@@ -520,11 +520,12 @@ par_hang_after := ra + estimated_par_lines(py-fy) ;
     if (par_hang_indent>0) and (par_hang_after<0) and obey_multi_par_hang :
       pair _ul_ ; _ul_ := (xpart ulcorner multipar, ypart snapped_multi_pos(ulxy[fpos]));
       pair _pa_ ; _pa_ := _ul_ shifted (0,par_hang_after*par_line_height) ;
-      _pa_ := (xpart _pa_,max(ypart _pa_,ypart llcorner multipar)) ;
+%       _pa_ := (xpart _pa_,max(ypart _pa_,ypart llcorner multipar)) ;
+      _pa_ := (xpart _pa_,max(ypart _pa_ -TopSkipCorrection,ypart llcorner multipar)) ;
       if same_area :
-        _pa_ := (xpart _pa_,max(ypart _pa_,ypart llxy[tpos])) ;
+%         _pa_ := (xpart _pa_,max(ypart _pa_,ypart llxy[tpos])) ;
+        _pa_ := (xpart _pa_,max(ypart _pa_ -TopSkipCorrection,ypart llxy[tpos])) ;
       fi ;
-% vervalt:
       if obey_multi_par_more and (round(par_line_height)>0) :
         par_hang_after := min(0,round(par_hang_after +
           (ypart urxy[fpos]-ypart _pa_)/par_line_height)) ;
@@ -539,7 +540,8 @@ par_hang_after := ra + estimated_par_lines(py-fy) ;
 
   vardef right_top_hang (expr same_area) =
 
-par_hang_after := ra - estimated_par_lines(py-fy) ;
+% par_hang_after := ra - estimated_par_lines(py-fy) ;
+par_hang_after := ra + estimated_par_lines(py-fy) ;
 
     if (par_hang_indent<0) and (par_hang_after<0) and obey_multi_par_hang :
       pair _ur_ ; _ur_ := (xpart urcorner multipar, ypart snapped_multi_pos(urxy[fpos])) ;
@@ -1240,6 +1242,7 @@ vardef PrepareSyncTasks(expr n, collapse, extendtop, prestartnext) =
         NOfSyncPaths := NOfSyncPaths + 1 ;
         if not ok :
           if i>1 :
+% not yet correct when two of teh same follow each other
             if sync_t[n][i-1] = sync_t[n][i] :
               SyncPaths[NOfSyncPaths] := SyncBox(n, i, SyncLeftOffset, SyncWidth, PaperHeight, -PaperHeight) ;
               SyncTasks[NOfSyncPaths] := i ;

@@ -399,7 +399,8 @@
 \def\somespaceentity#1#2%
   {\mathortext
      {\mskip#1mu}
-     {\unskip\hskip#2em\strut\hskip\zeropoint\ignorespaces}\relax}
+     {\ifvmode\dontleavehmode\else\unskip\fi\hskip#2em\strut\hskip\zeropoint\ignorespaces}%
+   \relax}
 
 \defineXMLentity [VeryThinSpace]         {\somespaceentity {2}{.125}}
 \defineXMLentity [ThinSpace]             {\somespaceentity {3}{.25}}

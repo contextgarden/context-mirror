@@ -216,8 +216,11 @@
   \def\normalhandleMPgraycolor
     {{\checkPDFMPstrokecolor\execcolorS\gMPa1:0:0\od}}
 
-  \def\normalhandleMPspotcolor
-    {{\checkPDFMPstrokecolor\execcolorP\gMPa1:\gMPa2:0:0\od}}
+%   \def\normalhandleMPspotcolor
+%     {{\checkPDFMPstrokecolor\execcolorP\gMPa1:\gMPa2:0:0\od}}
+
+  \def\normalhandleMPspotcolor % ???
+    {{\checkPDFMPstrokecolor\execcolorP\gMPa1:\gMPa2:\gMPa3:\gMPa4:0:0\od}}
 
 \fi
 
@@ -597,17 +600,17 @@
        \fi
      \or
        % 3 = rgb transparency
-     %   to do
+       %   to do
      \or
        % 4 == cmyk transparency
-     % \ifMPcmykcolors
-     %   to do
-     % \fi
+       % \ifMPcmykcolors
+       %   to do
+       % \fi
      \or
        % 5 == spot transparency
-     % \ifMPspotcolors
-     %   to do
-     % \fi
+       % \ifMPspotcolors
+       %   to do
+       % \fi
      \fi
    \else
      \ifx\tempMPrvalue\tempMPgvalue
@@ -738,9 +741,9 @@
                 {\immediate\pdfximage\!!width\onebasepoint\!!height\onebasepoint{#7}%
                  \setxvalue{mps:x:#7}{\pdfrefximage\the\pdflastximage}}%
                 {\message{[reusing figure #7]}}%
-              \pdfliteral{q #1 #2 #3 #4 #5 #6 cm}%
+              \PDFcode{q #1 #2 #3 #4 #5 #6 cm}%
               \rlap{\getvalue{mps:x:#7}}%
-              \pdfliteral{Q}}
+              \PDFcode{Q}}
              {\message{[unknown figure #7]}}%
          \fi
          \hss}}}
@@ -846,19 +849,38 @@
 %     \setxvalue{\@@MPSP\gMPs1}{\gMPs2 \gMPs3 }%
 %   \fi}
 
+% \defineMPspecial{2}
+%   {\ifMPspotcolors
+%      \setxvalue{\@@MPSP\gMPs1}{\gMPs2 \gMPs3 }%
+%      \checkMPspot{\gMPs2}{\gMPs3}%
+%    \fi}
+%
+% \def\setMPspot#1 #2 %
+%   {\setvalue{\@@MP01}{#1}%
+%    \setvalue{\@@MP02}{#2}}
+%
+% \def\checkMPspot#1#2%
+%   {\expanded{\resolveMPspotcolor#1 #2}\end
+%    \ifx\MPspotspace\MPresolvedspace
+%      \edef\MPspotspacespec{/\MPspotspace\space}%
+%      \doifinstringelse\MPspotspacespec\currentMPcolorspaces
+%        \donothing\registerMPcolorspace
+%    \fi}
 
 \defineMPspecial{2}
   {\ifMPspotcolors
-     \setxvalue{\@@MPSP\gMPs1}{\gMPs2 \gMPs3 }%
-     \checkMPspot{\gMPs2}{\gMPs3}%
+     \setxvalue{\@@MPSP\gMPs1}{\gMPs2 \gMPs3 \gMPs4 \gMPs5 }% space is essential
+     \checkMPspot{\gMPs2}{\gMPs3}{\gMPs4}{\gMPs5}%
    \fi}
 
-\def\setMPspot#1 #2 %
+\def\setMPspot#1 #2 #3 #4 %
   {\setvalue{\@@MP01}{#1}%
-   \setvalue{\@@MP02}{#2}}
+   \setvalue{\@@MP02}{#2}%
+   \setvalue{\@@MP03}{#3}%
+   \setvalue{\@@MP04}{#4}}
 
-\def\checkMPspot#1#2%
-  {\expanded{\resolveMPspotcolor#1 #2}\end
+\def\checkMPspot#1#2#3#4%
+  {\expanded{\resolveMPspotcolor#1 #2 #3 #4}\end
    \ifx\MPspotspace\MPresolvedspace
      \edef\MPspotspacespec{/\MPspotspace\space}%
      \doifinstringelse\MPspotspacespec\currentMPcolorspaces
@@ -976,16 +998,32 @@
    \edef\PDFtransparencyreference {#2}%
    \edef\PDFtransparencycolorspecs{#3}}
 
-\def\PDFtransparencyspec
+% \def\PDFtransparencyspec
+%   {\ifx\MPresolvedspace\MPgrayspace
+%      \MPresolvedcolor\space  g \MPresolvedcolor\space  G%
+%    \else\ifx\MPresolvedspace\MPrgbspace
+%      \MPresolvedcolor\space rg \MPresolvedcolor\space RG%
+%    \else\ifx\MPresolvedspace\MPcmykspace
+%      \MPresolvedcolor\space  k \MPresolvedcolor\space  K%
+%    \else\ifx\MPresolvedspace\empty\else
+%     /\MPresolvedspace\space cs \MPresolvedcolor\space sc
+%     /\MPresolvedspace\space CS \MPresolvedcolor\space SC%
+%   \fi\fi\fi\fi}
+
+\def\PDFtransparencyspec % todo
   {\ifx\MPresolvedspace\MPgrayspace
-     \MPresolvedcolor\space  g \MPresolvedcolor\space  G%
+     \MPresolvedcolor\space  g
+     \MPresolvedcolor\space  G%
    \else\ifx\MPresolvedspace\MPrgbspace
-     \MPresolvedcolor\space rg \MPresolvedcolor\space RG%
+     \MPresolvedcolor\space  rg
+     \MPresolvedcolor\space  RG%
    \else\ifx\MPresolvedspace\MPcmykspace
-     \MPresolvedcolor\space  k \MPresolvedcolor\space  K%
+     \MPresolvedcolor\space  k
+     \MPresolvedcolor\space  K%
    \else\ifx\MPresolvedspace\empty\else
-    /\MPresolvedspace\space cs \MPresolvedcolor\space sc
-    /\MPresolvedspace\space CS \MPresolvedcolor\space SC%
+     /\MPresolvedspace\space cs
+     /\MPresolvedspace\space CS
+     \PDFgetspotcolorspec\MPresolvedcolor
   \fi\fi\fi\fi}
 
 \defineMPspecial{3} % rgb
@@ -1008,25 +1046,20 @@
         {\PDFtransparencyreference}%
         {\PDFtransparencyspec}}}
 
-%\defineMPspecial{5} % spot
-%  {\edef\currentMPspecial{\gMPs5}%
-%   \presetPDFtransparency{\gMPs1}{\gMPs2}%
-%   \expanded{\resolveMPspotcolor\gMPs3 \gMPs4}\end
-%   \ifx\MPspotspace\MPresolvedspace
-%     \edef\MPspotspacespec{/\MPspotspace\space}%
-%     \doifinstringelse\MPspotspacespec\currentMPcolorspaces
-%       \donothing\registerMPcolorspace
-%   \fi
-%   \setevalue{\@@MPST\currentMPspecial}% was \setxvalue, bug !
-%     {\noexpand\assignMPStransparency
-%        {\PDFtransparencyidentifier}%
-%        {\PDFtransparencyreference}%
-%        {\PDFtransparencyspec}}}
+% \defineMPspecial{5} % spot
+%   {\edef\currentMPspecial{\gMPs5}%
+%    \presetPDFtransparency{\gMPs1}{\gMPs2}%
+%    \checkMPspot{\gMPs3}{\gMPs4}%
+%    \setevalue{\@@MPST\currentMPspecial}% was \setxvalue, bug !
+%      {\noexpand\assignMPStransparency
+%         {\PDFtransparencyidentifier}%
+%         {\PDFtransparencyreference}%
+%         {\PDFtransparencyspec}}}
 
 \defineMPspecial{5} % spot
-  {\edef\currentMPspecial{\gMPs5}%
+  {\edef\currentMPspecial{\gMPs7}%
    \presetPDFtransparency{\gMPs1}{\gMPs2}%
-   \checkMPspot{\gMPs3}{\gMPs4}%
+   \checkMPspot{\gMPs3}{\gMPs4}{\gMPs5}{\gMPs6}%
    \setevalue{\@@MPST\currentMPspecial}% was \setxvalue, bug !
      {\noexpand\assignMPStransparency
         {\PDFtransparencyidentifier}%
@@ -1247,9 +1280,17 @@
      \execcolorS#1:0:0\od
      \stopMPcolorresolve}
 
-  \def\resolveMPspotcolor#1 #2\end
+%   \def\resolveMPspotcolor#1 #2\end
+%     {\startMPcolorresolve
+%      \execcolorP#1:#2:0:0\od
+%      \stopMPcolorresolve}
+
+  \def\resolveMPspotcolor#1 #2 #3 #4\end
     {\startMPcolorresolve
-     \execcolorP#1:#2:0:0\od
+     \ifnum#2>\plusone
+       \checkmultitonecolor{#1}%
+     \fi
+     \execcolorP#1:#2:#3:#4:0:0\od
      \stopMPcolorresolve}
 
 \else

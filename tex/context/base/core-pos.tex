@@ -1750,6 +1750,29 @@
 \def\backgroundvariable#1%
   {\csname\??td\currenttextbackground#1\endcsname}
 
+% \definetextbackground[more][state=start,backgroundcolor=red] % location=paragraph
+% \definetextbackground[test][state=start,backgroundcolor=green]
+%
+% \page \placefigure[left]{}{}
+%
+% \starttextbackground[test]
+%   \readfile{ward}{}{}
+%   \starttextbackground[more]
+%     \readfile{ward}{}{}
+%   \stoptextbackground
+%   \readfile{ward}{}{}
+% \stoptextbackground
+%
+% \page \placefigure[right]{}{}
+%
+% \starttextbackground[test]
+%   \readfile{ward}{}{}
+%   \starttextbackground[more]
+%     \readfile{ward}{}{}
+%   \stoptextbackground
+%   \readfile{ward}{}{}
+% \stoptextbackground
+
 \def\dostarttextbackground[#1][#2]%
   {\checktextbackgrounds
    \def\currenttextbackground{#1}%

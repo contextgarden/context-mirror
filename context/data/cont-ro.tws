@@ -1675,6 +1675,8 @@ var:textdistance:*dimensiune::
 var:latimetext:*numar::
 var:textmargin:*dimensiune::
 var:clipoffset:*dimensiune::
+var:pagina:*nume::
+var:hartie:*nume::
 stopsetup
 
 startsetup
@@ -2420,6 +2422,8 @@ val:*nume::
 val:*numar,fiecare::
 val:standard,repeat/broad,repeat/serried,impachetat, despachetat,stopper,unit,lamargine,inmargine, autointro,larg,sectiune,intext:standard:
 var:margine:nu,standard,*dimensiune::
+var:marginestanga:nu,standard,*dimensiune::
+var:marginedreapta:nu,standard,*dimensiune::
 var:latime:*dimensiune::
 var:distanta:*dimensiune::
 var:factor:*numar::

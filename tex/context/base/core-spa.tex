@@ -75,8 +75,8 @@
 \global\let\carriedoverpar\relax
 
 \def\carryoverpar#1%
-  {\expanded
-     {\noexpand#1%
+  {\expanded     % \scratchtoks{#1}%
+     {\noexpand#1% \the\scratchtoks
       \hangindent\the\hangindent
       \hangafter \the\hangafter
       \parskip   \the\parskip
@@ -434,8 +434,9 @@
 % \TestBlank[2*big,whatever]
 % \TestBlank[3\lineheight]
 
-\def\addblankskip#1#2#3%
-  {\global\advance\blankoskip#1\ifgridsnapping#3\else#2\fi}
+% this will be replaced/enhanced
+
+\def\addblankskip#1#2#3{\global\advance\blankoskip#1\ifgridsnapping#3\else#2\fi}
 
 \def\defineblankmethod[#1]#2{\setvalue{\??bo\??bo#1}{#2}}
 
@@ -445,10 +446,10 @@
 \defineblankmethod [-\v!middel]{\addblankskip-\medskipamount   {.5\openlineheight}}
 \defineblankmethod   [\v!klein]{\addblankskip+\smallskipamount{.25\openlineheight}}
 \defineblankmethod  [-\v!klein]{\addblankskip-\smallskipamount{.25\openlineheight}}
-\defineblankmethod     [\v!wit]{\addblankskip+\parskip\openlineheight}
-\defineblankmethod    [-\v!wit]{\addblankskip-\parskip\openlineheight}
-\defineblankmethod   [\v!regel]{\addblankskip+\openlineheight\openlineheight}
-\defineblankmethod  [-\v!regel]{\addblankskip-\openlineheight\openlineheight}
+\defineblankmethod     [\v!wit]{\addblankskip+\parskip            \openlineheight}
+\defineblankmethod    [-\v!wit]{\addblankskip-\parskip            \openlineheight}
+\defineblankmethod   [\v!regel]{\addblankskip+\openlineheight     \openlineheight}
+\defineblankmethod  [-\v!regel]{\addblankskip-\openlineheight     \openlineheight}
 
 \defineblankmethod [\v!formule    ]{\global\advance\blankoskip\medskipamount}
 \defineblankmethod [\v!geenwit    ]{\global\blankogeenwittrue}
@@ -1903,8 +1904,13 @@
    \edef\strutdepth {\the\strutdp}%
    \dosetstrut}
 
+% \def\setfontstrut
+%   {\setcharstrut{(}}
+%
+% better, since some fonts have small (but descending Q etc)
+
 \def\setfontstrut
-  {\setcharstrut{(}}
+  {\setcharstrut{(gplQT}}
 
 \def\setcapstrut% could be M, but Q has descender
   {\setcharstrut{Q}}
@@ -2284,15 +2290,6 @@
 
 \def\definieerhbox%
   {\dodoubleargument\dodefinieerhbox}
-
-\def\lrcbox#1#2#%
-  {\vbox#2\bgroup
-   \let\\=\endgraf
-   \forgetall#1\let\next=}
-
-\def\lbox{\lrcbox\raggedleft}
-\def\rbox{\lrcbox\raggedright}
-\def\cbox{\lrcbox\raggedcenter}
 
 \def\iobox#1#2#3#% here #3# is not really needed
   {\vbox\bgroup  % we want to return a vbox like the others

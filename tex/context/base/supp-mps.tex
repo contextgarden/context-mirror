@@ -791,8 +791,7 @@
 \fi
 
 \def\loadMPgraphic#1#2%
-  {\setbox\MPgraphicbox=\hbox
-     {\ifinsertMPgraphics\insertMPfile{#1}{#2}\fi}}
+  {\setbox\MPgraphicbox\hbox{\ifinsertMPgraphics\insertMPfile{#1}{#2}\fi}}
 
 \def\MPllx{0}
 \def\MPlly{0}
@@ -1151,7 +1150,7 @@
      \endlinechar=-1
      \setMPspecials
      \obeyMPspecials
-     \setbox\scratchbox=\hbox
+     \setbox\scratchbox\hbox
        {\hskip-\maxdimen
         \doprocessfile\scratchread{#1}\handleMPfont}%
      \smashbox\scratchbox
@@ -1614,12 +1613,14 @@
   {\globallet\MPdrawingdata\empty
    \global\MPdrawingdonefalse}
 
+% why global push/pop here?
+
 \def\pushMPdrawing
-  {\pushmacro\MPdrawingdata
+  {\globalpushmacro\MPdrawingdata
    \globallet\MPdrawingdata\empty}
 
 \def\popMPdrawing
-  {\popmacro\MPdrawingdata}
+  {\globalpopmacro\MPdrawingdata}
 
 \def\getMPdrawing
   {\ifMPdrawingdone

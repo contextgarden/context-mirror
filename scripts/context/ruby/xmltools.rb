@@ -35,7 +35,7 @@ class Commands
 
             class << output
                 def xputs(str,n=0)
-                    puts("#{' '*n} #{str}")
+                    puts("#{' '*n}#{str}")
                 end
             end
 
@@ -170,7 +170,7 @@ class Commands
                         end
                         f.close
                     else
-                        report("missing data log file #{filename}")
+                        report("missing data log file #{file}")
                     end
                 end
                 if png then
@@ -182,11 +182,11 @@ class Commands
                     system("imagemagick #{long}.pdf #{long}-%d.jpg")
                 end
             else
-                report("error in processing file #{filename}")
+                report("error in processing file #{file}")
             end
             system("texmfstart texutil --purge")
         else
-            report("error in processing file #{filename}")
+            report("error in processing file #{file}")
         end
 
     end
@@ -198,6 +198,9 @@ commandline = CommandLine.new
 
 commandline.registeraction('dir',     'generate directory listing')
 commandline.registeraction('mmlpages','generate graphic from mathml')
+
+# commandline.registeraction('dir',     'filename --pattern= --output= [--recurse --stripname --url --root]')
+# commandline.registeraction('mmlpages','filename [--eps --jpg --png --style= --mode=]')
 
 commandline.registeraction('ls')
 

@@ -378,11 +378,23 @@
      {\ifcase#6 \or\or\else /ViewerPreferences << /FitWindow true >>\fi}%
    \egroup}
 
+% not that good if we switch drivers
+
 \appendtoksonce % hack to prevent duplicates
   \doPDFaddtocatalog{\currentPDFpagemode\currentPDFviewerprefs}%
   \doPDFaddtoinfo{/Trapped /False}%
   \doPDFaddtoinfo{/ConTeXt.Version (\contextversion)}%
 \to \everyfirstshipout
+
+\def\PDFversion{1.5}
+
+\appendtoksonce
+  \def\PDFversion{1.5}%
+\to \everyresetspecials
+
+\appendtoksonce % we catch both n and 1.n
+  \doPDFaddtocatalog{/Version \ifdim\PDFversion00\points>100\points 1.\fi\PDFversion}%
+\to \everylastshipout
 
 \def\doPDFsetupwhateverbox#1#2#3#4#5#6% watch the extra arguments
   {\bgroup
@@ -1022,11 +1034,13 @@
    \startPDFsymbolappearance
      \doPDFembedfile\PDFfile{#7}{#8}%
      \doPDFgetembeddedfilereference\PDFfile\PDFobjectreference
+     \setFDFlayer\@@DriverAttachmentLayer
      \doPDFannotation width {\width} height {\totalheight} data
        {/Subtype /FileAttachment
         /FS \PDFobjectreference\space
         /Contents (#1)
         \PDFsymbol
+        \FDFlayer
         \PDFattributes}%
    \stopPDFsymbolappearance
    \egroup}
@@ -1256,37 +1270,6 @@
 %D The next section of this module is dedicated to form
 %D support. These macros are complicated by the fact that
 %D cloning is possible.
-
-% new approach, 'global' variables, since we run out of
-% arguments
-
-\ifx\undefined\@@DriverFieldName
-
-  \letempty \@@DriverFieldName
-  \letempty \@@DriverFieldWidth
-  \letempty \@@DriverFieldHeight
-  \letempty \@@DriverFieldDefault
-  \letempty \@@DriverFieldNumber
-  \letempty \@@DriverFieldNumber
-  \letempty \@@DriverFieldStyle
-  \letempty \@@DriverFieldColor
-  \letempty \@@DriverFieldBackgroundColor
-  \letempty \@@DriverFieldFrameColor
-  \letempty \@@DriverFieldLayer
-  \letempty \@@DriverFieldOption
-  \letempty \@@DriverFieldAlign
-  \letempty \@@DriverFieldClickIn
-  \letempty \@@DriverFieldClickOut
-  \letempty \@@DriverFieldRegionIn
-  \letempty \@@DriverFieldRegionOut
-  \letempty \@@DriverFieldAfterKey
-  \letempty \@@DriverFieldFormat
-  \letempty \@@DriverFieldValidate
-  \letempty \@@DriverFieldCalculate
-  \letempty \@@DriverFieldFocusIn
-  \letempty \@@DriverFieldFocusOut
-
-\fi
 
 %D \macros
 %D   {FDFflag...,FDFplus...}
@@ -1819,7 +1802,7 @@
 
 \def\doFDFpresetlinefield#1#2#3#4#5#6#7#8#9%
   {\bgroup
-   \setFDFlayer
+   \setFDFlayer\@@DriverFieldLayer
    \setFDFswitches[#7]%
    \setFDFattributes[#6]%
    \setFDFalignment[#8]%
@@ -1884,7 +1867,7 @@
 
 \def\doFDFpresetchoicefield#1#2#3#4#5#6#7#8%
   {\bgroup
-   \setFDFlayer
+   \setFDFlayer\@@DriverFieldLayer
    \setFDFswitches[#6]%
    \setFDFattributes[#5]%
    \setFDFvalues[#7][#4]%
@@ -1949,7 +1932,7 @@
 
 \def\doFDFpresetpushcheckfield#1#2#3#4#5#6#7#8% in acro<5 (\FDFdefault)
   {\bgroup                                    % in acro>5 /\FDFdefault
-   \setFDFlayer
+   \setFDFlayer\@@DriverFieldLayer
    \ifcase#8\relax\FDFvaluesfalse\else\FDFvaluestrue\fi
    \setFDFswitches[#5]%
    \setFDFactions[#7]%
@@ -2030,7 +2013,7 @@
 
 \def\doFDFpresetradiofield#1#2#3#4#5#6#7#8%
   {\bgroup
-   \setFDFlayer
+   \setFDFlayer\@@DriverFieldLayer
    \FDFvaluestrue
    \setFDFswitches[#5]%
    \setFDFactions[#8]%
@@ -2195,13 +2178,13 @@
 
 %D Layer support:
 
-\def\setFDFlayer % todo : \ifx\PDFobjectreference\noPDFobjectreference ipv found
+\def\setFDFlayer#1% todo : \ifx\PDFobjectreference\noPDFobjectreference ipv found
   {\letempty\FDFlayer
-   \doifsomething\@@DriverFieldLayer
-     {\checkproperty[\@@DriverFieldLayer]% == \dodocheckproperty\@@DriverFieldLayer
-      \doifobjectreferencefoundelse{PDLN}\@@DriverFieldLayer
-        {\doPDFgetobjectreference{PDLN}\@@DriverFieldLayer\PDFobjectreference
-         \edef\FDFlayer{/OC \PDFobjectreference}}%
+   \doifsomething{#1}%
+     {\checkproperty[#1]% == \dodocheckproperty\@@DriverFieldLayer
+      \doifobjectreferencefoundelse{PDLN}{#1}
+        {\doPDFgetobjectreference{PDLN}{#1}\!!stringa % we need to avoid a clash with other macros
+         \edef\FDFlayer{/OC \!!stringa}}%
         \donothing}}
 
 %D The three appearances {\em normal}, \type{roll over} and
@@ -2519,13 +2502,14 @@
 \def\doPDFflushcomments
   {\box\PDFsymbolbox}
 
-\long\def\doPDFinsertcomment#1#2#3#4#5#6#7#8%
+\long\def\doPDFinsertcomment#1#2#3#4#5#6#7#8% % \@@DriverCommentLayer set otherwise
   {\bgroup % title width height color open symbol collect data
    \presetPDFsymbolappearance{#4}{#6}{#2}{#3}\!!zeropoint% sets width/height
    \doifelsenothing{#1}
      {\let\PDFidentifier\empty}
      {\def\PDFidentifier{/T (#1)}}%
    \sanitizePDFencoding#8\to\PDFdata
+   \setFDFlayer\@@DriverCommentLayer
    \startPDFsymbolappearance
      \ifPDFpopupcomments
        \doglobal\increment\nofFDFcomments
@@ -2535,22 +2519,26 @@
          \donefalse
        \ifdone
          \setbox\scratchbox\hbox
-         % pdftex (efficient)
-         % {\doPDFannotation
-         % generic (less efficient)
            {\doPDFannotationobject class FDF name {c::\nofFDFcomments}
-         % argument (common)
-                 width #2 height #3 data % text window
+                 width #2 height #3 data % text window, size does not work
               {/Subtype /Popup
                /Parent \PDFobjectreference}}%
          \ifcase#7\relax
            \vbox to \height{\forgetall\vskip#3\box\scratchbox\vss}%
          \else % incredible trial and error hack
+           % it's quite a mess, the annot width cannot be set, well, it can
+           % but the appearance and text sizes get mixed up
+%            \setbox\scratchbox\vbox to \height{\forgetall\vskip#3\box\scratchbox\vss}%
+%            \global\setbox\PDFsymbolbox\vbox
+%              {\hsize#2%
+%               \forgetall
+%               \vsmash{\box\PDFsymbolbox}
+%               \box\scratchbox}%
+           % this may change when acrobat gets less bugged
+           \setbox\scratchbox\vbox to #3{\forgetall\vss\box\scratchbox}%
+           \wd\scratchbox#2%
            \global\setbox\PDFsymbolbox\vbox
-             {\hsize#2%
-              \forgetall
-              \vsmash{\box\PDFsymbolbox}
-              \box\scratchbox}%
+             {\startoverlay{\box\PDFsymbolbox}{\box\scratchbox}\stopoverlay}%
          \fi
        \fi
        % generic
@@ -2568,6 +2556,7 @@
           \ifdone /Popup \PDFobjectreference\fi
           /Contents \ifPDFunicode <\PDFdata> \else(\PDFdata) \fi
           \PDFidentifier
+          \FDFlayer
           \PDFsymbol
           \PDFattributes}%
      \else
@@ -2575,6 +2564,7 @@
          {/Subtype /Text
           \ifcase#5 \else/Open true\fi
           /Contents \ifPDFunicode <\PDFdata> \else(\PDFdata) \fi
+          \FDFlayer
           \PDFsymbol
           \PDFidentifier
           \PDFattributes}%
@@ -2753,8 +2743,27 @@
 \def\doPDFstartgraycolormode#1%
   {\PDFcode{#1 g\ifPDFstrokecolor\space#1 G\fi}}
 
-\def\doPDFstartspotcolormode#1#2%
-  {\PDFcode{/#1 CS #2 SC /#1 cs #2 sc}}
+% \def\doPDFstartspotcolormode#1#2%
+%   {\PDFcode{/#1 CS #2 SC /#1 cs #2 sc}}
+
+\def\doPDFstartspotcolormode#1#2% redefining spotcolors is not possible anyway
+  {\ifundefined{pdf:scs:#2}%
+     \bgroup
+     \getcommacommandsize[#2]%
+     \ifcase\commalistsize\or
+       \setxvalue{pdf:scs:#2}{#2 SCN #2 scn}% \setxvalue{pdf:scs:#2}{#2 SC #2 sc}%
+     \else
+       \let\PDFspotcolorspecs\empty
+       \def\dospotcolorcommand##1{\edef\PDFspotcolorspecs{\PDFspotcolorspecs##1\space}}%
+       \processcommacommand[#2]\dospotcolorcommand
+       \setxvalue{pdf:scs:#2}{\PDFspotcolorspecs SCN \PDFspotcolorspecs scn}%
+     \fi
+     \egroup
+   \fi
+   \PDFcode{/#1 cs /#1 CS \PDFgetspotcolorspec{#2}}}
+
+\def\PDFgetspotcolorspec#1%
+  {\executeifdefined{pdf:scs:#1}\empty} % better no default than one with too less args
 
 \def\doPDFstartnonecolormode
   {\PDFcode{/None CS 1 SC /None cs 1 sc}}
@@ -2769,27 +2778,53 @@
 % /Device#2 \the\pdflastobj\space0 R]} so we use separation
 % colors that work and print ok
 
-\def\doPDFregistersomespotcolor#1#2#3#4%
+\def\doPDFregistersomespotcolor#1#2#3#4% implemented in the driver
   {\writestatus\m!systems{missing spot color definition}\wait}
 
 \def\doPDFregisternonecolor % internal command
   {\doPDFregistergrayspotcolor{None}{1}%
    \globallet\doPDFregisternonecolor\relax}
 
-\def\doPDFregisterrgbspotcolor#1#2#3#4%
-  {\doPDFregistersomespotcolor
-     {#1}{RGB}{[0.0 1.0 0.0 1.0 0.0 1.0]}%
-     {{dup #2 mul exch dup #3 mul exch #4 mul}}}
+% \def\doPDFregisterrgbspotcolor#1#2#3#4%
+%   {\doPDFregistersomespotcolor
+%      {#1}{RGB}{[0.0 1.0 0.0 1.0 0.0 1.0]}%
+%      {{dup #2 mul exch dup #3 mul exch #4 mul}}}
+%
+% \def\doPDFregistercmykspotcolor#1#2#3#4#5%
+%   {\doPDFregistersomespotcolor
+%      {#1}{CMYK}{[0.0 1.0 0.0 1.0 0.0 1.0 0.0 1.0]}%
+%      {{dup #2 mul exch dup #3 mul exch dup #4 mul exch #5 mul}}}
+%
+% \def\doPDFregistergrayspotcolor#1#2%
+%   {\doPDFregistersomespotcolor
+%      {#1}{Gray}{[0.0 1.0]}%
+%      {{pop}}}
 
-\def\doPDFregistercmykspotcolor#1#2#3#4#5%
-  {\doPDFregistersomespotcolor
-     {#1}{CMYK}{[0.0 1.0 0.0 1.0 0.0 1.0 0.0 1.0]}%
-     {{dup #2 mul exch dup #3 mul exch dup #4 mul exch #5 mul}}}
+\def\doPDFregisterrgbspotcolor#1#2#3#4#5#6#7% name noffractions names p's r g b
+  {\doPDFregistersomespotcolor{#1}{#2}{#3}{#4}{RGB}{0.0 1.0 0.0 1.0 0.0 1.0}%
+     {\ifcase#2\or dup #5 mul exch dup #6 mul exch #7 mul\else#5 #6 #7\fi}}
 
-\def\doPDFregistergrayspotcolor#1#2%
-  {\doPDFregistersomespotcolor
-     {#1}{Gray}{[0.0 1.0]}%
-     {{pop}}}
+\def\doPDFregistercmykspotcolor#1#2#3#4#5#6#7#8% name noffractions names p's c m y k
+  {\doPDFregistersomespotcolor{#1}{#2}{#3}{#4}{CMYK}{0.0 1.0 0.0 1.0 0.0 1.0 0.0 1.0}%
+     {\ifcase#2\or dup #5 mul exch dup #6 mul exch dup #7 mul exch #8 mul\else #5 #6 #7 #8\fi}}
+
+\def\doPDFregistergrayspotcolor#1#2#3#4#5% name noffractions names p's s
+  {\doPDFregistersomespotcolor{#1}{#2}{#3}{#4}{Gray}{0.0 1.0}%
+     {\ifcase#2\or pop\else#5\fi}}
+
+%D New and very experimental.
+
+\def\doPDFregistercmykindexcolor#1#2#3#4#5#6#7#8% name noffractions names p's c m y k
+  {\doPDFregistersomeindexcolor{#1}{#2}{#3}{#4}{CMYK}{0.0 1.0 0.0 1.0 0.0 1.0 0.0 1.0}%
+     {dup #5 mul exch dup #6 mul exch dup #7 mul exch #8 mul}}
+
+\def\doPDFregisterrgbindexcolor#1#2#3#4#5#6#7% name noffractions names p's r g b
+  {\doPDFregistersomeindexcolor{#1}{#2}{#3}{#4}{RGB}{0.0 1.0 0.0 1.0 0.0 1.0}%
+     {dup #5 mul exch dup #6 mul exch #7 mul}}
+
+\def\doPDFregistergrayindexcolor#1#2#3#4#5% name noffractions names p's s
+  {\doPDFregistersomeindexcolor{#1}{#2}{#3}{#4}{Gray}{0.0 1.0}%
+     {pop}}
 
 %D \macros
 %D   {doPDFstartrotation,doPDFstoprotation}
@@ -2911,6 +2946,8 @@
 
 %D Transparency support (experimental):
 
+\newif\ifPDFtransparencysupported
+
 \def\PDFtransparancydictionary#1#2#3% type fraction extras
   {<</Type /ExtGState
      /ca #2 /CA #2
@@ -2919,8 +2956,6 @@
           ColorBurn\or Darken\or Lighten\or Difference\or
           Exclusion\else Compatible\fi
      #3>>}
-
-\newif\ifPDFtransparencysupported
 
 \def\dodoPDFstarttransparency#1#2%
   {\presetPDFtransparency{#1}{#2}%
@@ -3008,7 +3043,7 @@
       \fi
       /Name (#2)}%
    \doPDFgetobjectreference{PDLN}{#1}\PDFobjectreference
-     \xdef\PDFtextlayers{\PDFtextlayers\space\PDFobjectreference}%
+   \xdef\PDFtextlayers{\PDFtextlayers\space\PDFobjectreference}%
    \doifelse{#3}\v!start
      {\xdef\PDFvidelayers{\PDFvidelayers\space\PDFobjectreference}}%
      {\xdef\PDFhidelayers{\PDFhidelayers\space\PDFobjectreference}}%

@@ -150,6 +150,27 @@
    \def\currentregister{#1}%
    \donoregister[#2]}
 
+% \def\complexdozieregister[#1]#2#3%
+%   {\begingroup
+%      \thisisnextinternal\s!ind
+%      \ifduplicate\getlastregisterentry{#2}\fi
+%      \convertexpanded{\??id\currentregister}{#2}\asciiregisterentryA
+%      \convertexpanded{\??id\currentregister}{#3}\asciiregisterentryB
+%      \makesectionformat
+%      \edef\schrijfwegnaarregister%
+%        {\writeutility%
+%           {r s %
+%            {\currentregister} %
+%            {\nextinternalreference} %
+%            {#1} %
+%            {\asciiregisterentryA} %
+%            {\asciiregisterentryB} %
+%            {\sectionformat}}}%
+%      \schrijfwegnaarregister
+%    \endgroup
+%    \registerinfo{> zie}{#2}%
+%    \GotoPar}
+
 \def\complexdozieregister[#1]#2#3%
   {\begingroup
      \thisisnextinternal\s!ind
@@ -891,7 +912,7 @@
   {\begingroup
    \stelregisterin[\currentregister][#1]%
    \raggedright
-   \startkolommen
+   \startcolumns
      [\c!n=\getvalue{\??id\currentregister\c!n},
       \c!balanceren=\getvalue{\??id\currentregister\c!balanceren},
       \c!uitlijnen=\getvalue{\??id\currentregister\c!uitlijnen}]%
@@ -899,7 +920,7 @@
    \startopelkaar[\v!blanko]%
    \doutilities\currentregister\jobname\currentregister\relax\par
    \stopopelkaar
-   \stopkolommen
+   \stopcolumns
    \endgroup}
 
 % \def\complexdovolledigregister[#1]% \@EA's kunnen weg

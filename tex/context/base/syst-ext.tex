@@ -24,15 +24,28 @@
 %D A raw and dirty alternative for \type {\getparameters}; no
 %D checking is done!
 
-\def\rawgetparameters[#1][#2]% scheelt 5\%
-  {\def\rawparameterprefix{#1}%
-   \expandafter\rawsetparameter#2,]=,}
+% \def\rawgetparameters[#1][#2]% scheelt 5\%
+%   {\def\rawparameterprefix{#1}%
+%    \expandafter\rawsetparameter#2,]=,}
 
 \def\rawsetparameter#1=#2,%
   {\if]#1\else
      \expandafter\def\csname\rawparameterprefix#1\endcsname{#2}%
      \expandafter\rawsetparameter
    \fi}
+
+% the next one handles empty #1 okay:
+
+\def\rawgetparameters[#1][#2% some 5-10% faster
+  {\ifx#2]% test is needed, else bomb on [#1][]
+     \expandafter\gobbleoneargument
+   \else
+     \def\rawparameterprefix{#1}%
+     \expandafter\dorawgetparameters
+   \fi#2}
+
+\def\dorawgetparameters#1]%
+  {\expandafter\rawsetparameter#1,]=,}
 
 %D \macros
 %D   {doglobal,
@@ -1981,20 +1994,18 @@
 %D a row. In both commands, the \type{n*} is optional. When this
 %D specification is missing, the command executes once.
 
-% ! ! ! obsolete ! ! !
+% this one is obsolete:
 
 \def\dorepeat[#1]%
   {\dodorepeat#1*\empty*\relax}
 
 \long\def\dodorepeat#1*#2#3*#4\relax
-  {\ifx#2\empty
-     #1%
-   \else
-     \dorecurse{#1}{#2#3}%
-   \fi}
+  {\ifx#2\empty#1\else\dorecurse{#1}{#2#3}\fi}
 
 \def\repeater
   {\recurselevel}
+
+% this one will be kept
 
 \def\dorepeatwithcommand[#1]%
   {\dodorepeatwithcommand#1*\empty*\relax}
@@ -2008,23 +2019,62 @@
 %
 % more complex but better:
 
+% \long\def\dodorepeatwithcommand#1*#2#3*#4\relax#5%
+%   {\ifx#2\empty
+%      #5{#1}%
+%    \else\ifnum#1<\zerocount
+%      % a la etex
+%      % \dorecurse{-\numexpr(#1)}{#5{-#2#3}}%
+%      % indirect
+%      %\innerrecurse#1%
+%      %\expanded{\dorecurse{\number-\innerrecurse}}{#5{-#2#3}}%
+%      % safer:
+%      \bgroup\scratchcounter#1%
+%      \expanded{\egroup\noexpand\dorecurse{\number-\scratchcounter}}{#5{-#2#3}}%
+%    \else\ifx#2+%
+%      \dorecurse{#1}{#5{#3}}%
+%    \else
+%      \dorecurse{#1}{#5{#2#3}}%
+%    \fi\fi\fi}
+
+\def\dorepeatwithcommand[#1]%
+  {\dodorepeatwithcommand#1*\empty*\relax}
+
 \long\def\dodorepeatwithcommand#1*#2#3*#4\relax#5%
-  {\ifx#2\empty
-     #5{#1}%
+  {\ifx#2\empty\redorepeatwithcommand[#1]#5\else\dododorepeatwithcommand{#1}{#2}{#3}#5\fi}
+
+\long\def\dododorepeatwithcommand#1#2#3#4%
+  {\ifx#2\empty % redundant but gives cleaner extensions
+     #4{#1}%
    \else\ifnum#1<\zerocount
-     % a la etex
-     % \dorecurse{-\numexpr(#1)}{#5{-#2#3}}%
-     % indirect
-     %\innerrecurse#1%
-     %\expanded{\dorecurse{\number-\innerrecurse}}{#5{-#2#3}}%
-     % safer:
      \bgroup\scratchcounter#1%
-     \expanded{\egroup\noexpand\dorecurse{\number-\scratchcounter}}{#5{-#2#3}}%
+     \expanded{\egroup\noexpand\dorecurse{\number-\scratchcounter}}{#4{-#2#3}}%
    \else\ifx#2+%
-     \dorecurse{#1}{#5{#3}}%
+     \dorecurse{#1}{#4{#3}}%
    \else
-     \dorecurse{#1}{#5{#2#3}}%
+     \dorecurse{#1}{#4{#2#3}}%
    \fi\fi\fi}
+
+\def\redorepeatwithcommand[#1]#2%
+  {#2{#1}}
+
+%D The extension hook permits something like:
+%D
+%D \starttyping
+%D \bgroup
+%D
+%D \catcode`\*=\@@superscript
+%D
+%D \gdef\redorepeatwithcommand[#1]%
+%D   {\redodorepeatwithcommand#1*\empty*\relax}
+%D
+%D \long\gdef\redodorepeatwithcommand#1*#2#3*#4\relax#5%
+%D   {\dododorepeatwithcommand{#1}{#2}{#3}#5}
+%D
+%D \egroup
+%D \stoptyping
+%D
+%D although one may wonder if changing the catcode of \type {*} is wise.
 
 %D \macros
 %D   {normalbgroup,normalgroup}
@@ -3746,6 +3796,10 @@
   {\ifhmode\else \ifmmode\else
      {\mathsurround\zeropoint\everymath\emptytoks$ $}%
    \fi \fi}
+
+%D And now your version of \TEX\ may provide:
+
+\ifx\quitvmode\undefined \else \let\dontleavehmode\quitvmode \fi
 
 %D \macros
 %D   {uppercasestring,lowercasestring}

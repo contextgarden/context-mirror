@@ -736,9 +736,9 @@
 \def\setvisiblehfilbox#1\to#2#3#4%
   {\setbox#1\normalhbox
      {\visualvrule
-        \!!width#2\testrulewidth
+        \!!width #2\testrulewidth
         \!!height#3\testrulewidth
-        \!!depth#4\testrulewidth}%
+        \!!depth #4\testrulewidth}%
    \smashbox#1}
 
 \def\doruledhfiller#1#2#3#4%
@@ -846,9 +846,9 @@
 \def\setvisiblevfilbox#1\to#2#3#4%
   {\setbox#1\normalhbox
      {\visualvrule
-        \!!width#2\testrulewidth
+        \!!width #2\testrulewidth
         \!!height#3\testrulewidth
-        \!!depth#4\testrulewidth}%
+        \!!depth #4\testrulewidth}%
    \smashbox#1}%
 
 \def\doruledvfiller#1#2#3%
@@ -907,20 +907,11 @@
 %D Keep in mind that \type{\vfillneg} is not part of \PLAIN\
 %D \TEX, but are mimmicked by a macro.
 
-\unexpanded\def\ruledvss
-  {\doruledvfiller\normalvss\normalvfilneg{2}}
-
-\unexpanded\def\ruledvfil
-  {\doruledvfiller\normalvfil\normalvfilneg{-4}}
-
-\unexpanded\def\ruledvfill
-  {\doruledvfiller\normalvfill\normalvfillneg{-12}}
-
-\unexpanded\def\ruledvfilneg
-  {\doruledvfiller\normalvfilneg\normalvfil{8}}
-
-\unexpanded\def\ruledvfillneg
-  {\doruledvfiller\normalvfillneg\normalvfill{16}}
+\unexpanded\def\ruledvss     {\doruledvfiller\normalvss     \normalvfilneg   {2}}
+\unexpanded\def\ruledvfil    {\doruledvfiller\normalvfil    \normalvfilneg  {-4}}
+\unexpanded\def\ruledvfill   {\doruledvfiller\normalvfill   \normalvfillneg{-12}}
+\unexpanded\def\ruledvfilneg {\doruledvfiller\normalvfilneg \normalvfil      {8}}
+\unexpanded\def\ruledvfillneg{\doruledvfiller\normalvfillneg\normalvfill    {16}}
 
 %D \macros
 %D   {ruledhskip}
@@ -1584,11 +1575,8 @@
 \def\setruledpenaltybox#1#2#3#4#5#6%
   {\setbox#1\normalhbox
      {\ifnum#2=0 \else
-        \ifnum#2>0
-          \def\sign{+}%
-        \else
-          \def\sign{-}%
-        \fi
+        \edef\sign
+          {\ifnum#2>0 +\else-\fi}%
         \dimen0=\ifnum\sign#2>9999
                   28\else
                 \ifnum\sign#2>999

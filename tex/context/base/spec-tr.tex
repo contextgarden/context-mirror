@@ -62,6 +62,11 @@
    \dodoinsertfile{tr}{#1}{#2}{#3}{#4}{#5}{#6}{#7}{#8}{#9}%
    \egroup}
 
+%D Some MP stuff:
+
+\definespecial\doinsertMPfile#1%
+  {\doiffileelse{./#1}{\includeMPasEPS{./#1}}{\message{[MP #1]}}}
+
 %D \macros
 %D   {dostartrotation}
 %D

@@ -1456,7 +1456,8 @@
 %D for helping me sort this out.
 
 %D \macros
-%D   {definefontsynonym}
+%D   {definefontsynonym, doifelsefontsynonym,
+%D    expandfontsynonym, truefontname, truefontdata}
 %D
 %D While looking for fonts, fontsynonyms are used for accessing
 %D the files!
@@ -1541,6 +1542,18 @@
      \@EA\truefontname\csname\??ff\fontclass#1\endcsname
    \fi}
 
+\def\expandfontsynonym#1#2% #2 := onelevelexpansion(#1)
+  {\@EA\ifx\csname\??ff\fontclass#2\endcsname\relax\else
+     \expandafter\def\expandafter#1\expandafter{\csname\??ff\fontclass#2\endcsname}%
+   \fi}
+
+\def\doifelsefontsynonym#1%
+  {\@EA\ifx\csname\??ff\fontclass#1\endcsname\relax
+     \expandafter\secondoftwoarguments
+   \else
+     \expandafter\firstoftwoarguments
+   \fi}
+
 \endTEX
 
 \beginETEX \ifcsname
@@ -1569,7 +1582,20 @@
      #1%
    \fi\fi}
 
+\def\expandfontsynonym#1#2% #2 := onelevelexpansion(#1)
+  {\ifcsname\??ff\fontclass#2\endcsname
+     \expandafter\def\expandafter#1\expandafter{\csname\??ff\fontclass#2\endcsname}%
+   \fi}
+
+\def\doifelsefontsynonym#1%
+  {\ifcsname\??ff\fontclass#1\endcsname
+     \expandafter\firstoftwoarguments
+   \else
+     \expandafter\secondoftwoarguments
+   \fi}
+
 \endETEX
+
 
 %D \macros
 %D   {tracedfontname}
@@ -2074,17 +2100,40 @@
 \def\checkbodyfontenvironment[#1]%
   {\definebodyfontenvironment[\fontclass][#1][]}
 
-\def\setupbodyfontenvironment
-  {\dotripleempty\dosetupbodyfontenvironment}
+% original
+%
+% \def\setupbodyfontenvironment
+%   {\dotripleempty\dosetupbodyfontenvironment}
+%
+% \def\dosetupbodyfontenvironment[#1][#2][#3]% class size settings
+%   {\@@beginfontdef
+%    \ifthirdargument
+%      \getparameters[\??ft#1#2][#3]%
+%    \else
+%      \getparameters[\??ft#1][#2]%
+%    \fi
+%    \@@endfontdef}
+%
+% this one already catches both define/setup
 
-\def\dosetupbodyfontenvironment[#1][#2][#3]% class size settings
-  {\@@beginfontdef
-   \ifthirdargument
-     \getparameters[\??ft#1#2][#3]%
-   \else
-     \getparameters[\??ft#1][#2]%
-   \fi
-   \@@endfontdef}
+\def\setupbodyfontenvironment{\definebodyfontenvironment}
+
+% officially, but not needed (yet):
+%
+% \def\dosetupbodyfontenvironment[#1][#2][#3]% class size settings
+%   {\ifthirdargument
+%      \localbodyfontsize#2\relax
+%      \normalizebodyfontsize\localbodyfontsize\to\normalizedbodyfontsize
+%      \doifundefinedelse{\??ft#1\normalizedbodyfontsize\c!em}
+%        {\definebodyfontenvironment[#1][#2][#3]}%
+%        {\getparameters[\??ft#1\normalizedbodyfontsize][#3]}%
+%    \else
+%      \localbodyfontsize#1\relax
+%      \normalizebodyfontsize\localbodyfontsize\to\normalizedbodyfontsize
+%      \doifundefinedelse{\??ft\normalizedbodyfontsize\c!em}
+%        {\definebodyfontenvironment[#1][#2]}%
+%        {\getparameters[\??ft\normalizedbodyfontsize][#2]}%
+%    \fi}
 
 %D Just a couple of interface macros:
 

@@ -115,7 +115,6 @@
 %D clip.
 
 \def\objectoffset{1cm}
-  {}
 
 % \def\dodosetobject#1#2#3%
 %   {\bgroup
@@ -177,7 +176,30 @@
 %    \box\scratchbox
 %    \elabelgroup}
 
-\def\dogetobject#1#2#3#4#5#6#7%
+% \def\dogetobject#1#2#3#4#5#6#7%
+%   {\initializepaper
+%    \forgetall
+%    \dontshowcomposition
+%    \setbox\scratchbox\vbox
+%      {\doinsertobject{#1}{#2}}%
+%    \setbox\scratchbox#3%
+%      {\vbox to #5\scaledpoint
+%         {\ifdim\ht\scratchbox>#5\scaledpoint
+%     % or \ifdim\wd\scratchbox>#4\scaledpoint
+%            \vss\hbox to #4\scaledpoint{\hss\box\scratchbox\hss}\vss
+%          \else
+%            \vss\box\scratchbox
+%          \fi}}%
+%    \scratchdimen#7\scaledpoint
+%    \setbox\nextbox\hbox
+%      {\hskip-\scratchdimen\lower\scratchdimen\flushnextbox}%
+%    \wd\scratchbox#4\scaledpoint
+%    \ht\scratchbox#5\scaledpoint
+%    \dp\scratchbox#6\scaledpoint
+%    \box\scratchbox
+%    \elabelgroup}
+
+\def\dogetobject#1#2#3#4#5#6#7% don't change this, should work for dvi & pdf
   {\initializepaper
    \forgetall
    \dontshowcomposition
@@ -186,17 +208,12 @@
    \setbox\scratchbox#3%
      {\vbox to #5\scaledpoint
         {\ifdim\ht\scratchbox>#5\scaledpoint
-    % or \ifdim\wd\scratchbox>#4\scaledpoint
+           \vss\hbox to #4\scaledpoint{\hss\box\scratchbox\hss}\vss
+         \else\ifdim\wd\scratchbox>#4\scaledpoint
            \vss\hbox to #4\scaledpoint{\hss\box\scratchbox\hss}\vss
          \else
            \vss\box\scratchbox
-         \fi}}%
-   \scratchdimen#7\scaledpoint
-   \setbox\nextbox\hbox
-     {\hskip-\scratchdimen\lower\scratchdimen\flushnextbox}%
-   \wd\scratchbox#4\scaledpoint
-   \ht\scratchbox#5\scaledpoint
-   \dp\scratchbox#6\scaledpoint
+         \fi\fi}}%
    \box\scratchbox
    \elabelgroup}
 
@@ -242,7 +259,6 @@
 %D
 %D These commands are to be called by the \type{\startobject},
 %D \type{\stopobject} and \type{\insertobject} specials.
-
 
 \def\objectreferenced{\global\chardef\crossreferenceobject\plusone}
 \def\driverreferenced{\global\chardef\crossreferenceobject\zerocount}

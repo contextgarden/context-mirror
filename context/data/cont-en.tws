@@ -1675,6 +1675,8 @@ var:textdistance:*dimension::
 var:textwidth:*number::
 var:textmargin:*dimension::
 var:clipoffset:*dimension::
+var:page:*name::
+var:paper:*name::
 stopsetup
 
 startsetup
@@ -2420,6 +2422,8 @@ val:*name::
 val:*number,each::
 val:standard,repeat/broad,repeat/serried,packed, unpacked,stopper,joinedup,atmargin,inmargin, autointro,loose,section,intext:standard:
 var:margin:no,standard,*dimension::
+var:leftmargin:no,standard,*dimension::
+var:rightmargin:no,standard,*dimension::
 var:width:*dimension::
 var:distance:*dimension::
 var:factor:*number::

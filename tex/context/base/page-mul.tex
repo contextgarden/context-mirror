@@ -286,9 +286,9 @@
 %D
 %D \startbuffer
 %D \startbuffer[b]
-%D \startkolommen
+%D \startcolumns
 %D   \input tufte
-%D \stopkolommen
+%D \stopcolumns
 %D \stopbuffer
 %D \typebuffer[b] \haalbuffer[b]
 %D
@@ -300,44 +300,44 @@
 %D \typebuffer[b] \haalbuffer[b]
 %D
 %D \startbuffer[b]
-%D \startkolommen \startsmaller
+%D \startcolumns \startsmaller
 %D   \input tufte
-%D \stopsmaller \stopkolommen
+%D \stopsmaller \stopcolumns
 %D \stopbuffer
 %D \typebuffer[b] \haalbuffer[b]
 %D
 %D \startbuffer[b]
-%D \startsmaller \startkolommen
+%D \startsmaller \startcolumns
 %D   \input tufte
-%D \stopkolommen \stopsmaller
+%D \stopcolumns \stopsmaller
 %D \stopbuffer
 %D \typebuffer[b] \haalbuffer[b]
 %D
 %D \startbuffer[b]
-%D \startkolommen \startsmaller[left]
+%D \startcolumns \startsmaller[left]
 %D   \input tufte
-%D \stopsmaller \stopkolommen
+%D \stopsmaller \stopcolumns
 %D \stopbuffer
 %D \typebuffer[b] \haalbuffer[b]
 %D
 %D \startbuffer[b]
-%D \startsmaller[left] \startkolommen
+%D \startsmaller[left] \startcolumns
 %D   \input tufte
-%D \stopkolommen \stopsmaller
+%D \stopcolumns \stopsmaller
 %D \stopbuffer
 %D \typebuffer[b] \haalbuffer[b]
 %D
 %D \startbuffer[b]
-%D \startsmaller \startkolommen \startsmaller
+%D \startsmaller \startcolumns \startsmaller
 %D   \input tufte
-%D \stopsmaller\stopkolommen \stopsmaller
+%D \stopsmaller\stopcolumns \stopsmaller
 %D \stopbuffer
 %D \typebuffer[b] \haalbuffer[b]
 %D
 %D \startbuffer[b]
-%D \startsmaller[left] \startkolommen \startsmaller
+%D \startsmaller[left] \startcolumns \startsmaller
 %D   \input tufte
-%D \stopsmaller\stopkolommen \stopsmaller
+%D \stopsmaller\stopcolumns \stopsmaller
 %D \stopbuffer
 %D \typebuffer[b] \haalbuffer[b]
 %D \stopbuffer
@@ -492,6 +492,36 @@
 %D e.g. when there is no text given between \type{\begin..}
 %D and \type{\end..}. The \type{\par} is needed!
 
+% \def\endmulticolumns
+%   {%\par
+%    \vskip\lineheight\vskip-\lineheight % take footnotes into account
+%    \dontshowcomposition
+%    \doflushcolumnfloat  % added recently
+%   %\doflushcolumnfloats % no, since it results in wrong top floats
+%    \flushnotes          % before start of columns
+%    \par
+%    \ifbalancecolumns
+%      \global\output{\continuousmulticolumnsout}%
+%      \goodbreak
+%      \global\output{\balancedmulticolumnsout}%
+%    \else
+%      \goodbreak
+%    \fi
+%    \eject                 % the prevdepth is important, try e.g. toclist in
+%    \prevdepth\zeropoint % columns before some noncolumned text text
+%    \global\output\singlecolumnout
+%     \global\output{\the\mainoutput}% % % % % todo
+%    \ifvoid\precolumnbox\else
+%      \unvbox\precolumnbox
+%    \fi
+%    \global\precolumnboxheight\zeropoint
+%    \endgroup % here
+%    \nofcolumns\plusone
+%    \setvsize % the outer one!
+%    \checkendcolumnfootnotes
+%    \dosomebreak\allowbreak
+%    \restoresavedfloats}
+
 \def\endmulticolumns
   {%\par
    \vskip\lineheight\vskip-\lineheight % take footnotes into account
@@ -507,10 +537,10 @@
    \else
      \goodbreak
    \fi
-   \eject                 % the prevdepth is important, try e.g. toclist in
+   \eject               % the prevdepth is important, try e.g. toclist in
    \prevdepth\zeropoint % columns before some noncolumned text text
    \global\output\singlecolumnout
-    \global\output{\the\mainoutput}% % % % % todo
+   \global\output{\the\mainoutput}% % % % % todo
    \ifvoid\precolumnbox\else
      \unvbox\precolumnbox
    \fi
@@ -518,6 +548,7 @@
    \endgroup % here
    \nofcolumns\plusone
    \setvsize % the outer one!
+   \synchronizeoutput % new may 2004 / we need to: \pagegoal\vsize
    \checkendcolumnfootnotes
    \dosomebreak\allowbreak
    \restoresavedfloats}
@@ -670,9 +701,9 @@
 %D \def\postprocesscolumnline#1% or \postprocesscolumnbox
 %D   {\ruledhbox{\box#1}\hss}
 %D
-%D \startkolommen[n=4]
+%D \startcolumns[n=4]
 %D \dorecurse{25}{line: \recurselevel\par}
-%D \stopkolommen
+%D \stopcolumns
 %D \stopbuffer
 %D
 %D \typebuffer
@@ -691,9 +722,9 @@
 %D      \relax\unhbox#1\hfill
 %D    \fi}
 %D
-%D \startkolommen[n=4]
+%D \startcolumns[n=4]
 %D \dorecurse{25}{line \recurselevel\par}
-%D \stopkolommen
+%D \stopcolumns
 %D \stopbuffer
 %D
 %D \typebuffer
@@ -1503,13 +1534,13 @@
 
 % border case, should fit on one page
 %
-% \startkolommen
+% \startcolumns
 %
 % 1 \input tufte  \par \plaatsfiguur{}{\omlijnd[breedte=\hsize,hoogte=3cm]{1}}
 % 2 \input tufte  \par \plaatsfiguur{}{\omlijnd[breedte=\hsize,hoogte=3cm]{2}}
 % 3 \input tufte  \par \plaatsfiguur{}{\omlijnd[breedte=\hsize,hoogte=3cm]{3}}
 %
-% \stopkolommen
+% \stopcolumns
 
 \newif\ifbinnenkolommen
 \newif\if@@klbalanceren
@@ -1517,10 +1548,10 @@
 
 \binnenkolommenfalse
 
-\def\stelkolommenin
-  {\dodoubleargument\dostelkolommenin}
+\def\setupcolumns
+  {\dosingleempty\dosetupcolumns}
 
-\def\stelkolommenin[#1]%
+\def\dosetupcolumns[#1]%
   {\getparameters[\??kl][#1]%
    \nofcolumns\@@kln\relax
    \processaction
@@ -1567,14 +1598,14 @@
 
 \let\restorecolumnsettings\relax
 
-\definecomplexorsimpleempty\startkolommen
+\definecomplexorsimpleempty\startcolumns
 
-\def\complexstartkolommen[#1]% %% \startkolommen
+\def\complexstartcolumns[#1]% %% \startcolumns
   {\bgroup
-   \let\stopkolommen\egroup
+   \let\stopcolumns\egroup
    \ifbinnenkolommen
    \else
-     \stelkolommenin[#1]%
+     \setupcolumns[#1]%
      \ifnum\@@kln>1\relax
        \witruimte
        \begingroup
@@ -1614,12 +1645,12 @@
        %
        \edef\fixedcolumnheight{\@@klhoogte}%
        \edef\minbalancetoplines{\@@klnboven}%
-       \setuptolerance[\@@kltolerantie]%     %% \startkolommen
+       \setuptolerance[\@@kltolerantie]%     %% \startcolumns
        \setupblank[\@@klblanko]%
        \ifdim\tussenwit>\zeropoint\relax
          \setupwhitespace[\@@klblanko]%
        \fi
-       \def\stopkolommen
+       \def\stopcolumns
          {\endmulticolumns
           \global\binnenkolommenfalse
           \endgroup
@@ -1639,7 +1670,7 @@
    \vskip-\teksthoogte
    \prevdepth-\thousandpoint} % signals top of column to \blanko
 
-\stelkolommenin
+\setupcolumns
   [\c!n=2,
    \c!nboven=1,
    \c!commando=,

@@ -1675,6 +1675,8 @@ var:tekstafstand:*maat::
 var:tekstbreedte:*getal::
 var:tekstmarge:*maat::
 var:clipoffset:*maat::
+var:pagina:*naam::
+var:papier:*naam::
 stopsetup
 
 startsetup
@@ -2420,6 +2422,8 @@ val:*naam::
 val:*getal,elk::
 val:standaard,repeat/ruim,repeat/aanelkaar,opelkaar, vanelkaar,afsluiter,aansluitend,opmarge,inmarge, autointro,los,paragraaf,intekst:standaard:
 var:marge:nee,standaard,*maat::
+var:linkermarge:nee,standaard,*maat::
+var:rechtermarge:nee,standaard,*maat::
 var:breedte:*maat::
 var:afstand:*maat::
 var:factor:*getal::

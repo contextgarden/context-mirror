@@ -1318,6 +1318,12 @@
 
 \newif\ifnaturaltextext
 
+% \starttyping
+% test /naturaltextext\hpos{word}{test}/relax test
+% \stoptyping
+%
+% \MPxy{word}
+
 \beginETEX \scantokens
 
 %\def\naturaltextext#1#2\relax
@@ -1327,6 +1333,17 @@
   {\bgroup
    \prettynaturalfont{\restorecatcodes\scantokens{\ignorespaces#1}}%
    \egroup}
+
+% new, test first
+%
+% \def\naturaltextext#1\relax
+%   {\bgroup
+%    \prettynaturalfont
+%    \def\ascii{#1}%
+%    \setnormalcatcodes
+%    \restorecatcodes
+%    \scantokens\expandafter{\ascii}\ifhmode\unskip\fi
+%    \egroup}
 
 \endETEX
 

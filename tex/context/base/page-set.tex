@@ -436,6 +436,10 @@
             \fi
             \dorecurse\columnmaxcells
               {\setbox\scratchbox\hbox{\OTRSETgetgridcell\mofcolumns\recurselevel}%
+%               {\setbox\scratchbox\hbox
+%                  {\localstarttextcolor
+%                   \OTRSETgetgridcell\mofcolumns\recurselevel
+%                   \localstoptextcolor}%
                \ht\scratchbox\strutht
                \dp\scratchbox\strutdp
                \ifcase\columndirection

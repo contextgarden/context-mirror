@@ -108,7 +108,7 @@
    \c!hoofd=35pt,
    \c!voet=35pt]
 
-\stelkolommenin
+\setupcolumns
   [\c!afstand=1pc]
 
 %D Later zullen we zonodig nog instellen dat de \MAPS\ op een
@@ -459,7 +459,7 @@
          \kern 3.5pt
        \egroup
      \egroup
-   \ifMapsInKolommen\startkolommen\fi
+   \ifMapsInKolommen\startcolumns\fi
    \MapsAffiliatieB}
 
 \def\startBijdrage%
@@ -467,7 +467,7 @@
    \dosingleempty\dostartBijdrage}
 
 \def\stopBijdrage%
-  {\ifMapsInKolommen\stopkolommen\fi
+  {\ifMapsInKolommen\stopcolumns\fi
    \stoptekst}
 
 %D De affiliatie wordt in de marge gezet. De wat gecompliceerde

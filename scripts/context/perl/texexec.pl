@@ -184,6 +184,7 @@ my $Random           = 0;
 my $Filters          = '';
 my $NoMapFiles       = 0 ;
 my $Foxet            = 0 ;
+my $UseEnginePath    = 0 ;
 
 my $StartLine        = 0 ;
 my $StartColumn      = 0 ;
@@ -285,6 +286,7 @@ my $MakeMpy = '';
     "globalfile"     => \$GlobalFile,
     "nomapfiles"     => \$NoMapFiles,
     "foxet"          => \$Foxet,
+    "engine"         => \$UseEnginePath,
     #### exxperiment
     "startline=s"    => \$StartLine,
     "startcolumn=s"  => \$StartColumn,
@@ -347,7 +349,7 @@ if ( ( $LogFile ne '' ) && ( $LogFile =~ /\w+\.log$/io ) ) {
     *STDERR = *LOGFILE;
 }
 
-my $Program = " TeXExec 4.3 - ConTeXt / PRAGMA ADE 1997-2004";
+my $Program = " TeXExec 4.4 - ConTeXt / PRAGMA ADE 1997-2004";
 
 print "\n$Program\n\n";
 
@@ -645,6 +647,11 @@ if ( open( INI, $IniPath ) ) {
 sub IniValue {
     my ( $Key, $Default ) = @_;
     if ( defined( $Done{$Key} ) ) { $Default = $Done{$Key} }
+    if ($Default =~ /^(true|yes|on)$/io) {
+        $Default = 1 ;
+    } elsif ($Default =~ /^(false|no|off)$/io) {
+        $Default = 0 ;
+    }
     if ($Verbose) { print "          used setting : $Key = $Default\n" }
     return $Default;
 }
@@ -676,10 +683,13 @@ my $MpPassString      = IniValue( 'MpPassString',      '' );
 my $MpFormat          = IniValue( 'MpFormat',          $MetaFun );
 my $MpFormatPath      = IniValue( 'MpFormatPath',      $TeXFormatPath );
 
+my $UseEnginePath     = IniValue( 'UseEnginePath',     $UseEnginePath);
+
 my $FmtLanguage = IniValue( 'FmtLanguage', '' );
 my $FmtBodyFont = IniValue( 'FmtBodyFont', '' );
 my $FmtResponse = IniValue( 'FmtResponse', '' );
 my $TcXPath     = IniValue( 'TcXPath',     '' );
+
 
 $SetFile = IniValue( 'SetFile', $SetFile );
 
@@ -718,6 +728,11 @@ if ( $MpFormatFlag eq "" ) {
         $MpFormatFlag = "-mem=" ;
 }
 
+if ($UseEnginePath && (! $MakeFormats)) {
+    $MpFormatFlag .= $MpExecutable . '/' ;
+    $TeXFormatFlag .= $TeXExecutable . '/' ;
+}
+
 #~ if ( $TeXFormatFlag eq "" ) { $TeXFormatFlag = "&" }
 #~ if ( $MpFormatFlag  eq "" ) { $MpFormatFlag  = "&" }
 
@@ -730,8 +745,12 @@ if ($TeXProgram) { $TeXExecutable = $TeXProgram }
 
 my $fmtutil = '';
 
+# for the moment forget about fmtutil, since it does not support $engine subpaths
+
+$Alone = 1 ;
+
 if ( $MakeFormats || $Verbose ) {
-    if ($Alone) {
+    if ($Alone || $UseEnginePath) {
         if ($Verbose) { print "     generating format : not using fmtutil\n" }
     } elsif ( $TeXShell =~ /tetex|fptex/i ) {
         foreach (@paths) {
@@ -739,7 +758,7 @@ if ( $MakeFormats || $Verbose ) {
             if    ( -e $p )          { $fmtutil = $p;          last }
             elsif ( -e $p . '.exe' ) { $fmtutil = $p . '.exe'; last }
         }
-	$fmtutil = ($fmtutil =~ m/^[^\"].* / ? "\"$fmtutil\"" : "$fmtutil") ;
+     	$fmtutil = ($fmtutil =~ m/^[^\"].* / ? "\"$fmtutil\"" : "$fmtutil") ;
         if ($Verbose) {
             if ( $fmtutil eq '' ) {
                 print "      locating fmtutil : not found in path\n";
@@ -921,11 +940,14 @@ sub print_opt {
 
 sub show_help_options {
     print    # "\n" .
-      "                --help   overview of all options and their values\n"
+        "                --help   overview of all options and their values\n"
       . "            --help all   all about all options\n"
       . "          --help short   just the main options\n"
       . "   --help mode ... pdf   all about a few options\n"
-      . "        --help '*.pdf'   all about options containing 'pdf'\n";
+      . "        --help '*.pdf'   all about options containing 'pdf'\n"
+      . "\n"
+      . "            more info    http://www.pragma-ade.com/general/manuals/mtexexec.pdf\n"
+      . "                         http://www.ntg.nl/mailman/listinfo/ntg-context\n";
 }
 
 # determine what user wants to see
@@ -1238,7 +1260,7 @@ sub CheckPositions { }
 my $ConTeXtVersion = "unknown";
 my $ConTeXtModes   = '';
 
-sub ScanPreamble {
+sub ScanTeXPreamble {
     my ($FileName) = @_;
     open( TEX, $FileName );
     while (<TEX>) {
@@ -1266,6 +1288,12 @@ sub ScanPreamble {
         }
     }
     close(TEX);
+
+    # handy later on
+
+    $ProducePdfT = ($OutputFormat eq "pdftex") ;
+    $ProducePdfM = ($OutputFormat eq "dvipdfm") ;
+    $ProducePdfX = ($OutputFormat eq "dvipdfmx") ;
 }
 
 sub ScanContent {
@@ -1570,6 +1598,23 @@ sub RunConTeXtFile {
     if ($DummyFile) {
         open( TMP, ">$JobName.run" );
         if ( ( $JobSuffix =~ /(xml|fo|fox)/io ) || $ForceXML ) {
+            # scan xml preamble
+            open(XML,"<$JobName.$JobSuffix") ;
+            while (<XML>) {
+                if (/\<[a-z]+/io) {
+                    last ;
+                } elsif (/\<\?context\-directive\s+(.+?)\s+(.+?)\s+(.+?)\s*\?\>/o) {
+                    my ($class, $key, $value) = ($1, $2, $3) ;
+                    if ($class eq 'job') {
+                        if ($key eq 'stylefile') {
+                            print TMP "\\environment $value\n" ;
+                        } elsif ($key eq 'interface') {
+                            $ConTeXtInterface = $value ;
+                        }
+                    }
+                }
+            }
+            close(XML) ;
             if ( $Filters ne "" ) {
                 print "     using xml filters : $Filters\n";
             }
@@ -1585,9 +1630,8 @@ sub RunConTeXtFile {
         $JobSuffix = "run";
     }
     if ( ( -e "$JobName.$JobSuffix" ) || ($GlobalFile) ) {
-        unless ($DummyFile)    # we don't need this for xml
-        {
-            ScanPreamble("$JobName.$JobSuffix");
+        unless ($DummyFile) {    # we don't need this for xml
+            ScanTeXPreamble("$JobName.$JobSuffix");
             if ( $ConTeXtInterface eq "unknown" ) {
                 ScanContent("$JobName.$JobSuffix");
             }
@@ -1692,6 +1736,11 @@ sub RunConTeXtFile {
             CopyFile( "$JobName.top", "$JobName.tmp" );
             unlink "$JobName.tup";    # previous tuo file
             unlink "$JobName.top";    # runtime option file
+            if ($ProducePdfX) {
+                system("dvipdfmx -f dvipdfmx.map -d 4 $JobName") ;
+            } elsif ($ProducePdfM) {
+                system("dvipdfm $JobName") ;
+            }
             PopResult($JobName);
         }
         if ($Purge) { PurgeFiles($JobName) }
@@ -2033,6 +2082,7 @@ sub RunCombine {
 
 sub LocatedFormatPath {
     my $FormatPath = shift;
+    my $EnginePath = shift;
     if ( ( $FormatPath eq '' ) && ( $kpsewhich ne '' ) ) {
         $FormatPath = `$kpsewhich --show-path=fmt`;
         chomp $FormatPath;
@@ -2048,6 +2098,14 @@ sub LocatedFormatPath {
             print "    located formatpath : $FormatPath\n";
         }
     }
+
+    if ($UseEnginePath && ($FormatPath ne '' && ($FormatPath !~ /$EnginePath\/$/))) {
+        $FormatPath .= $EnginePath . '/' ;
+        unless (-d $FormatPath) {
+            mkdir $FormatPath ;
+        }
+    }
+
     return $FormatPath;
 }
 
@@ -2056,6 +2114,7 @@ sub RunOneFormat {
     my @TeXFormatPath;
     my $TeXPrefix = "";
     if ( ( $fmtutil ne "" ) && ( $FormatName !~ /metafun|mptopdf/io ) ) {
+# could not happen, not supported any more
         my $cmd = "$fmtutil --byfmt $FormatName";
         if ($Verbose) { print "\n$cmd\n\n" }
         MakeUserFile;    # this works only when the path is kept
@@ -2072,11 +2131,11 @@ sub RunOneFormat {
             $TeXPrefix = "*";
         }
         my $CurrentPath = cwd();
-        $TeXFormatPath = LocatedFormatPath($TeXFormatPath);
-        if ( $TeXFormatPath ne '' ) { chdir $TeXFormatPath }
+        my $TheTeXFormatPath = LocatedFormatPath($TeXFormatPath, $TeXExecutable);
+        if ( $TheTeXFormatPath ne '' ) { chdir $TheTeXFormatPath }
         MakeUserFile;
         MakeResponseFile;
-	$own_quote = ($TeXProgramPath =~ m/^[^\"].* / ? "\"" : "") ;
+	    $own_quote = ($TeXProgramPath =~ m/^[^\"].* / ? "\"" : "") ;
         my $cmd =
             "$own_quote$TeXProgramPath$TeXExecutable$own_quote $TeXVirginFlag "
           . "$TeXPassString $PassOn ${TeXPrefix}$FormatName";
@@ -2085,7 +2144,7 @@ sub RunOneFormat {
         RemoveResponseFile;
         RestoreUserFile;
 
-        if ( ( $TeXFormatPath ne '' ) && ( $CurrentPath ne '' ) ) {
+        if ( ( $TheTeXFormatPath ne '' ) && ( $CurrentPath ne '' ) ) {
             chdir $CurrentPath;
         }
     }
@@ -2130,15 +2189,15 @@ sub RunMpFormat {
     my $MpFormat = shift;
     return if ( $MpFormat eq '' );
     my $CurrentPath = cwd();
-    $MpFormatPath = LocatedFormatPath($MpFormatPath);
-    if ( $MpFormatPath ne '' ) { chdir "$MpFormatPath" }
+    my $TheMpFormatPath = LocatedFormatPath($MpFormatPath, $MpExecutable);
+    if ( $TheMpFormatPath ne '' ) { chdir $TheMpFormatPath }
     $own_quote = ($MpExecutable =~ m/^[^\"].* / ? "\"" : "") ;
     my $cmd =
       "$own_quote$MpExecutable$own_quote $MpVirginFlag $MpPassString $MpFormat";
     if ($Verbose) { print "\n$cmd\n\n" }
     system($cmd ) ;
 
-    if ( ( $MpFormatPath ne '' ) && ( $CurrentPath ne '' ) ) {
+    if ( ( $TheMpFormatPath ne '' ) && ( $CurrentPath ne '' ) ) {
         chdir $CurrentPath;
     }
 }
@@ -2298,12 +2357,35 @@ sub checkMPlabels {
     return 0 unless ( -s "$MpName.mpt" > 10 );
     return 0 unless open( MP, "$MpName.mpt" );
     my $n = 0;
+    my $t = "" ;
     while (<MP>) {
-        if (/% figure (\d+) : (.*)/o) { $mpbetex{$1} .= "$2\n"; ++$n }
+        if (/% setup : (.*)/o) {
+            $t = $1 ;
+        } else {
+            $t = "" ;
+        }
+        if (/% figure (\d+) : (.*)/o) {
+            if ($t ne "") {
+                $mpbetex{$1} .= "$t\n" ;
+                $t = "" ;
+            }
+            $mpbetex{$1} .= "$2\n";
+            ++$n ;
+        }
     }
     close(MP);
     print "  second MP run needed : $n tex labels found\n" if $n;
     return $n;
+}
+
+sub doMergeMP {
+    # make sure that the verbatimtex ends up before btex etc
+    my ($n,$str) = @_ ;
+    if ($str =~ /(.*?)(verbatimtex.*?etex)\s*\;(.*)/mois) {
+        return "beginfig($n)\;\n$1$2\;\n$mpbetex{$n}\n$3\;endfig\;\n" ;
+    } else {
+        return "beginfig($n)\;\n$mpbetex{$n}\n$str\;endfig\;\n" ;
+    }
 }
 
 sub doRunMP {    ###########
@@ -2337,9 +2419,9 @@ sub doRunMP {    ###########
             s/(\".*?)\@\@\@(.*?\")/$1\;$2/gmois; # added
             # merge labels
             if ($MergeBE) {
-                s/beginfig\s*\((\d+)\)\s*\;/beginfig($1)\;\n$mpbetex{$1}\n/goims;
+                # i hate this indirect (sub regexp) mess
+                s/beginfig\s*\((\d+)\)\s*\;(.*?)endfig\s*\;/doMergeMP($1,$2)/gems ;
             }
-            # flush
             unless (/beginfig\s*\(\s*0\s*\)/gmois) { print MP $mpbetex{0} }
             print MP $_;
             print MP "\n" . "end" . "\n";
@@ -2347,7 +2429,7 @@ sub doRunMP {    ###########
         }
         if ($TexFound) {
             print "       metapost to tex : $MpName\n";
-	    $own_quote = ($MpToTeXExecutable =~ m/^[^\"].* / ? "\"" : "") ;
+            $own_quote = ($MpToTeXExecutable =~ m/^[^\"].* / ? "\"" : "") ;
             $Problems =
               system("$own_quote$MpToTeXExecutable$own_quote $MpFile > $MpTex");
             if ( -e $MpTex && !$Problems ) {
@@ -2411,7 +2493,7 @@ sub RunMPX {
         local $/ = "\0777";
         $_ = <MP>;
         close(MP);
-        if (/(btex|etex|verbatimtex)/o) {
+        if (/(btex|etex|verbatimtex)/mos) {
             print "   generating mpx file : $MpName\n";
 	    $own_quote = ($MpToTeXExecutable =~ m/^[^\"].* / ? "\"" : "") ;
             $Problems =

@@ -392,32 +392,6 @@
 % Omdat een markering kan worden herdefinieerd moeten we
 % eerst testen of er wel een keten||afhankelijkheid is.
 
-% \def\doresetsectionmarks#1%
-%   {\doifdefined{\??se#1\c!markering} % skip zero level
-%      {\fastresetmarkerlist[\getvalue{\??se#1\c!markering}]}%
-%    \donexttracklevel{#1}}
-%
-% \def\resetsectionmarks#1%
-%   {\doifdefinedelse{\??se#1}
-%      {\let\donexttrackcommando\doresetsectionmarks
-%       \donexttracklevel{#1}}%
-%      {\fastresetmarker[\mainmarking{#1}]}} % redundant \mainmarking
-
-% \def\doresetsectionmarks#1%
-%   {\ifundefined{\??se#1\c!markering}\else % skip zero level
-%      \fastresetmarkerlist[\csname\??se#1\c!markering\endcsname]%
-%    \fi
-%    \donexttracklevel{#1}}
-%
-% not sure if the next one is better:
-
-\def\doresetsectionmarks#1%
-  {\ifundefined{\??se#1\c!markering}% skip zero level
-     \donexttracklevel{#1}%
-   \else
-     \fastresetmarkerlist[\csname\??se#1\c!markering\endcsname]%
-   \fi}
-
 \def\resetsectionmarks#1%
   {\ifundefined{\??se#1}%
      \fastresetmarker[\mainmarking{#1}]% % redundant \mainmarking
@@ -425,6 +399,23 @@
      \let\donexttrackcommando\doresetsectionmarks
      \donexttracklevel{#1}%
    \fi}
+
+\def\doresetsectionmarks#1%
+  {\ifundefined{\??se#1\c!markering}\else % skip zero level
+     \fastresetmarkerlist[\csname\??se#1\c!markering\endcsname]%
+   \fi
+   \donexttracklevel{#1}}
+
+% I'm not sure if the next one is better:
+%
+% \def\doresetsectionmarks#1%
+%   {\ifundefined{\??se#1\c!markering}% skip zero level
+%      \donexttracklevel{#1}%
+%    \else
+%      \fastresetmarkerlist[\csname\??se#1\c!markering\endcsname]%
+%    \fi}
+%
+% and indeed, it isn't, actually, it does not work at all, so let's drop it.
 
 % packaged:
 %
@@ -456,10 +447,18 @@
 
 % evt ook level gaan opslaan tbv snelle selectie
 
-\def\makesectionformat
-  {\edef\sectionformat
+% \def\makesectionformat
+%   {\edef\sectionformat
+%      {\@@sectiontype\sectionseparator
+%       \csname\lastsection\s!format\endcsname}}
+
+\unprotected \def\makesectionformat % we don't want eigennummers here
+  {\pushmacro\@@shortsectionnumber
+   \let\@@shortsectionnumber\@@sectionvalue
+   \edef\sectionformat
      {\@@sectiontype\sectionseparator
-      \csname\lastsection\s!format\endcsname}}
+      \csname\lastsection\s!format\endcsname}%
+   \popmacro\@@shortsectionnumber}
 
 \def\dobacktracklevel#1%
   {\doifnot{\previoussection{#1}}\zerosection
@@ -887,27 +886,55 @@
 % will result in an additional last page, which needs to be
 % captured at the end
 
-\def\doaroundsectieblok#1%
-  {\doifvaluesomething{\??sb#1\c!pagina}
-     {\ExpandFirstAfter\pagina[\getvalue{\??sb#1\c!pagina}]}%
+% \def\doaroundsectieblok#1%
+%   {\doifvaluesomething{\??sb#1\c!pagina}
+%      {\ExpandFirstAfter\pagina[\getvalue{\??sb#1\c!pagina}]}%
+%    \resetsectioncounters\zerosection % was firstsection
+%    \resetsectionmarks\zerosection}
+
+% \def\dostartsectieblok#1#2%
+%   {\begingroup
+%    \doaroundsectieblok{#1}%            % going to a new page or so
+%    \getvalue{\??sb#1}%                 % set name of section block
+%    \getsectieblokomgeving{#1}%         % special settings, grouped
+%   %\expandafter\csname#2true\endcsname % obsolete
+%    \setsystemmode{#1}%                 % can be used in conditionals
+%    \getvalue{\??sb\@@sectieblok\c!voor}% this one is not to be moved!
+%    \showmessage\m!structures1\@@sectieblokken}
+
+% \def\dostopsectieblok
+%   {\showmessage\m!structures2\@@sectieblokken
+%    \getvalue{\??sb\@@sectieblok\c!na}% don't move
+%    \doaroundsectieblok\@@sectieblok
+%    \endgroup}
+
+\def\doaroundsectieblok
+  {\doifvaluesomething{\??sb\@@sectieblok\c!pagina}
+     {\pagina[\getvalue{\??sb\@@sectieblok\c!pagina}]}%
    \resetsectioncounters\zerosection % was firstsection
    \resetsectionmarks\zerosection}
 
 \def\dostartsectieblok#1#2%
   {\begingroup
-   \doaroundsectieblok{#1}%            % going to a new page or so
-   \getvalue{\??sb#1}%                 % set name of section block
-   \getsectieblokomgeving{#1}%         % special settings, grouped
-  %\expandafter\csname#2true\endcsname % obsolete
-   \setsystemmode{#1}%                 % can be used in conditionals
-   \getvalue{\??sb\@@sectieblok\c!voor}% this one is not to be moved!
+   \getvalue{\??sb#1}%
+   \doaroundsectieblok
+%    \doifvaluesomething{\??sb\@@sectieblok\c!pagina}{\pagina[\getvalue{\??sb\@@sectieblok\c!pagina}]}%
+%    \resetsectioncounters\zerosection % was firstsection
+%    \resetsectionmarks\zerosection
+   \getsectieblokomgeving\@@sectieblok
+   \setsystemmode\@@sectieblok
+   \getvalue{\??sb\@@sectieblok\c!voor}%
    \showmessage\m!structures1\@@sectieblokken}
 
 \def\dostopsectieblok
   {\showmessage\m!structures2\@@sectieblokken
    \getvalue{\??sb\@@sectieblok\c!na}% don't move
-   \doaroundsectieblok\@@sectieblok
+   \doaroundsectieblok
+%    \doifvaluesomething{\??sb\@@sectieblok\c!pagina}{\pagina[\getvalue{\??sb\@@sectieblok\c!pagina}]}%
+%    \resetsectioncounters\zerosection % was firstsection
+%    \resetsectionmarks\zerosection
    \endgroup}
+
 
 \def\dostelsectieblokin[#1]% [#2]
   {\getparameters[\??sb#1]}
@@ -1003,7 +1030,7 @@
      \global\paginageblokkeerdtrue
    \fi}
 
-\def\dohandelpaginaafAB#1%
+\def\dohandelpaginaafAB#1% will be replaced by a more clever (signaling) mechanism (in beta)
   {\flushsidefloats
    \getvalue{\??ko#1\c!voor}%
    %\witruimte vervangen door \noindent elders
@@ -1837,13 +1864,13 @@
      \hskip\dimen0 \!!plus \dimen0 \!!minus .25\dimen0
      \hskip\headsignal\ignorespaces
    \fi
-   \ifdisplaysectionhead
+   \ifdisplaysectionhead \ifvmode
      \ifgridsnapping % important, font related depth, see comment
        \prevdepth\strutdp
      \else
        \prevdepth\localheaddepth
      \fi
-   \fi
+   \fi \fi
    \stopsynchronisatie
    \egroup
    \egroup

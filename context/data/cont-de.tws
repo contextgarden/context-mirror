@@ -1675,6 +1675,8 @@ var:textdistance:*Dimension::
 var:textbreite:*Nummer::
 var:textmargin:*Dimension::
 var:clipoffset:*Dimension::
+var:seite:*Name::
+var:papier:*Name::
 stopsetup
 
 startsetup
@@ -2420,6 +2422,8 @@ val:*Name::
 val:*Nummer,jede::
 val:standard,repeat/breit,repeat/kleinerabstand,gepackt, ungepackt,trenner,keinabstand,amrand,imrand, autointro,lose,absatz,imtext:standard:
 var:marginalie:nein,standard,*Dimension::
+var:linkerrand:nein,standard,*Dimension::
+var:rechterrand:nein,standard,*Dimension::
 var:breite:*Dimension::
 var:abstand:*Dimension::
 var:faktor:*Nummer::

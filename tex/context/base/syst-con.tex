@@ -152,6 +152,28 @@
      370\or 371\or 372\or 373\or 374\or 375\or 376\or 377\fi}
 
 %D \macros
+%D   {hexstringtonumber}
+%D
+%D This macro converts a two character hexadecimal number into
+%D a decimal number, thereby taking care of lowercase characters
+%D as well.
+
+\dostepwiserecurse{0}{9}{1}{\setevalue{@@uc@@\recurselevel}{\recurselevel}}
+
+\setvalue{@@uc@@a}{A} \setvalue{@@uc@@A}{A}
+\setvalue{@@uc@@b}{B} \setvalue{@@uc@@B}{B}
+\setvalue{@@uc@@c}{C} \setvalue{@@uc@@C}{C}
+\setvalue{@@uc@@d}{D} \setvalue{@@uc@@D}{D}
+\setvalue{@@uc@@e}{E} \setvalue{@@uc@@E}{E}
+\setvalue{@@uc@@f}{F} \setvalue{@@uc@@F}{F}
+
+\def\hexstringtonumber#1% {FF}
+  {\dohexstringtonumber#1}
+
+\def\dohexstringtonumber#1#2% FF
+  {"\csname @@uc@@#1\endcsname\csname @@uc@@#2\endcsname}
+
+%D \macros
 %D   {rawcharacter}
 %D
 %D This conversion macro produces raw characters. We have to

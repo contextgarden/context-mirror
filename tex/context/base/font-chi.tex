@@ -400,7 +400,7 @@
       \advance\dimen2 \@@vtafstand
       \divide\dimen0 \number\dimen2
       \edef\@@vtn{\number\dimen0}}%
-   \startkolommen
+   \startcolumns
      [\c!richting=\@@vtrichting,
       \c!balanceren=\@@vtbalanceren,
       \c!afstand=\@@vtafstand,
@@ -408,7 +408,7 @@
       #1]}
 
 \def\stopvertical
-  {\stopkolommen
+  {\stopcolumns
    \egroup}
 
 \setupchinese
@@ -492,22 +492,22 @@
 %D \def\DoIt #1 #2 %
 %D   {\hbox{\hbox to 2em{\uchar{#1}{#2}\hss}#1 #2}\par}
 %D
-%D \startkolommen[n=5]
+%D \startcolumns[n=5]
 %D \DoIt 161 162 \DoIt 161 163 \DoIt 161 164 \DoIt 161 167 \DoIt 161 173
 %D \DoIt 161 175 \DoIt 161 177 \DoIt 161 179 \DoIt 161 181 \DoIt 161 183
 %D \DoIt 161 185 \DoIt 161 187 \DoIt 161 189 \DoIt 161 191 \DoIt 161 227
 %D \DoIt 161 228 \DoIt 161 229 \DoIt 163 161 \DoIt 163 162 \DoIt 163 167
 %D \DoIt 163 169 \DoIt 163 172 \DoIt 163 174 \DoIt 163 186 \DoIt 163 187
 %D \DoIt 163 190 \DoIt 163 191 \DoIt 163 221 \DoIt 163 253
-%D \stopkolommen
+%D \stopcolumns
 %D
 %D A linebreak is not permitted after the following glyphs:
 %D
-%D \startkolommen[n=5]
+%D \startcolumns[n=5]
 %D \DoIt 161 174 \DoIt 161 176 \DoIt 161 178 \DoIt 161 180 \DoIt 161 182
 %D \DoIt 161 184 \DoIt 161 186 \DoIt 161 188 \DoIt 161 190 \DoIt 163 168
 %D \DoIt 163 219 \DoIt 163 224 \DoIt 163 251
-%D \stopkolommen
+%D \stopcolumns
 
 %D \macros
 %D   {tracechinesetrue, showchinesetracelegend}

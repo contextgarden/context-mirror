@@ -1675,6 +1675,8 @@ var:textdistance:*dimenze::
 var:sirkatextu:*cislo::
 var:textmargin:*dimenze::
 var:clipoffset:*dimenze::
+var:stranka:*jmeno::
+var:papir:*jmeno::
 stopsetup
 
 startsetup
@@ -2420,6 +2422,8 @@ val:*jmeno::
 val:*cislo,kazdy::
 val:standardni,repeat/siroky,repeat/semknuto,zhustene, rozbalene,predel,spojeno,naokraji,naokraji, autouvod,uvolnene,sekce,dotextu:standardni:
 var:marginalie:ne,standardni,*dimenze::
+var:levyokraj:ne,standardni,*dimenze::
+var:pravyokraj:ne,standardni,*dimenze::
 var:sirka:*dimenze::
 var:vzdalenost:*dimenze::
 var:faktor:*cislo::

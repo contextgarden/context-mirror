@@ -553,10 +553,48 @@
 %      \fi
 %    \fi}
 
+% \def\OTRONEdocheckiffloatfits % vervangen ivm downward comp
+%   {\ifnofloatpermitted
+%      \global\roomforfloatfalse
+%    \else
+%      \dimen0         \pagetotal
+%      \advance\dimen0 \ht\floatbox
+%      \advance\dimen0 \dp\floatbox
+%      \advance\dimen0 \floattopskip
+%      \advance\dimen0 -\pageshrink  % toegevoegd
+%     %\message{c:\the\mofcolumns,t:\the\pagetotal,g:\the\pagegoal}%\wait
+%      \dimen2\pagegoal
+%      \relax % needed
+%      \ifcase\textfloatmethod
+%        % method 0 : raw
+%      \or
+%        % method 1 : safe
+%        \dimen2 .99\pagegoal
+%      \or
+%        % method 2 : tight
+%        \advance\dimen0 -\onepoint
+%      \fi
+%      \relax % really needed ! ! ! !
+%      \ifdim\dimen0>\dimen2
+%        \global\roomforfloatfalse
+%      \else
+%        \global\roomforfloattrue
+%      \fi
+%    \fi}
+
 \def\OTRONEdocheckiffloatfits % vervangen ivm downward comp
   {\ifnofloatpermitted
      \global\roomforfloatfalse
    \else
+     % new per 31/5/2004, should be an option, only one column mode
+     \begingroup
+     \scratchdimen\pagetotal
+     \advance\scratchdimen\lineheight % maybe strutheight
+     \ifdim\scratchdimen>\pagegoal
+       \goodbreak % hack ? needed in icare-az
+     \fi
+     % should be an option
+     \endgroup
      \dimen0         \pagetotal
      \advance\dimen0 \ht\floatbox
      \advance\dimen0 \dp\floatbox

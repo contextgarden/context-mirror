@@ -223,24 +223,24 @@
 
 % \newif\ifPDFmediaboxprefered
 
-% \def\setPDFboundingbox#1#2#3#4#5#6%
-%   {\dimen0=#1\dimen0=#5\dimen0
-%    \ScaledPointsToBigPoints{\number\dimen0}\PDFxoffset
-%    \dimen0=#3\dimen0=#5\dimen0
-%    \xdef\PDFwidth{\the\dimen0}%
-%    \dimen0=#2\dimen0=#6\dimen0
-%    \ScaledPointsToBigPoints{\number\dimen0}\PDFyoffset
-%    \dimen0=#4\dimen0=#6\dimen0
-%    \xdef\PDFheight{\the\dimen0}%
-%    \global\let\PDFxoffset\PDFxoffset
-%    \global\let\PDFyoffset\PDFyoffset}
+\def\setPDFboundingbox#1#2#3#4#5#6%
+  {\dimen0=#1\dimen0=#5\dimen0
+   \ScaledPointsToBigPoints{\number\dimen0}\PDFxoffset
+   \dimen0=#3\dimen0=#5\dimen0
+   \xdef\PDFwidth{\the\dimen0}%
+   \dimen0=#2\dimen0=#6\dimen0
+   \ScaledPointsToBigPoints{\number\dimen0}\PDFyoffset
+   \dimen0=#4\dimen0=#6\dimen0
+   \xdef\PDFheight{\the\dimen0}%
+   \global\let\PDFxoffset\PDFxoffset
+   \global\let\PDFyoffset\PDFyoffset}
 
-% \def\setPDFmediabox#1[#2 #3 #4 #5]#6\done
-%   {\dimen2=#2bp\dimen2=-\dimen2 % \dimen2=-#2bp also works since tex handles --
-%    \dimen4=#3bp\dimen4=-\dimen4 % \dimen4=-#3bp also works since tex handles --
-%    \dimen6=#4bp\advance\dimen6 \dimen2
-%    \dimen8=#5bp\advance\dimen8 \dimen4
-%    \setPDFboundingbox{\dimen2}{\dimen4}{\dimen6}{\dimen8}\PDFxscale\PDFyscale}
+\def\setPDFmediabox#1[#2 #3 #4 #5]#6\done
+  {\dimen2=#2bp\dimen2=-\dimen2 % \dimen2=-#2bp also works since tex handles --
+   \dimen4=#3bp\dimen4=-\dimen4 % \dimen4=-#3bp also works since tex handles --
+   \dimen6=#4bp\advance\dimen6 \dimen2
+   \dimen8=#5bp\advance\dimen8 \dimen4
+   \setPDFboundingbox{\dimen2}{\dimen4}{\dimen6}{\dimen8}\PDFxscale\PDFyscale}
 
 % \def\checkPDFmediabox#1/MediaBox#2#3\done
 %   {\ifx#2\relax \else
@@ -891,7 +891,7 @@
 
 \let\MPfshowcommand\empty
 
-\def\handleMPfshow
+\def\dohandleMPfshow
   {\bgroup
    \setbox\scratchbox\hbox
      {\obeyMPspecials
@@ -938,7 +938,7 @@
          \fi
          \unskip}}%
   %
-  % this fails in latest pdftex's
+  % this fails in some versions of pdftex
   %
   % \dimen0=\lastMPmoveY bp
   % \advance\dimen0 by \ht0
@@ -958,6 +958,8 @@
    \wd\scratchbox\zeropoint
    \box\scratchbox
    \egroup}
+
+\let\handleMPfshow\dohandleMPfshow % so we can overload this one later
 
 %D You could consider the following definition to be the most
 %D natural one.
@@ -1834,7 +1836,9 @@
 %D The last object number used is avaliable in the macro
 %D \type {\lastPDFMPobject}.
 
-\chardef\makeMPintoPDFobject=0 \def\lastPDFMPobject{0}
+\ifx\makeMPintoPDFobject\undefined \chardef\makeMPintoPDFobject=0 \fi
+
+\def\lastPDFMPobject{0}
 
 %D The additional code needed can be made available in the
 %D (global) macro \type {\currentPDFresources}.
@@ -1936,18 +1940,6 @@
 \def\finishMPgraphic
   {\stopMPresources
    \egroup
-   % we go simple when in doubt, this macro will get a proper
-   % context counterpart so that we can also cover dvipdfmx
-   \ifx\pdfxform\undefined
-     \chardef\makeMPintoPDFobject\zerocount % no pdftex at all
-   \else\ifx\pdftexversion\undefined
-     \chardef\makeMPintoPDFobject\zerocount % no pdftex at all
-   \else\ifnum\pdftexversion<14
-     \chardef\makeMPintoPDFobject\zerocount % no resource support
-   \fi\fi\fi
-   \ifcase\makeMPintoPDFobject\or\or\ifx\currentPDFresources\empty\else
-     \chardef\makeMPintoPDFobject\plusone
-   \fi\fi
    \setbox\scratchbox\vbox
      {\forgetall
       \hbox
@@ -1957,35 +1949,60 @@
    \ht\scratchbox\MPheight
    \wd\scratchbox\MPwidth
    \dp\scratchbox\zeropoint\relax
+   \dopackageMPgraphic\scratchbox
+   \egroup
+   \endinput}
+
+%D Alternative for \PDFTEX. We cannot come up with something more contexy
+%D because this module is also used in \LATEX.
+
+\def\dopackageMPgraphic#1% #1 = boxregister
+  {%\ifx\pdfxform\undefined
+   %  \chardef\makeMPintoPDFobject\zerocount % no pdftex at all
+   %\else\ifx\pdftexversion\undefined
+   %  \chardef\makeMPintoPDFobject\zerocount % no pdftex at all
+   %\else\ifnum\pdftexversion<14
+   %  \chardef\makeMPintoPDFobject\zerocount % no resource support
+   %\else
+   %                                         % keep the default value
+   %\fi\fi\fi
+   \ifcase\makeMPintoPDFobject\or\or\ifx\currentPDFresources\empty\else
+     % an existing value of 2 signals object support (set elsewhere)
+     \chardef\makeMPintoPDFobject\plusone
+   \fi\fi
    \ifcase\makeMPintoPDFobject
-     \box\scratchbox
+     \box#1%
    \or
      \scratchdimen\PDFMPformoffset\relax
      \ifdim\scratchdimen>\zeropoint % compensate for error
-       \setbox\scratchbox\vbox spread 2\scratchdimen
-         {\forgetall
-          \vss
-          \hbox spread 2\scratchdimen
-            {\hss
-             \box\scratchbox
-             \hss}%
-          \vss}%
+       \setbox#1\vbox spread 2\scratchdimen
+         {\forgetall\vss\hbox spread 2\scratchdimen{\hss\box#1\hss}\vss}%
      \fi
-     \immediate\pdfxform resources{\currentPDFresources}\scratchbox
-     \xdef\lastPDFMPobject{\the\pdflastxform}%
+     \setMPPDFobject{\currentPDFresources}{#1}%
      \ifdim\scratchdimen>\zeropoint % compensate for error
        \vbox to \MPheight
-         {\forgetall
-          \vss\hbox to \MPwidth{\hss\pdfrefxform\lastPDFMPobject\hss}\vss}%
+         {\forgetall\vss\hbox to \MPwidth{\hss\getMPPDFobject\hss}\vss}%
      \else
-       \pdfrefxform\lastPDFMPobject
+       \getMPPDFobject
      \fi
      \global\let\currentPDFresources\empty
    \else
-     \box\scratchbox
-   \fi
-   \egroup
-   \endinput}
+     \box#1%
+   \fi}
+
+\def\setMPPDFobject#1#2% resources boxnumber
+  {\ifx\pdfxform\undefined
+     \def\getMPPDFobject{\box#2}%
+   \else\ifx\pdftexversion\undefined
+     \def\getMPPDFobject{\box#2}%
+   \else\ifnum\pdftexversion<14
+     \def\getMPPDFobject{\box#2}%
+   \else
+     \immediate\pdfxform resources{#1}#2%
+     \edef\getMPPDFobject{\noexpand\pdfrefxform\the\pdflastxform}%
+   \fi\fi\fi}
+
+\let\getMPPDFobject\relax
 
 %D \macros
 %D   {deleteMPgraphic,

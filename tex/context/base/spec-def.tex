@@ -158,9 +158,13 @@
 
 \installspecial [\dostartspotcolormode]    [or] [2]
 
-\installspecial [\doregistercmykspotcolor] [or] [5]
-\installspecial [\doregisterrgbspotcolor]  [or] [4]
-\installspecial [\doregistergrayspotcolor] [or] [2]
+\installspecial [\doregisterrgbspotcolor]  [or] [7]
+\installspecial [\doregistercmykspotcolor] [or] [8]
+\installspecial [\doregistergrayspotcolor] [or] [5]
+
+\installspecial [\doregisterrgbindexcolor]  [or] [7]
+\installspecial [\doregistercmykindexcolor] [or] [8]
+\installspecial [\doregistergrayindexcolor] [or] [5]
 
 \installspecial [\dostartnonecolormode]    [or] [0]
 \installspecial [\doregisternonecolor]     [or] [0]
@@ -169,7 +173,7 @@
 %D simply call the start one with zero arguments.
 
 %D \macros
-%D   {doinsertfile}
+%D   {doinsertfile,doinsertMPfile}
 %D
 %D Probably the most problematic special is the following
 %D one. Because we want to be able to support different
@@ -198,7 +202,8 @@
 %D When option 1 is passed, the viewers is asked to present a
 %D preview, like the first frame of a movie.
 
-\installspecial [\doinsertfile] [or] [9]
+\installspecial [\doinsertfile]   [or] [9]
+\installspecial [\doinsertMPfile] [or] [1] % speed up
 
 %D No start||stop construction is needed here, because there in
 %D no further interference of \TEX. All dimensions are output

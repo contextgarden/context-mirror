@@ -664,19 +664,6 @@
 \newtoks \mainoutput
 \newcount\otrlevel
 
-% Shipout handler (see page[stop] for example usage)
-
-\ifx\undefined\normalshipout \let\normalshipout=\shipout \fi
-
-\def\noshipout
-  {\writestatus\m!systems{ignoring further shipouts}%
-   \dowithnextbox{\deadcycles\zerocount}}
-
-\def\doignorerestoftext
-  {\ifarrangingpages \else \ifnum\textlevel>\zerocount \else
-     \globallet\shipout\noshipout
-   \fi \fi}
-
 % When issuing two \par\penalty-\@M's, only the first
 % triggers the otr; obscure feature or optimization?
 
@@ -1501,7 +1488,7 @@
 \installpagebreakhandler \s!default
   {} % do nothing if empty
 
-\installpagebreakhandler  \v!reset
+\installpagebreakhandler \v!reset
   {% better not: \global\chardef\pageornamentstate\zerocount
    \resetpagebreak}
 
@@ -1696,14 +1683,16 @@
 
 % We don't want spurious last pages (due to left over marks):
 
+\ifx\undefined\normalshipout \let\normalshipout=\shipout \fi
+
+\def\noshipout
+  {\writestatus\m!systems{ignoring further shipouts}%
+   \dowithnextbox{\deadcycles\zerocount}}
+
 \def\doignorerestoftext
-  {\ifarrangingpages \else
-     \ifnum\textlevel>\zerocount \else
-       \gdef\shipout
-         {\writestatus\m!systems{ignoring further shipouts}%
-          \dowithnextbox{\deadcycles\zerocount}}%
-     \fi
-   \fi}
+  {\ifarrangingpages \else \ifnum\textlevel>\zerocount \else
+     \globallet\shipout\noshipout
+   \fi \fi}
 
 \let\ignorerestoftext\donothing
 
@@ -1711,9 +1700,9 @@
   \globallet\ignorerestoftext\doignorerestoftext
 \to \everystarttext
 
-\appendtoks
-  \ignorerestoftext
-\to \everylastshipout
+% \appendtoks
+%   \ignorerestoftext
+% \to \everylastshipout
 
 \newif\ifgeselecteerd \geselecteerdtrue
 \newif\ifselecteren   \selecterenfalse

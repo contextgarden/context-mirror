@@ -1675,6 +1675,8 @@ var:distanzatesto:*dimensione::
 var:ampiezzatesto:*numero::
 var:textmargin:*dimensione::
 var:clipoffset:*dimensione::
+var:pagina:*nome::
+var:carta:*nome::
 stopsetup
 
 startsetup
@@ -2420,6 +2422,8 @@ val:*nome::
 val:*numero,ogni::
 val:standard,repeat/ampio,repeat/vicino,impaccato, unpacked,stopper,unito,almargine,inmargine, autointro,lento,capoverso,intesto:standard:
 var:margine:no,standard,*dimensione::
+var:marginesinistro:no,standard,*dimensione::
+var:marginedestro:no,standard,*dimensione::
 var:ampiezza:*dimensione::
 var:distanza:*dimensione::
 var:fattore:*numero::

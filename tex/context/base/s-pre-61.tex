@@ -42,7 +42,10 @@
 \setupinteraction
   [state=start,
    click=off,
-   menu=on]
+   menu=on,
+   style=,
+   color=interactioncolor,
+   contrastcolor=interactioncolor]
 
 \setupinteractionscreen
   [option=max]
@@ -86,6 +89,8 @@
 \definecolor [maincolor] [bright]
 \definecolor [textcolor] [red]
 
+\definecolor [interactioncolor] [r=.8,g=.8,b=.6]
+
 \setupcolors
   [state=start,
    textcolor=maincolor]
@@ -94,6 +99,19 @@
   [page]
   [background=page,
    backgroundcolor=textcolor]
+
+\setupbackgrounds
+  [text]% [text]
+  [background={comments,text,invoke}]
+
+\definelayer
+  [text]
+  [width=\textwidth,
+   height=\textheight]
+
+\defineoverlay
+  [comments]
+  [{\setlayer[text][preset=middle]{\placecomments}}]
 
 \defineoverlay[page][\uniqueMPgraphic{page-\ifcase\realpageno\or one\else plus\fi}]
 
@@ -122,9 +140,10 @@
   StopPage ;
 \stopuniqueMPgraphic
 
-\NormalizeFontHeight \HeadFont     {\setstrut\strut\quad} {1.0\headerheight} {SansBold}
-\NormalizeFontHeight \TitleFont    {\setstrut\strut\quad} {2.0\headerheight} {SansBold}
-\NormalizeFontHeight \SubTitleFont {\setstrut\strut\quad} {1.5\headerheight} {SansBold}
+\NormalizeFontHeight \HeadFont        {\setstrut\strut\quad} {1.0\headerheight} {SansBold}
+\NormalizeFontHeight \TitleFont       {\setstrut\strut\quad} {2.0\headerheight} {SansBold}
+\NormalizeFontHeight \SubTitleFont    {\setstrut\strut\quad} {1.5\headerheight} {SansBold}
+\NormalizeFontHeight \SubSubTitleFont {\setstrut\strut\quad} {1.0\headerheight} {SansBold}
 
 \setuphead
   [chapter]

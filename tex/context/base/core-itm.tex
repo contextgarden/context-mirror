@@ -116,6 +116,7 @@
       \c!kopvoor,\c!kopna,\c!voor,\c!tussen,\c!na,
       \c!afsluiter,\c!plaatsafsluiter,\c!inspringen,
       \c!n,\c!binnen,\c!symbool,\c!marge,\c!items,
+      \c!linkermarge,\c!rechtermarge,
       \c!start,\c!linkertekst,\c!rechtertekst]}
 
 \def\setupitemgroups
@@ -416,7 +417,7 @@
 %         \edef\columntextwidth{\the\scratchdimen}%
 %         \leftskip\zeropoint
 %         % so far
-%         \startkolommen
+%         \startcolumns
 %           [\c!n=\!!counta, % netter \??op\itemlevel\c!n
 %            \c!hoogte=,
 %            \c!lijn=\v!uit,
@@ -533,7 +534,7 @@
 %         \edef\columntextwidth{\the\scratchdimen}%
 %         \leftskip\zeropoint
 %         % so far
-%         \startkolommen
+%         \startcolumns
 %           [\c!n=\!!counta, % netter \??op\itemlevel\c!n
 %            \c!hoogte=,
 %            \c!lijn=\v!uit,
@@ -601,7 +602,9 @@
    \fi
    \begingroup
    \ifnum\itemlevel=\plusone % NIEUW
-     \doadaptleftskip{\getitemparameter1\c!marge}%
+     \doadaptleftskip {\getitemparameter1\c!marge}%
+     \doadaptleftskip {\getitemparameter1\c!linkermarge}%
+     \doadaptrightskip{\getitemparameter1\c!rechtermarge}%
    \fi
    \dosetraggedcommand{\getitemparameter\itemlevel\c!uitlijnen}\raggedcommand
    \doifsomething{\getitemparameter\itemlevel\c!inspringen}
@@ -632,7 +635,7 @@
         \edef\columntextwidth{\the\scratchdimen}%
         \leftskip\zeropoint
         % so far
-        \startkolommen
+        \startcolumns
           [\c!n=\!!counta, % netter \??op\itemlevel\c!n
            \c!hoogte=,
            \c!lijn=\v!uit,
@@ -704,7 +707,7 @@
    \ifnum\itemcolumndepth=\zerocount \dolistreference \fi % beware !
    \iffirstlist \else \endgroup \fi % toegevoegd, eerste \som opent groep
    \ifnum\itemcolumndepth=\itemlevel\relax
-     \stopkolommen
+     \stopcolumns
      \doglobal\newcounter\itemcolumndepth
      \getitemparameter\itemlevel\c!na
    \else
@@ -723,7 +726,9 @@
    \fi
    \endgroup
    \doglobal\decrement(\itemlevel,\itemincrement)%
-   \egroup}
+   \egroup
+   % new needed in sidefloats (surfaced in volker's proceedings)
+   \iftextitems\else\par\fi}
 
 \newtoks\itemgroupcommands
 
@@ -1010,7 +1015,9 @@
 
 \setupitemgroups % undocumented
   [\c!niveaus=6,
-   \c!marge=\!!zeropoint,
+   \c!marge=\zeropoint,
+   \c!linkermarge=\zeropoint,
+   \c!rechtermarge=\zeropoint,
    \c!springvolgendein=\v!ja,
    \c!breedte=1.5em,
    \c!factor=0,

@@ -179,6 +179,7 @@
 \edef\@@XMLdepth       {\@@XML dep} % used to track nesting
 \edef\@@XMLdopth       {\@@XML dop} % used to track nesting
 \edef\@@XMLsave        {\@@XML sav} % namespace for saved elements
+\edef\@@XMLglobal      {\@@XML glb} % global assignment
 
 \iffalse % slightly faster
 
@@ -199,6 +200,7 @@
 \edef\@@XMLdepth       {\@@XML n} % used to track nesting
 \edef\@@XMLdopth       {\@@XML o} % used to track nesting
 \edef\@@XMLsave        {\@@XML p} % namespace for saved elements
+\edef\@@XMLglobal      {\@@XML x} % global assignment
 
 \fi
 
@@ -847,10 +849,13 @@
 
 \def\beginXMLelement
   {\global\advance\XMLdepth\plusone
-   \global\@EA\let\csname\@@XMLdepth:\the\XMLdepth\endcsname\currentXMLelement}
+   \global\@EA\let\csname\@@XMLdepth:\the\XMLdepth\endcsname\currentXMLelement
+   }%\writestatus{XML TRACE}{[begin] [\the\XMLdepth] [\XMLself]}}
 
 \def\endXMLelement
-  {\global\advance\XMLdepth\minusone}
+  {%\writestatus{XML TRACE}{[end] [\the\XMLdepth] [\XMLself]}%
+   \global\@EA\let\csname\@@XMLdepth:\the\XMLdepth\endcsname\undefined
+   \global\advance\XMLdepth\minusone}
 
 % 0 = nothing
 % 1 = unknown
@@ -865,16 +870,16 @@
      \ifcase\XMLancestormode\or\s!unknown\or\currentXMLelement\fi
    \fi}
 
-\def\XMLparent
-  {\XMLancestor\plusone}
-
 \def\XMLpureancestor#1%
   {\ifnum\numexpr(\XMLdepth-#1)>0
      \csname\@@XMLdepth:\the\numexpr(\XMLdepth-#1)\endcsname
    \fi}
 
-\def\XMLpureparent
-  {\XMLpureancestor\plusone}
+\def\XMLparent{\XMLancestor\plusone}
+\def\XMLself  {\XMLancestor\zerocount}
+
+\def\XMLpureparent{\XMLpureancestor\plusone}
+\def\XMLpureself  {\XMLpureancestor\zerocount}
 
 % \def\XMLpureancestor#1%
 %   {\csname
@@ -887,6 +892,87 @@
 
 \def\XMLpureparent
   {\XMLpureancestor\plusone}
+
+% probleem: depth is vast en dus ook ancestor
+
+% \XMLinh{...} will backtrack definitions (given that the elements
+% use begin/end, the backtracking stops when a non-empty value is
+% encountered; maybe we will add some keyword (inherit) some day
+
+% \def\XMLinh#1% will recurse so no trickery can be used
+%   {\ifcsname\@@XMLvariable:\XMLpureancestor\plusone:#1\endcsname
+%      \@EA\@EA\csname\@@XMLvariable:\XMLpureancestor\plusone:#1\endcsname
+%    \fi}
+
+\def\XMLinh#1%
+  {\@EA\ifx\csname\@@XMLvariable:\currentXMLelement:#1\endcsname\empty
+     \@EA\pXMLinh
+   \else
+     \csname\@@XMLvariable:\currentXMLelement:#1\endcsname
+     \@EA\gobbletwoarguments
+   \fi\XMLdepth{#1}}
+
+\def\pXMLinh#1%
+  {\@EA\ppXMLinh\@EA{\the\numexpr(#1-\plusone)}}
+
+% \def\ppXMLinh#1#2%
+%   {\ifcsname\@@XMLvariable:\csname\@@XMLdepth:#1\endcsname:#2\endcsname
+%      \@EA\ifx\csname\@@XMLvariable:\csname\@@XMLdepth:#1\endcsname:#2\endcsname\empty
+%        \@EAEAEA\pppXMLinh
+%      \else
+%        \csname\@@XMLvariable:\csname\@@XMLdepth:#1\endcsname:#2\endcsname
+%        \@EAEAEA\gobbletwoarguments
+%      \fi
+%    \else
+%      \@EA\pppXMLinh
+%    \fi{#1}{#2}}
+
+% \def\pppXMLinh#1%
+%   {\ifnum#1>\zerocount
+%      \@EA\pXMLinh
+%    \else
+%      \@EA\gobbletwoarguments
+%    \fi{#1}}
+
+\def\ppXMLinh#1#2%
+  {\@EA\ifx\csname\@@XMLvariable:\csname\@@XMLdepth:#1\endcsname:#2\endcsname\empty
+     \ifnum#1>\plusone
+       \@EAEAEA\pXMLinh
+     \else
+       \@EAEAEA\gobbletwoarguments
+     \fi
+   \else
+     \csname\@@XMLvariable:\csname\@@XMLdepth:#1\endcsname:#2\endcsname
+     \@EA\gobbletwoarguments
+   \fi{#1}{#2}}
+
+% better
+%
+% \def\XMLpureancestor#1%
+%   {\ifcsname\@@XMLdepth:\the\numexpr(\XMLdepth-#1)\endcsname
+%      \csname\@@XMLdepth:\the\numexpr(\XMLdepth-#1)\endcsname
+%    \fi}
+
+% replaces macro in xtag-ini: ! ! !
+
+\def\edefXMLop#1#2% \macro{att}
+  {\edef#1%
+     {\csname\ifcsname\@@XMLvariable:\ownXMLelement:#2\endcsname
+        \@@XMLvariable:\ownXMLelement:#2\else\s!empty
+      \fi\endcsname}}
+
+\def\edefXMLinh#1#2% \macro{att}
+  {\edef#1{\XMLinh{#2}}}
+
+% \def\doifXMLopdef#1#2% \macro{att}
+%   {\ifcsname\@@XMLvariable:\ownXMLelement:#1\endcsname
+%      \@EA\let\@EA#1\csname\@@XMLvariable:\ownXMLelement:#1\endcsname
+%      \expandafter\firstofoneargument
+%    \else
+%      \expandafter\gobbleoneargument
+%    \fi}
+
+\fetchruntimecommand \tracebackXMLattribute {\f!xtagprefix\s!run}
 
 % \defineXMLenvironment[one]
 %   {\beginXMLelement}
@@ -909,7 +995,7 @@
 % {fallback A: \setXMLfallbackmode 0 \processXMLbuffer}\par
 % {fallback B: \setXMLfallbackmode 1 \processXMLbuffer}\par
 % {fallback C: \setXMLfallbackmode 2 \processXMLbuffer}\par
-
+
 % todo: split #1 into raws en reconstruct, set current etc, push and pop
 %
 % \def\beginXMLelement
@@ -1285,6 +1371,7 @@
 \def\dosetXMLattributeB#1%
   {\ifx\@@XMLspac\originalXMLnamespace
      \@EA\def\csname\@@XMLvariable:\@@XMLclass:\@@XMLname\endcsname{#1}%
+     % maybe some day global handling here as well
    \fi}
 
 % \def\dosetXMLattributeC#1%
@@ -1305,10 +1392,9 @@
 %      \@EA\def\csname\@@XMLvariable:\@@XMLclass:\@@XMLspac:\@@XMLname\endcsname{#1}%
 %    \fi}
 
-\def\dosetXMLattributeD%
+\def\dosetXMLattributeD
   {\@EA\def\csname\@@XMLvariable:\@@XMLclass:\ifx\@@XMLspac
-     \originalXMLnamespace\currentXMLnamespace\else\@@XMLspac\fi
-       :\@@XMLname\endcsname}
+     \originalXMLnamespace\currentXMLnamespace\else\@@XMLspac\fi:\@@XMLname\endcsname}
 
 \def\setXMLattributemode#1%
   {\ifcase#1\relax
@@ -1466,6 +1552,22 @@
 %
 % the ugly alternative
 
+% \def\dosetXMLargument#1% ugly alternative
+%   {\ifXMLnamespace
+%      \XMLnamespacefalse
+%      \ifx\@@XMLspac\@@XMLns
+%        \@EAEAEA\checkXMLnamespaceattr % xmlns:\@@XMLname="#1"
+%      \else
+%        \@EAEAEA\dosetXMLattribute % some:\@@XMLname="#1"
+%      \fi
+%    \else\ifx\@@XMLname\@@XMLns
+%      \@EAEAEA\checkXMLnamespaceattr % xmlns="#1"
+%    \else
+%      \@EAEAEA\dodosetXMLargument
+%    \fi\fi{#1}%
+%    \let\dodoparseXMLarguments\doparseXMLarguments
+%    \dodoparseXMLarguments}
+
 \def\dosetXMLargument#1% ugly alternative
   {\ifXMLnamespace
      \XMLnamespacefalse
@@ -1479,10 +1581,22 @@
    \else
      \@EAEAEA\dodosetXMLargument
    \fi\fi{#1}%
+   \dodocopyXMLargument
    \let\dodoparseXMLarguments\doparseXMLarguments
    \dodoparseXMLarguments}
 
-\def\dodosetXMLargumentA%
+\let\dodocopyXMLargument\relax
+
+\def\dododocopyXMLargument
+  {\@EA\@EA\@EA\let\@EA\@EA
+     \csname\@@XMLvariable:\csname\@@XMLglobal:\currentXMLelement\endcsname:\@@XMLname\endcsname
+     \csname\@@XMLvariable:\@@XMLclass                                     :\@@XMLname\endcsname}
+
+\def\copyXMLargumentindeed
+  {\def\dodocopyXMLargument{\ifcsname\@@XMLglobal:\currentXMLelement\endcsname\dododocopyXMLargument\fi}%
+   \let\copyXMLargumentindeed\relax}
+
+\def\dodosetXMLargumentA
   {\@EA\def\csname\@@XMLvariable:\@@XMLclass:\@@XMLname\endcsname}
 
 \def\dodosetXMLargumentB#1%
@@ -1740,6 +1854,19 @@
 \def\defineXMLnestedargument       {\dotripleempty\dodefineXMLnestedargument}
 \def\defineXMLnestedsave           {\dotripleempty\dodefineXMLnestedsave}
 \def\defineXMLnestedenvironmentsave{\dotripleempty\dodefineXMLnestedenvironmentsave}
+
+%D We can nill definitions with:
+
+\def\resetXMLelement[#1]{\dododefineXMLprocess{#1}}
+
+%D This is equivalent to:
+%D
+%D \starttypen
+%D \def\resetXMLelement[#1]% handy in case only singular
+%D   {\@EA\let\csname\@@XMLelement:#1\endcsname \donothing
+%D    \@EA\let\csname\@@XMLelement:/#1\endcsname\donothing
+%D    \@EA\let\csname\@@XMLelement:#1/\endcsname\donothing}
+%D \stoptypen
 
 % push is (not yet) a real push, so:
 
@@ -2181,6 +2308,11 @@
 \def\expandXMLta{\expandXMLarguments\@@XMLmapmap}
 \def\expandXMLtp{\expandTEXpar\@@XMLmapmap} % #1
 
+\def\getXMLparameters[#1]% faster than \rawgetparameters[#1][\theXMLar..]
+  {\ifcsname\@@XMLmap:#1\endcsname
+     \expanded{\rawgetparameters[#1][\csname\@@XMLmap:#1\endcsname]}%
+   \fi}
+
 \def\defXMLop#1#2{\@EA\let\@EA#1\csname\@@XMLvariable:\ownXMLelement:#2\endcsname}
 \def\defXMLtp#1#2{\@EA\let\@EA#1\csname\@@XMLmapmap\interfaced{#2}\endcsname}
 
@@ -2218,7 +2350,7 @@
    \protectXMLdata
    \dostartXMLdata}
 
-\long\def\dostartXMLdata#1\stopXMLdata
+\long\def\dostartXMLdata#1\stopXMLdata % evt \everyeof{}
   {\enableXML\scantokens{#1<gobblespacetokens/>}%
    \endgroup
    \ifhmode\unskip\unskip\fi}

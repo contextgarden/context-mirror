@@ -50,7 +50,17 @@
 \definefilesynonym [lang-tr.pat]  [trhyph.tex]
 \definefilesynonym [lang-ua.pat]  [ukrenhyp.tex]
 \definefilesynonym [lang-uk.pat]  [ukhyphen.tex]
-\definefilesynonym [lang-us.pat]  [ushyph1.tex]
+\definefilesynonym [lang-us.pat]  [ushyph.tex]
+
+%D Ah, something changed in 2003 with respect to ushyph.tex, so let's
+%D fall back when needed. I first noticed this during a workshop at  the
+%D practical tex conference 2004 in sf. Yet another proof of a mess in
+%D filenames.
+
+ \doiffileelse{ushyph.tex}  {\definefilesynonym[lang-us.pat][ushyph.tex]}
+{\doiffileelse{ushyph1.tex} {\definefilesynonym[lang-us.pat][ushyph1.tex]}
+{\doiffileelse{ushyph2.tex} {\definefilesynonym[lang-us.pat][ushyph2.tex]}
+                            {\definefilesynonym[lang-us.pat][ukhyph.tex]}}}
 
 %D When the dutch spelling changed, new patterns were
 %D constructed. For long these were named \type {dutch96.pat}.
@@ -60,11 +70,9 @@
 %D files as well as their coding is one of the dark areas of
 %D \TEX\ distributions.
 
-\doiffileelse{nehyph96.tex}
-  {\definefilesynonym[lang-nl.pat][nehyph96.tex]}
-  {\doiffileelse{dutch96.pat}
-     {\definefilesynonym[lang-nl.pat][dutch96.pat]}
-     {\definefilesynonym[lang-nl.pat][nehyph.tex]}}
+ \doiffileelse{nehyph96.tex}   {\definefilesynonym[lang-nl.pat][nehyph96.tex]}
+{\doiffileelse{dutch96.pat}    {\definefilesynonym[lang-nl.pat][dutch96.pat]}
+                               {\definefilesynonym[lang-nl.pat][nehyph.tex]}}
 
 %D Pattern files are (can be) encoded! And, alas, not all
 %D pattern files are self contained, which is why (for the

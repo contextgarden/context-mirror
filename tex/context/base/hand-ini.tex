@@ -323,8 +323,12 @@
   {\dotripleempty\dodefinefonthandling}
 
 \def\dodefinefonthandling[#1][#2][#3]%
-  {\setvalue{\@fha@\@fha@#1}{#2}%
-   \getparameters[\@fha@\@fha@#1][\c!type=\v!hangend,\c!links=1,\c!rechts=1,\c!min=20,\c!max=20,\c!stap=5,#3]}
+  {\ifthirdargument
+     \setvalue{\@fha@\@fha@#1}{#2}%
+     \getparameters[\@fha@\@fha@#1][\c!type=\v!hangend,\c!links=1,\c!rechts=1,\c!min=20,\c!max=20,\c!stap=5,#3]%
+   \else
+     \setvalue{\@fha@\@fha@\@fha@#1}{#2}%
+   \fi}
 
 \def\setupfonthandling
   {\dodoubleempty\dosetupfonthandling}
@@ -342,22 +346,45 @@
 
 \def\fastenablehandling#1%
   {\edef\askedfonthandling{#1}%
-   \@EA\ifx\csname\@fha@\@fha@\askedfonthandling\endcsname\relax
-     \expandafter\nofastenablehandling
+   \@EA\ifx\csname\@fha@\@fha@\@fha@\askedfonthandling\endcsname\relax
+     \@EA\ifx\csname\@fha@\@fha@\askedfonthandling\endcsname\relax
+       \@EAEAEA\nofastenablehandling
+     \else
+       \@EAEAEA\dofastenablehandling
+     \fi
    \else
-     \expandafter\dofastenablehandling
+     \@EA\redofastenablehandling
+   \fi}
+
+\def\xfastenablehandling#1%
+  {\edef\askedfonthandling{#1}%
+   \@EA\ifx\csname\@fha@\@fha@\askedfonthandling\endcsname
+     \@EA\nofastenablehandling
+   \else
+     \@EA\dofastenablehandling
    \fi}
 
 \endTEX
 
 \beginETEX \ifcsname
 
-\def\fastenablehandling#1% also gets #2 passed
+\def\fastenablehandling#1#2% also gets #2 passed
+  {\edef\askedfonthandling{#1}%
+   \edef\filoffonthandling{#2}%
+   \ifcsname\@fha@\@fha@\@fha@\askedfonthandling\endcsname
+     \@EA\redofastenablehandling
+   \else\ifcsname\@fha@\@fha@\askedfonthandling\endcsname
+     \@EAEAEA\dofastenablehandling
+   \else
+     \@EAEAEA\nofastenablehandling
+   \fi\fi}
+
+\def\xfastenablehandling#1%
   {\edef\askedfonthandling{#1}%
    \ifcsname\@fha@\@fha@\askedfonthandling\endcsname
-     \expandafter\dofastenablehandling
+     \@EA\dofastenablehandling
    \else
-     \expandafter\nofastenablehandling
+     \@EA\nofastenablehandling
    \fi}
 
 \endETEX
@@ -372,14 +399,18 @@
   \setfontadjusting\askedfonthandling
 \to \everyenablefonthandling
 
-\def\dofastenablehandling#1%
+\def\redofastenablehandling
+  {\edef\fonthandling{\csname\@fha@\@fha@\@fha@\askedfonthandling\endcsname}%
+   \rawprocesscommacommand[\fonthandling]\xfastenablehandling}
+
+\def\dofastenablehandling
   {\the\everyenablefonthandling
    \edef\fonthandling{\csname\@fha@\@fha@\askedfonthandling\endcsname}%
-   \checkfonthandling{#1}%
+   \checkfonthandling\filoffonthandling
    \rawprocesscommacommand[\fonthandling]\dodoenablehandling
-   \registerfonthandling{#1}}
+   \registerfonthandling\filoffonthandling}
 
-\def\nofastenablehandling#1%
+\def\nofastenablehandling
   {\the\everyenablefonthandling
    \let\fonthandling\askedfonthandling
    \dodoenablehandling\fonthandling}
@@ -404,12 +435,17 @@
 
 %D We must not use \type {\purefontname} here (was a bug)!
 
-\def\checkfonthandling#1% we need a fast compare
-  {\doifelsevalue{#1\s!handling\c!file}{\fontname\font}
-     \skiphandlingdeftrue\skiphandlingdeffalse}
+% not robust as long as tex reuses definitions internally
+%
+% \def\checkfonthandling#1% we need a fast compare
+%   {\doifelsevalue{#1\s!handling\c!file}{\fontname\font}
+%      \skiphandlingdeftrue\skiphandlingdeffalse}
+%
+% \def\registerfonthandling#1%
+%   {\@EA\xdef\csname#1\s!handling\c!file\endcsname{\fontname\font}}
 
-\def\registerfonthandling#1%
-  {\@EA\xdef\csname#1\s!handling\c!file\endcsname{\fontname\font}}
+\def\checkfonthandling   #1{\skiphandlingdeffalse}
+\let\registerfonthandling   \gobbleoneargument
 
 %D This one makes live easier (less definitions):
 

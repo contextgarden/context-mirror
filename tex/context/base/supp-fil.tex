@@ -183,12 +183,14 @@
 \catcode`\/=\@@active
 \catcode`\:=\@@active
 \catcode`\~=\@@active
+\catcode`\_=\@@active
 
 \gdef\sanitizefilename#1\to#2%
   {\bgroup
    \edef/{\string/}%
    \edef:{\string:}%
    \edef~{\string~}%
+   \edef_{\string_}%
    \expanded{\xdef\noexpand\sanitizedfilename{#1}}%
    \egroup
    % maybe \convertcommand\sanitizedfilename\to#2%

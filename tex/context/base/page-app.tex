@@ -74,19 +74,23 @@
 \def\dostartfittingpage[#1][#2]%
   {\pagina % this is kind of tricky! there can be preceding page refs
    \bgroup % resulting in a zero height page; test fig-make !
+   \def\currentfittingpage{#1}%
    \dontcomplain
    % runs under current page regime, i.e. page variables passed to mp
+   \getparameters[\currentfittingpage][\c!papier=,#2]% auto or size or nothing
    \setbox\scratchbox\hbox
      \bgroup
-     \getparameters[#1][#2]%
-     \doifvalue{#1\c!marge}{\v!pagina}
+     % needed later \getparameters[\currentfittingpage][\c!papier=,#2]% auto or size or nothing
+     \doifvalue{\currentfittingpage\c!marge}\v!pagina % undocumented
        {\offsetbox
           [\c!linkeroffset=\rugwit,
            \c!rechteroffset=\snijwit,
            \c!bovenoffset=\kopwit,
            \c!onderoffset=\bodemwit]\hbox}%
      \bgroup
-     \schaal[\c!schaal=\getvalue{#1\c!schaal}]\bgroup\localframed[#1]\bgroup}
+     \schaal[\c!schaal=\getvalue{\currentfittingpage\c!schaal}]%
+     \bgroup\localframed[\currentfittingpage]%
+     \bgroup}
 
 \def\dostopfittingpage
   {\egroup % localframed
@@ -102,8 +106,12 @@
      \edef\fittinght{\the\lineheight}%
    \fi
    \let\checkcurrentlayout\relax % else interference with odd/even layout
-   \setuppapersize
-     [\??fp\s!dummy][\??fp\s!dummy]%
+   \processaction
+     [\getvalue{\currentfittingpage\c!papier}]
+     [   \v!auto=>\let\fittingpapersize\printpapersize,
+      \s!unknown=>\let\fittingpapersize\commalistelement,
+      \s!default=>\def\fittingpapersize{\??fp\s!dummy}]%
+   \expanded{\setuppapersize[\??fp\s!dummy][\fittingpapersize]}%
    \definelayout
      [\v!pagina]%
      [\c!plaats=\v!midden,

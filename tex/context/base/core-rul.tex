@@ -2549,6 +2549,42 @@
      \localhsize\hsize
    \fi\fi}
 
+% \def\dododostartframedtext[#1][#2][#3]%
+%   {\doifsomething{#2}{\setvalue{\??kd#1\c!plaats}{#2}}%
+%    \processaction % \v!laag en \v!diepte are already taken !
+%      [\framedtextparameter{#1}\c!plaats]
+%      [  \v!links=>\letvalue{\??kd#1\c!links }\relax
+%                   \letvalue{\??kd#1\c!rechts}\hfill,
+%        \v!rechts=>\letvalue{\??kd#1\c!links }\hfill
+%                   \letvalue{\??kd#1\c!rechts}\relax,
+%        \v!midden=>\letvalue{\??kd#1\c!links }\hfill
+%                   \letvalue{\??kd#1\c!rechts}\hfill,
+%          \v!geen=>\letvalue{\??kd#1\c!links }\relax % new
+%                   \letvalue{\??kd#1\c!rechts}\relax]% new
+%    \letvalue{\??kd#1\c!plaats}\empty
+%    % removed 06/2001
+%    % \forgetparindent
+%    % added 06/2001 [see demo-bbv]
+%    \localhsize\hsize \checkframedtext
+%    % so far
+%    \setbox\framebox\vbox
+%      \startboxedcontent
+%        \hsize\localhsize
+%     %  \insidefloattrue % ? better
+%        \expanded{\switchtobodyfont[\framedtextparameter{#1}\c!korps]}%
+%        \startcolor[\framedtextparameter{#1}\c!kleur]%
+%        \localframed[\??kd#1][\c!strut=\v!nee,#3]%
+%        \bgroup
+%          \let\\=\endgraf
+%          \framedtextparameter{#1}\c!binnen % oud spul
+%          \doifvalue{\??kd#1\c!dieptecorrectie}\v!aan % new, inside box
+%            {\bgroup
+%             \verticalstrut
+%             \vskip-\struttotal}%
+%          \doinhibitblank % \blanko[\v!blokkeer]% plaatst signal
+%          \doconvertfont{\framedtextparameter{#1}\c!letter}\empty
+%          \def\dostopframedtext{\dodostopframedtext{#1}{#2}}}
+
 \def\dododostartframedtext[#1][#2][#3]%
   {\doifsomething{#2}{\setvalue{\??kd#1\c!plaats}{#2}}%
    \processaction % \v!laag en \v!diepte are already taken !
@@ -2580,7 +2616,11 @@
          \doifvalue{\??kd#1\c!dieptecorrectie}\v!aan % new, inside box
            {\bgroup
             \verticalstrut
-            \vskip-\struttotal}%
+            % we need \geenwitruimte in case of setups setting whitespace
+            % nb, not safe, text vs \vbox as next
+            \vskip-\struttotal
+            \geenwitruimte % na vskip ! new 20/05/2004, fails with next content being box (\scale{..})
+            }%
          \doinhibitblank % \blanko[\v!blokkeer]% plaatst signal
          \doconvertfont{\framedtextparameter{#1}\c!letter}\empty
          \def\dostopframedtext{\dodostopframedtext{#1}{#2}}}
@@ -2661,7 +2701,7 @@
 %D
 %D Putting rules before and after a paragraph is very space
 %D sensitive, but the next command handles that quite well. It
-%D comes in to disguises:
+%D comes in two disguises:
 %D
 %D \startbuffer
 %D \textrule[boven]{fragments}
@@ -2754,6 +2794,7 @@
    %\witruimte % no
    \@@tlvoor
    \docomplextextrule{#1}%
+% todo, option: \doifnothing{#1}{\ruledvskip-.5ex}
    \geenwitruimte
    \@@tltussen
    \endgraf}
@@ -2763,7 +2804,7 @@
      \endgraf
    \fi
    \dimen0\strutdp
-   \ifdim\prevdepth<\strutdp
+   \ifdim\prevdepth>\strutdp\else % was <\strutdp
      \ifdim\prevdepth>\zeropoint
        \advance\dimen0 -\prevdepth
      \fi
@@ -2793,11 +2834,10 @@
 
 \def\dounknowntextrule
   {\iffirstargument
-     \let\next\dotoptextrule
+     \@EA\dotoptextrule
    \else
-     \def\next{\dobottomtextrule{}}%
-   \fi
-   \next}
+     \@EA\dobottomtextrule\@EA\empty
+   \fi}
 
 %D The grouped commands also supports bodyfont switching:
 
@@ -2811,7 +2851,7 @@
 \def\stoptextrule
   {\par
    \egroup
-   \dobottomtextrule{}%
+   \dobottomtextrule\empty
    \egroup}
 
 %D \macros

@@ -287,4 +287,19 @@
    \showXMLfile{#1}
    \egroup}
 
+%D
+
+\gdef\tracebackXMLattribute#1%
+  {\bgroup
+   \doloop
+     {\ifcsname\@@XMLdepth:\recurselevel\endcsname
+        \edef\!!stringa{\csname\@@XMLdepth:\recurselevel\endcsname}%
+        \writestatus
+          {XML TRACE}
+          {[#1] [\recurselevel] [\!!stringa] [\XMLinh{#1}]}%
+      \else
+        \exitloop
+      \fi}%
+    \egroup}
+
 \protect \endinput

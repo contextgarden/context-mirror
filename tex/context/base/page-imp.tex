@@ -164,13 +164,14 @@
         \hbox % \setbox0=\box.. is nicer
           {\setbox0\hbox{#1}% just in case there are objects there
            \setbox\scratchbox\hbox
-             {\the\everyshipout\relax
-              % so, these two come *after* the main one
+             {% before the main one !
               \ifcase\realfolio \or
                 \the\everyfirstshipout
                 \global\everyfirstshipout\emptytoks
               \fi
-              % one page document can do both
+              % the main one
+              \the\everyshipout\relax
+              % always last (and after the main one)
               \ifnum\realpageno=\lastpage\relax
                 \flushtextdata
                 \the\everylastshipout
@@ -1045,10 +1046,9 @@
                         \@@ipboven
                         \hbox to \hsize
                           {\@@iplinks
-\ifnum\combinedpagescounter>\@@ipstop\relax
-  \globallet\@@ipn\!!zerocount
-\else
-                           \ifnum\combinedpagescounter>\@@ipn \else
+                           \ifnum\combinedpagescounter>\@@ipstop\relax
+                             \globallet\@@ipn\!!zerocount
+                           \else\ifnum\combinedpagescounter>\@@ipn \else
                              \externalfigure[#1]
                                [\c!object=\v!nee,
                                 \c!pagina=\combinedpagescounter,
@@ -1056,8 +1056,7 @@
                                 \c!achtergrond=\@@ipachtergrond,
                                 \c!achtergrondkleur=\@@ipachtergrondkleur,
                                 \c!kader=\@@ipkader]%
-                           \fi
-\fi
+                           \fi\fi
                            \@@iprechts}
                         \@@iponder}%
                      \doglobal\increment\combinedpagescounter
@@ -1079,13 +1078,14 @@
             {\dorecurse\@@ipnx
                {\doglobal\increment\combinedpagescounter
                 \ifnum\combinedpagescounter>\@@ipn \else
-                   \externalfigure[#1]
+                   \expanded{\externalfigure[#1]
                      [\c!pagina=\combinedpagescounter,
-                      \c!breedte=\!!widtha,
+                      \c!breedte=\the\!!widtha,% todo \freezedimenmacro
                       \c!achtergrond=\@@ipachtergrond,
                       \c!achtergrondkleur=\@@ipachtergrondkleur,
-                      \c!kader=\@@ipkader]%
-                \fi}}%
+                      \c!kader=\@@ipkader]}%
+                   \hfill
+                \fi}\hfillneg}%
         \stopbaselinecorrection
         \ifnum\combinedpagescounter<\@@ipn\relax
           \@@iptussen

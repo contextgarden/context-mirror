@@ -50,6 +50,7 @@
 \newdimen\sidefloatextrashift
 \newdimen\sidefloatvsize       \def\nofloatvsize{-1pt }
 \newdimen\sidefloatprogress
+\newdimen\sidefloatpagetotal
 
 \newbox\floatbottom
 
@@ -627,8 +628,6 @@
 
 \def\tosssidefloat
   {\vfill\eject}
-
-\newdimen\sidefloatpagetotal
 
 \def\measuresidefloat
   {\global\floatflagtrue

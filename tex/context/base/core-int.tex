@@ -2218,10 +2218,14 @@
      {\let\@@ccopen   \!!plusone}{\let\@@ccopen   \!!zerocount}%
    \doifelse\@@ccoptie\v!buffer
      {\let\@@cccollect\!!plusone}{\let\@@cccollect\!!zerocount}%
+   \preparecommentvariables
    \doinsertcomment
      \@@cctitel\!!widtha\!!heighta
      \@@cckleur\@@ccopen\@@ccsymbool
      \@@cccollect{#1}}
+
+\def\preparecommentvariables % more will move here as with fields
+  {\let\@@DriverCommentLayer\@@cctekstlaag}
 
 \def\dopreparecommentaar#1#2%
   {\doifassignmentelse{#1}
@@ -2355,22 +2359,54 @@
      \edef\attachmentname{\attachmentname.\!!stringd}%
    \fi}
 
-\def\attachment[#1]% currently title equals newname
+% \def\attachment[#1]% currently title equals newname
+%   {\iflocation
+%      \doifundefinedelse{\??at:#1}
+%        {\writestatus\m!interactions6{#1}}%
+%        {\doif\@@atstatus\v!start
+%           {\bgroup
+%            \getattachmentdata[#1]%
+%            \doiffileelse\attachmentfile
+%              {\doattachfile
+%                 \attachmenttitle
+%                   {1em}{\strutheight}{\strutdepth}\@@atkleur\@@atsymbool
+%                 \attachmentname
+%                 \attachmentfile}%
+%              {\writestatus\m!interactions5\attachmentfile}%
+%            \egroup}}%
+%    \fi}
+
+\def\attachment
+  {\dodoubleempty\doattachment}
+
+\def\doattachment[#1][#2]% currently title equals newname
   {\iflocation
-     \doifundefinedelse{\??at:#1}
-       {\writestatus\m!interactions6{#1}}%
-       {\doif\@@atstatus\v!start
-          {\bgroup
-           \getattachmentdata[#1]%
-           \doiffileelse\attachmentfile
-             {\doattachfile
-                \attachmenttitle
-                  {1em}{\strutheight}{\strutdepth}\@@atkleur\@@atsymbool
-                \attachmentname
-                \attachmentfile}%
-             {\writestatus\m!interactions5\attachmentfile}%
-           \egroup}}%
+     \ifsecondargument
+       \doifundefined{\??at:#2}
+         {\writestatus\m!interactions6{#2}%
+          \useattachment[#2]}%
+       \doif\@@atstatus\v!start
+         {\bgroup
+          \getattachmentdata[#2]%
+          \doiffileelse\attachmentfile
+            {\setupattachments[#1]%
+             \presetattachmentvariables
+\struttedbox{\tbox{%
+             \doattachfile
+               \attachmenttitle
+               {1em}\strutheight\strutdepth\@@atkleur\@@atsymbool
+               \attachmentname
+               \attachmentfile}%
+}}%
+            {\writestatus\m!interactions5\attachmentfile}%
+          \egroup}%
+     \else\iffirstargument
+        \attachment[][#1]%
+     \fi\fi
    \fi}
+
+\def\presetattachmentvariables
+  {\let\@@DriverAttachmentLayer\@@attekstlaag}
 
 \def\setupattachments
   {\dodoubleempty\getparameters[\??at]}
@@ -2378,6 +2414,7 @@
 \setupattachments
   [\c!status=\v!start,
    \c!kleur=\@@iakleur,
+   \c!tekstlaag=,
    \c!symbool=]
 
 % jammer, tussen/midden had erin gemoeten; \c!commando toevoegen
@@ -2599,7 +2636,8 @@
    \c!spatie=\v!nee,
    \c!symbool=\v!normaal,
    \c!plaats=\v!inmarge,
-   \c!optie=]
+   \c!optie=,
+   \c!tekstlaag=]
 
 \stelversiesin    % beware, @ is made active here,
   [\c!nummer=1,   % therefore we set this one at the end

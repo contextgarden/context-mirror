@@ -279,9 +279,10 @@
 
 \def\dodefinepapersize[#1][#2]%
   {\ifsecondargument
-     \getparameters
-       [\??pp#1] % geen \c!schaal, scheelt hash ruimte
-       [\c!breedte=\@@ppbreedte,\c!hoogte=\@@pphoogte,\c!offset=\@@ppoffset,#2]%
+     \doifsomething{#1} % to be sure
+       {\getparameters
+          [\??pp#1] % geen \c!schaal, scheelt hash ruimte
+          [\c!breedte=\@@ppbreedte,\c!hoogte=\@@pphoogte,\c!offset=\@@ppoffset,#2]}%
    \else
      \getparameters[\??pp][#1]%
      \setuppapersize
@@ -352,55 +353,69 @@
         {\getparameters[\??pp#1][#2]}
         {\dodosetuppapersize[#1][#2]}}}
 
+% \def\dodosetuppapersize[#1][#2]%
+%   {\ifsecondargument
+%      \xdef\restorepapersize
+%        {\noexpand\setuppapersize[#1][#2]}%
+%      \dostelpapierrichtingin{#1}\paperlandscape\paperrotation\paperreverse\papermirror
+%      \dostelpapierrichtingin{#2}\printlandscape\printrotation\printreverse\printmirror
+%      \def\docommando##1%
+%        {\doifsomething{##1}{\doifdefined{\??pp##1\c!breedte}
+%           {\global\papierbreedte\getvalue{\??pp##1\c!breedte}%
+%            \global\papierhoogte\getvalue{\??pp##1\c!hoogte}%
+%            \calculatepaperoffsets{##1}%
+%            \xdef\papersize{##1}}}}%
+%      \processcommacommand[#1]\docommando
+%      \doifdefinedelse{\??pp#1\c!schaal}
+%        {\edef\paperscale{\getvalue{\??pp#1\c!schaal}}}
+%        {\edef\paperscale{1}}%
+%      \def\docommando##1%
+%        {\doifsomething{##1}{\doifdefined{\??pp##1\c!breedte}
+%           {\global\printpapierbreedte\getvalue{\??pp##1\c!breedte}%
+%            \global\printpapierhoogte\getvalue{\??pp##1\c!hoogte}%
+%            \xdef\printpapersize{##1}}}}%
+%      \processcommacommand[#2]\docommando
+%      \global\setdimentoatleast\papierbreedte     \onepoint
+%      \global\setdimentoatleast\papierhoogte      \onepoint
+%      \global\setdimentoatleast\printpapierbreedte\onepoint
+%      \global\setdimentoatleast\printpapierhoogte \onepoint
+%      \ifcase\paperlandscape\else
+%        \doglobal\swapdimens\papierbreedte\papierhoogte
+%      \fi
+%      \ifcase\printlandscape\else
+%        \doglobal\swapdimens\printpapierbreedte\printpapierhoogte
+%      \fi
+%      % this check can be confusing, so we've added the possibility
+%      % to bypass this test: \setuppapersize[option=fit]
+%      \doif\@@ppoptie\v!max % \v!fit is
+%        {\bgroup
+%         % we need to pre-swap else we get the wrong paper size
+%         \doifinset\paperrotation{90,270}{\swapdimens\papierbreedte\papierhoogte}%
+%         \doifinset\printrotation{90,270}{\swapdimens\printpapierbreedte\printpapierhoogte}%
+%         \ifdim\papierhoogte>\printpapierhoogte
+%           \global\printpapierhoogte\papierhoogte
+%           \writestatus\m!systems{print height forced to paper height}%
+%         \fi
+%         \ifdim\papierbreedte>\printpapierbreedte
+%           \global\printpapierbreedte\papierbreedte
+%           \writestatus\m!systems{print width forced to paper width}%
+%         \fi
+%         \egroup}%
+%      %
+%      \calculatehsizes
+%      \calculatevsizes
+%      \recalculatelogos
+%      \recalculatebackgrounds
+%      \recalculatelayout
+%    \else\iffirstargument
+%      \setuppapersize[#1][#2]%
+%    \else\ifx\papersize\undefined\else
+%      \restorepapersize
+%    \fi\fi\fi}
+
 \def\dodosetuppapersize[#1][#2]%
   {\ifsecondargument
-     \xdef\restorepapersize
-       {\noexpand\setuppapersize[#1][#2]}%
-     \dostelpapierrichtingin{#1}\paperlandscape\paperrotation\paperreverse\papermirror
-     \dostelpapierrichtingin{#2}\printlandscape\printrotation\printreverse\printmirror
-     \def\docommando##1%
-       {\doifsomething{##1}{\doifdefined{\??pp##1\c!breedte}
-          {\global\papierbreedte\getvalue{\??pp##1\c!breedte}%
-           \global\papierhoogte\getvalue{\??pp##1\c!hoogte}%
-           \calculatepaperoffsets{##1}%
-           \xdef\papersize{##1}}}}%
-     \processcommacommand[#1]\docommando
-     \doifdefinedelse{\??pp#1\c!schaal}
-       {\edef\paperscale{\getvalue{\??pp#1\c!schaal}}}
-       {\edef\paperscale{1}}%
-     \def\docommando##1%
-       {\doifsomething{##1}{\doifdefined{\??pp##1\c!breedte}
-          {\global\printpapierbreedte\getvalue{\??pp##1\c!breedte}%
-           \global\printpapierhoogte\getvalue{\??pp##1\c!hoogte}%
-           \xdef\printpapersize{##1}}}}%
-     \processcommacommand[#2]\docommando
-     \global\setdimentoatleast\papierbreedte     \onepoint
-     \global\setdimentoatleast\papierhoogte      \onepoint
-     \global\setdimentoatleast\printpapierbreedte\onepoint
-     \global\setdimentoatleast\printpapierhoogte \onepoint
-     \ifcase\paperlandscape\else
-       \doglobal\swapdimens\papierbreedte\papierhoogte
-     \fi
-     \ifcase\printlandscape\else
-       \doglobal\swapdimens\printpapierbreedte\printpapierhoogte
-     \fi
-     % this check can be confusing, so we've added the possibility
-     % to bypass this test: \setuppapersize[option=fit]
-     \doif\@@ppoptie\v!max % \v!fit is
-       {\bgroup
-        % we need to pre-swap else we get the wrong paper size
-        \doifinset\paperrotation{90,270}{\swapdimens\papierbreedte\papierhoogte}%
-        \doifinset\printrotation{90,270}{\swapdimens\printpapierbreedte\printpapierhoogte}%
-        \ifdim\papierhoogte>\printpapierhoogte
-          \global\printpapierhoogte\papierhoogte
-          \writestatus\m!systems{print height forced to paper height}%
-        \fi
-        \ifdim\papierbreedte>\printpapierbreedte
-          \global\printpapierbreedte\papierbreedte
-          \writestatus\m!systems{print width forced to paper width}%
-        \fi
-        \egroup}%
-     %
+     \dododosetuppapersize[#1][#2]%
      \calculatehsizes
      \calculatevsizes
      \recalculatelogos
@@ -411,6 +426,54 @@
    \else\ifx\papersize\undefined\else
      \restorepapersize
    \fi\fi\fi}
+
+\def\dododosetuppapersize[#1][#2]%
+  {\xdef\restorepapersize
+     {\noexpand\setuppapersize[#1][#2]}%
+   \dostelpapierrichtingin{#1}\paperlandscape\paperrotation\paperreverse\papermirror
+   \dostelpapierrichtingin{#2}\printlandscape\printrotation\printreverse\printmirror
+   \def\docommando##1%
+     {\doifsomething{##1}{\doifdefined{\??pp##1\c!breedte}
+        {\global\papierbreedte\getvalue{\??pp##1\c!breedte}%
+         \global\papierhoogte\getvalue{\??pp##1\c!hoogte}%
+         \calculatepaperoffsets{##1}%
+         \xdef\papersize{##1}}}}%
+   \processcommacommand[#1]\docommando
+   \doifdefinedelse{\??pp#1\c!schaal}
+     {\edef\paperscale{\getvalue{\??pp#1\c!schaal}}}
+     {\edef\paperscale{1}}%
+   \def\docommando##1%
+     {\doifsomething{##1}{\doifdefined{\??pp##1\c!breedte}
+        {\global\printpapierbreedte\getvalue{\??pp##1\c!breedte}%
+         \global\printpapierhoogte\getvalue{\??pp##1\c!hoogte}%
+         \xdef\printpapersize{##1}}}}%
+   \processcommacommand[#2]\docommando
+   \global\setdimentoatleast\papierbreedte     \onepoint
+   \global\setdimentoatleast\papierhoogte      \onepoint
+   \global\setdimentoatleast\printpapierbreedte\onepoint
+   \global\setdimentoatleast\printpapierhoogte \onepoint
+   \ifcase\paperlandscape\else
+     \doglobal\swapdimens\papierbreedte\papierhoogte
+   \fi
+   \ifcase\printlandscape\else
+     \doglobal\swapdimens\printpapierbreedte\printpapierhoogte
+   \fi
+   % this check can be confusing, so we've added the possibility
+   % to bypass this test: \setuppapersize[option=fit]
+   \doif\@@ppoptie\v!max % \v!fit is
+     {\bgroup
+      % we need to pre-swap else we get the wrong paper size
+      \doifinset\paperrotation{90,270}{\swapdimens\papierbreedte\papierhoogte}%
+      \doifinset\printrotation{90,270}{\swapdimens\printpapierbreedte\printpapierhoogte}%
+      \ifdim\papierhoogte>\printpapierhoogte
+        \global\printpapierhoogte\papierhoogte
+        \writestatus\m!systems{print height forced to paper height}%
+      \fi
+      \ifdim\papierbreedte>\printpapierbreedte
+        \global\printpapierbreedte\papierbreedte
+        \writestatus\m!systems{print width forced to paper width}%
+      \fi
+      \egroup}}
 
 \def\dostelpapierrichtingin#1#2#3#4#5%
   {\global\chardef#2\zerocount
@@ -453,7 +516,13 @@
 % \newtoks \everybeforelayout \relax
 % \newtoks \everyafterlayout  \relax
 
+
 \def\recalculatelayout
+  {\doifsomething{\layoutparameter\c!pagina\layoutparameter\c!papier}
+     {\dododosetuppapersize[\layoutparameter\c!pagina][\layoutparameter\c!papier]}%
+   \dorecalculatelayout}
+
+\def\dorecalculatelayout
   {%\the\everybeforelayout
    \setups[\layoutparameter\c!preset]%
    \global\linkermargebreedte \layoutparameter\c!linkermarge
@@ -468,6 +537,11 @@
    \global\kopwit             \layoutparameter\c!kopwit
    \setlayoutdimensions % the rest of the `dimensions'
    \doifelse\@@lygrid\v!ja\gridsnappingtrue\gridsnappingfalse
+   \ifgridsnapping
+     \setsystemmode\v!grid
+   \else
+     \resetsystemmode\v!grid
+   \fi
    \setups[\layoutparameter\c!setups]% depends on gridsnapping !
    \simplesetupwhitespace
    \simplesetupblank
@@ -1247,7 +1321,9 @@
     \c!rechterrandafstand=\layoutparameter\c!randafstand,
            \c!rechterrand=\layoutparameter\c!rand,
              \c!kopoffset=\!!zeropoint,
+              \c!bodemwit=\!!zeropoint,
              \c!rugoffset=\!!zeropoint,
+               \c!snijwit=\!!zeropoint,
           \c!tekstbreedte=, % dangerous option -> centered / local
             \c!tekstmarge=, % dangerous option -> both sides
           \c!tekstafstand=\!!zeropoint, % shift down on grid
@@ -1265,10 +1341,10 @@
                 \c!setups=\systemsetupsprefix\s!default,
             \c!clipoffset=\!!zeropoint,
                 \c!regels=0,
+                \c!papier=, % for foxet
+                \c!pagina=, % for foxet
               \c!kolommen=1,
-          \c!kolomafstand=\!!zeropoint,
-               \c!snijwit=\!!zeropoint,
-              \c!bodemwit=\!!zeropoint]
+          \c!kolomafstand=\!!zeropoint]
 
 %D First we define a whole range of (DIN) papersizes,
 %D of which the A-series makes most sense. We enable checking.
@@ -1293,38 +1369,50 @@
    \c!links=,
    \c!rechts=\hss]
 
-\definepapersize [A0] [\c!breedte=841mm,\c!hoogte=1189mm]
-\definepapersize [A1] [\c!breedte=594mm,\c!hoogte=841mm]
-\definepapersize [A2] [\c!breedte=420mm,\c!hoogte=594mm]
-\definepapersize [A3] [\c!breedte=297mm,\c!hoogte=420mm]
-\definepapersize [A4] [\c!breedte=210mm,\c!hoogte=297mm]
-\definepapersize [A5] [\c!breedte=148mm,\c!hoogte=210mm]
-\definepapersize [A6] [\c!breedte=105mm,\c!hoogte=148mm]
-\definepapersize [A7] [\c!breedte=74mm,\c!hoogte=105mm]
-\definepapersize [A8] [\c!breedte=52mm,\c!hoogte=74mm]
-\definepapersize [A9] [\c!breedte=37mm,\c!hoogte=52mm]
+\definepapersize [A0]  [\c!breedte=841mm,\c!hoogte=1189mm]
+\definepapersize [A1]  [\c!breedte=594mm,\c!hoogte=841mm]
+\definepapersize [A2]  [\c!breedte=420mm,\c!hoogte=594mm]
+\definepapersize [A3]  [\c!breedte=297mm,\c!hoogte=420mm]
+\definepapersize [A4]  [\c!breedte=210mm,\c!hoogte=297mm]
+\definepapersize [A5]  [\c!breedte=148mm,\c!hoogte=210mm]
+\definepapersize [A6]  [\c!breedte=105mm,\c!hoogte=148mm]
+\definepapersize [A7]  [\c!breedte=74mm,\c!hoogte=105mm]
+\definepapersize [A8]  [\c!breedte=52mm,\c!hoogte=74mm]
+\definepapersize [A9]  [\c!breedte=37mm,\c!hoogte=52mm]
+\definepapersize [A10] [\c!breedte=26mm,\c!hoogte=37mm]
 
-\definepapersize [B0] [\c!breedte=1000mm,\c!hoogte=1414mm]
-\definepapersize [B1] [\c!breedte=707mm,\c!hoogte=1000mm]
-\definepapersize [B2] [\c!breedte=500mm,\c!hoogte=707mm]
-\definepapersize [B3] [\c!breedte=354mm,\c!hoogte=500mm]
-\definepapersize [B4] [\c!breedte=250mm,\c!hoogte=354mm]
-\definepapersize [B5] [\c!breedte=177mm,\c!hoogte=250mm]
-\definepapersize [B6] [\c!breedte=125mm,\c!hoogte=177mm]
-\definepapersize [B7] [\c!breedte=88mm,\c!hoogte=125mm]
-\definepapersize [B8] [\c!breedte=63mm,\c!hoogte=88mm]
-\definepapersize [B9] [\c!breedte=44mm,\c!hoogte=63mm]
+\definepapersize [B0]  [\c!breedte=1000mm,\c!hoogte=1414mm]
+\definepapersize [B1]  [\c!breedte=707mm,\c!hoogte=1000mm]
+\definepapersize [B2]  [\c!breedte=500mm,\c!hoogte=707mm]
+\definepapersize [B3]  [\c!breedte=353mm,\c!hoogte=500mm] % [\c!breedte=354mm,\c!hoogte=500mm]
+\definepapersize [B4]  [\c!breedte=250mm,\c!hoogte=353mm] % [\c!breedte=250mm,\c!hoogte=354mm]
+\definepapersize [B5]  [\c!breedte=176mm,\c!hoogte=250mm] % [\c!breedte=177mm,\c!hoogte=250mm]
+\definepapersize [B6]  [\c!breedte=125mm,\c!hoogte=176mm] % [\c!breedte=125mm,\c!hoogte=177mm]
+\definepapersize [B7]  [\c!breedte=88mm,\c!hoogte=125mm]
+\definepapersize [B8]  [\c!breedte=62mm,\c!hoogte=88mm]   % [\c!breedte=63mm,\c!hoogte=88mm]
+\definepapersize [B9]  [\c!breedte=44mm,\c!hoogte=62mm]   % [\c!breedte=44mm,\c!hoogte=63mm]
+\definepapersize [B10] [\c!breedte=31mm,\c!hoogte=44mm]
 
-\definepapersize [C0] [\c!breedte=917mm,\c!hoogte=1297mm]
-\definepapersize [C1] [\c!breedte=649mm,\c!hoogte=917mm]
-\definepapersize [C2] [\c!breedte=459mm,\c!hoogte=649mm]
-\definepapersize [C3] [\c!breedte=324mm,\c!hoogte=459mm]
-\definepapersize [C4] [\c!breedte=229mm,\c!hoogte=324mm]
-\definepapersize [C5] [\c!breedte=162mm,\c!hoogte=229mm]
-\definepapersize [C6] [\c!breedte=115mm,\c!hoogte=162mm]
-\definepapersize [C7] [\c!breedte=81mm,\c!hoogte=115mm]
-\definepapersize [C8] [\c!breedte=57mm,\c!hoogte=81mm]
-\definepapersize [C9] [\c!breedte=40mm,\c!hoogte=57mm]
+\definepapersize [C0]  [\c!breedte=917mm,\c!hoogte=1297mm]
+\definepapersize [C1]  [\c!breedte=648mm,\c!hoogte=917mm] % [\c!breedte=649mm,\c!hoogte=917mm]
+\definepapersize [C2]  [\c!breedte=458mm,\c!hoogte=648mm] % [\c!breedte=459mm,\c!hoogte=649mm]
+\definepapersize [C3]  [\c!breedte=324mm,\c!hoogte=458mm] % [\c!breedte=324mm,\c!hoogte=459mm]
+\definepapersize [C4]  [\c!breedte=229mm,\c!hoogte=324mm]
+\definepapersize [C5]  [\c!breedte=162mm,\c!hoogte=229mm]
+\definepapersize [C6]  [\c!breedte=114mm,\c!hoogte=162mm] % [\c!breedte=115mm,\c!hoogte=162mm]
+\definepapersize [C7]  [\c!breedte=81mm,\c!hoogte=114mm]  % [\c!breedte=81mm,\c!hoogte=115mm]
+\definepapersize [C8]  [\c!breedte=57mm,\c!hoogte=81mm]
+\definepapersize [C9]  [\c!breedte=40mm,\c!hoogte=57mm]
+\definepapersize [C10] [\c!breedte=28mm,\c!hoogte=40mm]
+
+%D Per August 2004 the rounding of some (seldom used) sizes
+%D were corrected top the latest DIN specifications. Peter
+%D Rolf came up with these and a few more missing sizes.
+%D Watch out: spaces and slashes!
+
+\definepapersize [4 A0]  [\c!breedte=1682mm,\c!hoogte=2378mm]
+\definepapersize [2 A0]  [\c!breedte=1189mm,\c!hoogte=1682mm]
+\definepapersize [C6/C5] [\c!breedte=114mm,\c!hoogte=229mm]
 
 %D Because there are no standardized screen sizes, we define
 %D a bunch of sizes with $4:3$ ratios. The \type {S6} size is
@@ -1376,7 +1464,8 @@
 \definepapersize [envelope 14] [\c!breedte=11.5in,\c!hoogte=5.0in]
 \definepapersize [monarch]     [\c!breedte=7.5in,\c!hoogte=3.88in]
 \definepapersize [check]       [\c!breedte=8.58in,\c!hoogte=3.88in]
-\definepapersize [DL]          [\c!breedte=220mm,\c!hoogte=110mm]
+\definepapersize [DL]          [\c!breedte=110mm,\c!hoogte=220mm] % [\c!breedte=220mm,\c!hoogte=110mm]
+\definepapersize [E4]          [\c!breedte=280mm,\c!hoogte=400mm]
 
 %D We can now default to a reasonable size. We match the print
 %D paper size with the typeset paper size. This setting should

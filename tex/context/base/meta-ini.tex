@@ -86,6 +86,10 @@
   graphictextdirective "\the\everyMPTEXgraphic";
 \to \MPextensions
 
+% \appendtoks
+%   textextdirective "\the\everyMPTEXgraphic";
+% \to \MPextensions
+
 %D A signal that we're in combines \CONTEXT||\METAFUN mode:
 
 \appendtoks
@@ -788,12 +792,7 @@
 %D However, on a 1 Gig Pentium, the next alternative saves
 %D us 20 seconds run time for the 300 page \METAFUN\ manual:
 
-\def\insertMPfile#1#2%
-  {\doiffileelse{./#1}
-     {\ifcase\pdfoutput
-        \@EA\includeMPasEPS\else\@EA\includeMPasPDF
-      \fi{./#1}}
-     {\message{[MP #1]}}}
+\def\insertMPfile#1#2{\doinsertMPfile{#1}}
 
 \def\includeMPasEPS#1%
   {\bgroup
@@ -803,7 +802,7 @@
    \setbox\scratchbox\vbox to \!!heightb
      {\vfill
       \doinsertfile
-        {\c!mps,\c!mps}{#1,\empty}{100}{100}
+        {\c!mps,\c!mps}{#1,\empty}{100}{100}%
         \!!widtha\!!heighta\!!widthb\!!heightb\zerocount}%
    \wd\scratchbox\!!widthb
    \dp\scratchbox\zeropoint

@@ -2609,9 +2609,10 @@
 \let\textofreference \relax
 
 \def\dodododoinatreference#1#2#3[#4]% \removeunwantedspaces added june 2004
-  {\ifx\next\bgroup
+  {\ifx\next\bgroup                 % but removed later, fails on metafun
      \dododododoinatreference
-       {\leftofreference#1\ignorespaces#3\removeunwantedspaces\rightofreference}{#2}[#4]%
+      % fails on metafun  {\leftofreference#1\ignorespaces#3\removeunwantedspaces\rightofreference}{#2}[#4]%
+       {\leftofreference#1\ignorespaces#3\rightofreference}{#2}[#4]%
    \else
      \dododododoinatreference
        {\leftofreference#1\rightofreference}{#2#3}[#4]%

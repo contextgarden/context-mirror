@@ -1981,12 +1981,20 @@ vardef dodostraightened(expr sign, p) =
   fi
 enddef ;
 
+% vardef simplified expr p =
+%   dostraightened(+1,p)
+% enddef ;
+
+% vardef unspiked   expr p =
+%   dostraightened(-1,p)
+% enddef ;
+
 vardef simplified expr p =
-  dostraightened(+1,p)
+  (reverse dostraightened(+1,dostraightened(+1,reverse p)))
 enddef ;
 
 vardef unspiked   expr p =
-  dostraightened(-1,p)
+  (reverse dostraightened(-1,dostraightened(-1,reverse p)))
 enddef ;
 
 % path p ;
@@ -2124,9 +2132,13 @@ enddef ;
 
 string _clean_ascii[] ;
 
-_clean_ascii[ASCII "-"] := "_" ;
-_clean_ascii[ASCII ":"] := "_" ;
-_clean_ascii[ASCII "."] := "_" ;
+def register_dirty_chars(expr str) =
+    for i = 0 upto length(str)-1 :
+        _clean_ascii[ASCII substring(i,i+1) of str] := "_" ;
+    endfor ;
+enddef ;
+
+register_dirty_chars("+-*/:;.,") ;
 
 vardef cleanstring (expr s) =
   save ss ; string ss, si ; ss = "" ;

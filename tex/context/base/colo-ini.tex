@@ -16,7 +16,7 @@
 %D To do: stroke versus fill color
 %D 1000 100 10 -> constants
 
-%D Possible optimizaiton: store level in mark instead of name
+%D Possible optimization: store level in mark instead of name
 
 \unprotect
 
@@ -232,12 +232,20 @@
 \def\@@cl@@z{0}
 \def\@@cl@@o{1}
 
+% \def\@@resetcolorparameters
+%   {\let\@@cl@@r\@@cl@@z\let\@@cl@@g\@@cl@@z\let\@@cl@@b\@@cl@@z
+%    \let\@@cl@@c\@@cl@@z\let\@@cl@@m\@@cl@@z\let\@@cl@@y\@@cl@@z\let\@@cl@@k\@@cl@@z
+%    \let\@@cl@@s\@@cl@@z\let\@@cl@@p\@@cl@@o
+%    \let\@@cl@@t\@@cl@@z\let\@@cl@@a\@@cl@@z
+%    \let\@@cl@@h\empty  \let\@@cl@@n\empty}
+
 \def\@@resetcolorparameters
-  {\let\@@cl@@r\@@cl@@z\let\@@cl@@g\@@cl@@z\let\@@cl@@b\@@cl@@z
-   \let\@@cl@@c\@@cl@@z\let\@@cl@@m\@@cl@@z\let\@@cl@@y\@@cl@@z
-   \let\@@cl@@k\@@cl@@z\let\@@cl@@s\@@cl@@z\let\@@cl@@p\@@cl@@o
-   \let\@@cl@@t\@@cl@@z\let\@@cl@@a\@@cl@@z
-   \let\@@cl@@h\empty  \let\@@cl@@n\empty}
+  {\let\@@cl@@r\@@cl@@z \let\@@cl@@g\@@cl@@z \let\@@cl@@b\@@cl@@z
+   \let\@@cl@@c\@@cl@@z \let\@@cl@@m\@@cl@@z \let\@@cl@@y\@@cl@@z \let\@@cl@@k\@@cl@@z
+   \let\@@cl@@s\@@cl@@z
+   \let\@@cl@@p\@@cl@@o \let\@@cl@@n\empty \let\@@cl@@d\empty \let\@@cl@@f\@@cl@@o
+   \let\@@cl@@h\empty
+   \let\@@cl@@t\@@cl@@z \let\@@cl@@a\@@cl@@z}
 
 \def\@@cl@@A{\@@cl@@a} % a hook for symbolic conversion, see below
 
@@ -263,7 +271,10 @@
 \def\colorSpattern{0S:\@@cl@@s:\@@cl@@A:\@@cl@@t}
 \def\colorCpattern{0C:\@@cl@@c:\@@cl@@m:\@@cl@@y:\@@cl@@k:\@@cl@@A:\@@cl@@t}
 \def\colorRpattern{0R:\@@cl@@r:\@@cl@@g:\@@cl@@b:\@@cl@@A:\@@cl@@t}
-\def\colorPpattern{0P:\@@cl@@n:\@@cl@@p:\@@cl@@A:\@@cl@@t}
+
+%def\colorPpattern{0P:\@@cl@@n:\@@cl@@p:\@@cl@@A:\@@cl@@t}
+
+\def\colorPpattern{0P:\@@cl@@n:\@@cl@@f:\@@cl@@d:\@@cl@@p:\@@cl@@A:\@@cl@@t}
 
 %D The extra 0 catches empty colors specs (needed for the
 %D \type {\MPcolor} and \type {\PDFcolor} conversion (\type
@@ -342,22 +353,22 @@
 
 %D New and experimental.
 
-\let\allspotcolors\empty
+\let\allspotcolors    \empty
+\let\usedspotcolors   \empty
+\let\usedcolorchannels\empty
 
 \def\definespotcolor % [name] [color] [p=,t=,a=]
   {\dotripleempty\dodefinespotcolor}
 
-\def\dodefinespotcolor[#1][#2][#3]%
+\def\dodefinespotcolor[#1][#2][#3]% todo: always global
   {\doifnot{#1}{#2}
      {\@@resetcolorparameters
       \edef\@@cl@@n{#2}%
       \getparameters[\??cl @@][#3]%
       \doifnothing\@@cl@@p{\let\@@cl@@p\!!plusone}%
       \doglobal\addtocommalist{#2}\allspotcolors
-      \setevalue{\??cr#1}{\colorPpattern}%
-      \setvalue{#1}{\switchtocolor[#1]}}}
-
-\let\usedspotcolors\empty
+      \setxvalue{\??cr#1}{\colorPpattern}% was \setevalue
+      \setgvalue{#1}{\switchtocolor[#1]}}} % was \setvalue
 
 \def\registerusedspotcolors
   {\ifx\allspotcolors\empty \else
@@ -369,8 +380,6 @@
      \savecurrentvalue\usedspotcolors\usedspotcolors
      \egroup
    \fi}
-
-\let\usedcolorchannels\empty
 
 \def\registerusedcolorchannels
   {\bgroup
@@ -393,6 +402,90 @@
 \def\registerusedspotcolor#1%
   {\global\@EA\chardef\csname\??cs#1\endcsname\zerocount}
 
+%D On top of spotcolors, we define multitone colors. You'd better know
+%D what you're doing because invalid definitions will lead to invalid
+%D documents (i.e.\ resources).
+
+% \definecolor [darkblue]   [c=.5,m=.5]
+% \definecolor [darkyellow] [y=.5]
+%
+% \definemultitonecolor [whatever] [darkblue=.5,darkyellow=.5] [c=.25,m=.25,y=.25] [a=1,t=.5]
+% \definemultitonecolor [another]  [darkblue=.5,darkyellow=.5] [c=.25,m=.25,y=.25]
+
+\def\definemultitonecolor
+  {\doquadrupleempty\dodefinemultitonecolor}
+
+\def\dodefinemultitonecolor[#1][#2][#3][#4]%
+  {\let\@@cl@@cl@@D\empty % n's
+   \let\@@cl@@cl@@P\empty % p's
+   \let\@@cl@@cl@@N\empty % name
+   \scratchcounter\zerocount
+   \processcommacommand[#2]\dododefinemultitonecolor
+   \bgroup
+     \lccode`\.=`\_\lccode`\,=`\_\lccode`\:=`\_\lccode`\;=`\_%
+     \lccode`\+=`\_\lccode`\-=`\_\lccode`\*=`\_\lccode`\/=`\_%
+     % not needed, other attribute in driver:
+     %
+     % \@@resetcolorparameters
+     % \getparameters[#4]%
+     % \ifx\@@cl@@t\@@cl@@z\else
+     %   \edef\@@cl@@cl@@N{\@@cl@@cl@@N_\@@cl@@t_\@@cl@@a}%
+     % \fi
+     \lowercase\@EA{\@EA\xdef\@EA\multitonecolor\@EA{\@@cl@@cl@@N}}%
+   \egroup
+   \setxvalue{\??cl\multitonecolor\s!check}{\noexpand\docheckmultitonecolor{\@@cl@@cl@@D}}%
+   \expanded{\defineglobalcolor[\multitonecolor][#3,#4]}%
+   \expanded{\definespotcolor[#1][\multitonecolor][#4,f=\the\scratchcounter,p={\@@cl@@cl@@P},d={\@@cl@@cl@@D}]}}
+
+\def\docheckmultitonecolor#1%
+  {\flushatshipout
+     {\let\checkmultitonecolor\gobbleoneargument
+      \def\docommand##1{\hbox{\definecolor[\s!dummy-100][##1][p=1]\color[\s!dummy-100]}}%
+      \processcommalist[#1]\docommand}}
+
+\def\checkmultitonecolor#1%
+  {\getvalue{\??cl#1\s!check}\letgvalue{\??cl#1\s!check}\relax}
+
+\def\dodefinespotcolor[#1][#2][#3]% todo: always global
+  {\doifnot{#1}{#2}
+     {\@@resetcolorparameters
+      \edef\@@cl@@n{#2}%
+      \getparameters[\??cl @@][#3]%
+      \doifnothing\@@cl@@p{\let\@@cl@@p\!!plusone}%
+      \doglobal\addtocommalist{#2}\allspotcolors
+      \setxvalue{\??cr#1}{\colorPpattern}% was \setevalue
+      \setgvalue{#1}{\switchtocolor[#1]}}}% was \setvalue
+
+\def\dododefinemultitonecolor#1%
+  {\advance\scratchcounter\plusone
+   \splitstring#1\at=\to\!!stringa\and\!!stringb
+   \ifx\@@cl@@cl@@D\empty
+     \let\@@cl@@cl@@D\!!stringa
+     \let\@@cl@@cl@@P\!!stringb
+     \normalizecolor\!!stringb
+     \edef\@@cl@@cl@@N{\!!stringa_\!!stringb}%
+   \else
+     \edef\@@cl@@cl@@D{\@@cl@@cl@@D,\!!stringa}%
+     \edef\@@cl@@cl@@P{\@@cl@@cl@@P,\!!stringb}%
+     \normalizecolor\!!stringb
+     \edef\@@cl@@cl@@N{\@@cl@@cl@@N_\!!stringa_\!!stringb}%
+   \fi}
+
+% \def\dododefinemultitonecolor#1% a/b safe
+%   {\advance\scratchcounter\plusone
+%    \splitstring#1\at=\to\@@cl@@one\and\@@cl@@two
+%    \ifx\@@cl@@cl@@D\empty
+%      \let\@@cl@@cl@@D\@@cl@@one
+%      \let\@@cl@@cl@@P\@@cl@@two
+%      \normalizecolor\@@cl@@two
+%      \edef\@@cl@@cl@@N{\@@cl@@one_\@@cl@@two}%
+%    \else
+%      \edef\@@cl@@cl@@D{\@@cl@@cl@@D,\@@cl@@one}%
+%      \edef\@@cl@@cl@@P{\@@cl@@cl@@P,\@@cl@@two}%
+%      \normalizecolor\@@cl@@two
+%      \edef\@@cl@@cl@@N{\@@cl@@cl@@N_\@@cl@@one_\@@cl@@two}%
+%    \fi}
+
 %D We now redefine the color definition macro so that you
 %D can define both normal and spotcolors.
 
@@ -403,7 +496,7 @@
   {\ifthirdargument
      \doifassignmentelse{#2}
        {\dododefinecolor[#1][#2,#3]}% actually this is an error
-       {\dodefinespotcolor[#1][#2][#3]}%
+       {\dodefinespotcolor[#1][#2][#3]}% and this the prefered method
    \else
      \dodefinecolor[#1][#2]%
    \fi}
@@ -709,11 +802,35 @@
    \doexeccolorgray
    \exectransparency}
 
-\def\doexeccolorP#1:#2:%
+% \def\doexeccolorP#1:#2:%
+%   {\edef\@@cl@@n{#1}%
+%    \edef\@@cl@@p{#2}%
+%    \registerusedspotcolor\@@cl@@n
+%    \ifSPOTsupported
+%      \dowithcolor\registerspotcolor\@@cl@@n
+%      \dostartspotcolormode\@@cl@@n\@@cl@@p
+%    \else
+%      \doingspotcolortrue
+%      \let\spotcolorfactor\@@cl@@p
+%      \factorizecolortrue            % using counter and array
+%      \dowithcolor\execcolorRCSP\@@cl@@n
+%      \factorizecolorfalse
+%      \let\spotcolorfactor\@@cl@@o
+%      \doingspotcolorfalse
+%    \fi
+%    \exectransparency}
+
+\def\doexeccolorP#1:#2:#3:#4:%
   {\edef\@@cl@@n{#1}%
-   \edef\@@cl@@p{#2}%
+   \edef\@@cl@@f{#2}%
+   \edef\@@cl@@d{#3}%
+   \edef\@@cl@@p{#4}%
+   \ifx\@@cl@@d\empty
+     \let\@@cl@@d\@@cl@@n
+   \fi
    \registerusedspotcolor\@@cl@@n
    \ifSPOTsupported
+     \checkmultitonecolor\@@cl@@n
      \dowithcolor\registerspotcolor\@@cl@@n
      \dostartspotcolormode\@@cl@@n\@@cl@@p
    \else
@@ -727,17 +844,19 @@
    \fi
    \exectransparency}
 
-% \def\doexeccolorPP#1:#2:%
-%   {\edef\@@cl@@n{#1}%
-%    \edef\@@cl@@p{#2}%
-%    \registerusedspotcolor\@@cl@@n
-%    \ifx\@@cl@@n\currentspotcolor
-%      \normalizeSPOT
-%      \dostartgraycolormode\@@cl@@p % was spotcolormode
-%    \else
-%      \dostartgraycolormode\@@cl@@o
-%    \fi
-%    \exectransparency}
+\def\doexeccolorPindex#1:#2:#3:#4:%
+  {\edef\@@cl@@n{#1}%
+   \edef\@@cl@@f{#2}%
+   \edef\@@cl@@d{#3}%
+   \edef\@@cl@@p{#4}%
+   \ifx\@@cl@@d\empty
+     \let\@@cl@@d\@@cl@@n
+   \fi
+   \ifSPOTsupported
+     \checkmultitonecolor\@@cl@@n
+     \dowithcolor\registerindexcolor\@@cl@@n
+   \fi
+   \noexectransparency}
 
 \def\doexeccolorPP#1:#2:%
   {\edef\@@cl@@n{#1}%
@@ -840,8 +959,12 @@
   {\edef\@@cl@@s{#1}%
    \dohidecolor\@@cl@@s\@@cl@@o}
 
-\def\noexeccolorP#1:#2:#3\od
-  {\edef\@@cl@@p{#2}%
+% \def\noexeccolorP#1:#2:#3\od
+%   {\edef\@@cl@@p{#2}%
+%    \dohidecolor\@@cl@@p\@@cl@@z}
+
+\def\noexeccolorP#1:#2:#3:#4:#5\od
+  {\edef\@@cl@@p{#4}%
    \dohidecolor\@@cl@@p\@@cl@@z}
 
 %D For the sake of postprocessing (i.e.\ color separation)
@@ -912,29 +1035,86 @@
 %D We need to register spot colors (i.e.\ resources need to
 %D be created.
 
+% \def\registerspotcolor#1:%
+%   {\ifundefined{\??cl:\c!p:\@@cl@@n}%
+%      \letgvalue{\??cl:\c!p:\@@cl@@n}\empty
+%      %\@EA\@EA\csname registerspotcolor#1\endcsname
+%      \csname registerspotcolor#1\@EA\endcsname
+%    \else
+%      \@EA\dontregisterspotcolor
+%    \fi}
+
 \def\registerspotcolor#1:%
   {\ifundefined{\??cl:\c!p:\@@cl@@n}%
      \letgvalue{\??cl:\c!p:\@@cl@@n}\empty
      %\@EA\@EA\csname registerspotcolor#1\endcsname
      \csname registerspotcolor#1\@EA\endcsname
    \else
-     \@EA\dontregistersplotcolor
+     \@EA\dontregisterspotcolor
    \fi}
 
-\def\dontregistersplotcolor#1\od
-  {}
+% \def\dontregisterspotcolor         #1\od{}
+% \def\registerspotcolorR   #1:#2:#3:#4\od{\doregisterrgbspotcolor \@@cl@@n{#1}{#2}{#3}}
+% \def\registerspotcolorC#1:#2:#3:#4:#5\od{\doregistercmykspotcolor\@@cl@@n{#1}{#2}{#3}{#4}}
+% \def\registerspotcolorS         #1:#2\od{\doregistergrayspotcolor\@@cl@@n{#1}}
+% \def\registerspotcolorP      #1:#2:#3\od{\doregistergrayspotcolor\@@cl@@n{#2}}
 
-\def\registerspotcolorR#1:#2:#3:#4\od
-  {\doregisterrgbspotcolor\@@cl@@n{#1}{#2}{#3}}
+\def\dontregisterspotcolor         #1\od{}
+\def\registerspotcolorR   #1:#2:#3:#4\od{\doregisterrgbspotcolor \@@cl@@n\@@cl@@f\@@cl@@d\@@cl@@p{#1}{#2}{#3}}
+\def\registerspotcolorC#1:#2:#3:#4:#5\od{\doregistercmykspotcolor\@@cl@@n\@@cl@@f\@@cl@@d\@@cl@@p{#1}{#2}{#3}{#4}}
+\def\registerspotcolorS         #1:#2\od{\doregistergrayspotcolor\@@cl@@n\@@cl@@f\@@cl@@d\@@cl@@p{#1}}
+\def\registerspotcolorP      #1:#2:#3\od{\doregistergrayspotcolor\@@cl@@n\@@cl@@f\@@cl@@d\@@cl@@p{#2}}
 
-\def\registerspotcolorC#1:#2:#3:#4:#5\od
-  {\doregistercmykspotcolor\@@cl@@n{#1}{#2}{#3}{#4}}
+%D Experimental feature:
 
-\def\registerspotcolorS#1:#2\od
-  {\doregistergrayspotcolor\@@cl@@n{#1}}
+% \definecolor [darkblue]   [c=1,m=.38,y=0,k=.64] % pantone pms 2965 uncoated m
+% \definecolor [darkyellow] [c=0,m=.28,y=1,k=.06] % pantone pms  124 uncoated m
+%
+% \definecolor [darkblue-50]    [darkblue]   [p=.5]
+% \definecolor [darkyellow-50]  [darkyellow] [p=.5]
+% \definecolor [darkblue-80]    [darkblue]   [p=.8]
+% \definecolor [darkyellow-80]  [darkyellow] [p=.8]
+%
+% \definecolor [darkblue,darkyellow]  [r=.8]
+% \definecolor [darkdull-5030] [darkblue,darkyellow]  [p={.5,.3}]
+%
+% \setupcolors[state=start]
+%
+% \blackrule[width=4cm,height=3cm,color=darkblue-50]
+% \blackrule[width=4cm,height=3cm,color=darkblue-80]
+% \blackrule[width=4cm,height=3cm,color=darkyellow-50]
+% \blackrule[width=4cm,height=3cm,color=darkyellow-80]
+% \blackrule[width=4cm,height=3cm,color=darkdull-5030]
 
-\def\registerspotcolorP#1:#2:#3\od
-  {\doregistergrayspotcolor\@@cl@@n{#2}}
+%D Experimental too (special purpose code).
+
+\def\registerindexcolor#1:%
+  {\ifundefined{\??cl:i:\@@cl@@n}%
+     \letgvalue{\??cl:i:\@@cl@@n}\empty % signal
+     \writestatus\m!colors{registering index color \@@cl@@n}%
+     \@EA\@EA\csname registerindexcolor#1\endcsname
+   \else
+     \@EA\dontregisterindexcolor
+   \fi}
+
+\let\dontregisterindexcolor\dontregisterspotcolor
+
+\def\registerindexcolorR   #1:#2:#3:#4\od{\doregisterrgbindexcolor \@@cl@@n\@@cl@@f\@@cl@@d\@@cl@@p{#1}{#2}{#3}}
+\def\registerindexcolorC#1:#2:#3:#4:#5\od{\doregistercmykindexcolor\@@cl@@n\@@cl@@f\@@cl@@d\@@cl@@p{#1}{#2}{#3}{#4}}
+\def\registerindexcolorS         #1:#2\od{\doregistergrayindexcolor\@@cl@@n\@@cl@@f\@@cl@@d\@@cl@@p{#1}}
+\def\registerindexcolorP      #1:#2:#3\od{\doregistergrayindexcolor\@@cl@@n\@@cl@@f\@@cl@@d\@@cl@@p{#2}}
+
+\def\predefinecolor[#1]%
+  {\bgroup
+   \flushatshipout{\hbox{\localcolortrue\color[#1]}}% real ones
+   \egroup}
+
+\def\predefineindexcolor[#1]%
+  {\bgroup
+   \flushatshipout{\hbox{\localcolortrue\color[#1]}}% real ones
+   \let\doexeccolorP\doexeccolorPindex
+   \flushatshipout{\hbox{\localcolortrue\color[#1]}}% index one
+   \egroup}
 
 %D Transparency is handled similar for all three color modes. We
 %D can turn transparency off with the following switch:
@@ -1900,7 +2080,10 @@
 \def\doformatgrayS#1:#2:#3\od
   {\dodoformatcolor{#1}}
 
-\def\doformatgrayP#1:#2:#3:#4\od
+% \def\doformatgrayP#1:#2:#3:#4\od
+%   {\dowithcolor\doformatcolor{#1}}
+
+\def\doformatgrayP#1:#2:#3:#4:#5:#6\od
   {\dowithcolor\doformatcolor{#1}}
 
 \def\doformatgray#1:%
@@ -2344,11 +2527,17 @@
 \def\doMPcmykN#1:#2:#3:#4:#5\end#6\end
   {\doMPtransparent{\cmykASrgbMP(#1,#2,#3,#4,#6)}#5\end}
 
-\def\doMPspotY#1:#2:#3\end#4\end
-  {\doMPtransparent{\spotMP("#1",#2)}#3\end}
+% \def\doMPspotY#1:#2:#3\end#4\end
+%   {\doMPtransparent{\spotMP("#1",#2)}#3\end}
+%
+% \def\doMPspotN#1:#2:#3\end#4\end
+%   {\scaledMPcolor{#2}{#1}}
 
-\def\doMPspotN#1:#2:#3\end#4\end
-  {\scaledMPcolor{#2}{#1}}
+\def\doMPspotY#1:#2:#3:#4:#5\end#6\end % best make #3 same as #1 when empty
+  {\doMPtransparent{multitonecolor("#1",#2,"#3","#4")}#5\end}
+
+\def\doMPspotN#1:#2:#3:#4:#5\end#6\end
+  {\scaledMPcolor{#4}{#1}}
 
 \def\doMPblack#1\end#2\end
   {\unknownMPcolor}
@@ -2361,36 +2550,55 @@
 %D
 %D Similar alternatives are avaliable for \PDF:
 
-\def\PDFcolor#1%
-  {\handlecolorwith\doPDFcolor\csname\??cr#1\endcsname:::::::\end}
+\def\PDFcolor     #1{\handlecolorwith\doPDFcolor     \csname\??cr#1\endcsname:::::::\end}
+\def\PDFcolorvalue#1{\handlecolorwith\doPDFcolorvalue\csname\??cr#1\endcsname:::::::\end}
+\def\FDFcolor     #1{\handlecolorwith\doFDFcolor     \csname\??cr#1\endcsname:::::::\end}
+
+% \def\doPDFcolor#1:#2:#3:#4:#5:#6:#7:#8\end
+%   {\if     #1R#2 #3 #4 rg%
+%    \else\if#1C#2 #3 #4 #5 k%
+%    \else\if#1S#2 g%
+%    \else\if#1P#3 g% todo
+%    \else       0 g%
+%    \fi\fi\fi\fi}
+%
+% \def\doPDFcolorvalue#1:#2:#3:#4:#5:#6:#7:#8\end
+%   {\if     #1R#2 #3 #4%
+%    \else\if#1C#2 #3 #4 #5%
+%    \else\if#1S#2%
+%    \else\if#1P#3%
+%    \else       0%
+%    \fi\fi\fi\fi}
+%
+% \def\doFDFcolor#1:#2:#3:#4:#5:#6:#7:#8\end
+%   {[\if     #1R#2 #3 #4%
+%     \else\if#1C#2 #3 #4 #5%
+%     \else\if#1S#2%
+%     \else\if#1P#3% todo
+%     \else       0%
+%     \fi\fi\fi\fi]}
 
 \def\doPDFcolor#1:#2:#3:#4:#5:#6:#7:#8\end
   {\if     #1R#2 #3 #4 rg%
    \else\if#1C#2 #3 #4 #5 k%
    \else\if#1S#2 g%
-   \else\if#1P#3 g% todo
+   \else\if#1P#5 g%
    \else       0 g%
    \fi\fi\fi\fi}
-
-\def\PDFcolorvalue#1%
-  {\handlecolorwith\doPDFcolorvalue\csname\??cr#1\endcsname:::::::\end}
 
 \def\doPDFcolorvalue#1:#2:#3:#4:#5:#6:#7:#8\end
   {\if     #1R#2 #3 #4%
    \else\if#1C#2 #3 #4 #5%
    \else\if#1S#2%
-   \else\if#1P#3%
+   \else\if#1P#5%
    \else       0%
    \fi\fi\fi\fi}
-
-\def\FDFcolor#1%
-  {\handlecolorwith\doFDFcolor\csname\??cr#1\endcsname:::::::\end}
 
 \def\doFDFcolor#1:#2:#3:#4:#5:#6:#7:#8\end
   {[\if     #1R#2 #3 #4%
     \else\if#1C#2 #3 #4 #5%
     \else\if#1S#2%
-    \else\if#1P#3% todo
+    \else\if#1P#5%
     \else       0%
     \fi\fi\fi\fi]}
 

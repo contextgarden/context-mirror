@@ -61,13 +61,13 @@
    \dontcomplain
    \boxrulewidth5\testrulewidth
    #3#4\relax
-   \setbox0\normalhbox to \scratchdimen
+   \setbox\scratchbox\normalhbox to \scratchdimen
      {#2{\ruledhbox to \scratchdimen
            {\vrule #5 20\testrulewidth \!!width \zeropoint
             \normalhss}}}%
-   \smashbox0
+   \smashbox\scratchbox
    \normalpenalty\!!tenthousand
-   \box0
+   \box\scratchbox
    \egroup}
 
 \def\ruledhanging
@@ -75,7 +75,7 @@
      \ifnum\hangafter<\zerocount
        \normalhbox
          {\boxrulewidth5\testrulewidth
-          \setbox0\ruledhbox to \hangindent
+          \setbox\scratchbox\ruledhbox to \hangindent
             {\scratchdimen\strutht
              \advance\scratchdimen \strutdp
              \vrule
@@ -83,8 +83,8 @@
                \!!height \zeropoint
                \!!depth -\hangafter\scratchdimen}%
           \normalhskip-\hangindent
-          \smashbox0
-          \raise\strutht\box0}%
+          \smashbox\scratchbox
+          \raise\strutht\box\scratchbox}%
      \fi
    \fi}
 
@@ -214,14 +214,14 @@
            \vrule
              \!!height \testrulewidth
              \!!depth \testrulewidth
-             \!!width 120pt}
+             \!!width 120\points}
       \normalvfill}%
    \smashbox\scratchbox
    \advance\scratchdimen \strutheightfactor\baselineskip
    \setbox\scratchbox\normalhbox
-     {\normalhskip -48pt
-      \normalhbox to 24pt
-        {\normalhss\debuggertext\ruledbaselines\normalhskip6pt}%
+     {\normalhskip -48\points
+      \normalhbox to 24\points
+        {\normalhss\debuggertext\ruledbaselines\normalhskip6\points}%
       \raise\scratchdimen\box\scratchbox}%
    \smashbox\scratchbox
    \box\scratchbox
@@ -414,7 +414,7 @@
       \boxmaxdepth\maxdimen
       \offinterlineskip
       \scratchdimen\cutmarklength
-      \divide\scratchdimen 2
+      \divide\scratchdimen \plustwo
       \hsize\ruledwidth
       \setbox\scratchbox\normalvbox
         {\setbox\scratchbox\normalhbox{\horizontalcuts}%
@@ -526,7 +526,7 @@
 \def\colorrangeB
   {\hbox
      {\scratchdimen-\colormarklength
-      \multiply\scratchdimen 2
+      \multiply\scratchdimen \plustwo
       \advance\scratchdimen \ruledwidth
       \divide\scratchdimen 11
       \def\docommando ##1 ##2 ##3##4##5##6%
@@ -598,7 +598,7 @@
    \edef\ruledwidth {\the\wd#2}%
    \setbox#2\hbox
      {\scratchdimen\colormarklength
-      \divide\scratchdimen 2
+      \divide\scratchdimen \plustwo
       \forgetall
       \ssxx
       \setbox\scratchbox\vbox
@@ -671,7 +671,7 @@
 
 \ifx\eTeXversion\undefined
 
-  \let\showwhatsits\relax
+  \let\showwhatsits    \relax
   \let\dontshowwhatsits\relax
 
 \else
@@ -720,13 +720,8 @@
         \vrule\!!width\wd\scratchbox\dostopcolormode
         \hskip-\wd\scratchbox\box\scratchbox}%
      \scratchdimen1ex
-     \ifdone
-       \setbox\scratchbox\hbox
-         {\hskip#4\scratchdimen\box\scratchbox}%
-     \else
-       \setbox\scratchbox\hbox
-         {\raise#4\scratchdimen\box\scratchbox}%
-     \fi
+     \setbox\scratchbox\hbox
+       {\ifdone\hskip\else\raise#4\fi\scratchdimen\box\scratchbox}%
      \smashbox\scratchbox
      \ifdone\nointerlineskip\fi
      \box\scratchbox
@@ -751,7 +746,7 @@
            \ifhmode
              \edef\popwhatsit{\kern\the\lastkern}\unkern
            \else
-             \edef\popwhatsit{\kern\the\lastkern\prevdepth\the\prevdepth}
+             \edef\popwhatsit{\kern\the\lastkern\prevdepth\the\prevdepth}%
              \kern-\lastkern
            \fi
          \fi
@@ -768,7 +763,7 @@
        \ifhmode
          \edef\popwhatsit{\hskip\the\lastskip}\unskip
        \else
-         \edef\popwhatsit{\vskip\the\lastskip\prevdepth\the\prevdepth}
+         \edef\popwhatsit{\vskip\the\lastskip\prevdepth\the\prevdepth}%
          \vskip-\lastskip
        \fi
      \fi}
@@ -843,6 +838,6 @@
 \def\coloredvtop{\coloredbox\vtop}
 
 \def\coloredstrut
-  {\color[strutcolor]{\def\strutwidth{2pt}\setstrut\strut}}
+  {\color[strutcolor]{\def\strutwidth{2\points}\setstrut\strut}}
 
 \protect \endinput

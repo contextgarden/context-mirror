@@ -312,7 +312,7 @@
   {\docontextXMLdirective#1 @ @ @\end}
 
 \def\docontextXMLdirective#1 #2 #3 #4\end % class variable value
-  {\csname\@@XMLvariable:#1:#2\endcsname{#3}}
+  {\expandafter\def\csname\@@XMLvariable:#1:#2\endcsname{#3}}
 
 %D A simple processing instruction is the following. It just
 %D writes a message to the screen.

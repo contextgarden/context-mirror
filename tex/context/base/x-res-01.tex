@@ -91,7 +91,7 @@
      background=color,
      backgroundcolor=gray,
      foregroundcolor=darkred,
-     align=normal,
+     align={lohi,middle}, % normal,
      frame=off]
     {\bf \XMLflush{rl:dummy}}
 \stopbuffer
@@ -145,13 +145,13 @@
 
 % Ulgy:
 
-\startnotmode[previewpage-letter,previewpage-S6]
-  \enablemode[previewpage-A4]
-\stopnotmode
-
 \startmode[letter] % downward compatible
   \enablemode[previewpage-letter]
 \stopmode
+
+\startnotmode[previewpage-letter,previewpage-S6]
+  \enablemode[previewpage-A4]
+\stopnotmode
 
 %startbuffer[paper]
 \startsetups[paper]

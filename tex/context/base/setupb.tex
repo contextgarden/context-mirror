@@ -2787,7 +2787,7 @@
 
 \startsetup
   \command
-    [\y!stelkolommenin]
+    [\y!setupcolumns]
   \type
     [\c!vars!]
   \variable
@@ -2841,11 +2841,11 @@
 
 \startsetup
   \command
-    [\y!startkolommen]
+    [\y!startcolumns]
   \type
     [\c!opt!\c!vars!\c!stp!]
   \inheritvariables
-    [\y!stelkolommenin]
+    [\y!setupcolumns]
     []
 \stopsetup
 
@@ -3338,6 +3338,14 @@
     [\c!clipoffset]
     [\c!dimension!]
     [\!!zeropoint]
+  \variable
+    [\c!pagina]
+    [\c!identifier!]
+    []
+  \variable
+    [\c!papier]
+    [\c!identifier!]
+    []
 \stopsetup
 
 \startsetup
@@ -5217,6 +5225,14 @@
     [\v!standaard]
   \variable
     [\c!marge]
+    [\v!nee,\v!standaard,\c!dimension!]
+    [0pt]
+  \variable
+    [\c!linkermarge]
+    [\v!nee,\v!standaard,\c!dimension!]
+    [0pt]
+  \variable
+    [\c!rechtermarge]
     [\v!nee,\v!standaard,\c!dimension!]
     [0pt]
   \variable

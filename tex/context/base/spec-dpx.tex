@@ -40,14 +40,14 @@
 %D DVIPDFMx supports the special command \type{pdf: literal ...}
 %D since the version \type{dvipdfmx-20021028}.
 %D
-%D 1. \type{pdf: linteral #1} puts the given PDF commands \#1
+%D 1. \type{pdf: literal #1} puts the given PDF commands \#1
 %D    after changing the text matrix with \type{"1 0 0 1 x y cm"}
 %D    to set the current DVI position $(x,y)$ to the origin.
 %D
-%D 2. \type{pdf: linteral reverse #1} puts the given PDF commands \#1
+%D 2. \type{pdf: literal reverse #1} puts the given PDF commands \#1
 %D    after changing the text matrix with \type{"1 0 0 1 -x -y cm"}.
 %D
-%D 3. \type{pdf: linteral direct #1} puts directly the given PDF
+%D 3. \type{pdf: literal direct #1} puts directly the given PDF
 %D    commands \#1 without changing the text matrix.
 %D
 %D Literal \PDF\ inclusion is implemented as:
@@ -203,18 +203,70 @@
 
 %D Negation is not (yet) supported:
 
+% we need resource access
+%
 % \definespecial\dostartnegative      {}
 % \definespecial\dostopnegative       {}
 % \definespecial\dostarttransparency  {}
 % \definespecial\dostoptransparency   {}
 
+\definespecial\dostarttransparency{\doPDFstarttransparency}
+\definespecial\dostoptransparency {\doPDFstoptransparency}
+
+\PDFtransparencysupportedtrue
+
+\def\@@PDT{@PDT@}
+
+\ifx\PDFcurrenttransparency\undefined
+  \newcount\PDFcurrenttransparency \PDFcurrenttransparency=0 % -1
+\fi
+
+\def\assignPDFtransparency#1#2%
+  {\def\PDFtransparencyidentifier{/Tr#1}%
+   %\def\PDFtransparencyreference{#2 0 R}}
+   \def\PDFtransparencyreference{@TR:#2}}
+
+\def\presetPDFtransparency#1#2%
+  {\initializePDFtransparency
+   \executeifdefined{\@@PDT#1:#2}{\dopresetPDFtransparency{#1}{#2}}}
+
+\def\dopresetPDFtransparency#1#2%
+  {\global\advance\PDFcurrenttransparency \plusone
+   %\immediate\pdfobj{\PDFtransparancydictionary{#1}{#2}{}}%
+%   \special{pdf: object @TR:\the\PDFcurrenttransparency\space \PDFtransparancydictionary{#1}{#2}{}}%
+   \doPDFreserveDPXobject{TR:\the\PDFcurrenttransparency}{<< >>}%
+   \special{pdf: \doPDFcheckedDPXobject{TR:\the\PDFcurrenttransparency}\PDFtransparancydictionary{#1}{#2}{}}%
+   \edef\PDFtransparencyidentifier{/Tr\the\PDFcurrenttransparency}%
+   %\edef\PDFtransparencyreference {\the\pdflastobj\space 0 R}%
+   \edef\PDFtransparencyreference {@TR:\the\PDFcurrenttransparency}%
+   \setxvalue{\@@PDT#1:#2}%
+     {\noexpand\assignPDFtransparency{\the\PDFcurrenttransparency}{\the\PDFcurrenttransparency}}%
+   \appendtoPDFdocumentextgstates
+     {\PDFtransparencyidentifier\space
+      \PDFtransparencyreference\space}}
+
+\def\initializePDFtransparency
+  %{\immediate\pdfobj{\PDFtransparancydictionary{1}{1}{/AIS false}}%
+%  {\special{pdf: object @TR:0 \PDFtransparancydictionary{1}{1}{/AIS false}}%
+  {\doPDFreserveDPXobject{TR:0}{<< >>}%
+   \special{pdf: \doPDFcheckedDPXobject{TR:0}\PDFtransparancydictionary{1}{1}{/AIS false}}%
+   \xdef\PDFtransparencyresetidentifier{/Tr0}%
+   %\xdef\PDFtransparencyresetreference{\the\pdflastobj\space 0 R}%
+   \xdef\PDFtransparencyresetreference{@TR:0}%
+   \setxvalue{\@@PDT0:0}%
+     %{\noexpand\assignPDFtransparency{0}{\the\pdflastobj}}%
+     {\noexpand\assignPDFtransparency{0}{0}}%
+   \appendtoPDFdocumentextgstates
+     {\PDFtransparencyresetidentifier\space
+      \PDFtransparencyresetreference\space}%
+   \global\let\initializePDFtransparency\relax}
 
 %D \macros
 %D   {dosetupinteraction,
 %D    dosetupopenaction,dosetupcloseaction}
 
 \definespecial\dosetupinteraction
-  {\showmessage{\m!interactions}{21}{DVIPDFMx}}
+  {\showmessage\m!interactions{21}{DVIPDFMx}}
 
 \definespecial\dosetupopenaction {\doPDFsetupopenaction}
 \definespecial\dosetupcloseaction{\doPDFsetupcloseaction}
@@ -306,35 +358,46 @@
 
 %D \macros
 %D  {dostartobject,dostopobject,doinsertobject}
-
-\definespecial\dostartobject#1#2#3#4#5%
-  {\bgroup
-   \setbox\nextbox\hbox\bgroup
-     \dosetobjectreference{#1}{#2}{#1::#2}%
-     \scratchdimen#3\edef\width {\the\scratchdimen\space}%
-     \scratchdimen#4\edef\height{\the\scratchdimen\space}%
-     \special{pdf: bxobj @#1::#2 width \width height \height}}
-
+%D
 %D Modified to support the color shading feature since version
 %D \type{dvipdfmx-20021128}.
 
+% wd nextbox > #3 ivm offset
+
+\definespecial\dostartobject#1#2#3#4#5%
+  {\bgroup
+   \dowithnextbox
+     {\dosetobjectreference{#1}{#2}{@#1::#2}%
+      \scratchdimen#3\edef\width {\the\scratchdimen\space}%
+      \scratchdimen#4\edef\height{\the\scratchdimen\space}%
+      \setbox\nextbox\vbox
+        {\special{pdf: bxobj @#1::#2 width \width height \height}%
+         % we need to compensate for the box offset (ugly, sigh)
+         \scratchdimen\nextboxht
+         \advance\scratchdimen\nextboxdp
+         \advance\scratchdimen-#4\relax
+         \nextboxdp\zeropoint
+         \nextboxht\zeropoint
+         \hbox to #3{\hss\lower.5\scratchdimen\box\nextbox\hss}%
+         \ifx\currentPDFresources\empty
+           \special{pdf: exobj}%
+         \else
+           \special{pdf: exobj <<\currentPDFresources\the\pdfpageresources>>}%
+           \global\let\currentPDFresources\empty
+         \fi}%
+      \smashbox\nextbox
+      \flushatshipout{\box\nextbox}%
+      \egroup}%
+    \hbox\bgroup}
+
 \definespecial\dostopobject
-  {\ifx\currentPDFresources\empty
-     \special{pdf: exobj}%
-   \else
-     \special{pdf: exobj <<\currentPDFresources>>}%
-     \global\let\currentPDFresources\empty
-   \fi
-   \egroup
-   \smashbox\nextbox
-   \flushatshipout{\box\nextbox}%
-   \egroup}
+  {\egroup}
 
 \definespecial\doinsertobject#1#2%
   {\hbox
-     {\dogetobjectreference{#1}{#2}\PDFobjectreference
+     {\doPDFgetobjectreference{#1}{#2}\PDFobjectreference
       \ifx\PDFobjectreference\empty \else
-        \special{pdf: usexobj @\PDFobjectreference}%
+        \special{pdf: usexobj @#1::#2}%
       \fi}}
 
 %D \macros
@@ -439,16 +502,43 @@
    \scratchdimen#3\edef\width {\the\scratchdimen\space}%
    \scratchdimen#4\edef\height{\the\scratchdimen\space}%
    \special{pdf: ann @#1::#2 width \width height \height <<#5>>}%
-   \dosetobjectreference{#1}{#2}{#1::#2}%
+   \dosetobjectreference{#1}{#2}{@#1::#2}%
    \egroup}
 
 \def\doPDFactionobject class #1 name #2 width #3 height #4 action #5%
   {\dodoPDFaction{@#1::#2}{#3}{#4}{#5}%
-   \dosetobjectreference{#1}{#2}{#1::#2}}
+   \dosetobjectreference{#1}{#2}{@#1::#2}}
 
 %D \macros
 %D   {doPDFaddtocatalog,doPDFaddtoinfo,
 %D    doPDFpageattribute,doPDFpagesattribute}
+
+% we could move much more to spec-fdf
+
+% \ifx\pdfcatalog      \undefined \newtoks\pdfcatalog       \fi
+% \ifx\pdfinfo         \undefined \newtoks\pdfinfo          \fi
+% \ifx\pdfpageattr     \undefined \newtoks\pdfpageattr      \fi
+% \ifx\pdfpageresources\undefined \newtoks\pdfpageresources \fi
+% \ifx\pdfpagesattr    \undefined \newtoks\pdfpagesattr     \fi
+
+% \def\doPDFaddtocatalog  #1{\expanded{\global\pdfcatalog      {#1\the\pdfcatalog      }}}
+% \def\doPDFaddtoinfo     #1{\expanded{\global\pdfinfo         {#1\the\pdfinfo         }}}
+% \def\doPDFpageattribute #1{\expanded{\global\pdfpageattr     {#1\the\pdfpageattr     }}}
+% \def\doPDFpageresource  #1{\expanded{\global\pdfpageresources{#1\the\pdfpageresources}}}
+% \def\doPDFpagesattribute#1{\expanded{\global\pdfpagesattr    {#1\the\pdfpagesattr    }}}
+
+% \def\doPDFresetpageattributes{\global\pdfpageattr\emptytoks}
+% \def\doPDFresetpageresources {\global\pdfpageresources\emptytoks}
+
+% \appendtoks
+%   \special{pdf: put @catalog <<#1>>}%
+%   \special{pdf: docinfo      <<#1>>}%
+%   \special{pdf: put @pages   <<#1>>}%
+% \to \everylastshipout
+
+% \appendtoks
+%   \special{pdf: put @thispage <<#1>>}%
+% \to\everyshipout
 
 \def\doPDFaddtocatalog#1%
   {\special{pdf: put @catalog <<#1>>}}
@@ -463,7 +553,7 @@
   {\special{pdf: put @pages <<#1>>}}
 
 \def\doPDFpageresource#1%
-  {\message{[skipping PDF resource]}}
+  {\special{pdf: put @resources <<#1>>}}
 
 \let\doPDFresetpageresources =\relax
 \let\doPDFresetpageattributes=\relax
@@ -483,21 +573,58 @@
 %D \macros
 %D   {doPDFdictionaryobject,doPDFarrayobject}
 
+% Dvipdfmx can't handle
+%
+% \special{pdf:put @foo << /Bar @bar >>}
+% \special{pdf:put @bar << /Foo @foo >>}
+%
+% Objects must be defined before they are used.
+%
+% \special{pdf:obj @foo << >>}
+% \special{pdf:obj @bar << >>}
+% \special{pdf:put @foo << /Bar @bar >>}
+% \special{pdf:put @bar << /Foo @foo >>}
+%
+% However, this only works for dictionary and array.
+
+\def\doPDFreserveDPXobject#1#2%
+  {\ifundefined{r:pdx:d:#1}%
+     % we need a \flushatshipoutprep (prepended, normally appended)
+     \flushatshipout{\special{pdf: object @#1 #2}}%
+     \global\letvalue{r:pdx:d:#1}\empty
+   \fi}
+
+\def\doPDFreserveDPXobjectfirst#1#2%
+  {\ifundefined{r:pdx:d:#1}%
+     \doglobal\prependtoks\special{pdf: object @#1 #2}\to\everyfirstshipout
+     \global\letvalue{r:pdx:d:#1}\empty
+   \fi}
+
+\def\doPDFcheckedDPXobject#1{\ifundefined{r:pdx:d:#1}object\else put\fi\space @#1\space}
+
+% todo when etex is fixed, \everyPDFpresets, leeg voor pdftex, nodig voor dvipdfmx
+
+\doPDFreserveDPXobjectfirst{FDF::docuextgstates}{<< >>}
+
 \def\doPDFdictionaryobject class #1 name #2 data #3%
-  {\special{pdf: object @#1::#2 <<#3>>}}
+  {\flushatshipout
+     {\special{pdf: \doPDFcheckedDPXobject{#1::#2}<<#3>>}%
+      \dosetobjectreference{#1}{#2}{@#1::#2}}}
 
 \def\doPDFarrayobject class #1 name #2 data #3%
-  {\special{pdf: object @#1::#2 [#3]}}
+  {\flushatshipout
+     {\special{pdf: \doPDFcheckedDPXobject{#1::#2}[#3]}%
+      \dosetobjectreference{#1}{#2}{@#1::#2}}}
 
 %D \macros
 %D   {defaultobjectreference,doPDFgetobjectreference}
 
-\def\defaultobjectreference#1#2{#1::#2}
+\def\defaultobjectreference#1#2{@#1::#2}
 
 %D \type{\doPDFgetobjectreference} in \type{spec-dpm} had a bug.
 
 \def\doPDFgetobjectreference#1#2#3%
-  {\dogetobjectreference{@#1}{#2}#3%
+  {\dogetobjectreference{#1}{#2}#3%
    \ifx#3\empty\else\edef#3{#3}\fi}
 
 % \def\doPDFgetobjectpage         #1#2#3{..}
@@ -578,13 +705,32 @@
 
 %D 5. Modified codes from \type{supp-pdf}
 
-\let\dohandleMPfshow\handleMPfshow
-
 \def\handleMPfshow
   {\special{pdf: literal direct q}%
    \special{pdf: literal reverse}%
    \dohandleMPfshow
    \special{pdf: literal direct Q}}
+
+\newcounter\MPPDFcounter
+
+\def\setMPPDFobject#1#2% resources boxnumber / see other object macros / unchecked
+  {\doglobal\increment\MPPDFcounter
+   \bgroup
+   \setbox\nextbox\vbox
+     {\scratchdimen\wd#2\edef\width {\the\scratchdimen\space}%
+      \scratchdimen\ht#2\edef\height{\the\scratchdimen\space}%
+      \special{pdf: bxobj @MPPDF:\MPPDFcounter\space width \width height \height}%
+      \box#2%
+      \special{pdf: exobj <<\currentPDFresources>>}}%
+    \smashbox\nextbox
+    \flushatshipout{\box\nextbox}%
+    \egroup
+    \edef\getMPPDFobject{\special{pdf: usexobj @MPPDF:\MPPDFcounter}}}
+
+\let\getMPPDFobject\relax
+
+\definespecial\doinsertMPfile#1%
+  {\doiffileelse{./#1}{\includeMPasPDF{./#1}}{\message{[MP #1]}}}
 
 %D Experimental (untested):
 

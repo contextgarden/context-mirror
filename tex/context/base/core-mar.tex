@@ -84,6 +84,23 @@
 \letvalue{\??mk\??mk\v!laatste}\getbotmark
 \letvalue{\??mk\??mk\v!huidige}\getcurrentmark
 
+% todo: make it work in balancing
+%
+% \definemarking[vers][]
+% \setupheadertexts
+%   [\doiftext{\getmarking[vers][first]}
+%      {\doiftextelse{\getmarking[vers][column:last]}
+%         {\getmarking[vers][first] -- \getmarking[vers][column:last]}
+%         {\getmarking[vers][first]}}]
+% \starttext
+%   \startcolumns[n=2,balance=no]
+%     \dorecurse{10}{\expanded{\marking[vers]{\recurselevel}} \recurselevel:\dorecurse{4}{\input ward } \endgraf}
+%   \stopcolumns
+% \stoptext
+
+\letvalue{\??mk\??mk\v!kolom:\v!eerste }\getsplitfirstmark
+\letvalue{\??mk\??mk\v!kolom:\v!laatste}\getsplitbottommark
+
 \ifx\decouplemarking\undefined \def\decouplemarking[#1]{} \fi
 
 \def\dododefinemarking[#1][#2]%

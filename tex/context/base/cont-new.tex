@@ -21,17 +21,73 @@
 
 \writestatus{\m!systems}{beware: some patches loaded from cont-new.tex!}
 
-\def\doifelsefontsynonym#1%
-  {\ifcsname\??ff\fontclass#1\endcsname
-     \expandafter\firstoftwoarguments
-   \else
-     \expandafter\secondoftwoarguments
+% \definemarkedpage[nobackgrounds]
+% \markpage[nobackgrounds]
+% \doifmarkedpageelse{nobackgrounds}
+
+\def\gettwopassdatalist#1%
+  {\loadtwopassdata
+   \letcscsname\twopassdatalist\csname#1:\s!list\endcsname
+   \ifx\twopassdatalist\relax\let\twopassdatalist\empty\fi}
+
+\newcounter\nofmarkedpages
+
+\def\definemarkedpage[#1]%
+  {\definetwopasslist{\v!pagina:#1}}
+
+\def\markpage[#1]% looks very much like domarginreference and doparagraphreference
+  {\iftrialtypesetting\else
+     \doglobal\increment\nofmarkedpages\relax
+     \edef\writeparref%
+       {\writeutilitycommand%
+          {\twopassentry%
+             {\v!pagina:#1}%
+             {\nofmarkedpages}%
+             {\noexpand\realfolio}}}%
+     \writeparref
    \fi}
 
-\def\expandfontsynonym#1#2% #2 := onelevelexpansion(#1)
-  {\ifcsname\??ff\fontclass#2\endcsname
-     \expandafter\def\expandafter#1\expandafter{\csname\??ff\fontclass#2\endcsname}%
-   \fi}
+\def\doifmarkedpageelse#1%
+  {\gettwopassdatalist{\v!pagina:#1}%
+   \expanded{\doifinsetelse{\realfolio}{\twopassdatalist}}}
+
+% Just a simple and fast hanger, for usage in macros.
+
+\def\setuphanging
+  {\dodoubleempty\getparameters[\??ha]}
+
+\setuphanging
+  [\c!afstand=.5em]
+
+\def\starthanging
+  {\noindent\bgroup
+   \dowithnextbox
+     {\setbox\nextbox\hbox{\flushnextbox\hskip\@@haafstand}%
+      \hangindent\nextboxwd
+      \hangafter\plusone
+      \flushnextbox\ignorespaces}
+   \hbox}
+
+\def\stophanging
+  {\endgraf
+   \egroup}
+
+\def\modevalue#1#2#3%
+  {\@EA\ifx\csname\@mode@\systemmodeprefix#1\endcsname\endcsname\enabledmode#2\else#2\fi}
+
+\def\systemmodevalue#1%
+  {\modevalue{\systemmodeprefix#1}}
+
+% \getmulticolumnlines -> now in cont-loc, to be tested and really needed
+
+\def\naturaltextext#1\relax
+  {\bgroup
+   \prettynaturalfont
+   \def\ascii{#1}%
+   \setnormalcatcodes
+   \restorecatcodes
+   \scantokens\expandafter{\ascii}\ifhmode\unskip\fi
+   \egroup}
 
 \long\def\startprocesscommalist[#1]#2\stopprocesscommalist
   {\long\def\currentcommalistcommand##1{\def\currentcommalistitem{##1}#2}%
@@ -41,88 +97,6 @@
   {\long\xdef\@@expanded{#1}\@@expanded}
 
 \tracefonthandlingtrue
-
-% \def\resetXMLelement[#1]% handy in case only singular
-%   {\@EA\let\csname\@@XMLelement:#1\endcsname \donothing
-%    \@EA\let\csname\@@XMLelement:/#1\endcsname\donothing
-%    \@EA\let\csname\@@XMLelement:#1/\endcsname\donothing}
-%
-% is the same as:
-
-\def\resetXMLelement[#1]{\dododefineXMLprocess{#1}}
-
-\let\dorecalculatelayout\recalculatelayout
-
-\def\recalculatelayout
-  {\doifsomething{\layoutparameter\c!pagina\layoutparameter\c!papier}
-     {\dododosetuppapersize[\layoutparameter\c!pagina][\layoutparameter\c!papier]}%
-   \dorecalculatelayout}
-
-\def\dodosetuppapersize[#1][#2]%
-  {\ifsecondargument
-     \dododosetuppapersize[#1][#2]%
-     \calculatehsizes
-     \calculatevsizes
-     \recalculatelogos
-     \recalculatebackgrounds
-     \recalculatelayout
-   \else\iffirstargument
-     \setuppapersize[#1][#2]%
-   \else\ifx\papersize\undefined\else
-     \restorepapersize
-   \fi\fi\fi}
-
-\def\dododosetuppapersize[#1][#2]%
-  {\xdef\restorepapersize
-     {\noexpand\setuppapersize[#1][#2]}%
-   \dostelpapierrichtingin{#1}\paperlandscape\paperrotation\paperreverse\papermirror
-   \dostelpapierrichtingin{#2}\printlandscape\printrotation\printreverse\printmirror
-   \def\docommando##1%
-     {\doifsomething{##1}{\doifdefined{\??pp##1\c!breedte}
-        {\global\papierbreedte\getvalue{\??pp##1\c!breedte}%
-         \global\papierhoogte\getvalue{\??pp##1\c!hoogte}%
-         \calculatepaperoffsets{##1}%
-         \xdef\papersize{##1}}}}%
-   \processcommacommand[#1]\docommando
-   \doifdefinedelse{\??pp#1\c!schaal}
-     {\edef\paperscale{\getvalue{\??pp#1\c!schaal}}}
-     {\edef\paperscale{1}}%
-   \def\docommando##1%
-     {\doifsomething{##1}{\doifdefined{\??pp##1\c!breedte}
-        {\global\printpapierbreedte\getvalue{\??pp##1\c!breedte}%
-         \global\printpapierhoogte\getvalue{\??pp##1\c!hoogte}%
-         \xdef\printpapersize{##1}}}}%
-   \processcommacommand[#2]\docommando
-   \global\setdimentoatleast\papierbreedte     \onepoint
-   \global\setdimentoatleast\papierhoogte      \onepoint
-   \global\setdimentoatleast\printpapierbreedte\onepoint
-   \global\setdimentoatleast\printpapierhoogte \onepoint
-   \ifcase\paperlandscape\else
-     \doglobal\swapdimens\papierbreedte\papierhoogte
-   \fi
-   \ifcase\printlandscape\else
-     \doglobal\swapdimens\printpapierbreedte\printpapierhoogte
-   \fi
-   % this check can be confusing, so we've added the possibility
-   % to bypass this test: \setuppapersize[option=fit]
-   \doif\@@ppoptie\v!max % \v!fit is
-     {\bgroup
-      % we need to pre-swap else we get the wrong paper size
-      \doifinset\paperrotation{90,270}{\swapdimens\papierbreedte\papierhoogte}%
-      \doifinset\printrotation{90,270}{\swapdimens\printpapierbreedte\printpapierhoogte}%
-      \ifdim\papierhoogte>\printpapierhoogte
-        \global\printpapierhoogte\papierhoogte
-        \writestatus\m!systems{print height forced to paper height}%
-      \fi
-      \ifdim\papierbreedte>\printpapierbreedte
-        \global\printpapierbreedte\papierbreedte
-        \writestatus\m!systems{print width forced to paper width}%
-      \fi
-      \egroup}}
-
-\setuplayout
-  [\c!papier=,
-   \c!pagina=]
 
 \def\parseTR[#1][#2]% [#2] is dummy that kills spaces / no #3 argument
   {\def\currentcol{0}\increment\maximumrow
@@ -211,52 +185,6 @@
    \obeyspaces}
 
 \egroup
-
-\def\complexdozieregister[#1]#2#3%
-  {\begingroup
-     \thisisnextinternal\s!ind
-     \ifduplicate\getlastregisterentry{#2}\fi
-     \convertexpanded{\??id\currentregister}{#2}\asciiregisterentryA
-     \convertexpanded{\??id\currentregister}{#3}\asciiregisterentryB
-     \makesectionformat
-     \edef\schrijfwegnaarregister%
-       {\writeutility%
-          {r s %
-           {\currentregister} %
-           {\nextinternalreference} %
-           {#1} %
-           {\asciiregisterentryA} %
-           {\asciiregisterentryB} %
-           {\sectionformat}}}%
-     \schrijfwegnaarregister
-   \endgroup
-   \registerinfo{> zie}{#2}%
-   \GotoPar}
-
-\def\dodododoinatreference#1#2#3[#4]% \removeunwantedspaces added june 2004
-  {\ifx\next\bgroup
-     \dododododoinatreference
-      % fails on metafun  {\leftofreference#1\ignorespaces#3\removeunwantedspaces\rightofreference}{#2}[#4]%
-       {\leftofreference#1\ignorespaces#3\rightofreference}{#2}[#4]%
-   \else
-     \dododododoinatreference
-       {\leftofreference#1\rightofreference}{#2#3}[#4]%
-   \fi}
-
-\dostepwiserecurse{0}{9}{1}{\setevalue{@@uc@@\recurselevel}{\recurselevel}}
-
-\setvalue{@@uc@@a}{A} \setvalue{@@uc@@A}{A}
-\setvalue{@@uc@@b}{B} \setvalue{@@uc@@B}{B}
-\setvalue{@@uc@@c}{C} \setvalue{@@uc@@C}{C}
-\setvalue{@@uc@@d}{D} \setvalue{@@uc@@D}{D}
-\setvalue{@@uc@@e}{E} \setvalue{@@uc@@E}{E}
-\setvalue{@@uc@@f}{F} \setvalue{@@uc@@F}{F}
-
-\def\hexstringtonumber#1% {FF}
-  {\dohexstringtonumber#1}
-
-\def\dohexstringtonumber#1#2% FF
-  {"\csname @@uc@@#1\endcsname\csname @@uc@@#2\endcsname}
 
 % \def\doshowpardata#1#2{\hbox{\string#1: \the#2}\endgraf}
 %
@@ -386,44 +314,6 @@
 %
 % \endETEX
 
-\def\OTRONEdocheckiffloatfits % vervangen ivm downward comp
-  {\ifnofloatpermitted
-     \global\roomforfloatfalse
-   \else
-     % new per 31/5/2004, should be an option, only one column mode
-     \begingroup
-     \scratchdimen\pagetotal
-     \advance\scratchdimen\lineheight % maybe strutheight
-     \ifdim\scratchdimen>\pagegoal
-       \goodbreak % hack ? needed in icare-az
-     \fi
-     % should be an option
-     \endgroup
-     \dimen0         \pagetotal
-     \advance\dimen0 \ht\floatbox
-     \advance\dimen0 \dp\floatbox
-     \advance\dimen0 \floattopskip
-     \advance\dimen0 -\pageshrink  % toegevoegd
-    %\message{c:\the\mofcolumns,t:\the\pagetotal,g:\the\pagegoal}%\wait
-     \dimen2\pagegoal
-     \relax % needed
-     \ifcase\textfloatmethod
-       % method 0 : raw
-     \or
-       % method 1 : safe
-       \dimen2 .99\pagegoal
-     \or
-       % method 2 : tight
-       \advance\dimen0 -\onepoint
-     \fi
-     \relax % really needed ! ! ! !
-     \ifdim\dimen0>\dimen2
-       \global\roomforfloatfalse
-     \else
-       \global\roomforfloattrue
-     \fi
-   \fi}
-
 % cleaner
 %
 % \long\def\doMPTEXcheck#1%
@@ -452,123 +342,6 @@
 %      \the\MPTEXgrapicchecks\relax % \relax is end condition!
 %    \fi}
 
-\def\endmulticolumns
-  {%\par
-   \vskip\lineheight\vskip-\lineheight % take footnotes into account
-   \dontshowcomposition
-   \doflushcolumnfloat  % added recently
-  %\doflushcolumnfloats % no, since it results in wrong top floats
-   \flushnotes          % before start of columns
-   \par
-   \ifbalancecolumns
-     \global\output{\continuousmulticolumnsout}%
-     \goodbreak
-     \global\output{\balancedmulticolumnsout}%
-   \else
-     \goodbreak
-   \fi
-   \eject               % the prevdepth is important, try e.g. toclist in
-   \prevdepth\zeropoint % columns before some noncolumned text text
-   \global\output\singlecolumnout
-   \global\output{\the\mainoutput}% % % % % todo
-   \ifvoid\precolumnbox\else
-     \unvbox\precolumnbox
-   \fi
-   \global\precolumnboxheight\zeropoint
-   \endgroup % here
-   \nofcolumns\plusone
-   \setvsize % the outer one!
-   \synchronizeoutput % new may 2004 / we need to: \pagegoal\vsize
-   \checkendcolumnfootnotes
-   \dosomebreak\allowbreak
-   \restoresavedfloats}
-
-% this one already catches both define/setup
-
-\def\setupbodyfontenvironment{\definebodyfontenvironment}
-
-% officially, but not needed (yet):
-%
-% \def\dosetupbodyfontenvironment[#1][#2][#3]% class size settings
-%   {\ifthirdargument
-%      \localbodyfontsize#2\relax
-%      \normalizebodyfontsize\localbodyfontsize\to\normalizedbodyfontsize
-%      \doifundefinedelse{\??ft#1\normalizedbodyfontsize\c!em}
-%        {\definebodyfontenvironment[#1][#2][#3]}%
-%        {\getparameters[\??ft#1\normalizedbodyfontsize][#3]}%
-%    \else
-%      \localbodyfontsize#1\relax
-%      \normalizebodyfontsize\localbodyfontsize\to\normalizedbodyfontsize
-%      \doifundefinedelse{\??ft\normalizedbodyfontsize\c!em}
-%        {\definebodyfontenvironment[#1][#2]}%
-%        {\getparameters[\??ft\normalizedbodyfontsize][#2]}%
-%    \fi}
-
-\def\dogetobject#1#2#3#4#5#6#7%
-  {\initializepaper
-   \forgetall
-   \dontshowcomposition
-   \setbox\scratchbox\vbox
-     {\doinsertobject{#1}{#2}}%
-   \setbox\scratchbox#3%
-     {\vbox to #5\scaledpoint
-        {\ifdim\ht\scratchbox>#5\scaledpoint
-           \vss\hbox to #4\scaledpoint{\hss\box\scratchbox\hss}\vss
-         \else\ifdim\wd\scratchbox>#4\scaledpoint
-           \vss\hbox to #4\scaledpoint{\hss\box\scratchbox\hss}\vss
-         \else
-           \vss\box\scratchbox
-         \fi\fi}}%
-   \box\scratchbox
-   \elabelgroup}
-
-% todo: make it work in balancing
-%
-% \definemarking[vers][]
-% \setupheadertexts
-%   [\doiftext{\getmarking[vers][first]}
-%      {\doiftextelse{\getmarking[vers][column:last]}
-%         {\getmarking[vers][first] -- \getmarking[vers][column:last]}
-%         {\getmarking[vers][first]}}]
-% \starttext
-%   \startcolumns[n=2,balance=no]
-%     \dorecurse{10}{\expanded{\marking[vers]{\recurselevel}} \recurselevel:\dorecurse{4}{\input ward } \endgraf}
-%   \stopcolumns
-% \stoptext
-
-\letvalue{\??mk\??mk\v!kolom:\v!eerste }\getsplitfirstmark
-\letvalue{\??mk\??mk\v!kolom:\v!laatste}\getsplitbottommark
-
-% \definemarkedpage[nobackgrounds]
-% \markpage[nobackgrounds]
-% \doifmarkedpageelse{nobackgrounds}
-
-\def\gettwopassdatalist#1%
-  {\loadtwopassdata
-   \letcscsname\twopassdatalist\csname#1:\s!list\endcsname
-   \ifx\twopassdatalist\relax\let\twopassdatalist\empty\fi}
-
-\newcounter\nofmarkedpages
-
-\def\definemarkedpage[#1]%
-  {\definetwopasslist{\v!pagina:#1}}
-
-\def\markpage[#1]% looks very much like domarginreference and doparagraphreference
-  {\iftrialtypesetting\else
-     \doglobal\increment\nofmarkedpages\relax
-     \edef\writeparref%
-       {\writeutilitycommand%
-          {\twopassentry%
-             {\v!pagina:#1}%
-             {\nofmarkedpages}%
-             {\noexpand\realfolio}}}%
-     \writeparref
-   \fi}
-
-\def\doifmarkedpageelse#1%
-  {\gettwopassdatalist{\v!pagina:#1}%
-   \expanded{\doifinsetelse{\realfolio}{\twopassdatalist}}}
-
 % no, wrong! never!
 %
 % \def\tightlayer[#1]%
@@ -592,15 +365,6 @@
        {\processcommacommand  [\allinputpaths]\docommando}
        {\processcommacommand[.,\allinputpaths]\docommando}%
    \fi}
-
-\def\setfontstrut
-  {\setcharstrut{(gplQT}}
-
-\def\doifXMLtextelse#1%
-  {\doiftextelse{\simplifyXMLelements#1}}
-
-\def\doifXMLtext#1#2%
-  {\doiftextelse{\simplifyXMLelements#1}{#2}\donothing}
 
 % todo : share symbols
 
@@ -1274,27 +1038,6 @@
   {\endgraf\verticalstrut\endgraf\kern-2\lineheight
    \egroup}
 
-% Just a simple and fast hanger, for usage in macros.
-
-\def\setuphanging
-  {\dodoubleempty\getparameters[\??ha]}
-
-\setuphanging
-  [\c!afstand=.5em]
-
-\def\starthanging
-  {\noindent\bgroup
-   \dowithnextbox
-     {\setbox\nextbox\hbox{\flushnextbox\hskip\@@haafstand}%
-      \hangindent\nextboxwd
-      \hangafter\plusone
-      \flushnextbox\ignorespaces}
-   \hbox}
-
-\def\stophanging
-  {\endgraf
-   \egroup}
-
 \def\definepushbutton % name optional setup
   {\dodoubleempty\dodefinepushbutton}
 
@@ -1782,8 +1525,8 @@
 %    \the\@@everyparagraphtoks}
 
 \def\doinsertparagraphintro
-  {%\begingroup
-   %\everypar\emptytoks
+  {\begingroup
+   \everypar\emptytoks
    \ifcase\everyparagraphintro\relax
      % no data
      \@@everyparagraphtoks\emptytoks
@@ -1797,7 +1540,7 @@
      \@@everyparagraphtoks\everynextparagraphintro
    \fi
    \the\@@everyparagraphtoks
-   }%\endgroup}
+   \endgroup}
 
 \def\insertparagraphintro
   {\ifcase\everyparagraphintro\else\@EA\doinsertparagraphintro\fi}

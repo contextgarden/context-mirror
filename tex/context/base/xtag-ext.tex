@@ -147,8 +147,8 @@
 % \defineXMLdirective [flowchart] [shapes] \setupFLOWshapes % [#2=#3]
 % \defineXMLdirective [flowchart] [lines] \setupFLOWlines % [#2=#3]
 
-\defineXMLprocessor [context-begin-group] {\begingroup\gobbleoneargument}
-\defineXMLprocessor [context-end-group]   {\endgroup  \gobbleoneargument}
+\defineXMLprocessor [context-begin-group] {\bgroup\gobbleoneargument}
+\defineXMLprocessor [context-end-group]   {\egroup\gobbleoneargument}
 
 % \def\XMLnspart#1:#2\empty{#1} % call ...:\empty\empty
 % \def\XMLidpart#1:#2#3\empty{\ifx#2\empty#1\else\XMLidpart#2#3\empty\empty\fi}
@@ -206,6 +206,12 @@
    \else
      \@EA\secondoftwoarguments
    \fi}
+
+\def\doifXMLtextelse#1% new
+  {\doiftextelse{\simplifyXMLelements#1}}
+
+\def\doifXMLtext#1#2% new
+  {\doiftextelse{\simplifyXMLelements#1}{#2}\donothing}
 
 \gdef\convertXMLelement#1\to#2%
   {\ifcsname\@@XMLsave:#1\endcsname

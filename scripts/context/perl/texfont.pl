@@ -155,9 +155,6 @@ my $variant         = "" ;    # atl: encoding variant
 my $extension       = "pfb" ; # atl: default font extension
 my $lcdf            = "" ;    # atl: trigger for lcdf otftotfm
 
-my $mappath         = 'fonts/map/pdftex/context' ; # will be set later
-my $encpath         = 'fonts/enc/dvips/context' ; # will be set later
-
 my @cleanup         = () ;    # atl: build list of generated files to delete
 
 # todo: parse name for style, take face from command line
@@ -495,7 +492,7 @@ if ($sourcepath eq "auto") # todo uppercase root
         else
           { $path = `kpsewhich -expand-path=\\\$$root` }
         chomp $path ;
-        $path = $ENV{$root} if (($path == '') && defined($ENV{$root})) ;
+        $path = $ENV{$root} if (($path eq '') && defined($ENV{$root})) ;
         report ("checking root : $root") ;
         if ($preproc)
           { $sourcepath = "$path/fonts/truetype/$vendor/$collection" }
@@ -566,7 +563,7 @@ if ($sourcepath eq "auto") # todo uppercase root
     error ("unknown subpath ../fonts/afm/$vendor/$collection") unless -d $sourcepath }
 
 error ("unknown source path $sourcepath") unless -d $sourcepath ;
-error ("unknown option $ARGV[0]")         if ($ARGV[0] =~ /\-\-/) ;
+error ("unknown option $ARGV[0]")         if (($ARGV[0]||'') =~ /\-\-/) ;
 
 my $afmpath = "$fontroot/fonts/afm/$vendor/$collection" ;
 my $tfmpath = "$fontroot/fonts/tfm/$vendor/$collection" ;
@@ -694,7 +691,7 @@ sub globafmfiles
        }
     return @files }
 
-if ($ARGV[0] ne "")
+if ($ARGV[0])
   { $pattern = $ARGV[0] ;
     report ("processing files : all in pattern $ARGV[0]") ;
     @files = globafmfiles($runpath,$pattern) }
@@ -760,7 +757,7 @@ if ($map)
     print MAP "%\n" ;
     print MAP "% Alternatively in your TeX source you can say:\n" ;
     print MAP "%\n" ;
-    print MAP "%   \\pdfmapfile\{+$mapfile\}\n" ;
+    print MAP "%   \\pdf    \{+$mapfile\}\n" ;
     print MAP "%\n" ;
     print MAP "% In ConTeXt you can best use:\n" ;
     print MAP "%\n" ;
@@ -906,7 +903,7 @@ foreach my $file (@files)
             if ($afmpl)
               { report "         generating pl : $cleanname$fontsuffix (from $cleanname)" ;
                 $encstr = " -p $encfil" ;
-                my $command = "afm2pl $shape $passon $encstr $file $cleanname$fontsuffix.vpl" ;
+                my $command = "afm2pl -f afm2tfm $shape $passon $encstr $file $cleanname$fontsuffix.vpl" ;
                 print "$command\n" if $trace ;
                 my $ok = `$command` ;
                 if (open (TMP,"$cleanname$fontsuffix.map"))

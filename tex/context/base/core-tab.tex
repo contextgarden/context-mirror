@@ -13,6 +13,12 @@
 
 \writestatus{loading}{Context Core Macros / TaBlE Embedding}
 
+% Don't change the splitter:
+%
+% ... \NR
+% \TABLEnoalign{\page}\TABLEhead
+% \NC ...
+
 % e-tex: reverse rows or vadjust or ... in tables
 % \ifalign
 % \xhrule : calls for 'special' with width
@@ -492,6 +498,63 @@
      \global\TABLEparheight\scratchdimen             % multi-line box
    \fi                                               % i.e. vtop
    \box\scratchbox}
+
+% We also need to patch away the interfering math switch:
+
+% \mathpunctuationtrue
+
+% test, test
+% \starttable[|c|]
+% \NC1,,10\NC\AR
+% \stoptable
+% test, test
+
+\def\!ttBeginTableA[#1]{%
+  \if #1u%                  % "unboxed" table
+    \ifmmode
+      \def\!ttEndTable{%    % user had better be in display math mode
+        \relax}%            %   and have only one table at the outer level
+    \else                   % user had better be in vertical mode
+      \bgroup
+      \def\!ttEndTable{%
+        \egroup}%
+    \fi
+  \else
+    %\hbox\bgroup $
+    %\def\!ttEndTable{%
+    %  \egroup %   for the \vtop, \vbox, or \vcenter, yet to come
+    %  $%          for math mode
+    %  \egroup}%   for the \hbox
+    %\if #1t%
+    %  \vtop
+    %\else
+    %  \if #1b%
+    %    \vbox
+    %  \else
+    %    \vcenter % math mode was essential for this
+    %  \fi
+    %\fi
+    %
+    \hbox\bgroup
+    \def\!ttEndTable{\egroup\egroup}%
+    \if#1t%
+      \vtop
+    \else\if#1b%
+      \vbox
+    \else
+      \def\!ttEndTable{\egroup$\egroup}%
+      %$\vcenter
+      \scratchtoks\everymath\everymath\emptytoks$\everymath\scratchtoks\vcenter
+    \fi\fi
+    %
+    \bgroup % for the \vtop, \vbox, or \vcenter
+  \fi
+  \advance\!taRecursionLevel 1 % RecursionLevel governs initialization
+  \let\!ttRightGlue=\relax  % This may be changed by \JustCenter, etc
+  \everycr\emptytoks % ={}
+  \ifnum \!taRecursionLevel=1
+    \!ttInitializeTable
+  \fi}
 
 % (*) Try this one with \type {direction} and {girection};
 % the \PPCHTEX\ manual is a nice testcase.
@@ -975,6 +1038,9 @@
 %  {\bgroup
 %   \catcode`\|=\@@other
 %   \dodoubleargument\dodefinetabletemplate}
+
+
+% \TABLEnoalign{\page}\TABLEhead is valid
 
 \def\douseTABLEtemplate#1#2#3%
   {\gdef\TABLEhead{\getvalue{@@TABLEhead#2}}%

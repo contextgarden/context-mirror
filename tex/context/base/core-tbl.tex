@@ -573,7 +573,7 @@
   {\dontcomplain
    \global\setbox\tabulatebox % % % global ? % % %
      \vsplit\tablebox\tabulatecolumn to \lineheight
-   \setbox\tabulatebox\vbox
+   \setbox\tabulatebox\normalvbox
      {\unvbox\tabulatebox}%
    \setbox\tabulatebox\hbox to \wd\tabulatebox
      {\hss\dotabulatehook{\box\tabulatebox}\hss}%
