@@ -212,7 +212,7 @@ class Commands
                             when 'scite' then
                                 if f = open("cont-#{interface}-scite.properties", 'w') then
                                     i = 0
-                                    f.write("keywordclass.macros.context.$interface=")
+                                    f.write("keywordclass.macros.context.#{interface}=")
                                     collection.keys.sort.each do |name|
                                         unless name.empty? then
                                             if i==0 then
