@@ -11,7 +11,7 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-%D Todo : --language=pl,en,nl : nl incs number of language 
+%D Todo : --language=pl,en,nl : nl incs number of language
 
 %D This module implements the (for the moment still simple)
 %D multi||language support of \CONTEXT, which should not be
@@ -139,8 +139,8 @@
 \newcounter\loadedlanguage
 
 %D Let's start with setting the lowercase code of quotes, so
-%D that we get proper hyphenation in languages like Dutch, 
-%D French and Czech. 
+%D that we get proper hyphenation in languages like Dutch,
+%D French and Czech.
 
 \lccode`\'=`\'
 
@@ -157,7 +157,7 @@
 
 \def\setupcurrentlanguage[#1]{\def\currentlanguage{#1}}
 
-%D The internal macros will be defined later. 
+%D The internal macros will be defined later.
 
 %D \macros
 %D   {installlanguage}
@@ -299,7 +299,7 @@
 \def\installlanguage
   {\dodoubleargument\doinstalllanguage}
 
-%D Handy 
+%D Handy
 
 \def\preloadallpatterns
   {\gdef\preloadallpatterns##1%
@@ -333,7 +333,7 @@
 
 \let\normalpatterns\patterns
 
-\def\dodoloadpatterns#1#2#3#4% beware, loaded language also incr 
+\def\dodoloadpatterns#1#2#3#4% beware, loaded language also incr
   {\normallanguage\loadedlanguage % when not really needed
   %\letvalue{\??la\??la#2}\loadedlanguage
    \bgroup
@@ -370,14 +370,14 @@
    \egroup
    \increment\loadedlanguage}
 
-%D Since we can only load patterns in ini\TeX, we nil the 
-%D loading before dumping (which saves a bit of memory, but 
-%D strangely enough not in the format).   
+%D Since we can only load patterns in ini\TeX, we nil the
+%D loading before dumping (which saves a bit of memory, but
+%D strangely enough not in the format).
 
-\appendtoks 
+\appendtoks
   \gdef\doloadpatterns{\increment\loadedlanguage\gobbletwoarguments}%
   \globallet\dodoloadpatterns\gobblefourarguments
-\to \everydump 
+\to \everydump
 
 %D \macros
 %D   {setuplanguage}
@@ -390,7 +390,7 @@
   {\dodoubleargument\dosetuplanguage}
 
 \def\dosetuplanguage[#1][#2]%
-  {\getparameters[\??la#1][#2]%  
+  {\getparameters[\??la#1][#2]%
    \doif{#1}\currentlanguage\docomplexlanguage}
 
 %D The values \type {\c!leftsentence} and \type
@@ -493,6 +493,9 @@
 \newevery \everylanguage               \relax
 \newevery \everyresetlanguagespecifics \relax
 
+\def\disablelanguagespecifics
+  {\ignorecompoundcharacter}
+
 \def\setnormallanguage#1%
   {\dosetnormallanguage{:\currentencoding:\currentmapping:}{#1}{%
    \dosetnormallanguage{:\currentencoding:\s!default     :}{#1}{%
@@ -503,7 +506,7 @@
   {\edef\currentdefaultlanguage{\defaultlanguage\currentlanguage}%
    \def\synchronizepatterns{\setnormallanguage
      {\csname\??la\currentlanguage\s!patterns\endcsname}}% called often
-   \donefalse 
+   \donefalse
    \synchronizepatterns
    \ifdone\else
      \def\synchronizepatterns{\setnormallanguage\currentlanguage}%
@@ -520,16 +523,16 @@
        \fi
      \fi
    \fi
-   \the\everylanguage 
+   \the\everylanguage
    \enablelanguagespecifics[\currentlanguage]%
-% strange, what is this doing here, dangerous for {il2,ec} 
+% strange, what is this doing here, dangerous for {il2,ec}
 %   \edef\languagemapping{\csname\??la\currentlanguage\s!mapping\endcsname}%
 %   \ifx\languagemapping\empty\else
 %     \fastenablemapping\languagemapping
 %   \fi
    \lefthyphenmin 0\csname\??la\currentlanguage\s!lefthyphenmin \endcsname
    \righthyphenmin0\csname\??la\currentlanguage\s!righthyphenmin\endcsname\relax
-   % will be definable 
+   % will be definable
    \doifelsevalue{\??la\currentlanguage\c!spatiering}\v!ruim
      \nonfrenchspacing\frenchspacing}
 
@@ -541,15 +544,15 @@
 
 \beginETEX
 
-\def\complexlanguage[#1]%   
-  {\edef\askedlanguage{#1}% 
+\def\complexlanguage[#1]%
+  {\edef\askedlanguage{#1}%
    \ifx\askedlanguage\empty \else
      \ifcsname\l!prefix!\askedlanguage\endcsname
        \edef\askedlanguage{\csname\l!prefix!\askedlanguage\endcsname}%
        \ifx\currentlanguage\askedlanguage \else
          \let\currentlanguage\askedlanguage
          \docomplexlanguage
-       \fi 
+       \fi
      \else
        \showmessage\m!linguals6{#1}%
      \fi
@@ -569,7 +572,7 @@
        \ifx\currentlanguage\askedlanguage \else
          \let\currentlanguage\askedlanguage
          \docomplexlanguage
-       \fi 
+       \fi
      \fi
    \fi}
 
@@ -589,8 +592,8 @@
        \ifx\currentmainlanguage\askedlanguage \else
          \let\currentmainlanguage\askedlanguage
          \let\currentlanguage\askedlanguage
-         \docomplexlanguage 
-       \fi 
+         \docomplexlanguage
+       \fi
      \fi
    \fi}
 
@@ -606,8 +609,8 @@
        \ifx\currentmainlanguage\askedlanguage \else
          \let\currentmainlanguage\askedlanguage
          \let\currentlanguage\askedlanguage
-         \docomplexlanguage 
-       \fi 
+         \docomplexlanguage
+       \fi
      \fi
    \fi}
 
@@ -641,7 +644,7 @@
 \def\languageparameter#1%
   {\csname\??la\defaultlanguage\currentlanguage#1\endcsname}
 
-% moved 
+% moved
 %
 % %D \macros
 % %D   {leftguillemot,rightguillemot,leftsubguillemot,rightsubguillemot,
@@ -671,36 +674,36 @@
 % %D
 % %D But in other fonts, these definitions can give problems, so
 % %D we just say:
-% 
+%
 % \def\lowerleftsingleninequote  {,}
 % \def\lowerleftdoubleninequote  {,,}
 % \def\upperleftsingleninequote  {'}
 % \def\upperleftdoubleninequote  {''}
 % \def\upperleftsinglesixquote   {`}
 % \def\upperleftdoublesixquote   {``}
-% 
+%
 % \def\lowerrightsingleninequote {,}
 % \def\lowerrightdoubleninequote {,,}
 % \def\upperrightsingleninequote {'}
 % \def\upperrightdoubleninequote {''}
 % \def\upperrightsinglesixquote  {`}
 % \def\upperrightdoublesixquote  {``}
-% 
+%
 % %D Yes I know, they are ugly:
-% 
+%
 % \def\leftfakeguillemot
 %   {\dontleavehmode\hbox{\raise.25ex\hbox{$\scriptscriptstyle\ll$}}}
-% 
+%
 % \def\rightfakeguillemot
 %   {\hbox{\raise.25ex\hbox{$\scriptscriptstyle\gg$}}}
-% 
+%
 % \def\leftsubfakeguillemot
 %   {\dontleavehmode\hbox{\raise.25ex\hbox{$\scriptscriptstyle<$}}}
-% 
+%
 % \def\rightsubfakeguillemot
 %   {\hbox{\raise.25ex\hbox{$\scriptscriptstyle>$}}}
 
-%D New (see nomarking and nolist):  
+%D New (see nomarking and nolist):
 
 \def\splitsequence#1#2%
   {\doifelse{#1}\v!nee
@@ -825,7 +828,7 @@
 % \bgroup \normallanguage255 \patterns{} \egroup
 % \def\nopatterns{\normallanguage255 }
 
-\def\nopatterns{\normallanguage\minusone} 
+\def\nopatterns{\normallanguage\minusone}
 
 %D We default to the language belonging to the interface. This
 %D is one of the few places outside the interface modules where

@@ -2,7 +2,7 @@
 %D   [       file=page-num, % moved here from main-001
 %D        version=1997.03.31,
 %D          title=\CONTEXT\ Core Macros,
-%D       subtitle=Numbering, 
+%D       subtitle=Numbering,
 %D         author=Hans Hagen,
 %D           date=\currentdate,
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
@@ -13,7 +13,7 @@
 
 \writestatus{loading}{Context Core Macros / Numbering}
 
-\unprotect 
+\unprotect
 
 % \gotonextsubpage  : voor de pagebody
 % \subpaginanummer  : alleen in de voet/kopregels
@@ -36,15 +36,15 @@
   [\s!subpage]
   [\c!wijze=\@@snwijze]
 
-% hard to sync 
+% hard to sync
 %
 % \def\resetsubpaginanummer%
 %   {\resetnummer[\s!subpage]%
 %    \global\subpageno=\ruwenummer[\s!subpage]}
 %
-% better sync 
+% better sync
 
-\newif\ifresettingsubpagenumber 
+\newif\ifresettingsubpagenumber
 
 \def\resetsubpaginanummer
   {\global\resettingsubpagenumbertrue}
@@ -58,7 +58,7 @@
       \processaction
         [\@@snstatus]
         [  \v!stop=>\ifsubpaging
-                      \resetsubpaginanummer % new, see sync 
+                      \resetsubpaginanummer % new, see sync
                     \else
                       \subpagingfalse
                     \fi
@@ -114,8 +114,8 @@
 
 \def\gotonextsubpage % overlapt behoorlijk met realpage macro
   {\global\let\checksubpages\relax
-   \ifresettingsubpagenumber 
-     \resetnummer[\s!subpage]%  
+   \ifresettingsubpagenumber
+     \resetnummer[\s!subpage]%
      \global\resettingsubpagenumberfalse
    \fi
    \ifsubpaging
@@ -258,7 +258,7 @@
    \global\let\checkrealpage\relax}
 
 \def\savenofpages
-  {\bgroup 
+  {\bgroup
    \advance\realpageno \minusone
    \savecurrentvalue\lastpage\realfolio
    \advance\userpageno \minusone
@@ -303,13 +303,13 @@
 \def\stelpaginanummerin
   {\dosingleargument\dostelpaginanummerin}
 
-% long time used alternative 
+% long time used alternative
 %
 % \def\verlaagpaginanummer
 %   {\doifinset{\@@pnstatus}{\v!start,\v!leeg,\v!geen}
 %      {\verlaagnummer[\s!page]%
 %       \setuserpageno{\ruwenummer[\s!page]}}}
-% 
+%
 % \def\verhoogpaginanummer
 %   {\doifinset{\@@pnstatus}{\v!start,\v!leeg,\v!geen}
 %      {\verhoognummer[\s!page]%
@@ -342,7 +342,7 @@
                             \dosynchronizepagenumber}
 \letvalue{\??pn+\v!handhaaf}\dosynchronizepagenumber
 
-% so far 
+% so far
 
 \def\checkpagecounter%
   {\checknummer{\s!page}}
@@ -506,18 +506,18 @@
   {\dodopaginaprefix{#1}%
    \donexttracklevel{#1}}
 
-\def\paginaprefix#1[#2]% 
+\def\paginaprefix#1[#2]%
   {\bgroup
    \edef\paginatype{#1}%
-   \edef\postprefix{\@@filternumberpart[#2]}% 
+   \edef\postprefix{\@@filternumberpart[#2]}%
    \let\donexttrackcommando\dopaginaprefix
    \donexttrackcommando\firstsection
    \egroup}
 
-%D It was Marco Kuhlmann who uncovered the missing strut. This 
-%D was a pretty old bug kind of covered up by the fact that non 
+%D It was Marco Kuhlmann who uncovered the missing strut. This
+%D was a pretty old bug kind of covered up by the fact that non
 %D oldstyle numbers are about as high as strutheight. Rather
-%D interesting that it went unnoticed for so long. 
+%D interesting that it went unnoticed for so long.
 
 \unexpanded\def\@@plaatspaginanummer % called in empty tests
   {\doif{\@@nmstatus\@@pnstatus}{\v!start\v!start}
@@ -525,7 +525,7 @@
        \@@nmcommando{\doattributes\??nm\c!letter\c!kleur
          {\completepagenumber}}}}}
 
-\def\@@plaatspaginascheider% still used ? 
+\def\@@plaatspaginascheider% still used ?
   {\doif{\@@nmstatus\@@pnstatus}{\v!start\v!start}
      {\@@nmtekstscheider}}
 
@@ -546,15 +546,15 @@
        \donexttracklevel{##1}}%
     \donexttrackcommando{\firstsection}}
 
-\unexpanded\def\completepagenumber  
-  {\doif{\@@nmstatus\@@pnstatus}{\v!start\v!start} 
+\unexpanded\def\completepagenumber
+  {\doif{\@@nmstatus\@@pnstatus}{\v!start\v!start}
      {\@@nmlinks\labeltexts\v!paginanummer{\pageprefixes\pagenumber}\@@nmrechts}}
 
 \unexpanded\def\placepagenumber
   {\doif{\@@nmstatus\@@pnstatus}{\v!start\v!start}
      {\labeltexts\v!paginanummer{\pagenumber}}}
 
-% Nog een variant; wat is een goeie naam? 
+% Nog een variant; wat is een goeie naam?
 
 % \unexpanded\def\placexxpagenumber
 %   {\@@plaatspaginanummer}
@@ -563,8 +563,12 @@
 
 \def\translatednumber{\@@filterpagepart}
 
+% \unexpanded\def\referencepagenumber[#1]%
+%   {\doifelsenothing{#1}{?}{\paginaprefix\??rf[#1]\translatednumber[#1]}}
+
 \unexpanded\def\referencepagenumber[#1]%
-  {\doifelsenothing{#1}{?}{\paginaprefix\??rf[#1]\translatednumber[#1]}}
+  {\doifelsenothing{#1}{?}% \prepare had got lost
+     {\preparepaginaprefix\??rf\paginaprefix\??rf[#1]\translatednumber[#1]}}
 
 \stelpaginanummerin
   [\c!status=\v!start,
@@ -574,4 +578,4 @@
   [\c!wijze=\v!per\v!deel,
    \c!status=\v!stop]
 
-\protect \endinput 
+\protect \endinput

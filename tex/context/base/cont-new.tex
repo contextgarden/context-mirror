@@ -17,101 +17,9 @@
 
 \unprotect
 
-\newbox\nestednextbox \prependtoks \let\nextbox\nestednextbox \to \everybeforepagebody
+\writestatus{\m!systems}{beware: some patches loaded from cont-new.tex!}
 
-\def\dostartcolumnsetspan[#1][#2][#3]% [#3] gobbles space
-  {\endgraf % else rubish output if forgotten
-   \vskip \zeropoint % make sure otr is done, otherwise last line problems
-   \bgroup
-   \forgetall
-   \ifnum\columnsetlevel>\zerocount\else
-     % of course we needed a one-column fall back for tm
-     \columnsetspanhsize\hsize
-     \nofcolumns\plusone
-     \mofcolumns\plusone
-   \fi
-   \setupframedtexts[cs:#1]
-     [\c!breedte=\columnsetspanhsize,
-      \c!regelcorrectie=\v!uit,
-      \c!dieptecorrectie=\v!uit,
-      #2]%
-   % determine widths
-   \!!countc\framedtextparameter{cs:#1}\c!n
-    % \!!countd\numexpr(\nofcolumns-\mofcolumns+\plusone)%
-   \!!countd\nofcolumns
-   % n <= n of columns
-   \ifnum\!!countc>\!!countd \!!countc\!!countd \fi
-   \advance\!!countd -\mofcolumns
-   \advance\!!countd \plusone
-   % n <= n of available columns (alternative a)
-   \doif{\framedtextparameter{cs:#1}\c!variant}\v!a
-     {\ifnum\!!countc>\!!countd \!!countc\!!countd \fi}%
-   % here it all starts
-   \setcolumnsetspanhsize\mofcolumns\!!countc % a/b used
-   \hsize\columnsetspanhsize
-   \setbox\scratchbox\vbox\bgroup
-     \dostartframedtext[cs:#1][\v!geen]% geen nils placement
-     \vskip-\struttotal\par\verticalstrut\par
-     \ifnum\columnsetlevel>\zerocount
-       \framedtextparameter{cs:#1}\c!voor
-     \fi
-     \def\stopcolumnsetspan{\dostopcolumnsetspan{#1}}}
-
-\def\dostopcolumnsetspan#1%
-  {\par
-   \verticalstrut
-   \kern-2\struttotal
-   \verticalstrut
-   \ifnum\columnsetlevel>\zerocount
-     \doifsomething{\framedtextparameter{cs:#1}\c!na}
-       {\framedtextparameter{cs:#1}\c!na
-        \kern\zeropoint}% otherwise blanks disappear, better be a switch
-   \else
-     \endgraf
-   \fi
-   \dostopframedtext
-   \egroup
-   % frozen keeps grid snapping okay
-   \setbox\scratchbox\frozenhbox to \hsize
-     {\dontcomplain
-      \alignedline{\framedtextparameter{cs:#1}\c!plaats}\v!midden
-        {\lower\strutdepth\box\scratchbox}}%
-   \dp\scratchbox\zeropoint % else wrong snap insidefloat
-%
-% to be tested first:
-%
-% \setbox\scratchbox\frozenhbox to \hsize
-%   {\dontcomplain
-%    \chardef\alignstrutmode\zerocount
-%    \alignedline{\framedtextparameter{cs:#1}\c!plaats}\v!midden
-%      {\box\scratchbox}}%
-%
-   \ifinsidefloat
-     \box\scratchbox
-   \else\ifnum\columnsetlevel>\zerocount
-     % we only set \columnsetspacing when asked for, else bottom problems
-     % don't change this any more (test naw)
-     \chardef\columnslotspacing\framedtextparameter{cs:#1}\c!nregels\relax
-     % todo: nboven/onder & \chardef\columnslotlocation2
-     %\OTRSETstoreincolumnslotHERE\scratchbox
-     \edef\floatmethod{\framedtextparameter{cs:#1}\c!default}%
-     \@EA\uppercasestring\floatmethod\to\floatmethod
-     % todo : \v!hier -> here enzovoorts
-     \OTRSETstoreincolumnslot\floatmethod\scratchbox
-     % watch out: no \dochecknextindentation{tag}
-     \checknextindentation[\framedtextparameter{cs:#1}\c!springvolgendein]
-   \else
-     % of course we needed a one-column fall back for tm; brrr, the box has now too
-     % much height (try \ruledvbox); don't change this without testing techniek
-     \scratchdimen\ht\scratchbox
-     \advance\scratchdimen-\strutdp
-     \ht\scratchbox\scratchdimen
-     \framedtextparameter{cs:#1}\c!voor
-     \snaptogrid\vbox{\box\scratchbox}%
-     \framedtextparameter{cs:#1}\c!na
-   \fi\fi
-   \egroup
-   \endgraf}
+\def\showsetupsdefinition[#1]{\showvalue{\??su:#1}}
 
 % will be a MyWay
 %
@@ -150,84 +58,6 @@
 % \input ward
 %
 % \stoptext
-
-\let\@@efgrid\empty
-
-\def\dosetdimensionfiguresize#1#2#3%
-  {#1\relax
-   \doifsomething\@@efmaxbreedte
-     {\ifdim\figwid>\@@efmaxbreedte\global\figwid\@@efmaxbreedte#2\relax\fi}%
-   \doifsomething\@@efmaxhoogte
-     {\ifdim\fighei>\@@efmaxhoogte \global\fighei\@@efmaxhoogte #3\relax\fi}%
-   \processaction
-     [\@@efgrid]
-     [     \v!ja=>\getnoflines\fighei
-                  \global\fighei\noflines\lineheight,
-       \v!hoogte=>\getrawnoflines\fighei
-                  \global\fighei\noflines\lineheight
-                  \global\advance\fighei\strutdepth,
-      \v!passend=>\getrawnoflines\fighei
-                  \global\fighei\noflines\lineheight]}
-
-\def\splittblbox#1% #1 <> 0/2
-  {\ifinsidefloat
-     \unvbox#1%
-   \else
-     % spacing between rows gets lost in split
-     \setbox4\vbox
-       {\doifsomething\tbltbltussenwit{\blank[\tbltbltussenwit]}}%
-     \setbox2\vbox
-       {}%
-     \dorecurse\noftblheadlines
-       {\setbox0\vsplit#1 to \lineheight
-        \setbox2\vbox{\unvcopy2\unvcopy0}}%
-     \ifcase\noftblheadlines\else\unvcopy2\fi
-     \donefalse
-     \doloop
-       {\setbox0\vsplit#1 to \lineheight
-        \ifdim\pagegoal<\maxdimen
-          \setbox0\vbox{\unvbox0}%
-          \dimen0\ht0
-          \advance\dimen0\ht4
-          \advance\dimen0\pagetotal
-          \ifdim\dimen0>\pagegoal
-            \bgroup \pagina \egroup % make sure that local vars are kept
-            \ifcase\noftblheadlines\else\unvcopy2\fi
-          \fi
-        \fi
-        \ifdone
-          \doifsomething\tbltbltussenwit{\blank[\tbltbltussenwit]}%
-        \fi
-        \unvbox0
-        %\allowbreak
-        \bgroup
-          \scratchcounter\recurselevel
-          \advance\scratchcounter\noftblheadlines
-          \setupTBLcell{\number\scratchcounter}1
-          \ifx\@@tblsplitafter\relax
-            \allowbreak
-          \else
-            \doifelsenothing\@@tblsplitafter
-               \allowbreak
-              {\scratchcounter\realpageno
-               \@@tblsplitafter
-               \ifnum\scratchcounter<\realpageno
-                 \ifcase\noftblheadlines\else\unvcopy2\fi
-               \fi}%
-          \fi
-        \egroup
-        \ifvoid#1 \exitloop \else \donetrue \fi}%
-   \fi}
-
-% \bTABLE[split=repeat]
-%   \bTABLEhead
-%     \bTR \bTH lxxxeft \eTH\bTD right \eTD\eTR
-%   \eTABLEhead
-%   \bTABLEbody
-%     \dorecurse{100}{\bTR[after={\pagina[bigpreference]}] \bTD left \eTD\bTD right \eTD\eTR}
-%     \dorecurse{100}{\bTR\bTD left \eTD\bTD right \eTD\eTR}
-%   \eTABLEbody
-% \eTABLE
 
 % new, continuous blocks, \som \par \startdoorlopendblok ...
 
@@ -245,19 +75,19 @@
       \setbox\nextbox\hbox{\lower\scratchdimen\box\nextbox}%
       \ht\nextbox\strutheight
       \dp\nextbox\strutdepth
-\setbox\nextbox\vbox
-  {\indent\box\nextbox
-   \endgraf
-   \nobreak
-   \advance\noflines\minusone
-   \dorecurse\noflines{\crlf\nobreak}}%
-\verticalstrut
-\endgraf
-\nobreak
-\offinterlineskip
-\kern-2\lineheight
-\nobreak
-\unvbox\nextbox
+      \setbox\nextbox\vbox
+        {\indent\box\nextbox
+         \endgraf
+         \nobreak
+         \advance\noflines\minusone
+         \dorecurse\noflines{\crlf\nobreak}}%
+         \verticalstrut
+         \endgraf
+         \nobreak
+         \offinterlineskip
+         \kern-2\lineheight
+         \nobreak
+         \unvbox\nextbox
       \prevdepth\strutdepth
       % evt (eerst testen) een signal zodat een direct volgend blok goed gaat)
       \egroup}
@@ -268,73 +98,11 @@
 \def\stopdoorlopendblok
   {\egroup}
 
-\def\disablelanguagespecifics{\def\installcompoundcharacter##1 ##2{}}
-
-\appendtoks
-  \disablelanguagespecifics
-\to \everyenableXML
-
-\installoutput\discardpage
-  {\setbox\scratchbox\box\normalpagebox}
-
-\unexpanded\def\referencepagenumber[#1]%
-  {\doifelsenothing{#1}{?}% \prepare had got lost
-     {\preparepaginaprefix\??rf\paginaprefix\??rf[#1]\translatednumber[#1]}}
-
 \def\defineXMLstore {\doquadrupleargument\dodefineXMLstore[\saveXMLasdata]}
 \def\defineXMLgstore{\doquadrupleargument\dodefineXMLstore[\gsaveXMLasdata]}
 
 \def\dodefineXMLstore[#1][#2][#3][#4]% element attribute prefix % will become faster
   {\defineXMLargument[#2][#3=\s!dummy]{#1{#4:\XMLop{#3}}}}
-
-\def\OTRONEsometopsfloat[#1]%
-  {\ifdim\topinserted=\zeropoint
-     \topofinserttrue
-   \else
-     \topofinsertfalse
-   \fi
-   \global\advance\topinserted \ht\floatbox
-   \global\advance\topinserted \dp\floatbox
-   \global\advance\topinserted \floatbottomskip
-   \insert\topins
-     {\forgetall
-      \iftopofinsert
-        \topskipcorrection % [xx] new: see icare topbleed
-        \kern-\lineskip\par\prevdepth\maxdimen
-      \else
-        %\blanko[-\@@bknawit,\@@bkvoorwit]% inserts can't look back
-        \betweenfloatblanko
-      \fi
-      \flushfloatbox
-      \blanko[\@@bknawit]}%
-   \doinsertfloatinfo}
-
-\def\OTRONEdotopinsertions
-  {\ifvoid\topins\else
-     \ifgridsnapping
-       \box\topins
-       \vskip-\topskip \vskip\strutheight % [xx] new: see icare topbleed
-     \else
-       \unvbox\topins
-     \fi
-   \fi
-   \global\topinserted\zeropoint}
-
-
-\def\tightlayer[#1]%
-  {\hbox
-     {\def\currentlayer{#1}% todo: left/right
-      \hsize\layerparameter\c!breedte
-      \vsize\layerparameter\c!hoogte
-      \composedlayer{#1}}}
-
-\def\dodosetobject#1#2#3%
-  {\bgroup
-   \globalpushmacro\crossreferenceobject \objectreferenced
-   \inobjecttrue
-   \dowithnextbox
-     {\globalpopmacro\crossreferenceobject
-      \dododosetobject{#1}{#2}{#3}\egroup}}
 
 % Just a simple and fast hanger, for usage in macros.
 
@@ -356,16 +124,6 @@
 \def\stophanging
   {\endgraf
    \egroup}
-
-\def\doifdimensionelse#1%
-  {\afterassignment\dodoifdimensionelse\scratchdimen#1pt\relax}
-
-\def\dodoifdimensionelse#1%
-  {\ifx#1\relax
-     \expandafter\secondoftwoarguments
-   \else % #1=p ... t\relax
-     \expandafter\thirdoffourarguments
-   \fi}
 
 \def\definepushbutton % name optional setup
   {\dodoubleempty\dodefinepushbutton}
@@ -440,8 +198,6 @@
 
 %%%%%%%% todo: \chardef\snapstruts=1 => d=l-h
 
-\writestatus{\m!systems}{beware: some patches loaded from cont-new.tex!}
-
 \def\useMPvariables
   {\dodoubleargument\douseMPvariables}
 
@@ -465,30 +221,6 @@
    \startlinetableanalysis\processXMLfile{#1}\stoplinetableanalysis
    \startlinetablerun     \processXMLfile{#1}\stoplinetablerun
    \egroup}
-
-\def\startlinetablepart
-  {\global\linetablesubcol\zerocount
-   \setbox\scratchbox\hbox\bgroup
-   \doconvertfont{\linetablerparameter\c!letter}%
-   \startcolor[\linetablerparameter\c!kleur]%
-   \ignorespaces}
-
-\def\stoplinetablepart
-  {\ifnum\linetablepart>\zerocount
-     \unskip \unskip % remove last intercolumn skip (distance+fill)
-   \fi
-   \stopcolor
-   \egroup
-   \iflinetablepreroll \else
-     \ifcase\linetablepart
-       % we're collecting the repeater
-     \else
-       \scratchdimen\hsize \advance\scratchdimen-\wd\scratchbox\relax
-       \ifdim\scratchdimen>\linetableparameter\c!rek\else
-         \setbox\scratchbox\hbox to \hsize{\unhbox\scratchbox}%
-       \fi
-     \fi
-   \fi}
 
 % experimental: \synchronizegrid bla bla bla
 
@@ -608,19 +340,6 @@
      \strut\crcr
      \TABLEnoalign{\kern-\lineheight}%
    \fi}
-
-\def\showexternalfigured
-  {\bgroup
-   \immediate\openout\scratchwrite=mpfigs.mp
-   \def\presetfigure[##1][##2]%
-     {\getfiguredimensionsonly[##1]% \pagefigure[##1]%
-      \immediate\write\scratchwrite
-         {registerfigure("##1",\figurewidth,\figureheight)}}
-   \pushendofline
-   \readjobfile\@@exfile\donothing\donothing
-   \popendofline
-   \immediate\closeout\scratchwrite
-   \egroup}
 
 % between alignment lines certain rules apply, and even a
 % simple test can mess up a table, which is why we have a
@@ -1066,47 +785,6 @@
 %         \s!unknown=>\global#1=\@@exkorps\relax
 %                     \global\divide#1 \!!ten\relax
 %                     \global\multiply#1 #2#3#4\relax]}
-
-\def\complexTableTB[#1]{\TABLEnoalign{\blanko[#1]}}
-\def\simpleTableTB     {\TABLEnoalign{\blanko}}
-
-\def\TabulateTB
-  {\complexorsimpleTable{TB}}
-
-\def\doTableinterline% #1
-  {\ifnum\currentTABLEcolumn>\maxTABLEcolumn
-     \chuckTABLEautorow
-   \else\ifnum\currentTABLEcolumn=\zerocount
-     \TABLEnoalign
-       {\globalletempty\checkTABLEautorow
-        \globalletempty\chuckTABLEautorow}%
-   \else
-     \setTABLEerror\TABLEmissingcolumn
-     \handleTABLEerror
-   \fi\fi
-   \complexorsimpleTable} % {#1}
-
-\def\TableHL{\doTableinterline{HL}}
-\def\TableTB{\doTableinterline{TB}}
-
-\appendtoks\let\TB\TableTB   \to\everytable
-\appendtoks\let\TB\TabulateTB\to\everytabulate
-
-% \starttabulate
-% \NC text \NC text \NC \NR
-% \TB[small]
-% \NC text \NC text \NC \NR
-% \TB[4*big]
-% \NC text \NC text \NC \NR
-% \stoptabulate
-%
-% \starttable[|||]
-% \VL text \VL text \VL \AR
-% \TB[small]
-% \VL text \VL text \VL \AR
-% \TB[4*big]
-% \VL text \VL text \VL \AR
-% \stoptable
 
 % still needed for uguide
 

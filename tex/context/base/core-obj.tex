@@ -2,14 +2,14 @@
 %D   [       file=core-obj,
 %D        version=1998.01.15,
 %D          title=\CONTEXT\ Core Macros,
-%D       subtitle=Object Handling, 
+%D       subtitle=Object Handling,
 %D         author=Hans Hagen,
 %D           date=\currentdate,
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
-%C details. 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
 
 \writestatus{loading}{Context Core Macros / Object Handling}
 
@@ -50,57 +50,57 @@
      31: obiect duplicat --
 \stopmessages
 
-%D \macros 
+%D \macros
 %D   {setobject,getobject,ifinobject}
 %D
 %D Boxes can be considered reuable objects. Unfortunaltely once
 %D passed to the \DVI\ file, such objects cannot be reused. In
 %D \PDF\ however, reusing is possible and sometimes even a
-%D necessity. Therefore, \CONTEXT\ supports reusable objects. 
-%D 
+%D necessity. Therefore, \CONTEXT\ supports reusable objects.
+%D
 %D During the \TEX\ processing run, boxes can serve the purpose
 %D of objects, and the \DVI\ driver module implements objects
-%D using packed boxes. 
-%D 
+%D using packed boxes.
+%D
 %D The \PDF\ and \PDFTEX\ driver modules implement objects
 %D using \PDF\ forms. There is no (real) restriction on the
-%D number of objects there. 
-%D 
+%D number of objects there.
+%D
 %D The first application of objects in \CONTEXT\ concerned
 %D \METAPOST\ graphics and fill||in form fields. The first
 %D application can save lots of bytes, while the latter use is
-%D more a necessity than byte saving. 
-%D 
+%D more a necessity than byte saving.
+%D
 %D \starttypen
 %D \setobject{class}{name}\somebox{}
 %D \getobject{class}{name}
 %D \stoptypen
-%D 
+%D
 %D Here \type{\somebox} can be whatever box specification suits
 %D \TEX. We save the dimensions of an object, although some
 %D drivers will do so themselves. This means that when for
 %D instance using \PDFTEX\ we could save a hash entry plus some
 %D 20+ memory locations per object by delegating this
-%D housekeeping to the driver. The current approach permits 
-%D us to keep the box characteristic too. 
+%D housekeeping to the driver. The current approach permits
+%D us to keep the box characteristic too.
 
 \newif\ifinobject
 
 \def\objectplaceholder{NOT YET FLUSHED}%
 
-\def\presetobject#1#2% \global added 
+\def\presetobject#1#2% \global added
   {\blabelgroup
-   \ifundefined{\r!object#1::#2}%   
+   \ifundefined{\r!object#1::#2}%
      \global\@EA\let\csname\r!object#1::#2\endcsname\objectplaceholder
    \fi
    \elabelgroup}
 
 \def\dosetobject#1#2#3% \initializepaper this will move to \everyshipout
   {\initializepaper
-   \blabelgroup 
-   \ifundefined{\r!object#2::#3}%   
+   \blabelgroup
+   \ifundefined{\r!object#2::#3}%
      \elabelgroup \expandafter\dodosetobject
-   \else % tzt, overload internal referenced objects to save entries 
+   \else % tzt, overload internal referenced objects to save entries
      \elabelgroup \expandafter\gobblefivearguments
    \fi
    {#1}{#2}{#3}}
@@ -112,22 +112,30 @@
 %D Somehow there is a rounding error problem in either \PDFTEX\
 %D or in viewers, or maybe it is conforming the specs. The next
 %D variable compensate for it by removing the rather tight
-%D clip. 
+%D clip.
 
 \def\objectoffset{1cm}
   {}
 
-\def\dodosetobject#1#2#3%   
+% \def\dodosetobject#1#2#3%
+%   {\bgroup
+%    \inobjecttrue
+%    \dowithnextbox{\dododosetobject{#1}{#2}{#3}\egroup}}
+
+\def\dodosetobject#1#2#3%
   {\bgroup
+   \globalpushmacro\crossreferenceobject \objectreferenced
    \inobjecttrue
-   \dowithnextbox{\dododosetobject{#1}{#2}{#3}\egroup}}
+   \dowithnextbox
+     {\globalpopmacro\crossreferenceobject
+      \dododosetobject{#1}{#2}{#3}\egroup}}
 
 \def\dododosetobject#1#2#3%
   {\blabelgroup
    \dontshowcomposition % rather fuzzy in \setxvalue ... \hbox
-   \scratchdimen\objectoffset 
+   \scratchdimen\objectoffset
    \@EA\xdef\csname\r!object#2::#3\endcsname
-     {\noexpand\dohandleobject{#2}{#3}% 
+     {\noexpand\dohandleobject{#2}{#3}%
         {\ifhbox\nextbox\hbox\else\vbox\fi}%
        %{\the\nextboxwd}{\the\nextboxht}{\the\nextboxdp}}%
         {\number\nextboxwd}{\number\nextboxht}{\number\nextboxdp}%
@@ -151,13 +159,13 @@
 
 % \def\dogetobject#1#2#3#4#5#6%
 %   {\initializepaper
-%    \forgetall 
+%    \forgetall
 %    \dontshowcomposition
 %    \setbox\scratchbox\vbox
 %      {\doinsertobject{#1}{#2}}%
 %    \setbox\scratchbox#3%
-%      {\vbox to #5\s!sp  
-%         {\ifdim\ht\scratchbox>#5\s!sp 
+%      {\vbox to #5\s!sp
+%         {\ifdim\ht\scratchbox>#5\s!sp
 %     % or \ifdim\wd\scratchbox>#4\s!sp
 %            \vss\hbox to #4\s!sp{\hss\box\scratchbox\hss}\vss
 %          \else
@@ -171,13 +179,13 @@
 
 \def\dogetobject#1#2#3#4#5#6#7%
   {\initializepaper
-   \forgetall 
+   \forgetall
    \dontshowcomposition
    \setbox\scratchbox\vbox
      {\doinsertobject{#1}{#2}}%
    \setbox\scratchbox#3%
-     {\vbox to #5\s!sp  
-        {\ifdim\ht\scratchbox>#5\s!sp 
+     {\vbox to #5\s!sp
+        {\ifdim\ht\scratchbox>#5\s!sp
     % or \ifdim\wd\scratchbox>#4\s!sp
            \vss\hbox to #4\s!sp{\hss\box\scratchbox\hss}\vss
          \else
@@ -185,7 +193,7 @@
          \fi}}%
    \scratchdimen#7\s!sp
    \setbox\nextbox\hbox
-     {\hskip-\scratchdimen\lower\scratchdimen\flushnextbox}% 
+     {\hskip-\scratchdimen\lower\scratchdimen\flushnextbox}%
    \wd\scratchbox#4\s!sp
    \ht\scratchbox#5\s!sp
    \dp\scratchbox#6\s!sp
@@ -198,15 +206,15 @@
 %D \getobjectdimensions{class}{name}
 %D \stoptypen
 %D
-%D The results are reported in \type {\objectwidth}, \type 
-%D {\objectheight} and \type {\objectdepth}. 
+%D The results are reported in \type {\objectwidth}, \type
+%D {\objectheight} and \type {\objectdepth}.
 
-% \def\dogetobjectdimensions#1#2#3#4#5#6% 
+% \def\dogetobjectdimensions#1#2#3#4#5#6%
 %   {\def\objectwidth {#4\s!sp}%
 %    \def\objectheight{#5\s!sp}%
 %    \def\objectdepth {#6\s!sp}}
 
-\def\dogetobjectdimensions#1#2#3#4#5#6#7% 
+\def\dogetobjectdimensions#1#2#3#4#5#6#7%
   {\def\objectwidth {#4\s!sp}%
    \def\objectheight{#5\s!sp}%
    \def\objectdepth {#6\s!sp}%
@@ -219,31 +227,31 @@
    \let\objectdepth \!!zeropoint
    \labelcsname\r!object#1::#2\endcsname}
 
-%D Apart from this kind of objects, that have typeset content, 
-%D we can have low level driver specific objects. Both types 
-%D can have references to internal representations, hidden for 
-%D the user. We keep track of such references by means of a 
-%D dedicated cross reference mechanism. Normally, objects are 
-%D defined before they are used, but forward referencing 
-%D sometimes occurs. 
-%D 
+%D Apart from this kind of objects, that have typeset content,
+%D we can have low level driver specific objects. Both types
+%D can have references to internal representations, hidden for
+%D the user. We keep track of such references by means of a
+%D dedicated cross reference mechanism. Normally, objects are
+%D defined before they are used, but forward referencing
+%D sometimes occurs.
+%D
 %D \starttypen
 %D \dosetobjectreference {class} {identifier} {reference value} {page}
 %D \dogetobjectreference {class} {identifier} \csname
 %D \stoptypen
-%D 
+%D
 %D These commands are to be called by the \type{\startobject},
 %D \type{\stopobject} and \type{\insertobject} specials.
 
 
-\def\objectreferenced{\global\chardef\crossreferenceobject\plusone} 
+\def\objectreferenced{\global\chardef\crossreferenceobject\plusone}
 \def\driverreferenced{\global\chardef\crossreferenceobject\zerocount}
 
 \objectreferenced
 
 \def\checkobjectreferences
   {\startnointerference
-   \protectlabels 
+   \protectlabels
    \doutilities{objectreferences}\jobname\empty\relax\relax
    \global\let\checkobjectreferences\relax
    \stopnointerference}
@@ -271,9 +279,9 @@
        {\writeutilitycommand{\objectreference{#1}{#2}{#3}{\noexpand\realfolio}}}%
      \dowritereference
    \fi
-  %\ifundefined{\r!driver#1::#2}% could have been be replaced ! 
+  %\ifundefined{\r!driver#1::#2}% could have been be replaced !
      \setxvalue{\r!driver#1::#2}{{#3}{\noexpand\realfolio}}%
-  %\fi % so no test ! ! ! ! (pdftex fails on undefined objects) 
+  %\fi % so no test ! ! ! ! (pdftex fails on undefined objects)
    \elabelgroup}
 
 \def\dosetdriverreference
@@ -305,7 +313,7 @@
 %D \macros
 %D   {doifobjectfoundelse,doifobjectreferencefoundelse}
 %D
-%D To prevent redundant definition of objects, one can use 
+%D To prevent redundant definition of objects, one can use
 %D the next tests:
 %D
 %D \starttypen
@@ -354,16 +362,16 @@
 %D \macros
 %D   {doifobjectssupportedelse}
 %D
-%D Starting with reuse of graphics, we will implement object 
-%D reuse when possible. To enable mechanisms to determine 
+%D Starting with reuse of graphics, we will implement object
+%D reuse when possible. To enable mechanisms to determine
 %D what method to use, we provide:
 %D
 %D \starttypen
 %D \doifobjectssupportedelse{true action}{false action}
 %D \stoptypen
 %D
-%D As we can see, currently objects depend on the special 
-%D driver. 
+%D As we can see, currently objects depend on the special
+%D driver.
 
 \newif\ifobjectssupported \objectssupportedtrue
 
@@ -376,8 +384,8 @@
 
 %D There is a conceptual problem here. Objects are not possible
 %D in \DVI, unless faked like in \type {spec-dvi}. This means
-%D that we must be careful in loading special drivers that do 
-%D support objects while we still want to be able to use the 
-%D \DVI\ output. 
+%D that we must be careful in loading special drivers that do
+%D support objects while we still want to be able to use the
+%D \DVI\ output.
 
-\protect \endinput 
+\protect \endinput

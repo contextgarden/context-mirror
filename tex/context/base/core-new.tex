@@ -193,8 +193,8 @@
 \let\stopmode   \donothing
 \let\stopnotmode\donothing
 
-\long\def\dostopmode   #1\stopmode   {} 
-\long\def\dostopnotmode#1\stopnotmode{} 
+\long\def\dostopmode   #1\stopmode   {}
+\long\def\dostopnotmode#1\stopnotmode{}
 
 \def\doifallmodeselse{\unprotect\dodoifallmodeselse}
 \def\doifallmodes    {\unprotect\dodoifallmodes}
@@ -220,8 +220,111 @@
 \let\stopallmodes   \donothing
 \let\stopnotallmodes\donothing
 
-\long\def\dostopallmodes   #1\stopallmodes   {} 
-\long\def\dostopnotallmodes#1\stopnotallmodes{} 
+\long\def\dostopallmodes   #1\stopallmodes   {}
+\long\def\dostopnotallmodes#1\stopnotallmodes{}
+
+% \def\setups
+%   {\dosingleargument\dosetups}
+%
+% \def\dosetups[#1]%
+%   {\iffirstargument
+%      \def\next{\dodosetups{#1}}%
+%    \else
+%      \let\next\dodosetups
+%    \fi
+%    \next}
+%
+% \def\dodosetups#1%
+%   {\processcommalist[#1]\dododosetups}
+%
+% \def\dododosetups#1%
+%   {\getvalue{\??su#1}}
+%
+% \def\doifsetupselse#1%
+%   {\doifdefinedelse{\??su#1}}
+%
+% \long\@EA\def\csname\e!start\v!instellingen\endcsname#1 %
+%   {\bgroup
+%    \catcode`\^^M=\@@ignore
+%    \xdostartsetups{#1}}
+%
+% \expanded
+%   {\long\noexpand\def\noexpand\xdostartsetups##1##2\csname\e!stop\v!instellingen\endcsname
+%      {\egroup
+%       \long\noexpand\setvalue{\??su##1}{##2}}}
+%
+% \def\startsetups % for international purposes
+%   {\bgroup\doifnextcharelse[{\startsetupsA\stopsetups}{\startsetupsB\stopsetups}}
+%
+% \def\startlocalsetups % for nested purposes
+%   {\bgroup\doifnextcharelse[{\startsetupsA\stoplocalsetups}{\startsetupsB\stoplocalsetups}}
+%
+% \def\startsetupsA#1[#2]%
+%   {\catcode`\^^M=\@@ignore
+%    \dostartsetups#1{#2}}
+%
+% \def\startsetupsB#1#2 % space delimited
+%   {\startsetupsA#1[#2]}%
+%
+% \long\def\dostartsetups#1#2% watch out: not \grabuntil
+%   {\dograbuntil#1{\egroup\long\setvalue{\??su#2}}}
+
+\expanded
+  {\long\def\@EA\noexpand\csname\e!start\v!instellingen\endcsname
+     {\bgroup\noexpand\doifnextcharelse[%
+        {\noexpand\startsetupsA\@EA\noexpand\csname\e!stop\v!instellingen\endcsname}
+        {\noexpand\startsetupsB\@EA\noexpand\csname\e!stop\v!instellingen\endcsname}}}
+
+\letvalue{\e!stop\v!instellingen}\relax
+
+\def\setups % {..} or [..]
+  {\doifnextcharelse\bgroup\dosetupsA\dosetupsB}
+
+\def\dosetupsA  #1{\processcommalist[#1]\dosetups} % {..}
+\def\dosetupsB[#1]{\processcommalist[#1]\dosetups} % [..]
+
+\def\dosetups#1% the grid option will be extended to other main modes
+  {\executeifdefined{\??su\ifgridsnapping\v!grid\fi:#1}{\csname\??su:#1\endcsname}\relax}
+
+\def\doifsetupselse#1% to be done: grid
+  {\doifdefinedelse{\??su:#1}}
+
+\def\startsetups % for international purposes
+  {\bgroup\doifnextcharelse[{\startsetupsA\stopsetups}{\startsetupsB\stopsetups}}
+
+\def\startlocalsetups % for nested purposes
+  {\bgroup\doifnextcharelse[{\startsetupsA\stoplocalsetups}{\startsetupsB\stoplocalsetups}}
+
+\let\stopsetups     \relax
+\let\stoplocalsetups\relax
+
+\def\startsetupsA#1%
+  {\catcode`\^^M\@@ignore
+   \dotripleempty\dostartsetups[#1]}
+
+\def\startsetupsB#1#2 % space delimited / kind of obsolete
+  {\catcode`\^^M\@@ignore
+   \dodostartsetups#1\empty{#2}}
+
+\def\dostartsetups
+  {\ifthirdargument
+     \@EA\startsetupsC
+   \else
+     \@EA\startsetupsD
+    \fi}
+
+\def\startsetupsC[#1][#2][#3]% [..] [..]
+  {\dodostartsetups#1{#2}{#3}}
+
+\def\startsetupsD[#1][#2][#3]% [..]
+  {\dodostartsetups#1\empty{#2}}
+
+\long\def\dodostartsetups#1#2#3% watch out: not \grabuntil
+  {\dograbuntil#1{\egroup\long\setvalue{\??su#2:#3}}}
+
+\def\systemsetupsprefix{*}
+
+\def\systemsetups#1{\dosetups{\systemsetupsprefix#1}}
 
 % new
 %
@@ -394,7 +497,7 @@
 
 \bgroup
 
-\gdef\cleanedupcolon{:} \catcode`:=\@@active 
+\gdef\cleanedupcolon{:} \catcode`:=\@@active
 
 \gdef\cleanuplabel#1%
   {\bgroup\let:\cleanedupcolon

@@ -2,7 +2,7 @@
 %D   [       file=page-ini,
 %D        version=2000.10.20,
 %D          title=\CONTEXT\ Page Macros,
-%D       subtitle=Initializations, 
+%D       subtitle=Initializations,
 %D         author=Hans Hagen,
 %D           date=\currentdate,
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
@@ -11,20 +11,20 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-\writestatus{loading}{Context Page Macros / Initializations} 
+\writestatus{loading}{Context Page Macros / Initializations}
 
-%D This class of modules implements the output routines and 
-%D floating body support. Although the modules are relatively 
-%D new, the code herein is rather old. This reordering was 
-%D needed when column sets were implemented and sharing code 
-%D started to make sense. 
+%D This class of modules implements the output routines and
+%D floating body support. Although the modules are relatively
+%D new, the code herein is rather old. This reordering was
+%D needed when column sets were implemented and sharing code
+%D started to make sense.
 
-%D The history shows from the code, since both column 
-%D mechanism use a different way of looping over columns. 
+%D The history shows from the code, since both column
+%D mechanism use a different way of looping over columns.
 
 \unprotect
 
-% message will be distributed 
+% message will be distributed
 
 \startmessages  dutch  library: systems
   title: systeem
@@ -317,7 +317,7 @@
   title: layout
       1: teksthøyde tilpasset med -- på side --
       2: -- ganger forskjøvet tekst plassert
-      3: -- ganger tekst forskjøvet 
+      3: -- ganger tekst forskjøvet
       4: margblokker aktive
       5: margblokker inaktive
       6: delside sett -- behandlet (størrelse --)
@@ -331,7 +331,7 @@
   title: aranjamente
       1: textheight adaptat cu -- la pagina --
       2: textul amanat de -- ori a fost plasat
-      3: textul amanat de -- ori 
+      3: textul amanat de -- ori
       4: blocuri marginale active
       5: blocuri marginale inactive
       6: setul -- de subpagini procesat (dimensiunea --)
@@ -351,14 +351,14 @@
 
   \let \recalculatelayout \relax
 
-\fi 
+\fi
 
 \ifx\recalculatelogos\undefined
 
   \let \recalculatelogos  \relax
   \let \addlogobackground \gobbleoneargument % <box>
 
-\fi 
+\fi
 
 \ifx\recalculatebackgrounds\undefined
 
@@ -369,18 +369,18 @@
   \let \addprintbackground     \gobbleoneargument % <box>
   \let \addstatusinfo          \gobbleoneargument % <box>
 
-\fi 
+\fi
 
 \ifx\realpageno\undefined
 
   \countdef\realpageno\zerocount \realpageno\plusone
 
-\fi 
+\fi
 
-\ifx\realfolio\undefined 
+\ifx\realfolio\undefined
 
-  \def\realfolio{\the\realpageno} 
- 
+  \def\realfolio{\the\realpageno}
+
 \fi
 
 \newcount\nofshipouts
@@ -388,7 +388,7 @@
 \appendtoks
   \global\advance\nofshipouts\plusone
 \to \everyaftershipout
-      
+
 % principle:
 %
 % multiple otr's
@@ -507,7 +507,7 @@
       9: kontrola nerovnost
      10: zbyl (mene nez) 1 radek
      11: plovouci objekt je pro sloupec prilis siroky
-     12: plovouci objekt je presunut do nasledujiciho sloupce / -- 
+     12: plovouci objekt je presunut do nasledujiciho sloupce / --
      13: siroky plovouci objekt je presunut nad sloupce
 \stopmessages
 
@@ -562,26 +562,26 @@
      13: blocul lat este mutat in partea de sus a coloanelor
 \stopmessages
 
-\ifx\dosetuplayout\undefined % overloaded in page-lay ! 
+\ifx\dosetuplayout\undefined % overloaded in page-lay !
 
   \def\setuplayout{\dodoubleempty\getparameters[\??ly]}
 
-\fi 
+\fi
 
-%D In case we're not running \ETEX, we need to bypass a 
-%D couple of primitives.  
+%D In case we're not running \ETEX, we need to bypass a
+%D couple of primitives.
 
 \beginTEX \...discards
 
   \chardef \savingvdiscards \zerocount
-  \let     \splitdiscards   \relax   
-  \let     \pagediscards    \relax    
+  \let     \splitdiscards   \relax
+  \let     \pagediscards    \relax
 
 \endTEX
 
-% ONE = single column 
+% ONE = single column
 % MUL = multi column
-% SET = columns sets 
+% SET = columns sets
 
 \def\@@OTR{OTR}
 
@@ -593,8 +593,8 @@
   {\csname\@@OTR
      \ifcsname\@@OTR\OTRidentifier\strippedcsname#1\endcsname
        \OTRidentifier
-     \else\ifcsname\@@OTR\OTRdefault\strippedcsname#1\endcsname % fallback 
-       \OTRdefault 
+     \else\ifcsname\@@OTR\OTRdefault\strippedcsname#1\endcsname % fallback
+       \OTRdefault
      \fi\fi
    \strippedcsname#1\endcsname}
 
@@ -605,7 +605,7 @@
 \def\OTRcommand#1%
   {\csname\@@OTR
      \@EA\ifx\csname\@@OTR\OTRidentifier\strippedcsname#1\endcsname\relax
-       \@EA\ifx\csname\@@OTR\OTRdefault\strippedcsname#1\endcsname\relax % fallback 
+       \@EA\ifx\csname\@@OTR\OTRdefault\strippedcsname#1\endcsname\relax % fallback
        \else
          \OTRdefault
        \fi
@@ -616,7 +616,7 @@
 
 \endTEX
 
-% obsolete 
+% obsolete
 
 \def\installotr#1% andere naam, beter \connectotr of zo
   {\def\OTRidentifier{#1}}
@@ -626,7 +626,7 @@
    \def\OTRdefault   {#2}}
 
 %D The initialization of the \type {\hsize} and \type {\vsize}
-%D depends on the OTR used. 
+%D depends on the OTR used.
 
 \def\setvsize             {\OTRcommand\setvsize}
 \def\sethsize             {\OTRcommand\sethsize}
@@ -642,7 +642,7 @@
 \def\doflushfloats        {\OTRcommand\doflushfloats}
 \def\flushfloatbox        {\OTRcommand\flushfloatbox}
 \def\docheckiffloatfits   {\OTRcommand\docheckiffloatfits}
-   
+
 \def\someherefloat        {\OTRcommand\someherefloat}
 \def\somefixdfloat        {\OTRcommand\somefixdfloat}
 \def\somepagefloat        {\OTRcommand\somepagefloat}
@@ -655,19 +655,19 @@
 \def\synchronizehsize     {\OTRcommand\synchronizehsize}
 
 \def\gotonextpage         {\OTRcommand\gotonextpage }
-\def\gotonextpageX        {\OTRcommand\gotonextpageX} % will become obsolete 
+\def\gotonextpageX        {\OTRcommand\gotonextpageX} % will become obsolete
 
-% beter een \installotr#1 met #1 = macro en auto test 
+% beter een \installotr#1 met #1 = macro en auto test
 
-\newif   \iftraceotr 
+\newif   \iftraceotr
 \newif   \ifinotr
-\newtoks \mainoutput 
-\newcount\otrlevel 
+\newtoks \mainoutput
+\newcount\otrlevel
 
-% When issuing two \par\penalty-\@M's, only the first 
-% triggers the otr; obscure feature or optimization?  
+% When issuing two \par\penalty-\@M's, only the first
+% triggers the otr; obscure feature or optimization?
 
-\def\outputcounter{-100010} % -10010 
+\def\outputcounter{-100010} % -10010
 
 \def\doinvokeoutput
   {\iftraceotr
@@ -685,15 +685,15 @@
    \outputmessage-{special}{#1}}
 
 \def\dodotracedoutput#1%
-  {\outputmessage+{traced}{#1/\the\outputpenalty}% 
+  {\outputmessage+{traced}{#1/\the\outputpenalty}%
    \writestatus\m!otr{c:\number\mofcolumns,v:\the\vsize,g:\the\pagegoal,t:\the\pagetotal}%
    \dodoinvokeoutput{#1}%
    \writestatus\m!otr{c:\number\mofcolumns,v:\the\vsize,g:\the\pagegoal,t:\the\pagetotal}%
    \outputmessage-{traced}{#1/\the\outputpenalty}}
 
-\def\installoutput#1#2% \invoke \action 
+\def\installoutput#1#2% \invoke \action
   {\decrement\outputcounter
-   \edef#1{\noexpand\doinvokeoutput{\outputcounter}}% 
+   \edef#1{\noexpand\doinvokeoutput{\outputcounter}}%
    \setvalue{\@@OTR\outputcounter}{#2}}
 
 \def\invokeoutputroutine
@@ -708,30 +708,33 @@
 
 \mainoutput{\invokeoutputroutine} \output{\inotrtrue\the\mainoutput}
 
-\installoutput\synchronizeoutput % maybe add pagediscards 
+\installoutput\synchronizeoutput % maybe add pagediscards
   {\ifvoid\normalpagebox\else\unvbox\normalpagebox\fi}
-
-%D In order to force consistent use of variables, we 
-%D predefine a lot of them here. 
 
-%D The next two registers can be used to store pre column 
-%D material as well as footnotes or so. 
+\installoutput\discardpage
+  {\setbox\scratchbox\box\normalpagebox}
+
+%D In order to force consistent use of variables, we
+%D predefine a lot of them here.
+
+%D The next two registers can be used to store pre column
+%D material as well as footnotes or so.
 
 \newbox\precolumnbox   \newdimen\precolumnboxheight
 \newbox\postcolumnbox  \newdimen\postcolumnboxheight
 
-%D We reserve a counter for the number of columns as well as 
-%D the current column. Both are not to be changed by users! 
+%D We reserve a counter for the number of columns as well as
+%D the current column. Both are not to be changed by users!
 
 \newcount\nofcolumns \nofcolumns = 1
 \newcount\mofcolumns \mofcolumns = 1
 
-\chardef\maxnofcolumns       = 50 
+\chardef\maxnofcolumns       = 50
 \chardef\allocatednofcolumns =  0
 
-%D The next dimensions reports the final column height 
+%D The next dimensions reports the final column height
 
-\newdimen\finalcolumnheights 
+\newdimen\finalcolumnheights
 \newcount\finalcolumnlines
 
 %D During initialization the temporary boxes are allocated.
@@ -796,7 +799,7 @@
 %D and only parameter can do something with \type
 %D {\currentcolumnbox}. In case of the mid columns, \type
 %D {\firstcolumnbox} and \type {\lastcolumnbox} are handled
-%D outside these macro's. 
+%D outside these macro's.
 
 \def\dohandlecolumn#1%
   {\mofcolumns\recurselevel
@@ -811,20 +814,20 @@
 
 \def\dohandlemidcolumns#1%
   {\dohandleallcolumns
-     {\ifnum\recurselevel>\plusone 
+     {\ifnum\recurselevel>\plusone
         \ifnum\recurselevel<\nofcolumns
           \dohandlecolumn{#1}%
         \fi
       \fi}}
 
-%D This register can be used as a temporary storage for page 
-%D content.  
+%D This register can be used as a temporary storage for page
+%D content.
 
 \newbox\restofpage
 
 %D Features.
 
-\newif\ifintermediatefootnotes 
+\newif\ifintermediatefootnotes
 \newif\ifcarryoverfootnotes  %\carryoverfootnotestrue
 \newif\iflastcolumnfootnotes %\lastcolumnfootnotestrue
 \newif\ifbalancecolumns      %\balancecolumnstrue
@@ -834,11 +837,11 @@
 \newif\ifinheritcolumns       \inheritcolumnsfalse
 \newif\ifheightencolumns      \heightencolumnsfalse
 
-\newif\ifbalancingcolumns     
-\newif\ifcollectingcontent     
+\newif\ifbalancingcolumns
+\newif\ifcollectingcontent
 \newif\ifcolumnoverflow
 \newif\iffinalflushingfloats
-\newif\ifpackflushedfloats   \packflushedfloatstrue % for the moment 
+\newif\ifpackflushedfloats   \packflushedfloatstrue % for the moment
 
 \newdimen\intercolumnwidth
 \newdimen\localcolumnwidth
@@ -857,18 +860,18 @@
 
 %D The \type {\ifdim} test is needed, because otherwise the
 %D last line of a text end up on top of the baseline instead of
-%D on the baseline, as is the case with preceding pages. 
-%D Also, a \type {\vfil} better than a \type {\vfill}. 
+%D on the baseline, as is the case with preceding pages.
+%D Also, a \type {\vfil} better than a \type {\vfill}.
 
-\def\eject         {\par\penalty-\@M } % == {\par\break} % plain 
-\def\supereject    {\par\penalty-\@MM} % also plain 
+\def\eject         {\par\penalty-\@M } % == {\par\break} % plain
+\def\supereject    {\par\penalty-\@MM} % also plain
 
 \def\doejectpage   {\par\ifdim\pagetotal>\pagegoal\else\normalvfil\fi}
 \def\ejectpage     {\doejectpage\eject}
 \def\superejectpage{\doejectpage\supereject}
 
-% floats 
-% 
+% floats
+%
 % \def\ejectinsert
 %   {\flushnotes
 %    \bgroup
@@ -882,18 +885,18 @@
    \bgroup
    \noftopfloats\plusthousand
    \nofbotfloats\zerocount
-   % this is needed in case a float that has been stored 
-   % ends up at the current page; this border case occurs when 
+   % this is needed in case a float that has been stored
+   % ends up at the current page; this border case occurs when
    % the calculated room is 'eps' smaller that the room available
-   % when just flushing; so now we have (maybe optional):  
+   % when just flushing; so now we have (maybe optional):
    \pagebaselinecorrection
    % alas, this is tricky but needed (first surfaced in prikkels)
    \doflushfloats
    \egroup}
 
 \def\ejectdummypage
-  {\ejectinsert 
-   \hardespatie % will be different 
+  {\ejectinsert
+   \hardespatie % will be different
    \vfill
    \gotonextpage}
 
@@ -907,13 +910,13 @@
      \unvbox\normalpagebox
      \penalty\outputpenalty
    \fi
-   % not really needed, replaced by \flushsavedfloats 
+   % not really needed, replaced by \flushsavedfloats
    \ifnum\outputpenalty>-\@MM \else % better use a proper otr signal
-     \dosupereject 
+     \dosupereject
    \fi
-   % but does not hurt either 
+   % but does not hurt either
    \inpagebodytrue      % needed for enabling \blanko !
-   \flushsavedfloats    % was \dosetbothinserts; only otr one !  
+   \flushsavedfloats    % was \dosetbothinserts; only otr one !
    \setvsize            % this is needed for interacting components, like floats and multicolumns
    \adaptfuzzypagegoal} % watch this hack!
 
@@ -937,7 +940,7 @@
    \setpagecounters
    \message{[-\the\realpageno]}%
    \setbox\scratchbox\hbox
-     {%\the\everyshipout % still needed here ? 
+     {%\the\everyshipout % still needed here ?
       \dopagebody#1#2}%
    \deadcycles\zerocount
    \gotonextrealpage
@@ -966,17 +969,17 @@
    \ifnum\outputpenalty>-\@MM \else
      \dosupereject
    \fi
-   \doflushspread 
+   \doflushspread
    \douitstellen}
 
-\ifx\doflushspread\undefined \let\doflushspread\relax \fi 
+\ifx\doflushspread\undefined \let\doflushspread\relax \fi
 
 \def\dooutput
   {\finaloutput\unvbox\normalpagebox}
 
 \maxdeadcycles=1000
 
-% will be installable tracer; better use chardef 
+% will be installable tracer; better use chardef
 
 \newif\ifvoorlopig \voorlopigfalse
 
@@ -990,16 +993,16 @@
 
 \def\plaatsversieaanduiding% nog engels maken
   {\ifcase\conceptmode
-     % nothing 
-   \or 
-     % simple 
+     % nothing
+   \or
+     % simple
      \vskip\!!sixpoint
      \hbox to \zetbreedte
        {\infofont
         Concept: \currentdate
         \hss\reportpagedimensions}%
-   \or 
-     % extensive 
+   \or
+     % extensive
      \vskip\!!sixpoint
      \hbox to \zetbreedte
        {\infofont
@@ -1019,10 +1022,10 @@
    \overfullrule\zeropoint
    \processaction % \v!definitief=>
      [#1]
-     [  \v!concept=>\chardef\conceptmode\plusone,% simple banner 
-           \v!file=>\chardef\conceptmode\plustwo,% full banner 
-      \v!voorlopig=>\chardef\conceptmode\plustwo % full banner plus  
-                    \overfullrule5\s!pt]}        % info in the margin 
+     [  \v!concept=>\chardef\conceptmode\plusone,% simple banner
+           \v!file=>\chardef\conceptmode\plustwo,% full banner
+      \v!voorlopig=>\chardef\conceptmode\plustwo % full banner plus
+                    \overfullrule5\s!pt]}        % info in the margin
 
 \def\versie
   {\dosingleargument\doversie}
@@ -1030,14 +1033,14 @@
 %\def\addstatusinfo
 %  {\ifvoorlopig
 %     \@EA\doaddstatusinfo
-%   \else\ifcase\conceptmode  
+%   \else\ifcase\conceptmode
 %     \@EAEAEA\gobbleoneargument
 %   \else
 %     \@EAEAEA\doaddstatusinfo
 %   \fi\fi}
 
 \def\addstatusinfo
-  {\ifcase\conceptmode  
+  {\ifcase\conceptmode
      \@EA\gobbleoneargument
    \else
      \@EA\doaddstatusinfo
@@ -1045,12 +1048,12 @@
 
 \def\doaddstatusinfo#1%
   {\setbox#1\vbox to \papierhoogte
-     {\vsmashbox#1\box#1% 
+     {\vsmashbox#1\box#1%
       \offinterlineskip
-      \vskip\kopwit 
+      \vskip\kopwit
       \hsize\papierbreedte
       \hfill\hbox{\plaatstestinfo\hskip.5cm}\vss
-      \settexthoffset\hskip\texthoffset % brrrr 
+      \settexthoffset\hskip\texthoffset % brrrr
      %\tlap{\plaatsversieaanduiding}\vskip.5cm}}
       \vbox to 1cm{\vss\plaatsversieaanduiding\vss}}}
 
@@ -1062,7 +1065,7 @@
          {#2 \ascii}%
        \gdef\totaltestinfo
          {\global\setbox#1\vbox
-            {\unvbox#1\relax 
+            {\unvbox#1\relax
              \infofont \setupinterlinespace
              \hbox
                {\strut
@@ -1079,9 +1082,9 @@
 
 % this will be inserts some day
 
-% \installinsertion\referentieinfobox 
-% \installinsertion\registerinfobox   
-% \installinsertion\floatinfobox      
+% \installinsertion\referentieinfobox
+% \installinsertion\registerinfobox
+% \installinsertion\floatinfobox
 
 \newbox\referentieinfobox
 \newbox\registerinfobox
@@ -1125,12 +1128,12 @@
 
 \newif\ifinpagebody
 
-\ifx\pushcolor\undefined 
+\ifx\pushcolor\undefined
   \let \pushcolor      \relax
   \let \popcolor       \relax
   \let \startcolorpage \relax
   \let \stopcolorpage  \relax
-\fi 
+\fi
 
 % bewaren tvb documentatie
 %
@@ -1166,7 +1169,7 @@
 \newtoks\afterpage     \newtoks\aftereverypage
 \newtoks\beforepage    \newtoks\beforeeverypage
 
-\chardef\showgridstate=0 
+\chardef\showgridstate=0
 
 \def\showgrid
   {\dosingleempty\doshowgrid}
@@ -1198,21 +1201,21 @@
 \newif\ifpagebodyornaments \pagebodyornamentstrue
 \newif\ifarrangingpages    \arrangingpagesfalse
 
-\appendtoks 
+\appendtoks
   \global\pagebodyornamentstrue
-\to \everyaftershipout 
+\to \everyaftershipout
 
 \let\poparrangedpages\relax
 \let\pusharrangedpage\relax
 
-\ifx\shiftprintpagebox\undefined 
+\ifx\shiftprintpagebox\undefined
   \let\shiftprintpagebox\gobbleoneargument
   \let\shiftpaperpagebox\gobbleoneargument
-\fi 
+\fi
 
 \ifx\registerpageposition\undefined
   \let\registerpageposition\gobbleoneargument
-\fi 
+\fi
 
 \def\reportarrangedpage#1%
   {\showmessage\m!systems
@@ -1221,7 +1224,7 @@
 \newif\ifsavepagebody \newbox\savedpagebody
 
 % \def\buildpagebody#1#2%
-%   {\ifsavepagebody\global\setbox\savedpagebody\fi 
+%   {\ifsavepagebody\global\setbox\savedpagebody\fi
 %    \vbox
 %      {\beginrestorecatcodes
 %       \forgetall  % igv problemen, check: \boxmaxdepth\maxdimen
@@ -1233,14 +1236,14 @@
 % %           \getbackgroundbox
 % %           \getlogobox
 %            \bgroup % else footnotes get inconsistent font/baseline
-%            % \doconvertfont\@@lyletter\empty 
+%            % \doconvertfont\@@lyletter\empty
 %              \dostartattributes\??ly\c!letter\c!kleur\empty
-%                \offinterlineskip 
+%                \offinterlineskip
 %                \gettextboxes
 %              \dostopattributes
 %            \egroup
 %          \fi
-%          \getmainbox#1#2}% including footnotes 
+%          \getmainbox#1#2}% including footnotes
 %       \ifpagebodyornaments
 %         \addmainbackground \pagebox
 %         \addlogobackground \pagebox
@@ -1251,16 +1254,16 @@
 %         \addpagebackground \pagebox
 %       \fi
 %       \registerpageposition\pagebox
-%       \ifarrangingpages 
+%       \ifarrangingpages
 %         \shiftpaperpagebox \pagebox % \v!papier
 %       \else
 %         \clippagebox       \pagebox
-%         \addpagecutmarks   \pagebox   
+%         \addpagecutmarks   \pagebox
 %         \replicatepagebox  \pagebox
 %         \scalepagebox      \pagebox
 %         \mirrorpaperbox    \pagebox
 %         \rotatepaperbox    \pagebox
-%         \addpagecolormarks \pagebox 
+%         \addpagecolormarks \pagebox
 %         \centerpagebox     \pagebox
 %         \addprintbackground\pagebox
 %         \mirrorprintbox    \pagebox
@@ -1273,12 +1276,12 @@
 %       \endrestorecatcodes}%
 %    \ifsavepagebody\copy\savedpagebody\fi}
 
-% beware, \??ly is used before defined, i.e. bad module design 
+% beware, \??ly is used before defined, i.e. bad module design
 
 \setuplayout[\c!methode=\v!normaal]
 
 \def\buildpagebody#1#2%
-  {\ifsavepagebody\global\setbox\savedpagebody\fi 
+  {\ifsavepagebody\global\setbox\savedpagebody\fi
    \vbox
      {\beginrestorecatcodes
       \forgetall  % igv problemen, check: \boxmaxdepth\maxdimen
@@ -1287,22 +1290,22 @@
       % the following plugin uses and sets pagebox; beware: this
       % will change and is for my (hh) personal experiments
       \executeifdefined{\??ly\c!methode\@@lymethode}%
-        {\getvalue{\??ly\c!methode\v!normaal}}#1#2% 
-      % the finishing touch 
+        {\getvalue{\??ly\c!methode\v!normaal}}#1#2%
+      % the finishing touch
       \ifpagebodyornaments
         \addpagebackground \pagebox
       \fi
       \registerpageposition\pagebox
-      \ifarrangingpages 
+      \ifarrangingpages
         \shiftpaperpagebox \pagebox % \v!papier
       \else
         \clippagebox       \pagebox
-        \addpagecutmarks   \pagebox   
+        \addpagecutmarks   \pagebox
         \replicatepagebox  \pagebox
         \scalepagebox      \pagebox
         \mirrorpaperbox    \pagebox
         \rotatepaperbox    \pagebox
-        \addpagecolormarks \pagebox 
+        \addpagecolormarks \pagebox
         \centerpagebox     \pagebox
         \addprintbackground\pagebox
         \mirrorprintbox    \pagebox
@@ -1321,12 +1324,12 @@
       \ifpagebodyornaments
         \bgroup % else footnotes get inconsistent font/baseline
           \dostartattributes\??ly\c!letter\c!kleur\empty
-            \offinterlineskip 
+            \offinterlineskip
             \gettextboxes
           \dostopattributes
         \egroup
       \fi
-      \getmainbox#1#2}% including footnotes 
+      \getmainbox#1#2}% including footnotes
    \ifpagebodyornaments
      \addmainbackground \pagebox
      \addlogobackground \pagebox
@@ -1336,7 +1339,7 @@
 
 \def\finishpagebox#1%
   {\ifarrangingpages
-     \addpagecutmarks  #1% 
+     \addpagecutmarks  #1%
      \addpagecolormarks#1%
      \centerpagebox    #1%
      \mirrorprintbox   #1%
@@ -1348,8 +1351,12 @@
 \appendtoks \restoreglobalbodyfont \to \everybeforepagebody
 \appendtoks \restorecolumnsettings \to \everybeforepagebody
 
+\ifx\nestednewbox\undefined \newbox\nestednextbox \fi
+
+\prependtoks \let\nextbox\nestednextbox \to \everybeforepagebody
+
 \def\dopagebody#1#2%
-  {%\getallmarks % now in following token register  
+  {%\getallmarks % now in following token register
    \the\everybeforepagebody
    \startcolorpage
    \gotonextsubpage  % nog eens: als in pagina (tbv standaard opmaak)
@@ -1374,7 +1381,7 @@
 
 \let\checkpageversion=\relax
 
-% not here 
+% not here
 
 \newif\ifpaginageblokkeerd \paginageblokkeerdfalse
 
@@ -1382,9 +1389,9 @@
   {\dodoubleempty\dotestpage}
 
 \def\dotestpage[#1][#2]%
-  {%\relax % needed  before \if  
+  {%\relax % needed  before \if
    \endgraf
-   \ifpaginageblokkeerd \else \ifdim\pagegoal<\maxdimen 
+   \ifpaginageblokkeerd \else \ifdim\pagegoal<\maxdimen
      \ifdim\pagetotal<\pagegoal % \relax
        \scratchdimen\lineheight
        \multiply\scratchdimen#1\relax
@@ -1395,11 +1402,11 @@
        \ifsecondargument
          \advance\scratchdimen#2\relax
        \fi
-       % quite inaccurate, better pagegoal 1pt or so 
-       \ifdim\scratchdimen>.99\pagegoal 
+       % quite inaccurate, better pagegoal 1pt or so
+       \ifdim\scratchdimen>.99\pagegoal
          \penalty-\!!tenthousand\relax
        \fi
-     \fi 
+     \fi
    \else
      \goodbreak
    \fi \fi}
@@ -1413,16 +1420,16 @@
    \ifdim\pagegoal<\maxdimen \ifdim\pagetotal<\pagegoal % \relax
      \scratchdimen\pagegoal
      \advance\scratchdimen-\pagetotal
-     \ifdim\lastskip<\parskip 
-       \advance\scratchdimen \parskip 
+     \ifdim\lastskip<\parskip
+       \advance\scratchdimen \parskip
      \fi
      \ifsecondargument
        \advance\scratchdimen#2%
      \fi
-     \getrawnoflines\scratchdimen % raw ! 
-   % \message{[\number#1>\number\noflines ?}\wait 
+     \getrawnoflines\scratchdimen % raw !
+   % \message{[\number#1>\number\noflines ?}\wait
      \ifnum#1>\noflines
-       \column 
+       \column
      \fi
    \else
      \penalty-\!!tenthousand % untested ! ! \column
@@ -1432,7 +1439,7 @@
 
 % was: \resetsectionmarks\firstsection, zie \handelpaginaaf
 
-\def\page  {\pagebreak} % the short form of \pagebreak (mult-com one)  
+\def\page  {\pagebreak} % the short form of \pagebreak (mult-com one)
 \def\pagina{\pagebreak} % for the moment, keep this one
 
 \def\resetpagebreak
@@ -1458,9 +1465,9 @@
   {\flushnotes
    \executepagebreakhandler\v!ja}
 
-\def\complexpagebreak[#1]% if empty, do nothing and avoid processing, 
-  {\flushnotes        % see head's; watch how we group 
-   \doifsomething{#1}{\bgroup\executepagebreakhandlers{#1}\egroup}} 
+\def\complexpagebreak[#1]% if empty, do nothing and avoid processing,
+  {\flushnotes        % see head's; watch how we group
+   \doifsomething{#1}{\bgroup\executepagebreakhandlers{#1}\egroup}}
 
 \def\executepagebreakhandlers#1%
   {\processcommacommand[#1]\executepagebreakhandler}
@@ -1493,13 +1500,13 @@
 \installpagebreakhandler \v!ja
   {\ifpaginageblokkeerd\else
      \ejectinsert
-     \gotonextpage 
-     \ifbinnenkolommen % this will move to MUL 
+     \gotonextpage
+     \ifbinnenkolommen % this will move to MUL
        \ejectpage  % anders soms geen overgang
      \fi
    \fi}
 
-\installpagebreakhandler \v!opmaak % ?? 
+\installpagebreakhandler \v!opmaak % ??
   {\ifpaginageblokkeerd\else
      \eject
    \fi}
@@ -1514,7 +1521,7 @@
 
 \installpagebreakhandler \v!voorkeur
   {\ifpaginageblokkeerd\else
-     \ifbinnenkolommen % this will move to MUL  
+     \ifbinnenkolommen % this will move to MUL
        \dosomebreak\goodbreak
      \else
        \testpage[3][\zeropoint]%
@@ -1569,7 +1576,7 @@
    \doifoddpageelse
      \donothing{\resetcurrentsectionmarks\ejectdummypage}}
 
-\installpagebreakhandler \v!viertal % not yet ok inside columnsets 
+\installpagebreakhandler \v!viertal % not yet ok inside columnsets
   {\ifdubbelzijdig
      \!!counta\realpageno
      \!!countb\realpageno
@@ -1596,7 +1603,7 @@
    \od
    \filluparrangedpages}
 
-% nb: \executepagebreakhandler\v!hoofd in other ones 
+% nb: \executepagebreakhandler\v!hoofd in other ones
 
 \installpagebreakhandler \v!hoofd
   {\doifnotvalue{\??tk\v!hoofd\c!status}\v!stop
@@ -1609,14 +1616,14 @@
 % \definepagebreak
 %   [chapter]
 %   [yes,header,right]
-% 
+%
 % \setuphead
 %   [chapter]
 %   [page=chapter,
 %    header=empty,
 %    footer=chapter]
 
-% public page handler, beware: definepage already in use (core-ref) 
+% public page handler, beware: definepage already in use (core-ref)
 %
 % \definepagebreak[instance][forsure]
 % \definepagebreak[forsure][yes,+4]
@@ -1634,10 +1641,10 @@
 % \setupbackgrounds[state=repeat]
 % \setupbackgrounds[text][text][background=whatever]
 % \couplepage[chapter][before={\defineoverlay[whatever][ON]}]
-% \setuphead[chapter][before={\pagetype[chapter]}] 
-% \chapter{First} \page test \chapter{second} \page test 
+% \setuphead[chapter][before={\pagetype[chapter]}]
+% \chapter{First} \page test \chapter{second} \page test
 
-\long\def\installcolumnbreakhandler#1#2#3% #1=otr-id #2=tag 
+\long\def\installcolumnbreakhandler#1#2#3% #1=otr-id #2=tag
   {\long\setvalue{\??cn:#1:#2}{#3}}
 
 \def\definecolumnbreak
@@ -1658,12 +1665,12 @@
   {\executecolumnbreakhandler\v!ja}
 
 \def\complexcolumnbreak[#1]% if empty, do nothing and avoid processing
-  {\doifsomething{#1}{\executecolumnbreakhandlers{#1}}}   
+  {\doifsomething{#1}{\executecolumnbreakhandlers{#1}}}
 
 \def\executecolumnbreakhandlers#1%
   {\processcommacommand[#1]\executecolumnbreakhandler}
 
-\def\executecolumnbreakhandler#1% here no commalist 
+\def\executecolumnbreakhandler#1% here no commalist
   {\edef\@@columnspecification{#1}%
    \doifdefinedelse{\??cn:\OTRidentifier:\@@columnspecification}
      {\getvalue{\??cn:\OTRidentifier:\@@columnspecification}}
@@ -1687,12 +1694,12 @@
 
 \let\ignorerestoftext\donothing
 
-\prependtoks % only ignore in a symmetrical doc 
-  \globallet\ignorerestoftext\doignorerestoftext 
+\prependtoks % only ignore in a symmetrical doc
+  \globallet\ignorerestoftext\doignorerestoftext
 \to \everystarttext
 
-\appendtoks  
-  \ignorerestoftext                        
+\appendtoks
+  \ignorerestoftext
 \to \everylastshipout
 
 \newif\ifgeselecteerd \geselecteerdtrue
@@ -1732,11 +1739,11 @@
   {\doifsomething\paginasoort
      {\processcommacommand[\paginasoort]\dodonapagina}}
 
-% Dit wordt eigenlijk nooit en moet worden vervangen door 
+% Dit wordt eigenlijk nooit en moet worden vervangen door
 % het meer algemene mechanisme.
 
 \def\dosoortpagina[#1]%
-  {\edef\desoortpagina{#1}% 
+  {\edef\desoortpagina{#1}%
    \ifx\desoortpagina\empty \else
      \@EA\doglobal\@EA\addtocommalist\@EA{\desoortpagina}\paginasoort
      \ifselecteren
@@ -1790,19 +1797,19 @@
      \od
    \fi}
 
-\newif\ifregistertextareas 
+\newif\ifregistertextareas
 \newif\iftracetextareas
 
 \newbox\registertextbox
 
-% \def\registeredtextarea#1#2#3% #1=lower-dp #2=correct-ht #3=box 
+% \def\registeredtextarea#1#2#3% #1=lower-dp #2=correct-ht #3=box
 %   {\hbox{\box#3}}
 
 \def\enabletextarearegistration{\global\registertextareastrue}
 
-\def\registeredtextarea#1#2#3% #1=lower-dp #2=correct-ht #3=box 
+\def\registeredtextarea#1#2#3% #1=lower-dp #2=correct-ht #3=box
   {\hbox\bgroup
-     \ifregistertextareas \ifx\registerMPtextarea\undefined \else 
+     \ifregistertextareas \ifx\registerMPtextarea\undefined \else
        \setbox\registertextbox\null
        \wd\registertextbox\wd#3%
        \ht\registertextbox\ht#3%
@@ -1810,11 +1817,11 @@
        \ifcase#1\or % 1
          \setbox\registertextbox\hbox{\lower\strutdp\box\registertextbox}%
        \fi
-       \ifcase#2\or % 1 
+       \ifcase#2\or % 1
          \setbox\registertextbox\hbox{\raise\topskip\hbox{\lower\strutht\box\registertextbox}}%
          \dp\registertextbox\strutdp
        \fi
-       \dp\registertextbox\strutdp % needed 
+       \dp\registertextbox\strutdp % needed
       %\setbox\registertextbox\hbox
       %  {\iftracetextareas\gray\boxrulewidth2pt\ruledhbox\fi
       %   {\registerMPtextarea{\box\registertextbox}}}%
@@ -1822,8 +1829,8 @@
          {\registerMPtextarea{\box\registertextbox}}%
        \smashbox\registertextbox
        \box\registertextbox
-     \fi \fi 
+     \fi \fi
      \box#3%
    \egroup}
 
-\protect \endinput 
+\protect \endinput

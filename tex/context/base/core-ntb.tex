@@ -710,6 +710,51 @@
 % \def\splittblbox#1% #1 <> 0/2
 %   {\unvbox#1}
 
+% \def\splittblbox#1% #1 <> 0/2
+%   {\ifinsidefloat
+%      \unvbox#1%
+%    \else
+%      % spacing between rows gets lost in split
+%      \setbox4\vbox
+%        {\doifsomething\tbltbltussenwit{\blank[\tbltbltussenwit]}}%
+%      \setbox2\vbox
+%        {}%
+%      \dorecurse\noftblheadlines
+%        {\setbox0\vsplit#1 to \lineheight
+%         \setbox2\vbox{\unvcopy2\unvcopy0}}%
+%      \ifcase\noftblheadlines\else\unvcopy2\fi
+%      \donefalse
+%      \doloop
+%        {\setbox0\vsplit#1 to \lineheight
+%         \ifdim\pagegoal<\maxdimen
+%           \setbox0\vbox{\unvbox0}%
+%           \dimen0\ht0
+%           \advance\dimen0\ht4
+%           \advance\dimen0\pagetotal
+%           \ifdim\dimen0>\pagegoal
+%             \bgroup \pagina \egroup % make sure that local vars are kept
+%             \ifcase\noftblheadlines\else\unvcopy2\fi
+%           \fi
+%         \fi
+%         \ifdone
+%           \doifsomething\tbltbltussenwit{\blank[\tbltbltussenwit]}%
+%         \fi
+%         \unvbox0
+%         \allowbreak
+%         \ifvoid#1 \exitloop \else \donetrue \fi}%
+%    \fi}
+
+
+% \bTABLE[split=repeat]
+%   \bTABLEhead
+%     \bTR \bTH lxxxeft \eTH\bTD right \eTD\eTR
+%   \eTABLEhead
+%   \bTABLEbody
+%     \dorecurse{100}{\bTR[after={\pagina[bigpreference]}] \bTD left \eTD\bTD right \eTD\eTR}
+%     \dorecurse{100}{\bTR\bTD left \eTD\bTD right \eTD\eTR}
+%   \eTABLEbody
+% \eTABLE
+
 \def\splittblbox#1% #1 <> 0/2
   {\ifinsidefloat
      \unvbox#1%
@@ -740,7 +785,23 @@
           \doifsomething\tbltbltussenwit{\blank[\tbltbltussenwit]}%
         \fi
         \unvbox0
-        \allowbreak
+        %\allowbreak
+        \bgroup
+          \scratchcounter\recurselevel
+          \advance\scratchcounter\noftblheadlines
+          \setupTBLcell{\number\scratchcounter}1
+          \ifx\@@tblsplitafter\relax
+            \allowbreak
+          \else
+            \doifelsenothing\@@tblsplitafter
+               \allowbreak
+              {\scratchcounter\realpageno
+               \@@tblsplitafter
+               \ifnum\scratchcounter<\realpageno
+                 \ifcase\noftblheadlines\else\unvcopy2\fi
+               \fi}%
+          \fi
+        \egroup
         \ifvoid#1 \exitloop \else \donetrue \fi}%
    \fi}
 
@@ -1113,5 +1174,48 @@
           \c!hoogte=\v!passend]%
      \fi
   \fi}
+
+%D Spacing:
+%
+% \starttabulate
+% \NC text \NC text \NC \NR
+% \TB[small]
+% \NC text \NC text \NC \NR
+% \TB[4*big]
+% \NC text \NC text \NC \NR
+% \stoptabulate
+%
+% \starttable[|||]
+% \VL text \VL text \VL \AR
+% \TB[small]
+% \VL text \VL text \VL \AR
+% \TB[4*big]
+% \VL text \VL text \VL \AR
+% \stoptable
+
+\def\complexTableTB[#1]{\TABLEnoalign{\blanko[#1]}}
+\def\simpleTableTB     {\TABLEnoalign{\blanko}}
+
+\def\TabulateTB
+  {\complexorsimpleTable{TB}}
+
+\def\doTableinterline% #1
+  {\ifnum\currentTABLEcolumn>\maxTABLEcolumn
+     \chuckTABLEautorow
+   \else\ifnum\currentTABLEcolumn=\zerocount
+     \TABLEnoalign
+       {\globalletempty\checkTABLEautorow
+        \globalletempty\chuckTABLEautorow}%
+   \else
+     \setTABLEerror\TABLEmissingcolumn
+     \handleTABLEerror
+   \fi\fi
+   \complexorsimpleTable} % {#1}
+
+\def\TableHL{\doTableinterline{HL}}
+\def\TableTB{\doTableinterline{TB}}
+
+\appendtoks\let\TB\TableTB   \to\everytable
+\appendtoks\let\TB\TabulateTB\to\everytabulate
 
 \protect \endinput

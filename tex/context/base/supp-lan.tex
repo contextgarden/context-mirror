@@ -12,7 +12,7 @@
 %C details.
 
 %D This module needs a drastic update: can be made simplier
-%D and faster; code can move to core module. 
+%D and faster; code can move to core module.
 
 %D Also, commenting the previous versions code will clear up
 %D some memory.
@@ -791,9 +791,9 @@
   {\convertargument#1\to\ascii
    \setvalue{\@tmd@\ascii}}
 
-\definetextmodediscretionary {} % empty case, also handled in parser 
+\definetextmodediscretionary {} % empty case, also handled in parser
   {\prewordbreak\compoundhyphen\allowbreak\postwordbreak}
- 
+
 \definetextmodediscretionary =
   {\prewordbreak\textmodediscretionary}
 
@@ -829,14 +829,14 @@
 \definetextmodediscretionary >
   {\endofsubsentencespacing\prewordbreak\endofsubsentence}
 
-\definetextmodediscretionary . % not yet definitive 
+\definetextmodediscretionary . % not yet definitive
   {\prewordbreak\midsentence\prewordbreak}
 
 \definetextmodediscretionary ^
   {\prewordbreak\discretionary{\hbox{$|$}}{}{\hbox{$|$}}%
    \allowbreak\postwordbreak}
 
-\definetextmodediscretionary :  
+\definetextmodediscretionary :
   {\removeunwantedspaces\prewordbreak\kern\hspaceamount\empty{:}:}
   %\space\aftergroup\ignorespaces}
 
@@ -869,10 +869,10 @@
 
 %D Done somewhere else: \type {\enableactivediscretionaries}.
 
-%D \macros 
+%D \macros
 %D   {directdiscretionary}
 %D
-%D In those situations where the nature of characters is 
+%D In those situations where the nature of characters is
 %D less predictable, we can use the more direct approach:
 
 \def\directdiscretionary#1%
@@ -977,6 +977,12 @@
 
 \def\restorecompoundcharacter#1% new
   {\catcode`#1=\csname\@nn@\string#1\endcsname\relax}
+
+%D We can also ignore definitions (needed in for instance \XML). Beware,
+%D this macro is supposed to be used grouped!
+
+\def\ignorecompoundcharacter
+  {\def\installcompoundcharacter##1 ##2{}}
 
 %D In handling the compound characters we have to take care of
 %D \type{\bgroup} and \type{\egroup} tokens, so we end up with
@@ -1390,13 +1396,13 @@
 %
 % {\hsize1cm\hyphenatedstring{ABXXXXXXXXXXC-12345-12345}}
 
-%D \macros 
+%D \macros
 %D   {disablediscretionaries,disablecompoundcharacter}
-%D 
-%D Occasionally we need to disable this mechanism. For the 
-%D moment we assume that \type {|} is used. 
+%D
+%D Occasionally we need to disable this mechanism. For the
+%D moment we assume that \type {|} is used.
 
-\def\disablediscretionaries   
+\def\disablediscretionaries
   {\def|##1|{\string##1}%
    \def\directdiscretionary##1{\string##1}}
 

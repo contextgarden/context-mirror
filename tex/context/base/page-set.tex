@@ -2507,7 +2507,13 @@
   {\endgraf % else rubish output if forgotten
    \vskip \zeropoint % make sure otr is done, otherwise last line problems
    \bgroup
-\forgetall
+   \forgetall
+   \ifnum\columnsetlevel>\zerocount\else
+     % of course we needed a one-column fall back for tm
+     \columnsetspanhsize\hsize
+     \nofcolumns\plusone
+     \mofcolumns\plusone
+   \fi
    \setupframedtexts[cs:#1]
      [\c!breedte=\columnsetspanhsize,
       \c!regelcorrectie=\v!uit,
@@ -2530,19 +2536,23 @@
    \setbox\scratchbox\vbox\bgroup
      \dostartframedtext[cs:#1][\v!geen]% geen nils placement
      \vskip-\struttotal\par\verticalstrut\par
-     \framedtextparameter{cs:#1}\c!voor
+     \ifnum\columnsetlevel>\zerocount
+       \framedtextparameter{cs:#1}\c!voor
+     \fi
      \def\stopcolumnsetspan{\dostopcolumnsetspan{#1}}}
-
-% \chardef\columnslotlocation2
 
 \def\dostopcolumnsetspan#1%
   {\par
    \verticalstrut
    \kern-2\struttotal
    \verticalstrut
-   \doifsomething{\framedtextparameter{cs:#1}\c!na}
-     {\framedtextparameter{cs:#1}\c!na
-      \kern\zeropoint}% otherwise blanks disappear, better be a switch
+   \ifnum\columnsetlevel>\zerocount
+     \doifsomething{\framedtextparameter{cs:#1}\c!na}
+       {\framedtextparameter{cs:#1}\c!na
+        \kern\zeropoint}% otherwise blanks disappear, better be a switch
+   \else
+     \endgraf
+   \fi
    \dostopframedtext
    \egroup
    % frozen keeps grid snapping okay
@@ -2562,7 +2572,7 @@
 %
    \ifinsidefloat
      \box\scratchbox
-   \else
+   \else\ifnum\columnsetlevel>\zerocount
      % we only set \columnsetspacing when asked for, else bottom problems
      % don't change this any more (test naw)
      \chardef\columnslotspacing\framedtextparameter{cs:#1}\c!nregels\relax
@@ -2574,7 +2584,16 @@
      \OTRSETstoreincolumnslot\floatmethod\scratchbox
      % watch out: no \dochecknextindentation{tag}
      \checknextindentation[\framedtextparameter{cs:#1}\c!springvolgendein]
-   \fi
+   \else
+     % of course we needed a one-column fall back for tm; brrr, the box has now too
+     % much height (try \ruledvbox); don't change this without testing techniek
+     \scratchdimen\ht\scratchbox
+     \advance\scratchdimen-\strutdp
+     \ht\scratchbox\scratchdimen
+     \framedtextparameter{cs:#1}\c!voor
+     \snaptogrid\vbox{\box\scratchbox}%
+     \framedtextparameter{cs:#1}\c!na
+   \fi\fi
    \egroup
    \endgraf}
 

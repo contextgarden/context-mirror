@@ -2278,6 +2278,7 @@
       \let \@@efbreedte\@@xybreedte
       \let \@@efhoogte \@@xyhoogte
       \let \@@efregels \@@xyregels
+      \let \@@efgrid   \@@xygrid
       \let \@@epx      \!!zeropoint
       \let \@@epy      \!!zeropoint
       \edef\@@epw     {\the\nextboxwd}%
@@ -2301,7 +2302,7 @@
    \getparameters
      [\??xy]
      [\c!schaal=,\c!breedte=,\c!hoogte=,\c!regels=,
-      \c!factor=,\c!hfactor=,\c!bfactor=,
+      \c!factor=,\c!hfactor=,\c!bfactor=,\c!grid=,
       \c!sx=1,\c!sy=1,#1]%
    \dowithnextbox
      {\dontshowcomposition

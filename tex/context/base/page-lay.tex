@@ -440,6 +440,8 @@
            {\showmessage\m!systems{10}{##1}}}}%
    \processcommalist[#1]\docommando}
 
+\ifx\setups\undefined \def\setups[#1]{\setdefaultpenalties} \fi
+
 \def\recalculatelayout
   {\global\linkermargebreedte \layoutparameter\c!linkermarge
    \global\rechtermargebreedte\layoutparameter\c!rechtermarge
@@ -453,7 +455,7 @@
    \global\kopwit             \layoutparameter\c!kopwit
    \setlayoutdimensions % the rest of the `dimensions'
    \doifelse\@@lygrid\v!ja\gridsnappingtrue\gridsnappingfalse
-   \synchronizecriteria[\layoutparameter\c!criterium]% see elsewhere
+   \setups[\layoutparameter\c!setups]% depends on gridsnapping !
    \simplesetupwhitespace
    \simplesetupblank
    \global\snijwit\layoutparameter\c!snijwit
@@ -1193,7 +1195,7 @@
                     \c!dx=\!!zeropoint,
                     \c!dy=\!!zeropoint,
                   \c!grid=\v!nee,
-             \c!criterium=\s!default,
+                \c!setups=\systemsetupsprefix\s!default,
             \c!clipoffset=\!!zeropoint,
                 \c!regels=0,
               \c!kolommen=1,

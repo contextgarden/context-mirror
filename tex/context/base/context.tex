@@ -8,14 +8,14 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
-%C details. 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
 
 % dec 07 2001 : cont-en.efmt : 4,035,912
 
-\catcode`\{=1 \catcode`\}=2 
+\catcode`\{=1 \catcode`\}=2
 
-\def\contextversion{2003.9.25}
+\def\contextversion{2003.9.26}
 
 %D Welcome to the main module. When this module is ran through
 %D \type{initex} or \type{tex -i} or \type{whatevertex} using
@@ -29,26 +29,26 @@
 %D manipulation macros. The first one loads \PLAIN\ \TEX, as
 %D minimal as possible.
 
-%input syst-tex.tex  
+%input syst-tex.tex
 
-\input syst-pln.tex % stripped plain 
+\input syst-pln.tex % stripped plain
 \input syst-prm.tex % saved primitives (will be extended)
 
-\input syst-etx.tex % etex 
-\input syst-omg.tex % omega 
+\input syst-etx.tex % etex
+\input syst-omg.tex % omega
 \input syst-gen.tex
 \input syst-ext.tex
 \input syst-new.tex
 \input syst-con.tex
 
-\input math-pln.tex % basic plain math 
+\input math-pln.tex % basic plain math
 
 %D To enable selective loading, we say:
 
 \CONTEXTtrue
 
-%D In order to conveniently load files, we need a few 
-%D support modules.  
+%D In order to conveniently load files, we need a few
+%D support modules.
 
 \input supp-ini.tex
 \input supp-fil.tex
@@ -83,10 +83,10 @@
 \input supp-ran.tex
 \input supp-ali.tex
 
-%D The next module deals with language specific typographic 
-%D extensions. 
+%D The next module deals with language specific typographic
+%D extensions.
 
-\input typo-ini.tex  
+\input typo-ini.tex
 
 %D Verbatim typesetting is implemented in a separate class of
 %D modules. The pretty typesetting modules are loaded at run
@@ -94,9 +94,9 @@
 
 \input verb-ini.tex  % replaces supp-ver
 
-%D The following modules are not sequentially dependent, 
-%D i.e. they have ugly dependencies, which will be cleaned 
-%D up by adding more overloading.  
+%D The following modules are not sequentially dependent,
+%D i.e. they have ugly dependencies, which will be cleaned
+%D up by adding more overloading.
 
 %D When loading the font, color and special modules, we need a
 %D bit more advanced file handling as well as some general
@@ -107,16 +107,16 @@
 \input core-fil.tex
 \input core-con.tex
 
-%D We already need some synonyms (patterns). At runtime this 
-%D file will be reloaded. 
+%D We already need some synonyms (patterns). At runtime this
+%D file will be reloaded.
 
-\input cont-fil.tex 
+\input cont-fil.tex
 
 %D \CONTEXT\ does not implement its own table handling. We
 %D just go for the best there is and load \TABLE. Just to be
 %D sure we do it here, before we redefine \type{|}.
 
-\input thrd-tab.tex   
+\input thrd-tab.tex
 
 %D Here comes the last support modules. They take care of
 %D some language specific things.
@@ -127,12 +127,12 @@
 %D The next few modules do what their names state. They
 %D load additional definition modules when needed.
 
-\input enco-ini.tex 
-\input filt-ini.tex 
-\input hand-ini.tex 
-\input regi-ini.tex 
+\input enco-ini.tex
+\input filt-ini.tex
+\input hand-ini.tex
+\input regi-ini.tex
 \input lang-ini.tex
-\input unic-ini.tex 
+\input unic-ini.tex
 
 \input colo-ini.tex
 %input colo-sep.tex
@@ -159,17 +159,18 @@
 \input lang-sla.tex
 \input lang-ura.tex
 
-\input lang-vn.tex    % vietnamese, will be grouped 
+\input lang-vn.tex    % vietnamese, will be grouped
 
 %D All kind of symbols are handled in:
 
 \input symb-ini.tex
 
 %D Next we load some core macro's. These implement the
-%D macros' that are seen by the users. The order of loading 
-%D is important, due to dependancies. 
+%D macros' that are seen by the users. The order of loading
+%D is important, due to dependancies.
 
 \input core-gen.tex
+\input core-new.tex
 \input core-uti.tex
 \input core-mar.tex
 \input core-mak.tex
@@ -179,34 +180,33 @@
 \input core-vis.tex
 %input core-con.tex
 \input core-rul.tex
-\input core-new.tex
 \input core-tab.tex
 \input core-nav.tex
 \input core-ref.tex
-\input core-obj.tex 
+\input core-obj.tex
 \input core-buf.tex
-\input core-lst.tex 
-\input core-num.tex 
-\input core-itm.tex 
-\input core-des.tex 
+\input core-lst.tex
+\input core-num.tex
+\input core-itm.tex
+\input core-des.tex
 \input core-mat.tex
-\input core-syn.tex 
-%input core-mul.tex % moved 
-\input core-spa.tex 
-\input core-sys.tex 
+\input core-syn.tex
+%input core-mul.tex % moved
+\input core-spa.tex
+\input core-sys.tex
 
-% experimental otr 
+% experimental otr
 
-\input page-ini.tex 
-\input page-not.tex 
-\input page-one.tex 
-\input page-lay.tex 
+\input page-ini.tex
+\input page-not.tex
+\input page-one.tex
+\input page-lay.tex
 \input page-log.tex
 \input page-txt.tex
-\input page-sid.tex 
-\input page-flt.tex 
-\input page-mul.tex 
-\input page-set.tex 
+\input page-sid.tex
+\input page-flt.tex
+\input page-mul.tex
+\input page-set.tex
 \input page-lyr.tex
 \input page-mak.tex
 \input page-num.tex
@@ -217,17 +217,17 @@
 
 \input core-job.tex
 
-% so far 
+% so far
 
-\input core-sec.tex 
+\input core-sec.tex
 \input page-imp.tex
 \input core-tbl.tex
 \input core-int.tex
 \input core-ntb.tex
-\input core-ltb.tex 
+\input core-ltb.tex
 
-%D Like languages, fonts, encodings and symbols, \METAPOST\ 
-%D support is also organized in its own class of modules. 
+%D Like languages, fonts, encodings and symbols, \METAPOST\
+%D support is also organized in its own class of modules.
 
 \input meta-ini.tex
 \input meta-pag.tex
@@ -235,10 +235,10 @@
 
 %D On which the next one depends:
 
-\input core-pos.tex 
+\input core-pos.tex
 
-%D A few more languages, that have specifics using core 
-%D functionality: 
+%D A few more languages, that have specifics using core
+%D functionality:
 
 \input lang-chi.tex
 
@@ -263,9 +263,9 @@
 \input type-ini.tex
 
 \input prop-ini.tex
-\input prop-lay.tex % needs core-ref.tex 
+\input prop-lay.tex % needs core-ref.tex
 
-\input math-ini.tex % after enco-ini.tex 
+\input math-ini.tex % after enco-ini.tex
 
 %D Now we're ready for more core modules.
 
@@ -274,18 +274,18 @@
 
 \input core-mis.tex
 
-\input core-fig.tex % after page body 
+\input core-fig.tex % after page body
 \input core-par.tex
 
 \input core-box.tex
 
-%D Language specific spacing. 
+%D Language specific spacing.
 
 \input lang-spa.tex
 
-%D Only the basic XML parser and remapper are part of the core. 
+%D Only the basic XML parser and remapper are part of the core.
 %D These macrosa re loaded last since they overload and|/|or
-%D extend previously defined ones. 
+%D extend previously defined ones.
 
 \input xtag-ini.tex
 \input xtag-ext.tex
@@ -296,7 +296,7 @@
 \input xtag-rng.tex
 %input xtag-ent.tex
 
-%D How about this: 
+%D How about this:
 
 \input meta-xml.tex
 
@@ -312,10 +312,10 @@
 
 \input cont-log.tex
 
-%D Defaults go here (more will be moved to this module 
-%D later): 
+%D Defaults go here (more will be moved to this module
+%D later):
 
-\input core-def.tex 
+\input core-def.tex
 
 %D At run time, a few more files are loaded, like:
 %D
@@ -326,7 +326,7 @@
 %D \som \type{cont-fil}: filename and module synonyms
 %D \stopopsomming
 
-%D Just to keep the user busy for a while, we say:  
+%D Just to keep the user busy for a while, we say:
 
 \startinterface english
 
@@ -410,7 +410,7 @@
 \stopinterface
 
 \edef\copyrightversion
-  {Copyright 1990-\the\normalyear\normalspace / 
+  {Copyright 1990-\the\normalyear\normalspace /
    PRAGMA ADE / J. Hagen - A.F. Otten}
 
 \writeline\writestring{\copyrightversion}\writeline
@@ -424,25 +424,25 @@
 
 \doifparentfileelse{context}{\donothing}{\endinput}
 
-%D Unless we're generating a \type {cont-..} format, we also 
-%D do the following. 
+%D Unless we're generating a \type {cont-..} format, we also
+%D do the following.
 
 %D Except from english, no hyphenation patterns are loaded
 %D yet. Users can specify their needs in the next module:
 
-\loaduserspecifications 
+\loaduserspecifications
 
-%D Next we default to the same language as the interface. 
+%D Next we default to the same language as the interface.
 
 \unprotect
 
-\installlanguage [\s!en] [\c!status=\v!start] 
+\installlanguage [\s!en] [\c!status=\v!start]
 
-\startinterface english 
+\startinterface english
 
   \installlanguage [\s!uk] [\c!status=\v!start]
 
-\stopinterface 
+\stopinterface
 
 \appendtoks \language     [\s!en] \to \everyjob
 \appendtoks \mainlanguage [\s!en] \to \everyjob
@@ -454,7 +454,7 @@
   \appendtoks \language     [\s!de] \to \everyjob
   \appendtoks \mainlanguage [\s!de] \to \everyjob
 
-\stopinterface 
+\stopinterface
 
 \startinterface dutch
 
@@ -463,44 +463,44 @@
   \appendtoks \language     [\s!nl] \to \everyjob
   \appendtoks \mainlanguage [\s!nl] \to \everyjob
 
-\stopinterface 
+\stopinterface
 
-\startinterface czech 
+\startinterface czech
 
   \installlanguage [\s!cz] [\c!status=\v!start]
 
   \appendtoks \language     [\s!cz] \to \everyjob
   \appendtoks \mainlanguage [\s!cz] \to \everyjob
 
-\stopinterface 
+\stopinterface
 
-\startinterface italian 
+\startinterface italian
 
   \installlanguage [\s!it] [\c!status=\v!start]
 
   \appendtoks \language     [\s!it] \to \everyjob
   \appendtoks \mainlanguage [\s!it] \to \everyjob
 
-\stopinterface 
+\stopinterface
 
-\startinterface romanian 
+\startinterface romanian
 
   \installlanguage [\s!ro] [\c!status=\v!start]
 
   \appendtoks \language     [\s!ro] \to \everyjob
   \appendtoks \mainlanguage [\s!ro] \to \everyjob
 
-\stopinterface 
+\stopinterface
 
 \protect
 
-%D Finally we (pre)load some fonts. 
+%D Finally we (pre)load some fonts.
 
 \setupbodyfont [cmr,rm,12pt]
 
 %D The next hook can be used to generate a local (extended)
-%D format. This file is only searched for at the current 
-%D path. 
+%D format. This file is only searched for at the current
+%D path.
 
 % \readlocfile{cont-def.tex}
 %   {\writestatus{loading}{adding extensions from cont-def}}

@@ -1759,6 +1759,24 @@
 % \widowpenalty=\defaultwidowpenalty\relax
 % \clubpenalty =\defaultclubpenalty \relax
 
+\beginTEX widowpenalties clubpenalties interlinepenalties
+
+  \newcount \widowpenalties
+  \newcount \clubpenalties
+  \newcount \interlinepenalties
+
+\endTEX
+
+% \setpenalties\widowpenalties2\maxdimen
+%
+% expands to \widowpenalty \maxdimen \maxdimen \zeropoint
+
+\def\setpenalties#1#2#3%
+  {#1\numexpr(#2+1)\space\doexpandedrecurse{\numexpr(#2)}{#3}\zeropoint\relax}
+
+\def\doexpandedrecurse#1#2%
+  {\ifnum#1>\zerocount#2\@EA\doexpandedrecurse\@EA{\the\numexpr(#1-1)}{#2}\fi}
+
 \newif\ifgridsnapping % to be sure
 
 \def\defaultwidowpenalty    {2000} % was: 1000
@@ -1767,19 +1785,63 @@
 \def\defaultgridwidowpenalty   {0}
 \def\defaultgridclubpenalty    {0}
 
-\def\synchronizecriteria
-  {\dosingleempty\dosynchronizecriteria}
+% The original approach:
+%
+% \def\setdefaultpenalties
+%   {\ifgridsnapping
+%      \widowpenalty\defaultgridwidowpenalty
+%      \clubpenalty \defaultgridclubpenalty
+%    \else
+%      \widowpenalty\defaultwidowpenalty
+%      \clubpenalty \defaultclubpenalty
+%    \fi}
+%
+% However, we will use setups:
 
-\def\dosynchronizecriteria[#1]%
-  {\ifgridsnapping
-     \widowpenalty\defaultgridwidowpenalty
-     \clubpenalty \defaultgridclubpenalty
-   \else
-     \widowpenalty\defaultwidowpenalty
-     \clubpenalty \defaultclubpenalty
-   \fi}
+\def\setdefaultpenalties
+  {\setups[\systemsetupsprefix\s!default]}
 
-\synchronizecriteria
+\startsetups [\systemsetupsprefix\v!reset]
+  \widowpenalties     \minusone
+  \clubpenalties      \minusone
+  \interlinepenalties \minusone
+\stopsetups
+
+\startsetups [\systemsetupsprefix\s!default]
+
+  \setups[\systemsetupsprefix\s!reset]
+
+  \widowpenalty\defaultwidowpenalty
+  \clubpenalty \defaultclubpenalty
+
+\stopsetups
+
+\startsetups [\v!grid] [\systemsetupsprefix\s!default]
+
+  \setups[\systemsetupsprefix\v!reset]
+
+  \widowpenalty\defaultgridwidowpenalty
+  \clubpenalty \defaultgridclubpenalty
+
+\stopsetups
+
+% as an illustration:
+
+\startsetups [\systemsetupsprefix\v!streng]
+
+   \setups[\v!reset]
+
+   \setpenalties\widowpenalties2\maxdimen
+   \setpenalties\clubpenalties 2\maxdimen
+                \brokenpenalty  \maxdimen
+
+\stopsetups
+
+\setdefaultpenalties % will happen later in \setuplayout
+
+% Suggested by GB (not the name -):
+
+\def\rapfillskip{.5\hsize plus .092\hsize minus .5\hsize} % D.A.'s value
 
 % Bovendien definieren we enkele extra \fill's:
 

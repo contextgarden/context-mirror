@@ -342,11 +342,22 @@
      \global\botinserted\zeropoint \OTRONEdosetbotinserts
    \fi}
 
+% \def\OTRONEdotopinsertions
+%   {\ifvoid\topins\else
+%      \ifgridsnapping
+%        \box\topins % not \topsnaptogrid{\box\topins}%
+%      \else
+%        \unvbox\topins
+%      \fi
+%    \fi
+%    \global\topinserted\zeropoint}
+
 \def\OTRONEdotopinsertions
   {\ifvoid\topins\else
      \ifgridsnapping
-       \box\topins % not \topsnaptogrid{\box\topins}% 
-     \else        
+       \box\topins
+       \vskip-\topskip \vskip\strutheight % [xx] new: see icare topbleed
+     \else
        \unvbox\topins
      \fi
    \fi
@@ -545,6 +556,27 @@
       \goodbreak}%
    \doinsertfloatinfo}
 
+% \def\OTRONEsometopsfloat[#1]%
+%   {\ifdim\topinserted=\zeropoint
+%      \topofinserttrue
+%    \else
+%      \topofinsertfalse
+%    \fi
+%    \global\advance\topinserted \ht\floatbox
+%    \global\advance\topinserted \dp\floatbox
+%    \global\advance\topinserted \floatbottomskip
+%    \insert\topins
+%      {\forgetall
+%       \iftopofinsert
+%         \kern-\lineskip\par\prevdepth\maxdimen
+%       \else
+%         %\blanko[-\@@bknawit,\@@bkvoorwit]% inserts can't look back
+%         \betweenfloatblanko
+%       \fi
+%       \flushfloatbox
+%       \blanko[\@@bknawit]}%
+%    \doinsertfloatinfo}
+
 \def\OTRONEsometopsfloat[#1]%
   {\ifdim\topinserted=\zeropoint
      \topofinserttrue
@@ -557,6 +589,7 @@
    \insert\topins
      {\forgetall
       \iftopofinsert
+        \topskipcorrection % [xx] new: see icare topbleed
         \kern-\lineskip\par\prevdepth\maxdimen
       \else
         %\blanko[-\@@bknawit,\@@bkvoorwit]% inserts can't look back

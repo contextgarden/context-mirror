@@ -63,7 +63,7 @@
 %D Because we build up the text window step by step, we will
 %D separate the entries by white space.
 
-\startsetups always
+\startsetups [always]
   \setupwhitespace[big]
   \setupblank[big]
 \stopsetups
@@ -110,7 +110,7 @@
 %D addition of subtexts (each subtext goes into its own
 %D buffer).
 
-\def\DoSampleText#1#2#3% 
+\def\DoSampleText#1#2#3%
   {\setupframedtexts[SampleText][background={background,#3}]
    \bgroup
    \setups[#1]%
@@ -126,8 +126,8 @@
    \egroup}
 
 %D Since we are no longer swapping windows, we end up with a
-%D much simplier \type {\Stopidea} macro. We don't reset 
-%D samples at the inner level. 
+%D much simplier \type {\Stopidea} macro. We don't reset
+%D samples at the inner level.
 
 \def\StartIdea%
   {\bgroup
@@ -149,7 +149,7 @@
 %D within a sequence.
 
 \def\SetTextWidth
-  {\ifnum\TextN<1 % yes or no, may change 
+  {\ifnum\TextN<1 % yes or no, may change
      \scratchdimen=\makeupwidth
      \advance\scratchdimen by -\SampleTextWidth
      \advance\scratchdimen by  \FrameSkip
@@ -166,8 +166,8 @@
 
 \doifnotmode{demo}{\endinput}
 
-%D The demo section. The original presentation uses proper 
-%D graphics and has better spacing. 
+%D The demo section. The original presentation uses proper
+%D graphics and has better spacing.
 
 \def\SomeSymbol#1#2{\definedfont[ContextNavigation at #1]\char#2}
 
@@ -287,20 +287,20 @@
 \StopIdea
 
 \StartIdea
-  \StartSample  
+  \StartSample
     \SomeSymbol{6cm}{3}
   \StopSample
-  \StartSubText 
+  \StartSubText
     \unknown\ and yet another for first \unknown
   \StopSubText
 \StopIdea
 
 \StartIdea
-  \StartSample 
-    \SomeSymbol{6cm}{4} 
+  \StartSample
+    \SomeSymbol{6cm}{4}
   \StopSample
-  \StartSubText 
-    \unknown\ and of course for last. 
+  \StartSubText
+    \unknown\ and of course for last.
   \StopSubText
 \StopIdea
 
