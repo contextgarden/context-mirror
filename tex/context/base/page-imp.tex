@@ -174,7 +174,14 @@
                          \global\chardef\arrangedpageT=2
                          \global\chardef\horizontalcutmarks=3
                          \global\chardef\verticalcutmarks=2
-                         \global\let\pusharrangedpage=\pusharrangedpageFOUR
+                         \global\let\pusharrangedpage=\pusharrangedpageFOURA
+                         \global\let\poparrangedpages=\poparrangedpagesAB,
+                   2**2=>\global\chardef\arrangedpageX=2
+                         \global\chardef\arrangedpageY=1
+                         \global\chardef\arrangedpageT=2
+                         \global\chardef\horizontalcutmarks=3
+                         \global\chardef\verticalcutmarks=2
+                         \global\let\pusharrangedpage=\pusharrangedpageFOURB
                          \global\let\poparrangedpages=\poparrangedpagesAB,
                   2SIDE=>\global\chardef\arrangedpageX=2
                          \global\chardef\arrangedpageY=1
@@ -260,6 +267,10 @@
 %                            \relax,
 %                     2*2=>\dosetuparrangingXY{2}{1}{2}{3}{2}
 %                            \pusharrangedpageFOUR     
+%                            \poparrangedpagesAB
+%                            \relax,
+%                    2**2=>\dosetuparrangingXY{2}{1}{2}{3}{2}
+%                            \pusharrangedpageFOURPLUS     
 %                            \poparrangedpagesAB
 %                            \relax,
 %                   2SIDE=>\dosetuparrangingXY{2}{1}{2}{3}{2}
@@ -428,14 +439,17 @@
      \poparrangedpages
    \fi}
 
-\def\pusharrangedpageFOUR#1%
+\def\pusharrangedpageFOURA{\pusharrangedpageFOURdo01}
+\def\pusharrangedpageFOURB{\pusharrangedpageFOURdo10}
+
+\def\pusharrangedpageFOURdo#1#2#3%
   {\doglobal\increment\arrangedpageN
    \reportarrangedpage\arrangedpageN
    \ifcase\arrangedpageN
-   \or \handlearrangedpageXY{#1}  {0}{1}{0}\arrangedpageA %  1
-   \or \handlearrangedpageXY{#1}{180}{0}{0}\arrangedpageB %  2
-   \or \handlearrangedpageXY{#1}{180}{1}{0}\arrangedpageB %  3
-   \or \handlearrangedpageXY{#1}  {0}{0}{0}\arrangedpageA %  4
+   \or \handlearrangedpageXY{#3}  {0} {1}{0}\arrangedpageA %  1
+   \or \handlearrangedpageXY{#3}{180}{#1}{0}\arrangedpageB %  2/3
+   \or \handlearrangedpageXY{#3}{180}{#2}{0}\arrangedpageB %  3/2
+   \or \handlearrangedpageXY{#3}  {0} {0}{0}\arrangedpageA %  4
      \poparrangedpages
    \fi}
 

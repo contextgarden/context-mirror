@@ -47,6 +47,16 @@ def initialize_box (expr n,x,y,w,h,d) =
 
 enddef ;
 
+def initialize_area (expr fn,fx,fy,fw,fh,fd,
+                          tn,tx,ty,tw,th,td) =
+
+  numeric fpos ; fpos := 1 ; initialize_box_pos(fpos,fn,fx,fy,fw,fh,fd) ;
+  numeric tpos ; tpos := 2 ; initialize_box_pos(tpos,tn,tx,ty,tw,th,td) ;
+
+  do_initialize_area (fpos, tpos) ;
+
+enddef ;
+
 def do_initialize_area (expr fpos, tpos) =
   lxy  := lxy[fpos] ;
   llxy := (xpart llxy[fpos], ypart llxy[tpos]) ;

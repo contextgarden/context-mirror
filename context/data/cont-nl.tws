@@ -2196,7 +2196,7 @@ stopsetup
 startsetup
 com:stelarrangerenin:
 typ:vals/:
-val:blokkeer, 2*16,2*8,2*4,2*2,2UP,2DOWN, gespiegeld,geroteerd,dubbelzijdig,negatief,90,180,270::
+val:blokkeer, 2*16,2*8,2*4,2*2,2**2,2UP,2DOWN, gespiegeld,geroteerd,dubbelzijdig,negatief,90,180,270::
 stopsetup
 
 startsetup

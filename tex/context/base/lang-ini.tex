@@ -258,19 +258,19 @@
                   \s!encoding=\languagedefault{#1}\s!encoding,
                   #2]}}}%
       \doifvalue{\??la#1\c!default}{#1}{\letvalue{\??la#1\c!default}\empty}%
-% loop in deo
-% \doifvalue{\??la#1\s!patterns}{#1}{\letvalue{\??la#1\c!default}\empty}%
-%
+       % loop in deo
+       % \doifvalue{\??la#1\s!patterns}{#1}{\letvalue{\??la#1\c!default}\empty}%
+       %
       \doifelsevalue{\??la#1\c!status}{\v!start}
         {\doifelsevaluenothing{\??la#1\s!patterns}
            {\edef\languagesuffix{#1}}
            {\edef\languagesuffix{\getvalue{\??la#1\s!patterns}}}%
-%         \doifundefinedelse{\??la\??la\languagesuffix}
-\doifundefinedelse{\??la\??la:\currentencoding:\currentmapping:\languagesuffix}
+        %\doifundefinedelse{\??la\??la\languagesuffix}
+         \doifundefinedelse{\??la\??la:\currentencoding:\currentmapping:\languagesuffix}
            {\doloadpatterns{#1}{\languagesuffix}}
            {\bgroup
-%            \edef\loadedlanguage{\getvalue{\??la\??la\languagesuffix}}%
-\edef\loadedlanguage{\getvalue{\??la\??la:\currentencoding:\currentmapping:\languagesuffix}}%
+           %\edef\loadedlanguage{\getvalue{\??la\??la\languagesuffix}}%
+            \edef\loadedlanguage{\getvalue{\??la\??la:\currentencoding:\currentmapping:\languagesuffix}}%
             \showmessage{\m!linguals}{1}{\languagesuffix,#1,\loadedlanguage}%
             \showmessage{\m!linguals}{3}{\languagesuffix,#1,\loadedlanguage}%
             \egroup}}

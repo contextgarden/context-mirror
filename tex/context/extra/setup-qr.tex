@@ -99,11 +99,11 @@
 
 \starttekst
 
-\stelachtergrondenin
+\setupbackgrounds
   [\v!rechterpagina]
   [\c!achtergrond=cover]
 
-\startopmaak[\v!standaard]
+\startmakeup[\v!standaard]
   \definefont[test][RegularBold at 100pt]\test\setstrut
   \steluitlijnenin[\v!midden]
   \strut Con\TeX t \par
@@ -122,13 +122,13 @@
   \startinterface czech    \strut CZ \stopinterface
   \startinterface italian  \strut IT \stopinterface
   \startinterface romanian \strut RO \stopinterface
-\stopopmaak
+\stopmakeup
 
-\stelachtergrondenin
+\setupbackgrounds
   [\v!rechterpagina]
   [\c!achtergrond=]
 
-\startopmaak[\v!standaard]
+\startmakeup[\v!standaard]
   \definefont[test][RegularBold at 60pt]\test\setstrut
   \steluitlijnenin[\v!midden]
   \strut Con\TeX t \par
@@ -149,7 +149,7 @@
   \startinterface italian  \strut italiano       \par \stopinterface
   \startinterface romanian \strut rom\^{a}n\u{a} \par \stopinterface
 
-\stopopmaak
+\stopmakeup
 
 \stellayoutin
   [\c!kopwit=1.5cm]
@@ -158,20 +158,20 @@
 
 \pagina[\v!ja,\v!blanko,\v!rechts,\v!links]
 
-\stelachtergrondenin
+\setupbackgrounds
   [\v!linkerpagina]
   [\c!achtergrond=cover]
 
 \stellayoutin
   [\c!kopwit=2cm]
 
-\startopmaak[\v!standaard][\c!pagina=]
+\startmakeup[\v!standaard][\c!pagina=]
   \definefont[test][RegularBold at 24pt]\test\stelinterliniein
   \steluitlijnenin[\v!midden]
   \vfill
   PRAGMA ADE \par
   Ridderstraat 27, 8061GH Hasselt NL 
-\stopopmaak
+\stopmakeup
 
 \protect 
 

@@ -2196,7 +2196,7 @@ stopsetup
 startsetup
 com:setuparranging:
 typ:vals/:
-val:disable, 2*16,2*8,2*4,2*2,2UP,2DOWN, mirrored,rotated,doublesided,negative,90,180,270::
+val:disable, 2*16,2*8,2*4,2*2,2**2,2UP,2DOWN, mirrored,rotated,doublesided,negative,90,180,270::
 stopsetup
 
 startsetup

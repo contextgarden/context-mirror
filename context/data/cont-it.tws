@@ -2196,7 +2196,7 @@ stopsetup
 startsetup
 com:impostaparranging:
 typ:vals/:
-val:disattiva, 2*16,2*8,2*4,2*2,2UP,2DOWN, riflesso,ruotato,doppiafaccia,negativo,90,180,270::
+val:disattiva, 2*16,2*8,2*4,2*2,2**2,2UP,2DOWN, riflesso,ruotato,doppiafaccia,negativo,90,180,270::
 stopsetup
 
 startsetup

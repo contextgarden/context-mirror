@@ -132,7 +132,7 @@
      \ifmmode
        \@EA\ifx\csname\@mt@\mathcollection#1\endcsname\relax
          \@EA\ifx\csname\@mt@\nomathcollection#1\endcsname\relax 
-           \@EA\ifcsname\characterencoding#1\endcsname
+           \@EA\ifx\csname\characterencoding#1\endcsname
              \nocharacterencoding
            \else
              \characterencoding
@@ -142,9 +142,9 @@
          \fi
        \else
          \@mt@\mathcollection
-       \fi\fi\fi
+       \fi
      \else
-       \@EA\ifcsname\characterencoding#1\endcsname
+       \@EA\ifx\csname\characterencoding#1\endcsname
          \nocharacterencoding
        \else
          \characterencoding

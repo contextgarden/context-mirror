@@ -155,6 +155,8 @@ sub do_make_path
 
 sub make_path
   { my $str = shift ;
+    do_make_path("$fontroot/fonts") ;
+    do_make_path("$fontroot/fonts/$str") ;
     do_make_path("$fontroot/fonts/$str/$vendor") ;
     do_make_path("$fontroot/fonts/$str/$vendor/$collection") }
 
@@ -216,6 +218,7 @@ sub copy_files
       { $ok = $file =~ /(.*)\/(.+?)\.(.*)/ ;
         ($path,$name,$suffix) = ($1,$2,$3) ;
         unlink "$topath/$name.$suffix" ;
+        report ("copying : $name.$suffix") ;
         copy ($file,"$topath/$name.$suffix") } }
 
 if ($install)
@@ -364,7 +367,7 @@ foreach $file (@files)
     unlink "texfont.log" ;
     # generate tfm and vpl, $file is on afm path 
     report "generating tfm : $cleanname$fontsuffix (from $cleanname)" ;
-    $passon .= " -t $encoding.enc" ; 
+    $passon .= " -p $encoding.enc" ; 
     $virtualfont = ($caps ne "") || ($noligs) ;
     if ($caps ne "") 
       { $passon .= " -V $fontname$fontsuffix" }

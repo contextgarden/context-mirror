@@ -63,13 +63,13 @@
 %D \type{groot} meegeven. Met \type{x} geven we de maat aan van
 %D de pseudo klein||kapitalen. De \MAPS\ wordt gezet in 9pt.
 
-\setupbodyfont[map,9pt]
-
-\startnotmode[localfonts]
-
-  \setupbodyfont[mty]
-
-\stopnotmode
+%\setupbodyfont[map,9pt]
+%
+%\startnotmode[localfonts]
+%
+%  \setupbodyfont[mty]
+%
+%\stopnotmode
 
 %D We gebruiken echte small caps: 
 
@@ -84,14 +84,14 @@
 %D minder hoog. We definieren daarom een wat afwijkend
 %D papierformaat en projecteren dat op A4.
 
-\definieerpapierformaat % \definepapersize
+\definepapersize
   [maps]
   [\c!breedte=21cm,
    \c!hoogte=26.4cm]
 
-\stelpapierformaatin % \setuppapersize
+\setuppapersize
   [maps]
-  [a4]
+  [A4]
 
 %D Artikelen in de \MAPS\ worden breed danwel in twee kolommen
 %D gezet. Vooralsnog beperken we de definitie van de layout tot
@@ -99,6 +99,7 @@
 
 \stellayoutin
   [\c!breedte=28pc,
+   \c!hoogte=\v!midden,
    \c!marge=9pc,
    \c!margeafstand=1pc,
    \c!rugwit=1in,
