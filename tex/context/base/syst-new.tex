@@ -552,7 +552,6 @@
     \long\xdef\@@expanded{\noexpand#1}%
     \let\notexpanded\empty
     \@@expanded}
-
 
 % \def\doifdimensionelse#1%
 %   {\afterassignment\dodoifdimensionelse\scratchdimen=#1pt\relax\empty\empty\empty\empty}
@@ -596,5 +595,9 @@
 % \edef\xxxx{\doifnum{2}{2}{yes}} \show \xxxx
 % \scratchcounter0 \edef\xxxx{\doifnum{1}{\scratchcounter}{no}} \show \xxxx
 % \scratchcounter1 \edef\xxxx{\doifnum{1}{\scratchcounter}{yes}} \show \xxxx
-
+
+\def\appended#1#2#3{\@EA#1\@EA#2\@EA{#2#3}}
+\def\appendvalue #1{\@EA\appended\@EA \def\csname#1\endcsname}
+\def\appendgvalue#1{\@EA\appended\@EA\gdef\csname#1\endcsname}
+
 \protect \endinput

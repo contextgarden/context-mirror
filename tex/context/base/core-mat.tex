@@ -163,8 +163,8 @@
 \def\doformulenummer
   {\dotripleempty\dodoformulenummer}
 
-\setvalue{\e!start\e!formule}{\dostartformula{}}
-\setvalue{\e!stop \e!formule}{\dostopformula}
+\setvalue{\e!start\v!formule}{\dostartformula{}}
+\setvalue{\e!stop \v!formule}{\dostopformula}
 
 \def\definieerformule%
   {\dodoubleempty\dodefinieerformule}
@@ -178,8 +178,8 @@
          \c!springvolgendein,\c!variant,
          \c!strut,\c!uitlijnen,\c!afstand]%
       \setupformulas[#1][#2]%
-      \setvalue{\e!start#1\e!formule}{\dostartformula{#1}}%
-      \setvalue{\e!stop #1\e!formule}{\dostopformula}}}
+      \setvalue{\e!start#1\v!formule}{\dostartformula{#1}}%
+      \setvalue{\e!stop #1\v!formule}{\dostopformula}}}
 
 \def\setupformulas
   {\dodoubleempty\dosetupformulas}
@@ -272,16 +272,16 @@
    \let\setdisplayskips\relax
    \ifoptimizedisplayspacing
      \ifdim\lastlinewidth>\zeropoint
-       \abovedisplayshortskip-\ht\strutbox\relax
+       \abovedisplayshortskip-\strutht\relax
      \fi
    \else
      \resetlastlinewidth
    \fi
-   \getvalue{\e!start\getvalue{\??fm\currentformula\c!variant}\e!formule}}
+   \getvalue{\e!start\getvalue{\??fm\currentformula\c!variant}\v!formule}}
 
 \def\switchtoformulabodyfont{\switchtobodyfont}
 
-\setvalue{\e!formule}{\dosingleempty\doformula}
+\setvalue{\v!formule}{\dosingleempty\doformula}
 
 \def\doformula[#1]#2%
   {\begingroup
@@ -294,10 +294,10 @@
 
 \def\dostopformula
   {\doplaceformulanumber
-   \getvalue{\e!stop\getvalue{\??fm\currentformula\c!variant}\e!formule}%
+   \getvalue{\e!stop\getvalue{\??fm\currentformula\c!variant}\v!formule}%
     \resetlastlinewidth
     \nonoindentation
-    \doifvalue{\??fm\currentformula\c!springvolgendein}\v!nee\noindentation
+    \dochecknextindentation{\??fm\currentformula}%
     \egroup}
 
 \newif\ifinformula
@@ -382,8 +382,8 @@
   {\dotripleargument\dodefineformulaalternative}
 
 \def\dodefineformulaalternative[#1][#2][#3]%  
-  {\setvalue{\e!start#1\e!formule}{#2}%
-   \setvalue{\e!stop #1\e!formule}{#3}}
+  {\setvalue{\e!start#1\v!formule}{#2}%
+   \setvalue{\e!stop #1\v!formule}{#3}}
 
 \defineformulaalternative[\s!default][\startdisplaymath][\stopdisplaymath]
 

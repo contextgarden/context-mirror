@@ -476,9 +476,9 @@
    \dimen0=\underbarlevel\dimen0
    \ifdone \else
     %\advance\dimen0 -1pt 
-     \advance\dimen0 -\ht\strutbox 
+     \advance\dimen0 -\strutht
    \fi
-   \dimen2=\dimen0
+   \dimen2\dimen0
    \advance\dimen2 \@@onlijndikte
    \dododounderbar{-\dimen0}{\dimen2}{#1}%
    \egroup}

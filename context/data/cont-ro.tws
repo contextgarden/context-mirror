@@ -328,7 +328,7 @@ var:linii:da,nu,despsilabe::
 stopsetup
 
 startsetup
-com:starttyping:
+com:start<<typing>>:
 typ:stp/:
 stopsetup
 
@@ -677,7 +677,7 @@ startsetup
 com:seteazaliniimargine:
 typ:var/:
 var:nivel:*numar::
-var:grosime:*dimensiune::
+var:grosimerigla:*dimensiune::
 stopsetup
 
 startsetup
@@ -2401,8 +2401,9 @@ val:*sectiune::
 stopsetup
 
 startsetup
-com:setareenumerare:
-typ:val/vals/vars/:
+com:setupitemgroup:
+typ:val/val/vals/vars/:
+val:*nume::
 val:*numar,fiecare::
 val:standard,repeat/broad,repeat/serried,impachetat, despachetat,stopper,unit,lamargine,inmargine, autointro,larg,sectiune,intext:standard:
 var:margine:nu,standard,*dimensiune::
@@ -2429,10 +2430,11 @@ var:aliniaturmator:da,nu::
 stopsetup
 
 startsetup
-com:startenumerare:
-typ:vals/vars/stp/:
+com:start<<itemgroup>>:
+typ:val/vals/vars/stp/:
+val:*nume::
 val:a,A,KA,n,N,m,r,R,KR,*numar,continuu, standard,repeat/broad,repeat/serried,impachetat, stopper,unit,lamargine,inmargine,intro, coloane:standard:
-ivr:setareenumerare::
+ivr:setupitemgroup::
 stopsetup
 
 startsetup
@@ -2855,7 +2857,7 @@ ivr:seteazainconjurat::
 stopsetup
 
 startsetup
-com:startbuffer:
+com:start<<buffer>>:
 typ:val/stp/:
 val:*nume::
 stopsetup
@@ -2946,7 +2948,7 @@ var:fisier:*fisier::
 stopsetup
 
 startsetup
-com:startformula:
+com:start<<formula>>:
 typ:stp/:
 val:*formula::
 stopsetup
@@ -3251,7 +3253,7 @@ val:*text::
 stopsetup
 
 startsetup
-com:starttabulate:
+com:start<<tabulate>>:
 typ:val/vars/stp/:
 val:*text::
 ivr:folosestefiguraexterna::

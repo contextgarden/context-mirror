@@ -328,7 +328,7 @@ var:radky:ano,ne,hyphenated::
 stopsetup
 
 startsetup
-com:starttyping:
+com:start<<typing>>:
 typ:stp/:
 stopsetup
 
@@ -677,7 +677,7 @@ startsetup
 com:nastavmarginalnilinky:
 typ:var/:
 var:uroven:*cislo::
-var:tloustka:*dimenze::
+var:tloustkalinky:*dimenze::
 stopsetup
 
 startsetup
@@ -2401,8 +2401,9 @@ val:*sekce::
 stopsetup
 
 startsetup
-com:nastavvycet:
-typ:val/vals/vars/:
+com:setupitemgroup:
+typ:val/val/vals/vars/:
+val:*jmeno::
 val:*cislo,kazdy::
 val:standardni,repeat/siroky,repeat/semknuto,zhustene, rozbalene,predel,spojeno,naokraji,naokraji, autouvod,uvolnene,sekce,dotextu:standardni:
 var:marginalie:ne,standardni,*dimenze::
@@ -2429,10 +2430,11 @@ var:odsadpristi:ano,ne::
 stopsetup
 
 startsetup
-com:startvycet:
-typ:vals/vars/stp/:
+com:start<<itemgroup>>:
+typ:val/vals/vars/stp/:
+val:*jmeno::
 val:a,A,KA,n,N,m,r,R,KR,*cislo,pokracovat, standardni,repeat/siroky,repeat/semknuto,zhustene, predel,spojeno,naokraji,naokraji,uvod, sloupce:standardni:
-ivr:nastavvycet::
+ivr:setupitemgroup::
 stopsetup
 
 startsetup
@@ -2855,7 +2857,7 @@ ivr:nastavoramovani::
 stopsetup
 
 startsetup
-com:startbuffer:
+com:start<<buffer>>:
 typ:val/stp/:
 val:*jmeno::
 stopsetup
@@ -2946,7 +2948,7 @@ var:soubor:*soubor::
 stopsetup
 
 startsetup
-com:startrovnice:
+com:start<<rovnice>>:
 typ:stp/:
 val:*rovnice::
 stopsetup
@@ -3251,7 +3253,7 @@ val:*text::
 stopsetup
 
 startsetup
-com:starttabelator:
+com:start<<tabelator>>:
 typ:val/vars/stp/:
 val:*text::
 ivr:uzijexterniobraz::

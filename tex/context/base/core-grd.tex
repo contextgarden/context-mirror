@@ -98,11 +98,11 @@
 \ifdim\prevdepth>\zeropoint\kern-\prevdepth\fi 
       \setbox0\null
       \wd0\hsize
-      \dp0\dp\strutbox
+      \dp0\strutdp
       \nointerlineskip
       \ruledvbox{\box0}%
       \egroup
-      \prevdepth\dp\strutbox}%
+      \prevdepth\strutdp}%
    \def\dotopbaselinecorrection
      {\hrule\!!height\thetopbaselinecorrection}%
    \def\dobotbaselinecorrection
@@ -110,15 +110,15 @@
 
 \def\dobaselinecorrection
   {\ifdim\prevdepth>\zeropoint\kern-\prevdepth\fi
-   \kern\dp\strutbox
-   \prevdepth\dp\strutbox}
+   \kern\strutdp
+   \prevdepth\strutdp}
 
 \def\baselinecorrection
   {\endgraf
    \ifvmode
      \ifdim\prevdepth<\maxdimen
        \ifdim\prevdepth<\zeropoint \else
-         \ifdim\prevdepth<\dp\strutbox
+         \ifdim\prevdepth<\strutdp
            \dobaselinecorrection
          \fi
        \fi
@@ -135,7 +135,6 @@
        \fi 
      \fi 
    \fi}
-
 
 % Beware, keep this one as it is, see for instance module
 % m-steps.tex, where we apply a \localhsize to the \vbox, in
@@ -235,7 +234,7 @@
      \setbaselinecorrections
      \dobotbaselinecorrection
      \allowbreak % new, otherwise problems when many in a row
-     \prevdepth\dp\strutbox
+     \prevdepth\strutdp
      \egroup
    \fi}
 
@@ -367,7 +366,7 @@
 %             \forcepresnaptrue
 %           \fi
 %           \forcedpresnapcorrection
-%           \ifdim\nextboxht>\ht\strutbox
+%           \ifdim\nextboxht>\strutht
 %             \scratchdimen\nextboxht
 %             \ifcase\@@presnap\relax
 %               \ifdim\scratchskip>\zeropoint\relax
@@ -411,7 +410,7 @@
 %               \vskip\scratchdimen
 %             \fi \fi
 %           \fi
-%           \ifdim\nextboxdp>\dp\strutbox
+%           \ifdim\nextboxdp>\strutdp
 %             \getnoflines{\nextboxdp}%
 %             \advance\noflines -1
 %             \ifnum\noflines>0
@@ -426,14 +425,14 @@
 %           \ifnum\@@extrasnap=3 \advance\scratchdimen \extrasnapsign\lineheight \fi
 %           \edef\postsnap{\the\scratchdimen}%
 %           \ifstrutsnapping
-%             \nextboxht\ht\strutbox
-%             \nextboxdp\dp\strutbox
+%             \nextboxht\strutht
+%             \nextboxdp\strutdp
 %           \else
 %             \scratchdimen\presnap
-%             \advance\scratchdimen \ht\strutbox
+%             \advance\scratchdimen \strutht
 %             \nextboxht\scratchdimen
 %             \scratchdimen\postsnap
-%             \advance\scratchdimen \dp\strutbox
+%             \advance\scratchdimen \strutdp
 %             \nextboxdp\scratchdimen
 %           \fi
 %           \hbox{\tracedsnapping\flushnextbox}%
@@ -462,7 +461,7 @@
 %           \ifshowgridboxes
 %             \setbox\nextbox\hbox{\color[grid:two]{\ruledhbox{\black\flushnextbox}}}%
 %           \fi
-%           \nextboxdp\dp\strutbox
+%           \nextboxdp\strutdp
 %           \dimen4=\nextboxht
 %           \dimen6=\nextboxdp
 %           \setbox\nextbox\vbox to \scratchdimen
@@ -568,7 +567,7 @@
             \forcepresnaptrue
           \fi
           \forcedpresnapcorrection
-          \ifdim\nextboxht>\ht\strutbox
+          \ifdim\nextboxht>\strutht
             \scratchdimen\nextboxht
             \ifcase\@@presnap\relax
               \ifdim\scratchskip>\zeropoint\relax
@@ -612,7 +611,7 @@
               \vskip\scratchdimen
             \fi \fi
           \fi
-          \ifdim\nextboxdp>\dp\strutbox
+          \ifdim\nextboxdp>\strutdp
             \getnoflines{\nextboxdp}%
             \advance\noflines -1
             \ifnum\noflines>0
@@ -627,14 +626,14 @@
           \ifnum\@@extrasnap=3 \advance\scratchdimen \extrasnapsign\lineheight \fi
           \edef\postsnap{\the\scratchdimen}%
           \ifstrutsnapping
-            \nextboxht\ht\strutbox
-            \nextboxdp\dp\strutbox
+            \nextboxht\strutht
+            \nextboxdp\strutdp
           \else
             \scratchdimen\presnap
-            \advance\scratchdimen \ht\strutbox
+            \advance\scratchdimen \strutht
             \nextboxht\scratchdimen
             \scratchdimen\postsnap
-            \advance\scratchdimen \dp\strutbox
+            \advance\scratchdimen \strutdp
             \nextboxdp\scratchdimen
           \fi
           \hbox{\tracedsnapping\flushnextbox}%
@@ -662,7 +661,7 @@
           \ifshowgridboxes
             \setbox\nextbox\hbox{\color[grid:two]{\ruledhbox{\black\flushnextbox}}}%
           \fi
-          \nextboxdp\dp\strutbox
+          \nextboxdp\strutdp
           \dimen4=\nextboxht
           \dimen6=\nextboxdp
           \iftracegridsnapping
@@ -757,7 +756,7 @@
   {\ifgridsnapping
      \dowithnextbox
        {\scratchdimen\nextboxht
-        \advance\scratchdimen -\ht\strutbox
+        \advance\scratchdimen -\strutht
         \advance\scratchdimen \topskip
         \nextboxht\scratchdimen
         \nextboxdp\zeropoint
@@ -782,7 +781,7 @@
 %           {\forgetall
 %            \vskip\zeropoint \!!plus \nextboxht
 %            \copy\nextbox
-%            \kern.5\dp\strutbox % VOORLOPIGE WAARDE
+%            \kern.5\strutdp % VOORLOPIGE WAARDE
 %            \vskip\zeropoint \!!plus \nextboxdp}
 %         \noindent\snaptogrid\vbox{\flushnextbox}%
 %         \egroup}
@@ -793,7 +792,7 @@
 % options, will be configurable some day ... 
 
 \def\centertogrid % usage: see ie pascal / stepcharts 
-  {\snaptogrid[\v!midden,.5\dp\strutbox]\vbox} 
+  {\snaptogrid[\v!midden,.5\strutdp]\vbox} 
 
 \ifx\startbaselinecorrection\undefined \wait \fi % change order
 
@@ -817,7 +816,7 @@
       \ruledvbox % calculated size 
         {\getrawnoflines{#3}% \getnoflines{#3}%
          \vskip\topskip
-         \vskip-\ht\strutbox
+         \vskip-\strutht
          \scratchdimen#2\advance\scratchdimen \lineheight
          \dorecurse\noflines
            {\strut

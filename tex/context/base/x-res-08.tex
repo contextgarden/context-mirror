@@ -16,14 +16,15 @@
 %D \starttyping 
 %D <rl:library>
 %D   <rl:usage>
-%D     <rl:type>figure<rr:type>
-%D     <rl:state>found|missing<rr:state>
-%D     <rl:name>filename<rr:name>
-%D     <rl:suffix>filesuffix<rr:suffix>
-%D     <rl:width>width in pt<rr:width>
-%D     <rl:height>height in pt<rr:height>
+%D     <rl:type>figure</rl:type>
+%D     <rl:state>found|missing</rl:state>
+%D     <rl:name>filename</rl:name>
+%D     <rl:suffix>filesuffix</rl:suffix>
+%D     <rl:width>width in pt</rl:width>
+%D     <rl:height>height in pt</rl:height>
+%D     <rl:comment>text</rl:comment>
 %D   </rl:usage>
-%D <rl:library>
+%D </rl:library>
 %D \stoptyping 
 
 \unprotect 
@@ -47,7 +48,8 @@
 \let\figurefilefile    \empty
 
 \def\XMLfeedbackresource#1#2%
-  {\immediate\write\XMLrllog
+  {\convertcommand\currentresourcecomment\to\currentresourcecomment
+   \immediate\write\XMLrllog
      {\writtenXMLelement{\XMLrlprefix usage}%
         {\writtenXMLelement{\XMLrlprefix type}{#2}%
          \writtenXMLelement{\XMLrlprefix state}{#1}%
@@ -78,6 +80,9 @@
          \ifnum\figurefilepage>\zerocount
            \writtenXMLelement{\XMLrlprefix page}{\figurefilepage}%
          \fi
+\ifx\currentresourcecomment\empty\else
+  \writtenXMLelement{\XMLrlprefix comment}{\currentresourcecomment}%
+\fi 
          \writtenXMLelement{\XMLrlprefix width}{\figurewidth}%
          \writtenXMLelement{\XMLrlprefix height}{\figureheight}}}}
 

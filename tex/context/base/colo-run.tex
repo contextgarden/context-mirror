@@ -14,7 +14,7 @@
      {\offinterlineskip
       \setuppalet[#1]
       \def\rule
-        {\vrule\!!width3em\!!height\ht\strutbox\!!depth\dp\strutbox}
+        {\vrule\!!width3em\!!height\strutht\!!depth\strutdp}
       \tabskip\zeropoint
       \def\doshowpalet##1%
         {\doifinsetelse\v!nummer{#2}{##1\hskip.5em}{}&
@@ -47,10 +47,10 @@
             \processpalet[#1]\doshowpalet}\cr
          \doifinset\v!naam{#2}{#1\hskip.5em}% 
          \def\doshowpalet##1%
-           {&\color[##1]{\vrule\!!width\!!widtha\!!height\ht\strutbox\!!depth\!!zeropoint}}%
+           {&\color[##1]{\vrule\!!width\!!widtha\!!height\strutht\!!depth\!!zeropoint}}%
          \processpalet[#1]\doshowpalet\crcr
          \def\doshowpalet##1%
-           {&\graycolor[##1]{\vrule\!!width\!!widtha\!!height\!!zeropoint\!!depth\dp\strutbox}}%
+           {&\graycolor[##1]{\vrule\!!width\!!widtha\!!height\!!zeropoint\!!depth\strutdp}}%
          \processpalet[#1]\doshowpalet\crcr
          \doifinset\v!waarde{#2}
            {\def\doshowpalet##1%
@@ -82,14 +82,14 @@
       \setuppalet
       \tabskip\zeropoint
       \def\rule
-        {\vrule\!!width4em\!!height\ht\strutbox\!!depth\dp\strutbox}
+        {\vrule\!!width4em\!!height\strutht\!!depth\strutdp}
       \def\colorformatseparator{\strut\cr}
       \def\dodoshowgroup##1%
         {\halign
            {\hss####\hss\cr
             \doifinset\v!nummer{#2}{\strut##1}\cr
-            \color[#1:##1]{\vrule\!!width4em\!!height\ht\strutbox\!!depth\!!zeropoint}\cr
-            \graycolor[#1:##1]{\vrule\!!width4em\!!height\!!zeropoint\!!depth\dp\strutbox}\cr
+            \color[#1:##1]{\vrule\!!width4em\!!height\strutht\!!depth\!!zeropoint}\cr
+            \graycolor[#1:##1]{\vrule\!!width4em\!!height\!!zeropoint\!!depth\strutdp}\cr
             \doifinset\v!waarde{#2}{\colorvalue{#1:##1}\strut}\crcr}}
       \def\doshowgroup##1%
         {\doifdefined{\??cr#1:##1}
@@ -110,7 +110,7 @@
       \setuppalet
       \tabskip\zeropoint
       \def\rule
-        {\vrule\!!width2.5em\!!height\ht\strutbox\!!depth\dp\strutbox}
+        {\vrule\!!width2.5em\!!height\strutht\!!depth\strutdp}
       \def\doshowgroup##1%
         {\doifdefined{\??cr#1:##1}
            {\doifinset\v!nummer{#2}{##1\hskip.5em}&
@@ -127,7 +127,7 @@
      \setupcolor[#1]
      \stelwitruimtein[\v!geen]
      \def\rule
-       {\vrule\!!width4em\!!height\ht\strutbox\!!depth\dp\strutbox}
+       {\vrule\!!width4em\!!height\strutht\!!depth\strutdp}
      \def\docommand##1%
        {\hbox 
           {\graycolor[##1]{\rule}\quad

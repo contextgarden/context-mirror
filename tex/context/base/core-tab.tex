@@ -1174,17 +1174,17 @@
 \let\@@TABLEhead\empty  \def\TABLEhead{\@@TABLEhead}
 \let\@@TABLEtail\empty  \def\TABLEtail{\@@TABLEtail}
 
-\letvalue{\e!start\e!tablehead}=\undefined
-\letvalue{\e!stop \e!tablehead}=\undefined
-\letvalue{\e!start\e!tabletail}=\undefined
-\letvalue{\e!stop \e!tabletail}=\undefined
+\letvalue{\e!start\v!tablehead}=\undefined
+\letvalue{\e!stop \v!tablehead}=\undefined
+\letvalue{\e!start\v!tabletail}=\undefined
+\letvalue{\e!stop \v!tabletail}=\undefined
 
 \expanded
-  {\def\csname\e!start\e!tablehead\endcsname##1\csname\e!stop\e!tablehead\endcsname%
+  {\def\csname\e!start\v!tablehead\endcsname##1\csname\e!stop\v!tablehead\endcsname%
      {\noexpand\setTABLEhead##1\noexpand\end}}
 
 \expanded
-  {\def\csname\e!start\e!tabletail\endcsname##1\csname\e!stop\e!tabletail\endcsname%
+  {\def\csname\e!start\v!tabletail\endcsname##1\csname\e!stop\v!tabletail\endcsname%
      {\noexpand\setTABLEtail##1\noexpand\end}}
 
 %D The second argument is a dummy one, by scanning for it, we
@@ -1218,9 +1218,9 @@
    \fi
    \advance\dimen2 -\dimen0
    \global\TABLEmaxheight\dimen2
-   \global\advance\TABLEmaxheight -\dp\strutbox
+   \global\advance\TABLEmaxheight -\strutdp
    \ifdim\prevdepth<\maxdimen\ifdim\prevdepth>\zeropoint
-     \global\advance\TABLEmaxheight -\dp\strutbox
+     \global\advance\TABLEmaxheight -\strutdp
      \global\advance\TABLEmaxheight -\parskip
    \fi\fi}
 
@@ -1233,7 +1233,7 @@
    \fi
    \advance\dimen2 -\dimen0
    \global\TABLEmaxheight\dimen2
-   \global\advance\TABLEmaxheight -\dp\strutbox}
+   \global\advance\TABLEmaxheight -\strutdp}
 
 \def\calculatemaxTABLEheight#1%
   {\ifsplittables
@@ -1570,7 +1570,7 @@
        \gdef\afterTABLEline{\TABLEnoalign{\nobreak}}%
      \else
        \dimen2=\TABLEheight
-       \advance\dimen2 \dp\strutbox
+       \advance\dimen2 \strutdp
        \advance\dimen2 \TABLEtailheight
        \advance\dimen2 \TABLEcaptionheight
        \advance\dimen2 \lineheight % we're ahead

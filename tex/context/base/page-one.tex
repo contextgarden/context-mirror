@@ -56,14 +56,14 @@
 %       \pushcolor
 %       \ifgridsnapping
 %         \vskip-\currentpagedepth
-%         \vskip\openstrutdepth % \dp\strutbox
-%         \prevdepth\openstrutdepth % \dp\strutbox
+%         \vskip\openstrutdepth     % \strutdp
+%         \prevdepth\openstrutdepth % \strutdp
 %         \dobotinsertions
 %         \vfil
 %       \else\ifr@ggedbottom
 %         \vskip-\currentpagedepth
-%         \vskip\openstrutdepth % \dp\strutbox
-%         \prevdepth\openstrutdepth % \dp\strutbox
+%         \vskip\openstrutdepth % \strutdp
+%         \prevdepth\openstrutdepth % \strutdp
 %         \dobotinsertions
 %         \vfil
 %       \else\ifb@selinebottom
@@ -458,7 +458,7 @@
   {\baselinecorrection
    \doplacefloatbox
    \doinsertfloatinfo
-   \doif\@@bkspringvolgendein\v!nee\noindentation} % new 
+   \dochecknextindentation\??bk} 
 
 \def\OTRONEsomefixdfloat % [#1]
   {\docheckiffloatfits

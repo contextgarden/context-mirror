@@ -76,15 +76,15 @@
        \normalhbox 
          {\boxrulewidth5\testrulewidth
           \setbox0\ruledhbox to \hangindent
-            {\scratchdimen\ht\strutbox
-             \advance\scratchdimen \dp\strutbox
+            {\scratchdimen\strutht
+             \advance\scratchdimen \strutdp
              \vrule
                \!!width  \zeropoint
                \!!height \zeropoint
                \!!depth -\hangafter\scratchdimen}%
           \normalhskip-\hangindent
           \smashbox0
-          \raise\ht\strutbox\box0}%
+          \raise\strutht\box0}%
      \fi
    \fi}
 

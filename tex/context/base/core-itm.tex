@@ -578,7 +578,7 @@
      \ifnum\itemlevel=\plusone
        \doitembreak\allowbreak           % toegevoegd
        \getitemparameter1\c!na
-       \doif\@@oospringvolgendein\v!nee\noindentation
+       \dochecknextindentation\??oo
      \fi
    \fi
    \endgroup
@@ -888,12 +888,12 @@
 % efficient default itemize as well as upward compatible 
 % definition: 
 
-\defineitemgroup [\e!itemize] [\c!niveaus=6]
+\defineitemgroup [\v!itemize] [\c!niveaus=6]
 
 % keep these, needed for styles: 
 
-% \def\startitemize {\startitemgroup[]} 
+% \def\startitemize {\startitemgroup[\v!itemize]} 
 % \def\stopitemize  {\stopitemgroup}
-% \def\setupitemize {\setupitemgroup[]}
+% \def\setupitemize {\setupitemgroup[\v!itemize]} 
 
 \protect \endinput

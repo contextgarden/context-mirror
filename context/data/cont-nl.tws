@@ -328,7 +328,7 @@ var:regels:ja,nee,afgebroken::
 stopsetup
 
 startsetup
-com:starttypen:
+com:start<<typen>>:
 typ:stp/:
 stopsetup
 
@@ -677,7 +677,7 @@ startsetup
 com:stelkantlijnin:
 typ:var/:
 var:niveau:*getal::
-var:dikte:*maat::
+var:lijndikte:*maat::
 stopsetup
 
 startsetup
@@ -2401,8 +2401,9 @@ val:*sectie::
 stopsetup
 
 startsetup
-com:stelopsommingin:
-typ:val/vals/vars/:
+com:stelitemgroepin:
+typ:val/val/vals/vars/:
+val:*naam::
 val:*getal,elk::
 val:standaard,repeat/ruim,repeat/aanelkaar,opelkaar, vanelkaar,afsluiter,aansluitend,opmarge,inmarge, autointro,los,paragraaf,intekst:standaard:
 var:marge:nee,standaard,*maat::
@@ -2429,10 +2430,11 @@ var:springvolgendein:ja,nee::
 stopsetup
 
 startsetup
-com:startopsomming:
-typ:vals/vars/stp/:
+com:start<<itemgroup>>:
+typ:val/vals/vars/stp/:
+val:*naam::
 val:a,A,KA,n,N,m,r,R,KR,*getal,verder, standaard,repeat/ruim,repeat/aanelkaar,opelkaar, afsluiter,aansluitend,opmarge,inmarge,intro, kolommen:standaard:
-ivr:stelopsommingin::
+ivr:stelitemgroepin::
 stopsetup
 
 startsetup
@@ -2855,7 +2857,7 @@ ivr:stelomlijndin::
 stopsetup
 
 startsetup
-com:startbuffer:
+com:start<<buffer>>:
 typ:val/stp/:
 val:*naam::
 stopsetup
@@ -2946,7 +2948,7 @@ var:file:*file::
 stopsetup
 
 startsetup
-com:startformule:
+com:start<<formule>>:
 typ:stp/:
 val:*formule::
 stopsetup
@@ -3251,7 +3253,7 @@ val:*tekst::
 stopsetup
 
 startsetup
-com:starttabulatie:
+com:start<<tabulatie>>:
 typ:val/vars/stp/:
 val:*tekst::
 ivr:gebruikexternfiguur::

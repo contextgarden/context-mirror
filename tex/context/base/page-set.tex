@@ -298,8 +298,8 @@
            {\topskipcorrection
             \dorecurse\columnmaxcells
               {\setbox\scratchbox\hbox{\OTRSETgetgridcell\mofcolumns\recurselevel}%
-               \ht\scratchbox\ht\strutbox
-               \dp\scratchbox\dp\strutbox
+               \ht\scratchbox\strutht
+               \dp\scratchbox\strutdp
                \ifcase\columndirection
                  \box\scratchbox
                \else
@@ -328,8 +328,8 @@
        \setbox\scratchbox\hbox
          {\hbox to \zeropoint{\OTRSETgetgridcell\nofcolumns\lastcolumnlastcell}%
           \box\scratchbox}%
-       \ht\scratchbox\ht\strutbox
-       \dp\scratchbox\dp\strutbox
+       \ht\scratchbox\strutht
+       \dp\scratchbox\strutdp
        \OTRSETsetgridcell\nofcolumns\lastcolumnlastcell\box\scratchbox
      \fi
      \global\lastcolumnlastcell\zerocount
@@ -628,14 +628,14 @@
 %    \setbox0\vbox to \columnfreecells\lineheight
 %      {\vskip-\topskip
 %       \vskip\lineheight
-%       \prevdepth\dp\strutbox
+%       \prevdepth\strutdp
 %       \unvbox\normalpagebox
 %       \vfill}%
 %    \setbox2\hbox
 %      {\OTRSETplacebottomnotes}%
 %    \setbox\scratchbox\hbox
 %      {\wd0\zeropoint\box0\box2}%
-%    \dp\scratchbox\dp\strutbox
+%    \dp\scratchbox\strutdp
 %    \OTRSEThandleflushedtext1
 %    \egroup}
 
@@ -645,14 +645,14 @@
    \setbox0\vbox to \columnfreecells\lineheight
      {\vskip-\topskip
       \vskip\lineheight
-      \prevdepth\dp\strutbox
+      \prevdepth\strutdp
       \unvbox\normalpagebox
       \vfill}%
    \setbox2\hbox
      {\OTRSETplacebottomnotes}%
    \setbox\scratchbox\hbox
      {\wd0\zeropoint\box0\box2}%
-   \dp\scratchbox\dp\strutbox
+   \dp\scratchbox\strutdp
    \donetrue
    \ifbalancecolumns \ifcase\OTRSETfinish \or \or
      % we're in the second balance loop in this column set, 
@@ -1931,8 +1931,8 @@
         \wd\scratchbox\zeropoint
       \else
         \wd\scratchbox\hsize
-        \ht\scratchbox\ht\strutbox
-        \dp\scratchbox\dp\strutbox
+        \ht\scratchbox\strutht
+        \dp\scratchbox\strutdp
       \fi
       \box\scratchbox}}
 
@@ -1973,7 +1973,7 @@
 
 \def\OTRSETsomeslotfloat[#1]%
   {\setbox\floatbox\vbox{\flushfloatbox}%
-   \dp\floatbox\dp\strutbox
+   \dp\floatbox\strutdp
    \@EA\uppercasestring\floatmethod\to\floatmethod
    \OTRSETstoreincolumnslot\floatmethod\floatbox
    \doinsertfloatinfo}
@@ -2439,27 +2439,6 @@
 
 % \chardef\columnslotlocation2
 
-% \def\dostopcolumnsetspan#1%
-%   {\par
-%    \vbox{\strut}
-%    \kern-2\lineheight 
-%    \vbox{\strut}
-%    \doifsomething{\framedtextparameter{cs:#1}\c!na}
-%      {\framedtextparameter{cs:#1}\c!na
-%       \kern\zeropoint}% otherwise blanks disappear, better be a switch
-%    \dostopframedtext 
-%    \egroup
-%    \setbox\scratchbox\frozenhbox % keeps grid snapping okay 
-%      {\lower\strutdepth\box\scratchbox}%
-%    %todo: nboven/onder\chardef\columnslotlocation2
-%    %\OTRSETstoreincolumnslotSOMEWHERE\columnslotlocation\scratchbox
-%    \chardef\columnslotspacing\framedtextparameter{cs:#1}\c!nregels\relax
-%    \OTRSETstoreincolumnslotSOMEWHERE2\scratchbox
-%    \doif{\framedtextparameter{cs:#1}\c!springvolgendein}\v!nee
-%      \noindentation
-%    \egroup
-%    \endgraf}
-
 \def\dostopcolumnsetspan#1%
   {\par
    \vbox{\strut}
@@ -2488,8 +2467,8 @@
      \@EA\uppercasestring\floatmethod\to\floatmethod
      % todo : \v!hier -> here enzovoorts 
      \OTRSETstoreincolumnslot\floatmethod\scratchbox
-     \doif{\framedtextparameter{cs:#1}\c!springvolgendein}\v!nee
-       \noindentation
+     % watch out: no \dochecknextindentation{tag} 
+     \checknextindentation[\framedtextparameter{cs:#1}\springvolgendein]
    \fi
    \egroup
    \endgraf}

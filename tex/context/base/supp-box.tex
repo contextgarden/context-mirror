@@ -35,6 +35,19 @@
 \ifx\normalvcenter\undefined \let\normalvcenter\vcenter \fi 
 
 %D \macros
+%D   {strutdp,strutht,strutwd}
+%D
+%D The next shortcuts save memory and keying. The width is 
+%D normally zero points (if not, you're in trouble). These 
+%D shortcuts can be used like a dimension, opposite to the 
+%D core macros \type {\strutdepth} and alike, which are 
+%D values.
+
+\def\strutdp{\dp\strutbox}
+\def\strutht{\ht\strutbox}
+\def\strutwd{\wd\strutbox} 
+
+%D \macros
 %D   {resetbox, emptybox}
 %D
 %D Let's start with an easy one. The next macro hides the 
@@ -741,7 +754,7 @@
      \reshapingboxtrue
      \the\everyshapebox 
      \normalhbox to \shapesignal{\strut\hss}% plus \strut 
-     \prevdepth\dp\strutbox} % never \nointerlineskip
+     \prevdepth\strutdp} % never \nointerlineskip
 
 \def\endofshapebox%
   {\endgraf
@@ -775,7 +788,7 @@
        {\everypar\emptytoks\normalvbox{\strut}}\nobreak
        \kern-\lineheight % geen \vskip
        \kern-\parskip
-     % \vskip-\dp\strutbox
+     % \vskip-\strutdp
      \fi\fi\fi
      \scratchdimen\dp\newshapebox
      \unvbox\newshapebox
@@ -783,8 +796,8 @@
      \kern-\scratchdimen % ?? 
      % now \prevdepth=0pt
      \ifdone
-       \kern\dp\strutbox
-       \prevdepth\dp\strutbox
+       \kern\strutdp
+       \prevdepth\strutdp
      \fi
    \fi
    \egroup}
@@ -899,8 +912,8 @@
               \normalhbox{\unhbox2}}}%
         \ifdim\ht0>\zeropoint
       \repeat}%
-    \ht\scratchbox\ht\strutbox
-    \dp\scratchbox\dp\strutbox
+    \ht\scratchbox\strutht
+    \dp\scratchbox\strutdp
     \box\scratchbox
     \egroup}
 
@@ -1009,12 +1022,12 @@
 %D            \hfuzz\maxdimen
 %D            \veryraggedright
 %D            \strut\unhcopy\nextbox}%
-%D         \ifdim\nextboxht>\ht\strutbox \else
+%D         \ifdim\nextboxht>\strutht \else
 %D           \setbox\scratchbox\null % overfull and not split 
 %D         \fi
 %D         \setbox\nextbox=\normalvbox % if omitted: missing brace reported
 %D           {\splittopskip=\openstrutheight
-%D            \setbox\nextbox=\vsplit\nextbox to \ht\strutbox
+%D            \setbox\nextbox=\vsplit\nextbox to \strutht
 %D            \unvbox\nextbox
 %D            \setbox\nextbox=\lastbox
 %D            \global\setbox1=\normalhbox
@@ -1065,15 +1078,15 @@
              \hskip\zeropoint \!!plus 1\!!fill % \hsize 
            \fi 
            \unhcopy0}%
-        \ifdim\nextboxht>\ht\strutbox 
+        \ifdim\nextboxht>\strutht 
           \setbox\nextbox\normalvbox % if omitted: missing brace reported
             {\splittopskip\openstrutheight
              \ifdone
-               \setbox\nextbox\vsplit\nextbox to \ht\strutbox
+               \setbox\nextbox\vsplit\nextbox to \strutht
              \else
                \doloop
-                 {\setbox0\vsplit\nextbox to \ht\strutbox
-                  \ifdim\nextboxht>\ht\strutbox \else \exitloop \fi}%
+                 {\setbox0\vsplit\nextbox to \strutht
+                  \ifdim\nextboxht>\strutht \else \exitloop \fi}%
              \fi
              \unvbox\nextbox
              \setbox\nextbox\lastbox
@@ -1651,8 +1664,8 @@
       \ifvoid\unhhedbox
         \setbox\hhbox\normalhbox{\strut\normalhboxofvbox\hhbox}%
       \fi
-      \ht\hhbox\ht\strutbox
-      \dp\hhbox\dp\strutbox
+      \ht\hhbox\strutht
+      \dp\hhbox\strutdp
       \ifdim\hhboxindent=\zeropoint\else
         \setbox\hhbox\normalhbox{\hskip-\hhboxindent\box\hhbox}%
         \hhboxindent\zeropoint
@@ -2045,10 +2058,10 @@
      {\bgroup
       \par
       \dimen0\nextboxht
-      \nextboxht\ht\strutbox
-      \nextboxdp\dp\strutbox
+      \nextboxht\strutht
+      \nextboxdp\strutdp
       \normalhbox{\flushnextbox}
-      \prevdepth\dp\strutbox
+      \prevdepth\strutdp
       \doloop
         {\advance\dimen0 -\lineheight
          \ifdim\dimen0<\zeropoint
@@ -2389,7 +2402,7 @@
   {\ifvmode \ifdim\prevdepth>\zeropoint \kern-\prevdepth \fi \fi}
 
 \def\obeydepth
-  {\par \removedepth \ifvmode \kern\dp\strutbox \fi}
+  {\par \removedepth \ifvmode \kern\strutdp \fi}
 
 %D \macros
 %D   {removebottomthings, removelastskip}
@@ -2409,8 +2422,8 @@
 %D strut. 
 
 \def\domakestrutofbox
-  {\ht\registercount\ht\strutbox
-   \dp\registercount\dp\strutbox
+  {\ht\registercount\strutht
+   \dp\registercount\strutdp
    \wd\registercount\zeropoint}
 
 \def\makestrutofbox
@@ -2433,8 +2446,8 @@
   {\def\next            % both direct and {} dimensions 
      {\dowithnextbox
         {\setbox\nextbox\normalhbox{#1\scratchdimen\flushnextbox}%
-         \nextboxht\ht\strutbox
-         \nextboxdp\dp\strutbox
+         \nextboxht\strutht
+         \nextboxdp\strutdp
          \flushnextbox}}%
    \afterassignment\next\scratchdimen=#2}
 

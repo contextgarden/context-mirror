@@ -328,7 +328,7 @@ var:righe:si,no,sillabato::
 stopsetup
 
 startsetup
-com:iniziatyping:
+com:inizia<<typing>>:
 typ:stp/:
 stopsetup
 
@@ -677,7 +677,7 @@ startsetup
 com:impostalineemargine:
 typ:var/:
 var:livello:*numero::
-var:spessore:*dimensione::
+var:spessorelinea:*dimensione::
 stopsetup
 
 startsetup
@@ -2401,8 +2401,9 @@ val:*sezione::
 stopsetup
 
 startsetup
-com:impostaelenco:
-typ:val/vals/vars/:
+com:setupitemgroup:
+typ:val/val/vals/vars/:
+val:*nome::
 val:*numero,ogni::
 val:standard,repeat/ampio,repeat/vicino,impaccato, unpacked,stopper,unito,almargine,inmargine, autointro,lento,capoverso,intesto:standard:
 var:margine:no,standard,*dimensione::
@@ -2429,10 +2430,11 @@ var:rientrasuccessivo:si,no::
 stopsetup
 
 startsetup
-com:iniziaelenco:
-typ:vals/vars/stp/:
+com:inizia<<itemgroup>>:
+typ:val/vals/vars/stp/:
+val:*nome::
 val:a,A,KA,n,N,m,r,R,KR,*numero,continua, standard,repeat/ampio,repeat/vicino,impaccato, stopper,unito,almargine,inmargine,intro, colonne:standard:
-ivr:impostaelenco::
+ivr:setupitemgroup::
 stopsetup
 
 startsetup
@@ -2855,7 +2857,7 @@ ivr:impostaincorniciato::
 stopsetup
 
 startsetup
-com:iniziabuffer:
+com:inizia<<buffer>>:
 typ:val/stp/:
 val:*nome::
 stopsetup
@@ -2946,7 +2948,7 @@ var:file:*file::
 stopsetup
 
 startsetup
-com:iniziaformula:
+com:inizia<<formula>>:
 typ:stp/:
 val:*formula::
 stopsetup
@@ -3251,7 +3253,7 @@ val:*testo::
 stopsetup
 
 startsetup
-com:iniziatabulato:
+com:inizia<<tabulato>>:
 typ:val/vars/stp/:
 val:*testo::
 ivr:usafiguraesterna::

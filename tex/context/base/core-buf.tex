@@ -131,8 +131,8 @@
 
 % more accurate 
 %
-% \@EA\convertcommand\csname\e!start\e!buffer\endcsname\to\beginofblock % else a space
-% \@EA\convertcommand\csname\e!stop\e!buffer \endcsname\to\endofblock
+% \@EA\convertcommand\csname\e!start\v!buffer\endcsname\to\beginofblock % else a space
+% \@EA\convertcommand\csname\e!stop\v!buffer \endcsname\to\endofblock
 
 \def\resetbuffer
   {\dosingleempty\doresetbuffer}
@@ -206,9 +206,9 @@
      {\doifnumberelse{\getvalue{\??bu#1\c!alinea}} 
         \segmentatebuffertrue\segmentatebufferfalse}%
    \doifelse{#4}{}
-     {\letbeundefined{\e!stop\e!buffer}% % \let\stopbuffer=\relax   % \undefined
-      \@EA\@EA\@EA\convertargument\@EA\e!start\e!buffer\to\beginofblock % else a space
-      \@EA\@EA\@EA\convertargument\@EA\e!stop\e!buffer\to\endofblock
+     {\letbeundefined{\e!stop\v!buffer}% % \let\stopbuffer=\relax   % \undefined
+      \@EA\@EA\@EA\convertargument\@EA\e!start\v!buffer\to\beginofblock % else a space
+      \@EA\@EA\@EA\convertargument\@EA\e!stop\v!buffer\to\endofblock
       \let\processnextblockline\processnextbufferline}
      {\letbeundefined{#4}% \letvalue{#4}=\relax     % \undefined
       \@EA\convertargument\csname#3\endcsname\to\beginofblock
@@ -233,7 +233,7 @@
    \let\writeoutblocks\gobbleoneargument
    \copyblockline}
 
-\letvalue{\e!start\e!buffer}\dostartbuffer
+\letvalue{\e!start\v!buffer}\dostartbuffer
 
 % \setbuffer[name]#2\endbuffer : saves to file #1.tmp
 
@@ -1014,9 +1014,9 @@
 
 % the buffer mechanism handles nesting, add some switch
 
-\setvalue{\e!start\e!verbergen}%
+\setvalue{\e!start\v!verbergen}%
   {\dostartbuffer[buf-\nofpostponedblocks]
-     [\e!start\e!verbergen][\e!stop\e!verbergen]}
+     [\e!start\v!verbergen][\e!stop\v!verbergen]}
 
 \stelbufferin
   [\c!alinea=\v!nee,

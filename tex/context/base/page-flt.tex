@@ -1056,7 +1056,7 @@
 \newskip\sidefloatleftshift
 \newskip\sidefloatrightshift
 
-\def\sidefloattopoffset         {\openstrutdepth} % {\dp\strutbox}
+\def\sidefloattopoffset         {\openstrutdepth} % {\strutdp}
 
 \newcount\noftopfloats          \noftopfloats=2
 \newcount\nofbotfloats          \nofbotfloats=0
@@ -1145,7 +1145,7 @@
           {\doattributes{\??kj#1}\c!kopletter\c!kopkleur
              {\labeltexts{#1}{\preparednumber}}%
            \doattributes{\??kj#1}\c!tekstletter\c!tekstkleur
-             {\dotfskip\@@kjkjafstand#3}}}%
+             {\dotfskip{\getvalue{\??kj#1\c!afstand}}#3}}}%
     \fi}
 
 \def\placefloatcaptiontext     [#1]{\getvalue{@fl@t@#1}}
@@ -1258,8 +1258,10 @@
              \dopreparestackcaptionmin{#1}{#2}{#3}{#4}%
            \fi}}%
      \edef\width{\the\wd\tempfloatbox}%
-\doglobal\addlocalbackgroundtobox\tempfloatbox
-\doglobal\addlocalbackgroundtobox\tempcaptionbox
+%\doglobal 
+\addlocalbackgroundtobox\tempfloatbox
+%\doglobal 
+\addlocalbackgroundtobox\tempcaptionbox
       \buildfloatbox
    \fi
 %   \doglobal\addlocalbackgroundtobox\floatbox
@@ -1381,10 +1383,10 @@
       \processaction
         [\@@kjkjplaats]
         [ \v!boven=>\locatefloat{\box\tempcaptionbox}%
-                    \endgraf\@@kjkjtussen
+                    \endgraf\nointerlineskip\@@kjkjtussen
                     \locatefloat{\box\tempfloatbox},
           \v!onder=>\locatefloat{\box\tempfloatbox}%
-                    \endgraf\@@kjkjtussen
+                    \endgraf\nointerlineskip\@@kjkjtussen
                     \locatefloat{\box\tempcaptionbox},
            \v!hoog=>\locatefloat
                       {\doifelse\@@flflplaats\v!links
@@ -1544,7 +1546,8 @@
    \mindermeldingen
    %\showcomposition
    \setbox\tempfloatbox\vbox{\borderedfloatbox{#4}}%
-\doglobal\addlocalbackgroundtobox\tempfloatbox
+%\doglobal
+\addlocalbackgroundtobox\tempfloatbox
    \ifnofloatcaption
      \global\setbox\floatbox\vbox{\box\tempfloatbox}%
    \else
@@ -1565,14 +1568,21 @@
           {\dosetraggedvbox\@@kjkjuitlijnen
            \setbox\tempcaptionbox\raggedbox
              {\hsize\wd\tempfloatbox\putcompletecaption{#4}{#2}{#3}{0}}}}%
-\doglobal\addlocalbackgroundtobox\tempcaptionbox
+%\doglobal
+\addlocalbackgroundtobox\tempcaptionbox
      \global\setbox\floatbox\vbox
        {\processaction
           [\@@kjkjplaats]
-          [ \v!boven=>\box\tempcaptionbox\endgraf\@@kjkjtussen\box\tempfloatbox,
-            \v!onder=>\box\tempfloatbox\endgraf\@@kjkjtussen\box\tempcaptionbox,
+          [ \v!boven=>\box\tempcaptionbox
+                      \endgraf\nointerlineskip\@@kjkjtussen
+                      \box\tempfloatbox,
+            \v!onder=>\box\tempfloatbox
+                      \endgraf\nointerlineskip\@@kjkjtussen
+                      \box\tempcaptionbox,
              \v!geen=>\box\tempfloatbox,
-          \s!unknown=>\box\tempfloatbox\endgraf\@@kjkjtussen\box\tempcaptionbox]}%
+          \s!unknown=>\box\tempfloatbox
+                      \endgraf\nointerlineskip\@@kjkjtussen
+                      \box\tempcaptionbox]}%
    \fi
 %   \doglobal\addlocalbackgroundtobox\floatbox
    \egroup}
@@ -1924,11 +1934,11 @@
 %      \egroup
 %    \fi\fi}
 % 
-% \setvalue{\e!start\e!uitstellen}%
+% \setvalue{\e!start\v!uitstellen}%
 %   {\doglobal\increment\nofpostponedblocks
 %    \showmessage\m!layouts3\nofpostponedblocks
 %    \dostartbuffer[buf-\nofpostponedblocks]
-%      [\e!start\e!uitstellen][\e!stop\e!uitstellen]}
+%      [\e!start\v!uitstellen][\e!stop\v!uitstellen]}
 
 % \startpostponing [pagenumber] [+pageoffset]
 % 
@@ -1983,7 +1993,7 @@
 
 % beware, \dosingleempty conflicts with buffers (feeds back the \par)
 
-\setvalue{\e!start\e!uitstellen}%
+\setvalue{\e!start\v!uitstellen}%
   {\bgroup
    \obeylines
    \doifnextcharelse[%
@@ -1998,13 +2008,13 @@
    \egroup
    \showmessage\m!layouts3\nofpostponedpageblocks
    \dostartbuffer[rbuf-\nofpostponedpageblocks]%
-     [\e!start\e!uitstellen][\e!stop\e!uitstellen]}
+     [\e!start\v!uitstellen][\e!stop\v!uitstellen]}
 
 \def\dodostartpostponing
   {\doglobal\increment\nofpostponedblocks
    \showmessage\m!layouts3\nofpostponedblocks
    \dostartbuffer[pbuf-\nofpostponedblocks]%
-     [\e!start\e!uitstellen][\e!stop\e!uitstellen]}
+     [\e!start\v!uitstellen][\e!stop\v!uitstellen]}
 
 \definieernummer
   [\??si]

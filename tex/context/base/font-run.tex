@@ -37,9 +37,9 @@
      {\dosetshowfonttitle{#1}%
       \def\bigstrut##1##2%
         {\hbox{\vrule
-           \!!height ##1\ht\strutbox
-           \!!depth  ##2\dp\strutbox
-           \!!width  \!!zeropoint}}
+           \!!height##1\strutht
+           \!!depth ##2\strutdp
+           \!!width \zeropoint}}
       \def\next##1##2##3%
         {&&##1&&##2\tf##3&&##2\sc##3%
          &&##2\sl##3&&##2\it##3&&##2\bf##3&&##2\bs##3&&##2\bi##3%
@@ -144,15 +144,15 @@
                     {\tf\vbox to 2.5em
                        {\vss
                         \hbox to 2.5em
-                          {\dummy\ifdim\fontdimen2\font=\!!zeropoint
-                           \setbox\scratchbox=\hbox
-                             {\raise.5\dp\scratchbox\hbox
-                                {\lower.5\ht\scratchbox\copy\scratchbox}}%
+                          {\dummy\ifdim\fontdimen2\font=\zeropoint
+                             \setbox\scratchbox\hbox
+                               {\raise.5\dp\scratchbox\hbox
+                                  {\lower.5\ht\scratchbox\copy\scratchbox}}%
                              \ht\scratchbox\zeropoint
                              \dp\scratchbox\zeropoint
                            \else
-                             \ht\scratchbox\ht\strutbox
-                             \dp\scratchbox\dp\strutbox
+                             \ht\scratchbox\strutht
+                             \dp\scratchbox\strutdp
                              \strut
                            \fi
                            \hss\copy\scratchbox\hss}

@@ -1505,6 +1505,9 @@
 \def\useexternalfigure
   {\doquadrupleempty\douseexternalfigure}
 
+\unexpanded\def\externalfigure
+  {\dotripleempty\doexternalfigure}
+
 \def\doexternalfigure[#1][#2][#3]%
   {\bgroup
    \doifelsenothing{#1}
@@ -1513,10 +1516,16 @@
         {\useexternalfigure[\s!dummy][#1][#2][#3]%
          \getexternalfigure{\s!dummy}[#3]}
         {\getexternalfigure{#1}[#2]}}%
+   \globallet\currentresourcecomment\empty
    \egroup}
 
-\unexpanded\def\externalfigure%
-  {\dotripleempty\doexternalfigure}
+\long\def\resourcecomment#1%
+  {\long\gdef\currentresourcecomment{#1}}
+
+\long\def\startresourcecomment#1\stopresourcecomment
+  {\long\gdef\currentresourcecomment{#1}}
+
+\let\currentresourcecomment\empty
 
 %D Two alternatives, more settings needed.
 

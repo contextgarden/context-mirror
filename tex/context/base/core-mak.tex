@@ -21,7 +21,7 @@
 % - still undocumented and also not in setupb yet
 % - kan ook intern/direct (scheelt duplicatie), zie \framedtext
 
-\def\dodefinieerplaats[#1][#2]%
+\def\dodefineplacement[#1][#2]%
   {\getparameters 
      [\??pl#1]
      [\c!links=\hss,
@@ -29,31 +29,71 @@
       \c!regelcorrectie=\v!uit,
       \c!dieptecorrectie=\v!uit,
       \c!marge=\v!standaard,
+      \c!grid=\v!midden,
       %\c!voor=,
       %\c!na=, 
      #2]%
-   \setvalue{\e!plaats#1}{\doplaats[\??pl#1]}}
+   \setvalue{\e!plaats#1}{\doplacement[\??pl#1]}}
 
-\def\definieerplaats
-  {\dodoubleempty\dodefinieerplaats}
+\def\defineplacement
+  {\dodoubleempty\dodefineplacement}
 
-\def\doplaats
-  {\dodoubleempty\dodoplaats}
+\def\setupplacement
+  {\dodoubleempty\dosetupplacement}
 
-\def\dodoplaats[#1][#2]% correctie moet mooier 
+\def\dosetupplacement[#1]%
+  {\dodoubleempty\getparameters[\??pl#1]}
+
+\def\doplacement
+  {\dodoubleempty\dodoplacement}
+
+% \def\dodoplacement[#1][#2]% correctie moet mooier 
+%   {\bgroup 
+%    \dowithnextbox
+%      {\setlocalhsize
+%       \getparameters[#1][#2]%
+%       \getvalue{#1\c!voor}%
+%       \doifvalue{#1\c!regelcorrectie}\v!aan \startbaselinecorrection
+%       \doifinset{\getvalue{#1\c!marge}}{\v!standaard,\v!ja}\noindent
+%       \hbox to \localhsize
+%         {\getvalue{#1\c!links}%
+%          \flushnextbox
+%          \getvalue{#1\c!rechts}}%
+%       \doifvalue{#1\c!dieptecorrectie}\v!aan\baselinecorrection
+%       \doifvalue{#1\c!regelcorrectie }\v!aan\stopbaselinecorrection
+%       \getvalue{#1\c!na}%
+%       \egroup}
+%    \vbox}
+
+\def\dodoplacement[#1][#2]% correctie moet mooier 
   {\bgroup 
-   \dowithnextbox
+   \dowithnextboxcontent
+     {\forgetall}
      {\setlocalhsize
       \getparameters[#1][#2]%
       \getvalue{#1\c!voor}%
-      \doifvalue{#1\c!regelcorrectie}\v!aan \startbaselinecorrection
-      \doifinset{\getvalue{#1\c!marge}}{\v!standaard,\v!ja}\noindent
-      \hbox to \localhsize
+      \begingroup
+      \positioningparfalse
+      \setbox\nextbox\hbox to \localhsize
         {\getvalue{#1\c!links}%
          \flushnextbox
          \getvalue{#1\c!rechts}}%
-      \doifvalue{#1\c!dieptecorrectie}\v!aan\baselinecorrection
-      \doifvalue{#1\c!regelcorrectie }\v!aan\stopbaselinecorrection
+      \ifinsidefloat \else
+        \addlocalbackgroundtobox\nextbox
+      \fi 
+      \ifgridsnapping 
+        \doifundefined{#1\c!grid}{\letvalue{#1\c!grid}\v!midden}%
+        % unchecked 
+        \doifinset{\getvalue{#1\c!marge}}{\v!standaard,\v!ja}\noindent
+        \snaptogrid[\getvalue{#1\c!grid}]\hbox{\flushnextbox}%
+      \else
+        \doifvalue{#1\c!regelcorrectie}\v!aan \startbaselinecorrection
+        \doifinset{\getvalue{#1\c!marge}}{\v!standaard,\v!ja}\noindent
+        \flushnextbox
+        \doifvalue{#1\c!dieptecorrectie}\v!aan\baselinecorrection
+        \doifvalue{#1\c!regelcorrectie }\v!aan\stopbaselinecorrection
+      \fi 
+      \endgroup
       \getvalue{#1\c!na}%
       \egroup}
    \vbox}

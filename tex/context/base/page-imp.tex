@@ -1081,11 +1081,11 @@
         {\setuppapersize[\c!links=\hskip\@@pcoffset]%
          \adddimenmacro\papierhoogte\@@pcoffset\@@pcoffset\@@pcafstand\@@pchoogte\to\@@pcpaperheight
          \adddimenmacro\papierbreedte\@@pcoffset\@@pcoffset\to\@@pcpaperwidth
-         \defineoverlay[pagecomment][\placepagecommentTB]}
+         \defineoverlay[\v!pagecomment][\placepagecommentTB]}
         {\setuppapersize[\c!boven=\vskip\@@pcoffset]%
          \adddimenmacro\papierhoogte\@@pcoffset\@@pcoffset\to\@@pcpaperheight
          \adddimenmacro\papierbreedte\@@pcoffset\@@pcoffset\@@pcafstand\@@pcbreedte\to\@@pcpaperwidth
-         \defineoverlay[pagecomment][\placepagecommentLR]}%
+         \defineoverlay[\v!pagecomment][\placepagecommentLR]}%
       \processaction
         [\@@pcplaats]
         [ \v!onder=>{\setuppapersize[\c!onder =\vss,\c!boven =\vskip\@@pcoffset]},
@@ -1093,12 +1093,12 @@
           \v!links=>{\setuppapersize[\c!links =\hss,\c!rechts=\hskip\@@pcoffset]},
          \v!rechts=>{\setuppapersize[\c!rechts=\hss,\c!links =\hskip\@@pcoffset]}]%
       \definepapersize
-        [commentedpage]
+        [\v!pagecomment]
         [\c!hoogte=\@@pcpaperheight,
          \c!breedte=\@@pcpaperwidth]%
       \let\@@pcprintpapersize\printpapersize
-      \setuppapersize[\papersize][commentedpage]%
-      \setupbackgrounds[\v!papier][\c!achtergrond=pagecomment]}
+      \setuppapersize[\papersize][\v!pagecomment]%
+      \setupbackgrounds[\v!papier][\c!achtergrond=\v!pagecomment]}
     {\doif\@@pcstatus\v!stop % else initialization  invokes backgrounds
        {% this should be tested first
         % \expanded{\setuppapersize[\papersize][\@@pcprintpapersize]}%
@@ -1117,7 +1117,7 @@
         {\forgetall
          \hsize\papierbreedte
          \ifpagecomment
-           \haalbuffer[pagecomm]
+           \getbuffer[\v!pagecomment]%
            \global\pagecommentfalse
          \fi}%
       \hfill
@@ -1133,7 +1133,7 @@
          \vskip\@@pcoffset
          \hsize\@@pcbreedte
          \ifpagecomment
-           \haalbuffer[pagecomm]
+           \getbuffer[\v!pagecomment]% 
            \global\pagecommentfalse
          \fi
          \vss}%
@@ -1142,9 +1142,9 @@
 
 \newif\ifpagecomment
 
-\setvalue{\e!start\e!pagecomment}%
+\setvalue{\e!start\v!pagecomment}%
   {\global\pagecommenttrue
-   \dostartbuffer[pagecomm][\e!start\e!pagecomment][\e!stop\e!pagecomment]}
+   \dostartbuffer[\v!pagecomment][\e!start\v!pagecomment][\e!stop\v!pagecomment]}
 
 \setuppagecomment
   [\c!status=, % \v!stop would invoke background calculation

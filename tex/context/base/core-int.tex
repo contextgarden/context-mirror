@@ -1115,7 +1115,7 @@
 \setvalue{\??am\??am\v!geen}{3}
 \setvalue{\??am\??am       }{1} % default
 
-\processbetween{\e!interactiemenu}\dostartinteractiemenu
+\processbetween{\v!interactiemenu}\dostartinteractiemenu
 
 \def\dostartinteractiemenu#1%
   {\dodostartinteractiemenu#1\dodostopinteractiemenu}
@@ -2112,7 +2112,7 @@
 \newbox\commentbox
 
 \def\doflushcommentanchors
-   {\inmarge{\hbox{\raise\ht\strutbox\box\commentbox}}}
+   {\inmarge{\hbox{\raise\strutht\box\commentbox}}}
 
 \def\flushcommentanchors % in everypar so indirect
   {\ifvoid\commentbox\else \doflushcommentanchors \fi}
@@ -2120,7 +2120,7 @@
 \def\stelcommentaarin
   {\dodoubleargument\getparameters[\??cc]}
 
-\setvalue{\e!start\e!commentaar}% the dummy triple gobbles trailing spaces
+\setvalue{\e!start\v!commentaar}% the dummy triple gobbles trailing spaces
   {\dotripleempty\dostartcommentaar}
 
 \def\commentaar
@@ -2157,14 +2157,14 @@
          \egroup}}%
      {\long\def\docommando##1%
         {\egroup}}%
-   \grabuntil{\e!stop\e!commentaar}\docommando}
+   \grabuntil{\e!stop\v!commentaar}\docommando}
 
 \def\docommentaar[#1][#2]#3%
   {\doif\@@ccstatus\v!start
      {\hbox to \zeropoint
         {\dopreparecommentaar{#1}{#2}%
          \hskip-\@@ccmarge
-         \raise\ht\strutbox\hbox{\dodocommentaar{#3}}}}%
+         \raise\strutht\hbox{\dodocommentaar{#3}}}}%
    \ignorespaces}
 
 % \startcommentaar

@@ -372,15 +372,15 @@
 \def\dosetunicodestrut#1#2% height depth
   {\def\unicodestrut
      {\vrule
-        \!!width\zeropoint
-        \!!height#1\ht\strutbox
-        \!!depth#2\dp\strutbox
+        \!!width \zeropoint
+        \!!height#1\strutht
+        \!!depth #2\strutdp
         \relax}}
 
 \def\setunicodestrut#1#2% height depth
-  {\ifdim#1\ht\strutbox>\zeropoint
+  {\ifdim#1\strutht>\zeropoint
      \dosetunicodestrut{#1}{#2}%
-   \else\ifdim#1\dp\strutbox>\zeropoint
+   \else\ifdim#1\strutdp>\zeropoint
      \dosetunicodestrut{#1}{#2}%
    \else
      \let\unicodestrut\empty

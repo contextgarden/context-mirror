@@ -441,8 +441,8 @@
      \forgetall
      \setfootnotebodyfont
      \redoconvertfont % to undo \undo calls in in headings etc
-     \splittopskip\ht\strutbox  % not actually needed here
-     \splitmaxdepth\dp\strutbox % not actually needed here
+     \splittopskip\strutht  % not actually needed here
+     \splitmaxdepth\strutdp % not actually needed here
      \iffixedlayoutdimensions % ugly hack, will change
        \linkermargeafstand\@@vnmargeafstand
        \rechtermargeafstand\linkermargeafstand
@@ -571,7 +571,7 @@
           \c!strut=\v!nee,
           \c!offset=\v!overlay]
          {\ifdim\dp0=\zeropoint            % this hack is needed because \vadjust
-            \hbox{\lower\dp\strutbox\box0}% % in margin number placement
+            \hbox{\lower\strutdp\box0}% % in margin number placement
           \else                             % hides the (always) present depth
             \box0
           \fi}%
@@ -705,7 +705,7 @@
              \c!strut=\v!nee,
             \c!offset=\v!overlay]
           {\ifdim\dp0=\zeropoint   % this hack is needed because \vadjust
-             \hbox{\lower\dp\strutbox\box0}% % in margin number placement
+             \hbox{\lower\strutdp\box0}% % in margin number placement
            \else                   % hides the (always) present depth
              \box0
            \fi}}%

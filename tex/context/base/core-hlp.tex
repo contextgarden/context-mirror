@@ -24,10 +24,10 @@
 \unprotect 
 
 \defineframedtext
-  [\e!helptext]
+  [\v!helptext]
 
 \setupframedtexts
-  [\e!helptext]
+  [\v!helptext]
   [\c!breedte=.75\tekstbreedte,
    \c!uitlijnen=\v!normaal,
    \c!kader=\v!uit,
@@ -87,33 +87,36 @@
         {\nofhelpdataentries}%
         {#1}}}
 
-\setvalue{\e!start\e!helptext}[#1]%
+\setvalue{\e!start\v!helptext}[#1]%
   {\iflocation
      \global\settrue\somehelpdatadefined
-     \setvalue{\e!stop\e!helptext}%
-      %{\definesymbol[helpinfo:#1][\getvalue\e!helptext{\getbuffer[\e!helptext]}]%
-       {\definesymbol[helpinfo:#1][{\doframedtext[\e!helptext]{\getbuffer[\e!helptext]}}]%
-        \dopresetfieldsymbol{helpinfo:#1}}%
+     \setvalue{\e!stop\v!helptext}%
+      %{\definesymbol[helpinfo:#1][{\doframedtext[\v!helptext]{\getbuffer[\v!helptext]}}]%
+      % \dopresetfieldsymbol{helpinfo:#1}}%
+       {\definesymbol[\v!helptext:#1][{\doframedtext[\v!helptext]{\getbuffer[\v!helptext]}}]%
+        \dopresetfieldsymbol{\v!helptext:#1}}%
    \else
-     \letvalue{\e!stop\e!helptext}\relax
+     \letvalue{\e!stop\v!helptext}\relax
    \fi
-   \dostartbuffer[\e!helptext][\e!start\e!helptext][\e!stop\e!helptext]}
+   \dostartbuffer[\v!helptext][\e!start\v!helptext][\e!stop\v!helptext]}
 
 \long\def\helptext[#1]#2% 
   {\iflocation
      \global\settrue\somehelpdatadefined
-    %\definesymbol[helpinfo:#1][\getvalue\e!helptext{#2}]%
-     \definesymbol[helpinfo:#1][{\doframedtext[\e!helptext]{#2}}]%
-     \dopresetfieldsymbol{helpinfo:#1}%
+    %\definesymbol[helpinfo:#1][{\doframedtext[\v!helptext]{#2}}]%
+    %\dopresetfieldsymbol{helpinfo:#1}%
+     \definesymbol[\v!helptext:#1][{\doframedtext[\v!helptext]{#2}}]%
+     \dopresetfieldsymbol{\v!helptext:#1}%
    \fi}
 
 \let\definehelptext\helptext % for backward compabilities sake 
 
 \def\dohelpdata#1%
-  {\setbox0=\hbox
+  {\setbox0\hbox
      {\startoverlay
         {\box0}
-        {\definemainfield[help:#1][check][helpsetup][helpinfo:#1][helpinfo:#1]%
+       %{\definemainfield[help:#1][check][helpsetup][helpinfo:#1][helpinfo:#1]%
+        {\definemainfield[help:#1][check][helpsetup][\v!helptext:#1][\v!helptext:#1]%
          \fitfield[help:#1]}
       \stopoverlay}}
 

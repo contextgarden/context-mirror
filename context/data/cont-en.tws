@@ -328,7 +328,7 @@ var:lines:yes,no,hyphenated::
 stopsetup
 
 startsetup
-com:starttyping:
+com:start<<typing>>:
 typ:stp/:
 stopsetup
 
@@ -677,7 +677,7 @@ startsetup
 com:setupmarginrules:
 typ:var/:
 var:level:*number::
-var:thickness:*dimension::
+var:rulethickness:*dimension::
 stopsetup
 
 startsetup
@@ -2401,8 +2401,9 @@ val:*section::
 stopsetup
 
 startsetup
-com:setupitemize:
-typ:val/vals/vars/:
+com:setupitemgroup:
+typ:val/val/vals/vars/:
+val:*name::
 val:*number,each::
 val:standard,repeat/broad,repeat/serried,packed, unpacked,stopper,joinedup,atmargin,inmargin, autointro,loose,section,intext:standard:
 var:margin:no,standard,*dimension::
@@ -2429,10 +2430,11 @@ var:indentnext:yes,no::
 stopsetup
 
 startsetup
-com:startitemize:
-typ:vals/vars/stp/:
+com:start<<itemgroup>>:
+typ:val/vals/vars/stp/:
+val:*name::
 val:a,A,KA,n,N,m,r,R,KR,*number,continue, standard,repeat/broad,repeat/serried,packed, stopper,joinedup,atmargin,inmargin,intro, columns:standard:
-ivr:setupitemize::
+ivr:setupitemgroup::
 stopsetup
 
 startsetup
@@ -2855,7 +2857,7 @@ ivr:setupframed::
 stopsetup
 
 startsetup
-com:startbuffer:
+com:start<<buffer>>:
 typ:val/stp/:
 val:*name::
 stopsetup
@@ -2946,7 +2948,7 @@ var:file:*file::
 stopsetup
 
 startsetup
-com:startformula:
+com:start<<formula>>:
 typ:stp/:
 val:*formula::
 stopsetup
@@ -3251,7 +3253,7 @@ val:*text::
 stopsetup
 
 startsetup
-com:starttabulate:
+com:start<<tabulate>>:
 typ:val/vars/stp/:
 val:*text::
 ivr:useexternalfigure::

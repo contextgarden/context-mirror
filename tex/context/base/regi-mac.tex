@@ -3,7 +3,7 @@
 %D        version=2001.03.18,
 %D          title=\CONTEXT\ Encoding Macros,
 %D       subtitle=Mac Encoding, 
-%D         author={Michel Bovani \& Hans Hagen},
+%D         author={Michel Bovani \& Adam Lindsay \& Hans Hagen},
 %D           date=\currentdate,
 %D      copyright=PRAGMA-ADE]
 %C
@@ -13,104 +13,135 @@
 
 \startregime [mac]
 
-\defineactivetoken À {\Agrave} 
-\defineactivetoken Á {\Aacute} 
-\defineactivetoken Â {\Acircumflex}
-\defineactivetoken Ã {\Atilde} 
-\defineactivetoken Ä {\Adiaeresis} 
-\defineactivetoken Å {\Aring} % ? 
-\defineactivetoken Æ {\AEligature} 
-
-\defineactivetoken À {\agrave} 
-\defineactivetoken á {\aacute}
-\defineactivetoken â {\acircumflex}
-\defineactivetoken ã {\atilde} 
-\defineactivetoken ä {\adiaeresis}  
-\defineactivetoken å {\aring} % ?
-\defineactivetoken æ {\aeligature} 
-
-\defineactivetoken Ç {\Ccedilla} 
-\defineactivetoken ç {\ccedilla}  
-
-\defineactivetoken È {\Egrave} 
-\defineactivetoken É {\Eacute}
-\defineactivetoken Ê {\Ecircumflex} 
-\defineactivetoken Ë {\Ediaeresis}  
-
-\defineactivetoken è {\egrave} 
-\defineactivetoken é {\eacute}
-\defineactivetoken ê {\ecircumflex} 
-\defineactivetoken ë {\ediaeresis}  
-
-\defineactivetoken Ì {\Igrave} 
-\defineactivetoken Í {\Iacute}
-\defineactivetoken Î {\Icircumflex} 
-\defineactivetoken Ï {\Idiaeresis}  
-
-\defineactivetoken ì {\igrave} 
-\defineactivetoken í {\iacute}
-\defineactivetoken î {\icircumflex} 
-\defineactivetoken ï {\idiaeresis}  
-
-\defineactivetoken Ñ {\Ntilde} 
-\defineactivetoken ñ {\ntilde} 
-
-\defineactivetoken Ò {\Ograve} 
-\defineactivetoken Ó {\Oacute}
-\defineactivetoken Ô {\Ocircumflex}
-\defineactivetoken Õ {\Otilde}  
-\defineactivetoken Ö {\Odiaeresis}  
-\defineactivetoken Œ {\OEligature}
-\defineactivetoken Ø {\Oslash} % ? 
-
-\defineactivetoken ò {\ograve} 
-\defineactivetoken ó {\oacute}
-\defineactivetoken ô {\ocircumflex}
-\defineactivetoken õ {\otilde}  
-\defineactivetoken ö {\odiaeresis} 
-\defineactivetoken œ {\oeligature}
-\defineactivetoken ø {\oslash} % ? 
-
-\defineactivetoken ä {\Scaron} 
-\defineactivetoken ö {\scaron} 
-\defineactivetoken ß {\ssharp}  
-
-\defineactivetoken Ù {\Ugrave} 
-\defineactivetoken Ú {\Uacute}
-\defineactivetoken Û {\Ucircumflex}
-\defineactivetoken Ü {\Udiaeresis}  
-
-\defineactivetoken ù {\ugrave} 
-\defineactivetoken ú {\uacute}
-\defineactivetoken û {\ucircumflex}
-\defineactivetoken ü {\udiaeresis}  
-
-\defineactivetoken › {\Yacute}
-\defineactivetoken ˝ {\yacute} 
-\defineactivetoken ÿ {\ydiaeresis}  
-\defineactivetoken Ÿ {\Ydiaeresis}  
-
-\defineactivetoken ¿ {?`} % ? 
-\defineactivetoken ¡ {!`} % ? 
-\defineactivetoken † {\textdag} 
-\defineactivetoken ‡ {\textddag} 
-\defineactivetoken ¶ {\paragraphmark} 
-\defineactivetoken § {\sectionmark} 
-\defineactivetoken – {\endash} 
-\defineactivetoken — {\emdash} 
-\defineactivetoken … {\unknown} % ? 
-\defineactivetoken © {\copyright}
-\defineactivetoken £ {\sterling} % ? 
-
-\defineactivetoken „ {\quotedblleft } % {\char44\kern-.1em\char44 } % ? 
-\defineactivetoken “ {\quotedblbase } % {\char96\kern-.1em\char96 } % ? 
-\defineactivetoken ‘ {\quoteleft}               
-\defineactivetoken ’ {\char39 }       % ?           
-\defineactivetoken « {\leftguillemot}
-\defineactivetoken » {\rightguillemot}
+\defineactivetoken 128 {\Adiaeresis}
+\defineactivetoken 129 {\Aring}
+\defineactivetoken 130 {\Ccedilla}
+\defineactivetoken 131 {\Eacute}
+\defineactivetoken 132 {\Ntilde}
+\defineactivetoken 133 {\Odiaeresis}
+\defineactivetoken 134 {\Udiaeresis}
+\defineactivetoken 135 {\aacute}
+\defineactivetoken 136 {\agrave}
+\defineactivetoken 137 {\acircumflex}
+\defineactivetoken 138 {\adiaeresis}
+\defineactivetoken 139 {\atilde}
+\defineactivetoken 140 {\aring}
+\defineactivetoken 141 {\ccedilla}
+\defineactivetoken 142 {\eacute}
+\defineactivetoken 143 {\egrave}
+\defineactivetoken 144 {\ecircumflex}
+\defineactivetoken 145 {\ediaeresis}
+\defineactivetoken 146 {\iacute}
+\defineactivetoken 147 {\igrave}
+\defineactivetoken 148 {\icircumflex}
+\defineactivetoken 149 {\idiaeresis}
+\defineactivetoken 150 {\ntilde}
+\defineactivetoken 151 {\oacute}
+\defineactivetoken 152 {\ograve}
+\defineactivetoken 153 {\ocircumflex}
+\defineactivetoken 154 {\odiaeresis}
+\defineactivetoken 155 {\otilde}
+\defineactivetoken 156 {\uacute}
+\defineactivetoken 157 {\ugrave}
+\defineactivetoken 158 {\ucircumflex}
+\defineactivetoken 159 {\udiaeresis}
+\defineactivetoken 160 {\textdag}
+\defineactivetoken 161 {\textdegree}
+\defineactivetoken 162 {\textcent}
+\defineactivetoken 163 {\textsterling}
+\defineactivetoken 164 {\sectionmark}
+\defineactivetoken 165 {\textbullet}
+\defineactivetoken 166 {\paragraphmark}
+\defineactivetoken 167 {\ssharp}
+\defineactivetoken 168 {\registered}
+\defineactivetoken 169 {\copyright}
+\defineactivetoken 170 {\trademark}
+\defineactivetoken 171 {\textacute}
+\defineactivetoken 172 {\textdiaeresis}
+\defineactivetoken 173 {\mathematics\neq}
+\defineactivetoken 174 {\AEligature}
+\defineactivetoken 175 {\Ostroke}
+\defineactivetoken 176 {\mathematics\infty}
+\defineactivetoken 177 {\textpm}
+\defineactivetoken 178 {\mathematics\leq}
+\defineactivetoken 179 {\mathematics\geq}
+\defineactivetoken 180 {\textyen}
+\defineactivetoken 181 {\textmu}
+\defineactivetoken 182 {\mathematics\partial}
+\defineactivetoken 183 {\mathematics\Sigma}
+\defineactivetoken 184 {\mathematics\Pi}
+\defineactivetoken 185 {\mathematics\pi}
+\defineactivetoken 186 {\mathematics\smallint}
+\defineactivetoken 187 {\ordfeminine}
+\defineactivetoken 188 {\ordmasculine}
+\defineactivetoken 189 {\mathematics\Omega}
+\defineactivetoken 190 {\aeligature}
+\defineactivetoken 191 {\ostroke}
+\defineactivetoken 192 {\questiondown}
+\defineactivetoken 193 {\exclamdown}
+\defineactivetoken 194 {\textlognot}
+\defineactivetoken 195 {\mathematics{\sqrt{}}}
+\defineactivetoken 196 {\textflorin}
+\defineactivetoken 197 {\mathematics\approx}
+\defineactivetoken 198 {\mathematics\Delta}
+\defineactivetoken 199 {\leftguillemot}
+\defineactivetoken 200 {\rightguillemot}
+\defineactivetoken 201 {\dots}
+\defineactivetoken 202 {\nonbreakablespace}
+\defineactivetoken 203 {\Agrave}
+\defineactivetoken 204 {\Atilde}
+\defineactivetoken 205 {\Otilde}
+\defineactivetoken 206 {\OEligature}
+\defineactivetoken 207 {\oeligature}
+\defineactivetoken 208 {\endash}
+\defineactivetoken 209 {\emdash}
+\defineactivetoken 210 {\quotedblleft}
+\defineactivetoken 211 {\quotedblright}
+\defineactivetoken 212 {\quoteleft}
+\defineactivetoken 213 {\quoteright}
+\defineactivetoken 214 {\textdiv}
+\defineactivetoken 215 {\mathematics\diamond}
+\defineactivetoken 216 {\ydiaeresis}
+\defineactivetoken 217 {\Ydiaeresis}
+\defineactivetoken 218 {\textfraction}
+\defineactivetoken 219 {\texteuro}
+\defineactivetoken 220 {\guilsingleleft}
+\defineactivetoken 221 {\guilsingleright}
+\defineactivetoken 222 {fi}
+\defineactivetoken 223 {fl}
+\defineactivetoken 224 {\textddag}
+\defineactivetoken 225 {\periodcentered}
+\defineactivetoken 226 {\quotesinglebase}
+\defineactivetoken 227 {\quotedblbase }
+\defineactivetoken 228 {\perthousand}
+\defineactivetoken 229 {\Acircumflex}
+\defineactivetoken 230 {\Ecircumflex}
+\defineactivetoken 231 {\Aacute}
+\defineactivetoken 232 {\Ediaeresis}
+\defineactivetoken 233 {\Egrave}
+\defineactivetoken 234 {\Iacute}
+\defineactivetoken 235 {\Icircumflex}
+\defineactivetoken 236 {\Idiaeresis}
+\defineactivetoken 237 {\Igrave}
+\defineactivetoken 238 {\Oacute}
+\defineactivetoken 239 {\Ocircumflex}
+%defineactivetoken 240 % No definition for Apple logo glyph yet.
+\defineactivetoken 241 {\Ograve}
+\defineactivetoken 242 {\Uacute}
+\defineactivetoken 243 {\Ucircumflex}
+\defineactivetoken 244 {\Ugrave}
+\defineactivetoken 245 {\dotlessi}
+\defineactivetoken 246 {\textcircumflex}
+\defineactivetoken 247 {\texttilde}
+\defineactivetoken 248 {\textmacron}
+\defineactivetoken 249 {\textbreve}
+\defineactivetoken 250 {\textdotaccent}
+\defineactivetoken 251 {\textring}
+\defineactivetoken 252 {\textcedilla}
+\defineactivetoken 253 {\texthungarumlaut}
+\defineactivetoken 254 {\textogonek}
+\defineactivetoken 255 {\textcaron}
 
 \stopregime
-
-% \enableregime[mac]
 
 \endinput

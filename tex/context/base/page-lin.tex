@@ -269,7 +269,7 @@
 
 %\def\regelreferentie#1[#2]%
 %  {\bgroup
-%   \dimen0=\dp\strutbox
+%   \dimen0\strutdp
 %   \doif{\@@rnrefereren}{\v!aan}
 %     {\doglobal\increment\linereference
 %      % start 1=>(n=y,l=0,p=1)
@@ -285,7 +285,7 @@
 
 \def\regelreferentie#1[#2]%
   {\bgroup
-   \dimen0=\dp\strutbox
+   \dimen0=\strutdp
    \doif\@@rnrefereren\v!aan
      {\doglobal\increment\linereference
       % start 1=>(n=y,l=0,p=1)
@@ -307,7 +307,7 @@
      {\reshapebox % We are going back!
         {\global\advance\linenumber \minusone
          \dimen0=\dp\shapebox
-         \advance\dimen0 -\dp\strutbox\relax
+         \advance\dimen0 -\strutdp\relax
          \ifdim\dimen0>\zeropoint
            % 1=>4 | 2=>4 1=>2
            % start 1=>(n=y,l=2,p=1)
@@ -354,9 +354,9 @@
                      {\referenceprefix\linereferencename}{}{}{0}}% ==done
                  \fi}%
               \dimen0\dp\shapebox
-              \advance\dimen0 -\dp\strutbox\relax
+              \advance\dimen0 -\strutdp\relax
               \ifdim\dimen0>\zeropoint
-                \dp\shapebox\dp\strutbox
+                \dp\shapebox\strutdp
               \fi
               \schrijfregelnummer\box\shapebox}}% no \strut !
       \else

@@ -133,14 +133,14 @@
 %       \fi
 %       \setbox0=\hbox
 %         {\definedfont[#2 at #3]#1{#7}\hskip#4}%
-%          \ifdim\dp0>\dp\strutbox % one of those Q's , will be option
-%            \setbox2=\hbox{\raise\dp0\hbox{\lower\dp\strutbox\copy0}}%
-%            \ht2=\ht0 \dp0=\dp\strutbox \setbox0=\box2
+%          \ifdim\dp0>\strutdp % one of those Q's , will be option
+%            \setbox2=\hbox{\raise\dp0\hbox{\lower\strutdp\copy0}}%
+%            \ht2=\ht0 \dp0=\strutdp \setbox0=\box2
 %          \fi
-%       \setbox0=\hbox
+%       \setbox0\hbox
 %         {\lower#5\box0}%
-%       \ht0=\ht\strutbox
-%       \dp0=\dp\strutbox
+%       \ht0\strutht
+%       \dp0\strutdp
 %       \edef\DroppedIndent{\the\wd0}%
 %       \edef\DroppedLines {\number#6}%
 %       \hangindent\DroppedIndent
@@ -174,14 +174,14 @@
 %       \fi
 %       \setbox0\hbox
 %         {\definedfont[#2 at #3]#1{#7}\hskip#4}%
-%          \ifdim\dp0>\dp\strutbox % one of those Q's , will be option
-%            \setbox2\hbox{\raise\dp0\hbox{\lower\dp\strutbox\copy0}}%
-%            \ht2\ht0 \dp0\dp\strutbox \setbox0\box2
+%          \ifdim\dp0>\strutdp % one of those Q's , will be option
+%            \setbox2\hbox{\raise\dp0\hbox{\lower\strutdp\copy0}}%
+%            \ht2\ht0 \dp0\strutdp \setbox0\box2
 %          \fi
 %       \setbox0\hbox
 %         {\lower#5\box0}%
-%       \ht0\ht\strutbox
-%       \dp0\dp\strutbox
+%       \ht0\strutht
+%       \dp0\strutdp
 %       \globaldropcaps\edef\DroppedIndent{\the\wd0}%
 %       \globaldropcaps\edef\DroppedLines {\number#6}%
 %       \globaldropcaps\chardef\DroppedStatus2
@@ -215,10 +215,10 @@
       \fi
       \setbox0\hbox
         {\definedfont[#2 at #3]#1{#7}\hskip#4}%
-         \ifdim\dp0>\dp\strutbox % one of those Q's , will be option
-           \setbox2\hbox{\raise\dp0\hbox{\lower\dp\strutbox\copy0}}%
+         \ifdim\dp0>\strutdp % one of those Q's , will be option
+           \setbox2\hbox{\raise\dp0\hbox{\lower\strutdp\copy0}}%
            \ht2\ht0
-           \dp0\dp\strutbox
+           \dp0\strutdp
            \setbox0\box2
          \fi
       \setbox0\hbox
@@ -226,8 +226,8 @@
            \hskip-\wd0\wd0\zeropoint
          \fi
          \lower#5\box0}%
-      \ht0\ht\strutbox
-      \dp0\dp\strutbox
+      \ht0\strutht
+      \dp0\strutdp
       \ifnum\DropMode=\plusone
         \globaldropcaps\let\DroppedIndent\!!zeropoint
         \globaldropcaps\edef\DroppedLines{\number\maxdimen}%
@@ -368,7 +368,7 @@
      {\scratchcounter\baselineskip}{#5}}
 
 \def\LineDroppedCaps% command font offset lines
-  {\DoLineDroppedCaps{\ht\strutbox}}
+  {\DoLineDroppedCaps{\strutht}}
 
 \def\NiceDroppedCaps% command font offset lines
   {\DoLineDroppedCaps{.5\baselineskip}}

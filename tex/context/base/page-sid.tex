@@ -597,11 +597,32 @@
 \def\iffirstsidefloatparagraph
   {\ifnum\sidefloatparagraph=1 }
 
+% \def\setsidefloatparagraph
+%  {%\advance\sidefloatprogress \sidefloatbottomskip
+%   %\!!counta\sidefloatprogress
+%\scratchdimen\sidefloatprogress
+%\advance\scratchdimen \strutht
+%\!!counta\scratchdimen
+%   \divide\!!counta \baselineskip
+%   \ifnum\!!counta>0
+%     \hangindent \ifrightfloat-\fi\sidefloatwidth
+%     \hangafter-\!!counta
+%   \fi
+%   \global\advance\sidefloatparagraph \plusone
+%   \iftracesidefloats
+%     \hskip-\sidefloatwidth
+%     \color[darkgray]%
+%       {\vrule\!!height.5\s!pt\!!depth.5\s!pt\!!width\sidefloatwidth
+%       %\hskip-.25\bodyfontsize\showstruts\strut\hskip.25\bodyfontsize}%
+%        \llap{\showstruts\strut\hskip.25\bodyfontsize}}%
+%   \fi}
+
 \def\setsidefloatparagraph
   {%\advance\sidefloatprogress \sidefloatbottomskip
    %\!!counta\sidefloatprogress
 \scratchdimen\sidefloatprogress
-\advance\scratchdimen \ht\strutbox
+\advance\scratchdimen \strutht
+\advance\scratchdimen -10sp % new, needed in prikkels, prevent rounding errors 
 \!!counta\scratchdimen
    \divide\!!counta \baselineskip
    \ifnum\!!counta>0

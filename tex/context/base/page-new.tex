@@ -11,9 +11,9 @@
   {\bgroup
    \donefalse
    \def\OTRSETcheckcontent##1%
-     {\setbox\scratchbox=##1\recurselevel
-      \setbox\scratchbox=\vbox{\unvbox\scratchbox}%
-      \ifdim\ht\scratchbox>\!!zeropoint\donetrue\fi}%
+     {\setbox\scratchbox##1\recurselevel
+      \setbox\scratchbox\vbox{\unvbox\scratchbox}%
+      \ifdim\ht\scratchbox>\zeropoint\donetrue\fi}%
    \dorecurse{\nofcolumns}
      {\OTRSETcheckcontent\columngettextbox
       \OTRSETcheckcontent\columngetfootbox
@@ -25,12 +25,12 @@
   {\scratchdimen=\OTRSETgetparameter\c!maxhoogte#1%
    \advance\scratchdimen -\OTRSETgetparameter\c!bovenoffset#1%
    \advance\scratchdimen -\ht\columntopbox#1%
-\advance\scratchdimen -\getvalue{\??mc\number\mofcolumns-f}%
+   \advance\scratchdimen -\getvalue{\??mc\number\mofcolumns-f}%
    \advance\scratchdimen -\ht\columnbotbox#1} % not used 
 
 \def\OTRSETgetcolumnnaturalheight#1% max - boven - top
-  {\setbox\scratchbox=\vbox{\unvcopy\columntextbox#1}%
-   \scratchdimen=\ht\scratchbox
+  {\setbox\scratchbox\vbox{\unvcopy\columntextbox#1}%
+   \scratchdimen\ht\scratchbox
    \advance\scratchdimen \OTRSETgetparameter\c!bovenoffset#1%
    \advance\scratchdimen \ht\columntopbox#1%
    \advance\scratchdimen -\getvalue{\??mc\number\mofcolumns-f}%
@@ -42,8 +42,8 @@
    % collect content and notes
    \bgroup
    \OTRSEToutput
-     {\global\setbox1=\vbox{\unvbox\normalpagebox}%
-      \global\setbox3=\vbox{\unvbox\footins}}%
+     {\global\setbox1\vbox{\unvbox\normalpagebox}%
+      \global\setbox3\vbox{\unvbox\footins}}%
    \vbox{\toonstruts\strut}\vskip-\lineheight % makes footnotes flush  
    \eject
    \global\collectingcontentfalse
@@ -52,18 +52,18 @@
      \global\setbox1=\vbox{}
      % fix height of first line 
      \ifdim\ht3>\!!zeropoint
-       \global\setbox3=\vbox
+       \global\setbox3\vbox
          {\setfootnotebodyfont
-          \kern-\ht\strutbox
+          \kern-\strutht
           \kern\topskip
           \unvbox3}
    \fi
    % prepare trial box 
-   \global\setbox5=\vbox
-     {\ifdim\ht1>\!!zeropoint 
+   \global\setbox5\vbox
+     {\ifdim\ht1>\zeropoint 
         \unvcopy1 \ifdim\ht3>\zeropoint \kern\skip\footins \fi
       \fi
-      \ifdim\ht3>\!!zeropoint \unvcopy3 \fi}
+      \ifdim\ht3>\zeropoint \unvcopy3 \fi}
    \egroup
    % erase old stuff 
    \columnerasetextboxes
@@ -72,11 +72,11 @@
    \OTRSETdotopinsertions
    \OTRSETdobotinsertions % not used can be removed 
    % calculate available space
-   \!!heighta=\!!zeropoint % available total height
+   \!!heighta\zeropoint % available total height
    \dorecurse{\nofcolumns}
      {\OTRSETgetcolumntextheight\recurselevel
       \OTRSETcalculatelines\scratchdimen
-      \advance\!!heighta by  \scratchdimen}
+      \advance\!!heighta \scratchdimen}
    % quick check
    \ifdim\ht5>\!!heighta
      % use normal routine
@@ -87,26 +87,26 @@
      \unvbox3 
      \doglobal\addtocommalist{-\realfolio}\OTRSETbalancinglist
      \donefalse
-    %\writestatus{\m!columns}{no balancing, text overflows height}%
-   \else\ifdim\ht5>\!!zeropoint \relax
+    %\writestatus\m!columns{no balancing, text overflows height}%
+   \else\ifdim\ht5>\zeropoint \relax
      % some text and/or notes
      \donetrue
    \else      
      \donefalse
-     \dorecurse{\nofcolumns}
-       {\ifdim\ht\columntopbox\recurselevel>\!!zeropoint \donetrue \fi}%
+     \dorecurse\nofcolumns
+       {\ifdim\ht\columntopbox\recurselevel>\zeropoint \donetrue \fi}%
      \ifdone 
        % no text and notes, but figures  
      \else
        % no text, no notes, no figures 
        \doglobal\addtocommalist{-\realfolio}\OTRSETbalancinglist
-       \writestatus{\m!columns}{no balancing, nothing to be placed}%
+       \writestatus\m!columns{no balancing, nothing to be placed}%
      \fi
    \fi\fi
    \ifdone
-     \ifdim\ht5>\!!zeropoint \relax
+     \ifdim\ht5>\zeropoint \relax
        % balancing text and notes 
-      %\writestatus{\m!columns}{text may fit, balancing}%
+      %\writestatus\m!columns{text may fit, balancing}%
        \newcounter\loopcounter
        \newcounter\balancinglines
        \doloop
@@ -115,22 +115,22 @@
           \columnerasetextboxes
           \columnerasefootboxes
           \setbox0=\copy5 
-          \splittopskip=\topskip
+          \splittopskip\topskip
           % pre-split loop and quality calculation
-         %\writestatus{\m!columns}{pass \loopcounter: correction -\balancinglines}
-          \dorecurse{\nofcolumns}
+         %\writestatus\m!columns{pass \loopcounter: correction -\balancinglines}
+          \dorecurse\nofcolumns
             {\OTRSETgetcolumntextheight\recurselevel
              \OTRSETcalculatelines\scratchdimen
-             \!!heightc=\scratchdimen
+             \!!heightc\scratchdimen
              \ifnum\recurselevel<\nofcolumns
-               \advance\!!heightc by -\balancinglines\lineheight
+               \advance\!!heightc -\balancinglines\lineheight
              \fi
-             \columnsettextbox\recurselevel=\vsplit0 to \!!heightc}
+             \columnsettextbox\recurselevel\vsplit0 to \!!heightc}
           % just one method 
-          \OTRSETgetcolumnnaturalheight1           \dimen4=\scratchdimen
-          \OTRSETgetcolumnnaturalheight\nofcolumns \dimen6=\scratchdimen
-         %\writestatus{\m!columns}{first column: \the\dimen4}%
-         %\writestatus{\m!columns}{last  column: \the\dimen6}%
+          \OTRSETgetcolumnnaturalheight1           \dimen4\scratchdimen
+          \OTRSETgetcolumnnaturalheight\nofcolumns \dimen6\scratchdimen
+         %\writestatus\m!columns{first column: \the\dimen4}%
+         %\writestatus\m!columns{last  column: \the\dimen6}%
           \ifdim\dimen4=\dimen6
             \donetrue  % perfect balance
           \else\ifdim\dimen4>\dimen6
@@ -144,50 +144,50 @@
             \fi
           \fi\fi
           % extra check  
-          % \ifdim\ht0>\!!zeropoint\relax \donefalse \fi
+          % \ifdim\ht0>\zeropoint\relax \donefalse \fi
           % another check 
           \ifdone
-           %\writestatus{\m!columns}{balancing finished in pass \loopcounter}%
+           %\writestatus\m!columns{balancing finished in pass \loopcounter}%
           \else \ifnum\loopcounter>100 \donetrue
-           %\writestatus{\m!columns}{balancing aborted after pass \loopcounter}%
+           %\writestatus\m!columns{balancing aborted after pass \loopcounter}%
           \else
-           %\writestatus{\m!columns}{balancing continued after pass \loopcounter}%
+           %\writestatus\m!columns{balancing continued after pass \loopcounter}%
           \fi \fi
           % final balancing pass
           \ifdone
-            \setbox0=\copy1
-            \setbox2=\copy3
+            \setbox0\copy1
+            \setbox2\copy3
             \columnerasetextboxes
             \columnerasefootboxes
-            \dorecurse{\nofcolumns}
+            \dorecurse\nofcolumns
               {\OTRSETgetcolumntextheight\recurselevel
                \OTRSETcalculatelines\scratchdimen
-               \!!heightc=\scratchdimen
+               \!!heightc\scratchdimen
                \ifnum\recurselevel<\nofcolumns
-                 \advance\!!heightc by -\balancinglines\lineheight
+                 \advance\!!heightc -\balancinglines\lineheight
                \fi
                % split off text 
-               \ifdim\ht0>\!!zeropoint
-                 \columnsettextbox\recurselevel=\vsplit0 to \!!heightc
-                 \setbox4=\vbox{\unvcopy\columntextbox\recurselevel}
-                 \advance\!!heightc by -\ht4
-                 \ifdim\ht0>\!!zeropoint
-                   \columnsettextbox\recurselevel=\box4
-                   \advance\!!heightc by \skip\footins
+               \ifdim\ht0>\zeropoint
+                 \columnsettextbox\recurselevel\vsplit0 to \!!heightc
+                 \setbox4\vbox{\unvcopy\columntextbox\recurselevel}
+                 \advance\!!heightc -\ht4
+                 \ifdim\ht0>\zeropoint
+                   \columnsettextbox\recurselevel\box4
+                   \advance\!!heightc \skip\footins
                  \fi
                \fi
                % split off footnotes
-               \ifdim\ht0>\!!zeropoint\relax \else 
-                 \ifdim\ht2>\!!zeropoint\relax
-                   \setbox4=\vsplit2 to \!!heightc
+               \ifdim\ht0>\zeropoint\relax \else 
+                 \ifdim\ht2>\zeropoint\relax
+                   \setbox4\vsplit2 to \!!heightc
                    \setbox\footins=\vbox{\unvbox4} % ugly and dirty trick
-                   \ifdim\ht\columntextbox\recurselevel=\!!zeropoint\relax
-                     \columnsettextbox\recurselevel=\hbox
-                       {\raise\dp\strutbox\hbox % ugly but needed
+                   \ifdim\ht\columntextbox\recurselevel=\zeropoint\relax
+                     \columnsettextbox\recurselevel\hbox
+                       {\raise\strutdp\hbox % ugly but needed
                           {\setfootnotebodyfont % both these moves
-                           \lower\dp\strutbox\hbox{\placebottomnotes}}}
+                           \lower\strutdp\hbox{\placebottomnotes}}}
                    \else
-                     \columnsetfootbox\recurselevel=\hbox{\placebottomnotes}
+                     \columnsetfootbox\recurselevel\hbox{\placebottomnotes}
                    \fi
                  \fi
                \fi}

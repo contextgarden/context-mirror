@@ -16,6 +16,57 @@
 %D features. 
 
 \unprotect
+
+% startplaats 
+
+\writestatus{\m!systems}{beware: some patches loaded from cont-new.tex!}
+
+\def\removefunnytabulateline
+  {\ifhmode
+     \strut\crcr
+     \TABLEnoalign{\kern-\lineheight}%
+   \fi}
+
+% \def\fulltabulatecontent
+%   {\tabulateheadcontent
+%    \tabulatecontent
+%    \tabulatetailcontent
+%    \removefunnytabulateline}
+
+\newsignal\strutsignal \setfalse\sigstruts
+
+\def\begstrut
+  {\relax\ifcase\strutht\else
+     \ifconditional\sigstruts
+       \noindent\hbox{\strut}%
+       \normalpenalty\@M % \!!tenthousand
+       \normalhskip-\strutsignal
+       \normalhskip\strutsignal
+     \else
+       \strut
+       \normalpenalty\@M % \!!tenthousand
+       \normalhskip\zeropoint
+     \fi
+     \ignorespaces
+   \fi}
+
+\def\endstrut
+  {\relax\ifhmode\ifcase\strutht\else
+     \ifconditional\sigstruts
+       \ifdim\lastskip=\strutsignal 
+         \unskip\unskip\unpenalty\setbox\scratchbox\lastbox
+       \else
+         \normalpenalty\@M % \!!tenthousand
+         \normalhskip\zeropoint
+         \strut
+       \fi
+     \else
+       \removeunwantedspaces
+       \normalpenalty\@M % \!!tenthousand
+       \normalhskip\zeropoint
+       \strut
+     \fi
+   \fi\fi}
 
 \def\showexternalfigured
   {\bgroup
@@ -30,31 +81,26 @@
    \immediate\closeout\scratchwrite
    \egroup}
 
-\def\setsidefloatparagraph
-  {%\advance\sidefloatprogress \sidefloatbottomskip
-   %\!!counta\sidefloatprogress
-\scratchdimen\sidefloatprogress
-\advance\scratchdimen \ht\strutbox
-\advance\scratchdimen -10sp % new, needed in prikkels, prevent rounding errors 
-\!!counta\scratchdimen
-   \divide\!!counta \baselineskip
-   \ifnum\!!counta>0
-     \hangindent \ifrightfloat-\fi\sidefloatwidth
-     \hangafter-\!!counta
-   \fi
-   \global\advance\sidefloatparagraph \plusone
-   \iftracesidefloats
-     \hskip-\sidefloatwidth
-     \color[darkgray]%
-       {\vrule\!!height.5\s!pt\!!depth.5\s!pt\!!width\sidefloatwidth
-       %\hskip-.25\bodyfontsize\showstruts\strut\hskip.25\bodyfontsize}%
-        \llap{\showstruts\strut\hskip.25\bodyfontsize}}%
-   \fi}
+% between alignment lines certain rules apply, and even a 
+% simple test can mess up a table, which is why we have a 
+% special test facility 
+% 
+% \ruledvbox
+%   {\starttabulate[|l|p|]
+%    \NC 1test \NC test \NC \NR 
+%    \tableifelse{\doifelse{a}{a}}{\NC Xtest \NC test \NC \NR}{}%
+%    \stoptabulate}
 
+\long \def\tableifelse#1%
+  {\TABLEnoalign{#1%
+     {\aftergroup \firstoftwoarguments}%
+     {\aftergroup\secondoftwoarguments}}}
 
+% \long \def\tableif#1% whow, this is real ugly 
+%   {\TABLEnoalign{\let\gnext\gobbleoneargument#1%
+%      {\let\gnext\firstofoneargument}}\gnext}
 
-
-\writestatus{\m!systems}{beware: some patches loaded from cont-new.tex!}
+\long \def\tableiftextelse#1{\tableifelse{\doiftextelse{#1}}}
 
 \def\ejectinsert
   {\flushnotes
@@ -760,7 +806,7 @@
       \setbox\columnspanbox\hbox % depth to be checked, probably option!
         {\localframed[\??ks][\c!offset=\v!overlay]{\box\columnspanbox}}%
       \ht\columnspanbox\scratchdimen
-      \dp\columnspanbox\dp\strutbox
+      \dp\columnspanbox\strutdp
       \wd\columnspanbox\hsize
       \ifbinnenkolommen
         \ifnum\@@ksn>1
@@ -784,7 +830,7 @@
         \snaptogrid\vbox{\box\columnspanbox}
       \fi
       \endgraf
-      \prevdepth\dp\strutbox
+      \prevdepth\strutdp
       \egroup}
      \vbox\bgroup
       %\topskipcorrection % becomes an option !

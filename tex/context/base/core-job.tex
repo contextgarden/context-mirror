@@ -355,8 +355,8 @@
        {\currentproject,\currentproduct,%
         \currentcomponent,\currentenvironment}
        {\loadedlocalenvironments}
-     {\letvalue{\e!stop\e!deelomgeving}\relax}
-     {\grabuntil{\e!stop\e!deelomgeving}\relax}}
+     {\letvalue{\e!stop\v!deelomgeving}\relax}
+     {\grabuntil{\e!stop\v!deelomgeving}\relax}}
 
 \def\startproduct{\startprodukt}
 \def\stopproduct {\stopprodukt}
@@ -386,13 +386,13 @@
 \def\doifsetupselse#1%
   {\doifdefinedelse{\??su#1}}
 
-\long\@EA\def\csname\e!start\e!instellingen\endcsname#1 %
+\long\@EA\def\csname\e!start\v!instellingen\endcsname#1 %
   {\bgroup
    \catcode`\^^M=\@@ignore
    \xdostartsetups{#1}}
 
 \expanded
-  {\long\noexpand\def\noexpand\xdostartsetups##1##2\csname\e!stop\e!instellingen\endcsname%
+  {\long\noexpand\def\noexpand\xdostartsetups##1##2\csname\e!stop\v!instellingen\endcsname%
      {\egroup
       \long\noexpand\setvalue{\??su##1}{##2}}}
 

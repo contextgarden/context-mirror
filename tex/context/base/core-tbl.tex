@@ -487,8 +487,8 @@
      {\unvbox\tabulatebox}%
    \setbox\tabulatebox\hbox to \wd\tabulatebox
      {\hss\dotabulatehook{\box\tabulatebox}\hss}%
-   \ht\tabulatebox\ht\strutbox
-   \dp\tabulatebox\dp\strutbox
+   \ht\tabulatebox\strutht
+   \dp\tabulatebox\strutdp
    \box\tabulatebox}
 
 \def\dotabulatehook {\getvalue{\@@tabhook@@ \tabulatecolumn}}
@@ -572,7 +572,7 @@
   {\ifthirdargument
      \doifundefined{\??tt#1::\c!eenheid}
        {\copyparameters
-          [\??tt#1::][\??tt\e!tabulate::]%
+          [\??tt#1::][\??tt\v!tabulate::]%
           [\c!kader,\c!afstand,\c!eenheid,\c!voor,\c!korps,\c!na,
            \c!binnen,\c!inspringen,\c!marge,\c!uitlijnen,
            \c!lijnkleur,\c!lijndikte,EQ]}%
@@ -652,19 +652,19 @@
    \tabulatecontent
    \tabulatetailcontent}
  
-\setvalue{\e!start\e!tabulatehead}%
+\setvalue{\e!start\v!tabulatehead}%
   {\dosingleempty\dostartstarttabulatehead}
 
 \def\dostartstarttabulatehead[#1]%
-  {\processcontent{\e!stop\e!tabulatehead}\next
-     {\letvalue{\??tt\iffirstargument#1\else\e!tabulate\fi::\v!hoofd}\next}}
+  {\processcontent{\e!stop\v!tabulatehead}\next
+     {\letvalue{\??tt\iffirstargument#1\else\v!tabulate\fi::\v!hoofd}\next}}
 
-\setvalue{\e!start\e!tabulatetail}%
+\setvalue{\e!start\v!tabulatetail}%
   {\dosingleempty\dostartstarttabulatetail}
 
 \def\dostartstarttabulatetail[#1]%
-  {\processcontent{\e!stop\e!tabulatetail}\next
-     {\letvalue{\??tt\iffirstargument#1\else\e!tabulate\fi::\v!voet}\next}}
+  {\processcontent{\e!stop\v!tabulatetail}\next
+     {\letvalue{\??tt\iffirstargument#1\else\v!tabulate\fi::\v!voet}\next}}
 
 \def\dosubstarttabulate
   {\dodoubleempty\dodosubstarttabulate}
@@ -672,17 +672,17 @@
 \def\dodosubstarttabulate[#1][#2]%
   {\getvalue{\e!start#1::\ifundefined{\e!start#1::#2}\else#2\fi}}
 
-\setvalue{\e!start\e!tabulate}%
+\setvalue{\e!start\v!tabulate}%
   {\bgroup\dodoubleempty\donormalstarttabulate}
 
 \def\donormalstarttabulate[#1][#2]%
   {\ifsecondargument
-     \getparameters[\??tt\e!tabulate::][#2]%
+     \getparameters[\??tt\v!tabulate::][#2]%
    \fi
    \iffirstargument
-     \def\next{\dofinalstarttabulate[\e!tabulate][][#1]}%
+     \def\next{\dofinalstarttabulate[\v!tabulate][][#1]}%
    \else
-     \def\next{\dofinalstarttabulate[\e!tabulate][][|l|p|]}%
+     \def\next{\dofinalstarttabulate[\v!tabulate][][|l|p|]}%
    \fi
    \next}
 
@@ -781,16 +781,16 @@
    \let\\\tabulateautocolumn}
 
 %\def\tabulateruleseperator
-%  {\vskip\dp\strutbox}
+%  {\vskip\strutdp}
 
-\def\tabulateruleseperator%
+\def\tabulateruleseperator
   {\bgroup
    \let\factor\!!plusone
-   \scratchskip\dp\strutbox
+   \scratchskip\strutdp
    \ExpandFirstAfter\processallactionsinset
      [\getvalue{\??tt\currenttabulate\c!afstand}]
      [ \v!blanko=>\scratchskip\bigskipamount,
-       \v!diepte=>\scratchskip\dp\strutbox,
+       \v!diepte=>\scratchskip\strutdp,
         \v!klein=>\def\factor{.25},
        \v!middel=>\def\factor{.5},
         \v!groot=>,
@@ -1025,7 +1025,7 @@
 \def\xbskip{\bskip}%
 \def\xeskip{\eskip}%
    \ifsplittabulate
-     \splittopskip\ht\strutbox
+     \splittopskip\strutht
      \global\let\flushtabulatedindeed\empty
      \long\def\bbskip
        {\ifvoid\tablebox\tabulatecolumn
@@ -1086,8 +1086,8 @@
    \def\tablebaselinecorrection
      {\def\dobaselinecorrection
         {\vskip-\prevdepth
-         \vskip\dp\strutbox
-         \vskip\dp\strutbox}%
+         \vskip\strutdp
+         \vskip\strutdp}%
       \baselinecorrection}%
    \def\FL{\TABLEnoalign
      {\ifinsidefloat\else
@@ -1097,7 +1097,7 @@
       \tabulaterule
       \dotabulatenobreak
       \tabulateruleseperator
-      \prevdepth\dp\strutbox
+      \prevdepth\strutdp
       \dotabulatenobreak}}%
    \def\ML{\TABLEnoalign
      {\tabulateruleseperator
@@ -1117,7 +1117,7 @@
       \tabulaterule
       \ifinsidefloat\else
         \doifemptyvalue{\??tt\currenttabulate\c!na} % no expansion
-          {\vskip\dp\strutbox
+          {\vskip\strutdp
            \vbox{\strut}%
            \vskip-\lineheight}%
       \fi}}%
@@ -1125,9 +1125,9 @@
    %
    \chardef\tabulatepass\plustwo
    \@EA\halign\@EA{\the\!!toksa\crcr\fulltabulatecontent\crcr}%
-   \prevdepth\dp\strutbox % nog eens beter, temporary hack
+   \prevdepth\strutdp % nog eens beter, temporary hack
    \doifvalue{\??tt\currenttabulate\c!afstand}\v!grid
-     {\vskip-\dp\strutbox}% experimental tm-prikkels
+     {\vskip-\strutdp}% experimental tm-prikkels
    %
    \stopframedcontent
    %
@@ -1186,7 +1186,7 @@
    \else\ifsecondargument
      \getparameters[\??tt#1::][#2]%
    \else
-     \getparameters[\??tt\e!tabulate::][#1]%
+     \getparameters[\??tt\v!tabulate::][#1]%
    \fi\fi}
 
 \setuptabulate

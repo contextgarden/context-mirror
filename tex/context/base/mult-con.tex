@@ -315,6 +315,9 @@
                    spraak: spraak                    speech 
                            speech                    speech 
                            speech                    speech 
+                  itemize: opsomming                 itemize
+                           aufzaehlung               vycet
+                           elenco                    enumerare
 
 \stopvariables
 
@@ -445,6 +448,9 @@ clipoffset: clipoffset   clipoffset
                    auteur: auteur                    author
                            autor                     autor
                            autore                    autor
+                     auto: auto                      auto
+                           auto                      auto
+                           auto                      auto
                  autofile: autofile                  autofile
                            autofile                  autofile
                            autofile                  autofile % TB TH
@@ -529,9 +535,9 @@ clipoffset: clipoffset   clipoffset
           dieptecorrectie: dieptecorrectie           depthcorrection
                            tiefekorrektur            korekcehloubky
                            correzioneprofondita      corectieadancime
-                    dikte: dikte                     thickness
-                           dicke                     tloustka
-                           spessore                  grosime
+%                    dikte: dikte                     thickness
+%                           dicke                     tloustka
+%                           spessore                  grosime
                  doorgaan: doorgaan                  continue
                            fortsetzen                pokracovat
                            continua                  continua
@@ -1412,9 +1418,6 @@ trefwoord: trefwoord keyword
                   breedte: breedte                   width
                            breite                    sirka
                            ampiezza                  latime
-                   buffer: buffer                    buffer
-                           puffer                    buffer
-                           buffer                    buffer
                    buiten: buiten                    outer
                            aussen                    vnejsi
                            esterno                   extern
@@ -2311,6 +2314,21 @@ geencontrole: geencontrole  nocheck
                framedtext: kadertekst                framedtext
                            umrahmtertext             oramovanytext
                            testoincorniciato         textinconjurat
+                itemgroup: itemgroup                 itemgroup
+                           itemgroup                 itemgroup
+                           itemgroup                 itemgroup         
+                    typen: typen                     typing
+                           tippen                    typing
+                           typing                    typing % GB
+                   buffer: buffer                    buffer
+                           puffer                    buffer
+                           buffer                    buffer
+                  formule: formule                   formula
+                           formel                    rovnice
+                           formula                   formula
+                 tabulate: tabulatie                 tabulate
+                           tabulator                 tabelator
+                           tabulato                  tabulate
 
 \stopsetupvariables
 
@@ -2329,18 +2347,9 @@ geencontrole: geencontrole  nocheck
                  beginvan: beginvan                  begin
                            anfang                    zacatek
                            inizio                    inceput
-                   buffer: buffer                    buffer
-                           puffer                    buffer
-                           buffer                    buffer
-               commentaar: commentaar                comment
-                           kommentar                 komentar
-                           commento                  comentariu
                   eindvan: eindvan                   end
                            ende                      konec
                            fine                      sfarsit
-                  formule: formule                   formula
-                           formel                    rovnice
-                           formula                   formula
                gekoppelde: gekoppelde                coupled
                            verknuepft                propojene
                            accoppiato                cuplat
@@ -2353,15 +2362,6 @@ geencontrole: geencontrole  nocheck
                        in: in                        -
                            ein                       -
                            -                         -
-             instellingen: instellingen              setups
-                           impostazioni              einstellungen
-                           nastaveni                 setari
-           interactiemenu: interactiemenu            interactionmenu
-                           interaktionsmenue         interaktivnimenu
-                           menuinterattivo           meniuinteractiune
-                  itemize: opsomming                 itemize
-                           aufzaehlung               vycet
-                           elenco                    enumerare
                      laad: laad                      load
                            laden                     nacist
                            carica                    incarca
@@ -2380,9 +2380,6 @@ geencontrole: geencontrole  nocheck
                    lokale: lokale                    local
                            lokal                     lokalne
                            locale                    local
-                   opmaak: opmaak                    makeup
-                           umbruch                   zlom
-                           makeup                    makeup % GB
                    plaats: plaats                    place
                            platziere                 umisti
                            metti                     pune
@@ -2398,33 +2395,6 @@ geencontrole: geencontrole  nocheck
                      stop: stop                      stop
                            stop                      stop
                            termina                   stop
-                tablehead: tabelkop                  tablehead
-                           tabellenueberschrift      zahlavitabulky
-                           testatabella              antettabel
-                tabletail: tabelstaart               tabletail
-                           tabellenende              konectabulky
-                           codatabella               subsoltabel
-                 tabulate: tabulatie                 tabulate
-                           tabulator                 tabelator
-                           tabulato                  tabulate
-             tabulatehead: tabulatiekop              tabulatehead
-                           tabulatehead              tabulatehead
-                           testatabulato             tabulatehead %
-             tabulatetail: tabulatiestaart           tabulatetail
-                           tabulatetail              tabulatetail
-                           codatabulato              tabulatetail %
-                    tekst: tekst                     text
-                           text                      text
-                           testo                     text
-                     type: type                      type
-                           type                      opis
-                           type                      type % GB
-               uitstellen: uitstellen                postponing
-                           verschieben               odlozit
-                           posporre                  postponing % GB
-                verbergen: verbergen                 hiding
-                           verbergen                 skryt
-                           nascondere                ascundere
                   verhoog: verhoog                   increment
                            erhoehen                  zvysit
                            incrementa                increment
@@ -2443,33 +2413,83 @@ geencontrole: geencontrole  nocheck
                       zie: zie                       see
                            sieh                      viz
                            vedi                      vezi
-                 register: register                  register
-                           register                  rejstrik
-                           registro                  registru
+                     type: type                      type
+                           type                      opis
+                           type                      type % GB
+                   opmaak: opmaak                    makeup
+                           umbruch                   zlom
+                           makeup                    makeup % GB
+                    tekst: tekst                     text
+                           text                      text
+                           testo                     text
+
+\stopelements
+
+%D These are predefined instances. To be cleaned up.  
+
+\startvariables            dutch                     english
+                           german                    czech
+                           italian                   romanian
+
+                   buffer: buffer                    buffer
+                           puffer                    buffer
+                           buffer                    buffer
+                 linenote: regelnoot                 linenote 
+                           linenote                  linenote
+                           linenote                  linenote
+               commentaar: commentaar                comment
+                           kommentar                 komentar
+                           commento                  comentariu
+           interactiemenu: interactiemenu            interactionmenu
+                           interaktionsmenue         interaktivnimenu
+                           menuinterattivo           meniuinteractiune
+               uitstellen: uitstellen                postponing
+                           verschieben               odlozit
+                           posporre                  postponing % GB
+                verbergen: verbergen                 hiding
+                           verbergen                 skryt
+                           nascondere                ascundere
+                 tabulate: tabulatie                 tabulate
+                           tabulator                 tabelator
+                           tabulato                  tabulate
+             tabulatehead: tabulatiekop              tabulatehead
+                           tabulatehead              tabulatehead
+                           testatabulato             tabulatehead %
+             tabulatetail: tabulatiestaart           tabulatetail
+                           tabulatetail              tabulatetail
+                           codatabulato              tabulatetail %
                   gegeven: gegeven                   fact
                            gegeben                   fakt
                            fatto                     fapt
                   legenda: legenda                   legend
                            legende                   legenda
                            legenda                   legenda
+                  formule: formule                   formula
+                           formel                    rovnice
+                           formula                   formula
+                tablehead: tabelkop                  tablehead
+                           tabellenueberschrift      zahlavitabulky
+                           testatabella              antettabel
+                tabletail: tabelstaart               tabletail
+                           tabellenende              konectabulky
+                           codatabella               subsoltabel
+             instellingen: instellingen              setups
+                           impostazioni              einstellungen
+                           nastaveni                 setari
                  helptext: helptekst                 helptext
                            hilfetext                 textnapovedy
                            testoaiuto                textajutator
-              pagecomment: paginacommentaar          pagecomment
-                           pagecomment               komentarstranky
-                           commentopagina            comentariupagina % TB
-       sectieblokomgeving: sectieblokomgeving        sectionblockenvironment
-                           sectionblockenvironment   sectionblockenvironment
-                           ambientebloccosezione     blocsectiuneambient % TB TH
              deelomgeving: deelomgeving              localenvironment
                            lokaleumgebung            lokalnihoprostredi
                            ambientelocale            mediulocal
+       sectieblokomgeving: sectieblokomgeving        sectionblockenvironment
+                           sectionblockenvironment   sectionblockenvironment
+                           ambientebloccosezione     blocsectiuneambient % TB TH
+              pagecomment: paginacommentaar          pagecomment
+                           pagecomment               komentarstranky
+                           commentopagina            comentariupagina % TB
 
-                 linenote: regelnoot                 linenote 
-                           linenote                  linenote
-                           linenote                  linenote
-
-\stopelements
+\stopvariables
 
 %D \stopcompressdefinitions
 

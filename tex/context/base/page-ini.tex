@@ -562,6 +562,12 @@
      13: blocul lat este mutat in partea de sus a coloanelor
 \stopmessages
 
+\ifx\dosetuplayout\undefined % overloaded in page-lay ! 
+
+  \def\setuplayout{\dodoubleempty\getparameters[\??ly]}
+
+\fi 
+
 %D In case we're not running \ETEX, we need to bypass a 
 %D couple of primitives.  
 
@@ -1198,6 +1204,63 @@
 
 \newif\ifsavepagebody \newbox\savedpagebody
 
+% \def\buildpagebody#1#2%
+%   {\ifsavepagebody\global\setbox\savedpagebody\fi 
+%    \vbox
+%      {\beginrestorecatcodes
+%       \forgetall  % igv problemen, check: \boxmaxdepth\maxdimen
+%       \boxmaxdepth\maxdimen % new
+%       \mindermeldingen
+%       \setbox\pagebox\vbox
+%         {\offinterlineskip
+%          \ifpagebodyornaments
+% %           \getbackgroundbox
+% %           \getlogobox
+%            \bgroup % else footnotes get inconsistent font/baseline
+%            % \doconvertfont\@@lyletter\empty 
+%              \dostartattributes\??ly\c!letter\c!kleur\empty
+%                \offinterlineskip 
+%                \gettextboxes
+%              \dostopattributes
+%            \egroup
+%          \fi
+%          \getmainbox#1#2}% including footnotes 
+%       \ifpagebodyornaments
+%         \addmainbackground \pagebox
+%         \addlogobackground \pagebox
+%       \fi
+%       \buildpagebox        \pagebox
+%       \addstatusinfo       \pagebox
+%       \ifpagebodyornaments
+%         \addpagebackground \pagebox
+%       \fi
+%       \registerpageposition\pagebox
+%       \ifarrangingpages 
+%         \shiftpaperpagebox \pagebox % \v!papier
+%       \else
+%         \clippagebox       \pagebox
+%         \addpagecutmarks   \pagebox   
+%         \replicatepagebox  \pagebox
+%         \scalepagebox      \pagebox
+%         \mirrorpaperbox    \pagebox
+%         \rotatepaperbox    \pagebox
+%         \addpagecolormarks \pagebox 
+%         \centerpagebox     \pagebox
+%         \addprintbackground\pagebox
+%         \mirrorprintbox    \pagebox
+%         \rotateprintbox    \pagebox
+%         \shiftprintpagebox \pagebox % \v!pagina
+%         \offsetprintbox    \pagebox
+%         \negateprintbox    \pagebox
+%       \fi
+%       \box\pagebox
+%       \endrestorecatcodes}%
+%    \ifsavepagebody\copy\savedpagebody\fi}
+
+% beware, \??ly is used before defined, i.e. bad module design 
+
+\setuplayout[\c!methode=\v!normaal]
+
 \def\buildpagebody#1#2%
   {\ifsavepagebody\global\setbox\savedpagebody\fi 
    \vbox
@@ -1205,26 +1268,11 @@
       \forgetall  % igv problemen, check: \boxmaxdepth\maxdimen
       \boxmaxdepth\maxdimen % new
       \mindermeldingen
-      \setbox\pagebox\vbox
-        {\offinterlineskip
-         \ifpagebodyornaments
-%           \getbackgroundbox
-%           \getlogobox
-           \bgroup % else footnotes get inconsistent font/baseline
-           % \doconvertfont\@@lyletter\empty 
-             \dostartattributes\??ly\c!letter\c!kleur\empty
-               \offinterlineskip 
-               \gettextboxes
-             \dostopattributes
-           \egroup
-         \fi
-         \getmainbox#1#2}% including footnotes 
-      \ifpagebodyornaments
-        \addmainbackground \pagebox
-        \addlogobackground \pagebox
-      \fi
-      \buildpagebox        \pagebox
-      \addstatusinfo       \pagebox
+      % the following plugin uses and sets pagebox; beware: this
+      % will change and is for my (hh) personal experiments
+      \executeifdefined{\??ly\c!methode\@@lymethode}%
+        {\getvalue{\??ly\c!methode\v!normaal}}#1#2% 
+      % the finishing touch 
       \ifpagebodyornaments
         \addpagebackground \pagebox
       \fi
@@ -1250,6 +1298,25 @@
       \box\pagebox
       \endrestorecatcodes}%
    \ifsavepagebody\copy\savedpagebody\fi}
+
+\setvalue{\??ly\c!methode\v!normaal}#1#2%
+  {\setbox\pagebox\vbox
+     {\offinterlineskip
+      \ifpagebodyornaments
+        \bgroup % else footnotes get inconsistent font/baseline
+          \dostartattributes\??ly\c!letter\c!kleur\empty
+            \offinterlineskip 
+            \gettextboxes
+          \dostopattributes
+        \egroup
+      \fi
+      \getmainbox#1#2}% including footnotes 
+   \ifpagebodyornaments
+     \addmainbackground \pagebox
+     \addlogobackground \pagebox
+   \fi
+   \buildpagebox  \pagebox
+   \addstatusinfo \pagebox}
 
 \def\finishpagebox#1%
   {\ifarrangingpages
@@ -1684,13 +1751,13 @@
        \ht\registertextbox\ht#3%
        \dp\registertextbox\dp#3%
        \ifcase#1\or % 1
-         \setbox\registertextbox\hbox{\lower\dp\strutbox\box\registertextbox}%
+         \setbox\registertextbox\hbox{\lower\strutdp\box\registertextbox}%
        \fi
        \ifcase#2\or % 1 
-         \setbox\registertextbox\hbox{\raise\topskip\hbox{\lower\ht\strutbox\box\registertextbox}}%
-         \dp\registertextbox\dp\strutbox
+         \setbox\registertextbox\hbox{\raise\topskip\hbox{\lower\strutht\box\registertextbox}}%
+         \dp\registertextbox\strutdp
        \fi
-       \dp\registertextbox\dp\strutbox % needed 
+       \dp\registertextbox\strutdp % needed 
       %\setbox\registertextbox\hbox
       %  {\iftracetextareas\gray\boxrulewidth2pt\ruledhbox\fi
       %   {\registerMPtextarea{\box\registertextbox}}}%

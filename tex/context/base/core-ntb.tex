@@ -64,7 +64,7 @@
    \else
      \par
      \ifdim\prevdepth<\zeropoint % =-1000pt ?
-       \vskip-\dp\strutbox
+       \vskip-\strutdp
      \else
        \removebottomthings
      \fi
@@ -471,7 +471,7 @@
    \endTBL
    % wrong ! ! ! better to have an auto-offset-overlay
    % \ifnum\TBLlevel>1
-   %   \vskip-\dp\strutbox
+   %   \vskip-\strutdp
    % \fi
    \egroup
    \egroup
@@ -596,8 +596,9 @@
    \setbox0\vbox{\trialtypesettingtrue \the\tbltoks}% 
    \ifautoTBLspread
      % experimental, stretch non fixed cells to \hsize 
-     \checktblwidthsone % trial run 
-     \checktblwidthstwo % real run 
+     \checktblwidthsone   % trial run 
+     \checktblwidthstwo   % real run 
+     \stretchtblwidths
      \let\handleTBLcell\dohandleTBLcellB
      \setbox\scratchbox\vbox{\trialtypesettingtrue \the\tbltoks}%
    \else\ifdim\wd0>\hsize
@@ -687,6 +688,21 @@
       \vbox{\the\tbltoks}%
     \fi\fi}
 
+\def\stretchtblwidths
+  {\!!dimend\zeropoint
+   \dorecurse\maximumcol
+     {\advance\!!dimend\gettblwid\recurselevel}%
+   % distribute width (stretch)
+   \ifdim\!!dimend<\hsize
+     \advance\!!dimend-\hsize
+     \!!dimend-\!!dimend
+     \divide\!!dimend\maximumcol
+     \dorecurse\maximumcol
+       {\scratchdimen\gettblwid\recurselevel
+        \advance\scratchdimen\!!dimend
+        \settblwid\recurselevel{\the\scratchdimen}}% 
+   \fi} 
+
 % \def\splittblbox#1% #1 <> 0/2 
 %   {\unvbox#1}
 
@@ -769,17 +785,17 @@
      {\let\xrowTBL\recurselevel
       \dorecurse\maximumcol
         {\let\xcolTBL\recurselevel
-         \count0=0\gettblrow\xrowTBL\xcolTBL\relax 
+         \!!countb=0\gettblrow\xrowTBL\xcolTBL\relax 
          % check row span 
-         \ifnum\count0>1
+         \ifnum\!!countb>1
            % current height in row 
            \dimen0=\gettblht\xrowTBL\xcolTBL 
            % find nearest height in row 
            \dimen2=\zeropoint              
            \dorecurse\maximumcol
              {\ifnum\recurselevel=\xcolTBL\else
-                \count2=0\gettblrow\xrowTBL\recurselevel\relax 
-                \ifnum\count2=\plusone
+                \!!countc=0\gettblrow\xrowTBL\recurselevel\relax 
+                \ifnum\!!countc=\plusone
                   \dimen4=\gettblht\xrowTBL\recurselevel\relax
                   \ifdim\dimen2<\dimen4
                     \dimen2=\dimen4
@@ -789,7 +805,7 @@
            \let\xxrowTBL\xrowTBL
            % calculate cummulative height 
            \dimen4=\dimen2 
-           \dorecurse{\count0}
+           \dorecurse{\!!countb}
              {\ifnum\xxrowTBL=\xrowTBL\else
                 \advance\dimen4 \gettblhei\xxrowTBL 
               \fi
@@ -797,10 +813,10 @@
            % distribute overshoot equally
            \ifdim\dimen4<\dimen0 
              \advance\dimen0 -\dimen4
-             \divide\dimen0 \count0 
+             \divide\dimen0 \!!countb 
              \let\xxrowTBL\xrowTBL
              \settblhei\xrowTBL{\the\dimen2}%
-             \dorecurse{\count0}
+             \dorecurse{\!!countb}
                {\dorecurse\maximumcol
                   {\ifnum\recurselevel=\xcolTBL\else
                      \scratchdimen\gettblht\xxrowTBL\recurselevel
@@ -816,7 +832,7 @@
            \fi\fi
          \fi}}}
 
-\def\checktblheightstwo%
+\def\checktblheightstwo
   {}
 
 \def\showtblwids#1%

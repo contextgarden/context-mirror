@@ -539,7 +539,7 @@
 \def\doorsnede
   {\hbox{\rlap/$\circ$} }
 
-\def\punten
+\unexpanded\def\punten
   {\dosingleempty\dopunten}
 
 \def\dopunten[#1]%
@@ -547,12 +547,12 @@
    \hbox to \iffirstargument#1\else5\fi \scratchdimen
      {\leaders\hbox to \scratchdimen{\hss.\hss}\hss}}
 
-\def\ongeveer
+\unexpanded\def\ongeveer
   {\mathematics\pm}
 
 % for compatibility
 
-\def\unknown
+\unexpanded\def\unknown
   {\dontleavehmode\punten[3]}
 
 \def\leftboundarycharacter#1#2%
@@ -889,7 +889,7 @@
       \let\dodostopdelimitedtextpar\endgraf}
      {\startsmaller[#1]\let\dodostopdelimitedtextpar\stopsmaller}%
    % so far 
-   \doif{\delimitedtextparameter\c!springvolgendein}\v!nee\noindentation
+   \dochecknextindentation{\??ci\currentdelimitedtext}%
    \dostartattributes{\??ci\currentdelimitedtext}\c!letter\c!kleur\empty
    \leftdelimitedtextmark
    \doglobal\incrementvalue{\??ci\currentdelimitedtext\c!niveau}%
@@ -1372,23 +1372,23 @@
 \stopmessages
 
 \definetabulate
-  [\e!legenda]
+  [\v!legenda]
   [|emj1|i1|mR|]
 
 \setuptabulate
-  [\e!legenda]
+  [\v!legenda]
   [\c!eenheid=.75em,\c!binnen=\setquicktabulate\leg,EQ={=}]
 
 \definetabulate
-  [\e!legenda][\v!twee]
+  [\v!legenda][\v!twee]
   [|emj1|emk1|i1|mR|]
 
 \definetabulate
-  [\e!gegeven]
+  [\v!gegeven]
   [|R|ecmj1|i1mR|]
 
 \setuptabulate
-  [\e!gegeven]
+  [\v!gegeven]
   [\c!eenheid=.75em,\c!binnen=\setquicktabulate\geg,EQ={=}]
 
 \unexpanded\def\xbox
@@ -1759,7 +1759,7 @@
       \box#1\relax
       \ifcase\pairedlocationb\hss\or\or\or\or\hss\fi}}
 
-\definepairedbox[\e!legenda]
+\definepairedbox[\v!legenda]
 
 %D Goody: 
 
@@ -1846,10 +1846,10 @@
           {\ifx\nexttoken\egroup \else % the next box is empty
              \hsize\wd0
              \steluitlijnenin[\combinationparameter\c!uitlijnen]%
-\dostartattributes{\??co\currentcombination}\c!letter\c!kleur\empty
+             \dostartattributes{\??co\currentcombination}\c!letter\c!kleur\empty
              \bgroup
              \aftergroup\endstrut
-\aftergroup\dostopattributes
+             \aftergroup\dostopattributes
              \aftergroup\egroup
              \begstrut
            \fi}%
@@ -1954,6 +1954,7 @@
 \def\flushcombinationstack
   {\noalign
      {\ifdim\ht\combinationstack>\zeropoint
+\nointerlineskip % nieuw 
         \@@cotussen
         \global\horcombination\maxhorcombination
         \globallet\doflushcombinationstack\dodoflushcombinationstack

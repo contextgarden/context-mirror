@@ -328,7 +328,7 @@ var:zeilen:ja,nein,hyphenate::
 stopsetup
 
 startsetup
-com:starttippen:
+com:start<<tippen>>:
 typ:stp/:
 stopsetup
 
@@ -677,7 +677,7 @@ startsetup
 com:stellemarginallinieein:
 typ:var/:
 var:niveau:*Nummer::
-var:dicke:*Dimension::
+var:liniendicke:*Dimension::
 stopsetup
 
 startsetup
@@ -2401,8 +2401,9 @@ val:*Abschnitt::
 stopsetup
 
 startsetup
-com:stelleaufzaehlungein:
-typ:val/vals/vars/:
+com:setupitemgroup:
+typ:val/val/vals/vars/:
+val:*Name::
 val:*Nummer,jede::
 val:standard,repeat/breit,repeat/kleinerabstand,gepackt, ungepackt,trenner,keinabstand,amrand,imrand, autointro,lose,absatz,imtext:standard:
 var:marginalie:nein,standard,*Dimension::
@@ -2429,10 +2430,11 @@ var:ziehefolgendeein:ja,nein::
 stopsetup
 
 startsetup
-com:startaufzaehlung:
-typ:vals/vars/stp/:
+com:start<<itemgroup>>:
+typ:val/vals/vars/stp/:
+val:*Name::
 val:a,A,KA,n,N,m,r,R,KR,*Nummer,fortsetzten, standard,repeat/breit,repeat/kleinerabstand,gepackt, trenner,keinabstand,amrand,imrand,intro, spalten:standard:
-ivr:stelleaufzaehlungein::
+ivr:setupitemgroup::
 stopsetup
 
 startsetup
@@ -2855,7 +2857,7 @@ ivr:stelleumrahmtein::
 stopsetup
 
 startsetup
-com:startpuffer:
+com:start<<puffer>>:
 typ:val/stp/:
 val:*Name::
 stopsetup
@@ -2946,7 +2948,7 @@ var:datei:*Datei::
 stopsetup
 
 startsetup
-com:startformel:
+com:start<<formel>>:
 typ:stp/:
 val:*Formel::
 stopsetup
@@ -3251,7 +3253,7 @@ val:*Text::
 stopsetup
 
 startsetup
-com:starttabulator:
+com:start<<tabulator>>:
 typ:val/vars/stp/:
 val:*Text::
 ivr:verwendeexterneabbildung::

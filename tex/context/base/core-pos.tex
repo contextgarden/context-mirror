@@ -707,7 +707,7 @@
 
 \def\wpos#1%
   {\dontleavehmode\vadjust % may disappear if buried
-     {\setbox0\hbox{\raise\dp\strutbox\hbox{\rawwpos{#1}}}%
+     {\setbox0\hbox{\raise\strutdp\hbox{\rawwpos{#1}}}%
       \rlap{\smashedbox0}}}
 
 \def\wwpos#1% \hsmashed{\llap{\rawwpos{#1}}}
@@ -766,22 +766,23 @@
 
 \def\doregisterparoptions
   {\doglobal\increment\parposcounter
-   \bgroup
+   \begingroup
      \leftskip 1\leftskip
      \rightskip1\rightskip
      \setpositiondataplus
        {p:\parposcounter}%         % identifier
-       {\zeropoint}
-       {\ht\strutbox}
-       {\dp\strutbox}
+       {\zeropoint}%
+       {\strutht}%
+       {\strutdp}%
        {\efficientdimen\hsize     ,% 1
         \efficientdimen\leftskip  ,% 2
         \efficientdimen\rightskip ,% 3
         \efficientdimen\hangindent,% 4
                    \the\hangafter ,% 5
         \efficientdimen\parindent }% 6
-     \normalhbox{\registerparsymbol}%
-   \egroup}
+    %\normalhbox{\registerparsymbol}%
+     \registerparsymbol
+   \endgroup}
 
 \newif\iftracepositions
 
@@ -913,39 +914,39 @@
 
 % \def\dopresetpositionanchors
 %   {\bgroup
-%    \dimen0=\ifdim\topskip>\ht\strutbox\topskip\else\ht\strutbox\fi
+%    \dimen0=\ifdim\topskip>\strutht\topskip\else\strutht\fi
 %    \dimen2=\MPy\textanchor
 %    \dimen4=\dimen2
 %    \advance\dimen2 \MPh\textanchor % space is essential
 %    \advance\dimen2 -\dimen0
-%    \advance\dimen4 \dp\strutbox
+%    \advance\dimen4 \strutdp
 %    \dimen6=\MPx\textanchor
 %    \dimen8=\MPw\textanchor
 %    \setxvalue{\POSprefix\headanchor}%
 %      {\realfolio,\withoutpt{\the\dimen6},\withoutpt{\the\dimen2},%
-%       \withoutpt{\the\dimen8},\withoutpt{\the\dimen0},\withoutpt{\the\dp\strutbox}}%
+%       \withoutpt{\the\dimen8},\withoutpt{\the\dimen0},\withoutpt{\the\strutdp}}%
 %    \setxvalue{\POSprefix\tailanchor}%
 %      {\realfolio,\withoutpt{\the\dimen6},\withoutpt{\the\dimen4},%
-%       \withoutpt{\the\dimen8},\withoutpt{\the\ht\strutbox},\withoutpt{\the\dp\strutbox}}%
+%       \withoutpt{\the\dimen8},\withoutpt{\the\strutht},\withoutpt{\the\strutdp}}%
 %   %\showanchor\textanchor\showanchor\headanchor\showanchor\tailanchor\wait
 %    \egroup}
 
 \def\dopresetpositionanchors
   {\bgroup
-   \!!dimena\ifdim\topskip>\ht\strutbox\topskip\else\ht\strutbox\fi
+   \!!dimena\ifdim\topskip>\strutht\topskip\else\strutht\fi
    \!!dimenb\MPy\textanchor
    \!!dimenc\!!dimenb
    \advance\!!dimenb \MPh\textanchor % space is essential
    \advance\!!dimenb -\!!dimena
-   \advance\!!dimenc \dp\strutbox
+   \advance\!!dimenc \strutdp
    \!!dimend\MPx\textanchor
    \!!dimene\MPw\textanchor
    \setxvalue{\POSprefix\headanchor}%
      {\realfolio,\withoutpt{\the\!!dimend},\withoutpt{\the\!!dimenb},%
-      \withoutpt{\the\!!dimene},\withoutpt{\the\!!dimena},\withoutpt{\the\dp\strutbox}}%
+      \withoutpt{\the\!!dimene},\withoutpt{\the\!!dimena},\withoutpt{\the\strutdp}}%
    \setxvalue{\POSprefix\tailanchor}%
      {\realfolio,\withoutpt{\the\!!dimend},\withoutpt{\the\!!dimenc},%
-      \withoutpt{\the\!!dimene},\withoutpt{\the\ht\strutbox},\withoutpt{\the\dp\strutbox}}%
+      \withoutpt{\the\!!dimene},\withoutpt{\the\strutht},\withoutpt{\the\strutdp}}%
   %\showanchor\textanchor\showanchor\headanchor\showanchor\tailanchor\wait
    \egroup}
 
@@ -1083,9 +1084,9 @@
             % rounding errors
              {\setbox\scratchbox\hbox to \overlaywidth
                 {\dopositionaction{#1::\MPanchoridentifier}\hss}%
-                 \ht\scratchbox\overlayheight
-                 \dp\scratchbox\zeropoint
-                 \box\scratchbox}}%
+              \ht\scratchbox\overlayheight
+              \dp\scratchbox\zeropoint
+              \box\scratchbox}}%
           {\hbox to \overlaywidth{\hss}}%
         \vfill}%
    \fi}
@@ -1836,7 +1837,6 @@
    \endgraf % new
    \getvalue{\??td\currenttextbackground\c!na}}
 
-
 \let\textparpages \!!zeropoint
 \let\textparheight\!!zeropoint
 \let\textparwidth \!!zeropoint
@@ -1913,7 +1913,7 @@
   {\dodoubleempty\dodefinetextbackground}
 
 \def\dodefinetextbackground[#1][#2]%
-  {\ifsecondargument
+  {\ifsecondargument % why ? 
      \copyparameters[\??td#1][\??td]
        [\c!status,\c!plaats,\c!variant,\c!mp,\c!methode,
         \c!achtergrond,\c!achtergrondkleur,\c!hoek,\c!niveau,
@@ -2100,7 +2100,7 @@
 %      \scratchdimen=\MPy{\s!margin:\currentmarginpos}%
 %      \doglobal\increment\currentmarginpos
 %      \advance\scratchdimen by -\MPy{\s!margin:\currentmarginpos}%
-%      \advance\scratchdimen by -\dp\strutbox
+%      \advance\scratchdimen by -\strutdp
 %      \setbox#1=\hbox
 %        {\setposition{\s!margin:\currentmarginpos}\raise\scratchdimen\box#1}%
 %      \dp#1=\!!zeropoint
@@ -2117,7 +2117,7 @@
      \scratchdimen\MPy{\s!margin:\currentmarginpos}%
      \doglobal\increment\currentmarginpos
      \advance\scratchdimen -\MPy{\s!margin:\currentmarginpos}%
-     \advance\scratchdimen -\dp\strutbox
+     \advance\scratchdimen -\strutdp
      % new
      \setbox#1\hbox
        {\hskip-\MPx{\s!margin:\currentmarginpos}%
@@ -2344,22 +2344,20 @@
 %D \startbuffer
 %D \def\cw#1{\color[white]{#1}}
 %D
-%D \def\TableShade#1#2%
-%D   {\startMPpositiongraphic
-%D      initialize_area(\MPpos{b:#1},\MPpos{e:#1}) ;
-%D      linear_shade(pxy,0,.4#2,.9#2) ;
-%D      anchor_area(\MPanchor{b:#1}) ;
-%D    \stopMPpositiongraphic}
-%D
-%D \dosetpositionaction{b:x}{\TableShade{x}{red}}
-%D \dosetpositionaction{b:y}{\TableShade{y}{green}}
-%D \dosetpositionaction{b:z}{\TableShade{z}{blue}}
+%D \startMPpositiongraphic{tableshade}
+%D   initialize_area(\MPpos{\MPvar{from}},\MPpos{\MPvar{to}}) ;
+%D   color c ; c := \MPvar{color} ;
+%D   linear_shade(pxy,0,.4c,.9c) ;
+%D   anchor_area(\MPanchor{\MPvar{from}}) ;
+%D \stopMPpositiongraphic
+%D 
+%D \setMPpositiongraphic{b:x}{tableshade}{from=b:x,to=e:x,color=red}
+%D \setMPpositiongraphic{b:y}{tableshade}{from=b:y,to=e:y,color=green}
+%D \setMPpositiongraphic{b:z}{tableshade}{from=b:z,to=e:z,color=blue}
 %D \stopbuffer
 %D
-%D \typebuffer
-%D
-%D % \haalbuffer
-%D
+%D \typebuffer \haalbuffer
+%D 
 %D The definition of the table looks about the same as the
 %D previous one:
 %D
@@ -2373,7 +2371,7 @@
 %D
 %D \typebuffer
 %D
-%D % \haalbuffer
+%D \haalbuffer
 
 % \definepositionframed[w][background=color,backgroundcolor=yellow]
 % \definepositionframed[x][background=color,backgroundcolor=red]

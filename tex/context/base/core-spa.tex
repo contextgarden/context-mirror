@@ -1122,6 +1122,22 @@
 
 \def\nietinspringen{\inspringen[\v!nee,\v!volgende]}
 \def\welinspringen {\inspringen[\v!ja,\v!eerste]}
+
+\def\dochecknextindentation#1% internal one 
+  {\checknextindentation[\getvalue{#1\c!springvolgendein}]}
+
+\def\checknextindentation[#1]%
+  {\processaction[#1][%\v!handhaaf=>,
+      \v!ja=>\doindentation,
+     \v!nee=>\noindentation,
+    \v!auto=>\autoindentation]}
+
+\def\doindentation% too simple
+  {\gdef\checkindentation{\global\indentationtrue}}
+
+\ifx\autoindentation\undefined 
+  \let\autoindentation\relax
+\fi
 
 % \frenchspacing leidt soms tot afbreken tussen -, vandaar
 % de variant \newfrenchspacing.
@@ -1734,7 +1750,7 @@
   {\strutdimen\normallineheight       % wat niet per se \lineheight
    \strutdimen#2\strutdimen           % is omdat een strut lokaal
    \strutdimen#3\strutdimen           % kan afwijken van de globale
-   \edef#1{\the\strutdimen}}          % strut
+   \edef#1{\the\strutdimen}} % macro  % strut
 
 % plain definition:
 %
@@ -1779,8 +1795,8 @@
 
 \def\setcharstrut#1%
   {\setbox\strutbox\hbox{#1}%
-   \edef\strutheight{\the\ht\strutbox}%
-   \edef\strutdepth {\the\dp\strutbox}%
+   \edef\strutheight{\the\strutht}%
+   \edef\strutdepth {\the\strutdp}%
    \dosetstrut}
 
 \def\setfontstrut
@@ -1831,8 +1847,7 @@
    \setstrut}
 
 \def\begstrut
-  {%relax\ifdim\ht\strutbox=\zeropoint\else
-   \relax\ifcase\ht\strutbox\else
+  {\relax\ifcase\strutht\else
      \strut
      \normalpenalty\@M % \!!tenthousand
      \normalhskip\zeropoint
@@ -1840,8 +1855,7 @@
    \fi}
 
 \def\endstrut
-  {%relax\ifhmode\ifdim\ht\strutbox=\zeropoint\else
-   \relax\ifhmode\ifcase\ht\strutbox\else
+  {\relax\ifhmode\ifcase\strutht\else
      \removeunwantedspaces
      \normalpenalty\@M % \!!tenthousand
      \normalhskip\zeropoint

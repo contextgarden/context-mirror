@@ -730,7 +730,7 @@
 
 \startsetup
   \command
-    [\e!start\v!typen]
+    [\e!start<<\y!typen>>]
   \type
     [\c!stp!]
 \stopsetup
@@ -1255,7 +1255,7 @@
     [\c!number!]
     [1]
   \variable
-    [\c!dikte]
+    [\c!lijndikte]
     [\c!dimension!]
     []
 \stopsetup
@@ -1286,7 +1286,7 @@
 %   \type
 %     [\c!var!]
 %   \variable
-%     [\c!dikte]
+%     [\c!lijndikte]
 %     [\v!klein,\v!middel,\v!groot,\c!dimension!]
 %     [\v!middel]
 %   \variable
@@ -5151,9 +5151,12 @@
 
 \startsetup
   \command
-    [\y!setupitemize]
+    [\y!setupitemgroup]
   \type
-    [\c!opt!\c!val!\c!opt!\c!vals!\c!opt!\c!vars!]
+    [\c!val!\c!opt!\c!val!\c!opt!\c!vals!\c!opt!\c!vars!]
+  \value
+    [\c!identifier!]
+    []
   \value
     [\c!number!,\v!elk]
     []
@@ -5260,9 +5263,12 @@
 
 \startsetup
   \command
-    [\y!startitemize]
+    [\e!start<<\y!itemgroup>>]
   \type
-    [\c!opt!\c!vals!\c!opt!\c!vars!\c!stp!]
+    [\c!val!\c!opt!\c!vals!\c!opt!\c!vars!\c!stp!]
+  \value
+    [\c!identifier!]
+    []
   \value
     [a,A,KA,n,N,m,r,R,KR,\c!number!,\v!verder,
      \v!standaard,\c!repeat!\v!ruim,\c!repeat!\v!aanelkaar,\v!opelkaar,
@@ -5270,7 +5276,7 @@
      \v!kolommen]
     [\v!standaard]
   \inheritvariables
-    [\y!setupitemize]
+    [\y!setupitemgroup]
     []
 \stopsetup
 
@@ -5897,7 +5903,7 @@
 
 \startsetup
   \command
-    [\e!start\e!uitstellen]
+    [\e!start\v!uitstellen]
   \type
     [\c!stp!]
 \stopsetup
@@ -5921,7 +5927,7 @@
 
 \startsetup
   \command
-    [\e!start\e!verbergen]
+    [\e!start\v!verbergen]
   \type
     [\c!stp!]
 \stopsetup
@@ -6080,7 +6086,7 @@
 
 \startsetup
    \command
-     [\e!start\e!buffer]
+     [\e!start<<\y!buffer>>]
    \type
      [\c!opt!\c!val!\c!stp!]
    \value
@@ -6262,7 +6268,7 @@
 
 \startsetup
   \command
-    [\e!start\e!formule]
+    [\e!start<<\y!formule>>]
   \type
     [\c!stp!]
   \value
@@ -6949,7 +6955,7 @@
 
 \startsetup
   \command
-    [\e!start\e!tabulate]
+    [\e!start<<\y!tabulate>>]
   \type
     [\c!opt!\c!val!\c!opt!\c!vars!\c!stp!]
   \value
@@ -7353,7 +7359,7 @@
 
 \startsetup
   \command
-    [\e!start\e!legenda]
+    [\e!start\v!legenda]
   \type
     [\c!opt!\c!val!\c!tex!{leg}\c!nop!\c!sep!\c!nop!\c!sep!\c!nop!\c!sep!\c!tex!{leg}\c!stp!]
   \value
@@ -7372,7 +7378,7 @@
 
 \startsetup
   \command
-    [\e!start\e!gegeven]
+    [\e!start\v!gegeven]
   \type
 %    [\c!tex!{geg}\c!nop!\c!sep!\c!nop!\c!sep!\c!nop!\c!sep!\c!tex!{geg}\c!stp!]
     [\c!tex!{\y!geg}\c!nop!\c!sep!\c!nop!\c!sep!\c!nop!\c!sep!\c!tex!{\y!geg}\c!stp!]
@@ -7805,7 +7811,7 @@
 
 \startsetup
   \command
-    [\e!start\e!interactiemenu]
+    [\e!start\v!interactiemenu]
   \type
     [\c!alwint!\c!val!\c!stp!]
   \value
@@ -8396,7 +8402,7 @@
 
 \startsetup
   \command
-    [\e!start\e!commentaar]
+    [\e!start\v!commentaar]
   \type
     [\c!opt!\c!val!\c!opt!\c!vars!\c!stp!]
   \value

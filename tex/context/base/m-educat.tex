@@ -73,7 +73,7 @@
 \def\setupanswerarea
   {\setuptextbackground[\v!answerarea]}
 
-\def\answerspace
+\setvalue\e!answerspace
   {\dosingleempty\doanswerspace}
 
 \def\doanswerspace[#1]%
@@ -181,7 +181,7 @@
    \getvalue{\e!stop\v!answerarea}%
    \par\endgroup\endgroup} 
 
-\def\answerlines
+\setvalue\e!answerlines
   {\dosingleempty\doanswerlines}
 
 \def\doanswerlines[#1]#2%

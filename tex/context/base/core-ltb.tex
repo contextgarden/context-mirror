@@ -171,9 +171,9 @@
       \else
         \scratchdimen\teksthoogte
       \fi
-      \advance\scratchdimen -\dp\strutbox
+      \advance\scratchdimen -\strutdp
       \ifdim\prevdepth<\maxdimen\ifdim\prevdepth>\zeropoint
-        \global\advance\scratchdimen -\dp\strutbox
+        \global\advance\scratchdimen -\strutdp
         \global\advance\scratchdimen -\parskip
       \fi\fi
       \getrawnoflines\scratchdimen 

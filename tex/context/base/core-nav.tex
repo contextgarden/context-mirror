@@ -137,19 +137,21 @@
 \newif\iflocationsplit
 
 \def\resetgoto
-  {\global\let\@@ia@@hoogte\!!zeropoint
-   \global\let\@@ia@@diepte\!!zeropoint}
+  {\globallet\@@ia@@hoogte\!!zeropoint
+   \globallet\@@ia@@diepte\!!zeropoint}
  
 \resetgoto
 
 \def\presetgoto
   {\iflocationstrut
      \setstrut
-     \xdef\@@ia@@hoogte{\the\ht\strutbox}%
-     \xdef\@@ia@@diepte{\the\dp\strutbox}%
+    %\xdef\@@ia@@hoogte{\the\strutht}%
+    %\xdef\@@ia@@diepte{\the\strutdp}%
+     \globallet\@@ia@@hoogte\strutheight
+     \globallet\@@ia@@diepte\strutdepth
    \else
-     \global\let\@@ia@@hoogte\@@iahoogte
-     \global\let\@@ia@@diepte\@@iadiepte
+     \globallet\@@ia@@hoogte\@@iahoogte
+     \globallet\@@ia@@diepte\@@iadiepte
    \fi}
 
 %D In the macros that deal with making areas into hyperlinks, 

@@ -19,35 +19,42 @@
 
 \defineXMLenvironment [rl:usage] 
   {\bgroup} 
-  {\setups[rl usage]\egroup}
+  {\setups[rl:usage]%
+   \egroup}
 
-\defineXMLsave [rl:type]   % figure
-\defineXMLsave [rl:state]  % found|missing
-\defineXMLsave [rl:file]   % filename
-\defineXMLsave [rl:suffix] % filesuffix
-\defineXMLsave [rl:width]  % width in pt
-\defineXMLsave [rl:height] % height in pt
-\defineXMLsave [rl:page]   % page from file 
+\defineXMLsave [rl:type]    % figure
+\defineXMLsave [rl:state]   % found|missing
+\defineXMLsave [rl:file]    % filename
+\defineXMLsave [rl:suffix]  % filesuffix
+\defineXMLsave [rl:comment] % text 
+\defineXMLsave [rl:width]   % width in pt
+\defineXMLsave [rl:height]  % height in pt
+\defineXMLsave [rl:page]    % page from file 
 
 \def\XMLbpentry#1%
   {\PointsToWholeBigPoints{\XMLflush{#1}}\temp\temp bp}
 
+% \def\XMLrlentry#1#2#3%
+%   {\doiftextelse{\XMLflush{#2}}
+%      {\NC\bf#1\NC\XMLflush{#2}\doif{#3}{1}{ (\XMLbpentry{#2})}\NC\NR}
+%      {}}
+
 \def\XMLrlentry#1#2#3%
-  {\doiftext{\XMLflush{#2}}
-     {\NC\bf#1\NC\XMLflush{#2}\doif{#3}{1}{ (\XMLbpentry{#2})}\NC\NR}%
-   \ignorespaces} 
+  {\tableiftextelse{\XMLflush{#2}}
+     {\NC\bf#1\NC\XMLflush{#2}\doif{#3}{1}{ (\XMLbpentry{#2})}\NC\NR}{}}
 
-\startsetups[rl usage]
+\startsetups[rl:usage]
 
-\starttabulate
-\XMLrlentry {type}   {rl:type}   {0}
-\XMLrlentry {state}  {rl:state}  {0}
-\XMLrlentry {file}   {rl:file}   {0}
-\XMLrlentry {name}   {rl:name}   {0}
-\XMLrlentry {suffix} {rl:suffix} {0}
-\XMLrlentry {page}   {rl:page}   {0}
-\XMLrlentry {width}  {rl:width}  {1}
-\XMLrlentry {height} {rl:height} {1}
+\starttabulate[|lw(4.5em)|p|]
+  \XMLrlentry {type}   {rl:type}   {0}
+  \XMLrlentry {state}  {rl:state}  {0}
+  \XMLrlentry {file}   {rl:file}   {0}
+  \XMLrlentry {name}   {rl:name}   {0}
+  \XMLrlentry {suffix} {rl:suffix} {0}
+  \XMLrlentry {page}   {rl:page}   {0}
+  \XMLrlentry {width}  {rl:width}  {1}
+  \XMLrlentry {height} {rl:height} {1}
+  \XMLrlentry {comment}{rl:comment}{0}
 \stoptabulate 
 
 \stopsetups 

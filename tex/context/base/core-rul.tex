@@ -11,7 +11,7 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-\writestatus{loading}{Context Core Macros / Ruled Stuff Handling}
+\writestatus{loading}{Context Core Macros / Ruled Content Handling}
 
 \unprotect
 
@@ -795,7 +795,7 @@
      \let\localbegstrut\pseudobegstrut % was: \relax
      \let\localendstrut\pseudoendstrut % was: \relax
      \let\localstrut   \pseudostrut    % was: \relax
-    %\ifboxhasheight\ifdim\!!heighta<\ht\strutbox % saveguard
+    %\ifboxhasheight\ifdim\!!heighta<\strutht % saveguard
     %  \let\localbegstrut\relax                   % but not that
     %  \let\localstrut   \relax                   % save afterall
     %\fi\fi
@@ -1401,45 +1401,11 @@
   {\framednoflines\zerocount
    \framedlastlength\zeropoint}
 
-% \def\doreshapeframedbox%
-%   {\beginofshapebox
-%    \unvcopy\framebox
-%    \endofshapebox
-%    \global\@@globalwidth=\zeropoint
-%    \resetshapeframebox
-%    \reshapebox
-%      {\setbox0=\hbox
-%         {\strut\ifhbox\shapebox\unhbox\else\box\fi\shapebox}%
-%       \global\advance\framednoflines by 1
-%       \ifdim\framedlastlength>\zeropoint\else
-%         \global\framedlastlength=\wd0
-%       \fi
-%       \ifdim\wd0>\@@globalwidth
-%         \global\@@globalwidth=\wd0
-%       \fi}%
-%    \dosetraggedcommand{\localformat}%
-%    \raggedcommand
-%    \ifboxhasheight
-%      \setbox\framebox=\vbox to \localheight
-%        {\hsize\@@globalwidth
-%         \reshapebox{\hbox to \hsize{\ifhbox\shapebox\unhbox\else\box\fi\shapebox}}%
-%         \dobeforeframedbox
-%         \innerflushshapebox
-%         \doafterframedbox}%
-%    \else
-%      \setbox\framebox=\vbox
-%        {\hsize\@@globalwidth
-%         \reshapebox{\hbox to \hsize{\ifhbox\shapebox\unhbox\else\box\fi\shapebox}}%
-%         \innerflushshapebox}%
-%      \dp\framebox=\dp\strutbox
-%    \fi
-%    \ifdim\framedlastlength=\zeropoint\global\framednoflines=\wd\framebox\fi
-%    \ifcase\framednoflines\global\framednoflines=1\fi}
+% The next implementation is frozen! It preserves the depth, 
+% otherwise we get problems with framed display math and auto 
+% width. 
 
-% better depth preserving, else problems with framed display
-% math and auto width
-
-\def\doreshapeframedbox
+\def\doreshapeframedbox % frozen 
   {\beginofshapebox
    \unvcopy\framebox
    \endofshapebox
@@ -1470,7 +1436,7 @@
        {\hsize\@@globalwidth
         \reshapebox{\hbox to \hsize{\ifhbox\shapebox\unhbox\else\box\fi\shapebox}}%
         \innerflushshapebox}%
-     \dp\framebox\scratchdimen % \dp\strutbox otherwise problem with math
+     \dp\framebox\scratchdimen % \strutdp otherwise problem with math
    \fi
    \ifdim\framedlastlength=\zeropoint\global\framednoflines\wd\framebox\fi
    \ifcase\framednoflines\global\framednoflines\plusone\fi}
@@ -1539,14 +1505,14 @@
 %D baseline intact outside as well as inside the framed box.
 
 \def\doinlineframedbox
-  {\scratchdimen\dp\strutbox
+  {\scratchdimen\strutdp
    \advance\scratchdimen \ruledlinewidth
    \ifboxhasoffset
      \advance\scratchdimen \framedparameter\c!offset
    \fi
    \setbox\framebox\hbox{\lower\scratchdimen\box\framebox}%
-   \ht\framebox\ht\strutbox
-   \dp\framebox\dp\strutbox
+   \ht\framebox\strutht
+   \dp\framebox\strutdp
    \box\framebox}
 
 %D We can also lower the box over the natural depth of the
@@ -1554,9 +1520,9 @@
 
 \def\doloweredframedbox
   {\getboxheight\scratchdimen\of\box\framebox
-   \advance\scratchdimen -\dp\strutbox
+   \advance\scratchdimen -\strutdp
    \ht\framebox\scratchdimen
-   \dp\framebox\dp\strutbox
+   \dp\framebox\strutdp
    \box\framebox}
 
 %D Hanging the content is mainly meant for cases like the
@@ -1618,14 +1584,14 @@
    \ifboxhasheight
      \dimen4=\localheight \divide\dimen4 2
      \dimen6=\dimen4
-     \advance\dimen4   \dp\strutbox
-     \advance\dimen6  -\dp\strutbox
+     \advance\dimen4   \strutdp
+     \advance\dimen6  -\strutdp
      \advance\dimen4 -2\ruledlinewidth
      \advance\dimen6  2\ruledlinewidth
    \else
-     \dimen4\ht\strutbox
+     \dimen4\strutht
      \advance\dimen4 \dimen2
-     \dimen6\dp\strutbox
+     \dimen6\strutdp
      \advance\dimen6 \dimen2
    \fi
    \unskip
@@ -1636,8 +1602,8 @@
         \!!depth\dimen6
         \!!width\ruledlinewidth
       \hskip\dimen2}%
-   \ht0\ht\strutbox
-   \dp0\dp\strutbox
+   \ht0\strutht
+   \dp0\strutdp
    \box0
    \ignorespaces
    \egroup}
@@ -1722,8 +1688,8 @@
    \getparameters[\??bj][#1]%
    \setstrut
    \doif\@@bjbreedte\v!max{\def\@@bjbreedte{1em}}%
-   \doif\@@bjhoogte \v!max{\def\@@bjhoogte{\ht\strutbox}}%
-   \doif\@@bjdiepte \v!max{\def\@@bjdiepte{\dp\strutbox}}%
+   \doif\@@bjhoogte \v!max{\def\@@bjhoogte{\strutht}}%
+   \doif\@@bjdiepte \v!max{\def\@@bjdiepte{\strutdp}}%
    \localstartcolor[\@@bjkleur]%
      \vrule
        \!!width \@@bjbreedte
@@ -1800,7 +1766,7 @@
 
 \def\dodrawmarginrule
   {\setbox0\hbox
-     {\vrule\!!depth\strutdepth\!!height\strutheight\!!width\@@kadikte}%
+     {\vrule\!!depth\strutdepth\!!height\strutheight\!!width\@@kalijndikte}%
    \smashbox0 % no \vsmash !!!
    \box0}
 
@@ -1840,7 +1806,7 @@
 %D
 %D \showsetup{\y!setupmarginrules}
 
-\def\setupmarginrules%
+\def\setupmarginrules
   {\dodoubleargument\getparameters[\??ka]}
 
 %D \macros
@@ -1886,7 +1852,7 @@
 %D \stopkantlijn
 %D
 %D \startkantlijn[5]
-%D The second paragraph is a level~5 one. As we can se here,
+%D The second paragraph is a level~5 one. As we can see here,
 %D the marginal rule gets a width according to its level.
 %D \stopkantlijn
 %D
@@ -1924,24 +1890,24 @@
 
 \def\complexvl[#1]%
   {\bgroup
-   \dimen0=#1\ht\strutbox
-   \dimen2=#1\dp\strutbox
-   \setbox0\hbox
+   \!!dimena#1\strutht
+   \!!dimenb#1\strutdp
+   \setbox\scratchbox\hbox
      {\vrule
         \!!width \linewidth
-        \!!height\dimen0
-        \!!depth \dimen2}%
-   \dp0\dp\strutbox
-   \ht0\ht\strutbox
-   \box0
+        \!!height\!!dimena
+        \!!depth \!!dimenb}%
+   \dp\scratchbox\strutdp
+   \ht\scratchbox\strutht
+   \box\scratchbox
    \egroup}
 
 \def\complexhl[#1]%
   {\hbox
      {\vrule
-        \!!width#1em
+        \!!width #1\s!em
         \!!height\linewidth
-        \!!depth\zeropoint}}
+        \!!depth \zeropoint}}
 
 \definecomplexorsimple\vl \def\simplevl{\complexvl[1]}
 \definecomplexorsimple\hl \def\simplehl{\complexhl[1]}
@@ -2005,8 +1971,8 @@
 %    \startcolor[\@@dlkleur]%
 %    \doif{\@@dlhoogte}{\v!max}{\def\@@dlhoogte{1}}%
 %    \doif{\@@dldiepte}{\v!max}{\def\@@dldiepte{1}}%
-%    \freezedimensionwithunit\@@dlhoogte{\ht\strutbox}%
-%    \freezedimensionwithunit\@@dldiepte{\dp\strutbox}%
+%    \freezedimensionwithunit\@@dlhoogte{\strutht}%
+%    \freezedimensionwithunit\@@dldiepte{\strutdp}%
 %    \leaders
 %      \hrule\!!height\@@dlhoogte\!!depth\@@dldiepte
 %      \hfill
@@ -2054,8 +2020,8 @@
      \let\@@dlhoogte\!!plusone
      \let\@@dldiepte\!!plusone
    \fi
-   \freezedimensionwithunit\@@dlhoogte{\ht\strutbox}%
-   \freezedimensionwithunit\@@dldiepte{\dp\strutbox}%
+   \freezedimensionwithunit\@@dlhoogte{\strutht}%
+   \freezedimensionwithunit\@@dldiepte{\strutdp}%
    \divide\linewidth 2
    \doifelse\@@dlachtergrond\v!kleur
      {\startcolor[\@@dlachtergrondkleur]%
@@ -2460,7 +2426,7 @@
    \ifinsidefloat
      \box\framebox
    \else
-     \doplaats[\??kd#1][\c!dieptecorrectie=\v!uit]{\box\framebox}%
+     \doplacement[\??kd#1][\c!dieptecorrectie=\v!uit]{\box\framebox}%
    \fi
    \egroup}
 
@@ -2592,8 +2558,8 @@
       \fi
       \color[\@@tllijnkleur]
         {\leaders\hrule\!!height\dimen4\!!depth\dimen6\hfill}}%
-   \ht\scratchbox\ht\strutbox
-   \dp\scratchbox\dp\strutbox
+   \ht\scratchbox\strutht
+   \dp\scratchbox\strutdp
    \noindent\box\scratchbox
 %\nobreak\verticalstrut\kern-\lineheight
 % evt \witruimte
@@ -2612,8 +2578,8 @@
   {\ifhmode
      \endgraf
    \fi
-   \dimen0\dp\strutbox
-   \ifdim\prevdepth<\dp\strutbox
+   \dimen0\strutdp
+   \ifdim\prevdepth<\strutdp
      \ifdim\prevdepth>\zeropoint
        \advance\dimen0 -\prevdepth
      \fi
@@ -3124,7 +3090,7 @@
 % \def\registered{\encircled{R}}
 
 % \setuprules
-%   [\c!dikte=\v!middel]
+%   [\c!lijndikte=\v!middel]
 
 \setuplinewidth
   [\v!middel]
@@ -3174,7 +3140,7 @@
 
 \setupmarginrules
   [\c!niveau=0,
-   \c!dikte=\@@kadefaultwidth\linewidth]
+   \c!lijndikte=\@@kadefaultwidth\linewidth]
 
 \setupthinrules
   [\c!interlinie=\v!klein,

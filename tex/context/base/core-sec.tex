@@ -206,7 +206,7 @@
      {\let\numberseparator\empty
       \let#3#2}
      {\unexpanded\def\numberseparator{\getvalue{#1\c!scheider}}%
-      \edef#3{\@EA\separatednumber\@EA{#2}}}}
+      \edef#3{\@EA\separatednumber\@EA{#2}}}}  % hm, etex 
 
 \def\lossenummer[#1]%
   {\maakhetnummer[#1]%
@@ -827,12 +827,12 @@
 \def\getsectieblokomgeving#1%
   {\let\do\firstofoneargument\getvalue{\??sb\s!do#1}}
 
-\setvalue{\e!start\e!sectieblokomgeving}%
+\setvalue{\e!start\v!sectieblokomgeving}%
   {\dosingleargument\dostartsectieblokomgeving}
 
 \def\dostartsectieblokomgeving[#1]% evt \pushendofline \popendofline
   {\long\def\do##1##2{\setsectieblokomgeving{#1}{##1##2}}%
-   \grabuntil{\e!stop\e!sectieblokomgeving}{\getvalue{\??sb\s!do#1}}}
+   \grabuntil{\e!stop\v!sectieblokomgeving}{\getvalue{\??sb\s!do#1}}}
 
 %D \starttypen
 %D \startsectionblockenvironment[frontpart]
@@ -1468,7 +1468,7 @@
 \def\stoplistreferences%
   {\gobbleoneargument}
 
-% \prevdepth\dp\strutbox is belangrijk, vergelijk naast elkaar:
+% \prevdepth\strutdp % is belangrijk, vergelijk naast elkaar:
 %
 % \onderwerp{test} \input tufte
 % \onderwerp{test} \strut \input tufte
@@ -1552,7 +1552,8 @@
                \ifdisplaysectionhead
                  \getvalue{\??ko#1\c!tekstcommando}%
                    {\setstrut\begstrut#3\endstrut}%
-                 \xdef\localheaddepth{\the\dp\strutbox}%
+                 \xdef\localheaddepth{\the\strutdp}%
+                % == \globallet\localheaddepth\strutdepth
                \else
                  \getvalue{\??ko#1\c!tekstcommando}{#3}%
                \fi
@@ -1608,7 +1609,8 @@
                \ifdisplaysectionhead
                  \getvalue{\??ko#1\c!tekstcommando}%
                    {\setstrut\begstrut#4\endstrut}%
-                 \xdef\localheaddepth{\the\dp\strutbox}%
+                 \xdef\localheaddepth{\the\strutdp}%
+                 % == \globallet\localheaddepth\strutdepth
                \else
                  \getvalue{\??ko#1\c!tekstcommando}{#4}%
                \fi
@@ -1623,62 +1625,12 @@
 \let\headlastlinewidth\!!zeropoint
 \newif\ifcontinuoushead
 
-% \def\beginheadplacement#1%
-%   {\bgroup
-%    \gdef\localheaddepth{\dp\strutbox}%
-%    \everypar{}% needed indeed
-%    \noindent  % ipv \witruimte elders, na \forgetall !
-%    \bgroup
-%    \forgetall % now we may forget everything
-%   %\showcomposition
-%    \mindermeldingen
-%    \postponefootnotes
-%    \iflocation\ifdisplaysectionhead\else\noninterferingmarks\fi\fi
-%    %\setupinteraction
-%    %  [\c!letter=,
-%    %   \c!kleur=,
-%    %   \c!contrastkleur=]%
-%    \resetinteractionparameter\c!letter
-%    \resetinteractionparameter\c!kleur
-%    \resetinteractionparameter\c!contrastkleur
-%    \strictouterreferencestrue % tzt instelling
-%    \def\localheadsetup%
-%      {\dolocalheadsetup{#1}}%
-%    \startsynchronisatie}
-
-% \def\beginheadplacement#1%
-%   {\bgroup
-%    \setsystemmode{#1}% to be documented                 
-% \ifgridsnapping\iftracegridsnapping\showstruts\fi\fi
-%    \gdef\localheaddepth{\dp\strutbox}%
-%    \everypar\emptytoks % needed indeed
-%    \noindent           % ipv \witruimte elders, na \forgetall !
-%    \bgroup
-%    \doifelsevalue{\??ko#1\c!titeluitlijnen}\v!ja % new 
-%      {\leftskip 1\leftskip
-%       \rightskip1\rightskip
-%       \edef\next{\leftskip\the\leftskip\rightskip\the\rightskip}%
-%       \xdef\localheadskip{\the\leftskip}%
-%       \expandafter\forgetall\next % now we may forget everything
-%       \setlocalhsize\hsize\localhsize}
-%      {\globallet\localheadskip\!!zeropoint
-%       \forgetall}%
-%    \mindermeldingen
-%    \postponefootnotes
-%    \iflocation\ifdisplaysectionhead\else\noninterferingmarks\fi\fi
-%    \resetinteractionparameter\c!letter
-%    \resetinteractionparameter\c!kleur
-%    \resetinteractionparameter\c!contrastkleur
-%    \strictouterreferencestrue % tzt instelling
-%    \def\localheadsetup%
-%      {\dolocalheadsetup{#1}}%
-%    \startsynchronisatie}
-
 \def\beginheadplacement#1%
   {\bgroup
    \setsystemmode{#1}% to be documented                 
    \ifgridsnapping\iftracegridsnapping\showstruts\fi\fi
-   \gdef\localheaddepth{\dp\strutbox}%
+   \gdef\localheaddepth{\strutdp}%
+   % == \globallet\localheaddepth\strutdp
    \everypar\emptytoks % needed indeed
    \noindent           % ipv \witruimte elders, na \forgetall !
    \bgroup
@@ -1703,7 +1655,6 @@
    \def\localheadsetup%
      {\dolocalheadsetup{#1}}%
    \startsynchronisatie}
-
 
 \def\endheadplacement#1#2%
   {\doifelsevalue{\??rf#1\c!status}\v!start
@@ -1756,7 +1707,7 @@
    \fi
    \ifdisplaysectionhead
      \ifgridsnapping % important, font related depth, see comment
-       \prevdepth\dp\strutbox
+       \prevdepth\strutdp
      \else
        \prevdepth\localheaddepth
      \fi
@@ -1765,7 +1716,7 @@
    \egroup
    \egroup
    \ifdisplaysectionhead
-     \doifvalue{\??ko#1\c!springvolgendein}\v!nee\noindentation
+     \dochecknextindentation{\??ko#1}%
    \else
      \nonoindentation % recently added, was a bug
    \fi}

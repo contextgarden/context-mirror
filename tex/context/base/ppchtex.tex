@@ -1158,7 +1158,7 @@
    \ifchemicalpicture
      \setchemicalpicture{#1}{#2}%
    \else
-     \doifelse{\@@chemicaloptie}{\v!test}
+     \doifelse\@@chemicaloptie\v!test
        {\def\@@chemicalframe{\chemicalframe}}
        {\def\@@chemicalframe{}}%
      \dosetsubscripts
@@ -1166,7 +1166,7 @@
      \setbox4=\hbox{$\@@dochemicalstyle{\@@localchemicalformat C_2^2}$}%
      \setbox6=\hbox{$\@@dochemicalstyle{\@@localchemicalformat O}$}% or C
      \doresetsubscripts
-     \doifnot{\@@chemicalplaats}{\v!intekst}
+     \doifnot\@@chemicalplaats\v!intekst
        {\ht2=\ht4
         \dp2=\dp4}%
      \setbox2=\hbox{\@@chemicalframe{\@@dochemicalcolor\box2}}%
@@ -3166,7 +3166,7 @@ RT##3##4##5=>\processchemicaltextelement{RN}{##3##4##5}{#1}{0}{},
      {\dosetsubscripts%
       $\@@dochemicalstyle{\@@localchemicalformat\strut##1}$%
       \doresetsubscripts}%
-   \doifelse{\@@chemicalplaats}{\v!intekst}%
+   \doifelse\@@chemicalplaats\v!intekst
      {#1{\dochemicaltext\toptext}}%
      {\setbox\chemicalsymbols=\hbox
         {\box\chemicalsymbols
@@ -3175,56 +3175,56 @@ RT##3##4##5=>\processchemicaltextelement{RN}{##3##4##5}{#1}{0}{},
            #2%
            \hbox to 3em{\hss\dochemicaltext{\bottext}\hss}\cr}}}}}
 
-\def\executechemicalGIVES%
+\def\executechemicalGIVES
   {\executechemicalarrow
      {\chemicalsinglepicturearrow}% nodig
      {\rightarrowfill\cr}}
 
-\def\executechemicalEQUILIBRIUM%
+\def\executechemicalEQUILIBRIUM
   {\executechemicalarrow
      {\chemicaldoublepicturearrow}%  nodig
      {\rightarrowfill\cr\leftarrowfill\cr}}
 
-\def\executechemicalMESOMERIC%
+\def\executechemicalMESOMERIC
   {\executechemicalarrow
      {\chemicalsinglepicturearrow}%  nodig
      {$\leftarrow\hskip-1em$\rightarrowfill\cr}}
 
 \def\executechemicalsign#1[#2]%
-  {\doifelse{\@@chemicalplaats}{\v!intekst}
+  {\doifelse\@@chemicalplaats\v!intekst
      {\dosetsubscripts
       $\@@dochemicalstyle{\@@localchemicalformat#1}$%
       \doresetsubscripts}
-     {\setbox\chemicalsymbols=\hbox
+     {\setbox\chemicalsymbols\hbox
         {\box\chemicalsymbols
          \dosetsubscripts
          $\@@dochemicalstyle{\@@localchemicalformat#1}$%
          \doresetsubscripts}}}
 
-\def\executechemicalPLUS%
+\def\executechemicalPLUS
   {\executechemicalsign{+}}
 
-\def\executechemicalMINUS%
+\def\executechemicalMINUS
   {\executechemicalsign{-}}
 
-\def\executechemicalEQUAL%
+\def\executechemicalEQUAL
   {\executechemicalsign{=}}
 
 \def\executechemicalSPACE[#1]%
-  {\doifnot{\@@chemicalplaats}{\v!intekst}%
-     {\setbox\chemicalsymbols=\hbox
+  {\doifnot\@@chemicalplaats\v!intekst
+     {\setbox\chemicalsymbols\hbox
         {\box\chemicalsymbols
          \quad}}}
 
 \def\executechemicalCHEM[#1]%
-  {\doifnot{\@@chemicalplaats}{\v!intekst}%
-     {\setbox\chemicalsymbols=\hbox
+  {\doifnot\@@chemicalplaats\v!intekst
+     {\setbox\chemicalsymbols\hbox
         {\box\chemicalsymbols
          $\@@dochemicalstyle{\@@localchemicalformat#1}$}}}
 
 \def\executechemicalTEXT[#1]%
-  {\doifnot{\@@chemicalplaats}{\v!intekst}%
-     {\setbox\chemicalsymbols=\hbox
+  {\doifnot\@@chemicalplaats\v!intekst
+     {\setbox\chemicalsymbols\hbox
         {\box\chemicalsymbols#1}}}
 
 %\def\executechemicalLOW[#1]%
@@ -3362,11 +3362,11 @@ RT##3##4##5=>\processchemicaltextelement{RN}{##3##4##5}{#1}{0}{},
 \ifCONTEXT 
 
 \def\setchemicalattributes
-  {\scratchdimen=\@@chemicalchemicallijndikte 
+  {\scratchdimen\@@chemicalchemicallijndikte 
    \def\chemicalattributes
      {withpen pencircle scaled \the\scratchdimen\space
       withcolor }% 
-   \doifelsenothing{\@@chemicalchemicallijnkleur}
+   \doifelsenothing\@@chemicalchemicallijnkleur
      {\edef\chemicalattributes{\chemicalattributes black}}
      {\edef\chemicalattributes
         {\chemicalattributes \MPcolor{\@@chemicalchemicallijnkleur}}}%
@@ -3377,10 +3377,10 @@ RT##3##4##5=>\processchemicaltextelement{RN}{##3##4##5}{#1}{0}{},
 \let\@@chemicalkleur\empty
 
 \def\@@dochemicalcolor 
-  {\doifsomething{\@@chemicalkleur}{\color[\@@chemicalkleur]}}     
+  {\doifsomething\@@chemicalkleur{\color[\@@chemicalkleur]}}     
 
 \def\@@dochemicalstyle 
-  {\doconvertfont{\@@chemicalletter}}
+  {\doconvertfont\@@chemicalletter}
 
 \setupchemical
   [\c!lijndikte=\linewidth,
@@ -3396,6 +3396,4 @@ RT##3##4##5=>\processchemicaltextelement{RN}{##3##4##5}{#1}{0}{},
 
 \fi 
 
-\protect
-
-\endinput
+\protect \endinput

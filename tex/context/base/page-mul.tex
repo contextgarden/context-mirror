@@ -809,15 +809,15 @@
      \ifnotespresent
        \bgroup
        \scratchdimen\ht\firstcolumnbox
-       \advance\scratchdimen -\openstrutdepth % \dp\strutbox
+       \advance\scratchdimen -\openstrutdepth % \strutdp
        \getnoflines\scratchdimen
        \advance\noflines -2
        \scratchdimen\noflines\lineheight
        \advance\scratchdimen \topskip
        \setbox0\hbox
          {\lower\scratchdimen\vbox{\placefootnoteinserts}}%
-       \ht0=\openstrutheight % \ht\strutbox
-       \dp0=\openstrutdepth  % \dp\strutbox
+       \ht0=\openstrutheight % \strutht
+       \dp0=\openstrutdepth  % \strutdp
        \scratchdimen\ht\lastcolumnbox
        \global\setbox\lastcolumnbox\vbox to \scratchdimen
          {\box\lastcolumnbox
@@ -856,8 +856,8 @@
             {\dimen0\dp\currentcolumnbox
              \unvbox\currentcolumnbox
              \vskip-\dimen0
-             \vskip\openstrutdepth % \dp\strutbox
-             \prevdepth\openstrutdepth % \dp\strutbox
+             \vskip\openstrutdepth % \strutdp
+             \prevdepth\openstrutdepth % \strutdp
              \vfill}}%
        \ifbottomnotes \else
          \dimen0\ht\firstcolumnbox

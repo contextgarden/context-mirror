@@ -13,6 +13,11 @@
 
 \unprotect
 
+% If you want some extras, just uncomment the following 
+% line:
+%
+% \usemodule[plus]
+%
 % Here you can take care of overloading some (style) 
 % defaults. What goes here, depends on your local system. 
 %

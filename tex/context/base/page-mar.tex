@@ -57,7 +57,7 @@
 \def\margetekstnummer     {0}
 \let\margetekstscheider = \empty
 
-\def\margestrutheight{\ht\strutbox}
+\def\margestrutheight{\strutht}
 
 \def\maakmargetekstblok#1#2#3#4#5#6%
   {#4\relax
@@ -92,11 +92,11 @@
       \@@imvoor
       \dostartattributes{\??im\margetekstnummer}\c!letter\c!kleur\empty
         \dorecurse\margetekstregels{\strut\\}%
-        \xdef\margestrutheight{\the\ht\strutbox}%
+        \xdef\margestrutheight{\the\strutht}%
         \begstrut#6\endstrut\endgraf
       \dostopattributes
       \@@imna}%
-   \ht0\ht\strutbox
+   \ht0\strutht
    \box0
    \egroup
    #5\relax}
@@ -131,17 +131,17 @@
    \setbox0\hbox
      {#2{\hskip#3\strut
          \iflowinmargin\else
-           \dimen0\dp\strutbox
+           \dimen0\strutdp
            \advance\dimen0 \margestrutheight
-           \advance\dimen0 -\ht\strutbox
+           \advance\dimen0 -\strutht
            \raise\dimen0
          \fi
          \box0}}%
    \ht0\zeropoint
    \dp0\zeropoint
-   \gdef\margestrutheight{\the\ht\strutbox}%
+   \gdef\margestrutheight{\the\strutht}%
   %\graphicvadjust{\box0}} % fails in high math lines, let it be  
-  %\hbox{\lower\dp\strutbox\box0}} % alas, wrong lapping, therefore useless 
+  %\hbox{\lower\strutdp\box0}} % alas, wrong lapping, therefore useless 
    \dopositionmarginbox0}
 
 %D This approach permits us to implement a better mechanism 
@@ -562,7 +562,7 @@
   {\egroup
    \global\setbox\facingpage\vbox
      {\ifvoid\facingpage
-        \vskip\openstrutdepth % \dp\strutbox
+        \vskip\openstrutdepth % \strutdp
       \else
         \unvbox\facingpage
       \fi

@@ -730,7 +730,7 @@ fi ;
       urxy[tpos] -- 
       ulxy[fpos] -- cycle ;
  
-      save_multipar (i,1,multipar) ;
+      save_multipar (1,1,multipar) ;
 
   else :
 
@@ -1059,12 +1059,13 @@ def collapse_multi_pars =
     for i:=1 upto nofmultipars-1 :
       if (round(xpart(llcorner multipars[i]-llcorner multipars[i+1]))=0) and
          (round(xpart(lrcorner multipars[i]-lrcorner multipars[i+1]))=0) :
-        multipars[_nofmultipars_] :=
+multilocs[_nofmultipars_] := multilocs[i+1] ;
+multirefs[_nofmultipars_] := multirefs[i+1] ;
         multipars[_nofmultipars_] :=
           ulcorner multipars[_nofmultipars_] -- 
           urcorner multipars[_nofmultipars_] -- 
-         lrcorner multipars[i+1] -- 
-         llcorner multipars[i+1] -- cycle ;
+          lrcorner multipars[i+1] -- 
+          llcorner multipars[i+1] -- cycle ;
       else :
         _nofmultipars_ := _nofmultipars_ + 1 ;
         multipars[_nofmultipars_] := multipars[i+1] ;
