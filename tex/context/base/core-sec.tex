@@ -1195,6 +1195,7 @@
             \doifelsevalue{\??ko#1\c!eigennummer}{\v!ja} % brrr 
               {\edef\finalsectionnumber{#3}}
               {\bepaalkopnummer[#1]}%
+% todo : geen markering (leeg maken) 
             \expanded{\marking[#1\v!nummer]{\finalsectionnumber}}}%
          \writesection{#1}{-}{#4}%
        \fi
@@ -1320,6 +1321,8 @@
 % \onderwerp{test} \plaatslijst[...]
 
 \newif\ifheadnumbercontent % niet meer wijzigen / wordt mode
+
+% todo: kap
 
 \def\doplaatskoptekst#1#2#3#4%
   {\beginheadplacement{#1}%

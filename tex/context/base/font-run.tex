@@ -130,7 +130,8 @@
               {\red
                \dostepwiserecurse{0}{15}{1}
                  {\let\col\recurselevel
-                  \scratchcounter="\hexnumber\row\hexnumber\col\relax
+                  \@EA\scratchcounter\normaldblquote\hexnumber\row\hexnumber\col\relax
+                  \edef\rowcol{\the\scratchcounter}%
                   \iffontchar\font\scratchcounter
                     \setbox\scratchbox\ruledhbox{\black\char\scratchcounter}%
                     \ifdim\wd\scratchbox>\!!zeropoint\relax
@@ -147,8 +148,8 @@
                            \setbox\scratchbox=\hbox
                              {\raise.5\dp\scratchbox\hbox
                                 {\lower.5\ht\scratchbox\copy\scratchbox}}%
-                             \ht\scratchbox\!!zeropoint
-                             \dp\scratchbox\!!zeropoint
+                             \ht\scratchbox\zeropoint
+                             \dp\scratchbox\zeropoint
                            \else
                              \ht\scratchbox\ht\strutbox
                              \dp\scratchbox\dp\strutbox
@@ -160,17 +161,17 @@
                        {\ifdone
                           \blue \hsize2.4em
                           \edef\ascii
-                            {\ifnum\hyphenchar\font=\scratchcounter
+                            {\ifnum\hyphenchar\font=\rowcol
                                hyph%
-                             \else\ifnum\skewchar\font=\scratchcounter
+                             \else\ifnum\skewchar\font=\rowcol
                                skew%
                              \fi\fi}%
                           \tinyfont
                           {\red\ascii}\hfill
-                          \number\scratchcounter
+                          \number\rowcol
                           \vfill
-                          \octnumber\scratchcounter\hfill
-                          \lchexnumbers\scratchcounter\par
+                          \octnumber\rowcol\hfill
+                          \lchexnumbers\rowcol\par
                         \fi}}
                   \stopoverlay}}}
           \par}}

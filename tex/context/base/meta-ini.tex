@@ -328,7 +328,8 @@
       \convertcommand\!!stringa\to\ascii % otherwise problems 
       \doifcolorelse{\ascii}             % with 2\bodyfontsize
         {\setevalue{#1}{\MPcolor{\getvalue{#1}}}}
-        {\setbox\scratchbox=\hbox{\scratchdimen=\getvalue{#1}sp}%
+        {% can be aux macro 
+         \setbox\scratchbox=\hbox{\scratchdimen=\getvalue{#1}sp}%
          \ifdim\wd\scratchbox=\zeropoint
            \scratchcounter=\getvalue{#1}\relax
            \setevalue{#1}{\the\scratchcounter}%

@@ -104,7 +104,7 @@
   {\ifvmode
      \color
        [\@@vnlijnkleur]
-       {\hrule\!!width.2\hsize\!!height\@@vnlijndikte\!!depth\!!zeropoint}
+       {\hrule\!!width.2\hsize\!!height\@@vnlijndikte\!!depth\!!zeropoint}%
      \kern\strutdepth
    \fi}
 
@@ -201,7 +201,7 @@
    \def\startpopfootnotes  {\bgroup
                             \setfootnotehsize 
                             \setrigidcolumnhsize\hsize\@@vnkolomafstand\@@vnn
-                            \setbox0=\vbox\bgroup}
+                            \setbox0=\vbox\bgroup}%
    \def\stoppopfootnotes   {\egroup
                             \setbox0=\vbox
                               {\unvbox0\setbox0\lastbox
@@ -349,7 +349,7 @@
      \else
        \@EAEAEA\dodofootnote
      \fi
-   \else
+   \else % todo: \iftrialtypesetting 
      \@EA\gobbletwoarguments
    \fi{#2}}
 

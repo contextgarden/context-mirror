@@ -37,6 +37,7 @@ PaperWidth          := 597.50787pt  ;
 PrintPaperHeight    := 845.04684pt  ;
 PrintPaperWidth     := 597.50787pt  ;
 TopSpace            :=  71.12546pt  ;
+BottomSpace         :=   0.0pt ; 
 BackSpace           :=  71.13275pt  ;
 CutSpace            :=   0.0pt      ;
 MakeupHeight        := 711.3191pt   ; 

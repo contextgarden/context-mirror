@@ -342,7 +342,7 @@ vardef dofmt_@#(expr f, x) = %%% adapted by HH %%%
       if k <= length f : 
         errmessage("No valid format letter found in "&f) ; 
       fi
-      s = if fmt_metapost : nullpicture else : "" fi ;
+      s = if fmt_metapost : "nullpicture" else : "" fi ;
     fi
     Fline_up_
       (Fset_item_(substring (0,k-1) of f)

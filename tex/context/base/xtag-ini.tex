@@ -11,6 +11,8 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
+% todo: XMLfullsave == also attributes 
+
 % csnames 
 
 \beginTEX
@@ -364,31 +366,9 @@
 \long\def\xparseXMLprocess ?#1 #2>{\parseXMLprocess{#1}{#2}}
 \long\def\xparseXMLelement     #1>{\parseXMLelement #1 >}
 
-% this kind of optimizations are only faster in a more 
-% extensive if tree combined with equally spread occurance of 
-% #1 (also tested for arguments)
-%
-% \long\def\doXMLelement#1%
-%   {\csname<\if#1!!\else\if#1??\else.\fi\fi>\endcsname#1}
-%
-% \long\setvalue{<!>}!#1 {\parseXMLescape{#1}}
-% \long\setvalue{<?>}?#1 {\parseXMLprocess{#1}}
-% \long\setvalue{<.>}#1>{\parseXMLelement#1 >}
-
 %D The escape handler takes care of the fuzzy \type {<!} 
 %D constructs. Unfortunately, we need to catch \type {<--text} 
 %D too, so we need another handler: 
-
-% \long\def\xparseXMLescape !#1#2%
-%   {\if#1-%
-%      \if#2-%
-%        \expandafter\expandafter\expandafter\xxparseXMLescape
-%      \else
-%        \expandafter\expandafter\expandafter\xyparseXMLescape
-%      \fi
-%    \else
-%      \expandafter\xyparseXMLescape
-%    \fi#1#2}
 
 \long\def\xparseXMLescape !#1#2%
   {\if#1-%
@@ -405,7 +385,6 @@
      \fi
    \fi#1#2}
 
-
 \long\def\xxparseXMLescape--#1{\parseXMLescape{--}#1}
 \long\def\xyparseXMLescape#1  {\parseXMLescape{#1}}
 \long\def\xzparseXMLescape[#1[{\parseXMLescape{#1}}
@@ -420,10 +399,6 @@
 
 \def\parseXMLescape#1% #2> parsing takes place in macros 
   {\executeifdefined{\@@XMLescape:#1}{\csname\@@XMLescape:\s!default\endcsname}}
-
-\let\normalparseXMLescape \parseXMLescape
-\let\normalparseXMLelement\parseXMLelement
-\let\normalparseXMLprocess\parseXMLprocess
 
 %D In our case, processing instructions are only needed if
 %D we want specific \CONTEXT\ support. This may be useful in
@@ -463,6 +438,12 @@
         {\@@XMLinstruction:#1}
         \noexpand\gobbleoneargument
         {\expandafter\noexpand\currentXMLprocess}}}
+
+%D One never knows: 
+
+\let\normalparseXMLescape \parseXMLescape
+\let\normalparseXMLelement\parseXMLelement
+\let\normalparseXMLprocess\parseXMLprocess
 
 %D Next we will implement the normal element handler. This
 %D piece of code is complicated by the fact that we need to
@@ -1199,19 +1180,27 @@
 
 \newtoks\globalscratchtoks
 
-\def\expandXMLvalue#1%
-  {\ifcsname#1\endcsname
+\def\doexpandXMLvalue#1#2%
+  {\ifcsname#2\endcsname
      \bgroup
-\enableXMLexpansion
+     \enableXMLexpansion
      \let\getXMLentity\expandedXMLentity
-     \expanded{\global\globalscratchtoks{\csname#1\endcsname}}%
+     #1% simplify maps entities back to _ and alike 
+     \expanded{\global\globalscratchtoks{\csname#2\endcsname}}%
      \egroup
-     \@EA\edef\csname#1\endcsname{\the\globalscratchtoks}%
+     \@EA\edef\csname#2\endcsname{\the\globalscratchtoks}%
    \fi}
 
-\def\expandTEXpar    #1#2{\expandXMLvalue{#1\interfaced{#2}}}
-\def\expandXMLpar    #1#2{\expandXMLvalue{\@@XMLvariable:#1:#2}}
-\def\expandXMLarguments#1{\expandXMLvalue{\@@XMLmap:#1}}
+\def\expandXMLvalue  {\doexpandXMLvalue\relax}
+\def\simplifyXMLvalue{\doexpandXMLvalue\XMLsimpleentitiestrue}
+
+\def\expandTEXpar      #1#2{\expandXMLvalue{#1\interfaced{#2}}}
+\def\expandXMLpar      #1#2{\expandXMLvalue{\@@XMLvariable:#1:#2}}
+\def\expandXMLarguments  #1{\expandXMLvalue{\@@XMLmap:#1}}
+
+\def\simplifyTEXpar    #1#2{\simplifyXMLvalue{#1\interfaced{#2}}}
+\def\simplifyXMLpar    #1#2{\simplifyXMLvalue{\@@XMLvariable:#1:#2}}
+\def\simplifyXMLarguments#1{\simplifyXMLvalue{\@@XMLmap:#1}}
 
 %D \startbuffer[tex]
 %D \defineXMLsingular [fx:root]

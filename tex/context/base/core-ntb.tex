@@ -217,8 +217,12 @@
    \getvalue{\@@tblprefix\c!x#2}%
    \getvalue{\@@tblprefix\c!x#2\c!y#1}\relax}
 
+%\long\def\parseTR[#1][#2]#3\eTR% [#2] is dummy that kills spaces
+%  {\def\currentcol{0}\increment\maximumrow#3}
+
 \long\def\parseTR[#1][#2]#3\eTR% [#2] is dummy that kills spaces
-  {\def\currentcol{0}\increment\maximumrow#3}
+  {\def\currentcol{0}\increment\maximumrow
+   \setupTABLE[\v!rij][\maximumrow][#1]#3}
 
 % \long\def\parseTD[#1][#2]#3\eTD% [#2] is dummy that kills spaces
 %   {\getparameters[\@@tbl][\c!ny=\tblnr,\c!nx=\tblnc,nc=1,nr=1,#1]%

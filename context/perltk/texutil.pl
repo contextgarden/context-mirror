@@ -384,7 +384,7 @@ elsif ($UserInterface eq "de")
     $MS{"PlugInReport"}            = "         plugin report :" ;
 
   } # end of german section
-  
+
 elsif ($UserInterface eq "it")
 
   { # begin of italian section
@@ -841,13 +841,13 @@ sub SanitizedString
         $string =~ s/([\^\"\`\'\~\,])([a-zA-Z])/$2/gio ;
         $string .= "\x00";
         $string .= $copied }
-# new and very experimental, will change   
-$string =~ s/\<\*(.*?)\>/\\$1 /go ; # reduce entities / will be table too  
-$string =~ s/\\getXMLentity\s*\{(.*?)\}/$1/gio ; # {tex} => tex 
-$string =~ s/\<[a-zA-Z\/].*?\>//go ; # remove elements 
-# so far 
+# new and very experimental, will change
+$string =~ s/\<\*(.*?)\>/\\$1 /go ; # reduce entities / will be table too
+$string =~ s/\\getXMLentity\s*\{(.*?)\}/$1/gio ; # {tex} => tex
+$string =~ s/\<[a-zA-Z\/].*?\>//go ; # remove elements
+# so far
     $string =~ s/\\-|\|\|/\-/gio ;
-    $string =~ s/\\[a-zA-Z]*| |\{|\}//gio ;  # ? 
+    $string =~ s/\\[a-zA-Z]*| |\{|\}//gio ;  # ?
     return $string }
 
 #D This subroutine looks a bit complicated, which is due to the
@@ -963,9 +963,9 @@ sub FlushCommands
 
 #D Experimental: Extra
 #D
-#D s p : extra programs 
+#D s p : extra programs
 
-my @ExtraPrograms = () ; 
+my @ExtraPrograms = () ;
 
 sub InitializeExtra
   { }
@@ -973,59 +973,59 @@ sub InitializeExtra
 sub HandleExtra
   { if ($RestOfLine =~ /(.)\s+(.*)\s*$/o)
       { if ($1 eq "p")
-          { my $str = $2 ; $str =~ s/^\{(.*)\}$/$1/o ; 
-            push @ExtraPrograms,$str } } } 
+          { my $str = $2 ; $str =~ s/^\{(.*)\}$/$1/o ;
+            push @ExtraPrograms,$str } } }
 
 sub FlushExtra
   { print TUO "%\n" . "% $Program / System\n" . "%\n" ;
-    foreach $EP (@ExtraPrograms) 
-      { print TUO "% extra program : $EP\n" } } 
+    foreach $EP (@ExtraPrograms)
+      { print TUO "% extra program : $EP\n" } }
 
-sub RunExtraPrograms 
-  { foreach $EP (@ExtraPrograms) 
-      { system($EP) } } 
-  
+sub RunExtraPrograms
+  { foreach $EP (@ExtraPrograms)
+      { system($EP) } }
+
 #D Plugins
-#D 
-#D test.pm: 
-#D 
-#D \starttypen 
-#D see plugtest.pm 
-#D \stoptypen 
-#D 
+#D
+#D test.pm:
+#D
+#D \starttypen
+#D see plugtest.pm
+#D \stoptypen
+#D
 #D utility format:
-#D 
-#D \starttypen 
-#D p u {name} {data} {data} ... 
-#D \stoptypen 
+#D
+#D \starttypen
+#D p u {name} {data} {data} ...
+#D \stoptypen
 
-my $pm_path ; 
+my $pm_path ;
 
-BEGIN 
-  { # $pm_path = `kpsewhich --format="other text files" --progname=context texutil.pl` ; 
-    # chomp($pm_path) ; 
-    # $pm_path =~ s/texutil\.pl.*// } 
-    $pm_path = $0 ;   
+BEGIN
+  { # $pm_path = `kpsewhich --format="other text files" --progname=context texutil.pl` ;
+    # chomp($pm_path) ;
+    # $pm_path =~ s/texutil\.pl.*// }
+    $pm_path = $0 ;
     $pm_path =~ s/\\/\//o ;
-    $pm_path =~ s/texutil\.pl.*//io ; 
+    $pm_path =~ s/texutil\.pl.*//io ;
     if ($pm_path eq "") { $pm_path = "./" } }
 
 use lib $pm_path ;
 
-my %UserPlugIns ; 
+my %UserPlugIns ;
 
-sub HandlePlugIn 
-  { if ($RestOfLine =~ /\s*u\s*\{(.*?)\}\s*(.*)\s*/io) 
-      { my $tag = $1 ; 
+sub HandlePlugIn
+  { if ($RestOfLine =~ /\s*u\s*\{(.*?)\}\s*(.*)\s*/io)
+      { my $tag = $1 ;
         my $arg = $2 ;
         if (! defined($UserPlugIns{$tag}))
-          { $UserPlugIns{$tag} = 1 ; 
-            eval("use $tag") ; 
+          { $UserPlugIns{$tag} = 1 ;
+            eval("use $tag") ;
             my $result = $tag->identify ;
-            if ($result ne "") 
-              { Report ("PlugInInit", "$tag -> $result") } 
-            else 
-              { Report ("PlugInInit", $tag ) } 
+            if ($result ne "")
+              { Report ("PlugInInit", "$tag -> $result") }
+            else
+              { Report ("PlugInInit", $tag ) }
             $tag->initialize() }
         if (defined($UserPlugIns{$tag}))
           { $arg =~ s/\{(.*)\}/$1/o ;
@@ -1033,18 +1033,18 @@ sub HandlePlugIn
             $tag->handle(@args) } } }
 
 sub FlushPlugIns
-  { foreach my $tag (keys %UserPlugIns)     
+  { foreach my $tag (keys %UserPlugIns)
       { my @report = $tag->report ;
-        foreach $rep (@report) 
-          { my ($key,$val) = split (/\s*\:\s*/,$rep) ; 
-            if ($val ne "") 
-              { Report ("PlugInReport", "$tag -> $key -> $val") } 
+        foreach $rep (@report)
+          { my ($key,$val) = split (/\s*\:\s*/,$rep) ;
+            if ($val ne "")
+              { Report ("PlugInReport", "$tag -> $key -> $val") }
             else
-              { Report ("PlugInReport", "$tag -> $key") } } 
+              { Report ("PlugInReport", "$tag -> $key") } }
         $tag->process ;
-        print TUO "%\n" . "% $Program / $tag->identify\n" . "%\n" ;
-        foreach my $str ($tag->results) 
-          { print TUO "\\plugincommand\{$str\}\n" } } } 
+        print TUO "%\n" . "% $Program / " . $tag->identify . "\n" . "%\n" ;
+        foreach my $str ($tag->results)
+          { print TUO "\\plugincommand\{$str\}\n" } } }
 
 #D Synonyms are a sort of key||value pairs and are used for
 #D ordered lists like abbreviations and units.
@@ -1199,7 +1199,7 @@ sub HandleRegister # the } { makes sure that local {} is ok
     #
     if ($Key eq "")
       { $Key = SanitizedString($Entry) }
-    if ($SortMethod ne '') 
+    if ($SortMethod ne '')
       { $ProcessHigh = 0 }
     if ($ProcessHigh)
       { $Key = HighConverted($Key) }
@@ -1229,8 +1229,8 @@ sub HandleRegister # the } { makes sure that local {} is ok
       { $Entry =~ s/([^\\])\&/$1$SPLIT/go ;
         $Entry =~ s/([^\\])\+/$1$SPLIT/go }
     $Key =~ s/^([^a-zA-Z])/ $1/go ;
-$Key =~ s/^\s*\{(.*)\}$SPLIT/$1$SPLIT/go ; ####### new 
-$Entry =~ s/^\{(.*)\}$SPLIT/$1$SPLIT/go ; ###### new 
+$Key =~ s/^\s*\{(.*)\}$SPLIT/$1$SPLIT/go ; ####### new
+$Entry =~ s/^\{(.*)\}$SPLIT/$1$SPLIT/go ; ###### new
     if ($ProcessIJ)
       { $Key =~ s/ij/yy/go }
     $LCKey = lc $Key ;
@@ -1451,10 +1451,10 @@ sub NormalHandleReferences
                FlushKeys ;
                FlushRegisters ;
                FlushSynonyms ;
-               FlushPlugIns ; 
+               FlushPlugIns ;
                FlushFiles ;
                FlushData ;
-               FlushExtra ; 
+               FlushExtra ;
                close (TUO) ;
                RunExtraPrograms }
             else
@@ -1637,12 +1637,12 @@ sub HandleDocuments
                   { $FileType=lc $ProcessType }
                 Report("FileType", $FileType) ;
                 # we need to signal to texexec what interfaec to use
-                my $firstline = <TEX> ; 
-                if ($firstline =~ /^\%.*interface\=/) 
+                my $firstline = <TEX> ;
+                if ($firstline =~ /^\%.*interface\=/)
                   { print TED $firstline }
                 else
                   { seek TEX, 0, 0 }
-                # so far 
+                # so far
                 print TED "\\startmodule[type=$FileType]\n" ;
                 while (<TEX>)
                   { chomp ;
@@ -2603,21 +2603,21 @@ sub KeepContextFile
     ++$keptfiles ;
     print "                  kept : $filename\n" }
 
-my   @dontaskprefixes = sort glob "mpx-*" ; push @dontaskprefixes , 
+my   @dontaskprefixes = sort glob "mpx-*" ; push @dontaskprefixes ,
   ("tex-form.tex","tex-edit.tex","tex-temp.tex",
    "texexec.tex","texexec.tui","texexec.tuo",
    "texexec.ps","texexec.pdf","texexec.dvi",
    "cont-opt.tex","cont-opt.bak") ;
-my @dontasksuffixes = 
+my @dontasksuffixes =
   ("mpgraph.mp","mpgraph.mpd","mpgraph.mpo","mpgraph.mpy",
      "mprun.mp",  "mprun.mpd",  "mprun.mpo",  "mprun.mpy") ;
-my @forsuresuffixes = 
+my @forsuresuffixes =
   ("tui","tup","ted","tes","top",
-   "log","tmp", 
+   "log","tmp",
    "mpt","mpx","mpd","mpo") ;
-my @texonlysuffixes = 
+my @texonlysuffixes =
   ("dvi","ps","pdf") ;
-my @texnonesuffixes = 
+my @texnonesuffixes =
   ("tuo","tub","top") ;
 
 sub PurgeFiles # no my in foreach
@@ -2644,12 +2644,12 @@ sub PurgeFiles # no my in foreach
     foreach $suffix (@texnonesuffixes)
       { foreach (@files)
           { if (/(.*)\.$suffix$/i)
-              { if (-e "$1.tex")
+              { if ((-e "$1.tex")||(-e "$1.xml"))
                   { KeepContextFile($_) }
                 else
                   { $strippedname = $1 ;
                     $strippedname =~ s/\-[a-z]$//io ;
-                    if (-e "$strippedname.tex")
+                    if ((-e "$strippedname.tex")||(-e "$strippedname.xml"))
                       { KeepContextFile($_." (potential result file)") }
                     else
                       { RemoveContextFile($_) } } } } }

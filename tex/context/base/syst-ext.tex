@@ -4050,8 +4050,11 @@
 %D
 %D This macro needs a speed-up!
 
-\def\gobblespacetokens % will go to syst-ext.tex + speed up
-  {\doifnextcharelse\empty\donothing\donothing} % no {}\do\do ! 
+%\def\gobblespacetokens 
+%  {\doifnextcharelse\empty\donothing\donothing} % no {}\do\do ! 
+
+\def\gobblespacetokens 
+  {\afterassignment\nexttoken\let\nexttoken=}
 
 %D \macros
 %D   {verbatimargument}

@@ -256,7 +256,9 @@
 \def\dofetchruntimecommand#1#2%
   {\doifnotflagged{#2}
      {\let#1\undefined
+      \startreadingfile
       \readfile{#2}\donothing\donothing
+      \stopreadingfile
       \doglobal\setflag{#2}}% 
    \ifx#1\undefined
      \writestatus{\m!systems}{command \string#1 not found in file #2}%

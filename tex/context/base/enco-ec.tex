@@ -3,9 +3,9 @@
 %D      version=1999.16.7,
 %D        title=\CONTEXT\ Encoding Macros,
 %D     subtitle=\LATEX\ EC Encoding,
-%D       author=Taco Hoekwater,
+%D       author={Hans Hagen, Taco Hoekwater, Patrick Gundlach},
 %D         date=\currentdate,
-%D    copyright={Hans Hagen \& Taco Hoekwater}]
+%D    copyright={Hans Hagen \& Taco Hoekwater \& Patrick Gundlach}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
@@ -59,13 +59,28 @@
 \definecharacter textcedilla      11 
 \definecharacter textogonek       12 
 
-\definecharacter textunderscore   95 
-
+\definecharacter quotesinglebase  13 % singlebasequote 
+\definecharacter guilsingleleft   14 % singleleftguillemot
+\definecharacter guilsingleright  15 % singlerightguillemot
+\definecharacter quotedblleft     16 % doubleleftquote
+\definecharacter quotedblright    17 % doublerightquote
+\definecharacter quotedblbase     18 % doiublebasequote 
 \definecharacter leftguillemot    19
 \definecharacter rightguillemot   20
-
+\definecharacter endash           21 % lig
+\definecharacter emdash           22 % lig
+\definecharacter cwm              23 % compoundwordmark
+\definecharacter perthousand      24
 \definecharacter dotlessi         25
 \definecharacter dotlessj         26
+
+\definecharacter textbackslash    92  
+\definecharacter textasciicircum  94 % ? 
+\definecharacter textunderscore   95 
+\definecharacter textbraceleft   123 % textleftbrace
+\definecharacter textbraceright  125 % textrightbrace
+\definecharacter texttilde       126 
+\definecharacter softhyphen      127 % ?
 
 \definecharacter Abreve          128
 \definecharacter Aogonek         129
@@ -98,7 +113,7 @@
 \definecharacter IJligature      156
 \definecharacter Idotaccent      157
 \definecharacter dmacron         158
-  
+\definecharacter sectionmark     159  
 \definecharacter abreve          160
 \definecharacter aogonek         161
 \definecharacter cacute          162
@@ -128,7 +143,9 @@
 \definecharacter zcaron          186
 \definecharacter zdotaccent      187
 \definecharacter ijligature      188
-  
+\definecharacter exclamdown      189 % lig
+\definecharacter questiondown    190 % lig
+\definecharacter pounds          191
 \definecharacter Agrave          192
 \definecharacter Aacute          193
 \definecharacter Acircumflex     194
@@ -145,7 +162,7 @@
 \definecharacter Iacute          205
 \definecharacter Icircumflex     206
 \definecharacter Idiaeresis      207
-
+\definecharacter Eth             208
 \definecharacter Ntilde          209
 \definecharacter Ograve          210
 \definecharacter Oacute          211
@@ -177,7 +194,7 @@
 \definecharacter iacute          237
 \definecharacter icircumflex     238
 \definecharacter idiaeresis      239
-
+\definecharacter eth             240
 \definecharacter ntilde          241
 \definecharacter ograve          242
 \definecharacter oacute          243

@@ -241,37 +241,30 @@
 
 \newcount\crossreferencenumber \crossreferencenumber=1
 
-% \def\writereference#1#2#3#4%
-%   {\ifreferencing
-%      \doifsomething{#1}
-%        {\def\dowritereference##1%
-%           {\xdef\lastreference{##1}%
-%            \@EA\dodowritereference\lastreference\empty\empty\end
-%               {#2}{#3}{#4}}%
-%         \processcommalist[#1]\dowritereference}%
-%    \fi}
-
 \def\writereference#1#2#3#4%
   {\ifreferencing
      \edef\!!stringa{#1}%
      \ifx\!!stringa\empty \else
        \def\dowritereference##1%
-         {\def\lastreference{##1}%
+         {\xdef\lastreference{##1}%
           \@EA\dodowritereference\lastreference\empty\empty\end{#2}{#3}{#4}}%
        \rawprocesscommalist[\!!stringa]\dowritereference
      \fi
    \fi}
 
-\def\dodowritereference#1#2#3\end#4#5#6%
-  {\bgroup
+%D Beware: \type {#2} gobbles space in references so that 
+%D \typ {a nice ref} becomes \typ {anice ref}. 
+
+\def\dodowritereference#1#2#3\end#4#5#6% 
+  {\bgroup 
    \global\advance\crossreferencenumber 1
    \if#1-\if#2:%
      \let\referenceprefix\empty
      \xdef\lastreference{#3}%
    \else
-     \xdef\lastreference{#1#2#3}%
+     % \xdef\lastreference{#1#2#3}% here we loose the space
    \fi\else
-     \xdef\lastreference{#1#2#3}%
+     % \xdef\lastreference{#1#2#3}% here we loose the space
    \fi
    \ifx\lastreference\empty \else
      \doiffirstreferenceoccurance\lastreference

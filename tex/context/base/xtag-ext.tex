@@ -115,32 +115,35 @@
 \bgroup \catcode`\<=\active
 
 \gdef\saveasXMLdata#1#2% name raw data 
-  {\dodoglobal\setevalue{\@@XMLsave#1}{#2}} % \edef! 
+  {\dodoglobal\setevalue{\@@XMLsave:#1}{#2}} % \edef! 
 
 \gdef\saveXMLdata#1#2% name data-name ; definitely no \edef
-  {\dodoglobal\copycsname\@@XMLsave#1\endcsname\csname\@@XMLdata:#2\endcsname}
+  {\dodoglobal\copycsname\@@XMLsave:#1\endcsname\csname\@@XMLdata:#2\endcsname}
 
 \gdef\saveXMLdatainelement#1#2#3% name element data 
-  {\dodoglobal\setevalue{\@@XMLsave#1}% todo: one level expansion 
+  {\dodoglobal\setevalue{\@@XMLsave:#1}% todo: one level expansion 
      {<#2 \currentXMLarguments>\XMLflush{#3}</#2>}}
 
 \gdef\saveXMLdatastructure#1#2#3#4#5#6% name element args before data after
-  {\dodoglobal\setevalue{\@@XMLsave#1}% todo: one level expansion 
+  {\dodoglobal\setevalue{\@@XMLsave:#1}% todo: one level expansion 
      {<#2 #3 \currentXMLarguments>#4\XMLflush{#5}#6</#2>}}
 
 \gdef\doifelseXMLelement#1%
-  {\doifdefinedelse{\@@XMLsave#1}}
+  {\doifdefinedelse{\@@XMLsave:#1}}
 
 \gdef\flushXMLelement#1%
-  {\csname\@@XMLsave#1\endcsname}
+  {\csname\@@XMLsave:#1\endcsname}
 
 \gdef\showXMLelement#1%
-  {\showvalue{\@@XMLsave#1}}
+  {\showvalue{\@@XMLsave:#1}}
+
+\gdef\eraseXMLelement#1% 
+  {\dodoglobal\letbeundefined{\@@XMLsave:#1}}
 
 \gdef\processXMLelement#1%
   {\bgroup
    \enableXMLelements 
-   \getvalue{\@@XMLsave#1}%
+   \getvalue{\@@XMLsave:#1}%
    \egroup}
 
 \gdef\texXMLelement#1%
@@ -148,10 +151,9 @@
    \setnormalcatcodes
    \scantokens\@EA\@EA\@EA{\csname\@@XMLsave#1\endcsname}%
    \endgroup}
-
 
 \egroup
-
+
 \def\potentialXMLentity#1%
   {\doifXMLentityelse{#1}{\getXMLentity{#1}}{#1}}
 

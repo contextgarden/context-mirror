@@ -155,7 +155,7 @@
 %D Another switch tells \CONTEXT\ to locate and calculate a
 %D figure, but does not actually insert it. Especially when we
 %D use \PDFTEX\ this saves a lot of time on trialruns. (Keep
-%D in mind that \PDFTEX\ is both a \TEX\ pre|| and postcessor.)
+%D in mind that \PDFTEX\ is both a \TEX\ pre|| and postprocessor.)
 
 \newif\ifskipexternalfigures  % \skipexternalfigurestrue
 
@@ -614,10 +614,10 @@
    \doifsomething{\@@efmaxhoogte}
      {\ifdim\fighei>\@@efmaxhoogte \global\fighei=\@@efmaxhoogte #3\relax\fi}}
 
-\def\setdimensionfiguresize%
+\def\setdimensionfiguresize
   {\ifdim\figwid>\zeropoint\relax
      \ifdim\fighei>\zeropoint\relax
-       \dosetdimensionfiguresize%
+       \dosetdimensionfiguresize
          {\docalculatefigurescale\fighei\@@eph\figysca
           \docalculatefigurescale\figwid\@@epw\figxsca}%
          {\docalculatefigurescale\fighei\@@eph\figysca
@@ -625,19 +625,19 @@
          {\docalculatefigurescale\fighei\@@eph\figysca
           \docalculatefigurescale\figwid\@@epw\figxsca}%
      \else
-       \dosetdimensionfiguresize%
+       \dosetdimensionfiguresize
          {\docalculatefigurescales\figwid\@@epw\fighei\@@eph}%
          {\docalculatefigurescales\figwid\@@epw\fighei\@@eph}%
          {\docalculatefigurescales\figwid\@@epw\fighei\@@eph}%
      \fi
    \else
      \ifdim\fighei>\zeropoint\relax
-       \dosetdimensionfiguresize%
+       \dosetdimensionfiguresize
          {\docalculatefigurescales\fighei\@@eph\figwid\@@epw}%
          {\docalculatefigurescales\fighei\@@eph\figwid\@@epw}%
          {\docalculatefigurescales\fighei\@@eph\figwid\@@epw}%
      \else
-       \dosetdimensionfiguresize%
+       \dosetdimensionfiguresize
          {\doapplyfigurescale\figwid\@@epw\figxsca
           \doapplyfigurescale\fighei\@@eph\figysca}%
          {\docalculatefigurescales\figwid\@@epw\fighei\@@eph}%
@@ -836,8 +836,8 @@
    \let\@@efextension #1%
    \let\@@efobject    \v!nee
    \let\@@efpreset    \v!nee
-   \ifx\@@efbreedte\empty\def\@@breedte{4cm}\fi
-   \ifx\@@efhoogte \empty\def\@@hoogte {3cm}\fi}
+   \ifx\@@efbreedte\empty\def\@@efbreedte{4cm}\fi
+   \ifx\@@efhoogte \empty\def\@@efhoogte {3cm}\fi}
 
 \def\presetfiguremov{\presetundefinedfigure\c!mov}
 \def\presetfigureavi{\presetundefinedfigure\c!avi}
@@ -861,13 +861,16 @@
 %  where the second one inherited some characteristics from 
 %  the factor=max one some 30 pages back. Sigh. 
 
-%  this macro will be cleaned up when the tuf format has 
-%  become replaced by its xml counterpart
+%  This macro will be cleaned up when the tuf format has 
+%  become replaced by its xml counterpart; for that I first 
+%  need to patch texutil. 
 
 \def\calculateexternalfigure[#1][#2][#3][#4][#5][#6]%
   {\mindermeldingen
-   \global\figwid=\zeropoint \figxsca=1 % see note * 
-   \global\fighei=\zeropoint \figysca=1 % see note * 
+   \setupexternalfigures
+   \the\externalfigureresets % hook, see resource libraries
+   \global\figwid\zeropoint \figxsca1 % see note * 
+   \global\fighei\zeropoint \figysca1 % see note * 
    \global\setbox\foundexternalfigure=\box\voidb@x
    \edef\expandedfigurename{#3}% needed e.g. in [\get...] cases
    \expandafter\beforesplitstring\expandedfigurename\at.\to\@@effilename
@@ -1121,8 +1124,63 @@
       \global\let\appliedfigurexscale\scax
       \global\let\appliedfigureyscale\scay}%
    \global\wd\foundexternalfigure=\figwid
-   \the\externalfigurepostprocessors}
+   \finalizeexternalfigure{#2}{#3}}
 
+\def\finalizeexternalfigure#1#2%
+  {\pushmacro\figurewidth
+   \pushmacro\figureheight
+   \xdef\figurewidth {\the\figwid}%
+   \xdef\figureheight{\the\fighei}%
+   \global\setbox\foundexternalfigure\vbox
+     {\forgetall
+      \ifconditional\externalfigurelevel % probably background
+        \ifskipexternalfigures
+          % nothing 
+        \else\ifcase\figurestatus
+          % nothing 
+        \else
+          \the\externalfigurepostprocessors
+          \box\foundexternalfigure
+        \fi\fi
+      \else
+        \settrue\externalfigurelevel
+        \ifskipexternalfigures
+          \externalfigurereplacement{#1}{#2}{skipped}% 
+        \else\ifcase\figurestatus
+          \externalfigurereplacement{#1}{#2}{unknown}% 
+        \else
+          \the\externalfigurepostprocessors
+          \doifelse\@@efreset\v!ja
+            {\ht\foundexternalfigure\figureheight
+             \dp\foundexternalfigure\zeropoint
+             \wd\foundexternalfigure\figurewidth
+             \box\foundexternalfigure}
+            {\localframed % should also be applied to high res !
+               [\??ef]
+               [\c!offset=\v!overlay, 
+                \c!breedte=\figurewidth,
+                \c!hoogte=\figureheight]             
+               {\vfilll\box\foundexternalfigure}}%
+        \fi\fi
+      \fi}%
+   \popmacro\figureheight
+   \popmacro\figurewidth}
+
+\def\externalfigurereplacement#1#2#3%
+  {\expanded{\localframed
+     [\??ef]
+     [\c!breedte=\figurewidth,
+      \c!hoogte=\figureheight,
+      \c!achtergrond=\v!raster, 
+      \c!achtergrondraster=.5, 
+     %\c!kader=\ifincolor\v!uit\else\v!aan\fi]
+      \c!kader=\ifincolor\@@efkader\else\v!aan\fi]}%
+     {\ttx \nohyphens
+           name:  \expanded{\verbatimstring{#1}}\\%
+           file:  \expanded{\verbatimstring{#2}}\\%
+           state: \expanded{\verbatimstring{#3}}}}
+
+\newtoks\externalfigureresets
 \newtoks\externalfigurepostprocessors
 
 \gdef\appliedfigurexscale{1}
@@ -1150,6 +1208,8 @@
 %D are best handled by the driver.
 
 \let\lastfigureobjectname\empty
+
+%D The next macro does not work well with figure bases yet. 
 
 \def\calculateexternalscreenfigure[#1][#2][#3][#4][#5][#6]%
   {\ifx\@@efscherm\empty\else
@@ -1195,65 +1255,18 @@
 
 \presetlocalframed[\??ef]
 
+\newconditional\externalfigurelevel
+
 \def\doplaceexternalfigure% used direct and indirect
   {\dosixtupleempty\dodoplaceexternalfigure}
 
-\newconditional\externalfigurelevel
-
 \def\dodoplaceexternalfigure[#1][#2][#3][#4][#5][#6]%
   {\bgroup
-   \setupexternalfigures
+   \def\textunderscore{_}% brrr, temp hack  
    \calculateexternalfigure[#1][#2][#3][#4][#5][#6]%
-   \setupexternalfigures
    \calculateexternalscreenfigure[#1][#2][#3][#4][#5][#6]%
-\pushmacro\figurewidth
-\pushmacro\figureheight
-   \xdef\figurewidth {\the\figwid}%
-   \xdef\figureheight{\the\fighei}%
-   \ifconditional\externalfigurelevel % probably background
-     \ifskipexternalfigures
-       % nothing 
-     \else\ifcase\figurestatus
-       % nothing 
-     \else
-       \box\foundexternalfigure
-     \fi\fi
-   \else
-     \settrue\externalfigurelevel
-     \ifskipexternalfigures
-       \externalfigurereplacement{#2}{#3}{skipped}% {name: #2 \\ file: #3 \\ skipped}%
-     \else\ifcase\figurestatus
-       \externalfigurereplacement{#2}{#3}{unknown}% {name: #2 \\ file: #3 \\ unknown}%
-     \else
-       \doifelse\@@efreset\v!ja
-         {\ht\foundexternalfigure\figureheight
-          \dp\foundexternalfigure\zeropoint
-          \wd\foundexternalfigure\figurewidth
-          \box\foundexternalfigure}
-         {\localframed
-            [\??ef]
-            [\c!breedte=\figurewidth,
-             \c!hoogte=\figureheight,
-             \c!offset=\v!overlay]
-            {\vfilll\box\foundexternalfigure}}%
-     \fi\fi
-   \fi
-\popmacro\figureheight
-\popmacro\figurewidth
+   \box\foundexternalfigure
    \egroup}
-
-\def\externalfigurereplacement#1#2#3%
-  {\expanded{\localframed
-     [\??ef]
-     [\c!breedte=\figurewidth,
-      \c!hoogte=\figureheight,
-      \c!achtergrond=\v!raster, 
-      \c!achtergrondraster=.5, 
-     %\c!kader=\ifincolor\v!uit\else\v!aan\fi]
-      \c!kader=\ifincolor\@@efkader\else\v!aan\fi]}%
-     {\ttx name:  \expanded{\verbatimstring{#1}}\\%
-           file:  \expanded{\verbatimstring{#2}}\\%
-           state: \expanded{\verbatimstring{#3}}}}
 
 \def\getexternalfigure#1%
   {\getvalue{\??ef\??ef#1}}
@@ -1282,6 +1295,14 @@
 % 4cm breed:     \externalfigure[beta] [breedte=4cm]  \par
 % 5cm breed:     \externalfigure[gamma][breedte=5cm]  \par
 
+\def\dosetuseexternalfigure[#1][#2][#3][#4]%
+  {\doifassignmentelse{#3}
+     {\setvalue{\??ef\??ef#1}{\doplaceexternalfigure[\dopresetfigure][#1][#2][#3][#4]}}
+     {\doifelsenothing{#3} % catch [1][2][leeg][leeg]
+        {\setvalue{\??ef\??ef#1}{\doplaceexternalfigure[\dopresetfigure][#1][#2][#3][#4]}}
+        {\setvalue{\??ef\??ef#1}{\doplaceexternalfigure[\doprecopfigure][#1][#2][#3][#4]}}}%
+   \doifundefined{#1}{\setvalue{#1}{\getexternalfigure{#1}}}} % upward compatible
+
 \def\douseexternalfigure[#1][#2][#3][#4]%
   {\doifelsenothing{#1}
      {\doifsomething{#2}
@@ -1289,15 +1310,6 @@
      {\doifelsenothing{#2}
         {\dosetuseexternalfigure[#1][#1][#3][#4]}
         {\dosetuseexternalfigure[#1][#2][#3][#4]}}}
-
-\def\dosetuseexternalfigure[#1][#2][#3][#4]%
-%  {\doifinstringelse{=}{#3}
-  {\doifassignmentelse{#3}
-     {\setvalue{\??ef\??ef#1}{\doplaceexternalfigure[\dopresetfigure][#1][#2][#3][#4]}}
-     {\doifelsenothing{#3} % catch [1][2][leeg][leeg]
-        {\setvalue{\??ef\??ef#1}{\doplaceexternalfigure[\dopresetfigure][#1][#2][#3][#4]}}
-        {\setvalue{\??ef\??ef#1}{\doplaceexternalfigure[\doprecopfigure][#1][#2][#3][#4]}}}%
-   \doifundefined{#1}{\setvalue{#1}{\getexternalfigure{#1}}}} % upward compatible
 
 \def\useexternalfigure%
   {\doquadrupleempty\douseexternalfigure}

@@ -495,18 +495,24 @@
 
 \def\complexdoblanko
   {\flushfootnotes
-   \ifopelkaar
-     \ifinpagebody
-       \@EAEAEA\docomplexdoblanko
-     \else
-       \@EAEAEA\nocomplexdoblanko
-     \fi
+   \ifmmode
+     \let\next\nocomplexdoblanko
    \else
-     \@EA\docomplexdoblanko
-   \fi}
+     \ifopelkaar
+       \ifinpagebody
+         \let\next\docomplexdoblanko
+       \else
+         \let\next\nocomplexdoblanko
+       \fi
+     \else
+       \let\next\docomplexdoblanko
+     \fi
+   \fi
+   \next}
 
 \def\nocomplexdoblanko[#1]% 
-  {\par}
+  {% evt blokkeerfalse  
+   \ifmmode\else\par\fi}
 
 \def\docomplexdoblanko[#1]% pas op \relax's zijn nodig ivm volgende \if
   {\global\blankoresetfalse

@@ -26,6 +26,16 @@
 
 \def\@@itemcounter {\s!itemcount\currentitemgroup}
 
+\long\def\startexternalfigure
+  {\dotripleempty\dostartexternalfigure}
+
+\long\def\dostartexternalfigure[#1][#2][#3]#4\stopexternalfigure
+  {\gdef\figuredescription{#4}%
+   \externalfigure[#1][#2][#3]%
+   \global\let\figuredescription\empty}
+
+\let\figuredescription\empty
+
 % very experimental 
 
 \def\redoanalyzefigurefiles#1%
@@ -47,8 +57,131 @@
    \doanalyzefigurefiles\doanalyzefigurefilesA
    \doanalyzefigurefiles\doanalyzefigurefilesB
    \doanalyzefigurefiles\doanalyzefigurefilesC}
+
+\def\dodefineexternalfigure[#1][#2]%
+  {\setvalue{\??ef\??ef#1}%
+     {\doplaceexternalfigure[\dopresetfigure][#1][][#2][]}}
 
+\def\defineexternalfigure
+  {\dodoubleargument\dodefineexternalfigure}
 
+\def\dodoplaceexternalfigure[#1][#2][#3][#4][#5][#6]%
+  {\doifsomething{#3}% catches \defineexternalfigure dummies
+     {\bgroup
+      \def\textunderscore{_}% brrr, temp hack  
+      \calculateexternalfigure[#1][#2][#3][#4][#5][#6]%
+      \calculateexternalscreenfigure[#1][#2][#3][#4][#5][#6]%
+      \box\foundexternalfigure
+      \egroup}}
+
+\definesystemvariable {bl} % bleeding
+
+\newcounter\nofbleeds % per pag 
+
+\def\setupbleeding
+  {\dodoubleempty\getparameters[\??bl]}
+
+\setupbleeding
+  [\c!plaats=l,
+   \c!rek=\v!ja,
+   \c!breedte=3cm,
+   \c!hoogte=3cm,
+   \c!offset=2mm,
+   \c!voffset=\@@bloffset,
+   \c!hoffset=\@@bloffset]
+
+\def\bleed
+  {\dosingleempty\dobleed}
+
+\def\dobleed[#1]#2%
+  {\hbox\bgroup  
+   \def\bleedwidth {\hsize}%
+   \def\bleedheight{\vsize}%
+   \doglobal\increment\nofbleeds
+   \getparameters[\??bl][#1]%
+   \!!doneafalse % left
+   \!!donebfalse % right 
+   \!!donecfalse % top
+   \!!donedfalse % bottom  
+   \processaction
+     [\@@blplaats]
+     [ t=>\!!donectrue\let\@@blhoffset\!!zeropoint, 
+       b=>\!!donedtrue\let\@@blhoffset\!!zeropoint,
+       l=>\!!doneatrue\let\@@blvoffset\!!zeropoint, 
+       r=>\!!donebtrue\let\@@blvoffset\!!zeropoint,
+      bl=>\!!doneatrue\!!donedtrue,   
+      lb=>\!!doneatrue\!!donedtrue,   
+      br=>\!!donebtrue\!!donedtrue,   
+      rb=>\!!donebtrue\!!donedtrue,  
+      tl=>\!!doneatrue\!!donectrue,  
+      lt=>\!!doneatrue\!!donectrue,  
+      tr=>\!!donebtrue\!!donectrue,  
+      rt=>\!!donebtrue\!!donectrue]%  
+   \doifelse\@@blrek\v!ja\donetrue\donefalse
+   \scratchdimen\@@blbreedte
+   \ifdone
+     \if!!donea
+       \advance\scratchdimen\MPx{\??bl:\nofbleeds}%
+     \else\if!!doneb
+       \scratchdimen\papierbreedte
+       \advance\scratchdimen-\MPx{\??bl:\nofbleeds}%
+     \fi\fi
+   \fi
+   \advance\scratchdimen\@@blhoffset
+   \edef\bleedwidth{\the\scratchdimen}%
+   \scratchdimen\@@blhoogte
+   \ifdone
+     \if!!donec
+       \scratchdimen\papierhoogte
+       \advance\scratchdimen-\MPy{\??bl:\nofbleeds}%
+     \else\if!!doned
+       \advance\scratchdimen\MPy{\??bl:\nofbleeds}%
+     \fi\fi
+   \fi
+   \advance\scratchdimen\@@blvoffset
+   \edef\bleedheight{\the\scratchdimen}%
+   \hsize\bleedwidth
+   \vsize\bleedheight
+   \setbox\scratchbox\hbox{#2}%
+   \setbox\scratchbox\hbox to \@@blbreedte
+     {\if!!donea\hss\fi\box\scratchbox\if!!doneb\hss\fi}%
+   \if!!doned 
+     \setbox\scratchbox\hbox
+       {\lower\bleedheight\hbox{\raise\@@blhoogte\box\scratchbox}}%
+   \fi
+   \wd\scratchbox\@@blbreedte
+   \ht\scratchbox\@@blhoogte
+   \dp\scratchbox\zeropoint
+   \ifdone
+     \hpos{\??bl:\nofbleeds}{\box\scratchbox}%
+   \else
+     \box\scratchbox
+   \fi
+   \egroup}
+
+\setupbleeding[\c!rek=\v!ja]
+
+\defineexternalfigure[bleed][\c!breedte=\bleedwidth,\c!hoogte=\bleedheight]
+
+% \placefloat[left]{none}
+%   {\bleed[width=5cm,height=3cm,location=lt]{\externalfigure[koe][bleed]}}
+% 
+% \input tufte 
+% 
+% \placefloat[left]{none}
+%   {\bleed[width=5cm,height=3cm,location=l]{\externalfigure[koe][bleed]}}
+% 
+% \input tufte 
+% 
+% \placesomefloat[right]{none}
+%   {\bleed[width=5cm,height=3cm,location=r]{\externalfigure[koe][bleed]}}
+% 
+% \input tufte 
+% 
+% \placesomefloat[right]{none}
+%   {\bleed[width=5cm,height=3cm,location=rb]{\externalfigure[koe][bleed]}}
+% 
+% \input tufte 
 
 \def\OTRSETgotocell#1#2% not that robust 
   {\endgraf
@@ -84,47 +217,6 @@
      \fi
    \fi
    \OTRSETsetvsize}
-
-\def\setsidefloat% nilling everypar saves time and redudant pos's 
-  {% removed here dec 2001   
-  %{\everypar\emptytoks\forgetall\vbox{\strut}\vskip-\lineheight}%
-   %
-   \kern\sidefloattopskip
-   \edef\presidefloatdepth{\the\prevdepth}%
-   \nointerlineskip
-   \bgroup
-   \everypar\emptytoks
-   \parskip\zeropoint
-   \logsidefloat
-   \ifrightfloat
-     \hfill
-     \ifmarginfloat
-%       \rlap{\hskip\rechtermargeafstand\hskip\rightskip\unhbox\floatbox}%
-\rlap{\tbox{\hskip\rechtermargeafstand\hskip\rightskip\unhbox\floatbox}}%
-     \else
-       \unhbox\floatbox
-     \fi
-   \else
-     \noindent
-     \ifmarginfloat
-%       \llap{\unhbox\floatbox\hskip\leftskip\hskip\linkermargeafstand}%
-\llap{\tbox{\unhbox\floatbox\hskip\leftskip\hskip\linkermargeafstand}}%
-     \else
-       \unhbox\floatbox
-     \fi
-     \hfill
-   \fi
-   \egroup
-   \par
-   \kern-\sidefloatheight
-   \penalty10001 % oeps, this will change 
-   \normalbaselines
-   \prevdepth=\presidefloatdepth
-   %\noindent
-   \resetsidefloatparagraph
-   \ignorespaces}
-
-
 
 \def\setlocalfloatdimensions#1#2% experimental ! ! ! !
   {\doifvaluesomething{\??fl#1\c!maxbreedte}
@@ -381,137 +473,6 @@
    \c!hoogte=\dimexpr(2\papierbreedte+1.5cm)]
 
 \endETEX
-
-\def\dofield[#1][#2][#3]%
-  {\iffirstargument
-     \bgroup
-     \getfield{#2}%
-     \ifsecondargument
-       \def\@@FieldLabel{#3}%
-     \else
-       \let\@@FieldLabel\@@FieldName
-     \fi
-     \ifx\@@FieldType\empty
-       \writestatus{\m!fields}{unknown field #2}%
-     \else\ifcase\@@FieldFree\relax
-       \doifdefinedelse{\strippedcsname\setupfield\@@FieldGroup}
-         {\let\dosetupfield=#1\getvalue{\strippedcsname\setupfield\@@FieldGroup}}
-         {#1[\@@FieldName][\v!label,\v!kader,\v!horizontaal][][][]}%
-\iftrialtypesetting\else
-       \def\@@FieldFree{1}%
-       \changefield{#2}%
-\fi
-     \else\ifcase\@@FieldAuto\relax
-     % \writestatus{\m!fields}{field #2 already typeset}%
-     \else
-     % \writestatus{\m!fields}{field #2 automatically copied}%
-       \nextsystemfield
-       \copyfield[\@@FieldName][\currentsystemfield]%
-       \dotripleempty\dofield[#1][\currentsystemfield][#3]% get the if's right
-     \fi\fi\fi
-     \egroup
-   \fi}
-
-\def\typesetfield%
-  {\useJSscripts[fld]%
-   \ifx\@@FieldRoot\empty \else
-     \let\@@SavedFieldName\@@FieldName
-     \getfield\@@FieldRoot
-     \ifcase\@@FieldFree\relax
-       \dosetfieldstatus\@@FieldMode\@@FieldParent\@@FieldKids\@@FieldRoot
-       \dopresetrecord
-\iftrialtypesetting\else
-       \def\@@FieldFree{1}%
-       \changefield\@@FieldName
-\fi
-     \fi
-     \getfield\@@SavedFieldName
-   \fi
-   \ifx\@@FieldKids\empty
-     \donefalse
-   \else
-     \donetrue
-   \fi
-   \ifdone
-     \let\@@FieldParent\@@FieldName
-    %\addtocommalist\@@FieldParent\@@FieldKids
-     \appendtocommalist\@@FieldParent\@@FieldKids
-     \dosetfieldstatus\@@FieldMode\@@FieldParent\@@FieldKids\@@FieldRoot
-     \dopresetfield
-     \let\@@FieldMode\fieldchildmode
-   \fi
-   \dosetfieldstatus\@@FieldMode\@@FieldParent\@@FieldKids\@@FieldRoot
-   \dopresetfield}
-
-\def\dopresetfield
-  {\iftrialtypesetting\else\iflocation\getvalue{preset\@@FieldType  field}\fi\fi}
-
-\def\dopresetrecord
-  {\iftrialtypesetting\else\iflocation\getvalue{preset\@@FieldType record}\fi\fi}
-
-\def\doclonefield[#1][#2][#3][#4]% parent children setupgroup values
-  {\ifsecondargument
-     \getfield{#1}%
-\iftrialtypesetting\else
-     \ifx\@@FieldType\empty
-       \writestatus{\m!fields}{unknown field #1}%
-     \else
-       \let\@@FieldMode=\fieldparentmode
-      %\def\docommando##1{\addtocommalist{##1}\@@FieldKids}%
-       \def\docommando##1{\appendtocommalist{##1}\@@FieldKids}%
-       \processcommalist[#2]\docommando
-       \changefield{#1}%
-       \let\@@FieldAutoParent=\@@FieldAuto
-       \def\@@FieldParent{#1}%
-       \let\@@FieldKids=\empty
-       \let\@@FieldRoot=\empty
-       \let\@@FieldMode=\fieldchildmode
-       \def\@@FieldFree{0}%
-       \def\@@FieldAuto{0}%
-       \doifsomething{#3}{\edef\@@FieldGroup{#3}}%
-       \doifsomething{#4}{\edef\@@FieldValues{#4}}%
-       \def\docommando##1%
-         {\ifcase\@@FieldAutoParent\else
-            \setmainfieldkid{\@@FieldParent}{##1}%
-          \fi
-          \changefield{##1}}%
-       \processcommalist[#2]\docommando
-     \fi
-\fi
-   \else
-     \writestatus{\m!fields}{pass parent field and clones}%
-   \fi}
-
-\def\docopyfield[#1][#2]% parent children
-  {\ifsecondargument
-     \getfield{#1}%
-\iftrialtypesetting\else
-     \ifx\@@FieldType\empty
-       \writestatus{\m!fields}{unknown field #1}%
-     \else
-       \let\@@FieldMode=\fieldparentmode
-      %\def\docommando##1{\addtocommalist{##1}\@@FieldKids}%
-       \def\docommando##1{\appendtocommalist{##1}\@@FieldKids}%
-       \processcommalist[#2]\docommando
-       \changefield{#1}%
-       \let\@@FieldAutoParent=\@@FieldAuto
-       \def\@@FieldParent{#1}%
-       \let\@@FieldKids=\empty
-       \let\@@FieldRoot=\empty
-       \let\@@FieldMode=\fieldcopymode
-       \def\@@FieldFree{0}%
-       \def\@@FieldAuto{0}%
-       \def\docommando##1%
-         {\ifcase\@@FieldAutoParent\else
-            \setmainfieldkid{\@@FieldParent}{##1}%
-          \fi
-          \changefield{##1}}%
-       \processcommalist[#2]\docommando
-     \fi
-\fi
-   \else
-     \writestatus{\m!fields}{pass parent field and copies}%
-   \fi}
 
 \newtoks\everyfirstparagraphintro
 \newtoks\everynextparagraphintro
@@ -770,10 +731,6 @@
    \else
      \localhsize\hsize
    \fi \fi}
-
-\long\def\parseTR[#1][#2]#3\eTR% [#2] is dummy that kills spaces
-  {\def\currentcol{0}\increment\maximumrow
-   \setupTABLE[\v!rij][\maximumrow][#1]#3}
 
 \def\obeyfollowingtoken{{}}  % end \cs scanning
 

@@ -308,14 +308,16 @@
    \ifrightfloat
      \hfill
      \ifmarginfloat
-       \rlap{\hskip\rechtermargeafstand\hskip\rightskip\unhbox\floatbox}%
+%       \rlap{\hskip\rechtermargeafstand\hskip\rightskip\unhbox\floatbox}%
+\rlap{\tbox{\hskip\rechtermargeafstand\hskip\rightskip\unhbox\floatbox}}%
      \else
        \unhbox\floatbox
      \fi
    \else
      \noindent
      \ifmarginfloat
-       \llap{\unhbox\floatbox\hskip\leftskip\hskip\linkermargeafstand}%
+%       \llap{\unhbox\floatbox\hskip\leftskip\hskip\linkermargeafstand}%
+\llap{\tbox{\unhbox\floatbox\hskip\leftskip\hskip\linkermargeafstand}}%
      \else
        \unhbox\floatbox
      \fi
@@ -330,7 +332,7 @@
    %\noindent
    \resetsidefloatparagraph
    \ignorespaces}
-
+
 \newcount\sidefloatparagraph
 
 \def\iffirstsidefloatparagraph%

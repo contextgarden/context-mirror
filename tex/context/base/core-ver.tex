@@ -129,7 +129,9 @@
 \installnewpretty X {\setupprettiesintype{XML}\setupprettytype}
 
 \def\setupcommonverbatim#1%
-  {\def\prettyidentifier{TEX}%
+  {\eightbitcharactersfalse % obey regime / encoding 
+   %
+   \def\prettyidentifier{TEX}%
    %
    \doifelsevalue{#1\c!tekst}{\v!ja}
      {\naturaltextexttrue}{\naturaltextextfalse}%

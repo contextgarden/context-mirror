@@ -748,17 +748,24 @@
 \def\stoppatternaccents%
   {\let\char\savedpatternchar}
 
-% \def\presetcharacter#1%
-%   {\setvalue{#1}{\dohandlecharacter{#1}}}
-
 \def\definecharacter#1 #2 %
   {\ifundefined{#1}\setvalue{#1}{\dohandlecharacter{#1}}\fi
-%  {\setvalue{#1}{\dohandlecharacter{#1}}%
-%  {\@EA\presetcharacter\@EA{\@EA\strippedcsname\csname#1\endcsname}%
    \doifnumberelse{\string#2}
      {\setvalue{\characterencoding\string#1}{\char#2 }% watch the space
       \doautosetregime{#1}{#2}}
      {\setvalue{\characterencoding\string#1}{#2}}}
+
+% better 
+% 
+% \def\definecharacter#1 #2 %
+%   {\ifundefined{#1}\setvalue{#1}{\dohandlecharacter{#1}}\fi
+%    \doifnumberelse{\string#2}
+%      {\setevalue{\characterencoding\string#1}{\noexpand\charofnum{\number#2}}% watch the space
+%       \doautosetregime{#1}{#2}}
+%      {\setvalue{\characterencoding\string#1}{#2}}}
+% 
+% \def\charofnum#1{\char#1 }
+% \def\byteofnum#1{\rawcharacter{#1}}
 
 \beginTEX
 
@@ -1111,7 +1118,7 @@
 
 \ifx\obeylccodes\undefined
 
-\def\obeylccodes%
+\def\obeylccodes
   {\scratchcounter32
    \loop
      \ifnum\scratchcounter<127

@@ -537,6 +537,9 @@
      \ifnum\noflistelements=1               % tgv bv kolommen/nesting
        \findtwopassdata\s!list{\noflists:}% % wordt soms de volgorde
      \fi                                    % verstoord, vandaar \find
+\iftwopassdatafound
+  \ifcase0\twopassdata\relax \twopassdatafoundfalse \fi
+\fi  
      \iftwopassdatafound
        \ifnum\twopassdata=3
          \ifnum\noflistelements>1
@@ -564,7 +567,7 @@
      {\ifheaditem
         \doitemattributes\itemlevel\c!kopletter\c!kopkleur{\listitem}%
       \else\ifsymbolitem
-        \symsymbol
+        \symsymbol 
       \else
         \doitemattributes\itemlevel\c!letter\c!kleur{\listitem}%
       \fi\fi}%

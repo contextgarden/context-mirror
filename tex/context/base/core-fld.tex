@@ -520,8 +520,9 @@
    \fi}
 
 \def\doclonefield[#1][#2][#3][#4]% parent children setupgroup values
-  {\ifsecondargument         
+  {\ifsecondargument
      \getfield{#1}%
+\iftrialtypesetting\else
      \ifx\@@FieldType\empty
        \writestatus{\m!fields}{unknown field #1}%
      \else
@@ -531,7 +532,7 @@
        \processcommalist[#2]\docommando
        \changefield{#1}%
        \let\@@FieldAutoParent=\@@FieldAuto
-       \def\@@FieldParent{#1}% 
+       \def\@@FieldParent{#1}%
        \let\@@FieldKids=\empty
        \let\@@FieldRoot=\empty
        \let\@@FieldMode=\fieldchildmode
@@ -540,22 +541,24 @@
        \doifsomething{#3}{\edef\@@FieldGroup{#3}}%
        \doifsomething{#4}{\edef\@@FieldValues{#4}}%
        \def\docommando##1%
-         {\ifcase\@@FieldAutoParent\else    
+         {\ifcase\@@FieldAutoParent\else
             \setmainfieldkid{\@@FieldParent}{##1}%
           \fi
           \changefield{##1}}%
        \processcommalist[#2]\docommando
      \fi
+\fi
    \else
      \writestatus{\m!fields}{pass parent field and clones}%
-   \fi}  
+   \fi}
 
 \def\clonefield%
   {\doquadrupleempty\doclonefield}
 
-\def\docopyfield[#1][#2]% parent children 
-  {\ifsecondargument         
+\def\docopyfield[#1][#2]% parent children
+  {\ifsecondargument
      \getfield{#1}%
+\iftrialtypesetting\else
      \ifx\@@FieldType\empty
        \writestatus{\m!fields}{unknown field #1}%
      \else
@@ -565,22 +568,23 @@
        \processcommalist[#2]\docommando
        \changefield{#1}%
        \let\@@FieldAutoParent=\@@FieldAuto
-       \def\@@FieldParent{#1}% 
+       \def\@@FieldParent{#1}%
        \let\@@FieldKids=\empty
        \let\@@FieldRoot=\empty
        \let\@@FieldMode=\fieldcopymode
        \def\@@FieldFree{0}%
        \def\@@FieldAuto{0}%
        \def\docommando##1%
-         {\ifcase\@@FieldAutoParent\else    
+         {\ifcase\@@FieldAutoParent\else
             \setmainfieldkid{\@@FieldParent}{##1}%
           \fi
           \changefield{##1}}%
        \processcommalist[#2]\docommando
      \fi
+\fi
    \else
      \writestatus{\m!fields}{pass parent field and copies}%
-   \fi}  
+   \fi}
 
 \def\copyfield%
   {\dodoubleempty\docopyfield}
@@ -596,9 +600,9 @@
      \bgroup
      \getfield{#2}%
      \ifsecondargument
-       \def\@@FieldLabel{#3}% 
+       \def\@@FieldLabel{#3}%
      \else
-       \let\@@FieldLabel=\@@FieldName
+       \let\@@FieldLabel\@@FieldName
      \fi
      \ifx\@@FieldType\empty
        \writestatus{\m!fields}{unknown field #2}%
@@ -606,8 +610,10 @@
        \doifdefinedelse{\strippedcsname\setupfield\@@FieldGroup}
          {\let\dosetupfield=#1\getvalue{\strippedcsname\setupfield\@@FieldGroup}}
          {#1[\@@FieldName][\v!label,\v!kader,\v!horizontaal][][][]}%
+\iftrialtypesetting\else
        \def\@@FieldFree{1}%
        \changefield{#2}%
+\fi
      \else\ifcase\@@FieldAuto\relax
      % \writestatus{\m!fields}{field #2 already typeset}%
      \else
@@ -616,40 +622,45 @@
        \copyfield[\@@FieldName][\currentsystemfield]%
        \dotripleempty\dofield[#1][\currentsystemfield][#3]% get the if's right
      \fi\fi\fi
-     \egroup 
+     \egroup
    \fi}
 
 \def\typesetfield%
-  {\useJSscripts[fld]% 
+  {\useJSscripts[fld]%
    \ifx\@@FieldRoot\empty \else
-     \let\@@SavedFieldName=\@@FieldName
+     \let\@@SavedFieldName\@@FieldName
      \getfield\@@FieldRoot
      \ifcase\@@FieldFree\relax
        \dosetfieldstatus\@@FieldMode\@@FieldParent\@@FieldKids\@@FieldRoot
        \dopresetrecord
+\iftrialtypesetting\else
        \def\@@FieldFree{1}%
        \changefield\@@FieldName
+\fi
      \fi
      \getfield\@@SavedFieldName
    \fi
-   \ifx\@@FieldKids\empty 
+   \ifx\@@FieldKids\empty
      \donefalse
    \else
      \donetrue
    \fi
    \ifdone
-     \let\@@FieldParent=\@@FieldName
-    %\addtocommalist\@@FieldParent\@@FieldKids 
+     \let\@@FieldParent\@@FieldName
+    %\addtocommalist\@@FieldParent\@@FieldKids
      \appendtocommalist\@@FieldParent\@@FieldKids
      \dosetfieldstatus\@@FieldMode\@@FieldParent\@@FieldKids\@@FieldRoot
      \dopresetfield
-     \let\@@FieldMode=\fieldchildmode
+     \let\@@FieldMode\fieldchildmode
    \fi
    \dosetfieldstatus\@@FieldMode\@@FieldParent\@@FieldKids\@@FieldRoot
    \dopresetfield}
 
-\def\dopresetfield {\iflocation\getvalue{preset\@@FieldType  field}\fi}
-\def\dopresetrecord{\iflocation\getvalue{preset\@@FieldType record}\fi}
+\def\dopresetfield
+  {\iftrialtypesetting\else\iflocation\getvalue{preset\@@FieldType  field}\fi\fi}
+
+\def\dopresetrecord
+  {\iftrialtypesetting\else\iflocation\getvalue{preset\@@FieldType record}\fi\fi}
 
 \def\dodefinethefieldset[#1][#2]% 
   {\dodefinefieldset{#1}{#2}}

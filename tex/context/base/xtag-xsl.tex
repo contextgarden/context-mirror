@@ -107,14 +107,6 @@
   {\expanded{\applyXSLTscript
      [#1][\TEXbufferfile{\ifsecondargument#2\else\jobname\fi}]}}
 
-%D \startMPdrawing
-%D \stopMPdrawing
-%D \pushMPdrawing
-%D \popMPdrawing
-%D \resetMPdrawing
-%D \ifMPdrawingdone
-%D \getMPdrawing
-
 \def\resetXSLTscripting#1%
   {\setgvalue{\??xl\s!dummy}{\doXSLTscript{#1}{}}}
 

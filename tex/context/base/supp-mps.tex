@@ -1190,7 +1190,8 @@
 
 \def\dodohandleMPcolor#1 #2 #3setrgbcolor#4setrgbcolor*\\%
   {\bgroup
-\ifdim\MPspecialsignal=.123pt % color spec / hardcoded hack 
+%\ifnum\MPspecialsignal=123 % color spec / hardcoded hack 
+\ifdim#1pt=.123pt
   \immediate\write\scratchwrite{#1 #2 #3 setrgbcolor}%
 \else
    \ifforcegrayMPcolors
