@@ -11,17 +11,17 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-% to do: \localpushmacro/\localpopmacro (dohandleflowchart etc) 
+% to do: \localpushmacro/\localpopmacro (dohandleflowchart etc)
 
-% will be redone with layers 
+% will be redone with layers
 
 %D This is an experimental module. Pieces of code will be moved
 %D to other modules. More features are possible but will be
-%D interfaces later. 
+%D interfaces later.
 %D
 %D When finished this module will be documented. The main macro
 %D is still a rather big one and there is some redundant and
-%D slow code that needs a clean up. 
+%D slow code that needs a clean up.
 
 % arrow, dash
 % crossing
@@ -49,7 +49,7 @@
 % nx      : minimaal aantal cellen horizontaal
 % ny      : minimaal aantal cellen vertikaal
 %
-% shape none en geen equivalent maken 
+% shape none en geen equivalent maken
 %
 % kaderkleur achtergrondkleur
 % lijnkleur lijndikte
@@ -61,7 +61,7 @@
 \unprotect
 
 \definieersorteren [flowchart] [flowcharts] [\v!geen] % no access
-\stelsorterenin    [flowchart] [\c!status=\v!stop]    % off by default 
+\stelsorterenin    [flowchart] [\c!status=\v!stop]    % off by default
 
 \def\@FLOW@{@FLOW@}
 \def\@FLOC@{@FLOC@}
@@ -99,7 +99,7 @@
    \global\let\FLOWalign      \empty
    \global\let\FLOWshape      \empty
    \global\let\FLOWlocation   \empty
-   \global\let\FLOWtext       \empty 
+   \global\let\FLOWtext       \empty
    \global\let\FLOWhelp       \empty
    \global\let\FLOWdestination\empty
    \global\let\FLOWoverlay    \empty
@@ -191,7 +191,7 @@
 \def\doFLOWexit[#1]#2%
   {\setgvalue{#1FLOWexit}{#2}\ignorespaces}
 
-\def\startFLOWchart%
+\def\startFLOWchart
   {\bgroup
    \let\stopFLOWchart\egroup
    \obeylines % lelijk, buffers nog eens fatsoeneren
@@ -213,7 +213,7 @@
    \flowchart{#1}%
    \setxvalue{\@FLOW@-#1}%
      {\noexpand\dohandleflowchart[\nofFLOWcharts][#2]}}
-  
+
 \def\setupFLOWcharts{\dodoubleargument\getparameters[\@@FLOW]}
 \def\setupFLOWlines {\dodoubleargument\getparameters[\@@FLOL]}
 \def\setupFLOWshapes{\dodoubleargument\getparameters[\@@FLOS]}
@@ -394,7 +394,7 @@
    \global\let\FLOWwidth \@@FLOWnx
    \global\let\FLOWheight\@@FLOWny
    \let\startFLOWcell\startFLOWcellA
-   \resetFLOWlocation 
+   \resetFLOWlocation
    \processFLOWbuffer\currentFLOWnumber
    \ifcase\@@FLOWnx\relax \let\@@FLOWnx\FLOWwidth  \fi
    \ifcase\@@FLOWny\relax \let\@@FLOWny\FLOWheight \fi
@@ -434,7 +434,7 @@
      \forgetall
      \offinterlineskip
    \else\ifx\@@FLOWkorps\empty\else
-     \expanded{\switchtobodyfont[\@@FLOWkorps]}% \expanded ? 
+     \expanded{\switchtobodyfont[\@@FLOWkorps]}% \expanded ?
    \fi\fi
    \global\let\FLOWcells\empty
    \dimen0=\@@FLOWbreedte
@@ -481,7 +481,7 @@
    \resetMPdrawing
    \doglobal\newcounter\FLOWcomment
    \startMPdrawing
-     if unknown context_char : input mp-char.mp ; fi ; 
+     if unknown context_char : input mp-char.mp ; fi ;
      grid_width             := \FLOWgridwidth ;
      grid_height            := \FLOWgridheight ;
      shape_width            := \FLOWshapewidth ;
@@ -500,7 +500,7 @@
 %     \expandafter\getFLOWlocationX\FLOWlocation\end
 %     \ignorespaces}%
 %  \let\startFLOWcell\startFLOWcellX
-%  \resetFLOWlocation 
+%  \resetFLOWlocation
 %  \processFLOWbuffer\currentFLOWnumber
 %  \ifnum\@@FLOWnx\@@FLOWny=11 % listig
 %    \let\@@FLOWnx\FLOWwidth
@@ -535,10 +535,10 @@
                     show_\@@FLOWpunt_points := true ;
                   \stopMPdrawing]%
    \let\startFLOWcell\startFLOWcellB
-   \resetFLOWlocation 
+   \resetFLOWlocation
    \processFLOWbuffer\currentFLOWnumber
    \let\startFLOWcell\startFLOWcellC
-   \resetFLOWlocation 
+   \resetFLOWlocation
    \processFLOWbuffer\currentFLOWnumber
    \startMPdrawing
      clip_chart(\@@FLOWx,\@@FLOWy,\@@FLOWnx,\@@FLOWny) ;
@@ -559,7 +559,7 @@
    \def\MPareapath##1##2##3##4%
      {\def\areaMPllx{##1bp}\def\areaMPlly{##2bp}%
       \def\areaMPurx{##3bp}\def\areaMPury{##4bp}}%
-   \getMPdata 
+   \getMPdata
    \doglobal\newcounter\FLOWcomment
    \let\startFLOWcell\startFLOWcellD
    \setbox2\vbox to \ht0
@@ -635,9 +635,9 @@
 
 % Pass B
 %
-% beware: the - after \@FLOC@ is needed since name can be 
-% empty and we don't want to redefine \@FLOC@ itself by 
-% mistake 
+% beware: the - after \@FLOC@ is needed since name can be
+% empty and we don't want to redefine \@FLOC@ itself by
+% mistake
 
 \long\def\startFLOWcellB#1\stopFLOWcell
   {\resetFLOWcell\ignorespaces#1\unskip
@@ -689,10 +689,10 @@
 
 \long\def\startFLOWcellC#1\stopFLOWcell%
   {\resetFLOWcell
-\pushmacro\lastFLOWx 
+\pushmacro\lastFLOWx
 \pushmacro\lastFLOWy
-   \ignorespaces#1\unskip % makes sure that vars are set 
-\popmacro\lastFLOWy 
+   \ignorespaces#1\unskip % makes sure that vars are set
+\popmacro\lastFLOWy
 \popmacro\lastFLOWx
    \let\connection\doFLOWconnectionC
    \ignorespaces#1\unskip}
@@ -704,7 +704,7 @@
 
 \def\doFLOWconnectionC
   {\dodoubleempty\dodoFLOWconnectionC}
-   
+
 \def\dodoFLOWconnectionC[#1][#2]#3%
   {\doglobal\increment\FLOWcomment
    \setFLOWname\otherFLOWname{name_#3}%
@@ -715,7 +715,7 @@
      \doifdefinedelse{\@FLOC@-\otherFLOWname}
        {\edef\FLOWto  {\getvalue{\@FLOC@-\otherFLOWname}}}
        {\let \FLOWto   \FLOWorigin}%
-     \ifx\FLOWto\FLOWorigin \else 
+     \ifx\FLOWto\FLOWorigin \else
        \FLOWsetconnect{#1}%
        \ifx\cFLOWfrom\empty \else
          \doifelse\@@FLOLhoek\v!rond
@@ -732,17 +732,17 @@
            {\startMPdrawing touchshape := false ; \stopMPdrawing}%
 %\doifsomething{#2}
 %  {\startMPdrawing
-%   \doFLOWdisplace[0#2,0,0]% 
+%   \doFLOWdisplace[0#2,0,0]%
 %   \stopMPdrawing}%
          \startMPdrawing
-\doFLOWdisplace[0#2,0,0]% 
+\doFLOWdisplace[0#2,0,0]%
            connection_line_color := \MPcolor{\@@FLOLkleur} ;
            connection_line_width := \@@FLOLlijndikte ;
            connect_\cFLOWfrom_\cFLOWto (\FLOWfrom,\zFLOWfrom) (\FLOWto,\zFLOWto) ;
-\doFLOWdisplace[0,0,0]% 
+\doFLOWdisplace[0,0,0]%
          \stopMPdrawing
        \fi
-     \fi 
+     \fi
    \fi
    \ignorespaces}
 
@@ -865,9 +865,9 @@
      \fi
      \edef\FLOWdx{\the\dimen0}%
      \edef\FLOWdy{\the\dimen2}%
-     \def\positionFLOWzero% assumes \FLOWdx and \FLOWdy are set 
+     \def\positionFLOWzero% assumes \FLOWdx and \FLOWdy are set
        {\setbox0=\hbox{\hskip\FLOWdx\lower\FLOWdy\box0}%
-        \smashbox0\box0}% 
+        \smashbox0\box0}%
      \def\doFLOWtlabel##1##2##3%
        {\scratchdimen=\ifcase##2 \!!zeropoint\else\@@FLOWdy\fi
         \setbox0=\hbox{\hskip\dimen2\raise\scratchdimen
@@ -896,17 +896,17 @@
      \doFLOWblabel\rightbottombox0\bFLOWlabel
      \doFLOWllabel    \lefttopbox0\lFLOWlabel
      \doFLOWrlabel   \righttopbox0\rFLOWlabel
-     \doFLOWtlabel        \topbox0\tcFLOWlabel % for me only 
-     \doFLOWblabel     \bottombox0\bcFLOWlabel % for me only 
-     \doFLOWllabel       \leftbox0\lcFLOWlabel % for me only 
-     \doFLOWrlabel      \rightbox0\rcFLOWlabel % for me only 
+     \doFLOWtlabel        \topbox0\tcFLOWlabel % for me only
+     \doFLOWblabel     \bottombox0\bcFLOWlabel % for me only
+     \doFLOWllabel       \leftbox0\lcFLOWlabel % for me only
+     \doFLOWrlabel      \rightbox0\rcFLOWlabel % for me only
      \ifnum#1=\@@FLOWx\relax \doFLOWllabel   \leftbox1\lFLOWexit \fi
      \ifnum#1=\!!countc      \doFLOWrlabel  \rightbox1\rFLOWexit \fi
      \ifnum#2=\@@FLOWy\relax \doFLOWtlabel    \topbox1\tFLOWexit \fi
      \ifnum#2=\!!countd      \doFLOWblabel \bottombox1\bFLOWexit \fi
    \fi\fi\fi\fi}
 
-% Pass E 
+% Pass E
 
 \long\def\startFLOWcellE#1\stopFLOWcell
   {\resetFLOWcell
@@ -1033,7 +1033,7 @@
    \fi}
 
 \def\setgetFLOWchart[#1][#2][#3]%
-   {\def\docommando##1{}% cell line focus ? 
+   {\def\docommando##1{}% cell line focus ?
     \processcommalist[#2]\docommando
     \getFLOWchart[#1][#3]}
 
@@ -1180,13 +1180,13 @@
 %D   {\FLOWcharts[mybigflow]}
 %D \stoptypen
 
-%D \macros 
+%D \macros
 %D   {typeFLOWchart}
 %D
-%D For documentation purposes the following macro is 
-%D provided. Watch the use of the first and last line hooks, 
-%D which is needed because the start and stop commands are 
-%D not part of the buffer. 
+%D For documentation purposes the following macro is
+%D provided. Watch the use of the first and last line hooks,
+%D which is needed because the start and stop commands are
+%D not part of the buffer.
 
 \def\typeFLOWchart[#1]%
   {\bgroup
@@ -1194,69 +1194,69 @@
    \convertargument\startFLOWchart[#1]\to\firstverbatimfileline
    \convertargument     \stopFLOWchart\to\lastverbatimfileline
    \getvalue{\@FLOW@-#1}
-   \egroup}   
+   \egroup}
 
-%D New: 
+%D New:
 %D
-%D \starttypen 
+%D \starttypen
 %D \setupFLOWcharts[command=\Whow]
-%D 
-%D \startFLOWset[convert-en] % [tag][convert-en]  
+%D
+%D \startFLOWset[convert-en] % [tag][convert-en]
 %D   \subFLOWchart[a][x=1,y=1,nx=3,ny=3]
 %D   \subFLOWchart[b][x=1,y=2,nx=3,ny=3]
 %D   \subFLOWchart[c][x=2,y=1,nx=3,ny=3]
 %D \stopFLOWset
-%D 
+%D
 %D \def\Whow#1%
 %D   {\ifnum\currentFLOWset=1 \framed{Some Chart}\fi}
-%D 
-%D \FLOWset[convert-en] % [tag] 
-%D 
+%D
+%D \FLOWset[convert-en] % [tag]
+%D
 %D \def\Whow#1%
 %D   {\setuphead[status=hoog]
 %D    \startstandardmakeup
 %D    \centerbox{#1}
 %D    \stopstandardmakeup}
-%D 
-%D \FLOWset[convert-en] % [tag] 
-%D \stoptypen 
+%D
+%D \FLOWset[convert-en] % [tag]
+%D \stoptypen
 
 \def\startFLOWset
   {\dodoubleempty\dostartFLOWset}
 
-\def\dostartFLOWset[#1][#2]#3\stopFLOWset % tag name data 
+\def\dostartFLOWset[#1][#2]#3\stopFLOWset % tag name data
   {\ifsecondargument
      \long\setvalue{\@FLOX@#1}{\dohandleFLOWset{#1}{#2}{#3}}%
    \else
      \long\setvalue{\@FLOX@#1}{\dohandleFLOWset{#1}{#1}{#3}}%
    \fi}
 
-\long\def\dohandleFLOWset#1#2#3% tag name data 
+\long\def\dohandleFLOWset#1#2#3% tag name data
   {\bgroup
    \def\subFLOWchart
      {\dodoubleempty\dosubFLOWchart}%
-   \def\dosubFLOWchart[##1][##2]% subtag settings 
+   \def\dosubFLOWchart[##1][##2]% subtag settings
      {\ifsecondargument
-        \dodohandleFLOWset{#1}{##1}{#2}{##2}% 
+        \dodohandleFLOWset{#1}{##1}{#2}{##2}%
       \else
         \subFLOWchart[][##1]%
       \fi}%
    #3%
    \egroup}
 
-\def\dodohandleFLOWset#1#2#3#4% tag subtag name settings 
+\def\dodohandleFLOWset#1#2#3#4% tag subtag name settings
   {\increment\currentFLOWset
    \bgroup
    \@@FLOXcommando
      {\ifnum\currentFLOWset=1 \pagereference[#1]\fi
       \doifsomething{#2}
-        {\setupreferencing[\c!prefix=]%              
-         \pagereference[#1:#2]% -:#1:#2 
-         \setupreferencing[\c!prefix=#1:#2]}%              
+        {\setupreferencing[\c!prefix=]%
+         \pagereference[#1:#2]% -:#1:#2
+         \setupreferencing[\c!prefix=#1:#2]}%
       \FLOWchart[#3][#4]}%
    \egroup}
 
-\def\FLOWset[#1]% 
+\def\FLOWset[#1]%
   {\newcounter\currentFLOWset
    \doifdefinedelse{\@FLOX@#1}
      {\getvalue{\@FLOX@#1}}
@@ -1267,11 +1267,11 @@
 \setupFLOWsets
   [\c!commando=]
 
-%D This will be an option: 
- 
+%D This will be an option:
+
 % \def\startFLOWchart%
 %   {\dodoubleempty\dostartFLOWchart}
-% 
+%
 % \long\def\dostartFLOWchart[#1][#2]#3\stopFLOWchart
 %   {\preparenextFLOWchart{#1}{#2}%
 %    \long\setgvalue{\FLOWbufferprefix\nofFLOWcharts}{#3}}
@@ -1310,8 +1310,8 @@
 \defineXMLsingular [flowchart]
   {\expanded{\FLOWchart[\XMLpar{flowchart}{identifier}{unknown}]}}
 
-\defineXMLdirective [flowchart] [shapes] \setupFLOWshapes  
-\defineXMLdirective [flowchart] [lines]  \setupFLOWlines   
+\defineXMLdirective [flowchart] [shapes] \setupFLOWshapes
+\defineXMLdirective [flowchart] [lines]  \setupFLOWlines
 
 \stopXMLdefinitions
 

@@ -2714,8 +2714,8 @@
 
 \def\withoutunit#1#2%
   {\begingroup
-   \dimen0=#1\relax
-   \@EA\convertargument\the\dimen0\to\asciiA
+   \scratchdimen#1\relax
+   \@EA\convertargument\the\scratchdimen\to\asciiA
    \@EA\convertargument#2\to\asciiB
   %\@EA\@EA\@EA\beforesplitstring\@EA\asciiA\@EA\at\asciiB\to\!!stringa
    \@EA\beforesplitstring\@EA\asciiA\@EA\at\asciiB\to\!!stringa
@@ -2748,7 +2748,7 @@
   {\begingroup
    \scratchdimen#1\relax
    \scratchdimen0.0351459804\scratchdimen % 2.54/72.27
-   \withoutpt{\the\scratchdimen}cm%
+   \withoutpt\the\scratchdimen cm%
    \endgroup}
 
 %D We also support:
@@ -2760,10 +2760,12 @@
 %D
 %D Both macros return a rounded number.
 
+% todo: etex version
+
 \def\numberofpoints#1%
   {\scratchdimen#1%
    \advance\scratchdimen .5pt
-   \withoutpt{\the\scratchdimen}}
+   \withoutpt\the\scratchdimen}
 
 \def\dimensiontocount#1#2%
   {\scratchdimen#1%
@@ -2895,7 +2897,7 @@
 %D \macros
 %D   {processtokens}
 %D
-%D We fully agree with (most) typogaphers that inter||letter
+%D We fully agree with (most) typographers that inter||letter
 %D spacing is only permitted in fancy titles, we provide a
 %D macro that can be used to do so. Because this is
 %D (definitely and fortunately) no feature of \TEX, we have to
@@ -3648,7 +3650,7 @@
 \def\PointsToBigPoints#1#2%
   {\scratchdimen#1%
    \scratchdimen.996264\scratchdimen
-   \edef#2{\withoutpt{\the\scratchdimen}}}
+   \edef#2{\withoutpt\the\scratchdimen}}
 
 \def\PointsToWholeBigPoints#1#2%
   {\scratchdimen#1%
@@ -3670,7 +3672,7 @@
 
 \def\PointsToReal#1#2%
   {\scratchdimen#1%
-   \edef#2{\withoutpt{\the\scratchdimen}}}
+   \edef#2{\withoutpt\the\scratchdimen}}
 
 %D \macros
 %D  {dontleavehmode}
@@ -4386,6 +4388,32 @@
            \strippedcsname\thirdofthreearguments
          \else
            \strippedcsname\gobblethreearguments
+         \fi
+       \or
+         \ifcase#3\or
+           \strippedcsname\firstoffourarguments
+         \or
+           \strippedcsname\secondoffourarguments
+         \or
+           \strippedcsname\thirdoffourarguments
+         \or
+           \strippedcsname\fourthoffourarguments
+         \else
+           \strippedcsname\gobblefourarguments
+         \fi
+       \or
+         \ifcase#3\or
+           \strippedcsname\firstoffivearguments
+         \or
+           \strippedcsname\secondoffivearguments
+         \or
+           \strippedcsname\thirdoffivearguments
+         \or
+           \strippedcsname\fourthoffivearguments
+         \or
+           \strippedcsname\fifthoffivearguments
+         \else
+           \strippedcsname\gobblefivearguments
          \fi
        \fi
      \fi

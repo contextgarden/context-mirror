@@ -1439,6 +1439,9 @@
 %D the second one is a vertical box that gets passed the
 %D bodyfont and alignment settings.
 
+%D Today we would implement this using layers .... but for the
+%D moment we keep it this way.
+
 %  \startbuffer[test]
 %  \test left   \test left,top    \test left,bottom  \test left,middle
 %  \test right  \test right,top   \test right,bottom \test right,middle
@@ -2017,19 +2020,34 @@
    \c!na=,
    \c!uitlijnen=\v!midden]
 
+% does not work
+%
+% \def\plaatsondernaastelkaar#1#2%
+%   {\bgroup
+%    \def\doplaatsondernaastelkaar%
+%      {#2\cr\omit\bgroup#2%
+%       \aftergroup#2%
+%       \aftergroup\cr
+%       \aftergroup\egroup
+%       \aftergroup\egroup
+%       \let\next=}%
+%    #1\bgroup##\cr
+%    \omit\bgroup#2%
+%    \aftergroup\doplaatsondernaastelkaar
+%    \let\next=}
+
 \def\plaatsondernaastelkaar#1#2%
   {\bgroup
-   \def\doplaatsondernaastelkaar%
-     {#2\cr\omit\bgroup#2%
-      \aftergroup#2%
-      \aftergroup\cr
-      \aftergroup\egroup
-      \aftergroup\egroup
-      \let\next=}%
-   #1\bgroup##\cr
-   \omit\bgroup#2%
-   \aftergroup\doplaatsondernaastelkaar
-   \let\next=}
+   \dowithnextbox
+     {\bgroup
+      \setbox0\box\nextbox
+      \dowithnextbox
+        {\setbox2\box\nextbox
+         #1{#2#########2\cr\box0\cr\box2\cr}
+         \egroup
+         \egroup}
+        \hbox}
+     \hbox}
 
 \def\placeontopofeachother
   {\plaatsondernaastelkaar\halign\hss}
@@ -2190,7 +2208,7 @@
      \dodostoprotate\nextboxht\relax\vfill\nextboxwd\relax\hfill
    \fi}
 
-%D A couple of examples, demonstrating how the depth ios
+%D A couple of examples, demonstrating how the depth is
 %D taken care of:
 %D
 %D \startbuffer

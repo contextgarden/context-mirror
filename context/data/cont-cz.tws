@@ -361,6 +361,7 @@ var:textovyprikaz:*\prikaz#1::
 var:split:tolerantni,striktni,velmistriktni,*cislo::
 var:styltextu:normalni,tucne,sklonene,tucnesklonene,opis,kap,male...,*prikaz::
 var:barvatextu:*jmeno::
+var:interakce:ano,ne::
 ivr:oramovani::
 stopsetup
 
@@ -1922,7 +1923,7 @@ stopsetup
 startsetup
 com:strana:
 typ:vals/:
-val:ano,zlom,ne,nastaveni,vysokapriorita, vlevo,vpravo,zablokovat,posledni,ctyrnasobny, sude,liche,prazdny,prazdne,reset:ano:
+val:ano,zlom,ne,nastaveni,vysokapriorita, vlevo,vpravo,zablokovat,posledni,ctyrnasobny, sude,liche,prazdny,prazdne,reset,start,stop:ano:
 stopsetup
 
 startsetup

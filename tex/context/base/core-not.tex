@@ -200,6 +200,7 @@
         \c!tekstcommando=\high,
         \c!tekstletter=\tx,
         \c!tekstkleur=,
+        \c!interactie=\v!ja,
         \c!n=1]%
     \definieernummer
       [\currentnote]
@@ -585,20 +586,18 @@
      \startpushnote
        {\ifx\lastnotenumber\empty \else
           \preparethenumber{\??vn\currentnote}\lastnotenumber\preparednumber
-          \iflocation
-            \naarbox{\noteparameter\c!commando % was \c!nummercommando, but compatible
-              {\preparednumber\domovednote\v!volgendepagina\v!vorigepagina}}%
-              [\s!fnt:f:\internalfootreference]%
-          \else
-            \noteparameter\c!nummercommando
-              {\preparednumber\domovednote\v!volgendepagina\v!vorigepagina}%
-          \fi
+          \doifelse{\noteparameter\c!interactie}\v!nee
+            {\noteparameter\c!nummercommando
+               {\preparednumber\domovednote\v!volgendepagina\v!vorigepagina}}%
+            {\naarbox{\noteparameter\c!commando % was \c!nummercommando, but compatible
+               {\preparednumber\domovednote\v!volgendepagina\v!vorigepagina}}%
+               [\s!fnt:f:\internalfootreference]}%
         \fi
-        \iflocation
-          \rawreference\s!fnt{\s!fnt:t:\internalfootreference}{}%
-        \else\ifconditional\pagewisenotes
-          \rawreference\s!fnt{\s!fnt:t:\internalfootreference}{}%
-        \fi\fi}%
+        \doifelse{\noteparameter\c!interactie}\v!nee
+          {\ifconditional\pagewisenotes
+             \rawreference\s!fnt{\s!fnt:t:\internalfootreference}{}%
+           \fi}%
+          {\rawreference\s!fnt{\s!fnt:t:\internalfootreference}{}}}%
      \bgroup
      \postponenotes
      \aftergroup\dostopnote
@@ -637,17 +636,15 @@
      \dodonotesymbol{\kern\noteparameter\c!afstand}% gets the font right, hack !
    \fi
    \nobreak
-   \iflocation
-     \naarbox
-       {\dodonotesymbol{\lastnotenumber\domovednote\v!vorigepagina\v!volgendepagina}}%
-       [\s!fnt:t:\internalfootreference]%
-     \rawreference\s!fnt{\s!fnt:f:\internalfootreference}{}%
-   \else
-     \dodonotesymbol{\lastnotenumber\domovednote\v!vorigepagina\v!volgendepagina}%
-     \ifconditional\pagewisenotes
-       \rawreference\s!fnt{\s!fnt:f:\internalfootreference}{}%
-     \fi
-   \fi
+   \doifelse{\noteparameter\c!interactie}\v!nee
+     {\dodonotesymbol{\lastnotenumber\domovednote\v!vorigepagina\v!volgendepagina}%
+      \ifconditional\pagewisenotes
+        \rawreference\s!fnt{\s!fnt:f:\internalfootreference}{}%
+      \fi}
+     {\naarbox
+        {\dodonotesymbol{\lastnotenumber\domovednote\v!vorigepagina\v!volgendepagina}}%
+        [\s!fnt:t:\internalfootreference]%
+      \rawreference\s!fnt{\s!fnt:f:\internalfootreference}{}}%
    \globallet\lastnotesymbol\relax}
 
 \let\lastnotesymbol\relax

@@ -4,6 +4,20 @@
 % texfont --en=texnansi --ve=linotype --co=optima-nova  type-ghz.dat
 % texfont --en=texnansi --ve=linotype --co=palatino     type-ghz.dat
 
+% zapfino
+
+\starttypescript [serif] [zapfino] [texnansi,ec,8r] % todo: handwriting
+
+  \definefontsynonym [ZapfinoOne]   [\typefaceencoding-lt-54223] [encoding=\typefaceencoding]
+  \definefontsynonym [ZapfinoTwo]   [\typefaceencoding-lt-54224] [encoding=\typefaceencoding]
+  \definefontsynonym [ZapfinoThree] [\typefaceencoding-lt-54225] [encoding=\typefaceencoding]
+  \definefontsynonym [ZapfinoFour]  [\typefaceencoding-lt-54226] [encoding=\typefaceencoding]
+
+  \loadmapfile[\typefaceencoding-linotype-zapfino.map]
+
+\stoptypescript
+
+
 % optima
 
 \starttypescript [sans] [optima] [name]

@@ -2152,6 +2152,47 @@ def showgrid (expr MinX, MaxX, DeltaX, MinY, MaxY, DeltaY)=
   endgroup
 enddef;
 
+% new, handy for:
+%
+% \startuseMPgraphic{map}{n}
+%   \includeMPgraphic{map:germany} ;
+%   c_phantom (\MPvar{n}<1) (
+%     fill map_germany withcolor \MPcolor{lightgray} ;
+%     draw map_germany withpen pencircle scaled 1pt withcolor \MPcolor{darkgray} ;
+%   ) ;
+%   \includeMPgraphic{map:austria} ;
+%   c_phantom (\MPvar{n}<2) (
+%     fill map_austria withcolor \MPcolor{lightgray} ;
+%     draw map_austria withpen pencircle scaled 1pt withcolor \MPcolor{darkgray} ;
+%   ) ;
+%   c_phantom (\MPvar{n}<3) (
+%   \includeMPgraphic{map:swiss} ;
+%     fill map_swiss withcolor \MPcolor{lightgray} ;
+%     draw map_swiss withpen pencircle scaled 1pt withcolor \MPcolor{darkgray}  ;
+%   ) ;
+%   c_phantom (\MPvar{n}<4) (
+%   \includeMPgraphic{map:luxembourg} ;
+%     fill map_luxembourg withcolor \MPcolor{lightgray} ;
+%     draw map_luxembourg withpen pencircle scaled 1pt withcolor \MPcolor{darkgray}  ;
+%   ) ;
+% \stopuseMPgraphic
+%
+% \useMPgraphic{map}{n=3}
+
+vardef phantom (text t) =
+   picture _p_ ; _p_ := image(t) ; addto _p_ also currentpicture ;
+   setbounds currentpicture to boundingbox _p_ ;
+enddef ;
+
+vardef c_phantom (expr b) (text t) =
+   if b :
+     picture _p_ ; _p_ := image(t) ; addto _p_ also currentpicture ;
+     setbounds currentpicture to boundingbox _p_ ;
+   else :
+     t ;
+   fi ;
+enddef ;
+
 % done
 
 endinput ;

@@ -1,6 +1,6 @@
 %D \module
 %D   [       file=core-buf,
-%D        version=2000.01.05, 
+%D        version=2000.01.05,
 %D          title=\CONTEXT\ Core Macros,
 %D       subtitle=Buffers and Blockmoves,
 %D         author=Hans Hagen,
@@ -8,10 +8,10 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
-%C details. 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
 
-% investigate etex's \readline and \scantokens 
+% investigate etex's \readline and \scantokens
 
 \writestatus{loading}{Context Core Macros / Buffers and Blockmoves}
 
@@ -127,9 +127,9 @@
      12: -- sarit peste
 \stopmessages
 
-\unprotect 
+\unprotect
 
-% more accurate 
+% more accurate
 %
 % \@EA\convertcommand\csname\e!start\v!buffer\endcsname\to\beginofblock % else a space
 % \@EA\convertcommand\csname\e!stop\v!buffer \endcsname\to\endofblock
@@ -148,8 +148,8 @@
 %    \hskip-3em%
 %    \hbox to 3em{\hss\NOfLines\hskip1em}}
 
-%D For Willy's nested commented buffers, we need the \type 
-%D {\delcharacter} trick. 
+%D For Willy's nested commented buffers, we need the \type
+%D {\delcharacter} trick.
 
 %\def\processnextbufferline#1% needs testing ! ! ! !
 %  {\relax % checken waarom eerdere macro dit nodig heeft / supp-mps run
@@ -157,7 +157,7 @@
 %   \doifinstringelse{\delcharacter\texcommentsymbol}{\delcharacter\next}
 %     {\let\next\secondoftwoarguments}
 %     {\doifincsnameelse\endofblock\next
-%        {\ifnum\nestedbufferlevel=\zerocount 
+%        {\ifnum\nestedbufferlevel=\zerocount
 %           \let\next\firstoftwoarguments
 %         \else
 %           \decrement\nestedbufferlevel\relax
@@ -169,13 +169,13 @@
 %           {\let\next\secondoftwoarguments}}}%
 %   \next}
 
-\long\def\processnextbufferline#1% 
+\long\def\processnextbufferline#1%
   {\relax % checken waarom eerdere macro dit nodig heeft / supp-mps run
    \convertargument#1 \to\next
    \doifinstringelse{\delcharacter\texcommentsymbol}{\delcharacter\next}
      {\secondoftwoarguments}
      {\doifincsnameelse\endofblock\next
-        {\ifnum\nestedbufferlevel=\zerocount 
+        {\ifnum\nestedbufferlevel=\zerocount
            \expandafter\firstoftwoarguments
          \else
            \decrement\nestedbufferlevel\relax
@@ -191,7 +191,7 @@
    \obeylines % nodig, anders gaat 't fout als direct \starttabel (bv)
    \doquadrupleempty\dodostartbuffer}
 
-\def\dodostartbuffer[#1][#2][#3][#4]% upward compatible 
+\def\dodostartbuffer[#1][#2][#3][#4]% upward compatible
   {\iffourthargument
      \def\next{\dododostartbuffer[#1][#2][#3][#4]}%
    \else
@@ -203,18 +203,18 @@
   {%\showmessage\m!systems{15}{#2}%
    \doifelsevalue{\??bu#1\c!alinea}\v!ja
      {\segmentatebuffertrue}
-     {\doifnumberelse{\getvalue{\??bu#1\c!alinea}} 
+     {\doifnumberelse{\getvalue{\??bu#1\c!alinea}}
         \segmentatebuffertrue\segmentatebufferfalse}%
    \doifelse{#4}{}
      {\letbeundefined{\e!stop\v!buffer}% % \let\stopbuffer=\relax   % \undefined
       \@EA\@EA\@EA\convertargument\@EA\e!start\v!buffer\to\beginofblock % else a space
-      \@EA\@EA\@EA\convertargument\@EA\e!stop\v!buffer\to\endofblock
+      \@EA\@EA\@EA\convertargument\@EA\e!stop \v!buffer\to\endofblock
       \let\processnextblockline\processnextbufferline}
      {\letbeundefined{#4}% \letvalue{#4}=\relax     % \undefined
       \@EA\convertargument\csname#3\endcsname\to\beginofblock
       \@EA\convertargument\csname#4\endcsname\to\endofblock}%
    \def\closeblock
-     {\ifsegmentatebuffer 
+     {\ifsegmentatebuffer
         \immediate\write\tmpblocks{\string\stopbufferparagraph}%
       \fi
       \immediate\closeout\tmpblocks
@@ -225,7 +225,7 @@
       \immediate\openout\tmpblocks\TEXbufferfile\jobname}
      {\message{<\TEXbufferfile{#2}>}%
       \immediate\openout\tmpblocks\TEXbufferfile{#2}}%
-   \ifsegmentatebuffer 
+   \ifsegmentatebuffer
      \immediate\write\tmpblocks{\string\startbufferparagraph}%
    \fi
    \newcounter\nestedbufferlevel
@@ -270,7 +270,7 @@
    \dobuffer{16}[#2]\readjobfile
    \getvalue{\??bu#1\c!na}}
 
-\let\getbuffer \processTEXbuffer % handy  
+\let\getbuffer \processTEXbuffer % handy
 \let\haalbuffer\processTEXbuffer % will move to mult-com.tex
 
 \def\typebuffer
@@ -323,7 +323,7 @@
   {\setbuffer[\iffirstargument#1\else\jobname\fi]#2\endbuffer}
 
 % \long\def\startcrap#1\stopcrap
-%   {\usememorybuffers#1\usefilebuffers} % or {{...}} 
+%   {\usememorybuffers#1\usefilebuffers} % or {{...}}
 %
 % \startcrap
 % \startbuffer
@@ -332,11 +332,11 @@
 % \placefigure{crap}{\getbuffer}
 % \stopcrap
 
-% TODO: no grouping due to sidefloats 
+% TODO: no grouping due to sidefloats
 
 \expandafter \convertargument \gobbleoneargument @ \to \emptybufferline
 
-\newif\ifsegmentatebuffer 
+\newif\ifsegmentatebuffer
 \newif\ifemptybufferline
 
 \def\skippedbufferparagraphs{0}
@@ -349,7 +349,7 @@
 \def\getbufferparagraphs
   {\dodoubleempty\dogetbufferparagraphs}
 
-\def\dosetbufferoffset#1% 
+\def\dosetbufferoffset#1%
   {\doifnumberelse{\getvalue{\??bu#1\c!alinea}}
      {\currentbufferparagraph-\getvalue{\??bu#1\c!alinea}}
      {\currentbufferparagraph \zerocount}%
@@ -358,14 +358,14 @@
 \def\dogetbufferparagraphs[#1][#2]%
   {\iffirstargument
      \ifsecondargument
-       \dosetbufferoffset{#1}% 
+       \dosetbufferoffset{#1}%
        \doifelse{#2}\v!alles
          {\def\startbufferparagraph{\normalbufferparagraph{#1}}}
          {\def\startbufferparagraph{\filterbufferparagraph{#1}{#2}}}%
        \def\stopbufferparagraph{\dostopbufferparagraph{#1}}%
        \def\next{\getparagraphedbuffer[#1]}%
      \else
-       \dosetbufferoffset\empty 
+       \dosetbufferoffset\empty
        \def\startbufferparagraph{\filterbufferparagraph{}{#1}}%
        \def\stopbufferparagraph{\dostopbufferparagraph{}}%
        \def\next{\getparagraphedbuffer[]}%
@@ -400,7 +400,7 @@
    \ifnum\currentbufferparagraph>\zerocount
      \doifinsetelse{\the\currentbufferparagraph}{#2}
        {\let\next\dostartbufferparagraph}
-       {\let\next\fakebufferparagraph}%  
+       {\let\next\fakebufferparagraph}%
    \else
      \let\next\gobblebufferparagraph
    \fi
@@ -434,7 +434,7 @@
   {\expanded{\setvalue{\??se\s!old#2}{\@@filterheadpart[#1]}}%
    \doifnot{#2}\lastsection
      {\expanded{\dodosetblockcounters[\@@filtertailpart[#1]]}%
-        {\getvalue{\??se#2\c!na}}}} % ???? 
+        {\getvalue{\??se#2\c!na}}}} % ????
 
 \def\dosetblockcounters[#1]%
   {\ifblockpermitted
@@ -451,7 +451,7 @@
      \@EA\dosetblockcounters\@EA[\blockstatus]%
    \fi}
 
-\def\getblockstatus#1% is this still ok 
+\def\getblockstatus#1% is this still ok
   {\dosetfilterlevel{\getvalue{\??by\@@bscriterium}}\empty
    \expanded{\doifblklevelelse[#1\sectionseparator\sectionseparator0]}
      {\global\blockpermittedtrue}
@@ -496,9 +496,9 @@
 %  {\global\advance\blocklevel by #11
 %   \ifnum\blocklevel>2\relax\doingblockstrue\else\doingblocksfalse\fi}
 %
-% oeps, got bugged 
+% oeps, got bugged
 
-\def\setblocklevel#1% sign 
+\def\setblocklevel#1% sign
   {\global\advance\blocklevel #11
    \ifcase\blocklevel\doingblocksfalse\else\doingblockstrue\fi}
 
@@ -511,7 +511,7 @@
 
 \def\writetmpblock#1%
   {\iftmpblockstarted
-     \ifsegmentatebuffer 
+     \ifsegmentatebuffer
        \ifemptybufferline
          \immediate\write\tmpblocks{\string\stopbufferparagraph }%
          \immediate\write\tmpblocks{\string\startbufferparagraph}%
@@ -578,14 +578,14 @@
    \endrestorecatcodes}
 
 \def\setupcopyblock
-  {\makeallother 
+  {\makeallother
    \obeylines}
 
 \def\writeoutblocks
   {\immediate\write\outblocks}
 
 % readable
-% 
+%
 % \def\processnextblocklineAB#1#2#3%
 %   {\convertargument#1 \to\next
 %    \doifinstringelse\endofblockA\next
@@ -595,14 +595,14 @@
 %        {\def\next{#3}}}%
 %    \next}
 %
-% faster 
-% 
+% faster
+%
 % \def\processnextblocklineAB#1#2#3%
-%   {\convertargument#1 \to\next % space is essential 
+%   {\convertargument#1 \to\next % space is essential
 %    \doifinstringelse\endofblockA\next
 %      {#2}{\doifinstringelse\endofblockB\next{#2}{#3}}}
 %
-% even more 
+% even more
 
 \long\def\processnextblocklineAB#1% #2#3%
   {\convertargument#1 \to\next
@@ -637,8 +637,8 @@
 %        {\def\next{#3}}%
 %    \fi
 %    \next}
-% 
-% faster 
+%
+% faster
 
 \long\def\processnextblockline#1% #2#3%
   {\convertargument#1 \to\next
@@ -748,7 +748,7 @@
 \def\doverbergblok[#1][#2][#3]%
   {\doifassignmentelse{#3}
      {\dodoverbergblok[#1][#2][][#3]}
-     {\dodoverbergblok[#1][#2][#3][]}}   
+     {\dodoverbergblok[#1][#2][#3][]}}
 
 \def\dodoverbergblok[#1][#2][#3][#4]%
   {\doifelsenothing{#2}
@@ -808,7 +808,7 @@
 \def\doexecuteloadedblock#1#2%
   {\blockpermittedtrue % ?
    \bgroup % before \c!voor (think of: \c!voor=\startitemize)
-   \dosetupblockparameters[#1][#2]% voor 'voor'? 
+   \dosetupblockparameters[#1][#2]% voor 'voor'?
    \getvalue{\??tb#1\c!voor}%
    \dostartattributes{\??tb#1}\c!letter\c!kleur\empty
    \visibletrue
@@ -996,7 +996,7 @@
   {\def\docommando##1%
      {\setvalue{\e!beginvan##1}%
         {\setblocklevel+\bgroup
-         \obeylines % here, since we look ahead 
+         \obeylines % here, since we look ahead
          \dodoubleempty\dopasseerblok[##1]}%}%
       \setvalue{\e!eindvan##1}%
         {}}%
@@ -1023,4 +1023,4 @@
    \c!voor=,
    \c!na=]
 
-\protect \endinput 
+\protect \endinput

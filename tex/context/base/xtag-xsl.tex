@@ -11,18 +11,18 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-%D This module is rather experimental so users may expect 
+%D This module is rather experimental so users may expect
 %D changes in the interface.
 
-\unprotect  
+\unprotect
 
-\definesystemvariable {xl} 
+\definesystemvariable {xl}
 
 \newif\iftraceXSLTprocessing % \traceXSLTprocessingtrue
 
 \def\XSLTscriptfile{\bufferprefix xlscript}
 
-% to be sped up: 
+% to be sped up:
 
 \def\presetXSLTcharacters
   {\let\par\empty
@@ -39,21 +39,29 @@
    \obeyXSLTcharacters
    \doifelse{#2}{capsule}\dostartXSLTscript\nostartXSLTscript#1 #2 }
 
-\long\def\dostartXSLTscript#1 #2 #3 #4\stopXSLTscript
+\long\def\dostartXSLTscript#1 #2 #3 %
+  {\obeylines
+   \dodostartXSLTscript#1 #2 #3 }
+
+\long\def\dodostartXSLTscript#1 #2 #3 #4\stopXSLTscript
   {\egroup
    \long\setvalue{\??xl#1}{\doXSLTscript{#3}{#4}}}
 
-\long\def\nostartXSLTscript#1 #2\stopXSLTscript
+\long\def\nostartXSLTscript
+  {\obeylines
+   \nonostartXSLTscript}
+
+\long\def\nonostartXSLTscript#1 #2\stopXSLTscript
   {\egroup
    \long\setvalue{\??xl#1}{\doXSLTscript\empty{#2}}}
 
-\long\def\donormalXSLTscript#1#2%  
+\long\def\donormalXSLTscript#1#2%
   {\includeXSLTscript{b-capsule-#1}%
    #2%
    \includeXSLTscript{e-capsule-#1}}
-   
+
 \def\includeXSLTscript#1%
-  {\csname\ifcsname\??xl#1\endcsname\??xl#1\else empty\fi\endcsname}
+  {\csname\ifcsname\??xl#1\endcsname\??xl#1\else\s!empty\fi\endcsname}
 
 \startXSLTscript b-capsule-1.0
 <?xml version="1.0"?>
@@ -73,41 +81,40 @@
      \let\doXSLTscript\donormalXSLTscript
      \presetXSLTcharacters
      \donefalse
-     \def\docommando##1%
-       {\dodoapplyXSLTscript{##1}{\ifdone#3\else#2\fi}{#3}\donetrue}%
+     \def\docommando##1{\dodoapplyXSLTscript{##1}{\ifdone#3\else#2\fi}{#3}\donetrue}%
      \processcommalist[#1]\docommando
      \egroup
    \else
      \applyXSLTscript[#1][#2][#2]%
    \fi}
 
-% Since a \XML\ file is loaded into memory as a tree, we 
+% Since a \XML\ file is loaded into memory as a tree, we
 % can safely use the same input and output filename, thereby
-% avoiding temporary files. 
- 
+% avoiding temporary files.
+
 \def\dodoapplyXSLTscript#1#2#3%
   {\bgroup
    \doifundefined{\??xl#1}%
      {\writestatus{XSLT}{unknown script #1}}
      {\writestatus{XSLT}{convert #2 into #3 using #1}%
+      \edef\par{\rawcharacter{13}}%
       \edef\!!stringc{\getvalue{\??xl#1}}%
       \immediate\openout\scratchwrite=\XSLTscriptfile.xsl
       \immediate\write\scratchwrite{\!!stringc}%
       \immediate\closeout\scratchwrite
       \iftraceXSLTprocessing\wait\fi
       \executeXSLT{\XSLTscriptfile.xsl}{#2}{#3}%
-      \iftraceXSLTprocessing\wait\fi}% 
+      \iftraceXSLTprocessing\wait\fi}%
    \egroup}
 
-\def\executeXSLT#1#2#3% script input output 
+\def\executeXSLT#1#2#3% script input output
   {\executesystemcommand{xsltproc -o #3 #1 #2}}
 
 \long\def\applyXSLTtobuffer
   {\dodoubleempty\doapplyXSLTtobuffer}
 
 \long\def\doapplyXSLTtobuffer[#1][#2]%
-  {\expanded{\applyXSLTscript
-     [#1][\TEXbufferfile{\ifsecondargument#2\else\jobname\fi}]}}
+  {\expanded{\applyXSLTscript[#1][\TEXbufferfile{\ifsecondargument#2\else\jobname\fi}]}}
 
 \def\resetXSLTscripting#1%
   {\setgvalue{\??xl\s!dummy}{\doXSLTscript{#1}{}}}
@@ -117,6 +124,7 @@
 \def\startXSLTscripting
   {\bgroup
    \obeyXSLTcharacters
+   \obeylines
    \dostartXSLTscripting}
 
 \long\def\dostartXSLTscripting#1\stopXSLTscripting
@@ -130,57 +138,57 @@
 \def\applyXSLTscripting
   {\applyXSLTscript[\s!dummy]}
 
-\protect 
+\protect
 
-\doifnotmode{mytest}{\endinput}
+\doifnotmode{demo}{\endinput}
 
-\starttext 
- 
 % \def\Whow{Whow It Works}
-% 
-% \startXSLTscript test capsule 1.0  
+%
+% \startXSLTscript test capsule 1.0
 % <xsl:output method="text"/>
-% 
+%
 % <xsl:template match="/figurelibrary/figure">
 %   \Whow \\ #<xsl:apply-templates/>
 % </xsl:template>
-% 
+%
 % <xsl:template match="/">
 %   <xsl:apply-templates/>
 % </xsl:template>
-% \stopXSLTscript 
-% 
+% \stopXSLTscript
+%
 % \applyXSLTscript [test] [figtest.xml] [crap.tmp] \typefile{crap.tmp}
-% 
+%
 % \startbuffer
 % <hello>world</hello>
 % \stopbuffer
-% 
+%
 % \applyXSLTtobuffer[test] \typebuffer
-% 
+%
 % \startXSLTscripting
 % <xsl:output method="text"/>
-% \stopXSLTscripting 
-% 
+% \stopXSLTscripting
+%
 % \startXSLTscripting
 % <xsl:template match="/figurelibrary/figure">
 %   <xsl:apply-templates/>
 % </xsl:template>
-% \stopXSLTscripting 
-% 
+% \stopXSLTscripting
+%
 % \startXSLTscripting
 % <xsl:template match="/">
 %   <xsl:apply-templates/>
 % </xsl:template>
-% \stopXSLTscripting 
-% 
+% \stopXSLTscripting
+%
 % \applyXSLTscripting [figtest.xml] [crap.tmp]  \typefile{crap.tmp}
 
-\startXSLTscript another 
+\starttext
+
+\startXSLTscript another
 <?xml version="1.0"?>
 
-<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" 
-                xmlns:cd="http://www.pragma-ade.com/commands" 
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+                xmlns:cd="http://www.pragma-ade.com/commands"
                 version="1.0">
 
 <xsl:output method="text"/>
@@ -198,10 +206,10 @@
 </xsl:template>
 
 </xsl:stylesheet>
-\stopXSLTscript 
+\stopXSLTscript
 
-\applyXSLTscript [another] [cont-en.xml] [whatever.tmp]  
+\applyXSLTscript [another] [cont-en.xml] [whatever.tmp]
 
 \readfile{whatever.tmp}{}{}
 
-\stoptext 
+\stoptext

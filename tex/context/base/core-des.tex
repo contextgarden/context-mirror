@@ -167,23 +167,38 @@
    \nobreak
    \@@dodefinitie{#1}}
 
-\setvalue{@@definitie\v!inmarge}#1[#2]#3%
-  {\@@dostartdefinitie{#1}[#2]{#3}%
-   \noindent\ignorespaces
-   \inmarge{\ifhbox\@@definitiebox\unhcopy\else\copy\fi\@@definitiebox}%
-   \@@dodefinitie{#1}}
+% \setvalue{@@definitie\v!inmarge}#1[#2]#3%
+%   {\@@dostartdefinitie{#1}[#2]{#3}%
+%    \noindent\ignorespaces
+%    \inmarge{\ifhbox\@@definitiebox\unhcopy\else\copy\fi\@@definitiebox}%
+%    \@@dodefinitie{#1}}
+%
+% \setvalue{@@definitie\v!inlinker}#1[#2]#3%
+%   {\@@dostartdefinitie{#1}[#2]{#3}%
+%    \noindent\ignorespaces
+%    \inlinker{\ifhbox\@@definitiebox\unhcopy\else\copy\fi\@@definitiebox}%
+%    \@@dodefinitie{#1}}
+%
+% \setvalue{@@definitie\v!inrechter}#1[#2]#3%
+%   {\@@dostartdefinitie{#1}[#2]{#3}%
+%    \noindent\ignorespaces
+%    \inrechter{\ifhbox\@@definitiebox\unhcopy\else\copy\fi\@@definitiebox}%
+%    \@@dodefinitie{#1}}
 
-\setvalue{@@definitie\v!inlinker}#1[#2]#3%
-  {\@@dostartdefinitie{#1}[#2]{#3}%
+\def\do@@definitie#1#2[#3]#4%
+  {\@@dostartdefinitie{#2}[#3]{#4}%
    \noindent\ignorespaces
-   \inlinker{\ifhbox\@@definitiebox\unhcopy\else\copy\fi\@@definitiebox}%
-   \@@dodefinitie{#1}}
+   #1{\ifhbox\@@definitiebox\unhcopy\else\copy\fi\@@definitiebox}%
+   \@@dodefinitie{#2}}
 
-\setvalue{@@definitie\v!inrechter}#1[#2]#3%
-  {\@@dostartdefinitie{#1}[#2]{#3}%
-   \noindent\ignorespaces
-   \inrechter{\ifhbox\@@definitiebox\unhcopy\else\copy\fi\@@definitiebox}%
-   \@@dodefinitie{#1}}
+\setvalue{@@definitie\v!inmarge     }{\do@@definitie\inmarge  }
+\setvalue{@@definitie\v!inlinker    }{\do@@definitie\inlinker }
+\setvalue{@@definitie\v!inrechter   }{\do@@definitie\inrechter}
+\setvalue{@@definitie\v!marge       }{\do@@definitie\inmarge  }
+\setvalue{@@definitie\v!linkermarge }{\do@@definitie\inlinker }
+\setvalue{@@definitie\v!rechtermarge}{\do@@definitie\inrechter}
+\setvalue{@@definitie\v!binnenmarge }{\do@@definitie\inbinnen }
+\setvalue{@@definitie\v!buitenmarge }{\do@@definitie\inbuiten }
 
 \def\@@definitieaanelkaarpassend#1[#2]#3%
   {\@@dostartdefinitie{#1}[#2]{#3}%

@@ -79,9 +79,7 @@
    \else
      \let\filepath\empty
      \def\docommando##1%
-       {\doiffileelse{\pathplusfile{##1}{#1}}
-          {\donetrue\def\filepath{##1}}
-          {\donefalse}%
+       {\doiffileelse{\pathplusfile{##1}{#1}}{\donetrue\def\filepath{##1}}\donefalse
         \ifdone\expandafter\quitcommalist\fi}%
      \doifparentfileelse{#1} % new
        {\processcommacommand  [\allinputpaths]\docommando}
@@ -113,12 +111,13 @@
      \processcommacommand[\allinputpaths]\docommando
    \fi}
 
-\def\registreerfileinfo[#1#2]#3% geen \showmessage ?
+\def\registerfileinfo[#1#2]#3% geen \showmessage ?
   {\writestatus\m!systems{#1#2 file #3 at line \the\inputlineno}%
+   % \pdfliteral{\letterpercent #1#2 file #3 at line \the\inputlineno}%
    \immediatewriteutility{f #1 {#3}}}
 
-\doifundefined{preloadfonts}    {\let\preloadfonts=\relax}
-\doifundefined{preloadspecials} {\let\preloadspecials=\relax}
+\ifx\preloadfonts   \undefined \let\preloadfonts   \relax \fi
+\ifx\preloadspecials\undefined \let\preloadspecials\relax \fi
 
 % \def\loadsystemfiles
 %   {\reportprotectionstate
@@ -202,7 +201,7 @@
 
 \appendtoks \pagina[\v!laatste] \pagina           \to \everybye
 \appendtoks \ifarrangingpages\poparrangedpages\fi \to \everybye
-\appendtoks \registreerfileinfo[end]{\jobname}    \to \everybye
+\appendtoks \registerfileinfo[end]\jobname        \to \everybye
 
 \appendtoks \savenofpages    \to \everybye
 \appendtoks \savenofsubpages \to \everybye
@@ -233,7 +232,7 @@
 \def\starttekst
   {\doateverystarttext
    \ifnum\textlevel=\zerocount
-     \registreerfileinfo[begin]{\jobname}%
+     \registerfileinfo[begin]\jobname
      \expandafter\startcopyingblocks
    \fi
    \doglobal\increment\textlevel\relax}
@@ -269,11 +268,11 @@
       \doexecutefile{#1}}}
 
 \def\doexecutefile#1%
-  {\registreerfileinfo[begin]{#1}%
+  {\registerfileinfo[begin]{#1}%
    \dostarttextfile{#1}%
    \processfile{#1}%
    \dostoptextfile
-   \registreerfileinfo[end]{#1}}
+   \registerfileinfo[end]{#1}}
 
 \def\donotexecutefile#1%
   {}

@@ -360,14 +360,14 @@
 \def\testfeature#1#2%
   {\def\dotestfeature
      {\advance\featuretest \plusone
-      \ifnum\featuretest<#1\relax#2\expandafter\dotestfeature\fi}%
+      \ifnum\featuretest>#1\else#2\expandafter\dotestfeature\fi}%
    \retestfeature}
 
 \def\retestfeature
   {\bgroup
    \ifcase\interactionmode\let\wait\relax\fi
    \message{starting feature test}\wait
-   \featuretest=-1 \dotestfeature
+   \featuretest\zerocount \dotestfeature
    \message{feature test done}\wait
    \egroup}
 

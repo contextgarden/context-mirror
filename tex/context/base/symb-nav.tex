@@ -8,108 +8,112 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
-%C details. 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
 
 \unprotect
 
 \definefontsynonym [ContextNavigation] [contnav]
 
 \loadmapfile [original-context-symbol.map]
- 
+
 % \def\ContextNavigationGlyph#1{\getglyph{ContextNavigation}{\char#1}}
 
 \def\ContextNavigationGlyph#1{\getrawglyph{contnav}{\char#1}}
 
 \startsymbolset [navigation 1]
 
-  \definesymbol [\v!vorigepagina]      [\ContextNavigationGlyph{1}] 
-  \definesymbol [\v!volgendepagina]    [\ContextNavigationGlyph{2}] 
-  \definesymbol [\v!eerstepagina]      [\ContextNavigationGlyph{3}] 
-  \definesymbol [\v!laatstepagina]     [\ContextNavigationGlyph{4}] 
+  \definesymbol [\v!vorigepagina]      [\ContextNavigationGlyph{1}]
+  \definesymbol [\v!volgendepagina]    [\ContextNavigationGlyph{2}]
+  \definesymbol [\v!eerstepagina]      [\ContextNavigationGlyph{3}]
+  \definesymbol [\v!laatstepagina]     [\ContextNavigationGlyph{4}]
 
-  \definesymbol [\v!PreviousJump]      [\ContextNavigationGlyph{5}] 
-  \definesymbol [\v!NextJump]          [\ContextNavigationGlyph{6}] 
+  \definesymbol [\v!PreviousJump]      [\ContextNavigationGlyph{5}]
+  \definesymbol [\v!NextJump]          [\ContextNavigationGlyph{6}]
 
-  \definesymbol [\v!CloseDocument]     [\ContextNavigationGlyph{7}] 
+  \definesymbol [\v!CloseDocument]     [\ContextNavigationGlyph{7}]
 
-  \definesymbol [\v!vorigesubpagina]   [\ContextNavigationGlyph{1}] 
-  \definesymbol [\v!volgendesubpagina] [\ContextNavigationGlyph{2}] 
-  \definesymbol [\v!eerstesubpagina]   [\ContextNavigationGlyph{3}] 
-  \definesymbol [\v!laatstesubpagina]  [\ContextNavigationGlyph{4}] 
+  \definesymbol [\v!vorigesubpagina]   [\ContextNavigationGlyph{1}]
+  \definesymbol [\v!volgendesubpagina] [\ContextNavigationGlyph{2}]
+  \definesymbol [\v!eerstesubpagina]   [\ContextNavigationGlyph{3}]
+  \definesymbol [\v!laatstesubpagina]  [\ContextNavigationGlyph{4}]
 
-  \definesymbol [\v!StartSound]        [\ContextNavigationGlyph{2}] 
-  \definesymbol [\v!PauseSound]        [\ContextNavigationGlyph{8}] 
-  \definesymbol [\v!StopSound]         [\ContextNavigationGlyph{7}] 
+  \definesymbol [\v!StartSound]        [\ContextNavigationGlyph{2}]
+  \definesymbol [\v!PauseSound]        [\ContextNavigationGlyph{8}]
+  \definesymbol [\v!StopSound]         [\ContextNavigationGlyph{7}]
 
-  \definesymbol [\v!StartMovie]        [\ContextNavigationGlyph{2}] 
-  \definesymbol [\v!PauseMovie]        [\ContextNavigationGlyph{8}] 
-  \definesymbol [\v!StopMovie]         [\ContextNavigationGlyph{7}] 
+  \definesymbol [\v!StartMovie]        [\ContextNavigationGlyph{2}]
+  \definesymbol [\v!PauseMovie]        [\ContextNavigationGlyph{8}]
+  \definesymbol [\v!StopMovie]         [\ContextNavigationGlyph{7}]
 
-  \definesymbol [\v!StartRendering]    [\ContextNavigationGlyph{2}] 
-  \definesymbol [\v!PauseRendering]    [\ContextNavigationGlyph{8}] 
-  \definesymbol [\v!StopRendering]     [\ContextNavigationGlyph{7}] 
+  \definesymbol [\v!StartRendering]    [\ContextNavigationGlyph{2}]
+  \definesymbol [\v!PauseRendering]    [\ContextNavigationGlyph{8}]
+  \definesymbol [\v!StopRendering]     [\ContextNavigationGlyph{7}]
+  \definesymbol [\v!ResumeRendering]   [\ContextNavigationGlyph{2}]
 
-\stopsymbolset 
+\stopsymbolset
 
 \startsymbolset [navigation 2]
 
-  \definesymbol [\v!vorigepagina]      [\ContextNavigationGlyph{101}] 
-  \definesymbol [\v!volgendepagina]    [\ContextNavigationGlyph{102}] 
-  \definesymbol [\v!eerstepagina]      [\ContextNavigationGlyph{103}] 
-  \definesymbol [\v!laatstepagina]     [\ContextNavigationGlyph{104}] 
+  \definesymbol [\v!vorigepagina]      [\ContextNavigationGlyph{101}]
+  \definesymbol [\v!volgendepagina]    [\ContextNavigationGlyph{102}]
+  \definesymbol [\v!eerstepagina]      [\ContextNavigationGlyph{103}]
+  \definesymbol [\v!laatstepagina]     [\ContextNavigationGlyph{104}]
 
-  \definesymbol [\v!PreviousJump]      [\ContextNavigationGlyph{105}] 
-  \definesymbol [\v!NextJump]          [\ContextNavigationGlyph{106}] 
+  \definesymbol [\v!PreviousJump]      [\ContextNavigationGlyph{105}]
+  \definesymbol [\v!NextJump]          [\ContextNavigationGlyph{106}]
 
-  \definesymbol [\v!CloseDocument]     [\ContextNavigationGlyph{107}] 
+  \definesymbol [\v!CloseDocument]     [\ContextNavigationGlyph{107}]
 
-  \definesymbol [\v!vorigesubpagina]   [\ContextNavigationGlyph{101}] 
-  \definesymbol [\v!volgendesubpagina] [\ContextNavigationGlyph{102}] 
-  \definesymbol [\v!eerstesubpagina]   [\ContextNavigationGlyph{103}] 
-  \definesymbol [\v!laatstesubpagina]  [\ContextNavigationGlyph{104}] 
+  \definesymbol [\v!vorigesubpagina]   [\ContextNavigationGlyph{101}]
+  \definesymbol [\v!volgendesubpagina] [\ContextNavigationGlyph{102}]
+  \definesymbol [\v!eerstesubpagina]   [\ContextNavigationGlyph{103}]
+  \definesymbol [\v!laatstesubpagina]  [\ContextNavigationGlyph{104}]
 
-  \definesymbol [\v!StartSound]        [\ContextNavigationGlyph{102}] 
-  \definesymbol [\v!PauseSound]        [\ContextNavigationGlyph{108}] 
-  \definesymbol [\v!StopSound]         [\ContextNavigationGlyph{107}] 
+  \definesymbol [\v!StartSound]        [\ContextNavigationGlyph{102}]
+  \definesymbol [\v!PauseSound]        [\ContextNavigationGlyph{108}]
+  \definesymbol [\v!StopSound]         [\ContextNavigationGlyph{107}]
 
-  \definesymbol [\v!StartMovie]        [\ContextNavigationGlyph{102}] 
-  \definesymbol [\v!PauseMovie]        [\ContextNavigationGlyph{108}] 
-  \definesymbol [\v!StopMovie]         [\ContextNavigationGlyph{107}] 
+  \definesymbol [\v!StartMovie]        [\ContextNavigationGlyph{102}]
+  \definesymbol [\v!PauseMovie]        [\ContextNavigationGlyph{108}]
+  \definesymbol [\v!StopMovie]         [\ContextNavigationGlyph{107}]
 
-  \definesymbol [\v!StartRendering]    [\ContextNavigationGlyph{102}] 
-  \definesymbol [\v!PauseRendering]    [\ContextNavigationGlyph{108}] 
-  \definesymbol [\v!StopRendering]     [\ContextNavigationGlyph{107}]   
+  \definesymbol [\v!StartRendering]    [\ContextNavigationGlyph{102}]
+  \definesymbol [\v!PauseRendering]    [\ContextNavigationGlyph{108}]
+  \definesymbol [\v!StopRendering]     [\ContextNavigationGlyph{107}]
+  \definesymbol [\v!ResumeRendering]   [\ContextNavigationGlyph{102}]
+
 \stopsymbolset
 
 \startsymbolset [navigation 3]
 
-  \definesymbol [\v!vorigepagina]      [\ContextNavigationGlyph{201}] 
-  \definesymbol [\v!volgendepagina]    [\ContextNavigationGlyph{202}] 
-  \definesymbol [\v!eerstepagina]      [\ContextNavigationGlyph{203}] 
-  \definesymbol [\v!laatstepagina]     [\ContextNavigationGlyph{204}] 
+  \definesymbol [\v!vorigepagina]      [\ContextNavigationGlyph{201}]
+  \definesymbol [\v!volgendepagina]    [\ContextNavigationGlyph{202}]
+  \definesymbol [\v!eerstepagina]      [\ContextNavigationGlyph{203}]
+  \definesymbol [\v!laatstepagina]     [\ContextNavigationGlyph{204}]
 
-  \definesymbol [\v!PreviousJump]      [\ContextNavigationGlyph{205}] 
-  \definesymbol [\v!NextJump]          [\ContextNavigationGlyph{206}] 
+  \definesymbol [\v!PreviousJump]      [\ContextNavigationGlyph{205}]
+  \definesymbol [\v!NextJump]          [\ContextNavigationGlyph{206}]
 
-  \definesymbol [\v!CloseDocument]     [\ContextNavigationGlyph{207}] 
+  \definesymbol [\v!CloseDocument]     [\ContextNavigationGlyph{207}]
 
-  \definesymbol [\v!vorigesubpagina]   [\ContextNavigationGlyph{201}] 
-  \definesymbol [\v!volgendesubpagina] [\ContextNavigationGlyph{202}] 
-  \definesymbol [\v!eerstesubpagina]   [\ContextNavigationGlyph{203}] 
-  \definesymbol [\v!laatstesubpagina]  [\ContextNavigationGlyph{204}] 
+  \definesymbol [\v!vorigesubpagina]   [\ContextNavigationGlyph{201}]
+  \definesymbol [\v!volgendesubpagina] [\ContextNavigationGlyph{202}]
+  \definesymbol [\v!eerstesubpagina]   [\ContextNavigationGlyph{203}]
+  \definesymbol [\v!laatstesubpagina]  [\ContextNavigationGlyph{204}]
 
-  \definesymbol [\v!StartSound]        [\ContextNavigationGlyph{202}] 
-  \definesymbol [\v!PauseSound]        [\ContextNavigationGlyph{208}] 
-  \definesymbol [\v!StopSound]         [\ContextNavigationGlyph{207}] 
+  \definesymbol [\v!StartSound]        [\ContextNavigationGlyph{202}]
+  \definesymbol [\v!PauseSound]        [\ContextNavigationGlyph{208}]
+  \definesymbol [\v!StopSound]         [\ContextNavigationGlyph{207}]
 
-  \definesymbol [\v!StartMovie]        [\ContextNavigationGlyph{202}] 
-  \definesymbol [\v!PauseMovie]        [\ContextNavigationGlyph{208}] 
-  \definesymbol [\v!StopMovie]         [\ContextNavigationGlyph{207}] 
+  \definesymbol [\v!StartMovie]        [\ContextNavigationGlyph{202}]
+  \definesymbol [\v!PauseMovie]        [\ContextNavigationGlyph{208}]
+  \definesymbol [\v!StopMovie]         [\ContextNavigationGlyph{207}]
 
-  \definesymbol [\v!StartRendering]    [\ContextNavigationGlyph{202}] 
-  \definesymbol [\v!PauseRendering]    [\ContextNavigationGlyph{208}] 
-  \definesymbol [\v!StopRendering]     [\ContextNavigationGlyph{207}] 
+  \definesymbol [\v!StartRendering]    [\ContextNavigationGlyph{202}]
+  \definesymbol [\v!PauseRendering]    [\ContextNavigationGlyph{208}]
+  \definesymbol [\v!StopRendering]     [\ContextNavigationGlyph{207}]
+  \definesymbol [\v!ResumeRendering]   [\ContextNavigationGlyph{202}]
 
 \stopsymbolset
 
@@ -117,4 +121,4 @@
 %D \showsymbolset[navigation 2]
 %D \showsymbolset[navigation 3]
 
-\protect \endinput 
+\protect \endinput

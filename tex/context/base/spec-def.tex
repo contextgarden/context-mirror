@@ -8,11 +8,11 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
-%C details. 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
 
-%D This module used to be integrated in \type {spec-ini}, 
-%D but testing optimization is more convenient this way. 
+%D This module used to be integrated in \type {spec-ini},
+%D but testing optimization is more convenient this way.
 
 \writestatus{loading}{Context Special Macros / Definitions}
 
@@ -100,7 +100,7 @@
 %D can easily be accomplished by using \TEX's mark mechanism.
 %D In \CONTEXT\ we follow this approach. More and more, drivers
 %D are starting to support color, including stacking them.
-%D 
+%D
 %D Colors as well as grayscales can be represented in scales
 %D from~0 to~1. When drivers use values in the range 0..255,
 %D this value has to be adapted in the translation process.
@@ -109,8 +109,8 @@
 %D Green and Blue components of 0.80 show the same gray as a
 %D Gray Scale specified 0.80. The \kap{CMYK} color system
 %D supports a Black component apart from Cyan, Magenta and
-%D Yellow. 
-%D 
+%D Yellow.
+%D
 %D Depending on the target format, color support differs from
 %D gray support. PostScript for example offers different
 %D operators for setting gray and color. This is because
@@ -174,45 +174,45 @@
 %D Probably the most problematic special is the following
 %D one. Because we want to be able to support different
 %D schemes, we pass a lot of data to it.
-%D 
+%D
 %D The support of inserting files (like illustrations) comes in
 %D many flavors. Some drivers use scales, some take dimensions.
 %D Some need offsets and others act on stored characteristics.
 %D They need one thing in common: a filename. Although separate
 %D specials for different formats sometimes are more clear, we
-%D decided to combine them all in one: 
-%D 
+%D decided to combine them all in one:
+%D
 %D \starttypen
-%D \doinsertfile {type,method} {file,label} 
-%D               {xscale} {yscale} {x} {y} {w} {h} 
+%D \doinsertfile {type,method} {file,label}
+%D               {xscale} {yscale} {x} {y} {w} {h}
 %D               {options}
 %D \stoptypen
 %D
-%D The scale is given percents, the other values are base 
+%D The scale is given percents, the other values are base
 %D points.
-%D 
+%D
 %D The special is implemented as \type{or}. Because \DVIPSONE\
 %D understands them all, a chain of alternatives would generate
-%D multiple occurrences of the same illustration. 
-%D 
+%D multiple occurrences of the same illustration.
+%D
 %D When option 1 is passed, the viewers is asked to present a
-%D preview, like the first frame of a movie. 
+%D preview, like the first frame of a movie.
 
 \installspecial [\doinsertfile] [or] [9]
 
 %D No start||stop construction is needed here, because there in
 %D no further interference of \TEX. All dimensions are output
-%D in points and scales as a number, where 100 equal 100\%. (We 
-%D used to pass scaled points). 
+%D in points and scales as a number, where 100 equal 100\%. (We
+%D used to pass scaled points).
 
 %D \macros
 %D   {doinsertsoundtrack}
 %D
-%D Sounds are (for the moment) just files with 
-%D associated options. 
+%D Sounds are (for the moment) just files with
+%D associated options.
 %D
 %D \starttypen
-%D \doinsertsoundtrack {file} {label} {options} 
+%D \doinsertsoundtrack {file} {label} {options}
 %D \stoptypen
 
 \installspecial [\doinsertsoundtrack] [or] [3]
@@ -220,21 +220,21 @@
 %D \macros
 %D   {dogetnofinsertpages}
 %D
-%D Some file formats support more than one page, like \PDF, 
-%D and for special applications, one may want to have access 
-%D to the total number of pages. 
+%D Some file formats support more than one page, like \PDF,
+%D and for special applications, one may want to have access
+%D to the total number of pages.
 %D
 %D \starttypen
 %D \dogetnofinsertpages{filename}
 %D \stoptypen
 %D
-%D The number is also available after the insert is placed, 
-%D since inclusion may take place immediate when an insert is 
-%D called upon. 
+%D The number is also available after the insert is placed,
+%D since inclusion may take place immediate when an insert is
+%D called upon.
 
-\def\nofinsertpages{1} % one of the few 'talk backs' 
+\def\nofinsertpages{1} % one of the few 'talk backs'
 
-\installspecial [\dogetnofinsertpages] [or] [1] 
+\installspecial [\dogetnofinsertpages] [or] [1]
 
 %D \macros
 %D   {dostartrotation,
@@ -262,7 +262,7 @@
 %D \dostartscaling {x} {y} ... \dostopscaling
 %D \stoptypen
 %D
-%D Like the previous one, these specials are of category 
+%D Like the previous one, these specials are of category
 %D \type{or}.
 
 \installspecial [\dostartscaling] [or] [2]
@@ -287,7 +287,7 @@
 %D   {dostartnegative,
 %D    dostopnegative}
 %D
-%D When producing output for an image setter, negating the 
+%D When producing output for an image setter, negating the
 %D page comes into view. Here are the tools:
 
 \installspecial [\dostartnegative] [or] [0]
@@ -295,7 +295,7 @@
 
 
 %D The following two specials are used in for instance \type
-%D {\vadjust}'d margin material inside colored paragraphs. 
+%D {\vadjust}'d margin material inside colored paragraphs.
 
 \installspecial [\dostartgraphicgroup] [or] [0]
 \installspecial [\dostopgraphicgroup ] [or] [0]
@@ -323,22 +323,22 @@
 %D This command has to return a \type{\vbox} which can be used
 %D to lay over another one (with text). The radius is in
 %D degrees, the stroke and fill are~\type{1} (true) of~\type{0}
-%D (false). 
+%D (false).
 
 \installspecial [\doovalbox] [or] [7]
 
-%D \macros 
+%D \macros
 %D   {dostartclipping,dostopclipping}
-%D 
-%D Clipping is implemented in such a way that an arbitrary 
-%D can be fed. 
-%D 
-%D \starttypen 
-%D \dostartclipping {pathname}{width} {height} 
-%D \dostopclipping 
+%D
+%D Clipping is implemented in such a way that an arbitrary
+%D can be fed.
+%D
+%D \starttypen
+%D \dostartclipping {pathname}{width} {height}
+%D \dostopclipping
 %D \stoptyping
 %D
-%D 
+%D
 
 \installspecial [\dostartclipping] [or] [3]
 \installspecial [\dostopclipping]  [or] [0]
@@ -348,11 +348,11 @@
 %D
 %D We can declare some characteristics of the document with
 %D
-%D \starttypen 
+%D \starttypen
 %D \dosetupidentity {title} {subject} {author} {creator} {date} {keys}
 %D \stoptypen
 %D
-%D All data is in string format. 
+%D All data is in string format.
 
 \installspecial [\dosetupidentity] [and] [6]
 
@@ -360,30 +360,30 @@
 %D   {dosetuppaper}
 %D
 %D This special can be used to tell the driver what page size
-%D to use. The special takes three arguments. 
+%D to use. The special takes three arguments.
 %D
 %D \starttypen
 %D \dosetuppaper {type} {width} {height}
 %D \stoptypen
 %D
-%D The type is one of the common identifiers, like A4, A5 or 
-%D B2. 
+%D The type is one of the common identifiers, like A4, A5 or
+%D B2.
 
 \installspecial [\dosetuppaper] [and] [3]
 
 %D \macros
 %D   {dosetupprinter}
 %D
-%D Some drivers enable the user to specify the paper type 
-%D used and/or page dimensions to be taken into account. 
+%D Some drivers enable the user to specify the paper type
+%D used and/or page dimensions to be taken into account.
 %D
 %D \starttypen
 %D \dosetupprinter {type} {hoffset} {voffset} {width} {height}
 %D \stoptypen
 %D
-%D The first argument is one of \type{letter}, \type{legal}, 
-%D \type{A4}, \type{A5} etc. The dimensions are in 
-%D basepoints. 
+%D The first argument is one of \type{letter}, \type{legal},
+%D \type{A4}, \type{A5} etc. The dimensions are in
+%D basepoints.
 
 \installspecial [\dosetupprinter] [and] [5]
 
@@ -405,7 +405,7 @@
 %D \stoptypen
 %D
 %D Normally this command does nothing but giving a message
-%D that some scheme is supported. 
+%D that some scheme is supported.
 %D
 %D \starttypen
 %D \dosetupstartaction
@@ -413,9 +413,9 @@
 %D \stoptypen
 %D
 %D These two setup the actions to be executed when the document
-%D is opened and closed. 
+%D is opened and closed.
 %D
-%D The next commands sets up the page and screen. They are 
+%D The next commands sets up the page and screen. They are
 %D kind of related.
 %D
 %D \starttypen
@@ -423,24 +423,28 @@
 %D \dosetupscreen {hoffset} {voffset} {width} {height} {options}
 %D \stoptypen
 %D
-%D The first four arguments are in points. Option~1 results in a 
+%D The first four arguments are in points. Option~1 results in a
 %D full screen launch.
 %D
 %D \starttypen
 %D \dosetuppageview {keyword}
 %D \stoptypen
 %D
-%D For the moment we only support \type{fit}. 
+%D For the moment we only support \type{fit}.
 
 \installspecial [\dosetupinteraction]     [and] [0]
+
 \installspecial [\dosetupopenaction]      [and] [0]
-\installspecial [\dosetupcloseaction]     [and] [0]
-\installspecial [\dosetupopenpageaction]  [and] [0]
-\installspecial [\dosetupclosepageaction] [and] [0]
 \installspecial [\dosetupscreen]          [and] [5]
 \installspecial [\dosetuppageview]        [and] [1]
 
-% new, yet undocumented, replaces \dosetupscreen 
+\installspecial [\dosetupcloseaction]              [and] [0]
+\installspecial [\dosetupopenpageaction]           [and] [0]
+\installspecial [\dosetupclosepageaction]          [and] [0]
+\installspecial [\dosetuprenderingopenpageaction]  [and] [0]
+\installspecial [\dosetuprenderingclosepageaction] [and] [0]
+
+% new, yet undocumented, replaces \dosetupscreen
 
 \installspecial [\dosetupcropbox]  [and] [4]
 \installspecial [\dosetuptrimbox]  [and] [4]
@@ -467,14 +471,14 @@
 %D   {dostartgotolocation, dostopgotolocation,
 %D    dostartgotorealpage, dostopgotorealpage}
 %D
-%D When we want to support hypertext buttons, again we have 
+%D When we want to support hypertext buttons, again we have
 %D to deal with two concepts.
 %D
 %D \startopsomming[opelkaar,n]
 %D \som let \TEX\ highlight the text
 %D \som let the driver show us where to click
 %D \stopopsomming
-%D 
+%D
 %D The first approach is the most secure one. It gives us
 %D complete control over the visual appearance of hyper
 %D buttons. The second alternative lets the driver guess what
@@ -487,9 +491,9 @@
 %D However, it's no trivial matter to let a driver find out
 %D where things begin and end. Because most hyperlinks can be
 %D found in tables of contents and registers, the saving in
-%D terms of bytes can be neglected and the first approach is a 
-%D clear winner. 
-%D 
+%D terms of bytes can be neglected and the first approach is a
+%D clear winner.
+%D
 %D The most convenient way of cross||referencing is using named
 %D destinations. A more simple scheme is using page numbers as
 %D destinations. Because the latter alternative can often be
@@ -508,7 +512,7 @@
 %D implementation of \type{pdfmarks} in version 1.0 of
 %D Acrobat. Because only pagenumbers were supported as
 %D destination, we had to provide both labels (\DVIWINDO) and
-%D pagenumbers (\PDF). Some drivers use start stop pairs. 
+%D pagenumbers (\PDF). Some drivers use start stop pairs.
 %D
 %D \starttypen
 %D \dostartgotolocation {w} {h} {url} {file} {label} {page}
@@ -518,14 +522,14 @@
 %D Their counterparts are:
 %D
 %D \starttypen
-%D \dostopgotolocation  
-%D \dostopgotorealpage  
+%D \dostopgotolocation
+%D \dostopgotorealpage
 %D \stoptypen
 %D
 %D The internal alternative is used for system||generated
-%D links, the external one for user||generated links. The 
-%D Uniform Resource Locator can be used to let the reader 
-%D surf the net. 
+%D links, the external one for user||generated links. The
+%D Uniform Resource Locator can be used to let the reader
+%D surf the net.
 
 \installspecial [\dostartgotolocation] [and] [6]
 \installspecial [\dostopgotolocation]  [and] [0]
@@ -539,15 +543,15 @@
 
 %D \macros
 %D  {dostartgotoJS, doflushJSpreamble}
-%D   
-%D Rather special is the option to include and execute 
+%D
+%D Rather special is the option to include and execute
 %D JavaScript code. This is a typical \PDF\ option.
 %D
 %D \starttypen
 %D \dostartgotoJS {w} {h} {script}
 %D \stoptypen
 %D
-%D This not so standard \TEX\ feature should be used with 
+%D This not so standard \TEX\ feature should be used with
 %D care. Preamble scripts are flushed by
 %D
 %D \doflushJSpreamble {script}
@@ -574,11 +578,11 @@
 %D \dostartthisisrealpage {page}
 %D \stoptypen
 %D
-%D These commands are accompanied by: 
+%D These commands are accompanied by:
 %D
 %D \starttypen
-%D \dostopthisislocation  
-%D \dostopthisisrealpage 
+%D \dostopthisislocation
+%D \dostopthisisrealpage
 %D \stoptypen
 %D
 %D As with all interactive commands's they are installed as
@@ -589,13 +593,13 @@
 \installspecial [\dostartthisisrealpage] [and] [1]
 \installspecial [\dostopthisisrealpage]  [and] [0]
 
-%D In \CONTEXT\ we don't use the \type{\stopsomething} 
-%D macros because we let \TEX\ take care of typographic 
-%D issues.  
+%D In \CONTEXT\ we don't use the \type{\stopsomething}
+%D macros because we let \TEX\ take care of typographic
+%D issues.
 
 %D \macros
 %D   {doresetgotowhereever}
-%D 
+%D
 %D These and others need:
 
 \installspecial [\doresetgotowhereever] [and] [0]
@@ -603,21 +607,21 @@
 %D \macros
 %D   {dostartexecutecommand, dostopexecutecommand}
 %D
-%D The actual behavior of the next pair of commands depends 
-%D much on the viewing engine. Therefore one cannot depend 
-%D too much on their support. 
+%D The actual behavior of the next pair of commands depends
+%D much on the viewing engine. Therefore one cannot depend
+%D too much on their support.
 %D
 %D \starttypen
-%D \dostartexecutecommand {w} {h} {command} {options} 
+%D \dostartexecutecommand {w} {h} {command} {options}
 %D \stoptypen
 %D
-%D At least the next commands are supported (more examples 
-%D can be found in \type {spec-fdf.tex}: 
+%D At least the next commands are supported (more examples
+%D can be found in \type {spec-fdf.tex}:
 %D
 %D \startregelcorrectie\steluitlijnenin[midden]\leavevmode
-%D \starttabel[|l|l|] 
+%D \starttabel[|l|l|]
 %D \HL
-%D \NC \bf command  \NC \bf action                  \NC\SR 
+%D \NC \bf command  \NC \bf action                  \NC\SR
 %D \HL
 %D \NC first        \NC go to the first page        \NC\FR
 %D \NC previous     \NC go to the previous page     \NC\MR
@@ -634,20 +638,20 @@
 %D \stoptabel
 %D \stopregelcorrectie
 %D
-%D Options are to be passed as a comma separated list of 
+%D Options are to be passed as a comma separated list of
 %D assignments.
 
 \installspecial [\dostartexecutecommand] [and] [4]
 \installspecial [\dostopexecutecommand]  [and] [0]
 
 %D \macros
-%D   {dostartobject, 
+%D   {dostartobject,
 %D    dostopobject,
 %D    doresetobjects,
 %D    doinsertobject}
 %D
-%D Reuse of object can reduce the output filesize 
-%D considerably. Reusable objects are implemented with: 
+%D Reuse of object can reduce the output filesize
+%D considerably. Reusable objects are implemented with:
 %D
 %D \starttypen
 %D \dostartobject{class}{name}{width}{height}{depth}
@@ -659,7 +663,7 @@
 %D \doinsertobject{class}{name}
 %D \stoptypen
 %D
-%D The savings can be huge in interactive texts. 
+%D The savings can be huge in interactive texts.
 %D
 %D \starttypen
 %D \doresetobjects
@@ -672,26 +676,26 @@
 
 %D \macros
 %D   {doregisterfigure}
-%D 
+%D
 %D Images can be objects as well and it's up to the driver to
 %D handle this. Alternative images are also up to the driver,
 %D and the next macro tells the driver that the previous image
 %D is somehow followed by another and that both have to be
-%D handled together. This is a rather fuzzy model, but for the 
+%D handled together. This is a rather fuzzy model, but for the
 %D moment it suits its purpose: low res screen versions combined
-%D with high res printable ones. 
+%D with high res printable ones.
 
 \installspecial [\doregisterfigure][or] [2]
 
 % %D \macros
-% %D   {dogetobjectreference} 
+% %D   {dogetobjectreference}
 % %D
-% %D For very special purposes, one can ask for the internal 
+% %D For very special purposes, one can ask for the internal
 % %D reference to the object. Beware!
-% 
+%
 % \installspecial [\dogetobjectreference] [or] [3]
-% 
-% %D The first argument is the name, the second a macro that 
+%
+% %D The first argument is the name, the second a macro that
 % %D gets the associated value.
 
 %D \macros
@@ -714,36 +718,36 @@
 
 %D \macros
 %D   {doinsertbookmark}
-%D 
+%D
 %D Bookmarks, that is viewer generated tables of contents, are
 %D a strange phenomena, mainly because \TEX\ can provide
-%D whatever kind of table in much better quality. 
+%D whatever kind of table in much better quality.
 
 \installspecial [\doinsertbookmark] [and] [5]
 
 %D This special is called as:
-%D 
+%D
 %D \starttypen
 %D \doinstallbookmark {level} {nofsubentries} {text} {page} {open}
 %D \stoptypen
 %D
-%D This definition is very \PDF\ oriented, so for more 
-%D information we kindly refer to the \PDF\ manuals. 
+%D This definition is very \PDF\ oriented, so for more
+%D information we kindly refer to the \PDF\ manuals.
 
 %D \macros
 %D   {dosetpagetransition}
 %D
 %D In presentations, fancy page transitions can, at least for a
 %D short moment, let the audience focus at the screen. Like the
-%D previous one, this special is very \PDF. 
+%D previous one, this special is very \PDF.
 %D
 %D \starttypen
 %D \dosetpagetransition{dissolve}{0}
 %D \stoptypen
 %D
 %D Transitions have symbolic names, like dissolve, box, split,
-%D blinds, wipe and glitter. The second argument determines 
-%D the wait time (unless zero). 
+%D blinds, wipe and glitter. The second argument determines
+%D the wait time (unless zero).
 
 \installspecial [\dosetpagetransition] [or] [2]
 
@@ -756,29 +760,29 @@
 %D The special drivers are programmed independant from their
 %D calling macros are thereby use the standard \TEX\ way of
 %D passing parameters. Unfortunately fields often have more
-%D than nine characteristics, so we pack some arguments in one. 
-%D 
+%D than nine characteristics, so we pack some arguments in one.
+%D
 %D \starttypen
 %D \dopresettextfield / \dopresetlinefield
-%D   {name} {width} {height} {default} {length} 
+%D   {name} {width} {height} {default} {length}
 %D   {style,color} {options} {alignment} {actions}
-%D 
+%D
 %D \dopresetchoicefield / \dopresetpopupfield / \dopresetcombofield
-%D   {name} {width} {height} {default} 
+%D   {name} {width} {height} {default}
 %D   {style,color} {options} {values} {actions}
-%D 
-%D \dopresetpushfield 
+%D
+%D \dopresetpushfield
 %D   {name} {width} {height} {default}
 %D   {options} {values} {actions}
-%D 
-%D \dopresetcheckfield 
-%D   {name} {width} {height} {default} 
+%D
+%D \dopresetcheckfield
+%D   {name} {width} {height} {default}
 %D   {options} {values} {actions}
-%D 
+%D
 %D \dopresetradiofield
 %D   {name} {width} {height} {default}
 %D   {options} {parent} {values} {actions}
-%D 
+%D
 %D \dopresetradiorecord
 %D   {name} {top} {options} {kids} {actions}
 %D \stoptypen
@@ -795,7 +799,7 @@
 
 %D \macros
 %D   {dodefinefieldset,dogetfieldset,doiffieldset}
-%D 
+%D
 %D Field sets, used in resetting and submitting, are handled
 %D by:
 
@@ -803,11 +807,11 @@
 \installspecial [\dogetfieldset]    [or] [1]
 \installspecial [\doiffieldset]     [or] [2]
 
-%D \macros 
+%D \macros
 %D   {dosetfieldstatus}
 %D
-%D For practical reasons we set some field characteristics 
-%D using: 
+%D For practical reasons we set some field characteristics
+%D using:
 %D
 %D \starttypen
 %D \dosetfieldstatus {mode} {parent} {kids} {root}
@@ -822,7 +826,7 @@
 \def\fieldchildmode {2} % no \chardef here
 \def\fieldcopymode  {3} % no \chardef here
 
-%D \macros 
+%D \macros
 %D   {doregistercalculationset}
 %D
 %D We can define a calculation order list with:
@@ -833,18 +837,18 @@
 
 \installspecial [\doregistercalculationset] [or] [1]
 
-%D \macros 
+%D \macros
 %D   {doinsertcomment, doflushcomments}
 %D
-%D Not so much out of need, but to be complete, we also 
+%D Not so much out of need, but to be complete, we also
 %D implement text annotations, so called  comment:
-%D 
+%D
 %D \starttypen
 %D \doinsertcomment
-%D   {title} {width} {height} {color} {open} {symbol} {collect} {data} 
+%D   {title} {width} {height} {color} {open} {symbol} {collect} {data}
 %D \stoptypen
 %D
-%D When enables, comments can be collected and flushed: 
+%D When enables, comments can be collected and flushed:
 %D
 %D \starttypen
 %D \doflushcomments
@@ -854,27 +858,27 @@
 \installspecial[\doflushcomments] [and] [0]
 
 %D \macros
-%D   {dosetposition, dosetpositionwhd, dosetpositionplus, 
+%D   {dosetposition, dosetpositionwhd, dosetpositionplus,
 %D    dosetpositionpapersize}
 %D
-%D Not natural to \TEX, but available in \PDFTEX, and by 
-%D means of postprocessed \DVI, we can save and call upon 
-%D positions. 
+%D Not natural to \TEX, but available in \PDFTEX, and by
+%D means of postprocessed \DVI, we can save and call upon
+%D positions.
 %D
 %D \starttypen
 %D \dosetposition          {identifier}
 %D \dosetpositionwhd       {identifier} {width} {height} {depth}
 %D \dosetpositionplus      {identifier} {width} {height} {depth} {list}
-%D \dosetpositionpapersize {width} {height} 
+%D \dosetpositionpapersize {width} {height}
 %D \stoptypen
 %D
-%D This is one of the few specials where when using \PDFTEX\ 
-%D the driver directly deals with the utility file. 
+%D This is one of the few specials where when using \PDFTEX\
+%D the driver directly deals with the utility file.
 
-\installspecial [\dosetposition]          [or] [1] 
-\installspecial [\dosetpositionwhd]       [or] [4] 
-\installspecial [\dosetpositionplus]      [or] [5] 
-\installspecial [\dosetpositionpapersize] [or] [2] 
+\installspecial [\dosetposition]          [or] [1]
+\installspecial [\dosetpositionwhd]       [or] [4]
+\installspecial [\dosetpositionplus]      [or] [5]
+\installspecial [\dosetpositionpapersize] [or] [2]
 
 %D \macros
 %D   {dostarttransparency,dostoptransparency}
@@ -883,10 +887,10 @@
 %D \dostarttransparency{fraction}{type}
 %D \dostoptransparency
 %D \stoptypen
-%D 
-%D Although in \CONTEXT\ transparency is closely integrated 
-%D in the color drivers, in the end it is an independent 
-%D feature. 
+%D
+%D Although in \CONTEXT\ transparency is closely integrated
+%D in the color drivers, in the end it is an independent
+%D feature.
 
 \installspecial [\dostarttransparency] [or] [2]
 \installspecial [\dostoptransparency]  [or] [0]
@@ -900,7 +904,7 @@
 
 \installspecial [\doattachfile] [or] [8]
 
-%D Experimental (properties): 
+%D Experimental (properties):
 
 \installspecial[\dostartviewerlayer]      [or] [1]
 \installspecial[\dostopviewerlayer]       [or] [0]
@@ -909,19 +913,24 @@
 %installspecial[\doflushviewerpagelayers] [or] [0]
 \installspecial[\domakeviewerlayerlist]   [or] [1]
 
-%D We define a couple of backends: 
+\installspecial[\doinsertrenderingwindow] [or] [4]
+\installspecial[\doinsertrendering]       [or] [4]
+\installspecial[\doinsertrenderingobject] [or] [4]
+\installspecial[\doinsertrenderingobject] [or] [4]
+
+%D We define a couple of backends:
 
 \defineoutput [dvipsone] [dvi,ps,yy]
 \defineoutput [dviwindo] [dvi,ps,yy,win]
 \defineoutput [dvips]    [dvi,ps,tr]
 \defineoutput [dviview]  [dvi,ps,tr,dv]
-\defineoutput [pdftex]   [tpd]   
-\defineoutput [pdf]      [tpd] 
+\defineoutput [pdftex]   [tpd]
+\defineoutput [pdf]      [tpd]
 \defineoutput [dvipdfm]  [dpm]
-\defineoutput [dpm]      [dpm]   
+\defineoutput [dpm]      [dpm]
 \defineoutput [dvipdfmx] [dpx]
-\defineoutput [dpx]      [dpx]   
-\defineoutput [acrobat]  [pdf,ps,tr] 
+\defineoutput [dpx]      [dpx]
+\defineoutput [acrobat]  [pdf,ps,tr]
 
 %D Please let me know if we need more. From now on we default
 %D to:
@@ -929,16 +938,16 @@
 \setupoutput [dvips]
 
 %D We don't enable \ACROBAT, because pure \POSTSCRIPT\ is not
-%D that strong on objects and \PDFTEX\ does a better job. 
+%D that strong on objects and \PDFTEX\ does a better job.
 %D Some reasonable alternatives are:
-%D 
+%D
 %D \starttypen
 %D \setupoutput [dvipsone,acrobat]
 %D \setupoutput [dviwindo,acrobat]
 %D \stoptypen
-%D 
+%D
 %D Although, better is:
-%D 
+%D
 %D \starttypen
 %D \setupoutput [pdftex]
 %D \stoptypen

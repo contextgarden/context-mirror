@@ -852,12 +852,19 @@
 %D of \type {\normalhbox}, since it manages the height and depth of
 %D the line.
 
-\def\shapedhbox
-  {\dowithnextbox
-     {\nextboxht\zeropoint
-      \nextboxdp\zeropoint
-      \flushnextbox}
-   \normalhbox}
+% \def\shapedhbox
+%   {\dowithnextbox
+%      {\nextboxht\zeropoint
+%       \nextboxdp\zeropoint
+%       \flushnextbox}
+%    \normalhbox}
+
+\def\shapedhbox                  % lines with non strutted dimensions have
+  {\expanded{\dowithnextbox      % interlineskip so if we want the original
+     {\nextboxht\the\ht\shapebox % spacing, we need to preserve the original
+      \nextboxdp\the\dp\shapebox % height and depth which is definitely
+      \noexpand\flushnextbox}}   % needed if we apply struts to the 'new'
+   \normalhbox}                  % box or do something that changed ist size
 
 %D \macros
 %D   {hyphenatedword,
@@ -1640,27 +1647,27 @@
 \def\setvboxtohbox
   {\bgroup
    \ifdim\baselineskip<16pt \relax
-     \dimen0\baselineskip
-     \multiply\dimen0 1024
+     \scratchdimen\baselineskip
+     \multiply\scratchdimen 1024
    \else
      \message{cropping \baselineskip to 16pt}%
-     \dimen0\maxdimen
+     \scratchdimen\maxdimen
    \fi
-   \divide\dimen0 \hsize
-   \multiply\dimen0 64
-   \xdef\normalvboxtohboxfactor{\expandafter\withoutpt\the\dimen0}%
+   \divide\scratchdimen \hsize
+   \multiply\scratchdimen 64
+   \xdef\normalvboxtohboxfactor{\withoutpt\the\scratchdimen}%
    \egroup}
 
 \def\startvboxtohbox
  {\bgroup
   \setvboxtohbox
-  \setbox0\normalhbox\bgroup}
+  \setbox\scratchbox\normalhbox\bgroup}
 
 \def\stopvboxtohbox
   {\egroup
-   \dp0=\zeropoint
-   \ht0=\normalvboxtohboxfactor\wd0
-   \box0
+   \dp\scratchbox\zeropoint
+   \ht\scratchbox\normalvboxtohboxfactor\wd\scratchbox
+   \box\scratchbox
    \egroup}
 
 % % to be done: start halfway a line combined with one line
@@ -1689,6 +1696,8 @@
 %   %   h:\the\dimen0}%
 %    \box0
 %    \egroup}
+
+% todo: \scratchbox
 
 \def\convertvboxtohbox
   {\setvboxtohbox
@@ -2500,7 +2509,7 @@
   {\dorecurse5{\unskip\unkern\unpenalty}}
 
 \def\removelastskip % \ifvmode the plain tex one \fi
-  {\ifvmode\ifdim\lastskip=\z@\else\vskip-\lastskip\fi\fi}
+  {\ifvmode\ifdim\lastskip=\zeropoint\else\vskip-\lastskip\fi\fi}
 
 %D \macros
 %D   {makestrutofbox}
@@ -2662,5 +2671,35 @@
 
 \def\frozenhbox
   {\hbox\bgroup\dowithnextbox{\hbox{\hbox{\flushnextbox}}\egroup}\hbox}
+
+%D \macros
+%D   {setboxllx,setboxlly,gsetboxllx,gsetboxlly,getboxllx,getboxlly}
+%D
+%D A prelude to an extended \TEX:
+
+% it's about time to drop tex in favour of etex / TEX VERSION TO BE TESTED
+
+\beginTEX
+
+  \def\setboxllx #1#2{\bgroup\scratchdimen#2\expanded{\egroup\noexpand\setevalue{b@@x\number#1}{\the\scratchdimen}}}
+  \def\setboxlly #1#2{\bgroup\scratchdimen#2\expanded{\egroup\noexpand\setevalue{b@@y\number#1}{\the\scratchdimen}}}
+
+  \def\gsetboxllx#1#2{\bgroup\scratchdimen#2\setxvalue{b@@x\number#1}{\the\scratchdimen}\egroup}
+  \def\gsetboxlly#1#2{\bgroup\scratchdimen#2\setxvalue{b@@y\number#1}{\the\scratchdimen}\egroup}
+
+\endTEX
+
+\beginETEX
+
+  \def\setboxllx#1#2{\setevalue{b@@x\number#1}{\the\dimexpr(#2)}}
+  \def\setboxlly#1#2{\setevalue{b@@y\number#1}{\the\dimexpr(#2)}}
+
+  \def\gsetboxllx{\global\setboxllx}
+  \def\gsetboxlly{\global\setboxlly}
+
+\endETEX
+
+\def\getboxllx#1{\executeifdefined{b@@x\number#1}\zeropoint}
+\def\getboxlly#1{\executeifdefined{b@@y\number#1}\zeropoint}
 
 \protect \endinput

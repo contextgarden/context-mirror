@@ -196,11 +196,11 @@
 %D   {\getvalue{\@@MPG#1}}
 %D \stoptypen
 
-%\def\overlaystamp% watch the \MPcolor, since colors can be redefined
+%\def\overlaystamp % watch the \MPcolor, since colors can be redefined
 %  {\overlaywidth:\overlayheight:\overlaydepth
 %   :\MPcolor{\overlaycolor}:\MPcolor{\overlaylinecolor}}
 
-\def\overlaystamp% watch the \MPcolor, since colors can be redefined
+\def\overlaystamp % watch the \MPcolor, since colors can be redefined
   {\overlaywidth:\overlayheight:\overlaydepth
    :\MPcolor\overlaycolor:\MPcolor\overlaylinecolor}
 
@@ -272,7 +272,7 @@
 \long\def\startuseMPgraphic
   {\dodoublegroupempty\dostartuseMPgraphic}
 
-\long\def\dostartuseMPgraphic#1#2#3\stopuseMPgraphic%
+\long\def\dostartuseMPgraphic#1#2#3\stopuseMPgraphic
   {\blabelgroup
    \long\setgvalue{\@@MPG#1}{\handleuseMPgraphic{#1}{#2}{#3}}%
    \elabelgroup}
@@ -280,7 +280,7 @@
 \long\def\startusableMPgraphic % redundant but handy
   {\dodoublegroupempty\dostartusableMPgraphic}
 
-\long\def\dostartusableMPgraphic#1#2#3\stopusableMPgraphic%
+\long\def\dostartusableMPgraphic#1#2#3\stopusableMPgraphic
   {\blabelgroup
    \long\setgvalue{\@@MPG#1}{\handleuseMPgraphic{#1}{#2}{#3}}%
    \elabelgroup}
@@ -300,7 +300,7 @@
    \getvalue{\@@MPG#1}%
    \elabelgroup}
 
-\long\def\startreusableMPgraphic%
+\long\def\startreusableMPgraphic
   {\dodoublegroupempty\dostartreusableMPgraphic}
 
 % \long\def\dostartreusableMPgraphic#1#2#3\stopreusableMPgraphic%
@@ -353,10 +353,17 @@
 \unexpanded\def\uniqueMPpagegraphic
   {\dodoublegroupempty\douniqueMPpagegraphic}
 
+% \def\douniqueMPpagegraphic#1#2%
+%   {\blabelgroup
+%    \let\overlaystamp\overlaypagestamp
+%    \setupMPvariables[#1][#2]%
+%    \getvalue{\@@MPG\MPpageprefix#1}{}%
+%    \elabelgroup}
+
 \def\douniqueMPpagegraphic#1#2%
   {\blabelgroup
    \let\overlaystamp\overlaypagestamp
-   \setupMPvariables[#1][#2]%
+   \setupMPvariables[\MPpageprefix#1][#2]% prefix is new here
    \getvalue{\@@MPG\MPpageprefix#1}{}%
    \elabelgroup}
 
@@ -511,9 +518,9 @@
   \newtoks\everyMPTEXgraphic
 \fi
 
-%D A more generar of passing environments is:
+%D A more general way of passing environments is:
 
-\def\startMPenvironment%                % second arg gobbles spaces, so
+\def\startMPenvironment                 % second arg gobbles spaces, so
   {\dodoubleempty\dostartMPenvironment} % that reset gives \emptytoks
 
 \long\def\dostartMPenvironment[#1][#2]#3\stopMPenvironment%
@@ -529,9 +536,7 @@
      \global\loadfontfileoncetrue
    \stopMPenvironment}
 
-\startMPenvironment
-  \global\loadfontfileoncetrue
-\stopMPenvironment
+\resetMPenvironment
 
 %D This command takes \type {[reset]} as optional
 %D argument.
@@ -558,14 +563,21 @@
 %     \immediate\closeout\MPwrite
 %   }%\fi}
 
-\def\initializeMPgraphicfile
-  {\bgroup
-   \doinitializeMPgraphicfile
-   \MPruntrue
-   \doinitializeMPgraphicfile
-   \egroup}
+% strange :
 
-\def\doinitializeMPgraphicfile
+% \def\initializeMPgraphicfile
+%   {\bgroup
+%    \doinitializeMPgraphicfile
+%    \MPruntrue
+%    \doinitializeMPgraphicfile
+%    \egroup}
+
+% \def\doinitializeMPgraphicfile
+%   {\immediate\openout\scratchwrite\MPgraphicfile.mp
+%    \immediate\write\scratchwrite{end.}%
+%    \immediate\closeout\scratchwrite}
+
+\def\initializeMPgraphicfile
   {\immediate\openout\scratchwrite\MPgraphicfile.mp
    \immediate\write\scratchwrite{end.}%
    \immediate\closeout\scratchwrite}
@@ -843,6 +855,72 @@
 %D For my eyes only:
 
 \def\doifelseMPgraphic#1{\doifdefinedelse{\@@MPG#1}}
+
+%D \macros
+%D   {startMPcolor}
+%D
+%D The following time consuming method uses \METAPOST\ to
+%D calculate a color. This enables a match between colors
+%D resulting from a complex calculation (e.g. for a title
+%D page) and those in the text.
+
+% \startuseMPgraphic{somecolors}
+%   color c[] ; c[1] := .7[red,green] ; c[2] := .7[blue,yellow] ;
+% \stopuseMPgraphic
+
+% \startMPcolor[shade-1][t=.2,a=1]
+%   \includeMPgraphic{somecolors} ; fill fullcircle withcolor c[1] ;
+% \stopMPcolor
+
+% \startMPcolor[shade-2][t=.2,a=1]
+%   \includeMPgraphic{somecolors} ; fill fullcircle withcolor c[2] ;
+% \stopMPcolor
+
+% \blackrule[width=\hsize,height=4cm,color=shade-1]
+% \blackrule[width=\hsize,height=4cm,color=shade-2]
+
+\def\startMPcolor
+  {\dodoubleempty\dostartMPcolor}
+
+\long\def\dostartMPcolor[#1][#2]#3\stopMPcolor % slow but sometimes handy
+  {\startnointerference
+     \def\handleMPgraycolor{\expanded{\defineglobalcolor[#1][s=\!MPgMPa1,#2]}}%
+     \def\handleMPrgbcolor {\expanded{\defineglobalcolor[#1][r=\!MPgMPa1,g=\!MPgMPa2,b=\!MPgMPa3,#2]}}%
+     \def\handleMPcmykcolor{\expanded{\defineglobalcolor[#1][c=\!MPgMPa1,m=\!MPgMPa2,y=\!MPgMPa3,k=\!MPgMPa4,#2]}}%
+     \startMPcode#3\stopMPcode
+   \stopnointerference}
+
+%D New:
+
+\definelayerpreset
+  [mp]
+  [\c!y=-\MPury bp,
+   \c!x=\MPllx bp,
+   \c!methode=\v!passend]
+
+\definelayer
+  [mp]
+  [\c!preset=mp]
+
+%D Usage:
+%D
+%D \starttypen
+%D \defineproperty[one][layer][state=start]
+%D \defineproperty[two][layer][state=stop]
+%D
+%D \startuseMPgraphic{step-1}
+%D   fill fullcircle scaled 10cm withcolor red ;
+%D \stopuseMPgraphic
+%D
+%D \startuseMPgraphic{step-2}
+%D   fill fullcircle scaled 5cm withcolor green ;
+%D \stopuseMPgraphic
+%D
+%D \setlayer[mp]{\property[one]{\useMPgraphic{step-1}}}
+%D \setlayer[mp]{\property[two]{\useMPgraphic{step-2}}}
+%D
+%D \ruledhbox{\tightlayer[mp]}
+%D \stoptypen
 
 %D New:
 

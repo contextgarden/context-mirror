@@ -1,6 +1,6 @@
 # itc officina
 
---en=? --ve=itc --co=officina --re 
+--en=? --ve=itc --co=officina --re
 --en=? --ve=itc --co=officina --so=itc/officina --ma --in
 
 --en=? --ve=itc --co=officina --so=itc/officina --ca=* ovbk_*
@@ -14,7 +14,7 @@
 # bh lucida
 
 --en=? --ve=bh --co=lucida --re
---en=? --ve=bh --co=lucida --so=bh/lucida --ma --in
+--en=? --ve=bh --co=lucida --so=bh/lucida --ma --in --expert
 
 # fontfont meta
 
@@ -45,7 +45,7 @@
 --en=? --ve=creative --co=industria --re
 --en=? --ve=creative --co=industria --so=creative/industria --ma --in
 
-# creative insignia 
+# creative insignia
 
 --en=? --ve=creative --co=insignia  --re
 --en=? --ve=creative --co=insignia  --so=creative/insignia  --ma --in
@@ -55,12 +55,12 @@
 --en=? --ve=fontfont --co=din --re
 --en=? --ve=fontfont --co=din --so=fontfont/din --ma --in
 
-# adobe myriad 
+# adobe myriad
 
 --en=? --so=adobe/myriad --weight=400 --width=600 MyriadMM
 --en=? --so=adobe/myriad --weight=700 --width=600 MyriadMM
---en=? --so=adobe/myriad --weight=400 --width=600 MyriadMM-It 
---en=? --so=adobe/myriad --weight=700 --width=600 MyriadMM-It 
+--en=? --so=adobe/myriad --weight=400 --width=600 MyriadMM-It
+--en=? --so=adobe/myriad --weight=700 --width=600 MyriadMM-It
 
 --en=? --ve=adobe --co=myriad --so=adobe/myriad --ma --in MyriadMM-we*
 --en=? --ve=adobe --co=myriad --so=adobe/myriad --ma --in MyriadMM-It-we*
@@ -73,22 +73,22 @@
 --en=? --ve=adobe --co=frutiger --re
 --en=? --ve=adobe --co=frutiger --so=adobe/frutiger --ma --in
 
-# itc mendoza 
+# itc mendoza
 
 --en=? --ve=itc --co=mendoza --re
 --en=? --ve=itc --co=mendoza --so=itc/mendoza --ma --in
 
-# linotype univers 
+# linotype univers
 
 --en=? --ve=linotype --co=univers --re
 --en=? --ve=linotype --co=univers --so=linotype/univers --ma --in
 
-# adobe utopia 
-# 
+# adobe utopia
+#
 # --en=? --ve=adobe --co=utopia --re
 # --en=? --ve=adobe --co=utopia --so=adobe/utopia --ma --in
 
-# itc kabel 
+# itc kabel
 
 --en=? --ve=itc --co=kabel --re
 --en=? --ve=itc --co=kabel --so=itc/kabel --ma --in

@@ -1,6 +1,6 @@
-%D \module 
+%D \module
 %D   [       file=syst-con,
-%D        version=2000.12.10, % actually very old -) 
+%D        version=2000.12.10, % actually very old -)
 %D          title=\CONTEXT\ System Macros,
 %D       subtitle=Conversions,
 %D         author=Hans Hagen,
@@ -8,29 +8,29 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
-%C details. 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
 
 \writestatus{loading}{Context System Macro's / Conversions}
 
 \unprotect
 
 %D When the number of conversions grew, it did no longer make
-%D sense to spread them over multiple files. So, instead of 
-%D defining these in \type {font-ini}, we now have a dedicated 
-%D module. 
+%D sense to spread them over multiple files. So, instead of
+%D defining these in \type {font-ini}, we now have a dedicated
+%D module.
 
-%D \macros 
+%D \macros
 %D   {lchexnumber,uchexnumber,lchexnumbers,uchexnumbers}
 %D
-%D In addition to the uppercase hex conversion, as needed in 
-%D math families, we occasionally need a lowercase one, for 
+%D In addition to the uppercase hex conversion, as needed in
+%D math families, we occasionally need a lowercase one, for
 %D instance when we want to compose gbsong fontnames.
 %D
-%D The ugly indirectness is needed to get rid of \TEX\ 
-%D induced spaces and \type {\relax}'s. 
-%D 
-%D \starttypen 
+%D The ugly indirectness is needed to get rid of \TEX\
+%D induced spaces and \type {\relax}'s.
+%D
+%D \starttypen
 %D [\uchexnumber{0}]
 %D [\uchexnumber\scratchcounter]
 %D [\uchexnumber\zerocount]
@@ -53,7 +53,7 @@
   {\ifcase#1 0\or 1\or 2\or 3\or 4\or 5\or 6\or 7\or
              8\or 9\or a\or b\or c\or d\or e\or f\else 0\fi}
 
-\def\uchexnumber#1% 
+\def\uchexnumber#1%
   {\@EA\douchexnumber\number#1\relax}
 
 \def\douchexnumber#1\relax % \def\uchexnumber#1%
@@ -84,7 +84,7 @@
      e0\or e1\or e2\or e3\or e4\or e5\or e6\or e7\or e8\or e9\or ea\or eb\or ec\or ed\or ee\or ef\or
      f0\or f1\or f2\or f3\or f4\or f5\or f6\or f7\or f8\or f9\or fa\or fb\or fc\or fd\or fe\or ff\fi}
 
-\def\uchexnumbers#1% 
+\def\uchexnumbers#1%
   {\@EA\douchexnumbers\number#1\relax}
 
 \def\douchexnumbers#1\relax % \def\uchexnumbers#1%
@@ -106,61 +106,61 @@
      E0\or E1\or E2\or E3\or E4\or E5\or E6\or E7\or E8\or E9\or EA\or EB\or EC\or ED\or EE\or EF\or
      F0\or F1\or F2\or F3\or F4\or F5\or F6\or F7\or F8\or F9\or FA\or FB\or FC\or FD\or FE\or FF\fi}
 
-%D \macros 
+%D \macros
 %D   {octnumber}
 %D
-%D For unicode remapping purposes, we need octal numbers. 
+%D For unicode remapping purposes, we need octal numbers.
 
 \def\octnumber#1%
   {\@EA\dooctnumber\number#1\relax}
 
 \def\dooctnumber#1\relax % \def\octnumber#1%
   {\ifcase#1
-     000\or 001\or 002\or 003\or 004\or 005\or 006\or 007\or 
-     010\or 011\or 012\or 013\or 014\or 015\or 016\or 017\or 
-     020\or 021\or 022\or 023\or 024\or 025\or 026\or 027\or 
-     030\or 031\or 032\or 033\or 034\or 035\or 036\or 037\or 
-     040\or 041\or 042\or 043\or 044\or 045\or 046\or 047\or 
-     050\or 051\or 052\or 053\or 054\or 055\or 056\or 057\or 
-     060\or 061\or 062\or 063\or 064\or 065\or 066\or 067\or 
-     070\or 071\or 072\or 073\or 074\or 075\or 076\or 077\or 
+     000\or 001\or 002\or 003\or 004\or 005\or 006\or 007\or
+     010\or 011\or 012\or 013\or 014\or 015\or 016\or 017\or
+     020\or 021\or 022\or 023\or 024\or 025\or 026\or 027\or
+     030\or 031\or 032\or 033\or 034\or 035\or 036\or 037\or
+     040\or 041\or 042\or 043\or 044\or 045\or 046\or 047\or
+     050\or 051\or 052\or 053\or 054\or 055\or 056\or 057\or
+     060\or 061\or 062\or 063\or 064\or 065\or 066\or 067\or
+     070\or 071\or 072\or 073\or 074\or 075\or 076\or 077\or
      100\or 101\or 102\or 103\or 104\or 105\or 106\or 107\or
-     110\or 111\or 112\or 113\or 114\or 115\or 116\or 117\or 
-     120\or 121\or 122\or 123\or 124\or 125\or 126\or 127\or 
-     130\or 131\or 132\or 133\or 134\or 135\or 136\or 137\or 
-     140\or 141\or 142\or 143\or 144\or 145\or 146\or 147\or 
-     150\or 151\or 152\or 153\or 154\or 155\or 156\or 157\or 
-     160\or 161\or 162\or 163\or 164\or 165\or 166\or 167\or 
+     110\or 111\or 112\or 113\or 114\or 115\or 116\or 117\or
+     120\or 121\or 122\or 123\or 124\or 125\or 126\or 127\or
+     130\or 131\or 132\or 133\or 134\or 135\or 136\or 137\or
+     140\or 141\or 142\or 143\or 144\or 145\or 146\or 147\or
+     150\or 151\or 152\or 153\or 154\or 155\or 156\or 157\or
+     160\or 161\or 162\or 163\or 164\or 165\or 166\or 167\or
      170\or 171\or 172\or 173\or 174\or 175\or 176\or 177\or
-     200\or 201\or 202\or 203\or 204\or 205\or 206\or 207\or 
-     210\or 211\or 212\or 213\or 214\or 215\or 216\or 217\or 
-     220\or 221\or 222\or 223\or 224\or 225\or 226\or 227\or 
-     230\or 231\or 232\or 233\or 234\or 235\or 236\or 237\or 
-     240\or 241\or 242\or 243\or 244\or 245\or 246\or 247\or 
-     250\or 251\or 252\or 253\or 254\or 255\or 256\or 257\or 
-     260\or 261\or 262\or 263\or 264\or 265\or 266\or 267\or 
-     270\or 271\or 272\or 273\or 274\or 275\or 276\or 277\or 
-     300\or 301\or 302\or 303\or 304\or 305\or 306\or 307\or 
-     310\or 311\or 312\or 313\or 314\or 315\or 316\or 317\or 
-     320\or 321\or 322\or 323\or 324\or 325\or 326\or 327\or 
-     330\or 331\or 332\or 333\or 334\or 335\or 336\or 337\or 
-     340\or 341\or 342\or 343\or 344\or 345\or 346\or 347\or 
-     350\or 351\or 352\or 353\or 354\or 355\or 356\or 357\or 
-     360\or 361\or 362\or 363\or 364\or 365\or 366\or 367\or 
+     200\or 201\or 202\or 203\or 204\or 205\or 206\or 207\or
+     210\or 211\or 212\or 213\or 214\or 215\or 216\or 217\or
+     220\or 221\or 222\or 223\or 224\or 225\or 226\or 227\or
+     230\or 231\or 232\or 233\or 234\or 235\or 236\or 237\or
+     240\or 241\or 242\or 243\or 244\or 245\or 246\or 247\or
+     250\or 251\or 252\or 253\or 254\or 255\or 256\or 257\or
+     260\or 261\or 262\or 263\or 264\or 265\or 266\or 267\or
+     270\or 271\or 272\or 273\or 274\or 275\or 276\or 277\or
+     300\or 301\or 302\or 303\or 304\or 305\or 306\or 307\or
+     310\or 311\or 312\or 313\or 314\or 315\or 316\or 317\or
+     320\or 321\or 322\or 323\or 324\or 325\or 326\or 327\or
+     330\or 331\or 332\or 333\or 334\or 335\or 336\or 337\or
+     340\or 341\or 342\or 343\or 344\or 345\or 346\or 347\or
+     350\or 351\or 352\or 353\or 354\or 355\or 356\or 357\or
+     360\or 361\or 362\or 363\or 364\or 365\or 366\or 367\or
      370\or 371\or 372\or 373\or 374\or 375\or 376\or 377\fi}
 
 %D \macros
 %D   {rawcharacter}
 %D
 %D This conversion macro produces raw characters. We have to
-%D construct the macro in a special way to avoid problems with 
-%D characters with special meanings. So, we revert to the 
+%D construct the macro in a special way to avoid problems with
+%D characters with special meanings. So, we revert to the
 %D lowercase conversion trick to bypass \TEX's input parser.
 
 \bgroup
 
-\catcode`\^^@=12 % ascii null   == ignored in plain 
-\catcode`\^^?=12 % ascii delete == invalid in plain 
+\catcode`\^^@=12 % ascii null   == ignored in plain
+\catcode`\^^?=12 % ascii delete == invalid in plain
 
 \let\or\relax
 
@@ -175,4 +175,4 @@
 
 \egroup
 
-\protect \endinput 
+\protect \endinput

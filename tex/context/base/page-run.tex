@@ -2,7 +2,7 @@
 %D   [       file=page-run,
 %D        version=2000.10.20,
 %D          title=\CONTEXT\ Page Macros,
-%D       subtitle=Runtime Macros, 
+%D       subtitle=Runtime Macros,
 %D         author=Hans Hagen,
 %D           date=\currentdate,
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
@@ -11,9 +11,9 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-\writestatus{loading}{Context Page Macros / Runtime Macros} 
+\writestatus{loading}{Context Page Macros / Runtime Macros}
 
-\unprotect 
+\unprotect
 
 \gdef\doshowprint[#1][#2][#3]%
   {\framed
@@ -97,7 +97,7 @@
         \c!hoek=\v!recht,
         \c!kaderoffset=\!!zeropoint,
         \c!kaderdiepte=\!!zeropoint,
-        \c!kaderkleur=green]
+        \c!kaderkleur=layout:page]
      \setupbackgrounds
        [#1][#2]
        [\c!achtergrond=,
@@ -128,19 +128,19 @@
 \gdef\showsetupB#1#2#3%
   {#1&&#2#3&\tttf\string#3\cr}
 
-\iffixedlayoutdimensions 
+\iffixedlayoutdimensions
 
   \global\let\showsetupC=\showsetupA
 
 \else % we could have used \@the
 
-  \gdef\showsetupC#1#2% \relax is really needed here ! 
+  \gdef\showsetupC#1#2% \relax is really needed here !
     {#1&\scratchdimen#2\PtToCm{\the\scratchdimen}&%
      \scratchdimen#2\relax\the\scratchdimen&\tttf\string#2\cr}
 
 \fi
 
-% \startinterface english % english is fallback 
+% \startinterface english % english is fallback
 
 \gdef\showsetups
   {\noindent
@@ -184,7 +184,7 @@
          \showsetupB{topskip}            \relax \topskipfactor
          \showsetupB{maxdepth}           \relax \maxdepthfactor}}}
 
-% \stopinterface 
+% \stopinterface
 
 \startinterface dutch
 
@@ -283,7 +283,7 @@
 
 \startinterface czech
 
-\gdef\showsetups% 
+\gdef\showsetups%
   {\noindent
    \vbox
      {\forgetall
@@ -391,4 +391,4 @@
    \NC inner margin \NC \the\innermarginwidth               \NC \NR
    \stoptabulate}
 
-\protect \endinput 
+\protect \endinput

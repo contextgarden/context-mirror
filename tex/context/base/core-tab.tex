@@ -2455,18 +2455,18 @@
      {\let\StrutDepthFactor\@@itdiepte}
      {\let\StrutDepthFactor\@@tidiepte}%
    \scratchdimen\StrutHeightFactor\points \multiply\scratchdimen 10%
-   \edef\StrutHeightFactor{\@EA\withoutpt\the\scratchdimen}%
+   \edef\StrutHeightFactor{\withoutpt\the\scratchdimen}%
    \scratchdimen\StrutDepthFactor \points \multiply\scratchdimen 10%
-   \edef\StrutDepthFactor{\@EA\withoutpt\the\scratchdimen}%
+   \edef\StrutDepthFactor{\withoutpt\the\scratchdimen}%
    % units
    \NormalTSU{\normalbaselineskip\divide\StrutUnit 12 }%
    \NormalTableUnits}
 
 \def\OpenUp#1#2%
   {\scratchdimen\StrutHeightFactor \points \advance\scratchdimen #1\points
-   \edef\StrutHeightFactor{\@EA\withoutpt\the\scratchdimen}%
+   \edef\StrutHeightFactor{\withoutpt\the\scratchdimen}%
    \scratchdimen\StrutDepthFactor  \points \advance\scratchdimen #2\points
-   \edef\StrutDepthFactor{\@EA\withoutpt\the\scratchdimen}}
+   \edef\StrutDepthFactor{\withoutpt\the\scratchdimen}}
 
 %D As one can see, we didn't only add color, but also more
 %D control over spacing.

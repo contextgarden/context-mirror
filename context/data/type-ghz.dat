@@ -28,7 +28,10 @@
 
 # linotype kompakt
 
-# linotype linotype-zapfino
+# linotype zapfino
+
+--en=? --ve=linotype --co=zapfino --re
+--en=? --ve=linotype --co=zapfino --so=ghz/linotype-zapfino --ma --in
 
 # linotype marconi
 

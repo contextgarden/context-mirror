@@ -197,44 +197,50 @@
 \stopsetups
 
 \setupbottomtexts
-  [\RightBanner][]
-  [][\LeftBanner]
+  [\setups{rightbanner}] []
+  [] [\setups{leftbanner}]
 
-\def\LeftBanner
-  {\definedfont[Regular at \bottomheight]%
-   \setbox\scratchbox\hbox{\TitleColor\getvariable{magazine}{main}}%
-   \ht\scratchbox1ex
-   \dp\scratchbox\zeropoint
-   \MainColor
-   \definedfont[Regular sa 2]%
-   \doifsomething{\getvariable{magazine}{number}}
-     {\doifnot{\getvariable{magazine}{number}}{0}
-        {\#\getvariable{magazine}{number}}}%
-   \quad
-   \currentdate
-   \quad
-   \scale[height=.25\bottomheight]{\box\scratchbox}%
-   \quad
-   \hbox to 1.5em{\hss\pagenumber\hss}%
-   \quad
-   \hskip-\backspace}
+\startsetups [leftbanner]
 
-\def\RightBanner
-  {\definedfont[Regular at \bottomheight]%
-   \setbox\scratchbox\hbox{\TitleColor\getvariable{magazine}{main}}%
-   \ht\scratchbox1ex
-   \dp\scratchbox\zeropoint
-   \MainColor
-   \hskip-\backspace
-   \definedfont[Regular sa 2]%
-   \quad
-   \hbox to 1.5em{\hss\pagenumber\hss}%
-   \quad
-   \scale[height=.25\bottomheight]{\box\scratchbox}%
-   \quad
-   \currentdate
-   \quad
-   \doifmode{atpragma}{\#\getvariable{magazine}{number}}}
+  \definedfont[Regular at \bottomheight]
+  \setbox\scratchbox\hbox{\TitleColor\getvariable{magazine}{main}}
+  \ht\scratchbox1ex
+  \dp\scratchbox\zeropoint
+  \MainColor
+  \definedfont[Regular sa 2]
+  \doifsomething{\getvariable{magazine}{number}}
+    {\doifnot{\getvariable{magazine}{number}}{0}
+       {\#\getvariable{magazine}{number}}}
+  \quad
+  \currentdate
+  \quad
+  \scale[height=.25\bottomheight]{\box\scratchbox}
+  \quad
+  \hbox to 1.5em{\hss\pagenumber\hss}
+  \quad
+  \hskip-\backspace
+
+\stopsetups
+
+\startsetups [rightbanner]
+
+  \definedfont[Regular at \bottomheight]
+  \setbox\scratchbox\hbox{\TitleColor\getvariable{magazine}{main}}
+  \ht\scratchbox1ex
+  \dp\scratchbox\zeropoint
+  \MainColor
+  \hskip-\backspace
+  \definedfont[Regular sa 2]
+  \quad
+  \hbox to 1.5em{\hss\pagenumber\hss}
+  \quad
+  \scale[height=.25\bottomheight]{\box\scratchbox}
+  \quad
+  \currentdate
+  \quad
+  \doifmode{atpragma}{\#\getvariable{magazine}{number}}
+
+\stopsetups
 
 \startsetups[titlepage]
 

@@ -551,7 +551,30 @@
          \doifnottblcol\row\col{\settblcol\row\col\!!zerocount}%
          \doifnottbltag\row\col{\settbltag\row\col\tblnone}}}%
    % check and do
-   \begTBL
+   \startTBLprocessing
+     \begTBL
+       \dorecurse\maximumrow
+         {\bTBL
+            \let\row\recurselevel
+            \dorecurse\maximumcol
+              {\let\col\recurselevel
+               \expanded{\doTBL{\row}{\col}}}%
+          \eTBL}%
+       \removeunwantedspaces % only if hmode
+     \endTBL
+   \stopTBLprocessing
+   % wrong ! ! ! better to have an auto-offset-overlay
+   % \ifnum\TBLlevel>1
+   %   \vskip-\strutdp
+   % \fi
+   \egroup
+   \popTBL}
+
+\let\startTBLprocessing\relax
+\let\stopTBLprocessing \relax
+
+\def\processTBL
+  {\begTBL
    \dorecurse\maximumrow
      {\bTBL
       \let\row\recurselevel
@@ -560,13 +583,7 @@
          \expanded{\doTBL{\row}{\col}}}%
       \eTBL}%
    \removeunwantedspaces % only if hmode
-   \endTBL
-   % wrong ! ! ! better to have an auto-offset-overlay
-   % \ifnum\TBLlevel>1
-   %   \vskip-\strutdp
-   % \fi
-   \egroup
-   \popTBL}
+   \endTBL}
 
 \def\spanTBL#1#2%
   {\scratchcounter\gettblcol{#1}{#2}\relax
@@ -1032,10 +1049,82 @@
      \executeifdefined{splittblbox\tbltblsplitsmethode}\splittblboxa{#1}%
    \fi}
 
+% \def\splittblboxa#1% spacing between rows gets lost in split
+%   {\ifmultipleTBLheads
+%      \setbox\scratchbox\vbox{#1}%
+%      \setbox8\vbox{\doifsomething\tbltbltussenwit{\blank[\tbltbltussenwit]}}%
+%      \setbox2\vbox{}%
+%      \setbox4\vbox{}%
+%      \dorecurse\noftblheadlines
+%        {\setbox0\vsplit\scratchbox to \lineheight
+%         \setbox2\vbox{\unvcopy2\unvcopy0}}%
+%      \dorecurse\noftblnextlines
+%        {\setbox0\vsplit\scratchbox to \lineheight
+%         \setbox4\vbox{\unvcopy4\unvcopy0}}%
+%      \ifcase\noftblheadlines\else
+%        \ifdim\pagegoal<\maxdimen
+%          \dimen0\ht2
+%          \advance\dimen0\ht8
+%          \advance\dimen0\pagetotal\relax
+%          \ifdim\dimen0>\pagegoal
+%            \bgroup\pagina\egroup % make sure that local vars are kept
+%          \fi
+%        \fi
+%        \unvcopy2
+%        \ifcase\noftblnextlines\else
+%          \setbox2\box4
+%        \fi
+%      \fi
+%      \donefalse
+%      \!!doneafalse
+%      \doloop
+%        {\setbox0\vsplit\scratchbox to \lineheight
+%         \if!!donea
+%           \ifdim\pagegoal<\maxdimen
+%             \setbox0\vbox{\unvbox0}%
+%             \ifdim\ht0>\zeropoint
+%               \dimen0\ht0
+%               \advance\dimen0\ht8
+%               \advance\dimen0\pagetotal\relax
+%               \ifdim\dimen0>\pagegoal
+%                 \bgroup\pagina\egroup % make sure that local vars are kept
+%                 \ifcase\noftblheadlines\else\unvcopy2\fi
+%               \fi
+%             \fi
+%           \fi
+%         \fi
+%         \!!doneatrue
+%         \ifdone
+%           \doifsomething\tbltbltussenwit{\blank[\tbltbltussenwit]}%
+%         \fi
+%         \unvbox0
+%         %\allowbreak
+%         \bgroup
+%           % todo: what if tblnextlines ?
+%           \scratchcounter\recurselevel
+%           \advance\scratchcounter\noftblheadlines
+%           \setupTBLcell{\number\scratchcounter}1
+%           \ifx\@@tblsplitafter\relax
+%             \allowbreak
+%           \else
+%             \doifelsenothing\@@tblsplitafter
+%                \allowbreak
+%               {\scratchcounter\realpageno
+%                \@@tblsplitafter
+%                \ifnum\scratchcounter<\realpageno
+%                  \ifcase\noftblheadlines\else\unvcopy2\fi
+%                \fi}%
+%           \fi
+%         \egroup
+%         \ifvoid\scratchbox \exitloop \else \donetrue \fi}%
+%    \else
+%      \notsplittblbox{#1}%
+%    \fi}
+
 \def\splittblboxa#1% spacing between rows gets lost in split
-  {\ifmultipleTBLheads
-     \setbox\scratchbox\vbox{#1}%
-     \setbox8\vbox{\doifsomething\tbltbltussenwit{\blank[\tbltbltussenwit]}}%
+  {\setbox\scratchbox\vbox{#1}%
+   \setbox8\vbox{\doifsomething\tbltbltussenwit{\blank[\tbltbltussenwit]}}%
+   \ifmultipleTBLheads
      \setbox2\vbox{}%
      \setbox4\vbox{}%
      \dorecurse\noftblheadlines
@@ -1058,51 +1147,55 @@
          \setbox2\box4
        \fi
      \fi
-     \donefalse
-     \!!doneafalse
-     \doloop
-       {\setbox0\vsplit\scratchbox to \lineheight
-        \if!!donea
-          \ifdim\pagegoal<\maxdimen
-            \setbox0\vbox{\unvbox0}%
-            \ifdim\ht0>\zeropoint
-              \dimen0\ht0
-              \advance\dimen0\ht8
-              \advance\dimen0\pagetotal\relax
-              \ifdim\dimen0>\pagegoal
-                \bgroup\pagina\egroup % make sure that local vars are kept
+   \fi
+   \donefalse
+   \!!doneafalse
+   \doloop
+     {\setbox0\vsplit\scratchbox to \lineheight
+      \if!!donea
+        \ifdim\pagegoal<\maxdimen
+          \setbox0\vbox{\unvbox0}%
+          \ifdim\ht0>\zeropoint
+            \dimen0\ht0
+            \advance\dimen0\ht8
+            \advance\dimen0\pagetotal\relax
+            \ifdim\dimen0>\pagegoal
+              \bgroup\pagina\egroup % make sure that local vars are kept
+              \ifmultipleTBLheads
                 \ifcase\noftblheadlines\else\unvcopy2\fi
               \fi
             \fi
           \fi
         \fi
-        \!!doneatrue
-        \ifdone
-          \doifsomething\tbltbltussenwit{\blank[\tbltbltussenwit]}%
-        \fi
-        \unvbox0
-        %\allowbreak
-        \bgroup
-          % todo: what if tblnextlines ?
-          \scratchcounter\recurselevel
+      \fi
+      \!!doneatrue
+      \ifdone
+        \doifsomething\tbltbltussenwit{\blank[\tbltbltussenwit]}%
+      \fi
+      \unvbox0
+      %\allowbreak
+      \bgroup
+        % todo: what if tblnextlines ?
+        \scratchcounter\recurselevel
+        \ifmultipleTBLheads
           \advance\scratchcounter\noftblheadlines
-          \setupTBLcell{\number\scratchcounter}1
-          \ifx\@@tblsplitafter\relax
-            \allowbreak
-          \else
-            \doifelsenothing\@@tblsplitafter
-               \allowbreak
-              {\scratchcounter\realpageno
-               \@@tblsplitafter
+        \fi
+        \setupTBLcell{\number\scratchcounter}1
+        \ifx\@@tblsplitafter\relax
+          \allowbreak
+        \else
+          \doifelsenothing\@@tblsplitafter
+             \allowbreak
+            {\scratchcounter\realpageno
+             \@@tblsplitafter
+             \ifmultipleTBLheads
                \ifnum\scratchcounter<\realpageno
                  \ifcase\noftblheadlines\else\unvcopy2\fi
-               \fi}%
-          \fi
-        \egroup
-        \ifvoid\scratchbox \exitloop \else \donetrue \fi}%
-   \else
-     \notsplittblbox{#1}%
-   \fi}
+               \fi
+             \fi}%
+        \fi
+      \egroup
+      \ifvoid\scratchbox \exitloop \else \donetrue \fi}}
 
 % \def\splittblboxb#1%
 %   {\setbox\scratchbox\vbox{#1}%
@@ -1212,10 +1305,12 @@
         \@@tblsplitafter
         \exitloop
       \else
-        % hack
+       % hack
         \scratchdimen\pagegoal
-        \advance\scratchdimen \lineheight
-        \global\pagegoal\scratchdimen
+        \ifdim\scratchdimen<\maxdimen
+          \advance\scratchdimen \lineheight
+          \global\pagegoal\scratchdimen
+        \fi
         % brrr
         \beforeTABLEsplitbox
         \box\finaltblbox

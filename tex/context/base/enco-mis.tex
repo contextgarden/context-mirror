@@ -8,16 +8,16 @@
 %D      copyright=PRAGMA-ADE]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
-%C details. 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
 
-%D In this file we collect some definitions that construct 
-%D pseudo characters. Some day we will move some definitions 
-%D from \type {plain.tex} to this file. Some definitions are 
-%D derived from definitions in the \LATEX\ distribution, 
-%D especially Johannes Braams' Babel system.  
+%D In this file we collect some definitions that construct
+%D pseudo characters. Some day we will move some definitions
+%D from \type {plain.tex} to this file. Some definitions are
+%D derived from definitions in the \LATEX\ distribution,
+%D especially Johannes Braams' Babel system.
 
-\startmapping[\s!default] 
+\startmapping[\s!default]
 
 \defineuppercasecom \dj  \DJ
 \defineuppercasecom \Dj  \dj
@@ -26,7 +26,7 @@
 \definecharacter dstroke {\pseudoencodeddj}
 \definecharacter Dstroke {\pseudoencodedDJ}
 
-\stopmapping 
+\stopmapping
 
 %D We need proper names like in enco-com.tex!
 
@@ -34,53 +34,53 @@
 \definecharacter Dj {\Dstroke} % {\pseudoencodedDJ}
 \definecharacter DJ {\Dstroke} % {\pseudoencodedDJ}
 
-\unprotect 
+\unprotect
 
-% \def\pseudoencodeddj % like in babel 
+% \def\pseudoencodeddj % like in babel
 %   {\leavevmode\hbox\bgroup
 %    \setbox0\hbox{d}%
 %    \dimen0=\ht0
 %    \advance\dimen0 1ex
 %    \dimen0=.45\dimen0
-%    \dimen2\expandafter\withoutpt\the\fontdimen1\font\dimen0
+%    \dimen2=\withoutpt\the\fontdimen1\font\dimen0
 %    \advance\dimen2 .5ex
 %    \rlap{\raise\dimen0\hbox{\kern\dimen2\vbox{\hrule\!!height0.1ex\!!width0.3em}}}%
 %    \box0
 %    \egroup}
-% 
-% \def\pseudoencodedDJ % like in babel 
+%
+% \def\pseudoencodedDJ % like in babel
 %   {\leavevmode
 %    \hbox\bgroup
 %    \setbox0\hbox{D}%
 %    \dimen0=.55\ht0
-%    \dimen2\expandafter\withoutpt\the\fontdimen1\font\dimen0
-%    \advance\dimen2 .15ex 
-%    \advance\dimen2 -.15\fontdimen7\font 
+%    \dimen2=\withoutpt\the\fontdimen1\font\dimen0
+%    \advance\dimen2 .15ex
+%    \advance\dimen2 -.15\fontdimen7\font
 %    \rlap{\raise\dimen0\hbox{\kern\dimen2\vbox{\hrule\!!height0.1ex\!!width0.33em}}}%
 %    \box0
 %    \egroup}
 
-\def\pseudoencodeddj % like in babel, but safer   
+\def\pseudoencodeddj % like in babel, but safer
   {\leavevmode\hbox\bgroup
    \setbox\scratchbox\hbox{d}%
    \scratchdimen\ht\scratchbox
    \advance\scratchdimen 1ex
    \scratchdimen.45\scratchdimen
-   \dimen2\expandafter\withoutpt\the\fontdimen1\font\dimen0
+   \dimen2=\withoutpt\the\fontdimen1\font\dimen0
    \advance\dimen2 .5ex
    \hbox to \wd\scratchbox
      {\box\scratchbox\hss
       \raise\scratchdimen\hbox{\kern\dimen2\vbox{\hrule\!!height0.1ex\!!width0.3em}}}%
    \egroup}
 
-\def\pseudoencodedDJ % like in babel, but safer 
+\def\pseudoencodedDJ % like in babel, but safer
   {\leavevmode
    \hbox\bgroup
    \setbox\scratchbox\hbox{D}%
    \scratchdimen.55\ht\scratchbox
-   \dimen2\expandafter\withoutpt\the\fontdimen1\font\scratchdimen
-   \advance\dimen2 .15ex 
-   \advance\dimen2 -.15\fontdimen7\font 
+   \dimen2=\withoutpt\the\fontdimen1\font\scratchdimen
+   \advance\dimen2 .15ex
+   \advance\dimen2 -.15\fontdimen7\font
    \hbox to \wd\scratchbox
      {\box\scratchbox\hss
       \raise\scratchdimen\hbox{\kern\dimen2\vbox{\hrule\!!height0.1ex\!!width0.3em}}}%
@@ -88,7 +88,7 @@
 
 % currency
 
-\def\fakedollar % pretty cmr dependent 
+\def\fakedollar % pretty cmr dependent
   {\bgroup
    \ifnum\fam=\itfam
      \sl
@@ -98,7 +98,7 @@
    \$%
    \egroup}
 
-\def\fakesterling % pretty cmr dependent  
+\def\fakesterling % pretty cmr dependent
   {\bgroup
    \ifnum\fam=\bffam
      \bi
@@ -145,7 +145,7 @@
       \hss}%
    \egroup}
 
-% guillemots 
+% guillemots
 
 %D Yes I know, they are ugly:
 
@@ -161,7 +161,7 @@
 \def\fakerightsubguillemot
   {\hbox{\raise.25ex\hbox{$\scriptscriptstyle>$}}}
 
-%D Needed: 
+%D Needed:
 
 \def\fakevisiblespace
   {\leavevmode\hbox
@@ -169,29 +169,29 @@
       \scratchdimen.1\dp\scratchbox
       \setbox\scratchbox\hbox{\space}%
       \hbox to \wd\scratchbox
-        {\vrule 
+        {\vrule
            \!!depth  5\scratchdimen
-           \!!width   \scratchdimen 
+           \!!width   \scratchdimen
            \!!height  \zeropoint
          \hss
-         \vrule 
+         \vrule
            \!!depth  5\scratchdimen
            \!!width   \wd\scratchbox
            \!!height-4\scratchdimen
          \hss
-         \vrule 
+         \vrule
            \!!depth  5\scratchdimen
-           \!!width   \scratchdimen 
+           \!!width   \scratchdimen
            \!!height  \zeropoint}}}
 
-%\def\fakeunderscore{\leavevmode\kern.06em\vbox{\hrule\!!width.3em}} 
+%\def\fakeunderscore{\leavevmode\kern.06em\vbox{\hrule\!!width.3em}}
 
 \def\fakeunderscore
   {\leavevmode\hbox
      {\setbox\scratchbox\hbox{(}%
       \scratchdimen.2\dp\scratchbox
       \setbox\scratchbox\hbox{\space}%
-      \vrule 
+      \vrule
         \!!depth \scratchdimen
         \!!width \wd\scratchbox
         \!!height\zeropoint}}
@@ -201,8 +201,8 @@
 
 \def\_{\ifmmode\mathunderscore\else\textunderscore\fi}
 
-%D Handy: 
+%D Handy:
 
 \def\missingglyph{\ruledhbox{?}}
 
-\protect \endinput 
+\protect \endinput

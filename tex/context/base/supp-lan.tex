@@ -1223,7 +1223,7 @@
 % 2 => alles na
 % 3 => alles voor
 
-\bgroup \catcode`\~=\active \catcode`\/=\active
+% \bgroup \catcode`\~=\active \catcode`\/=\active
 
 % Why not convert to ascii first? I will redo this one!
 
@@ -1263,6 +1263,47 @@
 %
 % Better (a mere copy with \dohyphens):
 
+% \bgroup \catcode`\~=\active \catcode`\/=\active
+%
+% \unexpanded\gdef\hyphenatedurl#1% {}{} handles accents
+%   {\bgroup
+%    \ifnum\hyphenpenalty<10000 \else
+%      \def\discretionary##1##2##3{##1\allowbreak##2}%
+%    \fi
+%    \obeyhyphens
+%    \def\splitbefore##1%
+%      {\setbox\scratchbox=\hbox{##1{}{}}%
+%       \ifcase\urlsplitmode
+%         \box\scratchbox
+%       \or
+%         \postwordbreak\box\scratchbox\prewordbreak
+%       \or
+%         \prewordbreak\discretionary{\box\scratchbox}{}{\box\scratchbox}\prewordbreak
+%       \else
+%         \postwordbreak\box\scratchbox\prewordbreak
+%       \fi}%
+%    \def\splitafter##1%
+%      {\ifcase\urlsplitmode
+%         ##1{}{}%
+%       \or
+%         \prewordbreak\discretionary{##1{}{}}{}{##1{}{}}\prewordbreak
+%       \or
+%         \prewordbreak\discretionary{##1{}{}}{}{##1{}{}}\prewordbreak
+%       \else
+%         \prewordbreak\discretionary{}{##1{}{}}{##1{}{}}\prewordbreak
+%       \fi}%
+%    \def\flushurl%
+%      {\savedurl\let\savedurl\empty}%
+%    \def\\%
+%      {\spliturl\#}%
+%    \let\~=\lettertilde\let~=\~%
+%    \let\/=\letterslash\let/=\/%
+%    \let\savedurl\empty
+%    \handletokens#1\with\scanurl\savedurl
+%    \egroup}
+%
+% \egroup
+
 \bgroup \catcode`\~=\active \catcode`\/=\active
 
 \unexpanded\gdef\hyphenatedurl#1% {}{} handles accents
@@ -1299,6 +1340,7 @@
    \let\~=\lettertilde\let~=\~%
    \let\/=\letterslash\let/=\/%
    \let\savedurl\empty
+   \scratchcounter\zerocount % used for hyphenmethod
    \handletokens#1\with\scanurl\savedurl
    \egroup}
 
@@ -1311,10 +1353,60 @@
 %D \expandafter\handletokens\ascii\with\scanurl
 %D \stoptypen
 
-\egroup
+% \def\scanurl#1%
+%   {\ifx#1\~%
+%      \flushurl\splitbefore\~%
+%    \else\ifx#1\#%
+%      \flushurl\splitbefore\#%
+%    \else\ifx#1\&%
+%      \flushurl\splitbefore\&%
+%    \else\ifx#1\%%
+%      \flushurl\splitbefore\%%
+%    \else\ifx#1\_%
+%      \flushurl\splitbefore\_%
+%    \else\if\noexpand#1\relax
+%      #1%
+%    \else\ifnum\catcode`#1=8
+%      \flushurl\splitbefore\_%
+%    \else\ifnum\catcode`#1=6
+%      \flushurl\splitbefore\#%
+%    \else\ifnum\catcode`#1=4
+%      \flushurl\splitbefore\&%
+%    \else\if#1\lettertilde
+%      \flushurl\splitbefore\~%
+%    \else\if#1\letterpercent
+%      \flushurl\splitbefore\%%
+%    \else\if#1\letterunderscore
+%      \flushurl\splitbefore\_%
+%    \else\if#1\letterquestionmark
+%      \flushurl\splitafter\letterquestionmark
+%    \else\if#1\letterat
+%      \flushurl\splitafter\letterat
+%    \else\if#1\letterslash
+%      \edef\savedurl{\savedurl\letterslash}%
+%    \else\if#1+%
+%      \flushurl\splitafter+%
+%    \else\if#1:%
+%      \flushurl\splitafter:%
+%    \else\if#1.%
+%      \flushurl\splitafter.%
+%    \else\if#1(%
+%      \flushurl\splitbefore(%
+%    \else\if#1)%
+%      \flushurl\splitafter)%
+%    \else
+%      \ifx\savedurl\empty\else
+%        \splitbefore\savedurl
+%        \let\savedurl\empty
+%      \fi
+%      #1%
+%    \fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi}
+
+\chardef\urlhyphenmethod=0
 
 \def\scanurl#1%
-  {\ifx#1\~%
+  {\advance\scratchcounter\plusone
+   \ifx#1\~%
      \flushurl\splitbefore\~%
    \else\ifx#1\#%
      \flushurl\splitbefore\#%
@@ -1359,8 +1451,25 @@
        \splitbefore\savedurl
        \let\savedurl\empty
      \fi
-     #1%
+     \ifcase\urlhyphenmethod
+       #1%
+     \else
+       \ifnum\scratchcounter>\plusthree % so, \http: will not break
+         \edef\savedurl{#1}%
+       \else
+         #1%
+       \fi
+     \fi
    \fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi}
+
+% \setupinteraction[state=start]
+% \def\gotoURL#1{\useURL[foo][#1]\goto{\url[foo]}[url(foo)]}
+% \starttext
+% \endgraf \chardef\urlhyphenmethod=0
+% \hsize1pt\gotoURL{http://www.physik.fu-berlin.de/SomeVeryVeryVeryLongDirectory/And/AQuiteLongFileName.html}
+% \endgraf \chardef\urlhyphenmethod=1
+% \hsize1pt\gotoURL{http://www.physik.fu-berlin.de/SomeVeryVeryVeryLongDirectory/And/AQuiteLongFileName.html}
+% \stoptext
 
 %D When Joop Susan asked (on the \CONTEXT\ mailing list) how
 %D to handle url's passed as argument, the following solutions

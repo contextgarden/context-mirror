@@ -246,7 +246,7 @@
   {\setcolorbox}
 
 %D \macros
-%D   {defineoverlay,doifoverlayelse,overlayoffset,
+%D   {defineoverlay, doifoverlayelse, overlayoffset,
 %D    overlaywidth, overlayheight, overlaydepth,
 %D    overlaycolor, overlaylinecolor, overlaylinewidth}
 %D
@@ -638,11 +638,11 @@
   {\copyparameters[#1][#3]%
      [\c!breedte,\c!hoogte,\c!offset,\c!leeg,\c!lijndikte,%
       \c!straal,\c!hoek,\c!diepte,\c!kader,\c!kaderkleur,%
-      \c!voorgrondletter,\c!voorgrondkleur,\c!regels,\c!component,%
+      \c!voorgrondletter,\c!voorgrondkleur,\c!regels,%
       \c!bovenkader,\c!onderkader,\c!linkerkader,\c!rechterkader,%
       \c!lijndikte,\c!kaderoffset,\c!achtergrond,\c!component,%
       \c!achtergrondoffset,\c!achtergrondraster,\c!achtergrondkleur,%
-      \c!uitlijnen,\c!onder,\c!boven,\c!strut,\c!plaats]%
+      \c!uitlijnen,\c!onder,\c!boven,\c!strut,\c!plaats,\c!setups]%
    \copyparameters[#1\c!achtergrond][#1]%
      [\c!straal,\c!hoek,\c!diepte]%
    \copyparameters[#1\c!kader][#1]%
@@ -716,6 +716,10 @@
      {\@EA\doconvertfont\csname\@@framed\c!voorgrondletter\endcsname\empty}%
    % beware, both the frame and background offset can be overruled
    %
+   \edef\doframedsetups{\framedparameter\c!setups}%
+   \ifx\doframedsetups\empty\else
+     \edef\doframedsetups{\noexpand\setups[\doframedsetups]}%
+   \fi
    % the next macros are visible
    \edef\localoffset{\framedparameter\c!offset}%
    \edef\localwidth {\framedparameter\c!breedte}%
@@ -1385,6 +1389,7 @@
        \oninterlineskip
        \hsize\!!widtha
        \vsize\!!heighta
+       \doframedsetups
        \raggedcommand
        \dobeforeframedbox
        \bgroup
@@ -1402,6 +1407,7 @@
        \oninterlineskip
        \hsize\!!widtha
        \vsize\!!heighta
+       \doframedsetups
        \raggedcenter
        \vss
        \bgroup
@@ -1417,6 +1423,7 @@
      \bgroup
        \forgetall
        \oninterlineskip
+       \doframedsetups
        \raggedcommand
        \vss
        \bgroup
@@ -1433,6 +1440,7 @@
        \forgetall
        \oninterlineskip
        \hsize\!!widtha
+       \doframedsetups
        \raggedcommand
        \dobeforeframedbox
        \bgroup
@@ -1448,6 +1456,7 @@
      \bgroup
        \forgetall
        \vsize\!!heighta
+       \doframedsetups
        \vss
        \bgroup
        \aftergroup\vss
@@ -1463,6 +1472,7 @@
   {\hbox to \!!widtha
      \bgroup
        \forgetall
+       \doframedsetups
        \hss
        \localstrut
        \@@handleoneliner
@@ -1474,9 +1484,12 @@
 \def\doformatboxNoSize
   {\hbox
      \bgroup
+       \doframedsetups
        \localstrut
        \@@handleoneliner
        \let\next=}
+
+\let\doframedsetups\relax
 
 %D On the next page we show some examples of how these macros
 %D come into action. The examples show us how
@@ -3272,7 +3285,8 @@
    \c!onder=\vss,
    \c!boven=,
    \c!strut=\v!ja,
-   \c!plaats=\v!normaal]
+   \c!plaats=\v!normaal,
+   \c!setups=]
 
 \setupscreens
   [\c!factor=1.0,

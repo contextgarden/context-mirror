@@ -56,119 +56,160 @@
 
 %D The interface to the specials. DEFAULT NOG ANDERS
 
+\def\preparefieldvariables % evt \def's at the outer level (test) or \edef's here for fast testing
+  {\let\@@DriverFieldNumber         \@@fdn
+   \let\@@DriverFieldStyle          \@@fdletter
+   \let\@@DriverFieldColor          \@@fdkleur
+   \let\@@DriverFieldBackgroundColor\@@fdveldachtergrondkleur
+   \let\@@DriverFieldFrameColor     \@@fdveldkaderkleur
+   \let\@@DriverFieldLayer          \@@fdveldlaag
+   \let\@@DriverFieldOption         \@@fdoptie
+   \let\@@DriverFieldAlign          \@@fduitlijnen
+   \let\@@DriverFieldClickIn        \@@fdklikin
+   \let\@@DriverFieldClickOut       \@@fdklikuit
+   \let\@@DriverFieldRegionIn       \@@fdgebiedin
+   \let\@@DriverFieldRegionOut      \@@fdgebieduit
+   \let\@@DriverFieldAfterKey       \@@fdnatoets
+   \let\@@DriverFieldFormat         \@@fdformatteer
+   \let\@@DriverFieldValidate       \@@fdvalideer
+   \let\@@DriverFieldCalculate      \@@fdbereken
+   \let\@@DriverFieldFocusIn        \@@fdfocusin
+   \let\@@DriverFieldFocusOut       \@@fdfocusuit}
+
+% todo : remove arguments, consider DriverField a namespace
+
 \def\presetlinefield
-  {\dopresetlinefield
-     {\@@FieldName}
-     {\@@FieldWidth}
-     {\@@FieldHeight}
-     {\@@FieldDefault}
-     {\@@fdn}
-     {\@@fdletter,\@@fdkleur,\@@fdveldachtergrondkleur,\@@fdveldkaderkleur}
-     {\@@fdoptie}
-     {\@@fduitlijnen}
-     {\@@fdklikin,\@@fdklikuit,\@@fdgebiedin,\@@fdgebieduit,\@@fdnatoets,%
-      \@@fdformatteer,\@@fdvalideer,\@@fdbereken,\@@fdfocusin,\@@fdfocusuit}}
+  {\preparefieldvariables
+   \dopresetlinefield
+     {\@@DriverFieldName}
+     {\@@DriverFieldWidth}
+     {\@@DriverFieldHeight}
+     {\@@DriverFieldDefault}
+     {\@@DriverFieldNumber}
+     {\@@DriverFieldStyle,\@@DriverFieldColor,\@@DriverFieldBackgroundColor,\@@DriverFieldFrameColor}
+     {\@@DriverFieldOption}
+     {\@@DriverFieldAlign}
+     {\@@DriverFieldClickIn,\@@DriverFieldClickOut,\@@DriverFieldRegionIn,\@@DriverFieldRegionOut,%
+      \@@DriverFieldAfterKey,\@@DriverFieldFormat,\@@DriverFieldValidate,\@@DriverFieldCalculate,%
+      \@@DriverFieldFocusIn,\@@DriverFieldFocusOut}}
+
 
 \def\presettextfield
-  {\dopresettextfield
-     {\@@FieldName}
-     {\@@FieldWidth}
-     {\@@FieldHeight}
-     {\@@FieldDefault}
-     {\@@fdn}
-     {\@@fdletter,\@@fdkleur,\@@fdveldachtergrondkleur,\@@fdveldkaderkleur}
-     {\@@fdoptie}
-     {\@@fduitlijnen}
-     {\@@fdklikin,\@@fdklikuit,\@@fdgebiedin,\@@fdgebieduit,\@@fdnatoets,%
-      \@@fdformatteer,\@@fdvalideer,\@@fdbereken,\@@fdfocusin,\@@fdfocusuit}}
+  {\preparefieldvariables
+   \dopresettextfield
+     {\@@DriverFieldName}
+     {\@@DriverFieldWidth}
+     {\@@DriverFieldHeight}
+     {\@@DriverFieldDefault}
+     {\@@DriverFieldNumber}
+     {\@@DriverFieldStyle,\@@DriverFieldColor,\@@DriverFieldBackgroundColor,\@@DriverFieldFrameColor}
+     {\@@DriverFieldOption}
+     {\@@DriverFieldAlign}
+     {\@@DriverFieldClickIn,\@@DriverFieldClickOut,\@@DriverFieldRegionIn,\@@DriverFieldRegionOut,%
+      \@@DriverFieldAfterKey,\@@DriverFieldFormat,\@@DriverFieldValidate,\@@DriverFieldCalculate,%
+      \@@DriverFieldFocusIn,\@@DriverFieldFocusOut}}
 
 \def\presetchoicefield
-  {\dopresetchoicefield
-     {\@@FieldName}
-     {\@@FieldWidth}
-     {\@@FieldHeight}
-     {\@@FieldDefault}
-     {\@@fdletter,\@@fdkleur,\@@fdveldachtergrondkleur,\@@fdveldkaderkleur}
-     {\@@fdoptie}
-     {\@@FieldValues}
-     {\@@fdklikin,\@@fdklikuit,\@@fdgebiedin,\@@fdgebieduit,\@@fdnatoets,%
-      \@@fdformatteer,\@@fdvalideer,\@@fdbereken,\@@fdfocusin,\@@fdfocusuit}}
+  {\preparefieldvariables
+   \dopresetchoicefield
+     {\@@DriverFieldName}
+     {\@@DriverFieldWidth}
+     {\@@DriverFieldHeight}
+     {\@@DriverFieldDefault}
+     {\@@DriverFieldStyle,\@@DriverFieldColor,\@@DriverFieldBackgroundColor,\@@DriverFieldFrameColor}
+     {\@@DriverFieldOption}
+     {\@@DriverFieldValues}
+     {\@@DriverFieldClickIn,\@@DriverFieldClickOut,\@@DriverFieldRegionIn,\@@DriverFieldRegionOut,%
+      \@@DriverFieldAfterKey,\@@DriverFieldFormat,\@@DriverFieldValidate,\@@DriverFieldCalculate,%
+      \@@DriverFieldFocusIn,\@@DriverFieldFocusOut}}
 
 \def\presetpopupfield
-  {\dopresetpopupfield
-     {\@@FieldName}
-     {\@@FieldWidth}
-     {\@@FieldHeight}
-     {\@@FieldDefault}
-     {\@@fdletter,\@@fdkleur,\@@fdveldachtergrondkleur,\@@fdveldkaderkleur}
-     {\@@fdoptie}
-     {\@@FieldValues}
-     {\@@fdklikin,\@@fdklikuit,\@@fdgebiedin,\@@fdgebieduit,\@@fdnatoets,%
-      \@@fdformatteer,\@@fdvalideer,\@@fdbereken,\@@fdfocusin,\@@fdfocusuit}}
+  {\preparefieldvariables
+   \dopresetpopupfield
+     {\@@DriverFieldName}
+     {\@@DriverFieldWidth}
+     {\@@DriverFieldHeight}
+     {\@@DriverFieldDefault}
+     {\@@DriverFieldStyle,\@@DriverFieldColor,\@@DriverFieldBackgroundColor,\@@DriverFieldFrameColor}
+     {\@@DriverFieldOption}
+     {\@@DriverFieldValues}
+     {\@@DriverFieldClickIn,\@@DriverFieldClickOut,\@@DriverFieldRegionIn,\@@DriverFieldRegionOut,%
+      \@@DriverFieldAfterKey,\@@DriverFieldFormat,\@@DriverFieldValidate,\@@DriverFieldCalculate,%
+      \@@DriverFieldFocusIn,\@@DriverFieldFocusOut}}
 
 \def\presetcombofield
-  {\dopresetcombofield
-     {\@@FieldName}
-     {\@@FieldWidth}
-     {\@@FieldHeight}
-     {\@@FieldDefault}
-     {\@@fdletter,\@@fdkleur,\@@fdveldachtergrondkleur,\@@fdveldkaderkleur}
-     {\@@fdoptie}
-     {\@@FieldValues}
-     {\@@fdklikin,\@@fdklikuit,\@@fdgebiedin,\@@fdgebieduit,\@@fdnatoets,%
-      \@@fdformatteer,\@@fdvalideer,\@@fdbereken,\@@fdfocusin,\@@fdfocusuit}}
+  {\preparefieldvariables
+   \dopresetcombofield
+     {\@@DriverFieldName}
+     {\@@DriverFieldWidth}
+     {\@@DriverFieldHeight}
+     {\@@DriverFieldDefault}
+     {\@@DriverFieldStyle,\@@DriverFieldColor,\@@DriverFieldBackgroundColor,\@@DriverFieldFrameColor}
+     {\@@DriverFieldOption}
+     {\@@DriverFieldValues}
+     {\@@DriverFieldClickIn,\@@DriverFieldClickOut,\@@DriverFieldRegionIn,\@@DriverFieldRegionOut,%
+      \@@DriverFieldAfterKey,\@@DriverFieldFormat,\@@DriverFieldValidate,\@@DriverFieldCalculate,%
+      \@@DriverFieldFocusIn,\@@DriverFieldFocusOut}}
 
 \def\presetcheckfield
-  {\presetfieldsymbols[\@@FieldValues]%
+  {\preparefieldvariables
+   \presetfieldsymbols[\@@DriverFieldValues]%
    \dopresetcheckfield
-     {\@@FieldName}
-     {\@@FieldWidth}
-     {\@@FieldHeight}
-     {\@@FieldDefault}
-     {\@@fdoptie}
-     {\@@FieldValues}
-     {\@@fdklikin,\@@fdklikuit,\@@fdgebiedin,\@@fdgebieduit,\@@fdnatoets,%
-      \@@fdformatteer,\@@fdvalideer,\@@fdbereken,\@@fdfocusin,\@@fdfocusuit}}
+     {\@@DriverFieldName}
+     {\@@DriverFieldWidth}
+     {\@@DriverFieldHeight}
+     {\@@DriverFieldDefault}
+     {\@@DriverFieldOption}
+     {\@@DriverFieldValues}
+     {\@@DriverFieldClickIn,\@@DriverFieldClickOut,\@@DriverFieldRegionIn,\@@DriverFieldRegionOut,%
+      \@@DriverFieldAfterKey,\@@DriverFieldFormat,\@@DriverFieldValidate,\@@DriverFieldCalculate,%
+      \@@DriverFieldFocusIn,\@@DriverFieldFocusOut}}
 
 \def\presetpushfield
-  {%\edef\@@FieldValues{{\@@FieldValues}}% makes sure {a,b,c} is passed
-   \presetfieldsymbols[\@@FieldValues]%
+  {\preparefieldvariables
+   %\edef\@@DriverFieldValues{{\@@DriverFieldValues}}% makes sure {a,b,c} is passed
+   \presetfieldsymbols[\@@DriverFieldValues]%
    \dopresetpushfield
-     {\@@FieldName}
-     {\@@FieldWidth}
-     {\@@FieldHeight}
-     {\@@FieldDefault}
-     {\@@fdoptie}
-     {\@@FieldValues}
-     {\@@fdklikin,\@@fdklikuit,\@@fdgebiedin,\@@fdgebieduit,\@@fdnatoets,%
-      \@@fdformatteer,\@@fdvalideer,\@@fdbereken,\@@fdfocusin,\@@fdfocusuit}}
+     {\@@DriverFieldName}
+     {\@@DriverFieldWidth}
+     {\@@DriverFieldHeight}
+     {\@@DriverFieldDefault}
+     {\@@DriverFieldOption}
+     {\@@DriverFieldValues}
+     {\@@DriverFieldClickIn,\@@DriverFieldClickOut,\@@DriverFieldRegionIn,\@@DriverFieldRegionOut,%
+      \@@DriverFieldAfterKey,\@@DriverFieldFormat,\@@DriverFieldValidate,\@@DriverFieldCalculate,%
+      \@@DriverFieldFocusIn,\@@DriverFieldFocusOut}}
 
 \def\presetradiofield
-  {\presetfieldsymbols[\@@FieldValues]%
+  {\preparefieldvariables
+   \presetfieldsymbols[\@@DriverFieldValues]%
    \dopresetradiofield
-     {\@@FieldName}
-     {\@@FieldWidth}
-     {\@@FieldHeight}
-     {\@@FieldDefault}
-     {\@@fdoptie}
-     {\@@FieldRoot}
-     {\@@FieldValues}
-     {\@@fdklikin,\@@fdklikuit,\@@fdgebiedin,\@@fdgebieduit,\@@fdnatoets,%
-      \@@fdformatteer,\@@fdvalideer,\@@fdbereken,\@@fdfocusin,\@@fdfocusuit}}
+     {\@@DriverFieldName}
+     {\@@DriverFieldWidth}
+     {\@@DriverFieldHeight}
+     {\@@DriverFieldDefault}
+     {\@@DriverFieldOption}
+     {\@@DriverFieldRoot}
+     {\@@DriverFieldValues}
+     {\@@DriverFieldClickIn,\@@DriverFieldClickOut,\@@DriverFieldRegionIn,\@@DriverFieldRegionOut,%
+      \@@DriverFieldAfterKey,\@@DriverFieldFormat,\@@DriverFieldValidate,\@@DriverFieldCalculate,%
+      \@@DriverFieldFocusIn,\@@DriverFieldFocusOut}}
 
 \def\presetradiorecord
-  {\dopresetradiorecord
-     {\@@FieldName}
-     {\@@FieldDefault}
-     {\@@fdoptie}
-     {\@@FieldKids}
-     {\@@fdklikin,\@@fdklikuit,\@@fdgebiedin,\@@fdgebieduit,\@@fdnatoets,%
-      \@@fdformatteer,\@@fdvalideer,\@@fdbereken,\@@fdfocusin,\@@fdfocusuit}}
+  {\preparefieldvariables
+   \dopresetradiorecord
+     {\@@DriverFieldName}
+     {\@@DriverFieldDefault}
+     {\@@DriverFieldOption}
+     {\@@DriverFieldKids}
+     {\@@DriverFieldClickIn,\@@DriverFieldClickOut,\@@DriverFieldRegionIn,\@@DriverFieldRegionOut,%
+      \@@DriverFieldAfterKey,\@@DriverFieldFormat,\@@DriverFieldValidate,\@@DriverFieldCalculate,%
+      \@@DriverFieldFocusIn,\@@DriverFieldFocusOut}}
 
 \def\setfieldmodes#1#2#3%
-  {\xdef\@@FieldMode{#1}%  % 0 1 2 3
-   \xdef\@@FieldFree{#2}%  % 0 1
-   \xdef\@@FieldAuto{#3}}  % 0 1
+  {\xdef\@@DriverFieldMode{#1}%  % 0 1 2 3
+   \xdef\@@DriverFieldFree{#2}%  % 0 1
+   \xdef\@@DriverFieldAuto{#3}}  % 0 1
 
 \newevery\everysetfield\relax
 
@@ -186,22 +227,22 @@
    \egroup}
 
 \def\dosetfield#1#2#3#4#5#6#7#8#9%
-  {\xdef\@@FieldName   {#1}%
-   \xdef\@@FieldType   {#2}%
-   \xdef\@@FieldRoot   {#3}%
-   \xdef\@@FieldParent {#4}%
-   \xdef\@@FieldKids   {#5}%
-   \xdef\@@FieldGroup  {#6}%
+  {\xdef\@@DriverFieldName   {#1}%
+   \xdef\@@DriverFieldType   {#2}%
+   \xdef\@@DriverFieldRoot   {#3}%
+   \xdef\@@DriverFieldParent {#4}%
+   \xdef\@@DriverFieldKids   {#5}%
+   \xdef\@@DriverFieldGroup  {#6}%
    \setfieldmodes       #7%
    \bgroup
      \def\par{\string\n\string\n}%
-     \xdef\@@FieldValues {#8}%
-     \xdef\@@FieldDefault{#9}%
+     \xdef\@@DriverFieldValues {#8}%
+     \xdef\@@DriverFieldDefault{#9}%
    \egroup}
 
 \def\changefield#1%
-  {\setfield{#1}\@@FieldType\@@FieldRoot\@@FieldParent\@@FieldKids\@@FieldGroup
-     {\@@FieldMode\@@FieldFree\@@FieldAuto}\@@FieldValues\@@FieldDefault}
+  {\setfield{#1}\@@DriverFieldType\@@DriverFieldRoot\@@DriverFieldParent\@@DriverFieldKids\@@DriverFieldGroup
+     {\@@DriverFieldMode\@@DriverFieldFree\@@DriverFieldAuto}\@@DriverFieldValues\@@DriverFieldDefault}
 
 \def\getfield#1% name
   {\doifundefinedelse{fielddata#1}
@@ -247,14 +288,14 @@
      \immediate\write\scratchwrite{use \tracefieldstrue}%
    \else
      \def\normalizedfieldmode##1##2##3%
-       {\edef\@@FieldMode
+       {\edef\@@DriverFieldMode
           {\ifcase##1 loner \or parent \or clone \or copy \fi
            \ifcase##2 \else(done)\fi}}
      \def\dosetfield##1##2##3##4##5##6##7##8##9%
        {\normalizedfieldmode##7%
         \immediate\write\scratchwrite
           {N=##1 / T=##2 / R=##3 / P=##4 / K=##5 / G=##6 /
-           M=\@@FieldMode\space/ V=##8 / D=##9}}%
+           M=\@@DriverFieldMode\space/ V=##8 / D=##9}}%
      \processcommacommand[\collectedfields]\getfield
    \fi
    \immediate\closeout\scratchwrite
@@ -298,14 +339,14 @@
 %D
 %D \starttypen
 %D \def\getmainfieldkids#1%
-%D   {\let\@@FieldKids\empty
+%D   {\let\@@DriverFieldKids\empty
 %D    \ifdefinemainfield
 %D      \definetwopasslist{fld:#1}% defined by system
 %D      \doloop
 %D        {\gettwopassdata{fld:#1}%
 %D         \iftwopassdatafound
-%D          %\addtocommalist\twopassdata\@@FieldKids
-%D           \appendtocommalist\twopassdata\@@FieldKids
+%D          %\addtocommalist\twopassdata\@@DriverFieldKids
+%D           \appendtocommalist\twopassdata\@@DriverFieldKids
 %D         \else
 %D           \exitloop
 %D         \fi}%
@@ -318,10 +359,10 @@
 %D
 %D \starttypen
 %D \def\getmainfieldkids#1%
-%D   {\let\@@FieldKids\empty
+%D   {\let\@@DriverFieldKids\empty
 %D    \ifdefinemainfield
 %D      \definerawpasslist{fld:#1}% runtime defined by system
-%D      \moverawpasslist{fld:#1}\@@FieldKids
+%D      \moverawpasslist{fld:#1}\@@DriverFieldKids
 %D    \fi}
 %D \stoptypen
 %D
@@ -372,10 +413,10 @@
   {\checkfieldreferences
    \ifdefinemainfield
      \doifundefinedelse{\r!widget#1}%
-       {\let\@@FieldKids\empty}
-       {\@EA\let\@EA\@@FieldKids\csname\r!widget#1\endcsname}%
+       {\let\@@DriverFieldKids\empty}
+       {\@EA\let\@EA\@@DriverFieldKids\csname\r!widget#1\endcsname}%
    \else
-     \let\@@FieldKids\empty
+     \let\@@DriverFieldKids\empty
    \fi}
 
 \resetfieldreferences
@@ -419,36 +460,36 @@
        {\doifundefined{fielddata\currentfieldname}
           {\getmainfieldkids\currentfieldname
            \ifdefinemainfield
-             \ifx\@@FieldKids\empty
-               \let\@@FieldMode\fieldlonermode
+             \ifx\@@DriverFieldKids\empty
+               \let\@@DriverFieldMode\fieldlonermode
              \else
-               \let\@@FieldMode\fieldparentmode
+               \let\@@DriverFieldMode\fieldparentmode
              \fi
-             \def\@@FieldAuto{1}%
+             \def\@@DriverFieldAuto{1}%
            \else
-             \let\@@FieldMode\fieldlonermode
-             \def\@@FieldAuto{0}%
+             \let\@@DriverFieldMode\fieldlonermode
+             \def\@@DriverFieldAuto{0}%
            \fi
-           \def\@@FieldFree{0}%
+           \def\@@DriverFieldFree{0}%
            \getvalue{define#2field}{\currentfieldname}{#2}{#3}{#4}{#5}}}%
    \else
      \writestatus\m!fields{pass fieldname and fieldtype}%
    \fi}
 
 \def\definelinefield#1#2#3#4#5%
-  {\setfield{#1}{#2}{}{}{\@@FieldKids}{#3}{\@@FieldMode\@@FieldFree\@@FieldAuto}{}{#4}}
+  {\setfield{#1}{#2}{}{}{\@@DriverFieldKids}{#3}{\@@DriverFieldMode\@@DriverFieldFree\@@DriverFieldAuto}{}{#4}}
 
 \let\definetextfield=\definelinefield
 
 \def\definechoicefield#1#2#3#4#5%
   {\doifelsenothing{#4}
-     {\def\@@FieldValues{yes,no}}
-     {\def\@@FieldValues{#4}}%
+     {\def\@@DriverFieldValues{yes,no}}
+     {\def\@@DriverFieldValues{#4}}%
    \doifelsenothing{#5}
-     {\dogetcommacommandelement2\from\@@FieldValues\to\@@FieldDefault
-      \dogetcommacommandelement1\from\@@FieldDefault\to\@@FieldDefault}
-     {\def\@@FieldDefault{#5}}%
-   \setfield{#1}{#2}{}{}{\@@FieldKids}{#3}{\@@FieldMode\@@FieldFree\@@FieldAuto}{\@@FieldValues}{\@@FieldDefault}}
+     {\dogetcommacommandelement2\from\@@DriverFieldValues\to\@@DriverFieldDefault
+      \dogetcommacommandelement1\from\@@DriverFieldDefault\to\@@DriverFieldDefault}
+     {\def\@@DriverFieldDefault{#5}}%
+   \setfield{#1}{#2}{}{}{\@@DriverFieldKids}{#3}{\@@DriverFieldMode\@@DriverFieldFree\@@DriverFieldAuto}{\@@DriverFieldValues}{\@@DriverFieldDefault}}
 
 \let\definepopupfield=\definechoicefield
 \let\definecombofield=\definechoicefield
@@ -456,13 +497,13 @@
 %\def\definecheckfield#1#2#3#4#5%
 %  {\doifelsenothing{#4}
 %     {\definedefaultsymbols
-%      \def\@@FieldValues{defaultyes}}
-%     {\def\@@FieldValues{#4}}%
+%      \def\@@DriverFieldValues{defaultyes}}
+%     {\def\@@DriverFieldValues{#4}}%
 %   \doifelsenothing{#5}
-%     {\dogetcommacommandelement2\from\@@FieldValues\to\@@FieldDefault
-%      \dogetcommacommandelement1\from\@@FieldDefault\to\@@FieldDefault}
-%     {\def\@@FieldDefault{#5}}%
-%   \setfield{#1}{#2}{}{}{\@@FieldKids}{#3}{\@@FieldMode\@@FieldFree\@@FieldAuto}{\@@FieldValues}{\@@FieldDefault}}
+%     {\dogetcommacommandelement2\from\@@DriverFieldValues\to\@@DriverFieldDefault
+%      \dogetcommacommandelement1\from\@@DriverFieldDefault\to\@@DriverFieldDefault}
+%     {\def\@@DriverFieldDefault{#5}}%
+%   \setfield{#1}{#2}{}{}{\@@DriverFieldKids}{#3}{\@@DriverFieldMode\@@DriverFieldFree\@@DriverFieldAuto}{\@@DriverFieldValues}{\@@DriverFieldDefault}}
 
 %D Since these fields have an on/off state only, we pass 1/0
 %D to the driver as default values.
@@ -470,18 +511,18 @@
 \def\definecheckfield#1#2#3#4#5%
   {\doifelsenothing{#4}
      {\definedefaultsymbols
-      \def\@@FieldValues{defaultyes}}
-     {\def\@@FieldValues{#4}}%
+      \def\@@DriverFieldValues{defaultyes}}
+     {\def\@@DriverFieldValues{#4}}%
    \doifelsenothing{#5}
-     {\def\@@FieldDefault{2}}
-     {\dogetcommacommandelement1\from\@@FieldValues\to\@@FieldDefault
-      \doifinstringelse{#5}{\@@FieldDefault}
-        {\def\@@FieldDefault{1}}
-        {\def\@@FieldDefault{0}}}%
+     {\def\@@DriverFieldDefault{2}}
+     {\dogetcommacommandelement1\from\@@DriverFieldValues\to\@@DriverFieldDefault
+      \doifinstringelse{#5}{\@@DriverFieldDefault}
+        {\def\@@DriverFieldDefault{1}}
+        {\def\@@DriverFieldDefault{0}}}%
    \setfield
-     {#1}{#2}{}{}{\@@FieldKids}{#3}%
-     {\@@FieldMode\@@FieldFree\@@FieldAuto}%
-     {\@@FieldValues}{\@@FieldDefault}}
+     {#1}{#2}{}{}{\@@DriverFieldKids}{#3}%
+     {\@@DriverFieldMode\@@DriverFieldFree\@@DriverFieldAuto}%
+     {\@@DriverFieldValues}{\@@DriverFieldDefault}}
 
 \let\definepushfield=\definecheckfield
 
@@ -493,24 +534,24 @@
        {\def\SavedFieldDefault{#5}}%
 % when opt works
 % \@EA\beforesplitstring\SavedFieldDefault\at=>\to\SavedFieldDefault
-     \ifx\@@FieldKids\empty
-       \setfield{#1}{#2}{}{}{#4}{#3}{\@@FieldMode\@@FieldFree\@@FieldAuto}{}{\SavedFieldDefault}%
+     \ifx\@@DriverFieldKids\empty
+       \setfield{#1}{#2}{}{}{#4}{#3}{\@@DriverFieldMode\@@DriverFieldFree\@@DriverFieldAuto}{}{\SavedFieldDefault}%
      \else
-       \setfield{#1}{#2}{}{}{#4,\@@FieldKids}{#3}{\@@FieldMode\@@FieldFree\@@FieldAuto}{}{\SavedFieldDefault}%
+       \setfield{#1}{#2}{}{}{#4,\@@DriverFieldKids}{#3}{\@@DriverFieldMode\@@DriverFieldFree\@@DriverFieldAuto}{}{\SavedFieldDefault}%
      \fi
 %
      \def\docommando##1%
        {\doifelse{##1}\SavedFieldDefault
-          {\def\@@FieldDefault{##1}}%
-          {\let\@@FieldDefault\empty}%
-        \setfield{##1}{#2}{#1}{}{}{#3}{\@@FieldMode\@@FieldFree\@@FieldAuto}{}{\@@FieldDefault}}%
+          {\def\@@DriverFieldDefault{##1}}%
+          {\let\@@DriverFieldDefault\empty}%
+        \setfield{##1}{#2}{#1}{}{}{#3}{\@@DriverFieldMode\@@DriverFieldFree\@@DriverFieldAuto}{}{\@@DriverFieldDefault}}%
 % when opt works
 %     \def\docommando##1%
 %       {\@EA\beforesplitstring##1\at=>\to\FieldValue
 %        \doifelse\FieldValue\SavedFieldDefault
-%          {\let\@@FieldDefault\FieldValue}%
-%          {\let\@@FieldDefault\empty}%
-%        \setfield\FieldValue{#2}{#1}{}{}{#3}{\@@FieldMode\@@FieldFree\@@FieldAuto}{}{\@@FieldDefault}}%
+%          {\let\@@DriverFieldDefault\FieldValue}%
+%          {\let\@@DriverFieldDefault\empty}%
+%        \setfield\FieldValue{#2}{#1}{}{}{#3}{\@@DriverFieldMode\@@DriverFieldFree\@@DriverFieldAuto}{}{\@@DriverFieldDefault}}%
      \processcommalist[#4]\docommando
   \else
      \writestatus\m!fields{pass values too}%
@@ -523,15 +564,15 @@
   {\ifsecondargument
      \def\docommando##1%
        {\getfield{##1}%
-        \ifx\@@FieldType\empty
+        \ifx\@@DriverFieldType\empty
           \writestatus\m!fields{unknown field ##1}% to do
         \else
           \doifsomething{#2}
-            {\edef\@@FieldGroup{#2}}%
+            {\edef\@@DriverFieldGroup{#2}}%
           \doifelsenothing{#3}
             {\definedefaultsymbols
-             \def\@@FieldValues{defaultyes}}
-            {\def\@@FieldValues{#3}}%
+             \def\@@DriverFieldValues{defaultyes}}
+            {\def\@@DriverFieldValues{#3}}%
           \changefield{##1}%
         \fi}%
       \processcommalist[#1]\docommando
@@ -543,26 +584,26 @@
   {\ifsecondargument
      \getfield{#1}%
 \iftrialtypesetting\else
-     \ifx\@@FieldType\empty
+     \ifx\@@DriverFieldType\empty
        \writestatus\m!fields{unknown field #1}%
      \else
-       \let\@@FieldMode=\fieldparentmode
-      %\def\docommando##1{\addtocommalist{##1}\@@FieldKids}%
-       \def\docommando##1{\appendtocommalist{##1}\@@FieldKids}%
+       \let\@@DriverFieldMode=\fieldparentmode
+      %\def\docommando##1{\addtocommalist{##1}\@@DriverFieldKids}%
+       \def\docommando##1{\appendtocommalist{##1}\@@DriverFieldKids}%
        \processcommalist[#2]\docommando
        \changefield{#1}%
-       \let\@@FieldAutoParent\@@FieldAuto
-       \def\@@FieldParent{#1}%
-       \let\@@FieldKids\empty
-       \let\@@FieldRoot\empty
-       \let\@@FieldMode\fieldchildmode
-       \def\@@FieldFree{0}%
-       \def\@@FieldAuto{0}%
-       \doifsomething{#3}{\edef\@@FieldGroup{#3}}%
-       \doifsomething{#4}{\edef\@@FieldValues{#4}}%
+       \let\@@DriverFieldAutoParent\@@DriverFieldAuto
+       \def\@@DriverFieldParent{#1}%
+       \let\@@DriverFieldKids\empty
+       \let\@@DriverFieldRoot\empty
+       \let\@@DriverFieldMode\fieldchildmode
+       \def\@@DriverFieldFree{0}%
+       \def\@@DriverFieldAuto{0}%
+       \doifsomething{#3}{\edef\@@DriverFieldGroup{#3}}%
+       \doifsomething{#4}{\edef\@@DriverFieldValues{#4}}%
        \def\docommando##1%
-         {\ifcase\@@FieldAutoParent\else
-            \setmainfieldkid{\@@FieldParent}{##1}%
+         {\ifcase\@@DriverFieldAutoParent\else
+            \setmainfieldkid{\@@DriverFieldParent}{##1}%
           \fi
           \changefield{##1}}%
        \processcommalist[#2]\docommando
@@ -579,24 +620,24 @@
   {\ifsecondargument
      \getfield{#1}%
 \iftrialtypesetting\else
-     \ifx\@@FieldType\empty
+     \ifx\@@DriverFieldType\empty
        \writestatus\m!fields{unknown field #1}%
      \else
-       \let\@@FieldMode\fieldparentmode
-      %\def\docommando##1{\addtocommalist{##1}\@@FieldKids}%
-       \def\docommando##1{\appendtocommalist{##1}\@@FieldKids}%
+       \let\@@DriverFieldMode\fieldparentmode
+      %\def\docommando##1{\addtocommalist{##1}\@@DriverFieldKids}%
+       \def\docommando##1{\appendtocommalist{##1}\@@DriverFieldKids}%
        \processcommalist[#2]\docommando
        \changefield{#1}%
-       \let\@@FieldAutoParent=\@@FieldAuto
-       \def\@@FieldParent{#1}%
-       \let\@@FieldKids\empty
-       \let\@@FieldRoot\empty
-       \let\@@FieldMode\fieldcopymode
-       \def\@@FieldFree{0}%
-       \def\@@FieldAuto{0}%
+       \let\@@DriverFieldAutoParent=\@@DriverFieldAuto
+       \def\@@DriverFieldParent{#1}%
+       \let\@@DriverFieldKids\empty
+       \let\@@DriverFieldRoot\empty
+       \let\@@DriverFieldMode\fieldcopymode
+       \def\@@DriverFieldFree{0}%
+       \def\@@DriverFieldAuto{0}%
        \def\docommando##1%
-         {\ifcase\@@FieldAutoParent\else
-            \setmainfieldkid{\@@FieldParent}{##1}%
+         {\ifcase\@@DriverFieldAutoParent\else
+            \setmainfieldkid{\@@DriverFieldParent}{##1}%
           \fi
           \changefield{##1}}%
        \processcommalist[#2]\docommando
@@ -620,26 +661,26 @@
      \bgroup
      \getfield{#2}%
      \ifsecondargument
-       \def\@@FieldLabel{#3}%
+       \def\@@DriverFieldLabel{#3}%
      \else
-       \let\@@FieldLabel\@@FieldName
+       \let\@@DriverFieldLabel\@@DriverFieldName
      \fi
-     \ifx\@@FieldType\empty
+     \ifx\@@DriverFieldType\empty
        \writestatus\m!fields{unknown field #2}%
-     \else\ifcase\@@FieldFree\relax
-       \doifdefinedelse{\strippedcsname\setupfield\@@FieldGroup}
-         {\let\dosetupfield=#1\getvalue{\strippedcsname\setupfield\@@FieldGroup}}
-         {#1[\@@FieldName][\v!label,\v!kader,\v!horizontaal][][][]}%
+     \else\ifcase\@@DriverFieldFree\relax
+       \doifdefinedelse{\strippedcsname\setupfield\@@DriverFieldGroup}
+         {\let\dosetupfield=#1\getvalue{\strippedcsname\setupfield\@@DriverFieldGroup}}
+         {#1[\@@DriverFieldName][\v!label,\v!kader,\v!horizontaal][][][]}%
 \iftrialtypesetting\else
-       \def\@@FieldFree{1}%
+       \def\@@DriverFieldFree{1}%
        \changefield{#2}%
 \fi
-     \else\ifcase\@@FieldAuto\relax
+     \else\ifcase\@@DriverFieldAuto\relax
      % \writestatus\m!fields{field #2 already typeset}%
      \else
      % \writestatus\m!fields{field #2 automatically copied}%
        \nextsystemfield
-       \copyfield[\@@FieldName][\currentsystemfield]%
+       \copyfield[\@@DriverFieldName][\currentsystemfield]%
        \dotripleempty\dofield[#1][\currentsystemfield][#3]% get the if's right
      \fi\fi\fi
      \egroup
@@ -647,40 +688,40 @@
 
 \def\typesetfield
   {\useJSscripts[fld]%
-   \ifx\@@FieldRoot\empty \else
-     \let\@@SavedFieldName\@@FieldName
-     \getfield\@@FieldRoot
-     \ifcase\@@FieldFree\relax
-       \dosetfieldstatus\@@FieldMode\@@FieldParent\@@FieldKids\@@FieldRoot
+   \ifx\@@DriverFieldRoot\empty \else
+     \let\@@SavedFieldName\@@DriverFieldName
+     \getfield\@@DriverFieldRoot
+     \ifcase\@@DriverFieldFree\relax
+       \dosetfieldstatus\@@DriverFieldMode\@@DriverFieldParent\@@DriverFieldKids\@@DriverFieldRoot
        \dopresetrecord
 \iftrialtypesetting\else
-       \def\@@FieldFree{1}%
-       \changefield\@@FieldName
+       \def\@@DriverFieldFree{1}%
+       \changefield\@@DriverFieldName
 \fi
      \fi
      \getfield\@@SavedFieldName
    \fi
-   \ifx\@@FieldKids\empty
+   \ifx\@@DriverFieldKids\empty
      \donefalse
    \else
      \donetrue
    \fi
    \ifdone
-     \let\@@FieldParent\@@FieldName
-    %\addtocommalist\@@FieldParent\@@FieldKids
-     \appendtocommalist\@@FieldParent\@@FieldKids
-     \dosetfieldstatus\@@FieldMode\@@FieldParent\@@FieldKids\@@FieldRoot
+     \let\@@DriverFieldParent\@@DriverFieldName
+    %\addtocommalist\@@DriverFieldParent\@@DriverFieldKids
+     \appendtocommalist\@@DriverFieldParent\@@DriverFieldKids
+     \dosetfieldstatus\@@DriverFieldMode\@@DriverFieldParent\@@DriverFieldKids\@@DriverFieldRoot
      \dopresetfield
-     \let\@@FieldMode\fieldchildmode
+     \let\@@DriverFieldMode\fieldchildmode
    \fi
-   \dosetfieldstatus\@@FieldMode\@@FieldParent\@@FieldKids\@@FieldRoot
+   \dosetfieldstatus\@@DriverFieldMode\@@DriverFieldParent\@@DriverFieldKids\@@DriverFieldRoot
    \dopresetfield}
 
 \def\dopresetfield
-  {\iftrialtypesetting\else\iflocation\getvalue{preset\@@FieldType  field}\fi\fi}
+  {\iftrialtypesetting\else\iflocation\getvalue{preset\@@DriverFieldType  field}\fi\fi}
 
 \def\dopresetrecord
-  {\iftrialtypesetting\else\iflocation\getvalue{preset\@@FieldType record}\fi\fi}
+  {\iftrialtypesetting\else\iflocation\getvalue{preset\@@DriverFieldType record}\fi\fi}
 
 \def\dodefinethefieldset[#1][#2]%
   {\dodefinefieldset{#1}{#2}}
@@ -789,7 +830,7 @@
          {\reshapeframeboxtrue % else wrong dimensions
           \framed
             [\c!letter=,\c!kleur=,\c!uitlijnen=\c!rechts,#4]
-            {\@@FieldLabel}}%
+            {\@@DriverFieldLabel}}%
      \fi
      \setbox2=\hbox
        {\reshapeframeboxtrue % else wrong dimensions
@@ -809,9 +850,9 @@
               \c!natoets=,\c!formatteer=,\c!valideer=,\c!bereken=,
               \c!focusin=,\c!focusuit=,
               \c!veldoffset=\!!zeropoint,\c!veldachtergrondkleur=,
-              \c!veldkaderkleur=,#5]%
-            \dimen0=\framedwidth \edef\@@FieldWidth {\the\dimen0}%
-            \dimen0=\framedheight\edef\@@FieldHeight{\the\dimen0}%
+              \c!veldkaderkleur=,\c!veldlaag=,#5]%
+            \scratchdimen\framedwidth \edef\@@DriverFieldWidth {\the\scratchdimen}%
+            \scratchdimen\framedheight\edef\@@DriverFieldHeight{\the\scratchdimen}%
             \vfill
             \hbox{\lower\@@fdveldoffset\hbox{\typesetfield}}
             \vss}}%
@@ -848,17 +889,17 @@
       \c!focusin=,\c!focusuit=,
       \c!natoets=,\c!formatteer=,\c!valideer=,\c!bereken=,
       \c!veldoffset=\!!zeropoint,\c!veldachtergrondkleur=,
-      \c!veldkaderkleur=,#5,\c!uitlijnen=]
-     {\dogetcommacommandelement1\from\@@FieldValues\to\@@FieldValue
-      \ifx\@@FieldValue\empty
-        \let\@@FieldValue\@@FieldDefault
+      \c!veldkaderkleur=,\c!veldlaag=,#5,\c!uitlijnen=]
+     {\dogetcommacommandelement1\from\@@DriverFieldValues\to\@@DriverFieldValue
+      \ifx\@@DriverFieldValue\empty
+        \let\@@DriverFieldValue\@@DriverFieldDefault
       \fi
-      \dopresetfieldsymbol\@@FieldValue
-      \setbox0=\hbox{\dogetfieldsymbol{\@@FieldValue}}%
-      \dimen0=\wd0 \edef\@@FieldWidth {\the\dimen0}%
-      \dimen0=\ht0 \edef\@@FieldHeight{\the\dimen0}%
-      \vbox to \ht0
-        {\vfill\hbox to \wd0{\typesetfield\hfill}\vss}}}
+      \dopresetfieldsymbol\@@DriverFieldValue
+      \setbox\scratchbox\hbox{\dogetfieldsymbol\@@DriverFieldValue}%
+      \scratchdimen\wd\scratchbox \edef\@@DriverFieldWidth {\the\scratchdimen}%
+      \scratchdimen\ht\scratchbox \edef\@@DriverFieldHeight{\the\scratchdimen}%
+      \vbox to \ht\scratchbox
+        {\vfill\hbox to \wd\scratchbox{\typesetfield\hfill}\vss}}}
 
 %D Common stuff
 
@@ -874,7 +915,7 @@
   {\dosingleempty\dofillinfield}
 
 \def\dofillinfield[#1]#2%
-  {\leavevmode
+  {\dontleavehmode
    \hbox
      {\forgetall
       \setupfields[\v!reset]%

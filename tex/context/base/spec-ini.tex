@@ -8,17 +8,20 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
-%C details. 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
 
-\newif\ifsimplifyspecials \simplifyspecialstrue % see later 
+\newif\ifsimplifyspecials \simplifyspecialstrue % see later
 
-%D We will forbid loading specials after the first page is 
-%D shipped out. 
+% todo: no args, named vars instead
+% maybe also drop multiple drivers and make simply the default, then simplier defs
 
-\ifx\realpageno\undefined 
+%D We will forbid loading specials after the first page is
+%D shipped out.
+
+\ifx\realpageno\undefined
   \countdef\realpageno=0 \realpageno=1
-\fi 
+\fi
 
 %D Specials are \TEX's channel to the outside world. They make
 %D \TEX\ even more platform independant and permit easy
@@ -141,8 +144,8 @@
 %D are used which can optionally be followed by length
 %D specifiers and arguments. The \DVI||format incorporates a
 %D channel to the outside world. This channel is activated by
-%D the \TEX\ primitive \type {\special}. The sequence 
-%D 
+%D the \TEX\ primitive \type {\special}. The sequence
+%D
 %D \starttypen
 %D \special{Hello here I am.}
 %D \stoptypen
@@ -156,26 +159,26 @@
 %D The \type {xxx1} is represented in byte code 239 and the
 %D number of following bytes in a~1, 2, 3 or~4 byte number. So
 %D here we get $1+1+16$ bytes of code.
-%D 
+%D
 %D Translating these codes is upto the \DVI\ driver. It's
 %D common use to ignore specials that cannot be interpreted, so
 %D the example string should have no consequences for the
-%D output. 
+%D output.
 
-%D \macros 
+%D \macros
 %D   {everyresetspecials}
 %D
-%D Now what will this one do? We'll see in a few lines. 
+%D Now what will this one do? We'll see in a few lines.
 
 \newevery \everyresetspecials \relax
 
 %D \macros
 %D   {jobsuffix}
 %D
-%D By default, \TEX\ produces \DVI\ files which can be 
-%D converted to other filetypes. Sometimes it is handy to 
-%D know what the target file will be. In other driver 
-%D modules we wil set \type {\jobsuffix} to \type {pdf}.  
+%D By default, \TEX\ produces \DVI\ files which can be
+%D converted to other filetypes. Sometimes it is handy to
+%D know what the target file will be. In other driver
+%D modules we wil set \type {\jobsuffix} to \type {pdf}.
 
 \def\jobsuffix{dvi}
 
@@ -187,12 +190,12 @@
 %D settings is that the latter don't interfere with typesetting
 %D but must be set before the first shipout, while the specials
 %D must be packaged in the shipped out box in such a way that
-%D they don't interfere. 
+%D they don't interfere.
 
 \newif\ifspecialbasedsettings \specialbasedsettingstrue
 
-\appendtoksonce 
-  \specialbasedsettingstrue 
+\appendtoksonce
+  \specialbasedsettingstrue
 \to \everyresetspecials
 
 %D Because there is no standardization in the use of specials,
@@ -214,9 +217,9 @@
 %D \stopspecials
 %D \stoptypen
 %D
-%D Because drivers can have overlap in low level macros, a 
-%D mechanism of inheritance is implemented. The libraries 
-%D defined as second argument are loaded first. 
+%D Because drivers can have overlap in low level macros, a
+%D mechanism of inheritance is implemented. The libraries
+%D defined as second argument are loaded first.
 %D
 %D Every special has to be predefined first. We  do this with
 %D the command:
@@ -267,7 +270,7 @@
 \def\@@specarg@@{@@spcarg@@}
 \def\@@specexc@@{@@spcexc@@}
 
-% not faster 
+% not faster
 %
 % \def\@@specfil@@{@sp@f@}
 % \def\@@speclst@@{@sp@l@}
@@ -298,7 +301,7 @@
 %D overruled. The name may differ from the file||tag.
 %D
 %D The optional second argument can consist of a list of
-%D libraries that are to be loaded first. 
+%D libraries that are to be loaded first.
 
 \def\dostartspecials[#1][#2]%
   {\doifsomething{#2}
@@ -316,7 +319,7 @@
 \def\stopspecials
   {\localpopmacro\currentspecial
    \protect}
- 
+
 %D \macros
 %D   {installspecial,
 %D    resetspecials}
@@ -333,7 +336,7 @@
 %D
 %D With \type{\resetspecials} we can unload the predefined
 %D specials. Special reset actions |<|look in \type{spec-mis}
-%D for an example|>| can be assigned to the token register 
+%D for an example|>| can be assigned to the token register
 %D \type{\everyresetspecials}.
 
 \let\@@allspecials=\empty
@@ -393,7 +396,7 @@
 %D We use \type{\usespecials} to load a specific library.
 %D This command is only permitted outside the definition part.
 
-\def\dousespecials#1% 
+\def\dousespecials#1%
   {\doifelse{#1}\v!reset
      {\resetspecials}
      {\doifdefinedelse{\@@specfil@@#1}
@@ -420,10 +423,10 @@
 %D defined specials. Once a special is installed, the special
 %D itself calls for this command, so it's not needed outside
 %D this module. One can use it if wanted.
-%D 
-%D A former implementation grouped the execution. Recent 
-%D additions however |<|like the specials that implement object 
-%D handling|>| asked for non||grouped execution. 
+%D
+%D A former implementation grouped the execution. Recent
+%D additions however |<|like the specials that implement object
+%D handling|>| asked for non||grouped execution.
 
 %D \starttypen
 %D \def\executespecials#1#2%
@@ -431,7 +434,7 @@
 %D      {\getvalue{##1\string#1}#2\relax}%
 %D    \processcommacommand
 %D      [\getvalue{\@@speclst@@\string#1}]\doonespecial}
-%D 
+%D
 %D \def\executespecial#1%
 %D   {\expandafter\ifcase\getvalue{\@@specarg@@\string#1}\relax
 %D      \def\next%
@@ -462,24 +465,24 @@
 %D        {\executespecials#1{{##1}{##2}{##3}{##4}{##5}{##6}{##7}{##8}}}%
 %D    \or
 %D      \def\next##1##2##3##4##5##6##7##8##9%
-%D        {\executespecials#1{{##1}{##2}{##3}{##4}{##5}{##6}{##7}{##8}{##9}}}% 
+%D        {\executespecials#1{{##1}{##2}{##3}{##4}{##5}{##6}{##7}{##8}{##9}}}%
 %D    \else
 %D      \def\next%
 %D        {\message{illegal special: \string#1}}%
 %D    \fi
 %D    \next}
-%D \stoptypen 
-%D 
+%D \stoptypen
+%D
 %D Because specials happen quite often, we will use a bit more
 %D brute force. Keep in mind that we have to collect the
-%D arguments because we want to support more drivers at once. 
-%D 
-%D I tested this on the next test. Where the previous alternative 
-%D took about 32 seconds, the new alternative takes 25 seconds.  
+%D arguments because we want to support more drivers at once.
 %D
-%D \starttypen 
+%D I tested this on the next test. Where the previous alternative
+%D took about 32 seconds, the new alternative takes 25 seconds.
+%D
+%D \starttypen
 %D \testfeature{10000}{\setbox0=\hbox{test \color[red]{oeps} test}}
-%D \stoptypen 
+%D \stoptypen
 
 \def\@@exsp{exsp}
 
@@ -500,15 +503,15 @@
 %D      {\csname##1\xspecialcommand\endcsname#1\relax}%
 %D    \@EA\rawprocesscommalist\@EA
 %D      [\csname\@@speclst@@\xspecialcommand\endcsname]\doonespecial}
-%D 
+%D
 %D \def\executespecial#1%
 %D   {\def\xspecialcommand{\string#1}%
 %D    \@EA\@EA\@EA\executespecials\csname\@@exsp\csname\@@specarg@@\xspecialcommand\endcsname\endcsname}
-%D \stoptypen 
+%D \stoptypen
 
-%D Some more speed can be gained by using a dedicated string 
-%D processing routine. Now we can bring down the execution 
-%D time to 21 seconds, one third less than the original run time. 
+%D Some more speed can be gained by using a dedicated string
+%D processing routine. Now we can bring down the execution
+%D time to 21 seconds, one third less than the original run time.
 
 \def\executespecials#1%
   {\@EA\let\@EA\speciallist\csname\@@speclst@@\xspecialcommand\endcsname
@@ -527,32 +530,32 @@
      \doonespecial{#1}\expandafter\dodoonespecial
    \fi}
 
-%D This kind of saving only shows up when making interative 
-%D documents with lots of color switches. In such documents 
-%D tens of thousands of special calls are rather normal. 
-%D On a 650 Mhz Pentium, the previous test takes 15 seconds 
-%D less (on about 65 seconds). When processing 2000 page 
-%D interactive documents this saving can be neglected.  
+%D This kind of saving only shows up when making interative
+%D documents with lots of color switches. In such documents
+%D tens of thousands of special calls are rather normal.
+%D On a 650 Mhz Pentium, the previous test takes 15 seconds
+%D less (on about 65 seconds). When processing 2000 page
+%D interactive documents this saving can be neglected.
 
-%D In the previous macros, the \type{{{...}}} are needed 
+%D In the previous macros, the \type{{{...}}} are needed
 %D because we pass all those arguments to the specials support
-%D macro. 
+%D macro.
 
 \let\openspecialfile  \relax
 \let\closespecialfile \relax
 
 %D \macros
 %D   {doifspecialavailableelse}
-%D 
-%D For testing purposes (this was first needed when object 
-%D support was implemented) we have: 
-%D 
+%D
+%D For testing purposes (this was first needed when object
+%D support was implemented) we have:
+%D
 %D \starttypen
 %D \doifspecialavailableelse\specialcommand{true}{false}
 %D \stoptypen
-%D 
-%D e.g: 
-%D 
+%D
+%D e.g:
+%D
 %D \starttypen
 %D \doifspecialavailableelse\doinsertobject{...}{...}
 %D \stoptypen
@@ -564,9 +567,9 @@
 %D In the file \type {spec-def} you will find the predefined
 %D specials.
 
-%D Now that we have seen the flexible way (permitting 
-%D special chains) we will implement a faster and flat 
-%D alternative. But only if flag si set. 
+%D Now that we have seen the flexible way (permitting
+%D special chains) we will implement a faster and flat
+%D alternative. But only if flag si set.
 
 \ifsimplifyspecials
 
@@ -594,54 +597,54 @@
      \let\preloadedspecials\empty}
 
   \def\definespecial#1%
-    {\@EA\chardef\csname\@@speclst@@\string#1\endcsname=1 
+    {\@EA\chardef\csname\@@speclst@@\string#1\endcsname=1
      \def#1}
 
-  \def\doifspecialavailableelse#1%  
+  \def\doifspecialavailableelse#1%
     {\ifcase\csname\@@speclst@@\string#1\endcsname
        \expandafter\secondoftwoarguments
      \else
        \expandafter\firstoftwoarguments
      \fi}
 
-\fi 
+\fi
 
 %D For quite some time the \CONTEXT\ way of specifying the
-%D output format has been: 
-%D 
+%D output format has been:
+%D
 %D \starttypen
 %D \usespecials[ps,yy,win,pdf]
 %D \stoptypen
 %D
-%D Because at \PRAGMA\ we use \DVIPSONE, this was a suitable 
-%D setting, but with \CONTEXT\ going public, the next sequence 
-%D is more suitable for \DVIPS\ users: 
-%D 
+%D Because at \PRAGMA\ we use \DVIPSONE, this was a suitable
+%D setting, but with \CONTEXT\ going public, the next sequence
+%D is more suitable for \DVIPS\ users:
+%D
 %D \starttypen
 %D \usespecials[reset,ps,tr,pdf]
 %D \stoptypen
 %D
-%D On the other hand, for \PDFTEX\ we needed: 
+%D On the other hand, for \PDFTEX\ we needed:
 %D
 %D \starttypen
 %D \usespecials[tpd]
 %D \stoptypen
 %D
-%D To simplify things, I decided to provide a higher level 
-%D command. 
+%D To simplify things, I decided to provide a higher level
+%D command.
 %D
 %D \starttypen
 %D \defineoutput[name][specials]
 %D \setupoutput[name,...]
 %D \stoptypen
 %D
-%D In a \type {spec-def} you can find some examples. 
+%D In a \type {spec-def} you can find some examples.
 
 \def\defineoutput
   {\dodoubleargument\dodefineoutput}
 
 \def\dodefineoutput[#1][#2]%
-  {\setvalue{\??ui#1}{#2}} 
+  {\setvalue{\??ui#1}{#2}}
 
 \def\dosetupoutput#1%
   {\doifdefinedelse{\??ui#1}
@@ -651,7 +654,7 @@
         {\showmessage\m!specials7{#1}}}}
 
 \def\setupoutput[#1]%
-  {\ifnum\realpageno<2 % new 
+  {\ifnum\realpageno<2 % new
      \resetspecials\processcommacommand[#1]\dosetupoutput
    \fi}
 

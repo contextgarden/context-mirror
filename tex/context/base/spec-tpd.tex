@@ -347,7 +347,7 @@
      \immediate\pdfobj
        {[ << /Image \PDFfigurereference\space0 R
              /DefaultForPrinting true >> ]}%
-     \xdef\pdfimageattributes%
+     \xdef\pdfimageattributes
        {attr {/Alternates \the\pdflastobj\space0 R}}%
    \fi}
 
@@ -549,17 +549,13 @@
   {\pdfliteral{Q n}}
 
 %D \macros
-%D   {dosetupinteraction,
-%D    dosetupopenaction,dosetupcloseaction}
+%D   {dosetupinteraction}
 %D
 %D Nothing special is needed to enable \PDF\ commands and
 %D interaction. We stick with a message.
 
 \definespecial\dosetupinteraction
   {\showmessage\m!interactions{21}{pdftex}}
-
-\definespecial\dosetupopenaction {\doPDFsetupopenaction}
-\definespecial\dosetupcloseaction{\doPDFsetupcloseaction}
 
 %D \macros
 %D   {doresetgotowhereever,
@@ -1156,7 +1152,8 @@
 %D use feed this number to \type {pdftosrc} and filter the
 %D file from the \PDF\ file.
 
-\let\PDFlaststreamobject\s!unknown
+\let\PDFlaststreamobject   \s!unknown
+%def\PDFlaststreamreference{0 0 R}
 
 \def\doPDFfilestreamobject class #1 name #2 file #3 source #4%
   {\immediate\pdfobj stream file{#4}%
@@ -1165,9 +1162,12 @@
    \doPDFdictionaryobject class {#1} name {#2} data
      {/Type /Filespec /F (#3) /EF <</F \PDFlaststreamobject\space0 R>>}}
 
+\def\doPDFgetfilestreamreference#1#2%
+  {\doPDFgetobjectreference{PDFFS}{#1}#2}
+
 \def\doPDFfilestreamidentifier#1%
   {\doifsomething{#1}
-     {\doPDFgetobjectreference{PDFFS}{#1}\PDFobjectreference
+     {\doPDFgetfilestreamreference{#1}\PDFobjectreference
       \@EA\beforesplitstring\PDFobjectreference\at{ }\to\PDFlaststreamobject
       \PDFlaststreamobject}}
 

@@ -913,6 +913,7 @@
 \defineMPspecial{50} % x y width height label
   {\bgroup
    \scratchdimen\MPllx\s!bp \scratchdimen-\scratchdimen
+   % \scratchdimen-\MPllx\s!bp % moet ook werken
    \advance\scratchdimen\gMPs1\s!bp
    \edef\x{\number\scratchdimen}%
    \scratchdimen\gMPs2\s!bp \scratchdimen-\scratchdimen

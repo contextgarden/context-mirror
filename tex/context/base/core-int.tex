@@ -399,8 +399,7 @@
    % niet waterdicht
    \doifnot{\the\!!widtha\the\!!heighta}\@@pcscreendata
      {\xdef\@@pcscreendata{\the\!!widtha\the\!!heighta}%
-      \showmessage\m!interactions
-        1{\@EA\withoutpt\the\!!widtha,\@EA\withoutpt\the\!!heighta}}%
+      \showmessage\m!interactions1{\withoutpt\the\!!widtha,\withoutpt\the\!!heighta}}%
    % needs to be split: dimensions for each page
    % and mode per document and only once !
    \dosetupscreen \rugoffset\kopoffset\!!widtha\!!heighta{\the\!!counte}%
@@ -684,8 +683,7 @@
   {\global\skippedmenuitemfalse
    \setbox\locationbox\hbox
      {\resetgoto % anders cyclische aanroep !
-      \localframed[#1][#2]
-        {\dolocationattributes{#1}\c!letter\c!kleur{#3}}}%
+      \localframed[#1][#2]{\dolocationattributes{#1}\c!letter\c!kleur{#3}}}%
    \iflocationclick
      \hbox{\gotolocation{#4}{\box\locationbox}}%
    \else
@@ -774,12 +772,12 @@
    \getvalue{\??am#1#3}\relax
    \ifextendedmenu
      \setamboxcommands{#1}{#4}%
-     \def\next%
+     \def\next
        {\ignorespaces#2}%
    \else
      \def\dolocationcommand##1%
        {\dosetlocationcommanditem{#1}{#4}{##1}}%
-     \def\next%
+     \def\next
        {\processcommalist[#2]\dolocationcommand}%
    \fi
    \next
@@ -855,8 +853,7 @@
    \iflocationmenupermitted
      \bgroup
      \showcomposition
-     \def\dolocationcommand##1%
-       {\dosetlocationcommanditem{#3}{##1}}%
+     \def\dolocationcommand##1{\dosetlocationcommanditem{#3}{##1}}%
      \dimen0=\zetbreedte
      \advance\dimen0 \pagebackgroundhoffset
      \advance\dimen0 \pagebackgroundhoffset
@@ -913,17 +910,10 @@
   \let\do@@ammenuposition\gobbleoneargument % hook for positional thingies
 \fi
 
-\setvalue{\??am\s!do\v!rechts}%
-  {\@@amvbox{\dodummypageskip\v!rechts}\rechterrandbreedte}
-
-\setvalue{\??am\s!do\v!links}%
-  {\@@amvbox{\dodummypageskip\v!links}\linkerrandbreedte}
-
-\setvalue{\??am\s!do\v!boven}%
-  {\@@amhbox{\dodummypageskip\v!boven}\bovenhoogte}
-
-\setvalue{\??am\s!do\v!onder}%
-  {\@@amhbox{\dodummypageskip\v!onder}\onderhoogte}
+\setvalue{\??am\s!do\v!rechts}{\@@amvbox{\dodummypageskip\v!rechts}\rechterrandbreedte}
+\setvalue{\??am\s!do\v!links }{\@@amvbox{\dodummypageskip\v!links}\linkerrandbreedte}
+\setvalue{\??am\s!do\v!boven }{\@@amhbox{\dodummypageskip\v!boven}\bovenhoogte}
+\setvalue{\??am\s!do\v!onder }{\@@amhbox{\dodummypageskip\v!onder}\onderhoogte}
 
 \def\dointeractiemenu#1#2%
   {\getvalue{\??am\s!do\getvalue{\??am#1\c!plaats}}{#1}{#2}}
@@ -1403,6 +1393,7 @@
          \setbox0\hbox{\blackrule[\c!breedte=\!!widtha]}%
          \global\setbox\meterbox\hbox to \!!widthb
            {\hss
+            % brrr
             \for \teller=1 \to \lastpage \step \!!counta \do
               {\gotorealpage{}{}{\teller}{\copy0}}%
             \hss}%
@@ -1423,19 +1414,21 @@
              \!!widtha=1em\relax
            \fi
            \setupblackrules[\c!breedte=\!!widtha]%
-           \ifnum\realpageno>1\relax
-             \!!counta=\realpageno
+           \ifnum\realpageno>\plusone
+             \!!counta\realpageno
              \advance\!!counta -2\relax
              \hskip\zeropoint\!!plus\!!counta \s!sp\relax % cm gives overflow
+             % or just: \hskip\zeropoint\!!plus\!!counta \relax % cm gives overflow
              \doganaareenpagina\??ib\blackrule\prevpage
            \fi
            \color[\@@ibcontrastkleur]{\blackrule[\c!breedte=.5em]}%
            \ifnum\realpageno<\lastpage\relax
              \doganaareenpagina\??ib\blackrule\nextpage
-             \!!counta=\lastpage\relax
+             \!!counta\lastpage
              \advance\!!counta -\realpageno
              \advance\!!counta \minusone
              \hskip\zeropoint\!!plus\!!counta \s!sp\relax % cm gives overflow
+             % or just \hskip\zeropoint\!!plus\!!counta\relax % cm gives overflow
            \fi}%
         \hss
         \doganaareenpagina\??ib\blackrule\lastpage}%
@@ -2141,7 +2134,7 @@
 %     \next{\hbox{\raise\strutht\box\commentbox}}}
 
 \def\doflushcommentanchors
-   {\let\next\relax, % new
+   {\let\next\relax % new
     \processaction
       [\@@ccplaats]
       [%      \v!tekst=>\let\next\relax, % new
@@ -2219,13 +2212,13 @@
 % \stopcommentaar
 %
 % \startcommentaar[hallo][kleur=groen,breedte=4cm,hoogte=3cm]
-%   hello \leftguillemot\ \'e\'erste \rightguilemot\
+%   hello \leftguillemot\ \'e\'erste \rightguillemot\
 %   beautiful
 %   world
 % \stopcommentaar
 %
 % \startcommentaar[hallo][kleur=groen,breedte=4cm,hoogte=3cm]
-%   hello \leftguillemot\ \'e\'erste \rightguilemot\ test
+%   hello \leftguillemot\ \'e\'erste \rightguillemot\ test
 %
 %   beautiful
 %

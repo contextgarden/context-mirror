@@ -361,6 +361,7 @@ var:textcommand:*\command#1::
 var:split:tolerant,strict,verystrict,*number::
 var:textstyle:normal,bold,slanted,boldslanted,type,cap,small...,*command::
 var:textcolor:*name::
+var:interaction:yes,no::
 ivr:framed::
 stopsetup
 
@@ -1922,7 +1923,7 @@ stopsetup
 startsetup
 com:page:
 typ:vals/:
-val:yes,makeup,no,preference,bigpreference, left,right,disable,last,quadruple, even,odd,blank,empty,reset:yes:
+val:yes,makeup,no,preference,bigpreference, left,right,disable,last,quadruple, even,odd,blank,empty,reset,start,stop:yes:
 stopsetup
 
 startsetup

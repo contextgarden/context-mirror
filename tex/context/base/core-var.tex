@@ -23,6 +23,7 @@
 \newevery \everyshipout            \relax
 \newevery \everybeforeshipout      \relax
 \newevery \everyaftershipout       \relax
+\newevery \everyfirstshipout       \relax
 \newevery \everylastshipout        \relax
 \newevery \everybye                \relax
 \newevery \everygoodbye            \relax
@@ -154,7 +155,7 @@
 \fi
 
 %D \macros
-%D   {setvariables,getvariable}
+%D   {setvariables,getvariable,getvariabledefault}
 %D
 %D \starttyping
 %D \setvariables[xx][titel=]
@@ -178,7 +179,9 @@
 \def\dosetvariables[#1][#2][#3]%
   {\errorisfataltrue
    \def\currentvariableclass{#2}%
+   \getvariable{#2}\s!reset
    #1[\??vars:#2:][#3]%
+   \getvariable{#2}\s!set
    \errorisfatalfalse}
 
 \beginTEX
@@ -203,6 +206,50 @@
   {\showvalue{\ifundefined{\??vars:#1:#2}\s!empty\else\??vars:#1:#2\fi}}
 
 \let\currentvariableclass\empty
+
+%D \macros
+%D   {doifelsevariable,doifvariable,doifnotvariable}
+%D
+%D A few trivial macros:
+
+\def\doifelsevariable#1#2%
+  {\ifundefined{\??vars:#1:#2}%
+     \expandafter\secondoftwoarguments
+   \else
+     \expandafter\firstoftwoarguments
+   \fi}
+
+\def\doifvariable#1#2%
+  {\ifundefined{\??vars:#1:#2}%
+     \expandafter\gobbleoneargument
+   \else
+     \expandafter\firstofoneargument
+   \fi}
+
+\def\doifnotvariable#1#2%
+  {\ifundefined{\??vars:#1:#2}%
+     \expandafter\firstofoneargument
+   \else
+     \expandafter\gobbleoneargument
+   \fi}
+
+\def\getvariabledefault#1#2% #3%
+  {\executeifdefined{\??vars:#1:#2}}% {#3}
+
+%D \macros
+%D   {checkvariables}
+%D
+%D I'll probably forget that this on exists.
+
+\def\checkvariables
+  {\dodoubleargument\docheckvariables}
+
+\def\docheckvariables
+  {\dogetparameters\docheckrawvalue}
+
+\def\docheckrawvalue#1#2#3%
+  {\doifundefined   {\??vars:#1:#2}{\setvalue{\??vars:#1:#2}{#3}}
+  {\doifvaluenothing{\??vars:#1:#2}{\setvalue{\??vars:#1:#2}{#3}}}}
 
 %D We store some original meanings, maybe in \type
 %D {math-ini}.

@@ -22,50 +22,295 @@
 
 % todo : test low level translation (nl->en) and optimize script
 
-% \readfile{cont-exp}\donothing\donothing % speed up (5-20%)
-
-\def\doiffontcharelse#1#2%
-  {\bgroup
-   \definedfont[#1]%
-   \iffontchar\font#2\relax
-     \egroup\expandafter\firstoftwoarguments
+% todo : share symbols
+
+% \definecolor[rollover:n][red]
+% \definecolor[rollover:r][green]
+% \definecolor[rollover:d][blue]
+
+\definepalet
+  [rollover]
+  [n=red,
+   r=green,
+   d=blue]
+
+% \newcounter\nofrollovers
+%
+% \def\dorollbutton[#1][#2]#3[#4]%
+%   {\dontleavehmode
+%    \bgroup
+%    \doglobal\increment\nofrollovers
+%    \unexpanded\def\dosetlocationbox[##1]##2[##3]%
+%      {\getparameters[##1][##3]%
+%       \definecolor[rollover][rollover:##2]%
+%       \let\next\hbox
+%       \doif{##2}{n}
+%         {\doifvalue{##1\c!variant}\v!verborgen{\let\next\phantom}}%
+%       \next
+%         {\localframed[##1]
+%            [\c!kaderkleur=rollover,\c!achtergrondkleur=rollover,\c!kleur=rollover]%
+%            {\dolocationattributes{##1}\c!letter\c!kleur{#3}}}}%
+%    \iffirstargument
+%      \ifsecondargument
+%        \def\setlocationbox##1{\dosetlocationbox[\??am#1]{##1}[#2]}%
+%      \else
+%        \doifassignmentelse{#1}
+%          {\def\setlocationbox##1{\dosetlocationbox[\??bt]{##1}[#1]}}
+%          {\def\setlocationbox##1{\dosetlocationbox[\??am#1]{##1}[]}}%
+%      \fi
+%    \else
+%      \def\setlocationbox##1{\dosetlocationbox[\??bt]{##1}[]}%
+%    \fi
+%    % todo: share symbols
+%    \definesymbol[rsym:\nofrollovers:n][\setlocationbox n]%
+%    \definesymbol[rsym:\nofrollovers:r][\setlocationbox r]%
+%    \definesymbol[rsym:\nofrollovers:d][\setlocationbox d]%
+%    \nextsystemfield
+%    \setupfield
+%      [rollbutton]
+%      [\c!kader=\v!uit,\c!offset=\v!overlay,\c!klikuit={#4}]%
+%    \definefield
+%      [\currentsystemfield][push][rollbutton]
+%      [rsym:\nofrollovers:n,%
+%       rsym:\nofrollovers:r,%
+%       rsym:\nofrollovers:d]%
+%    \fitfield[\currentsystemfield]%
+%    \egroup}
+
+\newcounter\nofrollovers
+\newcounter\nofrollbuttons
+
+\def\dorollbutton[#1][#2]#3[#4]%
+  {\dontleavehmode
+   \bgroup
+   \doglobal\increment\nofrollovers
+   \doglobal\increment\nofrollbuttons
+   \unexpanded\def\dosetlocationbox[##1]##2[##3]%
+     {\getparameters[##1][##3]%
+      \definecolor[rollover][rollover:##2]%
+      \doifelse{##2}{n}{\doifelsevalue{##1\c!variant}\v!verborgen\phantom\hbox}\hbox
+        {\localframed[##1]
+           [\c!kaderkleur=rollover,\c!achtergrondkleur=rollover,\c!kleur=rollover]%
+           {\dolocationattributes{##1}\c!letter\c!kleur{#3}}}}%
+   \iffirstargument
+     \ifsecondargument
+       \def\setlocationbox##1{\dosetlocationbox[\??am#1]{##1}[#2]}%
+     \else
+       \doifassignmentelse{#1}
+         {\def\setlocationbox##1{\dosetlocationbox[\??bt]{##1}[#1]}}
+         {\def\setlocationbox##1{\dosetlocationbox[\??am#1]{##1}[]}}%
+     \fi
    \else
-     \egroup\expandafter\secondoftwoarguments
+     \def\setlocationbox##1{\dosetlocationbox[\??bt]{##1}[]}%
+   \fi
+   % todo: share symbols, tricky since different dimensions
+   \definesymbol[rsym:\nofrollovers:n][\setlocationbox n]%
+   \definesymbol[rsym:\nofrollovers:r][\setlocationbox r]%
+   \definesymbol[rsym:\nofrollovers:d][\setlocationbox d]%
+   \setupfield
+     [rollbutton]
+     [\c!kader=\v!uit,
+      \c!offset=\v!overlay,
+      \c!klikuit={#4}]%
+   \definefield
+     [roll:\nofrollbuttons][push][rollbutton]
+     [rsym:\nofrollovers:n,%
+      rsym:\nofrollovers:r,%
+      rsym:\nofrollovers:d]%
+   \fitfield[roll:\nofrollbuttons]%
+   \egroup}
+
+\unexpanded\def\rollbutton
+  {\dodoubleempty\dorollbutton}
+
+% \def\do@@amrob[#1]#2\\%
+%   {\txt\rollbutton[\currentmenu]{\ignorespaces#2\unskip}[#1]\\}%
+
+% \appendtoks \let\rob\do@@amrob \to \everysetmenucommands
+
+\def\menu@rob[#1]#2\\%
+  {\@@amboxcommand\rollbutton[\currentmenu]{\ignorespaces#2\unskip}[#1]\\}%
+
+\appendtoks \let\rob\menu@rob \to \everysetmenucommands
+
+% calls:
+%              {..} [JS..]
+% [left]       {..} [JS..]
+%        [a=b] {..} [JS..]
+% [left] [a=b] {..} [JS..]
+%
+% \setupbuttons[offset=0pt,frame=off] % alternative=hidden
+%
+% \rollbutton {Manuals}       [JS(Goto_File{show-man.pdf})]
+% \rollbutton {Articles}      [JS(Goto_File{show-art.pdf})]
+% \rollbutton {Papers}        [JS(Goto_File{show-pap.pdf})]
+% \rollbutton {Presentations} [JS(Goto_File{show-pre.pdf})]
+% \rollbutton {Resources}     [JS(Goto_File{show-res.pdf})]
+%
+% \rob [JS(...)] bla bla \\
+
+\unexpanded\def\overlayrollbutton
+  {\dodoubleargument\dooverlayrollbutton}
+
+\def\dooverlayrollbutton[#1][#2]%
+  {\bgroup
+   \nextsystemfield
+   \setupfield
+     [overlayrollbutton]
+     [\c!kader=\v!uit,\c!offset=\v!overlay,\c!gebiedin={#1},\c!gebieduit={#2}]%
+   \definesymbol
+     [\currentsystemfield]
+     [{\framed[\c!kader=\v!uit,\c!breedte=\overlaywidth,\c!hoogte=\overlayheight]{}}]%
+   \definefield
+     [\currentsystemfield][push][overlayrollbutton][\currentsystemfield][\currentsystemfield]%
+   \fitfield[\currentsystemfield]%
+   \egroup}
+
+% \defineoverlay
+%   [ShowMenu]
+%   [{\overlayrollbutton[VideLayer{navigation}][HideLayer{navigation}]}]
+
+\def\dodoflushlayer#1#2#3%
+  {\ifundefined{\@@layerbox#3}%
+     \ifcase#1\else\writestatus{layer}{unknown layer #3}\fi
+   \else
+     \bgroup
+     \forgetall
+     \offinterlineskip
+     % needed because we need to handle method
+\executeifdefined{\??ll\??ll\getvalue{\??ll#2\c!preset}}\gobbletwoarguments{#2}{}%
+     %
+     \doifvalue{\??ll#2\c!optie}\v!test\tracelayerstrue
+     \iftracelayers\traceboxplacementtrue\fi
+     \!!doneafalse
+     \!!donebfalse
+     \doifvalue{\??ll#2\c!methode}\v!overlay\!!doneatrue
+     \doifvalue{\??ll#2\c!methode}\v!passend\!!donebtrue
+     \!!donectrue
+     \ifcase#1\else
+       \doifnotvalue{\??ll#2\c!positie}\v!ja
+         {\doifvalue{\??ll#2\c!herhaal}\v!ja\!!donecfalse
+          \doifvalue{\??ll#2\c!status}\v!herhaal\!!donecfalse}%
+     \fi
+     \chardef\layerbox\csname\@@layerbox#3\endcsname
+     % we need to copy in order to retain the negative offsets for a next
+     % stage of additions, i.e. llx/lly accumulate in repeat mode and the
+     % compensation may differ each flush depending on added content
+     \setbox\nextbox \if!!doneb
+       \vbox
+         {\scratchdimen\getboxlly\layerbox
+          \vskip-\scratchdimen
+          \scratchdimen\getboxllx\layerbox
+          \hskip-\scratchdimen
+          \advance\scratchdimen-\wd\layerbox
+          \hsize-\scratchdimen
+          \if!!donec\box\else\copy\fi\layerbox}%
+     \else
+        \if!!donec\box\else\copy\fi\layerbox % sorry for the delay due to copying
+     \fi
+     \iftracelayers \ruledvbox \else \vbox \fi \if!!donea to \overlayheight \fi
+       {\hbox \if!!donea to \overlaywidth \fi
+          {% klopt dit? #3 en niet #2 ?
+           \doifvalue{\??ll#3\realfolio\c!positie}\v!ja     {\xypos{lyr:#3:\realfolio}}%
+           \doifoverlayelse{#3}
+             {\box\nextbox}
+             {\startlayoutcomponent{l:#3}{layer #3}\box\nextbox\stoplayoutcomponent}%
+           \hss}%
+        \vss}%
+     \if!!donec
+       \gsetboxllx\layerbox\zeropoint
+       \gsetboxlly\layerbox\zeropoint
+     \fi
+     \egroup
    \fi}
 
-\unexpanded\def\asciistr#1{\convertargument#1\to\ascii{\verbatimfont\ascii}}
+\def\tightlayer[#1]%
+  {\hbox
+     {\def\currentlayer{#1}% todo: left/right
+      \setbox\nextbox\emptybox        % hoogte/breedte are \wd\nextbox/\ht\nextbox
+      \hsize\layerparameter\c!breedte % \overlaywidth   = \hsize
+      \vsize\layerparameter\c!hoogte  % \overlaywheight = \vsize
+      \composedlayer{#1}}}
 
-\def\shapedhbox                  % lines with non strutted dimensions have
-  {\expanded{\dowithnextbox      % interlineskip so if we want the original
-     {\nextboxht\the\ht\shapebox % spacing, we need to preserve the original
-      \nextboxdp\the\dp\shapebox % height and depth which is definitely
-      \noexpand\flushnextbox}}   % needed if we apply struts to the 'new'
-   \normalhbox}                  % box or do something that changed ist size
+\def\inlinedbox
+  {\bgroup
+   \dowithnextbox
+     {\scratchdimen\nextboxht
+      \advance\scratchdimen\nextboxdp
+      \advance\scratchdimen-\lineheight
+      \divide\scratchdimen\plustwo
+      \advance\scratchdimen\strutdepth
+      \setbox\nextbox\hbox{\lower\scratchdimen\flushnextbox}%
+      \nextboxht\strutht
+      \nextboxdp\strutdp
+      \flushnextbox
+      \egroup}%
+     \hbox}
 
-\def\inrightmargin#1% new: hsize correction
-  {\pushindentation
-   \rlap
-     {\hskip\tekstbreedte
-      %\hskip-\hsize
-      %\hskip\hsize
-      \hskip-\rightskip
-      \hskip\rechtermargeafstand
-      \hsize\rechtermargebreedte
-      #1}%
-   \popindentation
-   \ignorespaces}
+\def\dosetups#1% the grid option will be extended to other main modes
+  {\executeifdefined{\??su\ifgridsnapping\v!grid\fi:#1}{\csname\??su:#1\endcsname}\empty}
 
-\def\rechtermargetekstblok#1% new: hsize correction
-  {\maakmargetekstblok \rightmargintextwidth \v!rechts \v!links
-     {\hskip\margetekstafstand\hskip\tekstbreedte\hskip-\hsize }{\rlap{\plaatsmargetekstscheider}}
-     {#1}}
+\let\directsetup\dosetups
 
-\def\douniqueMPpagegraphic#1#2%
-  {\blabelgroup
-   \let\overlaystamp\overlaypagestamp
-   \setupMPvariables[\MPpageprefix#1][#2]% prefix is new here
-   \getvalue{\@@MPG\MPpageprefix#1}{}%
-   \elabelgroup}
+% \readfile{cont-exp}\donothing\donothing % speed up (5-20%)
+
+\def\dimenratio#1#2% etex only
+  {\withoutpt\the\dimexpr(2\dimexpr(#1)/(\dimexpr(#2)/32768))}
+
+% in page-lyr
+
+\definelayer[OTRTEXT] \setuplayer[OTRTEXT][\c!breedte=\zetbreedte,\c!hoogte=\teksthoogte]
+
+\let\normalsettextpagecontent\settextpagecontent
+
+\def\settextpagecontent#1#2#3% #2 and #3 will disappear
+  {\doifelselayerdata{OTRTEXT}
+     {\setbox#1\hbox to \zetbreedte
+        {\startoverlay
+           {\normalsettextpagecontent{#1}{#2}{#3}\box#1}
+           {\tightlayer[OTRTEXT]}
+         \stopoverlay}%
+      \dp#1\zeropoint}%
+     {\normalsettextpagecontent{#1}{#2}{#3}}}
+
+% in page-set
+
+\def\OTRSETdofinaloutput
+  {\ifdim\ht\OTRfinalpagebox=\teksthoogte
+    \bgroup % \let\OTRSETsetvsize\relax % prevents useless search for gap
+     \ifcase\OTRSETbalancemethod
+       \finaloutput\box\OTRfinalpagebox
+     \else\ifdim\OTRSETbalht>\zeropoint
+       % catch a bordercase
+       \scratchdimen\OTRSETbalht
+       \advance\scratchdimen\lineheight\relax
+       \ifdim\scratchdimen>\teksthoogte
+         % full page
+         \finaloutput\box\OTRfinalpagebox
+       \else
+         % same page
+         \global\setbox\OTRfinalpagebox \iftracecolumnset\ruledvbox\else\vbox\fi to \OTRSETbalht
+           {\box\OTRfinalpagebox\vss}%
+         \setlayer[OTRTEXT]{\box\OTRfinalpagebox}%
+         \snaptogrid\vbox{\vskip\OTRSETbalht}% hack
+       \fi
+     \else
+       \finaloutput\box\OTRfinalpagebox
+     \fi \fi
+     \globallet\OTRSETbalht\zeropoint
+    \egroup
+   \fi}
+
+\def\doxprecurse#1#2%
+  {\ifnum#1=\zerocount % no \ifcase
+     \expandafter\gobblethreearguments
+   \else
+     #2\expandafter\expandafter\expandafter\doxprecurse\expandafter
+   \fi\expandafter{\the\numexpr(#1-1)}{#2}}
+
+\def\buttonframed{\dodoubleempty\localframed[\??bt]} % goodie
+
+\unexpanded\def\asciistr#1{\convertargument#1\to\ascii{\verbatimfont\ascii}}
 
 \prependtoks \setnormalcatcodes  \to \everyTEXinputmode
 \appendtoks  \processingXMLfalse \to \everyTEXinputmode
@@ -77,16 +322,6 @@
 
 \def\enableXML {\setinputmode[XML]}
 \def\disableXML{\setinputmode[TEX]}
-
-\def\checkvariables
-  {\dodoubleargument\docheckvariables}
-
-\def\docheckvariables
-  {\dogetparameters\docheckrawvalue}
-
-\def\docheckrawvalue#1#2#3%
-  {\doifundefined   {\??vars:#1:#2}{\setvalue{\??vars:#1:#2}{#3}}
-  {\doifvaluenothing{\??vars:#1:#2}{\setvalue{\??vars:#1:#2}{#3}}}}
 
 \beginTEX
 
@@ -102,43 +337,46 @@
 
 \endETEX
 
-\beginETEX \lastnodetype
+% Currently there is a bug in \lastnodetype, so we will enable this
+% feature when the bugfix is widespread.
 
-\def\dodoreshapebox#1#2#3#4% \shapebox, \shapepenalty, \shapekern, \shapeskip
-  {\ifnum\lastnodetype=\@@gluenode % \ifcase\lastskip % \ifdim\lastskip=\zeropoint\relax
-     \shapeskip\lastskip
-     \global\setbox\tmpshapebox\normalvbox{#4\unvbox\tmpshapebox}%
-     \unskip
-   \else\ifnum\lastnodetype=\@@kernnode % \ifcase\lastkern % \ifdim\lastkern=\zeropoint\relax
-     \shapekern\lastkern
-     \global\setbox\tmpshapebox\normalvbox{#3\unvbox\tmpshapebox}%
-     \unkern
-   \else\ifnum\lastnodetype=\@@penaltynode % \ifcase\lastpenalty % \ifnum\lastpenalty=\zerocount
-     \shapepenalty\lastpenalty
-     \global\setbox\tmpshapebox\normalvbox{#2\unvbox\tmpshapebox}%
-     \unpenalty
-   \else
-     \setbox\shapebox\lastbox
-     \ifvoid\shapebox
-       \unskip\unpenalty\unkern
-     \else
-       \ifdim\wd\shapebox=\shapesignal\relax
-         \exitloop
-       \else
-         \shapecounter\zerocount
-         \global\setbox\tmpshapebox\normalvbox{#1\unvbox\tmpshapebox}%
-       \fi
-     \fi
-   \fi\fi\fi
-   \ifnum\shapecounter>100 % can be less
-     \message{<<forced exit from shapebox>>}%
-     \global\setbox\tmpshapebox\copy\oldshapebox
-     \exitloop
-   \else
-     \advance\shapecounter \plusone
-   \fi}
-
-\endETEX
+% \beginETEX \lastnodetype
+%
+% \def\dodoreshapebox#1#2#3#4% \shapebox, \shapepenalty, \shapekern, \shapeskip
+%   {\ifnum\lastnodetype=\@@gluenode % \ifcase\lastskip % \ifdim\lastskip=\zeropoint\relax
+%      \shapeskip\lastskip
+%      \global\setbox\tmpshapebox\normalvbox{#4\unvbox\tmpshapebox}%
+%      \unskip
+%    \else\ifnum\lastnodetype=\@@kernnode % \ifcase\lastkern % \ifdim\lastkern=\zeropoint\relax
+%      \shapekern\lastkern
+%      \global\setbox\tmpshapebox\normalvbox{#3\unvbox\tmpshapebox}%
+%      \unkern
+%    \else\ifnum\lastnodetype=\@@penaltynode % \ifcase\lastpenalty % \ifnum\lastpenalty=\zerocount
+%      \shapepenalty\lastpenalty
+%      \global\setbox\tmpshapebox\normalvbox{#2\unvbox\tmpshapebox}%
+%      \unpenalty
+%    \else
+%      \setbox\shapebox\lastbox
+%      \ifvoid\shapebox
+%        \unskip\unpenalty\unkern
+%      \else
+%        \ifdim\wd\shapebox=\shapesignal\relax
+%          \exitloop
+%        \else
+%          \shapecounter\zerocount
+%          \global\setbox\tmpshapebox\normalvbox{#1\unvbox\tmpshapebox}%
+%        \fi
+%      \fi
+%    \fi\fi\fi
+%    \ifnum\shapecounter>100 % can be less
+%      \message{<<forced exit from shapebox>>}%
+%      \global\setbox\tmpshapebox\copy\oldshapebox
+%      \exitloop
+%    \else
+%      \advance\shapecounter \plusone
+%    \fi}
+%
+% \endETEX
 
 \let\normaltype\type
 
@@ -234,14 +472,16 @@
 %   \headsym{xx} test \par test
 % \stopitemize
 
-\beginETEX \lastnodetype
-
-\def\removeunwantedspaces
-  {\ifhmode
-     \doloop{\ifnum\lastnodetype=\@@gluenode\unskip\else\exitloop\fi}%
-   \fi}
-
-\endETEX
+% wait till bugfix in etex is widespead
+%
+% \beginETEX \lastnodetype
+%
+% \def\removeunwantedspaces
+%   {\ifhmode
+%      \doloop{\ifnum\lastnodetype=\@@gluenode\unskip\else\exitloop\fi}%
+%    \fi}
+%
+% \endETEX
 
 % \def\dodimchoice#1#2#3%
 %   {\ifx#3\relax
@@ -325,6 +565,144 @@
         \vrule\!!width4\scratchdimen\!!height\scratchdimen\!!depth\scratchdimen}%
    \fi}
 
+% It took quite a while to figure this out (using the preliminary 1.5
+% spec). There are still a lot of things to be implemented. This is
+% the third alternative.
+
+% todo: multiple instances, dus indirect
+
+\let\currentrendering\empty
+
+\definereference[StartCurrentRendering] [\v!StartRendering{\currentrendering}]
+\definereference[StopCurrentRendering]  [\v!StopRendering {\currentrendering}]
+\definereference[PauseCurrentRendering] [\v!PauseRendering{\currentrendering}]
+\definereference[ResumeCurrentRendering][\v!ResumeRendering{\currentrendering}]
+
+\newcounter\nofexternalrenderings
+
+\def\useexternalrendering{\doquadrupleempty\douseexternalrendering}
+\def\setinternalrendering{\dodoubleempty   \dosetinternalrendering}
+
+\def\douseexternalrendering[#1][#2][#3][#4]% tag mime file options
+  {\setgvalue{\??rd:#1}{\plusone{#1}{#2}{#3}{#4}}}
+
+\def\dosetinternalrendering[#1][#2]% tag options {content}
+  {\bgroup
+   \dowithnextbox
+     {\setgvalue{\??rd:#1}{\plustwo{#1}{IRO}{#1}{#2}}%
+      \let\objectoffset\zeropoint
+      \setobject{IRO}{#1}\hbox{\box\nextbox}%
+      \egroup}%
+     \hbox}
+
+\def\checkrendering#1% let's hope that \next is not used
+  {\iflocation
+    \doifsomething{#1}%
+      {\doifdefined{\??rd:#1}%
+         {\expanded{\getvalue{\??rd::\number\renderingtype{#1}}%
+            {\filterfromvalue{\??rd:#1}52}{\filterfromvalue{\??rd:#1}53}%
+            {\filterfromvalue{\??rd:#1}54}{\filterfromvalue{\??rd:#1}55}}}}%
+   \fi}
+
+\setvalue{\??rd::1}{\doinsertrendering}
+\setvalue{\??rd::2}{\doinsertrenderingobject}
+
+\def\renderingtype   #1{\filterfromvalue{\??rd:#1}51}
+\def\renderingoptions#1{\filterfromvalue{\??rd:#1}55}
+
+\setexecutecommandcheck {startrendering}  \checkrendering
+\setexecutecommandcheck {stoprendering}   \checkrendering
+\setexecutecommandcheck {pauserendering}  \checkrendering
+\setexecutecommandcheck {resumerendering} \checkrendering
+
+% by using a nice trick (used in other places of context as well) we
+% can easily overload the default size to match the opbject size
+
+\def\renderingwidth {8cm}
+\def\renderingheight{6cm}
+
+\def\definerenderingwindow
+  {\dodoubleempty\dodefinerenderingwindow}
+
+\def\dodefinerenderingwindow[#1][#2]%
+  {\presetlocalframed[\??rw#1]%
+   \getparameters%
+     [\??rw#1]%
+     [\c!openpaginaactie=,\c!sluitpaginaactie=,%
+      \c!breedte=\renderingwidth,\c!hoogte=\renderingheight,%
+      #2]}
+
+\def\setuprenderingwindow
+  {\dodoubleargument\dosetuprenderingwindow}
+
+\def\dosetuprenderingwindow[#1]%
+  {\getparameters[\??rw#1]}
+
+\def\placerenderingwindow
+  {\dodoubleempty\doplacerenderingwindow}
+
+\def\doplacerenderingwindow[#1][#2]%
+  {\bgroup
+   \edef\currentrendering{\ifsecondargument#2\else#1\fi}%
+   \ifcase\renderingtype\currentrendering\or
+     % a file
+   \or
+     % an object
+     \getobjectdimensions{IRO}\currentrendering
+     \scratchdimen\objectheight
+     \advance\scratchdimen\objectdepth
+     \edef\renderingheight{\the\scratchdimen}%
+     \edef\renderingwidth{\objectwidth}%
+   \fi
+   % create fall back if needed
+   \doifdefinedelse{\??rw#1\c!breedte}
+     {\def\currentrenderingwindow{#1}}
+     {\let\currentrenderingwindow\s!default
+      \definerenderingwindow[\currentrenderingwindow]}%
+   \checkrendering\currentrendering
+   \handlereferenceactions{\getvalue{\??rw\currentrenderingwindow\c!openpaginaactie }}\dosetuprenderingopenpageaction
+   \handlereferenceactions{\getvalue{\??rw\currentrenderingwindow\c!sluitpaginaactie}}\dosetuprenderingclosepageaction
+   \localframed
+     [\??rw\currentrenderingwindow][\c!offset=\v!overlay]%
+     {\expanded{\doinsertrenderingwindow
+        \noexpand\currentrendering\hsize\vsize{\renderingoptions\currentrendering}}}%
+   \egroup}
+
+% todo:
+%
+% \setinternalrendering[example-1][options]{}
+
+% test file:
+%
+% \definerenderingwindow
+%   [example]
+%   [width=320pt,height=150pt,frame=off,
+%    background=color,backgroundcolor=gray,
+%    openpageaction=StartCurrentRendering,
+%    closepageaction=NextPage]% StopCurrentRendering]
+%
+% \useexternalrendering[example-1][audio/mpeg]                   [eldorado.mp3]
+% \useexternalrendering[example-2][audio/mpeg]                   [myst-12.mp3]
+% \useexternalrendering[example-3][application/x-shockwave-flash][http://localhost/mb.swf] [auto]
+% \useexternalrendering[example-4][application/x-shockwave-flash][celebration.swf]
+% \useexternalrendering[example-5][video/quicktime]              [p1000726.mov]
+% \useexternalrendering[example-6][application/smil]             [quadratic_map.smi]
+%
+% \def\renderingmenu[#1]%
+%   {\hbox
+%      {\setupbuttons[width=2.5em]%
+%       \button{\symbol[StartRendering]} [StartRendering{#1}]\enspace
+%       \button{\symbol[StopRendering]}  [StopRendering{#1}]\enspace
+%       \button{\symbol[PauseRendering]} [PauseRendering{#1}]\enspace
+%       \button{\symbol[ResumeRendering]}[ResumeRendering{#1}]}}
+%
+% \renderingmenu[example-1]\blank
+% \renderingmenu[example-2]\blank
+% \renderingmenu[example-3]\blank
+% \renderingmenu[example-4] \placefigure{A ShockWave}{\placerenderingwindow[example][example-4]} \page
+% \renderingmenu[example-5] \placefigure{A Movie}{\placerenderingwindow[example][example-5]} \page
+% \renderingmenu[example-6] \placefigure{A Smile}{\placerenderingwindow[example][example-6]}
+
 % will be a MyWay
 %
 % \setuplayout[grid=yes] \setupcaption[figure][inbetween=] \useMPlibrary[dum] \setupcolors[state=start]
@@ -362,6 +740,13 @@
 % \input ward
 %
 % \stoptext
+
+% funny, as field action with e.g. dissolve ... only the field dissolves, bug?
+
+\setglobalsystemreference\rt!exec{Transition}{transition}
+
+%def\PDFexecutetransition {/Trans /Trans <</Type /Trans \executeifdefined{PDFpage\argumentA}\PDFpagereplace>>}
+\def\PDFexecutetransition {/Trans /Trans <<\executeifdefined{PDFpage\argumentA}\PDFpagereplace>>}
 
 % new, continuous blocks, \som \par \startdoorlopendblok ...
 
@@ -886,10 +1271,12 @@
 
 \let\figuredescription\empty
 
+% beware, changing this will break some code (like pos/backgrounds)
+
 \newtoks\everyfirstparagraphintro
 \newtoks\everynextparagraphintro
 
-\chardef\everyparagraphintro=0
+\chardef\everyparagraphintro\zerocount
 
 \def\setupparagraphintro
   {\dodoubleempty\dosetupparagraphintro}
@@ -897,14 +1284,14 @@
 \def\dosetupparagraphintro[#1][#2]%
   {\processallactionsinset
      [#1]
-     [   \v!reset=>\global\chardef\everyparagraphintro0
+     [   \v!reset=>\global\chardef\everyparagraphintro\zerocount
                    \global\everyfirstparagraphintro\emptytoks
                    \global\everynextparagraphintro \emptytoks,
-        \v!eerste=>\global\chardef\everyparagraphintro1
+        \v!eerste=>\global\chardef\everyparagraphintro\plusone
                    \doglobal\appendtoks#2\to\everyfirstparagraphintro,
-      \v!volgende=>\ifcase\everyparagraphintro\global\chardef\everyparagraphintro=2\fi
+      \v!volgende=>\ifcase\everyparagraphintro\global\chardef\everyparagraphintro\plusone\fi
                    \doglobal\appendtoks#2\to\everynextparagraphintro,
-           \v!elk=>\ifcase\everyparagraphintro\global\chardef\everyparagraphintro=2\fi
+           \v!elk=>\ifcase\everyparagraphintro\global\chardef\everyparagraphintro\plustwo\fi
                    \doglobal\appendtoks#2\to\everyfirstparagraphintro
                    \doglobal\appendtoks#2\to\everynextparagraphintro]}
 
@@ -913,7 +1300,7 @@
      % no data
    \or
      % first data
-     \global\chardef\everyparagraphintro2
+     \global\chardef\everyparagraphintro\plustwo
      \scratchtoks\everyfirstparagraphintro
      \global\everyfirstparagraphintro\emptytoks
    \or

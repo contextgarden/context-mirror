@@ -36,6 +36,10 @@
 % the current implementation permits us to determine
 % the page state and is also more efficient
 
+% the code is rather fuzzy (and will be redone some day); this is
+% due to the chaining (collect secondary and then hook that into
+% the primary etc
+
 \unprotect
 
 \startmessages  dutch  library: references
@@ -416,7 +420,7 @@
 %D on the reference mechsnism. An example can be found in the
 %D field module.
 
-\def\checkreferences%
+\def\checkreferences
   {\bgroup
    \let\fileprefix\empty
    \global\let\checkreferences\relax
@@ -645,10 +649,10 @@
 %D
 %D and split accordingly.
 
-\def\settextreferences%
+\def\settextreferences
   {\futurelet\next\dosettextreferences}
 
-\def\dosettextreferences%
+\def\dosettextreferences
   {\ifx\next\bgroup
      \expandafter\dotriplegroupempty\expandafter\dodosettextreferences
    \else
@@ -1328,6 +1332,7 @@
 
 \def\doifreferencefoundelse#1#2#3% REF \cs
   {\checkreferences
+   % first we collect the secondary ones
    \bgroup
      \the\everyreference
      \let\referenceprefix\empty
@@ -1344,8 +1349,9 @@
      \ifenablereferencechains \iflocation
        \global\secondaryreferencetrue
        \xdef\secondaryreference{\csname REF::2\endcsname}%
+       % test: \global\letcscsname\secondaryreference\csname REF::2\endcsname
        \bgroup
-%%\let\doifreferencefoundelse\localdoifreferencefoundelse
+         %%\let\doifreferencefoundelse\localdoifreferencefoundelse
          \let\unharmedreferenceprefix\referenceprefix
          \dodoifreferencefoundelse\secondaryreference
          \ifreferencefound
@@ -1363,8 +1369,9 @@
        \scratchcounter\plustwo
        \loop
          \xdef\secondaryreference{\csname REF::\number\scratchcounter\endcsname}%
+         % test: \global\letcscsname\secondaryreference\csname REF::\number\scratchcounter\endcsname
          \bgroup
-%%\let\doifreferencefoundelse\localdoifreferencefoundelse
+           %%\let\doifreferencefoundelse\localdoifreferencefoundelse
            \let\unharmedreferenceprefix\referenceprefix
            \dodoifreferencefoundelse\secondaryreference
            \ifreferencefound
@@ -1381,8 +1388,10 @@
    \fi
    \global\secondaryreferencefalse
    \xdef\primaryreference{\csname REF::1\endcsname}%
+   % test: \global\letcscsname\secondaryreference\csname REF::1\endcsname
    \bgroup
-%%\let\doifreferencefoundelse\localdoifreferencefoundelse
+     % now we handle the primary one
+     %%\let\doifreferencefoundelse\localdoifreferencefoundelse
      \let\unharmedreferenceprefix\referenceprefix
      \dodoifreferencefoundelse\primaryreference
      \ifreferencefound#2\else#3\fi
@@ -1396,9 +1405,13 @@
 %D to let speed prevail over beauty in resolving chained
 %D references with symbolic (defined) references.
 
-\def\localdoifreferencefoundelse#1#2#3%
+% \def\localdoifreferencefoundelse#1#2#3% beware, this feeds back the (...) ref
+%   {\dodoifreferencefoundelse{#1}%
+%    \ifreferencefound#2\else#3\fi}
+
+\def\localdoifreferencefoundelse#1%
   {\dodoifreferencefoundelse{#1}%
-   \ifreferencefound#2\else#3\fi}
+   \ifreferencefound\@EA\firstoftwoarguments\else\@EA\secondoftwoarguments\fi}
 
 %D Somewhere else we will properly define \type {\dostartgoto};
 %D the noto alternative takes care of undefined references in
@@ -1563,7 +1576,7 @@
      \docheckouterreference
    \fi}
 
-\def\docheckouterreference%
+\def\docheckouterreference
   {\let\referenceprefix\empty
    \let\unharmedreferenceprefix\empty
    \xdef\predefinedreference
@@ -1591,7 +1604,7 @@
 
 \beginETEX \ifcsname
 
-\def\dodocheckouterreference%
+\def\dodocheckouterreference
   {\ifcsname\specialREFidentifier\currentfullreference\endcsname
      \@EA\@EA\@EA\splitofffullreference\@EA\@EA\@EA % 1 level
         {\csname\specialREFidentifier\currentfullreference\endcsname}%
@@ -1602,7 +1615,7 @@
      % already \global\referencefoundtrue % no checking done
    \fi\fi}
 
-\def\docheckouterreference%
+\def\docheckouterreference
   {\let\referenceprefix\empty
    \let\unharmedreferenceprefix\empty
    \xdef\predefinedreference
@@ -1631,10 +1644,10 @@
 %D Special references are only tested when some test routine is
 %D defined.
 
-\def\docheckspecialreference%
+\def\docheckspecialreference
   {\let\referenceprefix\empty
    \let\unharmedreferenceprefix\empty
-   \xdef\predefinedreference%
+   \xdef\predefinedreference
      {\currentreferencespecial::\currentreferenceoperation}%
    \executeifdefined{\s!do:\v!test:\currentreferencespecial}%
      {\global\referencefoundtrue\gobbletwoarguments}%
@@ -1656,7 +1669,7 @@
            \doboundtext{#2}\scratchdimen{..}->}}%
    \fi\fi
    \doifpredefinedreferenceelse
-     {}
+     \donothing
      {\predefinereference
       \showmessage\m!references{#1}{[\unharmedreferenceprefix][#2]}}%
    \egroup}
@@ -1717,6 +1730,8 @@
 %D \stoptypen
 %D
 %D The second argument can be a comma seperated list.
+
+% this will be replaced by a more general mechanis
 
 % \def\doifreferencepermittedelse#1#2#3#4% ref set found notfound
 %   {\doifreferencefoundelse{#1}
@@ -1900,7 +1915,7 @@
   {\doifsomething{#2}{\thisisdestination{#1:#2}}}
 
 \def\gotosomeinternal#1#2% #3#4
-  {\gotodestination{}{}{#1:#2}}
+  {\gotodestination\empty\empty{#1:#2}}
 
 %D An automatic mechanism is provided too:
 %D
@@ -1940,9 +1955,9 @@
 
 \def\gotonextinternal#1#2#3#4%
   {\ifinternalnamedreferences
-     \gotodestination{}{}{\s!aut\iftraceinternalreferences:#1\fi:#2}{#3}{#4}%
+     \gotodestination\empty\empty{\s!aut\iftraceinternalreferences:#1\fi:#2}{#3}{#4}%
    \else
-     \gotorealpage{}{}{#3}{#4}%
+     \gotorealpage\empty\empty{#3}{#4}%
    \fi}
 
 %D We already went through a lot of problems to sort out what
@@ -1950,7 +1965,7 @@
 %D supplied cross references (show/goto this or that) as well
 %D as user supplied system references (invoke this or that) is
 %D already taken care of in the test routine, but we still have
-%D to direct the request to the right routine.
+%D to direct the request to the right (first) routine.
 
 \def\gotolocation% #1#2%
   {\ifx\currentreferencespecial\empty
@@ -2112,7 +2127,7 @@
 %D shorter reference (\type{close}) and passed to the
 %D special driver (using \type{\executecommand}).
 
-% better: [command(name)] and \definereference[name][command(name)]
+% better: [action(name)] and \definereference[name][action(name)]
 
 \setglobalsystemreference \rt!exec \v!CloseDocument    {close}
 \setglobalsystemreference \rt!exec \v!ExitViewer       {exit}
@@ -2460,7 +2475,7 @@
    \removelastskip
    \ifx\currentreferencespecial\empty
      \ifx\currentouterreference\empty
-       \ifnum0\currentrealreference=0
+       \ifnum0\currentrealreference=\zerocount
          \ifhmode\strut\high{\symbol[\v!nergens]}\fi
        \else\ifnum0\currentrealreference>\realpageno
          \dodosymbolreference{#2}{\high{\symbol[\v!volgende]}}%
@@ -2478,7 +2493,7 @@
    \egroup}
 
 \def\dodosymbolreference#1#2%
-  {#1\hbox{\gotorealpage{}{}{\currentrealreference}
+  {#1\hbox{\gotorealpage\empty\empty\currentrealreference
     {\dolocationattributes\??ia\c!letter\c!kleur{#2}}}}
 
 %D The other alternatives just conform their names: only the
@@ -2492,14 +2507,22 @@
 %      {\doifsomething{#2}{\donaarspace{#2}[#3]~}\donaarfixed{#1}[#3]}
 %      {\donaarfixed{\dotextprefix{#2}#1}[#3]}}
 %
-
 % better:
+
+% \def\docompletereference#1#2[#3]%
+%   {\iflocationsplit
+%       \doifsomespaceelse{#2}
+%         {\donaarspace{\dotextprefix{#2}#1}[#3]}
+%         {\donaarfixed{\dotextprefix{#2}#1}[#3]}%
+%    \else
+%      \donaarfixed{\dotextprefix{#2}#1}[#3]%
+%    \fi}
+%
+% more efficient
 
 \def\docompletereference#1#2[#3]%
   {\iflocationsplit
-      \doifsomespaceelse{#2}
-        {\donaarspace{\dotextprefix{#2}#1}[#3]}
-        {\donaarfixed{\dotextprefix{#2}#1}[#3]}%
+     \doifsomespaceelse{#2}\donaarspace\donaarfixed{\dotextprefix{#2}#1}[#3]%
    \else
      \donaarfixed{\dotextprefix{#2}#1}[#3]%
    \fi}
@@ -2688,7 +2711,7 @@
        #1\relax % \relax prevents #1's next macros from gobbling \fi
      \fi
    \fi
-   \global\similarreference=0 }
+   \global\similarreference\zerocount}
 
 \def\donaarfixed#1[#2]%
   {{\iflocation
@@ -2761,9 +2784,9 @@
           {\dogebruikexterndocument[#1][#2][#2]}
           {\doifsomething{#2}
              {\setgvalue{\v!file:::#1}{\doexternaldocument[][#2][#3]}% just \do
-              \doif{\@@rfstatus}{\v!start}
+              \doif\@@rfstatus\v!start
                 {\doifparentfileelse{#2}
-                   {\showmessage{\m!references}{21}{#2}}
+                   {\showmessage\m!references{21}{#2}}
                    {\dodogebruikexterndocument{#1}{#2}}}}}}%
    \else
      \dodogebruikexterndocument{#1}{#1}%
@@ -2773,10 +2796,10 @@
 \def\dodogebruikexterndocument#1#2%
   {\bgroup % prevents wrong loading of \jobname
      \def\fileprefix{#1::}%
-     \let\setglobalcrossreference=\setoutercrossreference
+     \let\setglobalcrossreference\setoutercrossreference
      \usereferences[#2]%
    \egroup % when called nested
-   \showmessage{\m!references}{21}{#2}}
+   \showmessage\m!references{21}{#2}}
 
 %D The \URL\ alternative takes four arguments:
 %D
@@ -2849,11 +2872,11 @@
   {\bgroup
    \processaction
      [\@@urvariant]
-     [ \v!geen=>\chardef\urlsplitmode=0,
-      \v!beide=>\chardef\urlsplitmode=1,
-         \v!na=>\chardef\urlsplitmode=2,
-       \v!voor=>\chardef\urlsplitmode=3]%
-   \doifelse{\@@urspatie}{\v!ja}
+     [ \v!geen=>\chardef\urlsplitmode\zerocount,
+      \v!beide=>\chardef\urlsplitmode\plusone,
+         \v!na=>\chardef\urlsplitmode\plustwo,
+       \v!voor=>\chardef\urlsplitmode\plusthree]%
+   \doifelse\@@urspatie\v!ja
      {\setbetweenisolatedwords%
         {\scratchskip\currentspaceskip
          \hskip\zeropoint\!!plus.2\scratchskip}}
@@ -2989,9 +3012,9 @@
 %D
 %D The fastest implementation would be:
 
-\definespecialtest\v!file{\setfalse\forceURLlocation\handlespecialFILEandURL}
-\definespecialtest\v!URL {\settrue \forceURLlocation\handlespecialFILEandURL}
-\definespecialtest\v!url {\settrue \forceURLlocation\handlespecialFILEandURL}
+\definespecialtest\v!file    {\setfalse\forceURLlocation\handlespecialFILEandURL}
+\definespecialtest\v!URL     {\settrue \forceURLlocation\handlespecialFILEandURL}
+\definespecialtest\v!url     {\settrue \forceURLlocation\handlespecialFILEandURL}
 
 \definespeciallocation\v!file{\setfalse\forceURLlocation\handlespecialallocationFILEandURL}
 \definespeciallocation\v!URL {\settrue \forceURLlocation\handlespecialallocationFILEandURL}
@@ -3020,8 +3043,12 @@
 %D
 %D An better alternative, slower but error aware, is
 
-\definespecialtest\v!actie
-  {\localdoifreferencefoundelse\currentreferenceoperation}
+% \definespecialtest\v!actie
+%   {\localdoifreferencefoundelse\currentreferenceoperation}
+
+\definespecialtest\v!actie % rather ugly action(whatever{argument})
+  {\expanded{\localdoifreferencefoundelse{\currentreferenceoperation
+     \ifx\currentreferencearguments\empty\else{\currentreferencearguments}\fi}}}
 
 \definespeciallocation\v!actie
   {\handleexecreference}
@@ -3163,7 +3190,7 @@
 %        \doifnonzeropositiveelse{\currentinnerreference}
 %          {}
 %          {\edef\currentinnerreference{1}}%
-%        \gotorealpage{}{}{\currentinnerreference}{#2}%
+%        \gotorealpage\empty\empty\currentinnerreference{#2}%
 %      \else
 %        \setouterlocation\currentouterreference
 %        \doifnonzeropositiveelse{\currentinnerreference}
@@ -3171,7 +3198,7 @@
 %          {\doifdefinedelse{\v!pagina:::\currentinnerreference}
 %             {\edef\currentinnerreference{\getvalue{\v!pagina:::\currentinnerreference}}}
 %             {\edef\currentinnerreference{1}}}%
-%        \gotorealpage{\otherURL}{\otherfile}{\currentinnerreference}{#2}%
+%        \gotorealpage\otherURL\otherfile\currentinnerreference{#2}%
 %      \fi
 %    \else
 %      {#2}%
@@ -3250,15 +3277,15 @@
    \doifreferencefoundelse{#1}
      {\ifrealreferencepage
         \ifforwardreference
-          \donaarfixed{\labeltext{\v!hierboven}}[#1]%
+          \donaarfixed{\labeltext\v!hierboven}[#1]%
         \else
-          \donaarfixed{\labeltext{\v!hieronder}}[#1]%
+          \donaarfixed{\labeltext\v!hieronder}[#1]%
         \fi
       \else
-        \donaarfixed{\labeltexts{\v!oppagina}{\currentpagereference}}[#1]%
+        \donaarfixed{\labeltexts\v!oppagina\currentpagereference}[#1]%
       \fi}
      {\unknownreference{#1}%
-      \labeltexts{\v!pagina}{\dummyreference}}%
+      \labeltexts\v!pagina\dummyreference}%
    \referentieinfo{<}{#1}}
 
 %D We can cross link documents by using:
@@ -3301,7 +3328,7 @@
      \dogebruikexterndocument[#1][#2][#4]%
      \doglobal\addtocommalist{#1}\crossdocumentreferences
      \def\docommando##1%
-       {\setxvalue{\??rf##1\c!status}{\v!start}% for fast checking
+       {\globalletvalue{\??rf##1\c!status}\v!start % for fast checking
         \doglobal\addtocommalist{##1}\crossdocumentelements}%
      \processcommalist[#3]\docommando
      \ifutilitydone
@@ -3368,6 +3395,8 @@
 \long\def\docomplexbutton#1[#2]#3#4% get rid of possible space before [#4]
   {\dodocomplexbutton#1[#2]{#3}#4} % #4 == [
 
+\def\buttonframed{\dodoubleempty\localframed[\??bt]} % goodie
+
 % \def\dodocomplexbutton#1[#2]#3[#4]%
 %   {\bgroup
 %    \doifvalue{#1\c!status}{\v!stop}{\locationfalse}%
@@ -3397,10 +3426,10 @@
 
 \long\def\dodocomplexbutton#1[#2]#3[#4]% #3 can contain [] -> {#3} later
   {\bgroup
-   \doifvalue{#1\c!status}{\v!stop}{\locationfalse}%
+   \doifvalue{#1\c!status}\v!stop\locationfalse
    \iflocation
      \resetgoto
-     \ConvertConstantAfter\doifelse{#3}{\v!geen}{\hphantom}{\hbox}
+     \ConvertConstantAfter\doifelse{#3}\v!geen\hphantom\hbox
        {\doifelsenothing{#4}
           {\setlocationboxnop#1[#2]{#3}[#4]}
           {\doifreferencefoundelse{#4}
@@ -3430,6 +3459,8 @@
 %D The symbols are derived from the symbols linked to the
 %D entries.
 
+% does not work well with for instance SomeRef{whatever}
+
 \def\interactiebuttons
   {\dodoubleempty\dointeractiebuttons}
 
@@ -3447,7 +3478,7 @@
          \stelinteractiebalkin[#1,\c!strut=\v!nee]%
         %\setupinteraction[\c!breedte=\!!zeropoint]%
          \setinteractionparameter\c!breedte\!!zeropoint
-         \!!counta=0 % new, was 1
+         \!!counta\zerocount % new, was 1
          \processallactionsinset
            [#2]
            [       \v!pagina=>\advance\!!counta 4,
@@ -3473,7 +3504,6 @@
             \edef\localreference{##1}%
             \dodocomplexbutton\??ib
               [\c!hoogte=\!!heighta,\c!breedte=\!!widtha]%
-% funny buggy left over: [\c!breedte=\!!widtha]%
               {\dontleavehmode\symbol[\localreference]}%
               [\localreference]%
             \hss}%
@@ -3559,7 +3589,7 @@
 \def\dotextprefix#1%
   {\bgroup
    \global\labeltextdonefalse  % this is an ugly dependancy,
-   \setbox\scratchbox=\hbox{#1}% to be solved some day
+   \setbox\scratchbox\hbox{#1}% to be solved some day
    \ifdim\wd\scratchbox>\zeropoint
      \unhbox\scratchbox
      \iflabeltextdone\else\@@rfscheider\fi
@@ -3615,5 +3645,47 @@
 %    \c!kleur=\@@iakleur,
 %    \c!zelfdepagina=\v!ja,
 %    \c!onbekendeverwijzing=\v!ja]
+
+% under consideration:
+%
+% \setupinteraction[state=start]
+%
+% \unprotect
+%
+% \chardef\rt!extern=5
+%
+% \definesystemreferencehandler \rt!extern \handleexecreference
+%
+% \definespecialtest\v!extern
+%   {\expanded{\localdoifreferencefoundelse{\currentreferenceoperation
+%      \ifx\currentreferencearguments\empty\else{\currentreferencearguments}\fi}}}
+%
+% \definespeciallocation\v!extern
+%   {\handleexecreference}
+%
+% \def\defineexternalreference[#1]%
+%   {\setglobalsystemreference\rt!extern{#1}{#1}}
+%
+% \protect
+%
+% \defineexternalreference[NewOne]
+%
+% \def\PDFexecuteNewOne{/SomeNewAction /SomeParameter (\argumentA)}
+%
+% \starttext
+%
+%   \goto{test}[AVDP{../../nach-dateipfad.pdf}]
+%   \blank
+%   \goto{test}[external(AVDP{../../nach-dateipfad.pdf})]
+%   \blank
+%   \goto{test}[AVDP{../../nach-dateipfad.pdf}]
+%   \blank
+%   \goto{test}[external(AVDP{../../nach-dateipfad.pdf})]
+%   \blank
+%   \goto{test}[CloseDocument]
+%   \blank
+%   \goto{test}[action(CloseDocument)]
+%
+% \stoptext
 
 \protect \endinput

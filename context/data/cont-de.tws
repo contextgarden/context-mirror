@@ -361,6 +361,7 @@ var:textbefehl:*\Befehl#1::
 var:split:tolerant,streng,sehrstreng,*Nummer::
 var:textstil:normal,fett,geneigt,fettgeneigt,tippen,kap,klein...,*Befehl::
 var:textfarbe:*Name::
+var:interaktion:ja,nein::
 ivr:umrahmt::
 stopsetup
 
@@ -1922,7 +1923,7 @@ stopsetup
 startsetup
 com:seite:
 typ:vals/:
-val:ja,umbruch,nein,einstellung,grosszuegig, links,rechts,sperren,letzte,viertel, gerade,ungerade,blanko,leer,zuruecksetzten:ja:
+val:ja,umbruch,nein,einstellung,grosszuegig, links,rechts,sperren,letzte,viertel, gerade,ungerade,blanko,leer,zuruecksetzten,start,stop:ja:
 stopsetup
 
 startsetup

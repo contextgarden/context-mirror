@@ -164,16 +164,16 @@
 %    \setbox\scratchbox\vbox
 %      {\doinsertobject{#1}{#2}}%
 %    \setbox\scratchbox#3%
-%      {\vbox to #5\s!sp
-%         {\ifdim\ht\scratchbox>#5\s!sp
-%     % or \ifdim\wd\scratchbox>#4\s!sp
-%            \vss\hbox to #4\s!sp{\hss\box\scratchbox\hss}\vss
+%      {\vbox to #5\scaledpoint
+%         {\ifdim\ht\scratchbox>#5\scaledpoint
+%     % or \ifdim\wd\scratchbox>#4\scaledpoint
+%            \vss\hbox to #4\scaledpoint{\hss\box\scratchbox\hss}\vss
 %          \else
 %            \vss\box\scratchbox
 %          \fi}}%
-%    \wd\scratchbox#4\s!sp
-%    \ht\scratchbox#5\s!sp
-%    \dp\scratchbox#6\s!sp
+%    \wd\scratchbox#4\scaledpoint
+%    \ht\scratchbox#5\scaledpoint
+%    \dp\scratchbox#6\scaledpoint
 %    \box\scratchbox
 %    \elabelgroup}
 
@@ -184,19 +184,19 @@
    \setbox\scratchbox\vbox
      {\doinsertobject{#1}{#2}}%
    \setbox\scratchbox#3%
-     {\vbox to #5\s!sp
-        {\ifdim\ht\scratchbox>#5\s!sp
-    % or \ifdim\wd\scratchbox>#4\s!sp
-           \vss\hbox to #4\s!sp{\hss\box\scratchbox\hss}\vss
+     {\vbox to #5\scaledpoint
+        {\ifdim\ht\scratchbox>#5\scaledpoint
+    % or \ifdim\wd\scratchbox>#4\scaledpoint
+           \vss\hbox to #4\scaledpoint{\hss\box\scratchbox\hss}\vss
          \else
            \vss\box\scratchbox
          \fi}}%
-   \scratchdimen#7\s!sp
+   \scratchdimen#7\scaledpoint
    \setbox\nextbox\hbox
      {\hskip-\scratchdimen\lower\scratchdimen\flushnextbox}%
-   \wd\scratchbox#4\s!sp
-   \ht\scratchbox#5\s!sp
-   \dp\scratchbox#6\s!sp
+   \wd\scratchbox#4\scaledpoint
+   \ht\scratchbox#5\scaledpoint
+   \dp\scratchbox#6\scaledpoint
    \box\scratchbox
    \elabelgroup}
 

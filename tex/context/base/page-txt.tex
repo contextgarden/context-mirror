@@ -444,13 +444,18 @@
       \hss}%
    \dp#1\zeropoint}
 
+\definepalet
+  [layout]
+  [grid=red,
+   page=green]
+
 \def\addtextgridlayer#1% tzt run time
   {\ifcase\showgridstate\else % 1=bottom 2=top
      \setgridbox\scratchbox\zetbreedte\teksthoogte
      \setbox#1\hbox
        {\ifcase\showgridstate\or\or\box#1\hskip-\zetbreedte\fi
         \bgroup % color
-\startlayoutcomponent{gridcolumns}{grid columns}%
+        \startlayoutcomponent{gridcolumns}{grid columns}%
         \incolortrue
         \ifcase\layoutcolumns\else
           \gray
@@ -465,11 +470,10 @@
               \fi}}%
           \hskip-\zetbreedte
         \fi
-\stoplayoutcomponent
-\startlayoutcomponent{gridlines}{grid lines}%
-        \red
-        \box\scratchbox
-\stoplayoutcomponent
+        \stoplayoutcomponent
+        \startlayoutcomponent{gridlines}{grid lines}%
+        \startcolor[layout:grid]\box\scratchbox\stopcolor
+        \stoplayoutcomponent
         \egroup
         \ifcase\showgridstate\or\hskip-\zetbreedte\box#1\fi}%
    \fi}

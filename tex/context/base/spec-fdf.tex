@@ -379,11 +379,10 @@
    \egroup}
 
 \appendtoksonce % hack to prevent duplicates
-  \ifcase\realfolio \or % only at page one
-    \doPDFaddtocatalog{\currentPDFpagemode\currentPDFviewerprefs}%
-    \doPDFaddtoinfo{/Trapped /False}%
-  \fi
-\to \everyshipout
+  \doPDFaddtocatalog{\currentPDFpagemode\currentPDFviewerprefs}%
+  \doPDFaddtoinfo{/Trapped /False}%
+  \doPDFaddtoinfo{/ConTeXt.Version (\contextversion)}%
+\to \everyfirstshipout
 
 \def\doPDFsetupwhateverbox#1#2#3#4#5#6% watch the extra arguments
   {\bgroup
@@ -445,6 +444,15 @@
 %D because action chains are derived from the reference
 %D mechanism.
 
+%D Starting with version~5 viewers, when the open actions
+%D started yto give problems, for testing purposes we
+%D decided use indirect actions.
+
+% \definespecial\dosetupopenaction     {\doPDFsetupopenaction}
+% \definespecial\dosetupcloseaction    {\doPDFsetupcloseaction}
+% \definespecial\dosetupopenpageaction {\doPDFsetupopenpageaction}
+% \definespecial\dosetupclosepageaction{\doPDFsetupclosepageaction}
+
 \let\lastPDFaction\empty
 
 %D We can safe a couple of references by moving this code
@@ -454,15 +462,42 @@
 %D update of Acrobat Viewers, upward compatibility was
 %D just a dream.
 
-\def\doPDFsetupopenaction
-  {\doPDFaddtocatalog{/OpenAction <<\lastPDFaction>>}}
+\definespecial\dosetupopenaction {\doPDFaddtocatalog{/OpenAction  <<\lastPDFaction>>}}
+\definespecial\dosetupcloseaction{\doPDFaddtocatalog{/CloseAction <<\lastPDFaction>>}}
 
-\def\doPDFsetupcloseaction
-  {\doPDFaddtocatalog{/CloseAction <<\lastPDFaction>>}}
+% todo: /AA << dictionary in catalog >>
 
-%D So, starting with version~5 viewers, when the open actions
-%D started yto give problems, for testing purposes we
-%D decided use indirect actions.
+% \globalletempty\PDFdocumentclose
+% \globalletempty\PDFwillsave
+% \globalletempty\PDFdidsave
+% \globalletempty\PDFwillprint
+% \globalletempty\PDFdidprint
+
+% \definespecial\dosetupdocumentcloseaction {\global\let\PDFdocumentclose\lastPDFaction}
+% \definespecial\dosetupwillsaveaction      {\global\let\PDFwillsave     \lastPDFaction}
+% \definespecial\dosetupdidsaveaction       {\global\let\PDFdidsave      \lastPDFaction}
+% \definespecial\dosetupwillprintaction     {\global\let\PDFwillprint    \lastPDFaction}
+% \definespecial\dosetupdidprintaction      {\global\let\PDFdidprint     \lastPDFaction}
+
+% \def\checkPDFdocumentactions
+%   {\iflocation
+%      \doPDFpageattribute
+%        {/AA <<\ifx\PDFdocumentclose\empty \else /DC <<\PDFdocumentclose>> \fi
+%               \ifx\PDFwillsave     \empty \else /WS <<\PDFwillsave     >> \fi
+%               \ifx\PDFdidsave      \empty \else /DS <<\PDFdidsave      >> \fi
+%               \ifx\PDFwillprint    \empty \else /WP <<\PDFwillprint    >> \fi
+%               \ifx\PDFdidprint     \empty \else /DP <<\PDFdidprint     >> \fi>>}%
+%      % \globalletempty\PDFdocumentclose
+%      % \globalletempty\PDFwillsave
+%      % \globalletempty\PDFdidsave
+%      % \globalletempty\PDFwillprint
+%      % \globalletempty\PDFdidprint
+%      \global\let\checkPDFdocumentactions\relax
+%    \fi}
+
+% \appendtoksonce
+%   \checkPDFdocumentactions
+% \to \everylastshipout
 
 %\def\doPDFsetupopenaction%
 %  {\doPDFdictionaryobject class FDF name local:openaction data \lastPDFaction
@@ -477,11 +512,8 @@
 \let\PDFopenpageaction \empty
 \let\PDFclosepageaction\empty
 
-\def\doPDFsetupopenpageaction
-  {\global\let\PDFopenpageaction\lastPDFaction}
-
-\def\doPDFsetupclosepageaction
-  {\global\let\PDFclosepageaction\lastPDFaction}
+\definespecial\dosetupopenpageaction {\global\let\PDFopenpageaction \lastPDFaction}
+\definespecial\dosetupclosepageaction{\global\let\PDFclosepageaction\lastPDFaction}
 
 \def\checkPDFpageactions
   {\iflocation % important since direct -)
@@ -771,7 +803,7 @@
   %\@EA\aftersplitstring \string\at{ }\to\parameters
   %\edef\action%
   %  {/S /Launch /F (\program) /P (\parameters) /D (.)}%
-   \edef\action%
+   \edef\action
      {/S /Launch /F (#3) /P (#4) /D (.)}%
    \ifsecondaryreference
      \savesecondaryPDFreference\action
@@ -794,7 +826,7 @@
   {\bgroup
    \setPDFdestination{#3}%
    \doifsomething\PDFdestination
-     {\edef\action%
+     {\edef\action
         {/S /Thread /D (\PDFdestination)}%
       \ifsecondaryreference
         \savesecondaryPDFreference\action
@@ -813,6 +845,23 @@
 %D (watch out: \type{replace} is not in this list). Most of
 %D the transitions look awful anyway. By the way, \CONTEXT\ is
 %D able to select transitions randomly.
+
+% some day, when 1.5 is on linux and apple, we will add:
+%
+% \def\pagetransitions
+%   {{split,in,vertical},{split,in,horizontal},
+%    {split,out,vertical},{split,out,horizontal},
+%    {blinds,horizontal},{blinds,vertical},
+%    {box,in},{box,out},
+%    {wipe,east},{wipe,west},{wipe,north},{wipe,south},
+%    dissolve,
+%    {glitter,east},{glitter,south},
+%    {fly,in,east},{fly,in,west},{fly,in,north},{fly,in,south},
+%    {fly,out,east},{fly,out,west},{fly,out,north},{fly,out,south},
+%    {push,east},{push,west},{push,north},{push,south},
+%    {cover,east},{cover,west},{cover,north},{cover,south},
+%    {uncover,east},{uncover,west},{uncover,north},{uncover,south},
+%    fade}
 
 \def\pagetransitions
   {{split,in,vertical},{split,in,horizontal},
@@ -833,6 +882,12 @@
 \def\PDFpagedissolve {/S /Dissolve }
 \def\PDFpageglitter  {/S /Glitter  }
 \def\PDFpagereplace  {/S /R        }
+
+\def\PDFpagefly      {/S /Fly      } % 1.5
+\def\PDFpagepush     {/S /Push     } % 1.5
+\def\PDFpagecover    {/S /Cover    } % 1.5
+\def\PDFpageuncover  {/S /Uncover  } % 1.5
+\def\PDFpagefade     {/S /Fade     } % 1.5
 
 \def\PDFpagehorizontal {/Dm /H  }
 \def\PDFpagevertical   {/Dm /V  }
@@ -862,6 +917,10 @@
 %D Most of the annotations we use here are of type {\em
 %D link}, but here is another one: the {\em movie} annotation.
 %D The driver module must implement \type {setcurrentmovie}.
+
+%D Great: this will become an obsolete pdf feature; why did we have to
+%D keep up with the bugs ... and by the time acrobat gets better in
+%D handling it have to drop it.
 
 \let\currentmovie\s!unknown
 
@@ -916,6 +975,33 @@
 \def\doPDFfilestreamobject class #1 name #2 file #3 source #4%
   {}
 
+\def\doPDFfilestreamidentifier#1%
+  {0}
+
+\def\doPDFgetfilestreamreference#1#2%
+  {0 0 R}
+
+% \def\doPDFattachfile#1#2#3#4#5#6#7#8%
+%   {\bgroup % title width height color symbol file
+%    \edef\PDFfile{#8}\convertcommand\PDFfile\to\PDFfile
+%    % beware: the symbol may (indirectly) use the file
+%    % reference when typesetting the object number;
+%    \presetPDFsymbolappearance{#5}{#6}{#2}{#3}{#4}% sets width/height
+%    \startPDFsymbolappearance
+%      \doifnotflagged{a:\PDFfile}%
+%        {\doPDFfilestreamobject
+%           class PDFEF name {\PDFfile} file {#7} source {#8}%
+%         \doglobal\setflag{a:\PDFfile}}%
+%      \doPDFgetobjectreference{PDFEF}\PDFfile\PDFobjectreference
+%      \doPDFannotation width {\width} height {\totalheight} data
+%        {/Subtype /FileAttachment
+%         /FS \PDFobjectreference\space
+%         /Contents (#1)
+%         \PDFsymbol
+%         \PDFattributes}%
+%    \stopPDFsymbolappearance
+%    \egroup}
+
 \def\doPDFattachfile#1#2#3#4#5#6#7#8%
   {\bgroup % title width height color symbol file
    \edef\PDFfile{#8}\convertcommand\PDFfile\to\PDFfile
@@ -923,11 +1009,8 @@
    % reference when typesetting the object number;
    \presetPDFsymbolappearance{#5}{#6}{#2}{#3}{#4}% sets width/height
    \startPDFsymbolappearance
-     \doifnotflagged{a:\PDFfile}%
-       {\doPDFfilestreamobject
-          class PDFEF name {\PDFfile} file {#7} source {#8}%
-        \doglobal\setflag{a:\PDFfile}}%
-     \doPDFgetobjectreference{PDFEF}\PDFfile\PDFobjectreference
+     \doPDFembedfile\PDFfile{#7}{#8}%
+     \doPDFgetembeddedfilereference\PDFfile\PDFobjectreference
      \doPDFannotation width {\width} height {\totalheight} data
        {/Subtype /FileAttachment
         /FS \PDFobjectreference\space
@@ -936,6 +1019,23 @@
         \PDFattributes}%
    \stopPDFsymbolappearance
    \egroup}
+
+% semi-public
+
+\def\doPDFembedfile#1#2#3% symbolic name | filename | user name
+  {\edef\PDFfile{#1}\convertcommand\PDFfile\to\PDFfile
+   \doifnotflagged{a:\PDFfile}%
+     {\doPDFfilestreamobject
+        class PDFEF name {\PDFfile} file {#2} source {#3}%
+      \doglobal\setflag{a:\PDFfile}}}
+
+\def\doPDFgetembeddedfilereference#1#2%
+  {\edef\PDFfile{#1}\convertcommand\PDFfile\to\PDFfile
+   \doPDFgetobjectreference{PDFEF}\PDFfile#2}
+
+\def\doPDFgetembeddedfilestreamreference#1#2%
+  {\edef\PDFfile{#1}\convertcommand\PDFfile\to\PDFfile
+   \doPDFgetfilestreamreference\PDFfile#2} % == \doPDFgetobjectreference{PDFFS}\PDFfile#2
 
 \definespecial \doattachfile {\doPDFattachfile}
 
@@ -962,6 +1062,169 @@
    \fi}
 
 %D \macros
+%D   {...}
+%D
+%D Rather preliminary. We have to wait till the complete specs
+%D show up. As usual, we cannot really check it (Acrobat 6.0
+%D has a bug that inhibits us to make a test file). Half a day
+%D of testing made clear that trying to control the plugin fails
+%D in most cases (we need plugin specs -). We also miss a feature
+%D to let acrobat wait with proceeding (action processing) till
+%D the media clip is ready.
+
+% aiff audio/aiff
+% au   audio/basic
+% avi  video/avi
+% mid  audio/midi
+% mov  video/quicktime
+% mp3  audio/x-mp3 (mpeg)
+% mp4  audio/mp4
+% mp4  video/mp4
+% mpeg video/mpeg
+% smil application/smil
+% swf  application/x-shockwave-flash
+
+% beware, this is preliminary code, should be improved
+
+\def\PDFrenderingspecs#1{\executeifdefined{PDFMR:#1}\empty}
+
+\def\PDFexecutestartrendering  {/Rendition /OP 0 \PDFrenderingspecs\argumentA}
+\def\PDFexecutestoprendering   {/Rendition /OP 1 \PDFrenderingspecs\argumentA}
+\def\PDFexecutepauserendering  {/Rendition /OP 2 \PDFrenderingspecs\argumentA}
+\def\PDFexecuteresumerendering {/Rendition /OP 3 \PDFrenderingspecs\argumentA}
+
+% todo : sub files
+%
+% \doPDFembedfile{pier-39.png}{pier-39.png}{pier-39.png}%
+% \doPDFgetembeddedfilestreamreference{pier-39.png}\xPDFobjectreference
+% \edef\xxxx{/RF [(pier-39.png) \xPDFobjectreference]}%
+
+% todo: alternative renderings
+%
+% object_1  -> <</Type /Rendition /S /MR /C << /Type /MediaClip ... >> >>
+% object_2  -> <</Type /Rendition /S /MR /C << /Type /MediaClip ... >> >>
+%
+% rendering -> <</Type /Rendition /S /MS [objref_1 objref_2]>>
+
+% todo: embedded files (too buggy)
+%
+%     \let\PDFattribute\empty
+%      % /D \PDFobjectreference
+%      % test one, no error, but ignored
+%      \doifinset\v!file{#4}
+%        {\doPDFembedfile{#3}{#3}{#3}%
+%         \doPDFgetembeddedfilestreamreference{#3}\PDFobjectreference
+%         \edef\PDFattribute{/EF \PDFobjectreference}}%
+%      % official, does not work either
+%      \doifinset\v!file{#4}
+%        {\doPDFembedfile{#3}{#3}{#3}%
+%         \doPDFgetembeddedfilereference{#3}\PDFobjectreference}
+%      % do we play the game as follows
+
+\definespecial\doinsertrendering#1#2#3#4% tag mime file options
+  {\ifundefined{PDFMR:#1}%
+     \doifinstringelse{://}{#3}\donetrue\donefalse % evt url as keyword
+     \doPDFdictionaryobject class {PDFMF} name {#1} data
+       {/Type /Rendition
+        /S    /MR
+        % does not work: /SP << /Type /MediaScreenParam /BE << /B [1 0 0] /O 0.5 >> >>
+        /C << /Type /MediaClip
+              /S /MCD
+              /N (#1)
+              /Alt [() (file not found)] % language id + message
+              /D << /Type /Filespec
+                    /F (#3)
+                    \ifdone/FS /URL\fi >>
+              /CT (#2) >>}%
+     % common code
+     \doifobjectreferencefoundelse{PDFMS}{#1}
+       {\doPDFgetobjectreference{PDFMS}{#1}\PDFobjectreferenceB}
+       {\doPDFgetobjectreference{PDFMU}{#1}\PDFobjectreferenceB}%
+     \doPDFgetobjectreference{PDFMF}{#1}\PDFobjectreferenceA
+     \setxvalue{PDFMR:#1}% needed /AA actions in /Screen
+       {/R  \PDFobjectreferenceA
+        /AN \PDFobjectreferenceB}%
+     \doifobjectreferencefoundelse{PDFMS}{#1}\donothing
+       {\dodoinsertrenderingwindow{PDFMU}{#1}\zeropoint\zeropoint{#4}}%
+   \fi}
+
+\definespecial\doinsertrenderingobject#1#2#3#4% tag class objectname options
+  {\ifundefined{PDFMR:#1}%
+     \doPDFgetobjectreference{#2}{#3}\PDFobjectreference
+     \doPDFdictionaryobject class {PDFMF} name {#1} data
+       {/Type /Rendition
+        /S    /MR
+        /C << /Type /MediaClip
+              /S /MCD
+              /N (#1)
+              /D \PDFobjectreference>>}%
+     % common code
+     \doifobjectreferencefoundelse{PDFMS}{#1}
+       {\doPDFgetobjectreference{PDFMS}{#1}\PDFobjectreferenceB}
+       {\doPDFgetobjectreference{PDFMU}{#1}\PDFobjectreferenceB}%
+     \doPDFgetobjectreference{PDFMF}{#1}\PDFobjectreferenceA
+     \setxvalue{PDFMR:#1}% needed /AA actions in /Screen
+       {/R  \PDFobjectreferenceA
+        /AN \PDFobjectreferenceB}%
+     \doifobjectreferencefoundelse{PDFMS}{#1}\donothing
+       {\dodoinsertrenderingwindow{PDFMU}{#1}\zeropoint\zeropoint{#4}}%
+   \fi}
+
+\definespecial\doinsertrenderingwindow
+  {\dodoinsertrenderingwindow{PDFMS}}
+
+\def\dodoinsertrenderingwindow#1#2#3#4#5%
+  {\vbox to #4 \bgroup
+     \checkPDFscreenactions{#2}{#5}%
+     \doPDFgetobjectpagereference{PDFMF}{#2}\PDFobjectreferenceA
+     \doPDFgetobjectreference    {PDFMF}{#2}\PDFobjectreferenceB
+     \vss
+     \hbox to #3 \bgroup
+       \doPDFannotationobject class {#1} name {#2} width #3 height #4 data
+         {/Subtype /Screen
+          /P \PDFobjectreferenceA
+          /A \PDFobjectreferenceB
+          \PDFattributes
+          /Border [0 0 0]}%
+       \hss
+     \egroup
+   \egroup}
+
+\global\let\PDFrenderingopenpageaction \empty
+\global\let\PDFrenderingclosepageaction\empty
+
+\def\checkPDFscreenactions#1#2%
+  {\let\PDFattributes\empty
+   \iflocation % important since direct -)
+     % the action can either (already) be set by the window handler
+     % or (normally when no window [i.e a zero dimensions one] is present) by keyword
+     \doifinset\v!auto{#2}
+       {% brrr, here instead of in navigation module, must move and become special
+        % now two sided dependency
+        \let\checkrendering\gobbleoneargument
+        \ifx\PDFrenderingopenpageaction \empty
+          \handlereferenceactions{\v!StartRendering{#1}}\dosetuprenderingopenpageaction
+        \fi
+        \ifx\PDFrenderingclosepageaction\empty
+          \handlereferenceactions{\v!StopRendering {#1}}\dosetuprenderingclosepageaction
+        \fi
+        }%
+     \donefalse
+     \ifx\PDFrenderingopenpageaction \empty\!!doneafalse\else\donetrue\!!doneatrue\fi
+     \ifx\PDFrenderingclosepageaction\empty\!!donebfalse\else\donetrue\!!donebtrue\fi
+     \ifdone
+       \edef\PDFattributes
+         {/AA <<\if!!donea/PO <<\PDFrenderingopenpageaction >> \fi
+                \if!!doneb/PC <<\PDFrenderingclosepageaction>> \fi>>}%
+     \fi
+     \global\let\PDFrenderingopenpageaction \empty
+     \global\let\PDFrenderingclosepageaction\empty
+   \fi}
+
+\definespecial\dosetuprenderingopenpageaction {\global\let\PDFrenderingopenpageaction \lastPDFaction}
+\definespecial\dosetuprenderingclosepageaction{\global\let\PDFrenderingclosepageaction\lastPDFaction}
+
+%D \macros
 %D   {doPDFinsertbookmark}
 %D
 %D Well, here is the dreadfull bookmark, rather useless because
@@ -982,6 +1245,37 @@
 %D The next section of this module is dedicated to form
 %D support. These macros are complicated by the fact that
 %D cloning is possible.
+
+% new approach, 'global' variables, since we run out of
+% arguments
+
+\ifx\undefined\@@DriverFieldName
+
+  \letempty \@@DriverFieldName
+  \letempty \@@DriverFieldWidth
+  \letempty \@@DriverFieldHeight
+  \letempty \@@DriverFieldDefault
+  \letempty \@@DriverFieldNumber
+  \letempty \@@DriverFieldNumber
+  \letempty \@@DriverFieldStyle
+  \letempty \@@DriverFieldColor
+  \letempty \@@DriverFieldBackgroundColor
+  \letempty \@@DriverFieldFrameColor
+  \letempty \@@DriverFieldLayer
+  \letempty \@@DriverFieldOption
+  \letempty \@@DriverFieldAlign
+  \letempty \@@DriverFieldClickIn
+  \letempty \@@DriverFieldClickOut
+  \letempty \@@DriverFieldRegionIn
+  \letempty \@@DriverFieldRegionOut
+  \letempty \@@DriverFieldAfterKey
+  \letempty \@@DriverFieldFormat
+  \letempty \@@DriverFieldValidate
+  \letempty \@@DriverFieldCalculate
+  \letempty \@@DriverFieldFocusIn
+  \letempty \@@DriverFieldFocusOut
+
+\fi
 
 %D \macros
 %D   {FDFflag...,FDFplus...}
@@ -1022,6 +1316,11 @@
 \def\FDFplusHidden                {2} %  2
 \def\FDFplusPrintable             {4} %  3
 
+%def\FDFplusNoView               {32} %  6
+%def\FDFplusToggleNoView        {256} %  9
+
+\def\FDFplusAutoView            {256} % {288} %  6+9
+
 %D \macros
 %D   {setFDFswitches}
 %D
@@ -1042,6 +1341,8 @@
 
 \letvalue       {\@@FDFplus\v!verborgen}=\FDFplusHidden
 \letvalue       {\@@FDFplus\v!printbaar}=\FDFplusPrintable
+
+\letvalue            {\@@FDFplus\v!auto}=\FDFplusAutoView
 
 %D A set of switches is collected into the flags we mentioned
 %D before by the next macro (we don't handle negations yet,
@@ -1196,25 +1497,51 @@
 %   \fi}
 %% {\setFDFaction A#2}% mouseup % changed for version 5
 
+% \def\setFDFactions[#1,#2,#3,#4,#5,#6,#7,#8,%
+%   {\global\let\FDFactions\empty
+%    \setFDFaction D#1%  mousedown
+%   %\setFDFaction U#2%  mouseup
+%    \setFDFaction E#3%  enterregion
+%    \setFDFaction X#4%  exitregion
+%    \setFDFaction K#5%  afterkeystroke
+%    \setFDFaction F#6%  formatresult
+%    \setFDFaction V#7%  validateresult
+%    \setFDFaction C#8%  calculatewhatever
+%    \setFDFactionsmore#2,}
+
+% \def\setFDFactionsmore#1,#2,#3]%
+%   {\setFDFaction{Fo}#2%  focusin
+%    \setFDFaction{Bl}#3%  focusout % was I (now pdf ref manual explicitly talks about lowercase l)
+%    \ifx\FDFactions\empty\else
+%      \xdef\FDFactions{/AA << \FDFactions >>}% since 1.3 no longer inherited
+%    \fi
+%    \setFDFaction A#1}% mouseup
+
 \def\setFDFactions[#1,#2,#3,#4,#5,#6,#7,#8,%
   {\global\let\FDFactions\empty
    \setFDFaction D#1%  mousedown
-%  \setFDFaction U#2%  mouseup
+   \setFDFaction U#2%  mouseup
    \setFDFaction E#3%  enterregion
    \setFDFaction X#4%  exitregion
    \setFDFaction K#5%  afterkeystroke
    \setFDFaction F#6%  formatresult
    \setFDFaction V#7%  validateresult
    \setFDFaction C#8%  calculatewhatever
-   \setFDFactionsmore#2,}
+   \setFDFactionsmore}
 
-\def\setFDFactionsmore#1,#2,#3]%
-  {\setFDFaction{Fo}#2%  focusin
-   \setFDFaction{Bi}#3%  focusout
+\def\setFDFactionsmore#1,#2]%
+  {\setFDFaction{Fo}#1%  focusin
+   \setFDFaction{Bl}#2%  focusout % was I (now pdf ref manual explicitly talks about lowercase l)
    \ifx\FDFactions\empty\else
      \xdef\FDFactions{/AA << \FDFactions >>}% since 1.3 no longer inherited
-   \fi
-   \setFDFaction A#1}% mouseup
+   \fi}
+
+% todo, when new var scheme is implemented
+%
+%   \setFDFaction{PO}\@@DriverFieldPageOpen
+%   \setFDFaction{PC}\@@DriverFieldPageClose
+%   \setFDFaction{PV}\@@DriverFieldPageVisible
+%   \setFDFaction{PI}\@@DriverFieldPageInVisible
 
 %D The event handler becomes something:
 %D
@@ -1247,8 +1574,7 @@
 
 \def\setFDFaction#1#2%
   {\bgroup
-   \def\docommando%
-     {\xdef\FDFactions{\FDFactions /#1 << \lastPDFaction >> }}%
+   \def\docommando{\xdef\FDFactions{\FDFactions /#1 << \lastPDFaction >> }}%
    \@EA\handlereferenceactions\@EA{#2}\docommando % one level expansion
    \egroup}
 
@@ -1486,6 +1812,7 @@
 
 \def\doFDFpresetlinefield#1#2#3#4#5#6#7#8#9%
   {\bgroup
+   \setFDFlayer
    \setFDFswitches[#7]%
    \setFDFattributes[#6]%
    \setFDFalignment[#8]%
@@ -1500,6 +1827,7 @@
         /Ff \FDFflag\space
         /F \FDFplus\space
         /DA (\FDFattributes)
+        \FDFlayer\space
         \FDFsurroundings\space
         /Q \FDFalign\space
         \FDFactions}%
@@ -1515,6 +1843,7 @@
         /Ff \FDFflag\space
         /F \FDFplus\space
         /DA (\FDFattributes)
+        \FDFlayer\space
         \FDFsurroundings\space
         /Q \FDFalign\space
         \FDFactions}%
@@ -1528,6 +1857,7 @@
         /Ff \FDFflag\space
         /F \FDFplus\space
         /DA (\FDFattributes)
+        \FDFlayer\space
         \FDFsurroundings\space
         /Q \FDFalign\space
         \FDFactions}%
@@ -1547,6 +1877,7 @@
 
 \def\doFDFpresetchoicefield#1#2#3#4#5#6#7#8%
   {\bgroup
+   \setFDFlayer
    \setFDFswitches[#6]%
    \setFDFattributes[#5]%
    \setFDFvalues[#7][#4]%
@@ -1559,6 +1890,7 @@
         /Ff \FDFflag\space
         /F \FDFplus\space
         /DA (\FDFattributes)
+        \FDFlayer\space
         \FDFsurroundings\space
         /Opt [\FDFvalues]
         \FDFactions}%
@@ -1572,6 +1904,7 @@
         /Ff \FDFflag\space
         /F \FDFplus\space
         /DA (\FDFattributes)
+        \FDFlayer\space
         \FDFsurroundings\space
         /Opt [\FDFvalues]
         \FDFactions}%
@@ -1585,6 +1918,7 @@
         /Ff \FDFflag\space
         /F \FDFplus\space
         /DA (\FDFattributes)
+        \FDFlayer\space
         \FDFsurroundings\space
         \FDFactions}%
    \or
@@ -1608,6 +1942,7 @@
 
 \def\doFDFpresetpushcheckfield#1#2#3#4#5#6#7#8% in acro<5 (\FDFdefault)
   {\bgroup                                    % in acro>5 /\FDFdefault
+   \setFDFlayer
    \ifcase#8\relax\FDFvaluesfalse\else\FDFvaluestrue\fi
    \setFDFswitches[#5]%
    \setFDFactions[#7]%
@@ -1623,12 +1958,14 @@
           /V  /\FDFdefault\space
           /AS /\FDFdefault\space
         \fi
+        \FDFlayer
         /Ff \FDFflag\space
         /F \FDFplus\space
+        \FDFlayer\space
         \FDFappearance\space
         \FDFactions}%
      \registerFDFobject{#1}%
-   \or
+   \or % no appearance and layer ?
      \setFDFkids[kids:][\currentFDFkids]%
      \doPDFdictionaryobject class FDF name #1 data
        {/T (#1) /FT /Btn
@@ -1656,6 +1993,7 @@
         \fi
         /Ff \FDFflag\space
         /F \FDFplus\space
+        \FDFlayer\space
         \FDFappearance\space
         \FDFactions}%
    \or
@@ -1671,6 +2009,7 @@
           /V  /\FDFdefault\space
           /AS /\FDFdefault\space
         \fi
+        \FDFlayer\space
         \FDFappearance
         \FDFactions}%
    \fi
@@ -1684,14 +2023,15 @@
 
 \def\doFDFpresetradiofield#1#2#3#4#5#6#7#8%
   {\bgroup
+   \setFDFlayer
    \FDFvaluestrue
    \setFDFswitches[#5]%
    \setFDFactions[#8]%
    \doifelsenothing{#4}
      {\def\FDFdefault{Off}}
      {\def\FDFdefault{#4}}%
-\@EA\aftersplitstring\FDFdefault\at=>\to\FDFdefaultvalue
-\ifx\FDFdefaultvalue\empty\else\let\FDFdefault\FDFdefaultvalue\fi
+   \@EA\aftersplitstring\FDFdefault\at=>\to\FDFdefaultvalue
+   \ifx\FDFdefaultvalue\empty\else\let\FDFdefault\FDFdefaultvalue\fi
    \ifcase\currentFDFmode
      \doFDFappearance{#1}{#7}{1}%
      \doPDFgetobjectreference{FDF}{#6}\PDFobjectreference
@@ -1700,6 +2040,7 @@
         /Parent \PDFobjectreference\space
         /F \FDFplus\space
         /AS /\FDFdefault\space
+        \FDFlayer\space
         \FDFappearance\space
         \FDFactions}%
      \registerFDFobject{#1}%
@@ -1722,6 +2063,7 @@
         /Parent \PDFobjectreference\space
         /AS /\FDFdefault\space
         /F \FDFplus\space
+        \FDFlayer\space
         \FDFappearance\space
         \FDFactions}%
    \or
@@ -1734,6 +2076,7 @@
         /Parent \PDFobjectreference\space
         /AS /\FDFdefault\space
         /F \FDFplus\space
+        \FDFlayer\space
         \FDFappearance\space
         \FDFactions}%
    \fi
@@ -1766,13 +2109,13 @@
       % /V (#2)
       % and now finally this works
       /H /N
-% /opt is buggy in 5.05, only works once, sigh
-%\ifx\FDFfirstvalues\FDFsecondvalues
-  /V /#2
-%\else
-%  /V /\FDFdefaultindex\space
-%  /Opt [\FDFsecondvalues]
-%\fi
+      % /opt is buggy in 5.05, only works once, sigh
+      %\ifx\FDFfirstvalues\FDFsecondvalues
+      /V /#2
+      %\else
+      %  /V /\FDFdefaultindex\space
+      %  /Opt [\FDFsecondvalues]
+      %\fi
       /Ff \FDFflag\space
       /F \FDFplus\space
       /Kids [\FDFkids]
@@ -1843,6 +2186,17 @@
 \def\doFDFdefault#1#2%
   {\doifelse{#2}{1}{\def\FDFdefault{On}}{\def\FDFdefault{Off}}}
 
+%D Layer support:
+
+\def\setFDFlayer % todo : \ifx\PDFobjectreference\noPDFobjectreference ipv found
+  {\letempty\FDFlayer
+   \doifsomething\@@DriverFieldLayer
+     {\checkproperty\@@DriverFieldLayer
+      \doifobjectreferencefoundelse{PDLN}\@@DriverFieldLayer
+        {\doPDFgetobjectreference{PDLN}\@@DriverFieldLayer\PDFobjectreference
+         \edef\FDFlayer{/OC \PDFobjectreference}}%
+        \donothing}}
+
 %D The three appearances {\em normal}, \type{roll over} and
 %D \type{push down} are passed as comma separated triplets,
 %D that is, the second argument can look like:
@@ -1908,10 +2262,10 @@
 
 \beginETEX \ifcsname
 
-\def\getsecondaryPDFreferences%
+\def\getsecondaryPDFreferences
   {\ifcase\nofsecondaryreferences\else
      \ifcsname PDF-SR:\the\nofsecondaryreferences\endcsname
-       \xdef\secondaryPDFreferences%
+       \xdef\secondaryPDFreferences
          {/Next << \csname PDF-SR:\the\nofsecondaryreferences\endcsname\space
                    \secondaryPDFreferences >>}%
      \fi
@@ -1923,10 +2277,10 @@
 
 \beginTEX
 
-\def\getsecondaryPDFreferences%
+\def\getsecondaryPDFreferences
   {\ifcase\nofsecondaryreferences\else
      \@EA\ifx\csname PDF-SR:\the\nofsecondaryreferences\endcsname\relax\else
-       \xdef\secondaryPDFreferences%
+       \xdef\secondaryPDFreferences
          {/Next << \csname PDF-SR:\the\nofsecondaryreferences\endcsname\space
                    \secondaryPDFreferences >>}%
      \fi
@@ -2010,7 +2364,7 @@
    \egroup}
 
 %D The next macro does the same job, but now in the \TEX\ way
-%D of doing things. Easy eh?
+%D of doing things. Easy eh? Will become obsolete!
 
 \bgroup
 
@@ -2627,11 +2981,9 @@
       /Name (#2)}%
    \doPDFgetobjectreference{PDLN}{#1}\PDFobjectreference
      \xdef\PDFtextlayers{\PDFtextlayers\space\PDFobjectreference}%
-   \ifcase#3\relax
-     \xdef\PDFhidelayers{\PDFhidelayers\space\PDFobjectreference}%
-   \or
-     \xdef\PDFvidelayers{\PDFvidelayers\space\PDFobjectreference}%
-   \fi
+   \doifelse{#3}\v!start
+     {\xdef\PDFvidelayers{\PDFvidelayers\space\PDFobjectreference}}%
+     {\xdef\PDFhidelayers{\PDFhidelayers\space\PDFobjectreference}}%
   %\driverreferenced \doPDFdictionaryobject class PDLD name #1 data
    \doPDFdictionaryobject class PDLD name #1 data
      {/Type /OCMD

@@ -103,10 +103,10 @@
 
 \appendtoks \dolocationstartup \to \everyshipout
 
-\def\dolocationpagecheck
+\def\dolocationpagecheck % brr pdf dependent
   {\iflocation
-     \handlereferenceactions\@@iaopenpaginaactie \doPDFsetupopenpageaction
-     \handlereferenceactions\@@iasluitpaginaactie\doPDFsetupclosepageaction
+     \handlereferenceactions\@@iaopenpaginaactie \dosetupopenpageaction
+     \handlereferenceactions\@@iasluitpaginaactie\dosetupclosepageaction
    \fi}
 
 \appendtoks \dolocationpagecheck \to \everyshipout

@@ -847,7 +847,7 @@
 %    \edef#2{\the\scratchdimen}% oeps, \the vergeten
 %    \scratchdimen#3\points
 %    \divide\scratchdimen \!!ten
-%    \edef#4{\@EA\withoutpt\@EA{\the\scratchdimen}}}
+%    \edef#4{\withoutpt\the\scratchdimen}}
 %
 % more obscure but better:
 
@@ -870,7 +870,7 @@
      \scratchdimen\the\scratchcounter\points
      \divide\scratchdimen \!!ten
    \fi
-   \edef#4{\@EA\withoutpt\@EA{\the\scratchdimen}}}
+   \edef#4{\withoutpt\the\scratchdimen}}
 
 \newbox\foundexternalfigure
 
@@ -942,6 +942,9 @@
    \restorecatcodes  % recently added; we presume local use
    \def\@@eflabel{#2}%
    \global\let\externalfigurelog\empty
+   \iftraceexternalfigures
+     \writestatus\m!figures{including \expandedfigurename}%
+   \fi
    \getparameters
      [\??ep]
      [\c!e=\s!unknown,
@@ -1018,12 +1021,22 @@
            {\doifobjectfoundelse{FIG}\@@efobjectname\donetrue\donefalse}
            \donefalse}
         \donefalse}%
-   % redo message, only filename
+   % too strict:
+   %    \doifparentfileelse\@@effilename
+   %      {\@EA\removefromcommalist\@EA{\jobsuffix}\figuretypes
+   %       \let\@@efextension\empty
+   %       \showmessage\m!figures9\@@effilename
+   %       \donefalse}
+   %      \donothing
+   % ok, but catcode problems with jobfilesuffix
    \doifparentfileelse\@@effilename
-     {\@EA\removefromcommalist\@EA{\jobsuffix}\figuretypes
-      \let\@@efextension\empty
-      \showmessage\m!figures9\@@effilename
-      \donefalse}
+     {\@EA\removefromcommalist\@EA{\jobsuffix    }\figuretypes
+      \@EA\removefromcommalist\@EA{\jobfilesuffix}\figuretypes}%
+     \donothing
+   % so we get:
+   \doifparentfileelse\@@effilename
+     {\removefromcommalist{pdf}\figuretypes
+      \removefromcommalist{tex}\figuretypes}%
      \donothing
    \ifdone
      \getobjectdimensions{FIG}\@@efobjectname
@@ -1204,9 +1217,9 @@
       \hsize\figwid
       \ifdone
         \scratchdimen\scax\points\divide\scratchdimen \plushundred
-        \edef\scax{\@EA\withoutpt\the\scratchdimen}%
+        \edef\scax{\withoutpt\the\scratchdimen}%
         \scratchdimen\scay\points\divide\scratchdimen \plushundred
-        \edef\scay{\@EA\withoutpt\the\scratchdimen}%
+        \edef\scay{\withoutpt\the\scratchdimen}%
        %\schaal[\c!sx=\scax,\c!sy=\scay]{\dowithfigure{\getobject{FIG}{\@@efobjectname}}}%
         \doscalenextbox\scax\scay\figwid\fighei{\dowithfigure{\getobject{FIG}{\@@efobjectname}}}%
         \xdef\noffigurepages{\number\getvalue{\@@efobjectname\c!n}}%
@@ -1218,9 +1231,9 @@
         \xdef\noffigurepages{\number\nofinsertpages}%
       \else
         \scratchdimen\scax\points\divide\scratchdimen \plushundred
-        \edef\scax{\@EA\withoutpt\the\scratchdimen}%
+        \edef\scax{\withoutpt\the\scratchdimen}%
         \scratchdimen\scay\points\divide\scratchdimen \plushundred
-        \edef\scay{\@EA\withoutpt\the\scratchdimen}%
+        \edef\scay{\withoutpt\the\scratchdimen}%
        %\schaal[\c!sx=\scax,\c!sy=\scay]{\dowithfigure{\box\foundexternalfigure}}%
         \doscalenextbox\scax\scay\figwid\fighei{\dowithfigure{\box\foundexternalfigure}}%
         \xdef\noffigurepages{\number\nofinsertpages}%
@@ -1762,8 +1775,8 @@
         \linewidth\onepoint
         \setuppositioning
           [\c!eenheid=pt,
-           \c!xschaal=\withoutpt{\the\efxsteps},
-           \c!yschaal=\withoutpt{\the\efysteps},
+           \c!xschaal=\withoutpt\the\efxsteps,
+           \c!yschaal=\withoutpt\the\efysteps,
            \c!factor=1]%
         \ignorespaces#4%
         \def\referring(##1,##2)##3(##4,##5)##6[##7]%
@@ -1812,9 +1825,9 @@
           \position(0,0)
             {\basegrid
                [\c!nx=\@@exxmax,
-                \c!dx=\withoutpt{\the\efxsteps},
+                \c!dx=\withoutpt\the\efxsteps,
                 \c!ny=\@@exymax,
-                \c!dy=\withoutpt{\the\efysteps},
+                \c!dy=\withoutpt\the\efysteps,
                 \c!xstap=1,
                 \c!ystap=1,
                 \c!schaal=1,
@@ -1822,8 +1835,8 @@
                 \c!eenheid=pt]}%
           \setuppositioning
             [\c!eenheid=pt,
-             \c!xschaal=\withoutpt{\the\efxsteps},
-             \c!yschaal=\withoutpt{\the\efysteps},
+             \c!xschaal=\withoutpt\the\efxsteps,
+             \c!yschaal=\withoutpt\the\efysteps,
              \c!factor=1]%
           \linewidth\onepoint
           \ignorespaces#4\relax

@@ -325,7 +325,7 @@
       \else
         \writestatus{pdftex}{using map file: #1}%
       \fi
-      \pdfmapfile{+#1}%
+      \doiffileelse{#1}{\pdfmapfile{+#1}}\donothing
       \setxvalue{#1 \c!status}{1}}}
 
 \def\doreportfontmapfile#1%

@@ -115,33 +115,6 @@
    \let\pospxywhd \setpospxywhd
    \let\pospxyplus\setpospxyplus}
 
-% \def\setpospxy#1#2#3#4%
-%   {\dosetpositionnm\@@posp{#2}%
-%    \dosetpositionpt\@@posx{#3}%
-%    \dosetpositionpt\@@posy{#4}%
-%   %\setxvalue{\POSprefix#1}{\@@posp,\@@posx,\@@posy}}%
-%    \@EA\xdef\csname\POSprefix#1\endcsname{\@@posp,\@@posx,\@@posy}}%
-%
-% \def\setpospxywhd#1#2#3#4#5#6#7%
-%   {\dosetpositionnm\@@posp{#2}%
-%    \dosetpositionpt\@@posx{#3}%
-%    \dosetpositionpt\@@posy{#4}%
-%    \dosetpositionpt\@@posw{#5}%
-%    \dosetpositionpt\@@posh{#6}%
-%    \dosetpositionpt\@@posd{#7}%
-%   %\setxvalue{\POSprefix#1}{\@@posp,\@@posx,\@@posy,\@@posw,\@@posh,\@@posd}}%
-%    \@EA\xdef\csname\POSprefix#1\endcsname{\@@posp,\@@posx,\@@posy,\@@posw,\@@posh,\@@posd}}%
-%
-% \def\setpospxyplus#1#2#3#4#5#6#7#8%
-%   {\dosetpositionnm\@@posp{#2}%
-%    \dosetpositionpt\@@posx{#3}%
-%    \dosetpositionpt\@@posy{#4}%
-%    \dosetpositionpt\@@posw{#5}%
-%    \dosetpositionpt\@@posh{#6}%
-%    \dosetpositionpt\@@posd{#7}%
-%   %\setxvalue{\POSprefix#1}{\@@posp,\@@posx,\@@posy,\@@posw,\@@posh,\@@posd,#8}}
-%    \@EA\xdef\csname\POSprefix#1\endcsname{\@@posp,\@@posx,\@@posy,\@@posw,\@@posh,\@@posd,#8}}
-
 %D This is real tricky! The page anchor is applied to the
 %D page box and therefore flushed first. So, when present, it
 %D is applied to all positions except itself.
@@ -162,19 +135,11 @@
      \fi
    \fi\fi}
 
-\def\dosetpositionxy#1#2#3% todo: scaled points
-  {\scratchdimen#2\s!sp
-   \ifcase\positionanchormode\or
-     \advance\scratchdimen-#3\pageanchor
-   \fi
-   \xdef#1{\@EA\withoutpt\the\scratchdimen}}
-
 \def\setpospxy#1#2#3#4%
   {\dosetpositionnm\@@posp{#2}%
    \dosetpositionxy\@@posx{#3}\MPx
    \dosetpositionxy\@@posy{#4}\MPy
-  %\setxvalue{\POSprefix#1}{\@@posp,\@@posx,\@@posy}}%
-   \@EA\xdef\csname\POSprefix#1\endcsname{\@@posp,\@@posx,\@@posy}}%
+   \@EA\xdef\csname\POSprefix#1\endcsname{\@@posp,\@@posx,\@@posy}}
 
 \def\setpospxywhd#1#2#3#4#5#6#7%
   {\dosetpositionnm\@@posp{#2}%
@@ -183,8 +148,7 @@
    \dosetpositionpt\@@posw{#5}%
    \dosetpositionpt\@@posh{#6}%
    \dosetpositionpt\@@posd{#7}%
-  %\setxvalue{\POSprefix#1}{\@@posp,\@@posx,\@@posy,\@@posw,\@@posh,\@@posd}}%
-   \@EA\xdef\csname\POSprefix#1\endcsname{\@@posp,\@@posx,\@@posy,\@@posw,\@@posh,\@@posd}}%
+   \@EA\xdef\csname\POSprefix#1\endcsname{\@@posp,\@@posx,\@@posy,\@@posw,\@@posh,\@@posd}}
 
 \def\setpospxyplus#1#2#3#4#5#6#7#8%
   {\dosetpositionnm\@@posp{#2}%
@@ -193,8 +157,30 @@
    \dosetpositionpt\@@posw{#5}%
    \dosetpositionpt\@@posh{#6}%
    \dosetpositionpt\@@posd{#7}%
-  %\setxvalue{\POSprefix#1}{\@@posp,\@@posx,\@@posy,\@@posw,\@@posh,\@@posd,#8}}
    \@EA\xdef\csname\POSprefix#1\endcsname{\@@posp,\@@posx,\@@posy,\@@posw,\@@posh,\@@posd,#8}}
+
+%D Sometimes we want to trick the position handler a bit:
+
+\def\replacepospxywhd#1#2#3#4#5#6#7%
+  {\begingroup
+   \nosetpositionnm\@@posp{#2}%
+   \nosetpositionpt\@@posx{#3}%
+   \nosetpositionpt\@@posy{#4}%
+   \nosetpositionpt\@@posw{#5}%
+   \nosetpositionpt\@@posh{#6}%
+   \nosetpositionpt\@@posd{#7}%
+   \@EA\xdef\csname\POSprefix#1\endcsname{\@@posp,\@@posx,\@@posy,\@@posw,\@@posh,\@@posd}%
+   \endgroup}
+
+% slower, as many tokens, etc:
+%
+% \def\replacepospxywhd#1#2#3#4#5#6#7%
+%   {\begingroup
+%    \let\dosetpositionnm\nosetpositionnm
+%    \let\dosetpositionpt\nosetpositionpt
+%    \let\dosetpositionxy\nosetpositionpt
+%    \setpospxywhd{#1}{#2}{#3}{#4}{#5}{#6}{#7}%
+%    \endgroup}
 
 %D We need to initialize.
 
@@ -238,11 +224,28 @@
 %D \METAPOST\ too.
 
 \def\dosetpositionpt#1#2%
-  {\scratchdimen#2\s!sp
-   \xdef#1{\@EA\withoutpt\the\scratchdimen}}
+  {\scratchdimen\number#2\scaledpoint
+   \xdef#1{\withoutpt\the\scratchdimen}}
 
 \def\dosetpositionnm#1#2%
   {\xdef#1{\number#2}}
+
+\def\dosetpositionxy#1#2#3% todo: scaled points
+  {\scratchdimen\number#2\scaledpoint
+   \ifcase\positionanchormode\or
+     \advance\scratchdimen-#3\pageanchor
+   \fi
+   \xdef#1{\withoutpt\the\scratchdimen}}
+
+\def\nosetpositionnm#1#2{\xdef#1{\number#2}}
+\def\nosetpositionpt#1#2{\scratchdimen#2\xdef#1{\withoutpt\the\scratchdimen}}
+
+\beginETEX \dimexpr
+
+  \def\dosetpositionpt#1#2{\xdef#1{\withoutpt\the\dimexpr(\number#2\scaledpoint)}}
+  \def\nosetpositionpt#1#2{\xdef#1{\withoutpt\the\dimexpr(#2)}}
+
+\endETEX
 
 \def\checkpositions
   {\startnointerference
@@ -850,7 +853,7 @@
 %
 % \overlappingmargin-2sp % better
 
-\def\overlappingmargin{-2\s!sp}
+\def\overlappingmargin{-2\scaledpoint}
 
 \def\doifoverlappingelse#1#2%
   {\begingroup
@@ -982,11 +985,11 @@
 %    \dimen6=\MPx\textanchor
 %    \dimen8=\MPw\textanchor
 %    \setxvalue{\POSprefix\headanchor}%
-%      {\realfolio,\withoutpt{\the\dimen6},\withoutpt{\the\dimen2},%
-%       \withoutpt{\the\dimen8},\withoutpt{\the\dimen0},\withoutpt{\the\strutdp}}%
+%      {\realfolio,\withoutpt\the\dimen6,\withoutpt\the\dimen2,%
+%       \withoutpt\the\dimen8,\withoutpt\the\dimen0,\withoutpt\the\strutdp}%
 %    \setxvalue{\POSprefix\tailanchor}%
-%      {\realfolio,\withoutpt{\the\dimen6},\withoutpt{\the\dimen4},%
-%       \withoutpt{\the\dimen8},\withoutpt{\the\strutht},\withoutpt{\the\strutdp}}%
+%      {\realfolio,\withoutpt\the\dimen6,\withoutpt\the\dimen4,%
+%       \withoutpt\the\dimen8,\withoutpt\the\strutht,\withoutpt\the\strutdp}%
 %   %\showanchor\textanchor\showanchor\headanchor\showanchor\tailanchor\wait
 %    \egroup}
 
@@ -1001,11 +1004,11 @@
    \!!dimend\MPx\textanchor
    \!!dimene\MPw\textanchor
    \setxvalue{\POSprefix\headanchor}%
-     {\realfolio,\withoutpt{\the\!!dimend},\withoutpt{\the\!!dimenb},%
-      \withoutpt{\the\!!dimene},\withoutpt{\the\!!dimena},\withoutpt{\the\strutdp}}%
+     {\realfolio,\withoutpt\the\!!dimend,\withoutpt\the\!!dimenb,%
+      \withoutpt\the\!!dimene,\withoutpt\the\!!dimena,\withoutpt\the\strutdp}%
    \setxvalue{\POSprefix\tailanchor}%
-     {\realfolio,\withoutpt{\the\!!dimend},\withoutpt{\the\!!dimenc},%
-      \withoutpt{\the\!!dimene},\withoutpt{\the\strutht},\withoutpt{\the\strutdp}}%
+     {\realfolio,\withoutpt\the\!!dimend,\withoutpt\the\!!dimenc,%
+      \withoutpt\the\!!dimene,\withoutpt\the\strutht,\withoutpt\the\strutdp}%
   %\showanchor\textanchor\showanchor\headanchor\showanchor\tailanchor\wait
    \egroup}
 
@@ -2170,8 +2173,81 @@
 %D margin settings. When set to \type {yes}, this macro comes
 %D into action.
 
+% \def\stackeddown
+%   {\dowithnextbox
+%      {\doglobal\increment\currentautopos
+%       \hpos{\POSstackprefix\currentautopos}
+%         {\edef\next
+%            {\nextboxht\the\nextboxht
+%             \nextboxdp\the\nextboxdp
+%             \nextboxwd\the\nextboxwd}%
+%          \let\previousautopos\currentautopos
+%          \scratchdimen\zeropoint
+%          \doloop
+%            {\decrement\previousautopos
+%             \doifoverlappingelse{\POSstackprefix\currentautopos}{\POSstackprefix\previousautopos}
+%               {\advance\scratchdimen\MPh{\POSstackprefix\previousautopos}%
+%                \advance\scratchdimen\MPd{\POSstackprefix\previousautopos}}%
+%               \exitloop
+%             \ifnum\previousautopos<\zerocount\exitloop\fi}%
+%         % \ifdim\scratchdimen>\zeropoint
+%            \setbox\nextbox\iftracepositions\@EA\ruledhbox\else\@EA\hbox\fi
+%              {\lower\scratchdimen\flushnextbox}%
+%            \next
+%         % \fi
+%          \flushnextbox}}}
+
+% Because there can be many stacked items in a line and successive lines, we
+% play dirty and adapt the position and height of the current node so that
+% this becomes visible to a next pass.
+%
+% \startbuffer
+% \inleft {test 1} test 1 \inleft {test 2} test 2 \endgraf
+% \inleft {test 3} test 3
+% \stopbuffer
+% \getbuffer \typebuffer \flushstatus \page
+%
+% \startbuffer
+% \inleft {test 1} test 1 \inleft {test 2} test 2 \inleft {test 3} test 3 \endgraf
+% \inleft {test 4} test 4
+% \stopbuffer
+% \getbuffer \typebuffer \flushstatus \page
+%
+% \startbuffer
+% \inleft {test 1} test 1 \endgraf
+% \inleft {test 2} test 2 \endgraf
+% \inleft {test 3} test 3
+% \stopbuffer
+% \getbuffer \typebuffer \flushstatus \page
+%
+% \startbuffer
+% \inleft {test 1\\test 1} test 1 \inleft {test 2} test 2 \endgraf
+% \inleft {test 3} test 3
+% \stopbuffer
+% \getbuffer \typebuffer \flushstatus \page
+%
+% \startbuffer
+% \inleft {test 1\\test 1\\test 1\\test 1\\test 1} test 1 \endgraf
+% test 2 \endgraf
+% \inleft {test 3} test 3
+% \stopbuffer
+% \getbuffer \typebuffer \flushstatus \page
+%
+% \startbuffer
+% \inleft{test 1} test \inleft{test 2} test \inleft{test 3\\test 3} test
+% \stopbuffer
+% \getbuffer \typebuffer \flushstatus \page
+%
+% \startbuffer
+% \inleft{test 1\\test 1\\test 1} test \inleft{test 2\\test 2} test \inleft{test 3\\test 3\\test 3} test \endgraf
+% \inleft{test 1\\test 1\\test 1} test \inleft{test 2\\test 2} test \inleft{test 3\\test 3\\test 3} test
+% \stopbuffer
+% \getbuffer \typebuffer \flushstatus \page
+
 \def\stackeddown
-  {\dowithnextbox
+  {\bgroup
+   % this macro assumes a few things and is meant to work for margin notes
+   \dowithnextbox
      {\doglobal\increment\currentautopos
       \hpos{\POSstackprefix\currentautopos}
         {\edef\next
@@ -2180,19 +2256,52 @@
             \nextboxwd\the\nextboxwd}%
          \let\previousautopos\currentautopos
          \scratchdimen\zeropoint
+         \scratchcounter\zerocount
          \doloop
-           {\decrement\previousautopos
-            \doifoverlappingelse{\POSstackprefix\currentautopos}{\POSstackprefix\previousautopos}
-              {\advance\scratchdimen\MPh{\POSstackprefix\previousautopos}%
-               \advance\scratchdimen\MPd{\POSstackprefix\previousautopos}}%
+           {\decrement\previousautopos\relax
+            \edef\currentposition {\POSstackprefix\currentautopos}%
+            \edef\previousposition{\POSstackprefix\previousautopos}%
+            \ifnum\MPp\currentposition=\MPp\previousposition\relax
+              %\registerstatus{doing \currentautopos/\previousautopos}%
+              \doifoverlappingelse\currentposition\previousposition
+                {\scratchskip         \MPy\currentposition
+                 \advance\scratchskip-\MPy\previousposition
+                 \advance\scratchskip-\MPd\currentposition  % untested
+                 \advance\scratchskip \MPd\previousposition % untested
+                 \advance\scratchskip \MPh\currentposition
+                 % todo: also take depth into account
+                 \relax
+                 \ifdim\scratchskip<\scratchdimen
+                   %\registerstatus{no \the\scratchskip}%
+                 \else
+                   %\registerstatus{yes \the\scratchskip}%
+                   \scratchdimen\scratchskip
+                 \fi}%
+                \donothing % {\registerstatus{next}}%
+              \ifnum\previousautopos<\zerocount\exitloop\fi
+            \else
               \exitloop
-            \ifnum\previousautopos<\zerocount\exitloop\fi}%
-        % \ifdim\scratchdimen>\zeropoint
+            \fi}%
+         \ifdim\scratchdimen=\zeropoint \else
+           \bgroup
+           \edef\currentposition{\POSstackprefix\currentautopos}%
+           \scratchskip\scratchdimen
+           \advance\scratchskip\MPh\currentposition
+           \scratchdimen-\scratchdimen
+           \advance\scratchdimen\MPy\currentposition
+           %\registerstatus{old \currentautopos: \MPy\currentposition/\MPh\currentposition}%
+           \expanded{\replacepospxywhd
+             {\currentposition}{\MPp\currentposition}{\MPx\currentposition}{\the\scratchdimen}%
+             {\MPw\currentposition}{\the\scratchskip}{\MPd\currentposition}}%
+           %\registerstatus{new \currentautopos: \MPy\currentposition/\MPh\currentposition}%
+           \egroup
            \setbox\nextbox\iftracepositions\@EA\ruledhbox\else\@EA\hbox\fi
              {\lower\scratchdimen\flushnextbox}%
            \next
-        % \fi
-         \flushnextbox}}}
+           %\registerstatus{\strut}%
+         \fi
+         \flushnextbox}%
+        \egroup}}
 
 %D The next hack make sure that margin texts near faulty
 %D strutted lines are handled ok.

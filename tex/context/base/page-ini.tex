@@ -664,6 +664,19 @@
 \newtoks \mainoutput
 \newcount\otrlevel
 
+% Shipout handler (see page[stop] for example usage)
+
+\ifx\undefined\normalshipout \let\normalshipout=\shipout \fi
+
+\def\noshipout
+  {\writestatus\m!systems{ignoring further shipouts}%
+   \dowithnextbox{\deadcycles\zerocount}}
+
+\def\doignorerestoftext
+  {\ifarrangingpages \else \ifnum\textlevel>\zerocount \else
+     \globallet\shipout\noshipout
+   \fi \fi}
+
 % When issuing two \par\penalty-\@M's, only the first
 % triggers the otr; obscure feature or optimization?
 
@@ -1185,9 +1198,9 @@
   {\chardef\showgridstate\plusone % downward compatible default
    \processaction
      [#1]%
-     [\v!reset=>\chardef\showgridstate0,
-     %\v!onder=>\chardef\showgridstate1,%
-      \v!boven=>\chardef\showgridstate2]}
+     [\v!reset=>\chardef\showgridstate\zerocount,
+     %\v!onder=>\chardef\showgridstate\plusone,
+      \v!boven=>\chardef\showgridstate\plustwo]}
 
 \def\buildpagebox#1%
   {\setbox#1\vbox to \papierhoogte
@@ -1609,6 +1622,12 @@
      \ejectdummypage
    \od
    \filluparrangedpages}
+
+\installpagebreakhandler \v!start
+  {\globallet\shipout\normalshipout}
+
+\installpagebreakhandler \v!stop
+  {\globallet\shipout\noshipout}
 
 % nb: \executepagebreakhandler\v!hoofd in other ones
 

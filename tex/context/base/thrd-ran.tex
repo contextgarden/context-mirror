@@ -1,12 +1,12 @@
 % Since we cannot be sure that this file is available at any
-% system, we have copied the original in this file. These 
-% macros are encapsulates and extended in supp-ran.tex. 
+% system, we have copied the original in this file. These
+% macros are encapsulates and extended in supp-ran.tex.
 %
-% This module is slightly recoded to bring it more in tune 
+% This module is slightly recoded to bring it more in tune
 % with \CONTEXT's scratch registers and protection mechanisms.
 
 % RANDOM.TEX v.1 (Donald Arseneau)
-% Generating "random" numbers in TeX. 
+% Generating "random" numbers in TeX.
 %
 % Random integers are generated in the range 1 to 2147483646 by the
 % macro \nextrandom.  The result is returned in the counter \randomi.
@@ -43,12 +43,12 @@
 % code deals with initialization and type-conversion.  On the other hand,
 % the large range may be wasted due to the sparse seed initialization.
 
-% original code 
-% 
+% original code
+%
 % \newcount\randomi % the random number seed (while executing)
 % \global\randomi\catcode`\@  % scratch variable during definitions
 % \catcode`\@=11
-% 
+%
 % \def\nextrandom{\begingroup
 %  \ifnum\randomi<\@ne % then initialize with time
 %     \global\randomi\time
@@ -69,11 +69,11 @@
 %  \ifnum\randomi<\z@ \global\advance\randomi 2147483647\relax\fi
 %  \endgroup
 % }
-% 
+%
 % \countdef\count@ii=2 % use only in boxes!
 % \ifx\@tempcnta\undefined \csname newcount\endcsname \@tempcnta \fi
 % \ifx\@tempcntb\undefined \csname newcount\endcsname \@tempcntb \fi
-% 
+%
 % \def\setrannum#1#2#3{% count register, minimum, maximum
 %  \@tempcnta#3\advance\@tempcnta-#2\advance\@tempcnta\@ne
 %  \@tempcntb 2147483645 %  =  m - 2  =  2^{31} - 3
@@ -82,40 +82,40 @@
 %  \advance\ranval#2\relax
 %  #1\ranval
 % }
-% 
+%
 % \def\setrandim#1#2#3{% dimen register, minimum length, maximum length
 %  \dimen@#2\dimen@ii#3\relax
 %  \setrannum\ranval\dimen@\dimen@ii
 %  #1\ranval sp\relax
 % }
-% 
+%
 % \def\getr@nval{% The values in \@tempcnta and \@tempcntb are parameters
 %  \nextrandom
 %  \ranval\randomi \advance\ranval\m@ne \divide\ranval\@tempcntb
 %  \ifnum\ranval<\@tempcnta\else \expandafter\getr@nval \fi
 % }
-% 
-% %D The next macro is not needed in \CONTEXT, which provides 
-% %D the \type {\withoutpt} macro. 
+%
+% %D The next macro is not needed in \CONTEXT, which provides
+% %D the \type {\withoutpt} macro.
 % %D
-% %D \starttypen  
+% %D \starttypen
 % %D \def\pointless{\expandafter\PoinTless\the}
 % %D {\catcode`p=12 \catcode`t=12 \gdef\PoinTless#1pt{#1}}
-% %D \stoptypen 
-%  
+% %D \stoptypen
+%
 % \catcode`\@=\randomi
 % \global\randomi=0
 % \newcount\ranval
 
-% the recoded version, using \CONTEXT\ methods and variables; 
-% the magic is kept untouched 
+% the recoded version, using \CONTEXT\ methods and variables;
+% the magic is kept untouched
 
-\unprotect 
+\unprotect
 
 \newcount\randomi % the random number seed (while executing)
 \newcount\ranval
 
-\ifx\m!systems\undefined \def\m!systems{system} \fi 
+\ifx\m!systems\undefined \def\m!systems{system} \fi
 
 \def\nextrandom
   {\begingroup
@@ -135,8 +135,8 @@
    \global\multiply\randomi 16807
    \multiply\!!countc 2836
    \global\advance\randomi-\!!countc\relax
-   \ifnum\randomi<\zerocount 
-     \global\advance\randomi 2147483647 
+   \ifnum\randomi<\zerocount
+     \global\advance\randomi 2147483647
    \fi
    \endgroup}
 
@@ -154,15 +154,15 @@
   {\!!dimenc#2%
    \!!dimend#3%
    \setrannum\ranval\!!dimenc\!!dimend
-   #1\ranval\s!sp\relax}
+   #1\ranval\s!sp\relax} % \s!sp not needed
 
 \def\getr@nval % The values in \!!counta and \!!countb are parameters
   {\nextrandom
-   \ranval\randomi 
+   \ranval\randomi
    \advance\ranval\minusone
    \divide\ranval\!!countb
-   \ifnum\ranval<\!!counta \else 
-     \expandafter\getr@nval 
+   \ifnum\ranval<\!!counta \else
+     \expandafter\getr@nval
    \fi}
 
-\protect \endinput 
+\protect \endinput

@@ -164,6 +164,12 @@
           {\setbox0\hbox{#1}% just in case there are objects there
            \setbox\scratchbox\hbox
              {\the\everyshipout\relax
+              % so, these two come *after* the main one
+              \ifcase\realfolio \or
+                \the\everyfirstshipout
+                \global\everyfirstshipout\emptytoks
+              \fi
+              % one page document can do both
               \ifnum\realpageno=\lastpage\relax
                 \flushtextdata
                 \the\everylastshipout

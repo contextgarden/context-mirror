@@ -66,6 +66,8 @@
 %  j  i<n> skip right of column
 %  k  i<n> skip around column
 
+%  s  setups
+
 %  g  g{char} align at char
 %  .  align at .
 %  ,  align at ,
@@ -184,9 +186,10 @@
 
 \def\noftabcolumns{16}
 
-\def\@@tabbox@@  {@@tabbox@}
-\def\@@tabhook@@ {@@tabhook@}
-\def\@@tabalign@@{@@tabalign@}
+\def\@@tabbox@@   {@@tabbox@}
+\def\@@tabhook@@  {@@tabhook@}
+\def\@@tabalign@@ {@@tabalign@}
+\def\@@tabsetups@@{@@tabsetups@}
 
 % \dorecurse\noftabcolumns % quick and dirty stack
 %   {\@EA\newbox\csname\@@tabbox@@\recurselevel\endcsname}
@@ -230,6 +233,79 @@
      \global\let\tabulatehook\dotabulatehook
    \fi}
 
+\def\checktabulatesetups
+  {\getvalue{\@@tabsetups@@\tabulatecolumn}}
+
+% \def\dodosettabulatepreamble#1#2%
+%   {\ifzeropt\tabulatewidth
+%      \ifcase\tabulatemodus\relax
+%        \let\preamblebox\empty
+%      \else
+%        \def\preamblebox{\autotabulatetrue}%
+%      \fi
+%    \else
+%      \ifcase\tabulatemodus\relax
+%        \edef\preamblebox{\hbox to \the\tabulatewidth}%
+%      \else
+%        \edef\preamblebox{\hsize\the\tabulatewidth}%
+%      \fi
+%    \fi
+%   %
+%   % less bytes
+%   %
+%   %\edef\preamblebox%
+%   %  {\ifcase\tabulatewidth
+%   %     \ifcase\tabulatemodus\relax\else\noexpand\autotabulatetrue\fi
+%   %   \els
+%   %     \ifcase\tabulatemodus\relax\hbox to\else\hsize\fi\the\tabulatewidth
+%   %   \fi}%
+%   %
+%   % 0 = NC column next   EQ equal column
+%   % 1 = RC column raw    RQ equal column raw
+%   % 2 = HC column hook   HQ equal column hook
+%   % some entries can be left out if we test for them being set
+%    \@EA\appendtoks                     \@EA&\@EA\hskip\pretabskip##&\to\!!toksa
+%        \appendtoks                                     \ignorespaces\to\!!toksa
+%   %\@EA\appendtoks\@EA\xdef\@EA\tabulatecolumn\@EA{\tabulatecolumns}\to\!!toksa
+%    \@EA\appendtoks\@EA\xdef\@EA\tabulatecolumn\@EA{\the\tabulatecolumns}\to\!!toksa
+%        \appendtoks                              \checktabulatesetups\to\!!toksa
+%        \appendtoks                                \checktabulatehook\to\!!toksa
+%    \@EA\appendtoks                                      \preamblebox\to\!!toksa
+%        \appendtoks                           \bgroup\bbskip\bgroup#1\to\!!toksa
+%        \appendtoks\ifnum\tabulatetype=\plusone \else                \to\!!toksa
+%    \@EA\appendtoks                                \the\tabulatebmath\to\!!toksa
+%    \@EA\appendtoks                                 \the\tabulatefont\to\!!toksa
+%    \@EA\appendtoks                             \the\tabulatesettings\to\!!toksa
+%    \@EA\appendtoks                               \the\tabulatebefore\to\!!toksa
+%        \appendtoks\fi                                               \to\!!toksa
+%        \appendtoks                              \bgroup\ignorespaces\to\!!toksa
+%        %
+%        \appendtoks                                   \tabulatehook##\to\!!toksa
+%        %
+%       %%\doifdefinedelse{\@@tabalign@@\tabulatecolumns}
+%        %\doifdefinedelse{\@@tabalign@@\the\tabulatecolumns}
+%        %  {\appendtoks\handletabulatecharalign## \to\!!toksa}
+%        %  {\appendtoks\tabulatehook ##\to \!!toksa}%
+%        % waarom kan ik hier geen \xx{##} geven, om een of
+%        % andere reden passeert dan tex de hele regel (incl \NC's)
+%        % als argument; elke delimiter <> space gaat trouwens fout
+%        \appendtoks     \unskip\unskip\ifmmode\else\endgraf\fi\egroup\to\!!toksa
+%        \appendtoks\ifnum\tabulatetype=1 \else                       \to\!!toksa
+%    \@EA\appendtoks                                \the\tabulateafter\to\!!toksa
+%    \@EA\appendtoks                                \the\tabulateemath\to\!!toksa
+%        \appendtoks\fi                                               \to\!!toksa
+%        \appendtoks                                  #2\egroup\egroup\to\!!toksa
+%    \@EA\appendtoks                      \@EA&\@EA\hskip\postabskip##\to\!!toksa
+%    \appendtoks\NC\to\tabulatedummy
+%    \let\bbskip\empty
+%    \def\pretabskip{.5\tabulateunit}%
+%    \let\postabskip\pretabskip
+%    \let\gettabulateexit\dogettabulateexit
+%    \tabulatewidth\zeropoint}
+
+\let\pretabrule \donothing
+\let\posttabrule\donothing
+
 \def\dodosettabulatepreamble#1#2%
   {\ifzeropt\tabulatewidth
      \ifcase\tabulatemodus\relax
@@ -257,10 +333,12 @@
   % 0 = NC column next   EQ equal column
   % 1 = RC column raw    RQ equal column raw
   % 2 = HC column hook   HQ equal column hook
-   \@EA\appendtoks                     \@EA&\@EA\hskip\pretabskip##&\to\!!toksa
+  % some entries can be left out if we test for them being set
+   \@EA\appendtoks          \@EA&\@EA\hskip\pretabskip\pretabrule##&\to\!!toksa
        \appendtoks                                     \ignorespaces\to\!!toksa
   %\@EA\appendtoks\@EA\xdef\@EA\tabulatecolumn\@EA{\tabulatecolumns}\to\!!toksa
    \@EA\appendtoks\@EA\xdef\@EA\tabulatecolumn\@EA{\the\tabulatecolumns}\to\!!toksa
+       \appendtoks                              \checktabulatesetups\to\!!toksa
        \appendtoks                                \checktabulatehook\to\!!toksa
    \@EA\appendtoks                                      \preamblebox\to\!!toksa
        \appendtoks                           \bgroup\bbskip\bgroup#1\to\!!toksa
@@ -287,7 +365,7 @@
    \@EA\appendtoks                                \the\tabulateemath\to\!!toksa
        \appendtoks\fi                                               \to\!!toksa
        \appendtoks                                  #2\egroup\egroup\to\!!toksa
-   \@EA\appendtoks                      \@EA&\@EA\hskip\postabskip##\to\!!toksa
+   \@EA\appendtoks      \@EA&\@EA\posttabrule\@EA\hskip\postabskip##\to\!!toksa
    \appendtoks\NC\to\tabulatedummy
    \let\bbskip\empty
    \def\pretabskip{.5\tabulateunit}%
@@ -297,14 +375,15 @@
 
 \def\dosettabulatepreamble
   {\ifx\next\relax
-     \let\nextnext\relax
+     \let\nextnext\relax % == \expandafter\gobbleoneargument
    \else
      \let\nextnext\settabulatepreamble
-     \ifx      x\next \chardef\tabulatealign\zerocount
+     \ifx      x\next \chardef\tabulatealign\zerocount % internal
      \else\ifx l\next \chardef\tabulatealign\plusone
      \else\ifx r\next \chardef\tabulatealign\plustwo
      \else\ifx c\next \chardef\tabulatealign\plusthree
      \else\ifx p\next \let\nextnext\gettabulateparagraph
+     \else\ifx s\next \let\nextnext\gettabulatesetups
      \else\ifx w\next \let\nextnext\gettabulatewidth
      \else\ifx f\next \let\nextnext\gettabulatefont
      \else\ifx B\next \tabulatefont{\bf}%
@@ -320,7 +399,7 @@
      \else\ifx i\next \let\nextnext\gettabulatepreskip
      \else\ifx j\next \let\nextnext\gettabulateposskip
      \else\ifx k\next \let\nextnext\gettabulatepreposskip
-     \else\ifx X\next \let\nextnext\gettabulateexit
+     \else\ifx X\next \let\nextnext\gettabulateexit % internal
      \else\ifx e\next \appendtoks\global\tabulateequaltrue\to\tabulatesettings
      \else\ifx ~\next \appendtoks\fixedspaces\to\tabulatesettings
      \else\ifx g\next \let\nextnext\gettabulatealign
@@ -328,7 +407,7 @@
      \else\ifx ,\next \def\nextnext{\gettabulatealign,}%
      \else            \message{unknown preamble key [\meaning\next]}%
      \fi\fi\fi\fi\fi \fi\fi\fi\fi\fi \fi\fi\fi\fi\fi
-     \fi\fi\fi\fi\fi \fi\fi\fi\fi\fi \fi
+     \fi\fi\fi\fi\fi \fi\fi\fi\fi\fi \fi\fi
    \fi
    \nextnext}
 
@@ -361,6 +440,10 @@
    \let\postabskip\pretabskip
    \let\gettabulateexit\settabulatepreamble
        \@EA\settabulatepreamble\next}
+
+\def\gettabulatesetups#1%
+  {\setvalue{\@@tabsetups@@\the\tabulatecolumns}{\setups[#1]}%
+   \settabulatepreamble}
 
 \def\gettabulatehook#1%
   {\setvalue{\@@tabhook@@\the\tabulatecolumns}{#1}%
@@ -454,6 +537,7 @@
    \tabulatefont    \emptytoks
    \tabulatesettings\emptytoks
    \global\advance\tabulatecolumns\plusone
+   \letvalue{\@@tabsetups@@\the\tabulatecolumns}\donothing
    \settabulatepreamble#1\relax\relax % permits i without n
    \ifcase\tabulatemodus\relax
      \ifcase\tabulatealign\relax
@@ -496,8 +580,8 @@
    \dp\tabulatebox\strutdp
    \box\tabulatebox}
 
-\def\dotabulatehook {\getvalue{\@@tabhook@@ \tabulatecolumn}}
-\def\dotabulatealign{\getvalue{\@@tabalign@@\tabulatecolumn}}
+\def\dotabulatehook  {\getvalue{\@@tabhook@@  \tabulatecolumn}}
+\def\dotabulatealign {\getvalue{\@@tabalign@@ \tabulatecolumn}}
 
 \def\resettabulatepheight
   {\globallet\tabulateminplines\!!plusone
@@ -1348,19 +1432,52 @@
    \let\minusnoftabulatelines\noftabulatelines
    \decrement\minusnoftabulatelines
    \doglobal\newcounter\noftabulatelines
-   \def\doHL##1%
+% not satisfying
+%    \def\doHL##1%
+%      {\TABLEnoalign
+%         {\ifnum\noftabulatelines=\zerocount
+%            \ifcase##1%
+%              \@EAEAEA\ML
+%            \or
+%              \@EAEAEA\FL
+%            \fi
+%          \else\ifnum\noftabulatelines=\totalnoftabulatelines
+%            \ifcase##1%
+%              \@EA\@EAEAEA\@EA\ML
+%            \or
+%              \@EA\@EAEAEA\@EA\LL
+%            \fi
+%          \else
+%            \@EAEAEA\ML
+%          \fi\fi}}%
+% not good either
+%    \def\doHL##1%
+%      {\TABLEnoalign
+%         {\csname\ifnum\noftabulatelines=\zerocount
+%            \ifcase##1M\or F\fi
+%          \else\ifnum\noftabulatelines=\totalnoftabulatelines
+%            \ifcase##1M\or L\fi
+%          \else
+%            M%
+%          \fi\fi L\endcsname}}%
+% ok
+%    \def\doHL##1% ##1 ignored
+%      {\TABLEnoalign
+%         {\ifnum\noftabulatelines=\zerocount
+%            \@EA\FL
+%          \else\ifnum\noftabulatelines=\totalnoftabulatelines
+%            \@EAEAEA\LL
+%          \else
+%            \@EAEAEA\ML
+%          \fi\fi}}%
+% more fun
+   \def\doHL##1% ##1 ignored
      {\TABLEnoalign
-        {\ifnum\noftabulatelines=\zerocount
-           \ifcase##1\or
-             \@EAEAEA\FL
-           \fi
-         \else\ifnum\noftabulatelines=\totalnoftabulatelines
-           \ifcase##1\or
-             \@EA\@EAEAEA\@EA\LL
-           \fi
-         \else
-           \@EAEAEA\ML
-         \fi\fi}}%
+        {\csname
+           \ifnum\noftabulatelines=\zerocount             F\else
+           \ifnum\noftabulatelines=\totalnoftabulatelines L\else
+                                                          M\fi\fi
+         L\endcsname}}%
    \def\doHR##1% horizontal rule line (break untested)
      {\TABLEnoalign
         {\globallet\TABLEautoline\dotabulatelinerule

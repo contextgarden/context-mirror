@@ -1351,9 +1351,9 @@
      \immediate\write\scratchwrite
        {\@@cl@@s \space setgray #4}%
    \else
-     \dimen0=1\s!pt \advance\dimen0 -#1\s!pt
-     \dimen2=1\s!pt \advance\dimen2 -#2\s!pt
-     \dimen4=1\s!pt \advance\dimen4 -#3\s!pt
+     \dimen0=\onepoint \advance\dimen0 -#1\points
+     \dimen2=\onepoint \advance\dimen2 -#2\points
+     \dimen4=\onepoint \advance\dimen4 -#3\points
      \ifreduceMPcolors
        \dimen6\dimen0
        \ifdim\dimen2<\dimen6 \dimen6\dimen2 \fi
@@ -1365,10 +1365,10 @@
        \dimen6\zeropoint
      \fi
      \immediate\write\scratchwrite
-       {\withoutpt{\the\dimen0} \space
-        \withoutpt{\the\dimen2} \space
-        \withoutpt{\the\dimen4} \space
-        \withoutpt{\the\dimen6} \space setcmykcolor #4}%
+       {\withoutpt\the\dimen0 \space
+        \withoutpt\the\dimen2 \space
+        \withoutpt\the\dimen4 \space
+        \withoutpt\the\dimen6 \space setcmykcolor #4}%
    \fi
 \fi
    \egroup

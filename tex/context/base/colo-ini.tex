@@ -649,12 +649,12 @@
    \else\ifCMYKsupported
      \registercolorchannel\c!c
      \convertRGBtoCMYK\@@cl@@r\@@cl@@g\@@cl@@b
-\normalizeCMYK
+     \normalizeCMYK
      \doexeccolorcmyk
    \else
      \registercolorchannel\c!s
      \convertRGBtoGRAY\@@cl@@r\@@cl@@g\@@cl@@b
-\normalizeGRAY
+     \normalizeGRAY
      \doexeccolorgray
    \fi\fi\fi
    \exectransparency}
@@ -674,21 +674,18 @@
      \registercolorchannel\c!c
      \ifreduceCMYK
        \convertCMYKtoCMY\@@cl@@c\@@cl@@m\@@cl@@y\@@cl@@k
-%     \else
-%       \normalizeCMYK
-%     \fi
-\fi
-\normalizeCMYK
+     \fi
+     \normalizeCMYK
      \doexeccolorcmyk
    \else\ifRGBsupported
      \registercolorchannel\c!r
      \convertCMYKtoRGB\@@cl@@c\@@cl@@m\@@cl@@y\@@cl@@k
-\normalizeRGB
+     \normalizeRGB
      \doexeccolorrgb
    \else
      \registercolorchannel\c!s
      \convertCMYKtoGRAY\@@cl@@c\@@cl@@m\@@cl@@y\@@cl@@k
-\normalizeGRAY
+     \normalizeGRAY
      \doexeccolorgray
    \fi\fi\fi
    \exectransparency}
@@ -713,7 +710,7 @@
      \factorizecolortrue            % using counter and array
      \dowithcolor\execcolorRCSP\@@cl@@n
      \factorizecolorfalse
-\let\spotcolorfactor\@@cl@@o
+     \let\spotcolorfactor\@@cl@@o
      \doingspotcolorfalse
    \fi
    \exectransparency}
@@ -2260,7 +2257,7 @@
 \def\negatecolorcomponent#1% #1 = \macro
   {\scratchdimen\onepoint\advance\scratchdimen-#1\onepoint
    \ifdim\scratchdimen<\zeropoint\scratchdimen\zeropoint\fi
-   \edef#1{\@EA\withoutpt\the\scratchdimen}}
+   \edef#1{\withoutpt\the\scratchdimen}}
 
 \def\negatecolorbox#1%
   {\setbox#1\hbox

@@ -1721,7 +1721,7 @@
 \def\setspacingfactor#1\to#2\by#3\\%
   {\strutdimen#2\points
    \strutdimen#3\strutdimen
-   \edef#1{\withoutpt{\the\strutdimen}}}
+   \edef#1{\withoutpt\the\strutdimen}}
 
 \def\spacing#1%
   {\ifgridsnapping

@@ -1,4 +1,4 @@
-# fontsite opus 
+# fontsite opus
 
 --en=? --ve=fontsite --co=opus --re
 --en=? --ve=fontsite --co=opus --so=fontsite/500 --ma --in opus*
@@ -14,10 +14,10 @@
 --en=? --ve=fontsite --co=typewriter --so=fontsite/500 --sl=* typerg_*
 --en=? --ve=fontsite --co=typewriter --so=fontsite/500 --sl=* typeb_*
 
-# fontsite garamond 
+# fontsite garamond
 
 --en=? --ve=fontsite --co=garamond --re
 --en=? --ve=fontsite --co=garamond --so=fontsite/500 --ma --in gara*
 
---en=? --ve=fontsite --co=garamond --so=fontsite/500 --sl=* garai_*
+--en=? --ve=fontsite --co=garamond --so=fontsite/500 --sl=* garamond*
 --en=? --ve=fontsite --co=garamond --so=fontsite/500 --sl=* garab_*

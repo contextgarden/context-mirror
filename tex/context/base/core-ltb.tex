@@ -11,6 +11,9 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
+% todo: als nx>1, dan in geval van rek tussenruimte berekenen en optellen
+% bij breedte, dus: nx nog niet gebruiken in combinatie met rek ! ! ! ! !
+
 \beginTEX
   \expandafter \endinput
 \endTEX
@@ -191,12 +194,17 @@
    \xdef\linetablestep{\linetablecparameter\c!nx}%
    \ifcase\linetablestep\or
      \scratchdimen\linetablecparameter\c!breedte
+     \scratchskip \linetablecparameter\c!afstand
    \else
-     \scratchdimen\zeropoint
+     \scratchdimen  \zeropoint
+     \scratchskip   \zeropoint
      \scratchcounter\linetablecolumn
      \dorecurse\linetablestep
        {\advance\scratchdimen\linetablecparameter\c!breedte
-        \global\advance\linetablecolumn\plusone}%
+       %\advance\scratchskip \linetablecparameter\c!afstand
+        \global\advance      \linetablecolumn\plusone
+        \advance\scratchskip \linetablecparameter\c!afstand
+       }%
      \global\linetablecolumn\scratchcounter
    \fi
    \chardef\linetablemode
@@ -374,18 +382,19 @@
      \iflinetablepreroll \else
        \box\linetablecell
        % the columncounter is one ahead !
-       \hskip\linetablecparameter\c!afstand
+%      \hskip\linetablecparameter\c!afstand
+       \hskip\scratchskip
      \fi
-%%%
+     %%%
      \donefalse
      \ifcase\linetablerepeat\else
        % van te voren berekenen
-       \scratchcounter\linetablecolumn\advance\scratchcounter-2
+       \scratchcounter\linetablecolumn\advance\scratchcounter-\plustwo
        \ifnum\linetablerepeat=\scratchcounter
          \donetrue % collecting repeater
        \fi
      \fi
-%%%%
+     %%%%
      \ifdone
        % collecting repeater
      \else
@@ -409,21 +418,22 @@
      \fi
    \else
      \donefalse
-\!!doneafalse
+     \!!doneafalse
      \ifcase\linetablerepeat\else
        % van te voren berekenen
-       \scratchcounter\linetablecolumn \advance\scratchcounter-2
+       \scratchcounter\linetablecolumn \advance\scratchcounter-\plustwo
        \ifnum\linetablerepeat=\scratchcounter
          \donetrue % collecting repeater
        \fi
      \fi
      \ifdone
-\!!doneatrue
+       \!!doneatrue
        % collecting repeater
      \else\ifdim\linetablewidth>\hsize
        \donetrue
      \else
-       \global\advance\linetablewidth\linetablecparameter\c!afstand\relax
+%       \global\advance\linetablewidth\linetablecparameter\c!afstand\relax
+       \global\advance\linetablewidth\scratchskip
        \ifdim\linetablewidth>\hsize % ?
          \donetrue
        \fi
@@ -455,8 +465,10 @@
      \iflinetablepreroll \else
        \box\linetablecell
        % the columncounter is one ahead !
-       \hskip\linetablecparameter\c!afstand
-       \hfill
+%       \hskip\linetablecparameter\c!afstand
+%       \hskip\scratchskip
+\dorecurse\linetablestep{\strut\hfil}%
+       \hskip\scratchskip
      \fi
    \fi}
 
@@ -612,7 +624,7 @@
    \checklinetablepart}
 
 \def\linetableER
-  {\stoplinetablecell
+  {% \stoplinetablecell
    % no \box\linetablecell, i.e. dummy columnn, last \NC \NR
    \stoplinetablepart
    \savelinetablepart
@@ -659,10 +671,11 @@
    \else
      \linetableEC
    \fi
-   \linetableBC}
+   \linetableBC} % beware, this will result in BR BC EC BC NR
 
 \def\linetableNR
-  {\linetableER}
+  {\stoplinetablecell % dummy
+   \linetableER}
 
 \def\startlinetable
   {\startlinetablerun}

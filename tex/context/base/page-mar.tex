@@ -16,6 +16,7 @@
 \writestatus{loading}{Context Core Macros / Maginal Things}
 
 % todo: compensate distance when setuplayout[textwidth=..]
+% todo: generalize margin/edge model, now too much duplication
 
 \unprotect
 
@@ -100,7 +101,7 @@
       \dostopattributes
       \@@imna}%
    \doif\@@imstapel\v!ja
-     {\def\overlappingmargin{-2\s!sp}% test value, maybe .25\strutboxdp, maybe configurable
+     {\def\overlappingmargin{-20\scaledpoint}% test value, maybe .25\strutboxdp, maybe configurable
       \setbox0\vbox{\stackeddown\vbox{\box0}}}% new
    \ht0\strutht
    \box0
@@ -145,9 +146,14 @@
      {\llap{\plaatsmargetekstscheider}}{\hskip\margetekstafstand}
      {#1}}
 
-\def\rechtermargetekstblok#1%
+% \def\rechtermargetekstblok#1%
+%   {\maakmargetekstblok \rightmargintextwidth \v!rechts \v!links
+%      {\hskip\margetekstafstand}{\rlap{\plaatsmargetekstscheider}}
+%      {#1}}
+
+\def\rechtermargetekstblok#1% new: hsize correction
   {\maakmargetekstblok \rightmargintextwidth \v!rechts \v!links
-     {\hskip\margetekstafstand}{\rlap{\plaatsmargetekstscheider}}
+     {\hskip\margetekstafstand\hskip\tekstbreedte\hskip-\hsize }{\rlap{\plaatsmargetekstscheider}}
      {#1}}
 
 \def\doplacemargintext#1#2#3%
@@ -212,7 +218,7 @@
 
 \definetwopasslist\s!margin
 
-\def\domarginreference
+\def\domarginreference % todo: use doonrightpage
   {\doglobal\increment\nofmarginnotes\relax
    \edef\writemarref
      {\writeutilitycommand%
@@ -285,7 +291,7 @@
      [\v!rechts][\doinlinker][\doinrechter]}
 
 \def\inmarge
-  {\doquintupleempty\doinmarge
+  { \doquintupleempty\doinmarge
      [\@@implaats][\doinlinker][\doinrechter]}
 
 \def\inanderemarge
@@ -499,10 +505,24 @@
    \popindentation
    \ignorespaces}
 
-\def\inrightmargin#1%
+% \def\inrightmargin#1%
+%   {\pushindentation
+%    \rlap
+%      {\hskip\hsize
+%       \hskip-\rightskip
+%       \hskip\rechtermargeafstand
+%       \hsize\rechtermargebreedte
+%       #1}%
+%    \popindentation
+%    \ignorespaces}
+
+
+\def\inrightmargin#1% new: hsize correction
   {\pushindentation
    \rlap
-     {\hskip\hsize
+     {\hskip\tekstbreedte
+      %\hskip-\hsize
+      %\hskip\hsize
       \hskip-\rightskip
       \hskip\rechtermargeafstand
       \hsize\rechtermargebreedte
@@ -512,10 +532,10 @@
 
 \def\inleftedge#1%
   {\inleftmargin
-      {\hsize\linkermargebreedte
-       #1\relax
-       \hskip\linkermargebreedte
-       \hskip\linkerrandafstand}}
+     {\hsize\linkermargebreedte
+      #1\relax
+      \hskip\linkermargebreedte
+      \hskip\linkerrandafstand}}
 
 \def\inrightedge#1%
   {\inrightmargin

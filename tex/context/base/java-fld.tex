@@ -127,17 +127,18 @@
   event.value = Sanitized_TeX_String(event.value) ;
 \stopJScode
 
-%\startJSpreamble {Do_With_Field} used now
-
 \startJSpreamble {Field} used now
-
-function PresetFields ()
-  { this.syncAnnotScan() }
 
 var visible_field  = new Array() ; % no garbage collection !
 var visible_fields = 0 ;
 
-function Hide_When_Down ()
+function PresetFields ( )
+  { this.syncAnnotScan() }
+
+function Preset_Fields ( )
+  { this.syncAnnotScan() }
+
+function Hide_When_Down ( )
   { event.target.hidden = true }
 % { event.target.display = display.hidden }
 
@@ -224,6 +225,9 @@ function Flip_Fields ( Name )
             v.value = "On" } } }
 
 function Forget_Changes ()
+  { this.dirty = false }
+
+function ForgetChanges ()
   { this.dirty = false }
 
 \stopJSpreamble

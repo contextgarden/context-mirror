@@ -626,6 +626,22 @@
    \next
    \doglobal\increment\localpositionnumber\relax} % afterwards !
 
+\def\doaddlocalbackground#1%
+  {\edef\next
+     {\noexpand\redoglobal\wd#1\the\wd#1%
+      \noexpand\redoglobal\ht#1\the\ht#1%
+      \noexpand\dodoglobal\dp#1\the\dp#1}%
+   \dodoglobal\setbox#1\hbox
+     {\fastlocalframed
+        [\??ma\v!lokaal]
+        [\c!component=local,\c!kader=\v!uit,\c!offset=\v!overlay,%
+         \c!breedte=\wd#1,\c!hoogte=\ht#1,\c!diepte=\dp#1,%
+         \c!achtergrond=\localbackground]%
+        {\registerMPlocaltextarea{\box#1}}}%
+   \next
+   \doglobal\increment\localpositionnumber\relax} % afterwards !
+
+
 % Test how previous macro behaves with depth:
 %
 % \startcolumnset

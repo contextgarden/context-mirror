@@ -89,7 +89,10 @@
 % {\one \bf test \two test}
 % {\one \bf test \pushcurrentfont \two \popcurrentfont test}
 
-% new
+%D \macros
+%D   {definedfont,startfont,doiffontcharelse}
+%D
+%D A couple of relatively new macros:
 
 \newevery \everydefinedfont \relax
 
@@ -106,6 +109,15 @@
 
 \def\stopfont
   {\egroup}
+
+\def\doiffontcharelse#1#2%
+  {\bgroup
+   \definedfont[#1]%
+   \iffontchar\font#2\relax
+     \egroup\expandafter\firstoftwoarguments
+   \else
+     \egroup\expandafter\secondoftwoarguments
+   \fi}
 
 %%% message 14 added
 
@@ -2519,7 +2531,7 @@
       \readsysfile{\truefilename{\f!fontprefix#2}}
         {\showmessage\m!fonts2{#2}}
         {\makeshortfilename[\truefilename{\f!fontprefix#2}]%
-         \readsysfile{\shortfilename}
+         \readsysfile\shortfilename
            {\showmessage\m!fonts2{#2}}
            {\showmessage\m!fonts3{#2}}}%
       \stopreadingfile}}

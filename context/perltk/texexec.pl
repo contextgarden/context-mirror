@@ -325,7 +325,7 @@ if ( ( $LogFile ne '' ) && ( $LogFile =~ /\w+\.log$/io ) ) {
     *STDERR = *LOGFILE;
 }
 
-my $Program = " TeXExec 4.0 - ConTeXt / PRAGMA ADE 1997-2003";
+my $Program = " TeXExec 4.0 - ConTeXt / PRAGMA ADE 1997-2004";
 
 print "\n$Program\n\n";
 
@@ -602,7 +602,7 @@ if ( open( INI, $IniPath ) ) {
     if ($Verbose) { print "\n" }
 } elsif ($Verbose) {
     print
-"               warning : $IniPath not found, did you read 'texexec.rme'?\n";
+      "               warning : $IniPath not found, did you read 'texexec.rme'?\n";
     exit 1;
 } else {
     print

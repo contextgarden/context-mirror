@@ -361,6 +361,7 @@ var:comandatext:*\comanda#1::
 var:split:tolerant,strict,foartestrict,*numar::
 var:stiltext:normal,aldin,inclinat,aldininclinat,type,cap,mic...,*comanda::
 var:culoaretext:*nume::
+var:interactiune:da,nu::
 ivr:framed::
 stopsetup
 
@@ -1922,7 +1923,7 @@ stopsetup
 startsetup
 com:pagina:
 typ:vals/:
-val:da,marcaj,nu,preferinta,preferintamare, stanga,dreapta,dezactivat,ultim,cvadrupul, par,impar,blank,gol,reset:da:
+val:da,marcaj,nu,preferinta,preferintamare, stanga,dreapta,dezactivat,ultim,cvadrupul, par,impar,blank,gol,reset,start,stop:da:
 stopsetup
 
 startsetup

@@ -361,6 +361,7 @@ var:comandotesto:*\comando#1::
 var:separa:tollerante,rigido,moltorigido,*numero::
 var:stiletesto:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...,*comando::
 var:coloretesto:*nome::
+var:interazione:si,no::
 ivr:incorniciato::
 stopsetup
 
@@ -1922,7 +1923,7 @@ stopsetup
 startsetup
 com:pagina:
 typ:vals/:
-val:si,makeup,no,preferenza,grandepreferenza, sinistra,destra,disattiva,ultimo,quadruplo, pari,dispari,rigovuoto,vuoto,reimposta:si:
+val:si,makeup,no,preferenza,grandepreferenza, sinistra,destra,disattiva,ultimo,quadruplo, pari,dispari,rigovuoto,vuoto,reimposta,inizia,termina:si:
 stopsetup
 
 startsetup

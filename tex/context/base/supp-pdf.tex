@@ -220,8 +220,8 @@
    \global\let\PDFyoffset\PDFyoffset}
 
 \def\setPDFmediabox#1[#2 #3 #4 #5]#6\done
-  {\dimen2=#2bp\dimen2=-\dimen2
-   \dimen4=#3bp\dimen4=-\dimen4
+  {\dimen2=#2bp\dimen2=-\dimen2 % \dimen2=-#2bp also works since tex handles --
+   \dimen4=#3bp\dimen4=-\dimen4 % \dimen4=-#3bp also works since tex handles --
    \dimen6=#4bp\advance\dimen6 \dimen2
    \dimen8=#5bp\advance\dimen8 \dimen4
    \setPDFboundingbox{\dimen2}{\dimen4}{\dimen6}{\dimen8}\PDFxscale\PDFyscale}
@@ -328,7 +328,7 @@
    \def\PDFxscale{1}%
    \def\PDFyscale{1}%
    \uncatcodespecials
-   \endlinechar=-1
+   \endlinechar\minusone
    \def\checkPDFtypepage##1/Type /Page##2##3\done%
      {\ifx##2\relax
       \else\if##2s% accept /Page and /Pages
@@ -482,17 +482,17 @@
 \def\@@MP{@@MP}
 
 \def\setMPargument% #1%
-  {\advance\nofMParguments 1
+  {\advance\nofMParguments \plusone
    \expandafter\def
      \csname\@@MP\the\nofMPsegments\the\nofMParguments\endcsname} % {#1}
 
 \def\letMPargument
-  {\advance\nofMParguments 1
+  {\advance\nofMParguments \plusone
    \expandafter\let
      \csname\@@MP\the\nofMPsegments\the\nofMParguments\endcsname}
 
 \def\setMPsequence#1 %
-  {\advance\nofMParguments 1
+  {\advance\nofMParguments \plusone
    \expandafter\def
      \csname\@@MP\the\nofMPsegments\the\nofMParguments\endcsname{#1}%
    \handleMPsequence}
@@ -508,8 +508,8 @@
 
 \def\setMPkeyword#1 %
   {\expandafter\def\csname\@@MP\the\nofMPsegments0\endcsname{#1}%
-   \advance\nofMPsegments1
-   \nofMParguments0 }
+   \advance\nofMPsegments \plusone
+   \nofMParguments\zerocount}
 
 \def\getMPkeyword#1%
   {\csname\@@MP#10\endcsname}
@@ -799,8 +799,8 @@
      \xdef\MPurx{#4}\xdef\MPury{#5}%
      \dimen0=#2pt\dimen0=-\MPxscale\dimen0
      \dimen2=#3pt\dimen2=-\MPyscale\dimen2
-     \xdef\MPxoffset{\withoutpt{\the\dimen0}}%
-     \xdef\MPyoffset{\withoutpt{\the\dimen2}}%
+     \xdef\MPxoffset{\withoutpt\the\dimen0}%
+     \xdef\MPyoffset{\withoutpt\the\dimen2}%
      \dimen0=#2bp\dimen0=-\dimen0
      \dimen2=#3bp\dimen2=-\dimen2
      \advance\dimen0 #4bp
@@ -810,7 +810,7 @@
      \xdef\MPyshift{\the\dimen2}% unscaled
      \dimen2=\MPyscale\dimen2
      \xdef\MPheight{\the\dimen2}%
-     \chardef\currentMPboundingbox=#1\relax
+     \chardef\currentMPboundingbox#1\relax
    \fi
    \doresetMPstack
    \let\handleMPsequence\dohandleMPsequence
@@ -873,31 +873,31 @@
      {\obeyMPspecials
       \edef\size{\gMPa\nofMParguments}%
       \ifx\size\PSnfont % round font size (to pt)
-        \advance\nofMParguments -1
-        \expandafter\scratchdimen\gMPa\nofMParguments pt\relax
-        \ifdim\scratchdimen<1pt
+        \advance\nofMParguments \minusone
+        \expandafter\scratchdimen\gMPa\nofMParguments\onepoint\relax
+        \ifdim\scratchdimen<\onepoint
           \def\size{1pt}%
         \else
-          \advance\scratchdimen .5pt
+          \advance\scratchdimen .5\onepoint
           \def\size##1.##2\relax{\def\size{##1pt}}%
           \expandafter\size\the\scratchdimen\relax
         \fi
       \else
         \edef\size{\size bp}%
       \fi
-      \advance\nofMParguments -1
+      \advance\nofMParguments \minusone
      %\font\temp=\gMPa\nofMParguments\space at \size
       \let\temp\relax % to be sure
       \setMPfshowfont{\gMPa\nofMParguments}\size
-      \advance\nofMParguments -1
+      \advance\nofMParguments \minusone
       \temp
       \MPfshowcommand
-        {\ifnum\nofMParguments=1
+        {\ifnum\nofMParguments=\plusone
            \def\do(##1){##1}%
            \dogMPa1%
          \else
            % we need to catch ( a ) (a a a) (\123 \123 \123) etc
-           \scratchcounter=1
+           \scratchcounter\plusone
            \def\dodo##1% Andreas Fieger's bug: (\304...)
              {\edef\!!stringa{##1\empty\empty}% and another one: ( 11) -> \ifx 11
               \ifx\!!stringa\MPspacechar\MPspacechar\else\expandafter##1\fi}%
@@ -905,7 +905,7 @@
            \dogMPa\scratchcounter\MPspacechar
            \let\do\relax
            \loop
-             \advance\scratchcounter 1
+             \advance\scratchcounter \plusone
              \ifnum\scratchcounter<\nofMParguments\relax
                \gMPa\scratchcounter\MPspacechar
            \repeat
@@ -1156,18 +1156,18 @@
   {\multiply\dimen#1 \MPconcatfactor\relax}
 
 \def\presetMPconcat
-  {\dimen 0=\gMPs1 pt \doMPreducedimen 0    % r_x
-   \dimen 2=\gMPs2 pt \doMPreducedimen 2    % s_x
-   \dimen 4=\gMPs3 pt \doMPreducedimen 4    % s_y
-   \dimen 6=\gMPs4 pt \doMPreducedimen 6    % r_y
-   \dimen 8=\gMPs5 pt \doMPreducedimen 8    % t_x
-   \dimen10=\gMPs6 pt \doMPreducedimen10 }  % t_y
+  {\dimen 0=\gMPs1 \onepoint \doMPreducedimen 0    % r_x
+   \dimen 2=\gMPs2 \onepoint \doMPreducedimen 2    % s_x
+   \dimen 4=\gMPs3 \onepoint \doMPreducedimen 4    % s_y
+   \dimen 6=\gMPs4 \onepoint \doMPreducedimen 6    % r_y
+   \dimen 8=\gMPs5 \onepoint \doMPreducedimen 8    % t_x
+   \dimen10=\gMPs6 \onepoint \doMPreducedimen10 }  % t_y
 
 \def\presetMPscale
-  {\dimen 0=\gMPs1 pt \doMPreducedimen 0
+  {\dimen 0=\gMPs1 \onepoint \doMPreducedimen 0
    \dimen 2=\zeropoint
    \dimen 4=\zeropoint
-   \dimen 6=\gMPs2 pt \doMPreducedimen 6
+   \dimen 6=\gMPs2 \onepoint \doMPreducedimen 6
    \dimen 8=\zeropoint
    \dimen10=\zeropoint}
 
@@ -1212,8 +1212,8 @@
 %D    \divide   \dimen18  \dimen16 \doMPexpanddimen18
 %D    \divide   \dimen12  \dimen16 \doMPexpanddimen12
 %D    %
-%D    \edef#2{\withoutpt{\the\dimen18}}% % p_x^\prime
-%D    \edef#4{\withoutpt{\the\dimen12}}} % p_y^\prime
+%D    \edef#2{\withoutpt\the\dimen18}% % p_x^\prime
+%D    \edef#4{\withoutpt\the\dimen12}} % p_y^\prime
 %D \stoptypen
 
 %D The following optimization resulted from some tests by
@@ -1264,8 +1264,8 @@
 %D      \fi
 %D    \fi
 %D    %
-%D    \edef#2{\withoutpt{\the\dimen18}}% % p_x^\prime
-%D    \edef#4{\withoutpt{\the\dimen12}}} % p_y^\prime
+%D    \edef#2{\withoutpt\the\dimen18}% % p_x^\prime
+%D    \edef#4{\withoutpt\the\dimen12}} % p_y^\prime
 %D \stoptypen
 %D
 %D But, this one is still too inaccurate, so we now have:
@@ -1325,8 +1325,8 @@
 %    \divide\dimen18 \MPfactor
 %    \divide\dimen12 \MPfactor
 %    %
-%    \edef#2{\withoutpt{\the\dimen18}}% % p_x^\prime
-%    \edef#4{\withoutpt{\the\dimen12}}} % p_y^\prime
+%    \edef#2{\withoutpt\the\dimen18}% % p_x^\prime
+%    \edef#4{\withoutpt\the\dimen12}} % p_y^\prime
 
 %D We cannot use \type {\beginETEX} here since in plain we
 %D get \type {\outer} problems, sigh.
@@ -1405,8 +1405,8 @@
    \multiply \dimen20  \dimen10
    \advance  \dimen12 -\dimen20
    %
-   \ifdim\dimen16=1pt \else
-     \ifdim\dimen16>\MPconcatfactor pt
+   \ifdim\dimen16=\onepoint \else
+     \ifdim\dimen16>\MPconcatfactor \onepoint \relax
        \doMPreducedimen16
        \divide \dimen18 \dimen16 \doMPexpanddimen18
        \divide \dimen12 \dimen16 \doMPexpanddimen12
@@ -1419,8 +1419,8 @@
    \divide\dimen18 \MPfactor
    \divide\dimen12 \MPfactor
    %
-   \edef#2{\withoutpt{\the\dimen18}}% % p_x^\prime
-   \edef#4{\withoutpt{\the\dimen12}}} % p_y^\prime
+   \edef#2{\withoutpt\the\dimen18}% % p_x^\prime
+   \edef#4{\withoutpt\the\dimen12}} % p_y^\prime
 
 %D The following explanation of the conversion process was
 %D posted to the \PDFTEX\ mailing list by Tanmoy. The original
@@ -1902,7 +1902,7 @@
    \or
      \scratchdimen\PDFMPformoffset\relax
      \ifdim\scratchdimen>\zeropoint % compensate for error
-       \setbox\scratchbox=\vbox spread 2\scratchdimen
+       \setbox\scratchbox\vbox spread 2\scratchdimen
          {\forgetall
           \vss
           \hbox spread 2\scratchdimen

@@ -21,9 +21,9 @@
 \def\tg@series
   {\!!dimena\@lxxi\!!dimena
    \divide\!!dimena\@mmmmlxviii
-   \edef\!!stringa{\withoutpt{\the\!!dimena}}%
+   \edef\!!stringa{\withoutpt\the\!!dimena}%
    \!!dimena\!!stringa\!!dimena
-   \edef\!!stringb{\withoutpt{\the\!!dimena}}%
+   \edef\!!stringb{\withoutpt\the\!!dimena}%
    \divide\!!dimena\tr@coeffz
    \advance\!!dimena\minusone\onepoint
    \!!dimena\!!stringb\!!dimena
@@ -54,7 +54,7 @@
   {{\expandafter\ifx\csname sin \number#1\endcsname\relax
       \!!dimena#1\onepoint
       \tg@@sin
-      \expandafter\xdef\csname sin \number#1\endcsname{\withoutpt{\the\!!dimena}}%
+      \expandafter\xdef\csname sin \number#1\endcsname{\withoutpt\the\!!dimena}%
     \fi}}
 
 \def\calculatecos#1%
@@ -62,7 +62,7 @@
       \!!dimena\@xc\onepoint
       \advance\!!dimena-#1\onepoint
       \tg@@sin
-      \expandafter\xdef\csname cos \number#1\endcsname{\withoutpt{\the\!!dimena}}%
+      \expandafter\xdef\csname cos \number#1\endcsname{\withoutpt\the\!!dimena}%
     \fi}}
 
 \def\calculatetan#1%
@@ -74,7 +74,7 @@
       \!!dimenb\calculatedsin{#1}\onepoint
       \!!dimenb\@xvi@k\!!dimenb
       \divide\!!dimenb\!!dimena
-      \expandafter\xdef\csname tan \number#1\endcsname{\withoutpt{\the\!!dimenb}}%
+      \expandafter\xdef\csname tan \number#1\endcsname{\withoutpt\the\!!dimenb}%
    \fi}}
 
 %D The results are accessed with:

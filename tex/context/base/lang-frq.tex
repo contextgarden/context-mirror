@@ -193,14 +193,25 @@
 %D A few samples of usage of this mechanism are shown below:
 %D
 %D \startbuffer
-%D {\mainlanguage[en]\hsize65\averagecharwidth\mainlanguage[en]\input ward \endgraf}
-%D {\mainlanguage[nl]\hsize65\averagecharwidth\mainlanguage[en]\input ward \blanko }
-%D {\mainlanguage[de]\hsize65\averagecharwidth\mainlanguage[de]\input ward \blanko }
+%D {\mainlanguage[en]\hsize65\averagecharwidth\mainlanguage[en]\input ward \blanko}
+%D {\mainlanguage[nl]\hsize65\averagecharwidth\mainlanguage[en]\input ward \blanko}
+%D {\mainlanguage[de]\hsize65\averagecharwidth\mainlanguage[en]\input ward \blanko}
 %D \stopbuffer
 %D
 %D \typebuffer \getbuffer
 %D
 %D Although the widthts differ, the consequenes for breaking the paragraph
 %D into lines are minimal.
+
+%D \macros
+%D   {freezeaveragecharacterwidth}
+%D
+%D This macro can be used to make sure that the width does not change during a
+%D page break when another font is used.
+
+\let\normalaveragecharacterwidth\averagecharacterwidth
+
+\def\freezeaveragecharacterwidth % global
+  {\xdef\averagecharacterwidth{\dimexpr(\the\normalaveragecharacterwidth)}}
 
 \protect \endinput

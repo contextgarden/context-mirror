@@ -22,7 +22,7 @@
 %D Because \LATEX\ has no safe package loading mechanism, we
 %D need to take care of possible interference.
 
-\def\StartLatexHack%
+\def\StartLatexHack
   {\edef\StopLatexHack
      {\catcode`\noexpand/=\the\catcode`/
       \catcode`\noexpand:=\the\catcode`:
@@ -53,16 +53,16 @@
 %D Furthermore nested \type{\if}'s can get us into
 %D trouble.
 
-\def\definecontextobject%
+\def\definecontextobject
   {\iftrue}
 
-\def\gobblecontextobject%
-  {\setbox0=\hbox
+\def\gobblecontextobject
+  {\setbox0\hbox
      \bgroup
      \long\def\gobblecontextobject##1\fi{\egroup}%
      \expandafter\gobblecontextobject\string}
 
-\long\def\ifnocontextobject#1\do%
+\long\def\ifnocontextobject#1\do
   {\ifx#1\undefined
      \expandafter\definecontextobject
    \else
@@ -115,11 +115,11 @@
 
 \ifnocontextobject \unprotect \do
 
-  \def\unprotect%
+  \def\unprotect
     {\advance\protectiondepth 1
      \ifnum\protectiondepth=1
        \let\normalprotect=\protect
-       \def\protect%
+       \def\protect
          {\ifnum\protectiondepth>0
             \advance\protectiondepth -1
             \ifnum\protectiondepth=0
@@ -127,7 +127,7 @@
               \let\protect=\normalprotect
             \fi
           \fi}
-       \edef\doprotect%
+       \edef\doprotect
          {\catcode`\noexpand @=\the\catcode`@\relax
           \catcode`\noexpand !=\the\catcode`!\relax
           \catcode`\noexpand ?=\the\catcode`?\relax}
@@ -150,6 +150,25 @@
 %D called. We only allocate things when they are yet
 %D undefined. This way we can't mess up other macro packages,
 %D but of course previous definitions can mess up our modules.
+
+\ifnocontextobject \donetrue \do \newif\ifdone \fi
+
+% no time now, will do a better test later (based on dimendef)
+
+\def\!!stringa{plain}       \ifx\!!stringa\fmtname \donetrue  \else
+\def\!!stringa{babel-plain} \ifx\!!stringa\fmtname \donetrue  \else
+                                                   \donefalse \fi \fi
+
+\ifdone
+  % plain defines some 15 dimens, so we need to define a few
+  % dummies in order to get out of the scratch area
+  \newdimen\scratchdimen % 16
+  \newdimen\scratchdimen % 17
+  \newdimen\scratchdimen % 18
+  \newdimen\scratchdimen % 19
+  \newdimen\scratchdimen % 20
+  \newdimen\scratchdimen % 21
+\fi
 
 \ifnocontextobject \scratchcounter \do \newcount  \scratchcounter \fi
 \ifnocontextobject \scratchtoks    \do \newtoks   \scratchtoks    \fi
@@ -179,7 +198,6 @@
 \ifnocontextobject \nextdepth \do \newdimen \nextdepth \fi
 
 \ifnocontextobject \CONTEXTtrue            \do \newif\ifCONTEXT            \fi
-\ifnocontextobject \donetrue               \do \newif\ifdone               \fi
 \ifnocontextobject \eightbitcharacterstrue \do \newif\ifeightbitcharacters \fi
 \ifnocontextobject \MPdrawingdonetrue      \do \newif\ifMPdrawingdone      \fi
 
@@ -458,7 +476,7 @@
 
 \ifnocontextobject \uncatcodespecials \do
 
-  \def\uncatcodespecials%
+  \def\uncatcodespecials
     {\def\do##1{\catcode`##1=12 }\dospecials
      \catcode`\   =\@@space
      \catcode`\^^L=\@@ignore
@@ -469,7 +487,7 @@
 
 \ifnocontextobject \setnaturalcatcodes \do
 
-\def\setnaturalcatcodes%
+\def\setnaturalcatcodes
   {\catcode`\!=\@@other \catcode`\?=\@@other \catcode`\@=\@@other
    \catcode`\#=\@@other \catcode`\&=\@@other \catcode`\|=\@@other
    \catcode`\$=\@@other \catcode`\^=\@@other \catcode`\_=\@@other
@@ -538,10 +556,10 @@
 \def\dorecurse#1%
   {\dostepwiserecurse{1}{#1}{1}}
 
-\def\doloop%
+\def\doloop
   {\dostepwiserecurse{1}{\maxdimen}{1}}
 
-\def\exitloop%
+\def\exitloop
   {\recursecounter=\maxdimen}
 
 %D \macros
@@ -620,13 +638,13 @@
 
 \ifnocontextobject \dohandletokens \do
 
-\def\dodohandletokens%
+\def\dodohandletokens
   {\ifx\next\end \else
      \docommando{\next}%
      \expandafter\dohandletokens
    \fi}
 
-\def\dohandletokens%
+\def\dohandletokens
   {\afterassignment\dodohandletokens\let\next= }
 
 \long\def\handletokens#1\with#2%

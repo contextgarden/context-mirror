@@ -217,32 +217,6 @@
 \def\MPgraphicfile     {\bufferprefix mp\ifMPrun run\else graph\fi}
 \def\convertMPcolorfile{\bufferprefix metacmyk.tmp}
 
-%D The next few macros ar eused for some internal (rather
-%D old already) extensions.
-
-\def\definieerfilegroep
-  {\dodoubleargument\dodefinieerfilegroep}
-
-\def\dodefinieerfilegroep[#1][#2]%
-  {\getparameters[\??fp#1][\c!file=#1,\c!voor=,\c!na=,#2]%
-   \setvalue{\e!start#1}{\dostartfilegroep[#1]}}
-
-\def\dostartfilegroep%
-  {\dodoubleargument\dodostartfilegroep}
-
-\def\dodostartfilegroep[#1][#2]%
-  {\getvalue{\??fp#1\c!voor}%
-   \setvalue{\e!stop#1}{\dostopfilegroep[#1][#2]}%
-   \expanded{\dolaadfilegroep[\getvalue{\??fp#1\c!file}-#2]}%
-   \getvalue{\e!start#1#2}}
-
-\def\dolaadfilegroep[#1-#2#3#4#5]%
-  {\readsysfile{#1-#2#3#4}\donothing\donothing}
-
-\def\dostopfilegroep[#1][#2]%
-  {\getvalue{\e!stop#1#2}%
-   \getvalue{\??fp#1\c!na}}
-
 %D To save memory, we implement some seldomly used commands
 %D in a lazy way. Nota bene: such runtime definitions are
 %D global.

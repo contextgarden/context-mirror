@@ -255,69 +255,6 @@
 
 \let\floatrotation\!!zerocount
 
-% \def\presetfloatvariables#1#2#3#4%
-%   {\doifcommonelse
-%      {#2}
-%      {\v!links,\v!rechts,\v!binnen,\v!buiten,%
-%       \v!inlinker,\v!inrechter,\v!inmarge,%
-%       \v!rugwit,\v!snijwit,%
-%       \v!binnenmarge,\v!buitenmarge,\v!binnenrand,\v!buitenrand,%
-%       \v!linkermarge,\v!linkerrand,\v!rechtermarge,\v!rechterrand}
-%      {\global\parfloattrue}
-%      {\global\parfloatfalse}%
-%    \ifbinnenkolommen
-%      \global\parfloatfalse
-%    \fi
-%    \global\sidefloatshift\zeropoint
-%    \global\sidefloatmaximum\zeropoint
-%    \global\chardef\sidefloatmethod\getvalue{\??fl#1\c!zijmethode}%
-%    \global\chardef\textfloatmethod\getvalue{\??fl#1\c!tekstmethode}%
-%    \global\chardef\sidefloatalign\zerocount
-%    \globallet\floatrotation\!!zerocount
-%    \calculatefloatskips{#1}%
-%    \ifparfloat
-%      \processaction
-%        [\getvalue{\??fl#1\c!zijuitlijnen}]
-%        [\v!hoogte=>\global\chardef\sidefloatalign\plusone,%
-%          \v!regel=>\global\chardef\sidefloatalign\plustwo,% (***)
-%         \v!diepte=>\global\chardef\sidefloatalign\plusthree,%
-%           \v!grid=>\global\chardef\sidefloatalign4]%
-%      \ifcase\sidefloatalign\relax
-%        \doifinset\v!hoogte{#2}{\global\chardef\sidefloatalign\plusone}%
-%        \doifinset\v!regel {#2}{\global\chardef\sidefloatalign\plustwo}%
-%        \doifinset\v!diepte{#2}{\global\chardef\sidefloatalign\plusthree}%
-%        \doifinset\v!grid  {#2}{\global\chardef\sidefloatalign4}%
-%      \fi
-%      \doifinset\v!hoog{#2}{\global\sidefloattopskip   \zeropoint}%
-%      \doifinset\v!laag{#2}{\global\sidefloatbottomskip\zeropoint}%
-%      \doifinset\v!passend{#2}
-%        {\global\sidefloattopskip   \zeropoint
-%         \global\sidefloatbottomskip\zeropoint
-%         \global\floatsideskip      \zeropoint}%
-%    \else
-%      \processallactionsinset
-%        [#2]
-%        [ 90=>\globallet\floatrotation\commalistelement,%
-%         180=>\globallet\floatrotation\commalistelement,%
-%         270=>\globallet\floatrotation\commalistelement]%
-%    \fi
-%    \doifinsetelse\v!geennummer{#2}
-%      {\global\nofloatnumbertrue}
-%      {\doifelsevalue{\??kj#1\c!nummer}\v!ja
-%         {\global\nofloatnumberfalse}
-%         {\global\nofloatnumbertrue}}%
-%    \ConvertToConstant\doifelse{#4}{}
-%      {\global\emptyfloatcaptiontrue}
-%      {\global\emptyfloatcaptionfalse}%
-%    \doifinsetelse\v!geen{#2}
-%      {\global\nofloatcaptiontrue}
-%      {\ConvertToConstant\doifelse{#4}\v!geen
-%         {\global\nofloatcaptiontrue}
-%         {\global\nofloatcaptionfalse}}%
-%    \ifemptyfloatcaption \ifnofloatnumber
-%      \global\nofloatcaptiontrue
-%    \fi \fi}
-
 \def\presetfloatvariables#1#2#3#4%
   {\doifcommonelse
      {#2}
@@ -661,26 +598,16 @@
 \def\dodefinefloatcommands[#1][#2]%
   {\definieerlijst[#1]%
    \presetheadtext[#2=\Word{#2}]%
-   \setvalue{\e!plaats\e!lijstmet#2}%
-     {\dodoubleempty\doplaatslijst[#1]}%
-   \setvalue{\e!volledige\e!lijstmet#2}%
-     {\dotripleempty\dodovolledigelijst[#1][#2]}%
-   \setvalue{\e!plaats#1}%
-     {\dotripleempty\docomplexplaatsblok[#1]}%
-   \setvalue{\e!reserveer#1}%
-     {\doquadrupleempty\docomplexreserveerblok[#1]}%
-   \setvalue{\e!start#1\e!tekst}%
-     {\dotripleempty\docomplexstarttekstblok[#1]}%
-   \setvalue{\e!stop#1\e!tekst}%
-     {\dostoptextfloat}%
-   \setvalue{\e!start\e!reserveer#1\e!tekst}%
-     {\doquadrupleempty\docomplexstartreserveertekstblok[#1]}%
-   \setvalue{\e!stop\e!reserveer#1\e!tekst}%
-     {\dostoptextfloat}%
-   \setvalue{\e!lege#1}%
-     {\doleegblok{#1}}%
-   \setvalue{\e!leeg#1}%
-     {\doleegblok{#1}}}
+   \setvalue        {\e!plaats\e!lijstmet#2}{\dodoubleempty\doplaatslijst[#1]}%
+   \setvalue     {\e!volledige\e!lijstmet#2}{\dotripleempty\dodovolledigelijst[#1][#2]}%
+   \setvalue                   {\e!plaats#1}{\dotripleempty\docomplexplaatsblok[#1]}%
+   \setvalue                {\e!reserveer#1}{\doquadrupleempty\docomplexreserveerblok[#1]}%
+   \setvalue            {\e!start#1\e!tekst}{\dotripleempty\docomplexstarttekstblok[#1]}%
+   \setvalue             {\e!stop#1\e!tekst}{\dostoptextfloat}%
+   \setvalue{\e!start\e!reserveer#1\e!tekst}{\doquadrupleempty\docomplexstartreserveertekstblok[#1]}%
+   \setvalue {\e!stop\e!reserveer#1\e!tekst}{\dostoptextfloat}%
+   \setvalue                     {\e!lege#1}{\doleegblok{#1}}%
+   \setvalue                     {\e!leeg#1}{\doleegblok{#1}}}
 
 % \setupfloat[...][leftmargindistance=1cm,default={left,none}]
 
@@ -1370,6 +1297,66 @@
      {\hsize\wd\tempfloatbox
       \putcompletecaption{#4}{#2}{#3}{0}}}
 
+% \def\dopreparestackcaptionaut#1#2#3#4%
+%   {\doifsomething\@@kjkjuitlijnen
+%      {\ExpandBothAfter\doifnotinset\v!midden\@@kjkjuitlijnen
+%         {\let\captionovershoot\!!zeropoint}}%
+%    \ifdim\wd\tempfloatbox>\hsize
+%      % float is wider than \hsize
+%      \dosetraggedvbox\@@kjkjuitlijnen
+%      \setbox\scratchbox\raggedbox % trial run
+%        {\hsize\wd\tempfloatbox
+%         \notesenabledfalse
+%         \putcompletecaption{#4}{#2}{#3}{0}}%
+%      \ifdim\ht\scratchbox>\lineheight % more lines
+%        \dosetraggedvbox\@@kjkjuitlijnen
+%        \setbox\tempcaptionbox\raggedbox
+%          {\hsize\wd\tempfloatbox
+%           \advance\hsize -\captionovershoot\relax
+%           \ifdim\hsize<\captionminwidth\relax
+%             \hsize\wd\tempfloatbox
+%           \fi
+%           \putcompletecaption{#4}{#2}{#3}{0}}%
+%      \else
+%        \setbox\tempcaptionbox\raggedbox
+%          {\hsize\wd\tempfloatbox
+%           \putcompletecaption{#4}{#2}{#3}{0}}%
+%      \fi
+%    \else
+%      % float is smaller of equal to \hsize
+%      \ifdim\wd\tempfloatbox<\captionminwidth\relax
+%        \scratchdimen\captionminwidth % float smaller than min width
+%      \else
+%        \scratchdimen\wd\tempfloatbox % float width
+%      \fi
+%      \setbox\scratchbox\vbox     % test with overshoot
+%        {\advance\scratchdimen \captionovershoot
+%         \advance\scratchdimen 3em % an average word length
+%         \ifdim\scratchdimen<\hsize \hsize\scratchdimen \fi
+%         \notesenabledfalse
+%         \putcompletecaption{#4}{#2}{#3}{0}}%
+%      \ifdim\ht\scratchbox>\lineheight
+%        % at least an average word longer than a line
+%        \dosetraggedvbox\@@kjkjuitlijnen
+%        \setbox\tempcaptionbox\raggedbox
+%          {\advance\scratchdimen \captionovershoot
+%           \ifdim\scratchdimen<\hsize \hsize\scratchdimen \fi
+%           \putcompletecaption{#4}{#2}{#3}{0}}%
+%      \else
+%        % just over a line, don't use an overshoot
+%        \doifinsetelse\@@kjkjuitlijnen{\v!links,\v!rechts}
+%          {\dosetraggedvbox\@@kjkjuitlijnen
+%           \setbox\tempcaptionbox\raggedbox
+%             {\hsize\scratchdimen
+%              \raggedcenter
+%              \putcompletecaption{#4}{#2}{#3}{0}}}
+%          {% nicer
+%           \setbox\tempcaptionbox\cbox
+%             {\hsize\scratchdimen
+%              \putcompletecaption{#4}{#2}{#3}{0}}}%
+%      \fi
+%    \fi}
+
 \def\dopreparestackcaptionaut#1#2#3#4%
   {\doifsomething\@@kjkjuitlijnen
      {\ExpandBothAfter\doifnotinset\v!midden\@@kjkjuitlijnen
@@ -1421,7 +1408,7 @@
          {\dosetraggedvbox\@@kjkjuitlijnen
           \setbox\tempcaptionbox\raggedbox
             {\hsize\scratchdimen
-             \raggedcenter
+% strange :           \raggedcenter
              \putcompletecaption{#4}{#2}{#3}{0}}}
          {% nicer
           \setbox\tempcaptionbox\cbox

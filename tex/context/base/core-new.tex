@@ -290,7 +290,9 @@
 \def\dosetupsC[#1]{\dosetups{#1}} % [..]
 
 \def\dosetups#1% the grid option will be extended to other main modes
-  {\executeifdefined{\??su\ifgridsnapping\v!grid\fi:#1}{\csname\??su:#1\endcsname}\relax}
+  {\executeifdefined{\??su\ifgridsnapping\v!grid\fi:#1}{\csname\??su:#1\endcsname}\empty}
+
+\let\directsetup\dosetups
 
 \def\doifsetupselse#1% to be done: grid
   {\doifdefinedelse{\??su:#1}}
@@ -475,31 +477,43 @@
 %D it seems -a:to work- well
 %D \stopregels
 
-\def\setupenv{\dodoubleargument\rawgetparameters[\??en]}
+% \def\setupenv{\dodoubleargument\rawgetparameters[\??en]}
+%
+% \def\doifenvelse#1{\doifdefinedelse{\??en#1}} % speed up
+% \def\doifenv    #1{\doifdefined    {\??en#1}} % speed up
+% \def\doifnotenv #1{\doifundefined  {\??en#1}} % speed up
+%
+% \def\env#1{\csname\??en#1\endcsname}
+%
+% \beginTEX
+%
+% \def\envvar#1#2%
+%   {\@EA\ifx\csname\??en#1\endcsname\relax
+%      #2\else\csname\??en#1\endcsname
+%    \fi}
+%
+% \endTEX
+%
+% \beginETEX \ifcsname
+%
+% \def\envvar#1#2%
+%   {\ifcsname\??en#1\endcsname
+%      \csname\??en#1\endcsname\else#2%
+%    \fi}
+%
+% \endETEX
 
-\def\doifenvelse#1{\doifdefinedelse{\??en#1}} % speed up
-\def\doifenv    #1{\doifdefined    {\??en#1}} % speed up
-\def\doifnotenv #1{\doifundefined  {\??en#1}} % speed up
+% low level change, now also accessible as \getvariable{environment}{...}; the
+% next macros will become obsolete some day in favor of normal variables
 
-\def\env#1{\csname\??en#1\endcsname}
+\def\s!environment{environment}
 
-\beginTEX
-
-\def\envvar#1#2%
-  {\@EA\ifx\csname\??en#1\endcsname\relax
-     #2\else\csname\??en#1\endcsname
-   \fi}
-
-\endTEX
-
-\beginETEX \ifcsname
-
-\def\envvar#1#2%
-  {\ifcsname\??en#1\endcsname
-     \csname\??en#1\endcsname\else#2%
-   \fi}
-
-\endETEX
+\def\setupenv   {\dotripleargument\dosetvariables[\getrawparameters][\s!environment]}
+\def\doifenvelse{\doifelsevariable  \s!environment}
+\def\doifenv    {\doifvariable      \s!environment}
+\def\doifnotenv {\doifnotvariable   \s!environment}
+\def\env        {\getvariable       \s!environment}
+\def\envvar     {\getvariabledefault\s!environment}
 
 \bgroup
 
