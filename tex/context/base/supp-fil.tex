@@ -87,6 +87,9 @@
 \def\popendofline
   {\catcode\newlinecode\csname :eol:\endoflinelevel\endcsname
    \fastdecrement\endoflinelevel}
+
+\def\restoreendofline
+  {\catcode\newlinecode\@@endofline}
 
 %D \macros
 %D   {scratchread, scratchwrite}
