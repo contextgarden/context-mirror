@@ -2931,6 +2931,10 @@
   {\PDFcode{q \ifdim#1\points=\zeropoint\@@PDFzeroscale\else#1\fi\space 0 0
               \ifdim#2\points=\zeropoint\@@PDFzeroscale\else#2\fi\space 0 0 cm}}
 
+% \def\doPDFstartscaling#1#2% the test is needed because acrobat is bugged!
+%   {\PDFcode{q\ifdim#1\points=\zeropoint\else\ifdim#2\points=\zeropoint\else
+%             \space#1\space 0 0 #2\space 0 0 cm\fi\fi}}
+
 \def\doPDFstopscaling
   {\PDFcode{Q}}
 

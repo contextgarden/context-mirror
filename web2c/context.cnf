@@ -35,6 +35,8 @@ MPPOOL        = .;$TEXFORMATS
 
 WEB2C         = $TEXMF/web2c
 
+TEXFORMATS.xetex = .;$TEXMF/web2c/{xetex,}//
+
 % fonts, for the moment we also support the old enc/map locations
 
 OSFONTDIR =

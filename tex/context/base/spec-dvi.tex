@@ -115,7 +115,7 @@
 \definespecial\dosetpositionpapersize#1#2%
   {\xdef\flushDVIpositionpapersize%
      {\special{pos:papersize #1 #2}%
-      \noexpand\installprogram{dvipos --outfile=\jobname.tuo}%
+      \noexpand\installprogram{dvipos \jobname}%
       \global\noexpand\let\noexpand\flushDVIpositionpapersize\relax}}
 
 \prependtoksonce \flushDVIpositionpapersize \to \everyshipout

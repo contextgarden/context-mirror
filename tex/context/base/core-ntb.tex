@@ -102,9 +102,6 @@
 \def\settblhei#1#2{\setxvalue{\@@tblprefix#1:h}{#2}} % global !
 \def\settblaut#1#2{\setxvalue{\@@tblprefix#1:a}{#2}} % global !
 
-%\def\gettblwid#1{\ifundefined{\@@tblprefix#1:w}\!!zeropoint\else\getvalue{\@@tblprefix#1:w}\fi}
-%\def\gettblhei#1{\ifundefined{\@@tblprefix#1:h}\!!zeropoint\else\getvalue{\@@tblprefix#1:h}\fi}
-
 \def\gettblwid#1{\executeifdefined{\@@tblprefix#1:w}\zeropoint}
 \def\gettblhei#1{\executeifdefined{\@@tblprefix#1:h}\zeropoint}
 \def\gettblaut#1{\csname\@@tblprefix#1:a\endcsname}

@@ -24,6 +24,41 @@
 
 \ifx\normalcompound\undefined \let\normalcompound=| \fi
 
+% to do:
+%
+% \def\defineshapesynonym
+%   {\dodoubleargument\dodefineshapesynonym}
+%
+% \def\dodefineshapesynonym[#1][#2]%
+%   {\setvalue{shsy:#1}{#2}}
+%
+% \def\shapesynonym#1%
+%   {\ifcsname shsy:#1\endcsname
+%      \expandafter\shapesynonym\csname shsy:#1\endcsname\else#1%
+%    \fi}
+%
+% \beginTEX
+%
+% \def\shapesynonym#1%
+%   {\expandafter\ifx\csname shsy:#1\endcsname\relax
+%      #1\else\expandafter\shapesynonym\csname shsy:#1\endcsname
+%    \fi}
+%
+% \endTEX
+%
+%\defineshapesynonym[eacute] [e]
+%\defineshapesynonym[egrave] [e]
+%\defineshapesynonym[eumlaut [e]
+%\defineshapesynonym[eogonek][e]
+%
+% more reduction
+%
+%\defineshapesynonym[e][o]
+%\defineshapesynonym[w][v]
+%\defineshapesynonym[m][n]
+%
+% \shapesynonym{eacute}
+
 \def\OTRSETnobalance
   {\iflastcolumnfootnotes % testen ! optie
      % inhibit flush of floats !

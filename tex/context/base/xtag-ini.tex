@@ -228,7 +228,8 @@
 %D a way around this, but for convenience \TEXEXEC\ will take
 %D care of processing raw \XML\ files in a transparant way.
 
-\chardef\XMLtokensreduction\zerocount
+\chardef\XMLtokensreduction\zerocount % cmr as default
+\chardef\XMLtokensreduction\plustwo   % lmr as default
 
 % \def\alwaysreduceXMLtokens   {\XMLtokensreduction\plusone}
 % \def\permanentreduceXMLtokens{\XMLtokensreduction\plustwo}
@@ -271,19 +272,18 @@
 * there; this is needed because reading from file goes wrong
 * (eating up argument)
 
-.unexpanded.gdef.enableXML*
-  B.catcode`.!=.@@other*
-   .catcode`.?=.@@other*
-   .catcode`.:=.@@other* active in french
-   .catcode`.;=.@@other* active in french
-   .catcode`.&=.@@active .let&=.doXMLentity*
-   .catcode`.<=.@@active .unexpanded.def<B.doXMLelementE*
+.unexpanded.gdef.enableXML
+  B.catcode`.!=.@@other
+   .catcode`.?=.@@other
+   .catcode`.:=.@@other * active in french
+   .catcode`.;=.@@other * active in french
+   .catcode`.&=.@@active .let&=.doXMLentity
+   .catcode`.<=.@@active .unexpanded.def<B.doXMLelementE
    .catcode`.>=.@@other
    .catcode`."=.@@other
    .catcode`./=.@@other
    .catcode`.'=.@@other
    .catcode`.~=.@@other
-*  .catcode`.#=.@@active .def#B&hash;E*
    .catcode`.#=.@@other
    .ifcase.XMLtokensreduction
      .entitleXMLescapetokens
@@ -296,7 +296,7 @@
    .the.everyenableXML
   E
 
-.gdef.activateXMLescapetokens*
+.gdef.activateXMLescapetokens
   B.catcode`.$=.@@active
    .catcode`.%=.@@active
    .catcode`.\=.@@active
@@ -307,8 +307,8 @@
    .catcode`.|=.@@active
   E
 
-.gdef.entitleXMLescapetokens*
-  B.activateXMLescapetokens*
+.gdef.entitleXMLescapetokens
+  B.activateXMLescapetokens
    .def#B&tex-hash;E*
    .def$B&tex-dollar;E*
    .def%B&tex-percent;E*
@@ -320,8 +320,8 @@
    .def|B&tex-bar;E*
   E
 
-.gdef.reduceXMLescapetokens*
-  B.activateXMLescapetokens*
+.gdef.reduceXMLescapetokens
+  B.activateXMLescapetokens
    .def#B.string#E*
    .def$B.string$E*
    .def%B.string%E*
@@ -333,8 +333,8 @@
    .def|B.string|E*
   E
 
-.gdef.ignoreXMLescapetokens*
-  B.catcode`.$=.@@other * or letter ?
+.gdef.ignoreXMLescapetokens
+  B.catcode`.$=.@@other
    .catcode`.%=.@@other
    .catcode`.\=.@@other
    .catcode`.^=.@@other
@@ -347,14 +347,14 @@
 * The following macro can be invokes when reading from
 * an auxiliary file.
 
-.unexpanded.gdef.enableXMLelements*
+.unexpanded.gdef.enableXMLelements
   B.catcode60=.@@active * .catcode`.<=.@@active
    .catcode62=.@@other  * .catcode`.>=.@@other
    .unexpanded.def<B.doXMLelementE*
    .processingXMLtrue
   E
 
-.unexpanded.gdef.disableXMLelements*
+.unexpanded.gdef.disableXMLelements
   B.catcode60=.@@active * .catcode`.<=.@@active
    .catcode62=.@@other  * .catcode`.>=.@@other
    .let<.relax * new
@@ -1479,7 +1479,7 @@
 %    \fi\fi
 %    \dodoparseXMLarguments}
 %
-% we squeeze out one more assignment
+% we can get rid of one more assignment
 
 \long\def\doparseXMLarguments#1% space goes ok
   {\if#1>%

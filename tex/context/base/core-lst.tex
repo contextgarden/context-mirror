@@ -556,9 +556,8 @@
         {\hbox{##2}}}%
    \doif{\listparameter\c!interaction}\v!text % not supported ! ! ! ! ! ! text == all
      {\setlistparameter\currentlist\c!interaction\v!all}%
-%    \makelistelement\v!all
-%      {\hbox to \hsize
-   \dontleavehmode % new, else no margin
+ % \dontleavehmode % new, else no margin, but wrong, better (else \indent as well):
+   \noindent
    \makelistelement\v!all
      {\setlocalhsize \hsize\localhsize \hbox to \hsize
         {\forgetall

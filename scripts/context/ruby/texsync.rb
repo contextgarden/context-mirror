@@ -70,7 +70,7 @@ class Commands
                     if option('make') then
                         report("generating tex and metapost formats")
                         report
-                        formats.delete_if do |f|
+                        @@formats.delete_if do |f|
                             begin
                                 `kpsewhich cont-#{f}`.chomp.empty?
                             rescue

@@ -842,7 +842,7 @@
    \doOTRSETsetgridcells
      {\copy\placeholderboxf}
      \mofcolumns\columnfirstcell\plusone\noflines
-     {\registeredtextarea1\columnfirstcell\scratchbox}% == \hbox
+     {\registeredtextarea1\columnfirstcell\scratchbox}% == \hbox / tricky htcorr == \columnfirstcell
    \global\columnlastcell\columnfirstcell
    \global\advance\columnlastcell \noflines
    \global\lastcolumnlastcell\columnlastcell
@@ -1008,8 +1008,7 @@
      \OTRSETcheckcolumnspace\mofcolumns\columnlastcell{#1}%
    \fi
    \ifenoughcolumncells
-     \OTRSETsetgridcells\mofcolumns\columnlastcell\columnhcells\columnvcells
-       {\copy#1}
+     \OTRSETsetgridcells\mofcolumns\columnlastcell\columnhcells\columnvcells{\copy#1}%
      \OTRSETfillgapsbetweencells\mofcolumns\savedcolumnlastcell % -)
      \OTRSETsetvsize
    \else
