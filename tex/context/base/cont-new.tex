@@ -24,6 +24,21 @@
 
 \ifx\normalcompound\undefined \let\normalcompound=| \fi
 
+% \def\literateencodedtokens
+%   {% \let\dohandleaccent   \keephandleaccent  % assumes named chars % defineaccent    "e {name}
+%    % \let\dohandlecommand  \keephandlecommand % assumes named chars % definecommand crap {name}
+%    \let\dohandlecharacter\keephandlecharacter}
+%
+% \def\convertmeaning#1\to % watch the double expansion !
+%   {\bgroup
+%      \honorunexpanded
+%     %\dontexpandencoding % new
+%      \literateencodedtokens % newer
+%      \xdef\@@globalexpanded{#1}%
+%      \xdef\@@globalexpanded{\@@globalexpanded}%
+%    \egroup
+%    \convertcommand\@@globalexpanded\to}
+
 % twice as fast in #1=5 #2=40 situations, only gains some speed when
 % multiple runs of large docs are done; fully expandable, no
 % statuscounter needed, no restore (due to grouping) needed etc

@@ -14,6 +14,10 @@ eval '(exit $?0)' && eval 'exec perl -S $0 ${1+"$@"}' && eval 'exec perl -S $0 $
 #C therefore copyrighted by \PRAGMA. See licen-en.pdf for
 #C details.
 
+# much functionality will move to ctxtools, xmltools and pdftools; that way texutil
+# becomes limited to tui processing only, which is cleaner (also for taco's binary
+# version)
+
 #  Thanks to Tobias    Burnus    for the german translations.
 #  Thanks to Thomas    Esser     for hooking it into web2c
 #  Thanks to Taco      Hoekwater for making the file -w proof and some fixes
@@ -1654,6 +1658,11 @@ sub HandleReferences
     else
       { NormalHandleReferences } }
 
+# moved to ctxtools
+#
+# sub HandleDocuments
+#   { my $files = @ARGV.join(' ') ; system("ctxtools $files") }
+
 #D \extras
 #D   {documents}
 #D
@@ -1719,6 +1728,7 @@ sub HandleDocuments
                 $SkipLevel      = 0 ;
                 $InDocument     = 0 ;
                 $InDefinition   = 0 ;
+                $skippingbang = 0 ;
                 if ($ProcessType eq "")
                   { $FileType=lc $FileSuffix }
                 else
@@ -2673,6 +2683,15 @@ sub HandleLogFile
           { Report ( "NOfUnknown", "$NOfUnknown") } } }
 
 #D Undocumented feature.
+#
+# obsolete, i.e now in ctxtools, so this will become:
+#
+# sub PurgeFiles {
+#     if ($PurgeAllFiles) {
+#         system("ctxtools --purge $ARGV[0]") ;
+#     } else {
+#         system("ctxtools --purge --all $ARGV[0]") ;
+#     }
 
 my $removedfiles    = 0 ;
 my $keptfiles       = 0 ;
@@ -2768,6 +2787,11 @@ sub PurgeFiles # no my in foreach
     print "       reclaimed bytes : $reclaimedbytes\n" }
 
 #D Another undocumented feature.
+#
+# obsolete, i.e now in pdftools, so this will become:
+#
+# sub AnalyzeFile
+#   { system("pdftools --analyze $ARGV[0]") }
 
 sub AnalyzeFile
   { my $filename = $ARGV[0] ;
@@ -2798,10 +2822,16 @@ sub AnalyzeFile
     print "                 links : $Link ($Named named / $Script scripts / $Cross files)\n" ;
     print "               widgets : $Widget\n" }
 
+# moved to ctxtools
+#
+# sub FilterPages
+#    { system("ctxtools $ARGV{0]") }
+
 sub FilterPages # temp feature / no reporting
   { my $filename = $ARGV[0] ;
     return unless -f "$filename.pdf" ;
-    $old = '' ; $num = 0 ;
+    my $old = '' ;
+    my $n = 0 ;
     if (open(PDF,"<$filename.pdf") && open(TUO,">>$filename.tuo"))
       { binmode PDF ;
         while (<PDF>)

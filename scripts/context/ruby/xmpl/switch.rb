@@ -78,7 +78,11 @@ module CommandBase
     def help
         version # is nilled when already given
         @commandline.helpkeys.each do |k|
-            report("#{('--'+k).ljust(@commandline.helplength+2)} #{@commandline.helptext(k)}") if @commandline.help?(k)
+            if @commandline.help?(k) then
+                message = @commandline.helptext(k)
+                message = '' if message == CommandLine::NOHELP
+                report("#{('--'+k).ljust(@commandline.helplength+2)} #{message}")
+            end
         end
     end
 
@@ -153,6 +157,7 @@ end
 class CommandLine
 
     VALUE, FLAG = 1, 2
+    NOHELP = 'no arguments'
 
     def initialize(prefix='-')
 

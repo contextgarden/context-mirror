@@ -74,6 +74,8 @@
    \processseparatedlist[#1][+]\docommando
    \!!stringa}
 
+\def\registerparameter#1{\csname\??id\currentregister#1\endcsname}
+
 % \enableregime[windows] \setupregister[index][keyexpansion=strict]
 %
 % \index[Ätsch]{Ätsch} test \index{QÄtsch} test \index[ratsch]{RÄtsch} test
@@ -82,14 +84,14 @@
   {\begingroup
    \thisisnextinternal\s!ind
    \ifduplicate\getlastregisterentry{#3}\fi
-   \convertexpanded{\getvalue{\??id\currentregister\c!keyexpansion}}{#1}\asciiregisterentryA
-   \convertexpanded{\getvalue{\??id\currentregister\c!expansion   }}{#3}\asciiregisterentryB
-\doifvaluesomething{\??id\currentregister\c!keyexpansion}
+   \convertexpanded{\registerparameter\c!keyexpansion}{#1}\asciiregisterentryA
+   \convertexpanded{\registerparameter\c!expansion   }{#3}\asciiregisterentryB
+\doifsomething{\registerparameter\c!keyexpansion}
   {\ifx\asciiregisterentryA\empty
-     \convertexpanded{\getvalue{\??id\currentregister\c!keyexpansion}}{#3}\asciiregisterentryA
+     \convertexpanded{\registerparameter\c!keyexpansion}{#3}\asciiregisterentryA
    \fi}%
    \makesectionformat
-   \doifelsevalue{\??id\currentregister\c!ownnumber}\v!yes
+   \doifelse{\registerparameter\c!ownnumber}\v!yes
      \donetrue\donefalse
    % the spaces between } { are essential for texutil's split
    \expanded
@@ -109,7 +111,7 @@
 \def\doregister#1%
   {\chardef\registerpagestatus\plusone
    \def\currentregister{#1}%
-   \doifelsevalue{\??id\currentregister\c!ownnumber}\v!yes
+   \doifelse{\registerparameter\c!ownnumber}\v!yes
      {\dosingleempty\dodoregister}
      {\dosingleempty\donoregister}}
 
@@ -157,12 +159,12 @@
   {\begingroup
      \thisisnextinternal\s!ind
      \ifduplicate\getlastregisterentry{#2}\fi
-     \convertexpanded{\getvalue{\??id\currentregister\c!keyexpansion}}{#1}\asciiregisterentryA
-     \convertexpanded{\getvalue{\??id\currentregister\c!expansion   }}{#2}\asciiregisterentryB
-     \convertexpanded{\getvalue{\??id\currentregister\c!expansion   }}{#3}\asciiregisterentryC
-\doifvaluesomething{\??id\currentregister\c!keyexpansion}
+     \convertexpanded{\registerparameter\c!keyexpansion}{#1}\asciiregisterentryA
+     \convertexpanded{\registerparameter\c!expansion   }{#2}\asciiregisterentryB
+     \convertexpanded{\registerparameter\c!expansion   }{#3}\asciiregisterentryC
+\doifsomething{\registerparameter\c!keyexpansion}
   {\ifx\asciiregisterentryA\empty
-     \convertexpanded{\getvalue{\??id\currentregister\c!keyexpansion}}{#2}\asciiregisterentryA
+     \convertexpanded{\registerparameter\c!keyexpansion}{#2}\asciiregisterentryA
    \fi}%
      \makesectionformat
      \expanded
@@ -838,9 +840,9 @@
      \setupregister[\currentregister][#2]%
      \raggedright
      \startcolumns
-       [\c!n=\getvalue{\??id\currentregister\c!n},
-        \c!balance=\getvalue{\??id\currentregister\c!balance},
-        \c!align=\getvalue{\??id\currentregister\c!align}]%
+       [\c!n=\registerparameter\c!n,
+        \c!balance=\registerparameter\c!balance,
+        \c!align=\registerparameter\c!align]%
      \dontcomplain
      \startpacked[\v!blank]%
      \doutilities\currentregister\jobname\currentregister\relax\par

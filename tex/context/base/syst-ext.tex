@@ -776,7 +776,7 @@
 %D The use of \type{\od} as a dilimiter would have made nested
 %D use more problematic.
 
-% maybe this one will becoem obsolete
+% maybe this one will become obsolete
 
 \def\for#1=#2\to#3\step#4\do#5%
   {\dostepwiserecurse{#2}{#3}{#4}
@@ -877,7 +877,7 @@
    \long\global\@EA\def\csname\@@arecurse\recursedepth\endcsname{#1}%
    \global\@EA\let\csname\@@irecurse\recursedepth\endcsname\recurselevel
    \let\endofloop\dodoloop
-   \dodoloop\plusone}
+   \dodoloop1} % no \plusone else \recurselevel wrong
 
 \beginETEX \numexpr
 

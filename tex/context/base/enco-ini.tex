@@ -643,7 +643,7 @@
       \enablelanguagespecifics[\currentlanguage]}}
 
 \let\startcoding  \startencoding
-\def\stopcoding  {\stopencoding }
+\def\stopcoding  {\stopencoding}
 \let\enablecoding \enableencoding
 
 %D The use of these macros are not limited to font
@@ -1462,6 +1462,11 @@
 \def\keepencodedtokens
   {\let\dohandleaccent   \keephandleaccent
    \let\dohandlecommand  \keephandlecommand
+   \let\dohandlecharacter\keephandlecharacter}
+
+\def\literateencodedtokens
+  {% \let\dohandleaccent   \keephandleaccent
+   % \let\dohandlecommand  \keephandlecommand
    \let\dohandlecharacter\keephandlecharacter}
 
 \def\keephandleaccent   #1{\expandafter\noexpand\csname#1\endcsname}
