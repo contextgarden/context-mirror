@@ -21,7 +21,9 @@
 \let\typescriptfiles\empty
 
 \unexpanded\def\usetypescriptfile[#1]%
-  {\addtocommalist{#1}\typescriptfiles}
+  {\doifelse{#1}\v!reset
+     {\let\typescriptfiles\empty}
+     {\addtocommalist{#1}\typescriptfiles}}
 
 \usetypescriptfile[\f!typeprefix syn] % font file synonyms
 \usetypescriptfile[\f!typeprefix enc] % files and encodings

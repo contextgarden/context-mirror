@@ -150,7 +150,7 @@
    \ExpandFirstAfter\processaction
      [\getvalue{#1\c!lines}]
      [        \v!yes=>\obeybreakpoints,
-      \v!hyphenated=>\obeyhyphens]%
+       \v!hyphenated=>\obeyhyphens]%
    %
    \ExpandFirstAfter\processaction
      [\getvalue{#1\c!option}]
@@ -158,10 +158,10 @@
           \v!color=>\setupprettiesintype{TEX}%
                     \let\obeycharacters\setupprettytype
                     \let\obeytabs\ignoretabs,
-        \v!normal=>\let\obeycharacters\setupgroupedtype,
-      \v!commands=>\def\obeycharacters{\setupcommandsintype{#1}}%
+         \v!normal=>\let\obeycharacters\setupgroupedtype,
+       \v!commands=>\def\obeycharacters{\setupcommandsintype{#1}}%
                     \let\obeytabs\ignoretabs,
-         \v!slanted=>\let\obeycharacters\setupslantedtype
+        \v!slanted=>\let\obeycharacters\setupslantedtype
                     \let\obeytabs\ignoretabs,
         \s!unknown=>\setupprettiesintype{\getvalue{#1\c!option}}%
                     \let\obeycharacters\setupprettytype
@@ -789,27 +789,27 @@
 %D alternative escape character.
 
 \setuptyping
-  [          \c!before=\blank,
-               \c!after=\blank,
-            \c!bodyfont=,
-            \c!color=,
+  [       \c!before=\blank,
+           \c!after=\blank,
+        \c!bodyfont=,
+           \c!color=,
            \c!space=\v!off,
-           \c!page=\v!no,
-              \c!tab=\s!ascii,
-            \c!option=\v!none,
-            \c!palet=colorpretty,
+            \c!page=\v!no,
+             \c!tab=\s!ascii,
+          \c!option=\v!none,
+           \c!palet=colorpretty,
             \c!text=\v!no,
            \c!style=\tttf,
         \c!icommand=\ttsl,
         \c!vcommand=,
         \c!ccommand=\tttf,
- \c!indentnext=\v!yes,
-            \c!margin=\!!zeropoint,
-        \c!evenmargin=\!!zeropoint,
-      \c!oddmargin=\!!zeropoint,
+      \c!indentnext=\v!yes,
+          \c!margin=\!!zeropoint,
+      \c!evenmargin=\!!zeropoint,
+       \c!oddmargin=\!!zeropoint,
            \c!blank=\v!line,
-           \c!escape=/, % beware \string\ , should also be accepted
-           \c!numbering=\v!no,
+          \c!escape=/, % beware \string\ , should also be accepted
+       \c!numbering=\v!no,
            \c!lines=]
 
 %D \macros

@@ -2752,7 +2752,7 @@ sub PurgeFiles # no my in foreach
     foreach $suffix (@texnonesuffixes)
       { foreach (@files)
           { if (/(.*)\.$suffix$/i)
-              { if ((-e "$1.tex")||(-e "$1.xml"))
+              { if ((-e "$1.tex")||(-e "$1.xml")||(-e "$1.fo"))
                   { KeepContextFile($_) }
                 else
                   { $strippedname = $1 ;
@@ -2815,7 +2815,7 @@ sub FilterPages # temp feature / no reporting
        close(PDF) ;
        close(TUO) } }
 
-sub GenerateSciteApi # ugly, not generic, but fast
+sub GenerateSciteApi # ugly, not generic, but fast, will become xsltproc based
   { my $filename = $ARGV[0] ;
     my $commands = 0 ;
     my $environments = 0 ;

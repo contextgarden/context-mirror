@@ -1184,21 +1184,16 @@
       {\ifx\next#2%
          \flushinterfaceelementline
          \flushinterfaceelementline
-         \let\next\gobbleoneargument
+         \def\next####1{#2}% was: \let\next\gobbleoneargument
        \else\ifx\next\par
-         \long\def\next####1%
-           {\dogetinterfaceobjects}%
+         \long\def\next####1{\dogetinterfaceobjects}%
        \else\ifx\next\empty
-         \def\next####1%
-           {\dogetinterfaceobjects}%
+         \def\next####1{\dogetinterfaceobjects}%
        \else
-         \def\next####1 %
-           {\dogetinterfaceobject[####1:\relax]%
-            \dogetinterfaceobjects}%
+         \def\next####1 {\dogetinterfaceobject[####1:\relax]\dogetinterfaceobjects}%
        \fi\fi\fi
        \next}%
-   \def\dogetinterfaceobjects
-     {\futurelet\next\dodogetinterfaceobjects}%
+   \def\dogetinterfaceobjects{\futurelet\next\dodogetinterfaceobjects}%
    \dogetinterfaceobjects}
 
 \def\dogetinterfacetemplate[#1:#2]%
@@ -1244,15 +1239,17 @@
 %D Anno 2003 I've forgotten why the \type {\c!internal} is
 %D still in there; it's probably a left over from an experiment.
 
+%D Once we're gone XML we can drop some of the extra mappings.
+
 \let\c!internal!y \string
 \def\c!internal!n {-}
 \let\c!internal!  \c!internal!y
 
 \def\setinterfaceconstant#1#2%
   {\setvalue{\c!prefix!#1}{\c!internal!#1}%
-   \doifelse{#2}\nointerfaceobject
+   \doifelse{#2}\nointerfaceobject % ?
      {\debuggerinfo{constant}{#1 defined as #1 by default}%
-      \setvalue{\k!prefix!#2}{#1}}
+      }% \setvalue{\k!prefix!#1}{#1}} % was #2 -> #1
      {\debuggerinfo{constant}{#1 defined as #2}%
       \ifinterfacetranslation
         \setvalue{\x!prefix!#1}{#2}%
@@ -1273,11 +1270,11 @@
   {\doifdefined{#1}{\doifvaluesomething{#1}{\doifnotvalue{#1}{#2}
      {\writestatus{problems}{set #1 to #2 overloads \getvalue{#1}}}}}}
 
-\def\startvariables
-  {\startinterfaceobjects\setinterfacevariable\stopvariables}
+\def\startvariables{\startinterfaceobjects\setinterfacevariable\stopvariables}
+\def\startconstants{\startinterfaceobjects\setinterfaceconstant\stopconstants}
 
-\def\startconstants
-  {\startinterfaceobjects\setinterfaceconstant\stopconstants}
+\let\stopvariables\relax
+\let\stopconstants\relax
 
 %D \macros
 %D   {defineinterfaceconstant}
@@ -1318,8 +1315,9 @@
        {\setvalue{\y!prefix!#1}{#2}}%
    \fi}
 
-\def\startsetupvariables
-  {\startinterfaceobjects\setinterfacesetupvariable\stopsetupvariables}
+\def\startsetupvariables{\startinterfaceobjects\setinterfacesetupvariable\stopsetupvariables}
+
+\let\stopsetupvariables\relax
 
 %D \macros
 %D   {startelements}
@@ -1368,8 +1366,9 @@
        {\debuggerinfo{element}{#1 defined as #2}%
         \setvalue{\e!prefix!#1}{#2}}}}
 
-\def\startelements
-  {\startinterfaceobjects\setinterfaceelement\stopelements}
+\def\startelements{\startinterfaceobjects\setinterfaceelement\stopelements}
+
+\let\stopelements\relax
 
 %D \macros
 %D   {startcommands}
@@ -1410,8 +1409,9 @@
         \@EA\def\csname#2\@EA\endcsname\@EA{\csname#1\endcsname}}% ugly but faster
       \setinterfacesetupvariable{#1}{#2}}}
 
-\def\startcommands
-  {\startinterfaceobjects\setinterfacecommand\stopcommands}
+\def\startcommands{\startinterfaceobjects\setinterfacecommand\stopcommands}
+
+\let\stopcommands\relax
 
 %D \macros
 %D   {getinterfaceconstant, getinterfacevariable}

@@ -257,10 +257,19 @@
      \expandafter\utfunihashchar  \or
      \expandafter\utfunihashsplit \or
      \expandafter\utfunihashboth  \or
-     \@EA\string\@EA\unicodechar  \or
+     \expandafter\utfuniglyphname \or
      \expandafter\utfunientity    \else
      \expandafter\utfunihash
   \fi}
+
+%D \startbuffer
+%D \enableregime[utf] \dostepwiserecurse{0}{8}{1}
+%D   {\recurselevel:
+%D    \chardef\utfunicodetracer=\recurselevel aap‒noot coördinatie – één
+%D    \crlf}
+%D \stopbuffer
+%D
+%D \typebuffer \start \getbuffer \stop
 
 %D \macros
 %D   {unicodehexnumber}
@@ -378,6 +387,17 @@
 %D Now we can say:
 
 \let\utfunihash\utfunihashglyph
+
+%D We also need:
+
+\def\utfuniglyphname#1%
+  {{\tttf
+    \expandafter\string\csname
+      \ifnum#1<\utf@i
+        \strippedcsname\unicodeasciicharacter\endcsname{#1}%
+      \else
+        \@EA\doutfunihash\@EA{\number\utfdiv{#1}}{#1}\endcsname
+      \fi}}
 
 %D The combined presentation is implemented by:
 

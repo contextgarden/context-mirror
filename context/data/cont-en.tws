@@ -3138,12 +3138,6 @@ val:*number::
 stopsetup
 
 startsetup
-com:domicile:
-typ:arg/:
-val:*text::
-stopsetup
-
-startsetup
 com:items:
 typ:vars/args/:
 ivr:setupitems::

@@ -180,6 +180,19 @@
    \handleunicodeglyph
    \egroup}
 
+%D In \XETEX, unicode support is straightforward, so we
+%D simply output a \type {\char} with a 16||bit number.
+%D
+%D \starttyping
+%D \def\uchar#1#2{\char\numexpr(#2+(#1*256))\relax}
+%D \stoptyping
+
+\beginXETEX \uchar
+
+  \unexpanded\def\uchar#1#2{\char\numexpr#2+#1*\@cclvi\relax}
+
+\endXETEX
+
 \def\dohandleucflowglyph
 %  {\unicodeposition=\unicodeone\unicodetwo\relax
   {\unicodeposition\unicodeone\unicodetwo\relax

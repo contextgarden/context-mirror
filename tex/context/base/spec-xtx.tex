@@ -1,110 +1,151 @@
-%D \module
-%D   [       file=spec-xtx,
-%D        version=2004.*.*,
-%D          title=\CONTEXT\ Special Macros,
-%D       subtitle=DVIPDFMx support,
-%D         author={Adam Lindsay \& Hans Hagen \& \unknown},
-%D           date=\currentdate,
-%D      copyright={Adam Lindsay \& Hans Hagen}]
+%D \module%D   [       file=spec-xtx,%D        version=2004.11.08,%D          title=\CONTEXT\ Special Macros,%D       subtitle=\XETEX\ support,%D         author={Adam Lindsay \& Hans Hagen \& \unknown},%D           date=\currentdate,%D      copyright={Adam Lindsay \& Hans Hagen}]
 
 \unprotect
 
-\startspecials[xetex]
+\startspecials[xetex][reset,dpx]
 
-%D Rotation looks fine. Scaling and mirroring are also fine.
+%D Actually, there's an intermediate ``\type{xdv}''
+%D output format, but by default, it's tranparently
+%D converted to \PDF\ by \XETEX.
 
-\definespecial\dostartrotation  #1{\special{x:gsave}\special{x:rotate #1}}
-\definespecial\dostartscaling #1#2{\special{x:gsave}\special{x:scale  #1 #2}}
-\definespecial\dostartmirroring   {\special{x:gsave}\special{x:scale  -1 1}}
+\def\jobsuffix{pdf}
 
-\definespecial\dostoprotation {\special{x:grestore}}
-\definespecial\dostopscaling  {\special{x:grestore}}
-\definespecial\dostopmirroring{\special{x:grestore}}
+%D Rotation looks fine.
 
-\ifx\colorhexcomponent\undefined
+\definespecial\dostartrotation#1%
+  {\special{x:gsave}\special{x:rotate #1}}
 
-    % this will be added to colo-hex.tex
+\definespecial\dostoprotation%
+  {\special{x:grestore}}
 
-\else
+%D Scaling and mirroring are also fine.
 
-    % because we intercept the zero condition, the .23pt in 1.23pt will disappear in the
-    % ifcase zero part branch
+\definespecial\dostartscaling#1#2%
+  {\special{x:gsave}\special{x:scale #1 #2}}
 
-    \def\colorhexcomponent#1%
-      {\ifdim#1\points<.005\points
-         00\else\lchexnumbers{\the\dimexpr(255\dimexpr(#1\points)\relax+.5\points)\relax}%
-       \fi}
+\definespecial\dostopscaling%
+  {\special{x:grestore}}
 
-    % the faster one
+\definespecial\dostartmirroring%
+  {\special{x:gsave}\special{x:scale -1 1}}
 
-    \newdimen\hex@color@a \hex@color@a=.005pt
-    \newdimen\hex@color@b \hex@color@b=.5pt
-    \chardef \hex@color@c             =255
+\definespecial\dostopmirroring%
+  {\special{x:grestore}}
 
-    \def\colorhexcomponent#1%
-      {\ifdim#1\points<\hex@color@a
-         00\else\lchexnumbers{\the\dimexpr(#1\points*\hex@color@c+\hex@color@b)\relax}%
-       \fi}
+%D Colors are done with the \DVIPDFMX\ color model, which are
+%D inherited.
 
-\fi
+%D Although hex colors were accommodated by Hans, we'll try the
+%D more familiar \DVIPDFMX\ ones. One good side-effect of the
+%D previous approach
+%D was that it kept track of the color state (transparency
+%D in XeTeX is accomplished setting the color to an RGBA quadruple,
+%D rather than an RGB triple). So transparency will need another
+%D plan.
 
+% \macros
+%   {dostarttransparency,dostoptransparency}
 %
+% \starttypen
+% \dostarttransparency{fraction}{type}
+% \dostoptransparency
+% \stoptypen
+%
+% Although in \CONTEXT\ transparency is closely integrated
+% in the color drivers, in the end it is an independent
+% feature.
 
-\definespecial\dostartrgbcolormode#1#2#3%
-  {\bgroup
-   \edef\hexcolorstring{\colorhexcomponent{#1}\colorhexcomponent{#2}\colorhexcomponent{#3}}%
-   \special{x:textcolor=\hexcolorstring}%
-   \special{x:rulecolor=\hexcolorstring}%
-   \egroup}
+%\installspecial [\dostarttransparency] [or] [2]
+%\installspecial [\dostoptransparency]  [or] [0]
 
-\definespecial\dostopcolormode
-  {\special{x:textcolor=000000}%
-   \special{x:rulecolor=000000}}
-
-%D Whadda you mean by 'corected;, this hex color model is crazy. Why does
-%D \XETEX\ provide high end font support but only hex rgb colors -)
-
-%D once colors are ``corrected'' by Hans, transparency should
-%D follow fairly easily. A good side-effect of the above approach
-%D is that we need to keep track of the color state (transparency
-%D in \XETEX\ is accomplished setting the color to an RGBA quadruple,
-%D rather than an RGB triple)
-
-%D File/graphic insertion is fouled up. I don't know why, but
-%D the externalfile misses its designated box/frame. It's also not
-%D finding files without the help of a \TEXUTIL\ file.
-
-%D Maybe \XETEX\ should provide a way to report the figure dimensions,
-%D I suppose it can ask the QuickTime Driver.
-
-%D However it gets resolved, the following is the basic schema
-%D of file inclusion for \XETEX. \type {\XeTeXpicfile} supports
-%D rotation, as well, but it seems less important for \CONTEXT.
-%D \XETEX\ uses QuickTime file import, which means a huge number of
-%D file import options.
-
-%D More importantly and interestingly, there is \type
-%D {XeTeXpdffile}, which supports a \type {page} option.
+%D \XETEX\ supports \type{\doPDFdestination} and
+%D \type{\doPDFbookmark} inherited straight from \DVIPDFMX.
 
 \definespecial\doinsertfile#1#2#3#4#5#6#7#8#9%
   {\bgroup
    \dodoinsertfile{xtx}{#1}{#2}{#3}{#4}{#5}{#6}{#7}{#8}{#9}%
    \egroup}
 
-\definefileinsertion{xtx}{jpg}{\handlepdfimage}
-\definefileinsertion{xtx}{png}{\handlepdfimage}
-\definefileinsertion{xtx}{pdf}{\handlepdfimage}
-\definefileinsertion{xtx}{gif}{\handlepdfimage}
-\definefileinsertion{xtx}{tif}{\handlepdfimage}
+\definefileinsertion{xtx}{jpg}{\xtxhandleotherimage}
+\definefileinsertion{xtx}{png}{\xtxhandleotherimage}
+\definefileinsertion{xtx}{gif}{\xtxhandleotherimage}
+\definefileinsertion{xtx}{tif}{\xtxhandleotherimage}
+\definefileinsertion{xtx}{pdf}{\xtxhandlepdfimage  }
 
-% do we need it this way? either provide width and height or provide scales,
-% best provide the dimensions
+\def\xtxhandleotherimage#1#2#3#4#5#6#7#8#9%
+  {\bgroup % not needed, we load this under a normal catcode regime; \catcode`\"=11
+   \XeTeXpicfile "#1" width #7 height #8\relax%
+   \donetrue
+   \egroup}
 
-% \def\handlepdfimage#1#2#3#4#5#6#7#8#9%
-%   {\XeTeXpicfile "#1" width #7 height #8 xscaled #3 yscaled #4\relax}
+\def\xtxhandlepdfimage#1#2#3#4#5#6#7#8#9%
+  {\bgroup % not needed, we load this under a normal catcode regime; \catcode`\"=11
+   \checkpdfimagepagenumber{#9}
+   \XeTeXpdffile "#1" \pdfimagepagenumber\space width #7 height #8  \relax%
+   \donetrue
+   \egroup}
 
-\def\handlepdfimage#1#2#3#4#5#6#7#8#9%
-  {\XeTeXpicfile "#1" width #7 height #8\relax}
+\def\checkpdfimagepagenumber#1%
+  {\let\pdfimagepagenumber\empty
+   \getfromcommacommand[#1][1]%
+   \doifnumberelse\commalistelement
+     {\ifcase\commalistelement\else
+        \edef\pdfimagepagenumber{page \commalistelement}%
+        %\message{(pdf image \pdfimagepagenumber)}%
+      \fi}
+     {}}
+
+% \type{\getfiguredimensionsA} calls this one.
+% \type{\executedtrue} means it was able to get the desired
+% dogetfiguresizeBLAH method for the image type.
+% \type{\donetrue} means that the image was successfully
+% measured to be more than zero points.
+
+\def\dogetXTXfiguresize#1#2#3#4#5#6#7%
+    {#4\zeropoint
+     #5\zeropoint
+     \setbox\foundexternalfigure\vbox{\XeTeXpicfile "#2"}%
+     #6\wd\foundexternalfigure
+     #7\ht\foundexternalfigure
+     \ifdim\wd\foundexternalfigure=\zeropoint % \ifzeropt\wd\foundexternalfigure
+       #1{#2}{#3}{#4}{#5}{#6}{#7}%
+     \fi}
+
+\def\dogetXTXpdfsize#1#2#3#4#5#6#7%
+    {#4\zeropoint
+     #5\zeropoint
+     \checkpdfimagepagenumber{#3}
+     \setbox\foundexternalfigure\vbox{\XeTeXpdffile "#2" \pdfimagepagenumber}% \relax not needed
+     #6\wd\foundexternalfigure
+     #7\ht\foundexternalfigure
+     \ifdim\wd\foundexternalfigure=\zeropoint % \ifzeropt\wd\foundexternalfigure
+       #1{#2}{#3}{#4}{#5}{#6}{#7}%
+     \fi}
+
+\let\normaldogetfiguresizepng=\dogetfiguresizepng
+\let\normaldogetfiguresizetif=\dogetfiguresizetif
+\let\normaldogetfiguresizejpg=\dogetfiguresizejpg
+\let\normaldogetfiguresizegif=\dogetfiguresizegif
+\let\normaldogetfiguresizepdf=\dogetfiguresizepdf
+
+\def\dogetfiguresizepng{\dogetXTXfiguresize\normaldogetfiguresizepng}
+\def\dogetfiguresizejpg{\dogetXTXfiguresize\normaldogetfiguresizejpg}
+\def\dogetfiguresizegif{\dogetXTXfiguresize\normaldogetfiguresizegif}
+\def\dogetfiguresizetif{\dogetXTXfiguresize\normaldogetfiguresizetif}
+\def\dogetfiguresizepdf{\dogetXTXpdfsize\normaldogetfiguresizepdf}
+
+\appendtoksonce
+  \let\dogetfiguresizepng\normaldogetfiguresizepng
+  \let\dogetfiguresizetif\normaldogetfiguresizetif
+  \let\dogetfiguresizejpg\normaldogetfiguresizejpg
+  \let\dogetfiguresizegif\normaldogetfiguresizegif
+  \let\dogetfiguresizepdf\normaldogetfiguresizepdf
+\to \everyresetspecials
+
+%D The figure object system caused no end of headaches. They all
+%D went away with this single line:
+
+\setupexternalfigures[\c!object=\v!no]
 
 \stopspecials
 

@@ -341,7 +341,7 @@
 
 \def\dodosetuppapersize[#1][#2]%
   {\ifsecondargument
-     \dododosetuppapersize[#1][#2]%
+     \expanded{\dododosetuppapersize[#1][#2]}%
      \calculatehsizes
      \calculatevsizes
      \recalculatelogos
@@ -442,10 +442,9 @@
 % \newtoks \everybeforelayout \relax
 % \newtoks \everyafterlayout  \relax
 
-
 \def\recalculatelayout
   {\doifsomething{\layoutparameter\c!page\layoutparameter\c!paper}
-     {\dododosetuppapersize[\layoutparameter\c!page][\layoutparameter\c!paper]}%
+     {\expanded{\dododosetuppapersize[\layoutparameter\c!page][\layoutparameter\c!paper]}}%
    \dorecalculatelayout}
 
 \def\dorecalculatelayout

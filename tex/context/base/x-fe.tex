@@ -1,8 +1,8 @@
 %D \module
 %D   [      file=x-fe,
 %D        version=2004.03.12, % based on earlier experiments
-%D          title=\CONTEXT\ XML Modules,
-%D       subtitle=Formatting Objects Extensions,
+%D          title=\FOXET,
+%D       subtitle=Simple Extensions,
 %D         author=Hans Hagen,
 %D           date=\currentdate,
 %D      copyright={PRAGMA ADE / Hans Hagen \& Ton Otten}]
@@ -96,7 +96,23 @@
 
 \defineXMLargument
   [fe:message]
-  {\writestatus{XML-FO}}
+  [category=XML-FO]
+  {\writestatus{\XMLop{category}}}
+
+%D Handy
+
+\defineXMLargument
+  [fe:trace]
+  [attribute=,option=]
+  {\showXMLinh{\XMLop{attribute}}%
+   \XMLval{fe:trace}{\XMLop{option}}{}}
+
+\mapXMLvalue
+  {fe:trace}
+  {font}
+  {\hbox\bgroup\infofont[%
+   \xFOfont/\xFOfontsize/\xFOfontsizeadjust/\xFOfontfamily/\xFOfontweight/\xFOfontstyle/\xFOfontvariant:\FOfontdefinition
+   ]\egroup}
 
 %D Extensions:
 
@@ -118,5 +134,10 @@
   \XMLval{fe:tracing} {\XMLop{fe:tracing}} {}
   \XMLval{fe:testgrid}{\XMLop{fe:testgrid}}{}
 \stopsetups
+
+%D Private (testing)
+
+\defineXMLcommand[fe:synchronizeoutput]{\synchronizeoutput}
+
 
 \protect \endinput

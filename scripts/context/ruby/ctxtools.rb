@@ -19,6 +19,26 @@ require 'ftools'
 require 'xmpl/switch'
 require 'exa/logger'
 
+class String
+
+    def i_translate(element, attribute, category)
+        self.gsub!(/(<#{element}.*?#{attribute}=)([\"\'])(.*?)\2/) do
+            if category.key?($3) then
+                "#{$1}#{$2}#{category[$3]}#{$2}"
+            else
+                "#{$1}#{$2}#{$3}#{$2}" # unchanged
+            end
+        end
+    end
+
+    def i_load(element, category)
+        self.scan(/<#{element}.*?name=([\"\'])(.*?)\1.*?value=\1(.*?)\1/) do
+            category[$2] = $3
+        end
+    end
+
+end
+
 class Commands
 
     include CommandBase
@@ -78,12 +98,108 @@ class Commands
 
     end
 
+    def translateinterface
+
+        # since we know what kind of file we're dealign with,
+        # we do it quick and dirty instead of using rexml or
+        # xslt
+
+        interfaces = @commandline.arguments
+
+        if interfaces.empty? then
+            interfaces = ['cz','de','it','nl','ro']
+        else
+            interfaces.delete('en')
+        end
+
+        interfaces.flatten.each do |interface|
+
+            variables, constants, strings, list, data = Hash.new, Hash.new, Hash.new, '', ''
+
+            keyfile, intfile, outfile = "keys-#{interface}.xml", "cont-en.xml", "cont-#{interface}.xml"
+
+            report("generating #{keyfile}")
+
+            begin
+                one = "texexec --make --alone --all #{interface}"
+                two = "texexec --batch --silent --interface=#{interface} x-set-01"
+                if @commandline.option("force") then
+                    system(one)
+                    system(two)
+                elsif not system(two) then
+                    system(one)
+                    system(two)
+                end
+            rescue
+            end
+
+                unless File.file?(keyfile) then
+                report("no #{keyfile} generated")
+                next
+            end
+
+            report("loading #{keyfile}")
+
+            begin
+                list = IO.read(keyfile)
+            rescue
+                list = empty
+            end
+
+            if list.empty? then
+                report("error in loading #{keyfile}")
+                next
+            end
+
+            list.i_load('cd:variable', variables)
+            list.i_load('cd:constant', constants)
+            list.i_load('cd:command' , strings)
+            list.i_load('cd:element' , strings)
+
+            report("loading #{intfile}")
+
+            begin
+                data = IO.read(intfile)
+            rescue
+                data = empty
+            end
+
+            if data.empty? then
+                report("error in loading #{intfile}")
+                next
+            end
+
+            report("translating interface en to #{interface}")
+
+            data.i_translate('cd:string'   , 'value', strings)
+            data.i_translate('cd:variable' , 'value', variables)
+            data.i_translate('cd:parameter', 'name' , constants)
+            data.i_translate('cd:constant' , 'type' , variables)
+            data.i_translate('cd:variable' , 'type' , variables)
+            data.i_translate('cd:inherit'  , 'name' , strings)
+            data.i_translate('cd:command'  , 'name' , strings)
+
+            report("saving #{outfile}")
+
+            begin
+                if f = File.open(outfile, 'w') then
+                    f.write(data)
+                    f.close
+                end
+            rescue
+            end
+
+        end
+
+    end
+
 end
 
 logger      = EXA::ExaLogger.new(banner.shift)
 commandline = CommandLine.new
 
 commandline.registeraction('touchcontextfile', '')
+commandline.registeraction('translateinterface', '')
 
 commandline.registeraction('help')
 commandline.registeraction('version')

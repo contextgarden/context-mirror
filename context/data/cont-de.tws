@@ -3138,12 +3138,6 @@ val:*Nummer::
 stopsetup
 
 startsetup
-com:wohnort:
-typ:arg/:
-val:*Text::
-stopsetup
-
-startsetup
 com:posten:
 typ:vars/args/:
 ivr:stellepostenein::

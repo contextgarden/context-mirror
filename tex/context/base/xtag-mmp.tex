@@ -11,6 +11,48 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
+% under reconstruction
+%
+% \starttext
+% \usemodule[mathml] \useXMLfilter[utf]
+% \unprotect
+%
+% \remapXMLsequence [mover]      [CPA] \MMLpOVER
+% \remapXMLsequence [munder]     [CPA] \MMLpUNDER
+%
+% \def\MMLpUNDER#1#2%
+%   {\getXMLarguments{munder}{accent="false" #1}%
+%    \withnexttwoXMLRelements\doMMLpUNDER#2}
+%
+% \def\MMLpOVER#1#2%
+%   {\getXMLarguments{mover}{accent="false" #1}%
+%    \withnexttwoXMLRelements\doMMLpOVER #2}
+%
+% \def\doMMLpUNDER
+%   {\doifelse{\XMLpar{munder}{accent}{}}{true}
+%      {\secondXMLRelement\firstXMLRelement}
+%      {\mathop{\vtop{\m@th\ialign{\hss##\hss\crcr
+%         \disabledelimiter\doMMLfiller\firstXMLRelement
+%         \crcr\noalign{\kern3\p@\nointerlineskip}%
+%         \disabledelimiter\doMMLfiller\secondXMLRelement
+%        \crcr\noalign{\kern3\p@}}}}\limits}}
+%
+% \def\doMMLpOVER
+%   {\doifelse{\XMLpar{mover}{accent}{}}{true}
+%      {\secondXMLRelement\firstXMLRelement}
+%      {\mathop{\vbox{\m@th\ialign{\hss##\hss\crcr\noalign{\kern3\p@}%
+%         \disabledelimiter\doMMLfiller\secondXMLRelement
+%         \crcr\noalign{\kern3\p@\nointerlineskip}%
+%         \disabledelimiter\doMMLfiller\firstXMLRelement
+%         \crcr}}}\limits}}
+%
+% \protect
+%
+% Normal: \startXMLdata<math><mover              ><mi>a</mi><mo>¯</mo></mover></math>\stopXMLdata \par
+% Accent: \startXMLdata<math><mover accent="true"><mi>x</mi><mo>¯</mo></mover></math>\stopXMLdata \par
+%
+% \stoptext
+
 \writestatus{loading}{Context XML Macros (presentational math ml)}
 
 \unprotect
@@ -262,14 +304,14 @@
     \popmacro\doMMLfiller
     \dodoMMLfiller}
 
-\def\doMMLpUNDER%
+\def\doMMLpUNDER
   {\mathop{\vtop{\m@th\ialign{\hss##\hss\crcr
      \disabledelimiter\doMMLfiller\firstXMLRelement
      \crcr\noalign{\kern3\p@\nointerlineskip}%
      \disabledelimiter\doMMLfiller\secondXMLRelement
      \crcr\noalign{\kern3\p@}}}}\limits}
 
-\def\doMMLpOVER%%
+\def\doMMLpOVER
   {\mathop{\vbox{\m@th\ialign{\hss##\hss\crcr\noalign{\kern3\p@}%
      \disabledelimiter\doMMLfiller\secondXMLRelement
      \crcr\noalign{\kern3\p@\nointerlineskip}%

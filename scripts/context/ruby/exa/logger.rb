@@ -88,6 +88,10 @@ module EXA
             @@verbose = true
         end
 
+        def silent
+            @@verbose = false
+        end
+
         def verbose?
             @@verbose
         end

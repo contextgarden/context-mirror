@@ -3138,12 +3138,6 @@ val:*getal::
 stopsetup
 
 startsetup
-com:woonplaats:
-typ:arg/:
-val:*tekst::
-stopsetup
-
-startsetup
 com:items:
 typ:vars/args/:
 ivr:stelitemsin::

@@ -227,6 +227,7 @@
 
 \def\setupTBLcell#1#2% cell over col over row
   {\setupTBLsection % already forgotten
+\getvalue{\@@tblprefix\c!each\v!each}%
    \getvalue{\@@tblprefix\c!y\v!each}%
    \getvalue{\@@tblprefix\c!x\v!each}%
    \getvalue{\@@tblprefix\c!y\v!oddeven{#1}}%
@@ -653,7 +654,7 @@
      \setbox\scratchbox\vbox{\trialtypesettingtrue \the\tbltoks}%
    \fi\fi\fi\fi
    \let\handleTBLcell\dohandleTBLcellD
-   \chardef\TBLpass2
+   \chardef\TBLpass\plustwo
    \def\makeTBL##1##2% meer in cellD
      {\dimen2\zeropoint
       \globalpushmacro\colTBL
@@ -672,7 +673,7 @@
    \checktblheightsone
    \checktblheightstwo
    \let\handleTBLcell\dohandleTBLcellE
-   \chardef\TBLpass3
+   \chardef\TBLpass\plusthree
    \def\makeTBL##1##2%
      {% height
       \globalpushmacro\rowTBL

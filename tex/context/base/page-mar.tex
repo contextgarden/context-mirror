@@ -213,6 +213,7 @@
       \c!hoffset=\zeropoint,
       \c!style=\@@imstyle,
       \c!color=\@@imcolor,
+      \c!strut=\@@imstrut,
       \c!location=\@@imlocation,
       \c!align=\@@imalign,
       \c!before=\@@imbefore,
@@ -249,18 +250,18 @@
    \doifvaluesomething{\??im\margincontenttag\c!align} % watch {} around set
      {\edef\margincontentalign{{\getvalue{\??im\margincontenttag\c!align},\margincontentalign}}}%
    %
-   \expanded{\getparameters
-     [\??im\margincontenttag]
-     [\c!strut=\v!no,\c!offset=\v!overlay,\c!align=\margincontentalign]}%
+   \expanded{\getparameters[\??im\margincontenttag][\c!align=\margincontentalign]}%
    %
+   \edef\margincontentstrut{\getvalue{\??im\margincontenttag\c!strut}}%
    \savestrut %
    \setbox\scratchbox\vbox\localframed
      [\??im\margincontenttag]
+     [\c!strut=\v!no,\c!offset=\v!overlay] % strut handled internally
      {\decrement\margincontentlines
       \dorecurse\margincontentlines{\savedstrut\endgraf\nointerlineskip}% ! savedstrut
       \@@imbefore
       \dostartattributes{\??im\margincontenttag}\c!style\c!color\empty
-        \setstrut % yes or no
+        \dosetupstrut[\margincontentstrut]% was: \setstrut % yes or no
         \begstrut#3\endstrut\endgraf
         \xdef\margincontentstrutheight{\the\strutht}% so that it's known outside the framed
       \dostopattributes
@@ -741,6 +742,7 @@
 \setupinmargin
   [\c!style=\v!bold,
    \c!color=,
+   \c!strut=\v!auto,
    \c!location=\v!both,
    \c!align=\v!inner,
    \c!stack=\v!no,

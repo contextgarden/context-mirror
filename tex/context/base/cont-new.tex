@@ -23,6 +23,63 @@
 
 \ifx\normalcompound\undefined \let\normalcompound=| \fi
 
+\bgroup \catcode`\<=\active
+
+% usage: \expanded{\rescanXMLatttributes{fo:table-cell}}
+
+\gdef\rescanXMLattributes  #1{\noexpand\dogetXMLarguments{#1}\currentXMLarguments>}
+\gdef\parseXMLattributes #1#2{\dogetXMLarguments{#1}#2>}
+
+\egroup
+
+\def\setupTBLcell#1#2% cell over col over row
+  {\setupTBLsection % already forgotten
+   \getvalue{\@@tblprefix\c!y\v!each}%
+   \getvalue{\@@tblprefix\c!x\v!each}%
+   \getvalue{\@@tblprefix\c!y\v!oddeven{#1}}%
+   \getvalue{\@@tblprefix\c!x\v!oddeven{#2}}%
+   \getvalue{\@@tblprefix\c!x\v!oddeven{#2}\c!y\v!oddeven{#1}}%
+   \ifnum#1=\plusone
+     \getvalue{\@@tblprefix\c!y\v!first}%
+     \executeifdefined{\@@tblprefix\c!x#2\c!y\v!first}\donothing
+   \fi
+   \ifnum#2=\plusone
+     \getvalue{\@@tblprefix\c!x\v!first}%
+     \executeifdefined{\@@tblprefix\c!x\v!first\c!y#1}\donothing
+   \fi
+   \ifnum#1=\maximumrow\relax
+     \getvalue{\@@tblprefix\c!y\v!last}%
+     \executeifdefined{\@@tblprefix\c!x#2\c!y\v!last}\donothing
+   \fi
+   \ifnum#2=\maximumcol\relax
+     \getvalue{\@@tblprefix\c!x\v!last}%
+     \executeifdefined{\@@tblprefix\c!x\v!last\c!y#1}\donothing
+   \fi
+   \ifnum#1=\maximumrow\relax\ifnum#2=\maximumcol\relax
+     \getvalue{\@@tblprefix\c!x\v!last\c!y\v!last}%
+   \fi\fi
+   \ifnum#1=\plusone \ifnum#2=\plusone
+     \getvalue{\@@tblprefix\c!x\v!first\c!y\v!first}%
+   \fi\fi
+   \ifnum#1>\noftblhdnxlines\else
+     \executeifdefined{\@@tblprefix\v!header\v!each}\donothing
+     \executeifdefined{\@@tblprefix\v!header#2}\donothing
+   \fi
+   \executeifdefined{\@@tblprefix\c!y#1}\donothing
+\getvalue{\@@tbl\@@tbl\c!extras}\letvalue{\@@tbl\@@tbl\c!extras}\relax
+   \executeifdefined{\@@tblprefix\c!x#2}\donothing
+\getvalue{\@@tbl\@@tbl\c!extras}\letvalue{\@@tbl\@@tbl\c!extras}\relax
+   \executeifdefined{\@@tblprefix\c!x#2\c!y#1}\donothing
+   \global\letcscsname\@@tblsplitafter\csname\@@tbl\@@tbl\c!after\endcsname
+   \relax}
+
+\newbox\@@dlhbox
+
+\def\dontleavehmode
+  {\ifhmode\else \ifmmode\else
+     \setbox\@@dlhbox\hbox{\mathsurround\zeropoint\everymath\emptytoks$ $}\unhbox\@@dlhbox
+   \fi \fi}
+
 % in xtag-ini:
 
 \def\doexecuteXMLhexcharacter#1\relax{\getXMLcharacter{"#1}}

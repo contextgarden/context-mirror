@@ -382,7 +382,7 @@
   {\bgroup
    \doifassignmentelse{#1}
      {\getparameters[\s!dummy][\c!alternative=\v!a,#1]%
-      \doifelse\dummyvariant\v!a
+      \doifelse\dummyalternative\v!a
         {\egroup\collectedtext}%
         {\egroup\layeredtext  }%
       [#1][#2]}%

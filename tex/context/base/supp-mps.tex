@@ -1395,7 +1395,7 @@
      \doprocessfile\scratchread{#1}\handleMPcolor
      \immediate\closeout\scratchwrite
      \ifdone
-       \immediate\openout\scratchwrite=\convertMPcolorpath#1
+       \immediate\openout\scratchwrite=\convertMPcolorpath#1\relax
        \doprocessfile\scratchread{\convertMPcolorpath \convertMPcolorfile}\handleMPcopy
        \immediate\closeout\scratchwrite
        \message{done]}%
@@ -1638,9 +1638,7 @@
    \bgroup
    \enableincludeMPgraphics
    \presetMPdefinitions % in case #2 has measures
-   \doifelse{#1}{-}
-     {\convertargument#2\to\asciiA}
-     {\long\def\asciiA{#2}}%
+   \doifelse{#1}{-}{\convertargument#2\to\asciiA}{\long\def\asciiA{#2}}%
    \long\xdef\MPdrawingdata{\MPdrawingdata\asciiA}%
    \egroup}
 

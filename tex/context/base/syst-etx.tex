@@ -258,15 +258,13 @@
 
 \beginETEX \ifcsname
 
-\def\begcsname#1\endcsname
-  {\ifcsname#1\endcsname\csname#1\endcsname\fi}
+  \def\begcsname#1\endcsname{\ifcsname#1\endcsname\csname#1\endcsname\fi}
 
 \endETEX
 
 \beginTEX
 
-\def\begcsname#1\endcsname
-  {\csname#1\endcsname}
+  \def\begcsname#1\endcsname{\csname#1\endcsname}
 
 \endTEX
 

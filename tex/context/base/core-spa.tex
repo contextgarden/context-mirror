@@ -1097,11 +1097,11 @@
 \def\complexsetupindenting[#1]%
   {\processallactionsinset
      [#1]
-     [   \v!first=>\indentfirstparagraphtrue,
-       \v!next=>\indentfirstparagraphfalse,
-        \s!default=>\simplesetupindenting,
-        \s!unknown=>\edef\currentindentation{\commalistelement}%
-                    \simplesetupindenting]}
+     [  \v!first=>\indentfirstparagraphtrue,
+         \v!next=>\indentfirstparagraphfalse,
+      \s!default=>\simplesetupindenting,
+      \s!unknown=>\edef\currentindentation{\commalistelement}%
+                  \simplesetupindenting]}
 
 \def\simplesetupindenting
   {\assigndimension\currentindentation\ctxparindent{1em}{1.5em}{2em}%
@@ -1110,25 +1110,31 @@
 \def\indenting % watch out: \dodo and no \do
   {\dosingleargument\dodoindenting}
 
-\def\dodoindenting[#1]%
+\def\dodoindenting[#1]% oeps, we needed a commalist handler here!
+  {\edef\currentindenting{#1}%
+   \processcommacommand[#1]\dododoindenting}
+
+\def\dododoindenting#1%
   {\executeifdefined{\??in:#1}\donothing}
+
+\let\currentindenting\empty
 
 \def\defineindentingmethod[#1]#2%
   {\setvalue{\??in:#1}{#2}}
 
-\defineindentingmethod [\v!no]      {\parindent\ctxparindent\noindent}
-\defineindentingmethod [\v!not]     {\parindent\ctxparindent\noindent}
+\defineindentingmethod [\v!no]     {\parindent\ctxparindent\noindent}
+\defineindentingmethod [\v!not]    {\parindent\ctxparindent\noindent}
 
-\defineindentingmethod [\v!first]   {\indentfirstparagraphtrue}
-\defineindentingmethod [\v!next] {\indentfirstparagraphfalse}
+\defineindentingmethod [\v!first]  {\indentfirstparagraphtrue}
+\defineindentingmethod [\v!next]   {\indentfirstparagraphfalse}
 
-\defineindentingmethod [\v!yes]       {\parindent\ctxparindent\relax}   % no \indent !
-\defineindentingmethod [\v!always]   {\parindent\ctxparindent\relax}   % no \indent !
+\defineindentingmethod [\v!yes]    {\parindent\ctxparindent\relax}   % no \indent !
+\defineindentingmethod [\v!always] {\parindent\ctxparindent\relax}   % no \indent !
 
-\defineindentingmethod [\v!never]    {\parindent\zeropoint\relax} % no \indent !
+\defineindentingmethod [\v!never]  {\parindent\zeropoint\relax} % no \indent !
 
-\def\noindenting{\indenting[\v!no,\v!next]} % was \nietinspringen
-\def\doindenting{\indenting[\v!yes,\v!first]}    % was \welinspringen
+\def\noindenting{\indenting[\v!no,\v!next]}   % was \nietinspringen
+\def\doindenting{\indenting[\v!yes,\v!first]} % was \welinspringen
 
 \def\dochecknextindentation#1% internal one
   {\checknextindentation[\getvalue{#1\c!indentnext}]}
@@ -1964,8 +1970,9 @@
 \def\dosetupstrut[#1]% yet undocumented, todo: fontstrut
   {\processaction
      [#1]
-     [     \v!yes=>\setstrut,
-            \v!no=>\setnostrut,
+     [    \v!yes=>\setstrut,
+         \v!auto=>\setautostrut,
+           \v!no=>\setnostrut,
           \v!cap=>\setcapstrut,
           \v!fit=>\setfontstrut,
          \v!line=>\setstrut,
@@ -1975,6 +1982,20 @@
 \def\setteststrut
   {\def\strutwidth{.8pt}%
    \setstrut}
+
+\def\autostrutfactor{1.1}
+
+\def\setautostrut
+  {\begingroup
+   \setbox\scratchbox\copy\strutbox
+   \setstrut
+   \ifdim\ht\strutbox>\autostrutfactor\ht\scratchbox
+     \endgroup \setstrut
+   \else\ifdim\dp\strutbox>\autostrutfactor\dp\scratchbox
+     \endgroup \setstrut
+   \else
+     \endgroup
+   \fi\fi}
 
 % simple version
 %
@@ -2261,7 +2282,7 @@
          \v!middle=>\global\advance\ctxmidskip   \@@slmiddle,
           \v!right=>\global\advance\ctxrightskip \@@slright,
            \v!none=>,
-        \s!unknown=>\global\advance\ctxmidskip \commalistelement]}
+        \s!unknown=>\global\advance\ctxmidskip   \commalistelement]}
 
 \def\donarrower[#1]%
   {\processaction
@@ -2277,7 +2298,7 @@
    \bgroup
    \global\ctxleftskip \zeropoint
    \global\ctxrightskip\zeropoint
-   \global\ctxmidskip\zeropoint
+   \global\ctxmidskip  \zeropoint
    \processcommalistwithparameters[#1]\donarrower
    \advance\leftskip  \ctxleftskip
    \advance\rightskip \ctxrightskip

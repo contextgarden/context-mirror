@@ -148,10 +148,15 @@
 %D \setupfootnotes[conversion=set 2]
 %D \stoptyping
 
+% experiment: (compare scope=text and scope=page)
+%
+% \definenote[mynote][way=bytext,location=text,width=\leftmarginwidth,scope=page,rule=,before=,after=,factor=0]
+% \setuptexttexts[margin][\vbox to \textheight{\placenotes[mynote]\vfill}][]
+
 \def\definenote
   {\dodoubleempty\dodefinenote}
 
-% maybe we should inherit
+% maybe we should inherit (todo)
 
 \def\dodefinenote[#1][#2]%
   {\def\currentnote{#1}%
@@ -205,6 +210,7 @@
         \c!textcolor=,
         \c!interaction=\v!yes,
         \c!factor=,
+        \c!scope=, % \v!text \v!page
         \c!n=1]%
     \definenumber
       [\currentnote]
@@ -230,7 +236,7 @@
        [\??vn\currentnote][#2]%
      \processaction
        [\noteparameter\c!rule]
-       [    \v!on=>\letvalue{\??vn\c!rule:\currentnote}\normalnoterule,
+       [     \v!on=>\letvalue{\??vn\c!rule:\currentnote}\normalnoterule,
             \v!off=>\letvalue{\??vn\c!rule:\currentnote}\relax,
         \s!default=>\letvalue{\??vn\c!rule:\currentnote}\relax,
         \s!unknown=>\setvalue{\??vn\c!rule:\currentnote}{\noteparameter\c!rule}]%
@@ -589,6 +595,7 @@
    \fi
    \ignorespaces
    \localnoteinsert\currentnoteins\bgroup
+\doif{\noteparameter\c!scope}\v!page{\floatingpenalty\maxdimen}% experiment
      \penalty\notepenalty
      \forgetall
      \setnotebodyfont

@@ -100,11 +100,12 @@
        \ifcase\@XMLnofelements\else\@@xfinbetween\fi
      \fi
    \fi
-   % no, too fragile: \hangindent2em
+   % no, too fragile:
+% \ifnum\XMLlevel>1\hangindent2em\fi
    \ifcase\kindofXMLelement\or\or
      \getvalue{\@@XMLshow::\currentXMLelement}\relax
    \fi
-   \indent
+   \dontleavehmode % \indent
    \bgroup
      % \localcolortrue
      \advance\XMLlevel \minusone
@@ -154,7 +155,9 @@
 \gdef\someXMLword{\@XMLlevel+\@XMLelement1\@XMLlevel-}
 
 \gdef\@XMLindent#1%
-  {\ifnum\XMLlevel>0\advance\leftskip#11em\relax\fi}
+  {\ifnum\XMLlevel>\zerocount
+     \advance\leftskip#11em\relax
+   \fi}
 
 \gdef\nextXMLtext{\blank\@XMLlevel+\@XMLelement1\par\@XMLindent+}
 \gdef\prevXMLtext{\par\@XMLindent-\@XMLelement0\par\@XMLlevel-\blank}
@@ -169,7 +172,7 @@
   {\def\docommando##1{#1[##1]#2#3\letvalue{\@@XMLshow:##1}\empty}%
    \processcommalist[#4]\docommando}
 
-\gdef\showXMLign[#1]%
+\gdef\showXMLinh[#1]%
   {\setXMLshow\defineXMLignore     \relax\relax[#1]%
    \setXMLshow\defineXMLsingular   \relax\relax[#1]}
 
@@ -301,5 +304,14 @@
         \exitloop
       \fi}%
     \egroup}
+
+\gdef\showXMLinh#1%
+  {\doifsomething{#1}
+     {\bgroup\infofont[%
+      \dorecurse\XMLdepth
+%          {\csname\@@XMLvariable:\csname\@@XMLdepth:\recurselevel\endcsname:#1\endcsname
+         {\csname\@@XMLvariable:\recurselevel:#1\endcsname
+         \ifnum\recurselevel<\XMLdepth->\fi}%
+      ]\egroup}}
 
 \protect \endinput

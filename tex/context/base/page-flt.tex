@@ -723,7 +723,7 @@
    \fi}
 
 % In \dofloatinfomessage wordt {{ }} gebruikt omdat anders
-% binnen \startuitstellen...\stopuitstellen geen goede
+% binnen \startpostponing...\stoppostponing geen goede
 % melding in de marge volgt: \ifinner is dan namelijk true.
 
 \def\dofloatinfomessage#1#2#3%
@@ -1846,7 +1846,7 @@
 
 \newcounter\nofpostponedblocks
 
-\newif\ifinuitstellen
+\newif\ifinpostponing
 
 \newevery\everytopofpage\relax
 
@@ -1872,7 +1872,7 @@
 \newtoks   \postponedpageblocks
 \newcounter\nofpostponedpageblocks
 
-% \ifinuitstellen: handhaven, want gebruikt in stijlen ! ! ! ! !
+% \ifinpostponing: handhaven, want gebruikt in stijlen ! ! ! ! !
 
 \def\dopostponeblock
   {\bgroup % new may 2004
@@ -1883,24 +1883,24 @@
      \unvbox\collectedpagefloats
    \fi
    \donefalse
-   \ifinuitstellen \else
+   \ifinpostponing \else
      \ifcase\nofpostponedblocks     \else \donetrue \fi
      \ifcase\nofpostponedpageblocks \else \donetrue \fi
    \fi
    \ifdone
      \bgroup % we need the color/font switch, else problems inside split verbatim
-     \setnormalcatcodes % uitstellen in verbatim
+     \setnormalcatcodes % postponing in verbatim
      \edef\savedtopofpagecolor{\topofpagecolor}%
      \doifsomething\savedtopofpagecolor\restorecolormode % \stopcolormode
      \restoreglobalbodyfont                        % The \nof-test is
      \global\pagetotal\zeropoint                   % recently added and
-     \global\inuitstellentrue                      % definitely needed else
+     \global\inpostponingtrue                      % definitely needed else
      \the\postponedpageblocks                      % we can loose or disorder
      \dorecurse\nofpostponedblocks                 % floats; anyhow, this
        {\getbuffer[pbuf-\recurselevel]}           % mechanism is still
      \doflushfloats % new but potential dangerous  % suboptimal and needs a
      \doglobal\newcounter\nofpostponedblocks       % proper analysis
-     \global\inuitstellenfalse
+     \global\inpostponingfalse
      \doifsomething\savedtopofpagecolor\startcolormode\savedtopofpagecolor
      \egroup
    \fi

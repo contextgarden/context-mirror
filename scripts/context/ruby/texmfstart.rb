@@ -162,6 +162,15 @@ def expanded(arg)
     end
 end
 
+def runcommand(command)
+    if $execute then
+        report("using 'exec' instead of 'system' call") if $verbose
+        exec(command)
+    else
+        system(command)
+    end
+end
+
 def runoneof(application,fullname,browserpermitted)
     if browserpermitted && launch(fullname) then
         return true
@@ -175,7 +184,7 @@ def runoneof(application,fullname,browserpermitted)
                 return true
             else
                 applications.each do |a|
-                    if system([a,fullname,expanded($arguments)].join(' ')) then
+                    if runcommand([a,fullname,expanded($arguments)].join(' ')) then
                         return true
                     end
                 end
@@ -185,14 +194,14 @@ def runoneof(application,fullname,browserpermitted)
                 print [fullname,expanded($arguments)].join(' ')
                 return true
             else
-                return system([fullname,expanded($arguments)].join(' '))
+                return runcommand([fullname,expanded($arguments)].join(' '))
             end
         else
             if $report then
                 print [applications,fullname,expanded($arguments)].join(' ')
                 return true
             else
-                return system([applications,fullname,expanded($arguments)].join(' '))
+                return runcommand([applications,fullname,expanded($arguments)].join(' '))
             end
         end
         return false
@@ -208,7 +217,7 @@ def usage
     print("\n")
     print("usage    : texmfstart [switches] filename [optional arguments]\n")
     print("\n")
-    print("switches : --verbose --report --browser --direct\n")
+    print("switches : --verbose --report --browser --direct --execute\n")
     print("           --program --file   --page    --arguments\n")
     print("           --make    --lmake  --wmake\n")
     print("\n")
@@ -431,7 +440,7 @@ end
 
 def direct(fullname)
     begin
-        return system([fullname.sub(/^bin\:/, ''),expanded($arguments)].join(' '))
+        return runcommand([fullname.sub(/^bin\:/, ''),expanded($arguments)].join(' '))
     rescue
         return false
     end
@@ -486,6 +495,7 @@ $browser     = $directives['browser']   || false
 $report      = $directives['report']    || false
 $verbose     = $directives['verbose']   || false
 $arguments   = $directives['arguments'] || ''
+$execute     = $directives['execute']   || $directives['exec'] || false
 
 $make        = $directives['make']      || false
 $unix        = $directives['unix']      || false

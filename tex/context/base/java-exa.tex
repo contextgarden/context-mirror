@@ -89,7 +89,7 @@
                 console.println("url before check: "+url) ;
             }
 %            url = url.replace(/(http:\\\/\\\/.+)(\\\/.*$)/, "$1") ;
-            url = url.replace(/(http:\\\/\\\/.+?)(\\\/.*$)/, "$1") ;
+            url = url.replace(/(https*:\\\/\\\/.+?)(\\\/.*$)/, "$1/exarequest") ;
             if (example_log) {
                 console.println("url after check: "+url) ;
             }

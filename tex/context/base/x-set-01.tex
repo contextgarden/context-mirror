@@ -1,0 +1,75 @@
+%D \module
+%D   [       file=x-set-01,
+%D        version=2004.10.31,
+%D         remark=setupx.tex: 1998.07.20 and later,
+%D          title=\CONTEXT\ Setup Mappings,
+%D       subtitle=Macro Definitions,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\unprotect
+
+\def\SETUPnamespace{xmlns:cd="http://www.pragma-ade.com/commands"}
+
+\bgroup \catcode`\<=\@@other
+
+\unexpanded\gdef\dostring#1#2#3%
+  {\immediate\write\scratchwrite{#1<#2cd:#3>}}
+
+\gdef\doline#1%
+  {\immediate\write\scratchwrite{#1}}
+
+\egroup
+
+\def\startsetupfile
+  {\immediate\openout\scratchwrite=keys-\currentlanguage.xml
+   \doline{\string<?xml version="1.0"?>}
+   \doline{}
+   \dostring{}{}{interface \SETUPnamespace\space name="context" language="\currentlanguage" version="\contextversion"}}
+
+\def\stopsetupfile
+  {\doline{}
+   \dostring{}{/}{interface}
+   \immediate\closeout\scratchwrite}
+
+\def\interfacecomponenttoxml#1#2#3%
+  {\doifelse{#3}\nointerfaceobject
+     {\dostring{\space\space\space\space}{}{#1 name="#2" value="#2"/}}
+     {\dostring{\space\space\space\space}{}{#1 name="#2" value="#3"/}}}
+
+\def\setinterfaceconstant{\interfacecomponenttoxml{constant}}
+\def\setinterfacevariable{\interfacecomponenttoxml{variable}}
+\def\setinterfaceelement {\interfacecomponenttoxml{element}}
+\def\setinterfacecommand {\interfacecomponenttoxml{command}}
+
+\def\startinterfacexmlcomponent{\doline{}\dostring{\space\space}{}} % #1
+\def\stopinterfacexmlcomponent {\dostring{\space\space}{/}} % #1
+
+\let\normalstartvariables\startvariables \let\normalstopvariables\stopvariables
+\let\normalstartconstants\startconstants \let\normalstopconstants\stopconstants
+\let\normalstartcommands \startcommands  \let\normalstopcommands \stopcommands
+\let\normalstartelements \startelements  \let\normalstopelements \stopelements
+
+\def\startvariables{\startinterfacexmlcomponent{variables}\normalstartvariables}
+\def\startconstants{\startinterfacexmlcomponent{constants}\normalstartconstants}
+\def\startcommands {\startinterfacexmlcomponent{commands} \normalstartcommands }
+\def\startelements {\startinterfacexmlcomponent{elements} \normalstartelements }
+
+\def\stopvariables{\stopinterfacexmlcomponent{variables}\normalstopvariables}
+\def\stopconstants{\stopinterfacexmlcomponent{constants}\normalstopconstants}
+\def\stopcommands {\stopinterfacexmlcomponent{commands} \normalstopcommands }
+\def\stopelements {\stopinterfacexmlcomponent{elements} \normalstopelements }
+
+\protect
+
+\starttext
+  \startsetupfile
+    \input mult-con.tex
+    \input mult-com.tex
+  \stopsetupfile
+\stoptext

@@ -13,38 +13,38 @@
 
 \unprotect
 
-\startunicodevector 32
-  \ifcase\numexpr(#1-19)
-    endash\or
-    emdash\or
-    \@@unknownchar\or
-    \@@unknownchar\or
-    \@@unknownchar\or
-    quoteleft\or
-    quoteright\or
-    quotesinglebase\or
-    \@@unknownchar\or
-    quotedblleft\or
-    quotedblright\or
-    quotedblbase\or
-    \@@unknownchar\or
-    textdag\or
-    textddag\or
-    textbullet\or
-    \@@unknownchar\or
-    \@@unknownchar\or
-    \@@unknownchar\or
-    textellipsis\else
-  \ifcase\numexpr(#1-48)
-    perthousand\else
-  \ifcase\numexpr(#1-57)
-    \@@unknownchar\or   % SINGLE LEFT-POINTING ANGLE QUOTATION MARK
-    \@@unknownchar\else % SINGLE RIGHT-POINTING ANGLE QUOTATION MARK
-  \ifcase\numexpr(#1-172)
-    texteuro\else
-    \@@unknownchar
-  \fi\fi\fi\fi
-\stopunicodevector
+% \startunicodevector 32
+%   \ifcase\numexpr(#1-19)
+%     endash\or
+%     emdash\or
+%     \@@unknownchar\or
+%     \@@unknownchar\or
+%     \@@unknownchar\or
+%     quoteleft\or
+%     quoteright\or
+%     quotesinglebase\or
+%     \@@unknownchar\or
+%     quotedblleft\or
+%     quotedblright\or
+%     quotedblbase\or
+%     \@@unknownchar\or
+%     textdag\or
+%     textddag\or
+%     textbullet\or
+%     \@@unknownchar\or
+%     \@@unknownchar\or
+%     \@@unknownchar\or
+%     textellipsis\else
+%   \ifcase\numexpr(#1-48)
+%     perthousand\else
+%   \ifcase\numexpr(#1-57)
+%     \@@unknownchar\or   % SINGLE LEFT-POINTING ANGLE QUOTATION MARK
+%     \@@unknownchar\else % SINGLE RIGHT-POINTING ANGLE QUOTATION MARK
+%   \ifcase\numexpr(#1-172)
+%     texteuro\else
+%     \@@unknownchar
+%   \fi\fi\fi\fi
+% \stopunicodevector
 
 %D More efficient:
 
@@ -147,57 +147,57 @@
 
 \startunicodevector 32
   \ifcase\numexpr(#1)
-    \strippedcsname \enspace         \or % U+2000  	EN QUAD
-    \strippedcsname \emspace         \or % U+2001 	EM QUAD
-    \strippedcsname \enspace         \or % U+2002 	EN SPACE
-    \strippedcsname \emspace         \or % U+2003 	EM SPACE
-    \strippedcsname \unknownchar     \or % U+2004 	THREE-PER-EM SPACE
-    \strippedcsname \unknownchar     \or % U+2005 	FOUR-PER-EM SPACE
-    \strippedcsname \unknownchar     \or % U+2006 	SIX-PER-EM SPACE
-    \strippedcsname \unknownchar     \or % U+2007 	FIGURE SPACE
-    \strippedcsname \unknownchar     \or % U+2008 	PUNCTUATION SPACE
-    \strippedcsname \unknownchar     \or % U+2009 	THIN SPACE
-    \strippedcsname \unknownchar     \or % U+200A 	HAIR SPACE
-    \strippedcsname \unknownchar     \or % U+200B 	ZERO WIDTH SPACE
-    \strippedcsname \unknownchar     \or % U+200C 	ZERO WIDTH NON-JOINER
-    \strippedcsname \unknownchar     \or % U+200D 	ZERO WIDTH JOINER
-    \strippedcsname \unknownchar     \or % U+200E 	LEFT-TO-RIGHT MARK
-    \strippedcsname \unknownchar     \or % U+200F 	RIGHT-TO-LEFT MARK
-    \strippedcsname \unknownchar     \or % U+2010 	HYPHEN
-    \strippedcsname \unknownchar     \or % U+2011 	NON-BREAKING HYPHEN
-    \strippedcsname \unknownchar     \or % U+2012 	FIGURE DASH
+    \strippedcsname \enspace          \or % U+2000  	EN QUAD
+    \strippedcsname \emspace          \or % U+2001 	EM QUAD
+    \strippedcsname \enspace          \or % U+2002 	EN SPACE
+    \strippedcsname \emspace          \or % U+2003 	EM SPACE
+    \strippedcsname \unknownchar      \or % U+2004 	THREE-PER-EM SPACE
+    \strippedcsname \unknownchar      \or % U+2005 	FOUR-PER-EM SPACE
+    \strippedcsname \unknownchar      \or % U+2006 	SIX-PER-EM SPACE
+    \strippedcsname \unknownchar      \or % U+2007 	FIGURE SPACE
+    \strippedcsname \unknownchar      \or % U+2008 	PUNCTUATION SPACE
+    \strippedcsname \unknownchar      \or % U+2009 	THIN SPACE
+    \strippedcsname \unknownchar      \or % U+200A 	HAIR SPACE
+    \strippedcsname \unknownchar      \or % U+200B 	ZERO WIDTH SPACE
+    \strippedcsname \unknownchar      \or % U+200C 	ZERO WIDTH NON-JOINER
+    \strippedcsname \unknownchar      \or % U+200D 	ZERO WIDTH JOINER
+    \strippedcsname \unknownchar      \or % U+200E 	LEFT-TO-RIGHT MARK
+    \strippedcsname \unknownchar      \or % U+200F 	RIGHT-TO-LEFT MARK
+    \strippedcsname \breakinghyphen   \or % U+2010 	HYPHEN
+    \strippedcsname \nonbreakinghyphen\or % U+2011 	NON-BREAKING HYPHEN
+    \strippedcsname \endash           \or % U+2012 	FIGURE DASH
   % \ifcase\numexpr(#1-19)
-    \strippedcsname \endash          \or % U+2013 	EN DASH
-    \strippedcsname \emdash          \or % U+2014 	EM DASH
-    \strippedcsname \unknownchar     \or % U+2015 	HORIZONTAL BAR
-    \strippedcsname \unknownchar     \or % U+2016 	DOUBLE VERTICAL LINE
-    \strippedcsname \unknownchar     \or % U+2017 	DOUBLE LOW LINE
-    \strippedcsname \quoteleft       \or
-    \strippedcsname \quoteright      \or
-    \strippedcsname \quotesinglebase \or
-    \strippedcsname \unknownchar     \or
-    \strippedcsname \quotedblleft    \or
-    \strippedcsname \quotedblright   \or
-    \strippedcsname \quotedblbase    \or
-    \strippedcsname \unknownchar     \or
-    \strippedcsname \textdag         \or
-    \strippedcsname \textddag        \or
-    \strippedcsname \textbullet      \or
-    \strippedcsname \unknownchar     \or
-    \strippedcsname \unknownchar     \or
-    \strippedcsname \unknownchar     \or
-    \strippedcsname \textellipsis    \else
+    \strippedcsname \endash           \or % U+2013 	EN DASH
+    \strippedcsname \emdash           \or % U+2014 	EM DASH
+    \strippedcsname \unknownchar      \or % U+2015 	HORIZONTAL BAR
+    \strippedcsname \unknownchar      \or % U+2016 	DOUBLE VERTICAL LINE
+    \strippedcsname \unknownchar      \or % U+2017 	DOUBLE LOW LINE
+    \strippedcsname \quoteleft        \or
+    \strippedcsname \quoteright       \or
+    \strippedcsname \quotesinglebase  \or
+    \strippedcsname \unknownchar      \or
+    \strippedcsname \quotedblleft     \or
+    \strippedcsname \quotedblright    \or
+    \strippedcsname \quotedblbase     \or
+    \strippedcsname \unknownchar      \or
+    \strippedcsname \textdag          \or
+    \strippedcsname \textddag         \or
+    \strippedcsname \textbullet       \or
+    \strippedcsname \unknownchar      \or
+    \strippedcsname \unknownchar      \or
+    \strippedcsname \unknownchar      \or
+    \strippedcsname \textellipsis     \else
   \ifcase\numexpr(#1-48)
-    \strippedcsname \perthousand     \or   % U+2030 PER MILLE SIGN
-    \strippedcsname \unknownchar     \or   % U+2031 PER TEN THOUSAND SIGN
-    \strippedcsname \prime           \or   % U+2032 PRIME
-    \strippedcsname \doubleprime     \or   % U+2033 DOUBLE PRIME
-    \strippedcsname \tripleprime     \else % U+2034 TRIPLE PRIME
+    \strippedcsname \perthousand      \or   % U+2030 PER MILLE SIGN
+    \strippedcsname \unknownchar      \or   % U+2031 PER TEN THOUSAND SIGN
+    \strippedcsname \prime            \or   % U+2032 PRIME
+    \strippedcsname \doubleprime      \or   % U+2033 DOUBLE PRIME
+    \strippedcsname \tripleprime      \else % U+2034 TRIPLE PRIME
   \ifcase\numexpr(#1-57)
-    \strippedcsname \unknownchar     \or   % SINGLE LEFT-POINTING ANGLE QUOTATION MARK
-    \strippedcsname \unknownchar     \else % SINGLE RIGHT-POINTING ANGLE QUOTATION MARK
+    \strippedcsname \unknownchar      \or   % SINGLE LEFT-POINTING ANGLE QUOTATION MARK
+    \strippedcsname \unknownchar      \else % SINGLE RIGHT-POINTING ANGLE QUOTATION MARK
   \ifcase\numexpr(#1-172)
-    \strippedcsname \texteuro        \else
+    \strippedcsname \texteuro         \else
     \strippedcsname \unknownchar
   \fi\fi\fi\fi
 \stopunicodevector

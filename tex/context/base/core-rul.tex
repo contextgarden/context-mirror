@@ -642,7 +642,7 @@
       \c!topframe,\c!bottomframe,\c!leftframe,\c!rightframe,%
       \c!rulethickness,\c!frameoffset,\c!background,\c!component,%
       \c!backgroundoffset,\c!backgroundscreen,\c!backgroundcolor,%
-      \c!align,\c!bottom,\c!top,\c!strut,\c!location,\c!setups]%
+      \c!align,\c!bottom,\c!top,\c!strut,\c!location,\c!setups,\c!extras]%
    \copyparameters[#1\c!background][#1]%
      [\c!radius,\c!corner,\c!depth]%
    \copyparameters[#1\c!frame][#1]%
@@ -711,6 +711,8 @@
    \ifsecondargument % faster
      \getparameters[\@@framed][#2]% here !
    \fi
+   % new, experimental dirty hook
+   \framedparameter\c!extras
    % we need to register the (outer) color
    \startregistercolor[\framedparameter\c!foregroundcolor]%
    % to get the right spacing
@@ -3103,6 +3105,8 @@
       \c!left=,
       \c!right=,
       #2]}
+
+\let\setuplocalframed\getparameters
 
 \def\setupframedcontent
   {\dodoubleempty\dosetupframedcontent}

@@ -2,27 +2,27 @@
 %D   [       file=syst-prm,
 %D        version=1999.03.17,
 %D          title=\CONTEXT\ System Macros,
-%D       subtitle=Primitive Behavior, 
+%D       subtitle=Primitive Behavior,
 %D         author=Hans Hagen,
 %D           date=\currentdate,
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
-%C details. 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
 
-\unprotect 
+\unprotect
 
-%D Saved primitives are preceded by \type {\normal}, as in: 
+%D Saved primitives are preceded by \type {\normal}, as in:
 
 \let\normalfmtversion\fmtversion
 
-%D When applicable, we also load the \ETEX\ source and 
-%D definition files. 
+%D When applicable, we also load the \ETEX\ source and
+%D definition files.
 
-\bgroup \obeylines 
+\bgroup \obeylines
 
-\ifx\eTeXversion\undefined 
+\ifx\eTeXversion\undefined
 
   \long\gdef\beginETEX#1\endETEX%
     {}
@@ -30,7 +30,7 @@
   \gdef\beginTEX%
     {\bgroup\obeylines\dobeginTEX}
 
-  \gdef\dobeginTEX#1 
+  \gdef\dobeginTEX#1
     {\egroup}
 
   \global\let\endTEX\relax
@@ -40,64 +40,92 @@
   \long\gdef\beginTEX#1\endTEX%
     {}
 
-  \gdef\beginETEX% 
+  \gdef\beginETEX%
     {\bgroup\obeylines\dobeginETEX}
 
-  \gdef\dobeginETEX#1 
+  \gdef\dobeginETEX#1
     {\egroup\immediate\write16%
        {system (E-TEX) : [line \the\inputlineno] \detokenize{#1}}}
 
   \global\let\endETEX\relax
 
-\fi 
+\fi
 
-\ifx\OmegaVersion\undefined 
+\ifx\OmegaVersion\undefined
 
   \long\gdef\beginOMEGA#1\endOMEGA%
     {}
 
 \else
 
-  \gdef\beginOMEGA% 
+  \gdef\beginOMEGA%
     {\bgroup\obeylines\dobeginOMEGA}
 
-  \gdef\dobeginOMEGA#1 
-    {\egroup\immediate\write16%
-       {system (OMEGA) : [line \the\inputlineno] \string#1}}
+  \ifx\detokenize\undefined
+
+    \gdef\dobeginOMEGA#1
+      {\egroup\immediate\write16%
+         {system (OMEGA) : [line \the\inputlineno] \string#1 }} % we assume an argument
+
+  \else
+
+    \gdef\dobeginOMEGA#1
+      {\egroup\immediate\write16%
+         {system (OMEGA) : [line \the\inputlineno] \detokenize{#1}}} % we assume aleph
+
+  \fi
 
   \global\let\endOMEGA\relax
 
 \fi
 
+\ifx\XeTeXversion\undefined
+
+  \long\gdef\beginXETEX#1\endXETEX%
+    {}
+
+\else
+
+  \gdef\beginXETEX%
+    {\bgroup\obeylines\dobeginXETEX}
+
+  \gdef\dobeginXETEX#1
+    {\egroup\immediate\write16%
+       {system (XETEX) : [line \the\inputlineno] \detokenize{#1}}}
+
+  \global\let\endXETEX\relax
+
+\fi
+
 \egroup
 
-%D Let's get rid of this one: 
+%D Let's get rid of this one:
 
-\def\wlog#1{} 
+\def\wlog#1{}
 
 %D Just for tracing purposes we set:
 
 \tracingstats=1
 
-%D We don't like outer commands, and we always want access 
-%D to the original \type {\input} primitive. 
+%D We don't like outer commands, and we always want access
+%D to the original \type {\input} primitive.
 
 \let\normalouter = \outer  \let\outer\relax
-\let\normalinput = \input  
+\let\normalinput = \input
 
-%D We need to make sure that we start up in \DVI\ mode, so, 
-%D after testing for running \PDFTEX, we default to \DVI.  
+%D We need to make sure that we start up in \DVI\ mode, so,
+%D after testing for running \PDFTEX, we default to \DVI.
 
 \ifx\pdftexversion\undefined \newcount\pdfoutput \fi \pdfoutput=0
 
-%D To circumvent dependencies, we can postpone certain 
-%D initializations to dumping time, by appending them to the 
-%D \type {\everydump} token register. 
+%D To circumvent dependencies, we can postpone certain
+%D initializations to dumping time, by appending them to the
+%D \type {\everydump} token register.
 
-\newtoks \everydump 
+\newtoks \everydump
 
-\let\normaldump \dump 
+\let\normaldump \dump
 
 \def\dump{\the\everydump\normaldump}
 
-\protect \endinput 
+\protect \endinput

@@ -148,6 +148,7 @@ my $PrintFormat      = 'standard';
 my $ProducePdfT      = 0;
 my $ProducePdfM      = 0;
 my $ProducePdfX      = 0;
+my $ProducePdfXTX    = 0;
 my $Input            = "";
 my $Result           = '';
 my $Suffix           = '';
@@ -189,6 +190,7 @@ my $NoMapFiles       = 0 ;
 my $Foxet            = 0 ;
 my $TheEnginePath    = 0 ;
 my $Paranoid         = 0 ;
+my $NotParanoid      = 0 ;
 
 my $StartLine        = 0 ;
 my $StartColumn      = 0 ;
@@ -245,6 +247,7 @@ my $MakeMpy = '';
     "pdf"            => \$ProducePdfT,
     "pdm"            => \$ProducePdfM,
     "pdx"            => \$ProducePdfX,
+    "xtx"            => \$ProducePdfXTX,
     "pdfarrange"     => \$PdfArrange,
     "pdfselect"      => \$PdfSelect,
     "pdfcombine"     => \$PdfCombine,
@@ -294,6 +297,7 @@ my $MakeMpy = '';
     "foxet"          => \$Foxet,
     "engine"         => \$TheEnginePath,
     "paranoid"       => \$Paranoid,
+    "notparanoid"    => \$NotParanoid,
     #### experiment
     "startline=s"    => \$StartLine,
     "startcolumn=s"  => \$StartColumn,
@@ -328,9 +332,13 @@ if ($Paranoid) {
     $ENV{shell_escape} = 'f' ;
     $ENV{openout_any}  = 'p' ;
     $ENV{openin_any}   = 'p' ;
+} elsif ($NotParanoid) {
+    $ENV{shell_escape} = 't' ;
+    $ENV{openout_any}  = 'p' ;
+    $ENV{openin_any}   = 'a' ;
 }
 
-if (($ENV{openout_any} eq 'p') || ($ENV{openin_any} eq 'p')) {
+if ($ENV{openin_any} eq 'p') {
     $Paranoid = 1 ; # extra test in order to set readlevel
 }
 
@@ -346,10 +354,11 @@ if ($ScreenSaver) {
 }
 
 if ( $DoMPTeX || $DoMPXTeX ) {
-    $RunOnce     = 1;
-    $ProducePdfT = 0;
-    $ProducePdfX = 0;
-    $ProducePdfM = 0;
+    $RunOnce       = 1;
+    $ProducePdfT   = 0;
+    $ProducePdfX   = 0;
+    $ProducePdfM   = 0;
+    $ProducePdfXTX = 0;
 }
 
 if ( $PdfArrange || $PdfSelect || $PdfCopy || $PdfCombine ) {
@@ -357,9 +366,15 @@ if ( $PdfArrange || $PdfSelect || $PdfCopy || $PdfCombine ) {
     $RunOnce     = 1;
 }
 
-if    ($ProducePdfT) { $OutputFormat = "pdftex" }
-elsif ($ProducePdfM) { $OutputFormat = "dvipdfm" }
-elsif ($ProducePdfX) { $OutputFormat = "dvipdfmx" }
+if    ($ProducePdfT)   { $OutputFormat = "pdftex" }
+elsif ($ProducePdfM)   { $OutputFormat = "dvipdfm" }
+elsif ($ProducePdfX)   { $OutputFormat = "dvipdfmx" }
+elsif ($ProducePdfXTX) { $OutputFormat = "xetex" }
+
+if ( $ProducePdfXTX ) {
+    $TeXProgram = 'xetex'  ; # ignore the default pdfetex engine
+    $PassOn .= ' -no-pdf ' ; # Adam Lindsay's preference
+}
 
 if ($AutoPdf) {
     $PdfOpen = $PdfClose = 1 ;
@@ -388,7 +403,7 @@ if ( ( $LogFile ne '' ) && ( $LogFile =~ /\w+\.log$/io ) ) {
     *STDERR = *LOGFILE;
 }
 
-my $Program = " TeXExec 5.2.2 - ConTeXt / PRAGMA ADE 1997-2004";
+my $Program = " TeXExec 5.2.3 - ConTeXt / PRAGMA ADE 1997-2004";
 
 print "\n$Program\n\n";
 
@@ -849,6 +864,7 @@ $OutputFormats{dviwindo} = "dviwindo";
 $OutputFormats{dviview}  = "dviview";
 $OutputFormats{dvipdfm}  = "dvipdfm";
 $OutputFormats{dvipdfmx} = "dvipdfmx";
+$OutputFormats{xetex}    = "xetex";
 
 my @ConTeXtFormats = ( "nl", "en", "de", "cz", "uk", "it", "ro", "xx" );
 
@@ -1335,9 +1351,10 @@ sub ScanTeXPreamble {
 
     # handy later on
 
-    $ProducePdfT = ($OutputFormat eq "pdftex") ;
-    $ProducePdfM = ($OutputFormat eq "dvipdfm") ;
-    $ProducePdfX = ($OutputFormat eq "dvipdfmx") ;
+    $ProducePdfT   = ($OutputFormat eq "pdftex") ;
+    $ProducePdfM   = ($OutputFormat eq "dvipdfm") ;
+    $ProducePdfX   = ($OutputFormat eq "dvipdfmx") ;
+    $ProducePdfXTX = ($OutputFormat eq "xetex") ;
 }
 
 sub ScanContent {
@@ -1865,6 +1882,8 @@ if ($JobSuffix =~ /\_fo$/i) {
                 system("dvipdfmx -f dvipdfmx.map -d 4 $JobName") ;
             } elsif ($ProducePdfM) {
                 system("dvipdfm $JobName") ;
+            } elsif ($ProducePdfXTX) {
+                system("xdv2pdf $JobName.xdv") ;
             }
             PopResult($JobName);
         }
@@ -2387,6 +2406,7 @@ sub RunFiles {
     } else {
         my $JobSuffix = "tex";
         foreach my $JobName (@ARGV) {
+            next if ($JobName =~ /^\-/io) ;
             # start experiment - full name spec including suffix is prerequisite
             if (($StartLine>0) && ($EndLine>=$StartLine) && (-e $JobName)) {
                 if (open(INP,$JobName) && open(OUT,'>texexec.tex')) {
