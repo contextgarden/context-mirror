@@ -60,12 +60,14 @@
 % \preloadmapfile[ec-base.map]
 % \preloadmapfile[8r-base.map]
 % \preloadmapfile[qx-base.map]
+% \preloadmapfile[t5-base.map]
 % \preloadmapfile[texnansi-base.map]
 % \preloadmapfile[original-ams-cmr.map]
 % \preloadmapfile[original-ams-euler.map]
 % \preloadmapfile[original-public-lm.map]
 % \preloadmapfile[original-public-plr.map]
 % \preloadmapfile[original-public-csr.map]
+% \preloadmapfile[original-public-vnr.map]
 %
 % (2) otherwise, use this if you have a fast machine
 %
@@ -79,12 +81,14 @@
 \loadmapfile[ec-base.map]
 \loadmapfile[8r-base.map]
 \loadmapfile[qx-base.map]
+\loadmapfile[t5-base.map]
 \loadmapfile[texnansi-base.map]
 \loadmapfile[original-ams-cmr.map]
 \loadmapfile[original-ams-euler.map]
 \loadmapfile[original-public-lm.map]
 \loadmapfile[original-public-plr.map]
 \loadmapfile[original-public-csr.map]
+\loadmapfile[original-public-vnr.map]
 \loadmapfile[texnansi-public-lm.map]
 \loadmapfile[ec-public-lm.map]
 

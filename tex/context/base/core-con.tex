@@ -203,6 +203,52 @@
     \ruledhbox spread .15em{\hss\uppercased{\romannumerals{#1}}\hss}}}
 
 %D \macros
+%D   {defineconversionvector,conversionnumber} % bad names so no danger for clash
+%D
+%D For Adam and friends \unknown
+%D
+%D \startitemize[persiannummerals]
+%D \item test \item test \item test \item test
+%D \stopitemize
+
+% \defineconversionvector{alpha}{`a}
+% \edef\test{\conversionnumber{alpha}{123}}
+
+% \ifx\gobbleoneargument\undefined \long\def\gobbleoneargument#1{} \fi
+
+\def\defineconversionvector#1#2% name base
+  {\bgroup
+   % dirty trick
+   \uccode`\!=`\1
+   % plain:
+   % \uccode`\0=\numexpr#2+0\relax \uccode`\1=\numexpr#2+1\relax
+   % \uccode`\2=\numexpr#2+2\relax \uccode`\3=\numexpr#2+3\relax
+   % \uccode`\4=\numexpr#2+4\relax \uccode`\5=\numexpr#2+5\relax
+   % \uccode`\6=\numexpr#2+6\relax \uccode`\7=\numexpr#2+7\relax
+   % \uccode`\8=\numexpr#2+8\relax \uccode`\9=\numexpr#2+9\relax
+   % context:
+   \dostepwiserecurse091{\expandafter\uccode\expandafter`\recurselevel=\numexpr#2+\recurselevel}%
+   % prepared macro
+   \uppercase\expandafter{\expandafter\gdef\csname::cvn::#1::\endcsname##!%
+     {\ifcase##! 0\or1\or2\or3\or4\or5\or6\or7\or8\or9\fi}}%
+   \egroup}
+
+\def\conversionnumber#1#2%
+  {\ifcsname::cvn::#1::\endcsname
+     \expandafter\doconversionnumber\csname::cvn::#1::\expandafter\endcsname\number#2\relax
+   \else
+      \number#2%
+   \fi}
+
+\def\doconversionnumber#1#2%
+  {\ifx#2\relax
+     \expandafter\gobbleoneargument
+   \else
+     #1{#2}%
+     \expandafter\doconversionnumber
+   \fi#1}
+
+%D \macros
 %D   {protectconversion}
 %D
 %D The previous two commands are not robust enough to be
@@ -795,6 +841,19 @@
 
 \defineconversion [\v!greek]         [\greeknumerals]
 \defineconversion [\v!Greek]         [\Greeknumerals]
+
+\defineconversion [arabicnumerals]   [\numbers]
+\defineconversion [persiannumerals]  [\numbers]
+
+\beginXETEX \number
+
+\defineconversionvector{arabicnumerals} {"0660}
+\defineconversionvector{persiannumerals}{"06F0}
+
+\defineconversion[arabicnumerals] [\conversionnumber{arabicnumerals}]
+\defineconversion[persiannumerals][\conversionnumber{persiannumerals}]
+
+\endXETEX
 
 % Some bonus ones:
 

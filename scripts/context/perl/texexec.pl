@@ -2254,10 +2254,11 @@ sub LocatedFormatPath {
     }
 
     if ($UseEnginePath && ($FormatPath ne '' && ($FormatPath !~ /$EnginePath\/$/))) {
-        $FormatPath .= $EnginePath . '/' ;
+        $FormatPath .= $EnginePath ;
         unless (-d $FormatPath) {
             mkdir $FormatPath ;
         }
+        $FormatPath .= '/' ;
     }
 
     return $FormatPath;

@@ -907,7 +907,7 @@
 \def\doplaceregister[#1][#2]%
   {\iffirstargument
      \begingroup
-     \def\currentregister{#1}%
+     \edef\currentregister{#1}%
      \setupregister[\currentregister][#2]%
      \raggedright
      \startcolumns
@@ -928,7 +928,7 @@
 \def\docompleteregister[#1][#2]%
   {\iffirstargument
      \begingroup
-     \def\currentregister{#1}%
+     \edef\currentregister{#1}%
      % the expansion is needed because we don't want \v!'s in the tuo file (french)
      \expanded{\systemsuppliedchapter[\currentregister]{\noexpand\headtext{\currentregister}}}%
      \placeregister[\currentregister][#2]%

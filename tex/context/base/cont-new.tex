@@ -2239,8 +2239,7 @@
 %D For Ton. To be documented.
 
 \def\plaatsexterndocument[#1]%
-  {\def\doexternaldocument[##1][##2][##3]%
-     {\readlocfile{##2}\donothing\donothing}%
+  {\def\doexternaldocument##1##2##3{\readlocfile{##2}\donothing\donothing}%
    \getvalue{\v!file:::#1}}
 
 %D Far from complete.

@@ -297,7 +297,7 @@
      \next\midname
      \next\posname
    \dostring{\space\space}{/}{sequence}
-   \ifx\currenttype\empty \else
+   \ifx\currenttype\empty \else \ifx\asciia\asciib \else
      \dostring{\space\space}{}{arguments}
        \let\command         \nocommand
        \let\type            \notype
@@ -307,7 +307,7 @@
        \let\inheritvariables\doinheritvariables
        \newcounter\currentwhatever \currenttype
      \dostring{\space\space}{/}{arguments}
-   \fi
+   \fi \fi
    \dostring{}{/}{command}
 }%
    \egroup}

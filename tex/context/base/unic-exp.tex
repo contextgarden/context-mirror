@@ -31,12 +31,9 @@
        \writestatus{unicode}{expanding vector #1}%
        \setvalue{\@@univector\@@univector#1}{\expandedunivector{#1}}%
        \dorecurse{255}
-         {\@EA\ifx\csname\csname\@@univector#1\endcsname\recurselevel\endcsname
-            \unknownchar
+         {\@EA\ifx\csname\csname\@@univector#1\endcsname\recurselevel\endcsname\unknownchar
             % skip
           \else
-            % \@EAEAEA\let\@EA\@EA\csname\@@univector\@@univector#1:\recurselevel\endcsname
-            %   \csname\csname\@@univector#1\endcsname\recurselevel\endcsname
             \@EA\let\csname\@@univector\@@univector#1:\recurselevel\@EA\endcsname
               \csname\csname\@@univector#1\endcsname\recurselevel\endcsname
           \fi}%
@@ -66,6 +63,6 @@
 
 %D Let's use it:
 
-\expandunivector[0,1,2,32,33]
+\expandunivector[0,1,2,30,32,33]
 
 \protect \endinput

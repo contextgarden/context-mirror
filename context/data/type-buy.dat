@@ -98,3 +98,18 @@
 
 --en=? --ve=itc --co=kabel --re
 --en=? --ve=itc --co=kabel --so=itc/kabel --ma --in
+
+# monotype sabon
+
+--en=? --ve=monotype --co=sabon --re
+--en=? --ve=monotype --co=sabon --so=monotype/sabon --ma --in
+
+# linotype industria
+
+--en=? --ve=linotype --co=industria --re
+--en=? --ve=linotype --co=industria --so=linotype/industria --ma --in
+
+# itc stone
+
+--en=? --ve=itc --co=stone --re
+--en=? --ve=itc --co=stone --so=itc/stone --ma --in

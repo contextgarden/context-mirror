@@ -1,10 +1,10 @@
 <?xml version="1.0"?>
 
-<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context">
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="en" version="2004.11.17">
 
-<cd:command name="installalingua" file="lang-ini.tex">
+<cd:command name="installlanguage" file="lang-ini.tex">
   <cd:sequence>
-    <cd:string value="installalingua"/>
+    <cd:string value="installlanguage"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
@@ -56,9 +56,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="impostalingua" file="lang-ini.tex">
+<cd:command name="setuplanguage" file="lang-ini.tex">
   <cd:sequence>
-    <cd:string value="impostalingua"/>
+    <cd:string value="setuplanguage"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
@@ -72,14 +72,14 @@
       <cd:constant type=".."/>
     </cd:keywords>
     <cd:assignments list="yes">
-      <cd:inherit name="installalingua"/>
+      <cd:inherit name="installlanguage"/>
     </cd:assignments>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="lingua">
+<cd:command name="language">
   <cd:sequence>
-    <cd:string value="lingua"/>
+    <cd:string value="language"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
@@ -95,9 +95,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="linguaprincipale" file="lang-ini.tex">
+<cd:command name="mainlanguage" file="lang-ini.tex">
   <cd:sequence>
-    <cd:string value="linguaprincipale"/>
+    <cd:string value="mainlanguage"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
@@ -113,9 +113,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="traduci" file="lang-lab.tex">
+<cd:command name="translate" file="lang-lab.tex">
   <cd:sequence>
-    <cd:string value="traduci"/>
+    <cd:string value="translate"/>
   </cd:sequence>
   <cd:arguments>
     <cd:assignments list="yes">
@@ -126,9 +126,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="usacodifica" file="enco-ini.tex">
+<cd:command name="useencoding" file="enco-ini.tex">
   <cd:sequence>
-    <cd:string value="usacodifica"/>
+    <cd:string value="useencoding"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords list="yes">
@@ -137,9 +137,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="usaspecialita" file="spec-ini.tex">
+<cd:command name="usespecials" file="spec-ini.tex">
   <cd:sequence>
-    <cd:string value="usaspecialita"/>
+    <cd:string value="usespecials"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords list="yes">
@@ -149,9 +149,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="definiscioutput" file="spec-ini.tex">
+<cd:command name="defineoutput" file="spec-ini.tex">
   <cd:sequence>
-    <cd:string value="definiscioutput"/>
+    <cd:string value="defineoutput"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
@@ -163,9 +163,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="impostaoutput" file="spec-ini.tex">
+<cd:command name="setupoutput" file="spec-ini.tex">
   <cd:sequence>
-    <cd:string value="impostaoutput"/>
+    <cd:string value="setupoutput"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords list="yes">
@@ -174,9 +174,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="definisciambientefontdeltesto" file="font-ini.tex">
+<cd:command name="definebodyfontenvironment" file="font-ini.tex">
   <cd:sequence>
-    <cd:string value="definisciambientefontdeltesto"/>
+    <cd:string value="definebodyfontenvironment"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
@@ -211,34 +211,34 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="impostaambientefontdeltesto" file="font-ini.tex">
+<cd:command name="setupbodyfontenvironment" file="font-ini.tex">
   <cd:sequence>
-    <cd:string value="impostaambientefontdeltesto"/>
+    <cd:string value="setupbodyfontenvironment"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
-      <cd:inherit name="impostafontdeltesto"/>
+      <cd:inherit name="setupbodyfont"/>
     </cd:keywords>
     <cd:assignments list="yes">
-      <cd:inherit name="impostafontdeltesto"/>
+      <cd:inherit name="setupbodyfont"/>
     </cd:assignments>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="mostraambientefontdeltesto">
+<cd:command name="showbodyfontenvironment">
   <cd:sequence>
-    <cd:string value="mostraambientefontdeltesto"/>
+    <cd:string value="showbodyfontenvironment"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords list="yes">
-      <cd:inherit name="impostafontdeltesto"/>
+      <cd:inherit name="setupbodyfont"/>
     </cd:keywords>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="definiscifontdeltesto" file="font-ini.tex">
+<cd:command name="definebodyfont" file="font-ini.tex">
   <cd:sequence>
-    <cd:string value="definiscifontdeltesto"/>
+    <cd:string value="definebodyfont"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords list="yes">
@@ -299,20 +299,20 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="mostrafontdeltesto">
+<cd:command name="showbodyfont">
   <cd:sequence>
-    <cd:string value="mostrafontdeltesto"/>
+    <cd:string value="showbodyfont"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords list="yes">
-      <cd:inherit name="impostafontdeltesto"/>
+      <cd:inherit name="setupbodyfont"/>
     </cd:keywords>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="impostafontdeltesto">
+<cd:command name="setupbodyfont">
   <cd:sequence>
-    <cd:string value="impostafontdeltesto"/>
+    <cd:string value="setupbodyfont"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords list="yes">
@@ -335,9 +335,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="cambiaafontdeltesto" file="font-ini.tex">
+<cd:command name="switchtobodyfont" file="font-ini.tex">
   <cd:sequence>
-    <cd:string value="cambiaafontdeltesto"/>
+    <cd:string value="switchtobodyfont"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords list="yes">
@@ -351,9 +351,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="definiscifont" file="font-ini.tex">
+<cd:command name="definefont" file="font-ini.tex">
   <cd:sequence>
-    <cd:string value="definiscifont"/>
+    <cd:string value="definefont"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
@@ -365,9 +365,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="impostastrut" file="core-spa.tex">
+<cd:command name="setupstrut" file="core-spa.tex">
   <cd:sequence>
-    <cd:string value="impostastrut"/>
+    <cd:string value="setupstrut"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords optional="yes" list="yes">
@@ -379,9 +379,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="impostacolore" file="colo-ini.tex">
+<cd:command name="setupcolor" file="colo-ini.tex">
   <cd:sequence>
-    <cd:string value="impostacolore"/>
+    <cd:string value="setupcolor"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
@@ -390,9 +390,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="impostacolori" file="colo-ini.tex">
+<cd:command name="setupcolors" file="colo-ini.tex">
   <cd:sequence>
-    <cd:string value="impostacolori"/>
+    <cd:string value="setupcolors"/>
   </cd:sequence>
   <cd:arguments>
     <cd:assignments list="yes">
@@ -448,9 +448,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="definiscicolore" file="colo-ini.tex">
+<cd:command name="definecolor" file="colo-ini.tex">
   <cd:sequence>
-    <cd:string value="definiscicolore"/>
+    <cd:string value="definecolor"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
@@ -485,9 +485,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="colore" type="environment" file="colo-ini.tex">
+<cd:command name="color" type="environment" file="colo-ini.tex">
   <cd:sequence>
-    <cd:string value="colore"/>
+    <cd:string value="color"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
@@ -496,9 +496,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="colore" file="colo-ini.tex">
+<cd:command name="color" file="colo-ini.tex">
   <cd:sequence>
-    <cd:string value="colore"/>
+    <cd:string value="color"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
@@ -508,9 +508,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="coloregrigio" file="colo-ini.tex">
+<cd:command name="graycolor" file="colo-ini.tex">
   <cd:sequence>
-    <cd:string value="coloregrigio"/>
+    <cd:string value="graycolor"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
@@ -519,9 +519,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="mostracolore">
+<cd:command name="showcolor">
   <cd:sequence>
-    <cd:string value="mostracolore"/>
+    <cd:string value="showcolor"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
@@ -530,9 +530,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="definiscitavolozza" file="colo-ini.tex">
+<cd:command name="definepalet" file="colo-ini.tex">
   <cd:sequence>
-    <cd:string value="definiscitavolozza"/>
+    <cd:string value="definepalet"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
@@ -546,9 +546,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="impostatavolozza" file="colo-ini.tex">
+<cd:command name="setuppalet" file="colo-ini.tex">
   <cd:sequence>
-    <cd:string value="impostatavolozza"/>
+    <cd:string value="setuppalet"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
@@ -557,9 +557,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="definiscigruppocolori" file="colo-ini.tex">
+<cd:command name="definecolorgroup" file="colo-ini.tex">
   <cd:sequence>
-    <cd:string value="definiscigruppocolori"/>
+    <cd:string value="definecolorgroup"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
@@ -575,9 +575,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="mostratavolozza">
+<cd:command name="showpalet">
   <cd:sequence>
-    <cd:string value="mostratavolozza"/>
+    <cd:string value="showpalet"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
@@ -592,9 +592,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="mostragruppocolori">
+<cd:command name="showcolorgroup">
   <cd:sequence>
-    <cd:string value="mostragruppocolori"/>
+    <cd:string value="showcolorgroup"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
@@ -610,9 +610,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="confrontatavolozza">
+<cd:command name="comparepalet">
   <cd:sequence>
-    <cd:string value="confrontatavolozza"/>
+    <cd:string value="comparepalet"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
@@ -621,9 +621,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="confrontagruppocolori">
+<cd:command name="comparecolorgroup">
   <cd:sequence>
-    <cd:string value="confrontagruppocolori"/>
+    <cd:string value="comparecolorgroup"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
@@ -632,29 +632,29 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="mostramakeup" file="supp-vis.tex">
+<cd:command name="showmakeup" file="supp-vis.tex">
   <cd:sequence>
-    <cd:string value="mostramakeup"/>
+    <cd:string value="showmakeup"/>
   </cd:sequence>
 </cd:command>
 
-<cd:command name="definiscitype" file="core-ver.tex">
+<cd:command name="definetype" file="core-ver.tex">
   <cd:sequence>
-    <cd:string value="definiscitype"/>
+    <cd:string value="definetype"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
       <cd:constant type="cd:name"/>
     </cd:keywords>
     <cd:assignments list="yes">
-      <cd:inherit name="impostatype"/>
+      <cd:inherit name="setuptype"/>
     </cd:assignments>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="impostatype" file="core-ver.tex">
+<cd:command name="setuptype" file="core-ver.tex">
   <cd:sequence>
-    <cd:string value="impostatype"/>
+    <cd:string value="setuptype"/>
   </cd:sequence>
   <cd:arguments>
     <cd:assignments list="yes">
@@ -720,9 +720,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="definiscityping" file="core-ver.tex">
+<cd:command name="definetyping" file="core-ver.tex">
   <cd:sequence>
-    <cd:string value="definiscityping"/>
+    <cd:string value="definetyping"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
@@ -731,14 +731,14 @@
       <cd:constant type="cd:name"/>
     </cd:keywords>
     <cd:assignments list="yes">
-      <cd:inherit name="impostatyping"/>
+      <cd:inherit name="setuptyping"/>
     </cd:assignments>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="impostatyping" file="core-ver.tex">
+<cd:command name="setuptyping" file="core-ver.tex">
   <cd:sequence>
-    <cd:string value="impostatyping"/>
+    <cd:string value="setuptyping"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords optional="yes">
@@ -838,8 +838,6 @@
   <cd:sequence>
     <cd:variable value="typing"/>
   </cd:sequence>
-  <cd:arguments>
-  </cd:arguments>
 </cd:command>
 
 <cd:command name="typefile" file="verb-ini.tex">
@@ -854,9 +852,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="impostanotepdp" file="core-not.tex">
+<cd:command name="setupfootnotes" file="core-not.tex">
   <cd:sequence>
-    <cd:string value="impostanotepdp"/>
+    <cd:string value="setupfootnotes"/>
   </cd:sequence>
   <cd:arguments>
     <cd:assignments list="yes">
@@ -957,25 +955,25 @@
       <cd:parameter name="fattore">
         <cd:constant type="cd:number"/>
       </cd:parameter>
-      <cd:inherit name="incorniciato"/>
+      <cd:inherit name="framed"/>
     </cd:assignments>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="impostadefinizionenotepdp" file="core-not.tex">
+<cd:command name="setupfootnotedefinition" file="core-not.tex">
   <cd:sequence>
-    <cd:string value="impostadefinizionenotepdp"/>
+    <cd:string value="setupfootnotedefinition"/>
   </cd:sequence>
   <cd:arguments>
     <cd:assignments list="yes">
-      <cd:inherit name="definiscidescrizione"/>
+      <cd:inherit name="definedescription"/>
     </cd:assignments>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="notapdp" file="core-not.tex">
+<cd:command name="footnote" file="core-not.tex">
   <cd:sequence>
-    <cd:string value="notapdp"/>
+    <cd:string value="footnote"/>
   </cd:sequence>
   <cd:arguments>
     <cd:reference optional="yes"/>
@@ -983,9 +981,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="testonotapdp" file="core-not.tex">
+<cd:command name="footnotetext" file="core-not.tex">
   <cd:sequence>
-    <cd:string value="testonotapdp"/>
+    <cd:string value="footnotetext"/>
   </cd:sequence>
   <cd:arguments>
     <cd:reference optional="yes"/>
@@ -993,9 +991,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="nota" file="core-not.tex">
+<cd:command name="note" file="core-not.tex">
   <cd:sequence>
-    <cd:string value="nota"/>
+    <cd:string value="note"/>
   </cd:sequence>
   <cd:arguments>
     <cd:reference interactive="yes"/>
@@ -1006,35 +1004,33 @@
   <cd:sequence>
     <cd:string value="localfootnotes"/>
   </cd:sequence>
-  <cd:arguments>
-  </cd:arguments>
 </cd:command>
 
-<cd:command name="mettinotepdplocali" file="core-not.tex">
+<cd:command name="placelocalfootnotes" file="core-not.tex">
   <cd:sequence>
-    <cd:string value="mettinotepdplocali"/>
+    <cd:string value="placelocalfootnotes"/>
   </cd:sequence>
   <cd:arguments>
     <cd:assignments optional="yes" list="yes">
-      <cd:inherit name="impostanotepdp"/>
+      <cd:inherit name="setupfootnotes"/>
     </cd:assignments>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="mettinotepdp" file="core-not.tex">
+<cd:command name="placefootnotes" file="core-not.tex">
   <cd:sequence>
-    <cd:string value="mettinotepdp"/>
+    <cd:string value="placefootnotes"/>
   </cd:sequence>
   <cd:arguments>
     <cd:assignments optional="yes" list="yes">
-      <cd:inherit name="impostanotepdp"/>
+      <cd:inherit name="setupfootnotes"/>
     </cd:assignments>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="impostasottolinea" file="core-fnt.tex">
+<cd:command name="setupunderbar" file="core-fnt.tex">
   <cd:sequence>
-    <cd:string value="impostasottolinea"/>
+    <cd:string value="setupunderbar"/>
   </cd:sequence>
   <cd:arguments>
     <cd:assignments list="yes">
@@ -1059,117 +1055,117 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="sottolinea" file="core-fnt.tex">
+<cd:command name="underbar" file="core-fnt.tex">
   <cd:sequence>
-    <cd:string value="sottolinea"/>
+    <cd:string value="underbar"/>
   </cd:sequence>
   <cd:arguments>
     <cd:content/>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="sottolinee" file="core-fnt.tex">
+<cd:command name="underbars" file="core-fnt.tex">
   <cd:sequence>
-    <cd:string value="sottolinee"/>
+    <cd:string value="underbars"/>
   </cd:sequence>
   <cd:arguments>
     <cd:word list="yes"/>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="sopralinea" file="core-fnt.tex">
+<cd:command name="overbar" file="core-fnt.tex">
   <cd:sequence>
-    <cd:string value="sopralinea"/>
+    <cd:string value="overbar"/>
   </cd:sequence>
   <cd:arguments>
     <cd:content/>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="sopralinee" file="core-fnt.tex">
+<cd:command name="overbars" file="core-fnt.tex">
   <cd:sequence>
-    <cd:string value="sopralinee"/>
+    <cd:string value="overbars"/>
   </cd:sequence>
   <cd:arguments>
     <cd:word list="yes"/>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="sbarrato" file="core-fnt.tex">
+<cd:command name="overstrike" file="core-fnt.tex">
   <cd:sequence>
-    <cd:string value="sbarrato"/>
+    <cd:string value="overstrike"/>
   </cd:sequence>
   <cd:arguments>
     <cd:content/>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="sbarrati" file="core-fnt.tex">
+<cd:command name="overstrikes" file="core-fnt.tex">
   <cd:sequence>
-    <cd:string value="sbarrati"/>
+    <cd:string value="overstrikes"/>
   </cd:sequence>
   <cd:arguments>
     <cd:word list="yes"/>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="numeriromani" file="core-con.tex">
+<cd:command name="romannumerals" file="core-con.tex">
   <cd:sequence>
-    <cd:string value="numeriromani"/>
+    <cd:string value="romannumerals"/>
   </cd:sequence>
   <cd:arguments>
     <cd:content/>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="Numeriromani" file="core-con.tex">
+<cd:command name="Romannumerals" file="core-con.tex">
   <cd:sequence>
-    <cd:string value="Numeriromani"/>
+    <cd:string value="Romannumerals"/>
   </cd:sequence>
   <cd:arguments>
     <cd:content/>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="numeri" file="core-con.tex">
+<cd:command name="numbers" file="core-con.tex">
   <cd:sequence>
-    <cd:string value="numeri"/>
+    <cd:string value="numbers"/>
   </cd:sequence>
   <cd:arguments>
     <cd:content/>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="lettera" file="core-con.tex">
+<cd:command name="character" file="core-con.tex">
   <cd:sequence>
-    <cd:string value="lettera"/>
+    <cd:string value="character"/>
   </cd:sequence>
   <cd:arguments>
     <cd:content/>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="Lettera" file="core-con.tex">
+<cd:command name="Character" file="core-con.tex">
   <cd:sequence>
-    <cd:string value="Lettera"/>
+    <cd:string value="Character"/>
   </cd:sequence>
   <cd:arguments>
     <cd:content/>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="lettere" file="core-con.tex">
+<cd:command name="characters" file="core-con.tex">
   <cd:sequence>
-    <cd:string value="lettere"/>
+    <cd:string value="characters"/>
   </cd:sequence>
   <cd:arguments>
     <cd:content/>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="Lettere" file="core-con.tex">
+<cd:command name="Characters" file="core-con.tex">
   <cd:sequence>
-    <cd:string value="Lettere"/>
+    <cd:string value="Characters"/>
   </cd:sequence>
   <cd:arguments>
     <cd:content/>
@@ -1185,45 +1181,45 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="mese" file="core-con.tex">
+<cd:command name="month" file="core-con.tex">
   <cd:sequence>
-    <cd:string value="mese"/>
+    <cd:string value="month"/>
   </cd:sequence>
   <cd:arguments>
     <cd:content/>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="MESE" file="core-con.tex">
+<cd:command name="MONTH" file="core-con.tex">
   <cd:sequence>
-    <cd:string value="MESE"/>
+    <cd:string value="MONTH"/>
   </cd:sequence>
   <cd:arguments>
     <cd:content/>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="giornosettimana" file="core-con.tex">
+<cd:command name="weekday" file="core-con.tex">
   <cd:sequence>
-    <cd:string value="giornosettimana"/>
+    <cd:string value="weekday"/>
   </cd:sequence>
   <cd:arguments>
     <cd:content/>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="GIORNOSETTIMANA" file="core-con.tex">
+<cd:command name="WEEKDAY" file="core-con.tex">
   <cd:sequence>
-    <cd:string value="GIORNOSETTIMANA"/>
+    <cd:string value="WEEKDAY"/>
   </cd:sequence>
   <cd:arguments>
     <cd:content/>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="impostamaiuscole" file="core-fnt.tex">
+<cd:command name="setupcapitals" file="core-fnt.tex">
   <cd:sequence>
-    <cd:string value="impostamaiuscole"/>
+    <cd:string value="setupcapitals"/>
   </cd:sequence>
   <cd:arguments>
     <cd:assignments list="yes">
@@ -1284,54 +1280,54 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="PAROLA" file="core-fnt.tex">
+<cd:command name="WORD" file="core-fnt.tex">
   <cd:sequence>
-    <cd:string value="PAROLA"/>
+    <cd:string value="WORD"/>
   </cd:sequence>
   <cd:arguments>
     <cd:word/>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="PAROLE" file="core-fnt.tex">
+<cd:command name="WORDS" file="core-fnt.tex">
   <cd:sequence>
-    <cd:string value="PAROLE"/>
+    <cd:string value="WORDS"/>
   </cd:sequence>
   <cd:arguments>
     <cd:word list="yes"/>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="Parola" file="core-fnt.tex">
+<cd:command name="Word" file="core-fnt.tex">
   <cd:sequence>
-    <cd:string value="Parola"/>
+    <cd:string value="Word"/>
   </cd:sequence>
   <cd:arguments>
     <cd:word/>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="Parole" file="core-fnt.tex">
+<cd:command name="Words" file="core-fnt.tex">
   <cd:sequence>
-    <cd:string value="Parole"/>
+    <cd:string value="Words"/>
   </cd:sequence>
   <cd:arguments>
     <cd:word list="yes"/>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="stirato" file="core-fnt.tex">
+<cd:command name="stretched" file="core-fnt.tex">
   <cd:sequence>
-    <cd:string value="stirato"/>
+    <cd:string value="stretched"/>
   </cd:sequence>
   <cd:arguments>
     <cd:word/>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="definiscisimbolo" file="symb-ini.tex">
+<cd:command name="definesymbol" file="symb-ini.tex">
   <cd:sequence>
-    <cd:string value="definiscisimbolo"/>
+    <cd:string value="definesymbol"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
@@ -1343,9 +1339,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="definiscifigurasimbolo" file="symb-ini.tex">
+<cd:command name="definefiguresymbol" file="symb-ini.tex">
   <cd:sequence>
-    <cd:string value="definiscifigurasimbolo"/>
+    <cd:string value="definefiguresymbol"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
@@ -1355,14 +1351,14 @@
       <cd:constant type="cd:text"/>
     </cd:keywords>
     <cd:assignments optional="yes" list="yes">
-      <cd:inherit name="figuraesterna"/>
+      <cd:inherit name="externalfigure"/>
     </cd:assignments>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="simbolo" file="symb-ini.tex">
+<cd:command name="symbol" file="symb-ini.tex">
   <cd:sequence>
-    <cd:string value="simbolo"/>
+    <cd:string value="symbol"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords optional="yes">
@@ -1385,9 +1381,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="impostasetsimboli" file="symb-ini.tex">
+<cd:command name="setupsymbolset" file="symb-ini.tex">
   <cd:sequence>
-    <cd:string value="impostasetsimboli"/>
+    <cd:string value="setupsymbolset"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
@@ -1396,9 +1392,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="usasimboli" file="symb-ini.tex">
+<cd:command name="usesymbols" file="symb-ini.tex">
   <cd:sequence>
-    <cd:string value="usasimboli"/>
+    <cd:string value="usesymbols"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
@@ -1407,9 +1403,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="mostrasetsimboli">
+<cd:command name="showsymbolset">
   <cd:sequence>
-    <cd:string value="mostrasetsimboli"/>
+    <cd:string value="showsymbolset"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
@@ -1418,9 +1414,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="definisciconversione" file="core-con.tex">
+<cd:command name="defineconversion" file="core-con.tex">
   <cd:sequence>
-    <cd:string value="definisciconversione"/>
+    <cd:string value="defineconversion"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
@@ -1433,9 +1429,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="convertinumero" file="core-con.tex">
+<cd:command name="convertnumber" file="core-con.tex">
   <cd:sequence>
-    <cd:string value="convertinumero"/>
+    <cd:string value="convertnumber"/>
   </cd:sequence>
   <cd:arguments>
     <cd:content/>
@@ -1443,9 +1439,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="impostatestointestazioni" file="lang-lab.tex">
+<cd:command name="setupheadtext" file="lang-lab.tex">
   <cd:sequence>
-    <cd:string value="impostatestointestazioni"/>
+    <cd:string value="setupheadtext"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords optional="yes">
@@ -1466,9 +1462,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="impostatestoetichette" file="lang-lab.tex">
+<cd:command name="setuplabeltext" file="lang-lab.tex">
   <cd:sequence>
-    <cd:string value="impostatestoetichette"/>
+    <cd:string value="setuplabeltext"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords optional="yes">
@@ -1489,27 +1485,27 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="testoinstestazioni" file="lang-lab.tex">
+<cd:command name="headtext" file="lang-lab.tex">
   <cd:sequence>
-    <cd:string value="testoinstestazioni"/>
+    <cd:string value="headtext"/>
   </cd:sequence>
   <cd:arguments>
     <cd:content/>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="testoetichetta">
+<cd:command name="labeltext">
   <cd:sequence>
-    <cd:string value="testoetichetta"/>
+    <cd:string value="labeltext"/>
   </cd:sequence>
   <cd:arguments>
     <cd:content/>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="impostalineemargine" file="core-rul.tex">
+<cd:command name="setupmarginrules" file="core-rul.tex">
   <cd:sequence>
-    <cd:string value="impostalineemargine"/>
+    <cd:string value="setupmarginrules"/>
   </cd:sequence>
   <cd:arguments>
     <cd:assignments>
@@ -1523,9 +1519,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="lineamargine" type="environment">
+<cd:command name="marginrule" type="environment">
   <cd:sequence>
-    <cd:string value="lineamargine"/>
+    <cd:string value="marginrule"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
@@ -1534,9 +1530,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="lineamargine">
+<cd:command name="marginrule">
   <cd:sequence>
-    <cd:string value="lineamargine"/>
+    <cd:string value="marginrule"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
@@ -1546,9 +1542,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="impostaampiezzariga" file="core-rul.tex">
+<cd:command name="setuplinewidth" file="core-rul.tex">
   <cd:sequence>
-    <cd:string value="impostaampiezzariga"/>
+    <cd:string value="setuplinewidth"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
@@ -1557,9 +1553,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="impostaincorniciato" file="core-rul.tex">
+<cd:command name="setupframed" file="core-rul.tex">
   <cd:sequence>
-    <cd:string value="impostaincorniciato"/>
+    <cd:string value="setupframed"/>
   </cd:sequence>
   <cd:arguments>
     <cd:assignments list="yes">
@@ -1701,44 +1697,44 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="incorniciato" file="core-rul.tex">
+<cd:command name="framed" file="core-rul.tex">
   <cd:sequence>
-    <cd:string value="incorniciato"/>
+    <cd:string value="framed"/>
   </cd:sequence>
   <cd:arguments>
     <cd:assignments optional="yes" list="yes">
-      <cd:inherit name="impostaincorniciato"/>
+      <cd:inherit name="setupframed"/>
     </cd:assignments>
     <cd:content/>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="circondato" file="core-rul.tex">
+<cd:command name="inframed" file="core-rul.tex">
   <cd:sequence>
-    <cd:string value="circondato"/>
+    <cd:string value="inframed"/>
   </cd:sequence>
   <cd:arguments>
     <cd:assignments optional="yes" list="yes">
-      <cd:inherit name="impostaincorniciato"/>
+      <cd:inherit name="setupframed"/>
     </cd:assignments>
     <cd:content/>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="lineesottili" file="core-rul.tex">
+<cd:command name="thinrules" file="core-rul.tex">
   <cd:sequence>
-    <cd:string value="lineesottili"/>
+    <cd:string value="thinrules"/>
   </cd:sequence>
   <cd:arguments>
     <cd:assignments optional="yes">
-      <cd:inherit name="impostalineesottili"/>
+      <cd:inherit name="setupthinrules"/>
     </cd:assignments>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="impostalineesottili" file="core-rul.tex">
+<cd:command name="setupthinrules" file="core-rul.tex">
   <cd:sequence>
-    <cd:string value="impostalineesottili"/>
+    <cd:string value="setupthinrules"/>
   </cd:sequence>
   <cd:arguments>
     <cd:assignments>
@@ -1795,49 +1791,49 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="capello" file="core-rul.tex">
+<cd:command name="hairline" file="core-rul.tex">
   <cd:sequence>
-    <cd:string value="capello"/>
+    <cd:string value="hairline"/>
   </cd:sequence>
 </cd:command>
 
-<cd:command name="lineasottile" file="core-rul.tex">
+<cd:command name="thinrule" file="core-rul.tex">
   <cd:sequence>
-    <cd:string value="lineasottile"/>
+    <cd:string value="thinrule"/>
   </cd:sequence>
 </cd:command>
 
-<cd:command name="definiscitestoincorniciato" file="core-rul.tex">
+<cd:command name="defineframedtext" file="core-rul.tex">
   <cd:sequence>
-    <cd:string value="definiscitestoincorniciato"/>
-  </cd:sequence>
-  <cd:arguments>
-    <cd:keywords>
-      <cd:constant type="cd:name"/>
-    </cd:keywords>
-    <cd:assignments optional="yes" list="yes">
-      <cd:inherit name="impostatestiincorniciati"/>
-    </cd:assignments>
-  </cd:arguments>
-</cd:command>
-
-<cd:command name="definisciincorniciato" file="core-rul.tex">
-  <cd:sequence>
-    <cd:string value="definisciincorniciato"/>
+    <cd:string value="defineframedtext"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
       <cd:constant type="cd:name"/>
     </cd:keywords>
     <cd:assignments optional="yes" list="yes">
-      <cd:inherit name="impostatestiincorniciati"/>
+      <cd:inherit name="setupframedtexts"/>
     </cd:assignments>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="impostatestiincorniciati" file="core-rul.tex">
+<cd:command name="defineframed" file="core-rul.tex">
   <cd:sequence>
-    <cd:string value="impostatestiincorniciati"/>
+    <cd:string value="defineframed"/>
+  </cd:sequence>
+  <cd:arguments>
+    <cd:keywords>
+      <cd:constant type="cd:name"/>
+    </cd:keywords>
+    <cd:assignments optional="yes" list="yes">
+      <cd:inherit name="setupframedtexts"/>
+    </cd:assignments>
+  </cd:arguments>
+</cd:command>
+
+<cd:command name="setupframedtexts" file="core-rul.tex">
+  <cd:sequence>
+    <cd:string value="setupframedtexts"/>
   </cd:sequence>
   <cd:arguments>
     <cd:assignments list="yes">
@@ -1891,7 +1887,7 @@
         <cd:constant type="centro"/>
         <cd:constant type="nessuno"/>
       </cd:parameter>
-      <cd:inherit name="impostaincorniciato"/>
+      <cd:inherit name="setupframed"/>
     </cd:assignments>
   </cd:arguments>
 </cd:command>
@@ -1908,7 +1904,7 @@
       <cd:constant type="nessuno"/>
     </cd:keywords>
     <cd:assignments optional="yes" list="yes">
-      <cd:inherit name="impostatestiincorniciati"/>
+      <cd:inherit name="setupframedtexts"/>
     </cd:assignments>
   </cd:arguments>
 </cd:command>
@@ -1919,28 +1915,26 @@
   </cd:sequence>
   <cd:arguments>
     <cd:assignments optional="yes" list="yes">
-      <cd:inherit name="impostatestiincorniciati"/>
+      <cd:inherit name="setupframedtexts"/>
     </cd:assignments>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="sfondo" type="environment">
+<cd:command name="background" type="environment">
   <cd:sequence>
-    <cd:string value="sfondo"/>
-  </cd:sequence>
-  <cd:arguments>
-  </cd:arguments>
-</cd:command>
-
-<cd:command name="sfondo">
-  <cd:sequence>
-    <cd:string value="sfondo"/>
+    <cd:string value="background"/>
   </cd:sequence>
 </cd:command>
 
-<cd:command name="impostasfondo" file="core-rul.tex">
+<cd:command name="background">
   <cd:sequence>
-    <cd:string value="impostasfondo"/>
+    <cd:string value="background"/>
+  </cd:sequence>
+</cd:command>
+
+<cd:command name="setupbackground" file="core-rul.tex">
+  <cd:sequence>
+    <cd:string value="setupbackground"/>
   </cd:sequence>
   <cd:arguments>
     <cd:assignments list="yes">
@@ -1966,40 +1960,40 @@
         <cd:constant type="inizia"/>
         <cd:constant type="termina"/>
       </cd:parameter>
-      <cd:inherit name="impostaincorniciato"/>
+      <cd:inherit name="setupframed"/>
     </cd:assignments>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="lineeriempimento">
+<cd:command name="fillinrules">
   <cd:sequence>
-    <cd:string value="lineeriempimento"/>
+    <cd:string value="fillinrules"/>
   </cd:sequence>
   <cd:arguments>
     <cd:assignments optional="yes" list="yes">
-      <cd:inherit name="impostalineeriempimento"/>
+      <cd:inherit name="setupfillinrules"/>
     </cd:assignments>
     <cd:content/>
     <cd:content optional="yes"/>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="testoriempimento">
+<cd:command name="fillintext">
   <cd:sequence>
-    <cd:string value="testoriempimento"/>
+    <cd:string value="fillintext"/>
   </cd:sequence>
   <cd:arguments>
     <cd:assignments optional="yes" list="yes">
-      <cd:inherit name="impostalineeriempimento"/>
+      <cd:inherit name="setupfillinrules"/>
     </cd:assignments>
     <cd:content/>
     <cd:content optional="yes"/>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="impostalineeriempimento" file="core-rul.tex">
+<cd:command name="setupfillinrules" file="core-rul.tex">
   <cd:sequence>
-    <cd:string value="impostalineeriempimento"/>
+    <cd:string value="setupfillinrules"/>
   </cd:sequence>
   <cd:arguments>
     <cd:assignments list="yes">
@@ -2042,21 +2036,21 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="rigariempimento">
+<cd:command name="fillinline">
   <cd:sequence>
-    <cd:string value="rigariempimento"/>
+    <cd:string value="fillinline"/>
   </cd:sequence>
   <cd:arguments>
     <cd:assignments optional="yes" list="yes">
-      <cd:inherit name="impostarigheriempimento"/>
+      <cd:inherit name="setupfillinlines"/>
     </cd:assignments>
     <cd:nothing/>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="impostarigheriempimento" file="core-rul.tex">
+<cd:command name="setupfillinlines" file="core-rul.tex">
   <cd:sequence>
-    <cd:string value="impostarigheriempimento"/>
+    <cd:string value="setupfillinlines"/>
   </cd:sequence>
   <cd:arguments>
     <cd:assignments list="yes">
@@ -2079,9 +2073,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="impostalineetesto" file="core-rul.tex">
+<cd:command name="setuptextrules" file="core-rul.tex">
   <cd:sequence>
-    <cd:string value="impostalineetesto"/>
+    <cd:string value="setuptextrules"/>
   </cd:sequence>
   <cd:arguments>
     <cd:assignments list="yes">
@@ -2131,9 +2125,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="lineatesto" file="core-rul.tex">
+<cd:command name="textrule" file="core-rul.tex">
   <cd:sequence>
-    <cd:string value="lineatesto"/>
+    <cd:string value="textrule"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords optional="yes">
@@ -2144,9 +2138,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="lineatesto" type="environment" file="core-rul.tex">
+<cd:command name="textrule" type="environment" file="core-rul.tex">
   <cd:sequence>
-    <cd:string value="lineatesto"/>
+    <cd:string value="textrule"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords optional="yes">
@@ -2157,31 +2151,31 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="lineanera" file="core-rul.tex">
+<cd:command name="blackrule" file="core-rul.tex">
   <cd:sequence>
-    <cd:string value="lineanera"/>
+    <cd:string value="blackrule"/>
   </cd:sequence>
   <cd:arguments>
     <cd:assignments optional="yes" list="yes">
-      <cd:inherit name="impostalineenere"/>
+      <cd:inherit name="setupblackrules"/>
     </cd:assignments>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="lineenere" file="core-rul.tex">
+<cd:command name="blackrules" file="core-rul.tex">
   <cd:sequence>
-    <cd:string value="lineenere"/>
+    <cd:string value="blackrules"/>
   </cd:sequence>
   <cd:arguments>
     <cd:assignments list="yes">
-      <cd:inherit name="impostalineenere"/>
+      <cd:inherit name="setupblackrules"/>
     </cd:assignments>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="impostalineenere" file="core-rul.tex">
+<cd:command name="setupblackrules" file="core-rul.tex">
   <cd:sequence>
-    <cd:string value="impostalineenere"/>
+    <cd:string value="setupblackrules"/>
   </cd:sequence>
   <cd:arguments>
     <cd:assignments list="yes">
@@ -2211,9 +2205,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="definiscisovrapposizione" file="core-rul.tex">
+<cd:command name="defineoverlay" file="core-rul.tex">
   <cd:sequence>
-    <cd:string value="definiscisovrapposizione"/>
+    <cd:string value="defineoverlay"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords list="yes">
@@ -2225,9 +2219,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="usamodulo">
+<cd:command name="usemodule">
   <cd:sequence>
-    <cd:string value="usamodulo"/>
+    <cd:string value="usemodule"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords list="yes">
@@ -2236,9 +2230,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="reimposta" file="core-num.tex">
+<cd:command name="reset" file="core-num.tex">
   <cd:sequence>
-    <cd:string value="reimposta"/>
+    <cd:string value="reset"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords list="yes">
@@ -2247,9 +2241,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="notest">
+<cd:command name="donttest">
   <cd:sequence>
-    <cd:string value="notest"/>
+    <cd:string value="donttest"/>
   </cd:sequence>
 </cd:command>
 
@@ -2257,13 +2251,11 @@
   <cd:sequence>
     <cd:string value="localenvironment"/>
   </cd:sequence>
-  <cd:arguments>
-  </cd:arguments>
 </cd:command>
 
-<cd:command name="impostasistema" file="core-sys.tex">
+<cd:command name="setupsystem" file="core-sys.tex">
   <cd:sequence>
-    <cd:string value="impostasistema"/>
+    <cd:string value="setupsystem"/>
   </cd:sequence>
   <cd:arguments>
     <cd:assignments list="yes">
@@ -2299,27 +2291,27 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="ped" file="core-fnt.tex">
+<cd:command name="low" file="core-fnt.tex">
   <cd:sequence>
-    <cd:string value="ped"/>
+    <cd:string value="low"/>
   </cd:sequence>
   <cd:arguments>
     <cd:content/>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="ap" file="core-fnt.tex">
+<cd:command name="high" file="core-fnt.tex">
   <cd:sequence>
-    <cd:string value="ap"/>
+    <cd:string value="high"/>
   </cd:sequence>
   <cd:arguments>
     <cd:content/>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="pedap" file="core-fnt.tex">
+<cd:command name="lohi" file="core-fnt.tex">
   <cd:sequence>
-    <cd:string value="pedap"/>
+    <cd:string value="lohi"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords optional="yes">
@@ -2330,9 +2322,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="mostracornice">
+<cd:command name="showframe">
   <cd:sequence>
-    <cd:string value="mostracornice"/>
+    <cd:string value="showframe"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords optional="yes">
@@ -2343,60 +2335,45 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="allineasinistra" file="core-spa.tex">
+<cd:command name="leftaligned" file="core-spa.tex">
   <cd:sequence>
-    <cd:string value="allineasinistra"/>
+    <cd:string value="leftaligned"/>
   </cd:sequence>
   <cd:arguments>
     <cd:content/>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="allineadestra" file="core-spa.tex">
+<cd:command name="rightaligned" file="core-spa.tex">
   <cd:sequence>
-    <cd:string value="allineadestra"/>
+    <cd:string value="rightaligned"/>
   </cd:sequence>
   <cd:arguments>
     <cd:content/>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="allineacentro" file="core-spa.tex">
+<cd:command name="midaligned" file="core-spa.tex">
   <cd:sequence>
-    <cd:string value="allineacentro"/>
+    <cd:string value="midaligned"/>
   </cd:sequence>
   <cd:arguments>
     <cd:content/>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="paroladestra" file="core-spa.tex">
+<cd:command name="wordright" file="core-spa.tex">
   <cd:sequence>
-    <cd:string value="paroladestra"/>
+    <cd:string value="wordright"/>
   </cd:sequence>
   <cd:arguments>
     <cd:content/>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="inmargine" file="core-sec.tex">
+<cd:command name="inmargin" file="core-sec.tex">
   <cd:sequence>
-    <cd:string value="inmargine"/>
-  </cd:sequence>
-  <cd:arguments>
-    <cd:keywords optional="yes">
-      <cd:constant type="+"/>
-      <cd:constant type="-"/>
-      <cd:constant type="basso"/>
-    </cd:keywords>
-    <cd:reference optional="yes"/>
-    <cd:content/>
-  </cd:arguments>
-</cd:command>
-
-<cd:command name="inaltromargine" file="page-mar.tex">
-  <cd:sequence>
-    <cd:string value="inaltromargine"/>
+    <cd:string value="inmargin"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords optional="yes">
@@ -2409,9 +2386,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="insinistra">
+<cd:command name="inothermargin" file="page-mar.tex">
   <cd:sequence>
-    <cd:string value="insinistra"/>
+    <cd:string value="inothermargin"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords optional="yes">
@@ -2424,9 +2401,24 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="indestra">
+<cd:command name="inleft">
   <cd:sequence>
-    <cd:string value="indestra"/>
+    <cd:string value="inleft"/>
+  </cd:sequence>
+  <cd:arguments>
+    <cd:keywords optional="yes">
+      <cd:constant type="+"/>
+      <cd:constant type="-"/>
+      <cd:constant type="basso"/>
+    </cd:keywords>
+    <cd:reference optional="yes"/>
+    <cd:content/>
+  </cd:arguments>
+</cd:command>
+
+<cd:command name="inright">
+  <cd:sequence>
+    <cd:string value="inright"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords optional="yes">
@@ -2469,33 +2461,33 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="colonna">
+<cd:command name="column">
   <cd:sequence>
-    <cd:string value="colonna"/>
+    <cd:string value="column"/>
   </cd:sequence>
 </cd:command>
 
-<cd:command name="mostrastruts" file="core-spa.tex">
+<cd:command name="showstruts" file="core-spa.tex">
   <cd:sequence>
-    <cd:string value="mostrastruts"/>
+    <cd:string value="showstruts"/>
   </cd:sequence>
 </cd:command>
 
-<cd:command name="mostraimpostazioni">
+<cd:command name="showsetups">
   <cd:sequence>
-    <cd:string value="mostraimpostazioni"/>
+    <cd:string value="showsetups"/>
   </cd:sequence>
 </cd:command>
 
-<cd:command name="mostralyout">
+<cd:command name="showlayout">
   <cd:sequence>
-    <cd:string value="mostralyout"/>
+    <cd:string value="showlayout"/>
   </cd:sequence>
 </cd:command>
 
-<cd:command name="testoinmargine" file="page-mar.tex">
+<cd:command name="margintext" file="page-mar.tex">
   <cd:sequence>
-    <cd:string value="testoinmargine"/>
+    <cd:string value="margintext"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords optional="yes">
@@ -2508,9 +2500,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="impostablocchimargine" file="page-flt.tex">
+<cd:command name="setupmarginblocks" file="page-flt.tex">
   <cd:sequence>
-    <cd:string value="impostablocchimargine"/>
+    <cd:string value="setupmarginblocks"/>
   </cd:sequence>
   <cd:arguments>
     <cd:assignments list="yes">
@@ -2568,8 +2560,6 @@
   <cd:sequence>
     <cd:string value="marginblock"/>
   </cd:sequence>
-  <cd:arguments>
-  </cd:arguments>
 </cd:command>
 
 <cd:command name="part" file="core-sec.tex">
@@ -2683,9 +2673,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="al">
+<cd:command name="at">
   <cd:sequence>
-    <cd:string value="al"/>
+    <cd:string value="at"/>
   </cd:sequence>
   <cd:arguments>
     <cd:content interactive="yes"/>
@@ -2694,9 +2684,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="intorno">
+<cd:command name="about">
   <cd:sequence>
-    <cd:string value="intorno"/>
+    <cd:string value="about"/>
   </cd:sequence>
   <cd:arguments>
     <cd:content interactive="yes"/>
@@ -2704,9 +2694,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="daqualcheparte" file="core-ref.tex">
+<cd:command name="somewhere" file="core-ref.tex">
   <cd:sequence>
-    <cd:string value="daqualcheparte"/>
+    <cd:string value="somewhere"/>
   </cd:sequence>
   <cd:arguments>
     <cd:content/>
@@ -2715,18 +2705,18 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="apagina" file="core-ref.tex">
+<cd:command name="atpage" file="core-ref.tex">
   <cd:sequence>
-    <cd:string value="apagina"/>
+    <cd:string value="atpage"/>
   </cd:sequence>
   <cd:arguments>
     <cd:reference/>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="rif" file="core-ref.tex">
+<cd:command name="ref" file="core-ref.tex">
   <cd:sequence>
-    <cd:string value="rif"/>
+    <cd:string value="ref"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
@@ -2740,9 +2730,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="riferimentotesto" file="core-ref.tex">
+<cd:command name="textreference" file="core-ref.tex">
   <cd:sequence>
-    <cd:string value="riferimentotesto"/>
+    <cd:string value="textreference"/>
   </cd:sequence>
   <cd:arguments>
     <cd:reference/>
@@ -2750,18 +2740,18 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="riferimentopagina" file="core-ref.tex">
+<cd:command name="pagereference" file="core-ref.tex">
   <cd:sequence>
-    <cd:string value="riferimentopagina"/>
+    <cd:string value="pagereference"/>
   </cd:sequence>
   <cd:arguments>
     <cd:reference/>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="riferimento" file="core-ref.tex">
+<cd:command name="reference" file="core-ref.tex">
   <cd:sequence>
-    <cd:string value="riferimento"/>
+    <cd:string value="reference"/>
   </cd:sequence>
   <cd:arguments>
     <cd:reference/>
@@ -2769,9 +2759,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="usariferimenti" file="core-ref.tex">
+<cd:command name="usereferences" file="core-ref.tex">
   <cd:sequence>
-    <cd:string value="usariferimenti"/>
+    <cd:string value="usereferences"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords list="yes">
@@ -2780,9 +2770,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="definisciriferimento" file="core-ref.tex">
+<cd:command name="definereference" file="core-ref.tex">
   <cd:sequence>
-    <cd:string value="definisciriferimento"/>
+    <cd:string value="definereference"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
@@ -2792,9 +2782,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="definisciformatoriferimento" file="core-ref.tex">
+<cd:command name="definereferenceformat" file="core-ref.tex">
   <cd:sequence>
-    <cd:string value="definisciformatoriferimento"/>
+    <cd:string value="definereferenceformat"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
@@ -2839,9 +2829,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="vaigiu" file="core-spa.tex">
+<cd:command name="godown" file="core-spa.tex">
   <cd:sequence>
-    <cd:string value="vaigiu"/>
+    <cd:string value="godown"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
@@ -2850,15 +2840,15 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="spaziobianco" file="core-spa.tex">
+<cd:command name="whitespace" file="core-spa.tex">
   <cd:sequence>
-    <cd:string value="spaziobianco"/>
+    <cd:string value="whitespace"/>
   </cd:sequence>
 </cd:command>
 
-<cd:command name="nientespaziobianco" file="core-spa.tex">
+<cd:command name="nowhitespace" file="core-spa.tex">
   <cd:sequence>
-    <cd:string value="nientespaziobianco"/>
+    <cd:string value="nowhitespace"/>
   </cd:sequence>
 </cd:command>
 
@@ -2868,15 +2858,15 @@
   </cd:sequence>
 </cd:command>
 
-<cd:command name="spazio" file="syst-pln.tex">
+<cd:command name="space" file="syst-pln.tex">
   <cd:sequence>
-    <cd:string value="spazio"/>
+    <cd:string value="space"/>
   </cd:sequence>
 </cd:command>
 
-<cd:command name="spazifissi" file="core-spa.tex">
+<cd:command name="fixedspaces" file="core-spa.tex">
   <cd:sequence>
-    <cd:string value="spazifissi"/>
+    <cd:string value="fixedspaces"/>
   </cd:sequence>
 </cd:command>
 
@@ -2891,21 +2881,21 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="nientespazio" file="core-spa.tex">
+<cd:command name="nospace" file="core-spa.tex">
   <cd:sequence>
-    <cd:string value="nientespazio"/>
+    <cd:string value="nospace"/>
   </cd:sequence>
 </cd:command>
 
-<cd:command name="impaccato" file="core-spa.tex">
+<cd:command name="packed" file="core-spa.tex">
   <cd:sequence>
-    <cd:string value="impaccato"/>
+    <cd:string value="packed"/>
   </cd:sequence>
 </cd:command>
 
-<cd:command name="impostadescrizioni" file="core-des.tex">
+<cd:command name="setupdescriptions" file="core-des.tex">
   <cd:sequence>
-    <cd:string value="impostadescrizioni"/>
+    <cd:string value="setupdescriptions"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords optional="yes" list="yes">
@@ -3004,23 +2994,23 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="impostaenumerazioni" file="core-des.tex">
+<cd:command name="setupenumerations" file="core-des.tex">
   <cd:sequence>
-    <cd:string value="impostaenumerazioni"/>
+    <cd:string value="setupenumerations"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords optional="yes" list="yes">
       <cd:constant type="cd:name"/>
     </cd:keywords>
     <cd:assignments list="yes">
-      <cd:inherit name="definiscidescrizione"/>
+      <cd:inherit name="definedescription"/>
     </cd:assignments>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="definiscienumerazione" file="core-des.tex">
+<cd:command name="defineenumeration" file="core-des.tex">
   <cd:sequence>
-    <cd:string value="definiscienumerazione"/>
+    <cd:string value="defineenumeration"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords list="yes">
@@ -3030,7 +3020,7 @@
       <cd:constant type="cd:name"/>
     </cd:keywords>
     <cd:assignments optional="yes" list="yes">
-      <cd:inherit name="impostaenumerazioni"/>
+      <cd:inherit name="setupenumerations"/>
     </cd:assignments>
   </cd:arguments>
 </cd:command>
@@ -3048,20 +3038,18 @@
   <cd:sequence>
     <cd:variable value="enumeration"/>
   </cd:sequence>
-  <cd:arguments>
-  </cd:arguments>
 </cd:command>
 
-<cd:command name="definiscidescrizione" file="core-des.tex">
+<cd:command name="definedescription" file="core-des.tex">
   <cd:sequence>
-    <cd:string value="definiscidescrizione"/>
+    <cd:string value="definedescription"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
       <cd:constant type="cd:name"/>
     </cd:keywords>
     <cd:assignments optional="yes" list="yes">
-      <cd:inherit name="impostadescrizioni"/>
+      <cd:inherit name="setupdescriptions"/>
     </cd:assignments>
   </cd:arguments>
 </cd:command>
@@ -3085,9 +3073,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="impostarientri" file="core-des.tex">
+<cd:command name="setupindentations" file="core-des.tex">
   <cd:sequence>
-    <cd:string value="impostarientri"/>
+    <cd:string value="setupindentations"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords optional="yes" list="yes">
@@ -3140,16 +3128,16 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="definiscirientro" file="core-des.tex">
+<cd:command name="defineindenting" file="core-des.tex">
   <cd:sequence>
-    <cd:string value="definiscirientro"/>
+    <cd:string value="defineindenting"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
       <cd:constant type="cd:name"/>
     </cd:keywords>
     <cd:assignments list="yes">
-      <cd:inherit name="impostarientri"/>
+      <cd:inherit name="setupindentations"/>
     </cd:assignments>
   </cd:arguments>
 </cd:command>
@@ -3163,9 +3151,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="definiscietichetta" file="core-des.tex">
+<cd:command name="definelabel" file="core-des.tex">
   <cd:sequence>
-    <cd:string value="definiscietichetta"/>
+    <cd:string value="definelabel"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
@@ -3219,9 +3207,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="impostacolonne" file="page-mul.tex">
+<cd:command name="setupcolumns" file="page-mul.tex">
   <cd:sequence>
-    <cd:string value="impostacolonne"/>
+    <cd:string value="setupcolumns"/>
   </cd:sequence>
   <cd:arguments>
     <cd:assignments list="yes">
@@ -3273,7 +3261,7 @@
         <cd:constant type="sinistra"/>
         <cd:constant type="destra"/>
       </cd:parameter>
-      <cd:inherit name="impostaincorniciato"/>
+      <cd:inherit name="setupframed"/>
     </cd:assignments>
   </cd:arguments>
 </cd:command>
@@ -3284,14 +3272,14 @@
   </cd:sequence>
   <cd:arguments>
     <cd:assignments optional="yes" list="yes">
-      <cd:inherit name="impostacolonne"/>
+      <cd:inherit name="setupcolumns"/>
     </cd:assignments>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="definiscitesto" file="page-txt.tex">
+<cd:command name="definetext" file="page-txt.tex">
   <cd:sequence>
-    <cd:string value="definiscitesto"/>
+    <cd:string value="definetext"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
@@ -3313,9 +3301,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="impostainstestazione" file="page-txt.tex">
+<cd:command name="setupheader" file="page-txt.tex">
   <cd:sequence>
-    <cd:string value="impostainstestazione"/>
+    <cd:string value="setupheader"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords optional="yes">
@@ -3384,104 +3372,77 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="impostapdp" file="page-txt.tex">
+<cd:command name="setupfooter" file="page-txt.tex">
   <cd:sequence>
-    <cd:string value="impostapdp"/>
+    <cd:string value="setupfooter"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords optional="yes">
-      <cd:inherit name="impostainstestazione"/>
+      <cd:inherit name="setupheader"/>
     </cd:keywords>
     <cd:assignments list="yes">
-      <cd:inherit name="impostainstestazione"/>
+      <cd:inherit name="setupheader"/>
     </cd:assignments>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="impostatesto" file="page-txt.tex">
+<cd:command name="setuptext" file="page-txt.tex">
   <cd:sequence>
-    <cd:string value="impostatesto"/>
+    <cd:string value="setuptext"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords optional="yes">
-      <cd:inherit name="impostainstestazione"/>
+      <cd:inherit name="setupheader"/>
     </cd:keywords>
     <cd:assignments list="yes">
-      <cd:inherit name="impostainstestazione"/>
+      <cd:inherit name="setupheader"/>
     </cd:assignments>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="impostacima" file="page-txt.tex">
+<cd:command name="setuptop" file="page-txt.tex">
   <cd:sequence>
-    <cd:string value="impostacima"/>
+    <cd:string value="setuptop"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords optional="yes">
-      <cd:inherit name="impostainstestazione"/>
+      <cd:inherit name="setupheader"/>
     </cd:keywords>
     <cd:assignments list="yes">
-      <cd:inherit name="impostainstestazione"/>
+      <cd:inherit name="setupheader"/>
     </cd:assignments>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="impostafondo" file="page-txt.tex">
+<cd:command name="setupbottom" file="page-txt.tex">
   <cd:sequence>
-    <cd:string value="impostafondo"/>
+    <cd:string value="setupbottom"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords optional="yes">
-      <cd:inherit name="impostainstestazione"/>
+      <cd:inherit name="setupheader"/>
     </cd:keywords>
     <cd:assignments list="yes">
-      <cd:inherit name="impostainstestazione"/>
+      <cd:inherit name="setupheader"/>
     </cd:assignments>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="nientelineintestazionepdp" file="page-txt.tex">
+<cd:command name="noheaderandfooterlines" file="page-txt.tex">
   <cd:sequence>
-    <cd:string value="nientelineintestazionepdp"/>
+    <cd:string value="noheaderandfooterlines"/>
   </cd:sequence>
 </cd:command>
 
-<cd:command name="nientelineecimafondo" file="page-txt.tex">
+<cd:command name="notopandbottomlines" file="page-txt.tex">
   <cd:sequence>
-    <cd:string value="nientelineecimafondo"/>
+    <cd:string value="notopandbottomlines"/>
   </cd:sequence>
 </cd:command>
 
-<cd:command name="impostatestiintestazioni" file="page-txt.tex">
+<cd:command name="setupheadertexts" file="page-txt.tex">
   <cd:sequence>
-    <cd:string value="impostatestiintestazioni"/>
-  </cd:sequence>
-  <cd:arguments>
-    <cd:keywords optional="yes">
-      <cd:variable type="cd:text" default="yes"/>
-      <cd:constant type="margine"/>
-      <cd:constant type="bordo"/>
-    </cd:keywords>
-    <cd:keywords>
-      <cd:constant type="cd:text"/>
-      <cd:constant type="cd:section"/>
-      <cd:constant type="data"/>
-      <cd:constant type="cd:mark"/>
-      <cd:constant type="numeropagina"/>
-    </cd:keywords>
-    <cd:keywords>
-      <cd:constant type="cd:text"/>
-      <cd:constant type="cd:section"/>
-      <cd:constant type="data"/>
-      <cd:constant type="cd:mark"/>
-      <cd:constant type="numeropagina"/>
-    </cd:keywords>
-  </cd:arguments>
-</cd:command>
-
-<cd:command name="impostatestipdp" file="page-txt.tex">
-  <cd:sequence>
-    <cd:string value="impostatestipdp"/>
+    <cd:string value="setupheadertexts"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords optional="yes">
@@ -3506,9 +3467,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="impostatestotesti" file="page-txt.tex">
+<cd:command name="setupfootertexts" file="page-txt.tex">
   <cd:sequence>
-    <cd:string value="impostatestotesti"/>
+    <cd:string value="setupfootertexts"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords optional="yes">
@@ -3533,9 +3494,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="impostatesticima" file="page-txt.tex">
+<cd:command name="setuptexttexts" file="page-txt.tex">
   <cd:sequence>
-    <cd:string value="impostatesticima"/>
+    <cd:string value="setuptexttexts"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords optional="yes">
@@ -3560,9 +3521,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="impostatestifondo" file="page-txt.tex">
+<cd:command name="setuptoptexts" file="page-txt.tex">
   <cd:sequence>
-    <cd:string value="impostatestifondo"/>
+    <cd:string value="setuptoptexts"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords optional="yes">
@@ -3587,9 +3548,36 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="definiscimarcatura" file="core-mar.tex">
+<cd:command name="setupbottomtexts" file="page-txt.tex">
   <cd:sequence>
-    <cd:string value="definiscimarcatura"/>
+    <cd:string value="setupbottomtexts"/>
+  </cd:sequence>
+  <cd:arguments>
+    <cd:keywords optional="yes">
+      <cd:variable type="cd:text" default="yes"/>
+      <cd:constant type="margine"/>
+      <cd:constant type="bordo"/>
+    </cd:keywords>
+    <cd:keywords>
+      <cd:constant type="cd:text"/>
+      <cd:constant type="cd:section"/>
+      <cd:constant type="data"/>
+      <cd:constant type="cd:mark"/>
+      <cd:constant type="numeropagina"/>
+    </cd:keywords>
+    <cd:keywords>
+      <cd:constant type="cd:text"/>
+      <cd:constant type="cd:section"/>
+      <cd:constant type="data"/>
+      <cd:constant type="cd:mark"/>
+      <cd:constant type="numeropagina"/>
+    </cd:keywords>
+  </cd:arguments>
+</cd:command>
+
+<cd:command name="definemarking" file="core-mar.tex">
+  <cd:sequence>
+    <cd:string value="definemarking"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
@@ -3601,9 +3589,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="accoppiamarcatura" file="core-sec.tex">
+<cd:command name="couplemarking" file="core-sec.tex">
   <cd:sequence>
-    <cd:string value="accoppiamarcatura"/>
+    <cd:string value="couplemarking"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
@@ -3615,9 +3603,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="separamarcatura" file="core-mar.tex">
+<cd:command name="decouplemarking" file="core-mar.tex">
   <cd:sequence>
-    <cd:string value="separamarcatura"/>
+    <cd:string value="decouplemarking"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
@@ -3626,9 +3614,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="reimpostamarcatura" file="core-mar.tex">
+<cd:command name="resetmarking" file="core-mar.tex">
   <cd:sequence>
-    <cd:string value="reimpostamarcatura"/>
+    <cd:string value="resetmarking"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
@@ -3637,9 +3625,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="impostamarcatura" file="core-mar.tex">
+<cd:command name="setupmarking" file="core-mar.tex">
   <cd:sequence>
-    <cd:string value="impostamarcatura"/>
+    <cd:string value="setupmarking"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
@@ -3661,9 +3649,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="marcatura" file="core-mar.tex">
+<cd:command name="marking" file="core-mar.tex">
   <cd:sequence>
-    <cd:string value="marcatura"/>
+    <cd:string value="marking"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
@@ -3673,9 +3661,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="prendimarcatura" file="core-mar.tex">
+<cd:command name="getmarking" file="core-mar.tex">
   <cd:sequence>
-    <cd:string value="prendimarcatura"/>
+    <cd:string value="getmarking"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
@@ -3692,18 +3680,18 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="nientemarcatura" file="core-mar.tex">
+<cd:command name="nomarking" file="core-mar.tex">
   <cd:sequence>
-    <cd:string value="nientemarcatura"/>
+    <cd:string value="nomarking"/>
   </cd:sequence>
   <cd:arguments>
     <cd:content/>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="impostalayout" file="page-ini.tex">
+<cd:command name="setuplayout" file="page-ini.tex">
   <cd:sequence>
-    <cd:string value="impostalayout"/>
+    <cd:string value="setuplayout"/>
   </cd:sequence>
   <cd:arguments>
     <cd:assignments list="yes">
@@ -3865,9 +3853,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="adattalayout" file="page-lay.tex">
+<cd:command name="adaptlayout" file="page-lay.tex">
   <cd:sequence>
-    <cd:string value="adattalayout"/>
+    <cd:string value="adaptlayout"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords optional="yes" list="yes">
@@ -3885,27 +3873,27 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="mostragriglia" file="page-ini.tex">
+<cd:command name="showgrid" file="page-ini.tex">
   <cd:sequence>
-    <cd:string value="mostragriglia"/>
+    <cd:string value="showgrid"/>
   </cd:sequence>
 </cd:command>
 
-<cd:command name="mettiingriglia" file="core-grd.tex">
+<cd:command name="placeongrid" file="core-grd.tex">
   <cd:sequence>
-    <cd:string value="mettiingriglia"/>
+    <cd:string value="placeongrid"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords optional="yes">
-      <cd:inherit name="spostaagriglia"/>
+      <cd:inherit name="moveongrid"/>
     </cd:keywords>
     <cd:content/>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="spostaagriglia" file="core-grd.tex">
+<cd:command name="moveongrid" file="core-grd.tex">
   <cd:sequence>
-    <cd:string value="spostaagriglia"/>
+    <cd:string value="moveongrid"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords optional="yes" list="yes">
@@ -3931,18 +3919,18 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="progetto" type="environment">
+<cd:command name="project" type="environment">
   <cd:sequence>
-    <cd:string value="progetto"/>
+    <cd:string value="project"/>
   </cd:sequence>
   <cd:arguments>
     <cd:file/>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="ambiente" type="environment">
+<cd:command name="environment" type="environment">
   <cd:sequence>
-    <cd:string value="ambiente"/>
+    <cd:string value="environment"/>
   </cd:sequence>
   <cd:arguments>
     <cd:file/>
@@ -3958,24 +3946,24 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="componenet" type="environment">
+<cd:command name="component" type="environment">
   <cd:sequence>
-    <cd:string value="componenet"/>
+    <cd:string value="component"/>
   </cd:sequence>
   <cd:arguments>
     <cd:file/>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="bastafile">
+<cd:command name="nomorefiles">
   <cd:sequence>
-    <cd:string value="bastafile"/>
+    <cd:string value="nomorefiles"/>
   </cd:sequence>
 </cd:command>
 
-<cd:command name="impostainterlinea">
+<cd:command name="setupinterlinespace">
   <cd:sequence>
-    <cd:string value="impostainterlinea"/>
+    <cd:string value="setupinterlinespace"/>
   </cd:sequence>
   <cd:arguments>
     <cd:choice>
@@ -4008,9 +3996,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="impostanumerazionepagina" file="page-num.tex">
+<cd:command name="setuppagenumbering" file="page-num.tex">
   <cd:sequence>
-    <cd:string value="impostanumerazionepagina"/>
+    <cd:string value="setuppagenumbering"/>
   </cd:sequence>
   <cd:arguments>
     <cd:assignments list="yes">
@@ -4090,9 +4078,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="impostapiustretto" file="core-spa.tex">
+<cd:command name="setupnarrower" file="core-spa.tex">
   <cd:sequence>
-    <cd:string value="impostapiustretto"/>
+    <cd:string value="setupnarrower"/>
   </cd:sequence>
   <cd:arguments>
     <cd:assignments list="yes">
@@ -4109,9 +4097,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="definisci" file="syst-ext.tex">
+<cd:command name="define" file="syst-ext.tex">
   <cd:sequence>
-    <cd:string value="definisci"/>
+    <cd:string value="define"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords optional="yes">
@@ -4122,18 +4110,18 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="usacomandi" file="core-sys.tex">
+<cd:command name="usecommands" file="core-sys.tex">
   <cd:sequence>
-    <cd:string value="usacomandi"/>
+    <cd:string value="usecommands"/>
   </cd:sequence>
   <cd:arguments>
     <cd:content/>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="definisciiniziatermina" file="core-sys.tex">
+<cd:command name="definestartstop" file="core-sys.tex">
   <cd:sequence>
-    <cd:string value="definisciiniziatermina"/>
+    <cd:string value="definestartstop"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
@@ -4163,9 +4151,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="impostateste" file="core-sec.tex">
+<cd:command name="setupheads" file="core-sec.tex">
   <cd:sequence>
-    <cd:string value="impostateste"/>
+    <cd:string value="setupheads"/>
   </cd:sequence>
   <cd:arguments>
     <cd:assignments list="yes">
@@ -4215,9 +4203,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="impostacaptions" file="page-flt.tex">
+<cd:command name="setupcaptions" file="page-flt.tex">
   <cd:sequence>
-    <cd:string value="impostacaptions"/>
+    <cd:string value="setupcaptions"/>
   </cd:sequence>
   <cd:arguments>
     <cd:assignments list="yes">
@@ -4296,23 +4284,23 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="impostacaption" file="page-flt.tex">
+<cd:command name="setupcaption" file="page-flt.tex">
   <cd:sequence>
-    <cd:string value="impostacaption"/>
+    <cd:string value="setupcaption"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
       <cd:constant type="cd:name"/>
     </cd:keywords>
     <cd:assignments list="yes">
-      <cd:inherit name="impostacaptions"/>
+      <cd:inherit name="setupcaptions"/>
     </cd:assignments>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="impostaoggettimobili" file="page-flt.tex">
+<cd:command name="setupfloats" file="page-flt.tex">
   <cd:sequence>
-    <cd:string value="impostaoggettimobili"/>
+    <cd:string value="setupfloats"/>
   </cd:sequence>
   <cd:arguments>
     <cd:assignments list="yes">
@@ -4389,14 +4377,14 @@
         <cd:constant type="normale"/>
         <cd:constant type="riga"/>
       </cd:parameter>
-      <cd:inherit name="impostaincorniciato"/>
+      <cd:inherit name="setupframed"/>
     </cd:assignments>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="impostaspezzamentooggettomobile" file="page-flt.tex">
+<cd:command name="setupfloatsplitting" file="page-flt.tex">
   <cd:sequence>
-    <cd:string value="impostaspezzamentooggettomobile"/>
+    <cd:string value="setupfloatsplitting"/>
   </cd:sequence>
   <cd:arguments>
     <cd:assignments list="yes">
@@ -4414,22 +4402,22 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="spezzaoggettomobile" file="page-flt.tex">
+<cd:command name="splitfloat" file="page-flt.tex">
   <cd:sequence>
-    <cd:string value="spezzaoggettomobile"/>
+    <cd:string value="splitfloat"/>
   </cd:sequence>
   <cd:arguments>
     <cd:assignments optional="yes" list="yes">
-      <cd:inherit name="impostaspezzamentooggettomobile"/>
+      <cd:inherit name="setupfloatsplitting"/>
     </cd:assignments>
     <cd:content/>
     <cd:content/>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="impostaposizionamentoopposti" file="page-ini.tex">
+<cd:command name="setupoppositeplacing" file="page-ini.tex">
   <cd:sequence>
-    <cd:string value="impostaposizionamentoopposti"/>
+    <cd:string value="setupoppositeplacing"/>
   </cd:sequence>
   <cd:arguments>
     <cd:assignments>
@@ -4454,13 +4442,11 @@
   <cd:sequence>
     <cd:string value="opposite"/>
   </cd:sequence>
-  <cd:arguments>
-  </cd:arguments>
 </cd:command>
 
-<cd:command name="impostasegnosillabazione" file="core-mis.tex">
+<cd:command name="setuphyphenmark" file="core-mis.tex">
   <cd:sequence>
-    <cd:string value="impostasegnosillabazione"/>
+    <cd:string value="setuphyphenmark"/>
   </cd:sequence>
   <cd:arguments>
     <cd:assignments>
@@ -4478,9 +4464,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="impostaposizionamento" file="page-lyr.tex">
+<cd:command name="setuppositioning" file="page-lyr.tex">
   <cd:sequence>
-    <cd:string value="impostaposizionamento"/>
+    <cd:string value="setuppositioning"/>
   </cd:sequence>
   <cd:arguments>
     <cd:assignments list="yes">
@@ -4523,13 +4509,11 @@
   <cd:sequence>
     <cd:string value="positioning"/>
   </cd:sequence>
-  <cd:arguments>
-  </cd:arguments>
 </cd:command>
 
-<cd:command name="griglia" file="core-spa.tex">
+<cd:command name="grid" file="core-spa.tex">
   <cd:sequence>
-    <cd:string value="griglia"/>
+    <cd:string value="grid"/>
   </cd:sequence>
   <cd:arguments>
     <cd:assignments list="yes">
@@ -4584,9 +4568,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="pagina" file="page-ini.tex">
+<cd:command name="page" file="page-ini.tex">
   <cd:sequence>
-    <cd:string value="pagina"/>
+    <cd:string value="page"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords list="yes">
@@ -4611,9 +4595,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="impostariferimento" file="core-ref.tex">
+<cd:command name="setupreferencing" file="core-ref.tex">
   <cd:sequence>
-    <cd:string value="impostariferimento"/>
+    <cd:string value="setupreferencing"/>
   </cd:sequence>
   <cd:arguments>
     <cd:assignments list="yes">
@@ -4667,9 +4651,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="impostaurl" file="core-ref.tex">
+<cd:command name="setupurl" file="core-ref.tex">
   <cd:sequence>
-    <cd:string value="impostaurl"/>
+    <cd:string value="setupurl"/>
   </cd:sequence>
   <cd:arguments>
     <cd:assignments list="yes">
@@ -4697,9 +4681,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="scriviinlistariferimenti" file="core-lst.tex">
+<cd:command name="writetoreferencelist" file="core-lst.tex">
   <cd:sequence>
-    <cd:string value="scriviinlistariferimenti"/>
+    <cd:string value="writetoreferencelist"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
@@ -4710,9 +4694,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="mettilistariferimenti">
+<cd:command name="placereferencelist">
   <cd:sequence>
-    <cd:string value="mettilistariferimenti"/>
+    <cd:string value="placereferencelist"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords list="yes">
@@ -4721,23 +4705,23 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="definiscilistariferimenti" file="core-lst.tex">
+<cd:command name="definereferencelist" file="core-lst.tex">
   <cd:sequence>
-    <cd:string value="definiscilistariferimenti"/>
+    <cd:string value="definereferencelist"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
       <cd:constant type="cd:name"/>
     </cd:keywords>
     <cd:assignments optional="yes" list="yes">
-      <cd:inherit name="impostalistariferimenti"/>
+      <cd:inherit name="setupreferencelist"/>
     </cd:assignments>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="impostalistariferimenti" file="core-lst.tex">
+<cd:command name="setupreferencelist" file="core-lst.tex">
   <cd:sequence>
-    <cd:string value="impostalistariferimenti"/>
+    <cd:string value="setupreferencelist"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords list="yes">
@@ -4767,9 +4751,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="scriviinelenco" file="core-lst.tex">
+<cd:command name="writetolist" file="core-lst.tex">
   <cd:sequence>
-    <cd:string value="scriviinelenco"/>
+    <cd:string value="writetolist"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
@@ -4781,9 +4765,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="scrividentroelenco" file="core-lst.tex">
+<cd:command name="writebetweenlist" file="core-lst.tex">
   <cd:sequence>
-    <cd:string value="scrividentroelenco"/>
+    <cd:string value="writebetweenlist"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
@@ -4794,9 +4778,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="nienteelenco" file="core-lst.tex">
+<cd:command name="nolist" file="core-lst.tex">
   <cd:sequence>
-    <cd:string value="nienteelenco"/>
+    <cd:string value="nolist"/>
   </cd:sequence>
   <cd:arguments>
     <cd:content/>
@@ -4815,51 +4799,51 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="mettielenco" file="core-lst.tex">
+<cd:command name="placelist" file="core-lst.tex">
   <cd:sequence>
-    <cd:string value="mettielenco"/>
+    <cd:string value="placelist"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords list="yes">
       <cd:constant type="cd:name"/>
     </cd:keywords>
     <cd:assignments optional="yes" list="yes">
-      <cd:inherit name="impostaelenco"/>
+      <cd:inherit name="setuplist"/>
     </cd:assignments>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="determinacarattersticheelenco" file="core-lst.tex">
+<cd:command name="determinelistcharacteristics" file="core-lst.tex">
   <cd:sequence>
-    <cd:string value="determinacarattersticheelenco"/>
+    <cd:string value="determinelistcharacteristics"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords list="yes">
       <cd:constant type="cd:name"/>
     </cd:keywords>
     <cd:assignments optional="yes" list="yes">
-      <cd:inherit name="impostaelenco"/>
+      <cd:inherit name="setuplist"/>
     </cd:assignments>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="mettielencocombinato" file="core-lst.tex">
+<cd:command name="placecombinedlist" file="core-lst.tex">
   <cd:sequence>
-    <cd:string value="mettielencocombinato"/>
+    <cd:string value="placecombinedlist"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
       <cd:constant type="cd:name"/>
     </cd:keywords>
     <cd:assignments optional="yes" list="yes">
-      <cd:inherit name="impostaelencocombinato"/>
+      <cd:inherit name="setupcombinedlist"/>
     </cd:assignments>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="definiscielenco" file="core-lst.tex">
+<cd:command name="definelist" file="core-lst.tex">
   <cd:sequence>
-    <cd:string value="definiscielenco"/>
+    <cd:string value="definelist"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
@@ -4869,14 +4853,14 @@
       <cd:constant type="cd:name"/>
     </cd:keywords>
     <cd:assignments optional="yes" list="yes">
-      <cd:inherit name="impostaelenco"/>
+      <cd:inherit name="setuplist"/>
     </cd:assignments>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="impostaelenco" file="core-lst.tex">
+<cd:command name="setuplist" file="core-lst.tex">
   <cd:sequence>
-    <cd:string value="impostaelenco"/>
+    <cd:string value="setuplist"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords list="yes">
@@ -5047,14 +5031,14 @@
       <cd:parameter name="ampiezzamax">
         <cd:constant type="cd:dimension"/>
       </cd:parameter>
-      <cd:inherit name="incorniciato"/>
+      <cd:inherit name="framed"/>
     </cd:assignments>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="definiscielencocombinato" file="core-lst.tex">
+<cd:command name="definecombinedlist" file="core-lst.tex">
   <cd:sequence>
-    <cd:string value="definiscielencocombinato"/>
+    <cd:string value="definecombinedlist"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
@@ -5064,14 +5048,14 @@
       <cd:constant type="cd:list"/>
     </cd:keywords>
     <cd:assignments optional="yes" list="yes">
-      <cd:inherit name="impostaelencocombinato"/>
+      <cd:inherit name="setupcombinedlist"/>
     </cd:assignments>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="impostaelencocombinato" file="core-lst.tex">
+<cd:command name="setupcombinedlist" file="core-lst.tex">
   <cd:sequence>
-    <cd:string value="impostaelencocombinato"/>
+    <cd:string value="setupcombinedlist"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
@@ -5086,12 +5070,12 @@
         <cd:constant type="cd:section"/>
         <cd:constant type="corrente"/>
       </cd:parameter>
-      <cd:inherit name="impostaelenco"/>
+      <cd:inherit name="setuplist"/>
     </cd:assignments>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="mettielencocombinato" generated="yes" file="core-lst.tex">
+<cd:command name="placecombinedlist" generated="yes" file="core-lst.tex">
   <cd:sequence>
     <cd:string value="metti"/>
     <cd:variable value="combinedlist"/>
@@ -5101,7 +5085,7 @@
       <cd:constant type="cd:name"/>
     </cd:keywords>
     <cd:assignments optional="yes" list="yes">
-      <cd:inherit name="impostaelencocombinato"/>
+      <cd:inherit name="setupcombinedlist"/>
     </cd:assignments>
   </cd:arguments>
 </cd:command>
@@ -5116,14 +5100,14 @@
       <cd:constant type="cd:name"/>
     </cd:keywords>
     <cd:assignments list="yes">
-      <cd:inherit name="impostaelencocombinato"/>
+      <cd:inherit name="setupcombinedlist"/>
     </cd:assignments>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="impostanumerazione" file="core-num.tex">
+<cd:command name="setupnumbering" file="core-num.tex">
   <cd:sequence>
-    <cd:string value="impostanumerazione"/>
+    <cd:string value="setupnumbering"/>
   </cd:sequence>
   <cd:arguments>
     <cd:assignments list="yes">
@@ -5199,18 +5183,18 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="pubblicazione" file="core-mis.tex">
+<cd:command name="publication" file="core-mis.tex">
   <cd:sequence>
-    <cd:string value="pubblicazione"/>
+    <cd:string value="publication"/>
   </cd:sequence>
   <cd:arguments>
     <cd:reference/>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="impostapubblicazioni" file="core-mis.tex">
+<cd:command name="setuppublications" file="core-mis.tex">
   <cd:sequence>
-    <cd:string value="impostapubblicazioni"/>
+    <cd:string value="setuppublications"/>
   </cd:sequence>
   <cd:arguments>
     <cd:assignments list="yes">
@@ -5218,14 +5202,14 @@
         <cd:constant type="apa"/>
         <cd:constant type="normale"/>
       </cd:parameter>
-      <cd:inherit name="impostaenumerazioni"/>
+      <cd:inherit name="setupenumerations"/>
     </cd:assignments>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="impostarighe" file="page-lin.tex">
+<cd:command name="setuplines" file="page-lin.tex">
   <cd:sequence>
-    <cd:string value="impostarighe"/>
+    <cd:string value="setuplines"/>
   </cd:sequence>
   <cd:arguments>
     <cd:assignments list="yes">
@@ -5252,13 +5236,11 @@
   <cd:sequence>
     <cd:string value="lines"/>
   </cd:sequence>
-  <cd:arguments>
-  </cd:arguments>
 </cd:command>
 
-<cd:command name="impostanumerazionecapoversi" file="page-lin.tex">
+<cd:command name="setupparagraphnumbering" file="page-lin.tex">
   <cd:sequence>
-    <cd:string value="impostanumerazionecapoversi"/>
+    <cd:string value="setupparagraphnumbering"/>
   </cd:sequence>
   <cd:arguments>
     <cd:assignments list="yes">
@@ -5285,9 +5267,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="impostanumerazionerighe" file="page-lin.tex">
+<cd:command name="setuplinenumbering" file="page-lin.tex">
   <cd:sequence>
-    <cd:string value="impostanumerazionerighe"/>
+    <cd:string value="setuplinenumbering"/>
   </cd:sequence>
   <cd:arguments>
     <cd:assignments list="yes">
@@ -5353,27 +5335,27 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="qualcheriga" file="page-lin.tex">
+<cd:command name="someline" file="page-lin.tex">
   <cd:sequence>
-    <cd:string value="qualcheriga"/>
+    <cd:string value="someline"/>
   </cd:sequence>
   <cd:arguments>
     <cd:reference/>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="inriga" file="page-lin.tex">
+<cd:command name="inline" file="page-lin.tex">
   <cd:sequence>
-    <cd:string value="inriga"/>
+    <cd:string value="inline"/>
   </cd:sequence>
   <cd:arguments>
     <cd:reference/>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="impostainmargine" file="page-mar.tex">
+<cd:command name="setupinmargin" file="page-mar.tex">
   <cd:sequence>
-    <cd:string value="impostainmargine"/>
+    <cd:string value="setupinmargin"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords optional="yes">
@@ -5432,14 +5414,14 @@
         <cd:constant type="si"/>
         <cd:constant type="no"/>
       </cd:parameter>
-      <cd:inherit name="impostaincorniciato"/>
+      <cd:inherit name="setupframed"/>
     </cd:assignments>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="impostanumeropagina" file="page-num.tex">
+<cd:command name="setuppagenumber" file="page-num.tex">
   <cd:sequence>
-    <cd:string value="impostanumeropagina"/>
+    <cd:string value="setuppagenumber"/>
   </cd:sequence>
   <cd:arguments>
     <cd:assignments list="yes">
@@ -5455,9 +5437,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="impostanumerosottopagina" file="page-num.tex">
+<cd:command name="setupsubpagenumber" file="page-num.tex">
   <cd:sequence>
-    <cd:string value="impostanumerosottopagina"/>
+    <cd:string value="setupsubpagenumber"/>
   </cd:sequence>
   <cd:arguments>
     <cd:assignments list="yes">
@@ -5474,9 +5456,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="impostarigovuoto">
+<cd:command name="setupblank">
   <cd:sequence>
-    <cd:string value="impostarigovuoto"/>
+    <cd:string value="setupblank"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords optional="yes">
@@ -5493,23 +5475,23 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="definiscirigovuoto" file="core-spa.tex">
+<cd:command name="defineblank" file="core-spa.tex">
   <cd:sequence>
-    <cd:string value="definiscirigovuoto"/>
+    <cd:string value="defineblank"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
       <cd:constant type="cd:name"/>
     </cd:keywords>
     <cd:keywords>
-      <cd:inherit name="impostarigovuoto"/>
+      <cd:inherit name="setupblank"/>
     </cd:keywords>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="definiscidimensionicarta" file="page-lay.tex">
+<cd:command name="definepapersize" file="page-lay.tex">
   <cd:sequence>
-    <cd:string value="definiscidimensionicarta"/>
+    <cd:string value="definepapersize"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
@@ -5570,9 +5552,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="impostadimensionicarta" file="page-lay.tex">
+<cd:command name="setuppapersize" file="page-lay.tex">
   <cd:sequence>
-    <cd:string value="impostadimensionicarta"/>
+    <cd:string value="setuppapersize"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords list="yes">
@@ -5610,9 +5592,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="impostaparranging" file="page-imp.tex">
+<cd:command name="setuparranging" file="page-imp.tex">
   <cd:sequence>
-    <cd:string value="impostaparranging"/>
+    <cd:string value="setuparranging"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords list="yes">
@@ -5639,26 +5621,26 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="mostrastampa">
+<cd:command name="showprint">
   <cd:sequence>
-    <cd:string value="mostrastampa"/>
+    <cd:string value="showprint"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords list="yes">
-      <cd:inherit name="impostadimensionicarta"/>
+      <cd:inherit name="setuppapersize"/>
     </cd:keywords>
     <cd:keywords list="yes">
-      <cd:inherit name="impostadimensionicarta"/>
+      <cd:inherit name="setuppapersize"/>
     </cd:keywords>
     <cd:assignments list="yes">
-      <cd:inherit name="impostalayout"/>
+      <cd:inherit name="setuplayout"/>
     </cd:assignments>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="definiscilogo" file="page-log.tex">
+<cd:command name="definelogo" file="page-log.tex">
   <cd:sequence>
-    <cd:string value="definiscilogo"/>
+    <cd:string value="definelogo"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
@@ -5694,9 +5676,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="mettiloghi" file="page-log.tex">
+<cd:command name="placelogos" file="page-log.tex">
   <cd:sequence>
-    <cd:string value="mettiloghi"/>
+    <cd:string value="placelogos"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords optional="yes" list="yes">
@@ -5705,9 +5687,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="impostaspaziobianco">
+<cd:command name="setupwhitespace">
   <cd:sequence>
-    <cd:string value="impostaspaziobianco"/>
+    <cd:string value="setupwhitespace"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords optional="yes">
@@ -5723,9 +5705,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="impostarientro">
+<cd:command name="setupindenting">
   <cd:sequence>
-    <cd:string value="impostarientro"/>
+    <cd:string value="setupindenting"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords list="yes">
@@ -5740,23 +5722,23 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="definiscibloccosezione" file="core-sec.tex">
+<cd:command name="definesectionblock" file="core-sec.tex">
   <cd:sequence>
-    <cd:string value="definiscibloccosezione"/>
+    <cd:string value="definesectionblock"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
       <cd:constant type="cd:name"/>
     </cd:keywords>
     <cd:assignments optional="yes" list="yes">
-      <cd:inherit name="impostabloccosezione"/>
+      <cd:inherit name="setupsectionblock"/>
     </cd:assignments>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="impostabloccosezione" file="core-sec.tex">
+<cd:command name="setupsectionblock" file="core-sec.tex">
   <cd:sequence>
-    <cd:string value="impostabloccosezione"/>
+    <cd:string value="setupsectionblock"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
@@ -5781,9 +5763,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="definiscisezione" file="core-sec.tex">
+<cd:command name="definesection" file="core-sec.tex">
   <cd:sequence>
-    <cd:string value="definiscisezione"/>
+    <cd:string value="definesection"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
@@ -5792,9 +5774,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="impostasezione" file="core-sec.tex">
+<cd:command name="setupsection" file="core-sec.tex">
   <cd:sequence>
-    <cd:string value="impostasezione"/>
+    <cd:string value="setupsection"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
@@ -5819,9 +5801,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="impostatesta" file="core-sec.tex">
+<cd:command name="setuphead" file="core-sec.tex">
   <cd:sequence>
-    <cd:string value="impostatesta"/>
+    <cd:string value="setuphead"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords list="yes">
@@ -5958,14 +5940,14 @@
         <cd:constant type="si"/>
         <cd:constant type="no"/>
       </cd:parameter>
-      <cd:inherit name="impostateste"/>
+      <cd:inherit name="setupheads"/>
     </cd:assignments>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="impostanumerotesta" file="core-sec.tex">
+<cd:command name="setupheadnumber" file="core-sec.tex">
   <cd:sequence>
-    <cd:string value="impostanumerotesta"/>
+    <cd:string value="setupheadnumber"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
@@ -5979,9 +5961,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="numerotesta">
+<cd:command name="headnumber">
   <cd:sequence>
-    <cd:string value="numerotesta"/>
+    <cd:string value="headnumber"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords optional="yes">
@@ -5990,9 +5972,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="determinanumerotesta" file="core-sec.tex">
+<cd:command name="determineheadnumber" file="core-sec.tex">
   <cd:sequence>
-    <cd:string value="determinanumerotesta"/>
+    <cd:string value="determineheadnumber"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
@@ -6001,9 +5983,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="numerotestacorrente" file="core-sec.tex">
+<cd:command name="currentheadnumber" file="core-sec.tex">
   <cd:sequence>
-    <cd:string value="numerotestacorrente"/>
+    <cd:string value="currentheadnumber"/>
   </cd:sequence>
 </cd:command>
 
@@ -6014,9 +5996,9 @@
   </cd:sequence>
 </cd:command>
 
-<cd:command name="definiscitesta" file="core-sec.tex">
+<cd:command name="definehead" file="core-sec.tex">
   <cd:sequence>
-    <cd:string value="definiscitesta"/>
+    <cd:string value="definehead"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
@@ -6196,27 +6178,27 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="elemento">
+<cd:command name="item">
   <cd:sequence>
-    <cd:string value="elemento"/>
+    <cd:string value="item"/>
   </cd:sequence>
   <cd:arguments>
     <cd:reference optional="yes" list="yes"/>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="fondo">
+<cd:command name="but">
   <cd:sequence>
-    <cd:string value="fondo"/>
+    <cd:string value="but"/>
   </cd:sequence>
   <cd:arguments>
     <cd:reference interactive="exclusive"/>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="el">
+<cd:command name="its">
   <cd:sequence>
-    <cd:string value="el"/>
+    <cd:string value="its"/>
   </cd:sequence>
   <cd:arguments>
     <cd:reference optional="yes" list="yes"/>
@@ -6232,9 +6214,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="testa">
+<cd:command name="head">
   <cd:sequence>
-    <cd:string value="testa"/>
+    <cd:string value="head"/>
   </cd:sequence>
   <cd:arguments>
     <cd:reference optional="yes" list="yes"/>
@@ -6260,9 +6242,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="sim" file="core-itm.tex">
+<cd:command name="sym" file="core-itm.tex">
   <cd:sequence>
-    <cd:string value="sim"/>
+    <cd:string value="sym"/>
   </cd:sequence>
   <cd:arguments>
     <cd:content/>
@@ -6275,9 +6257,9 @@
   </cd:sequence>
 </cd:command>
 
-<cd:command name="definisciregistro" file="core-reg.tex">
+<cd:command name="defineregister" file="core-reg.tex">
   <cd:sequence>
-    <cd:string value="definisciregistro"/>
+    <cd:string value="defineregister"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
@@ -6289,9 +6271,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="impostaregistro" file="core-reg.tex">
+<cd:command name="setupregister" file="core-reg.tex">
   <cd:sequence>
-    <cd:string value="impostaregistro"/>
+    <cd:string value="setupregister"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
@@ -6434,9 +6416,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="scriviinregistro" file="core-reg.tex">
+<cd:command name="writetoregister" file="core-reg.tex">
   <cd:sequence>
-    <cd:string value="scriviinregistro"/>
+    <cd:string value="writetoregister"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
@@ -6462,9 +6444,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="accoppiaregistro" file="core-reg.tex">
+<cd:command name="coupleregister" file="core-reg.tex">
   <cd:sequence>
-    <cd:string value="accoppiaregistro"/>
+    <cd:string value="coupleregister"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
@@ -6473,16 +6455,16 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="mettiregistro" file="core-reg.tex">
+<cd:command name="placeregister" file="core-reg.tex">
   <cd:sequence>
-    <cd:string value="mettiregistro"/>
+    <cd:string value="placeregister"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
       <cd:constant type="cd:name"/>
     </cd:keywords>
     <cd:assignments optional="yes" list="yes">
-      <cd:inherit name="impostaregistro"/>
+      <cd:inherit name="setupregister"/>
     </cd:assignments>
   </cd:arguments>
 </cd:command>
@@ -6508,26 +6490,26 @@
   </cd:sequence>
   <cd:arguments>
     <cd:assignments interactive="yes" optional="yes" list="yes">
-      <cd:inherit name="impostaregistro"/>
+      <cd:inherit name="setupregister"/>
     </cd:assignments>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="mettiregistro" generated="yes" file="core-reg.tex">
+<cd:command name="placeregister" generated="yes" file="core-reg.tex">
   <cd:sequence>
     <cd:string value="metti"/>
     <cd:variable value="registro"/>
   </cd:sequence>
   <cd:arguments>
     <cd:assignments interactive="yes" optional="yes" list="yes">
-      <cd:inherit name="impostaregistro"/>
+      <cd:inherit name="setupregister"/>
     </cd:assignments>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="definiscisinonimi" file="core-syn.tex">
+<cd:command name="definesynonyms" file="core-syn.tex">
   <cd:sequence>
-    <cd:string value="definiscisinonimi"/>
+    <cd:string value="definesynonyms"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
@@ -6545,9 +6527,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="impostasinonimi" file="core-syn.tex">
+<cd:command name="setupsynonyms" file="core-syn.tex">
   <cd:sequence>
-    <cd:string value="impostasinonimi"/>
+    <cd:string value="setupsynonyms"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
@@ -6644,9 +6626,9 @@
   </cd:sequence>
 </cd:command>
 
-<cd:command name="definisciordinamento" file="core-syn.tex">
+<cd:command name="definesorting" file="core-syn.tex">
   <cd:sequence>
-    <cd:string value="definisciordinamento"/>
+    <cd:string value="definesorting"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
@@ -6661,9 +6643,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="impostaordinamento" file="core-syn.tex">
+<cd:command name="setupsorting" file="core-syn.tex">
   <cd:sequence>
-    <cd:string value="impostaordinamento"/>
+    <cd:string value="setupsorting"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
@@ -6739,16 +6721,16 @@
   </cd:sequence>
 </cd:command>
 
-<cd:command name="definiscimakeup" file="page-mak.tex">
+<cd:command name="definemakeup" file="page-mak.tex">
   <cd:sequence>
-    <cd:string value="definiscimakeup"/>
+    <cd:string value="definemakeup"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
       <cd:constant type="cd:name"/>
     </cd:keywords>
     <cd:assignments list="yes">
-      <cd:inherit name="impostamakeup"/>
+      <cd:inherit name="setupmakeup"/>
     </cd:assignments>
   </cd:arguments>
 </cd:command>
@@ -6762,14 +6744,14 @@
       <cd:constant type="cd:name"/>
     </cd:keywords>
     <cd:assignments optional="yes" list="yes">
-      <cd:inherit name="impostamakeup"/>
+      <cd:inherit name="setupmakeup"/>
     </cd:assignments>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="impostamakeup" file="page-mak.tex">
+<cd:command name="setupmakeup" file="page-mak.tex">
   <cd:sequence>
-    <cd:string value="impostamakeup"/>
+    <cd:string value="setupmakeup"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
@@ -6849,13 +6831,11 @@
     <cd:variable value="nome"/>
     <cd:string value="makeup"/>
   </cd:sequence>
-  <cd:arguments>
-  </cd:arguments>
 </cd:command>
 
-<cd:command name="versione">
+<cd:command name="version">
   <cd:sequence>
-    <cd:string value="versione"/>
+    <cd:string value="version"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
@@ -6866,20 +6846,20 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="datadioggi">
+<cd:command name="currentdate">
   <cd:sequence>
-    <cd:string value="datadioggi"/>
+    <cd:string value="currentdate"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords list="yes">
-      <cd:inherit name="data"/>
+      <cd:inherit name="date"/>
     </cd:keywords>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="data" file="core-con.tex">
+<cd:command name="date" file="core-con.tex">
   <cd:sequence>
-    <cd:string value="data"/>
+    <cd:string value="date"/>
   </cd:sequence>
   <cd:arguments>
     <cd:assignments optional="yes" list="yes">
@@ -6898,15 +6878,15 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="datareferral" file="core-mis.tex">
+<cd:command name="referraldate" file="core-mis.tex">
   <cd:sequence>
-    <cd:string value="datareferral"/>
+    <cd:string value="referraldate"/>
   </cd:sequence>
 </cd:command>
 
-<cd:command name="rientro" file="core-spa.tex">
+<cd:command name="indenting" file="core-spa.tex">
   <cd:sequence>
-    <cd:string value="rientro"/>
+    <cd:string value="indenting"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords list="yes">
@@ -6921,15 +6901,15 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="nienterientro" file="core-spa.tex">
+<cd:command name="noindenting" file="core-spa.tex">
   <cd:sequence>
-    <cd:string value="nienterientro"/>
+    <cd:string value="noindenting"/>
   </cd:sequence>
 </cd:command>
 
-<cd:command name="rigovuoto" file="core-spa.tex">
+<cd:command name="blank" file="core-spa.tex">
   <cd:sequence>
-    <cd:string value="rigovuoto"/>
+    <cd:string value="blank"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords optional="yes" list="yes">
@@ -6952,9 +6932,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="impaccato" type="environment" file="core-spa.tex">
+<cd:command name="packed" type="environment" file="core-spa.tex">
   <cd:sequence>
-    <cd:string value="impaccato"/>
+    <cd:string value="packed"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords optional="yes">
@@ -6967,21 +6947,17 @@
   <cd:sequence>
     <cd:string value="unpacked"/>
   </cd:sequence>
-  <cd:arguments>
-  </cd:arguments>
 </cd:command>
 
 <cd:command name="linecorrection" type="environment">
   <cd:sequence>
     <cd:string value="linecorrection"/>
   </cd:sequence>
-  <cd:arguments>
-  </cd:arguments>
 </cd:command>
 
-<cd:command name="correggispaziobianco" file="core-spa.tex">
+<cd:command name="correctwhitespace" file="core-spa.tex">
   <cd:sequence>
-    <cd:string value="correggispaziobianco"/>
+    <cd:string value="correctwhitespace"/>
   </cd:sequence>
   <cd:arguments>
     <cd:content/>
@@ -6992,16 +6968,12 @@
   <cd:sequence>
     <cd:string value="postponing"/>
   </cd:sequence>
-  <cd:arguments>
-  </cd:arguments>
 </cd:command>
 
 <cd:command name="locale" type="environment">
   <cd:sequence>
     <cd:string value="locale"/>
   </cd:sequence>
-  <cd:arguments>
-  </cd:arguments>
 </cd:command>
 
 <cd:command name="narrower" type="environment">
@@ -7021,13 +6993,11 @@
   <cd:sequence>
     <cd:string value="hiding"/>
   </cd:sequence>
-  <cd:arguments>
-  </cd:arguments>
 </cd:command>
 
-<cd:command name="impostaallineamento" file="core-spa.tex">
+<cd:command name="setupalign" file="core-spa.tex">
   <cd:sequence>
-    <cd:string value="impostaallineamento"/>
+    <cd:string value="setupalign"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
@@ -7057,14 +7027,14 @@
   </cd:sequence>
   <cd:arguments>
     <cd:keywords optional="yes">
-      <cd:inherit name="impostaallineamento"/>
+      <cd:inherit name="setupalign"/>
     </cd:keywords>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="impostaspaziatura">
+<cd:command name="setupspacing">
   <cd:sequence>
-    <cd:string value="impostaspaziatura"/>
+    <cd:string value="setupspacing"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
@@ -7074,9 +7044,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="impostatolleranza" file="core-spa.tex">
+<cd:command name="setuptolerance" file="core-spa.tex">
   <cd:sequence>
-    <cd:string value="impostatolleranza"/>
+    <cd:string value="setuptolerance"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords list="yes">
@@ -7092,9 +7062,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="tipopagina" file="page-ini.tex">
+<cd:command name="pagetype" file="page-ini.tex">
   <cd:sequence>
-    <cd:string value="tipopagina"/>
+    <cd:string value="pagetype"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
@@ -7103,9 +7073,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="elaborapagina" file="page-ini.tex">
+<cd:command name="processpage" file="page-ini.tex">
   <cd:sequence>
-    <cd:string value="elaborapagina"/>
+    <cd:string value="processpage"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords list="yes">
@@ -7118,9 +7088,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="accoppiapagina" file="page-ini.tex">
+<cd:command name="couplepage" file="page-ini.tex">
   <cd:sequence>
-    <cd:string value="accoppiapagina"/>
+    <cd:string value="couplepage"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords list="yes">
@@ -7140,9 +7110,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="posizione" file="page-lyr.tex">
+<cd:command name="position" file="page-lyr.tex">
   <cd:sequence>
-    <cd:string value="posizione"/>
+    <cd:string value="position"/>
   </cd:sequence>
   <cd:arguments>
     <cd:position list="yes"/>
@@ -7150,9 +7120,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="impostaschermi" file="core-rul.tex">
+<cd:command name="setupscreens" file="core-rul.tex">
   <cd:sequence>
-    <cd:string value="impostaschermi"/>
+    <cd:string value="setupscreens"/>
   </cd:sequence>
   <cd:arguments>
     <cd:assignments list="yes">
@@ -7174,9 +7144,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="impostasfondi" file="page-bck.tex">
+<cd:command name="setupbackgrounds" file="page-bck.tex">
   <cd:sequence>
-    <cd:string value="impostasfondi"/>
+    <cd:string value="setupbackgrounds"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords optional="yes">
@@ -7203,7 +7173,7 @@
         <cd:constant type="termina"/>
         <cd:variable type="cd:repeat"/>
       </cd:parameter>
-      <cd:inherit name="impostaincorniciato"/>
+      <cd:inherit name="setupframed"/>
     </cd:assignments>
   </cd:arguments>
 </cd:command>
@@ -7219,9 +7189,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="prendibuffer">
+<cd:command name="getbuffer">
   <cd:sequence>
-    <cd:string value="prendibuffer"/>
+    <cd:string value="getbuffer"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords optional="yes">
@@ -7241,9 +7211,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="definiscibuffer" file="core-buf.tex">
+<cd:command name="definebuffer" file="core-buf.tex">
   <cd:sequence>
-    <cd:string value="definiscibuffer"/>
+    <cd:string value="definebuffer"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
@@ -7252,9 +7222,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="impostabuffer" file="core-buf.tex">
+<cd:command name="setupbuffer" file="core-buf.tex">
   <cd:sequence>
-    <cd:string value="impostabuffer"/>
+    <cd:string value="setupbuffer"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords optional="yes">
@@ -7274,9 +7244,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="definisciblocco" file="core-buf.tex">
+<cd:command name="defineblock" file="core-buf.tex">
   <cd:sequence>
-    <cd:string value="definisciblocco"/>
+    <cd:string value="defineblock"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
@@ -7285,15 +7255,15 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="bastablocchi" file="core-buf.tex">
+<cd:command name="nomoreblocks" file="core-buf.tex">
   <cd:sequence>
-    <cd:string value="bastablocchi"/>
+    <cd:string value="nomoreblocks"/>
   </cd:sequence>
 </cd:command>
 
-<cd:command name="nascondiblocchi" file="core-buf.tex">
+<cd:command name="hideblocks" file="core-buf.tex">
   <cd:sequence>
-    <cd:string value="nascondiblocchi"/>
+    <cd:string value="hideblocks"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords list="yes">
@@ -7305,9 +7275,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="tieniblocchi" file="core-buf.tex">
+<cd:command name="keepblocks" file="core-buf.tex">
   <cd:sequence>
-    <cd:string value="tieniblocchi"/>
+    <cd:string value="keepblocks"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords list="yes">
@@ -7320,9 +7290,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="usablocco" file="core-buf.tex">
+<cd:command name="useblocks" file="core-buf.tex">
   <cd:sequence>
-    <cd:string value="usablocco"/>
+    <cd:string value="useblocks"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords list="yes">
@@ -7334,9 +7304,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="elaborablocchi" file="core-buf.tex">
+<cd:command name="processblocks" file="core-buf.tex">
   <cd:sequence>
-    <cd:string value="elaborablocchi"/>
+    <cd:string value="processblocks"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords list="yes">
@@ -7348,9 +7318,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="saltablocchi" file="core-buf.tex">
+<cd:command name="bypassblocks" file="core-buf.tex">
   <cd:sequence>
-    <cd:string value="saltablocchi"/>
+    <cd:string value="bypassblocks"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords list="yes">
@@ -7362,9 +7332,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="forzablocchi">
+<cd:command name="forceblocks">
   <cd:sequence>
-    <cd:string value="forzablocchi"/>
+    <cd:string value="forceblocks"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords list="yes">
@@ -7376,9 +7346,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="selezionablocchi" file="core-buf.tex">
+<cd:command name="selectblocks" file="core-buf.tex">
   <cd:sequence>
-    <cd:string value="selezionablocchi"/>
+    <cd:string value="selectblocks"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords list="yes">
@@ -7396,9 +7366,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="impostablocco" file="core-buf.tex">
+<cd:command name="setupblock" file="core-buf.tex">
   <cd:sequence>
-    <cd:string value="impostablocco"/>
+    <cd:string value="setupblock"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords list="yes">
@@ -7435,22 +7405,20 @@
   <cd:sequence>
     <cd:variable value="formula"/>
   </cd:sequence>
-  <cd:arguments>
-  </cd:arguments>
 </cd:command>
 
-<cd:command name="matematica" file="supp-mat.tex">
+<cd:command name="mathematics" file="supp-mat.tex">
   <cd:sequence>
-    <cd:string value="matematica"/>
+    <cd:string value="mathematics"/>
   </cd:sequence>
   <cd:arguments>
     <cd:content/>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="mettiformula" file="core-mat.tex">
+<cd:command name="placeformula" file="core-mat.tex">
   <cd:sequence>
-    <cd:string value="mettiformula"/>
+    <cd:string value="placeformula"/>
   </cd:sequence>
   <cd:arguments>
     <cd:reference optional="yes" list="yes"/>
@@ -7459,9 +7427,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="mettisottoformula" file="core-mat.tex">
+<cd:command name="placesubformula" file="core-mat.tex">
   <cd:sequence>
-    <cd:string value="mettisottoformula"/>
+    <cd:string value="placesubformula"/>
   </cd:sequence>
   <cd:arguments>
     <cd:reference optional="yes" list="yes"/>
@@ -7542,9 +7510,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="definiscioggettomobile" file="page-flt.tex">
+<cd:command name="definefloat" file="page-flt.tex">
   <cd:sequence>
-    <cd:string value="definiscioggettomobile"/>
+    <cd:string value="definefloat"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
@@ -7556,9 +7524,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="impostaoggettomobile" file="page-flt.tex">
+<cd:command name="setupfloat" file="page-flt.tex">
   <cd:sequence>
-    <cd:string value="impostaoggettomobile"/>
+    <cd:string value="setupfloat"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
@@ -7597,7 +7565,7 @@
         <cd:constant type="centro"/>
         <cd:constant type="destra"/>
       </cd:parameter>
-      <cd:inherit name="impostaincorniciato"/>
+      <cd:inherit name="setupframed"/>
     </cd:assignments>
   </cd:arguments>
 </cd:command>
@@ -7628,8 +7596,6 @@
     <cd:string value="placelistof"/>
     <cd:variable value="floats"/>
   </cd:sequence>
-  <cd:arguments>
-  </cd:arguments>
 </cd:command>
 
 <cd:command name="completelistoffloats" generated="yes">
@@ -7637,8 +7603,6 @@
     <cd:string value="completelistof"/>
     <cd:variable value="floats"/>
   </cd:sequence>
-  <cd:arguments>
-  </cd:arguments>
 </cd:command>
 
 <cd:command name="referral" file="core-mis.tex">
@@ -7669,9 +7633,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="selezionacarta">
+<cd:command name="selectpaper">
   <cd:sequence>
-    <cd:string value="selezionacarta"/>
+    <cd:string value="selectpaper"/>
   </cd:sequence>
   <cd:arguments>
     <cd:assignments list="yes">
@@ -7683,9 +7647,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="accoppiacarta">
+<cd:command name="couplepaper">
   <cd:sequence>
-    <cd:string value="accoppiacarta"/>
+    <cd:string value="couplepaper"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
@@ -7694,9 +7658,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="chim" file="core-mis.tex">
+<cd:command name="chem" file="core-mis.tex">
   <cd:sequence>
-    <cd:string value="chim"/>
+    <cd:string value="chem"/>
   </cd:sequence>
   <cd:arguments>
     <cd:content/>
@@ -7705,9 +7669,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="frazione" file="core-mis.tex">
+<cd:command name="fraction" file="core-mis.tex">
   <cd:sequence>
-    <cd:string value="frazione"/>
+    <cd:string value="fraction"/>
   </cd:sequence>
   <cd:arguments>
     <cd:content/>
@@ -7715,9 +7679,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="punti" file="core-mis.tex">
+<cd:command name="periods" file="core-mis.tex">
   <cd:sequence>
-    <cd:string value="punti"/>
+    <cd:string value="periods"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
@@ -7726,30 +7690,21 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="domicilio">
+<cd:command name="items">
   <cd:sequence>
-    <cd:string value="domicilio"/>
-  </cd:sequence>
-  <cd:arguments>
-    <cd:content/>
-  </cd:arguments>
-</cd:command>
-
-<cd:command name="elementi">
-  <cd:sequence>
-    <cd:string value="elementi"/>
+    <cd:string value="items"/>
   </cd:sequence>
   <cd:arguments>
     <cd:assignments optional="yes" list="yes">
-      <cd:inherit name="impostaelementi"/>
+      <cd:inherit name="setupitems"/>
     </cd:assignments>
     <cd:content list="yes"/>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="impostaelementi" file="core-mis.tex">
+<cd:command name="setupitems" file="core-mis.tex">
   <cd:sequence>
-    <cd:string value="impostaelementi"/>
+    <cd:string value="setupitems"/>
   </cd:sequence>
   <cd:arguments>
     <cd:assignments list="yes">
@@ -7796,9 +7751,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="citazione" type="environment" file="core-mis.tex">
+<cd:command name="quotation" type="environment" file="core-mis.tex">
   <cd:sequence>
-    <cd:string value="citazione"/>
+    <cd:string value="quotation"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords list="yes">
@@ -7809,27 +7764,27 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="citazione" file="core-mis.tex">
+<cd:command name="quotation" file="core-mis.tex">
   <cd:sequence>
-    <cd:string value="citazione"/>
+    <cd:string value="quotation"/>
   </cd:sequence>
   <cd:arguments>
     <cd:content/>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="menzione" file="core-mis.tex">
+<cd:command name="quote" file="core-mis.tex">
   <cd:sequence>
-    <cd:string value="menzione"/>
+    <cd:string value="quote"/>
   </cd:sequence>
   <cd:arguments>
     <cd:content/>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="impostamenzione" file="core-mis.tex">
+<cd:command name="setupquote" file="core-mis.tex">
   <cd:sequence>
-    <cd:string value="impostamenzione"/>
+    <cd:string value="setupquote"/>
   </cd:sequence>
   <cd:arguments>
     <cd:assignments list="yes">
@@ -7873,9 +7828,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="definiscicapoversi" file="core-mis.tex">
+<cd:command name="defineparagraphs" file="core-mis.tex">
   <cd:sequence>
-    <cd:string value="definiscicapoversi"/>
+    <cd:string value="defineparagraphs"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
@@ -7931,13 +7886,11 @@
   <cd:sequence>
     <cd:variable value="capoverso"/>
   </cd:sequence>
-  <cd:arguments>
-  </cd:arguments>
 </cd:command>
 
-<cd:command name="impostacapoversi" file="core-mis.tex">
+<cd:command name="setupparagraphs" file="core-mis.tex">
   <cd:sequence>
-    <cd:string value="impostacapoversi"/>
+    <cd:string value="setupparagraphs"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
@@ -8000,9 +7953,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="impostatab" file="core-mis.tex">
+<cd:command name="setuptab" file="core-mis.tex">
   <cd:sequence>
-    <cd:string value="impostatab"/>
+    <cd:string value="setuptab"/>
   </cd:sequence>
   <cd:arguments>
     <cd:assignments list="yes">
@@ -8051,9 +8004,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="etichette">
+<cd:command name="labels">
   <cd:sequence>
-    <cd:string value="etichette"/>
+    <cd:string value="labels"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
@@ -8062,9 +8015,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="definiscitabulato" file="core-tbl.tex">
+<cd:command name="definetabulate" file="core-tbl.tex">
   <cd:sequence>
-    <cd:string value="definiscitabulato"/>
+    <cd:string value="definetabulate"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
@@ -8088,14 +8041,14 @@
       <cd:constant type="cd:text"/>
     </cd:keywords>
     <cd:assignments optional="yes" list="yes">
-      <cd:inherit name="usafiguraesterna"/>
+      <cd:inherit name="useexternalfigure"/>
     </cd:assignments>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="impostatabulato" file="core-tbl.tex">
+<cd:command name="setuptabulate" file="core-tbl.tex">
   <cd:sequence>
-    <cd:string value="impostatabulato"/>
+    <cd:string value="setuptabulate"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords optional="yes">
@@ -8162,9 +8115,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="impostatabelle" file="core-tab.tex">
+<cd:command name="setuptables" file="core-tab.tex">
   <cd:sequence>
-    <cd:string value="impostatabelle"/>
+    <cd:string value="setuptables"/>
   </cd:sequence>
   <cd:arguments>
     <cd:assignments list="yes">
@@ -8269,9 +8222,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="definiscimodellotabella" file="core-tab.tex">
+<cd:command name="definetabletemplate" file="core-tab.tex">
   <cd:sequence>
-    <cd:string value="definiscimodellotabella"/>
+    <cd:string value="definetabletemplate"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
@@ -8289,9 +8242,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="usafileesterni" file="core-mis.tex">
+<cd:command name="useexternalfiles" file="core-mis.tex">
   <cd:sequence>
-    <cd:string value="usafileesterni"/>
+    <cd:string value="useexternalfiles"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
@@ -8312,9 +8265,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="usafileesterno" file="core-mis.tex">
+<cd:command name="useexternalfile" file="core-mis.tex">
   <cd:sequence>
-    <cd:string value="usafileesterno"/>
+    <cd:string value="useexternalfile"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
@@ -8338,9 +8291,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="usafiguraesterna" file="core-fig.tex">
+<cd:command name="useexternalfigure" file="core-fig.tex">
   <cd:sequence>
-    <cd:string value="usafiguraesterna"/>
+    <cd:string value="useexternalfigure"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords optional="yes">
@@ -8423,23 +8376,23 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="figuraesterna" file="core-fig.tex">
+<cd:command name="externalfigure" file="core-fig.tex">
   <cd:sequence>
-    <cd:string value="figuraesterna"/>
+    <cd:string value="externalfigure"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
       <cd:constant type="cd:file"/>
     </cd:keywords>
     <cd:assignments list="yes">
-      <cd:inherit name="usafiguraesterna"/>
+      <cd:inherit name="useexternalfigure"/>
     </cd:assignments>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="impostafigureesterne" file="core-fig.tex">
+<cd:command name="setupexternalfigures" file="core-fig.tex">
   <cd:sequence>
-    <cd:string value="impostafigureesterne"/>
+    <cd:string value="setupexternalfigures"/>
   </cd:sequence>
   <cd:arguments>
     <cd:assignments>
@@ -8481,9 +8434,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="mostrafiguresterne" file="core-fig.tex">
+<cd:command name="showexternalfigures" file="core-fig.tex">
   <cd:sequence>
-    <cd:string value="mostrafiguresterne"/>
+    <cd:string value="showexternalfigures"/>
   </cd:sequence>
   <cd:arguments>
     <cd:assignments optional="yes" list="yes">
@@ -8496,9 +8449,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="usacolonnasonoraesterna" file="core-fig.tex">
+<cd:command name="useexternalsoundtrack" file="core-fig.tex">
   <cd:sequence>
-    <cd:string value="usacolonnasonoraesterna"/>
+    <cd:string value="useexternalsoundtrack"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
@@ -8535,9 +8488,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="fatto" type="environment">
+<cd:command name="fact" type="environment">
   <cd:sequence>
-    <cd:string value="fatto"/>
+    <cd:string value="fact"/>
   </cd:sequence>
   <cd:arguments>
     <cd:tex command="fact"/>
@@ -8548,21 +8501,21 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="ruota" file="core-mis.tex">
+<cd:command name="rotate" file="core-mis.tex">
   <cd:sequence>
-    <cd:string value="ruota"/>
+    <cd:string value="rotate"/>
   </cd:sequence>
   <cd:arguments>
     <cd:assignments optional="yes" list="yes">
-      <cd:inherit name="impostarotazione"/>
+      <cd:inherit name="setuprotate"/>
     </cd:assignments>
     <cd:content/>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="impostarotazione" file="core-mis.tex">
+<cd:command name="setuprotate" file="core-mis.tex">
   <cd:sequence>
-    <cd:string value="impostarotazione"/>
+    <cd:string value="setuprotate"/>
   </cd:sequence>
   <cd:arguments>
     <cd:assignments list="yes">
@@ -8576,23 +8529,23 @@
         <cd:constant type="ampio"/>
         <cd:constant type="profondita"/>
       </cd:parameter>
-      <cd:inherit name="impostaincorniciato"/>
+      <cd:inherit name="setupframed"/>
     </cd:assignments>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="riflessione" file="core-mis.tex">
+<cd:command name="mirror" file="core-mis.tex">
   <cd:sequence>
-    <cd:string value="riflessione"/>
+    <cd:string value="mirror"/>
   </cd:sequence>
   <cd:arguments>
     <cd:content/>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="scala" file="core-mis.tex">
+<cd:command name="scale" file="core-mis.tex">
   <cd:sequence>
-    <cd:string value="scala"/>
+    <cd:string value="scale"/>
   </cd:sequence>
   <cd:arguments>
     <cd:assignments optional="yes" list="yes">
@@ -8607,9 +8560,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="impostacombinazioni" file="core-mis.tex">
+<cd:command name="setupcombinations" file="core-mis.tex">
   <cd:sequence>
-    <cd:string value="impostacombinazioni"/>
+    <cd:string value="setupcombinations"/>
   </cd:sequence>
   <cd:arguments>
     <cd:assignments list="yes">
@@ -8674,9 +8627,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="mettifiancoafianco" file="core-mis.tex">
+<cd:command name="placesidebyside" file="core-mis.tex">
   <cd:sequence>
-    <cd:string value="mettifiancoafianco"/>
+    <cd:string value="placesidebyside"/>
   </cd:sequence>
   <cd:arguments>
     <cd:content/>
@@ -8684,9 +8637,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="mettiunosullaltro" file="core-mis.tex">
+<cd:command name="placeontopofeachother" file="core-mis.tex">
   <cd:sequence>
-    <cd:string value="mettiunosullaltro"/>
+    <cd:string value="placeontopofeachother"/>
   </cd:sequence>
   <cd:arguments>
     <cd:content/>
@@ -8715,9 +8668,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="impostaschermointerazione" file="core-int.tex">
+<cd:command name="setupinteractionscreen" file="core-int.tex">
   <cd:sequence>
-    <cd:string value="impostaschermointerazione"/>
+    <cd:string value="setupinteractionscreen"/>
   </cd:sequence>
   <cd:arguments>
     <cd:assignments interactive="exclusive" list="yes">
@@ -8757,17 +8710,15 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="schermo" file="core-int.tex">
+<cd:command name="screen" file="core-int.tex">
   <cd:sequence>
-    <cd:string value="schermo"/>
+    <cd:string value="screen"/>
   </cd:sequence>
-  <cd:arguments>
-  </cd:arguments>
 </cd:command>
 
-<cd:command name="impostatransizionepagina" file="core-int.tex">
+<cd:command name="setuppagetransitions" file="core-int.tex">
   <cd:sequence>
-    <cd:string value="impostatransizionepagina"/>
+    <cd:string value="setuppagetransitions"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords optional="yes" list="yes">
@@ -8777,9 +8728,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="impostainterazione" file="core-nav.tex">
+<cd:command name="setupinteraction" file="core-nav.tex">
   <cd:sequence>
-    <cd:string value="impostainterazione"/>
+    <cd:string value="setupinteraction"/>
   </cd:sequence>
   <cd:arguments>
     <cd:assignments interactive="exclusive" list="yes">
@@ -8871,9 +8822,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="definiscimenuinterazione" file="core-int.tex">
+<cd:command name="defineinteractionmenu" file="core-int.tex">
   <cd:sequence>
-    <cd:string value="definiscimenuinterazione"/>
+    <cd:string value="defineinteractionmenu"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords interactive="exclusive" list="yes">
@@ -8952,14 +8903,14 @@
         <cd:constant type="si"/>
         <cd:constant type="no"/>
       </cd:parameter>
-      <cd:inherit name="impostaincorniciato"/>
+      <cd:inherit name="setupframed"/>
     </cd:assignments>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="definiscimenuinterazione" file="core-int.tex">
+<cd:command name="defineinteractionmenu" file="core-int.tex">
   <cd:sequence>
-    <cd:string value="definiscimenuinterazione"/>
+    <cd:string value="defineinteractionmenu"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords interactive="exclusive">
@@ -8977,14 +8928,14 @@
       <cd:constant type="cd:name"/>
     </cd:keywords>
     <cd:assignments optional="yes" list="yes">
-      <cd:inherit name="impostamenuinterazione"/>
+      <cd:inherit name="setupinteractionmenu"/>
     </cd:assignments>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="menuinterattivo" type="environment">
+<cd:command name="interactionmenu" type="environment">
   <cd:sequence>
-    <cd:string value="menuinterattivo"/>
+    <cd:string value="interactionmenu"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords interactive="exclusive">
@@ -8993,9 +8944,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="disabilitamenuinterazione" file="core-int.tex">
+<cd:command name="disableinteractionmenu" file="core-int.tex">
   <cd:sequence>
-    <cd:string value="disabilitamenuinterazione"/>
+    <cd:string value="disableinteractionmenu"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords interactive="exclusive">
@@ -9009,9 +8960,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="usadocumentoesterno" file="core-ref.tex">
+<cd:command name="useexternaldocument" file="core-ref.tex">
   <cd:sequence>
-    <cd:string value="usadocumentoesterno"/>
+    <cd:string value="useexternaldocument"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords interactive="exclusive">
@@ -9026,9 +8977,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="usaURL" file="core-ref.tex">
+<cd:command name="useURL" file="core-ref.tex">
   <cd:sequence>
-    <cd:string value="usaURL"/>
+    <cd:string value="useURL"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords interactive="exclusive">
@@ -9046,9 +8997,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="accoppiadocumento" file="core-ref.tex">
+<cd:command name="coupledocument" file="core-ref.tex">
   <cd:sequence>
-    <cd:string value="accoppiadocumento"/>
+    <cd:string value="coupledocument"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords interactive="exclusive">
@@ -9063,33 +9014,33 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="da" file="core-ref.tex">
+<cd:command name="from" file="core-ref.tex">
   <cd:sequence>
-    <cd:string value="da"/>
+    <cd:string value="from"/>
   </cd:sequence>
   <cd:arguments>
     <cd:reference interactive="exclusive"/>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="barrainterazione">
+<cd:command name="interactionbar">
   <cd:sequence>
-    <cd:string value="barrainterazione"/>
+    <cd:string value="interactionbar"/>
   </cd:sequence>
   <cd:arguments>
     <cd:assignments interactive="exclusive" list="yes">
-      <cd:inherit name="impostabarrainterazione"/>
+      <cd:inherit name="setupinteractionbar"/>
     </cd:assignments>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="pulsantinterazione" file="core-ref.tex">
+<cd:command name="interactionbuttons" file="core-ref.tex">
   <cd:sequence>
-    <cd:string value="pulsantinterazione"/>
+    <cd:string value="interactionbuttons"/>
   </cd:sequence>
   <cd:arguments>
     <cd:assignments interactive="exclusive" optional="yes" list="yes">
-      <cd:inherit name="impostabarrainterazione"/>
+      <cd:inherit name="setupinteractionbar"/>
     </cd:assignments>
     <cd:keywords list="yes">
       <cd:constant type="cd:name"/>
@@ -9097,9 +9048,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="impostabarrainterazione" file="core-int.tex">
+<cd:command name="setupinteractionbar" file="core-int.tex">
   <cd:sequence>
-    <cd:string value="impostabarrainterazione"/>
+    <cd:string value="setupinteractionbar"/>
   </cd:sequence>
   <cd:arguments>
     <cd:assignments interactive="exclusive" list="yes">
@@ -9142,30 +9093,26 @@
         <cd:constant type="medio"/>
         <cd:constant type="grande"/>
       </cd:parameter>
-      <cd:inherit name="impostaincorniciato"/>
+      <cd:inherit name="setupframed"/>
     </cd:assignments>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="sincronizza" file="core-int.tex">
+<cd:command name="synchronize" file="core-int.tex">
   <cd:sequence>
-    <cd:string value="sincronizza"/>
+    <cd:string value="synchronize"/>
   </cd:sequence>
-  <cd:arguments>
-  </cd:arguments>
 </cd:command>
 
 <cd:command name="synchronization" type="environment">
   <cd:sequence>
     <cd:string value="synchronization"/>
   </cd:sequence>
-  <cd:arguments>
-  </cd:arguments>
 </cd:command>
 
-<cd:command name="impostabarrasincronizzazione" file="core-int.tex">
+<cd:command name="setupsynchronizationbar" file="core-int.tex">
   <cd:sequence>
-    <cd:string value="impostabarrasincronizzazione"/>
+    <cd:string value="setupsynchronizationbar"/>
   </cd:sequence>
   <cd:arguments>
     <cd:assignments interactive="exclusive" list="yes">
@@ -9194,14 +9141,14 @@
       <cd:parameter name="colore">
         <cd:constant type="cd:name"/>
       </cd:parameter>
-      <cd:inherit name="impostaincorniciato"/>
+      <cd:inherit name="setupframed"/>
     </cd:assignments>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="barrasincronizzazione" file="core-int.tex">
+<cd:command name="synchronizationbar" file="core-int.tex">
   <cd:sequence>
-    <cd:string value="barrasincronizzazione"/>
+    <cd:string value="synchronizationbar"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords interactive="exclusive">
@@ -9212,14 +9159,14 @@
         <cd:constant type="pagina"/>
         <cd:constant type="locale"/>
       </cd:parameter>
-      <cd:inherit name="impostabarrasincronizzazione"/>
+      <cd:inherit name="setupsynchronizationbar"/>
     </cd:assignments>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="impostasincronizzazione" file="core-int.tex">
+<cd:command name="setupsynchronization" file="core-int.tex">
   <cd:sequence>
-    <cd:string value="impostasincronizzazione"/>
+    <cd:string value="setupsynchronization"/>
   </cd:sequence>
   <cd:arguments>
     <cd:assignments interactive="exclusive" list="yes">
@@ -9231,9 +9178,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="definisciprofilo" file="core-int.tex">
+<cd:command name="defineprofile" file="core-int.tex">
   <cd:sequence>
-    <cd:string value="definisciprofilo"/>
+    <cd:string value="defineprofile"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords interactive="exclusive" list="yes">
@@ -9245,9 +9192,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="impostaprofili" file="core-int.tex">
+<cd:command name="setupprofiles" file="core-int.tex">
   <cd:sequence>
-    <cd:string value="impostaprofili"/>
+    <cd:string value="setupprofiles"/>
   </cd:sequence>
   <cd:arguments>
     <cd:assignments interactive="exclusive" list="yes">
@@ -9269,9 +9216,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="seguiprofilo" file="core-int.tex">
+<cd:command name="followprofile" file="core-int.tex">
   <cd:sequence>
-    <cd:string value="seguiprofilo"/>
+    <cd:string value="followprofile"/>
   </cd:sequence>
   <cd:arguments>
     <cd:content interactive="exclusive"/>
@@ -9281,9 +9228,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="mettisegnalibro" file="core-int.tex">
+<cd:command name="placebookmarks" file="core-int.tex">
   <cd:sequence>
-    <cd:string value="mettisegnalibro"/>
+    <cd:string value="placebookmarks"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords optional="yes" list="yes">
@@ -9294,9 +9241,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="segnalibro">
+<cd:command name="bookmark">
   <cd:sequence>
-    <cd:string value="segnalibro"/>
+    <cd:string value="bookmark"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords optional="yes">
@@ -9306,9 +9253,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="versione" type="environment">
+<cd:command name="version" type="environment">
   <cd:sequence>
-    <cd:string value="versione"/>
+    <cd:string value="version"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords interactive="exclusive" list="yes">
@@ -9317,9 +9264,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="impostaversioni" file="core-int.tex">
+<cd:command name="setupversions" file="core-int.tex">
   <cd:sequence>
-    <cd:string value="impostaversioni"/>
+    <cd:string value="setupversions"/>
   </cd:sequence>
   <cd:arguments>
     <cd:assignments list="yes">
@@ -9340,23 +9287,21 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="marcaversione" file="core-int.tex">
+<cd:command name="markversion" file="core-int.tex">
   <cd:sequence>
-    <cd:string value="marcaversione"/>
-  </cd:sequence>
-  <cd:arguments>
-  </cd:arguments>
-</cd:command>
-
-<cd:command name="selezionaversione" file="core-int.tex">
-  <cd:sequence>
-    <cd:string value="selezionaversione"/>
+    <cd:string value="markversion"/>
   </cd:sequence>
 </cd:command>
 
-<cd:command name="definisciversion" file="core-int.tex">
+<cd:command name="selectversion" file="core-int.tex">
   <cd:sequence>
-    <cd:string value="definisciversion"/>
+    <cd:string value="selectversion"/>
+  </cd:sequence>
+</cd:command>
+
+<cd:command name="defineversion" file="core-int.tex">
+  <cd:sequence>
+    <cd:string value="defineversion"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
@@ -9368,9 +9313,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="seguiversione" file="core-int.tex">
+<cd:command name="followversion" file="core-int.tex">
   <cd:sequence>
-    <cd:string value="seguiversione"/>
+    <cd:string value="followversion"/>
   </cd:sequence>
   <cd:arguments>
     <cd:content interactive="exclusive"/>
@@ -9380,9 +9325,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="seguiversioneprofilo" file="core-int.tex">
+<cd:command name="followprofileversion" file="core-int.tex">
   <cd:sequence>
-    <cd:string value="seguiversioneprofilo"/>
+    <cd:string value="followprofileversion"/>
   </cd:sequence>
   <cd:arguments>
     <cd:content interactive="exclusive"/>
@@ -9395,9 +9340,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="definisciprogramma" file="core-ref.tex">
+<cd:command name="defineprogram" file="core-ref.tex">
   <cd:sequence>
-    <cd:string value="definisciprogramma"/>
+    <cd:string value="defineprogram"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords interactive="exclusive">
@@ -9412,9 +9357,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="impostaprogrammi" file="core-ref.tex">
+<cd:command name="setupprograms" file="core-ref.tex">
   <cd:sequence>
-    <cd:string value="impostaprogrammi"/>
+    <cd:string value="setupprograms"/>
   </cd:sequence>
   <cd:arguments>
     <cd:assignments interactive="exclusive" list="yes">
@@ -9425,9 +9370,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="programma" file="core-ref.tex">
+<cd:command name="program" file="core-ref.tex">
   <cd:sequence>
-    <cd:string value="programma"/>
+    <cd:string value="program"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords interactive="exclusive">
@@ -9465,9 +9410,9 @@
 
 <!-- remark skipped -->
 
-<cd:command name="vaia" file="core-ref.tex">
+<cd:command name="goto" file="core-ref.tex">
   <cd:sequence>
-    <cd:string value="vaia"/>
+    <cd:string value="goto"/>
   </cd:sequence>
   <cd:arguments>
     <cd:content interactive="exclusive"/>
@@ -9476,9 +9421,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="vaiabox" file="core-ref.tex">
+<cd:command name="gotobox" file="core-ref.tex">
   <cd:sequence>
-    <cd:string value="vaiabox"/>
+    <cd:string value="gotobox"/>
   </cd:sequence>
   <cd:arguments>
     <cd:content interactive="exclusive"/>
@@ -9486,22 +9431,22 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="pulsante">
+<cd:command name="button">
   <cd:sequence>
-    <cd:string value="pulsante"/>
+    <cd:string value="button"/>
   </cd:sequence>
   <cd:arguments>
     <cd:assignments interactive="exclusive" optional="yes" list="yes">
-      <cd:inherit name="impostapulsanti"/>
+      <cd:inherit name="setupbuttons"/>
     </cd:assignments>
     <cd:content/>
     <cd:reference list="yes"/>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="impostapulsanti" file="core-ref.tex">
+<cd:command name="setupbuttons" file="core-ref.tex">
   <cd:sequence>
-    <cd:string value="impostapulsanti"/>
+    <cd:string value="setupbuttons"/>
   </cd:sequence>
   <cd:arguments>
     <cd:assignments list="yes">
@@ -9509,16 +9454,16 @@
         <cd:constant type="inizia"/>
         <cd:constant type="termina"/>
       </cd:parameter>
-      <cd:inherit name="impostaincorniciato"/>
+      <cd:inherit name="setupframed"/>
     </cd:assignments>
   </cd:arguments>
 </cd:command>
 
 <!-- menubutton skipped -->
 
-<cd:command name="impostacommento" file="core-int.tex">
+<cd:command name="setupcomment" file="core-int.tex">
   <cd:sequence>
-    <cd:string value="impostacommento"/>
+    <cd:string value="setupcomment"/>
   </cd:sequence>
   <cd:arguments>
     <cd:assignments list="yes">
@@ -9566,38 +9511,38 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="commento" type="environment">
+<cd:command name="comment" type="environment">
   <cd:sequence>
-    <cd:string value="commento"/>
+    <cd:string value="comment"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords optional="yes">
       <cd:constant type="cd:name"/>
     </cd:keywords>
     <cd:assignments optional="yes" list="yes">
-      <cd:inherit name="impostacommento"/>
+      <cd:inherit name="setupcomment"/>
     </cd:assignments>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="commento">
+<cd:command name="comment">
   <cd:sequence>
-    <cd:string value="commento"/>
+    <cd:string value="comment"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords optional="yes">
       <cd:constant type="cd:name"/>
     </cd:keywords>
     <cd:assignments optional="yes" list="yes">
-      <cd:inherit name="impostacommento"/>
+      <cd:inherit name="setupcomment"/>
     </cd:assignments>
     <cd:content/>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="definiscicampo" file="core-fld.tex">
+<cd:command name="definefield" file="core-fld.tex">
   <cd:sequence>
-    <cd:string value="definiscicampo"/>
+    <cd:string value="definefield"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
@@ -9618,9 +9563,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="definiscisottocampo" file="core-fld.tex">
+<cd:command name="definesubfield" file="core-fld.tex">
   <cd:sequence>
-    <cd:string value="definiscisottocampo"/>
+    <cd:string value="definesubfield"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
@@ -9635,9 +9580,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="copiacampo" file="core-fld.tex">
+<cd:command name="copyfield" file="core-fld.tex">
   <cd:sequence>
-    <cd:string value="copiacampo"/>
+    <cd:string value="copyfield"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
@@ -9649,9 +9594,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="clonacampo" file="core-fld.tex">
+<cd:command name="clonefield" file="core-fld.tex">
   <cd:sequence>
-    <cd:string value="clonacampo"/>
+    <cd:string value="clonefield"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
@@ -9669,9 +9614,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="campi" file="core-fld.tex">
+<cd:command name="field" file="core-fld.tex">
   <cd:sequence>
-    <cd:string value="campi"/>
+    <cd:string value="field"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
@@ -9680,9 +9625,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="adattacampo" file="core-fld.tex">
+<cd:command name="fitfield" file="core-fld.tex">
   <cd:sequence>
-    <cd:string value="adattacampo"/>
+    <cd:string value="fitfield"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
@@ -9691,9 +9636,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="camporiempimento" file="core-fld.tex">
+<cd:command name="fillinfield" file="core-fld.tex">
   <cd:sequence>
-    <cd:string value="camporiempimento"/>
+    <cd:string value="fillinfield"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords optional="yes">
@@ -9718,9 +9663,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="mostracampi" file="core-fld.tex">
+<cd:command name="showfields" file="core-fld.tex">
   <cd:sequence>
-    <cd:string value="mostracampi"/>
+    <cd:string value="showfields"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords optional="yes" list="yes">
@@ -9729,15 +9674,15 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="logcampi" file="core-fld.tex">
+<cd:command name="logfields" file="core-fld.tex">
   <cd:sequence>
-    <cd:string value="logcampi"/>
+    <cd:string value="logfields"/>
   </cd:sequence>
 </cd:command>
 
-<cd:command name="impostacampo" file="core-fld.tex">
+<cd:command name="setupfield" file="core-fld.tex">
   <cd:sequence>
-    <cd:string value="impostacampo"/>
+    <cd:string value="setupfield"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
@@ -9750,7 +9695,7 @@
       <cd:constant type="cornice"/>
     </cd:keywords>
     <cd:assignments list="yes">
-      <cd:inherit name="impostacampi"/>
+      <cd:inherit name="setupfields"/>
     </cd:assignments>
     <cd:assignments list="yes">
     </cd:assignments>
@@ -9759,9 +9704,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="impostacampi" file="core-fld.tex">
+<cd:command name="setupfields" file="core-fld.tex">
   <cd:sequence>
-    <cd:string value="impostacampi"/>
+    <cd:string value="setupfields"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords list="yes">
@@ -9847,7 +9792,7 @@
       <cd:parameter name="coloresfondocampo">
         <cd:constant type="cd:name"/>
       </cd:parameter>
-      <cd:inherit name="incorniciato"/>
+      <cd:inherit name="framed"/>
     </cd:assignments>
     <cd:assignments list="yes">
     </cd:assignments>
@@ -9856,9 +9801,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="impostaforms" file="core-fld.tex">
+<cd:command name="setupforms" file="core-fld.tex">
   <cd:sequence>
-    <cd:string value="impostaforms"/>
+    <cd:string value="setupforms"/>
   </cd:sequence>
   <cd:arguments>
     <cd:assignments list="yes">
@@ -9870,9 +9815,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="definiscistackcampi" file="core-fld.tex">
+<cd:command name="definefieldstack" file="core-fld.tex">
   <cd:sequence>
-    <cd:string value="definiscistackcampi"/>
+    <cd:string value="definefieldstack"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
@@ -9882,14 +9827,14 @@
       <cd:constant type="cd:name"/>
     </cd:keywords>
     <cd:assignments list="yes">
-      <cd:inherit name="impostacampi"/>
+      <cd:inherit name="setupfields"/>
     </cd:assignments>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="stackcampi" file="core-fld.tex">
+<cd:command name="fieldstack" file="core-fld.tex">
   <cd:sequence>
-    <cd:string value="stackcampi"/>
+    <cd:string value="fieldstack"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
@@ -9899,7 +9844,7 @@
       <cd:constant type="cd:name"/>
     </cd:keywords>
     <cd:assignments optional="yes" list="yes">
-      <cd:inherit name="impostacampi"/>
+      <cd:inherit name="setupfields"/>
     </cd:assignments>
   </cd:arguments>
 </cd:command>
@@ -9910,15 +9855,15 @@
   </cd:sequence>
   <cd:arguments>
     <cd:assignments optional="yes" list="yes">
-      <cd:inherit name="impostaclippling"/>
+      <cd:inherit name="setupclipping"/>
     </cd:assignments>
     <cd:content/>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="impostaclippling" file="core-fig.tex">
+<cd:command name="setupclipping" file="core-fig.tex">
   <cd:sequence>
-    <cd:string value="impostaclippling"/>
+    <cd:string value="setupclipping"/>
   </cd:sequence>
   <cd:arguments>
     <cd:assignments list="yes">
@@ -9953,9 +9898,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="mettilegenda">
+<cd:command name="placelegend">
   <cd:sequence>
-    <cd:string value="mettilegenda"/>
+    <cd:string value="placelegend"/>
   </cd:sequence>
   <cd:arguments>
     <cd:content/>
@@ -9963,9 +9908,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="impostalegenda">
+<cd:command name="setuplegend">
   <cd:sequence>
-    <cd:string value="impostalegenda"/>
+    <cd:string value="setuplegend"/>
   </cd:sequence>
   <cd:arguments>
     <cd:assignments list="yes">
@@ -9999,23 +9944,23 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="definiscilinea">
+<cd:command name="definerule">
   <cd:sequence>
-    <cd:string value="definiscilinea"/>
+    <cd:string value="definerule"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
       <cd:constant type="cd:name"/>
     </cd:keywords>
     <cd:assignments list="yes">
-      <cd:inherit name="impostalinea"/>
+      <cd:inherit name="setuprule"/>
     </cd:assignments>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="mettilinea">
+<cd:command name="placerule">
   <cd:sequence>
-    <cd:string value="mettilinea"/>
+    <cd:string value="placerule"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
@@ -10024,9 +9969,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="impostalinea">
+<cd:command name="setuprule">
   <cd:sequence>
-    <cd:string value="impostalinea"/>
+    <cd:string value="setuprule"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
@@ -10055,13 +10000,13 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="definiscivariabiletesto">
+<cd:command name="definetextvariable">
   <cd:sequence>
-    <cd:string value="definiscivariabiletesto"/>
+    <cd:string value="definetextvariable"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
-      <cd:inherit name="impostavariabiletesto"/>
+      <cd:inherit name="setuptextvariable"/>
     </cd:keywords>
     <cd:keywords optional="yes">
     </cd:keywords>
@@ -10070,9 +10015,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="impostavariabiletesto">
+<cd:command name="setuptextvariable">
   <cd:sequence>
-    <cd:string value="impostavariabiletesto"/>
+    <cd:string value="setuptextvariable"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
@@ -10101,9 +10046,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="setvariabiletesto">
+<cd:command name="settextvariable">
   <cd:sequence>
-    <cd:string value="setvariabiletesto"/>
+    <cd:string value="settextvariable"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
@@ -10115,9 +10060,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="mettivariabiletesto">
+<cd:command name="placetextvariable">
   <cd:sequence>
-    <cd:string value="mettivariabiletesto"/>
+    <cd:string value="placetextvariable"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
@@ -10126,9 +10071,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="variabiletesto">
+<cd:command name="textvariable">
   <cd:sequence>
-    <cd:string value="variabiletesto"/>
+    <cd:string value="textvariable"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
@@ -10137,9 +10082,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="definiscifontgrezzo">
+<cd:command name="definerawfont">
   <cd:sequence>
-    <cd:string value="definiscifontgrezzo"/>
+    <cd:string value="definerawfont"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
@@ -10149,14 +10094,14 @@
       <cd:constant type="cd:file"/>
     </cd:keywords>
     <cd:assignments optional="yes" list="yes">
-      <cd:inherit name="impostainterlinea"/>
+      <cd:inherit name="setupinterlinespace"/>
     </cd:assignments>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="passaafontgrezzo">
+<cd:command name="switchtorawfont">
   <cd:sequence>
-    <cd:string value="passaafontgrezzo"/>
+    <cd:string value="switchtorawfont"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
@@ -10165,37 +10110,37 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="definisciposizionetesto">
+<cd:command name="definetextposition">
   <cd:sequence>
-    <cd:string value="definisciposizionetesto"/>
+    <cd:string value="definetextposition"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
       <cd:constant type="cd:name"/>
     </cd:keywords>
     <cd:assignments optional="yes" list="yes">
-      <cd:inherit name="impostaposizionamento"/>
+      <cd:inherit name="setuppositioning"/>
     </cd:assignments>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="impostaposizionetesto">
+<cd:command name="setuptextposition">
   <cd:sequence>
-    <cd:string value="impostaposizionetesto"/>
+    <cd:string value="setuptextposition"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
       <cd:constant type="cd:name"/>
     </cd:keywords>
     <cd:assignments list="yes">
-      <cd:inherit name="impostaposizionamento"/>
+      <cd:inherit name="setuppositioning"/>
     </cd:assignments>
   </cd:arguments>
 </cd:command>
 
-<cd:command name="posizionatesto">
+<cd:command name="positiontext">
   <cd:sequence>
-    <cd:string value="posizionatesto"/>
+    <cd:string value="positiontext"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>
@@ -10205,9 +10150,9 @@
   </cd:arguments>
 </cd:command>
 
-<cd:command name="impostastrut" file="core-spa.tex">
+<cd:command name="setupstrut" file="core-spa.tex">
   <cd:sequence>
-    <cd:string value="impostastrut"/>
+    <cd:string value="setupstrut"/>
   </cd:sequence>
   <cd:arguments>
     <cd:keywords>

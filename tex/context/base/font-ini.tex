@@ -1379,7 +1379,7 @@
   {\expandafter\xdef\csname#1\endcsname
      {\noexpand\csname#1:\endcsname
       \noexpand\reactivatefont{\somefontname}{\fontfile}}%
-   \global\expandafter\font\csname#1:\endcsname\lastfontname}
+   \global\expandafter\font\csname#1:\endcsname\lastfontname\relax}
 
 \def\reactivatefont#1%#2%
   {\def\somefontname{#1}\def\fontfile}%{#2}}
@@ -4419,11 +4419,60 @@
    \ifx\fontalternative\c!it      \s!Italic \else
    \ifx\fontalternative\c!bs \s!BoldSlanted \else
    \ifx\fontalternative\c!bi  \s!BoldItalic \else
-                                 \s!Regular \fi\fi\fi\fi\fi\fi}%
+   \ifx\fontalternative\c!sc        \s!Caps \else
+                                 \s!Regular \fi\fi\fi\fi\fi\fi\fi}%
 
 %D We still have to take care of \type{\xi}, so:
 
 \def\xi{\ifmmode\normalxi\else\elevenpoint\fi}
+
+%D \macros
+%D   {definefontvariant,fontvariant,variant}
+%D
+%D A slightly adapted version of Adam Lindsays variant patches:
+%D
+%D \starttyping
+%D \usetypescriptfile[type-psc] \loadmapfile[texnansi-public-fpl]
+%D \usetypescript[palatino][texnansi] \setupbodyfont[palatino]
+%D
+%D \definefontvariant [Serif][osf] [OsF]
+%D
+%D \startlines
+%D {\sc abcdefgHIJKlmnop}
+%D 123{\Var[osf]456}789
+%D {\Var[osf] 123{\Var[reset]456}789}
+%D {\it  123{\Var[osf]456}789
+%D {\Var[osf]123{\Var[reset]456}789}}
+%D {\tfb\bf 123{\Var[osf]456}789
+%D {\Var[osf] 123{\Var[reset]456}789}}
+%D {\sc  123{\Var[osf]456}789
+%D {\Var[osf]  123{\Var[reset]456}789}}
+%D \stoplines
+%D \stoptyping
+
+\def\definefontvariant
+  {\dotripleargument\dodefinefontvariant}
+
+\def\dodefinefontvariant[#1][#2][#3]%
+  {\setvalue{\??fv#1#2}{#3}}
+
+\def\fontvariant#1#2{\executeifdefined{\??fv#1#2}\empty}
+
+\def\variant[#1]%
+  {\expanded{\definedfont
+     [\truefontname{\fontstringA\fontstylesuffix\fontvariant\fontstringA{#1}}
+        at \currentfontscale\bodyfontsize]}}
+
+\beginXETEX  \font
+
+  \def\variant[#1]%
+    {\font\variantfont\truefontname{\fontstringA\fontstylesuffix\fontvariant\fontstringA{#1}}
+       at \currentfontscale\bodyfontsize
+     \variantfont}
+
+\endXETEX
+
+\ifx\Var\undefined \let\Var\variant \fi
 
 %D By default we load the Computer Modern Roman fonts (but
 %D not yet at this moment) and activate the 12pt roman

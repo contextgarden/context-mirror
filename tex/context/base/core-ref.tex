@@ -2832,7 +2832,7 @@
        {\doifelsenothing{#3}
           {\douseexternaldocument[#1][#2][#2]}
           {\doifsomething{#2}
-             {\setgvalue{\v!file:::#1}{\doexternaldocument[][#2][#3]}% just \do
+             {\setgvalue{\v!file:::#1}{\doexternaldocument{}{#2}{#3}}% just \do
               \doif\@@rfstate\v!start
                 {\doifparentfileelse{#2}
                    {\showmessage\m!references{21}{#2}}
@@ -2877,23 +2877,33 @@
 \def\useURL
   {\bgroup
    \protectlabels
-   \catcode`\#=12\catcode`\%=12\catcode`\/=12
-   \catcode`\_=12\catcode`\~=12\catcode`\:=12
+   \catcode`\#=\@@other\catcode`\%=\@@other\catcode`\/=\@@other
+   \catcode`\_=\@@other\catcode`\~=\@@other\catcode`\:=\@@other
    \dodoubleempty\douseURL}
 
 \def\douseURL[#1][#2]%
   {\egroup\doquadrupleempty\dodouseURL[#1][#2]}
 
-\def\dodouseURL[#1][#2][#3][#4]%
+% \def\dodouseURL[#1][#2][#3][#4]%
+%   {\iffirstargument
+%      \iffourthargument\setgvalue{\v!file:::#1}{\doexternaldocument{#2}{#3}{#4}}\else
+%      \ifthirdargument \setgvalue{\v!file:::#1}{\doexternaldocument{#2}{#3}{\url[#1]}}\else
+%      \ifsecondargument\setgvalue{\v!file:::#1}{\doexternaldocument{#2}{}{\url[#1]}}\fi\fi\fi
+%    \fi}
+
+\def\dodouseURL[#1][#2][#3][#4]% to be redone: not too tricky redefs ad reuse
   {\iffirstargument
-     \iffourthargument
-       \setgvalue{\v!file:::#1}{\doexternaldocument[#2][#3][#4]}%
-     \else\ifthirdargument
-       \setgvalue{\v!file:::#1}{\doexternaldocument[#2][#3][{\url[#1]}]}%
-     \else\ifsecondargument
-       \setgvalue{\v!file:::#1}{\doexternaldocument[#2][][{\url[#1]}]}%
-     \fi\fi\fi
+     \iffourthargument\setgvalue{\v!file:::#1}{\doexternaldocument{#2}{#3}{#4}}\else
+     \ifthirdargument \setgvalue{\v!file:::#1}{\doexternalurl     {#2}{#3}{#1}}\else
+     \ifsecondargument\setgvalue{\v!file:::#1}{\doexternalurl     {#2}{}  {#1}}\fi\fi\fi
    \fi}
+
+\def\doexternalurl#1#2#3%
+  {\bgroup
+   \doifsomething\@@urstyle{\let\@@iastyle\@@urstyle\let\@@urstyle\empty}%
+   \doifsomething\@@urcolor{\let\@@iacolor\@@urcolor\let\@@urcolor\empty}%
+   \doexternaldocument{#1}{#2}{\url[#3]}%
+   \egroup}
 
 %D \macros
 %D   {url,setupurl}
@@ -2912,23 +2922,21 @@
 %D
 %D \showsetup{\y!setupurl}
 
-\def\setupurl%
+\def\setupurl
   {\dodoubleargument\getparameters[\??ur]}
 
 \unexpanded\def\url[#1]% slow
   {\bgroup
    \processaction
      [\@@uralternative]
-     [ \v!none=>\chardef\urlsplitmode\zerocount,
-      \v!both=>\chardef\urlsplitmode\plusone,
-         \v!after=>\chardef\urlsplitmode\plustwo,
-       \v!before=>\chardef\urlsplitmode\plusthree]%
+     [  \v!none=>\chardef\urlsplitmode\zerocount,
+        \v!both=>\chardef\urlsplitmode\plusone,
+       \v!after=>\chardef\urlsplitmode\plustwo,
+      \v!before=>\chardef\urlsplitmode\plusthree]%
    \doifelse\@@urspace\v!yes
-     {\setbetweenisolatedwords%
-        {\scratchskip\currentspaceskip
-         \hskip\zeropoint\!!plus.2\scratchskip}}
+     {\setbetweenisolatedwords{\scratchskip\currentspaceskip\hskip\zeropoint\!!plus.2\scratchskip}}
      {\setbetweenisolatedwords\allowbreak}%
-   \def\doexternaldocument[##1][##2][##3]{\hyphenatedurl{##1}}%
+   \def\doexternaldocument##1##2##3{\hyphenatedurl{##1}}% awful hack
    \dostartattributes\??ur\c!style\c!color{}%
    \getvalue{\v!file:::#1}%
    \dostopattributes
@@ -2972,7 +2980,7 @@
 
 \newconditional\forceURLlocation
 
-\def\setouterfilelocation[#1][#2][#3]%
+\def\setouterfilelocation#1#2#3%
   {\edef\otherURL{#1}%
    \edef\otherfile{#2}}%
 
@@ -3036,7 +3044,7 @@
   {\ifundefined{\v!file:::#1}%
      \tttf[#1]%
    \else
-     \def\doexternaldocument[##1][##2][##3]{\goto{##3}[#1::#2]}%
+     \def\doexternaldocument##1##2##3{\goto{##3}[#1::#2]}%
      \csname\v!file:::#1\endcsname
    \fi}
 
@@ -3044,7 +3052,7 @@
   {\ifundefined{\v!file:::#1}%
      \tttf[#1]%
    \else
-     \def\doexternaldocument[##1][##2][##3]{##3}% different than ^
+     \def\doexternaldocument##1##2##3{##3}% different than ^
      \csname\v!file:::#1\endcsname
    \fi}
 
@@ -3533,9 +3541,9 @@
          \!!counta\zerocount % new, was 1
          \processallactionsinset
            [#2]
-           [       \v!page=>\advance\!!counta 4,
-                \v!subpage=>\advance\!!counta 4,
-                  \s!unknown=>\advance\!!counta 1]%
+           [   \v!page=>\advance\!!counta 4,
+            \v!subpage=>\advance\!!counta 4,
+            \s!unknown=>\advance\!!counta 1]%
          \ifdim\@@ibwidth=\!!zeropoint\relax
            \!!widtha2em
            \advance\!!widtha \@@ibdistance  % new
@@ -3544,9 +3552,9 @@
          \else
            \!!widtha\@@ibwidth
            \!!widthb\@@ibdistance           % new
-           \multiply\!!widthb \!!counta    % new
+           \multiply\!!widthb \!!counta     % new
            \advance\!!widthb -\@@ibdistance % new
-           \advance\!!widtha -\!!widthb    % new
+           \advance\!!widtha -\!!widthb     % new
            \divide\!!widtha \!!counta
            \!!widthb\@@ibwidth
          \fi
@@ -3562,11 +3570,11 @@
          \hbox to \!!widthb
            {\processallactionsinset
               [#2]
-              [    \v!page=>\goto\v!firstpage
+              [      \v!page=>\goto\v!firstpage
                               \goto\v!nextpage
                               \goto\v!previouspage
                               \goto\v!lastpage,
-                \v!subpage=>\goto\v!firstsubpage
+                  \v!subpage=>\goto\v!firstsubpage
                               \goto\v!nextsubpage
                               \goto\v!previoussubpage
                               \goto\v!lastsubpage,

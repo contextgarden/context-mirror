@@ -34,6 +34,12 @@
 \usetypescriptfile[\f!typeprefix loc] % local scripts
 \usetypescriptfile[\f!typeprefix akb] % adobe karl berry names
 
+\beginXETEX \font
+
+  \usetypescriptfile[\f!typeprefix xtx] % xetex definitions
+
+\endXETEX
+
 %usetypescriptfile[\f!typeprefix pre] % predefined scripts (compatible)
 %usetypescriptfile[typeface]          % project scripts
 
@@ -356,8 +362,8 @@
      \saverelativefontsize{#2}{\relativefontsize}% fall back
     %\writestatus{typeface}{[#1] [#2] [#3] [#4]}
      \writestatus\m!fonts{[#1] [#2] [#3] [#4] / \typefaceencoding}%
-     \usetypescript[map][\typefaceencoding]% will become obsolete
-     \usetypescript[#3,map][#4][name,default,\typefaceencoding,special]%
+     %\usetypescript[map][\typefaceencoding]% latest versions of pdftex can load after first page
+     \usetypescript[#3,map][#4][name,default,\typefaceencoding,special]% is default needed
      \usetypescript[#3][#5][size]%
      \popmacro\fontclass
      \popmacro\typefaceencoding

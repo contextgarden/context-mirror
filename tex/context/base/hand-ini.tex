@@ -13,6 +13,8 @@
 
 \writestatus{loading}{Context Handling Macros (ini)}
 
+% \pushmacro -> dedicated fast one
+
 %D {\em This module is experimental and implements font
 %D specific features, like hanging punctuation.}
 
@@ -71,18 +73,56 @@
 
 \newif\ifskiphandlingdef  \skiphandlingdeffalse
 
+% much in common with hz/protruding defs
+% todo: fix others
+
+\let\normalchar\char % also done in enco-ini
+
+\def\dosetsomehandling#1#2#3 #4 % no define since directly set
+  {\ifskiphandlingdef \else
+     \doifnumberelse{\string#2}
+       {#1{#2#3}{#4}}
+       {\doifelsenothing{#3}
+          {#1{`#2}{#4}}
+          {\let\char\empty
+           \doifnumberelse{\csname#2#3\endcsname}{#1{\csname#2#3\endcsname}{#4}}\donothing
+           \let\char\normalchar}}%
+   \fi}
+
+\def\dosetpairhandling#1#2#3 #4 #5 % no define since directly set
+  {\ifskiphandlingdef \else
+     \doifnumberelse{\string#2}
+       {#1{#2#3}{#4}}
+       {\doifelsenothing{#3}
+          {#1{`#2}{#4}}
+          {\let\char\empty
+           \doifnumberelse{\csname#2#3\endcsname}{#1{\csname#2#3\endcsname}{#4}{#5}}\donothing
+           \let\char\normalchar}}%
+   \fi}
+
+\def\doinhsomehandling#1#2 #3 %
+  {\ifskiphandlingdef \else
+     \let\char\empty
+     \doifnumberelse{\csname#2\endcsname}
+       {#1{\csname#2\endcsname}{`#3}}
+       \donothing
+     \let\char\normalchar
+   \fi}
+
+% adjustspacing
+
 \newdimen\adjustdimen \let\handledfont\font
 
 \ifx\undefined\pdfadjustspacing % we don't use pdftex
 
-  \let\enableadjusting        \relax
-  \let\disableadjusting       \relax
-  \let\setadjusting           \gobbletwoarguments
+  \let\enableadjusting     \relax
+  \let\disableadjusting    \relax
+  \let\setadjusting        \gobbletwoarguments
 
-  \def\defineadjustfactor     #1 #2    {}
-  \def\inheritadjustfactor    #1 #2    {}
+  \def\defineadjustfactor  #1 #2 {}
+  \def\inheritadjustfactor #1 #2 {}
 
-  \let\setfontadjusting       \gobbleoneargument
+  \let\setfontadjusting    \gobbleoneargument
 
 \else
 
@@ -91,27 +131,27 @@
 
   \appendtoks \disableadjusting \to \everyforgetall % Here or not here?
 
-  \def\dodefineadjustfactor#1#2 #3 %
-    {\ifskiphandlingdef \else
-       \doifelsenothing{#2}
-         {\doifnumberelse{\string#1}
-            {\dododefineadjustfactor {#1}{#3}}
-            {\dododefineadjustfactor{`#1}{#3}}}
-         {\pushmacro\char \let\char\empty
-          \doifnumberelse{\csname#1#2\endcsname}
-            {\dododefineadjustfactor{\csname#1#2\endcsname}{#3}}
-            \donothing
-          \popmacro\char}%
-     \fi}
+%   \def\dodefineadjustfactor#1#2 #3 %
+%     {\ifskiphandlingdef \else
+%        \doifelsenothing{#2}
+%          {\doifnumberelse{\string#1}
+%             {\dododefineadjustfactor {#1}{#3}}
+%             {\dododefineadjustfactor{`#1}{#3}}}
+%          {\pushmacro\char \let\char\empty
+%           \doifnumberelse{\csname#1#2\endcsname}
+%             {\dododefineadjustfactor{\csname#1#2\endcsname}{#3}}
+%             \donothing
+%           \popmacro\char}%
+%      \fi}
 
-  \def\doinheritadjustfactor#1 #2 %
-    {\ifskiphandlingdef \else
-       \pushmacro\char \let\char\empty
-       \doifnumberelse{\csname#1\endcsname}
-         {\dodoinheritadjustfactor{\csname#1\endcsname}{`#2}}
-         \donothing
-       \popmacro\char
-     \fi}
+%   \def\doinheritadjustfactor#1 #2 %
+%     {\ifskiphandlingdef \else
+%        \pushmacro\char \let\char\empty
+%        \doifnumberelse{\csname#1\endcsname}
+%          {\dodoinheritadjustfactor{\csname#1\endcsname}{`#2}}
+%          \donothing
+%        \popmacro\char
+%      \fi}
 
   \def\dododefineadjustfactor#1#2%
     {\adjustdimen#2pt\multiply\adjustdimen\plusthousand\divide\adjustdimen\maxcard\relax
@@ -123,11 +163,11 @@
   \def\defineadjustfactor#1 #2 %
     {\setfonttoks
      \let\inherithandling\inheritadjustfactor
-     \appendtoks\dodefineadjustfactor#1 #2 \to\fonttoks}
+     \appendtoks\dosetsomehandling\dododefineadjustfactor#1 #2 \to\fonttoks}
 
   \def\inheritadjustfactor#1 #2 %
     {\setfonttoks
-     \appendtoks\doinheritadjustfactor#1 #2 \to\fonttoks}
+     \appendtoks\doinhsomehandling\dodoinheritadjustfactor#1 #2 \to\fonttoks}
 
   \ifnum\pdftexversion<120
     \let\@@pdfexpandbonus\plusthousand
@@ -153,6 +193,8 @@
        \csname\@fha@\@fha@#1\c!step\endcsname\space
        \fontname\handledfont}}
 \fi
+
+% protruding
 
 \newif\ifembasedprotruding \embasedprotrudingfalse
 
@@ -193,27 +235,27 @@
        \csname\@fha@\@fha@#1\c!right\endcsname\space
        \fontname\handledfont}}
 
-  \def\dodefineprotrudefactor#1#2 #3 #4 %
-    {\ifskiphandlingdef \else
-       \doifelsenothing{#2}
-         {\doifnumberelse{\string#1}
-            {\dododefineprotrudefactor {#1}{#3}{#4}}
-            {\dododefineprotrudefactor{`#1}{#3}{#4}}}
-         {\pushmacro\char \let\char\empty
-          \doifnumberelse{\csname#1#2\endcsname}
-            {\dododefineprotrudefactor{\csname#1#2\endcsname}{#3}{#4}}
-            \donothing
-          \popmacro\char}%
-     \fi}
+%   \def\dodefineprotrudefactor#1#2 #3 #4 %
+%     {\ifskiphandlingdef \else
+%        \doifelsenothing{#2}
+%          {\doifnumberelse{\string#1}
+%             {\dododefineprotrudefactor {#1}{#3}{#4}}
+%             {\dododefineprotrudefactor{`#1}{#3}{#4}}}
+%          {\pushmacro\char \let\char\empty
+%           \doifnumberelse{\csname#1#2\endcsname}
+%             {\dododefineprotrudefactor{\csname#1#2\endcsname}{#3}{#4}}
+%             \donothing
+%           \popmacro\char}%
+%      \fi}
 
-  \def\doinheritprotrudefactor#1 #2 %
-    {\ifskiphandlingdef \else
-       \pushmacro\char \let\char\empty
-       \doifnumberelse{\csname#1\endcsname}
-         {\dodoinheritprotrudefactor{\csname#1\endcsname}{`#2}}
-         \donothing
-       \popmacro\char
-     \fi}
+%   \def\doinheritprotrudefactor#1 #2 %
+%     {\ifskiphandlingdef \else
+%        \pushmacro\char \let\char\empty
+%        \doifnumberelse{\csname#1\endcsname}
+%          {\dodoinheritprotrudefactor{\csname#1\endcsname}{`#2}}
+%          \donothing
+%        \popmacro\char
+%      \fi}
 
   \beginETEX \fontcharwd
 
@@ -281,13 +323,34 @@
   \def\defineprotrudefactor#1 #2 #3 %
     {\setfonttoks
      \let\inherithandling\inheritprotrudefactor
-     \appendtoks\dodefineprotrudefactor#1 #2 #3 \to\fonttoks}
+     \appendtoks\dosetpairhandling\dododefineprotrudefactor#1 #2 #3 \to\fonttoks}
 
   \def\inheritprotrudefactor#1 #2 %
     {\setfonttoks
-     \appendtoks\doinheritprotrudefactor#1 #2 \to\fonttoks}
+     \appendtoks\doinhsomehandling\dodoinheritprotrudefactor#1 #2 \to\fonttoks}
 
 \fi
+
+% font attributes
+
+\let\notagcode\minusone
+
+\ifx\tagcode\undefined
+
+  \def\settagcode #1 #2 {}
+
+\else
+
+  \def\dodosettagcode#1#2%
+    {\tagcode\handledfont#1 #2\relax}
+
+  \def\settagcode#1 #2 %
+    {\setfonttoks
+     \appendtoks\dosetsomehandling\dodosettagcode#1 #2 \to\fonttoks}
+
+\fi
+
+% hook into font mechanism
 
 \let\fonthandling\empty
 
@@ -392,13 +455,17 @@
 
 \newtoks\everyenablefonthandling
 
-\appendtoks
-   \setprotrudingfactor\askedfonthandling
-\to \everyenablefonthandling
+\ifx\setprotrudingfactor\gobbleoneargument \else
+  \appendtoks
+     \setprotrudingfactor\askedfonthandling
+  \to \everyenablefonthandling
+\fi
 
-\appendtoks
-  \setfontadjusting\askedfonthandling
-\to \everyenablefonthandling
+\ifx\setfontadjusting\gobbleoneargument \else
+  \appendtoks
+    \setfontadjusting\askedfonthandling
+  \to \everyenablefonthandling
+\fi
 
 \def\redofastenablehandling
   {\edef\fonthandling{\csname\@fha@\@fha@\@fha@\askedfonthandling\endcsname}%

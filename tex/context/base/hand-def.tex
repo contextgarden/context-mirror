@@ -300,6 +300,109 @@
   \inherithandling Thorn P
   \inherithandling thorn p
 
+  % vietnamese
+
+  \inherithandling Ahook A
+  \inherithandling ahook a
+  \inherithandling Ehook E
+  \inherithandling ehook e
+  \inherithandling Ihook I
+  \inherithandling ihook i
+  \inherithandling Ohook O
+  \inherithandling ohook o
+  \inherithandling Uhook U
+  \inherithandling uhook u
+  \inherithandling Yhook Y
+  \inherithandling yhook y
+
+  \inherithandling Acircumflexgrave A
+  \inherithandling Acircumflexacute A
+  \inherithandling Acircumflextilde A
+  \inherithandling Acircumflexhook  A
+  \inherithandling acircumflexgrave a
+  \inherithandling acircumflexacute a
+  \inherithandling acircumflextilde a
+  \inherithandling acircumflexhook  a
+  \inherithandling Ecircumflexgrave E
+  \inherithandling Ecircumflexacute E
+  \inherithandling Ecircumflextilde E
+  \inherithandling Ecircumflexhook  E
+  \inherithandling ecircumflexgrave e
+  \inherithandling ecircumflexacute e
+  \inherithandling ecircumflextilde e
+  \inherithandling ecircumflexhook  e
+  \inherithandling Ocircumflexgrave O
+  \inherithandling Ocircumflexacute O
+  \inherithandling Ocircumflextilde O
+  \inherithandling Ocircumflexhook  O
+  \inherithandling ocircumflexgrave o
+  \inherithandling ocircumflexacute o
+  \inherithandling ocircumflextilde o
+  \inherithandling ocircumflexhook  o
+
+  \inherithandling Abrevegrave A
+  \inherithandling Abreveacute A
+  \inherithandling Abrevetilde A
+  \inherithandling Abrevehook  A
+  \inherithandling abrevegrave a
+  \inherithandling abreveacute a
+  \inherithandling abrevetilde a
+  \inherithandling abrevehook  a
+
+  \inherithandling Adotbelow A
+  \inherithandling adotbelow a
+  \inherithandling Edotbelow E
+  \inherithandling edotbelow e
+  \inherithandling Idotbelow I
+  \inherithandling idotbelow i
+  \inherithandling Odotbelow O
+  \inherithandling odotbelow o
+  \inherithandling Udotbelow U
+  \inherithandling udotbelow u
+  \inherithandling Ydotbelow Y
+  \inherithandling ydotbelow y
+
+  \inherithandling Ohorndotbelow O
+  \inherithandling ohorndotbelow o
+  \inherithandling Uhorndotbelow U
+  \inherithandling uhorndotbelow u
+
+  \inherithandling Acircumflexdotbelow A
+  \inherithandling acircumflexdotbelow a
+  \inherithandling Ecircumflexdotbelow E
+  \inherithandling ecircumflexdotbelow e
+  \inherithandling Ocircumflexdotbelow O
+  \inherithandling ocircumflexdotbelow o
+
+  \inherithandling Abrevedotbelow A
+  \inherithandling abrevedotbelow a
+
+  \inherithandling Ohorn      O
+  \inherithandling Ohorngrave O
+  \inherithandling Ohornacute O
+  \inherithandling Ohorntilde O
+  \inherithandling Ohornhook  O
+  \inherithandling ohorn      o
+  \inherithandling ohorngrave o
+  \inherithandling ohornacute o
+  \inherithandling ohorntilde o
+  \inherithandling ohornhook  o
+  \inherithandling Uhorn      U
+  \inherithandling Uhorngrave U
+  \inherithandling Uhornacute U
+  \inherithandling Uhorntilde U
+  \inherithandling Uhornhook  U
+  \inherithandling uhorn      u
+  \inherithandling uhorngrave u
+  \inherithandling uhornacute u
+  \inherithandling uhorntilde u
+  \inherithandling uhornhook  u
+
+  \inherithandling Ytilde Y
+  \inherithandling ytilde y
+  \inherithandling Etilde E
+  \inherithandling etilde e
+
 \stopfonthandling
 
 \startfonthandling [hz]
@@ -354,6 +457,28 @@
 
 \stopfonthandling
 
+% no ligs other than fi fl etc, no --- and ''
+
+\startfonthandling[noligs]
+
+    \settagcode - {\notagcode}
+    \settagcode ' {\notagcode}
+    \settagcode ` {\notagcode}
+    \settagcode ? {\notagcode}
+    \settagcode ! {\notagcode}
+
+\stopfonthandling
+
+% \startfonthandling[noligs]
+%   \dostepwiserecurse{0}{255}{1}{\expanded{\settagcode \recurselevel\space\notagcode\space}}
+% \stopfonthandling
+
+% \definefonthandling [noligs] [noligs] [type=tag]
+% \setupfontsynonym[Serif][handling=noligs]
+% \definefont[test][Serif at 12.34pt]
+%
+% {``fi--ffl---ffi'' \test ``fi--ffl---ffi''}
+
 \unprotect
 
 % beware: extended extends the preceding vector (both protruding and
@@ -377,6 +502,10 @@
 % combined variants
 
 \definefonthandling [quality]     [hz,pure]
+
+% noligs (xml) : \definefonthandling [default] [noligs]
+
+\definefonthandling [noligs]      [noligs]                     [\c!type=tag]
 
 % A special case of guillemots, beware: when used ungrouped,
 % it overloads all successive (current) encoding vector

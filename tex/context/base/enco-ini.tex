@@ -1369,7 +1369,7 @@
       \lineskiplimit\zeropoint
       \setbox0\hbox{#4}%
       \halign
-        {##\crcr#5\crcr
+        {##\crcr\hbox{#5}\crcr
          \hidewidth
          \hskip#2\wd0
          \hskip-#3\fontdimen1\font % in plain 1ex * dimenless value
@@ -1499,7 +1499,9 @@
 
 \useencoding[def,acc,raw,com,cas,mis] % mis should come first
 
-\useencoding[ans,il2,ec,tbo,pdf,uc,pol,qx]
+\useencoding[ans,il2,ec,tbo,pdf,uc,pol,qx,t5]
+
+% \useencoding[vna]
 
 \setupencoding[\s!default=ec] % was: [\s!default=\s!default]
 

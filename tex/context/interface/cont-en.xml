@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 
-<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context">
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="en" version="2004.11.17">
 
 <cd:command name="installlanguage" file="lang-ini.tex">
   <cd:sequence>
@@ -838,8 +838,6 @@
   <cd:sequence>
     <cd:variable value="typing"/>
   </cd:sequence>
-  <cd:arguments>
-  </cd:arguments>
 </cd:command>
 
 <cd:command name="typefile" file="verb-ini.tex">
@@ -1006,8 +1004,6 @@
   <cd:sequence>
     <cd:string value="localfootnotes"/>
   </cd:sequence>
-  <cd:arguments>
-  </cd:arguments>
 </cd:command>
 
 <cd:command name="placelocalfootnotes" file="core-not.tex">
@@ -1928,8 +1924,6 @@
   <cd:sequence>
     <cd:string value="background"/>
   </cd:sequence>
-  <cd:arguments>
-  </cd:arguments>
 </cd:command>
 
 <cd:command name="background">
@@ -2257,8 +2251,6 @@
   <cd:sequence>
     <cd:string value="localenvironment"/>
   </cd:sequence>
-  <cd:arguments>
-  </cd:arguments>
 </cd:command>
 
 <cd:command name="setupsystem" file="core-sys.tex">
@@ -2568,8 +2560,6 @@
   <cd:sequence>
     <cd:string value="marginblock"/>
   </cd:sequence>
-  <cd:arguments>
-  </cd:arguments>
 </cd:command>
 
 <cd:command name="part" file="core-sec.tex">
@@ -3048,8 +3038,6 @@
   <cd:sequence>
     <cd:variable value="enumeration"/>
   </cd:sequence>
-  <cd:arguments>
-  </cd:arguments>
 </cd:command>
 
 <cd:command name="definedescription" file="core-des.tex">
@@ -4454,8 +4442,6 @@
   <cd:sequence>
     <cd:string value="opposite"/>
   </cd:sequence>
-  <cd:arguments>
-  </cd:arguments>
 </cd:command>
 
 <cd:command name="setuphyphenmark" file="core-mis.tex">
@@ -4523,8 +4509,6 @@
   <cd:sequence>
     <cd:string value="positioning"/>
   </cd:sequence>
-  <cd:arguments>
-  </cd:arguments>
 </cd:command>
 
 <cd:command name="grid" file="core-spa.tex">
@@ -5252,8 +5236,6 @@
   <cd:sequence>
     <cd:string value="lines"/>
   </cd:sequence>
-  <cd:arguments>
-  </cd:arguments>
 </cd:command>
 
 <cd:command name="setupparagraphnumbering" file="page-lin.tex">
@@ -6849,8 +6831,6 @@
     <cd:variable value="name"/>
     <cd:string value="makeup"/>
   </cd:sequence>
-  <cd:arguments>
-  </cd:arguments>
 </cd:command>
 
 <cd:command name="version">
@@ -6967,16 +6947,12 @@
   <cd:sequence>
     <cd:string value="unpacked"/>
   </cd:sequence>
-  <cd:arguments>
-  </cd:arguments>
 </cd:command>
 
 <cd:command name="linecorrection" type="environment">
   <cd:sequence>
     <cd:string value="linecorrection"/>
   </cd:sequence>
-  <cd:arguments>
-  </cd:arguments>
 </cd:command>
 
 <cd:command name="correctwhitespace" file="core-spa.tex">
@@ -6992,16 +6968,12 @@
   <cd:sequence>
     <cd:string value="postponing"/>
   </cd:sequence>
-  <cd:arguments>
-  </cd:arguments>
 </cd:command>
 
 <cd:command name="local" type="environment">
   <cd:sequence>
     <cd:string value="local"/>
   </cd:sequence>
-  <cd:arguments>
-  </cd:arguments>
 </cd:command>
 
 <cd:command name="narrower" type="environment">
@@ -7021,8 +6993,6 @@
   <cd:sequence>
     <cd:string value="hiding"/>
   </cd:sequence>
-  <cd:arguments>
-  </cd:arguments>
 </cd:command>
 
 <cd:command name="setupalign" file="core-spa.tex">
@@ -7435,8 +7405,6 @@
   <cd:sequence>
     <cd:variable value="formula"/>
   </cd:sequence>
-  <cd:arguments>
-  </cd:arguments>
 </cd:command>
 
 <cd:command name="mathematics" file="supp-mat.tex">
@@ -7628,8 +7596,6 @@
     <cd:string value="placelistof"/>
     <cd:variable value="floats"/>
   </cd:sequence>
-  <cd:arguments>
-  </cd:arguments>
 </cd:command>
 
 <cd:command name="completelistoffloats" generated="yes">
@@ -7637,8 +7603,6 @@
     <cd:string value="completelistof"/>
     <cd:variable value="floats"/>
   </cd:sequence>
-  <cd:arguments>
-  </cd:arguments>
 </cd:command>
 
 <cd:command name="referral" file="core-mis.tex">
@@ -7723,15 +7687,6 @@
     <cd:keywords>
       <cd:constant type="cd:number"/>
     </cd:keywords>
-  </cd:arguments>
-</cd:command>
-
-<cd:command name="domicile">
-  <cd:sequence>
-    <cd:string value="domicile"/>
-  </cd:sequence>
-  <cd:arguments>
-    <cd:content/>
   </cd:arguments>
 </cd:command>
 
@@ -7931,8 +7886,6 @@
   <cd:sequence>
     <cd:variable value="paragraph"/>
   </cd:sequence>
-  <cd:arguments>
-  </cd:arguments>
 </cd:command>
 
 <cd:command name="setupparagraphs" file="core-mis.tex">
@@ -8761,8 +8714,6 @@
   <cd:sequence>
     <cd:string value="screen"/>
   </cd:sequence>
-  <cd:arguments>
-  </cd:arguments>
 </cd:command>
 
 <cd:command name="setuppagetransitions" file="core-int.tex">
@@ -9151,16 +9102,12 @@
   <cd:sequence>
     <cd:string value="synchronize"/>
   </cd:sequence>
-  <cd:arguments>
-  </cd:arguments>
 </cd:command>
 
 <cd:command name="synchronization" type="environment">
   <cd:sequence>
     <cd:string value="synchronization"/>
   </cd:sequence>
-  <cd:arguments>
-  </cd:arguments>
 </cd:command>
 
 <cd:command name="setupsynchronizationbar" file="core-int.tex">
@@ -9344,8 +9291,6 @@
   <cd:sequence>
     <cd:string value="markversion"/>
   </cd:sequence>
-  <cd:arguments>
-  </cd:arguments>
 </cd:command>
 
 <cd:command name="selectversion" file="core-int.tex">

@@ -153,7 +153,7 @@ class Commands
 
             list.i_load('cd:variable', variables)
             list.i_load('cd:constant', constants)
-            list.i_load('cd:command' , strings)
+            # list.i_load('cd:command' , strings)
             list.i_load('cd:element' , strings)
 
             report("loading #{intfile}")

@@ -18,12 +18,14 @@
   \loadmapfile[ec-base.map]
   \loadmapfile[8r-base.map]
   \loadmapfile[qx-base.map]
+  \loadmapfile[t5-base.map]
   \loadmapfile[texnansi-base.map]
   \loadmapfile[original-ams-cmr.map]
   \loadmapfile[original-ams-euler.map]
   \loadmapfile[original-public-lm.map]
   \loadmapfile[original-public-plr.map]
   \loadmapfile[original-public-csr.map]
+  \loadmapfile[original-public-vnr.map]
 \stoptypescript
 
 % This is the base map file, load it to be sure.
@@ -58,67 +60,72 @@
   \loadmapfile[original-public-lm.map]
 \stoptypescript
 
-% latin modern
+\starttypescript [map] [vnr]
+  \loadmapfile[original-public-vnr.map]
+\stoptypescript
 
-\starttypescript [map] [latin-modern] [ec,texnansi,qx]
+% latin modern (t5 to be done)
+
+\starttypescript [map] [latin-modern] [ec,texnansi,qx,t5]
   \loadmapfile[\typescriptthree-public-lm.map]
   \loadmapfile[\typescriptthree-var-exclusive-public-lm.map]
 \stoptypescript
 
 % the next applies to texfont generated metrics
 
-\starttypescript [map] [utopia] [ec,8r,texnansi]
+\starttypescript [map] [utopia] [ec,texnansi,t5,8r]
   \loadmapfile[\typescriptthree-adobe-utopia.map]
 \stoptypescript
 
-\starttypescript [map] [charter] [ec,8r,texnansi]
+\starttypescript [map] [charter] [ec,texnansi,t5,8r]
   \loadmapfile[\typescriptthree-bitstrea-charter.map]
 \stoptypescript
 
-\starttypescript [map] [antykwa-torunska] [ec,8r,texnansi]
+\starttypescript [map] [antykwa-torunska] [ec,texnansi,t5,8r]
   \loadmapfile[\typescriptthree-public-antt.map]
 \stoptypescript
 
-\starttypescript [map] [antykwa-poltawskiego] [ec,8r,texnansi]
+\starttypescript [map] [antykwa-poltawskiego] [ec,texnansi,t5,8r]
   \loadmapfile[\typescriptthree-public-antp.map]
 \stoptypescript
 
-\starttypescript [map] [bookman] [ec,8r,texnansi]
+\starttypescript [map] [bookman] [ec,texnansi,t5,8r]
   \loadmapfile[\typescriptthree-urw-bookman.map]
 \stoptypescript
 
-\starttypescript [map] [courier] [ec,8r,texnansi]
+\starttypescript [map] [courier] [ec,texnansi,t5,8r]
   \loadmapfile[\typescriptthree-urw-courier.map]
 \stoptypescript
 
-\starttypescript [map] [helvetica] [ec,8r,texnansi]
+\starttypescript [map] [helvetica] [ec,texnansi,t5,8r]
   \loadmapfile[\typescriptthree-urw-helvetica.map]
 \stoptypescript
 
-\starttypescript [map] [palatino] [ec,8r,texnansi]
+\starttypescript [map] [palatino] [ec,texnansi,t5,8r]
   \loadmapfile[\typescriptthree-urw-palatino.map]
+  \loadmapfile[\typescriptthree-public-pfl.map]
 \stoptypescript
 
-\starttypescript [map] [times] [ec,8r,texnansi]
+\starttypescript [map] [times] [ec,texnansi,t5,8r]
   \loadmapfile[\typescriptthree-urw-times.map]
 \stoptypescript
 
-\starttypescript [map] [chancery] [ec,8r,texnansi]
+\starttypescript [map] [chancery] [ec,texnansi,t5,8r]
   \loadmapfile[\typescriptthree-urw-zapfchan.map]
 \stoptypescript
 
-\starttypescript [map] [schoolbook] [ec,8r,texnansi]
+\starttypescript [map] [schoolbook] [ec,texnansi,t5,8r]
   \loadmapfile[\typescriptthree-urw-ncntrsbk.map]
 \stoptypescript
 
 % once i can be sure that the map files are in the tree, i will
 % use those instead of original (too many variants anyway)
 
-\starttypescript [map] [palatino] [default,ec,texnansi,8r]
+\starttypescript [map] [palatino] [default,ec,texnansi,t5,8r]
   \loadmapfile[original-youngryu-px.map]
 \stoptypescript
 
-\starttypescript [map] [times] [default,ec,texnansi,8r]
+\starttypescript [map] [times] [default,ec,texnansi,t5,8r]
   \loadmapfile[original-youngryu-tx.map]
 \stoptypescript
 

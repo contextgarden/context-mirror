@@ -145,6 +145,10 @@
 % U+206E 	NATIONAL DIGIT SHAPES
 % U+206F 	NOMINAL DIGIT SHAPES
 
+\ifx\undefined\zerowidthspace \unexpanded\def\zerowidthspace{\kern\zeropoint}
+
+% will be made more efficient
+
 \startunicodevector 32
   \ifcase\numexpr(#1)
     \strippedcsname \enspace          \or % U+2000  	EN QUAD
@@ -158,14 +162,14 @@
     \strippedcsname \unknownchar      \or % U+2008 	PUNCTUATION SPACE
     \strippedcsname \unknownchar      \or % U+2009 	THIN SPACE
     \strippedcsname \unknownchar      \or % U+200A 	HAIR SPACE
-    \strippedcsname \unknownchar      \or % U+200B 	ZERO WIDTH SPACE
+    \strippedcsname \zerowidthspace   \or % U+200B 	ZERO WIDTH SPACE
     \strippedcsname \unknownchar      \or % U+200C 	ZERO WIDTH NON-JOINER
     \strippedcsname \unknownchar      \or % U+200D 	ZERO WIDTH JOINER
     \strippedcsname \unknownchar      \or % U+200E 	LEFT-TO-RIGHT MARK
     \strippedcsname \unknownchar      \or % U+200F 	RIGHT-TO-LEFT MARK
     \strippedcsname \breakinghyphen   \or % U+2010 	HYPHEN
     \strippedcsname \nonbreakinghyphen\or % U+2011 	NON-BREAKING HYPHEN
-    \strippedcsname \endash           \or % U+2012 	FIGURE DASH
+    \strippedcsname \textminus        \or % U+2012 	FIGURE DASH
   % \ifcase\numexpr(#1-19)
     \strippedcsname \endash           \or % U+2013 	EN DASH
     \strippedcsname \emdash           \or % U+2014 	EM DASH
@@ -194,8 +198,8 @@
     \strippedcsname \doubleprime      \or   % U+2033 DOUBLE PRIME
     \strippedcsname \tripleprime      \else % U+2034 TRIPLE PRIME
   \ifcase\numexpr(#1-57)
-    \strippedcsname \unknownchar      \or   % SINGLE LEFT-POINTING ANGLE QUOTATION MARK
-    \strippedcsname \unknownchar      \else % SINGLE RIGHT-POINTING ANGLE QUOTATION MARK
+    \strippedcsname \guilsingleleft   \or   % SINGLE LEFT-POINTING ANGLE QUOTATION MARK
+    \strippedcsname \guilsingleright  \else % SINGLE RIGHT-POINTING ANGLE QUOTATION MARK
   \ifcase\numexpr(#1-172)
     \strippedcsname \texteuro         \else
     \strippedcsname \unknownchar
