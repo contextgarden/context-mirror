@@ -309,7 +309,7 @@
          \let\docommando\gobbleoneargument}
        {\let\listitem\empty}}}
 
-\def\calculatelistwidth#1#2%
+\def\calculatelistwidth#1#2% distance deals with 'broad'
   {#2=\getitemparameter{#1}\c!afstand\relax
    \ifnum\getitemparameter{#1}\c!factor>\zerocount
      \ifdim#2=\zeropoint #2=.5em\fi
@@ -714,6 +714,7 @@
        \ifconditional\inlinelistitem
          \hbox to \dimen0{\ifsubitem\llap{+}\fi\box8\hfill}%
        \else
+         % todo: align+marge binnen de hbox 
          \llap{\hbox to \dimen0{\ifsubitem\llap{+}\fi\box8\hfill}}%
        \fi
      \fi

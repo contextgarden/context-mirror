@@ -1882,11 +1882,11 @@
 % %D
 % %D \leavevmode\haalbuffer
 %
-% \def\dohspread%
+% \def\dohspread
 %   {\flushnextbox
 %    \def\dohspread{\hfil\flushnextbox}}
 %
-% \def\starthspread%
+% \def\starthspread
 %   {\normalhbox to \hsize \bgroup
 %    \let\stophspread\egroup
 %    \processboxes\dohspread}
@@ -2216,7 +2216,7 @@
 \let\bottomrightbox\rightbottombox
 
 \def\middlebox#1%
-  {\normalhbox{\setbox0=\placedbox{#1}\boxoffset=-.5\wd0\rightbox{\box0}}}
+  {\normalhbox{\setbox0\placedbox{#1}\boxoffset=-.5\wd0\rightbox{\box0}}}
 
 %D \macros 
 %D   {initializeboxstack,savebox,foundbox}

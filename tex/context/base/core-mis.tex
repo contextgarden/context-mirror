@@ -1592,6 +1592,7 @@
       \c!breedte,\c!hoogte,\c!maxbreedte,\c!maxhoogte,
       \c!korps,\c!uitlijnen,\c!plaats]%
    \@@ldvoor\bgroup
+   \global\setsystemmode{pairedbox}%
    \beforefirstpairedbox
    \dowithnextbox
      {\betweenbothpairedboxes
@@ -1759,6 +1760,15 @@
       \ifcase\pairedlocationb\hss\or\or\or\or\hss\fi}}
 
 \definepairedbox[\e!legenda]
+
+%D Goody: 
+
+\newevery \everyinsidefloat \relax
+
+\appendtoks
+  \global\resetsystemmode{combination}%
+  \global\resetsystemmode{pairedbox}%
+\to \everyinsidefloat
 
 \newcount\horcombination  % counter
 \newcount\totcombination
@@ -1786,6 +1796,7 @@
 
 \def\dostartcombination[#1][#2]%
   {\bgroup
+   \global\setsystemmode{combination}%
    \ifsecondargument
      \def\currentcombination{#1}%
    \else

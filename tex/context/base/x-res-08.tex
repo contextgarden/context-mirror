@@ -1,0 +1,95 @@
+%D \module
+%D   [      file=x-fig-08,
+%D        version=2002.06.27,
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=Resource Reporting,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
+%C details. 
+
+%D Experimental module!
+%D
+%D \starttyping 
+%D <rl:library>
+%D   <rl:usage>
+%D     <rl:type>figure<rr:type>
+%D     <rl:state>found|missing<rr:state>
+%D     <rl:name>filename<rr:name>
+%D     <rl:suffix>filesuffix<rr:suffix>
+%D     <rl:width>width in pt<rr:width>
+%D     <rl:height>height in pt<rr:height>
+%D   </rl:usage>
+%D <rl:library>
+%D \stoptyping 
+
+\unprotect 
+
+\def\XMLrlprefix{rl:}
+
+\newwrite\XMLrllog
+
+\def\openXMLresourcelog
+  {%\global\let\openXMLresourcelog\relax
+   \immediate\openout\XMLrllog\jobname.rlg\relax
+   \immediate\write\XMLrllog{\writtenXMLstart{\XMLrlprefix library}}}
+
+\def\closeXMLresourcelog
+  {%\global\let\closeXMLresourcelog\relax
+   \immediate\write\XMLrllog{\writtenXMLend{\XMLrlprefix library}}%
+   \immediate\closeout\XMLrllog}
+
+\let\figurefilelabel   \empty
+\let\figurefileoriginal\empty
+\let\figurefilefile    \empty
+
+\def\XMLfeedbackresource#1#2%
+  {\immediate\write\XMLrllog
+     {\writtenXMLelement{\XMLrlprefix usage}%
+        {\writtenXMLelement{\XMLrlprefix type}{#2}%
+         \writtenXMLelement{\XMLrlprefix state}{#1}%
+         \ifx\figurefilelabel\empty 
+           \ifx\figurelabel\s!dummy 
+             % label equals filename 
+           \else
+             \writtenXMLelement{\XMLrlprefix label}{\figurelabel}%
+           \fi
+           \writtenXMLelement{\XMLrlprefix file}{\figurefilename}%
+           \ifx\figurefiletype\empty\else
+             \writtenXMLelement{\XMLrlprefix suffix}{\figurefiletype}%
+           \fi 
+         \else
+           % \figurefilelabel is set in x-res-04 and since 
+           % we fetch from this base using the normal 
+           % \externalfigure macro, the label becomes the 
+           % name of the figurebase  
+           \writtenXMLelement{\XMLrlprefix base}{\figurefilename}%
+           \writtenXMLelement{\XMLrlprefix label}{\figurefilelabel}%
+\ifx\figurefilefile\empty\else
+  \writtenXMLelement{\XMLrlprefix file}{\figurefilefile}%
+\fi 
+\ifx\figurefileoriginal\empty\else
+  \writtenXMLelement{\XMLrlprefix original}{\figurefileoriginal}%
+\fi 
+         \fi
+         \ifnum\figurefilepage>\zerocount
+           \writtenXMLelement{\XMLrlprefix page}{\figurefilepage}%
+         \fi
+         \writtenXMLelement{\XMLrlprefix width}{\figurewidth}%
+         \writtenXMLelement{\XMLrlprefix height}{\figureheight}}}}
+
+\def\XMLfeedbackexternalfigure
+  {\doifmodeelse{*\v!figuur}%
+     {\XMLfeedbackresource{found}}%
+     {\XMLfeedbackresource{missing}}%
+   {figure}} 
+
+\appendtoks \openXMLresourcelog  \to \everystarttext 
+\appendtoks \closeXMLresourcelog \to \everystoptext 
+
+\let \feedbackexternalfigure \XMLfeedbackexternalfigure
+
+\protect \endinput 

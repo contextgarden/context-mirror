@@ -1505,7 +1505,8 @@ sub RunConTeXtFile
     if ($DummyFile)
       { open (TMP,">$JobName.run") ;
       # if ($JobSuffix =~ /(xml|xsd|exa|rng)/io)
-        if ($JobSuffix =~ /xml/io)
+      # if ($JobSuffix =~ /xml/io)
+        if (($JobSuffix =~ /xml/io)||$ForceXML)
           { if ($Filters ne "")
               { print "     using xml filters : $Filters\n" }
             print TMP "\\starttext\n" ;
@@ -1513,7 +1514,7 @@ sub RunConTeXtFile
             print TMP "\\stoptext\n" }
         else
           { print TMP "\\starttext\n" ;
-            print TMP "\\processfile{$JobName}\n" ;
+            print TMP "\\processfile{$JobName.$JobSuffix}\n" ;
             print TMP "\\stoptext\n" }
         close (TMP) ;
         $JobSuffix = "run" }
@@ -1682,7 +1683,7 @@ sub DoRunModule
 sub RunFigures
   { my @Files = @_ ;
     $TypesetFigures = lc $TypesetFigures ;
-    return unless ($TypesetFigures =~ /[abc]/o) ;
+    return unless ($TypesetFigures =~ /[abcd]/o) ;
     unlink "$FiguresFile.pdf" ;
     if (@Files) { RunPerlScript ($TeXUtil, "--figures @Files" ) }
     open (FIG, ">$FiguresFile.tex") ;

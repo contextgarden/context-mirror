@@ -160,51 +160,62 @@
       \egroup}
      \hbox}
 
+\def\collectorparameter#1{\csname\??cb\currentcollector#1\endcsname}
+
 \def\dodosetcollector[#1][#2]% todo: keep reference point 
-  {\getparameters[\??cb#1][#2]%
-   \@@layerxsiz\wd\csname\@@collectorbox#1\endcsname
-   \@@layerysiz\ht\csname\@@collectorbox#1\endcsname
+  {\def\currentcollector{#1}%
+   \chardef\collectorbox\csname\@@collectorbox#1\endcsname
+   \getparameters[\??cb#1][#2]%
+   \@@layerxsiz\wd\collectorbox
+   \@@layerysiz\ht\collectorbox
    \doifvaluesomething{\??cb#1\c!rotatie}
      {\setbox\nextbox\hbox
         {\rotate
            [\c!plaats=\v!hoog,
-            \c!rotatie=\getvalue{\??cb#1\c!rotatie}]
+            \c!rotatie=\collectorparameter\c!rotatie]
            {\flushnextbox}}}%
-   \advance\@@layerysiz\dp\csname\@@collectorbox#1\endcsname
-   \@@layerxpos\getvalue{\??cb#1\c!x}%
-   \advance\@@layerxpos\getvalue{\??cb#1\c!hoffset}%
-   \@@layerypos\getvalue{\??cb#1\c!y}%
-   \advance\@@layerypos\getvalue{\??cb#1\c!voffset}%
-   \ExpandBothAfter\doifinset{\v!onder}{\getvalue{\??cb#1\c!hoek}}
-     {\ifdim\@@layerysiz>\zeropoint
-        \advance\@@layerypos-\@@layerysiz
-        \@@layerypos-\@@layerypos
-      \fi}%
-   \ExpandBothAfter\doifinset{\v!rechts}{\getvalue{\??cb#1\c!hoek}}
+   \advance\@@layerysiz\dp\collectorbox
+   \@@layerxpos\collectorparameter\c!x
+   \advance\@@layerxpos\collectorparameter\c!hoffset
+   \@@layerypos\collectorparameter\c!y
+   \advance\@@layerypos\collectorparameter\c!voffset
+   \doifelse\v!midden{\collectorparameter\c!hoek}
      {\ifdim\@@layerxsiz>\zeropoint
-        \advance\@@layerxpos-\@@layerxsiz
-        \@@layerxpos-\@@layerxpos
+        \advance\@@layerxpos.5\@@layerxsiz
+      \fi
+      \ifdim\@@layerysiz>\zeropoint
+        \advance\@@layerypos.5\@@layerysiz
       \fi}%
+     {\ExpandBothAfter\doifinset\v!onder{\collectorparameter\c!hoek}
+        {\ifdim\@@layerysiz>\zeropoint
+           \advance\@@layerypos-\@@layerysiz
+           \@@layerypos-\@@layerypos
+         \fi}%
+      \ExpandBothAfter\doifinset\v!rechts{\collectorparameter\c!hoek}
+        {\ifdim\@@layerxsiz>\zeropoint
+           \advance\@@layerxpos-\@@layerxsiz
+           \@@layerxpos-\@@layerxpos
+         \fi}}%
    \setbox\nextbox\hbox
-     {\alignedbox[\getvalue{\??cb#1\c!plaats}]\vbox{\flushnextbox}}%
+     {\alignedbox[\collectorparameter\c!plaats]\vbox{\flushnextbox}}%
    \boxmaxdepth\zeropoint % really needed, nice example 
    \global\advance\boxhdisplacement\@@layerxpos
    \ifdim\boxhdisplacement<\zeropoint
-     \global\setbox\csname\@@collectorbox#1\endcsname\hbox
+     \global\setbox\collectorbox\hbox
        {\hskip-\boxhdisplacement
-        \box\csname\@@collectorbox#1\endcsname}%
+        \box\collectorbox}%
    \fi
    \global\advance\boxvdisplacement\@@layerypos
    \ifdim\boxvdisplacement<\zeropoint
-     \global\setbox\csname\@@collectorbox#1\endcsname\hbox
+     \global\setbox\collectorbox\hbox
        {\lower-\boxvdisplacement
-        \box\csname\@@collectorbox#1\endcsname}%
+        \box\collectorbox}%
    \fi
-   \@@layerxsiz\wd\csname\@@collectorbox#1\endcsname
-   \@@layerysiz\ht\csname\@@collectorbox#1\endcsname
-   \advance\@@layerysiz\dp\csname\@@collectorbox#1\endcsname
-   \global\setbox\csname\@@collectorbox#1\endcsname\hbox
-     {\box\csname\@@collectorbox#1\endcsname
+   \@@layerxsiz\wd\collectorbox
+   \@@layerysiz\ht\collectorbox
+   \advance\@@layerysiz\dp\collectorbox
+   \global\setbox\collectorbox\hbox
+     {\box\collectorbox
       \hskip-\@@layerxsiz
       \hskip\@@layerxpos\relax
       \ifdim\boxhdisplacement<\zeropoint
@@ -216,8 +227,12 @@
          \else
            \flushnextbox
          \fi}}%
-   \ifdim\wd\csname\@@collectorbox#1\endcsname<\@@layerxsiz
-     \global\wd\csname\@@collectorbox#1\endcsname\@@layerxsiz 
+   % combine height and depth into depth only (later flushed as height)
+   \global\setbox\collectorbox\hbox
+     {\lower\ht\collectorbox\box\collectorbox}%
+   % just to be sure 
+   \ifdim\wd\collectorbox<\@@layerxsiz
+     \global\wd\collectorbox\@@layerxsiz 
    \fi}
 
 \def\flushcollector[#1]%
@@ -302,9 +317,12 @@
      {\!!widtha \nextboxwd
       \!!heighta\nextboxht
       \bgroup % preserve \nextbox
+      \setuplayer
+        [caption]
+        [\c!breedte=\!!widtha,\c!hoogte=\!!heighta]%
       \setlayer
         [caption]
-        [\c!breedte=\!!widtha,\c!hoogte=\!!heighta,#1]
+        [#1]
         {\getparameters[\??du][#2]%
          \dosetfontattribute\??du\c!letter\stelinterliniein
          \framed
@@ -345,7 +363,7 @@
 \def\doornamenttext[#1][#2]%
   {\bgroup
    \doifassignmentelse{#1}
-     {\getparameters[\s!dummy][\c!variant=\v!a,#2]%
+     {\getparameters[\s!dummy][\c!variant=\v!a,#1]%
       \doifelse\dummyvariant\v!a
         {\egroup\collectedtext}%
         {\egroup\layeredtext  }%
@@ -622,6 +640,7 @@
 \setvalue{\??ab\??ab\v!onder }{\bottombox}
 \setvalue{\??ab\??ab\v!boven }{\topbox   }
 
+\setvalue{\??ab\??ab\v!midden\v!midden}{\middlebox}
 \setvalue{\??ab\??ab\v!links \v!boven }{\lefttopbox}
 \setvalue{\??ab\??ab\v!links \v!onder }{\leftbottombox}
 \setvalue{\??ab\??ab\v!rechts\v!boven }{\righttopbox}

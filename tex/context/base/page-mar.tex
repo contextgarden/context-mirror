@@ -264,18 +264,28 @@
 
 \newcounter\margincontent
 
-\def\flushmargincontent% [#1][#2]#3% hier plaats 'globaal' (geen 1,2 enz)
+\def\doflushmargincontent % [#1][#2]#3% hier plaats 'globaal' (geen 1,2 enz)
   {\doinmarge[\@@implaats][\doinlinker][\doinrechter]} % [#1][#2]{#3}}
 
 \newdimen\marginheight
 
 \let\restoreinterlinepenalty=\relax
 
-\def\flushmargincontents
+\def\flushmargincontents % plural 
   {\restoreinterlinepenalty  % here?
    \ifcase\margincontent\else           % called quite often, so we
      \expandafter\doflushmargincontents % speed up the \fi scan by
    \fi}                                 % using a \do..
+
+% for a manual flush in for instance headers
+
+\def\placemargintexts % to be documented and translated
+  {\ifcase\margincontent\else           
+     \bgroup
+       \let\normalvadjust\fakedvadjust
+       \doflushmargincontents 
+     \egroup
+   \fi}                                 
 
 % \def\doflushmargincontents% % links + rechts
 %   {\bgroup
@@ -323,7 +333,7 @@
       \edef\margetekstscheider{\getvalue{\??im\recurselevel\c!scheider}}%
       \let\margetekstnummer\recurselevel
       \getvalue{\??im\recurselevel}%
-      \global\setvalue{\??im\recurselevel}{}%
+      \letgvalue{\??im\recurselevel}\empty
       \egroup}%
 \ifbinnenkolommen 
   \donetrue  % how fuzzy 
@@ -359,7 +369,7 @@
 \def\docomplexmargewoord#1#2#3%
   {\@EA\setgvalue\@EA{\@EA\??im\@EA\margincontent\@EA}\@EA
      {\@EA\stelinmargein\@EA[\margincontent][]%  see next macro
-      \flushmargincontent[#1][#2]{#3}}}
+      \doflushmargincontent[#1][#2]{#3}}}
 
 \def\complexmargewoord[#1][#2]#3%
   {\doglobal\increment\margincontent
@@ -381,7 +391,7 @@
    \stelinmargein[#1][]% when at outer level, saves local settings
    \setgvalue{\??im#1}%
      {\stelinmargein[#1][]% needed when par start outside group
-      \flushmargincontent[][]{#2}}}
+      \doflushmargincontent[][]{#2}}}
 
 \def\margewoord%
   {\dodoubleempty\complexmargewoord}

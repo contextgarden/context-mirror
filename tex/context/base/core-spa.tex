@@ -429,17 +429,21 @@
 \defineblankmethod   [\v!regel]{\addblankskip+\openlineheight\openlineheight}
 \defineblankmethod  [-\v!regel]{\addblankskip-\openlineheight\openlineheight}
 
-\defineblankmethod [\v!formule   ]{\global\advance\blankoskip\medskipamount}
-\defineblankmethod [\v!geenwit   ]{\global\blankogeenwittrue}
-\defineblankmethod [\v!blokkeer  ]{\global\blankoblokkeertrue}
-\defineblankmethod [\v!forceer   ]{\global\blankoforceertrue}
-\defineblankmethod [\v!buiten    ]{\ifvmode\ifinner\blankobuitentrue\fi\fi}
-\defineblankmethod [\v!reset     ]{\global\blankoresettrue}
-\defineblankmethod [\v!flexibel  ]{\global\lokaalblankoflexibeltrue}
-\defineblankmethod [\v!vast      ]{\global\lokaalblankovasttrue}
-\defineblankmethod [\v!back      ]{\geenblanko}
-\defineblankmethod [\v!halveregel]{\ifgridsnapping\global\fuzzyvskiptrue\fi
-                                   \global\advance\blankoskip .5\lineheight}
+\defineblankmethod [\v!formule    ]{\global\advance\blankoskip\medskipamount}
+\defineblankmethod [\v!geenwit    ]{\global\blankogeenwittrue}
+\defineblankmethod [\v!blokkeer   ]{\global\blankoblokkeertrue}
+\defineblankmethod [\v!forceer    ]{\global\blankoforceertrue}
+\defineblankmethod [\v!buiten     ]{\ifvmode\ifinner\blankobuitentrue\fi\fi}
+\defineblankmethod [\v!reset      ]{\global\blankoresettrue}
+\defineblankmethod [\v!flexibel   ]{\global\lokaalblankoflexibeltrue}
+\defineblankmethod [\v!vast       ]{\global\lokaalblankovasttrue}
+\defineblankmethod [\v!back       ]{\geenblanko}
+\defineblankmethod [\v!halveregel ]{\ifgridsnapping\global\fuzzyvskiptrue\fi
+                                    \global\advance\blankoskip .5\lineheight}
+
+\defineblankmethod [\v!geen       ]{\global\blankoresettrue}
+\defineblankmethod [\v!aansluitend]{\ifvmode\nointerlineskip\fi}
+
 % happens often
 
 \defineblankmethod [2*\v!groot]{\addblankskip+{2\bigskipamount}{2\openlineheight}}
@@ -1787,7 +1791,7 @@
 
 %D Centered looks nicer:
 
-\def\dosetstrut%
+\def\dosetstrut
   {\let\strut\normalstrut
    \setbox\strutbox\normalhbox
      {\normalhbox to \zeropoint
@@ -1942,14 +1946,13 @@
 % gemaakt.
 
 \def\tfskipsize{1em\relax}
-
 \def\tfkernsize{1ex\relax}
 
-\def\tfskip%
-  {{\tf\hskip\tfskipsize}}
+\def\tfskip{\dotfskip\tfskipsize}
+\def\tfkern{\dotfkern\tfkernsize}
 
-\def\tfkern%
-  {{\tf\kern\tfkernsize}}
+\def\dotfskip#1{{\tf\hskip#1}}
+\def\dotfkern#1{{\tf\kern #1}}
 
 \newskip\linkssmaller
 \newskip\rechtssmaller
@@ -2103,8 +2106,8 @@
    \let\raggedtopcommand\empty
    \let\raggedbottomcommand\empty
    \doifsomething{#1}
-     {\doifinsetelse{\v!ruim} {#1}\!!doneatrue\!!doneafalse
-      \doifinsetelse{\v!breed}{#1}\!!donebtrue\!!donebfalse
+     {\doifinsetelse\v!ruim {#1}\!!doneatrue\!!doneafalse
+      \doifinsetelse\v!breed{#1}\!!donebtrue\!!donebfalse
       \!!donectrue
       \rawprocesscommalist[#1]\dododosetraggedcommand}}
 
@@ -3171,6 +3174,15 @@
          \localstoptextcolor
          \dostopgraphicgroup}}%
      \vbox}
+
+%D This works only in a properly strutted line, and is meant 
+%D for deeply burried operations, like in heads. 
+
+\def\fakedvadjust
+  {\dowithnextbox
+     {\setbox\nextbox\hbox{\llap{\lower\strutdepth\box\nextbox}}%
+      \smashedbox\nextbox}%
+   \vtop}
 
 \def\flexiblespaceamount#1#2#3%
          {#1\fontdimen2\font

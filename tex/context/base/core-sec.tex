@@ -1478,89 +1478,6 @@
 
 % todo: kap
 
-% \def\doplaatskoptekst#1#2#3#4%
-%   {\beginheadplacement{#1}%
-%    \iflegekop
-%      \setbox0\ifvertical\vbox\else\hbox\fi to \zeropoint
-%        {\headnumbercontentfalse
-%         \resetsystemmode\v!sectienummer
-%         #2}%
-%      \makestrutofbox0
-%    \else
-%      \setbox0=\ifvertical\vbox\else\hbox\fi % \vhbox
-%        {\headnumbercontentfalse
-%         \resetsystemmode\v!sectienummer
-%         \getvalue{\??ko#1\c!commando}
-%           {} % no number
-%           {\doattributes
-%              {\??ko#1}\c!letter\c!kleur
-%              {\doattributes
-%                 {\??ko#1}\c!tekstletter\c!tekstkleur
-%                 {\dontconvertfont
-%                  \ifdisplaysectionhead
-%                    \stelinterliniein
-%                  \else
-%                    \stelspatieringin
-%                  \fi
-%                  #2%
-%                  \getvalue{\??ko#1\c!voorcommando}%
-%                  \ifdisplaysectionhead
-%                    \getvalue{\??ko#1\c!tekstcommando}%
-%                      {\setstrut\begstrut#3\endstrut}%
-%                    \xdef\localheaddepth{\the\dp\strutbox}%
-%                  \else
-%                    \getvalue{\??ko#1\c!tekstcommando}{#3}%
-%                  \fi
-%                  \getvalue{\??ko#1\c!nacommando}%
-%                  \ifdisplaysectionhead\endgraf\fi}}}}%  
-%    \fi  
-%    \endheadplacement{#1}{#4}}
-% 
-% \def\doplaatskopnummertekst#1#2#3#4#5%
-%   {\beginheadplacement{#1}%
-%    \iflegekop
-%      \setbox0\ifvertical\vbox\else\hbox\fi to \zeropoint
-%        {\doiftextelse{#3}
-%           {\setsystemmode  \v!sectienummer\headnumbercontenttrue }
-%           {\resetsystemmode\v!sectienummer\headnumbercontentfalse}%
-%         #2}%
-%      \makestrutofbox0
-%    \else
-%      \setbox0=\ifvertical\vbox\else\hbox\fi % \vhbox
-%        {\doiftextelse{#3}
-%           {\setsystemmode  \v!sectienummer\headnumbercontenttrue }
-%           {\resetsystemmode\v!sectienummer\headnumbercontentfalse}%
-%         \getvalue{\??ko#1\c!commando}%
-%           {\doattributes{\??ko#1}\c!letter\c!kleur
-%              {\doattributes{\??ko#1}\c!nummerletter\c!nummerkleur
-%                 {\getvalue{\??ko#1\c!voorcommando}%
-%                  \ifdisplaysectionhead
-%                    \getvalue{\??ko#1\c!nummercommando}%
-%                      {\setstrut\begstrut#3\endstrut}%
-%                  \else
-%                    \getvalue{\??ko#1\c!nummercommando}{#3}%
-%                  \fi}}}
-%           {\doattributes{\??ko#1}\c!letter\c!kleur
-%              {\doattributes{\??ko#1}\c!tekstletter\c!tekstkleur
-%                 {\dontconvertfont
-%                  \ifdisplaysectionhead
-%                    \stelinterliniein
-%                  \else
-%                    \stelspatieringin
-%                  \fi
-%                  #2%
-%                  \ifdisplaysectionhead
-%                    \getvalue{\??ko#1\c!tekstcommando}%
-%                      {\setstrut\begstrut#4\endstrut}%
-%                    \xdef\localheaddepth{\the\dp\strutbox}%
-%                  \else
-%                    \getvalue{\??ko#1\c!tekstcommando}{#4}%
-%                  \fi
-%                  \getvalue{\??ko#1\c!nacommando}%
-%                  \ifdisplaysectionhead\endgraf\fi}}}}%
-%    \fi
-%    \endheadplacement{#1}{#5}}
-
 % to be documented: \placeheadtext \placeheadnumber
 
 \unexpanded\def\placeheadtext
@@ -1584,6 +1501,24 @@
    \dostopattributes
    \egroup}
 
+\chardef\headtimingmode=0
+
+% \chardef\headtimingmode=1
+% 
+% Martin Kolarik's problem: 
+%
+% \setuphead[section][command=\doTitle]
+% 
+% \def\doTitle#1#2%
+%   {\ruledvbox{\forgetall \hsize=4cm
+%      \ruledhbox{\ruledvtop{#1}\ruledvtop{#2}}}}
+% 
+% \section{test test test test test test test test test test
+% test test test test test test test}
+
+\def\placeheadmargintexts#1%
+  {\doifvalue{\??ko#1\c!margetekst}\v!ja\placemargintexts}
+
 \def\doplaatskoptekst#1#2#3#4%
   {\beginheadplacement{#1}%
    \iflegekop
@@ -1596,6 +1531,8 @@
      \setbox0=\ifvertical\vbox\else\hbox\fi % \vhbox
        {\headnumbercontentfalse
         \resetsystemmode\v!sectienummer
+        % less interfering 
+        \ifcase\headtimingmode\or#2\fi
         % outerside font determines distance
         \dosetfontattribute{\??ko#1}\c!letter
         % but we don't want color to influence user commands 
@@ -1609,8 +1546,9 @@
                \else
                  \stelspatieringin
                \fi
-               #2%
+               \ifcase\headtimingmode#2\fi
                \getvalue{\??ko#1\c!voorcommando}%
+               \placeheadmargintexts{#1}% binnen #3? 
                \ifdisplaysectionhead
                  \getvalue{\??ko#1\c!tekstcommando}%
                    {\setstrut\begstrut#3\endstrut}%
@@ -1625,7 +1563,7 @@
    \fi  
    \endheadplacement{#1}{#4}}
 
-\def\doplaatskopnummertekst#1#2#3#4#5%
+\def\doplaatskopnummertekst#1#2#3#4#5% maybe move modes outside box
   {\beginheadplacement{#1}%
    \iflegekop
      \setbox0\ifvertical\vbox\else\hbox\fi to \zeropoint
@@ -1639,6 +1577,8 @@
        {\doiftextelse{#3}
           {\setsystemmode  \v!sectienummer\headnumbercontenttrue }
           {\resetsystemmode\v!sectienummer\headnumbercontentfalse}%
+        % less interfering 
+        \ifcase\headtimingmode\or#2\fi
         % outerside font determines distance
         \dosetfontattribute{\??ko#1}\c!letter
         % but we don't want color to influence user commands 
@@ -1646,6 +1586,7 @@
           {\dostartattributes{\??ko#1}\c!letter\c!kleur\empty
              \dostartattributes{\??ko#1}\c!nummerletter\c!nummerkleur\empty
                \getvalue{\??ko#1\c!voorcommando}%
+               \placeheadmargintexts{#1}% binnen #3? 
                \ifdisplaysectionhead
                  \getvalue{\??ko#1\c!nummercommando}%
                    {\setstrut\begstrut#3\endstrut}%
@@ -1662,7 +1603,8 @@
                \else
                  \stelspatieringin
                \fi
-               #2%
+               \ifcase\headtimingmode#2\fi
+               \placeheadmargintexts{#1}% binnen #3? 
                \ifdisplaysectionhead
                  \getvalue{\??ko#1\c!tekstcommando}%
                    {\setstrut\begstrut#4\endstrut}%
@@ -2014,6 +1956,7 @@
          \c!file=,
          \c!expansie=,
          \c!grid=,
+         \c!margetekst=,
          #2]%
       \ConvertToConstant\doifnot{#1}{\getvalue{\??ko#1\c!default}}
         {\doifsomething{\getvalue{\??ko#1\c!default}}
@@ -2026,7 +1969,7 @@
               %\c!nummerletter,\c!tekstletter,
               %\c!expansie, % why njet ?
                \c!uitlijnen,\c!titeluitlijnen,\c!tolerantie,\c!grid,
-               \c!nummercommando,\c!tekstcommando]}}%
+               \c!nummercommando,\c!tekstcommando,\c!margetekst]}}%
       \getparameters[\??ko#1][#2]%
       \doifsomething{\getvalue{\??ko#1\c!sectie}}
         {\doifelsemarking{#1}% \doifundefined{\??mk#1}
@@ -2051,7 +1994,7 @@
            %\c!nummerletter,\c!tekstletter,
            %\c!expansie, % why njet ?
             \c!uitlijnen,\c!titeluitlijnen,\c!tolerantie,\c!grid,
-            \c!nummercommando,\c!tekstcommando]%
+            \c!nummercommando,\c!tekstcommando,\c!margetekst]%
 \getparameters[\??ko#1][\c!expansie=]% iig een value, rather fuzzy
          \definieermarkering[#1][#2]%
          \definieermarkering[#1\v!nummer][#2\v!nummer]%

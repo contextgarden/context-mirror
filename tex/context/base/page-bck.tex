@@ -575,25 +575,40 @@
      \resetglobal \expandafter\gobbleoneargument
    \fi}
 
+% \def\doaddlocalbackground#1%
+%   {\scratchdimen\dp#1%
+%    \edef\next
+%      {\noexpand\redoglobal\wd#1\the\wd#1%
+%       \noexpand\redoglobal\ht#1\the\ht#1%
+%       \noexpand\dodoglobal\dp#1\the\dp#1}%
+%    \dp#1\zeropoint
+%    \redoglobal\setbox#1\hbox
+%      {\localframed
+%         [\??ma\v!lokaal]
+%         [\c!kader=\v!uit,
+%          \c!offset=\v!overlay,
+%          \c!achtergrond=\localbackground]%
+%         {\registerMPlocaltextarea{\box#1}}}%
+%    \ifdim\naturalfloatdepth>\zeropoint % maybe take difference 
+%      \redoglobal\setbox#1\hbox{\lower\scratchdimen\box#1}%
+%    \fi 
+%    \doglobal\increment\localpositionnumber % afterwards ! 
+%    \next}
+
 \def\doaddlocalbackground#1%
-  {\scratchdimen\dp#1%
-   \edef\next
+  {\edef\next
      {\noexpand\redoglobal\wd#1\the\wd#1%
       \noexpand\redoglobal\ht#1\the\ht#1%
       \noexpand\dodoglobal\dp#1\the\dp#1}%
-   \dp#1\zeropoint
-   \redoglobal\setbox#1\hbox
+   \dodoglobal\setbox#1\hbox
      {\localframed
         [\??ma\v!lokaal]
         [\c!kader=\v!uit,
          \c!offset=\v!overlay,
          \c!achtergrond=\localbackground]%
         {\registerMPlocaltextarea{\box#1}}}%
-   \ifdim\naturalfloatdepth>\zeropoint % maybe take difference 
-     \redoglobal\setbox#1\hbox{\lower\scratchdimen\box#1}%
-   \fi 
-\doglobal\increment\localpositionnumber % afterwards ! 
-   \next}
+   \next
+   \doglobal\increment\localpositionnumber\relax} % afterwards ! 
 
 % Test how previous macro behaves with depth: 
 %

@@ -1814,6 +1814,7 @@ var:align:left,middle,right,no::
 var:conversion:numbers,characters,Characters,romannumerals,Romannumerals::
 var:way:bytext,by*section::
 var:separator:*text::
+var:distance:*dimension::
 stopsetup
 
 startsetup
@@ -2359,6 +2360,7 @@ var:placehead:yes,no,empty::
 var:incrementnumber:yes,no,list,*file::
 var:file:*name::
 var:expansion:yes,command,no::
+var:margintext:yes,no::
 ivr:setupheads::
 stopsetup
 
@@ -2735,7 +2737,7 @@ stopsetup
 startsetup
 com:blank:
 typ:vals/:
-val:repeat/small,repeat/medium,repeat/big, nowhite,back,white,disable,force,reset, line,halfline,formula,fixed,flexible:big:
+val:repeat/small,repeat/medium,repeat/big, nowhite,back,white,disable,force,reset, line,halfline,formula,fixed,flexible,none:big:
 stopsetup
 
 startsetup

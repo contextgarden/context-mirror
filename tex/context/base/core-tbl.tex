@@ -841,11 +841,16 @@
 %D would make things less clear.
 
 \def\doregistertabulateparoptions
-  {\ifinsidefloat \else \iftrialtypesetting \else
+  {\iftrialtypesetting \else
      \registerparoptions
-% unsafe in crossing pages, at each b...
-%     \global\let\registertabulateparoptions\empty
-   \fi \fi}
+     \ifinsidefloat 
+       % that is, an unbreakable one 
+       \global\let\registertabulateparoptions\empty
+     \else
+       % unsafe in crossing pages, at each b...
+       % \global\let\registertabulateparoptions\empty
+     \fi
+   \fi}
 
 \appendtoks
   \global\let\registertabulateparoptions\doregistertabulateparoptions

@@ -16,7 +16,44 @@
 %D features. 
 
 \unprotect
+
+\def\showexternalfigured
+  {\bgroup
+   \immediate\openout\scratchwrite=mpfigs.mp
+   \def\presetfigure[##1][##2]%
+     {\getfiguredimensionsonly[##1]% \pagefigure[##1]%
+      \immediate\write\scratchwrite
+         {registerfigure("##1",\figurewidth,\figureheight)}}
+   \pushendofline
+   \readjobfile\@@exfile\donothing\donothing
+   \popendofline
+   \immediate\closeout\scratchwrite
+   \egroup}
+
+\def\setsidefloatparagraph
+  {%\advance\sidefloatprogress \sidefloatbottomskip
+   %\!!counta\sidefloatprogress
+\scratchdimen\sidefloatprogress
+\advance\scratchdimen \ht\strutbox
+\advance\scratchdimen -10sp % new, needed in prikkels, prevent rounding errors 
+\!!counta\scratchdimen
+   \divide\!!counta \baselineskip
+   \ifnum\!!counta>0
+     \hangindent \ifrightfloat-\fi\sidefloatwidth
+     \hangafter-\!!counta
+   \fi
+   \global\advance\sidefloatparagraph \plusone
+   \iftracesidefloats
+     \hskip-\sidefloatwidth
+     \color[darkgray]%
+       {\vrule\!!height.5\s!pt\!!depth.5\s!pt\!!width\sidefloatwidth
+       %\hskip-.25\bodyfontsize\showstruts\strut\hskip.25\bodyfontsize}%
+        \llap{\showstruts\strut\hskip.25\bodyfontsize}}%
+   \fi}
 
+
+
+
 \writestatus{\m!systems}{beware: some patches loaded from cont-new.tex!}
 
 \def\ejectinsert

@@ -517,44 +517,58 @@
 %D
 %D These macros are called upon quite often and so we optimized
 %D them a bit.
-
-\def\dosetvalue#1#2#3%
-  {\let\c!internal!\c!internal!n
-   \p!doifundefined{\k!prefix!#2}%
-     \let\c!internal!\c!internal!y
-     \let\donottest\doprocesstest
-     \@EA\def\csname#1#2\endcsname{#3}%
-   \else
-     \let\c!internal!\c!internal!y
-     \let\donottest\doprocesstest
-     \@EA\def\csname#1\csname\k!prefix!#2\endcsname\endcsname{#3}%
-   \fi}
-
-\def\dosetevalue#1#2#3%
-  {\let\c!internal!\c!internal!n
-   \p!doifundefined{\k!prefix!#2}%
-     \let\c!internal!\c!internal!y
-     \let\donottest\doprocesstest
-     \@EA\edef\csname#1#2\endcsname{#3}%
-   \else
-     \let\c!internal!\c!internal!y
-     \let\donottest\doprocesstest
-     \@EA\edef\csname#1\csname\k!prefix!#2\endcsname\endcsname{#3}%
-   \fi}
-
-\def\docopyvalue#1#2#3%
-  {\let\c!internal!\c!internal!n
-   \p!doifundefined{\k!prefix!#3}%
-     \let\c!internal!\c!internal!y
-     \let\donottest\doprocesstest
-     \@EA\def\csname#1#3\endcsname%
-       {\csname#2#3\endcsname}%
-   \else
-     \let\c!internal!\c!internal!y
-     \let\donottest\doprocesstest
-     \@EA\def\csname#1\csname\k!prefix!#3\endcsname\endcsname%
-       {\csname#2\csname\k!prefix!#3\endcsname\endcsname}%
-   \fi}
+%D
+%D \starttypen 
+%D \def\dosetvalue#1#2#3%
+%D   {\let\c!internal!\c!internal!n
+%D    \p!doifundefined{\k!prefix!#2}%
+%D      \let\c!internal!\c!internal!y
+%D      \let\donottest\doprocesstest
+%D      \@EA\def\csname#1#2\endcsname{#3}%
+%D    \else
+%D      \let\c!internal!\c!internal!y
+%D      \let\donottest\doprocesstest
+%D      \@EA\def\csname#1\csname\k!prefix!#2\endcsname\endcsname{#3}%
+%D    \fi}
+%D 
+%D \def\dosetevalue#1#2#3%
+%D   {\let\c!internal!\c!internal!n
+%D    \p!doifundefined{\k!prefix!#2}%
+%D      \let\c!internal!\c!internal!y
+%D      \let\donottest\doprocesstest
+%D      \@EA\edef\csname#1#2\endcsname{#3}%
+%D    \else
+%D      \let\c!internal!\c!internal!y
+%D      \let\donottest\doprocesstest
+%D      \@EA\edef\csname#1\csname\k!prefix!#2\endcsname\endcsname{#3}%
+%D    \fi}
+%D 
+%D \def\dosetgvalue#1#2#3%
+%D   {\let\c!internal!\c!internal!n
+%D    \p!doifundefined{\k!prefix!#2}%
+%D      \let\c!internal!\c!internal!y
+%D      \let\donottest\doprocesstest
+%D      \@EA\gdef\csname#1#2\endcsname{#3}%
+%D    \else
+%D      \let\c!internal!\c!internal!y
+%D      \let\donottest\doprocesstest
+%D      \@EA\gdef\csname#1\csname\k!prefix!#2\endcsname\endcsname{#3}%
+%D    \fi}
+%D 
+%D \def\docopyvalue#1#2#3% 
+%D   {\let\c!internal!\c!internal!n
+%D    \p!doifundefined{\k!prefix!#3}%
+%D      \let\c!internal!\c!internal!y
+%D      \let\donottest\doprocesstest % still needed ? 
+%D      \@EA\def\csname#1#3\endcsname%
+%D        {\csname#2#3\endcsname}%
+%D    \else
+%D      \let\c!internal!\c!internal!y
+%D      \let\donottest\doprocesstest % still needed ? 
+%D      \@EA\def\csname#1\csname\k!prefix!#3\endcsname\endcsname%
+%D        {\csname#2\csname\k!prefix!#3\endcsname\endcsname}%
+%D    \fi}
+%D \stoptypen 
 
 \def\doresetvalue#1#2%
   {\dosetvalue{#1}{#2}{}}
@@ -562,27 +576,29 @@
 \def\doignorevalue#1#2#3%
   {\dosetvalue{#1}{#2}{}}
 
-%\def\dogetvalue#1#2%
-%  {\csname#1\csname\k!prefix!#2\endcsname\endcsname}
+% \def\dogetvalue#1#2%
+%   {\csname#1\csname\k!prefix!#2\endcsname\endcsname}
 
 %D Although maybe not clearly visible, there is a
 %D considerable profit in further optimization. By expanding
 %D the embedded \type {\csname} we can reduce the format file
 %D by about 5\% (60~KB out of 1.9~MB).
-
-\def\docopyvalue#1#2#3%  c -> k
-  {\p!doifundefined{\k!prefix!#3}%
-     \let\donottest\doprocesstest
-     \@EAEAEA\def\@EA
-       \csname\@EA#1\@EA#3\@EA
-       \endcsname\@EA{\csname#2#3\endcsname}%
-   \else
-     \let\donottest\doprocesstest
-     \@EAEAEA\def\@EA
-       \csname\@EA#1\@EA\csname\@EA\k!prefix!\@EA#3\@EA\endcsname\@EA
-       \endcsname\@EA{\csname#2\csname\k!prefix!#3\endcsname\endcsname}%
-   \fi}
-
+%D 
+%D \starttypen 
+%D \def\docopyvalue#1#2#3%  c -> k
+%D   {\p!doifundefined{\k!prefix!#3}%
+%D      \let\donottest\doprocesstest
+%D      \@EAEAEA\def\@EA
+%D        \csname\@EA#1\@EA#3\@EA
+%D        \endcsname\@EA{\csname#2#3\endcsname}%
+%D    \else
+%D      \let\donottest\doprocesstest
+%D      \@EAEAEA\def\@EA
+%D        \csname\@EA#1\@EA\csname\@EA\k!prefix!\@EA#3\@EA\endcsname\@EA
+%D        \endcsname\@EA{\csname#2\csname\k!prefix!#3\endcsname\endcsname}%
+%D    \fi}
+%D \stoptypen
+%D 
 %D The next alternatives are slightly faster.
 
 \beginTEX
@@ -1173,7 +1189,7 @@
    \fi}
 
 %D The constants and variables are defined as described. When
-%D \type{\interfacetranslation} is \type{true}, we also
+%D \type {\interfacetranslation} is \type{true}, we also
 %D generate a reverse translation. Because we don't want to put
 %D too big a burden on \TEX's hash table, this is no default
 %D behavior. Reverse translation is used in the commands that
@@ -1181,6 +1197,9 @@
 %D the real \CONTEXT\ commands in an abstract way and generate
 %D those reference cards for each language without further
 %D interference.
+
+%D Anno 2003 I've forgotten why the \type {\c!internal} is 
+%D still in there; it's probably a left over from an experiment. 
 
 \let\c!internal!y \string
 \def\c!internal!n {-}

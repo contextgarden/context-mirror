@@ -1814,6 +1814,7 @@ var:uitlijnen:links,midden,rechts,nee::
 var:conversie:cijfers,letters,Letters,romeins,Romeins::
 var:wijze:pertekst,per*sectie::
 var:scheider:*tekst::
+var:afstand:*maat::
 stopsetup
 
 startsetup
@@ -2359,6 +2360,7 @@ var:plaatskop:ja,nee,leeg::
 var:verhoognummer:ja,nee,lijst,*file::
 var:file:*naam::
 var:expansie:ja,commando,nee::
+var:margetekst:ja,nee::
 ivr:stelkoppenin::
 stopsetup
 
@@ -2735,7 +2737,7 @@ stopsetup
 startsetup
 com:blanko:
 typ:vals/:
-val:repeat/klein,repeat/middel,repeat/groot, geenwit,terug,wit,blokkeer,forceer,reset, regel,halveregel,formule,vast,flexibel:groot:
+val:repeat/klein,repeat/middel,repeat/groot, geenwit,terug,wit,blokkeer,forceer,reset, regel,halveregel,formule,vast,flexibel,geen:groot:
 stopsetup
 
 startsetup

@@ -56,8 +56,8 @@
 
 \ifx\nextrandom\undefined
 
-  \def\setrannum#1#2#3{#1=1  }
-  \def\setrandim#1#2#3{#1=1pt}
+  \def\setrannum#1#2#3{#1\plusone}
+  \def\setrandim#1#2#3{#1\onepoint}
 
 \else
 
@@ -72,7 +72,7 @@
      \verynormalnextrandom
      \egroup}
 
-  \chardef\randomseedfrozen=0
+  \chardef\randomseedfrozen\zerocount
 
   \def\nextrandom
     {\bgroup
@@ -81,17 +81,17 @@
        {\ifcase\randomseedfrozen\normalnextrandom\fi}%
      \egroup}
 
-  % avoid scratch dimens 0 and 2 
-
-  \unprotect 
-
-  \def\setrandim#1#2#3% dimen register, minimum length, maximum length
-    {\scratchdimen#2\edef\!!stringa{\number\scratchdimen}%
-     \scratchdimen#3\edef\!!stringb{\number\scratchdimen}%
-     \setrannum\ranval\!!stringa\!!stringb
-     #1\ranval sp\relax}
-
-  \protect 
+  % avoid scratch dimens 0 and 2 (already recoded in third-ran
+  % 
+  % \unprotect 
+  %  
+  % \def\setrandim#1#2#3% dimen register, minimum length, maximum length
+  %   {\scratchdimen#2\edef\!!stringa{\number\scratchdimen}%
+  %    \scratchdimen#3\edef\!!stringb{\number\scratchdimen}%
+  %    \setrannum\ranval\!!stringa\!!stringb
+  %    #1\ranval\s!sp\relax}
+  % 
+  % \protect 
 
 \fi
 
@@ -109,15 +109,15 @@
 \let\getrandomdimen = \setrandim
 
 \def\getrandomnumber#1#2#3%
-  {\getrandomcount{\scratchcounter}{#2}{#3}%
+  {\getrandomcount\scratchcounter{#2}{#3}%
    \edef#1{\the\scratchcounter}}
 
 \def\getrandomfloat#1#2#3%
-  {\getrandomdimen{\scratchdimen}{#2pt}{#3pt}%
+  {\getrandomdimen\scratchdimen{#2\s!pt}{#3\s!pt}%
    \edef#1{\withoutpt\the\scratchdimen}}
 
 \unexpanded \def\setrandomseed#1%
-  {\randomi=#1\relax}
+  {\randomi#1\relax}
 
 \unexpanded \def\getrandomseed#1%
   {\edef#1{\number\randomi}}

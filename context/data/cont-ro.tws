@@ -1814,6 +1814,7 @@ var:aliniere:stanga,centru,dreapta,nu::
 var:conversie:numere,caractere,Caractere,numereromane,Numereromane::
 var:mod:detext,de*sectiune::
 var:separator:*text::
+var:distanta:*dimensiune::
 stopsetup
 
 startsetup
@@ -2359,6 +2360,7 @@ var:punetitlu:da,nu,gol::
 var:numarincrement:da,nu,lista,*fisier::
 var:fisier:*nume::
 var:expansiune:da,comanda,nu::
+var:textmargine:da,nu::
 ivr:seteazatitluri::
 stopsetup
 
@@ -2735,7 +2737,7 @@ stopsetup
 startsetup
 com:blanc:
 typ:vals/:
-val:repeat/mic,repeat/mediu,repeat/mare, faraalb,inapot,alb,dezactivat,fortat,reset, linie,jumatatelinie,formula,fixat,flexibil:mare:
+val:repeat/mic,repeat/mediu,repeat/mare, faraalb,inapot,alb,dezactivat,fortat,reset, linie,jumatatelinie,formula,fixat,flexibil,niciunul:mare:
 stopsetup
 
 startsetup

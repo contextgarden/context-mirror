@@ -495,22 +495,22 @@
 \def\@@ddvolgendesubsubsubnummer#1[#2]%
   {\edef\doornummer{\getvalue{\??dd#1\??dd\c!nummer}}%
    \verhoognummer[\v!sub\v!sub\v!sub\doornummer]%
-   \rawreference{\s!num}{#2}{\showdnsubsubsubnummer{\doornummer}}}%
+   \rawreference\s!num{#2}{\showdnsubsubsubnummer{\doornummer}}}%
 
 \def\@@ddvolgendesubsubnummer#1[#2]%
   {\@@ddresetsubsubsubnummer{#1}%
    \verhoognummer[\v!sub\v!sub\doornummer]%
-   \rawreference{\s!num}{#2}{\showdnsubsubnummer{\doornummer}}}
+   \rawreference\s!num{#2}{\showdnsubsubnummer{\doornummer}}}
 
 \def\@@ddvolgendesubnummer#1[#2]%
   {\@@ddresetsubsubnummer{#1}%
    \verhoognummer[\v!sub\doornummer]%
-   \rawreference{\s!num}{#2}{\showdnsubnummer{\doornummer}}}
+   \rawreference\s!num{#2}{\showdnsubnummer{\doornummer}}}
 
 \def\@@ddvolgendenummer#1[#2]%
   {\@@ddresetsubnummer{#1}%
    \verhoognummer[\doornummer]%
-   \rawreference{\s!num}{#2}{\showdnnummer{\doornummer}}}
+   \rawreference\s!num{#2}{\showdnnummer{\doornummer}}}
 
 \def\dodosteldoornummerenin[#1][#2]%
   {\getparameters[\??dd#1][#2]% 

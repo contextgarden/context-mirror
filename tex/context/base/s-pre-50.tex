@@ -25,37 +25,6 @@
 %D texexec --pdf --mode=demo s-pre-50 
 %D \stoptypen 
 
-%D Hack. This will move to the kernel. 
-
-\ifx\nofshipouts\undefined 
-
-  \newcount\nofshipouts
-
-  \appendtoks
-    \global\advance\nofshipouts\plusone
-  \to \everyaftershipout
-
-  \def\cwriteutility#1%
-    {\write\uti{\noexpand\checkedutility{\number\nofshipouts}{#1}}}
- 
-  \def\cwriteutilitycommand#1%
-    {\write\uti{\noexpand\checkedutility{\number\nofshipouts}{c \string#1}}}
-
-  \let\checkedutility\secondoftwoarguments
-
-  \def\docheckedutility#1#2{\ifnum#1=\nofshipouts#2\fi}
-
-  \prependtoks 
-    \let\checkedutility\docheckedutility
-  \to \everybeforeshipout
-
-  \def\checkutilities
-    {\let\writeutility       \cwriteutility
-     \let\writeutilitycommand\cwriteutilitycommand
-     \let\checkutilities     \relax}
-
-\fi 
-
 % Basic definitions.
 
 \defineframedtext
@@ -90,7 +59,7 @@
 
 \stopmode
 
-%D Structure.
+%D Structure and trick. 
 
 \def\StartSteps
   {\checkutilities}
@@ -114,9 +83,7 @@
 
 \doifnotmode{demo}{\endinput}
 
-\setupcolors[state=start]
-\setuppapersize[S6][S6]
-\setuplayout[middle]
+\setupcolors[state=start] \setuppapersize[S6][S6] \setuplayout[middle]
 
 \starttext
 

@@ -1814,6 +1814,7 @@ var:ausrichtung:links,mittig,rechts,nein::
 var:konversion:ziffern,buchstaben,Buchstaben,roemischezahlen,Roemischezahlen::
 var:art:protext,pro*Abschnitt::
 var:seperator:*Text::
+var:abstand:*Dimension::
 stopsetup
 
 startsetup
@@ -2359,6 +2360,7 @@ var:setzekopf:ja,nein,leer::
 var:nummererhoehen:ja,nein,liste,*Datei::
 var:datei:*Name::
 var:expansion:ja,befehl,nein::
+var:marginaltext:ja,nein::
 ivr:stelleueberschriftenein::
 stopsetup
 
@@ -2735,7 +2737,7 @@ stopsetup
 startsetup
 com:blanko:
 typ:vals/:
-val:repeat/klein,repeat/mittel,repeat/gross, keinweiss,zurueck,weiss,sperren,zwinge,zuruecksetzten, zeile,halbezeile,formel,fest,flexibel:gross:
+val:repeat/klein,repeat/mittel,repeat/gross, keinweiss,zurueck,weiss,sperren,zwinge,zuruecksetzten, zeile,halbezeile,formel,fest,flexibel,kein:gross:
 stopsetup
 
 startsetup

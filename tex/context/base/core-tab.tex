@@ -1054,7 +1054,6 @@
       \getTABLEnofcolumns\TABLEformat 
       \expandafter\BeginFormat\TABLEformat\EndFormat}}
 
-
 \def\finishTABLE
   {\chuckTABLEautorow
    \unskip\crcr
@@ -1655,13 +1654,12 @@
 
 \bgroup
 \catcode`\|=\@@active 
-%\gdef\protectTABLEbar{\let|\letterbar} % maybe in \cleanupfeatures
-\doglobal \appendtoks \let|\letterbar \to \everycleanupfeatures  
+\gdef\protectTABLEbar{\let|\letterbar} 
 \catcode`\|=\@@other  
 \gdef\getTABLEnofcolumns#1%
   {\bgroup
    \cleanupfeatures % needed ! 
-%   \protectTABLEbar 
+   \protectTABLEbar % is still a feature 
    \expanded{\convertargument#1}\to\ascii
    \@EA\doglobal\@EA\counttoken\@EA|\@EA\in\ascii\to\maxTABLEcolumn
    \global\advance\maxTABLEcolumn \minusone

@@ -28,10 +28,10 @@
 %D preset value of .4pt equals the default hard coded \TEX\
 %D rule width.
 
-\newdimen\linewidth
+\newdimen\linewidth  
 
 \def\dosetuplinewidth[#1]%
-  {\assigndimension{#1}{\linewidth}{0.2pt}{0.4pt}{0.6pt}}
+  {\assigndimension{#1}\linewidth{.2\s!pt}{.4\s!pt}{.6\s!pt}}
 
 \def\setuplinewidth
   {\dosingleargument\dosetuplinewidth}
@@ -200,7 +200,7 @@
   {\vrule\!!width#1\!!height#2\!!depth#3}%
 
 \def\dofilledroundbox\width#1\height#2\depth#3\radius#4\\%
-  {\ovalbox{#1}{#2}{#3}{\ruledlinewidth}{#4}\v!uit\v!aan}
+  {\ovalbox{#1}{#2}{#3}\ruledlinewidth{#4}\v!uit\v!aan}
 
 \def\ovalbox#1#2#3#4#5#6#7% direct #1 etc passeren
   {\bgroup
@@ -242,7 +242,7 @@
      \dophantombox\width#1\height#2\depth#3\corner#5\radius#6\\%
    \fi}}
 
-\def\colorbox%
+\def\colorbox
   {\setcolorbox}
 
 %D \macros
@@ -339,7 +339,7 @@
    \scratchdimen#3%
    \edef\overlaywidth{\the\scratchdimen\space}%
    \scratchdimen#4%
-   \advance\scratchdimen #5%
+   \advance\scratchdimen#5%
    \edef\overlayheight{\the\scratchdimen\space}%
    \scratchdimen#5%
    \edef\overlaydepth{\the\scratchdimen\space}%
@@ -1853,7 +1853,7 @@
 
 \definecomplexorsimple\startmarginrule
 
-\def\simplestartmarginrule%
+\def\simplestartmarginrule
   {\bgroup
    \let\drawmarginrule\relax
    \let\stopmarginrule\dostopmarginrule
@@ -2349,10 +2349,10 @@
       \c!marge=\v!standaard,
       #2]%
    \setvalue{\e!start#1}{\dostartframedtext[#1]}%
-   \setvalue{\e!stop#1}{\dostopframedtext}%
-   \setvalue{#1}{\doframedtext[#1]}}
+   \setvalue{\e!stop #1}{\dostopframedtext     }%
+   \setvalue        {#1}{\doframedtext     [#1]}}
 
-\def\defineframedtext%
+\def\defineframedtext
   {\dodoubleempty\dodefineframedtext}
 
 %D We define the general (and original) case by just saying:

@@ -44,7 +44,7 @@
 \def\setuprandomize[#1]%
   {\doifsomething{#1}
      {\bgroup
-      \setrandomseed{-1}%
+      \setrandomseed\minusone
       \processaction
         [#1]
         [  \v!klein=>\divide\time  900, % 15   taco vragen hoe

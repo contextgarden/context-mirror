@@ -1814,6 +1814,7 @@ var:zarovnani:vlevo,nastred,vpravo,ne::
 var:konverze:cisla,pismena,Pismena,rimskecislice,Rimskecislice::
 var:zpusob:skrztext,skrz*sekce::
 var:oddelovac:*text::
+var:vzdalenost:*dimenze::
 stopsetup
 
 startsetup
@@ -2359,6 +2360,7 @@ var:umistihlavicku:ano,ne,prazdne::
 var:zvysujicicislo:ano,ne,seznam,*soubor::
 var:soubor:*jmeno::
 var:expanzen:ano,prikaz,ne::
+var:textmarginalie:ano,ne::
 ivr:nastavnadpisy::
 stopsetup
 
@@ -2735,7 +2737,7 @@ stopsetup
 startsetup
 com:preskoc:
 typ:vals/:
-val:repeat/male,repeat/stredni,repeat/velke, zadnabila,zpet,bily,zablokovat,sila,reset, radek,pulradku,rovnice,fixne,prizpusobive:velke:
+val:repeat/male,repeat/stredni,repeat/velke, zadnabila,zpet,bily,zablokovat,sila,reset, radek,pulradku,rovnice,fixne,prizpusobive,zadny:velke:
 stopsetup
 
 startsetup

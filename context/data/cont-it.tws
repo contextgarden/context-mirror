@@ -1814,6 +1814,7 @@ var:allinea:sinistra,centro,destra,no::
 var:conversione:numeri,lettere,Lettere,numeriromani,Numeriromani::
 var:modo:datesto,da*sezione::
 var:separatore:*testo::
+var:distanza:*dimensione::
 stopsetup
 
 startsetup
@@ -2359,6 +2360,7 @@ var:mettitesta:si,no,vuoto::
 var:incrementanumero:si,no,elenco,*file::
 var:file:*nome::
 var:espansione:si,comando,no::
+var:testomargine:si,no::
 ivr:impostateste::
 stopsetup
 
@@ -2735,7 +2737,7 @@ stopsetup
 startsetup
 com:rigovuoto:
 typ:vals/:
-val:repeat/piccolo,repeat/medio,repeat/grande, nobianco,dietro,bianco,disattiva,forza,reimposta, riga,mezzariga,formula,fisso,flessibile:grande:
+val:repeat/piccolo,repeat/medio,repeat/grande, nobianco,dietro,bianco,disattiva,forza,reimposta, riga,mezzariga,formula,fisso,flessibile,nessuno:grande:
 stopsetup
 
 startsetup
