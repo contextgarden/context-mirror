@@ -28,21 +28,69 @@ fi ;
 
 numeric textextoffset ; textextoffset := 0 ; 
 
+% vardef textext@#(expr txt) = 
+%   interim labeloffset := textextoffset ; 
+%   noftexpictures := noftexpictures + 1 ; 
+%   if string txt : 
+%     write "% figure " & decimal charcode & " : " &  
+%       "texpictures[" & decimal noftexpictures & "] := btex " & 
+%       txt & " etex ;" to jobname & ".mpt" ; 
+%     if unknown texpictures[noftexpictures] : 
+%       thelabel@#("unknown",origin)   
+%     else :
+%       thelabel@#(texpictures[noftexpictures],origin) 
+%     fi 
+%   else :
+%     thelabel@#(txt,origin)   
+%   fi 
+% enddef ; 
+
+boolean hobbiestextext ; hobbiestextext := false ; 
+
 vardef textext@#(expr txt) = 
   interim labeloffset := textextoffset ; 
   noftexpictures := noftexpictures + 1 ; 
   if string txt : 
-    write "% figure " & decimal charcode & " : " &  
-      "texpictures[" & decimal noftexpictures & "] := btex " & 
-      txt & " etex ;" to jobname & ".mpt" ; 
-    if unknown texpictures[noftexpictures] : 
-      thelabel@#("unknown",origin)   
+    if hobbiestextext : % the tex.mp method as fallback (see tex.mp)
+      write "btex " & txt & " etex" to "mptextmp.mp" ;
+      write EOF to "mptextmp.mp" ;
+      scantokens "input mptextmp"
     else :
-      thelabel@#(texpictures[noftexpictures],origin) 
-    fi 
+      write "% figure " & decimal charcode & " : " &  
+        "texpictures[" & decimal noftexpictures & "] := btex " & 
+        txt & " etex ;" to jobname & ".mpt" ; 
+      if unknown texpictures[noftexpictures] : 
+        thelabel@#("unknown",origin)   
+      else :
+        thelabel@#(texpictures[noftexpictures],origin) 
+      fi
+    fi  
   else :
     thelabel@#(txt,origin)   
   fi 
+enddef ; 
+
+string laboff_   ; laboff_   := ""      ; 
+string laboff_c  ; laboff_c  := ""      ; 
+string laboff_l  ; laboff_l  := ".lft"  ;  
+string laboff_r  ; laboff_r  := ".rt"   ;   
+string laboff_b  ; laboff_b  := ".bot"  ;   
+string laboff_t  ; laboff_t  := ".top"  ;   
+string laboff_lt ; laboff_lt := ".ulft" ;   
+string laboff_rt ; laboff_rt := ".urt"  ;   
+string laboff_lb ; laboff_lb := ".llft" ;   
+string laboff_rb ; laboff_rb := ".lrt"  ;   
+string laboff_tl ; laboff_tl := ".ulft" ;   
+string laboff_tr ; laboff_tr := ".urt"  ;  
+string laboff_bl ; laboff_bl := ".llft" ;   
+string laboff_br ; laboff_br := ".lrt"  ;   
+
+vardef textextstr(expr s, a) = 
+  save ss ; string ss ; 
+  ss := "laboff_" & a  ;  
+  ss := scantokens ss ;  
+  ss := "textext" & ss & "(" & ditto & s & ditto & ")" ;
+  scantokens ss  
 enddef ; 
 
 pair laboff.origin ; laboff.origin = (infinity,infinity) ; 

@@ -25,7 +25,7 @@
 \unprotect
 
 \appendtoks
-  input mp-text ; 
+  if unknown context_text : input mp-text ; fi ; 
 \to \MPinitializations 
 
 %%%%%%% 
@@ -48,7 +48,7 @@
      \expanded{\switchtobodyfont[\@@shkorps]}%
      \dontcomplain
      \hsize\parwidth
-     \setuptolerance[\v!zeersoepel,\v!rek]%
+     \steltolerantiein[\v!zeersoepel,\v!rek]%
      \!!counta=0
      \!!toksa=\emptytoks
      \def\docommando##1%
@@ -83,12 +83,12 @@
       \else
         \advance\!!counta by -1
       \fi}%
-   \!!counta=\prevgraf 
+   \!!counta\prevgraf 
    \doglobal\decrement(\totalparlines,\!!counta)%
    \multiply\!!counta by 2
-   \!!toksa=\emptytoks
+   \!!toksa\emptytoks
    \expanded{\processseparatedlist[\the\partoks][\space]}\docommando
-   \global\partoks=\!!toksa
+   \global\partoks\!!toksa
   %\ifx\partoks\emptytoks\else % safeguard 
      \expanded{\parshape\totalparlines\the\partoks}%
  }%\fi}
@@ -96,18 +96,18 @@
 \def\getshapecharacteristics%
   {\doglobal\increment\currentshapetext
    \doifdefinedelse{parlines:\currentshapetext}
-     {\global\parlines         =\getvalue{parlines:\currentshapetext}%
-      \global\chardef\parfirst =\getvalue{parfirst:\currentshapetext}%
-      \global\parvoffset       =\getvalue{parvoffset:\currentshapetext}%
-      \global\parhoffset       =\getvalue{parhoffset:\currentshapetext}%
-      \global\parwidth         =\getvalue{parwidth:\currentshapetext}%
-      \global\parheight        =\getvalue{parheight:\currentshapetext}}
-     {\global\parlines         =1
-      \global\chardef\parfirst =0
-      \global\parvoffset       =\!!zeropoint
-      \global\parhoffset       =\!!zeropoint
-      \global\parwidth         =\hsize
-      \global\parheight        =\vsize}}
+     {\global\parlines         \getvalue{parlines:\currentshapetext}%
+      \global\chardef\parfirst \getvalue{parfirst:\currentshapetext}%
+      \global\parvoffset       \getvalue{parvoffset:\currentshapetext}%
+      \global\parhoffset       \getvalue{parhoffset:\currentshapetext}%
+      \global\parwidth         \getvalue{parwidth:\currentshapetext}%
+      \global\parheight        \getvalue{parheight:\currentshapetext}}
+     {\global\parlines         1
+      \global\chardef\parfirst 0
+      \global\parvoffset       \zeropoint
+      \global\parhoffset       \zeropoint
+      \global\parwidth         \hsize
+      \global\parheight        \vsize}}
 
 \def\setshapecharacteristics%
   {\doglobal\increment\currentshapetext
@@ -123,14 +123,14 @@
    \forgetall
    \setbox\scratchbox\vbox to \parheight 
      {\expanded{\switchtobodyfont[\@@shkorps]}% evt strutheight en
-      \splittopskip=\strutheight              % lineheight opslaan 
+      \splittopskip\strutheight               % lineheight opslaan 
       \vskip\parvoffset                       % scheelt switch en
       \ifcase\parfirst\or\vskip\lineheight\fi % is ook veiliger
       \hskip\parhoffset
       \hbox{\vsplit\shapetextbox to \parlines\lineheight}}%
-   \wd\scratchbox=\parwidth
-   \ht\scratchbox=\parheight
-   \dp\scratchbox=\!!zeropoint
+   \wd\scratchbox\parwidth
+   \ht\scratchbox\parheight
+   \dp\scratchbox\zeropoint
    \box\scratchbox
    \getshapecharacteristics
    \egroup}
@@ -175,6 +175,7 @@
    \handletokens#1\with\processfollowingtoken
    \startMPdrawing
      if unknown RotPath  : path    RotPath  ; RotPath  := origin ; fi ;
+     if unknown RotColor : color   RotColor ; RotColor := black  ; fi ;
      if unknown TraceRot : boolean TraceRot ; TraceRot := false  ; fi ;
      if unknown ExtraRot : numeric ExtraRot ; ExtraRot := 0      ; fi ;
      numeric al, at, pl, wid, pos ; pair ap, ad ; 
@@ -187,7 +188,7 @@
        RotPath := RotPath scaled ((len[n]+ExtraRot)/al) ; 
        al := arclength RotPath ;
      fi ;
-     pl := (al-len[n])/(n-1) ;
+     pl := (al-len[n])/(if n>1 : (n-1) else : 1 fi) ;
      if TraceRot : 
        draw RotPath withpen pencircle scaled 1pt withcolor blue ;
      fi ; 
@@ -197,7 +198,8 @@
        at := arctime   pos of RotPath ;
        ap := point     at  of RotPath ;
        ad := direction at  of RotPath ;
-       draw pic[i] shifted (-wid/2,0) rotated(angle(ad)) shifted ap ;
+       draw pic[i] shifted (-wid/2,0) rotated(angle(ad)) shifted ap 
+         withcolor RotColor ;
        if TraceRot : 
          draw boundingbox
             pic[i] shifted (-wid/2,0) rotated(angle(ad)) shifted ap
@@ -273,5 +275,19 @@
   {\startlinecorrection[EnglishRule]
    \setlocalhsize \noindent \reuseMPgraphic{EnglishRule}
    \stoplinecorrection}
+
+%D The following macro returns a tight bound character 
+%D sequence. 
+%D
+%D \startlinecorrection
+%D \TightText{\ss\bf 123}{0cm}{3cm}{red}
+%D \stoplinecorrection
+
+\def\TightText#1#2#3#4%
+  {\hbox % \ruledhbox 
+     {\startMPcode
+        picture p ; p := image (graphictext "#1" withfillcolor red) ;
+        draw p xsized #2 ysized #3 withcolor \MPcolor{#4} ;
+      \stopMPcode}}
 
 \protect \endinput 

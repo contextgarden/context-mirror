@@ -13,7 +13,7 @@
 
 % nieuw: oncomment plaatssamengesteldelijst
 
-% nog 'reductie=ja/nee'         in \setupcolors
+% nog 'reductie=ja/nee' in \setupcolors
 
 \startsetupfile
 
@@ -86,6 +86,9 @@
     [\y!setuplanguage]
   \type
     [\c!val!\c!vars!]
+  \value
+    [\s!nl,\s!fr,\s!en,\s!uk,\s!de,\s!es,\s!cz,..]
+    [\s!nl]
   \inheritvariables
     [\y!installlanguage]
     []
@@ -484,16 +487,13 @@
   \command
     [\y!definecolorgroup]
   \type
-    [\c!val!\c!opt!\c!val!\c!vals!]
+    [\c!val!\c!opt!\c!val!\c!trips!]
   \value
     [\c!identifier!]
     []
   \value
     [\v!rgb,\v!cmyk,\v!grijs,\v!s]
     [\v!rgb]
-  \value
-    [\c!trips!]
-    []
 \stopsetup
 
 \startsetup
@@ -568,7 +568,7 @@
   \command
     [\y!setuptype]
   \type
-    [\c!var!]
+    [\c!vars!]
   \variable
     [\c!spatie]
     [\v!aan,\v!uit]
@@ -886,6 +886,10 @@
     [\c!bovenoffset]
     [\c!dimension!]
     [2.5pt]
+  \variable
+    [\c!lijnkleur]
+    [\c!identifier!]
+    []
 \stopsetup
 
 \startsetup
@@ -1988,7 +1992,8 @@
 
 \startsetup
   \command[\y!lohi]
-  \type[\c!arg!\c!arg!]
+  \type[\c!opt!\c!val!\c!arg!\c!arg!]
+  \value[\v!laag][]
   \value[\c!text!][]
   \value[\c!text!][]
 \stopsetup
@@ -3412,13 +3417,17 @@
     [\c!text!]
     []
   \variable
-    [\c!section!\c!number!]
+    [\c!sectionnumber!]
     [\v!ja,\v!nee]
     []
   \variable
     [\c!scheider]
     [\c!text!]
     [--]
+  \variable
+    [\c!strut]
+    [\v!ja,\v!nee]
+    [\v!ja]
   \variable
     [\c!status]
     [\v!start,\v!stop]
@@ -3467,9 +3476,12 @@
 
 \startsetup
   \command
-    [\y!definieerstartstop]
+    [\y!definestartstop]
   \type
     [\c!val!\c!vars!]
+  \value
+    [\c!identifier!]
+    []
   \variable
     [\c!voor]
     [\c!command!]
@@ -3560,6 +3572,10 @@
     [\c!wijze]
     [\v!per\v!tekst,\v!per\c!section!]
     [\v!per\v!tekst]
+  \variable
+    [\c!scheider]
+    [\c!text!]
+    [.]
 \stopsetup
 
 \startsetup
@@ -3809,13 +3825,13 @@
   \command
     [\y!setupreferencing]
   \type
-    [\c!var!]
+    [\c!vars!]
   \variable
     [\c!status]
     [\v!start,\v!stop]
     [\v!start]
   \variable
-    [\c!section!\c!number!]
+    [\c!sectionnumber!]
     [\v!ja,\v!nee]
     []
   \variable
@@ -4047,7 +4063,7 @@
     [\v!uit]
   \variable
     [\c!criterium]
-    [\c!section!,\v!lokaal,\v!vorige,\v!alles]
+    [\c!section!,\v!lokaal,\v!vorige,\v!huidige,\v!alles]
     [\v!lokaal]
   \variable
     [\c!paginaovergangen]
@@ -4119,14 +4135,14 @@
     [\v!nee]
   \variable
     [\c!prefix]
-    [\v!ja,\v!nee]
+    [\v!ja,\v!nee,\v!geen]
     [\v!ja]
   \variable
     [\c!paginanummer]
     [\v!ja,\v!nee]
     [\v!ja]
   \variable
-    [\c!section!\c!number!]
+    [\c!sectionnumber!]
     [\v!ja,\v!nee]
     []
   \variable
@@ -4159,6 +4175,10 @@
     [0em]
   \variable
     [\c!scheider]
+    [\c!text!]
+    [.]
+  \variable
+    [\c!afsluiter]
     [\c!text!]
     []
   \variable
@@ -4311,6 +4331,10 @@
     [\c!na]
     [\c!dimension!]
     [0pt]
+  \variable
+    [\c!scheider]
+    [\c!text!]
+    [.]
 \stopsetup
 
 \startsetup
@@ -4832,6 +4856,10 @@
     [\c!oneargument!]
     []
   \variable
+    [\c!scheider]
+    [\c!text!]
+    [.]
+  \variable
     [\c!prefix]
     [+,-,\c!text!]
     []
@@ -4927,7 +4955,7 @@
 
 \startsetup
   \command
-    [\y!stelopsommingin]
+    [\y!setupitemize]
   \type
     [\c!opt!\c!val!\c!opt!\c!vals!\c!opt!\c!vars!]
   \value
@@ -5036,7 +5064,7 @@
 
 \startsetup
   \command
-    [\y!startopsomming]
+    [\y!startitemize]
   \type
     [\c!opt!\c!vals!\c!opt!\c!vars!\c!stp!]
   \value
@@ -5046,15 +5074,15 @@
      \v!kolommen]
     [\v!standaard]
   \inheritvariables
-    [\y!stelopsommingin]
+    [\y!setupitemize]
     []
 \stopsetup
 
-\startsetup \command[\y!som] \type[\c!opt!\c!refs!]        \stopsetup
+\startsetup \command[\y!item]\type[\c!opt!\c!refs!]        \stopsetup
 \startsetup \command[\y!but] \type[\c!alwint!\c!ref!]      \stopsetup
 \startsetup \command[\y!its] \type[\c!opt!\c!refs!]        \stopsetup
 \startsetup \command[\y!ran] \type[\c!arg!]                \stopsetup
-\startsetup \command[\y!kop] \type[\c!opt!\c!refs!]        \stopsetup
+\startsetup \command[\y!head]\type[\c!opt!\c!refs!]        \stopsetup
 \startsetup \command[\y!mar] \type[\c!opt!\c!refs!\c!arg!] \stopsetup
 \startsetup \command[\v!sub] \type[\c!opt!\c!refs!]        \stopsetup % no \y!sub
 \startsetup \command[\y!sym] \type[\c!arg!]                \stopsetup
@@ -5117,7 +5145,7 @@
     [\v!ja,\v!nee]
     [\v!nee]
   \variable
-    [\c!section!\c!number!]
+    [\c!sectionnumber!]
     [\v!ja,\v!nee]
     []
   \variable
@@ -5533,6 +5561,10 @@
     [\v!stop,\v!start]
     [\v!stop]
   \variable
+    [\c!paginastatus]
+    [\v!stop,\v!start]
+    [\v!stop]
+  \variable
     [\c!kleur]
     [\c!identifier!]
     []
@@ -5560,10 +5592,9 @@
     [\y!currentdate]
   \type
     [\c!vals!]
-  \value
-    [\v!dag,\v!maand,\v!weekdag,\v!jaar, % \v!WEEKDAG,\v!MAAND, 
-     dd,mm,jj,yy,d,m,j,y,\v!kenmerk]
-    [\v!dag,\v!maand,\v!jaar]
+  \inheritvalues
+    [\y!date]
+    []
 \stopsetup
 
 \startsetup
@@ -5583,9 +5614,10 @@
     [y]
     [\c!number!]
     []
-  \inheritvalues
-    [\y!currentdate]
-    []
+  \value
+    [\v!dag,\v!maand,\v!weekdag,\v!jaar, % \v!WEEKDAG,\v!MAAND, 
+     dd,mm,jj,yy,d,m,j,y,\v!kenmerk]
+    [\v!dag,\v!maand,\v!jaar]
 \stopsetup
 
 \startsetup
@@ -6397,6 +6429,14 @@
     [\c!letter]
     [\v!normaal,\v!vet,\v!schuin,\v!vet\v!schuin,\v!type,\v!kap,\v!klein...,\c!command!]
     [\v!normaal]
+  \variable
+    [\c!kleur]
+    [\c!identifier!]
+    []
+  \variable
+    [\c!plaats]
+    [\v!tekst,\v!marge]
+    [\v!marge]
 \stopsetup
 
 \startsetup
@@ -7985,13 +8025,7 @@
   \command
     [\y!remark]
   \type
-    [\c!poss!\c!poss!\c!vars!\c!arg!]
-  \value
-    [\c!number!]
-    []
-  \value
-    [\c!number!]
-    []
+    [\c!pos!\c!pos!\c!vars!\c!arg!]
   \value
     [\c!number!]
     []
@@ -8272,9 +8306,6 @@
     [\v!label,\v!horizontaal,\v!vertikaal,\v!kader]
     []
   \inheritvariables
-    [\y!framed]
-    []
-  \inheritvariables
     [\y!setupfields]
     []
 \stopsetup
@@ -8289,9 +8320,6 @@
     []
   \value
     [\v!reset,\v!label,\v!horizontaal,\v!vertikaal,\v!kader]
-    []
-  \inheritvariables
-    [\y!framed]
     []
   \variable
     [\c!n]
@@ -8373,6 +8401,9 @@
   \variable
     [\c!veldachtergrondkleur]
     [\c!identifier!]
+    []
+  \inheritvariables
+    [\y!framed]
     []
 \stopsetup
 

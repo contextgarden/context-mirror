@@ -43,14 +43,18 @@
   {\let\synchronizepagehelpdata\relax}
 
 \def\resetpagehelpdata% 
-  {\let\synchronizepagehelpdata\resetpagehelpdata
-   \global\let\pagehelpdata\empty
-   \definereference[HideHelp][]} % hm 
+  {\iflocation  
+     \let\synchronizepagehelpdata\resetpagehelpdata
+     \global\let\pagehelpdata\empty
+     \resetreference[HideHelp]%
+   \fi}
 
 \let\synchronizepagehelpdata\resetpagehelpdata
 
+\resetreference[HideHelp]
+
 \def\getpagehelpdata%
-  {\iflocation
+  {\iflocation\ifcase\nofhelpdataentries\else
      \let\pagehelpdata\empty
      \ifconditional\somehelpdatadefined
        \definetwopasslist{hlp:\realfolio}%
@@ -66,10 +70,12 @@
        \useJSscripts[fld]%
        \definereference[HideHelp][JS(Hide_Fields)]% for the moment 
      \fi
-   \fi}
+   \fi\fi}
 
 \def\setpagehelpdata[#1]%
-  {\iflocation\expanded{\dosetpagehelpdata{#1}}\fi}
+  {\iflocation\ifcase\nofhelpdataentries\else
+     \expanded{\dosetpagehelpdata{#1}}%
+   \fi\fi}
 
 \def\dosetpagehelpdata#1%
   {\doglobal\increment\nofhelpdataentries

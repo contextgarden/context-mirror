@@ -101,7 +101,8 @@
   {\dosetpositionnm\@@posp{#2}%
    \dosetpositionpt\@@posx{#3}%
    \dosetpositionpt\@@posy{#4}%
-   \setxvalue{\POSprefix#1}{\@@posp,\@@posx,\@@posy}}%
+  %\setxvalue{\POSprefix#1}{\@@posp,\@@posx,\@@posy}}%
+   \@EA\xdef\csname\POSprefix#1\endcsname{\@@posp,\@@posx,\@@posy}}%
 
 \def\setpospxywhd#1#2#3#4#5#6#7%
   {\dosetpositionnm\@@posp{#2}%
@@ -110,7 +111,9 @@
    \dosetpositionpt\@@posw{#5}%
    \dosetpositionpt\@@posh{#6}%
    \dosetpositionpt\@@posd{#7}%
-   \setxvalue{\POSprefix#1}{\@@posp,\@@posx,\@@posy,\@@posw,\@@posh,\@@posd}}%
+  %\setxvalue{\POSprefix#1}{\@@posp,\@@posx,\@@posy,\@@posw,\@@posh,\@@posd}}%
+   \@EA\xdef\csname\POSprefix#1\endcsname{\@@posp,\@@posx,\@@posy,\@@posw,\@@posh,\@@posd}}%
+
 
 \def\setpospxyplus#1#2#3#4#5#6#7#8%
   {\dosetpositionnm\@@posp{#2}%
@@ -119,7 +122,8 @@
    \dosetpositionpt\@@posw{#5}%
    \dosetpositionpt\@@posh{#6}%
    \dosetpositionpt\@@posd{#7}%
-   \setxvalue{\POSprefix#1}{\@@posp,\@@posx,\@@posy,\@@posw,\@@posh,\@@posd,#8}}
+  %\setxvalue{\POSprefix#1}{\@@posp,\@@posx,\@@posy,\@@posw,\@@posh,\@@posd,#8}}
+   \@EA\xdef\csname\POSprefix#1\endcsname{\@@posp,\@@posx,\@@posy,\@@posw,\@@posh,\@@posd,#8}}
 
 %D We need to initialize.
 
@@ -235,6 +239,17 @@
      \@EA\@EA\@EA#1\csname\POSprefix#2\endcsname,0,0,0,0\relax
    \fi}
 
+\beginETEX
+
+\def\doMPxyhdwlr#1#2% evt kan \s!unknown leeg zijn 
+  {\@EA\@EA\@EA#1\csname\POSprefix
+     \ifcsname\POSprefix#2\endcsname#2\else\s!unknown\fi\endcsname
+     ,0,0,0,0\relax}
+
+\setvalue{\POSprefix\s!unknown}{0,0,0}
+
+\endETEX
+
 %D \macros
 %D  {MPplus, MPrest, MPv, MPvv}
 %D
@@ -262,6 +277,17 @@
   {\ifundefined{\POSprefix#2}#4\else
      \@EA\@EA\@EA#1\csname\POSprefix#2\endcsname,,,,,,,,,\relax{#3}%
    \fi}
+
+% \beginETEX
+% 
+% \def\MPdoplus#1#2#3#4%
+%   {\ifcsname\POSprefix#2\endcsname
+%      \@EA\@EA\@EA#1\csname\POSprefix#2\endcsname,,,,,,,,,\relax{#3}%
+%    \else
+%      #4%
+%    \fi}
+% 
+% \endETEX
 
 \def\doMPplus#1,#2,#3,#4,#5,#6,%
   {\dodoMPplus}
@@ -304,7 +330,7 @@
   {\ifpositioning \else
      \global\positioningtrue
      \dosetpositionpapersize
-       {\number\printpapierbreedte}
+       {\number\printpapierbreedte}%
        {\number\printpapierhoogte }%
    \fi
    \doglobal\increment\currentpositions}
@@ -320,12 +346,12 @@
         {\initializenextposition
          \def\currentposition{#1}%
          \dosetpositionwhd
-           {#1}
-           {\number\wd\nextbox}
-           {\number\ht\nextbox}
+           {\currentposition}% {#1}%
+           {\number\wd\nextbox}%
+           {\number\ht\nextbox}%
            {\number\dp\nextbox}%
          \setbox\positionbox=\box\nextbox
-         \dopositionaction{#1}%
+         \dopositionaction\currentposition % {#1}%
          \box\positionbox
          \hss}}}
 
@@ -335,13 +361,13 @@
         {\initializenextposition
          \def\currentposition{#1}%
          \dosetpositionplus
-           {#1}
-           {\number\wd\nextbox}
-           {\number\ht\nextbox}
-           {\number\dp\nextbox}
+           {\currentposition}% {#1}%
+           {\number\wd\nextbox}%
+           {\number\ht\nextbox}%
+           {\number\dp\nextbox}%
            {#2}%
          \setbox\positionbox=\box\nextbox
-         \dopositionaction{#1}%
+         \dopositionaction\currentposition % {#1}%
          \box\positionbox
          \hss}}}
 
@@ -402,8 +428,15 @@
 %D \doifpositionelse {identifier} {found action} {not found action}
 %D \stoptypen
 
+% \def\doifpositionelse#1%
+%   {\doifdefinedelse{\POSprefix#1}}
+
 \def\doifpositionelse#1%
-  {\doifdefinedelse{\POSprefix#1}}
+  {\ifundefined{\POSprefix#1}% 
+     \expandafter\secondoftwoarguments
+   \else
+     \expandafter\firstoftwoarguments
+   \fi}
 
 %D We have now arrived at a few macros that would make sense as
 %D support macros, but ended up in the core.
@@ -442,14 +475,14 @@
 %       \rlap{#2\box0}}}
 
 \def\bpos#1{\hpos{b:#1}{\strut}\ignorespaces}
-\def\epos#1{\ifhmode\unskip\fi\hpos{e:#1}{\strut}}
+\def\epos#1{\removelastspace\hpos{e:#1}{\strut}}
 
 \def\fpos#1%
   {\setpositionplus{b:#1}{\parposcounter}\hbox{\strut}%
    \ignorespaces}
 
 \def\tpos#1%
-  {\ifhmode\unskip\fi
+  {\removelastspace 
    \setpositionplus{e:#1}{\parposcounter}\hbox{\strut}}
 
 \def\ffpos#1%
@@ -457,7 +490,7 @@
    \ignorespaces}
 
 \def\ttpos#1%
-  {\ifhmode\unskip\fi
+  {\removelastspace 
    \setpositionbox{e:#1}\hbox{\strut}}
 
 \def\wpos#1%
@@ -486,11 +519,17 @@
 % we can check for used entries, and if not, then not add one
 
 \def\registerparoptions%
-  {\ifinpagebody \else \ifpositioning \ifpositioningpar
-     \ifmmode \else \ifinformula \else
-       \doregisterparoptions
-     \fi \fi
-   \fi \fi \fi}
+  {\ifpositioningpar
+     \ifpositioning 
+       \ifinpagebody \else 
+         \ifmmode \else 
+           \ifinformula \else
+             \doregisterparoptions
+           \fi 
+         \fi
+       \fi  
+     \fi 
+   \fi}
 
 \def\doregisterparoptions%
   {\doglobal\increment\parposcounter
@@ -542,13 +581,13 @@
           \fi\fi
         \fi}%
      \dimen 0=\MPx{#1}%
-     \dimen 2=\MPx{#1}\advance\dimen 2 by  \MPw{#1}%
-     \dimen 4=\MPy{#1}\advance\dimen 4 by -\MPd{#1}%
-     \dimen 6=\MPy{#1}\advance\dimen 6 by  \MPh{#1}%
+     \dimen 2=\MPx{#1}\advance\dimen 2  \MPw{#1}%
+     \dimen 4=\MPy{#1}\advance\dimen 4 -\MPd{#1}%
+     \dimen 6=\MPy{#1}\advance\dimen 6  \MPh{#1}%
      \dimen10=\MPx{#2}%
-     \dimen12=\MPx{#2}\advance\dimen12 by  \MPw{#2}%
-     \dimen14=\MPy{#2}\advance\dimen14 by -\MPd{#2}%
-     \dimen16=\MPy{#2}\advance\dimen16 by  \MPh{#2}%
+     \dimen12=\MPx{#2}\advance\dimen12  \MPw{#2}%
+     \dimen14=\MPy{#2}\advance\dimen14 -\MPd{#2}%
+     \dimen16=\MPy{#2}\advance\dimen16  \MPh{#2}%
     %\message{\the\dimen 0-\the\dimen 2,\the\dimen 4-\the\dimen 6}\wait
     %\message{\the\dimen10-\the\dimen12,\the\dimen14-\the\dimen16}\wait
      \check04\check24\check26\check06\ifdone\egroup#3\else\egroup#4\fi
@@ -600,12 +639,12 @@
 
 \def\placepositionanchors% todo : depth pagebox
   {\ifpositioning
-     \setbox\scratchbox=\vbox to \teksthoogte
+     \setbox\scratchbox\vbox to \teksthoogte
        {\topskipcorrection
         \hbox{\strut\dopositionaction\headanchor}%
         \vfill
         \hbox{\strut\dopositionaction\tailanchor}}%
-     \dp\scratchbox=\zeropoint
+     \dp\scratchbox\zeropoint
      \hpos\textanchor{\box\scratchbox}%
    \else
      \vskip\teksthoogte
@@ -618,33 +657,36 @@
 \def\headanchor{head:\realfolio} % virtual position
 \def\tailanchor{tail:\realfolio} % virtual position
 
-\def\presetpositionanchors% compatibility hack
+\def\presetpositionanchors% compatibility hack (still needed?)
   {\ifpositioning
-     \bgroup
-     \dimen0=\ifdim\topskip>\ht\strutbox\topskip\else\ht\strutbox\fi
-     \dimen2=\MPy\textanchor
-     \dimen4=\dimen2
-     \advance\dimen2 \MPh\textanchor % space is essential
-     \advance\dimen2 -\dimen0
-     \advance\dimen4 \dp\strutbox
-     \dimen6=\MPx\textanchor
-     \dimen8=\MPw\textanchor
-     \setxvalue{\POSprefix\headanchor}%
-       {\realfolio,\withoutpt{\the\dimen6},\withoutpt{\the\dimen2},%
-        \withoutpt{\the\dimen8},\withoutpt{\the\dimen0},\withoutpt{\the\dp\strutbox}}%
-     \setxvalue{\POSprefix\tailanchor}%
-       {\realfolio,\withoutpt{\the\dimen6},\withoutpt{\the\dimen4},%
-        \withoutpt{\the\dimen8},\withoutpt{\the\ht\strutbox},\withoutpt{\the\dp\strutbox}}%
-   % \showanchor\textanchor\showanchor\headanchor\showanchor\tailanchor\wait
-     \egroup
+     \dopresetpositionanchors
    \fi}
+
+\def\dopresetpositionanchors
+  {\bgroup
+   \dimen0=\ifdim\topskip>\ht\strutbox\topskip\else\ht\strutbox\fi
+   \dimen2=\MPy\textanchor
+   \dimen4=\dimen2
+   \advance\dimen2 \MPh\textanchor % space is essential
+   \advance\dimen2 -\dimen0
+   \advance\dimen4 \dp\strutbox
+   \dimen6=\MPx\textanchor
+   \dimen8=\MPw\textanchor
+   \setxvalue{\POSprefix\headanchor}%
+     {\realfolio,\withoutpt{\the\dimen6},\withoutpt{\the\dimen2},%
+      \withoutpt{\the\dimen8},\withoutpt{\the\dimen0},\withoutpt{\the\dp\strutbox}}%
+   \setxvalue{\POSprefix\tailanchor}%
+     {\realfolio,\withoutpt{\the\dimen6},\withoutpt{\the\dimen4},%
+      \withoutpt{\the\dimen8},\withoutpt{\the\ht\strutbox},\withoutpt{\the\dp\strutbox}}%
+  %\showanchor\textanchor\showanchor\headanchor\showanchor\tailanchor\wait
+   \egroup}
 
 \def\showanchor#1%
   {\expanded{\writestatus{#1}
      {\MPp{#1}\string|\MPx{#1}\string|\MPy{#1}\string|%
       \MPw{#1}\string|\MPh{#1}\string|\MPd{#1}}}}
 
-%D We set these anchors befor and after each page.
+%D We set these anchors before and after each page.
 
 \appendtoks \presetpositionanchors \to \beforeeverypage
 \appendtoks \presetpositionanchors \to \aftereverypage
@@ -699,7 +741,7 @@
 %D
 %D \typebuffer[graphic]
 
-\def\MPanchoridentifier{mp-anchor}
+\def\MPanchoridentifier{mp-anchor} % {MPA} % {mp-anchor}
 \def\MPoverlayposprefix{MO::}
 
 \long\def\defineMPpositiongraphic#1% 
@@ -772,7 +814,7 @@
   {\handlepositionaction\dohandlepositionboxes\with{#1}{#2}{#3}\on{#2}}
 
 \def\doinsertpositionboxes#1#2#3% pos tag setups
-  {\ifnum\MPp{#1}=\realpageno
+  {\ifnum\MPp{#1}=\realpageno\relax
      % \doifdefined{\MPoverlayposprefix#1}
      %   {\getvalue{\MPoverlayposprefix#1}{#1}{#2}{#3}}%
      \executeifdefined{\MPoverlayposprefix#1}%
@@ -832,7 +874,7 @@
    \def\doMPpositiongraphic##1##2{\getvalue{MPG:##1}}% temp hack
    \setbox\positiongraphicbox=\hbox
      {\doifdefinedelse{MPM:#1} % method
-        {\ignorespaces\getvalue{MPM:#1}\unskip}
+        {\ignorespaces\getvalue{MPM:#1}\removelastspace}
         {\getvalue{MPG:#1}}}%
    \smashbox\positiongraphicbox
    \box\positiongraphicbox
@@ -857,7 +899,7 @@
   {\handlepositionaction\dohandleMPpositiongraphic\with{#1}{#2}{#3}\on{#2}}
 
 \def\doinsertMPpositiongraphic#1#2#3% pos tag setups
-  {\ifnum\MPp{#1}=\realpageno % extra saveguard
+  {\ifnum\MPp{#1}=\realpageno\relax % extra saveguard
      \def\currentposition{#1}\MPpositiongraphic{#2}{#3}%
    \fi}
 
@@ -891,9 +933,9 @@
 
 \def\doinsertMPpositiongraphicrange#1#2#3#4% pos tag setups
   {\donefalse
-        \ifnum\MPp{#1}=\realpageno                           \donetrue
-   \else\ifnum\MPp{#2}=\realpageno                           \donetrue
-   \else\ifnum\MPp{#1}<\realpageno\ifnum\MPp{#2}>\realpageno \donetrue
+        \ifnum\MPp{#1}=\realpageno\relax                          \donetrue
+   \else\ifnum\MPp{#2}=\realpageno\relax                          \donetrue
+   \else\ifnum\MPp{#1}<\realpageno\relax\ifnum\MPp{#2}>\realpageno\donetrue
    \fi\fi\fi\fi \ifdone
      \def\currentposition{#1}\MPpositiongraphic{#3}{#4}%
    \fi}
@@ -987,30 +1029,30 @@
    boxlineradius := \MPvar{lineradius} ;
 \stopuseMPgraphic
 
-\startMPpositionmethod{mpos:par}
-  \doifpositionelse{w:\MPvar{self}}
-    {\startMPpositiongraphic{mpos:par}%
-         {fillcolor,linecolor,gridcolor,linewidth,gridwidth,lineradius}
-       initialize_area_par(\MPpos{b:\MPvar{self}},
-                           \MPpos{e:\MPvar{self}},
-                           \MPpos{w:\MPvar{self}}) ;
-       \includeMPgraphic{mpos:par:setup} ;
-       \includeMPgraphic{\MPvar{mp}} ; % \includeMPgraphic{mpos:par:shape} ;
-       anchor_par(\MPanchor{b:\MPvar{self}}) ;
-     \stopMPpositiongraphic}
-    {\startMPpositiongraphic{mpos:par}%
-         {fillcolor,linecolor,gridcolor,linewidth,gridwidth,lineradius}
-       initialize_par(\MPpos{b:\MPvar{self}},
-                      \MPpos{e:\MPvar{self}},
-                      \MPpos{text:\realfolio},
-                      \MPpos{p:\parcounter},
-                      \MPvv {p:\parcounter}{0,0,0,0,0,0}) ;
-       \includeMPgraphic{mpos:par:setup} ;
-       \includeMPgraphic{\MPvar{mp}} ; % \includeMPgraphic{mpos:par:shape} ;
-       anchor_par(\MPanchor{b:\MPvar{self}}) ;  
-     \stopMPpositiongraphic}%
-  \MPpositiongraphic{mpos:par}{}%
-\stopMPpositionmethod
+% \startMPpositionmethod{mpos:par}
+%   \doifpositionelse{w:\MPvar{self}}
+%     {\startMPpositiongraphic{mpos:par}%
+%          {fillcolor,linecolor,gridcolor,linewidth,gridwidth,lineradius}
+%        initialize_area_par(\MPpos{b:\MPvar{self}},
+%                            \MPpos{e:\MPvar{self}},
+%                            \MPpos{w:\MPvar{self}}) ;
+%        \includeMPgraphic{mpos:par:setup} ;
+%        \includeMPgraphic{\MPvar{mp}} ; % \includeMPgraphic{mpos:par:shape} ;
+%        anchor_par(\MPanchor{b:\MPvar{self}}) ;
+%      \stopMPpositiongraphic}
+%     {\startMPpositiongraphic{mpos:par}%
+%          {fillcolor,linecolor,gridcolor,linewidth,gridwidth,lineradius}
+%        initialize_par(\MPpos{b:\MPvar{self}},
+%                       \MPpos{e:\MPvar{self}},
+%                       \MPpos{text:\realfolio},
+%                       \MPpos{p:\parcounter},
+%                       \MPvv {p:\parcounter}{0,0,0,0,0,0}) ;
+%        \includeMPgraphic{mpos:par:setup} ;
+%        \includeMPgraphic{\MPvar{mp}} ; % \includeMPgraphic{mpos:par:shape} ;
+%        anchor_par(\MPanchor{b:\MPvar{self}}) ;  
+%      \stopMPpositiongraphic}%
+%   \MPpositiongraphic{mpos:par}{}%
+% \stopMPpositionmethod
 
 %D Less readable but shorter.
 
@@ -1116,7 +1158,7 @@
    \dodostarttextbackground}
 
 \def\dopresettextbackground#1%
-  {\ExpandFirstAfter\processaction
+  {\ExpandFirstAfter\processaction % \EFA niet echt nodig 
      [\getvalue{\??td#1\c!plaats}]
      [ \v!tekst=>\let\dodostarttextbackground\dostarttextbackgroundtxt
                  \let\dodostoptextbackground \dostoptextbackgroundtxt,
@@ -1273,14 +1315,28 @@
 \def\setuptextbackground%
   {\dodoubleargument\dosetuptextbackground}
 
+%\def\dosetuptextbackground[#1][#2]%
+%  {\ifsecondargument
+%     \getparameters[\??td#1][#2]%
+%     \def\currenttextbackground{#1}%
+%     \doifvalue{\??td#1\c!status}{\v!start}{\checktextbackgrounds}%
+%   \else
+%     \setuptextbackground[][#1]%
+%   \fi}
+
 \def\dosetuptextbackground[#1][#2]%
   {\ifsecondargument
-     \getparameters[\??td#1][#2]%
-     \def\currenttextbackground{#1}%
-     \doifvalue{\??td#1\c!status}{\v!start}{\checktextbackgrounds}%
+     \doifelsenothing{#1}
+       {\dodosetuptextbackground{#2}\empty}
+       {\processcommalist[#1]{\dodosetuptextbackground{#2}}}%
    \else
-     \setuptextbackground[][#1]%
+     \dodosetuptextbackground{#1}\empty
    \fi}
+
+\def\dodosetuptextbackground#1#2%
+  {\getparameters[\??td#2][#1]%
+   \def\currenttextbackground{#2}%
+   \doifvalue{\??td#2\c!status}{\v!start}{\checktextbackgrounds}}
 
 \let\currenttextbackground\empty
 

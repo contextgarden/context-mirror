@@ -1,7 +1,7 @@
 %D \module
-%D   [       file=setupa,
+%D   [       file=setupd,
 %D        version=1998.07.20,
-%D          title=\CONTEXT\ Setup Definitions,
+%D          title=\CONTEXT\ Setup to TWS,
 %D       subtitle=Help Generation,
 %D         author=Hans Hagen,
 %D           date=\currentdate,
@@ -38,6 +38,7 @@
 \copymessage \c!matrix!         *      {matrix}
 \copymessage \c!list!           *      {list}
 \copymessage \c!section!        *      {section}
+\copymessage \c!sectionnumber!  *      {sectionnumber}
 \copymessage \c!noargument!     \empty {command}
 \copymessage \c!oneargument!    \empty {command}
 \copymessage \c!twoarguments!   \empty {command}
@@ -149,6 +150,7 @@
 
 \long\def\startsetup#1\stopsetup % the :'s serve as breakpoints
   {\bgroup
+   \naturalsetupvariablepart
    \long\def\command         [##1]%
      {\immediate\write\scratchwrite{com:##1:}}%
    \long\def\type            [##1]%

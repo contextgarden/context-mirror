@@ -16,6 +16,19 @@
 \unprotect
 
 %D \macros
+%D   {compound}
+%D
+%D We will overload the already active \type {|} so we have
+%D to save its meaning in order to be able to use this handy
+%D macro.
+%D
+%D \starttypen
+%D so test\compound{}test can be used instead of test||test
+%D \stoptypen
+
+\bgroup \catcode`\|=\@@active \gdef\compound#1{|#1|} \egroup
+
+%D \macros
 %D   {kap,KAP,Kap,Kaps,nokap,userealcaps,usepseudocaps}
 %D
 %D We already introduced \type{\kap} as way to capitalize
@@ -155,6 +168,17 @@
 \ifx\uppercased\undefined \let\uppercased\uppercase \fi
 \ifx\lowercased\undefined \let\lowercased\lowercase \fi
 
+% pretty tricky stuff: 
+%
+% \usemodule[abr-01] \TEX \METAPOST \PPCHTEX \LATEX
+% \usemodule[abr-02] \TEX \METAPOST \PPCHTEX \LATEX
+
+\def\uppercased#1%
+  {{\forceunexpanded\xdef\@@globalcrap{\uppercase{#1}}}\@@globalcrap}
+
+\def\lowercased#1%
+  {{\forceunexpanded\xdef\@@globalcrap{\lowercase{#1}}}\@@globalcrap}
+
 \setupcapitals
   [\c!titel=\v!ja,
    \c!sc=\v!nee]
@@ -289,7 +313,7 @@
 %   {\bgroup
 %    \the\everyuppercase
 %    \uppercase{\def\textstring{#1}}%
-%    \ifdim\stretchedspaceamount>\!!zeropoint
+%    \ifdim\stretchedspaceamount>\zeropoint
 %      \def\textkern%
 %        {\kern\stretchedspaceamount}%
 %      \def\textskip%
@@ -318,7 +342,7 @@
 \def\stretchedsomecase#1#2% 
   {\bgroup
    #1{\def\textstring{#2}}%
-   \ifdim\stretchedspaceamount>\!!zeropoint
+   \ifdim\stretchedspaceamount>\zeropoint
      \def\textkern##1%
        {\determinemidwordbreak{##1}{\stretchedbreaktokens}%
         \kern\stretchedspaceamount##1\domidwordbreak}%
@@ -430,8 +454,8 @@
 \def\dododounderbar#1#2#3% 
   {\startmathmode
    \setbox0=\hbox{#3}%
-   \setbox2=\getvalue{underbarmethod\@@onvariant}{\wd0}{#1}{#2}%
-   \wd0=\!!zeropoint
+   \setbox2=\hbox{\color[\@@onlijnkleur]{\getvalue{underbarmethod\@@onvariant}{\wd0}{#1}{#2}}}%
+   \wd0=\zeropoint
    \ht2=\ht0 
    \dp2=\dp0 
    \box0\box2
@@ -455,7 +479,7 @@
    \setbox0=\hbox
      {\dodounderbar{\hskip\fontdimen2\font}}%
    \nobreak
-   \hskip\!!zeropoint\!!minus\fontdimen4\font
+   \hskip\zeropoint\!!minus\fontdimen4\font
    \discretionary{}{}{\box0}%
    \egroup}
 
@@ -504,7 +528,7 @@
    \setbox0=\hbox
      {\dooverstrike{\hskip\fontdimen2\font}}%
    \nobreak
-   \hskip\!!zeropoint\!!minus\fontdimen4\font
+   \hskip\zeropoint\!!minus\fontdimen4\font
    \discretionary{}{}{\box0}%
    \egroup}
 
@@ -569,16 +593,52 @@
 \unexpanded\def\high{\dohighlow\raise{14}{.86}{0}}
 \unexpanded\def\low {\dohighlow\lower{16}{.48}{0}}
 
-\unexpanded\def\lohi#1#2%
+% \unexpanded\def\lohi#1#2%
+%   {\dontleavehmode
+%    \hbox
+%      {\setbox4=\hbox{\dohighlow\lower{16}{.48}{.1}{#1}}%
+%       \setbox6=\hbox{\dohighlow\raise{14}{.86}{.1}{#2}}%
+%       \ifdim\wd4<\wd6
+%         \wd4=\zeropoint\box4\box6
+%       \else
+%         \wd6=\zeropoint\box6\box4
+%       \fi}}
+
+\unexpanded\def\lohi%
+  {\dosingleempty\dolohi}
+
+\def\dolohi[#1]#2#3%
   {\dontleavehmode
    \hbox
-     {\setbox4=\hbox{\dohighlow\lower{16}{.48}{.1}{#1}}%
-      \setbox6=\hbox{\dohighlow\raise{14}{.86}{.1}{#2}}%
+     {\setbox4=\hbox{\dohighlow\lower{16}{.48}{.1}{#2}}%
+      \setbox6=\hbox{\dohighlow\raise{14}{.86}{.1}{#3}}%
+      \doif{#1}{\v!links}
+        {\ifdim\wd4<\wd6
+          \setbox4\hbox to \wd6{\hss\box4}%
+        \else
+          \setbox6\hbox to \wd4{\hss\box6}%
+        \fi}%
       \ifdim\wd4<\wd6
-        \wd4=\!!zeropoint\box4\box6
+        \wd4=\zeropoint\box4\box6
       \else
-        \wd6=\!!zeropoint\box6\box4
+        \wd6=\zeropoint\box6\box4
       \fi}}
+
+%D You can provide an optional keyword \type {left}, in which
+%D case the super and subscripts will be aligned in a way that
+%D permits placement at the left of a word (which means that
+%D it will be right aligned). 
+%D 
+%D \startbuffer
+%D \lohi{aha}{ah} test \lohi{aha}{ah} test 
+%D \lohi[links]{aha}{ah} test \lohi[links]{aha}{ah} test 
+%D \lohi{aha}{ah} test\lohi{aha}{ah} test 
+%D \lohi[links]{aha}{ah}test \lohi[links]{aha}{ah}test 
+%D \stopbuffer
+%D 
+%D \typebuffer
+%D 
+%D \haalbuffer
 
 %D \macros
 %D   {setupinitial,placeinitial,checkinitial}
@@ -621,7 +681,8 @@
   [\c!variant=a,
    \c!lijndikte=\linewidth,
    \c!onderoffset=1.5pt,
-   \c!bovenoffset=2.5pt]
+   \c!bovenoffset=2.5pt,
+   \c!lijnkleur=]
 
 %D ? ? ? 
 

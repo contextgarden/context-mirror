@@ -146,40 +146,49 @@
      \let\next\relax
    \else
      \makeshortfilename[#1\truefilename{#2}]%
-     \doifundefinedelse{\shortfilename\v!aan}
-       {\setgvalue{\shortfilename\v!aan}{}%
+     \doifelseflagged\shortfilename
+       {\showmessage\m!systems7{#2}%
+        \settrue\moduleisloaded
+        \let\next\relax}
+       {\doglobal\setflag\shortfilename
         \def\next
           {\startreadingfile
-           \readsysfile{\shortfilename}%
-             {\showmessage{\m!systems}{5}{#2}%
-              \settrue\moduleisloaded}%
-             {}%
-           \stopreadingfile}}
-       {\showmessage{\m!systems}{7}{#2}%
-        \settrue\moduleisloaded
-        \let\next\relax}%
+             \readsysfile\shortfilename
+               {\showmessage\m!systems5{#2}\settrue\moduleisloaded}
+               \donothing
+           \stopreadingfile}}%
+   \fi
+   \next}
+ 
+\def\dodousemodules#1#2% 
+  {\setfalse\moduleisloaded 
+   \doifelsenothing{#1}
+     {\dododousemodules\f!moduleprefix {#2}% 
+      \dododousemodules\f!privateprefix{#2}%
+      \dododousemodules\f!styleprefix  {#2}%
+      \dododousemodules\f!xstyleprefix {#2}%
+      \dododousemodules\f!thirdprefix  {#2}}
+     {\dododousemodules{#1-}{#2}}%
+   \ifconditional\moduleisloaded\else
+     \showmessage{\m!systems}{6}{#2}%
+   \fi}
+
+\def\dousemodules[#1][#2]%
+  {\ifsecondargument
+     \doifelsenothing{#2}
+       {\let\next\relax}
+       {\def\next{\processcommalist[#2]{\dodousemodules{#1}}}}%
+   \else
+     \def\next{\usemodules[][#1]}%
    \fi
    \next}
 
-\def\dodousemodules#1%
-  {\setfalse\moduleisloaded
-   \dododousemodules\f!moduleprefix {#1}% 
-   \dododousemodules\f!privateprefix{#1}%
-   \dododousemodules\f!styleprefix  {#1}%
-   \dododousemodules\f!xstyleprefix {#1}%
-   \dododousemodules\f!thirdprefix  {#1}%
-   \ifconditional\moduleisloaded\else
-     \showmessage{\m!systems}{6}{#1}%
-   \fi}
+\def\usemodules
+  {\dodoubleempty\dousemodules}
 
-\def\dousemodules[#1]%
-  {\doifelsenothing{#1}
-     {\let\next\relax}
-     {\def\next{\processcommalist[#1]\dodousemodules}}
-   \next}
+\let\usemodule\usemodules
 
-\def\usemodules%
-  {\dosingleargument\dousemodules}
+% \usemodule[t][speech]
 
 %D We also support a singular call, which saves us for 
 %D frustrations when we do a typo.
@@ -199,34 +208,22 @@
 
 \newif\ifprotectbuffers
 
-\def\bufferprefix%
-  {\ifprotectbuffers\jobname-\fi}
+\def\bufferprefix{\ifprotectbuffers\jobname-\fi}
 
-% also 
+% The following filenames are defined here: 
 
-\def\TEXbufferfile#1%
-  {\bufferprefix#1.\f!temporaryextension}
+\def\TEXbufferfile   #1{\bufferprefix#1.\f!temporaryextension}
+\def\MPgraphicfile     {\bufferprefix mp\ifMPrun run\else graph\fi}
+\def\convertMPcolorfile{\bufferprefix metacmyk.tmp}
 
-%D We also redefine: 
+%D The next few macros ar eused for some internal (rather 
+%D old already) extensions.
 
-\def\MPgraphicfile%
-  {\bufferprefix mp\ifMPrun run\else graph\fi}
-
-\def\convertMPcolorfile%
-  {\bufferprefix metacmyk.tmp}
-
-%D Temporarilly here: 
-
-\def\definieerfilegroep%
+\def\definieerfilegroep
   {\dodoubleargument\dodefinieerfilegroep}
 
 \def\dodefinieerfilegroep[#1][#2]%
-  {\getparameters
-     [\??fp#1]
-     [\c!file=#1,
-      \c!voor=,
-      \c!na=,
-      #2]%
+  {\getparameters[\??fp#1][\c!file=#1,\c!voor=,\c!na=,#2]%
    \setvalue{\e!start#1}{\dostartfilegroep[#1]}}
 
 \def\dostartfilegroep%
@@ -235,34 +232,38 @@
 \def\dodostartfilegroep[#1][#2]%
   {\getvalue{\??fp#1\c!voor}%
    \setvalue{\e!stop#1}{\dostopfilegroep[#1][#2]}%
-   \edef\!!stringa{\getvalue{\??fp#1\c!file}-#2}%
-   \@EA\dolaadfilegroep\@EA[\!!stringa]%
+   \expanded{\dolaadfilegroep[\getvalue{\??fp#1\c!file}-#2]}%
    \getvalue{\e!start#1#2}}
 
 \def\dolaadfilegroep[#1-#2#3#4#5]%
-  {\readsysfile{#1-#2#3#4}{}{}}
+  {\readsysfile{#1-#2#3#4}\donothing\donothing}
 
 \def\dostopfilegroep[#1][#2]%
   {\getvalue{\e!stop#1#2}%
    \getvalue{\??fp#1\c!na}}
 
-% usage: 
-%
-% \fetchruntimecommand\showaccents{\f!encodingprefix ...}
+%D To save memory, we implement some seldomly used commands 
+%D in a lazy way. Nota bene: such runtime definitions are 
+%D global. 
+%D
+%D \starttypen 
+%D \fetchruntimecommand\showaccents{\f!encodingprefix ...}
+%D \stoptypen 
 
 \def\fetchruntimecommand#1#2%
   {\def#1{\dofetchruntimecommand#1{#2}}}
 
 \def\dofetchruntimecommand#1#2%
-  {\doifundefined{@@@#2@@@}{\let#1\undefined\doinputonce{#2}}%
+  {\doifnotflagged{#2}
+     {\let#1\undefined
+      \readfile{#2}\donothing\donothing
+      \doglobal\setflag{#2}}% 
    \ifx#1\undefined
      \writestatus{\m!systems}{command \string#1 not found in file #2}%
      \def#1{{\infofont[unknown command \string#1]}}%
    \fi 
    #1}
 
-%D This will be perfected / changed / weeded. 
+%D This module will be perfected / changed / weeded. 
  
-\protect
-
-\endinput
+\protect \endinput

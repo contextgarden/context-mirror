@@ -81,55 +81,55 @@
 %D A database file |<|in most cases such a base is generated 
 %D from another one|>| is structured as follows: 
 %D 
-%D \starttyping 
+%D \starttypen 
 %D \startrecord{tag}
 %D   \memberofgroup{grouplist}
 %D   \setrecordentry{name}{...}
 %D   ....
 %D \stoprecord
-%D \stoptyping 
+%D \stoptypen 
 %D 
 %D The interface to such a database is defined as follows: 
 %D 
-%D \starttyping 
+%D \starttypen 
 %D \definerecord[class][settings]
 %D \setuprecord[class][settings]
 %D \definerecordentry[class][name]
-%D \stoptyping 
+%D \stoptypen 
 %D 
 %D and processed by 
 %D 
-%D \starttyping 
+%D \starttypen 
 %D \processrecords[file list][tag and/or group list]
-%D \stoptyping 
+%D \stoptypen 
 %D 
 %D The actual processing is done by a macro assigned to \type 
 %D {command}: 
 %D 
-%D \starttyping 
+%D \starttypen 
 %D \setuprecord[class][command=\DoWithRecord]
-%D \stoptyping 
+%D \stoptypen 
 %D 
 %D Given that one can ask for a field with 
 %D 
-%D \starttyping 
+%D \starttypen 
 %D \getrecordentry{name}
-%D \stoptyping 
+%D \stoptypen 
 %D 
 %D such a command can look like: 
 %D 
-%D \starttyping 
+%D \starttypen 
 %D \def\DoWithRecord#1%
 %D   {\startpacked
 %D    \let\\=\quad
 %D    name:  \getrecordentry{name}~\getrecordentry{family name}\par
 %D    address: \getrecordentry{postal address}\par
 %D    \stoppacked}
-%D \stoptyping  
+%D \stoptypen  
 %D 
 %D The argument passed is the tag. The database can look like:
 %D 
-%D \starttyping 
+%D \starttypen 
 %D \startrecord{hagenj}
 %D   \memberofgroup{a,b}
 %D   \setrecordentry{naam}{Hans}
@@ -143,27 +143,27 @@
 %D   \setrecordentry{family name}{Otten}
 %D   \setrecordentry{postal address}{A.F. Otten\\Prinsengracht 17\\Hasselt NL}
 %D \stoprecord
-%D \stoptyping  
+%D \stoptypen  
 %D 
 %D The definition of this database looks like: 
 %D 
-%D \starttyping 
+%D \starttypen 
 %D \definerecord[address][command=\DoWithRecord]
 %D 
 %D \definerecordentry[address][name]
 %D \definerecordentry[address][family name]
 %D \definerecordentry[address][postal address]
-%D \stoptyping 
+%D \stoptypen 
 %D 
 %D The actual processing is now done by (for instance): 
 %D 
-%D \starttyping 
+%D \starttypen 
 %D \processrecords[datafile][hagenj]
 %D \processrecords[datafile][hagenj,offenaf]
 %D \processrecords[datafile][all]
 %D \processrecords[datafile][a]
 %D \processrecords[datafile][b]
-%D \stoptyping 
+%D \stoptypen 
 %D 
 %D Of course one can reassing the command used to handle the
 %D records in between. 
@@ -277,7 +277,7 @@
 %D experiments with \type {%} before each entry and changing
 %D the category code of the comment char. Because \TEX\ scans
 %D the line anyway |<|this is needed because the end of line
-%D character can be non standard|> this is not faster. 
+%D character can be non standard|>| this is not faster. 
 %D 
 %D Although this mechanism could have been combined with the
 %D block moving mechaism, the current implementation is

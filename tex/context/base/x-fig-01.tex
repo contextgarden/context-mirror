@@ -13,7 +13,7 @@
 
 %D See \type {x-fig-00.tex} for more information on how to use 
 %D and generate figure databases. This file loads the file 
-%D named \type {\inputfilename} (\TEXEXEC\ will set this 
+%D named \type {\jobfilename} (\TEXEXEC\ will set this 
 %D variable). You can apply this style to a database by 
 %D saying:
 %D 
@@ -51,19 +51,20 @@
 
 \usemodule[fig-00]
 
-\overcomePDFspacefalse
+\setupoutput[pdftex] \overcomePDFspacefalse
 
-\doifnothing  {\inputfilename}        {\end} 
-\doiffileelse {\inputfilename.xml} {} {\end} 
+\doifnothing  {\jobfilename}        {\end} 
+\doiffileelse {\jobfilename.xml} {} {\end} 
 
-\def\StartDescription%
+
+\def\StartDescription
   {\bgroup
    \defineXMLpush[organization]
    \defineXMLpush[project]
    \defineXMLpush[product]
    \defineXMLpush[comment]}
 
-\def\StopDescription%
+\def\StopDescription
   {\subject [begin] {Figure collection}
    \starttabulate[|lBe|p|]
    \doifXMLdataelse{organization}
@@ -78,10 +79,10 @@
    \blank[2*big]
    \egroup}
 
-\def\StartFigureA%
+\def\StartFigureA
   {\bgroup
-   \XMLassign{file}{buffer}
    \defineXMLpush[file]
+   \XMLassign{file}{buffer}
    \defineXMLpush[dummy]
    \defineXMLpush[label]
    \defineXMLpush[copyright]
@@ -101,7 +102,7 @@
     {\bf \XMLpop{dummy}}    
 \stopbuffer
 
-\def\StopFigureA%
+\def\StopFigureA
   {\doglobal\increment\CurrentPage
    \setupbackgrounds[page][background=page]
    \doifelsenothing{\XMLpop{label}}
@@ -113,7 +114,7 @@
    \setupbackgrounds[page][background=]
    \egroup}
 
-\def\StartFigureB%
+\def\StartFigureB
   {\StartFigureA}
 
 \defineregister
@@ -167,7 +168,7 @@
    rulethickness=1pt,
    framecolor=darkred]
 
-\def\StopFigureB%
+\def\StopFigureB
   {\par
    \doglobal\increment\CurrentPage
    \doifelsenothing{\XMLpop{label}}
@@ -244,10 +245,10 @@
    \vskip10pt
    \egroup}
 
-\def\StartFigureC%
+\def\StartFigureC
   {\StartFigureA}
 
-\def\StopFigureC%
+\def\StopFigureC
   {\doglobal\increment\NumberOfFigures
    \egroup}
 
@@ -319,7 +320,7 @@
 
 \doglobal\newcounter\CurrentPage
 
-\processXMLfilegrouped{\inputfilename.xml} 
+\processXMLfilegrouped{\jobfilename.xml} 
 
 \increment\NumberOfFigures
 
@@ -333,7 +334,7 @@
 
 \doglobal\newcounter\CurrentPage
 
-\processXMLfilegrouped{\inputfilename.xml} 
+\processXMLfilegrouped{\jobfilename.xml} 
 
 \setuppapersize
   [S6][S6]
@@ -350,7 +351,7 @@
 
 \doglobal\newcounter\CurrentPage
 
-\processXMLfilegrouped{\inputfilename.xml} \page
+\processXMLfilegrouped{\jobfilename.xml} \page
 
 \subject [list] {List of figures}
 

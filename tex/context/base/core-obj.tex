@@ -86,13 +86,16 @@
 
 \newif\ifinobject
 
-\def\presetobject#1#2%
-  {\doifundefined{\r!object#1::#2}
-     {\setxvalue{\r!object#1::#2}{NOT YET FLUSHED}}}
+\def\objectplaceholder{NOT YET FLUSHED}%
 
-\def\dosetobject#1#2#3% evt \initializepaper naar \everyshipout
-  {\initializepaper
-   \ifundefined{\r!object#2::#3}%
+\def\presetobject#1#2%
+  {\ifundefined{\r!object#1::#2}%   
+     \@EA\let\csname\r!object#1::#2\endcsname\objectplaceholder
+   \fi}
+
+\def\dosetobject#1#2#3% \initializepaper this will move to \everyshipout
+  {\initializepaper   
+   \ifundefined{\r!object#2::#3}%   
      \expandafter\dodosetobject
    \else
      \expandafter\gobblefivearguments
@@ -106,105 +109,62 @@
 
 \def\objectoffset{1cm}
 
-% \def\dodosetobject#1#2#3%   
-%  {\bgroup
-%   \inobjecttrue
-%   \dowithnextbox       
-%     {\bgroup
-%      \dontshowcomposition % rather fuzzy in \setxvalue ... \hbox
-%      \setxvalue{\r!object#2::#3}% 
-%        {\noexpand\dohandleobject{#2}{#3} 
-%           {\ifhbox\nextbox\hbox\else\vbox\fi}
-%          %{\the\wd\nextbox}{\the\ht\nextbox}{\the\dp\nextbox}}%
-%           {\number\wd\nextbox}{\number\ht\nextbox}{\number\dp\nextbox}}%
-%      \expanded % fix the dimensions since \dostartobject may use \nextbox
-%        {\dostartobject
-%           {#2}{#3}
-%           {\number\wd\nextbox}{\number\ht\nextbox}{\number\dp\nextbox}}%
-%      \ifcase#1\relax\else\ifdim\objectoffset>\!!zeropoint\relax
-%        \scratchdimen=\objectoffset
-%        \edef\next%
-%          {\wd\nextbox\the\wd\nextbox
-%           \ht\nextbox\the\ht\nextbox
-%           \dp\nextbox\the\dp\nextbox}%
-%        \setbox\nextbox=\vbox spread 2\scratchdimen
-%          {\forgetall
-%           \vss
-%           \hbox spread 2\scratchdimen{\hss\box\nextbox\hss}%
-%           \vss}%
-%        \setbox\nextbox=\hbox
-%          {\hskip-\scratchdimen\lower\scratchdimen\box\nextbox}% 
-%        \next
-%      \fi\fi
-%      \box\nextbox
-%      \dostopobject
-%      \egroup
-%      \egroup}}
-
 \def\dodosetobject#1#2#3%   
   {\bgroup
    \inobjecttrue
-   \dowithnextbox       
-     {\bgroup
-      \dontshowcomposition % rather fuzzy in \setxvalue ... \hbox
-      \setxvalue{\r!object#2::#3}% 
-        {\noexpand\dohandleobject{#2}{#3} 
-           {\ifhbox\nextbox\hbox\else\vbox\fi}
-          %{\the\wd\nextbox}{\the\ht\nextbox}{\the\dp\nextbox}}%
-           {\number\wd\nextbox}{\number\ht\nextbox}{\number\dp\nextbox}}%
-      \expanded % fix the dimensions since \dostartobject may use \nextbox
-        {\dostartobject
-           {#2}{#3}
-           {\number\wd\nextbox}{\number\ht\nextbox}{\number\dp\nextbox}}%
-      \ifcase#1\relax
-        \box\nextbox
-      \else\ifdim\objectoffset>\!!zeropoint
-        \scratchdimen=\objectoffset
-        \edef\width {\the\wd\nextbox}%
-        \edef\height{\the\ht\nextbox}%
-        \edef\depth {\the\dp\nextbox}%
-        \setbox\nextbox=
-          \vbox spread 2\scratchdimen
-            {\forgetall
-             \vss
-             \hbox spread 2\scratchdimen{\hss\box\nextbox\hss}%
-             \vss}%
-        \setbox\nextbox=\hbox
-          {\hskip-\scratchdimen\lower\scratchdimen\box\nextbox}% 
-        \wd\nextbox=\width
-        \ht\nextbox=\height
-        \dp\nextbox=\depth
-        \box\nextbox
-      \else
-        \box\nextbox
-      \fi\fi
-      \dostopobject
-      \egroup
-      \egroup}}
+   \dowithnextbox{\dododosetobject{#1}{#2}{#3}\egroup}}
+
+\def\dododosetobject#1#2#3%
+  {\dontshowcomposition % rather fuzzy in \setxvalue ... \hbox
+   \@EA\xdef\csname\r!object#2::#3\endcsname
+     {\noexpand\dohandleobject{#2}{#3}% 
+        {\ifhbox\nextbox\hbox\else\vbox\fi}%
+       %{\the\wd\nextbox}{\the\ht\nextbox}{\the\dp\nextbox}}%
+        {\number\wd\nextbox}{\number\ht\nextbox}{\number\dp\nextbox}}%
+   \expanded % freeze the dimensions since \dostartobject may use \nextbox
+     {\dostartobject
+        {#2}{#3}{\the\wd\nextbox}{\the\ht\nextbox}{\the\dp\nextbox}}%
+   \ifcase#1\relax\else \ifdim\objectoffset>\zeropoint
+     \scratchdimen\objectoffset
+     \edef\width {\the\wd\nextbox}%
+     \edef\height{\the\ht\nextbox}%
+     \edef\depth {\the\dp\nextbox}%
+     \setbox\nextbox\vbox spread 2\scratchdimen
+       {\forgetall
+        \vss\hbox spread 2\scratchdimen{\hss\box\nextbox\hss}\vss}%
+     \setbox\nextbox\hbox
+       {\hskip-\scratchdimen\lower\scratchdimen\box\nextbox}% 
+     \wd\nextbox\width
+     \ht\nextbox\height
+     \dp\nextbox\depth
+   \fi \fi
+   \box\nextbox
+   \dostopobject}
 
 \def\dogetobject#1#2#3#4#5#6%
   {\initializepaper
    \bgroup
    \forgetall 
    \dontshowcomposition
-   \setbox0=\vbox
+   \setbox\scratchbox\vbox
      {\doinsertobject{#1}{#2}}%
-   \setbox0=#3%
+   \setbox\scratchbox#3%
      {\vbox to #5\s!sp  
-        {\ifdim\ht0>#5\s!sp % or \ifdim\wd0>#4\s!sp
-           \vss\hbox to #4\s!sp{\hss\box0\hss}\vss
+        {\ifdim\ht\scratchbox>#5\s!sp 
+    % or \ifdim\wd\scratchbox>#4\s!sp
+           \vss\hbox to #4\s!sp{\hss\box\scratchbox\hss}\vss
          \else
-           \vss\box0
+           \vss\box\scratchbox
          \fi}}%
-   \wd0=#4\s!sp
-   \ht0=#5\s!sp
-   \dp0=#6\s!sp
-   \box0
+   \wd\scratchbox#4\s!sp
+   \ht\scratchbox#5\s!sp
+   \dp\scratchbox#6\s!sp
+   \box\scratchbox
    \egroup}
 
 \def\getobject#1#2%
   {\let\dohandleobject\dogetobject
-   \getvalue{\r!object#1::#2}}
+   \csname\r!object#1::#2\endcsname}
 
 %D If needed one can ask for the dimensions of an object with:
 %D
@@ -225,7 +185,7 @@
    \let\objectwidth \!!zeropoint
    \let\objectheight\!!zeropoint
    \let\objectdepth \!!zeropoint
-   \getvalue{\r!object#1::#2}}
+   \csname\r!object#1::#2\endcsname}
 
 %D Apart from this kind of objects, that have typeset content, 
 %D we can have low level driver specific objects. Both types 
@@ -246,20 +206,27 @@
 \newif\ifobjectreferencing \objectreferencingtrue
 
 \def\checkobjectreferences%
-  {\bgroup
-   \setbox0=\hbox
-     {\doutilities{objectreferences}{\jobname}{}{}{}}%
-   \global\let\checkobjectreferences=\relax
-   \egroup}
+  {\startnointerference
+   \doutilities{objectreferences}\jobname\empty\empty\empty
+   \global\let\checkobjectreferences\relax
+   \stopnointerference}
 
-\def\setobjectreferences%
+% \def\setobjectreferences
+%   {\def\objectreference##1##2##3%
+%      {\doifundefinedelse{\r!driver##1::##2}
+%         {\setxvalue{\r!driver##1::##2}{##3}}
+%         {\showmessage{\m!references}{31}{[##1 ##2=>##3]}}}}
+
+\def\setobjectreferences
   {\def\objectreference##1##2##3%
-     {\doifundefinedelse{\r!driver##1::##2}
-        {\setxvalue{\r!driver##1::##2}{##3}}
-        {\showmessage{\m!references}{31}{[##1 ##2=>##3]}}}}
+     {\ifundefined{\r!driver##1::##2}%
+        \setxvalue{\r!driver##1::##2}{##3}%
+      \else
+        \showmessage{\m!references}{31}{[##1 ##2=>##3]}%
+      \fi}}
 
-\def\resetobjectreferences%
-  {\let\objectreference=\gobblethreearguments}
+\def\resetobjectreferences
+  {\let\objectreference\gobblethreearguments}
 
 \resetobjectreferences
 
@@ -267,7 +234,7 @@
   {\checkobjectreferences
    \ifobjectreferencing 
      \bgroup
-     \edef\dowritereference%
+     \edef\dowritereference% why not immediate ? 
        {\writeutilitycommand{\objectreference{#1}{#2}{#3}}}%
      \dowritereference
      \egroup
@@ -278,12 +245,21 @@
 
 \def\defaultobjectreference#1#2{0}
 
+% \def\dogetobjectreference#1#2#3%
+%   {\checkobjectreferences
+%    \doifdefinedelse{\r!driver#1::#2}
+%      {\@EA\xdef\@EA#3\@EA{\csname\r!driver#1::#2\endcsname}}
+%      {\showmessage{\m!references}{30}{[#1 #2=>\defaultobjectreference{#1}{#2}]}%
+%       \xdef#3{\defaultobjectreference{#1}{#2}}}}
+
 \def\dogetobjectreference#1#2#3%
   {\checkobjectreferences
-   \doifdefinedelse{\r!driver#1::#2}
-     {\@EA\xdef\@EA#3\@EA{\csname\r!driver#1::#2\endcsname}}
-     {\showmessage{\m!references}{30}{[#1 #2=>\defaultobjectreference{#1}{#2}]}%
-      \xdef#3{\defaultobjectreference{#1}{#2}}}}
+   \ifundefined{\r!driver#1::#2}%
+     \showmessage{\m!references}{30}{[#1 #2=>\defaultobjectreference{#1}{#2}]}%
+     \xdef#3{\defaultobjectreference{#1}{#2}}%
+   \else
+     \global\@EA\let\@EA#3\csname\r!driver#1::#2\endcsname
+   \fi}
 
 \def\setobject     {\global\objectreferencingfalse\dosetobject1}
 \def\settightobject{\global\objectreferencingfalse\dosetobject0}
@@ -299,12 +275,43 @@
 %D \doifobjectreferencefoundelse{class}{object}{do then}{do else}
 %D \stoptypen
 
-\def\doifobjectfoundelse#1#2#3#4%
-  {\doifundefinedelse{\r!object#1::#2}{#4}{#3}}
+\beginTEX
 
-\def\doifobjectreferencefoundelse#1#2#3#4%
+\def\doifobjectfoundelse#1#2%
+  {\@EA\ifx\csname\r!object#1::#2\endcsname\relax
+     \expandafter\secondoftwoarguments
+   \else
+     \expandafter\firstoftwoarguments
+   \fi}
+
+\def\doifobjectreferencefoundelse#1#2%
   {\checkobjectreferences
-   \doifundefinedelse{\r!driver#1::#2}{#4}{#3}}
+   \@EA\ifx\csname\r!driver#1::#2\endcsname\relax
+     \expandafter\secondoftwoarguments
+   \else
+     \expandafter\firstoftwoarguments
+   \fi}
+
+\endTEX
+
+\beginETEX
+
+\def\doifobjectfoundelse#1#2%
+  {\ifcsname\r!object#1::#2\endcsname
+     \expandafter\firstoftwoarguments
+   \else
+     \expandafter\secondoftwoarguments
+   \fi}
+
+\def\doifobjectreferencefoundelse#1#2%
+  {\checkobjectreferences
+   \ifcsname\r!driver#1::#2\endcsname
+     \expandafter\firstoftwoarguments
+   \else
+     \expandafter\secondoftwoarguments
+   \fi}
+
+\endETEX
 
 %D \macros
 %D   {doifobjectssupportedelse}
@@ -322,11 +329,11 @@
 
 \newif\ifobjectssupported \objectssupportedtrue
 
-\def\doifobjectssupportedelse#1#2%
+\def\doifobjectssupportedelse
   {\ifobjectssupported
-     \doifspecialavailableelse\doinsertobject{#1}{#2}%
+     \@EA\doifspecialavailableelse\@EA\doinsertobject
    \else
-     #2%
+     \@EA\secondoftwoarguments
    \fi}
 
 %D There is a conceptual problem here. Objects are not possible
@@ -335,6 +342,4 @@
 %D support objects while we still want to be able to use the 
 %D \DVI\ output. 
 
-\protect
-
-\endinput 
+\protect \endinput 

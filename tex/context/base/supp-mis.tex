@@ -17,6 +17,8 @@
 
 \ifx \undefined \writestatus \else \expandafter \endinput \fi
 
+\ifx \undefined \pdfoutput \chardef\pdfoutput=0 \fi 
+
 %D Because \LATEX\ has no safe package loading mechanism, we
 %D need to take care of possible interference. 
 
@@ -417,6 +419,15 @@
 %D alternative is a bit different, but we hope this one works
 %D here.
 
+\ifx\dospecials\undefined
+
+  \def\dospecials
+    {\do\ \do\\\do\{\do\}\do\$%
+     \do\#\do\^\do\_\do\&\do\%%
+     \do\~\do\^^A\do\^^K} 
+     
+\fi 
+
 \ifnocontextobject \uncatcodespecials \do
 
   \def\uncatcodespecials%
@@ -441,7 +452,8 @@
    \catcode`\:=\@@other \catcode`\;=\@@other
    \catcode`\,=\@@other \catcode`\.=\@@other \catcode`\~=\@@other 
    \catcode`\(=\@@other \catcode`\)=\@@other 
-   \catcode`\{=\@@other \catcode`\}=\@@other}
+   \catcode`\{=\@@other \catcode`\}=\@@other
+   \catcode`\\=\@@other \catcode`\%=\@@other }
 
 \fi
 
@@ -505,13 +517,16 @@
   {\recursecounter=\maxdimen}
 
 %D \macros 
-%D   {doifdefined,doifundefined,
+%D   {ifundefined,doifdefined,doifundefined,
 %D    doifdefinedelse,doifundefinedelse}
 %D
 %D These alteratives are not robust but suitable for simple 
-%D usage. 
+%D usage. The official ones are a bit faster. 
 
 \ifnocontextobject \doifdefined \do
+
+  \def\ifundefined#1%
+    {\expandafter\ifx\csname#1\endcsname\relax}
 
   \def\doifdefinedelse#1#2#3%
     {\expandafter\ifx\csname#1\endcsname\relax#3\else#2\fi}

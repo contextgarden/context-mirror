@@ -20,6 +20,7 @@ stopsetup
 startsetup
 com:setarelimba:
 typ:val/vars/:
+val:nl,fr,en,uk,de,es,cz,..:nl:
 ivr:instalarelimba::
 stopsetup
 
@@ -214,10 +215,9 @@ stopsetup
 
 startsetup
 com:definestegrupculori:
-typ:val/val/vals/:
+typ:val/val/trips/:
 val:*nume::
 val:rgb,cmyk,gri,s:rgb:
-val:trips/::
 stopsetup
 
 startsetup
@@ -260,7 +260,7 @@ stopsetup
 
 startsetup
 com:seteazatype:
-typ:var/:
+typ:vars/:
 var:spatiu:on,dezactivat::
 var:optiune:inclinat,normal,niciunul::
 var:stil:normal,aldin,inclinat,aldininclinat,type,cap,mic...,*comanda::
@@ -405,6 +405,7 @@ var:alternativ:a,b,c::
 var:grosimerigla:*dimensiune::
 var:offsetjos:*dimensiune::
 var:offsetsus:*dimensiune::
+var:culoarerigla:*nume::
 stopsetup
 
 startsetup
@@ -993,7 +994,8 @@ stopsetup
 
 startsetup
 com:jossus:
-typ:arg/arg/:
+typ:val/arg/arg/:
+val:jos::
 val:*text::
 val:*text::
 stopsetup
@@ -1725,8 +1727,9 @@ var:mod:detext,de*sectiune::
 var:text:*text::
 var:separatornumar:*text::
 var:separatortext:*text::
-var:*sectiune*numar:da,nu::
+var:*sectiunenumar singular: nume singular:da,nu::
 var:separator:*text::
+var:strut:da,nu::
 var:stare:start,stop::
 var:comanda:*\comanda#1::
 stopsetup
@@ -1753,6 +1756,7 @@ stopsetup
 startsetup
 com:definestestartstop:
 typ:val/vars/:
+val:*nume::
 var:inainte:*comanda::
 var:dupa:*comanda::
 var:stil:normal,aldin,inclinat,aldininclinat,type,cap,mic...,*comanda::
@@ -1780,6 +1784,7 @@ var:intre:*comanda::
 var:aliniere:stanga,centru,dreapta,nu::
 var:conversie:numere,caractere,Caractere,numereromane,Numereromane::
 var:mod:detext,de*sectiune::
+var:separator:*text::
 stopsetup
 
 startsetup
@@ -1881,9 +1886,9 @@ stopsetup
 
 startsetup
 com:seteazareferinte:
-typ:var/:
+typ:vars/:
 var:stare:start,stop::
-var:*sectiune*numar:da,nu::
+var:*sectiunenumar singular: nume singular:da,nu::
 var:prefix:+,-,*text::
 var:interactiune:eticheta,text,tot,simbol::
 var:latime:*dimensiune::
@@ -1980,7 +1985,7 @@ val:*nume::
 var:stare:start,stop::
 var:alternativ:a,b,c,...,niciunul,comanda::
 var:cuplare:on,dezactivat::
-var:criteriu:*sectiune,local,precedent,tot::
+var:criteriu:*sectiune,local,precedent,curent,tot::
 var:marginipagina:*lista::
 var:stil:normal,aldin,inclinat,aldininclinat,type,cap,mic...,*comanda::
 var:stilnumar:normal,aldin,inclinat,aldininclinat,type,cap,mic...,*comanda::
@@ -1998,9 +2003,9 @@ var:intre:*comanda::
 var:stanga:*text::
 var:dreapta:*text::
 var:eticheta:da,nu::
-var:prefix:da,nu::
+var:prefix:da,nu,niciunul::
 var:numarpagina:da,nu::
-var:*sectiune*numar:da,nu::
+var:*sectiunenumar singular: nume singular:da,nu::
 var:alinieretitlu:da,nu::
 var:margine:*dimensiune::
 var:latime:*dimensiune,ajustat::
@@ -2008,6 +2013,7 @@ var:inaltime:*dimensiune,ajustat,broad::
 var:inaltime:*dimensiune,ajustat,broad::
 var:distanta:*dimensiune::
 var:separator:*text::
+var:stopper:*text::
 var:simbol:niciunul,1,2,3,...::
 var:expansiune:da,nu,comanda::
 var:latimemaxima:*dimensiune::
@@ -2067,6 +2073,7 @@ var:aliniaturmator:da,nu::
 var:alternativ:*nume::
 var:spatiuinainte:*dimensiune::
 var:dupa:*dimensiune::
+var:separator:*text::
 stopsetup
 
 startsetup
@@ -2291,6 +2298,7 @@ var:alternativ:normal,inmargine,centru,text::
 var:comanda:*\comanda#1#2::
 var:comandanumar:*\comanda#1::
 var:comandatext:*\comanda#1::
+var:separator:*text::
 var:prefix:+,-,*text::
 var:punetitlu:da,nu::
 var:numarincrement:da,nu,*fisier::
@@ -2420,14 +2428,14 @@ stopsetup
 startsetup
 com:definesteregistru:
 typ:val/val/:
-val:*nume singular::
+val:*\@@mssetupsingular ::
 val:*nume pluram::
 stopsetup
 
 startsetup
 com:seteazaregistru:
 typ:val/val/vars/:
-val:*nume singular::
+val:*\@@mssetupsingular ::
 val:*nume::
 var:n:*numar::
 var:balanta:da,nu::
@@ -2437,7 +2445,7 @@ var:stilpagina:normal,aldin,inclinat,aldininclinat,type,cap,mic...,*comanda::
 var:stiltext:normal,aldin,inclinat,aldininclinat,type,cap,mic...,*comanda::
 var:indicator:da,nu::
 var:cuplare:da,nu::
-var:*sectiune*numar:da,nu::
+var:*sectiunenumar singular: nume singular:da,nu::
 var:criteriu:*sectiune,local,tot::
 var:distanta:*dimensiune::
 var:simbol:1,2,...,n,a,...,niciunul::
@@ -2467,7 +2475,7 @@ stopsetup
 startsetup
 com:scrieinregistru:
 typ:val/val/idxs/:
-val:*nume singular::
+val:*\@@mssetupsingular ::
 val:*text::
 val:*text::
 stopsetup
@@ -2508,7 +2516,7 @@ stopsetup
 startsetup
 com:definestesinonim:
 typ:val/val/val/val/:
-val:*nume singular::
+val:*\@@mssetupsingular ::
 val:*nume pluram::
 val:*comanda::
 val:*comanda::
@@ -2555,7 +2563,7 @@ stopsetup
 startsetup
 com:definestesortare:
 typ:val/val/val/:
-val:*nume singular::
+val:*\@@mssetupsingular ::
 val:*nume pluram::
 val:*comanda::
 stopsetup
@@ -2625,6 +2633,7 @@ var:staresubsol:normal,stop,start,gol,niciunul,faramarcare::
 var:staretext:normal,stop,start,gol,niciunul,faramarcare::
 var:staresus:stop,start::
 var:starejos:stop,start::
+var:pagestate:stop,start::
 var:culoare:*nume::
 stopsetup
 
@@ -2642,7 +2651,7 @@ stopsetup
 startsetup
 com:datacurenta:
 typ:vals/:
-val:zi,luna,zisaptamana,an, dd,mm,jj,yy,d,m,j,y,referinta:zi,luna,an:
+ivl:data::
 stopsetup
 
 startsetup
@@ -2651,7 +2660,7 @@ typ:vars/vals/:
 var:d:*numar::
 var:m:*numar::
 var:y:*numar::
-ivl:datacurenta::
+val:zi,luna,zisaptamana,an, dd,mm,jj,yy,d,m,j,y,referinta:zi,luna,an:
 stopsetup
 
 startsetup
@@ -2928,7 +2937,7 @@ stopsetup
 startsetup
 com:definestefloat:
 typ:val/val/:
-val:*nume singular::
+val:*\@@mssetupsingular ::
 val:*nume pluram::
 stopsetup
 
@@ -3054,6 +3063,8 @@ typ:vars/:
 var:inainte:*comanda::
 var:dupa:*comanda::
 var:stil:normal,aldin,inclinat,aldininclinat,type,cap,mic...,*comanda::
+var:culoare:*nume::
+var:locatie:text,margine::
 stopsetup
 
 startsetup
@@ -3729,9 +3740,7 @@ stopsetup
 
 startsetup
 com:remarca:
-typ:poss/poss/vars/arg/:
-val:*numar::
-val:*numar::
+typ:pos/pos/vars/arg/:
 val:*numar::
 val:*numar::
 ivr:seteazainconjurat::
@@ -3873,7 +3882,6 @@ com:seteazacamp:
 typ:val/vals/vars/vars/vars/:
 val:*nume::
 val:eticheta,orizontal,vertical,incadrat::
-ivr:framed::
 ivr:seteazacampuri::
 stopsetup
 
@@ -3882,7 +3890,6 @@ com:seteazacampuri:
 typ:vals/val/vars/vars/vars/:
 val:*nume::
 val:reset,eticheta,orizontal,vertical,incadrat::
-ivr:framed::
 var:n:*numar::
 var:distanta:*dimensiune::
 var:inainte:*comanda::
@@ -3903,6 +3910,7 @@ var:calculeaza:*referinta::
 var:offsetcamp:*dimensiune::
 var:culoareframecamp:*nume::
 var:culoarefundalcamp:*nume::
+ivr:framed::
 stopsetup
 
 startsetup

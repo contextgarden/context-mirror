@@ -1,4 +1,21 @@
-\ifx\undefined\unprotect \catcode`\@=11 \fi 
+%D \module
+%D   [       file=syst-etx,
+%D        version=1999.03.17, % some time ...  
+%D          title=\CONTEXT\ System Macros,
+%D       subtitle=Efficient \PLAIN\ \TEX\ loading,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
+%C details. 
+
+%D This module prepares \CONTEXT\ for \ETEX. We don't use 
+%D the definition files that come with this useful \TEX\ 
+%D extension, but implement our own alternatives. 
+
+\unprotect
 
 %D Constants to be used with \type {\grouptype}.
 
@@ -89,22 +106,22 @@
 \beginETEX \tracing... 
 
 \def\tracingall%
-  {\tracingonline    =\@ne
-   \tracingcommands  =\thr@@
-   \tracingstats     =\tw@
-   \tracingpages     =\@ne
-   \tracingoutput    =\@ne
-   \tracinglostchars =\tw@
-   \tracingmacros    =\tw@
-   \tracingparagraphs=\@ne
-   \tracingrestores  =\@ne
-   \showboxbreadth   =\maxdimen
-   \showboxdepth     =\maxdimen
-   \tracinggroups    =\@ne
-   \tracingifs       =\@ne
-   \tracingscantokens=\@ne
-   \tracingnesting   =\@ne
-   \tracingassigns   =\tw@
+  {\tracingonline    \@ne
+   \tracingcommands  \thr@@
+   \tracingstats     \tw@
+   \tracingpages     \@ne
+   \tracingoutput    \@ne
+   \tracinglostchars \tw@
+   \tracingmacros    \tw@
+   \tracingparagraphs\@ne
+   \tracingrestores  \@ne
+   \showboxbreadth   \maxdimen
+   \showboxdepth     \maxdimen
+   \tracinggroups    \@ne
+   \tracingifs       \@ne
+   \tracingscantokens\@ne
+   \tracingnesting   \@ne
+   \tracingassigns   \tw@
    \errorstopmode}
 
 \def\loggingall%
@@ -112,22 +129,22 @@
    \tracingonline=\z@}
 
 \def\tracingnone%
-  {\tracingassigns   =\z@
-   \tracingnesting   =\z@
-   \tracingscantokens=\z@
-   \tracingifs       =\z@
-   \tracinggroups    =\z@
-   \showboxdepth     =\thr@@
-   \showboxbreadth   =5
-   \tracingrestores  =\z@
-   \tracingparagraphs=\z@
-   \tracingmacros    =\z@
-   \tracinglostchars =\@ne
-   \tracingoutput    =\z@
-   \tracingpages     =\z@
-   \tracingstats     =\z@
-   \tracingcommands  =\z@
-   \tracingonline    =\z@ }
+  {\tracingassigns   \z@
+   \tracingnesting   \z@
+   \tracingscantokens\z@
+   \tracingifs       \z@
+   \tracinggroups    \z@
+   \showboxdepth     \thr@@
+   \showboxbreadth   5
+   \tracingrestores  \z@
+   \tracingparagraphs\z@
+   \tracingmacros    \z@
+   \tracinglostchars \@ne
+   \tracingoutput    \z@
+   \tracingpages     \z@
+   \tracingstats     \z@
+   \tracingcommands  \z@
+   \tracingonline    \z@ }
 
 \endETEX
 
@@ -171,9 +188,9 @@
 
 %D We use some constants in the tests.
 
-\mathchardef\@@minallocation=   16
-\mathchardef\@@medallocation=  256
-\mathchardef\@@maxallocation=32767
+\mathchardef\@@minallocation =    16
+\mathchardef\@@medallocation =   256
+\mathchardef\@@maxallocation = 32767
 
 %D I cannot imagine that more than~8 extra insert classes 
 %D are needed, so we say:
@@ -212,4 +229,4 @@
 \let\normalprotected  = \protected
 \let\normalunexpanded = \unexpanded
 
-\ifx\undefined\unprotect \catcode`\@=12 \fi \endinput
+\protect \endinput

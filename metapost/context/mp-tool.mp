@@ -12,6 +12,7 @@
 %C details.
 
 % a cleanup is needed, like using image and alike
+% use a few more "newinternal"'s
 
 %D This module is rather preliminary and subjected to
 %D changes.
@@ -56,6 +57,8 @@ string semicolor ; semicolor := char 59 ;
 
 % When somehow the first one gets no HiRes, then make sure 
 % that the format matches the mem sizes in the config file. 
+
+% eerste " " er uit 
 
 vardef ddecimal primary p =
   " " & decimal xpart p &
@@ -185,10 +188,11 @@ def pop_boundingbox text p =
 enddef;
 
 vardef boundingbox primary p =
-  llcorner p --
-  lrcorner p --
-  urcorner p --
-  ulcorner p -- cycle
+  if (path p) or (picture p) : 
+    llcorner p -- lrcorner p -- urcorner p -- ulcorner p 
+  else : 
+    origin 
+  fi -- cycle 
 enddef;
 
 vardef inner_boundingbox primary p =
@@ -219,18 +223,44 @@ enddef;
 %D Some missing functions can be implemented rather
 %D straightforward:
 
-def tand (expr x) = (sind(x)/cosd(x))                     enddef ;
+numeric Pi ; Pi := 3.1415926 ;
+
 def sqr  (expr x) = (x*x)                                 enddef ;
 def log  (expr x) = (if x=0: 0 else: mlog(x)/mlog(10) fi) enddef ;
 def ln   (expr x) = (if x=0: 0 else: mlog(x)/256 fi)      enddef ;
 def exp  (expr x) = ((mexp 256)**x)                       enddef ;
-def pow  (expr x) = (x**power)                            enddef ;
 def inv  (expr x) = (if x=0: 0 else: x**-1 fi)            enddef ;
+
+def pow  (expr x,p) = (x**p)                              enddef ;
+
 def asin (expr x) = (x+(x**3)/6+3(x**5)/40)               enddef ;
 def acos (expr x) = (asin(-x))                            enddef ;
 def atan (expr x) = (x-(x**3)/3+(x**5)/5-(x**7)/7)        enddef ;
+def tand (expr x) = (sind(x)/cosd(x))                     enddef ;
 
-numeric Pi ; Pi := 3.14159 ;
+%D Here are Taco Hoekwater's alternatives: 
+
+pi := 3.1415926 ; radian := 180/pi ; % 2pi*radian = 360 ; 
+
+def tand   (expr x) = (sind(x)/cosd(x))  enddef ;
+def cotd   (expr x) = (cosd(x)/sind(x))  enddef ;
+
+def sin    (expr x) = (sind(x*radian))   enddef ;
+def cos    (expr x) = (cosd(x*radian))   enddef ;
+def tan    (expr x) = (sin(x)/cos(x))    enddef ;
+def cot    (expr x) = (cos(x)/sin(x))    enddef ;
+
+def asin   (expr x) = angle((1+-+x,x))   enddef ;
+def acos   (expr x) = angle((x,1+-+x))   enddef ;
+
+def invsin (expr x) = ((asin(x))/radian) enddef ;
+def invcos (expr x) = ((acos(x))/radian) enddef ;
+
+def acosh  (expr x) = ln(x+(x+-+1))      enddef ; 
+def asinh  (expr x) = ln(x+(x++1))       enddef ; 
+
+vardef sinh primary x = save xx ; xx = exp xx ; (xx-1/xx)/2 enddef ;
+vardef cosh primary x = save xx ; xx = exp xx ; (xx+1/xx)/2 enddef ;
 
 %D We provide two macros for drawing stripes across a shape.
 %D The first method (with the n suffix) uses another method,
@@ -376,17 +406,22 @@ enddef;
 % TODO TODO TODO TODO, not yet ok 
 
 primarydef p xsized w =
-  (p if bbwidth(p)>0 : scaled (w/bbwidth(p)) fi) 
+  (p if (bbwidth (p)>0) and (w>0) : scaled (w/bbwidth (p)) fi) 
 enddef ;
 
 primarydef p ysized h =
-  (p if bbheight(p)>0 : scaled (h/bbheight(p)) fi) 
+  (p if (bbheight(p)>0) and (h>0) : scaled (h/bbheight(p)) fi)  
 enddef ;
 
-primarydef p xysized wh =
-  (p if (bbwidth(p)>0) and (bbheight(p)>0) : 
-       xscaled (xpart wh/bbwidth(p)) yscaled (ypart wh/bbheight(p))
-     fi) 
+primarydef p xysized s =
+  begingroup ; 
+    save wh, w, h ; pair wh ; numeric w, h ; 
+    wh := paired (s) ; w := bbwidth(p) ; h := bbheight(p) ; 
+    (p if (w>0) and (h>0) : 
+         if xpart wh > 0 : xscaled (xpart wh/w) fi 
+         if ypart wh > 0 : yscaled (ypart wh/h) fi 
+       fi) 
+  endgroup 
 enddef ;
 
 primarydef p sized wh =
@@ -447,10 +482,24 @@ path unitdiamond, fulldiamond ;
 unitdiamond := (.5,0)--(1,.5)--(.5,1)--(0,.5)--cycle ;
 fulldiamond := unitdiamond shifted - center unitdiamond ;
 
-%D shorter
+%D More robust:
+
+% let  normalscaled =  scaled ; 
+% let normalxscaled = xscaled ; 
+% let normalyscaled = yscaled ; 
+% 
+% def  scaled expr s =  normalscaled (s) enddef ; 
+% def xscaled expr s = normalxscaled (s) enddef ; 
+% def yscaled expr s = normalyscaled (s) enddef ; 
+
+%D Shorter
 
 primarydef p xyscaled q =
-  p xscaled (xpart paired(q)) yscaled (ypart paired(q))
+  begingroup ; save qq ; pair qq ; qq = paired(q) ; 
+    ( p 
+      if xpart qq<>0 : xscaled (xpart qq) fi  
+      if ypart qq<>0 : yscaled (ypart qq) fi )
+  endgroup
 enddef ;
 
 %D Experimenteel, zie folder-3.tex.
@@ -594,16 +643,9 @@ vardef paired (expr d) =
   if pair d : d else : (d,d) fi
 enddef ;
 
-%primarydef p enlarged d =
-%  begingroup ; save dd ; pair dd ;
-%  dd := if pair d : d else : (d,d) fi ;
-%  (llcorner p shifted (-xpart dd,-ypart dd) --
-%   lrcorner p shifted (+xpart dd,-ypart dd) --
-%   urcorner p shifted (+xpart dd,+ypart dd) --
-%   ulcorner p shifted (-xpart dd,+ypart dd) --
-%   cycle)
-%  endgroup
-%enddef;
+vardef tripled (expr d) =
+  if color d : d else : (d,d,d) fi
+enddef ;
 
 primarydef p enlarged d =
   (p llmoved d -- p lrmoved d -- p urmoved d -- p ulmoved d -- cycle)
@@ -642,24 +684,31 @@ primarydef p ulmoved d =
 enddef ;
 
 primarydef p leftenlarged d = 
-  (llcorner p shifted (-d,0) -- lrcorner p -- 
-   urcorner p -- ulcorner p shifted (-d,0) -- cycle)
+  ((llcorner p) shifted (-d,0) -- lrcorner p -- 
+   urcorner p -- (ulcorner p) shifted (-d,0) -- cycle)
 enddef ; 
 
 primarydef p rightenlarged d = 
-  (llcorner p -- lrcorner p shifted (d,0) -- 
-   urcorner p shifted (d,0) -- ulcorner p -- cycle) 
+  (llcorner p -- (lrcorner p) shifted (d,0) -- 
+   (urcorner p) shifted (d,0) -- ulcorner p -- cycle) 
 enddef ; 
 
 primarydef p topenlarged d = 
   (llcorner p -- lrcorner p -- 
-   urcorner p shifted (0,-d) -- ulcorner p shifted (0,-d) -- cycle) 
+   (urcorner p) shifted (0,d) -- (ulcorner p) shifted (0,d) -- cycle) 
 enddef ; 
 
 primarydef p bottomenlarged d = 
-  (llcorner p shifted (0,d) -- lrcorner p shifted (0,d) -- 
+  (llcorner p shifted (0,-d) -- lrcorner p shifted (0,-d) -- 
    urcorner p -- ulcorner p -- cycle) 
 enddef ; 
+
+%D Saves typing: 
+
+vardef bottomboundary primary p = (llcorner p -- lrcorner p) enddef ;
+vardef rightboundary  primary p = (lrcorner p -- urcorner p) enddef ;
+vardef topboundary    primary p = (urcorner p -- ulcorner p) enddef ;
+vardef leftboundary   primary p = (ulcorner p -- llcorner p) enddef ;
 
 %D Nice too:
 
@@ -709,7 +758,11 @@ primarydef p randomized s =
   elseif pair p :
     p randomshifted s  
   elseif color p :
-    if pair s : 
+    if color s : 
+      (uniformdeviate redpart   s * redpart   p,
+       uniformdeviate greenpart s * greenpart p,
+       uniformdeviate bluepart  s * bluepart  p)  
+    elseif pair s : 
       ((xpart s + uniformdeviate (ypart s - xpart s)) * p)  
     else :  
       (uniformdeviate s * p)  
@@ -718,6 +771,68 @@ primarydef p randomized s =
     p + uniformdeviate s  
   fi)  
 enddef ; 
+
+%D Not perfect (alternative for interpath) 
+
+vardef interpolated(expr s, p, q) =
+  save m ; m := max(length(p),length(q)) ; 
+  (if path p : 
+     for i=0 upto m-1 :
+       s[point       (i   /m) along p,
+         point       (i   /m) along q] .. controls 
+       s[postcontrol (i   /m) along p,
+         postcontrol (i   /m) along q] and 
+       s[precontrol ((i+1)/m) along p,
+         precontrol ((i+1)/m) along q] .. 
+     endfor 
+     if cycle p : 
+       cycle 
+     else :
+       s[point infinity of p,
+         point infinity of q] 
+     fi
+   else :
+     a[p,q]
+   fi)  
+enddef ; 
+
+%D Interesting too:
+
+% primarydef p parallel s =
+%   begingroup ; save q, b ; path q ; numeric b ; 
+%   b := xpart (lrcorner p - llcorner p) ; 
+%   q := p if b>0 : scaled ((b+2s)/b) fi ;
+%   (q shifted (center p-center q)) 
+%   endgroup 
+% enddef ; 
+
+%primarydef p parallel s =
+%  begingroup ; save q, w,h ; path q ; numeric w, h ; 
+%  w := bbwidth(p) ; h := bbheight(p) ; 
+%  q := p if (w>0) and (h>0) : 
+%    xyscaled ((w+2*xpart paired(s))/w,(h+2*ypart paired(s))/h) fi ;
+%  (q shifted (center p-center q)) 
+%  endgroup 
+%enddef ; 
+
+vardef punked primary p = 
+  (point 0 of p for i=1 upto length(p)-1 : -- point i of p endfor 
+   if cycle p : -- cycle else : -- point length(p) of p fi)  
+enddef ;  
+
+vardef curved primary p = 
+  (point 0 of p for i=1 upto length(p)-1 : .. point i of p endfor 
+   if cycle p : .. cycle else : .. point length(p) of p fi)  
+enddef ;  
+
+primarydef p blownup s = 
+  begingroup 
+    save _p_ ; path _p_ ; _p_ := p xysized 
+     (bbwidth (p)+2(xpart paired(s)),
+      bbheight(p)+2(ypart paired(s))) ; 
+    (_p_ shifted (center p - center _p_))
+  endgroup 
+enddef ;
 
 %D Rather fundamental. 
 
@@ -774,13 +889,17 @@ def draworiginoptions (text t) = def _ori_opt_ = t enddef ; enddef ;
 def drawboundoptions  (text t) = def _bnd_opt_ = t enddef ; enddef ;
 def drawpathoptions   (text t) = def _pth_opt_ = t enddef ; enddef ;
 
-drawlineoptions   (withpen pencircle scaled 1   withcolor .5white) ;
-drawpointoptions  (withpen pencircle scaled 4   withcolor   black) ;
-drawcontroloptions(withpen pencircle scaled 2.5 withcolor   black) ;
-drawlabeloptions  () ;
-draworiginoptions (withpen pencircle scaled 1   withcolor .5white) ;
-drawboundoptions  (dashed evenly _ori_opt_) ;
-drawpathoptions   (withpen pencircle scaled 5   withcolor .8white) ;
+def resetdrawoptions = 
+  drawlineoptions   (withpen pencircle scaled 1pt   withcolor .5white) ;
+  drawpointoptions  (withpen pencircle scaled 4pt   withcolor   black) ;
+  drawcontroloptions(withpen pencircle scaled 2.5pt withcolor   black) ;
+  drawlabeloptions  () ;
+  draworiginoptions (withpen pencircle scaled 1pt   withcolor .5white) ;
+  drawboundoptions  (dashed evenly _ori_opt_) ;
+  drawpathoptions   (withpen pencircle scaled 5pt   withcolor .8white) ;
+enddef ; 
+
+resetdrawoptions ;
 
 %D Path.
 
@@ -1062,10 +1181,17 @@ enddef ;
 
 % this cuts of a piece from both ends 
 
+% tertiarydef pat cutends len =
+%   begingroup ; save tap ; path tap ; 
+%   tap := pat cutbefore (point len on pat) ; 
+%   (tap cutafter (point -len on tap))  
+%   endgroup 
+% enddef ;   
+
 tertiarydef pat cutends len =
   begingroup ; save tap ; path tap ; 
-  tap := pat cutbefore (point len on pat) ; 
-  (tap cutafter (point -len on tap))  
+  tap := pat cutbefore (point (xpart paired(len)) on pat) ; 
+  (tap cutafter (point -(ypart paired(len)) on tap))  
   endgroup 
 enddef ;   
 
@@ -1105,7 +1231,7 @@ vardef thefreelabel (expr str, loc, ori) =
   q := freesquare xyscaled (urcorner s - llcorner s) ;
   l := point xpart (p intersectiontimes (ori--loc shifted (loc-ori))) of q ;
   setbounds s to boundingbox s enlarged -freelabeloffset ; % new
-  draw boundingbox s shifted -l withpen pencircle scaled .5pt withcolor red ;
+ %draw boundingbox s shifted -l withpen pencircle scaled .5pt withcolor red ;
   (s shifted -l)
 enddef ;
 
@@ -1215,9 +1341,9 @@ def pushcurrentpicture =
   currentpicture := nullpicture ; 
 enddef ;
 
-def popcurrentpicture = 
+def popcurrentpicture text t = % optional text 
   if currentpicturedepth > 0 : 
-    addto currentpicturestack[currentpicturedepth] also currentpicture ;
+    addto currentpicturestack[currentpicturedepth] also currentpicture t ;
     currentpicture := currentpicturestack[currentpicturedepth] ;
     currentpicturedepth := currentpicturedepth - 1 ; 
   fi ;
@@ -1321,13 +1447,13 @@ vardef colorcircle (expr size, red, green, blue) =
 
   pushcurrentpicture ;
 
-  fill r withcolor red   ; 
-  fill g withcolor green ; 
-  fill b withcolor blue  ; 
+  fill r withcolor       red   ; 
+  fill g withcolor       green ; 
+  fill b withcolor       blue  ; 
   fill c withcolor white-red   ; 
   fill m withcolor white-green ; 
   fill y withcolor white-blue  ; 
-  fill w withcolor white ; 
+  fill w withcolor white       ; 
 
   for i = r,g,b,c,m,y : draw i withcolor .5white ; endfor ;   
 
@@ -1346,19 +1472,53 @@ enddef ;
 
 % nice: currentpicture := inverted currentpicture ;  
 
-vardef inverted expr p = 
-  save pp ; picture pp ; pp := nullpicture ; 
-  for i within p : 
-    addto pp 
-    if stroked i or filled i : 
-      if filled i : contour else : doublepath fi pathpart i  
-      dashed dashpart i withpen penpart i 
-    else : 
-      also i  
-    fi  
-    withcolor white-(redpart i, greenpart i, bluepart i) ;    
-  endfor ; 
-  pp 
+primarydef p uncolored c = 
+  image 
+    (for i within p : 
+       addto currentpicture 
+       if stroked i or filled i : 
+         if filled i : contour else : doublepath fi pathpart i  
+         dashed dashpart i withpen penpart i 
+       else : 
+         also i  
+       fi  
+       withcolor c-(redpart i, greenpart i, bluepart i) ;    
+     endfor ; )  
+enddef ; 
+
+vardef inverted primary p = 
+  (p uncolored white) 
+enddef ;  
+
+primarydef p softened c = 
+  image 
+    (save cc ; color cc ; cc := tripled(c) ; 
+     for i within p : 
+       addto currentpicture 
+       if stroked i or filled i : 
+         if filled i : contour else : doublepath fi pathpart i  
+         dashed dashpart i withpen penpart i 
+       else : 
+        also i  
+       fi  
+       withcolor (redpart   cc * redpart   i, 
+                  greenpart cc * greenpart i, 
+                  bluepart  cc * bluepart  i) ;    
+     endfor ;) 
+enddef ; 
+
+vardef grayed primary p = 
+  image 
+    (for i within p : 
+       addto currentpicture  
+       if stroked i or filled i : 
+         if filled i : contour else : doublepath fi pathpart i  
+         dashed dashpart i withpen penpart i 
+       else : 
+         also i  
+       fi  
+       withcolor tripled(.30redpart i+.59greenpart i+.11bluepart i) ;    
+     endfor ; ) 
 enddef ; 
 
 % yes or no: "text" infont "cmr12" at 24pt ; 
@@ -1386,7 +1546,8 @@ def condition primary b = if b : "true" else : "false" fi enddef ;
 
 primarydef p stretched s = 
   begingroup
-  save pp ; path pp ; pp := p scaled s ;
+% save pp ; path pp ; pp := p scaled s ;
+  save pp ; path pp ; pp := p xyscaled s ;
   (pp shifted ((point 0 of p) - (point 0 of pp)))  
   endgroup
 enddef ; 
@@ -1401,10 +1562,15 @@ def yshifted expr dy = shifted(0,dy) enddef ;
 % right: str = readfrom ("abc" & ".def" ) ; 
 % wrong: str = readfrom  "abc" & ".def"   ;
 
+% Every 62th read fails so we need to try again! 
+
 def readfile (expr name) = 
   if (readfrom (name) <> EOF) : 
-    scantokens("input " & name & " ") 
+    scantokens("input " & name & " ") ;
+  elseif (readfrom (name) <> EOF) : 
+    scantokens("input " & name & " ") ;
   fi  
+  closefrom (name) ;
 enddef ; 
 
 % permits redefinition of end in macro 
@@ -1413,17 +1579,28 @@ inner end ;
 
 % real fun
 
+let normalwithcolor = withcolor ;
+
+def remapcolors =
+  def withcolor primary c = normalwithcolor remappedcolor(c) enddef ;
+enddef ;
+
+def normalcolors =
+  let withcolor = normalwithcolor ;
+enddef ;
+
 def resetcolormap = 
   color color_map[][][] ;
+  normalcolors ;
 enddef ; 
 
 resetcolormap ; 
 
-%color_map_resolution := 1000 ;
+% color_map_resolution := 1000 ;
 %
-%def r_color primary c = round(color_map_resolution*redpart   c) enddef ;
-%def g_color primary c = round(color_map_resolution*greenpart c) enddef ;
-%def b_color primary c = round(color_map_resolution*bluepart  c) enddef ;
+% def r_color primary c = round(color_map_resolution*redpart   c) enddef ;
+% def g_color primary c = round(color_map_resolution*greenpart c) enddef ;
+% def b_color primary c = round(color_map_resolution*bluepart  c) enddef ;
 
 def r_color primary c = redpart   c enddef ;
 def g_color primary c = greenpart c enddef ;
@@ -1441,21 +1618,13 @@ def remappedcolor(expr c) =
   fi
 enddef ;
 
-let normalwithcolor = withcolor ;
-
-def remapcolors =
-  def withcolor primary c = normalwithcolor remappedcolor(c) enddef ;
-enddef ;
-
-def normalcolors =
-  let withcolor = normalwithcolor ;
-enddef ;
-
 def refill  suffix c = do_repath (1) (c) enddef ;
 def redraw  suffix c = do_repath (2) (c) enddef ;
 def recolor suffix c = do_repath (0) (c) enddef ;
 
-def do_repath (expr mode) (suffix c) text t =
+color refillbackground ; refillbackground := (1,1,1) ; 
+
+def do_repath (expr mode) (suffix c) text t = % can it be stroked and filled at the same time ? 
   begingroup ;
   if mode=0 : save withcolor ; remapcolors ; fi ; 
   save _c_, _f_, _b_ ; picture _c_ ; color _f_ ; path _b_ ; 
@@ -1469,12 +1638,12 @@ def do_repath (expr mode) (suffix c) text t =
     elseif stroked i : 
       addto c doublepath pathpart i 
         dashed dashpart i withpen penpart i 
-        withcolor (redpart i, greenpart i, bluepart i) 
+        withcolor _f_ % (redpart i, greenpart i, bluepart i) 
         if mode=2 : t fi ;
     elseif filled  i : 
       addto c contour pathpart i 
-      withcolor (redpart i, greenpart i, bluepart i) 
-      if mode=1 : t if _f_ = background : withcolor background fi fi ;
+        withcolor _f_         
+        if (mode=1) and (_f_<>refillbackground) : t fi ;
     fi ;
   endfor ;   
   setbounds c to _b_ ; 
@@ -1586,25 +1755,26 @@ vardef dostraightened(expr sign, p) =
         pp := pp -- point i of p ;
       fi ; 
     endfor ;
-    save n ; numeric n ; 
-    n := length(pp) ; 
+    save n, ok ; numeric n ; boolean ok ;  
+    n := length(pp) ; ok := false ; 
     for i=0 upto n : % evt hier ook round 
-     if unitvector(point i                        of pp  - 
-                   point if i=0 : n else : i-1 fi of pp) <> 
- sign * unitvector(point if i=n : 0 else : i+1 fi of pp  - 
-                   point i                        of pp) : 
-        point i of pp --
-     fi 
-%
-% to test: 
-%
-%     if round(unitvector(point i                        of pp)) <> 
-% sign * round(unitvector(point if i=n : 0 else : i+1 fi of pp)) : 
-%        point i of pp --
-%     fi 
-%
+ 
+%%      if unitvector(point i                        of pp  - 
+%%                    point if i=0 : n else : i-1 fi of pp) <> 
+%%  sign * unitvector(point if i=n : 0 else : i+1 fi of pp  - 
+%%                    point i                        of pp) : 
+%%         if ok : -- else : hide ( ok := true ; ) fi point i of pp 
+%%      fi 
+
+     if unitvector(round(point i                        of pp  - 
+                   point if i=0 : n else : i-1 fi of pp)) <> 
+ sign * unitvector(round(point if i=n : 0 else : i+1 fi of pp  - 
+                   point i                        of pp)) : 
+        if ok : -- else : ok := true ; fi point i of pp 
+      fi 
+
     endfor   
-    cycle 
+    if ok and (cycle p) : -- cycle fi 
   else : 
     p 
   fi 
@@ -1643,6 +1813,96 @@ enddef;
 vardef anchored@#(expr p, z) =  
   p shifted (z + (labxf@#*lrcorner p + labyf@#*ulcorner p
        + (1-labxf@#-labyf@#)*llcorner p))
+enddef ;
+
+% epsed(1.2345)
+
+vardef epsed (expr e) = 
+  e if e>0 : + eps elseif e<0 : - eps fi  
+enddef ; 
+
+% handy 
+
+def withgray primary g = 
+  withcolor (g,g,g) 
+enddef ; 
+
+% for metafun 
+
+if unknown darkred    : color darkred    ; darkred    := .625(1,0,0) fi ; 
+if unknown darkyellow : color darkyellow ; darkyellow := .625(1,1,0) fi ; 
+if unknown darkgray   : color darkgray   ; darkgray   := .625(1,1,1) fi ; 
+if unknown lightgray  : color lightgray  ; lightgray  := .875(1,1,1) fi ; 
+
+% an improeved plain mp macro 
+
+vardef center primary p = 
+  if pair p : p else : .5[llcorner p, urcorner p] fi  
+enddef;
+
+% new, yet undocumented 
+
+vardef rangepath (expr p, d, a) = 
+  (if length p>0 :  
+     (d*unitvector(direction 0 of p) rotated a) 
+      shifted point 0 of p 
+     -- p -- 
+     (d*unitvector(direction length(p) of p) rotated a) 
+      shifted point length(p) of p 
+   else : 
+     p 
+   fi)
+enddef ; 
+
+% under construction 
+
+vardef straightpath(expr a, b, method) =
+  if (method<1) or (method>6)  :
+    (a--b)
+  elseif method = 1 :
+    (a --
+     if xpart a > xpart b :
+       if ypart a > ypart b :
+         (xpart b,ypart a) --
+       elseif ypart a < ypart b :
+         (xpart a,ypart b) --
+       fi
+     elseif xpart a < xpart b :
+       if ypart a > ypart b :
+         (xpart a,ypart b) --
+       elseif ypart a < ypart b :
+         (xpart b,ypart a) --
+        fi
+    fi
+    b)
+  elseif method = 3 :
+    (a --
+     if xpart a > xpart b :
+       (xpart b,ypart a) --
+     elseif xpart a < xpart b :
+       (xpart a,ypart b) --
+     fi
+     b)
+  elseif method = 5 :
+    (a --
+     if ypart a > ypart b :
+       (xpart b,ypart a) --
+     elseif ypart a < ypart b :
+     (xpart a,ypart b) --
+     fi
+     b)
+  else :
+    (reverse straightpath(b,a,method-1))
+  fi
+enddef ;
+
+% handy for myself 
+
+def addbackground text t =
+  begingroup ; save p ; picture p ;
+  p := currentpicture ; currentpicture := nullpicture ;
+  fill boundingbox p t ; draw p ;
+  endgroup ;
 enddef ;
 
 % done 

@@ -129,7 +129,7 @@
   [bottom 1]
   [state=start]
 
-\def\EndAnswer%
+\def\EndAnswer
   {\vfill
    \bgroup
    \tfx\setstrut
@@ -141,7 +141,7 @@
      {\AuthorOfFAQ}
     \egroup}
 
-\def\TitlePage%
+\def\TitlePage
   {\startstandardmakeup
    \blank[3*big]
    \midaligned{\bfd \labeltext{FAQ}}
@@ -156,16 +156,22 @@
    \blank[3*big]
    \stopstandardmakeup}
 
-\def\FileWithFAQs%
+\def\StartReadingFAQ
   {\setupinteractionmenu[bottom 1][state=stop]
    \setupinteractionmenu[bottom 2][state=start]
-   \page
-   \input \FileNameOfFAQ \relax
-   \page
+   \page}
+
+\def\StopReadingFAQ
+  {\page
    \setupinteractionmenu[bottom 2][state=stop]
    \setupinteractionmenu[bottom 1][state=start]}
 
-\def\IndexPage%
+\def\FileWithFAQs
+  {\StartReadingFAQ
+   \input \FileNameOfFAQ \relax
+   \StopReadingFAQ}
+
+\def\IndexPage
   {\page
    \def\CurrentIndexOfFAQ{}
    \def\NameOfFAQ{}
@@ -173,19 +179,22 @@
    \placeregister[index]
    \page}
 
-\def\BeginFAQ%
+\def\BeginFAQ
   {\doglobal\increment\CurrentNOfFAQ
    \setbox0=\vbox\bgroup
    \setupframedtexts[before=,after=,linecorrection=off]
    \startframedtext}
 
-\def\EndFAQ%
+\def\EndFAQ
   {\stopframedtext
    \egroup 
-   \button[color=,contrastcolor=,frame=overlay,offset=overlay]{\copy0}[faq:\CurrentNOfFAQ]
+   \button
+     [color=,contrastcolor=,frame=overlay,offset=overlay]
+     {\copy0}
+     [faq:\CurrentNOfFAQ]
    \vskip6pt}
 
-\def\AllFAQs%
+\def\AllFAQs
   {\page
    \def\CurrentIndexOfFAQ{}
    \def\NameOfFAQ{}

@@ -21,6 +21,9 @@
 % Figures at Either Margin. De macro's zijn slechts op enkele
 % punten door mij aangepast.
 
+% This module badly needs an update because it's now a 
+% mixture of old and new macros. 
+
 % afhankelijke variabelen
 %
 % \overgap    vervangen door   \floatsidetopskip
@@ -46,6 +49,7 @@
 \newdimen\sidefloatwidth
 \newdimen\sidefloathsize
 \newdimen\sidefloatvsize       \def\nofloatvsize{-1pt }
+\newdimen\sidefloatprogress
 
 \newbox\floatbottom
 
@@ -57,22 +61,57 @@
 \newif\iffloatrighteqo
 \newif\iffloatlefteqo
 
-\let\floatrighteqo=\eqno
-\let\floatleftleqo=\leqno
+% eq is still crap 
+
+\ifx\normalleqno\undefined 
+
+  \let\floatrighteqo=\eqno
+  \let\floatleftleqo=\leqno
+
+\else
+
+  \let\floatrighteqo=\normaleqno
+  \let\floatleftleqo=\normalleqno
+
+\fi 
 
 % Watch it even more! In inner, gaat't mis omdat daar
 % pagetotal enz niet zijn aangepast. Inner kan overigens niet
 % betrouwbaar worden getest!
 
+% \def\flushsidefloats%
+%   {\par
+%    \sidefloatprogress=\sidefloatvsize
+%    \advance\sidefloatprogress by -\pagetotal
+%    \ifdim\sidefloatprogress>\zeropoint
+%      \witruimte % nog checken op interferentie
+%      \kern\sidefloatprogress
+%    \fi
+%    \global\sidefloatvsize=\nofloatvsize
+%    \global\floatflagfalse}
+%
+% no, too buggy, leads to top of page crap
+%
+%\def\flushsidefloats%
+%  {\par
+%   \dochecksidefloat
+%   \scratchcounter=-\hangafter
+%   \dorecurse{\scratchcounter}{\strut\hfill\strut\par}}
+
 \def\flushsidefloats%
   {\par
-   \!!heighta=\sidefloatvsize
-   \advance\!!heighta by -\pagetotal
+   \!!heighta\sidefloatvsize
+   \advance\!!heighta -\pagetotal
    \ifdim\!!heighta>\zeropoint
-     \witruimte % nog checken op interferentie
+     % to be checked for interference
+     \witruimte
+     % will be option
+     \getnoflines\!!heighta
+     \!!heighta\noflines\lineheight
+     % so far for option
      \kern\!!heighta
    \fi
-   \global\sidefloatvsize=\nofloatvsize
+   \global\sidefloatvsize\nofloatvsize
    \global\floatflagfalse}
 
 \def\flushsidefloatsafterpar%
@@ -80,7 +119,7 @@
    \gdef\checksidefloat%
      {\dochecksidefloat
       \ifdim\oldpagetotal=\pagetotal \else
-        \xdef\checksidefloat{\dochecksidefloat}%
+        \global\let\checksidefloat\dochecksidefloat
         \flushsidefloats
       \fi}}
 
@@ -103,8 +142,7 @@
 \let\poppenalties=\relax
 
 \def\restorepenalties%
-  {\ifnum\outputpenalty=\!!tenthousand\relax
-   \else
+  {\ifnum\outputpenalty=\!!tenthousand\else
      \penalty\outputpenalty
    \fi}
 
@@ -120,7 +158,7 @@
        \else
          \restoreleftindent
          \ifdim\wd\floatbottom<\sidefloathsize
-           \parskip=\!!zeropoint
+           \parskip=\zeropoint
            %\noindent
            \vadjust{\penalty-1}%
            \iffloatlefteqo
@@ -152,17 +190,29 @@
 
 \def\restoreleftindent%
   {\ifrightfloat \else
-     \parskip=\!!zeropoint
+     \parskip=\zeropoint
      \noindent
      \vadjust{\penalty-1}%
      \hskip\sidefloatwidth
    \fi}
 
-\def\eqno%
-  {\iffloatshort
-     \global\floatrighteqotrue
-   \fi
-   \floatrighteqo}
+\ifx\normaleqno\undefined
+
+  \def\normaleqno%
+    {\iffloatshort
+       \global\floatrighteqotrue
+     \fi
+     \floatrighteqo}
+
+\else
+
+  \def\eqno%
+    {\iffloatshort
+       \global\floatrighteqotrue
+     \fi
+     \floatrighteqo}
+
+\fi 
 
 \def\leftmarginfloat#1%
   {\global\rightfloatfalse\marginfloattrue\putsidefloat{#1}}
@@ -176,49 +226,56 @@
 \def\rightfloat#1%
   {\global\rightfloattrue\marginfloatfalse\putsidefloat{#1}}
 
-\def\putsidefloat#1%
+\def\putsidefloat#1% crap macro 
   {\par
    \witruimte
+   % moved here dec 2001 
+   {\everypar\emptytoks\forgetall\vbox{\strut}\vskip-\lineheight}% moved
+   %
    \previoussidefloat
    \stallsidefloat
    \setbox\floatbox=\hbox{\vbox % pretty ugly, will be rewritten
      {\vskip\ifmarginfloat-\sidefloattopskip\else\sidefloattopoffset\fi#1}}
    \measuresidefloat
-   \ifroomforfloat \else
+   \ifroomforfloat 
+   \else
      \tosssidefloat
      \measuresidefloat
      \stallsidefloat
    \fi
    \setsidefloat}
 
+
 \def\progresssidefloat%
-  {\!!heighta=\sidefloatvsize
+  {\sidefloatprogress=\sidefloatvsize
    \iffloatflag
-     \advance\!!heighta by -\dimen3
+     \advance\sidefloatprogress -\sidefloatpagetotal
      \global\floatflagfalse
    \else
-     \advance\!!heighta by -\pagetotal
+     \advance\sidefloatprogress -\pagetotal
    \fi}
 
 \def\tosssidefloat%
   {\vfill\eject}
 
+\newdimen\sidefloatpagetotal
+
 \def\measuresidefloat%
   {\global\floatflagtrue
-   \dimen3=\pagetotal % global 
+   \global\sidefloatpagetotal \pagetotal % global 
    \ifmarginfloat
-     \global\sidefloatwidth=\!!zeropoint
+     \global        \sidefloatwidth \zeropoint
    \else
-     \global\sidefloatwidth=\wd\floatbox
-     \global\advance\sidefloatwidth by \floatsideskip
+     \global        \sidefloatwidth \wd\floatbox
+     \global\advance\sidefloatwidth \floatsideskip
    \fi
-   \global\sidefloathsize=\hsize
-   \global\advance\sidefloathsize by -\sidefloatwidth
-   \global\sidefloatheight=\ht\floatbox
-   \global\advance\sidefloatheight by \dp\floatbox
-   \global\advance\sidefloatheight by \sidefloattopskip
-   \global\sidefloatvsize=\sidefloatheight
-   \global\advance\sidefloatvsize by \dimen3
+   \global        \sidefloathsize  \hsize
+   \global\advance\sidefloathsize -\sidefloatwidth
+   \global        \sidefloatheight \ht\floatbox
+   \global\advance\sidefloatheight \dp\floatbox
+   \global\advance\sidefloatheight \sidefloattopskip
+   \global        \sidefloatvsize  \sidefloatheight
+   \global\advance\sidefloatvsize  \sidefloatpagetotal
    \dimen0=\sidefloatvsize
    \ifdim\dimen0>.99\pagegoal \relax
      \roomforfloatfalse
@@ -238,13 +295,15 @@
    \fi}
 
 \def\setsidefloat% nilling everypar saves time and redudant pos's 
-  {{\everypar\emptytoks\vbox{\strut}}\vskip-\lineheight
+  {% removed here dec 2001   
+  %{\everypar\emptytoks\forgetall\vbox{\strut}\vskip-\lineheight}%
+   %
    \kern\sidefloattopskip
    \edef\presidefloatdepth{\the\prevdepth}%
    \nointerlineskip
    \bgroup
-   \everypar=\emptytoks
-   \parskip=\zeropoint
+   \everypar\emptytoks
+   \parskip\zeropoint
    \logsidefloat
    \ifrightfloat
      \hfill
@@ -265,7 +324,7 @@
    \egroup
    \par
    \kern-\sidefloatheight
-   \penalty10001
+   \penalty10001 % oeps, this will change 
    \normalbaselines
    \prevdepth=\presidefloatdepth
    %\noindent
@@ -278,33 +337,33 @@
   {\ifnum\sidefloatparagraph=1 }
 
 \def\setsidefloatparagraph%
-  {\global\advance\sidefloatparagraph by 1 }
+  {%\advance\sidefloatprogress by \sidefloatbottomskip
+   %\!!counta=\sidefloatprogress
+\scratchdimen=\sidefloatprogress
+\advance\scratchdimen \ht\strutbox
+\!!counta=\scratchdimen
+   \divide\!!counta by \baselineskip
+   \ifnum\!!counta>0
+     \ifrightfloat
+       \hangindent=-\sidefloatwidth
+     \else
+       \hangindent=\sidefloatwidth
+     \fi
+     \hangafter=-\!!counta
+   \fi
+   \global\advance\sidefloatparagraph 1 }
 
 \def\resetsidefloatparagraph%
   {\global\sidefloatparagraph=0 }
 
 \def\dochecksidefloat%
   {\progresssidefloat
-   \ifdim\!!heighta>\zeropoint
-%     \advance\!!heighta by \sidefloatbottomskip
-%     \!!counta=\!!heighta
-\scratchdimen=\!!heighta
-\advance\scratchdimen \ht\strutbox
-\!!counta=\scratchdimen
-     \divide\!!counta by \baselineskip
-     \ifnum\!!counta>0
-       \ifrightfloat
-         \hangindent=-\sidefloatwidth
-       \else
-         \hangindent=\sidefloatwidth
-       \fi
-       \hangafter=-\!!counta
-     \fi
+   \ifdim\sidefloatprogress>\zeropoint
      \setsidefloatparagraph
    \else
      \resetsidefloatparagraph
    \fi
-   \parskip=\tussenwit}
+   \parskip\tussenwit}
 
 \def\checksidefloat%
   {\dochecksidefloat}
@@ -320,20 +379,20 @@
 
 \def\previoussidefloat%
   {\progresssidefloat
-   \ifdim\!!heighta>\!!zeropoint \relax
+   \ifdim\sidefloatprogress>\zeropoint \relax
      \iffloatshort
        \global\floatshortfalse
        \tosssidefloat
      \else
-       \kern\!!heighta
+       \kern\sidefloatprogress
      \fi
    \fi}
 
 \def\stallsidefloat%
   {\!!counta=\pageshrink
-   \divide\!!counta by \baselineskip
-   \advance\!!counta by 1
-   \parskip=\!!zeropoint
+   \divide\!!counta \baselineskip
+   \advance\!!counta 1
+   \parskip=\zeropoint
    \dorecurse{\!!counta}{\line{}}
    \kern-\!!counta\baselineskip
    \penalty0 }

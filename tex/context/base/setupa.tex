@@ -8,15 +8,15 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
-%C details. 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
 
-\startmessages  dutch  library: setup  
+\startmessages  dutch  library: setup
         title:  setup
       formula:  formule
        number:  getal
          list:  lijst
-    dimension:  maat 
+    dimension:  maat
          mark:  markering
     reference:  verwijzing
       command:  commando
@@ -24,6 +24,7 @@
          name:  naam
          text:  tekst
       section:  sectie
+sectionnumber:  sectienummer
      singular:  naam enkelvoud
        plural:  naam meervoud
        matrix:  n*m
@@ -34,12 +35,12 @@
             4:  -- wordt nogmaals verwerkt
 \stopmessages
 
-\startmessages  english  library: setup  
+\startmessages  english  library: setup
         title:  setup
       formula:  formula
        number:  number
          list:  list
-    dimension:  dimension 
+    dimension:  dimension
          mark:  mark
     reference:  reference
       command:  command
@@ -47,10 +48,11 @@
          name:  name
          text:  text
       section:  section
-     singular:  singular name 
-       plural:  plural name 
+sectionnumber:  sectionnumber
+     singular:  singular name
+       plural:  plural name
        matrix:  n*m
-          see:  see 
+          see:  see
             1:  the characters < and > are globally active!
             2:  -- is processed
             3:  -- is undefined
@@ -70,6 +72,7 @@
          name:  Name
          text:  Text
       section:  Abschnitt
+sectionnumber:  Abschnittnummer
      singular:  singular
        plural:  plural
        matrix:  n*m
@@ -93,6 +96,7 @@
          name:  jmeno
          text:  text
       section:  sekce
+sectionnumber:  sekcecislo % ? 
      singular:  jmeno v singularu
        plural:  jmeno v pluralu
        matrix:  n*m
@@ -103,12 +107,12 @@
             4:  -- je zpracovano znovu
 \stopmessages
 
-\startmessages  italian library: setup  
+\startmessages  italian library: setup
         title:  setup
       formula:  formula
        number:  number
          list:  list
-    dimension:  dimension 
+    dimension:  dimension
          mark:  mark
     reference:  reference
       command:  command
@@ -116,16 +120,17 @@
          name:  name
          text:  text
       section:  section
-     singular:  singular name 
-       plural:  plural name 
+sectionnumber:  sectionnumber
+     singular:  singular name
+       plural:  plural name
        matrix:  n*m
-          see:  see 
+          see:  see
             1:  the characters < and > are globally active!
             2:  -- is processed
             3:  -- is undefined
             4:  -- is processed again
 \stopmessages
- 
+
 \startmessages  romanian library: setup
          title:  setari
        formula:  formula
@@ -139,6 +144,7 @@
           name:  nume
           text:  text
        section:  sectiune
+ sectionnumber:  sectiunenumar % ? 
       singular:  nume singular
         plural:  nume pluram
         matrix:  n*m
@@ -149,9 +155,9 @@
              4:  -- este procesat din nou
 \stopmessages
 
-% we need some more constants 
+% we need some more constants
 
-\interfacetranslationtrue  
+\interfacetranslationtrue
 
 \input mult-sys
 \input mult-con
@@ -179,15 +185,18 @@
 % zitten, moeten we deze karakters bij verwijzingen
 % converteren naar wat onschuldiger varianten.
 
-\catcode`\<=\active
-\catcode`\>=\active
+\def\stpt#1{{\tttf#1}}
+\def\stpr#1{#1*}
+\def\stpv#1{{\setupvarfont#1}}
 
-\def<{\lesscharacter}
-\def>{\morecharacter}
+\bgroup \catcode`\<=\active \catcode`\>=\other
 
-\def\protectmoreless{\def<{@}\def>{@}}
+\gdef \verbatimsetupvariablepart{\def<<##1>>{\stpr{##1}}}
+\gdef  \protectsetupvariablepart{\def<<##1>>{\string\stpv{##1}}}
+\gdef\visualizesetupvariablepart{\def<<##1>>{\stpv{##1}}}
+\gdef \naturalsetupvariablepart{\def<<##1>>{\string<\string<##1\string>\string>}}
 
-\showmessage{setup}{1}{}
+\egroup
 
 % \stelsetupin
 %   [verwijzing=<0,1,2,3>]
@@ -263,102 +272,40 @@
 \def\c!setupref {stp}
 \def\??stp      {@@stp}
 
-\def\c!command!%
-  {{\setupvarfont\getmessage{setup}{command}}}
+\def\c!setup!variable!#1{{\setupvarfont\getmessage{setup}{#1}}}
+\def\c!setup!command! #1{{\setupvarfont\texescape\getmessage{setup}{command}#1}}
+   
+\def\c!command!      {\c!setup!variable!{command}}
+\def\c!dimension!    {\c!setup!variable!{dimension}}
+\def\c!filename!     {\c!setup!variable!{file}}
+\def\c!identifier!   {\c!setup!variable!{name}}
+\def\c!character!    {\c!setup!variable!{character}}
+\def\c!marker!       {\c!setup!variable!{mark}}
+\def\c!number!       {\c!setup!variable!{number}}
+\def\c!reference!    {\c!setup!variable!{reference}}
+\def\c!plural!       {\c!setup!variable!{plural}}
+\def\c!singular!     {\c!setup!variable!{singula}}
+\def\c!text!         {\c!setup!variable!{text}}
+\def\c!formula!      {\c!setup!variable!{formula}}
+\def\c!font!         {\c!setup!variable!{file}}
+\def\c!matrix!       {\c!setup!variable!{matrix}}
+\def\c!list!         {\c!setup!variable!{list}}
+\def\c!section!      {\c!setup!variable!{section}}
+\def\c!sectionnumber!{\c!setup!variable!{sectionnumber}}
 
-\def\c!dimension!%      
-  {{\setupvarfont\getmessage{setup}{dimension}}}
+\def\c!noargument!    {\c!setup!command!{}}
+\def\c!oneargument!   {\c!setup!command!{\#1}}
+\def\c!twoarguments!  {\c!setup!command!{\#1\#2}}
+\def\c!threearguments!{\c!setup!command!{\#1\#2\#3}}
 
-\def\c!filename!%      
-  {{\setupvarfont\getmessage{setup}{file}}}
-
-\def\c!identifier!%     
-  {{\setupvarfont\getmessage{setup}{name}}}
-
-\def\c!character!%     
-  {{\setupvarfont\getmessage{setup}{character}}}
-
-\def\c!marker!%         
-  {{\setupvarfont\getmessage{setup}{mark}}}
-
-\def\c!number!%         
-  {{\setupvarfont\getmessage{setup}{number}}}
-
-\def\c!reference!%      
-  {{\setupvarfont\getmessage{setup}{reference}}}
-
-\def\c!plural!%         
-  {{\setupvarfont\getmessage{setup}{plural}}}
-
-\def\c!singular!%       
-  {{\setupvarfont\getmessage{setup}{singular}}}
-
-\def\c!text!%           
-  {{\setupvarfont\getmessage{setup}{text}}}
-
-\def\c!formula!%        
-  {{\setupvarfont\getmessage{setup}{formula}}}
-
-\def\c!font!%           
-  {{\setupvarfont\getmessage{setup}{file}}}
-
-\def\c!matrix!%           
-  {{\setupvarfont\getmessage{setup}{matrix}}}
-
-\def\c!list!%          
-  {{\setupvarfont\getmessage{setup}{list}}}
-
-\def\c!section!%        
-  {{\setupvarfont\getmessage{setup}{section}}}
-
-\def\c!noargument!%    
-  {{\setupvarfont\texescape\getmessage{setup}{command}}}
-
-\def\c!oneargument!%    
-  {{\setupvarfont\texescape\getmessage{setup}{command}\#1}}
-
-\def\c!twoarguments!%   
-  {{\setupvarfont\texescape\getmessage{setup}{command}\#1\#2}}
-
-\def\c!threearguments!%
-  {{\setupvarfont\texescape\getmessage{setup}{command}\#1\#2\#3}}
-
-\def\c!repeat! {\c!opt!{{\setupvarfont n}*}}
-\def\c!arg!    {\leftargument\c!dots!\rightargument}
-\def\c!args!   {\leftargument..,\c!dots!,..\rightargument}
-\def\c!dis!    {\$\$\c!dots!\$\$}
-\def\c!idx!    {\leftargument\c!dots!\rightargument}
-\def\c!idxs!   {\leftargument..+\c!dots!+..\rightargument}
-\def\c!mat!    {\$\c!dots!\$}
-\def\c!nop!    {\c!dots!}
-\def\c!fil!    {~\c!dots!~}
-\def\c!pos!    {(\c!dots!)}
-\def\c!poss!   {(\c!dots!,\c!dots!)}
-\def\c!sep!    {\texescape\texescape}
-\def\c!ref!    {[{\setupvarfont ref}]}
-\def\c!refs!   {[{\setupvarfont ref},..]}
-\def\c!val!    {[\c!dots!]}
-\def\c!vals!   {[..,\c!dots!,..]}
-\def\c!var!    {[..=..]}
-\def\c!vars!   {[..,..=..,..]}
-\def\c!cmd!    {\c!noargument!}
-\def\c!dest!   {[\leftargument..\c!ref!\rightargument]}
-\def\c!dests!  {[..,\leftargument..\c!refs!\rightargument,..]}
-\def\c!trip!   {[x:y:z=]}
-\def\c!trips!  {[x:y:z=,..]}
-\def\c!wrd!    {\leftargument\c!dots!\rightargument}
-\def\c!wrds!   {\leftargument.. \c!dots!\ ..\rightargument}
-\def\c!par!    {\texescape par}
-\def\c!opt!  #1{{\setupoptfont{#1}}}
 \def\c!tex!  #1{\texescape#1}
 \def\c!or!     {\hbox spread .25em{\vl}}
 
 \let\redefinesetupconstants=\relax
 
-% Test: 
+% Test:
 
-\newif\ifbreaksetup
-\def\breaksetup{\ifbreaksetup\allowbreak\fi}
+\newif\ifbreaksetup \def\breaksetup{\ifbreaksetup\allowbreak\fi}
 
 \def\c!repeat! {\breaksetup\c!opt!{{\setupvarfont n}*}\breaksetup}
 \def\c!arg!    {\breaksetup\leftargument\c!dots!\rightargument\breaksetup}
@@ -376,7 +323,7 @@
 \def\c!refs!   {\breaksetup[{\setupvarfont ref},\breaksetup..]\breaksetup}
 \def\c!val!    {\breaksetup[\c!dots!]\breaksetup}
 \def\c!vals!   {\breaksetup[..,\breaksetup\c!dots!,\breaksetup..]\breaksetup}
-\def\c!var!    {\breaksetup[..=..]\breaksetup} 
+\def\c!var!    {\breaksetup[..=..]\breaksetup}
 \def\c!vars!   {\breaksetup[..,\breaksetup..=..,\breaksetup..]\breaksetup}
 \def\c!cmd!    {\breaksetup\c!noargument!\breaksetup}
 \def\c!dest!   {\breaksetup[\leftargument..\breaksetup\c!ref!\rightargument]\breaksetup}
@@ -410,10 +357,10 @@
   [\c!commando=\@@stpcommando,
    \c!criterium=\v!alles]
 
-% verwijzing: 0 geen verwijzingen plaatsen / wel genereren 
-%             1 alleen bij zie plaatsen / wel genereren 
-%             2 alle verwijzingen plaatsen / niet genereren 
-%             3 bij zie commando klikken / wel genereren 
+% verwijzing: 0 geen verwijzingen plaatsen / wel genereren
+%             1 alleen bij zie plaatsen / wel genereren
+%             2 alle verwijzingen plaatsen / niet genereren
+%             3 bij zie commando klikken / wel genereren
 
 \newif\ifv!numberingdots!
 \newif\ifv!alwaysinteractive!
@@ -482,10 +429,10 @@
         {\writesetupparametervalues{#1}{#3}{}}}
      {\writesetupparametervalues{#1}{#3}{#5}}}
 
-\unexpanded\def\inheritsetup#1% 
+\unexpanded\def\inheritsetup#1%
   {\setsetupreference#1\to\currentsetupinheritance
    \ifcase\@@stpverwijzing
-     \texescape#1% % njet 
+     \texescape#1% % njet
    \or
      {\op{p}[\currentsetupinheritance]: \texescape#1}% zonder { } probleem
    \or
@@ -499,8 +446,7 @@
 \def\inheritsetupvalues[#1]#2[#3]%
   {\bgroup
    \ConvertToConstant\doifelse{#3}{}{\def\next{}}{\def\next{: }}%
-   \def<<{\setupvarfont}\def>>{}%
-   \protectmoreless
+   \verbatimsetupvariablepart
    \value[\getmessage{setup}{see} \inheritsetup{#1}\next#3][]%
    \egroup}
 
@@ -509,22 +455,27 @@
 \def\inheritsetupvariables[#1]#2[#3]%
   {\bgroup
    \ConvertToConstant\doifelse{#3}{}{\def\next{}}{\def\next{: }}%
-   \def<<{\setupvarfont}\def>>{}%
-   \protectmoreless
+   \verbatimsetupvariablepart
    \variable[..=..][\getmessage{setup}{see} \inheritsetup{#1}\next#3][]%
    \egroup}
 
 \def\stelsetupin%
   {\dodoubleargument\getparameters[\??stp]}
 
-\def\dowritetexcommand#1<<#2>>#3\\%
+\bgroup \catcode`<=\active
+
+\gdef\dowritetexcommand#1<<#2>>#3\\%
   {\texescape#1{\setupvarfont#2}#3}
 
-\def\writetexcommand#1%
+\gdef\writetexcommand#1%
   {\setuptxtfont
-   \doifinstringelse{<<}{#1}
+   \convertargument<<\to\asciia
+   \convertargument#1\to\asciib
+   \doifinstringelse{\asciia}{\asciib}
      {\dowritetexcommand#1\\}
      {\texescape#1}}
+
+\egroup
 
 \xdef\currentsetupreference   {}
 \xdef\currentsetupinheritance {}
@@ -535,7 +486,7 @@
 
 \def\setsetupreference#1\to#2%
   {\bgroup
-   \protectmoreless
+   \verbatimsetupvariablepart 
    \let\subsetup=\subsetupreference
    \xdef#2{\c!setupref:#1}%
    \egroup}
@@ -570,8 +521,15 @@
      \dointeractivesetupsymbol\setupoptcolor
    \fi}
 
-\@EA\def\@EA\c!dostp!\e!start#1<<#2>>#3\\%
+\bgroup \catcode`<=\active
+
+\@EA\gdef\@EA\c!dostp!\e!start#1<<#2>>#3\\%
   {\breaksetup~...~\breaksetup\texescape\e!stop#1{\setupvarfont#2}}%
+
+\gdef\stripsetupstoppart#1%
+  {\@EA\def\@EA\c!stp!\@EA{\@EA\c!dostp!#1<<>>\\}}
+
+\egroup
 
 \pushmacro\setuptext
 
@@ -583,15 +541,17 @@
 
 \popmacro\setuptext
 
-\newif\ifshortsetup 
+\newif\ifshortsetup
 
-\def\dosetupreference% 
+\newcounter\currentsetupnumber
+
+\def\dosetupreference%
   {\doifundefinedelse{done::\currentsetupreference}
      {\pagereference[\currentsetupnumber]%
       \pagereference[\currentsetupreference]%
       \setgvalue{done::\currentsetupreference}{}}
      {\showmessage{setup}{4}{\currentsetupreference}}}
-
+
 \def\doprocesssetup\number[#1]\command[#2]\type[#3]#4%
   {\bgroup
      \showmessage{setup}{2}{#2}%
@@ -600,19 +560,15 @@
      \let\variable=\setupvariable
      \let\inheritvalues=\inheritsetupvalues
      \let\inheritvariables=\inheritsetupvariables
-     \@EA\def\@EA\c!stp!\@EA{\@EA\c!dostp!#2<<>>\\}%
+     \stripsetupstoppart{#2}%
      \advance\hsize by -\leftskip
      \advance\hsize by -\rightskip
      \getvalue{\e!start setuptext}
        \stelwitruimtein[\v!geen]%
        \bgroup
-         \def<{}%
-         \def>{}%
-         \edef\firstcommand{#2*}%
-         \let<=\lesscharacter
-         \let>=\morecharacter
-         \edef\secondcommand{#2}%
-         \expanded{\texmacro[\firstcommand]{\noexpand\tex{\secondcommand}}}% 
+         \verbatimsetupvariablepart \edef\first {#2*}%
+         \protectsetupvariablepart  \edef\second{#2}%
+         \expanded{\texmacro[\first]{\noexpand\stpt{\second}}}%
        \egroup
        \global\v!dotnumber!=0
        \global\v!numberingdots!true
@@ -626,8 +582,8 @@
        \fi
        \global\v!dotnumber!=0
        \ifbreaksetup
-         \hangafter1 
-         \hangindent1em  
+         \hangafter1
+         \hangindent1em
          \veryraggedright
        \else
          \hbox to \hsize
@@ -635,6 +591,7 @@
          {\let\subsetup=\gobbleoneargument
           \redefinesetupconstants
           \setuptxtfont\setstrut\strut
+          \visualizesetupvariablepart 
           \writetexcommand{#2}#3%
           \ifbreaksetup\hfill\else\hss\fi
           \ifnum\@@stpverwijzing>0
@@ -684,64 +641,65 @@
        \fi
      \getvalue{\e!stop setuptext}
    \egroup}
-
-\newcounter\currentsetupnumber
-
-\def\startsetup#1\command[#2]#3\type[#4]#5\stopsetup%
-  {\bgroup
-   \def<{}%
-   \def>{}%
-   \doglobal\increment\currentsetupnumber\relax
-   \def\!!stringa{\@@setup#2}%
-   \expandafter\setgvalue\expandafter\!!stringa\expandafter
-     {\expandafter\doprocesssetup
-        \expandafter\number\expandafter[\currentsetupnumber]%
-        \command[#2]%
-        \type[#4]%
-        {#5}}%
-   \edef\firstcommand{#2*}%
-   \let<=\lesscharacter
-   \let>=\morecharacter
-   \edef\secondcommand{#2}%
-   % 'elk' comes first, else no 'gebruikt' entries are written  
-   \expanded{\elktexcommando[\firstcommand]{\secondcommand}}% 
-   % this uggly hack prevents messages
-   \let\showmessage=\gobblethreearguments
-   % here 'elk' is overruled 
-   \expanded{\texcommando[\firstcommand]{\secondcommand}}% 
-   \egroup}
-
+
 \def\dosetup#1%
   {\protect
-   \@@stpvoor
-   \bgroup
-   \def<{}%
-   \def>{}%
+   \verbatimsetupvariablepart
    \xdef\globalsetupname{#1}%
-   \gebruikcommandos{#1*}%
-   \egroup
+   \expanded{\gebruikcommandos{#1*}}%
    \doifdefinedelse{\@@setup\globalsetupname}
      {\getvalue{\@@setup\globalsetupname}}
      {\bgroup
       \showmessage{setup}{3}{#1}%
       \setuptxtfont [setup \makemessage{setup}{3}{#1}]\endgraf
       \egroup}%
+   \egroup
    \@@stpna}
 
 \def\setup%
-  {\shortsetupfalse
-   \unprotect\dosetup}
+  {\@@stpvoor
+   \bgroup
+   \catcode`\<=\@@active
+   \catcode`\>=\@@other
+   \unprotect
+   \shortsetupfalse
+   \dosetup}
 
 \def\shortsetup%
-  {\shortsetuptrue
-   \unprotect\dosetup}
-
+  {\@@stpvoor
+   \bgroup
+   \catcode`\<=\@@active
+   \catcode`\>=\@@other
+   \unprotect
+   \shortsetuptrue
+   \dosetup}
+
 \def\startsetupfile%
-  {\unprotect}
+  {\bgroup
+   \catcode`\<=\active
+   \unprotect}
 
 \def\stopsetupfile%
   {\protect
+   \egroup
    \endinput}
+
+\def\startsetup#1\command[#2]#3\type[#4]#5\stopsetup%
+  {\bgroup
+   \verbatimsetupvariablepart
+   \doglobal\increment\currentsetupnumber\relax
+   \edef\!!stringa{\@@setup#2}%
+   \expandafter\setgvalue\expandafter\!!stringa\expandafter
+     {\expandafter\doprocesssetup\expandafter
+        \number\expandafter[\currentsetupnumber]%
+        \command[#2]\type[#4]{#5}}%
+   % 'elk' comes first, else no 'gebruikt' entries are written
+   \expanded{\elktexcommando[#2*]{#2}}%
+   % this uggly hack prevents messages
+   \let\showmessage\gobblethreearguments
+   % here 'elk' is overruled
+   \expanded{\texcommando[#2*]{#2}}%
+   \egroup}
 
 \let\documenteduntilhere=\relax
 
@@ -756,7 +714,9 @@
    \c!criterium=\v!gebruikt]
 
 \def\plaatssetup%
-  {\getvalue{\e!plaats\e!lijstmet texcommandos}}
+  {\bgroup
+   \getvalue{\e!plaats\e!lijstmet texcommandos}
+   \egroup}
 
 \def\plaatselkesetup% for fun purposes only
   {\bgroup
@@ -765,9 +725,14 @@
    \getvalue{\e!plaats\e!lijstmet alletexcommandos}%
    \egroup}
 
-\let\setupsetup     = \stelsetupin
-\let\placesetup     = \plaatssetup
-\let\placeeverysetup= \plaatselkesetup
+\let\setupsetup     \stelsetupin
+\let\placesetup     \plaatssetup
+\let\placeeverysetup\plaatselkesetup
+
+
+\bgroup \catcode`\<=\active \def<{\lesscharacter} \egroup
+
+% \showmessage{setup}{1}{} \catcode`\<=\active
 
 \protect
 

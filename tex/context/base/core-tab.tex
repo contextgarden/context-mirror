@@ -96,7 +96,7 @@
 %D options. After implementing this feature, I also added
 %D warnings, error recovery and automatic spacing.
 
-\newif\iftracetables 
+\newif\iftracetables
 
 %D We show this feature in an eample that also shows some of
 %D the basic table typesetting commands.
@@ -460,20 +460,6 @@
 %D    \ReadFormatKeys}
 %D \stoptypen
 
-% \def\BeginTableParBox#1%
-%   {\vtop\bgroup
-%      \hsize=#1
-%      \normalbaselines
-%      \let~=\!ttTie
-%      \let\-=\!ttDH
-%      \the\EveryTableParBox
-%      \begstrut}  % added
-%
-% \def\EndTableParBox%
-%     {\endstrut % added
-%      \MakeStrut{0pt}{\StrutDepthFactor\StrutUnit}%
-%    \egroup}
-
 \newdimen\TABLEparheight
 
 \def\BeginTableParBox#1%
@@ -485,16 +471,73 @@
      \blanko[\v!blokkeer]% % added
      \the\EveryTableParBox}
 
-\def\EndTableParBox%
-  {\removelastskip % added
-  %\MakeStrut{0pt}{\StrutDepthFactor\StrutUnit}         % removed
-   \par \ifnum\prevgraf>0 \strut \vskip-\lineheight \fi % added
-   \egroup % finishes the \vtop begun by \BeginTableParbox
-   \getboxheight\scratchdimen\of\box\scratchbox\relax   % added
-   \ifdim\scratchdimen>\TABLEparheight                  % added
-     \global\TABLEparheight=\scratchdimen               % added
-   \fi                                                  % added
+% \def\EndTableParBox%
+%   {\removelastskip % added
+%   %\MakeStrut{0pt}{\StrutDepthFactor\StrutUnit}         % removed
+%    \par
+%    \ifnum\prevgraf>0
+%      \strut \geenwitruimte \vskip-\lineheight           % added
+%    \fi
+%    \egroup % finishes the \vtop begun by \BeginTableParbox
+%    \getboxheight\scratchdimen\of\box\scratchbox\relax   % added
+%    \ifdim\scratchdimen>\TABLEparheight                  % added
+%      \global\TABLEparheight=\scratchdimen               % added
+%    \fi                                                  % added
+%    \box\scratchbox}
+
+\def\EndTableParBox 
+  {\removelastskip                                   % itemize or so
+   \par
+   \ifnum\prevgraf>0                                 % we want at least
+     \strut \geenwitruimte \vskip-\lineheight        % one line of text
+     \egroup
+     \ifdim\dp\scratchbox>\lineheight                % see (*) for an
+       \getnoflines{\dp\scratchbox}%                 % example of where
+       \dp\scratchbox=\zeropoint                     % saving can go 
+       \vtop to \noflines\lineheight{\box\scratchbox}% terrible wrong 
+     \fi                                             % esp between rows
+   \else                                             % of paragraphs
+     \egroup
+   \fi
+   \getboxheight\scratchdimen\of\box\scratchbox\relax% compensate for
+   \ifdim\scratchdimen>\TABLEparheight               % funny depth of 
+     \global\TABLEparheight=\scratchdimen            % multi-line box
+   \fi                                               % i.e. vtop
    \box\scratchbox}
+
+% (*) Try this one with \type {direction} and {girection};
+% the \PPCHTEX\ manual is a nice testcase.
+%
+% \startoverlay
+%   {\starttable[ | l w(2cm) | w(8cm) | ]
+%    \HL
+% \VL direction \VL \showbaselines \dorecurse{3}{direction }\VL \FR
+% \VL direction \VL \showbaselines \dorecurse{3}{direction }\VL \MR
+% \VL direction \VL \showbaselines \dorecurse{3}{direction }\VL \LR
+%    \HL
+%    \stoptable}
+%   {\starttable[ | l w(2cm) | p(8cm) | ]
+%    \HL
+% \VL direction \VL \showbaselines \dorecurse{3}{direction }\VL \FR
+% \VL direction \VL \showbaselines \dorecurse{3}{direction }\VL \MR
+% \VL direction \VL \showbaselines \dorecurse{3}{direction }\VL \LR
+%    \HL
+%    \stoptable}
+% \stopoverlay
+% \vskip2cm
+% \starttable[ | l w(2cm) | p(8cm) | ]
+% \HL
+% \VL direction \VL \showbaselines \dorecurse{3}{direction }\VL \FR
+% \VL direction \VL \showbaselines \dorecurse{8}{direction }\VL \LR
+% \HL
+% \stoptable
+% \vskip2cm
+% \starttable[ | l w(2cm) | p(8cm) | ]
+% \HL
+% \VL direction \VL \showbaselines \dorecurse{8}{direction }\VL \FR
+% \VL direction \VL \showbaselines \dorecurse{8}{direction }\VL \LR
+% \HL
+% \stoptable
 
 %D To give an impression of what the (well documented) source
 %D of \TABLE\ looks like, we first implement an alternative for
@@ -987,7 +1030,7 @@
 %D The third stage involves a lot of (re)sets, which we will
 %D explain later.
 
-\let \everytable \EveryTable % convenient and more in tune 
+\let \everytable \EveryTable % convenient and more in tune
 
 \def\thirdstagestartTABLE#1%
   {\global\setTABLEactiontrue
@@ -1011,6 +1054,7 @@
    \defineTABLEshorthands
    \defineTABLEbackgrounds
    \defineTABLEendings
+   \forgetall % added
    \doifsomething{#1}
      {\def\TABLEformat{#1}%
       \expandafter\getTABLEnofcolumns\expandafter{\TABLEformat}%
@@ -1238,7 +1282,8 @@
 %D as efficient as possible.
 
 \def\complexorsimpleTable#1#2%
-  {\getvalue{\if[\noexpand#2\s!complex\else\s!simple\fi\c!Table#1}#2}
+% {\getvalue{\if[\noexpand#2\s!complex\else\s!simple\fi\c!Table#1}#2}
+  {\csname\if[\noexpand#2\s!complex\else\s!simple\fi\c!Table#1\endcsname#2}
 
 %D The next one is used in \type{\VL} cum suis and honours
 %D the next grouping.
@@ -2030,7 +2075,7 @@
   {\doanalyzeTABLEcr[#1,,]}
 
 \def\doanalyzeTABLEcr[#1,#2,#3]%
-  {\doifnumberelse{#1x}  % Is the x still needed here? 
+  {\doifnumberelse{#1x}  % Is the x still needed here?
      {\dodoanalyzeTABLEcr[#1,#2,#3]}
      {\dodoanalyzeTABLEcr[1,#1,#2]}}
 

@@ -347,8 +347,7 @@
 
 \def\findinterfacemessage#1#2%
   {\let#2\empty
-   \def\dofindinterfacemessage##1 #1: ##2\relax##3\end%
-     {\def#2{##2}}%
+   \def\dofindinterfacemessage##1 #1: ##2\relax##3\end{\def#2{##2}}%
    \edef\!!stringa{\getvalue{\??ms\currentmessagelibrary} #1: \relax}%
    \expandafter\dofindinterfacemessage\!!stringa\end}
 
@@ -404,11 +403,10 @@
 
 \def\getinterfacemessage%
   {\ifx\next\stopmessages
-     \def\next##1{\egroup}%
+     \egroup\expandafter\gobbleoneargument 
    \else
-     \let\next\addinterfacemessage
-   \fi
-   \next}
+     \expandafter\addinterfacemessage
+   \fi}
 
 \def\startmessages #1 library: #2
   {\definemessageconstant{#2}% handy for modules
@@ -572,12 +570,12 @@
 \def\docopyvalue#1#2#3%  c -> k
   {\p!doifundefined{\k!prefix!#3}%
      \let\donottest\doprocesstest
-     \@EA\@EA\@EA\def\@EA
+     \@EAEAEA\def\@EA
        \csname\@EA#1\@EA#3\@EA
        \endcsname\@EA{\csname#2#3\endcsname}%
    \else
      \let\donottest\doprocesstest
-     \@EA\@EA\@EA\def\@EA
+     \@EAEAEA\def\@EA
        \csname\@EA#1\@EA\csname\@EA\k!prefix!\@EA#3\@EA\endcsname\@EA
        \endcsname\@EA{\csname#2\csname\k!prefix!#3\endcsname\endcsname}%
    \fi}
@@ -622,30 +620,30 @@
   {\let\c!internal!\c!internal!n
    \@EA\ifx\csname\k!prefix!#2\endcsname\relax
      \let\c!internal!\c!internal!y
-     \@EA\@EA\@EA\def\@EA\@EA\csname#1#2\endcsname
+     \@EAEAEA\def\@EA\@EA\csname#1#2\endcsname
    \else
      \let\c!internal!\c!internal!y
-     \@EA\@EA\@EA\def\@EA\@EA\csname#1\csname\k!prefix!#2\endcsname\endcsname
+     \@EAEAEA\def\@EA\@EA\csname#1\csname\k!prefix!#2\endcsname\endcsname
    \fi}
 
 \def\dosetevalue#1#2%
   {\let\c!internal!\c!internal!n
    \@EA\ifx\csname\k!prefix!#2\endcsname\relax
      \let\c!internal!\c!internal!y
-     \@EA\@EA\@EA\edef\@EA\@EA\csname#1#2\endcsname
+     \@EAEAEA\edef\@EA\@EA\csname#1#2\endcsname
    \else
      \let\c!internal!\c!internal!y
-     \@EA\@EA\@EA\edef\@EA\@EA\csname#1\csname\k!prefix!#2\endcsname\endcsname
+     \@EAEAEA\edef\@EA\@EA\csname#1\csname\k!prefix!#2\endcsname\endcsname
    \fi}
 
 \def\dosetgvalue#1#2%
   {\let\c!internal!\c!internal!n
    \@EA\ifx\csname\k!prefix!#2\endcsname\relax
      \let\c!internal!\c!internal!y
-     \@EA\@EA\@EA\gdef\@EA\@EA\csname#1#2\endcsname
+     \@EAEAEA\gdef\@EA\@EA\csname#1#2\endcsname
    \else
      \let\c!internal!\c!internal!y
-     \@EA\@EA\@EA\gdef\@EA\@EA\csname#1\csname\k!prefix!#2\endcsname\endcsname
+     \@EAEAEA\gdef\@EA\@EA\csname#1\csname\k!prefix!#2\endcsname\endcsname
    \fi}
 
 % so far 
@@ -654,12 +652,12 @@
   {\let\c!internal!\c!internal!n
    \@EA\ifx\csname\k!prefix!#3\endcsname\relax
      \let\c!internal!\c!internal!y
-     \@EA\@EA\@EA\def\@EA
+     \@EAEAEA\def\@EA
         \csname\@EA#1\@EA#3\@EA
         \endcsname\@EA{\csname#2#3\endcsname}%
    \else
      \let\c!internal!\c!internal!y
-     \@EA\@EA\@EA\def\@EA
+     \@EAEAEA\def\@EA
        \csname\@EA#1\@EA\csname\@EA\k!prefix!\@EA#3\@EA\endcsname\@EA
        \endcsname\@EA{\csname#2\csname\k!prefix!#3\endcsname\endcsname}%
    \fi}
@@ -699,51 +697,93 @@
 %    \fi}
 % 
 % cleaner (not that much faster) don't pass #3 yet: 
+%
+% \def\dosetvalue#1#2%
+%   {\let\c!internal!\c!internal!n
+%    \ifcsname\k!prefix!#2\endcsname
+%      \let\c!internal!\c!internal!y
+%      \@EAEAEA\def\@EA\@EA\csname#1\csname\k!prefix!#2\endcsname\endcsname
+%    \else
+%      \let\c!internal!\c!internal!y
+%      \@EAEAEA\def\@EA\@EA\csname#1#2\endcsname
+%    \fi}
+% 
+% \def\dosetevalue#1#2%
+%   {\let\c!internal!\c!internal!n
+%    \ifcsname\k!prefix!#2\endcsname
+%      \let\c!internal!\c!internal!y
+%      \@EAEAEA\edef\@EA\@EA\csname#1\csname\k!prefix!#2\endcsname\endcsname
+%    \else
+%      \let\c!internal!\c!internal!y
+%      \@EAEAEA\edef\@EA\@EA\csname#1#2\endcsname
+%    \fi}
+% 
+% \def\dosetgvalue#1#2%
+%   {\let\c!internal!\c!internal!n
+%    \ifcsname\k!prefix!#2\endcsname
+%      \let\c!internal!\c!internal!y
+%      \@EAEAEA\gdef\@EA\@EA\csname#1\csname\k!prefix!#2\endcsname\endcsname
+%    \else
+%      \let\c!internal!\c!internal!y
+%      \@EAEAEA\gdef\@EA\@EA\csname#1#2\endcsname
+%    \fi}
+% 
+% \def\docopyvalue#1#2#3%
+%   {\let\c!internal!\c!internal!n
+%    \ifcsname\k!prefix!#3\endcsname
+%      \let\c!internal!\c!internal!y
+%      \@EAEAEA\def\@EA
+%        \csname\@EA#1\@EA\csname\@EA\k!prefix!\@EA#3\@EA\endcsname\@EA
+%        \endcsname\@EA{\csname#2\csname\k!prefix!#3\endcsname\endcsname}%
+%    \else
+%      \let\c!internal!\c!internal!y
+%      \@EAEAEA\def\@EA
+%        \csname\@EA#1\@EA#3\@EA
+%        \endcsname\@EA{\csname#2#3\endcsname}%
+%    \fi}
+% 
+% sligntly more efficient (but not faster in day to day runs) 
 
 \def\dosetvalue#1#2%
   {\let\c!internal!\c!internal!n
    \ifcsname\k!prefix!#2\endcsname
      \let\c!internal!\c!internal!y
-     \@EA\@EA\@EA\def\@EA\@EA\csname#1\csname\k!prefix!#2\endcsname\endcsname
+     \@EA\def\csname#1\csname\k!prefix!#2\endcsname%\endcsname
    \else
      \let\c!internal!\c!internal!y
-     \@EA\@EA\@EA\def\@EA\@EA\csname#1#2\endcsname
-   \fi}
+     \@EA\def\csname#1#2%\endcsname
+   \fi\endcsname}
 
 \def\dosetevalue#1#2%
   {\let\c!internal!\c!internal!n
    \ifcsname\k!prefix!#2\endcsname
      \let\c!internal!\c!internal!y
-     \@EA\@EA\@EA\edef\@EA\@EA\csname#1\csname\k!prefix!#2\endcsname\endcsname
+     \@EA\edef\csname#1\csname\k!prefix!#2\endcsname%\endcsname
    \else
      \let\c!internal!\c!internal!y
-     \@EA\@EA\@EA\edef\@EA\@EA\csname#1#2\endcsname
-   \fi}
+     \@EA\edef\csname#1#2%\endcsname
+   \fi\endcsname}
 
 \def\dosetgvalue#1#2%
   {\let\c!internal!\c!internal!n
    \ifcsname\k!prefix!#2\endcsname
      \let\c!internal!\c!internal!y
-     \@EA\@EA\@EA\gdef\@EA\@EA\csname#1\csname\k!prefix!#2\endcsname\endcsname
+     \@EA\gdef\csname#1\csname\k!prefix!#2\endcsname%\endcsname
    \else
      \let\c!internal!\c!internal!y
-     \@EA\@EA\@EA\gdef\@EA\@EA\csname#1#2\endcsname
-   \fi}
-
-% so far 
+     \@EA\gdef\csname#1#2%\endcsname
+   \fi\endcsname}
 
 \def\docopyvalue#1#2#3%
   {\let\c!internal!\c!internal!n
    \ifcsname\k!prefix!#3\endcsname
      \let\c!internal!\c!internal!y
-     \@EA\@EA\@EA\def\@EA
-       \csname\@EA#1\@EA\csname\@EA\k!prefix!\@EA#3\@EA\endcsname\@EA
+     \@EAEAEA\def\@EA\@EA
+       \csname#1\csname\k!prefix!#3\endcsname
        \endcsname\@EA{\csname#2\csname\k!prefix!#3\endcsname\endcsname}%
    \else
      \let\c!internal!\c!internal!y
-     \@EA\@EA\@EA\def\@EA
-       \csname\@EA#1\@EA#3\@EA
-       \endcsname\@EA{\csname#2#3\endcsname}%
+     \@EAEAEA\def\@EA\@EA\csname#1#3\endcsname\@EA{\csname#2#3\endcsname}%
    \fi}
 
 \endETEX
@@ -1296,7 +1336,7 @@
         {\doifdefinedelse{#2}
            {\debuggerinfo{command}{core command #2 redefined as #1}}%
            {\debuggerinfo{command}{#2 defined as #1}}%
-         \@EA\@EA\@EA\def\@EA\csname\@EA#2\@EA\endcsname
+         \@EAEAEA\def\@EA\csname\@EA#2\@EA\endcsname
            \@EA{\csname#1\endcsname}}%
       \setinterfacesetupvariable{#1}{#2}}}
 

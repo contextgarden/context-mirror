@@ -17,7 +17,9 @@
 
 \loadmapfile [original-context-symbol.map]
  
-\def\ContextNavigationGlyph#1{\getglyph{ContextNavigation}{\char#1}}
+% \def\ContextNavigationGlyph#1{\getglyph{ContextNavigation}{\char#1}}
+
+\def\ContextNavigationGlyph#1{\getrawglyph{contnav}{\char#1}}
 
 \startsymbolset [navigation 1]
 

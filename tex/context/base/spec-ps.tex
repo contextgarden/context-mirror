@@ -20,7 +20,6 @@
 %D    dostartnegative,dostopnegative,
 %D    doselectfirstpaperbin,
 %D    doselectsecondpaperbin}
-%D   {}
 %D
 %D This implementation is straightforward and can be used as 
 %D a default with postscript||drivers. We use \type{ps:} as 
@@ -116,7 +115,6 @@
 
 %D \macros
 %D   {doovalbox}
-%D   {}
 %D
 %D This implementation is a mixture of several possible 
 %D implementations. We use some constants that may not be 
@@ -144,14 +142,14 @@
 \def\@@insertpostscriptretain  {postscript } % unknown 
 
 \def\dosomeovalcalc#1#2#3%
-  {\dimen2=#1sp%
-   \advance\dimen2 by #2%   
-   \ScaledPointsToBigPoints{\number\dimen2}#3}
+  {\dimen2=#1%
+   \advance\dimen2 #2%   
+   \PointsToBigPoints{\dimen2}#3}
 
 \def\dosomeovalbox#1#2#3#4#5#6#7% 
   {\bgroup
-   \dimen0=#4sp\divide\dimen0 by 2
-   \dosomeovalcalc {0}{+\dimen0}\xmin
+   \dimen0=#4\divide\dimen0 2
+   \dosomeovalcalc{0pt}{+\dimen0}\xmin
    \dosomeovalcalc{#1}{-\dimen0}\xmax
    \dosomeovalcalc{#2}{-\dimen0}\ymax
    \dosomeovalcalc{-#3}{+\dimen0}\ymin
@@ -183,7 +181,7 @@
                  {fill} if
              grestore}%
       \fi}% 
-   \wd0=#1sp\ht0=#2sp\dp0=#3sp\box0
+   \wd0=#1\ht0=#2\dp0=#3\box0
    \egroup}
 
 %D The indirect call permits a (rather) dirty hack, needed 
@@ -198,8 +196,8 @@
 %D These two specials are not yet working as expected.  
 
 \definespecial\dostartclipping#1#2#3%
-  {\ScaledPointsToBigPoints{#2}\width
-   \ScaledPointsToBigPoints{#3}\height
+  {\PointsToBigPoints{#2}\width
+   \PointsToBigPoints{#3}\height
    \grabMPclippath{#1}{0}{\width}{\height}
      {0 0 moveto \width 0 lineto \width \height lineto 0 \height\space lineto}%    
    \special

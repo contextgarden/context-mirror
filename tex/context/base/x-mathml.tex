@@ -27,16 +27,18 @@
 
 %D For simple inline math, we first provide: 
 
-% todo : nesting ! ! ! ! 
+\newcount\xmlmathlevel % todo : nesting ! ! ! ! 
 
-\newcount\xmlmathlevel
+\defineXMLenvironment [m] \startXMLinlinemath \stopXMLinlinemath 
 
-\defineXMLenvironment [m] 
+\def\startXMLinlinemath 
   {\ifmmode
      \advance\xmlmathlevel1\relax 
    \else
      \xmlmathlevel1$%
    \fi} 
+
+\def\stopXMLinlinemath 
   {\ifcase\xmlmathlevel\or
      $\xmlmathlevel0\relax
    \else

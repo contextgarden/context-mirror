@@ -69,20 +69,21 @@
 \definecolor[GridTextColor][blue]
 
 \def\setbaselinecorrections%
-  {\setbox0=\hbox{\setstrut\strut}%
-   \setbox2=\hbox{(}%
-   \dimen0=\ht0\advance\dimen0 by -\ht2
-   \ifdim\dimen0<\zeropoint\dimen0=\zeropoint\fi
-   \dimen2=\dp0\advance\dimen2 by -\dp2
-   \ifdim\dimen2<\zeropoint\dimen2=\zeropoint\fi
-   \edef\thetopbaselinecorrection{\the\dimen0}%
-   \edef\thebotbaselinecorrection{\the\dimen2}}
+  {\setbox0\hbox{\setstrut\strut}%
+   \setbox2\hbox{(}%
+   \dimen0\ht0\advance\dimen0 -\ht2
+   \ifdim\dimen0<\zeropoint\dimen0\zeropoint\fi
+   \dimen2\dp0\advance\dimen2 -\dp2
+   \ifdim\dimen2<\zeropoint\dimen2\zeropoint\fi
+   \edef\thetopbaselinecorrection   {\the\dimen0}\dimen0-\dimen0
+   \edef\thebotbaselinecorrection   {\the\dimen2}\dimen2-\dimen2
+   \edef\thenegtopbaselinecorrection{\the\dimen0}%
+   \edef\thenegbotbaselinecorrection{\the\dimen2}}
 
-\def\dotopbaselinecorrection%
-  {\kern\thetopbaselinecorrection}
-
-\def\dobotbaselinecorrection%
-  {\kern\thebotbaselinecorrection}
+\def\dotopbaselinecorrection   {\kern\thetopbaselinecorrection}
+\def\dobotbaselinecorrection   {\kern\thebotbaselinecorrection}
+\def\donegtopbaselinecorrection{\kern\thenegtopbaselinecorrection}
+\def\donegbotbaselinecorrection{\kern\thenegbotbaselinecorrection}
 
 \def\showbaselinecorrection%
   {\def\dobaselinecorrection% visualization is not watertight!
@@ -533,20 +534,42 @@
 \newbox\fuzzysnapbox
 \newbox\fuzzysnapsplit
 
+%\def\dosyncfuzzyvskip%
+%  {\ifvmode\ifdim\lastskip<\lineheight\ifdim\lastskip>\zeropoint
+%     \bgroup
+%     \endgraf
+%     \forgetall
+%     \vbox{\strut}
+%     \kern-2\lineheight
+%     \nobreak
+%     \vskip\lineheight 
+%     \egroup
+%   \fi\fi\fi}
+
+%\def\fuzzyvskip#1%
+%  {\iffuzzysnapdone
+%     \endfuzzysnapping
+%     \vskip#1\relax
+%     \dosyncfuzzyvskip  % NEW
+%     \global\fuzzysnapdonefalse
+%   \else
+%     \vskip#1\relax
+%     \beginfuzzysnapping
+%     \global\fuzzysnapdonetrue
+%   \fi}
+
 \def\dosyncfuzzyvskip%
   {\ifvmode\ifdim\lastskip<\lineheight\ifdim\lastskip>\zeropoint
-     \hbox{\strut}
-%     \nobreak
-     \kern-2\lineheight
-     \nobreak
-     \vskip\lineheight % on behalf of testing
+     \bgroup
+       \endgraf\forgetall\vbox{\strut}\nobreak\vskip\lineheight 
+     \egroup
    \fi\fi\fi}
 
 \def\fuzzyvskip#1%
   {\iffuzzysnapdone
+     \dosyncfuzzyvskip  % NEWER
      \endfuzzysnapping
      \vskip#1\relax
-     \dosyncfuzzyvskip  % NEW
      \global\fuzzysnapdonefalse
    \else
      \vskip#1\relax
@@ -657,11 +680,11 @@
 
 \def\adaptfuzzypagegoal%
   {\ifgridsnapping\iffuzzysnapping\ifcase\fuzzysnappedleft\or % see dopagecontents
-     \scratchdimen=\pagegoal
-     \advance\scratchdimen by -.5\openlineheight
-     \global\pagegoal=\scratchdimen
-     \global\advance\vsize by -.5\openlineheight
-     \global\chardef\fuzzysnappedleft=0
+     \scratchdimen\pagegoal
+     \advance\scratchdimen -.5\openlineheight
+     \global\pagegoal\scratchdimen
+     \global\advance\vsize -.5\openlineheight
+     \global\chardef\fuzzysnappedleft0
    \fi\fi\fi}
 
 \protect

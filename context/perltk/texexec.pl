@@ -2,8 +2,7 @@ eval '(exit $?0)' && eval 'exec perl -S $0 ${1+"$@"}' && eval 'exec perl -S $0 $
         if 0;
 
 # todo: second run of checksum of mp file with --nomprun changes
-
-# todo: merge wybo's enhanced help function 
+# todo: merge wybo's enhanced help function [along with updating manual]
 
 #D \module
 #D   [       file=texexec.pl,
@@ -49,7 +48,10 @@ my %Help ;
 
 $ENV{"MPXCOMMAND"} = "0" ; # otherwise loop
 
-my $dosish  = ($Config{'osname'} =~ /dos|mswin/i) ;
+my $TotalTime = time ;
+
+## $dosish    = ($Config{'osname'} =~ /dos|mswin/i) ;
+my $dosish    = ($Config{'osname'} =~ /^(ms)?dos|^os\/2|^(ms|cyg)win/i) ;
 
 my $TeXUtil   = 'texutil'  ;
 my $TeXExec   = 'texexec'  ;
@@ -128,7 +130,7 @@ my $MpyForce         = 0 ;
 my $RunPath          = "" ;
 my $Arguments        = "" ;
 my $Pretty           = 0 ;
-my $SetFile          = "" ; 
+my $SetFile          = "" ;
 
 &GetOptions
   ( "arrange"       => \$Arrange          ,
@@ -198,6 +200,13 @@ my $SetFile          = "" ;
     "pretty"        => \$Pretty           ,
     "setfile=s"     => \$SetFile          ) ;
 
+# a set file (like blabla.bat) can set paths now
+
+if ($SetFile ne "")
+  { load_set_file ($SetFile,$Verbose) ; $SetFile = "" }
+
+# later we will do a second attempt.
+
 $SIG{INT} = "IGNORE" ;
 
 if ($ARGV[0] =~ /\.mpx$/io) # catch -tex=.... bug in mpost
@@ -222,7 +231,7 @@ if (($LogFile ne '')&&($LogFile =~ /\w+\.log$/io))
     *STDOUT = *LOGFILE ;
     *STDERR = *LOGFILE }
 
-my $Program = " TeXExec 2.5 - ConTeXt / PRAGMA ADE 1997-2001" ;
+my $Program = " TeXExec 2.6 - ConTeXt / PRAGMA ADE 1997-2001" ;
 
 print "\n$Program\n\n";
 
@@ -472,6 +481,11 @@ my $TcXPath           = IniValue('TcXPath'           , '' ) ;
 
    $SetFile           = IniValue('SetFile'           , $SetFile ) ;
 
+if (($Verbose)&&($kpsewhich ne ''))
+  { print "\n" ;
+    my $CnfFile = `$kpsewhich -progname=context texmf.cnf` ;
+    chomp $CnfFile ;
+    print " applications will use : $CnfFile\n" }
 
 if (($FmtLanguage)&&($MainLanguage eq 'standard'))
   { $MainLanguage = $FmtLanguage }
@@ -479,8 +493,6 @@ if (($FmtBodyFont)&&($MainBodyFont eq 'standard'))
   { $MainBodyFont = $FmtBodyFont }
 if (($FmtResponse)&&($MainResponse eq 'standard'))
   { $MainResponse = $FmtResponse }
-
-if ($Verbose) { print "\n" }
 
 if ($TeXFormatFlag eq "" )
   { $TeXFormatFlag = "&" }
@@ -497,21 +509,24 @@ if ($TeXProgram)
 
 my $fmtutil = '' ;
 
-if ($Alone)
-  { if ($Verbose)
-      { print "     generating format : not using fmtutil\n" } }
-elsif ($TeXShell =~ /tetex|fptex/i)
-  { foreach (@paths)
-      { my $p = checked_path($_) . 'fmtutil' ;
-        if (-e $p)
-          { $fmtutil = $p ; last }
-        elsif (-e $p . '.exe')
-          { $fmtutil = $p . '.exe' ; last } }
-    if ($Verbose)
-      { if ($fmtutil eq '')
-          { print "      locating fmtutil : not found in path\n" }
-        else
-          { print "      locating fmtutil : found\n" } } }
+if ($MakeFormats||$Verbose)
+  { if ($Alone)
+      { if ($Verbose)
+          { print "     generating format : not using fmtutil\n" } }
+    elsif ($TeXShell =~ /tetex|fptex/i)
+      { foreach (@paths)
+          { my $p = checked_path($_) . 'fmtutil' ;
+            if (-e $p)
+              { $fmtutil = $p ; last }
+            elsif (-e $p . '.exe')
+              { $fmtutil = $p . '.exe' ; last } }
+        if ($Verbose)
+          { if ($fmtutil eq '')
+              { print "      locating fmtutil : not found in path\n" }
+            else
+              { print "      locating fmtutil : $fmtutil\n" } } } }
+
+if ($Verbose) { print "\n" }
 
 unless ($TeXScriptsPath)
   { $TeXScriptsPath = $own_path }
@@ -814,7 +829,7 @@ sub CheckOutputFormat
       { $FullFormat = $OutputFormat } } # 'standard' to terminal
 
 sub MakeOptionFile
-  { my ($FinalRun, $FastDisabled, $JobName) = @_ ;
+  { my ($FinalRun, $FastDisabled, $JobName, $JobSuffix) = @_ ;
     open (OPT, ">$JobName.top") ;
     print OPT "\\unprotect\n" ;
     if ($Result) # no '' test
@@ -853,7 +868,7 @@ sub MakeOptionFile
         elsif (/.5.4/goi)
           { print OPT "\\setuppapersize[A5][A4]\n" }
         elsif (!/standard/)
-          { $_ = uc $_ ; my ($from,$to) = split (/\*/) ;
+          { s/x/\*/io ; $_ = uc $_ ; my ($from,$to) = split (/\*/) ;
             if ($to eq "") { $to = $from }
             print OPT "\\setuppapersize[$from][$to]\n" } }
     if (($PdfSelect||$PdfCombine||$PdfCopy||$PdfArrange)&&($Background ne ''))
@@ -881,6 +896,8 @@ sub MakeOptionFile
       { print OPT "\\setupenv[$Arguments]\n" }
     if ($Input)
       { print OPT "\\setupsystem[inputfile=$Input]\n" }
+    else
+      { print OPT "\\setupsystem[inputfile=$JobName.$JobSuffix]\n" }
     if ($Mode)
       { print OPT "\\enablemode[$Mode]\n" }
     if ($Pages)
@@ -1184,44 +1201,44 @@ sub CheckChanges # also tub
     if (open(MP, $MPJobName))
       { while (<MP>)
           { unless (/random/oi)
-              { $checksum += do { unpack("%32C*",<MP>) % 65535 } } } 
+              { $checksum += do { unpack("%32C*",<MP>) % 65535 } } }
         close (MP) }
     $MPJobName = MPJobName($JobName,"mprun") ;
     if (open(MP, $MPJobName))
       { while (<MP>)
           { unless (/random/oi)
-              { $checksum += do { unpack("%32C*",<MP>) % 65535 } } } 
+              { $checksum += do { unpack("%32C*",<MP>) % 65535 } } }
         close(MP) }
     return $checksum }
+
+my $DummyFile = 0 ;
 
 sub RunConTeXtFile
   { my ($JobName, $JobSuffix) = @_ ;
     $JobName =~ s/\\/\//goi ;
     $RunPath =~ s/\\/\//goi ;
-    my $DummyFile = 0 ;
+    my $OriSuffix = $JobSuffix ;
     if (-e "$JobName.$JobSuffix")
-      { $DummyFile = ($JobSuffix =~ /xml/io) }
+      { $DummyFile = ($JobSuffix =~ /(xml|xsd)/io) }
     elsif (($RunPath)&&(-e "$RunPath/$JobName.$JobSuffix"))
       { $DummyFile = 1 }
     if ($DummyFile)
-      { open (TMP,">$JobName.tex") ;
-        if ($JobSuffix =~ /xml/io)
+      { open (TMP,">$JobName.run") ;
+        if ($JobSuffix =~ /(xml|xsd)/io)
           { if ($Filters ne "")
               { print "     using xml filters : $Filters\n" }
-            print TMP "\\ifx\\processXMLfile\\undefined\n" ;
-            print TMP "  \\let\\processXMLfile\\processfile\n" ;
-            print TMP "\\fi\n" ;
             print TMP "\\starttext\n" ;
-            print TMP "\\processXMLfilegrouped{$JobName.xml}\n" ;
+            print TMP "\\processXMLfilegrouped{$JobName.$JobSuffix}\n" ;
             print TMP "\\stoptext\n" }
         else
           { print TMP "\\processfile{$JobName}\n" }
         close (TMP) ;
-        $JobSuffix = "tex" }
+        $JobSuffix = "run" }
     if (-e "$JobName.$JobSuffix")
-      { ScanPreamble ("$JobName.$JobSuffix") ;
-        if ($ConTeXtInterface eq "unknown")
-          { ScanContent ("$JobName.$JobSuffix") }
+      { unless ($Dummy) # we don't need this for xml
+          { ScanPreamble ("$JobName.$JobSuffix") ;
+            if ($ConTeXtInterface eq "unknown")
+              { ScanContent ("$JobName.$JobSuffix") } }
         if ($ConTeXtInterface eq "unknown")
           { $ConTeXtInterface = $UserInterface }
         if ($ConTeXtInterface eq "unknown")
@@ -1286,7 +1303,7 @@ sub RunConTeXtFile
         $Problems = 0 ;
         my $TeXRuns = 0 ;
         if (($PdfArrange)||($PdfSelect)||($RunOnce))
-          { MakeOptionFile (1, 1, $JobName) ;
+          { MakeOptionFile (1, 1, $JobName, $OriSuffix) ;
             print "\n" ;
             $Problems = RunTeX($JobName, $JobSuffix) ;
             if ($ForceTeXutil)
@@ -1296,7 +1313,7 @@ sub RunConTeXtFile
             PopResult($JobName) }
         else
           { while (!$StopRunning&&($TeXRuns<$NOfRuns)&&(!$Problems))
-             { MakeOptionFile (0, 0, $JobName) ;
+             { MakeOptionFile (0, 0, $JobName, $OriSuffix) ;
                ++$TeXRuns ;
                print "               TeX run : $TeXRuns\n\n" ;
                my $mpchecksumbefore = $mpchecksumafter = 0 ;
@@ -1315,14 +1332,14 @@ sub RunConTeXtFile
             if (($NOfRuns==1)&&$ForceTeXutil)
               { $Ok = RunTeXutil ($JobName) }
             if ((!$Problems)&&(($FinalMode||$FinalRunNeeded))&&($NOfRuns>1))
-              { MakeOptionFile (1, $FinalMode, $JobName) ;
+              { MakeOptionFile (1, $FinalMode, $JobName, $OriSuffix) ;
                 print "         final TeX run : $TeXRuns\n\n" ;
                 $Problems = RunTeX($JobName, $JobSuffix) }
             CopyFile("$JobName.top","$JobName.tmp") ;
             unlink "$JobName.tup" ; # previous tuo file
             unlink "$JobName.top" ; # runtime option file
             PopResult($JobName) }
-        if ($DummyFile)
+        if ($DummyFile) # $JobSuffix == run
           { unlink "$JobName.$JobSuffix" } } }
 
 sub RunSomeTeXFile
@@ -1354,19 +1371,27 @@ sub RunModule
         next unless $Suffix =~ /(tex|mp|pl|pm)/io ;
         DoRunModule($Name, $Suffix) } }
 
-sub DoRunModule
+# the next one can be more efficient: directly process ted 
+# file a la --use=abr-01,mod-01
+
+sub DoRunModule 
   { my ($FileName,$FileSuffix) = @_ ;
     RunPerlScript ($TeXUtil, "--documents $FileName.$FileSuffix" ) ;
     print "                module : $FileName\n\n" ;
     open (MOD, ">$ModuleFile.tex") ;
-  # print MOD "% format=dutch\n" ;
-    print MOD "\\gebruikmodule[abr-01,mod-01]\n" ;
+    # we need to signal to texexec what interface to use
+    open(TED, "$FileName.ted") ; my $firstline = <TED> ; close (TED) ;
+    if ($firstline =~ /interface=en/)
+      { print MOD $firstline }
+    else
+      { print MOD "% interface=nl\n" }
+    # so far
+    print MOD "\\usemodule[abr-01,mod-01]\n" ;
     print MOD "\\def\\ModuleNumber{1}\n" ;
     print MOD "\\starttekst\n" ;
-    print MOD "\\input $FileName.ted\n" ;
+    print MOD "\\readlocfile{$FileName.ted}{}{}\n" ;
     print MOD "\\stoptekst\n" ;
     close (MOD) ;
-  # $ConTeXtInterface = "nl" ;
     RunConTeXtFile($ModuleFile, "tex") ;
     if ($FileName ne $ModuleFile)
       { foreach my $FileSuffix ("dvi", "pdf", "tui", "tuo", "log")
@@ -1526,8 +1551,8 @@ sub RunSelect
 #      { print "             papersize : $PaperFormat\n" ;
 #        print SEL "\\setuppapersize[$PaperFormat][$PaperFormat]\n" }
 #
-          { $_ = $PaperFormat ; # NO UPPERCASE ! 
-            my ($from,$to) = split (/\*/) ;
+          { $_ = $PaperFormat ; # NO UPPERCASE !
+            s/x/\*/io ; my ($from,$to) = split (/\*/) ;
             if ($to eq "") { $to = $from }
             print "             papersize : $PaperFormat\n" ;
             print SEL "\\setuppapersize[$from][$to]\n" }
@@ -1599,7 +1624,7 @@ sub RunCopy
 sub RunCombine
   { my $FileName = shift ;
     print "               pdffile : $FileName\n" ;
-    my ($nx,$ny) = split (/\*/,$Combination,2) ;
+    $Combination =~ s/x/\*/io ; my ($nx,$ny) = split (/\*/,$Combination,2) ;
     return unless ($nx&&$ny) ;
     print "           combination : $Combination\n" ;
     open (COM, ">$CombineFile.tex") ;
@@ -1608,9 +1633,9 @@ sub RunCombine
 #      { print "         papersize : $PaperFormat\n" ;
 #        print COM "\\setuppapersize\n" ;
 #        print COM "  [$PaperFormat][$PaperFormat]\n" }
-# see RunSelect 
-          { $_ = $PaperFormat ; # NO UPPERCASE ! 
-            my ($from,$to) = split (/\*/) ;
+# see RunSelect
+          { $_ = $PaperFormat ; # NO UPPERCASE !
+            s/x/\*/io ; my ($from,$to) = split (/\*/) ;
             if ($to eq "") { $to = $from }
             print "             papersize : $PaperFormat\n" ;
             print COM "\\setuppapersize[$from][$to]\n" }
@@ -1853,6 +1878,8 @@ $TexFound = $MergeBE || /btex .*? etex/o ;
             if ($MergeBE)
               { s/beginfig\s*\((\d+)\)\s*\;/beginfig($1)\;\n$mpbetex{$1}\n/goims }
             # flush
+            unless (/beginfig\s*\(\s*0\s*\)/gmois) 
+              { print MP $mpbetex{0} } 
             print MP $_ ;
             print MP "end .\n" ;
             close(MP) }
@@ -1861,7 +1888,7 @@ $TexFound = $MergeBE || /btex .*? etex/o ;
             $Problems = system ("$MpToTeXExecutable $MpFile > $MpTex" ) ;
             if (-e $MpTex && !$Problems)
               { open (TMP,">>$MpTex") ;
-                print TMP "\\end\n" ; # to be sure
+                print TMP "\\end\{document\}\n" ; # to be sure
                 close (TMP) ;
                 if (($Format eq '')||($Format =~ /^cont.*/io))
                   { $OutputFormat = "dvips" ;
@@ -1871,8 +1898,8 @@ $TexFound = $MergeBE || /btex .*? etex/o ;
                     if (-e $MpDvi && !$Problems)
                       { print "       dvi to metapost : $MpName\n" ;
                         $Problems = system ("$DviToMpExecutable $MpDvi $MpName.mpx") }
-# $Problems = system ("dvicopy $MpDvi texexec.dvi") ;
-# $Problems = system ("$DviToMpExecutable texexec.dvi $MpName.mpx") }
+                    # $Problems = system ("dvicopy $MpDvi texexec.dvi") ;
+                    # $Problems = system ("$DviToMpExecutable texexec.dvi $MpName.mpx") }
                     unlink $MpTex ;
                     unlink $MpDvi } }
             print "              metapost : $MpName\n" ;
@@ -1923,7 +1950,7 @@ sub load_set_file
     my ($file, $trace) = @_ ;
     if (open(BAT,$file))
       { while (<BAT>)
-          { chomp ; 
+          { chomp ;
             if (/\s*SET\s+(.+?)\=(.+)\s*/io)
               { my ($var,$val) = ($1, $2) ;
                 $val =~ s/\%(.+?)\%/$ENV{$1}/goi ;
@@ -1966,5 +1993,9 @@ elsif (@ARGV)
 else
   { print $Help{HELP} ;
     unless ($Verbose) { print $Help{VERBOSE} } }
+
+$TotalTime = time - $TotalTime ;
+
+print "\n        total run time : $TotalTime seconds\n" ;
 
 if ($Problems) { exit 1 }

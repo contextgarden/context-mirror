@@ -1,8 +1,8 @@
 %D \module
-%D   [       file=symb-nav,
+%D   [       file=symb-ini,
 %D        version=1998.07.20,
 %D          title=\CONTEXT\ Symbol Libraries,
-%D       subtitle=Navigational Symbols,
+%D       subtitle=Basic Symbols Commands,
 %D         author=Hans Hagen,
 %D           date=\currentdate,
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
@@ -82,41 +82,93 @@
 % ss:set:tag -> symbol out of set 
 % sstag      -> list of symbols in set  
 
+% \def\dodefinesymbol[#1][#2]%
+%   {\ifx\currentsymboldef\empty
+%      \setvalue{\??ss:#1}{#2}%
+%    \else
+%      \doifundefinedelse{\??ss\currentsymboldef}
+%        {\let\currentsymbollist\empty}
+%        {\edef\currentsymbollist{\csname\??ss\currentsymboldef\endcsname}}%
+%      \addtocommalist{#1}\currentsymbollist
+%      \setvalue{\??ss:\currentsymboldef:#1}{#2}%
+%      \letvalue{\??ss\currentsymboldef}\currentsymbollist
+%    \fi}
+
 \def\dodefinesymbol[#1][#2]%
-  {\ifx\currentsymbolset\empty
+  {\ifx\currentsymboldef\empty
      \setvalue{\??ss:#1}{#2}%
    \else
-     \doifundefinedelse{\??ss\currentsymbolset}
-       {\let\currentsymbollist\empty}
-       {\edef\currentsymbollist{\csname\??ss\currentsymbolset\endcsname}}%
-     \addtocommalist{#1}\currentsymbollist
-     \setvalue{\??ss:\currentsymbolset:#1}{#2}%
-     \letvalue{\??ss\currentsymbolset}\currentsymbollist
+     \setvalue{\??ss:\currentsymboldef:#1}{#2}%
+     \addvalue{\??ss\currentsymboldef}{#1}%
    \fi}
 
-\def\definesymbol%
+\def\definesymbol
   {\dodoubleargument\dodefinesymbol}
 
 \unexpanded\def\symbol%      % This one always gobbles spaces, 
   {\dodoubleempty\dosymbol}  % so never change it again!
 
-\def\dosymbol[#1][#2]% 
-  {\ifsecondargument
-     \doifdefinedelse{\??ss:#1:#2}
-       {\dodosymbol{#1:#2}}
-       {\doifdefinedelse{\??ss:#2}{\dodosymbol{#2}}{#2}}%
-   \else\ifx\currentsymbolset\empty
-     \doifdefinedelse{\??ss:#1}{\dodosymbol{#1}}{#1}%
-   \else
-     \doifdefinedelse{\??ss:\currentsymbolset:#1}
-       {\dodosymbol{\currentsymbolset:#1}}
-       {\doifdefinedelse{\??ss:#1}{\dodosymbol{#1}}{#1}}%
-   \fi\fi}
+%D Since symbols are used frequently in interactive 
+%D documents, we speed up this one.  
+
+\newif\ifnosymbol \newtoks\everysymbol
 
 \def\dodosymbol#1% \relax's prevent lookahead problems 
-  {{\the\everysymbol\getvalue{\??ss:#1}\relax}\relax}
+  {\nosymbolfalse{\the\everysymbol\csname\??ss:#1\endcsname\relax}\relax}
 
-\newtoks\everysymbol
+\beginTEX 
+
+\def\dosymbol[#1][#2]%
+  {\nosymboltrue 
+   \ifsecondargument \@EA\ifx\csname\??ss:#1:#2\endcsname\relax\else
+     \dodosymbol{#1:#2}%
+   \fi \fi 
+   \ifnosymbol
+     \edef\currentsymbol{#1}%
+     \the\symbolsetups
+     \ifnosymbol 
+       \redosymbol\currentsymbol
+     \fi
+   \fi}
+
+\def\fetchsymbol#1%
+  {\ifnosymbol % will be a \cs anyway, so no test needed 
+     %\@EA\ifx\csname\??ss:#1:\currentsymbol\endcsname\relax\else
+       \dodosymbol{#1:\currentsymbol}%
+     %\fi 
+   \fi}
+
+\def\redosymbol#1%
+  {\@EA\ifx\csname\??ss:#1\endcsname\relax\else\@EA\dodosymbol\fi{#1}}
+
+\endTEX
+
+\beginETEX \ifcsname
+
+\def\dosymbol[#1][#2]%
+  {\nosymboltrue 
+   \ifsecondargument \ifcsname\??ss:#1:#2\endcsname
+     \dodosymbol{#1:#2}%
+   \fi \fi 
+   \ifnosymbol
+     \edef\currentsymbol{#1}%
+     \the\symbolsetups
+     \ifnosymbol 
+       \redosymbol\currentsymbol
+     \fi
+   \fi}
+
+\def\fetchsymbol#1%
+  {\ifnosymbol 
+     \ifcsname\??ss:#1:\currentsymbol\endcsname
+       \dodosymbol{#1:\currentsymbol}%
+     \fi 
+   \fi}
+
+\def\redosymbol#1%
+  {\ifcsname\??ss:#1\endcsname\@EA\dodosymbol\else\fi{#1}}
+
+\endETEX
 
 % % % % %
 % this should go in symb-fig, to be loaded after core-fig
@@ -129,12 +181,19 @@
 %D \showsetup{\y!definefiguresymbol} 
 %D
 %D By default, such symbols scale along the current bodyfont
-%D size.
+%D size or running font size (which is better). 
 
 \def\defaultsymbolfactor{10}
+\def\defaultsymbolheight{1.25ex}
 
 \def\dohandlefiguresymbol#1#2% 
-  {\externalfigure[#1][\c!reset=\v!ja,\c!symbool=\v!ja,\c!hfactor=\defaultsymbolfactor,#2]}
+  {\externalfigure
+     [#1]
+     [\c!reset=\v!ja,
+      \c!symbool=\v!ja,
+      \c!hoogte=\defaultsymbolheight,
+      %\c!hfactor=\defaultsymbolfactor,
+      #2]}
 
 \appendtoks \resetexternalfigures \to \everysymbol
 
@@ -157,12 +216,49 @@
 %D
 %D A handy private one: 
 
-\def\doifsymboldefinedelse#1#2#3%
-  {\ifx\currentsymbolset\empty
-     \doifdefinedelse{\??ss:#1}{#2}{#3}%
+\beginTEX
+
+\def\xfetchsymbol#1%
+  {\ifnosymbol % will be a \cs anyway, so no test needed 
+     %\@EA\ifx\csname\??ss:#1:\currentsymbol\endcsname\relax\else
+       \nosymbolfalse
+     %\fi 
+   \fi}
+
+\def\xredosymbol#1%
+  {\@EA\ifx\csname\??ss:#1\endcsname\relax\else\nosymbolfalse\fi}
+
+\endTEX
+
+\beginETEX
+
+\def\xfetchsymbol#1%
+  {\ifnosymbol 
+     \ifcsname\??ss:#1:\currentsymbol\endcsname\nosymbolfalse\fi 
+   \fi}
+
+\def\xredosymbol#1%
+  {\ifcsname\??ss:#1\endcsname\nosymbolfalse\fi}
+
+\endETEX
+
+\def\doifsymboldefinedelse#1%
+  {\bgroup
+   \edef\currentsymbol{#1}%
+   \let\fetchsymbol\xfetchsymbol
+  %\let\redosymbol \xredosymbol
+   \nosymboltrue 
+   \the\symbolsetups
+   \ifnosymbol 
+    %\redosymbol\currentsymbol 
+     \xredosymbol\currentsymbol 
+     \ifnosymbol
+       \egroup\@EAEAEA\secondoftwoarguments
+     \else
+       \egroup\@EAEAEA\firstoftwoarguments
+     \fi
    \else
-     \doifdefinedelse{\??ss:\currentsymbolset:#1}
-       {#2}{\doifdefinedelse{\??ss:#1}{#2}{#3}}%
+     \egroup\@EA\firstoftwoarguments
    \fi}
 
 %D \macros
@@ -195,59 +291,31 @@
 %D \showsetup{\y!setupsymbolset} 
 %D \showsetup{\y!startsymbolset} 
 
-\let\currentsymbolset\empty
+\let\currentsymboldef\empty
 
-\def\startsymbolset%
-  {\localpushmacro\currentsymbolset
-   \setupsymbolset}
+\def\startsymbolset[#1]
+  {\def\currentsymboldef{#1}}
 
-\def\stopsymbolset%
-  {\localpopmacro\currentsymbolset}
+\def\stopsymbolset
+  {\let\currentsymboldef\empty}
+
+\newtoks\symbolsetups
 
 \def\setupsymbolset[#1]%
-  {\def\currentsymbolset{#1}} 
+  {\prependtoksonce\fetchsymbol{#1}\to\symbolsetups}
+
+\def\resetsymbolset
+  {\symbolsetups\emptytoks}
+
+\def\forcesymbolset[#1]%
+  {\symbolsetups{\fetchsymbol{#1}}}
 
 %D \macros
 %D   {showsymbolset}
 %D
 %D \showsetup{\y!showsymbolset} 
 
-\def\doshowsymbolset[#1][#2]% looks like \showexternalfigureb
-  {\vbox\bgroup
-   \blanko
-   \getparameters[\??ss][\c!n=5,#2]%
-   \setupsymbolset[#1]%
-   \doifdefined{\??ss\currentsymbolset}
-     {\global\let\allfigures=\empty
-      \doglobal\newcounter\figurecounter
-      \setupcolors[\c!status=\v!start]% to prevent mps color conversion 
-      \mindermeldingen
-      \def\doshowsymbols% global needed due to grouping in alignment
-        {\expanded{\globalprocesscommalist[\getvalue{\??ss\currentsymbolset}]\noexpand\docommando}}%
-      \def\docommando##1%
-        {\vbox
-           {\forgetall
-            \tttf 
-            \halign
-              {\hss\quad####\strut\quad\hss\cr
-               \symbol[##1]\quad{\red\ruledhbox{\black\symbol[##1]}}\cr
-               \tfx##1\cr}}%
-         \doglobal\increment\figurecounter
-         \ifnum\figurecounter=\@@ssn
-           \doglobal\newcounter\figurecounter
-           \def\next{\crcr\noalign{\vskip1ex}}%
-         \else
-           \def\next{&}%
-         \fi
-         \next}%
-      \tabskip=\!!zeropoint \!!plus 1fill
-      \halign to \hsize
-        {&\hss##\hss\cr\doshowsymbols\crcr}}%
-   \blanko
-   \egroup}
-
-\def\showsymbolset%
-  {\dodoubleempty\doshowsymbolset}
+\fetchruntimecommand \showsymbolset {\f!symbolprefix\s!run}
 
 %D \macros 
 %D   {usesymbols}
@@ -280,7 +348,7 @@
 \definesymbol [circle]    [\mathematics{\circ}]
 \definesymbol [medcircle] [\hbox{\setsmallbodyfont\raise\!!onepoint\hbox{$\bigcirc$}}]
 \definesymbol [bigcircle] [\mathematics{\bigcirc}]
-\definesymbol [square]    [\hbox{\hsmash{$\sqcup$}$\sqcap$}]
+\definesymbol [square]    [\mathematics{\square}]
 \definesymbol [diamond]   [\mathematics{\diamond}]
 
 \definesymbol [1] [{\symbol[bullet]}]

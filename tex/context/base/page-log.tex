@@ -94,17 +94,17 @@
        % no logos to take care of  
      \or % 1 
        \ifnewlogos 
-         \chardef\logostatus=2
+         \chardef\logostatus2
          \setlogoboxes
-         \chardef\logostatus=1
+         \chardef\logostatus1
          \global\newlogosfalse
        \fi 
      \or % 2 
        \setlogoboxes
-       \chardef\logostatus=1
+       \chardef\logostatus1
      \or % 3 
        \setlogoboxes
-       \global\chardef\logostatus=2
+       \global\chardef\logostatus2
      \fi
      \setbox#1=\vbox
        {\offinterlineskip

@@ -121,21 +121,19 @@
 %   \GotoPar}
 
 %\def\doregister#1%
-%  {\def\currentregister{#1}%
-%   \complexorsimpleempty\doregister}
-
-%\def\doregister#1%
 %  {\chardef\registerpagestatus=1
 %   \def\currentregister{#1}%
-%   \complexorsimpleempty\doregister}
+%   \doifelsevalue{\??id\currentregister\c!eigennummer}{\v!ja}
+%     {\def\next{\dosingleempty\dodoregister}}
+%     {\def\next{\dosingleempty\donoregister}}%
+%   \next}
 
 \def\doregister#1%
   {\chardef\registerpagestatus=1
    \def\currentregister{#1}%
    \doifelsevalue{\??id\currentregister\c!eigennummer}{\v!ja}
-     {\def\next{\dosingleempty\dodoregister}}
-     {\def\next{\dosingleempty\donoregister}}%
-   \next}
+     {\dosingleempty\dodoregister}
+     {\dosingleempty\donoregister}}
 
 \def\donoregister[#1]%
   {\dodoregister[#1]{}}
@@ -144,6 +142,9 @@
   {\doprocesspageregister[#1]{#2}{#3}%
    \ifvmode\nobreak\fi
    \GotoPar}
+
+\def\writetoregister[#1]% to be documented
+  {\doregister{#1}}
 
 \def\startregister%
   {\dodoubleargument\dostartregister}
@@ -439,7 +440,7 @@
       \dohandleregisterentry{#2}%
       \global\firstsubsubentryfalse}}
 
-\def\dosetpageregister#1%
+\def\dosetpageregister#1% \currentregister gebruiken 
   {\dosetreglevel{\getvalue{\??id#1\c!criterium}}%
    \global\let\currentregisterentry\empty
    \global\firstsubentrytrue
@@ -461,8 +462,8 @@
      {\edef\alllistreferences%
         {\getvalue{\??id#1\??id\currentregisterentry}}%
       \beforesplitstring\alllistreferences\at::\to\internallistreference
-      \aftersplitstring\alllistreferences\at::\to\alllistreferences}
-     {\let\alllistreferences=\empty
+      \aftersplitstring \alllistreferences\at::\to\alllistreferences}
+     {\let\alllistreferences\empty
       \def\internallistreference{0}}}
 
 \def\dosetlinkregister#1% is die page reference echt nodig?
@@ -471,10 +472,8 @@
    \global\let\currentregisterentry\empty
    \global\firstsubentrytrue % not needed 
    \global\firstsubsubentrytrue % not needed too
-   \setvalue{#1\s!entrya}##1%
-     {\dosetlinkregisterentrya{#1}{##1}}%
-   \setvalue{#1\s!entry}##1% 
-     {\dosetpageregisterletter{#1}{##1}}}
+   \setvalue{#1\s!entrya}##1{\dosetlinkregisterentrya{#1}{##1}}%
+   \setvalue{#1\s!entry }##1{\dosetpageregisterletter{#1}{##1}}}
 
 \def\dosetlinkregisterentrya#1#2%
    {\global\utilitydonetrue
@@ -490,20 +489,20 @@
       \getcommacommandsize[\alllistreferences]%
       \getfromcommacommand[\alllistreferences][1]%
       \ifnum\commalistsize=1
-        \let\firstlistreference=\empty
-        \let\midlistreference=\commalistelement
-        \let\lastlistreference=\empty
+        \let\firstlistreference\empty
+        \let\midlistreference\commalistelement
+        \let\lastlistreference\empty
       \else
-        \let\firstlistreference=\commalistelement
+        \let\firstlistreference\commalistelement
         \getfromcommacommand[\alllistreferences][\commalistsize]%
-        \let\lastlistreference=\commalistelement
+        \let\lastlistreference\commalistelement
         \ifnum\commalistsize=2
-          \let\midlistreference=\empty
+          \let\midlistreference\empty
         \else
-          \!!counta=\commalistsize
-          \divide\!!counta by 2
+          \!!counta\commalistsize
+          \divide\!!counta 2
           \getfromcommacommand[\alllistreferences][\!!counta]%
-          \let\midlistreference=\commalistelement
+          \let\midlistreference\commalistelement
         \fi
       \fi
       % aangepast 
@@ -685,71 +684,212 @@
 %          [ \v!midden=>\docommando\nextlistreference\v!volgende,
 %            \v!rechts=>\docommando\prevlistreference\v!vorige
 %                       \docommando\nextlistreference\v!volgende]}}
+%
+% \def\doprocesslinkregister[#1][#2]#3%
+%   {\hbox
+%      {\doprocesspageregister[#2]{}{#3}%
+%       \let\firstlistreference=\empty
+%       \let\lastlistreference=\empty
+%       \let\selflistreference=\empty
+%       \let\prevlistreference=\empty
+%       \let\nextlistreference=\empty
+%       \getalllistreferences{#1}{#3}%
+%       \doifnot{\alllistreferences}{}
+%         {\def\dodocommando[##1-##2]%
+%            {\ifx\firstlistreference\empty
+%               \def\firstlistreference{##1-##2}%
+%             \fi
+%             \def\lastlistreference{##1-##2}%
+%             \ifnum##1<\nextinternalreference\relax
+%               \def\prevlistreference{##1-##2}%
+%              \else\ifnum##1>\nextinternalreference\relax
+%                \def\nextlistreference{##1-##2}%
+%                \def\dodocommando[####1-####2]%
+%                  {\def\lastlistreference{####1-####2}}%
+%              \else
+%                \def\selflistreference{##1-##2}%
+%              \fi\fi}%
+%          \def\docommando##1%
+%            {\dodocommando[##1]}%
+%          \processcommacommand[\alllistreferences]\docommando}%
+%        \ifx\prevlistreference\empty
+%          \let\prevlistreference=\lastlistreference
+%        \fi
+%        \ifx\nextlistreference\empty
+%          \let\nextlistreference=\firstlistreference
+%        \fi
+%        \ifx\prevlistreference\selflistreference
+%          \let\prevlistreference=\empty
+%          \let\nextlistreference=\empty
+%        \fi
+%        \def\dodocommando[##1-##2]%
+%          {\gotonextinternal{\s!ind}{##1}{##2}{\box0}}%{\copy0}}%
+%        \def\docommando##1##2%
+%          {\bgroup
+%           \ifx##1\empty
+%             \doifvalue{\??id#1\c!onbekendeverwijzing}{\v!leeg}
+%               {\hskip1em}%
+%           \else
+%             \setbox0=\hbox to 1em{\hss\showlocation{\symbol[##2]}\hss}%
+%             \expandafter\dodocommando\expandafter[##1]%
+%           \fi
+%           \egroup}%
+%        \processaction
+%          [\getvalue{\??id#1\c!plaats}]
+%          [\v!midden=>\docommando\prevlistreference\v!vorige,
+%            \v!links=>\docommando\prevlistreference\v!vorige
+%                      \docommando\nextlistreference\v!volgende]%
+%        \doifreferencefoundelse{\s!lin:\internallistreference}
+%          {\gotosomeinternal
+%             {\s!lin}{\internallistreference}{\currentrealreference}
+%             {\showlocation{\limitedregisterentry{#1}{#3}}}}
+%          {\hbox{\limitedregisterentry{#1}{#3}}}%
+%        \processaction
+%          [\getvalue{\??id#1\c!plaats}]
+%          [ \v!midden=>\docommando\nextlistreference\v!volgende,
+%            \v!rechts=>\docommando\prevlistreference\v!vorige
+%                       \docommando\nextlistreference\v!volgende]}}
+%
+% better: 
+ 
+% \def\dodocommandoprolinrefA[#1-#2]%
+%   {\ifx\firstlistreference\empty
+%      \def\firstlistreference{#1-#2}%
+%    \fi
+%    \def\lastlistreference{#1-#2}%
+%    \ifnum#1<\nextinternalreference\relax
+%      \def\prevlistreference{#1-#2}%
+%    \else\ifnum#1>\nextinternalreference\relax
+%      \def\nextlistreference{#1-#2}%
+%      \def\dodocommandoprolinrefA[##1-##2]%
+%        {\def\lastlistreference{##1-##2}}%
+%    \else
+%      \def\selflistreference{#1-#2}%
+%    \fi\fi}
+% 
+% more efficient :
+
+\def\dodocommandoprolinrefAA[#1-#2]%
+  {\def\lastlistreference{#1-#2}}
+
+\def\dodocommandoprolinrefA[#1-#2]%
+  {\def\lastlistreference{#1-#2}%
+   \ifx\firstlistreference\empty
+     \let\firstlistreference\lastlistreference
+   \fi
+   \ifnum#1<\nextinternalreference\relax
+     \let\prevlistreference\lastlistreference
+   \else\ifnum#1>\nextinternalreference\relax
+     \let\nextlistreference\lastlistreference
+     \let\dodocommandoprolinrefA\dodocommandoprolinrefAA
+   \else
+     \let\selflistreference\lastlistreference
+   \fi\fi}
+
+\def\docommandoprolinrefA#1%
+  {\dodocommandoprolinrefA[#1]}
+
+\def\dodocommandoprolinrefB[#1-#2]%
+  {\gotonextinternal{\s!ind}{#1}{#2}{\box0}}
+
+\def\docommandoprolinrefB#1#2#3%
+  {\bgroup
+   \ifx#2\empty
+     \doifvalue{\??id#1\c!onbekendeverwijzing}\v!leeg{\hskip1em}%
+   \else
+     \setbox0=\hbox to 1em{\hss\showlocation{\symbol[#3]}\hss}%
+     \expandafter\dodocommandoprolinrefB\expandafter[#2]%
+   \fi
+   \egroup}
+
+%\def\doprocesslinkregister[#1][#2]#3%
+%  {\hbox
+%     {\doprocesspageregister[#2]{}{#3}%
+%      \let\firstlistreference\empty
+%      \let\lastlistreference\empty
+%      \let\selflistreference\empty
+%      \let\prevlistreference\empty
+%      \let\nextlistreference\empty
+%      \getalllistreferences{#1}{#3}%
+%      \ifx\alllistreferences\empty \else
+%        \expanded{\rawprocesscommalist[\alllistreferences]}\docommandoprolinrefA
+%      \fi
+%       \ifx\prevlistreference\empty
+%         \let\prevlistreference\lastlistreference
+%       \fi
+%       \ifx\nextlistreference\empty
+%         \let\nextlistreference\firstlistreference
+%       \fi
+%       \ifx\prevlistreference\selflistreference
+%         \let\prevlistreference\empty
+%         \let\nextlistreference\empty
+%       \fi
+%       % can be a bit faster is one proces only
+%       % can even be resolved at definition time 
+%       \processaction
+%         [\getvalue{\??id#1\c!plaats}]
+%         [\v!midden=>\docommandoprolinrefB{#1}\prevlistreference\v!vorige,
+%           \v!links=>\docommandoprolinrefB{#1}\prevlistreference\v!vorige
+%                     \docommandoprolinrefB{#1}\nextlistreference\v!volgende]%
+%       \doifreferencefoundelse{\s!lin:\internallistreference}
+%         {\gotosomeinternal
+%            {\s!lin}{\internallistreference}{\currentrealreference}
+%            {\showlocation{\limitedregisterentry{#1}{#3}}}}
+%         {\hbox{\limitedregisterentry{#1}{#3}}}%
+%       \processaction
+%         [\getvalue{\??id#1\c!plaats}]
+%         [ \v!midden=>\docommandoprolinrefB{#1}\nextlistreference\v!volgende,
+%           \v!rechts=>\docommandoprolinrefB{#1}\prevlistreference\v!vorige
+%                      \docommandoprolinrefB{#1}\nextlistreference\v!volgende]}}
 
 \def\doprocesslinkregister[#1][#2]#3%
   {\hbox
      {\doprocesspageregister[#2]{}{#3}%
-      \let\firstlistreference=\empty
-      \let\lastlistreference=\empty
-      \let\selflistreference=\empty
-      \let\prevlistreference=\empty
-      \let\nextlistreference=\empty
+      \let\firstlistreference\empty
+      \let\lastlistreference\empty
+      \let\selflistreference\empty
+      \let\prevlistreference\empty
+      \let\nextlistreference\empty
       \getalllistreferences{#1}{#3}%
-      \doifnot{\alllistreferences}{}
-        {\def\dodocommando[##1-##2]%
-           {\ifx\firstlistreference\empty
-              \def\firstlistreference{##1-##2}%
-            \fi
-            \def\lastlistreference{##1-##2}%
-            \ifnum##1<\nextinternalreference\relax
-              \def\prevlistreference{##1-##2}%
-             \else\ifnum##1>\nextinternalreference\relax
-               \def\nextlistreference{##1-##2}%
-               \def\dodocommando[####1-####2]%
-                 {\def\lastlistreference{####1-####2}}%
-             \else
-               \def\selflistreference{##1-##2}%
-             \fi\fi}%
-         \def\docommando##1%
-           {\dodocommando[##1]}%
-         \processcommacommand[\alllistreferences]\docommando}%
+      \ifx\alllistreferences\empty \else
+        \expanded{\rawprocesscommalist[\alllistreferences]}\docommandoprolinrefA
+      \fi
        \ifx\prevlistreference\empty
-         \let\prevlistreference=\lastlistreference
+         \let\prevlistreference\lastlistreference
        \fi
        \ifx\nextlistreference\empty
-         \let\nextlistreference=\firstlistreference
+         \let\nextlistreference\firstlistreference
        \fi
        \ifx\prevlistreference\selflistreference
-         \let\prevlistreference=\empty
-         \let\nextlistreference=\empty
+         \let\prevlistreference\empty
+         \let\nextlistreference\empty
        \fi
-       \def\dodocommando[##1-##2]%
-         {\gotonextinternal{\s!ind}{##1}{##2}{\box0}}%{\copy0}}%
-       \def\docommando##1##2%
-         {\bgroup
-          \ifx##1\empty
-            \doifvalue{\??id#1\c!onbekendeverwijzing}{\v!leeg}
-              {\hskip1em}%
-          \else
-            \setbox0=\hbox to 1em{\hss\showlocation{\symbol[##2]}\hss}%
-            \expandafter\dodocommando\expandafter[##1]%
-          \fi
-          \egroup}%
-       \processaction
-         [\getvalue{\??id#1\c!plaats}]
-         [\v!midden=>\docommando\prevlistreference\v!vorige,
-           \v!links=>\docommando\prevlistreference\v!vorige
-                     \docommando\nextlistreference\v!volgende]%
+       \setalignmentswitch{\getvalue{\??id#1\c!plaats}}%
+       \ifcase\alignmentswitch
+         % links 
+         \docommandoprolinrefB{#1}\prevlistreference\v!vorige
+         \docommandoprolinrefB{#1}\nextlistreference\v!volgende
+       \or 
+         % midden 
+         \docommandoprolinrefB{#1}\prevlistreference\v!vorige
+       \or 
+         % rechts 
+       \fi
        \doifreferencefoundelse{\s!lin:\internallistreference}
          {\gotosomeinternal
-            {\s!lin}{\internallistreference}{\currentrealreference}
+            \s!lin \internallistreference \currentrealreference
             {\showlocation{\limitedregisterentry{#1}{#3}}}}
          {\hbox{\limitedregisterentry{#1}{#3}}}%
-       \processaction
-         [\getvalue{\??id#1\c!plaats}]
-         [ \v!midden=>\docommando\nextlistreference\v!volgende,
-           \v!rechts=>\docommando\prevlistreference\v!vorige
-                      \docommando\nextlistreference\v!volgende]}}
+       \ifcase\alignmentswitch
+         % links 
+       \or 
+         % midden 
+         \docommandoprolinrefB{#1}\nextlistreference\v!volgende
+       \or 
+         % rechts
+         \docommandoprolinrefB{#1}\prevlistreference\v!vorige
+         \docommandoprolinrefB{#1}\nextlistreference\v!volgende
+       \fi}}
 
 % \def\dodolinkedregister[#1][#2]#3% page auto link 
 %   {\bgroup
@@ -769,20 +909,20 @@
 %    \ifvmode\nobreak\fi
 %    \GotoPar}
 
-\def\dodolinkedregister[#1][#2]#3% page auto link 
-  {\bgroup
+\def\dodolinkedregister[#1][#2]#3% page auto link
+  {\bgroup                                       
    \chardef\registerpagestatus=1
    \def\currentregister{#1}%
    \iflocation
      \ifautoregisterhack 
-       \def\next{\doprocessautoregister[#1][#2]{#3}}%
+       \def\next{\doprocessautoregister[#1][#2]}%
      \else
-       \def\next{\doprocesslinkregister[#1][#2]{#3}}%
+       \def\next{\doprocesslinkregister[#1][#2]}%
      \fi
    \else
-     \def\next{\doprocesspageregister[#2]{}{#3}}%
+     \def\next{\doprocesspageregister[#2]{}}%
    \fi
-   \next
+   \next{#3}%
    \egroup
    \ifvmode\nobreak\fi
    \GotoPar}
@@ -811,7 +951,10 @@
      \pagereference[-:\s!lin:\internallistreference]% 
      \pluscounter{autolink:#1}%
      \bgroup
-     \setupinteraction[\c!kleur=,\c!contrastkleur=,\c!letter=]% kan sneller
+    %\setupinteraction[\c!kleur=,\c!contrastkleur=,\c!letter=]% kan sneller
+     \resetinteractionparameter\c!kleur
+     \resetinteractionparameter\c!contrastkleur
+     \resetinteractionparameter\c!letterkleur
      \naarbox
        {\limitedregisterentry{#1}{\begstrut#2}}%  
        [JS(SetRegisterEntry{\v!register,\countervalue{autolink:#1},#2,{\alllistreferences}})]%
@@ -933,7 +1076,8 @@
       \c!plaats=\v!midden,
       \c!maxbreedte=,
       \c!nummer=\v!nee,
-      \c!onbekendeverwijzing=\v!leeg]%
+      \c!onbekendeverwijzing=\v!leeg,
+      \c!expansie=]%
    \presetheadtext[#1=\Word{#1}]%
    \setvalue{#1}%
      {\doregister{#1}}%
@@ -976,12 +1120,12 @@
      {\doutilities{#1}{\jobname}{#1}{}{}}%
    \endgroup
    \ifregistergeplaatst
-     \enablemode [\systemmodeprefix\v!register]%
+     \setsystemmode  \v!register 
    \else
-     \disablemode[\systemmodeprefix\v!register]%
+     \resetsystemmode\v!register 
    \fi}
      
-\def\bepaalregisterkenmerken%
+\def\bepaalregisterkenmerken
   {\dodoubleempty\dobepaalregisterkenmerken}
 
 \definieerregister

@@ -83,8 +83,8 @@
 
 \else
 
-  \def\enableprotruding {\pdfprotrudechars=2 }
-  \def\disableprotruding{\pdfprotrudechars=0 }
+  \def\enableprotruding {\pdfprotrudechars2\relax}
+  \def\disableprotruding{\pdfprotrudechars0\relax}
 
   \appendtoks \disableprotruding \to \everyforgetall % Here or not here? 
 
@@ -202,28 +202,119 @@
 \def\enablehandling%
   {\dodoubleempty\doenablehandling}
 
+%\def\doenablehandling[#1][#2]% handling / symbolic fontname 
+%  {\doifdefinedelse{\@fha@\@fha@#1}%
+%     {\setprotrudingfactor
+%        {\getvalue{\@fha@\@fha@#1\c!links}}
+%        {\getvalue{\@fha@\@fha@#1\c!rechts}}%
+%      \edef\fonthandling{\getvalue{\@fha@\@fha@#1}}%
+%      \checkfonthandling{#2}%
+%      \@EA\rawprocesscommalist\@EA[\fonthandling]\dodoenablehandling
+%      \registerfonthandling{#2}}
+%     {\edef\fonthandling{#1}% new
+%      \dodoenablehandling{#1}}}
+%
+%\def\dodoenablehandling#1% weg met die @EA
+%  {\doifdefined{\@fha@#1}{\@EA\the\csname\@fha@#1\endcsname}}
+%
+%\def\checkfonthandling#1%
+%   {\doifelsevalue{#1\s!handling\c!file}{\purefontname\font}
+%      \skipprotrudingdeftrue\skipprotrudingdeffalse}
+%
+%\def\registerfonthandling#1%
+%  {%\ifskipprotrudingdef\else\message{#1->#2->\purefontname\font}\wait\fi
+%   \setxvalue{#1\s!handling\c!file}{\purefontname\font}}
+%
+%\def\registerfonthandling#1%
+%  {%\ifskipprotrudingdef\else\message{#1->#2->\purefontname\font}\wait\fi
+%   \setxvalue{#1\s!handling\c!file}{\purefontname\font}}
+
 \def\doenablehandling[#1][#2]% handling / symbolic fontname 
-  {\doifdefinedelse{\@fha@\@fha@#1}%
-     {\setprotrudingfactor
-        {\getvalue{\@fha@\@fha@#1\c!links}}
-        {\getvalue{\@fha@\@fha@#1\c!rechts}}%
-      \edef\fonthandling{\getvalue{\@fha@\@fha@#1}}%
-      \checkfonthandling{#2}%
-      \@EA\rawprocesscommalist\@EA[\fonthandling]\dodoenablehandling
-      \registerfonthandling{#2}}
-     {\edef\fonthandling{#1}% new
-      \dodoenablehandling{#1}}}
+  {\fastenablehandling{#1}{#2}} % for the moment the same as:
+ 
+% fast one for font switch: 
+
+% \def\fastenablehandling#1#2% 
+%   {\@EA\ifx\csname\@fha@\@fha@#1\endcsname\relax
+%      \edef\fonthandling{#1}% new
+%      \dodoenablehandling{#1}%
+%    \else
+%      \setprotrudingfactor
+%        {\csname\@fha@\@fha@#1\c!links\endcsname}
+%        {\csname\@fha@\@fha@#1\c!rechts\endcsname}%
+%      \edef\fonthandling{\csname\@fha@\@fha@#1\endcsname}%
+%      \checkfonthandling{#2}%
+%      \@EA\rawprocesscommalist\@EA[\fonthandling]\dodoenablehandling
+%      \registerfonthandling{#2}%
+%    \fi}
+% 
+% \def\dodoenablehandling#1%
+%   {\@EA\ifx\csname\@fha@#1\endcsname\relax\else
+%      \the\csname\@fha@#1\endcsname
+%    \fi}
+
+\beginTEX
+
+\def\fastenablehandling#1% 
+  {\def\askedfonthandling{#1}%
+   \@EA\ifx\csname\@fha@\@fha@\askedfonthandling\endcsname\relax
+     \expandafter\nofastenablehandling
+   \else
+     \expandafter\dofastenablehandling
+   \fi}
+
+\endTEX
+
+\beginETEX \ifcsname
+
+\def\fastenablehandling#1% also gets #2 passed 
+  {\def\askedfonthandling{#1}%
+   \ifcsname\@fha@\@fha@\askedfonthandling\endcsname
+     \expandafter\dofastenablehandling
+   \else
+     \expandafter\nofastenablehandling
+   \fi}
+
+\endETEX
+
+\def\dofastenablehandling#1% 
+  {\setprotrudingfactor 
+     {\csname\@fha@\@fha@\askedfonthandling\c!links \endcsname}
+     {\csname\@fha@\@fha@\askedfonthandling\c!rechts\endcsname}%
+   \edef\fonthandling{\csname\@fha@\@fha@\askedfonthandling\endcsname}%
+   \checkfonthandling{#1}%
+   \@EA\rawprocesscommalist\@EA[\fonthandling]\dodoenablehandling
+   \registerfonthandling{#1}}
+
+\def\nofastenablehandling#1%  
+  {\let\fonthandling\askedfonthandling
+   \dodoenablehandling\fonthandling}
+
+\beginTEX
 
 \def\dodoenablehandling#1%
-  {\doifdefined{\@fha@#1}{\@EA\the\csname\@fha@#1\endcsname}}
+  {\@EA\ifx\csname\@fha@#1\endcsname\relax\else
+     \the\csname\@fha@#1\endcsname
+   \fi}
 
-\def\checkfonthandling#1%
-   {\doifelsevalue{#1\s!handling\c!file}{\purefontname\font}
+\endTEX
+
+\beginETEX \ifcsname
+
+\def\dodoenablehandling#1%
+  {\ifcsname\@fha@#1\endcsname
+     \the\csname\@fha@#1\endcsname
+   \fi}
+
+\endETEX
+
+\def\checkfonthandling#1% we need a fast compare 
+  {\doifelsevalue{#1\s!handling\c!file}{\purefontname\font}
       \skipprotrudingdeftrue\skipprotrudingdeffalse}
 
 \def\registerfonthandling#1%
   {%\ifskipprotrudingdef\else\message{#1->#2->\purefontname\font}\wait\fi
-   \setxvalue{#1\s!handling\c!file}{\purefontname\font}}
+   \@EA\xdef\csname#1\s!handling\c!file\endcsname{\purefontname\font}}
 
 %D \macros 
 %D   {usehandling}

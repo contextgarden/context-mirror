@@ -244,18 +244,24 @@
 %D turn them into \SPACE. We need the double \type{\bgroup}
 %D construction to keep the closing command local.
 
+\def\setverbatimspaceskip
+  {\setbox\scratchbox\hbox{x}%
+   \spaceskip\wd\scratchbox 
+   \xspaceskip\spaceskip}
+
 \def\setupinlineverbatim%
-  {\verbatimfont \spaceskip=.5em \xspaceskip=\spaceskip
-   \let\obeytabs=\ignoretabs
-   \let\obeylines=\ignorelines
-   \let\obeypages=\ignorepages
+  {\verbatimfont 
+   \setverbatimspaceskip
+   \let\obeytabs\ignoretabs
+   \let\obeylines\ignorelines
+   \let\obeypages\ignorepages
    \setupcopyverbatim}
 
 \def\doprocessinlineverbatim%
   {\ifx\next\bgroup
      \setupinlineverbatim
-     \catcode`\{=\@@begingroup
-     \catcode`\}=\@@endgroup
+     \catcode`\{\@@begingroup
+     \catcode`\}\@@endgroup
      \def\next{\let\next=}%
    \else
      \setupinlineverbatim
@@ -343,13 +349,19 @@
 
 \let\handleverbatimline=\relax
 
+% \def\initializeverbatimline%
+%   {\global\let\savedverbatimline=\empty
+%    \ifskipfirstverbatimline
+%      \global\chardef\verbatimstatus=0
+%    \else
+%      \global\chardef\verbatimstatus=1
+%    \fi}
+% 
+% more efficient 
+
 \def\initializeverbatimline%
-  {\global\let\savedverbatimline=\empty
-   \ifskipfirstverbatimline
-     \global\chardef\verbatimstatus=0
-   \else
-     \global\chardef\verbatimstatus=1
-   \fi}
+  {\global\let\savedverbatimline\empty
+   \global\chardef\verbatimstatus\ifskipfirstverbatimline0 \else1 \fi}
 
 \def\presetemptyverbatimline%
   {\ifcase\verbatimstatus
@@ -363,7 +375,7 @@
      \doemptyverbatimline
      \global\chardef\verbatimstatus=2
    \else
-     \kern\!!zeropoint
+     \kern\zeropoint
      \doverbatimnobreak
      \doflushverbatimline
      \global\let\savedverbatimline=\empty
@@ -382,7 +394,7 @@
      \doflushverbatimline
      \global\chardef\verbatimstatus=4
    \or
-     \kern\!!zeropoint
+     \kern\zeropoint
      \doverbatimnobreak
      \doflushverbatimline
      \global\chardef\verbatimstatus=5
@@ -396,7 +408,7 @@
   {\ifcase\verbatimstatus \or \or \or
      \doflushverbatimline
    \else
-     \kern\!!zeropoint
+     \kern\zeropoint
      \doverbatimnobreak
      \doflushverbatimline
    \fi}
@@ -449,18 +461,19 @@
    \egroup
    \def\endofdisplayverbatim{\csname\verbatimname\endcsname}% 
    \bgroup
-   \parindent\!!zeropoint
+   \parindent\zeropoint
    \ifdim\lastskip<\parskip
      \removelastskip
      \vskip\parskip
    \fi
-   \parskip\!!zeropoint
+   \parskip\zeropoint
    \processingverbatimtrue
    \global\linepartrue
    \expandafter\let\csname\verbatimname\endcsname=\relax
    \edef\endofverbatimcommand{\csname\verbatimname\endcsname}%
    \edef\endofverbatimcommand{\meaning\endofverbatimcommand}%
-   \verbatimfont \spaceskip=.5em \xspaceskip=\spaceskip
+   \verbatimfont 
+   \setverbatimspaceskip
    \global\linepartrue % needed for paragraph numbering 
    \setupcopyverbatim
    \initializeverbatimline
@@ -527,24 +540,60 @@
    \catcode`\^^?=\@@ignore}
 
 \def\setcatcodes#1%
-  {\doprocesscatcodes
-     {\catcode\scratchcounter=#1}}
+  {\doprocesscatcodes{\catcode\scratchcounter=#1}}
+
+% \def\uncatcodecharacters%
+%   {\setcatcodes\@@letter}
 
 \def\uncatcodecharacters%
-  {\setcatcodes\@@letter}
+  {\setnaturalcatcodes}
 
-\def\setnaturalcatcodes%
-  {\catcode`\!=\@@other \catcode`\?=\@@other \catcode`\@=\@@other
-   \catcode`\#=\@@other \catcode`\&=\@@other \catcode`\|=\@@other
-   \catcode`\$=\@@other \catcode`\^=\@@other \catcode`\_=\@@other
-   \catcode`\*=\@@other \catcode`\/=\@@other 
-   \catcode`\-=\@@other \catcode`\+=\@@other
-   \catcode`\==\@@other \catcode`\<=\@@other \catcode`\>=\@@other
-   \catcode`\"=\@@other \catcode`\'=\@@other \catcode`\`=\@@other
-   \catcode`\:=\@@other \catcode`\;=\@@other
-   \catcode`\,=\@@other \catcode`\.=\@@other \catcode`\~=\@@other 
-   \catcode`\(=\@@other \catcode`\)=\@@other 
-   \catcode`\{=\@@other \catcode`\}=\@@other}
+\newtoks\everycommoncatcodes
+\newtoks\everynaturalcatcodes
+\newtoks\everynormalcatcodes
+
+\def\setcommoncatcodes%
+  {\catcode`\!\@@other \catcode`\?\@@other \catcode`\@\@@other
+   \catcode`\=\@@other \catcode`\<\@@other \catcode`\>\@@other
+   \catcode`\*\@@other \catcode`\/\@@other 
+   \catcode`\-\@@other \catcode`\+\@@other
+   \catcode`\:\@@other \catcode`\;\@@other
+   \catcode`\.\@@other \catcode`\,\@@other 
+   \catcode`\'\@@other \catcode`\"\@@other \catcode`\`\@@other
+   \catcode`\(\@@other \catcode`\)\@@other
+   \the\everycommoncatcodes}
+
+\def\setnaturalcatcodes% see elsewhere, merge 'm 
+  {\setcommoncatcodes
+   \uncatcodespacetokens
+   \catcode`\#\@@other 
+   \catcode`\$\@@other 
+   \catcode`\%\@@other 
+   \catcode`\&\@@other 
+   \catcode`\\\@@other 
+   \catcode`\^\@@other 
+   \catcode`\_\@@other
+   \catcode`\{\@@other 
+   \catcode`\|\@@other
+   \catcode`\}\@@other
+   \catcode`\~\@@other
+   \the\everynaturalcatcodes}
+
+\def\setnormalcatcodes
+  {\setcommoncatcodes
+   \uncatcodespacetokens
+   \catcode`\#\@@parameter  
+   \catcode`\$\@@mathshift  
+   \catcode`\%\@@comment
+   \catcode`\&\@@alignment   
+   \catcode`\\\@@escape     
+   \catcode`\^\@@superscript 
+   \catcode`\_\@@subscript 
+   \catcode`\{\@@begingroup 
+   \catcode`\|\@@active      
+   \catcode`\}\@@endgroup 
+   \catcode`\~\@@active
+   \the\everynormalcatcodes}
 
 %D \macros
 %D   {localcatcodes,
@@ -572,18 +621,18 @@
 \def\savecatcode%
   {\iflocalcatcodes \else
      \saverestoreactivecatcode
-       {\@EA\let\csname\@@aa@@\the\scratchcounter\endcsname=~}%
+       {\@EA\let\csname\@@aa@@\the\scratchcounter\endcsname~}%
      \@EA\chardef\csname\@@cc@@\the\scratchcounter\endcsname
-       =\catcode\scratchcounter
+       \catcode\scratchcounter
    \fi}
 
 %D It's counterpart is:
 
 \def\restorecatcode%
-  {\@EA\catcode\@EA\scratchcounter\@EA=
+  {\@EA\catcode\@EA\scratchcounter
      \csname\@@cc@@\the\scratchcounter\endcsname
    \saverestoreactivecatcode
-     {\@EA\let\@EA~\@EA=\csname\@@aa@@\the\scratchcounter\endcsname}}
+     {\@EA\let\@EA~\csname\@@aa@@\the\scratchcounter\endcsname}}
 
 %D Especially when we enable pretty printing, we need to 
 %D restore the meaning of active characters too. Just think of 
@@ -613,35 +662,39 @@
 
 \def\beginrestorecatcodes%
   {\ifx\restorecatcodes\relax
-     \let\endrestorecatcodes=\relax
+     \let\endrestorecatcodes\relax
    \else
      \bgroup
      \restorecatcodes
-     \let\beginrestorecatcodes=\bgroup
-     \let\endrestorecatcodes  =\egroup
+     \let\beginrestorecatcodes\bgroup
+     \let\endrestorecatcodes  \egroup
    \fi}
 
 %D \macros 
-%D   {makeallletter}
+%D   {makeallother}
 %D
-%D With \type {\makeallletter} each character ($>0$) gets the 
+%D With \type {\makeallother} each character ($>0$) gets the 
 %D category code 12. 
 %D
 %D The next alternative was okay when memory was still low. 
 %D
-%D \startypen
+%D \starttypen
 %D \def\makeallother%
 %D   {\dorecurse{255}{\catcode\recurselevel=\@@other}}
 %D \stoptypen 
 %D
 %D Today we prebuild a token list:
 
-\newtoks\makeallothertoks
+\ifx\makeallother\undefined
 
-\dorecurse{255}
-  {\@EA\appendtoks\@EA\catcode\recurselevel=\@@other\to\makeallothertoks}
+  \newtoks\makeallothertoks
 
-\def\makeallother{\the\makeallothertoks}
+  \dorecurse{255}
+    {\@EA\appendtoks\@EA\catcode\recurselevel=\@@other\to\makeallothertoks}
+
+  \def\makeallother{\the\makeallothertoks}
+
+\fi 
 
 %D The main copying routine of display verbatim does an
 %D ordinary string||compare on the saved closing command and
@@ -704,11 +757,11 @@
    \iflinepar\else\EveryPar{}\fi
    \leavevmode
    \xdef\dokeepverbatimlinedata%
-     {\parindent =\the\parindent
-      \hangindent=\the\hangindent
-      \hangafter =\the\hangafter
-      \leftskip  =\the\leftskip
-      \rightskip =\the\rightskip}%
+     {\parindent \the\parindent
+      \hangindent\the\hangindent
+      \hangafter \the\hangafter
+      \leftskip  \the\leftskip
+      \rightskip \the\rightskip}%
    \egroup
    \dokeepverbatimlinedata
    \doopenupverbatimline
@@ -850,16 +903,17 @@
 \def\processfileverbatim#1%
   {\par
    \bgroup
-   \parindent\!!zeropoint
+   \parindent\zeropoint
    \ifdim\lastskip<\parskip
      \removelastskip
      \vskip\parskip
    \fi
-   \parskip\!!zeropoint
+   \parskip\zeropoint
    \processingverbatimtrue
    \global\linepartrue
    \uncatcodecharacters
-   \verbatimfont \spaceskip=.5em \xspaceskip=\spaceskip
+   \verbatimfont 
+   \setverbatimspaceskip
    \frenchspacing
    \obeyspaces
    \obeytabs
@@ -986,7 +1040,7 @@
 %D calls for an interpreter macro.
 
 \def\handleprettytoken#1%
-  {\getvalue{\!!PRETTY#1}}
+  {\csname\!!PRETTY#1\endcsname} % \getvalue{\!!PRETTY#1}}
 
 %D This interpreter is installed by saying
 %D
@@ -1773,17 +1827,18 @@
 %     \egroup
 %     \def\endofdisplayverbatim{\csname\verbatimname\endcsname}%
 %     \bgroup
-%     \parindent\!!zeropoint
+%     \parindent\zeropoint
 %     \ifdim\lastskip<\parskip
 %       \removelastskip
 %       \vskip\parskip
 %     \fi
-%     \parskip\!!zeropoint
+%     \parskip\zeropoint
 %     \processingverbatimtrue
 %     \expandafter\let\csname\verbatimname\endcsname=\relax
 %     \expandafter\convertargument\csname\verbatimname\endcsname
 %       \to\endofverbatimcommand
-%     \verbatimfont \spaceskip=.5em \xspaceskip=\spaceskip
+%     \verbatimfont 
+%     \setverbatimspaceskip
 %     \global\linepartrue % needed for paragraph numbering 
 %     \setupcopyverbatim
 %     \initializeverbatimline
@@ -1812,14 +1867,15 @@
 %     \let\endofdisplayverbatim\relax
 %     \convertargument#1\to\endofverbatimcommand
 %     \bgroup
-%     \parindent\!!zeropoint
+%     \parindent\zeropoint
 %     \ifdim\lastskip<\parskip
 %       \removelastskip
 %       \vskip\parskip
 %     \fi
-%     \parskip\!!zeropoint
+%     \parskip\zeropoint
 %     \processingverbatimtrue
-%     \verbatimfont \spaceskip=.5em \xspaceskip=\spaceskip
+%     \verbatimfont 
+%     \setverbatimspaceskip
 %     \global\linepartrue % needed for paragraph numbering 
 %     \setupcopyverbatim
 %     \initializeverbatimline
@@ -1837,12 +1893,12 @@
        \def\endofdisplayverbatim{\csname\verbatimname\endcsname}%
      \fi
      \bgroup
-     \parindent\!!zeropoint
+     \parindent\zeropoint
      \ifdim\lastskip<\parskip
        \removelastskip
        \vskip\parskip
      \fi
-     \parskip\!!zeropoint
+     \parskip\zeropoint
      \processingverbatimtrue
      \ifcase#1%
        \convertargument#2\to\endofverbatimcommand
@@ -1851,7 +1907,8 @@
        \expandafter\convertargument\csname\verbatimname\endcsname
          \to\endofverbatimcommand
      \fi
-     \verbatimfont \spaceskip=.5em \xspaceskip=\spaceskip
+     \verbatimfont 
+     \setverbatimspaceskip
      \global\linepartrue % needed for paragraph numbering 
      \setupcopyverbatim
      \initializeverbatimline

@@ -299,16 +299,16 @@
    \global\vsize=-\columntextoffset
    \global\multiply\vsize by 2
    \global\advance\vsize by \columntextheight
-   \ifdim\precolumnboxheight>\!!zeropoint
+   \ifdim\precolumnboxheight>\zeropoint
      \global\advance\vsize by -\precolumnboxheight
    \fi
    \getinsertionheights\to\dimen0\\% 
    \global\advance\vsize by -\dimen0
-   \ifgridsnapping % evt altijd, nog testen
+%%%\ifgridsnapping % evt altijd, nog testen, testing now, see columned tocs 
      \getnoflines\vsize
      \vsize=\noflines\openlineheight
      \advance\vsize by .5\openlineheight % collect enough data
-   \fi
+%%%\fi
    \global\vsize=\nofcolumns\vsize
    \global\pagegoal=\vsize} % let's do it only here
 
@@ -365,7 +365,7 @@
    \hangafter=0
    \hangindent=\!!zeropoint
    \everypar{}%
-   \ifdim\pagetotal=\!!zeropoint \else
+   \ifdim\pagetotal=\zeropoint \else
      \vbox{\forgetall\strut}%
      \vskip-\openlineheight
    \fi
@@ -439,7 +439,7 @@
 \def\checkbegincolumnfootnotes%
   {\ifcleverfootnotes
      \doflushfootnotes
-     \ifdim\ht\footins>\!!zeropoint % hm, actually unknown 
+     \ifdim\ht\footins>\zeropoint % hm, actually unknown 
        \global\setbox\savedfootins=\box\footins
      \else
        \global\setbox\savedfootins=\box\voidb@x
@@ -572,12 +572,13 @@
    \global\precolumnboxheight=\!!zeropoint
    \setvsize
    \dosomebreak\nobreak
-   \ifgridsnapping \else
-     \scratchdimen=\topskip
-     \advance\scratchdimen by -\openstrutheight
-     \nointerlineskip
-     \vskip-\scratchdimen
-   \fi
+% wrong ! ! ! ! !
+%   \ifgridsnapping \else
+%     \scratchdimen=\topskip
+%     \advance\scratchdimen by -\openstrutheight
+%     \nointerlineskip
+%     \vskip-\scratchdimen
+%   \fi
    \prevdepth\openstrutdepth
    \nointerlineskip
    \dp\columnpagebox=\!!zeropoint
@@ -732,7 +733,7 @@
 
 \def\splitcolumn#1from \box#2to \dimen#3 top \box#4%
   {\bgroup
-   \ifdim\ht#4>\!!zeropoint
+   \ifdim\ht#4>\zeropoint
      \dimen0=\dimen#3\relax
      \dimen2=\dimen0
      \advance\dimen0 by -\ht#4%
@@ -780,7 +781,7 @@
   {\relax
    \ifcleverfootnotes
      \ifnum#1=\lastcolumnbox
-       \ifdim\ht\footins>\!!zeropoint
+       \ifdim\ht\footins>\zeropoint
          \vskip1\skip\footins % remove stretch and shrink 
          \kern\ht\footins % a \vskip would be is discarded! 
        \fi
@@ -791,7 +792,7 @@
   {\relax
    \ifcleverfootnotes
      \ifnum#1=\lastcolumnbox\relax
-       \ifdim\ht\footins>\!!zeropoint
+       \ifdim\ht\footins>\zeropoint
          \advance#2 by -\ht\footins
          \advance#2 by -\skip\footins
        \fi
@@ -800,7 +801,7 @@
 
 \def\overlaycolumnfootnotes%   VERVANGEN !!!
   {\relax
-   \ifcleverfootnotes\ifdim\ht\footins>\!!zeropoint
+   \ifcleverfootnotes\ifdim\ht\footins>\zeropoint
      \bgroup
      \scratchdimen=\ht\firstcolumnbox
      \advance\scratchdimen by -\openstrutdepth % \dp\strutbox
@@ -1387,7 +1388,7 @@
             \else
             %  \showmessage{\m!columns}{13}{}%
             \fi
-            \ifdim\ht\floatbox>\!!zeropoint\relax
+            \ifdim\ht\floatbox>\zeropoint\relax
               \global\setbox\currenttopcolumnbox=\vbox
                 {\snaptogrid\vbox
                    {\copy\currenttopcolumnbox
@@ -1455,7 +1456,7 @@
 \def\linebetweencolumns%
   {\bgroup
    \startcolorpage
-   \ifdim\@@klafstand>\!!zeropoint
+   \ifdim\@@klafstand>\zeropoint
      \dimen0=\@@klafstand
    \else
      \dimen0=\linewidth
@@ -1488,6 +1489,8 @@
       \c!uitlijnen=]}
 
 \let\restorecolumnsettings\relax
+
+\definecomplexorsimpleempty\startkolommen
 
 \def\complexstartkolommen[#1]% %% \startkolommen
   {\bgroup
@@ -1536,7 +1539,7 @@
        \edef\minbalancetoplines{\@@klnboven}%
        \steltolerantiein[\@@kltolerantie]%     %% \startkolommen
        \stelblankoin[\@@klblanko]%
-       \ifdim\tussenwit>\!!zeropoint
+       \ifdim\tussenwit>\zeropoint\relax
          \stelwitruimtein[\@@klblanko]%
        \fi
        \def\stopkolommen%
@@ -1548,8 +1551,6 @@
        \beginmulticolumns
      \fi
    \fi}
-
-\definecomplexorsimpleempty\startkolommen
 
 %\def\kolom%
 %  {\ifbinnenkolommen

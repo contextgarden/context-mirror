@@ -11,6 +11,8 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
 %C details. 
 
+\newif\ifsimplifyspecials \simplifyspecialstrue % see later 
+
 %D Specials are \TEX's channel to the outside world. They make
 %D \TEX\ even more platform independant and permit easy
 %D adaption to new developments. One major drawback of specials
@@ -252,11 +254,11 @@
 %D We define some local constants and variables. They look a
 %D bit horrible but we don't want conflicts.
 
-\def\@@specfil@@{@@specfil@@}
-\def\@@speclst@@{@@speclst@@}
-\def\@@speccat@@{@@speccat@@}
-\def\@@specarg@@{@@specarg@@}
-\def\@@specexc@@{@@specexc@@}
+\def\@@specfil@@{@@spcfil@@}
+\def\@@speclst@@{@@spclst@@}
+\def\@@speccat@@{@@spccat@@}
+\def\@@specarg@@{@@spcarg@@}
+\def\@@specexc@@{@@spcexc@@}
 
 % not faster 
 %
@@ -266,9 +268,9 @@
 % \def\@@specarg@@{@sp@a@}
 % \def\@@specexc@@{@sp@e@}
 
-\let\currentspecial    =\empty
-\let\currentspecialfile=\empty
-\let\preloadedspecials =\empty
+\let\currentspecial    \empty
+\let\currentspecialfile\empty
+\let\preloadedspecials \empty
 
 %D \macros
 %D   {preloadspecials}
@@ -290,34 +292,6 @@
 %D
 %D The optional second argument can consist of a list of
 %D libraries that are to be loaded first. 
-
-% to fuzzy and error prone 
-%
-% \def\dostartspecials[#1][#2]%
-%   {\let\mainspecialfile=\currentspecialfile
-%    \doifelsenothing{#2}
-%      {\inheritspecialsfalse}
-%      {\ifinheritspecials
-%         \showmessage{\m!specials}{2}{(#2)}%
-%       \else
-%         \inheritspecialstrue
-%         \processcommalist[#2]\dousespecials
-%         \inheritspecialsfalse
-%       \fi}%
-%    \doifelsenothing{#1}
-%      {\let\currentspecial\s!unknown}
-%      {\def\currentspecial{#1}}%
-%    \let\currentspecialfile=\mainspecialfile
-%    \setevalue{\@@specfil@@\currentspecial}{\currentspecialfile}%
-%    \unprotect
-%    \addtocommalist{\currentspecial}\preloadedspecials}
-% 
-% \def\startspecials%
-%   {\dodoubleempty\dostartspecials}
-% 
-% \def\stopspecials%
-%   {\def\currentspecial{}%
-%    \protect}
 
 \def\dostartspecials[#1][#2]%
   {\doifsomething{#2}
@@ -410,25 +384,25 @@
 %D   {usespecials}
 %D
 %D We use \type{\usespecials} to load a specific library.
-%D This command is only permitted outside de definition part.
+%D This command is only permitted outside the definition part.
 
-\def\dousespecials#1%
+\def\dousespecials#1% 
   {\doifelse{#1}{\v!reset}
      {\resetspecials}
      {\doifdefinedelse{\@@specfil@@#1}
         {\edef\currentspecialfile{\getvalue{\@@specfil@@#1}}}
         {\edef\currentspecialfile{#1}}%
       \makeshortfilename[\f!specialprefix\currentspecialfile]%
-      \showmessage{\m!specials}{5}{\currentspecialfile}%
+      \showmessage\m!specials5\currentspecialfile
       \startreadingfile
-      \readsysfile{\shortfilename}{}{}%
+      \readsysfile\shortfilename\donothing\donothing
       \stopreadingfile
-      \showmessage{\m!specials}{1}{\preloadedspecials}}}
+      \showmessage\m!specials1\preloadedspecials}}
 
 \def\usespecials[#1]%
   {\doifelsenothing{\currentspecial}
      {\processcommalist[#1]\dousespecials}
-     {\showmessage{\m!specials}{6}{}}}
+     {\showmessage\m!specials6\empty}}
 
 %D \macros
 %D   {executespecials}
@@ -555,8 +529,8 @@
 %D because we pass all those arguments to the specials support
 %D macro. 
 
-\let\openspecialfile  = \relax
-\let\closespecialfile = \relax
+\let\openspecialfile  \relax
+\let\closespecialfile \relax
 
 %D \macros
 %D   {doifspecialavailableelse}
@@ -577,831 +551,55 @@
 \def\doifspecialavailableelse#1#2#3%
   {\doifelsevaluenothing{\@@speclst@@\string#1}{#3}{#2}}
 
-%D The following libraries are defined. Two postscript
-%D drivers are supported, as well as two mechanisms for
-%D interactive texts.
-%D
-%D \startregelcorrectie
-%D \starttabel[|l|l|l|l|l|]
-%D \HL
-%D \NC \bf file             \NC
-%D     \bf name             \NC
-%D     \bf calls            \NC
-%D     \bf support          \NC
-%D     \bf program / driver \NC\SR
-%D \HL
-%D \NC \tttf spec-tex       \NC
-%D     \tttf tex            \NC
-%D                          \NC
-%D     Generic \TEX\ (\DVI) \NC
-%D     (default)            \NC\FR
-%D \NC \tttf spec-tpd       \NC
-%D     \tttf \PDF           \NC
-%D                          \NC
-%D     Han The Thanh        \NC
-%D     (pdftex)             \NC\MR
-%D \NC \tttf spec-ps        \NC
-%D     \tttf postscript     \NC
-%D                          \NC
-%D     Adobe PostScript     \NC
-%D     (default)            \NC\MR
-%D \NC \tttf spec-tr        \NC
-%D     \tttf rokicki        \NC
-%D     \tttf postscript     \NC
-%D     Thomas Rokicki       \NC
-%D     (dvips)              \NC\MR
-%D \NC \tttf spec-yy        \NC
-%D     \tttf yandy          \NC
-%D     \tttf postscript     \NC
-%D     YandY                \NC
-%D     (dvipsone, dviwindo) \NC\MR
-%D \NC \tttf spec-pdf       \NC
-%D     \tttf pdf            \NC
-%D                          \NC
-%D     Adobe PDF            \NC
-%D     (Acrobat)            \NC\MR
-%D \NC \tttf spec-win       \NC
-%D     \tttf dviwindo       \NC
-%D     YandY                \NC
-%D     (dviwindo)           \NC\MR
-%D \NC \tttf spec-htm       \NC
-%D     \tttf html           \NC
-%D                          \NC
-%D     HTML V 2.0           \NC
-%D     (dvips)              \NC\LR
-%D \HL
-%D \stoptabel
-%D \stopregelcorrectie
+%D So far for the macros that deal with installing specials.
+%D In the file \type {spec-def} you will find the predefined
+%D specials.
 
-%D \macros
-%D   {dostartgraymode,dostopgraymode,
-%D    dostartrgbcolormode,dostartcmykcolormode,dostartgraycolormode,dostopcolormode}
-%D
-%D Switching to and from color can be done in two ways:
-%D
-%D \startopsomming[opelkaar,n]
-%D \som  insert driver specific commands
-%D \som  pass instructions to the output device
-%D \stopopsomming
-%D
-%D The first approach is more general and lays the
-%D responsibility at the driver side. Probably due to the fact
-%D that \TEX\ does not directly support color, we have been
-%D confronted for the last few years with changing special
-%D definitions. The need for support depends on how a macro
-%D package handles colored text that crosses the page boundary.
-%D Again, there are two approaches.
-%D
-%D \startopsomming[opelkaar,n]
-%D \som  let \TEX\ do the job
-%D \som  let the driver handle things
-%D \stopopsomming
-%D
-%D The first approach is as driver independant as possible and
-%D can easily be accomplished by using \TEX's mark mechanism.
-%D In \CONTEXT\ we follow this approach. More and more, drivers
-%D are starting to support color, including stacking them.
+%D Now that we have seen the flexible way (permitting 
+%D special chains) we will implement a faster and flat 
+%D alternative. But only if flag si set. 
+
+\ifsimplifyspecials
+
+  \def\doinstallspecial[#1][#2][#3]%
+    {\appendtoks\forgetspecial#1{#3}\to\everyresetspecials
+     \@EA\chardef\csname\@@speclst@@\string#1\endcsname0 
+     \forgetspecial#1{#3}}
+
+  \def\forgetspecial#1#2%
+    {\ifcase#2\relax
+        \let#1\relax                \or
+        \let#1\gobbleoneargument    \or
+        \let#1\gobbletwoarguments   \or
+        \let#1\gobblethreearguments \or
+        \let#1\gobblefourarguments  \or
+        \let#1\gobblefivearguments  \or
+        \let#1\gobblesixarguments   \or
+        \let#1\gobblesevenarguments \or
+        \let#1\gobbleeightarguments \or
+        \let#1\gobbleninearguments  \or
+        \let#1\gobbletenarguments   \fi}
+
+  \def\resetspecials%
+    {\the\everyresetspecials
+     \let\preloadedspecials\empty}
+
+  \def\definespecial#1%
+    {\@EA\chardef\csname\@@speclst@@\string#1\endcsname=1 
+     \def#1}
+
+  \def\doifspecialavailableelse#1%  
+    {\ifcase\csname\@@speclst@@\string#1\endcsname
+       \expandafter\secondoftwoarguments
+     \else
+       \expandafter\firstoftwoarguments
+     \fi}
+
+\fi 
+
+%D For quite some time the \CONTEXT\ way of specifying the
+%D output format has been: 
 %D 
-%D Colors as well as grayscales can be represented in scales
-%D from~0 to~1. When drivers use values in the range 0..255,
-%D this value has to be adapted in the translation process.
-%D Technically it's possible to get a grayscale from combining
-%D colors. In the \kap{RGB} color system, a color with Red,
-%D Green and Blue components of 0.80 show the same gray as a
-%D Gray Scale specified 0.80. The \kap{CMYK} color system
-%D supports a Black component apart from Cyan, Magenta and
-%D Yellow. 
-%D 
-%D Depending on the target format, color support differs from
-%D gray support. PostScript for example offers different
-%D operators for setting gray and color. This is because
-%D printing something using three colors is someting else than
-%D printing with just black.
-%D
-%D In \CONTEXT\ we have implemented a color subsystem that
-%D supports the use of well defined colors that, when printed
-%D in black and white, still can be distinguished. This
-%D approach enables us to serve both printed and electronic
-%D versions, using colored text and illustrations. More on the
-%D fundamentals of this topic can be found in the \kap{MAPS} of
-%D the Dutch User Group, 14 (95.1).
-%D
-%D To satisfy all those needs, we define four specials which
-%D supply enough information for drivers to act upon. We
-%D could have used more general commands with the keywords
-%D 'rgb' and 'gray', but because these specials are used often,
-%D we prefer the more direct and shorter alternative.
-%D
-%D We start with the installation of color and grayscale
-%D specials. The values are in the range 0..1 (e.g. 0.25).
-%D
-%D \starttypen
-%D \dostartgraymode      {gray} ... \dostopgraymode
-%D \dostartrgbcolormode  {red} {green} {blue} ... \dostopcolormode
-%D \dostartcmykcolormode {cyan} {magenta} {yellow} {black} ... \dostopcolormode
-%D \dostartgraycolormode {gray} ... \dostopcolormode
-%D \stoptypen
-%D
-%D Because we can expect conflicts between drivers, we
-%D implement them as category \type{or}. In previous versions
-%D of \DVIPSONE\ the use of their color||specials did not
-%D interfere with the PostScript ones, but recent versions do.
-
-\installspecial [\dostartgraymode]      [or] [1]
-\installspecial [\dostopgraymode]       [or] [0]
-
-\installspecial [\dostartrgbcolormode]  [or] [3]
-\installspecial [\dostartcmykcolormode] [or] [4]
-\installspecial [\dostartgraycolormode] [or] [1]
-\installspecial [\dostopcolormode]      [or] [0]
-
-%D For some drivers, the stop special is of no use and can
-%D simply call the start one with zero arguments.
-
-%D \macros
-%D   {doinsertfile}
-%D
-%D Probably the most problematic special is the following
-%D one. Because we want to be able to support different
-%D schemes, we pass a lot of data to it.
-%D 
-%D The support of inserting files (like illustrations) comes in
-%D many flavors. Some drivers use scales, some take dimensions.
-%D Some need offsets and others act on stored characteristics.
-%D They need one thing in common: a filename. Although separate
-%D specials for different formats sometimes are more clear, we
-%D decided to combine them all in one: 
-%D 
-%D \starttypen
-%D \doinsertfile {type,method} {file,label} 
-%D               {xscale} {yscale} {x} {y} {w} {h} 
-%D               {options}
-%D \stoptypen
-%D
-%D The scale is given percents, the other values are base 
-%D points.
-%D 
-%D The special is implemented as \type{or}. Because \DVIPSONE\
-%D understands them all, a chain of alternatives would generate
-%D multiple occurrences of the same illustration. 
-%D 
-%D When option 1 is passed, the viewers is asked to present a
-%D preview, like the first frame of a movie. 
-
-\installspecial [\doinsertfile] [or] [9]
-
-%D No start||stop construction is needed here, because there in
-%D no further interference of \TEX. All dimensions are output
-%D as scaled points and scales as a number, where 100 equal
-%D 100\%. 
-
-%D \macros
-%D   {doinsertsoundtrack}
-%D
-%D Sounds are (for the moment) just files with 
-%D associated options. 
-%D
-%D \starttypen
-%D \doinsertsoundtrack {file} {label} {options} 
-%D \stoptypen
-
-\installspecial [\doinsertsoundtrack] [or] [3]
-
-%D \macros
-%D   {dogetnofinsertpages}
-%D
-%D Some file formats support more than one page, like \PDF, 
-%D and for special applications, one may want to have access 
-%D to the total number of pages. 
-%D
-%D \starttypen
-%D \dogetnofinsertpages{filename}
-%D \stoptypen
-%D
-%D The number is also available after the insert is placed, 
-%D since inclusion may take place immediate when an insert is 
-%D called upon. 
-
-\def\nofinsertpages{1} % one of the few 'talk backs' 
-
-\installspecial [\dogetnofinsertpages] [or] [1] 
-
-%D \macros
-%D   {dostartrotation,
-%D    dostoprotation}
-%D
-%D We support rotation with the special:
-%D
-%D \starttypen
-%D \dostartrotation {angle} ... \dostoprotation
-%D \stoptypen
-%D
-%D For the moment these specials are installed as
-%D category \type{or}.
-
-\installspecial [\dostartrotation] [or] [1]
-\installspecial [\dostoprotation]  [or] [0]
-
-%D \macros
-%D   {dostartscaling,
-%D    dostopscaling}
-%D
-%D Scaling is also supported:
-%D
-%D \starttypen
-%D \dostartscaling {x} {y} ... \dostopscaling
-%D \stoptypen
-%D
-%D Like the previous one, these specials are of category 
-%D \type{or}.
-
-\installspecial [\dostartscaling] [or] [2]
-\installspecial [\dostopscaling]  [or] [0]
-
-%D \macros
-%D   {dostartmirroring,
-%D    dostopmirroring}
-%D
-%D And indeed, mirroring is there too:
-%D
-%D \starttypen
-%D \dostartmirroring {x} {y} ... \dostopmirroring
-%D \stoptypen
-%D
-%D Again these specials are installed as category \type{or}.
-
-\installspecial [\dostartmirroring] [or] [0]
-\installspecial [\dostopmirroring]  [or] [0]
-
-%D \macros
-%D   {dostartnegative,
-%D    dostopnegative}
-%D
-%D When producing output for an image setter, negating the 
-%D page comes into view. Here are the tools:
-
-\installspecial [\dostartnegative] [or] [0]
-\installspecial [\dostopnegative]  [or] [0]
-
-%D \macros
-%D   {doselectfirstpaperbin,
-%D    doselectsecondpaperbin}
-%D
-%D Here are some very printer||specific ones. No further
-%D comment.
-
-\installspecial [\doselectfirstpaperbin]  [or]  [0]
-\installspecial [\doselectsecondpaperbin] [or]  [0]
-
-%D \macros
-%D   {doovalbox}
-%D
-%D When we look at the implementation, this is a complicated
-%D one. There are seven arguments.
-%D
-%D \starttypen
-%D \doovalbox {w} {h} {d} {linewidth} {radius} {stroke} {fill}
-%D \stoptypen
-%D
-%D This command has to return a \type{\vbox} which can be used
-%D to lay over another one (with text). The radius is in
-%D degrees, the stroke and fill are~\type{1} (true) of~\type{0}
-%D (false). 
-
-\installspecial [\doovalbox] [or] [7]
-
-%D \macros 
-%D   {dostartclipping,dostopclipping}
-%D 
-%D Clipping is implemented in such a way that an arbitrary 
-%D can be fed. 
-%D 
-%D \starttypen 
-%D \dostartclipping {pathname}{width} {height} 
-%D \dostopclipping 
-%D \stoptyping
-%D
-%D 
-
-\installspecial [\dostartclipping] [or] [3]
-\installspecial [\dostopclipping]  [or] [0]
-
-%D \macros
-%D   {dosetupidentity}
-%D
-%D We can declare some characteristics of the document with
-%D
-%D \starttypen 
-%D \dosetupidentity {title} {subject} {author} {creator} {date} 
-%D \stoptypen
-%D
-%D All data is in string format. 
-
-\installspecial [\dosetupidentity] [and] [5]
-
-%D \macros
-%D   {dosetuppaper}
-%D
-%D This special can be used to tell the driver what page size
-%D to use. The special takes three arguments. 
-%D
-%D \starttypen
-%D \dosetuppaper {type} {width} {height}
-%D \stoptypen
-%D
-%D The type is one of the common identifiers, like A4, A5 or 
-%D B2. 
-
-\installspecial [\dosetuppaper] [and] [3]
-
-%D \macros
-%D   {dosetupprinter}
-%D
-%D Some drivers enable the user to specify the paper type 
-%D used and/or page dimensions to be taken into account. 
-%D
-%D \starttypen
-%D \dosetupprinter {type} {hoffset} {voffset} {width} {height}
-%D \stoptypen
-%D
-%D The first argument is one of \type{letter}, \type{legal}, 
-%D \type{A4}, \type{A5} etc. The dimensions are in 
-%D basepoints. 
-
-\installspecial [\dosetupprinter] [and] [5]
-
-%D \macros
-%D   {% dosetuppage,
-%D    dosetupopenaction, dosetupclosaction,
-%D    dosetupopenpageaction, dosetupclospageaction,
-%D    dosetupinteraction,
-%D    dosetupscreen,
-%D    dosetupviewmode}
-%D
-%D Here come some obscure interactive commands. Probably the
-%D specs will change with the development of the macros that
-%D use them.
-%D
-%D The first ones can be used to set up the interaction.
-%D
-%D \starttypen
-%D \dosetupinteraction
-%D \stoptypen
-%D
-%D Normally this command does nothing but giving a message
-%D that some scheme is supported. 
-%D
-%D \starttypen
-%D \dosetupstartaction
-%D \dosetupstopaction
-%D \stoptypen
-%D
-%D These two setup the actions to be executed when the document
-%D is opened and closed. 
-%D
-%D The next command sets up the screen. It takes five 
-%D arguments:
-%D
-%D \starttypen
-%D \dosetupscreen {hoffset} {voffset} {width} {height} {options}
-%D \stoptypen
-%D
-%D The first four arguments are in scaled points. Option~1 
-%D results in a full screen launch.
-%D
-%D \starttypen
-%D \dosetuppageview {keyword}
-%D \stoptypen
-%D
-%D For the moment we only support \type{fit}. 
-
-\installspecial [\dosetupinteraction]     [and] [0]
-\installspecial [\dosetupopenaction]      [and] [0]
-\installspecial [\dosetupcloseaction]     [and] [0]
-\installspecial [\dosetupopenpageaction]  [and] [0]
-\installspecial [\dosetupclosepageaction] [and] [0]
-\installspecial [\dosetupscreen]          [and] [5]
-\installspecial [\dosetuppageview]        [and] [1]
-
-%D \macros
-%D   {dostarthide,
-%D    dostophide}
-%D
-%D Not every part of the screen is suitable for paper. Menus
-%D for instance have no meaning on an non||interactive medium.
-%D These elements are hidden by means of:
-%D
-%D \starttypen
-%D \dostarthide
-%D \dostophide
-%D \stoptypen
-
-\installspecial [\dostarthide] [or] [0]
-\installspecial [\dostophide]  [or] [0]
-
-%D \macros
-%D   {dostartgotolocation, dostopgotolocation,
-%D    dostartgotorealpage, dostopgotorealpage}
-%D
-%D When we want to support hypertext buttons, again we have 
-%D to deal with two concepts.
-%D
-%D \startopsomming[opelkaar,n]
-%D \som let \TEX\ highlight the text
-%D \som let the driver show us where to click
-%D \stopopsomming
-%D 
-%D The first approach is the most secure one. It gives us
-%D complete control over the visual appearance of hyper
-%D buttons. The second alternative lets the driver guess what
-%D part of the text needs highlighting. As long as we deal with
-%D not too complicated textual buttons, this is no problem.
-%D It's even a bit more efficient when we take long mid
-%D paragraph active regions into account. When we let \TEX\
-%D handle active sentences {\em for instance marked like this
-%D one}, we have to take care of line- and pagebreaks ourselve.
-%D However, it's no trivial matter to let a driver find out
-%D where things begin and end. Because most hyperlinks can be
-%D found in tables of contents and registers, the saving in
-%D terms of bytes can be neglected and the first approach is a 
-%D clear winner. 
-%D 
-%D The most convenient way of cross||referencing is using named
-%D destinations. A more simple scheme is using page numbers as
-%D destinations. Because the latter alternative can often be
-%D implemented more efficient, and because we cannot be sure
-%D what scheme a driver supports, we always have to supply a
-%D pagenumber, even when we use named destinations.
-%D
-%D To enable a driver to find out what to make active, we have
-%D to provide begin and endpoints, so like with color, we use
-%D pairs of specials. The first scheme can be satisfied with
-%D proper dimensions of the areas to be made active.
-%D
-%D The interactive real work is done by the following four
-%D specials. The reason for providing the first one with both
-%D a label and a number, is a result of the quite poor
-%D implementation of \type{pdfmarks} in version 1.0 of
-%D Acrobat. Because only pagenumbers were supported as
-%D destination, we had to provide both labels (\DVIWINDO) and
-%D pagenumbers (\PDF). Some drivers use start stop pairs. 
-%D
-%D \starttypen
-%D \dostartgotolocation {w} {h} {url} {file} {label} {page}
-%D \dostartgotorealpage {w} {h} {url} {file}         {page}
-%D \stoptypen
-%D
-%D Their counterparts are:
-%D
-%D \starttypen
-%D \dostopgotolocation  
-%D \dostopgotorealpage  
-%D \stoptypen
-%D
-%D The internal alternative is used for system||generated
-%D links, the external one for user||generated links. The 
-%D Uniform Resource Locator can be used to let the reader 
-%D surf the net. 
-
-\installspecial [\dostartgotolocation] [and] [6]
-\installspecial [\dostopgotolocation]  [and] [0]
-\installspecial [\dostartgotorealpage] [and] [5]
-\installspecial [\dostopgotorealpage]  [and] [0]
-
-%D One may wonder why jumps to page and location are not
-%D combined. By splitting them, we enable macro||packages to
-%D force the prefered alternative, while on the other hand
-%D drivers can pick up the alternative desired most.
-
-%D \macros
-%D  {dostartgotoJS, doflushJSpreamble}
-%D   
-%D Rather special is the option to include and execute 
-%D JavaScript code. This is a typical \PDF\ option.
-%D
-%D \starttypen
-%D \dostartgotoJS {w} {h} {script}
-%D \stoptypen
-%D
-%D This not so standard \TEX\ feature should be used with 
-%D care. Preamble scripts are flushed by
-%D
-%D \doflushJSpreamble {script}
-
-\installspecial [\dostartgotoJS]    [and] [3]
-\installspecial [\dostopgotoJS]     [and] [0]
-\installspecial [\doflushJSpreamble][and] [1]
-
-%D \macros
-%D   {dostartthisislocation, dostopthisislocation,
-%D    dostartthisisrealpage, dostopthisisrealpage}
-%D
-%D Before we can goto some location or page, we have to tell
-%D the system where it can be found. Because some drivers
-%D follow the \SGML\ approach of begin||end tags, we have to
-%D support pairs. A possible extension to this scheme is
-%D supplying coordinates for viewing the text.
-%D
-%D The opposite commands of \type{\dogotosomething} have only
-%D one argument:
-%D
-%D \starttypen
-%D \dostartthisislocation {label}
-%D \dostartthisisrealpage {page}
-%D \stoptypen
-%D
-%D These commands are accompanied by: 
-%D
-%D \starttypen
-%D \dostopthisislocation  
-%D \dostopthisisrealpage 
-%D \stoptypen
-%D
-%D As with all interactive commands's they are installed as
-%D \type{and} category specials.
-
-\installspecial [\dostartthisislocation] [and] [1]
-\installspecial [\dostopthisislocation]  [and] [0]
-\installspecial [\dostartthisisrealpage] [and] [1]
-\installspecial [\dostopthisisrealpage]  [and] [0]
-
-%D In \CONTEXT\ we don't use the \type{\stopsomething} 
-%D macros because we let \TEX\ take care of typographic 
-%D issues.  
-
-%D \macros
-%D   {doresetgotowhereever}
-%D 
-%D These and others need:
-
-\installspecial [\doresetgotowhereever] [and] [0]
-
-%D \macros
-%D   {dostartexecutecommand, dostopexecutecommand}
-%D
-%D The actual behavior of the next pair of commands depends 
-%D much on the viewing engine. Therefore one cannot depend 
-%D too much on their support. 
-%D
-%D \starttypen
-%D \dostartexecutecommand {w} {h} {command} {options} 
-%D \stoptypen
-%D
-%D At least the next commands are supported (more examples 
-%D can be found in \type {spec-fdf.tex}: 
-%D
-%D \startregelcorrectie\steluitlijnenin[midden]\leavevmode
-%D \starttabel[|l|l|] 
-%D \HL
-%D \NC \bf command  \NC \bf action                  \NC\SR 
-%D \HL
-%D \NC first        \NC go to the first page        \NC\FR
-%D \NC previous     \NC go to the previous page     \NC\MR
-%D \NC next         \NC go to the next page         \NC\MR
-%D \NC last         \NC go to the last page         \NC\MR
-%D \NC backward     \NC go back to the  link list   \NC\MR
-%D \NC forward      \NC go forward in the link list \NC\MR
-%D \NC print        \NC enter print mode            \NC\MR
-%D \NC exit         \NC exit viewer                 \NC\MR
-%D \NC close        \NC close document              \NC\MR
-%D \NC enter        \NC enter viewer                \NC\MR
-%D \NC help         \NC show help on the viewer     \NC\LR
-%D \HL
-%D \stoptabel
-%D \stopregelcorrectie
-%D
-%D Options are to be passed as a comma separated list of 
-%D assignments.
-
-\installspecial [\dostartexecutecommand] [and] [4]
-\installspecial [\dostopexecutecommand]  [and] [0]
-
-%D \macros
-%D   {dostartobject, 
-%D    dostopobject,
-%D    doinsertobject}
-%D
-%D Reuse of object can reduce the output filesize 
-%D considerably. Reusable objects are implemented with: 
-%D
-%D \starttypen
-%D \dostartobject{class}{name}{width}{height}{depth}
-%D some typeset material
-%D \dostopobject
-%D \stoptypen
-%D
-%D \starttypen
-%D \doinsertobject{class}{name}
-%D \stoptypen
-%D
-%D The savings can be huge in interactive texts. 
-
-\installspecial [\dostartobject]  [or] [5]
-\installspecial [\dostopobject]   [or] [0]
-\installspecial [\doinsertobject] [or] [2]
-
-%D \macros
-%D   {doregisterfigure}
-%D 
-%D Images can be objects as well and it's up to the driver to
-%D handle this. Alternative images are also up to the driver,
-%D and the next macro tells the driver that the previous image
-%D is somehow followed by another and that both have to be
-%D handled together. This is a rather fuzzy model, but for the 
-%D moment it suits its purpose: low res screen versions combined
-%D with high res printable ones. 
-
-\installspecial [\doregisterfigure][or] [2]
-
-% %D \macros
-% %D   {dogetobjectreference} 
-% %D
-% %D For very special purposes, one can ask for the internal 
-% %D reference to the object. Beware!
-% 
-% \installspecial [\dogetobjectreference] [or] [3]
-% 
-% %D The first argument is the name, the second a macro that 
-% %D gets the assiciated value.
-
-%D \macros
-%D   {dostartrunprogram, dostoprunprogram,
-%D    dostartgotoprofile, dostopgotoprofile,
-%D    dobeginofprofile,
-%D    doendofprofile}
-%D
-%D These specials are still experimental. They are not yet
-%D supported by the programs the way they should be.
-%D
-%D {\em --- still undocumented ---}
-
-\installspecial [\dostartrunprogram]  [and] [4]
-\installspecial [\dostoprunprogram]   [and] [0]
-\installspecial [\dostartgotoprofile] [and] [3]
-\installspecial [\dostopgotoprofile]  [and] [0]
-\installspecial [\dobeginofprofile]   [and] [4]
-\installspecial [\doendofprofile]     [and] [0]
-
-%D \macros
-%D   {doinsertbookmark}
-%D 
-%D Bookmarks, that is viewer generated tables of contents, are
-%D a strange phenomena, mainly because \TEX\ can provide
-%D whatever kind of table in much better quality. 
-
-\installspecial [\doinsertbookmark] [and] [5]
-
-%D This special is called as:
-%D 
-%D \starttypen
-%D \doinstallbookmark {level} {nofsubentries} {text} {page} {open}
-%D \stoptypen
-%D
-%D This definition is very \PDF\ oriented, so for more 
-%D information we kindly refer to the \PDF\ manuals. 
-
-%D \macros
-%D   {dosetpagetransition}
-%D
-%D In presentations, fancy page transitions can, at least for a
-%D short moment, let the audience focus at the screen. Like the
-%D previous one, this special is very \PDF. 
-%D
-%D \starttypen
-%D \dosetpagetransition{dissolve}{0}
-%D \stoptypen
-%D
-%D Transitions have symbolic names, like dissolve, box, split,
-%D blinds, wipe and glitter. The second argument determines 
-%D the wait time (unless zero). 
-
-\installspecial [\dosetpagetransition] [or] [2]
-
-%D \macros
-%D   {dopresettextfield,dopresetlinefield,
-%D    dopresetchoicefield,dopresetpopupfield,dopresetcombofield,
-%D    dopresetbuttonfield,dopresetcheckfield,
-%D    dopresetradiofield,dopresetradiorecord}
-%D
-%D The special drivers are programmed independant from their
-%D calling macros are thereby use the standard \TEX\ way of
-%D passing parameters. Unfortunately fields often have more
-%D than nine characteristics, so we pack some arguments in one. 
-%D 
-%D \starttypen
-%D \dopresettextfield / \dopresetlinefield
-%D   {name} {width} {height} {default} {length} 
-%D   {style,color} {options} {alignment} {actions}
-%D 
-%D \dopresetchoicefield / \dopresetpopupfield / \dopresetcombofield
-%D   {name} {width} {height} {default} 
-%D   {style,color} {options} {values} {actions}
-%D 
-%D \dopresetpushfield 
-%D   {name} {width} {height} {default}
-%D   {options} {values} {actions}
-%D 
-%D \dopresetcheckfield 
-%D   {name} {width} {height} {default} 
-%D   {options} {values} {actions}
-%D 
-%D \dopresetradiofield
-%D   {name} {width} {height} 
-%D   {options} {parent} {values} {actions}
-%D 
-%D \dopresetradiorecord
-%D   {name} {top} {options} {kids} {actions}
-%D \stoptypen
-
-\installspecial [\dopresetlinefield]   [or] [9]
-\installspecial [\dopresettextfield]   [or] [9]
-\installspecial [\dopresetchoicefield] [or] [8]
-\installspecial [\dopresetpopupfield]  [or] [8]
-\installspecial [\dopresetcombofield]  [or] [8]
-\installspecial [\dopresetpushfield]   [or] [7]
-\installspecial [\dopresetcheckfield]  [or] [7]
-\installspecial [\dopresetradiofield]  [or] [7]
-\installspecial [\dopresetradiorecord] [or] [5]
-
-%D \macros
-%D   {dodefinefieldset,dogetfieldset,doiffieldset}
-%D 
-%D Field sets, used in resetting and submitting, are handled
-%D by:
-
-\installspecial [\dodefinefieldset] [or] [2]
-\installspecial [\dogetfieldset]    [or] [1]
-\installspecial [\doiffieldset]     [or] [2]
-
-%D \macros 
-%D   {dosetfieldstatus}
-%D
-%D For practical reasons we set some field characteristics 
-%D using: 
-%D
-%D \starttypen
-%D \dosetfieldstatus {mode} {parent} {kids} {root}
-%D \stoptypen
-
-\installspecial [\dosetfieldstatus] [or] [4]
-
-%D with:
-
-\def\fieldlonermode {0} % no \chardef here
-\def\fieldparentmode{1} % no \chardef here
-\def\fieldchildmode {2} % no \chardef here
-\def\fieldcopymode  {3} % no \chardef here
-
-%D \macros 
-%D   {doregistercalculationset}
-%D
-%D We can define a calculation order list with:
-%D
-%D \starttypen
-%D \doregistercalculationset {set identifier}
-%D \stoptypen
-
-\installspecial [\doregistercalculationset] [or] [1]
-
-%D \macros 
-%D   {doinsertcomment}
-%D
-%D Not so much out of need, but to be complete, we also 
-%D implement text annotations, so called  comment:
-%D 
-%D \starttypen
-%D \doinsertcomment
-%D   {title} {width} {height} {color} {open} {symbol} {data} 
-%D \stoptypen
-
-\installspecial[\doinsertcomment] [and] [7]
-
-%D \macros
-%D   {dosetposition, dosetpositionwhd, dosetpositionplus, 
-%D    dosetpositionpapersize}
-%D
-%D Not natural to \TEX, but available in \PDFTEX, and by 
-%D means of postprocessed \DVI, we can save and call upon 
-%D positions. 
-%D
-%D \starttypen
-%D \dosetposition          {identifier}
-%D \dosetpositionwhd       {identifier} {width} {height} {depth}
-%D \dosetpositionplus      {identifier} {width} {height} {depth} {list}
-%D \dosetpositionpapersize {width} {height} 
-%D \stoptypen
-%D
-%D This is one of the few specials where when using \PDFTEX\ 
-%D the driver directly deals with the utility file. 
-
-\installspecial [\dosetposition]          [or] [1] 
-\installspecial [\dosetpositionwhd]       [or] [4] 
-\installspecial [\dosetpositionplus]      [or] [5] 
-\installspecial [\dosetpositionpapersize] [or] [2] 
-
-%D So far for the installation. For quite some time the 
-%D \CONTEXT\ way of specifying the output format has been: 
-%D
 %D \starttypen
 %D \usespecials[ps,yy,win,pdf]
 %D \stoptypen
@@ -1428,7 +626,7 @@
 %D \setupoutput[name,...]
 %D \stoptypen
 %D
-%D In a few lines, we will see some examples. 
+%D In a \type {spec-def} you can find some examples. 
 
 \def\defineoutput%
   {\dodoubleargument\dodefineoutput}
@@ -1446,37 +644,4 @@
 \def\setupoutput[#1]%
   {\resetspecials\processcommacommand[#1]\dosetupoutput}
 
-%D Some suitable definitions are: 
-
-\defineoutput [dvipsone] [dvi,ps,yy]
-\defineoutput [dviwindo] [dvi,ps,yy,win]
-\defineoutput [dvips]    [dvi,ps,tr]
-\defineoutput [dviview]  [dvi,ps,tr,dv]
-\defineoutput [dvipdfm]  [dpm]
-\defineoutput [pdftex]   [tpd]   
-\defineoutput [pdf]      [tpd]   
-\defineoutput [acrobat]  [pdf,ps,tr] % use: [acrobat,dvipsone]   
-
-%D Please let me know if we need more. From now on we default
-%D to:
-
-\setupoutput [dvips]
-
-%D We don't enable \ACROBAT, because pure \POSTSCRIPT\ is not
-%D that strong on objects and \PDFTEX\ does a better job. 
-%D Some reasonable alternatives are:
-%D 
-%D \starttypen
-%D \setupoutput [dvipsone,acrobat]
-%D \setupoutput [dviwindo,acrobat]
-%D \stoptypen
-%D 
-%D Although, better is:
-%D 
-%D \starttypen
-%D \setupoutput [pdftex]
-%D \stoptypen
-
-\protect
-
-\endinput
+\protect \endinput

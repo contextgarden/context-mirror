@@ -46,58 +46,64 @@
 %D forces page destinations (instead of named ones). We set
 %D this switch here. 
 
-\def\setupinteraction%
+\def\setinteractionparameter#1#2% use with case, no checking done 
+  {\setvalue{\??ia#1}{#2}}      % pass #2, can be \blabla
+
+\def\resetinteractionparameter#1% use with case, no checking done 
+  {\letvalue{\??ia#1}\empty}
+
+\def\setupinteraction
   {\dosingleargument\dodosetupinteraction}
 
 \def\dodosetupinteraction[#1]% % \dosetupinteraction == special 
   {\getparameters[\??ia][#1]%
-   \doifelse{\@@iastatus}{\v!start}
+   \doifelse\@@iastatus\v!start
      {\iflocation\else
-        \showmessage{\m!interactions}{2}{\ifusepagedestinations\space(PAGE)\fi}%
+        \showmessage\m!interactions2{\ifusepagedestinations\space(PAGE)\fi}%
         \global\locationtrue
       \fi}
      {\iflocation
-        \showmessage{\m!interactions}{3}{\ifusepagedestinations\space(PAGE)\fi}%
+        \showmessage\m!interactions3{\ifusepagedestinations\space(PAGE)\fi}%
         \global\locationfalse
       \fi}%
    \iflocation
-     \enablemode [\systemmodeprefix\v!interactie]%
+     \setsystemmode  \v!interactie 
    \else
-     \disablemode[\systemmodeprefix\v!interactie]%
+     \resetsystemmode\v!interactie 
    \fi
-   \dosetuppageview{\@@iafocus}%     
-   \doifsomething{\@@iabereken}
+   \dosetuppageview\@@iafocus
+   \doifsomething\@@iabereken
      {\doregistercalculationset\@@iabereken}%
-   \doifelse{\@@iastrut}{\v!ja}
-     {\locationstruttrue}
-     {\locationstrutfalse}%
-   \doifelse{\@@iaklik}{\v!ja}
-     {\highlighthyperlinkstrue}
-     {\highlighthyperlinksfalse}%
-   \doifelse{\@@iasplitsen}{\v!ja}
-     {\locationsplittrue}
-     {\locationsplitfalse}%
-   \doifelse{\@@iascherm}{\v!nieuw}
-     {\gotonewwindowtrue}
-     {\gotonewwindowfalse}%
-   \doifelse{\@@iapagina}{\v!ja}
+   \doifelse\@@iastrut\v!ja
+     \locationstruttrue
+     \locationstrutfalse
+   \doifelse\@@iaklik\v!ja
+     \highlighthyperlinkstrue
+     \highlighthyperlinksfalse
+   \doifelse\@@iasplitsen\v!ja
+     \locationsplittrue
+     \locationsplitfalse
+   \doifelse\@@iascherm\v!nieuw
+     \gotonewwindowtrue
+     \gotonewwindowfalse
+   \doifelse\@@iapagina\v!ja
      {\global\usepagedestinationstrue}
      {\global\usepagedestinationsfalse}}
 
 %D We have to make sure of some settings:
 
-\def\dolocationstartup%
+\def\dolocationstartup
   {\iflocation
      \dosetupinteraction
      \handlereferenceactions\@@iaopenactie \dosetupopenaction
      \handlereferenceactions\@@iasluitactie\dosetupcloseaction
      \setupinteractionscreens
-     \global\let\dolocationstartup=\relax
+     \global\let\dolocationstartup\relax
    \fi}
 
 \appendtoks \dolocationstartup \to \everyshipout
 
-\def\dolocationpagecheck%
+\def\dolocationpagecheck
   {\iflocation
      \handlereferenceactions\@@iaopenpaginaactie \doPDFsetupopenpageaction
      \handlereferenceactions\@@iasluitpaginaactie\doPDFsetupclosepageaction
@@ -131,8 +137,8 @@
 \newif\iflocationsplit
 
 \def\resetgoto%
-  {\global\let\@@ia@@hoogte=\!!zeropoint
-   \global\let\@@ia@@diepte=\!!zeropoint}
+  {\global\let\@@ia@@hoogte\!!zeropoint
+   \global\let\@@ia@@diepte\!!zeropoint}
  
 \resetgoto
 
@@ -142,8 +148,8 @@
      \xdef\@@ia@@hoogte{\the\ht\strutbox}%
      \xdef\@@ia@@diepte{\the\dp\strutbox}%
    \else
-     \global\let\@@ia@@hoogte=\@@iahoogte
-     \global\let\@@ia@@diepte=\@@iadiepte
+     \global\let\@@ia@@hoogte\@@iahoogte
+     \global\let\@@ia@@diepte\@@iadiepte
    \fi}
 
 %D In the macros that deal with making areas into hyperlinks, 

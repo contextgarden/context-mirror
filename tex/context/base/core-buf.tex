@@ -129,34 +129,6 @@
 
 \unprotect 
 
-% PAS OP! 
-
-\def\checknummer#1%
-  {\bgroup
-%\message{\the\blocklevel}\wait
-   \ifdoingblocks
-     \doifelsevalue{\s!number#1\c!blokwijze}{\v!nee}
-       {\dochecknummer{#1}}
-       {\setblockcounters    % dit kan sneller omdat de waarden
-        \dochecknummer{#1}}% % en het type bekend zijn
-   \else
-     \dochecknummer{#1}%
-   \fi
-   \egroup}
-
-\def\maakvoorafgaandenummer[#1]%
-  {\bgroup
-%\message{\the\blocklevel}\wait
-   \ifdoingblocks
-     \doifelsevalue{\s!number#1\c!blokwijze}{\v!nee}
-       {\domaakvoorafgaandenummer[#1]}%
-       {\setblockcounters               % dit kan sneller omdat de waarden
-        \domaakvoorafgaandenummer[#1]}% % en het type bekend zijn
-   \else
-     \domaakvoorafgaandenummer[#1]%
-   \fi
-   \egroup}
-
 \def\resetbuffer%
   {\dosingleempty\doresetbuffer}
 
@@ -247,9 +219,9 @@
       \getvalue{#4}}%
    \doifelsenothing{#2}
      {\message{<\TEXbufferfile{\jobname}>}%
-      \immediate\openout\tmpblocks=\TEXbufferfile{\jobname}}
+      \immediate\openout\tmpblocks\TEXbufferfile{\jobname}}
      {\message{<\TEXbufferfile{#2}>}%
-      \immediate\openout\tmpblocks=\TEXbufferfile{#2}}%
+      \immediate\openout\tmpblocks\TEXbufferfile{#2}}%
    \ifsegmentatebuffer 
      \immediate\write\tmpblocks{\string\startbufferparagraph}%
    \fi
@@ -280,20 +252,23 @@
      {\dodobuffer\jobname}
      {\processcommalist[#2]\dodobuffer}}
 
-\def\haalbuffer%
-  {\dodoubleempty\dohaalbuffer}
+\def\processTEXbuffer%
+  {\dodoubleempty\doprocessTEXbuffer}
 
-\def\dohaalbuffer[#1][#2]%
+\def\doprocessTEXbuffer[#1][#2]%
   {\ifsecondargument
-     \dodohaalbuffer[#1][#2]%
+     \dodoprocessTEXbuffer[#1][#2]%
    \else
-     \dodohaalbuffer[][#1]%
+     \dodoprocessTEXbuffer[][#1]%
    \fi}
 
-\def\dodohaalbuffer[#1][#2]%
+\def\dodoprocessTEXbuffer[#1][#2]%
   {\getvalue{\??bu#1\c!voor}%
    \dobuffer{16}[#2]\readjobfile
    \getvalue{\??bu#1\c!na}}
+
+\let\getbuffer \processTEXbuffer % handy  
+\let\haalbuffer\processTEXbuffer % will move to mult-com.tex
 
 \def\typebuffer%
   {\dodoubleempty\dotypebuffer}
@@ -323,7 +298,7 @@
      \setevalue{\e!start#1}%
        {\noexpand\dostartbuffer[#1][def-\nofdefinedbuffers][\e!start#1][\e!stop#1]}%
      \setevalue{\e!haal#1}%
-       {\noexpand\dodohaalbuffer[#1][def-\nofdefinedbuffers]}%
+       {\noexpand\dodoprocessTEXbuffer[#1][def-\nofdefinedbuffers]}%
      \setevalue{\e!type#1}%
        {\noexpand\dodotypebuffer[#1][def-\nofdefinedbuffers]}%
    \fi}
@@ -576,14 +551,32 @@
 \def\writeoutblocks%
   {\immediate\write\outblocks}
 
-\def\processnextblocklineAB#1#2#3%
+% readable
+% 
+% \def\processnextblocklineAB#1#2#3%
+%   {\convertargument#1 \to\next
+%    \doifinstringelse{\endofblockA}{\next}
+%      {\def\next{#2}}
+%      {\doifinstringelse{\endofblockB}{\next}
+%        {\def\next{#2}}
+%        {\def\next{#3}}}%
+%    \next}
+%
+% faster 
+% 
+% \def\processnextblocklineAB#1#2#3%
+%   {\convertargument#1 \to\next % space is essential 
+%    \doifinstringelse\endofblockA\next
+%      {#2}{\doifinstringelse\endofblockB\next{#2}{#3}}}
+%
+% even more 
+
+\def\processnextblocklineAB#1% #2#3%
   {\convertargument#1 \to\next
-   \doifinstringelse{\endofblockA}{\next}
-     {\def\next{#2}}
-     {\doifinstringelse{\endofblockB}{\next}
-       {\def\next{#2}}
-       {\def\next{#3}}}%
-   \next}
+   \doifinstringelse\endofblockA\next
+      \firstoftwoarguments
+     {\doifinstringelse\endofblockB\next
+        \firstoftwoarguments\secondoftwoarguments}}
 
 \bgroup
 \obeylines
@@ -599,18 +592,32 @@
      {\skipblocklineAB}}
 \egroup
 
-\def\processnextblockline#1#2#3%
+% \def\processnextblockline#1#2#3%
+%   {\convertargument#1 \to\next
+%    \ifx\next\emptybufferline
+%      \ifsegmentatebuffer \emptybufferlinetrue \fi
+%      \def\next{#3}%
+%    \else
+%      \emptybufferlinefalse
+%      \doifinstringelse{\endofblock}{\next}
+%        {\def\next{#2}}
+%        {\def\next{#3}}%
+%    \fi
+%    \next}
+% 
+% faster 
+
+\def\processnextblockline#1% #2#3%
   {\convertargument#1 \to\next
    \ifx\next\emptybufferline
      \ifsegmentatebuffer \emptybufferlinetrue \fi
-     \def\next{#3}%
+     \expandafter\secondoftwoarguments% #3%
    \else
      \emptybufferlinefalse
-     \doifinstringelse{\endofblock}{\next}
-       {\def\next{#2}}
-       {\def\next{#3}}%
-   \fi
-   \next}
+     \doifinstringelse\endofblock\next
+       {\expandafter\firstoftwoarguments }% #2}
+       {\expandafter\secondoftwoarguments}% #3}%
+   \fi}
 
 \bgroup
 \obeylines

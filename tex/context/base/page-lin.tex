@@ -50,6 +50,7 @@
          \global\let\afterfirstobeyedline\relax}}%
    \def\obeyedline%
      {\par
+\let\checkindentation=\relax % else problems with odd/even 
       \afterfirstobeyedline
       \ifdim\lastskip>\zeropoint
         \gdef\@@rglinesteptoggle{0}%
@@ -164,7 +165,7 @@
   {\regelreferentie1[#1]\ignorespaces}
 
 \def\stopregel[#1]%
-  {\unskip\regelreferentie2[#1]}
+  {\removelastspace\regelreferentie2[#1]}
 
 % \def\inregellabel#1%
 %   {\doifinstringelse{--}{#1}
@@ -313,7 +314,7 @@
   {\ifhmode\unskip\else\strut\fi\ifcase\raggedstatus\hfil\fi\break}
 
 \def\opeenregel%
-  {\def\crlf{\ifhmode\unskip\fi\space}\let\\\crlf}
+  {\def\crlf{\removelastspace\space}\let\\\crlf}
 
 \newcount\internalparagraphnumber
 

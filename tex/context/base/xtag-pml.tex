@@ -1,0 +1,83 @@
+%D \module
+%D   [       file=xtag-pml,
+%D        version=2001.09.04,
+%D          title=\CONTEXT\ XML Support,
+%D       subtitle=Physics ML,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{Context XML Macros (phys ml)}
+
+%D This filter runs on top of the mathml and units modules. 
+
+\useXMLfilter[mml,mmp,mmc,unt]
+
+\defineXMLargument [phys]  \doXMLphys
+\defineXMLargument [iphys] \doXMLiphys
+\defineXMLargument [dphys] \doXMLdphys
+
+\unprotect 
+
+\unexpanded\def\doXMLphys {\ifhmode\@EA\doXMLiphys\else\@EA\doXMLdphys\fi}
+\unexpanded\def\doXMLiphys{\XMLremapdata[mml]{$\ignorespaces}{\unskip$}}
+\unexpanded\def\doXMLdphys{\XMLremapdata[mml]{\dostartformula{}}{\dostopformula}}
+
+\protect 
+
+\doifnotmode{demo}{\endinput}
+
+\usemodule[units]
+
+\starttext 
+
+\startXMLdata
+<phys> 
+  <apply> <times/> 
+    <cn> 10 </cn>
+    <ci><unit><Milli/><Sec/><Per/><Square/><Kilo/><Meter/></unit> </ci>
+  </apply> 
+</phys>
+\stopXMLdata
+
+\startXMLdata
+<phys> 
+  <apply> <divide/> 
+    <cn> 10 </cn>
+    <ci> <unit><Unit/><Milli/><Sec/><Per/><Square/><Kilo/><Meter/></unit> </ci>
+  </apply> 
+</phys>
+\stopXMLdata
+
+\startXMLdata
+<phys> 
+  <apply> <times/> 
+    <cn> 10 </cn>
+    <ci> <unit> <Milli/> <Sec/> <Per/> <Square/> <Kilo/> <Meter/> </unit> </ci>
+  </apply> 
+</phys>
+\stopXMLdata
+
+\startXMLdata
+<phys> 
+  <apply> <times/> 
+    <cn> 10 </cn>
+    <ci> <unit><Milli/><Sec/><Per/><Square/><Kilo/><Meter/></unit> </ci>
+  </apply> 
+</phys>
+\stopXMLdata
+
+\startXMLdata
+<phys> 
+  <apply> <times/> 
+    <cn> 10 </cn>
+    <ci> <unit> <Milli/> <Sec/> <Per/> <Square/> <Kilo/> <Meter/> </unit> </ci>
+  </apply> 
+</phys>
+\stopXMLdata
+
+\stoptext

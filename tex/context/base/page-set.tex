@@ -192,7 +192,7 @@
         \else
           \OTRSETdoifcellelse{#1}\columnfirstcell
             {\global\advance\columnfirstcell 1 }
-            {\exitloop}
+            {\exitloop}%
         \fi}%
      \global\columnlastcell=\columnfirstcell
      \doloop
@@ -201,7 +201,7 @@
         \else
           \OTRSETdoifcellelse{#1}\columnlastcell
             {\global\advance\columnlastcell -1 \exitloop}
-            {\global\advance\columnlastcell 1 }
+            {\global\advance\columnlastcell 1 }%
         \fi}%
      \ifnum\columnfirstcell>\columnmaxcells
        \global\columnfreecells=0
@@ -245,8 +245,64 @@
      \OTRSETdomakegridbox{\nofcolumns}{1}{-1}%
    \fi}
  
+%\def\OTRSETdomakegridbox#1#2#3%
+%  {\hbox\bgroup
+%   % test first ! 
+%   \hbox to \zetbreedte
+%     {\dostepwiserecurse{#1}{#2}{#3}
+%        {\mofcolumns=\recurselevel
+%         \localcolumnwidth=\OTRSETlocalwidth\mofcolumns
+%         \setbox\scratchbox=\hbox\localframed
+%           [\??mc\OTRSETidentifier\number\mofcolumns]%
+%           [\c!breedte=\localcolumnwidth,\c!hoogte=\teksthoogte]%
+%           {}%
+%         \ifcase\columndirection
+%           \hskip\OTRSETgetparameter\c!afstand\recurselevel\box\scratchbox
+%         \else
+%           \box\scratchbox\hskip\OTRSETgetparameter\c!afstand\recurselevel
+%         \fi}}%
+%   \hskip-\zetbreedte
+%   % main text 
+%   \hbox to \zetbreedte
+%     {\dostepwiserecurse{#1}{#2}{#3}
+%        {\mofcolumns=\recurselevel
+%         \localcolumnwidth=\OTRSETlocalwidth\mofcolumns
+%         \offinterlineskip
+%         \setbox\scratchbox=\vbox to \teksthoogte
+%           {\topskipcorrection
+%            \dorecurse{\columnmaxcells}
+%              {\setbox\scratchbox=\hbox{\OTRSETgetgridcell\mofcolumns\recurselevel}%
+%               \ht\scratchbox=\ht\strutbox
+%               \dp\scratchbox=\dp\strutbox
+%               \ifcase\columndirection
+%                 \box\scratchbox
+%               \else
+%                 \hbox to \localcolumnwidth
+%                   {\hskip\localcolumnwidth\llap{\box\scratchbox}}
+%               \fi
+%               \par}}%
+%         \wd\scratchbox=\localcolumnwidth % \tekstbreedte
+%         \ifcase\columndirection
+%           \hskip\OTRSETgetparameter\c!afstand\recurselevel\box\scratchbox
+%         \else
+%           \box\scratchbox\hskip\OTRSETgetparameter\c!afstand\recurselevel
+%         \fi}}%
+%   \egroup}
+
 \def\OTRSETdomakegridbox#1#2#3%
   {\hbox\bgroup
+% 
+\ifbalancecolumns     
+  \ifnum\realpageno=\balancingpageno\relax
+    \!!heighta \localcolumnmaxcells\lineheight 
+\xdef\localcolumnmaxcells{0}%
+  \else
+    \!!heighta \teksthoogte
+  \fi
+\else
+  \!!heighta \teksthoogte
+\fi
+%
    % test first ! 
    \hbox to \zetbreedte
      {\dostepwiserecurse{#1}{#2}{#3}
@@ -254,7 +310,7 @@
          \localcolumnwidth=\OTRSETlocalwidth\mofcolumns
          \setbox\scratchbox=\hbox\localframed
            [\??mc\OTRSETidentifier\number\mofcolumns]%
-           [\c!breedte=\localcolumnwidth,\c!hoogte=\teksthoogte]%
+           [\c!breedte=\localcolumnwidth,\c!hoogte=\!!heighta]%  \teksthoogte]%
            {}%
          \ifcase\columndirection
            \hskip\OTRSETgetparameter\c!afstand\recurselevel\box\scratchbox
@@ -268,7 +324,7 @@
         {\mofcolumns=\recurselevel
          \localcolumnwidth=\OTRSETlocalwidth\mofcolumns
          \offinterlineskip
-         \setbox\scratchbox=\vbox to \teksthoogte
+         \setbox\scratchbox=\vbox to \!!heighta % \teksthoogte
            {\topskipcorrection
             \dorecurse{\columnmaxcells}
               {\setbox\scratchbox=\hbox{\OTRSETgetgridcell\mofcolumns\recurselevel}%
@@ -278,7 +334,7 @@
                  \box\scratchbox
                \else
                  \hbox to \localcolumnwidth
-                   {\hskip\localcolumnwidth\llap{\box\scratchbox}}
+                   {\hskip\localcolumnwidth\llap{\box\scratchbox}}%
                \fi
                \par}}%
          \wd\scratchbox=\localcolumnwidth % \tekstbreedte
@@ -288,6 +344,11 @@
            \box\scratchbox\hskip\OTRSETgetparameter\c!afstand\recurselevel
          \fi}}%
    \egroup}
+
+\def\OTRSETreducegridbox%
+  {\ifnum\localcolumnmaxcells>0
+     \let\columnmaxcells\localcolumnmaxcells
+   \fi}
 
 \def\OTRSETflushfinalfootnotes
   {\ifcase\lastcolumnlastcell \else
@@ -304,24 +365,52 @@
      \global\lastcolumnlastcell=0 
    \fi}
 
+%\def\OTRSETdoflush
+%  {\ifcollectingcontent
+%     \global\mofcolumns=1
+%   \else
+%     \OTRSETdofinalflush
+%     \OTRSETinitializecolumns
+%     \OTRSETmanualbalance % or after \gotonextpage
+%    %\OTRSETdoflushfloats
+%     \OTRSETgotonextpage
+%   \fi}
+
 \def\OTRSETdoflush
   {\ifcollectingcontent
      \global\mofcolumns=1
    \else
-     \OTRSETdofinalflush
+     \OTRSETdofinalflush 
+     \OTRSETdofinaloutput
      \OTRSETinitializecolumns
      \OTRSETmanualbalance % or after \gotonextpage
     %\OTRSETdoflushfloats
      \OTRSETgotonextpage
+\initializecolumntextareas
    \fi}
+
+%\def\OTRSETdofinalflush % see \OTRSETdoflush 
+%  {\OTRSETflushfinalfootnotes
+%   \placecolumntextareas
+%   \OTRSETcentergridcells
+%   \setbox\scratchbox=\OTRSETmakegridbox
+%   \global\mofcolumns=\nofcolumns % otherwise problems in finaloutput
+%   \finaloutput\box\scratchbox}
+
+\newbox\OTRfinalpagebox
 
 \def\OTRSETdofinalflush % see \OTRSETdoflush 
   {\OTRSETflushfinalfootnotes
    \placecolumntextareas
    \OTRSETcentergridcells
-   \setbox\scratchbox=\OTRSETmakegridbox
-   \global\mofcolumns=\nofcolumns % otherwise problems in finaloutput
-   \finaloutput\box\scratchbox}
+   \OTRSETreducegridbox
+   \global\setbox\OTRfinalpagebox=\OTRSETmakegridbox
+   \global\mofcolumns=\nofcolumns} % otherwise problems in finaloutput
+
+\def\OTRSETdofinaloutput
+  {\ifdim\ht\OTRfinalpagebox=\teksthoogte
+     \finaloutput\box\OTRfinalpagebox
+   \fi}
 
 \let\OTRSETbalancinglist\empty
 
@@ -361,7 +450,7 @@
        \allowbreak % hm
      \fi
      \ifdim\ht\footins>\zeropoint % updates vsize 
-       \insert\footins{\unvbox\footins}
+       \insert\footins{\unvbox\footins}%
      \fi
    \fi}
 
@@ -385,8 +474,8 @@
 \def\OTRSETnextcolumn%
   {\ifhmode
      \bgroup
-     \unskip\unskip\unskip
-     \parfillskip\!!zeropoint
+     \removeunwantedspaces
+     \parfillskip\zeropoint
      \OTRSETcolumnseparator
      \par
      \egroup
@@ -444,11 +533,11 @@
       \vskip\lineheight
       \prevdepth\dp\strutbox
       \unvbox\normalpagebox
-      \vfill}
+      \vfill}%
    \setbox2=\hbox
-     {\OTRSETplacefootnotes}
+     {\OTRSETplacefootnotes}%
    \setbox\scratchbox=\hbox
-     {\wd0=\!!zeropoint\box0\box2}
+     {\wd0=\zeropoint\box0\box2}%
    \dp\scratchbox=\dp\strutbox
    \OTRSEThandleflushedtext1}
 
@@ -579,9 +668,6 @@
      \OTRSETsavebox{#1}%
    \fi}
 
-\def\OTRSETstoreincolumnslotHERE%
-  {\OTRSETflushtextsofar\OTRSETstoreincolumnslotTOPS}
-
 \def\OTRSETstoreincolumnslotTOPS#1% 
   {\OTRSETcheckcolumnslot{#1}%
    \ifenoughcolumncells
@@ -589,7 +675,7 @@
    \fi
    \ifenoughcolumncells
      \OTRSETsetgridcells\mofcolumns\columnfirstcell\columnhcells\columnvcells
-       {\hbox{\copy#1}}
+       {\hbox{\copy#1}}%
      \OTRSETsetvsize
    \else
      \OTRSETsavebox{#1}%
@@ -620,7 +706,7 @@
 
 \def\OTRSETcheckcolumnspace#1#2#3% col row box
   {\columnhcells=1
-   \totalcolumnspace=\!!zeropoint
+   \totalcolumnspace=\zeropoint
    \scratchcounter=#1%
    \enoughcolumncellstrue
    \doloop
@@ -655,9 +741,9 @@
 %\scratchcounter=#2\advance\scratchcounter-1\relax
 %\ifnum\scratchcounter>0 
 %  \dostepwiserecurse{#1}{\!!countd}{1} 
-%    {\ifdim\wd\OTRSETgridcell\recurselevel\scratchcounter>\!!zeropoint
+%    {\ifdim\wd\OTRSETgridcell\recurselevel\scratchcounter>\zeropoint
 %       \def\columnspacetopoffset{1}%
-%     \else\ifdim\dp\OTRSETgridcell\recurselevel\scratchcounter>\!!zeropoint
+%     \else\ifdim\dp\OTRSETgridcell\recurselevel\scratchcounter>\zeropoint
 %       \def\columnspacetopoffset{1}%
 %     \fi\fi}% 
 %  \advance\!!counte \columnspacetopoffset \relax
@@ -668,9 +754,9 @@
 %\advance\scratchcounter \columnvcells \relax
 %\ifnum\scratchcounter>\columnmaxcells\else
 %  \dostepwiserecurse{#1}{\!!countd}{1} 
-%    {\ifdim\wd\OTRSETgridcell\recurselevel\scratchcounter>\!!zeropoint
+%    {\ifdim\wd\OTRSETgridcell\recurselevel\scratchcounter>\zeropoint
 %       \def\columnspacebotoffset{1}%
-%     \else\ifdim\dp\OTRSETgridcell\recurselevel\scratchcounter>\!!zeropoint
+%     \else\ifdim\dp\OTRSETgridcell\recurselevel\scratchcounter>\zeropoint
 %       \def\columnspacebotoffset{1}%
 %     \fi\fi}% 
 %  \advance\!!counte \columnspacebotoffset \relax
@@ -687,23 +773,16 @@
         \fi}%
    \fi}
 
-\def\OTRSETsetpreferedcolumnslot#1%
-  {\doifsomething{#1}{\edef\preferedcolumn{#1}}}
+\def\OTRSETsetpreferedcolumnslot#1#2%
+  {\doifsomething{#1}{\edef\preferedcolumn{#1}}%
+   \doifsomething{#2}{\edef\preferedrow   {#2}}}
 
-\OTRSETsetpreferedcolumnslot{\nofcolumns} % default ? 
+\OTRSETsetpreferedcolumnslot{\nofcolumns}{1} % default ? 
 
 \let\pofcolumns\mofcolumns
 \let\qofcolumns\mofcolumns
 
 \newif\ifquitincurrentcolumn
-
-\def\OTRSETstoreincolumnslotFXTB% fixed column 
-  {\OTRSETstoreincolumnslotindeed
-     \pofcolumns\pofcolumns+\currenthcell1\columnmaxcells+\currentvcell}
-
-\def\OTRSETstoreincolumnslotFXBT% fixed column 
-  {\OTRSETstoreincolumnslotindeed
-     \pofcolumns\pofcolumns+\currenthcell\columnmaxcells1-\currentvcell}
 
 \def\OTRSETstoreincolumnslotLRTB%
   {\OTRSETstoreincolumnslotindeed
@@ -736,6 +815,42 @@
 \def\OTRSETstoreincolumnslotBTRL%
   {\OTRSETstoreincolumnslotindeed
      \columnmaxcells1-\currentvcell\nofcolumns\qofcolumns-\currenthcell}
+
+\def\OTRSETstoreincolumnslotFXTB% fixed column
+  {\OTRSETstoreincolumnslotindeed
+     \pofcolumns\pofcolumns
+     +\currenthcell\preferedrow
+     \columnmaxcells+\currentvcell}
+
+\def\OTRSETstoreincolumnslotFXBT% fixed column
+  {\OTRSETstoreincolumnslotindeed
+     \pofcolumns\pofcolumns
+     +\currenthcell\columnmaxcells
+     \preferedrow-\currentvcell}
+
+%\def\OTRSETstoreincolumnslotHERE% fixed column
+%  {\OTRSETflushtextsofar
+%   \ifdim\pagetotal>\zeropoint
+%     \@EA\OTRSETstoreincolumnslotEREH
+%   \else
+%     \@EA\OTRSETstoreincolumnslotTOPS
+%   \fi}
+%
+%\def\OTRSETstoreincolumnslotEREH% fixed column
+%  {\getnoflines\pagetotal
+%   \OTRSETstoreincolumnslotindeed
+%     \mofcolumns\mofcolumns
+%     +\currenthcell\noflines
+%     \columnmaxcells+\currentvcell}
+
+\def\OTRSETstoreincolumnslotHERE#1% fixed column
+  {\OTRSETflushtextsofar 
+   \getnoflines\pagetotal \advance\noflines\columnfirstcell
+   \OTRSETstoreincolumnslotindeed
+     \mofcolumns\mofcolumns
+     +\currenthcell\noflines
+     \columnmaxcells+\currentvcell{#1}%
+   \OTRSETsetvsize}
 
 \def\OTRSETstoreincolumnslotindeed#1#2#3#4#5#6#7#8#9%
   {\OTRSETflushtextsofar
@@ -820,12 +935,12 @@
 \def\columnslotspacing{2}
 
 \def\OTRSETstoreincolumnslot#1#2% {method} {box} % alleen last
-  {\dp#2=\!!zeropoint
+  {\dp#2=\zeropoint
    \ifcase\columnslotspacing\else
      \setbox#2=\vbox spread \columnslotspacing\lineheight
-       {\vss\box#2\vss}
+       {\vss\box#2\vss}%
    \fi
-%\dp#2=\!!zeropoint
+%\dp#2=\zeropoint
    \doifdefinedelse{\strippedcsname\OTRSETstoreincolumnslot#1}
      {\getvalue{\strippedcsname\OTRSETstoreincolumnslot#1}{#2}}
      {\copy#2}}
@@ -834,10 +949,14 @@
 %  {\setbox\floatbox=\box#1\dosavefloat}
 
 \def\OTRSETsavebox#1% clean up the skips 
-  {\setbox\scratchbox=\vbox
-     {\unvbox#1\unskip\unskip\unskip
-      \global\setbox\floatbox\lastbox
-      }%\unskip\unskip\unskip\box\floatbox}%
+  {\ifhbox#1% spans and so 
+     \global\setbox\floatbox=\vbox{\box#1}%
+   \else
+     \setbox\scratchbox=\vbox
+       {\unvbox#1\unskip\unskip\unskip
+        \global\setbox\floatbox\lastbox
+        }%\unskip\unskip\unskip\box\floatbox}%
+   \fi
    \dosavefloat}
 
 \def\OTRSETflushfloatbox% nog verder doorvoeren en meer info in marge
@@ -851,7 +970,7 @@
         \dogetfloat
         \ifdim\wd\floatbox>\zeropoint
           \!!doneatrue
-          \dp\floatbox=\!!zeropoint
+          \dp\floatbox=\zeropoint
           \OTRSETstoreincolumnslot{TBLR}\floatbox     
           \if!!donea
            %\message{[flu]}%
@@ -919,8 +1038,8 @@
 \def\OTRSETinitializecolumns% once per page 
   {\columnspreadtrue % todo
    \ifcolumnspread
-     \global\rofcolumns=\getvalue{\??mc\OTRSETidentifier\c!nrechts}
-     \global\lofcolumns=\getvalue{\??mc\OTRSETidentifier\c!nlinks}
+     \global\rofcolumns=\getvalue{\??mc\OTRSETidentifier\c!nrechts}%
+     \global\lofcolumns=\getvalue{\??mc\OTRSETidentifier\c!nlinks}%
      \global\tofcolumns=\rofcolumns \relax
      \ifodd\realpageno\relax
        \global\nofcolumns=\rofcolumns
@@ -929,7 +1048,7 @@
        \global\nofcolumns=\lofcolumns
      \fi
    \else
-     \global\nofcolumns=\getvalue{\??mc\OTRSETidentifier\c!n}
+     \global\nofcolumns=\getvalue{\??mc\OTRSETidentifier\c!n}%
      \global\rofcolumns=\nofcolumns
      \global\lofcolumns=\nofcolumns
      \global\tofcolumns=\nofcolumns
@@ -1024,22 +1143,45 @@
      \binnenkolommentrue % will be different flag 
     %\let\redofloatorder\gobbleoneargument % will also be a flag 
      \let\kolom\OTRSETgotocolumn%
-     \activateotr{SET}{ONE} % andere naam, activate or so 
-     \xdef\OTRSETlist{#1}
+     \activateotr{SET}{ONE}% andere naam, activate or so 
+     \xdef\OTRSETlist{#1}%
      \OTRSETgotonextpage
      \OTRSETassignwidths
    \else
      \bgroup 
    \fi}
 
+%\def\stopcolumnset%
+%  {\ifnum\columnsetlevel=1
+%     \par
+%     \OTRSETsetmanualbalance 
+%     \dostopcolumnset
+%     \egroup
+%     \global\footnotelimittrue
+%     \dimen\footins\savedfootnotedimen % ugly
+%     \ifsomefloatwaiting \setvsize \pagina \setvsize \fi
+%   \else
+%     \egroup
+%   \fi
+%   \decrement\columnsetlevel\relax}
+
 \def\stopcolumnset%
-  {\ifnum\columnsetlevel=1
+  {\relax
+   \ifnum\columnsetlevel=1
      \par
      \OTRSETsetmanualbalance 
      \dostopcolumnset
      \egroup
      \global\footnotelimittrue
      \dimen\footins\savedfootnotedimen % ugly
+\setvsize
+\sethsize
+\ifvoid\OTRfinalpagebox\else
+  \dp\OTRfinalpagebox\zeropoint
+  \box\OTRfinalpagebox
+  \nobreak\vbox{\strut}\vskip-\lineheight
+\prevdepth\dp\strutbox  
+\fi
      \ifsomefloatwaiting \setvsize \pagina \setvsize \fi
    \else
      \egroup
@@ -1057,13 +1199,33 @@
 \def\OTRSETdobalance
   {\OTRSETnobalance}
 
+%\def\OTRSETmanualbalance 
+%  {\ifbalancecolumns     
+%     \ifnum\realpageno=\balancingpageno\relax
+%       \ifnum\mofcolumns=1
+%         \dorecurse\nofcolumns
+%           {\!!counta=\recurselevel
+%            \!!countb=\balancingcolumnmaxcells\!!counta 
+%            \advance\!!countb 1
+%            \dostepwiserecurse\!!countb\columnmaxcells1
+%              {\OTRSETsetgridcell\!!counta\recurselevel\copy\placeholderboxe}}%
+%       \fi
+%     \fi
+%   \fi}
+
+\def\localcolumnmaxcells{0}
+
 \def\OTRSETmanualbalance 
   {\ifbalancecolumns     
+     \let\savedcolumnmaxcells\columnmaxcells
      \ifnum\realpageno=\balancingpageno\relax
        \ifnum\mofcolumns=1
          \dorecurse\nofcolumns
            {\!!counta=\recurselevel
-            \!!countb=\balancingcolumnmaxcells\!!counta 
+            \!!countb=\balancingcolumnmaxcells\!!counta\relax
+            \ifnum\!!countb>\localcolumnmaxcells
+              \xdef\localcolumnmaxcells{\the\!!countb}%  
+            \fi
             \advance\!!countb 1
             \dostepwiserecurse\!!countb\columnmaxcells1
               {\OTRSETsetgridcell\!!counta\recurselevel\copy\placeholderboxe}}%
@@ -1092,6 +1254,16 @@
    \fi
    \global\balancingcolumnsfalse}
 
+%\def\OTRSETnobalance
+%  {\iflastcolumnfootnotes % testen ! optie 
+%     % inhibit flush of floats !
+%     \dostepwiserecurse{\mofcolumns}{\nofcolumns}{1}
+%       {\vskip-\lineheight\vbox{\strut}\vfill\eject}%
+%   \else
+%     \ifdim\pagetotal>\zeropoint 
+%       \vfill \eject \OTRSETdofinalflush 
+%     \fi  
+%   \fi}
 
 \def\OTRSETnobalance
   {\iflastcolumnfootnotes % testen ! optie 
@@ -1100,7 +1272,14 @@
        {\vskip-\lineheight\vbox{\strut}\vfill\eject}%
    \else
      \ifdim\pagetotal>\zeropoint 
-       \vfill \eject \OTRSETdofinalflush 
+\ifnum\mofcolumns=\nofcolumns
+  \OTRSETflushfinalfootnotes
+  \vfill \eject 
+\else
+       \vfill \eject 
+       \OTRSETdofinalflush 
+       \OTRSETdofinaloutput
+\fi
      \fi  
    \fi}
 
@@ -1125,7 +1304,6 @@
 \initializecolumntextareas % name ! 
    \OTRSETsetvsize}
 
-
 \OTRSEToutput
   {\OTRSETnaturalflush
 %   \OTRSETgotonextpage
@@ -1134,11 +1312,11 @@
 
 \def\OTRSETinitializefeatures%
   {% number of lines
-   \getnoflines\teksthoogte\xdef\columnmaxcells{\the\noflines}
+   \getnoflines\teksthoogte\xdef\columnmaxcells{\the\noflines}%
    % direction
    \doifelsevalue{\??mc\OTRSETidentifier\c!richting}{\v!rechts}
      {\chardef\columndirection=0}
-     {\chardef\columndirection=1}
+     {\chardef\columndirection=1}%
    % balancing 
    \doifelsevalue{\??mc\OTRSETidentifier\c!balanceren}{\v!ja}
      {\balancecolumnstrue}
@@ -1151,12 +1329,12 @@
    \fi}
 
 \def\OTRSEThandlepreposttext%
-  {\getnoflines{\ht\precolumnbox}
+  {\getnoflines{\ht\precolumnbox}%
    \doOTRSETsetgridcells
      {\copy\placeholderboxe}
      11\nofcolumns\noflines
-     {\box\precolumnbox}
-   \getnoflines{\ht\postcolumnbox}
+     {\box\precolumnbox}%
+   \getnoflines{\ht\postcolumnbox}%
    \advance\columnfreecells -\noflines
    \advance\columnfreecells 1
    \doOTRSETsetgridcells
@@ -1195,7 +1373,7 @@
 
 \def\OTRSETinhibitinserts%
   {\global\count\footins=0
-   \global\skip\footins=\!!zeropoint}
+   \global\skip\footins=\zeropoint}
 
 % interface to footnotes
 
@@ -1269,9 +1447,9 @@
         \fi
         \hss}%
      \ifcase#1\relax
-       \ht\scratchbox\!!zeropoint 
-       \dp\scratchbox\!!zeropoint 
-       \wd\scratchbox\!!zeropoint
+       \ht\scratchbox\zeropoint 
+       \dp\scratchbox\zeropoint 
+       \wd\scratchbox\zeropoint
      \else
        \wd\scratchbox\hsize
        \ht\scratchbox\ht\strutbox
@@ -1287,10 +1465,11 @@
    \global\setbox\placeholderboxe\columnplaceholder0\magenta
    \global\setbox\placeholderboxf\columnplaceholder1\darkgray}
 
+\def\doOTRSETshowstatus
+  {\llap{\tt\tfxx\blue(\number\columnfirstcell\#\number\columnfreecells)}}
+
 \def\OTRSETshowstatus
-  {\iftracecolumnset 
-     \llap{\tt\tfxx\blue(\number\columnfirstcell\#\number\columnfreecells)}%
-   \fi}
+  {\iftracecolumnset \doOTRSETshowstatus \fi}
 
 \appendtoks \OTRSETshowstatus \to \everypar 
 
@@ -1325,7 +1504,7 @@
 %   {\ifsecondargument
 %      \doifundefinedelse{#4box}
 %        {\@EA\newbox\csname#4box\endcsname}
-%        {\@EA\setbox\csname#4box\endcsname=\box\voidb@x}%
+%        {\setbox\csname#4box\endcsname=\box\voidb@x}%
 %      \setvalue{\??mc#1#2\v!tekst#3}{\OTRSETflusharea{#1}{#2}{#3}}%
 %      \setxvalue{#1#2#3source}{#4}%
 %      \setgvalue{#4setup}%
@@ -1376,34 +1555,39 @@
      \doifelse{#2}{\v!beide}
        {\definecolumntextarea[#1][\v!links ][#3]%
         \definecolumntextarea[#1][\v!rechts][#3]}
-       {\presetlocalframed
-          [\??mt#1#2]%
-        \processaction[#2]
-          [ \v!links=>\addtocommalist{#1}\columnleftareas,
-           \v!rechts=>\addtocommalist{#1}\columnrightareas]%
-        \getparameters[\??mt#1#2]
-          [\c!x=1,\c!y=1,\c!nx=1,\c!ny=1,
-           \c!offset=\v!overlay,\c!strut=\v!nee,\c!kader=\v!uit,
-           \c!status=\v!stop,#3]}%
+       {\doifelse{#2}{\v!volgende}
+          {\doifonevenpaginaelse      
+             {\definecolumntextarea[#1][\v!rechts][#3]}
+             {\definecolumntextarea[#1][\v!links][#3]}}
+          {\presetlocalframed
+             [\??mt#1#2]%
+           \processaction[#2] % \doglobal voorkomt stack build up 
+             [ \v!links=>\doglobal\addtocommalist{#1}\columnleftareas,
+              \v!rechts=>\doglobal\addtocommalist{#1}\columnrightareas]%
+           \getparameters[\??mt#1#2]
+             [\c!x=1,\c!y=1,\c!nx=1,\c!ny=1,
+              \c!offset=\v!overlay,\c!strut=\v!nee,\c!kader=\v!uit,
+              \c!status=\v!stop,#3]}}%
    \else
-     \definecolumntextarea[#1][\v!beide][#2]%
+     \definecolumntextarea[#1][\v!volgende][#2]%
    \fi}
 
 \def\setupcolumntextarea%
   {\dotripleempty\dosetupcolumntextarea}
 
-\def\dosetupcolumntextarea[#1][#2]%
-  {\getparameters[\??mt#1#2]}
-
-\def\doinitializecolumntextareas#1#2%
-  {\def\docommando##1%
-     {\doifvalue{\??mt##1#2\c!status}{\v!start}
-        {\doOTRSETsetgridcells
-           {\copy\placeholderboxd}
-           {\getvalue{\??mt##1#2\c!x }}{\getvalue{\??mt##1#2\c!y }}
-           {\getvalue{\??mt##1#2\c!nx}}{\getvalue{\??mt##1#2\c!ny}}
-           {\copy\placeholderboxd}}}%
-   \processcommacommand[#1]\docommando}
+\def\dosetupcolumntextarea[#1][#2][#3]%
+  {\ifthirdargument
+     \doifelse{#2}{\v!beide}
+       {\setupcolumntextarea[#1][\v!links ][#3]%
+        \setupcolumntextarea[#1][\v!rechts][#3]}
+       {\doifelse{#2}{\v!volgende}
+          {\doifonevenpaginaelse      
+             {\setupcolumntextarea[#1][\v!rechts][#3]}
+             {\setupcolumntextarea[#1][\v!links][#3]}}
+          {\getparameters[\??mt#1#2][#3]}}%
+   \else
+     \setupcolumntextarea[#1][\v!volgende][#2]%
+   \fi}
 
 \def\initializecolumntextareas%
   {\ifodd\realpageno
@@ -1412,67 +1596,20 @@
      \doinitializecolumntextareas\columnleftareas\v!links
    \fi}
 
-\def\doplacecolumntextareas#1#2%
-  {\bgroup
-   \forgetall
-   \def\docommando##1%
-     {\doifvalue{\??mt##1#2\c!status}{\v!start}
-        {\!!counta=\getvalue{\??mt##1#2\c!x}%
-         \!!countb=\getvalue{\??mt##1#2\c!nx}%
-         \!!widtha=\!!countb\hsize
-         \!!heighta=\getvalue{\??mt##1#2\c!ny}\lineheight
-         \advance\!!countb \!!counta \advance\!!countb -1 \relax
-         \ifnum\!!countb>\nofcolumns
-           \!!countc=\!!countb
-           \advance\!!countc -\nofcolumns
-           \!!countb=\nofcolumns
-         \else
-           \!!countc=0
-         \fi
-         \advance\!!counta 1
-         \dostepwiserecurse{\!!counta}{\!!countb}{1}
-           {\advance\!!widtha\OTRSETgetparameter\c!afstand\recurselevel}%
-         \!!widthc=\!!widtha
-         \advance\!!widthc -\!!countc\hsize
-\!!widthb=\!!widthc
-         \ifodd\realpageno \else
-           \ifcase\!!countc\else
-             \advance\!!widtha 2\rugwit
-             \advance\!!widthc \rugwit
-             \dorecurse{\!!countc}
-               {\advance\!!widtha\OTRSETgetparameter\c!afstand\recurselevel}%
-           \fi
-         \fi
-% option 
-\advance\!!heighta -\lineheight
-         \setbox\scratchbox=\vbox
-           {\localframed
-              [\??mt##1#2]
-              [\c!breedte=\!!widtha,\c!hoogte=\!!heighta]
-              {\getvalue{\??mt##1#2}}}%
-         \!!counta=\getvalue{\??mt##1#2\c!x}%
-         \!!countb=\getvalue{\??mt##1#2\c!y}%
-         \advance\!!countb \getvalue{\??mt##1#2\c!ny}%
-         \advance\!!countb -1
-         \OTRSETsetgridcell
-           {\!!counta}{\!!countb}
-           \hbox{\clip
-             [\c!breedte=\!!widthc,\c!hoogte=\!!heighta]
-             {\copy\scratchbox}}%
-         \ifcase\!!countc\else
-           \advance\!!counta \getvalue{\??mt##1#2\c!nx}%
-           \advance\!!counta -\!!countc
-           \advance\!!widtha -\!!widthc
-           \OTRSETsetgridcell
-             {\!!counta}{\!!countb}
-             \hbox{\hskip-\rugwit
-              \clip
-                [\c!breedte=\!!widtha,\c!hoogte=\!!heighta,
-                 \c!hoffset=\!!widthc]
-                {\copy\scratchbox}}%
-         \fi}}%
-   \processcommacommand[#1]\docommando
-   \egroup}
+\def\doinitializecolumntextareas#1#2%
+  {\def\docommando##1%
+     {\doifelsevalue{\??mt##1#2\c!status}{\v!start}
+        {\dodoinitializecolumntextareas{##1}{#2}}
+        {\doifvalue{\??mt##1#2\c!status}{\v!herhaal}
+           {\dodoinitializecolumntextareas{##1}{#2}}}}%
+   \processcommacommand[#1]\docommando}
+
+\def\dodoinitializecolumntextareas#1#2%
+  {\doOTRSETsetgridcells
+     {\copy\placeholderboxd}
+     {\getvalue{\??mt#1#2\c!x }}{\getvalue{\??mt#1#2\c!y }}
+     {\getvalue{\??mt#1#2\c!nx}}{\getvalue{\??mt#1#2\c!ny}}
+     {\copy\placeholderboxd}}
 
 \def\placecolumntextareas%
   {\ifodd\realpageno
@@ -1481,10 +1618,142 @@
      \doplacecolumntextareas\columnleftareas\v!links
    \fi}
 
+\def\doplacecolumntextareas#1#2% global ? 
+  {\bgroup
+   \forgetall
+   \def\docommando##1%
+     {\doifelsevalue{\??mt##1#2\c!status}{\v!start}
+        {\doglobal\removefromcommalist{##1}#1%
+         \dodoplacecolumntextareas{##1}{#2}}
+        {\doifvalue{\??mt##1#2\c!status}{\v!herhaal}
+           {\dodoplacecolumntextareas{##1}{#2}}}}%
+   \processcommacommand[#1]\docommando
+   \egroup}
+
+\def\dodoplacecolumntextareas#1#2%
+  {\!!counta\getvalue{\??mt#1#2\c!x}%
+   \!!countb\getvalue{\??mt#1#2\c!nx}% 
+   \docalculatecolumnsetspan
+   \!!heighta=\getvalue{\??mt#1#2\c!ny}\lineheight
+   % option 
+   \advance\!!heighta -\lineheight
+   \setbox\scratchbox=\vbox
+     {\localframed
+        [\??mt#1#2]
+        [\c!breedte=\!!widtha,\c!hoogte=\!!heighta]
+        {\getvalue{\??mt#1#2}}}%
+   \!!counta=\getvalue{\??mt#1#2\c!x}%
+   \!!countb=\getvalue{\??mt#1#2\c!y}%
+   \advance\!!countb \getvalue{\??mt#1#2\c!ny}%
+   \advance\!!countb -1
+   \OTRSETsetgridcell
+     {\!!counta}{\!!countb}
+     \hbox{\clip
+       [\c!breedte=\!!widthb,\c!hoogte=\!!heighta]
+       {\copy\scratchbox}}%
+   \ifcase\!!countc\else
+     \advance\!!counta \getvalue{\??mt#1#2\c!nx}%
+     \advance\!!counta -\!!countc
+     \advance\!!widtha -\!!widthb
+     \OTRSETsetgridcell
+       {\!!counta}{\!!countb}
+       \hbox
+         {\hskip-\rugwit
+          \clip
+            [\c!breedte=\!!widtha,\c!hoogte=\!!heighta,
+             \c!hoffset=\!!widthb]
+            {\copy\scratchbox}}%
+   \fi}
+
 \def\setupcolumntextareatext%
   {\dotripleempty\dosetupcolumntextareatext}
 
 \def\dosetupcolumntextareatext[#1][#2][#3]%
   {\setvalue{\??mt#1#2}{#3}}
 
+\def\docalculatecolumnsetspan
+  {% \!!counta <= x 
+   % \!!countb <= nx 
+   % \!!widtha => total width
+   % \!!widthb => left width 
+   % \!!countc => left cols 
+   \!!widtha=\!!countb\hsize
+   \advance\!!countb \!!counta \advance\!!countb -1 \relax
+   \ifnum\!!countb>\nofcolumns
+     \!!countc=\!!countb
+     \advance\!!countc -\nofcolumns
+     \!!countb=\nofcolumns
+   \else
+     \!!countc=0
+   \fi
+   \advance\!!counta 1
+   \dostepwiserecurse{\!!counta}{\!!countb}{1}
+     {\advance\!!widtha\OTRSETgetparameter\c!afstand\recurselevel}%
+   \!!widthb=\!!widtha
+   \advance\!!widthb -\!!countc\hsize
+   \ifodd\realpageno \else
+     \ifcase\!!countc\else
+       \advance\!!widtha 2\rugwit
+       \advance\!!widthb \rugwit
+       \dorecurse{\!!countc}
+         {\advance\!!widtha\OTRSETgetparameter\c!afstand\recurselevel}%
+     \fi
+   \fi}
+
+\def\columnsetspanhsize{\hsize}
+
+\def\setcolumnsetspanhsize#1#2% x nx / uses counta/b
+  {\!!counta=#1\!!countb=#2\docalculatecolumnsetspan
+   \edef\columnsetspanhsize{\the\!!widtha}}
+
+\def\definecolumnsetspan%
+  {\dodoubleempty\dodefinecolumnsetspan}
+
+\def\dodefinecolumnsetspan[#1][#2]%
+  {\ifsecondargument
+     \defineframedtext
+       [cs:#1]
+       [\c!kader=\v!uit,
+        \c!voor=,
+        \c!na=,
+        \c!offset=\v!overlay,
+        \c!plaats=,
+        \c!dieptecorrectie=\v!uit,
+        \c!n=2,
+        #2]%
+   \else
+     \definecolumnspan[][#1]%
+   \fi}
+
+\def\setupcolumnsetspan%
+  {\dodoubleempty\dosetupcolumnsetspan}
+
+\def\dosetupcolumnsetspan[#1][#2]%
+  {\ifsecondargument
+     \setupframedtext[cs:#1][#2]%
+   \else
+     \setupcolumnsetspan[][#1]%
+   \fi}
+
+\def\startcolumnsetspan%
+  {\dotripleempty\dostartcolumnsetspan}
+
+\def\dostartcolumnsetspan[#1][#2][#3]% [#3] gobbles space 
+  {\bgroup
+   \!!countc\getvalue{\??kd cs:#1\c!n} % \framedtextparameter{cs:\c!n}%
+   \!!countd\nofcolumns \advance\!!countd -\mofcolumns \advance\!!countd 1
+   \ifnum\!!countc>\!!countd \!!countc\!!countd \fi
+   \setcolumnsetspanhsize\mofcolumns\!!countc % a/b used
+   \hsize\columnsetspanhsize
+   \setupframedtexts[cs:#1][\c!breedte=\columnsetspanhsize,#2]
+   \setbox\scratchbox\ruledhbox \bgroup 
+   \dostartframedtext[cs:#1][\v!geen]
+   \vskip-\lineheight\par\strut\par}
+
+\def\stopcolumnsetspan%
+  {\par\kern-\lineheight\prevdepth\dp\strutbox\strut
+   \dostopframedtext \egroup
+   \OTRSETstoreincolumnslotHERE\scratchbox
+   \egroup}
+
 \protect \endinput 

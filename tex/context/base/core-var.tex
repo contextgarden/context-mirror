@@ -20,16 +20,23 @@
 %D
 %D A few every's. 
 
-\newevery \everyshipout       \relax
-\newevery \everybeforeshipout \relax
-\newevery \everyaftershipout  \relax
-\newevery \everylastshipout   \relax
-\newevery \everybye           \relax   
-\newevery \everygoodbye       \relax   
-\newevery \everystarttext     \relax
-\newevery \everystoptext      \relax
-\newevery \everypagebody      \relax
-\newevery \everyforgetall     \relax
+\newevery \everyshipout        \relax
+\newevery \everybeforeshipout  \relax
+\newevery \everyaftershipout   \relax
+\newevery \everylastshipout    \relax
+\newevery \everybye            \relax   
+\newevery \everygoodbye        \relax   
+\newevery \everystarttext      \relax
+\newevery \everystoptext       \relax
+\newevery \everyforgetall      \relax
+
+\newevery \everybeforepagebody \relax
+\newevery \everyafterpagebody  \relax
+
+\let \everypagebody \everybeforepagebody % backward compatible 
+
+\newevery \everybeforeutilityread \relax 
+\newevery \everyafterutilityread  \relax 
 
 %D \macros
 %D   {ifproductionrun}
@@ -40,6 +47,21 @@
 \newif\ifproductionrun 
 
 \appendtoks \productionruntrue \to \everydump
+
+%D \macros 
+%D   {everyboxedcontent, ifboxedcontent,
+%D    startboxedcontent, stopboxedcontent}
+%D
+%D This one is relatively new and will be used as a more 
+%D robust test for inner situations. 
+
+\newif    \ifboxedcontent
+\newevery \everyboxedcontent \relax
+
+\appendtoks \boxedcontenttrue \to \everyboxedcontent
+
+\def\startboxedcontent{\bgroup\the\everyboxedcontent}
+\let\stopboxedcontent  \egroup
 
 %D \macros 
 %D   {fastmode}
@@ -77,6 +99,15 @@
 
 \fi
 
-\protect 
+%D We store some original meanings, maybe in \type 
+%D {math-ini}. 
 
-\endinput
+\let\normalin             \in
+\let\normalover           \over
+\let\normalabove          \above
+\let\normalatop           \atop
+\let\normaloverwithdelims \overwithdelims
+\let\normalabovewithdelims\abovewithdelims
+\let\normalatopwithdelims \atopwithdelims
+
+\protect \endinput

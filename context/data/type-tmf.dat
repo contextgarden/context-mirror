@@ -43,10 +43,10 @@
 
 # bit charter 
 
---en=? --ve=bit --co=charter --so=auto                    
---en=? --ve=bit --co=charter --so=auto --ca=* bchr8a
---en=? --ve=bit --co=charter --so=auto --sl=* bchr8a
---en=? --ve=bit --co=charter --so=auto --sl=* bchb8a
+--en=? --ve=bitstrea --co=charter --so=auto                    
+--en=? --ve=bitstrea --co=charter --so=auto --ca=* bchr8a
+--en=? --ve=bitstrea --co=charter --so=auto --sl=* bchr8a
+--en=? --ve=bitstrea --co=charter --so=auto --sl=* bchb8a
 
 # uwr bookman 
 

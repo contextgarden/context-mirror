@@ -1,5 +1,5 @@
 %D \module
-%D   [       file=core-01a,
+%D   [       file=core-mis,
 %D        version=1998.01.29,
 %D          title=\CONTEXT\ Core Macros,
 %D       subtitle=Miscelaneous,
@@ -728,20 +728,34 @@
   {\bgroup
    \dosingleempty\dostartcitaat}
 
+\def\leftquotation {\getvalue{\??la\currentlanguage\c!leftquotation }}
+\def\rightquotation{\getvalue{\??la\currentlanguage\c!rightquotation}}
+
+\def\leftquote     {\getvalue{\??la\currentlanguage\c!leftquote }}
+\def\rightquote    {\getvalue{\??la\currentlanguage\c!rightquote}}
+
+\def\leftquotationmark%
+  {\setbox\scratchbox=\hbox{\leftquotation}%
+   \doif{\@@ciplaats}{\v!marge}{\hskip-\wd\scratchbox}%
+   \box\scratchbox}
+
+\def\rightquotationmark%
+  {\hsmash{\rightquotation}}
+
 \def\dostartcitaat[#1]%
   {\@@civoor
    \doifelsenothing{#1}
-     {\let\dostopcitaat=\relax}
-     {\startsmaller[#1]
-      \let\dostopcitaat=\stopsmaller}%
+     {\let\dostopcitaat\relax}
+     {\startsmaller[#1]%
+      \let\dostopcitaat\stopsmaller}%
    \dostartattributes\??ci\c!letter\c!kleur{}%
-   \setbox0=\hbox{\getvalue{\??la\currentlanguage\c!leftquotation}}%
-   \hskip-\wd0
-   \box0\relax
+   \leftquotationmark
    \ignorespaces}
 
 \def\stopcitaat%
-  {\unskip\hsmash{\getvalue{\??la\currentlanguage\c!rightquotation}}%
+  {\removeunwantedspaces
+   \removelastskip
+   \rightquotationmark
    \dostopattributes
    \dostopcitaat
    \@@cina
@@ -754,7 +768,7 @@
      #2%
    \fi
    \ifhmode % else funny pagebeaks 
-     \penalty\!!tenthousand\hskip\!!zeropoint      % == \prewordbreak
+     \penalty\!!tenthousand\hskip\zeropoint      % == \prewordbreak
    \fi
    \strut % new, needed below 
    \getvalue{\??la\currentlanguage#1}%
@@ -763,18 +777,18 @@
 \unexpanded\def\citaat%
   {\groupedcommand
      {\dohandlequotation\c!leftquotation\relax}
-     {\dohandlequotation\c!rightquotation\unskip}}
+     {\dohandlequotation\c!rightquotation\removelastskip}}
 
 \unexpanded\def\citeer%
   {\doifelse{\@@ciletter}{\v!normaal}
-     {\let\next=\doquotedcite}
-     {\let\next=\doattributedcite}%
+     {\let\next\doquotedcite}
+     {\let\next\doattributedcite}%
    \next}
 
 \def\doquotedcite%
   {\groupedcommand
-     {\dohandlequotation\c!leftquote\relax}
-     {\dohandlequotation\c!rightquote\unskip}}
+     {\dohandlequotation\c!leftquote \relax}
+     {\dohandlequotation\c!rightquote\removelastskip}}
 
 \def\doattributedcite%
   {\groupedcommand
@@ -787,14 +801,15 @@
 
 \unexpanded\def\citaat%
   {\dohandlequotation\c!leftquotation\relax
-   \groupedcommand{}{\dohandlequotation\c!rightquotation\unskip}}
+   \groupedcommand{}{\dohandlequotation\c!rightquotation\removelastskip}}
 
 \def\doquotedcite%
   {\dohandlequotation\c!leftquote\relax
-   \groupedcommand{}{\dohandlequotation\c!rightquote\unskip}}
+   \groupedcommand{}{\dohandlequotation\c!rightquote\removelastskip}}
 
 \stelciterenin
-  [\c!letter=\v!normaal,
+  [\c!plaats=\v!marge,
+   \c!letter=\v!normaal,
    \c!kleur=,
    \c!voor=\startsmaller,
    \c!na=\stopsmaller]
@@ -816,24 +831,27 @@
    \ignorespaces}
 
 \def\stopspeech
-  {\dohandlequotation\c!rightspeech\unskip
+  {\dohandlequotation\c!rightspeech\removelastskip
    \doglobal\decrement\speechlevel\relax
    \ifcase\speechlevel\relax \global\setfalse\insidespeech \fi}
 
-\def\dohandlespeech%
-  {\relax \ifcase\speechlevel 
-   \or\ifconditional\insidespeech
+\def\dohandlespeech% indirect since called in everypar 
+  {\relax % still needed? 
+   \ifcase\speechlevel\or\dodohandlespeech\fi}
+
+\def\dodohandlespeech%
+  {\ifconditional\insidespeech
      \dohandlequotation\c!middlespeech\relax 
    \else
      \global\settrue\insidespeech
-   \fi\fi}
+   \fi}
 
 \unexpanded\def\speech% 
   {\doglobal\increment\speechlevel\relax
    \dohandlequotation\c!leftspeech\relax
    \groupedcommand
      {\ignorespaces}
-     {\dohandlequotation\c!rightspeech\unskip
+     {\dohandlequotation\c!rightspeech\removelastskip
       \doglobal\decrement\speechlevel\relax}}
 
 \appendtoks \dohandlespeech \to \everypar
@@ -876,7 +894,6 @@
 
 \definecomplexorsimpleempty\toevoegen
 
-
 \def\dorooster[#1]%
   {\begingroup
    \getparameters[\??rt]
@@ -1427,6 +1444,8 @@
      [\??ld#1]
      [\c!n=1,
       \c!afstand=\bodyfontsize,
+      \c!voor=,
+      \c!na=,
       \c!tussen={\blanko[\v!middel]},
       \c!breedte=\hsize,
       \c!hoogte=\vsize,
@@ -1452,14 +1471,16 @@
   {\setuppairedbox[#1][#2]%     % and don't change them 
    \copyparameters 
      [\??ld][\??ld#1]
-     [\c!n,\c!afstand,\c!tussen,
+     [\c!n,\c!afstand,\c!tussen,\c!voor,\c!na,
       \c!breedte,\c!hoogte,\c!maxbreedte,\c!maxhoogte,
       \c!korps,\c!uitlijnen,\c!plaats]%
+   \@@ldvoor\bgroup
    \beforefirstpairedbox
    \dowithnextbox
      {\betweenbothpairedboxes
       \dowithnextbox
         {\afterbothpairedboxes
+         \egroup\@@ldna
          \egroup}
       \vbox\bgroup
         \insidesecondpairedbox
@@ -1593,7 +1614,7 @@
    \global\totcombinatie=#2\relax
    \xdef\maxhorcombinatie{\the\horcombinatie}%
    \multiply\totcombinatie by \horcombinatie
-   \tabskip=\!!zeropoint
+   \tabskip\zeropoint
    \doifelse{\@@cobreedte}{\v!passend}
      {\halign}
      {\halign to \@@cobreedte}%
@@ -1874,8 +1895,8 @@
       \dimen4=\@@xysx\wd\nextbox
       \dimen6=\dimen0\advance\dimen6 by \dimen2 
       \setbox\nextbox=\vbox to \dimen6
-        {\ht\nextbox=\!!zeropoint
-         \dp\nextbox=\!!zeropoint
+        {\ht\nextbox=\zeropoint
+         \dp\nextbox=\zeropoint
          \vfill % erbij
          \dostartscaling\@@xysx\@@xysy\box\nextbox\dostopscaling}%
       \ht\nextbox=\dimen0

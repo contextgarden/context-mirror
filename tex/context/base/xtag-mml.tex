@@ -11,9 +11,27 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-\ifx\remapXMLsequence\undefined \input xtag-map.tex \relax \fi % temp hack
-
 \writestatus{loading}{Context XML Macros (math ml)}
+
+%\enablemathpunctuation
+
+% First some general formula element definitions.  
+
+\defineXMLenvironment [formula] [label=,sublabel=]   
+  {\dostartXMLformula\placeformula}
+  {\dostopXMLformula}
+
+\defineXMLenvironment [subformula] [label=,sublabel=]   
+  {\dostartXMLformula\placesubformula}
+  {\dostopXMLformula}
+
+\def\dostartXMLformula#1%
+  {\doifelsenothingXMLop{label}
+     {\startformula}
+     {\expanded{#1[\XMLop{label}]{\XMLop{sublabel}}}\startformula}}
+
+\def\dostopXMLformula
+  {\stopformula}
 
 % Since I only had the draft of mml 2 as example of
 % rendering, there are probably a lot of omissions and
@@ -35,43 +53,17 @@
 
 \unprotect
 
-\def\setupMMLappearance[#1]%
-  {\dodoubleargument\getparameters[@@MML#1]}
+\def\setupMMLappearance[#1]{\dodoubleargument\getparameters[@@MML#1]}
 
-\defineXMLprocessor[context-mathml-directive]{\contextXMLmathml}
-
-\def\contextXMLmathml#1%
-  {\docontextXMLmathml#1 dummy dummy dummy\end}
-
-\def\docontextXMLmathml#1 #2 #3 #4\end
-  {\setupMMLappearance[#1][#2=#3]}
-
-% == \defineXMLdirective [mathml] \setupMMLappearance 
+\defineXMLdirective [mathml] \setupMMLappearance 
 
 \defineXMLargument [math]  \doXMLmath
 \defineXMLargument [imath] \doXMLimath
 \defineXMLargument [dmath] \doXMLdmath
 
 \unexpanded\def\doXMLmath {\ifhmode\@EA\doXMLimath\else\@EA\doXMLdmath\fi}
-\unexpanded\def\doXMLimath{\XMLremapdata{$}{$}}
-\unexpanded\def\doXMLdmath{\XMLremapdata{\dostartformula{}}{\dostopformula}}
-
-\defineXMLenvironment [formula]    
-  {\dostartXMLformula{formula}\placeformula}
-  {\dostopXMLformula}
-
-\defineXMLenvironment [subformula]    
-  {\dostartXMLformula{subformula}\placesubformula}
-  {\dostopXMLformula}
-
-\def\dostartXMLformula#1#2%
-  {\doifXMLparelse{#1}{label}
-     {\expanded{#2[\XMLpar{#1}{label}{}]{\XMLpar{#1}{sublabel}{}}}%
-      \startformula}
-     {\startformula}}
-
-\def\dostopXMLformula%
-  {\stopformula}
+\unexpanded\def\doXMLimath{\XMLremapdata[mml]{$}{$}}
+\unexpanded\def\doXMLdmath{\XMLremapdata[mml]{\dostartformula{}}{\dostopformula}}
 
 \ifx\XMLRtoks\undefined \newtoks\XMLRtoks \fi
 
@@ -112,11 +104,15 @@
 \gdef\xdefineMMLentity #1 #2 #3 #4
   {\egroup\dodefineMMLentity{#1}{#2}{#3}{#4}} 
 
+\global\let\dodefineMMLsynonym\gobblefourarguments
+
 \gdef\defineMMLsynonym%
   {\bgroup\obeylines\xdefineMMLsynonym}
 
 \gdef\xdefineMMLsynonym #1 #2 
   {\egroup\dodefineMMLsynonym{#1}{#2}} 
+
+\global\let\dodefineMMLsynonym\gobbletwoarguments
 
 \egroup  
 
@@ -387,6 +383,9 @@
 \defineXMLentity [OverBar]    {\normalorfiller\hrule\hrulefill}
 \defineXMLentity [Hat]        {\normalorfiller\empty\empty} % todo
 
+\defineXMLentity [downarrow]  {\mathortext\downarrow\empty}
+\defineXMLentity [uparrow]    {\mathortext\uparrow\empty}
+
 \defineXMLentity [Tab]              {\hskip4em}
 \defineXMLentity [NewLine]          {\mathortext\empty\crlf}
 \defineXMLentity [IndentingNewLine] {\mathortext\empty\crlf}
@@ -464,6 +463,8 @@
 
 \def\myspecialvert{\mathematics{\vert}} % temp hack, should stretch
 
+\defineXMLentity [,] {{,}}
+\defineXMLentity [.] {{.}}
 \defineXMLentity [+] {+}
 \defineXMLentity [-] {-}
 \defineXMLentity [(] {(}

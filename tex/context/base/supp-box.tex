@@ -19,7 +19,8 @@
 
 \unprotect
 
-%D First a hack to make this module loadable in plain \TEX. 
+%D First a couple of hacks to make this module loadable 
+%D in plain \TEX. 
 
 \ifx\myalloc@\undefined % seems like we're not in context 
   \def\newbox{\alloc@4\box\chardef\insc@unt} 
@@ -27,6 +28,11 @@
 
 \ifx      \scratchbox\undefined \newbox      \scratchbox \fi
 \ifx\globalscratchbox\undefined \newbox\globalscratchbox \fi
+
+\ifx\normalhbox   \undefined \let\normalhbox   \hbox    \fi 
+\ifx\normalvbox   \undefined \let\normalvbox   \vbox    \fi 
+\ifx\normalvtop   \undefined \let\normalvtop   \vtop    \fi 
+\ifx\normalvcenter\undefined \let\normalvcenter\vcenter \fi 
 
 %D \macros
 %D   {resetbox, emptybox}
@@ -55,9 +61,9 @@
 %D one is presented first.
 
 \def\smashbox#1%
-  {\wd#1=\zeropoint
-   \ht#1=\zeropoint
-   \dp#1=\zeropoint}
+  {\wd#1\zeropoint
+   \ht#1\zeropoint
+   \dp#1\zeropoint}
 
 %D \macros
 %D   {hsmashbox,vsmashbox}
@@ -66,35 +72,56 @@
 %D the mode, horizontal or vertical, one can use:
 
 \def\hsmashbox#1%
-  {\wd#1=\zeropoint}
+  {\wd#1\zeropoint}
 
 \def\vsmashbox#1%
-  {\ht#1=\zeropoint
-   \dp#1=\zeropoint}
+  {\ht#1\zeropoint
+   \dp#1\zeropoint}
 
 %D The next implementation is less sensitive for spurious 
 %D spaces. 
 
 \newcount\registercount
 
-\def\dowithregister#1%
-  {\def\dodowithregister{#1}%
-   \afterassignment\dodowithregister\registercount}
+% \def\dowithregister#1%
+%   {\def\dodowithregister{#1}%
+%    \afterassignment\dodowithregister\registercount}
+% 
+% \def\smashbox% 
+%   {\dowithregister
+%      {\wd\registercount\zeropoint
+%       \ht\registercount\zeropoint
+%       \dp\registercount\zeropoint}}
+% 
+% \def\hsmashbox%
+%   {\dowithregister
+%      {\wd\registercount\zeropoint}}
+% 
+% \def\vsmashbox%
+%   {\dowithregister
+%      {\ht\registercount\zeropoint
+%       \dp\registercount\zeropoint}}
 
 \def\smashbox% 
-  {\dowithregister
-     {\wd\registercount\zeropoint
-      \ht\registercount\zeropoint
-      \dp\registercount\zeropoint}}
+  {\afterassignment\dosmashbox\registercount}
+
+\def\dosmashbox
+  {\wd\registercount\zeropoint
+   \ht\registercount\zeropoint
+   \dp\registercount\zeropoint}
 
 \def\hsmashbox%
-  {\dowithregister
-     {\wd\registercount\zeropoint}}
+  {\afterassignment\dohsmashbox\registercount}
+
+\def\dohsmashbox
+  {\wd\registercount\zeropoint}
 
 \def\vsmashbox%
-  {\dowithregister
-     {\ht\registercount\zeropoint
-      \dp\registercount\zeropoint}}
+  {\afterassignment\dovsmashbox\registercount}
+
+\def\dovsmashbox
+  {\ht\registercount\zeropoint
+   \dp\registercount\zeropoint}
 
 %D \macros
 %D   {hsmash,vsmash,
@@ -137,18 +164,14 @@
 %D math module (although the \type {\leavevmode} is not added 
 %D here).
 
-\def\smash%
+\def\smash
   {\futurelet\nexttoken\dosmash}
 
-\def\dosmash%
-  {\ifx\nexttoken[%
-     \@EA\dodosmash
-   \else
-     \@EA\dodosmash\@EA[\@EA h\@EA d\@EA]%
-   \fi}
+\def\dosmash
+  {\ifx\nexttoken[\@EA\dodosmash\else\@EA\donosmash\fi}
 
-% \def\smash% test 
-%   {\doifnextcharelse{[}{\dodosmash}{\dodosmash[hd]}}
+\def\donosmash  
+  {\dodosmash[hd]}
 
 \def\dodosmash[#1]%
   {\edef\@@smash{#1}\futurelet\nexttoken\dododosmash}
@@ -175,7 +198,7 @@
 
 \def\finsm@sh% redefined plain macro 
   {\dowithnextbox
-     {\@EA\handletokens\@@smash\with\makesm@sh\box\nextbox}\hbox}
+     {\@EA\handletokens\@@smash\with\makesm@sh\box\nextbox}\normalhbox}
 
 %D \starttabulatie[|l|l|]
 %D \NC w   \NC \ruledhbox{\smash  [w]{This is some great smashing, isn't it?}} \NC \NR
@@ -219,7 +242,7 @@
       \ht\scratchbox\ht#1\dp\scratchbox\dp#2\wd\scratchbox\wd#3%
       \box\scratchbox
       \endgroup}
-   \hbox}
+   \normalhbox}
 
 % used in table
 %
@@ -228,12 +251,9 @@
 
 \let\finph@nt\undefined 
 
-% %D We have to redefine plain's \type {\mathstrut}. Well, 
-% %D this is not longer needed. 
-% %D
-% %D \starttypen
-% %D \def\mathstrut{\vphantom{(}}
-% %D \stoptypen 
+%D We also define plain's \type {\mathstrut}. 
+
+\def\mathstrut{\vphantom{(}}
 
 %D \macros
 %D   {getboxheight}
@@ -259,7 +279,7 @@
 %D \stoptypen
 
 \def\getboxheight#1\of#2\box#3%
-  {#1=\ht#3\advance#1\dp#3\relax}
+  {#1\ht#3\advance#1\dp#3\relax}
 
 %D \macros
 %D   {doiftextelse, doiftext}
@@ -273,17 +293,26 @@
 %D \doiftext     {data} {then branch}
 %D \stoptypen
 
-\def\doiftextelse#1#2#3%
+%\def\doiftextelse#1#2#3%
+%  {\bgroup
+%   \setbox0=\normalhbox{#1}%
+%   \ifdim\wd0>\zeropoint
+%     \egroup#2%
+%   \else
+%     \egroup#3%
+%   \fi}
+
+\def\doiftextelse#1%
   {\bgroup
-   \setbox0=\hbox{#1}%
+   \setbox0\normalhbox{#1}%
    \ifdim\wd0>\zeropoint
-     \egroup#2%
+     \egroup\@EA\firstoftwoarguments
    \else
-     \egroup#3%
+     \egroup\@EA\secondoftwoarguments
    \fi}
 
 \def\doiftext#1#2%
-  {\doiftextelse{#1}{#2}{}}
+  {\doiftextelse{#1}{#2}\donothing}
 
 %D \macros
 %D   {dowithnextbox,nextbox}
@@ -309,7 +338,7 @@
 %D \starttypen
 %D \def\getfloat%
 %D   {\def\handlefloat{...\box\nextbox...}
-%D    \dowithnextbox\handlefloat\vbox}
+%D    \dowithnextbox\handlefloat\normalvbox}
 %D \stoptypen
 %D
 %D instead of:
@@ -333,13 +362,6 @@
 \def\dododowithnextbox%
   {\aftergroup\dodowithnextbox}
 
-% Better but first to be checked:
-%
-%\long\def\dowithnextbox#1%
-%  {\bgroup\long\def\dodowithnextbox{#1\egroup}%
-%   \afterassignment\dododowithnextbox
-%   \setbox\nextbox}
-
 %D So in fact we get:
 %D
 %D \starttypen
@@ -357,13 +379,13 @@
 %D \starttypen
 %D \long\def\dowithnextbox#1#2%
 %D   {\long\def\dodowithnextbox{#1}%
-%D    \ifx#2\hbox
+%D    \ifx#2\normalhbox
 %D      \afterassignment\dododowithnextbox
-%D    \else\ifx#2\vbox
+%D    \else\ifx#2\normalvbox
 %D      \afterassignment\dododowithnextbox
-%D    \else\ifx#2\vtop
+%D    \else\ifx#2\normalvtop
 %D      \afterassignment\dododowithnextbox
-%D    \else\ifx#2\vcenter
+%D    \else\ifx#2\normalvcenter
 %D      \afterassignment\dododowithnextbox
 %D    \else
 %D      \afterassignment\dodowithnextbox
@@ -384,6 +406,8 @@
 %D \starttypen
 %D \dowithnextboxcontent{inside}{after}{box content}
 %D \stoptypen
+%D
+%D {\em todo: Search source for potential usage!} 
 
 \long\def\dowithnextboxcontent#1#2% inside, after 
   {\long\def\dodowithnextbox{#2}%
@@ -399,7 +423,8 @@
 %D \macros
 %D   {llap, rlap, tlap, blap} 
 %D
-%D Some well known friends. 
+%D Some well known friends, but we implement them our own 
+%D way. 
 
 \def\rlap{\begingroup\dowithnextbox{\normalhbox to \zeropoint
   {\box\nextbox\normalhss}\endgroup}\normalhbox}
@@ -458,7 +483,7 @@
 %D
 %D \reshapebox
 %D   {\doglobal\increment\LineNumber
-%D    \hbox{\llap{\LineNumber\hskip2em}\box\shapebox}}
+%D    \normalhbox{\llap{\LineNumber\hskip2em}\box\shapebox}}
 %D
 %D \flushshapebox
 %D \stopbuffer
@@ -480,7 +505,7 @@
 %D
 %D \reshapebox
 %D   {\doglobal\increment\LineNumber
-%D    \hbox
+%D    \normalhbox
 %D      {\llap{\LineNumber\ (\NumberOfLines)\hskip2em}%
 %D       \box\shapebox}%
 %D    \doglobal\decrement\NumberOfLines}
@@ -503,7 +528,7 @@
 %D
 %D \reshapebox
 %D   {\doglobal\increment\LineNumber
-%D    \hbox{\llap{$\star$\hskip1em}\box\shapebox}%
+%D    \normalhbox{\llap{$\star$\hskip1em}\box\shapebox}%
 %D    \doglobal\decrement\NumberOfLines}
 %D
 %D \flushshapebox
@@ -556,67 +581,16 @@
      {\kern   \shapekern   }
      {\vskip  \shapeskip   }}
 
-%\def\doreshapebox#1#2#3#4% \shapebox, \shapepenalty, \shapekern, \shapeskip
-%  {\setbox\newshapebox=\normalvbox
-%     \bgroup
-%       \unvcopy\oldshapebox
-%       \resetbox\newshapebox
-%       \shapecounter=0
-%       \doloop{\dodoreshapebox{#1}{#2}{#3}{#4}}%
-%       \unvbox\newshapebox
-%     \egroup}
-%
-%\def\dodoreshapebox#1#2#3#4% \shapebox, \shapepenalty, \shapekern, \shapeskip
-%  {\ifdim\lastskip=\zeropoint\relax
-%     \ifdim\lastkern=\zeropoint\relax
-%       \ifnum\lastpenalty=0
-%         \setbox\shapebox=\lastbox
-%         \ifvoid\shapebox
-%           \unskip\unpenalty\unkern
-%         \else
-%           \ifdim\wd\shapebox=\shapesignal\relax
-%             \exitloop
-%           \else
-%             \shapecounter=0
-%             \setbox\newshapebox=
-%               \normalvbox{#1\unvbox\newshapebox}
-%           \fi
-%         \fi
-%       \else
-%         \shapepenalty=\lastpenalty
-%         \setbox\newshapebox=
-%           \normalvbox{#2\unvbox\newshapebox}
-%         \unpenalty
-%       \fi
-%     \else
-%       \shapekern=\lastkern
-%       \setbox\newshapebox=
-%         \normalvbox{#3\unvbox\newshapebox}
-%       \unkern
-%     \fi
-%   \else
-%     \shapeskip=\lastskip
-%     \setbox\newshapebox=
-%       \normalvbox{#4\unvbox\newshapebox}
-%     \unskip
-%   \fi
-%   \ifnum\shapecounter>100 % can be less
-%     \message{<<forced exit from shapebox>>}%
-%     \exitloop
-%   \else
-%     \advance\shapecounter by 1
-%   \fi}
-
 \newbox\tmpshapebox
 
 \def\doreshapebox#1#2#3#4% \shapebox, \shapepenalty, \shapekern, \shapeskip
   {\ifdim\ht\oldshapebox=\zeropoint
-     \setbox\newshapebox=\normalvbox{}%
+     \setbox\newshapebox\normalvbox{}%
    \else
-     \setbox\newshapebox=\normalvbox
+     \setbox\newshapebox\normalvbox
        {\unvcopy\oldshapebox
         \resetbox\newshapebox
-        \shapecounter=0
+        \shapecounter\zerocount
         \doloop{\dodoreshapebox{#1}{#2}{#3}{#4}}}%
      \setbox\newshapebox\box\tmpshapebox
    \fi}
@@ -624,56 +598,52 @@
 \def\dodoreshapebox#1#2#3#4% \shapebox, \shapepenalty, \shapekern, \shapeskip
   {\ifdim\lastskip=\zeropoint\relax
      \ifdim\lastkern=\zeropoint\relax
-       \ifnum\lastpenalty=0
-         \setbox\shapebox=\lastbox
+       \ifcase\lastpenalty % =\zerocount
+         \setbox\shapebox\lastbox
          \ifvoid\shapebox
            \unskip\unpenalty\unkern
          \else
            \ifdim\wd\shapebox=\shapesignal\relax
              \exitloop
            \else
-             \shapecounter=0
-             \global\setbox\tmpshapebox=
-               \normalvbox{#1\unvbox\tmpshapebox}
+             \shapecounter\zerocount
+             \global\setbox\tmpshapebox\normalvbox{#1\unvbox\tmpshapebox}
            \fi
          \fi
        \else
-         \shapepenalty=\lastpenalty
-         \global\setbox\tmpshapebox=
-           \normalvbox{#2\unvbox\tmpshapebox}
+         \shapepenalty\lastpenalty
+         \global\setbox\tmpshapebox\normalvbox{#2\unvbox\tmpshapebox}
          \unpenalty
        \fi
      \else
-       \shapekern=\lastkern
-       \global\setbox\tmpshapebox=
-         \normalvbox{#3\unvbox\tmpshapebox}
+       \shapekern\lastkern
+       \global\setbox\tmpshapebox\normalvbox{#3\unvbox\tmpshapebox}
        \unkern
      \fi
    \else
-     \shapeskip=\lastskip
-     \global\setbox\tmpshapebox=
-       \normalvbox{#4\unvbox\tmpshapebox}
+     \shapeskip\lastskip
+     \global\setbox\tmpshapebox\normalvbox{#4\unvbox\tmpshapebox}
      \unskip
    \fi
    \ifnum\shapecounter>100 % can be less
      \message{<<forced exit from shapebox>>}%
-     \global\setbox\tmpshapebox=\copy\oldshapebox
+     \global\setbox\tmpshapebox\copy\oldshapebox
      \exitloop
    \else
-     \advance\shapecounter by 1
+     \advance\shapecounter \plusone
    \fi}
 
 %\def\beginofshapebox%
 %  {\setbox\oldshapebox=\normalvbox
 %     \bgroup
 %     \reshapingboxtrue
-%     \hbox to \shapesignal{\hss}}
+%     \normalhbox to \shapesignal{\hss}}
 
 \def\beginofshapebox%
-  {\setbox\oldshapebox=\normalvbox
+  {\setbox\oldshapebox\normalvbox
      \bgroup
      \reshapingboxtrue
-     \hbox to \shapesignal{\strut\hss} % plus \strut 
+     \normalhbox to \shapesignal{\strut\hss}% plus \strut 
      \prevdepth\dp\strutbox            % hm
    }%\nointerlineskip}                 % suppress parskip
 
@@ -684,40 +654,6 @@
 \let\beginshapebox=\beginofshapebox
 \let\endshapebox  =\endofshapebox
 
-%\def\flushshapebox%
-%  {\ifdim\ht\newshapebox=\zeropoint\relax
-%   \else
-%     % make \prevdepth legal
-%     % \par before the next \vskip gives far worse results
-%     \ifdim\parskip>\zeropoint\vskip\parskip\else\par\fi
-%     % and take a look
-%     \ifdim\prevdepth=-1000pt
-%       \prevdepth=\zeropoint
-%     \fi
-%     \ifdim\prevdepth<\zeropoint\relax
-%       % something like a line or a signal or ...
-%       \donetrue
-%     \else\ifinner
-%       % not watertight and not ok
-%       \donefalse
-%     \else\ifdim\pagegoal=\maxdimen
-%       \donetrue
-%     \else
-%       % give the previous line a normal depth
-%       \donetrue
-%       \vbox{\forgetall\strut}\nobreak\kern-\lineheight % geen \vskip
-%       \vskip-\dp\strutbox
-%     \fi\fi\fi
-%     \unvcopy\newshapebox\relax
-%     % \prevdepth=0pt and \dp\newshapebox depend on last line
-%     \kern-\dp\newshapebox\relax
-%     % now \prevdepth=0pt
-%     \ifdone
-%       \kern\dp\strutbox
-%       \prevdepth\dp\strutbox
-%     \fi
-%   \fi}
-
 \def\flushshapebox%
   {\bgroup
    \ifdim\ht\newshapebox=\zeropoint\relax
@@ -727,7 +663,7 @@
      \ifdim\parskip>\zeropoint\vskip\parskip\else\par\fi
      % and take a look
      \ifdim\prevdepth=-1000pt
-       \prevdepth=\zeropoint
+       \prevdepth\zeropoint
      \fi
      \ifdim\prevdepth<\zeropoint\relax
        % something like a line or a signal or ...
@@ -740,7 +676,7 @@
      \else
        % give the previous line a normal depth
        \donetrue
-       {\everypar\emptytoks\vbox{\strut}}\nobreak
+       {\everypar\emptytoks\normalvbox{\strut}}\nobreak
        \kern-\lineheight % geen \vskip
        \kern-\parskip
      % \vskip-\dp\strutbox
@@ -770,8 +706,7 @@
 % \omlijnd[offset=0pt,hoogte=8mm,uitlijnen={rechts,laho}]{\bfa test} 
 
 \def\innerflushshapebox%
-  {\ifdim\ht\newshapebox=\zeropoint\relax
-   \else
+  {\ifdim\ht\newshapebox=\zeropoint\relax \else
      \unvcopy\newshapebox\relax
    % \kern-\dp\newshapebox\relax
    \fi}
@@ -792,15 +727,15 @@
 %D
 %D When constructing a new box, using the content of \type 
 %D {\shapebox}, one can best use \type {\shapedhbox} instead 
-%D of \type {\hbox}, since it manages the height and depth of
+%D of \type {\normalhbox}, since it manages the height and depth of
 %D the line. 
 
 \def\shapedhbox%
   {\dowithnextbox
-     {\ht\nextbox=\zeropoint
-      \dp\nextbox=\zeropoint
+     {\ht\nextbox\zeropoint
+      \dp\nextbox\zeropoint
       \box\nextbox}
-   \hbox}
+   \normalhbox}
 
 %D \macros
 %D   {hyphenatedword,
@@ -842,30 +777,30 @@
 
 \def\dohyphenateword#1#2#3%
   {\bgroup
-   \setbox0=\hbox
+   \setbox0=\normalhbox
      {\mindermeldingen
       \widowpenalty=0
       \clubpenalty=0
-      \setbox0=\vbox
+      \setbox0=\normalvbox
         {\hsize\zeropoint \ #3}%
       \ifnum#1>0
         \dorecurse{#1}
-          {\setbox2=\hbox
+          {\setbox2=\normalhbox
              {\splittopskip=\openstrutheight
               \vsplit0 to \baselineskip}}%
         #2%
       \fi
       \loop
-        \setbox2=\hbox
+        \setbox2=\normalhbox
           {\splittopskip=\openstrutheight
            \vsplit0 to \baselineskip}%
-        \hbox
+        \normalhbox
           {\unhbox2
            \setbox2=\lastbox
-           \vbox
+           \normalvbox
              {\unvbox2
               \setbox2=\lastbox
-              \hbox{\unhbox2}}}%
+              \normalhbox{\unhbox2}}}%
         \ifdim\ht0>\zeropoint
       \repeat}%
     \ht0=\ht\strutbox
@@ -895,7 +830,7 @@
 %D complex macro than needed at first sight.
 
 % \def\dodoboundtext#1%
-%   {\setbox0=\hbox{\unhcopy0 #1}%
+%   {\setbox0=\normalhbox{\unhcopy0 #1}%
 %    \ifdim\wd0>\dimen0
 %      \let\dodoboundtext=\gobbleoneargument
 %    \else
@@ -903,13 +838,13 @@
 %    \fi}
 % 
 % \def\doboundtext#1#2#3%
-%   {\hbox
-%      {\setbox0=\hbox{#1}%
+%   {\normalhbox
+%      {\setbox0=\normalhbox{#1}%
 %       \dimen0=#2\relax
 %       \ifdim\wd0>\dimen0
-%         \setbox2=\hbox{#3}%
+%         \setbox2=\normalhbox{#3}%
 %         \advance\dimen0 by -\wd2
-%         \setbox0=\hbox{}%
+%         \setbox0=\normalhbox{}%
 %         \processtokens
 %           {\dodoboundtext}
 %           {\dodoboundtext}
@@ -922,17 +857,17 @@
 %       \fi}}
 
 \def\dodoboundtext#1%
-  {\setbox2=\hbox{#1}%
-   \advance\dimen0 by -\wd2
+  {\setbox2=\normalhbox{#1}%
+   \advance\dimen0 -\wd2
    \ifdim\dimen0>\zeropoint\relax#1\fi}%
 
 \def\doboundtext#1#2#3%
-  {\hbox
-     {\setbox0=\hbox{#1}%
+  {\normalhbox
+     {\setbox0=\normalhbox{#1}%
       \dimen0=#2\relax
       \ifdim\wd0>\dimen0
-        \setbox0=\hbox{#3}%
-        \advance\dimen0 by -\wd0
+        \setbox0=\normalhbox{#3}%
+        \advance\dimen0 -\wd0
         \handletokens#1\with\dodoboundtext
       \fi
       \box0}}
@@ -946,7 +881,8 @@
 %D on text that cannot be hyphenated.
 %D
 %D \starttypen
-%D \limitatetext {text} {width} {sentinel}
+%D \limitatetext {text}  {width} {sentinel}
+%D \limitatetext {text} {-width} {prelude}
 %D \stoptypen
 %D
 %D When no width is given, the whole text comes available. The
@@ -959,8 +895,9 @@
 %D \starttypen
 %D \unexpanded\def\limitatetext%
 %D   {\bgroup % evt \setstrut 
+%D    \forgetall
 %D    \fakecompoundhyphen % dangerous ! ! ! ! ! ! ! ! !
-%D    \dowithnextbox\dolimitatetext\hbox}
+%D    \dowithnextbox\dolimitatetext\normalhbox}
 %D 
 %D \def\dolimitatetext#1#2%
 %D   {\doifelsenothing{#1}
@@ -969,9 +906,9 @@
 %D       \clubpenalty=0
 %D       \scratchdimen=#1\relax
 %D       \ifdim\wd\nextbox>\scratchdimen
-%D         \setbox\scratchbox=\hbox{ #2}%
+%D         \setbox\scratchbox=\normalhbox{ #2}%
 %D         \advance\scratchdimen by -\wd\scratchbox
-%D         \setbox\nextbox=\vbox
+%D         \setbox\nextbox=\normalvbox
 %D           {\hsize=\scratchdimen
 %D            \hfuzz\maxdimen
 %D            \veryraggedright
@@ -979,12 +916,12 @@
 %D         \ifdim\ht\nextbox>\ht\strutbox \else
 %D           \setbox\scratchbox\null % overfull and not split 
 %D         \fi
-%D         \setbox\nextbox=\vbox % if omitted: missing brace reported
+%D         \setbox\nextbox=\normalvbox % if omitted: missing brace reported
 %D           {\splittopskip=\openstrutheight
 %D            \setbox\nextbox=\vsplit\nextbox to \ht\strutbox
 %D            \unvbox\nextbox
 %D            \setbox\nextbox=\lastbox
-%D            \global\setbox1=\hbox
+%D            \global\setbox1=\normalhbox
 %D              {\unhbox\nextbox\unskip\kern\zeropoint\box\scratchbox\unskip}}%
 %D         \unhbox1
 %D       \else
@@ -999,49 +936,52 @@
 
 \unexpanded\def\limitatetext%
   {\bgroup % evt \setstrut 
+   \forgetall % otherwise indentation and so 
+  %\def\limitatetext##1##2##3{##1}% \def ! 
+   \let\limitatetext\firstofthreearguments
    \fakecompoundhyphen % dangerous ! ! ! ! ! ! ! ! !
-   \dowithnextbox\dolimitatetext\hbox}
+   \dowithnextbox\dolimitatetext\normalhbox}
  
 \def\dolimitatetext#1#2%
   {\doifelsenothing{#1}
      {\unhbox\nextbox}
-     {\widowpenalty=0
-      \clubpenalty=0
-      \scratchdimen=#1\relax
+     {\widowpenalty\zerocount
+      \clubpenalty\zerocount
+      \scratchdimen#1\relax
       \ifdim\scratchdimen<\zeropoint\relax % we'll take the last line 
         \donefalse 
-        \scratchdimen=-\scratchdimen
+        \scratchdimen-\scratchdimen
       \else
         \donetrue
       \fi
       \ifdim\wd\nextbox>\scratchdimen
-        \setbox\scratchbox=\hbox{\ifdone\space#2\else#2\space\fi}%
-        \advance\scratchdimen by -\wd\scratchbox
-        \setbox0=\box\nextbox
-        \setbox\nextbox=\vbox
-          {\hsize=\scratchdimen
+        \setbox\scratchbox\normalhbox{\ifdone\space#2\else#2\space\fi}%
+        \advance\scratchdimen -\wd\scratchbox
+        \setbox0\box\nextbox
+        \setbox\nextbox\normalvbox
+          {\hsize\scratchdimen
            \hfuzz\maxdimen
            \veryraggedright
            \strut
            \ifdone \else
-             \parfillskip=\zeropoint
-             \rightskip=\zeropoint
+             \parfillskip\zeropoint
+             \rightskip\zeropoint
              \hskip\zeropoint \!!plus 1\!!fill % \hsize 
            \fi 
            \unhcopy0}%
         \ifdim\ht\nextbox>\ht\strutbox 
-          \setbox\nextbox=\vbox % if omitted: missing brace reported
-            {\splittopskip=\openstrutheight
+          \setbox\nextbox\normalvbox % if omitted: missing brace reported
+            {\splittopskip\openstrutheight
              \ifdone
-               \setbox\nextbox=\vsplit\nextbox to \ht\strutbox
+               \setbox\nextbox\vsplit\nextbox to \ht\strutbox
              \else
                \doloop
-                 {\setbox0=\vsplit\nextbox to \ht\strutbox
+                 {\setbox0\vsplit\nextbox to \ht\strutbox
                   \ifdim\ht\nextbox>\ht\strutbox \else \exitloop \fi}%
              \fi
              \unvbox\nextbox
-             \setbox\nextbox=\lastbox
-             \global\setbox1=\hbox
+             \setbox\nextbox\lastbox
+             \global\setbox1\normalhbox
                {\ifdone
                   \unhbox\nextbox\unskip\kern\zeropoint\box\scratchbox
                 \else
@@ -1056,6 +996,44 @@
         \unhbox\nextbox
       \fi}%
    \egroup}
+
+%D We can also limit a text with more control:  
+%D 
+%D \startbuffer 
+%D \limitatetext {\input tufte } {2cm,5mm} {\unknown} 
+%D \limitatetext {ton en hans} {2cm,5mm} {\unknown} 
+%D \limitatetext {ton en hans zijn eikels} {2cm,5mm} {\unknown} 
+%D \limitatetext {ton} {2cm,5mm} {\unknown} 
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+%D
+%D We build this feature on top of the previous macro.
+
+\let\normallimitatetext\limitatetext
+
+\def\speciallimitatetext#1#2#3#4% text left right placeholder
+  {%\dontleavehmode
+   \bgroup
+  %\def\speciallimitatetext##1##2##3##4{##1}% \def ! 
+   \let\speciallimitatetext\firstoffourarguments
+   \setbox0\normalhbox
+     {\nohyphens 
+      \normallimitatetext{#1}{+#2}{}#4%
+      \normallimitatetext{#1}{-#3}{}}%
+   \setbox2\normalhbox
+     {#1}%
+  \ifdim\wd2<\wd0 #1\else\unhbox0\fi
+  \egroup}
+
+\def\limitatetext#1#2#3%
+  {\beforesplitstring#2\at,\to\leftlimit
+   \aftersplitstring #2\at,\to\rightlimit
+   \ifx\rightlimit\empty
+     \normallimitatetext{#1}{\leftlimit}{#3}%
+   \else
+     \speciallimitatetext{#1}{\leftlimit}{\rightlimit}{#3}%
+   \fi}
 
 %D \macros
 %D   {processisolatedwords,
@@ -1094,7 +1072,7 @@
 %D \startbuffer
 %D \processisolatedwords{some more words}           \ruledhbox \par
 %D \processisolatedwords{and some $x + y = z$ math} \ruledhbox \par
-%D \processisolatedwords{and a \hbox{$x + y = z$}}  \ruledhbox \par
+%D \processisolatedwords{and a \normalhbox{$x + y = z$}}  \ruledhbox \par
 %D \stopbuffer
 %D
 %D \typebuffer
@@ -1131,8 +1109,8 @@
 %D strange and|/|or complicated arguments or simply boxes
 %D whose dimensions are to be left intact.
 %D
-%D First we build a \type{\hbox}. This enables us to save the
-%D last skip. Next we fill a \type{\vbox} without hyphenating
+%D First we build a \type{\normalhbox}. This enables us to save the
+%D last skip. Next we fill a \type{\normalvbox} without hyphenating
 %D words. After we've tested if there is more than one word, we
 %D start processing the individual lines (words). We need some
 %D splitting, packing and unpacking to get the spacing and
@@ -1159,40 +1137,40 @@
    \fakecompoundhyphen
    \mindermeldingen
    \forgetall
-   \widowpenalty=0  
-   \clubpenalty=0
+   \widowpenalty\zerocount
+   \clubpenalty\zerocount
    \def\processisolatedwords##1##2{##2{##1}}% we split only once
    \global\let\localbetweenisolatedwords\betweenisolatedwords 
-   \setbox0=\hbox    % we default to spaces, but from inside out
+   \setbox0\normalhbox    % we default to spaces, but from inside out
      {\ignorespaces#1% \localbetweenisolatedwords can be overruled 
       \global\isolatedlastskip\lastskip}%
-   \setbox2=\vbox
-     {%\hyphenpenalty10000       % this one fails in \url breaking, 
-      \lefthyphenmin=\!!maxcard  % but this trick works ok, due to them
-      \righthyphenmin=\!!maxcard % total>63, when no hyphenation is done
+   \setbox2\normalvbox
+     {%\hyphenpenalty10000    % this one fails in \url breaking, 
+      \lefthyphenmin\maxcard  % but this trick works ok, due to them
+      \righthyphenmin\maxcard % total>63, when no hyphenation is done
       \hsize\zeropoint
       \unhcopy0}% == #1
    \ifdim\ht0=\ht2
      \isolatedwordsfalse
-     #2{\unhcopy0}% == #2{#1}
+     #2{\unhbox0}% == #2{#1} % was \unhcopy0 
    \else
      \isolatedwordstrue
-     \setbox0=\hbox
+     \setbox0=\normalhbox
        {\ignorespaces
         \loop
-          \setbox4=\hbox
-            {\splittopskip=\openstrutheight
+          \setbox4\normalhbox
+            {\splittopskip\openstrutheight
              \vsplit2 to \baselineskip}%
-          \hbox
+          \normalhbox
             {\unhbox4\unskip % recently added 
-             \setbox4=\lastbox
-             \vbox                  % outer \hbox needed 
+             \setbox4\lastbox
+             \normalvbox            % outer \normalhbox needed 
                {\unvbox4            % for nested use   
-                \setbox4=\lastbox
-                \hbox{#2{\hbox
+                \setbox4\lastbox
+                \normalhbox{#2{\normalhbox
                   {\unhbox4
                    \unskip\unpenalty % remove end of line stuff
-                   \global\dimen1=\lastkern}}}}}% 
+                   \global\dimen1\lastkern}}}}}% 
         \ifdim\ht2>\zeropoint\relax 
           \ifdim\dimen1=\compoundbreakpoint
             \allowbreak
@@ -1202,7 +1180,7 @@
         \repeat
         \unskip}%
       \unhbox0\unskip
-      \ifdim\isolatedlastskip=\zeropoint\relax\else % added
+      \ifdim\isolatedlastskip=\zeropoint\else % added
         \hskip\isolatedlastskip
       \fi
     \fi
@@ -1247,14 +1225,21 @@
 
 \def\sbox%  in handleiding, voorbeeld \inlinker{xx} \extern..
   {\dowithnextbox
-     {\setbox0=\hbox
+     {\setbox\scratchbox\normalhbox
         {\strut
-         \dp\nextbox=0pt
+         \dp\nextbox\zeropoint
          \lower\strutdepth\box\nextbox}%
-      \dp0=\strutdepth
-      \ht0=\strutheight
-      \box0}%
-     \vbox}
+      \dp\scratchbox\strutdepth
+      \ht\scratchbox\strutheight
+      \box\scratchbox}%
+     \normalvbox}
+
+\def\struttedbox
+  {\dowithnextbox
+     {\dp\nextbox\strutdepth
+      \ht\nextbox\strutheight
+      \box\nextbox}%
+     \normalhbox}
 
 %D \macros
 %D   {centeredbox, centerednextbox}
@@ -1304,19 +1289,19 @@
 
 \def\centeredbox#1#%   height +/-dimen width +/-dimen
   {\bgroup
-   \setbox0=\vbox to \vsize
+   \setbox0\normalvbox to \vsize
      \bgroup
        \mindermeldingen
        \forgetall
-       \setbox0=\hbox{\vrule\!!width \zeropoint#1}%
-       \setbox2=\vbox{\hrule\!!height\zeropoint#1}%
-       \advance\vsize by \ht2
-       \advance\hsize by \wd0
-       \vbox to \vsize
+       \setbox0\normalhbox{\vrule\!!width \zeropoint#1}%
+       \setbox2\normalvbox{\hrule\!!height\zeropoint#1}%
+       \advance\vsize \ht2
+       \advance\hsize \wd0
+       \normalvbox to \vsize
          \bgroup
            \vskip-\ht2
            \vss
-           \hbox to \hsize
+           \normalhbox to \hsize
              \bgroup
                \dowithnextbox
                  {\hskip-\wd0
@@ -1327,11 +1312,11 @@
            \vss
          \egroup
      \egroup
-     \wd0=\hsize
-     \ht0=\vsize
+     \wd0\hsize
+     \ht0\vsize
      \box0
      \egroup}
-   \hbox}
+   \normalhbox}
 
 %D For those who don't want to deal with \type {\hsize}
 %D and \type {\vsize}, we have:
@@ -1350,7 +1335,7 @@
       \vsize\ht\nextbox
       \centeredbox#1{\box\nextbox}%
       \egroup}
-   \hbox}
+   \normalhbox}
 
 %D \macros
 %D   {centerbox}
@@ -1368,13 +1353,13 @@
   {\bgroup
    \dowithnextbox
      {\setlocalhsize
-      \setbox0=\hbox{\vrule\!!width\zeropoint#1}%
-      \setbox2=\vbox{\hrule\!!height\zeropoint#1}%
+      \setbox0\normalhbox{\vrule\!!width \zeropoint#1}%
+      \setbox2\normalvbox{\hrule\!!height\zeropoint#1}%
       \hsize\ifdim\wd0=\zeropoint\hsize\else\wd0\fi
       \vsize\ifdim\ht2=\zeropoint\vsize\else\ht2\fi
-      \vbox to \vsize{\vss\hbox to \hsize{\hss\box\nextbox\hss}\vss}%
+      \normalvbox to \vsize{\vss\normalhbox to \hsize{\hss\box\nextbox\hss}\vss}%
       \egroup}%
-     \hbox}
+     \normalhbox}
 
 %D \macros
 %D   {setrigidcolumnhsize,rigidcolumnbalance}
@@ -1401,13 +1386,13 @@
 
 \def\setrigidcolumnhsize#1#2#3%
   {\xdef\savedrigidhsize{\the\hsize}%
-   \hsize=#1\relax
+   \hsize#1\relax
    \global\chardef\rigidcolumns=#3\relax
-   \scratchdimen=-#2\relax
-   \multiply\scratchdimen by #3\relax
-   \advance\scratchdimen by #2\relax
-   \advance\hsize by \scratchdimen
-   \divide\hsize by #3\relax}
+   \scratchdimen -#2\relax
+   \multiply\scratchdimen #3\relax
+   \advance\scratchdimen  #2\relax
+   \advance\hsize \scratchdimen
+   \divide\hsize  #3\relax}
 
 \newbox\rigidcolumnbox
 
@@ -1415,34 +1400,34 @@
   {\ifnum\rigidcolumns=1 % tzt ook h/d correctie
      \ifinner\ifhmode\box\else\unvbox\fi\else\unvbox\fi#1\relax 
    \else
-     \vbox
+     \normalvbox
        {\forgetall
         \dontcomplain
-        \setbox\rigidcolumnbox=\vbox
+        \setbox\rigidcolumnbox\normalvbox
           {\line{}\goodbreak\unvbox#1\removebottomthings}%
-        \splittopskip=\openstrutheight 
-        \setbox\scratchbox=\vsplit\rigidcolumnbox to \zeropoint
-        \scratchdimen=\ht\rigidcolumnbox      
-        \divide\scratchdimen by \rigidcolumns 
+        \splittopskip\openstrutheight 
+        \setbox\scratchbox\vsplit\rigidcolumnbox to \zeropoint
+        \scratchdimen\ht\rigidcolumnbox      
+        \divide\scratchdimen \rigidcolumns 
         \getnoflines\scratchdimen 
-        \scratchdimen=\noflines\lineheight
-        \setbox\scratchbox=\hbox to \savedrigidhsize
-          {\dorecurse{\rigidcolumns}
+        \scratchdimen\noflines\lineheight
+        \setbox\scratchbox\normalhbox to \savedrigidhsize
+          {\dorecurse\rigidcolumns
              {\setbox\scratchbox=\vsplit\rigidcolumnbox to \scratchdimen
               \dp\scratchbox=\openstrutdepth
-              \setbox\scratchbox=\vtop
+              \setbox\scratchbox=\normalvtop
                 \ifalignrigidcolumns to 
                   \ifstretchrigidcolumns\vsize\else\scratchdimen\fi
                 \fi
-               {\unvbox\scratchbox}%
+                {\unvbox\scratchbox}%
               \wd\scratchbox=\hsize
               \box\scratchbox
               \hfill}%
            \hfillneg}%
-       \advance\scratchdimen by -\openstrutdepth
-       \setbox\scratchbox\hbox{\raise\scratchdimen\box\scratchbox}
-       \dp\scratchbox=\openstrutdepth
-       \ht\scratchbox=\scratchdimen
+       \advance\scratchdimen -\openstrutdepth
+       \setbox\scratchbox\normalhbox{\raise\scratchdimen\box\scratchbox}
+       \dp\scratchbox\openstrutdepth
+       \ht\scratchbox\scratchdimen
        \box\scratchbox}
    \fi}
 
@@ -1454,14 +1439,14 @@
 %D like:
 %D
 %D \starttypen
-%D \vbox
+%D \normalvbox
 %D   \bgroup
 %D     \startvboxtohbox ... \stopvboxtohbox
 %D     \startvboxtohbox ... \stopvboxtohbox
 %D     \startvboxtohbox ... \stopvboxtohbox
 %D   \egroup
 %D
-%D \vbox
+%D \normalvbox
 %D   \bgroup
 %D     \converthboxtovbox
 %D   \egroup
@@ -1481,18 +1466,18 @@
    \fi
    \divide\dimen0 by \hsize
    \multiply\dimen0 by 64
-   \xdef\vboxtohboxfactor{\expandafter\withoutpt\the\dimen0}%
+   \xdef\normalvboxtohboxfactor{\expandafter\withoutpt\the\dimen0}%
    \egroup}
 
 \def\startvboxtohbox%
  {\bgroup
   \setvboxtohbox
-  \setbox0=\hbox\bgroup}
+  \setbox0=\normalhbox\bgroup}
 
 \def\stopvboxtohbox%
   {\egroup
    \dp0=\zeropoint
-   \ht0=\vboxtohboxfactor\wd0
+   \ht0=\normalvboxtohboxfactor\wd0
    \box0
    \egroup}
 
@@ -1501,16 +1486,16 @@
 %
 % \def\stopvboxtohbox%
 %   {\egroup
-%    \setbox2=\vbox
+%    \setbox2=\normalvbox
 %      {\forgetall\unhcopy0\par\xdef\globalvhlines{\the\prevgraf}}%
-%    \setbox2=\vbox
+%    \setbox2=\normalvbox
 %      {\unvbox2
 %       \setbox2=\lastbox
-%       \setbox2=\hbox{\unhbox2}%
+%       \setbox2=\normalhbox{\unhbox2}%
 %       \xdef\globalvhwidth{\the\wd2}}%
 %    \decrement\globalvhlines
 %    \dimen0=\globalvhwidth
-%    \dimen0=\vboxtohboxfactor\dimen0
+%    \dimen0=\normalvboxtohboxfactor\dimen0
 %    \advance\dimen0 by \globalvhlines\lineheight
 %    \dp0=\zeropoint
 %    \ht0=\dimen0
@@ -1526,15 +1511,15 @@
 \def\convertvboxtohbox%
   {\setvboxtohbox
    \makehboxofhboxes
-   \setbox0=\hbox{\unhbox0 \removehboxes}%
+   \setbox0=\normalhbox{\unhbox0 \removehboxes}%
    \noindent\unhbox0\par}
 
 \def\makehboxofhboxes%
-  {\setbox0=\hbox{}%
+  {\setbox0=\normalhbox{}%
    \loop                  % \doloop { .. \exitloop .. }
      \setbox2=\lastbox
      \ifhbox2
-       \setbox0=\hbox{\box2\unhbox0}%
+       \setbox0=\normalhbox{\box2\unhbox0}%
    \repeat}
 
 \def\removehboxes%
@@ -1561,16 +1546,16 @@
    \clubpenalty=0
    \mindermeldingen
    \forgetall
-   \setbox\unhhedbox=\vbox{\hskip\hhboxindent\strut\unhbox#1}% => \hsize
+   \setbox\unhhedbox=\normalvbox{\hskip\hhboxindent\strut\unhbox#1}% => \hsize
    \doloop
      {\setbox\hhbox=\vsplit\unhhedbox to \lineheight
       \ifvoid\unhhedbox
-        \setbox\hhbox=\hbox{\strut\hboxofvbox\hhbox}%
+        \setbox\hhbox=\normalhbox{\strut\normalhboxofvbox\hhbox}%
       \fi
       \ht\hhbox=\ht\strutbox
       \dp\hhbox=\dp\strutbox
       \ifdim\hhboxindent=\zeropoint\else
-        \setbox\hhbox=\hbox{\hskip-\hhboxindent\box\hhbox}%
+        \setbox\hhbox=\normalhbox{\hskip-\hhboxindent\box\hhbox}%
         \hhboxindent=\zeropoint
       \fi
       \global\lasthhboxwidth=\wd\hhbox
@@ -1583,11 +1568,11 @@
    \egroup}
 
 \def\dohboxofvbox%
-  {\setbox0=\vbox{\unvbox\scratchcounter\global\setbox1=\lastbox}%
+  {\setbox0=\normalvbox{\unvbox\scratchcounter\global\setbox1=\lastbox}%
    \unhbox1
    \egroup}
 
-\def\hboxofvbox%
+\def\normalhboxofvbox%
   {\bgroup
    \afterassignment\dohboxofvbox
    \scratchcounter=}
@@ -1599,8 +1584,8 @@
 %D headers.
 %D
 %D \startbuffer
-%D \setbox0=\hbox{\input tufte \relax}
-%D \setbox2=\hbox{\input knuth \relax}
+%D \setbox0=\normalhbox{\input tufte \relax}
+%D \setbox2=\normalhbox{\input knuth \relax}
 %D \unhhbox0\with{\ruledhbox{\box\hhbox}}
 %D \hskip1em plus 1em minus 1em
 %D \hhboxindent=\lasthhboxwidth
@@ -1627,12 +1612,12 @@
 %D \doifcontent{pre content}{post content}{no content}\somebox
 %D \stoptypen
 %D
-%D Where \type{\somebox} is either a \type{\hbox} or
-%D \type{\vbox}. If the dimension of this box suggest some
+%D Where \type{\somebox} is either a \type{\normalhbox} or
+%D \type{\normalvbox}. If the dimension of this box suggest some
 %D content, the resulting box is unboxed and surrounded by the
 %D first two arguments, else the third arguments is executed.
 
-\def\doifcontent#1#2#3%
+\unexpanded\def\doifcontent#1#2#3%
   {\dowithnextbox
      {\ifhbox\nextbox
         \ifdim\wd\nextbox>\zeropoint
@@ -1651,11 +1636,11 @@
 %D So when we say:
 %D
 %D \startbuffer
-%D \doifcontent{[}{]}{}\hbox{content sensitive typesetting}
+%D \doifcontent{[}{]}{}\normalhbox{content sensitive typesetting}
 %D
-%D \doifcontent{}{\pagina}{}\vbox{content sensitive typesetting}
+%D \doifcontent{}{\pagina}{}\normalvbox{content sensitive typesetting}
 %D
-%D \doifcontent{}{}{\message{Didn't you forget something?}}\hbox{}
+%D \doifcontent{}{}{\message{Didn't you forget something?}}\normalhbox{}
 %D \stopbuffer
 %D
 %D \typebuffer
@@ -1698,7 +1683,7 @@
   {\dowithnextbox
      {\ifhmode\unskip\fi\doprocessbox % takes \nextbox makes \processbox
       \afterassignment\dogetprocessbox\let\next=}
-   \hbox\bgroup}
+   \normalhbox\bgroup}
 
 %D \macros
 %D   {startoverlay}
@@ -1722,10 +1707,10 @@
 % \def\dooverlaybox%
 %   {\ifhmode\unskip\fi
 %    \ifdim\ht\nextbox>\ht\processbox
-%      \setbox\processbox=\vbox to \ht\nextbox
+%      \setbox\processbox=\normalvbox to \ht\nextbox
 %        {\vss\box\processbox\vss}%
 %    \else
-%      \setbox\nextbox=\vbox to \ht\processbox
+%      \setbox\nextbox=\normalvbox to \ht\processbox
 %        {\vss\box\nextbox\vss}%
 %    \fi
 %    \scratchdimen=\wd
@@ -1734,10 +1719,10 @@
 %      \else
 %        \processbox
 %      \fi
-%    \setbox\processbox=\hbox to \scratchdimen
-%      {\hbox to \scratchdimen{\hss\box\processbox\hss}%
+%    \setbox\processbox=\normalhbox to \scratchdimen
+%      {\normalhbox to \scratchdimen{\hss\box\processbox\hss}%
 %       \hskip-\scratchdimen
-%       \hbox to \scratchdimen{\hss\box\nextbox\hss}}}
+%       \normalhbox to \scratchdimen{\hss\box\nextbox\hss}}}
 %
 % \def\startoverlay%
 %   {\bgroup
@@ -1753,10 +1738,10 @@
        \processbox
      \fi
    \ifdim\ht\nextbox>\ht\processbox
-     \setbox\processbox=\vbox to \ht\nextbox
+     \setbox\processbox=\normalvbox to \ht\nextbox
        {\dp\processbox=\zeropoint\vss\box\processbox\vss}%
    \else
-     \setbox\nextbox=\vbox to \ht\processbox
+     \setbox\nextbox=\normalvbox to \ht\processbox
        {\dp\nextbox=\zeropoint\vss\box\nextbox\vss}%
    \fi
    \dp\nextbox=\scratchdimen
@@ -1767,10 +1752,10 @@
      \else
        \processbox
      \fi
-   \setbox\processbox=\hbox to \scratchdimen
-     {\hbox to \scratchdimen{\hss\box\processbox\hss}%
+   \setbox\processbox=\normalhbox to \scratchdimen
+     {\normalhbox to \scratchdimen{\hss\box\processbox\hss}%
       \hskip-\scratchdimen
-      \hbox to \scratchdimen{\hss\box\nextbox\hss}}}
+      \normalhbox to \scratchdimen{\hss\box\nextbox\hss}}}
 
 \def\startoverlay%
   {\bgroup
@@ -1803,7 +1788,7 @@
 %    \def\dohspread{\hfil\box\nextbox}}
 %
 % \def\starthspread%
-%   {\hbox to \hsize \bgroup
+%   {\normalhbox to \hsize \bgroup
 %    \let\stophspread\egroup
 %    \processboxes\dohspread}
 
@@ -1813,7 +1798,7 @@
 %D The next macro is a rather silly one, but saves space.
 %D
 %D \starttypen
-%D \hbox{\fakebox0}
+%D \normalhbox{\fakebox0}
 %D \stoptypen
 %D
 %D returns an empty box with the dimensions of the box
@@ -1824,7 +1809,7 @@
    \wd\scratchbox=\wd\scratchcounter
    \ht\scratchbox=\ht\scratchcounter
    \dp\scratchbox=\dp\scratchcounter
-   \ifhbox\scratchcounter\hbox\else\vbox\fi{\box\scratchbox}%
+   \ifhbox\scratchcounter\normalhbox\else\normalvbox\fi{\box\scratchbox}%
    \egroup}
 
 \def\fakebox%
@@ -1842,7 +1827,7 @@
 %D \rbox{text ...}
 %D \stoptypen
 %D
-%D Are similar to \type {\vbox}, which means that they also
+%D Are similar to \type {\normalvbox}, which means that they also
 %D accept something like \type{to 3cm}, but align to the left,
 %D middle and right. These box types can be used to typeset
 %D paragraphs.
@@ -1852,7 +1837,7 @@
 \def\rbox{\lrcbox\raggedright}
 
 \def\lrcbox#1#2#%
-  {\vbox#2\bgroup
+  {\normalvbox#2\bgroup
    \let\\=\endgraf
    \forgetall#1\let\next=}
 
@@ -1879,29 +1864,29 @@
 \def\bbox{\tbbox\dp\ht}
 
 \def\tbbox#1#2%
-  {\hbox\bgroup
+  {\normalhbox\bgroup
    \dowithnextbox
      {\scratchdimen=\ht\nextbox
       \advance\scratchdimen\dp\nextbox
       \advance\scratchdimen-#1\strutbox
       #1\nextbox=#1\strutbox
       #2\nextbox=\scratchdimen
-      \setbox\nextbox=\hbox
+      \setbox\nextbox=\normalhbox
         {\lower\dp\nextbox\box\nextbox}%
       #1\nextbox=#1\strutbox
       #2\nextbox=\scratchdimen
       \box\nextbox
       \egroup}
-     \hbox}
+     \normalhbox}
 
 %D \macros 
 %D   {lhbox,mhbox,rhbox}
 %D
 %D A few more boxes. 
 
-\def\lhbox{\dowithnextbox{\hbox to \hsize{\box\nextbox\hss    }}\hbox}
-\def\mhbox{\dowithnextbox{\hbox to \hsize{\hss\box\nextbox\hss}}\hbox}
-\def\rhbox{\dowithnextbox{\hbox to \hsize{\hss\box\nextbox    }}\hbox}
+\def\lhbox{\dowithnextbox{\normalhbox to \hsize{\box\nextbox\hss    }}\normalhbox}
+\def\mhbox{\dowithnextbox{\normalhbox to \hsize{\hss\box\nextbox\hss}}\normalhbox}
+\def\rhbox{\dowithnextbox{\normalhbox to \hsize{\hss\box\nextbox    }}\normalhbox}
 
 \let\lefthbox =\lhbox 
 \let\midhbox  =\mhbox 
@@ -1915,7 +1900,7 @@
 %D additions, we can use:
 %D
 %D \starttypen
-%D \boxofsize \vbox 10cm 3cm -5cm {the text to be typeset}
+%D \boxofsize \normalvbox 10cm 3cm -5cm {the text to be typeset}
 %D \stoptypen
 %D
 %D This example demonstrates that one can use positive and
@@ -1949,12 +1934,12 @@
   {\dowithnextbox
      {\dimen0=#1\hsize
       \ifdim\wd\nextbox>\dimen0
-        \setbox\nextbox=\hbox
+        \setbox\nextbox=\normalhbox
           {\advance\dimen0 by -.1\hsize
            \limitatetext{\unhbox\nextbox}{\dimen0}{\nobreak#2}}%
       \fi
       \unhbox\nextbox}
-     \hbox}
+     \normalhbox}
 
 \def\fittoptobaselinegrid% weg hier
   {\dowithnextbox
@@ -1963,7 +1948,7 @@
       \dimen0=\ht\nextbox
       \ht\nextbox=\ht\strutbox
       \dp\nextbox=\dp\strutbox
-      \hbox{\box\nextbox}
+      \normalhbox{\box\nextbox}
       \prevdepth\dp\strutbox
       \doloop
         {\advance\dimen0 by -\lineheight
@@ -1971,80 +1956,91 @@
            \exitloop
          \else
            \nobreak
-           \hbox{\strut}
+           \normalhbox{\strut}
          \fi}
       \egroup}
-     \vbox}
+     \normalvbox}
 
 %D Some more undocumented macros (used in m-chart).
 
 \newif\iftraceboxplacement % \traceboxplacementtrue
 
-\def\boxcursor%
+\newbox\fakedboxcursor
+
+\setbox\fakedboxcursor\normalhbox
+  {\vrule\!!width\zeropoint\!!height\zeropoint\!!depth\zeropoint}
+
+\def\boxcursor% overloaded in core-vis 
   {\iftraceboxplacement
      \bgroup
-     \setbox0=\hbox
-       {\hskip-1pt\vrule\!!width2pt\!!height2pt\!!depth2pt}%
-     \smashbox0\box0
+     \scratchdimen2pt
+     \setbox\scratchbox\normalhbox to \zeropoint
+       {\hss
+        \vrule
+          \!!width \scratchdimen
+          \!!height\scratchdimen
+          \!!depth \scratchdimen
+        \hss}%
+     \smashbox\scratchbox 
+     \box\scratchbox 
      \egroup
    \else
-     \hbox
-       {\vrule\!!width\zeropoint\!!height\zeropoint\!!depth\zeropoint}%
+     \copy\fakedboxcursor
    \fi}
 
 \def\placedbox%
-  {\iftraceboxplacement\ruledhbox\else\hbox\fi}
+  {\iftraceboxplacement\ruledhbox\else\normalhbox\fi}
 
 \newdimen\boxoffset
 
 \def\rightbox#1%
-  {\hbox
+  {\normalhbox
      {\setbox0=\placedbox{#1}%
-      \dimen0=.5\ht0\advance\dimen0 by -.5\dp0
+      \dimen0=.5\ht0\advance\dimen0 -.5\dp0
       \boxcursor\hskip\boxoffset\lower\dimen0\box0}}
 
 \def\leftbox#1%
-  {\hbox
+  {\normalhbox
      {\setbox0=\placedbox{#1}%
-      \dimen0=.5\ht0\advance\dimen0 by -.5\dp0
+      \dimen0=.5\ht0\advance\dimen0 -.5\dp0
       \boxcursor\hskip-\wd0\hskip-\boxoffset\lower\dimen0\box0}}
 
 \def\topbox#1%
-  {\hbox
+  {\normalhbox
      {\setbox0=\placedbox{#1}%
-      \dimen0=\boxoffset\advance\dimen0 by \dp0
+      \dimen0=\boxoffset\advance\dimen0 \dp0
       \boxcursor\hskip-.5\wd0\raise\dimen0\box0}}
 
 \def\bottombox#1%
-  {\hbox
+  {\normalhbox
      {\setbox0=\placedbox{#1}%
-      \dimen0=\boxoffset\advance\dimen0 by \ht0
+      \dimen0=\boxoffset\advance\dimen0 \ht0
       \boxcursor\hskip-.5\wd0\lower\dimen0\box0}}
 
 \def\lefttopbox#1%
-  {\hbox
+  {\normalhbox
      {\setbox0=\placedbox{#1}%
-      \dimen0=\boxoffset\advance\dimen0 by \dp0
+      \dimen0=\boxoffset\advance\dimen0 \dp0
       \advance\boxoffset\wd0
       \boxcursor\hskip-\boxoffset\raise\dimen0\box0}}
 
 \def\righttopbox#1%
-  {\hbox
+  {\normalhbox
      {\setbox0=\placedbox{#1}%
-      \dimen0=\boxoffset\advance\dimen0 by \dp0
+      \dimen0=\boxoffset\advance\dimen0 \dp0
       \boxcursor\hskip\boxoffset\raise\dimen0\box0}}
 
 \def\leftbottombox#1%
-  {\hbox
+  {\normalhbox
      {\setbox0=\placedbox{#1}%
-      \dimen0=\boxoffset\advance\dimen0 by \ht0
+      \dimen0=\boxoffset\advance\dimen0 \ht0
       \advance\boxoffset\wd0
       \boxcursor\hskip-\boxoffset\lower\dimen0\box0}}
 
 \def\rightbottombox#1%
-  {\hbox
+  {\normalhbox
      {\setbox0=\placedbox{#1}%
-      \dimen0=\boxoffset\advance\dimen0 by \ht0
+      \dimen0=\boxoffset\advance\dimen0 \ht0
       \boxcursor\hskip\boxoffset\lower\dimen0\box0}}
 
 \let\topleftbox    \lefttopbox
@@ -2053,7 +2049,7 @@
 \let\bottomrightbox\rightbottombox
 
 \def\middlebox#1%
-  {\hbox{\setbox0=\placedbox{#1}\boxoffset=-.5\wd0\rightbox{\box0}}}
+  {\normalhbox{\setbox0=\placedbox{#1}\boxoffset=-.5\wd0\rightbox{\box0}}}
 
 %D \macros 
 %D   {initializeboxstack,savebox,foundbox}
@@ -2068,11 +2064,11 @@
 %D \savebox{one}{p}{test p}
 %D \savebox{one}{q}{test q}
 %D 
-%D \hbox{a:\foundbox{one}{a}} \par
-%D \hbox{q:\foundbox{one}{q}} \par
-%D \hbox{p:\foundbox{one}{p}} \par
-%D \hbox{x:\foundbox{one}{x}} \par
-%D \hbox{y:\foundbox{two}{a}} \par
+%D \normalhbox{a:\foundbox{one}{a}} \par
+%D \normalhbox{q:\foundbox{one}{q}} \par
+%D \normalhbox{p:\foundbox{one}{p}} \par
+%D \normalhbox{x:\foundbox{one}{x}} \par
+%D \normalhbox{y:\foundbox{two}{a}} \par
 %D \stoptypen 
 
 % a first version 
@@ -2085,7 +2081,7 @@
 %   {\ifundefined{\@@stackbox#1}%
 %      \@EA\newbox\csname\@@stackbox#1\endcsname
 %    \else
-%      \@EA\global\@EA\setbox\csname\@@stackbox#1\endcsname\vbox{}%
+%      \global\setbox\csname\@@stackbox#1\endcsname\normalvbox{}%
 %    \fi
 %    % actually we should erase the old values
 %    \setgvalue{\@@stackmax#1}{0}}
@@ -2095,22 +2091,22 @@
 %      {\doifdefined{\@@stackbox#1}
 %         {\@EA\doglobal\@EA\increment\csname\@@stackmax#1\endcsname
 %          \setxvalue{\@@stacktag#2}{\csname\@@stackmax#1\endcsname}%
-%          \global\setbox\csname\@@stackbox#1\endcsname=\vbox
+%          \global\setbox\csname\@@stackbox#1\endcsname=\normalvbox
 %            {\forgetall
-%             \setbox\scratchbox=\vbox{\box\nextbox}
+%             \setbox\scratchbox=\normalvbox{\box\nextbox}
 %             \ht\scratchbox=\!!onepoint
-%             \dp\scratchbox=\!!zeropoint
+%             \dp\scratchbox=\zeropoint
 %             \unvbox\csname\@@stackbox#1\endcsname
 %             \offinterlineskip
 %             \allowbreak
 %             \box\scratchbox}}}%
-%    \vbox}
+%    \normalvbox}
 % 
 % \def\foundbox#1#2%
-%   {\vbox
+%   {\normalvbox
 %      {\doifdefined{\@@stackbox#1}
 %         {\doifdefined{\@@stacktag#2}
-%            {\setbox\scratchbox=\vbox
+%            {\setbox\scratchbox=\normalvbox
 %               {\splittopskip\zeropoint
 %                \setbox0=\copy\csname\@@stackbox#1\endcsname
 %                \dimen0=\getvalue{\@@stacktag#2}pt     
@@ -2133,7 +2129,7 @@
   {\ifundefined{\@@stackbox#1}%
      \@EA\newbox\csname\@@stackbox#1\endcsname
    \else
-     \@EA\global\@EA\setbox\csname\@@stackbox#1\endcsname\vbox{}%
+     \global\setbox\csname\@@stackbox#1\endcsname\normalvbox{}%
      \def\docommando##1{\global\letbeundefined{\@@stacktag#1:##1}}%
      \processcommacommand[\getvalue{\@@stacklst#1}]\docommando
    \fi
@@ -2146,22 +2142,22 @@
         {\@EA\doglobal\@EA\increment\csname\@@stackmax#1\endcsname
          \setxvalue{\@@stacktag#1:#2}{\csname\@@stackmax#1\endcsname}%
          \setxvalue{\@@stacklst#1}{\getvalue{\@@stacklst#1},#2}%
-         \global\setbox\csname\@@stackbox#1\endcsname=\vbox
+         \global\setbox\csname\@@stackbox#1\endcsname=\normalvbox
            {\forgetall
-            \setbox\scratchbox=\vbox{\box\nextbox}
+            \setbox\scratchbox=\normalvbox{\box\nextbox}
             \ht\scratchbox=\!!onepoint
-            \dp\scratchbox=\!!zeropoint
+            \dp\scratchbox=\zeropoint
             \unvbox\csname\@@stackbox#1\endcsname
             \offinterlineskip
             \allowbreak
             \box\scratchbox}}}%
-   \vbox}
+   \normalvbox}
 
 \def\foundbox#1#2%
-  {\vbox
+  {\normalvbox
      {\doifdefined{\@@stackbox#1}
         {\doifdefined{\@@stacktag#1:#2}
-           {\setbox\scratchbox=\vbox
+           {\setbox\scratchbox=\normalvbox
               {\splittopskip\zeropoint
                \setbox0=\copy\csname\@@stackbox#1\endcsname
                \dimen0=\getvalue{\@@stacktag#1:#2}pt
@@ -2187,7 +2183,7 @@
   {\ifcsname\@@stackbox:#1:#2\endcsname\else
      \expandafter\newbox\csname\@@stackbox:#1:#2\endcsname
    \fi
-   \global\setbox\csname\@@stackbox:#1:#2\endcsname\vbox}
+   \global\setbox\csname\@@stackbox:#1:#2\endcsname\normalvbox}
 
 \def\initializeboxstack#1%
   {\def\docommando##1{\setstackbox{#1}{##1}{}}%
@@ -2201,7 +2197,7 @@
    \setstackbox{#1}{#2}}
 
 \def\foundbox#1#2%
-  {\vbox
+  {\normalvbox
      {\ifcsname\@@stackbox:#1:#2\endcsname
         \copy\csname\@@stackbox:#1:#2\endcsname
       \fi}}
@@ -2247,15 +2243,15 @@
 %D article. 
 %D
 %D \starttypen 
-%D \raisebox{100pt}\hbox{test} 
-%D \raisebox50pt\hbox{test} 
-%D \hsmash{\raisebox{100pt}\hbox{test}} 
+%D \raisebox{100pt}\normalhbox{test} 
+%D \raisebox50pt\normalhbox{test} 
+%D \hsmash{\raisebox{100pt}\normalhbox{test}} 
 %D \stoptypen 
 
 \def\doraiselowerbox#1#2% a nice trick us used to accept 
   {\def\next%           % both direct and {} dimensions 
      {\dowithnextbox
-        {\setbox\nextbox=\hbox{#1\scratchdimen\box\nextbox}%
+        {\setbox\nextbox=\normalhbox{#1\scratchdimen\box\nextbox}%
          \ht\nextbox=\ht\strutbox
          \dp\nextbox=\dp\strutbox
          \box\nextbox}}%
@@ -2270,7 +2266,7 @@
 %   {\bgroup
 %    \ifdim\prevdepth<\zeropoint
 %      \ifdim\pagetotal=\zeropoint
-%        \setbox8=\vtop{\unvcopy#1}%
+%        \setbox8=\normalvtop{\unvcopy#1}%
 %        \hrule\c!!height\zeropoint
 %        \kern-\ht8
 %        \box#1\relax
@@ -2280,7 +2276,7 @@
 %    \else
 %      \dimen0=\prevdepth
 %      \hrule\c!!height\zeropoint
-%      \setbox8=\vtop{\unvcopy#1}%
+%      \setbox8=\normalvtop{\unvcopy#1}%
 %      \dimen2=\baselineskip
 %      \advance\dimen2 by -\dimen0
 %      \advance\dimen2 by -\ht8
@@ -2313,15 +2309,15 @@
 % \def\donormbox[#1][#2]%
 %   {\bgroup
 %    \doifinstringelse{v}{#2}
-%      {\let\next\vbox}
-%      {\let\next\hbox}%
+%      {\let\next\normalvbox}
+%      {\let\next\normalhbox}%
 %    \dowithnextbox
 %      {\ifvbox\nextbox
 %         \let\\=\par
-%         \dodonormbox{#1}{#2}\vbox\ruledvbox\ht\vfil\unvbox
+%         \dodonormbox{#1}{#2}\normalvbox\ruledvbox\ht\vfil\unvbox
 %       \else
 %         \let\\=\space
-%         \dodonormbox{#1}{#2}\hbox\ruledhbox\wd\hfil\unhbox
+%         \dodonormbox{#1}{#2}\normalhbox\ruledhbox\wd\hfil\unhbox
 %       \fi
 %       \egroup}%
 %    \next}
@@ -2334,16 +2330,34 @@
 \def\halfwaybox%
   {\dowithnextbox
      {\dp\nextbox\zeropoint
-      \setbox\nextbox=\hbox{\lower.5\ht\nextbox\box\nextbox}%
+      \setbox\nextbox=\normalhbox{\lower.5\ht\nextbox\box\nextbox}%
       \box\nextbox}
-   \hbox}
+   \normalhbox}
 
-
-% new 
+%D New: 
 
 \def\setdimentoatleast#1#2%
   {\ifdim#1>\zeropoint\else#1=#2\fi}
- 
-\protect
+
+%D \macros 
+%D   {vcenter}
+%D
+%D Also new: tex mode \type {\vcenter}. 
+
+\ifx \normalhbox    \undefined \let \normalhbox    = \hbox    \fi 
+\ifx \normalvbox    \undefined \let \normalvbox    = \vbox    \fi 
+\ifx \normalvtop    \undefined \let \normalvtop    = \vtop    \fi 
+\ifx \normalvcenter \undefined \let \normalvcenter = \vcenter \fi 
+
+\let\verynormalvcenter \vcenter % since \vcenter can be visualized
+
+\def\vcenter%
+  {\normalvbox\bgroup
+   \dowithnextbox{\normalhbox{$\verynormalvcenter{\box\nextbox}$}\egroup}
+   \normalvbox}
+
+\prependtoks \let\vcenter\normalvcenter \to \everymath
+
+ \protect
 
 \endinput

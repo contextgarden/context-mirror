@@ -162,7 +162,7 @@
   {\localpushmacro\characterregime
    \edef\characterregime{@#1@}%
    \doifundefined{\@reg@\characterregime}
-     {\expanded{\newtoks\csname\@reg@\characterregime\endcsname}}}
+     {\@EA\newtoks\csname\@reg@\characterregime\endcsname}}
 
 \def\stopregime%
   {\localpopmacro\characterregime}
@@ -201,12 +201,19 @@
 %D This command is typically used in coding definitions, 
 %D like the \UNICODE\ one. 
 
+%\def\dodefineactivedecimal#1#2% \unexpanded ? pdfdoc encoding 
+%  {\catcode#1=\active % maybe \protectregimetrue
+%   \scratchcounter=\the\uccode`~
+%   \uccode`~=#1\relax
+%   \uppercase{\unexpanded\edef~{\noexpand#2{\number#1}}}%
+%   \uccode`~=\scratchcounter}
+
 \def\dodefineactivedecimal#1#2% \unexpanded ? pdfdoc encoding 
-  {\catcode#1=\active % maybe \protectregimetrue
-   \scratchcounter=\the\uccode`~
-   \uccode`~=#1\relax
+  {\catcode#1\active 
+   \scratchcounter\uccode\activehackcode
+   \uccode\activehackcode#1\relax
    \uppercase{\unexpanded\edef~{\noexpand#2{\number#1}}}%
-   \uccode`~=\scratchcounter}
+   \uccode\activehackcode\scratchcounter}
 
 \long\def\defineactivedecimal#1 #2 %
   {\setregimetoks
@@ -340,8 +347,8 @@
 
 \def\definecasemaps #1 to #2 lc #3 uc #4 % from to lc+ uc+ 
   {\dostepwiserecurse{#1}{#2}{1}
-     {\!!counta=\recurselevel\advance\!!counta by #3\relax
-      \!!countb=\recurselevel\advance\!!countb by #4\relax
+     {\!!counta\recurselevel\advance\!!counta #3\relax
+      \!!countb\recurselevel\advance\!!countb #4\relax
       \expanded{\definecasemap
         \recurselevel\space\the\!!counta\space\the\!!countb\space}}%
    \ignorespaces}
@@ -374,8 +381,8 @@
 
 \def\setspacemap #1 #2 %
   {\setregimecode{#1}\@@other
-   \lccode #1=0 
-   \uccode #1=0 
+   \lccode #1=\zerocount
+   \uccode #1=\zerocount 
    \sfcode #1=#2 } 
 
 \def\defineuppercasecom#1#2% 
@@ -402,9 +409,21 @@
        {\the\csname\@map@\charactermapping\endcsname}%
      \edef\enabledmapping{\charactermapping}%
      \enablelanguagespecifics[\currentlanguage]% new 
-%     \edef\enabledmapping{\charactermapping\currentlanguage}%
+   % \edef\enabledmapping{\charactermapping\currentlanguage}% can be comma list 
    \fi
    \synchronizepatterns}
+
+% on behalf of font switching: 
+
+\def\fastenablemapping#1%
+  {\edef\charactermapping{@#1@}%
+   \ifx\enabledmapping\charactermapping \else
+     \@EA\ifx\csname\@map@\charactermapping\endcsname\relax\else
+       \the\csname\@map@\charactermapping\endcsname
+     \fi
+     \let\enabledmapping\charactermapping
+     \enablelanguagespecifics[\currentlanguage]% to faster 
+   \fi}
 
 %D This macro wil be implemented in \type {lang-ini.tex}. 
 
@@ -518,21 +537,23 @@
 %D \type {\reduceto}||command for local switching to 
 %D simplified commands. 
 
+% etex : \ifcsname 
+
 \def\donthandleaccent#1#2% \empty makes #2={} save % no \unexpanded 
   {\ifundefined{\characterencoding#1\string#2\empty}% 
      #2%
    \else
-     \getvalue{\characterencoding#1\string#2\empty}%
+     \csname\characterencoding#1\string#2\empty\endcsname
    \fi}
 
 \def\donthandlecommand#1% % no \unexpanded, otherwise pdfdoc will fail 
   {\ifundefined{\characterencoding#1}% as well as hyph patterns
      #1%
    \else
-     \getvalue{\characterencoding#1}%
+     \csname\characterencoding#1\endcsname
    \fi}
 
-\def\enablecoding%
+\def\enableencoding%
   {\dodoubleempty\doenableencoding}
 
 \def\doenableencoding[#1][#2]% main fallback 
@@ -540,12 +561,24 @@
    \edef\nocharacterencoding{@\ifsecondargument#2\else\s!default\fi @}%
    \synchronizepatterns}
 
-\def\startcoding%
-  {\dodoubleempty\dostartcoding}
+%\def\enablesimpleencoding#1% e.g. \enableencoding{raw}
+%  {\edef\characterencoding{@#1@}% handy for XML key=val's 
+%   \edef\nocharacterencoding{@\s!default @}} % evt noppes 
 
-\def\dostartcoding[#1][#2]% encoding regime 
+% in font switch and xml simple k/v remapping
+
+\edef\xnocharacterencoding{@\s!default @}
+
+\def\fastenableencoding#1%
+  {\edef\characterencoding{@#1@}%
+   \let\nocharacterencoding\xnocharacterencoding}
+
+\def\startencoding%
+  {\dodoubleempty\dostartencoding}
+
+\def\dostartencoding[#1][#2]% encoding regime 
   {\doifelsenothing{#1}
-     {\let\stopcoding\relax}
+     {\let\stopencoding\relax}
      {%\protectfontcharacters % problematic in language loading
       \showmessage{\m!encodings}{1}{#1}%
       \pushmacro\dohandleaccent
@@ -560,14 +593,14 @@
         {% message 
          \let\doautosetregime\gobbletwoarguments}
         {\def\currentcharacterregime{@#2@}}%
-      \enablecoding[#1]%
-      \def\stopcoding%
+      \enableencoding[#1]%
+      \def\stopencoding%
         {\popmacro\dosetautoregime
          \popmacro\currentcharacterregime
          \popmacro\definesortkey
          \popmacro\dohandlecommand
          \popmacro\dohandleaccent
-         \enablecoding[\s!default]%
+         \enableencoding[\s!default]%
          }}}% \unprotectfontcharacters}}} % ?? 
 
 % probably obsolete 
@@ -576,12 +609,12 @@
   {\doifsomething{#1}
      {\let\dohandleaccent\donthandleaccent
       \let\dohandlecommand\donthandlecommand
-      \enablecoding[#1]%
+      \enableencoding[#1]%
       \enablelanguagespecifics[\currentlanguage]}}
 
-\def\startencoding {\startcoding}
-\def\stopencoding  {\stopcoding}
-\def\enableencoding{\enablecoding}
+\let\startcoding  \startencoding
+\def\stopcoding  {\stopencoding }
+\let\enablecoding \enableencoding
 
 %D The use of these macros are not limited to font 
 %D definition files, but may also be used when loading 
@@ -908,7 +941,9 @@
 %D
 %D The \type{\next} construction permits handling of commands
 %D that take arguments. This means that we can use this
-%D command to redefine accent handling commands too.
+%D command to redefine accent handling commands too 
+%D (although today the next is not needed any longer in test 
+%D macros). 
 
 \def\redefinecommand#1 %
   {% no \unexpanded, else pdfdoc fails 
@@ -1074,21 +1109,25 @@
 %D \type{\lccode} and applying \type{\lowcase}. An example of
 %D this can be found in \type{spec-mis}.
 
+\ifx\obeylccodes\undefined
+
 \def\obeylccodes%
   {\scratchcounter32
    \loop
      \ifnum\scratchcounter<127
        \lccode\scratchcounter\scratchcounter
-       \advance\scratchcounter 1
+       \advance\scratchcounter \plusone
    \repeat
    \ifeightbitcharacters
      \scratchcounter128
      \loop
        \ifnum\scratchcounter<255
          \lccode\scratchcounter`.
-         \advance\scratchcounter 1
+         \advance\scratchcounter \plusone
      \repeat
    \fi}
+
+\fi 
 
 % %D \macros 
 % %D   {cc,CC}
@@ -1280,11 +1319,11 @@
   {\leavevmode
    \vtop
      {\forgetall
-      \baselineskip\!!zeropoint
+      \baselineskip\zeropoint
       \lineskip#1%
       \everycr\emptytoks
-      \tabskip\!!zeropoint
-      \lineskiplimit\!!zeropoint
+      \tabskip\zeropoint
+      \lineskiplimit\zeropoint
       \setbox0=\hbox{#4}%
       \halign
         {##\crcr#5\crcr
@@ -1360,6 +1399,17 @@
 % \startregime[ec]
 %   \useencodingvector ec
 % \stopregime
+
+% new, to be documented 
+
+\def\dontexpandencoding%
+  {\let\dohandleaccent   \donthandleaccent
+   \let\dohandlecommand  \donthandlecommand
+   \let\dohandlecharacter\donthandlecharacter}
+
+\def\donthandleaccent   #1{\expandafter\string\csname#1\endcsname\space}
+\def\donthandlecommand  #1{\expandafter\string\csname#1\endcsname\space}
+\def\donthandlecharacter#1{\expandafter\string\csname#1\endcsname\space}
 
 %D We preload several encodings: 
 

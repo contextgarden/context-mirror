@@ -41,14 +41,23 @@
    \blank[3*big]
    \stopstandardmakeup}
 
-\def\FileWithFAQs%
-  {\page
-   \input \FileNameOfFAQ \relax
-   \page}
+\def\StartReadingFAQ
+  {\page}
 
-\def\IndexPage%
+\def\StopReadingFAQ
+  {\page}
+
+\def\FileWithFAQs
+  {\StartReadingFAQ
+   \input \FileNameOfFAQ \relax
+   \StopReadingFAQ}
+
+\def\IndexPage
   {\page
    \setupfootertexts[\labeltext{index}][]
    \placeregister[index]}
+
+\def\AllFAQs
+  {}
 
 \endinput

@@ -11,18 +11,109 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
 %C details. 
 
+%D Code from this module will move. For instance to 
+%D syst-dat.tex (datastructures).
+
 \unprotect
+
+% For myself
+
+\newcount\nofprofiled
+
+\def\profilemacro#1%
+  {\nofprofiled=0
+   \letvalue{\string#1\string#1}#1%
+   \appendtoks
+     \writestatus{\m!systems}{profile \string#1: \number\nofprofiled}%
+   \to \everystoptext
+   \unexpanded\def#1%
+     {\global\advance\nofprofiled\plusone
+      \csname\string#1\string#1\endcsname}}
+
+% pretty ugly but fast 
+
+% \copycsname xxx\endcsname\csname ..\endcsname
+
+\def\copycsname{\@EA\@EA\@EA\let\@EA\@EA\csname}
+
+% \letcscsname    \crap               \csname ..\endcsname
+% \letcsnamecs    \csname ..\endcsname\crap
+% \letcsnamecsname\csname ..\endcsname\csname ..\endcsname
+
+\def\letcscsname    {\@EA\let\@EA}
+\def\letcsnamecs    {\@EA\let}
+\def\letcsnamecsname{\@EA\@EA\@EA\let\@EA\@EA}
+
+% another one, add an item to a commalist
+
+\def\addvalue#1#2% cs item 
+  {\ifundefined{#1}\@EA\let\csname#1\endcsname\empty\fi
+   \expanded{\addtocommalist{#2}\@EA\noexpand\csname#1\endcsname}}
+
+% faster, and looks okay
+
+\dostepwiserecurse{0}{255}{1}
+  {\@EA\chardef\csname-\recurselevel\endcsname\recurselevel}
+
+\newtoks\withminorcharacters
+\newtoks\withlowercharacters
+\newtoks\withuppercharacters
+
+% \thewithcharacter#1 % self
+
+\dostepwiserecurse{0}{31}{1}
+  {\expanded
+     {\appendtoks\noexpand\withcharacter\csname-\recurselevel\endcsname
+        \noexpand\to\withminorcharacters}}
+
+\dostepwiserecurse{32}{127}{1}
+  {\expanded
+     {\appendtoks\noexpand\withcharacter\csname-\recurselevel\endcsname
+        \noexpand\to\withlowercharacters}}
+
+\dostepwiserecurse{128}{255}{1}
+  {\expanded
+     {\appendtoks\noexpand\withcharacter\csname-\recurselevel\endcsname
+        \noexpand\to\withuppercharacters}}
+
+\def\doassigncatcodes#1%
+  {\def\withcharacter##1{\catcode##1#1}%
+   \the\withminorcharacters
+   \the\withlowercharacters
+   \ifeightbitcharacters\the\withuppercharacters\fi}
+
+\def\makeallother%
+  {\doassigncatcodes\@@other}
+
+\chardef\obeyedlccode=`. % so <32 and >127 chars become .
+
+%\def\obeylccodes%
+%  {\def\withcharacter##1{\lccode##1##1}%
+%   \the\withlowercharacters
+%   \def\withcharacter##1{\lccode##1\obeyedlccode}%
+%   \the\withminorcharacters
+%   \ifeightbitcharacters\the\withuppercharacters\fi}
+
+\def\setownlccode   #1{\lccode#1#1}
+\def\setobeyedlccode#1{\lccode#1\obeyedlccode}
+
+\def\obeylccodes%
+  {\let\withcharacter\setownlccode 
+   \the\withlowercharacters
+   \let\withcharacter\setobeyedlccode
+   \the\withminorcharacters
+   \ifeightbitcharacters\the\withuppercharacters\fi}
 
 \def\unspaced#1%
   {\dounspaced#1\end}
 
 \def\dounspaced#1%
   {\ifx#1\end
-   \else\ifx#1\blankspace
-     \@EA\@EA\@EA\dounspaced
+     \@EA\gobbleoneargument
    \else
-     #1\@EA\@EA\@EA\dounspaced
-   \fi\fi}
+     \ifx#1\blankspace\else#1\fi
+   \fi
+   \dounspaced}
 
 \def\unspaceargument#1\to#2%
   {\convertargument#1\to#2%
@@ -30,10 +121,53 @@
 
 \def\unspaceafter#1#2%
   {\edef\ascii{\dounspaced#2\end}\@EA#1\@EA{\ascii}}
+
+
+% etex, much faster 
+%
+% \def\unspaceargument#1\to#2%
+%   {\scratchcounter\catcode'32\catcode32=\@@ignore
+%    \scantokens{\edef#2{#1}}% 
+%    \catcode32=\scratchcounter}
+
+\def\unspaceafter#1#2%
+  {\edef\ascii{\dounspaced#2\end}\@EA#1\@EA{\ascii}}
+
+% this will replace loadfile once and alike !!! todo 
+
+\def\@flg@{@flg@}
+
+\def\setflag#1%
+  {\@EA\dodoglobal\@EA\chardef\csname\@flg@#1\endcsname=0 } 
+
+\def\resetflag#1%
+  {\@EA\dodoglobal\@EA\chardef\csname\@flg@#1\endcsname=1 } 
+
+\let\ifflagged\ifcase
+
+\def\flag#1{\csname\@flg@#1\endcsname}
+
+\def\doifelseflagged#1%
+  {\@EA\ifx\csname\@flg@#1\endcsname\relax 
+     \@EA\secondoftwoarguments
+   \else\ifcase\csname\@flg@#1\endcsname 
+     \@EAEAEA\firstoftwoarguments
+   \else
+     \@EAEAEA\secondoftwoarguments
+   \fi\fi} 
+
+\def\doifnotflagged#1%
+  {\@EA\ifx\csname\@flg@#1\endcsname\relax 
+     \@EA\firstofoneargument
+   \else\ifcase\csname\@flg@#1\endcsname 
+     \@EAEAEA\gobbleoneargument 
+   \else
+     \@EAEAEA\firstofoneargument
+   \fi\fi} 
 
 \def\inheritparameter[#1]#2[#3]#4[#5]% tag tokey fromkey % [bypasses k!prefix]
-  {\@EA\@EA\@EA\def\@EA\csname\@EA#1\@EA#3\@EA
-     \endcsname\@EA{\csname#1#5\endcsname}}
+  {\@EAEAEA\def\@EA\csname\@EA#1\@EA#3\@EA\endcsname\@EA
+     {\csname#1#5\endcsname}}
 
 % \buildarray[test][aa,bb,cc,dd,ee,ff]
 % \setarrayelement{test}{1}{qq}
@@ -89,14 +223,14 @@
 % here ? 
 
 \def\dosetrawvalue#1#2#3%
-  {\setvalue{#1#2}{#3}}
+  {\@EA\def\csname#1#2\endcsname{#3}}
 
 \def\getrawparameters%
   {\dogetparameters\dosetrawvalue}
 
 \def\splitskip#1%
-  {\scratchskip=0pt plus 1pt minus 1pt
-   \advance\scratchskip by #1
+  {\scratchskip\zeropoint \!!plus 1pt \!!minus 1pt
+   \advance\scratchskip#1\relax % \relax is realy needed here
    \expandafter\SPLITSKIP\the\scratchskip}
 
 {\catcode`\.=\@@other
@@ -113,8 +247,8 @@
 
 \def\DOSPLITSKIP#1 #2 #3
   {\dimen0=#1pt\dimen2=#2pt\dimen4=#3pt
-   \advance\dimen2 by -1pt%
-   \advance\dimen4 by -1pt}
+   \advance\dimen2 -1pt%
+   \advance\dimen4 -1pt}
 
 % \def\minimaxskip#1#2%
 %   {\splitskip#2\relax
@@ -140,15 +274,11 @@
 \newcount\modcounter
 
 \def\DoMod #1by#2to#3%
-  {\modcounter=#1\relax
-   \divide\modcounter by #2\relax
-   \multiply\modcounter by #2\relax
-   #3=#1\relax
-   \advance#3 by -\modcounter}
+  {\modcounter#1\divide\modcounter#2\multiply\modcounter#2%
+   #3#1\advance#3 -\modcounter}
 
 \def\DoDiv #1by#2to#3%
-  {#3=#1\relax
-   \divide#3 by #2\relax}
+  {#3#1\divide#3 #2\relax}
 
 \def\dounprotected#1\par%
   {#1\protect}
@@ -209,18 +339,21 @@
 \newcount\featuretest
 
 \def\testfeature#1#2%
-  {\def\dotestfeature%
+  {\def\dotestfeature
      {\advance\featuretest 1
       \ifnum\featuretest<#1\relax#2\expandafter\dotestfeature\fi}%
    \retestfeature}
 
-\def\retestfeature%
+\def\retestfeature
   {\bgroup
    \ifcase\interactionmode\let\wait\relax\fi
    \message{starting feature test}\wait
    \featuretest=-1 \dotestfeature
    \message{feature test done}\wait
    \egroup}
+
+\def\testfeatureonce#1#2%
+  {\let\wait\relax\testfeature{#1}{#2}\end}
 
 %D \macros
 %D   {adddimenregister,adddimenmacro}
@@ -266,6 +399,12 @@
 
 \def\freezedimenmacro#1%
   {\scratchdimen#1\edef#1{\the\scratchdimen}}
+
+%D The next one is slower: 
+%D
+%D \starttypen
+%D \def\freezedimenmacro#1{\edef#1{\the\dimexpr(#1)}} 
+%D \stoptypen 
 
 % \newcount\rawrecursecounter
 % 
@@ -346,6 +485,23 @@
 
 \let\donothing\empty
 
-\protect
+% The following macros are used in XML handling. 
 
-\endinput
+\def\dowithstringed#1#2#3#4% " ' space 
+  {\if#4"\@EA#1\else\if#4'\@EAEAEA#2\else\@EAEAEA#3\fi\fi#4} 
+
+\def\unstringed%
+  {\dowithstringed\unstringdouble\unstringsingle\unstringnothing}
+
+\def\unstringdouble"#1"{#1}
+\def\unstringsingle'#1'{#1}
+\def\unstringspaced #1 {#1}
+
+\def\grabstring%
+  {\dowithstringed\grabstringdouble\grabstringsingle\grabstringspaced}
+
+\def\grabstringdouble"#1"{\scratchtoks{#1}}
+\def\grabstringsingle'#1'{\scratchtoks{#1}}
+\def\grabstringspaced #1 {\scratchtoks{#1}}
+
+\protect \endinput

@@ -289,12 +289,11 @@
 %   \definesortkey {\o}{z} {c}{\o}
 %   \definesortkey {\O}{z} {c}{\O}
 %   \definesortkey {\aa}{z}{d}{\aa}
+%   \definesortkey {\aring}{z}{d}{\aring}
 %   \definesortkey {\AA}{z}{d}{\AA}
+%   \definesortkey {\Aring}{z}{d}{\Aring}
 %
 % \stoplanguagespecifics
-%
-%  Active characters - just for texnansi encoding now.
-%  Will the other encodings be the same?
 %
 % \startencoding[texnansi]
 %   \startlanguagespecifics[\s!no]%
@@ -311,7 +310,7 @@
 \setupheadtext [\s!nl] [\v!inhoud=Inhoud]
 \setupheadtext [\s!de] [\v!inhoud=Inhalt]
 \setupheadtext [\s!da] [\v!inhoud=Indhold]
-\setupheadtext [\s!sv] [\v!inhoud=Inneh\aa l]
+\setupheadtext [\s!sv] [\v!inhoud=Inneh\aring l]
 \setupheadtext [\s!af] [\v!inhoud=Inhoud]
 \setupheadtext [\s!no] [\v!inhoud=Innhold]
 
@@ -357,9 +356,9 @@
 
 \setupheadtext [\s!en] [\v!afkortingen=Abbreviations]
 \setupheadtext [\s!nl] [\v!afkortingen=Afkortingen]
-\setupheadtext [\s!de] [\v!afkortingen=Abk\"urzungen]
+\setupheadtext [\s!de] [\v!afkortingen=Abk\uumlaut rzungen]
 \setupheadtext [\s!da] [\v!afkortingen=Forkortelser]
-\setupheadtext [\s!sv] [\v!afkortingen=F\"orkortningen]
+\setupheadtext [\s!sv] [\v!afkortingen=F\oumlaut rkortningen]
 \setupheadtext [\s!af] [\v!afkortingen=Afkortings]
 \setupheadtext [\s!no] [\v!afkortingen=Forkortelser]
 
@@ -472,7 +471,7 @@
 \setuplabeltext [\s!de] [\v!regel=Zeile ]
 \setuplabeltext [\s!da] [\v!regel=linie ] % or linje 
 \setuplabeltext [\s!sv] [\v!regel=rad ]
-\setuplabeltext [\s!af] [\v!regel=re\"el ]
+\setuplabeltext [\s!af] [\v!regel=re\ediaeresis l ]
 \setuplabeltext [\s!no] [\v!regel=linje ]
 
 \setuplabeltext [\s!en] [\v!regels=lines ]
@@ -480,7 +479,7 @@
 \setuplabeltext [\s!de] [\v!regels=Zeilen ]
 \setuplabeltext [\s!da] [\v!regels=linier ] % or linjer 
 \setuplabeltext [\s!sv] [\v!regels=raden ]
-\setuplabeltext [\s!af] [\v!regels=re\"els ]
+\setuplabeltext [\s!af] [\v!regels=re\ediaeresis ls ]
 \setuplabeltext [\s!no] [\v!regels=linjer ]
 
 \setuplabeltext [\s!en]   [\v!january=January]
@@ -511,7 +510,7 @@
 
 \setuplabeltext [\s!de]   [\v!january=Januar]
 \setuplabeltext [\s!de]  [\v!february=Februar]
-\setuplabeltext [\s!de]     [\v!march=M\"arz]
+\setuplabeltext [\s!de]     [\v!march=M\aumlaut rz]
 \setuplabeltext [\s!de]     [\v!april=April]
 \setuplabeltext [\s!de]       [\v!may=Mai]
 \setuplabeltext [\s!de]      [\v!june=Juni]
@@ -598,21 +597,21 @@
 \setuplabeltext [\s!de]    [\v!friday=Freitag]
 \setuplabeltext [\s!de]  [\v!saturday=Samstag]
 
-\setuplabeltext [\s!da]    [\v!sunday=s\o ndag]
+\setuplabeltext [\s!da]    [\v!sunday=s\ostroke ndag]
 \setuplabeltext [\s!da]    [\v!monday=mandag]
 \setuplabeltext [\s!da]   [\v!tuesday=tirsdag]
 \setuplabeltext [\s!da] [\v!wednesday=onsdag]
 \setuplabeltext [\s!da]  [\v!thursday=torsdag]
 \setuplabeltext [\s!da]    [\v!friday=fredag]
-\setuplabeltext [\s!da]  [\v!saturday=l\o rdag]
+\setuplabeltext [\s!da]  [\v!saturday=l\ostroke rdag]
 
-\setuplabeltext [\s!sv]    [\v!sunday=s\"ondag]
-\setuplabeltext [\s!sv]    [\v!monday=m\aa ndag]
+\setuplabeltext [\s!sv]    [\v!sunday=s\oumlaut ndag]
+\setuplabeltext [\s!sv]    [\v!monday=m\aring ndag]
 \setuplabeltext [\s!sv]   [\v!tuesday=tisdag]
 \setuplabeltext [\s!sv] [\v!wednesday=onsdag]
 \setuplabeltext [\s!sv]  [\v!thursday=torsdag]
 \setuplabeltext [\s!sv]    [\v!friday=fredag]
-\setuplabeltext [\s!sv]  [\v!saturday=l\"ordag]
+\setuplabeltext [\s!sv]  [\v!saturday=l\oumlaut rdag]
 
 \setuplabeltext [\s!af]    [\v!sunday=sondag]
 \setuplabeltext [\s!af]    [\v!monday=maandag]
@@ -622,13 +621,13 @@
 \setuplabeltext [\s!af]    [\v!friday=vrydag]
 \setuplabeltext [\s!af]  [\v!saturday=saterdag]
 
-\setuplabeltext [\s!no]    [\v!sunday=s\o ndag]
+\setuplabeltext [\s!no]    [\v!sunday=s\ostroke ndag]
 \setuplabeltext [\s!no]    [\v!monday=mandag]
 \setuplabeltext [\s!no]   [\v!tuesday=tirsdag]
 \setuplabeltext [\s!no] [\v!wednesday=onsdag]
 \setuplabeltext [\s!no]  [\v!thursday=torsdag]
 \setuplabeltext [\s!no]    [\v!friday=fredag]
-\setuplabeltext [\s!no]  [\v!saturday=l\o rdag]
+\setuplabeltext [\s!no]  [\v!saturday=l\ostroke rdag]
 
 %D Rather new ...
 
@@ -651,13 +650,13 @@
 \setuplabeltext [\s!de]       [\v!zie=siehe ]
 
 \setuplabeltext [\s!da]    [\v!pagina=Side ]
-\setuplabeltext [\s!da]  [\v!oppagina=p\aa\ side ]
+\setuplabeltext [\s!da]  [\v!oppagina=p\aring\ side ]
 \setuplabeltext [\s!da] [\v!hierboven=se foroven]
 \setuplabeltext [\s!da] [\v!hieronder=se forneden]
 \setuplabeltext [\s!da]       [\v!zie=se ]
 
 \setuplabeltext [\s!no]    [\v!pagina=Side ]
-\setuplabeltext [\s!no]  [\v!oppagina=p\aa\ side ]
+\setuplabeltext [\s!no]  [\v!oppagina=p\aring\ side ]
 \setuplabeltext [\s!no] [\v!hierboven=se foroven]
 \setuplabeltext [\s!no] [\v!hieronder=se forneden]
 \setuplabeltext [\s!no]       [\v!zie=se ]

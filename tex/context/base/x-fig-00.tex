@@ -47,7 +47,6 @@
 %D     <comment>When will we talk about European cows?</comment>
 %D   </figure>
 %D 
-%D 
 %D </figurelibrary> 
 %D \stoptypen 
 %D 
@@ -87,7 +86,7 @@
 
 \unprotect 
 
-\startXMLnamespace [-] [figbase]
+\startXMLmapping [-] [figbase]
 
 \defineXMLprocess     [figurelibrary]
 \defineXMLignore      [description]
@@ -99,7 +98,7 @@
 \defineXMLpush        [dummy]
 \defineXMLenvironment [figure] \figbase@StartFigure \figbase@StopFigure
 
-\stopXMLnamespace
+\stopXMLmapping
 
 \newcounter\figurefilepage
 
@@ -114,7 +113,8 @@
 
 \def\getfigurefilename#1#2%
   {\startnointerference
-     \startXMLnamespace[-][figbase]
+     \traceXMLelementsfalse
+     \startXMLmapping[-][figbase]
        \resetfigurefilebase
        \XMLerase{file} 
        \XMLerase{dummy}
@@ -123,7 +123,7 @@
        \doglobal\newcounter\figurefilepage
        \def\askedlabel{#2}
        \processXMLfilegrouped{#1.xml} % grouped ? 
-     \stopXMLnamespace
+     \stopXMLmapping
    \stopnointerference}
 
 \def\resetfigurefilebase%
@@ -156,7 +156,7 @@
 \def\usefigurebase[#1]%
   {\doifelse{#1}{\v!reset}
      {\let\figurebaselist\empty}
-     {\appendtocommalist{#1}\figurebaselist}}
+     {\addtocommalist{#1}\figurebaselist}}
 
 \let\figurebaselist\empty
 

@@ -138,8 +138,8 @@
 %D it in a way we don't want, therefore we need:
 
 \definespecial\dosetuppaper#1#2#3%
-  {\global\pdfpagewidth =#2\relax
-   \global\pdfpageheight=#3\relax}
+  {\global\pdfpagewidth #2\relax
+   \global\pdfpageheight#3\relax}
 
 %D \macros
 %D   {doinsertfile,dogetnofinsertpages}
@@ -195,7 +195,7 @@
 %D   {\beforesplitstring#1\at.\to\filename
 %D    \scratchdimen=#3pt \PointsToReal{.01\scratchdimen}\xscale
 %D    \scratchdimen=#4pt \PointsToReal{.01\scratchdimen}\yscale
-%D    \convertPDFtoPDF{\filename.pdf}\xscale\yscale{#5sp}{#6sp}{#7sp}{#8sp}}
+%D    \convertPDFtoPDF{\filename.pdf}\xscale\yscale{#5}{#6}{#7}{#8}}
 %D \stoptypen
 %D
 %D superseded by the next macros.
@@ -246,14 +246,14 @@
    \doifvalidpdfimagefileelse{#1}
      {\checkpdfimagepagenumber{#9}%
       \immediate\pdfximage
-        \ifcase#7 \else \!!width  #7sp\fi
-        \ifcase#8 \else \!!height #8sp\fi
+        \ifdim#7>\zeropoint \!!width  #7\fi
+        \ifdim#8>\zeropoint \!!height #8\fi
         \pdfimagepagenumber
         {#1}%
       \xdef\PDFimagereference{\the\pdflastximage}%
       \xdef\nofinsertpages{\the\pdflastximagepages}%
       \pdfrefximage\pdflastximage}
-     {\framed[\c!breedte=#7sp,\c!hoogte=#8sp]{#1}}%
+     {\framed[\c!breedte=#7,\c!hoogte=#8]{#1}}%
    \egroup}
 
 \else
@@ -262,10 +262,10 @@
   {\bgroup
    \doifvalidpdfimagefileelse{#1}
      {\pdfimage
-        \ifcase#7 \else \!!width  #7sp\fi
-        \ifcase#8 \else \!!height #8sp\fi
+        \ifdim#7>\zeropoint \!!width  #7\fi
+        \ifdim#8>\zeropoint \!!height #8\fi
         {#1}}%
-     {\framed[\c!breedte=#7sp,\c!hoogte=#8sp]{#1}}%
+     {\framed[\c!breedte=#7,\c!hoogte=#8]{#1}}%
    \egroup}
 
 \fi
@@ -314,8 +314,8 @@
 
 \def\dogetTPDfiguresize#1#2#3#4#5#6#7%
   {\ifmeasureTPDfiguresize
-     #4=\!!zeropoint
-     #5=\!!zeropoint
+     #4=\zeropoint
+     #5=\zeropoint
      \doifvalidpdfimagefileelse{#2}
        {\ifvoid\foundexternalfigure
           \donetrue
@@ -338,8 +338,8 @@
        \global\let\PDFfigurereference\empty
        \global\let\PDFimageattributes\empty
      \else
-       #6=\!!zeropoint
-       #7=\!!zeropoint
+       #6=\zeropoint
+       #7=\zeropoint
      \fi
   \else
     #1{#2}{#3}{#4}{#5}{#6}{#7}% \normaldogetfiguresize...
@@ -349,14 +349,14 @@
 
 \def\dogetTPDfiguresize#1#2#3#4#5#6#7%
   {\ifmeasureTPDfiguresize
-     #4=\!!zeropoint
-     #5=\!!zeropoint
+     #4=\zeropoint
+     #5=\zeropoint
      \doifvalidpdfimagefileelse{#2}
        {\global\setbox\foundexternalfigure=\vbox{\pdfimage{#2}}%
         #6=\wd\foundexternalfigure
         #7=\ht\foundexternalfigure}
-       {#6=\!!zeropoint
-        #7=\!!zeropoint}%
+       {#6=\zeropoint
+        #7=\zeropoint}%
   \else
     #1{#2}{#3}{#4}{#5}{#6}{#7}% \normaldogetfiguresize...
   \fi}
@@ -432,21 +432,66 @@
 \definespecial\dostopnegative       {\doPDFstopnegative}
 
 %D \macros
+%D   {dostarttransparency,dostoptransparency}
+%D
+%D For transparency, we need to implement a couple of 
+%D auxiliary macros. If needed, we will generalize tham later.
+
+\definespecial\dostarttransparency  {\doPDFstarttransparency}
+\definespecial\dostoptransparency   {\doPDFstoptransparency}
+
+\PDFtransparencysupportedtrue
+
+\def\@@PDT{@PDT@}
+
+\newcount\PDFcurrenttransparency \PDFcurrenttransparency=0 % -1 
+
+\def\assignPDFtransparency#1#2%
+  {\def\PDFtransparencyidentifier{/Tr#1}%
+   \def\PDFtransparencyreference{#2 0 R}} 
+
+\def\presetPDFtransparency#1#2% 
+  {\initializePDFtransparency      
+   \executeifdefined{\@@PDT#1:#2}{\dopresetPDFtransparency{#1}{#2}}}
+
+\def\dopresetPDFtransparency#1#2% 
+  {\global\advance\PDFcurrenttransparency 1
+   \immediate\pdfobj{\PDFtransparancydictionary{#1}{#2}{}}%
+   \edef\PDFtransparencyidentifier{/Tr\the\PDFcurrenttransparency}%
+   \edef\PDFtransparencyreference {\the\pdflastobj\space 0 R}%
+   \setxvalue{\@@PDT#1:#2}%
+     {\noexpand\assignPDFtransparency{\the\PDFcurrenttransparency}{\the\pdflastobj}}%
+   \appendtoPDFdocumentextgstates 
+     {\PDFtransparencyidentifier\space
+      \PDFtransparencyreference\space}}
+
+\def\initializePDFtransparency
+  {\immediate\pdfobj{\PDFtransparancydictionary{1}{1}{/AIS false}}%
+   \xdef\PDFtransparencyresetidentifier{/Tr0}%
+   \xdef\PDFtransparencyresetreference{\the\pdflastobj\space 0 R}%
+   \setxvalue{\@@PDT0:0}%
+     {\noexpand\assignPDFtransparency{0}{\the\pdflastobj}}%
+   \appendtoPDFdocumentextgstates
+     {\PDFtransparencyresetidentifier\space
+      \PDFtransparencyresetreference\space}%
+   \global\let\initializePDFtransparency\relax}
+
+%D \macros
 %D   {dostartclipping,dostopclipping}
 %D
 %D Clipping in \PDFTEX\ is rather trivial. We can even hook
 %D in \METAPOST\ without problems.
 
 \definespecial\dostartclipping#1#2#3%
-  {\ScaledPointsToBigPoints{#2}\width
-   \ScaledPointsToBigPoints{#3}\height
+  {\PointsToBigPoints{#2}\width
+   \PointsToBigPoints{#3}\height
    \grabMPclippath{#1}{1}{\width}{\height}
      {0 0 m \width\space 0 l \width \height l 0 \height l}%
    \pdfliteral
      {q 0 w \MPclippath\space W n}}
 
 \definespecial\dostopclipping%
-  {\pdfliteral{Q}}
+  {\pdfliteral{Q n}}
 
 %D \macros
 %D   {dosetupinteraction,
@@ -584,7 +629,7 @@
   {\setPDFdestination{#1}%
    \doifsomething{\PDFdestination}
      {\pdfthread
-        width #2sp height #3sp
+        width #2 height #3
         attr {/Title (\PDFdestination)} % can be omitted
         name {\PDFdestination}}}
 
@@ -650,11 +695,14 @@
         \else
           \dosetobjectreference{#1}{#2}{-\PDFimagereference}%
           \global\let\PDFimagereference\empty
-       \fi}}
+        \fi}}
 
   \definespecial\dostopobject%
     {\dodostopobject
      \egroup}
+
+  \definespecial\doresetobjects
+    {\global\let\PDFimagereference\empty}
 
   \definespecial\doinsertobject#1#2%
     {\bgroup
@@ -822,24 +870,62 @@
 
 \newif\ifsharePDFactions \sharePDFactionstrue
 
+% hm, due to some stupid optimization this feature has been 
+% disabled for some time, watch out \lastPDFaction is to be 
+% persistent
+
 \ifnum\pdftexversion>13
 
   \def\doPDFaction width #1 height #2 action #3%
     {\ifcollectreferenceactions 
        \xdef\lastPDFaction{#3}%
      \else
-       \xdef\lastPDFaction{<<#3>>}%
-       \ifcase\similarreference\relax\or\ifsharePDFactions
-         \immediate\pdfobj{\lastPDFaction}%
-         \xdef\lastPDFaction{\the\pdflastobj\space0 R}%
-       \fi\fi
+       \ifsharePDFactions
+         \ifcase\similarreference\relax
+           \xdef\lastPDFaction{<<#3>>}%
+         \or
+           \immediate\pdfobj{<<#3>>}%
+           \xdef\lastPDFaction{\the\pdflastobj\space0 R}%
+         \else
+           % leave \lastPDFaction untouched 
+         \fi
+       \else
+         \xdef\lastPDFaction{<<#3>>}%
+       \fi
        \pdfannot
-         width #1sp height #2sp depth 0sp
+         width #1 height #2 depth \zeropoint
            {/Subtype /Link
             /Border [0 0 0]
             \ifhighlighthyperlinks \else /H /N \fi
             /A \lastPDFaction}%
-     \fi}
+      \fi}
+
+  % less #2 passing 
+  
+  \def\doPDFaction width #1 height #2 action #3%
+    {\xdef\lastPDFcontent{#3}%
+     \ifcollectreferenceactions 
+       \global\let\lastPDFaction\lastPDFcontent
+     \else
+       \ifsharePDFactions
+         \ifcase\similarreference\relax
+           \xdef\lastPDFaction{<<\lastPDFcontent>>}%
+         \or
+           \immediate\pdfobj{<<\lastPDFcontent>>}%
+           \xdef\lastPDFaction{\the\pdflastobj\space0 R}%
+         \else
+           % leave \lastPDFaction untouched 
+         \fi
+       \else
+         \xdef\lastPDFaction{<<\lastPDFcontent>>}%
+       \fi
+       \pdfannot
+         width #1 height #2 depth \zeropoint
+           {/Subtype /Link
+            /Border [0 0 0]
+            \ifhighlighthyperlinks \else /H /N \fi
+            /A \lastPDFaction}%
+      \fi}
 
 \else
 
@@ -847,13 +933,20 @@
     {\ifcollectreferenceactions 
        \xdef\lastPDFaction{#3}%
      \else
-       \xdef\lastPDFaction{<<#3>>}%
-       \ifcase\similarreference\relax\or\ifsharePDFactions
-         \immediate\pdfobj{\lastPDFaction}%
-         \xdef\lastPDFaction{\the\pdflastobj\space0 R}%
-       \fi\fi
+       \ifsharePDFactions
+         \ifcase\similarreference\relax
+           \xdef\lastPDFaction{<<#3>>}%
+         \or
+           \immediate\pdfobj{<<#3>>}%
+           \xdef\lastPDFaction{\the\pdflastobj\space0 R}%
+         \else
+           % leave \lastPDFaction untouched 
+         \fi
+       \else
+         \xdef\lastPDFaction{<<#3>>}%
+       \fi
        \pdfannotlink % could be \pdfannot if not the - problem was there
-         width #1sp height #2sp depth 0sp
+         width #1 height #2 depth \zeropoint
          user {/Subtype /Link
                /Border [0 0 0]
                \ifhighlighthyperlinks \else /H /N \fi
@@ -866,7 +959,7 @@
 % pdftex and viewers give problems with this one (printing forms)
 %
 %\def\doPDFannotation width #1 height #2 data #3%
-%  {\pdfannot width #1sp height -#2sp depth 0sp {#3}}
+%  {\pdfannot width #1sp height -#2sp depth \zeropoint{#3}}
 %
 % This is corrected in version 14. When this version is wide
 % spread, this will be cleaned up.
@@ -874,12 +967,12 @@
 \ifnum\pdftexversion>13
 
   \def\doPDFannotation width #1 height #2 data #3%
-    {\pdfannot width #1sp height #2sp depth 0sp {#3}}
+    {\pdfannot width #1 height #2 depth \zeropoint{#3}}
 
 \else
 
   \def\doPDFannotation width #1 height #2 data #3%
-    {\hbox{\raise#2sp\hbox{\pdfannot width #1sp height #2sp depth 0sp {#3}}}}
+    {\hbox{\raise#2\hbox{\pdfannot width #1 height #2 depth \zeropoint{#3}}}}
 
 \fi
 
@@ -890,10 +983,6 @@
 %D many cases we can do without indirect references (and use
 %D the last annotation object number directly), we take the
 %D save route.
-
-%\def\doPDFannotationobject class #1 name #2 width #3 height #4 data #5%
-%  {\pdfannot width #3sp height -#4sp depth 0sp {#5}%
-%   \dosetobjectreference{#1}{#2}{\the\pdflastannot}}
 
 \def\doPDFannotationobject class #1 name #2 width #3 height #4 data #5%
   {\doPDFannotation width #3 height #4 data {#5}%
@@ -911,15 +1000,17 @@
 \def\doPDFpageattribute#1%
   {\expanded{\global\pdfpageattr{#1\the\pdfpageattr}}}
 
+\def\doPDFpageresource#1%
+  {\expanded{\global\pdfpageresources{#1\the\pdfpageresources}}}
+
 \def\doPDFpagesattribute#1%
   {\expanded{\global\pdfpagesattr{#1\the\pdfpagesattr}}}
 
-\def\doPDFresetattributes%
-  {\global\pdfpageattr{}}
+\def\doPDFresetpageattributes%
+  {\global\pdfpageattr\emptytoks}
 
-\appendtoksonce
-  \doPDFresetattributes
-\to \everyaftershipout
+\def\doPDFresetpageresources%
+  {\global\pdfpageresources\emptytoks}
 
 %D \macros
 %D   {doPDFbookmark}
@@ -975,19 +1066,13 @@
 %D Here follow some rather obscure macros. They will only
 %D come into action when one wants negated output.
 
-\let\PDFextgstates\empty
-
-\def\initializePDFnegative%
-  {%\bgroup
-   %\pdfcompresslevel=0
-   \immediate\pdfobj stream attr {/FunctionType 4 /Range [0 1] /Domain [0 1]} {{1 exch sub}}%
+\def\initializePDFnegative
+  {\immediate\pdfobj stream attr {/FunctionType 4 /Range [0 1] /Domain [0 1]} {{1 exch sub}}%
    \immediate\pdfobj{<</Type /ExtGState /TR \the\pdflastobj\space0 R>>}%
-   \xdef\PDFextgstates{\PDFextgstates/GSnegative \the\pdflastobj\space0 R}%
+   \appendtoPDFdocumentextgstates{/GSnegative \the\pdflastobj\space0 R}%
    \immediate\pdfobj{<</Type /ExtGState /TR /Identity>>}%
-   \xdef\PDFextgstates{\PDFextgstates/GSpositive \the\pdflastobj\space0 R}%
-   \global\let\initializePDFnegative\relax
-   %\egroup
-   \expanded{\global\pdfpageresources{/ExtGState <<\PDFextgstates>>}}}
+   \appendtoPDFdocumentextgstates{/GSpositive \the\pdflastobj\space0 R}%
+   \global\let\initializePDFnegative\relax}
 
 % %D We can set \METAPOST\ prologues to~2:
 
@@ -997,6 +1082,4 @@
 
 \stopspecials
 
-\protect
-
-\endinput
+\protect \endinput

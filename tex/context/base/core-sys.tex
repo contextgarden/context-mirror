@@ -15,11 +15,25 @@
 
 \unprotect 
 
+\def\outputfilename{\@@svfile} 
+\def\inputfilename {\@@svinputfile} 
+
+\def\splitjobfilename
+  {\edef\ascii{\inputfilename}\convertcommand\ascii\to\ascii
+  %\beforesplitstring\ascii\at.\to\jobfilename
+  %\aftersplitstring \ascii\at.\to\jobfilesuffix
+   \splitstring\ascii\at.\to\jobfilename\and\jobfilesuffix
+   \doifnothing\jobfilename  {\let\jobfilename  \jobname}%
+   \doifnothing\jobfilesuffix{\let\jobfilesuffix\c!tex}}
+
+\appendtoks \splitjobfilename \to \everyjob
+
 \def\dosetupsystem[#1]%
   {\getparameters[\??sv][#1]%
    \setuprandomize[\@@svwillekeur]%
    \beforesplitstring\@@svresolutie\at dpi\to\@@svresolutie
-   \let\outputresolution=\@@svresolutie}
+   \let\outputresolution\@@svresolutie
+   \splitjobfilename}
 
 \def\setupsystem%
   {\dosingleargument\dosetupsystem}
@@ -38,9 +52,6 @@
          \s!unknown=>\time=#1]%    
       \nextrandom   
       \egroup}}
-
-\def\outputfilename{\@@svfile} 
-\def\inputfilename {\@@svinputfile} 
 
 \setupsystem
   [\c!gebied=,
@@ -79,7 +90,7 @@
 \definecomplexorsimple\start
 \definecomplexorsimple\stop
 
-\def\dodefinieerstartstop[#1][#2]%
+\def\dododefinestartstop[#1][#2]%
   {\getparameters
      [\??be#1]
      [\c!voor=,
@@ -87,8 +98,6 @@
       \c!commandos=,
       \c!letter=,
       #2]%
-%   \setvalue{\e!stel#1\e!in}[##1]%
-%     {\dodoubleargument\getparameters[\??be##1]}%
    \unexpanded\setvalue{#1}%
      {\groupedcommand
         {\getvalue{\??be#1\c!commandos}%
@@ -104,11 +113,19 @@
       \egroup
       \getvalue{\??be#1\c!na}}}
 
-\def\definieerstartstop%
-  {\dodoubleargument\dodefinieerstartstop}
+\def\dodefinestartstop[#1][#2]%
+  {\def\docommando##1{\dododefinestartstop[##1][#2]}%
+   \processcommalist[#1]\docommando}
 
-\def\stelstartstopin[#1]%
-  {\dodoubleargument\getparameters[\??be#1]}
+\def\definestartstop
+  {\dodoubleargument\dodefinestartstop}
+
+\def\dosetupstartstop[#1][#2]%
+  {\def\docommando##1{\getparameters[\??be##1][#2]}%
+   \processcommalist[#1]\docommando}
+
+\def\setupstartstop
+  {\dodoubleargument\dosetupstartstop}
 
 % \docommando kan niet worden gebruikt omdat deze macro
 %  soms lokaal wordt gebruikt
@@ -161,25 +178,63 @@
 
 \definecomplexorsimpleempty\definieer
 
-\unexpanded\def\naam#1%
+\unexpanded\def\naam#1% brrr
   {\getvalue{#1}}
 
 \def\gebruikcommandos#1%
   {\bgroup
-   \def\docommando##1%
-     {\setbox0=\hbox{\getvalue{\string##1}##1}}%
+   \def\docommando##1{\setbox0=\hbox{\getvalue{\string##1}##1}}%
    \processcommalist[#1]\docommando
    \egroup}
 
-\def\convertexpanded#1#2#3% watch the double \v!ja expansion ! 
-  {\ExpandFirstAfter\processaction
-     [\getvalue{#1\c!expansie}]
-     [       \v!ja=>{{\honorunexpanded\xdef\@@globalexpanded{#2}%
-                      \xdef\@@globalexpanded{\@@globalexpanded}}%
-                      \dodoglobal\convertcommand\@@globalexpanded\to#3},
-       \v!commando=>{\dodoglobal\convertcommand #2\to#3},
-        \s!default=>{\dodoglobal\convertargument#2\to#3},
-        \s!unknown=>{\dodoglobal\convertargument#2\to#3}]}
+\newif\ifforcefileexpansion % handy for document level overload 
+
+% \def\convertexpanded#1#2#3% watch the double \v!ja expansion ! 
+%   {\ExpandFirstAfter\processaction
+%      [\ifforcefileexpansion\v!ja\else\getvalue{#1\c!expansie}\fi]
+%      [       \v!ja=>{{\honorunexpanded
+%                       \dontexpandencoding % new 
+%                       \xdef\@@globalexpanded{#2}%
+%                       \xdef\@@globalexpanded{\@@globalexpanded}}%
+%                       \convertcommand\@@globalexpanded\to#3},
+%        \v!commando=>{\convertcommand #2\to#3},
+%         \s!default=>{\convertargument#2\to#3},
+%         \s!unknown=>{\convertargument#2\to#3}]}
+
+%D The next implementation is about 4 times as fast on an 
+%D string of average length. Since this feature is used in 
+%D XML processing, it made sense to support this faster 
+%D alternative.
+
+\def\installexpander#1{\setvalue{\s!do\c!expansie#1}}
+
+\long\def\convertexpanded#1#2#3% hm, first we need to make sure 
+  {\csname   % that we assign all exp a value   
+     \s!do\c!expansie
+     \ifforcefileexpansion 
+       \v!ja 
+     \else\@EA\ifx\csname\s!do\c!expansie\csname#1\c!expansie\endcsname\endcsname\relax
+       \s!default
+     \else
+       \csname#1\c!expansie\endcsname
+     \fi\fi
+   \endcsname#2\to#3}
+
+\installexpander\v!ja      {\convertmeaning }
+\installexpander\v!ja      {\convertmeaning }
+\installexpander\v!commando{\convertcommand }
+\installexpander\s!default {\convertargument}
+\installexpander\empty     {\convertargument}
+\installexpander\v!nee     {\convertargument}
+
+\def\convertmeaning#1\to % watch the double expansion ! 
+  {\bgroup
+     \honorunexpanded
+     \dontexpandencoding % new 
+     \xdef\@@globalexpanded{#1}%
+     \xdef\@@globalexpanded{\@@globalexpanded}%
+   \egroup
+   \convertcommand\@@globalexpanded\to}
 
 % \setvalue{statevalue\v!stop   }{0}
 % \setvalue{statevalue\v!start  }{1}

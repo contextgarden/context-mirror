@@ -55,8 +55,36 @@
 \def\romannumerals#1%
   {\romannumeral#1}
 
+%D For some years we had \unknown
+%D
+%D \starttypen 
+%D \def\Romannumerals#1%
+%D   {\uppercase\expandafter{\romannumeral#1}}
+%D \stoptypen 
+%D 
+%D \unknown but we need to be fully expandable in order to get
+%D the utility output file right, so now we have th efollowing
+%D solution. It was Patrick Gundlach who first noticed this
+%D ommision. 
+ 
 \def\Romannumerals#1%
-  {\uppercase\expandafter{\romannumeral#1}}
+  {\expandafter\doRomannumerals\number#1\relax}
+
+\def\doRomannumerals#1#2\relax % spaces after ifcase prevent \relax
+  {\ifnum#1#2<10
+     \ifcase0#1#2 \or I\or II\or III\or IV\or V\or VI\or VII\or VIII\or IX\fi
+   \else\ifnum#1#2<100
+     \ifcase0#1   \or X\or XX\or XXX\or XL\or L\or LX\or LXX\or LXXX\or XC\fi 
+     \doRomannumerals#2\relax 
+   \else\ifnum#1#2<1000
+     \ifcase0#1   \or C\or CC\or CCC\or CD\or D\or DC\or DCC\or DCCC\or CM\fi 
+     \doRomannumerals#2\relax 
+   \else\ifnum#1#2<4000
+     \ifcase0#1   \or M\or MM\or MMM\fi
+     \doRomannumerals#2\relax 
+   \else
+     \uppercase\expandafter{\romannumeral#1#2}%
+   \fi\fi\fi\fi}
 
 %D \macros
 %D   {character,Character}
@@ -185,10 +213,10 @@
 %D possible, and because \TEX\ already uses up some of those,
 %D we save the original meanings.
 
-\let\normaltime  = \time
-\let\normalyear  = \year
-\let\normalmonth = \month
-\let\normalday   = \day
+\savenormalmeaning\time  
+\savenormalmeaning\year  
+\savenormalmeaning\month 
+\savenormalmeaning\day   
 
 %D \macros
 %D   {month,MONTH}
@@ -432,7 +460,7 @@
 %D We can also typeset arbitrary dates, using the previous
 %D command.
 %D
-%D \typebyffer
+%D \typebuffer
 %D
 %D The date is specified by one character keys. When no date
 %D is given, we get the current date.
@@ -443,35 +471,75 @@
 
 \def\kenmerkdatumpatroon{j,mm,dd} % jj,mm,dd changed at januari 1-1-2000 
 
+% \def\complexcurrentdate[#1]%
+%   {\bgroup
+%    \let\labellanguage\currentlanguage
+%    \def\betweendates{\let\betweendates\space}%
+%    \lowercase{\edef\!!stringa{#1}}% permits usage in \kap 
+%    \@EA\processallactionsinset\@EA
+%      [\!!stringa]
+%      [    \v!dag=>\betweendates\the\normalday,
+%         \v!maand=>\betweendates\month\normalmonth,
+%          \v!jaar=>\betweendates\the\normalyear,
+%               \ =>\ , % optimization -) 
+%                d=>\the\normalday,
+%                m=>\the\normalmonth,
+%                j=>\the\normalyear,
+%                y=>\the\normalyear,
+%                w=>\betweendates\dayoftheweek\normalday\normalmonth\normalyear,
+%               dd=>\ifnum\normalday  >9 \else0\fi\the\normalday,
+%               mm=>\ifnum\normalmonth>9 \else0\fi\the\normalmonth,
+%               jj=>\expandafter\gobbletwoarguments\the\normalyear,
+%               yy=>\expandafter\gobbletwoarguments\the\normalyear,
+%       \v!weekdag=>\betweendates\dayoftheweek\normalday\normalmonth\normalyear,
+% %       \v!MAAND=>\betweendates\MONTH\normalmonth,
+% %     \v!WEEKDAG=>\betweendates
+% %                 \bgroup
+% %                 \let\labeltext=\LABELTEXT
+% %                 \dayoftheweek\normalday\normalmonth\normalyear
+% %                 \egroup,
+%       \v!kenmerk=>\expanded{\complexcurrentdate[\kenmerkdatumpatroon]},
+%       \s!unknown=>\commalistelement
+%                   \def\betweendates{\let\betweendates\space}]%
+%    \egroup}
+
+\newsignal\datesignal
+
+\def\dobetweendates%
+  {\ifdim\lastskip=\datesignal\relax\else
+     \unskip\space
+     \hskip\datesignal\relax
+   \fi}
+
 \def\complexcurrentdate[#1]%
   {\bgroup
-   \let\labellanguage=\currentlanguage
-   \def\betweendates{\let\betweendates\space}%
+   \let\labellanguage\currentlanguage
+   \def\betweendates{\let\betweendates\dobetweendates}%
    \lowercase{\edef\!!stringa{#1}}% permits usage in \kap 
    \@EA\processallactionsinset\@EA
      [\!!stringa]
-     [        dd=>\ifnum\normalday>9 \else0\fi\the\normalday,
-              mm=>\ifnum\normalmonth>9 \else0\fi\the\normalmonth,
-              jj=>\expandafter\gobbletwoarguments\the\normalyear,
-              yy=>\expandafter\gobbletwoarguments\the\normalyear,
+     [    \v!dag=>\betweendates\the\normalday,
+        \v!maand=>\betweendates\month\normalmonth,
+         \v!jaar=>\betweendates\the\normalyear,
+              \ =>\unskip\ \hskip\datesignal,% optimization -) 
                d=>\the\normalday,
                m=>\the\normalmonth,
                j=>\the\normalyear,
                y=>\the\normalyear,
                w=>\betweendates\dayoftheweek\normalday\normalmonth\normalyear,
-      \v!kenmerk=>\expanded{\complexcurrentdate[\kenmerkdatumpatroon]},
-          \v!dag=>\betweendates\the\normalday,
-        \v!maand=>\betweendates\month\normalmonth,
-%        \v!MAAND=>\betweendates\MONTH\normalmonth,
-         \v!jaar=>\betweendates\the\normalyear,
+              dd=>\ifnum\normalday  >9 \else0\fi\the\normalday,
+              mm=>\ifnum\normalmonth>9 \else0\fi\the\normalmonth,
+              jj=>\expandafter\gobbletwoarguments\the\normalyear,
+              yy=>\expandafter\gobbletwoarguments\the\normalyear,
       \v!weekdag=>\betweendates\dayoftheweek\normalday\normalmonth\normalyear,
-%      \v!WEEKDAG=>\betweendates
-%                  \bgroup
-%                  \let\labeltext=\LABELTEXT
-%                  \dayoftheweek\normalday\normalmonth\normalyear
-%                  \egroup,
-      \s!unknown=>\commalistelement
-                  \def\betweendates{\let\betweendates\space}]%
+      \v!kenmerk=>\expanded{\complexcurrentdate[\kenmerkdatumpatroon]},
+      \s!unknown=>\unskip
+                  \commalistelement
+                  \hskip\datesignal
+                  \def\betweendates{\let\betweendates\dobetweendates}]%
+   \ifdim\lastskip=\datesignal\relax
+     \unskip
+   \fi
    \egroup}
 
 \def\simplecurrentdate%
@@ -496,9 +564,34 @@
    \fi
    \egroup}
 
-\def\date%
+\def\date
   {\dodoubleempty\dodate}
 
+%D \macros
+%D   {currenttime}
+%D
+%D The currenttime is actually the jobtime. You can specify 
+%D a pattern similar to the previous date macro using the 
+%D keys \type {h}, \type {m} and a separator.  
+
+\def\calculatecurrenttime
+  {\DoDiv\time by60to\scratchcounter\edef\currenthour  {\the\scratchcounter}%
+   \DoMod\time by60to\scratchcounter\edef\currentminute{\the\scratchcounter}}
+
+\appendtoks \calculatecurrenttime \to \everyjob
+
+\def\currenttimespecification{h,:,m}
+
+\def\complexcurrenttime[#1]%
+  {\calculatecurrenttime
+   \processallactionsinset[#1]
+     [h=>\currenthour,m=>\currentminute,\s!unknown=>\commalistelement]}
+
+\def\simplecurrenttime
+  {\expanded{\complexcurrenttime[\currenttimespecification]}}
+
+\definecomplexorsimple\currenttime
+   
 %D Because we're dealing with dates, we also introduce a few
 %D day loops:
 %D
@@ -555,17 +648,21 @@
         {\advance\scratchcounter by 1
          \setvalue{\??cv#1\the\scratchcounter}{##1}}%
       \processcommalist[#2]\docommando
-      \setvalue{\??cv#1}##1{\getvalue{\??cv#1##1}}}
+      \setvalue{\??cv#1}##1{\csname\??cv#1##1\endcsname}}
      {\setvalue{\??cv#1}{#2}}}
 
 \def\defineconversion%
   {\dodoubleargument\dodefineconversion}
 
 \def\convertnumber#1%
-  {\getvalue{\??cv#1}}
+  {\csname\??cv#1\endcsname}
 
 \def\doifconversiondefinedelse#1%
-  {\doifdefinedelse{\??cv#1}}
+  {\ifundefined{\??cv#1}%
+     \@EA\secondoftwoarguments
+   \else
+     \@EA\firstoftwoarguments
+   \fi}
 
 %D As longs as symbols are linked to levels or numbers, we can
 %D also use the conversion mechanism, but in for instance the

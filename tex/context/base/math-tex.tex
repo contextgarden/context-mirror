@@ -218,6 +218,12 @@
 
 \startmathcollection[default]
 
+\definemathcommand [square] {\hbox{\hsmash{$\sqcup$}$\sqcap$}}
+
+\stopmathcollection
+
+\startmathcollection[default]
+
 \definemathsymbol [coprod]    [op]  [ex] ["60]
 \definemathsymbol [bigvee]    [op]  [ex] ["57]
 \definemathsymbol [bigwedge]  [op]  [ex] ["56]
@@ -494,5 +500,18 @@
 \def\Bbb#1{{\fam\purefamily{blackboard}\relax#1}}  
 \def\mit   {\fam\purefamily{mitfamily}}
 \def\cal   {\fam\purefamily{calfamily}}
+
+\startmathcollection[default]
+
+  \definemathsymbol [mathperiod] [ord]   [mi] ["3A]
+  \definemathsymbol [textperiod] [punct] [mi] ["3A]
+
+  \definemathsymbol [mathcomma]  [ord]   [mi] ["3B]
+  \definemathsymbol [textcomma]  [punct] [mi] ["3B]
+
+\stopmathcollection
+
+\definemathpunctuation . mathperiod textperiod
+\definemathpunctuation , mathcomma  textcomma 
 
 \protect \endinput 

@@ -37,11 +37,14 @@
 %D Ok then, let's start:
 
 \ifx \undefined \writestatus          \input supp-mis.tex \relax \fi
+\ifx \undefined \letterhash     \else \input supp-ini.tex \relax \fi
 \ifx \undefined \startMPgraphic \else \expandafter \endinput     \fi
 
 \writestatus{loading}{Context Support Macros / MetaPost Inclusion}
 
 \unprotect
+
+\def\@@MPG{@MPG@}
 
 %D \macros
 %D   {startMPgraphic}
@@ -56,7 +59,7 @@
 %D
 %D This is implemented as:
 
-\long\def\startMPgraphic#1\stopMPgraphic%
+\long\def\startMPgraphic#1\stopMPgraphic
   {\checkMPTEXgraphic{#1}%
    \startwritingMPgraphic
    \writeMPgraphic{#1}%
@@ -92,7 +95,7 @@
 
 \ifCONTEXT
 
-  \long\def\dostartMPrun#1#2\stopMPrun%
+  \long\def\dostartMPrun#1#2\stopMPrun
     {\bgroup
      \MPruntrue
      \doifsomething{#1}{\def\MPgraphicfile{#1}}%
@@ -102,12 +105,12 @@
      \stopwritingMPgraphic
      \egroup}
 
-  \def\startMPrun%
+  \def\startMPrun
     {\dosinglegroupempty\dostartMPrun}
 
 \else
 
-  \long\def\startMPrun#1\stopMPrun%
+  \long\def\startMPrun#1\stopMPrun
     {\MPruntrue
      \checkMPTEXgraphic{#1}%
      \startwritingMPgraphic
@@ -169,6 +172,7 @@
 %D characterized bij a \COUNTER. This counter is available
 %D in \type{\MPgraphic}.
 
+\newcount\nofMPgraphics
 \newcount\currentMPgraphic
 
 \def\MPgraphic{0}
@@ -199,8 +203,8 @@
 
 \newtoks \MPinitializations
 
-\long\def\startMPinclusions#1\stopMPinclusions%
-  {\long\def\theMPinclusions%
+\long\def\startMPinclusions#1\stopMPinclusions
+  {\long\def\theMPinclusions
      {\@EA\expanded\@EA{\@EA\writeMPgraphic\@EA{\the\MPinitializations;}}%
       \writeMPgraphic{#1}}}
 
@@ -232,26 +236,38 @@
    \edef\currentwidth     {\the\hsize       \space}%
    \edef\currentheight    {\the\vsize       \space}}
 
-\long\def\writeMPgraphic#1% \expanded testen
+\def\writeMPgraphic % no big #1 passing here
+  {\iflongMPlines
+     \expandafter\writeMPgraphiclong
+   \else
+     \expandafter\writeMPgraphicshort
+   \fi}
+
+\long\def\writeMPgraphiclong#1%
   {\bgroup
    \presetMPdefinitions
-   \let\par=\space
-   \iflongMPlines
-     \long\def\flush##1##2\par%
-       {\ifx##1\relax \else
-          \immediate\write\MPwrite{##1##2}%
-          \expandafter\flush
-        \fi}%
-     \flush#1\empty\par\relax\par
-   \else
-     \long\def\flush##1##2;%
-       {\ifx##1\relax \else
-          \dowriteMPgraphicline##1##2tex \relax etex\MPend
-          \expandafter\flush
-        \fi}%
-     \flush#1\empty;\relax;%
-   \fi
+   \let\par\space
+   \longMPflush#1\empty\par\relax\par
    \egroup}
+
+\long\def\writeMPgraphicshort#1%
+  {\bgroup
+   \presetMPdefinitions
+   \let\par\space
+   \shortMPflush#1\empty;\relax;%
+   \egroup}
+
+\long\def\longMPflush#1#2\par
+  {\ifx#1\relax \else
+     \immediate\write\MPwrite{#1#2}%
+     \expandafter\longMPflush
+   \fi}
+
+\long\def\shortMPflush#1#2;%
+  {\ifx#1\relax \else
+     \dowriteMPgraphicline#1#2tex \relax etex\MPend
+     \expandafter\shortMPflush
+   \fi}
 
 %D The \type {;} aware method (the \type {\else} branch) also
 %D takes care of \type {btex}||\type {etex}, \type
@@ -289,43 +305,70 @@
 
 \newif\ifforceMPTEXgraphic
 
+\convertargument        etex\to\MPasciiB
+\convertargument     textext\to\MPasciiC % geen "text"
+\convertargument graphictext\to\MPasciiD % geen "text"
+
 \long\def\checkMPTEXgraphic#1%
   {\ifforceMPTEXgraphic
      \global\MPTEXgraphictrue
    \else
-     \expandafter\convertargument          #1\to\asciiA
-                 \convertargument        etex\to\asciiB
-                 \convertargument     textext\to\asciiC % geen "text"
-                 \convertargument graphictext\to\asciiD % geen "text"
-     \expandtwoargsafter\doifinstringelse{\asciiB}{\asciiA}
+     \expandafter\convertargument#1\to\MPasciiA
+     \doifstringinstringelse\MPasciiB\MPasciiA
        {\global\MPTEXgraphictrue}
-       {\expandtwoargsafter\doifinstringelse{\asciiC}{\asciiA}
+       {\doifstringinstringelse\MPasciiC\MPasciiA
           {\global\MPTEXgraphictrue}
-          {\expandtwoargsafter\doifinstringelse{\asciiD}{\asciiA}
+          {\doifstringinstringelse\MPasciiD\MPasciiA
              {\global\MPTEXgraphictrue}
              {\global\MPTEXgraphicfalse}}}%
    \fi}
 
-\def\flushMPTEXgraphic%
+\def\flushMPTEXgraphic
   {\ifMPTEXgraphic \ifx\everyMPTEXgraphic\emptytoks \else
      \immediate\write\MPwrite{verbatimtex \the\everyMPTEXgraphic\space etex;}%
    \fi \fi}
 
-\long\def\dodowriteMPgraphicline#1tex #2#3etex#4\MPend%
+% \long\def\dodowriteMPgraphicline#1tex #2#3etex#4\MPend%
+%   {\ifx\next\empty\else\ifx\next\relax\else
+%      \bgroup
+%      \let\par=\space
+%      \ifx#2\relax
+%        \iflongMPlines
+%          \immediate\write\MPwrite{#1;}%
+%        \else
+%          \edef\ascii{#1}%
+%          \long\def\flush##1##2;%
+%            {\ifx##1\relax \else
+%               \immediate\write\MPwrite{##1##2;}%
+%               \expandafter\flush
+%             \fi}%
+%          \expandafter\flush\ascii\empty;\relax;%
+%        \fi
+%        \egroup
+%      \else
+%        \convertargument#2#3\to\ascii
+%        \immediate\write\MPwrite{#1tex \ascii etex}%
+%        \egroup
+%        \dowriteMPgraphicline#4tex \relax etex\MPend
+%      \fi
+%    \fi\fi}
+
+\long\def\flushMPgraphicline#1#2;%
+  {\ifx#1\relax \else
+     \immediate\write\MPwrite{#1#2;}%
+     \expandafter\flushMPgraphicline
+   \fi}
+
+\long\def\dodowriteMPgraphicline#1tex #2#3etex#4\MPend
   {\ifx\next\empty\else\ifx\next\relax\else
      \bgroup
-     \let\par=\space
+     \let\par\space
      \ifx#2\relax
        \iflongMPlines
          \immediate\write\MPwrite{#1;}%
        \else
          \edef\ascii{#1}%
-         \long\def\flush##1##2;%
-           {\ifx##1\relax \else
-              \immediate\write\MPwrite{##1##2;}%
-              \expandafter\flush
-            \fi}%
-         \expandafter\flush\ascii\empty;\relax;%
+         \expandafter\flushMPgraphicline\ascii\empty;\relax;%
        \fi
        \egroup
      \else
@@ -347,57 +390,67 @@
 %D Because some graphics interact with \TEX\ (i.e.\ \CONTEXT), we
 %D provide a hook for additional actions: \type {\everyMPgraphic}.
 
-\bgroup
-\catcode`\%=12\gdef\percentletter{%}
-\egroup
-
 \newtoks\everyMPgraphic
 
-\def\writeMPgraph%
+\def\writeMPgraph
   {\immediate\write\MPwrite{mpgraph:=\the\currentMPgraphic;}}
 
-\def\startwritingMPgraphic%
+\newconditional\firstMPgraphic \settrue\firstMPgraphic
+
+\appendtoks 
+  \let \# \letterhash
+  \let \_ \letterunderscore
+  \let \& \letterampersand 
+  \let \{ \letteropenbrace
+  \let \} \letterclosebrace
+\to \everyMPgraphic
+
+\def\startwritingMPgraphic
   {\bgroup
-   % will go to \appendtoks ... \to \everyMPgraphic 
-   \let\#\hashletter
-   \let\_\underscoreletter  
-   \let\&\ampercentletter   
-   \def\{{\iftrue \string{\else}\fi}% ook nog ....letter 
-   \def\}{\iffalse{\else\string}\fi}% ook nog ....letter 
-   %
+   \global\advance\nofMPgraphics 1 
    \ifMPrun \else
      \allocateMPslot\currentMPgraphic
    \fi
    \enableincludeMPgraphics
+   \xdef\MPgraphic{\the\currentMPgraphic}%
+   \the\everyMPgraphic
    \ifrunMPgraphics
-     \the\everyMPgraphic
-     \xdef\MPgraphic{\the\currentMPgraphic}%
-     \immediate\openout\MPwrite=\MPgraphicfile.mp
-     \immediate\write\MPwrite{\percentletter\space runtime generated graphics of job "\jobname"}%
-     \writeMPgraph
-     \setMPrandomseed
+     \openMPgraphicfile{1}{runtime}%
      \theMPinclusions % no reset here !
    \else
-     \xdef\MPgraphic{\the\currentMPgraphic}%
-     \the\everyMPgraphic % here ? 
-     \ifnum\currentMPgraphic<2 % mprun (0) or mpgraph (1) 
-       \immediate\openout\MPwrite=\MPgraphicfile.mp
-       \immediate\write\MPwrite{\percentletter\space collected graphics of job "\jobname"}%
-       \writeMPgraph
-       \setMPrandomseed
-     \fi
+     \openMPgraphicfile{0}{collected}%
      \theMPinclusions \let\theMPinclusions\relax % reset here !
    \fi
    \flushMPTEXgraphic
    \ifMPrun \else
+     \immediate\write\MPwrite{let mprunend = end ;}%
      \immediate\write\MPwrite{beginfig(\the\currentMPgraphic);}%
    \fi
    \global\let\flushMPgraphics\dodostopwritingMPgraphic
    \global\let\stopwritingMPgraphic=\dostopwritingMPgraphic}
 
+\def\openMPgraphicfile#1#2% #1=alwaysopen #2=message
+  {%\doifundefinedelse{\@@MPG\@@MPG\MPgraphicfile}
+   %  {\donetrue
+   %   \@EA\newwrite\csname\@@MPG\@@MPG\MPgraphicfile\endcsname}%
+   %  {\ifcase#1\donefalse\else\donetrue\fi}%
+   \@EA\ifx\csname\@@MPG\@@MPG\MPgraphicfile\endcsname\relax
+     \donetrue \@EA\newwrite\csname\@@MPG\@@MPG\MPgraphicfile\endcsname 
+   \else
+     \ifcase#1\relax\donefalse\else\donetrue\fi
+   \fi
+   \@EA\let\@EA\MPwrite\csname\@@MPG\@@MPG\MPgraphicfile\endcsname
+   \ifdone
+     \immediate\openout\MPwrite=\MPgraphicfile.mp
+     \immediate\write\MPwrite{\letterpercent\space #2 graphics of job "\jobname"}%
+     \writeMPgraph
+     \setMPrandomseed
+   \fi}
+
 \def\dostopwritingMPgraphic%
   {\ifMPrun \else
      \immediate\write\MPwrite{endfig;}%
+     \immediate\write\MPwrite{let end = mprunend ;}%
    \fi
    \ifrunMPgraphics
      \dodostopwritingMPgraphic
@@ -415,17 +468,17 @@
    \ifdone
      \immediate\write\MPwrite{end.}%
      \immediate\closeout\MPwrite
-     \runMPgraphic{\MPgraphicfile}%
+     \runMPgraphic\MPgraphicfile
    \fi
-   \global\let\flushMPgraphics=\relax}
+   \global\let\flushMPgraphics\relax}
 
-\let\stopwritingMPgraphic=\relax
-\let\flushMPgraphics     =\relax
+\let\stopwritingMPgraphic\relax
+\let\flushMPgraphics     \relax
 
 %D By default each graphic gets its own slot (number). Later
 %D on we will define a recycle bin.
 
-\def  \allocateMPslot#1{\global\advance#1 by 1 }
+\def  \allocateMPslot#1{\global\advance#1 1 }
 \def\deallocateMPslot#1{}
 
 %D \macros
@@ -495,17 +548,29 @@
   {\setbox\MPgraphicbox=\hbox
      {\ifinsertMPgraphics\insertMPfile{#1}{#2}\fi}}
 
-% \def\placeMPgraphic%
-%   {\box\MPgraphicbox}
+\def\MPllx{0}
+\def\MPlly{0}
 
-\def\placeMPgraphic%
+% \def\placeMPgraphic%
+%  {\ifMPshiftdrawing
+%     \hbox{\hskip\MPllx bp\raise\MPlly bp\box\MPgraphicbox}%
+%   \else
+%     \box\MPgraphicbox
+%   \fi}
+%
+% experimental: 
+
+\def\placeMPgraphic
   {\ifMPshiftdrawing
-     \dimen0=\MPllx bp
-     \dimen2=\MPlly bp
-     \hbox{\hskip\dimen0\raise\dimen2\box\MPgraphicbox}%
-   \else
-     \box\MPgraphicbox
-   \fi}
+     \edef\next
+       {\wd\MPgraphicbox\the\wd\MPgraphicbox
+        \ht\MPgraphicbox\the\ht\MPgraphicbox
+        \dp\MPgraphicbox\the\dp\MPgraphicbox}%
+     \setbox\MPgraphicbox\hbox
+       {\hskip\MPllx bp\raise\MPlly bp\box\MPgraphicbox}%
+     \next
+   \fi
+   \box\MPgraphicbox}
 
 %D \macros
 %D   {startreusableMPgraphic, reuseMPgraphic, useMPbox}
@@ -516,96 +581,94 @@
 
 \newif\ifuseMPbox  \useMPboxtrue
 
-\def\douseMPbox#1%
-  {\setobject{MP}{#1}
-     \vbox
-       {\forgetall
-        \loadMPgraphic{\MPgraphicfile.\the\currentMPgraphic}{}%
-        \deallocateMPslot\currentMPgraphic
-        \placeMPgraphic}%
-   \setgvalue{#1}%
-     {\getobject{MP}{#1}}}
+%D We assume that one can set objects: 
+%D 
+%D \starttypen 
+%D \def\douseMPbox#1%
+%D   {\setobject{MP}{#1}\vbox
+%D      {\forgetall
+%D       \loadMPgraphic{\MPgraphicfile.\the\currentMPgraphic}{}%
+%D       \deallocateMPslot\currentMPgraphic
+%D       \placeMPgraphic}%
+%D    \setgvalue{#1}{\getobject{MP}{#1}}}
+%D \stoptypen 
+%D 
+%D More save is to use a number for {MP}{#1} which permits
+%D redefinition. 
 
-% More save is to use a number for {MP}{#1} which permits
-% redefinition. I have to test it first.
-%
-% \newcounter\MPobjectcounter
-%
-% \def\douseMPbox#1%
-%   {\doglobal\increment\MPobjectcounter
-%    \setobject{MP}{\MPobjectcounter}
-%      \vbox
-%        {\forgetall
-%         \loadMPgraphic{\MPgraphicfile.\the\currentMPgraphic}{}%
-%         \deallocateMPslot\currentMPgraphic
-%         \placeMPgraphic}%
-%    \setxvalue{#1}%
-%      {\noexpand\getobject{MP}{\MPobjectcounter}}}
+\newcounter\MPobjectcounter
+
+\def\douseMPbox#1%
+  {\doglobal\increment\MPobjectcounter
+   \setobject{MP}{\MPobjectcounter}\vbox 
+     {\forgetall
+      \loadMPgraphic{\MPgraphicfile.\the\currentMPgraphic}{}%
+      \deallocateMPslot\currentMPgraphic
+      \placeMPgraphic}%
+   \setxvalue{#1}{\noexpand\getobject{MP}{\MPobjectcounter}}}
 
 \def\nouseMPbox#1%
   {\setxvalue{#1}%
      {\noexpand\forgetall
       \noexpand\loadMPgraphic{\MPgraphicfile.\the\currentMPgraphic}{}%
-      \deallocateMPslot\currentMPgraphic
+      \noexpand\deallocateMPslot{\currentMPgraphic}%
       \noexpand\placeMPgraphic}}
 
 \ifCONTEXT \else \let\douseMPbox=\nouseMPbox          \fi
 \ifCONTEXT \else \let\doifobjectssupportedelse=\relax \fi
 
-% \long\def\startreusableMPgraphic#1#2\stopreusableMPgraphic%
-%   {\ifundefined{MP:#1}%
-%      \long\setgvalue{MP:#1}%
-%        {\startMPgraphic#2\stopMPgraphic
-%         \doifobjectssupportedelse{}{\useMPboxfalse}%
-%         \ifuseMPbox
-%           \douseMPbox{MP:#1}%
-%         \else
-%           \nouseMPbox{MP:#1}%
-%         \fi
-%         \getvalue{MP:#1}}%
-%    \fi}
-
 \long\def\handlereusableMPgraphic#1#2%
   {\bgroup
    \enableincludeMPgraphics
    \startMPgraphic#2\stopMPgraphic
-   \doifobjectssupportedelse{}{\useMPboxfalse}%
+   \doifobjectssupportedelse\donothing\useMPboxfalse
    \ifuseMPbox
      \expandafter \douseMPbox
    \else
      \expandafter \nouseMPbox
-   \fi {MP:#1}%
-   \getvalue{MP:#1}%
+   \fi {\@@MPG#1}%
+   \getvalue{\@@MPG#1}%
    \egroup}
 
-\long\def\startreusableMPgraphic#1#2\stopreusableMPgraphic%
-  {\ifundefined{MP:#1}%
-     \long\setgvalue{MP:#1}{\handlereusableMPgraphic{#1}{#2}}%
-   \fi}
+% \long\def\startreusableMPgraphic#1#2\stopreusableMPgraphic
+%   {\ifundefined{\@@MPG#1}%
+%      \long\setgvalue{\@@MPG#1}{\handlereusableMPgraphic{#1}{#2}}%
+%    \fi}
+
+\long\def\dostartreusableMPgraphic#1#2\stopreusableMPgraphic
+  {\long\setgvalue{\@@MPG#1}{\handlereusableMPgraphic{#1}{#2}}}
 
 \def\reuseMPgraphic#1%
-  {\getvalue{MP:#1}}
+  {\getvalue{\@@MPG#1}}
 
 %D \macros
 %D   {startuseMPgraphic,useMPgraphic}
 %D
 %D The every||time||it's||used original one is defined below.
 %D This one makes sense when the graphic uses random numbers.
+%D
+%D We can run (process graphic) without including them at that
+%D particular place. Therefore we explicitly disable
+%D inclusions (resulting in an dummy figure) when we are in MP
+%D run mode (see mfun-004 for an example, we process an
+%D example buffer which produced graphics). 
 
 \long\def\handleuseMPgraphic#1#2%
   {\bgroup
    \enableincludeMPgraphics
    \startMPgraphic#2\stopMPgraphic
-   \loadMPgraphic{\MPgraphicfile.\the\currentMPgraphic}{}%
+   \ifMPrun \else
+     \loadMPgraphic{\MPgraphicfile.\the\currentMPgraphic}{}%
+     \placeMPgraphic
+   \fi 
    \deallocateMPslot\currentMPgraphic
-   \placeMPgraphic
    \egroup}
 
-\long\def\startuseMPgraphic#1#2\stopuseMPgraphic%
-  {\long\setgvalue{MP:#1}{\handleuseMPgraphic{#1}{#2}}}
+\long\def\startuseMPgraphic#1#2\stopuseMPgraphic
+  {\long\setgvalue{\@@MPG#1}{\handleuseMPgraphic{#1}{#2}}}
 
-\long\def\startusableMPgraphic#1#2\stopusableMPgraphic% dummy
-  {\long\setgvalue{MP:#1}{\handleuseMPgraphic{#1}{#2}}} % unsafe {}{}
+\long\def\startusableMPgraphic#1#2\stopusableMPgraphicv% dummy
+  {\long\setgvalue{\@@MPG#1}{\handleuseMPgraphic{#1}{#2}}} % unsafe {}{}
 
 \let\useMPgraphic=\reuseMPgraphic
 
@@ -615,7 +678,7 @@
 %D For (mainly internal) pusposes we provide a test macro.
 
 \def\doifMPgraphicelse#1%
-  {\doifdefinedelse{MP:#1}}
+  {\doifdefinedelse{\@@MPG#1}}
 
 %D \macros
 %D   {includeMPgraphic}
@@ -637,10 +700,9 @@
 %D \stoptypen
 
 \def\includeMPgraphic#1%
- %{\getvalue{MP:#1}}
-  {\csname MP:#1\endcsname}
+  {\csname\@@MPG#1\endcsname}
 
-\def\enableincludeMPgraphics%
+\def\enableincludeMPgraphics
   {\let\handleuseMPgraphic     \secondoftwoarguments
    \let\handlereusableMPgraphic\secondoftwoarguments}
 
@@ -659,7 +721,7 @@
 %D
 %D For faster running, one can generate a format, saying
 %D
-%D \startypen
+%D \starttypen
 %D mpost -ini context
 %D \stoptypen
 %D
@@ -708,15 +770,26 @@
        --output=\MPOSTdriver\space
        \ifuseMETAFUNformat --mpformat=metafun \fi --mptex --nomp --once #1}
 
-  \def\executeMetaPost#1%
+% \def\executeMetaPost#1% @EA's 
+%   {\ifrunMPTEXgraphics
+%      \ifMPTEXgraphic
+%        \executeMPTEX{#1}%
+%      \else
+%        \executeMPOST{#1}%
+%      \fi
+%    \else
+%      \executeMPOST{#1}%
+%    \fi}
+
+  \def\executeMetaPost
     {\ifrunMPTEXgraphics
        \ifMPTEXgraphic
-         \executeMPTEX{#1}%
+         \@EAEAEA\executeMPTEX
        \else
-         \executeMPOST{#1}%
+         \@EAEAEA\executeMPOST
        \fi
      \else
-       \executeMPOST{#1}%
+       \@EA\executeMPOST
      \fi}
 
 \fi
@@ -812,10 +885,16 @@
 %D \starttypen
 %D \includeMPfontsfalse
 %D \stoptypen
+%D 
+%D {\em Currently this method fails for situations where the
+%D font definition is not on one line, which is he case when
+%D unkerned fonts are used along with long lines. One solution
+%D for this is to increase the value of \type {max_print_line}
+%D in \type {texmf.cnf}.}} 
 
 \newif\ifincludeMPfonts \includeMPfontstrue
 
-\def\includeMPfonts#1%
+\def\includeMPfonts#1% 
   {\ifincludeMPfonts
      \bgroup
      \message{[MP fonts #1]}%
@@ -823,11 +902,11 @@
      \endlinechar=-1
      \setMPspecials
      \obeyMPspecials
-     \setbox0=\hbox
+     \setbox\scratchbox=\hbox
        {\hskip-\maxdimen
         \doprocessfile\scratchread{#1}\handleMPfont}%
-     \smashbox0%
-     \box0
+     \smashbox\scratchbox
+     \box\scratchbox
      \egroup
    \fi}
 
@@ -887,10 +966,10 @@
 %D Font definitions specified in the preamble are simply
 %D ignored. Only lines starting with \type{(} are interpreted.
 
-\def\dohandleMPfont#1#2\relax%
+\def\dohandleMPfont#1#2\relax
   {\if#1(\expandafter\includeMPcharacters\fileline\relax\fi}
 
-\def\handleMPfont%
+\def\handleMPfont
   {\expandafter\dohandleMPfont\fileline\relax}
 
 %D Before we start scanning for data, we first change some
@@ -966,7 +1045,7 @@
 
 \def\PSnfont{nfont}
 
-\def\includeMPcharacters(#1) #2 #3 #4#5#6#7#8#9\relax%
+\def\includeMPcharacters(#1) #2 #3 #4#5#6#7#8#9\relax
   {\edef\temp{#4#5#6#7#8}%
    \ifx\temp\PSnfont % round font size (to pt)
      \scratchdimen=#3pt
@@ -1047,7 +1126,7 @@
 \def\convertMPcolorpath{}
 \def\convertMPcolorfile{metacmyk.tmp}
 
-\def\convertMPcolors#1%
+\def\convertMPcolors#1% todo: open on local path, no copy  
   {\bgroup
    \ifforcegrayMPcolors
      \donetrue
@@ -1101,18 +1180,18 @@
      \immediate\write\scratchwrite
        {\@@cl@@s \space setgray #4}%
    \else
-     \dimen0=1pt \advance\dimen0 by -#1pt
-     \dimen2=1pt \advance\dimen2 by -#2pt
-     \dimen4=1pt \advance\dimen4 by -#3pt
+     \dimen0=1pt \advance\dimen0 -#1pt
+     \dimen2=1pt \advance\dimen2 -#2pt
+     \dimen4=1pt \advance\dimen4 -#3pt
      \ifreduceMPcolors
        \dimen6=\dimen0
        \ifdim\dimen2<\dimen6 \dimen6=\dimen2 \fi
        \ifdim\dimen4<\dimen6 \dimen6=\dimen4 \fi
-       \advance\dimen0 by -\dimen6
-       \advance\dimen2 by -\dimen6
-       \advance\dimen4 by -\dimen6
+       \advance\dimen0 -\dimen6
+       \advance\dimen2 -\dimen6
+       \advance\dimen4 -\dimen6
      \else
-       \dimen6=\!!zeropoint
+       \dimen6=\zeropoint
      \fi
      \immediate\write\scratchwrite
        {\withoutpt{\the\dimen0} \space
@@ -1271,29 +1350,29 @@
 \newif\ifMPdrawingdone  \MPdrawingdonefalse
 \newif\ifMPshiftdrawing \MPshiftdrawingfalse
 
-\def\resetMPdrawing%
+\def\resetMPdrawing
   {\global\let\MPdrawingdata\empty
    \global\MPdrawingdonefalse}
 
-\def\pushMPdrawing%
+\def\pushMPdrawing
   {\pushmacro\MPdrawingdata
    \global\let\MPdrawingdata\empty}
 
-\def\popMPdrawing%
+\def\popMPdrawing
   {\popmacro\MPdrawingdata}
 
-\def\getMPdrawing%
+\def\getMPdrawing
   {\ifMPdrawingdone
      \expandafter\startMPgraphic\MPdrawingdata\stopMPgraphic
      \loadcurrentMPgraphic\empty
-     \deallocateMPslot\currentMPgraphic % new
+     \deallocateMPslot\currentMPgraphic 
      \placeMPgraphic
    \fi}
 
-\def\startMPdrawing%
+\def\startMPdrawing
   {\dosingleempty\dostartMPdrawing}
 
-\long\def\dostartMPdrawing[#1]#2\stopMPdrawing%
+\long\def\dostartMPdrawing[#1]#2\stopMPdrawing
   {\relax
    \bgroup
    \enableincludeMPgraphics
@@ -1402,6 +1481,45 @@
 
 \newif\ifrecycleMPslots \recycleMPslotsfalse
 
+% \def\allocateMPslot#1%
+%   {\ifrunMPgraphics
+%      \ifcase\pdfoutput \recycleMPslotsfalse \fi
+%    \else
+%      \recycleMPslotsfalse
+%    \fi
+%    \ifrecycleMPslots
+%      \doloop % slow but used seldom 
+%        {\doifundefined{\recurselevel MP}
+%           {\global\letvalue{\recurselevel MP}=\empty
+%            \global#1=\recurselevel\exitloop}}%
+%     %\message{[MP slot + \number#1]%
+%    \else
+%      \global\advance#1 1
+%    \fi}
+
+%D When a graphic takes space in the text flow, we can run
+%D into deadlock typesetting. In the first pass, the graphic
+%D is not available, but in the second pass it is. The
+%D placeholder that was put there in the first pass in now
+%D replace by the real graphic and as a result the document
+%D shrinks or grows and pages are removed or added. This in
+%D turn can trigger generation of other graphics, like those
+%D in the background. Graphics start swapping place and again
+%D page breaks change. You can imagine the mess we en dup
+%D with. 
+%D 
+%D This is why we provide was to use a dedicate range if
+%D numbers for fixed graphcis. Such graphics will not en dup
+%D in the text flow (at least their dimensions don't
+%D contribute to the main vertical list, and thereby they
+%D cannot interfere. We use a rather safe maximum of 4000 
+%D graphics here and 8000 in \type {meta-ini}. 
+
+\newcount \maxnofMPgraphics  \maxnofMPgraphics = 4000 %8000 
+\newcount \minnofMPgraphics  \minnofMPgraphics =    1
+
+\newif    \ifMPstaticgraphic \MPstaticgraphicfalse 
+
 \def\allocateMPslot#1%
   {\ifrunMPgraphics
      \ifcase\pdfoutput \recycleMPslotsfalse \fi
@@ -1409,13 +1527,21 @@
      \recycleMPslotsfalse
    \fi
    \ifrecycleMPslots
-     \doloop
+     \doloop % slow but used seldom 
        {\doifundefined{\recurselevel MP}
-          {\global\letvalue{\recurselevel MP}=\empty
-           \global#1=\recurselevel\exitloop}}%
-    %\message{[MP slot + \number#1]%
+          {\global\letvalue{\recurselevel MP}\empty
+           \global#1=\recurselevel
+           \exitloop}}%
+   % \message{[MP slot + \number#1]%
+   \else\ifMPstaticgraphic
+     \global#1\maxnofMPgraphics 
+     \global\advance\maxnofMPgraphics -1
    \else
-     \global\advance#1 by 1
+     \global#1\minnofMPgraphics 
+     \global\advance\minnofMPgraphics  1
+   \fi\fi
+   \ifnum\minnofMPgraphics<\maxnofMPgraphics \else
+     \writestatus{\m!systems}{increase \string\maxnofMPgraphics}% 
    \fi}
 
 \def\deallocateMPslot#1%
@@ -1460,6 +1586,4 @@
 \long\def\startMPcode#1\stopMPcode%
   {\startuseMPgraphic{@@}#1\stopuseMPgraphic\useMPgraphic{@@}}
 
-\protect
-
-\endinput
+\protect \endinput

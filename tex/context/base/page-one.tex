@@ -25,17 +25,17 @@
 \newtoks\OTRONEoutput
 
 \def\OTRONEsethsize%
-  {\global\hsize=\tekstbreedte}
+  {\global\hsize\tekstbreedte}
 
 \def\OTRONEsetvsize%
   {\ifdim\vsize=\teksthoogte \else
      \bgroup
-     \scratchdimen=-\vsize
-     \advance\scratchdimen by \teksthoogte
-     \global\advance\vsize by \scratchdimen
+     \scratchdimen-\vsize
+     \advance\scratchdimen \teksthoogte
+     \global\advance\vsize \scratchdimen
      \ifdim\pagegoal<\maxdimen
-       \advance\scratchdimen by \pagegoal
-       \global\pagegoal=\scratchdimen
+       \advance\scratchdimen \pagegoal
+       \global\pagegoal\scratchdimen
      \fi
      \egroup
    \fi}
@@ -64,30 +64,30 @@
         \kern\maxdepth
         \dobotinsertions
       \fi\fi\fi
-      \ifdim\ht\footins>\!!zeropoint % beter dan \ifvoid\footins\else
+      \ifdim\ht\footins>\zeropoint % beter dan \ifvoid\footins\else
         \kern\skip\footins
         \kern\ht\footins
       \fi}%
    \ifbottomnotes
      \ifgridsnapping
        \getnoflines\teksthoogte
-       \advance\noflines by -1
-       \scratchdimen=\noflines\lineheight
-       \advance\scratchdimen by \topskip
+       \advance\noflines -1
+       \scratchdimen\noflines\lineheight
+       \advance\scratchdimen \topskip
      \else
-       \scratchdimen=\ht0
+       \scratchdimen\ht0
      \fi
    \else
-     \scratchdimen=\!!zeropoint
+     \scratchdimen\zeropoint
    \fi
    \setbox2=\hbox
      {\ifvoid\savedfootins \else
-        \setbox\footins=\box\savedfootins
+        \setbox\footins\box\savedfootins
       \fi
       \lower\scratchdimen\vbox{\placefootnotes}}%
    \smashbox2% % needed here 
    \ifbottomnotes
-     \ht0=\!!zeropoint
+     \ht0\zeropoint
    \fi
    \vbox to \teksthoogte
      {\box0\box2\ifbottomnotes\else\vfill\fi}%
@@ -109,15 +109,15 @@
 \def\OTRONEdosettopinserts%
   {\bgroup
    \ifsomefloatwaiting
-     \noffloatinserts=0
-     \let\totaltopinserted=\!!zeropoint
+     \noffloatinserts0
+     \let\totaltopinserted\!!zeropoint
      \OTRONEdodosettopinserts
      \ifnum\@@bknonder=0
        \ifnum\@@bknregels>0
-         \ifdim\totaltopinserted>\!!zeropoint\relax
+         \ifdim\totaltopinserted>\zeropoint\relax
            \dimen0=\lineheight
            \dimen0=\@@bknregels\dimen0
-           \advance\dimen0 by \totaltopinserted\relax
+           \advance\dimen0 \totaltopinserted\relax
            \ifdim\dimen0>\teksthoogte
              \showmessage{\m!floatblocks}{8}{\@@bknregels}%
              \vfilll\eject
@@ -136,15 +136,16 @@
      \else
        \topofinsertfalse
      \fi
-     \global\advance\topinserted by \ht\floatbox
-     \global\advance\topinserted by \dp\floatbox
-     \global\advance\topinserted by \floatbottomskip\relax
+     \global\advance\topinserted \ht\floatbox
+     \global\advance\topinserted \dp\floatbox
+     \global\advance\topinserted \floatbottomskip\relax
      \ifdim\topinserted<\teksthoogte\relax
        \xdef\totaltopinserted{\the\topinserted}%
        \insert\topins
          {\forgetall
           \iftopofinsert
-            \kern-\lineskip\par\prevdepth=\maxdimen
+            \kern-\lineskip\par
+            \prevdepth\maxdimen
           \else
             %\blanko[-\@@bknawit,\@@bkvoorwit]% inserts can't look back
             \betweenfloatblanko
@@ -152,27 +153,27 @@
           \flushfloatbox
           \blanko[\@@bknawit]}%
        \ifsomefloatwaiting
-         \advance\noffloatinserts by 1
+         \advance\noffloatinserts 1
        \else
-         \noffloatinserts=\noftopfloats\relax
+         \noffloatinserts\noftopfloats\relax
        \fi
        \dofloatflushedinfo
      \else
        \doresavefloat
-       \noffloatinserts=\noftopfloats\relax
+       \noffloatinserts\noftopfloats\relax
      \fi
    \else
      \ifsomefloatwaiting
-       \showmessage{\m!floatblocks}{6}{\the\noftopfloats}%
+       \showmessage\m!floatblocks6{\the\noftopfloats}%
      \fi
-     \let\OTRONEdodosettopinserts=\relax
+     \let\OTRONEdodosettopinserts\relax
    \fi
    \OTRONEdodosettopinserts}
 
 \def\OTRONEdosetbotinserts%
   {\bgroup
    \ifsomefloatwaiting
-     \noffloatinserts=0
+     \noffloatinserts0
      \OTRONEdodosetbotinserts
    \fi
    \egroup}
@@ -180,40 +181,40 @@
 \def\OTRONEdodosetbotinserts%
   {\ifnum\noffloatinserts<\nofbotfloats\relax
      \dogetfloat
-     \global\advance\botinserted by \ht\floatbox\relax
-     \global\advance\botinserted by \dp\floatbox\relax
-     \global\advance\botinserted by \floattopskip\relax
+     \global\advance\botinserted \ht\floatbox\relax
+     \global\advance\botinserted \dp\floatbox\relax
+     \global\advance\botinserted \floattopskip\relax
      \ifdim\botinserted<\pagegoal\relax
        \insert\botins
          {\forgetall
           \blanko[\@@bkvoorwit]%
           \flushfloatbox}%
        \ifsomefloatwaiting
-         \advance\noffloatinserts by 1
+         \advance\noffloatinserts 1
        \else
-         \noffloatinserts=\nofbotfloats
+         \noffloatinserts\nofbotfloats
        \fi
        \dofloatflushedinfo
      \else
        \doresavefloat
-       \noffloatinserts=\nofbotfloats\relax
+       \noffloatinserts\nofbotfloats\relax
      \fi
      \global\nofloatpermittedtrue % vgl topfloats s!
    \else
      \ifsomefloatwaiting
-       \showmessage{\m!floatblocks}{7}{\the\nofbotfloats}%
+       \showmessage\m!floatblocks7{\the\nofbotfloats}%
      \fi
-     \let\OTRONEdodosetbotinserts=\relax
+     \let\OTRONEdodosetbotinserts\relax
    \fi
    \OTRONEdodosetbotinserts}
 
 \def\OTRONEdosetbothinserts%
   {\ifflushingfloats
-     \global\topinserted=\zeropoint
-     \global\botinserted=\zeropoint 
+     \global\topinserted\zeropoint
+     \global\botinserted\zeropoint 
    \else
-     \global\topinserted=\zeropoint \OTRONEdosettopinserts
-     \global\botinserted=\zeropoint \OTRONEdosetbotinserts
+     \global\topinserted\zeropoint \OTRONEdosettopinserts
+     \global\botinserted\zeropoint \OTRONEdosetbotinserts
    \fi}
 
 \def\OTRONEdotopinsertions%
@@ -225,7 +226,7 @@
        \unvbox\topins
      \fi
    \fi
-   \global\topinserted=\!!zeropoint\relax}
+   \global\topinserted\zeropoint}
 
 \def\OTRONEdobotinsertions%
   {\ifvoid\botins\else
@@ -235,7 +236,7 @@
        \unvbox\botins
      \fi
    \fi
-   \global\botinserted=\!!zeropoint\relax
+   \global\botinserted\zeropoint
    \global\nofloatpermittedfalse}
 
 \def\OTRONEdoflushfloats%
@@ -245,13 +246,13 @@
      \ifvmode\prevdepth=\maxdimen\fi % prevents whitespace
      \OTRONEdodoflushfloats
    \fi
-   \global\savednoffloats=0
+   \global\savednoffloats0
    \global\somefloatwaitingfalse
    \global\flushingfloatsfalse}
 
 \def\OTRONEflushfloatbox% nog verder doorvoeren en meer info in marge
   {\ifcenterfloatbox \ifdim\wd\floatbox<\hsize
-     \setbox\floatbox=\hbox to \hsize{\hss\box\floatbox\hss}%
+     \setbox\floatbox\hbox to \hsize{\hss\box\floatbox\hss}%
    \fi \fi
    \snaptogrid\hbox{\iftestfloatbox\ruledhbox\fi{\copy\floatbox}}}
 
@@ -271,23 +272,23 @@
        \centerfloatboxfalse
        \dogetfloat
        \ifdim\wd\floatbox>\zetbreedte 
-         \global\setbox\floatbox=\hbox to \zetbreedte{\hss\box\floatbox\hss}%
+         \global\setbox\floatbox\hbox to \zetbreedte{\hss\box\floatbox\hss}%
        \fi
        \OTRONEsetvsize
-       \!!widtha=\wd\floatbox
+       \!!widtha\wd\floatbox
        \dofloatflushedinfo
        \doloop
          {\ifsomefloatwaiting 
             \dosavefloatstatus
             \dogetfloat
-            \advance\!!widtha by 1em % variable 
-            \advance\!!widtha by \wd\floatbox\relax
+            \advance\!!widtha 1em % variable 
+            \advance\!!widtha \wd\floatbox\relax
             \ifdim\!!widtha>\hsize
               \dorestorefloatstatus
               \global\somefloatwaitingtrue
               \exitloop
             \else
-              \global\setbox\floatbox=\hbox
+              \global\setbox\floatbox\hbox
                 {\ifcase\columndirection % nog document wide
                    \ifvoid\savedfloatbox\else
                      \ifhbox\savedfloatbox\unhbox\else\box\fi\savedfloatbox\hfil 
@@ -322,10 +323,10 @@
      \global\roomforfloatfalse
    \else
      \dimen0=\pagetotal
-     \advance\dimen0 by \ht\floatbox
-     \advance\dimen0 by \dp\floatbox
-     \advance\dimen0 by \floattopskip
-     \advance\dimen0 by -\pageshrink  % toegevoegd
+     \advance\dimen0 \ht\floatbox
+     \advance\dimen0 \dp\floatbox
+     \advance\dimen0 \floattopskip
+     \advance\dimen0 -\pageshrink  % toegevoegd
 %\message{c:\the\mofcolumns,t:\the\pagetotal,g:\the\pagegoal}%\wait
      \ifdim\dimen0>\pagegoal
        \global\roomforfloatfalse
@@ -338,21 +339,21 @@
   {\baselinecorrection
    \doplacefloatbox
    \doinsertfloatinfo
-   \doif{\@@bkspringvolgendein}{\v!nee}{\noindentation}} % new 
+   \doif\@@bkspringvolgendein\v!nee\noindentation} % new 
 
-\def\OTRONEsomefixdfloat[#1]%
+\def\OTRONEsomefixdfloat% [#1]%
   {\docheckiffloatfits
    \ifroomforfloat\else
      \goodbreak
    \fi
-   \showmessage{\m!floatblocks}{9}{}%
-   \someherefloat}
+   \showmessage\m!floatblocks9\empty
+   \someherefloat} % [#1]}%
 
 \def\OTRONEsomesidefloat[#1]%  links, rechts     NOG TESTEN EN AANPASSEN
   {\ifbinnenkolommen
      \someelsefloat[\v!hier]%
    \else
-     \checkwaitingfloats{#1}%
+    %\checkwaitingfloats{#1}%
      \def\logsidefloat%
        {\doinsertfloatinfo}%
      \setbox\floatbox=\vbox{\box\floatbox}%
@@ -369,14 +370,16 @@
        {\flushsidefloatsafterpar}%
    \fi}
 
-\def\OTRONEsomepagefloat[#1]%  links, rechts, midden, hoog, midden, laag
-  {\checkwaitingfloats{#1}%
-   \vbox to \teksthoogte
-     {\doifnotinset{\v!hoog}{#1}{\vfill}%
-      \box\floatbox
-      \doifnotinset{\v!laag}{#1}{\vfill}}%
-   \doinsertfloatinfo
-   \pagina}                      % toegevoegd
+\def\OTRONEsomepagefloat[#1]%  
+  {%\checkwaitingfloats{#1}%
+   \global\setbox\collectedpagefloats=\vbox
+     {\unvbox\collectedpagefloats
+      \vbox to \teksthoogte
+        {\doifnotinset{\v!hoog}{#1}{\vfill}
+         \box\floatbox
+         \doifnotinset{\v!laag}{#1}{\vfill}}
+      \goodbreak}%
+   \doinsertfloatinfo}
 
 \def\OTRONEsometopsfloat[#1]%
   {\ifdim\topinserted=\!!zeropoint\relax

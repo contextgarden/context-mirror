@@ -1,0 +1,325 @@
+%D \module
+%D   [       file=xtag-pre,
+%D        version=2000.12.20,
+%D          title=\CONTEXT\ XML Support,
+%D       subtitle=Predefined Things
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\beginTEX 
+  \endinput 
+\endTEX 
+
+\writestatus{loading}{Context XML Macros (predefined)}
+
+%D Here we predefine some escapes, processing instructions,
+%D entities and other handy things.
+
+\unprotect
+
+%D First we define the default error handler. When tracing is
+%D activated, the unknown element is showed verbatim.
+
+\defineXMLenvironment [\s!default] \defaultXMLelement \defaultXMLelement
+\defineXMLsingular    [\s!default] \defaultXMLelement
+
+\def\defaultXMLelement{\iftraceXMLelements[\currentXMLelement]\fi}
+
+%D The following entities need to be defined anyway. They
+%D may be overloaded later.
+
+\defineXMLentities [amp]  {\string&} {\&}
+\defineXMLentities [gt]   {\string>} {\mathematics{>}}
+\defineXMLentities [lt]   {\string<} {\mathematics{<}}
+\defineXMLentities [quot] {\string"} {\mathematics{"}}
+\defineXMLentities [apos] {\string`} {\mathematics{'}}
+
+%D Of course we define:
+
+\defineXMLentities [tex]     {tex}     {\TeX}
+\defineXMLentities [context] {context} {\ConTeXt}
+\defineXMLentities [xml]     {xml}     {XML}
+\defineXMLentities [xsd]     {xsd}     {XSD}
+\defineXMLentities [html]    {html}    {HTML}
+
+%D The following entities are used for internal purposes and
+%D concern characters that are kind of problematic in \TEX\
+%D input.
+
+\defineXMLentities [tex-hash]       {\letterhash}       {\#}
+\defineXMLentities [tex-dollar]     {\letterdollar}     {\$}
+\defineXMLentities [tex-percent]    {\letterpercent}    {\%}
+\defineXMLentities [tex-backslash]  {\letterbackslash}  {\texescape}
+\defineXMLentities [tex-hat]        {\letterhar}        {\^{}}
+\defineXMLentities [tex-underscore] {\letterunderscore} {\_}
+\defineXMLentities [tex-leftbrace]  {\letterleftbrace}  {\leftargument}
+\defineXMLentities [tex-rightbrace] {\letterrightbrace} {\rightargument}
+\defineXMLentities [tex-bar]        {\letterbar}        {\vl}
+\defineXMLentities [tex-tilde]      {\lettertilde}      {\~{}}
+
+%D Some pretty printing macros will use color, for which we
+%D define a dedicated palet here.
+
+\definepalet
+  [xtag]
+  [0=darkgray,   1=darkred,  2=darkgreen,
+   3=darkblue,   4=darkcyan, 5=darkmagenta,
+   6=darkyellow, 7=black,    8=black]
+
+%D An example of its usage can be found in the pretty
+%D printing macros in the run time module.
+
+\newif\ifautoXMLshow      \autoXMLshowtrue
+\newif\ifshowXMLarguments \showXMLargumentstrue
+
+\def\setupXMLfile{\dodoubleargument\getparameters[\??xf]}
+
+\setupXMLfile
+  [\c!tussen=\blanko,
+   \c!niveau=1]
+
+\fetchruntimecommand\showXMLfile  {\f!xtagprefix\s!run}
+\fetchruntimecommand\showXMLbuffer{\f!xtagprefix\s!run}
+
+\fetchruntimecommand\showXMLign   {\f!xtagprefix\s!run}
+\fetchruntimecommand\showXMLnop   {\f!xtagprefix\s!run}
+\fetchruntimecommand\showXMLtxt   {\f!xtagprefix\s!run}
+\fetchruntimecommand\showXMLpar   {\f!xtagprefix\s!run}
+\fetchruntimecommand\showXMLlin   {\f!xtagprefix\s!run}
+\fetchruntimecommand\showXMLwrd   {\f!xtagprefix\s!run}
+\fetchruntimecommand\showXMLemp   {\f!xtagprefix\s!run}
+
+%D By default, we will ignore escape commands, preceded by
+%D \type {<!} and ending in (presumably) a \type {>}.
+
+\defineXMLescape [\s!default] {\gobbleuntil{>}}
+
+%D The comment escape has the form:
+%D
+%D \starttypen
+%D <!-- a couple of remarks -->
+%D \stoptypen
+
+\defineXMLescape [--] {\gobbleuntil{-->}}
+
+%D The \type {CDATA} escape is kind of unique in its
+%D strange syntax.
+%D
+%D \starttypen
+%D <!CDATA[
+%D whatever you like to be shown verbatim
+%D ]]>
+%D \stoptypen
+%D
+%D Watch this rather obscure definition (we need to pass an
+%D \type {[} to the macro.
+
+\defineXMLescape [{CDATA[}]
+  {\skipfirstverbatimlinefalse
+   \processtaggeddisplayverbatim{]]>}}
+
+%D \starttypen
+%D <!ENTITY crap "very new [&#x7B;] crap">
+%D <!ENTITY crap SYSTEM "crapfile.xml">
+%D <!ENTITY crap SYSTEM "crapfile.pdf" NDATA ignoredanyway>
+%D \stoptypen
+
+\defineXMLescape [ENTITY] \handleXMLentityescape
+
+\def\handleXMLentityescape#1>%
+  {\dohandleXMLentityescape#1 @ @ @ @ @ @>}
+
+\def\dohandleXMLentityescape#1 #2 #3 #4>
+  {\doifnot{#1}{\letterpercent}
+     {\doifelse{#2}{SYSTEM}
+        {\dohandleXMLentitySYSTEM#1 #2 #3 #4>}
+        {\dohandleXMLentityDEFINE#1 #2 #3 #4>}}}
+
+\def\dohandleXMLentitySYSTEM#1 #2 #3 #4 #5 #6>% name SYSTEM ....
+  {\doifelse{#4}{@}
+     {\expanded{\defineXMLentity[#1]{\noexpand\readXMLsystem{\unstringed#3}}}}
+     {\doif{#4}{NDATA} % maybe we should also store the NDATA
+        {\expanded{\defineXMLentity[#1]{\noexpand\readXMLndata{\unstringed#3}}}}}}
+
+\def\readXMLsystem#1%
+  {\readfile{#1}
+     {\writestatus{xml-system}{reading #1}}
+     {\writestatus{xml-system}{unable to locate #1}}}
+
+\def\readXMLndata#1%
+  {#1} % {\externalfigure[#1]}
+
+\def\dohandleXMLentityDEFINE#1 %#2 #3 #4 #5 #6>% name replacement
+  {\def\docommando##1>{\expanded{\defineXMLentity[#1]{\the\scratchtoks}}}%
+   \afterassignment\docommando\grabstring}
+
+%D Such entities can be encapsulated in a \type {DOCTYPE}
+%D element. Therefore we remove the outer level of document
+%D type definitions.
+
+\defineXMLescape [DOCTYPE] \handleXMLdoctype
+
+\def\handleXMLdoctype#1 #2%
+  {\doifelse{#2}{[}
+     {%\writestatus{xml-doctype}{expanding #1}%
+      \def\next{\processuntil{]>}}}
+     {%\writestatus{xml-doctype}{skipping  #1}%
+      \def\next{\gobbleuntil  {>}}}%
+   \next}
+
+%D Some day we may need to support entities within a
+%D document type namespace.
+
+%D As an example of processing instructions, we implement a
+%D \CONTEXT\ code handler:
+
+\defineXMLprocessor [context]         \contextXMLcommand
+\defineXMLprocessor [context-command] \contextXMLcommand
+
+% we need to get rid of the endlinechar inserted by \scantokens
+%
+% \def\saveendlinechar%
+%   {\ifx\restoreendlinechar\undefined
+%      \edef\restoreendlinechar{\endlinechar\the\endlinechar\space}%
+%    \fi
+%    \endlinechar=-1 }
+%
+% \def\scanXMLtokens#1%
+%   {\saveendlinechar\scantokens{#1}\restoreendlinechar}
+
+%D For security reasons, we provide a switch to turn this 
+%D mechanism on and off. When turned off, there is no way to
+%D turn it on from within an \XML\ encoded document, simply 
+%D because the possibility to process \CONTEXT\ commands is 
+%D gone. 
+
+\setupXMLprocessing[\c!commando=\v!ja]
+
+%\def\contextXMLcommand#1%
+%  {\doif{\@@xpcommando}{\v!ja}
+%     {\pushmacro\disableXML
+%      \def\disableXML{\global\let\afterXMLprocessor\empty}%
+%      \global\let\afterXMLprocessor\enableXML
+%      \setnormalcatcodes\scantokens{#1}\afterXMLprocessor
+%      \popmacro\disableXML}}
+
+\def\contextXMLcommand#1% we don't use #1 here      
+  {\doif{\@@xpcommando}{\v!ja}  
+     {\disableXML\scantokens\@EA{\currentXMLprocess}\enableXML}}
+
+%D The indirect method (using the macro \type
+%D {\currentXMLprocess} instead of \type {#}) is needed
+%D because of the \type {\scantokens}. Given the previous 
+%D definition, and given that \ETEX\ is used, we can now 
+%D say:
+%D
+%D \starttypen
+%D <?context-command {\bf Start Of Some \TeX\ Text} ?>
+%D \stoptypen
+%D
+%D A non||\ETEX\ solution is also possible, using buffers,
+%D but for the moment we assume that \ETEX\ is used.
+
+%D Next we implement a general purpose directive. This one
+%D can be used to set variables that can be accessed with
+%D \type {\XMLvar}.
+
+\defineXMLprocessor [context-directive] \contextXMLdirective
+
+\def\contextXMLdirective#1%
+  {\docontextXMLdirective#1 @ @ @\end}
+
+\def\docontextXMLdirective#1 #2 #3 #4\end% class variable value
+  {\csname\@@XMLvariable:#1:#2\endcsname{#3}}
+
+%D A simple processing instruction is the following. It just
+%D writes a message to the screen.
+
+\defineXMLprocessor [context-message] {\writestatus{xml-message}}
+
+%D The following processing instruction permits you to tag
+%D parts of the file in such a way that you can filter data.
+%D We use this method when documenting schemas.
+
+\defineXMLprocessor [context-block] \handleXMLcontextblock
+
+\def\handleXMLcontextblock#1%
+  {\dohandleXMLcontextblock#1 \relax}
+
+\def\dohandleXMLcontextblock#1 #2 #3\relax
+  {\dodohandleXMLcontextblock{#1}{#2}}
+
+\let\dodohandleXMLcontextblock\gobbletwoarguments
+
+\def\hideXMLcontextblock[#1]%
+  {\def\dodohandleXMLcontextblock
+     {\dododohandleXMLcontextblock\doifinset{#1}}}
+
+\def\videXMLcontextblock[#1]%
+  {\def\dodohandleXMLcontextblock
+     {\dododohandleXMLcontextblock\doifnotinset{#1}}}
+
+\protect
+
+\def\dododohandleXMLcontextblock#1#2#3#4%
+  {\let\next\relax
+   \doifelse{#3}{begin}
+     {#1{#4}{#2}
+       {%\writestatus{xml-block}{skipping begin #4}%
+        \long\def\next##1?context-block end #4 ##2?>{}}}
+     {\doif{#3}{name}
+        {#1{#4}{#2}
+          {%\writestatus{xml-block}{skipping name #4}%
+           \long\def\next##1?context-block ##2?>{}}}}%
+   \next}
+
+\unprotect
+
+%D Say that a file contains blocks like the following:
+%D
+%D \starttypen
+%D <?context-block begin whatevername ?>
+%D
+%D <to/> <be> <or/> maybe <not/> so much <to/> </be>
+%D
+%D <?context-block end whatevername ?>
+%D \stoptypen
+%D
+%D The following commands will show only this block:
+%D
+%D \starttypen
+%D \videXMLcontextblock[whatevername] \showXMLfile{yourfile}
+%D \stoptypen
+%D
+%D You can also mark blocks in the following way, thereby
+%D saving yourself some work:
+%D
+%D \starttypen
+%D <?context-block what ?>
+%D
+%D <what>What do you want?</what>
+%D
+%D <?context-block how ?>
+%D
+%D <how>How do you want?</how>
+%D
+%D <?context-block done ?>
+%D \stoptypen
+
+% yet undocumented and experimental
+
+% \defineXMLprocessor [context-eof] {\endinput}
+
+% already defined in xtag-ini
+
+% \defineXMLsingular [begingroup] {\begingroup}
+% \defineXMLsingular [endgroup]   {\endgroup}
+%
+% \defineXMLsingular [gobblespacetokens] {\gobblespacetokens}
+
+\protect \endinput

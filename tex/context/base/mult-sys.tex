@@ -49,11 +49,13 @@
 \definesystemconstant {polish}      \definesystemconstant {pl}
 \definesystemconstant {portuguese}  \definesystemconstant {pt}
 \definesystemconstant {romanian}    \definesystemconstant {ro}
+\definesystemconstant {russian}     \definesystemconstant {ru}
 \definesystemconstant {slovak}      \definesystemconstant {sk}
 \definesystemconstant {spanish}     \definesystemconstant {es}
 \definesystemconstant {swedish}     \definesystemconstant {sv}
 \definesystemconstant {turkish}     \definesystemconstant {tr}
 \definesystemconstant {ukenglish}   \definesystemconstant {uk}
+\definesystemconstant {ukrainian}   \definesystemconstant {ua}
 \definesystemconstant {usenglish}   \definesystemconstant {us}
 
 %D For proper \UNICODE\ support we need a few font related 
@@ -174,6 +176,7 @@
 \definesystemconstant  {mapping}
 \definesystemconstant  {patterns}
 \definesystemconstant  {handling}
+\definesystemconstant  {ucmap}
 
 %D Just to be complete we define the standard \TEX\ units.
 
@@ -320,6 +323,9 @@
 
 \ifx\z@\undefined \newdimen\zeropoint \else \let\zeropoint\z@ \fi
 
+\newcount\medcard \medcard\!!medcard % used in font module 
+\newcount\maxcard \maxcard\!!maxcard % used in font module 
+
 %D Variables are composed of a command specific tag and a user
 %D supplied variable (system constant). The first tag \type{ag}
 %D for instance is available as \type{\??ag} and expands to
@@ -330,6 +336,7 @@
 \definesystemvariable {ag}   % AchterGrond
 \definesystemvariable {al}   % ALinea's
 \definesystemvariable {am}   % interActieMenu
+\definesystemvariable {as}   % AlignmentSwitch
 \definesystemvariable {ba}   % synchronisatieBAlk
 \definesystemvariable {be}   % startstop (BeginEnd)
 \definesystemvariable {bj}   % BlokJe
@@ -357,7 +364,8 @@
 \definesystemvariable {do}   % DefinieerOpmaak
 \definesystemvariable {ds}   % DoorSpringen
 \definesystemvariable {ef}   % ExternFiguur
-\definesystemvariable {ec}   % Encoding
+\definesystemvariable {ec}   % EnCoding
+\definesystemvariable {en}   % ENvironments
 \definesystemvariable {ep}   % ExternfiguurPreset
 \definesystemvariable {ex}   % ExterneFiguren
 \definesystemvariable {ht}   % HiddenText
@@ -371,9 +379,11 @@
 \definesystemvariable {fr}   % ForM
 \definesystemvariable {fs}   % FileSynonym
 \definesystemvariable {ft}   % FonTs
+\definesystemvariable {hs}   % HSpace
 \definesystemvariable {ia}   % Interactie
 \definesystemvariable {ib}   % InteractieBalk
 \definesystemvariable {id}   % Index
+\definesystemvariable {ig}   % ItemGroup
 \definesystemvariable {ih}   % InHoudsopgave
 \definesystemvariable {ii}   % stelIndexIn
 \definesystemvariable {il}   % stelInvulRegelsin
@@ -444,6 +454,7 @@
 \definesystemvariable {sc}   % SCherm
 \definesystemvariable {sd}   % SounD
 \definesystemvariable {se}   % SEctie
+\definesystemvariable {sg}   % SpacinG
 \definesystemvariable {sh}   % ShapeText
 \definesystemvariable {si}   % SplIt
 \definesystemvariable {sk}   % SectieKop
@@ -478,6 +489,8 @@
 \definesystemvariable {vn}   % VoetNoten
 \definesystemvariable {vt}   % VerTical
 \definesystemvariable {wr}   % WitRuimte
+\definesystemvariable {xf}   % XML File
+\definesystemvariable {xp}   % XML Processing
 \definesystemvariable {xy}   % schaal
 \definesystemvariable {za}   % ZetspiegelAanpassing
 
@@ -512,6 +525,9 @@
 \defineinterfaceconstant {t} {t}
 \defineinterfaceconstant {h} {h}
 \defineinterfaceconstant {b} {b}
+
+\defineinterfaceconstant {t} {t} % transparency 
+\defineinterfaceconstant {a} {a} % alternative
 
 \defineinterfaceconstant {rgb}  {rgb}
 \defineinterfacevariable {rgb}  {rgb}

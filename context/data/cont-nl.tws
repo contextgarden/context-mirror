@@ -20,6 +20,7 @@ stopsetup
 startsetup
 com:steltaalin:
 typ:val/vars/:
+val:nl,fr,en,uk,de,es,cz,..:nl:
 ivr:installeertaal::
 stopsetup
 
@@ -214,10 +215,9 @@ stopsetup
 
 startsetup
 com:definieerkleurgroep:
-typ:val/val/vals/:
+typ:val/val/trips/:
 val:*naam::
 val:rgb,cmyk,grijs,s:rgb:
-val:trips/::
 stopsetup
 
 startsetup
@@ -260,7 +260,7 @@ stopsetup
 
 startsetup
 com:steltypein:
-typ:var/:
+typ:vars/:
 var:spatie:aan,uit::
 var:optie:schuin,normaal,geen::
 var:letter:normaal,vet,schuin,vetschuin,type,kap,klein...,*commando::
@@ -405,6 +405,7 @@ var:variant:a,b,c::
 var:lijndikte:*maat::
 var:onderoffset:*maat::
 var:bovenoffset:*maat::
+var:lijnkleur:*naam::
 stopsetup
 
 startsetup
@@ -993,7 +994,8 @@ stopsetup
 
 startsetup
 com:laho:
-typ:arg/arg/:
+typ:val/arg/arg/:
+val:laag::
 val:*tekst::
 val:*tekst::
 stopsetup
@@ -1725,8 +1727,9 @@ var:wijze:pertekst,per*sectie::
 var:tekst:*tekst::
 var:nummerscheider:*tekst::
 var:tekstscheider:*tekst::
-var:*sectie*getal:ja,nee::
+var:*sectienummer:ja,nee::
 var:scheider:*tekst::
+var:strut:ja,nee::
 var:status:start,stop::
 var:commando:*\commando#1::
 stopsetup
@@ -1753,6 +1756,7 @@ stopsetup
 startsetup
 com:definieerstartstop:
 typ:val/vars/:
+val:*naam::
 var:voor:*commando::
 var:na:*commando::
 var:letter:normaal,vet,schuin,vetschuin,type,kap,klein...,*commando::
@@ -1780,6 +1784,7 @@ var:tussen:*commando::
 var:uitlijnen:links,midden,rechts,nee::
 var:conversie:cijfers,letters,Letters,romeins,Romeins::
 var:wijze:pertekst,per*sectie::
+var:scheider:*tekst::
 stopsetup
 
 startsetup
@@ -1881,9 +1886,9 @@ stopsetup
 
 startsetup
 com:stelrefererenin:
-typ:var/:
+typ:vars/:
 var:status:start,stop::
-var:*sectie*getal:ja,nee::
+var:*sectienummer:ja,nee::
 var:prefix:+,-,*tekst::
 var:interactie:label,tekst,alles,symbool::
 var:breedte:*maat::
@@ -1980,7 +1985,7 @@ val:*naam::
 var:status:start,stop::
 var:variant:a,b,c,...,geen,commando::
 var:koppeling:aan,uit::
-var:criterium:*sectie,lokaal,vorige,alles::
+var:criterium:*sectie,lokaal,vorige,huidige,alles::
 var:paginaovergangen:*lijst::
 var:letter:normaal,vet,schuin,vetschuin,type,kap,klein...,*commando::
 var:nummerletter:normaal,vet,schuin,vetschuin,type,kap,klein...,*commando::
@@ -1998,9 +2003,9 @@ var:tussen:*commando::
 var:links:*tekst::
 var:rechts:*tekst::
 var:label:ja,nee::
-var:prefix:ja,nee::
+var:prefix:ja,nee,geen::
 var:paginanummer:ja,nee::
-var:*sectie*getal:ja,nee::
+var:*sectienummer:ja,nee::
 var:titeluitlijnen:ja,nee::
 var:marge:*maat::
 var:breedte:*maat,passend::
@@ -2008,6 +2013,7 @@ var:hoogte:*maat,passend,ruim::
 var:diepte:*maat,passend,ruim::
 var:afstand:*maat::
 var:scheider:*tekst::
+var:afsluiter:*tekst::
 var:symbool:geen,1,2,3,...::
 var:expansie:ja,nee,commando::
 var:maxbreedte:*maat::
@@ -2067,6 +2073,7 @@ var:springvolgendein:ja,nee::
 var:variant:*naam::
 var:voorwit:*maat::
 var:na:*maat::
+var:scheider:*tekst::
 stopsetup
 
 startsetup
@@ -2291,6 +2298,7 @@ var:variant:normaal,inmarge,midden,tekst::
 var:commando:*\commando#1#2::
 var:nummercommando:*\commando#1::
 var:tekstcommando:*\commando#1::
+var:scheider:*tekst::
 var:prefix:+,-,*tekst::
 var:plaatskop:ja,nee::
 var:verhoognummer:ja,nee,*file::
@@ -2437,7 +2445,7 @@ var:paginaletter:normaal,vet,schuin,vetschuin,type,kap,klein...,*commando::
 var:tekstletter:normaal,vet,schuin,vetschuin,type,kap,klein...,*commando::
 var:aanduiding:ja,nee::
 var:koppeling:ja,nee::
-var:*sectie*getal:ja,nee::
+var:*sectienummer:ja,nee::
 var:criterium:*sectie,lokaal,alles::
 var:afstand:*maat::
 var:symbool:1,2,...,n,a,...,geen::
@@ -2625,6 +2633,7 @@ var:voetstatus:normaal,stop,start,leeg,geen,geenmarkering::
 var:tekststatus:normaal,stop,start,leeg,geen,geenmarkering::
 var:bovenstatus:stop,start::
 var:onderstatus:stop,start::
+var:paginastatus:stop,start::
 var:kleur:*naam::
 stopsetup
 
@@ -2642,7 +2651,7 @@ stopsetup
 startsetup
 com:huidigedatum:
 typ:vals/:
-val:dag,maand,weekdag,jaar, dd,mm,jj,yy,d,m,j,y,kenmerk:dag,maand,jaar:
+ivl:datum::
 stopsetup
 
 startsetup
@@ -2651,7 +2660,7 @@ typ:vars/vals/:
 var:d:*getal::
 var:m:*getal::
 var:y:*getal::
-ivl:huidigedatum::
+val:dag,maand,weekdag,jaar, dd,mm,jj,yy,d,m,j,y,kenmerk:dag,maand,jaar:
 stopsetup
 
 startsetup
@@ -3054,6 +3063,8 @@ typ:vars/:
 var:voor:*commando::
 var:na:*commando::
 var:letter:normaal,vet,schuin,vetschuin,type,kap,klein...,*commando::
+var:kleur:*naam::
+var:plaats:tekst,marge::
 stopsetup
 
 startsetup
@@ -3729,9 +3740,7 @@ stopsetup
 
 startsetup
 com:toelichting:
-typ:poss/poss/vars/arg/:
-val:*getal::
-val:*getal::
+typ:pos/pos/vars/arg/:
 val:*getal::
 val:*getal::
 ivr:stelomlijndin::
@@ -3873,7 +3882,6 @@ com:stelveldin:
 typ:val/vals/vars/vars/vars/:
 val:*naam::
 val:label,horizontaal,vertikaal,kader::
-ivr:omlijnd::
 ivr:stelveldenin::
 stopsetup
 
@@ -3882,7 +3890,6 @@ com:stelveldenin:
 typ:vals/val/vars/vars/vars/:
 val:*naam::
 val:reset,label,horizontaal,vertikaal,kader::
-ivr:omlijnd::
 var:n:*getal::
 var:afstand:*maat::
 var:voor:*commando::
@@ -3903,6 +3910,7 @@ var:bereken:*verwijzing::
 var:veldoffset:*maat::
 var:veldkaderkleur:*naam::
 var:veldachtergrondkleur:*naam::
+ivr:omlijnd::
 stopsetup
 
 startsetup

@@ -325,7 +325,7 @@
       \normalvfill}%
    \normalhbox to \ruledwidth
      {\scratchdimen=\cutmarklength
-      \divide\scratchdimen by 2
+      \divide\scratchdimen 2
       \llap{\copy\scratchbox\normalhskip\cutmarkoffset\scratchdimen}%
       \normalhfill
       \rlap{\normalhskip\cutmarkoffset\scratchdimen\copy\scratchbox}}}
@@ -416,10 +416,10 @@
 \def\colorrangeA#1#2#3#4%
   {\vbox
      {\scratchdimen=-\colormarklength
-      \multiply\scratchdimen by 4
-      \advance\scratchdimen by \ruledheight 
-      \advance\scratchdimen by \ruleddepth
-      \divide\scratchdimen by 21
+      \multiply\scratchdimen 4
+      \advance\scratchdimen \ruledheight 
+      \advance\scratchdimen \ruleddepth
+      \divide\scratchdimen 21
       \def\docommando##1%
         {\vbox
            {\hsize3em % \scratchdimen
@@ -433,7 +433,7 @@
             \hrule 
               \!!width 3em 
               \!!height \scratchdimen 
-              \!!depth  \!!zeropoint
+              \!!depth  \zeropoint
             \localstopcolor
             \ifdim\scratchdimen>1ex
               \vskip-\scratchdimen 
@@ -446,12 +446,12 @@
       \offinterlineskip
       \processcommalist[1.00,0.95,0.75,0.50,0.25,0.05,0.00]\docommando}}
 
-\def\colorrangeB%
+\def\colorrangeB
   {\hbox
      {\scratchdimen=-\colormarklength
-      \multiply\scratchdimen by 2
-      \advance\scratchdimen by \ruledwidth
-      \divide\scratchdimen by 11
+      \multiply\scratchdimen 2
+      \advance\scratchdimen \ruledwidth
+      \divide\scratchdimen 11
       \def\docommando ##1 ##2 ##3##4##5##6%
         {\definecolor 
            [\s!dummy]
@@ -463,7 +463,7 @@
          \vrule 
            \!!width  \scratchdimen 
            \!!height \colormarklength
-           \!!depth  \!!zeropoint
+           \!!depth  \zeropoint
          \localstopcolor
          \ifdim\scratchdimen>2em 
            \hskip-\scratchdimen 
@@ -485,7 +485,7 @@
       \docommando B 1  \iftrue \iftrue \iffalse\iffalse
       \docommando K 1  \iffalse\iffalse\iffalse\iftrue}}
 
-\def\colorrangeC%
+\def\colorrangeC
   {\hbox
      {\scratchdimen=-\colormarklength
       \multiply\scratchdimen by 2
@@ -586,8 +586,8 @@
 
 \else
 
-  \let\supernormalmark  \normalmark  % mark is already superseded
-  \let\supernormalmarks \normalmarks % mark is already superseded
+  \let\supernormalmark  \normalmark  % mark may already superseded
+  \let\supernormalmarks \normalmarks % mark may already superseded
 
   \def\showwhatsits%
     {\protected\def\normalmark {\visualwhatsit100+m\supernormalmark }%
@@ -684,7 +684,49 @@
      \fi}
 
 \fi
- 
-\protect
 
-\endinput
+%D The next macro can be used to keep track of classes of 
+%D boxes (handy for development cq.\ tracing). 
+
+\def\dodotagbox#1#2#3%
+  {\def\next##1##2##3##4%
+     {\vbox to \ht#2{##3\hbox to \wd#2{##1#3##2}##4}}%
+   \processaction
+     [#1]
+     [        l=>\next\relax\hfill\vfill\vfill,
+              r=>\next\hfill\relax\vfill\vfill,
+              t=>\next\hfill\hfill\relax\vfill,
+              b=>\next\hfill\hfill\vfill\relax,
+             lt=>\next\relax\hfill\relax\vfill,
+             lb=>\next\relax\hfill\vfill\relax,
+             rt=>\next\hfill\relax\relax\vfill,
+             rb=>\next\hfill\relax\vfill\relax,
+             tl=>\next\relax\hfill\relax\vfill,
+             bl=>\next\relax\hfill\vfill\relax,
+             tr=>\next\hfill\relax\relax\vfill,
+             br=>\next\hfill\relax\vfill\relax,
+     \s!default=>\next\hfill\hfill\vfill\vfill,
+     \s!unknown=>\next\hfill\hfill\vfill\vfill]}
+
+\def\dotagbox[#1]#2%
+  {\bgroup
+   \dowithnextbox
+     {\setbox\scratchbox\box\nextbox
+      \setbox\nextbox\ifhbox\nextbox\hbox\else\vbox\fi
+        \bgroup 
+          \startoverlay
+            {\copy\scratchbox}
+            {\dodotagbox{#1}\scratchbox{\framed
+               [\c!achtergrond=\v!raster,\c!achtergrondraster=1]{#2}}}
+          \stopoverlay 
+        \egroup
+      \wd\nextbox\the\wd\scratchbox
+      \ht\nextbox\the\ht\scratchbox
+      \dp\nextbox\the\dp\scratchbox
+      \box\nextbox
+      \egroup}}
+
+\def\tagbox
+  {\dosingleempty\dotagbox}
+
+\protect \endinput

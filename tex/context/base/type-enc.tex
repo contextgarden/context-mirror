@@ -273,7 +273,7 @@
   \definefontsynonym [ComputerModern-Bold]        [cmbx10]
   \definefontsynonym [ComputerModern-BoldItalic]  [cmbxti10]
   \definefontsynonym [ComputerModern-BoldSlanted] [cmbxsl10]
-  \definefontsynonym [ComputerModern-Caps]        [cmr10]
+  \definefontsynonym [ComputerModern-Caps]        [cmcsc10]
 \stoptypescript
 
 \starttypescript [sans] [computer-modern] [default]
@@ -294,6 +294,7 @@
   \definefontsynonym [ComputerModernMono-BoldItalic]  [cmtt10]
   \definefontsynonym [ComputerModernMono-BoldSlanted] [cmtt10]
   \definefontsynonym [ComputerModernMono-Caps]        [cmtt10]
+  \definefontsynonym [ComputerModernMono-Variable]    [cmvtt10]
 \stoptypescript
 
 \starttypescript [math] [computer-modern] [default]
@@ -368,11 +369,15 @@
 
 % Math Times (tx)
 
-\starttypescript [math] [times] [ec]
-  \definefontsynonym [Times-Roman-Upright]     [t1xr]  [encoding=ec]
-  \definefontsynonym [Times-Roman-Italic]      [t1xi]  [encoding=ec]
-  \definefontsynonym [Times-Roman-Slanted]     [t1xsl] [encoding=ec]
-  \definefontsynonym [Times-Roman-Caps]        [t1xsc] [encoding=ec]
+\starttypescript [math] [times] [all]
+%  \definefontsynonym [Times-Roman-Upright]     [t1xr]  [encoding=ec]
+%  \definefontsynonym [Times-Roman-Italic]      [t1xi]  [encoding=ec]
+%  \definefontsynonym [Times-Roman-Slanted]     [t1xsl] [encoding=ec]
+%  \definefontsynonym [Times-Roman-Caps]        [t1xsc] [encoding=ec]
+  \definefontsynonym [Times-Roman-Upright]     [txr]  
+  \definefontsynonym [Times-Roman-Italic]      [txi]  
+  \definefontsynonym [Times-Roman-Slanted]     [txsl] 
+  \definefontsynonym [Times-Roman-Caps]        [txsc] 
   \definefontsynonym [Times-Companion-Upright] [tcxr]
   \definefontsynonym [Times-Companion-Italic]  [tcxi]
   \definefontsynonym [Times-Companion-Slanted] [tcxsl]
@@ -418,15 +423,19 @@
 
 % Palatino Math (PX)
 
-\starttypescript [math] [palatino] [ec] 
-  \definefontsynonym [Palatino-Roman-Upright]     [p1xr]  [encoding=ec]
-  \definefontsynonym [Palatino-Roman-Italic]      [p1xi]  [encoding=ec]
-  \definefontsynonym [Palatino-Roman-Slanted]     [p1xsl] [encoding=ec]
-  \definefontsynonym [Palatino-Roman-Caps]        [p1xsc] [encoding=ec]
-  \definefontsynonym [Palatino-Companion-Upright] [pcxr]
-  \definefontsynonym [Palatino-Companion-Italic]  [pcxi]
-  \definefontsynonym [Palatino-Companion-Slanted] [pcxsl]
-  \definefontsynonym [Palatino-Math-Italic]       [pxmi]
+\starttypescript [math] [palatino] [all]
+%  \definefontsynonym [Palatino-Roman-Upright]     [p1xr]  [encoding=ec]
+%  \definefontsynonym [Palatino-Roman-Italic]      [p1xi]  [encoding=ec]
+%  \definefontsynonym [Palatino-Roman-Slanted]     [p1xsl] [encoding=ec]
+%  \definefontsynonym [Palatino-Roman-Caps]        [p1xsc] [encoding=ec]
+  \definefontsynonym [Palatino-Roman-Upright]     [pxr]   
+  \definefontsynonym [Palatino-Roman-Italic]      [pxi]   
+  \definefontsynonym [Palatino-Roman-Slanted]     [pxsl]  
+  \definefontsynonym [Palatino-Roman-Caps]        [pxsc]  
+  \definefontsynonym [Palatino-Companion-Upright] [pcxr]  
+  \definefontsynonym [Palatino-Companion-Italic]  [pcxi]  
+  \definefontsynonym [Palatino-Companion-Slanted] [pcxsl] 
+  \definefontsynonym [Palatino-Math-Italic]       [pxmi]  
   \definefontsynonym [Palatino-Math-Symbols]      [pxsy]
   \definefontsynonym [Palatino-Math-Extension]    [pxex]
   \definefontsynonym [Palatino-Math-SymbolsA]     [pxsya]
@@ -511,34 +520,34 @@
 
 % Lucida Bright (BH)
 
-\starttypescript [serif] [lucida] [texnansi]
-  \definefontsynonym [LucidaBright]               [lbr]   [encoding=texnansi]
-  \definefontsynonym [LucidaBright-Demi]          [lbd]   [encoding=texnansi]
-  \definefontsynonym [LucidaBright-DemiItalic]    [lbdi]  [encoding=texnansi]
-  \definefontsynonym [LucidaBright-Italic]        [lbi]   [encoding=texnansi]
-  \definefontsynonym [LucidaBrightSmallcaps]      [lbrsc] [encoding=texnansi]
-  \definefontsynonym [LucidaBrightSmallcaps-Demi] [lbdsc] [encoding=texnansi]
-  \definefontsynonym [LucidaBright-Oblique]       [lbsl]  [encoding=texnansi]
+\starttypescript [serif] [lucida] [texnansi,ec,8r]
+  \definefontsynonym [LucidaBright]               [\typefaceencoding-lbr]   [encoding=\typefaceencoding]
+  \definefontsynonym [LucidaBright-Demi]          [\typefaceencoding-lbd]   [encoding=\typefaceencoding]
+  \definefontsynonym [LucidaBright-DemiItalic]    [\typefaceencoding-lbdi]  [encoding=\typefaceencoding]
+  \definefontsynonym [LucidaBright-Italic]        [\typefaceencoding-lbi]   [encoding=\typefaceencoding]
+  \definefontsynonym [LucidaBrightSmallcaps]      [\typefaceencoding-lbrsc] [encoding=\typefaceencoding]
+  \definefontsynonym [LucidaBrightSmallcaps-Demi] [\typefaceencoding-lbdsc] [encoding=\typefaceencoding]
+  \definefontsynonym [LucidaBright-Oblique]       [\typefaceencoding-lbsl]  [encoding=\typefaceencoding]
 \stoptypescript
 
-\starttypescript [sans] [lucida] [texnansi]
-  \definefontsynonym [LucidaSans]            [lsr]  [encoding=texnansi]
-  \definefontsynonym [LucidaSans-Demi]       [lsd]  [encoding=texnansi]
-  \definefontsynonym [LucidaSans-DemiItalic] [lsdi] [encoding=texnansi]
-  \definefontsynonym [LucidaSans-Italic]     [lsi]  [encoding=texnansi]
-  \definefontsynonym [LucidaSans-Bold]       [lsb]  [encoding=texnansi]
-  \definefontsynonym [LucidaSans-BoldItalic] [lsbi] [encoding=texnansi]
+\starttypescript [sans] [lucida] [texnansi,ec,8r]
+  \definefontsynonym [LucidaSans]            [\typefaceencoding-lsr]  [encoding=\typefaceencoding]
+  \definefontsynonym [LucidaSans-Demi]       [\typefaceencoding-lsd]  [encoding=\typefaceencoding]
+  \definefontsynonym [LucidaSans-DemiItalic] [\typefaceencoding-lsdi] [encoding=\typefaceencoding]
+  \definefontsynonym [LucidaSans-Italic]     [\typefaceencoding-lsi]  [encoding=\typefaceencoding]
+  \definefontsynonym [LucidaSans-Bold]       [\typefaceencoding-lsb]  [encoding=\typefaceencoding]
+  \definefontsynonym [LucidaSans-BoldItalic] [\typefaceencoding-lsbi] [encoding=\typefaceencoding]
 \stoptypescript
 
-\starttypescript [mono] [lucida] [texnansi]
-  \definefontsynonym [LucidaSans-Typewriter]            [lstr]  [encoding=texnansi]
-  \definefontsynonym [LucidaSans-TypewriterBold]        [lstb]  [encoding=texnansi]
-  \definefontsynonym [LucidaSans-TypewriterBoldOblique] [lstbo] [encoding=texnansi]
-  \definefontsynonym [LucidaSans-TypewriterOblique]     [lsto]  [encoding=texnansi]
+\starttypescript [mono] [lucida] [texnansi,ec,8r]
+  \definefontsynonym [LucidaSans-Typewriter]            [\typefaceencoding-lstr]  [encoding=\typefaceencoding]
+  \definefontsynonym [LucidaSans-TypewriterBold]        [\typefaceencoding-lstb]  [encoding=\typefaceencoding]
+  \definefontsynonym [LucidaSans-TypewriterBoldOblique] [\typefaceencoding-lstbo] [encoding=\typefaceencoding]
+  \definefontsynonym [LucidaSans-TypewriterOblique]     [\typefaceencoding-lsto]  [encoding=\typefaceencoding]
 \stoptypescript
 
-\starttypescript [math] [lucida] [texnansi]
-  \definefontsynonym [LucidaBright]                [lbr]   [encoding=texnansi]
+\starttypescript [math] [lucida] [texnansi,ec,8r]
+  \definefontsynonym [LucidaBright]                [\typefaceencoding-lbr]   [encoding=\typefaceencoding]
   \definefontsynonym [LucidaNewMath-AltItalic]     [lbmo]
   \definefontsynonym [LucidaNewMath-Arrows]        [lbma]
   \definefontsynonym [LucidaNewMath-Extension]     [lbme]
@@ -548,7 +557,7 @@
   \definefontsynonym [LucidaBlackletter]           [lbl]
 \stoptypescript
 
-\starttypescript [boldmath] [lucida] [texnansi]
+\starttypescript [boldmath] [lucida] [texnansi,ec,8r]
   \definefontsynonym [LucidaNewMath-AltDemiItalic] [lbmdo]
   \definefontsynonym [LucidaNewMath-Arrows-Demi]   [lbmad]
   \definefontsynonym [LucidaNewMath-Extension]     [lbme]
@@ -557,85 +566,25 @@
   \definefontsynonym [LucidaNewMath-Symbol-Demi]   [lbmsd]
 \stoptypescript
 
-\starttypescript [calligraphy] [lucida] [texnansi]
-  \definefontsynonym [LucidaCalligraphy-Italic] [lbc] [encoding=texnansi]
+\starttypescript [calligraphy] [lucida] [texnansi,ec,8r]
+  \definefontsynonym [LucidaCalligraphy-Italic] [\typefaceencoding-lbc] [encoding=\typefaceencoding]
 \stoptypescript
 
-\starttypescript [casual] [lucida] [texnansi]
-  \definefontsynonym [LucidaCasual]        [lbkr] [encoding=texnansi]
-  \definefontsynonym [LucidaCasual-Italic] [lbki] [encoding=texnansi]
+\starttypescript [casual] [lucida] [texnansi,ec,8r]
+  \definefontsynonym [LucidaCasual]        [\typefaceencoding-lbkr] [encoding=\typefaceencoding]
+  \definefontsynonym [LucidaCasual-Italic] [\typefaceencoding-lbki] [encoding=\typefaceencoding]
 \stoptypescript
 
-\starttypescript [handwriting] [lucida] [texnansi]
-  \definefontsynonym [LucidaHandwriting-Italic] [lbh] [encoding=texnansi]
+\starttypescript [handwriting] [lucida] [texnansi,ec,8r]
+  \definefontsynonym [LucidaHandwriting-Italic] [\typefaceencoding-lbh] [encoding=\typefaceencoding]
 \stoptypescript
 
-\starttypescript [fax] [lucida] [texnansi]
-  \definefontsynonym [LucidaFax]            [lfr]  [encoding=texnansi]
-  \definefontsynonym [LucidaFax-Demi]       [lfd]  [encoding=texnansi]
-  \definefontsynonym [LucidaFax-DemiItalic] [lfdi] [encoding=texnansi]
-  \definefontsynonym [LucidaFax-Italic]     [lfi]  [encoding=texnansi]
+\starttypescript [fax] [lucida] [texnansi,ec,8r]
+  \definefontsynonym [LucidaFax]            [\typefaceencoding-lfr]  [encoding=\typefaceencoding]
+  \definefontsynonym [LucidaFax-Demi]       [\typefaceencoding-lfd]  [encoding=\typefaceencoding]
+  \definefontsynonym [LucidaFax-DemiItalic] [\typefaceencoding-lfdi] [encoding=\typefaceencoding]
+  \definefontsynonym [LucidaFax-Italic]     [\typefaceencoding-lfi]  [encoding=\typefaceencoding]
 \stoptypescript
-
-% \starttypescript [serif] [lucida] [ec]
-%   \definefontsynonym [LucidaBright]            [hlhr8t]   [encoding=ec]
-%   \definefontsynonym [LucidaBright-Demi]       [hlhb8t]   [encoding=ec]
-%   \definefontsynonym [LucidaBright-Italic]     [hlhri8t]  [encoding=ec]
-%   \definefontsynonym [LucidaBright-Oblique]    [hlhro8t]  [encoding=ec]
-%   \definefontsynonym [LucidaBright-DemiItalic] [hlhbi8t]  [encoding=ec]
-%   \definefontsynonym [LucidaBrightSmallcaps]   [hlhrc8t]  [encoding=ec]
-% \stoptypescript
-% 
-% \starttypescript [sans] [lucida] [ec]
-%   \definefontsynonym [LucidaSans]                       [hlsr8t]   [encoding=ec]
-%   \definefontsynonym [LucidaSans-Demi]                  [hlsb8t]   [encoding=ec]
-%   \definefontsynonym [LucidaSans-Italic]                [hlsri8t]  [encoding=ec]
-%   \definefontsynonym [LucidaSans-DemiItalic]            [hlsbi8t]  [encoding=ec]
-% \stoptypescript
-% 
-% \starttypescript [mono] [lucida] [ec]
-%   \definefontsynonym [LucidaSans-Typewriter]            [hlsrt8t]  [encoding=ec]
-%   \definefontsynonym [LucidaSans-TypewriterBold]        [hlsbt8t]  [encoding=ec]
-%   \definefontsynonym [LucidaSans-TypewriterOblique]     [hlsrot8t] [encoding=ec]
-%   \definefontsynonym [LucidaSans-TypewriterBoldOblique] [hlsbot8t] [encoding=ec]
-% \stoptypescript
-% 
-% \starttypescript [math] [lucida] [ec]
-%   \definefontsynonym [LucidaBright]                [hlhr8t]   [encoding=ec]
-%   \definefontsynonym [LucidaNewMath-AltItalic]     [hlcrima]
-%   \definefontsynonym [LucidaNewMath-Arrows]        [hlcra]
-%   \definefontsynonym [LucidaNewMath-Extension]     [hlcrv]
-%   \definefontsynonym [LucidaNewMath-Roman]         [hlcrm]
-%   \definefontsynonym [LucidaNewMath-Italic]        [hlcrim]
-%   \definefontsynonym [LucidaNewMath-Symbol]        [hlcry]
-% \stoptypescript
-% 
-% \starttypescript [boldmath] [lucida] [ec]
-%   \definefontsynonym [LucidaNewMath-AltDemiItalic] [hlcdima]
-%   \definefontsynonym [LucidaNewMath-Arrows-Demi]   [hlcda]
-%   \definefontsynonym [LucidaNewMath-Extension]     [hlcrv]
-%   \definefontsynonym [LucidaNewMath-Demibold]      [hlcdm]
-%   \definefontsynonym [LucidaNewMath-DemiItalic]    [hlcdim]
-%   \definefontsynonym [LucidaNewMath-Symbol-Demi]   [hlcdy]
-% \stoptypescript
-% 
-% \starttypescript [calligraphy] [lucida] [ec]
-%   \definefontsynonym [LucidaCalligraphy-Italic] [hlcrie8t] [encoding=ec]
-% \stoptypescript
-% 
-% \starttypescript [handwriting] [lucida] [ec]
-%   \definefontsynonym [LucidaHandwriting-Italic] [hlcriw8t] [encoding=ec]
-% \stoptypescript
-
-% \definefontsynonym [Helvetica-MathRoman]           [hvrm10t1]
-% \definefontsynonym [Helvetica-MathExtendedSymbols] [hvex10]
-% \definefontsynonym [Helvetica-MathItalics]         [hvmi10]
-% \definefontsynonym [Helvetica-MathSymbols]         [hvsy10]
-
-% \definefontsynonym [Times-MathRoman]     [tir]  [encoding=texnansi]
-% \definefontsynonym [Times-MathExtension] [mtex]
-% \definefontsynonym [Times-MathItalic]    [mtmi] [skewcharmi='177]
-% \definefontsynonym [Times-MathSymbol]    [mtsy] [skewcharmi='60]
 
 %D For those who want to use the existing tfm and vf files we
 %D provide: 

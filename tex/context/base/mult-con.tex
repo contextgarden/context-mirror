@@ -873,6 +873,9 @@
          paginaovergangen: paginaovergangen          pageboundaries
                            seitenbegrenzung          hranicestranky
                            limitipagina              marginipagina
+             paginastatus: paginastatus              pagestate
+                           pagestate                 pagestate
+                           statopagina               pagestate % TODO
                     palet: palet                     palet
                            palette                   paleta
                            tavolozza                 paleta
@@ -969,6 +972,9 @@
                    regels: regels                    lines
                            zeilen                    radky
                            righe                     linii
+                      rek: rek                       stretch
+                           strecken                  natahnout
+                           dilata                    dilatat % CHECK 
                 resolutie: resolutie                 resolution
                            aufloesung                rozliseni
                            risoluzione               rezolutie
@@ -2262,6 +2268,9 @@
            interactiemenu: interactiemenu            interactionmenu
                            interaktionsmenue         interaktivnimenu
                            menuinterattivo           meniuinteractiune
+                  itemize: opsomming                 itemize
+                           aufzaehlung               vycet
+                           elenco                    enumerare
                      laad: laad                      load
                            laden                     nacist
                            carica                    incarca
@@ -2300,13 +2309,19 @@
                            termina                   stop
                  tabelkop: tabelkop                  tablehead
                            tabellenueberschrift      zahlavitabulky
-                           testatabella              antettabel % GB
+                           testatabella              antettabel
               tabelstaart: tabelstaart               tabletail
                            tabellenende              konectabulky
-                           codatabella               subsoltabel % GB
+                           codatabella               subsoltabel
                  tabulate: tabulatie                 tabulate
                            tabulator                 tabelator
-                           tabulate                  tabulate % GB
+                           tabulato                  tabulate
+             tabulatehead: tabulatiekop              tabulatehead
+                           tabulatehead              tabulatehead
+                           testatabulato             tabulatehead % 
+             tabulatetail: tabulatiestaart           tabulatetail
+                           tabulatetail              tabulatetail
+                           codatabulato              tabulatetail % 
                     tekst: tekst                     text
                            text                      text
                            testo                     text
@@ -2436,13 +2451,13 @@
                StartSound: StartGeluid               StartSound
                            StartSound                StartZvuk
                            IniziaSuono               StartSunet % TB
-                StopSound: StopFilm                  StopSound
+                StopSound: StopGeluid                StopSound
                            StopSound                 StopZvuk
                            FermaSuono                StopSunet % TB
-               PauseSound: PauzeerFilm               PauseSound
+               PauseSound: PauzeerGeluid             PauseSound
                            PauseSound                PozastavitZvuk  
                            PausaSuono                PauzaSunet % TB
-              ResumeSound: HervatSound               ResumeSound
+              ResumeSound: HervatGeluid              ResumeSound
                            ResumeSound               PokracovatZvuk
                            RiprendiSuono             RepornesteSunet % TB
                  SaveForm: BewaarFormulier           SaveForm

@@ -126,8 +126,12 @@
 \defineconstant number          getal            nummer
 \defineconstant height          hoogte           hoehe   
 \defineconstant frame           kader            rahmen
+%defineconstant framecolor      kaderkleur       rahmenfarbe
+\defineconstant color           kleur            farbe
 \defineconstant bodyfont        korps            fliesstext
 \defineconstant style           letter           schriftstil
+\defineconstant rulethickness   lijndikte        liniendicke
+\defineconstant rulecolor       lijnkleur        linienfarbe
 \defineconstant left            links            links 
 \defineconstant offset          offset           offset
 \defineconstant bottom          onder            unten
@@ -138,6 +142,7 @@
 \defineconstant scale           schaal           format 
 \defineconstant status          status           status
 \defineconstant text            tekst            text
+\defineconstant textcolor       tekstkleur       tekstfarbe
 \defineconstant textsize        tekstformaat     textgroesse       
 \defineconstant alternative     variant          alternative
 \defineconstant x               x                x
@@ -201,6 +206,6 @@
   \setupchemical[\c!resolutie=\outputresolution]
 \fi
 
-\protect
+\protect 
 
 \endinput

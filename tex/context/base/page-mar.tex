@@ -254,7 +254,7 @@
 
 \def\flushmargincontents%
   {\restoreinterlinepenalty  % here?
-   \ifnum\margincontent>0               % called quite often, so we
+   \ifcase\margincontent\else           % called quite often, so we
      \expandafter\doflushmargincontents % speed up the \fi scan by
    \fi}                                 % using a \do..
 
@@ -296,13 +296,13 @@
 \def\doflushmargincontents% % links + rechts
   {\bgroup
    \forgetall
-   \global\marginheight\!!zeropoint
+   \global\marginheight\zeropoint
    \dorecurse{\margincontent}
      {\bgroup
       \edef\margetekstafstand {\getvalue{\??im\recurselevel\c!afstand}}%
       \edef\margetekstregels  {\getvalue{\??im\recurselevel\c!regel}}%
       \edef\margetekstscheider{\getvalue{\??im\recurselevel\c!scheider}}%
-      \let\margetekstnummer=\recurselevel
+      \let\margetekstnummer\recurselevel
       \getvalue{\??im\recurselevel}%
       \global\setvalue{\??im\recurselevel}{}%
       \egroup}%
@@ -314,12 +314,12 @@
   \donefalse % how needed
 \fi\fi
 \ifdone
-     \advance\marginheight by \pagetotal
-     \advance\marginheight by \lineheight  % a sort of bonus
+     \advance\marginheight \pagetotal
+     \advance\marginheight \lineheight  % a sort of bonus
      \ifdim\marginheight>\pagegoal
        \xdef\restoreinterlinepenalty%
          {\global\let\restoreinterlinepenalty\relax
-          \global\interlinepenalty=\the\interlinepenalty}%
+          \global\interlinepenalty=\the\interlinepenalty}% keep = here
        \global\interlinepenalty=10000
      \fi
    \else % We need the above because interlinepenalties overrule vadjusted \nobreaks.
@@ -381,6 +381,12 @@
       \getboxheight\dimen0\of\box0
       \vskip-\dimen0\
       \box0}}
+
+\def\resetmargincontent % quick hack
+  {\doglobal\newcounter\margincontent}
+
+\def\resetmargetitels
+  {\resetmargincontent} 
 
 %D \macros
 %D   {inleftside,inleftmargin,inrightmargin,inrightside}
@@ -474,12 +480,12 @@
      \ifnum\realpageno>1
        \bgroup
        \pagebodyornamentsfalse
-       \setbox\facingpage=\vbox to \zethoogte
+       \setbox\facingpage\vbox to \zethoogte
          {\unvbox\facingpage\vfil}%
        \myshipout{\buildpagebody\box\facingpage}%
        \egroup
      \else
-       \global\setbox\facingpage=\box\voidb@x
+       \global\setbox\facingpage\emptybox
      \fi
    \fi}
 
@@ -491,17 +497,16 @@
 
 \def\startnaast% beter: \dowithnextbox
   {\iffacingpages
-     \global\setbox\facingbox=\vbox
+     \global\setbox\facingbox\vbox
        \bgroup
-       \hsize=\zetbreedte
+       \hsize\zetbreedte
    \else
-     \def\next{\gobbleuntil\stopnaast}%
-     \expandafter\next
+     \@EA\gobbleuntil\@EA\stopnaast
    \fi}
 
 \def\stopnaast%
   {\egroup
-   \global\setbox\facingpage=\vbox
+   \global\setbox\facingpage\vbox
      {\ifvoid\facingpage
         \vskip\openstrutdepth % \dp\strutbox
       \else

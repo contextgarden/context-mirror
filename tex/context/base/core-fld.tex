@@ -12,6 +12,8 @@
 %C details. 
 
 % \appendtocommalist  versus \addtocommalist 
+%
+% * as default trigger in radiofields ? 
 
 \writestatus{loading}{Context Field Macros}
 
@@ -140,6 +142,7 @@
      {\@@FieldName}
      {\@@FieldWidth}
      {\@@FieldHeight}
+     {\@@FieldDefault}  
      {\@@fdoptie}
      {\@@FieldRoot}
      {\@@FieldValues}
@@ -197,7 +200,7 @@
 
 \let\tracefields\tracefieldstrue
 
-\def\doshowfields[#1]%
+\def\doshowfields[#1]% todo: tabulate van maken 
   {\bgroup
    \switchtobodyfont[8pt,tt]
    \doifsomething{#1}{\def\collectedfields{#1}}
@@ -438,16 +441,35 @@
 \let\definepopupfield=\definechoicefield
 \let\definecombofield=\definechoicefield
 
+%\def\definecheckfield#1#2#3#4#5%
+%  {\doifelsenothing{#4}
+%     {\definedefaultsymbols  
+%      \def\@@FieldValues{defaultyes}}
+%     {\def\@@FieldValues{#4}}%
+%   \doifelsenothing{#5}
+%     {\dogetcommacommandelement2\from\@@FieldValues\to\@@FieldDefault
+%      \dogetcommacommandelement1\from\@@FieldDefault\to\@@FieldDefault}
+%     {\def\@@FieldDefault{#5}}%
+%   \setfield{#1}{#2}{}{}{\@@FieldKids}{#3}{\@@FieldMode\@@FieldFree\@@FieldAuto}{\@@FieldValues}{\@@FieldDefault}}
+
+%D Since these fields have an on/off state only, we pass 1/0
+%D to the driver as default values. 
+
 \def\definecheckfield#1#2#3#4#5%
   {\doifelsenothing{#4}
      {\definedefaultsymbols  
       \def\@@FieldValues{defaultyes}}
      {\def\@@FieldValues{#4}}%
    \doifelsenothing{#5}
-     {\dogetcommacommandelement2\from\@@FieldValues\to\@@FieldDefault
-      \dogetcommacommandelement1\from\@@FieldDefault\to\@@FieldDefault}
-     {\def\@@FieldDefault{#5}}%
-   \setfield{#1}{#2}{}{}{\@@FieldKids}{#3}{\@@FieldMode\@@FieldFree\@@FieldAuto}{\@@FieldValues}{\@@FieldDefault}}
+     {\def\@@FieldDefault{2}}
+     {\dogetcommacommandelement1\from\@@FieldValues\to\@@FieldDefault
+      \doifinstringelse{#5}{\@@FieldDefault}
+        {\def\@@FieldDefault{1}}
+        {\def\@@FieldDefault{0}}}%   
+   \setfield
+     {#1}{#2}{}{}{\@@FieldKids}{#3}%
+     {\@@FieldMode\@@FieldFree\@@FieldAuto}%
+     {\@@FieldValues}{\@@FieldDefault}}
 
 \let\definepushfield=\definecheckfield
 
@@ -464,8 +486,8 @@
      \fi
      \def\docommando##1%
        {\doifelse{##1}{\SavedFieldDefault}
-          {\def\@@FieldDefault{*}}
-          {\let\@@FieldDefault=\empty}%
+          {\def\@@FieldDefault{##1}}% 
+          {\let\@@FieldDefault\empty}%
         \setfield{##1}{#2}{#1}{}{}{#3}{\@@FieldMode\@@FieldFree\@@FieldAuto}{}{\@@FieldDefault}}%
      \processcommalist[#4]\docommando
   \else
@@ -488,10 +510,6 @@
             {\definedefaultsymbols  
              \def\@@FieldValues{defaultyes}}
             {\def\@@FieldValues{#3}}%
-          \doifelse{\@@FieldDefault}{*}
-            {\@EA\dogetcommalistelement\@EA1\@EA\from\@@FieldValues\to\@@FieldDefault}
-            {\@EA\dogetcommalistelement\@EA2\@EA\from\@@FieldValues\to\@@FieldDefault}%
-          \@EA\dogetcommalistelement\@EA1\@EA\from\@@FieldDefault\to\@@FieldDefault
           \changefield{##1}%
         \fi}%
       \processcommalist[#1]\docommando
@@ -582,13 +600,13 @@
      \fi
      \ifx\@@FieldType\empty
        \writestatus{\m!fields}{unknown field #2}%
-     \else\ifcase\@@FieldFree
+     \else\ifcase\@@FieldFree\relax
        \doifdefinedelse{\strippedcsname\setupfield\@@FieldGroup}
          {\let\dosetupfield=#1\getvalue{\strippedcsname\setupfield\@@FieldGroup}}
          {#1[\@@FieldName][\v!label,\v!kader,\v!horizontaal][][][]}%
        \def\@@FieldFree{1}%
        \changefield{#2}%
-     \else\ifcase\@@FieldAuto
+     \else\ifcase\@@FieldAuto\relax
        \writestatus{\m!fields}{field #2 already typeset}%
      \else
        \writestatus{\m!fields}{field #2 automatically copied}%
@@ -604,9 +622,9 @@
    \ifx\@@FieldRoot\empty \else
      \let\@@SavedFieldName=\@@FieldName
      \getfield\@@FieldRoot
-     \ifcase\@@FieldFree
+     \ifcase\@@FieldFree\relax
        \dosetfieldstatus\@@FieldMode\@@FieldParent\@@FieldKids\@@FieldRoot
-       \iflocation\getvalue{preset\@@FieldType record}\fi
+       \dopresetrecord
        \def\@@FieldFree{1}%
        \changefield\@@FieldName
      \fi
@@ -622,11 +640,14 @@
     %\addtocommalist\@@FieldParent\@@FieldKids 
      \appendtocommalist\@@FieldParent\@@FieldKids
      \dosetfieldstatus\@@FieldMode\@@FieldParent\@@FieldKids\@@FieldRoot
-     \iflocation\getvalue{preset\@@FieldType field}\fi
+     \dopresetfield
      \let\@@FieldMode=\fieldchildmode
    \fi
    \dosetfieldstatus\@@FieldMode\@@FieldParent\@@FieldKids\@@FieldRoot
-   \iflocation\getvalue{preset\@@FieldType field}\fi}
+   \dopresetfield}
+
+\def\dopresetfield {\iflocation\getvalue{preset\@@FieldType  field}\fi}
+\def\dopresetrecord{\iflocation\getvalue{preset\@@FieldType record}\fi}
 
 \def\dodefinethefieldset[#1][#2]% 
   {\dodefinefieldset{#1}{#2}}
@@ -753,8 +774,8 @@
               \c!focusin=,\c!focusuit=,
               \c!veldoffset=\!!zeropoint,\c!veldachtergrondkleur=,
               \c!veldkaderkleur=,#5]%
-            \dimen0=\framedwidth \edef\@@FieldWidth {\number\dimen0}% 
-            \dimen0=\framedheight\edef\@@FieldHeight{\number\dimen0}% 
+            \dimen0=\framedwidth \edef\@@FieldWidth {\the\dimen0}% 
+            \dimen0=\framedheight\edef\@@FieldHeight{\the\dimen0}% 
             \vfill
             \hbox{\lower\@@fdveldoffset\hbox{\typesetfield}}
             \vss}}%
@@ -785,7 +806,7 @@
   {\presetlocalframed[\??fd]%
    \localframed
      [\??fd]
-     [\c!n=1,\c!strut=\v!nee,\c!kleur=,\c!letter=,\c!optie=,
+     [\c!n=12,\c!strut=\v!nee,\c!kleur=,\c!letter=,\c!optie=,
       \c!klikin=,\c!klikuit=,\c!gebiedin=,\c!gebieduit=,
       \c!focusin=,\c!focusuit=,
       \c!natoets=,\c!formatteer=,\c!valideer=,\c!bereken=,
@@ -797,8 +818,8 @@
       \fi
       \dopresetfieldsymbol\@@FieldValue
       \setbox0=\hbox{\dogetfieldsymbol{\@@FieldValue}}%
-      \dimen0=\wd0 \edef\@@FieldWidth {\number\dimen0}% 
-      \dimen0=\ht0 \edef\@@FieldHeight{\number\dimen0}% 
+      \dimen0=\wd0 \edef\@@FieldWidth {\the\dimen0}% 
+      \dimen0=\ht0 \edef\@@FieldHeight{\the\dimen0}% 
       \vbox to \ht0 
         {\vfill\hbox to \wd0{\typesetfield\hfill}\vss}}}
 

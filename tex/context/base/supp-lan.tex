@@ -11,6 +11,9 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
 %C details. 
 
+%D This module needs a drastic update: can be made simplier 
+%D and faster. 
+
 %D \gdef\starttest%
 %D   {\blanko
 %D    \noindent
@@ -160,15 +163,16 @@
 %D \macros
 %D   {compoundhyphen,
 %D    beginofsubsentence,endofsubsentence}
-%D   {}
 %D
 %D Now let's go to the macros. First we define some variables.
 %D In the main \CONTEXT\ modules these can be tuned by a setup
 %D command. Watch the (maybe) better looking compound hyphen.
 
-\def\compoundhyphen     {{-}\kern-.25ex{-}}
-\def\beginofsubsentence {---}
-\def\endofsubsentence   {---}
+% I've added \hbox's so that in mathmode we get proper chars 
+
+\def\compoundhyphen     {\hbox{-\kern-.25ex-}}
+\def\beginofsubsentence {\hbox{---}}
+\def\endofsubsentence   {\hbox{---}}
 
 %D The last two variables are needed for subsentences
 %D |<|like this one|>| which we did not yet mention.
@@ -298,8 +302,8 @@
 
 \def\installdiscretionaries#1#2#3% 
   {\convertargument#1\to\ascii
-   \setevalue{mathmodediscretionary\string#1}{\ascii}% 
-   \setvalue{textmodediscretionary\string#1}{#3}%
+   \setevalue{\strippedcsname\mathmodediscretionary\string#1}{\ascii}% 
+   \setvalue{\strippedcsname\textmodediscretionary\string#1}{#3}%
    \catcode`#1=\@@active
    \scratchcounter=\the\uccode`~
    \uccode`~=`#1
@@ -311,8 +315,8 @@
 \beginETEX \detokenize
 
 \def\installdiscretionaries#1#2#3% 
-  {\setevalue{mathmodediscretionary\string#1}{\detokenize{#1}}% 
-   \setvalue{textmodediscretionary\string#1}{#3}%
+  {\setevalue{\strippedcsname\mathmodediscretionary\string#1}{\detokenize{#1}}% 
+   \setvalue{\strippedcsname\textmodediscretionary\string#1}{#3}%
    \catcode`#1=\@@active
    \scratchcounter=\the\uccode`~
    \uccode`~=`#1
@@ -322,7 +326,7 @@
 \endETEX
 
 \def\dohandlemathmodebar#1%
-  {\getvalue{mathmodediscretionary\string#1}}
+  {\getvalue{\strippedcsname\mathmodediscretionary\string#1}}
 
 \def\discretionarycommand%
   {\relax\ifmmode
@@ -384,17 +388,36 @@
 %D The next alternative also supports character numbers: 
 
 \def\defineactivecharacter #1 #2%
-  {\scratchcounter=\the\uccode`~
+  {\scratchcounter\the\uccode`~
    \expandafter\doifnumberelse\expandafter{\string#1}
      {\catcode #1=\@@active \uccode`~= #1\relax}
      {\catcode`#1=\@@active \uccode`~=`#1\relax}%
    \uppercase{\def\next{~}}%
   %\expandafter\unexpanded\expandafter\def\next{#2}% 
    \expandafter\def\next{#2}% unexpanded goes wrong in pdfdoc 
-   \uccode`~=\scratchcounter}
+   \uccode`~\scratchcounter}
 
 %D One reason for abusing the \type{~} is that it is already
 %D an active character, so it is unlikely to appear as argument.
+
+%D The next implementation is about 20\% faster; 1M
+%D definitions on a 1Gig machine takes about 19 seconds
+%D (against 24 for the previous alternative). 
+
+\chardef\activehackcode=`~
+
+\def\defineactivecharacter #1 %
+  {\scratchcounter\the\uccode\activehackcode
+   \uccode\activehackcode\expandafter\doifnumberelse\expandafter{\string#1}\empty`#1%
+   \catcode\uccode\activehackcode\@@active 
+   \uppercase{\def\next{~}}%
+   \uccode\activehackcode\scratchcounter
+   \expandafter\def\next}% unexpanded goes wrong in pdfdoc 
+
+%D A goody: 
+
+\def\makecharacteractive #1 %
+  {\catcode`#1\active}
 
 %D Although adapting character codes and making characters
 %D active can interfere with other features of macropackages,
@@ -415,7 +438,8 @@
      {\def\betweendiscretionary{##1}%
       \futurelet\nextnext\dododotextmodediscretionary}%
    \let\discretionarycommand=#1%
-   \def\textmodediscretionary{\getvalue{textmodediscretionary\string#1}}%
+   \def\textmodediscretionary%
+     {\getvalue{\strippedcsname\textmodediscretionary\string#1}}%
    \futurelet\next\dodotextmodediscretionary}
 
 \def\dododotextmodediscretionary%
@@ -572,7 +596,8 @@
       \nextuccode##1@\relax
       \futurelet\nextnext\dododotextmodediscretionary}%
    \let\discretionarycommand=#1%
-   \def\textmodediscretionary{\getvalue{textmodediscretionary\string#1}}%
+   \def\textmodediscretionary%
+     {\getvalue{\strippedcsname\textmodediscretionary\string#1}}%
    \futurelet\next\dodotextmodediscretionary}
 
 %D This time we use \type{\ifnum}:
@@ -662,7 +687,8 @@
 
 \def\activedododotextmodediscretionary#1#2%
   {\convertargument#2\to\discretionarytoken
-   \def\textmodediscretionary{\getvalue{textmodediscretionary\string#1}}%
+   \def\textmodediscretionary%
+     {\getvalue{\strippedcsname\textmodediscretionary\string#1}}%
    \ifx#1\nextnext % takes care of ||| and +++ and ......
      \prewordbreak\discretionary{\hbox{$#1$}}{}{\hbox{$#1$}}%
        \allowbreak\postwordbreak
@@ -720,17 +746,20 @@
 
 \def\activedododotextmodediscretionary#1#2%
   {\convertargument#2\to\discretionarytoken
-   \def\textmodediscretionary{\getvalue{textmodediscretionary\string#1}}%
-   \ifx#1\nextnext % takes care of ||| and +++ and ......
-     \prewordbreak\discretionary{\hbox{$#1$}}{}{\hbox{$#1$}}%
-       \allowbreak\postwordbreak
-     \def\nextnextnext{\afterassignment\egroup\let\next=}%
-   \else\ifx\discretionarytoken\empty
-     \checkafterdiscretionary
-     \bgroup
-       \checkbeforediscretionary
-       \prewordbreak\hbox{\textmodediscretionary\nextnext}\allowbreak\postwordbreak
-     \egroup
+   \def\textmodediscretionary%
+     {\getvalue{\strippedcsname\textmodediscretionary\string#1}}%
+   \ifx\discretionarytoken\empty
+     \ifx#1\nextnext % takes care of ||| and +++ and ......
+        \prewordbreak\discretionary{\hbox{$#1$}}{}{\hbox{$#1$}}%
+         \allowbreak\postwordbreak
+       \def\nextnextnext{\afterassignment\egroup\let\next=}%
+     \else
+       \checkafterdiscretionary
+       \bgroup
+         \checkbeforediscretionary
+         \prewordbreak\hbox{\textmodediscretionary\nextnext}\allowbreak\postwordbreak
+       \egroup
+     \fi
    \else\expandafter\ifx\csname @tmd@\discretionarytoken\endcsname\relax
      \checkafterdiscretionary
      \bgroup
@@ -741,7 +770,7 @@
      \egroup
    \else
      \csname @tmd@\discretionarytoken\endcsname
-   \fi\fi\fi
+   \fi\fi
    \nextnextnext}
 
 \def\definetextmodediscretionary #1
@@ -793,8 +822,8 @@
 \definetextmodediscretionary ; 
   {\prewordbreak\kern.25em;\space\ignorespaces}
 
-\definetextmodediscretionary * 
-  {\prewordbreak\discretionary{-}{}{\kern.05em}\postwordbreak}
+\definetextmodediscretionary *
+  {\prewordbreak\discretionary{-}{}{\kern.05em}\prewordbreak}
 
 %D Since we don't have to bother about active characters any
 %D longer, we end up with a pretty simple activating macro:
@@ -874,7 +903,7 @@
 %D \stoptypen 
 
 \def\restorecompoundcharacter#1% new 
-  {\catcode`#1=\getvalue{\@nn@\string#1}\relax}
+  {\catcode`#1=\csname\@nn@\string#1\endcsname\relax}
 
 %D In handling the compound characters we have to take care of
 %D \type{\bgroup} and \type{\egroup} tokens, so we end up with
@@ -934,7 +963,8 @@
 \beginTEX
 
 \long\def\handlecompoundcharacterone#1#2%
-  {\ifx#1#2%
+%  {\ifx#1#2%
+  {\if\string#1\string#2%
     %\def\next{\getvalue{\@nc@\string#1}\getvalue{\@nc@\string#2}}%
      \def\next{\getvalue{\@nc@\string#1}}%
    \else\expandafter\ifx\csname\@cc@\string#1\string#2\endcsname\relax
@@ -945,7 +975,8 @@
    \next}
 
 \long\def\handlecompoundcharactertwo#1#2#3%
-  {\ifx#1#2%
+%  {\ifx#1#2%
+  {\if\string#1\string#2%
     %\def\next{\getvalue{\@nc@\string#1}\getvalue{\@nc@\string#2}#3}%
      \def\next{\getvalue{\@nc@\string#1}#3}%
    \else\@EA\ifx\csname\@cs@\string#1\string#2\string#3\endcsname\relax
@@ -964,7 +995,8 @@
 \beginETEX \ifcsname
 
 \long\def\handlecompoundcharacterone#1#2%
-  {\ifx#1#2%
+%  {\ifx#1#2%
+  {\if\string#1\string#2%
     %\def\next{\getvalue{\@nc@\string#1}\getvalue{\@nc@\string#2}}%
      \def\next{\getvalue{\@nc@\string#1}}%
    \else\ifcsname\@cc@\string#1\string#2\endcsname
@@ -975,7 +1007,8 @@
    \next}
 
 \long\def\handlecompoundcharactertwo#1#2#3%
-  {\ifx#1#2%
+%  {\ifx#1#2%
+  {\if\string#1\string#2%
     %\def\next{\getvalue{\@nc@\string#1}\getvalue{\@nc@\string#2}#3}%
      \def\next{\getvalue{\@nc@\string#1}#3}%
    \else\ifcsname\@cs@\string#1\string#2\string#3\endcsname
@@ -1081,20 +1114,9 @@
 % 2 => alles na
 % 3 => alles voor
 
-\bgroup
-\catcode`\&=12\gdef\ampercentletter   {&}
-\catcode`\#=12\gdef\hashletter        {#}
-\catcode`\_=12\gdef\underscoreletter  {_}
-\catcode`\~=12\gdef\tildeletter       {~}
-\catcode`\%=12\gdef\percentletter     {%}
-\catcode`\?=12\gdef\questionmarkletter{?}
-\catcode`\@=12\gdef\atletter          {@}
-\catcode`\/=12\gdef\slashletter       {/}
-\egroup
-
 \bgroup \catcode`\~=\active \catcode`\/=\active 
 
-% why not convert to ascii first? 
+% Why not convert to ascii first? I will redo this one! 
 
 % \unexpanded\gdef\hyphenatedurl#1% {}{} handles accents
 %   {\bgroup
@@ -1124,8 +1146,8 @@
 %      {\savedurl\let\savedurl\empty}%
 %    \def\\%
 %      {\spliturl\#}%
-%    \let\~=\tildeletter \let~=\~%
-%    \let\/=\slashletter \let/=\/%
+%    \let\~=\lettertilde \let~=\~%
+%    \let\/=\letterslash \let/=\/%
 %    \let\savedurl\empty
 %    \handletokens#1\with\scanurl
 %    \egroup}
@@ -1165,8 +1187,8 @@
      {\savedurl\let\savedurl\empty}%
    \def\\%
      {\spliturl\#}%
-   \let\~=\tildeletter \let~=\~%
-   \let\/=\slashletter \let/=\/%
+   \let\~=\lettertilde\let~=\~%
+   \let\/=\letterslash\let/=\/%
    \let\savedurl\empty
    \handletokens#1\with\scanurl\savedurl
    \egroup}
@@ -1201,18 +1223,18 @@
      \flushurl\splitbefore\#% 
    \else\ifnum\catcode`#1=4
      \flushurl\splitbefore\&% 
-   \else\if#1\tildeletter
+   \else\if#1\lettertilde
      \flushurl\splitbefore\~%
-   \else\if#1\percentletter
+   \else\if#1\letterpercent
      \flushurl\splitbefore\%%   
-   \else\if#1\underscoreletter
+   \else\if#1\letterunderscore
      \flushurl\splitbefore\_%   
-   \else\if#1\questionmarkletter
-     \flushurl\splitafter\questionmarkletter
-   \else\if#1\atletter
-     \flushurl\splitafter\atletter
-   \else\if#1\slashletter
-     \edef\savedurl{\savedurl\slashletter}%
+   \else\if#1\letterquestionmark
+     \flushurl\splitafter\letterquestionmark
+   \else\if#1\letterat
+     \flushurl\splitafter\letterat
+   \else\if#1\letterslash
+     \edef\savedurl{\savedurl\letterslash}%
    \else\if#1+%
      \flushurl\splitafter+%
    \else\if#1:%
@@ -1236,7 +1258,7 @@
 %D   {{\def~{\string~}\useURL[dummy][#1]\goto{\url[dummy]}[URL(dummy)]}}
 %D 
 %D \def\whateverurl#1%
-%D   {{\let~\tildeletter\useURL[dummy][#1]\goto{\url[dummy]}[URL(dummy)]}}
+%D   {{\let~\lettertilde\useURL[dummy][#1]\goto{\url[dummy]}[URL(dummy)]}}
 %D 
 %D \def\whateverurl#1%
 %D   {\convertargument#1\to\ascii

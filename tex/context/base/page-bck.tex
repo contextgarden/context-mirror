@@ -60,9 +60,6 @@
 \newif\ifnewbackground
 \newif\ifsomebackground
 
-\def\recalculatebackgrounds%
-  {\global\newbackgroundtrue}
-
 %D For special purposes, users can question the \type
 %D {*background} mode. This mode is only available when
 %D typesetting the pagebody.
@@ -72,8 +69,8 @@
 %D \stoptypen
 
 \appendtoks
-  \ifnewbackground\enablemode[\systemmodeprefix\v!achtergrond]\fi
-\to \everypagebody
+  \ifsomebackground \ifnewbackground \setsystemmode\v!achtergrond \fi \fi
+\to \everybeforepagebody
 
 %D \macros
 %D   {addmainbackground, addtextbackground,
@@ -118,22 +115,27 @@
 \def\ifsomebackgroundfound#1%
   {\ifusage{\??ma#1}}
 
-\def\doifsomebackgroundelse#1#2#3%
-  {\ifusage{\??ma#1}#2\else#3\fi}
+% \def\doifsomebackgroundelse#1#2#3%
+%   {\ifusage{\??ma#1}#2\else#3\fi}
+
+\def\doifsomebackgroundelse#1%
+  {\ifusage{\??ma#1}%
+     \expandafter\firstoftwoarguments
+   \else
+     \expandafter\secondoftwoarguments
+   \fi}
 
 %D The background mechanism falls back on the \type {\framed}
 %D macro. This means that all normal frame and overlay
 %D features can be used.
 
 \def\addsomebackground#1#2#3#4% area box width height / zero test added
-  {\ifdim#3>\zeropoint\ifdim#4>\zeropoint\ifsomebackgroundfound{#1}%
+  {\ifdim#3>\zeropoint\ifdim#4>\zeropoint\ifsomebackgroundfound#1%
      \setbox#2=\vbox\localframed
        [\??ma#1]
        [\c!strut=\v!nee,\c!offset=\v!overlay,
         \c!breedte=#3,\c!hoogte=#4]
        {\dp#2=\zeropoint\box#2}%
-%{\offinterlineskip\smashbox#2\box#2\endgraf
-% \getvalue{\??ma#1\c!commando}}%
    \fi\fi\fi}
 
 %D There are quite some backgrounds. At the bottom layer,
@@ -142,7 +144,7 @@
 
 \def\addprintbackground#1%
   {\addsomebackground
-     \v!papier{#1}\printpapierbreedte\printpapierhoogte}
+     \v!papier#1\printpapierbreedte\printpapierhoogte}
 
 %D The page backgrounds can be put behind the {\em left
 %D page}, the {\em right page} or {\em each page}. As with
@@ -150,13 +152,13 @@
 
 \def\addpagebackground#1%
   {\doifbothsidesoverruled
-     \addsomebackground\v!rechterpagina{#1}\papierbreedte\papierhoogte
+     \addsomebackground\v!rechterpagina#1\papierbreedte\papierhoogte
    \orsideone
-     \addsomebackground\v!rechterpagina{#1}\papierbreedte\papierhoogte
+     \addsomebackground\v!rechterpagina#1\papierbreedte\papierhoogte
    \orsidetwo
-     \addsomebackground\v!linkerpagina {#1}\papierbreedte\papierhoogte
+     \addsomebackground\v!linkerpagina #1\papierbreedte\papierhoogte
    \od
-   \addsomebackground\v!pagina{#1}\papierbreedte\papierhoogte}
+     \addsomebackground\v!pagina       #1\papierbreedte\papierhoogte}
 
 %D Then there are the 25 areas that make up the layout: {\em
 %D top, header, text, footer, bottom} times {\em left edge,
@@ -186,49 +188,104 @@
 
 \def\addtextbackground#1%
   {\ifconditional\hiddenbackgroundenabled
-     \addsomebackground\v!verborgen{#1}\zetbreedte\teksthoogte% mine ! 
+     \addsomebackground\v!verborgen#1\zetbreedte\teksthoogte % mine ! 
    \fi 
-   \addsomebackground\v!tekst{#1}\zetbreedte\teksthoogte}
+   \addsomebackground\v!tekst#1\zetbreedte\teksthoogte}
 
 %D The next couple of macros implement the area backgrounds.
 %D As said, these are cached in dedicated boxes. The offsets
 %D and depth of the page are used for alignment purposes.
 
+\newdimen\pageoffset % bleed 
+\newdimen\pagedepth  
+
 \let\pagebackgroundhoffset = \!!zeropoint
 \let\pagebackgroundvoffset = \!!zeropoint
 \let\pagebackgrounddepth   = \!!zeropoint
 
-\def\setbackgroundboxes%
-  {\showmessage{\m!layouts}{8}\empty
-   \setbackgroundbox\leftbackground\relax
-   \ifdubbelzijdig
-     \setbackgroundbox\rightbackground\doswapmargins
-   \fi
-   \doifnot{\@@mastatus}{\v!herhaal}{\global\newbackgroundfalse}}
+% \def\setbackgroundboxes
+%   {\showmessage{\m!layouts}{8}\empty
+%    \setbackgroundbox\leftbackground\relax
+%    \ifdubbelzijdig
+%      \setbackgroundbox\rightbackground\doswapmargins
+%    \fi
+%    \doifnot{\@@mastatus}{\v!herhaal}{\global\newbackgroundfalse}}
+
+%D We need a bit more clever mechanism in order to handle
+%D layers well. This means that we cannot calculate both
+%D background at the same time since something may have
+%D changed halfway a page. 
+
+\chardef\newrightbackground0
+\chardef\newleftbackground 0
+
+\def\recalculatebackgrounds
+  {\global\newbackgroundtrue}
+
+\def\setbackgroundboxes
+  {\ifnewbackground
+     \global\chardef\newrightbackground1
+     \global\chardef\newleftbackground1
+     \global\setbox\leftbackground\emptybox
+     \global\setbox\rightbackground\emptybox
+   \fi 
+   \doifbothsides
+     \ifcase\newleftbackground \else
+       \showmessage\m!layouts8\empty
+       \setbackgroundbox\leftbackground\relax
+       \global\chardef\newleftbackground0
+       \global\chardef\newrightbackground0
+     \fi
+   \orsideone
+     \ifcase\newleftbackground \else
+       \showmessage\m!layouts8\empty
+       \setbackgroundbox\leftbackground\relax
+       \global\chardef\newleftbackground0
+      %\global\chardef\newrightbackground0
+     \fi
+   \orsidetwo
+     \ifcase\newrightbackground \else
+       \showmessage\m!layouts8\empty
+       \setbackgroundbox\rightbackground\doswapmargins
+       \global\chardef\newrightbackground0
+     \fi
+   \od
+   \ifx\@@mastatus\v!herhaal\else\global\newbackgroundfalse\fi}
+
+\def\addmainbackground#1% todo: dimension spec
+  {\ifsomebackground
+     \setbackgroundboxes 
+     \setbox#1=\vbox
+       {\offinterlineskip
+        \doifmarginswapelse
+          {\copy\leftbackground}
+          {\copy\rightbackground}
+        \box#1}%
+   \fi}
 
 \def\setbackgroundoffsets
   {\ifsomebackground \ifnewbackground 
-     \global\let\pagebackgroundhoffset=\!!zeropoint
-     \global\let\pagebackgroundvoffset=\!!zeropoint
-     \global\let\pagebackgrounddepth  =\!!zeropoint
+     \global\let\pagebackgroundhoffset\!!zeropoint
+     \global\let\pagebackgroundvoffset\!!zeropoint
+     \global\let\pagebackgrounddepth  \!!zeropoint
      \doifsomebackgroundelse{\v!tekst\v!tekst}\donetrue\donefalse
-     \ifdone\else\doifsomebackgroundelse{\v!tekst}\donetrue\donothing\fi
+     \ifdone\else\doifsomebackgroundelse\v!tekst\donetrue\donothing\fi
      \ifdone
        \bgroup
-       \scratchdimen=\getvalue{\??ma\v!pagina\c!offset}%
+       \scratchdimen\getvalue{\??ma\v!pagina\c!offset}%
        \doifsomebackgroundelse{\v!boven\v!tekst}\donothing
          {\doifsomebackgroundelse{\v!onder\v!tekst}\donothing
             {\xdef\pagebackgroundhoffset{\the\scratchdimen}}}%
        \doifsomebackgroundelse{\v!tekst\v!rechterrand}\donothing
          {\doifsomebackgroundelse{\v!tekst\v!linkerrand}\donothing
             {\xdef\pagebackgroundvoffset{\the\scratchdimen}%
-             \scratchdimen=\getvalue{\??ma\v!pagina\c!diepte}%
+             \scratchdimen\getvalue{\??ma\v!pagina\c!diepte}%
              \xdef\pagebackgrounddepth{\the\scratchdimen}}}%
        \egroup
      \fi
    \fi \fi}
 
-\appendtoks \setbackgroundoffsets \to \everypagebody
+\appendtoks \setbackgroundoffsets \to \everybeforepagebody
 
 \def\setbackgroundbox#1#2%
   {\global\setbox#1=\vbox
@@ -330,9 +387,20 @@
    \else\iffirstargument
      \getparameters[\??ma][#1]%
    \fi\fi\fi
-   \doifelse{\@@mastatus}{\v!stop}
+   \doifelsevalue{\??ma\v!pagina\c!offset}\v!overlay
+     {\global\pageoffset\zeropoint}
+     {\global\pageoffset\getvalue{\??ma\v!pagina\c!offset}}%
+   \global\pagedepth\getvalue{\??ma\v!pagina\c!diepte}%
+   \xdef\pagebackgroundoffset{\the\pageoffset}%
+   \xdef\pagebackgrounddepth {\the\pagedepth }%
+   \doifelse\@@mastatus\v!stop
      {\global\newbackgroundfalse}
-     {\global\newbackgroundtrue}}
+     {\global\newbackgroundtrue }}
+
+\let\pagebackgroundoffset\!!zeropoint
+\let\pagebackgrounddepth \!!zeropoint
+
+\appendtoks\global\newbackgroundfalse\to\everyjob
 
 %D Each areas (currently there are $1+3+25+1=30$ of them)
 %D has its own low level framed object associated.
@@ -453,8 +521,8 @@
 
 \def\enablehiddenbackground
   {\global\settrue\hiddenbackgroundenabled
-   \global\somebackgroundtrue % also make these
-   \global\newbackgroundtrue} % two conditionals
+   \global\somebackgroundtrue 
+   \recalculatebackgrounds}   
 
 \def\disablehiddenbackground
   {\global\setfalse\hiddenbackgroundenabled}

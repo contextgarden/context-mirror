@@ -13,7 +13,7 @@
 
 \writestatus{loading}{Context XML Macros (visualization)}
 
-\unprotect 
+\unprotect
 
 \bgroup
 
@@ -46,77 +46,192 @@
 
 .egroup
 
-\definepalet
-  [xtag]
-  [0=darkgreen,
-   1=darkred,
-   2=darkblue,
-   3=darkgray]
+\gdef\@@XMLshow {\@@XML shw}  
 
-\newcount\XMLlevel 
+\gdef\@XMLindent#1%
+  {\ifnum\XMLlevel>1\advance\leftskip#11em\relax\fi}
 
-\def\@XMLindent#1%
-%  {\ifnum\XMLlevel>0\advance\leftskip#11em\relax\fi}
-  {\advance\leftskip#11em\relax}
-
-\def\@XMLlevel#1%
+\gdef\@XMLlevel#1%
   {\advance\XMLlevel#11\relax}
 
-\def\@XMLentity#1%
-  {\noindent
-   \hbox
-     {\localcolortrue
-      \startcolormode{xtag:3}\string&#1;\stopcolormode}}
+\unexpanded\gdef\@XMLentity#1%
+  {\noindent\hbox{\localcolortrue\color[xtag:0]{\string&#1;}}}
 
-\def\@XMLelement#1%
-  {\ifhmode\unskip\fi
-   \noindent
-   \hbox
-     {\localcolortrue
-      \DoMod\XMLlevel by3to\scratchcounter
-      \startcolormode{xtag:\number\scratchcounter}\string<\currentXMLelement\stopcolormode
+\bgroup
+
+\@EA\catcode\string`=\@@active
+\@EA\catcode\string`"\@@active
+\@EA\catcode\string``\@@active
+\@EA\catcode\string`&\@@active
+
+\gdef\showXMLarguments%
+  {\ifshowXMLarguments
+     \bgroup
+     \@EA\catcode\string`=\@@active
+     \@EA\catcode\string`"\@@active
+     \@EA\catcode\string``\@@active
+     \@EA\catcode\string`&\@@active
+     \def={\color[xtag:7]{\string=}}%
+     \def"##1"{\string"\color[xtag:8]{##1}\string"}%
+     \def`##1`{\string`\color[xtag:8]{##1}\string`}%
+     \def&##1;{\string&\color[xtag:7]{##1}\string;}%
+     \scantokens\@EA{\currentXMLarguments}%
+     \egroup
+   \else
+     \currentXMLarguments
+   \fi}
+
+\egroup
+
+\ifx\XMLprettycycle\undefined \gdef\XMLprettycycle{3} \fi 
+
+\doglobal\newcounter\@XMLnofelements
+
+\gdef\@XMLelement#1%
+  {\ifnum\XMLlevel<\@@xfniveau\relax
+     \ifnum\kindofXMLelement=2\else
+       \doglobal\increment\@XMLnofelements\relax
+       \ifcase\@XMLnofelements\else\@@xftussen\fi 
+     \fi 
+   \fi
+\hangindent2em 
+\indent 
+    \bgroup
+      \localcolortrue
+      \advance\XMLlevel -1
+      \DoMod\XMLlevel by\XMLprettycycle to\scratchcounter
+      \advance\scratchcounter 1
+      \startcolor[xtag:\number\scratchcounter]%
+        \string<%
+        \ifnum\kindofXMLelement=2\string/\fi
+        \currentXMLelement
+      \stopcolor
       \ifcase#1\or\ifx\currentXMLarguments\empty\else
-        \startcolormode{xtag:3}\hskip.5em\currentXMLarguments\unskip\stopcolormode
+        \cleanupXMLarguments
+        \startcolor[xtag:0]\hbox{\space}\showXMLarguments\unskip\stopcolor
       \fi\fi
-      \startcolormode{xtag:\number\scratchcounter}\string>\stopcolormode}%
+      \startcolor[xtag:\number\scratchcounter]%
+      \ifnum\kindofXMLelement=3\string/\fi
+      \string>%
+      \stopcolor
+   \egroup 
+   \ifnum\XMLlevel<\@@xfniveau\relax
+     \ifnum\kindofXMLelement=1\else
+       \doglobal\increment\@XMLnofelements\relax
+       \ifcase\@XMLnofelements\else\@@xftussen\fi 
+     \fi 
+   \fi
    \ignorespaces}
 
-\def\nextXMLtext{\blank\@XMLlevel+\@XMLelement1\par}
-\def\prevXMLtext{\par\@XMLelement0\par\@XMLlevel-\blank}
-\def\nextXMLpara{\nextXMLline\par}
-\def\prevXMLpara{\par\prevXMLline}
-\def\nextXMLline{\par\@XMLlevel+\@XMLindent+\@XMLelement1}
-\def\prevXMLline{\@XMLelement0\par\@XMLlevel-\@XMLindent-}
-\def\nextXMLword{\@XMLlevel+\@XMLelement1}
-\def\prevXMLword{\@XMLelement0\@XMLlevel-}
+\gdef\nextXMLtext{\blank\@XMLlevel+\@XMLelement1\par}
+\gdef\prevXMLtext{\par\@XMLelement0\par\@XMLlevel-\blank}
+\gdef\nextXMLpara{\nextXMLline\par}
+\gdef\prevXMLpara{\par\prevXMLline}
+\gdef\nextXMLline{\par\@XMLlevel+\@XMLindent+\@XMLelement1}
+\gdef\prevXMLline{\@XMLelement0\par\@XMLindent-\@XMLlevel-}
+\gdef\nextXMLword{\@XMLlevel+\@XMLelement1}
+\gdef\prevXMLword{\@XMLelement0\@XMLlevel-}
 
-\def\someXMLword{\@XMLlevel+\@XMLelement1\@XMLlevel-}
+\gdef\someXMLtext{\blank\@XMLlevel+\@XMLelement1\@XMLlevel-\blank}
+\gdef\someXMLpara{\someXMLline}
+\gdef\someXMLline{\par\@XMLlevel+\@XMLindent+\@XMLelement1\par\@XMLindent-\@XMLlevel-}
+\gdef\someXMLword{\@XMLlevel+\@XMLelement1\@XMLlevel-}
+
+\gdef\@XMLindent#1%
+  {\ifnum\XMLlevel>0\advance\leftskip#11em\relax\fi}
 
-\def\setXMLshow#1#2#3[#4]%
-  {\def\docommando##1{#1[##1]#2#3}\processcommalist[#4]\docommando}
+\gdef\nextXMLtext{\blank\@XMLlevel+\@XMLelement1\par\@XMLindent+}
+\gdef\prevXMLtext{\par\@XMLindent-\@XMLelement0\par\@XMLlevel-\blank}
+\gdef\nextXMLpara{\nextXMLline\par\@XMLindent+}
+\gdef\prevXMLpara{\par\@XMLindent-\prevXMLline}
+\gdef\nextXMLline{\par\@XMLlevel+\@XMLelement1}
+\gdef\prevXMLline{\@XMLelement0\par\@XMLlevel-}
 
-\def\showXMLtxt{\setXMLshow\defineXMLenvironment\nextXMLtext\prevXMLtext}
-\def\showXMLpar{\setXMLshow\defineXMLenvironment\nextXMLpara\prevXMLpara}
-\def\showXMLlin{\setXMLshow\defineXMLenvironment\nextXMLline\prevXMLline}
-\def\showXMLwrd{\setXMLshow\defineXMLenvironment\nextXMLword\prevXMLword}
-\def\showXMLemp{\setXMLshow\defineXMLsingular\someXMLword\relax}
+\gdef\someXMLline{\par\@XMLlevel+\@XMLelement1\par\@XMLlevel-}
+
+\gdef\setXMLshow#1#2#3[#4]%
+  {\def\docommando##1{#1[##1]#2#3\letvalue{\@@XMLshow:##1}\empty}%
+   \processcommalist[#4]\docommando}
 
-\def\showXMLfile#1%
-  {{\tttf\dontcomplain
-    \let\executeXMLentity\@XMLentity
-    \enableXML\verbatimXML
-    \processfile{#1}}}
+\gdef\showXMLign[#1]%
+  {\setXMLshow\defineXMLignore     \relax\relax[#1]%
+   \setXMLshow\defineXMLsingular   \relax\relax[#1]}
 
-\def\showXMLbuffer%
+\gdef\showXMLnop[#1]%
+  {\setXMLshow\defineXMLenvironment\relax\relax[#1]%
+   \setXMLshow\defineXMLsingular   \relax\relax[#1]}
+
+\gdef\showXMLtxt[#1]%
+  {\setXMLshow\defineXMLenvironment\nextXMLtext\prevXMLtext[#1]%
+   \setXMLshow\defineXMLsingular   \someXMLtext\relax      [#1]}
+
+\gdef\showXMLpar[#1]%
+  {\setXMLshow\defineXMLenvironment\nextXMLpara\prevXMLpara[#1]%
+   \setXMLshow\defineXMLsingular   \someXMLline\relax      [#1]}
+
+\gdef\showXMLlin[#1]%
+  {\setXMLshow\defineXMLenvironment\nextXMLline\prevXMLline[#1]%
+   \setXMLshow\defineXMLsingular   \someXMLword\relax      [#1]}
+
+\gdef\showXMLwrd[#1]%
+  {\setXMLshow\defineXMLenvironment\nextXMLword\prevXMLword[#1]%
+   \setXMLshow\defineXMLsingular   \someXMLword\relax      [#1]}
+
+\gdef\showXMLemp[#1]%
+  {\setXMLshow\defineXMLsingular\someXMLword\relax[#1]}
+
+\gdef\doautoshowXMLelement%
+  {\ifcase\kindofXMLelement
+     \or \nextXMLpara \or \prevXMLpara \or \someXMLline
+   \fi}
+
+\gdef\autoshowXMLelement%
+  {\ifcsname\@@XMLshow:\currentXMLelement\endcsname
+     \expandafter\normalexecuteXMLelement
+   \else
+     \expandafter\doautoshowXMLelement
+   \fi}
+
+\global\let\normalexecuteXMLelement\executeXMLelement
+
+\gdef\showXMLfile#1%
+  {\bgroup
+   \nohyphens
+   \dontcomplain
+   \XMLlevel=0
+   \increment\@@xfniveau % hack 
+   \tttf
+   \startopelkaar[\v!blanko]
+     \ifautoXMLshow \let\executeXMLelement\autoshowXMLelement \fi
+     \let\executeXMLentity\@XMLentity
+     \enableXML\verbatimXML
+     \readfile{\truefilename{#1}}{}{}\endgraf
+   \stopopelkaar
+   \egroup}
+
+\gdef\showXMLbuffer%
   {\dosingleempty\doshowXMLbuffer}
 
-\def\doshowXMLbuffer[#1]%
+\gdef\doshowXMLbuffer[#1]%
   {\doifelsenothing{#1}
      {\doshowXMLbuffer[\jobname]}
      {\bgroup
-      \def\dodoprocessXMLbuffer##1%
-        {\showXMLfile{\TEXbufferfile{##1}}}%
+      \def\dodoprocessXMLbuffer##1{\showXMLfile{\TEXbufferfile{##1}}}%
       \processcommalist[#1]\dodoprocessXMLbuffer
       \egroup}}
 
-\protect \endinput 
+%D 
+
+\gdef\showXSDcomponent%
+  {\dodoubleargument\doshowXSDcomponent}
+
+\gdef\doshowXSDcomponent[#1][#2]%
+  {\bgroup
+   \showXMLnop[xsd:schema] 
+   \showXMLign[xsd:appInfo] 
+   \showXMLign[xsd:annotation] 
+   \videXMLcontextblock[#2]
+   \showXMLfile{#1}
+   \egroup}
+
+\protect \endinput

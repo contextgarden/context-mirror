@@ -11,107 +11,167 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-%D There is a more versatile mapper available in \type {xtag-rem.tex}! 
+%D There is a more versatile mapper available in \type {xtag-rem.tex}!
 
-\beginTEX 
-  \endinput 
-\endTEX 
+%D We also need something that lets content as-is, like for 
+%D instance XML embedded in a chemical caption. 
 
-\writestatus{loading}{Context XML Macros (remap)}
+\beginTEX
+  \endinput
+\endTEX
+
+\writestatus{loading}{Context XML Macros (remapping)}
 
 %D A fundamental characteristic of \TEX\ is that much
 %D processing depends on picking up one or more arguments and
 %D acting upon them. In \type {xtag-ini} we have implemented
 %D the normal (high) level interface between \XML\ and
 %D \CONTEXT, and there we already saw some ways to pick up an
-%D element as argument. 
-%D 
-%D In this module we will implement a preprocessor. An element 
-%D that feeds its content to the preprocessor, becomes a token 
+%D element as argument.
+%D
+%D In this module we will implement a preprocessor. An element
+%D that feeds its content to the preprocessor, becomes a token
 %D list consisting of \TEX\ macros, which in turn may expand to
-%D their meanings. 
-%D 
+%D their meanings.
+%D
 %D This module is only tested with \ETEX. In principle we can
 %D make it work with good old \TEX, but we see no objection
 %D against using \ETEX, especially since it's part of every
-%D grown up \TEX\ distribution. 
+%D grown up \TEX\ distribution.
 
-\unprotect 
+\unprotect
 
+\let\normalparseXMLescape \parseXMLescape
+\let\normalparseXMLelement\parseXMLelement
+\let\normalparseXMLprocess\parseXMLprocess
+
+\let\normaldoXMLelement   \doXMLelement
+\let\normaldoXMLentity    \doXMLentity    
+
+\def\setnormalXMLhandler
+  {\let\doXMLelement   \normaldoXMLelement
+   \let\parseXMLelement\normalparseXMLelement
+   \let\parseXMLescape \normalparseXMLescape 
+   \let\parseXMLprocess\normalparseXMLprocess
+   \let\doXMLentity    \normaldoXMLentity}    
+ 
 %D A careful reader will notice that we do a full expansion of
 %D the content of the element, although commands that are
 %D protected will stay untouched. In this stage we also
 %D collect key|/|value pairs and pass them onto the \TEX\
 %D macros if needed. Again, we need a fully expandable parser
 %D to handle this, which make the core macros slightly
-%D unreadable. 
-%D 
+%D unreadable.
+%D
 %D The interface presented here evolved from an older module,
 %D written on top of \type {m-sgml}, that could take care of
 %D \MATHML\ (version 1). The implementation here is more
-%D advanced in the sense that it permits all kind of parsers. 
+%D advanced in the sense that it permits all kind of parsers.
 
-\def\findendofXMLelement#1% better use a few expandafters 
-  {\if#1>0                  \else % space prevents auto \relax 
+\def\findendofXMLelement#1% space after 0/1 prevents auto \relax
+  {\if#1>0                  \else
+   \if#1/1 \endofXMLelementE\else
    \if#1"\endofXMLelementD  \else
    \if#1'\endofXMLelementS  \else
-   \if#1/1 \endofXMLelement \else
          \endofXMLelementN  \fi\fi\fi\fi}
 
-\def\endofXMLelementD#1\fi\fi\fi\fi#2"{\fi\fi      \findendofXMLelement}
-\def\endofXMLelementS#1\fi\fi\fi\fi#2'{\fi\fi\fi   \findendofXMLelement}
-\def\endofXMLelementN#1\fi\fi\fi\fi   {\fi\fi\fi\fi\findendofXMLelement}
-\def\endofXMLelement #1\fi\fi\fi\fi#2>{\fi\fi\fi\fi}
+\def\endofXMLelementE#1\fi\fi\fi\fi#2>{\fi\fi}
+\def\endofXMLelementD#1\fi\fi\fi\fi#2"{\fi\fi\fi   \findendofXMLelement}
+\def\endofXMLelementS#1\fi\fi\fi\fi#2'{\fi\fi\fi\fi\findendofXMLelement}
+\def\endofXMLelementN  \fi\fi\fi\fi   {\fi\fi\fi\fi\findendofXMLelement}
+
+% not faster
+%
+% \def\findendofXMLelement#1%
+%   {\csname**\if#1>>\else\if#1//\else\if#1""\else\if#1''\else.\fi\fi\fi\fi\endcsname}
+%
+% \def\findendofXMLelement#1%
+%   {\csname**\ifcsname**#1\endcsname#1\else.\fi\endcsname}
+%
+% \setvalue{**>}{0 }
+% \setvalue{**/}#1>{1 }
+% \setvalue{**"}#1"{\findendofXMLelement}
+% \setvalue{**'}#1'{\findendofXMLelement}
+% \letvalue{**.}\findendofXMLelement
 
-\newif\ifremapXMLunknown 
+\newif\ifremapXMLunknown
 
-\def\doremapXMLelement#1#2#3#4%
-  {\expandafter\ifx\csname\@@XML#1:#2\endcsname\relax#4\else
-     \csname\@@XML#1:#2\endcsname#3%
-   \fi}
+%D We need three steps to avoid namespace: tag since comment
+%D and processing instructions don't have a namespace. The
+%D first step distinguishes between comment, processing
+%D instructions and elements. The second step (which is
+%D defined in the main mapping macro) either or not grabs the
+%D namespace. We may extend this model later to a more
+%D versatile one, using remapping.
 
-\long\def\remapXMLelement#1#2 #3>% todo: we need to get rid of the end / 
-  {\if#1!%
-     % ignore all comment 
-   \else\if#1?%
-     % ignore all instructions
-     \remapXMLpi#2 #3>%
-   \else\ifcase\findendofXMLelement#2#3>%
+%D Parsing escapes is done by specific macros. For the
+%D moment we assume that the sequence ends with an \type {>}
+%D (which is definietly not the case for \type {CDATA}).
+
+\long\def\remapXMLescape#1#2>{}
+
+%D Processing instructions are remapped and only certain
+%D cases are handled.
+
+\long\def\remapXMLprocess#1#2{\xmlp{procins/}{X}{#1}{#2}}
+
+%D This one is more efficient (although no one will notice
+%D this since this macro is used seldom).
+
+\long\def\remapXMLprocess{\xmlp{procins/}{X}}
+
+%D Element need a bit more work; \type {#4} consumes spaces.
+
+\def\remapXMLunknownONE#1#2% name args
+  {\ifremapXMLunknown\remapXMLone{\s!unknown}{#1 #2}\fi}
+
+\def\remapXMLunknownTWO#1#2% name args
+  {\ifremapXMLunknown\remapXMLtwo{\s!unknown}{#1 #2}\fi}
+
+\def\remapXMLunknownTHREE#1#2% name args
+  {\ifremapXMLunknown\remapXMLthree{\s!unknown/}{#1 #2}\fi}
+
+\long\def\remapXMLelement#1#2 #3>#4% todo: we need to get rid of the end /
+  {\ifcase\findendofXMLelement#2#3>%
      \if#1/%
-       \expandafter\ifx\csname\@@XML#2:M\endcsname\relax 
-         \ifremapXMLunknown\remapXMLone{\s!unknown}{#2}\fi
+       \expandafter\ifx\csname\@@XML\@@XMLmapping:#2:M\endcsname\relax
+         \remapXMLunknownONE{#2}{}%
        \else
          \remapXMLone{#2}{}%
        \fi
      \else
-       \expandafter\ifx\csname\@@XML#1#2:M\endcsname\relax 
-         \ifremapXMLunknown\remapXMLtwo{\s!unknown}{#1#2}\fi
+       \expandafter\ifx\csname\@@XML\@@XMLmapping:#1#2:M\endcsname\relax
+         \remapXMLunknownTWO{#1#2}{#3}%
        \else
          \remapXMLtwo{#1#2}{#3}%
        \fi
      \fi
    \else
-     \expandafter\ifx\csname\@@XML#1#2:M\endcsname\relax
-       \expandafter\ifx\csname\@@XML#1#2/:M\endcsname\relax 
-          \ifremapXMLunknown\remapXMLthree{\s!unknown/}{#1#2}\fi
+     \expandafter\ifx\csname\@@XML\@@XMLmapping:#1#2:M\endcsname\relax
+       \expandafter\ifx\csname\@@XML\@@XMLmapping:#1#2/:M\endcsname\relax
+         \remapXMLunknownTHREE{#1#2}{#3}%
        \else
          \remapXMLthree{#1#2/}{#3}%
        \fi
      \else
        \remapXMLthree{#1#2}{#3}%
      \fi
-   \fi\fi\fi}
+   \fi#4}
 
-\unexpanded\def\xmlr#1#2{\csname\@@XML#1:#2\endcsname}
+\unexpanded\def\xmlr#1#2{\csname\@@XML\@@XMLmapping:#1:#2\endcsname}
+\unexpanded\def\xmlp#1#2{\csname\@@XML             :#1:#2\endcsname}
+\def   \expandedxmlr#1#2{\csname\@@XML\@@XMLmapping:#1:#2\endcsname}
+
+\def\expandXMLremapping{\let\xmlr\expandedxmlr}
 
 \def\@@XMLremap{XMLremap}
 
 \def\remapXMLone#1#2%
-  {\ifcase\csname\@@XMLremap\csname\@@XML#1:M\endcsname\endcsname
+  {\ifcase\csname\@@XMLremap\csname\@@XML\@@XMLmapping:#1:M\endcsname\endcsname
    \or % GCPA
      \XMLeg\XMLeg
    \or % GCP-
-     \XMLeg       
+     \XMLeg
    \or % GC-A
      \XMLeg\XMLeg
    \or % GC--
@@ -119,11 +179,11 @@
    \or % -CPA
      \XMLeg
    \or % -CP-
-     % 
+     %
    \or % -C-A
      \XMLeg
    \or % -C--
-     % 
+     %
    \or % G---
      \XMLeg
    \or % GLR-
@@ -133,11 +193,11 @@
    \fi}
 
 \def\remapXMLtwo#1#2%
-  {\ifcase\csname\@@XMLremap\csname\@@XML#1:M\endcsname\endcsname
+  {\ifcase\csname\@@XMLremap\csname\@@XML\@@XMLmapping:#1:M\endcsname\endcsname
    \or % GCPA
      \XMLbg\xmlr{#1}{X}{#2}\XMLbg
    \or % GCP-
-     \XMLbg\xmlr{#1}{X}{#2}%       
+     \XMLbg\xmlr{#1}{X}{#2}%
    \or % GC-A
      \XMLbg\xmlr{#1}{X}\XMLbg
    \or % GC--
@@ -145,21 +205,21 @@
    \or % -CPA
      \xmlr{#1}{X}{#2}\XMLbg
    \or % -CP-
-     \xmlr{#1}{X}{#2}%       
+     \xmlr{#1}{X}{#2}%
    \or % -C-A
      \xmlr{#1}{X}\XMLbg
    \or % -C--
-     \xmlr{#1}{X}% 
+     \xmlr{#1}{X}%
    \or % G---
      \XMLbg
    \or % GLR-
      \XMLbg\xmlr{#1}{L}%
    \or % -LR-
-     \xmlr{#1}{L}% 
+     \xmlr{#1}{L}%
    \fi}
 
 \def\remapXMLthree#1#2%
-  {\ifcase\csname\@@XMLremap\csname\@@XML#1:M\endcsname\endcsname
+  {\ifcase\csname\@@XMLremap\csname\@@XML\@@XMLmapping:#1:M\endcsname\endcsname
    \or % GCPA
      \XMLbg\xmlr{#1}{X}{#2}\XMLbg\XMLeg\XMLeg
    \or % GCP-
@@ -169,9 +229,9 @@
    \or % GC--
      \XMLbg\xmlr{#1}{X}\XMLeg
    \or % -CPA
-     \xmlr{#1}{X}{#2}\XMLbg\XMLeg      
+     \xmlr{#1}{X}{#2}\XMLbg\XMLeg
    \or % -CP-
-     \xmlr{#1}{X}{#2}%       
+     \xmlr{#1}{X}{#2}%
    \or % -C-A
      \xmlr{#1}{X}\XMLbg\XMLeg
    \or % -C--
@@ -180,112 +240,116 @@
      \XMLbg\XMLeg
    \fi}
 
-\@EA\scratchtoks\@EA{\string{}  \edef\XMLbg{\the\scratchtoks}
-\@EA\scratchtoks\@EA{\string}}  \edef\XMLeg{\the\scratchtoks}
+\scratchtoks\@EA{\string{}  \edef\XMLbg{\the\scratchtoks}
+\scratchtoks\@EA{\string}}  \edef\XMLeg{\the\scratchtoks}
 
-\chardef\XMLremapGCPA = 1  % {\command {arg} {   } } 
+\chardef\XMLremapGCPA = 1  % {\command {arg} {   } }
 \chardef\XMLremapGCP  = 2  % {\command {arg}       } %
-\chardef\XMLremapGCA  = 3  % {\command       {   } } 
+\chardef\XMLremapGCA  = 3  % {\command       {   } }
 \chardef\XMLremapGC   = 4  % {\command             } %
-\chardef\XMLremapCPA  = 5  %  \command {arg} {   }  
+\chardef\XMLremapCPA  = 5  %  \command {arg} {   }
 \chardef\XMLremapCP   = 6  %  \command {arg}         %
-\chardef\XMLremapCA   = 7  %  \command       {   } 
+\chardef\XMLremapCA   = 7  %  \command       {   }
 \chardef\XMLremapC    = 8  %  \command               %
 \chardef\XMLremapG    = 9  % {                     }
 \chardef\XMLremapGLR  = 10 % { \bcom            \ecom }
 \chardef\XMLremapLR   = 11 %   \bcom            \ecom
 
-\protect 
-
-\def\remapXMLpi#1 #2?#3>%
-  {\xmlr{procins/}{X}{#1}{#2}}
-
-\unprotect 
-
-%D The remapping is controlled by only a few definition 
-%D macros, that both deal with elements. We distinguish 
-%D between normal and empty elements. 
-%D 
+%D The remapping is controlled by only a few definition
+%D macros, that both deal with elements. We distinguish
+%D between normal and empty elements.
+%D
 %D \starttypen
 %D \remapXMLsequence [name] [result map] \unexpandablecommand
 %D \remapXMLsequence [name] [result map] \unexpandablecommand
 %D \stoptypen
-%D 
-%D The \MATHML\ module demonstrates how these can be used. 
+%D
+%D The \MATHML\ module demonstrates how these can be used.
 %D The element is converted into a sequence with one or more
-%D of the following components. 
+%D of the following components.
 %D
 %D \starttypen
-%D { \command {parameters} {argument} } 
+%D { \command {parameters} {argument} }
 %D \stoptypen
 %D
-%D The following combinations are supported. 
-%D 
-%D \starttabulatie[|c|c|c|c|c|]
-%D \NC GCPA \NC grouped \NC command \NC parameters \NC argument \NC \NR 
-%D \NC GCP  \NC grouped \NC command \NC parameters \NC          \NC \NR 
-%D \NC GCA  \NC grouped \NC command \NC            \NC argument \NC \NR 
-%D \NC GC   \NC grouped \NC command \NC            \NC          \NC \NR 
-%D \NC CPA  \NC         \NC command \NC parameters \NC argument \NC \NR 
-%D \NC CP   \NC         \NC command \NC parameters \NC          \NC \NR 
-%D \NC CA   \NC         \NC command \NC            \NC argument \NC \NR 
-%D \NC C    \NC         \NC command \NC            \NC          \NC \NR 
-%D \NC G    \NC grouped \NC         \NC            \NC          \NC \NR 
-%D \stoptabulatie 
+%D The following combinations are supported.
 %D
-%D Empty elements (singular ones) never get an argument, 
-%D which makes sense, since they have at most parameters. 
+%D \starttabulatie[|c|c|c|c|c|]
+%D \NC GCPA \NC grouped \NC command \NC parameters \NC argument \NC \NR
+%D \NC GCP  \NC grouped \NC command \NC parameters \NC          \NC \NR
+%D \NC GCA  \NC grouped \NC command \NC            \NC argument \NC \NR
+%D \NC GC   \NC grouped \NC command \NC            \NC          \NC \NR
+%D \NC CPA  \NC         \NC command \NC parameters \NC argument \NC \NR
+%D \NC CP   \NC         \NC command \NC parameters \NC          \NC \NR
+%D \NC CA   \NC         \NC command \NC            \NC argument \NC \NR
+%D \NC C    \NC         \NC command \NC            \NC          \NC \NR
+%D \NC G    \NC grouped \NC         \NC            \NC          \NC \NR
+%D \stoptabulatie
+%D
+%D Empty elements (singular ones) never get an argument,
+%D which makes sense, since they have at most parameters.
 
-\def\remapXMLsequence{\dotripleargument\doremapXML []}
-\def\remapXMLsingular{\dotripleargument\doremapXML[/]}
+\def\remapXMLsequence{\doquadrupleargument\doremapXML []}
+\def\remapXMLsingular{\doquadrupleargument\doremapXML[/]}
 
-\def\doremapXML[#1][#2][#3]%
-  {\doifinstringelse{LR}{#3}
-     {\let\next\doremapXMLtwo}
-     {\let\next\doremapXMLone}%
-   \next[#1][#2][#3]}
+\def\doremapXML[#1][#2][#3][#4]%
+  {\iffourthargument
+     \def\next{\dodoremapXML[#2][#1][#3][#4]}%
+   \else
+     \def\next{\dodoremapXML[\@@XMLmapping][#1][#2][#3]}%
+   \fi
+   \next}
 
-\def\doremapXMLone[#1][#2][#3]#4%
-  {\setvalue{\@@XML#2#1:M}{#3}%
-   \setvalue{\@@XML#2#1:X}{#4}}
+%\def\dodoremapXML[#1][#2][#3][#4]% class / name pattern
+%  {\doifinstringelse{LR}{#4}
+%     {\let\next\doremapXMLtwo}
+%     {\let\next\doremapXMLone}%
+%   \next[#1][#2][#3][#4]}%
 
-\def\doremapXMLtwo[#1][#2][#3]#4#5%
-  {\setvalue{\@@XML#2:M}{#3}%
-   \setvalue{\@@XML#2:L}{#4}%
-   \setvalue{\@@XML#2:R}{#5}}
+\def\dodoremapXML[#1][#2][#3][#4]% class / name pattern
+  {\doifinstringelse{LR}{#4}\doremapXMLtwo\doremapXMLone[#1][#2][#3][#4]}
+
+\def\doremapXMLone[#1][#2][#3][#4]#5%
+  {\setvalue{\@@XML#1:#3#2:M}{#4}%
+   \setvalue{\@@XML#1:#3#2:X}{#5}}
+
+\def\doremapXMLtwo[#1][#2][#3][#4]#5#6%
+  {\setvalue{\@@XML#1:#3:M}{#4}%
+   \setvalue{\@@XML#1:#3:L}{#5}%
+   \setvalue{\@@XML#1:#3:R}{#6}}
 
 \let\dowithentity\empty
 
-%D We handle unknown elements with: 
+%D We handle processing instructions and unknown elements with:
 
-\remapXMLsingular[procins] [CPA] \doXMLprocins
-
-\def\doXMLprocins#1#2{\dodoXMLprocessor{?#1}{#2}}
-
+\remapXMLsingular [procins]    [CPA] \normalparseXMLprocess
 \remapXMLsingular [\s!unknown] [CPA] \doXMLunknownSI
 \remapXMLsequence [\s!unknown] [CPA] \doXMLunknownSE
 
-\def\doXMLunknownSI#1#2{\hbox{\tttf[#1]}}
-\def\doXMLunknownSE#1#2{\hbox{\tttf[#1:\enspace\ignorespaces#2\unskip]}}
+\def\doXMLunknownSI#1#2{{\tttf[#1 #2]}}
+\def\doXMLunknownSE#1#2{{\tttf[#1 #2]}}
 
 %D In a similar way, we can remap entities.
 
-\def\remapXMLentity%
+\def\remapXMLentity#1;#2%
+  {\doremapXMLentity{#1}#2}%
+
+\def\doremapXMLentity%
   {\xmlrent}
 
 \unexpanded\def\xmlrent#1%
   {\getXMLentity{#1}}
 
-%D The remapping is taken care of by the following macro, 
-%D which takes three arguments. 
+%D The remapping is taken care of by the following macro,
+%D which takes three arguments.
 %D
-%D \starttypen 
+%D \starttypen
 %D \XMLremapdata{before}{after}{content}
-%D \stoptypen 
+%D \stoptypen
 %D
-%D After the remapping, the content is executed (expanded) 
-%D under the normal \TEX\ catcode regime. The intermediate 
-%D result can be traced by turning on the following switch. 
+%D After the remapping, the content is executed (expanded)
+%D under the normal \TEX\ catcode regime. The intermediate
+%D result can be traced by turning on the following switch.
 
 \newif\iftraceXMLremapping
 
@@ -296,10 +360,10 @@
   \defineXMLentity[tex-bar]{\myspecialvert}%
 \to \everyXMLremapping
 
-\def\setnormalXMLentities%
+\def\setnormalXMLentities% will change ! ! ! ! !
   {\defineXMLentity[tex-hash]\letterhash
-   \defineXMLentity[tex-dollar]\letterdollar  
-   \defineXMLentity[tex-percent]\letterpercent 
+   \defineXMLentity[tex-dollar]\letterdollar
+   \defineXMLentity[tex-percent]\letterpercent
    \defineXMLentity[tex-backslash]\letterbackslash
    \defineXMLentity[tex-hat]\letterhat
    \defineXMLentity[tex-underscore]\letterunderscore
@@ -309,12 +373,36 @@
 
 \let\XMLremappedpar\empty
 
-\long\def\XMLremapdata#1#2#3%
+%D Here we implement the second step in the element grabber.
+
+\long\def\XMLremapdata%
+  {\dosingleempty\doXMLremapdata}
+
+\long\def\doXMLremapdata[#1]#2#3#4% 
   {\bgroup
-   \pushmacro\doXMLelement
-   \pushmacro\doXMLentity  % ##2 removes leading spaces
-   \long\def\doXMLelement##1>##2{\remapXMLelement##1 >##2}%
-   \def\doXMLentity      ##1;##2{\remapXMLentity{##1}##2}%
+   \startXMLmapping[#1]%
+   % enable unknown elements (should be macro)
+   \doifsomething{#1}
+     {\doifdefinedelse{\@@XML#1:\s!unknown:M} 
+        {\remapXMLunknowntrue}{\remapXMLunknownfalse}}% 
+   % 
+   \pushmacro\doXMLentity % needed ?   
+   % this will change, proper split in element itself
+   \ifx\currentXMLnamespace\empty
+     \let\parseXMLelement\remapXMLelement
+   \else
+     % here we need to get rid of the namespace; we also
+     % have to preserve the leaqding / if present
+     \@EA\long\@EA\def\@EA\parseXMLelement\@EA
+       ##\@EA1\currentXMLnamespace:{\remapXMLelement##1}%
+     % ##2 removes leading spaces
+   \fi
+   %
+   \let\parseXMLescape \remapXMLescape
+   \let\parseXMLprocess\remapXMLprocess
+   %
+   \let\doXMLentity    \remapXMLentity
+   %
    \enableXML % sets entities
    \enableXMLexpansion
    \let\par\XMLremappedpar
@@ -324,10 +412,9 @@
    \catcode`\^^M=\@@space
    \catcode`\^^L=\@@space
    \catcode`\^^Z=\@@space
-   \xdef\remappedXMLdata{#3\empty}%   
+   \xdef\remappedXMLdata{#4\empty}%
    \let\par\endgraf
-   \popmacro\doXMLentity
-   \popmacro\doXMLelement
+   \popmacro\doXMLentity % needed ? 
    \disableXMLexpansion
    \catcode`\{=\@@begingroup
    \catcode`\}=\@@endgroup
@@ -336,18 +423,19 @@
      \bgroup
      \convertcommand\remappedXMLdata\to\ascii
      \tttf\veryraggedright\ascii\par
-     \writestatus{XML}{\ascii}%
+     \writestatus{xml-remap}{\ascii}%
      \egroup
    \fi
-   #1\scantokens\@EA{\remappedXMLdata\empty\empty}#2%
+   #2\scantokens\@EA{\remappedXMLdata\empty\empty}#3%
+   \stopXMLmapping
    \egroup}
 
-% rename to better names 
+% rename to better names
 
 \newtoks  \XMLRtoks
 \newcount \nofXMLRchildren
 
-\def\naturalxmlr#1#2{\getvalue{\@@XML#1:#2}}
+\def\naturalxmlr#1#2{\getvalue{\@@XML\@@XMLmapping:#1:#2}}
 
 \def\ignoreXMLRelement#1#2{}
 \def\normalXMLRelement#1#2{#2}
@@ -363,8 +451,8 @@
 %       \def\nextXMLRelement{##1{##2}{##3}{##4}{##5}}%
 %       #1}%
 %    \doifnextcharelse\empty\empty\dowithnextXMLRelement}
-% 
-% better and faster:  
+%
+% better and faster:
 
 \def\dowithnextXMLRelement#1#2#3#4#5#6%
   {\def\nextXMLRelement{#2{#3}{#4}{#5}{#6}}#1}%
@@ -383,7 +471,7 @@
          \popmacro\secondXMLRelement
          \popmacro\firstXMLRelement}}}
 
-\def\withnextthreeXMLRelements#1% korter, met two 
+\def\withnextthreeXMLRelements#1% korter, met two
   {\pushmacro\firstXMLRelement
    \pushmacro\secondXMLRelement
    \pushmacro\thirdXMLRelement
@@ -467,7 +555,7 @@
      {\let\nextXMLRelement\empty#2}%
    \doifnextcharelse\xmlr\xdowithnextXMLRelement\xnowithnextXMLRelement}
 
-\def\encapsulatenextXMLRelements#1#2#3#4% oude bewaren 
+\def\encapsulatenextXMLRelements#1#2#3#4% oude bewaren
   {\pushmacro\betweenXMLRchild
    \pushmacro\afterXMLRchild
    \def\betweenXMLRchild{#1\def\betweenXMLRchild{#2}}%
@@ -482,7 +570,7 @@
       \popmacro\betweenXMLRchild}%
    #4}
 
-\def\collectXMLRchild#1#2% 
+\def\collectXMLRchild#1#2%
   {\XMLRtoks\emptytoks
    \pushmacro\xmlr
    \def\xmlr##1##2##3##4%
@@ -490,7 +578,7 @@
    #2\empty
    \popmacro\xmlr}
 
-\def\collectbetweenXMLRchild#1#2#3% 
+\def\collectbetweenXMLRchild#1#2#3%
   {\XMLRtoks\emptytoks
    \pushmacro\xmlr
    \pushmacro\betweenXMLRchild
@@ -502,7 +590,7 @@
    \popmacro\betweenXMLRchild
    \popmacro\xmlr}
 
-\def\dorawcollectbetweenXMLR#1#2% 
+\def\dorawcollectbetweenXMLR#1#2%
   {\pushmacro\xmlr
    \pushmacro\betweenXMLRchild
    \def\betweenXMLRchild{\def\betweenXMLRchild{#1}}%
@@ -512,16 +600,16 @@
    \popmacro\betweenXMLRchild
    \popmacro\xmlr}
 
-\def\rawcollectbetweenXMLR% 
+\def\rawcollectbetweenXMLR%
   {\XMLRtoks\emptytoks\dorawcollectbetweenXMLR}
 
-\def\docollectbetweenXMLR#1% 
-  {\dorawcollectbetweenXMLR{\appendtoks#1\to\XMLRtoks}} 
+\def\docollectbetweenXMLR#1%
+  {\dorawcollectbetweenXMLR{\appendtoks#1\to\XMLRtoks}}
 
 \def\collectbetweenXMLR%
   {\XMLRtoks\emptytoks\docollectbetweenXMLR}
 
-\def\processXMLRchildren#1% 
+\def\processXMLRchildren#1%
   {\pushmacro\xmlr
    \let\xmlr\naturalxmlr
    #1\empty
@@ -544,7 +632,7 @@
    #1\empty
    \popmacro\xmlr}
 
-\def\countXMLRchild#1#2% 
+\def\countXMLRchild#1#2%
   {\pushmacro\xmlr
    \nofXMLRchildren=0
    \def\xmlr##1##2##3##4%
@@ -552,4 +640,27 @@
    #2\empty
    \popmacro\xmlr}
 
-\protect \endinput 
+\def\installXMLunknownremapping
+  {\remapXMLsingular[\s!unknown][CPA]\doXMLunknownSI
+   \remapXMLsequence[\s!unknown][CPA]\doXMLunknownSE}
+
+\bgroup \catcode`<=\active
+
+\gdef\revertXMLremapping
+  {\gdef\doXMLunknownSE##1##2{<##1>##2</##1>}%
+   \gdef\doXMLunknownSI##1##2{<##1>}}
+
+\gdef\unmapXMLdata#1#2% todo: singular, evt ##2 space ervoor en ##1##2
+  {\bgroup
+   \revertXMLremapping
+   \expandXMLremapping      % now we can roll back 
+   \setnormalXMLhandler     % using the normal parser 
+   \resetXMLmapping         % and leaving the mapping namespace
+   \xdef\unmappedXMLdata{#2}% recreate the original 
+   \enableXMLelements       % enable normal handler 
+   \unmappedXMLdata         % off we go ... 
+   \egroup}
+
+\egroup
+
+\protect \endinput

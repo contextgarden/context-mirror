@@ -122,14 +122,14 @@
      \fi
      \maakhetnummer[\v!formule]%
      \setbox0=\hbox{\ignorespaces#2\unskip}%
-     \ifdim\wd0>\!!zeropoint
+     \ifdim\wd0>\zeropoint
        \edef\hetsubnummer{#2}%
      \else
        \let\hetsubnummer\empty
      \fi
      \doifsomething{#1}{\rawreference{\s!for}{#1}{\hetnummer\hetsubnummer}}%
      \setbox0=\hbox{\ignorespaces#4\unskip}%
-     \ifdim\wd0>\!!zeropoint
+     \ifdim\wd0>\zeropoint
        \edef\hetsubnummer{#4}%
      \fi
      \doifsomething{#3}{\rawreference{\s!for}{#3}{\hetnummer\hetsubnummer}}%
@@ -138,8 +138,9 @@
        {\dostartattributes\??fm\c!nummerletter\c!nummerkleur
         \strut
         \@@fmlinks
+        \preparethenumber\??fm\hetnummer\preparednumber
         \labeltexts\v!formule
-          {\ignorespaces\hetnummer\ignorespaces\hetsubnummer\unskip}%
+          {\ignorespaces\preparednumber\ignorespaces\hetsubnummer\unskip}%
         \@@fmrechts
         \dostopattributes}%
    \fi
@@ -197,6 +198,7 @@
    \c!variant=\s!default,
    \c!uitlijnen=,
    \c!strut=\v!nee,
+   \c!scheider=\@@koscheider,
    \c!afstand=1em]
 
 \def\currentformula          {}
@@ -453,7 +455,10 @@
 \def\dispplaatsformule[#1]#2$$#3$$%
   {\dodoplaatsformule[#1]{#2}\dostartformula{}#3\dostopformula}
 
-\def\dodoplaatsformule[#1]#2%
+\let\normalreqno\eqno
+\let\normalleqno\leqno
+
+\def\dodoplaatsformule[#1]#2% messy, needs a clean up 
   {\doifelse{#1}{-}
      {\setfalse\handleformulanumber}
      {\doifelse{#2}{-}
@@ -461,7 +466,7 @@
         {\settrue\handleformulanumber}}%
    \ifconditional\handleformulanumber
      \def\formulenummer%
-       {\global\let\subformulenummer\doformulenummer
+       {%\global\let\subformulenummer\doformulenummer % no, bug 
         \doformulenummer[#1][#2]}%
      \def\subformulenummer%
        {\setfalse\incrementformulanumber
@@ -469,13 +474,32 @@
      \gdef\doplaceformulanumber%
        {\global\let\doplaceformulanumber\empty
         \doifelse{\@@fmplaats}{\v!links}
-          {\leqno{\doformulenummer[#1][#2][]{}}}
-          {\eqno {\doformulenummer[#1][#2][]{}}}}%
+          {\normalleqno{\doformulenummer[#1][#2][]{}}}
+          {\normalreqno{\doformulenummer[#1][#2][]{}}}}%
    \else
      \def\formulenummer{\doformulenummer[#1][#2]}%
      \global\let\subformulenummer\doformulenummer
      \global\let\doplaceformulanumber\empty
    \fi} 
+
+%D We need a hook into the plain math alignment macros
+%D
+%D \starttypen
+%D \displaylines
+%D \eqalignno
+%D \eqalignno
+%D \stoptypen
+%D
+%D Otherwise we get a missing \type {$$} error reported.
+
+\def\resetdisplaymatheq
+  {\let\normalleqno\relax \let\leqno\relax
+   \let\normalreqno\relax \let\eqno \relax
+   \let\doplaceformulanumber\relax}
+
+\let\normaldispl@y\displ@y
+
+\def\displ@y{\resetdisplaymatheq\normaldispl@y}
 
 %D Here we implement a basic math alignment mechanism. Numbers
 %D are also handled. The macros \type {\startinnermath} and
@@ -504,6 +528,10 @@
   {\hsize\displaywidth
    \global\let\@eqno \empty \def\eqno {\gdef\@eqno }%
    \global\let\@leqno\empty \def\leqno{\gdef\@leqno}%
+   % added 
+   \let\normalreqno\eqno
+   \let\normalleqno\leqno
+   % added 
    \doplaceformulanumber
    \mathhbox to \displaywidth\bgroup
      \mathinnerstrut

@@ -165,7 +165,10 @@
      %  {\def\saveddigits{#1}}%
    \fi\fi\fi\fi
    \grabdigit}
-  
+
+\let\handlemathdigits\firstofoneargument
+\let\handletextdigits\mathematics
+
 \def\handledigits%  
   {%\ifcase\powerdigits
    %  \edef\collecteddigits{\collecteddigits\saveddigits}%
@@ -173,9 +176,9 @@
    %  \edef\savedpowerdigits{\savedpowerdigits\saveddigits}%
    %\fi
    \ifmmode
-     \dohandledigits
+     \handlemathdigits{\dohandledigits}%
    \else
-     \dontleavehmode\hbox{$\dohandledigits$}%
+     \dontleavehmode\hbox{\handletextdigits{\dohandledigits}}%
    \fi
    \egroup}
 
@@ -321,9 +324,9 @@
 %D \digits 123.222,00^10
 %D \stoptypen
 %D
-%D The seperator is defined as:
+%D The separator is defined as:
 
-\def\digitpowerseperator%
+\def\digitpowerseparator%
   {\cdot10} % {\times10}
 
 %D \macros

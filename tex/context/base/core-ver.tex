@@ -119,6 +119,8 @@
      {\def\setupprettytype{\getvalue{setuppretty\prettyidentifier type}}}
      {\let\setupprettytype=\relax}}
 
+\installprettytype [RAW]        [RAW]
+
 \installprettytype [TEX]        [TEX]
 
 \installprettytype [PERL]       [PL]
@@ -220,6 +222,8 @@
 %D \type{<<} and \type{>>} as delimiters. This alternative can
 %D be used in situations where slanted typeseting is needed.
 
+% todo: we can use \letter... here: 
+
 \def\lesscharacter {<}
 \def\morecharacter {>}
 
@@ -236,7 +240,6 @@
 
 %\unexpanded\def\type%
 %  {\bgroup
-%%   \verbatimcolor
 %   \catcode`\<=\@@other
 %   \catcode`\>=\@@other
 %   \futurelet\next\dotype}
@@ -246,6 +249,7 @@
    
 \def\dotype#1%
   {\bgroup
+   \strut % new, enables leading space in \type { abc } at par start
    \edef\@@currenttype{#1}%
    \catcode`\<=\@@other
    \catcode`\>=\@@other
@@ -280,33 +284,70 @@
 %    \fi\fi
 %    \verbatimcolor
 %    \next}
+% 
+% \def\dodotype%
+%   {\ifx\next\bgroup
+%      \initializetype
+%      \verbatimcolor
+%      \initializetypegrouping
+%      \def\next%
+%        {\afterassignment\protectfirsttype\let\next=}%
+%    \else\if\next<%
+%      \doifelsevalue{\??ty\@@currenttype\c!optie}{\v!geen}
+%        {\initializetype
+%         \verbatimcolor
+%         \setupnotypegrouping
+%         \def\next%
+%           {\let\next=}}
+%        {\def\next<##1%
+%           {\initializetype
+%            \verbatimcolor
+%            \if##1<%
+%            \else
+%              \setupalternativetypegrouping
+%              ##1%
+%            \fi}}%
+%    \else
+%      \def\next##1%
+%        {\initializetype
+%         \verbatimcolor
+%         \catcode`##1=\@@endgroup}%
+%    \fi\fi
+%    \next}
+
+\def\dodotypeA
+  {\initializetype
+   \initializetypegrouping
+   \verbatimcolor 
+   \afterassignment\protectfirsttype\let\next=}
+
+\def\dodotypeB%
+  {\initializetype
+   \setupnotypegrouping
+   \verbatimcolor 
+   \let\next=}
+
+\def\dodotypeC<#1%
+  {\initializetype
+   \verbatimcolor 
+   \if#1<\else
+     \setupalternativetypegrouping#1%
+   \fi}
+
+\def\dodotypeD#1%
+  {\initializetype
+   \verbatimcolor 
+   \catcode`#1=\@@endgroup}
 
 \def\dodotype%
   {\ifx\next\bgroup
-     \initializetype
-     \initializetypegrouping
-     \def\next%
-       {\afterassignment\protectfirsttype\let\next=}%
+     \@EA\dodotypeA
    \else\if\next<%
      \doifelsevalue{\??ty\@@currenttype\c!optie}{\v!geen}
-       {\initializetype
-        \setupnotypegrouping
-        \def\next%
-          {\let\next=}}
-       {\def\next<##1%
-          {\initializetype
-           \if##1<%
-           \else
-             \setupalternativetypegrouping
-             ##1%
-           \fi}}%
+       {\@EAEAEA\dodotypeB}{\@EAEAEA\dodotypeC}%
    \else
-     \def\next##1%
-       {\initializetype
-        \catcode`##1=\@@endgroup}%
-   \fi\fi
-   \verbatimcolor
-   \next}
+     \@EAEAEA\dodotypeD
+   \fi\fi}
 
 \bgroup
 \catcode`\[=\@@begingroup
@@ -553,7 +594,7 @@
 %D support of \type{\tt} text will be implemented soon.
 
 \def\obeyhyphens%
-  {\def\obeyedspace{ }%
+  {\def\obeyedspace{\hskip\spaceskip}%
    \edef\savedfont{\the\font}%
    \ttsl\hyphenchar\font=45
    \tttf\hyphenchar\font=45
@@ -561,7 +602,7 @@
    \spaceskip.5em\!!plus.25em\!!minus.25em\relax}
 
 \def\obeybreakpoints%
-  {\def\obeyedspace{ }%
+  {\def\obeyedspace{\hskip\spaceskip}%
    \spaceskip.5em
    \veryraggedright}
 
@@ -688,7 +729,7 @@
           \v!groot=>\scratchskip=\blankogrootmaat,
      \v!halveregel=>\scratchskip=.5\baselineskip,
           \v!regel=>\scratchskip=\baselineskip,
-           \v!geen=>\scratchskip=\!!zeropoint,
+           \v!geen=>\scratchskip=\zeropoint,
         \s!unknown=>\scratchskip=\commalistelement]%
    \ifgridsnapping
      \ifdim\scratchskip=.5\baselineskip\relax  
@@ -832,6 +873,7 @@
 
 \definetyping[\v!typen]
 
+\definetyping[RAW]   [\c!optie=RAW]
 \definetyping[MP]    [\c!optie=MP]
 \definetyping[PL]    [\c!optie=PL]
 \definetyping[PM]    [\c!optie=PL]

@@ -315,12 +315,12 @@
   {\popmacro\mathcollection}
 
 \def\startrawmathcollection%
-  {\pushmacro\iftracemathcollection
-   \tracemathcollectionfalse
+  {%\pushmacro\iftracemathcollection % does not work in new push 
+   %\tracemathcollectionfalse
    \startmathcollection}
 
 \def\stoprawmathcollection%
-  {\popmacro\iftracemathcollection
+  {%\popmacro\iftracemathcollection
    \stopmathcollection}
 
 \newtoks\mathtoks
@@ -356,6 +356,43 @@
 
 \fetchruntimecommand \showmathcharacters {\f!mathprefix\s!run}
 
+%D \macros 
+%D   {ifmathpunctuation, enablemathpunctuation, 
+%D    definemathpunctuation}
+%D
+%D \starttypen 
+%D \definemathpunctuation . mathperiod textperiod
+%D \definemathpunctuation , mathcomma  textcomma 
+%D \stoptypen 
+
+\newif\ifmathpunctuation
+
+\def\enablemathpunctuation{\mathpunctuationtrue}
+
+\def\definemathpunctuation #1 #2 #3 %
+  {\appendtoks 
+     \initializemathpunctuation{#1}{#2}{#3}%
+   \to\everymath} 
+
+\def\initializemathpunctuation#1#2#3% sloowww  
+  {\ifmathpunctuation
+     \mathcode`#1="8000 
+     \defineactivecharacter #1 {\dohandlemathpunctuation{#2}{#3}}%
+   \fi}
+
+\unexpanded\def\dohandlemathpunctuation#1#2% \if fails in mathml interval
+%  {\def\next{\csname\if\space\nexttoken#2\else#1\fi\endcsname}%
+  {\def\next{\csname\ifx\space\nexttoken#2\else#1\fi\endcsname}%
+   \futurelet\nexttoken\next}
+ 
+%D \startbuffer
+%D \enablemathpunctuationtrue$(1,2) (1, 2) (1{,}2) \hbox{foo, not bar}$
+%D \stopbuffer
+%D 
+%D \typebuffer
+%D 
+%D \blanko{\getbuffer}\blanko
+
 \edef\hexmrfam {0} \edef\hexbsfam {8}
 \edef\hexmifam {1} \edef\hexbifam {9}
 \edef\hexsyfam {2} \edef\hexscfam {A}
@@ -382,6 +419,10 @@
 
 \usemathcollection[default]
 
+%D Some goodies: 
+
+\def\Angstrom{\nomathematics{\Aring}}
+
 \protect \endinput
 
 \tracemathcollectiontrue 
@@ -390,7 +431,6 @@
 \setupbodyfont[ams] \enablemathcollection[ams] \input math-ams \page
 \setupbodyfont[lbr] \enablemathcollection[lbr] \input math-lbr \page
 \setupbodyfont[eul] \enablemathcollection[eul] \input math-eul \stoptext
-
 
 % to be checked
 

@@ -8,14 +8,12 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
-%C details. 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
 
 \writestatus{loading}{Context Core Macros / New Ones}
 
 \unprotect
-
-%D To be placed elsewhere.
 
 % Some kind of new feature, for the moment a private one.
 %
@@ -23,7 +21,7 @@
 %
 % \doifmodeelse {paper}        {this} {that}
 % \doifmode     {paper,screen} {this}
-% \doifnotmode  {paper,bound}  {that} 
+% \doifnotmode  {paper,bound}  {that}
 %
 % \startmode [list]
 % \stopmode
@@ -31,43 +29,145 @@
 % \startnotmode [list]
 % \stopnotmode
 %
-% system modes have a * as prefix 
+% system modes have a * as prefix
 %
-% to be implemented: mode naar texutil/scherm + message  
+% to be implemented: mode naar texutil/scherm + message
 %                  : geen #2 en nesting (\startregels)
-
-\def\systemmodeprefix{*}
-
-\let\currentmode=\empty
-
-% \def\enablemode[#1]%
-%   {\expandafter\addtocommalist\expandafter{#1}\currentmode}
-%
-% \def\disablemode[#1]%
-%   {\expandafter\removefromcommalist\expandafter{#1}\currentmode}
-%
-% this one fails in removing system modes 
-
-% \def\enablemode[#1]%
-%   {\expanded{\addtocommalist{#1}\noexpand\currentmode}}
 
 %D Sometimes, we want to prevent a mode for being set. Think
 %D of situations where a style enables a mode, but an outer
 %D level style does not want that. Preventing can be
-%D considered a permanent disabling on forehand. 
+%D considered a permanent disabling on forehand.
 
-\let\preventedmodes\empty
+% \def\systemmodeprefix{*}
+%
+% \let\currentmode   \empty
+% \let\preventedmodes\empty
+%
+% \def\preventmode[#1]%
+%   {\expanded{\addtocommalist{#1}\noexpand\preventedmodes}}
+%
+% \def\enablemode[#1]%
+%   {\expanded
+%      {\doifnotinset{#1}{\preventedmodes}
+%         {\noexpand\addtocommalist{#1}\noexpand\currentmode}}}
+%
+% \def\disablemode[#1]%
+%   {\expanded{\removefromcommalist{#1}\noexpand\currentmode}}
+%
+% \def\doifmodeelse{\unprotect\dodoifmodeelse}
+% \def\doifmode    {\unprotect\dodoifmode    }
+% \def\doifnotmode {\unprotect\dodoifnotmode }
+% \def\startmode   {\unprotect\dostartmode   }
+% \def\startnotmode{\unprotect\dostartnotmode}
+%
+% \long\def\dodoifmodeelse#1%
+%   {\protect\expanded{\doifcommonelse{#1}{\currentmode}}}
+%
+% \long\def\dodoifmode#1%
+%   {\protect\expanded{\doifcommon    {#1}{\currentmode}}}
+%
+% \long\def\dodoifnotmode#1%
+%   {\protect\expanded{\doifnotcommon {#1}{\currentmode}}}
+%
+% \let\stopmode   \relax
+% \let\stopnotmode\relax
+%
+% \long\def\dostartmode[#1]%
+%   {\protect
+%    \expanded{\doifnotcommon{#1}{\currentmode}}{\gobbleuntil\stopmode}}
+%
+% \long\def\dostartnotmode[#1]%
+%   {\protect
+%    \expanded{\doifcommon   {#1}{\currentmode}}{\gobbleuntil\stopnotmode}}
+%
+% \def\doifallmodeselse{\unprotect\dodoifallmodeselse}
+% \def\doifallmodes    {\unprotect\dodoifallmodes}
+% \def\doifnotallmodes {\unprotect\dodoifnotallmodes}
+% \def\startallmodes   {\unprotect\dostartallmodes}
+% \def\startnotallmodes{\unprotect\dostartnotallmodes}
+%
+% \long\def\dodoifallmodeselse#1%
+%   {\protect\expanded{\doifallcommonelse{#1}{\currentmode}}}
+%
+% \long\def\dodoifallmodes#1%
+%   {\protect\expanded{\doifallcommon    {#1}{\currentmode}}}
+%
+% \long\def\dodoifnotallmodes#1%
+%   {\protect\expanded{\doifnotallcommon {#1}{\currentmode}}}
+%
+% \let\stopallmodes   \relax
+% \let\stopnotallmodes\relax
+%
+% \long\def\dostartallmodes[#1]%
+%   {\protect
+%    \expanded{\doifnotallcommon{#1}{\currentmode}}{\gobbleuntil\stopallmodes}}
+%
+% \long\def\dostartnotallmodes[#1]%
+%   {\protect
+%    \expanded{\doifallcommon   {#1}{\currentmode}}{\gobbleuntil\stopnotallmodes}}
 
-\def\preventmode[#1]%
-  {\expanded{\addtocommalist{#1}\noexpand\preventedmodes}}
+% faster
 
-\def\enablemode[#1]%
-  {\expanded
-     {\doifnotinset{#1}{\preventedmodes}
-        {\noexpand\addtocommalist{#1}\noexpand\currentmode}}}
+\def\@mode@{@md@}
 
-\def\disablemode[#1]%
-  {\expanded{\removefromcommalist{#1}\noexpand\currentmode}}
+\def\systemmodeprefix{*}
+
+\def\disabledmode    {0}
+\def\enabledmode     {1}
+\def\preventedmode   {2}
+
+% fast internal ones
+
+\def\setmode  #1{\@EA\let\csname\@mode@#1\endcsname\enabledmode }
+\def\resetmode#1{\@EA\let\csname\@mode@#1\endcsname\disabledmode}
+
+\def\setsystemmode  #1{\@EA\let\csname\@mode@\systemmodeprefix#1\endcsname\enabledmode }
+\def\resetsystemmode#1{\@EA\let\csname\@mode@\systemmodeprefix#1\endcsname\disabledmode}
+
+% user ones
+
+\def\preventmode{\unprotect\dopreventmode}
+\def\enablemode {\unprotect\doenablemode }
+\def\disablemode{\unprotect\dodisablemode}
+
+\def\dopreventmode[#1]{\protect\rawprocesscommalist[#1]\dodopreventmode}
+\def\doenablemode [#1]{\protect\rawprocesscommalist[#1]\dodoenablemode }
+\def\dodisablemode[#1]{\protect\rawprocesscommalist[#1]\dododisablemode}
+
+\def\dodopreventmode#1%
+  {\@EA\let\csname\@mode@#1\endcsname\preventedmode}
+
+\def\dodoenablemode#1%
+  {\ifcase0\csname\@mode@#1\endcsname\relax
+     \@EA\let\csname\@mode@#1\endcsname\enabledmode
+   \fi}
+
+\def\dododisablemode#1%
+  {\ifcase0\csname\@mode@#1\endcsname\or
+     \@EA\let\csname\@mode@#1\endcsname\disabledmode
+   \fi}
+
+% check macros
+
+\newif\ifcheckedmode
+
+\def\dodocheckformode#1%
+  {\ifcase0\csname\@mode@#1\endcsname\or\checkedmodetrue\fi}
+
+\def\docheckformode#1#2#3% will be sped up with a quit
+  {\protect\checkedmodefalse\rawprocesscommalist[#3]\dodocheckformode
+   \ifcheckedmode\@EA#1\else\@EA#2\fi}
+
+\def\dodocheckforallmodes#1%
+  {\ifcase0\csname\@mode@#1\endcsname\relax
+     \checkedmodefalse\or\or\checkedmodefalse\fi}
+
+\def\docheckforallmodes#1#2#3% will be sped up with a quit
+  {\protect\checkedmodetrue\rawprocesscommalist[#3]\dodocheckforallmodes
+   \ifcheckedmode\@EA#1\else\@EA#2\fi}
+
+% simple ones
 
 \def\doifmodeelse{\unprotect\dodoifmodeelse}
 \def\doifmode    {\unprotect\dodoifmode}
@@ -75,25 +175,58 @@
 \def\startmode   {\unprotect\dostartmode}
 \def\startnotmode{\unprotect\dostartnotmode}
 
-\long\def\dodoifmodeelse#1#2#3%
-  {\protect\ExpandBothAfter\doifcommonelse{#1}{\currentmode}{#2}{#3}}
+\def\dodoifmodeelse
+  {\docheckformode\firstoftwoarguments\secondoftwoarguments}
 
-\long\def\dodoifmode#1#2%
-  {\protect\ExpandBothAfter\doifcommonelse{#1}{\currentmode}{#2}{}}
+\def\dodoifmode
+  {\docheckformode\firstofoneargument\gobbleoneargument}
 
-\long\def\dodoifnotmode#1#2%
-  {\protect\ExpandBothAfter\doifcommonelse{#1}{\currentmode}{}{#2}}
+\def\dodoifnotmode
+  {\docheckformode\gobbleoneargument\firstofoneargument}
 
-\long\def\dostartmode[#1]#2\stopmode%   
-  {\dodoifmode{#1}{#2}}
+\long\def\dostartmode[#1]%
+  {\docheckformode\donothing\dostopmode{#1}}
 
-\long\def\dostartnotmode[#1]#2\stopnotmode%
-  {\dodoifnotmode{#1}{#2}}
+\long\def\dostartnotmode[#1]%
+  {\docheckformode\dostopnotmode\donothing{#1}}
+
+\let\stopmode   \donothing
+\let\stopnotmode\donothing
+
+\long\def\dostopmode   #1\stopmode   {} 
+\long\def\dostopnotmode#1\stopnotmode{} 
+
+\def\doifallmodeselse{\unprotect\dodoifallmodeselse}
+\def\doifallmodes    {\unprotect\dodoifallmodes}
+\def\doifnotallmodes {\unprotect\dodoifnotallmodes}
+\def\startallmodes   {\unprotect\dostartallmodes}
+\def\startnotallmodes{\unprotect\dostartnotallmodes}
+
+\def\doifallmodeselse
+  {\docheckforallmodes\firstoftwoarguments\secondoftwoarguments}
+
+\def\doifallmodes
+  {\docheckforallmodes\firstofoneargument\gobbleoneargument}
+
+\def\doifnotallmodes
+  {\docheckforallmodes\gobbleoneargument\firstofoneargument}
+
+\long\def\dostartallmodes[#1]%
+  {\docheckallformodes\donothing\dostopallmodes{#1}}
+
+\long\def\dostartnotallmodes[#1]%
+  {\docheckforallmodes\dostopallmodes\donothing{#1}}
+
+\let\stopallmodes   \donothing
+\let\stopnotallmodes\donothing
+
+\long\def\dostopallmodes   #1\stopallmodes   {} 
+\long\def\dostopnotallmodes#1\stopnotallmodes{} 
 
-% new 
+% new
 %
 % \startnointerference
-% all kind of code 
+% all kind of code
 % \stopnointerference
 
 \newbox\nointerferencebox
@@ -106,37 +239,14 @@
   {\egroup
    \setbox\nointerferencebox\box\voidb@x}
 
-% new 
-
-\def\doifallmodeselse{\unprotect\dodoifallmodeselse}
-\def\doifallmodes    {\unprotect\dodoifallmodes}
-\def\doifnotallmodes {\unprotect\dodoifnotallmodes}
-\def\startallmodes   {\unprotect\dostartallmodes}
-\def\startnotallmodes{\unprotect\dostartnotallmodes}
-
-\long\def\dodoifallmodeselse#1#2#3%
-  {\protect\ExpandBothAfter\doifallcommonelse{#1}{\currentmode}{#2}{#3}}
-
-\long\def\dodoifallmodes#1#2%
-  {\protect\ExpandBothAfter\doifallcommonelse{#1}{\currentmode}{#2}{}}
-
-\long\def\dodoifnotallmodes#1#2%
-  {\protect\ExpandBothAfter\doifallcommonelse{#1}{\currentmode}{}{#2}}
-
-\long\def\dostartallmodes[#1]#2\stopallmodes
-  {\dodoifallmodes{#1}{#2}}
-
-\long\def\dostartnotallmodes[#1]#2\stopnotallmodes
-  {\dodoifnotallmodes{#1}{#2}}
-
-% will go to ... 
+% will go to ...
 
 \def\alignedbox%
   {\dodoubleempty\doalignedbox[]}
 
 \def\doalignedbox[#1][#2]%
   {\bgroup
-   \let\iftraceboxplacement\iftracelayers
+  %\let\iftraceboxplacement\iftracelayers % ugly
    \dowithnextbox
      {\let\next\middlebox
       \processaction
@@ -173,8 +283,8 @@
               {\box\nextbox}
               {\alignedbox[\@@oxplaats]\hbox{\box\nextbox}}}}%
       \wd\nextbox\@@oxbreedte
-      \ht\nextbox\@@oxhoogte 
-      \dp\nextbox\@@oxdiepte 
+      \ht\nextbox\@@oxhoogte
+      \dp\nextbox\@@oxdiepte
       \box\nextbox
       \egroup}#1}
 
@@ -184,7 +294,7 @@
 %\ruledhbox{\offsetbox[x=-1cm,y=-1cm,location=c]
 %  {\framed[width=4cm,height=4cm]{x}}}
 
-% actually this is pretty old, but temporary moved here 
+% actually this is pretty old, but temporary moved here
 
 \installdiscretionaries || \@@kpteken
 
@@ -242,45 +352,45 @@
 
 \enableactivediscretionaries
 
-%D new and beta 
+%D new and beta
 
 % \def\defineshortcut%
 %   {\dodoubleargument\dodefineshortcut}
-% 
+%
 % \bgroup
-% 
-%   \catcode`\<=\@@active 
-% 
+%
+%   \catcode`\<=\@@active
+%
 %   \gdef\dodefineshortcut[#1][#2]%
 %     {\ifsecondargument
-%        \catcode`\<=\@@active 
+%        \catcode`\<=\@@active
 %        \def<{\ifmmode\expandafter\normalless\else\expandafter\doshortcut\fi}%
 %        \getparameters[\??te#1][\c!commandos=,\c!commando=,\c!letter=,\c!kleur=,#2]%
 %      \else
-%        \defineshortcut[][#1]%   
+%        \defineshortcut[][#1]%
 %      \fi}
-% 
+%
 % \egroup
-% 
-% \def\doshortcut% 
+%
+% \def\doshortcut%
 %   {\bgroup
 %    \catcode`\>=\@@other
 %    \dodoshortcut}
-% 
-% \def\dodoshortcut#1>% 
+%
+% \def\dodoshortcut#1>%
 %   {\def\shortcut{#1}%
 %    \dododoshortcut#1:\end}
-% 
-% \def\dododoshortcut#1:#2\end 
+%
+% \def\dododoshortcut#1:#2\end
 %   {\doifelsenothing{#2}
 %      {\doifundefinedelse{\??te\c!commandos}
-%         {\shortcut} 
+%         {\shortcut}
 %         {\@EA\dodododoshortcut\@EA\??te\@EA:\shortcut:\end}}
 %      {\doifundefinedelse{\??te#1\c!commandos}
-%         {\shortcut} 
+%         {\shortcut}
 %         {\dodododoshortcut\??te#1:#2\end}}%
 %    \egroup}
-% 
+%
 % \def\dodododoshortcut#1:#2:\end
 %   {\getvalue{#1\c!commandos}%
 %    \doattributes{#1}\c!letter\c!kleur{\getvalue{#1\c!commando}{#2}}}
@@ -294,9 +404,9 @@
        {\dododefineshortcut[<>][#2][#3]}
        {\dododefineshortcut[#1][#2][#3]}%
    \else\ifsecondargument
-     \dododefineshortcut[<>][#1][#2]%   
+     \dododefineshortcut[<>][#1][#2]%
    \else
-     \dododefineshortcut[<>][][#1]%   
+     \dododefineshortcut[<>][][#1]%
    \fi\fi}
 
 \def\dododefineshortcut[#1#2][#3][#4]% #1 is the trigger, #2 the delimiter/tag
@@ -306,26 +416,26 @@
      [\??te\string#2#3]
      [\c!commandos=,\c!commando=,\c!letter=,\c!kleur=,#4]}
 
-\def\doshortcut#1% 
+\def\doshortcut#1%
   {\ifmmode
      \getvalue{\??te\??te#1}%
    \else
      \bgroup
      \catcode`#1=\@@other
-     \def\dodoshortcut##1#1% 
+     \def\dodoshortcut##1#1%
        {\def\shorttag{\??te#1}%
         \def\shortcut{##1}%
         \dododoshortcut##1:\end}%
      \@EA\dodoshortcut
    \fi}
- 
-\def\dododoshortcut#1:#2\end 
+
+\def\dododoshortcut#1:#2\end
   {\doifelsenothing{#2}
      {\doifundefinedelse{\shorttag\c!commandos}
-        {\shortcut} 
+        {\shortcut}
         {\@EA\dodododoshortcut\@EA\shorttag\@EA:\shortcut:\end}}
      {\doifundefinedelse{\shorttag#1\c!commandos}
-        {\shortcut} 
+        {\shortcut}
         {\dodododoshortcut\shorttag#1:#2\end}}%
    \egroup}
 
@@ -335,40 +445,64 @@
 
 %D \defineshortcut     [\c!letter=\v!type]
 %D \defineshortcut [b] [\c!letter=\v!vet]
-%D \defineshortcut [e] [\c!letter=\em] 
+%D \defineshortcut [e] [\c!letter=\em]
 %D \defineshortcut [t] [\c!letter=\v!type]
 %D \defineshortcut [c] [\c!letter=\v!kap]
 %D \defineshortcut [k] [\c!letter=\v!kap]
 %D \defineshortcut [u] [\c!letter=\v!type,\c!commando=\hyphenatedurl]
-%D 
+%D
 %D \startregels
-%D test <ziezo> test 
-%D test test <t:ziezo> 
-%D test test <b:ziezo> 
-%D test test <w:ziezo> 
-%D zus<>zo zus<:>zo zus<::>zo 
-%D test test <t:ziezo> dat (ziezo)          
-%D test test <t::ziezo> dat (:ziezo)        
-%D test test <t:ziezo:> dat (ziezo:)        
-%D test test <t:zi:ezo:> dat (zi:ezo:)      
-%D well, <u:http://www.pragma-ade.nl> looks fuzzy 
+%D test <ziezo> test
+%D test test <t:ziezo>
+%D test test <b:ziezo>
+%D test test <w:ziezo>
+%D zus<>zo zus<:>zo zus<::>zo
+%D test test <t:ziezo> dat (ziezo)
+%D test test <t::ziezo> dat (:ziezo)
+%D test test <t:ziezo:> dat (ziezo:)
+%D test test <t:zi:ezo:> dat (zi:ezo:)
+%D well, <u:http://www.pragma-ade.nl> looks fuzzy
 %D $10<20$
 %D \stopregels
-%D 
+%D
 %D \defineshortcut [<>] [i] [\c!letter=\it]
 %D \defineshortcut [()] [b] [\c!letter=\bf]
 %D \defineshortcut [++] [s] [\c!letter=\sl]
 %D \defineshortcut [//] [u] [\c!letter=\underbars]
 %D \defineshortcut [--] [a] [\c!letter=\overstrike]
-%D 
+%D
 %D \startregels
-%D it seems <i:to work> well 
-%D it seems (b:to work) well 
-%D it seems +s:to work+ well 
-%D it seems /u:to work/ well 
-%D it seems -a:to work- well 
+%D it seems <i:to work> well
+%D it seems (b:to work) well
+%D it seems +s:to work+ well
+%D it seems /u:to work/ well
+%D it seems -a:to work- well
 %D \stopregels
 
-\protect 
+\def\setupenv{\dodoubleargument\rawgetparameters[\??en]}
+
+\def\doifenvelse#1{\doifdefinedelse{\??en#1}} % speed up
+
+\def\env#1{\csname\??en#1\endcsname}
+
+\beginTEX
+
+\def\envvar#1#2%
+  {\@EA\ifx\csname\??en#1\endcsname\relax
+     #2\else\csname\??en#1\endcsname
+   \fi}
+
+\endTEX
+
+\beginETEX \ifcsname
+
+\def\envvar#1#2%
+  {\ifcsname\??en#1\endcsname
+     \csname\??en#1\endcsname\else#2%
+   \fi}
+
+\endETEX
+
+\protect
 
 \endinput

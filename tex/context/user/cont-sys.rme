@@ -71,9 +71,9 @@
 %
 % Enabling \CONTEXT\ navigation symbols as well as \euro's. 
 
-\usesymbols [nav,eur]  
+\usesymbols [nav,mvs]  
 
-\setupsymbolset [navigation 1]
+\setupsymbolset [navigation 1] % not that clever 
 
 \setupinteraction [\c!symboolset=navigation 1]
 

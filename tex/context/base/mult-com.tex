@@ -22,7 +22,7 @@
 %D
 %D The German translations were provided by Tobias Burnus,
 %D the Czech ones by Tom Hudec, and the Italian ones
-%D by Giuseppe Bilotta. Here we include their comments. 
+%D by Giuseppe Bilotta. Here we include their comments.
 
 %D Giuseppe Bilotta: \citaat {Having to choose between a
 %D full|-|length name and a shortcut, I decided to resort to the
@@ -34,7 +34,7 @@
 %D \tex{impostapdp}, and so for all composed words: \tex{footnote}
 %D (nota a pi\`e di pagina) becomes \tex{notapdp};
 %D \tex{footnotetext} (testo della nota a pi\`e di pagina) becomes
-%D \tex{testonotapdp}; and so on.} 
+%D \tex{testonotapdp}; and so on.}
 
 \writestatus{loading}{Context Multilingual Macros / Commands}
 
@@ -757,13 +757,13 @@
                            kolom: kolom                            column
                                   spalte                           sloupec
                                   colonna                          coloana
-                             kop: kop                              head
+                            head: kop                              head
                                   kopf                             nadpis
                                   testa                            titlu % GB
                              but: but                              but
                                   but                              spodek
                                   fondo                            but
-                             som: som                              item
+                            item: som                              item
                                   pos                              polozka
                                   elemento                         element
                              nop: nop                              nop
@@ -780,19 +780,26 @@
                                   el                               el  % abbr. of elemento (it) element (ro)
                              ran: ran                              ran
                                   ran                              ran
-                                  ran	                           ran
-                  startopsomming: startopsomming                   startitemize
-                                  startaufzaehlung                 startvycet
-                                  iniziaelenco                     startenumerare
-               stelopsommingenin: stelopsommingenin                setupitemizations
+                                  ran                              ran
+% new 
+                 setupitemgroups: stelitemgroepenin                setupitemgroups
+                                  setupitemgroups                  setupitemgroups
+                                  setupitemgroups                  setupitemgroups
+% downward compatible
+                 setupitemgroups: stelopsommingenin                setupitemizations
                                   stelleaufzaehlungenein           nastavvycty
                                   impostaelencazioni               setareitemization
-                 stelopsommingin: stelopsommingin                  setupitemize
+% will be replaced / generatated 
+                    startitemize: startopsomming                   startitemize
+                                  startaufzaehlung                 startvycet
+                                  iniziaelenco                     startenumerare
+                    setupitemize: stelopsommingin                  setupitemize
                                   stelleaufzaehlungein             nastavvycet
                                   impostaelenco                    setareenumerare
-                   stopopsomming: stopopsomming                    stopitemize
+                     stopitemize: stopopsomming                    stopitemize
                                   stopaufzaehlung                  stopvycet
                                   terminaelenco                    stopenumerare
+%
                     definieerkop: definieerkop                     definehead
                                   definiereueberschrift            definujnadpis
                                   definiscitesta                   definesteantet
@@ -1087,6 +1094,9 @@
      stelplaatsblokkensplitsenin: stelplaatsblokkensplitsenin      setupfloatsplitting
                                   stelleplatziegeteiltegleitobjekt nastavdeleniplvoucichobjektu
                                   impostaspezzamentooggettomobile  seteazaimpartireafloat
+                      placefloat: plaatsplaatsblok                 placefloat
+                                  placefloat                       placefloat
+                                  placefloat                       placefloat %%%
                  startcombinatie: startcombinatie                  startcombination
                                   startkombination                 startspojeni
                                   iniziacombinazione               startcombinare
@@ -1468,9 +1478,12 @@
                 gebruikcommandos: gebruikcommandos                 usecommands
                                   verwendebefehl                   uzijprikazy
                                   usacomandi                       folosestecomenzi
-              definieerstartstop: definieerstartstop               definestartstop
+                 definestartstop: definieerstartstop               definestartstop
                                   definierestartstop               definujstartstop
                                   definisciiniziatermina           definestestartstop
+                  setupstartstop: stelstartstopin                  setupstartstop
+                                  setupstartstop                   setupstartstop
+                                  impostainiziatermina             setupstartstop
                       startlocal: startlokaal                      startlocal
                                   startlokal                       startlokalni
                                   inizialocale                     startlocal
@@ -1551,7 +1564,7 @@
                                   impostaposizionamento            setarepozitie
                           roteer: roteer                           rotate
                                   drehen                           otocit
-                                  rotazione                        roteste % GB
+                                  ruota                            roteste % GB
                    stelroterenin: stelroterenin                    setuprotate
                                   stelledrehenein                  nastavotoceni
                                   impostarotazione                 seteazarotare
@@ -1560,7 +1573,7 @@
                                   riflessione                      reflexie
                           schaal: schaal                           scale
                                   format                           meritko
-                                  scale                            scala % GB
+                                  scala                            scala % GB
                   stelnummerenin: stelnummerenin                   setupnumbering
                                   stellenummerierungein            nastavcislovani
                                   impostanumerazione               seteazanumerotare
@@ -1713,7 +1726,7 @@
                                   impostaposizionetesto            seteazapozitietext
                     positiontext: positioneertekst                 positiontext
                                   positiontext                     positiontext
-                                  posizionetesto                   pozitietext % GB
+                                  posizionatesto                   pozitietext % GB
                    definerawfont: definerawfont                    definerawfont
                                   definerawfont                    definerawfont
                                   definiscifontgrezzo              definestefontraw
@@ -1826,6 +1839,12 @@
                printpapierhoogte: printpapierhoogte                printpaperheight
                                   printpapierhoehe                 vyskatiskpapiru
                                   altezzacartastampa               inaltimehartieimprimanta  % GB
+                      pageoffset: paginaoffset                     pageoffset
+                                  pageoffset                       pageoffset
+                                  pageoffset                       pageoffset
+                       pagedepth: paginadiepte                     pagedepth 
+                                  pagedepth                        pagedepth 
+                                  pagedepth                        pagedepth                        
                        kopniveau: kopniveau                        headlevel
                                   kopfniveau                       hlavniuroven
                                   livellotesta                     niveltitlu % GB

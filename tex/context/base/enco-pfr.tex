@@ -64,13 +64,13 @@
 %D \stopopsomming
 
 \def\pdffontresource%
-  {\strippedcsname\pdffontresource\currentencoding}
+  {pdfr:\currentencoding}
 
 \def\pdffontfileresource%
-  {pdfr:\pdffontresource}
+  {pdff:\pdffontresource}
 
 %D A resource is defined in a file prefixed by \type {pdfr-}.
-%D The following \PDF\ code is compsed by Ondrej Koala Vacha (i
+%D The following \PDF\ code is composed by Ondrej Koala Vacha (I
 %D probably mispelled this name). 
 %D 
 %D \starttypen
@@ -151,30 +151,67 @@
      \fi\fi
    \fi}
 
-\def\doincludepdffontresource%
-  {% does this font has an special encoding entry
-   \doifdefined{\purefontname\font\s!encoding}
-     {% does this encoding entry has a value
-      \doifvaluesomething{\purefontname\font\s!encoding}
-        {\bgroup
-         % quick and dirty switch
-         \edef\currentencoding{\getvalue{\purefontname\font\s!encoding}}% okay?
-         % is there a pdf font encoding resource file defined
-         \doifdefined{\pdffontfileresource}
-           {% load the pdf font resource
-            \doifvaluesomething{\pdffontfileresource}
-              {% but load it only once
-               \startreadingfile
-               \readsysfile{pdfr-\getvalue{\pdffontfileresource}}{}{}% messages
-               \stopreadingfile
-               % but do that only once, so forget the flag, empty==loaded
-               \global\letvalue{\pdffontfileresource}\empty}}%
-         % is there a resource indeed, i.e. an object reference
-         \doifdefined{\pdffontresource}
-           {% if so, create a reference to the object
-            \expanded{\pdffontattr\font % current font
-              {/ToUnicode \getvalue{\pdffontresource}\space0 R}}}%
-         \egroup}}}
+\beginETEX
+
+\def\doincludepdffontresource
+  {\ifcsname\s!ucmap\fontfile\endcsname\else
+     \dodoincludepdffontresource 
+   \fi}
+
+\def\dodoincludepdffontresource%
+  {% does this font has an encoding specified
+   \ifx\currentencoding\empty \else \ifx\currentencoding\s!default \else
+     % is there a pdf font encoding resource file defined
+     \ifcsname\pdffontfileresource\endcsname
+       % load the pdf font resource
+       \edef\xpdffontfileresource{\csname\pdffontfileresource\endcsname}%
+       \ifx\xpdffontfileresource\empty \else
+         % but load it only once
+         \startreadingfile
+           \readsysfile{pdfr-\xpdffontfileresource}{}{}% messages
+         \stopreadingfile
+         % but do that only once, so forget the flag, empty==loaded
+         \global\@EA\let\csname\pdffontfileresource\endcsname\empty
+       \fi
+     \fi
+     % is there a resource indeed, i.e. an object reference
+     \ifcsname\pdffontresource\endcsname
+       % if so, create a reference to the object
+       \expanded{\pdffontattr\font % current font
+         {/ToUnicode \csname\pdffontresource\endcsname\space0 R}}%
+     \fi
+     \global\@EA\let\csname\s!ucmap\fontfile\endcsname\empty
+   \fi \fi}
+
+\endETEX
+
+\beginTEX
+
+\def\doincludepdffontresource
+  {\@EA\ifx\csname\s!ucmap\fontfile\endcsname\relax
+     \dodoincludepdffontresource 
+   \fi}
+
+\def\dodoincludepdffontresource%
+  {\ifx\currentencoding\empty \else \ifx\currentencoding\s!default \else
+     \@EA\ifx\csname\pdffontfileresource\endcsname\relax\else
+       \edef\xpdffontfileresource{\csname\pdffontfileresource\endcsname}%
+       \ifx\xpdffontfileresource\empty \else
+         \startreadingfile
+           \readsysfile{pdfr-\xpdffontfileresource}{}{}%
+         \stopreadingfile
+         \global\@EA\let\csname\pdffontfileresource\endcsname\empty
+       \fi
+     \fi
+     \@EA\ifx\csname\pdffontresource\endcsname\relax\else
+       \expanded{\pdffontattr\font 
+         {/ToUnicode \csname\pdffontresource\endcsname\space0 R}}%
+     \fi
+     \global\@EA\let\csname\s!ucmap\fontfile\endcsname\empty
+   \fi\fi}
+
+\endTEX
+
 
 %D For the moment, we keep this definition here, if only 
 %D because \type {\usepdffontencoding} is not defined in the 

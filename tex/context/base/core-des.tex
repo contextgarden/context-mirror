@@ -415,8 +415,13 @@
      {\ignorespaces}
      {\strut\getvalue{\??dd#1\c!tekst}\fixedspace}}
 
+% \def\showdnnummer#1%
+%   {\voorafgaandenummer
+%    \nummer[\getvalue{\??dd#1\??dd\c!nummer}]}
+
 \def\showdnnummer#1%
-  {\voorafgaandenummer%
+  {\preparethenumber{\??dd#1}\voorafgaandenummer\preparednumber
+   \preparednumber
    \nummer[\getvalue{\??dd#1\??dd\c!nummer}]}
 
 \def\showdnsubnummer#1%
@@ -483,10 +488,9 @@
        {\let\normalkap\relax % sorry, uppercase causes troubles
         \doattributes        % \nocase primitive needed
           {\??dd#1}\c!kopletter\c!kopkleur
-{\getvalue{\??dd#1\c!commando}%
-          {\showdntext{#2#1}%
-           \domakednnummer{#1}{#2}{#3}}%
-}%
+          {\getvalue{\??dd#1\c!commando}% hook for taco 
+             {\showdntext{#2#1}%
+              \domakednnummer{#1}{#2}{#3}}}%
         \iflocation\ifcase\definitiekoppeling \else
           \edef\localconnection{\getvalue{\??dd#1\c!koppeling}:\internaldoornummer}%
           \doifreferencefoundelse{\localconnection}
@@ -498,9 +502,8 @@
      \hbox
        {\edef\!!stringa{\showdnpuretext{#2#1}}% nog eens testen binnen \expanded
         \expanded{\doattributes{\??dd#1}\noexpand\c!kopletter\noexpand\c!kopkleur
-{\noexpand\getvalue{\??dd#1\c!commando}%
-          {\!!stringa}}%
-}%
+          {\noexpand\getvalue{\??dd#1\c!commando}%
+             {\!!stringa}}}%
         \doifnot{#5}{-}{\rawreference{\s!num}{#5}{}}}%
    \fi}
 
@@ -581,7 +584,8 @@
       \c!monster,\c!hang,\c!uitlijnen,\c!voor,\c!tussen,\c!na,
       \c!niveaus,\c!wijze,\c!blokwijze,\c!scheider,\c!marge,
       \c!springvolgendein,\c!afsluiter,\c!sectienummer,\c!nummer]%
-   \ConvertToConstant\doifinstringelse{=}{#4}
+%   \ConvertToConstant\doifinstringelse{=}{#4}
+   \doifassignmentelse{#4}
      {\getparameters[\??dd#3#1]%
         [\c!tekst=#1,\??dd\c!nummer=#1,\c!conversie=,
          \c!links=,\c!rechts=,\c!koppeling=,\c!koppelwijze=\v!lokaal,#4]}%
@@ -710,7 +714,7 @@
 \def\dodoorlabel[#1][#2]%
   {\getvalue{\s!number#1\c!voor}%
    \bgroup
-   \doif{\getvalue{\s!number#1\c!plaats}}{\v!marge}
+   \doifvalue{\s!number#1\c!plaats}{\v!marge}
      {\setvalue{\s!number#1\c!plaats}{\v!inmarge}}%
    \doattributes{\s!number#1}\c!kopletter\c!kopkleur
      {\getvalue{\e!volgende#1}[#2]}%
@@ -722,22 +726,12 @@
 
 \def\dodoorlabelen[#1][#2]%
   {\definieernummer
-     [#1]
-     [\c!voor=,
-      \c!na=,
-      \c!kopletter=,
-      \c!wijze=\@@nrwijze,
-      #2]%
-   \setvalue{#1}%
-     {\dodoubleempty\dodoorlabel[#1]}%
-   \setvalue{\s!reset#1}%
-     {\resetnummer[#1]}%
-   \setvalue{\e!verhoog#1}%
-     {\verhoognummer[#1]}%
-   \setvalue{\e!volgende#1}%
-     {\dodoubleempty\dovolgendedoorlabel[#1]}%
-   \setvalue{\c!huidige#1}%
-     {\huidigenummer[#1]}}
+     [#1][\c!voor=,\c!na=,\c!kopletter=,\c!wijze=\@@nrwijze,#2]%
+   \setvalue           {#1}{\dodoubleempty\dodoorlabel[#1]}%
+   \setvalue{\s!reset   #1}{\resetnummer[#1]}%
+   \setvalue{\e!verhoog #1}{\verhoognummer[#1]}%
+   \setvalue{\e!volgende#1}{\dodoubleempty\dovolgendedoorlabel[#1]}%
+   \setvalue{\c!huidige #1}{\huidigenummer[#1]}}
 
 \def\doorlabelen%
   {\dodoubleargumentwithset\dodoorlabelen}

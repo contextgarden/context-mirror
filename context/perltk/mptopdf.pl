@@ -20,14 +20,31 @@ eval '(exit $?0)' && eval 'exec perl -S $0 ${1+"$@"}' && eval 'exec perl -S $0 $
 # use File::Copy ; # not in every perl 
 
 use Config ;
+use Getopt::Long ;
+use strict ; 
 
-$program = "MPtoPDF 1.1" ;
-$pattern = $ARGV[0] ;
-$done    = 0 ;
-$report  = '' ;
+$Getopt::Long::passthrough = 1 ; # no error message
+$Getopt::Long::autoabbrev  = 1 ; # partial switch accepted
 
-my $dosish = ($Config{'osname'} =~ /dos|mswin/io) ;
+my $Help = my $Latex = 0 ; 
+
+&GetOptions
+  ( "help"  => \$Help  ,
+    "latex" => \$Latex ) ;
+ 
+my $program = "MPtoPDF 1.2" ;
+my $pattern = $ARGV[0] ;
+my $done    = 0 ;
+my $report  = '' ;
+my $latexswitch = " --tex=latex --format=latex " ;
+
+## $dosish = ($Config{'osname'} =~ /dos|mswin/i) ;
+my $dosish = ($Config{'osname'} =~ /^(ms)?dos|^os\/2|^(ms|cyg)win/i) ;
+
 my $miktex = ($ENV{"TEXSYSTEM"} =~ /miktex/io); 
+
+my @files ; 
+my $command = "" ; 
 
 sub CopyFile # agressive copy, works for open files like in gs 
   { my ($From,$To) = @_ ; 
@@ -37,13 +54,21 @@ sub CopyFile # agressive copy, works for open files like in gs
     close (INP) ; 
     close (OUT) }
 
-if (($pattern eq '')||($pattern =~ /^\-+(h|help)$/io))
-  { print "\n$program: provide MP output file (or pattern)\n" ;
+if (($pattern eq '')||($Help))
+  { print "\n$program : provide MP output file (or pattern)\n" ;
     exit }
 elsif ($pattern =~ /\.mp$/io) 
-  { $error = system ("texexec --mptex $pattern") ;
+  { shift @ARGV ; my $rest = join(" ", @ARGV) ;  
+    if (open(INP,$pattern))
+      { while (<INP>) 
+          { if (/(documentstyle|documentclass|begin\{document\})/io) 
+              { $Latex = 1 ; last } } 
+        close (INP) } 
+    if ($Latex) 
+      { $rest .= " $latexswitch" } 
+    my $error = system ("texexec --mptex $rest $pattern") ;
     if ($error) 
-      { print "\n$program: error while processing mp file\n" ; exit } 
+      { print "\n$program : error while processing mp file\n" ; exit } 
     else 
       { $pattern =~ s/\.mp$//io ; 
         @files = glob "$pattern.*" } } 
@@ -55,7 +80,7 @@ else
   { $pattern .= '.*' ;
     @files = glob "$pattern" }
 
-foreach $file (@files)
+foreach my $file (@files)
   { $_ = $file ;
     if (s/\.(\d+|mps)$// && -e $file)
       { if ($miktex) 
@@ -64,7 +89,8 @@ foreach $file (@files)
             else
               { $command = "pdfetex \\&mptopdf" } }
         else 
-          { $command = "pdfetex -progname=pdfetex -efmt=mptopdf" } 
+#         { $command = "pdfetex -progname=pdfetex -efmt=mptopdf" } 
+          { $command = "pdfetex -progname=context -efmt=mptopdf" } 
         if ($dosish)  
           { system ("$command   \\relax $file") }
         else
@@ -76,6 +102,6 @@ foreach $file (@files)
         ++$done } }
 
 if ($done)
-  { print "\n$program: $pattern is converted to$report\n" }
+  { print "\n$program : $pattern is converted to$report\n" }
 else
-  { print "\n$program: no filename matches $pattern\n" }
+  { print "\n$program : no filename matches $pattern\n" }

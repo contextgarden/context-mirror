@@ -1,5 +1,5 @@
 %D \module
-%D   [       file=syst-tex,
+%D   [       file=syst-pln,
 %D        version=1999.03.17,  % an oldie: 1995.10.10
 %D          title=\CONTEXT\ System Macros,
 %D       subtitle=Efficient \PLAIN\ \TEX\ loading,
@@ -74,12 +74,23 @@
 \long\def\font#1=#2 #3%
   {\ifx#3s%
      \skipmessage{scaled \string\font}%
-     \let\next=\skipscaled
+     \let\next\skipscaled
    \else
      \skipmessage{\string\font}%
-     \let\next=\relax
+     \let\next\relax
    \fi
    \next#3}
+
+% or:  
+%
+% \long\def\font#1=#2 #3%
+%   {\ifx#3s%
+%      \skipmessage{scaled \string\font}%
+%      \expandafter\skipscaled
+%    \else
+%      \skipmessage{\string\font}%
+%    \fi
+%    #3}
 
 %D Relaxing some font switching macros is needed because we 
 %D don't want any error messages during loading. These 
@@ -124,7 +135,7 @@
 %D initializations. We just want to default to \DVI\ output. 
 
 \ifx\pdftexversion\undefined 
-  \newcount\pdfoutput
+  \chardef\pdfoutput=0
 \else
   \pdfoutput=0
 \fi 
@@ -193,6 +204,12 @@
 % \let\normalprotected  = \protected
 % \let\normalunexpanded = \unexpanded
 
+\beginETEX \savinghyphcodes
+
+  \savinghyphcodes=1
+
+\endETEX
+ 
 %D We restore some redefined primitives to their old meaning. 
 
 \let\font             = \normalfont
@@ -214,8 +231,9 @@
 \let\normaltextfont         = \undefined
 \let\normalscriptfont       = \undefined
 \let\normalscriptscriptfont = \undefined
-\let\normalinput            = \undefined
-\let\normalouter            = \undefined
+
+% \let\normalinput = \undefined
+% \let\normalouter = \undefined
 
 %D We want a bit more statistics and some less logging info 
 %D in the \type{log} file. 

@@ -79,7 +79,7 @@
 %D All driver modules use the same scheme for file insertion,
 %D and therefore have the next macro in common: 
 
-\def\dododoinsertfile[#1][#2,#3][#4,#5]%
+\def\dododoinsertfile[#1][#2,#3][#4,#5]% \next kan weg 
   {\def\fileinsertionclass{do#1insert}%
    \doifdefinedelse{\fileinsertionclass#3}
      {\def\next{\getvalue{\fileinsertionclass#3}}}
@@ -123,13 +123,13 @@
 
 %D When submitting forms, we need to communicate the format.
 
-\chardef\submitoutputformat=0 % 0=unknown 1=HTML 2=FDF
+\chardef\submitoutputformat=0 % 0=unknown 1=HTML 2=FDF 3=XML
 
 \def\setsubmitoutputformat#1%
   {\doifinsetelse{#1}{FDF,fdf}
      {\chardef\submitoutputformat=2} 
-     {\chardef\submitoutputformat=1}} 
+     {\doifinsetelse{#1}{XML,xml}
+        {\chardef\submitoutputformat=3}
+        {\chardef\submitoutputformat=1}}} 
 
-\protect
-
-\endinput
+\protect \endinput

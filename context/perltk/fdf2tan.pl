@@ -1,3 +1,6 @@
+eval '(exit $?0)' && eval 'exec perl -S $0 ${1+"$@"}' && eval 'exec perl -S $0 $argv:q'
+        if 0;
+
 #D \module
 #D   [       file=fdf2tan.pl,
 #D        version=2000.02.06,

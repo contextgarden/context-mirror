@@ -457,8 +457,7 @@
      anchor_box(\MPpos{\stepchartprefix origin}) ;
    \stopMPdrawing
    \MPdrawingdonetrue
-   \setbox0=\vbox
-     {\getMPdrawing}%
+   \setbox0=\vbox{\MPstaticgraphictrue\getMPdrawing}%
    \resetMPdrawing
    \setbox2=\vbox
      {\offinterlineskip
@@ -792,7 +791,7 @@
      anchor_box(\MPpos{\steptableprefix origin}) ;
    \stopMPdrawing
    \MPdrawingdonetrue
-   \setbox0=\vbox{\getMPdrawing}
+   \setbox0=\vbox{\MPstaticgraphictrue\getMPdrawing}%
    \resetMPdrawing
    % typesetting pass 
    \dimen6=\@@STPTafstand \dimen6=2\dimen6

@@ -15,6 +15,8 @@
 
 \unprotect
 
+\startXMLmapping [mml]
+
 \def\convertasciiafter#1#2%
   {\convertargument#2\to\asciiafter
    \@EA#1\@EA{\asciiafter}}
@@ -70,7 +72,7 @@
         {}%
         {\pushmacro\myspecialvert % hack 
          \def\myspecialvert{\;\vrule\;}%
-         \grabMMLseparator{\XMLpar{mfenced}{separators}}%
+         \grabMMLseparator{\XMLpar{mfenced}{separators}{}}%
          \popmacro\myspecialvert}
         {}%
         {#2\empty}}
@@ -102,9 +104,11 @@
    \fi
    \dograbMMLseparator}
 
-\def\grabMMLseparatorb#1%
+\def\grabMMLseparatorb#1% better use \checkMMLoperator
   {\ifnum\MMLxxcounter=\MMLyycounter\space
-     \def\lastMMLseparator{#1}%
+\doifXMLentityelse{#1}
+  {\def\lastMMLseparator{\xmlrent{#1}}}
+  {\def\lastMMLseparator{#1}}%
    \fi
    \dograbMMLseparator}
 
@@ -468,5 +472,7 @@
    \fi
    \doif{mprescripts/}{#1}{\donefalse}% weak, the / here
    \ifdone \advance\scratchcounter 1 \fi}
-
+
+\stopXMLmapping
+
 \protect \endinput

@@ -15,6 +15,8 @@
 
 \unprotect 
 
+% \checkdefined kan hierheen 
+
 %  Formaat tex-utility-input-file <jobname.tui>:
 %
 %    synonym entry {tag} {pure} {text} {synonym}
@@ -98,7 +100,7 @@
 %\def\getsynonymmeaning#1#2#3%
 %  {\doifdefinedelse{#2#3}
 %     {{\synonymmeaningtrue\getvalue{#2#3}}}
-%     {{\showmessage{\m!systems}{18}{#1,#3}}}
+%     {{\showmessage{\m!systems}{18}{#1,#3}}}}
 
 \def\getsynonymmeaning#1#2#3%
   {\bgroup
@@ -167,25 +169,7 @@
    \fi}
 
 \def\dodefinieersynoniemen[#1][#2][#3][#4]%
-  {\stelsynoniemenin
-     [#1]
-     [\c!synoniemletter=,
-      \c!tekstletter=,
-      \c!status=\v!start,
-      \c!criterium=,
-      \c!plaats=\v!links,
-      \c!breedte=5em,
-      \c!afstand=0pt,
-      \c!monster=,
-      \c!hang=,
-      \c!uitlijnen=,
-      \c!voor=,
-      \c!tussen=,
-      \c!na=,
-      \c!springvolgendein=\v!nee]%
-   \presetheadtext
-     [#2=\Word{#2}]%
-   \setvalue{\e!stel#2\e!in}%
+  {\setvalue{\e!stel#2\e!in}%
      {\dodoubleargument\getparameters[\??sm#1]}%
    \iffourthargument
      \unexpanded\def#4##1%
@@ -204,6 +188,25 @@
      \setvalue{#1}%
        {\dotripleempty\docomplexsynonym[][#1]}%
    \fi
+   \dostelsynoniemenin
+     [#1]%
+     [\c!synoniemletter=,
+      \c!tekstletter=,
+      \c!status=\v!start,
+      \c!criterium=,
+      \c!plaats=\v!links,
+      \c!breedte=5em,
+      \c!afstand=0pt,
+      \c!monster=,
+      \c!hang=,
+      \c!uitlijnen=,
+      \c!voor=,
+      \c!tussen=,
+      \c!na=,
+      \c!springvolgendein=\v!nee,
+      \c!expansie=]%
+   \presetheadtext % changes the \if...argument
+     [#2=\Word{#2}]%
    \setvalue{\s!set#1}%
      {\dosetsynonym{#1}}%
    \setvalue{\s!reset#1}%
@@ -336,7 +339,8 @@
       \c!criterium=,
       \c!letter=,
       \c!voor=,
-      \c!na=\endgraf]%
+      \c!na=\endgraf,
+      \c!expansie=]%
    \presetheadtext[#2=\Word{#2}]%
    \setvalue{\e!stel#2\e!in}[##1]% vervalt tzt, soort oo-mode 
      {\getparameters[\??so#1][##1]}%

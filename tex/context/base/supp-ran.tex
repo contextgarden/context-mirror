@@ -61,18 +61,23 @@
 
 \else
 
-  \let\normalnextrandom = \nextrandom
+  \let\verynormalnextrandom = \nextrandom
 
-  \global\chardef\randomseedfrozen=0
-
-  \def\nextrandom%
+  \def\normalnextrandom
     {\bgroup
-     \let\time =\normaltime   
-     \let\day  =\normalday
-     \let\month=\normalmonth  
-     \let\year =\normalyear
+     \let\time \normaltime   
+     \let\day  \normalday
+     \let\month\normalmonth  
+     \let\year \normalyear
+     \verynormalnextrandom
+     \egroup}
+
+  \chardef\randomseedfrozen=0
+
+  \def\nextrandom
+    {\bgroup
      \normalnextrandom
-     \gdef\nextrandom%
+     \gdef\nextrandom
        {\ifcase\randomseedfrozen\normalnextrandom\fi}%
      \egroup}
 

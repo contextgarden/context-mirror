@@ -15,12 +15,16 @@
 
 \unprotect
 
+% When being backgrounds layers get the background offset 
+% displacement. Should be an option, on by default 
+% (compatibility).
+
 %D The layering mechanism implemented here is independent of
 %D the output routine, but future extensions may depend on a
 %D more close cooperation. 
 
 %D First we overload a macro from \type {core-rul}. From now on
-%D we accept a third (optional) argument: the specific layer it
+%D we accept a (optional) argument: the specific layer it
 %D will go in. This means that we can move an overlay from one
 %D background to the other using the dimensions of the parent.
 
@@ -29,12 +33,13 @@
 \def\defineoverlay%
   {\dotripleempty\dodefineoverlay}
 
-\def\dodefineoverlay[#1][#2][#3]%
+\def\dodefineoverlay[#1][#2][#3]% overlay [layer] content 
   {\ifthirdargument
+     \writestatus{BEWARE}{This (overlay definition) has changed!}% temp
      \def\docommando##1%
        {\setvalue{\??ov##1}####1####2####3####4####5####6####7%
-          {\setlayer[#3]{\executedefinedoverlay
-             ##1\\#2\\{####1}{####2}{####3}{####4}{####5}{####6}{####7}}}}%
+          {\setlayer[#2]{\executedefinedoverlay
+             ##1\\#3\\{####1}{####2}{####3}{####4}{####5}{####6}{####7}}}}%
    \else
      \def\docommando##1%
        {\setvalue{\??ov##1}{\executedefinedoverlay
@@ -75,8 +80,10 @@
      [\c!status=\v!start,\c!richting=\v!normaal,\c!optie=,
       \c!x=\!!zeropoint,\c!y=\!!zeropoint,\c!positie=\v!nee,
       \c!breedte=\wd\nextbox,\c!hoogte=\ht\nextbox,
+      \c!offset=\!!zeropoint,
       \c!hoffset=\!!zeropoint,\c!voffset=\!!zeropoint,
-      \c!plaats=rb,\c!positie=\v!nee,\c!pagina=,#2]}
+      \c!plaats=rb,\c!positie=\v!nee,\c!pagina=,
+      \c!sx=1,\c!sy=1,\c!hoek=,#2]}
 
 %D \macros 
 %D   {setuplayer}
@@ -116,7 +123,8 @@
    \doglobal\increment\currentlayerdata
    \forgetall
    \dontcomplain
-   \doifvalue{\??ll#1\c!optie}{\v!test}{\tracelayerstrue}%
+   \doifvalue{\??ll#1\c!optie}{\v!test}
+     {\traceboxplacementtrue\tracelayerstrue}%
    \dowithnextbox % sneller als aparte macro
      {\ifundefined{\@@layerbox#1}%
         \writestatus{layer}{unknown layer #1}%
@@ -128,28 +136,102 @@
 
 \newbox\layerbox
 
-\def\dododosetlayer[#1][#2]% 
+% \def\dododosetlayer[#1][#2]% 
+%   {\getparameters[\??ll#1][#2]%
+%    \doifvalue{\??ll#1\c!positie}{\v!overlay}
+%      {\getparameters[\??ll#1]
+%         [\c!positie=\v!ja,
+%          \c!breedte=\!!zeropoint,
+%          \c!hoogte=\!!zeropoint]}%
+%    \doifelsevalue{\??ll#1\c!positie}{\v!ja}
+%      {\edef\layerpage{\MPp{lyr:\currentlayerdata}}%
+%       \scratchdimen\MPx{lyr:#1:\layerpage}\scratchdimen-\scratchdimen
+%       \advance\scratchdimen\MPx{lyr:\currentlayerdata}%
+%       \setevalue{\??ll#1\c!x}{\the\scratchdimen}%
+%       \scratchdimen\MPy{lyr:#1:\layerpage}%
+%       \advance\scratchdimen-\MPy{lyr:\currentlayerdata}%
+%       \setevalue{\??ll#1\c!y}{\the\scratchdimen}%
+%       \setxvalue{\??ll#1\layerpage\c!positie}{\v!ja}%
+%       \setxvalue{\??ll#1\c!status}{\v!start}% needed ?
+%       \setbox\layerbox\vbox to \getvalue{\??ll#1\c!hoogte} % \ht\nextbox
+%         {\hbox to \getvalue{\??ll#1\c!breedte} % \wd\nextbox
+%            {\xypos{lyr:\currentlayerdata}\hss}%
+%          \vss}}
+%      {\setbox\layerbox=\emptybox
+%       \edef\layerpage{\getvalue{\??ll#1\c!pagina}}}%
+%    \doifsomething{\layerpage}
+%      {\edef\layerpage{:\layerpage}%
+%       \doifundefined{\@@layerbox#1\layerpage}
+%         {\global\expandafter\newbox\csname\@@layerbox#1\layerpage\endcsname}}%
+%    \global\setbox\csname\@@layerbox#1\layerpage\endcsname=\vbox
+%      {\offinterlineskip
+%       \ifvoid\csname\@@layerbox#1\layerpage\endcsname\else
+%         \ht\csname\@@layerbox#1\layerpage\endcsname\zeropoint
+%         \dp\csname\@@layerbox#1\layerpage\endcsname\zeropoint
+%         \wd\csname\@@layerbox#1\layerpage\endcsname\zeropoint
+%         \doifnotvalue{\??ll#1\c!richting}{\v!omgekeerd}
+%           {\box\csname\@@layerbox#1\layerpage\endcsname}%
+%       \fi
+%       \setbox\nextbox=\hbox
+%         {\alignedbox[\getvalue{\??ll#1\c!plaats}]\vbox{\box\nextbox}}%
+%       \smashbox\nextbox
+%       \scratchdimen=\getvalue{\??ll#1\c!y}%
+%       \advance\scratchdimen\getvalue{\??ll#1\c!voffset}%
+%       \vskip\scratchdimen 
+%       \hskip\getvalue{\??ll#1\c!x}%
+%       \hskip\getvalue{\??ll#1\c!hoffset}%
+%       \box\nextbox % \hfill
+%       \ifvoid\csname\@@layerbox#1\layerpage\endcsname
+%         % already flushed 
+%       \else
+%         % the reverse case
+%         \vskip-\scratchdimen
+%         \box\csname\@@layerbox#1\layerpage\endcsname
+%       \fi}%
+%    \ifvoid\layerbox\else\box\layerbox\fi}
+
+\newdimen\@@layerxsiz \newdimen\@@layerxoff \newdimen\@@layerxpos
+\newdimen\@@layerysiz \newdimen\@@layeryoff \newdimen\@@layerypos
+
+\def\dododosetlayer[#1][#2]% will be sped up
   {\getparameters[\??ll#1][#2]%
-   \doifvalue{\??ll#1\c!positie}{\v!overlay}
+   \doifvalue{\??ll#1\c!positie}\v!overlay  % slow
      {\getparameters[\??ll#1]
-        [\c!positie=\v!ja,
-         \c!breedte=\!!zeropoint,
-         \c!hoogte=\!!zeropoint]}%
-   \doifelsevalue{\??ll#1\c!positie}{\v!ja}
+        [\c!breedte=\!!zeropoint,
+         \c!hoogte=\!!zeropoint,
+         \c!positie=\v!ja]}%
+   \@@layerxsiz\getvalue{\??ll#1\c!breedte}%
+   \@@layerysiz\getvalue{\??ll#1\c!hoogte }%
+   \@@layerxpos\getvalue{\??ll#1\c!x}%
+   \@@layerypos\getvalue{\??ll#1\c!y}%
+   \@@layerxoff\getvalue{\??ll#1\c!hoffset}%
+   \@@layeryoff\getvalue{\??ll#1\c!voffset}%
+   \advance\@@layerxoff \getvalue{\??ll#1\c!offset}%
+   \advance\@@layeryoff \getvalue{\??ll#1\c!offset}%
+   \@@layerxpos\getvalue{\??ll#1\c!sx}\@@layerxpos
+   \@@layerypos\getvalue{\??ll#1\c!sy}\@@layerypos
+   \@@layerxoff\getvalue{\??ll#1\c!sx}\@@layerxoff
+   \@@layeryoff\getvalue{\??ll#1\c!sy}\@@layeryoff
+   \doifelsevalue{\??ll#1\c!positie}{\v!ja}   % combine ^
      {\edef\layerpage{\MPp{lyr:\currentlayerdata}}%
-      \scratchdimen\MPx{lyr:#1:\layerpage}\scratchdimen-\scratchdimen
+      \scratchdimen\MPx{lyr:#1:\layerpage}%
+      \scratchdimen-\scratchdimen
       \advance\scratchdimen\MPx{lyr:\currentlayerdata}%
-      \setevalue{\??ll#1\c!x}{\the\scratchdimen}%
+      \@@layerxpos\scratchdimen
       \scratchdimen\MPy{lyr:#1:\layerpage}%
       \advance\scratchdimen-\MPy{lyr:\currentlayerdata}%
-      \setevalue{\??ll#1\c!y}{\the\scratchdimen}%
+      \@@layerypos\scratchdimen
       \setxvalue{\??ll#1\layerpage\c!positie}{\v!ja}%
       \setxvalue{\??ll#1\c!status}{\v!start}% needed ?
-      \setbox\layerbox\vbox to \getvalue{\??ll#1\c!hoogte} % \ht\nextbox
-        {\hbox to \getvalue{\??ll#1\c!breedte} % \wd\nextbox
-           {\xypos{lyr:\currentlayerdata}\hss}%
-         \vss}}
+      \setbox\layerbox\vbox to \@@layerysiz
+        {\hbox to \@@layerxsiz{\xypos{lyr:\currentlayerdata}\hss}\vss}}
      {\setbox\layerbox=\emptybox
+      \doifvalue{\??ll#1\c!hoek}{\v!onder}
+        {\ifdim\@@layerysiz>\zeropoint
+           \advance\@@layerypos-\@@layerysiz
+           \@@layerypos-\@@layerypos
+           \@@layeryoff-\@@layeryoff
+         \fi}%
       \edef\layerpage{\getvalue{\??ll#1\c!pagina}}}%
    \doifsomething{\layerpage}
      {\edef\layerpage{:\layerpage}%
@@ -167,17 +249,17 @@
       \setbox\nextbox=\hbox
         {\alignedbox[\getvalue{\??ll#1\c!plaats}]\vbox{\box\nextbox}}%
       \smashbox\nextbox
-      \scratchdimen=\getvalue{\??ll#1\c!y}%
-      \advance\scratchdimen\getvalue{\??ll#1\c!voffset}%
-      \vskip\scratchdimen 
-      \hskip\getvalue{\??ll#1\c!x}%
-      \hskip\getvalue{\??ll#1\c!hoffset}%
-      \box\nextbox % \hfill
+      \vskip\@@layerypos
+      \vskip\@@layeryoff
+      \hskip\@@layerxpos
+      \hskip\@@layerxoff
+      \box\nextbox
       \ifvoid\csname\@@layerbox#1\layerpage\endcsname
-        % already flushed 
-       \else
-        % the reverse case
-        \vskip-\scratchdimen
+        % already flushed
+      \else
+        % the reverse case % check !
+        \vskip-\@@layerypos
+        \vskip-\@@layeryoff
         \box\csname\@@layerbox#1\layerpage\endcsname
       \fi}%
    \ifvoid\layerbox\else\box\layerbox\fi}
@@ -207,7 +289,8 @@
   {\ifundefined{\@@layerbox#3}%
      \ifcase#1\else\writestatus{layer}{unknown layer #3}\fi
    \else
-     \doifvalue{\??ll#2\c!optie}{\v!test}\tracelayerstrue
+     \doifvalue{\??ll#2\c!optie}{\v!test}    
+       {\traceboxplacementtrue\tracelayerstrue}%
      \iftracelayers \ruledvbox \else \vbox \fi to \overlayheight
        {\forgetall
         \hbox to \overlaywidth
@@ -241,7 +324,7 @@
 
 \def\doresetlayer#1%
   {\ifundefined{\@@layerbox#1}\else 
-     \global\@EA\setbox\csname\@@layerbox#1\endcsname\emptybox
+     \global\setbox\csname\@@layerbox#1\endcsname\emptybox
    \fi}
 
 \def\resetlayer[#1]%
@@ -309,18 +392,18 @@
 
 \def\startpositioning%
   {\bgroup
-   \xposition \!!zeropoint   \yposition\!!zeropoint
-   \xdimension\!!zeropoint   \ydimension\!!zeropoint
-   \xoffset   \!!zeropoint   \yoffset   \!!zeropoint
+   \xposition \zeropoint     \yposition \zeropoint
+   \xdimension\zeropoint     \ydimension\zeropoint
+   \xoffset   \zeropoint     \yoffset   \zeropoint
    \hfuzz     \papierbreedte \vfuzz     \papierhoogte
    \setbox\positionbox\hbox\bgroup}
 
 \def\stoppositioning%
-  {\doifnot{\@@psoffset}{\v!ja}
-     {\global\xoffset=\!!zeropoint
-      \global\yoffset=\!!zeropoint}%
-   \global\advance\xdimension by \xoffset
-   \global\advance\ydimension by \yoffset
+  {\doifnot\@@psoffset\v!ja
+     {\global\xoffset\zeropoint
+      \global\yoffset\zeropoint}%
+   \global\advance\xdimension \xoffset
+   \global\advance\ydimension \yoffset
    \egroup
    \vbox to \ydimension
      {\vskip\yoffset

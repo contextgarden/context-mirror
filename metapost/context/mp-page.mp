@@ -27,6 +27,10 @@ if unknown OnRightPage :
   boolean OnRightPage ; OnRightPage := true ;
 fi ;
 
+if unknown InPageBody :
+  boolean InPageBody ; InPageBody := false ;
+fi ;
+
 PageNumber          := 0 ; 
 PaperHeight         := 845.04684pt  ;
 PaperWidth          := 597.50787pt  ;
@@ -88,7 +92,7 @@ for VerPos=Top step 10 until Bottom:
     Field[HorPos][VerPos] := origin--cycle ; 
     Field[VerPos][HorPos] := Field[HorPos][VerPos] ;
   endfor ; 
-endfor ; 
+endfor ;  
 
 % def LoadPageState = 
 %   scantokens "input mp-state.tmp" ;
@@ -200,6 +204,22 @@ def StopPage =
   bboxmargin := 0 ; setbounds currentpicture to Page ;
 
 enddef ; 
+
+def OverlayBox = 
+  (unitsquare xyscaled (OverlayWidth,OverlayHeight)) 
+enddef ; 
+
+% handy 
+
+def innerenlarged = 
+  hide(LoadPageState) 
+  if OnRightPage : leftenlarged  else : rightenlarged fi 
+enddef ;   
+  
+def outerenlarged = 
+  hide(LoadPageState)
+  if OnRightPage : rightenlarged else : leftenlarged  fi 
+enddef ;   
 
 % obsolete
 

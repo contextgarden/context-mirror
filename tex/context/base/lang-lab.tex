@@ -42,32 +42,29 @@
 %D In a few paragraphs we'll show quite a lot of examples
 %D of its use.
 
-\def\setupheadtext%
-  {\dosetupsometextprefix\c!titel}
+\let\handletextprefix\relax
 
-\def\setuplabeltext%
-  {\dosetupsometextprefix\c!label}
+\def\setupheadtext {\dosetupsometextprefix[\c!titel]}
+\def\setuplabeltext{\dosetupsometextprefix[\c!label]}
 
-\let\handletextprefix=\relax
+\def\dosetupsometextprefix
+  {\let\dodocommando\xdosetupsometextprefix
+   \dotripleempty\dodosetupsometextprefix}
 
-\def\dodosetupsometextprefix#1%
-  {\def\dododosetupsometextprefix[##1][##2]%
-     {\ifsecondargument
-        \def\docommando####1{\dodocommando[#1##1][####1]}%
-        \processcommalist[##2]\docommando
-      \else
-        \def\docommando####1{\dodocommando[#1\currentmainlanguage][####1]}%
-        \processcommalist[##1]\docommando
-      \fi}%
-   \dodoubleempty\dododosetupsometextprefix}
+\def\dodosetupsometextprefix[#1][#2][#3]%
+  {\ifthirdargument
+     \def\docommando##1{\dodocommando[#1#2][##1]}%
+     \processcommalist[#3]\docommando
+   \else
+     \def\docommando##1{\dodocommando[#1\currentmainlanguage][##1]}%
+     \processcommalist[#2]\docommando
+   \fi}
 
 \def\doassignsometextprefix[#1][#2,#3,#4]%
   {\setvalue{#1}{\handletextprefix{#2}{#3}}}
 
-\def\dosetupsometextprefix#1%
-  {\def\dodocommando[##1][##2=##3]%
-     {\doassignsometextprefix[##1##2][##3,,]}%
-   \dodosetupsometextprefix{#1}}
+\def\xdosetupsometextprefix[#1][#2=#3]%
+  {\doassignsometextprefix[#1#2][#3,,]}
 
 %D By changing the meaning of \type {\handletextprefix} we 
 %D can filter the left and right labeltext as well as convert 
@@ -96,8 +93,11 @@
 %D
 %D The latter one has an upcased alternative \type{\LABELTEXT}.
 
-\def\labellanguage{\currentmainlanguage}
-\def\headlanguage {\currentmainlanguage}
+% \def\labellanguage{\currentmainlanguage}
+% \def\headlanguage {\currentmainlanguage}
+
+\def\labellanguage{\defaultlanguage\currentmainlanguage}
+\def\headlanguage {\defaultlanguage\currentmainlanguage}
 
 \def\headtext%
   {\let\handletextprefix\firstoftwoarguments
@@ -128,24 +128,116 @@
 \def\labeltexts#1#2{\leftlabeltext{#1}#2\rightlabeltext{#1}}
 \def\LABELTEXTS#1#2{\LEFTLABELTEXT{#1}#2\RIGHTLABELTEXT{#1}}
 
-\def\dodogetupsometextprefix#1#2#3#4%
-  {\doifdefinedelse{#2#1#3}
-     {\getvalue{#2#1#3}}
-     {\doifdefinedelse{#1#3}
-        {\getvalue{#2#3}}
-        {#4}}}
-
 \newif\iflabeltextdone % needs to be reset elsewhere
 \newif\iftracinglabels % shows missing labels 
 
-\unexpanded\def\dogetupsometextprefix#1#2#3%
-  {\global\labeltextdonetrue 
-   \dodogetupsometextprefix{#1}{#2}{#3}
-     {\dodogetupsometextprefix{\defaultlanguage{#1}}{#2}{#3}
-        {\dodogetupsometextprefix{\s!en}{#2}{#3}
-           {\dodogetupsometextprefix{\s!nl}{#2}{#3}
-              {\iftracinglabels{\tttf[#2:~#3/#1]~}\fi}}}}}
+% \def\dodogetupsometextprefix#1#2#3#4%
+%   {\doifdefinedelse{#2#1#3}
+%      {\getvalue{#2#1#3}}
+%      {\doifdefinedelse{#2#3} % was bug: #1#3 
+%         {\getvalue{#2#3}}
+%         {#4}}}
+% 
+% \unexpanded\def\dogetupsometextprefix#1#2#3%
+%   {\global\labeltextdonetrue 
+%    \dodogetupsometextprefix{#1}{#2}{#3}
+%      {\dodogetupsometextprefix{\defaultlanguage{#1}}{#2}{#3}
+%         {\dodogetupsometextprefix{\s!en}{#2}{#3}
+%            {\dodogetupsometextprefix{\s!nl}{#2}{#3}
+%               {\iftracinglabels{\tttf[#2:~#3/#1]~}\fi}}}}}
 
+\beginETEX 
+
+% \def\dodogetupsometextprefix#1#2#3#4%
+%   {\ifcsname#2#1#3\endcsname
+%      \csname#2#1#3\endcsname
+%    \else\ifcsname#2#3\endcsname
+%      \csname#2#3\endcsname
+%    \else
+%      #4%
+%    \fi\fi}
+% 
+% this can be reduced to: 
+% 
+% \def\dodogetupsometextprefix#1#2#3%
+%   {\ifcsname#2#1#3\endcsname
+%      \csname#2#1#3\endcsname
+%      \@EA\gobbleoneargument
+%    \else\ifcsname#2#3\endcsname
+%      \csname#2#3\endcsname
+%      \@EAEAEA\gobbleoneargument
+%    \else
+%      \@EAEAEA\firstofoneargument
+%    \fi\fi}
+% 
+% \endETEX
+% 
+% \beginTEX
+% 
+% \def\dodogetupsometextprefix#1#2#3%
+%   {\@EA\ifx\csname#2#1#3\endcsname\relax
+%      \@EA\ifx\csname#2#3\endcsname\relax
+%        \@EAEAEA\firstofoneargument
+%      \else
+%        \csname#2#3\endcsname
+%        \@EAEAEA\gobbleoneargument     
+%      \fi
+%    \else
+%      \csname#2#1#3\endcsname
+%      \@EA\gobbleoneargument
+%    \fi}
+% 
+% \endTEX
+% 
+% \unexpanded\def\dogetupsometextprefix#1#2#3%
+%   {\global\labeltextdonetrue 
+%    \dodogetupsometextprefix{#1}{#2}{#3}
+%      {\dodogetupsometextprefix{\defaultlanguage{#1}}{#2}{#3}
+%         {\dodogetupsometextprefix\s!en{#2}{#3}
+%            {\dodogetupsometextprefix\s!nl{#2}{#3}
+%               {\reporttextprefixerror{#1}{#2}{#3}}}}}}
+
+\def\reporttextprefixerror#1#2#3%
+  {\iftracinglabels{\tttf[#2:~#3/#1]~}\fi}
+
+\beginETEX \ifcsname
+
+\unexpanded\def\dogetupsometextprefix#1#2#3%
+  {\global\labeltextdonetrue
+   \ifcsname#2#1#3\endcsname
+     \csname#2#1#3\endcsname                   \else
+   \ifcsname#2#3\endcsname
+     \csname#2#3\endcsname                     \else
+   \ifcsname#2\defaultlanguage{#1}#3\endcsname
+     \csname#2\defaultlanguage{#1}#3\endcsname \else
+   \ifcsname#2\s!en#3\endcsname
+     \csname#2\s!en#3\endcsname                \else
+   \ifcsname#2\s!nl#3\endcsname
+     \csname#2\s!nl#3\endcsname                \else
+     \reporttextprefixerror{#1}{#2}{#3}%
+   \fi\fi\fi\fi\fi}
+
+\endETEX
+
+\beginTEX
+
+\unexpanded\def\dogetupsometextprefix#1#2#3%
+  {\global\labeltextdonetrue
+   \@EA\ifx\csname#2#1#3\endcsname\relax
+   \@EA\ifx\csname#2#3\endcsname\relax
+   \@EA\ifx\csname#2\defaultlanguage{#1}#3\endcsname\relax
+   \@EA\ifx\csname#2\s!en#3\endcsname\relax
+   \@EA\ifx\csname#2\s!nl#3\endcsname\relax
+           \reporttextprefixerror{#1}{#2}{#3}%
+      \else\csname#2\s!nl#3\endcsname
+   \fi\else\csname#2\s!en#3\endcsname
+   \fi\else\csname#2\defaultlanguage{#1}#3\endcsname
+   \fi\else\csname#2#3\endcsname
+   \fi\else\csname#2#1#3\endcsname
+   \fi}
+
+\endTEX
+
 \ifx\simplifiedcommands\undefined \newtoks\simplifiedcommands \fi 
 
 \appendtoks 
@@ -166,17 +258,15 @@
 %D head and label texts without replacing predefined ones.
 %D These are internal macros.
 
-\def\dopresetsometextprefix#1%
-  {\def\dodocommando[##1][##2=##3]%
-     {\doifundefined{##1##2}
-        {\doassignsometextprefix[##1##2][##3,,]}}%
-   \dodosetupsometextprefix{#1}}
+\def\xdopresetsometextprefix[#1][#2=#3]%
+  {\ifundefined{#1#2}\doassignsometextprefix[#1#2][#3,,]\fi}
 
-\def\presetheadtext%
-  {\dopresetsometextprefix\c!titel}
+\def\dopresetsometextprefix
+  {\let\dodocommando\xdopresetsometextprefix
+   \dotripleempty\dodosetupsometextprefix}
 
-\def\presetlabeltext%
-  {\dopresetsometextprefix\c!label}
+\def\presetheadtext {\dopresetsometextprefix[\c!titel]}
+\def\presetlabeltext{\dopresetsometextprefix[\c!label]}
 
 %D \macros
 %D   {translate}
@@ -196,7 +286,7 @@
 %D which expands to {\em something} or {\em iets}, depending on
 %D de current language.
 
-\def\dotranslate[#1]% don't group! 
+\def\dotranslate[#1]% don't group! SLOW if really used: speed up 
   {\getparameters[\??lg][#1]%
    \doifdefinedelse{\??lg\currentlanguage}%
      {\getvalue{\??lg\currentlanguage}}
@@ -206,7 +296,7 @@
           {\getvalue{\??lg\s!nl}}
           {[translation #1]}}}}
 
-\unexpanded\def\translate%
+\unexpanded\def\translate
   {\dosingleempty\dotranslate}
 
 %D When used without argument, the last defined values are
@@ -228,8 +318,6 @@
 
 \def\assigntranslation[#1]\to#2%
   {\getparameters[\??lg][#1]%
-   \edef#2{\getvalue{\??lg\currentlanguage}}}
+   \edef#2{\csname\??lg\currentlanguage\endcsname}}
 
-\protect
-
-\endinput
+\protect \endinput

@@ -20,7 +20,11 @@
 % approach, which we needed for proper nesting, but the 
 % code is still too ugly 
 
+\startXMLmapping[mml]
+
 \unprotect
+
+\def\MMLccomma{{,}}
 
 \def\getmmlarguments#1#2#3#4#5#6% {class} {defaults} mmlargs
   {\getXMLarguments{#1}{#2 #5}}%
@@ -47,7 +51,7 @@
      {#1}}
 
 \def\MMLcdopolara#1%
-  {\def\MMLcsep{,}\getXMLentity{polar}\left(#1\right)}
+  {\def\MMLcsep{\MMLccomma}\getXMLentity{polar}\left(#1\right)}
 
 \def\MMLcdopolarb#1%
   {\def\MMLcsep##1\empty%
@@ -130,7 +134,7 @@ complex-cartesian=>\let\next\MMLccartesian,
 \def\MMLcCIdefault#1#2% #1=dummy 
   {#2\!% \getXMLentity{NegThinSpace}%
    \doifnextcharelse\xmlr
-     {\encapsulatenextXMLRelements{\left(}{,}{\right)}}
+     {\encapsulatenextXMLRelements{\left(}{\MMLccomma}{\right)}}
      {}}
 
 \def\MMLcCN#1% #2% can be sped up with \doifundefined ... 
@@ -207,8 +211,9 @@ complex-cartesian=>\let\next\MMLccartesian,
    in/,inverse/,%
    fn,%
    floor/,ceiling/,%
-   mean/,
-   abs/,int/,limit/,sum/,product/%
+   mean/,%
+   selector/,%
+   abs/,int/,limit/,sum/,product/,%
    outerproduct/,innerproduct/,scalarproduct/}
 
 \def\MMLcfunctionlist
@@ -219,17 +224,18 @@ complex-cartesian=>\let\next\MMLccartesian,
    csc/,arccsc/,csch/,arccsch/,%
    sec/,arcsec/,sech/,arcsech/,%
    ln/,exp/,log/,%
-   abs/,int/,limit/,sum/,product/%
+   abs/,int/,limit/,sum/,product/,%
    fn} % ?  
 
 \def\MMLcconstructlist
-  {diff/,partialdiff/,apply}
+  {diff/,partialdiff/,root/} % apply goes wrong on 1/2 * (a_2 + b_3) 
 
 % better: no () here but explicitly when needed, which is in
 % less cases
 
 \def\MMLcAPPLY#1#2%
-  {\pushmacro\xmlr
+  {\mathinner{\begingroup % new, else 1/2(1+2) problem / inner: ask taco
+   \pushmacro\xmlr
    \@EA\@EA\@EA\doifXMLRchild\@EA\@EA\@EA{\@EA\MMLcmainresetlist\@EA,\MMLctempresetlist}{#2}
      {\MMLcreset}%
    \ifcase\@MMLlevel
@@ -246,7 +252,8 @@ complex-cartesian=>\let\next\MMLccartesian,
    \endgroup % ook level push
    \advance\@MMLlevel-1
    \doifXMLparelse{apply}{close}{\right\XMLpar{apply}{close}{}}{}%
-   \popmacro\xmlr}
+   \popmacro\xmlr
+   \endgroup}} 
 
 \remapXMLsequence [reln] [CPA] \MMLcRELN
 
@@ -266,20 +273,32 @@ complex-cartesian=>\let\next\MMLccartesian,
 
 \def\MMLcFNdefault#1#2% neg space needed because of \left 
   {#2\!% \getXMLentity{NegThinSpace}%
-   \MMLcreset\encapsulatenextXMLRelements{\left(}{,}{\right)}}
+   \MMLcreset\encapsulatenextXMLRelements{\left(}{\MMLccomma}{\right)}}
 
 % special function handlers 
 
 \def\MMLcFNoperator
   {\getvalue{doMMLcFN\mmloperator}}
 
+% \def\doMMLcFNplusminus#1#2#3\empty
+%   {\countXMLRchildren{#3}% 
+%    \ifcase\nofXMLRchildren\or
+%      #2#3%
+%    \else % suboptimal for instance under root 
+%      \encapsulateXMLR{\left(}{#2}{\right)}{\MMLcreset#3}%
+%    \fi}
+
 \def\doMMLcFNplusminus#1#2#3\empty
   {\countXMLRchildren{#3}% 
    \ifcase\nofXMLRchildren\or
-     #2#3%
-   \else
-     \encapsulateXMLR{\left(}{#2}{\right)}{\MMLcreset#3}%
-   \fi}
+     \def\next{#2#3}%
+   \else 
+     \def\next
+       {\doifnextcharelse\xmlr
+          {\encapsulateXMLR{\left(}{#2}{\right)}{\MMLcreset#3}}%
+          {\encapsulateXMLR{}{#2}{}{\MMLcreset#3}}}%
+   \fi
+   \next}
 
 \let\doMMLcFNminusplus\doMMLcFNplusminus
 
@@ -347,11 +366,11 @@ complex-cartesian=>\let\next\MMLccartesian,
 
 \def\MMLcLAMBDA#1#2%
   {\doifelse{\@@MMLlambdavariant}{a}
-     {\encapsulateXMLR{\getXMLentity{lambda}(}{,}{)}{#2}}
+     {\encapsulateXMLR{\getXMLentity{lambda}(}{\MMLccomma}{)}{#2}}
      {\countXMLRchild{bvar}{#2}%
       \ifnum\nofXMLRchildren>1
         \collectXMLRchild{bvar}{#2}%
-        \encapsulateXMLR{\left(}{,}{\right)}{\the\XMLRtoks}%
+        \encapsulateXMLR{\left(}{\MMLccomma}{\right)}{\the\XMLRtoks}%
       \else
         \processXMLRchild{bvar}{#2}%
       \fi
@@ -422,13 +441,13 @@ complex-cartesian=>\let\next\MMLccartesian,
 
 \def\MMLcDIVIDE#1#2%
   {\withnexttwoXMLRelements
-    {\increment\MMLcDIVIDElevel
-     \ifnum\MMLcDIVIDElevel>\@@MMLdivideniveau\space
-       \firstXMLRelement/\secondXMLRelement
-     \else
-       \frac{\MMLcreset\firstXMLRelement}{\MMLcreset\secondXMLRelement}%
-     \fi
-     \decrement\MMLcDIVIDElevel}}
+     {\increment\MMLcDIVIDElevel
+      \ifnum\MMLcDIVIDElevel>\@@MMLdivideniveau\space
+        \firstXMLRelement/\secondXMLRelement
+      \else
+        \frac{\MMLcreset\firstXMLRelement}{\MMLcreset\secondXMLRelement}%
+      \fi
+      \decrement\MMLcDIVIDElevel}}
 
 \remapXMLsingular [min] [CPA] \MMLcMIN
 \remapXMLsingular [max] [CPA] \MMLcMAX
@@ -436,12 +455,12 @@ complex-cartesian=>\let\next\MMLccartesian,
 \def\MMLcMIN#1#2#3\empty
   {\encapsulateXMLR
      {\min\doifXMLRchild{bvar}{#3}{_{\processXMLRchild{bvar}{#3}}}\left\{}
-     {,}{\right\}}{#3}}
+     {\MMLccomma}{\right\}}{#3}}
 
 \def\MMLcMAX#1#2#3\empty
   {\encapsulateXMLR
      {\max\doifXMLRchild{bvar}{#3}{_{\processXMLRchild{bvar}{#3}}}\left\{}
-     {,}{\right\}}{#3}}
+     {\MMLccomma}{\right\}}{#3}}
 
 \remapXMLsingular [minus] [CPA] \MMLcMINUS
 \remapXMLsingular [plus]  [CPA] \MMLcPLUS
@@ -529,7 +548,7 @@ complex-cartesian=>\let\next\MMLccartesian,
 
 \remapXMLsingular [gcd] [CPA] \MMLcGCD
 
-\def\MMLcGCD#1#2#3\empty{\encapsulateXMLR{\gcd(}{,}{)}{#3}}
+\def\MMLcGCD#1#2#3\empty{\encapsulateXMLR{\gcd(}{\MMLccomma}{)}{#3}}
 
 \remapXMLsingular [and]     [CPA] \MMLcAND
 \remapXMLsingular [or]      [CPA] \MMLcOR
@@ -559,7 +578,7 @@ complex-cartesian=>\let\next\MMLccartesian,
 
 \def\MMLcFORALLandEXISTS#1#2#3\empty
   {\MMLcreset
-   _{\encapsulateXMLRchildren{bvar}{}{,}{}{#3}}%
+   _{\encapsulateXMLRchildren{bvar}{}{\MMLccomma}{}{#3}}%
    \doifXMLRchildelse{condition}{#3}
      {\;% \getXMLentity{ThickSpace}%
       \processXMLRchild{condition}{#3}
@@ -608,7 +627,7 @@ complex-cartesian=>\let\next\MMLccartesian,
 \remapXMLsingular [lcm] [CPA] \MMLcLCM
 
 \def\MMLcLCM#1#2#3\empty
-  {\encapsulateXMLR{\getXMLentity{lcm}(}{,}{)}{#3}}
+  {\encapsulateXMLR{\getXMLentity{lcm}(}{\MMLccomma}{)}{#3}}
 
 \remapXMLsingular [floor]   [CPA] \MMLcFLOOR
 \remapXMLsingular [ceiling] [CPA] \MMLcCEILING
@@ -762,7 +781,7 @@ complex-cartesian=>\let\next\MMLccartesian,
 \def\MMLcPARTIALDIFF#1#2#3\empty
   {\pushmacro\xmlr
    \doifXMLRchildelse{list}{#3}
-     {\getXMLentity{capitaldifferentiald}_{\encapsulateXMLRchild{list}{}{,}{}{#3}}%
+     {\getXMLentity{capitaldifferentiald}_{\encapsulateXMLRchild{list}{}{\MMLccomma}{}{#3}}%
       \processXMLRchild{apply,reln,ci,cn}{#3}}
      {\countXMLRchild{bvar}{#3}%
       \ifnum\nofXMLRchildren>0
@@ -829,11 +848,11 @@ complex-cartesian=>\let\next\MMLccartesian,
 \def\MMLcSET#1#2%
   {\doifXMLRchildelse{condition}{#2}
      {\{\processXMLRchild{bvar}{#2}\,\vert\,\processXMLRchild{condition}{#2}\}}
-     {\encapsulateXMLR{\{}{,}{\}}{#2}}}
+     {\encapsulateXMLR{\{}{\MMLccomma}{\}}{#2}}}
 
 \remapXMLsequence [list] [CPA] \MMLcLIST
 
-\def\MMLcLIST#1#2{\encapsulateXMLR{[} {,}{]} {#2}}
+\def\MMLcLIST#1#2{\encapsulateXMLR{[}{\MMLccomma}{]}{#2}}
 
 \remapXMLsingular [union]            [CPA] \MMLcUNION
 \remapXMLsingular [intersect]        [CPA] \MMLcINTERSECT
@@ -1072,7 +1091,7 @@ complex-cartesian=>\let\next\MMLccartesian,
    {\countXMLRchildren{#2}% 
     \ifnum\nofXMLRchildren>1
       \doifelse{\@@MMLvectorrichting}{\v!horizontaal}
-        {\encapsulateXMLR{\left(}{,}{\right)}{#2}}
+        {\encapsulateXMLR{\left(}{\MMLccomma}{\right)}{#2}}
         {\collectbetweenXMLR{\crcr}{#2}%
          \MMLcreset\left(\matrix{\the\XMLRtoks}\right)}%
     \else
@@ -1128,7 +1147,7 @@ complex-cartesian=>\let\next\MMLccartesian,
    \popmacro\xmlr}
 
 \def\doMMLcSELECTOR#1\empty
-  {_{\encapsulateXMLR{}{,}{}{#1\empty}}}
+  {_{\MMLcreset\encapsulateXMLR{}{\MMLccomma}{}{#1\empty}}}
 
 \remapXMLsingular [vectorproduct] [CPA] \MMLcVECTORPRODUCT
 \remapXMLsingular [scalarproduct] [CPA] \MMLcSCALARPRODUCT
@@ -1152,11 +1171,11 @@ complex-cartesian=>\let\next\MMLccartesian,
 
 \remapXMLsequence [annotation] [CPA] \MMLcANNOTATION
 
-\def\MMLcANNOTATION#1#2%
+\def\MMLcANNOTATION#1#2% we need a better unmapper 
   {\getXMLarguments{annotation}{encoding="" #1}%
    \doif{\XMLpar{annotation}{encoding}{}}{TeX}%
      {\begingroup
-      \setnormalXMLentities
+      \setnormalXMLentities % better: \simplifyXMLentities ; test first  
       \let\xmlrent\expandedXMLentity 
       \edef\mmlascii{#2}%           
       \setnormalcatcodes
@@ -1219,5 +1238,7 @@ complex-cartesian=>\let\next\MMLccartesian,
 \def\MMLcPI            #1#2{\pi}
 \def\MMLcEULERGAMMA    #1#2{\gamma}
 \def\MMLcINFINITY      #1#2{\infty}
+
+\stopXMLmapping
 
 \protect \endinput

@@ -24,8 +24,6 @@
 
 \unprotect
 
-\def\m!otr{otr}
-
 % message will be distributed 
 
 \startmessages  dutch  library: systems
@@ -343,6 +341,12 @@
      11: spatierea -- nu este permisa in gridmode
 \stopmessages
 
+\def\m!otr{otr}
+
+\chardef\normalpagebox=255
+
+\newbox\pagebox
+
 \ifx\recalculatelayout\undefined
 
   \let \recalculatelayout \relax
@@ -557,24 +561,6 @@
 
 \def\@@OTR{OTR}
 
-% \beginETEX \ifcsname 
-% 
-%   \let\ifcs \ifcsname
-%   \let\endcs\endcsname
-% 
-% \endETEX
-% 
-% \beginTEX \ifcsname 
-% 
-%   \def\ifcs#1\endcs{\@EA\ifx\csname#1\endcsname\relax\else}
-% 
-% \endTEX
-% 
-% \def\OTRcommand#1%
-%   {\csname\@@OTR
-%      \ifcs\@@OTR\OTRidentifier\strippedcsname#1\endcs\OTRidentifier\fi
-%    \strippedcsname#1\endcsname}
-
 \let\OTRdefault\empty
 
 \beginETEX \ifcsname
@@ -584,7 +570,7 @@
      \ifcsname\@@OTR\OTRidentifier\strippedcsname#1\endcsname
        \OTRidentifier
      \else\ifcsname\@@OTR\OTRdefault\strippedcsname#1\endcsname % fallback 
-       \OTRidentifier
+       \OTRdefault 
      \fi\fi
    \strippedcsname#1\endcsname}
 
@@ -686,21 +672,16 @@
    \unvbox\normalpagebox}
            
 \newtoks\mainoutput 
+\newif\ifinotr
 
-\mainoutput
-  {\doifdefinedelse{\@@OTR\the\outputpenalty}
-     {\getvalue{\@@OTR\the\outputpenalty}}
-     {\the\OTRcommand\output}}
+\def\invokeoutputroutine
+  {\ifcsname\@@OTR\the\outputpenalty\endcsname
+     \csname\@@OTR\the\outputpenalty\endcsname
+   \else
+     \the\OTRcommand\output
+   \fi}
 
-%\mainoutput
-%  {\advance\otrlevel 1 
-%   \ifnum\otrlevel>1 \writestatus{otr}{nested main output}\fi 
-%   \doifdefinedelse{\@@OTR\the\outputpenalty}
-%     {\getvalue{\@@OTR\the\outputpenalty}}
-%     {\the\OTRcommand\output}%
-%   \advance\otrlevel -1 }
-
-\output{\the\mainoutput}
+\mainoutput{\invokeoutputroutine} \output{\inotrtrue\the\mainoutput}
 
 %D In order to force consistent use of variables, we 
 %D predefine a lot of them here. 
@@ -877,7 +858,7 @@
 
 \def\afterfinaloutput%
   {\forgetall
-   \vskip\!!zeropoint\relax
+   \vskip\zeropoint\relax
    \ifvoid\normalpagebox
    \else
      \unvbox\normalpagebox
@@ -896,7 +877,7 @@
   {\beforefinaloutput
    \the\everybeforeshipout
    \ifspecialbasedsettings
-     \myshipout{\hbox{\hbox to \!!zeropoint{\the\pageboundsettings}\hbox{\dopagebody#1#2\setpagecounters}}}%
+     \myshipout{\hbox{\hbox to \zeropoint{\the\pageboundsettings}\hbox{\dopagebody#1#2\setpagecounters}}}%
    \else
      \the\pageboundsettings
      \myshipout{\hbox{\dopagebody#1#2\setpagecounters}}%
@@ -984,7 +965,7 @@
 \def\doversie[#1]%
   {\voorlopigfalse
    \conceptfalse
-   \overfullrule=\!!zeropoint
+   \overfullrule=\zeropoint
    \processaction
      [#1]
      [\v!voorlopig=>\voorlopigtrue\overfullrule=5pt,
@@ -993,21 +974,42 @@
 \def\versie%
   {\dosingleargument\doversie}
 
-\def\addstatusinfo#1%
-  {\ifvoorlopig \donetrue \fi 
-   \ifconcept   \donetrue \fi 
-   \ifdone 
-     \setbox#1=\vbox to \papierhoogte
-       {\vsmashbox#1\box#1 
-        \offinterlineskip
-        \vskip\topspace
-        \hsize\papierbreedte
-        \hfill\hbox{\plaatstestinfo\hskip.5cm}\vss
-        \settexthoffset\hskip\texthoffset
-        \tlap{\plaatsversieaanduiding}
-        \vskip.5cm}%
-   \fi} 
- 
+%\def\addstatusinfo#1%
+%  {\ifvoorlopig \donetrue  \else 
+%   \ifconcept   \donetrue  \else 
+%                \donefalse \fi \fi 
+%   \ifdone 
+%     \setbox#1=\vbox to \papierhoogte
+%       {\vsmashbox#1\box#1 
+%        \offinterlineskip
+%        \vskip\kopwit 
+%        \hsize\papierbreedte
+%        \hfill\hbox{\plaatstestinfo\hskip.5cm}\vss
+%        \settexthoffset\hskip\texthoffset
+%        \tlap{\plaatsversieaanduiding}
+%        \vskip.5cm}%
+%   \fi} 
+
+\def\addstatusinfo
+  {\ifvoorlopig
+     \@EA\doaddstatusinfo
+   \else\ifconcept  
+     \@EAEAEA\doaddstatusinfo
+   \else
+     \@EAEAEA\gobbleoneargument
+   \fi\fi}
+
+\def\doaddstatusinfo#1%
+  {\setbox#1=\vbox to \papierhoogte
+     {\vsmashbox#1\box#1 
+      \offinterlineskip
+      \vskip\kopwit 
+      \hsize\papierbreedte
+      \hfill\hbox{\plaatstestinfo\hskip.5cm}\vss
+      \settexthoffset\hskip\texthoffset
+      \tlap{\plaatsversieaanduiding}
+      \vskip.5cm}}
+
 % this will be inserts some day
 
 %\newinsert\referentieinfobox 
@@ -1021,7 +1023,7 @@
 \def\dotestinfo#1#2#3%
   {\ifvoorlopig\ifinpagebody\else
      \begingroup
-       \convertargument#3\to\ascii
+       \@EA\convertargument#3\to\ascii
        \xdef\extratestinfo%
          {#2 \ascii}%
        \gdef\totaltestinfo%
@@ -1043,14 +1045,9 @@
      \fi
    \fi\fi}
 
-\def\referentieinfo%
- {\dotestinfo\referentieinfobox}
-
-\def\registerinfo%
- {\dotestinfo\registerinfobox}
-
-\def\floatinfo%
- {\dotestinfo\floatinfobox}
+\def\referentieinfo{\dotestinfo\referentieinfobox}
+\def\registerinfo  {\dotestinfo\registerinfobox}
+\def\floatinfo     {\dotestinfo\floatinfobox}
 
 \def\plaatstestinfo%
   {\ifvoorlopig
@@ -1079,14 +1076,6 @@
    \fi}
 
 \versie[\v!definitief]
-
-% Output routines
-%
-% \dopagecontents#1#2  : tekst, floats en footnotes
-% \dopagebody#1#2      : hoofd, \pagecontents, voet
-% \dooutput            : outputroutine
-%
-% \ifinpagebody
 
 % De volgende macro's worden gedefinieerd in de module
 % colo-ini. Om resetten bij twee maal laden te voorkomen
@@ -1155,7 +1144,7 @@
         \hskip-\zetbreedte
       \od
       \box#1}%
-   \dp#1=\!!zeropoint}
+   \dp#1=\zeropoint}
 
 \newif\ifpagebodyornaments \pagebodyornamentstrue
 \newif\ifarrangingpages    \arrangingpagesfalse
@@ -1177,7 +1166,7 @@
       \forgetall  % igv problemen, check: \boxmaxdepth\maxdimen
       \boxmaxdepth\maxdimen % new
       \mindermeldingen
-      \setbox0=\vbox
+      \setbox\pagebox=\vbox
         {\offinterlineskip
          \ifpagebodyornaments
 %           \getbackgroundbox
@@ -1190,35 +1179,35 @@
          \fi
          \getmainbox#1#2}% including footnotes 
       \ifpagebodyornaments
-        \addmainbackground0%
-        \addlogobackground0%
+        \addmainbackground\pagebox
+        \addlogobackground\pagebox
       \fi
-      \buildpagebox0%
-      \addstatusinfo0% new 
+      \buildpagebox\pagebox
+      \addstatusinfo\pagebox
       \ifpagebodyornaments
-        \addpagebackground0%
+        \addpagebackground\pagebox
       \fi
       \ifarrangingpages \else
-        \addpagecutmarks0%
-        \replicatepagebox0%
-        \scalepagebox0%
-        \mirrorpaperbox0%
-        \rotatepaperbox0%
-        \addpagecolormarks0%
-        \centerpagebox0%
-\addprintbackground0%
-        \mirrorprintbox0%
-        \rotateprintbox0%
-        \offsetprintbox0%
-        \negateprintbox0%
+        \addpagecutmarks\pagebox   
+        \replicatepagebox\pagebox
+        \scalepagebox\pagebox
+        \mirrorpaperbox\pagebox
+        \rotatepaperbox\pagebox
+        \addpagecolormarks\pagebox 
+        \centerpagebox\pagebox
+        \addprintbackground\pagebox
+        \mirrorprintbox\pagebox
+        \rotateprintbox\pagebox
+        \offsetprintbox\pagebox
+        \negateprintbox\pagebox
       \fi
-      \box0%
+      \box\pagebox
       \endrestorecatcodes}%
    \ifsavepagebody\copy\savedpagebody\fi}
 
 \def\finishpagebox#1%
   {\ifarrangingpages
-     \addpagecutmarks#1%
+     \addpagecutmarks#1% 
      \addpagecolormarks#1%
      \centerpagebox#1%
      \mirrorprintbox#1%
@@ -1227,14 +1216,12 @@
      \negateprintbox#1%
    \fi}
 
-\chardef\normalpagebox=255
-
-\appendtoks \restoreglobalbodyfont \to \everypagebody
-\appendtoks \restorecolumnsettings \to \everypagebody
+\appendtoks \restoreglobalbodyfont \to \everybeforepagebody
+\appendtoks \restorecolumnsettings \to \everybeforepagebody
 
 \def\dopagebody#1#2%
-  {\getallmarks
-   \the\everypagebody
+  {%\getallmarks % now in following token register  
+   \the\everybeforepagebody
    \startcolorpage
    \gotonextsubpage  % nog eens: als in pagina (tbv standaard opmaak)
    \dontshowboxes    % dan hier blokkeren en verderop resetten
@@ -1249,7 +1236,8 @@
    \resetpagina
    \updatelistreferences
    \resetlayoutlines % will go to \aftereverypage
-   \stopcolorpage}
+   \stopcolorpage
+   \the\everyafterpagebody}
 
 \newtoks\pageboundsettings
 
@@ -1282,9 +1270,17 @@
 
 \let\resetcurrentsectionmarks=\relax
 
-% was: \resetsectionmarks[\firstsection], zie \handelpaginaaf
+% was: \resetsectionmarks\firstsection, zie \handelpaginaaf
 
-\def\docomplexpagina[#1]%
+\def\complexpagina[#1]%
+  {\edef\!!stringa{#1}%
+   \ifx\!!stringa\empty
+     % do nothing and avoid processing, see head's  
+   \else
+     \@EA\docomplexpagina\@EA[\!!stringa]
+   \fi}
+
+\def\docomplexpagina[#1]% % will be installable 
   {\flushfootnotes
    \bgroup
    \processallactionsinset
@@ -1372,13 +1368,15 @@
                        %\fi
                      \od
                      \filluparrangedpages},
-        \s!unknown=>\doifinstringelse{+}{#1}
+%       \s!default=>,% do nothing if empty 
+        \s!unknown=>\let\@@pagespecification\commalistelement
+                    \doifinstringelse{+}\@@pagespecification
                       {\ejectinsert\ejectpage
-                       \dorecurse{#1}{\ejectdummypage}}
-                      {\doifnumberelse{#1}
+                       \dorecurse\@@pagespecification\ejectdummypage}
+                      {\doifnumberelse\@@pagespecification
                          {\ejectinsert\ejectpage
                           \doloop
-                            {\ifnum\userpageno<#1\relax
+                            {\ifnum\userpageno<\@@pagespecification\relax
                                \ejectdummypage
                              \else
                                \exitloop
@@ -1386,11 +1384,7 @@
                          {}}]%
    \egroup}
 
-\def\complexpagina[#1]%
-  {\expanded{\docomplexpagina[#1]}}
-
-\def\simplepagina%
-%  {\docomplexpagina[\v!ja]}
+\def\simplepagina
   {\flushfootnotes
    \ifpaginageblokkeerd\else
      \ejectinsert
@@ -1415,55 +1409,57 @@
 % \setuphead[chapter][before={\pagetype[chapter]}] 
 % \chapter{First} \page test \chapter{second} \page test 
 
-\newif\ifgeselecteerd
-\geselecteerdtrue
+\newif\ifgeselecteerd \geselecteerdtrue
+\newif\ifselecteren   \selecterenfalse
+\newif\ifverwerken    \verwerkentrue
 
-\newif\ifselecteren
-\selecterenfalse
+\let\selectie   \empty
+\let\paginasoort\empty
+\let\naastpagina\relax
+\let\napagina   \relax
+\let\voorpagina \relax
 
-\newif\ifverwerken
-\verwerkentrue
-
-\def\selectie{}
-\def\paginasoort{}
-
-\let\naastpagina=\relax
-\let\napagina=\relax
-\let\voorpagina=\relax
+\def\dodovoorpagina#1%
+  {\global\let\voorpagina\relax
+   \getvalue{\??pg#1\c!voor}}
 
 \def\dovoorpagina%
   {\doifsomething{\paginasoort}
-     {\def\dododopagina##1%
-        {\global\let\voorpagina=\relax
-         \getvalue{\??pg##1\c!voor}}%
-      \processcommacommand[\paginasoort]\dododopagina}}
+     {\processcommacommand[\paginasoort]\dodovoorpagina}}
 
 \def\dododonapagina#1%
-  {\global\let\napagina=\relax
-   \gdef\paginasoort{}%
+  {\global\let\napagina\relax
+   \global\let\paginasoort\empty
    \getvalue{\??pg#1\c!na}}
+
+\def\dodonapagina#1%
+  {\doifelsevalue{\??pg#1\c!optie}{\v!dubbelzijdig}
+     {\doifbothsidesoverruled
+        \dododonapagina{#1}%
+      \orsideone
+        \dododonapagina{#1}%
+      \orsidetwo
+      \od}
+     {\dododonapagina{#1}}}
 
 \def\donapagina%
   {\doifsomething{\paginasoort}
-     {\def\dodopagina##1%
-        {\doifelsevalue{\??pg##1\c!optie}{\v!dubbelzijdig}
-           {\doifbothsidesoverruled
-              \dododonapagina{##1}%
-            \orsideone
-              \dododonapagina{##1}%
-            \orsidetwo
-            \od}%
-           {\dododonapagina{##1}}}%
-      \processcommacommand[\paginasoort]\dodopagina}}
+     {\processcommacommand[\paginasoort]\dodonapagina}}
+
+% Dit wordt eigenlijk nooit en moet worden vervangen door 
+% het meer algemene mechanisme.
 
 \def\dosoortpagina[#1]%
-  {\doglobal\addtocommalist{#1}\paginasoort
-   \ifselecteren
-     \ExpandBothAfter\doifcommon{#1}{\selectie}
-       {\global\geselecteerdtrue}%
-   \fi
-   \gdef\voorpagina{\dovoorpagina}%
-   \gdef\napagina{\donapagina}}
+  {\edef\desoortpagina{#1}% 
+   \ifx\desoortpagina\empty \else
+     \@EA\doglobal\@EA\addtocommalist\@EA{\desoortpagina}\paginasoort
+     \ifselecteren
+       \fullexpandtwoargsafter\doifcommon{\desoortpagina}{\selectie}
+         {\global\geselecteerdtrue}%
+     \fi
+     \gdef\voorpagina{\dovoorpagina}%
+     \gdef\napagina  {\donapagina  }%
+   \fi}
 
 \def\soortpagina%
   {\dosingleargument\dosoortpagina}

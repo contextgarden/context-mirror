@@ -105,6 +105,10 @@
      \setgvalue{\paragraphprefix\totalnofparagraphs}{\skipparagraph#1\par}%
     \fi} 
 
+\long\def\directskipparagraph#1%
+  {\doglobal\increment\totalnofparagraphs
+   \setgvalue{\paragraphprefix\totalnofparagraphs}{\skipparagraph#1\par}}
+
 \def\dopushparagraphs#1%
   {\global\let\mostrecentparagraphtotal=\totalnofparagraphs
    \ifx#1\undefined

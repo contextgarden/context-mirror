@@ -21,54 +21,61 @@
 \unprotect 
 
 %D \macros 
-%D  {startXMLnamespace}
+%D  {startXMLmapping}
 %D 
 %D You can define macros within a namespace, so that they 
 %D will not conflict (don't confuse this with \XML\ 
-%D namespaces.
+%D namespaces.)
 %D
 %D \starttypen
-%D \startXMLnamespace [tag] | [-] [tag] | [+] [tag]
+%D \startXMLmapping [tag] | [-] [tag] | [+] [tag]
 %D   definitions 
-%D \stopXMLnamespace 
+%D \stopXMLmapping 
 %D \stoptypen 
 %D 
-%D When a \type {[+]} is specified, the namespaces will 
+%D When a \type {[+]} is specified, the mappings will 
 %D nest.  
 
 \let\normal@@XMLelement\@@XMLelement
-\let\XMLnamespace\empty
 
-\def\startXMLnamespace%
-  {\dodoubleempty\dostartXMLnamespace}
+\def\resetXMLmapping
+  {\let\@@XMLelement\normal@@XMLelement
+   \let\@@XMLmapping\empty}
 
-\def\dostartXMLnamespace[#1][#2]%
+\resetXMLmapping
+
+\def\startXMLmapping
+  {\dodoubleempty\dostartXMLmapping}
+
+\def\dostartXMLmapping[#1][#2]% sneller maken 
   {\pushmacro\@@XMLelement
-   \pushmacro\@@XMLnamespace
+   \pushmacro\@@XMLmapping
    \ifsecondargument
      \doifelse{#1}{-}
-       {\donostartXMLnamespace{#1}}
+       {\donostartXMLmapping{#2}}
        {\doifelse{#1}{+}
-          {\dodostartXMLnamespace{#1}{#2}}
-          {\donostartXMLnamespace{#1}}}%
+          {\dodostartXMLmapping{#2}}
+          {\donostartXMLmapping{#2}}}%
    \else
-     \donostartXMLnamespace{#1}%
+     \donostartXMLmapping{#1}%
    \fi
    \unprotect}
 
-\def\donostartXMLnamespace#1%
-  {\edef\XMLnamespace{#1}%
-   \let\@@XMLelement\normal@@XMLelement}
+\def\donostartXMLmapping#1%
+  {\let\@@XMLprevelement\@@XMLelement
+   \edef\@@XMLmapping{#1}%
+   \edef\@@XMLelement{\normal@@XMLelement+#1}}
 
-\def\dodostartXMLnamespace#1#2%
-  {\edef\XMLnamespace{\XMLnamespace:#2}%
-   \edef\@@XMLelement{\@@XMLelement:#2}}
+\def\dodostartXMLmapping#1%
+  {\let\@@XMLprevelement\@@XMLelement
+   \edef\@@XMLmapping{\@@XMLmapping+#1}%
+   \edef\@@XMLelement{\@@XMLelement+#1}}
 
-\def\stopXMLnamespace%
+\def\stopXMLmapping%
   {\protect
-   \popmacro\@@XMLnamespace
+   \popmacro\@@XMLmapping
    \popmacro\@@XMLelement}
-
+ 
 %D Context Directives: 
 
 \def\@@CTXML{@@CTXML}
@@ -76,20 +83,22 @@
 \def\defineXMLdirective%
   {\dodoubleempty\dodefineXMLdirective}
 
-\def\dodefineXMLdirective[#1][#2]#3%
+\long\def\dodefineXMLdirective[#1][#2]#3%
   {\defineXMLprocessor[context-#1-directive]{\dohandleXMLdirective{#1}{#3}}%
    \ifsecondargument     
-     \setvalue{\@@CTXML-#1-#2}{#3}%
+     \long\setvalue{\@@CTXML-#1-#2}{#3}%
    \fi}
 
 \def\dohandleXMLdirective#1#2#3% 
-%  {\dodohandleXMLdirective#3 dummy dummy dummy\end{#1}{#2}}
   {\dodohandleXMLdirective#3 @ @ @\end{#1}{#2}}
 
+%\def\dodohandleXMLdirective#1 #2 #3 #4\end#5#6%
+%  {\doifdefinedelse{\@@CTXML-#5-#1}
+%     {\getvalue{\@@CTXML-#5-#1}[#2=#3]}
+%     {#6[#1][#2=#3]}}
+
 \def\dodohandleXMLdirective#1 #2 #3 #4\end#5#6%
-  {\doifdefinedelse{\@@CTXML-#5-#1}
-     {\getvalue{\@@CTXML-#5-#1}[#2=#3]}
-     {#6[#2=#3]}}
+  {\executeifdefined{\@@CTXML-#5-#1}{#6[#1]}[#2=#3]}
 
 % \defineXMLdirective [mathml] \setupMMLappearance % [#1][#2=#3]
 % \defineXMLdirective [flowchart] [shapes] \setupFLOWshapes % [#2=#3]    
@@ -97,5 +106,53 @@
 
 \defineXMLprocessor [context-begin-group] {\begingroup\gobbleoneargument}
 \defineXMLprocessor [context-end-group]   {\endgroup  \gobbleoneargument}
+
+% \def\XMLnspart#1:#2\empty{#1} % call ...:\empty\empty
+% \def\XMLidpart#1:#2#3\empty{\ifx#2\empty#1\else\XMLidpart#2#3\empty\empty\fi}
+
+% trial macros (used in setupx), to be sped up ! 
 
+\bgroup \catcode`\<=\active
+
+\gdef\saveasXMLdata#1#2% name raw data 
+  {\dodoglobal\setevalue{\@@XMLsave#1}{#2}} % \edef! 
+
+\gdef\saveXMLdata#1#2% name data-name ; definitely no \edef
+  {\dodoglobal\copycsname\@@XMLsave#1\endcsname\csname\@@XMLdata:#2\endcsname}
+
+\gdef\saveXMLdatainelement#1#2#3% name element data 
+  {\dodoglobal\setevalue{\@@XMLsave#1}% todo: one level expansion 
+     {<#2 \currentXMLarguments>\XMLflush{#3}</#2>}}
+
+\gdef\saveXMLdatastructure#1#2#3#4#5#6% name element args before data after
+  {\dodoglobal\setevalue{\@@XMLsave#1}% todo: one level expansion 
+     {<#2 #3 \currentXMLarguments>#4\XMLflush{#5}#6</#2>}}
+
+\gdef\doifelseXMLelement#1%
+  {\doifdefinedelse{\@@XMLsave#1}}
+
+\gdef\flushXMLelement#1%
+  {\csname\@@XMLsave#1\endcsname}
+
+\gdef\showXMLelement#1%
+  {\showvalue{\@@XMLsave#1}}
+
+\gdef\processXMLelement#1%
+  {\bgroup
+   \enableXMLelements 
+   \getvalue{\@@XMLsave#1}%
+   \egroup}
+
+\gdef\texXMLelement#1%
+  {\begingroup
+   \setnormalcatcodes
+   \scantokens\@EA\@EA\@EA{\csname\@@XMLsave#1\endcsname}%
+   \endgroup}
+
+
+\egroup
+
+\def\potentialXMLentity#1%
+  {\doifXMLentityelse{#1}{\getXMLentity{#1}}{#1}}
+
 \protect \endinput

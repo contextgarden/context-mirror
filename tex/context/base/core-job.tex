@@ -218,8 +218,8 @@
 
 \def\doexecutefileonce#1%
   {\beforesplitstring#1\at.\to\currentfile
-   \ExpandBothAfter\doifnotinset{\currentfile}{\loadedfiles}%
-     {\ExpandFirstAfter\addtocommalist{\currentfile}\loadedfiles
+   \fullexpandtwoargsafter\doifnotinset{\currentfile}{\loadedfiles}%
+     {\fullexpandoneargafter\addtocommalist{\currentfile}\loadedfiles
       \doexecutefile{#1}}}
 
 \def\doexecutefile#1%
@@ -235,18 +235,18 @@
 
 \def\omgeving #1 % at outermost level only
   {\def\startomgeving ##1 {}%
-   \let\stopomgeving=\relax
+   \let\stopomgeving\relax
    \startreadingfile
    \processfile{#1}% \readlocfile{#1}{}{}%
    \stopreadingfile}
 
-\let\environment\omgeving % for the moment 
+\def\environment{\omgeving} % for the moment, no \let !  
 
 \newcounter\filelevel
 
 \def\!!donextlevel#1#2#3#4#5#6\\%
   {\beforesplitstring#6\at.\to#1
-   \ifnum\filelevel=0
+   \ifcase\filelevel\relax
      \starttekst
      \def\projekt   ##1 {#2{##1}}%
      \def\omgeving  ##1 {#3{##1}}%
@@ -254,7 +254,7 @@
      \def\onderdeel ##1 {#5{##1}}%
    \fi
    \increment\filelevel\relax
-   \ExpandFirstAfter\addtocommalist{#1}\loadedfiles}
+   \fullexpandoneargafter\addtocommalist{#1}\loadedfiles}
 
 \def\doprevlevel%
   {\ifnum\filelevel=1
@@ -305,15 +305,15 @@
   {\def\partialenvironments{}%
    \def\docommando##1%
      {\beforesplitstring##1\at.\to\someevironment
-      \ExpandFirstAfter\addtocommalist{\someevironment}\partialenvironments}%
+      \fullexpandoneargafter\addtocommalist{\someevironment}\partialenvironments}%
    \processcommalist[#1]\docommando
-   \ExpandBothAfter\doifcommonelse
+   \fullexpandtwoargsafter\doifcommonelse % no longer next needed
        {\currentproject,\currentproduct,
         \currentcomponent,\currentenvironment}
        {\partialenvironments}
-     {\let\stopdeelomgeving=\relax
-      \let\next=\relax}
-     {\let\next=\skipdeelomgeving}%
+     {\let\stopdeelomgeving\relax
+      \let\next\relax}
+     {\let\next\skipdeelomgeving}%
    \next}
 
 \def\startproduct{\startprodukt}

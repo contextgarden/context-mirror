@@ -199,33 +199,33 @@ vardef some_shape_path (expr type) =
     elseif type=59 :
       border := mirror (ll--ulx--urx--lr--cycle) ;
 
-    elseif type= 61 : 
+    elseif type=61 : 
       border := normal (fullcircle scaled (1.5*yradius) xscaled (grid_height/grid_width)) ;
-    elseif type= 62 : 
+    elseif type=62 : 
       border := normal (fullcircle scaled (2.0*yradius) xscaled (grid_height/grid_width)) ;
 
-    elseif type= 66 :
+    elseif type=66 :
       border := normal (rc--origin shifted ( epsilon,0) --cycle & 
                         rc--origin                      --cycle ) ;
-    elseif type= 67 :
+    elseif type=67 :
       border := normal (lc--origin shifted (-epsilon,0) --cycle & 
                         lc--origin                      --cycle ) ;
-    elseif type= 68 :
+    elseif type=68 :
       border := normal (tc--origin shifted (0, epsilon) --cycle & 
                         tc--origin                      --cycle ) ;
-    elseif type= 69 :
+    elseif type=69 :
       border := normal (bc--origin shifted (0,-epsilon) --cycle & 
                         bc--origin                      --cycle ) ;
 
-    elseif type= 75 : 
+    elseif type=75 : 
       border := mirror (lly--lry--ury--uly--cycle) ;
-    elseif type= 76 : 
+    elseif type=76 : 
       border := mirror (ll--lr--ur--uly--cycle) ;
-    elseif type= 77 : 
+    elseif type=77 : 
       border := mirror (ll--lr--ury--ul--cycle) ;
-    elseif type= 78 : 
+    elseif type=78 : 
       border := mirror (lly--lr--ur--ul--cycle) ;
-    elseif type= 79 : 
+    elseif type=79 : 
       border := mirror (ll--lry--ur--ul--cycle) ;
 
     else :

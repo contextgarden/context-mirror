@@ -41,47 +41,6 @@
 %D definitions with the text flow, since all settings are
 %D kept local. The page is clipped to the image size.
 
-% \presetlocalframed[\??mp]
-% 
-% \def\setupMPpage%
-%   {\dodoubleargument\getparameters[\??mp]}
-% 
-% \def\startMPpage%
-%   {\dosingleempty\dostartMPpage}
-% 
-% \long\def\dostartMPpage[#1]#2\stopMPpage
-%   {\pagina
-%    \bgroup
-%    \setbox\scratchbox=\hbox
-%      {\localframed[\??mp][#1]{\startMPcode#2\stopMPcode}}
-%    \edef\MPwd{\the\wd\scratchbox}
-%    \edef\MPht{\the\ht\scratchbox}
-%    \definepapersize
-%      [\s!dummy]
-%      [\c!breedte=\MPwd,
-%       \c!hoogte=\MPht]
-%    \startlocal % keep settings as local as can be
-%      \setuppapersize
-%        [\s!dummy][\s!dummy]
-%      \stellayoutin
-%        [\c!breedte=\MPwd,\c!hoogte=\MPht,
-%         \c!kopwit=\!!zeropoint,\c!rugwit=\!!zeropoint,
-%         \c!snijwit=\!!zeropoint,\c!bodemwit=\!!zeropoint,
-%         \c!hoofd=\!!zeropoint,\c!voet=\!!zeropoint]
-%    \stoplocal % which saves us the trouble of push/pop
-%    \startmakeup[\v!standaard]%
-%      \centerbox{\box\scratchbox}%
-%    \stopmakeup
-%    \egroup}
-% 
-% \setupMPpage
-%   [\c!strut=\v!nee,
-%    \c!uitlijnen=,
-%    \c!offset=\v!overlay,
-%    \c!breedte=\v!passend,
-%    \c!hoogte=\v!passend,
-%    \c!kader=\v!uit]
-
 % generalized, so this belongs in another module 
 
 \def\dostartfittingpage[#1][#2]%
@@ -94,22 +53,22 @@
 
 \def\dostopfittingpage%
   {\egroup\egroup\egroup
-   \edef\fittingwd{\the\wd\scratchbox}
-   \edef\fittinght{\the\ht\scratchbox}
+   \edef\fittingwd{\the\wd\scratchbox}%
+   \edef\fittinght{\the\ht\scratchbox}%
    \definepapersize
      [\s!dummy]
      [\c!breedte=\fittingwd,
-      \c!hoogte=\fittinght]
+      \c!hoogte=\fittinght]%
    \startlocal % keep settings as local as can be
      \setuppapersize
-       [\s!dummy][\s!dummy]
+       [\s!dummy][\s!dummy]%
      \stellayoutin
        [\c!breedte=\fittingwd,\c!hoogte=\fittinght,\c!plaats=\v!midden,
         \c!kopwit=\!!zeropoint,\c!rugwit=\!!zeropoint,
         \c!snijwit=\!!zeropoint,\c!bodemwit=\!!zeropoint,
-        \c!hoofd=\!!zeropoint,\c!voet=\!!zeropoint]
+        \c!hoofd=\!!zeropoint,\c!voet=\!!zeropoint]%
    \stoplocal % which saves us the trouble of push/pop
-   \startmakeup[\v!standaard]%
+   \startmakeup[\v!standaard][\c!dubbelzijdig=\v!nee,\c!pagina=]%
      \centerbox{\box\scratchbox}%
    \stopmakeup
    \egroup}
@@ -126,7 +85,7 @@
 
 \long\def\dostartMPpage[#1]#2\stopMPpage
   {\dostartfittingpage[\??mg][#1]%
-     \startMPcode#2\stopMPcode%
+     \startMPcode#2\stopMPcode
    \dostopfittingpage}
 
 \setupMPpage
@@ -167,7 +126,7 @@
 
 \def\MPfigure#1#2% test for dup figure
   {\bgroup
-   \getfiguredimensions[#1][\c!object=\v!nee]%
+   \getfiguredimensionsonly[#1]% [\c!object=\v!nee] already set 
    \freezedimenmacro\naturalfigurewidth
    \freezedimenmacro\naturalfigureheight
    \startMPcode

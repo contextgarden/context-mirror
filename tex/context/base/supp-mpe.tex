@@ -17,8 +17,8 @@
 %D preamble definitions, but when producing \PDF\ we have to
 %D set up the appropriate datastructures ourselves. It acts as
 %D a plug in into \type {supp-pdf}. As soon as we need more
-%D extensions, we will generalize these macro. Some 
-%D definitions will move to the special drivers. 
+%D extensions, we will generalize these macro. Some
+%D definitions will move to the special drivers.
 
 \writestatus{loading}{MetaPost Special Extensions}
 
@@ -81,29 +81,26 @@
 
 %D The \type {%%MetaPostSpecials: version.revision signal} line
 %D triggers this module into handling color specifications kind
-%D of special. We need this safeguard for non||special 
-%D usage. 
+%D of special. We need this safeguard for non||special
+%D usage.
 
 \chardef\MPspecialversion  = 0  % specials when >1
 \chardef\MPspecialrevision = 0  % specials when >1
 \chardef\MPspecialsignal   = 0  % passed on by graphic
 
-\newcount\currentPDFshade  % 0  % global (document wide) counter
 \chardef\inlineMPspecials  = 1  % only needed for stack resetting
 
-\let\currentMPshades\empty
-
-%D This macro handles the special definitions that are 
-%D passed as comment. 
+%D This macro handles the special definitions that are
+%D passed as comment.
 
 \def\dohandleMPspecialcomment#1
   {\setMPargument{#1}%
-   \advance\scratchcounter by -1\relax
+   \advance\scratchcounter -1
    \ifcase\scratchcounter\relax
      \handleMPspecialcommand
      \donetrue
      \doresetMPstack
-     \let\handleMPsequence=\dohandleMPsequence
+     \let\handleMPsequence\dohandleMPsequence
      \expandafter\handleMPsequence
    \else
      \expandafter\dohandleMPspecialcomment
@@ -113,69 +110,60 @@
   {\doresetMPstack
    \scratchcounter=#1\relax
    \ifcase\scratchcounter % when zero, inline shading is used
-     \chardef\inlineMPspecials=1
-     \let\handleMPsequence=\dohandleMPsequence
+     \chardef\inlineMPspecials1
+     \let\handleMPsequence\dohandleMPsequence
      \expandafter\handleMPsequence
    \else
-     \chardef\inlineMPspecials=0
+     \chardef\inlineMPspecials0
      \expandafter\dohandleMPspecialcomment
    \fi}
 
-%D When defined inline, we use another macro to handle the 
-%D definitions. Actually, this macro is called by the 
-%D previous ones. 
+%D When defined inline, we use another macro to handle the
+%D definitions. Actually, this macro is called by the
+%D previous ones.
 
 \def\handleMPspecialcommand%
   {\ifcase\inlineMPspecials\or
-     \advance\nofMParguments by -1 % pop the size
+     \advance\nofMParguments -1 % pop the size
    \fi
-   \doifundefinedelse{\MPspecial}
-     {\message{[unknown \MPspecial]}}
-     {\getvalue{\MPspecial}}%
+   \ifundefined\MPspecial
+     \message{[unknown \MPspecial]}%
+   \else
+     \csname\MPspecial\endcsname
+   \fi
    \ifcase\inlineMPspecials
      \doresetMPstack % 0
    \else
      \resetMPstack   % 1
    \fi}
 
-%D This macro triggers special support. Currently, the 
+%D This macro triggers special support. Currently, the
 %D version and revision number are not used. Any version number
-%D greater than zero will enable special support.  
+%D greater than zero will enable special support.
 
 \def\handleMPspecialscomment #1.#2 #3 % version.revision signal
   {\doresetMPstack
-   \chardef\MPspecialversion =#1 
-   \chardef\MPspecialrevision=#2 
-   \chardef\MPspecialsignal  =#3 
-   \let\handleMPsequence=\dohandleMPsequence
+   \chardef\MPspecialversion #1
+   \chardef\MPspecialrevision#2
+   \chardef\MPspecialsignal  #3
+   \let\handleMPsequence\dohandleMPsequence
    \handleMPsequence}
 
-%D In case of \PDF, we need to prepare resourcs. 
+%D In case of \PDF, we need to prepare resourcs.
+
+\newtoks\MPstartresources
+\newtoks\MPstopresources
 
 \def\startMPresources%
-  {\global\let\currentMPshades\empty
+  {\the\MPstartresources
    \ifx\currentPDFresources\empty\else
-     \message{[unused resources before shade \the\currentPDFshade]}%
+     \message{[unused resources]}%
    \fi
    \global\let\currentPDFresources\empty}
 
 \def\stopMPresources%
-  {\ifx\currentMPshades\empty
-     \global\let\currentPDFresources\empty
-   \else
-     \xdef\currentPDFresources%
-       {/Shading << \currentMPshades >>}%
-   \fi}
-
-\def\startMPshading#1%
-  {\edef\currentMPspecial{\gMPs{#1}}}
-
-\def\stopMPshading%
-  {\global\advance\currentPDFshade by 1
-   \setxvalue{obj:Sh:\currentMPspecial}% 
-     {/Sh\the\currentPDFshade\space\the\pdflastobj\space0 R }%
-   \setxvalue{mps:Sh:\currentMPspecial}%
-     {\the\currentPDFshade}}
+  {\let\currentPDFresources\empty
+   \the\MPstopresources}
 
 %D Since colors are not subjected to transformations, we can
 %D only use colors as signal. In our case, we use a dummy colored
@@ -183,7 +171,7 @@
 %D {0.001} is the first path and \type {0.010} the tenth. Since
 %D \METAPOST strips trailing zeros, we have to padd the string.
 
-\newif\ifMPcmyk 
+\newif\ifMPcmyk
 
 \ifx\normalhandleMPrgbcolor\undefined % in case we reload this module
 
@@ -191,45 +179,45 @@
   \let\normalhandleMPcmykcolor\handleMPcmykcolor
   \let\normalhandleMPgraycolor\handleMPgraycolor
 
-\fi 
+\fi
 
-%D When we are using \CONTEXT, we will fall back to the 
+%D When we are using \CONTEXT, we will fall back to the
 %D better color conversion routines. This also has the advantage
-%D that we don't have to parse and convert the file. In this 
+%D that we don't have to parse and convert the file. In this
 %D alternative, \type {\!MP} is not (yet) supported. Because
-%D we can (for efficiency reasons) turn off strokecolor, 
-%D something we cannot do in \METAPOST\ converted code. 
+%D we can (for efficiency reasons) turn off strokecolor,
+%D something we cannot do in \METAPOST\ converted code.
 
-\newif\ifPDFMPstrokecolor \PDFMPstrokecolortrue 
+\newif\ifPDFMPstrokecolor \PDFMPstrokecolortrue
 
 %D [This code should move to meta-ini.]
 
-\ifCONTEXT
+\ifCONTEXT % we can use this for a better xgstate handling
 
   \def\checkPDFMPstrokecolor%
     {\ifPDFMPstrokecolor \PDFstrokecolortrue \fi}
 
-  \def\normalhandleMPrgbcolor%
-    {{\checkPDFMPstrokecolor\dostartcolormodeR\gMPa1:\gMPa2:\gMPa3\od}}
+  \def\normalhandleMPrgbcolor
+    {{\checkPDFMPstrokecolor\execcolorR\gMPa1:\gMPa2:\gMPa3:0:0\od}}
 
-  \def\normalhandleMPcmykcolor%
-    {{\checkPDFMPstrokecolor\dostartcolormodeC\gMPa1:\gMPa2:\gMPa3:\gMPa4\od}}
+  \def\normalhandleMPcmykcolor
+    {{\checkPDFMPstrokecolor\execcolorC\gMPa1:\gMPa2:\gMPa3:\gMPa4:0:0\od}}
 
-  \def\normalhandleMPgraycolor%
-    {{\checkPDFMPstrokecolor\dostartcolormodeS\gMPa1\od}}
+  \def\normalhandleMPgraycolor
+    {{\checkPDFMPstrokecolor\execcolorS\gMPa1:0:0\od}}
 
 \fi
 
 % In the previous macros we use the special drivers. A more
-% direct approach would have been: 
+% direct approach would have been:
 %
-% \def\doPDFstartrgbcolormode#1#2#3%   
+% \def\doPDFstartrgbcolormode#1#2#3%
 %   {\PDFcode{#1 #2 #3 rg #1 #2 #3 RG}}
 %
 % \def\doPDFstartcmykcolormode#1#2#3#4%
 %   {\PDFcode{#1 #2 #3 #4 k #1 #2 #3 #4 K}}
 %
-% \def\doPDFstartgraycolormode#1%      
+% \def\doPDFstartgraycolormode#1%
 %   {\PDFcode{#1 g #1 G}}
 %
 % \appendtoks
@@ -238,15 +226,15 @@
 %   \let\dostartgraycolormode\doPDFstartgraycolormode
 % \to \everyMPtoPDFconversion
 
-%D Now we can handle special color signals. We only do this 
-%D when special are detected. 
+%D Now we can handle special color signals. We only do this
+%D when special are detected.
 
 \def\MPrgbnumber#1{\expandafter\doMPrgbnumber#1000.0000\relax}
 \def\doMPrgbnumber#1.#2#3#4#5\relax{#2#3#4}
 
-%D The naive case looks like: 
-%D 
-%D \starttypen 
+%D The naive case looks like:
+%D
+%D \starttypen
 %D \def\handleMPrgbcolor%
 %D   {\setMPcolor
 %D    \ifcase\MPspecialversion
@@ -256,124 +244,150 @@
 %D    \else
 %D      \resetMPcolor\normalhandleMPrgbcolor
 %D    \fi\fi}
-%D \stoptypen 
+%D \stoptypen
 %D
-%D However, since we want \CMYK\ support, we will use the 
-%D following implementation: 
+%D However, since we want \CMYK\ support, we will use the
+%D following implementation:
 
-\def\handleMPrgbcolor%
-  {\setMPcolor
-   \ifcase\MPspecialversion
-     \resetMPcolor\normalhandleMPrgbcolor
-   \else\ifnum\MPrgbnumber\lastMPrvalue=\MPspecialsignal\relax
-     \ifMPcmyk \ifnum\MPrgbnumber\lastMPgvalue=1 % cmyk color spec
-       \doifdefined{mps:k:\number\MPrgbnumber\lastMPbvalue}
-         {\getvalue{mps:k:\number\MPrgbnumber\lastMPbvalue}%
-          \resetMPcolor\normalhandleMPcmykcolor}%
-     \fi \fi 
-   \else
-     \resetMPcolor\normalhandleMPrgbcolor
-   \fi\fi}
-
-\def\handleMPcmykcolor%
-  {\resetMPcolor\normalhandleMPcmykcolor}
-
-\def\handleMPgraycolor%
-  {\resetMPcolor\normalhandleMPgraycolor}
-
-\def\resetMPcolor%
-  {\def\lastMPrvalue{0.0}%
-   \def\lastMPgvalue{0.0}%
-   \def\lastMPbvalue{0.0}}
+% \def\setMPcolor
+%   {\edef\lastMPrvalue{\gMPa1}%
+%    \edef\lastMPgvalue{\gMPa2}%
+%    \edef\lastMPbvalue{\gMPa3}}
+%
+% speed up:
 
 \def\setMPcolor%
-  {\edef\lastMPrvalue{\gMPa1}%
-   \edef\lastMPgvalue{\gMPa2}%
-   \edef\lastMPbvalue{\gMPa3}}
+  {\edef\lastMPrvalue{\csname\@@MP01\endcsname}%
+   \edef\lastMPgvalue{\csname\@@MP02\endcsname}%
+   \edef\lastMPbvalue{\csname\@@MP03\endcsname}}
 
-\resetMPcolor 
+\def\zeroMPrgbvalue{0.0}
 
-%D Specials are define and recalled using: 
+\def\resetMPcolor
+  {\let\lastMPrvalue\zeroMPrgbvalue
+   \let\lastMPgvalue\zeroMPrgbvalue
+   \let\lastMPbvalue\zeroMPrgbvalue}
 
-\def\MPspecial%
+\resetMPcolor
+
+% \def\handleMPrgbcolor%
+%  {\ifcase\MPspecialversion
+%     \normalhandleMPrgbcolor
+%   \else
+%     \setMPcolor
+%     \ifnum\MPrgbnumber\lastMPrvalue=\MPspecialsignal\relax
+%       \ifMPcmyk \interceptMPcmykcolor \fi
+%     \else
+%       \resetMPcolor\normalhandleMPrgbcolor
+%     \fi
+%   \fi}
+
+\def\@@MPSK{@MPSK@}
+
+% \def\interceptMPcmykcolor
+%   {\ifMPcmyk
+%      \ifnum\MPrgbnumber\lastMPgvalue=1 % cmyk color spec
+%        \doifdefined{\@@MPSK\number\MPrgbnumber\lastMPbvalue}
+%          {\getvalue{\@@MPSK\number\MPrgbnumber\lastMPbvalue}%
+%           \resetMPcolor\normalhandleMPcmykcolor}%
+%      \fi
+%    \fi}
+
+%\def\interceptMPcmykcolor % can be used often, so sped up
+%  {\ifcase\MPrgbnumber\lastMPgvalue \or % 1 == cmyk color spec
+%     \expandafter\dointerceptMPcmykcolor
+%   \fi}
+
+\def\interceptMPcmykcolor % todo : \ifMPcmyk
+  {\ifcase\MPrgbnumber\lastMPgvalue
+     % cannot happen
+   \or
+     % 1 == cmyk color spec
+     \ifMPcmyk \dointerceptMPcmykcolor \fi
+   \or
+     % 2 == rgb transparency
+     \invokeMPtransparencyspecial
+   \else
+     % 3 == cmyk transparency
+     \ifMPcmyk \invokeMPtransparencyspecial \fi
+   \fi}
+
+%\def\dointerceptMPcmykcolor % can be used often, so sped up
+%  {\@EA\ifx\csname\@@MPSK\number\MPrgbnumber\lastMPbvalue\endcsname\relax\else
+%     \csname\@@MPSK\number\MPrgbnumber\lastMPbvalue\endcsname
+%     \resetMPcolor\normalhandleMPcmykcolor
+%   \fi}
+
+\def\dointerceptMPcmykcolor % can be used often, so sped up 
+  {\revokeMPtransparencyspecial
+   \@EA\ifx\csname\@@MPSK\number\MPrgbnumber\lastMPbvalue\endcsname\relax\else
+     \csname\@@MPSK\number\MPrgbnumber\lastMPbvalue\endcsname
+     \normalhandleMPcmykcolor
+   \fi}
+
+\def\handleMPrgbcolor
+  {\resetMPcolor 
+   \ifcase\MPspecialversion
+     \normalhandleMPrgbcolor
+   \else
+     \setMPcolor
+     \ifnum\MPrgbnumber\lastMPrvalue=\MPspecialsignal\relax
+       \interceptMPcmykcolor
+     \else
+       \revokeMPtransparencyspecial 
+       \normalhandleMPrgbcolor
+     \fi
+   \fi}
+
+\def\handleMPgraycolor
+  {\resetMPcolor 
+   \ifcase\MPspecialversion \else \revokeMPtransparencyspecial \fi
+   \normalhandleMPgraycolor}
+
+\def\handleMPcmykcolor
+  {\resetMPcolor 
+   \ifcase\MPspecialversion \else \revokeMPtransparencyspecial \fi
+   \normalhandleMPcmykcolor}
+
+%D Specials are define and recalled using:
+
+\def\MPspecial
   {MP special \gMPs\nofMParguments}
 
 \def\defineMPspecial#1#2%
   {\setvalue{MP special #1}{#2}}
 
-%D The path processing macro is slightly extended. 
-
-% \def\processMPpath%
-%   {\ifcase\MPspecialversion\else
-%      \ifnum\MPrgbnumber\lastMPrvalue=\MPspecialsignal 
-%        \scratchcounter=\MPrgbnumber\lastMPbvalue
-%        \edef\currentMPspecial{\the\scratchcounter}%
-%        \ifnum\finiMPpath=2 
-%          \doifdefined{mps:Sh:\currentMPspecial}
-%             {\edef\currentMPshade{\getvalue{obj:Sh:\currentMPspecial}}% 
-%              \doifinstringelse{\currentMPshade}{\currentMPshades}
-%                {}{\xdef\currentMPshades{\currentMPshades\currentMPshade}}% 
-%              \chardef\finiMPpath=4 \PDFcode{q /Pattern cs}}%
-%        \fi
-%      \fi
-%    \fi
-%    \flushMPpath
-%    \closeMPpath
-%    \PDFcode
-%      {\ifcase\finiMPpath
-%         W n\or S\or f\or B\or W n /Sh\getvalue{mps:Sh:\currentMPspecial} sh Q%
-%       \fi}%
-%    \let\handleMPsequence=\dohandleMPsequence
-%    \resetMPstack
-%    \nofMPsegments=0
-%    \handleMPsequence}
+%D The path processing macro is slightly extended.
 
 \newtoks \invokeMPspecials
 
-% \def\processMPpath%
-%   {\let\extraMPpathcode\empty
-%    \ifcase\MPspecialversion\else
-%      \ifnum\MPrgbnumber\lastMPrvalue=\MPspecialsignal 
-%        \scratchcounter=\MPrgbnumber\lastMPbvalue
-%        \edef\currentMPspecial{\the\scratchcounter}%
-%        \ifnum\finiMPpath=2 % to outer level 
-%          \the\invokeMPspecials
-%        \fi
-%      \fi
-%    \fi
-%    \flushMPpath
-%    \closeMPpath
-%    \PDFcode{\ifcase\finiMPpath W n\or S\or f\or B\else W n\fi \extraMPpathcode}%
-%    \let\handleMPsequence=\dohandleMPsequence
-%    \resetMPstack
-%    \nofMPsegments=0
-%    \handleMPsequence}
-
 \def\finishMPpath%
   {\PDFcode
-     {\ifcase\finiMPpath W n\or S\or f\or B\else W n\fi 
+     {\ifcase\finiMPpath W n\or S\or f\or B\else W n\fi
       \extraMPpathcode}}
 
 \def\processMPpath%
-  {\checkMPpath % ! 
+  {\checkMPpath % !
    \ifcase\nofMPsegments\else
      \let\extraMPpathcode\empty
      \ifcase\MPspecialversion\else
-       \ifnum\MPrgbnumber\lastMPrvalue=\MPspecialsignal 
-         \scratchcounter=\MPrgbnumber\lastMPbvalue
-         \edef\currentMPspecial{\the\scratchcounter}%
-         \ifnum\finiMPpath=2 % to outer level 
-           \the\invokeMPspecials
+       \ifnum\MPrgbnumber\lastMPrvalue=\MPspecialsignal
+         \ifnum\MPrgbnumber\lastMPgvalue>10 % really needed
+           \scratchcounter\MPrgbnumber\lastMPbvalue
+           \edef\currentMPspecial{\the\scratchcounter}%
+           \ifnum\finiMPpath=2 % to outer level
+             \the\invokeMPspecials
+           \fi
          \fi
        \fi
      \fi
      \flushMPpath
      \closeMPpath
      \finishMPpath
-   \fi 
-   \let\handleMPsequence=\dohandleMPsequence
+   \fi
+   \let\handleMPsequence\dohandleMPsequence
    \resetMPstack
-   \nofMPsegments=0
+   \nofMPsegments0
    \handleMPsequence}
 
 %D Shading is an example of a more advanced graphic feature,
@@ -510,18 +524,42 @@
 %D \NC /N      \NC smaller values, bigger inner circles \NC \NR
 %D \stoptabulatie
 
+\newcount\currentPDFshade  % 0  % global (document wide) counter
+\let\currentMPshades\empty
+
+\def\startMPshading#1%
+  {\edef\currentMPspecial{\gMPs{#1}}}
+
+\def\stopMPshading%
+  {\global\advance\currentPDFshade 1
+   \setxvalue{obj:Sh:\currentMPspecial}%
+     {/Sh\the\currentPDFshade\space\the\pdflastobj\space0 R }%
+   \setxvalue{mps:Sh:\currentMPspecial}%
+     {\the\currentPDFshade}}
+
+\appendtoks
+  \global\let\currentMPshades\empty
+\to \MPstartresources
+
+\appendtoks
+   \ifx\currentMPshades\empty \else
+     \xdef\currentPDFresources{\currentPDFresources
+       /Shading <<\currentMPshades>>}%
+   \fi
+\to \MPstopresources
+
 \def\invokeMPshadespecial%
   {\doifdefined{mps:Sh:\currentMPspecial}
-     {\edef\currentMPshade{\getvalue{obj:Sh:\currentMPspecial}}% 
+     {\edef\currentMPshade{\getvalue{obj:Sh:\currentMPspecial}}%
       \doifinstringelse{\currentMPshade}{\currentMPshades}
-        {}{\xdef\currentMPshades{\currentMPshades\currentMPshade}}% 
+        {}{\xdef\currentMPshades{\currentMPshades\currentMPshade}}%
       \def\extraMPpathcode{/Sh\getvalue{mps:Sh:\currentMPspecial} sh Q}%
-      \chardef\finiMPpath=0 
+      \chardef\finiMPpath=0
       \PDFcode{q /Pattern cs}}}
 
 \appendtoks \invokeMPshadespecial \to \invokeMPspecials
 
-\defineMPspecial{2}
+\defineMPspecial{30}
   {\startMPshading{14}% type 2
    \immediate\pdfobj
      {<</FunctionType 2
@@ -537,7 +575,7 @@
         /Extend [true true]>>}%
    \stopMPshading}
 
-\defineMPspecial{3}
+\defineMPspecial{31}
   {\startMPshading{16}% type 3
    \immediate\pdfobj
      {<</FunctionType 2
@@ -553,12 +591,12 @@
         /Extend [true true]>>}%
    \stopMPshading}
 
-%D Figure inclusion is kind of strange to \METAPOST, but when 
+%D Figure inclusion is kind of strange to \METAPOST, but when
 %D Santiago Muelas started discussing this with me, I was able
-%D to cook up a solution using specials. 
+%D to cook up a solution using specials.
 
 \def\invokeMPfigurespecial%
-  {\getvalue{mps:gr:\currentMPspecial}} % or \relax 
+  {\getvalue{mps:gr:\currentMPspecial}} % or \relax
 
 \appendtoks \invokeMPfigurespecial \to \invokeMPspecials
 
@@ -571,50 +609,50 @@
 % \def\handleMPfigurespecial#1#2#3#4#5#6#7%
 %   {\vbox to 0pt
 %      {\vss
-%       \hbox to 0pt 
-%         {\pdfliteral{q #1 #2 #3 #4 #5 #6 cm}% 
-%          \pdfimage width 1bp height 1bp {#7}% maybe 10 is better 
-%          \pdfliteral{Q}% 
+%       \hbox to 0pt
+%         {\pdfliteral{q #1 #2 #3 #4 #5 #6 cm}%
+%          \pdfimage width 1bp height 1bp {#7}% maybe 10 is better
+%          \pdfliteral{Q}%
 %          \hss}}}
-% 
-% better, since xform reuse 
+%
+% better, since xform reuse
 
-\def\handleMPfigurespecial#1#2#3#4#5#6#7%
-  {\vbox to \!!zeropoint
+\def\handleMPfigurespecial#1#2#3#4#5#6#7% todo : combine with ext fig 
+  {\vbox to \zeropoint
      {\vss
-      \hbox to \!!zeropoint
+      \hbox to \zeropoint
         {\ifcase\pdfoutput\or % will be hooked into the special driver
            \doiffileelse{#7}
              {\doifundefinedelse{mps:x:#7}
-                {\immediate\pdfximage width 1bp height 1bp {#7}% 
+                {\immediate\pdfximage width 1bp height 1bp {#7}%
                  \setxvalue{mps:x:#7}{\pdfrefximage\the\pdflastximage}}%
-                {\message{[reusing figure #7]}}% 
-              \pdfliteral{q #1 #2 #3 #4 #5 #6 cm}% 
+                {\message{[reusing figure #7]}}%
+              \pdfliteral{q #1 #2 #3 #4 #5 #6 cm}%
               \rlap{\getvalue{mps:x:#7}}%
               \pdfliteral{Q}}
-             {\message{[unknown figure #7]}}% 
+             {\message{[unknown figure #7]}}%
          \fi
          \hss}}}
 
-%D An example of using both special features is the 
-%D following. 
+%D An example of using both special features is the
+%D following.
 %D
-%D \starttypen 
-%D \startMPpage 
-%D   externalfigure "hakker1b.png" scaled 22cm rotated  10 shifted (-2cm,0cm); 
-%D   externalfigure "hakker1b.png" scaled 10cm rotated -10 ; 
-%D   externalfigure "hakker1b.png" scaled  7cm rotated  45 shifted (8cm,12cm) ; 
+%D \starttypen
+%D \startMPpage
+%D   externalfigure "hakker1b.png" scaled 22cm rotated  10 shifted (-2cm,0cm);
+%D   externalfigure "hakker1b.png" scaled 10cm rotated -10 ;
+%D   externalfigure "hakker1b.png" scaled  7cm rotated  45 shifted (8cm,12cm) ;
 %D   path p ; p := unitcircle xscaled 15cm yscaled 20cm;
-%D   path q ; q := p rotatedaround(center p,90) ;   
-%D   path r ; r := buildcycle(p,q) ; clip currentpicture to r ; 
-%D   path s ; s := boundingbox currentpicture enlarged 5mm ; 
-%D   picture c ; c := currentpicture ; currentpicture := nullpicture ; 
+%D   path q ; q := p rotatedaround(center p,90) ;
+%D   path r ; r := buildcycle(p,q) ; clip currentpicture to r ;
+%D   path s ; s := boundingbox currentpicture enlarged 5mm ;
+%D   picture c ; c := currentpicture ; currentpicture := nullpicture ;
 %D   circular_shade(s,0,.2red,.9red) ;
-%D   addto currentpicture also c ; 
+%D   addto currentpicture also c ;
 %D \stopMPpage
-%D \stoptypen 
+%D \stoptypen
 
-%D This is some experimental hyperlink driver that I wrote 
+%D This is some experimental hyperlink driver that I wrote
 %D for Mark Wicks.
 
 \defineMPspecial{20}
@@ -625,7 +663,7 @@
 
 \def\handleMPhyperlink#1#2#3#4#5%
   {%\ifcase\pdfoutput\or
-     \setbox\scratchbox=\hbox 
+     \setbox\scratchbox=\hbox
        {\setbox\scratchbox=\null
         \scratchdimen=#1bp\scratchdimen=-\scratchdimen
         \advance\scratchdimen#3bp
@@ -633,10 +671,10 @@
         \scratchdimen=#2bp\scratchdimen=-\scratchdimen
         \advance\scratchdimen#4bp
         \ht\scratchbox=\scratchdimen
-        \incolorfalse 
+        \incolorfalse
         \gotobox{\box\scratchbox}[#5]}%
      \setbox\scratchbox=\hbox
-       {\scratchdimen\MPxoffset  bp \advance\scratchdimen#1bp 
+       {\scratchdimen\MPxoffset  bp \advance\scratchdimen#1bp
         \hskip\scratchdimen
         \scratchdimen=\MPyoffset bp \advance\scratchdimen#2bp
         \raise\scratchdimen\box\scratchbox}%
@@ -645,45 +683,45 @@
    }%\fi}
 
 \def\invokeMPhyperlinkspecial%
-  {\getvalue{mps:hl:\currentMPspecial}} % or \relax 
+  {\getvalue{mps:hl:\currentMPspecial}} % or \relax
 
 \appendtoks \invokeMPhyperlinkspecial \to \invokeMPspecials
 
-%D Special number~1 is dedicated to \CMYK\ support. If you 
-%D want to know why: look at this: 
-%D 
+%D Special number~1 is dedicated to \CMYK\ support. If you
+%D want to know why: look at this:
+%D
 %D \startbuffer[mp]
 %D   fill fullcircle xyscaled (3cm,1cm) withcolor \MPcolor{test} ;
 %D \stopbuffer
-%D 
+%D
 %D \startbuffer[cmyk]
 %D \startcombinatie[4*1]
-%D   {\definecolor[test][c=1,y=.3,k=.3] \processMPbuffer[mp]} {c=1 y=.3 k=.3} 
-%D   {\definecolor[test][c=.9,y=.15]    \processMPbuffer[mp]} {c=.9 y=.15}    
-%D   {\definecolor[test][c=.25,y=.8]    \processMPbuffer[mp]} {c=.25 y=.8}   
-%D   {\definecolor[test][c=.45,y=.1]    \processMPbuffer[mp]} {c=.45 y=.1}  
+%D   {\definecolor[test][c=1,y=.3,k=.3] \processMPbuffer[mp]} {c=1 y=.3 k=.3}
+%D   {\definecolor[test][c=.9,y=.15]    \processMPbuffer[mp]} {c=.9 y=.15}
+%D   {\definecolor[test][c=.25,y=.8]    \processMPbuffer[mp]} {c=.25 y=.8}
+%D   {\definecolor[test][c=.45,y=.1]    \processMPbuffer[mp]} {c=.45 y=.1}
 %D \stopcombinatie
 %D \stopbuffer
-%D 
+%D
 %D \plaatsfiguur
-%D   {\CMYK\ support disabled, 
+%D   {\CMYK\ support disabled,
 %D    conversion to \RGB.}
 %D   {\setupcolors[cmyk=nee,status=start]\haalbuffer[cmyk]}
-%D 
+%D
 %D \plaatsfiguur
-%D   {\CMYK\ support enabled, 
+%D   {\CMYK\ support enabled,
 %D    no support in \METAPOST.}
 %D   {\setupcolors[cmyk=ja,mpcmyk=nee,status=start]\haalbuffer[cmyk]}
-%D 
+%D
 %D \plaatsfiguur
-%D   {\CMYK\ support enabled, 
-%D    no conversion to \RGB, 
+%D   {\CMYK\ support enabled,
+%D    no conversion to \RGB,
 %D    support in \METAPOST}
 %D   {\setupcolors[cmyk=ja,status=start]\haalbuffer[cmyk]}
 
 \defineMPspecial{1}
-  {\ifMPcmyk 
-     \setxvalue{mps:k:\gMPs1}{\noexpand\setMPcmyk\gMPs2 \gMPs3 \gMPs4 \gMPs5 }%
+  {\ifMPcmyk
+     \setxvalue{\@@MPSK\gMPs1}{\noexpand\setMPcmyk\gMPs2 \gMPs3 \gMPs4 \gMPs5 }%
    \fi}
 
 \def\setMPcmyk#1 #2 #3 #4 %
@@ -692,67 +730,267 @@
    \setvalue{\@@MP03}{#3}%
    \setvalue{\@@MP04}{#4}}
 
-%D This special (number 50) passes positions to a tex file. 
-%D This method uses a two||pass approach an (mis|)|used the 
-%D context positioning macros. In \type {core-pos} we will 
-%D implement the low level submacro needed. 
+%D This special (number 50) passes positions to a tex file.
+%D This method uses a two||pass approach an (mis|)|used the
+%D context positioning macros. In \type {core-pos} we will
+%D implement the low level submacro needed.
 %D
 %D \startbuffer
-%D \definelayer[test] 
+%D \definelayer[test]
 %D
 %D \setlayer
 %D   [test]
 %D   [x=\MPx{somepos-1},y=\MPy{somepos-1}]
 %D   {Whatever we want here!}
-%D 
+%D
 %D \setlayer
 %D   [test]
 %D   [x=\MPx{somepos-2},y=\MPy{somepos-2}]
 %D   {Whatever we need there!}
-%D 
+%D
 %D \startuseMPgraphic{oeps}
-%D   draw fullcircle scaled 6cm withcolor red ; 
-%D   register ("somepos-1",1cm,2cm,center currentpicture) ; 
-%D   register ("somepos-2",4cm,3cm,(-1cm,-2cm)) ; 
+%D   draw fullcircle scaled 6cm withcolor red ;
+%D   register ("somepos-1",1cm,2cm,center currentpicture) ;
+%D   register ("somepos-2",4cm,3cm,(-1cm,-2cm)) ;
 %D \stopuseMPgraphic
-%D 
+%D
 %D \framed[background=test,offset=overlay]{\useMPgraphic{oeps}}
 %D \stopbuffer
-%D 
-%D \typebuffer 
-%D 
+%D
+%D \typebuffer
+%D
 %D Here the width and height are not realy used, but one can
-%D imagine situations where tex has to work with values 
-%D calculated by \METAPOST.  
-%D 
+%D imagine situations where tex has to work with values
+%D calculated by \METAPOST.
+%D
 %D \startlinecorrection
 %D \getbuffer
 %D \stoplinecorrection
 %D
-%D Later we will implement a more convenient macro: 
+%D Later we will implement a more convenient macro:
 %D
-%D \starttyping 
+%D \starttyping
 %D \setMPlayer [test] [somepos-1] {Whatever we want here!}
 %D \setMPlayer [test] [somepos-2] {Whatever we need there!}
 %D \stoptyping
- 
+
 \ifx\dosavepositionwhd\undefined
   \let\dosavepositionwhd\gobblesevenarguments
 \fi
 
-\defineMPspecial{50} % x y width height label 
+\defineMPspecial{50} % x y width height label
   {\bgroup
-   \scratchdimen\MPllx bp \scratchdimen=-\scratchdimen
-   \advance\scratchdimen\gMPs1bp 
+   \scratchdimen\MPllx bp \scratchdimen-\scratchdimen
+   \advance\scratchdimen\gMPs1bp
    \edef\x{\number\scratchdimen}%
-   \scratchdimen\gMPs2bp \scratchdimen=-\scratchdimen
-   \advance\scratchdimen\MPury bp 
+   \scratchdimen\gMPs2bp \scratchdimen-\scratchdimen
+   \advance\scratchdimen\MPury bp
    \edef\y{\number\scratchdimen}%
-   \scratchdimen=\gMPs3bp
+   \scratchdimen\gMPs3bp
    \edef\w{\number\scratchdimen}%
-   \scratchdimen=\gMPs4bp
+   \scratchdimen\gMPs4bp
    \edef\h{\number\scratchdimen}%
    \dosavepositionwhd{\gMPs5}{0}{\x}{\y}{\w}{\h}{0}%
    \egroup}
+
+%D Transparency support used specials 60 (rgb) and 61
+%D (cmyk).
+%D
+%D \startbuffer
+%D u := 2cm ; path p ; p := fullcircle scaled u shifted (u/4,0);
+%D
+%D color cyan    ; cyan    := cmyk(1,0,0,0) ;
+%D color magenta ; magenta := cmyk(0,1,0,0) ;
+%D color yellow  ; yellow  := cmyk(0,0,1,0) ;
+%D
+%D fill p rotated  90 withcolor transparent(1,.5,yellow) ;
+%D fill p rotated 210 withcolor transparent(1,.5,green) ;
+%D fill p rotated 330 withcolor transparent(1,.5,blue) ;
+%D \stopbuffer
+%D
+%D \typebuffer
+%D
+%D \startlinecorrection \processMPbuffer \stoplinecorrection
+%D
+%D One can also communicate colors between \CONTEXT\ and
+%D \METAPOST:
+%D
+%D \startbuffer
+%D \definecolor[tcyan]   [c=1,k=.2,t=.5]
+%D \definecolor[tmagenta][m=1,k=.2,t=.5]
+%D \definecolor[tyellow] [y=1,k=.2,t=.5]
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+%D
+%D \startbuffer
+%D u := 2cm ; path p ; p := fullcircle scaled u shifted (u/4,0);
+%D
+%D fill p rotated  90 withcolor \MPcolor{tcyan} ;
+%D fill p rotated 210 withcolor \MPcolor{tmagenta} ;
+%D fill p rotated 330 withcolor \MPcolor{tyellow} ;
+%D \stopbuffer
+%D
+%D \startlinecorrection \processMPbuffer \stoplinecorrection
+%D
+%D We save all the three components needed in one macro,
+%D just to save hash space.
+
+\def\@@MPST{@MPST@}
+
+\def\assignMPStransparency#1#2#3%
+  {\edef\PDFtransparencyidentifier{#1}%
+   \edef\PDFtransparencyreference {#2}%
+   \edef\PDFtransparencycolorspecs{#3}}
+
+\defineMPspecial{2}
+  {\edef\currentMPspecial{\gMPs6}%
+   \presetPDFtransparency{\gMPs1}{\gMPs2}%
+   \setxvalue{\@@MPST\currentMPspecial}%
+     {\noexpand\assignMPStransparency
+        {\PDFtransparencyidentifier}%
+        {\PDFtransparencyreference}%
+        {\gMPs3 \gMPs4 \gMPs5 rg \gMPs3 \gMPs4 \gMPs5 RG}}}
+
+\defineMPspecial{3}
+  {\edef\currentMPspecial{\gMPs7}%
+   \presetPDFtransparency{\gMPs1}{\gMPs2}%
+   \setxvalue{\@@MPST\currentMPspecial}%
+     {\noexpand\assignMPStransparency
+        {\PDFtransparencyidentifier}%
+        {\PDFtransparencyreference}%
+        {\gMPs3 \gMPs4 \gMPs5 \gMPs6 k \gMPs3 \gMPs4 \gMPs5 \gMPs6 K}}}
+
+%D For efficiency reasons, we fall back on the allocation
+%D mechanisms already present. For use within \MPTOPDF, we
+%D provide a fall back routine.
+
+\let\currentMPtransparencies\empty
+
+% \def\invokeMPtransparencyspecial
+%   {\doifdefined{\@@MPST\currentMPspecial}
+%      {\getvalue{\@@MPST\currentMPspecial}%
+%       \doifinstringelse
+%         {\PDFtransparencyidentifier}{\currentMPtransparencies}
+%         {}
+%         {\xdef\currentMPtransparencies
+%            {\currentMPtransparencies
+%             \PDFtransparencyidentifier\space
+%             \PDFtransparencyreference\space}}%
+%       \def\extraMPpathcode{ Q}%
+%       \PDFcode{q
+%         \PDFtransparencycolorspecs\space
+%         \PDFtransparencyidentifier\space gs}}}
+
+% this one triggers a new graphic state
+
+\def\invokeMPtransparencyspecial
+  {\scratchcounter\MPrgbnumber\lastMPbvalue
+   \edef\currentMPspecial{\the\scratchcounter}%
+   \ifundefined{\@@MPST\currentMPspecial}\else
+     \getvalue{\@@MPST\currentMPspecial}%
+     \doifinstringelse\PDFtransparencyidentifier\currentMPtransparencies
+       \donothing\registerMPtransparencyresource % slow
+     \PDFcode
+       {\PDFtransparencycolorspecs\space
+        \PDFtransparencyidentifier\space gs}%
+     % potential optimization
+     % \setevalue{\@@MPST\currentMPspecial}%
+     %   {\PDFcode
+     %      {\PDFtransparencycolorspecs\space
+     %       \PDFtransparencyidentifier\space gs}}%
+     % \getvalue{\@@MPST\currentMPspecial}%
+     \let\revokeMPtransparencyspecial\dorevokeMPtransparencyspecial
+   \fi}
+
+% this one does a reset
+
+\let\revokeMPtransparencyspecial\relax
+
+\def\dorevokeMPtransparencyspecial % only called if state is set
+  {\ifx\PDFtransparencyresetidentifier\empty\else
+     \doifinstringelse\PDFtransparencyresetidentifier\currentMPtransparencies
+       \donothing\registerMPtransparencyresetresource
+     \PDFcode{\PDFtransparencyresetidentifier\space gs}%
+     % potential optimization
+     % \def\dorevokeMPtransparencyspecial
+     %   {\PDFcode
+     %      {\PDFtransparencycolorspecs\space
+     %       \PDFtransparencyidentifier\space gs}}%
+     \let\dorevokeMPtransparencyspecial\dodorevokeMPtransparencyspecial
+     \let\revokeMPtransparencyspecial\relax % invoke sets it
+   \fi}
+
+% and this one a simplified reset
+
+% \def\dodorevokeMPtransparencyspecial % used after first invocation
+%   {\getvalue{\@@MPST0}%
+%    \PDFcode{\PDFtransparencyidentifier\space gs}}
+
+\def\dodorevokeMPtransparencyspecial % used after first invocation
+  {\PDFcode{\PDFtransparencyresetidentifier\space gs}%
+   \let\revokeMPtransparencyspecial\relax} % invoke sets it
+
+% add a resource entry
+
+\def\registerMPtransparencyresource
+  {\xdef\currentMPtransparencies
+     {\currentMPtransparencies
+      \PDFtransparencyidentifier\space
+      \PDFtransparencyreference\space}}
+
+\def\registerMPtransparencyresetresource
+  {\xdef\currentMPtransparencies
+     {\currentMPtransparencies
+      \PDFtransparencyresetidentifier\space
+      \PDFtransparencyresetreference\space}}
+
+\appendtoks \invokeMPtransparencyspecial \to \invokeMPspecials
+
+\ifCONTEXT \else
+
+  \def\@@MPSTN{@MPSTN@}
+  \def\@@MPSTO{@MPSTO@}
+
+  \newcount\PDFcurrenttransparency
+
+  \let\PDFtransparencyresetidentifier\empty
+  \let\PDFtransparencyresetreference \empty
+
+  \let\PDFtransparencyidentifier\empty
+  \let\PDFtransparencyreference \empty
+
+  \def\initializePDFtransparency
+    {\presetPDFtransparency{1}{1}%
+     \xdef\PDFtransparencyresetidentifier{/Tr0}%
+     \xdef\PDFtransparencyresetreference{\the\pdflastobj\space 0 R}%
+     \global\initializePDFtransparency\relax}
+
+  \def\presetPDFtransparency#1#2%
+    {\initializePDFtransparency
+     \@EA\ifx\csname\@@MPSTO#1:#2\endcsname\relax
+       \global\advance\PDFcurrenttransparency 1
+       \immediate\pdfobj{\PDFtransparancydictionary{#1}{#2}{}}%
+       \setxvalue{\@@MPSTN#1:#2}{\the\PDFcurrenttransparency}%
+       \setxvalue{\@@MPSTO#1:#2}{\the\pdflastobj}%
+     \fi
+     \edef\PDFtransparencyidentifier{/Tr\getvalue{\@@MPSTN#1:#2}}%
+     \edef\PDFtransparencyreference{\getvalue{\@@MPSTO#1:#2} 0 R}}
+
+\fi
+
+\appendtoks
+  \global\let\currentMPtransparencies\empty
+\to \MPstartresources
+
+\appendtoks
+  \ifx\currentMPtransparencies\empty \else
+    \xdef\currentPDFresources{\currentPDFresources
+       /ExtGState <<\currentMPtransparencies>>}%
+  \fi
+\to \MPstopresources
+
+%D In all cases, we need to keep track of the resources
+%D used.
 
 \protect \endinput

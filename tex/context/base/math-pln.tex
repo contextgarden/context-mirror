@@ -1,0 +1,336 @@
+%D \module
+%D   [       file=math-pln,
+%D        version=2001.11.16, 
+%D          title=\CONTEXT\ System Macros,
+%D       subtitle=Efficient \PLAIN\ \TEX\ loading,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
+%C details. 
+
+%D This is a temporary module, some of this code will move to 
+%D the other math modules. 
+
+\unprotect 
+
+\def\m@th{\mathsurround\z@}
+
+\newbox\rootbox 
+
+\def\root#1\of%
+  {\setbox\rootbox\hbox{$\m@th\scriptscriptstyle{#1}$}%
+   \mathpalette\r@@t}
+
+\def\r@@t#1#2% will be overloaded
+  {\setbox\z@\hbox{$\m@th#1\sqrt{#2}$}\dimen@\ht\z@
+   \advance\dimen@-\dp\z@
+   \mkern5mu\raise.6\dimen@\copy\rootbox 
+   \mkern-10mu\box\z@}
+
+\def\mathhexbox#1#2#3%
+  {\leavevmode
+   \hbox{$\m@th\mathchar"#1#2#3$}}
+
+\def\oalign#1%
+  {\leavevmode
+   \vtop
+     {\baselineskip\z@skip \lineskip.25ex%
+      \ialign{##\crcr#1\crcr}}} 
+
+\def\o@lign
+  {\lineskiplimit\z@ \oalign}
+
+\def\ooalign % chars over each other
+  {\lineskiplimit-\maxdimen 
+   \oalign}
+
+{\catcode`p=12 \catcode`t=12 \gdef\\#1pt{#1}} \let\getf@ctor=\\
+
+\def\sh@ft#1% kern by #1 times the current slant
+  {\dimen@#1%
+   \kern\expandafter\getf@ctor\the\fontdimen1\font
+   \dimen@} 
+
+\def\copyright
+  {{\ooalign{\hfil\raise.07ex\hbox{c}\hfil\crcr\Orb}}}
+
+\def\dots
+  {\relax\ifmmode\ldots\else$\m@th\ldots\,$\fi}
+
+\def\hrulefill
+  {\leaders\hrule\hfill}
+
+\def\dotfill
+  {\cleaders\hbox{$\m@th \mkern1.5mu.\mkern1.5mu$}\hfill}
+
+\def\rightarrowfill
+  {$\m@th\smash-\mkern-7mu%
+   \cleaders\hbox{$\mkern-2mu\smash-\mkern-2mu$}\hfill
+   \mkern-7mu\mathord\rightarrow$}
+
+\def\leftarrowfill
+  {$\m@th\mathord\leftarrow\mkern-7mu%
+   \cleaders\hbox{$\mkern-2mu\smash-\mkern-2mu$}\hfill
+   \mkern-7mu\smash-$}
+
+% must go to math-tex 
+
+\mathchardef\braceld="37A 
+\mathchardef\bracerd="37B
+\mathchardef\bracelu="37C 
+\mathchardef\braceru="37D
+
+\def\downbracefill
+  {$\m@th\setbox\z@\hbox{$\braceld$}%
+   \braceld\leaders\vrule\!!height\ht\z@\!!depth\z@\hfill\braceru
+   \bracelu\leaders\vrule\!!height\ht\z@\!!depth\z@\hfill\bracerd$}
+
+\def\upbracefill
+  {$\m@th\setbox\z@\hbox{$\braceld$}%
+   \bracelu\leaders\vrule\!!height\ht\z@\!!depth\z@\hfill\bracerd
+   \braceld\leaders\vrule\!!height\ht\z@\!!depth\z@\hfill\braceru$}
+
+\def\bye{\par\vfill\supereject\end}
+
+\let\sp=^ 
+\let\sb=_
+\def\,{\mskip\thinmuskip}
+\def\>{\mskip\medmuskip}
+\def\;{\mskip\thickmuskip}
+\def\!{\mskip-\thinmuskip}
+\def\*{\discretionary{\thinspace\the\textfont2\char2}{}{}}
+
+{\catcode`\'=\active \gdef'{^\bgroup\prim@s}}
+
+\def\prim@s
+ {\prime\futurelet\next\pr@m@s}
+
+\def\pr@m@s
+  {\ifx'\next
+     \let\nxt\pr@@@s 
+   \else
+     \ifx^\next
+       \let\nxt\pr@@@t
+     \else
+       \let\nxt\egroup
+     \fi
+   \fi 
+   \nxt}
+
+\def\pr@@@s#1%
+  {\prim@s} 
+
+\def\pr@@@t#1#2%
+  {#2\egroup}
+
+{\catcode`\_=\active \global\let_=\_} % _ in math is either subscript or \_
+
+\def\relbar            {\mathrel{\smash-}} % - has the same height as +
+\def\Relbar            {\mathrel=}
+
+\def\Longrightarrow    {\Relbar\joinrel\Rightarrow}
+\def\longrightarrow    {\relbar\joinrel\rightarrow}
+\def\longleftarrow     {\leftarrow\joinrel\relbar}
+\def\Longleftarrow     {\Leftarrow\joinrel\Relbar}
+\def\longmapsto        {\mapstochar\longrightarrow}
+\def\longleftrightarrow{\leftarrow\joinrel\rightarrow}
+\def\Longleftrightarrow{\Leftarrow\joinrel\Rightarrow}
+
+\def\overrightarrow#1%
+  {\vbox{\m@th\ialign{##\crcr
+   \rightarrowfill\crcr\noalign{\kern-\p@\nointerlineskip}
+   $\hfil\displaystyle{#1}\hfil$\crcr}}}
+
+\def\overleftarrow#1%
+  {\vbox{\m@th\ialign{##\crcr
+   \leftarrowfill\crcr\noalign{\kern-\p@\nointerlineskip}
+   $\hfil\displaystyle{#1}\hfil$\crcr}}}
+
+\def\overbrace#1%
+  {\mathop{\vbox{\m@th\ialign{##\crcr\noalign{\kern3\p@}
+   \downbracefill\crcr\noalign{\kern3\p@\nointerlineskip}
+   $\hfil\displaystyle{#1}\hfil$\crcr}}}\limits}
+
+\def\underbrace#1%
+  {\mathop{\vtop{\m@th\ialign{##\crcr
+   $\hfil\displaystyle{#1}\hfil$\crcr\noalign{\kern3\p@\nointerlineskip}
+   \upbracefill\crcr\noalign{\kern3\p@}}}}\limits}
+
+\def\skew#1#2#3%
+  {{\muskip\z@#1mu\divide\muskip\z@\tw@ \mkern\muskip\z@
+    #2{\mkern-\muskip\z@{#3}\mkern\muskip\z@}\mkern-\muskip\z@}{}}
+
+\def\n@space
+  {\nulldelimiterspace\z@ \m@th}
+
+\def\choose{\atopwithdelims()}
+\def\brack {\atopwithdelims[]}
+\def\brace {\atopwithdelims\{\}}
+
+\def\mathpalette#1#2%
+  {\mathchoice
+     {#1\displaystyle     {#2}}%
+     {#1\textstyle        {#2}}%
+     {#1\scriptstyle      {#2}}%
+     {#1\scriptscriptstyle{#2}}}
+
+\def\cong%
+  {\mathrel{\mathpalette\@vereq\sim}} % congruence sign
+
+\def\@vereq#1#2%
+  {\lower.5\p@\vbox{\lineskiplimit\maxdimen\lineskip-.5\p@
+   \ialign{$\m@th#1\hfil##\hfil$\crcr#2\crcr=\crcr}}}
+
+\def\notin%
+  {\mathrel{\mathpalette\c@ncel\in}}
+
+\def\c@ncel#1#2%
+  {\m@th\ooalign{$\hfil#1\mkern1mu/\hfil$\crcr$#1#2$}}
+
+\def\rightleftharpoons%
+  {\mathrel{\mathpalette\rlh@{}}}
+
+\def\rlh@#1%
+  {\vcenter
+     {\m@th
+      \hbox
+        {\ooalign
+           {\raise2pt\hbox{$#1\rightharpoonup$}\crcr
+            $#1\leftharpoondown$}}}}
+
+\def\buildrel#1\over#2%
+  {\mathrel{\mathop{\kern\z@#2}\limits^{#1}}}
+
+\def\doteq%
+  {\buildrel\textstyle.\over=}
+
+\def\bmod%
+  {\nonscript
+   \mskip-\medmuskip
+   \mkern5mu
+   \mathbin{\rm mod}%
+   \penalty900
+   \mkern5mu
+   \nonscript
+   \mskip-\medmuskip}
+
+\def\pmod#1%
+  {\allowbreak
+   \mkern18mu
+   ({\rm mod}\,\,#1)}
+
+\def\cases#1%
+  {\left\{%
+   \,%
+   \vcenter
+     {\normalbaselines
+      \m@th
+      \ialign{$##\hfil$&\quad##\hfil\crcr#1\crcr}}%
+   \right.}
+
+\def\matrix#1%
+  {\null
+   \,%
+   \vcenter
+     {\normalbaselines\m@th
+      \ialign{\hfil$##$\hfil&&\quad\hfil$##$\hfil\crcr
+      \mathstrut\crcr\noalign{\kern-\baselineskip}
+      #1\crcr\mathstrut\crcr\noalign{\kern-\baselineskip}}}%
+   \,}
+
+\def\pmatrix#1%
+  {\left(\matrix{#1}\right)}
+
+\newdimen\p@renwd
+
+% \setbox0=\hbox{\tenex B} \p@renwd=\wd0 % width of the big left (
+
+\def\bordermatrix#1%
+  {\begingroup 
+   \m@th
+   \setbox\z@\vbox
+     {\def\cr{\crcr\noalign{\kern2\p@\global\let\cr\endline}}%
+      \ialign{$##$\hfil\kern2\p@\kern\p@renwd&\thinspace\hfil$##$\hfil
+        &&\quad\hfil$##$\hfil\crcr
+        \omit\strut\hfil\crcr\noalign{\kern-\baselineskip}%
+        #1\crcr\omit\strut\cr}}%
+   \setbox\tw@\vbox
+     {\unvcopy\z@\global\setbox\@ne\lastbox}%
+   \setbox\tw@\hbox
+     {\unhbox\@ne\unskip\global\setbox\@ne\lastbox}%
+   \setbox\tw@\hbox
+     {$\kern\wd\@ne\kern-\p@renwd\left(\kern-\wd\@ne
+      \global\setbox\@ne\vbox{\box\@ne\kern2\p@}%
+      \vcenter{\kern-\ht\@ne\unvbox\z@\kern-\baselineskip}\,\right)$}%
+   \null
+   \;%
+   \vbox{\kern\ht\@ne\box\tw@}%
+   \endgroup}
+
+\def\openup{\afterassignment\@penup\dimen@=}
+
+\def\@penup{\advance\lineskip\dimen@
+  \advance\baselineskip\dimen@
+  \advance\lineskiplimit\dimen@}
+
+\def\eqalign#1%
+  {\null
+   \,%
+   \vcenter
+     {\openup
+      \jot\m@th
+      \ialign
+        {\strut\hfil$\displaystyle{##}$&$\displaystyle{{}##}$\hfil\crcr
+         #1\crcr}}%
+   \,}
+
+\newif\ifdt@p
+
+\def\displ@y%
+  {\global\dt@ptrue
+   \openup\jot\m@th
+   \everycr
+     {\noalign
+        {\ifdt@p 
+           \global\dt@pfalse 
+           \ifdim\prevdepth>-1000\p@
+             \vskip-\lineskiplimit 
+             \vskip\normallineskiplimit 
+           \fi
+         \else 
+           \penalty\interdisplaylinepenalty 
+         \fi}}}
+
+\def\@lign % restore inside \displ@y
+  {\tabskip\z@skip
+   \everycr{}} 
+
+\def\displaylines#1%
+  {\displ@y 
+   \tabskip\z@skip
+   \halign
+     {\hbox to \displaywidth{$\@lign\hfil\displaystyle##\hfil$}\crcr
+      #1\crcr}}
+
+\def\eqalignno#1%
+  {\displ@y 
+   \tabskip\centering
+   \halign to \displaywidth
+     {\hfil$\@lign\displaystyle{##}$\tabskip\z@skip
+      &$\@lign\displaystyle{{}##}$\hfil\tabskip\centering
+      &\llap{$\@lign##$}\tabskip\z@skip\crcr
+      #1\crcr}}
+
+\def\leqalignno#1%
+  {\displ@y 
+   \tabskip\centering
+   \halign to \displaywidth
+     {\hfil$\@lign\displaystyle{##}$\tabskip\z@skip
+      &$\@lign\displaystyle{{}##}$\hfil\tabskip\centering
+      &\kern-\displaywidth\rlap{$\@lign##$}\tabskip\displaywidth\crcr
+      #1\crcr}}
+
+\protect \endinput

@@ -56,6 +56,7 @@
       \c!tekststatus=\v!normaal,
       \c!hoofdstatus=\v!stop,
       \c!voetstatus=\v!stop,
+      \c!paginastatus=\v!stop,
       \c!kleur=,
       #2]%
    \setvalue{\e!start#1\e!opmaak}{\startmakeup[#1]}%
@@ -75,6 +76,10 @@
 %D the direct and indirect way. The parameterless call will 
 %D build a simple box. 
 
+\newtoks\everymakeup 
+
+\appendtoks \postponemarks \to \everymakeup 
+
 \let\currentmakeup\empty
 
 \def\startmakeup%
@@ -82,6 +87,7 @@
 
 \def\dostartmakeup[#1][#2]%
   {\bgroup
+   \the\everymakeup
    \edef\currentmakeup{#1}%
    \iffirstargument
      \setupmakeup[\currentmakeup][#2]%
@@ -102,6 +108,7 @@
 
 \def\donostopmakeup%
   {\egroup
+   \flushmarks % new, here, else empty pages 
    \pagina
    \egroup}
 
@@ -126,7 +133,8 @@
   {\endgraf
    \makeupparameter\c!onder
    \egroup
-\stopregistercolor
+   \flushmarks % new, here, else empty pages 
+   \stopregistercolor
    \doflushmakeup
    \egroup
    \calculatehsizes
@@ -149,20 +157,26 @@
    \fi}
 
 \def\doshipoutmakeup%
-  {\makeupparameter\c!voor
+  {\pushmacro\@@pnstatus % new 
+   \makeupparameter\c!voor   
    \vbox{\hbox{\color[\makeupparameter\c!kleur]{\box\makeupbox}}}%
+   \stelpaginanummerin[\c!status=\makeupparameter\c!paginastatus]% 
    \setupmakeuplayout
    \pagina
    \makeupparameter\c!na
    \ifdubbelzijdig \ifodd\realpageno\else
      \processaction
        [\makeupparameter\c!dubbelzijdig]
-       [  \v!ja=>\null\pagina\verlaagpaginanummer,
+       [  \v!ja=>\null
+                 \pagina,
+               % \verlaagpaginanummer, % new 
         \v!leeg=>\setupmakeuplayout
-                 \pagebodyornamentsfalse % hm, an old forgotten option
-                 \null\pagina\verlaagpaginanummer]%
+                 \pagebodyornamentsfalse 
+                 \null\pagina]%
+               % \verlaagpaginanummer]% % new 
    \fi \fi
-   \verlaagpaginanummer}
+ % \verlaagpaginanummer % new 
+   \popmacro\@@pnstatus} % new 
 
 %D The text surrounding the main body text can be influenced
 %D by setting their associated status variables. The
@@ -174,7 +188,7 @@
    \setuptext  [\c!status=\makeupparameter\c!tekststatus]%
    \setupbottom[\c!status=\makeupparameter\c!onderstatus]%
    \setuptop   [\c!status=\makeupparameter\c!bovenstatus]}
-
+ 
 %D The standard page template is defined as follows: 
 
 \definemakeup

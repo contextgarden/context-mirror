@@ -34,9 +34,9 @@
           {\offinterlineskip
            \forgetall
            \unvbox\DVIobjects
-           \setbox\nextbox=\hbox{\box\nextbox}
-           \wd\nextbox=\!!zeropoint
-           \dp\nextbox=\!!zeropoint
+           \setbox\nextbox\hbox{\box\nextbox}
+           \wd\nextbox\zeropoint
+           \dp\nextbox\zeropoint
            \ht\nextbox=\!!onepoint
            \allowbreak
            \box\nextbox}%
@@ -48,13 +48,13 @@
 \definespecial\doinsertobject#1#2%
   {\bgroup
    \dogetobjectreference{#1}{#2}\DVIobjectreference
-   \splittopskip\!!zeropoint
+   \splittopskip\zeropoint
    \setbox0=\copy\DVIobjects
    \dimen0=\DVIobjectreference pt
-   \advance\dimen0 by -\!!onepoint
+   \advance\dimen0 -\!!onepoint
    \setbox2=\vsplit0 to \dimen0
    \ifdim\ht0>\!!onepoint
-     \setbox0=\vsplit0 to \!!onepoint
+     \setbox0=\vsplit0 \!!onepoint
    \fi
    \unvbox0\setbox0=\lastbox\unhbox0
    \egroup}
@@ -106,6 +106,4 @@
 
 \stopspecials
 
-\protect
-
-\endinput
+\protect \endinput

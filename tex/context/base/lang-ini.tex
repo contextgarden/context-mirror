@@ -8,8 +8,8 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
-%C details. 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
 
 %D This module implements the (for the moment still simple)
 %D multi||language support of \CONTEXT, which should not be
@@ -31,7 +31,7 @@
       7: taal specifieke opties [--] introduceren een skip van --
       8: taal specifieke opties [--] naadloos toegevoegd
       9: taal -- is actief
-     10: patronen --geladen 
+     10: patronen --geladen
 \stopmessages
 
 \startmessages  english  library: linguals
@@ -59,10 +59,10 @@
       7: Sprachenspezifische Option [--] fuegt eine Luecke von -- ein
       8: Sprachenspezifische Option [--] nahtlos hinzugefuegt
       9: Sprache -- ist aktiv
-     10: Trennmuster --geladen  
+     10: Trennmuster --geladen
 \stopmessages
 
-% TOM: 9 and 10 
+% TOM: 9 and 10
 
 \startmessages  czech  library: linguals
   title: jazyky
@@ -75,7 +75,7 @@
       7: specificke volby jazyka [--] zavadeji -- (zavlecenou) mezeru
       8: specificke volby jazyka [--] bez mezer pripojeny
       9: language -- is active
-     10: vzory --nacteny 
+     10: vzory --nacteny
 \stopmessages
 
 \startmessages  italian  library: linguals
@@ -143,17 +143,19 @@
 \newcounter\loadedlanguage
 
 %D \macros
-%D   {currentlanguage, setcurrentlanguage}
+%D   {currentlanguage, setupcurrentlanguage}
 %D
 %D Instead of numbers,we are going to use symbolic names for
 %D the languages. The current langage is saved in the macro
-%D \type {\currentlanguage}. The setup macro is mainly used 
-%D for cosmetic purposes. 
+%D \type {\currentlanguage}. The setup macro is mainly used
+%D for cosmetic purposes.
 
-\let\currentlanguage=\empty
+\let\currentlanguage    \empty
+\let\currentmainlanguage\empty
 
-\def\setupcurrentlanguage[#1]%
-  {\edef\currentlanguage{#1}} 
+\def\setupcurrentlanguage[#1]{\def\currentlanguage{#1}}
+
+%D The internal macros will be defined later. 
 
 %D \macros
 %D   {installlanguage}
@@ -187,19 +189,19 @@
 %D implementations support run time addition of patterns to a
 %D preloaded format).
 
-\def\dodoinstalllanguage#1#2% #2 added 
-  {\doifundefined{#1}{\setvalue{#1}{\language[#2]}}%
+\def\dodoinstalllanguage#1#2% #2 added
+  {\doifundefined{#1}{\setvalue{#1}{\complexlanguage[#2]}}%
    \expanded{\noexpand\uppercase{\noexpand\edef\noexpand\ascii{#1}}}%
-   \doifundefined{\ascii}{\setvalue{\ascii}{\language[#2]}}}      
+   \doifundefined{\ascii}{\setvalue{\ascii}{\complexlanguage[#2]}}}
 
 %D \macros
 %D   {preloadlanguages}
 %D
-%D We first try to load the files defined as file synonym 
+%D We first try to load the files defined as file synonym
 %D for \type {lang-*.pat} and \type {lang-*.hyp}. After that we
-%D fall back on those files. The macro \type {\preloadpatterns} 
-%D reports which patterns are loaded and what hyphenmin 
-%D values are set. 
+%D fall back on those files. The macro \type {\preloadpatterns}
+%D reports which patterns are loaded and what hyphenmin
+%D values are set.
 
 \let\preloadedpatterns\empty
 
@@ -208,12 +210,13 @@
    -#1-%
    \getvalue{\??la#1\s!righthyphenmin} }
 
-\def\preloadlanguages% 
+\def\preloadlanguages%
   {\doifsomething{\preloadedpatterns}
      {\showmessage{\m!linguals}{10}{\preloadedpatterns}}}
 
 \def\doinstalllanguage[#1][#2]%
-  {\ConvertConstantAfter\doifinstringelse{=}{#2}
+  {%\ConvertConstantAfter\doifinstringelse{=}{#2}
+   \doifassignmentelse{#2}
      {\doifdefinedelse{\??la#1\c!status}
         {\getparameters[\??la#1][#2]}
         {\setvalue{\l!prefix!#1}{#1}%
@@ -231,9 +234,9 @@
             \c!rightquote=\upperrightsingleninequote,
             \c!leftquotation=\upperleftdoublesixquote,
             \c!rightquotation=\upperrightdoubleninequote,
-  \c!leftspeech=\getvalue{\??la#1\c!leftquotation},
-\c!middlespeech=,
- \c!rightspeech=\getvalue{\??la#1\c!rightquotation},
+            \c!leftspeech=\getvalue{\??la#1\c!leftquotation},
+            \c!middlespeech=,
+            \c!rightspeech=\getvalue{\??la#1\c!rightquotation},
             \c!datum={\v!jaar,\ ,\v!maand,\ ,\v!dag},
             \c!status=\v!stop,
             \c!default=,
@@ -256,9 +259,9 @@
                   \c!rightquote=\languagedefault{#1}\c!rightquote,
                   \c!leftquotation=\languagedefault{#1}\c!leftquotation,
                   \c!rightquotation=\languagedefault{#1}\c!rightquotation,
-  \c!leftspeech=\languagedefault{#1}\c!leftspeech,
-\c!middlespeech=\languagedefault{#1}\c!middlespeech,
- \c!rightspeech=\languagedefault{#1}\c!rightspeech,
+                  \c!leftspeech=\languagedefault{#1}\c!leftspeech,
+                  \c!middlespeech=\languagedefault{#1}\c!middlespeech,
+                  \c!rightspeech=\languagedefault{#1}\c!rightspeech,
                   \c!datum=\languagedefault{#1}\c!datum,
                   \s!mapping=\languagedefault{#1}\s!mapping,
                   \s!encoding=\languagedefault{#1}\s!encoding,
@@ -281,18 +284,18 @@
             \showmessage{\m!linguals}{3}{\languagesuffix,#1,\loadedlanguage}%
             \egroup}}
         {\showmessage{\m!linguals}{5}{#1}}}
-     {\setvalue{\l!prefix!#1}{#2}% 
+     {\setvalue{\l!prefix!#1}{#2}%
       \dodoinstalllanguage{#1}{#2}}}
 
-% ^^ \language[#1] gave unwanted side effect of loading language specifics 
+% ^^ \language[#1] gave unwanted side effect of loading language specifics
 
 \def\installlanguage%
   {\dodoubleargument\doinstalllanguage}
 
-%D When the second argument is a language identifier, a 
-%D synonym is created. This feature is present because we 
-%D used dutch mnemonics in the dutch version, but nowadays 
-%D conform a standard.  
+%D When the second argument is a language identifier, a
+%D synonym is created. This feature is present because we
+%D used dutch mnemonics in the dutch version, but nowadays
+%D conform a standard.
 
 \let \patternencoding \s!default
 \let \patternmapping  \s!default
@@ -316,10 +319,10 @@
 \let\normalpatterns\patterns
 
 \def\dodoloadpatterns#1#2#3#4%
-  {\normallanguage=\loadedlanguage
-%  \letvalue{\??la\??la#2}=\loadedlanguage
+  {\normallanguage\loadedlanguage
+%  \letvalue{\??la\??la#2}\loadedlanguage
    \bgroup
-   \scratchtoks=\everyjob % we don't want additional junk put there
+   \scratchtoks\everyjob % we don't want additional junk put there
    \let\showpatterns\relax
    \startencoding[#3]%
    \enablemapping[#4]%
@@ -350,10 +353,10 @@
    \egroup
    \increment\loadedlanguage}
 
-%D \macros 
+%D \macros
 %D   {setuplanguage}
 %D
-%D Quick and dirty, but useful: 
+%D Quick and dirty, but useful:
 %D
 %D \showsetup{\y!setuplanguage}
 
@@ -361,8 +364,8 @@
   {\dodoubleargument\dosetuplanguage}
 
 \def\dosetuplanguage[#1][#2]%
-  {\getparameters[\??la#1][#2]%                % we need to make sure
-   \doif{#1}{\currentlanguage}{\language[#1]}} % that settings apply
+  {\getparameters[\??la#1][#2]%  
+   \doif{#1}{\currentlanguage}{\docomplexlanguage}}
 
 %D The values \type {\c!leftsentence} and \type
 %D {\c!rightsentence} can be (and are) used to implement
@@ -408,7 +411,7 @@
 %D \stoptypen
 %D
 %D is a valid operation, where the relation between number
-%D and language depends on the order in installing languages. 
+%D and language depends on the order in installing languages.
 %D
 %D \showsetup{\y!language}
 %D \showsetup{\y!mainlanguage}
@@ -422,40 +425,61 @@
 %D We take care of local as well as standardized language
 %D switching (fr and fa, de and du, but nl and nl).
 
-% new, encoding specific patterns 
+% new, encoding specific patterns
 
 \ifx\synchronizepatterns\undefined \let\synchronizepatterns\relax \fi
 
-\def\dosetnormallanguage#1#2#3#4%
-  {\doifdefinedelse{\??la\??la#2#3}
-     {\doifelsevaluenothing{\??la\??la#2#3}
-        {#4}
-        {\donetrue
-         \setxvalue{\??la#1\s!patterns}{#3}%
-         \normallanguage=\getvalue{\??la\??la#2#3}\relax}} % \relax is needed for lookahead problems 
-     {#4}}     
-
-\def\setnormallanguage#1#2%
-  {\dosetnormallanguage{#1}{:\currentencoding:\currentmapping:}{#2}{%
-   \dosetnormallanguage{#1}{:\currentencoding:\s!default     :}{#2}{%   
-   \dosetnormallanguage{#1}{:\s!default      :\currentmapping:}{#2}{%   
-   \dosetnormallanguage{#1}{:\s!default      :\s!default     :}{#2}{}}}}}   
-
+%\def\dosetnormallanguage#1#2#3#4%
+%  {\doifdefinedelse{\??la\??la#2#3}
+%     {\doifelsevaluenothing{\??la\??la#2#3}
+%        {#4}
+%        {\donetrue
+%         \setxvalue{\??la#1\s!patterns}{#3}%
+%         \normallanguage=\getvalue{\??la\??la#2#3}\relax}} % \relax is needed for lookahead problems
+%     {#4}}
 %
-
+% because this macro is called often, we optimize 'm
+% 
+% \def\dosetnormallanguage#1#2#3%
+%   {\@EA\ifx\csname\??la\??la#2#3\endcsname\relax
+%      \@EA\firstofoneargument
+%    \else\@EA\ifx\csname\??la\??la#2#3\endcsname\empty
+%      \@EAEAEA\firstofoneargument
+%    \else
+%      \donetrue
+%      \global\expandafter\xdef\csname\??la#1\s!patterns\endcsname{#3}%
+%      \normallanguage\csname\??la\??la#2#3\endcsname\relax % \relax is needed for lookahead problems
+%      \@EAEAEA\gobbleoneargument
+%    \fi\fi}
+% 
+% \def\setnormallanguage#1#2%
+%   {\dosetnormallanguage{#1}{:\currentencoding:\currentmapping:}{#2}{%
+%    \dosetnormallanguage{#1}{:\currentencoding:\s!default     :}{#2}{%
+%    \dosetnormallanguage{#1}{:\s!default      :\currentmapping:}{#2}{%
+%    \dosetnormallanguage{#1}{:\s!default      :\s!default     :}{#2}{}}}}}
+% 
 % \def\docomplexlanguage[#1]%
 %   {\donefalse
-%    \setnormallanguage{#1}{\getvalue{\??la#1\s!patterns}}%
+%    % \def\synchronizepatterns{\setnormallanguage
+%    %   {#1}{\getvalue{\??la#1\s!patterns}}}%
+%    % called often, so :
+%    \def\synchronizepatterns{\setnormallanguage
+%      {#1}{\csname\??la#1\s!patterns\endcsname}}%
+%    \synchronizepatterns
 %    \ifdone\else
-%      \setnormallanguage{#1}{#1}%
+%      \def\synchronizepatterns{\setnormallanguage{#1}{#1}}%
+%      \synchronizepatterns
 %      \ifdone\else
 %        \doifvaluesomething{\??la#1\c!default}
-%          {\setnormallanguage{#1}{\getvalue{\??la\defaultlanguage{#1}\s!patterns}}%
+%          {\def\synchronizepatterns{\setnormallanguage
+%             {#1}{\getvalue{\??la\defaultlanguage{#1}\s!patterns}}}%
+%           \synchronizepatterns
 %           \ifdone\else
 %             \setnormallanguage{#1}{\defaultlanguage{#1}}%
+%             \synchronizepatterns
 %           \fi}%
 %      \fi
-%    \fi          
+%    \fi
 %    \edef\currentlanguage{#1}%
 %    \enablelanguagespecifics[#1]%
 %    \enablemapping[\getvalue{\??la#1\s!mapping}]%
@@ -467,73 +491,177 @@
 %           \v!ruim=>\nonfrenchspacing,
 %        \s!unknown=>\frenchspacing]}
 
-\def\docomplexlanguage[#1]%
-  {\donefalse
+\beginTEX
+
+\def\dosetnormallanguage#1#2%
+  {\@EA\ifx\csname\??la\??la#1#2\endcsname\relax
+     \@EA\firstofoneargument
+   \else\@EA\ifx\csname\??la\??la#1#2\endcsname\empty
+     \@EAEAEA\firstofoneargument
+   \else
+     \donetrue
+     \global\@EA\xdef\csname\??la\currentlanguage\s!patterns\endcsname{#2}%
+     \normallanguage\csname\??la\??la#1#2\endcsname\relax % \relax is needed for lookahead problems
+     \@EAEAEA\gobbleoneargument
+   \fi\fi}
+
+\endTEX
+
+\beginETEX
+
+\def\dosetnormallanguage#1#2%
+  {\ifcsname\??la\??la#1#2\endcsname
+     \edef\thenormallanguage{\csname\??la\??la#1#2\endcsname}%
+     \ifx\thenormallanguage\empty
+       \@EAEAEA\firstofoneargument
+     \else
+       \donetrue
+       \global\@EA\xdef\csname\??la\currentlanguage\s!patterns\endcsname{#2}%
+       \normallanguage\thenormallanguage\relax % \relax is needed for lookahead problems
+       \@EAEAEA\gobbleoneargument
+     \fi
+   \else
+     \@EA\firstofoneargument
+   \fi}
+
+\endETEX
+
+\def\setnormallanguage#1%
+  {\dosetnormallanguage{:\currentencoding:\currentmapping:}{#1}{%
+   \dosetnormallanguage{:\currentencoding:\s!default     :}{#1}{%
+   \dosetnormallanguage{:\s!default      :\currentmapping:}{#1}{%
+   \dosetnormallanguage{:\s!default      :\s!default     :}{#1}{}}}}}
+
+\def\docomplexlanguage% assumes that \currentlanguage is set
+  {\edef\currentdefaultlanguage{\defaultlanguage\currentlanguage}%
    \def\synchronizepatterns{\setnormallanguage
-     {#1}{\getvalue{\??la#1\s!patterns}}}%
+     {\csname\??la\currentlanguage\s!patterns\endcsname}}% called often
+   \donefalse 
    \synchronizepatterns
    \ifdone\else
-     \def\synchronizepatterns{\setnormallanguage{#1}{#1}}%
+     \def\synchronizepatterns{\setnormallanguage\currentlanguage}%
      \synchronizepatterns
      \ifdone\else
-       \doifvaluesomething{\??la#1\c!default}
-         {\def\synchronizepatterns{\setnormallanguage
-            {#1}{\getvalue{\??la\defaultlanguage{#1}\s!patterns}}}%
-          \synchronizepatterns
-          \ifdone\else
-            \setnormallanguage{#1}{\defaultlanguage{#1}}%
-            \synchronizepatterns
-          \fi}%
+       \ifx\currentdefaultlanguage\empty\else
+         \def\synchronizepatterns{\setnormallanguage
+           {\csname\??la\currentdefaultlanguage\s!patterns\endcsname}}%
+         \synchronizepatterns
+         \ifdone\else
+           \setnormallanguage\currentdefaultlanguage
+           \synchronizepatterns
+         \fi
+       \fi
      \fi
-   \fi          
-   \edef\currentlanguage{#1}%
-   \enablelanguagespecifics[#1]%
-   \enablemapping[\getvalue{\??la#1\s!mapping}]%
-   \lefthyphenmin =0\getvalue{\??la#1\s!lefthyphenmin}\relax
-   \righthyphenmin=0\getvalue{\??la#1\s!righthyphenmin}\relax
-   \processaction
-     [\getvalue{\??la#1\c!spatiering}]
-     [\v!opelkaar=>\frenchspacing,
-          \v!ruim=>\nonfrenchspacing,
-       \s!unknown=>\frenchspacing]}
+   \fi
+   \enablelanguagespecifics[\currentlanguage]%
+% strange, what is this doing here, dangerous for {il2,ec} 
+%   \edef\languagemapping{\csname\??la\currentlanguage\s!mapping\endcsname}%
+%   \ifx\languagemapping\empty\else
+%     \fastenablemapping\languagemapping
+%   \fi
+   \lefthyphenmin 0\csname\??la\currentlanguage\s!lefthyphenmin \endcsname
+   \righthyphenmin0\csname\??la\currentlanguage\s!righthyphenmin\endcsname\relax
+   % will be definable 
+   \doifelsevalue{\??la\currentlanguage\c!spatiering}\v!ruim
+     \nonfrenchspacing\frenchspacing}
+
+\beginETEX
+
+\def\complexlanguage[#1]%   
+  {\edef\askedlanguage{#1}% 
+   \ifx\askedlanguage\empty \else
+     \ifcsname\l!prefix!\askedlanguage\endcsname
+       \edef\askedlanguage{\csname\l!prefix!\askedlanguage\endcsname}%
+       \ifx\currentlanguage\askedlanguage \else
+         \let\currentlanguage\askedlanguage
+         \docomplexlanguage
+       \fi 
+     \else
+       \showmessage\m!linguals6{#1}%
+     \fi
+   \fi}
+
+\endETEX
+
+\beginTEX
 
 \def\complexlanguage[#1]%
-  {\doifdefinedelse{\l!prefix!#1}
-     {\expanded{\docomplexlanguage[\getvalue{\l!prefix!#1}]}}
-     {\showmessage{\m!linguals}{6}{#1}}}
+  {\edef\askedlanguage{#1}%
+   \ifx\askedlanguage\empty \else
+     \@EA\ifx\csname\l!prefix!\askedlanguage\endcsname\relax
+       \showmessage\m!linguals6{#1}%
+     \else
+       \edef\askedlanguage{\csname\l!prefix!\askedlanguage\endcsname}%
+       \ifx\currentlanguage\askedlanguage \else
+         \let\currentlanguage\askedlanguage
+         \docomplexlanguage
+       \fi 
+     \fi
+   \fi}
 
-\def\simplelanguage%
-  {\normallanguage}
+\endTEX
+
+\let\simplelanguage\normallanguage
 
 \definecomplexorsimple\language
 
-\let\currentmainlanguage=\empty
-
-%\def\mainlanguage[#1]%
-%  {\edef\currentmainlanguage{#1}} % We expand indeed!
+\beginETEX
 
 \def\mainlanguage[#1]%
-  {\doifsomething{#1}
-     {\doifdefined{\l!prefix!#1}
-        {\@EA\let\@EA\currentmainlanguage\csname\l!prefix!#1\endcsname
-         \language[#1]}}}
+  {\edef\askedlanguage{#1}%
+   \ifx\askedlanguage\empty \else
+     \ifcsname\l!prefix!\askedlanguage\endcsname
+       \edef\askedlanguage{\csname\l!prefix!\askedlanguage\endcsname}%
+       \ifx\currentmainlanguage\askedlanguage \else
+         \let\currentmainlanguage\askedlanguage
+         \let\currentlanguage\askedlanguage
+         \docomplexlanguage 
+       \fi 
+     \fi
+   \fi}
+
+\endETEX
+
+\beginTEX
+
+\def\mainlanguage[#1]%
+  {\edef\askedlanguage{#1}%
+   \ifx\askedlanguage\empty \else
+     \@EA\ifx\csname\l!prefix!\askedlanguage\endcsname\relax\else
+       \edef\askedlanguage{\csname\l!prefix!\askedlanguage\endcsname}%
+       \ifx\currentmainlanguage\askedlanguage \else
+         \let\currentmainlanguage\askedlanguage
+         \let\currentlanguage\askedlanguage
+         \docomplexlanguage 
+       \fi 
+     \fi
+   \fi}
+
+\endTEX
 
 %D \macros
 %D   {defaultlanguage,languagedefault}
 %D
-%D The macro \type {\defaultlanguage{id}} expands into the 
-%D default language, when defined, while \type 
-%D {\languagedefault{id}\c!parameter} returns the default's 
-%D parameter. 
+%D The macro \type {\defaultlanguage{id}} expands into the
+%D default language, when defined, while \type
+%D {\languagedefault{id}\c!parameter} returns the default's
+%D parameter.
+
+%\def\defaultlanguage#1%
+%  {\@EA\ifx\csname\??la#1\c!default\endcsname\empty
+%     #1%
+%   \else
+%     \@EA\defaultlanguage\@EA{\csname\??la#1\c!default\endcsname}%
+%   \fi}
 
 \def\defaultlanguage#1%
   {\@EA\ifx\csname\??la#1\c!default\endcsname\empty
      #1%
    \else
-     \@EA\defaultlanguage\@EA{\csname\??la#1\c!default\endcsname}%
+     \@EA\defaultlanguage\csname\??la#1\c!default\endcsname
    \fi}
 
-\def\languagedefault#1#2% 
+\def\languagedefault#1#2%
   {\csname\??la\defaultlanguage{#1}#2\endcsname}
 
 %D \macros
@@ -563,7 +691,7 @@
 %D precautions that will prevent spurious spaces to creep into
 %D the list.
 
-\def\startlanguagespecifics%                % we use double to 
+\def\startlanguagespecifics%                % we use double to
   {\bgroup
    \catcode`\^^I=\@@ignore
    \catcode`\^^M=\@@ignore
@@ -573,7 +701,7 @@
 %D The main macro looks quite complicated but actually does
 %D nothing special. By embedding \type{\do} we can easily
 %D append to the lists and also execute them at will. Just to
-%D be sure, we check on spurious spaces. The second dummy 
+%D be sure, we check on spurious spaces. The second dummy
 %D argument gobbles spaces.
 
 \def\languageencoding%
@@ -601,12 +729,12 @@
 %         {\enablelanguagespecifics[##1]}}%
 %    \processcommalist[#1]\docommando}
 
-% This saves 3K in the fmt file. 
+% This saves 3K in the fmt file.
 
 \long\def\dostartlanguagespecifics[#1][#2]#3\stoplanguagespecifics%
   {\egroup
    \processcommalist[#1]{\dosetlanguagespecifics{#3}}}
-         
+
 \long\def\dosetlanguagespecifics#1#2%
   {\doifdefinedelse{\??la\languageencoding#2\??la}
      {\long\def\do##1##2##3%
@@ -628,16 +756,29 @@
 %D define \type{\do} in such a way that \type{{ }} is removed
 %D and the language key is gobbled.
 
+%\def\enablelanguagespecifics[#1]%
+%  {\let\do\secondoftwoarguments
+%   \doifvaluesomething{\??la#1\c!default}
+%     {\getvalue{\??la\getvalue{\??la#1\c!default}\??la}%
+%      \getvalue{\??la\languageencoding\??la}}%
+%   \getvalue{\??la#1\??la}%
+%   \getvalue{\??la\languageencoding#1\??la}}
+%
+% sped up since used often:
+
 \def\enablelanguagespecifics[#1]%
-  {\long\def\do##1##2{##2}%
-   \doifvaluesomething{\??la#1\c!default}
-     {\getvalue{\??la\getvalue{\??la#1\c!default}\??la}%
-      \getvalue{\??la\languageencoding\getvalue{\??la#1\c!default}\??la}}%
-   % or 
-   %\doifvaluesomething{\??la#1\c!default}
-   %  {\expanded{\enablelanguagespecifics[\getvalue{\??la#1\c!default}]}}%
-   \getvalue{\??la#1\??la}%
-   \getvalue{\??la\languageencoding#1\??la}}
+  {\let\do\secondoftwoarguments
+   \csname
+     \??la
+     \@EA\ifx\csname\??la#1\c!default\endcsname\relax
+       \languageencoding
+     \else
+       \csname\??la#1\c!default\endcsname
+     \fi
+     \??la
+   \endcsname
+   \csname\??la#1\??la\endcsname
+   \csname\??la\languageencoding#1\??la\endcsname} % dup ?
 
 %D \macros
 %D   {leftguillemot,rightguillemot,leftsubguillemot,rightsubguillemot,
@@ -646,9 +787,9 @@
 %D We assign logical names to all kind of quote and sentence
 %D boundary characters.
 %D
-%D When using Computer Modern Roman, the next definitions 
-%D looks a bit better than the default ligatures. 
-%D 
+%D When using Computer Modern Roman, the next definitions
+%D looks a bit better than the default ligatures.
+%D
 %D \starttypen
 %D \def\lowerleftsingleninequote  {,}
 %D \def\lowerleftdoubleninequote  {,\kern-.1em,}
@@ -656,7 +797,7 @@
 %D \def\upperleftdoubleninequote  {''\kern-.1em}
 %D \def\upperleftsinglesixquote   {`}
 %D \def\upperleftdoublesixquote   {`\kern-.1em`}
-%D 
+%D
 %D \def\lowerrightsingleninequote {,}
 %D \def\lowerrightdoubleninequote {,\kern-.1em,}
 %D \def\upperrightsingleninequote {'}
@@ -682,18 +823,18 @@
 \def\upperrightsinglesixquote  {`}
 \def\upperrightdoublesixquote  {``}
 
-%D Yes I know, they are ugly: 
+%D Yes I know, they are ugly:
 
-\def\leftguillemot%
+\def\leftfakeguillemot
   {\dontleavehmode\hbox{\raise.25ex\hbox{$\scriptscriptstyle\ll$}}}
 
-\def\rightguillemot%
+\def\rightfakeguillemot
   {\hbox{\raise.25ex\hbox{$\scriptscriptstyle\gg$}}}
 
-\def\leftsubguillemot%
+\def\leftsubfakeguillemot
   {\dontleavehmode\hbox{\raise.25ex\hbox{$\scriptscriptstyle<$}}}
 
-\def\rightsubguillemot%
+\def\rightsubfakeguillemot
   {\hbox{\raise.25ex\hbox{$\scriptscriptstyle>$}}}
 
 %D Just like with subsentence boundary symbols, quotes
@@ -711,8 +852,10 @@
 %D    \vskip.5em
 %D    \hrule
 %D    \vskip.5em
+%D    \let\normalbar=|
 %D    \hbox to \hsize
-%D      {\hfil\citaat{#3 #4}\hfil\citeer{#2}\hfil\strut|<||<|#3|>|#4|>|\hfil}
+%D      {\hfil\citaat{#3 #4}\hfil\citeer{#2}\hfil
+%D       \let|=\normalbar\strut|<||<|#3|>|#4|>|\hfil}
 %D    \vskip.5em
 %D    \hrule
 %D    \egroup
@@ -720,101 +863,108 @@
 %D    \blanko}
 %D
 %D \ShowLanguageValues [af] [afrikaans]  afrikaanse ...
-%D \ShowLanguageValues [cz] [czech]      tjechisch tex  
-%D \ShowLanguageValues [cz] [slovak]     slowaakse ... 
+%D \ShowLanguageValues [cz] [czech]      tjechisch tex
+%D \ShowLanguageValues [cz] [slovak]     slowaakse ...
 %D \ShowLanguageValues [da] [danish]     deense ...
 %D \ShowLanguageValues [de] [german]     duitse degelijkheid
 %D \ShowLanguageValues [en] [english]    engelse humor
 %D \ShowLanguageValues [fi] [finnish]    finse ...
 %D \ShowLanguageValues [fr] [french]     franse slag
 %D \ShowLanguageValues [it] [italian]    italiaanse ...
-%D \ShowLanguageValues [la] [latin]      latijnse missen 
+%D \ShowLanguageValues [la] [latin]      latijnse missen
 %D \ShowLanguageValues [nl] [dutch]      nederlandse zuinigheid
 %D \ShowLanguageValues [no] [norwegian]  noorse ...
 %D \ShowLanguageValues [pl] [polish]     poolse ...
 %D \ShowLanguageValues [pt] [portuguese] portugese ...
-%D \ShowLanguageValues [sp] [spanish]    spaans benauwd
+%D \ShowLanguageValues [es] [spanish]    spaans benauwd
 %D \ShowLanguageValues [sv] [swedish]    zweedse ...
 %D \ShowLanguageValues [tr] [turkish]    turks fruit
 
-%D We support a lot of languages. These are specified and 
-%D loaded in separate files, according to their roots. Here 
-%D we only take care of (postponed) setting of the current 
-%D language. 
-%D 
+%D We support a lot of languages. These are specified and
+%D loaded in separate files, according to their roots. Here
+%D we only take care of (postponed) setting of the current
+%D language.
+%D
 %D \unprotect
 %D \plaatstabel{The germanic languages (\type{lang-ger})}
 %D \starttabel[||||]
-%D \HL 
+%D \HL
 %D \NC \bf mnemonic \NC \bf language \NC \bf group \NC\SR
-%D \HL 
-%D \NC \s!nl        \NC dutch        \NC germanic  \NC\FR  
-%D \NC \s!en        \NC english      \NC germanic  \NC\MR  
-%D \NC \s!de        \NC german       \NC germanic  \NC\MR    
-%D \NC \s!da        \NC danish       \NC germanic  \NC\MR    
-%D \NC \s!sv        \NC swedish      \NC germanic  \NC\MR    
-%D \NC \s!af        \NC afrikaans    \NC germanic  \NC\MR    
-%D \NC \s!no        \NC norwegian    \NC germanic  \NC\LR    
-%D \HL 
+%D \HL
+%D \NC \s!nl        \NC dutch        \NC germanic  \NC\FR
+%D \NC \s!en        \NC english      \NC germanic  \NC\MR
+%D \NC \s!de        \NC german       \NC germanic  \NC\MR
+%D \NC \s!da        \NC danish       \NC germanic  \NC\MR
+%D \NC \s!sv        \NC swedish      \NC germanic  \NC\MR
+%D \NC \s!af        \NC afrikaans    \NC germanic  \NC\MR
+%D \NC \s!no        \NC norwegian    \NC germanic  \NC\LR
+%D \HL
 %D \stoptabel
 %D \protect
-%D 
+%D
 %D \unprotect
 %D \plaatstabel{The italic languages (\type{lang-ita})}
 %D \starttabel[||||]
-%D \HL 
+%D \HL
 %D \NC \bf mnemonic \NC \bf language \NC \bf group \NC\SR
-%D \HL 
+%D \HL
 %D \NC \s!fr        \NC french       \NC italic    \NC\FR
-%D \NC \s!es        \NC spanish      \NC italic    \NC\MR    
-%D \NC \s!it        \NC italian      \NC italic    \NC\MR    
-%D \NC \s!la        \NC latin        \NC italic    \NC\MR    
-%D \NC \s!pt        \NC portuguese   \NC italic    \NC\LR    
-%D \HL 
+%D \NC \s!es        \NC spanish      \NC italic    \NC\MR
+%D \NC \s!it        \NC italian      \NC italic    \NC\MR
+%D \NC \s!la        \NC latin        \NC italic    \NC\MR
+%D \NC \s!pt        \NC portuguese   \NC italic    \NC\LR
+%D \HL
 %D \stoptabel
 %D \protect
-%D 
+%D
 %D \unprotect
 %D \plaatstabel{The slavic languages (\type{lang-sla})}
 %D \starttabel[||||]
-%D \HL 
+%D \HL
 %D \NC \bf mnemonic \NC \bf language \NC \bf group \NC\SR
-%D \HL 
-%D \NC \s!pl        \NC polish       \NC slavic    \NC\FR    
-%D \NC \s!cz        \NC czech        \NC slavic    \NC\MR    
-%D \NC \s!sk        \NC slavik       \NC slavic    \NC\LR    
-%D \HL 
+%D \HL
+%D \NC \s!pl        \NC polish       \NC slavic    \NC\FR
+%D \NC \s!cz        \NC czech        \NC slavic    \NC\MR
+%D \NC \s!sk        \NC slavik       \NC slavic    \NC\LR
+%D \HL
 %D \stoptabel
 %D \protect
 %D \unprotect
-%D 
+%D
 %D \plaatstabel{The altaic languages (\type{lang-alt})}
 %D \starttabel[||||]
-%D \HL 
+%D \HL
 %D \NC \bf mnemonic \NC \bf language \NC \bf group \NC\SR
-%D \HL 
-%D \NC \s!tr        \NC turkish      \NC altaic    \NC\SR    
-%D \HL 
+%D \HL
+%D \NC \s!tr        \NC turkish      \NC altaic    \NC\SR
+%D \HL
 %D \stoptabel
 %D
 %D \plaatstabel{The uralic languages (\type{lang-ura})}
 %D \starttabel[||||]
-%D \HL 
+%D \HL
 %D \NC \bf mnemonic \NC \bf language \NC \bf group \NC\SR
-%D \HL 
-%D \NC \s!fi        \NC finnish      \NC uralic    \NC\SR    
-%D \HL 
+%D \HL
+%D \NC \s!fi        \NC finnish      \NC uralic    \NC\SR
+%D \HL
 %D \stoptabel
 %D \protect
 
+%D 
+
+% \bgroup \normallanguage255 \patterns{} \egroup
+% \def\nopatterns{\normallanguage255 }
+
+\def\nopatterns{\normallanguage\minusone} 
+
 %D We default to the language belonging to the interface. This
 %D is one of the few places outside the interface modules where
-%D \type{\startinterface} is used. 
+%D \type{\startinterface} is used.
 
 \let\normaldoublequote ="
 \let\normalforwardslash=/
 
-%D We default to english: 
+%D We default to english:
 
 \setupcurrentlanguage[\s!en]
 
@@ -822,6 +972,4 @@
 
 \appendtoks\showmessage{\m!linguals}{9}{\currentlanguage}\to\everyjob
 
-\protect
-
-\endinput
+\protect \endinput

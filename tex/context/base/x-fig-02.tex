@@ -34,15 +34,15 @@
 
 \usemodule[fig-00]
 
-\doifnothing  {\inputfilename}        {\end}
-\doiffileelse {\inputfilename.xml} {} {\end}
+\doifnothing  {\jobfilename}        {\end}
+\doiffileelse {\jobfilename.xml} {} {\end}
 
 \defineXMLenvironment [figurelibrary] \StartLibrary \StopLibrary
 \defineXMLignore      [description]
 \defineXMLenvironment [figure]        \StartFigure \StopFigure
 
 \def\StartLibrary
-  {\immediate\openout \scratchwrite=\inputfilename.fig 
+  {\immediate\openout \scratchwrite=\jobfilename.fig 
    \immediate\write\scratchwrite{\string\input\space x-fig-03.tex \string\relax}
    \immediate\write\scratchwrite{}}
 
@@ -64,13 +64,13 @@
    \immediate\write\scratchwrite
      {\string\setfiguredata\space
         {\XMLpop{label}}
-        {\inputfilename}
+        {\jobfilename}
         {\CurrentPage}}}
 
 \doglobal\newcounter\CurrentPage
 
 \starttext
 
-\processXMLfilegrouped{\inputfilename.xml}
+\processXMLfilegrouped{\jobfilename.xml}
 
 \stoptext

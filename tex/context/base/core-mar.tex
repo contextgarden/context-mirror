@@ -15,6 +15,9 @@
 
 \unprotect 
 
+\prependtoks \getallmarks \to \everybeforepagebody % TEX 
+\prependtoks \setallmarks \to \everyafterpagebody  % ETEX 
+
 % voor 'interne' doeleinden zijn beschikbaar:
 %
 %   \fetchmark[naam][plaats]
@@ -23,15 +26,46 @@
 
 % ook nog reset koppelen aan sectie
 
-\def\hoofdmarkering#1%
-  {\getvalue{\??mk#1\c!koppeling}}
+%\def\hoofdmarkering#1%
+%  {\csname\??mk#1\c!koppeling\endcsname}
+%
+%\def\fastresetmarker#1%
+%  {\doifdefined{\??mk\hoofdmarkering{#1}}
+%     {\expandafter\resetmark\csname\??mk\hoofdmarkering{#1}\endcsname}}
 
-\def\dodoresetmarkering#1%
-  {\doifdefined{\??mk\hoofdmarkering{#1}}
-     {\expandafter\resetmark\csname\??mk\hoofdmarkering{#1}\endcsname}}
+\beginTEX
+
+\def\hoofdmarkering#1%
+  {\@EA\ifx\csname\??mk#1\c!koppeling\endcsname\else
+     \csname\??mk#1\c!koppeling\endcsname
+   \fi}
+
+\def\fastresetmarker#1% 
+  {\@EA\ifx\csname\??mk#1\c!koppeling\endcsname\else
+     \@EA\resetmark\csname\??mk\csname\??mk#1\c!koppeling\endcsname\endcsname
+   \fi}
+
+\endTEX
+
+\beginETEX \ifcsname
+
+\def\hoofdmarkering#1%
+  {\ifcsname\??mk#1\c!koppeling\endcsname
+     \csname\??mk#1\c!koppeling\endcsname
+   \fi}
+
+\def\fastresetmarker#1% 
+  {\ifcsname\??mk#1\c!koppeling\endcsname
+     \@EA\resetmark\csname\??mk\csname\??mk#1\c!koppeling\endcsname\endcsname
+   \fi}
+
+\endETEX
+
+\def\fastresetmarkerlist[#1]%
+  {\expanded{\rawprocesscommalist[#1]}\fastresetmarker}
 
 \def\doresetmarkering[#1]%
-  {\processcommalist[#1]\dodoresetmarkering}
+  {\processcommalist[#1]\fastresetmarker}
 
 \def\resetmarkering%
   {\dosingleargument\doresetmarkering}
@@ -50,9 +84,9 @@
 
 \def\dododefinieermarkering[#1][#2]%
   {\stelmarkeringin[#1]
-     [% \c!expansie=\v!nee,  % saves a macro
-        \c!scheider={ --- }, % watch the spaces
-          \c!status=\v!start]%
+     [\c!expansie=\v!nee,  % saves a macro
+      \c!scheider={ --- }, % watch the spaces
+        \c!status=\v!start]%
    \ontkoppelmarkering[#1]%  % no coupling with sections
    \setevalue{\??mk#1\c!koppeling}{#2}%
    \expandafter\newmark\csname\??mk#2\endcsname
@@ -69,15 +103,38 @@
 \let\geenmarkering=\relax
 
 %\def\fetchmark[#1][#2]% geen \def, anders problemen in \doif...
-%   {\def\dofetchmark{\getvalue{\??mk#2}}%
+%   {\def\dofetchmark{\csname\??mk#2\endcsname}%
 %    \expandafter\dofetchmark\csname\??mk\hoofdmarkering{#1}\endcsname}
 
-\def\dofetchmark#1#2% needed because we need to expand
-  {\getvalue{\??mk#2}#1}
+%\def\dofetchmark#1#2% needed because we need to expand
+%  {\csname\??mk#2\endcsname#1}
+%
+%\def\fetchmark[#1][#2]% never \unexpanded
+%  {\expandafter\dofetchmark\csname\??mk\hoofdmarkering{#1}\endcsname{#2}}
 
 \def\fetchmark[#1][#2]% never \unexpanded
- %{\getvalue{\getvalue{\??mk#2}\??mk\hoofdmarkering{#1}}}
-  {\expandafter\dofetchmark\csname\??mk\hoofdmarkering{#1}\endcsname{#2}}
+  {\@EA\@EA\csname\??mk#2\endcsname
+     \csname\??mk\hoofdmarkering{#1}\endcsname}
+
+\beginTEX
+
+\def\fetchmark[#1][#2]% never \unexpanded
+  {\@EA\ifx\csname\??mk#1\c!koppeling\endcsname\else
+     \@EA\@EA\csname\??mk#2\endcsname
+     \csname\??mk\csname\??mk#1\c!koppeling\endcsname\endcsname
+   \fi}
+
+\endTEX
+
+\beginETEX \ifcsname
+
+\def\fetchmark[#1][#2]% never \unexpanded
+  {\ifcsname\??mk#1\c!koppeling\endcsname
+     \@EA\@EA\csname\??mk#2\endcsname
+     \csname\??mk\csname\??mk#1\c!koppeling\endcsname\endcsname
+   \fi}
+
+\endETEX
 
 \def\fetchtwomarks[#1]%
   {\doifsomething{\fetchmark[#1][\v!eerste]}
@@ -98,7 +155,7 @@
      {\bgroup
       \def\geenmarkering##1{\unknown\ }%
       \setfullsectionnumber{\??mk#1}%
-      \processaction
+      \processaction % slow 
         [#2]
         [  \v!beide=>{\fetchtwomarks[#1]},
            \v!alles=>{\fetchallmarks[#1]},
@@ -112,17 +169,60 @@
 \unexpanded\def\haalmarkering%
   {\dodoubleargument\dohaalmarkering}
 
+\let\setsomemark\setmark
+
+\beginTEX
+
 \def\domarking[#1]#2%
-  {\bgroup
-   \doifelsevalue{\??mk#1\c!expansie}{\v!ja}
-     {\expandmarkstrue}
-     {\expandmarksfalse}%
-% \honorunexpanded 
-%   \getvalue{\??mk\hoofdmarkering{#1}}{#2}%
-   \expandafter\setmark\csname\??mk\hoofdmarkering{#1}\endcsname{#2}%
-   \egroup}
+  {\@EA\ifx\csname\??mk#1\c!koppeling\endcsname\else
+     \bgroup
+     \doifelsevalue{\??mk#1\c!expansie}\v!ja
+       \expandmarkstrue\expandmarksfalse
+     \@EA\setsomemark\csname\??mk\csname\??mk#1\c!koppeling\endcsname\endcsname{#2}%
+     \egroup
+   \fi}
+
+\endTEX
+
+\beginETEX \ifcsname
+
+\def\domarking[#1]#2%
+  {\ifcsname\??mk#1\c!koppeling\endcsname
+     \bgroup
+     \doifelsevalue{\??mk#1\c!expansie}\v!ja
+       \expandmarkstrue\expandmarksfalse
+     \@EA\setsomemark\csname\??mk\csname\??mk#1\c!koppeling\endcsname\endcsname{#2}%
+     \egroup
+   \fi}
+
+\endETEX
 
 \def\marking%
   {\dosingleargument\domarking}
+
+%D Used in placing text lines. 
+
+\def\doifelsemarking#1%
+  {\ifundefined{\??mk#1\c!koppeling}%
+     \expandafter\secondoftwoarguments
+   \else
+     \expandafter\firstoftwoarguments
+   \fi}
+
+%D And then \unknown\ we had a chaptertitle packaged in a 
+%D makeup environment. And we don't want to loose marks there!
+
+\newbox\collectedmarks
+
+\def\flushmarks % use with care to avoid empty pages 
+  {\ifvoid\collectedmarks\else\unhbox\collectedmarks\fi}
+
+\def\postponemarks
+  {\let\setsomemark\postponemark}
+
+\def\postponemark#1#2%
+  {%\writestatus{marks}{postponing \string#1 => #2}%
+   \global\setbox\collectedmarks\hbox
+     {\unhbox\collectedmarks\setmark{#1}{#2}}} 
 
 \protect \endinput

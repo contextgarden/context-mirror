@@ -51,7 +51,7 @@ set  TeXShell  to  tetex
 %
 % Here are some general defaults. They can be overruled later.  
 
-set  UsedInterfaces     to  en nl de uk
+set  UsedInterfaces     to  en nl metafun mptopdf 
 set  UserInterface      to  en
 
 set  TeXExecutable      to  tex 
@@ -89,7 +89,7 @@ for  fptex  set  TeXPassString     to  -progname=context
 for  fptex  set  TeXBatchFlag      to  -int=batchmode 
 for  fptex  set  MpToTeXExecutable to  mpto
 for  fptex  set  MpVirginFlag      to  -ini 
-for  fptex  set  MpPassString      to  -progname=mpost 
+for  fptex  set  MpPassString      to  -progname=mpost
 for  fptex  set  MpBatchFlag       to  -int=batchmode
 
 % MikTeX users probably have to set up some paths too.
@@ -100,7 +100,7 @@ for  miktex  set  TeXPassString     to  --alias=context
 for  miktex  set  TeXBatchFlag      to  --interaction=batchmode 
 for  miktex  set  MpToTeXExecutable to  mptotex
 for  miktex  set  MpVirginFlag      to  --initialize
-for  miktex  set  MpPassString      to  --alias=mpost 
+for  miktex  set  MpPassString      to  --alias=mpost
 for  miktex  set  MpBatchFlag       to  --interaction=batchmode 
 
 for  miktex  set  TeXFormatFlag     to  --undump=

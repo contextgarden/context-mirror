@@ -83,14 +83,14 @@
 %D \stelsynoniemenin [unit] [textstyle=\dimension]
 %D \stoptypen
 %D
-%D We have to use the command \type {\unitedmeaning} instead
-%D of \type {\meaning}, simply because the latter is a \TEX\
-%D primitive we don't want to loose. We use the label text 
-%D mechanism for translations. 
-%D
 %D This definition means that we can ask for the meaning of a
 %D unit using \type {\unitmeaning} and get a list of used
 %D units by saying \type {\placelistofunits}
+%D
+%D We have to use the command \type {\unitmeaning} instead
+%D of \type {\meaning}, simply because the latter is a \TEX\
+%D primitive we don't want to loose. We use the label text 
+%D mechanism for translations. 
 
 %D \macros
 %D   {dimension}
@@ -277,15 +277,14 @@
 \newif\ifSIunits \SIunitstrue
 
 \def\noSI#1{\begingroup\SIunitsfalse#1\endgroup}
-\def\doSI#1{\begingroup\SIunitstrue#1\endgroup}
+\def\doSI#1{\begingroup\SIunitstrue #1\endgroup}
 
 %D \macros
 %D   {Degrees}
 %D
 %D We can fake the degrees symbol with:
 
-\def\Degrees%
-  {\dimensionaddfix{^\circ}}
+\def\Degrees{\dimensionaddfix{^\circ}}
 
 %D \macro
 %D   {Unit, NoUnit}
@@ -414,6 +413,21 @@
    u:hour=Stunde,
    u:min=Minuten]
 
+\setuplabeltext
+  [\s!it]
+  [u:sec=secondo,
+   u:fsec=femtosecondo,
+   u:psec=picosecondo,
+   u:nsec=nanosecondo,
+   u:usec=microsecondo,
+   u:msec=millisecondo,
+   u:year=anno,
+   u:month=mese,
+   u:week=settimana,
+   u:day=giorno,
+   u:hour=ora,
+   u:min=minuti]
+
 %D Then we define some angles.
 
 \getvalue{\v!eenheid} [Rad] {rad}      {\labeltext{u:rad}}
@@ -433,6 +447,11 @@
   [\s!de]
   [u:rad=Bogenma\SS,
    u:deg=Gradma\SS]
+
+\setuplabeltext
+  [\s!it]
+  [u:rad=radianti,
+   u:deg=angoli sessagesimali]
 
 %D Rotation and frequency related units are defined by:
 
@@ -461,6 +480,11 @@
   [u:rps=Umdrehungen pro Sekunde,
    u:rpm=Umdrehungen pro Minute]
 
+\setuplabeltext
+  [\s!it]
+  [u:rps=giri al secondo,
+   u:rpm=giri al minuto]
+
 %D Mass and force:
 
 \getvalue{\v!eenheid} [Gram]    {g}              {gram}
@@ -487,6 +511,10 @@
 \setuplabeltext
   [\s!de]
   [u:u=Atomare Masseneinheit]
+
+\setuplabeltext
+  [\s!it]
+  [u:u=unit\`a di massa atomica]
 
 %D Energy units comes in two alternatives:
 
@@ -565,6 +593,11 @@
   [u:vac=Wechselspannung,
    u:vdc=Gleichspannung]
 
+\setuplabeltext
+  [\s!it]
+  [u:vac=corrente alternata,
+   u:vdc=corrente continua]
+
 %D Computer memory is specified in Bytes:
 
 \getvalue{\v!eenheid} [Baud]  {Baud}         {Baud (Bit/s)}
@@ -606,6 +639,14 @@
 \getvalue{\v!eenheid} [kCal]  {\Kilo \Cal} {\labeltext{u:kcal}}
 \getvalue{\v!eenheid} [Lux]   {lux}        {lux}
 
+
+\def\xPercent {\dimensionaddfix{\percent }}
+\def\xPromille{\dimensionaddfix{\promille}}
+
+\getvalue{\v!eenheid} [Percent]  {\xPercent } {percent}  
+\getvalue{\v!eenheid} [Permille] {\xPromille} {promille} 
+\getvalue{\v!eenheid} [Promille] {\xPromille} {promille} 
+
 %D Some more, thanks to Tobias: 
 
 \getvalue{\v!eenheid} [Gray]     {Gr}  {Gray}  
@@ -641,6 +682,15 @@
    u:cal=Kalorien,
    u:f=Force,
    u:kcal=Kilokalorien]
+
+\setuplabeltext
+  [\s!it]
+  [u:at=pressione atmosferica tecnica,
+   u:atm=pressione atmosfera fisica,
+   u:ft=piede,
+   u:cal=caloria,
+   u:f=forza,
+   u:kcal=chilocaloria]
 
 %D Here are some old ones, still there for compatibility
 %D reasons. These will probably be obsolete in a few years.

@@ -22,14 +22,33 @@ string CRLF ; CRLF := char 10 & char 13 ;
 
 picture _currentpicture_ ; 
 
+def beginfig (expr c) =
+  begingroup
+  charcode := c ; 
+  resetfig ; 
+  scantokens extra_beginfig ; 
+enddef ; 
+
+def resetfig =
+  clearxy ; 
+  clearit ; 
+  clearpen ;
+  pickup defaultpen ;
+  interim linecap := linecap ; 
+  interim linejoin := linejoin ; 
+  interim miterlimit := miterlimit ; 
+  save _background_ ; color _background_ ; _background_ :=  background  ; 
+  save  background  ; color  background  ;  background  := _background_ ;
+  drawoptions () ;
+enddef ;
+
 def protectgraphicmacros = 
   save showtext ; 
   save beginfig ; let beginfig = begingraphictextfig ;
   save endfig   ; let endfig   = endgraphictextfig ;
   save end      ; let end      = relax ; 
   interim prologues := prologues ; 
-  interim linecap   := butt ; 
-  interim linejoin  := mitered ; 
+  resetfig ;
 enddef ; 
 
 numeric currentgraphictext ; currentgraphictext := 0 ; 
@@ -53,7 +72,7 @@ def erasegraphictextfile =
   let erasegraphictextfile = relax ; 
 enddef ; 
 
-extra_beginfig := extra_beginfig & "erasegraphictextfile ;" ; 
+extra_beginfig := extra_beginfig & " erasegraphictextfile ;" ; 
 
 def begingraphictextfig (expr n) =
   foundpicture := n ; scratchpicture := nullpicture ;
@@ -67,25 +86,6 @@ def endgraphictextfig =
   fi ;
 enddef ;
 
-% def loadfigure (expr filename, n) =
-%   begingroup ;
-%   protectgraphicmacros ; % also save linewidth, color, options etc ?
-%   save sp ; picture sp ; sp := currentpicture ; 
-%   save ok ; boolean ok ; ok := false ; 
-%   def beginfig (expr m) = 
-%    if n=m : 
-%      currentpicture := sp ; ok := true ;
-%      def endfig = endinput ; enddef ; 
-%    else : 
-%      currentpicture := nullpicture ; 
-%    fi ; 
-%   enddef ; 
-%   let endfig = relax ; 
-%   readfile(filename) ; 
-%   if not ok : currentpicture := sp ; fi ; 
-%   endgroup ;
-% enddef ;
-
 def loadfigure primary filename = 
   doloadfigure (filename) 
 enddef ; 
@@ -97,6 +97,11 @@ def doloadfigure (expr filename) text figureattributes =
   picture figurepicture ; figurepicture := currentpicture ; 
   def number primary n = hide(figurenumber := n) enddef ; 
   protectgraphicmacros ; 
+  % defaults 
+  interim linecap    := rounded ;
+  interim linejoin   := rounded ;
+  interim miterlimit := 10 ;
+  % 
   currentpicture := nullpicture ; 
   def beginfig (expr n) = 
     currentpicture := nullpicture ; 
@@ -114,37 +119,59 @@ def graphictext primary t =
   dographictext(t)
 enddef ;
 
-def dographictext (expr t) text x_op_x =
+def dographictext (expr t) =
   begingroup ;
-  protectgraphicmacros ; 
   if graphictextformat<>"" :
-    graphictextstring := 
+    graphictextstring :=
       "% format=" & graphictextformat & CRLF & graphictextstring ;
-    graphictextformat := "" ; 
+    graphictextformat := "" ;
   fi ;
-  let normalwithshade = withshade ; 
-  save foundpicture, scratchpicture, str ;
-  save fill, draw, withshade, reversefill, outlinefill ;
-  numeric foundpicture ; picture scratchpicture ; string str ; 
   currentgraphictext := currentgraphictext + 1 ;
   savegraphictext ("\startTEXpage[scale=10000]" & t & "\stopTEXpage") ;
+  dofinishgraphictext 
+enddef ;
+
+def redographictext primary t =
+  regraphictext(t)
+enddef ;
+
+def regraphictext (expr t) =
+  begingroup ;
+  save currentgraphictext ; numeric currentgraphictext ;
+  currentgraphictext := t ;
+  dofinishgraphictext 
+enddef ;
+
+def dofinishgraphictext text x_op_x =
+  protectgraphicmacros ;
+  interim linecap    := butt ;     % normally rounded  
+  interim linejoin   := mitered ;  % normally rounded  
+  interim miterlimit := 10 ;       % todo 
+  let normalwithshade = withshade ;
+  save foundpicture, scratchpicture, str ;
+  save fill, draw, withshade, reversefill, outlinefill ;
+  numeric foundpicture ; picture scratchpicture ; string str ;
   def draw expr p =
-    addto scratchpicture doublepath p withpen currentpen ;
+    % the first, naive implementation was: 
+    %   addto scratchpicture doublepath p withpen currentpen ;
+    % but it is better to turn lines into fills 
+    addto scratchpicture contour boundingbox 
+      image (addto currentpicture doublepath p withpen currentpen) ;
   enddef ;
   def fill expr p =
     addto scratchpicture contour p withpen currentpen ;
   enddef ;
-  def f_op_f = enddef ; boolean f_color ; f_color := false ; 
-  def d_op_d = enddef ; boolean d_color ; d_color := false ; 
-  def s_op_s = enddef ; boolean s_color ; s_color := false ; 
-  boolean reverse_fill ; reverse_fill := false ;  
-  boolean outline_fill ; outline_fill := false ;  
-  def reversefill = 
-    hide(reverse_fill := true ) 
-  enddef ; 
-  def outlinefill = 
-    hide(outline_fill := true ) 
-  enddef ; 
+  def f_op_f = enddef ; boolean f_color ; f_color := false ;
+  def d_op_d = enddef ; boolean d_color ; d_color := false ;
+  def s_op_s = enddef ; boolean s_color ; s_color := false ;
+  boolean reverse_fill ; reverse_fill := false ;
+  boolean outline_fill ; outline_fill := false ;
+  def reversefill =
+    hide(reverse_fill := true )
+  enddef ;
+  def outlinefill =
+    hide(outline_fill := true )
+  enddef ;
   def withshade primary c =
     hide(def s_op_s = normalwithshade c enddef ; s_color := true )
   enddef ;
@@ -156,53 +183,53 @@ def dographictext (expr t) text x_op_x =
   enddef ;
   scratchpicture := nullpicture ;
   addto scratchpicture doublepath origin x_op_x ; % pre-roll
-  for i within scratchpicture : % Below here is a dirty tricky test! 
-    if (urcorner dashpart i) = origin : outline_fill := false ; fi ; 
-  endfor ; 
+  for i within scratchpicture : % Below here is a dirty tricky test!
+    if (urcorner dashpart i) = origin : outline_fill := false ; fi ;
+  endfor ;
   scratchpicture := nullpicture ;
-  readfile(jobname & ".mpy") ; 
+  readfile(jobname & ".mpy") ;
   scratchpicture := (scratchpicture shifted -llcorner scratchpicture) scaled (1/10) ;
-  if not d_color and not f_color : d_color := true ; fi 
-  if s_color : d_color := false ; f_color := false ; fi ; 
-  if d_color and not reverse_fill : 
-    for i within scratchpicture : 
-      if f_color and outline_fill : 
-        addto currentpicture doublepath pathpart i _op_ x_op_x f_op_f 
+  if not d_color and not f_color : d_color := true ; fi
+  if s_color : d_color := false ; f_color := false ; fi ;
+  if d_color and not reverse_fill :
+    for i within scratchpicture :
+      if f_color and outline_fill :
+        addto currentpicture doublepath pathpart i _op_ x_op_x f_op_f
           dashed nullpicture ;
-      fi ; 
-      if filled i : 
+      fi ;
+      if filled i :
         addto currentpicture doublepath pathpart i _op_ x_op_x d_op_d ;
-      fi ; 
+      fi ;
     endfor ;
   fi ;
-  if f_color : 
+  if f_color :
     for i within scratchpicture :
-      if filled i : 
-        addto currentpicture contour pathpart i _op_ x_op_x f_op_f 
-          withpen pencircle scaled 0 ; 
-      fi ; 
+      if filled i :
+        addto currentpicture contour pathpart i _op_ x_op_x f_op_f
+          withpen pencircle scaled 0 ;
+      fi ;
     endfor ;
   fi ;
-  if d_color and reverse_fill : 
+  if d_color and reverse_fill :
     for i within scratchpicture :
-      if filled i : 
+      if filled i :
         addto currentpicture doublepath pathpart i _op_ x_op_x d_op_d ;
-      fi ; 
+      fi ;
     endfor ;
   fi ;
-  if s_color : 
+  if s_color :
     for i within scratchpicture :
-      if filled i : 
+      if filled i :
         addto currentpicture contour pathpart i _op_ x_op_x s_op_s ;
-      fi ; 
+      fi ;
     endfor ;
-  else : 
+  else :
     for i within scratchpicture :
-      if stroked i : 
+      if stroked i :
         addto currentpicture doublepath pathpart i _op_ x_op_x d_op_d ;
-      fi ; 
+      fi ;
     endfor ;
-  fi ; 
+  fi ;
   endgroup ;
 enddef ;
 

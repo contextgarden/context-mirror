@@ -101,7 +101,7 @@
 %D The \METAFONT\ and \METAPOST\ logos adapt themselves to the
 %D current fontsize, an ugly but usefull hack. 
 
-\def\setMFPfont%
+\unexpanded\def\setMFPfont%
   {\font\logofont=logo%
      \ifnum\fam=\bffam bf\else
      \ifnum\fam=\slfam sl\else
@@ -121,10 +121,10 @@
 %
 % \def\setMFPfont{\symbolicfont{MetaLogo}}
 
-\def\symbolicfont#1{\definedfont[\glyphfontfile{#1} sa *]}
+\let\logofont\nullfont
 
-\def\setMFPfont% more sensitive for low level changes 
-  {\font\logofont=logo%
+\unexpanded\def\setMFPfont% more sensitive for low level changes 
+  {\font\logofont=logo% 
      \ifx\fontalternative\c!bf\else
      \ifx\fontalternative\c!sl\else
      \ifx\fontalternative\c!sl\else
@@ -144,13 +144,13 @@
   {\discretionary{\vrule\!!height.33em\!!depth-.27em\!!width.33em}{}{}}
 
 \unexpanded\def\MetaFont% 
- {{\setMFPfont META\MetaHyphen FONT}}
+  {{\setMFPfont META\MetaHyphen FONT}}
 
 \unexpanded\def\MetaPost% 
- {{\setMFPfont META\MetaHyphen POST}}
+  {{\setMFPfont META\MetaHyphen POST}}
 
 \unexpanded\def\MetaFun% 
- {MetaFun}
+  {MetaFun}
 
 %D \macros
 %D  {TEX, METAFONT, METAPOST, METAFUN,

@@ -56,25 +56,35 @@
 
 \unprotect
 
-\let\EPSllx\!!zeropoint \let\MPllx\EPSllx % just in case these 
-\let\EPSlly\!!zeropoint \let\MPlly\EPSlly % are used while running 
-\let\EPSurx\!!zeropoint \let\MPurx\EPSurx % in fast mode we set
-\let\EPSury\!!zeropoint \let\MPury\EPSury % them to 0pt. 
+\def\EPSllx{0} \let\MPllx\EPSllx % just in case these 
+\def\EPSlly{0} \let\MPlly\EPSlly % are used while running 
+\def\EPSurx{0} \let\MPurx\EPSurx % in fast mode we set
+\def\EPSury{0} \let\MPury\EPSury % them to 0. 
 
 \chardef\EPSfound  =0 
 \chardef\EPScreator=0 
 \chardef\EPSspecial=0 
-\chardef\EPSstatus =0 
+\chardef\EPSstatus =0
+
+\let\EPScreatorstring\empty
+
+\newtoks\extraEPSpreambleresets
+\newtoks\extraEPSpreambleparsers
+
+\def\dofinishEPSfile{\dofinishfile} % no \let, can be overloaded
 
 \def\dogetEPSboundingbox#1#2#3#4#5%
   {\bgroup
-   \global\chardef\EPSfound=0
-   \global\chardef\EPScreator=0 
-   \global\chardef\EPSspecial=0
-   \global\chardef\EPSstatus=0
+   \global\chardef\EPSfound  0
+   \global\chardef\EPScreator0 
+   \global\chardef\EPSspecial0
+   \global\chardef\EPSstatus 0
+   \global\let\EPScreatorstring\empty
+   \the\extraEPSpreambleresets
    \uncatcodespecials
-   \def\doprocessEPSline%
-     {\expandafter\checkEPSboundingbox\fileline:. \end}%
+   \catcode`\^^M=\@@ignore
+   \def\doprocessEPSline
+     {\expandafter\checkEPSboundingbox\fileline\empty\empty:.:.\end}%
    \doprocessfile\scratchread{#1}\doprocessEPSline
    \egroup
    \ifnum\EPSfound>0
@@ -82,77 +92,104 @@
      #4=\EPSurx bp% \dimen0=1bp and \EPSllx\dimen0
      #3=\EPSlly bp% is more accurate (.005pt). 
      #5=\EPSury bp% 
-     \scratchdimen=\EPSllx bp\advance#4 -\scratchdimen
-     \scratchdimen=\EPSlly bp\advance#5 -\scratchdimen
+     \scratchdimen\EPSllx bp\advance#4 -\scratchdimen
+     \scratchdimen\EPSlly bp\advance#5 -\scratchdimen
    \else
      #2=\zeropoint
      #3=\zeropoint
      #4=\zeropoint
      #5=\zeropoint
    \fi
-  %\message{[bbox #1: \EPSllx\space\EPSurx\space\EPSlly\space\EPSury]}%
+  %\message{[bbox #1: \EPSllx\space\EPSurx\space\EPSlly\space\EPSury]}\wait
    \global\let\MPllx\EPSllx \global\let\MPlly\EPSlly
    \global\let\MPurx\EPSurx \global\let\MPury\EPSury}
 
-\bgroup
-\catcode`\%=\@@other
-\global\let\EPSpercenttag   =%
-\gdef\EPSboundingboxtag     {%BoundingBox}  
-\gdef\EPShiresboundingboxtag{%HiResBoundingBox}  
-\gdef\EPSexactboundingboxtag{%ExactBoundingBox}  
-\gdef\EPScreatortag         {%Creator}  
-\gdef\EPSmetaposttag        { MetaPost :. }  
-\gdef\EPSmetapostspecialtag {%MetaPostSpecial}  
-\gdef\EPSmetapostspecialstag{%MetaPostSpecials}  
-\gdef\EPSpagetag            {%Page}  
-\egroup  
+\bgroup \catcode`\%=\@@other \gdef\letterpercent{\string%} \egroup
 
-\long\def\checkEPSboundingbox#1#2:#3\end%
-  {\ifx#1\EPSpercenttag
-     \def\!!stringa{#2}%
-     \ifx\!!stringa\EPScreatortag
-       \edef\!!stringa{#3}%
-       \global\chardef\EPScreator=\ifx\!!stringa\EPSmetaposttag1 \else0 \fi
-     \else\ifx\!!stringa\EPSboundingboxtag
-       \expandafter \getEPSboundingbox #3 . . . \end
-       \global\chardef\EPSfound=1
-     \else\ifx\!!stringa\EPShiresboundingboxtag
-       \expandafter \getEPSboundingbox #3 . . . \end
-       \global\chardef\EPSfound=2
-       \dofinishfile
-     \else\ifx\!!stringa\EPSexactboundingboxtag
-       \expandafter \getEPSboundingbox #3 . . . \end
-       \global\chardef\EPSfound=2
-       \dofinishfile
-     \else\ifx\!!stringa\EPSmetapostspecialtag % only before finish! 
-       \global\chardef\EPSspecial=1 % ah, we've met some MP extensions 
-     \else\ifx\!!stringa\EPSmetapostspecialstag % only before finish! 
-       \global\chardef\EPSspecial=1 % ah, we've met some MP extensions 
-     \else\ifx\!!stringa\EPSpagetag 
-       \global\chardef\EPSstatus=1 % we passed MP font defs 
-     \fi\fi\fi\fi\fi\fi\fi
+\def\EPSboundingboxtag     {BoundingBox}  
+\def\EPShiresboundingboxtag{HiResBoundingBox}  
+\def\EPSexactboundingboxtag{ExactBoundingBox}  
+\def\EPScreatortag         {Creator}  
+\def\EPSmetaposttag        {MetaPost}  
+\def\EPSmetapostspecialtag {MetaPostSpecial}  
+\def\EPSmetapostspecialstag{MetaPostSpecials}  
+\def\EPSpagetag            {Page}  
+
+\let\EPSspecialstring \empty 
+\let\EPSspecialcontent\empty 
+
+\long\def\checkEPSboundingbox#1#2#3:#4:.#5\end
+  {\if\string#1\letterpercent
+     \if\string#2\letterpercent
+       \edef\EPSspecialstring{#3}% 
+       \edef\EPSspecialcontent{#4}% 
+       \ifx\EPSspecialstring\EPScreatortag
+         \getEPScreatorspec
+       \else\ifx\EPSspecialstring\EPSboundingboxtag
+         \getEPSboundingboxspec
+         \global\chardef\EPSfound 1
+       \else\ifx\EPSspecialstring\EPShiresboundingboxtag
+         \getEPSboundingboxspec
+         \global\chardef\EPSfound 2
+         \dofinishEPSfile
+       \else\ifx\EPSspecialstring\EPSexactboundingboxtag
+         \getEPSboundingboxspec
+         \global\chardef\EPSfound 2
+         \dofinishEPSfile
+       \else\ifx\EPSspecialstring\EPSmetapostspecialtag % only before finish! 
+         \global\chardef\EPSspecial 1 % ah, we've met some MP extensions 
+       \else\ifx\EPSspecialstring\EPSmetapostspecialstag % only before finish! 
+         \global\chardef\EPSspecial 1 % ah, we've met some MP extensions 
+       \else\ifx\EPSspecialstring\EPSpagetag 
+         \global\chardef\EPSstatus  1 % we passed MP font defs 
+       \else
+         \the\extraEPSpreambleparsers
+       \fi\fi\fi\fi\fi\fi\fi
+     \fi
    \else\ifnum\EPSfound>0
      \ifnum\EPScreator=1 % that is, we are dealing with MP output
        \ifcase\EPSstatus
          % we've run into MP fontdefs
        \or
-         \dofinishfile
+         \dofinishEPSfile
        \fi
      \else
-       \dofinishfile
+       \dofinishEPSfile
      \fi
    \fi\fi}
 
-\def\getEPSboundingbox #1 #2 #3 #4 #5\end%
+\def\getEPSboundingboxspec
+  {\edef\EPSspecialstring{\EPSspecialcontent\space . . . . }%
+   \expandafter\dogetEPSboundingboxspec\EPSspecialstring\end}
+   
+\def\dogetEPSboundingboxspec#1 #2 #3 #4 #5\end
   {\gdef\EPSllx{#1}%
    \ifx\EPSllx\empty
-     \getEPSboundingbox #2 #3 #4 #5 .\end
+     \dogetEPSboundingboxspec#2 #3 #4 #5\end
    \else
      \gdef\EPSlly{#2}%
      \gdef\EPSurx{#3}%
      \gdef\EPSury{#4}%
+  \fi}
+
+\def\getEPScreatorspec
+  {\edef\EPSspecialstring{\EPSspecialcontent. . .}%
+   \expandafter\dogetEPScreatorspec\EPSspecialstring\end}
+
+\def\dogetEPScreatorspec#1#2. . #3\end
+  {\edef\EPSspecialstring{#1}%
+   \ifx\EPSspecialstring\empty
+     \dogetEPScreatorspec#2. . #3\end
+   \else
+     \edef\EPScreatorstring{#1#2}%
+     \global\chardef\EPScreator
+       \ifx\EPScreatorstring\EPSmetaposttag1\else0\fi\relax
    \fi}
 
-\protect 
+\def\dogetEPSpreambledata#1% can be combined with \extraEPSpreambleparsers
+  {\bgroup
+   \let\dofinishEPSfile\relax % dirty trick, read past all bboxes  
+   \dogetEPSboundingbox{#1}\!!widtha\!!heighta\!!widthb\!!heightb
+   \egroup}
 
-\endinput
+\protect \endinput 

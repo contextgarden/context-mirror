@@ -20,6 +20,7 @@ stopsetup
 startsetup
 com:nastavjazyk:
 typ:val/vars/:
+val:nl,fr,en,uk,de,es,cz,..:nl:
 ivr:instalacejazyka::
 stopsetup
 
@@ -214,10 +215,9 @@ stopsetup
 
 startsetup
 com:definujskupinubarev:
-typ:val/val/vals/:
+typ:val/val/trips/:
 val:*jmeno::
 val:rgb,cmyk,seda,s:rgb:
-val:trips/::
 stopsetup
 
 startsetup
@@ -260,7 +260,7 @@ stopsetup
 
 startsetup
 com:nastavtype:
-typ:var/:
+typ:vars/:
 var:mezera:zap,vyp::
 var:volba:sklonene,normalni,zadny::
 var:pismeno:normalni,tucne,sklonene,tucnesklonene,opis,kap,male...,*prikaz::
@@ -405,6 +405,7 @@ var:alternativa:a,b,c::
 var:tloustkalinky:*dimenze::
 var:offsetspodku:*dimenze::
 var:offsetvrsku:*dimenze::
+var:barvalinky:*jmeno::
 stopsetup
 
 startsetup
@@ -993,7 +994,8 @@ stopsetup
 
 startsetup
 com:nivy:
-typ:arg/arg/:
+typ:val/arg/arg/:
+val:nizko::
 val:*text::
 val:*text::
 stopsetup
@@ -1725,8 +1727,9 @@ var:zpusob:skrztext,skrz*sekce::
 var:text:*text::
 var:oddelovaccisla:*text::
 var:oddelovactextu:*text::
-var:*sekce*cislo:ano,ne::
+var:*sekcecislo singular: jmeno v singularu:ano,ne::
 var:oddelovac:*text::
+var:strut:ano,ne::
 var:status:start,stop::
 var:prikaz:*\prikaz#1::
 stopsetup
@@ -1753,6 +1756,7 @@ stopsetup
 startsetup
 com:definujstartstop:
 typ:val/vars/:
+val:*jmeno::
 var:pred:*prikaz::
 var:po:*prikaz::
 var:pismeno:normalni,tucne,sklonene,tucnesklonene,opis,kap,male...,*prikaz::
@@ -1780,6 +1784,7 @@ var:mezi:*prikaz::
 var:zarovnani:vlevo,nastred,vpravo,ne::
 var:konverze:cisla,pismena,Pismena,rimskecislice,Rimskecislice::
 var:zpusob:skrztext,skrz*sekce::
+var:oddelovac:*text::
 stopsetup
 
 startsetup
@@ -1881,9 +1886,9 @@ stopsetup
 
 startsetup
 com:nastavodkazovani:
-typ:var/:
+typ:vars/:
 var:status:start,stop::
-var:*sekce*cislo:ano,ne::
+var:*sekcecislo singular: jmeno v singularu:ano,ne::
 var:prefix:+,-,*text::
 var:interakce:popisek,text,vse,symbol::
 var:sirka:*dimenze::
@@ -1980,7 +1985,7 @@ val:*jmeno::
 var:status:start,stop::
 var:alternativa:a,b,c,...,zadny,prikaz::
 var:propojeni:zap,vyp::
-var:kriterium:*sekce,lokalne,predchozi,vse::
+var:kriterium:*sekce,lokalne,predchozi,aktualni,vse::
 var:hranicestranky:*seznam::
 var:pismeno:normalni,tucne,sklonene,tucnesklonene,opis,kap,male...,*prikaz::
 var:stylcisla:normalni,tucne,sklonene,tucnesklonene,opis,kap,male...,*prikaz::
@@ -1998,9 +2003,9 @@ var:mezi:*prikaz::
 var:vlevo:*text::
 var:vpravo:*text::
 var:popisek:ano,ne::
-var:prefix:ano,ne::
+var:prefix:ano,ne,zadny::
 var:cislostranky:ano,ne::
-var:*sekce*cislo:ano,ne::
+var:*sekcecislo singular: jmeno v singularu:ano,ne::
 var:zarovnejtitul:ano,ne::
 var:marginalie:*dimenze::
 var:sirka:*dimenze,prizpusobive::
@@ -2008,6 +2013,7 @@ var:vyska:*dimenze,prizpusobive,siroky::
 var:hloubka:*dimenze,prizpusobive,siroky::
 var:vzdalenost:*dimenze::
 var:oddelovac:*text::
+var:predel:*text::
 var:symbol:zadny,1,2,3,...::
 var:expanzen:ano,ne,prikaz::
 var:maxsirka:*dimenze::
@@ -2067,6 +2073,7 @@ var:odsadpristi:ano,ne::
 var:alternativa:*jmeno::
 var:mezerapred:*dimenze::
 var:po:*dimenze::
+var:oddelovac:*text::
 stopsetup
 
 startsetup
@@ -2291,6 +2298,7 @@ var:alternativa:normalni,naokraji,nastred,text::
 var:prikaz:*\prikaz#1#2::
 var:ciselnyprikaz:*\prikaz#1::
 var:textovyprikaz:*\prikaz#1::
+var:oddelovac:*text::
 var:prefix:+,-,*text::
 var:umistihlavicku:ano,ne::
 var:zvysujicicislo:ano,ne,*soubor::
@@ -2420,14 +2428,14 @@ stopsetup
 startsetup
 com:definujrejstrik:
 typ:val/val/:
-val:*jmeno v singularu::
+val:*\@@mssetupsingular ::
 val:*jmeno v pluralu::
 stopsetup
 
 startsetup
 com:nastavrejstrik:
 typ:val/val/vars/:
-val:*jmeno v singularu::
+val:*\@@mssetupsingular ::
 val:*jmeno::
 var:n:*cislo::
 var:rovnovaha:ano,ne::
@@ -2437,7 +2445,7 @@ var:stylstranky:normalni,tucne,sklonene,tucnesklonene,opis,kap,male...,*prikaz::
 var:styltextu:normalni,tucne,sklonene,tucnesklonene,opis,kap,male...,*prikaz::
 var:indikator:ano,ne::
 var:propojeni:ano,ne::
-var:*sekce*cislo:ano,ne::
+var:*sekcecislo singular: jmeno v singularu:ano,ne::
 var:kriterium:*sekce,lokalne,vse::
 var:vzdalenost:*dimenze::
 var:symbol:1,2,...,n,a,...,zadny::
@@ -2467,7 +2475,7 @@ stopsetup
 startsetup
 com:zapisdorejstriku:
 typ:val/val/idxs/:
-val:*jmeno v singularu::
+val:*\@@mssetupsingular ::
 val:*text::
 val:*text::
 stopsetup
@@ -2508,7 +2516,7 @@ stopsetup
 startsetup
 com:definujsynonyma:
 typ:val/val/val/val/:
-val:*jmeno v singularu::
+val:*\@@mssetupsingular ::
 val:*jmeno v pluralu::
 val:*prikaz::
 val:*prikaz::
@@ -2555,7 +2563,7 @@ stopsetup
 startsetup
 com:definujtrideni:
 typ:val/val/val/:
-val:*jmeno v singularu::
+val:*\@@mssetupsingular ::
 val:*jmeno v pluralu::
 val:*prikaz::
 stopsetup
@@ -2625,6 +2633,7 @@ var:statusupati:normalni,stop,start,prazdne,zadny,zadneznaceni::
 var:statustextu:normalni,stop,start,prazdne,zadny,zadneznaceni::
 var:statusvrsku:stop,start::
 var:statusspodku:stop,start::
+var:pagestate:stop,start::
 var:barva:*jmeno::
 stopsetup
 
@@ -2642,7 +2651,7 @@ stopsetup
 startsetup
 com:aktualnidatum:
 typ:vals/:
-val:den,mesic,vsedniden,rok, dd,mm,jj,yy,d,m,j,y,znacka:den,mesic,rok:
+ivl:datum::
 stopsetup
 
 startsetup
@@ -2651,7 +2660,7 @@ typ:vars/vals/:
 var:d:*cislo::
 var:m:*cislo::
 var:y:*cislo::
-ivl:aktualnidatum::
+val:den,mesic,vsedniden,rok, dd,mm,jj,yy,d,m,j,y,znacka:den,mesic,rok:
 stopsetup
 
 startsetup
@@ -2928,7 +2937,7 @@ stopsetup
 startsetup
 com:definujplvouciobjekt:
 typ:val/val/:
-val:*jmeno v singularu::
+val:*\@@mssetupsingular ::
 val:*jmeno v pluralu::
 stopsetup
 
@@ -3054,6 +3063,8 @@ typ:vars/:
 var:pred:*prikaz::
 var:po:*prikaz::
 var:pismeno:normalni,tucne,sklonene,tucnesklonene,opis,kap,male...,*prikaz::
+var:barva:*jmeno::
+var:misto:text,marginalie::
 stopsetup
 
 startsetup
@@ -3729,9 +3740,7 @@ stopsetup
 
 startsetup
 com:oznaceni:
-typ:poss/poss/vars/arg/:
-val:*cislo::
-val:*cislo::
+typ:pos/pos/vars/arg/:
 val:*cislo::
 val:*cislo::
 ivr:nastavoramovani::
@@ -3873,7 +3882,6 @@ com:nastavpole:
 typ:val/vals/vars/vars/vars/:
 val:*jmeno::
 val:popisek,horizontalne,vertikalne,ramecek::
-ivr:oramovani::
 ivr:nastavvsechnapole::
 stopsetup
 
@@ -3882,7 +3890,6 @@ com:nastavvsechnapole:
 typ:vals/val/vars/vars/vars/:
 val:*jmeno::
 val:reset,popisek,horizontalne,vertikalne,ramecek::
-ivr:oramovani::
 var:n:*cislo::
 var:vzdalenost:*dimenze::
 var:pred:*prikaz::
@@ -3903,6 +3910,7 @@ var:pocitat:*reference::
 var:offsetpole:*dimenze::
 var:barvarameckupole:*jmeno::
 var:barvapozadipole:*jmeno::
+ivr:oramovani::
 stopsetup
 
 startsetup

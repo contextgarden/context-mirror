@@ -30,17 +30,22 @@
 --en=? --ve=lucas --co=sun --re
 --en=? --ve=lucas --co=sun --so=lucas/sun --ma --in
 
-# creative aliance arcadia
+# lucas antiqua
+
+--en=? --ve=lucas --co=antiqua --re
+--en=? --ve=lucas --co=antiqua --so=lucas/antiqua --ma --in
+
+# creative arcadia
 
 --en=? --ve=creative --co=arcadia   --re
 --en=? --ve=creative --co=arcadia   --so=creative/arcadia   --ma --in
 
-# creative aliance industria
+# creative industria
 
 --en=? --ve=creative --co=industria --re
 --en=? --ve=creative --co=industria --so=creative/industria --ma --in
 
-# creative aliance insigna 
+# creative insignia 
 
 --en=? --ve=creative --co=insignia  --re
 --en=? --ve=creative --co=insignia  --so=creative/insignia  --ma --in

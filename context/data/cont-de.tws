@@ -20,6 +20,7 @@ stopsetup
 startsetup
 com:stellespracheein:
 typ:val/vars/:
+val:nl,fr,en,uk,de,es,cz,..:nl:
 ivr:installieresprache::
 stopsetup
 
@@ -214,10 +215,9 @@ stopsetup
 
 startsetup
 com:definierefarbengruppe:
-typ:val/val/vals/:
+typ:val/val/trips/:
 val:*Name::
 val:rgb,cmyk,grau,s:rgb:
-val:trips/::
 stopsetup
 
 startsetup
@@ -260,7 +260,7 @@ stopsetup
 
 startsetup
 com:stelletipein:
-typ:var/:
+typ:vars/:
 var:spatium:an,aus::
 var:option:geneigt,normal,kein::
 var:stil:normal,fett,geneigt,fettgeneigt,tippen,kap,klein...,*Befehl::
@@ -405,6 +405,7 @@ var:alternative:a,b,c::
 var:liniendicke:*Dimension::
 var:untenoffset:*Dimension::
 var:obenoffset:*Dimension::
+var:linienfarbe:*Name::
 stopsetup
 
 startsetup
@@ -993,7 +994,8 @@ stopsetup
 
 startsetup
 com:tiho:
-typ:arg/arg/:
+typ:val/arg/arg/:
+val:tief::
 val:*Text::
 val:*Text::
 stopsetup
@@ -1725,8 +1727,9 @@ var:art:protext,pro*Abschnitt::
 var:text:*Text::
 var:nummernseperator:*Text::
 var:textseparator:*Text::
-var:*Abschnitt*Nummer:ja,nein::
+var:*Abschnittnummer:ja,nein::
 var:seperator:*Text::
+var:strut:ja,nein::
 var:status:start,stop::
 var:befehl:*\Befehl#1::
 stopsetup
@@ -1753,6 +1756,7 @@ stopsetup
 startsetup
 com:definierestartstop:
 typ:val/vars/:
+val:*Name::
 var:vor:*Befehl::
 var:nach:*Befehl::
 var:stil:normal,fett,geneigt,fettgeneigt,tippen,kap,klein...,*Befehl::
@@ -1780,6 +1784,7 @@ var:zwischen:*Befehl::
 var:ausrichtung:links,mittig,rechts,nein::
 var:konversion:ziffern,buchstaben,Buchstaben,roemischezahlen,Roemischezahlen::
 var:art:protext,pro*Abschnitt::
+var:seperator:*Text::
 stopsetup
 
 startsetup
@@ -1881,9 +1886,9 @@ stopsetup
 
 startsetup
 com:stellereferenzierenein:
-typ:var/:
+typ:vars/:
 var:status:start,stop::
-var:*Abschnitt*Nummer:ja,nein::
+var:*Abschnittnummer:ja,nein::
 var:prefix:+,-,*Text::
 var:interaktion:label,text,alles,symbol::
 var:breite:*Dimension::
@@ -1980,7 +1985,7 @@ val:*Name::
 var:status:start,stop::
 var:alternative:a,b,c,...,kein,befehl::
 var:verknuepfung:an,aus::
-var:kriterium:*Abschnitt,lokal,vorig,alles::
+var:kriterium:*Abschnitt,lokal,vorig,aktuell,alles::
 var:seitenbegrenzung:*Liste::
 var:stil:normal,fett,geneigt,fettgeneigt,tippen,kap,klein...,*Befehl::
 var:nummernstil:normal,fett,geneigt,fettgeneigt,tippen,kap,klein...,*Befehl::
@@ -1998,9 +2003,9 @@ var:zwischen:*Befehl::
 var:links:*Text::
 var:rechts:*Text::
 var:label:ja,nein::
-var:prefix:ja,nein::
+var:prefix:ja,nein,kein::
 var:seitennummer:ja,nein::
-var:*Abschnitt*Nummer:ja,nein::
+var:*Abschnittnummer:ja,nein::
 var:titelausrichten:ja,nein::
 var:marginalie:*Dimension::
 var:breite:*Dimension,passend::
@@ -2008,6 +2013,7 @@ var:hoehe:*Dimension,passend,breit::
 var:tiefe:*Dimension,passend,breit::
 var:abstand:*Dimension::
 var:seperator:*Text::
+var:abschnitttrenner:*Text::
 var:symbol:kein,1,2,3,...::
 var:expansion:ja,nein,befehl::
 var:maxbreite:*Dimension::
@@ -2067,6 +2073,7 @@ var:ziehefolgendeein:ja,nein::
 var:alternative:*Name::
 var:vorspatium:*Dimension::
 var:nach:*Dimension::
+var:seperator:*Text::
 stopsetup
 
 startsetup
@@ -2291,6 +2298,7 @@ var:alternative:normal,imrand,mittig,text::
 var:befehl:*\Befehl#1#2::
 var:nummerbefehl:*\Befehl#1::
 var:textbefehl:*\Befehl#1::
+var:seperator:*Text::
 var:prefix:+,-,*Text::
 var:setzekopf:ja,nein::
 var:nummererhoehen:ja,nein,*Datei::
@@ -2437,7 +2445,7 @@ var:seitenstil:normal,fett,geneigt,fettgeneigt,tippen,kap,klein...,*Befehl::
 var:textstil:normal,fett,geneigt,fettgeneigt,tippen,kap,klein...,*Befehl::
 var:indikator:ja,nein::
 var:verknuepfung:ja,nein::
-var:*Abschnitt*Nummer:ja,nein::
+var:*Abschnittnummer:ja,nein::
 var:kriterium:*Abschnitt,lokal,alles::
 var:abstand:*Dimension::
 var:symbol:1,2,...,n,a,...,kein::
@@ -2625,6 +2633,7 @@ var:fusszeilenstatus:normal,stop,start,leer,kein,keinebeschriftung::
 var:textstatus:normal,stop,start,leer,kein,keinebeschriftung::
 var:statusoben:stop,start::
 var:untenstatus:stop,start::
+var:pagestate:stop,start::
 var:farbe:*Name::
 stopsetup
 
@@ -2642,7 +2651,7 @@ stopsetup
 startsetup
 com:heutigesdatum:
 typ:vals/:
-val:tag,monat,wochentag,jahr, dd,mm,jj,yy,d,m,j,y,merkmal:tag,monat,jahr:
+ivl:datum::
 stopsetup
 
 startsetup
@@ -2651,7 +2660,7 @@ typ:vars/vals/:
 var:d:*Nummer::
 var:m:*Nummer::
 var:y:*Nummer::
-ivl:heutigesdatum::
+val:tag,monat,wochentag,jahr, dd,mm,jj,yy,d,m,j,y,merkmal:tag,monat,jahr:
 stopsetup
 
 startsetup
@@ -3054,6 +3063,8 @@ typ:vars/:
 var:vor:*Befehl::
 var:nach:*Befehl::
 var:stil:normal,fett,geneigt,fettgeneigt,tippen,kap,klein...,*Befehl::
+var:farbe:*Name::
+var:platz:text,marginalie::
 stopsetup
 
 startsetup
@@ -3729,9 +3740,7 @@ stopsetup
 
 startsetup
 com:bemerkung:
-typ:poss/poss/vars/arg/:
-val:*Nummer::
-val:*Nummer::
+typ:pos/pos/vars/arg/:
 val:*Nummer::
 val:*Nummer::
 ivr:stelleumrahmtein::
@@ -3873,7 +3882,6 @@ com:stellefeldein:
 typ:val/vals/vars/vars/vars/:
 val:*Name::
 val:label,horizontal,vertikal,rahmen::
-ivr:umrahmt::
 ivr:stellefelderin::
 stopsetup
 
@@ -3882,7 +3890,6 @@ com:stellefelderin:
 typ:vals/val/vars/vars/vars/:
 val:*Name::
 val:zuruecksetzten,label,horizontal,vertikal,rahmen::
-ivr:umrahmt::
 var:n:*Nummer::
 var:abstand:*Dimension::
 var:vor:*Befehl::
@@ -3903,6 +3910,7 @@ var:berechnen:*Referenz::
 var:feldoffset:*Dimension::
 var:feldrahmenfarbe:*Name::
 var:feldhintergrundfarbe:*Name::
+ivr:umrahmt::
 stopsetup
 
 startsetup

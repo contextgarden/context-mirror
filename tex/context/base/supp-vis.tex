@@ -118,10 +118,8 @@
 %D messages we introduce \type{\dontcomplain}.
 
 \def\dontcomplain%
-  {\hbadness  = \!!tenthousand
-   \hfuzz     = \maxdimen
-   \vbadness  = \!!tenthousand
-   \vfuzz     = \maxdimen}
+  {\hbadness=\!!tenthousand \vbadness=\hbadness
+   \hfuzz   =\maxdimen      \vfuzz   =\hfuzz}
 
 %D \macros
 %D   {normaloffinterlineskip}
@@ -143,10 +141,10 @@
 %D baseline behavior. Especially \type{\vtop}'s need our
 %D special attention.
 
-\let\normalhbox     = \hbox
-\let\normalvbox     = \vbox
-\let\normalvtop     = \vtop
-\let\normalvcenter  = \vcenter
+\ifx \normalhbox    \undefined \let \normalhbox    = \hbox    \fi 
+\ifx \normalvbox    \undefined \let \normalvbox    = \vbox    \fi 
+\ifx \normalvtop    \undefined \let \normalvtop    = \vtop    \fi 
+\ifx \normalvcenter \undefined \let \normalvcenter = \vcenter \fi 
 
 %D \macros
 %D   {normalhskip,
@@ -335,6 +333,8 @@
 %D primitive too. By storing and restoring the height and depth
 %D of box \type{#1}, we preserve the mode.
 
+\let\dowithruledbox\relax
+
 \def\makeruledbox#1%
   {\edef\ruledheight{\the\ht#1}%
    \edef\ruleddepth {\the\dp#1}%
@@ -379,7 +379,9 @@
          \ifbottomrule\else\!!width\!!zeropoint\fi}%
    \wd#1=\!!zeropoint
    \setbox#1=\ifhbox#1\normalhbox\else\normalvbox\fi
-     {\normalhbox{\box#1\lower\ruleddepth\box\scratchbox}}%
+     {\normalhbox
+        {\box#1%
+         \lower\ruleddepth\normalhbox{\dowithruledbox{\box\scratchbox}}}}%
    \ht#1=\ruledheight
    \wd#1=\ruledwidth
    \dp#1=\ruleddepth}
@@ -1707,66 +1709,66 @@
 %D For those who want to manipulate the visual cues in detail,
 %D we have grouped them.
 
-\def\showfils%
-  {\let\hss      = \ruledhss
-   \let\hfil     = \ruledhfil
-   \let\hfill    = \ruledhfill
-   \let\hfilneg  = \ruledhfilneg
-   \let\hfillneg = \ruledhfillneg
-   \let\vss      = \ruledvss
-   \let\vfil     = \ruledvfil
-   \let\vfill    = \ruledvfill
-   \let\vfilneg  = \ruledvfilneg
-   \let\vfillneg = \ruledvfillneg}
+\def\showfils
+  {\let\hss      \ruledhss
+   \let\hfil     \ruledhfil
+   \let\hfill    \ruledhfill
+   \let\hfilneg  \ruledhfilneg
+   \let\hfillneg \ruledhfillneg
+   \let\vss      \ruledvss
+   \let\vfil     \ruledvfil
+   \let\vfill    \ruledvfill
+   \let\vfilneg  \ruledvfilneg
+   \let\vfillneg \ruledvfillneg}
 
-\def\dontshowfils%
-  {\let\hss      = \normalhss
-   \let\hfil     = \normalhfil
-   \let\hfill    = \normalhfill
-   \let\hfilneg  = \normalhfilneg
-   \let\hfillneg = \normalhfillneg
-   \let\vss      = \normalvss
-   \let\vfil     = \normalvfil
-   \let\vfill    = \normalvfill
-   \let\vfilneg  = \normalvfilneg
-   \let\vfillneg = \normalvfillneg}
+\def\dontshowfils
+  {\let\hss      \normalhss
+   \let\hfil     \normalhfil
+   \let\hfill    \normalhfill
+   \let\hfilneg  \normalhfilneg
+   \let\hfillneg \normalhfillneg
+   \let\vss      \normalvss
+   \let\vfil     \normalvfil
+   \let\vfill    \normalvfill
+   \let\vfilneg  \normalvfilneg
+   \let\vfillneg \normalvfillneg}
 
-\def\showboxes%
+\def\showboxes
   {\baselineruletrue
-   \let\hbox     = \ruledhbox
-   \let\vbox     = \ruledvbox
-   \let\vtop     = \ruledvtop
-   \let\vcenter  = \ruledvcenter}
+   \let\hbox     \ruledhbox
+   \let\vbox     \ruledvbox
+   \let\vtop     \ruledvtop
+   \let\vcenter  \ruledvcenter}
 
-\def\dontshowboxes%
-  {\let\hbox     = \normalhbox
-   \let\vbox     = \normalvbox
-   \let\vtop     = \normalvtop
-   \let\vcenter  = \normalvcenter}
+\def\dontshowboxes
+  {\let\hbox     \normalhbox
+   \let\vbox     \normalvbox
+   \let\vtop     \normalvtop
+   \let\vcenter  \normalvcenter}
 
-\def\showskips%
-  {\let\hskip    = \ruledhskip
-   \let\vskip    = \ruledvskip
-   \let\kern     = \ruledkern
-   \let\mskip    = \ruledmskip
-   \let\mkern    = \ruledmkern
-   \let\hglue    = \ruledhglue
-   \let\vglue    = \ruledvglue}
+\def\showskips
+  {\let\hskip    \ruledhskip
+   \let\vskip    \ruledvskip
+   \let\kern     \ruledkern
+   \let\mskip    \ruledmskip
+   \let\mkern    \ruledmkern
+   \let\hglue    \ruledhglue
+   \let\vglue    \ruledvglue}
 
-\def\dontshowskips%
-  {\let\hskip    = \normalhskip
-   \let\vskip    = \normalvskip
-   \let\kern     = \normalkern
-   \let\mskip    = \normalmskip
-   \let\mkern    = \normalmkern
-   \let\hglue    = \normalhglue
-   \let\vglue    = \normalvglue}
+\def\dontshowskips
+  {\let\hskip    \normalhskip
+   \let\vskip    \normalvskip
+   \let\kern     \normalkern
+   \let\mskip    \normalmskip
+   \let\mkern    \normalmkern
+   \let\hglue    \normalhglue
+   \let\vglue    \normalvglue}
 
-\def\showpenalties%
-  {\let\penalty  = \ruledpenalty}
+\def\showpenalties
+  {\let\penalty  \ruledpenalty}
 
-\def\dontshowpenalties%
-  {\let\penalty  = \normalpenalty}
+\def\dontshowpenalties
+  {\let\penalty  \normalpenalty}
 
 %D \macros
 %D   {showcomposition,dontshowcomposition,

@@ -42,11 +42,12 @@
         {\doifparentfileelse{#4}
            {\!!doneafalse}
            {\!!doneatrue}}%
-      %\hsmash{[l:#5]}%
       \setreferencefilename#4\to\DVIfile
+      \scratchdimen#1\edef\width {\the\scratchdimen\space}%
+      \scratchdimen#2\edef\height{\the\scratchdimen\space}%
       \special
         {button: 
-           #1 #2
+           \width \height
            \if!!donea 
              file: \DVIfile, 
            \fi
@@ -62,11 +63,12 @@
         {\doifparentfileelse{#4}
            {\!!doneafalse}
            {\!!doneatrue}}%
-      %\hsmash{[p:#5]}%
       \setreferencefilename#4\to\DVIfile
+      \scratchdimen#1\edef\width {\the\scratchdimen\space}%
+      \scratchdimen#2\edef\height{\the\scratchdimen\space}%
       \special
         {button: 
-           #1 #2
+           \width \height
            \if!!donea 
              file: \DVIfile, 
            \fi 
@@ -77,20 +79,21 @@
    \egroup}
 
 \definespecial\dostartthisislocation#1%
-  {%\hsmash{[m:#1]}%
-   \special{mark: "#1"}}
+  {\special{mark: "#1"}}
 
 \definespecial\dostartthisisrealpage#1%
   {}
 
 \definespecial\dostartrunprogram#1#2#3#4%
-  {\special{button: #1 #2 launch: #3 #4}}
+  {\bgroup
+   \scratchdimen#1\edef\width {\the\scratchdimen\space}%
+   \scratchdimen#2\edef\height{\the\scratchdimen\space}%
+   \special{button: \width \height launch: #3 #4}%
+   \egroup}
 
 \let\doyandyinsertmov = \docommoninsertmov
 \let\dotrinsertmov    = \docommoninsertmov
 
 \stopspecials
 
-\protect
-
-\endinput
+\protect \endinput

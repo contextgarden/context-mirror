@@ -19,7 +19,7 @@
 \unprotect
 
 %D \macros
-%D   {mathematics, startmathmode}
+%D   {mathematics, nomathematics, startmathmode}
 %D 
 %D The \type{$} can be both an begin and end math character.
 %D This can lead to confusing and errorprone situations when
@@ -54,6 +54,9 @@
    \else
      $\def\stopmathmode{$}%  \let\stopmathmode=$
    \fi}
+
+\def\nomathematics#1%
+  {\ifmmode\hbox{#1}\else#1\fi}
 
 %D \macros
 %D   {dimension, nodimension}

@@ -19,9 +19,9 @@ if   known context_char : endinput         ; fi ;
 
 boolean context_char ; context_char := true ; 
 
-current_position := 0 ;
-
 % kan naar elders 
+
+current_position := 0 ;
 
 def save_text_position (expr p) =  % beware: clip shift needed
   current_position := current_position + 1 ;
@@ -85,56 +85,62 @@ def show_shapes (expr n) =
 
 enddef ; 
 
-%D connections -> namespace needed ! ! ! 
+%D connections 
 
-color connection_line_color ;
+def new_chart =
 
-connection_line_width  := shape_line_width ;
-connection_line_color  := .8white ;
-connection_smooth_size := 5pt ;
-connection_arrow_size  := 4pt ;
-connection_dash_size   := 3pt ;
+  color connection_line_color ;
 
-max_x := 6 ;
-max_y := 4 ;
+  connection_line_width  := shape_line_width ;
+  connection_line_color  := .8white ;
+  connection_smooth_size := 5pt ;
+  connection_arrow_size  := 4pt ;
+  connection_dash_size   := 3pt ;
+  
+  max_x := 6 ;
+  max_y := 4 ;
+  
+  numeric xypoint       ; xypoint := 0 ;
+  
+  pair    xypoints []   ;
+  
+  boolean xyfree   [][] ;
+  path    xypath   [][] ;
+  numeric xysx     [][] ;
+  numeric xysy     [][] ;
+  color   xyfill   [][] ;
+  color   xydraw   [][] ;
+  numeric xyline   [][] ;
+  boolean xypeep   [][] ;
+  
+  numeric cpath         ; cpath := 0 ; 
+  path    cpaths    []  ; 
+  numeric cline     []  ;
+  color   ccolor    []  ;
+  boolean carrow    []  ;
+  boolean cdash     []  ;
+  boolean ccross    []  ; 
+  
+  boolean smooth        ; smooth       := true  ;
+  boolean peepshape     ; peepshape    := false ;
+  boolean arrowtip      ; arrowtip     := true  ;
+  boolean dashline      ; dashline     := false ;
+  boolean forcevalid    ; forcevalid   := false ;
+  boolean touchshape    ; touchshape   := false ; 
+  boolean showcrossing  ; showcrossing := false ; 
+  
+  picture dash_pattern ;
+  
+  boolean reverse_y ; reverse_y := true ;
+  
+enddef ; 
 
-numeric xypoint       ; xypoint := 0 ;
-
-pair    xypoints []   ;
-
-boolean xyfree   [][] ;
-path    xypath   [][] ;
-numeric xysx     [][] ;
-numeric xysy     [][] ;
-color   xyfill   [][] ;
-color   xydraw   [][] ;
-numeric xyline   [][] ;
-boolean xypeep   [][] ;
-
-numeric cpath         ; cpath := 0 ; 
-path    cpaths    []  ; 
-numeric cline     []  ;
-color   ccolor    []  ;
-boolean carrow    []  ;
-boolean cdash     []  ;
-boolean ccross    []  ; 
-
-boolean smooth        ; smooth       := true  ;
-boolean peepshape     ; peepshape    := false ;
-boolean arrowtip      ; arrowtip     := true  ;
-boolean dashline      ; dashline     := false ;
-boolean forcevalid    ; forcevalid   := false ;
-boolean touchshape    ; touchshape   := false ; 
-boolean showcrossing  ; showcrossing := false ; 
-
-picture dash_pattern ;
-
-boolean reverse_y ; reverse_y := true ;
+new_chart ; 
 
 def y_pos (expr y) =
   if reverse_y : max_y + 1 - y else : y fi
 enddef ;
-
+  
 def initialize_grid (expr maxx, maxy) =
   begingroup ; 
   save i, j ; 
@@ -268,7 +274,7 @@ vardef points_initialized (expr xfrom, yfrom, xto, yto, n) =
   fi
 enddef ;
 
-def collapse_points =
+def collapse_points = % this is now an mp-tool macro 
   % remove redundant points
   n := 1 ;
   for i=2 upto xypoint:
@@ -285,7 +291,7 @@ def collapse_points =
   fi ;
 enddef ;
 
-vardef smooth_connection (expr a,b) =
+vardef smooth_connection (expr a,b) = % also a mp-tool macro
   sx := connection_smooth_size/grid_width ;
   sy := connection_smooth_size/grid_height ;
   if ypart a = ypart b :
@@ -822,6 +828,7 @@ def clip_chart (expr minx, miny, maxx, maxy) =
 enddef ;
 
 def begin_chart (expr n, maxx, maxy) =
+  new_chart ;
   chart_figure := n ;
   chart_scale := 1 ; 
   if chart_figure>0: beginfig(chart_figure) ; fi ;

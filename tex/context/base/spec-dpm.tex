@@ -11,8 +11,6 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-% untested - sp as unit not supported
-
 \unprotect
 
 %D This driver is build on top of the general \PDF\ macros,
@@ -39,8 +37,8 @@
 
 \def\doDPMsetuppaper#1#2#3%
   {\bgroup
-   \scratchdimen=#2\edef\width {\the\scratchdimen\space}%
-   \scratchdimen=#3\edef\height{\the\scratchdimen\space}%
+   \scratchdimen#2\edef\width {\the\scratchdimen\space}%
+   \scratchdimen#3\edef\height{\the\scratchdimen\space}%
    \special{pdf: pagesize width \width height \height}%
    \global\let\doDPMsetuppaper\gobblethreearguments
    \egroup}
@@ -56,16 +54,10 @@
 \definespecial\doinsertfile#1#2#3#4#5#6#7#8#9%
   {\dodoinsertfile{dpm}{#1}{#2}{#3}{#4}{#5}{#6}{#7}{#8}{#9}}
 
-%\definefileinsertion{dpm}{mps}#1#2#3#4#5#6#7#8#9%
-%  {\hbox
-%     {\convertMPcolors{#1}%
-%      \scratchdimen=#3pt \PointsToReal{.01\scratchdimen}\xscale
-%      \scratchdimen=#4pt \PointsToReal{.01\scratchdimen}\yscale
-%      \convertMPtoPDF{#1}\xscale\yscale}}
-
 \definefileinsertion{dpm}{mps}#1#2#3#4#5#6#7#8#9%
-  {\ScaledPointsToWholeBigPoints{#7}\width
-   \ScaledPointsToWholeBigPoints{#8}\height
+  {\PointsToWholeBigPoints{#7}\width
+   \PointsToWholeBigPoints{#8}\height
+   % brrr, should use #1->#9 
    \special
      {PSfile="#1"\space
       llx=\EPSllx\space lly=\EPSlly\space
@@ -74,15 +66,15 @@
 
 \definefileinsertion{dpm}{pdf}#1#2#3#4#5#6#7#8#9%
   {\bgroup
-   \scratchdimen=#7sp\edef\width {\the\scratchdimen\space}%
-   \scratchdimen=#8sp\edef\height{\the\scratchdimen\space}%
+   \scratchdimen#7\edef\width {\the\scratchdimen\space}%
+   \scratchdimen#8\edef\height{\the\scratchdimen\space}%
    \special{pdf: epdf width \width height \height (#1)}%
    \egroup}
 
 \definefileinsertion{dpm}{jpg}#1#2#3#4#5#6#7#8#9%
   {\bgroup
-   \scratchdimen=#7pt\edef\width {\the\scratchdimen\space}%
-   \scratchdimen=#8pt\edef\height{\the\scratchdimen\space}%
+   \scratchdimen#7\edef\width {\the\scratchdimen\space}%
+   \scratchdimen#8\edef\height{\the\scratchdimen\space}%
    \special{pdf: image width \width height \height (#1)}%
    \egroup}
 
@@ -130,8 +122,11 @@
 
 %D Negation is not (yet) supported:
 
-\definespecial\dostartnegative             {}
-\definespecial\dostopnegative              {}
+% \definespecial\dostartnegative      {}
+% \definespecial\dostopnegative       {}
+% \definespecial\dostarttransparency  {}
+% \definespecial\dostoptransparency   {}
+
 
 %D \macros
 %D   {dosetupinteraction,
@@ -213,8 +208,8 @@
 \definespecial\dobeginofprofile#1#2#3#4%
   {\bgroup
    \setPDFdestination{#1}%
-   \scratchdimen=#2sp\edef\width {\the\scratchdimen\space}%
-   \scratchdimen=#3sp\edef\height{\the\scratchdimen\space}%
+   \scratchdimen#2\edef\width {\the\scratchdimen\space}%
+   \scratchdimen#3\edef\height{\the\scratchdimen\space}%
    \doifsomething{\PDFdestination}
      {\special
         {pdf: thread @ART::\PDFdestination\space
@@ -237,8 +232,8 @@
   {\bgroup
    \setbox\nextbox=\hbox\bgroup
      \dosetobjectreference{#1}{#2}{#1::#2}%
-     \scratchdimen=#3sp\edef\width {\the\scratchdimen\space}%
-     \scratchdimen=#4sp\edef\height{\the\scratchdimen\space}%
+     \scratchdimen#3\edef\width {\the\scratchdimen\space}%
+     \scratchdimen#4\edef\height{\the\scratchdimen\space}%
      \special{pdf: bxobj @#1::#2 width \width height \height}}
 
 \definespecial\dostopobject%
@@ -311,15 +306,22 @@
      \xdef\lastPDFaction{#3}%
    \else
      \bgroup
-     \xdef\lastPDFaction{<<#3>>}%
-   % this is yet untested 
-   % \ifcase\similarreference\relax\or\ifsharePDFactions
-   %   \global\advance\nofPDFsimilar by 1
-   %   \special{pdf: object @PDF::sim:\the\nofPDFsimilar\space\lastPDFaction}%
-   %   \xdef\lastPDFaction{@PDF::sim:\the\nofPDFsimilar}%
-   % \fi\fi
-     \scratchdimen=#1sp\edef\width {\the\scratchdimen\space}%
-     \scratchdimen=#2sp\edef\height{\the\scratchdimen\space}%
+    % this is yet untested 
+    %\ifsharePDFactions
+    %  \ifcase\similarreference\relax
+    %    \xdef\lastPDFaction{<<#3>>}%
+    %  \or
+    %    \global\advance\nofPDFsimilar by 1
+    %    \special{pdf: object @PDF::sim:\the\nofPDFsimilar\space<<#3>>}%
+    %    \xdef\lastPDFaction{@PDF::sim:\the\nofPDFsimilar}%
+    %  \else
+    %    % leave \lastPDFaction untouched 
+    %  \fi
+    %\else
+       \xdef\lastPDFaction{<<#3>>}%
+    %\fi
+     \scratchdimen#1\edef\width {\the\scratchdimen\space}%
+     \scratchdimen#2\edef\height{\the\scratchdimen\space}%
      \special{pdf: ann width \width height \height
        <</Subtype /Link /Border [0 0 0]
          \ifhighlighthyperlinks \else /H /N \fi
@@ -329,8 +331,8 @@
 
 \def\doPDFannotation width #1 height #2 data #3%
   {\bgroup
-   \scratchdimen=#1sp\edef\width {\the\scratchdimen\space}%
-   \scratchdimen=#2sp\edef\height{\the\scratchdimen\space}%
+   \scratchdimen#1\edef\width {\the\scratchdimen\space}%
+   \scratchdimen#2\edef\height{\the\scratchdimen\space}%
    \special{pdf: ann width \width height \height
      <</Subtype /Link /Border [0 0 0] /A <<#3>>}%
    \egroup}
@@ -340,8 +342,8 @@
 
 \def\doPDFannotationobject class #1 name #2 width #3 height #4 data #5%
   {\bgroup
-   \scratchdimen=#3sp\edef\width {\the\scratchdimen\space}%
-   \scratchdimen=#4sp\edef\height{\the\scratchdimen\space}%
+   \scratchdimen#3\edef\width {\the\scratchdimen\space}%
+   \scratchdimen#4\edef\height{\the\scratchdimen\space}%
    \special{pdf: ann @#1::#2 width \width height \height <<#5>>}%
    \dosetobjectreference{#1}{#2}{@#1::#2}%
    \egroup}
@@ -358,6 +360,10 @@
 \def\doPDFpagesattribute#1%
   {\special{pdf: put @pages <<#1>>}}
 
+\def\doPDFpageresource#1%
+  {\message{[skipping PDF resource]}}
+
+\let\doPDFresetpageresources =\relax
 \let\doPDFresetpageattributes=\relax
 
 %D \macros
@@ -392,6 +398,4 @@
 
 \stopspecials
 
-\protect
-
-\endinput
+\protect \endinput

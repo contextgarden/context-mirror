@@ -1,0 +1,81 @@
+%D \module
+%D   [       file=xtag-exp,
+%D        version=2001.08.20,
+%D          title=\CONTEXT\ XML Support,
+%D       subtitle=Expansion Related Things, 
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\beginTEX
+  \writestatus{XML}{sorry, XML is only supported in (pdf)etex}
+  \def\startXMLdefinitions{\gobbleuntil\stopXMLdefinitions}
+  \endinput
+\endTEX
+
+\writestatus{loading}{Context XML Macros (expansion)}
+
+\unprotect 
+
+%D Files 
+
+\newcounter\XMLfilenesting \let\restoreXMLelements\relax
+
+\def\startXMLreading
+  {\increment \XMLfilenesting \relax
+   \ifnum\XMLfilenesting=1 
+     \ifprocessingXML 
+       \let\restoreXMLelements\relax
+     \else 
+       \let\restoreXMLelements\disableXMLelements
+       \enableXMLelements 
+     \fi
+   \fi}  
+
+\def\stopXMLreading
+  {\ifnum\XMLfilenesting=1 
+     \restoreXMLelements 
+     \let\restoreXMLelements\relax
+   \fi  
+   \decrement \XMLfilenesting \relax}
+
+\def\enableXMLfiledata
+  {\prependtoks \enableXMLelements      \to \mainoutput % brrr, will change 
+   \appendtoks  \startXMLreading        \to \everybeforeutilityread
+   \appendtoks  \stopXMLreading         \to \everyafterutilityread
+   \appendtoks  \forcefileexpansiontrue \to \everyenableXML
+   \let\enableXMLfiledata\relax}
+
+\setupXMLprocessing[\c!status=\v!start]
+
+\appendtoks \enableXMLfiledata \to \aftersetupXMLprocessing
+
+%D Here we overload the mark handler. 
+
+\def\XMLexpanded#1%
+  {\bgroup
+   \honorunexpanded
+   \dontexpandencoding 
+   \xdef\@@globalexpanded{\noexpand#1}%
+   \egroup
+   \@@globalexpanded}
+
+\let\normalsetnormalmark\setnormalmark
+
+\long\def\setnormalmark#1% overloaded
+  {\ifprocessingXML 
+     \expandafter\setXMLexpandedmark
+   \else
+     \expandafter\normalsetnormalmark
+   \fi#1}
+
+\def\setXMLexpandedmark#1#2% using a tok prevents unwanted expansion in mark 
+  {\XMLexpanded{\scratchtoks{\enableXMLelements#2}}%
+   \setxvalue{\@@crk\string#1}{\the\scratchtoks}%
+   \normalmarks#1{\the\scratchtoks}}
+
+\protect \endinput 

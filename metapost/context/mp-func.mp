@@ -1,0 +1,59 @@
+%D \module
+%D   [       file=mp-func.mp,
+%D        version=2001.12.29,
+%D          title=\CONTEXT\ \METAPOST\ graphics,
+%D       subtitle=function hacks, 
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See licen-en.pdf for 
+%C details. 
+
+%D Under construction.
+
+if unknown context_tool :    input mp-tool ; fi ; 
+if   known context_func : endinput         ; fi ; 
+
+boolean context_func ; context_func := true ; 
+
+string pathconnectors[] ; 
+
+pathconnectors[0] := ","   ;
+pathconnectors[1] := "--"  ; 
+pathconnectors[2] := ".."  ; 
+pathconnectors[3] := "..." ; 
+
+vardef function (expr f) (expr u, t, b, e, s) = save x ; numeric x ; 
+  for xx := b step s until e : 
+    hide (x := xx ;) if xx>b : scantokens(pathconnectors[f]) fi 
+    (scantokens(u),scantokens(t)) 
+  endfor 
+enddef ; 
+
+def punkedfunction = function (1) enddef ; 
+def curvedfunction = function (2) enddef ; 
+def tightfunction  = function (3) enddef ; 
+
+vardef constructedpath (expr f) (text t) = 
+  save ok ; boolean ok ; ok := false ; 
+  for i=t : 
+    if ok : scantokens(pathconnectors[f]) else : ok := true ; fi i 
+  endfor  
+enddef ; 
+
+def punkedpath = constructedpath (1) enddef ;  
+def curvedpath = constructedpath (2) enddef ;  
+def tightpath  = constructedpath (3) enddef ;  
+
+vardef constructedpairs (expr f) (text p) = 
+  save i ; i := -1 ; 
+  forever : exitif unknown p[incr(i)] ; 
+    if i>0 : scantokens(pathconnectors[f]) fi p[i] 
+  endfor  
+enddef ; 
+
+def punkedpairs = constructedpairs (1) enddef ;  
+def curvedpairs = constructedpairs (2) enddef ;  
+def tightpairs  = constructedpairs (3) enddef ;  

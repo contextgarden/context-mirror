@@ -14,6 +14,8 @@
 %D This is an unfinished, preliminary module. At least two 
 %D runs are needed to get the table fixed. 
 
+% optie=rek beschrijven
+
 \writestatus{loading}{Context Core Macros / Natural Tables}
 
 %D As always, this is the nth version. Much time went in 
@@ -57,7 +59,7 @@
      \endstrut
    \else
      \par
-     \ifdim\prevdepth<\!!zeropoint % =-1000pt ?
+     \ifdim\prevdepth<\zeropoint % =-1000pt ?
        \vskip-\dp\strutbox
      \else
        \removebottomthings
@@ -69,7 +71,7 @@
 %\def\@@tbl{tbl}  \def\tblcell{m}  \def\tblnone{n}
 \def\@@tbl{tbl}  \def\tblcell{1}  \def\tblnone{2}
 
-\def\@@tblprefix{tbl:}
+\def\@@tblprefix{tbl:} \let\@@rawtblprefix\@@tblprefix
 
 %D This should be done more efficient: 
 
@@ -122,6 +124,7 @@
 \newif\ifautoTBLhsize       \autoTBLhsizetrue
 \newif\ifautoTBLrowspan     \autoTBLrowspantrue
 \newif\ifautoTBLemptycell   \autoTBLemptycelltrue
+\newif\ifautoTBLcheckwidth  \autoTBLcheckwidthtrue
 \newif\ifappendTBLsetups    \appendTBLsetupstrue
 
 \newif\iftraceTABLE         \traceTABLEfalse
@@ -143,13 +146,14 @@
   {\ifthirdargument
      \processaction
        [#1]
-       [    \v!rij=>{\dosetupTABLExy[\c!y][#2][#3]},
-          \v!kolom=>{\dosetupTABLExy[\c!x][#2][#3]},      
-                 r=>{\dosetupTABLExy[\c!y][#2][#3]},
-                 c=>{\dosetupTABLExy[\c!x][#2][#3]},
-                 y=>{\dosetupTABLExy[\c!y][#2][#3]},
-                 x=>{\dosetupTABLExy[\c!x][#2][#3]},
-        \s!unknown=>{\dosetupTABLEzz[#1][#2][#3]}]%
+       [  \v!rij=>{\dosetupTABLExy[\c!y][#2][#3]},
+        \v!kolom=>{\dosetupTABLExy[\c!x][#2][#3]},
+               r=>{\dosetupTABLExy[\c!y][#2][#3]},
+               c=>{\dosetupTABLExy[\c!x][#2][#3]},
+               y=>{\dosetupTABLExy[\c!y][#2][#3]},
+               x=>{\dosetupTABLExy[\c!x][#2][#3]},
+        \v!start=>{\dosetupTABLExy[#1][#2][#3]},
+      \s!unknown=>{\dosetupTABLEzz[#1][#2][#3]}]%
    \else\ifsecondargument
      \processaction
        [#1]
@@ -159,6 +163,7 @@
                c=>{\dosetupTABLExy[\c!x][\v!elk][#2]},
                y=>{\dosetupTABLExy[\c!y][\v!elk][#2]},
                x=>{\dosetupTABLExy[\c!x][\v!elk][#2]},
+        \v!start=>{\dosetupTABLExy[#1][\v!elk][#2]},
       \s!unknown=>{\dosetupTABLEzz[\c!x][#1][#2]}]%
    \else
      \getparameters[\@@tbl\@@tbl][#1]%
@@ -269,7 +274,7 @@
       \increment\row}%
    % check max column
    \decrement\col 
-   \ifnum\col>\maximumcol
+   \ifnum\col>\maximumcol\relax
      \let\maximumcol\col
    \fi
    % set values 
@@ -283,7 +288,8 @@
 
 \long\def\parseTH[#1]#2\eTH% 
 % {\parseTD[#1,\c!letter=\v!vet,\c!karakteruitlijnen=\v!nee]#2\eTD}
-  {\parseTD[#1,\c!kleur=\tbltblkopkleur,\c!letter=\tbltblkopletter,\c!karakteruitlijnen=\v!nee]#2\eTD}
+  {\parseTD[#1,\c!kleur=\tbltblkopkleur,\c!letter=\tbltblkopletter,%
+      \c!karakteruitlijnen=\v!nee]#2\eTD}
 
 \newtoks\TBLhead
 \newtoks\TBLbody
@@ -314,6 +320,11 @@
 
 \chardef\TBLpass=0
 
+\def\presetallTABLEparameters% each odd|even level
+  {\executeifdefined{\@@rawtblprefix\v!start\v!elk}\relax
+   \executeifdefined{\@@rawtblprefix\v!start\v!oddeven\TBLlevel}\relax
+   \executeifdefined{\@@rawtblprefix\v!start\number\TBLlevel}\relax}
+
 \def\bTABLE%
   {\dosingleempty\dobTABLE}
 
@@ -324,10 +335,11 @@
    \getparameters
      [\@@tbl\@@tbl]
      [\c!uitlijnen={\v!rechts,\v!ruim,\v!hoog},#1]%
+   \presetallTABLEparameters
    \ExpandFirstAfter\processallactionsinset
      [\tbltbloptie]
      [\v!rek=>\autoTBLspreadtrue]%
-   \linewidth=\tbltbllijndikte % needs to be frozen 
+   \linewidth=\tbltbllijndikte % needs to be frozen
    \dontcomplain
    \def\currentcol{0}%
    \def\maximumrowspan{1}%
@@ -353,7 +365,7 @@
                  {\doifelsetbltag\xrow\xcol
                     {\exitloop}
                     {\increment\xcol \relax
-                     \ifnum\xcol>\maximumcol \exitloop \fi}}%
+                     \ifnum\xcol>\maximumcol\relax \exitloop \fi}}%
                \doifelsetbltag\xrow\xcol
                  {\exitloop}
                  {\let\xxrow\xrow \let\xxcol\xcol \increment\xrow \relax
@@ -403,35 +415,24 @@
          \expanded{\doTBL{\row}{\col}}}%
       \eTBL}%
    \endTBL
-\ifnum\TBLlevel>1
-    \vskip-\dp\strutbox
-\fi
+% wrong ! ! ! better to have an auto-offset-overlay
+% \ifnum\TBLlevel>1
+%   \vskip-\dp\strutbox
+% \fi
    \egroup
    \popTBL}
 
 \def\spanTBL#1#2%
   {\scratchcounter=\gettblcol{#1}{#2}\relax
    \ifnum\scratchcounter>0
-     \advance\scratchcounter by -1
+     \advance\scratchcounter -1
      \dorecurse{\scratchcounter}{\appendtoks\spantblcol\to\tbltoks}%
-     \dorecurse{\scratchcounter}
-       {\appendtoks
-          \skiptblcol
-        \to\tbltoks}%
-     \appendtoks
-       \nexttblcol
-     \to\tbltoks
+     \dorecurse{\scratchcounter}{\appendtoks\skiptblcol\to\tbltoks}%
+                                 \appendtoks\nexttblcol\to\tbltoks
    \fi}
 
-\def\bTBL%
-  {\appendtoks
-     \begintblrow
-   \to\tbltoks}
-
-\def\eTBL%
-  {\appendtoks
-     \endtblrow
-   \to\tbltoks}
+\def\bTBL{\appendtoks\begintblrow\to\tbltoks}
+\def\eTBL{\appendtoks\endtblrow  \to\tbltoks}
 
 % We use aligments to handle the empty (skipped) columns, so 
 % that we don't have to (re|)|calculate these. 
@@ -458,7 +459,7 @@
   {\doglobal\newcounter\colTBL
    \doglobal\newcounter\rowTBL
    \doglobal\decrement\rowTBL
-   \tabskip\!!zeropoint
+   \tabskip\zeropoint
    \halign\bgroup\ignorespaces##\unskip&&\ignorespaces##\unskip\cr}
 
 \def\endtbl%
@@ -497,13 +498,13 @@
    \edef\minimalcellheight{\the\ht\scratchbox}%
    \dorecurse{\maximumcol}
      {\settblaut\recurselevel\!!zeropoint
-% new 
-\let\xcol\recurselevel
-\dorecurse{\maximumrow}
-  {\settblwd \recurselevel\xcol\!!zeropoint
-   \settblht \recurselevel\xcol\!!zeropoint}%
-% till here 
-      \settblwid\recurselevel\!!zeropoint}%
+      % new 
+   \let\xcol\recurselevel
+   \dorecurse{\maximumrow}
+     {\settblwd \recurselevel\xcol\!!zeropoint
+      \settblht \recurselevel\xcol\!!zeropoint}%
+   % till here 
+   \settblwid\recurselevel\!!zeropoint}%
    \dorecurse{\maximumrow}
      {\settblhei\recurselevel\maxdimen}%
    \chardef\TBLpass=1
@@ -533,6 +534,10 @@
        \setbox\scratchbox=\vbox{\the\tbltoks}%
      \fi
    \else\ifautoTBLrowspan\ifnum\maximumrowspan>1 % max ? 
+% added jan 2002 because nx=* did no longer work 
+  \checktblwidthsone % trial run 
+  \checktblwidthstwo % real run 
+%
      \let\handleTBLcell\dohandleTBLcellC
      \setbox\scratchbox=\vbox{\the\tbltoks}%
    \fi\fi\fi
@@ -540,7 +545,7 @@
    \let\handleTBLcell\dohandleTBLcellD
    \chardef\TBLpass=2
    \def\makeTBL##1##2% meer in cellD 
-     {\dimen2=\!!zeropoint
+     {\dimen2=\zeropoint
       \pushmacro\colTBL
       \dorecurse{\gettblcol{##1}{##2}}
         {\advance\dimen2 by \gettblwid\colTBL
@@ -561,7 +566,7 @@
    \def\makeTBL##1##2%
      {% height
       \pushmacro\rowTBL
-      \scratchdimen=\!!zeropoint
+      \scratchdimen=\zeropoint
       \def\rowTBL{##1}%
       \ifnum\gettblcol{##1}{##2}=\maximumcol\relax
         % case: nc=maxcolumns 
@@ -577,7 +582,7 @@
       \popmacro\rowTBL
       % width
       \pushmacro\colTBL
-      \scratchdimen=\!!zeropoint
+      \scratchdimen=\zeropoint
       \dorecurse{\gettblcol{##1}{##2}}
         {\advance\scratchdimen by \gettblwid\colTBL 
          \increment\colTBL}%
@@ -593,7 +598,7 @@
           {\lower\ht\scratchbox\hbox{\raise\scratchdimen\box\scratchbox}}%
         \ht\scratchbox=\scratchdimen 
       \fi
-      \dp\scratchbox=\!!zeropoint
+      \dp\scratchbox=\zeropoint
       \box\scratchbox}%
     \iftraceTABLE\showtbltoks\fi
     \vbox{\the\tbltoks}}
@@ -607,7 +612,7 @@
    \!!counta=0
    \dorecurse{\maximumcol}
      {\scratchdimen=\gettblaut\recurselevel\relax
-      \ifdim\scratchdimen>\!!zeropoint\relax
+      \ifdim\scratchdimen>\zeropoint\relax
         \advance\!!dimena by -\scratchdimen
       \else
         \scratchdimen=\gettblwid\recurselevel\relax
@@ -615,7 +620,7 @@
           \ifcase#1\else\settblwid\recurselevel\!!zeropoint\fi
           \advance\!!counta by 1 
         \else
-          \ifdim\scratchdimen>\!!zeropoint\relax
+          \ifdim\scratchdimen>\zeropoint\relax
             \advance\!!dimena by -\scratchdimen
           \else
             % eigenlijk moet dit alleen als de kolom wordt overspannen door een 
@@ -627,12 +632,12 @@
    \ifcase\!!counta \else \divide\!!dimena by \!!counta \fi
    \dorecurse{\maximumcol}
      {\scratchdimen=\gettblwid\recurselevel\relax
-      \ifcase#1 
-        \ifdim\scratchdimen<\!!dimena          % take natural width
+      \ifcase#1\relax 
+        \ifdim\scratchdimen<\!!dimena        % take natural width
           \settblaut\recurselevel{\the\scratchdimen}%
         \fi
       \else
-        \ifdim\scratchdimen=\!!zeropoint\relax % auto set width 
+        \ifdim\scratchdimen=\zeropoint\relax % auto set width 
           \settblwid\recurselevel{\the\!!dimena}% 
         \fi
       \fi}%
@@ -643,7 +648,7 @@
 %    \!!counta=0
 %    \dorecurse{\maximumcol}
 %      {\scratchdimen=\gettblaut\recurselevel\relax
-%       \ifdim\scratchdimen>\!!zeropoint\relax
+%       \ifdim\scratchdimen>\zeropoint\relax
 %         \advance\!!dimena by -\scratchdimen
 %       \else
 %         \advance\!!counta by 1 
@@ -651,7 +656,7 @@
 %    \ifcase\!!counta \else \divide\!!dimena by \!!counta \fi
 %    \dorecurse{\maximumcol}
 %      {\scratchdimen=\gettblaut\recurselevel\relax
-%       \ifdim\scratchdimen=\!!zeropoint\relax 
+%       \ifdim\scratchdimen=\zeropoint\relax 
 %         \settblaut\recurselevel{\the\!!dimena}% 
 %       \fi
 % \settblwid\recurselevel{\the\!!dimena}% 
@@ -741,13 +746,45 @@
    \setsecondpasscharacteralign\checkalignment{\strut#2\unskip}% 
    \ignorespaces}
 
+% \long\def\dohandleTBLcellA#1#2[#3]#4%
+%   {\setbox\scratchbox=\hbox
+%      {\setupTBLcell{#1}{#2}%
+%       \localframed
+%         [\@@tbl\@@tbl]
+%         [#3,\c!achtergrond=,\c!kader=\v!uit]% 25% faster
+%         {\bTBLCELL\TBLcharalign{#2}{#4}\eTBLCELL\inTBLcell{#1}{#2}}}%
+%    \scratchdimen=\gettblwid\colTBL\relax
+%    \ifdim\wd\scratchbox>\scratchdimen
+%      \settblwid\colTBL{\the\wd\scratchbox}% auto set
+%    \fi
+%    \let\rowTBLx\rowTBL\increment\rowTBLx
+%    \scratchdimen=\gettblhei\rowTBLx\relax
+%    \ifdim\ht\scratchbox<\scratchdimen
+%      \settblhei\rowTBLx{\the\ht\scratchbox}% auto set
+%    \fi
+%    \settblht{#1}{#2}{\the\ht\scratchbox}%
+%    \settblwd{#1}{#2}{\the\wd\scratchbox}%
+%    \ifdim\wd\scratchbox<.75\hsize
+%      \ifdim\ht\scratchbox>2\openlineheight % honor width since this can be a 
+%        \scratchdimen=\gettblaut\colTBL\relax % figure or so
+%        \ifdim\wd\scratchbox>\scratchdimen
+%          \settblaut\colTBL{\the\wd\scratchbox}%
+%         %\message{[forcing width of \colTBL\space(\the\wd\scratchbox/\the\hsize)]}%
+%        \fi
+%      \fi
+%    \fi
+%    \setbox2=\null
+%    \wd2=\wd\scratchbox \ht2=\ht\scratchbox \dp2=\dp\scratchbox
+%    \box2}
+
 \long\def\dohandleTBLcellA#1#2[#3]#4%
   {\setbox\scratchbox=\hbox
      {\setupTBLcell{#1}{#2}%
       \localframed
         [\@@tbl\@@tbl]
         [#3,\c!achtergrond=,\c!kader=\v!uit]% 25% faster
-        {\bTBLCELL\TBLcharalign{#2}{#4}\eTBLCELL\inTBLcell{#1}{#2}}}%
+        {\trialtypesettingtrue
+         \bTBLCELL\TBLcharalign{#2}{#4}\eTBLCELL\inTBLcell{#1}{#2}}}%
    \scratchdimen=\gettblwid\colTBL\relax
    \ifdim\wd\scratchbox>\scratchdimen
      \settblwid\colTBL{\the\wd\scratchbox}% auto set
@@ -759,15 +796,18 @@
    \fi
    \settblht{#1}{#2}{\the\ht\scratchbox}%
    \settblwd{#1}{#2}{\the\wd\scratchbox}%
-   \ifdim\wd\scratchbox<.75\hsize
-     \ifdim\ht\scratchbox>2\openlineheight % honor width since this can be a 
-       \scratchdimen=\gettblaut\colTBL\relax % figure or so
-       \ifdim\wd\scratchbox>\scratchdimen
-         \settblaut\colTBL{\the\wd\scratchbox}%
-        %\message{[forcing width of \colTBL\space(\the\wd\scratchbox/\the\hsize)]}%
+   \ifautoTBLcheckwidth
+     \ifdim\wd\scratchbox<.75\hsize
+       \ifdim\ht\scratchbox>2\openlineheight % honor width since this can be a 
+         \scratchdimen=\gettblaut\colTBL\relax % figure or so
+         \ifdim\wd\scratchbox>\scratchdimen
+           \settblaut\colTBL{\the\wd\scratchbox}%
+           % to be translated 
+           \writestatus{TABLE}{no auto width in (\number#1,\number#2)\space\the\wd\scratchbox/\the\hsize}%
+         \fi
        \fi
      \fi
-   \fi
+   \fi 
    \setbox2=\null
    \wd2=\wd\scratchbox \ht2=\ht\scratchbox \dp2=\dp\scratchbox
    \box2}
@@ -778,7 +818,8 @@
       \localframed
         [\@@tbl\@@tbl]
         [#4,#1,\c!kader=\v!uit,\c!achtergrond=] 
-        {\bTBLCELL#5\eTBLCELL}}%
+        {\trialtypesettingtrue
+         \bTBLCELL#5\eTBLCELL}}%
    \setbox2=\null 
    \wd2=\wd\scratchbox \ht2=\ht\scratchbox \dp2=\dp\scratchbox 
    \ifautoTBLrowspan
@@ -793,11 +834,11 @@
 
 \long\def\dohandleTBLcellB#1#2[#3]#4%
    {\scratchdimen=\gettblaut\colTBL\relax
-    \ifdim\scratchdimen>\!!zeropoint\relax
+    \ifdim\scratchdimen>\zeropoint\relax
       \let\tblwidthkey\c!breedte \edef\tblwidth{\the\scratchdimen}%
     \else
       \scratchdimen=\gettblwid\colTBL\relax
-      \ifdim\scratchdimen>\!!zeropoint\relax
+      \ifdim\scratchdimen>\zeropoint\relax
         \ifnum\gettblcol{#1}{#2}=\maximumcol\relax
           \scratchdimen=\hsize
         \fi
@@ -817,14 +858,15 @@
      [\@@tbl\@@tbl]
      [#3,\c!breedte=\widthTBL,
       \c!achtergrond=,\c!kader=\v!uit]% 25% faster
-     {\bTBLCELL\TBLcharalign{#2}{#4}\eTBLCELL}}
+     {\trialtypesettingtrue
+      \bTBLCELL\TBLcharalign{#2}{#4}\eTBLCELL}}
 
 \long\def\dohandleTBLcellE#1#2[#3]#4%
   {\setupTBLcell{#1}{#2}%
    \getparameters[\@@tbl\@@tbl][#3]% to get the color right, the way we  
    \color % handle color here prevents interference due to whatsit nodes 
      [\tbltblkleur] % as well as permits local colors to take precedence
-     {\ifdim\heightTBL=\!!zeropoint\relax % case: nc=maxcolumns 
+     {\ifdim\heightTBL=\zeropoint\relax % case: nc=maxcolumns 
         \localframed 
           [\@@tbl\@@tbl]
           [\c!kleur=,\c!breedte=\widthTBL]
@@ -904,11 +946,11 @@
    \fi
    \doglobal\decrement\TBLlevel\relax}
 
-\chardef\resetTABLEmode=0
+\newconditional\resetTABLEmode \settrue\resetTABLEmode
 
 \def\resetallTABLEparameters% moet genest wel werken
   {\ifnum\TBLlevel>1        % in ieder geval 
-     \ifcase\resetTABLEmode
+     \ifconditional\resetTABLEmode
        \presetlocalframed   % breedte hoogte diepte offset 
          [\@@tbl\@@tbl]%    % achtergrond, achtergrondraster, achtergrondkleur
        % not ok yet            
@@ -918,8 +960,8 @@
           \c!kaderkleur=black,
           \c!kleur=,
           \c!letter=,
-\c!kopletter=,
-\c!kopkleur=,
+          \c!kopletter=,
+          \c!kopkleur=,
           \c!strut=\v!nee,
           \c!karakteruitlijnen=\v!nee,
           \c!uitlijnkarakter={,},

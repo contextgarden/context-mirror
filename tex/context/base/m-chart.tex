@@ -77,6 +77,9 @@
 
 \def\FLOWbufferprefix{flw-}
 
+\def\processFLOWbuffer#1{\haalbuffer[\FLOWbufferprefix#1]}
+\def\typeFLOWbuffer   #1{\typebuffer[\FLOWbufferprefix#1]}
+
 \def\setFLOWname#1#2% funny hack that makes sure that we get
   {\bgroup          % names that are acceptable for METAPOST
    \lccode`0=`a\lccode`1=`b\lccode`2=`c\lccode`3=`d\lccode`4=`e%
@@ -159,8 +162,8 @@
 \def\doFLOWtext%
   {\dosingleempty\dodoFLOWtext}
 
-\def\dodoFLOWtext[#1]#2%
-  {\gdef\FLOWalign{#1}\gdef\FLOWtext{#2}}
+\def\dodoFLOWtext[#1]%               %  #2%
+  {\gdef\FLOWalign{#1}\gdef\FLOWtext}% {#2}}
 
 \def\doFLOWcomment[#1]#2%
   {\ignorespaces\dogobblesingleempty}
@@ -284,7 +287,7 @@
          \gdef\dohandleflowchart[####1][####2]%
            {\popmacro\dohandleflowchart
             \resetFLOWlocation
-            \haalbuffer[\FLOWbufferprefix####1]}%
+            \processFLOWbuffer{####1}}%
          \getvalue{\@FLOW@-##1}}}%
    \processcommalist[#1]\dodoincludeFLOWchart
    \popmacro\includeFLOWx
@@ -387,7 +390,7 @@
    \let\FLOWheight\@@FLOWny
    \let\startFLOWcell\startFLOWcellA
    \resetFLOWlocation 
-   \haalbuffer[\FLOWbufferprefix\currentFLOWnumber]%
+   \processFLOWbuffer\currentFLOWnumber
    \ifcase\@@FLOWnx\relax \let\@@FLOWnx\FLOWwidth  \fi
    \ifcase\@@FLOWny\relax \let\@@FLOWny\FLOWheight \fi
    \doifnothing{\@@FLOWmaxbreedte\@@FLOWmaxhoogte}{\FLOWscalingfalse}%
@@ -473,7 +476,7 @@
    \resetMPdrawing
    \doglobal\newcounter\FLOWcomment
    \startMPdrawing
-     input mp-char.mp ;
+     if unknown context_char : input mp-char.mp ; fi ; 
      grid_width             := \FLOWgridwidth ;
      grid_height            := \FLOWgridheight ;
      shape_width            := \FLOWshapewidth ;
@@ -493,7 +496,7 @@
 %     \ignorespaces}%
 %  \let\startFLOWcell\startFLOWcellX
 %  \resetFLOWlocation 
-%  \haalbuffer[\FLOWbufferprefix\currentFLOWnumber]%
+%  \processFLOWbuffer\currentFLOWnumber
 %  \ifnum\@@FLOWnx\@@FLOWny=11 % listig
 %    \let\@@FLOWnx\FLOWwidth
 %    \let\@@FLOWny\FLOWheight
@@ -528,16 +531,19 @@
                   \stopMPdrawing]%
    \let\startFLOWcell\startFLOWcellB
    \resetFLOWlocation 
-   \haalbuffer[\FLOWbufferprefix\currentFLOWnumber]%
+   \processFLOWbuffer\currentFLOWnumber
    \let\startFLOWcell\startFLOWcellC
    \resetFLOWlocation 
-   \haalbuffer[\FLOWbufferprefix\currentFLOWnumber]%
+   \processFLOWbuffer\currentFLOWnumber
    \startMPdrawing
      clip_chart(\@@FLOWx,\@@FLOWy,\@@FLOWnx,\@@FLOWny) ;
      end_chart ;
    \stopMPdrawing
    \MPdrawingdonetrue
-   \setbox0=\hbox{\MPshiftdrawingfalse\getMPdrawing}%
+   \setbox0=\hbox
+     {\MPstaticgraphictrue
+      \MPshiftdrawingfalse
+      \getMPdrawing}%
    \def\MPmessage##1%
      {\writestatus{MP charts}{##1}}%
    \def\MPposition##1##2##3%
@@ -554,7 +560,7 @@
    \setbox2=\vbox to \ht0
      {\forgetall % \offinterlineskip
       \resetFLOWlocation
-      \haalbuffer[\FLOWbufferprefix\currentFLOWnumber]\vss}%
+      \processFLOWbuffer\currentFLOWnumber\vss}%
    \setbox2=\hbox
      {\hskip\@@FLOW@@offset\lower\@@FLOW@@offset\box2}%
    \wd2=\wd0\ht2=\ht0\dp2=\dp0
@@ -562,7 +568,7 @@
    \setbox4=\vbox to \ht0
      {\forgetall % \offinterlineskip
       \resetFLOWlocation
-      \haalbuffer[\FLOWbufferprefix\currentFLOWnumber]\vss}%
+      \processFLOWbuffer\currentFLOWnumber\vss}%
    \setbox4=\hbox
      {\hskip\@@FLOW@@offset\lower\@@FLOW@@offset\box4}%
    \wd4=\wd0\ht4=\ht0\dp4=\dp0
@@ -710,7 +716,7 @@
          \doifelse{\@@FLOLpijl}{\v!ja}
            {\startMPdrawing arrowtip   := true  ; \stopMPdrawing}
            {\startMPdrawing arrowtip   := false ; \stopMPdrawing}%
-         \doifelse{\@@FLOLoffset}{none} % {\v!geen}
+         \doifelse{\@@FLOLoffset}{\v!geen}
            {\startMPdrawing touchshape := true  ; \stopMPdrawing}
            {\startMPdrawing touchshape := false ; \stopMPdrawing}%
          \startMPdrawing
@@ -940,7 +946,7 @@
    \def\@@FLOWabsx  {0}\let\@@FLOWabsy\@@FLOWabsx
    \let\startFLOWcell\startFLOWcellF
    \resetFLOWlocation
-   \haalbuffer[\FLOWbufferprefix\currentFLOWnumber]%
+   \processFLOWbuffer\currentFLOWnumber
   %\message{AUTOSHAPE 1: (\@@FLOWminx,\@@FLOWminy)->(\@@FLOWmaxx,\@@FLOWmaxy)}%
    \ifnum\@@FLOWabsx<\@@FLOWmaxx\let\@@FLOWmaxx\@@FLOWabsx\fi
    \ifnum\@@FLOWabsy<\@@FLOWmaxy\let\@@FLOWmaxy\@@FLOWabsy\fi
@@ -1051,7 +1057,7 @@
         {{##1\expandafter\getFLOWlocation\FLOWlocation\end}}%
       \def\dohandleflowchart[##1][##2]%
         {\resetFLOWlocation
-         \haalbuffer[\FLOWbufferprefix##1]}%
+         \processFLOWbuffer{##1}}%
       \getvalue{\@FLOW@-#1}}}
 
 \def\setupFLOWsplit%
@@ -1162,7 +1168,7 @@
 
 \def\typeFLOWchart[#1]%
   {\bgroup
-   \def\dohandleflowchart[##1][##2]{\typebuffer[\FLOWbufferprefix##1]}%
+   \def\dohandleflowchart[##1][##2]{\typeFLOWbuffer{##1}}%
    \convertargument\startFLOWchart[#1]\to\firstverbatimfileline
    \convertargument     \stopFLOWchart\to\lastverbatimfileline
    \getvalue{\@FLOW@-#1}
@@ -1239,6 +1245,22 @@
 \setupFLOWsets
   [\c!commando=]
 
+%D This will be an option: 
+ 
+% \def\startFLOWchart%
+%   {\dodoubleempty\dostartFLOWchart}
+% 
+% \long\def\dostartFLOWchart[#1][#2]#3\stopFLOWchart
+%   {\preparenextFLOWchart{#1}{#2}%
+%    \long\setgvalue{\FLOWbufferprefix\nofFLOWcharts}{#3}}
+%
+% \long\def\dodefineFLOWchart[#1][#2]#3%
+%   {\preparenextFLOWchart{#1}{#2}%
+%    \long\setgvalue{\FLOWbufferprefix\nofFLOWcharts}{#3}}
+%
+% \def\processFLOWbuffer#1{\getvalue{\FLOWbufferprefix#1}}
+% \def\typeFLOWbuffer   #1{[Sorry, no verbatim chart #1 available.]}
+
 %D The XML interface [will be mode protected or separate x-chart file]
 
 \startXMLdefinitions flowchart
@@ -1269,9 +1291,6 @@
 \defineXMLdirective [flowchart] [shapes] \setupFLOWshapes  
 \defineXMLdirective [flowchart] [lines]  \setupFLOWlines   
 
-
 \stopXMLdefinitions
 
-\protect
-
-\endinput
+\protect \endinput

@@ -162,15 +162,15 @@ function Vide_Fields ( Name ) % show only one field
 
 function Toggle_Hide ( Name )
   { var v = this.getField(Name) ;
-    if (v) { v.hidden = !v.hidden } }
+    if (v) { v.hidden = !v.hidden ; this.dirty = false } }
 
 function Field_On ( Name )
   { v = this.getField(Name) ;
-    if (v) { v.value = "On" } }
+    if (v) { v.value = "On" ; this.dirty = false } }
 
 function Field_Off ( Name )
   { var v = this.getField(Name) ;
-    if (v) { v.value = "Off" } }
+    if (v) { v.value = "Off" ; this.dirty = false } }
 
 function Toggle_Value ( Name )
   { var v = this.getField(Name) ;
@@ -178,7 +178,8 @@ function Toggle_Value ( Name )
       { if (v.value=="On")
           { v.value = "Off" }
         else
-          { v.value = "On" } } }
+          { v.value = "On" } } 
+   this.dirty = false }
 
 function Toggle_Read ( Name )
   { var v = this.getField(Name);

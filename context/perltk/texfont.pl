@@ -1,6 +1,9 @@
 eval '(exit $?0)' && eval 'exec perl -S $0 ${1+"$@"}' && eval 'exec perl -S $0 $argv:q'
         if 0;
 
+# This is an example of a crappy unstructured file but once 
+# I know what should happen exactly, I will clean it up. 
+
 #D \module
 #D   [       file=texfont.pl,
 #D        version=2000.12.14,
@@ -20,10 +23,13 @@ eval '(exit $?0)' && eval 'exec perl -S $0 ${1+"$@"}' && eval 'exec perl -S $0 $
 #D Todo : Wybo's help system 
 #D Todo : list of encodings [texnansi, ec, textext]
 
+#D Thanks to George N. White III for solving a couple of bugs. 
+
 use strict ;
 
 my $savedoptions = join (" ",@ARGV) ;
 
+use Config ;
 use File::Copy ;
 use Getopt::Long ;
 
@@ -33,11 +39,15 @@ $Getopt::Long::autoabbrev  = 1 ; # partial switch accepted
 # Unless a user has specified an installation path, we take 
 # the dedicated font path or the local path.
 
+## $dosish = ($Config{'osname'} =~ /dos|mswin/i) ;
+my $dosish = ($Config{'osname'} =~ /^(ms)?dos|^os\/2|^(ms|cyg)win/i) ;
+
 my $installpath = "" ; my @searchpaths = () ; 
 
 if (defined($ENV{TEXMFLOCAL})) { $installpath = "TEXMFLOCAL" }
 if (defined($ENV{TEXMFFONTS})) { $installpath = "TEXMFFONTS" }
 
+if ($installpath eq "") { $installpath = "TEXMFFONTS" } # redundant 
 if ($installpath eq "") { $installpath = "TEXMFLOCAL" } # redundant 
 
 @searchpaths = ('TEXMFFONTS','TEXMFLOCAL','TEXMFMAIN') ;
@@ -45,7 +55,7 @@ if ($installpath eq "") { $installpath = "TEXMFLOCAL" } # redundant
 my $encoding        = "texnansi" ;
 my $vendor          = "" ;
 my $collection      = "" ;
-my $fontroot        = "" ; 
+my $fontroot        = "" ; #/usr/people/gwhite/texmf-fonts" ; 
 my $help            = 0 ;
 my $makepath        = 0 ;
 my $show            = 0 ;
@@ -59,6 +69,7 @@ my $caps            = "" ;
 my $noligs          = 0 ;
 my $test            = 0 ;
 my $virtual         = 0 ;
+my $novirtual       = 0 ;
 my $listing         = 0 ;
 my $remove          = 0 ;
 
@@ -96,10 +107,15 @@ my $width = "" ;
     "remove"       => \$remove,
     "test"         => \$test,
     "virtual"      => \$virtual,
+    "novirtual"    => \$novirtual,
     "caps=s"       => \$caps,
     "batch"        => \$batch,
     "weight=s"     => \$weight,
     "width=s"      => \$width) ;
+
+# so we can use both combined 
+
+if (!$novirtual) { $virtual = 1 } 
 
 # A couple of routines. 
 
@@ -119,7 +135,7 @@ sub error
 # The banner. 
 
 print "\n" ;
-report ("TeXFont 1.3 - ConTeXt / PRAGMA ADE 2000-2001 (STILL BETA)") ;
+report ("TeXFont 1.5 - ConTeXt / PRAGMA ADE 2000-2001 (STILL BETA)") ;
 print "\n" ;
 
 # Handy for scripts: one can provide a preferred path, if it 
@@ -163,8 +179,11 @@ if (($weight ne "")||($width ne ""))
 if (($listing||$remove)&&($sourcepath eq ".")) 
   { $sourcepath = "auto" } 
 
-if ($fontroot eq "") 
-  { $fontroot = `kpsewhich -expand-path=\$$installpath` ; 
+if ($fontroot eq "")
+  { if ($dosish) 
+      { $fontroot = `kpsewhich --expand-path=\$$installpath` }
+    else 
+      { $fontroot = `kpsewhich --expand-path=\\\$$installpath` }
     chomp $fontroot }
 
 if ($test) 
@@ -237,9 +256,9 @@ if (($batch)||($ARGV[0] =~ /.+\.dat$/io))
                   { $selecting = 1 ; next } 
                 else 
                   { next } }  
-    else
-      { next if (/^\s*[\#\%]/io) ;
-        next unless (/\-\-/oi) }
+            else
+              { next if (/^\s*[\#\%]/io) ;
+                next unless (/\-\-/oi) }
                 s/\s+/ /gio ;
                 s/(--en.*\=)\?/$1$encoding/io ;
                 report ("batch line : $_") ;
@@ -253,11 +272,14 @@ error ("unknown tex root   $lcfontroot") unless -d $fontroot ;
 
 my $identifier = "$encoding-$vendor-$collection" ;
 
-my $outlinepath = $sourcepath ;
+my $outlinepath = $sourcepath ; my $path = "" ; 
 
 if ($sourcepath eq "auto")
   { foreach my $root (@searchpaths)
-      { my $path = `kpsewhich -expand-path=\$$root` ;
+      { if ($dosish) 
+          { $path = `kpsewhich -expand-path=\$$root` }
+        else 
+          { $path = `kpsewhich -expand-path=\\\$$root` }
         chomp $path ;
         $sourcepath = "$path/fonts/afm/$vendor/$collection" ;
         unless (-d $sourcepath)
@@ -321,7 +343,7 @@ my $pfbpath = "$fontroot/fonts/type1/$vendor/$collection" ;
 my $pdfpath = "$fontroot/pdftex/config" ;
 
 sub do_make_path
-  { my $str = shift ; mkdir $str, 755 unless -d $str }
+  { my $str = shift ; mkdir $str, 0755 unless -d $str }
 
 sub make_path
   { my $str = shift ;
@@ -391,6 +413,7 @@ sub copy_files
 
 if ($install)
   { copy_files("afm",$sourcepath,$afmpath) ;
+#   copy_files("tfm",$sourcepath,$tfmpath) ; # raw supplied names 
     copy_files("pfb",$outlinepath,$pfbpath) }
 
 error ("no afm files found") unless @files ;
@@ -400,8 +423,11 @@ my $map = my $tex = 0 ; my $mapdata = my $texdata = "" ;
 copy ("$pdfpath/$mapfile","$pdfpath/$bakfile") ;
 
 if (open (MAP,"<$pdfpath/$mapfile"))
-  { while (<MAP>) { unless (/^\%/o) { $mapdata .= $_ } }
+  { report ("extending map file : $pdfpath/$mapfile") ;
+    while (<MAP>) { unless (/^\%/o) { $mapdata .= $_ } }
     close (MAP) }
+else
+  { report ("no map file at : $pdfpath/$mapfile") }
 
 if (open (TEX,"<$texfile"))
   { while (<TEX>) { unless (/stoptext/o) { $texdata .= $_ } }
@@ -510,7 +536,8 @@ if ($encoding ne "") # evt -progname=context
 foreach my $file (@files)
   { my $option = my $slant = my $extend = my $vfstr = my $encstr = "" ;
     my $strange = "" ; 
-    $file = lc $file ; my $ok = $file =~ /(.*)\/(.+?)\.(.*)/ ;
+    $file = $file ; 
+    my $ok = $file =~ /(.*)\/(.+?)\.(.*)/ ;
     my ($path,$name,$suffix) = ($1,$2,$3) ;
     # remove trailing _'s
     my $fontname = $name ;
@@ -561,8 +588,10 @@ foreach my $file (@files)
           { report "generating new tfm : $use$cleanname$fontsuffix (from $raw$cleanname)" ;
             my $ok = `pltotf $raw$cleanname$fontsuffix.vpl $use$cleanname$fontsuffix.tfm ` }
         } # end of next stage
+    elsif (-e "$sourcepath/$cleanname.tfm" )   
+      { report "using existing tfm : $cleanname.tfm" }
     else
-      { report "use supplied tfm : $cleanname$fontsuffix" } 
+      { report "use supplied tfm : $cleanname" }
     # report results
     my ($rawfont,$cleanfont,$restfont) = split(/\s/,$font) ;
     $cleanfont =~ s/\_/\-/goi ;
@@ -572,7 +601,9 @@ foreach my $file (@files)
     my $rawname = "$raw$cleanname$fontsuffix" ;
     if ($strange ne "") 
       { unlink "$vfpath/$cleanname.vf", "$tfmpath/$cleanname.tfm" ;
-        copy ("$cleanname.tfm","$tfmpath/$cleanname.tfm") }
+        copy ("$cleanname.tfm","$tfmpath/$cleanname.tfm") ;
+        # or when available, use vendor one :
+        copy ("$sourcepath/$cleanname.tfm","$tfmpath/$cleanname.tfm") }
     elsif ($virtual)
       { unlink "$vfpath/$rawname.vf", "$vfpath/$usename.vf" ;
         unlink "$tfmpath/$rawname.tfm", "$tfmpath/$usename.tfm" ;
@@ -581,20 +612,16 @@ foreach my $file (@files)
         copy ("$usename.tfm","$tfmpath/$usename.tfm") }
     else
       { unlink "$vfpath/$usename.vf", "$tfmpath/$usename.tfm" ;
-# slow but prevents conflicting vf's 
-my $rubish = `kpsewhich $usename.vf` ; chomp $rubish ; 
-if ($rubish ne "") { unlink $rubish }
+        # slow but prevents conflicting vf's 
+        my $rubish = `kpsewhich $usename.vf` ; chomp $rubish ; 
+        if ($rubish ne "") { unlink $rubish }
+        # 
         copy ("$usename.tfm","$tfmpath/$usename.tfm") }
     # cleanup
     foreach my $suf ("tfm", "vf", "vpl")
       { unlink "$rawname.$suf", unlink "$usename.$suf" ;
         unlink "$cleanname.$suf", unlink "$fontname.$suf" ;
         unlink "$fontname$fontsuffix.$suf" }
-    # quit rest if no type 1 file
-    $pfbpath = `kpsewhich $name.pfb` ;
-    if ($pfbpath eq "")
-      { if ($tex) { $report .= "missing file: \\type \{$name.pfb\}\n" }
-        next }
     # add line to maps file
     $option =~ s/^\s+(.*)/$1/o ;
     $option =~ s/(.*)\s+$/$1/o ;
@@ -604,11 +631,22 @@ if ($rubish ne "") { unlink $rubish }
     else
       { $option = "4" }
     # adding cleanfont is kind of dangerous 
-    my $thename = "" ; 
-    if ($virtual) { $thename = $rawname } else { $thename = $usename } 
-    my $str = "$thename $cleanfont $option < $fontname.pfb $encoding.enc\n" ;
+    my $thename = my $str = my $theencoding = "" ; 
+    if ($strange ne "") 
+      { $thename = $cleanname ; $theencoding = "" }
+    elsif ($virtual) 
+      { $thename = $rawname ; $theencoding = " $encoding.enc" } 
+    else 
+      { $thename = $usename ; $theencoding = " $encoding.enc" } 
+    # quit rest if no type 1 file
+    unless ((-e "$pfbpath/$fontname.pfb")||
+           (-e "$sourcepath/$fontname.pfb")) 
+     { if ($tex) { $report .= "missing file: \\type \{$fontname.pfb\}\n" }
+       report ("missing pfb file : $fontname.pfb") }
+    # now add entry to map 
+    $str = "$thename $cleanfont $option < $fontname.pfb$theencoding\n" ;
     if ($map) # check for redundant entries
-      { $mapdata =~ s/^$thename\s.*?$//gmois ;
+      { $mapdata =~ s/^$thename\s.*?$//gmis ;
         $maplist .= $str ; 
         $mapdata .= $str }
     # write lines to tex file

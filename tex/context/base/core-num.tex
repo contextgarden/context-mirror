@@ -31,43 +31,49 @@
 
 \newif\ifnummeren
 
-\def\dostelnummerin[#1][#2]%
-  {\@EA\let\@EA\savedstartnumber\csname\s!number#1\c!start\endcsname
-   \getparameters[\s!number#1][\c!start=,#2]%
-   \doifelsevaluenothing{\s!number#1\c!start}
-     {\letvalue{\s!number#1\c!start}=\savedstartnumber}
-     {\setcounter{\s!number#1}{\getvalue{\s!number#1\c!start}}}}
+\def\@@thenumber#1{\s!number\csname\s!number#1\c!nummer\endcsname}
 
-\def\stelnummerin%
+\def\dostelnummerin[#1][#2]%
+  {\@EA\let\@EA\savedstartnumber\csname\@@thenumber{#1}\c!start\endcsname
+   \getparameters[\@@thenumber{#1}][\c!start=,#2]%
+   \doifelsevaluenothing{\@@thenumber{#1}\c!start}
+     {\letvalue{\@@thenumber{#1}\c!start}=\savedstartnumber}
+     {\setcounter{\@@thenumber{#1}}{\getvalue{\@@thenumber{#1}\c!start}}}}
+
+\def\stelnummerin
   {\dodoubleargument\dostelnummerin}
 
 \def\dodefinieernummer[#1][#2]% ook overal class als localframed
+  {\doifassignmentelse{#2}
+     {\dododefinieernummer[#1][#2]}
+     {\doifelsenothing{#2} % can break on not yet defined macros in #2
+        {\dododefinieernummer[#1][#2]}
+        {\setvalue{\s!number#1\c!nummer}{#2}}}}
+
+\def\dododefinieernummer[#1][#2]%
   {\getparameters
      [\s!number#1]
-     [\s!check=,
+     [\c!nummer=#1, 
+      \s!check=,
       \c!wijze=\@@nrwijze,
-      \c!wijze\c!lokaal=\getvalue{\s!number#1\c!wijze},
+      \c!wijze\c!lokaal=\getvalue{\@@thenumber{#1}\c!wijze},
       \c!sectienummer=\v!ja,
-      \c!tekst=,
-      \c!plaats=, % was: \c!zetwijze
+      \c!tekst=,  % weg hier 
+      \c!plaats=, % weg hier, was trouwens \c!zetwijze 
       \c!conversie=\v!cijfers,
       \c!start=0,
       #2]%
-    \makecounter{\s!number#1}%
-    \setcounter{\s!number#1}{\getvalue{\s!number#1\c!start}}}
-
-% \c!nummer=#1 ; nogal veel copieen nodig
-%
-% \def\@@thenumber#1{\s!number\getvalue{\s!number#1\c!nummer}}
+    \makecounter{\@@thenumber{#1}}%
+    \setcounter{\@@thenumber{#1}}{\getvalue{\@@thenumber{#1}\c!start}}}
 
 \def\definieernummer%
   {\dodoubleempty\dodefinieernummer}
 
 \def\setnummer[#1]#2%
-  {\setcounter{\s!number#1}{#2}}
+  {\setcounter{\@@thenumber{#1}}{#2}}
 
 \def\resetnummer[#1]%
-  {\setcounter{\s!number#1}{0\getvalue{\s!number#1\c!start}}}
+  {\setcounter{\@@thenumber{#1}}{0\csname\@@thenumber{#1}\c!start\endcsname}}
 
 \def\dodoreset#1%
   {\getvalue{\s!reset#1}}%
@@ -78,40 +84,57 @@
 \def\reset%
   {\dosingleargument\doreset}
 
-\def\verhoognummer[#1]%
-  {\checknummer{#1}%
-   \ifnummeren
-   \else
-     \resetcounter{\s!number#1}%
-   \fi
-   \pluscounter{\s!number#1}}
+%\def\verhoognummer[#1]%
+%  {\checknummer{#1}%
+%   \ifnummeren
+%   \else
+%     \resetcounter{\@@thenumber{#1}}%
+%   \fi
+%   \pluscounter{\@@thenumber{#1}}}
 
 \def\savenumber[#1]%
-  {\savecounter{\s!number#1}}
+  {\savecounter{\@@thenumber{#1}}}
 
 \def\restorenumber[#1]%
-  {\restorecounter{\s!number#1}}
+  {\restorecounter{\@@thenumber{#1}}}
 
 % nieuw, maar kan dit (i.v.m. (sub)page?)
 
+% \def\verhoognummer[#1]%
+%   {\checknummer{#1}%
+%    \ifnummeren
+%      \pluscounter{\@@thenumber{#1}}%
+%    \else
+%      \setcounter{\@@thenumber{#1}}{0\csname\@@thenumber{#1}\c!start\endcsname}%
+%    \fi}
+
 \def\verhoognummer[#1]%
-  {\checknummer{#1}%
+  {\doifelsevalue{\@@thenumber{#1}\c!wijze}{\v!per\v!pagina}
+     {\checkpagechange{#1}%
+      \ifpagechanged\resetcounter{\@@thenumber{#1}}\fi}
+     {\checknummer{#1}}%
    \ifnummeren
-     \pluscounter{\s!number#1}%
+     \pluscounter{\@@thenumber{#1}}%
    \else
-     \setcounter{\s!number#1}{0\getvalue{\s!number#1\c!start}}%
+     \setcounter{\@@thenumber{#1}}{0\getvalue{\@@thenumber{#1}\c!start}}%
    \fi}
 
+% \defineenumeration [test] [way=bypage,text=\lastchangedpage]
+%
+% \starttext \dorecurse{10}{\test \input tufte \par} \stoptext
+
 \def\verlaagnummer[#1]%
-  {\minuscounter{\s!number#1}}
+  {\minuscounter{\@@thenumber{#1}}}
 
 \def\nummer[#1]%
   {\convertnumber
-     {\getvalue{\s!number#1\c!conversie}}
-     {\countervalue{\s!number#1}}}
+     {\getvalue{\@@thenumber{#1}\c!conversie}}
+     {\countervalue{\@@thenumber{#1}}}}
 
 \def\ruwenummer[#1]%
-  {\countervalue{\s!number#1}}
+  {\countervalue{\@@thenumber{#1}}}
+
+\ifx\checknummer\undefined \let\checknummer\gobbleoneargument \fi
 
 % ook de pag nummers hierheen halen ivm \@@nrwijze 
 

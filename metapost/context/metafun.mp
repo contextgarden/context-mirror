@@ -40,4 +40,8 @@ input mp-char.mp ;
 input mp-step.mp ; 
 input mp-grph.mp ; 
 
+%     mp-form.mp ; 
+input mp-grid.mp ; 
+input mp-func.mp ; 
+
 dump ; endinput .

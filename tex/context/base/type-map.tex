@@ -18,6 +18,7 @@
 \starttypescript [map] [all]
   \loadmapfile[original-ams-cmr.map]
   \loadmapfile[original-ams-euler.map]
+  \loadmapfile[original-ams-logo.map]
 \stoptypescript 
 
 \starttypescript [map] [il2]
@@ -74,19 +75,27 @@
   \loadmapfile[texnansi-urw-zapfchan.map]
 \stoptypescript
 
-\starttypescript [map] [ec] 
-  \loadmapfile[ec-youngryu-px.map]
-  \loadmapfile[ec-youngryu-tx.map]
+\starttypescript [map] [ec,texnansi,8r]
+  \loadmapfile[original-youngryu-px.map]
+  \loadmapfile[original-youngryu-tx.map]
 \stoptypescript 
+
+% to do 
 
 \starttypescript [map] [default]
   \loadmapfile[original-micropress-informal.map]
 \stoptypescript 
 
-% to do 
-
 \starttypescript [map] [texnansi] 
-  \loadmapfile[original-bh-lucida.map]
+  \loadmapfile[texnansi-bh-lucida.map]
+\stoptypescript 
+
+\starttypescript [map] [ec] 
+  \loadmapfile[ec-bh-lucida.map]
+\stoptypescript 
+
+\starttypescript [map] [8r] 
+  \loadmapfile[8r-bh-lucida.map]
 \stoptypescript 
 
 %\starttypescript [math] [helvetica] [all] 

@@ -18,10 +18,10 @@
 
 \unprotect
 
-\stelkorpsin
+\setupbodyfont
   [10pt,ams]
 
-\taal
+\mainlanguage 
   [en]
 
 \stelwitruimtein
@@ -60,13 +60,13 @@
 \stelnummeringin
   [\c!plaats=]
 
-\stelvoettekstenin
+\setupfootertexts
   [\v!rand]
   [][\v!paginanummer]
 
 \startmode[single]
 
-  \stelvoettekstenin
+  \setupfootertexts
     [\v!marge]
     [\tt\Modulefile][]  
 
@@ -74,19 +74,19 @@
 
 \startnotmode[single]
 
-  \stelvoettekstenin
+  \setupfootertexts
     [\v!marge]
     [\tt\Modulefile][]  
     [\tt\Modulefile][]  
 
 \stopnotmode
 
-\stelvoettekstenin
+\setupfootertexts
   [\v!tekst]
   [\CONTEXT]
   [\Moduletitle]
 
-\stelhoofdtekstenin
+\setupheadertexts
   [\v!tekst]
   []
   [\Modulesubtitle]
@@ -104,7 +104,7 @@
    \c!hoofd=\v!leeg]
 
 \stelkopin
-  [paragraaf]
+  [\v!paragraaf]
   [\c!letter=\ssb,
    \c!pagina=\v!rechts]
 
@@ -113,32 +113,34 @@
   [\c!letter=\v!vet,
    \c!na=\blanko]
 
-\stelinhoudin
+\stelsamengesteldelijstin
+  [\v!inhoud]
   [\c!breedte=3em,
    \c!titeluitlijnen=\v!ja]
 
-\stelindexin
+\stelregisterin
+  [\v!index]
   [\c!balanceren=\v!ja,
    \c!aanduiding=\v!nee]
 
 \startnotmode[nocolor]
 
-\stelkleurenin
+\setupcolors
   [\c!status=\v!start]
 
 \stopnotmode
 
 \startnotmode[color]
 
-  \stelkleurenin
+  \setupcolors 
     [\c!conversie=\v!altijd]
 
-  \steltypenin
+  \setuptyping
     [\c!palet=graypretty]
 
 \stopnotmode
 
-\stelinteractiein
+\setupinteraction
   [\c!status=\v!start,
    \c!kleur=,
    \c!letter=]

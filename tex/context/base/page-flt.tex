@@ -13,6 +13,9 @@
 
 \writestatus{loading}{Context OTR Macros / Floating Bodies} 
 
+%D This module is currently a mess, due to splitting float 
+%D handlers over specific otr's. Consider it work in progress.  
+
 \unprotect
 
 % naar supp-box.tex
@@ -109,7 +112,7 @@
 \startmessages  italian  library: floatblocks
  title: oggetti mobili
       1: -- rinumerato / -- => --
-      2: -- salavto
+      2: -- salvato
       3: -- mosso
       4: -- sistemato
       5: ordine aggiustato
@@ -154,22 +157,24 @@
      12: nedefinit
 \stopmessages
 
-\def\stelplaatsblokkenin%
+\def\stelplaatsblokkenin
   {\dodoubleargument\getparameters[\??bk]}
 
-\def\stelblokkopjesin%
+\def\stelblokkopjesin
   {\dodoubleargument\getparameters[\??kj]}%
 
 \def\dostelplaatsblokin[#1][#2]%
-  {\getparameters[\??fl#1][#2]}
+  {\def\docommando##1{\getparameters[\??fl##1][#2]}%
+   \processcommalist[#1]\docommando}
 
-\def\stelplaatsblokin%
+\def\stelplaatsblokin
   {\dodoubleargument\dostelplaatsblokin}
 
 \def\dostelblokkopjein[#1][#2]%
-  {\getparameters[\??kj#1][#2]}
+  {\def\docommando##1{\getparameters[\??kj##1][#2]}%
+   \processcommalist[#1]\docommando}
 
-\def\stelblokkopjein%
+\def\stelblokkopjein
   {\dodoubleargument\dostelblokkopjein}
 
 \def\doleegblok#1%
@@ -177,21 +182,96 @@
       [\??fl#1][\c!kader=\v!aan]%
       {\getmessage{\m!floatblocks}{12}}}
 
+% \def\docomplexplaatsblok[#1][#2][#3]#4%
+%   {\flushfootnotes
+%    \ifsomefloatwaiting
+%      % this was \checkwaitingfloats spread all over  
+%      \doifinsetelse{\v!altijd}{#2}
+%        {\showmessage{\m!floatblocks}{5}{}}
+%        {\doifcommonelse{#2}{\v!tekst,\v!naast,% \v!pagina, 
+%              \v!links,\v!rechts,\v!inlinker,\v!inrechter,%
+%              \v!inmarge}
+%           {\doflushfloats}
+%           {}}%
+%      % but which should be done before using box \floatbox 
+%    \fi
+%    \ifmargeblokken
+%      \doifinset{\v!marge}{#2}
+%        {\bgroup
+%         \everypar{\egroup\the\everypar}%
+%         \hsize=\@@mbbreedte}%
+%    \fi
+%    \global\insidefloattrue
+%    \dowithnextboxcontent % better a \the\everyfloattoks 
+%      {\postponefootnotes} % new 
+%      {\setlocalfloatdimensions{#1}{#2}% new  
+%       \docompletefloat
+%         {#1}{#3}{#1}{#2}{#1}{#4}
+%         {\box\nextbox}}%
+%    \vbox}
+
 \def\docomplexplaatsblok[#1][#2][#3]#4%
   {\flushfootnotes
+   \ifsomefloatwaiting
+     % this was \checkwaitingfloats spread all over
+     \doifinsetelse{\v!altijd}{#2}
+       {\showmessage{\m!floatblocks}{5}{}}
+       {\doifcommonelse
+          {#2}
+          {\v!tekst,\v!naast,% \v!pagina,
+           \v!links,\v!rechts,\v!inlinker,\v!inrechter,%
+           \v!inmarge}
+          {\doflushfloats}
+          {}}%
+     % but which should be done before using box \floatbox
+   \fi
    \ifmargeblokken
      \doifinset{\v!marge}{#2}
-       {\bgroup
-        \everypar{\egroup\the\everypar}%
-        \hsize=\@@mbbreedte}%
+       {\bgroup\everypar{\egroup\the\everypar}%
+        \hsize\@@mbbreedte}%
    \fi
    \global\insidefloattrue
-   \dowithnextboxcontent
-     {\postponefootnotes} % new 
-     {\docompletefloat
-        {#1}{#3}{#1}{#2}{#1}{#4}
-        {\box\nextbox}}%
+   \let\@@extrafloat\empty
+   \dowithnextboxcontent % better a \the\everyfloattoks
+     {\postponefootnotes} % new
+     {\xdocompletefloat{#1}{#3}{#1}{#2}{#1}{#4}}%
    \vbox}
+
+\def\xxdocompletefloat#1#2%
+  {\setbox\nextbox\hbox{\signalrightpage\box\nextbox}%
+   \doifrightpageelse{\let\@@extrafloat#1}{\let\@@extrafloat#2}}
+
+\newif\ifextrafloatactions \extrafloatactionstrue
+
+\def\xdocompletefloat#1#2#3#4#5#6%
+  {\ifextrafloatactions 
+     \let\@@extrafloat\empty
+     \processallactionsinset
+       [#4]
+       [\v!binnen=>\xxdocompletefloat\v!links    \v!rechts,
+        \v!buiten=>\xxdocompletefloat\v!rechts   \v!links,
+          ininner=>\xxdocompletefloat\v!inlinker \v!inrechter,
+          inouter=>\xxdocompletefloat\v!inrechter\v!inlinker]%
+     \ifx\@@extrafloat\empty
+       \setlocalfloatdimensions{#1}{#4}% 
+       \docompletefloat{#1}{#2}{#3}{#4}{#5}{#6}{\box\nextbox}%
+     \else
+       \setlocalfloatdimensions{#1}{\@@extrafloat,#4}%
+       \docompletefloat{#1}{#2}{#3}{\@@extrafloat,#4}{#5}{#6}{\box\nextbox}%
+     \fi
+   \else % downward compatible 
+     \docompletefloat{#1}{#2}{#3}{#4}{#5}{#6}{\box\nextbox}%
+   \fi}
+
+\def\setlocalfloatdimensions#1#2% experimental ! ! ! !
+  {\doifvaluesomething{\??fl#1\c!maxbreedte}
+     {\scratchdimen=\getvalue{\??fl#1\c!maxbreedte}\relax
+      \ifdim\wd\nextbox>\scratchdimen
+        \setbox\nextbox=\hbox to \scratchdimen
+          {\doifnotcommon{\v!rechts,\v!inrechter}{#2}{\hss}%
+           \box\nextbox
+           \doifnotcommon{\v!links ,\v!inlinker }{#2}{\hss}}%
+      \fi}}
 
 \def\docomplexstarttekstblok[#1][#2][#3]%
   {\flushfootnotes
@@ -205,12 +285,29 @@
   {\flushsidefloats % hoort eigenlijk niet hier
    \docomplexreserveerblok[#1][#2][\v!tekst,#3,\v!links][#4]}
 
-\def\dodefinieerplaatsblok[#1][#2]%        #1=naam  #2=meervoud
+\def\definieerplaatsblok
+  {\dotripleempty\dodefinieerplaatsblok}
+
+\def\dodefinieerplaatsblok[#1][#2][#3]% #1=naam #2=meervoud #3=parent
+  {\ifthirdargument
+     \redodefinieerplaatsblok[#1][#2][#3]%        
+   \else\ifsecondargument
+     \dododefinieerplaatsblok[#1][#2]%        
+   \else
+     \dododefinieerplaatsblok[#1][#1]%        
+   \fi\fi}        
+
+\def\dododefinieerplaatsblok[#1][#2]% 
   {\presetlocalframed[\??fl#1]%
    \stelplaatsblokin
      [#1]
      [\c!breedte=15\korpsgrootte,
       \c!hoogte=10\korpsgrootte,
+\c!maxbreedte=,
+\c!maxhoogte=,
+\c!zijvoorwit=\@@bkzijvoorwit,
+\c!zijnawit=\@@bkzijnawit,
+\c!marge=\@@bkmarge,
       \c!kader=\@@bkkader,
       \c!straal=\@@bkstraal,
       \c!hoek=\@@bkhoek,
@@ -228,11 +325,14 @@
    \stelblokkopjein
      [#1]
      [\c!plaats=\@@kjplaats,
-      %\c!voor=\@@kjvoor,
+     %\c!voor=\@@kjvoor,
       \c!tussen=\@@kjtussen,
-      %\c!na=\@@kjna,
+     %\c!na=\@@kjna,
       \c!breedte=\@@kjbreedte,
       \c!kopletter=\@@kjkopletter,
+      \c!kopkleur=\@@kjkopkleur,
+      \c!tekstletter=\@@kjtekstletter,
+      \c!tekstkleur=\@@kjtekstkleur,
       \c!letter=\@@kjletter,
       \c!kleur=\@@kjkleur,
       \c!uitlijnen=\@@kjuitlijnen,
@@ -240,6 +340,7 @@
       \c!wijze=\@@kjwijze,
       \c!blokwijze=\@@kjblokwijze,
       \c!sectienummer=\@@kjsectienummer,
+      \c!scheider=\@@kjscheider,
       \c!conversie=\@@kjconversie]%
    \doorlabelen
      [#1]
@@ -250,8 +351,11 @@
       \c!sectienummer=\getvalue{\??kj#1\c!sectienummer},
       \c!conversie=\getvalue{\??kj#1\c!conversie}]%
    \presetlabeltext[#1=\Word{#1}~]%
+   \dodefinefloatcommands[#1][#2]}
+
+\def\dodefinefloatcommands[#1][#2]%
+  {\definieerlijst[#1]%
    \presetheadtext[#2=\Word{#2}]%
-   \definieerlijst[#1]%
    \setvalue{\e!plaats\e!lijstmet#2}%
      {\dodoubleempty\doplaatslijst[#1]}%
    \setvalue{\e!volledige\e!lijstmet#2}%
@@ -273,8 +377,28 @@
    \setvalue{\e!leeg#1}%
      {\doleegblok{#1}}}
 
-\def\definieerplaatsblok%
-  {\dodoubleargument\dodefinieerplaatsblok}
+\def\redodefinieerplaatsblok[#1][#2][#3]% same label/number
+  {\presetlocalframed[\??fl#1]%
+   \copylocalframed[\??fl#1][\??fl#3]%
+   \copyparameters[\??fl#1][\??fl#3]
+     [\c!breedte,\c!hoogte,
+      \c!maxbreedte,\c!maxhoogte,\c!marge,\c!zijvoorwit,\c!zijnawit,
+      \c!kader,\c!straal,\c!hoek,\c!plaats,\c!achtergrond,
+      \c!achtergrondraster,\c!achtergrondkleur,\c!achtergrondoffset,
+      \c!bovenkader,\c!onderkader,\c!linkerkader,\c!rechterkader,
+      \c!kaderoffset,\c!paginaovergangen]%
+   \copyparameters[\??kj#1][\??kj#3]
+     [\c!plaats,\c!voor,\c!tussen,\c!na,
+      \c!breedte,\c!kopletter,\c!kopkleur,\c!letter,\c!kleur,
+      \c!tekstletter,\c!tekstkleur,
+      \c!uitlijnen,\c!nummer,\c!wijze,\c!blokwijze,
+      \c!sectienummer,\c!scheider,\c!conversie]%
+   \definieernummer[#1][#3]%
+   \presetlabeltext[#1=\labeltext{#3}]%
+   \dodefinefloatcommands[#1][#2]}
+
+\def\placefloat % \plaatsplaatsblok
+  {\dotripleempty\docomplexplaatsblok}
 
 % De onderstaande macro's zijn verantwoordelijk voor het plaatsen
 % van floats. De macro's moeten nog worden aangepast en
@@ -296,13 +420,21 @@
 \newbox\floatlist
 \newbox\savedfloatlist
 
-%newinsert\topins 
-\newinsert\botins  
-\newinsert\lowins % below footnotes  
+\ifx\topins\undefined \newinsert\topins \fi
+\ifx\botins\undefined \newinsert\botins \fi
+\ifx\lowins\undefined \newinsert\lowins \fi
 
-\skip \botins=\zeropoint    \skip \lowins=\zeropoint
-\count\botins=\!!thousand   \count\lowins=\!!thousand
-\dimen\botins=\maxdimen     \dimen\lowins=\maxdimen
+\skip\topins\zeropoint 
+\skip\botins\zeropoint    
+\skip\lowins\zeropoint
+
+\count\topins\!!thousand   
+\count\botins\!!thousand   
+\count\lowins\!!thousand
+
+\dimen\topins\maxdimen     
+\dimen\botins\maxdimen     
+\dimen\lowins\maxdimen
 
 \newdimen\topinserted \topinserted=\zeropoint
 \newdimen\botinserted \botinserted=\zeropoint
@@ -482,7 +614,7 @@
      {\nointerlineskip
       \uncenteredfloatbox
       \unvbox\floatlist}%
-   \global\advance\savednoffloats by 1
+   \global\advance\savednoffloats 1
    \global\somefloatwaitingtrue
    \dosavefloatinfo
    \nonoindentation}
@@ -492,7 +624,7 @@
      {\nointerlineskip
       \unvbox\floatlist
       \uncenteredfloatbox}%
-   \global\advance\savednoffloats by 1
+   \global\advance\savednoffloats 1
    \global\somefloatwaitingtrue}
 
 \def\doreversesavefloat%
@@ -500,26 +632,26 @@
      {\nointerlineskip
       \unvbox\floatlist
       \uncenteredfloatbox}%
-   \global\advance\savednoffloats by 1
+   \global\advance\savednoffloats 1
    \global\somefloatwaitingtrue
    \dosavefloatinfo}
 
 \def\dosavefloatstatus%
-  {\global\setbox\savedfloatlist=\copy\floatlist
-   \global\setbox\savedfloatbox =\copy\floatbox
+  {\global\setbox\savedfloatlist\copy\floatlist
+   \global\setbox\savedfloatbox \copy\floatbox
    \xdef\dorestorefloatstatus%
-     {\global\setbox\floatlist=\box\savedfloatlist
-      \global\setbox\floatbox =\box\savedfloatbox
-      \savednoffloats=\the\savednoffloats}}
+     {\global\setbox\floatlist\box\savedfloatlist
+      \global\setbox\floatbox \box\savedfloatbox
+      \savednoffloats\the\savednoffloats}}
  
 \let\dorestorefloatstatus\relax
 
-\def\checkwaitingfloats#1%
-  {\ifsomefloatwaiting
-     \doifinsetelse{\v!altijd}{#1}
-       {\showmessage{\m!floatblocks}{5}{}}
-       {\doflushfloats}%
-   \fi}
+%\def\checkwaitingfloats#1%
+%  {\ifsomefloatwaiting
+%     \doifinsetelse{\v!altijd}{#1}
+%       {\showmessage{\m!floatblocks}{5}{}}
+%       {\doflushfloats}%
+%   \fi}
 
 \ifx\doflushfloats\undefined \let\doflushfloats\relax \fi
 \ifx\flushfloatbox\undefined \let\flushfloatbox\relax \fi
@@ -534,7 +666,7 @@
 \def\betweenfloatblanko% assumes that \@@bknawit is present
   {\bgroup
    \setbox0=\vbox{\strut\blanko[\@@bkvoorwit]\strut}%
-   \setbox2=\vbox{\strut\blanko[\@@bknawit]\strut}%
+   \setbox2=\vbox{\strut\blanko[\@@bknawit  ]\strut}%
    \ifdim\ht0>\ht2
      \blanko[-\@@bknawit,\@@bkvoorwit]
    \fi
@@ -558,7 +690,7 @@
 \ifx\sometextfloat\undefined \let\sometextfloat\doplacefloatbox \fi
 
 \def\somepagefloat[#1]%  links, rechts, midden, hoog, midden, laag
-  {\checkwaitingfloats{#1}%
+  {%\checkwaitingfloats{#1}%
    \global\setbox\collectedpagefloats=\vbox
      {\unvbox\collectedpagefloats
       \vbox to \teksthoogte
@@ -569,13 +701,13 @@
    \doinsertfloatinfo}
 
 \def\sometextfloat[#1]%  lang, links, rechts, hoog, midden, laag, offset
-  {\checkwaitingfloats{#1}%
+  {%\checkwaitingfloats{#1}%
    \def\dostoptextfloat{\dodostoptextfloat[#1]}%
    \global\floattextwidth=\hsize
    \global\floatwidth=\wd\floatbox
    \global\floatheight=\ht\floatbox % forget about the depth
-   \global\advance\floattextwidth by -\floatwidth
-   \global\advance\floattextwidth by -\@@bkmarge\relax % was \tfskipsize
+   \global\advance\floattextwidth -\floatwidth
+   \global\advance\floattextwidth -\@@bkmarge\relax % was \tfskipsize
    \doifinsetelse{\v!lang}{#1}
      {\floattextheight=\pagegoal
       \advance\floattextheight by -\pagetotal
@@ -595,9 +727,9 @@
    \hsize\floattextwidth
    \ignorespaces}
 
-\def\dodostoptextfloat[#1]%
-  {\egroup
-   \doifnotinset{\v!lang}{#1}%
+\def\dodostoptextfloat[#1]%  % de tekst kan beter in een soort 
+  {\egroup                   % kadertekst zonder kader, is flexibeler
+   \doifnotinset{\v!lang}{#1}% en beter 
      {\ifdim\ht\floattext<\floatheight
         \floattextheight=\floatheight
       \else
@@ -644,7 +776,7 @@
    \doinsertfloatinfo}
 
 \def\somefacefloat[#1]%  links, rechts, midden, hoog, midden, laag
-  {\checkwaitingfloats{#1}%
+  {%\checkwaitingfloats{#1}%
    \startnaast\box\floatbox\stopnaast
    \doinsertfloatinfo}
 
@@ -723,41 +855,94 @@
 \newcount\noftopfloats          \noftopfloats=2
 \newcount\nofbotfloats          \nofbotfloats=0
 
-\def\calculatefloatskips%
-  {{\def\calculatefloatskips##1##2%
-      {\doifelsenothing{##2}
-         {\global##1=\zeropoint}
-         {\doifelse{##2}{\v!geen}
-            {\global##1=\zeropoint}
-            {\setbox0=\vbox{\witruimte\@EA\blanko\@EA[##2]}%
-             \global##1=\ht0}}}%
-    \calculatefloatskips\floattopskip\@@bkvoorwit
-    \calculatefloatskips\floatbottomskip\@@bknawit
-    \calculatefloatskips\sidefloattopskip\@@bkzijvoorwit
-    \calculatefloatskips\sidefloatbottomskip\@@bkzijnawit
-    \def\sidefloattopoffset{\openstrutdepth}% {\dp\strutbox}%
-    \global\floatsideskip=\@@bkmarge\relax
-    \global\noftopfloats=\@@bknboven\relax
-    \global\nofbotfloats=\@@bknonder\relax}}
+\def\docalculatefloatskip#1#2%
+  {\doifelsenothing{#2}
+     {\global#1\zeropoint}
+     {\doifelse{#2}{\v!geen}
+        {\global#1\zeropoint}
+        {\setbox0\vbox{\witruimte\@EA\blanko\@EA[#2]}%
+         \global#1\ht0}}}
+
+\def\calculatefloatskips#1%
+  {{\docalculatefloatskip\floattopskip       \@@bkvoorwit
+    \docalculatefloatskip\floatbottomskip    \@@bknawit
+    \docalculatefloatskip\sidefloattopskip   {\getvalue{\??fl#1\c!zijvoorwit}}% \@@bkzijvoorwit
+    \docalculatefloatskip\sidefloatbottomskip{\getvalue{\??fl#1\c!zijnawit}}% \@@bkzijnawit
+    \gdef\sidefloattopoffset{\openstrutdepth}% was \def
+    \global\floatsideskip\getvalue{\??fl#1\c!marge}% \@@bkmarge\relax
+    \global\noftopfloats \@@bknboven\relax
+    \global\nofbotfloats \@@bknonder\relax}}
 
 \newif\ifinsidefloat
 
-\def\floatcaptionsuffix{} % an optional suffix
-\def\floatcaptionnumber{} % a logical counter
+\let\floatcaptionsuffix\empty % an optional suffix
+\let\floatcaptionnumber\empty % a logical counter
 
-\def\dosetfloatcaption#1#2#3% name will change 
-  {\def\dofloattekst%
-     {{\doattributes{\??kj#1}\c!letter\c!kleur{#3}}}%
-   \doifelsevalue{\??kj#1\c!nummer}{\v!ja}
-     {\def\dofloatnummer%
-        {{\xdef\floatcaptionnumber{#1}%
-          \hbox{\doattributes{\??kj#1}\c!kopletter\c!kopkleur
-             {\strut#2\floatcaptionsuffix}}}%
-          \ConvertToConstant\doifnot{#3}{}
-            {\tfskip
-             \emergencystretch=.5em}}}
-     {\let\dofloatnummer=\empty}}
+% obsolete ? 
+% 
+% \def\dosetfloatcaption#1#2#3% name will change 
+%   {\def\dofloattekst%
+%      {{\doattributes{\??kj#1}\c!letter\c!kleur{#3}}}%
+%    \doifelsevalue{\??kj#1\c!nummer}{\v!ja}
+%      {\def\dofloatnummer%
+%         {{\xdef\floatcaptionnumber{#1}%
+%           \hbox{\doattributes{\??kj#1}\c!kopletter\c!kopkleur
+%              {\strut#2\floatcaptionsuffix}}}%
+%           \ConvertToConstant\doifnot{#3}{}
+%             {\tfskip\emergencystretch=.5em}}}
+%      {\let\dofloatnummer\empty}}
+
+% Quite experimental !
 
+% the split is needed when for instance the float goes into
+% a multi page field and the list of figs becomes larger than
+% one page: cycle between 'only flush when object ref ok'
+% and 'one/many page fig list'; see "uguide finometer"
+%
+% potential sync bug with sectionblocks, see uguide.tex
+
+\def\placefloatcaption
+  {\dodoubleempty\doplacefloatcaption}
+
+\def\doplacefloatcaption[#1][#2]#3%
+  {\setfloatcaption[#1][#2]{#3}%
+   \placefloatcaptiontext[#1]%
+   \placefloatcaptionreference[#1]}
+
+\def\setfloatcaption % \dosetfloatcaption already in use 
+  {\dodoubleempty\dodosetfloatcaption} % beware, name clash
+
+\def\dodosetfloatcaption[#1][#2]#3% to do namespace for number/ascii
+  {\doifelsevalue{\??kj#1\c!nummer}{\v!ja} % also handle trialtypesetting
+     {\verhoognummer[#1]%
+      \maakhetnummer[#1]%
+      \global\let\flhetnummer\hetnummer
+      \setgvalue{@fl@r@#1}%
+        {\dofloatreference
+         \redofloatorder{#1}%
+         \doschrijfnaarlijst{#1}{\flhetnummer}{#3}{#1}%
+         \doglobal\convertargument#3\to\flasciititle % \asciititle is global
+         \doifsomething{#2}{\rawreference{\s!flt}{#2}{{\flhetnummer}{\flasciititle}}}%
+         \global\letvalue{@fl@r@#1}\relax}% nills
+      \setgvalue{@fl@t@#1}%
+        {\preparethenumber{\??kj#1}\flhetnummer\preparednumber
+         \doattributes{\??kj#1}\c!letter\c!kleur
+           {\doattributes{\??kj#1}\c!kopletter\c!kopkleur
+              {\labeltexts{#1}{\preparednumber}}%
+            \doattributes{\??kj#1}\c!tekstletter\c!tekstkleur
+              {\tfskip#3}}}}
+     {\global\letvalue{@fl@r@#1}\relax
+      \global\letvalue{@fl@t@#1}\relax}}
+
+\def\placefloatcaptiontext     [#1]{\getvalue{@fl@t@#1}}
+\def\placefloatcaptionreference[#1]{\getvalue{@fl@r@#1}}
+
+% still needed for uguide
+
+\let\placefloatlabel          \placefloatcaption
+\let\placefloatlabeltext      \placefloatcaptiontext
+\let\placefloatlabelreference \placefloatcaptionreference
+
 \def\putborderedfloat#1\in#2\\%
   {\setbox#2=\vbox
      {\localframed
@@ -782,155 +967,8 @@
             \else
               \ifx\@@kjkjtussen\empty\else\unskip\@@kjkjtussen\fi
             \fi}}%
-      \begstrut#3\endstrut\endgraf}}
-
-% \def\dosetpagfloat#1#2#3#4% \copy wegwerken 
-%   {\bgroup
-%    \forgetall
-%    \postponefootnotes
-%    \mindermeldingen
-%   %\showcomposition
-%    \putborderedfloat#4\in4\\%
-%    \def\locatefloat%
-%      {\doregelplaats\@@flflplaats}%
-%    \ConvertToConstant\doifelse{#3}{\v!geen}
-%      {\global\setbox\floatbox=\vbox % pas op als wd groter dan hsize
-%         {\ifbinnenkolommen\ifdim\wd4>\hsize  
-%            \let\locatefloat\relax            
-%          \fi\fi                              
-%          \locatefloat{\copy4}}}  % we need \wd4 later 
-%      {\setbox2=\hbox  
-%         {\footnotesenabledfalse\putcompletecaption{#4}{#2}{#3}{0}}%
-%       \doifinsetelse{\@@kjkjplaats}{\v!hoog,\v!midden,\v!laag}
-%         {\dimen0=\hsize
-%          \advance\dimen0 by -\wd4\relax
-%          \advance\dimen0 by -\@@bkmarge\relax % \was tfskipsize\relax
-%          \ifdim\wd2>\dimen0\relax
-%            \dimen2=1.3\dimen0\relax
-%            \ifdim\wd2<\dimen2\relax
-%              \dimen0=0.8\dimen0\relax
-%            \fi
-%          \fi
-%          \setbox2=\vbox
-%            {\forgetall
-%             \hsize=\dimen0\relax
-%             \raggedright
-%             \putcompletecaption{#4}{#2}{#3}{1}}}
-%         {\doifelse{\@@kjkjbreedte}{\v!max}
-%            {\dosetraggedvbox{\@@kjkjuitlijnen}%
-%             \setbox2=\raggedbox
-%               {\hsize\wd4\relax
-%                \putcompletecaption{#4}{#2}{#3}{0}}}
-%            {\ifdim\wd2>\wd4\relax
-%               \doifelse{\@@kjkjbreedte}{\v!passend}
-%                 {\ifdim\wd4<15\korpsgrootte\relax
-%                    \dimen0=15\korpsgrootte\relax
-%                  \else
-%                    \dimen0=\wd4\relax
-%                  \fi
-%                  \ifdim\wd4>\hsize
-%                    \setbox0=\vbox
-%                      {\forgetall
-%                       \hsize=1.0\wd4
-%                       \footnotesenabledfalse
-%                       \putcompletecaption{#4}{#2}{#3}{0}}%
-%                    \ifdim\ht0>\lineheight\relax
-%                      \setbox2=\vbox
-%                        {\forgetall
-%                         \hsize=0.9\wd4
-%                         \putcompletecaption{#4}{#2}{#3}{0}}%
-%                    \else
-%                     %\setbox2=\vbox % was 0, bug
-%                     %  {\forgetall
-%                     %   \hsize=1.0\wd4
-%                     %   \putcompletecaption{#4}{#2}{#3}{0}}%
-%                      \setbox2=\hbox{\putcompletecaption{#4}{#2}{#3}{0}}% 
-%                    \fi
-%                  \else
-%                    \setbox0=\vbox
-%                      {\forgetall
-%                       \dimen2=1.5\dimen0\relax
-%                       \ifdim\dimen2<\hsize
-%                         \hsize=\dimen2\relax
-%                       \fi
-%                       \footnotesenabledfalse
-%                       \putcompletecaption{#4}{#2}{#3}{0}}%
-%                    \ifdim\ht0>\lineheight\relax
-%                      \setbox2=\vbox
-%                        {\forgetall
-%                         \dimen2=1.2\dimen0\relax
-%                         \ifdim\dimen2<\hsize
-%                           \hsize=\dimen2\relax
-%                         \fi
-%                         \putcompletecaption{#4}{#2}{#3}{0}}%
-%                    \else
-%                     %\setbox2=\vbox % was 0, bug
-%                     %  {\forgetall
-%                     %   \dimen2=1.5\dimen0\relax
-%                     %   \ifdim\dimen2<\hsize
-%                     %     \hsize=\dimen2\relax
-%                     %   \fi
-%                     %   \putcompletecaption{#4}{#2}{#3}{0}}%
-%                      \setbox2=\hbox{\putcompletecaption{#4}{#2}{#3}{0}}% 
-%                    \fi
-%                  \fi}
-%                 {\dosetraggedvbox{\@@kjkjuitlijnen}%
-%                  \setbox2=\raggedbox
-%                    {\hsize\@@kjkjbreedte
-%                     \putcompletecaption{#4}{#2}{#3}{0}}}%
-%             \else
-% %              \setbox2=\hbox % we want footnotes ! 
-% %                {\putcompletecaption{#4}{#2}{#3}{0}}%
-%                \dosetraggedvbox{\@@kjkjuitlijnen}%
-%                \setbox2=\raggedbox
-%                  {\hsize\wd4
-%                   \putcompletecaption{#4}{#2}{#3}{0}}%
-%             \fi}}%
-%       \global\setbox\floatbox=\vbox
-%         {\forgetall
-%          \processaction
-%            [\@@kjkjplaats]
-%            [ \v!boven=>\locatefloat{\copy2}%
-%                        \endgraf\@@kjkjtussen
-%                        \locatefloat{\copy4},
-%              \v!onder=>\locatefloat{\copy4}%
-%                        \endgraf\@@kjkjtussen
-%                        \locatefloat{\copy2},
-%               \v!hoog=>\locatefloat
-%                          {\doifelse{\@@flflplaats}{\v!links}
-%                             {\copy4
-%                              \tfskip
-%                              \vbox to\ht4{\@@kjkjtussen\copy2\vfill}}
-%                             {\vbox to\ht4{\@@kjkjtussen\copy2\vfill}%
-%                              \tfskip
-%                              \copy4}},
-%               \v!laag=>\locatefloat
-%                          {\doifelse{\@@flflplaats}{\v!links}
-%                             {\copy4
-%                              \tfskip
-%                              \vbox to\ht4
-%                                {\vfill\copy2\@@kjkjtussen}}
-%                             {\vbox to\ht4
-%                                {\vfill\copy2\@@kjkjtussen}%
-%                              \tfskip
-%                              \copy4}},
-%             \v!midden=>\locatefloat
-%                          {\doifelse{\@@flflplaats}{\v!links}
-%                             {\copy4
-%                              \tfskip
-%                              \vbox to\ht4{\vfill\copy2\vfill}}
-%                             {\vbox to\ht4{\vfill\copy2\vfill}%
-%                              \tfskip
-%                              \copy4}},
-%               \v!geen=>\locatefloat{\copy4}]}}%
-%   % extended: 
-%    \postcenterfloatbox{\wd4}%
-%   %\ifdim\wd4>\hsize
-%   %  \global\setbox\floatbox=
-%   %    \hbox to \ifbinnenkolommen\wd4\else\hsize\fi
-%   %      {\hss\box\floatbox\hss}%
-%   %\fi
-%    \egroup}
+      \doattributes{\??kj#1}\c!tekstletter\c!tekstkleur
+        {\begstrut#3\endstrut\endgraf}}}
 
 % new 
 
@@ -1033,10 +1071,16 @@
           \putcompletecaption{#4}{#2}{#3}{0}}%
      \else
        % just over a line, don't use an overshoot
-       \dosetraggedvbox\@@kjkjuitlijnen
-       \setbox\tempcaptionbox=\raggedbox
-         {\hsize\scratchdimen
-          \putcompletecaption{#4}{#2}{#3}{0}}%
+       \doifinsetelse{\@@kjkjuitlijnen}{\v!links,\v!rechts}
+         {\dosetraggedvbox\@@kjkjuitlijnen
+          \setbox\tempcaptionbox\raggedbox
+            {\hsize\scratchdimen
+             \raggedcenter
+             \putcompletecaption{#4}{#2}{#3}{0}}}
+         {% nicer
+          \setbox\tempcaptionbox\cbox
+            {\hsize\scratchdimen
+             \putcompletecaption{#4}{#2}{#3}{0}}}%
      \fi
    \fi}
 
@@ -1203,7 +1247,9 @@
   {\ifvisible
      \par
      \doifcommonelse
-        {#1}{\v!links,\v!rechts,\v!inlinker,\v!inrechter,\v!inmarge}
+        {#1}
+        {\v!links,\v!rechts,\v!inlinker,\v!inrechter,%
+         \v!inmarge}
         {\global\parfloattrue}
         {\global\parfloatfalse}%
      \ifbinnenkolommen
@@ -1275,7 +1321,7 @@
 
 \long\def\docompletefloat#1#2#3#4#5#6#7%
   {\flushsidefloats
-   \calculatefloatskips
+   \calculatefloatskips{#1}%
    \bgroup
    \global\setbox\floatbox=\vbox{#7}%
    \dimen0=\ht\floatbox
@@ -1300,13 +1346,14 @@
              \redofloatorder{#1}%
              \rawreference{\s!flt}{#2}{{\hetnummer}{\asciititle}}%
              \doschrijfnaarlijst{#3}{\hetnummer}{#6}{#3}}%
-         \egroup\dofloat{#4}{\labeltexts{#5}{\hetnummer}}{#6}{#1}}
+         \egroup
+         \preparethenumber{\??kj#1}\hetnummer\preparednumber 
+         \dofloat{#4}{\labeltexts{#5}{\preparednumber}}{#6}{#1}}
         {\global\setbox\floatbox=\vbox
            {\unvbox\floatbox % no \vss, keep the depth
             \rawreference{\s!flt}{#2}{{}{\asciititle}}}%
          \egroup\dofloat{#4}{}{#6}{#1}}}%
    \global\insidefloatfalse}
-
 
 \newif\ifmargeblokken
 
@@ -1460,6 +1507,26 @@
 %     \global\inuitstellenfalse                         % Anyhow, 'uitstellen'
 %   \fi\fi}                                             % is still suboptimal.
 
+% \def\douitstellen%
+%   {\the\everytopofpage
+%    \ifvoid\collectedpagefloats\else
+%      % message
+%      \unvbox\collectedpagefloats
+%    \fi
+%    \ifinuitstellen\else\ifcase\nofpostponedblocks\else % The \nof-test is
+% \bgroup
+% \restoreglobalbodyfont % else problems inside split verbatim 
+%      % message
+%      \global\pagetotal\zeropoint % recently added
+%      \global\inuitstellentrue                          % definitely needed
+%      \dorecurse{\nofpostponedblocks}                   % else we can loose
+%        {\haalbuffer[buf-\recurselevel]}                % or disorder floats
+%      \doflushfloats % new but potential dangerous      % and that is something
+%      \doglobal\newcounter\nofpostponedblocks           % we don't want, do we?
+%      \global\inuitstellenfalse                         % Anyhow, 'uitstellen'
+% \egroup
+%    \fi\fi}                                             % is still suboptimal.
+
 \def\douitstellen%
   {\the\everytopofpage
    \ifvoid\collectedpagefloats\else
@@ -1467,19 +1534,21 @@
      \unvbox\collectedpagefloats
    \fi
    \ifinuitstellen\else\ifcase\nofpostponedblocks\else % The \nof-test is
-\bgroup
-\black % else problems inside split verbatim 
-\restoreglobalbodyfont % else problems inside split verbatim 
-     % message
-     \global\pagetotal\zeropoint % recently added
-     \global\inuitstellentrue                          % definitely needed
-     \dorecurse{\nofpostponedblocks}                   % else we can loose
-       {\haalbuffer[buf-\recurselevel]}                % or disorder floats
-     \doflushfloats % new but potential dangerous      % and that is something
-     \doglobal\newcounter\nofpostponedblocks           % we don't want, do we?
-     \global\inuitstellenfalse                         % Anyhow, 'uitstellen'
-\egroup
-   \fi\fi}                                             % is still suboptimal.
+     \bgroup % we need the color/font switch, else problems inside split verbatim
+     \setnormalcatcodes % uitstellen in verbatim
+     \edef\savedtopofpagecolor{\topofpagecolor}%
+     \doifsomething\savedtopofpagecolor\stopcolormode
+     \restoreglobalbodyfont
+     \global\pagetotal\zeropoint                   % recently added and
+     \global\inuitstellentrue                      % definitely needed else
+     \dorecurse{\nofpostponedblocks}               % we can loose or disorder
+       {\haalbuffer[buf-\recurselevel]}            % floats; anyhow, this
+     \doflushfloats % new but potential dangerous  % mechanism is still
+     \doglobal\newcounter\nofpostponedblocks       % suboptimal and needs a
+     \global\inuitstellenfalse                     % proper analysis
+     \doifsomething\savedtopofpagecolor\startcolormode\savedtopofpagecolor
+     \egroup
+   \fi\fi}
 
 \setvalue{\e!start\e!uitstellen}%
   {\doglobal\increment\nofpostponedblocks
@@ -1506,7 +1575,7 @@
      \getparameters[\??si][#1]%
      \resetnummer[\??si]%
      \def\floatcaptionsuffix{\nummer[\??si]}%
-     \TABLEcaptionheight=\@@siregels\lineheight
+     \TABLEcaptionheight=\@@siregels\lineheight % brrr 
 \def\docomplexpagina[##1]{\goodbreak}%
      \dowithnextbox
        {\forgetall
@@ -1581,13 +1650,17 @@
    \c!na=\blanko,
    \c!breedte=\v!passend,
    \c!kopletter=\v!vet,
+   \c!kopkleur=,
    \c!letter=\v!normaal,
    \c!kleur=,
+   \c!tekstletter=,
+   \c!tekstkleur=,
    \c!uitlijnen=,
    \c!nummer=\v!ja,
    \c!wijze=\@@nrwijze,
    \c!blokwijze=\@@nrblokwijze,
    \c!sectienummer=\@@nrsectienummer,
+   \c!scheider=\@@koscheider,
    \c!conversie=\v!cijfers]
 
 \stelplaatsblokkenin
@@ -1623,18 +1696,22 @@
   [\c!conversie=\v!letter, % \v!romeins
    \c!regels=3]
 
-% float strategy
+% float strategy, replaces some of the above macros  
 
 \let\floatmethod\empty
+\let\floatcolumn\empty
+\let\floatrow   \empty
 
 \def\dogetfloatbox#1%
   {\ifvisible
      \getfromcommalist[#1][1]%
      \@EA\beforesplitstring\commalistelement\at:\to\floatmethod
      \@EA\aftersplitstring \commalistelement\at:\to\floatcolumn
+     \@EA\aftersplitstring \floatcolumn\at*\to\floatrow
+     \@EA\beforesplitstring\floatcolumn\at*\to\floatcolumn
 % nog algemeen otr 
 \ifx\OTRSETsetpreferedcolumnslot\undefined\else
-     \OTRSETsetpreferedcolumnslot\floatcolumn 
+     \OTRSETsetpreferedcolumnslot\floatcolumn\floatrow
 \fi 
 % commando van maken 
      \doifundefined{\string\floatmethod\floatmethod}

@@ -15,7 +15,8 @@
 
 \unprotect 
 
-% to do : lan ook safen 
+% todo : safe lan etc too 
+% todo : load all commands at once (tok) 
 
 % Utility-file
 %
@@ -61,10 +62,10 @@
   {\immediate\write\uti}
 
 \def\writeutilitycommand#1%
-  {\writeutility{c \string#1}}
+  {\write\uti{c \string#1}}
 
 \def\immediatewriteutilitycommand#1%
-  {\immediatewriteutility{c \string#1}}
+  {\immediate\write\uti{c \string#1}}
 
 \def\openutilities%
   {\immediate\openout\uti=\jobname.\f!inputextension
@@ -185,17 +186,17 @@
 \long\def\doutilities#1#2#3#4#5% % introduceren in utility file
   {\restorecatcodes
    \resetutilities
-   \def\docommando##1%                 % zo kunnen meerdere dingen
-     {\getvalue{\s!set##1}}%           % in een pass worden gedaan,
-   \processcommacommand[#1]\docommando % zie bijvoorbeeld lijsten
+   \def\docommando##1%                 % more than one utility thing
+     {\csname\s!set##1\endcsname}%     % can be handled in one pass, 
+   \processcommacommand[#1]\docommando % for instance lists 
    \begingroup
    \def\currentutilityfilename{#2}%
    \footnotesenabledfalse
    \doinpututilitiestrue
    \global\utilitydonefalse
-\catcode`\\=\@@escape
-\catcode`\{=\@@begingroup
-\catcode`\}=\@@endgroup
+   \catcode`\\=\@@escape
+   \catcode`\{=\@@begingroup
+   \catcode`\}=\@@endgroup
    \catcode`\%=\@@comment\relax
    \pushendofline % geeft problemen zodra andere file wordt ingelezen
    \ifunprotectutilities % nog nodig ?
@@ -207,14 +208,18 @@
    \ifnum\catcode`\!=\@@active \else
      \catcode`\!=\@@letter % permits multilingual constants
    \fi
-   #4\readjobfile{#2.\f!outputextension}{}{}#5%
+   #4%
+   \the\everybeforeutilityread
+   \readjobfile{#2.\f!outputextension}{}{}%
+   \the\everyafterutilityread
+   #5%
    \relax
    \ifunprotectutilities
      \protect
    \fi
    \popendofline
    \ifutilitydone\else
-     \doifnot{#3}{}
+     \doifsomething{#3}
        {\showmessage{\m!systems}{9}{{#3}}%
         \ifvoorlopig
           \blanko
@@ -269,24 +274,45 @@
 \def\twopassentry#1%
   {\executeifdefined{@@#1\s!pass}\gobbletwoarguments}
 
-\def\appendtwopasselement#1#2#3%
+%\def\appendtwopasselement#1#2#3%
+%  {%\debuggerinfo{\m!systems}{twopass data #1 - #2 = #3}%
+%   \@EA\ifx\csname#1:\s!list\endcsname\empty
+%     \setxvalue{#1:\s!list}{#3}%
+%   \else
+%     \setxvalue{#1:\s!list}{\getvalue{#1:\s!list},#3}%
+%   \fi}
+
+\def\appendtwopasselement#1#2#3% can sometimes become a large list
   {%\debuggerinfo{\m!systems}{twopass data #1 - #2 = #3}%
-   \@EA\ifx\csname#1:\s!list\endcsname\empty
-     \setxvalue{#1:\s!list}{#3}%
-   \else
-     \setxvalue{#1:\s!list}{\getvalue{#1:\s!list},#3}%
-   \fi}
+   \expandafter\xdef\csname#1:\s!list\endcsname
+     {\@EA\ifx\csname#1:\s!list\endcsname\empty \else
+        \csname#1:\s!list\endcsname,\fi#3}}
+
+%\def\dodefinetwopasslist#1%
+%  {\doifundefined{#1:\s!list}
+%     {%\debuggerinfo{\m!systems}{defining twopass class #1}%
+%      \doglobal\addutilityreset{#1\s!pass}%
+%      \setgvalue{\s!set#1\s!pass}%
+%        {\global\letvalue{\s!set#1\s!pass}\gobbletwoarguments
+%         \setgvalue{@@#1\s!pass}{\appendtwopasselement{#1}}}%
+%      \setgvalue{\s!reset#1\s!pass}%
+%        {\global\letvalue{@@#1\s!pass}\gobbletwoarguments}%
+%      \getvalue{\s!reset#1\s!pass}}}
 
 \def\dodefinetwopasslist#1%
   {\doifundefined{#1:\s!list}
      {%\debuggerinfo{\m!systems}{defining twopass class #1}%
       \doglobal\addutilityreset{#1\s!pass}%
-      \setgvalue{\s!set#1\s!pass}%
-        {\global\letvalue{\s!set#1\s!pass}\gobbletwoarguments
-         \setgvalue{@@#1\s!pass}{\appendtwopasselement{#1}}}%
-      \setgvalue{\s!reset#1\s!pass}%
-        {\global\letvalue{@@#1\s!pass}\gobbletwoarguments}%
-      \getvalue{\s!reset#1\s!pass}}}
+      \setgvalue{\s!set  #1\s!pass}{\dosettwopasslist  {#1}}%
+      \setgvalue{\s!reset#1\s!pass}{\doresettwopasslist{#1}}%
+      \getvalue {\s!reset#1\s!pass}}}
+
+\def\dosettwopasslist#1%
+  {\global\letvalue{\s!set#1\s!pass}\gobbletwoarguments
+   \setgvalue{@@#1\s!pass}{\appendtwopasselement{#1}}}
+
+\def\doresettwopasslist#1%
+  {\global\letvalue{@@#1\s!pass}\gobbletwoarguments}
 
 \def\definetwopasslist#1%
   {\expanded{\dodefinetwopasslist{#1}}%
@@ -323,26 +349,39 @@
 
 \let\twopassdata=\empty
 
+%\def\dogettwopassdata[#1,#2]#3%
+%  {\doifelse{#1}{0} % \ifcase truukje gaat fout
+%     {\twopassdatafoundfalse
+%      \let\twopassdata\empty}
+%     {\twopassdatafoundtrue
+%      \setxvalue{#3:\s!list}{#2}%
+%      \edef\twopassdata{#1}}}
+
+\def\notwopassdata{0}
+
 \def\dogettwopassdata[#1,#2]#3%
-  {\doifelse{#1}{0} % \ifcase truukje gaat fout
-     {\twopassdatafoundfalse
-      \let\twopassdata\empty}
-     {\twopassdatafoundtrue
-      \setxvalue{#3:\s!list}{#2}%
-      \edef\twopassdata{#1}}}
+  {\edef\twopassdata{#1}%
+   \ifx\twopassdata\notwopassdata
+     \twopassdatafoundfalse
+     \let\twopassdata\empty
+   \else   
+     \twopassdatafoundtrue
+     \setxvalue{#3:\s!list}{#2}%
+   \fi}
 
 \def\gettwopassdata#1%
   {\loadtwopassdata
-   \edef\!!stringa{\getvalue{#1:\s!list}}%
+  %\edef\!!stringa{\csname#1:\s!list\endcsname}%
   %\debuggerinfo{\m!systems}{twopass get #1 - \!!stringa}%
-   \expandafter\dogettwopassdata\expandafter[\!!stringa]{#1}}
+  %\expandafter\dogettwopassdata\expandafter[\!!stringa]{#1}}
+   \expanded{\dogettwopassdata[\csname#1:\s!list\endcsname]}{#1}}
 
-\def\findtwopassdata%
+\def\findtwopassdata#1#2%
   {\loadtwopassdata
-   \ExpandBothAfter\dofindtwopassdata}
+   \expanded{\dofindtwopassdata{#1}{#2}}}
 
 \def\dofindtwopassdata#1#2%
-  {\edef\!!stringa{,\getvalue{#1:\s!list}}%
+  {\edef\!!stringa{,\csname#1:\s!list\endcsname}%
   %\debuggerinfo{\m!systems}{twopass find #2 - \!!stringa}%
    \def\dodofindtwopassdata[##1,##2#2##3,##4]%
      {\edef\twopassdata{##3}%
@@ -377,7 +416,7 @@
 
 \def\getfromtwopassdata#1#2%
   {\loadtwopassdata
-   \getfromcommacommand[\getvalue{#1:\s!list}][#2]%
+   \getfromcommacommand[\csname#1:\s!list\endcsname][#2]%
    \doifelsenothing{\commalistelement}
      {\twopassdatafoundfalse
       \let\twopassdata\empty}

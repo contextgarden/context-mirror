@@ -26,18 +26,18 @@
   {} %{\writestatus{pstricks}{overslaan definieer kleurgroep #2}}
 
 \def\loadpstrickscolors#1%
-  {\let\olddefinieerkleur=\definieerkleur
-   \let\olddefinieerpalet=\definieerpalet
-   \let\olddefinieerkleurgroep=\definieerkleurgroep
+  {\let\olddefinekleur     =\definecolor
+   \let\olddefinepalet     =\definepalet
+   \let\olddefinecolorgroup=\definecolorgroup
    \writestatus{pstricks}{loading colors from #1}%
    \input #1 \relax
-   \let\definieerkleur=\olddefinieerkleur
-   \let\definieerpalet=\olddefinieerpalet
-   \let\definieerkleurgroep=\olddefinieerkleurgroep} 
+   \let\definecolor     =\olddefinecolor
+   \let\definepalet     =\olddefinepalet
+   \let\definecolorgroup=\olddefinecolorgroup}
 
 \input multido  \relax  
 \input pstricks \relax      
-\input pst_plot \relax      
+\input pst-plot \relax      
 
 \loadpstrickscolors{colo-rgb}  % nog koppelen \redef\
 

@@ -22,7 +22,7 @@
 
 \newprettytrue
 
-\gebruikmodule[eenheid]
+\usemodule[eenheid]
 
 \mainlanguage[en]
 
@@ -39,10 +39,10 @@
 % nog eens \interface \\ \\ verder doorvoeren 
 
 \def\resetmodule%
-  {\getparameters
+  {\getrawparameters
      [Module]
      [       file=\jobname,
-          version={\currentdate[jaar,{.},maand,{.},dag]},
+          version={\currentdate[\v!jaar,{.},\v!maand,{.},\v!dag]},
             title=,
          subtitle=,
            author=Hans Hagen,
@@ -55,20 +55,20 @@
 \def\dostartmodule[#1]%
   {\newcounter\ParagraphNumber
    \resetmodule
-   \getparameters[Module][type=tex,#1]}
+   \getrawparameters[Module][type=tex,#1]}
 
 \def\startmodule%
   {\dosingleempty\dostartmodule}
 
 \def\complexmodule[#1]%
-  {\startglobaal % i.v.m. \bgroup in \startdocumentation  
-   \getparameters[Module][#1]
-   \stopglobaal  % i.v.m. \bgroup in \startdocumentation  
+  {\startglobal % i.v.m. \bgroup in \startdocumentation  
+   \getrawparameters[Module][#1]
+   \stopglobal  % i.v.m. \bgroup in \startdocumentation  
    \moduletitel}
 
 \def\stopmodule%
   {\pagina  
-   \plaatsindex
+   \plaatsregister[\v!index]
      [\c!balanceren=\v!ja,
       \c!aanduiding=\v!nee,
       \c!criterium=\v!tekst]}
@@ -78,55 +78,139 @@
 
 \definecomplexorsimple\module
 
-\startmode[atpragma]
+% \startmode[atpragma]
+% 
+%   \def\TitelPagina#1% can be done more efficient 
+%     {\startMPrun
+%         mpgraph := #1 ; 
+%         input mp-cont ; 
+%      \stopMPrun
+%      \externalfigure
+%        [\bufferprefix mprun.#1]
+%        [\c!hoogte=\vsize,
+%         \c!breedte=\hsize]}
+% 
+%   \defineoverlay[titelpagina][\TitelPagina{512}]
+% 
+% \stopmode
+
+\startuseMPgraphic{titlepage}
 
-  \def\TitelPagina#1% can be done more efficient 
-    {\startMPrun
-        mpgraph := #1 ; 
-        input mp-cont ; 
-    \stopMPrun
-    \externalfigure
-      [\bufferprefix mprun.#1]
-      [\c!hoogte=\vsize,
-       \c!breedte=\hsize]}
+  width  := PaperWidth ; 
+  height := PaperHeight ; 
 
-  \definieeroverlay[titelpagina][\TitelPagina{512}]
+  color local_red, local_white, local_blue ; 
 
-\stopmode
+  local_white := white ;
+
+  local_blue := local_white randomized (.6,.8) ; 
+  local_red  := local_white randomized (.3,.4) ; 
+
+  u := width/400 ; 
+
+  def a_module (expr dx, dy) =  
+    picture p ; p := image 
+      ( ddy := 0 ; sx := 60u ; 
+        for i=1 upto (4 randomized 2) : 
+          sy := 7u randomized 3u ;
+          fill unitsquare xyscaled(sx,sy) shifted (0,ddy) 
+            withcolor local_red ;
+          ddy := ddy + sy + 4u ; 
+        endfor ) ; 
+    p := p shifted (dx,dy) shifted - center p ; 
+    fill boundingbox p enlarged 8u withcolor local_white ;
+    fill boundingbox p enlarged 4u withcolor local_blue ; 
+    draw p ; 
+  enddef ; 
+
+  set_grid(width, height, width/15, height/15) ;
+  forever:
+    if new_on_grid(uniformdeviate width,uniformdeviate height):
+      a_module(dx,dy) ; 
+    fi ;
+    exitif grid_full ;
+  endfor ;
+
+  clip currentpicture to unitsquare xyscaled(width,height) ; 
+\stopuseMPgraphic
+
+\defineoverlay
+  [titelpagina]
+  [\useMPgraphic{titlepage}]
+
+% When run at \PRAGMA, we use a slightly difgferent graphic,
+% so that we can recognize an original. Users are not 
+% supposed to mimick this feature. 
+
+\doifmode{atpragma}{\readfile{s-mod-04.tex}{}{}}
+
+\defineframed
+  [TitleFrame]
+  [\c!achtergrond=\v!kleur,
+   \c!achtergrondkleur=wit,
+   \c!uitlijnen=\v!rechts,
+   \c!offset=12pt,
+   \c!strut=\v!nee,
+   \c!kader=\v!uit,
+   \c!onder=]
+
+\definelayout
+  [titlepage]
+  [\c!rugwit=0pt,
+   \c!kopwit=0pt,
+   \c!hoofd=0pt,
+   \c!voet=0pt,
+   \c!hoogte=\v!midden,
+   \c!breedte=\v!midden]
 
 \def\moduletitel%
-  {\ifx\ModuleNumber\undefined \else
+  {\stellayoutin[titlepage]
+   \ifx\ModuleNumber\undefined \else
      \ifnum\ModuleNumber<10
-       \edef\ModuleNumber{00\ModuleNumber}%
+       \edef\ModuleNumber{00\ModuleNumber}
      \else\ifnum\ModuleNumber<100
-       \edef\ModuleNumber{0\ModuleNumber}%
+       \edef\ModuleNumber{0\ModuleNumber}
      \fi\fi
-     \stelachtergrondenin
+     \setupbackgrounds
        [\v!pagina] 
        [\c!achtergrond=titelpagina]
    \fi
-   \startstandaardopmaak[\c!hoofdstatus=\v!geen,\c!voetstatus=\v!geen]
-     \switchnaarkorps[14.4pt,ss] 
-     \definefont[temp][SansBold at 72pt] % \font\temp=cmssbx10 at 72pt 
+   \startmakeup[\v!standaard][\c!hoofdstatus=\v!geen,\c!voetstatus=\v!geen]
+     \switchtobodyfont[14.4pt,ss] 
      \bgroup
        \def\CONTEXT {Con\kern-.15em\TeX t}
        \def\TEXUTIL {\TeX Util}
        \def\PPCHTEX {PPCH\TeX}
-       \regellinks{\temp               \CONTEXT}            \vskip24pt
-       \doifelse{\Modulesubtitle}{}
-         {\regellinks{\bfd             \Moduletitle}        \vfill}   
-         {\regellinks{\bfd             \Modulesubtitle}     \vfill
-          \doifnot{\Moduletitle}{}
-            {\regellinks{\bf category: \Moduletitle}        \vskip6pt}}
-       \regellinks{\bf         author: \Moduleauthor}       \vskip6pt
-       \regellinks{\bf           date: \currentdate}        \vskip6pt
-       \doifnot{\Modulesuggestions}{}
-         {\regellinks{\bs suggestions: \Modulesuggestions}  \vskip6pt}
+       \def\METAPOST{MetaPost}
+       \hfill
+         {\definedfont[SansBold at 96pt]\setstrut   
+          \TitleFrame{\CONTEXT}}    
+       \vfill
+       \definetabulate[temp][|l|l|]%
+       \switchtobodyfont[17.3pt,ss] 
+       \hfill
+         {\bf\setstrut 
+          \TitleFrame
+            {\insidefloattrue\steltabulatiein[\c!voor=,\c!na=]%
+             \starttemp
+               \doifsomething{\Moduletitle}
+                 {\NC title \EQ \Moduletitle \NC\NR}%
+               \doifsomething{\Modulesubtitle}
+                 {\NC subtitle \EQ \Modulesubtitle \NC\NR}%
+               \doifsomething{\Moduleauthor}
+                 {\NC author \EQ \Moduleauthor \NC\NR}%
+                  \NC date \EQ \currentdate \NC\NR
+              %\doifsomething{\Modulesuggestions} % todo: generates space 
+              %  {\NC suggestions \NC \Modulesuggestions \NC\NR}%
+             \stoptemp}}
      \egroup
-   \stopstandaardopmaak
+   \stopmakeup
    \ifx\ModuleNumber\undefined \else
-     \stelachtergrondenin[\v!pagina][\c!achtergrond=]
-   \fi}
+     \setupbackgrounds
+       [\v!pagina]
+       [\c!achtergrond=]
+   \fi
+   \stellayoutin}
 
 \let\stopdocumentation=\relax
 
@@ -142,41 +226,38 @@
 
 \gdef\CompressDefinitions%
   {\ifcompressdefinitions
-     \switchnaarkorps[klein]%
+     \switchtobodyfont[\v!klein]%
    \fi}
 
-\definieertypen
-  [definition]
+\startnotmode[nocode]
 
-\steltypenin
-  [definition]  
-  [\c!voor={\pagina[\v!voorkeur]}\blanko\PresetParagraphNumber\CompressDefinitions,
-   \c!na=\ResetParagraphNumber\blanko,
-   \c!optie=\Moduletype]
+  \definetyping
+    [definition]
 
-\definieertypen
-  [PL]
-  [\c!optie=PL,
-   \c!marge=\v!standaard]
+  \setuptyping
+    [definition]  
+    [\c!voor={\pagina[\v!voorkeur]}\blanko\PresetParagraphNumber\CompressDefinitions,
+     \c!na=\ResetParagraphNumber\blanko,
+     \c!optie=\Moduletype]
 
-\definieertypen
-  [JV]
-  [\c!optie=JV,
-   \c!marge=\v!standaard]
+\stopnotmode
 
-\definieertypen
-  [MP]
-  [\c!optie=MP,
-   \c!marge=\v!standaard]
+\startmode[nocode]
 
-\definieertypen
-  [TEX]
-  [\c!optie=TEX,
-   \c!marge=\v!standaard]
+% \definieerbuffer[definition] % ignore 
 
-\steltypenin [\v!typen]   [\c!marge=\v!standaard]
-\steltypenin [\v!file]    [\c!marge=\v!standaard]
-\steltypenin [definition] [\c!marge=0pt]
+  \long\def\startdefinition#1\stopdefinition{}
+
+\stopmode
+
+\definetyping [PL]  [\c!optie=PL, \c!marge=\v!standaard]
+\definetyping [JV]  [\c!optie=JV, \c!marge=\v!standaard]
+\definetyping [MP]  [\c!optie=MP, \c!marge=\v!standaard]
+\definetyping [TEX] [\c!optie=TEX,\c!marge=\v!standaard]
+
+\setuptyping [\v!typen]   [\c!marge=\v!standaard]
+\setuptyping [\v!file]    [\c!marge=\v!standaard]
+\setuptyping [definition] [\c!marge=0pt]
 
 \newcounter\NOfMarginLines
 \newcounter\ParagraphNumber
@@ -230,7 +311,7 @@
 \def\margeaanduidingen#1[#2]%
   {\def\domargeaanduidingen##1##2%
      {\margetitel[#2]%
-        {\switchnaarkorps[klein]%
+        {\switchtobodyfont[\v!klein]%
          \doglobal\newcounter\NOfMarginLines
          \dodomargeaanduidingen[##1]#1%
          \scratchcounter=\NOfMarginLines
@@ -241,14 +322,27 @@
          \processcommalist[##2]\index}}%
    \dodoublegroupempty\domargeaanduidingen}
 
-\def\complexmacros%
-  {\margeaanduidingen\tex}
+\def\complexmacros{\margeaanduidingen\tex  }
+\def\complexextras{\margeaanduidingen\relax}
 
-\def\complexextras%
-  {\margeaanduidingen\relax}
+\def\complexelements%
+  {\margeaanduidingen\someelement}
+
+\def\someelement#1{\type{<#1>}}
 
 \definecomplexorsimpleempty\macros
 \definecomplexorsimpleempty\extras
+\definecomplexorsimpleempty\elements
+
+\def\showelements{\dodoubleempty\doshowelements}
+
+\def\doshowelements[#1][#2]
+  {\bgroup
+   \processXMLbuffer 
+   \typebuffer 
+   \setupcolors[\c!status=\v!stop]
+   \showXSDcomponent[#1][#2]
+   \egroup}
 
 % \macros{a,b}        
 % \macros{a,b}{b}     
@@ -373,6 +467,7 @@
         \VL \THREE{\bf subsentence symbol and quotes} \VL\SR
         \HL
         \VL \citaat{#3 #4} \VL \citeer{#2} \VL \let|=\normalbar |<||<|#3|>|#4|>| \VL\SR
+        \VL \citaat{#3 #4} \VL \citeer{#2} \VL |<||<|#3|>|#4|>| \VL\SR
         \HL 
         \stoptabel
         \egroup
@@ -404,7 +499,7 @@
   {\doglobal\newcounter\CurrentArgument
    \setup}
 
-\stelkadertekstenin
+\setupframedtexts
   [setuptext]
   [\c!achtergrond=\v!raster,
    \c!kader=\v!uit]

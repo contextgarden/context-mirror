@@ -178,11 +178,11 @@
    \stopoverlay
    \nointerlineskip
    \vskip2pt
-   \edef\ascii
-     {name:~{\black\fontname\font}\quad
-      encoding:~{\black\currentencoding}\quad
-      mapping:~{\black\currentmapping}\quad
-      handling:~{\black\fonthandling}}%
+   \edef\ascii % \noexpand needed for non etex 
+     {name:~{\noexpand\black\fontname\font}\quad
+      encoding:~{\noexpand\black\currentencoding}\quad
+      mapping:~{\noexpand\black\currentmapping}\quad
+      handling:~{\noexpand\black\fonthandling}}%
    \tf\hbox to 40em
      {\blue\hfill\tinyfont\setstrut\strut\ascii}
    \egroup

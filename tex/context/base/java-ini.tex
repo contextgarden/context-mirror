@@ -444,7 +444,7 @@
      \ifoneJSpreamble
        \gdef\allJSpreambles{collected}%
      \fi
-     \global\let\presetJSpreamble=\relax
+     \global\let\presetJSpreamble\relax
      \egroup
    \fi}
 
@@ -454,13 +454,13 @@
        \bgroup
        \presetJSpreamble
        \expanded{\doflushJSpreamble{\allJSpreambles}}%
-       \global\let\flushJSpreamble=\relax
-       \global\let\allJSpreambles=\empty
+       \global\let\flushJSpreamble\relax
+       \global\let\allJSpreambles\empty
        \egroup
      \fi\fi
    \fi\fi}
 
-\def\finalflushJSpreamble% kan direct in \everylastshipout, testen 
+\def\finalflushJSpreamble
   {\iflocation
      \flushJSpreamble
      \ifcase\currentJSpreamble\relax\else
@@ -623,7 +623,7 @@
 %D Hooking this mechanism into the general \CONTEXT\ reference
 %D mechanism does not take much effort: 
 
-\definespecialtest{JS}
+\definespecialtest{JS}%
   {\doifdefinedelse{\r!java\currentreferenceoperation}}
 
 \definespeciallocation{JS}#1#2% 
@@ -638,9 +638,7 @@
        \data
          {#2}%
        \start
-         \dostartgotoJS
-           {\number\buttonwidth}{\number\buttonheight}
-           {\JScode}%
+         \dostartgotoJS\buttonwidth\buttonheight\JScode
        \stop
          \dostopgotoJS
      \dostopgoto

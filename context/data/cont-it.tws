@@ -20,6 +20,7 @@ stopsetup
 startsetup
 com:impostalingua:
 typ:val/vars/:
+val:nl,fr,en,uk,de,es,cz,..:nl:
 ivr:installalingua::
 stopsetup
 
@@ -214,10 +215,9 @@ stopsetup
 
 startsetup
 com:definiscigruppocolori:
-typ:val/val/vals/:
+typ:val/val/trips/:
 val:*name::
 val:rgb,cmyk,grigio,s:rgb:
-val:trips/::
 stopsetup
 
 startsetup
@@ -260,7 +260,7 @@ stopsetup
 
 startsetup
 com:impostatype:
-typ:var/:
+typ:vars/:
 var:spazio:attivo,disattivo::
 var:opzione:inclinato,normale,nessuno::
 var:stile:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...,*command::
@@ -405,6 +405,7 @@ var:alternativa:a,b,c::
 var:spessorelinea:*dimension::
 var:offsetfondo:*dimension::
 var:offsetcima:*dimension::
+var:colorelinea:*name::
 stopsetup
 
 startsetup
@@ -993,7 +994,8 @@ stopsetup
 
 startsetup
 com:pedap:
-typ:arg/arg/:
+typ:val/arg/arg/:
+val:basso::
 val:*text::
 val:*text::
 stopsetup
@@ -1725,8 +1727,9 @@ var:modo:datesto,da*section::
 var:testo:*text::
 var:separatorenumero:*text::
 var:separatoretesto:*text::
-var:*section*number:si,no::
+var:*sectionnumber:si,no::
 var:separatore:*text::
+var:strut:si,no::
 var:stato:inizia,termina::
 var:comando:*\command#1::
 stopsetup
@@ -1753,6 +1756,7 @@ stopsetup
 startsetup
 com:definisciiniziatermina:
 typ:val/vars/:
+val:*name::
 var:prima:*command::
 var:dopo:*command::
 var:stile:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...,*command::
@@ -1780,6 +1784,7 @@ var:tra:*command::
 var:allinea:sinistra,centro,destra,no::
 var:conversione:numeri,lettere,Lettere,numeriromani,Numeriromani::
 var:modo:datesto,da*section::
+var:separatore:*text::
 stopsetup
 
 startsetup
@@ -1881,9 +1886,9 @@ stopsetup
 
 startsetup
 com:impostariferimento:
-typ:var/:
+typ:vars/:
 var:stato:inizia,termina::
-var:*section*number:si,no::
+var:*sectionnumber:si,no::
 var:prefisso:+,-,*text::
 var:interazione:etichetta,testo,tutti,simbolo::
 var:ampiezza:*dimension::
@@ -1980,7 +1985,7 @@ val:*name::
 var:stato:inizia,termina::
 var:alternativa:a,b,c,...,nessuno,comando::
 var:accoppiamento:attivo,disattivo::
-var:criterio:*section,locale,precedente,tutti::
+var:criterio:*section,locale,precedente,corrente,tutti::
 var:limitipagina:*list::
 var:stile:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...,*command::
 var:stilenumero:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...,*command::
@@ -1998,9 +2003,9 @@ var:tra:*command::
 var:sinistra:*text::
 var:destra:*text::
 var:etichetta:si,no::
-var:prefisso:si,no::
+var:prefisso:si,no,nessuno::
 var:numeropagina:si,no::
-var:*section*number:si,no::
+var:*sectionnumber:si,no::
 var:allineatitolo:si,no::
 var:margine:*dimension::
 var:ampiezza:*dimension,adatta::
@@ -2008,6 +2013,7 @@ var:altezza:*dimension,adatta,ampio::
 var:profondita:*dimension,adatta,ampio::
 var:distanza:*dimension::
 var:separatore:*text::
+var:stopper:*text::
 var:simbolo:nessuno,1,2,3,...::
 var:espansione:si,no,comando::
 var:ampiezzamax:*dimension::
@@ -2067,6 +2073,7 @@ var:rientrasuccessivo:si,no::
 var:alternativa:*name::
 var:spazioprima:*dimension::
 var:dopo:*dimension::
+var:separatore:*text::
 stopsetup
 
 startsetup
@@ -2291,6 +2298,7 @@ var:alternativa:normale,inmargine,centro,testo::
 var:comando:*\command#1#2::
 var:comandonumero:*\command#1::
 var:comandotesto:*\command#1::
+var:separatore:*text::
 var:prefisso:+,-,*text::
 var:mettitesta:si,no::
 var:incrementanumero:si,no,*file::
@@ -2437,7 +2445,7 @@ var:stilepagina:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo.
 var:stiletesto:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...,*command::
 var:indicatore:si,no::
 var:accoppiamento:si,no::
-var:*section*number:si,no::
+var:*sectionnumber:si,no::
 var:criterio:*section,locale,tutti::
 var:distanza:*dimension::
 var:simbolo:1,2,...,n,a,...,nessuno::
@@ -2625,6 +2633,7 @@ var:statopdp:normale,termina,inizia,vuoto,nessuno,nomarcature::
 var:statotesto:normale,termina,inizia,vuoto,nessuno,nomarcature::
 var:statocima:termina,inizia::
 var:statofondo:termina,inizia::
+var:statopagina:termina,inizia::
 var:colore:*name::
 stopsetup
 
@@ -2642,7 +2651,7 @@ stopsetup
 startsetup
 com:datadioggi:
 typ:vals/:
-val:giorno,mese,giornosettimana,anno, dd,mm,jj,yy,d,m,j,y,referral:giorno,mese,anno:
+ivl:data::
 stopsetup
 
 startsetup
@@ -2651,7 +2660,7 @@ typ:vars/vals/:
 var:d:*number::
 var:m:*number::
 var:y:*number::
-ivl:datadioggi::
+val:giorno,mese,giornosettimana,anno, dd,mm,jj,yy,d,m,j,y,referral:giorno,mese,anno:
 stopsetup
 
 startsetup
@@ -3054,6 +3063,8 @@ typ:vars/:
 var:prima:*command::
 var:dopo:*command::
 var:stile:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...,*command::
+var:colore:*name::
+var:luogo:testo,margine::
 stopsetup
 
 startsetup
@@ -3178,7 +3189,7 @@ val:*text::
 stopsetup
 
 startsetup
-com:iniziatabulate:
+com:iniziatabulato:
 typ:val/vars/stp/:
 val:*text::
 ivr:usafiguraesterna::
@@ -3336,7 +3347,7 @@ val:*text::
 stopsetup
 
 startsetup
-com:rotazione:
+com:ruota:
 typ:vars/arg/:
 ivr:impostarotazione::
 stopsetup
@@ -3354,7 +3365,7 @@ typ:arg/:
 stopsetup
 
 startsetup
-com:scale:
+com:scala:
 typ:vars/arg/:
 var:sx:*number::
 var:sy:*number::
@@ -3729,9 +3740,7 @@ stopsetup
 
 startsetup
 com:commento:
-typ:poss/poss/vars/arg/:
-val:*number::
-val:*number::
+typ:pos/pos/vars/arg/:
 val:*number::
 val:*number::
 ivr:impostaincorniciato::
@@ -3873,7 +3882,6 @@ com:impostacampo:
 typ:val/vals/vars/vars/vars/:
 val:*name::
 val:etichetta,orizzontale,verticale,cornice::
-ivr:incorniciato::
 ivr:impostacampi::
 stopsetup
 
@@ -3882,7 +3890,6 @@ com:impostacampi:
 typ:vals/val/vars/vars/vars/:
 val:*name::
 val:reimposta,etichetta,orizzontale,verticale,cornice::
-ivr:incorniciato::
 var:n:*number::
 var:distanza:*dimension::
 var:prima:*command::
@@ -3903,6 +3910,7 @@ var:calcola:*reference::
 var:offsetcampo:*dimension::
 var:colorecornicecampo:*name::
 var:coloresfondocampo:*name::
+ivr:incorniciato::
 stopsetup
 
 startsetup
@@ -4056,7 +4064,7 @@ ivr:impostaposizionamento::
 stopsetup
 
 startsetup
-com:posizionetesto:
+com:posizionatesto:
 typ:val/arg/:
 val:*name::
 val:*text::

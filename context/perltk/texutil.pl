@@ -378,6 +378,91 @@ elsif ($UserInterface eq "de")
     $MS{"References"}              = "Referenzen" ;
 
   } # end of german section
+  
+elsif ($UserInterface eq "it")
+
+  { # begin of italian section
+
+    $MS{"ProcessingReferences"}    = "elaborazione di comandi, liste e registri" ;
+    $MS{"MergingReferences"}       = "fusione dei registri" ;
+    $MS{"GeneratingDocumentation"} = "preparazione del file di documentazione ConTeXt" ;
+    $MS{"GeneratingSources"}       = "generazione del solo sorgente ConTeXt" ;
+    $MS{"FilteringDefinitions"}    = "filtraggio delle definizioni formali ConTeXt" ;
+    $MS{"CopyingTemplates"}        = "copia dei modelli rapidi di voci di TeXEdit" ;
+    $MS{"CopyingInformation"}      = "copia delle informazioni di aiuto di TeXEdit" ;
+    $MS{"GeneratingFigures"}       = "generazione del file di elengo delle figure" ;
+    $MS{"FilteringLogFile"}        = "filtraggio del file di log" ;
+
+    $MS{"SortingIJ"}               = "IJ elencato sotto Y" ;
+    $MS{"ConvertingHigh"}          = "conversione dei valori ASCII alti" ;
+    $MS{"ProcessingQuotes"}        = "elaborazione dei caratteri accentati" ;
+    $MS{"ForcingFileType"}         = "impostazine del tipo di file" ;
+    $MS{"UsingEps"}                = "elaborazione del file EPS" ;
+    $MS{"UsingTif"}                = "elaborazione del file TIF" ;
+    $MS{"UsingPdf"}                = "elaborazione del file PDF" ;
+    $MS{"UsingPng"}                = "elaborazione del file PNG" ;
+    $MS{"UsingJpg"}                = "elaborazione del file JPG" ;
+    $MS{"EpsToPdf"}                = "conversione da EPS a PDF";
+    $MS{"EpsPage"}                 = "impostazione pagina EPS";
+
+    $MS{"FilteringBoxes"}          = "filtraggio delle overfull boxes" ;
+    $MS{"ApplyingCriterium"}       = "applicazione del criterio overfull" ;
+    $MS{"FilteringUnknown"}        = "filtraggio dei messaggi non conosciuti ..." ;
+
+    $MS{"NoInputFile"}             = "nessun file di input specificato" ;
+    $MS{"NoOutputFile"}            = "nessun file di output generato" ;
+    $MS{"EmptyInputFile"}          = "file di input vuoto" ;
+    $MS{"NotYetImplemented"}       = "non ancora disponibile" ;
+
+    $MS{"Action"}                  = "                azione :" ;
+    $MS{"Option"}                  = "               opzione :" ;
+    $MS{"Error"}                   = "                errore :" ;
+    $MS{"Remark"}                  = "              commento :" ;
+    $MS{"SystemCall"}              = "   chiamata di sistema :" ;
+    $MS{"BadSystemCall"}           = "chiamata di sistema er :" ; # GB: Hans, I need more space!
+    $MS{"MissingSubroutine"}       = "   subroutine mancante :" ;
+
+    $MS{"EmbeddedFiles"}           = "          file inclusi :" ;
+    $MS{"BeginEndError"}           = "      errore di i/f in :" ;
+    $MS{"SynonymEntries"}          = "      voci di sinonimi :" ;
+    $MS{"SynonymErrors"}           = "           voci errate :" ;
+    $MS{"RegisterEntries"}         = "      voci di registro :" ;
+    $MS{"RegisterErrors"}          = "           voci errate :" ;
+    $MS{"PassedCommands"}          = "       comandi passati :" ;
+
+    $MS{"MultiPagePdfFile"}        = "         troppe pagine :" ;
+    $MS{"MissingMediaBox"}         = "     mediabox mancante :" ;
+    $MS{"MissingBoundingBox"}      = "  boundingbox mancante :" ;
+
+    $MS{"NOfDocuments"}            = "  blocchi di documento :" ;
+    $MS{"NOfDefinitions"}          = "blocchi di definizioni :" ;
+    $MS{"NOfSkips"}                = "       blocchi saltati :" ;
+    $MS{"NOfSetups"}               = "  impostazioni copiate :" ;
+    $MS{"NOfTemplates"}            = "       modelli copiati :" ;
+    $MS{"NOfInfos"}                = "      helpinfo copiati :" ;
+    $MS{"NOfFigures"}              = "      figure elaborate :" ;
+    $MS{"NOfBoxes"}                = "        overfull boxes :" ;
+    $MS{"NOfUnknown"}              = "       sconosciuti ... :" ;
+
+    $MS{"InputFile"}               = "         file di input :" ;
+    $MS{"OutputFile"}              = "        file di output :" ;
+    $MS{"FileType"}                = "          tipo di file :" ;
+    $MS{"EpsFile"}                 = "              file eps :" ;
+    $MS{"PdfFile"}                 = "              file pdf :" ;
+    $MS{"TifFile"}                 = "              file tif :" ;
+    $MS{"PngFile"}                 = "              file png :" ;
+    $MS{"JpgFile"}                 = "              file jpg :" ;
+    $MS{"MPFile"}                  = "         file metapost :" ;
+
+    $MS{"LoadedFilter"}            = "       filtro caricato :" ;
+    $MS{"RemappedKeys"}            = "        voci rimappate :" ;
+    $MS{"WrongFilterPath"}         = "percorso filtro errato :" ;
+
+    $MS{"Overfull"}                = "overfull" ;
+    $MS{"Entries"}                 = "voci" ;
+    $MS{"References"}              = "riferimenti" ;
+
+  } # end of italian section
 
 else
 
@@ -543,6 +628,36 @@ elsif ($UserInterface eq "de")
 
   } # end of german section
 
+elsif ($UserInterface eq "it")
+
+  { # begin of italian section GB: Hans, I need more space!
+
+    $MS{"HelpInfo"} =
+
+"          --references   elabora file ausiliari / tui->tuo              \n" .
+"                       --ij : elenca IJ come Y                          \n" .
+"                       --high : converti i valori ASCII alti            \n" .
+"                       --quotes : converti caratteri accentati          \n" .
+"                       --tcxpath : percorso del filtro tcx              \n" .
+"                                                                        \n" .
+"              --purge    rimuovi i file temporanei ConTeXt              \n" .
+"                                                                        \n" .
+"           --documents   genera file di documentazione / tex->ted       \n" .
+"             --sources   genera solo sorgente / tex->tes                \n" .
+"              --setups   filtra definizioni ConTeXt / tex->texutil.tus  \n" .
+"           --templates   filtra modelli TeXEdit / tex->tud              \n" .
+"               --infos   filtra helpinfo TeXEdit / tex->tud             \n" .
+"                                                                        \n" .
+"             --figures   genera lista figure eps / *->texutil.tuf       \n" .
+"                       --epspage : prepara per pdf                      \n" .
+"                       --epstopdf : converti in pdf                     \n" .
+"                                                                        \n" .
+"             --logfile   filtra logfile / log->$ProgramLog              \n" .
+"                       --box : controlla overful boxes                  \n" .
+"                       --criterium : criterio overfull in pt            \n" .
+"                       --unknown : controlla sconosciuti ...            \n" ;
+
+  } # end of italian section
 
 else
 
@@ -588,6 +703,7 @@ else
 #D \som  \type{"e}: is translated into an \type{e} and \type{b} etc.
 #D \som  \type{||}: becomes \type{-}
 #D \som  \type{\-}: also becomes \type{-}
+#D \som  \type{<*..>}: becomes \type{..} (internal XML entity)
 #D \stopopsomming
 #D
 #D Of course other accented characters are handled too. The
@@ -713,7 +829,11 @@ sub SanitizedString
         $string =~ s/([\^\"\`\'\~\,])([a-zA-Z])/$2/gio ;
         $string .= "\x00";
         $string .= $copied }
-$string =~ s/\<ent\:(.*?)\>/$1/go ; # reduce entities / will be table too  
+# new and very experimental, will change   
+$string =~ s/\<\*(.*?)\>/\\$1 /go ; # reduce entities / will be table too  
+$string =~ s/\\getXMLentity\s*\{(.*?)\}/$1/gio ; # {tex} => tex 
+$string =~ s/\<[a-zA-Z\/].*?\>//go ; # remove elements 
+# so far 
     $string =~ s/\\-|\|\|/\-/gio ;
     $string =~ s/\\[a-zA-Z]*| |\{|\}//gio ;  # ? 
     return $string }
@@ -1410,6 +1530,13 @@ sub HandleDocuments
                 else
                   { $FileType=lc $ProcessType }
                 Report("FileType", $FileType) ;
+                # we need to signal to texexec what interfaec to use
+                my $firstline = <TEX> ; 
+                if ($firstline =~ /^\%.*interface\=/) 
+                  { print TED $firstline }
+                else
+                  { seek TEX, 0, 0 }
+                # so far 
                 print TED "\\startmodule[type=$FileType]\n" ;
                 while (<TEX>)
                   { chomp ;

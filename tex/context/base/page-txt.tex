@@ -19,7 +19,7 @@
 
 \let\dodummypageskip\gobbleoneargument % obsolete
 
-%D Interfainge between this and other modules is handled by
+%D Interfacing between this and other modules is handled by
 %D the following macros. The current state of a text line
 %D (header, footer, etc.) is checked by: 
 %D 
@@ -188,7 +188,8 @@
    \doifsomething{\ascii}
      {\doattributes{#1#2}#3#4%
         {\doifvalue{#1\v!tekst\c!strut}{\v!ja}{\setstrut\strut}% here!
-         \doifdefinedelse{\??mk\ascii\c!koppeling} % brrr
+        %\doifdefinedelse{\??mk\ascii\c!koppeling} % brrr
+         \doifelsemarking\ascii
            {\dolimitatetexts{#1#2#5}{\haalmarkering[\ascii][\v!eerste]}}
            {\ConvertConstantAfter\doifelse{\v!paginanummer}{#6}
               {\@@plaatspaginanummer}
@@ -201,7 +202,7 @@
 %D length.
 
 \def\dolimitatetexts#1#2%
-  {\doifelsevaluenothing{#1}{#2}{\limitatetext{#2}{\getvalue{#1}}{...}}}
+  {\doifelsevaluenothing{#1}{#2}{\limitatetext{#2}{\getvalue{#1}}{\unknown}}}
 
 %D The placement of text is hooked into the token lists 
 %D associated to the area at hand. 
@@ -230,11 +231,24 @@
 %D Instead we will map the values of status onto macro
 %D expansions.
 
-\def\placelayouttextline#1#2%  % handelt o.b.v. tekst
-  {\edef\textlinestatus{\getvalue{\??tk#1\v!tekst\c!status}}%
-   \doifdefinedelse{\string\placelayouttextline\textlinestatus}
-     {\getvalue{\string\placelayouttextline\textlinestatus}{#1}{#2}}
-     {\getvalue{\string\placelayouttextline\s!unknown}{#1}{#2}}}
+%\def\placelayouttextline#1#2%  % handelt o.b.v. tekst
+%  {\edef\textlinestatus{\getvalue{\??tk#1\v!tekst\c!status}}%
+%   \doifdefinedelse{\string\placelayouttextline\textlinestatus}
+%     {\getvalue{\string\placelayouttextline\textlinestatus}{#1}{#2}}
+%     {\getvalue{\string\placelayouttextline\s!unknown}{#1}{#2}}}
+%
+%\def\placelayouttextline#1% #2 
+%  {\edef\textlinestatus{\getvalue{\??tk#1\v!tekst\c!status}}%
+%   \doifundefined{\string\placelayouttextline\textlinestatus}
+%     {\let\textlinestatus\s!unknown}%
+%   \getvalue{\string\placelayouttextline\textlinestatus}{#1}} % {#2}
+
+\def\placelayouttextline#1% #2 
+  {\edef\textlinestatus{\csname\??tk#1\v!tekst\c!status\endcsname}%
+   \ifundefined{\string\placelayouttextline\textlinestatus}%
+     \let\textlinestatus\s!unknown
+   \fi
+   \csname\string\placelayouttextline\textlinestatus\endcsname{#1}} % {#2}
 
 \letvalue{\string\placelayouttextline\v!normaal}\doplacelayouttextline
 \letvalue{\string\placelayouttextline          }\doplacelayouttextline
@@ -243,14 +257,14 @@
 
 \setvalue{\string\placelayouttextline\v!leeg}#1#2%
   {\setgvalue{\??tk#1\v!tekst\c!status}{\v!normaal}%
-   \vskip#2\relax}
+  }% oeps, bug:  \vskip#2\relax}
 
 \setvalue{\string\placelayouttextline\v!start}#1#2%
   {\setgvalue{\??tk#1\v!tekst\c!status}{\v!normaal}%
    \doplacelayouttextline{#1}{#2}}
 
 \setvalue{\string\placelayouttextline\v!stop}#1#2%
-  {\vskip#2\relax}
+  {}% oeps, bug:\vskip#2\relax}
 
 \setvalue{\string\placelayouttextline\v!geenmarkering}#1#2%
   {\bgroup
@@ -262,22 +276,27 @@
 \setvalue{\string\placelayouttextline\s!unknown}#1#2%
   {\bgroup % new
    \setgvalue{\??tk#1\v!tekst\c!status}{\v!normaal}%
-   \setlocallayoutline{#1\textlinestatus}%
-   \setlocallayoutline{#1\v!tekst\textlinestatus}%
-   \setlocallayoutline{#1\v!marge\textlinestatus}%
-   \setlocallayoutline{#1\v!rand\textlinestatus}%
+  %\setlocallayoutline{#1\textlinestatus}%
+  %\setlocallayoutline{#1\v!tekst\textlinestatus}%
+  %\setlocallayoutline{#1\v!marge\textlinestatus}%
+  %\setlocallayoutline{#1\v!rand\textlinestatus}%
+   \getvalue{\??tk#1\textlinestatus}%
+   \getvalue{\??tk#1\v!tekst\textlinestatus}%
+   \getvalue{\??tk#1\v!marge\textlinestatus}%
+   \getvalue{\??tk#1\v!rand\textlinestatus}%
    \doplacelayouttextline{#1}{#2}%
    \egroup}
 
-\def\setlocallayoutline#1%
-  {\ifundefined{\??tk#1}\else\getvalue{\??tk#1}\fi}
+% \def\setlocallayoutline#1%
+%   {\ifundefined{\??tk#1}\else\getvalue{\??tk#1}\fi}
 
 %D The following macro has to be called after a page
 %D is flushed.
 
 \def\resetlayoutline#1% beware: global assignment
-  {\doifvalue{\??tk#1\v!tekst\c!status}{\v!hoog}
-     {\setgvalue{\??tk#1\v!tekst\c!status}{\v!normaal}\donetrue}}
+  {\doifvalue{\??tk#1\v!tekst\c!status}\v!hoog
+     {\global\letvalue{\??tk#1\v!tekst\c!status}\v!normaal
+      \donetrue}}
 
 \def\resetlayoutlines%
   {\donefalse
@@ -335,6 +354,8 @@
   \smashbox\scratchpagebox
   \box\scratchpagebox}
 
+\let\maintextcolor\empty
+
 \def\getmainbox#1#2%
   {\setbox\scratchpagebox=\vbox
      {\offinterlineskip  % na \paginaletter !
@@ -361,7 +382,11 @@
          \settextpagecontent\scratchpagebox{#1}{#2}%
          \addtextbackground\scratchpagebox
          \addtextgridlayer\scratchpagebox
-         \box\scratchpagebox
+         \ifx\maintextcolor\empty
+           \box\scratchpagebox
+         \else
+           \color[\maintextcolor]{\box\scratchpagebox}%
+         \fi
          \bgroup
            \hskip\rechtermargeafstand
            \ifdim\rechtermargebreedte>\zeropoint
@@ -394,7 +419,7 @@
       \hss}%
    \dp#1=\zeropoint}
 
-\def\addtextgridlayer#1%
+\def\addtextgridlayer#1% 
   {\ifshowgrid
      \setgridbox\scratchbox\zetbreedte\teksthoogte
      \setbox#1=\hbox

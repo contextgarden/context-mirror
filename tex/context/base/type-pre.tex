@@ -67,7 +67,6 @@
 
 \stoptypescript
 
-
 %D Here we implement the symbol fonts as provided by the
 %D American Mathematical Society. The names of these symbols
 %D can be found in The Joy of \TeX\ by M.~Spivak.
@@ -112,19 +111,25 @@
 \usetypescript [serif,sans,mono,math,handwriting] [lucida]  [name,special,\defaultencoding]
 \usetypescript [serif,sans,mono,math,handwriting] [default] [size]
 
-\usemathcollection[lbr]
+\usemathcollection[lbr] 
+
+\usetypescript [map] [\defaultencoding]
 
 \stoptypescript
 
-%D With thanks to Berthold Horn from YandY for providing me
-%D evaluation copies of the MathTimePlus fonts.
+% %D With thanks to Berthold Horn from YandY for providing me
+% %D evaluation copies of the MathTimePlus fonts.
 
-\starttypescript [mt,tim]
+% todo: \starttypescript [mt,tim]
+
+\starttypescript [tim]
 
 \usetypescript [math] [times]   [all]
 \usetypescript [math] [default] [size]
 
-\usemathcollection[tim]
+\usemathcollection[tim] 
+
+\usetypescript [map] [\defaultencoding]
 
 \stoptypescript
 
@@ -137,6 +142,8 @@
 \usetypescript [serif] [antykwa-torunska] [name,\defaultencoding]
 \usetypescript [serif] [default]          [size]
 
+\usetypescript [map] [\defaultencoding]
+
 \stoptypescript
 
 %D This script defines the Standard Adobe Courier fonts.
@@ -145,6 +152,8 @@
 
 \usetypescript [mono] [courier] [name,\defaultencoding]
 \usetypescript [mono] [default] [size] 
+
+\usetypescript [map] [\defaultencoding]
 
 \stoptypescript
 
@@ -155,6 +164,8 @@
 \usetypescript [sans] [helvetica] [name,\defaultencoding]
 \usetypescript [sans] [default]   [size] 
 
+\usetypescript [map] [\defaultencoding]
+
 \stoptypescript
 
 %D This script defines the Standard Adobe Times fonts.
@@ -163,6 +174,8 @@
 
 \usetypescript [serif] [times]   [name,\defaultencoding]
 \usetypescript [serif] [default] [size] 
+
+\usetypescript [map] [\defaultencoding]
 
 \stoptypescript
 
@@ -177,6 +190,11 @@
 
 \usetypescript [serif,sans,mono] [default] [size] 
 
+% \usetypescript [math] [times]   [all]
+% \usetypescript [math] [default] [size] 
+
+\usetypescript [map] [\defaultencoding]
+
 \stoptypescript
 
 %D This script defines the Palatino font.
@@ -185,6 +203,8 @@
 
 \usetypescript [serif] [palatino] [name,\defaultencoding]
 \usetypescript [serif] [default]  [size]
+
+\usetypescript [map] [\defaultencoding]
 
 \stoptypescript
 

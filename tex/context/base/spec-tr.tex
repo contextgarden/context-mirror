@@ -28,8 +28,8 @@
 \def\@@insertpostscriptretain  {" }  
 
 %\definefileinsertion{tr}{eps}#1#2#3#4#5#6#7#8#9%
-%  {\ScaledPointsToBigPoints{#5}\width 
-%   \ScaledPointsToBigPoints{#6}\height 
+%  {\PointsToBigPoints{#5}\width 
+%   \PointsToBigPoints{#6}\height 
 %   \special 
 %     {psfile=#1
 %      hscale=#3\space
@@ -40,8 +40,8 @@
 %D Ugly but useful:
 
 \definefileinsertion{tr}{eps}#1#2#3#4#5#6#7#8#9%
-  {\ScaledPointsToWholeBigPoints{#7}\width
-   \ScaledPointsToWholeBigPoints{#8}\height
+  {\PointsToWholeBigPoints{#7}\width
+   \PointsToWholeBigPoints{#8}\height
    \special
      {PSfile="#1"\space
       llx=\EPSllx\space
@@ -53,7 +53,7 @@
 
 \definefileinsertion{tr}{mps}#1#2#3#4#5#6#7#8#9%  
   {\hbox
-     {\includeMPfonts{#1}%
+     {%\includeMPfonts{#1}% dvips know mp
       \convertMPcolors{#1}%
       \dofileinsertion{tr}{eps}{#1}{#2}{#3}{#4}{#5}{#6}{#7}{#8}{#9}}}
 

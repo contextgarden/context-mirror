@@ -20,6 +20,7 @@ stopsetup
 startsetup
 com:setuplanguage:
 typ:val/vars/:
+val:nl,fr,en,uk,de,es,cz,..:nl:
 ivr:installlanguage::
 stopsetup
 
@@ -214,10 +215,9 @@ stopsetup
 
 startsetup
 com:definecolorgroup:
-typ:val/val/vals/:
+typ:val/val/trips/:
 val:*name::
 val:rgb,cmyk,gray,s:rgb:
-val:trips/::
 stopsetup
 
 startsetup
@@ -260,7 +260,7 @@ stopsetup
 
 startsetup
 com:setuptype:
-typ:var/:
+typ:vars/:
 var:space:on,off::
 var:option:slanted,normal,none::
 var:style:normal,bold,slanted,boldslanted,type,cap,small...,*command::
@@ -405,6 +405,7 @@ var:alternative:a,b,c::
 var:rulethickness:*dimension::
 var:bottomoffset:*dimension::
 var:topoffset:*dimension::
+var:rulecolor:*name::
 stopsetup
 
 startsetup
@@ -993,7 +994,8 @@ stopsetup
 
 startsetup
 com:lohi:
-typ:arg/arg/:
+typ:val/arg/arg/:
+val:low::
 val:*text::
 val:*text::
 stopsetup
@@ -1725,8 +1727,9 @@ var:way:bytext,by*section::
 var:text:*text::
 var:numberseparator:*text::
 var:textseparator:*text::
-var:*section*number:yes,no::
+var:*sectionnumber:yes,no::
 var:separator:*text::
+var:strut:yes,no::
 var:state:start,stop::
 var:command:*\command#1::
 stopsetup
@@ -1753,6 +1756,7 @@ stopsetup
 startsetup
 com:definestartstop:
 typ:val/vars/:
+val:*name::
 var:before:*command::
 var:after:*command::
 var:style:normal,bold,slanted,boldslanted,type,cap,small...,*command::
@@ -1780,6 +1784,7 @@ var:inbetween:*command::
 var:align:left,middle,right,no::
 var:conversion:numbers,characters,Characters,romannumerals,Romannumerals::
 var:way:bytext,by*section::
+var:separator:*text::
 stopsetup
 
 startsetup
@@ -1881,9 +1886,9 @@ stopsetup
 
 startsetup
 com:setupreferencing:
-typ:var/:
+typ:vars/:
 var:state:start,stop::
-var:*section*number:yes,no::
+var:*sectionnumber:yes,no::
 var:prefix:+,-,*text::
 var:interaction:label,text,all,symbol::
 var:width:*dimension::
@@ -1980,7 +1985,7 @@ val:*name::
 var:state:start,stop::
 var:alternative:a,b,c,...,none,command::
 var:coupling:on,off::
-var:criterium:*section,local,previous,all::
+var:criterium:*section,local,previous,current,all::
 var:pageboundaries:*list::
 var:style:normal,bold,slanted,boldslanted,type,cap,small...,*command::
 var:numberstyle:normal,bold,slanted,boldslanted,type,cap,small...,*command::
@@ -1998,9 +2003,9 @@ var:inbetween:*command::
 var:left:*text::
 var:right:*text::
 var:label:yes,no::
-var:prefix:yes,no::
+var:prefix:yes,no,none::
 var:pagenumber:yes,no::
-var:*section*number:yes,no::
+var:*sectionnumber:yes,no::
 var:aligntitle:yes,no::
 var:margin:*dimension::
 var:width:*dimension,fit::
@@ -2008,6 +2013,7 @@ var:height:*dimension,fit,broad::
 var:depth:*dimension,fit,broad::
 var:distance:*dimension::
 var:separator:*text::
+var:stopper:*text::
 var:symbol:none,1,2,3,...::
 var:expansion:yes,no,command::
 var:maxwidth:*dimension::
@@ -2067,6 +2073,7 @@ var:indentnext:yes,no::
 var:alternative:*name::
 var:spacebefore:*dimension::
 var:after:*dimension::
+var:separator:*text::
 stopsetup
 
 startsetup
@@ -2291,6 +2298,7 @@ var:alternative:normal,inmargin,middle,text::
 var:command:*\command#1#2::
 var:numbercommand:*\command#1::
 var:textcommand:*\command#1::
+var:separator:*text::
 var:prefix:+,-,*text::
 var:placehead:yes,no::
 var:incrementnumber:yes,no,*file::
@@ -2437,7 +2445,7 @@ var:pagestyle:normal,bold,slanted,boldslanted,type,cap,small...,*command::
 var:textstyle:normal,bold,slanted,boldslanted,type,cap,small...,*command::
 var:indicator:yes,no::
 var:coupling:yes,no::
-var:*section*number:yes,no::
+var:*sectionnumber:yes,no::
 var:criterium:*section,local,all::
 var:distance:*dimension::
 var:symbol:1,2,...,n,a,...,none::
@@ -2625,6 +2633,7 @@ var:footerstate:normal,stop,start,empty,none,nomarking::
 var:textstate:normal,stop,start,empty,none,nomarking::
 var:topstate:stop,start::
 var:bottomstate:stop,start::
+var:pagestate:stop,start::
 var:color:*name::
 stopsetup
 
@@ -2642,7 +2651,7 @@ stopsetup
 startsetup
 com:currentdate:
 typ:vals/:
-val:day,month,weekday,year, dd,mm,jj,yy,d,m,j,y,referral:day,month,year:
+ivl:date::
 stopsetup
 
 startsetup
@@ -2651,7 +2660,7 @@ typ:vars/vals/:
 var:d:*number::
 var:m:*number::
 var:y:*number::
-ivl:currentdate::
+val:day,month,weekday,year, dd,mm,jj,yy,d,m,j,y,referral:day,month,year:
 stopsetup
 
 startsetup
@@ -3054,6 +3063,8 @@ typ:vars/:
 var:before:*command::
 var:after:*command::
 var:style:normal,bold,slanted,boldslanted,type,cap,small...,*command::
+var:color:*name::
+var:location:text,margin::
 stopsetup
 
 startsetup
@@ -3729,9 +3740,7 @@ stopsetup
 
 startsetup
 com:remark:
-typ:poss/poss/vars/arg/:
-val:*number::
-val:*number::
+typ:pos/pos/vars/arg/:
 val:*number::
 val:*number::
 ivr:setupframed::
@@ -3873,7 +3882,6 @@ com:setupfield:
 typ:val/vals/vars/vars/vars/:
 val:*name::
 val:label,horizontal,vertical,frame::
-ivr:framed::
 ivr:setupfields::
 stopsetup
 
@@ -3882,7 +3890,6 @@ com:setupfields:
 typ:vals/val/vars/vars/vars/:
 val:*name::
 val:reset,label,horizontal,vertical,frame::
-ivr:framed::
 var:n:*number::
 var:distance:*dimension::
 var:before:*command::
@@ -3903,6 +3910,7 @@ var:calculate:*reference::
 var:fieldoffset:*dimension::
 var:fieldframecolor:*name::
 var:fieldbackgroundcolor:*name::
+ivr:framed::
 stopsetup
 
 startsetup

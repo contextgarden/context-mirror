@@ -11,8 +11,10 @@
 %C therefore copyrighted by \PRAGMA. See licen-en.pdf for
 %C details.
 
-% (r,g,b) => cmyk: g=1, b=hash
-%         => rest: g=n, b=whatever 
+% (r,g,b) => cmyk             : r=123 g=   1 b=hash
+%         => transparent rgb  : r=123 g=   2 b=hash
+%         => transparent cmyk : r=123 g=   3 b=hash
+%         => rest             : r=123 g=n>10 b=whatever 
 
 %D This module is rather preliminary and subjected to
 %D changes. Here we closely cooperates with the \METAPOST\
@@ -26,7 +28,7 @@ if   known context_spec : endinput         ; fi ;
 boolean context_spec ; context_spec := true ;
 
 numeric _special_counter_ ; _special_counter_ :=   0 ;
-numeric _color_counter_   ; _color_counter_   :=   0 ;
+numeric _color_counter_   ; _color_counter_   :=  11 ; % < 10 reserved  
 numeric _special_signal_  ; _special_signal_  := 123 ;
 
 %D When set to \type {true}, shading will be supported. Some
@@ -39,32 +41,49 @@ boolean _inline_specials_ ; _inline_specials_ := false ;
 %D bookkeeping and collection of specials. At the cost of some
 %D obscurity, we now have rather efficient resources.
 
-string _all_specials_ ; _all_specials_ := "" ;
+string _global_specials_ ; _global_specials_ := "" ;
+string _local_specials_  ; _local_specials_  := "" ;
 
-vardef add_special_signal =
-  if (length _all_specials_>0) : % write the version number
+vardef add_special_signal = % write the version number
+  if (length _global_specials_>0) or (length _local_specials_ >0) : 
     special ("%%MetaPostSpecials: 1.0 " & decimal _special_signal_ ) ;
   fi ;
 enddef ;
 
 vardef add_extra_specials =
-  scantokens _all_specials_ ;
+  scantokens _global_specials_ ;
+  scantokens _local_specials_ ;
 enddef ;
 
 vardef reset_extra_specials =
-  _all_specials_ := "" ;
+  % only local ones 
+  _local_specials_ := "" ;
 enddef ;
 
+boolean insidefigure ; insidefigure := false ;
+
+% todo: alleen als special gebruikt flush 
+
+extra_beginfig := 
+  " insidefigure := true ; " & 
+  " reset_extra_specials ; " & 
+    extra_beginfig ;  
+
 extra_endfig :=
-  " add_special_signal ; "   &
-    extra_endfig             &
-  " add_extra_specials ; "   &
-  " reset_extra_specials ; " ;
+  " add_special_signal ; "    &
+    extra_endfig              &
+  " add_extra_specials ; "    &
+  " reset_extra_specials ; "  & 
+  " insidefigure := false ; " ;
+
+def _current_specials_ = 
+  if insidefigure : _local_specials_ else : _global_specials_ fi 
+enddef ; 
 
 def flush_special (expr typ, siz, dat) =
   _special_counter_ := _special_counter_ + 1 ;
   if _inline_specials_ :
-    _all_specials_ := _all_specials_
+    _current_specials_ := _current_specials_
       & "special "
       & "(" & ditto
       & dat & " "
@@ -74,7 +93,7 @@ def flush_special (expr typ, siz, dat) =
       & " special"
       & ditto & ");" ;
   else :
-   _all_specials_ := _all_specials_
+    _current_specials_ := _current_specials_
       & "special "
       & "(" & ditto
       & "%%MetaPostSpecial: "
@@ -88,17 +107,17 @@ enddef ;
 
 %D Shade allocation.
 
-vardef define_circular_shade (expr a, b, ra, rb, ca, cb) =
-  flush_special(3, 17, "0 1 1" &
-    dddecimal ca & ddecimal a & " " & decimal ra &
-    dddecimal cb & ddecimal b & " " & decimal rb ) ;
+vardef define_linear_shade (expr a, b, ca, cb) =
+  flush_special(30, 15, "0 1 1" &
+    dddecimal ca & ddecimal a &
+    dddecimal cb & ddecimal b ) ;
   _special_counter_
 enddef ;
 
-vardef define_linear_shade (expr a, b, ca, cb) =
-  flush_special(2, 15, "0 1 1" &
-    dddecimal ca & ddecimal a &
-    dddecimal cb & ddecimal b ) ;
+vardef define_circular_shade (expr a, b, ra, rb, ca, cb) =
+  flush_special(31, 17, "0 1 1" &
+    dddecimal ca & ddecimal a & " " & decimal ra &
+    dddecimal cb & ddecimal b & " " & decimal rb ) ;
   _special_counter_
 enddef ;
 
@@ -121,6 +140,16 @@ def linear_shade (expr p, n, ca, cb) =
   endgroup ;
 enddef ;
 
+vardef predefined_linear_shade (expr p, n, ca, cb) =
+  save a, b, sh ; pair a, b ;
+  if     (n=1) : a := llcorner p ; b := urcorner p ;
+  elseif (n=2) : a := llcorner p ; b := ulcorner p ;
+  elseif (n=3) : a := lrcorner p ; b := ulcorner p ;
+  else         : a := llcorner p ; b := lrcorner p ;
+  fi ;
+  define_linear_shade (a,b,ca,cb) 
+enddef ;
+
 def circular_shade (expr p, n, ca, cb) =
   begingroup ;
   save ab, r ; pair ab ; numeric r ;
@@ -139,6 +168,19 @@ def circular_shade (expr p, n, ca, cb) =
   endgroup ;
 enddef ;
 
+vardef predefined_circular_shade (expr p, n, ca, cb) =
+  save ab, r ; pair ab ; numeric r ;
+  r := (xpart lrcorner p - xpart llcorner p) ++
+       (ypart urcorner p - ypart lrcorner p) ;
+  if     (n=1) : ab := llcorner p ;
+  elseif (n=2) : ab := lrcorner p ;
+  elseif (n=3) : ab := urcorner p ;
+  elseif (n=4) : ab := ulcorner p ;
+  else         : ab := center p ; r := .5r ;
+  fi ;
+  define_circular_shade(ab,ab,0,r,ca,cb) 
+enddef ;
+
 %D Since a \type {fill p withshade s} syntax looks better
 %D than some macro, we implement a new primary.
 
@@ -149,7 +191,7 @@ enddef ;
 
 %D Figure inclusion.
 
-numeric cef ; cef := 0 ;
+%numeric cef ; cef := 0 ;
 
 def externalfigure primary filename =
   doexternalfigure (filename)
@@ -163,15 +205,15 @@ def doexternalfigure (expr filename) text transformation =
     dddecimal (yypart t,  xpart t,  ypart t) & " " & filename) ;
   addto p contour unitsquare scaled 0 ;
   setbounds p to unitsquare transformed t ;
-%  _color_counter_ := _color_counter_ + 1 ; cef := cef + 1 ;
-%  draw p withcolor (_special_signal_/1000,_color_counter_/1000,cef/1000) ;
-draw p withcolor (_special_signal_/1000,cef/1000,_special_counter_/1000) ;
+  _color_counter_ := _color_counter_ + 1 ; 
+  draw p withcolor (_special_signal_/1000,_color_counter_/1000,_special_counter_/1000) ;
+%draw p withcolor (_special_signal_/1000,cef/1000,_special_counter_/1000) ;
   endgroup ;
 enddef ;
 
 %D Experimental:
 
-numeric currenthyperlink ; currenthyperlink := 0 ;
+%numeric currenthyperlink ; currenthyperlink := 0 ;
 
 def hyperlink primary t = dohyperlink(t) enddef ;
 def hyperpath primary t = dohyperpath(t) enddef ;
@@ -188,11 +230,11 @@ def dohyperpath (expr destination) expr somepath =
   flush_special(20, 7,
     ddecimal (xpart llcorner somepath, ypart llcorner somepath) & " " &
     ddecimal (xpart urcorner somepath, ypart urcorner somepath) & " " & destination) ;
-  currenthyperlink := currenthyperlink + 1 ;
-%  _color_counter_ := _color_counter_ + 1 ;
+%  currenthyperlink := currenthyperlink + 1 ;
+  _color_counter_ := _color_counter_ + 1 ;
   fill boundingbox unitsquare scaled 0 withcolor
-%    (_special_signal_/1000,_color_counter_/1000,currenthyperlink/1000) ;
-    (_special_signal_/1000,currenthyperlink/1000,_special_counter_/1000) ;
+    (_special_signal_/1000,_color_counter_/1000,_special_counter_/1000) ;
+%    (_special_signal_/1000,currenthyperlink/1000,_special_counter_/1000) ;
   endgroup ;
 enddef ;
 
@@ -241,21 +283,118 @@ enddef ;
 
 resetcmykcolors ; boolean cmykcolors ; cmykcolors := false ; % true
 
+% vardef cmyk(expr c,m,y,k) =
+%   if cmykcolors :
+%     if not known cmykcolorhash[c][m][y][k] :
+%       _cmyk_counter_ := _cmyk_counter_ + 1 ;
+%       cmykcolorhash[c][m][y][k] := _cmyk_counter_ ;
+%       flush_special(1, 7,
+%         decimal _cmyk_counter_ & " "  &
+%         decimal c & " " &
+%         decimal m & " " &
+%         decimal y & " " &
+%         decimal k) ;
+%     fi
+%     (_special_signal_/1000,1/1000,cmykcolorhash[c][m][y][k]/1000)
+%   else :
+%     (1-c-k,1-m-k,1-y-k)
+%   fi
+% enddef ;
+
+string cmykcolorpattern[] ; % needed for transparancies 
+
 vardef cmyk(expr c,m,y,k) =
   if cmykcolors :
-    if not known cmykcolorhash[c][m][y][k] :
+    save ok ; boolean ok ; 
+    if unknown cmykcolorhash[c][m][y][k] :
+      ok := false ; % not yet defined 
+    elseif cmykcolorhash[c][m][y][k] = -1 : 
+      ok := false ; % locally defined and undefined  
+    else : 
+     ok := true ;  % globally already defined 
+    fi ; 
+    if not ok : 
+      save s ; string s ; s := dddecimal (c,m,y) & " " & decimal k ;
       _cmyk_counter_ := _cmyk_counter_ + 1 ;
+      cmykcolorpattern[_cmyk_counter_/1000] := s ;  
       cmykcolorhash[c][m][y][k] := _cmyk_counter_ ;
-      flush_special(1, 7,
-        decimal _cmyk_counter_ & " "  &
-        decimal c & " " &
-        decimal m & " " &
-        decimal y & " " &
-        decimal k) ;
-    fi
+      flush_special(1, 7, decimal _cmyk_counter_ & " " & s) ; 
+      _local_specials_ := _local_specials_ & 
+        " cmykcolorhash[" & decimal c & "][" & decimal m & 
+        "][" & decimal y & "][" & decimal k & "] := -1 ; " ;  
+    fi ;
     (_special_signal_/1000,1/1000,cmykcolorhash[c][m][y][k]/1000)
   else :
     (1-c-k,1-m-k,1-y-k)
+  fi
+enddef ;
+
+% newcolor truecyan, truemagenta, trueyellow ; 
+%
+% truecyan    = cmyk (1,0,0,0) ; 
+% truemagenta = cmyk (0,1,0,0) ; 
+% trueyellow  = cmyk (0,0,1,0) ; 
+
+%D Transparency 
+
+normaltransparent     :=  1 ; multiplytransparent   :=  2 ; 
+screentransparent     :=  3 ; overlaytransparent    :=  4 ; 
+softlighttransparent  :=  5 ; hardlighttransparent  :=  6 ; 
+colordodgetransparent :=  7 ; colorburntransparent  :=  8 ; 
+darkentransparent     :=  9 ; lightentransparent    := 10 ; 
+differencetransparent := 11 ; exclusiontransparent  := 12 ; 
+
+% nottransparent        :=  0 ; 
+% compatibletransparent := 99 ; 
+
+% fill fullcircle scaled 10cm withcolor transparant(.8,3,color) ; 
+
+vardef transparent(expr n, t, c) =
+  save s, ss, nn, cc, is_cmyk, ok ;
+  string s, ss ; numeric nn ; color cc ; boolean is_cmyk, ok ;
+  % transparancy type
+  if string n :
+    if expandafter known scantokens(n&"transparent") :
+      nn := scantokens(n&"transparent") ;
+    else :
+      nn := 0 ;
+    fi
+  else : % nn := min(n,13)
+    nn := if n<13 : n else : nn := 0 fi ;
+  fi ;
+  % we need to expand the color (can be cmyk(..) or predefined)
+  cc := c ; % expand color
+  % check for cmyk special
+  is_cmyk := (redpart   cc = _special_signal_/1000)
+         and (greenpart cc = 1/1000) ;
+  % build special string, fetch cmyk components
+  s := decimal nn & " " & decimal t & " " & if is_cmyk :
+         cmykcolorpattern[bluepart cc] else : dddecimal cc fi ;
+  % check if this one is already used
+  ss := "tr_" & s ;
+  % efficiency hack
+  if expandafter unknown scantokens(ss) :
+    ok := false ; % not yet defined 
+  elseif scantokens(ss) < 0  :  
+    ok := false ; % locally defined and undefined  
+  else : 
+    ok := true ;  % globally already defined 
+  fi ; 
+  if not ok : 
+    if is_cmyk :
+      flush_special(3, 8, s) ;
+    else :
+      flush_special(2, 7, s) ;
+    fi ;
+    scantokens(ss) := _special_counter_ ;
+    _local_specials_ := _local_specials_ & 
+      "scantokens(" & ditto & ss & ditto & ") := -1 ;" ; 
+  fi ; 
+  % go ahead
+  if is_cmyk :
+    (_special_signal_/1000,3/1000,scantokens(ss)/1000)
+  else :
+    (_special_signal_/1000,2/1000,scantokens(ss)/1000)
   fi
 enddef ;
 

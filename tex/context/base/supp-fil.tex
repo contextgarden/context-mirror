@@ -64,14 +64,14 @@
 %D Just to be sure, we save the current meaning of \type{^^M} 
 %D in \type{\poppedendofline}. 
 
-\chardef\poppedendofline=\the\catcode`\^^M
+\chardef\poppedendofline\catcode`\^^M
 
 \def\pushendofline
-  {\chardef\poppedendofline=\the\catcode`\^^M\relax
-   \catcode`\^^M=\@@comment\relax}
+  {\chardef\poppedendofline\catcode`\^^M\relax
+   \catcode`\^^M\@@comment\relax}
 
 \def\popendofline
-  {\catcode`\^^M=\poppedendofline}
+  {\catcode`\^^M\poppedendofline}
 
 %D \macros
 %D   {scratchread, scratchwrite}
@@ -122,10 +122,10 @@
      \fileprocessedtrue
      \gdef\dofinishfile% 
        {\closein#1\relax
-        \global\let\doprocessline=\relax}%
+        \global\let\doprocessline\relax}%
      \gdef\doprocessline%
        {\ifeof#1%
-          \dofinishfile
+          \expandafter\dofinishfile
         \else
           \global\read#1 to \fileline
           #3\relax
@@ -149,24 +149,17 @@
 \def\pathplusfile#1#2{#1\f!pathseparator#2}
 
 %D This one constructs a filename from a (possible empty) 
-%D path and filename. % The special \type {system} is ignored.
+%D path and filename. 
 
 \def\assignfullfilename#1#2\to#3%
   {\doifelsenothing{#1}
      {\edef#3{#2}}
      {\edef#3{#1\f!pathseparator#2}}}
 
-% \def\assignfullfilename#1#2\to#3%
-%   {\doifelsenothing{#1}
-%      {\edef#3{#2}}
-%      {\doifelse{#1}{system} % special case, honors default searching
-%         {\edef#3{#2}}
-%         {\edef#3{#1\f!pathseparator#2}}}}
-
 %D For the moment, we limit sanitizing to taking care of 
 %D active \type {/}.  
 
-\bgroup 
+\bgroup % todo: _ cleanup 
  
 \catcode`\/=\@@active 
 
@@ -236,9 +229,12 @@
 %D \type{\input} when needed, for instance when loading third 
 %D party libraries. 
 
-\newevery \everyreadfile \EveryReadFile
+\newevery \everybeforereadfile \EveryBeforeReadFile
+\newevery \everyafterreadfile  \EveryAfterReadFile
 
-\let\normalinput=\input
+\let \everyreadfile \everybeforereadfile
+
+\ifx\normalinput\undefined \let\normalinput\input \fi 
 
 \def\maxreadlevel{3}
 
@@ -258,16 +254,18 @@
    \fi
    \next}               
 
-\def\dodoreadfile%
-  {\the\everyreadfile % hook, for instance for \enableXML 
-   \normalinput\readfilename\relax} 
+\def\dodoreadfile % we provide hooks, for instance for \enableXML 
+  {\the\everybeforereadfile 
+   \normalinput\readfilename\relax
+   \the\everyafterreadfile} 
 
-\def\readfile#1%
-  {\let\readlevel=\maxreadlevel
-   \doreadfile{#1}}
+\def\readfile% #1%
+  {\let\readlevel\maxreadlevel
+   \doreadfile} % {#1}
 
 \def\ReadFile#1%
-  {\readfile{#1}{}{}}
+  {\readfile{#1}\donothing\donothing}
+
 
 %D \macros
 %D   {readjobfile,readlocfile,readsysfile,
@@ -384,15 +382,25 @@
 %D \doiflocfileelse {filename} {before loading} {not found}
 %D \stoptypen
 
-\def\doiffileelse#1#2#3%
+%\def\doiffileelse#1#2#3%
+%  {\immediate\openin\scratchread=#1\relax
+%   \ifeof\scratchread
+%     \def\next{#3}%
+%   \else
+%     \def\next{#2}%
+%   \fi
+%   \immediate\closein\scratchread
+%   \next}
+
+\def\doiffileelse#1%
   {\immediate\openin\scratchread=#1\relax
    \ifeof\scratchread
-     \def\next{#3}%
+     \immediate\closein\scratchread
+     \expandafter\secondoftwoarguments
    \else
-     \def\next{#2}%
-   \fi
-   \immediate\closein\scratchread
-   \next}
+     \immediate\closein\scratchread
+     \expandafter\firstoftwoarguments
+   \fi}
 
 \def\doiflocfileelse#1%
   {\doiffileelse{\pathplusfile{\f!currentpath}{#1}}}
@@ -506,7 +514,7 @@
 
 \def\startreadingfile% beter een every 
   {\doglobal\increment\readingfilelevel
-   \setxvalue{popfilecharacters::\readingfilelevel}%
+   \setxvalue{\string\readingfilelevel::\readingfilelevel}%
      {\catcode`/ =\the\catcode`/%
       \catcode`" =\the\catcode`"%
       \catcode`< =\the\catcode`<%
@@ -525,7 +533,7 @@
    \catcode`\%=\@@comment}
 
 \def\stopreadingfile%
-  {\getvalue{popfilecharacters::\readingfilelevel}%
+  {\getvalue{\string\readingfilelevel::\readingfilelevel}%
    \doglobal\decrement\readingfilelevel}
 
 %% % gebruikt voor normale (!) files, will change to proper 
