@@ -334,9 +334,9 @@
    \hsize\!!widtha  % setting \wd afterwards removed
    \getvalue{\??al#1\the\alteller\c!binnen}%
    \edef\!!stringa{\getvalue{\??al#1\the\alteller\c!uitlijnen}}%  nodig?
-   \expandafter\steluitlijnenin\expandafter[\!!stringa]%
+   \expandafter\setupalign\expandafter[\!!stringa]%
    \edef\!!stringa{\getvalue{\??al#1\the\alteller\c!tolerantie}}% nodig?
-   \expandafter\steltolerantiein\expandafter[\!!stringa]%
+   \expandafter\setuptolerance\expandafter[\!!stringa]%
    \ignorespaces
    \endgraf
    \ignorespaces
@@ -1739,7 +1739,7 @@
 
 \def\insidesecondpairedbox
   {\forgetall
-   \steluitlijnenin[\@@lduitlijnen]%
+   \setupalign[\@@lduitlijnen]%
    \tolerantTABLEbreaktrue % hm.
    \blanko[\v!blokkeer]%
    \everypar{\begstrut}}
@@ -1845,7 +1845,7 @@
         \def\nextnext
           {\ifx\nexttoken\egroup \else % the next box is empty
              \hsize\wd0
-             \steluitlijnenin[\combinationparameter\c!uitlijnen]%
+             \setupalign[\combinationparameter\c!uitlijnen]%
              \dostartattributes{\??co\currentcombination}\c!letter\c!kleur\empty
              \bgroup
              \aftergroup\endstrut
@@ -1861,7 +1861,7 @@
 % 
 % \def\dodocombination
 %   {\vbox
-%      {\forgetall % \stelwitruimtein[\v!geen]%
+%      {\forgetall % \setupwhitespace[\v!geen]%
 %       \let\next\vbox
 %       \ExpandFirstAfter\processallactionsinset
 %         [\combinationparameter\c!plaats]
@@ -1873,7 +1873,7 @@
 %         %\vtop % wrong code 
 %         %  {\nointerlineskip  % recently added
 %         %   \hsize\wd0
-%         %   \steluitlijnenin[\combinationparameter\c!uitlijnen]%  % \raggedcenter
+%         %   \setupalign[\combinationparameter\c!uitlijnen]%  % \raggedcenter
 %         %   \begstrut\unhbox2\endstrut}%
 %         \box2
 %       \fi}%
@@ -1883,7 +1883,7 @@
 %      \ifnum\horcombination=\zerocount
 %        \def\next
 %          {\cr\noalign
-%             {\forgetall % \stelwitruimtein[\v!geen]% no 
+%             {\forgetall % \setupwhitespace[\v!geen]% no 
 %              \nointerlineskip
 %              \combinationparameter\c!na
 %              \combinationparameter\c!voor
@@ -1903,7 +1903,7 @@
 
 \def\dodocombination
   {\vbox
-     {\forgetall % \stelwitruimtein[\v!geen]%
+     {\forgetall % \setupwhitespace[\v!geen]%
       \let\next\vbox
       \ExpandFirstAfter\processallactionsinset
         [\combinationparameter\c!plaats]
@@ -1920,7 +1920,7 @@
          {\cr
           \flushcombinationstack
           \noalign
-            {\forgetall % \stelwitruimtein[\v!geen]% no
+            {\forgetall % \setupwhitespace[\v!geen]% no
              \global\setbox\combinationstack\emptybox
              \nointerlineskip
              \combinationparameter\c!na
@@ -2005,10 +2005,10 @@
    \aftergroup\doplaatsondernaastelkaar
    \let\next=}
 
-\def\plaatsonderelkaar
+\def\placeontopofeachother
   {\plaatsondernaastelkaar\halign\hss}
 
-\def\plaatsnaastelkaar
+\def\placesidebyside
   {\plaatsondernaastelkaar\valign\vss}
 
 \def\dogebruikexternefiles[#1][#2]%

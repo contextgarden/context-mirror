@@ -17,7 +17,7 @@
 
 %D Temp hack. 
 
-\def\doverbatimgoodbreak{}
+\let\doverbatimgoodbreak\donothing
 
 %D Fonts. 
 
@@ -98,8 +98,8 @@
 
 %D Spacing. 
 
-\stelwitruimtein [\v!halveregel]
-\stelblankoin    [\v!halveregel]
+\setupwhitespace [\v!halveregel]
+\setupblank      [\v!halveregel]
 
 %D Itemize. 
 
@@ -190,10 +190,10 @@
    \setupheader[\c!status=\v!leeg]
    \stelpaginanummerin[\c!nummer=\DTKPagina]
    \bgroup
-     \stelwitruimtein[\v!geen]
+     \setupwhitespace[\v!geen]
      \bgroup
        \switchtobodyfont[14.4pt,ss]
-       \steluitlijnenin[\v!rechts]
+       \setupalign[\v!rechts]
        \let\\=\par 
        \DTKTitel\par
        \doifsomething{\DTKSubtitel}
@@ -213,20 +213,20 @@
      \vskip12pt
      \bgroup
        \switchtobodyfont[9pt]
-       \stelsmallerin[voor=,na=]
+       \setupnarrower[\c!voor=,\c!na=]
        \startsmaller[.05\hsize]
-         \stelwitruimtein[\v!halveregel]
+         \setupwhitespace[\v!halveregel]
          \haalbuffer[abstract]
        \stopsmaller
      \egroup
      \vskip20pt
     \egroup}
 
-\def\startBijdrage%
+\def\startBijdrage
   {\starttekst
    \dosingleempty\dostartBijdrage}
 
-\def\stopBijdrage%
+\def\stopBijdrage
   {\stoptekst}
 
 %D Sectioning.

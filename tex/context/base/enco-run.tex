@@ -37,7 +37,7 @@
    \setuptextrules[\c!korps=,\c!letter=]
    \starttextrule{\visualizecharacterslegend}
    \witruimte
-   \restorefont\stelinterliniein
+   \restorefont\setupinterlinespace
    \visualizecharacters
    \def\do##1%
      {{\def\dodo####1%
@@ -85,7 +85,7 @@
    \edef\enccols{\number\dimen0}
    \visualizecharacters
    \startcolumns[\c!n=\enccols,\c!afstand=2em]
-   \restorefont\stelinterliniein
+   \restorefont\setupinterlinespace
    \def\definecharacter ##1 ##2 %
      {\setbox0=\hbox to \hsize{\localcolortrue\hbox to \encwidth{\getvalue{##1}\hss}\tttf##1}%
       \ht0\strutheight \dp0\strutdepth \box0 \allowbreak}

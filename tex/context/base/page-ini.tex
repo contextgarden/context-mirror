@@ -868,12 +868,26 @@
 \def\superejectpage{\doejectpage\supereject}
 
 % floats 
+% 
+% \def\ejectinsert
+%   {\flushnotes
+%    \bgroup
+%    \noftopfloats\plusthousand
+%    \nofbotfloats\zerocount
+%    \doflushfloats
+%    \egroup}
 
 \def\ejectinsert
   {\flushnotes
    \bgroup
    \noftopfloats\plusthousand
    \nofbotfloats\zerocount
+   % this is needed in case a float that has been stored 
+   % ends up at the current page; this border case occurs when 
+   % the calculated room is 'eps' smaller that the room available
+   % when just flushing; so now we have (maybe optional):  
+   \pagebaselinecorrection
+   % alas, this is tricky but needed (first surfaced in prikkels)
    \doflushfloats
    \egroup}
 
@@ -1049,7 +1063,7 @@
        \gdef\totaltestinfo
          {\global\setbox#1\vbox
             {\unvbox#1\relax 
-             \infofont \stelinterliniein
+             \infofont \setupinterlinespace
              \hbox
                {\strut
                 \expandafter\doboundtext\expandafter
@@ -1582,6 +1596,26 @@
    \od
    \filluparrangedpages}
 
+% nb: \executepagebreakhandler\v!hoofd in other ones 
+
+\installpagebreakhandler \v!hoofd
+  {\doifnotvalue{\??tk\v!hoofd\c!status}\v!stop
+     {\setupheader[\c!status=\v!leeg]}}
+
+\installpagebreakhandler \v!voet
+  {\doifnotvalue{\??tk\v!voet\c!status}\v!stop
+     {\setupfooter[\c!status=\v!leeg]}}
+
+% \definepagebreak
+%   [chapter]
+%   [yes,header,right]
+% 
+% \setuphead
+%   [chapter]
+%   [page=chapter,
+%    header=empty,
+%    footer=chapter]
+
 % public page handler, beware: definepage already in use (core-ref) 
 %
 % \definepagebreak[instance][forsure]
@@ -1639,6 +1673,27 @@
 
 %let\nextcolumn\columnbreak
 \let\column    \columnbreak
+
+% We don't want spurious last pages (due to left over marks):
+
+\def\doignorerestoftext
+  {\ifarrangingpages \else
+     \ifnum\textlevel>\zerocount \else
+       \gdef\shipout
+         {\writestatus\m!systems{ignoring further shipouts}%
+          \dowithnextbox{\deadcycles\zerocount}}%
+     \fi
+   \fi}
+
+\let\ignorerestoftext\donothing
+
+\prependtoks % only ignore in a symmetrical doc 
+  \globallet\ignorerestoftext\doignorerestoftext 
+\to \everystarttext
+
+\appendtoks  
+  \ignorerestoftext                        
+\to \everylastshipout
 
 \newif\ifgeselecteerd \geselecteerdtrue
 \newif\ifselecteren   \selecterenfalse

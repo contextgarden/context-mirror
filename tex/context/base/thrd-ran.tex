@@ -134,7 +134,7 @@
    \global\advance\randomi-\!!countd % random mod 127773
    \global\multiply\randomi 16807
    \multiply\!!countc 2836
-   \global\advance\randomi-\!!countc
+   \global\advance\randomi-\!!countc\relax
    \ifnum\randomi<\zerocount 
      \global\advance\randomi 2147483647 
    \fi

@@ -123,6 +123,13 @@
 
 \protect 
 
+%D Formally an \XML\ file starts with an unique sequence 
+%D \type {<?xml}, but in most of the unilities that come with 
+%D \CONTEXT\ we will be more tolerant, and gobble preceding 
+%D spaces. 
+
+\def\XMLbanner#1{\string<\string ?xml version='1.0' #1\string ?\string>}
+
 %D We will be dealing with elements, which means that we have
 %D to take care of \type {<this>} and \type {</that>}, but
 %D also with \type {<such/>} and \type {<so />}. In some cases

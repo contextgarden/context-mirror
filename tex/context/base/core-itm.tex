@@ -365,7 +365,7 @@
 %    \fi
 %    \dosetraggedcommand{\getitemparameter\itemlevel\c!uitlijnen}\raggedcommand
 %    \doifsomething{\getitemparameter\itemlevel\c!inspringen}
-%      {\expanded{\stelinspringenin[\getitemparameter\itemlevel\c!inspringen]}}%
+%      {\expanded{\setupindenting[\getitemparameter\itemlevel\c!inspringen]}}%
 %    \doifinset\v!kolommen{#1}%
 %      {\ifbinnenkolommen\else\ifnum\itemcolumndepth=\zerocount
 %         \globallet\itemcolumndepth\itemlevel
@@ -481,7 +481,8 @@
    \fi
    \dosetraggedcommand{\getitemparameter\itemlevel\c!uitlijnen}\raggedcommand
    \doifsomething{\getitemparameter\itemlevel\c!inspringen}
-     {\expanded{\stelinspringenin[\getitemparameter\itemlevel\c!inspringen]}}%
+     {% is \expanded needed? 
+      \expanded{\setupindenting[\getitemparameter\itemlevel\c!inspringen]}}%
    \doifinset\v!kolommen{#1}%
      {\ifbinnenkolommen\else\ifnum\itemcolumndepth=\zerocount
         \globallet\itemcolumndepth\itemlevel
@@ -772,7 +773,7 @@
    \ignorespaces
    \dolistitem
    \ifpackeditems
-     \stelwitruimtein[\v!geen]%
+     \setupwhitespace[\v!geen]%
    \fi
    \getitemparameter\itemlevel\c!binnen
    \marsymbol

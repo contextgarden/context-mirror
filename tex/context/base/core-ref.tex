@@ -148,10 +148,31 @@
 \def\reference     {\dosingleargument\doreference    }
 
 %D These are implemented in a low level form as:
+%D
+%D \starttypen  
+%D \def\dotextreference[#1]{\rawtextreference\s!txt{#1}} % #2
+%D \def\dopagereference[#1]{\rawpagereference\s!pag{#1}}
+%D \def\doreference    [#1]{\rawreference    \s!ref{#1}} % #2
+%D \stoptypen 
+%D
+%D or without expansion problems: 
 
-\def\dotextreference[#1]{\rawtextreference\s!txt{#1}} % #2
-\def\dopagereference[#1]{\rawpagereference\s!pag{#1}}
-\def\doreference    [#1]{\rawreference    \s!ref{#1}} % #2
+\def\dotextreference[#1]#2%
+  {\bgroup
+   \def\asciia{#1}%
+   \convertexpanded\??rf{#2}\asciib
+   \@EA\rawtextreference\@EA\s!txt\@EA\asciia\@EA{\asciib}%
+   \egroup}
+
+\def\dopagereference[#1]%
+  {\rawpagereference\s!pag{#1}}
+
+\def\doreference[#1]#2%
+  {\bgroup
+   \def\asciia{#1}%
+   \convertexpanded\??rf{#2}\asciib
+   \@EA\rawreference\@EA\s!ref\@EA\asciia\@EA{\asciib}%
+   \egroup}
 
 %D Actually there is not much difference between a text and a
 %D full reference, but it's the concept that counts. The low
@@ -3568,6 +3589,7 @@
    \c!links=\citaat\bgroup,
    \c!rechts=\egroup,
    \c!globaal=\v!nee,
+   \c!expansie=\v!nee,
    \c!scheider=\nonbreakablespace]
 
 \let\nonbreakablespace=~

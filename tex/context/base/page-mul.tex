@@ -1534,10 +1534,10 @@
        %
        \edef\fixedcolumnheight{\@@klhoogte}%
        \edef\minbalancetoplines{\@@klnboven}%
-       \steltolerantiein[\@@kltolerantie]%     %% \startkolommen
-       \stelblankoin[\@@klblanko]%
+       \setuptolerance[\@@kltolerantie]%     %% \startkolommen
+       \setupblank[\@@klblanko]%
        \ifdim\tussenwit>\zeropoint\relax
-         \stelwitruimtein[\@@klblanko]%
+         \setupwhitespace[\@@klblanko]%
        \fi
        \def\stopkolommen
          {\endmulticolumns

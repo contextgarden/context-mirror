@@ -2240,8 +2240,8 @@
   {\doifelsenothing{#1}
      {\let\PDFattributes\empty}
      {\def\PDFattributes{/C \FDFcolor{#1}}}%
-   \def\width {18pt}%
-   \def\height{24pt}%
+   \def\width {1.5\bodyfontsize}%
+   \def\height{\bodyfontsize}%
    \doifelsenothing{#2}
      {\let\PDFsymbol\empty}
      {\ifundefined{PDFsymbol#2}%

@@ -70,7 +70,9 @@
   [placeholder]
   [1=red,2=green,3=blue,4=cyan,5=magenta,6=yellow]
 
-\newcounter\figurereplacementcycle
+% \newcounter \figurereplacementcycle
+
+\let\figurereplacementcycle\relax
 
 \setupexternalfigures
   [\c!reductie=0,
@@ -78,7 +80,12 @@
 
 \def\externalfigurereplacement#1#2#3%
   {\getpaletsize[placeholder]%
-   \doglobal\increment\figurereplacementcycle
+   \ifx\figurereplacementcycle\relax
+     \getrandomnumber \figurereplacementcycle \!!plusone \paletsize
+     \globallet \figurereplacementcycle \figurereplacementcycle 
+   \else
+     \doglobal\increment\figurereplacementcycle
+   \fi 
    \ifnum\figurereplacementcycle>\paletsize
      \globallet\figurereplacementcycle\!!plusone
    \fi
@@ -100,7 +107,7 @@
       \c!achtergrond=\s!dummy,
       \c!voorgrondkleur=white]}%
      {\doif\@@eftekst\v!ja
-        {\infofont\stelinterliniein \nohyphens
+        {\infofont \setupinterlinespace \nohyphens
          \doifelse{#1}\s!dummy  \!!doneafalse\!!doneatrue
          \doifelse{#2}\s!dummy  \!!donebfalse\!!donebtrue
          \doifelse{#3}\s!unknown\!!donecfalse\!!donectrue

@@ -77,8 +77,7 @@
   \def\nextrandom
     {\bgroup
      \normalnextrandom
-     \gdef\nextrandom
-       {\ifcase\randomseedfrozen\normalnextrandom\fi}%
+     \gdef\nextrandom{\ifcase\randomseedfrozen\normalnextrandom\fi}%
      \egroup}
 
   % avoid scratch dimens 0 and 2 (already recoded in third-ran

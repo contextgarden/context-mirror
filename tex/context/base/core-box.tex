@@ -297,7 +297,7 @@
       \setcollector 
         [caption][#1]
         {\getparameters[\??du][#2]%
-         \dosetfontattribute\??du\c!letter\stelinterliniein
+         \dosetfontattribute\??du\c!letter\setupinterlinespace
          \framed % watch the special setting of kader/overlay 
            [\c!kader=\v!overlay,#2]
            {\doattributes\??du\c!letter\c!kleur{#3}}}%
@@ -342,7 +342,7 @@
         [caption]
         [#1]
         {\getparameters[\??du][#2]%
-         \dosetfontattribute\??du\c!letter\stelinterliniein
+         \dosetfontattribute\??du\c!letter\setupinterlinespace
          \framed
            [\c!kader=\v!overlay,,#2]
            {\doattributes\??du\c!letter\c!kleur{#3}}}%
@@ -577,7 +577,7 @@
    \dowithnextboxcontent
      {\forgetall
       \hsize\@@lxbreedte
-      \expanded{\steluitlijnenin[\@@lxuitlijnen]}%
+      \expanded{\setupalign[\@@lxuitlijnen]}%
       \dosetfontattribute\??lx\c!letter}
      {\setlayer[#1][#2]{\strut\color[\@@lxkleur]{\flushnextbox}}%
       \egroup}%

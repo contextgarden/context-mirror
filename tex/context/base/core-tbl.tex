@@ -689,7 +689,16 @@
    \fi
    \next}
 
+% The much neede hook: 
+
 \newtoks\everytabulate
+
+% An example of its usage: 
+
+\appendtoks \optimizeverbatimfalse \to \everytabulate
+
+% A status variable: 
+
 \chardef\tabulatepass=0
 
 \def\dofinalstarttabulate[#1][#2][#3]% identifier sub preamble

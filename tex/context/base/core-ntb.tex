@@ -110,8 +110,13 @@
 \def\doiftblcol    #1#2{\doifdefined    {\@@tblprefix#1:#2:c}}
 \def\doifnottblcol #1#2{\doifundefined  {\@@tblprefix#1:#2:c}}
 
-\def\settblspn#1#2{\setvalue     {\@@tblprefix#1:s}{#2}}
-\def\doiftblspn #1{\doifelsevalue{\@@tblprefix#1:s}{1}}
+% \def\settblspn#1#2{\setvalue     {\@@tblprefix#1:s}{#2}}
+% \def\doiftblspn #1{\doifelsevalue{\@@tblprefix#1:s}{1}}
+
+\newif\ifsqueezeTBLspan % \squeezeTBLspantrue 
+
+\def\settblspn     #1{\setvalue     {\@@tblprefix#1:s}{1}}
+\def\doifelsetblspn#1{\doifelsevalue{\@@tblprefix#1:s}{1}}
 
 \def\settbltxt#1#2{\long\setvalue{\@@tblprefix:#1:#2:t}}
 \def\gettbltxt#1#2{\csname\@@tblprefix:#1:#2:t\endcsname}
@@ -866,6 +871,47 @@
    \setsecondpasscharacteralign \checkalignment{#2}% {\strut#2\unskip}% 
    \ignorespaces}
 
+% \long\def\dohandleTBLcellA#1#2[#3]#4%
+%   {\setbox\scratchbox\hbox
+%      {\setupTBLcell{#1}{#2}%
+%       \localframed
+%         [\@@tbl\@@tbl]
+%         [#3,\c!achtergrond=,\c!kader=\v!uit]% 25% faster
+%         {\bTBLCELL\TBLcharalign{#2}{#4}\eTBLCELL\inTBLcell{#1}{#2}}}%
+%    \scratchdimen\gettblwid\colTBL\relax
+%    \ifdim\wd\scratchbox>\scratchdimen
+%      \settblwid\colTBL{\the\wd\scratchbox}% auto set
+%    \fi
+%    \let\rowTBLx\rowTBL\increment\rowTBLx
+%    \scratchdimen\gettblhei\rowTBLx\relax
+%    \ifdim\ht\scratchbox<\scratchdimen
+%      \settblhei\rowTBLx{\the\ht\scratchbox}% auto set
+%    \fi
+%    \settblht{#1}{#2}{\the\ht\scratchbox}%
+%    \settblwd{#1}{#2}{\the\wd\scratchbox}%
+%    \ifautoTBLcheckwidth
+%      \ifdim\wd\scratchbox<.75\hsize
+%        \ifdim\ht\scratchbox>2\openlineheight % honor width since this can be a 
+%          \scratchdimen\gettblaut\colTBL\relax % figure or so
+%          \ifdim\scratchdimen=\zeropoint
+%            % side effect: when width is set to 0pt,
+%            % we can force a span that fits the sum of spans widths 
+%            \settblaut\colTBL{\the\scratchdimen}%
+%          \else\ifdim\wd\scratchbox>\scratchdimen
+% % unless span 
+%            \settblaut\colTBL{\the\wd\scratchbox}%
+%            % to be translated 
+%            \writestatus\m!TABLE{no auto width in (\number#1,\number#2)\space\the\wd\scratchbox/\the\hsize}%
+%          \fi\fi
+%        \fi
+%      \fi
+%    \fi 
+%    \setbox2\null
+%    \wd2\wd\scratchbox \ht2\ht\scratchbox \dp2\dp\scratchbox
+%    \box2}
+
+% new, needed for icare first col of 'doeltabel', experimental 
+
 \long\def\dohandleTBLcellA#1#2[#3]#4%
   {\setbox\scratchbox\hbox
      {\setupTBLcell{#1}{#2}%
@@ -875,7 +921,11 @@
         {\bTBLCELL\TBLcharalign{#2}{#4}\eTBLCELL\inTBLcell{#1}{#2}}}%
    \scratchdimen\gettblwid\colTBL\relax
    \ifdim\wd\scratchbox>\scratchdimen
-     \settblwid\colTBL{\the\wd\scratchbox}% auto set
+     \ifsqueezeTBLspan
+       \ifnum0\number\gettblcol{#1}{#2}>1\relax \settblspn\colTBL \fi 
+     \fi
+     \doifelsetblspn\colTBL
+       \donothing{\settblwid\colTBL{\the\wd\scratchbox}}% auto set
    \fi
    \let\rowTBLx\rowTBL\increment\rowTBLx
    \scratchdimen\gettblhei\rowTBLx\relax
@@ -893,7 +943,7 @@
            % we can force a span that fits the sum of spans widths 
            \settblaut\colTBL{\the\scratchdimen}%
          \else\ifdim\wd\scratchbox>\scratchdimen
-% unless span 
+           % unless span 
            \settblaut\colTBL{\the\wd\scratchbox}%
            % to be translated 
            \writestatus\m!TABLE{no auto width in (\number#1,\number#2)\space\the\wd\scratchbox/\the\hsize}%

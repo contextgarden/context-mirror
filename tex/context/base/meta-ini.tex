@@ -795,6 +795,25 @@
   \consultutilityfilefalse
 \to \everyinsertMPfile
 
+%D One more: (still needed?) 
+
+\appendtoks 
+  def initialize_form_numbers = 
+    do_initialize_numbers ;
+  enddef ;
+\to \MPinitializations
+
+\appendtoks
+  HSize := \the\hsize ;
+  VSize := \the\vsize ;
+  vardef ForegroundBox =
+    unitsquare xysized(HSize,VSize)
+  enddef ;
+  vardef PageFraction =
+    if \lastpage>1 : (\realfolio-1)/(\lastpage-1) else : 1 fi 
+  enddef ; 
+\to \MPinitializations
+
 %D And some more. These are not really needed since we 
 %D don't use the normal figure inclusion macros any longer. 
 

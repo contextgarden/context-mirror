@@ -34,8 +34,8 @@
 
 \usemodule[res-00]
 
-\doifnothing  {\jobfilename}        {\end}
-\doiffileelse {\jobfilename.xml} {} {\end}
+\doifnothing  {\jobfullname}    {\end}
+\doiffileelse {\jobfullname} {} {\end}
 
 \defineXMLenvironment [rl:figurelibrary] \StartLibrary \StopLibrary
 \defineXMLenvironment [rl:library]       \StartLibrary \StopLibrary
@@ -67,6 +67,6 @@
 
 \starttext
 
-\processXMLfilegrouped{\jobfilename.xml}
+\processXMLfilegrouped{\jobfullname}
 
 \stoptext

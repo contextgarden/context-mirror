@@ -36,6 +36,7 @@
 \def\openXMLresourcelog
   {%\global\let\openXMLresourcelog\relax
    \immediate\openout\XMLrllog\jobname.rlg\relax
+   \immediate\write\XMLrllog{\XMLbanner\empty}%
    \immediate\write\XMLrllog{\writtenXMLstart{\XMLrlprefix library}}}
 
 \def\closeXMLresourcelog

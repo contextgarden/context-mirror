@@ -17,13 +17,13 @@
 
 \unprotect
 
-\def\tabulaterule
+\def\tabulaterule % to be redone, not correct 
   {\dotabulaterule
      {\hrule\!!height.5\scratchdimen\!!depth.5\scratchdimen\relax
       \doifvalue{\??tt\currenttabulate\c!afstand}\v!grid
         {\kern-\scratchdimen}}} % experimental tm-prikkels
 
-% todo: \stelinterliniein[regel=vast] => ==\the\baselineskip
+% todo: \setupinterlinespace[\c!regel=\v!vast] => ==\the\baselineskip
 
 %%%%%%%% todo: \chardef\snapstruts=1 => d=l-h 
 
@@ -44,98 +44,6 @@
        #2%
      \stopXMLignore
    \stopnointerference}
-
-\long\def\preservePSpar#1\to#2%
-  {\bgroup
-   \def\par{\rawcharacter{12}\rawcharacter{12}}%
-   \expanded{\egroup\noexpand\def\noexpand#2{#1}}}
-
-\appendtoks\optimizeverbatimfalse\to\everytabulate
-
-\def\filterfromvalue#1#2#3% value max n
-  {\@EA\@EAEAEA\csname
-     \ifcase#2\or
-       \ifcase#3\or
-         \strippedcsname\firstofoneargument
-       \else
-         \strippedcsname\gobbleoneargument
-       \fi
-     \or
-       \ifcase#3\or
-         \strippedcsname\firstoftwoarguments
-       \or
-         \strippedcsname\secondoftwoarguments
-       \else
-         \strippedcsname\gobbletwoarguments
-       \fi
-     \or
-       \ifcase#3\or
-         \strippedcsname\firstofthreearguments
-       \or
-         \strippedcsname\secondofthreearguments
-       \or
-         \strippedcsname\thirdofthreearguments
-       \else
-         \strippedcsname\gobblethreearguments
-       \fi
-     \fi
-   \endcsname\csname#1\endcsname}
-
-% \setvalue{xx}{{A}{B}{C}}
-
-% \filterfromvalue{xx}{3}{3}
-% \filterfromvalue{xx}{3}{2}
-% \filterfromvalue{xx}{3}{1}
-
-% new, needed for icare first col of 'doeltabel', experimental 
-
-\newif\ifsqueezeTBLspan % \squeezeTBLspantrue 
-
-\def\settblspn     #1{\setvalue     {\@@tblprefix#1:s}{1}}
-\def\doifelsetblspn#1{\doifelsevalue{\@@tblprefix#1:s}{1}}
-
-\long\def\dohandleTBLcellA#1#2[#3]#4%
-  {\setbox\scratchbox\hbox
-     {\setupTBLcell{#1}{#2}%
-      \localframed
-        [\@@tbl\@@tbl]
-        [#3,\c!achtergrond=,\c!kader=\v!uit]% 25% faster
-        {\bTBLCELL\TBLcharalign{#2}{#4}\eTBLCELL\inTBLcell{#1}{#2}}}%
-   \scratchdimen\gettblwid\colTBL\relax
-   \ifdim\wd\scratchbox>\scratchdimen
-     \ifsqueezeTBLspan
-       \ifnum0\number\gettblcol{#1}{#2}>1\relax \settblspn\colTBL \fi 
-     \fi
-     \doifelsetblspn\colTBL
-       \donothing{\settblwid\colTBL{\the\wd\scratchbox}}% auto set
-   \fi
-   \let\rowTBLx\rowTBL\increment\rowTBLx
-   \scratchdimen\gettblhei\rowTBLx\relax
-   \ifdim\ht\scratchbox<\scratchdimen
-     \settblhei\rowTBLx{\the\ht\scratchbox}% auto set
-   \fi
-   \settblht{#1}{#2}{\the\ht\scratchbox}%
-   \settblwd{#1}{#2}{\the\wd\scratchbox}%
-   \ifautoTBLcheckwidth
-     \ifdim\wd\scratchbox<.75\hsize
-       \ifdim\ht\scratchbox>2\openlineheight % honor width since this can be a 
-         \scratchdimen\gettblaut\colTBL\relax % figure or so
-         \ifdim\scratchdimen=\zeropoint
-           % side effect: when width is set to 0pt,
-           % we can force a span that fits the sum of spans widths 
-           \settblaut\colTBL{\the\scratchdimen}%
-         \else\ifdim\wd\scratchbox>\scratchdimen
-% unless span 
-           \settblaut\colTBL{\the\wd\scratchbox}%
-           % to be translated 
-           \writestatus\m!TABLE{no auto width in (\number#1,\number#2)\space\the\wd\scratchbox/\the\hsize}%
-         \fi\fi
-       \fi
-     \fi
-   \fi 
-   \setbox2\null
-   \wd2\wd\scratchbox \ht2\ht\scratchbox \dp2\dp\scratchbox
-   \box2}
 
 \def\processlinetableXMLfile#1%
   {\bgroup 
@@ -168,81 +76,6 @@
        \fi 
      \fi
    \fi}
-
-\def\centertogrid % meant for special situations 
-  {\ifgridsnapping
-     \dowithnextboxcontent
-       {\ignorespaces}
-       {\bgroup
-        \par
-        \scratchdimen\nextboxht
-        \advance\scratchdimen \nextboxdp
-        \getnoflines\scratchdimen
-        \setbox\nextbox\vbox to \noflines\lineheight
-          {\forgetall
-           \vss
-           \topbaselinecorrection
-           \copy\nextbox
-           \botbaselinecorrection
-           \vss}%
-        \setbox\nextbox\hbox{\lower\strutdp\flushnextbox}%
-        \noindent\snaptogrid\vbox{\flushnextbox}%
-        \egroup}
-       \vbox % was \hbox
-   \fi}
-
-% \strut Bruggetje 
-% \startlinecorrection
-% \startcombination
-%   {\framed{test}} {} {\framed{test}} {}
-% \stopcombination
-% \stoplinecorrection
-% \strut Bruggetje 
-% \startlinecorrection
-% \startcombination[2*2]
-%   {\framed{test}} {} {\framed{test}} {}
-%   {\framed{test}} {} {\framed{test}} {}
-% \stopcombination
-% \stoplinecorrection
-% \strut Bruggetje 
-% \startlinecorrection[blank]
-% \startcombination
-%   {\framed{test}} {} {\framed{test}} {}
-% \stopcombination
-% \stoplinecorrection
-% \strut Bruggetje 
-% \startlinecorrection[blank]
-% \startcombination[2*2]
-%   {\framed{test}} {} {\framed{test}} {}
-%   {\framed{test}} {} {\framed{test}} {}
-% \stopcombination
-% \stoplinecorrection
-% \strut Bruggetje 
-% \startlinecorrection
-% \startcombination
-%   {\framed[lines=1]{test}} {} {\framed[lines=1]{test}} {}
-% \stopcombination
-% \stoplinecorrection
-% \strut Bruggetje 
-% \startlinecorrection
-% \startcombination[2*2]
-%   {\framed[lines=1]{test}} {} {\framed[lines=1]{test}} {}
-%   {\framed[lines=1]{test}} {} {\framed[lines=1]{test}} {}
-% \stopcombination
-% \stoplinecorrection
-% \strut Bruggetje 
-% \startlinecorrection[blank]
-% \startcombination
-%   {\framed[lines=1]{test}} {} {\framed[lines=1]{test}} {}
-% \stopcombination
-% \stoplinecorrection
-% \strut Bruggetje 
-% \startlinecorrection[blank]
-% \startcombination[2*2]
-%   {\framed[lines=1]{test}} {} {\framed[lines=1]{test}} {}
-%   {\framed[lines=1]{test}} {} {\framed[lines=1]{test}} {}
-% \stopcombination
-% \stoplinecorrection
 
 % experimental: \synchronizegrid bla bla bla 
 
@@ -321,59 +154,6 @@
      #4\expandafter{\the\!!widtha}}
 
 % so far 
-
-\def\setstrut
-  {\strutdimen\normallineheight       
-   \strutdimen\strutheightfactor\strutdimen           
-   \strutdimen\spacingfactor\strutdimen           
-   \edef\strutheight{\the\strutdimen}% 
-   \strutdimen\normallineheight     
-   \ifgridsnapping
-     \advance\strutdimen-\strutheight 
-   \else
-     \strutdimen\strutdepthfactor\strutdimen         
-     \strutdimen\spacingfactor\strutdimen         
-   \fi
-   \edef\strutdepth{\the\strutdimen}% 
-   \dosetstrut}
-
-% \setupinteraction[state=start]
-% 
-% \useattachment[whatever][[new name]][test.tex]
-% 
-% % \setupattachments[\c!symbool={symbol-normal,symbol-down}]
-% 
-% \starttext \attachment[whatever] \stoptext
-
-\definesystemvariable{at}
-
-\def\useattachment
-  {\dotripleempty\douseattachment}
-
-\def\douseattachment[#1][#2][#3]% 
-  {\setgvalue{\??at :#1}{#2}%
-   \setgvalue{\??at::#1}{#3}%
-   \doifvaluenothing{\??at :#1}{\setxvalue{\??at :#1}{#1}}%
-   \doifvaluenothing{\??at::#1}{\setxvalue{\??at::#1}{\getvalue{\??at:#1}}}}
-
-\def\attachment[#1]%
-  {\ifundefined{\??at:#1}\else \iflocation
-     \doif\@@atstatus\v!start
-       {\doiffileelse{\getvalue{\??at:#1}}%
-          {\doPDFattachfile
-             {\getvalue{\??at::#1}}%
-             {1em}{1ex}\@@atkleur\@@atsymbool
-             {\getvalue{\??at:#1}}}%
-          {}}%
-   \fi \fi}
-
-\def\setupattachments
-  {\dodoubleempty\getparameters[\??at]}
-
-\setupattachments
-  [\c!status=\v!start,
-   \c!kleur=\@@iakleur,
-   \c!symbool=]
 
 % test this prikkels/pascal margin text before heads (mode 
 % 1) as well as uitwerkingen (mode 2) 
@@ -454,38 +234,11 @@
 
 \long \def\tableiftextelse#1{\tableifelse{\doiftextelse{#1}}}
 
-\def\ejectinsert
-  {\flushnotes
-   \bgroup
-   \noftopfloats\plusthousand
-   \nofbotfloats\zerocount
-   % this is needed in case a float that has been stored 
-   % ends up at the current page; this border case occurs when 
-   % the calculated room is 'eps' smaller that the room available
-   % when just flushing; so now we have (maybe optional):  
-   \pagebaselinecorrection
-   % alas, this is tricky but needed (first surfaced in prikkels)
-   \doflushfloats
-   \egroup}
-
 \def\overloaded#1#2%
   {\appendtoks
      \writestatus\m!systems{overloaded: \string#2}%
    \to \everybye
    #1#2}
-
-\def\toplinebox
-  {\dowithnextbox
-     {\ifdim\nextboxdp>\strutdepth
-        \scratchdimen\nextboxdp
-        \advance\scratchdimen-\strutdepth
-        \getnoflines\scratchdimen
-        \struttedbox{\flushnextbox}%
-        \dorecurse\noflines\verticalstrut
-      \else
-        \flushnextbox
-      \fi}%
-   \tbox}
 
 \def\expandifnonempty#1%
   {\@EA\ifx\csname#1\endcsname\empty
@@ -530,25 +283,6 @@
 \def\tightvtop
   {\dowithnextbox{\nextboxht\zeropoint\flushnextbox}\vtop}
 
-\def\startpagefigure
-  {\dodoubleempty\dostartpagefigure}
-
-\def\dostartpagefigure[#1][#2]%
-  {\bgroup
-   \getparameters[\??ex][\c!offset=\!!zeropoint,#2]%
-   \startTEXpage[\c!offset=\@@exoffset]%
-     \externalfigure[#1][#2]\ignorespaces}
-
-\def\stoppagefigure
-  {\stopTEXpage
-   \egroup}
-
-\def\pagefigure
-  {\dodoubleempty\dopagefigure}
-
-\def\dopagefigure[#1][#2]%
-  {\dostartpagefigure[#1][#2]\stoppagefigure}
-
 % pretty important (esp since we now ignore shipouts)
 %
 % actually we should nil all writes, marks, specials
@@ -585,29 +319,6 @@
 %   {\bgroup\startcolor[#1]
 %    \aftergroup\stopcolor
 %    \aftergroup\egroup}
-
-% test this for a long time, esp since from now on, by default
-% \commands are not expanded
-
-\setupreferencing
-  [\c!expansie=\v!nee]
-
-\def\dotextreference[#1]#2%
-  {\bgroup
-   \def\asciia{#1}%
-   \convertexpanded\??rf{#2}\asciib
-   \@EA\rawtextreference\@EA\s!txt\@EA\asciia\@EA{\asciib}%
-   \egroup}
-
-\def\dopagereference[#1]%
-  {\rawpagereference\s!pag{#1}}
-
-\def\doreference[#1]#2%
-  {\bgroup
-   \def\asciia{#1}%
-   \convertexpanded\??rf{#2}\asciib
-   \@EA\rawreference\@EA\s!ref\@EA\asciia\@EA{\asciib}%
-   \egroup}
 
 % what is this stupid macro meant for:
 

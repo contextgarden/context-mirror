@@ -25,22 +25,22 @@
 \appendtoks \settopskip             \to \everybodyfont
 \appendtoks \setmaxdepth            \to \everybodyfont
 \appendtoks \spacing               1\to \everybodyfont
-\appendtoks \simplestelinspringenin \to \everybodyfont
-\appendtoks \simplestelblankoin     \to \everybodyfont
-\appendtoks \simplestelwitruimtein  \to \everybodyfont
+\appendtoks \simplesetupindenting   \to \everybodyfont
+\appendtoks \simplesetupblank       \to \everybodyfont
+\appendtoks \simplesetupwhitespace  \to \everybodyfont
 %appendtoks \checknotes             \to \everybodyfont % not
-\appendtoks \simplestelspatieringin \to \everybodyfont % nieuw
+\appendtoks \simplesetupspacing     \to \everybodyfont % nieuw
 \appendtoks \setdisplayskips        \to \everybodyfont % nieuw
 
 \appendtoks \updateraggedskips \to \everyfontswitch  % under test
 
 \prependtoks \let\par\endgraf \to \everypagebody % see \fillinline
 
-\appendtoks \simplestelspatieringin \to \everydefinedfont
+\appendtoks \simplesetupspacing \to \everydefinedfont
 
 \def\stelfactorenin
-  {\simplestelwitruimtein
-   \simplestelblankoin
+  {\simplesetupwhitespace
+   \simplesetupblank
    \settopskip
    \setmaxdepth}
 
@@ -79,7 +79,7 @@
 %D There are two ways to influence the interline spacing. The
 %D most general and often most consistent way is using
 %D
-%D \showsetup{\y!stelinterliniein}
+%D \showsetup{\y!setupinterlinespace}
 %D
 %D For instance
 %D
@@ -153,22 +153,22 @@
        \s!unknown=>\assignvalue{#1}\regelwit{1.00}{1.25}{1.50}%
                    \spacing\regelwit]}
 
-\def\complexstelinterliniein[#1]% \commalistelement ipv #1
+\def\complexsetupinterlinespace[#1]% \commalistelement ipv #1
   {\doifassignmentelse{#1}
      \setupspecifiedinterlinespace\setuprelativeinterlinespace[#1]}
 
 \def\setuplocalinterlinespace[#1]%
   {\localinterlinespacetrue
-   \stelinterliniein[#1]%
+   \setupinterlinespace[#1]%
    \localinterlinespacefalse}
 
-\def\simplestelinterliniein
+\def\simplesetupinterlinespace
   {\localinterlinespacetrue
    \setfontparameters
    \updateraggedskips % funny one here
    \localinterlinespacefalse}
 
-\definecomplexorsimple\stelinterliniein
+\definecomplexorsimple\setupinterlinespace
 
 % In earlier versions \type{\bigskipamount} was
 % \type{\ht\strutbox} and the stretch was plus or minus
@@ -731,7 +731,7 @@
 %D   [\v!groot]
 %D \stoptypen
 
-\def\dostelblankoin#1% amount are an plain inheritance
+\def\dosetupblank#1% amount are an plain inheritance
   {\bigskipamount#1\relax
    \ifblankoflexibel \else
      \bigskipamount1\bigskipamount
@@ -739,7 +739,7 @@
    \medskipamount  \bigskipamount \divide\medskipamount   2
    \smallskipamount\bigskipamount \divide\smallskipamount 4 }%
 
-\def\complexstelblankoin[#1]% more \let's
+\def\complexsetupblank[#1]% more \let's
   {\ifgridsnapping
      \blankoflexibelfalse
    \else
@@ -750,18 +750,18 @@
    \fi
    \ExpandFirstAfter\processallactionsinset
      [#1]
-     [ \v!flexibel=>\dostelblankoin\deblankoskip,
-           \v!vast=>\dostelblankoin\deblankoskip,
+     [ \v!flexibel=>\dosetupblank\deblankoskip,
+           \v!vast=>\dosetupblank\deblankoskip,
           \v!regel=>\edef\deblankoskip{\regelafstand}%
-                    \dostelblankoin\deblankoskip
+                    \dosetupblank\deblankoskip
                     \let\deblanko\v!groot,
      \v!halveregel=>\scratchskip.5\regelafstand
                     \edef\deblankoskip{\the\scratchskip}%
-                    \dostelblankoin\deblankoskip
+                    \dosetupblank\deblankoskip
                     \let\deblanko\v!middel,
           \v!groot=>\ifgridsnapping
                       \edef\deblankoskip{\regelafstand}%
-                      \dostelblankoin\deblankoskip
+                      \dosetupblank\deblankoskip
                     \fi
                     \let\currentblanko\v!groot  % was \def, why ?
                     \let\deblanko\v!groot,
@@ -769,35 +769,35 @@
                     \let\deblanko\v!middel,
           \v!klein=>\let\currentblanko\v!klein  % was \def, why ?
                     \let\deblanko\v!klein,
-        \v!normaal=>\dostelblankoin\deblankoskip
+        \v!normaal=>\dosetupblank\deblankoskip
                     \let\deblanko\v!groot,
       \v!standaard=>\edef\deblankoskip{\skipfactor\regelafstand}%
-                    \dostelblankoin\deblankoskip
+                    \dosetupblank\deblankoskip
                     \let\deblanko\v!groot,
-        \s!default=>\dostelblankoin\deblankoskip
+        \s!default=>\dosetupblank\deblankoskip
                     \let\deblanko\v!groot,
         \s!unknown=>\let\deblankoskip\commalistelement
-                    \dostelblankoin\deblankoskip
+                    \dosetupblank\deblankoskip
                     \let\deblanko\v!groot]%
-   \simplestelwitruimtein}
+   \simplesetupwhitespace}
 
-% \definecomplexorsimpleempty\stelblankoin
+% \definecomplexorsimpleempty\setupblank
 %
 % speed gain: 60 sec -> 30 sec
 
-\definecomplexorsimple\stelblankoin
+\definecomplexorsimple\setupblank
 
-\def\simplestelblankoin % == snelle \stelblankoin[\s!default]
+\def\simplesetupblank % == snelle \setupblank[\s!default]
   {\ifgridsnapping
      \blankoflexibelfalse
    \fi
-   \dostelblankoin\deblankoskip
+   \dosetupblank\deblankoskip
    \let\deblanko\v!groot
-   \simplestelwitruimtein}
+   \simplesetupwhitespace}
 
 \def\restorestandardblank% \v!standaard
   {\edef\deblankoskip{\skipfactor\regelafstand}%
-   \dostelblankoin\deblankoskip
+   \dosetupblank\deblankoskip
    \let\deblanko\v!groot}
 
 \def\dodefinieerblanko[#1][#2]%
@@ -837,18 +837,18 @@
 \def\presetindentation
   {\doifoutervmode{\ifindentfirstparagraph\else\noindentation\fi}}
 
-\definecomplexorsimple\stelinspringenin
+\definecomplexorsimple\setupindenting
 
-\def\complexstelinspringenin[#1]%
+\def\complexsetupindenting[#1]%
   {\processallactionsinset
      [#1]
      [   \v!eerste=>\indentfirstparagraphtrue,
        \v!volgende=>\indentfirstparagraphfalse,
-        \s!default=>\simplestelinspringenin,
+        \s!default=>\simplesetupindenting,
         \s!unknown=>\edef\currentvoorwit{\commalistelement}%
-                    \simplestelinspringenin]}
+                    \simplesetupindenting]}
 
-\def\simplestelinspringenin
+\def\simplesetupindenting
   {\assigndimension\currentvoorwit\voorwit{1em}{1.5em}{2em}%
    \parindent\voorwit\relax}
 
@@ -906,14 +906,14 @@
 \definespacingmethod[\v!opelkaar]{\newfrenchspacing}
 \definespacingmethod[\v!ruim    ]{\nonfrenchspacing}
 
-\def\complexstelspatieringin[#1]%
+\def\complexsetupspacing[#1]%
   {\executeifdefined{\??sg\??sg#1}\relax
    \updateraggedskips}
 
-\def\simplestelspatieringin
+\def\simplesetupspacing
   {\updateraggedskips}
 
-\definecomplexorsimple\stelspatieringin
+\definecomplexorsimple\setupspacing
 
 \catcode`\~=\@@active % to be sure
 
@@ -1121,17 +1121,17 @@
 \def\currentwitruimte {\zeropoint}
 
 % \def\stelwitruimteopnieuwin
-%   {\expanded{\stelwitruimtein[\currentwitruimte]}}
+%   {\expanded{\setupwhitespace[\currentwitruimte]}}
 %
 % \newif\ifwitruimteflexibel \witruimteflexibeltrue
 %
-% \definecomplexorsimple\stelwitruimtein
+% \definecomplexorsimple\setupwhitespace
 %
-% \def\complexstelwitruimtein[#1]%
-%   {\expanded{\dostelwitruimtein[#1]}%
-%    \dodostelwitruimtein}
+% \def\complexsetupwhitespace[#1]%
+%   {\expanded{\dosetupwhitespace[#1]}%
+%    \dodosetupwhitespace}
 %
-% \def\dostelwitruimtein[#1]%
+% \def\dosetupwhitespace[#1]%
 %   {\processallactionsinset
 %      [#1]
 %      [\v!herstel=>,
@@ -1143,7 +1143,7 @@
 %       \s!unknown=>\@EA\assigndimension\@EA{\commalistelement} % \@EA is nodig
 %                     \tussenwit\blankokleinmaat\blankomiddelmaat\blankogrootmaat]}   % te vangen
 %
-% \def\dodostelwitruimtein
+% \def\dodosetupwhitespace
 %   {\edef\currentwitruimte
 %      {\ifdim\tussenwit=\zeropoint
 %         \v!geen
@@ -1161,26 +1161,26 @@
 %    \fi
 %    \parskip\tussenwit}
 %
-% \def\simplestelwitruimtein% == snelle \stelwitruimtein[\s!default]
+% \def\simplesetupwhitespace% == snelle \setupwhitespace[\s!default]
 %   {\doifnot\currentwitruimte\v!geen\stelwitruimteopnieuwin
-%    \dodostelwitruimtein}
+%    \dodosetupwhitespace}
 
-\definecomplexorsimple\stelwitruimtein
+\definecomplexorsimple\setupwhitespace
 
-\def\simplestelwitruimtein
-  {\doifnot\currentwitruimte\v!geen\dostelwitruimtein}
+\def\simplesetupwhitespace
+  {\doifnot\currentwitruimte\v!geen\dosetupwhitespace}
 
-\def\complexstelwitruimtein[#1]%
+\def\complexsetupwhitespace[#1]%
   {\doifelsenothing{#1}
-     {\simplestelwitruimtein}
+     {\simplesetupwhitespace}
      {\edef\currentwitruimte{#1}%
-      \dostelwitruimtein}}
+      \dosetupwhitespace}}
 
-\def\dostelwitruimtein
+\def\dosetupwhitespace
   {\processcommacommand[\currentwitruimte]\dowhitespacemethod
-   \dodostelwitruimtein}
+   \dodosetupwhitespace}
 
-\def\dodostelwitruimtein
+\def\dodosetupwhitespace
   {\ifgridsnapping
      \witruimteflexibelfalse
      \tussenwit1\tussenwit
@@ -1284,7 +1284,7 @@
        \opelkaarfalse
        \opelkaartrue
      \blanko[\v!blokkeer]       % dit is nog niet ok, gaat fout
-     \stelwitruimtein[\v!geen]  % bovenin vtop (dwz, baseline)
+     \setupwhitespace[\v!geen]  % bovenin vtop (dwz, baseline)
   \fi}
 
 \def\stopopelkaar
@@ -1539,9 +1539,24 @@
 %            \!!depth  \strutdepth
 %            \normalkern-\strutwidth}}}
 
+% \def\setstrut
+%   {\setstrutdimen\strutheight\strutheightfactor\spacingfactor
+%    \setstrutdimen\strutdepth \strutdepthfactor \spacingfactor
+%    \dosetstrut}
+
 \def\setstrut
-  {\setstrutdimen\strutheight\strutheightfactor\spacingfactor
-   \setstrutdimen\strutdepth \strutdepthfactor \spacingfactor
+  {\strutdimen\normallineheight       
+   \strutdimen\strutheightfactor\strutdimen           
+   \strutdimen\spacingfactor\strutdimen           
+   \edef\strutheight{\the\strutdimen}% 
+   \strutdimen\normallineheight     
+   \ifgridsnapping
+     \advance\strutdimen-\strutheight 
+   \else
+     \strutdimen\strutdepthfactor\strutdimen         
+     \strutdimen\spacingfactor\strutdimen         
+   \fi
+   \edef\strutdepth{\the\strutdimen}% 
    \dosetstrut}
 
 \def\setcharstrut#1%
@@ -1809,7 +1824,7 @@
   {\par % else skips forgotten
    \egroup}
 
-\def\stelsmallerin
+\def\setupnarrower
   {\dodoubleargument\getparameters[\??sl]}
 
 \newdimen\@@effectivehsize     \def\effectivehsize    {\hsize}
@@ -2076,10 +2091,10 @@
 %\def\forgetparindent
 %  {\forgeteverypar
 %   \indentfirstparagraphtrue % recently added
-%   \stelinspringenin[\v!geen]}
+%   \setupindenting[\v!geen]}
 
 %\def\forgetparskip
-%  {\stelwitruimtein[\v!geen]}
+%  {\setupwhitespace[\v!geen]}
 
 \def\forgetparindent
   {\forgeteverypar
@@ -2694,7 +2709,7 @@
 
 \newif\if@@asragged \@@asraggedtrue % old method
 
-\def\dodosteluitlijnenin[#1]%
+\def\dodosetupalign[#1]%
   {\doifinsetelse\v!ruim {#1}\!!doneatrue\!!doneafalse
    \doifinsetelse\v!breed{#1}\!!donebtrue\!!donebfalse
    \ExpandFirstAfter\processallactionsinset
@@ -2723,15 +2738,15 @@
          \v!nieuw=>\@@asraggedfalse, % so new will give you consistency
          \v!reset=>\notragged\normalbottom]}
 
-\def\dosteluitlijnenin[#1]%
-  {\expanded{\dodosteluitlijnenin[#1]}}
+\def\dosetupalign[#1]%
+  {\expanded{\dodosetupalign[#1]}}
 
-\def\steluitlijnenin
-  {\dosingleargument\dosteluitlijnenin}
+\def\setupalign
+  {\dosingleargument\dosetupalign}
 
 \def\startuitlijnen
   {\bgroup
-   \steluitlijnenin}
+   \setupalign}
 
 \def\stopuitlijnen
   {\par
@@ -2798,7 +2813,7 @@
 
 %D ...
 
-\def\dosteltolerantiein[#1]%
+\def\dosetuptolerance[#1]%
   {\doifinsetelse\v!vertikaal{#1}%
      {\ExpandFirstAfter\processallactionsinset
         [#1]
@@ -2815,8 +2830,8 @@
              \v!soepel=>\tolerance3000,
          \v!zeersoepel=>\tolerance4500]}}
 
-\def\steltolerantiein
-  {\dosingleargument\dosteltolerantiein}
+\def\setuptolerance
+  {\dosingleargument\dosetuptolerance}
 
 % \def\woordrechts
 %   {\groupedcommand{\hfill\hbox}{\parfillskip\zeropoint}}
@@ -3007,16 +3022,16 @@
 \def\fixedspaceamount#1%
          {#1\fontdimen2\font}
 
-\stelwitruimtein
+\setupwhitespace
   [\v!geen]
 
 \inspringen
   [\v!nooit]
 
-\stelinspringenin
+\setupindenting
   [\v!geen]
 
-\stelblankoin
+\setupblank
   [\v!standaard,
    \v!groot]
 
@@ -3031,7 +3046,7 @@
 \def\@@blankotussen{\blanko[\v!tussen]} %  scheelt 5 tokens == >20 bytes
 \def\@@blankona    {\blanko[\v!na]}     %
 
-\stelinterliniein
+\setupinterlinespace
   [\c!hoogte=.72,
    \c!diepte=.28,
    \c!boven=1.0,
@@ -3040,22 +3055,22 @@
    \c!regel=2.8ex,
    \c!rek=0]
 
-\stelsmallerin
+\setupnarrower
   [\c!links=1.5em,
    \c!rechts=1.5em,
    \c!midden=1.5em]
 
-\steltolerantiein
+\setuptolerance
   [\v!horizontaal,\v!zeerstreng]
 
-\steltolerantiein
+\setuptolerance
   [\v!vertikaal,\v!streng]
 
-\steluitlijnenin
+\setupalign
   [\v!onder,
    \v!breedte]
 
-\stelspatieringin
+\setupspacing
   [\v!opelkaar]
 
 \protect \endinput

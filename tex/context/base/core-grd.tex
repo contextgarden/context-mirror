@@ -976,7 +976,32 @@
        \hbox
    \fi}
 
-\def\centertogrid % meant for special situations
+% \def\centertogrid % meant for special situations
+%   {\ifgridsnapping
+%      \dowithnextboxcontent
+%        {\ignorespaces}
+%        {\bgroup
+%         \par
+%         \scratchdimen\nextboxht
+%         \advance\scratchdimen \nextboxdp
+%         \getnoflines\scratchdimen
+%         \setbox\nextbox\vbox to \noflines\lineheight
+%           {\forgetall
+%            \vskip\zeropoint \!!plus \nextboxht
+%            \copy\nextbox
+%            \kern.5\strutdp % VOORLOPIGE WAARDE
+%            \vskip\zeropoint \!!plus \nextboxdp}%
+%         \noindent\snaptogrid\vbox{\flushnextbox}%
+%         \egroup}
+%        \vbox % was \hbox
+%    \fi}
+ 
+% The next implementation is sub-optimal
+%
+% \def\centertogrid % usage: see ie pascal / stepcharts
+%   {\snaptogrid[\v!midden,.5\strutdp]\vbox}
+
+\def\centertogrid % meant for special situations 
   {\ifgridsnapping
      \dowithnextboxcontent
        {\ignorespaces}
@@ -987,19 +1012,71 @@
         \getnoflines\scratchdimen
         \setbox\nextbox\vbox to \noflines\lineheight
           {\forgetall
-           \vskip\zeropoint \!!plus \nextboxht
+           \vss
+           \topbaselinecorrection
            \copy\nextbox
-           \kern.5\strutdp % VOORLOPIGE WAARDE
-           \vskip\zeropoint \!!plus \nextboxdp}%
+           \botbaselinecorrection
+           \vss}%
+        \setbox\nextbox\hbox{\lower\strutdp\flushnextbox}%
         \noindent\snaptogrid\vbox{\flushnextbox}%
         \egroup}
        \vbox % was \hbox
    \fi}
 
-% The next implementation is sub-optimal
+% testbed for \centertogrid 
 %
-% \def\centertogrid % usage: see ie pascal / stepcharts
-%   {\snaptogrid[\v!midden,.5\strutdp]\vbox}
+% \strut Bruggetje 
+% \startlinecorrection
+% \startcombination
+%   {\framed{test}} {} {\framed{test}} {}
+% \stopcombination
+% \stoplinecorrection
+% \strut Bruggetje 
+% \startlinecorrection
+% \startcombination[2*2]
+%   {\framed{test}} {} {\framed{test}} {}
+%   {\framed{test}} {} {\framed{test}} {}
+% \stopcombination
+% \stoplinecorrection
+% \strut Bruggetje 
+% \startlinecorrection[blank]
+% \startcombination
+%   {\framed{test}} {} {\framed{test}} {}
+% \stopcombination
+% \stoplinecorrection
+% \strut Bruggetje 
+% \startlinecorrection[blank]
+% \startcombination[2*2]
+%   {\framed{test}} {} {\framed{test}} {}
+%   {\framed{test}} {} {\framed{test}} {}
+% \stopcombination
+% \stoplinecorrection
+% \strut Bruggetje 
+% \startlinecorrection
+% \startcombination
+%   {\framed[lines=1]{test}} {} {\framed[lines=1]{test}} {}
+% \stopcombination
+% \stoplinecorrection
+% \strut Bruggetje 
+% \startlinecorrection
+% \startcombination[2*2]
+%   {\framed[lines=1]{test}} {} {\framed[lines=1]{test}} {}
+%   {\framed[lines=1]{test}} {} {\framed[lines=1]{test}} {}
+% \stopcombination
+% \stoplinecorrection
+% \strut Bruggetje 
+% \startlinecorrection[blank]
+% \startcombination
+%   {\framed[lines=1]{test}} {} {\framed[lines=1]{test}} {}
+% \stopcombination
+% \stoplinecorrection
+% \strut Bruggetje 
+% \startlinecorrection[blank]
+% \startcombination[2*2]
+%   {\framed[lines=1]{test}} {} {\framed[lines=1]{test}} {}
+%   {\framed[lines=1]{test}} {} {\framed[lines=1]{test}} {}
+% \stopcombination
+% \stoplinecorrection
 
 \ifx\startbaselinecorrection\undefined \wait \fi % change order
 

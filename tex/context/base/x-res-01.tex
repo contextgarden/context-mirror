@@ -55,8 +55,10 @@
 
 \setupoutput[pdftex] \overcomePDFspacefalse
 
-\doifnothing  {\jobfilename}        {\end}
-\doiffileelse {\jobfilename.xml} {} {\end}
+\setjobfullname {xml} % default suffix 
+
+\doifnothing  {\jobfullname}    {\end}
+\doiffileelse {\jobfullname} {} {\end}
 
 \def\StartDescription
   {\bgroup}
@@ -337,7 +339,7 @@
 
 \doglobal\newcounter\CurrentPage
 
-\processXMLfilegrouped{\jobfilename.xml}
+\processXMLfilegrouped{\jobfullname}
 
 \increment\NumberOfFigures
 
@@ -346,7 +348,7 @@
 
 \doglobal\newcounter\CurrentPage
 
-\processXMLfilegrouped{\jobfilename.xml}
+\processXMLfilegrouped{\jobfullname}
 
 \setuppapersize
   [S6][S6]
@@ -363,7 +365,7 @@
 
 \doglobal\newcounter\CurrentPage
 
-\processXMLfilegrouped{\jobfilename.xml} \page
+\processXMLfilegrouped{\jobfullname} \page
 
 \subject [list] {List of figures}
 
@@ -444,6 +446,6 @@
 
 \doglobal\newcounter\CurrentPage
 
-\processXMLfilegrouped{\jobfilename.xml} \page
+\processXMLfilegrouped{\jobfullname} \page
 
 \stoptext

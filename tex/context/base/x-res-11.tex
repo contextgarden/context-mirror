@@ -1,8 +1,8 @@
 %D \module
-%D   [      file=x-fig-09,
-%D        version=2002.06.27,
+%D   [      file=x-fig-11,
+%D        version=2003.02.08,
 %D          title=\CONTEXT\ Style File,
-%D       subtitle=Resource Reporting (2),
+%D       subtitle=Resource Reporting (3),
 %D         author=Hans Hagen,
 %D           date=\currentdate,
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
@@ -14,12 +14,18 @@
 \usemodule[res-00]
 
 \defineXMLenvironment [rl:library] 
-  {\starttext}
-  {\stoptext}
+  {\starttext 
+   \doiffileelse{\outputfilename.zip}{\setups[rl:attach]}{}
+   \disablemode[rl:used]}
+  {\doifnotmode{rl:used}{No images processed.}
+   \page
+   \stoptext}
 
 \defineXMLenvironment [rl:usage] 
   {\bgroup} 
-  {\doifnot{\XMLflush{rl:file}}{dummy}{\setups[rl:usage]}%
+  {\doifnot{\XMLflush{rl:file}}{dummy}
+     {\setups[rl:usage]
+      \enablemode[rl:used]}
    \egroup}
 
 \defineXMLsave [rl:base]    % base
@@ -36,16 +42,21 @@
 \def\XMLbpentry#1%
   {\PointsToWholeBigPoints{\XMLflush{#1}}\temp\temp bp}
 
-% \def\XMLrlentry#1#2#3%
-%   {\doiftextelse{\XMLflush{#2}}
-%      {\NC\bf#1\NC\XMLflush{#2}\doif{#3}{1}{ (\XMLbpentry{#2})}\NC\NR}
-%      {}}
-
 \def\XMLrlentry#1#2#3%
   {\tableiftextelse{\XMLflush{#2}}
      {\NC\bf#1\NC\XMLflush{#2}\doif{#3}{1}{ (\XMLbpentry{#2})}\NC\NR}{}}
 
-\startsetups[rl:usage]
+\unprotect 
+
+\setuplayout[\v!midden]
+
+\startsetups[rl:figure]
+
+  \externalfigure[\XMLflush{rl:file}][\c!breedte=4cm]
+ 
+\stopsetups
+
+\startsetups[rl:table]
 
 % by using a dedicated tabulation, we permit usage in dutch interface
 
@@ -66,4 +77,34 @@
 
 \stopsetups 
 
-\endinput 
+\startsetups[rl:usage]
+
+  \startfiguretext {\v!geen} {\setups[rl:figure]}
+    \setups[rl:table]
+  \stopfiguretext 
+
+\stopsetups 
+
+\startsetups[rl:attach]
+
+  \useMPlibrary[nav]
+
+  \setupcolors[\c!status=\v!start]
+
+  \setupinteraction[\c!status=\v!start]
+
+  \useattachment[whatever][\outputfilename.zip]
+
+  \startlocalsetups[rl:attach:button]
+
+    \inframed
+      [\c!offset=\v!overlay,\c!kader=\v!uit]
+      {\attachment[whatever]}
+
+  \stoplocalsetups
+ 
+  \setupfootertexts[archive with dummies: \setups{rl:attach:button}] 
+
+\stopsetups
+
+\protect \endinput 

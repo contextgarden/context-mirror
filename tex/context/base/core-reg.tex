@@ -108,10 +108,13 @@
 \def\donoregister[#1]%
   {\dodoregister[#1]{}}
 
+% \def\dodoregister[#1]#2#3%
+%   {\doprocesspageregister[#1]{#2}{#3}%
+%    \ifvmode\nobreak\fi
+%    \GotoPar}
+
 \def\dodoregister[#1]#2#3%
-  {\doprocesspageregister[#1]{#2}{#3}%
-   \ifvmode\nobreak\fi
-   \GotoPar}
+  {\dogotopar{\doprocesspageregister[#1]{#2}{#3}}}
 
 \def\writetoregister[#1]% to be documented
   {\doregister{#1}}

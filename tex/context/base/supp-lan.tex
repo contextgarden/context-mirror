@@ -547,9 +547,17 @@
 
   \newsignal\compoundbreakpoint
 
-  \def\fakecompoundhyphen%
-    {\def|##1|%
-       {\doifelsenothing{##1}{\compoundhyphen}{##1}%
+  % \def\fakecompoundhyphen%
+  %   {\def|##1|%
+  %      {\doifelsenothing{##1}{\compoundhyphen}{##1}%
+  %       \kern\compoundbreakpoint\allowbreak}}
+
+  \def\fakecompoundhyphen
+    {\def\|{\mathortext\vert\dofakecompoundhyphen}}
+
+  \def\dofakecompoundhyphen
+    {\def##1|%
+       {\doifelsenothing{##1}\compoundhyphen{##1}%
         \kern\compoundbreakpoint\allowbreak}}
 
 \fi

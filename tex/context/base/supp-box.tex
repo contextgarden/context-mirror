@@ -2238,6 +2238,24 @@
   {\normalhbox{\setbox0\placedbox{#1}\boxoffset=-.5\wd0\rightbox{\box0}}}
 
 %D \macros 
+%D   {toplinebox} 
+%D
+%D See core-tbl.tex for an example of its usage: 
+
+\def\toplinebox
+  {\dowithnextbox
+     {\ifdim\nextboxdp>\strutdepth
+        \scratchdimen\nextboxdp
+        \advance\scratchdimen-\strutdepth
+        \getnoflines\scratchdimen
+        \struttedbox{\flushnextbox}%
+        \dorecurse\noflines\verticalstrut
+      \else
+        \flushnextbox
+      \fi}%
+   \tbox}
+
+%D \macros 
 %D   {initializeboxstack,savebox,foundbox}
 %D
 %D At the cost of some memory, but saving box registers, we 

@@ -1673,9 +1673,9 @@
 %\def\redodefinefont#1#2#3%
 %  {\dododefinefont{#1}{#2}%
 %   \doifnumberelse{#3}
-%     {\stelinterliniein[#3]\stelspatieringin}
+%     {\setupinterlinespace[#3]\setupspacing}
 %     {\doifassignmentelse{#3}
-%        {\stelinterliniein[#3]\stelspatieringin}
+%        {\setupinterlinespace[#3]\setupspacing}
 %        {\setups[#3]}}} % so, we can have setups associated to fonts ! 
 
 \def\redodefinefont#1#2#3%
@@ -1683,7 +1683,7 @@
    \doifsetupselse{#3}
      {\setups[#3]} % don't forget to document this ! 
      {\setuplocalinterlinespace[#3]%
-      \stelspatieringin}} % needed ? 
+      \setupspacing}} % needed ? 
 
 % \def\defineclassfont
 %   {\doquadrupleempty\dodefineclassfont}
@@ -3733,7 +3733,7 @@
 %D some typing:
 
 \def\setfont% geen \dosetfont mogelijk
-  {\def\next{\nextfont\stelinterliniein}%
+  {\def\next{\nextfont\setupinterlinespace}%
    \afterassignment\next\font\nextfont=}
 
 %D One can call this macro as:

@@ -76,7 +76,7 @@
       \c!kopletter=,
       \c!letter=]%
 %
-   \stelwitruimtein[\v!geen]%
+   \setupwhitespace[\v!geen]%
    \doutilities{#1}\jobname{#2}\relax\par
    \endgroup
    \ifutilitydone\else\geenwitruimte\fi}
@@ -257,7 +257,7 @@
 \def\doplaatslijstmetsorteren#1% NOG EEN RUWE VERSIE MAKEN
   {\witruimte                  % ZONDER WITRUIMTE ETC ETC
    \begingroup
-   \stelwitruimtein[\v!geen]%
+   \setupwhitespace[\v!geen]%
    \doutilities{#1}\jobname{#1}\relax\par
    \endgroup
    \ifutilitydone\else\geenwitruimte\fi}

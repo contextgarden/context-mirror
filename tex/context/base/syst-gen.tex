@@ -1,6 +1,6 @@
 %D \module
 %D   [       file=syst-gen,
-%D        version=1996.3.20,
+%D        version=1996.03.20,
 %D          title=\CONTEXT\ System Macros,
 %D       subtitle=General,
 %D         author=Hans Hagen,
@@ -1348,6 +1348,68 @@
 %
 % \endETEX
 
+% then we had: 
+% 
+% \def\p!docheckiteminset#1%
+%   {\edef\!!stringb{#1}%
+%    \ifx\!!stringa\!!stringb
+%      \donetrue
+%      \expandafter\quitcommalist
+%    \fi}
+% 
+% \beginTEX
+% 
+% \def\p!doifinsetelse#1#2%
+%   {\let\donottest\dontprocesstest
+%    \donefalse
+%    \edef\!!stringa{#1}%
+%    \ifx\!!stringa\empty
+%    \else
+%      \processcommalist[#2]\p!docheckiteminset
+%    \fi
+%    \let\donottest\doprocesstest
+%    \ifdone}
+% 
+% \endTEX
+% 
+% % can be sped up with processnext...
+% 
+% \beginETEX \protected
+% 
+% \def\p!doifinsetelse#1#2%
+%   {\donefalse
+%    \edef\!!stringa{#1}%
+%    \ifx\!!stringa\empty
+%    \else
+%      \processcommalist[#2]\p!docheckiteminset
+%    \fi
+%    \ifdone}
+% 
+% \endETEX
+% 
+% \long\def\doifinsetelse#1#2%
+%   {\p!doifinsetelse{#1}{#2}%
+%      \expandafter\firstoftwoarguments
+%    \else
+%      \expandafter\secondoftwoarguments
+%    \fi}
+% 
+% \long\def\doifinset#1#2%    
+%   {\p!doifinsetelse{#1}{#2}%
+%      \expandafter\firstofoneargument
+%    \else
+%      \expandafter\gobbleoneargument
+%    \fi}
+% 
+% \long\def\doifnotinset#1#2% 
+%   {\p!doifinsetelse{#1}{#2}%
+%      \expandafter\gobbleoneargument
+%    \else
+%      \expandafter\firstofoneargument
+%     \fi}
+%  
+% now we have 
+
 \def\p!docheckiteminset#1%
   {\edef\!!stringb{#1}%
    \ifx\!!stringa\!!stringb
@@ -1357,54 +1419,40 @@
 
 \beginTEX
 
-\def\p!doifinsetelse#1#2%
+\def\p!doifinsetelse#1#2#3#4%
   {\let\donottest\dontprocesstest
    \donefalse
-   \edef\!!stringa{#1}%
+   \edef\!!stringa{#3}%
    \ifx\!!stringa\empty
    \else
-     \processcommalist[#2]\p!docheckiteminset
+     \processcommalist[#4]\p!docheckiteminset
    \fi
    \let\donottest\doprocesstest
-   \ifdone}
+   \ifdone\expandafter#1\else\expandafter#2\fi}
 
 \endTEX
 
-% can be sped up with processnext...
-
 \beginETEX \protected
 
-\def\p!doifinsetelse#1#2%
+\def\p!doifinsetelse#1#2#3#4%
   {\donefalse
-   \edef\!!stringa{#1}%
+   \edef\!!stringa{#3}%
    \ifx\!!stringa\empty
    \else
-     \processcommalist[#2]\p!docheckiteminset
+     \processcommalist[#4]\p!docheckiteminset
    \fi
-   \ifdone}
+   \ifdone\expandafter#1\else\expandafter#2\fi}
 
 \endETEX
 
-\long\def\doifinsetelse#1#2%
-  {\p!doifinsetelse{#1}{#2}%
-     \expandafter\firstoftwoarguments
-   \else
-     \expandafter\secondoftwoarguments
-   \fi}
+\long\def\doifinsetelse
+  {\p!doifinsetelse\firstoftwoarguments\secondoftwoarguments}
 
-\long\def\doifinset#1#2%    
-  {\p!doifinsetelse{#1}{#2}%
-     \expandafter\firstofoneargument
-   \else
-     \expandafter\gobbleoneargument
-   \fi}
+\long\def\doifinset
+  {\p!doifinsetelse\firstofoneargument\gobbleoneargument}
 
-\long\def\doifnotinset#1#2% 
-  {\p!doifinsetelse{#1}{#2}%
-     \expandafter\gobbleoneargument
-   \else
-     \expandafter\firstofoneargument
-   \fi}
+\long\def\doifnotinset
+  {\p!doifinsetelse\gobbleoneargument\firstofoneargument}
 
 %D \macros
 %D   {doifcommon,doifnotcommon,doifcommonelse}
@@ -1493,6 +1541,62 @@
 %
 % \endETEX
 
+% \def\p!dodocommoncheck#1%
+%   {\edef\!!stringb{#1}%
+%    \ifx\!!stringa\!!stringb
+%      \donetrue
+%      \expandafter\quitprevcommalist
+%    \fi}
+% 
+% \beginTEX
+% 
+% \def\p!doifcommonelse#1#2%
+%   {\donefalse
+%    \let\donottest\dontprocesstest
+%    \def\p!docommoncheck##1%
+%      {\edef\!!stringa{##1}%
+%       \def\commalistelement{##1}% no let to stringa 
+%       \processcommalist[#2]\p!dodocommoncheck}%
+%    \processcommalist[#1]\p!docommoncheck
+%    \let\donottest\doprocesstest
+%    \ifdone}
+% 
+% \endTEX
+% 
+% \beginETEX \protected
+% 
+% \def\p!doifcommonelse#1#2%
+%   {\donefalse
+%    \def\p!docommoncheck##1%
+%      {\edef\!!stringa{##1}%
+%       \def\commalistelement{##1}%
+%       \processcommalist[#2]\p!dodocommoncheck}%
+%    \processcommalist[#1]\p!docommoncheck
+%    \ifdone}
+% 
+% \endETEX
+% 
+% \long\def\doifcommonelse#1#2%  % #3#4%
+%   {\p!doifcommonelse{#1}{#2}%  % #3\else#4\fi}
+%      \expandafter\firstoftwoarguments
+%    \else
+%      \expandafter\secondoftwoarguments
+%    \fi}
+% 
+% \long\def\doifcommon#1#2%    
+%   {\p!doifcommonelse{#1}{#2}%
+%      \expandafter\firstofoneargument
+%    \else
+%      \expandafter\gobbleoneargument
+%    \fi}
+% 
+% \long\def\doifnotcommon#1#2% 
+%   {\p!doifcommonelse{#1}{#2}%
+%      \expandafter\gobbleoneargument
+%    \else
+%      \expandafter\firstofoneargument
+%    \fi}
+
 \def\p!dodocommoncheck#1%
   {\edef\!!stringb{#1}%
    \ifx\!!stringa\!!stringb
@@ -1502,52 +1606,40 @@
 
 \beginTEX
 
-\def\p!doifcommonelse#1#2%
+\def\p!doifcommonelse#1#2#3#4%
   {\donefalse
    \let\donottest\dontprocesstest
    \def\p!docommoncheck##1%
      {\edef\!!stringa{##1}%
       \def\commalistelement{##1}% no let to stringa 
-      \processcommalist[#2]\p!dodocommoncheck}%
-   \processcommalist[#1]\p!docommoncheck
+      \processcommalist[#4]\p!dodocommoncheck}%
+   \processcommalist[#3]\p!docommoncheck
    \let\donottest\doprocesstest
-   \ifdone}
+   \ifdone\expandafter#1\else\expandafter#2\fi}
 
 \endTEX
 
 \beginETEX \protected
 
-\def\p!doifcommonelse#1#2%
+\def\p!doifcommonelse#1#2#3#4%
   {\donefalse
    \def\p!docommoncheck##1%
      {\edef\!!stringa{##1}%
       \def\commalistelement{##1}%
-      \processcommalist[#2]\p!dodocommoncheck}%
-   \processcommalist[#1]\p!docommoncheck
-   \ifdone}
+      \processcommalist[#4]\p!dodocommoncheck}%
+   \processcommalist[#3]\p!docommoncheck
+   \ifdone\expandafter#1\else\expandafter#2\fi}
 
 \endETEX
 
-\long\def\doifcommonelse#1#2%  % #3#4%
-  {\p!doifcommonelse{#1}{#2}%  % #3\else#4\fi}
-     \expandafter\firstoftwoarguments
-   \else
-     \expandafter\secondoftwoarguments
-   \fi}
+\def\doifcommonelse
+  {\p!doifcommonelse\firstoftwoarguments\secondoftwoarguments}
 
-\long\def\doifcommon#1#2%    
-  {\p!doifcommonelse{#1}{#2}%
-     \expandafter\firstofoneargument
-   \else
-     \expandafter\gobbleoneargument
-   \fi}
+\def\doifcommon
+  {\p!doifcommonelse\firstofoneargument \gobbleoneargument}
 
-\long\def\doifnotcommon#1#2% 
-  {\p!doifcommonelse{#1}{#2}%
-     \expandafter\gobbleoneargument
-   \else
-     \expandafter\firstofoneargument
-   \fi}
+\def\doifnotcommon
+  {\p!doifcommonelse\gobbleoneargument  \firstofoneargument}
 
 %D \macros
 %D   {processcommalist,processcommacommand,quitcommalist,
@@ -2010,7 +2102,7 @@
      \fi
    \fi}
 
-\def\doprocessallactionsinset%
+\def\doprocessallactionsinset
   {\csname\s!do\the\processlevel\endcsname}
 
 \def\processallactionsinset[#1]#2[#3]% faster version follows
@@ -2132,10 +2224,7 @@
 
 %D By default we expand actions:
 
-\def\expandactions%
-  {\let\expandedaction\edef}
-
-\expandactions
+\def\expandactions{\let\expandedaction\edef} \expandactions
 
 %D But when needed we convert the strings to meaningful
 %D sequences of characters.

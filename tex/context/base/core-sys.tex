@@ -31,33 +31,73 @@
 
 \appendtoks \splitjobfilename \to \everyjob
 
+% Some mechanisms (see x-res-01) use either \jobfilename or 
+% \jobfilename.somesuffix, in which case we need to use the 
+% full name if given or a default (like \jobfilename.xml); 
+% this comes down to replacing the default tex suffix. 
+
+\def\jobfullname{\jobfilename.\jobfilesuffix} 
+
+\def\setjobfullname#1% #1 = default if not given 
+  {\doifelsenothing\jobfilename
+     {\let\jobfullname\empty}                          
+     {\doif\jobfilesuffix\c!tex{\edef\jobfullname{\jobfilename.#1}}}}
+
+% ... 
+
 \def\dosetupsystem[#1]%
   {\getparameters[\??sv][#1]%
    \setuprandomize[\@@svwillekeur]%
    \beforesplitstring\@@svresolutie\at dpi\to\@@svresolutie
    \let\outputresolution\@@svresolutie
+   \ifcase\@@svn
+     %                        % 0 : unknown 
+   \or 
+     \setsystemmode\v!eerste  % 1 : first run 
+   \or 
+     %                        % 2 : successive run 
+   \or 
+     \setsystemmode\v!eerste  % 3 : first and only run 
+   \or
+     \setsystemmode\v!laatste % 4 : extra last run 
+   \fi 
    \splitjobfilename}
 
 \def\setupsystem
   {\dosingleargument\dosetupsystem}
 
+%D The system modes set by the setup command can be used in 
+%D situations like: 
+%D
+%D \starttypen
+%D \startmode[*first]
+%D   \executesystemcommand{cleanupxml text.xml clean-text.xml}
+%D \stopmode 
+%D 
+%D \starttext 
+%D   \typefile{clean-text.xml}
+%D \stoptext
+%D \stoptypen 
+
 \def\setuprandomize[#1]%
   {\doifsomething{#1}
      {\bgroup
-      \setrandomseed\minusone
+      \setrandomseed\minusone % signals thrd-ran to reseed
+      % tex's time is in minutes 
       \processaction
         [#1]
-        [  \v!klein=>\divide\time  900, % 15   taco vragen hoe
-          \v!middel=>\divide\time 1800, % 30   time werkt; nodig voor 
-           \v!groot=>\divide\time 3600, % 60   random pos deadlock
+        [  \v!klein=>\divide\normaltime 15, %  900, 
+          \v!middel=>\divide\normaltime 30, % 1800, 
+           \v!groot=>\divide\normaltime 60, % 3600, 
          \v!normaal=>,
          \s!default=>,
-         \s!unknown=>\time=#1]%    
+         \s!unknown=>\normaltime=#1]%    
       \nextrandom   
       \egroup}}
 
 \setupsystem
   [\c!gebied=,
+   \c!n=0, % 0:unknown 1: one run 2: first 3: successive 4: final run 
    \c!resolutie=600dpi,
    \c!willekeur=,
    \c!file=\jobname,

@@ -178,9 +178,14 @@
    \fi
    \egroup}
 
+% \long\def\preservePSpar#1\to#2%
+%   {\bgroup
+%    \def\par{\rawcharacter{12}}%
+%    \expanded{\egroup\noexpand\def\noexpand#2{#1}}}
+
 \long\def\preservePSpar#1\to#2%
   {\bgroup
-   \def\par{\rawcharacter{12}}%
+   \def\par{\rawcharacter{12}\rawcharacter{12}}%
    \expanded{\egroup\noexpand\def\noexpand#2{#1}}}
 
 %D \macros 

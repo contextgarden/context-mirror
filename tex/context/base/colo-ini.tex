@@ -1,6 +1,6 @@
 %D \module
 %D   [       file=colo-ini,
-%D        version=1997.4.1,
+%D        version=1997.04.01,
 %D          title=\CONTEXT\ Color Macros,
 %D       subtitle=Initialization,
 %D         author=Hans Hagen,
@@ -1795,10 +1795,26 @@
 %D therefore implement \type{\color} as:
 
 \unexpanded\def\color[#1]%
+  {\groupedcommand{\startcolor[#1]}\stopcolor}
+
+% \let\switchtocolor\color
+
+%D When \type {\somecolor} is issued, we can savely assume
+%D grouping. Using \type {\groupedcommand} here (i.e.\ the
+%D definition of \type {\color}) is unsafe because in
+%D interferes with for instance switching attributes.
+
+%D Also wrong, test in combinations: \type{...{}{\red test}}
+%D
+%D \def\switchtocolor[#1]%
+%D   {\startcolor[#1]\aftergroup\stopcolor}
+
+\def\switchtocolor[#1]% grouping is realy needed, else migration 
+  {\bgroup\startcolor[#1]\aftergroup\stopcolor\aftergroup\egroup}
+
+\unexpanded\def\color[#1]%
   {\groupedcommand
      {\startcolor[#1]}\stopcolor}
-
-\let\switchtocolor\color
 
 \unexpanded\def\graycolor[#1]% not \gray because this is a color
   {\groupedcommand

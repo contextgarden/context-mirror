@@ -41,7 +41,7 @@
   [style=type]
 
 \setupbodyfont
-  [10pt]
+  [10pt,tt]
 
 \setuptolerance
   [verytolerant]   
@@ -80,6 +80,10 @@
   \showXMLlin
     [exa:resolve,exa:include]
 \stopmode
+
+\def\XMLbannerprocessor#1{\string<\string ?xml #1\string ?\string>\endgraf}
+
+\defineXMLprocessor [xml] {\XMLbannerprocessor}
 
 \starttext
 

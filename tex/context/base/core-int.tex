@@ -1,6 +1,6 @@
 %D \module
 %D   [       file=core-int,
-%D        version=1995.1.1,
+%D        version=1995.01.01,
 %D          title=\CONTEXT\ Core Macros,
 %D       subtitle=Interaction,
 %D         author=Hans Hagen,
@@ -872,7 +872,7 @@
      \advance\dimen0 -\getvalue{\??am#3\c!onderoffset}%
      \setbox0\vbox to \dimen0
        {\forgetall                     % Voor't geval de afstand
-       %\stelblankoin[\v!standaard]%   % (tijdelijk) is aangepast.
+       %\setupblank[\v!standaard]%   % (tijdelijk) is aangepast.
         \restorestandardblank
         \hsize#2\relax
         \executeamboxcommands{#3}{#4}\c!voor\c!tussen\c!na}%
@@ -2232,6 +2232,44 @@
 
 \def\placecomments
   {\doflushcomments}
+
+% \setupinteraction[state=start]
+% 
+% \useattachment[whatever][[new name]][test.tex]
+% 
+% % \setupattachments[\c!symbool={symbol-normal,symbol-down}]
+% 
+% \starttext \attachment[whatever] \stoptext
+
+\definesystemvariable{at}
+
+\def\useattachment
+  {\dotripleempty\douseattachment}
+
+\def\douseattachment[#1][#2][#3]% 
+  {\setgvalue{\??at :#1}{#2}%
+   \setgvalue{\??at::#1}{#3}%
+   \doifvaluenothing{\??at :#1}{\setxvalue{\??at :#1}{#1}}%
+   \doifvaluenothing{\??at::#1}{\setxvalue{\??at::#1}{\getvalue{\??at:#1}}}}
+
+\def\attachment[#1]%
+  {\ifundefined{\??at:#1}\else \iflocation
+     \doif\@@atstatus\v!start
+       {\doiffileelse{\getvalue{\??at:#1}}%
+          {\doPDFattachfile
+             {\getvalue{\??at::#1}}%
+             {1em}{1ex}\@@atkleur\@@atsymbool
+             {\getvalue{\??at:#1}}}%
+          {}}%
+   \fi \fi}
+
+\def\setupattachments
+  {\dodoubleempty\getparameters[\??at]}
+
+\setupattachments
+  [\c!status=\v!start,
+   \c!kleur=\@@iakleur,
+   \c!symbool=]
 
 % jammer, tussen/midden had erin gemoeten; \c!commando toevoegen
 

@@ -1379,20 +1379,38 @@
 
 \newif\ifinterfacetranslation
 
+% for a long time: 
+%
+% \def\getinterfaceconstant#1%
+%   {\ifinterfacetranslation
+%      \doifdefinedelse{\x!prefix!#1}
+%        {\getvalue{\x!prefix!#1}}
+%        {#1}%
+%    \else
+%      #1%
+%    \fi}
+% 
+% \def\getinterfacevariable#1%
+%   {\ifinterfacetranslation
+%      \doifdefinedelse{\y!prefix!#1}
+%        {\getvalue{\y!prefix!#1}}
+%        {#1}%
+%    \else
+%      #1%
+%    \fi}
+% 
+% more compact 
+
 \def\getinterfaceconstant#1%
   {\ifinterfacetranslation
-     \doifdefinedelse{\x!prefix!#1}
-       {\getvalue{\x!prefix!#1}}
-       {#1}%
+     \executeifdefined{\x!prefix!#1}{#1}%
    \else
      #1%
    \fi}
 
 \def\getinterfacevariable#1%
   {\ifinterfacetranslation
-     \doifdefinedelse{\y!prefix!#1}
-       {\getvalue{\y!prefix!#1}}
-       {#1}%
+     \executeifdefined{\y!prefix!#1}{#1}%
    \else
      #1%
    \fi}

@@ -72,6 +72,7 @@ set  TeXFontsPath       to  l:/tex/texmf;l:/tex/texmf-local;
 
 % For teTeX the next settings will do.
 
+for  tetex  set  TeXHashExecutable to  mktexlsr
 for  tetex  set  TeXExecutable     to  pdfetex
 for  tetex  set  TeXVirginFlag     to  -ini
 for  tetex  set  TeXPassString     to  -progname=context 
@@ -85,6 +86,7 @@ for  tetex  set  MpNonStopFlag     to  -int=nonstopmode
 
 % These also apply to fpTeX. 
 
+for  fptex  set  TeXHashExecutable to  mktexlsr
 for  fptex  set  TeXExecutable     to  pdfetex
 for  fptex  set  TeXVirginFlag     to  -ini
 for  fptex  set  TeXPassString     to  -progname=context 
@@ -98,6 +100,7 @@ for  tetex  set  MpNonStopFlag     to  -int=nonstopmode
 
 % MikTeX users probably have to set up some paths too.
 
+for  miktex  set  TeXHashExecutable to  initexmf --update-fndb
 for  miktex  set  TeXExecutable     to  pdfetex
 for  miktex  set  TeXVirginFlag     to  --initialize
 for  miktex  set  TeXPassString     to  --alias=context 

@@ -39,12 +39,19 @@
 \def\@@definitiewoord#1%
   {\getvalue{\??dd#1\s!do\c!commando}{#1}}
 
+% \def\normal@@definitiewoord#1[#2]#3#4%
+%   {\doattributes
+%      {\??dd#1}\c!kopletter\c!kopkleur
+%      {\getvalue{\??dd#1\c!commando}% NAAR BUITENSTE NIVEAU !
+%         {\begstrut\getvalue{\??dd#1\c!tekst}#4\endstrut}}%
+%    \rawreference\s!def{#2}{#3}}
+
 \def\normal@@definitiewoord#1[#2]#3#4%
   {\doattributes
      {\??dd#1}\c!kopletter\c!kopkleur
-     {\getvalue{\??dd#1\c!commando}% NAAR BUITENSTE NIVEAU !
-        {\begstrut\getvalue{\??dd#1\c!tekst}#4\endstrut}}%
-   \rawreference\s!def{#2}{#3}}
+     {\getvalue{\??dd#1\c!commando}{#4}}% NAAR BUITENSTE NIVEAU !
+   \rawreference\s!def{#2}{#3}} % brrr moet in #4 
+
 
 \setvalue{@@definitie\v!links}#1%
   {\@@definitiehang{#1}\@@definitielinkspure\@@definitielinkshang}
@@ -97,7 +104,7 @@
       \hsize\!!widtha
       \leftskip\zeropoint
       \rightskip\zeropoint
-      #2\steluitlijnenin[\getvalue{\??dd#1\c!uitlijnen}]%
+      #2\setupalign[\getvalue{\??dd#1\c!uitlijnen}]%
       \unhcopy\@@definitiebox}%
    \ht\@@definitiebox\strutht
    \dp\@@definitiebox\strutdp}
@@ -136,7 +143,7 @@
      {\forgetall
       \mindermeldingen
       \hsize\!!widtha
-      #2\steluitlijnenin[\getvalue{\??dd#1\c!uitlijnen}]#3%
+      #2\setupalign[\getvalue{\??dd#1\c!uitlijnen}]#3%
       \unhcopy\@@definitiebox}%
    \ht\@@definitiebox\strutht
    \dp\@@definitiebox\strutdp
@@ -243,18 +250,51 @@
 \let\@@leftdefinitieskip \!!zeropoint
 \let\@@rightdefinitieskip\!!zeropoint
 
+% \def\@@dostartdefinitie#1[#2]#3%
+%   {\getvalue{\??dd#1\c!voor}%
+%    \begingroup
+%    \doadaptleftskip{\getvalue{\??dd#1\c!marge}}%
+%    \showcomposition
+%    \setbox\@@definitiebox\hbox
+%      {\forgetall
+%       \mindermeldingen
+%       \def\\{\crcr}%
+%       \doifelsevalue{\??dd#1\c!plaats}\v!aanelkaar
+%         {\@@definitiewoord{#1}[#2]{#3}{#3}}
+%         {\@@definitiewoord{#1}[#2]{#3}{\vbox{\halign{\strut##\hss\cr#3\crcr}}}}}%
+%    \!!widthb\getvalue{\??dd#1\c!afstand}\relax
+%    \ifdim\!!widthb=\zeropoint\relax
+%      \doifvalue{\??dd#1\c!breedte}\v!ruim{\!!widthb=1em}%
+%    \fi
+%    \assignwidth
+%      {\!!widtha}
+%      {\getvalue{\??dd#1\c!breedte}}
+%      {\doifelsevaluenothing{\??dd#1\c!monster}
+%         {\unhcopy\@@definitiebox}
+%         {\doattributes
+%            {\??dd#1}\c!kopletter\c!kopkleur
+%            {\getvalue{\??dd#1\c!tekst}\getvalue{\??dd#1\c!monster}}}}
+%      {\!!widthb}%
+% %   \parindent\zeropoint\relax
+%    \doifelsevalue{\??dd#1\c!titeluitlijnen}\v!nee
+%      {\edef\@@leftdefinitieskip {\the\leftskip }%
+%       \edef\@@rightdefinitieskip{\the\rightskip}}
+%      {\ifcase\insidedefinition 
+%         \edef\@@leftdefinitieskip {\the\leftskip }%
+%         \edef\@@rightdefinitieskip{\the\rightskip}%
+%       \fi}%
+% \expanded{\inspringen[\getvalue{\??dd#1\c!inspringen}]}%
+%    \ifcase\insidedefinition % better a system mode 
+%      \chardef\insidedefinition\plusone
+%    \or
+%      \chardef\insidedefinition\plustwo
+%    \fi} % now happens elsewhere : \noindent\ignorespaces
+
 \def\@@dostartdefinitie#1[#2]#3%
   {\getvalue{\??dd#1\c!voor}%
    \begingroup
    \doadaptleftskip{\getvalue{\??dd#1\c!marge}}%
    \showcomposition
-   \setbox\@@definitiebox\hbox
-     {\forgetall
-      \mindermeldingen
-      \def\\{\crcr}%
-      \doifelsevalue{\??dd#1\c!plaats}\v!aanelkaar
-        {\@@definitiewoord{#1}[#2]{#3}{#3}}
-        {\@@definitiewoord{#1}[#2]{#3}{\vbox{\halign{\strut##\hss\cr#3\crcr}}}}}%
    \!!widthb\getvalue{\??dd#1\c!afstand}\relax
    \ifdim\!!widthb=\zeropoint\relax
      \doifvalue{\??dd#1\c!breedte}\v!ruim{\!!widthb=1em}%
@@ -268,7 +308,16 @@
            {\??dd#1}\c!kopletter\c!kopkleur
            {\getvalue{\??dd#1\c!tekst}\getvalue{\??dd#1\c!monster}}}}
      {\!!widthb}%
-%   \parindent\zeropoint\relax
+   \setbox\@@definitiebox\hbox
+     {\forgetall
+      \mindermeldingen
+      \let\\\endgraf
+      \doifelsevalue{\??dd#1\c!plaats}\v!aanelkaar
+        {\@@definitiewoord{#1}[#2]{#3}%
+           {\begstrut\getvalue{\??dd#1\c!tekst}#3\endstrut}}
+        {\@@definitiewoord{#1}[#2]{#3}%
+           {\vtop{\hsize\!!widtha\advance\hsize-\!!widthb
+            \begstrut\getvalue{\??dd#1\c!tekst}\ignorespaces#3\endstrut}}}}%
    \doifelsevalue{\??dd#1\c!titeluitlijnen}\v!nee
      {\edef\@@leftdefinitieskip {\the\leftskip }%
       \edef\@@rightdefinitieskip{\the\rightskip}}
@@ -276,7 +325,7 @@
         \edef\@@leftdefinitieskip {\the\leftskip }%
         \edef\@@rightdefinitieskip{\the\rightskip}%
       \fi}%
-\expanded{\inspringen[\getvalue{\??dd#1\c!inspringen}]}%
+   \expanded{\inspringen[\getvalue{\??dd#1\c!inspringen}]}%
    \ifcase\insidedefinition % better a system mode 
      \chardef\insidedefinition\plusone
    \or
@@ -364,10 +413,17 @@
 \def\showdnpuretext#1%
   {\strut\getvalue{\??dd#1\c!tekst}} % geen spatie
 
+% \def\showdntext#1%
+%   {\doifelsevaluenothing{\??dd#1\c!tekst}
+%      {\ignorespaces}
+%      {\strut\getvalue{\??dd#1\c!tekst}\fixedspace}}
+
 \def\showdntext#1%
   {\doifelsevaluenothing{\??dd#1\c!tekst}
      {\ignorespaces}
-     {\strut\getvalue{\??dd#1\c!tekst}\fixedspace}}
+     {\strut
+      \getvalue{\??dd#1\c!tekst}%
+      \removeunwantedspaces\fixedspace}}
 
 % \def\showdnnummer#1%
 %   {\voorafgaandenummer
@@ -401,13 +457,68 @@
 
 % #1=name  #2=level #3=\show  #4[#5]#6#7=#1[#2]#3#4 van definitie
 
+% \def\special@@definitiewoord#1#2#3#4[#5]#6#7%
+%   {\strut
+%    \doifelsevalue{\??dd#1\c!nummer}\v!nee
+%      \!!doneafalse
+%      {\doifelse{#5}{-}
+%         \!!doneafalse
+%         \!!doneatrue}%
+%    \chardef\definitiekoppeling\zerocount
+%    \iflocation
+%      \doifvaluesomething{\??dd#1\c!koppeling}
+%        {\processaction % genereert > of <
+%           [\getvalue{\??dd#1\c!koppelwijze}]
+%           [ \v!lokaal=>\chardef\definitiekoppeling1, % old: default
+%            \v!globaal=>\chardef\definitiekoppeling2]}% new: global crosslinking
+%    \fi
+%    \stelnummerin % the number is called indirectly
+%      [\getvalue{\??dd#1\??dd\c!nummer}]
+%      [\c!sectienummer=\getvalue{\??dd#1\c!sectienummer}]%
+%    \if!!donea
+%      \getvalue{\e!volgende#2#1}%
+%      \iflocation
+%        \bgroup
+%        \letvalue{\??dd#1\c!sectienummer}\v!ja
+%        \protectconversion
+%        \maakvoorafgaandenummer[\getvalue{\??dd#1\??dd\c!nummer}]%
+%        \preparethenumber{\??dd#1}\voorafgaandenummer\preparednumber
+%        \ifcase\definitiekoppeling \or
+%          \xdef\internaldoornummer{#3{#1}}%
+%          \rawreference\s!num{#1:\internaldoornummer}{}%
+%        \or
+%          \xdef\internaldoornummer{\countervalue{\??dd\c!koppeling#1}}%
+%          \rawreference\s!num{#1:\internaldoornummer}{}%
+%        \fi
+%        \egroup
+%      \fi
+%      \maakvoorafgaandenummer[\getvalue{\??dd#1\??dd\c!nummer}]%
+%      \preparethenumber{\??dd#1}\voorafgaandenummer\preparednumber
+%      \hbox
+%        {\let\normalkap\relax % sorry, uppercase causes troubles
+%         \doattributes        % \nocase primitive needed
+%           {\??dd#2#1}\c!kopletter\c!kopkleur 
+%           {\getvalue{\??dd#1\c!commando}% hook for taco 
+%              {\showdntext{#2#1}%
+%               \domakednnummer{#1}{#2}{#3}}}%
+%         \iflocation\ifcase\definitiekoppeling \else
+%           \edef\localconnection{\getvalue{\??dd#1\c!koppeling}:\internaldoornummer}%
+%           \doifreferencefoundelse\localconnection
+% %             {\in[\localconnection]}{}% genereert > of <
+%         \fi\fi}%
+%      \doifnot{#5}{-}{\rawreference\s!num{#5}{#3{#1}}}%
+%    \else % Why was this strange expansion needed? 
+%      \hbox
+%        {\edef\!!stringa{\showdnpuretext{#2#1}}% nog eens testen binnen \expanded
+%         \expanded{\doattributes{\??dd#1}\noexpand\c!kopletter\noexpand\c!kopkleur
+%           {\noexpand\getvalue{\??dd#1\c!commando}{\!!stringa}}}%
+%         \doifnot{#5}{-}{\rawreference\s!num{#5}{}}}%
+%    \fi}
+
 \def\special@@definitiewoord#1#2#3#4[#5]#6#7%
   {\strut
    \doifelsevalue{\??dd#1\c!nummer}\v!nee
-     \!!doneafalse
-     {\doifelse{#5}{-}
-        \!!doneafalse
-        \!!doneatrue}%
+     \!!doneafalse{\doifelse{#5}{-}\!!doneafalse\!!doneatrue}%
    \chardef\definitiekoppeling\zerocount
    \iflocation
      \doifvaluesomething{\??dd#1\c!koppeling}
@@ -438,25 +549,23 @@
      \fi
      \maakvoorafgaandenummer[\getvalue{\??dd#1\??dd\c!nummer}]%
      \preparethenumber{\??dd#1}\voorafgaandenummer\preparednumber
-     \hbox
-       {\let\normalkap\relax % sorry, uppercase causes troubles
-        \doattributes        % \nocase primitive needed
-          {\??dd#2#1}\c!kopletter\c!kopkleur 
-          {\getvalue{\??dd#1\c!commando}% hook for taco 
-             {\showdntext{#2#1}%
-              \domakednnummer{#1}{#2}{#3}}}%
-        \iflocation\ifcase\definitiekoppeling \else
-          \edef\localconnection{\getvalue{\??dd#1\c!koppeling}:\internaldoornummer}%
-          \doifreferencefoundelse\localconnection
-            {\in[\localconnection]}{}% genereert > of <
-        \fi\fi}%
+     \let\normalkap\relax % sorry, uppercase causes troubles
+     \doattributes        % \nocase primitive needed
+       {\??dd#1}\c!kopletter\c!kopkleur
+       {\getvalue{\??dd#1\c!commando}% hook for taco 
+          {\showdntext{#2#1}%
+           \domakednnummer{#1}{#2}{#3}}}%
+     \iflocation\ifcase\definitiekoppeling \else
+       \edef\localconnection{\getvalue{\??dd#1\c!koppeling}:\internaldoornummer}%
+       \doifreferencefoundelse\localconnection
+         {\in[\localconnection]}\donothing % genereert > of <
+     \fi\fi
      \doifnot{#5}{-}{\rawreference\s!num{#5}{#3{#1}}}%
    \else % Why was this strange expansion needed? 
-     \hbox
-       {\edef\!!stringa{\showdnpuretext{#2#1}}% nog eens testen binnen \expanded
-        \expanded{\doattributes{\??dd#1}\noexpand\c!kopletter\noexpand\c!kopkleur
-          {\noexpand\getvalue{\??dd#1\c!commando}{\!!stringa}}}%
-        \doifnot{#5}{-}{\rawreference\s!num{#5}{}}}%
+     \edef\!!stringa{\showdnpuretext{#2#1}}% nog eens testen binnen \expanded
+     \expanded{\doattributes{\??dd#1}\noexpand\c!kopletter\noexpand\c!kopkleur
+       {\noexpand\getvalue{\??dd#1\c!commando}{\!!stringa}}}%
+     \doifnot{#5}{-}{\rawreference\s!num{#5}{}}%
    \fi}
 
 \def\@@ddsetsubsubsubnummer#1%

@@ -1609,16 +1609,35 @@
    \popendofline
    \egroup}
 
+% \def\pagefigure
+%   {\dodoubleempty\dopagefigure}
+% 
+% \def\dopagefigure[#1][#2]%
+%   {\bgroup
+%    \getparameters[\??ex][\c!offset=\v!overlay,#2]%
+%    \startTEXpage[\c!offset=\@@exoffset]%
+%      \externalfigure[#1][#2]%
+%    \stopTEXpage
+%    \egroup}
+
+\def\startpagefigure
+  {\dodoubleempty\dostartpagefigure}
+
+\def\dostartpagefigure[#1][#2]% 
+  {\bgroup
+   \getparameters[\??ex][\c!offset=\v!overlay,#2]%
+   \startTEXpage[\c!offset=\@@exoffset]%
+     \externalfigure[#1][#2]\ignorespaces}
+
+\def\stoppagefigure
+  {\stopTEXpage
+   \egroup}
+
 \def\pagefigure
   {\dodoubleempty\dopagefigure}
 
 \def\dopagefigure[#1][#2]%
-  {\bgroup
-   \getparameters[\??ex][\c!offset=\!!zeropoint,#2]%
-   \startTEXpage[\c!offset=\@@exoffset]%
-     \externalfigure[#1][#2]%
-   \stopTEXpage
-   \egroup}
+  {\dostartpagefigure[#1][#2]\stoppagefigure}
 
 % \starttext \pagefigure[two.1] \stoptext
 

@@ -218,6 +218,8 @@
 % 
 % And this is the one optimized for speed:
 
+% maxcounter = 2\maxdimen=1 
+
 \def\!!zerocount {0} % alongside \zerocount 
 \def\!!minusone {-1} % alongside \minusone  
 \def\!!plusone   {1} % alongside \plusone
@@ -4292,6 +4294,9 @@
 \def\thelasttwodigits#1#2#3% 0 dig ... \relax
   {\ifx#3\relax#1#2\else\@EA\thelasttwodigits\@EA#2\@EA#3\fi}
 
+%D \macros
+%D   {serializecommalist}
+%D 
 %D Concatenate commalists: 
 
 \def\serializecommalist[#1]%
@@ -4299,6 +4304,9 @@
    \def\docommando##1{\edef\serializedcommalist{\serializedcommalist##1}}%
    \processcommacommand[#1]\docommando}
 
+%D \macros
+%D   {purenumber}
+%D
 %D Sometimes we need control over when \TEX\ stops reading a
 %D number, especially in full expandable macros where using 
 %D \type {\relax} would lead to disasters. 
@@ -4313,5 +4321,45 @@
 %D as \ETEX's \type {\numexpr}. 
 
 \def\purenumber#1{\@EA\firstofoneargument\@EA{\number#1}}
+
+%D \macros
+%D   {filterfromvalue}
+%D
+%D \starttypen 
+%D \setvalue{xx}{{A}{B}{C}}
+%D
+%D \filterfromvalue{xx}{3}{3}
+%D \filterfromvalue{xx}{3}{2}
+%D \filterfromvalue{xx}{3}{1}
+%D \stoptypen
+
+\def\filterfromvalue#1#2#3% value max n
+  {\@EA\@EAEAEA\csname
+     \ifcase#2\or
+       \ifcase#3\or
+         \strippedcsname\firstofoneargument
+       \else
+         \strippedcsname\gobbleoneargument
+       \fi
+     \or
+       \ifcase#3\or
+         \strippedcsname\firstoftwoarguments
+       \or
+         \strippedcsname\secondoftwoarguments
+       \else
+         \strippedcsname\gobbletwoarguments
+       \fi
+     \or
+       \ifcase#3\or
+         \strippedcsname\firstofthreearguments
+       \or
+         \strippedcsname\secondofthreearguments
+       \or
+         \strippedcsname\thirdofthreearguments
+       \else
+         \strippedcsname\gobblethreearguments
+       \fi
+     \fi
+   \endcsname\csname#1\endcsname}
 
 \protect \endinput

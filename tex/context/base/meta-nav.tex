@@ -11,8 +11,6 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-\unprotect 
-
 \startuniqueMPgraphic{navplus}{size,color,type,mode}
   color c ; numeric s, t ; path p ; 
   t := \MPvar{type} ; c := \MPvar{color} ; s := \MPvar{size} ;
@@ -58,6 +56,8 @@
 \definesymbol
   [attach-down]
   [\uniqueMPgraphic{navplus}{type=2,color=navplus:attach,mode=1}]
+
+\unprotect 
 
 \setupcomment    [\c!symbool={comment-normal,comment-down}]
 \setupattachments[\c!symbool={attach-normal,attach-down}] 

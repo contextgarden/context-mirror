@@ -452,7 +452,7 @@
    \edef\lijstelementen
      {\getvalue{\??li#1\c!paginaovergangen}}%
    \ExpandBothAfter\doifinset{#3}\lijstelementen
-     {\showmessage{\m!systems}{14}{#3}%
+     {\showmessage\m!systems{14}{#3}%
       \pagina}%
    \egroup
    \mindermeldingen
@@ -576,7 +576,7 @@
                               \translatednumber[#5]}}}}}}}%
          \vbox
            {\hsize\!!widthb
-            \expanded{\steluitlijnenin[\getvalue{\??li#1\c!uitlijnen}]}%
+            \setupalign[\getvalue{\??li#1\c!uitlijnen}]%
             \ifdim\!!widtha<\hsize
               \hangindent=\wd2
               \dimen2=\!!widthc % \getvalue{\??li#1\c!afstand}%

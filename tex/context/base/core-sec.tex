@@ -938,8 +938,17 @@
      {\doifvaluesomething{\??ko#1#3}
         {\setuplayouttext[#2][\c!status=\getvalue{\??ko#1#3}]}}}
 
+% \def\dohandelpaginaafB#1%
+%   {\doifinset{\getvalue{\??ko#1\c!pagina}}{\v!ja,\v!rechts,\v!links}
+%      {\def\resetcurrentsectionmarks% toegevoegd, zie \pagina
+%         {\resetsectionmarks{\previoussection\@@sectie}}%
+%       \pagina[\getvalue{\??ko#1\c!pagina}]%
+%       \dohandelpaginaafBB{#1}\v!hoofd\c!hoofd
+%       \dohandelpaginaafBB{#1}\v!tekst\c!tekst
+%       \dohandelpaginaafBB{#1}\v!voet \c!voet}}
+
 \def\dohandelpaginaafB#1%
-  {\doifinset{\getvalue{\??ko#1\c!pagina}}{\v!ja,\v!rechts,\v!links}
+  {\doifvaluesomething{\??ko#1\c!pagina}
      {\def\resetcurrentsectionmarks% toegevoegd, zie \pagina
         {\resetsectionmarks{\previoussection\@@sectie}}%
       \pagina[\getvalue{\??ko#1\c!pagina}]%
@@ -978,17 +987,17 @@
 %\def\dolocalheadsetup#1%  koppeling met standaard kopcommando / engels
 %  {\forgetall
 %   \doifvaluesomething{\??ko#1\c!uitlijnen}
-%     {\ExpandFirstAfter\steluitlijnenin[\getvalue{\??ko#1\c!uitlijnen}]}%
+%     {\ExpandFirstAfter\setupalign[\getvalue{\??ko#1\c!uitlijnen}]}%
 %   \doifvaluesomething{\??ko#1\c!tolerantie}
-%     {\ExpandFirstAfter\steltolerantiein[\getvalue{\??ko#1\c!tolerantie}]}%
+%     {\ExpandFirstAfter\setuptolerance[\getvalue{\??ko#1\c!tolerantie}]}%
 %   \def\\{\crlf\strut\ignorespaces}}
 
 \def\dolocalheadsetup#1%  koppeling met standaard kopcommando / engels
   {\forgetall         %  traag dus ...
    \doifvaluesomething{\??ko#1\c!uitlijnen} % wordt al expanded in spa
-     {\expanded{\steluitlijnenin[\getvalue{\??ko#1\c!uitlijnen}]}}%
+     {\expanded{\setupalign[\getvalue{\??ko#1\c!uitlijnen}]}}%
    \doifvaluesomething{\??ko#1\c!tolerantie} % wordt al expanded in spa
-     {\expanded{\steltolerantiein[\getvalue{\??ko#1\c!tolerantie}]}}%
+     {\expanded{\setuptolerance[\getvalue{\??ko#1\c!tolerantie}]}}%
    \def\\{\crlf\strut\ignorespaces}}
 
 \def\localkopsetup{\localheadsetup} % kan tzt weg 
@@ -1511,7 +1520,7 @@
    \dostartattributes\@@sectie\c!letter\c!kleur\empty
      \dontconvertfont
      \dostartattributes\@@sectie{#1}{#2}\empty
-       \stelinterliniein % \setupinterlinespace
+       \setupinterlinespace 
        \begstrut\haalmarkering[\hoofdmarkering{#4#3}]\endstrut
        \endgraf
      \dostopattributes
@@ -1560,9 +1569,9 @@
              \dostartattributes{\??ko#1}\c!tekstletter\c!tekstkleur\empty
                \dontconvertfont
                \ifdisplaysectionhead
-                 \stelinterliniein
+                 \setupinterlinespace
                \else
-                 \stelspatieringin
+                 \setupspacing
                \fi
                \ifcase\headtimingmode#2\fi
                \getvalue{\??ko#1\c!voorcommando}%
@@ -1618,9 +1627,9 @@
              \dostartattributes{\??ko#1}\c!tekstletter\c!tekstkleur\empty
                \dontconvertfont
                \ifdisplaysectionhead
-                 \stelinterliniein
+                 \setupinterlinespace
                \else
-                 \stelspatieringin
+                 \setupspacing
                \fi
                \ifcase\headtimingmode#2\fi
                \placeheadmargintexts{#1}% binnen #3? 

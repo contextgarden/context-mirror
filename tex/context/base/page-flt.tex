@@ -981,7 +981,7 @@
       \setbox\floattext\vbox to \floattextheight}
      {\setbox\floattext\vbox}%
    \bgroup
-   \forgetall\stelblankoin\stelwitruimtein % new, also needed for footnotes
+   \forgetall \setupblank \setupwhitespace % new, also needed for footnotes
    \blanko[\v!blokkeer]
    \hsize\floattextwidth
    \ignorespaces}
@@ -1918,7 +1918,7 @@
        \unvbox\marginbox
        \@@mbtussen
      \fi
-     \steluitlijnenin[\@@mbuitlijnen]%
+     \setupalign[\@@mbuitlijnen]%
      \dostartattributes\??mb\c!letter\c!kleur{}%
      \begstrut\ignorespaces}
 

@@ -1,6 +1,6 @@
 %D \module
 %D   [     file=enco-ans,
-%D      version=2000.5.7, % 1995.1.1,
+%D      version=2000.05.07, % 1995.01.01,
 %D        title=\CONTEXT\ Encoding Macros,
 %D     subtitle=\YandY\ texnansi Encoding,
 %D       author={Patrick Gundlach, Hans Hagen},
@@ -47,6 +47,9 @@
 \definecasemap 241 241 209 \definecasemap 209 241 209
 \definecasemap 245 245 213 \definecasemap 213 245 213
 
+\definecasemap 240 240 208 \definecasemap 208 240 208  
+\definecasemap 254 254 222 \definecasemap 222 254 222  
+
 \stopmapping
 
 \startencoding[texnansi]
@@ -80,6 +83,9 @@
 
 \definecharacter thorn            254
 \definecharacter Thorn            222
+
+\definecharacter Eth              208
+\definecharacter eth              240
 
 \definecharacter exclamdown       161
 \definecharacter questiondown     191

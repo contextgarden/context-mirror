@@ -488,8 +488,8 @@
    \def\unicodedepth             {\getvalue{\??uc#1\c!diepte}}%
    \def\unicodedigits            {\getvalue{\??uc#1\c!conversie}}%
    \def\handleunicodeglyph       {\getvalue{\??uc#1\c!commando}}%
-   \enableregime[unicode]%
-   \doifvalue{\??uc#1\c!interlinie}\v!ja{\stelinterliniein\relax}%
+   \enableregime[unicode]% the following \relax's are realy needed
+   \doifvalue{\??uc#1\c!interlinie}\v!ja\setupinterlinespace\relax
    \getvalue{\??uc#1\c!commandos}\relax}
 
 %D \macros 

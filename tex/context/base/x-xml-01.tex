@@ -20,7 +20,7 @@
 \doifnothing  {\inputfilename}    {\end} 
 \doiffileelse {\inputfilename} {} {\end} 
 
-% makes pdftotext too slow 
+% The following makes pdftotext too slow: 
 %
 % \definepapersize
 %   [mine]
@@ -40,49 +40,70 @@
 %   [A0][A0]
 %
 % but normal A4 combined with 1 pt font size is the best 
-
+%
+% An alternative is to use a small size, but this leads to 
 % too many messages 
 %
 % \setupbodyfont
 %   [1pt,tt]
 %
-% so: 
+% so we stick to a more normal alternive.  
 
-\setupbodyfont
-  [tt,10pt]  
+\unprotect 
 
-\setuptolerance
-  [verytolerant]
-
-\setupalign
-  [broad,right]
+% \setuplayout
+%   [backspace=0cm,
+%    topspace=0cm,
+%   %width=40em, 
+%    width=middle, 
+%    height=middle,
+%    header=0cm,
+%    footer=0cm]
 
 \setuplayout
-  [backspace=0cm,
-   topspace=0cm,
-   width=middle, 
-%   width=40em, 
-   height=middle,
-   header=0cm,
-   footer=0cm]
+  [\c!rugwit=0cm,
+   \c!kopwit=0cm,
+  %\c!breedte=40em, 
+   \c!breedte=\v!midden, 
+   \c!hoogte=\v!midden,
+   \c!hoofd=0cm,
+   \c!voet=0cm]
 
-\setupXMLfile
-  [level=2]
+% \setupbodyfont  [tt,10pt]  
+% \setuptolerance [verytolerant]
+% \setupalign     [broad,right]
+% \setupXMLfile   [level=2]
+
+
+\setupbodyfont  [tt,10pt]  
+\setuptolerance [\v!zeersoepel]
+\setupalign     [\v!ruim,\v!rechts]
+\setupXMLfile   [\c!niveau=2]
 
 \startmode[wide]
 
-  \setuplayout[width=250cm]
+% \setuplayout [width=250cm]
+  \setuplayout [\c!breedte=250cm]
 
 \stopmode
 
 \startmode[packed]
 
-  \setupXMLfile[inbetween=]
+% \setupXMLfile [inbetween=]
+  \setupXMLfile [\c!tussen=]
 
 \stopmode
 
+\protect 
+
+% The main text: 
+
+\def\XMLbannerprocessor#1{\string<\string ?xml #1\string ?\string>\endgraf}
+
+\defineXMLprocessor [xml] {\XMLbannerprocessor}
+
 \starttext 
 
-\dontcomplain \showXMLfile{\inputfilename}
+  \dontcomplain \showXMLfile{\inputfilename}
 
 \stoptext 

@@ -741,7 +741,7 @@
   {\bgroup
    \forgetall
    \dontcomplain
-   \steltolerantiein[\v!zeersoepel]% == \tolerance4500
+   \setuptolerance[\v!zeersoepel]% == \tolerance4500
    \hsize#1% 
    \def\\{\softbreak}%
    \!!heighta#4%
@@ -789,7 +789,7 @@
      #1%
      {\def\+{\global\settrue\NFSpread\gobbleuntil\relax}%
       \def\\{\gobbleuntil\relax}% newline 
-      \stelspatieringin
+      \setupspacing
       #6\relax}%
      {\scratchdimen}%
      {#4}%
@@ -806,7 +806,7 @@
 \def\GapText#1#2#3#4#5% width distance font spec title
   {\bgroup
    \NormalizeFontWidthSpread\DummyFont{#1}{#2}{#3}{#4}{#5}%
-   \DummyFont\stelspatieringin\SpreadGapText{#2}{#5}\endgraf
+   \DummyFont\setupspacing\SpreadGapText{#2}{#5}\endgraf
    \egroup}
 
 \protect \endinput

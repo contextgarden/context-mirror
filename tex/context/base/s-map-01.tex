@@ -143,7 +143,7 @@
 %D Waar nodig springen we in. We willen echter niet inspringen
 %D na een witruimte, vandaar het trefwoord \type{volgende}.
 
-\stelinspringenin
+\setupindenting
   [\v!volgende,9.5pt]
 
 %D Hoewel niet strikt noodzakelijk, definities en dergelijke
@@ -263,10 +263,10 @@
   {\witruimte
    \snaptogrid\vbox\bgroup
      \forgetall
-     \steluitlijnenin[\v!rechts]
+     \setupalign[\v!rechts]
      \parfillskip 0pt plus 1 fill
-     \steltolerantiein[\v!zeersoepel]
-     \stelinspringenin[\v!geen]
+     \setuptolerance[\v!zeersoepel]
+     \setupindenting[\v!geen]
      {\ssbf#1}\par
      \switchtobodyfont[8pt]
      \ss\tf
@@ -421,11 +421,11 @@
    \stelpaginanummerin[\c!nummer=\MapsPagina]
    \setuplayout[\c!grid=\MapsGrid]
    \ifgridsnapping                           % nog controleren
-     \stelblankoin[\v!regel]
+     \setupblank[\v!regel]
      \definieerblanko[mapsvoor][\v!halveregel]
      \definieerblanko[mapstussen][\v!regel]
    \else
-     \stelblankoin[\v!halveregel]
+     \setupblank[\v!halveregel]
      \definieerblanko[\v!middel][\v!halveregel]
      \definieerblanko[mapsvoor][\v!halveregel]
      \definieerblanko[mapstussen][\v!halveregel]
@@ -436,7 +436,7 @@
        \bgroup
          \topskip 0pt
          \forgetall
-         \ifMapsInKolommen \steluitlijnenin[\v!links] \fi
+         \ifMapsInKolommen \setupalign[\v!links] \fi
          \noindent\tf\MapsAffiliatieA
          \ifx\MapsCategorie\Bericht
             ~\strut
@@ -449,9 +449,9 @@
          \forgetall
          \kern 7.5pt
          \ifMapsInKolommen 
-           \steluitlijnenin[\v!links] 
+           \setupalign[\v!links] 
          \else
-           \steluitlijnenin[\v!rechts] 
+           \setupalign[\v!rechts] 
          \fi
          {\bf\MapsTitel\par}
          {\bfx\MapsSubtitel\par}
@@ -608,9 +608,9 @@
   {\witruimte
    \snaptogrid\vbox\bgroup
    \forgetall
-   \steluitlijnenin[\v!links]
+   \setupalign[\v!links]
    \steltolerantiein[\v!zeersoepel]
-   \stelinspringenin[\v!geen]
+   \setupindenting[\v!geen]
    \switchtobodyfont[8pt]
    \noindent{\ssbf#1}\par
    \ss\tf
