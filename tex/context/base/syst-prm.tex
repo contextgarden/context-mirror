@@ -43,9 +43,12 @@
   \gdef\beginETEX%
     {\bgroup\obeylines\dobeginETEX}
 
+%   \gdef\dobeginETEX#1
+%     {\egroup\immediate\write16%
+%        {system (E-TEX) : [line \the\inputlineno] \detokenize{#1}}}
+
   \gdef\dobeginETEX#1
-    {\egroup\immediate\write16%
-       {system (E-TEX) : [line \the\inputlineno] \detokenize{#1}}}
+    {\egroup}
 
   \global\let\endETEX\relax
 

@@ -101,7 +101,7 @@
    \ifinsidefloat\else\stopbaselinecorrection\fi}
 
 \gdef\showfont
-  {\dosingleempty\doshowfont}
+  {\dodoubleempty\doshowfont}
 
 \beginTEX \iffontchar
 
@@ -109,7 +109,7 @@
 
 \endTEX
 
-\gdef\doshowfont[#1]%
+\gdef\doshowfont[#1][#2]%
   {\bgroup
    \boxrulewidth=.1pt
    \setupcolors[\c!state=\v!local]%
@@ -135,7 +135,7 @@
                   \edef\rowcol{\the\scratchcounter}%
                   \iffontchar\font\scratchcounter
                     \setbox\scratchbox\ruledhbox{\black\char\scratchcounter}%
-                    \ifdim\wd\scratchbox>\!!zeropoint\relax
+                    \ifdim\wd\scratchbox>\zeropoint
                       \donetrue \else \donefalse
                     \fi
                   \else
@@ -160,19 +160,16 @@
                         \vss}}
                     {\tf\vbox to 2.3em
                        {\ifdone
-                          \blue \hsize2.4em
-                          \edef\ascii
-                            {\ifnum\hyphenchar\font=\rowcol
-                               hyph%
-                             \else\ifnum\skewchar\font=\rowcol
-                               skew%
-                             \fi\fi}%
-                          \tinyfont
-                          {\red\ascii}\hfill
-                          \number\rowcol
+                          \hsize2.4em
+                          \blue
+                          \edef\theshowfontspecs
+                            {\ifnum\hyphenchar\font=\rowcol hyph\else
+                             \ifnum\skewchar  \font=\rowcol skew\fi\fi}%
+                          \tinyfont % after \edef, else wrong font analyzed
+                          \doifnot\v!unknown{#2}{{\red\theshowfontspecs}}\hfill\number\rowcol
                           \vfill
-                          \octnumber\rowcol\hfill
-                          \lchexnumbers\rowcol\par
+                          \octnumber\rowcol\hfill\lchexnumbers\rowcol
+                          \par
                         \fi}}
                   \stopoverlay}}}
           \par}}
@@ -180,13 +177,18 @@
    \stopoverlay
    \nointerlineskip
    \vskip2pt
-   \edef\ascii % \noexpand needed for non etex
-     {name:     {\noexpand\black\fontname\font  }\quad
-      encoding: {\noexpand\black\currentencoding}\quad
-      mapping:  {\noexpand\black\currentmapping }\quad
-      handling: {\noexpand\black\fonthandling   }}%
-   \tf\hbox to 40em
-     {\blue\hfill\tinyfont\setstrut\strut\ascii}
+   % the \noexpand before \blank is needed for non etex
+   \edef\ascii         {name:     {\noexpand\black\fontname\font}}
+   \doifelse\v!unknown{#2}
+     {\edef\theshowfontspecs
+        {name:     {\noexpand\black\fontname\font}}}
+     {\edef\theshowfontspecs
+        {name:     {\noexpand\black\fontname\font  }\noexpand\quad
+         encoding: {\noexpand\black\currentencoding}\noexpand\quad
+         mapping:  {\noexpand\black\currentmapping }\noexpand\quad
+         handling: {\noexpand\black\fonthandling   }}}%
+   \tf % also sets em
+   \hbox to 40em{\blue\hfill\tinyfont\setstrut\strut\theshowfontspecs}
    \egroup
    \ifinsidefloat\else\stopbaselinecorrection\fi
    \egroup}

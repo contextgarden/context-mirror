@@ -10,7 +10,7 @@
 
 # todo: move scite here
 
-banner = ['CtxTools', 'version 1.2.0', '2004/2005', 'PRAGMA ADE/POD']
+banner = ['CtxTools', 'version 1.2.1', '2004/2005', 'PRAGMA ADE/POD']
 
 unless defined? ownpath
     ownpath = $0.sub(/[\\\/][a-z0-9\-]*?\.rb/i,'')
@@ -478,7 +478,7 @@ class Commands
                 filesize = FileTest.size(filename)
                 File.delete(filename)
             rescue
-                    report("problematic : #{filename}")
+                report("problematic : #{filename}")
             else
                 if FileTest.file?(filename) then
                     $persistentfiles += 1
@@ -704,6 +704,405 @@ class Commands
 
 end
 
+# This script is used to generate hyphenation pattern files
+# that suit ConTeXt. One reason for independent files is that
+# over the years too many uncommunicated chabges took place
+# as well that inconsistency in content, naming, and location
+# in the texmf tree takes more time than I'm willing to spend
+# on it. Pattern files are normally shipped for LaTeX (and
+# partially plain). A side effect of independent files is that
+# we can make them encoding independent.
+
+class Language
+
+    include CommandBase
+
+    def initialize(commandline=nil, language='en', filenames=nil, encoding='ec')
+        @commandline= commandline
+        @language = language
+        @filenames = filenames
+        @remapping = Array.new
+        @encoding = encoding
+        @data = ''
+        @read = ''
+        preload_accents()
+        case @encoding.downcase
+            when 't1', 'ec', 'cork' then preload_vector('ec')
+        end
+    end
+
+    def report(str)
+        if @commandline then
+            @commandline.report(str)
+        else
+            puts("#{str}\n")
+        end
+    end
+
+    def remap(from, to)
+        @remapping.push([from,to])
+    end
+
+    def load(filenames=@filenames)
+        begin
+            if filenames then
+                @filenames = [filenames].flatten
+                @filenames.each do |filename|
+                    begin
+                        if filename = located(filename) then
+                            data = IO.read(filename)
+                            @data += data.gsub(/\%.*$/, '')
+                            data.gsub!(/(\\patterns|\\hyphenation)\s*\{.*/mo) do '' end
+                            @read += "\n% preamble of file #{filename}\n\n#{data}\n"
+                        else
+                            report("file #{filename} is not found")
+                        end
+                    rescue
+                        report("file #{filename} is not readable")
+                    else
+                        report("file #{filename} is loaded")
+                    end
+                    # @data.gsub!(/\s\\[nc]\{(.*?)\}\s/o) do $1 end
+                end
+            end
+        rescue
+        end
+    end
+
+    def valid?
+        ! @data.empty?
+    end
+
+    def convert
+        if @data then
+            n = 0
+            @remapping.each do |k|
+                @data.gsub!(k[0]) do
+                    # report("#{k[0]} => #{k[1]}")
+                    n += 1
+                    k[1]
+                end
+            end
+            report("#{n} changes in patterns and exceptions")
+            return n
+        else
+            return 0
+        end
+    end
+
+    def comment(str)
+        str.gsub!(/^\n/o, '')
+        str.chomp!
+        if @commandline.option('xml') then
+            "<!-- #{str.strip} -->\n\n"
+        else
+            "% #{str.strip}\n\n"
+        end
+    end
+
+    def content(tag, str)
+        lst = str.split(/\s+/)
+        lst.collect! do |l|
+            l.strip
+        end
+        if lst.length>0 then
+            lst = "\n#{lst.join("\n")}\n"
+        else
+            lst = ""
+        end
+        if @commandline.option('xml') then
+            lst.gsub!(/\[(.*?)\]/o) do
+                "&#{$1};"
+            end
+            "<#{tag}>#{lst}</#{tag}>\n\n"
+        else
+            "\\#{tag} \{#{lst}\}\n\n"
+        end
+    end
+
+    def banner
+        if @commandline.option('xml') then
+            "<?xml version='1.0' standalone='yes' ?>\n\n"
+        end
+    end
+
+    def save
+        xml = @commandline.option("xml")
+
+        patname = "lang-#{@language}.pat"
+        hypname = "lang-#{@language}.hyp"
+        rmename = "lang-#{@language}.rme"
+        logname = "lang-#{@language}.log"
+
+        @data.gsub!(/\\[nc]\{(.+?)\}/)  do $1    end
+        @data.gsub!(/\{\}/)             do ''    end
+        @data.gsub!(/\n+/mo)            do "\n"  end
+        @read.gsub!(/\n+/mo)            do "\n"  end
+
+        begin
+            if f = File.open(logname,'w') then
+                report("saving #{@remapping.length} remap patterns in #{logname}")
+                @remapping.each do |m|
+                    f.puts("#{m[0].inspect} => #{m[1]}\n")
+                end
+                f.close
+            end
+        rescue
+        end
+
+        begin
+            if f = File.open(rmename,'w') then
+                data = @read.dup
+                data.gsub!(/(\s*\n\s*)+/mo, "\n")
+                f << comment("comment copied from public hyphenation files}")
+                f << comment("source of data: #{@filenames.join(' ')}")
+                f << comment("begin original comment")
+                f << "#{data}\n"
+                f << comment("end original comment")
+                f.close
+                report("comment saved in file #{rmename}")
+            else
+                report("file #{rmename} is not writable")
+            end
+        rescue
+        end
+
+        begin
+            if f = File.open(patname,'w') then
+                data = ''
+                @data.scan(/\\patterns\s*\{\s*(.*?)\s*\}/m) do
+                    report("merging patterns")
+                    data += $1 + "\n"
+                end
+                data.gsub!(/(\s*\n\s*)+/mo, "\n")
+                f << banner
+                f << comment("context pattern file, see #{rmename} for original comment")
+                f << comment("source of data: #{@filenames.join(' ')}")
+                f << comment("begin pattern data")
+                f << content('patterns', data)
+                f << comment("end pattern data")
+                f.close
+                report("patterns saved in file #{patname}")
+            else
+                report("file #{patname} is not writable")
+            end
+        rescue
+            report("problems with file #{patname}")
+        end
+
+        begin
+            if f = File.open(hypname,'w') then
+                data = ''
+                @data.scan(/\\hyphenation\s*\{\s*(.*?)\s*\}/m) do
+                    report("merging exceptions")
+                    data += $1 + "\n"
+                end
+                data.gsub!(/(\s*\n\s*)+/mo, "\n")
+                f << banner
+                f << comment("context hyphenation file, see #{rmename} for original comment")
+                f.<< comment("source of data: #{@filenames.join(' ')}")
+                f.<< comment("begin hyphenation data")
+                f << content('hyphenation', data)
+                f.<< comment("end hyphenation data")
+                f.close
+                report("exceptions saved in file #{hypname}")
+            else
+                report("file #{hypname} is not writable")
+            end
+        rescue
+            report("problems with file #{hypname}")
+        end
+    end
+
+    def process
+        load
+        if valid? then
+            convert
+            save
+        else
+            report("aborted due to missing files")
+        end
+    end
+
+    def Language::generate(commandline, language='', filenames='', encoding='ec')
+        if ! language.empty? && ! filenames.empty? then
+            commandline.report("processing language #{language}")
+            commandline.report("")
+            language = Language.new(commandline,language,filenames,encoding)
+            language.load
+            language.convert
+            language.save
+            commandline.report("")
+        end
+    end
+
+    private
+
+    def located(filename)
+        begin
+            filename = `kpsewhich -progname=context #{filename}`.chomp
+            if FileTest.file?(filename) then
+                report("using file #{filename}")
+                return filename
+            else
+                report("file #{filename} is not present")
+                return nil
+            end
+        rescue
+            report("file #{filename} cannot be located using kpsewhich")
+            return nil
+        end
+    end
+
+    def preload_accents
+
+        begin
+            if filename = located("enco-acc.tex") then
+                if data = IO.read(filename) then
+                    report("preloading accent conversions")
+                    data.scan(/\\defineaccent\s*\\*(.+?)\s*\{*(.+?)\}*\s*\{\\(.+?)\}/o) do
+                        one, two, three = $1, $2, $3
+                        one.gsub!(/[\`\~\!\^\*\_\-\+\=\:\;\"\'\,\.\?]/o) do
+                            "\\#{one}"
+                        end
+                        remap(/\\#{one} #{two}/, "[#{three}]")
+                        remap(/\\#{one}#{two}/, "[#{three}]")  unless one =~ /[a-zA-Z]/o
+                        remap(/\\#{one}\{#{two}\}/, "[#{three}]")
+                    end
+                end
+            end
+        rescue
+        end
+
+    end
+
+    def preload_vector(encoding='')
+
+        # funny polish
+
+        case @language
+            when 'pl' then
+                remap(/\/a/, "[aogonek]")    ; remap(/\/A/, "[Aogonek]")
+                remap(/\/c/, "[cacute]")     ; remap(/\/C/, "[Cacute]")
+                remap(/\/e/, "[eogonek]")    ; remap(/\/E/, "[Eogonek]")
+                remap(/\/l/, "[lstroke]")    ; remap(/\/L/, "[Lstroke]")
+                remap(/\/n/, "[nacute]")     ; remap(/\/N/, "[Nacute]")
+                remap(/\/o/, "[oacute]")     ; remap(/\/O/, "[Oacute]")
+                remap(/\/s/, "[sacute]")     ; remap(/\/S/, "[Sacute]")
+                remap(/\/x/, "[zacute]")     ; remap(/\/X/, "[Zacute]")
+                remap(/\/z/, "[zdotaccent]") ; remap(/\/Z/, "[Zdotaccent]")
+            when 'sl' then
+                remap(/\"c/,"[ccaron]")  ; remap(/\"C/,"[Ccaron]")
+                remap(/\"s/,"[scaron]")  ; remap(/\"S/,"[Scaron]")
+                remap(/\"z/,"[zcaron]")  ; remap(/\"Z/,"[Zcaron]")
+            when 'da' then
+                remap(/X/, "[aeligature]")
+                remap(/Y/, "[ostroke]")
+                remap(/Z/, "[aring]")
+            when 'ca' then
+                remap(/\\c\{.*?\}/, "")
+            when 'de', 'deo' then
+                remap(/\\c\{.*?\}/, "")
+                remap(/\\n\{\}/, "")
+                remap(/\\3/, "[ssharp]")
+                remap(/\\9/, "[ssharp]")
+                remap(/\"a/, "[adiaeresis]")
+                remap(/\"o/, "[odiaeresis]")
+                remap(/\"u/, "[udiaeresis]")
+            when 'fr' then
+                remap(/\\ae/, "[adiaeresis]")
+                remap(/\\oe/, "[odiaeresis]")
+            when 'la' then
+                # \lccode`'=`' somewhere else, todo
+                remap(/\\c\{.*?\}/, "")
+                remap(/\\a\s*/, "[aeligature]")
+                remap(/\\o\s*/, "[oeligature]")
+            else
+        end
+
+        if ! encoding.empty? then
+            begin
+                filename = `kpsewhich -progname=context enco-#{encoding}.tex`
+                if data = IO.read(filename.chomp) then
+                    report("preloading #{encoding} character mappings")
+                    data.scan(/\\definecharacter\s*([a-zA-Z]+)\s*(\d+)\s*/o) do
+                        name, number = $1, $2
+                        remap(/\^\^#{sprintf("%02x",number)}/, "[#{name}]")
+                    end
+                end
+            rescue
+            end
+        end
+
+    end
+
+end
+
+class Commands
+
+    include CommandBase
+
+    public
+
+    @@languagedata = Hash.new
+
+    def patternfiles
+        language = @commandline.argument('first')
+        if ! language.empty? then
+            if language == 'all' then
+                languages = @@languagedata.keys.sort
+            elsif @@languagedata.key?(language) then
+                languages = [language]
+            else
+                languages = []
+            end
+            languages.each do |language|
+                files    = @@languagedata[language][0] || ''
+                encoding = @@languagedata[language][1] || ''
+                Language::generate(self,language,files,encoding)
+            end
+        end
+    end
+
+    private
+
+    @@languagedata['ba' ] = [['bahyph.tex'],                   'ec']
+    @@languagedata['ca' ] = [['cahyph.tex'],                   'ec']
+    @@languagedata['cy' ] = [['cyhyph.tex'],                   'ec']
+    @@languagedata['cz' ] = [['czhyphen.tex','czhyphen.ex'],   'ec']
+    @@languagedata['de' ] = [['dehyphn.tex'],                  'ec']
+    @@languagedata['deo'] = [['dehypht.tex'],                  'ec']
+    @@languagedata['da' ] = [['dkspecial.tex','dkcommon.tex'], 'ec']
+    # elhyph.tex
+    @@languagedata['es' ] = [['eshyph.tex'],                   'ec']
+    @@languagedata['fi' ] = [['ethyph.tex'],                   'ec']
+    @@languagedata['fi' ] = [['fihyph.tex'],                   'ec']
+    @@languagedata['fr' ] = [['frhyph.tex'],                   'ec']
+    # ghyphen.readme ghyph31.readme grphyph
+    @@languagedata['hr' ] = [['hrhyph.tex'],                   'ec']
+    @@languagedata['hu' ] = [['huhyphn.tex'],                  'ec']
+    @@languagedata['en' ] = [['hyphen.tex'],                   'default']
+    # inhyph.tex
+    @@languagedata['is' ] = [['ishyph.tex'],                   'ec']
+    @@languagedata['it' ] = [['ithyph.tex'],                   'ec']
+    @@languagedata['la' ] = [['lahyph.tex'],                   'ec']
+    # mnhyph
+    @@languagedata['nl' ] = [['nehyph96.tex'],                 'ec']
+    @@languagedata['no' ] = [['nohyph.tex'],                   'ec']
+    # oldgrhyph.tex
+    @@languagedata['pl' ] = [['plhyph.tex'],                   'ec']
+    @@languagedata['pt' ] = [['pthyph.tex'],                   'ec']
+    @@languagedata['ro' ] = [['rohyph.tex'],                   'ec']
+    @@languagedata['sl' ] = [['sihyph.tex'],                   'ec']
+    @@languagedata['sk' ] = [['skhyphen.tex','skhyphen.ex'],   'ec']
+    # sorhyph.tex / upper sorbian
+    # srhyphc.tex / cyrillic
+    @@languagedata['sv' ] = [['svhyph.tex'],                   'ec']
+    @@languagedata['tr' ] = [['tkhyph.tex'],                   'ec']
+    @@languagedata['uk' ] = [['ukhyphen.tex'],                 'default']
+
+end
+
 logger      = EXA::ExaLogger.new(banner.shift)
 commandline = CommandLine.new
 
@@ -722,6 +1121,8 @@ commandline.registeraction('documentation', 'generate documentation file [--type
 
 commandline.registeraction('filterpages') # no help, hidden temporary feature
 
+commandline.registeraction('patternfiles', 'generate pattern files [languagecode|all]')
+
 commandline.registeraction('help')
 commandline.registeraction('version')
 
@@ -731,6 +1132,7 @@ commandline.registervalue('type','')
 # commandline.registerflag('force')
 commandline.registerflag('pipe')
 commandline.registerflag('all')
+commandline.registerflag('xml')
 
 commandline.expand
 

@@ -24,10 +24,10 @@
 
 \startmessages  dutch  library: linguals
   title: taal
-      1: afbreekpatronen -- voor -- geladen (n=--)
-      2: geen afbreekpatronen -- voor -- (n=--) (--,--)
-      3: afbreekdefinities -- voor -- geladen (n=--)
-      4: geen afbreekdefinities -- voor -- (n=--)
+      1: afbreekpatronen -- voor -- geladen (n=--,e=--,m=--)
+      2: geen afbreekpatronen -- voor -- (n=--,e=--,m=--) (--,--)
+      3: afbreekdefinities -- voor -- geladen (n=--,e=--,m=--)
+      4: geen afbreekdefinities -- voor -- (n=--,e=--,m=--)
       5: afbreekpatronen voor -- niet geladen
       6: taal -- is niet gedefinieerd
       7: taal specifieke opties [--] introduceren een skip van --
@@ -38,10 +38,10 @@
 
 \startmessages  english  library: linguals
   title: language
-      1: patterns -- for -- loaded (n=--)
-      2: no patterns -- for -- (n=--) (--,--)
-      3: hyphenations -- for -- loaded (n=--)
-      4: no hyphenations -- for -- (n=--)
+      1: patterns -- for -- loaded (n=--,e=--,m=--)
+      2: no patterns -- for -- (n=--,e=--,m=--) (--,--)
+      3: hyphenations -- for -- loaded (n=--,e=--,m=--)
+      4: no hyphenations -- for -- (n=--,e=--,m=--)
       5: patterns for -- not loaded
       6: language -- is undefined
       7: language specific options [--] introduce a -- skip
@@ -52,10 +52,10 @@
 
 \startmessages  german  library: linguals
   title: Sprache
-      1: Trennmuster -- fuer -- geladen (n=--)
-      2: Keine Trennmuster -- fuer -- (n=--) (--,--)
-      3: Trenndefinitionen -- fuer -- geladen (n=--)
-      4: Keine Trenndefinitionen -- fuer -- (n=--)
+      1: Trennmuster -- fuer -- geladen (n=--,e=--,m=--)
+      2: Keine Trennmuster -- fuer -- (n=--,e=--,m=--) (--,--)
+      3: Trenndefinitionen -- fuer -- geladen (n=--,e=--,m=--)
+      4: Keine Trenndefinitionen -- fuer -- (n=--,e=--,m=--)
       5: Trennmuster fuer -- nicht geladen
       6: Sprache -- ist undefiniert
       7: Sprachenspezifische Option [--] fuegt eine Luecke von -- ein
@@ -68,10 +68,10 @@
 
 \startmessages  czech  library: linguals
   title: jazyky
-      1: vzory -- pro -- nacteny (n=--)
-      2: zadne vzory -- pro -- (n=--) (--,--)
-      3: deleni slov -- pro -- nacteno (n=--)
-      4: zadne deleni slov -- pro -- (n=--)
+      1: vzory -- pro -- nacteny (n=--,e=--,m=--)
+      2: zadne vzory -- pro -- (n=--,e=--,m=--) (--,--)
+      3: deleni slov -- pro -- nacteno (n=--,e=--,m=--)
+      4: zadne deleni slov -- pro -- (n=--,e=--,m=--)
       5: vzory pro -- nenacteny
       6: jazyk -- neni definovan
       7: specificke volby jazyka [--] zavadeji -- (zavlecenou) mezeru
@@ -82,10 +82,10 @@
 
 \startmessages  italian  library: linguals
   title: lingua
-      1: schemi -- per -- caricati (n=--)
-      2: niente schemi -- per -- (n=--) (--,--)
-      3: sillabazione -- per -- caricata (n=--)
-      4: niente sillabazione -- per -- (n=--)
+      1: schemi -- per -- caricati (n=--,e=--,m=--)
+      2: niente schemi -- per -- (n=--,e=--,m=--) (--,--)
+      3: sillabazione -- per -- caricata (n=--,e=--,m=--)
+      4: niente sillabazione -- per -- (n=--,e=--,m=--)
       5: schemi per -- non caricati
       6: lingua -- non definita
       7: opzioni specifiche per la lingua [--] introducono un salto --
@@ -96,10 +96,10 @@
 
 \startmessages  norwegian  library: linguals
   title: språk
-      1: orddelingsmønster -- for -- er lest inn (n=--)
-      2: ingen orddelingsmønster -- for -- (n=--) (--,--)
-      3: orddelingsdefinisjon -- for -- er lest inn (n=--)
-      4: ingen orddelingsdefinisjon -- for -- (n=--)
+      1: orddelingsmønster -- for -- er lest inn (n=--,e=--,m=--)
+      2: ingen orddelingsmønster -- for -- (n=--,e=--,m=--) (--,--)
+      3: orddelingsdefinisjon -- for -- er lest inn (n=--,e=--,m=--)
+      4: ingen orddelingsdefinisjon -- for -- (n=--,e=--,m=--)
       5: orddelingsmønster for -- er ikke lest inn
       6: språk -- er udefinert
       7: språk spesifikk opsjon [--] introduserer et -- hopp
@@ -110,10 +110,10 @@
 
 \startmessages  romanian  library: linguals
   title: limbi
-      1: sablonul -- pentru -- s-a incarcat (n=--)
-      2: nu exista sabloane -- pentru -- (n=--) (--,--)
-      3: despartirea in silabe -- pentru -- s-a incarcat (n=--)
-      4: nu exista despartire in silabe -- pentru -- (n=--)
+      1: sablonul -- pentru -- s-a incarcat (n=--,e=--,m=--)
+      2: nu exista sabloane -- pentru -- (n=--,e=--,m=--) (--,--)
+      3: despartirea in silabe -- pentru -- s-a incarcat (n=--,e=--,m=--)
+      4: nu exista despartire in silabe -- pentru -- (n=--,e=--,m=--)
       5: sabloanele pentru -- nu sunt incarcate
       6: limba -- nu este definita
       7: optiunile specifice ale limbii [--] introduc un spatiu --
@@ -241,10 +241,12 @@
 
 \let\installedlanguages\empty
 
+\def\doiflanguageelse#1{\doifdefinedelse{\??la#1\c!state}}
+
 \def\doinstalllanguage[#1][#2]%
   {%\ConvertConstantAfter\doifinstringelse{=}{#2}
    \doifassignmentelse{#2}
-     {\doifdefinedelse{\??la#1\c!state}
+     {\doiflanguageelse{#1}
         {\getparameters[\??la#1][#2]}
         {\setvalue{\l!prefix!#1}{#1}%
          \addtocommalist{#1}\installedlanguages
@@ -256,53 +258,9 @@
             \s!patterns=,
             \s!mapping=,
             \s!encoding=,
-%             \s!lefthyphenmin=2,
-%             \s!righthyphenmin=2,
-%             \c!spacing=\v!packed,
-%             \c!midsentence=---,
-%             \c!leftsentence=---,
-%             \c!rightsentence=---,
-%             \c!leftsubsentence=---,
-%             \c!rightsubsentence=---,
-%             \c!leftquote=\upperleftsinglesixquote,
-%             \c!rightquote=\upperrightsingleninequote,
-%             \c!leftquotation=\upperleftdoublesixquote,
-%             \c!rightquotation=\upperrightdoubleninequote,
-%             \c!leftspeech=\getvalue{\??la#1\c!leftquotation},
-%             \c!middlespeech=,
-%             \c!rightspeech=\getvalue{\??la#1\c!rightquotation},
-%             \c!limittext=\unknown,
-%             \c!date={\v!year,\ ,\v!month,\ ,\v!day},
-%             \c!text=Ag,
-            #2]%
-%          \doifvaluesomething{\??la#1\c!default}
-%            {\doifnotvalue{\??la#1\c!default}{#1}
-%               {\getparameters
-%                  [\??la#1]
-%                  [\s!lefthyphenmin=\languagedefault{#1}\s!lefthyphenmin,
-%                   \s!righthyphenmin=\languagedefault{#1}\s!righthyphenmin,
-%                   \c!spacing=\languagedefault{#1}\c!spacing,
-%                   \c!leftsentence=\languagedefault{#1}\c!leftsentence,
-%                   \c!rightsentence=\languagedefault{#1}\c!rightsentence,
-%                   \c!leftsubsentence=\languagedefault{#1}\c!leftsubsentence,
-%                   \c!rightsubsentence=\languagedefault{#1}\c!rightsubsentence,
-%                   \c!leftquote=\languagedefault{#1}\c!leftquote,
-%                   \c!rightquote=\languagedefault{#1}\c!rightquote,
-%                   \c!leftquotation=\languagedefault{#1}\c!leftquotation,
-%                   \c!rightquotation=\languagedefault{#1}\c!rightquotation,
-%                   \c!leftspeech=\languagedefault{#1}\c!leftspeech,
-%                   \c!middlespeech=\languagedefault{#1}\c!middlespeech,
-%                   \c!rightspeech=\languagedefault{#1}\c!rightspeech,
-%                   \c!date=\languagedefault{#1}\c!date,
-%                   \s!mapping=\languagedefault{#1}\s!mapping,
-%                   \s!encoding=\languagedefault{#1}\s!encoding,
-%                   \c!text=\languagedefault{#1}\c!text,
-%                   #2]}}}%
-}%
+            #2]}%
       \doifvalue{\??la#1\c!default}{#1}{\letvalue{\??la#1\c!default}\empty}%
-       % loop in deo
-       % \doifvalue{\??la#1\s!patterns}{#1}{\letvalue{\??la#1\c!default}\empty}%
-       %
+      % loop in deo: \doifvalue{\??la#1\s!patterns}{#1}{\letvalue{\??la#1\c!default}\empty}%
       \doifelsevalue{\??la#1\c!state}\v!start
         {\doifelsevaluenothing{\??la#1\s!patterns}
            {\edef\languagesuffix{#1}}
@@ -311,8 +269,8 @@
            {\doloadpatterns{#1}\languagesuffix}
            {\bgroup
             \edef\loadedlanguage{\getvalue{\??la\??la:\currentencoding:\currentmapping:\languagesuffix}}%
-            \showmessage\m!linguals1{\languagesuffix,#1,\loadedlanguage}%
-            \showmessage\m!linguals3{\languagesuffix,#1,\loadedlanguage}%
+            \showmessage\m!linguals1{\languagesuffix,#1,\loadedlanguage,*,*}%
+            \showmessage\m!linguals3{\languagesuffix,#1,\loadedlanguage,*,*}%
             \egroup}}
         {\showmessage\m!linguals5{#1}}}
      {\setvalue{\l!prefix!#1}{#2}%
@@ -359,10 +317,14 @@
 \def\dodoloadpatterns#1#2#3#4% beware, loaded language also incr
   {\normallanguage\loadedlanguage % when not really needed
    \bgroup
-   \startencoding[#3]%
-   \enablemapping[#4]%
-   \doifnothing\currentencoding{\let\currentencoding\s!default}%
-   \doifnothing\currentmapping {\let\currentmapping \s!default}%
+   % \startencoding[#3]%
+   % \enablemapping[#4]% hm, does a sync patterns
+   % \doifnothing\currentencoding{\let\currentencoding\s!default}%
+   % \doifnothing\currentmapping {\let\currentmapping \s!default}%
+   % better:
+\let\synchronizepatterns\relax \let\enabledmapping\empty % needed?
+   \doifelsenothing{#3}{\enableencoding[\s!default]}{\enableencoding[#3]}%
+   \doifelsenothing{#4}{\enablemapping [\s!default]}{\enablemapping [#4]}%
    \ifundefined{\??la\??la:\currentencoding:\currentmapping:#2}%
      \let\showpatterns\relax
      \scratchtoks\everyjob % we don't want additional junk put there, is saving needed?
@@ -374,36 +336,36 @@
        \letgvalue{\??la\??la:\currentencoding:\currentmapping:#2}\loadedlanguage
        \doifundefined{\??la\??la:\s!default:\s!default:#2}{\letgvalue{\??la\??la:\s!default:\s!default:#2}\loadedlanguage}% fall back
        \startreadingfile
-       \startpatternaccents
+       \startpatternaccents{#3}{#4}%
        \readsysfile{\truefilename{\f!languageprefix#2.\f!patternsextension}}
          {\setxvalue{\??la#1\s!patterns}{#2}%
           \setxvalue{\??la\??la:\currentencoding:\currentmapping:\truefilename{\f!languageprefix#2.\f!patternsextension}}{\number\loadedlanguage}%
           \xdef\preloadedpmessage{\preloadedpmessage\showpatterns{#2}{\number\normallanguage}{\currentencoding}{\currentmapping}}%
           \doglobal\addtocommalist{#2}\preloadedpatterns
-          \showmessage\m!linguals1{#2,#1,\loadedlanguage}}
+          \showmessage\m!linguals1{#2,#1,\loadedlanguage,\currentencoding,\currentmapping}}
          {\readsysfile{\f!languageprefix#2.\f!patternsextension}
             {\setxvalue{\??la#1\s!patterns}{#2}%
              \setxvalue{\??la\??la:\currentencoding:\currentmapping:\f!languageprefix#2.\f!patternsextension}{\number\loadedlanguage}%
              \xdef\preloadedpmessage{\preloadedpmessage\showpatterns{#2}{\number\normallanguage}{\currentencoding}{\currentmapping}}%
              \doglobal\addtocommalist{#2}\preloadedpatterns
-             \showmessage\m!linguals1{#2,#1,\loadedlanguage}}
-            {\showmessage\m!linguals2{#2,#1,\loadedlanguage,\f!languageprefix#2.\f!patternsextension,\truefilename{\f!languageprefix#2.\f!patternsextension}}}}%
-          \readsysfile{\truefilename{\f!languageprefix#2.\f!hyphensextension}}
-            {\showmessage\m!linguals3{#2,#1,\loadedlanguage}}
-            {\readsysfile{\f!languageprefix#2.\f!hyphensextension}
-               {\showmessage\m!linguals3{#2,#1,\loadedlanguage}}
-               {\showmessage\m!linguals4{#2,#1,\loadedlanguage}}}%
+             \showmessage\m!linguals1{#2,#1,\loadedlanguage,\currentencoding,\currentmapping}}
+            {\showmessage\m!linguals2{#2,#1,\loadedlanguage,\currentencoding,\currentmapping,\f!languageprefix#2.\f!patternsextension,\truefilename{\f!languageprefix#2.\f!patternsextension}}}}%
+       \readsysfile{\truefilename{\f!languageprefix#2.\f!hyphensextension}}
+         {\showmessage\m!linguals3{#2,#1,\loadedlanguage,\currentencoding,\currentmapping}}
+         {\readsysfile{\f!languageprefix#2.\f!hyphensextension}
+            {\showmessage\m!linguals3{#2,#1,\loadedlanguage,\currentencoding,\currentmapping}}
+            {\showmessage\m!linguals4{#2,#1,\loadedlanguage,\currentencoding,\currentmapping}}}%
        \doglobal\increment\loadedlanguage
        \stoppatternaccents
        \stopreadingfile
-       \stopencoding
+       % \stopencoding
      \else % optimization, introduced 2004.08.24, while sorting out changes in tl
        \letgvalue{\??la\??la:\currentencoding:\currentmapping:#2}\alreadyloadedlanguage
        \doifundefined{\??la\??la:\s!default:\s!default:#2}{\letgvalue{\??la\??la:\s!default:\s!default:#2}\loadedlanguage}% fall back
        \setxvalue{\??la#1\s!patterns}{#2}%
        \xdef\preloadedpmessage{\preloadedpmessage\showpatterns{#2}{[\number\alreadyloadedlanguage]}{\currentencoding}{\currentmapping}}%
        \doglobal\addtocommalist{#2}\preloadedpatterns
-       \showmessage\m!linguals1{#2,#1,[\alreadyloadedlanguage]}%
+       \showmessage\m!linguals1{#2,#1,[\alreadyloadedlanguage],\currentencoding,\currentmapping}%
      \fi
      \global\everyjob\scratchtoks
    \fi

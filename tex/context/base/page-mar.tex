@@ -482,10 +482,10 @@
 %D This permits definitions like:
 %D
 %D \starttyping
-%D \defineinmargins[SomePlace] [inner] [normal] [distance=1cm]
-%D \defineinmargins[SomePlace] [inner] [normal] [SomePlace]    \setupinmargin[SomePlace][distance=1cm]
-%D \defineinmargins[MyPlace]   [inner] [normal] [SomePlace]
-%D \defineinmargins[YourPlace] [inner] [normal] [SomePlace]
+%D \defineinmargin [SomePlace] [inner] [normal] [distance=1cm]
+%D \defineinmargin [SomePlace] [inner] [normal] [SomePlace]    \setupinmargin[SomePlace][distance=1cm]
+%D \defineinmargin [MyPlace]   [inner] [normal] [SomePlace]
+%D \defineinmargin [YourPlace] [inner] [normal] [SomePlace]
 %D \stoptyping
 %D
 %D A torture test:
@@ -506,9 +506,9 @@
 %D and
 %D
 %D \starttyping
-%D \defineinmargin[InOuterA] [outer] [normal] [distance=0cm]
-%D \defineinmargin[InOuterB] [outer] [normal] [distance=1cm]
-%D \defineinmargin[InOuterC] [outer] [normal] [distance=2cm,line=2]
+%D \defineinmargin [InOuterA] [outer] [normal] [distance=0cm]
+%D \defineinmargin [InOuterB] [outer] [normal] [distance=1cm]
+%D \defineinmargin [InOuterC] [outer] [normal] [distance=2cm,line=2]
 %D
 %D \startbuffer
 %D \InOuterA{\TestLine{red}  {A}} test test test \par

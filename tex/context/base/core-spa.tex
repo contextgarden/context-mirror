@@ -1586,8 +1586,10 @@
 \def\regelcorrectie    {\baselinecorrection}
 
 % \prevdepth crosses pageboundaries!
+%
+% todo: a version that works ok inside a box
 
-\let\dorondomregelcorrectie=\relax
+\let\doaroundlinecorrection\relax
 
 \def\startlinecorrection
   {\dodoubleempty\dostartlinecorrection}
@@ -1596,17 +1598,17 @@
   {\bgroup
    \processaction
      [#1]
-     [ \v!blank=>\let\dorondomregelcorrectie\blank,
-      \s!default=>\let\dorondomregelcorrectie\relax,
-      \s!unknown=>{\def\dorondomregelcorrectie{\blank[#1]}}]%
-   \dorondomregelcorrectie
+     [  \v!blank=>\let\doaroundlinecorrection\blank,
+      \s!default=>\let\doaroundlinecorrection\relax,
+      \s!unknown=>{\def\doaroundlinecorrection{\blank[#1]}}]%
+   \doaroundlinecorrection
    \startbaselinecorrection
    \offbaselinecorrection
    \ignorespaces}
 
 \def\stoplinecorrection
   {\stopbaselinecorrection
-   \dorondomregelcorrectie
+   \doaroundlinecorrection
    \egroup}
 
 \def\correctwhitespace
@@ -2213,12 +2215,12 @@
 % to be documented
 
 \def\nopenalties
-   {\widowpenalty        \zerocount
-    \clubpenalty         \zerocount
-    \brokenpenalty       \zerocount
-    \doublehyphendemerits\zerocount
-    \finalhyphendemerits \zerocount
-    \adjdemerits         \zerocount}
+  {\widowpenalty        \zerocount
+   \clubpenalty         \zerocount
+   \brokenpenalty       \zerocount
+   \doublehyphendemerits\zerocount
+   \finalhyphendemerits \zerocount
+   \adjdemerits         \zerocount}
 
 \def\setdefaultpenalties
   {\setups[\systemsetupsprefix\s!default]}

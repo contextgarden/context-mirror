@@ -15,7 +15,9 @@
 
 \unprotect
 
-\startlanguagespecifics[\s!pl] 
+% todo : named glyphs
+
+\startlanguagespecifics[\s!pl]
 
   \appendtoks \makecharacteractive / \to \everynormalcatcodes
 
@@ -40,7 +42,7 @@
 
 \stoplanguagespecifics
 
-\startlanguagespecifics[\s!pl] 
+\startlanguagespecifics[\s!pl]
 
   \installcompoundcharacter /, {\handlequotation\c!leftquotation}
   \installcompoundcharacter /' {\handlequotation\c!rightquotation}
@@ -52,15 +54,15 @@
         \c!rightsentence=\rightguillemot,
         \c!leftsubsentence=\leftsubguillemot,
         \c!rightsubsentence=\rightsubguillemot]}
- 
+
   \installcompoundcharacter /< {{\setupPLlanguage|<|}}
   \installcompoundcharacter /> {{\setupPLlanguage|>|}}
 
-  \installcompoundcharacter /- {|-|} 
+  \installcompoundcharacter /- {|-|}
 
 \stoplanguagespecifics
 
-\startlanguagespecifics[\s!pl] 
+\startlanguagespecifics[\s!pl]
 
   \definesortkey {/a}{a}{a}{\k a}
   \definesortkey {/A}{a}{a}{\k a}
@@ -84,7 +86,7 @@
 \stoplanguagespecifics
 
 \startencoding[pdfdoc]
-  \startlanguagespecifics[pl]% hm 
+  \startlanguagespecifics[pl]% hm
     \defineactivecharacter / {\simplifiedcompoundcharacter/}
   \stoplanguagespecifics
 \stopencoding

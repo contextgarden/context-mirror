@@ -531,6 +531,86 @@ class Commands
         end
     end
 
+    public
+
+    def showfont
+
+        file = @commandline.argument('first')
+
+        if file.empty? then
+            report('provide filename')
+        else
+            file.sub!(/\.afm$/,'')
+            begin
+                report("analyzing afm file #{file}.afm")
+                file = `kpsewhich #{file}.afm`.chomp
+            rescue
+                report('unable to run kpsewhich')
+                return
+            end
+
+            names = Array.new
+
+            if FileTest.file?(file) then
+                File.new(file).each do |line|
+                    if line.match(/^C\s*([\-\d]+)\s*\;.*?\s*N\s*(.+?)\s*\;/o) then
+                        names.push($2)
+                    end
+                end
+                ranges = names.size
+                report("number of glyphs: #{ranges}")
+                ranges = ranges/256 + 1
+                report("number of subsets: #{ranges}")
+                file = File.basename(file).sub(/\.afm$/,'')
+                tex = File.open("textools.tex",'w')
+                map = File.open("textools.map",'w')
+                tex.puts("\\starttext\n")
+                tex.puts("\\loadmapfile[textools.map]\n")
+                for i in 1..ranges do
+                    rfile = "#{file}-range-#{i}"
+                    report("generating enc file #{rfile}.enc")
+                    flushencoding("#{rfile}", (i-1)*256, i*256-1, names)
+                    # catch console output
+                    report("generating tfm file #{rfile}.tfm")
+                    mapline = `afm2tfm #{file}.afm -T #{rfile}.enc #{rfile}.tfm`
+                    # more robust replacement
+                    mapline = "#{rfile} <#{rfile}.enc <#{file}.pfb"
+                    # final entry in map file
+                    mapline = "#{mapline} <#{file}.pfb"
+                    map.puts("#{mapline}\n")
+                    tex.puts("\\showfont[#{rfile}][unknown]\n")
+                end
+                tex.puts("\\stoptext\n")
+                report("generating map file textools.map")
+                report("generating tex file textools.tex")
+                map.close
+                tex.close
+            else
+                report("invalid file #{file}")
+            end
+        end
+
+    end
+
+    private
+
+    def flushencoding (file, from, to, names)
+        n = 0
+        out = File.open("#{file}.enc",'w')
+        out.puts("/#{file.gsub(/\-/,'')} [\n")
+        for i in from..to do
+            if names[i] then
+                n += 1
+                out.puts("/#{names[i]}\n")
+            else
+                out.puts("/.notdef\n")
+            end
+        end
+        out.puts("] def\n")
+        out.close
+        return n
+    end
+
     private # specific
 
     def movefiles(from_path,to_path,suffix,&block)
@@ -652,6 +732,7 @@ commandline.registeraction('fixtexmftrees'    , '[texmfroot] [--force]')
 commandline.registeraction('replace'          , 'filename    [--force]')
 commandline.registeraction('downcasefilenames', '[--recurse] [--force]') # not yet documented
 commandline.registeraction('stripformfeeds'   , '[--recurse] [--force]') # not yet documented
+commandline.registeraction('showfont'         , 'filename')
 
 commandline.registeraction('help')
 commandline.registeraction('version')

@@ -441,8 +441,8 @@
        \bgroup
        \letvalue{\??dd#1\c!sectionnumber}\v!yes
        \protectconversion
-       \maakvoorafgaandenummer[\getvalue{\??dd#1\??dd\c!number}]%
-       \preparethenumber{\??dd#1}\voorafgaandenummer\preparednumber
+       \makeprecedingsectionnumber[\getvalue{\??dd#1\??dd\c!number}]%
+       \preparethenumber{\??dd#1}\precedingsectionnumber\preparednumber
        \ifcase\descriptioncoupling \or
          \xdef\@@internalenumber{#3{#1}}%
          \rawreference\s!num{#1:\@@internalenumber}{}%
@@ -452,8 +452,8 @@
        \fi
        \egroup
      \fi
-     \maakvoorafgaandenummer[\getvalue{\??dd#1\??dd\c!number}]%
-     \preparethenumber{\??dd#1}\voorafgaandenummer\preparednumber
+     \makeprecedingsectionnumber[\getvalue{\??dd#1\??dd\c!number}]%
+     \preparethenumber{\??dd#1}\precedingsectionnumber\preparednumber
      \disablepseudocaps      % sorry, uppercase causes troubles
      \doattributes        % \nocase primitive needed
        {\??dd#1}\c!headstyle\c!headcolor

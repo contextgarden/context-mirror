@@ -169,15 +169,6 @@
 %
 % \runutilityfiletrue
 
-% You can also load additional encodings here:
-%
-% \useencoding[x5]
-%
-% \useregime[cyr]
-% \useencoding[cyr]
-% \enableregime[cp1251]
-% \setupbodyfont[cyr]
-
 % So far.
 
 \protect \endinput

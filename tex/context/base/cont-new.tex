@@ -24,6 +24,112 @@
 
 \ifx\normalcompound\undefined \let\normalcompound=| \fi
 
+\def\undepthed
+  {\dowithnextbox{\nextboxdp\zeropoint\flushnextbox}\hbox}
+
+\def\rawsectionnumber#1{\countervalue{\??se#1}}
+
+% new: \forcebaselinecorrection --> core-spa & core-grd
+
+\chardef\baselinecorrectionmode\plusone
+
+\def\onbaselinecorrection   {\chardef\baselinecorrectionmode\plusone  }
+\def\offbaselinecorrection  {\chardef\baselinecorrectionmode\plustwo  }
+\def\forcebaselinecorrection{\chardef\baselinecorrectionmode\plusthree}
+
+\def\topbaselinecorrection
+  {\ifvmode \ifdim\pagegoal<\maxdimen
+     \forcedtopbaselinecorrection
+   \fi \fi}
+
+\def\forcedtopbaselinecorrection
+  {\ifvmode
+     \bgroup
+     \setbaselinecorrections
+     \whitespace
+     \nointerlineskip
+     \dotopbaselinecorrection
+     \egroup
+   \fi}
+
+\let\forcedbotbaselinecorrection\botbaselinecorrection
+
+\def\startbaselinecorrection
+  {\ifcase\baselinecorectionmode
+   \or % normal
+     \baselinecorrection
+     \ifvmode
+       \bgroup
+       \setbox\scratchbox\vbox\bgroup
+       \ignorespaces
+       \let\stopbaselinecorrection\donormalstopbaselinecorrection
+     \else
+       \bgroup
+       \let\stopbaselinecorrection\egroup
+     \fi
+   \or % off
+     \bgroup
+     \let\stopbaselinecorrection\egroup
+   \or % force
+     \baselinecorrection
+     \ifvmode
+       \bgroup
+       \setbox\scratchbox\vbox\bgroup
+       \ignorespaces
+       \let\stopbaselinecorrection\doforcedstopbaselinecorrection
+     \else
+       \bgroup
+       \let\stopbaselinecorrection\egroup
+     \fi
+   \fi}
+
+\def\startbaselinecorrection
+  {\bgroup
+   \let\stopbaselinecorrection\egroup
+   \ifcase\baselinecorrectionmode
+   \or % normal
+     \baselinecorrection
+     \ifvmode
+       \setbox\scratchbox\vbox\bgroup\ignorespaces
+       \let\stopbaselinecorrection\donormalstopbaselinecorrection
+     \fi
+   \or % off
+   \or % force
+     \baselinecorrection
+     \ifvmode
+       \setbox\scratchbox\vbox\bgroup\ignorespaces
+       \let\stopbaselinecorrection\doforcedstopbaselinecorrection
+     \fi
+   \fi}
+
+\let\stopbaselinecorrection\relax
+
+\def\donormalstopbaselinecorrection % I have to check columns yet.
+  {\egroup
+   \topbaselinecorrection
+   \box\scratchbox
+   \botbaselinecorrection
+   \egroup}
+
+\def\doforcedstopbaselinecorrection % I have to check columns yet.
+  {\egroup
+   \forcedtopbaselinecorrection
+   \box\scratchbox
+   \forcedbotbaselinecorrection
+   \egroup}
+
+% core-grd:
+
+\let\normalstartbaselinecorrection=\startbaselinecorrection
+
+\def\startbaselinecorrection
+  {\ifgridsnapping
+     \centertogrid\bgroup
+     \let\stopbaselinecorrection\egroup
+   \else
+     \normalstartbaselinecorrection
+   \fi}
+
 % todo: fast processor
 
 \def\gettwopassdatalist#1%

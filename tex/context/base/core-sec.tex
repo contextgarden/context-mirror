@@ -162,9 +162,9 @@
    \dochecknummer{#1}%
    \egroup}
 
-\def\domaakvoorafgaandenummer[#1]% will become ugly after speed up
+\def\domakeprecedingsectionnumber[#1]% will become ugly after speed up
   {\bgroup % added
-   \globallet\voorafgaandenummer\empty
+   \globallet\precedingsectionnumber\empty
    \ifsectienummer
      \doifvalue{\??sb\@@sectionblock\c!number}\v!yes % added
        {\doifelsevalue{\@@thenumber{#1}\c!sectionnumber}\v!yes
@@ -174,37 +174,37 @@
         \ifdone
           \edef\currentsection
             {\getvalue{\??by\getvalue{\@@thenumber{#1}\c!way\c!local}}}%
-          \doifnot{\currentsection}\zerosection
-            {\doifnot{\@@sectionvalue{\currentsection}}{0}
-               {\xdef\voorafgaandenummer%
+          \doifnot\currentsection\zerosection
+            {\doifnot{\@@sectionvalue\currentsection}{0}
+               {\xdef\precedingsectionnumber%
                   {\getvalue{\currentsection\c!number}.}}}%
         \fi}%
    \fi
    \egroup}
 
-\def\maakvoorafgaandenummer[#1]%
+\def\makeprecedingsectionnumber[#1]%
   {\bgroup
   %\ifnum\blocklevel>0
   %\ifcase\blocklevel\else
    \ifdoingblocks
      \doifnotvalue{\@@thenumber{#1}\c!blockway}\v!no\setblockcounters
    \fi
-   \domaakvoorafgaandenummer[#1]%
+   \domakeprecedingsectionnumber[#1]%
    \egroup}
 
-% \def\maakhetnummer[#1]%
-%   {\maakvoorafgaandenummer[#1]%
+% \def\makesectionnumber[#1]%
+%   {\makeprecedingsectionnumber[#1]%
 %    \xdef\hetnummer%
-%      {\voorafgaandenummer\convertednumber[#1]}}%
+%      {\precedingsectionnumber\convertednumber[#1]}}%
 %
 % hack needed for chinese and oldstyle in normal tex, will change
 
-\def\maakhetnummer[#1]%
+\def\makesectionnumber[#1]%
   {\bgroup
    \forceunexpanded % i don't like this hack
-   \maakvoorafgaandenummer[#1]%
+   \makeprecedingsectionnumber[#1]%
    \xdef\hetnummer% was \xdef maar dat gaat fout met font switches
-     {\voorafgaandenummer\convertednumber[#1]}%
+     {\precedingsectionnumber\convertednumber[#1]}%
    \egroup}
 
 \def\preparethenumber#1#2#3% {\??id#1} \number \result
@@ -216,7 +216,7 @@
       \edef#3{\@EA\separatednumber\@EA{#2}}}}  % hm, etex
 
 \def\lossenummer[#1]%
-  {\maakhetnummer[#1]%
+  {\makesectionnumber[#1]%
    \hetnummer}
 
 \def\currentnumber[#1]% kan tekst hier weg ?
@@ -264,7 +264,7 @@
      {\setvalue{#1\c!number}{\@@longsectionnumber{#1}}}
      {\setvalue{#1\c!number}{\@@shortsectionnumber{#1}}}}
 
-\def\setupsection%
+\def\setupsection
   {\dodoubleargument\dosetupsection}
 
 %%%%%%%%% new, multilingual

@@ -1,0 +1,51 @@
+%D \module
+%D   [       file=lang-ctx,
+%D        version=2005.02.12,
+%D          title=\CONTEXT\ Language Macros,
+%D       subtitle=Generic Patterns,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{Context Language Macros / Generic Patterns}
+
+\unprotect
+
+%D The \CONTEXT\ specific patterns are more generic and
+%D are more or less encoding independent. They are generated
+%D from the ones shipped with distributions using:
+%D
+%D \starttyping
+%D ctxtools --pattern --all
+%D \stoptyping
+%D
+%D Later we will provide utf specific patterns.
+
+%D Todo:
+
+\definefilesynonym [lang-ru.pat]  [ruenhyph.tex]
+\definefilesynonym [lang-ua.pat]  [ukrenhyp.tex]
+\definefilesynonym [lang-af.pat]  [lang-nl.pat]
+
+%D In order to get 8 bit characters hyphenated, we need to load
+%D patterns under the right circumstances. In some countries, more
+%D than one font encoding is in use. I can add more defaults here
+%D if users let me know what encoding they use.
+
+\installlanguage [\s!nl] [\s!mapping={texnansi,ec},\s!encoding={texnansi,ec}]
+\installlanguage [\s!fr] [\s!mapping={texnansi,ec},\s!encoding={texnansi,ec}]
+\installlanguage [\s!de] [\s!mapping={texnansi,ec},\s!encoding={texnansi,ec}]
+\installlanguage [\s!it] [\s!mapping={texnansi,ec},\s!encoding={texnansi,ec}]
+
+\installlanguage [\s!hr] [\s!mapping=ec,\s!encoding=ec] % no il2, misses cacute characters
+
+\installlanguage [\s!pl] [\s!mapping={pl0,ec},\s!encoding={pl0,ec}]
+\installlanguage [\s!cz] [\s!mapping={il2,ec},\s!encoding={il2,ec}]
+\installlanguage [\s!sk] [\s!mapping={il2,ec},\s!encoding={il2,ec}]
+\installlanguage [\s!sl] [\s!mapping={il2,ec},\s!encoding={il2,ec}]
+
+\protect \endinput

@@ -121,7 +121,7 @@
 \fi
 
 %D \macros
-%D   [beschermen]
+%D   [protecting]
 %D   {protect,unprotect}
 %D
 %D We can shield macros from users by using some special
@@ -158,13 +158,13 @@
   % a simple version is already defined
 \fi
 
-\let\normalprotect=\protect % only for latex
+\let\normalprotect\protect % only for latex
 
 %D Although we don't need the \type{%} after commands that
 %D don't take arguments, unless lines are obeyed, I decided
 %D to put it there as a reminder. I only mention this once.
 
-\chardef\protectionthreshold=2
+\chardef\protectionthreshold=10
 %chardef\protectionthreshold=0 % for testing
 
 % \def\unprotect

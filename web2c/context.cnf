@@ -78,7 +78,7 @@ CTXDEVTXPATH=rubish
 CTXDEVMPPATH=rubish
 CTXDEVMFPATH=rubish
 
-TEXINPUTS.context = .;{$TXRESOURCES}//;{$CTXDEVTXPATH}//;$TEXMF/{pdftex,pdfetex,etex,xetex,omega,tex}/{context,plain,generic}//
+TEXINPUTS.context = .;{$TXRESOURCES}//;{$CTXDEVTXPATH}//;$TEXMF/{pdftex,pdfetex,etex,xetex,omega,tex}/{context,plain,generic,}//
 MPINPUTS          = .;{$MFRESOURCES}//;{$CTXDEVMPPATH}//;$TEXMF/metapost/{context,base,}//
 MFINPUTS          = .;{$MPRESOURCES}//;{$CTXDEVMFPATH}//;$TEXMF/metafont/{context,base,}//;{$TEXMF/fonts,$VARTEXFONTS}/source//
 

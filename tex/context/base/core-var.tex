@@ -128,9 +128,9 @@
 %D This boolean can be used to bypass certain
 %D initializations.
 
-\newif\ifproductionrun
+\newif\ifproductionrun \appendtoks \productionruntrue \to \everydump
 
-\appendtoks \productionruntrue \to \everydump
+\appendtoks \ifcase\protectionlevel\else\reportunprotection\fi \to \everydump
 
 %D \macros
 %D   {everyboxedcontent, ifboxedcontent,

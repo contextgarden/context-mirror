@@ -870,7 +870,7 @@ $OutputFormats{dvipdfm}  = "dvipdfm";
 $OutputFormats{dvipdfmx} = "dvipdfmx";
 $OutputFormats{xetex}    = "xetex";
 
-my @ConTeXtFormats = ( "nl", "en", "de", "cz", "uk", "it", "ro");
+my @ConTeXtFormats = ( "nl", "en", "de", "cz", "uk", "it", "ro", "xx");
 
 sub SetInterfaces {
     my ( $short, $long, $full ) = @_;
@@ -2808,7 +2808,7 @@ sub show_version_info {
   print "                   tex : $texengine\n" ;
   print "               context : ver: $contextversion\n" ;
   print "               cont-en : $type\n" ;
-  foreach my $a (qw(cz de it nl ro uk)) {
+  foreach my $a (qw(cz de it nl ro uk xx)) {
 	my $test = `$kpsewhich -format='fmt' cont-$a`;
 	if (defined $test && $test) {
 	  $Format = 'cont-' . $a;

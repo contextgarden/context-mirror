@@ -359,9 +359,9 @@
    \edef\!!stringa{\getvalue{\??ms\currentmessagelibrary} #1: \relax}%
    \expandafter\dofindinterfacemessage\!!stringa\end}
 
-\def\composemessagetext#1--#2--#3--#4--#5--#6\\%
-  {\def\docomposemessagetext##1,##2,##3,##4,##5,##6\\%
-     {\edef\currentmessagetext{#1##1#2##2#3##3#4##4#5##5}}%
+\def\composemessagetext#1--#2--#3--#4--#5--#6--#7--#8--#9\\%
+  {\def\docomposemessagetext##1,##2,##3,##4,##5,##6,##7,##8,##9\\%
+     {\edef\currentmessagetext{#1##1#2##2#3##3#4##4#5##5#6##6#7##7#8##8}}%
    \docomposemessagetext}
 
 \def\dogetmessage#1#2%
@@ -376,7 +376,7 @@
 \unexpanded\def\makemessage#1#2#3%
   {\def\currentmessagelibrary{#1}%
    \findinterfacemessage{#2}\currentmessagetext
-   \@EA\composemessagetext\currentmessagetext----------\\#3,,,,,\\%
+   \@EA\composemessagetext\currentmessagetext----------------\\#3,,,,,,,,\\%
    \currentmessagetext}
 
 \def\showmessage#1#2#3%
@@ -386,7 +386,7 @@
    \ifx\currentmessagetext\empty
      \def\currentmessagetext{<unknown message #2>}%
    \else
-     \@EA\composemessagetext\currentmessagetext----------\\#3,,,,,\\%
+     \@EA\composemessagetext\currentmessagetext----------------\\#3,,,,,,,,\\%
    \fi
    \@EA\writestatus\@EA{\currentmessagetitle}{\currentmessagetext}}
 

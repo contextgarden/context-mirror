@@ -54,6 +54,11 @@
 % exa quit : 2700 ms ( 500 ms)
 % preload  : 1300 ms (1900 ms) (60-70%)
 
+% \usetypescript [modern][\defaultencoding]
+% \usetypescript [map]   [latin-modern-os] [\defaultencoding]
+% \setupbodyfont[modern]
+% test 1234 test
+
 \unprotect
 
 \def\starttypescriptcollection
@@ -172,7 +177,9 @@
             \starttypescriptcollection##1\stoptypescriptcollection}}%
        \startreadingfile
        \pushendofline
+       \unprotect
        \readfile\currenttypefile\donothing\donothing
+       \protect
        \popendofline
        \stopreadingfile
        \egroup
@@ -184,7 +191,9 @@
      % process files each time
      \startreadingfile
      \pushendofline
+     \unprotect
      \readfile\currenttypefile\donothing\donothing
+     \protect
      \popendofline
      \stopreadingfile
    \fi
@@ -471,6 +480,13 @@
      \fi
      \forgetmapfiles
    \fi}
+
+\def\loadmapline
+  {\dodoubleempty\dodoloadmapline}
+
+\def\dodoloadmapline[#1][#2]%
+  {\loadallfontmapfiles % ! ! !
+   \doloadmapline{#1}{#2}} % special
 
 % since this is driver dependent, and since we may set map files
 % before an output format is defined, we need to postpone it

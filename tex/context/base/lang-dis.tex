@@ -1,0 +1,120 @@
+%D \module
+%D   [       file=lang-dis,
+%D        version=2005.02.12,
+%D          title=\CONTEXT\ Language Macros,
+%D       subtitle=Distribution Patterns,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D This code used to be part of cont-usr.tex but now that we
+%D use more generic pattern files, we decided to isolate these
+%D mappings.
+
+\writestatus{loading}{Context Language Macros / Distribution Patterns}
+
+\doiffileelse{lang-en.pat} \endinput \donothing
+
+\unprotect
+
+%D Hyphenation patterns are normally sought in filed named
+%D \type {lang-xx.pat}. When present on the system, those
+%D patterns take precedence. This list will be adapted to
+%D the actual situation, given that it's noticed.
+
+\definefilesynonym [lang-ca.pat]  [cahyph.tex]
+\definefilesynonym [lang-da.pat]  [dkhyph.tex]
+\definefilesynonym [lang-de.pat]  [dehyphn.tex]
+\definefilesynonym [lang-es.pat]  [eshyph.tex]
+\definefilesynonym [lang-fi.pat]  [fihyph.tex]
+\definefilesynonym [lang-fr.pat]  [frhyph.tex]
+\definefilesynonym [lang-hr.pat]  [hrhyph.tex]
+\definefilesynonym [lang-hu.pat]  [huhyph.tex]
+\definefilesynonym [lang-it.pat]  [ithyph.tex]
+\definefilesynonym [lang-la.pat]  [lahyph7.tex]
+\definefilesynonym [lang-no.pat]  [nohyph.tex]
+\definefilesynonym [lang-pl.pat]  [plhyph.tex]
+\definefilesynonym [lang-pt.pat]  [pthyph.tex]
+\definefilesynonym [lang-ro.pat]  [rohyph.tex]
+\definefilesynonym [lang-ru.pat]  [ruenhyph.tex] % sic: ruen
+\definefilesynonym [lang-sl.pat]  [sihyph.tex]   % sic: sl/si
+\definefilesynonym [lang-sv.pat]  [svhyph.tex]   % was [sehyph.tex]
+\definefilesynonym [lang-tr.pat]  [tkhyph.tex]   % was [trhyph.tex]
+\definefilesynonym [lang-ua.pat]  [ukrenhyp.tex] % sic ukren
+
+\definefilesynonym [lang-uk.pat]  [ukhyphen.tex] % symbolic name, see below
+
+\definefilesynonym [lang-nl.pat]  [nlhyphen.tex] % symbolic name, see below
+\definefilesynonym [lang-af.pat]  [nlhyphen.tex] % symbolic name, see below
+
+\definefilesynonym [lang-en.pat]  [ushyphen.tex] % symbolic name, see below
+\definefilesynonym [lang-us.pat]  [ushyphen.tex] % symbolic name, see below
+
+%definefilesynonym [czhyph.pat]   [czhyphen.tex] % safeguard
+%definefilesynonym [skhyph.pat]   [skhyphen.tex] % safeguard
+
+\definefilesynonym [lang-cz.pat]  [czhyphen.tex] % in a different part of the tree, sigh
+\definefilesynonym [lang-sk.pat]  [skhyphen.tex] % in a different part of the tree, sigh
+
+%definefilesynonym [lang-cz.hyp]  [czhyphen.ex]  % in a different part of the tree, sigh
+%definefilesynonym [lang-sk.hyp]  [skhyphen.ex]  % in a different part of the tree, sigh
+
+\definefilesynonym [lang-deo.pat] [dehypht.tex]  % old german patterns
+
+%D When the dutch spelling changed, new patterns were
+%D constructed. For long these were named \type {dutch96.pat}.
+%D From 2000 however, the old \type {nehyph} files were
+%D replaced by \type {nehyph96.tex}. Typical something that
+%D you have to find out by accident. The names of hyphenation
+%D files as well as their coding is one of the dark areas of
+%D \TEX\ distributions.
+
+ \doiffileelse{nehyph96.tex} {\definefilesynonym[nlhyphen.tex][nehyph96.tex]}
+{\doiffileelse{dutch96.pat}  {\definefilesynonym[nlhyphen.tex][dutch96.pat]}
+                             {\definefilesynonym[nlhyphen.tex][nehyph.tex]}}
+
+%D Ah, something changed in 2003 with respect to ushyph.tex, so let's
+%D fall back when needed. I first noticed this during a workshop at  the
+%D practical tex conference 2004 in sf. Yet another proof of a mess in
+%D filenames. So, we now use \type {ushyphen} as name and do some
+%D searching.
+%D
+%D Well, it happened again, this time in 2004/2005. We're now back at
+%D \type {hyphen.tex}. At the same time the uk patterns have changed. It
+%D clearly demonstrates that those taking care of patterns don't think
+%D generic and completely trust this aliasses mechanism in kpse. It's about
+%D time that \CONTEXT\ starts shipping its own pattern files again in order
+%D to get around this everlasting mess.
+
+ \doiffileelse{hyphen.tex}  {\definefilesynonym[ushyphen.tex][hyphen.tex] }
+{\doiffileelse{ushyph.tex}  {\definefilesynonym[ushyphen.tex][ushyph.tex] }
+{\doiffileelse{ushyph1.tex} {\definefilesynonym[ushyphen.tex][ushyph1.tex]}
+{\doiffileelse{ushyph2.tex} {\definefilesynonym[ushyphen.tex][ushyph2.tex]}}}}
+
+ \doiffileelse{ukhyph.tex}  {\definefilesynonym[ukhyphen.tex][ukhyph.tex] }
+{\doiffileelse{ukhyph1.tex} {\definefilesynonym[ukhyphen.tex][ukhyph1.tex]}
+{\doiffileelse{ukhyph2.tex} {\definefilesynonym[ukhyphen.tex][ukhyph2.tex]}
+                            {\definefilesynonym[ukhyphen.tex][hyphen.tex] }}}
+
+%D In order to get 8 bit characters hyphenated, we need to load
+%D patterns under the right circumstances. In some countries, more
+%D than one font encoding is in use. I can add more defaults here
+%D if users let me know what encoding they use.
+
+\installlanguage [\s!nl] [\s!mapping={texnansi,ec},\s!encoding={texnansi,ec}]
+\installlanguage [\s!fr] [\s!mapping={texnansi,ec},\s!encoding={texnansi,ec}]
+\installlanguage [\s!de] [\s!mapping={texnansi,ec},\s!encoding={texnansi,ec}]
+\installlanguage [\s!it] [\s!mapping={texnansi,ec},\s!encoding={texnansi,ec}]
+
+\installlanguage [\s!hr] [\s!mapping=ec,\s!encoding=ec] % no il2, misses cacute characters
+
+\installlanguage [\s!pl] [\s!mapping={pl0,ec},\s!encoding={pl0,ec}]
+\installlanguage [\s!cz] [\s!mapping={il2,ec},\s!encoding={il2,ec}]
+\installlanguage [\s!sk] [\s!mapping={il2,ec},\s!encoding={il2,ec}]
+\installlanguage [\s!sl] [\s!mapping={il2,ec},\s!encoding={il2,ec}]
+
+\protect \endinput

@@ -31,7 +31,7 @@
 %D 2004.8.30 the low level interface is english. Watch out and adapt
 %D your styles an modules.
 
-\def\contextversion{2005.02.07}
+\def\contextversion{2005.02.14}
 
 %D Welcome to the main module. When this module is ran through
 %D \type{initex} or \type {tex -i} or \type {whatevertex} using
@@ -76,18 +76,18 @@
 %D manipulation macros. The first one loads \PLAIN\ \TEX, as
 %D minimal as possible.
 
-\input syst-pln.tex % english / stripped plain
-\input syst-prm.tex % english / saved primitives (will be extended)
+\input syst-pln.tex  % stripped plain
+\input syst-prm.tex  % saved primitives (will be extended)
 
-\input syst-etx.tex % english / etex
-\input syst-omg.tex % english / omega-aleph
-\input syst-xtx.tex % english / xetex
-\input syst-gen.tex % english
-\input syst-ext.tex % english
-\input syst-new.tex % english
-\input syst-con.tex % english
+\input syst-etx.tex  % etex
+\input syst-omg.tex  % omega-aleph
+\input syst-xtx.tex  % xetex
+\input syst-gen.tex
+\input syst-ext.tex
+\input syst-new.tex
+\input syst-con.tex
 
-\input math-pln.tex % english / basic plain math
+\input math-pln.tex  % basic plain math
 
 %D To enable selective loading, we say:
 
@@ -96,51 +96,51 @@
 %D In order to conveniently load files, we need a few
 %D support modules.
 
-\input supp-ini.tex % english
-\input supp-fil.tex % english
-\input supp-dir.tex % english
+\input supp-ini.tex
+\input supp-fil.tex
+\input supp-dir.tex
 
 %D After this we're ready for the multi||lingual interface
 %D modules.
 
-\input mult-ini.tex % english
-\input mult-sys.tex % english
-\input mult-con.tex % english
-\input mult-com.tex % english
+\input mult-ini.tex
+\input mult-sys.tex
+\input mult-con.tex
+\input mult-com.tex
 
 %D We also use some third party macros. These are loaded by
 %D saying:
 
-\input thrd-ran.tex % english / based on: Donald Arseneau
-\input thrd-trg.tex % english / based on: David Carlisle
+\input thrd-ran.tex  % based on: Donald Arseneau
+\input thrd-trg.tex  % based on: David Carlisle
 
 %D Now we're ready for some general support modules. These
 %D modules implement some basic typesetting functionality.
 
-\input supp-box.tex % english
-\input supp-mrk.tex % english
-\input supp-vis.tex % english
-\input supp-fun.tex % english
-\input supp-eps.tex % english
-\input supp-pdf.tex % english
-\input supp-spe.tex % english
-\input supp-mps.tex % english
-\input supp-mpe.tex % english
-\input supp-tpi.tex % english
-\input supp-mat.tex % english
-\input supp-ran.tex % english
-\input supp-ali.tex % english
+\input supp-box.tex
+\input supp-mrk.tex
+\input supp-vis.tex
+\input supp-fun.tex
+\input supp-eps.tex
+\input supp-pdf.tex
+\input supp-spe.tex
+\input supp-mps.tex
+\input supp-mpe.tex
+\input supp-tpi.tex
+\input supp-mat.tex
+\input supp-ran.tex
+\input supp-ali.tex
 
 %D The next module deals with language specific typographic
 %D extensions.
 
-\input typo-ini.tex % english / I must not forget about this module
+\input typo-ini.tex  % I must not forget about this module
 
 %D Verbatim typesetting is implemented in a separate class of
 %D modules. The pretty typesetting modules are loaded at run
 %D time.
 
-\input verb-ini.tex % english / replaces supp-ver
+\input verb-ini.tex  % replaces supp-ver
 
 %D The following modules are not sequentially dependent,
 %D i.e. they have ugly dependencies, which will be cleaned
@@ -150,70 +150,73 @@
 %D bit more advanced file handling as well as some general
 %D variables, and features, so next we load:
 
-\input core-var.tex % english
-\input core-ins.tex % english
-\input core-fil.tex % english
-\input core-con.tex % english
+\input core-var.tex
+\input core-ins.tex
+\input core-fil.tex
+\input core-con.tex
 
 %D We already need some synonyms (patterns). At runtime this
 %D file will be reloaded.
 
-\input cont-fil.tex % english
+\input cont-fil.tex
 
 %D \CONTEXT\ does not implement its own table handling. We
 %D just go for the best there is and load \TABLE. Just to be
 %D sure we do it here, before we redefine \type{|}.
 
-\input thrd-tab.tex % english / based on: Michael Wichura / will be reimplemented
+\input thrd-tab.tex  % based on: Michael Wichura / will be reimplemented
 
 %D Here comes the last support modules. They take care of
 %D some language specific things.
 
-\input supp-lan.tex % english
-\input supp-num.tex % english
+\input supp-lan.tex
+\input supp-num.tex
+\input supp-pat.tex % generic pattern loading
 
 %D The next few modules do what their names state. They
 %D load additional definition modules when needed.
 
-\input enco-ini.tex % english
-\input filt-ini.tex % english
-\input hand-ini.tex % english
-\input regi-ini.tex % english
-\input lang-ini.tex % english
-\input unic-ini.tex % english
+\input enco-ini.tex
+\input filt-ini.tex
+\input hand-ini.tex
+\input regi-ini.tex
+\input lang-ini.tex
+\input lang-ctx.tex
+\input lang-dis.tex % after lang-ctx !
+\input unic-ini.tex
 
-\input colo-ini.tex % english
-\input colo-ext.tex % english
+\input colo-ini.tex
+\input colo-ext.tex
 
-\input spec-mis.tex % english
-\input spec-ini.tex % english
-\input spec-def.tex % english
-\input spec-var.tex % english
+\input spec-mis.tex
+\input spec-ini.tex
+\input spec-def.tex
+\input spec-var.tex
 
 %D For the moment we load a lot of languages. In the future
 %D we'll have to be more space conservative.
 
-\input lang-spe.tex % english
-\input lang-lab.tex % english
+\input lang-spe.tex
+\input lang-lab.tex
 
-\input lang-ger.tex % english
-\input lang-ita.tex % english
-\input lang-sla.tex % english
+\input lang-ger.tex
+\input lang-ita.tex
+\input lang-sla.tex
 
-\input lang-alt.tex % english
-\input lang-ana.tex % english
-\input lang-art.tex % english
-\input lang-bal.tex % english
-\input lang-cel.tex % english
-\input lang-grk.tex % english
-\input lang-ind.tex % english
-\input lang-ura.tex % english
+\input lang-alt.tex
+\input lang-ana.tex
+\input lang-art.tex
+\input lang-bal.tex
+\input lang-cel.tex
+\input lang-grk.tex
+\input lang-ind.tex
+\input lang-ura.tex
 
-\input lang-vn.tex  % english / vietnamese, maybe this belongs in lang-ita
+\input lang-vn.tex   % vietnamese, maybe this belongs in lang-ita
 
 %D All kind of symbols are handled in:
 
-\input symb-ini.tex % english
+\input symb-ini.tex
 
 %D Next we load some core macro's. These implement the
 %D macros' that are seen by the users. The order of loading
@@ -229,23 +232,23 @@
 \input core-ver.tex
 \input core-vis.tex
 %input core-con.tex
-\input core-rul.tex % english
+\input core-rul.tex
 \input core-tab.tex
 \input core-nav.tex
 \input core-ref.tex
-\input core-obj.tex % english
+\input core-obj.tex
 \input core-buf.tex
 \input core-lst.tex
-\input core-num.tex % english
+\input core-num.tex
 \input core-itm.tex
 \input core-des.tex
-\input core-mat.tex % english
+\input core-mat.tex
 \input core-syn.tex
 \input core-spa.tex
 \input core-sys.tex
 
 \input page-ini.tex
-\input page-not.tex % english
+\input page-not.tex
 \input page-one.tex
 \input page-lay.tex
 \input page-log.tex
@@ -254,15 +257,15 @@
 \input page-flt.tex
 \input page-mul.tex
 \input page-set.tex
-\input page-lyr.tex % english
+\input page-lyr.tex
 \input page-mak.tex
-\input page-num.tex % english
+\input page-num.tex
 \input page-lin.tex
-\input page-mar.tex % english
-\input page-bck.tex % english
-\input page-app.tex % english / unfinished
-\input page-flw.tex % english / experimental: flows
-\input page-spr.tex % english / experimental: spreads
+\input page-mar.tex
+\input page-bck.tex
+\input page-app.tex  % unfinished
+\input page-flw.tex  % experimental: flows
+\input page-spr.tex  % experimental: spreads
 
 \input core-job.tex
 
@@ -278,25 +281,25 @@
 %D Like languages, fonts, encodings and symbols, \METAPOST\
 %D support is also organized in its own class of modules.
 
-\input meta-ini.tex % english
-\input meta-pag.tex % english
-\input meta-fig.tex % english
+\input meta-ini.tex
+\input meta-pag.tex
+\input meta-fig.tex
 
 %D On which the next one depends:
 
-\input core-pos.tex % english
-\input core-snc.tex % english
+\input core-pos.tex
+\input core-snc.tex
 
 %D A few more languages, that have specifics using core
 %D functionality:
 
-\input lang-chi.tex % english
+\input lang-chi.tex
 
 %D How about fill||in fields and related stuff?
 
-\input java-ini.tex % english / needs a cleanup
-\input core-fld.tex % english / needs a cleanup
-\input core-hlp.tex % english / will become a m-module
+\input java-ini.tex  % needs a cleanup
+\input core-fld.tex  % needs a cleanup
+\input core-hlp.tex  % will become a m-module
 
 %D Registers can depend on fields, so we load that now.
 
@@ -307,53 +310,53 @@
 %D content. Here we also redefine \type{\it} as {\it italic}
 %D instead of italian.
 
-\input font-ini.tex % english
-\input font-uni.tex % english
-\input font-bfm.tex % english
+\input font-ini.tex
+\input font-uni.tex
+\input font-bfm.tex
 
-\input type-ini.tex % english
-\input type-def.tex % english
+\input type-ini.tex
+\input type-def.tex
 
-\input prop-ini.tex % english
-\input prop-lay.tex % english / needs core-ref.tex
-\input prop-mis.tex % english
+\input prop-ini.tex
+\input prop-lay.tex  % needs core-ref.tex
+\input prop-mis.tex
 
-\input math-ini.tex % english / needs enco-ini.tex
+\input math-ini.tex  % needs enco-ini.tex
 
 %D Now we're ready for more core modules.
 
-\input core-fnt.tex % english / todo: document setupinitial !
-\input core-not.tex % english
-\input core-lnt.tex % english / to be documented (with idris)
+\input core-fnt.tex  % todo: document setupinitial !
+\input core-not.tex
+\input core-lnt.tex  % to be documented (with idris)
 
 \input core-mis.tex
 
-\input core-fig.tex % english / after page body
-\input core-par.tex % english / maybe this should become a m-module
+\input core-fig.tex  % after page body
+\input core-par.tex  % maybe this should become a m-module
 
-\input core-box.tex % english
+\input core-box.tex
 
 %D Language specific spacing.
 
-\input lang-spa.tex % english
+\input lang-spa.tex
 
 %D Only the basic XML parser and remapper are part of the core.
 %D These macrosa re loaded last since they overload and|/|or
 %D extend previously defined ones.
 
-\input xtag-ini.tex % english
-\input xtag-ext.tex % english
-\input xtag-prs.tex % english
-\input xtag-map.tex % english
-\input xtag-exp.tex % english
-\input xtag-pre.tex % english
-\input xtag-xsd.tex % english
-\input xtag-rng.tex % english
-%input xtag-ent.tex % english
+\input xtag-ini.tex
+\input xtag-ext.tex
+\input xtag-prs.tex
+\input xtag-map.tex
+\input xtag-exp.tex
+\input xtag-pre.tex
+\input xtag-xsd.tex
+\input xtag-rng.tex
+%input xtag-ent.tex
 
 %D How about this:
 
-\input meta-xml.tex % english / to be documented
+\input meta-xml.tex  % to be documented
 
 % %D The next two modules implement some additional
 % %D functionality concerning classes of documents and output.
@@ -365,7 +368,7 @@
 %D \TEX\ related logo's are always typeset in a special way.
 %D Here they come:
 
-\input cont-log.tex % english
+\input cont-log.tex
 
 %D Defaults go here (more will be moved to this module
 %D later):

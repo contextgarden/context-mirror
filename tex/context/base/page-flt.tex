@@ -1114,7 +1114,7 @@
      \letgvalue{@fl@t@#1}\relax
    \else
      \incrementnumber[#1]%
-     \maakhetnummer[#1]%
+     \makesectionnumber[#1]%
    % \globallet\flhetnummer\hetnummer % beware, not unique should be done on a per class base
      \letgvalue{@fl@n@#1}\hetnummer
      % indirect macro can be more efficient
@@ -1677,7 +1677,7 @@
        \dofloat{#4}{}{#6}{#1}%
      \else
        \incrementnumber[#1]%
-       \maakhetnummer[#1]%
+       \makesectionnumber[#1]%
        \global\setbox\floatbox\vbox
          {\unvbox\floatbox % no \vss, keep the depth
           \dofloatreference
