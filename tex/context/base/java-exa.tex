@@ -1,0 +1,232 @@
+%D \module
+%D   [       file=java-exa,
+%D        version=2002.??.??,
+%D          title=\CONTEXT\ JavaScript Macros,
+%D       subtitle=Example Support,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\startJSpreamble request_0 used now
+
+    exa_command    = "" ;
+    exa_option     = "" ;
+    exa_filename   = "" ;
+    exa_filelist   = "" ;
+    exa_registered = "" ;
+
+\stopJSpreamble
+
+\startJSpreamble request_1 used now
+
+    function set_request (command,option) {
+        exa_command = command ;
+        if (option.indexOf("--")<0) {
+            exa_option = "--action=" + option ;
+        } else {
+            exa_option = option ;
+        }
+    }
+
+    function assemble_request ( ) {
+        v = this.getField('filename') ;
+        if (v) {
+            exa_filename = v.value ;
+        }
+        v = this.getField('filelist') ;
+        if (v) {
+            exa_filelist = v.value ;
+        }
+        % exa_filename = exa_filename.replace(/\\\\/g,'/') ;
+        % exa_filelist = exa_filelist.replace(/\\\\/g,'/') ;
+        str = "<exa:request><exa:application>" ;
+        if (exa_filelist == '') {
+            exa_filelist = exa_registered ;
+        } else {
+            if (exa_registered != '') {
+                exa_filelist = exa_filelist + "\\n" + exa_registered ;
+            }
+        }
+        if (exa_command != '') {
+            str = str+"<exa:command>"+exa_command+"</exa:command>" ;
+        }
+        if (exa_option != '') {
+            str = str+"<exa:option>"+exa_option+"</exa:option>" ;
+        }
+        if (exa_filename != '') {
+            str = str+"<exa:filename>"+exa_filename+"</exa:filename>" ;
+        }
+        if (exa_filelist != '') {
+            lst = exa_filelist.split(/\\s/) ;
+            str = str+"<exa:filelist>" ;
+            for (i=0;i<lst.length;i++) {
+                str = str+"<exa:entry>"+lst[i]+"</exa:entry>" ;
+            }
+            str = str+"</exa:filelist>" ;
+        }
+        str = str + "</exa:application></exa:request>" ;
+        v = this.getField('exa:request') ;
+        if (v) {
+            % console.println(str) ;
+            v.value = str ;
+        }
+    }
+
+\stopJSpreamble
+
+\startJSpreamble request_2 used now
+
+    multiplefiles = false ;
+
+    function setfilename ( suffixes ) {
+        f = this.getField("fakename") ;
+        if (f) {
+            f.browseForFileToSubmit() ;
+            if (suffixes != "") {
+                s = suffixes.replace(/,/g,"|") ;
+                r = new RegExp() ;
+                s = "\\\\.(" + s + ")$" ;
+                r.compile(s, "i") ;
+                if (f.value.search(r)<=0) {
+                    f.value = "" ;
+                    app.alert('This filetype is not permitted.') ;
+                }
+            }
+            g = this.getField("filename") ;
+            if (g) {
+                g.value = f.value ;
+            }
+            % we need to set the value of the selector to empty else
+            % we get some funny preloading of multimeg files in spite
+            % of the specs that say that xml fields will not get sent
+            f.value = '' }
+        this.dirty = false ;
+    }
+
+    function addfilename () {
+        if (multiplefiles) {
+            h = this.getField("filelist") ;
+            g = this.getField("filename") ;
+            if ((g) && (h)) {
+                str = g.value ;
+                if (h.value == '') {
+                    h.value = str ;
+                } else {
+                    h.value = h.value + "\\n" + str ;
+                }
+                g.value = '' ;
+                this.value = '' ;
+            }
+        }
+        this.dirty = false ;
+    }
+
+    % not needed (why is it in here then)
+
+    function registerfilename (str) {
+        if (str!='') {
+            h = this.getField("filelist") ;
+            if (h) {
+                if (h.value != '') {
+                    h.value = h.value + "\\n" ;
+                }
+                h.value = h.value + str ;
+            } else {
+                if (exa_registered != '') {
+                    exa_registered = exa_registered + "\\n" ;
+                }
+                exa_registered = exa_registered + str ;
+            }
+        }
+        console.show ;
+        console.println('registered files') ;
+        console.println("file: "+str) ;
+        console.println("list: "+exa_registered) ;
+        this.dirty = false ;
+    }
+
+    function checkfilename () {
+    }
+
+    function getfilename ( suffixes ) {
+        setfilename(suffixes) ;
+        checkfilename() ;
+        addfilename() ;
+    }
+
+    function resetfilename () {
+        f = this.getField("filename") ;
+        if (f) {
+            f.value = '' ;
+        }
+        f = this.getField("fakename") ;
+        if (f) {
+            f.value = '' ;
+        }
+        f = this.getField("filelist") ;
+        if (f) {
+            f.value = '' ;
+        }
+    }
+
+\stopJSpreamble
+
+\startJSpreamble request_3 used now
+
+    function set_example_host ( host ) {
+        if (host.indexOf("://")<0) {
+            global.examplehost = "http://" + host ;
+        } else {
+            global.examplehost = host ;
+        }
+    }
+
+    function set_example_port ( port ) {
+        global.exampleport = port ;
+    }
+
+    function show_example_url ( ) {
+        console.println("example url: " + global.examplehost + ":" + global.exampleport) ;
+    }
+
+    function report_example_url ( ) {
+        app.alert("Requests will be submitted to port " + global.exampleport + " on " + global.examplehost + '.') ;
+    }
+
+    function submit_form (host, port) {
+        console.println("form: submit") ;
+        console.println("host: "+host) ;
+        console.println("port: "+port) ;
+        % example_url = "http://" + host + ":" + port ;
+        example_url = host + ":" + port ;
+        this.submitForm({cURL : example_url, bXML : true}) ;
+    }
+
+    function submit_example_form ( ) {
+        console.println("example form: submit") ;
+        console.println("example host: "+global.examplehost) ;
+        console.println("example port: "+global.exampleport) ;
+        % example_url = "http://" + global.examplehost + ":" + global.exampleport ;
+        example_url = global.examplehost + ":" + global.exampleport ;
+        this.submitForm({cURL : example_url, bXML : true}) ;
+    }
+
+    if (typeof global.examplehost == "undefined" ) {
+        if (this.baseURL == "") {
+            set_example_host("http://localhost") ;
+        } else {
+            set_example_host(this.baseURL) ;
+        }
+    }
+
+    if (typeof global.exampleport == "undefined" ) {
+        set_example_port("8061") ;
+    }
+
+\stopJSpreamble
+
+\endinput

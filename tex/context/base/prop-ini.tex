@@ -76,6 +76,31 @@
       \csname\e!start\currentproperty\endcsname}
      {\csname\e!stop \currentproperty\endcsname}}
 
+% The next alternative provides optional non-grouping:
+
+\def\dodefineproperty[#1][#2][#3]% todo : global def
+  {\ifundefined{\??py#1\c!titel}%
+     \getgparameters[\??py#1][\c!globaal=\v!nee,\c!titel=#1,\c!type=#2,#3]% global ! ! ! !
+     \doifelsevalue{\??py#1\c!globaal}\v!ja
+       {\setgvalue{\s!check#1}{\docheckproperty{#1}}%
+        \setgvalue{\e!start#1}{\dostartproperty{#1}}%
+        \setgvalue{\e!stop #1}{\dostopproperty {#1}}}%
+       {\setgvalue{\s!check#1}{\docheckproperty{#1}}%
+        \setgvalue{\e!start#1}{\begingroup\dostartproperty{#1}}%
+        \setgvalue{\e!stop #1}{\dostopproperty {#1}\endgroup}}%
+   \fi}
+
+\unexpanded\def\startproperty[#1]%
+  {\globalpushmacro\currentproperty
+   \edef\currentproperty{#1}%
+   \csname\e!start\currentproperty\endcsname}
+
+\unexpanded\def\stopproperty
+  {\csname\e!stop \currentproperty\endcsname
+   \globalpopmacro\currentproperty}
+
+% % % % % old % % % % %
+
 % grouped
 
 % \def\restartproperty#1%

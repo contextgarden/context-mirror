@@ -187,6 +187,24 @@
 \def\placetextlinestrut#1%
   {\doifvalue{#1\c!strut}\v!ja{\setstrut\strut}}
 
+% \def\dosingletexts#1#2#3#4#5#6%
+%   {\bgroup
+%    \convertargument#6\to\ascii
+%    \doifsomething\ascii
+%      {\doattributes{#1#2}#3#4%
+%         {\placetextlinestrut{#1}% here !
+%         %\doifdefinedelse{\??mk\ascii\c!koppeling} % brrr
+%          \doifelsemarking\ascii
+%            {\dolimitatetexts{#1#2#5}{\haalmarkering[\ascii][\v!eerste]}}
+%            {\ConvertConstantAfter\doifelse{\v!paginanummer}{#6}
+%               {\@@plaatspaginanummer}
+%               {\ConvertConstantAfter\doifelse{\v!datum}{#6}
+%                  {\currentdate}
+%                  {% #6{}{}{} -> {} needed for macros that look
+%                   % ahead, like \uniqueMPgraphic
+%                   \opeenregel\dolimitatetexts{#1#2#5}{#6{}{}{}}}}}}}%
+%   \egroup}
+
 \def\dosingletexts#1#2#3#4#5#6%
   {\bgroup
    \convertargument#6\to\ascii
@@ -196,9 +214,9 @@
         %\doifdefinedelse{\??mk\ascii\c!koppeling} % brrr
          \doifelsemarking\ascii
            {\dolimitatetexts{#1#2#5}{\haalmarkering[\ascii][\v!eerste]}}
-           {\ConvertConstantAfter\doifelse{\v!paginanummer}{#6}
-              {\@@plaatspaginanummer}
-              {\ConvertConstantAfter\doifelse{\v!datum}{#6}
+           {\ConvertConstantAfter\doifelse\v!paginanummer{#6}
+               \@@plaatspaginanummer
+              {\ConvertConstantAfter\doifelse\v!datum{#6}
                  {\currentdate}
                  {% #6{}{}{} -> {} needed for macros that look
                   % ahead, like \uniqueMPgraphic

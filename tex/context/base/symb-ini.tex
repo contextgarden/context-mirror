@@ -8,18 +8,18 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
-%C details. 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
 
 %D The macros described here used to be part of the \type
-%D {core-con} module. I decided to move them here when 
-%D symbolsets saw the light. Let their light shine.  
+%D {core-con} module. I decided to move them here when
+%D symbolsets saw the light. Let their light shine.
 
 \writestatus{loading}{Context Symbol Libraries / Initialization}
 
 \unprotect
 
-% TOBIAS 
+% TOBIAS
 
 \startmessages  dutch  library: symbols
   title: symbolen
@@ -33,12 +33,12 @@
 
 \startmessages  german  library: symbols
   title: Symbole
-      1: Lade Symboldatei --    
+      1: Lade Symboldatei --
 \stopmessages
 
 \startmessages  czech  library: symbols
   title: symboly
-      1: nacita se soubor symbolu --    
+      1: nacita se soubor symbolu --
 \stopmessages
 
 \startmessages  italian  library: symbols
@@ -58,29 +58,29 @@
 
 %D \macros
 %D   {definesymbol, symbol}
-%D 
+%D
 %D Converting numbers or levels into a character, romannumeral,
 %D symbol or something else, is supported by many \CONTEXT\
 %D commands. Therefore we need a mechanism for linking such
-%D numbers to their counterparts. 
-%D 
+%D numbers to their counterparts.
+%D
 %D First we take care of symbols. These are for instance used
-%D in enumerations and itemizations. We have: 
-%D 
-%D \showsetup{\y!definesymbol} 
-%D \showsetup{\y!symbol} 
-%D 
+%D in enumerations and itemizations. We have:
+%D
+%D \showsetup{\y!definesymbol}
+%D \showsetup{\y!symbol}
+%D
 %D Symbols are simply linked to a tag. Such tags can be numbers
-%D or strings. 
-%D 
+%D or strings.
+%D
 %D \starttypen
 %D \definesymbol [1]       [$\bullet$]
 %D \definesymbol [level 5] [$\star$]
 %D \stoptypen
 
-% ss:tag     -> symbol 
-% ss:set:tag -> symbol out of set 
-% sstag      -> list of symbols in set  
+% ss:tag     -> symbol
+% ss:set:tag -> symbol out of set
+% sstag      -> list of symbols in set
 
 % \def\dodefinesymbol[#1][#2]%
 %   {\ifx\currentsymboldef\empty
@@ -105,37 +105,37 @@
 \def\definesymbol
   {\dodoubleargument\dodefinesymbol}
 
-\unexpanded\def\symbol       % This one always gobbles spaces, 
+\unexpanded\def\symbol       % This one always gobbles spaces,
   {\dodoubleempty\dosymbol}  % so never change it again!
 
-%D Since symbols are used frequently in interactive 
-%D documents, we speed up this one.  
+%D Since symbols are used frequently in interactive
+%D documents, we speed up this one.
 
 \newif\ifnosymbol \newtoks\everysymbol
 
-\def\dodosymbol#1% \relax's prevent lookahead problems 
+\def\dodosymbol#1% \relax's prevent lookahead problems
   {\nosymbolfalse{\the\everysymbol\csname\??ss:#1\endcsname\relax}\relax}
 
-\beginTEX 
+\beginTEX
 
 \def\dosymbol[#1][#2]%
-  {\nosymboltrue 
+  {\nosymboltrue
    \ifsecondargument \@EA\ifx\csname\??ss:#1:#2\endcsname\relax\else
      \dodosymbol{#1:#2}%
-   \fi \fi 
+   \fi \fi
    \ifnosymbol
      \edef\currentsymbol{#1}%
      \the\symbolsetups
-     \ifnosymbol 
+     \ifnosymbol
        \redosymbol\currentsymbol
      \fi
    \fi}
 
 \def\fetchsymbol#1%
-  {\ifnosymbol 
+  {\ifnosymbol
      \@EA\ifx\csname\??ss:#1:\currentsymbol\endcsname\relax\else
        \dodosymbol{#1:\currentsymbol}%
-     \fi 
+     \fi
    \fi}
 
 \def\redosymbol#1%
@@ -146,23 +146,23 @@
 \beginETEX \ifcsname
 
 \def\dosymbol[#1][#2]%
-  {\nosymboltrue 
+  {\nosymboltrue
    \ifsecondargument \ifcsname\??ss:#1:#2\endcsname
      \dodosymbol{#1:#2}%
-   \fi \fi 
+   \fi \fi
    \ifnosymbol
      \edef\currentsymbol{#1}%
      \the\symbolsetups
-     \ifnosymbol 
+     \ifnosymbol
        \redosymbol\currentsymbol
      \fi
    \fi}
 
 \def\fetchsymbol#1%
-  {\ifnosymbol 
+  {\ifnosymbol
      \ifcsname\??ss:#1:\currentsymbol\endcsname
        \dodosymbol{#1:\currentsymbol}%
-     \fi 
+     \fi
    \fi}
 
 \def\redosymbol#1%
@@ -178,10 +178,10 @@
 %D
 %D To simplify defining figure symbols, we offer:
 %D
-%D \showsetup{\y!definefiguresymbol} 
+%D \showsetup{\y!definefiguresymbol}
 %D
 %D By default, such symbols scale along the current bodyfont
-%D size or running font size (which is better). 
+%D size or running font size (which is better).
 
 \def\defaultsymbolfactor{10}
 \def\defaultsymbolheight{1.25ex}
@@ -189,7 +189,7 @@
 \def\figuresymbol
   {\dodoubleempty\dofiguresymbol}
 
-\def\dofiguresymbol[#1][% #2]% 
+\def\dofiguresymbol[#1][% #2]%
   {\externalfigure
      [#1]
      [\c!reset=\v!ja,
@@ -209,7 +209,7 @@
    \fi}
 
 % but for the moment we keep it here
-% % % % % % 
+% % % % % %
 
 %\def\objectsymbol[#1]%
 %  {\dopresetfieldsymbol{#1}\dogetfieldsymbol{#1}}
@@ -217,15 +217,15 @@
 %D \macros
 %D   {doifsymboldefinedelse}
 %D
-%D A handy private one: 
+%D A handy private one:
 
 \beginTEX
 
 \def\xfetchsymbol#1%
-  {\ifnosymbol 
+  {\ifnosymbol
      \@EA\ifx\csname\??ss:#1:\currentsymbol\endcsname\relax\else
        \nosymbolfalse
-     \fi 
+     \fi
    \fi}
 
 \def\xredosymbol#1%
@@ -236,8 +236,8 @@
 \beginETEX
 
 \def\xfetchsymbol#1%
-  {\ifnosymbol 
-     \ifcsname\??ss:#1:\currentsymbol\endcsname\nosymbolfalse\fi 
+  {\ifnosymbol
+     \ifcsname\??ss:#1:\currentsymbol\endcsname\nosymbolfalse\fi
    \fi}
 
 \def\xredosymbol#1%
@@ -250,11 +250,11 @@
    \edef\currentsymbol{#1}%
    \let\fetchsymbol\xfetchsymbol
   %\let\redosymbol \xredosymbol
-   \nosymboltrue 
+   \nosymboltrue
    \the\symbolsetups
-   \ifnosymbol 
-    %\redosymbol\currentsymbol 
-     \xredosymbol\currentsymbol 
+   \ifnosymbol
+    %\redosymbol\currentsymbol
+     \xredosymbol\currentsymbol
      \ifnosymbol
        \egroup\@EAEAEA\secondoftwoarguments
      \else
@@ -266,33 +266,33 @@
 
 %D \macros
 %D   {setupsymbolset,startsymbolset}
-%D 
+%D
 %D From these macro definitions one can deduce that symbols can
-%D be grouped in symbol sets: 
-%D 
+%D be grouped in symbol sets:
+%D
 %D \starttypen
 %D \startsymbolset [navigation 1]
-%D   \definefiguresymbol [Next] [mp-symb.1] 
+%D   \definefiguresymbol [Next] [mp-symb.1]
 %D   \definefiguresymbol [Prev] [mp-symb.2]
 %D \stopsymbolset
 %D \stoptypen
-%D 
+%D
 %D Such a symbol can be typeset with:
-%D 
+%D
 %D \starttypen
 %D \setupsymbolset[navigation 1]\symbol[Next]
 %D \stoptypen
-%D 
+%D
 %D or simply:
-%D 
+%D
 %D \starttypen
 %D \symbol[navigation 1][Next]
 %D \stoptypen
-%D 
+%D
 %D Formally:
-%D 
-%D \showsetup{\y!setupsymbolset} 
-%D \showsetup{\y!startsymbolset} 
+%D
+%D \showsetup{\y!setupsymbolset}
+%D \showsetup{\y!startsymbolset}
 
 \let\currentsymboldef\empty
 
@@ -316,11 +316,11 @@
 %D \macros
 %D   {showsymbolset}
 %D
-%D \showsetup{\y!showsymbolset} 
+%D \showsetup{\y!showsymbolset}
 
 \fetchruntimecommand \showsymbolset {\f!symbolprefix\s!run}
 
-%D \macros 
+%D \macros
 %D   {usesymbols}
 %D
 %D \showsetup{\y!usesymbols}
@@ -335,9 +335,9 @@
 \def\usesymbols[#1]%
   {\processcommalist[#1]\dousesymbols}
 
-%D As longs as symbols are linked to levels or numbers, we can 
-%D also use the conversion mechanism, but in for instance the 
-%D itemization macros, we prefer symbols because they can more 
-%D easier be (partially) redefined. 
+%D As longs as symbols are linked to levels or numbers, we can
+%D also use the conversion mechanism, but in for instance the
+%D itemization macros, we prefer symbols because they can more
+%D easier be (partially) redefined.
 
 \protect \endinput

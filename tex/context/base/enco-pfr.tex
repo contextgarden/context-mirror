@@ -14,39 +14,39 @@
 %D This is an experimental module in which we implement
 %D font resource inclusion in \PDF. One reason to include
 %D font resources is that it enables a search engine to
-%D perform a search (I'm told). This feature ws requested by 
-%D Petr Ferdus from Czech.  
+%D perform a search (I'm told). This feature ws requested by
+%D Petr Ferdus from Czech.
 
 %D A simple test file may look like this (watch how we first
-%D load the encoding and then the font; previous font 
-%D definitions are left untouched.) 
-%D 
+%D load the encoding and then the font; previous font
+%D definitions are left untouched.)
+%D
 %D \starttypen
-%D % output=pdftex interface=en 
-%D 
+%D % output=pdftex interface=en
+%D
 %D \useencoding[pfr]
 %D \setupbodyfont[csr]
-%D 
-%D \starttext 
-%D   test \`z \'z \bf test \sl test \bs quite funny \`z \page
-%D   test \`z \'z \bf test \sl test \bs quite funny \`z \page
-%D \stoptext 
-%D \stoptypen 
 %D
-%D We do our best to include a (often large) font resources 
-%D only once. The current implementation is not that 
-%D general which is also due to the fact that \type 
-%D {\pdffontattr} is expanded instantly and persistent. A 
-%D more versatile (but also slower) approach is to keep track 
-%D of the fonts and either flush the information at shipout 
-%D time, or at the end of the document. 
+%D \starttext
+%D   test \`z \'z \bf test \sl test \bs quite funny \`z \page
+%D   test \`z \'z \bf test \sl test \bs quite funny \`z \page
+%D \stoptext
+%D \stoptypen
+%D
+%D We do our best to include a (often large) font resources
+%D only once. The current implementation is not that
+%D general which is also due to the fact that \type
+%D {\pdffontattr} is expanded instantly and persistent. A
+%D more versatile (but also slower) approach is to keep track
+%D of the fonts and either flush the information at shipout
+%D time, or at the end of the document.
 
 \unprotect
 
-%D \macros 
+%D \macros
 %D   {ifincludepdffontresources}
 %D
-%D You can turn of this feature using the following switch. 
+%D You can turn of this feature using the following switch.
 
 \newif\ifincludepdffontresources \includepdffontresourcestrue
 
@@ -55,33 +55,30 @@
 %D done, the resource name is erased, and we use this fact to
 %D prevent redefinition as well as well as reloading. So, a
 %D macro defined with \type {\pdffontfileresource} can have
-%D three states: 
-%D 
+%D three states:
+%D
 %D \startopsomming[opelkaar]
 %D \som undefined: not yet loaded, and not yet included
 %D \som some value: loaded, but not yet included
 %D \som empty: loaded, and already included
 %D \stopopsomming
 
-\def\pdffontresource%
-  {pdfr:\currentencoding}
-
-\def\pdffontfileresource%
-  {pdff:\pdffontresource}
+\def\pdffontresource    {pdfr:\currentencoding}
+\def\pdffontfileresource{pdff:\pdffontresource}
 
 %D A resource is defined in a file prefixed by \type {pdfr-}.
 %D The following \PDF\ code is composed by Ondrej Koala Vacha (I
-%D probably mispelled this name). 
-%D 
+%D probably mispelled this name).
+%D
 %D \starttypen
-%D \startpdffontresource[il2] 
+%D \startpdffontresource[il2]
 %D /CIDInit /ProcSet findresource begin
 %D 12 dict begin
 %D   begincmap
 %D     /CIDSystemInfo
-%D       << /Registry (Adobe) 
-%D          /Ordering (T1UV)  
-%D          /Supplement 0 
+%D       << /Registry (Adobe)
+%D          /Ordering (T1UV)
+%D          /Supplement 0
 %D       >> def
 %D     /CMapName /Adobe-Identity-UCS def
 %D     /CMapType 1 def
@@ -100,17 +97,17 @@
 %D \stoppdffontresource
 %D \stoptypen
 %D
-%D We don't preload such huge definitions, and process them 
-%D run||time to save memory. Therefore, in the encoding 
+%D We don't preload such huge definitions, and process them
+%D run||time to save memory. Therefore, in the encoding
 %D vector, we only add an entry like:
-%D 
+%D
 %D \starttypen
 %D \startencoding [il2]
 %D   \usepdffontresource il2
 %D \stopencoding
 %D \stoptypen
 %D
-%D This macro is defined as follows. 
+%D This macro is defined as follows.
 
 \def\usepdffontresource #1 %
   {\doifundefinedelse{\pdffontfileresource} % okay, undefined, so either
@@ -118,10 +115,10 @@
      {\doifvaluesomething{\pdffontfileresource}  % only if not loaded in which
         {\setxvalue{\pdffontfileresource}{#1}}}} % case it's made empty
 
-%D Watch how we check for duplicated loading. The resource 
-%D itself, when asked for, is included immediately, after which 
-%D we save its reference. Normally a document will have one 
-%D such a resource. 
+%D Watch how we check for duplicated loading. The resource
+%D itself, when asked for, is included immediately, after which
+%D we save its reference. Normally a document will have one
+%D such a resource.
 
 \long\def\startpdffontresource[#1]#2\stoppdffontresource%
   {\donefalse % we use boolean due to \par
@@ -132,15 +129,15 @@
      \setxvalue{\pdffontresource}{\the\pdflastobj}%
    \fi}
 
-%D The reference to such a vector is to be handled at font 
-%D definition time, which is why we hook it into the font 
-%D loading routine. A little bit of indirectness speeds up 
-%D the process when this feature is disabled and keeps the 
-%D macros readable. 
+%D The reference to such a vector is to be handled at font
+%D definition time, which is why we hook it into the font
+%D loading routine. A little bit of indirectness speeds up
+%D the process when this feature is disabled and keeps the
+%D macros readable.
 
 \appendtoksonce \includepdffontresource \to \everyfont
 
-\def\includepdffontresource%
+\def\includepdffontresource
   {\ifincludepdffontresources
      \ifx\pdffontattr\undefined
        % we're not using (a recent version of) pdftex
@@ -155,7 +152,7 @@
 
 \def\doincludepdffontresource
   {\ifcsname\s!ucmap\fontfile\endcsname\else
-     \dodoincludepdffontresource 
+     \dodoincludepdffontresource
    \fi}
 
 \def\dodoincludepdffontresource%
@@ -189,7 +186,7 @@
 
 \def\doincludepdffontresource
   {\@EA\ifx\csname\s!ucmap\fontfile\endcsname\relax
-     \dodoincludepdffontresource 
+     \dodoincludepdffontresource
    \fi}
 
 \def\dodoincludepdffontresource%
@@ -204,7 +201,7 @@
        \fi
      \fi
      \@EA\ifx\csname\pdffontresource\endcsname\relax\else
-       \expanded{\pdffontattr\font 
+       \expanded{\pdffontattr\font
          {/ToUnicode \csname\pdffontresource\endcsname\space0 R}}%
      \fi
      \global\@EA\let\csname\s!ucmap\fontfile\endcsname\empty
@@ -213,8 +210,8 @@
 \endTEX
 
 
-%D For the moment, we keep this definition here, if only 
-%D because \type {\usepdffontencoding} is not defined in the 
+%D For the moment, we keep this definition here, if only
+%D because \type {\usepdffontencoding} is not defined in the
 %D core. In the end, this will go to enco-il2.
 
 \startencoding [il2]

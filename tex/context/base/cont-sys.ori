@@ -8,97 +8,112 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
-%C details. 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
 
 \unprotect
 
-% Occasionally we will support both A4 and letter in 
-% styles. If you want letter size paper to be the default, 
+% Occasionally we will support both A4 and letter in
+% styles. If you want letter size paper to be the default,
 % uncomment:
 %
 % \enablemode[\systemmodeprefix letter]
 %
 % If you always want to default to letter, you may uncomment
 % the following line, but beware: it makes your documents less
-% portable:  
+% portable:
 %
 % \setuppapersize[letter][letter]
-%
-% If you want some extras, just uncomment the following 
+
+% If you want some extras, just uncomment the following
 % line:
 %
-% \usemodule[plus] % experimental code 
+% \usemodule[plus] % experimental code
 %
-% Here you can take care of overloading some (style) 
-% defaults. What goes here, depends on your local system. 
-%
+% Here you can take care of overloading some (style)
+% defaults. What goes here, depends on your local system.
+
 % The following commands sets the default font encoding:
 %
-% \setupencoding [\s!default=texnansi] 
+% \setupencoding [\s!default=texnansi]
 %
-% or: 
+% or:
 %
-% \setupencoding [\s!default=ec] 
+% \setupencoding [\s!default=ec]
 %
-% If you want the default berry names: 
+% If you want the default berry names:
 %
 % \usetypescript [berry] [\defaultencoding]
 %
-% If you run into missing font metrics kind of problems, 
-% you may want to uncomment: 
-% 
-% \usetypescript[adobekb] [\defaultencoding]
+% If you run into missing font metrics kind of problems,
+% you may want to uncomment:
 %
-% You can let \CONTEXT\ load the map files for \PDFTEX. 
+% \usetypescript[adobekb] [\defaultencoding]
+
+% You can let \CONTEXT\ load the map files for \PDFTEX.
 %
 % \autoloadmapfilestrue
 %
-% If you use the more verbose naming scheme, uncomment this: 
+% (1) use this when you have a big mapfile
 %
-% \usetypescript [map] [default,\defaultencoding] 
+% \preloadmapfile[original-base.map]
+% \preloadmapfile[ec-base.map]
+% \preloadmapfile[8r-base.map]
+% \preloadmapfile[qx-base.map]
+% \preloadmapfile[texnansi-base.map]
+% \preloadmapfile[original-ams-cmr.map]
+% \preloadmapfile[original-ams-euler.map]
+% \preloadmapfile[original-public-lm.map]
+% \preloadmapfile[original-public-plr.map]
+% \preloadmapfile[original-public-csr.map]
 %
-% or : 
+% (2) otherwise, use this if you have a fast machine
 %
-% \usetypescript [map] [all] 
+% \resetmapfiles \usetypescript [map] [base] [all]
 %
-% In case you have set psfonts.map already, you can comment 
-% the following lines. Beware: pdftex uses the fontname 
-% (second entry on map file lines) for (not so) clever 
-% remapping, so in case of troubles, remove the names (is 
-% safe)!   
+% (3) or this if it's a slow one:
 %
-% \preloadmapfile [original-ams-cmr]
-% \preloadmapfile [original-ams-euler]
-% \preloadmapfile [il2-ams-cmr]
-% \preloadmapfile [pl0-ams-cmr]
+% \resetmapfiles
 %
-% Some styles default to Lucida Bright. You can overload 
-% Lucida by Times cum suis. Watch out, the pos collection 
-% is not scaled relatively. 
+% \loadmapfile[original-base.map]
+% \loadmapfile[ec-base.map]
+% \loadmapfile[8r-base.map]
+% \loadmapfile[qx-base.map]
+% \loadmapfile[texnansi-base.map]
+% \loadmapfile[original-ams-cmr.map]
+% \loadmapfile[original-ams-euler.map]
+% \loadmapfile[original-public-lm.map]
+% \loadmapfile[original-public-plr.map]
+% \loadmapfile[original-public-csr.map]
+% \loadmapfile[texnansi-public-lm.map]
+% \loadmapfile[ec-public-lm.map]
+
+% When you have your own fonts installed, you may want to predefine:
 %
-% \definetypescriptsynonym [lbr] [pos] 
+% \usetypescriptfile[type-buy]
+
+% Some styles default to Lucida Bright. You can overload
+% Lucida by Times cum suis. Watch out, the pos collection
+% is not scaled relatively.
 %
+% \definetypescriptsynonym [lbr] [pos]
+
 % Compensate for missing files:
 %
 % \definefontsynonym [gbhei]   [gbsong]
 % \definefontsynonym [gbheisl] [gbsong]
 % \definefontsynonym [gbheisl] [gbsong]
-%
-% The already loaded map file list can be reset with:
-%
-% \forgetmapfiles
-%
-% Setting up a global figure path: 
+
+% Setting up a global figure path
 %
 % \setupexternalfigures [\c!gebied={e:/fig/eps,t:/mine/figs}]
 %
-% Loading a specific special driver: 
+% Loading a specific special driver:
 %
 % \setupoutput [dviwindo]
 
-% Changing language defaults: 
-% 
+% Changing language defaults
+%
 % \setuplanguage
 %   [nl]
 %   [\c!leftquote=\upperleftsinglesixquote,
@@ -106,38 +121,38 @@
 
 % Loading local preferences, for example
 %
-% \input prag-gen % company styles 
-% \input prag-log % more company styles 
+% \input prag-gen % company styles
+% \input prag-log % more company styles
 %
-% Enabling run time \METAPOST\ (also enable \write18 in 
+% Enabling run time \METAPOST\ (also enable \write18 in
 % texmf.cnf):
 
-% \runMPgraphicstrue 
+% \runMPgraphicstrue
 % \runMPTEXgraphicstrue
 
 % This saves some runtime, but needs a format, which you can
-% make with 'texexec --make --alone metafun'. Make sure that 
-% the mem files are moved to the used web2c path (locate with 
+% make with 'texexec --make --alone metafun'. Make sure that
+% the mem files are moved to the used web2c path (locate with
 % 'kpsewhich plain.mem').
 
 \useMETAFUNformattrue
 
-% Enabling nested pretty printing:
+% Enabling nested pretty printing
 
-\newprettytrue 
+\newprettytrue
 
-% This can be a way to get things working on system with 
+% This can be a way to get things working on system with
 % name clashes. (Some \TeX's tend do search system wide.)
 
 \protectbufferstrue
 
-% You can enable a more extensive figure searching, but 
-% normally this is not really needed and even annoying. 
+% You can enable a more extensive figure searching, but
+% normally this is not really needed and even annoying.
 %
-% \runutilityfiletrue 
+% \runutilityfiletrue
 
-% You can also load additional encodings here: 
-
+% You can also load additional encodings here:
+%
 % \useencoding[x5]
 %
 % \useregime[cyr]
@@ -145,6 +160,6 @@
 % \enableregime[cp1251]
 % \setupbodyfont[cyr]
 
-% So far. 
+% So far.
 
 \protect \endinput

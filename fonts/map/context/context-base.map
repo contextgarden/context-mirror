@@ -1,0 +1,848 @@
+% latex + extras
+
+lasy10     <lasy10.pfb
+lasy5      <lasy5.pfb
+lasy6      <lasy6.pfb
+lasy7      <lasy7.pfb
+lasy8      <lasy8.pfb
+lasy9      <lasy9.pfb
+lasyb10    <lasyb10.pfb
+lcircle10  <lcircle1.pfb
+lcirclew10 <lcirclew.pfb
+lcmss8     <lcmss8.pfb
+lcmssb8    <lcmssb8.pfb
+lcmssi8    <lcmssi8.pfb
+line10     <line10.pfb
+linew10    <linew10.pfb
+
+% logo
+
+logo10     <logo10.pfb
+logo8      <logo8.pfb
+logo9      <logo9.pfb
+logobf10   <logobf10.pfb
+logod10    <logod10.pfb
+logosl10   <logosl10.pfb
+logosl8    <logosl8.pfb
+logosl9    <logosl9.pfb
+
+% dunno
+
+lscyb      <lscyb.pfb
+lscybo     <lscybo.pfb
+lscyo      <lscyo.pfb
+lscyr      <lscyr.pfb
+lstcyb     <lstcyb.pfb
+lstcybo    <lstcybo.pfb
+lstcyo     <lstcyo.pfb
+lstcyr     <lstcyr.pfb
+
+% ralph
+
+rsfs10 <rsfs10.pfb
+rsfs7  <rsfs7.pfb
+rsfs5  <rsfs5.pfb
+
+% marvosym
+
+fmvr8x <marvosym.pfb
+
+fmvri8x ".167 SlantFont" <marvosym.pfb
+
+% context
+
+contnav <contnav.pfb
+
+% dingbats
+
+uzdr <uzdr.pfb
+pzdr <pzdr.pfb
+
+% symbols
+
+usyr <usyr.pfb
+
+% xypic
+
+xyatip10 <xyatip10.pfb
+xybsql10 <xybsql10.pfb
+xybtip10 <xybtip10.pfb
+xycirc10 <xycirc10.pfb
+xycmat10 <xycmat10.pfb
+xycmbt10 <xycmbt10.pfb
+xydash10 <xydash10.pfb
+xyeuat10 <xyeuat10.pfb
+xyeubt10 <xyeubt10.pfb
+
+xycmat11 "1.1 ExtendFont" <xycmat10.pfb
+xycmbt11 "1.1 ExtendFont" <xycmbt10.pfb
+xyeuat11 "1.1 ExtendFont" <xyeuat10.pfb
+xyeubt11 "1.1 ExtendFont" <xyeubt10.pfb
+
+xycmat12 "1.2 ExtendFont" <xycmat10.pfb
+xycmbt12 "1.2 ExtendFont" <xycmbt10.pfb
+xyeuat12 "1.2 ExtendFont" <xyeuat10.pfb
+xyeubt12 "1.2 ExtendFont" <xyeubt10.pfb
+
+% euro
+
+zpeub    <zpeub.pfb
+zpeubi   <zpeubi.pfb
+zpeubis  <zpeubis.pfb
+zpeubit  <zpeubit.pfb
+zpeubs   <zpeubs.pfb
+zpeubt   <zpeubt.pfb
+zpeur    <zpeur.pfb
+zpeuri   <zpeuri.pfb
+zpeuris  <zpeuris.pfb
+zpeurit  <zpeurit.pfb
+zpeurs   <zpeurs.pfb
+zpeurt   <zpeurt.pfb% courier / urw
+
+ucrb8t  <ec.enc <ucrb8a.pfb
+ucrbo8t <ec.enc <ucrbo8a.pfb
+ucrr8t  <ec.enc <ucrr8a.pfb
+ucrro8t <ec.enc <ucrro8a.pfb
+
+% courier / adobe
+
+pcrb8t  <ec.enc <ucrb8a.pfb
+pcrbo8t <ec.enc <ucrbo8a.pfb
+pcrr8t  <ec.enc <ucrr8a.pfb
+pcrro8t <ec.enc <ucrro8a.pfb
+
+% helvetica / urw
+
+uhvb8t  <ec.enc <uhvb8a.pfb
+uhvbo8t <ec.enc <uhvbo8a.pfb
+uhvr8t  <ec.enc <uhvr8a.pfb
+uhvro8t <ec.enc <uhvro8a.pfb
+
+% helvetica / adobe
+
+phvb8t  <ec.enc <uhvb8a.pfb
+phvbo8t <ec.enc <uhvbo8a.pfb
+phvr8t  <ec.enc <uhvr8a.pfb
+phvro8t <ec.enc <uhvro8a.pfb
+
+% times / urw
+
+utmb8t  <ec.enc <utmb8a.pfb
+utmbi8t <ec.enc <utmbi8a.pfb
+utmr8t  <ec.enc <utmr8a.pfb
+utmri8t <ec.enc <utmri8a.pfb
+
+utmbo8t ".167 SlantFont" <ec.enc <utmb8a.pfb
+utmro8t ".167 SlantFont" <ec.enc <utmr8a.pfb
+
+% times / adobe
+
+ptmb8t  <ec.enc <utmb8a.pfb
+ptmbi8t <ec.enc <utmbi8a.pfb
+ptmr8t  <ec.enc <utmr8a.pfb
+ptmri8t <ec.enc <utmri8a.pfb
+
+ptmbo8t ".167 SlantFont" <ec.enc <utmb8a.pfb
+ptmro8t ".167 SlantFont" <ec.enc <utmr8a.pfb
+
+% palatino / urw
+
+uplb8t  <ec.enc <uplb8a.pfb
+uplbi8t <ec.enc <uplbi8a.pfb
+uplr8t  <ec.enc <uplr8a.pfb
+uplri8t <ec.enc <uplri8a.pfb
+
+uplbo8t ".167 SlantFont" <ec.enc <uplb8a.pfb
+uplro8t ".167 SlantFont" <ec.enc <uplr8a.pfb
+
+% palatino / adobe
+
+pplb8t  <ec.enc <uplb8a.pfb
+pplbi8t <ec.enc <uplbi8a.pfb
+pplr8t  <ec.enc <uplr8a.pfb
+pplri8t <ec.enc <uplri8a.pfb
+
+pplbo8t ".167 SlantFont" <ec.enc <uplb8a.pfb
+pplro8t ".167 SlantFont" <ec.enc <upplr8a.pfb
+
+% bookman / urw
+
+ubkd8t  <ec.enc <ubkd8a.pfb
+ubkdi8t <ec.enc <ubkdi8a.pfb
+ubkl8t  <ec.enc <ubkl8a.pfb
+ubkli8t <ec.enc <ubkli8a.pfb
+
+ubkdo8t ".167 SlantFont" <ec.enc <ubkd8a.pfb
+ubklo8t ".167 SlantFont" <ec.enc <ubkl8a.pfb
+
+% bookman / adobe
+
+pbkd8t  <ec.enc <ubkd8a.pfb
+pbkdi8t <ec.enc <ubkdi8a.pfb
+pbkl8t  <ec.enc <ubkl8a.pfb
+pbkli8t <ec.enc <ubkli8a.pfb
+
+pbkdo8t ".167 SlantFont" <ec.enc <ubkd8a.pfb
+pbklo8t ".167 SlantFont" <ec.enc <ubkl8a.pfb
+
+% chancery / urw
+
+uzcmi8t <ec.enc <uzcmi8a.pfb
+
+% chancery / adobe
+
+pzcmi8t <ec.enc <uzcmi8a.pfb
+
+% schoolbook / urw
+
+uncb8t  <ec.enc <uncb8a.pfb
+uncbi8t <ec.enc <uncbi8a.pfb
+uncr8t  <ec.enc <uncr8a.pfb
+uncri8t <ec.enc <uncri8a.pfb
+
+uncbo8t ".167 SlantFont" <ec.enc <uncb8a.pfb
+uncro8t ".167 SlantFont" <ec.enc <uncr8a.pfb
+
+% schoolbook / adobe
+
+pncb8t  <ec.enc <uncb8a.pfb
+pncbi8t <ec.enc <uncbi8a.pfb
+pncr8t  <ec.enc <uncr8a.pfb
+pncri8t <ec.enc <uncri8a.pfb
+
+pncbo8t ".167 SlantFont" <ec.enc <uncb8a.pfb
+pncro8t ".167 SlantFont" <ec.enc <uncr8a.pfb
+
+% utopia
+
+putb8t  <ec.enc <putb8a.pfb
+putbi8t <ec.enc <putbi8a.pfb
+putr8t  <ec.enc <putr8a.pfb
+putri8t <ec.enc <putri8a.pfb
+
+putbo8t ".167 SlantFont" <ec.enc <putb8a.pfb
+putro8t ".167 SlantFont" <ec.enc <putr8a.pfb
+
+% charter
+
+bchb8t  <ec.enc <bchb8a.pfb
+bchbi8t <ec.enc <bchbi8a.pfb
+bchbo8t <ec.enc <bchb8a.pfb
+bchr8t  <ec.enc <bchr8a.pfb
+bchri8t <ec.enc <bchri8a.pfb
+
+bchro8t ".167 SlantFont" <ec.enc <bchr8a.pfb% courier / urw
+
+ucrb8r  <8r.enc <ucrb8a.pfb
+ucrbo8r <8r.enc <ucrbo8a.pfb
+ucrr8r  <8r.enc <ucrr8a.pfb
+ucrro8r <8r.enc <ucrro8a.pfb
+
+% courier / adobe
+
+pcrb8r  <8r.enc <ucrb8a.pfb
+pcrbo8r <8r.enc <ucrbo8a.pfb
+pcrr8r  <8r.enc <ucrr8a.pfb
+pcrro8r <8r.enc <ucrro8a.pfb
+
+% helvetica / urw
+
+uhvb8r  <8r.enc <uhvb8a.pfb
+uhvbo8r <8r.enc <uhvbo8a.pfb
+uhvr8r  <8r.enc <uhvr8a.pfb
+uhvro8r <8r.enc <uhvro8a.pfb
+
+% helvetica / adobe
+
+phvb8r  <8r.enc <uhvb8a.pfb
+phvbo8r <8r.enc <uhvbo8a.pfb
+phvr8r  <8r.enc <uhvr8a.pfb
+phvro8r <8r.enc <uhvro8a.pfb
+
+% times / urw
+
+utmb8r  <8r.enc <utmb8a.pfb
+utmbi8r <8r.enc <utmbi8a.pfb
+utmr8r  <8r.enc <utmr8a.pfb
+utmri8r <8r.enc <utmri8a.pfb
+
+utmbo8r ".167 SlantFont" <8r.enc <utmb8a.pfb
+utmro8r ".167 SlantFont" <8r.enc <utmr8a.pfb
+
+% times / adobe
+
+ptmb8r  <8r.enc <utmb8a.pfb
+ptmbi8r <8r.enc <utmbi8a.pfb
+ptmr8r  <8r.enc <utmr8a.pfb
+ptmri8r <8r.enc <utmri8a.pfb
+
+ptmbo8r ".167 SlantFont" <8r.enc <utmb8a.pfb
+ptmro8r ".167 SlantFont" <8r.enc <utmr8a.pfb
+
+% palatino / urw
+
+uplb8r  <8r.enc <uplb8a.pfb
+uplbi8r <8r.enc <uplbi8a.pfb
+uplr8r  <8r.enc <uplr8a.pfb
+uplri8r <8r.enc <uplri8a.pfb
+
+uplbo8r ".167 SlantFont" <8r.enc <uplb8a.pfb
+uplro8r ".167 SlantFont" <8r.enc <uplr8a.pfb
+
+% palatino / adobe
+
+pplb8r  <8r.enc <uplb8a.pfb
+pplbi8r <8r.enc <uplbi8a.pfb
+pplr8r  <8r.enc <ulr8a.pfb
+pplri8r <8r.enc <upplri8a.pfb
+
+pplbo8r ".167 SlantFont" <8r.enc <uplb8a.pfb
+pplro8r ".167 SlantFont" <8r.enc <uplr8a.pfb
+
+% bookman / urw
+
+ubkd8r  <8r.enc <ubkd8a.pfb
+ubkdi8r <8r.enc <ubkdi8a.pfb
+ubkl8r  <8r.enc <ubkl8a.pfb
+ubkli8r <8r.enc <ubkli8a.pfb
+
+ubkdo8r ".167 SlantFont" <8r.enc <ubkd8a.pfb
+ubklo8r ".167 SlantFont" <8r.enc <ubkl8a.pfb
+
+% bookman / adobe
+
+pbkd8r  <8r.enc <ubkd8a.pfb
+pbkdi8r <8r.enc <ubkdi8a.pfb
+pbkl8r  <8r.enc <ubkl8a.pfb
+pbkli8r <8r.enc <ubkli8a.pfb
+
+pbkdo8r ".167 SlantFont" <8r.enc <ubkd8a.pfb
+pbklo8r ".167 SlantFont" <8r.enc <ubkl8a.pfb
+
+% chancery / urw
+
+uzcmi8r <8r.enc <uzcmi8a.pfb
+
+% chancery / adobe
+
+pzcmi8r <8r.enc <uzcmi8a.pfb
+
+% schoolbook / urw
+
+uncb8r  <8r.enc <uncb8a.pfb
+uncbi8r <8r.enc <uncbi8a.pfb
+uncr8r  <8r.enc <uncr8a.pfb
+uncri8r <8r.enc <uncri8a.pfb
+
+uncbo8r ".167 SlantFont" <8r.enc <uncb8a.pfb
+uncro8r ".167 SlantFont" <8r.enc <uncr8a.pfb
+
+% schoolbook / adobe
+
+pncb8r  <8r.enc <uncb8a.pfb
+pncbi8r <8r.enc <uncbi8a.pfb
+pncr8r  <8r.enc <uncr8a.pfb
+pncri8r <8r.enc <uncri8a.pfb
+
+pncbo8r ".167 SlantFont" <8r.enc <uncb8a.pfb
+pncro8r ".167 SlantFont" <8r.enc <uncr8a.pfb
+
+% utopia
+
+putb8r  <8r.enc <putb8a.pfb
+putbi8r <8r.enc <putbi8a.pfb
+putr8r  <8r.enc <putr8a.pfb
+putri8r <8r.enc <putri8a.pfb
+
+putbo8r ".167 SlantFont" <8r.enc <putb8a.pfb
+putro8r ".167 SlantFont" <8r.enc <putr8a.pfb
+
+% charter
+
+bchb8r  <8r.enc <bchb8a.pfb
+bchbi8r <8r.enc <bchbi8a.pfb
+bchbo8r <8r.enc <bchb8a.pfb
+bchr8r  <8r.enc <bchr8a.pfb
+bchri8r <8r.enc <bchri8a.pfb
+
+bchro8r ".167 SlantFont" <8r.enc <bchr8a.pfb% courier / urw
+
+ucrb8y  <texnansi.enc <ucrb8a.pfb
+ucrbo8y <texnansi.enc <ucrbo8a.pfb
+ucrr8y  <texnansi.enc <ucrr8a.pfb
+ucrro8y <texnansi.enc <ucrro8a.pfb
+
+% courier / adobe
+
+pcrb8y  <texnansi.enc <ucrb8a.pfb
+pcrbo8y <texnansi.enc <ucrbo8a.pfb
+pcrr8y  <texnansi.enc <ucrr8a.pfb
+pcrro8y <texnansi.enc <ucrro8a.pfb
+
+% helvetica / urw
+
+uhvb8y  <texnansi.enc <uhvb8a.pfb
+uhvbo8y <texnansi.enc <uhvbo8a.pfb
+uhvr8y  <texnansi.enc <uhvr8a.pfb
+uhvro8y <texnansi.enc <uhvro8a.pfb
+
+% helvetica / adobe
+
+phvb8y  <texnansi.enc <uhvb8a.pfb
+phvbo8y <texnansi.enc <uhvbo8a.pfb
+phvr8y  <texnansi.enc <uhvr8a.pfb
+phvro8y <texnansi.enc <uhvro8a.pfb
+
+% times / urw
+
+utmb8y  <texnansi.enc <utmb8a.pfb
+utmbi8y <texnansi.enc <utmbi8a.pfb
+utmr8y  <texnansi.enc <utmr8a.pfb
+utmri8y <texnansi.enc <utmri8a.pfb
+
+utmbo8y ".167 SlantFont" <texnansi.enc <utmb8a.pfb
+utmro8y ".167 SlantFont" <texnansi.enc <utmr8a.pfb
+
+% times / adobe
+
+ptmb8y  <texnansi.enc <utmb8a.pfb
+ptmbi8y <texnansi.enc <utmbi8a.pfb
+ptmr8y  <texnansi.enc <utmr8a.pfb
+ptmri8y <texnansi.enc <utmri8a.pfb
+
+ptmbo8y ".167 SlantFont" <texnansi.enc <utmb8a.pfb
+ptmro8y ".167 SlantFont" <texnansi.enc <utmr8a.pfb
+
+% palatino / urw
+
+uplb8y  <texnansi.enc <uplb8a.pfb
+uplbi8y <texnansi.enc <uplbi8a.pfb
+uplr8y  <texnansi.enc <uplr8a.pfb
+uplri8y <texnansi.enc <uplri8a.pfb
+
+uplbo8y ".167 SlantFont" <texnansi.enc <uplb8a.pfb
+uplro8y ".167 SlantFont" <texnansi.enc <uplr8a.pfb
+
+% palatino / adobe
+
+pplb8y  <texnansi.enc <uplb8a.pfb
+pplbi8y <texnansi.enc <uplbi8a.pfb
+pplr8y  <texnansi.enc <uplr8a.pfb
+pplri8y <texnansi.enc <uplri8a.pfb
+
+pplbo8y ".167 SlantFont" <texnansi.enc <uplb8a.pfb
+pplro8y ".167 SlantFont" <texnansi.enc <uplr8a.pfb
+
+% bookman / urw
+
+ubkd8y  <texnansi.enc <ubkd8a.pfb
+ubkdi8y <texnansi.enc <ubkdi8a.pfb
+ubkl8y  <texnansi.enc <ubkl8a.pfb
+ubkli8y <texnansi.enc <ubkli8a.pfb
+
+ubkdo8y ".167 SlantFont" <texnansi.enc <ubkd8a.pfb
+ubklo8y ".167 SlantFont" <texnansi.enc <ubkl8a.pfb
+
+% bookman / adobe
+
+pbkd8y  <texnansi.enc <ubkd8a.pfb
+pbkdi8y <texnansi.enc <ubkdi8a.pfb
+pbkl8y  <texnansi.enc <ubkl8a.pfb
+pbkli8y <texnansi.enc <ubkli8a.pfb
+
+pbkdo8y ".167 SlantFont" <texnansi.enc <ubkd8a.pfb
+pbklo8y ".167 SlantFont" <texnansi.enc <ubkl8a.pfb
+
+% chancery / urw
+
+uzcmi8y <texnansi.enc <uzcmi8a.pfb
+
+% chancery / adobe
+
+pzcmi8y <texnansi.enc <uzcmi8a.pfb
+
+% schoolbook / urw
+
+uncb8y  <texnansi.enc <uncb8a.pfb
+uncbi8y <texnansi.enc <uncbi8a.pfb
+uncr8y  <texnansi.enc <uncr8a.pfb
+uncri8y <texnansi.enc <uncri8a.pfb
+
+uncbo8y ".167 SlantFont" <texnansi.enc <uncb8a.pfb
+uncro8y ".167 SlantFont" <texnansi.enc <uncr8a.pfb
+
+% schoolbook / adobe
+
+pncb8y  <texnansi.enc <uncb8a.pfb
+pncbi8y <texnansi.enc <uncbi8a.pfb
+pncr8y  <texnansi.enc <uncr8a.pfb
+pncri8y <texnansi.enc <uncri8a.pfb
+
+pncbo8y ".167 SlantFont" <texnansi.enc <uncb8a.pfb
+pncro8y ".167 SlantFont" <texnansi.enc <uncr8a.pfb
+
+% utopia
+
+putb8y  <texnansi.enc <putb8a.pfb
+putbi8y <texnansi.enc <putbi8a.pfb
+putr8y  <texnansi.enc <putr8a.pfb
+putri8y <texnansi.enc <putri8a.pfb
+
+putbo8y ".167 SlantFont" <texnansi.enc <putb8a.pfb
+putro8y ".167 SlantFont" <texnansi.enc <putr8a.pfb
+
+% charter
+
+bchb8y  <texnansi.enc <bchb8a.pfb
+bchbi8y <texnansi.enc <bchbi8a.pfb
+bchbo8y <texnansi.enc <bchb8a.pfb
+bchr8y  <texnansi.enc <bchr8a.pfb
+bchri8y <texnansi.enc <bchri8a.pfb
+
+bchro8y ".167 SlantFont" <texnansi.enc <bchr8a.pfb
+
+% cmr
+
+cmb10      <cmb10.pfb
+cmbsy10    <cmbsy10.pfb
+cmbsy6     <cmbsy6.pfb
+cmbsy7     <cmbsy7.pfb
+cmbsy8     <cmbsy8.pfb
+cmbsy9     <cmbsy9.pfb
+cmbx10     <cmbx10.pfb
+cmbx12     <cmbx12.pfb
+cmbx5      <cmbx5.pfb
+cmbx6      <cmbx6.pfb
+cmbx7      <cmbx7.pfb
+cmbx8      <cmbx8.pfb
+cmbx9      <cmbx9.pfb
+cmbxsl10   <cmbxsl10.pfb
+cmbxti10   <cmbxti10.pfb
+cmcsc10    <cmcsc10.pfb
+cmdunh10   <cmdunh10.pfb
+cmex10     <cmex10.pfb
+cmff10     <cmff10.pfb
+cmfi10     <cmfi10.pfb
+cmfib8     <cmfib8.pfb
+cminch     <cminch.pfb
+cmitt10    <cmitt10.pfb
+cmmi10     <cmmi10.pfb
+cmmi12     <cmmi12.pfb
+cmmi5      <cmmi5.pfb
+cmmi6      <cmmi6.pfb
+cmmi7      <cmmi7.pfb
+cmmi8      <cmmi8.pfb
+cmmi9      <cmmi9.pfb
+cmmib10    <cmmib10.pfb
+cmr10      <cmr10.pfb
+cmr12      <cmr12.pfb
+cmr17      <cmr17.pfb
+cmr5       <cmr5.pfb
+cmr6       <cmr6.pfb
+cmr7       <cmr7.pfb
+cmr8       <cmr8.pfb
+cmr9       <cmr9.pfb
+cmsl10     <cmsl10.pfb
+cmsl12     <cmsl12.pfb
+cmsl8      <cmsl8.pfb
+cmsl9      <cmsl9.pfb
+cmsltt10   <cmsltt10.pfb
+cmss10     <cmss10.pfb
+cmss12     <cmss12.pfb
+cmss17     <cmss17.pfb
+cmss8      <cmss8.pfb
+cmss9      <cmss9.pfb
+cmssbx10   <cmssbx10.pfb
+cmssdc10   <cmssdc10.pfb
+cmssi10    <cmssi10.pfb
+cmssi12    <cmssi12.pfb
+cmssi17    <cmssi17.pfb
+cmssi8     <cmssi8.pfb
+cmssi9     <cmssi9.pfb
+cmssq8     <cmssq8.pfb
+cmssqi8    <cmssqi8.pfb
+cmsy10     <cmsy10.pfb
+cmsy5      <cmsy5.pfb
+cmsy6      <cmsy6.pfb
+cmsy7      <cmsy7.pfb
+cmsy8      <cmsy8.pfb
+cmsy9      <cmsy9.pfb
+cmtcsc10   <cmtcsc10.pfb
+cmtex10    <cmtex10.pfb
+cmtex8     <cmtex8.pfb
+cmtex9     <cmtex9.pfb
+cmti10     <cmti10.pfb
+cmti12     <cmti12.pfb
+cmti7      <cmti7.pfb
+cmti8      <cmti8.pfb
+cmti9      <cmti9.pfb
+cmtt10     <cmtt10.pfb
+cmtt12     <cmtt12.pfb
+cmtt8      <cmtt8.pfb
+cmtt9      <cmtt9.pfb
+cmu10      <cmu10.pfb
+cmvtt10    <cmvtt10.pfb
+
+% ams etc
+
+icmex10    <icmex10.pfb
+icmmi8     <icmmi8.pfb
+icmsy8     <icmsy8.pfb
+icmtt8     <icmtt8.pfb
+ilasy8     <ilasy8.pfb
+ilcmss8    <ilcmss8.pfb
+ilcmssb8   <ilcmssb8.pfb
+ilcmssi8   <ilcmssi8.pfb
+lasy10     <lasy10.pfb
+lasy5      <lasy5.pfb
+lasy6      <lasy6.pfb
+lasy7      <lasy7.pfb
+lasy8      <lasy8.pfb
+lasy9      <lasy9.pfb
+lasyb10    <lasyb10.pfb
+lcircle10  <lcircle1.pfb
+lcirclew10 <lcirclew.pfb
+lcmss8     <lcmss8.pfb
+lcmssb8    <lcmssb8.pfb
+lcmssi8    <lcmssi8.pfb
+line10     <line10.pfb
+linew10    <linew10.pfb
+
+logo10     <logo10.pfb
+logo8      <logo8.pfb
+logo9      <logo9.pfb
+logobf10   <logobf10.pfb
+logosl10   <logosl10.pfb
+
+msam10     <msam10.pfb
+msam5      <msam5.pfb
+msam7      <msam7.pfb
+msbm10     <msbm10.pfb
+msbm5      <msbm5.pfb
+msbm7      <msbm7.pfb
+
+wncyb10    <wncyb10.pfb
+wncyi10    <wncyi10.pfb
+wncyr10    <wncyr10.pfb
+wncysc10   <wncysc10.pfb
+wncyss10   <wncyss10.pfb
+
+manfnt     <manfnt.pfb
+
+% euler
+
+euex10 <euex10.pfb
+eufb10 <eufb10.pfb
+eufb5  <eufb5.pfb
+eufb7  <eufb7.pfb
+eufm10 <eufm10.pfb
+eufm5  <eufm5.pfb
+eufm7  <eufm7.pfb
+eurb10 <eurb10.pfb
+eurb5  <eurb5.pfb
+eurb7  <eurb7.pfb
+eurm10 <eurm10.pfb
+eurm5  <eurm5.pfb
+eurm7  <eurm7.pfb
+eusb10 <eusb10.pfb
+eusb5  <eusb5.pfb
+eusb7  <eusb7.pfb
+eusm10 <eusm10.pfb
+eusm5  <eusm5.pfb
+eusm7  <eusm7.pfb
+
+% latin modern
+
+lmb10    <lmb10.pfb
+lmbsl10  <lmbsl10.pfb
+lmbx10   <lmbx10.pfb
+lmbx12   <lmbx12.pfb
+lmbx5    <lmbx5.pfb
+lmbx6    <lmbx6.pfb
+lmbx7    <lmbx7.pfb
+lmbx8    <lmbx8.pfb
+lmbx9    <lmbx9.pfb
+lmbxsl10 <lmbxsl10.pfb
+lmbxti10 <lmbxti10.pfb
+lmcsc10  <lmcsc10.pfb
+lmitt10  <lmitt10.pfb
+lmr10    <lmr10.pfb
+lmr12    <lmr12.pfb
+lmr17    <lmr17.pfb
+lmr5     <lmr5.pfb
+lmr6     <lmr6.pfb
+lmr7     <lmr7.pfb
+lmr8     <lmr8.pfb
+lmr9     <lmr9.pfb
+lmsl10   <lmsl10.pfb
+lmsl12   <lmsl12.pfb
+lmsl8    <lmsl8.pfb
+lmsl9    <lmsl9.pfb
+lmsltt10 <lmsltt10.pfb
+lmss10   <lmss10.pfb
+lmss12   <lmss12.pfb
+lmss17   <lmss17.pfb
+lmss8    <lmss8.pfb
+lmss9    <lmss9.pfb
+lmssbi10 <lmssbi10.pfb
+lmssbx10 <lmssbx10.pfb
+lmssdc10 <lmssdc10.pfb
+lmssdi10 <lmssdi10.pfb
+lmssi10  <lmssi10.pfb
+lmssi12  <lmssi12.pfb
+lmssi17  <lmssi17.pfb
+lmssi8   <lmssi8.pfb
+lmssi9   <lmssi9.pfb
+lmssq8   <lmssq8.pfb
+lmssqb8  <lmssqb8.pfb
+lmssqbi8 <lmssqbi8.pfb
+lmssqi8  <lmssqi8.pfb
+lmtcsc10 <lmtcsc10.pfb
+lmti10   <lmti10.pfb
+lmti12   <lmti12.pfb
+lmti7    <lmti7.pfb
+lmti8    <lmti8.pfb
+lmti9    <lmti9.pfb
+lmtt10   <lmtt10.pfb
+lmtt12   <lmtt12.pfb
+lmtt8    <lmtt8.pfb
+lmtt9    <lmtt9.pfb
+
+% czech modern
+
+csr10    <csr.enc  <csr10.pfb
+csr12    <csr.enc  <csr12.pfb
+csr17    <csr.enc  <csr17.pfb
+csr9     <csr.enc  <csr9.pfb
+csr8     <csr.enc  <csr8.pfb
+csr7     <csr.enc  <csr7.pfb
+csr6     <csr.enc  <csr6.pfb
+csr5     <csr1.enc <csr5.pfb
+csbx10   <csr.enc  <csbx10.pfb
+csbx12   <csr.enc  <csbx12.pfb
+csbx9    <csr.enc  <csbx9.pfb
+csbx8    <csr.enc  <csbx8.pfb
+csbx7    <csr.enc  <csbx7.pfb
+csbx6    <csr.enc  <csbx6.pfb
+csbx5    <csr.enc  <csbx5.pfb
+csb10    <csr.enc  <csb10.pfb
+csti10   <csr.enc  <csti10.pfb
+csti12   <csr.enc  <csti12.pfb
+csti9    <csr.enc  <csti9.pfb
+csti8    <csr.enc  <csti8.pfb
+csti7    <csr.enc  <csti7.pfb
+cstt10   <cstt.enc <cstt10.pfb
+cstt12   <cstt.enc <cstt12.pfb
+cstt9    <cstt.enc <cstt9.pfb
+cstt8    <cstt.enc <cstt8.pfb
+cssltt10 <cstt.enc <cssltt10.pfb
+csvtt10  <cstt.enc <csvtt10.pfb
+csss10   <csr.enc  <csss10.pfb
+csss12   <csr.enc  <csss12.pfb
+csss17   <csr.enc  <csss17.pfb
+csss9    <csr.enc  <csss9.pfb
+csss8    <csr.enc  <csss8.pfb
+csssi10  <csr.enc  <csssi10.pfb
+csssi12  <csr.enc  <csssi12.pfb
+csssi17  <csr.enc  <csssi17.pfb
+csssi9   <csr.enc  <csssi9.pfb
+csssi8   <csr.enc  <csssi8.pfb
+cssl10   <csr.enc  <cssl10.pfb
+cssl12   <csr.enc  <cssl12.pfb
+cssl9    <csr.enc  <cssl9.pfb
+cssl8    <csr.enc  <cssl8.pfb
+csssq8   <csr.enc  <csssq8.pfb
+csssqi8  <csr.enc  <csssqi8.pfb
+csssdc10 <csr.enc  <csssdc10.pfb
+csssbx10 <csr.enc  <csssbx10.pfb
+csinch   <csin.enc <csinch.pfb
+csdunh10 <csr.enc  <csdunh10.pfb
+csbxsl10 <csr.enc  <csbxsl10.pfb
+csff10   <csr.enc  <csff10.pfb
+csfib8   <csr.enc  <csfib8.pfb
+csbxti10 <csr.enc  <csbxti10.pfb
+csitt10  <cstt.enc <csitt10.pfb
+csu10    <csr.enc  <csu10.pfb
+csfi10   <csr.enc  <csfi10.pfb
+cscsc10  <csr1.enc <cscsc10.pfb
+cstcsc10 <cstt.enc <cstcsc10.pfb
+
+% polish modern
+
+plb10    <plrm.enc  <plb10.pfb
+plbsy10  <plms.enc  <plbsy10.pfb
+plbx10   <plrm.enc  <plbx10.pfb
+plbx12   <plrm.enc  <plbx12.pfb
+plbx5    <plrm.enc  <plbx5.pfb
+plbx6    <plrm.enc  <plbx6.pfb
+plbx7    <plrm.enc  <plbx7.pfb
+plbx8    <plrm.enc  <plbx8.pfb
+plbx9    <plrm.enc  <plbx9.pfb
+plbxsl10 <plrm.enc  <plbxsl10.pfb
+plbxti10 <plit.enc  <plbxti10.pfb
+plcsc10  <plsc.enc  <plcsc10.pfb
+pldunh10 <plrm.enc  <pldunh10.pfb
+plex10   <plme.enc  <plex10.pfb
+plex9    <plme.enc  <plex9.pfb
+plff10   <plrm.enc  <plff10.pfb
+plfi10   <plit.enc  <plfi10.pfb
+plfib8   <plrm.enc  <plfib8.pfb
+plinch   <plin.enc  <plinch.pfb
+plitt10  <plitt.enc <plitt10.pfb
+plmi10   <plmi.enc  <plmi10.pfb
+plmi12   <plmi.enc  <plmi12.pfb
+plmi5    <plmi.enc  <plmi5.pfb
+plmi6    <plmi.enc  <plmi6.pfb
+plmi7    <plmi.enc  <plmi7.pfb
+plmi8    <plmi.enc  <plmi8.pfb
+plmi9    <plmi.enc  <plmi9.pfb
+plmib10  <plmi.enc  <plmib10.pfb
+plr10    <plrm.enc  <plr10.pfb
+plr12    <plrm.enc  <plr12.pfb
+plr17    <plrm.enc  <plr17.pfb
+plr5     <plsc.enc  <plr5.pfb
+plr6     <plrm.enc  <plr6.pfb
+plr7     <plrm.enc  <plr7.pfb
+plr8     <plrm.enc  <plr8.pfb
+plr9     <plrm.enc  <plr9.pfb
+plsl10   <plrm.enc  <plsl10.pfb
+plsl12   <plrm.enc  <plsl12.pfb
+plsl8    <plrm.enc  <plsl8.pfb
+plsl9    <plrm.enc  <plsl9.pfb
+plsltt10 <pltt.enc  <plsltt10.pfb
+plss10   <plrm.enc  <plss10.pfb
+plss12   <plrm.enc  <plss12.pfb
+plss17   <plrm.enc  <plss17.pfb
+plss8    <plrm.enc  <plss8.pfb
+plss9    <plrm.enc  <plss9.pfb
+plssbi10 <plrm.enc  <plssbi10.pfb
+plssbx10 <plrm.enc  <plssbx10.pfb
+plssdc10 <plrm.enc  <plssdc10.pfb
+plssi10  <plrm.enc  <plssi10.pfb
+plssi12  <plrm.enc  <plssi12.pfb
+plssi17  <plrm.enc  <plssi17.pfb
+plssi8   <plrm.enc  <plssi8.pfb
+plssi9   <plrm.enc  <plssi9.pfb
+plssq8   <plrm.enc  <plssq8.pfb
+plssqi8  <plrm.enc  <plssqi8.pfb
+plsy10   <plms.enc  <plsy10.pfb
+plsy5    <plms.enc  <plsy5.pfb
+plsy6    <plms.enc  <plsy6.pfb
+plsy7    <plms.enc  <plsy7.pfb
+plsy8    <plms.enc  <plsy8.pfb
+plsy9    <plms.enc  <plsy9.pfb
+pltcsc10 <pltt.enc  <pltcsc10.pfb
+pltex10  <plte.enc  <pltex10.pfb
+pltex8   <plte.enc  <pltex8.pfb
+pltex9   <plte.enc  <pltex9.pfb
+plti10   <plit.enc  <plti10.pfb
+plti12   <plit.enc  <plti12.pfb
+plti7    <plit.enc  <plti7.pfb
+plti8    <plit.enc  <plti8.pfb
+plti9    <plit.enc  <plti9.pfb
+pltt10   <pltt.enc  <pltt10.pfb
+pltt12   <pltt.enc  <pltt12.pfb
+pltt8    <pltt.enc  <pltt8.pfb
+pltt9    <pltt.enc  <pltt9.pfb
+plu10    <plit.enc  <plu10.pfb
+plvtt10  <plrm.enc  <plvtt10.pfb

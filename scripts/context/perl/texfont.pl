@@ -381,8 +381,11 @@ if (($batch)||(($ARGV[0]) && ($ARGV[0] =~ /.+\.dat$/io)))
       { if ($batchfile !~ /\.dat$/io) { $batchfile .= ".dat" } }
     unless (-f $batchfile)
       { report ("trying to locate : $batchfile") ;
-        $batchfile = `kpsewhich -progname=context --format="other text files" $batchfile` ;
-        chomp $batchfile }
+        $batchfile = `kpsewhich --format="scripts" -progname=context $batchfile` ;
+        chomp $batchfile ;
+        if ($batchfile eq '')
+          { $batchfile = `kpsewhich --format="other text files" -progname=context $batchfile` ;
+            chomp $batchfile } }
     error ("unknown batch file $batchfile") unless -e $batchfile ;
     report ("processing batch file : $batchfile") ;
     my $select = (($vendor ne "")||($collection ne "")) ;
@@ -1062,7 +1065,7 @@ foreach my $file (@files)
         $mapdata =~ s/^$thename\s.*?$//gmis ;
         if ($afmpl) {
             if ($mapdata =~ s/^$rawname\s.*?$//gmis) {
-               report ("removing conflicting file : $rawname") ;
+               report ("removing raw file : $rawname") ;
             }
         }
         $maplist .= $str ;

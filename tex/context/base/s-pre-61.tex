@@ -1,0 +1,222 @@
+%D \module
+%D   [      file=s-pre-61,
+%D        version=2004.03.15,
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=Presentation Environment 61,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\usemodule[pre-60]
+
+\usetypescriptfile[type-ghz]
+
+\definetypeface[mainface][ss][sans][optima-nova][default][encoding=\defaultencoding]
+
+\setupbodyfont[mainface,ss,22pt]
+
+\setuppapersize
+  [S6][S6]
+
+% \setuppapersize
+%   [SW][SW]
+
+\setuplayout
+  [topspace=10pt,
+   header=40pt,
+   headerdistance=20pt,
+   height=middle,
+   footerdistance=20pt,
+   footer=0pt,
+   bottomdistance=10pt,
+   bottom=20pt,
+   bottomspace=40pt,
+   backspace=30pt,
+   width=middle]
+
+\setupinteraction
+  [state=start,
+   click=off,
+   menu=on]
+
+\setupinteractionscreen
+  [option=max]
+
+\setupinteractionmenu
+  [bottom]
+  [color=maincolor,
+   contrastcolor=maincolor,
+   style=\tfa, % acceptable
+   left=\hfill,
+   middle=,
+   right=,
+   height=\bottomheight,
+   width=2\bottomheight,
+   offset=overlay,
+   frame=off]
+
+\startinteractionmenu[bottom]
+  \but [firstpage]               \symbol[firstpage]      \\
+  \but [previouspage]            \symbol[previouspage]   \\
+  \but [InvokeStepper] \StartBusy\symbol[PauseRendering]\StopBusy \\
+  \but [nextpage]                \symbol[nextpage]       \\
+  \but [lastpage]                \symbol[lastpage]       \\
+  \but [CloseDocument]           \symbol[CloseDocument]  \\
+\stopinteractionmenu
+
+% maybe in colo-sjk : \setupcolor[sjk]
+
+\definecolor [dark]   [s=.4]
+\definecolor [bright] [s=.9]
+
+\definecolor [red]    [r=.4,g=.2,b=.2]
+\definecolor [green]  [r=.2,g=.4,b=.2]
+\definecolor [blue]   [r=.2,g=.2,b=.4]
+
+\definecolor [cyan]   [r=.2,g=.4,b=.4]
+\definecolor [magenta][r=.4,g=.2,b=.4]
+\definecolor [yellow] [r=.4,g=.4,b=.2]
+
+\definecolor [pagecolor] [dark]
+\definecolor [maincolor] [bright]
+\definecolor [textcolor] [red]
+
+\setupcolors
+  [state=start,
+   textcolor=maincolor]
+
+\setupbackgrounds
+  [page]
+  [background=page,
+   backgroundcolor=textcolor]
+
+\defineoverlay[page][\uniqueMPgraphic{page-\ifcase\realpageno\or one\else plus\fi}]
+
+\startuniqueMPgraphic{page-one}
+  StartPage ;
+    fill Page
+      enlarged 4pt
+      withcolor \MPcolor{pagecolor} ;
+    fill Field[Text][Text]
+      topenlarged   (TopSpace +4pt)
+      leftenlarged  (BackSpace+4pt)
+      rightenlarged (CutSpace +4pt)
+      withcolor OverlayColor ;
+  StopPage ;
+\stopuniqueMPgraphic
+
+\startuniqueMPgraphic{page-plus}
+  StartPage ;
+    fill Page
+      enlarged 4pt
+      withcolor \MPcolor{pagecolor} ;
+    fill Field[Text][Text]
+      leftenlarged  (BackSpace+4pt)
+      rightenlarged (CutSpace+4pt)
+      withcolor OverlayColor ;
+  StopPage ;
+\stopuniqueMPgraphic
+
+\NormalizeFontHeight \HeadFont  {\setstrut\strut\quad} {\headerheight}  {SansBold}
+\NormalizeFontHeight \TitleFont {\setstrut\strut\quad} {2\headerheight} {SansBold}
+
+\setuphead
+  [chapter]
+  [placehead=empty,
+   after={\blank[big]},
+   color=maincolor,
+   placenumber=no,
+   style=\HeadFont]
+
+\setupheadertexts
+  [\doiftextelse{\placeheadtext[Topic]}
+     {\placeheadtext[Topic]}
+     {\placeheadtext[Nopic]}]
+  []
+
+\setuppagenumbering
+  [location=]
+
+\definesymbol[emdash][\emdash] \setupitemize[each][packed][symbol=emdash]
+
+\setupalign[broad,right]
+
+\def\TitlePage#1%
+  {\startstandardmakeup[headerstate=high]
+   \def\\{\endgraf\quad}\TitleFont\setstrut\setupinterlinespace\vfil#1\vfil\vfil
+   \stopstandardmakeup}
+
+\definehead[Topic][chapter]
+\definehead[Nopic][title]
+
+\def\Topics#1%
+  {\Nopic[topics]{#1}
+   \startcolumns
+     \placelist[Topic]
+   \stopcolumns}
+
+\setuplist
+  [Topic]
+  [alternative=f,
+   color=maincolor,
+   contrastcolor=maincolor,
+   criterium=all]
+
+\defineoverlay[topics][\overlaybutton{topics}]
+
+\setupbackgrounds
+  [bottom] [text]
+  [background=topics]
+
+\doifnotmode{demo}{\endinput}
+
+\TitlePage{Stepwise\\Refinement}
+
+\Topics{Topics}
+
+\Topic{Female Artists}
+
+\StartSteps
+
+\startitemize
+\item Tori Amos \FlushStep
+\item Kate Bush \FlushStep
+\item Heather Nova \FlushStep
+\item Alanis Morissette \FlushStep
+\item Suzanne Vega \FlushStep
+\stopitemize
+
+\StopSteps
+
+\Topic{Male Composers}
+
+\StartSteps
+
+\startitemize
+\item John Adams \FlushStep
+\item Steve Reich \FlushStep
+\item Louis Andriessen \FlushStep
+\item Olivier Messiaen \FlushStep
+\stopitemize
+
+\StopSteps
+
+\Topic{And Some More}
+
+\StartSteps
+
+\startitemize
+\item Mark Hollis \FlushStep
+\item Roger Waters \FlushStep
+\item David Gilmore \FlushStep
+\item Peter Gabriel \FlushStep
+\item Randy Newman \FlushStep
+\stopitemize
+
+\StopSteps
+
+\stoptext

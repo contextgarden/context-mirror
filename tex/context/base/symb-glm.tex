@@ -11,43 +11,46 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-%D Watch the \type {met} instead of \type {mot}!
+%D Watch the \type {x} before the local symbols.
 
-\loadmapfile [pl0-ams-cmr]
+\loadmapfile [ec-public-lm.map]
 
-\definefontsynonym [GuilSerif]            [plr10]    [encoding=pl0]
-\definefontsynonym [GuilSerifBold]        [plbx10]   [encoding=pl0]
-\definefontsynonym [GuilSerifItalic]      [plti10]   [encoding=pl0]
-\definefontsynonym [GuilSerifSlanted]     [plsl10]   [encoding=pl0]
-\definefontsynonym [GuilSerifBoldItalic]  [plbxti10] [encoding=pl0]
-\definefontsynonym [GuilSerifBoldSlanted] [plbxsl10] [encoding=pl0]
+\definefontsynonym [GuilSerif]            [plr10]    [encoding=ec]
+\definefontsynonym [GuilSerifBold]        [plbx10]   [encoding=ec]
+\definefontsynonym [GuilSerifItalic]      [plti10]   [encoding=ec]
+\definefontsynonym [GuilSerifSlanted]     [plsl10]   [encoding=ec]
+\definefontsynonym [GuilSerifBoldItalic]  [plbxti10] [encoding=ec]
+\definefontsynonym [GuilSerifBoldSlanted] [plbxsl10] [encoding=ec]
 
-\definefontsynonym [GuilSans]             [plss10]   [encoding=pl0]
-\definefontsynonym [GuilSansBold]         [plssbx10] [encoding=pl0]
-\definefontsynonym [GuilSansItalic]       [plssi10]  [encoding=pl0]
-\definefontsynonym [GuilSansSlanted]      [plssi10]  [encoding=pl0]
-\definefontsynonym [GuilSansBoldItalic]   [plssbi10] [encoding=pl0]
-\definefontsynonym [GuilSansBoldSlanted]  [plssbi10] [encoding=pl0]
+\definefontsynonym [GuilSans]             [plss10]   [encoding=ec]
+\definefontsynonym [GuilSansBold]         [plssbx10] [encoding=ec]
+\definefontsynonym [GuilSansItalic]       [plssi10]  [encoding=ec]
+\definefontsynonym [GuilSansSlanted]      [plssi10]  [encoding=ec]
+\definefontsynonym [GuilSansBoldItalic]   [plssbi10] [encoding=ec]
+\definefontsynonym [GuilSansBoldSlanted]  [plssbi10] [encoding=ec]
 
-\definefontsynonym [GuilMono]             [pltt10]   [encoding=pl0]
-%definefontsynonym [GuilMonoBold]         [pltt10]   [encoding=pl0]
-%definefontsynonym [GuilMonoSlanted]      [pltt10]   [encoding=pl0]
-%definefontsynonym [GuilMonoItalic]       [pltt10]   [encoding=pl0]
-%definefontsynonym [GuilMonoBoldItalic]   [pltt10]   [encoding=pl0]
-%definefontsynonym [GuilMonoBoldSlanted]  [pltt10]   [encoding=pl0]
+\definefontsynonym [GuilMono]             [pltt10]   [encoding=ec]
+%definefontsynonym [GuilMonoBold]         [pltt10]   [encoding=ec]
+%definefontsynonym [GuilMonoSlanted]      [pltt10]   [encoding=ec]
+%definefontsynonym [GuilMonoItalic]       [pltt10]   [encoding=ec]
+%definefontsynonym [GuilMonoBoldItalic]   [pltt10]   [encoding=ec]
+%definefontsynonym [GuilMonoBoldSlanted]  [pltt10]   [encoding=ec]
 
-\definesymbol [leftguillemet]  [\getglyph{Guil}{\char174}]
-\definesymbol [rightguillemet] [\getglyph{Guil}{\char175}]
+\definesymbol [xleftguillemot]   [\getglyph{Guil}{\char19}]
+\definesymbol [xrightguillemot]  [\getglyph{Guil}{\char20}]
+
+\definesymbol [xguilsingleleft]  [\getglyph{Guil}{\char14}]
+\definesymbol [xguilsingleright] [\getglyph{Guil}{\char15}]
 
 %D A strange place, but okay:
 
 \startencoding [default]
 
-  \definecharacter leftguillemot     {\symbol[leftguillemet]}
-  \definecharacter rightguillemot    {\symbol[rightguillemet]}
+  \definecharacter leftguillemot     {\symbol[xleftguillemot]}
+  \definecharacter rightguillemot    {\symbol[xrightguillemot]}
 
-  \definecharacter guilsingleleft    {\symbol[leftguillemet]}
-  \definecharacter guilsingleright   {\symbol[rightguillemet]}
+  \definecharacter guilsingleleft    {\symbol[xguilsingleleft]}
+  \definecharacter guilsingleright   {\symbol[xguilsingleright]}
 
 \stopencoding
 

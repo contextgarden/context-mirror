@@ -699,8 +699,19 @@
      \fi
    \fi}
 
+% \long\def\docleanupXMLarguments#1/ #2\relax % space added earlier
+%   {\edef\currentXMLarguments{#1}}
+%
+% \startbuffer
+% <xsl:value-of select="map[@att=$variable]/@att2"/>
+% \stopbuffer
+%
+% \showXMLbuffer
+%
+% No \type {\edef} in the following, else \showXMLbuffer fails:
+
 \long\def\docleanupXMLarguments#1/ #2\relax % space added earlier
-  {\edef\currentXMLarguments{#1}}
+  {\def\currentXMLarguments{#1}} % no \edef, goes wrong in \showXML
 
 \def\executeXMLelementA % no fallback
   {\ifcsname\@@XMLelement:\currentXMLfullidentifier\endcsname
@@ -1330,10 +1341,24 @@
 %
 % The next speed optimization is suggested by Taco. Since we
 % are dealing with validated code, we can grab larger chunks.
+%
+% \long\def\doparseXMLarguments#1% space goes ok
+%   {\if#1>%
+%      \let\dodoparseXMLarguments\empty
+%    \else\if#1/%
+%      \chardef\kindofXMLelement\emptyXMLtag
+%    \else
+%      \XMLtoks{#1}%
+%      \let\dodoparseXMLarguments\dodoparseXMLargumentsX
+%    \fi\fi
+%    \dodoparseXMLarguments}
+%
+% we squeeze out one more assignment
 
 \long\def\doparseXMLarguments#1% space goes ok
   {\if#1>%
-     \let\dodoparseXMLarguments\empty
+    %\let\dodoparseXMLarguments\empty
+     \expandafter\gobbleoneargument % speedup
    \else\if#1/%
      \chardef\kindofXMLelement\emptyXMLtag
    \else
@@ -1341,6 +1366,27 @@
      \let\dodoparseXMLarguments\dodoparseXMLargumentsX
    \fi\fi
    \dodoparseXMLarguments}
+
+% slightly faster:
+%
+% \long\def\doparseXMLarguments#1% space goes ok
+%   {\if#1>%
+%      \@EA\gobbleoneargument
+%    \else\if#1/%
+%      \chardef\kindofXMLelement\emptyXMLtag
+%      \@EAEAEA\gobbletwoarguments
+%    \else
+%      \@EAEAEA\dodoparseXMLargumentsX
+%    \fi\fi#1}
+%
+% \def\dodoparseXMLargumentsX#1=#2%
+%   {\def\@@XMLname{#1}%
+%    \getXMLNSSSS#1:\relax
+%    \if#2"%
+%      \expandafter\dodoparseXMLargumentsD
+%    \else
+%      \expandafter\dodoparseXMLargumentsS
+%    \fi}
 
 \def\dodoparseXMLargumentsX#1=#2%
   {\edef\@@XMLname{\the\XMLtoks#1}%
@@ -1810,10 +1856,17 @@
 
 %D Arguments (attributes) \unknown
 
+% \long\def\setXMLarguments#1#2#3% element [tag] settings
+%   {\doifassignmentelse{#2}
+%      {\long\setvalue{\@@XMLpars:#1}{\getrawparameters[\@@XMLvariable:#1:][#2]}}
+%      {\long\setvalue{\@@XMLmap :#1}{#2}% later we can init vars by this name
+%       \doifsomething{#3}{\long\setvalue{\@@XMLpars:#1}{\getrawparameters[#2][#3]}}}}
+
 \long\def\setXMLarguments#1#2#3% element [tag] settings
   {\doifassignmentelse{#2}
-     {\long\setvalue{\@@XMLpars:#1}{\getrawparameters[\@@XMLvariable:#1:][#2]}}
-     {\long\setvalue{\@@XMLmap :#1}{#2}% later we can init vars by this name
+     {\letbeundefined{\@@XMLmap:#1}%
+      \long\setvalue{\@@XMLpars:#1}{\getrawparameters[\@@XMLvariable:#1:][#2]}}
+     {\long\setvalue{\@@XMLmap:#1}{#2}% later we can init vars by this name
       \doifsomething{#3}{\long\setvalue{\@@XMLpars:#1}{\getrawparameters[#2][#3]}}}}
 
 \def\presetXMLarguments#1%

@@ -312,11 +312,36 @@
 \def\snaptogrid% [#1]#2 -> #2 == \hbox|\vbox
   {\dosingleempty\dosnaptogrid}
 
+% \def\dosnaptogrid[#1]%
+%   {\ifgridsnapping
+%      \iffirstargument\doifsomething{#1}{\verplaatsopgrid[#1]}\fi
+%      \expandafter\dodosnaptogrid
+%    \fi}
+
 \def\dosnaptogrid[#1]%
-  {\ifgridsnapping
+  {\resetlastlinewidth % maybe in more places, otherwise spacing gets messed up
+   \ifgridsnapping
      \iffirstargument\doifsomething{#1}{\verplaatsopgrid[#1]}\fi
      \expandafter\dodosnaptogrid
    \fi}
+
+% \def\forcedpresnapcorrection % test this on 'details'
+%   {\ifforcepresnap
+%      \ifvmode \else \par \fi % new
+%      % we don't want top of page space  when 'top' option
+%      %\verticalstrut\nobreak\vskip-\struttotal
+%      %\verticalstrut\vskip-\struttotal
+%      % nobreak really needed
+%      \allowbreak\verticalstrut\nobreak\vskip-\struttotal
+%      %\ifdim\pagetotal>\topskip \else
+%        % eigenlijk signal
+%        %\writestatus{grid}{removing dummy at top of page}%
+%        %\bgroup
+%        %\output{\setbox\scratchbox\box255}%
+%        %\penalty\outputpenalty
+%        %\egroup
+%      %\fi
+%    \fi}
 
 \def\forcedpresnapcorrection % test this on 'details'
   {\ifforcepresnap
@@ -325,7 +350,7 @@
      %\verticalstrut\nobreak\vskip-\struttotal
      %\verticalstrut\vskip-\struttotal
      % nobreak really needed
-     \allowbreak\verticalstrut\nobreak\vskip-\struttotal
+     \dosomebreak\allowbreak\verticalstrut\nobreak\vskip-\struttotal % new: \dosomebreak
      %\ifdim\pagetotal>\topskip \else
        % eigenlijk signal
        %\writestatus{grid}{removing dummy at top of page}%

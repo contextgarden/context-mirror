@@ -706,11 +706,11 @@ startsetup
 com:impostaincorniciato:
 typ:vars/:
 var:altezza:adatta,ampio,*dimensione::
-var:ampiezza:adatta,ampio,fisso,*dimensione::
+var:ampiezza:adatta,ampio,fisso,locale,*dimensione::
 var:offset:nessuno,sovrapponi,implicito,*dimensione::
 var:luogo:basso,profondita,sospeso::
 var:opzione:nessuno,vuoto::
-var:strut:si,no::
+var:strut:si,no,globale,locale::
 var:allinea:no,sinistra,destra,centro,normale,alto,basso,pedap::
 var:fondo:*comando::
 var:cima:*comando::

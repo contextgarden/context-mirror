@@ -3409,14 +3409,26 @@
 %D dimension is advanced accordingly, otherwise it gets the
 %D value.
 
+% \def\doadaptdimension#1#2\\#3\\%
+%   {\if#1+%
+%      \dodoglobal\advance#3 #1#2\relax
+%    \else\if#1-%
+%      \dodoglobal\advance#3 #1#2\relax
+%    \else
+%      \dodoglobal#3=#1#2\relax
+%    \fi\fi}
+%
+% more fuzzy but also more efficient
+
 \def\doadaptdimension#1#2\\#3\\%
   {\if#1+%
-     \dodoglobal\advance#3 #1#2\relax
+     \dodoglobal\advance
    \else\if#1-%
-     \dodoglobal\advance#3 #1#2\relax
+     \dodoglobal\advance
    \else
-     \dodoglobal#3=#1#2\relax
-   \fi\fi}
+     \dodoglobal
+   \fi\fi
+   #3 #1#2\relax}
 
 \def\adaptdimension#1#2%
   {\expandafter\doadaptdimension#2\\#1\\}
@@ -3644,21 +3656,59 @@
 %D The magic factor $72/72.27$ can be found in most \TEX\
 %D related books.
 
-\def\ScaledPointsToBigPoints     #1{\PointsToBigPoints     {#1sp}}
-\def\ScaledPointsToWholeBigPoints#1{\PointsToWholeBigPoints{#1sp}}
+% \def\ScaledPointsToBigPoints     #1{\PointsToBigPoints     {#1sp}}
+% \def\ScaledPointsToWholeBigPoints#1{\PointsToWholeBigPoints{#1sp}}
+%
+% \def\PointsToBigPoints#1#2%
+%   {\scratchdimen#1%
+%    \scratchdimen.996264\scratchdimen
+%    \edef#2{\withoutpt\the\scratchdimen}}
+%
+% \def\PointsToWholeBigPoints#1#2%
+%   {\scratchdimen#1%
+%    \scratchdimen.996264\scratchdimen
+%    \scratchcounter\scratchdimen
+%    \advance\scratchcounter \medcard
+%    \divide\scratchcounter \maxcard
+%    \edef#2{\the\scratchcounter}}
 
-\def\PointsToBigPoints#1#2%
-  {\scratchdimen#1%
-   \scratchdimen.996264\scratchdimen
-   \edef#2{\withoutpt\the\scratchdimen}}
+% \PointsToBigPoints{10.53940pt}\test \test
+% \PointsToBigPoints{10.53941pt}\test \test
+% \PointsToBigPoints{10.53942pt}\test \test
 
-\def\PointsToWholeBigPoints#1#2%
-  {\scratchdimen#1%
-   \scratchdimen.996264\scratchdimen
-   \scratchcounter\scratchdimen
-   \advance\scratchcounter \medcard
-   \divide\scratchcounter \maxcard
-   \edef#2{\the\scratchcounter}}
+% \PointsToWholeBigPoints{10.53940pt}\test \test
+% \PointsToWholeBigPoints{10.53941pt}\test \test
+% \PointsToWholeBigPoints{10.53942pt}\test \test
+
+\beginTEX
+
+  \def\PointsToBigPoints#1#2%
+    {\scratchdimen#1%
+     \scratchdimen.996264\scratchdimen
+     \edef#2{\withoutpt\the\scratchdimen}}
+
+  \def\PointsToWholeBigPoints#1#2%
+    {\scratchdimen#1%
+     \scratchdimen.996264\scratchdimen
+     \scratchcounter\scratchdimen
+     \advance\scratchcounter \medcard
+     \divide\scratchcounter \maxcard
+     \edef#2{\the\scratchcounter}}
+
+\endTEX
+
+\beginETEX \dimexpr \numexpr
+
+  \def\PointsToBigPoints#1#2%
+    {\edef#2{\withoutpt\the\dimexpr(.996264\dimexpr(#1))}}
+
+  \def\PointsToWholeBigPoints#1#2%
+    {\edef#2{\the\numexpr(\numexpr(\dimexpr(.996264\dimexpr(#1)))/\maxcard)}}
+
+\endETEX
+
+\def\ScaledPointsToBigPoints     #1{\PointsToBigPoints     {\number#1\scaledpoint}}
+\def\ScaledPointsToWholeBigPoints#1{\PointsToWholeBigPoints{\number#1\scaledpoint}}
 
 %D \macros
 %D   {PointsToReal}
@@ -4003,18 +4053,22 @@
 
 \beginTEX
 
-\def\twodigitrounding#1{#1}
+  \def\twodigitrounding#1{#1}
 
 \endTEX
 
-\beginETEX
+\beginETEX \dimexpr
 
-\def\dotwodigitrounding#1.#2#3#4\relax%
-  {\ifx#2*#1\else#1.#2#3\fi}
+  \def\dotwodigitrounding#1.#2#3#4\relax%
+    {\ifx#2*#1\else#1.#2#3\fi}
 
-\def\twodigitrounding#1%
-  {\@EA\@EA\@EA\dotwodigitrounding\@EA\WITHOUTPT
-      \the\dimexpr#1pt+.005pt\relax000.*00\relax}
+  % \def\twodigitrounding#1%
+  %   {\@EA\@EA\@EA\dotwodigitrounding\@EA\WITHOUTPT
+  %       \the\dimexpr#1pt+.005pt\relax000.*00\relax}
+
+  \def\twodigitrounding#1%
+    {\@EA\@EA\@EA\dotwodigitrounding\@EA\WITHOUTPT
+       \the\dimexpr#1\points+.005\points\relax000.*00\relax}
 
 \endETEX
 

@@ -794,10 +794,14 @@
    \else\ifx\localwidth\v!ruim
      \boxhaswidthtrue
      \!!widtha\hsize
+   \else\ifx\localwidth\v!lokaal
+     \boxhaswidthtrue
+     \setlocalhsize
+     \!!widtha\localhsize
    \else
      \boxhaswidthtrue
      \!!widtha\localwidth
-   \fi\fi\fi
+   \fi\fi\fi\fi
    \ifx\localheight\v!passend
      \boxhasheightfalse % no longer: \boxhasstrutfalse
    \else\ifx\localheight\v!ruim
@@ -816,18 +820,23 @@
           \boxhasheighttrue
         \fi}%
    \fi
-   % this should be an option ! ! ! !
-   \ifdim\!!widtha=\hsize
-     \parindent\zeropoint
-     \setlocalhsize
-     \!!widtha\localhsize
-   \fi
+   % this is now an option: width=local
+   %
+   % \ifdim\!!widtha=\hsize
+   %   \parindent\zeropoint
+   %   \setlocalhsize
+   %   \!!widtha\localhsize
+   % \fi
    % i.e. disable (colsetbackgroundproblemintechniek)
    \advance\!!widtha  -2\@@localoffset
    \advance\!!heighta -2\@@localoffset
    \ifx\localstrut\v!nee
      \boxhasstrutfalse
-   \fi
+   \else\ifx\localstrut\v!globaal
+     \setstrut
+   \else\ifx\localstrut\v!lokaal
+     \setfontstrut
+   \fi\fi\fi
    \ifboxhasstrut
      \setstrut
      \let\localbegstrut\begstrut

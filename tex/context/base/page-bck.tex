@@ -317,9 +317,37 @@
 
 \appendtoks \setbackgroundoffsets \to \everybeforepagebody
 
+% \def\setbackgroundbox#1#2%
+%   {\global\setbox#1\vbox
+%      {\dontcomplain
+%       \calculatereducedvsizes
+%       \offinterlineskip
+%       #2\relax
+%       \vskip-\bovenhoogte
+%       \vskip-\bovenafstand
+%       \dodopagebodybackground\v!boven\bovenhoogte
+%       \vskip\bovenafstand
+%       \dodopagebodybackground\v!hoofd\hoofdhoogte
+%       \vskip\hoofdafstand
+%       \dodopagebodybackground\v!tekst\teksthoogte
+%       \vskip\voetafstand
+%       \dodopagebodybackground\v!voet\voethoogte
+%       \vskip\onderafstand
+%       \dodopagebodybackground\v!onder\onderhoogte
+%       \vfilll}%
+%   \smashbox#1}
+
+\newconditional\swapbackgroundmargins \settrue\swapbackgroundmargins
+
 \def\setbackgroundbox#1#2%
   {\global\setbox#1\vbox
      {\dontcomplain
+      \swapmargins
+      \ifconditional\swapbackgroundmargins
+        \doifmarginswapelse \donothing
+          {\swapmacros\v!rechtermarge\v!linkermarge
+           \swapmacros\v!rechterrand \v!linkerrand}%
+      \fi
       \calculatereducedvsizes
       \offinterlineskip
       #2\relax
@@ -337,11 +365,31 @@
       \vfilll}%
   \smashbox#1}
 
+% \def\dodopagebodybackground#1#2%
+%   {\ifdim#2>\zeropoint % added, faster
+%      \setbox\scratchbox\vbox to #2
+%        \bgroup\hbox\bgroup
+%          \swapmargins
+%          \goleftonpage
+%          \dododopagebodybackground\linkerrandbreedte  #2#1\v!linkerrand
+%          \hskip\linkerrandafstand
+%          \dododopagebodybackground\linkermargebreedte #2#1\v!linkermarge
+%          \hskip\linkermargeafstand
+%          \dododopagebodybackground\zetbreedte         #2#1\v!tekst
+%          \hskip\rechtermargeafstand
+%          \dododopagebodybackground\rechtermargebreedte#2#1\v!rechtermarge
+%          \hskip\rechterrandafstand
+%          \dododopagebodybackground\rechterrandbreedte #2#1\v!rechterrand
+%        \egroup\egroup
+%      \wd\scratchbox\zeropoint
+%      \box\scratchbox\relax
+%    \fi}
+
 \def\dodopagebodybackground#1#2%
   {\ifdim#2>\zeropoint % added, faster
      \setbox\scratchbox\vbox to #2
        \bgroup\hbox\bgroup
-         \swapmargins
+       % \swapmargins
          \goleftonpage
          \dododopagebodybackground\linkerrandbreedte  #2#1\v!linkerrand
          \hskip\linkerrandafstand

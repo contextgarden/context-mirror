@@ -1930,13 +1930,63 @@
 %    \fi
 %    \next}
 
+% \def\dodocombination
+%   {\vbox
+%      {\forgetall % \setupwhitespace[\v!geen]%
+%       \let\next\vbox
+%       \ExpandFirstAfter\processallactionsinset
+%         [\combinationparameter\c!plaats]
+%         [  \v!boven=>\let\next\tbox,
+%           \v!midden=>\let\next\halfwaybox]%
+%       \next{\copy0}%
+%       % we need to save the caption for a next alignment line
+%       \saveoncombinationstack2}%
+%    \ifnum\totcombination>\plusone
+%      \global\advance\totcombination\minusone
+%      \global\advance\horcombination\minusone
+%      \ifnum\horcombination=\zerocount
+%        \def\next
+%          {\cr
+%           \flushcombinationstack
+%           \noalign
+%             {\forgetall % \setupwhitespace[\v!geen]% no
+%              \global\setbox\combinationstack\emptybox
+%              \nointerlineskip
+%              \combinationparameter\c!na
+%              \combinationparameter\c!voor
+%              \vss
+%              \nointerlineskip}%
+%           \global\horcombination\maxhorcombination\relax
+%           \docombination}%
+%      \else
+%        \def\next
+%          {&&&\hskip\combinationparameter\c!afstand&\docombination}%
+%      \fi
+%    \else
+%      \def\next
+%        {\cr
+%         \flushcombinationstack
+%         \egroup}%
+%    \fi
+%    \next}
+
+\def\depthonlybox
+  {\dowithnextbox{\vtop{\hsize\wd\nextbox\kern\zeropoint\box\nextbox}}\vbox}
+
+% \def\boxwithstrutheight
+%   {\dowithnextbox
+%      {\scratchdimen\strutheight
+%       \advance\scratchdimen-\nextboxht
+%       \hbox{\raise\scratchdimen\box\nextbox}}%
+%      \vbox}
+
 \def\dodocombination
   {\vbox
      {\forgetall % \setupwhitespace[\v!geen]%
       \let\next\vbox
       \ExpandFirstAfter\processallactionsinset
         [\combinationparameter\c!plaats]
-        [  \v!boven=>\let\next\tbox,
+        [  \v!boven=>\let\next\depthonlybox, % \tbox,
           \v!midden=>\let\next\halfwaybox]%
       \next{\copy0}%
       % we need to save the caption for a next alignment line
@@ -2103,111 +2153,6 @@
   [table]
   [\c!file=table]
 
-\presetlocalframed[\??ro]
-
-\def\setuprotate
-  {\dodoubleargument\getparameters[\??ro]}
-
-% \ht, \vfillvoor, \vfillna, \wd, \hfillvoor, \hfillna
-
-% \def\dodostoprotate#1#2#3#4#5#6%
-%   {\dontshowcomposition
-%    \vbox to #1\nextbox
-%      {#2\relax
-%       \hbox to #4\nextbox
-%         {#5\relax % \number removes leading spaces too
-%          \edef\@@rorotatie{\number\@@rorotatie}%
-%          \doifelsenothing{\@@rorotatie}
-%            {\dostartrotation{90}}
-%            {\dostartrotation{\@@rorotatie}}%
-%          \nextboxwd\zeropoint
-%          \nextboxht\zeropoint
-%          \flushnextbox
-%          \dostoprotation
-%          #6}
-%       #3}%
-%    \egroup}
-%
-% \def\dostoprotate%
-%   {\!!counta=\@@rorotatie
-%    \divide\!!counta by 90
-%    \ifcase\!!counta
-%      \dodostoprotate\ht\relax\vfill\wd\relax\hfill
-%    \or
-%      \dodostoprotate\wd\vfill\relax\ht\relax\hfill
-%    \or
-%      \dodostoprotate\ht\vfill\relax\wd\hfill\relax
-%    \or
-%      \dodostoprotate\wd\relax\vfill\ht\hfill\relax
-%    \or
-%      \dodostoprotate\ht\relax\vfill\wd\relax\hfill
-%    \else
-%      \def\@@rotatie{90}%
-%      \dodostoprotate\ht\relax\vfill\wd\relax\hfill
-%    \fi}
-%
-% \def\dorotatebox#1% {angle} \hbox/\vbox/\vtop
-%   {\bgroup
-%    \hbox\bgroup % compatibility hack
-%    \dowithnextbox
-%      {\edef\@@rorotatie{#1}%
-%       \setbox\nextbox=\vbox{\flushnextbox}%
-%       \dostoprotate
-%       \egroup}}
-
-\def\dorotatebox#1% {angle} \hbox/\vbox/\vtop
-  {\bgroup
-   \hbox\bgroup % compatibility hack
-   \dowithnextbox
-     {\edef\@@rorotatie{#1}%
-      \setbox\nextbox\vbox{\flushnextbox}%
-      \dostoprotate
-      \egroup}}
-
-\def\dodostoprotate#1#2#3#4#5#6%
-  {\dontshowcomposition
-   \scratchdimen\nextboxht\advance\scratchdimen\nextboxdp
-   \doif\@@roplaats\v!hoog
-     {\setbox\nextbox\vbox{\hbox{\raise\nextboxdp\flushnextbox}}}%
-   \setbox\nextbox\vbox to #1
-     {#2\relax
-      \hbox to #4
-        {#5\relax % \number removes leading spaces too
-         \edef\@@rorotatie{\number\@@rorotatie}%
-         \doifelsenothing\@@rorotatie
-           {\dostartrotation{90}}
-           {\dostartrotation{\@@rorotatie}}%
-         \nextboxwd\zeropoint
-         \nextboxht\zeropoint
-        %\nextboxdp\zeropoint
-         \flushnextbox
-         \dostoprotation
-         #6}
-      #3}%
-   \nextboxdp\zeropoint
-   \flushnextbox
-   \egroup}
-
-\def\dostoprotate
-  {\!!counta\@@rorotatie
-   \divide\!!counta 90
-   \ifcase\!!counta
-     \dodostoprotate\nextboxht\relax\vfill\nextboxwd\relax\hfill
-   \or
-    %\dodostoprotate\nextboxwd\vfill\relax\nextboxht\relax\hfill
-     \dodostoprotate\nextboxwd\vfill\relax\scratchdimen\relax\hfill
-   \or
-     \dodostoprotate\nextboxht\vfill\relax\nextboxwd\hfill\relax
-   \or
-    %\dodostoprotate\nextboxwd\relax\vfill\nextboxht\hfill\relax
-     \dodostoprotate\nextboxwd\relax\vfill\scratchdimen\hfill\relax
-   \or
-     \dodostoprotate\nextboxht\relax\vfill\nextboxwd\relax\hfill
-   \else
-     \def\@@rotatie{90}%
-     \dodostoprotate\nextboxht\relax\vfill\nextboxwd\relax\hfill
-   \fi}
-
 %D A couple of examples, demonstrating how the depth is
 %D taken care of:
 %D
@@ -2221,21 +2166,278 @@
 %D
 %D \typebuffer \getbuffer
 
-\def\complexrotate[#1]%
-  {\dowithnextbox
-     {\getparameters[\??ro][#1]%
-      \dostoprotate}%
-   \vbox\localframed[\??ro][#1]}
+% \presetlocalframed[\??ro]
+%
+% \def\setuprotate
+%   {\dodoubleargument\getparameters[\??ro]}
+%
+% \def\dorotatebox#1% {angle} \hbox/\vbox/\vtop
+%   {\bgroup
+%    \hbox\bgroup % compatibility hack
+%    \dowithnextbox
+%      {\edef\@@rorotatie{#1}%
+%       \setbox\nextbox\vbox{\flushnextbox}%
+%       \dostoprotate
+%       \egroup}}
+%
+% \def\dodostoprotate#1#2#3#4#5#6%
+%   {\dontshowcomposition
+%    \scratchdimen\nextboxht\advance\scratchdimen\nextboxdp
+%    \doif\@@roplaats\v!hoog
+%      {\setbox\nextbox\vbox{\hbox{\raise\nextboxdp\flushnextbox}}}%
+%    \setbox\nextbox\vbox to #1
+%      {#2\relax
+%       \hbox to #4
+%         {#5\relax % \number removes leading spaces too
+%          \edef\@@rorotatie{\number\@@rorotatie}%
+%          \doifelsenothing\@@rorotatie
+%            {\dostartrotation{90}}
+%            {\dostartrotation{\@@rorotatie}}%
+%          \nextboxwd\zeropoint
+%          \nextboxht\zeropoint
+%         %\nextboxdp\zeropoint
+%          \flushnextbox
+%          \dostoprotation
+%          #6}
+%       #3}%
+%    \nextboxdp\zeropoint
+%    \flushnextbox
+%    \egroup}
+%
+% \def\dostoprotate
+%   {\!!counta\@@rorotatie
+%    \divide\!!counta 90
+%    \ifcase\!!counta
+%      \dodostoprotate\nextboxht\relax\vfill\nextboxwd\relax\hfill
+%    \or
+%     %\dodostoprotate\nextboxwd\vfill\relax\nextboxht\relax\hfill
+%      \dodostoprotate\nextboxwd\vfill\relax\scratchdimen\relax\hfill
+%    \or
+%      \dodostoprotate\nextboxht\vfill\relax\nextboxwd\hfill\relax
+%    \or
+%     %\dodostoprotate\nextboxwd\relax\vfill\nextboxht\hfill\relax
+%      \dodostoprotate\nextboxwd\relax\vfill\scratchdimen\hfill\relax
+%    \or
+%      \dodostoprotate\nextboxht\relax\vfill\nextboxwd\relax\hfill
+%    \else
+%      \def\@@rotatie{90}%
+%      \dodostoprotate\nextboxht\relax\vfill\nextboxwd\relax\hfill
+%    \fi}
+%
+% \def\complexrotate[#1]%
+%   {\dowithnextbox
+%      {\getparameters[\??ro][#1]%
+%       \dostoprotate}%
+%    \vbox\localframed[\??ro][#1]}
+%
+% \unexpanded\def\rotate % \bgroup: \rotate kan argument zijn
+%   {\bgroup\complexorsimpleempty\rotate}
+%
+% \setuprotate
+%   [\c!rotatie=90,
+%    \c!breedte=\v!passend,
+%    \c!hoogte=\v!passend,
+%    \c!offset=\v!overlay,
+%    \c!kader=\v!uit]
+
+% The previous implementation is replaced by one that supports
+% rotation over arbitrary angles.
+%
+% When we rotate over arbitrary angles, we need to relocate the
+% resulting box because rotation brings that box onto the negative
+% axis. The calculations (mostly sin and cosine) need to be tuned for
+% the way a box is packages (i.e. the refence point). A typical example
+% of drawing, scribbling, and going back to the days of school math.
+%
+% We do a bit more calculations than needed, simply because that way
+% it's easier to debug the code.
+
+\def\dododorotatenextbox
+  {\setbox\nextbox\vbox to \@@layerysiz
+     {\vfill
+      \hbox to \@@layerxsiz
+        {\dostartrotation\@@rorotatie
+           \nextboxwd\zeropoint
+           \nextboxht\zeropoint
+           \flushnextbox
+         \dostoprotation
+         \hfill}%
+      \kern\@@layerypos}%
+  \setbox\nextbox\hbox
+    {\kern\@@layerxpos
+     \kern\@@layerxoff
+     \lower\@@layeryoff\flushnextbox}}
+
+\def\dodorotatenextbox#1#2% quite some trial and error -)
+  {\dontshowcomposition
+   \dontcomplain
+   \!!widtha \nextboxwd
+   \!!heighta\nextboxht
+   \!!deptha \nextboxdp
+   \!!doneafalse
+   \!!donebfalse
+   \ifcase#2\or
+     % fit
+   \or
+     % depth, not fit
+     \!!doneatrue
+     \!!donebtrue
+   \or
+     % depth, fit
+     \!!donebtrue
+   \fi
+   \setbox\nextbox\vbox{\hbox{\raise\nextboxdp\flushnextbox}}%
+   \!!dimena \nextboxht
+   \calculatecos\@@rorotatie\edef\cos{\calculatedcos\@@rorotatie}%
+   \calculatesin\@@rorotatie\edef\sin{\calculatedsin\@@rorotatie}%
+   \@@layerxpos\zeropoint
+   \@@layerypos\zeropoint
+   \@@layerxoff\zeropoint
+   \@@layeryoff\zeropoint
+   \ifdim\sin\points>\zeropoint
+     \ifdim\cos\points>\zeropoint
+       \@@layerxsiz                    \cos\!!widtha
+       \@@layerysiz                    \sin\!!widtha
+       \advance\@@layerxsiz            \sin\!!dimena
+       \advance\@@layerysiz            \cos\!!dimena
+       \@@layerypos                    \cos\!!dimena
+       \if!!donea
+         \@@layerxoff          \negated\sin\!!dimena
+         \advance\@@layerxoff          \sin\!!deptha
+       \fi
+       \if!!doneb
+         \@@layeryoff                  \cos\!!deptha
+       \fi
+       \dododorotatenextbox
+     \else
+       \@@layerxsiz            \negated\cos\!!widtha
+       \@@layerysiz                    \sin\!!widtha
+       \advance\@@layerxsiz            \sin\!!dimena
+       \advance\@@layerysiz    \negated\cos\!!dimena
+       \@@layerxpos            \negated\cos\!!widtha
+       \if!!donea
+         \@@layerxoff                     -\@@layerxsiz
+         \advance\@@layerxoff          \sin\!!deptha
+       \fi
+       \if!!doneb
+         \@@layeryoff          \negated\cos\!!heighta
+       \fi
+       \dododorotatenextbox
+       \wd\nextbox\if!!donea\sin\!!deptha\else\@@layerxsiz\fi
+     \fi
+   \else
+     \ifdim\cos\points<\zeropoint
+       \@@layerxsiz           \negated\cos\!!widtha
+       \@@layerysiz           \negated\sin\!!widtha
+       \advance\@@layerxsiz   \negated\sin\!!dimena
+       \advance\@@layerysiz   \negated\cos\!!dimena
+       \@@layerxpos                        \@@layerxsiz
+       \@@layerypos            \negated\sin\!!widtha
+       \if!!donea
+         \@@layerxoff                     -\@@layerxsiz
+         \advance\@@layerxoff  \negated\sin\!!heighta
+       \fi
+       \if!!doneb
+         \@@layeryoff                      \@@layerysiz
+         \advance\@@layeryoff          \cos\!!deptha
+       \fi
+       \dododorotatenextbox
+       \wd\nextbox\if!!donea\negated\sin\!!heighta\else\@@layerxsiz\fi
+     \else
+       \@@layerxsiz                    \cos\!!widtha
+       \@@layerysiz            \negated\sin\!!widtha
+       \advance\@@layerxsiz    \negated\sin\!!dimena
+       \advance\@@layerysiz            \cos\!!dimena
+       \ifdim\sin\points=\zeropoint
+         \@@layerxpos                       \zeropoint
+         \@@layerxoff                       \zeropoint
+         \@@layerypos                      \@@layerysiz
+         \if!!doneb
+           \@@layeryoff                     \!!deptha
+         \fi
+       \else
+         \@@layerypos                       \@@layerysiz
+         \@@layerxpos           \negated\sin\!!dimena
+         \if!!donea
+           \@@layerxoff                    -\@@layerxsiz
+           \advance\@@layerxoff \negated\sin\!!heighta
+         \fi
+         \if!!doneb
+           \@@layeryoff          \negated\sin\!!deptha
+         \fi
+       \fi
+       \dododorotatenextbox
+       \ifdim\sin\points=\zeropoint
+       \else
+         \wd\nextbox\if!!donea\negated\sin\!!heighta\else\@@layerxsiz\fi
+       \fi
+     \fi
+   \fi}
+
+\def\dorotatenextbox#1#2%
+  {\doifsomething{#1}
+     {\edef\@@rorotatie{\number#1}% get rid of leading zeros and spaces
+      \setbox\nextbox\vbox{\flushnextbox}% not really needed
+      \dodorotatenextbox\@@rorotatie#2}%
+   \hbox{\boxcursor\flushnextbox}}
+
+\def\dodorotatebox#1% {angle} \hbox/\vbox/\vtop
+  {\bgroup\hbox\bgroup % compatibility hack
+     \dowithnextbox
+       {\dorotatenextbox{#1}\plusone
+        \egroup\egroup}}
+
+\def\dorotatebox#1% {angle} \hbox/\vbox/\vtop
+  {\ifcase#1\relax
+     \expandafter\gobbleoneargument
+   \else
+     \expandafter\dodorotatebox
+   \fi{#1}}
 
 \unexpanded\def\rotate % \bgroup: \rotate kan argument zijn
   {\bgroup\complexorsimpleempty\rotate}
 
+\def\complexrotate[#1]% framed met diepte !
+  {\getparameters[\??ro][#1]%
+   \processaction
+     [\@@roplaats]
+     [\v!diepte=>\!!counta\plusthree\donefalse,% depth   fit   - raw box
+     \v!passend=>\!!counta\plustwo  \donefalse,% depth   tight - raw box
+        \v!ruim=>\!!counta\plusone  \donefalse,% nodepth fit   - raw box
+        \v!hoog=>\!!counta\plusone  \donetrue,%  nodepth fit   - framed
+     \s!default=>\!!counta\plusthree\donetrue,%  depth   fit   - framed
+     \s!unknown=>\!!counta\plusthree\donetrue]%  depth   fit   - framed
+   \ifdone
+     \def\docommand{\localframed[\??ro][#1,\c!plaats=]}%
+   \else
+     \let\docommand\relax
+   \fi
+   \dowithnextbox{\dorotatenextbox\@@rorotatie\!!counta\egroup}\vbox\docommand}
+
+\presetlocalframed[\??ro]
+
+\def\setuprotate
+  {\dodoubleargument\getparameters[\??ro]}
+
 \setuprotate
   [\c!rotatie=90,
+   \c!plaats=\v!normaal,
    \c!breedte=\v!passend,
    \c!hoogte=\v!passend,
    \c!offset=\v!overlay,
    \c!kader=\v!uit]
+
+% \dostepwiserecurse{0}{360}{10}
+%   {\startlinecorrection[blank]
+%    \hbox
+%      {\expanded{\setuprotate[rotation=\recurselevel]}%
+%       \traceboxplacementtrue
+%       \hbox to .2\hsize{\hss\ruledhbox{\rotate[location=depth] {\ruledhbox{\bfb  (depth)}}}}%
+%       \hbox to .2\hsize{\hss\ruledhbox{\rotate[location=fit]   {\ruledhbox{\bfb    (fit)}}}}%
+%       \hbox to .2\hsize{\hss\ruledhbox{\rotate[location=broad] {\ruledhbox{\bfb  (broad)}}}}%
+%       \hbox to .2\hsize{\hss\ruledhbox{\rotate[location=normal]{\ruledhbox{\bfb (normal)}}}}%
+%       \hbox to .2\hsize{\hss\ruledhbox{\rotate[location=high]  {\ruledhbox{\bfb   (high)}}}}}
+%    \stoplinecorrection}
 
 % schaal
 

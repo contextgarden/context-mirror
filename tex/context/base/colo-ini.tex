@@ -1742,7 +1742,7 @@
 % seperations in one file); no user command!
 
 \def\resynccolor
-  {\ifdim\pagetotal=\zeropoint
+  {\ifcase\pagetotal % \ifdim\pagetotal=\zeropoint
      \popcolor
    \else\ifx\@@currentcolor\empty
      \ifx\maintextcolor\empty\else

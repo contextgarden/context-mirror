@@ -16,7 +16,7 @@ eval '(exit $?0)' && eval 'exec perl -S $0 ${1+"$@"}' && eval 'exec perl -S $0 $
 
 #  Thanks to Tobias    Burnus    for the german translations.
 #  Thanks to Thomas    Esser     for hooking it into web2c
-#  Thanks to Taco      Hoekwater for making the file -w proof
+#  Thanks to Taco      Hoekwater for making the file -w proof and some fixes
 #  Thanks to Alex      Knowles   and friends for the right JPG specs
 #  Thanks to Sebastian Rahtz     for the eps to PDF method
 #  Thanks to Fabrice   Popineau  for windows bin code
@@ -40,7 +40,7 @@ eval '(exit $?0)' && eval 'exec perl -S $0 ${1+"$@"}' && eval 'exec perl -S $0 $
 #D binary version, like scanning illustrations other than \EPS.
 #D I would suggest to keep an eye on the version number:
 
-$Program = "TeXUtil 8.1 - ConTeXt / PRAGMA ADE 1992-2003" ;
+$Program = "TeXUtil 8.2 - ConTeXt / PRAGMA ADE 1992-2004" ;
 
 #D By the way, this is my first \PERL\ script, which means
 #D that it will be improved as soon as I find new and/or more
@@ -2011,7 +2011,7 @@ sub SaveFigurePresets
         if ($FUni)
           { print "n=$FNam t=$FTyp " .
          (sprintf "x=%1.3fcm y=%1.3fcm ", $FXof, $FYof) .
-         (sprintf "w=%1.3fcm h=%1.3fcm\n", $FWid, $FHei) }
+         (sprintf "w=%5.3fcm h=%5.3fcm\n", $FWid, $FHei) }
         else
           { print "n=$FNam t=$FTyp " .
                   "x=${FXof}bp y=${FYof}bp " .
@@ -2021,7 +2021,7 @@ sub SaveFigurePresets
       { ++$NOfFigures ;
         $Figures[$NOfFigures] = "\\presetfigure[$FNam][e=$FTyp" ;
         if ($FUni)
-          { $Figures[$NOfFigures] .= (sprintf ",w=%5.3fcm,h=%5.3fcm", $FWid, $FHei) }
+          { $Figures[$NOfFigures] .= (sprintf ",w=%5.3fcm,h=%5.3fcm\n", $FWid, $FHei) }
         else
           { $Figures[$NOfFigures] .= ",w=${FWid}bp,h=${FHei}bp" }
         if (($FXof!=0)||($FYof!=0))
@@ -2218,12 +2218,12 @@ sub HandlePdfFigure
 #D the current implementation does this job itself.
 
 sub TifGetByte
-  { my ($B) = 0 ;
+  { my $B = 0 ;
     read TIF, $B, 1 ;
     return ord($B) }
 
 sub TifGetShort
-  { my ($S) = 0 ;
+  { my $S = 0 ;
     read TIF, $S, 2 ;
     if ($TifLittleEndian)
       { return (unpack ("v", $S)) }
@@ -2231,7 +2231,7 @@ sub TifGetShort
       { return (unpack ("n", $S)) } }
 
 sub TifGetLong
-  { my ($L) = 0 ;
+  { my $L = 0 ;
     read TIF, $L, 4 ;
     if ($TifLittleEndian)
       { return (unpack ("V", $L)) }
@@ -2245,9 +2245,9 @@ sub TifGetRational
     return $N/$M }
 
 sub TifGetAscii
-  { my ($S) = "" ;
+  { my $S = "" ;
     --$TifValues;
-    if ($TifValues)
+    unless ($TifValues)
       { return "" }
     else
       { read TIF, $S, $TifValues ;
@@ -2333,15 +2333,17 @@ sub HandleTifFigure
              while (TifGetChunk) { }
              if ($TifUnit==2)
                { $TifMult = $INtoCM }
-             else
+             elsif ($TifUnit==3)
                { $TifMult = 1 }
-                 $TifWidth  = ($TifWidth /$TifHRes)*$TifMult ;
-                 $TifHeight = ($TifHeight/$TifVRes)*$TifMult ;
-                 close ( TIF ) ;
-                 SaveFigurePresets
-                  ( $TifFile, "tif", $TifUnit,
-                    0, 0, $TifWidth, $TifHeight,
-                    $TifTitle, $TifCreator, $TifSize ) } } }
+             else
+               { $TifMult = 72 }
+             $TifWidth  = ($TifWidth /$TifHRes)*$TifMult ;
+             $TifHeight = ($TifHeight/$TifVRes)*$TifMult ;
+             close ( TIF ) ;
+             SaveFigurePresets
+               ( $TifFile, "tif", $TifUnit,
+                 0, 0, $TifWidth, $TifHeight,
+                 $TifTitle, $TifCreator, $TifSize ) } } }
 
 #D I first intended to use the public utility \type{pngmeta}
 #D (many thanks to Taco for compiling it), but using this
@@ -2384,14 +2386,14 @@ sub PngGetChunk
             $PngVRes = PngGetLong ;
             read PNG, $PngUnit, 1 }
         elsif ($PngType eq "tEXt")
-          { read PNG, $PngKeyword, 79 ;
-            read PNG, $PngDummy, 1 ;
+          { read PNG, $PngKeyword, $PngLength ;
+            ($PngKeyword,$PngDummy) = split(/\x00/,$PngKeyword) ;
             if ( $PngKeyword eq "Title")
-              { read PNG, $PngTitle, $Length }
+              { $PngTitle  = $PngDummy }
             elsif ( $PngKeyword eq "Author")
-              { read PNG, $PngAuthor, $PngLength }
+              { $PngAuthor = $PngDummy }
             elsif ( $PngKeyword eq "Software")
-              { read PNG, $PngCreator, $PngLength } }
+              { $PngCreator = $PngDummy } }
         return 1 }
     else
       { return 0 } }
@@ -2511,6 +2513,8 @@ sub HandleJpgFigure
       { $JpgMult = $INtoCM }
     else
       { $JpgMult = 1 }
+    $JpgHRes = 72 unless $JpgHRes>1 ;
+    $JpgVRes = 72 unless $JpgVRes>1 ;
     $JpgWidth = ($JpgWidth/$JpgHRes)*$JpgMult ;
     $JpgHeight = ($JpgHeight/$JpgVRes)*$JpgMult ;
     close ( JPG ) ;
@@ -2697,7 +2701,8 @@ my   @dontaskprefixes = sort glob "mpx-*" ; push @dontaskprefixes ,
    "cont-opt.tex","cont-opt.bak") ;
 my @dontasksuffixes =
   ("mpgraph.mp","mpgraph.mpd","mpgraph.mpo","mpgraph.mpy",
-     "mprun.mp",  "mprun.mpd",  "mprun.mpo",  "mprun.mpy") ;
+   "mprun.mp", "mprun.mpd", "mprun.mpo", "mprun.mpy",
+   "xlscript.xsl") ;
 my @forsuresuffixes =
   ("tui","tup","ted","tes","top",
    "log","tmp","run","bck","rlg",

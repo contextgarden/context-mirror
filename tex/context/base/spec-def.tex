@@ -918,6 +918,13 @@
 \installspecial[\doinsertrenderingobject] [or] [4]
 \installspecial[\doinsertrenderingobject] [or] [4]
 
+%D From now on, mapfile loading is also a special; we assume the
+%D more or less standard dvips syntax.
+
+\installspecial[\doresetmapfilelist] [and] [0]
+\installspecial[\doloadmapfile]      [and] [2] % + - = | filename
+\installspecial[\doloadmapline]      [and] [2] % + - = | fileline
+
 %D We define a couple of backends:
 
 \defineoutput [dvipsone] [dvi,ps,yy]

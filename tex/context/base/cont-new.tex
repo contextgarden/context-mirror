@@ -16,11 +16,43 @@
 %D features.
 
 % todo: mp-new
+
 \unprotect
 
 \writestatus{\m!systems}{beware: some patches loaded from cont-new.tex!}
 
 % todo : test low level translation (nl->en) and optimize script
+
+\def\tightlayer[#1]%
+  {\begingroup
+   \def\currentlayer{#1}% todo: left/right
+   \setbox\nextbox\emptybox        % hoogte/breedte are \wd\nextbox/\ht\nextbox
+   \hsize\layerparameter\c!breedte % \overlaywidth   = \hsize
+   \vsize\layerparameter\c!hoogte  % \overlaywheight = \vsize
+   \hbox to \hsize{\composedlayer{#1}}%
+   \endgroup}
+
+\let\locatedfilepath\empty
+
+\def\locatefilepath#1%
+  {\let\locatedfilepath\empty
+   \ifx\allinputpaths\empty \else
+     \def\docommando##1%
+       {\doiffileelse{\pathplusfile{##1}{#1}}{\donetrue\def\locatedfilepath{##1}}\donefalse
+        \ifdone\expandafter\quitcommalist\fi}%
+     \doifparentfileelse{#1} % new
+       {\processcommacommand  [\allinputpaths]\docommando}
+       {\processcommacommand[.,\allinputpaths]\docommando}%
+   \fi}
+
+\def\setfontstrut
+  {\setcharstrut{(gplQT}}
+
+\def\doifXMLtextelse#1%
+  {\doiftextelse{\simplifyXMLelements#1}}
+
+\def\doifXMLtext#1#2%
+  {\doiftextelse{\simplifyXMLelements#1}{#2}\donothing}
 
 % todo : share symbols
 
@@ -170,68 +202,6 @@
 %   [ShowMenu]
 %   [{\overlayrollbutton[VideLayer{navigation}][HideLayer{navigation}]}]
 
-\def\dodoflushlayer#1#2#3%
-  {\ifundefined{\@@layerbox#3}%
-     \ifcase#1\else\writestatus{layer}{unknown layer #3}\fi
-   \else
-     \bgroup
-     \forgetall
-     \offinterlineskip
-     % needed because we need to handle method
-\executeifdefined{\??ll\??ll\getvalue{\??ll#2\c!preset}}\gobbletwoarguments{#2}{}%
-     %
-     \doifvalue{\??ll#2\c!optie}\v!test\tracelayerstrue
-     \iftracelayers\traceboxplacementtrue\fi
-     \!!doneafalse
-     \!!donebfalse
-     \doifvalue{\??ll#2\c!methode}\v!overlay\!!doneatrue
-     \doifvalue{\??ll#2\c!methode}\v!passend\!!donebtrue
-     \!!donectrue
-     \ifcase#1\else
-       \doifnotvalue{\??ll#2\c!positie}\v!ja
-         {\doifvalue{\??ll#2\c!herhaal}\v!ja\!!donecfalse
-          \doifvalue{\??ll#2\c!status}\v!herhaal\!!donecfalse}%
-     \fi
-     \chardef\layerbox\csname\@@layerbox#3\endcsname
-     % we need to copy in order to retain the negative offsets for a next
-     % stage of additions, i.e. llx/lly accumulate in repeat mode and the
-     % compensation may differ each flush depending on added content
-     \setbox\nextbox \if!!doneb
-       \vbox
-         {\scratchdimen\getboxlly\layerbox
-          \vskip-\scratchdimen
-          \scratchdimen\getboxllx\layerbox
-          \hskip-\scratchdimen
-          \advance\scratchdimen-\wd\layerbox
-          \hsize-\scratchdimen
-          \if!!donec\box\else\copy\fi\layerbox}%
-     \else
-        \if!!donec\box\else\copy\fi\layerbox % sorry for the delay due to copying
-     \fi
-     \iftracelayers \ruledvbox \else \vbox \fi \if!!donea to \overlayheight \fi
-       {\hbox \if!!donea to \overlaywidth \fi
-          {% klopt dit? #3 en niet #2 ?
-           \doifvalue{\??ll#3\realfolio\c!positie}\v!ja     {\xypos{lyr:#3:\realfolio}}%
-           \doifoverlayelse{#3}
-             {\box\nextbox}
-             {\startlayoutcomponent{l:#3}{layer #3}\box\nextbox\stoplayoutcomponent}%
-           \hss}%
-        \vss}%
-     \if!!donec
-       \gsetboxllx\layerbox\zeropoint
-       \gsetboxlly\layerbox\zeropoint
-     \fi
-     \egroup
-   \fi}
-
-\def\tightlayer[#1]%
-  {\hbox
-     {\def\currentlayer{#1}% todo: left/right
-      \setbox\nextbox\emptybox        % hoogte/breedte are \wd\nextbox/\ht\nextbox
-      \hsize\layerparameter\c!breedte % \overlaywidth   = \hsize
-      \vsize\layerparameter\c!hoogte  % \overlaywheight = \vsize
-      \composedlayer{#1}}}
-
 \def\inlinedbox
   {\bgroup
    \dowithnextbox
@@ -247,59 +217,10 @@
       \egroup}%
      \hbox}
 
-\def\dosetups#1% the grid option will be extended to other main modes
-  {\executeifdefined{\??su\ifgridsnapping\v!grid\fi:#1}{\csname\??su:#1\endcsname}\empty}
-
-\let\directsetup\dosetups
-
 % \readfile{cont-exp}\donothing\donothing % speed up (5-20%)
 
 \def\dimenratio#1#2% etex only
   {\withoutpt\the\dimexpr(2\dimexpr(#1)/(\dimexpr(#2)/32768))}
-
-% in page-lyr
-
-\definelayer[OTRTEXT] \setuplayer[OTRTEXT][\c!breedte=\zetbreedte,\c!hoogte=\teksthoogte]
-
-\let\normalsettextpagecontent\settextpagecontent
-
-\def\settextpagecontent#1#2#3% #2 and #3 will disappear
-  {\doifelselayerdata{OTRTEXT}
-     {\setbox#1\hbox to \zetbreedte
-        {\startoverlay
-           {\normalsettextpagecontent{#1}{#2}{#3}\box#1}
-           {\tightlayer[OTRTEXT]}
-         \stopoverlay}%
-      \dp#1\zeropoint}%
-     {\normalsettextpagecontent{#1}{#2}{#3}}}
-
-% in page-set
-
-\def\OTRSETdofinaloutput
-  {\ifdim\ht\OTRfinalpagebox=\teksthoogte
-    \bgroup % \let\OTRSETsetvsize\relax % prevents useless search for gap
-     \ifcase\OTRSETbalancemethod
-       \finaloutput\box\OTRfinalpagebox
-     \else\ifdim\OTRSETbalht>\zeropoint
-       % catch a bordercase
-       \scratchdimen\OTRSETbalht
-       \advance\scratchdimen\lineheight\relax
-       \ifdim\scratchdimen>\teksthoogte
-         % full page
-         \finaloutput\box\OTRfinalpagebox
-       \else
-         % same page
-         \global\setbox\OTRfinalpagebox \iftracecolumnset\ruledvbox\else\vbox\fi to \OTRSETbalht
-           {\box\OTRfinalpagebox\vss}%
-         \setlayer[OTRTEXT]{\box\OTRfinalpagebox}%
-         \snaptogrid\vbox{\vskip\OTRSETbalht}% hack
-       \fi
-     \else
-       \finaloutput\box\OTRfinalpagebox
-     \fi \fi
-     \globallet\OTRSETbalht\zeropoint
-    \egroup
-   \fi}
 
 \def\doxprecurse#1#2%
   {\ifnum#1=\zerocount % no \ifcase

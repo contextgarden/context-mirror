@@ -1,6 +1,6 @@
 %D \module
 %D   [       file=supp-pdf,
-%D        version=2003.08.12,
+%D        version=2004.03.26,
 %D          title=\CONTEXT\ Support Macros,
 %D       subtitle=\METAPOST\ to \PDF\ conversion,
 %D         author=Hans Hagen,
@@ -33,26 +33,37 @@
 
 % some optimizations are possible, but we need to be generic
 
-%D First we take care of non||\CONTEXT\ use:
+%D First we take care of non||\CONTEXT\ use (newlines needed,
+%D expandafter not -).
 
 \ifx \undefined \writestatus          \input supp-mis.tex \relax \fi
+
 \ifx \undefined \convertMPtoPDF \else \expandafter \endinput     \fi
+
 \ifx \undefined \StartLatexHack \else \StartLatexHack            \fi
 
 %D This module handles some \PDF\ conversion and insertions
 %D topics. By default, the macros use the \PDFTEX\ primitive
-%D \type{\pdfliteral} when available.
+%D \type{\pdfliteral} when available. Since \PDFTEX\ is now the
+%D default engine for \TEX\ distributions, we need a more complex
+%D test.
 
-\writestatus{loading}{Context Support Macros / PDF}
+\writestatus{loading}{Context Support Macros / PDF (2004.03.26)}
 
 \unprotect
 
 \ifx\PDFcode\undefined
   \ifx\pdfliteral\undefined
     \def\PDFcode#1{\special{PDF: #1}}
-  \else
+  \else\ifx\pdfoutput\undefined
+    \def\PDFcode#1{\special{PDF: #1}}
+  \else\ifcase\pdfoutput
+    \def\PDFcode#1{\special{PDF: #1}}
+  \else % pdftex as well as in pdf mode
     \let\PDFcode\pdfliteral
-  \fi
+  \fi\fi\fi
+\else
+  % we probably use context
 \fi
 
 %D First we define a handy constant:
@@ -82,13 +93,13 @@
 %D \pdfclippedimage <optional dimensions> {file} {l} {r} {t} {b}
 %D \stoptypen
 
-\ifx\pdftexversion\undefined % no \m!systems for the sake of latex
-  \writestatus{systems}{Why not use pdf(e)TeX binaries?}
-  \protect
-  \expandafter\endinput
-\fi
+% \ifx\pdftexversion\undefined % no \m!systems for the sake of latex
+%   \writestatus{systems}{Why not use pdf(e)TeX binaries?}
+%   \protect
+%   \expandafter\endinput
+% \fi
 
-\ifnum\pdftexversion>13
+\ifx\pdftexversion\undefined \else \ifnum\pdftexversion>13
 
   \def\pdfimage#1#%
     {\dopdfimage{#1}}
@@ -129,6 +140,8 @@
      \pdfrefxform\pdflastxform
      \egroup}
 
+\fi \fi
+
 %D If you want to save a few hash entries, you may prefer the
 %D less readable alternatives, like:
 %D
@@ -140,13 +153,16 @@
 %D       \pdfrefximage\pdflastximage\egroup}}
 %D \stoptypen
 
-%D For old times sake: (will be removed some day)
+%D For old times sake we provide a few aliases. These will be
+%D removed some day.
+
+\ifx\pdftexversion\undefined \else \ifnum\pdftexversion>13
 
   \let\pdfform    =\pdfxform
   \let\pdflastform=\pdflastxform
   \let\pdfrefform =\pdfrefxform
 
-\fi
+\fi \fi
 
 %D \macros
 %D   {convertPDFtoPDF}
@@ -203,61 +219,61 @@
 %D dimensions. Beware: the user supplied values are not the
 %D bounding box ones!
 
-% this will become obsolete
+%D This code has become obsolete.
 
-\newif\ifPDFmediaboxprefered
+% \newif\ifPDFmediaboxprefered
 
-\def\setPDFboundingbox#1#2#3#4#5#6%
-  {\dimen0=#1\dimen0=#5\dimen0
-   \ScaledPointsToBigPoints{\number\dimen0}\PDFxoffset
-   \dimen0=#3\dimen0=#5\dimen0
-   \xdef\PDFwidth{\the\dimen0}%
-   \dimen0=#2\dimen0=#6\dimen0
-   \ScaledPointsToBigPoints{\number\dimen0}\PDFyoffset
-   \dimen0=#4\dimen0=#6\dimen0
-   \xdef\PDFheight{\the\dimen0}%
-   \global\let\PDFxoffset\PDFxoffset
-   \global\let\PDFyoffset\PDFyoffset}
+% \def\setPDFboundingbox#1#2#3#4#5#6%
+%   {\dimen0=#1\dimen0=#5\dimen0
+%    \ScaledPointsToBigPoints{\number\dimen0}\PDFxoffset
+%    \dimen0=#3\dimen0=#5\dimen0
+%    \xdef\PDFwidth{\the\dimen0}%
+%    \dimen0=#2\dimen0=#6\dimen0
+%    \ScaledPointsToBigPoints{\number\dimen0}\PDFyoffset
+%    \dimen0=#4\dimen0=#6\dimen0
+%    \xdef\PDFheight{\the\dimen0}%
+%    \global\let\PDFxoffset\PDFxoffset
+%    \global\let\PDFyoffset\PDFyoffset}
 
-\def\setPDFmediabox#1[#2 #3 #4 #5]#6\done
-  {\dimen2=#2bp\dimen2=-\dimen2 % \dimen2=-#2bp also works since tex handles --
-   \dimen4=#3bp\dimen4=-\dimen4 % \dimen4=-#3bp also works since tex handles --
-   \dimen6=#4bp\advance\dimen6 \dimen2
-   \dimen8=#5bp\advance\dimen8 \dimen4
-   \setPDFboundingbox{\dimen2}{\dimen4}{\dimen6}{\dimen8}\PDFxscale\PDFyscale}
+% \def\setPDFmediabox#1[#2 #3 #4 #5]#6\done
+%   {\dimen2=#2bp\dimen2=-\dimen2 % \dimen2=-#2bp also works since tex handles --
+%    \dimen4=#3bp\dimen4=-\dimen4 % \dimen4=-#3bp also works since tex handles --
+%    \dimen6=#4bp\advance\dimen6 \dimen2
+%    \dimen8=#5bp\advance\dimen8 \dimen4
+%    \setPDFboundingbox{\dimen2}{\dimen4}{\dimen6}{\dimen8}\PDFxscale\PDFyscale}
 
-\def\checkPDFmediabox#1/MediaBox#2#3\done
-  {\ifx#2\relax \else
-     \message{mediabox}%
-     \setPDFmediabox#2#3\done
-   \fi}
+% \def\checkPDFmediabox#1/MediaBox#2#3\done
+%   {\ifx#2\relax \else
+%      \message{mediabox}%
+%      \setPDFmediabox#2#3\done
+%    \fi}
 
 %D We use the general macro \type{\doprocessfile} and feed this
 %D with a line handling macro that changes it's behavior when
 %D the stream operators are encountered.
 
-\def\handlePDFline
-  {\ifx\@@PDFstream@@\fileline
-     \let\doprocessPDFline\copyPDFobject
-     \startPDFtoPDF
-   \else\ifPDFmediaboxprefered
-     \expandafter\checkPDFmediabox\fileline/MediaBox\relax\done
-   \fi\fi}
+% \def\handlePDFline
+%   {\ifx\@@PDFstream@@\fileline
+%      \let\doprocessPDFline\copyPDFobject
+%      \startPDFtoPDF
+%    \else\ifPDFmediaboxprefered
+%      \expandafter\checkPDFmediabox\fileline/MediaBox\relax\done
+%    \fi\fi}
 
-\def\copyPDFobject
-  {\ifx\@@PDFendstream@@\fileline
-     \ifPDFmediaboxprefered
-       \let\doprocessPDFline\findPDFmediabox
-     \else
-       \let\doprocessPDFline\relax
-     \fi
-   \else
-     \advance\scratchcounter 1
-     \PDFcode{\fileline}%
-   \fi}
+% \def\copyPDFobject
+%   {\ifx\@@PDFendstream@@\fileline
+%      \ifPDFmediaboxprefered
+%        \let\doprocessPDFline\findPDFmediabox
+%      \else
+%        \let\doprocessPDFline\relax
+%      \fi
+%    \else
+%      \advance\scratchcounter 1
+%      \PDFcode{\fileline}%
+%    \fi}
 
-\def\findPDFmediabox
-  {\expandafter\checkPDFmediabox\fileline/MediaBox\relax\done}
+% \def\findPDFmediabox
+%   {\expandafter\checkPDFmediabox\fileline/MediaBox\relax\done}
 
 %D The main conversion macro wraps the \PDF\ codes in a box
 %D that is output as an object. The graphics are embedded
@@ -336,14 +352,14 @@
       \else
         \let\doprocessPDFline\findPDFmediabox
       \fi\fi}%
-   \def\findPDFtypepage%
+   \def\findPDFtypepage
      {\expandafter\checkPDFtypepage\fileline/Type /Page\relax\done}%
    \def\checkPDFmediabox##1/MediaBox##2##3\done%
      {\ifx##2\relax \else
         \setPDFmediabox##2##3\done
         \fileprocessedtrue
       \fi}%
-   \def\findPDFmediabox%
+   \def\findPDFmediabox
      {\expandafter\checkPDFmediabox\fileline/MediaBox\relax\done}%
    \let\doprocessPDFline\findPDFtypepage
    \doprocessfile\scratchread{#1}\doprocessPDFline
@@ -580,6 +596,7 @@
    \catcode`\]=\@@active
    \catcode`\{=\@@active
    \catcode`\}=\@@active
+   \lccode`\-=0 | latex sets this to `\-
    \lccode`\%=`\% | otherwise it's seen as a number
    \def\(B\char40\relax     E|
    \def\)B\char41\relax     E|
@@ -1882,9 +1899,15 @@
 \def\finishMPgraphic
   {\stopMPresources
    \egroup
-   \ifx\pdftexversion\undefined\else\ifnum\pdftexversion<14 % for the moment
-     \chardef\makeMPintoPDFobject0
-   \fi\fi
+   % we go simple when in doubt, this macro will get a proper
+   % context counterpart so that we can also cover dvipdfmx
+   \ifx\pdfxform\undefined
+     \chardef\makeMPintoPDFobject0 % no pdftex at all
+   \else\ifx\pdftexversion\undefined
+     \chardef\makeMPintoPDFobject0 % no pdftex at all
+   \else\ifnum\pdftexversion<14
+     \chardef\makeMPintoPDFobject0 % no resource support
+   \fi\fi\fi
    \ifcase\makeMPintoPDFobject\or\or\ifx\currentPDFresources\empty\else
      \chardef\makeMPintoPDFobject1
    \fi\fi

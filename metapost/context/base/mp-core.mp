@@ -1111,14 +1111,14 @@ vardef do_draw_par (expr p) =
       pp := p ;
     fi ;
     if boxfilltype>0 :
-if boxfilloffset>0 :
-  % temporary hack
-  begingroup ; interim linejoin := mitered ;
-  filldraw pp withcolor boxfillcolor withpen pencircle scaled (2*boxfilloffset) ;
-  endgroup ;
-else :
-      fill pp withcolor boxfillcolor ;
-fi ;
+      if boxfilloffset>0 :
+        % temporary hack
+        begingroup ; interim linejoin := mitered ;
+          filldraw pp withcolor boxfillcolor withpen pencircle scaled (2*boxfilloffset) ;
+        endgroup ;
+      else :
+        fill pp withcolor boxfillcolor ;
+      fi ;
     fi ;
     if boxlinetype>0 :
       draw pp withcolor boxlinecolor withpen pencircle scaled boxlinewidth ;

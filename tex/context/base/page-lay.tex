@@ -677,6 +677,12 @@
 %        {\let\currentlayout\v!even\recalculatelayout}%
 %    \fi}
 
+% document:
+%
+% \setuplayout[odd][state=stop] \setuplayout[even][state=stop] \setuplayout[page]
+%
+% \startstandardmakeup[page=blank] ... \stopstandardmakeup
+
 \def\checkcurrentlayout % public and used in naw, so keep this name
   {\ifundefined{\??ly\realfolio\c!status}%
      \doifoddpageelse\checkcurrentoddlayout\checkcurrentevenlayout
@@ -1405,6 +1411,7 @@
 \definepapersize [S6] [\c!breedte=600pt,\c!hoogte=450pt]
 \definepapersize [S8] [\c!breedte=800pt,\c!hoogte=600pt]
 \definepapersize [SW] [\c!breedte=800pt,\c!hoogte=450pt]
+\definepapersize [SM] [\c!breedte=720pt,\c!hoogte=450pt]
 
 %D These are handy too:
 

@@ -207,11 +207,19 @@
      {\voorafgaandenummer\nummer[#1]}%
    \egroup}
 
+% \def\preparethenumber#1#2#3% {\??id#1} \number \result
+%   {\doifelsevaluenothing{#1\c!scheider}
+%      {\let\numberseparator\empty
+%       \let#3#2}
+%      {\unexpanded\def\numberseparator{\getvalue{#1\c!scheider}}%
+%       \edef#3{\@EA\separatednumber\@EA{#2}}}}  % hm, etex
+
 \def\preparethenumber#1#2#3% {\??id#1} \number \result
   {\doifelsevaluenothing{#1\c!scheider}
      {\let\numberseparator\empty
       \let#3#2}
-     {\unexpanded\def\numberseparator{\getvalue{#1\c!scheider}}%
+     {% was \unexpanded \edef, but we need it unexpanded !
+      \edef\numberseparator{\getvalue{#1\c!scheider}}%
       \edef#3{\@EA\separatednumber\@EA{#2}}}}  % hm, etex
 
 \def\lossenummer[#1]%
@@ -944,6 +952,8 @@
 % better, because in english we get a name clash.
 
 \newcounter\currentsectionblock
+
+\def\currentsection{\@@sectieblok}
 
 \def\dodefinieersectieblok[#1][#2][#3]%
   {\getparameters

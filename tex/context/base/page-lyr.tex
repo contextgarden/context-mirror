@@ -313,9 +313,9 @@
         \doifnotvalue{\layerparameter\c!richting}\v!omgekeerd{\box\layerpagebox}%
       \fi
       % don't move
-      \xdef\lastlayerwd{\wd\nextboxwd}%
-      \xdef\lastlayerht{\ht\nextboxht}% % not entirely ok when grid !
-      \xdef\lastlayerdp{\dp\nextboxdp}% % not entirely ok when grid !
+      \xdef\lastlayerwd{\the\nextboxwd}%
+      \xdef\lastlayerht{\the\nextboxht}% % not entirely ok when grid !
+      \xdef\lastlayerdp{\the\nextboxdp}% % not entirely ok when grid !
       % this code
       \doifelse{\layerparameter\c!plaats}\v!grid\donetrue\donefalse
       \ifdone
@@ -438,6 +438,58 @@
         {\dodoflushlayer0{#2}{#1#2:\realfolio}}
       \stopoverlay}}
 
+% \def\dodoflushlayer#1#2#3%
+%   {\ifundefined{\@@layerbox#3}%
+%      \ifcase#1\else\writestatus{layer}{unknown layer #3}\fi
+%    \else
+%      \bgroup
+%      \forgetall
+%      \offinterlineskip
+%      \doifvalue{\??ll#2\c!optie}\v!test\tracelayerstrue
+%      \iftracelayers\traceboxplacementtrue\fi
+%      \!!doneafalse
+%      \!!donebfalse
+%      \doifvalue{\??ll#2\c!methode}\v!overlay\!!doneatrue
+%      \doifvalue{\??ll#2\c!methode}\v!passend\!!donebtrue
+%      \!!donectrue
+%      \ifcase#1\else
+%        \doifnotvalue{\??ll#2\c!positie}\v!ja
+%          {\doifvalue{\??ll#2\c!herhaal}\v!ja\!!donecfalse
+%           \doifvalue{\??ll#2\c!status}\v!herhaal\!!donecfalse}% old method
+%      \fi
+%      \chardef\layerbox\csname\@@layerbox#3\endcsname
+%      % we need to copy in order to retain the negative offsets for a next
+%      % stage of additions, i.e. llx/lly accumulate in repeat mode and the
+%      % compensation is may differ each flush depending on added content
+%      \setbox\nextbox \if!!doneb
+%        \vbox
+%          {\scratchdimen\getboxlly\layerbox
+%           \vskip-\scratchdimen
+%           \scratchdimen\getboxllx\layerbox
+%           \hskip-\scratchdimen
+%           \advance\scratchdimen-\wd\layerbox
+%           \hsize-\scratchdimen
+%           \if!!donec\box\else\copy\fi\layerbox}%
+%      \else
+%         \if!!donec\box\else\copy\fi\layerbox % sorry for the delay due to copying
+%      \fi
+%      \iftracelayers \ruledvbox \else \vbox \fi \if!!donea to \overlayheight \fi
+%        {\hbox \if!!donea to \overlaywidth \fi
+%           {% klopt dit? #3 en niet #2 ?
+%            \doifvalue{\??ll#3\realfolio\c!positie}\v!ja
+%              {\xypos{lyr:#3:\realfolio}}%
+%            \doifoverlayelse{#3}
+%              {\box\nextbox}
+%              {\startlayoutcomponent{l:#3}{layer #3}\box\nextbox\stoplayoutcomponent}%
+%            \hss}%
+%         \vss}%
+%      \if!!donec
+%        \gsetboxllx\layerbox\zeropoint
+%        \gsetboxlly\layerbox\zeropoint
+%      \fi
+%      \egroup
+%    \fi}
+
 \def\dodoflushlayer#1#2#3%
   {\ifundefined{\@@layerbox#3}%
      \ifcase#1\else\writestatus{layer}{unknown layer #3}\fi
@@ -445,6 +497,9 @@
      \bgroup
      \forgetall
      \offinterlineskip
+     % needed because we need to handle method
+\executeifdefined{\??ll\??ll\getvalue{\??ll#2\c!preset}}\gobbletwoarguments{#2}{}%
+     %
      \doifvalue{\??ll#2\c!optie}\v!test\tracelayerstrue
      \iftracelayers\traceboxplacementtrue\fi
      \!!doneafalse
@@ -455,12 +510,12 @@
      \ifcase#1\else
        \doifnotvalue{\??ll#2\c!positie}\v!ja
          {\doifvalue{\??ll#2\c!herhaal}\v!ja\!!donecfalse
-          \doifvalue{\??ll#2\c!status}\v!herhaal\!!donecfalse}% old method
+          \doifvalue{\??ll#2\c!status}\v!herhaal\!!donecfalse}%
      \fi
      \chardef\layerbox\csname\@@layerbox#3\endcsname
      % we need to copy in order to retain the negative offsets for a next
      % stage of additions, i.e. llx/lly accumulate in repeat mode and the
-     % compensation is may differ each flush depending on added content
+     % compensation may differ each flush depending on added content
      \setbox\nextbox \if!!doneb
        \vbox
          {\scratchdimen\getboxlly\layerbox
@@ -476,8 +531,7 @@
      \iftracelayers \ruledvbox \else \vbox \fi \if!!donea to \overlayheight \fi
        {\hbox \if!!donea to \overlaywidth \fi
           {% klopt dit? #3 en niet #2 ?
-           \doifvalue{\??ll#3\realfolio\c!positie}\v!ja
-             {\xypos{lyr:#3:\realfolio}}%
+           \doifvalue{\??ll#3\realfolio\c!positie}\v!ja     {\xypos{lyr:#3:\realfolio}}%
            \doifoverlayelse{#3}
              {\box\nextbox}
              {\startlayoutcomponent{l:#3}{layer #3}\box\nextbox\stoplayoutcomponent}%
@@ -508,11 +562,19 @@
 
 \let\placelayer\flushlayer
 
+% \def\tightlayer[#1]%
+%   {\hbox
+%      {\def\currentlayer{#1}% todo: left/right
+%       \hsize\layerparameter\c!breedte
+%       \vsize\layerparameter\c!hoogte
+%       \composedlayer{#1}}}
+
 \def\tightlayer[#1]%
   {\hbox
      {\def\currentlayer{#1}% todo: left/right
-      \hsize\layerparameter\c!breedte
-      \vsize\layerparameter\c!hoogte
+      \setbox\nextbox\emptybox        % hoogte/breedte are \wd\nextbox/\ht\nextbox
+      \hsize\layerparameter\c!breedte % \overlaywidth   = \hsize
+      \vsize\layerparameter\c!hoogte  % \overlaywheight = \vsize
       \composedlayer{#1}}}
 
 %D \macros
@@ -694,5 +756,23 @@
    \c!offset=\v!ja,
    \c!xoffset=\!!zeropoint,
    \c!yoffset=\!!zeropoint]
+
+%D Watch out, a redefinition:
+
+\ifx\settextpagecontent\undefined \writestatus\m!systems{error in page-lyr.tex} \wait \fi
+
+\definelayer[OTRTEXT] \setuplayer[OTRTEXT][\c!breedte=\zetbreedte,\c!hoogte=\teksthoogte]
+
+\let\normalsettextpagecontent\settextpagecontent
+
+\def\settextpagecontent#1#2#3% #2 and #3 will disappear
+  {\doifelselayerdata{OTRTEXT}
+     {\setbox#1\hbox to \zetbreedte
+        {\startoverlay
+           {\normalsettextpagecontent{#1}{#2}{#3}\box#1}
+           {\tightlayer[OTRTEXT]}
+         \stopoverlay}%
+      \dp#1\zeropoint}%
+     {\normalsettextpagecontent{#1}{#2}{#3}}}
 
 \protect \endinput

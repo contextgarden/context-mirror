@@ -283,7 +283,8 @@
         \v!diepte=>\global\chardef\sidefloatalign\plusthree,%
           \v!grid=>\global\chardef\sidefloatalign4,%
     \v!halveregel=>\global\chardef\sidefloatalign5]%
-     \ifcase\sidefloatalign\relax
+% todo (test first): \doifinset\v!lokaal{#2}{\chardef\sidefloatalign\zerocount}%
+     \ifcase\sidefloatalign\relax % todo: optie v!lokaal => \else
        \doifinset\v!hoogte    {#2}{\global\chardef\sidefloatalign\plusone}%
        \doifinset\v!regel     {#2}{\global\chardef\sidefloatalign\plustwo}%
        \doifinset\v!diepte    {#2}{\global\chardef\sidefloatalign\plusthree}%

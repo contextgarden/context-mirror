@@ -610,6 +610,17 @@
 
 \def\PDFgotonewwindow{\ifgotonewwindow\space/NewWindow true \fi}
 
+% optimization in tpd driver
+%
+% \edef\PDFdestination{(page:\the\scratchcounter)}%
+%
+%   ==>
+%
+% \advance\scratchcounter 1
+% \edef\PDFdestination{[\pdfpageref \scratchcounter\space 0 R\space\PDFpageviewwrd]}%
+%
+% \doPDFgetpagedestination#1#2% pagenumber macro % % fuzzy hack
+
 \def\doPDFstartgotorealpage#1#2#3#4#5% watch the R append trick
   {\bgroup
    \doifelsenothing{#3}% #1 = url

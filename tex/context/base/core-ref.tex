@@ -3204,6 +3204,40 @@
 %      {#2}%
 %    \fi}
 
+% \definespeciallocation\v!pagina#1#2% page(n) page(+n) page(-n)
+%   {\iflocation
+%      \ifx\currentouterreference\empty
+%        \splitoffreference\currentreferenceoperation
+%      \else
+%        \let\currentinnerreference\currentreferenceoperation
+%      \fi
+%      \ifx\currentouterreference\empty
+%        \doifinstringelse+\currentinnerreference
+%          {\scratchcounter\realpageno
+%           \advance\scratchcounter \currentinnerreference
+%           \edef\currentinnerreference{\the\scratchcounter}}
+%          {\doifinstringelse-\currentinnerreference
+%             {\scratchcounter\realpageno
+%              \advance\scratchcounter \currentinnerreference
+%              \edef\currentinnerreference{\the\scratchcounter}}
+%             \donothing}%
+%        \doifnonzeropositiveelse\currentinnerreference
+%          \donothing
+%          {\edef\currentinnerreference{1}}%
+%        \gotorealpage\empty\empty\currentinnerreference{#2}%
+%      \else
+%        \setouterlocation\currentouterreference
+%        \doifnonzeropositiveelse\currentinnerreference
+%          \donothing
+%          {\doifdefinedelse{\v!pagina:::\currentinnerreference}
+%             {\edef\currentinnerreference{\getvalue{\v!pagina:::\currentinnerreference}}}
+%             {\edef\currentinnerreference{1}}}%
+%        \gotorealpage\otherURL\otherfile\currentinnerreference{#2}%
+%      \fi
+%    \else
+%      {#2}%
+%    \fi}
+
 \definespeciallocation\v!pagina#1#2% page(n) page(+n) page(-n)
   {\iflocation
      \ifx\currentouterreference\empty
@@ -3224,6 +3258,8 @@
        \doifnonzeropositiveelse\currentinnerreference
          \donothing
          {\edef\currentinnerreference{1}}%
+       \docheckrealreferencepage\currentinnerreference % new
+       \let\currentrealreference\currentinnerreference % handy to have this available
        \gotorealpage\empty\empty\currentinnerreference{#2}%
      \else
        \setouterlocation\currentouterreference

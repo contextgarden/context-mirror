@@ -706,11 +706,11 @@ startsetup
 com:stelomlijndin:
 typ:vars/:
 var:hoogte:passend,ruim,*maat::
-var:breedte:passend,ruim,vast,*maat::
+var:breedte:passend,ruim,vast,lokaal,*maat::
 var:offset:geen,overlay,default,*maat::
 var:plaats:laag,diepte,hangend::
 var:optie:geen,leeg::
-var:strut:ja,nee::
+var:strut:ja,nee,globaal,lokaal::
 var:uitlijnen:nee,links,rechts,midden,normaal,hoog,laag,laho::
 var:onder:*commando::
 var:boven:*commando::

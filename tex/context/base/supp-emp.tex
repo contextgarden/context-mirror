@@ -214,7 +214,7 @@
 %D nothing happens since the \type {\csname...} will expand to
 %D \type {\relax}.
 
-\def\EMsetcounters%
+\def\EMsetcounters
   {\count0=0 \count2=0
    \csname EM:\the\EMcounter\endcsname}
 
@@ -331,9 +331,16 @@
 
 %D As a bonus, I will now provide a few macros that will make
 %D this mechanism transparant to \DVI\ as well as \PDF\
-%D output. We will use \type {\pdfoutput} as trigger.
+%D output. We will use \type {\pdfiteral} as trigger.
 
-\ifx\pdfoutput\undefined \chardef\pdfoutput=0 \fi
+\ifx\pdfliteral\undefined
+  \def\EMpdfordvi#1#2{#2}
+\else\ifx\pdfoutput\undefined
+  \def\EMpdfordvi#1#2{#2}
+\else
+  \def\EMpdfordvi#1#2{\ifcase\pdfoutput#2\else#1\fi}
+\fi\fi
+
 
 %D We save some of the macros we defined previously:
 
@@ -342,11 +349,11 @@
 
 %D We now redefine them to support \DVI\ and \PDF.
 
-\def\EMmoveto{\ifcase\pdfoutput\special{em:moveto}\else\pdfEMmoveto\fi}
-\def\EMlineto{\ifcase\pdfoutput\special{em:lineto}\else\pdfEMlineto\fi}
+\def\EMmoveto{\EMpdfordvi\pdfEMmoveto{\special{em:moveto}}}
+\def\EMlineto{\EMpdfordvi\pdfEMlineto{\special{em:lineto}}}
 
-\def\startEMspecials{\ifcase\pdfoutput\else\pdfstartEMspecials\fi}
-\def\stopEMspecials {\ifcase\pdfoutput\else\pdfstopEMspecials \fi}
+\def\startEMspecials{\EMpdfordvi\pdfstartEMspecials\relax}
+\def\stopEMspecials {\EMpdfordvi\pdfstopEMspecials \relax}
 
 %D If there is any real demand for this in \CONTEXT, I will
 %D hook these macros in the special drivers, so that their
@@ -365,22 +372,19 @@
    \dimen0=#1\relax
    \count0=\dimen0
    \divide\count0 65536
-   \ifcase\pdfoutput
-     \special{em:linewidth \the\dimen0}%
-   \fi
+   \pdfordvi\relax{\special{em:linewidth \the\dimen0}}%
    \xdef\EMlinewd{\the\count0}%
    \egroup}
 
 %D You may wonder to what extent positional tracking is
 %D \PDFTEX\ specific. In \CONTEXT, we also support position
 %D tracking in \DVI\ by using specials and analyzing the \DVI\
-%D file afterwards using a \PERL\ script created by Taco
-%D Hoekwater. Since many of the advanced \TEX\ features depend
-%D on some kind of back||end, we don't consider it to be a
-%D disadvantage. Of course, the \PDFTEX\ way is not only
-%D cleaner, but also faster. It was more out of curiosity than
-%D out of need that we provided the \DVI\ methods as well.
-%D Also, it is always good to have more roads to reach the same
-%D goal.
+%D file afterwards using \DVIPOS. Since many of the advanced
+%D \TEX\ features depend on some kind of back||end, we don't
+%D consider it to be a disadvantage. Of course, the \PDFTEX\
+%D way is not only cleaner, but also faster. It was more out
+%D of curiosity than out of need that we provided the \DVI\
+%D methods as well. Also, it is always good to have more roads
+%D to reach the same goal.
 
 \endinput

@@ -1,6 +1,6 @@
 % Insert this in font-fil.tex ( I would think):
 
-% tobias: what is the original and what the berry name? 
+% tobias: what is the original and what the berry name?
 
 %D \module
 %D   [       file=symb-mvs,
@@ -12,42 +12,42 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
-%C details. 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
 
 %D This module implements the Martin Vogel Symbole font
 %D (marvosym). The names are derived from the \LaTeXe\ package
 %D \type {marvosym} of Thomas Henlich. The symbols are
 %D available as Type~1 font and are included in \TETEX\ and
-%D \FPTEX\ distributions. 
-%D 
+%D \FPTEX\ distributions.
+%D
 %D This symbol font offers the signs of the zodiac, four
 %D alternative the euro signs, some general office signs and
-%D some more. 
-%D 
+%D some more.
+%D
 %D The font was designed by Martin Vogel who can be reached at
 %D \hyphenatedurl {martin.vogel@fh-bochum.de}. More information
 %D can be found at \hyphenatedurl
 %D {http://www.fh-bochum.de/fb1/vogel/marvosym.html}. The
 %D conversion to Type~1 font was done by Thomas Henlich, who
 %D can be reached at \hyphenatedurl
-%D {thenlich@rcs.urz.tu-dresden.de}. 
-%D 
+%D {thenlich@rcs.urz.tu-dresden.de}.
+%D
 %D This module is based on the current \CTAN\ version (as of
 %D March 30, 2000) and is older than the TrueType version at
 %D Martin Vogel's Homepage. The definitions in this module
 %D reflect the \CTAN\ version. The font conversion was done by
 %D Thomas Henlich using \type {ttf2pt1}, a program that can be
 %D found at \hyphenatedurl
-%D {http://www.netspace.net.au/~mheath/ttf2pt1/}. 
-%D 
+%D {http://www.netspace.net.au/~mheath/ttf2pt1/}.
+%D
 %D Using the new version of \type {marvosymb}, the MVzero will
 %D has a slash and the FHBOLOGO, (wo)manface, and (wo)manfront
-%D are replaced by other symbols. 
+%D are replaced by other symbols.
+
+\loadmapfile[original-base.map] % \loadmapfile[original-vogel-symbol]
 
 \definefontsynonym [MartinVogel] [fmvr8x]
-
-\loadmapfile[original-vogel-symbol]
 
 \def\MartinVogelSymbol#1{\getglyph{MartinVogel}{\char#1}}
 
@@ -101,7 +101,7 @@
 
   \definecharacter texteuro {\symbol[europe][EUR]}
 
-\stopencoding 
+\stopencoding
 
 \unexpanded\def\euro{\doiftextelse{\texteuro}{\texteuro}{\symbol[europe][EUR]}}
 
@@ -143,7 +143,7 @@
   \definesymbol [TTsteel]         [\MartinVogelSymbol{154}]
   \definesymbol [Circpipe]        [\MartinVogelSymbol{155}]
   \definesymbol [Tsteel]          [\MartinVogelSymbol{156}]
-  
+
   \definesymbol [Stopsign]        [\MartinVogelSymbol {33}]
   \definesymbol [Beam]            [\MartinVogelSymbol {34}]
   \definesymbol [Bearing]         [\MartinVogelSymbol {35}]
@@ -155,28 +155,28 @@
   \definesymbol [Lineload]        [\MartinVogelSymbol {41}]
   \definesymbol [Circles]         [\MartinVogelSymbol {46}]
   \definesymbol [Squaredot]       [\MartinVogelSymbol{247}]
-  
+
   \definesymbol [Correspondes]    [\MartinVogelSymbol {61}]
   \definesymbol [Vectorarrowhigh] [\MartinVogelSymbol {80}]
   \definesymbol [Vectorarrow]     [\MartinVogelSymbol{112}]
   \definesymbol [Rightarrow]      [\MartinVogelSymbol {62}]
   \definesymbol [Lightning]       [\MartinVogelSymbol {69}]
-  
+
   \definesymbol [Snowflake]       [\MartinVogelSymbol {42}]
   \definesymbol [Kross]           [\MartinVogelSymbol {43}]
   \definesymbol [Cross]           [\MartinVogelSymbol{134}]
   \definesymbol [Celtcross]       [\MartinVogelSymbol{135}]
   \definesymbol [Ankh]            [\MartinVogelSymbol{136}]
   \definesymbol [Yingyang]        [\MartinVogelSymbol {77}]
-     
-  \definesymbol [Pickup]          [\MartinVogelSymbol  {0}]  % ? 
-  \definesymbol [Letter]          [\MartinVogelSymbol {66}]  % ? 
+
+  \definesymbol [Pickup]          [\MartinVogelSymbol  {0}]  % ?
+  \definesymbol [Letter]          [\MartinVogelSymbol {66}]  % ?
   \definesymbol [Mobilephone]     [\MartinVogelSymbol {72}]
   \definesymbol [Telephone]       [\MartinVogelSymbol {84}]
   \definesymbol [fax]             [\MartinVogelSymbol{116}]
   \definesymbol [FAX]             [\MartinVogelSymbol{117}]
   \definesymbol [Faxmachine]      [\MartinVogelSymbol{118}]
-  
+
   \definesymbol [Clocklogo]       [\MartinVogelSymbol {85}]
   \definesymbol [Industry]        [\MartinVogelSymbol {73}]
   \definesymbol [Coffeecup]       [\MartinVogelSymbol {75}]
@@ -185,12 +185,12 @@
   \definesymbol [Frowny]          [\MartinVogelSymbol{167}]
   \definesymbol [Smiley]          [\MartinVogelSymbol{169}]
   \definesymbol [Bicycle]         [\MartinVogelSymbol{174}]
-  
+
   \definesymbol [Rightscissors]   [\MartinVogelSymbol {81}]
   \definesymbol [Leftscissors]    [\MartinVogelSymbol {83}]
   \definesymbol [Cutright]        [\MartinVogelSymbol{113}]
   \definesymbol [Cutleft]         [\MartinVogelSymbol{115}]
-  \definesymbol [Kutline]         [\MartinVogelSymbol {82}] % K ? 
+  \definesymbol [Kutline]         [\MartinVogelSymbol {82}] % K ?
   \definesymbol [Cutline]         [\MartinVogelSymbol{114}]
 
 \stopsymbolset
@@ -218,4 +218,4 @@
 %D \showsymbolset[martinvogel 2]
 %D \showsymbolset[martinvogel 3]
 
-\endinput 
+\endinput

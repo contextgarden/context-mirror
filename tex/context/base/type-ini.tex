@@ -58,8 +58,7 @@
    \pushmacro\typescriptthree
    \pushmacro\stoptypescript
    \typescriptfoundfalse
-   \writestatus\m!fonts
-     {[\@@typescriptone] [\@@typescripttwo] [\@@typescriptthree]}%
+   \writestatus\m!fonts{[\@@typescriptone] [\@@typescripttwo] [\@@typescriptthree]}%
    \processcommacommand[\typescriptfiles]\dododousetypescript
    \firsttypescriptpassfalse % testen
    \popmacro\stoptypescript
@@ -299,9 +298,11 @@
 %    \expanded{\processcommalist[#1]}\docommando
 %    \ifproductionrun \loadallfontmapfiles \fi}
 
+% this mechanism will be adapted to the new pdftex features
+
 \def\dopreloadmapfile#1%
   {\doifinstringelse{.}{#1}
-     {\writestatus{pdftex}{compensate map file: #1}%
+     {\writestatus\m!fonts{assuming map file: #1}%
       \setxvalue{#1 \c!status}{3}%
       \doglobal\removefromcommalist{#1}\allfontmapsfiles}
      {\expanded{\dopreloadmapfile{#1.\f!fontmapextension}}}}
@@ -309,59 +310,88 @@
 \def\preloadmapfile[#1]%
   {\expanded{\processcommalist[#1]}\dopreloadmapfile}
 
-\def\doloadmapfile#1%
-  {\doifinstringelse{.}{#1}
-     {\doglobal\pretocommalist{#1}\allfontmapsfiles}
-     {\expanded{\doloadmapfile{#1.\f!fontmapextension}}}}
+\def\loadmapfile[#1]%
+  {\expanded{\processcommalist[#1]}\loadthemapfile}
 
-\def\loadmapfile[#1]% last added first !
-  {\expanded{\processcommalist[#1]}\doloadmapfile
-   \ifproductionrun \loadallfontmapfiles \fi}
+%  too soon, no driver known, \ifproductionrun \loadallfontmapfiles \fi}
 
-\def\doloadfontmapfile#1% will be special
-  {\doifundefined{#1 \c!status}
-     {\ifnum\realpageno>\plusone
-        \writestatus{pdftex}{too late for map file: #1}%
-      \else
-        \writestatus{pdftex}{using map file: #1}%
-      \fi
-      \doiffileelse{#1}{\pdfmapfile{+#1}}\donothing
-      \setxvalue{#1 \c!status}{1}}}
+% temp hack, will become just \addto
+
+\ifx\pdftexversion\undefined
+
+  \def\loadthemapfile#1%
+    {\doifinstringelse{.}{#1}
+       {\doglobal\addtocommalist{#1}\allfontmapsfiles}
+       {\expanded{\loadthemapfile{#1.\f!fontmapextension}}}}
+
+\else\ifnum\pdftexversion<200
+
+  \def\loadthemapfile#1%
+    {\doifinstringelse{.}{#1}
+       {\doglobal\pretocommalist{#1}\allfontmapsfiles}
+       {\expanded{\loadthemapfile{#1.\f!fontmapextension}}}}
+
+\else
+
+  \def\loadthemapfile#1%
+    {\doifinstringelse{.}{#1}
+      %{\doglobal\pretocommalist{#1}\allfontmapsfiles}
+       {\doglobal\addtocommalist{#1}\allfontmapsfiles}
+       {\expanded{\loadthemapfile{#1.\f!fontmapextension}}}}
+
+
+\fi \fi
+
+\def\doloadfontmapfile#1%
+  {\ifundefined{#1 \c!status}%
+     \writestatus\m!fonts{using map file: #1}%
+     \doloadmapfile{+}{#1}%
+     \setxvalue{#1 \c!status}{1}%
+   \fi}
 
 \def\doreportfontmapfile#1%
-  {\doifundefined{#1 \c!status}
-     {\writestatus{pdftex}{needs map file: #1}%
-      \setxvalue{#1 \c!status}{2}}}
+  {\ifundefined{#1 \c!status}%
+     \writestatus\m!fonts{needs map file: #1}%
+     \setxvalue{#1 \c!status}{2}%
+    \fi}
 
 \def\loadallfontmapfiles
   {%\message{[\allfontmapsfiles]}%
+   \ifconditional\resettingmapfile
+     \doresetmapfilelist
+     \global\setfalse\resettingmapfile
+   \fi
    \ifx\allfontmapsfiles\empty \else
      \ifautoloadmapfiles
-       \ifcase\pdfoutput \else \ifx\pdfmapfile\undefined \else
-         \processcommacommand[\allfontmapsfiles]\doloadfontmapfile
-         \forgetmapfiles
-       \fi \fi
+       \processcommacommand[\allfontmapsfiles]\doloadfontmapfile
      \else
        \processcommacommand[\allfontmapsfiles]\doreportfontmapfile
-       \forgetmapfiles
      \fi
+     \forgetmapfiles
    \fi}
 
-\appendtoks \loadallfontmapfiles \to \everyjob
+% since this is driver dependent, and since we may set map files
+% before an output format is defined, we need to postpone it
+
+%appendtoks \loadallfontmapfiles \to \everyPDFximage
 \appendtoks \loadallfontmapfiles \to \everystarttext
 \appendtoks \loadallfontmapfiles \to \everybeforepagebody
 
 \newif\ifautoloadmapfiles
 
-\def\forgetmapfiles
-  {\global\let\allfontmapsfiles\empty}
+\let\allfontmapsfiles\empty
 
-\forgetmapfiles
+\def\forgetmapfiles
+  {\globallet\allfontmapsfiles\empty}
+
+\newconditional\resettingmapfile
+
+\def\resetmapfiles
+  {\global\settrue\resettingmapfile}
 
 \def\disablemapfiles
-  {\ifcase\pdfoutput \else \ifx\pdfmapfile\undefined \else
-     \pdfmapfile{}% this will (kind of reset) the map file loading
-   \fi \fi}
+  {\resetmapfiles
+   \forgetmapfiles}
 
 % \definetypeface [#1:joke] [#2:rm]
 % \definetypeface [#1:joke] [#2:rm] [#3:...]
@@ -384,10 +414,10 @@
 \def\dodefinetypeface[#1][#2][#3][#4][#5][#6]%
   {\dododefinetypeface[#1][#2]
    \iffifthargument % sixth is optional
-   % \getparameters[\??ts][rscale=1,\s!encoding=\defaultencoding,#6]
-   % we need to expand since in #6 there can be a \typescripttwo
-\expanded{\getparameters[\??ts][\s!rscale=1,\s!encoding=\defaultencoding,#6]}%
-% toch niet \expanded{\getparameters[\??ts][\s!rscale=1,\s!encoding=\s!default,#6]}%
+     % \getparameters[\??ts][rscale=1,\s!encoding=\defaultencoding,#6]
+     % we need to expand since in #6 there can be a \typescripttwo
+     \expanded{\getparameters[\??ts][\s!rscale=1,\s!encoding=\defaultencoding,#6]}%
+     % toch niet \expanded{\getparameters[\??ts][\s!rscale=1,\s!encoding=\s!default,#6]}%
      \pushmacro\relativefontsize
      \pushmacro\typefaceencoding
      \pushmacro\fontclass
@@ -398,7 +428,7 @@
     %\writestatus{typeface}{[#1] [#2] [#3] [#4]}
      \writestatus\m!fonts{[#1] [#2] [#3] [#4]}
      \usetypescript[map][\typefaceencoding]
-     \usetypescript[#3][#4][name,default,\typefaceencoding,special]
+     \usetypescript[#3,map][#4][name,default,\typefaceencoding,special]
      \usetypescript[#3][#5][size]
      \popmacro\fontclass
      \popmacro\typefaceencoding

@@ -948,10 +948,24 @@
 
 \def\textanchor{text:\realfolio}
 
+% \def\placepositionanchors % todo : depth pagebox
+%   {\ifpositioning
+%      \setbox\scratchbox\vbox to \teksthoogte
+%        {\topskipcorrection
+%         \hbox{\strut\dopositionaction\headanchor}%
+%         \vfill
+%         \hbox{\strut\dopositionaction\tailanchor}}%
+%      \dp\scratchbox\zeropoint
+%      \wd\scratchbox\zetbreedte % not \zeropoint, else wrong text backgrounds
+%      \hpos\textanchor{\box\scratchbox}%
+%    \else
+%      \vskip\teksthoogte
+%    \fi}
+
 \def\placepositionanchors % todo : depth pagebox
   {\ifpositioning
      \setbox\scratchbox\vbox to \teksthoogte
-       {\topskipcorrection
+       {\simpletopskipcorrection
         \hbox{\strut\dopositionaction\headanchor}%
         \vfill
         \hbox{\strut\dopositionaction\tailanchor}}%

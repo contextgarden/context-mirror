@@ -512,6 +512,36 @@
 %    \globallet\flushMPgraphics\closeMPgraphicfiles % \dodostopwritingMPgraphic
 %    \globallet\stopwritingMPgraphic=\dostopwritingMPgraphic}
 
+% \def\startwritingMPgraphic
+%   {\blabelgroup
+%    \global\advance\nofMPgraphics 1
+%    \ifMPrun \else
+%      \allocateMPslot\currentMPgraphic
+%    \fi
+%    \enableincludeMPgraphics
+%    \xdef\MPgraphic{\the\currentMPgraphic}%
+%    \the\everyMPgraphic
+%    \ifrunMPgraphics
+%      \openMPgraphicfile1{runtime}%
+%      % no reset here !
+%      \theMPinclusions
+% \@EA\expanded\@EA{\@EA\writeMPgraphic\@EA{\the\MPinitializations;}}%
+%    \else
+%      \openMPgraphicfile0{collected}%
+%       % reset here ! global added (due to adding \blabelgroup)
+%      \theMPinclusions
+%      \global\let\theMPinclusions\relax
+%    \fi
+%    \flushMPTEXgraphic
+%    \ifMPrun \else
+%      \immediate\write\MPwrite{let mprunend = end ;}%
+%      \immediate\write\MPwrite{beginfig(\the\currentMPgraphic);}%
+% \@EA\expanded\@EA{\@EA\writeMPgraphic\@EA{\the\MPinitializations;}}%
+%    \fi
+%    \globallet\flushMPgraphics\closeMPgraphicfiles % \dodostopwritingMPgraphic
+%    \globallet\stopwritingMPgraphic=\dostopwritingMPgraphic}
+
+
 \def\startwritingMPgraphic
   {\blabelgroup
    \global\advance\nofMPgraphics 1
@@ -525,7 +555,7 @@
      \openMPgraphicfile1{runtime}%
      % no reset here !
      \theMPinclusions
-\@EA\expanded\@EA{\@EA\writeMPgraphic\@EA{\the\MPinitializations;}}%
+     \@EA\expanded\@EA{\@EA\writeMPgraphic\@EA{\the\MPinitializations;}}%
    \else
      \openMPgraphicfile0{collected}%
       % reset here ! global added (due to adding \blabelgroup)
@@ -536,7 +566,9 @@
    \ifMPrun \else
      \immediate\write\MPwrite{let mprunend = end ;}%
      \immediate\write\MPwrite{beginfig(\the\currentMPgraphic);}%
-\@EA\expanded\@EA{\@EA\writeMPgraphic\@EA{\the\MPinitializations;}}%
+     \ifrunMPgraphics \else
+       \@EA\expanded\@EA{\@EA\writeMPgraphic\@EA{\the\MPinitializations;}}%
+     \fi
    \fi
    \globallet\flushMPgraphics\closeMPgraphicfiles % \dodostopwritingMPgraphic
    \globallet\stopwritingMPgraphic=\dostopwritingMPgraphic}
@@ -1667,7 +1699,7 @@
 %D with.
 %D
 %D This is why we provide was to use a dedicate range if
-%D numbers for fixed graphcis. Such graphics will not en dup
+%D numbers for fixed graphcs. Such graphics will not en dup
 %D in the text flow (at least their dimensions don't
 %D contribute to the main vertical list, and thereby they
 %D cannot interfere. We use a rather safe maximum of 4000
@@ -1680,7 +1712,11 @@
 
 \def\allocateMPslot#1%
   {\ifrunMPgraphics
-     \ifcase\pdfoutput \recycleMPslotsfalse \fi
+     \ifx\pdfliteral\undefined
+       \recycleMPslotsfalse % quite certainly not pdftex
+     \else\ifcase\pdfoutput
+       \recycleMPslotsfalse % dvi mode or not pdftex (we need to handle dvipdfmx)
+     \fi\fi
    \else
      \recycleMPslotsfalse
    \fi

@@ -706,11 +706,11 @@ startsetup
 com:setupframed:
 typ:vars/:
 var:height:fit,broad,*dimension::
-var:width:fit,broad,fixed,*dimension::
+var:width:fit,broad,fixed,local,*dimension::
 var:offset:none,overlay,default,*dimension::
 var:location:low,depth,hanging::
 var:option:none,empty::
-var:strut:yes,no::
+var:strut:yes,no,global,local::
 var:align:no,left,right,middle,normal,high,low,lohi::
 var:bottom:*command::
 var:top:*command::

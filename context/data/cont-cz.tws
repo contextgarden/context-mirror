@@ -706,11 +706,11 @@ startsetup
 com:nastavoramovani:
 typ:vars/:
 var:vyska:prizpusobive,siroky,*dimenze::
-var:sirka:prizpusobive,siroky,fixne,*dimenze::
+var:sirka:prizpusobive,siroky,fixne,lokalne,*dimenze::
 var:offset:zadny,prekryv,implicitni,*dimenze::
 var:misto:nizko,podlehloubky,visici::
 var:volba:zadny,prazdne::
-var:strut:ano,ne::
+var:strut:ano,ne,globalne,lokalne::
 var:zarovnani:ne,vlevo,vpravo,nastred,normalni,vysoko,nizko,nivy::
 var:spodek:*prikaz::
 var:vrsek:*prikaz::

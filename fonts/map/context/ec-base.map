@@ -1,0 +1,135 @@
+% courier / urw
+
+ucrb8t  <ec.enc <ucrb8a.pfb
+ucrbo8t <ec.enc <ucrbo8a.pfb
+ucrr8t  <ec.enc <ucrr8a.pfb
+ucrro8t <ec.enc <ucrro8a.pfb
+
+% courier / adobe
+
+pcrb8t  <ec.enc <ucrb8a.pfb
+pcrbo8t <ec.enc <ucrbo8a.pfb
+pcrr8t  <ec.enc <ucrr8a.pfb
+pcrro8t <ec.enc <ucrro8a.pfb
+
+% helvetica / urw
+
+uhvb8t  <ec.enc <uhvb8a.pfb
+uhvbo8t <ec.enc <uhvbo8a.pfb
+uhvr8t  <ec.enc <uhvr8a.pfb
+uhvro8t <ec.enc <uhvro8a.pfb
+
+% helvetica / adobe
+
+phvb8t  <ec.enc <uhvb8a.pfb
+phvbo8t <ec.enc <uhvbo8a.pfb
+phvr8t  <ec.enc <uhvr8a.pfb
+phvro8t <ec.enc <uhvro8a.pfb
+
+% times / urw
+
+utmb8t  <ec.enc <utmb8a.pfb
+utmbi8t <ec.enc <utmbi8a.pfb
+utmr8t  <ec.enc <utmr8a.pfb
+utmri8t <ec.enc <utmri8a.pfb
+
+utmbo8t ".167 SlantFont" <ec.enc <utmb8a.pfb
+utmro8t ".167 SlantFont" <ec.enc <utmr8a.pfb
+
+% times / adobe
+
+ptmb8t  <ec.enc <utmb8a.pfb
+ptmbi8t <ec.enc <utmbi8a.pfb
+ptmr8t  <ec.enc <utmr8a.pfb
+ptmri8t <ec.enc <utmri8a.pfb
+
+ptmbo8t ".167 SlantFont" <ec.enc <utmb8a.pfb
+ptmro8t ".167 SlantFont" <ec.enc <utmr8a.pfb
+
+% palatino / urw
+
+uplb8t  <ec.enc <uplb8a.pfb
+uplbi8t <ec.enc <uplbi8a.pfb
+uplr8t  <ec.enc <uplr8a.pfb
+uplri8t <ec.enc <uplri8a.pfb
+
+uplbo8t ".167 SlantFont" <ec.enc <uplb8a.pfb
+uplro8t ".167 SlantFont" <ec.enc <uplr8a.pfb
+
+% palatino / adobe
+
+pplb8t  <ec.enc <uplb8a.pfb
+pplbi8t <ec.enc <uplbi8a.pfb
+pplr8t  <ec.enc <uplr8a.pfb
+pplri8t <ec.enc <uplri8a.pfb
+
+pplbo8t ".167 SlantFont" <ec.enc <uplb8a.pfb
+pplro8t ".167 SlantFont" <ec.enc <upplr8a.pfb
+
+% bookman / urw
+
+ubkd8t  <ec.enc <ubkd8a.pfb
+ubkdi8t <ec.enc <ubkdi8a.pfb
+ubkl8t  <ec.enc <ubkl8a.pfb
+ubkli8t <ec.enc <ubkli8a.pfb
+
+ubkdo8t ".167 SlantFont" <ec.enc <ubkd8a.pfb
+ubklo8t ".167 SlantFont" <ec.enc <ubkl8a.pfb
+
+% bookman / adobe
+
+pbkd8t  <ec.enc <ubkd8a.pfb
+pbkdi8t <ec.enc <ubkdi8a.pfb
+pbkl8t  <ec.enc <ubkl8a.pfb
+pbkli8t <ec.enc <ubkli8a.pfb
+
+pbkdo8t ".167 SlantFont" <ec.enc <ubkd8a.pfb
+pbklo8t ".167 SlantFont" <ec.enc <ubkl8a.pfb
+
+% chancery / urw
+
+uzcmi8t <ec.enc <uzcmi8a.pfb
+
+% chancery / adobe
+
+pzcmi8t <ec.enc <uzcmi8a.pfb
+
+% schoolbook / urw
+
+uncb8t  <ec.enc <uncb8a.pfb
+uncbi8t <ec.enc <uncbi8a.pfb
+uncr8t  <ec.enc <uncr8a.pfb
+uncri8t <ec.enc <uncri8a.pfb
+
+uncbo8t ".167 SlantFont" <ec.enc <uncb8a.pfb
+uncro8t ".167 SlantFont" <ec.enc <uncr8a.pfb
+
+% schoolbook / adobe
+
+pncb8t  <ec.enc <uncb8a.pfb
+pncbi8t <ec.enc <uncbi8a.pfb
+pncr8t  <ec.enc <uncr8a.pfb
+pncri8t <ec.enc <uncri8a.pfb
+
+pncbo8t ".167 SlantFont" <ec.enc <uncb8a.pfb
+pncro8t ".167 SlantFont" <ec.enc <uncr8a.pfb
+
+% utopia
+
+putb8t  <ec.enc <putb8a.pfb
+putbi8t <ec.enc <putbi8a.pfb
+putr8t  <ec.enc <putr8a.pfb
+putri8t <ec.enc <putri8a.pfb
+
+putbo8t ".167 SlantFont" <ec.enc <putb8a.pfb
+putro8t ".167 SlantFont" <ec.enc <putr8a.pfb
+
+% charter
+
+bchb8t  <ec.enc <bchb8a.pfb
+bchbi8t <ec.enc <bchbi8a.pfb
+bchbo8t <ec.enc <bchb8a.pfb
+bchr8t  <ec.enc <bchr8a.pfb
+bchri8t <ec.enc <bchri8a.pfb
+
+bchro8t ".167 SlantFont" <ec.enc <bchr8a.pfb

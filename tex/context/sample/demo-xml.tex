@@ -1,0 +1,53 @@
+% interface=en
+
+\defineXMLargument
+  [title] [label=]
+  {\title[\XMLop{label}]}
+
+\defineXMLenvironment
+  [itemize] [packed=]
+  {\doifelseXMLop{packed}{yes}
+     {\startitemize[packed]}
+     {\startitemize}}
+  {\stopitemize}
+
+\defineXMLenvironment
+  [item]
+  {\item}
+  {\par}
+
+\defineXMLenvironment
+  [p]
+  {\ignorespaces}
+  {\par}
+
+\starttext
+
+\startXMLdata
+<title label="example">Just an Example</title>
+
+<p>There are three items:</p>
+
+<itemize packed="yes">
+  <item>Number One</item>
+  <item>Number Two</item>
+  <item>Number Three</item>
+</itemize>
+
+<p>And tree more</p>
+
+<itemize>
+  <item>First Line</item>
+  <item>Second Line</item>
+  <item>Third Line</item>
+</itemize>
+\stopXMLdata
+
+Instead of putting the data in here you can put it in a file, say
+\type {sample.xml} and load that file using:
+
+\starttyping
+\processXMLfilegrouped{sample.xml}
+\stoptyping
+
+\stoptext

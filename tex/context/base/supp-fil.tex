@@ -182,11 +182,13 @@
 
 \catcode`\/=\@@active
 \catcode`\:=\@@active
+\catcode`\~=\@@active
 
 \gdef\sanitizefilename#1\to#2%
   {\bgroup
    \edef/{\string/}%
    \edef:{\string:}%
+   \edef~{\string~}%
    \expanded{\xdef\noexpand\sanitizedfilename{#1}}%
    \egroup
    \let#2\sanitizedfilename}
@@ -288,7 +290,12 @@
 %    \fi
 %    \next}
 
-\newconditional\trackfilenames \settrue\trackfilenames
+\newconditional\trackfilenames
+
+% We need to postpone loading, else we got frozen type-* files and so when
+% a format is generated on a source path.
+
+\appendtoks \settrue\trackfilenames \to \everyjob
 
 \let\trackedfilename\empty
 
@@ -296,7 +303,7 @@
   {\sanitizefilename#2\to\readfilename
    \let\trackedfilename\readfilename
    \ifconditional\trackfilenames
-     \ifundefined{fn..\trackedfilename}\donetrue\else\donefalse\fi
+     \doifundefinedelse{fn..\trackedfilename}\donetrue\donefalse
    \else
      \donetrue
    \fi

@@ -165,6 +165,7 @@ my $Verbose          = 0;
 my $PdfCopy          = 0;
 my $LogFile          = "";
 my $MpyForce         = 0;
+my $InpPath          = "";
 my $RunPath          = "";
 my $Arguments        = "";
 my $Pretty           = 0;
@@ -225,7 +226,7 @@ my $MakeMpy = '';
     "pages=s"        => \$Pages,
     "paper=s"        => \$PaperFormat,
     "passon=s"       => \$PassOn,
-    "path=s"         => \$RunPath,
+    "path=s"         => \$InpPath,
     "pdf"            => \$ProducePdfT,
     "pdm"            => \$ProducePdfM,
     "pdx"            => \$ProducePdfX,
@@ -261,6 +262,7 @@ my $MakeMpy = '';
     "setfile=s"      => \$SetFile,
     "purge"          => \$Purge,
     #### yet undocumented #################
+    "runpath=s"      => \$RunPath,
     "random"         => \$Random,
     "makempy=s"      => \$MakeMpy,
     "allpatterns"    => \$AllPatterns,
@@ -325,7 +327,7 @@ if ( ( $LogFile ne '' ) && ( $LogFile =~ /\w+\.log$/io ) ) {
     *STDERR = *LOGFILE;
 }
 
-my $Program = " TeXExec 4.0 - ConTeXt / PRAGMA ADE 1997-2004";
+my $Program = " TeXExec 4.3 - ConTeXt / PRAGMA ADE 1997-2004";
 
 print "\n$Program\n\n";
 
@@ -397,10 +399,16 @@ else { @paths = split( /\:/, $ENV{PATH} ) }
 my $kpsewhich = '';
 
 sub found_ini_file {
-    my $suffix = shift;
-    my $IniPath = `$kpsewhich --format="other text files" -progname=context texexec.$suffix`;
-    chomp($IniPath);
-    return $IniPath;
+    my $suffix = shift ;
+    print "     locating ini file : kpsewhiching texexec.$suffix on scripts\n" if $Verbose ;
+    my $IniPath = `$kpsewhich --format="scripts" -progname=context texexec.$suffix` ;
+    chomp($IniPath) ;
+    if ($IniPath eq '') {
+        print "     locating ini file : kpsewhiching texexec.$suffix elsewhere\n" if $Verbose ;
+        $IniPath = `$kpsewhich --format="other text files" -progname=context texexec.$suffix` ;
+        chomp($IniPath) ;
+    }
+    return $IniPath ;
 }
 
 if ( $IniPath eq '' ) {
@@ -410,7 +418,7 @@ if ( $IniPath eq '' ) {
             $kpsewhich = $p;
             # FP: catch spurious error messages here if there $p has
             # spaces and $own_quote is not set
-	    $kpsewhich = ($kpsewhich =~ m/^[^\"].* / ? "\"$kpsewhich\"" : "$kpsewhich") ;
+            $kpsewhich = ($kpsewhich =~ m/^[^\"].* / ? "\"$kpsewhich\"" : "$kpsewhich") ;
             $IniPath   = found_ini_file("ini");
             unless ( -e $IniPath ) { $IniPath = found_ini_file("rme") }
             last;
@@ -423,8 +431,7 @@ if ( $IniPath eq '' ) {
             print "     locating ini file : not found by kpsewhich\n";
         } else {
             if ( $IniPath =~ /rme/oi ) {
-                print
-"     locating ini file : not found by kpsewhich, using '.rme' file\n";
+                print "     locating ini file : not found by kpsewhich, using '.rme' file\n";
             } else {
                 print "     locating ini file : found by kpsewhich\n";
             }
@@ -992,10 +999,10 @@ sub MakeOptionFile {
     if ( $ModeFile ne '' ) { print OPT "\\readlocfile{$ModeFile}{}{}" }
     if ( $Result   ne '' ) { print OPT "\\setupsystem[file=$Result]\n" }
     elsif ($Suffix) { print OPT "\\setupsystem[file=$JobName$Suffix]\n" }
-    if ( $RunPath ne "" ) {
-        $RunPath =~ s/\\/\//go;
-        $RunPath =~ s/\/$//go;
-        print OPT "\\usepath[$RunPath]\n";
+    if ( $InpPath ne "" ) {
+        $InpPath =~ s/\\/\//go;
+        $InpPath =~ s/\/$//go;
+        print OPT "\\usepath[$InpPath]\n";
     }
     $MainLanguage = lc $MainLanguage;
     unless ( $MainLanguage eq "standard" ) {
@@ -1302,6 +1309,25 @@ sub RunTeX {
     } else {
         $Problems = system("$cmd");
     }
+    # generate formats if needed and retry
+    if ($Problems) {
+        my $efmt = `$kpsewhich cont-en.efmt` ;
+        chomp $efmt ;
+        if ($efmt eq "") {
+            # generate formats
+            print "\n";
+            print "      emergency action : generate all formats\n";
+            system("texexec --make --alone --all") ;
+            # try again
+            print "\n";
+            print "      emergency action : retry processing file\n";
+            if ($EnterBatchMode) {
+                $Problems = system("$cmd");
+            } else {
+                $Problems = system("$cmd");
+            }
+        }
+    }
     my $StopTime = time - $StartTime;
     print "\n           return code : $Problems";
     print "\n              run time : $StopTime seconds\n";
@@ -1484,7 +1510,7 @@ sub isXMLfile {
 sub RunConTeXtFile {
     my ( $JobName, $JobSuffix ) = @_;
     $JobName =~ s/\\/\//goi;
-    $RunPath =~ s/\\/\//goi;
+    $InpPath =~ s/\\/\//goi;
     my $OriSuffix = $JobSuffix;
     if (($dosish) && ($PdfClose)) {
         my $ok = system("pdfclose --file $JobName.pdf") if -e "$JobName.pdf" ;
@@ -1498,9 +1524,9 @@ sub RunConTeXtFile {
     }
     # to be considered :
     # { $DummyFile = isXMLfile("$JobName.$JobSuffix") }
-    elsif ( $RunPath ne "" ) {
-        my @RunPaths = split( /,/, $RunPath );
-        foreach my $rp (@RunPaths) {
+    elsif ( $InpPath ne "" ) {
+        my @InpPaths = split( /,/, $InpPath );
+        foreach my $rp (@InpPaths) {
             if ( -e "$rp/$JobName.$JobSuffix" ) { $DummyFile = 1; last }
         }
     }
@@ -1540,7 +1566,7 @@ sub RunConTeXtFile {
         if ( $Format eq '' ) { $Format = "cont-$ConTeXtInterface" }
         print "            executable : $TeXProgramPath$TeXExecutable\n";
         print "                format : $TeXFormatPath$Format\n";
-        if ($RunPath) { print "           source path : $RunPath\n" }
+        if ($InpPath) { print "           source path : $InpPath\n" }
 
         if ($DummyFile) {
             print "            dummy file : $JobName.$JobSuffix\n";
@@ -1732,8 +1758,7 @@ sub RunFigures {
         print FIG "  [option=max]\n";
     }
     print FIG "\\starttext\n";
-    print FIG
-"\\showexternalfigures[alternative=$TypesetFigures,offset=$PaperOffset]\n";
+    print FIG "\\showexternalfigures[alternative=$TypesetFigures,offset=$PaperOffset]\n";
     print FIG "\\stoptext\n";
     close(FIG);
     $ConTeXtInterface = "en";
@@ -1874,8 +1899,7 @@ sub RunSelect {
 }
 
 sub RunCopy {
-    my $FileName = shift;
-    print "               pdffile : $FileName\n";
+    my @Files = @_ ;
     if ( $PageScale == 1000 ) {
         print "                offset : $PaperOffset\n";
     } else {
@@ -1884,34 +1908,36 @@ sub RunCopy {
     }
     open( COP, ">$CopyFile.tex" );
     print COP "% format=english\n";
-    print COP "\\getfiguredimensions\n";
-    print COP "  [$FileName][page=1]\n";
-    print COP "\\definepapersize\n";
-    print COP "  [copy]\n";
-    print COP "  [width=\\naturalfigurewidth,\n";
-    print COP "   height=\\naturalfigureheight]\n";
-    print COP "\\setuppapersize\n";
-    print COP "  [copy][copy]\n";
-    print COP "\\setuplayout\n";
-    print COP "  [location=middle,\n";
-    print COP "   topspace=0pt,\n";
-    print COP "   backspace=0pt,\n";
-    print COP "   header=0pt,\n";
-    print COP "   footer=0pt,\n";
-    print COP "   width=middle,\n";
-    print COP "   height=middle]\n";
-    print COP "\\setupexternalfigures\n";
-    print COP "  [directory=]\n";
     print COP "\\starttext\n";
-    print COP "\\copypages\n";
-    print COP "  [$FileName]\n";
-    print COP "  [scale=$PageScale,\n";
-
-    if ($Markings) {
-        print COP "   marking=on,\n";
-        print "           cutmarkings : on\n";
+    for my $FileName (@Files) {
+        print "               pdffile : $FileName\n";
+        print COP "\\getfiguredimensions\n";
+        print COP "  [$FileName][page=1]\n";
+        print COP "\\definepapersize\n";
+        print COP "  [copy]\n";
+        print COP "  [width=\\naturalfigurewidth,\n";
+        print COP "   height=\\naturalfigureheight]\n";
+        print COP "\\setuppapersize\n";
+        print COP "  [copy][copy]\n";
+        print COP "\\setuplayout\n";
+        print COP "  [location=middle,\n";
+        print COP "   topspace=0pt,\n";
+        print COP "   backspace=0pt,\n";
+        print COP "   header=0pt,\n";
+        print COP "   footer=0pt,\n";
+        print COP "   width=middle,\n";
+        print COP "   height=middle]\n";
+        print COP "\\setupexternalfigures\n";
+        print COP "  [directory=]\n";
+        print COP "\\copypages\n";
+        print COP "  [$FileName]\n";
+        print COP "  [scale=$PageScale,\n";
+        if ($Markings) {
+            print COP "   marking=on,\n";
+            print "           cutmarkings : on\n";
+        }
+        print COP "   offset=$PaperOffset]\n";
     }
-    print COP "   offset=$PaperOffset]\n";
     print COP "\\stoptext\n";
     close(COP);
     $ConTeXtInterface = "en";
@@ -2005,7 +2031,7 @@ sub RunOneFormat {
     }
     if ($Problems) {
         $Problems = 0;
-        if ( $TeXExecutable =~ /etex|eetex|pdfetex|pdfeetex|eomega/io ) {
+        if ( $TeXExecutable =~ /etex|eetex|pdfetex|pdfeetex|pdfxtex|xpdfetex|eomega|aleph/io ) {
             $TeXPrefix = "*";
         }
         my $CurrentPath = cwd();
@@ -2079,6 +2105,23 @@ sub RunMpFormat {
 }
 
 sub RunFiles {
+my $currentpath = cwd() ;
+# test if current path is writable
+if (! -w $currentpath) {
+    print " current path readonly : $currentpath\n";
+    if ($ENV["TEMP"] && -e $ENV["TEMP"]) {
+        $RunPath = $ENV["TEMP"] ;
+    } elsif ($ENV["TMP"] && -e $ENV["TMP"]) {
+        $RunPath = $ENV["TMP"] ;
+    }
+}
+# test if we need to change paths
+if (($RunPath ne "") && (! -w $RunPath)) {
+    print "      changing to path : $RunPath\n";
+    $InpPath = $currentpath ;
+    chdir ($RunPath) ;
+}
+# start working
     if ($PdfArrange) {
         my @arrangedfiles = ();
         foreach my $JobName (@ARGV) {
@@ -2096,9 +2139,12 @@ sub RunFiles {
                 if ( -f "$JobName.pdf" ) { $JobName .= ".pdf" }
                 else { $JobName .= ".PDF" }
             }
-            if    ($PdfSelect) { RunSelect($JobName) }
-            elsif ($PdfCopy)   { RunCopy($JobName) }
-            else {
+            if    ($PdfSelect) {
+                RunSelect($JobName) ;
+            } elsif ($PdfCopy) {
+                # RunCopy($JobName) ;
+                RunCopy(@ARGV) ;
+            } else {
                 # RunCombine ($JobName) ;
                 RunCombine(@ARGV);
             }

@@ -1,0 +1,23 @@
+% interface=en
+
+\setuppapersize
+  [S6][S6]
+
+\setuplayout
+  [width=middle,
+   height=middle]
+
+\setuphead
+  [chapter]
+  [header=high,
+   style=\bfc,
+   alternative=middle]
+
+\starttext
+
+\title{Peter D. Ward}   \processfile{ward}
+\title{Hermann Zapf}    \processfile{zapf}
+\title{Bill Bryson}     \processfile{bryson}
+\title{Edward R. Tufte} \processfile{tufte}
+
+\stoptext

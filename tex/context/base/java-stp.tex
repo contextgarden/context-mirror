@@ -1,0 +1,127 @@
+%D \module
+%D   [       file=java-stp,
+%D        version=2004.03.15,
+%D          title=\CONTEXT\ JavaScript Macros,
+%D       subtitle=Stepping,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\startJSpreamble Steps used now
+
+    % we define ocglist global, otherwise we quickly run into a memory hog (even
+    % out of memory in a 512 Meg machine)
+
+    % we cannot use doc_visited[this.pageNum] instead of doc_currentstep because
+    % of some funny side effect (i.e. dup or so)
+
+    var doc_ocglist     = this.getOCGs() ;
+    var doc_stepname    = "step" ;
+    var doc_currentstep =  0 ;
+    var doc_maxstep     = 50 ;
+    var doc_visited     = new Array() ;
+    var doc_busy        = new Array() ;
+
+    % for some reason, this function is not seen in time (funny initialization
+    % order again?) ...
+
+    function SetupStepper ( layername, laststep ) {
+        doc_stepname = layername ;
+        doc_maxstep  = laststep ;
+        for (var i=0; i<=this.numPages; i++) {
+            doc_visited[i] = 0 ;
+            doc_busy[i] = 0 ;
+        }
+    }
+
+    % so, we do it the ugly way
+
+    for (var i=0; i<=this.numPages; i++) {
+        doc_visited[i] = 0 ;
+        doc_busy[i] = 0 ;
+    }
+
+    function GetOCG ( name ) {
+        for (var i=0; i < doc_ocglist.length; i++) {
+            if (doc_ocglist[i].name == name) {
+                return doc_ocglist[i] ;
+            }
+        }
+        return null ;
+    }
+
+    function CheckBusy ( ) {
+         var ocg = GetOCG("step:busy") ;
+         if (ocg != null) {
+             if (doc_visited[this.pageNum]==0) {
+                 ocg.state = true ;
+             } else {
+                 if (doc_visited[this.pageNum]<doc_busy[this.pageNum]) {
+                     ocg.state = true ;
+                 } else {
+                     ocg.state = false ;
+                 }
+             }
+         }
+    }
+
+    function SetStepper ( maxstep, state ) {
+        for (var i=1; i<=maxstep; i++) {
+            try {
+                var ocg = GetOCG(doc_stepname + ':' + String(i)) ;
+                if (ocg != null) {
+                    ocg.state = state ;
+                }
+            } catch (e) {
+                return ;
+            }
+        }
+    }
+
+    function CheckStepper ( maxsteps ) {
+        SetStepper(doc_visited[this.pageNum], true) ;
+        doc_busy[this.pageNum] = Number(maxsteps) ;
+        doc_currentstep = doc_visited[this.pageNum] ;
+        CheckBusy() ;
+    }
+
+    function ResetStepper ( ) {
+        SetStepper(doc_maxstep, false) ;
+        doc_currentstep = 0 ;
+    }
+
+    function InvokeStepper ( ) {
+        try {
+%             console.println("INVOKE "+doc_currentstep+" "+doc_busy[this.pageNum]) ;
+            if (doc_currentstep<doc_busy[this.pageNum]) {
+                doc_currentstep += 1 ;
+                doc_visited[this.pageNum] = doc_currentstep ;
+                var ocg = GetOCG(doc_stepname + ':' + String(doc_currentstep)) ;
+                if (ocg != null) {
+                    ocg.state = true ;
+                }
+            } else {
+                if (this.pageNum+1==this.numPages) {
+                    this.pageNum  = 0 ;
+                } else {
+                    this.pageNum += 1 ;
+                }
+            }
+            CheckBusy() ;
+        } catch (e) {
+            return ;
+        }
+    }
+
+\stopJSpreamble
+
+% \definereference [SetupStepper]  [JS(SetupStepper{step,50})]
+% \definereference [ResetStepper]  [JS(ResetStepper)]
+% \definereference [CheckStepper]  [JS(CheckStepper{\StepCounter})]
+% \definereference [InvokeStepper] [JS(InvokeStepper)]
+
+\endinput

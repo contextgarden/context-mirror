@@ -701,50 +701,103 @@
 \def\dosetlocationboxnone#1[#2]#3[#4]%
   {\global\skippedmenuitemtrue}
 
-\def\setlocationboxyes#1%
-  {\locationclicktrue
-   \ifx\currentouterreference\empty
-     \ifrealreferencepage\!!doneatrue\else\!!doneafalse\fi
-   \else
-     \!!doneafalse
-   \fi
-   \if!!donea
-     \ifcase\csname\??am\??am\csname#1\c!zelfdepagina\endcsname\endcsname\relax
-       \copycsname#1\c!kleur\endcsname\csname#1\c!contrastkleur\endcsname
-       \@EAEAEA\dosetlocationboxyes
-     \or
-       \@EAEAEA\dosetlocationboxempty
-     \or
-       \@EAEAEA\dosetlocationboxno
-     \or
-       \@EAEAEA\dosetlocationboxnone
-     \fi
-   \else
-     \@EA\dosetlocationboxcontent
-   \fi{#1}}
+% the following version looks ok but is not, since it is unaware of
+% some reference properties
+%
+% \def\setlocationboxyes#1%
+%   {\locationclicktrue
+%    \ifx\currentouterreference\empty
+%      \ifrealreferencepage\!!doneatrue\else\!!doneafalse\fi
+%    \else
+%      \!!doneafalse
+%    \fi
+%    \if!!donea
+%      \ifcase\csname\??am\??am\csname#1\c!zelfdepagina\endcsname\endcsname\relax
+%        \copycsname#1\c!kleur\endcsname\csname#1\c!contrastkleur\endcsname
+%        \@EAEAEA\dosetlocationboxyes
+%      \or
+%        \@EAEAEA\dosetlocationboxempty
+%      \or
+%        \@EAEAEA\dosetlocationboxno
+%      \or
+%        \@EAEAEA\dosetlocationboxnone
+%      \fi
+%    \else
+%      \@EA\dosetlocationboxcontent
+%    \fi{#1}}
+%
+% \def\setlocationboxnop#1%
+%   {\locationclickfalse
+%    \ifcase\csname\??am\??am\csname#1\c!onbekendeverwijzing\endcsname\endcsname\relax
+%      \@EA\dosetlocationboxyes
+%    \or
+%      \@EA\dosetlocationboxempty
+%    \or
+%      \@EA\dosetlocationboxno
+%    \or
+%      \@EA\dosetlocationboxnone
+%    \fi{#1}}
+%
+% \def\setlocationbox#1[#2]#3[#4]%
+%   {\bgroup % really needed !
+%    \edef\permittedreferences{\csname#1\c!blokkade\endcsname}%
+%    \doifreferencepermittedelse{#4}
+%      {\setlocationboxyes{#1}[#2]{#3}[#4]}
+%      {\setlocationboxnop{#1}[#2]{#3}[#4]}%
+%    \egroup}
+%
+% \def\setlocationboxraw#1[#2]#3[#4]%
+%   {\localframed[#1][#2]{\dolocationattributes{#1}\c!letter\c!kleur{#3}}}
 
-\def\setlocationboxnop#1%
+\def\setlocationboxyes#1[#2]#3[#4]%
+  {\locationclicktrue
+   \setbox\locationbox\hbox
+     {\resetgoto % anders cyclische aanroep !
+      \global\skippedmenuitemfalse
+      \gotolocation
+        {#4}% % needed
+        {\ifrealreferencepage
+           \ifcase\csname\??am\??am\csname#1\c!zelfdepagina\endcsname\endcsname\relax
+             \copycsname#1\c!kleur\endcsname\csname#1\c!contrastkleur\endcsname
+             \localframed[#1][#2]{\dolocationattributes{#1}\c!letter\c!kleur{#3}}%
+           \or
+             \localframed[#1][\c!leeg=\v!ja,#2]{\dolocationattributes{#1}\c!letter\c!kleur{#3}}%
+           \or
+             \localframed[#1][\c!leeg=\v!ja,\c!kader=,\c!achtergrond=,#2]{\dolocationattributes{#1}\c!letter\c!kleur{#3}}%
+           \or
+             \global\skippedmenuitemtrue
+           \fi
+         \else
+           \localframed[#1][#2]{\dolocationattributes{#1}\c!letter\c!kleur{#3}}%
+         \fi}}%
+   \ifskippedmenuitem\else\box\locationbox\fi}
+
+\def\setlocationboxnop#1[#2]#3[#4]%
   {\locationclickfalse
-   \ifcase\csname\??am\??am\csname#1\c!onbekendeverwijzing\endcsname\endcsname\relax
-     \@EA\dosetlocationboxyes
-   \or
-     \@EA\dosetlocationboxempty
-   \or
-     \@EA\dosetlocationboxno
-   \or
-     \@EA\dosetlocationboxnone
-   \fi{#1}}
+   \setbox\locationbox\hbox
+     {\resetgoto % anders cyclische aanroep !
+      \global\skippedmenuitemfalse
+      \ifcase\csname\??am\??am\csname#1\c!onbekendeverwijzing\endcsname\endcsname\relax
+        \localframed[#1][#2]{\dolocationattributes{#1}\c!letter\c!kleur{#3}}%
+      \or
+        \localframed[#1][\c!leeg=\v!ja,#2]{\dolocationattributes{#1}\c!letter\c!kleur{#3}}%
+      \or
+        \localframed[#1][\c!leeg=\v!ja,\c!kader=,\c!achtergrond=,#2]{\dolocationattributes{#1}\c!letter\c!kleur{#3}}%
+      \or
+        \global\skippedmenuitemtrue
+      \fi}%
+   \ifskippedmenuitem\else\box\locationbox\fi}
+
+\def\setlocationboxraw#1[#2]#3[#4]%
+  {\localframed[#1][#2]{\dolocationattributes{#1}\c!letter\c!kleur{#3}}}
 
 \def\setlocationbox#1[#2]#3[#4]%
   {\bgroup % really needed !
    \edef\permittedreferences{\csname#1\c!blokkade\endcsname}%
-   \doifreferencepermittedelse{#4}
-     {\setlocationboxyes{#1}[#2]{#3}[#4]}
+   \doifreferencepermittedelse{#4}%
+     {\setlocationboxyes{#1}[#2]{#3}[#4]}%
      {\setlocationboxnop{#1}[#2]{#3}[#4]}%
    \egroup}
-
-\def\setlocationboxraw#1[#2]#3[#4]%
-  {\localframed[#1][#2]{\dolocationattributes{#1}\c!letter\c!kleur{#3}}}
 
 \def\dodosetlocationcommanditem#1#2#3[#4]#5\\%
   {\bgroup
@@ -1090,10 +1143,11 @@
    % inherit settings
    \doifnot{#1}{#2}
      {\copyparameters[\??am#1][\??am#2]
-        [\c!links,\c!midden,\c!rechts,\c!voor,\c!na,\c!tussen,
-         \c!breedte,\c!hoogte,\c!afstand,\c!offset,\c!kader,
-         \c!achtergrond,\c!achtergrondkleur,\c!achtergrondraster,
-         \c!letter,\c!kleur,\c!contrastkleur,\c!zelfdepagina,\c!onbekendeverwijzing,
+        [\c!links,\c!midden,\c!rechts,\c!voor,\c!na,\c!tussen,%
+         \c!breedte,\c!hoogte,\c!afstand,\c!offset,%
+         \c!kader,\c!kaderkleur,\c!lijndikte,%
+         \c!achtergrond,\c!achtergrondkleur,\c!achtergrondraster,%
+         \c!letter,\c!kleur,\c!contrastkleur,\c!zelfdepagina,\c!onbekendeverwijzing,%
          \c!linkeroffset,\c!rechteroffset,\c!bovenoffset,\c!onderoffset]}%
    % additional settings
    \getparameters[\??am#1][\c!plaats=#2,\c!blokkade=,#3]}

@@ -772,36 +772,65 @@
                     \global\divide#1 \!!ten\relax
                     \global\multiply#1 #2\relax]}
 
-\def\docalculatefigurescales#1#2#3#4%
-  {\dimen0=#1\relax                     % #1 = new 1-value
-   \dimen2=#2\relax                     % #2 = old 1-value
-   \divide\dimen2 \plusthousand
-   \divide\dimen0 \dimen2
-   \figxsca\dimen0                      %      x scale
-   \figysca\dimen0                      %      y scale
-   \dimen2=#4\relax                     % #4 = old 2-value
-   \divide\dimen2 \plusthousand
-   \multiply\dimen2 \dimen0
-   #3=\dimen2 }                         % #3 = new 2-value
+\beginTEX
 
-\def\docalculatefigurescale#1#2#3%
-  {\dimen0=#1\relax                     % #1 = new value
-   \dimen2=#2\relax                     % #2 = old value
-   \divide\dimen2 \plusthousand
-   \divide\dimen0 \dimen2
-   #3=\dimen0 }                         % #3 = schaal
+  \def\docalculatefigurescales#1#2#3#4%
+    {\dimen0=#1\relax                     % #1 = new 1-value
+     \dimen2=#2\relax                     % #2 = old 1-value
+     \divide\dimen2 \plusthousand
+     \divide\dimen0 \dimen2
+     \figxsca\dimen0                      %      x scale
+     \figysca\dimen0                      %      y scale
+     \dimen2=#4\relax                     % #4 = old 2-value
+     \divide\dimen2 \plusthousand
+     \multiply\dimen2 \dimen0
+     #3=\dimen2 }                         % #3 = new 2-value
 
-\def\doapplyfigurescale#1#2#3%
-  {\global#1=#2\relax
-   \ifcase0\@@efschaal\relax % beter: doifnum...
-     #3=\plusthousand
-   \else
-     #3=\@@efschaal
-   \fi\relax % important !
-   \ifnum#3=\plusthousand\else
-     \global\divide  #1 \plusthousand
-     \global\multiply#1 #3\relax
-   \fi}
+  \def\docalculatefigurescale#1#2#3%
+    {\dimen0=#1\relax                     % #1 = new value
+     \dimen2=#2\relax                     % #2 = old value
+     \divide\dimen2 \plusthousand
+     \divide\dimen0 \dimen2
+     #3=\dimen0 }                         % #3 = schaal
+
+  \def\doapplyfigurescale#1#2#3%
+    {\global#1=#2\relax
+     \ifcase0\@@efschaal\relax % beter: doifnum...
+       #3=\plusthousand
+     \else
+       #3=\@@efschaal
+     \fi\relax % important !
+     \ifnum#3=\plusthousand\else
+       \global\divide  #1 \plusthousand
+       \global\multiply#1 #3\relax
+     \fi}
+
+\endTEX
+
+% test extensively, more precise since one pass double precission
+
+\beginETEX \dimexpr
+
+  \def\docalculatefigurescales#1#2#3#4%
+    {\scratchdimen\dimexpr(#1/\dimexpr(#2/\plusthousand))%
+     \figxsca\scratchdimen
+     \figysca\figxsca
+     #3\dimexpr(\figxsca\dimexpr(#4/\plusthousand))}
+
+  \def\docalculatefigurescale#1#2#3%
+    {#3\dimexpr(#1/\dimexpr(#2/\plusthousand))}
+
+  \def\doapplyfigurescale#1#2#3%
+    {% #3=\ifnum0\number\@@efschaal=\zerocount\plusthousand\else\@@efschaal\fi
+     \ifcase0\@@efschaal\relax % @@efschaal kan empty zijn
+       #3=\plusthousand
+     \else
+       #3=\@@efschaal
+     \fi\relax % important !
+     \global#1\ifnum#3=\plusthousand#2\else\dimexpr(#3\dimexpr(#2/\plusthousand))\fi
+     \relax}
+
+\endETEX
 
 \newdimen\figurevsize % we cannot manipulate any global vsize !
 
@@ -2019,6 +2048,43 @@
 
 \setupexternalsoundtracks
   [\c!optie=]
+
+%D NEW: used in styledesign manual
+
+% \setbuffer[typeset-b]\endbuffer
+% \setbuffer[typeset-a]\endbuffer
+%
+% todo:
+%
+% \appendtoks \setbuffer[typeset-b]\endbuffer\to \everystarttext
+% \appendtoks \setbuffer[typeset-a]\endbuffer\to \everystarttext
+
+\def\typesetbuffer
+  {\dodoubleempty\dotypesetbuffer}
+
+\newcounter\noftypesetbuffers % all loaded at the end
+
+\defineexternalfigure
+  [typeset]
+  [\c!achtergrond=\v!kleur,
+   \c!achtergrondkleur=white]
+
+\def\dotypesetbuffer[#1][#2]% beware: this will mix up the mp graphics
+  {\bgroup
+   %\def\bufferprefix{\ifprotectbuffers\jobname-\fi typeset-}%
+   \def\TEXbufferfile##1{\bufferprefix##1.tex}%
+   \expanded{\setbuffer[typeset]%
+     \def\noexpand\bufferprefix{\ifprotectbuffers\jobname-\fi typeset-}}%
+     \starttext
+     \getbuffer[b,#1,a]%
+     \stoptext
+   \endbuffer
+   \doglobal\increment\noftypesetbuffers
+   % batch is needed
+   \executesystemcommand{texexec --batch --pdf --result=\bufferprefix typeset-\noftypesetbuffers\space \bufferprefix typeset.tex}%
+   %\externalfigure[\bufferprefix typeset-\noftypesetbuffers.pdf][\c!object=\v!nee,#2]%
+   \externalfigure[\bufferprefix typeset-\noftypesetbuffers.pdf][#2]%
+   \egroup}
 
 \appendtoks \setupexternalfigures[\c!optie=\v!leeg] \to \everyfastmode
 \appendtoks \runMPgraphicsfalse                     \to \everyfastmode

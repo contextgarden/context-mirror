@@ -25,6 +25,10 @@
 
 %D To Do:
 %D
+%D splitsen = ja | herhaal => als nofTH>1 then ja als herhaal
+
+%D To Do:
+%D
 %D \starttypen
 %D break over pagina
 %D kop herhalen
@@ -113,8 +117,6 @@
 % \def\settblspn#1#2{\setvalue     {\@@tblprefix#1:s}{#2}}
 % \def\doiftblspn #1{\doifelsevalue{\@@tblprefix#1:s}{1}}
 
-\newif\ifsqueezeTBLspan \squeezeTBLspantrue % spans one column cell over multi column par cells
-
 \def\settblspn     #1{\setvalue     {\@@tblprefix#1:s}{1}}
 \def\doifelsetblspn#1{\doifelsevalue{\@@tblprefix#1:s}{1}}
 
@@ -134,6 +136,7 @@
 \let\pushTBLparameters\relax
 \let\popTBLparameters \relax
 
+\newif\ifsqueezeTBLspan     \squeezeTBLspantrue % spans one column cell over multi column par cells
 \newif\ifautoTBLspread      \autoTBLspreadfalse
 \newif\ifautoTBLhsize       \autoTBLhsizetrue
 \newif\ifautoTBLrowspan     \autoTBLrowspantrue
@@ -1121,17 +1124,19 @@
 %      \notsplittblbox{#1}%
 %    \fi}
 
+\newbox\TABLEsplitbox
+
 \def\splittblboxa#1% spacing between rows gets lost in split
-  {\setbox\scratchbox\vbox{#1}%
+  {\setbox\TABLEsplitbox\vbox{#1}%
    \setbox8\vbox{\doifsomething\tbltbltussenwit{\blank[\tbltbltussenwit]}}%
    \ifmultipleTBLheads
      \setbox2\vbox{}%
      \setbox4\vbox{}%
      \dorecurse\noftblheadlines
-       {\setbox0\vsplit\scratchbox to \lineheight
+       {\setbox0\vsplit\TABLEsplitbox to \lineheight
         \setbox2\vbox{\unvcopy2\unvcopy0}}%
      \dorecurse\noftblnextlines
-       {\setbox0\vsplit\scratchbox to \lineheight
+       {\setbox0\vsplit\TABLEsplitbox to \lineheight
         \setbox4\vbox{\unvcopy4\unvcopy0}}%
      \ifcase\noftblheadlines\else
        \ifdim\pagegoal<\maxdimen
@@ -1151,7 +1156,7 @@
    \donefalse
    \!!doneafalse
    \doloop
-     {\setbox0\vsplit\scratchbox to \lineheight
+     {\setbox0\vsplit\TABLEsplitbox to \lineheight
       \if!!donea
         \ifdim\pagegoal<\maxdimen
           \setbox0\vbox{\unvbox0}%
@@ -1195,7 +1200,7 @@
              \fi}%
         \fi
       \egroup
-      \ifvoid\scratchbox \exitloop \else \donetrue \fi}}
+      \ifvoid\TABLEsplitbox \exitloop \else \donetrue \fi}}
 
 % \def\splittblboxb#1%
 %   {\setbox\scratchbox\vbox{#1}%
@@ -1252,19 +1257,19 @@
 \let\extratblsplitheight\zeropoint % additional space taken by before/afterTABLEsplitbox
 
 \def\splittblboxb#1%
-  {\setbox\scratchbox\vbox{#1}%
+  {\setbox\TABLEsplitbox\vbox{#1}%
    \setbox8\vbox{\doifsomething\tbltbltussenwit{\blank[\tbltbltussenwit]}}%
    \ifmultipleTBLheads
      \setbox2\vbox{}%
      \setbox4\vbox{}%
      \dorecurse\noftblheadlines
-       {\setbox0\vsplit\scratchbox to \lineheight
+       {\setbox0\vsplit\TABLEsplitbox to \lineheight
         \setbox2\vbox{\unvcopy2\unvcopy0}}%
      \dorecurse\noftblnextlines
-       {\setbox0\vsplit\scratchbox to \lineheight
+       {\setbox0\vsplit\TABLEsplitbox to \lineheight
         \setbox4\vbox{\unvcopy4\unvcopy0}}%
    \fi
-   \testpage[2]% quite save since a row is > 1 lineheight and we don't want on-liners
+   \testpage[2]% quite save since a row is > 1 lineheight and we don't want one-liners
    \!!doneafalse
    \doloop
      {\ifdim\pagegoal<\maxdimen
@@ -1291,14 +1296,14 @@
              \doifsomething\tbltbltussenwit{\blank[\tbltbltussenwit]}%
            \fi
          \fi
-         \setbox0\vsplit\scratchbox to\scratchdimen
+         \setbox0\vsplit\TABLEsplitbox to\scratchdimen
          \unvbox0}%
       \if!!donea\else\ifcase\noftblnextlines\else
         \setbox2\box4
       \fi\fi
       \!!doneatrue
       \postprocessTABLEsplitbox\finaltblbox
-      \ifvoid\scratchbox
+      \ifvoid\TABLEsplitbox
         \beforeTABLEsplitbox
         \box\finaltblbox
         \afterTABLEsplitbox

@@ -368,43 +368,92 @@
 
 \def\dohandlelistnumber#1{\separatednumber{#1}}
 
-% new
+% \let\currentlistsymbol\empty
+%
+% the big original one:
+%
+% \def\listsymbol[#1]#2%
+%   {{\dosetlistsymbol{#1}{#2}\currentlistsymbol}}
+%
+% \def\dosetlistsymbol#1#2% kan sneller, default case afvangen
+%   {\processaction
+%      [\getvalue{\??li#1\c!symbool}]
+%      [    \v!geen=>\def\currentlistsymbol%
+%                      {\doassigndimen{\dimen0}{\getvalue{\??li#1\c!breedte}}{1.5em}%
+%                       \hbox to \dimen0{}},
+%                 1=>\def\currentlistsymbol%
+%                      {\strut$\bullet$},
+%                 2=>\def\currentlistsymbol%
+%                      {\vrule\!!width1em\!!height1ex\!!depth\zeropoint},
+%                 3=>\def\currentlistsymbol% very slow
+%                      {{\doassigndimen{\dimen0}{\getvalue{\??li#1\c!breedte}}{1.5em}%
+%                        \doassigndimen{\dimen2}{\getvalue{\??li#1\c!hoogte}}{1ex}%
+%                        \doassigndimen{\dimen4}{\getvalue{\??li#1\c!diepte}}{0pt}%
+%                        \vrule\!!width\dimen0\!!height\dimen2\!!depth\dimen4}},
+%       \s!unknown=>\def\currentlistsymbol{\getvalue{\??li#1\c!symbool}},
+%       \s!default=>\doifelsevalue{\??li#1\c!prefix}\v!nee % ook nog eerste
+%                     {\edef\splitlistsymbol{\removefirstprefix{#2}}}
+%                     {\doifelsevalue{\??li#1\c!prefix}\v!geen
+%                        {\edef\splitlistsymbol{\removeallprefixes{#2}}}%
+%                        {\def\splitlistsymbol{#2}}}% geen \edef ivm Å enz
+%                   \def\currentlistsymbol% kan iets efficienter met \ifdone
+%                     {\doifvalue{\??li#1\c!label}\v!ja{\leftlabeltext{#1}}%
+%                      \strut
+%                      \def\numberseparator{\getvalue{\??li#1\c!scheider}}%
+%                      \@EA\dohandlelistnumber\@EA{\splitlistsymbol}%
+%                      \getvalue{\??li#1\c!afsluiter}%
+%                      \doifvalue{\??li#1\c!label}\v!ja{\rightlabeltext{#1}}}]}
+%
+% This may be fragile ! test for a long time ; it is a
+% prelude to an definable symbol handler.
 
 \let\currentlistsymbol\empty
 
 \def\listsymbol[#1]#2%
   {{\dosetlistsymbol{#1}{#2}\currentlistsymbol}}
 
-%
+\def\dosetlistsymbol#1% #2%
+  {\executeifdefined
+     {listsymbol@\getvalue{\??li#1\c!symbool}}%
+     \listsymbol@default
+     {#1}} % {#2}
 
-\def\dosetlistsymbol#1#2% kan sneller, default case afvangen
-  {\processaction
-     [\getvalue{\??li#1\c!symbool}]
-     [    \v!geen=>\def\currentlistsymbol%
-                     {\doassigndimen{\dimen0}{\getvalue{\??li#1\c!breedte}}{1.5em}%
-                      \hbox to \dimen0{}},
-                1=>\def\currentlistsymbol%
-                     {\strut$\bullet$},
-                2=>\def\currentlistsymbol%
-                     {\vrule\!!width1em\!!height1ex\!!depth\zeropoint},
-                3=>\def\currentlistsymbol% very slow
-                     {{\doassigndimen{\dimen0}{\getvalue{\??li#1\c!breedte}}{1.5em}%
-                       \doassigndimen{\dimen2}{\getvalue{\??li#1\c!hoogte}}{1ex}%
-                       \doassigndimen{\dimen4}{\getvalue{\??li#1\c!diepte}}{0pt}%
-                       \vrule\!!width\dimen0\!!height\dimen2\!!depth\dimen4}},
-      \s!unknown=>\def\currentlistsymbol{\getvalue{\??li#1\c!symbool}},
-      \s!default=>\doifelsevalue{\??li#1\c!prefix}\v!nee % ook nog eerste
-                    {\edef\splitlistsymbol{\removefirstprefix{#2}}}
-                    {\doifelsevalue{\??li#1\c!prefix}\v!geen
-                       {\edef\splitlistsymbol{\removeallprefixes{#2}}}%
-                       {\def\splitlistsymbol{#2}}}% geen \edef ivm Å enz
-                  \def\currentlistsymbol% kan iets efficienter met \ifdone
-                    {\doifvalue{\??li#1\c!label}\v!ja{\leftlabeltext{#1}}%
-                     \strut
-                     \def\numberseparator{\getvalue{\??li#1\c!scheider}}%
-                     \@EA\dohandlelistnumber\@EA{\splitlistsymbol}%
-                     \getvalue{\??li#1\c!afsluiter}%
-                     \doifvalue{\??li#1\c!label}\v!ja{\rightlabeltext{#1}}}]}
+\def\listsymbol@none#1#2%
+  {\def\currentlistsymbol%
+     {\doassigndimen{\dimen0}{\getvalue{\??li#1\c!breedte}}{1.5em}%
+      \hbox to \dimen0{}}}
+
+\def\listsymbol@one#1#2%
+  {\def\currentlistsymbol{\strut$\bullet$}}
+
+\def\listsymbol@two#1#2%
+  {\def\currentlistsymbol{\vrule\!!width1em\!!height1ex\!!depth\zeropoint}}
+
+\def\listsymbol@three#1#2%
+  {\def\currentlistsymbol % very slow
+     {{\doassigndimen{\dimen0}{\getvalue{\??li#1\c!breedte}}{1.5em}%
+       \doassigndimen{\dimen2}{\getvalue{\??li#1\c!hoogte}}{1ex}%
+       \doassigndimen{\dimen4}{\getvalue{\??li#1\c!diepte}}{0pt}%
+       \vrule\!!width\dimen0\!!height\dimen2\!!depth\dimen4}}}
+
+\def\listsymbol@default#1#2%
+  {\doifelsevalue{\??li#1\c!prefix}\v!nee % ook nog eerste
+     {\edef\splitlistsymbol{\removefirstprefix{#2}}}
+     {\doifelsevalue{\??li#1\c!prefix}\v!geen
+        {\edef\splitlistsymbol{\removeallprefixes{#2}}}%
+        {\def\splitlistsymbol{#2}}}% geen \edef ivm Å enz
+   \def\currentlistsymbol% kan iets efficienter met \ifdone
+     {\doifvalue{\??li#1\c!label}\v!ja{\leftlabeltext{#1}}%
+      \strut
+      \def\numberseparator{\getvalue{\??li#1\c!scheider}}%
+      \@EA\dohandlelistnumber\@EA{\splitlistsymbol}%
+      \getvalue{\??li#1\c!afsluiter}%
+      \doifvalue{\??li#1\c!label}\v!ja{\rightlabeltext{#1}}}}
+
+\def\listsymbol@unknown#1#2%
+  {\def\currentlistsymbol{\getvalue{\??li#1\c!symbool}}}
+
+% so far for list symbols
 
 \def\@@dodolijstelement{dodolijstelement}
 

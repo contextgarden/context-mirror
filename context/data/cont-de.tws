@@ -706,11 +706,11 @@ startsetup
 com:stelleumrahmtein:
 typ:vars/:
 var:hoehe:passend,breit,*Dimension::
-var:breite:passend,breit,fest,*Dimension::
+var:breite:passend,breit,fest,lokal,*Dimension::
 var:offset:kein,overlay,default,*Dimension::
 var:platz:tief,tiefe,haengend::
 var:option:kein,leer::
-var:strut:ja,nein::
+var:strut:ja,nein,global,lokal::
 var:ausrichtung:nein,links,rechts,mittig,normal,hoch,tief,hoti::
 var:unten:*Befehl::
 var:oben:*Befehl::

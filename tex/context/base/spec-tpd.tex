@@ -74,6 +74,11 @@
   \writestatus{\m!systems}{please update your pdfTeX binaries}
 \fi
 
+\ifnum\pdftexversion>19
+  \pdfhorigin=1 true in
+  \pdfvorigin=1 true in
+\fi
+
 %D We default to 300 dots per inch image resolution.
 
 \ifx\pdfimageresolution\undefined
@@ -171,6 +176,13 @@
 \let\PDFcode\pdfliteral
 
 %D \macros
+%D   {everyPDFximage}
+%D
+%D This token register is flushed before an ximage is loaded.
+
+\newevery \everyPDFximage \relax
+
+%D \macros
 %D   {dosetuppaper}
 %D
 %D If we don't set the paper size, \PDFTEX\ will certainly do
@@ -179,6 +191,20 @@
 \definespecial\dosetuppaper#1#2#3%
   {\global\pdfpagewidth #2\relax
    \global\pdfpageheight#3\relax}
+
+%D \macros
+%D   {doloadmapfile,doloadmapline,doresetmapfilelist}
+
+\ifx\pdfmapfile\undefined \let\pdfmapfile\gobbletwoarguments \fi
+\ifx\pdfmapline\undefined \let\pdfmapline\gobbletwoarguments \fi
+
+\definespecial\doresetmapfilelist{\pdfmapfile{original-empty.map}}
+\definespecial\doloadmapfile #1#2{\pdfmapfile{#1#2}}
+\definespecial\doloadmapline #1#2{\pdfmapline{#1#2}}
+
+%D nasty but needed
+
+\appendtoksonce \loadallfontmapfiles \to \everyPDFximage
 
 %D \macros
 %D   {doinsertfile,dogetnofinsertpages}
@@ -282,6 +308,7 @@
 
 \def\handlepdfimage#1#2#3#4#5#6#7#8#9%
   {\bgroup
+   \the\everyPDFximage
    \doifvalidpdfimagefileelse{#1}
      {\checkpdfimagepagenumber{#9}%
       \immediate\pdfximage
@@ -365,6 +392,7 @@
         \fi\fi}
        {\donefalse}%
      \ifdone
+       \the\everyPDFximage
        \checkpdfimagepagenumber{#3}%
        \checkpdfimageattributes
        \global\setbox\foundexternalfigure\vbox
@@ -1127,11 +1155,19 @@
 % \def\doPDFgetobjectpage         #1#2#3{..}
 % \def\doPDFgetobjectpagereference#1#2#3{..}
 
-\def\doPDFgetpagereference % number macro
-  {\installprogram{texutil --filter \jobname}%
-   \gdef\doPDFgetpagereference##1% ##2
-     {\doPDFgetobjectreference{PDFP}{\number##1}}% {##2}
-   \doPDFgetpagereference}
+\ifx\pdfpageref\undefined
+
+  \def\doPDFgetpagereference % number macro
+    {\installprogram{texutil --filter \jobname}%
+     \gdef\doPDFgetpagereference##1{\doPDFgetobjectreference{PDFP}{\number##1}}% {##2}
+     \doPDFgetpagereference}
+
+\else
+
+  \def\doPDFgetpagereference#1#2% number macro
+    {\edef#2{\pdfpageref#1\space\space0 R}}
+
+\fi
 
 %D \macros
 %D   {initializePDFnegative}

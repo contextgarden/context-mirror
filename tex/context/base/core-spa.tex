@@ -533,22 +533,40 @@
 \unexpanded\def\blanko % the \relax is definitely needed due to the many \if's
   {\relax\complexorsimple\doblanko}
 
+% \def\complexdoblanko
+%   {\flushnotes
+%    \ifmmode
+%      \let\next\nocomplexdoblanko
+%    \else
+%      \ifopelkaar
+%        \ifinpagebody
+%          \let\next\docomplexdoblanko
+%        \else
+%          \let\next\nocomplexdoblanko
+%        \fi
+%      \else
+%        \let\next\docomplexdoblanko
+%      \fi
+%    \fi
+%    \next}
+%
+% with \next removed
+
 \def\complexdoblanko
   {\flushnotes
    \ifmmode
-     \let\next\nocomplexdoblanko
+     \@EA\nocomplexdoblanko
    \else
      \ifopelkaar
        \ifinpagebody
-         \let\next\docomplexdoblanko
+         \@EA\@EAEAEA\@EA\docomplexdoblanko
        \else
-         \let\next\nocomplexdoblanko
+         \@EA\@EAEAEA\@EA\nocomplexdoblanko
        \fi
      \else
-       \let\next\docomplexdoblanko
+       \@EAEAEA\docomplexdoblanko
      \fi
-   \fi
-   \next}
+   \fi}
 
 \def\nocomplexdoblanko[#1]%
   {% evt blokkeerfalse
@@ -2397,13 +2415,30 @@
 \def\removelastskip% a redefinition of plain
   {\ifvmode\ifdim\lastskip=\zeropoint\else\vskip-\lastskip\fi\fi}
 
+% first version:
+%
+% \def\dosomebreak#1%
+%   {\scratchskip\lastskip
+%    \removelastskip
+%    %\type{#1}%
+%    #1\relax
+%    \ifdim\scratchskip=\zeropoint \else
+%      \vskip\scratchskip
+%    \fi}
+%
+% don't change the next improvement:
+
 \def\dosomebreak#1%
-  {\scratchskip\lastskip
-   \removelastskip
-   %\type{#1}%
-   #1\relax
-   \ifdim\scratchskip=\zeropoint \else
-     \vskip\scratchskip
+  {\endgraf % beware, this forces a newline
+   \ifvmode
+     \ifdim\lastskip=\zeropoint
+       #1\relax
+     \else
+       \scratchskip\lastskip
+       \removelastskip
+       #1\relax
+       \vskip\scratchskip
+     \fi
    \fi}
 
 % beter, vooral in \vbox; nog in \pagina toepassen s!

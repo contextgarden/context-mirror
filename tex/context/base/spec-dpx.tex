@@ -8,7 +8,7 @@
 %D      copyright={Jin-Hwan Cho \& Hans Hagen}]
 %C
 %C DVIPDFMx is an eXtended version of the DVIPDFM, a DVI to PDF
-%C translator, still under construction by Jin-Hwan Cho and 
+%C translator, still under construction by Jin-Hwan Cho and
 %C Shunsaku Hirata.
 %C
 %C It supports multi-byte character encodings and large character
@@ -17,7 +17,7 @@
 %C annotations with Chinese, Japanese, Korean characters, etc.
 %C
 %C DVIPDFMx (and information) can be downloaded from:
-%C 
+%C
 %C   http://project.ktug.or.kr/dvipdfmx/
 
 \unprotect
@@ -117,7 +117,7 @@
 %D \macros
 %D  {doinsertsoundtrack}
 %D
-%D Sounds are supported too. 
+%D Sounds are supported too.
 
 \definespecial\doinsertsoundtrack{\doPDFinsertsoundtrack}
 
@@ -131,7 +131,7 @@
 %D implementation does not differ that much from the one
 %D implemented in the \POSTSCRIPT\ driver.
 
-\def\doPDFovalbox#1#2#3#4#5#6#7% todo: \scratchdimen/\scatchbox  
+\def\doPDFovalbox#1#2#3#4#5#6#7% todo: \scratchdimen/\scatchbox
   {\bgroup
    \dimen0=#4\divide\dimen0 2
    \doPDFovalcalc{0pt}{+\dimen0}\xmin
@@ -392,11 +392,11 @@
 \newif\ifsharePDFactions \sharePDFactionsfalse
 
 \def\dodoPDFaction#1#2#3#4%
-  {\ifcollectreferenceactions 
+  {\ifcollectreferenceactions
      \xdef\lastPDFaction{#4}%
    \else
      \bgroup
-    % this is yet untested 
+    % this is yet untested
     %\ifsharePDFactions
     %  \ifcase\similarreference\relax
     %    \xdef\lastPDFaction{<<#4>>}%
@@ -405,7 +405,7 @@
     %    \special{pdf: object @PDF::sim:\the\nofPDFsimilar\space<<#4>>}%
     %    \xdef\lastPDFaction{@PDF::sim:\the\nofPDFsimilar}%
     %  \else
-    %    % leave \lastPDFaction untouched 
+    %    % leave \lastPDFaction untouched
     %  \fi
     %\else
        \xdef\lastPDFaction{<<#4>>}%
@@ -509,7 +509,7 @@
 %D Done.
 
 % %D 2. Modified codes from \type{spec-fdf}
-% 
+%
 % \definespecial\dostartgraphicgroup{\special{pdf: literal direct q}}
 % \definespecial\dostopgraphicgroup {\special{pdf: literal direct Q}}
 
@@ -519,7 +519,7 @@
 %D   {dostartclipping,dostopclipping}
 %D
 %D Clipping in \PDFTEX\ is rather trivial. We can even hook
-%D in \METAPOST\ without problems.                                 
+%D in \METAPOST\ without problems.
 
 \definespecial\dostartclipping#1#2#3%
   {\PointsToBigPoints{#2}\width

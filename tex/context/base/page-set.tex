@@ -538,21 +538,47 @@
   %\gdef\localcolumnmaxcells{0}% here ?
    \global\mofcolumns\nofcolumns} % otherwise problems in finaloutput
 
+% \def\OTRSETdofinaloutput
+%   {\ifdim\ht\OTRfinalpagebox=\teksthoogte
+%    % \bgroup \let\OTRSETsetvsize\relax % prevents useless search for gap
+%      \ifcase\OTRSETbalancemethod
+%        \finaloutput\box\OTRfinalpagebox
+%      \else\ifdim\OTRSETbalht>\zeropoint
+%        \global\setbox\OTRfinalpagebox \iftracecolumnset\ruledvbox\else\vbox\fi to \OTRSETbalht
+%          {\box\OTRfinalpagebox}%
+%        \global\dp\OTRfinalpagebox\strutdepth
+%        \box\OTRfinalpagebox
+%      \else
+%        \finaloutput\box\OTRfinalpagebox
+%      \fi \fi
+%      \globallet\OTRSETbalht\zeropoint
+%    % \egroup
+%    \fi}
+
 \def\OTRSETdofinaloutput
   {\ifdim\ht\OTRfinalpagebox=\teksthoogte
-   % \bgroup \let\OTRSETsetvsize\relax % prevents useless search for gap
+    \bgroup % \let\OTRSETsetvsize\relax % prevents useless search for gap
      \ifcase\OTRSETbalancemethod
        \finaloutput\box\OTRfinalpagebox
      \else\ifdim\OTRSETbalht>\zeropoint
-       \global\setbox\OTRfinalpagebox \iftracecolumnset\ruledvbox\else\vbox\fi to \OTRSETbalht
-         {\box\OTRfinalpagebox}%
-       \global\dp\OTRfinalpagebox\strutdepth
-       \box\OTRfinalpagebox
+       % catch a bordercase
+       \scratchdimen\OTRSETbalht
+       \advance\scratchdimen\lineheight\relax
+       \ifdim\scratchdimen>\teksthoogte
+         % full page
+         \finaloutput\box\OTRfinalpagebox
+       \else
+         % same page
+         \global\setbox\OTRfinalpagebox \iftracecolumnset\ruledvbox\else\vbox\fi to \OTRSETbalht
+           {\box\OTRfinalpagebox\vss}%
+         \setlayer[OTRTEXT]{\box\OTRfinalpagebox}%
+         \snaptogrid\vbox{\vskip\OTRSETbalht}% hack
+       \fi
      \else
        \finaloutput\box\OTRfinalpagebox
      \fi \fi
      \globallet\OTRSETbalht\zeropoint
-   % \egroup
+    \egroup
    \fi}
 
 \definesystemvariable {mc}
