@@ -57,7 +57,7 @@
 
 % new
 
-\newtoks \everydefinedfont \relax 
+\newevery \everydefinedfont \relax 
 
 \def\dodefinedfont[#1]%
   {\iffirstargument\definefont[\string\definedfont][#1]\fi
@@ -1986,7 +1986,7 @@
 
 \def\redefinebodyfont[#1][#2][#3][#4]%
   {\iffourthargument
-     \processcommalist[#1]{\reredefinebodyfont[#2][#3][#4]}%
+     \processcommacommand[#1]{\reredefinebodyfont[#2][#3][#4]}%
    \else
      \dodefinebodyfont[#1][#2][#3]%
    \fi}
@@ -2432,7 +2432,7 @@
 \def\dosetfont#1#2%  #1 = set/switch state
   {\doifelse{#2}{\v!globaal}
      {\restoreglobalbodyfont}
-     {\processcommalist[#2]{\dodosetfont{#1}}% ##1 get also passed
+     {\processcommacommand[#2]{\dodosetfont{#1}}% ##1 get also passed
       \ifloadingfonts\else
         \doswitchpoints[\normalizedbodyfontsize]%
         \doswitchstyle[\fontstyle]%

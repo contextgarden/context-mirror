@@ -292,17 +292,22 @@
 %   \PointsToBigPoints\!!heighta\bottom
 %   \PointsToBigPoints\!!widtha \width
 %   \PointsToBigPoints\!!heightb\height
-   \xdef\currentPDFcropbox% \doPDFpagesattribute
+   \xdef\currentPDFcropbox 
      {/CropBox [\left\space\bottom\space\width\space\height]}%
-   \xdef\currentPDFpagemode% \doPDFaddtocatalog  
-     {/PageMode \ifcase#6 /UseNone\or/FullScreen\or/UseOutlines\fi}%
+   \xdef\currentPDFpagemode
+     {/PageMode \ifcase#6 /UseNone\or/FullScreen\or/UseOutlines\else/UseNone\fi}%
+%   \xdef\currentPDFviewerprefs 
+%     {\ifcase#6\or\or\or /ViewerPreferences << /FitWindow true >>\fi}%
    \egroup}
 
-\global\let\currentPDFcropbox \empty
-\global\let\currentPDFpagemode\empty
+\global\let\currentPDFcropbox    \empty % page attributes 
+\global\let\currentPDFpagemode   \empty % document catalog
+\global\let\currentPDFviewerprefs\empty % document catalog
 
 \appendtoksonce % hack to prevent duplicates
-  \ifcase\realfolio\or\doPDFaddtocatalog{\currentPDFpagemode}\fi
+  \ifcase\realfolio\or
+    \doPDFaddtocatalog{\currentPDFpagemode\currentPDFviewerprefs}%
+  \fi
 \to \everyshipout
 
 \appendtoksonce
@@ -1187,6 +1192,8 @@
 \def\PDFpageviewwrd{ /Fit}
 \def\PDFpageview   {/View [\PDFpageviewwrd] }
 
+\def\PDFpagexyzspec{ 0 0 0} % hack, pdftex does handle this
+
 \def\dosetuppageview#1%
   {\processaction
      [#1]
@@ -1196,8 +1203,8 @@
                   \def\PDFpageviewwrd{ /FitH},   % swapping here
        \v!hoogte=>\def\PDFpageviewkey{  fitv}%   % and here and
                   \def\PDFpageviewwrd{ /FitV},   % here too
-%   \v!standaard=>\def\PDFpageviewkey{  xyz 0 0 0}%
-%                 \def\PDFpageviewwrd{ /XYZ 0 0 0}, 
+    \v!standaard=>\def\PDFpageviewkey{   xyz\PDFpagexyzspec}%
+                  \def\PDFpageviewwrd{  /XYZ\PDFpagexyzspec}, 
       \s!unknown=>\def\PDFpageviewkey{   fit}%
                   \def\PDFpageviewwrd{  /Fit}]%
    \edef\PDFpageview{/View [\PDFpageviewwrd]}}
@@ -1830,8 +1837,8 @@
 \def\PDFcommentParagraph {/Paragraph} 
 \def\PDFcommentKey       {/Key } 
 
-\long\def\doPDFinsertcomment#1#2#3#4#5#6#7% title width height color open data 
-  {\bgroup
+\long\def\doPDFinsertcomment#1#2#3#4#5#6#7#8% 
+  {\bgroup % title width height color open symbol collect data 
    \doifelsenothing{#1} 
      {\let\PDFidentifier\empty}
      {\def\PDFidentifier{/T (#1)}}%
@@ -1841,7 +1848,7 @@
    \doifundefinedelse{PDFcomment#6} 
      {\let\PDFcomment\empty}
      {\def\PDFcomment{/Name \getvalue{PDFcomment#6} }}%
-   \sanitizePDFdocencoding#7\to\PDFdata
+   \sanitizePDFdocencoding#8\to\PDFdata
    \setbox\scratchbox=\vbox to #3
      {\vfill
       \doPDFannotation width #2 height #3 data 
@@ -1856,6 +1863,112 @@
    \dp\scratchbox\zeropoint
    \box\scratchbox
    \egroup}
+
+\startmode[atpragma]
+
+% todo: scale annot relative to paper width to get 
+%       dimensions honored  
+
+\newcounter\nofFDFcomments
+
+\newif\ifPDFpopupcomments   \PDFpopupcommentstrue
+
+\newbox\PDFcommentbox
+
+\def\doPDFflushcomments 
+  {\box\PDFcommentbox}
+
+\long\def\doPDFinsertcomment#1#2#3#4#5#6#7#8% 
+  {\bgroup % title width height color open symbol collect data
+   \doifelsenothing{#1}
+     {\let\PDFidentifier\empty}
+     {\def\PDFidentifier{/T (#1)}}%
+   \doifelsenothing{#4}
+     {\let\PDFattributes\empty}
+     {\def\PDFattributes{/C \FDFcolor{#4}}}%
+   \def\width {18pt}%
+   \def\height{24pt}%
+   \doifundefinedelse{PDFcomment#6}
+     {\doifelsenothing{#6}
+        {\let\PDFcomment\empty}
+        {\presetPDFcommentappearance{#6}}}
+     {\def\PDFcomment{/Name \getvalue{PDFcomment#6} }}%
+   \sanitizePDFdocencoding#8\to\PDFdata
+   \setbox\scratchbox=\vbox to #3
+     {\vfill
+      \ifPDFpopupcomments
+        \doglobal\increment\nofFDFcomments
+        \doifobjectreferencefoundelse{FDF}{c:\nofFDFcomments}
+          {\doPDFgetobjectreference{FDF}{c:\nofFDFcomments}\PDFobjectreference
+           \donetrue}
+          {\donefalse}%
+        \ifdone
+          \setbox\scratchbox\hbox
+            {\doPDFannotation width #2 height #3 data % text window 
+               {/Subtype /Popup
+                /Parent \PDFobjectreference}}%
+          \ifcase#7\relax 
+            \vbox to \height{\forgetall\vskip#3\box\scratchbox\vss}%
+          \else % incredible trial and error hack
+            \global\setbox\PDFcommentbox\vbox
+              {\hsize#2%
+               \forgetall
+               \vsmash{\box\PDFcommentbox}
+               \box\scratchbox}%
+          \fi
+        \fi
+        \doPDFannotationobject class FDF name {c:\nofFDFcomments} 
+            width {\width} height {\height} data  
+          {/Subtype /Text
+           \ifcase#5 \else/Open true\fi 
+           \ifdone /Popup \the\pdflastannot\space 0 R\fi
+           /Contents (\PDFdata)
+           \PDFcomment
+           \PDFidentifier
+           \PDFattributes}%
+        \vskip#3%
+        \vskip-\height
+      \else
+        \doPDFannotation width #2 height #3 data
+          {/Subtype /Text
+           \ifcase#5 \else/Open true\fi 
+           /Contents (\PDFdata)
+           \PDFcomment
+           \PDFidentifier
+           \PDFattributes}%
+      \fi}%
+   \wd\scratchbox\zeropoint
+   \ht\scratchbox\zeropoint
+   \dp\scratchbox\zeropoint
+   \box\scratchbox
+   \egroup}
+
+\def\presetPDFcommentappearance#1%
+  {\getfromcommacommand[#1][1]\let\PDFcommentnormalsymbol\commalistelement
+   \getfromcommacommand[#1][2]\let\PDFcommentdownsymbol  \commalistelement
+   \doifsymboldefinedelse\PDFcommentnormalsymbol
+     {\doifsymboldefinedelse\PDFcommentdownsymbol
+        {\dopresetPDFcommentappearance
+           \PDFcommentnormalsymbol\PDFcommentdownsymbol}
+        {\dopresetPDFcommentappearance
+           \PDFcommentnormalsymbol\PDFcommentnormalsymbol}}
+     {\doifsymboldefinedelse\PDFcommentdownsymbol
+        {\dopresetPDFcommentappearance
+           \PDFcommentdownsymbol\PDFcommentdownsymbol}
+        {\let\PDFcomment\empty}}}
+
+\def\dopresetPDFcommentappearance#1#2%
+  {\dopresetfieldsymbol{#1}%
+   \dopresetfieldsymbol{#2}%
+   \setbox\scratchbox=\hbox{\symbol[#1]}%
+   \edef\width {\the\wd\scratchbox}%
+   \edef\height{\the\ht\scratchbox}%
+   \doPDFgetobjectreference{SYM}{#1}\FDFcommentNappearance
+   \doPDFgetobjectreference{SYM}{#2}\FDFcommentDappearance
+   \edef\PDFcomment
+     {/AP <</N \FDFcommentNappearance /D \FDFcommentDappearance>>}}
+
+\stopmode
 
 %D Hooked into \CONTEXT, this special supports
 %D

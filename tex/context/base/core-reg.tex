@@ -73,26 +73,6 @@
    \processseparatedlist[#1][+]\docommando
    \!!stringa}
 
-% \def\doprocesspageregister[#1]#2%
-%   {\begingroup
-%    \thisisnextinternal{\s!ind}%
-%    \ifduplicate\getlastregisterentry{#2}\fi
-%    \convertexpanded{\??id\currentregister}{#2}\asciiregisterentry
-%    \makesectionformat
-%    \edef\schrijfwegnaarregister%
-%      {\writeutility%
-%         {r \ifcase\registerpagestatus\space\or e \or f \or t \fi
-%          {\currentregister} %
-%          {\nextinternalreference} %
-%          {#1} %
-%          {\asciiregisterentry} %
-%          {\sectionformat::\noexpand\pagenumber} %
-%          {\noexpand\realfolio}}}%
-%    \schrijfwegnaarregister
-%    \getfirstcharacter\currentregister
-%    \registerinfo{> \firstcharacter}{#2}%
-%    \endgroup}
-
 \def\doprocesspageregister[#1]#2#3% key altnum entry 
   {\begingroup
    \thisisnextinternal{\s!ind}%
@@ -100,33 +80,20 @@
    \convertexpanded{\??id\currentregister}{#3}\asciiregisterentry
    \makesectionformat
    \doifelsevalue{\??id\currentregister\c!eigennummer}{\v!ja}{\donetrue}{\donefalse}%
-   \edef\schrijfwegnaarregister% spaces between } { are essential for texutil's split  
+   % the spaces between } { are essential for texutil's split  
+   \edef\schrijfwegnaarregister% 
      {\writeutility%
         {r \ifcase\registerpagestatus\space\or e \or f \or t \fi
          {\currentregister} %
          {\nextinternalreference} %
          {#1} %
          {\asciiregisterentry} %
-%         {\sectionformat::\noexpand\pagenumber} %
          {\sectionformat::\ifdone#2\else\noexpand\pagenumber\fi} %
          {\noexpand\realfolio}}}%
    \schrijfwegnaarregister
    \getfirstcharacter\currentregister
    \registerinfo{> \firstcharacter}{#3}%
    \endgroup}
-
-%\def\complexdoregister[#1]#2%
-%  {\doprocesspageregister[#1]{#2}%
-%   \ifvmode\nobreak\fi
-%   \GotoPar}
-
-%\def\doregister#1%
-%  {\chardef\registerpagestatus=1
-%   \def\currentregister{#1}%
-%   \doifelsevalue{\??id\currentregister\c!eigennummer}{\v!ja}
-%     {\def\next{\dosingleempty\dodoregister}}
-%     {\def\next{\dosingleempty\donoregister}}%
-%   \next}
 
 \def\doregister#1%
   {\chardef\registerpagestatus=1
@@ -567,39 +534,36 @@
       \doglobal\increment\internallistreference}%
    \setvalue{#1\s!from}%
      {\getvalue{#1\s!page}}%
+\ifautoregisterhack
+   \setvalue{#1\s!page}##1##2##3##4%
+     {\doifreglevelelse[##3]
+        {\global\utilitydonetrue
+         \iffirstregisterpage
+           \@EA\xdef\csname\??id#1\??id\currentregisterentry\endcsname
+             {\internallistreference::##4}%
+         \else % catches errors in index
+           \ifcsname\??id#1\??id\currentregisterentry\endcsname
+             \@EA\xdef\csname\??id#1\??id\currentregisterentry\endcsname
+               {\csname\??id#1\??id\currentregisterentry\endcsname,##4}%
+           \fi
+         \fi}
+        {}}%
+\else
    \setvalue{#1\s!page}##1##2##3##4%
      {\doifreglevelelse[##3]
         {\global\utilitydonetrue
          \iffirstregisterpage
            \global\firstregisterpagefalse
-\ifautoregisterhack 
-  \setxvalue{\??id#1\??id\currentregisterentry}%
-    {\internallistreference::##4}%
-\else
-           \setxvalue{\??id#1\??id\currentregisterentry}%
+           \@EA\xdef\csname\??id#1\??id\currentregisterentry\endcsname
              {\internallistreference::##2-##4}%
-\fi
          \else % catches errors in index
-\ifautoregisterhack % binnen doif
-  \doifdefined{\??id#1\??id\currentregisterentry}
-    {\setxvalue{\??id#1\??id\currentregisterentry}%
-       {\getvalue{\??id#1\??id\currentregisterentry},##4}}%
-\else
-           \doifdefined{\??id#1\??id\currentregisterentry}
-             {\setxvalue{\??id#1\??id\currentregisterentry}%
-                {\getvalue{\??id#1\??id\currentregisterentry},##2-##4}}%
-\fi
+           \ifcsname\??id#1\??id\currentregisterentry\endcsname
+             \@EA\xdef\csname\??id#1\??id\currentregisterentry\endcsname
+               {\csname\??id#1\??id\currentregisterentry\endcsname,##2-##4}%
+           \fi
          \fi}
-        {}}}
-
-%\def\dokoppelregister[#1][#2]%
-%  {\iflocation
-%     \begingroup
-%     \let\dosetregister=\doloadregisterlinks
-%     \stelregisterin[#1][#2]%
-%     \doutilities{#1}{\jobname}{#1}{}{}%
-%     \endgroup
-%   \fi}
+        {}}%
+\fi}
 
 \def\dokoppelregister[#1][#2]%
   {\iflocation

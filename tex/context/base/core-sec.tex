@@ -14,6 +14,9 @@
 % this module needs a clean up, currently some manipulations
 % take place multiple times
 
+% in manual (zie prikkels) : tussen=\blanko is enige hook om
+% met kop-in-hoofd een spatiering af te dwingen 
+
 \writestatus{loading}{Context Core Macros / Sectioning}
 
 \startmessages  dutch  library: structures
@@ -948,6 +951,7 @@
    \def\\{\crlf\strut\ignorespaces}}
 
 \newif\ifplaatskop
+\newif\iflegekop
 \newif\ifverhoognummer
 \newif\ifkopnummer
 
@@ -1084,6 +1088,14 @@
 
 \unexpanded\def\\{\space}
 
+\def\emptyheadcorrection % experimental, should work 
+  {\iflegekop            % well with na=\blanko
+     \vskip-\lineheight
+     \dosomebreak\nobreak
+     \kern\zeropoint
+     \prevdepth\strutdepth
+   \fi}
+
 \def\dodododosomekop#1[#2]#3#4% [ref] {number} {title} 
   {\def\currenthead{#1}%
    \unexpanded\def\\{\space}%
@@ -1105,6 +1117,11 @@
    \doifelsevalue{\??ko#1\c!plaatskop}{\v!ja}
      {\plaatskoptrue}
      {\plaatskopfalse}%
+\processaction
+  [\getvalue{\??ko#1\c!plaatskop}]
+  [  \v!ja=>\plaatskoptrue \legekopfalse,
+   \v!leeg=>\plaatskoptrue \legekoptrue,
+    \v!nee=>\plaatskopfalse\legekoptrue]%
    \processaction
      [\getvalue{\??ko#1\c!verhoognummer}]
      [     \v!ja=>\verhoognummertrue,
@@ -1203,8 +1220,19 @@
          \setupreferenceprefix[\localkopprefix]%
        \fi
        \dosomebreak\nobreak
-       \ifdisplaysectionhead\getvalue{\??ko#1\c!na}\fi
+       \ifdisplaysectionhead
+         \emptyheadcorrection
+         \getvalue{\??ko#1\c!na}%
+       \fi
      \else
+       % Whatever future tex's will do with nodes, 
+       % we assume a node here, because other \c!na=\blanko
+       % will fail! See 'prikkels'
+       %
+       % so, maybe we need an explicit \kern 
+       % 
+       % do nothing / should be vbox to 0pt 
+       % 
        \checknexthead\dohandelpaginaafB{#1}% toegevoegd ivm subpaginanr / tug sheets
        \setsectieenkoppeling{#1}% can be changed when [voor=\somehead{..}...]
        \ifkopprefix
@@ -1216,7 +1244,7 @@
          \let\fullsectionnumber\expandablefullsectionnumber
          \xdef\currentheadnumber{\someheadconversion}%
        \fi
-       \getvalue{\??ko#1\c!tussen}%
+       \getvalue{\??ko#1\c!tussen}% documenteren, is enige hook 
        \setsectionlistreference{\@@sectie}{#1}%
        \resetsectionmarks\@@sectie
        \marking[#1]{#4}%
@@ -1250,12 +1278,24 @@
          {#1}
          {\rawreference{\s!sec}{#2}{{#3}{\asciititle}}}
          {#4}
-         {}%
+        %{}% new:
+         {\marking[#1]{#4}%
+          \marking[#1\v!nummer]{}}%
        \writesection{#1}{-}{#4}%
        \dosomebreak\nobreak
-       \ifdisplaysectionhead\getvalue{\??ko#1\c!na}\fi
+       \ifdisplaysectionhead
+         \emptyheadcorrection
+         \getvalue{\??ko#1\c!na}%
+       \fi
      \else
-       % do nothing
+       % do nothing / should be vbox to 0pt 
+       \checknexthead\handelpaginaaf{#1}%
+       \setsectieenkoppeling{#1}% can be changed when [voor=\somehead{..}...]
+       \getvalue{\??ko#1\c!tussen}%
+       \rawreference{\s!sec}{#2}{{#3}{\asciititle}}%
+       \marking[#1]{#4}%
+       \marking[#1\v!nummer]{}%
+       \writesection{#1}{-}{#4}%
      \fi
    \fi
    \flushingcolumnfloatstrue
@@ -1326,89 +1366,133 @@
 
 \def\doplaatskoptekst#1#2#3#4%
   {\beginheadplacement{#1}%
-   \setbox0=\ifvertical\vbox\else\hbox\fi % \vhbox
-     {\headnumbercontentfalse
-      \resetsystemmode\v!sectienummer
-      \getvalue{\??ko#1\c!commando}
-        {} % no number
-        {\doattributes
-           {\??ko#1}\c!letter\c!kleur
-           {\doattributes
-              {\??ko#1}\c!tekstletter\c!tekstkleur
-              {\dontconvertfont
-               \ifdisplaysectionhead
-                 \stelinterliniein
-               \else
-                 \stelspatieringin
-               \fi
-               #2%
-               \getvalue{\??ko#1\c!voorcommando}%
-               \ifdisplaysectionhead
-                 \getvalue{\??ko#1\c!tekstcommando}%
-                   {\setstrut\begstrut#3\endstrut}%
-                 \xdef\localheaddepth{\the\dp\strutbox}%
-               \else
-                 \getvalue{\??ko#1\c!tekstcommando}{#3}%
-               \fi
-               \getvalue{\??ko#1\c!nacommando}%
-               \ifdisplaysectionhead\endgraf\fi}}}}%
+   \iflegekop
+     \setbox0\ifvertical\vbox\else\hbox\fi to \zeropoint
+       {\headnumbercontentfalse
+        \resetsystemmode\v!sectienummer
+        #2}%
+     \makestrutofbox0
+   \else
+     \setbox0=\ifvertical\vbox\else\hbox\fi % \vhbox
+       {\headnumbercontentfalse
+        \resetsystemmode\v!sectienummer
+        \getvalue{\??ko#1\c!commando}
+          {} % no number
+          {\doattributes
+             {\??ko#1}\c!letter\c!kleur
+             {\doattributes
+                {\??ko#1}\c!tekstletter\c!tekstkleur
+                {\dontconvertfont
+                 \ifdisplaysectionhead
+                   \stelinterliniein
+                 \else
+                   \stelspatieringin
+                 \fi
+                 #2%
+                 \getvalue{\??ko#1\c!voorcommando}%
+                 \ifdisplaysectionhead
+                   \getvalue{\??ko#1\c!tekstcommando}%
+                     {\setstrut\begstrut#3\endstrut}%
+                   \xdef\localheaddepth{\the\dp\strutbox}%
+                 \else
+                   \getvalue{\??ko#1\c!tekstcommando}{#3}%
+                 \fi
+                 \getvalue{\??ko#1\c!nacommando}%
+                 \ifdisplaysectionhead\endgraf\fi}}}}%  
+   \fi  
    \endheadplacement{#1}{#4}}
 
 \def\doplaatskopnummertekst#1#2#3#4#5%
   {\beginheadplacement{#1}%
-   \setbox0=\ifvertical\vbox\else\hbox\fi % \vhbox
-     {\doiftextelse{#3}
-        {\setsystemmode  \v!sectienummer\headnumbercontenttrue }
-        {\resetsystemmode\v!sectienummer\headnumbercontentfalse}%
-      \getvalue{\??ko#1\c!commando}%
-        {\doattributes{\??ko#1}\c!letter\c!kleur
-           {\doattributes{\??ko#1}\c!nummerletter\c!nummerkleur
-              {\getvalue{\??ko#1\c!voorcommando}%
-               \ifdisplaysectionhead
-                 \getvalue{\??ko#1\c!nummercommando}%
-                   {\setstrut\begstrut#3\endstrut}%
-               \else
-                 \getvalue{\??ko#1\c!nummercommando}{#3}%
-               \fi}}}
-        {\doattributes{\??ko#1}\c!letter\c!kleur
-           {\doattributes{\??ko#1}\c!tekstletter\c!tekstkleur
-              {\dontconvertfont
-               \ifdisplaysectionhead
-                 \stelinterliniein
-               \else
-                 \stelspatieringin
-               \fi
-               #2%
-               \ifdisplaysectionhead
-                 \getvalue{\??ko#1\c!tekstcommando}%
-                   {\setstrut\begstrut#4\endstrut}%
-                 \xdef\localheaddepth{\the\dp\strutbox}%
-               \else
-                 \getvalue{\??ko#1\c!tekstcommando}{#4}%
-               \fi
-               \getvalue{\??ko#1\c!nacommando}%
-               \ifdisplaysectionhead\endgraf\fi}}}}%
+   \iflegekop
+     \setbox0\ifvertical\vbox\else\hbox\fi to \zeropoint
+       {\doiftextelse{#3}
+          {\setsystemmode  \v!sectienummer\headnumbercontenttrue }
+          {\resetsystemmode\v!sectienummer\headnumbercontentfalse}%
+        #2}%
+     \makestrutofbox0
+   \else
+     \setbox0=\ifvertical\vbox\else\hbox\fi % \vhbox
+       {\doiftextelse{#3}
+          {\setsystemmode  \v!sectienummer\headnumbercontenttrue }
+          {\resetsystemmode\v!sectienummer\headnumbercontentfalse}%
+        \getvalue{\??ko#1\c!commando}%
+          {\doattributes{\??ko#1}\c!letter\c!kleur
+             {\doattributes{\??ko#1}\c!nummerletter\c!nummerkleur
+                {\getvalue{\??ko#1\c!voorcommando}%
+                 \ifdisplaysectionhead
+                   \getvalue{\??ko#1\c!nummercommando}%
+                     {\setstrut\begstrut#3\endstrut}%
+                 \else
+                   \getvalue{\??ko#1\c!nummercommando}{#3}%
+                 \fi}}}
+          {\doattributes{\??ko#1}\c!letter\c!kleur
+             {\doattributes{\??ko#1}\c!tekstletter\c!tekstkleur
+                {\dontconvertfont
+                 \ifdisplaysectionhead
+                   \stelinterliniein
+                 \else
+                   \stelspatieringin
+                 \fi
+                 #2%
+                 \ifdisplaysectionhead
+                   \getvalue{\??ko#1\c!tekstcommando}%
+                     {\setstrut\begstrut#4\endstrut}%
+                   \xdef\localheaddepth{\the\dp\strutbox}%
+                 \else
+                   \getvalue{\??ko#1\c!tekstcommando}{#4}%
+                 \fi
+                 \getvalue{\??ko#1\c!nacommando}%
+                 \ifdisplaysectionhead\endgraf\fi}}}}%
+   \fi
    \endheadplacement{#1}{#5}}
 
 \newsignal\headsignal
 \let\headlastlinewidth\!!zeropoint
 \newif\ifcontinuoushead
 
+% \def\beginheadplacement#1%
+%   {\bgroup
+%    \gdef\localheaddepth{\dp\strutbox}%
+%    \everypar{}% needed indeed
+%    \noindent  % ipv \witruimte elders, na \forgetall !
+%    \bgroup
+%    \forgetall % now we may forget everything
+%   %\showcomposition
+%    \mindermeldingen
+%    \postponefootnotes
+%    \iflocation\ifdisplaysectionhead\else\noninterferingmarks\fi\fi
+%    %\setupinteraction
+%    %  [\c!letter=,
+%    %   \c!kleur=,
+%    %   \c!contrastkleur=]%
+%    \resetinteractionparameter\c!letter
+%    \resetinteractionparameter\c!kleur
+%    \resetinteractionparameter\c!contrastkleur
+%    \strictouterreferencestrue % tzt instelling
+%    \def\localkopsetup%
+%      {\dolocalkopsetup{#1}}%
+%    \startsynchronisatie}
+
 \def\beginheadplacement#1%
   {\bgroup
+\ifgridsnapping\iftracegridsnapping\showstruts\fi\fi
    \gdef\localheaddepth{\dp\strutbox}%
-   \everypar{}% needed indeed
-   \noindent  % ipv \witruimte elders, na \forgetall !
+   \everypar\emptytoks % needed indeed
+   \noindent           % ipv \witruimte elders, na \forgetall !
    \bgroup
-   \forgetall % now we may forget everything
-  %\showcomposition
+   \doifelsevalue{\??ko#1\c!titeluitlijnen}{\v!ja} % new 
+     {\leftskip 1\leftskip
+      \rightskip1\rightskip
+      \edef\next{\leftskip\the\leftskip\rightskip\the\rightskip}%
+      \xdef\localheadskip{\the\leftskip}%
+      \expandafter\forgetall\next % now we may forget everything
+      \setlocalhsize\hsize\localhsize}
+     {\global\let\localheadskip\!!zeropoint
+      \forgetall}%
    \mindermeldingen
    \postponefootnotes
    \iflocation\ifdisplaysectionhead\else\noninterferingmarks\fi\fi
-   %\setupinteraction
-   %  [\c!letter=,
-   %   \c!kleur=,
-   %   \c!contrastkleur=]%
    \resetinteractionparameter\c!letter
    \resetinteractionparameter\c!kleur
    \resetinteractionparameter\c!contrastkleur
@@ -1426,7 +1510,8 @@
    \ifdisplaysectionhead
      \let\headlastlinewidth\!!zeropoint
      \snaptogrid[\getvalue{\??ko#1\c!grid}]\hbox
-       {\iflocation
+       {\hskip\localheadskip
+        \iflocation
           \ifautocrossdocument
             \doifreferencefoundelse{\getvalue{\??ko#1\c!file}::#1}
               {\edef\currentinnerreference{\s!aut:\currenttextreference}% stored in
@@ -1560,12 +1645,24 @@
        {\localkopsetup\noindent#2}%
    \fi}
 
+% \def\plaatskopinmarge#1#2%
+%   {\vbox
+%      {\localkopsetup
+%       \begstrut            % but use one \strut here!
+%       \ifheadnumbercontent
+%         \llap{\hbox to 5em{\hfill{#1}\hskip\linkermargeafstand}}%
+%       \fi
+%       {#2}}}
+
 \def\plaatskopinmarge#1#2%
   {\vbox
-     {\localkopsetup
+     {\scratchdimen\linkermargeafstand
+      \advance\scratchdimen\leftskip
+      \edef\plaatskopinmarge{\the\scratchdimen}% re-use saves hash entry 
+      \localkopsetup
       \begstrut            % but use one \strut here!
       \ifheadnumbercontent
-        \llap{\hbox to 5em{\hfill{#1}\hskip\linkermargeafstand}}%
+        \llap{\hbox to 5em{\hfill{#1}\hskip\plaatskopinmarge}}%
       \fi
       {#2}}}
 
@@ -1626,6 +1723,7 @@
          \c!commando=\@@plaatskop,
          \c!scheider=\@@koscheider,
          \c!uitlijnen=,
+         \c!titeluitlijnen=,
          \c!tolerantie=,
          \c!file=,
          \c!expansie=,
@@ -1637,11 +1735,12 @@
               [\??ko#1][\??ko\getvalue{\??ko#1\c!default}]
               [\c!voor,\c!na,\c!commando,\c!file,\c!pagina,\c!doorgaan,
                \c!hoofd,\c!tekst,\c!voet,
+\c!scheider,
                \c!nummer,\c!eigennummer,\c!plaatskop,\c!verhoognummer,
                \c!letter,\c!kleur,\c!afstand,\c!variant,\c!springvolgendein,
               %\c!nummerletter,\c!tekstletter,
               %\c!expansie, % why njet ?
-               \c!uitlijnen,\c!tolerantie,\c!grid,
+               \c!uitlijnen,\c!titeluitlijnen,\c!tolerantie,\c!grid,
                \c!nummercommando,\c!tekstcommando]}}%
       \getparameters[\??ko#1][#2]%
       \doifsomething{\getvalue{\??ko#1\c!sectie}}
@@ -1650,6 +1749,7 @@
            {\definieermarkering[#1]%
             \koppelmarkering[#1][\getvalue{\??ko#1\c!sectie}]%
             \definieermarkering[#1\v!nummer]%
+% klopt dit wel ? 
             \koppelmarkering[#1\v!nummer][\getvalue{\??ko#1\c!sectie}]}}%
 %            \koppelmarkering[#1\v!nummer][\getvalue{\??ko#1\c!sectie}\v!nummer]}}%
       \doifundefined{\??li#1}{\definieerlijst[#1]}}
@@ -1659,12 +1759,13 @@
            [\??ko#1][\??ko#2]
            [\c!niveau,\c!sectie,\c!koppeling,\c!prefix,
             \c!voor,\c!na,\c!commando,\c!file,\c!pagina,\c!doorgaan,
+\c!scheider,
             \c!hoofd,\c!tekst,\c!voet,
             \c!nummer,\c!eigennummer,\c!plaatskop,\c!verhoognummer,
             \c!letter,\c!kleur,\c!afstand,\c!variant,\c!springvolgendein,
            %\c!nummerletter,\c!tekstletter,
            %\c!expansie, % why njet ?
-            \c!uitlijnen,\c!tolerantie,\c!grid,
+            \c!uitlijnen,\c!titeluitlijnen,\c!tolerantie,\c!grid,
             \c!nummercommando,\c!tekstcommando]%
 \getparameters[\??ko#1][\c!expansie=]% iig een value, rather fuzzy
          \definieermarkering[#1][#2]%
@@ -1939,3 +2040,4 @@
    \c!kleur=]
 
 \protect \endinput
+

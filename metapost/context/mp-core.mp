@@ -326,6 +326,7 @@ pair    boxgriddirection ; boxgriddirection := up ;
 numeric boxgridwidth     ; boxgridwidth     := 1pt ;
 numeric boxlinewidth     ; boxlinewidth     := 1pt ;
 numeric boxlineradius    ; boxlineradius    := 0pt ; 
+numeric boxfilloffset    ; boxfilloffset    := 0pt ; 
 
 def draw_box =
   draw pxy withcolor boxlinecolor withpen pencircle scaled boxlinewidth ;
@@ -372,7 +373,14 @@ vardef do_draw_par (expr p) =
       pp := p ; 
     fi ; 
     if boxfilltype>0 :
+if boxfilloffset>0 :
+  % temporary hack
+  begingroup ; interim linejoin := mitered ;  
+  filldraw pp withcolor boxfillcolor withpen pencircle scaled (2*boxfilloffset) ;
+  endgroup ; 
+else : 
       fill pp withcolor boxfillcolor ; 
+fi ; 
     fi ;
     if boxlinetype>0 :
       draw pp withcolor boxlinecolor withpen pencircle scaled boxlinewidth ; 

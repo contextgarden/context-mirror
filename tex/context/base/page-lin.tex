@@ -16,7 +16,12 @@
 \unprotect 
 
 \newif\ifinregels
-\newif\ifregelnummersinmarge
+%\newif\ifregelnummersinmarge
+
+\chardef\linenumberlocation=0
+
+\newtoks\beforeeverylinenumbering
+\newtoks\aftereverylinenumbering
 
 \def\stelregelsin%
   {\dodoubleargument\getparameters[\??rg]}
@@ -87,7 +92,7 @@
 
 \def\dodoshowlinenumber% for use elsewhere, to be extended 
   {\doschrijfregelnummer
-   \global\advance\linenumber by 1\relax}%
+   \global\advance\linenumber 1\relax}%
 
 \def\regelweergave%
   {\convertnumber\@@rnconversie\linenumber}%
@@ -98,7 +103,7 @@
      [\c!start=1,
       \c!stap=1,
       #1]%
-   \global\linenumber=1\relax}
+   \global\linenumber1\relax}
 
 \def\stelregelnummerenin%
   {\dosingleargument\dostelregelnummerenin}
@@ -107,43 +112,57 @@
   {\EveryPar{\schrijfregelnummer}}
 
 \def\dostopnummerenLINE%
-  {\egroup}
+  {\the\aftereverylinenumbering
+   \egroup}
 
 \def\dodoschrijfregelnummer%
   {\setbox0=\hbox{\regelweergave}%
    \vsmashbox0%
-   \ifregelnummersinmarge
-     \llap{\hbox{\box0\hskip\linkermargeafstand}}%
-   \else
+   \ifcase\linenumberlocation
      \rlap{\hbox to \@@rnbreedte{\box0\hss}}% was \llap, nog testen !! 
+   \else
+     \llap{\hbox{\box0\hskip\linkermargeafstand}}%
    \fi}
 
 \def\complexstartregelnummeren[#1]%
-  {\doifnotinset{\v!verder}{#1}
-     {\global\linenumber=1\relax}%
-   \doifinsetelse{\@@rnplaats}{\v!inmarge,\v!marge}
-     {\regelnummersinmargetrue}
-     {\regelnummersinmargefalse}%
-   \ifregelnummersinmarge\else
-     \advance\leftskip by \@@rnbreedte\relax
+%  {\doifnotinset{\v!verder}{#1}
+%     {\global\linenumber=1\relax}%
+  {\doifnot{\v!verder}{#1}
+     {\doifnumberelse{#1}
+        {\global\linenumber#1}%
+        {\global\linenumber 1}%
+      \relax}%
+   \chardef\linenumberlocation0
+   \processaction
+     [\@@rnplaats]
+     [  \v!inmarge=>\chardef\linenumberlocation1,
+       \v!inlinker=>\chardef\linenumberlocation1,
+      \v!inrechter=>\chardef\linenumberlocation2,
+          \v!marge=>\chardef\linenumberlocation1]%
+       %  \v!tekst=>\chardef\linenumberlocation0,
+       %\v!unknown=>\chardef\linenumberlocation0,
+       %\v!default=>\chardef\linenumberlocation0]%
+   \ifcase\linenumberlocation % text 
+     \advance\leftskip \@@rnbreedte\relax
    \fi
    \ifinregels
      \let\dostartnummeren=\dostartnummerenLINE
      \let\stopregelnummeren=\dostopnummerenLINE
      \def\schrijfregelnummer%
        {\doschrijfregelnummer
-        \global\advance\linenumber by 1\relax}%
+        \global\advance\linenumber 1\relax}%
    \else
      \let\dostartnummeren=\dostartnummerenPAR
      \let\stopregelnummeren=\dostopnummerenPAR
      \def\schrijfregelnummer%
-       {\global\advance\linenumber by -1\relax
+       {\global\advance\linenumber -1\relax
         \doschrijfregelnummer}%
    \fi
    \dostartnummeren}
 
 \def\startregelnummeren%
   {\bgroup
+   \the\beforeeverylinenumbering
    \inregelnummerentrue
    \complexorsimpleempty\startregelnummeren}
 
@@ -235,7 +254,7 @@
       \setlinereference{\linereference}{\@@rnprefix#2}{0}{#1}%
       \advance\dimen0 by \linereference sp}%
    \prewordbreak
-   \vrule \!!width \!!zeropoint \!!depth \dimen0 \!!height \!!zeropoint
+   \vrule \!!width \zeropoint \!!depth \dimen0 \!!height \zeropoint
    \prewordbreak
    \egroup}
 
@@ -243,13 +262,13 @@
   {\endofshapebox
    \checkreferences
    \linestepper=0
-   \reshapebox{\global\advance\linestepper by 1\relax}%
-   \global\advance\linenumber by \linestepper
+   \reshapebox{\global\advance\linestepper 1\relax}%
+   \global\advance\linenumber \linestepper
    \doifelse{\@@rnrefereren}{\v!aan}
      {\reshapebox % We are going back!
         {\global\advance\linenumber by -1
          \dimen0=\dp\shapebox
-         \advance\dimen0 by -\dp\strutbox\relax
+         \advance\dimen0 -\dp\strutbox\relax
          \ifdim\dimen0>\zeropoint
            % 1=>4 | 2=>4 1=>2
            % start 1=>(n=y,l=2,p=1)
@@ -259,7 +278,7 @@
               \setlinereference\recurselevel
                 {\linereferencename}{\the\linenumber}{\linereferenceplus}}%
          \fi}%
-      \global\advance\linenumber by \linestepper
+      \global\advance\linenumber \linestepper
       \ifnum\linereference>0 % anders vreemde loop in paragraphs+recurse
         \dorecurse{\linereference}
           {\getlinereference\recurselevel
@@ -295,7 +314,7 @@
                      {\referenceprefix\linereferencename}{}{}{0}}% ==done
                  \fi}%
               \dimen0=\dp\shapebox
-              \advance\dimen0 by -\dp\strutbox\relax
+              \advance\dimen0 -\dp\strutbox\relax
               \ifdim\dimen0>\zeropoint
                 \dp\shapebox=\dp\strutbox
               \fi
@@ -303,17 +322,18 @@
       \else
         \reshapebox{\hbox{\schrijfregelnummer\box\shapebox}}% no \strut !
       \fi}
-     {\reshapebox{\global\advance\linenumber by -1}%
-      \global\advance\linenumber by \linestepper
+     {\reshapebox{\global\advance\linenumber -1}%
+      \global\advance\linenumber \linestepper
       \reshapebox{\hbox{\schrijfregelnummer\box\shapebox}}}% no \strut !
-   \global\advance\linenumber by \linestepper
+   \global\advance\linenumber \linestepper
    \flushshapebox
+   \the\aftereverylinenumbering
    \egroup}
 
-\def\crlf%
+\def\crlf
   {\ifhmode\unskip\else\strut\fi\ifcase\raggedstatus\hfil\fi\break}
 
-\def\opeenregel%
+\def\opeenregel
   {\def\crlf{\removelastspace\space}\let\\\crlf}
 
 \newcount\internalparagraphnumber
@@ -354,7 +374,7 @@
   [\c!conversie=\v!cijfers,
    \c!start=1,
    \c!stap=1,
-   \c!plaats=\v!inmarge,
+   \c!plaats=\v!marge,
    \c!letter=,
    \c!kleur=,
    \c!breedte=2em,
@@ -365,7 +385,7 @@
   [\c!status=\v!stop,
    \c!letter=,
    \c!kleur=,
-   \c!afstand=\ifregelnummersinmarge2em\else\!!zeropoint\fi] 
+   \c!afstand=\ifcase\linenumberlocation2em\else\!!zeropoint\fi] 
 
 \stelregelsin
   [\c!voor=\blanko,

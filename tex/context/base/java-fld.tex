@@ -141,15 +141,25 @@ function Hide_Field ( Name )
   { var v = this.getField(Name) ;
     if (v)
       { v.hidden = true ;
+        v.readonly = true ; 
         this.dirty = false } }
 
-function Vide_Field ( Name )
+function Do_Vide_Field ( Name,Closable )
   { var v = this.getField(Name) ;
     if (v)
       { ++visible_fields ;
         visible_field[visible_fields] = Name ;
         v.hidden = false ;
+        if (Closable)  
+          { v.readonly = false ; 
+            v.value = "On" } 
         this.dirty = false } }
+
+function Vide_Field ( Name )
+  { Do_Vide_Field(Name,false) } 
+
+function Vide_Hide_Field ( Name )
+  { Do_Vide_Field(Name,true) } 
 
 function Hide_Fields ()
   { while (visible_fields>0)
@@ -159,6 +169,10 @@ function Hide_Fields ()
 function Vide_Fields ( Name ) % show only one field
   { Hide_Fields () ;
     Vide_Field ( Name) }
+
+function Vide_Hide_Fields ( Name ) % show only one field
+  { Hide_Fields () ;
+    Vide_Hide_Field ( Name) }
 
 function Toggle_Hide ( Name )
   { var v = this.getField(Name) ;

@@ -723,8 +723,8 @@
    \else
      \boxhasformattrue
      \dosetraggedcommand\localformat
-     \edef\beforeframedbox{\raggedtopcommand\getvalue{\@@framed\c!boven}}%
-     \edef\afterframedbox {\getvalue{\@@framed\c!onder}\raggedbottomcommand}%
+     \edef\dobeforeframedbox{\raggedtopcommand\getvalue{\@@framed\c!boven}}%
+     \edef\doafterframedbox {\getvalue{\@@framed\c!onder}\raggedbottomcommand}%
    \fi
    \ifx\localoffset\v!geen
      \boxhasoffsetfalse
@@ -856,8 +856,8 @@
 \def\dodowithframebox
   {\aftergroup\dowithframebox}
 
-\let\afterframedbox \relax
-\let\beforeframedbox\relax
+\let\doafterframedbox \relax
+\let\dobeforeframedbox\relax
 
 %D Carefull analysis of this macro will learn us that not all
 %D branches in the last conditionals can be encountered, that
@@ -1233,11 +1233,11 @@
        \hsize\!!widtha
        \vsize\!!heighta
        \raggedcommand
-       \beforeframedbox
+       \dobeforeframedbox
        \bgroup
        \localbegstrut
        \aftergroup\localendstrut
-       \aftergroup\afterframedbox
+       \aftergroup\doafterframedbox
        \aftergroup\egroup
        \let\next=}
 
@@ -1317,11 +1317,11 @@
 %D come into action. The examples show us how
 %D \type {\v!passend}, \type {\v!ruim} dimensions influence the
 %D formatting. Watch the visualized struts. \voetnoot {Here we
-%D used \type {\toonstruts}.}
+%D used \type {\showstruts}.}
 %D
 %D \startuitstellen
 %D \bgroup 
-%D \toonstruts
+%D \showstruts
 %D \mindermeldingen
 %D \startregelcorrectie
 %D \halign{#\enskip&#\enskip&#\enskip&#\enskip&#\enskip&#\cr
@@ -1400,9 +1400,9 @@
 %      \setbox\framebox=\vbox to \localheight
 %        {\hsize\@@globalwidth
 %         \reshapebox{\hbox to \hsize{\ifhbox\shapebox\unhbox\else\box\fi\shapebox}}%
-%         \beforeframedbox
+%         \dobeforeframedbox
 %         \innerflushshapebox
-%         \afterframedbox}%
+%         \doafterframedbox}%
 %    \else
 %      \setbox\framebox=\vbox
 %        {\hsize\@@globalwidth
@@ -1438,9 +1438,9 @@
      \setbox\framebox=\vbox to \localheight
        {\hsize\@@globalwidth
         \reshapebox{\hbox to \hsize{\ifhbox\shapebox\unhbox\else\box\fi\shapebox}}%
-        \beforeframedbox
+        \dobeforeframedbox
         \innerflushshapebox
-        \afterframedbox}%
+        \doafterframedbox}%
    \else
      \scratchdimen=\dp\framebox
      \setbox\framebox=\vbox to \ht\framebox
@@ -2950,7 +2950,9 @@
           \vfill}
        \@@agvoor
        \ifcase\backgroundsplit\or\or % partial split
+\ifdim\pagegoal<\maxdimen
          \pagegoal=1.2\pagegoal % be a bit more tolerant
+\fi
        \fi
        \startregelcorrectie
          \localframed

@@ -75,7 +75,10 @@
   {%\savenofsubpages
    %\savenofpages
    \immediate\closeout\uti
-   \reportutilityproblems}
+   \reportutilityproblems
+   % should be a message : 
+   \let\immediatewriteutilitycommand\gobbleoneargument
+   \let\immediatewriteutility\gobbleoneargument}
 
 \def\abortutilitygeneration%
   {\immediatewriteutilitycommand{\utilitygenerationaborted}%
@@ -360,69 +363,139 @@
 
 \def\notwopassdata{0}
 
+% \def\dogettwopassdata[#1,#2]#3%
+%   {\edef\twopassdata{#1}%
+%    \ifx\twopassdata\notwopassdata
+%      \twopassdatafoundfalse
+%      \let\twopassdata\empty
+%    \else   
+%      \twopassdatafoundtrue
+%      \setxvalue{#3:\s!list}{#2}%
+%    \fi}
+% 
+% \def\gettwopassdata#1%
+%   {\loadtwopassdata
+%   %\edef\!!stringa{\csname#1:\s!list\endcsname}%
+%   %\debuggerinfo{\m!systems}{twopass get #1 - \!!stringa}%
+%   %\expandafter\dogettwopassdata\expandafter[\!!stringa]{#1}}
+%    \expanded{\dogettwopassdata[\csname#1:\s!list\endcsname]}{#1}}
+% 
+% \def\findtwopassdata#1#2%
+%   {\loadtwopassdata
+%    \expanded{\dofindtwopassdata{#1}{#2}}}
+% 
+% \def\dofindtwopassdata#1#2%
+%   {\edef\!!stringa{,\csname#1:\s!list\endcsname}%
+%   %\debuggerinfo{\m!systems}{twopass find #2 - \!!stringa}%
+%    \def\dodofindtwopassdata[##1,##2#2##3,##4]%
+%      {\edef\twopassdata{##3}%
+%       \ifx\twopassdata\empty
+%         \twopassdatafoundfalse
+%       \else
+%         \twopassdatafoundtrue
+%       \fi}%
+%    \@EA\dodofindtwopassdata\@EA[\!!stringa,#2,#2,]}
+%
+% \def\getfirsttwopassdata#1%
+%   {\loadtwopassdata
+%    \edef\!!stringa{\getvalue{#1:\s!list}}%
+%    \expandafter\dogetfirsttwopassdata\expandafter[\!!stringa]{#1}}
+% 
+% \def\dogetfirsttwopassdata[#1,#2]#3%
+%   {\doifelse{#1}{0}
+%      {\twopassdatafoundfalse
+%       \let\twopassdata\empty}
+%      {\twopassdatafoundtrue
+%       \edef\twopassdata{#1}}}
+% 
+% \def\getlasttwopassdata#1%
+%   {\loadtwopassdata
+%    \edef\twopassdata{0}\twopassdatafoundfalse
+%    \newcounter\noftwopassitems
+%    \def\docommando##1%
+%      {\doifnot{##1}{0}
+%         {\increment\noftwopassitems
+%          \edef\twopassdata{##1}\twopassdatafoundtrue}}%
+%    \processcommacommand[\getvalue{#1:\s!list}]\docommando}
+% 
+% \def\getfromtwopassdata#1#2%
+%   {\loadtwopassdata
+%    \getfromcommacommand[\csname#1:\s!list\endcsname][#2]%
+%    \doifelsenothing{\commalistelement}
+%      {\twopassdatafoundfalse
+%       \let\twopassdata\empty}
+%      {\twopassdatafoundtrue
+%       \let\twopassdata\commalistelement}}
+
+% todo: store each entry in hash, an load all uti commands at once
+
 \def\dogettwopassdata[#1,#2]#3%
   {\edef\twopassdata{#1}%
    \ifx\twopassdata\notwopassdata
      \twopassdatafoundfalse
      \let\twopassdata\empty
-   \else   
+   \else
      \twopassdatafoundtrue
      \setxvalue{#3:\s!list}{#2}%
    \fi}
 
 \def\gettwopassdata#1%
   {\loadtwopassdata
-  %\edef\!!stringa{\csname#1:\s!list\endcsname}%
-  %\debuggerinfo{\m!systems}{twopass get #1 - \!!stringa}%
-  %\expandafter\dogettwopassdata\expandafter[\!!stringa]{#1}}
-   \expanded{\dogettwopassdata[\csname#1:\s!list\endcsname]}{#1}}
+   \@EAEAEA\dogettwopassdata\@EA\@EA\@EA[\csname#1:\s!list\endcsname]{#1}}
 
 \def\findtwopassdata#1#2%
   {\loadtwopassdata
    \expanded{\dofindtwopassdata{#1}{#2}}}
 
 \def\dofindtwopassdata#1#2%
-  {\edef\!!stringa{,\csname#1:\s!list\endcsname}%
-  %\debuggerinfo{\m!systems}{twopass find #2 - \!!stringa}%
-   \def\dodofindtwopassdata[##1,##2#2##3,##4]%
-     {\edef\twopassdata{##3}%
-      \ifx\twopassdata\empty
-        \twopassdatafoundfalse
-      \else
-        \twopassdatafoundtrue
-      \fi}%
-   \@EA\dodofindtwopassdata\@EA[\!!stringa,#2,#2,]}
+  {\def\dodofindtwopassdata[##1,##2#2##3,##4]{\edef\twopassdata{##3}}%
+   \@EAEAEA\dodofindtwopassdata\@EA\@EA\@EA[\@EA\@EA\@EA,\csname#1:\s!list\endcsname,#2,#2,]%
+   \ifx\twopassdata\empty
+     \twopassdatafoundfalse
+   \else
+     \twopassdatafoundtrue
+   \fi}
 
 \def\getfirsttwopassdata#1%
   {\loadtwopassdata
-   \edef\!!stringa{\getvalue{#1:\s!list}}%
-   \expandafter\dogetfirsttwopassdata\expandafter[\!!stringa]{#1}}
+   \@EAEAEA\dogetfirsttwopassdata\@EA\@EA\@EA[\csname#1:\s!list\endcsname]{#1}}
 
 \def\dogetfirsttwopassdata[#1,#2]#3%
-  {\doifelse{#1}{0}
-     {\twopassdatafoundfalse
-      \let\twopassdata\empty}
-     {\twopassdatafoundtrue
-      \edef\twopassdata{#1}}}
+  {\edef\twopassdata{#1}%
+   \ifx\twopassdata\notwopassdata
+     \twopassdatafoundfalse
+     \let\twopassdata\empty
+   \else
+     \twopassdatafoundtrue
+   \fi}
+
+\def\dogetlasttwopassdata#1%
+  {\edef\nexttwopassdata{#1}%
+   \ifx\nexttwopassdata\notwopassdata \else
+     \let\twopassdata\nexttwopassdata
+     \advance\scratchcounter 1
+     \twopassdatafoundtrue
+   \fi}
 
 \def\getlasttwopassdata#1%
   {\loadtwopassdata
-   \edef\twopassdata{0}\twopassdatafoundfalse
-   \newcounter\noftwopassitems
-   \def\docommando##1%
-     {\doifnot{##1}{0}
-        {\increment\noftwopassitems
-         \edef\twopassdata{##1}\twopassdatafoundtrue}}%
-   \processcommacommand[\getvalue{#1:\s!list}]\docommando}
+   \scratchcounter0
+   \@EAEAEA\rawprocesscommalist\@EA\@EA\@EA[\csname#1:\s!list\endcsname]\dogetlasttwopassdata
+   \edef\noftwopassitems{\the\scratchcounter}%
+   \iftwopassdatafound\else
+     \let\twopassdata\empty
+   \fi}
 
 \def\getfromtwopassdata#1#2%
   {\loadtwopassdata
-   \getfromcommacommand[\csname#1:\s!list\endcsname][#2]%
-   \doifelsenothing{\commalistelement}
-     {\twopassdatafoundfalse
-      \let\twopassdata\empty}
-     {\twopassdatafoundtrue
-      \let\twopassdata\commalistelement}}
+   \@EAEAEA\getfromcommalist\@EA\@EA\@EA[\csname#1:\s!list\endcsname][#2]%
+   \ifx\commalistelement\empty
+     \twopassdatafoundfalse
+     \let\twopassdata\empty
+   \else
+     \twopassdatafoundtrue
+     \let\twopassdata\commalistelement
+   \fi}
 
 % Default-instellingen (verborgen)
 

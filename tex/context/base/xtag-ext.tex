@@ -47,17 +47,33 @@
 \def\startXMLmapping
   {\dodoubleempty\dostartXMLmapping}
 
-\def\dostartXMLmapping[#1][#2]% sneller maken 
+% \def\dostartXMLmapping[#1][#2]% sneller maken 
+%   {\pushmacro\@@XMLelement
+%    \pushmacro\@@XMLmapping
+%    \ifsecondargument
+%      \doifelse{#1}{-}
+%        {\donostartXMLmapping{#2}}
+%        {\doifelse{#1}{+}
+%           {\dodostartXMLmapping{#2}}
+%           {\donostartXMLmapping{#2}}}%
+%    \else
+%      \donostartXMLmapping{#1}%
+%    \fi
+%    \unprotect}
+
+\def\dostartXMLmapping[#1#2][#3]%
   {\pushmacro\@@XMLelement
    \pushmacro\@@XMLmapping
    \ifsecondargument
-     \doifelse{#1}{-}
-       {\donostartXMLmapping{#2}}
-       {\doifelse{#1}{+}
-          {\dodostartXMLmapping{#2}}
-          {\donostartXMLmapping{#2}}}%
+     \if\noexpand#1-%
+       \@EA\donostartXMLmapping
+     \else\if\noexpand#1+%
+       \@EAEAEA\dodostartXMLmapping
+     \else
+       \@EAEAEA\donostartXMLmapping
+     \fi\fi{#3}%
    \else
-     \donostartXMLmapping{#1}%
+     \donostartXMLmapping{#1#2}%
    \fi
    \unprotect}
 

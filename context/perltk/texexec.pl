@@ -232,13 +232,17 @@ if (($LogFile ne '')&&($LogFile =~ /\w+\.log$/io))
     *STDOUT = *LOGFILE ;
     *STDERR = *LOGFILE }
 
-my $Program = " TeXExec 2.7 - ConTeXt / PRAGMA ADE 1997-2001" ;
+my $Program = " TeXExec 2.8 - ConTeXt / PRAGMA ADE 1997-2002" ;
 
 print "\n$Program\n\n";
 
 my $pathslash = '/' ; if ($0 =~ /\\/) { $pathslash = "\\" }
 my $cur_path  = ".$pathslash" ;
-my $own_path  = $0 ; $own_path =~ s/texexec(\.pl|\.bat|)//io ;
+my $own_path  = $0 ; $own_path =~ s/texexec(\.pl|\.bat|\.exe)//io ;
+my $own_type  = $1 ; 
+my $own_stub  = "" ; 
+
+if ($own_type =~ /pl/oi) { $own_stub = "perl " } 
 
 sub checked_path
   { my $path = shift  ;
@@ -545,6 +549,8 @@ if ($ConTeXtPath)    { $ConTeXtPath    =~ s/[\/\\]$// ; $ConTeXtPath    .= '/' }
 if ($SetupPath)      { $SetupPath      =~ s/[\/\\]$// ; $SetupPath      .= '/' }
 if ($TeXScriptsPath) { $TeXScriptsPath =~ s/[\/\\]$// ; $TeXScriptsPath .= '/' }
 
+$SetupPath =~ s/\\/\//go ;  
+
 my %OutputFormats ;
 
 $OutputFormats{pdf}      = "pdftex" ;
@@ -797,8 +803,10 @@ sub MPJobName
 sub RunPerlScript
   { my ($ScriptName, $Options) = @_ ;
     if ($dosish)
-      { if (-e "$TeXScriptsPath$ScriptName.pl")
-          { system ("perl $TeXScriptsPath$ScriptName.pl $Options") } }
+#      { if (-e "$TeXScriptsPath$ScriptName.pl")
+      { if (-e "$TeXScriptsPath$ScriptName$own_type")
+#          { system ("perl $TeXScriptsPath$ScriptName.pl $Options") } }
+          { system ("$own_stub$TeXScriptsPath$ScriptName$own_type $Options") } }
     else
       { system ("$ScriptName $Options") } }
 

@@ -251,7 +251,7 @@
   {\ifcase\figurestatus
      \def\@@efcurrentpath{#1}%
      \sanitizefilename#1\to\@@efcurrentpath
-     \doiffileinsertionsupportedelse{\@@efcurrenttype}
+     \doiffileinsertionsupportedelse\@@efcurrenttype
        {\assignfullfilename % needed 
           {\@@efcurrentpath}% 
           {\@@effilename.\figureextension{\@@efcurrenttype}}%
@@ -267,7 +267,7 @@
 \def\doanalyzefigurefilesA%
   {\ifcase\figurestatus
      \@@eftrace{locating \@@efcurrentfile\space as \@@efcurrenttype}%
-     \doiffileelse{\@@efcurrentfile}
+     \doiffileelse\@@efcurrentfile
        {\getfiguredimensionsA
         \getfiguredimensionsB
         \getfiguredimensionsC}
@@ -413,7 +413,7 @@
      \ifcase\figurestatus\ifcase\figurefilemode\else
       %\doif{\@@efcurrenttype}{\c!tex} % oeps, was wrong 
        \doifnotinset{\@@efextension}{\c!tex,\c!tmp}
-         {\doiffileelse{\@@efcurrentfile}
+         {\doiffileelse\@@efcurrentfile
             {\edef\@@effilenametype{\@@effilename.\@@efcurrenttype}%
              \@@eftrace{running texutil on \@@effilenametype}%
              \def\@@efloadname{\f!utilityfilename.\f!temporaryextension}%
@@ -527,14 +527,14 @@
 
 \def\dodolocatepresetfigurefiles#1%
   {\ifcase\figurestatus
-     \doiffileinsertionsupportedelse{\@@efcurrenttype}
+     \doiffileinsertionsupportedelse\@@efcurrenttype
        {%\edef\@@efcurrentfile%
         %  {#1\f!pathseparator\@@effilename.\figureextension{\@@efcurrenttype}}%
         \assignfullfilename
           {#1}{\@@effilename.\figureextension{\@@efcurrenttype}}%
           \to\@@efcurrentfile
         \@@eftrace{only searching for \@@efcurrentfile}%
-        \doiffileelse{\@@efcurrentfile}
+        \doiffileelse\@@efcurrentfile
           {\chardef\figurestatus=1
            \let\@@eftype\@@efcurrenttype
            \let\@@effullname\@@efcurrentfile}
@@ -1261,12 +1261,32 @@
   {\dosixtupleempty\dodoplaceexternalfigure}
 
 \def\dodoplaceexternalfigure[#1][#2][#3][#4][#5][#6]%
-  {\bgroup
-   \def\textunderscore{_}% brrr, temp hack  
-   \calculateexternalfigure[#1][#2][#3][#4][#5][#6]%
-   \calculateexternalscreenfigure[#1][#2][#3][#4][#5][#6]%
-   \box\foundexternalfigure
-   \egroup}
+  {\doifsomething{#3}% catches \defineexternalfigure dummies
+     {\bgroup
+      \def\textunderscore{_}% brrr, temp hack  
+      \calculateexternalfigure[#1][#2][#3][#4][#5][#6]%
+      \calculateexternalscreenfigure[#1][#2][#3][#4][#5][#6]%
+      \box\foundexternalfigure
+      \egroup}}
+
+% new: more convenient/efficient than 
+%
+%   \use..[a][a][setting] \externalfigure[b][a] 
+%
+% is equivalent to: 
+%
+%   \def..[a][setting]    \externalfigure[b][a]
+% 
+% see x-res modules for usage: 
+%                          
+% \defineexternalfigure[name][settings] 
+
+\def\dodefineexternalfigure[#1][#2]%
+  {\setvalue{\??ef\??ef#1}%
+     {\doplaceexternalfigure[\dopresetfigure][#1][][#2][]}}
+
+\def\defineexternalfigure
+  {\dodoubleargument\dodefineexternalfigure}
 
 \def\getexternalfigure#1%
   {\getvalue{\??ef\??ef#1}}
@@ -1412,30 +1432,15 @@
    \popendofline
    \egroup}
 
-\def\pagefigure%
+\def\pagefigure
   {\dodoubleempty\dopagefigure}
 
 \def\dopagefigure[#1][#2]%
   {\bgroup
-   \pagina
-   \setbox\scratchbox=\hbox{\externalfigure[#1][#2]}%
-   \getparameters
-     [\??ex][\c!offset=\!!zeropoint,#2]
-   \scratchdimen=\@@exoffset
-   \dimen0=\figurewidth \advance\dimen0 2\scratchdimen\edef\figurewidth {\the\dimen0}
-   \dimen0=\figureheight\advance\dimen0 2\scratchdimen\edef\figureheight{\the\dimen0}
-   \definepapersize
-     [\s!dummy][\c!breedte=\figurewidth,\c!hoogte=\figureheight]
-   \setuppapersize
-     [\s!dummy][\s!dummy]
-   \setupcolors
-     [\c!status=\v!start]
-   \stellayoutin
-     [\c!kopwit=\@@exoffset,  \c!rugwit=\@@exoffset,
-       \c!hoofd=\!!zeropoint,   \c!voet=\!!zeropoint,
-      \c!hoogte=\v!midden,   \c!breedte=\v!midden]
-   \box\scratchbox
-   \pagina
+   \getparameters[\??ex][\c!offset=\!!zeropoint,#2]
+   \startTEXpage[\c!offset=\@@exoffset]%
+     \externalfigure[#1][#2]%
+   \stopTEXpage
    \egroup}
 
 % \starttext \pagefigure[two.1] \stoptext

@@ -33,6 +33,7 @@
      \scratchdimen-\vsize
      \advance\scratchdimen \teksthoogte
      \global\advance\vsize \scratchdimen
+\relax
      \ifdim\pagegoal<\maxdimen
        \advance\scratchdimen \pagegoal
        \global\pagegoal\scratchdimen
@@ -64,10 +65,7 @@
         \kern\maxdepth
         \dobotinsertions
       \fi\fi\fi
-      \ifdim\ht\footins>\zeropoint % beter dan \ifvoid\footins\else
-        \kern\skip\footins
-        \kern\ht\footins
-      \fi}%
+      \fakefootnotes}%
    \ifbottomnotes
      \ifgridsnapping
        \getnoflines\teksthoogte
@@ -81,9 +79,7 @@
      \scratchdimen\zeropoint
    \fi
    \setbox2=\hbox
-     {\ifvoid\savedfootins \else
-        \setbox\footins\box\savedfootins
-      \fi
+     {\checksinglecolumnfootnotes
       \lower\scratchdimen\vbox{\placefootnotes}}%
    \smashbox2% % needed here 
    \ifbottomnotes
@@ -367,6 +363,10 @@
             \v!rechts=>\rightfloat{\box\floatbox},
           \v!inlinker=>\leftmarginfloat{\box\floatbox},
          \v!inrechter=>\rightmarginfloat{\box\floatbox},
+       \v!linkermarge=>\leftmarginfloat{\box\floatbox},
+      \v!rechtermarge=>\rightmarginfloat{\box\floatbox},
+        \v!linkerrand=>\leftedgefloat{\box\floatbox},
+       \v!rechterrand=>\rightedgefloat{\box\floatbox},
            \v!inmarge=>{\doinmargenormal\leftmarginfloat
                         \rightmarginfloat{\box\floatbox}}]%
      \doifinset{\v!lang}{#1}

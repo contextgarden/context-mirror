@@ -338,12 +338,12 @@
 %D We can declare some characteristics of the document with
 %D
 %D \starttypen 
-%D \dosetupidentity {title} {subject} {author} {creator} {date} 
+%D \dosetupidentity {title} {subject} {author} {creator} {date} {keys}
 %D \stoptypen
 %D
 %D All data is in string format. 
 
-\installspecial [\dosetupidentity] [and] [5]
+\installspecial [\dosetupidentity] [and] [6]
 
 %D \macros
 %D   {dosetuppaper}
@@ -816,17 +816,24 @@
 \installspecial [\doregistercalculationset] [or] [1]
 
 %D \macros 
-%D   {doinsertcomment}
+%D   {doinsertcomment, doflushcomments}
 %D
 %D Not so much out of need, but to be complete, we also 
 %D implement text annotations, so called  comment:
 %D 
 %D \starttypen
 %D \doinsertcomment
-%D   {title} {width} {height} {color} {open} {symbol} {data} 
+%D   {title} {width} {height} {color} {open} {symbol} {collect} {data} 
+%D \stoptypen
+%D
+%D When enables, comments can be collected and flushed: 
+%D
+%D \starttypen
+%D \doflushcomments
 %D \stoptypen
 
-\installspecial[\doinsertcomment] [and] [7]
+\installspecial[\doinsertcomment] [and] [8]
+\installspecial[\doflushcomments] [and] [0]
 
 %D \macros
 %D   {dosetposition, dosetpositionwhd, dosetpositionplus, 

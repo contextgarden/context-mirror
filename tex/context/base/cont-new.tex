@@ -17,8 +17,171 @@
 %D excellent place for hacks and new features.
 
 \unprotect
+
+
+\def\woordrechts % zie naw 
+  {\groupedcommand
+     {\hfill\allowbreak\strut\hfill\hbox}
+     {\parfillskip\zeropoint\par}}
+
+\def\startkolomopmaak
+  {\bgroup
+   \getnoflines\vsize
+   \scratchdimen\noflines\lineheight
+   \vbox to \scratchdimen\bgroup}
+
+\def\stopkolomopmaak
+  {\vss % niet meer aanpassen 
+   \egroup
+   \egroup}
+
+% transparency ! 
+
+\def\dodoglobalstopcolor
+  {\ifcase\colorlevel \else
+     \donoglobalstopcolor
+     \global\@EA\let\@EA\previouscolor\csname\@@currentcolorname\endcsname
+     \ifcase\colorlevel\relax
+       \docolormark\empty
+       \dostoptransparency
+       \dostopcolormode
+     \else % let's do a bit redundant testing here
+       \docolormark\previouscolor
+       \ifx\previouscolor\empty
+         \dostoptransparency
+         \dostopcolormode
+       \else
+         \doifcolorelse\previouscolor
+           {\ifx\currentcolor\previouscolor\else
+% alternatively we could let \startcolormode handle this 
+\dostoptransparency % really needed 
+%\dostopcolormode % less safe but more efficient 
+              \startcolormode\previouscolor
+            \fi}
+           {\dostoptransparency
+            \dostopcolormode}%
+       \fi
+     \fi
+   \fi}
+
+\unexpanded\def\placeheadtext
+  {\doquintupleempty\doplaceheadtextornumber
+     [\c!tekstletter][\c!tekstkleur][\empty]}
+
+\unexpanded\def\placeheadnumber
+  {\doquintupleempty\doplaceheadtextornumber
+     [\c!nummerletter][\c!nummerkleur][\v!nummer]}
+
+\def\doplaceheadtextornumber[#1][#2][#3][#4][#5]%
+  {\bgroup
+   \edef\@@sectie{\??ko\iffifthargument#5\else#4\fi}%
+   \dostartattributes\@@sectie\c!letter\c!kleur\empty
+     \dontconvertfont
+     \dostartattributes\@@sectie#1#2\empty
+       \stelinterliniein % \setupinterlinespace
+       \begstrut\getmarking[\hoofdmarkering{#4#3}]\endstrut
+       \endgraf
+     \dostopattributes
+   \dostopattributes
+   \egroup}
+
+\def\doplaatskoptekst#1#2#3#4%
+  {\beginheadplacement{#1}%
+   \iflegekop
+     \setbox0\ifvertical\vbox\else\hbox\fi to \zeropoint
+       {\headnumbercontentfalse
+        \resetsystemmode\v!sectienummer
+        #2}%
+     \makestrutofbox0
+   \else
+     \setbox0=\ifvertical\vbox\else\hbox\fi % \vhbox
+       {\headnumbercontentfalse
+        \resetsystemmode\v!sectienummer
+        % outerside font determines distance
+        \dosetfontattribute{\??ko#1}\c!letter
+        % but we don't want color to influence user commands 
+        \getvalue{\??ko#1\c!commando}        
+          {} % no number
+          {\dostartattributes{\??ko#1}\c!letter\c!kleur\empty 
+             \dostartattributes{\??ko#1}\c!tekstletter\c!tekstkleur\empty
+               \dontconvertfont
+               \ifdisplaysectionhead
+                 \stelinterliniein
+               \else
+                 \stelspatieringin
+               \fi
+               #2%
+               \getvalue{\??ko#1\c!voorcommando}%
+               \ifdisplaysectionhead
+                 \getvalue{\??ko#1\c!tekstcommando}%
+                   {\setstrut\begstrut#3\endstrut}%
+                 \xdef\localheaddepth{\the\dp\strutbox}%
+               \else
+                 \getvalue{\??ko#1\c!tekstcommando}{#3}%
+               \fi
+               \getvalue{\??ko#1\c!nacommando}%
+               \ifdisplaysectionhead\endgraf\fi
+             \dostopattributes
+          \dostopattributes}}%  
+   \fi  
+   \endheadplacement{#1}{#4}}
+
+\def\doplaatskopnummertekst#1#2#3#4#5%
+  {\beginheadplacement{#1}%
+   \iflegekop
+     \setbox0\ifvertical\vbox\else\hbox\fi to \zeropoint
+       {\doiftextelse{#3}
+          {\setsystemmode  \v!sectienummer\headnumbercontenttrue }
+          {\resetsystemmode\v!sectienummer\headnumbercontentfalse}%
+        #2}%
+     \makestrutofbox0
+   \else
+     \setbox0=\ifvertical\vbox\else\hbox\fi % \vhbox
+       {\doiftextelse{#3}
+          {\setsystemmode  \v!sectienummer\headnumbercontenttrue }
+          {\resetsystemmode\v!sectienummer\headnumbercontentfalse}%
+        % outerside font determines distance
+        \dosetfontattribute{\??ko#1}\c!letter
+        % but we don't want color to influence user commands 
+        \getvalue{\??ko#1\c!commando}%
+          {\dostartattributes{\??ko#1}\c!letter\c!kleur\empty
+             \dostartattributes{\??ko#1}\c!nummerletter\c!nummerkleur\empty
+               \getvalue{\??ko#1\c!voorcommando}%
+               \ifdisplaysectionhead
+                 \getvalue{\??ko#1\c!nummercommando}%
+                   {\setstrut\begstrut#3\endstrut}%
+               \else
+                 \getvalue{\??ko#1\c!nummercommando}{#3}%
+               \fi
+             \dostopattributes
+           \dostopattributes}
+          {\dostartattributes{\??ko#1}\c!letter\c!kleur\empty
+             \dostartattributes{\??ko#1}\c!tekstletter\c!tekstkleur\empty
+               \dontconvertfont
+               \ifdisplaysectionhead
+                 \stelinterliniein
+               \else
+                 \stelspatieringin
+               \fi
+               #2%
+               \ifdisplaysectionhead
+                 \getvalue{\??ko#1\c!tekstcommando}%
+                   {\setstrut\begstrut#4\endstrut}%
+                 \xdef\localheaddepth{\the\dp\strutbox}%
+               \else
+                 \getvalue{\??ko#1\c!tekstcommando}{#4}%
+               \fi
+               \getvalue{\??ko#1\c!nacommando}%
+               \ifdisplaysectionhead\endgraf\fi
+           \dostopattributes
+          \dostopattributes}}%
+   \fi
+   \endheadplacement{#1}{#5}}
+
 
 \writestatus{\m!systems}{beware: some patches loaded from cont-new.tex!}
+
+% todo : hoe komt box er uit 
 
 % \def\@@itemcounter {\s!itemcount} -> non nested continue 
 %
@@ -57,22 +220,6 @@
    \doanalyzefigurefiles\doanalyzefigurefilesA
    \doanalyzefigurefiles\doanalyzefigurefilesB
    \doanalyzefigurefiles\doanalyzefigurefilesC}
-
-\def\dodefineexternalfigure[#1][#2]%
-  {\setvalue{\??ef\??ef#1}%
-     {\doplaceexternalfigure[\dopresetfigure][#1][][#2][]}}
-
-\def\defineexternalfigure
-  {\dodoubleargument\dodefineexternalfigure}
-
-\def\dodoplaceexternalfigure[#1][#2][#3][#4][#5][#6]%
-  {\doifsomething{#3}% catches \defineexternalfigure dummies
-     {\bgroup
-      \def\textunderscore{_}% brrr, temp hack  
-      \calculateexternalfigure[#1][#2][#3][#4][#5][#6]%
-      \calculateexternalscreenfigure[#1][#2][#3][#4][#5][#6]%
-      \box\foundexternalfigure
-      \egroup}}
 
 \definesystemvariable {bl} % bleeding
 
@@ -515,8 +662,7 @@
 
 \appendtoks\insertparagraphintro\to\everypar
 
-%D \starttext
-%D
+%D \starttypen
 %D \setupparagraphintro[first][\hbox to 3.5em{\tt FIRST \hss}]
 %D \setupparagraphintro[first][\hbox to 3.5em{\tt TSRIF \hss}]
 %D \setupparagraphintro[next] [\hbox to 3.5em{\tt NEXT  \hss}]
@@ -535,8 +681,7 @@
 %D some paragraph \par
 %D some paragraph \par
 %D some paragraph \par
-%D
-%D \stoptext
+%D \stoptypen
 
 \def\@@themaintextcolor{themaintextcolor}
 
@@ -810,13 +955,13 @@
    \hfil
    &}
 
-%D \starttable[|||]
-%D \HL
-%D \VL test \VS test \VL \FR
-%D \VL test \VD test \VL \MR
-%D \VL test \VT test \VL \LR
-%D \HL
-%D \stoptable
+% \starttable[|||]
+% \HL
+% \VL test \VS test \VL \FR
+% \VL test \VD test \VL \MR
+% \VL test \VT test \VL \LR
+% \HL
+% \stoptable
 
 %D To be documented, \type {\includemenu[menu]}.
 %D To be documented, \type {\emphbf} cum suis.
@@ -876,11 +1021,6 @@
 
 \def\doifstrategyvariable   #1#2{\doifstrategyvariableelse{#1}{#2}{}}
 \def\doifnotstrategyvariable#1#2{\doifstrategyvariableelse{#1}{}{#2}}
-
-\let\definieerkolomgroep\definecolumnset
-\let\stelkolomgroepin   \setupcolumnset
-\let\startkolomgroep    \startcolumnset
-\let\stopkolomgroep     \stopcolumnset
 
 %D New: only at start of columns; may change ! Rather
 %D interwoven and therefore to be integrated when the multi
@@ -981,3 +1121,4 @@
 \readfile {cont-loc} {} {}
 
 \endinput
+

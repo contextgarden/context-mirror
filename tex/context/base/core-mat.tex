@@ -27,7 +27,7 @@
 
 \newdimen\lastlinewidth 
 
-\def\setlastlinewidth% 
+\def\setlastlinewidth
   {\resetlastlinewidth
    \ifmmode\else\ifhmode\else\ifoptimizedisplayspacing
      \bgroup
@@ -37,8 +37,8 @@
      \egroup
    \fi\fi\fi}
 
-\def\resetlastlinewidth%
-  {\global\lastlinewidth\!!zeropoint\relax}
+\def\resetlastlinewidth
+  {\global\lastlinewidth\zeropoint\relax}
 
 \appendtoks \setlastlinewidth \to \everyendofpar
 

@@ -172,6 +172,17 @@
 
 \egroup
 
+%D NEW:
+
+\chardef\kindoffile=0 % 0=normal 1=http
+
+\def\checkfilename#1%
+  {\ifinstringelse{http://}{#1}%
+     \chardef\kindoffile1
+   \else
+     \chardef\kindoffile0
+   \fi}
+
 %D \macros
 %D   {readfile,ReadFile,maxreadlevel,
 %D    normalinput}
@@ -240,17 +251,22 @@
 
 \def\doreadfile#1#2#3%
   {\sanitizefilename#1\to\readfilename
-   \immediate\openin\scratchread=\readfilename\relax
-   \ifeof\scratchread
-     \immediate\closein\scratchread
-     \decrement\readlevel\relax
-     \ifnum\readlevel>0
-       \def\next{\doreadfile{\pathplusfile{\f!parentpath}{#1}}{#2}{#3}}%
+   \checkfilename\readfilename
+   \ifcase\kindoffile
+     \immediate\openin\scratchread=\readfilename\relax
+     \ifeof\scratchread
+       \immediate\closein\scratchread
+       \decrement\readlevel\relax
+       \ifnum\readlevel>0
+         \def\next{\doreadfile{\pathplusfile{\f!parentpath}{#1}}{#2}{#3}}%
+       \else
+         \def\next{#3}%
+       \fi
      \else
-       \def\next{#3}%
+       \def\next{\immediate\closein\scratchread#2\dodoreadfile}%
      \fi
    \else
-     \def\next{\immediate\closein\scratchread#2\dodoreadfile}%
+     \def\next{#2\dodoreadfile}%
    \fi
    \next}               
 
@@ -265,7 +281,6 @@
 
 \def\ReadFile#1%
   {\readfile{#1}\donothing\donothing}
-
 
 %D \macros
 %D   {readjobfile,readlocfile,readsysfile,
@@ -338,13 +353,17 @@
 %D in the normal way by \type{\closein}.
 
 \def\doopenin#1#2%
-  {\increment\readlevel
-   \immediate\openin#1=#2\relax
-   \ifeof#1\relax
-     \ifnum\readlevel>\maxreadlevel\relax
-     \else
-       \immediate\closein#1\relax
-       \doopenin{#1}{\pathplusfile{\f!parentpath}{#2}}%
+  {\sanitizefilename#2\to\readfilename
+   \checkfilename\readfilename
+   \ifcase\kindoffile
+     \increment\readlevel
+     \immediate\openin#1=\readfilename\relax
+     \ifeof#1\relax
+       \ifnum\readlevel>\maxreadlevel\relax
+       \else
+         \immediate\closein#1\relax
+         \doopenin{#1}{\pathplusfile{\f!parentpath}{#2}}%
+       \fi
      \fi
    \fi}
 
@@ -382,28 +401,29 @@
 %D \doiflocfileelse {filename} {before loading} {not found}
 %D \stoptypen
 
-%\def\doiffileelse#1#2#3%
-%  {\immediate\openin\scratchread=#1\relax
-%   \ifeof\scratchread
-%     \def\next{#3}%
-%   \else
-%     \def\next{#2}%
-%   \fi
-%   \immediate\closein\scratchread
-%   \next}
-
-\def\doiffileelse#1%
+\def\doiffileelse#1#2#3%
   {\immediate\openin\scratchread=#1\relax
    \ifeof\scratchread
-     \immediate\closein\scratchread
-     \expandafter\secondoftwoarguments
+     \def\next{#3}%
    \else
-     \immediate\closein\scratchread
-     \expandafter\firstoftwoarguments
-   \fi}
+     \def\next{#2}%
+   \fi
+   \immediate\closein\scratchread
+   \next}
+
+% \def\doiflocfileelse#1%
+%   {\doiffileelse{\pathplusfile{\f!currentpath}{#1}}}
 
 \def\doiflocfileelse#1%
-  {\doiffileelse{\pathplusfile{\f!currentpath}{#1}}}
+  {\makelocreadfilename{#1}%
+   \doiffileelse\readfilename}
+
+\def\makelocreadfilename#1%
+  {\sanitizefilename#1\to\readfilename
+   \checkfilename\readfilename
+   \ifcase\kindoffile
+     \edef\locreadfilename{\pathplusfile{\f!currentpath}{#1}}%
+   \fi}
 
 %D \macros
 %D   {doonlyonce, doinputonce, doendinputonce}
@@ -473,7 +493,7 @@
 %        {\catcode`"=\the\catcode`"\relax
 %         \catcode`<=\the\catcode`<\relax
 %         \catcode`>=\the\catcode`>\relax}%
-%      \catcode`"=\@@other
+%      \catcode`"=\@@letter
 %      \catcode`<=\@@other
 %      \catcode`>=\@@other
 %      \let\stopreadingfile=\dostopreadingfile
@@ -486,9 +506,10 @@
 %    \fi
 %    \decrement\readingfilelevel}
 
-\def\normalless {<} % geen \let ! 
-\def\normalmore {>} % geen \let ! 
-\def\normalequal{=} % geen \let ! 
+\def\normalless    {<} % geen \let ! 
+\def\normalmore    {>} % geen \let ! 
+\def\normalequal   {=} % geen \let ! 
+\def\normaldblquote{"} % geen \let ! 
 
 \newcounter\readingfilelevel
 
@@ -583,7 +604,7 @@
 %% 
 %% \def\setspecialcatcodes%
 %%   {\catcode`/=\@@other
-%%    \catcode`"=\@@letter
+%%    \catcode`"=\@@other
 %%    \catcode`<=\@@other
 %%    \catcode`>=\@@other}
 

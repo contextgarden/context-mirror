@@ -228,10 +228,14 @@
 .unexpanded.gdef.enableXML*
   B.catcode`.!=.@@other*
    .catcode`.?=.@@other* 
+   .catcode`.:=.@@other* active in french  
+   .catcode`.;=.@@other* active in french  
    .catcode`.&=.@@active .let&=.doXMLentity*
    .catcode`.<=.@@active .unexpanded.def<B.doXMLelementE*
-   .catcode`.>=.@@other  .catcode`."=.@@other*
-   .catcode`./=.@@other  .catcode`.'=.@@other*
+   .catcode`.>=.@@other  
+   .catcode`."=.@@other*
+   .catcode`./=.@@other  
+   .catcode`.'=.@@other*
    *catcode`.#=.@@active .def#PP1B&tex-hash;E* gobbles its own dup 
    .catcode`.#=.@@active .def#B&tex-hash;E* 
    .catcode`.$=.@@active .def$B&tex-dollar;E*
@@ -1501,7 +1505,8 @@
 
 \def\XMLflushdata#1% see m-steps for usage
   {\@EA\ifx\csname\@@XMLdata:#1\endcsname\longempty\else
-     \@EAEAEA\XMLdata\@EA\@EA\@EA{\csname\@@XMLdata:#1\endcsname}%
+     %\@EAEAEA\XMLdata\@EA\@EA\@EA{\csname\@@XMLdata:#1\endcsname}%
+     \@EA\XMLdata\csname\@@XMLdata:#1\endcsname
    \fi}
 
 \let\XMLpop    \XMLflush
@@ -1949,15 +1954,35 @@
 
 % interesting and fully expandable
 
-\def\XMLifequalelse#1#2#3%
+\def\XMLownifequalelse#1#2%
+  {\@EAEAEA\@@ifequal\csname\@@XMLvariable:\ownXMLelement:#1\endcsname\relax\@@and#2\relax\@@then}
+
+% \def\XMLifequalelse#1#2#3%
+%   {\@EAEAEA\@@ifequal\csname\@@XMLvariable:#1:#2\endcsname\relax\@@and#3\relax\@@then}
+
+\def\XMLifequalelse#1#2%
   {\ifcsname\@@XMLvariable:#1:#2\endcsname
-     \@EAEAEA\@@ifequal\csname\@@XMLvariable:#1:#2\endcsname\relax\@@and#3\relax\@@then
+     \@EAEAEA\doXMLifequalelse\@EA\@EA\csname\@@XMLvariable:#1:#2\endcsname
    \else
      \@EA\secondoftwoarguments
    \fi}
 
-\def\XMLownifequalelse#1#2%
-  {\@EAEAEA\@@ifequal\csname\@@XMLvariable:\ownXMLelement:#1\endcsname\relax\@@and#2\relax\@@then}
+\def\doXMLifequalelse#1#2%
+  {\@EA\@@ifequal#1\relax\@@and#2\relax\@@then}
+
+%D \starttypen 
+%D \defineXMLenvironment[test][a=1]
+%D   {\XMLownifequalelse{a}{2}{YES}{NO}}
+%D   {}
+%D 
+%D \defineXMLenvironment[test][a=1]
+%D   {\XMLifequalelse{test}{a}{1}{YES}{NO}}
+%D   {}
+%D 
+%D \startXMLdata
+%D <test a="1">test</test>
+%D \stopXMLdata
+%D \stoptypen  
 
 \def\XMLyes#1{\XMLownifequalelse{#1}{yes}{#1}{}}
 

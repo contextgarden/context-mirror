@@ -706,10 +706,26 @@ enddef ;
 
 %D Saves typing: 
 
-vardef bottomboundary primary p = (llcorner p -- lrcorner p) enddef ;
-vardef rightboundary  primary p = (lrcorner p -- urcorner p) enddef ;
-vardef topboundary    primary p = (urcorner p -- ulcorner p) enddef ;
-vardef leftboundary   primary p = (ulcorner p -- llcorner p) enddef ;
+% vardef bottomboundary primary p = (llcorner p -- lrcorner p) enddef ;
+% vardef rightboundary  primary p = (lrcorner p -- urcorner p) enddef ;
+% vardef topboundary    primary p = (urcorner p -- ulcorner p) enddef ;
+% vardef leftboundary   primary p = (ulcorner p -- llcorner p) enddef ;
+
+vardef bottomboundary primary p = 
+  if pair p : p else : (llcorner p -- lrcorner p) fi 
+enddef ;
+
+vardef rightboundary  primary p = 
+  if pair p : p else : (lrcorner p -- urcorner p) fi 
+enddef ;
+
+vardef topboundary    primary p = 
+  if pair p : p else : (urcorner p -- ulcorner p) fi 
+enddef ;
+
+vardef leftboundary   primary p = 
+  if pair p : p else : (ulcorner p -- llcorner p) fi 
+enddef ;
 
 %D Nice too:
 
@@ -1835,7 +1851,7 @@ if unknown darkyellow : color darkyellow ; darkyellow := .625(1,1,0) fi ;
 if unknown darkgray   : color darkgray   ; darkgray   := .625(1,1,1) fi ; 
 if unknown lightgray  : color lightgray  ; lightgray  := .875(1,1,1) fi ; 
 
-% an improeved plain mp macro 
+% an improved plain mp macro 
 
 vardef center primary p = 
   if pair p : p else : .5[llcorner p, urcorner p] fi  
@@ -1905,6 +1921,19 @@ def addbackground text t =
   fill boundingbox p t ; draw p ;
   endgroup ;
 enddef ;
+
+% makes a (line) into an infinite one (handy for calculating
+% intersection points
+
+vardef infinite expr p = 
+  (-infinity*unitvector(direction 0 of p) 
+    shifted point 0 of p 
+   -- p -- 
+   +infinity*unitvector(direction length(p) of p) 
+    shifted point length(p) of p)
+enddef ; 
+
+
 
 % done 
 

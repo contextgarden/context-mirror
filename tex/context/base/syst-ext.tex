@@ -2797,14 +2797,14 @@
 %    \doprocesstokens#5\lastcharacter
 %    \egroup}
 
-\def\dodoprocesstokens%
+\def\dodoprocesstokens
   {\ifx\nextprocessedtoken\lastcharacter
      \after
      \let\nextprocessedtoken=\relax
    \else\ifx\nextprocessedtoken\bgroup
      \def\nextprocessedtoken%
        {\dowithnextbox
-          {\before{\box\nextbox}%
+          {\before{\copy\nextbox}% \before can use nextbox several times 
            \let\before\between
            \doprocesstokens}
            \hbox\bgroup}%          
@@ -4064,5 +4064,19 @@
 
 \def\verbatimstring#1%
   {\convertargument#1\to\ascii\ascii}
+
+%D These are needed in ordinal number conversions: 
+
+\def\lastdigit#1%
+  {\@EA\thelastdigit\number#1\relax}
+
+\def\thelastdigit#1#2%
+  {\ifx#2\relax#1\else\@EA\thelastdigit\@EA#2\fi}
+
+\def\lasttwodigits#1%
+  {\@EA\thelasttwodigits\@EA0\number#1\relax}
+
+\def\thelasttwodigits#1#2#3% 0 dig ... \relax
+  {\ifx#3\relax#1#2\else\@EA\thelasttwodigits\@EA#2\@EA#3\fi}
 
 \protect \endinput

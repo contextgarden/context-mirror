@@ -451,9 +451,7 @@
        \dosynchronizeoutput
        \allowbreak % hm
      \fi
-     \ifdim\ht\footins>\zeropoint % updates vsize 
-       \insert\footins{\unvbox\footins}%
-     \fi
+     \synchronizevsize
    \fi}
 
 \def\OTRSETsethsize%
@@ -511,19 +509,17 @@
   {\ifvoid\OTRSETsavedfootnotes \else
      \iflastcolumnfootnotes
        \ifnum\nofcolumns=\mofcolumns 
-         \insert\footins{\unvbox\OTRSETsavedfootnotes}%
+         \flushsavedcolumnfootnotes
        \fi
      \else
-       \insert\footins{\unvbox\OTRSETsavedfootnotes}%
+       \flushsavedcolumnfootnotes
      \fi
    \fi}
 
 \def\OTRSETsavefootnotes
   {\iflastcolumnfootnotes
-     \ifnum\nofcolumns=\mofcolumns 
-     \else
-       \global\setbox\OTRSETsavedfootnotes=\vbox
-         {\unvbox\OTRSETsavedfootnotes\box\footins}%
+     \ifnum\nofcolumns=\mofcolumns \else
+       \savecolumnfootnotes
      \fi
    \fi}
 
@@ -865,12 +861,12 @@
      \ifnum\mofcolumns=\nofcolumns
        \def\qofcolumns{\mofcolumns}%
      \else
-       \scratchcounter=\mofcolumns 
+       \scratchcounter\mofcolumns 
        \advance\scratchcounter 1 
        \edef\qofcolumns{\the\scratchcounter}%
      \fi
    \else
-     \let\qofcolumns=\mofcolumns
+     \let\qofcolumns\mofcolumns
    \fi
    \enoughcolumncellsfalse
    \donefalse
@@ -900,10 +896,10 @@
      \OTRSETsetgridcells\currenthcell\currentvcell\columnhcells\columnvcells
        {\copy#9}%
      \ifnum\currenthcell=\mofcolumns\relax
-       \ifdim\ht\OTRSETsavedfootnotes>\zeropoint % \footins
+       \ifdim\ht\OTRSETsavedfootnotes>\zeropoint
          \OTRSETsetfreecells\mofcolumns\columnfirstcell
          \ifsomefreecolumncells
-           \getnoflines{\ht\OTRSETsavedfootnotes}% \footins
+           \getnoflines{\ht\OTRSETsavedfootnotes}% 
 \relax
            \ifnum\columnfreecells<\noflines
              \global\somefreecolumncellsfalse
@@ -1169,7 +1165,7 @@
   {\increment\columnsetlevel\relax
    \ifnum\columnsetlevel=1
      \OTRSETgetmanualbalance 
-     \edef\savedfootnotedimen{\the\dimen\footins}% ugly
+     \savefootnotedimensions
      \bgroup
      \def\currentcolumnset{#2}%
      \binnenkolommentrue % will be different flag 
@@ -1183,20 +1179,6 @@
      \bgroup 
    \fi}
 
-%\def\stopcolumnset%
-%  {\ifnum\columnsetlevel=1
-%     \par
-%     \OTRSETsetmanualbalance 
-%     \dostopcolumnset
-%     \egroup
-%     \global\footnotelimittrue
-%     \dimen\footins\savedfootnotedimen % ugly
-%     \ifsomefloatwaiting \setvsize \pagina \setvsize \fi
-%   \else
-%     \egroup
-%   \fi
-%   \decrement\columnsetlevel\relax}
-
 \def\stopcolumnset%
   {\relax
    \ifnum\columnsetlevel=1
@@ -1205,15 +1187,15 @@
      \dostopcolumnset
      \egroup
      \global\footnotelimittrue
-     \dimen\footins\savedfootnotedimen % ugly
-\setvsize
-\sethsize
-\ifvoid\OTRfinalpagebox\else
-  \dp\OTRfinalpagebox\zeropoint
-  \box\OTRfinalpagebox
-  \nobreak\vbox{\strut}\vskip-\lineheight
-\prevdepth\dp\strutbox  
-\fi
+     \restorefootnotedimensions
+     \setvsize
+     \sethsize
+     \ifvoid\OTRfinalpagebox\else
+       \dp\OTRfinalpagebox\zeropoint
+       \box\OTRfinalpagebox
+       \nobreak\vbox{\strut}\vskip-\lineheight
+     \prevdepth\dp\strutbox  
+     \fi
      \ifsomefloatwaiting \setvsize \pagina \setvsize \fi
    \else
      \egroup
@@ -1405,12 +1387,10 @@
    \fi}
 
 \def\OTRSETforceinserts%
-  {\global\count\footins=1000
-   \global\skip\footins=1\baselineskip\relax}%  plus 4\baselineskip\relax }
+  {\enablecolumnfootnotes}
 
 \def\OTRSETinhibitinserts%
-  {\global\count\footins=0
-   \global\skip\footins=\zeropoint}
+  {\disablecolumnfootnotes}
 
 % interface to footnotes
 

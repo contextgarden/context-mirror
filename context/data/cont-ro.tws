@@ -1653,6 +1653,7 @@ var:linii:*numar::
 var:grid:da,nu::
 var:spatiujos:*numar::
 var:cutspace:*numar::
+var:textdistance:*numar::
 stopsetup
 
 startsetup
@@ -1676,8 +1677,8 @@ stopsetup
 
 startsetup
 com:mutapegrid:
-typ:val/:
-val:sus,ambele,subsol,-sus,-ambele,-subsol, inalt,centru,jos,pagina,standard,niciunul, broad,ajustat:standard:
+typ:vals/:
+val:sus,ambele,subsol,-sus,-ambele,-subsol, inalt,centru,jos,pagina,niciunul,standard, broad,ajustat,adancime,linie,*dimensiune:standard:
 stopsetup
 
 startsetup
@@ -2309,6 +2310,7 @@ var:prefix:+,-,*text::
 var:punetitlu:da,nu::
 var:numarincrement:da,nu,*fisier::
 var:aliniere:stanga,dreapta,normal,broad::
+var:alinieretitlu:da,nu::
 var:toleranta:foartestrict,strict,tolerant,foartetolerant,dilatat::
 var:aliniaturmator:da,nu::
 var:fisier:*nume::
@@ -2666,7 +2668,7 @@ typ:vars/vals/:
 var:d:*numar::
 var:m:*numar::
 var:y:*numar::
-val:zi,luna,zisaptamana,an, dd,mm,jj,yy,d,m,j,y,referinta:zi,luna,an:
+val:zi,zi+,luna,zisaptamana,an, dd,dd+,mm,jj,yy,d,d+,m,j,y,referinta:zi,luna,an:
 stopsetup
 
 startsetup
@@ -2953,7 +2955,11 @@ typ:val/vars/:
 val:*nume::
 var:inaltime:*dimensiune::
 var:latime:*dimensiune::
+var:inaltimemaxima:*dimensiune::
+var:latimemaxima:*dimensiune::
+var:implicit:*nume::
 var:marginipagina:*lista::
+var:locatie:stanga,centru,dreapta::
 ivr:seteazainconjurat::
 stopsetup
 
@@ -3796,8 +3802,8 @@ var:inaltime:*dimensiune::
 var:culoare:*nume::
 var:titlu:*text::
 var:spatiu:da,nu::
-var:simbol:normal,Nou,Balon,Adaugare,Ajutor,Paragraf,Cheie::
-var:optiune:max::
+var:simbol:normal, Nou,Balon,Adaugare,Ajutor,Paragraf,Cheie, *nume::
+var:optiune:max,buffer::
 stopsetup
 
 startsetup

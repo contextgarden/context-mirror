@@ -1653,6 +1653,7 @@ var:lines:*number::
 var:grid:yes,no::
 var:bottomspace:*number::
 var:cutspace:*number::
+var:textdistance:*number::
 stopsetup
 
 startsetup
@@ -1676,8 +1677,8 @@ stopsetup
 
 startsetup
 com:moveongrid:
-typ:val/:
-val:top,both,bottom,-top,-both,-bottom, high,middle,low,page,standard,none, broad,fit:standard:
+typ:vals/:
+val:top,both,bottom,-top,-both,-bottom, high,middle,low,page,none,standard, broad,fit,depth,line,*dimension:standard:
 stopsetup
 
 startsetup
@@ -2309,6 +2310,7 @@ var:prefix:+,-,*text::
 var:placehead:yes,no::
 var:incrementnumber:yes,no,*file::
 var:align:left,right,normal,broad::
+var:aligntitle:yes,no::
 var:tolerance:verystrict,strict,tolerant,verytolerant,stretch::
 var:indentnext:yes,no::
 var:file:*name::
@@ -2666,7 +2668,7 @@ typ:vars/vals/:
 var:d:*number::
 var:m:*number::
 var:y:*number::
-val:day,month,weekday,year, dd,mm,jj,yy,d,m,j,y,referral:day,month,year:
+val:day,day+,month,weekday,year, dd,dd+,mm,jj,yy,d,d+,m,j,y,referral:day,month,year:
 stopsetup
 
 startsetup
@@ -2953,7 +2955,11 @@ typ:val/vars/:
 val:*name::
 var:height:*dimension::
 var:width:*dimension::
+var:maxheight:*dimension::
+var:maxwidth:*dimension::
+var:default:*name::
 var:pageboundaries:*list::
+var:location:left,middle,right::
 ivr:setupframed::
 stopsetup
 
@@ -3796,8 +3802,8 @@ var:height:*dimension::
 var:color:*name::
 var:title:*text::
 var:space:yes,no::
-var:symbol:normal,New,Balloon,Addition,Help,Paragraph,Key::
-var:option:max::
+var:symbol:normal, New,Balloon,Addition,Help,Paragraph,Key, *name::
+var:option:max,buffer::
 stopsetup
 
 startsetup

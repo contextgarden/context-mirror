@@ -11,6 +11,21 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
+% \let\PDFdestvoffset\zeropoint
+% \newbox\pdfdestbox
+% 
+% \def\doPDFdestination name #1%
+%   {\ifdim\PDFdestvoffset=\zeropoint\relax
+%      \pdfdest name {#1}\PDFpageviewkey
+%    \else
+%      \setbox\pdfdestbox\hbox to \zeropoint
+%        {\raise\PDFdestvoffset\hbox{\pdfdest name {#1}\PDFpageviewkey}}%
+%      \ht\pdfdestbox\zeropoint
+%      \box\pdfdestbox
+%    \fi}
+% 
+% \def\PDFdestvoffset{2\lineheight} % {1.5\ht\strutbox}
+
 %D \macros
 %D   {jobsuffix}
 %D
@@ -528,6 +543,8 @@
 \definespecial\dostartgotorealpage{\doPDFstartgotorealpage}
 \definespecial\dostartgotoJS      {\doPDFstartgotoJS}
 
+\let\PDFpagexyzspec\empty % hack, pdftex does not accept spec
+
 %D \macros
 %D   {doflushJSpreamble}
 %D
@@ -590,7 +607,7 @@
 %D etc. For the moment \PDFTEX\ only supports the first three
 %D of these.
 
-\definespecial\dosetupidentity#1#2#3#4#5%
+\definespecial\dosetupidentity#1#2#3#4#5#6%
   {\bgroup
    \enablePDFdocencoding
    \pdfinfo
@@ -598,7 +615,9 @@
       /Title (#1)
       /Subject (#2)
       /Author (#3)
-      /Creator (#4)}%
+      /Creator (#4)
+      /ModificationDate (#5) 
+      /Keywords (#6)}%
    \egroup}
 
 %D \macros
@@ -689,7 +708,13 @@
      \def\dodostopobject%
        {\egroup
         \ifx\PDFimagereference\empty
-          \immediate\pdfxform resources {\currentPDFresources}\nextbox
+          % We also flush page resources, since shared 
+          % resources end up there; otherwise transparencies 
+          % won't work in xforms; some day I will optimize 
+          % this. 
+          \immediate\pdfxform 
+            resources {\currentPDFresources\the\pdfpageresources}%
+            \nextbox
           \global\let\currentPDFresources\empty
           \dosetobjectreference{#1}{#2}{\the\pdflastxform}%
         \else
@@ -755,11 +780,12 @@
 %D box.
 
 %D \macros
-%D   {doinsertcomment}
+%D   {doinsertcomment, doflushcomments}
 %D
 %D Text annotation, or comments, are provided too:
 
 \definespecial\doinsertcomment{\doPDFinsertcomment}
+\definespecial\doflushcomments{\doPDFflushcomments}
 
 %D \macros
 %D   {dopresetlinefield,dopresettextfield,

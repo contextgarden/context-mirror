@@ -1653,6 +1653,7 @@ var:regels:*getal::
 var:grid:ja,nee::
 var:bodemwit:*getal::
 var:snijwit:*getal::
+var:tekstafstand:*getal::
 stopsetup
 
 startsetup
@@ -1676,8 +1677,8 @@ stopsetup
 
 startsetup
 com:verplaatsopgrid:
-typ:val/:
-val:boven,beide,onder,-boven,-beide,-onder, hoog,midden,laag,pagina,standaard,geen, ruim,passend:standaard:
+typ:vals/:
+val:boven,beide,onder,-boven,-beide,-onder, hoog,midden,laag,pagina,geen,standaard, ruim,passend,diepte,regel,*maat:standaard:
 stopsetup
 
 startsetup
@@ -2309,6 +2310,7 @@ var:prefix:+,-,*tekst::
 var:plaatskop:ja,nee::
 var:verhoognummer:ja,nee,*file::
 var:uitlijnen:links,rechts,normaal,ruim::
+var:titeluitlijnen:ja,nee::
 var:tolerantie:zeerstreng,streng,soepel,zeersoepel,rek::
 var:springvolgendein:ja,nee::
 var:file:*naam::
@@ -2666,7 +2668,7 @@ typ:vars/vals/:
 var:d:*getal::
 var:m:*getal::
 var:y:*getal::
-val:dag,maand,weekdag,jaar, dd,mm,jj,yy,d,m,j,y,kenmerk:dag,maand,jaar:
+val:dag,dag+,maand,weekdag,jaar, dd,dd+,mm,jj,yy,d,d+,m,j,y,kenmerk:dag,maand,jaar:
 stopsetup
 
 startsetup
@@ -2953,7 +2955,11 @@ typ:val/vars/:
 val:*naam::
 var:hoogte:*maat::
 var:breedte:*maat::
+var:maxhoogte:*maat::
+var:maxbreedte:*maat::
+var:default:*naam::
 var:paginaovergangen:*lijst::
+var:plaats:links,midden,rechts::
 ivr:stelomlijndin::
 stopsetup
 
@@ -3796,8 +3802,8 @@ var:hoogte:*maat::
 var:kleur:*naam::
 var:titel:*tekst::
 var:spatie:ja,nee::
-var:symbool:normaal,Nieuw,Ballon,Toevoeging,Help,Paragraaf,Sleutel::
-var:optie:max::
+var:symbool:normaal, Nieuw,Ballon,Toevoeging,Help,Paragraaf,Sleutel, *naam::
+var:optie:max,buffer::
 stopsetup
 
 startsetup

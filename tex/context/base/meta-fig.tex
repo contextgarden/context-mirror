@@ -43,15 +43,15 @@
 
 \presetlocalframed[\??mg]
 
-\def\setupMPpage%
+\def\setupMPpage
   {\dodoubleargument\getparameters[\??mg]}
 
-\def\startMPpage%
-  {\dosingleempty\dostartMPpage}
+\def\startMPpage
+  {\dodoubleempty\dostartMPpage}
 
-\long\def\dostartMPpage[#1]#2\stopMPpage
+\long\def\dostartMPpage[#1][#2]#3\stopMPpage % second arg gobbles space
   {\dostartfittingpage[\??mg][#1]%
-     \startMPcode#2\stopMPcode
+     \startMPcode#3\stopMPcode
    \dostopfittingpage}
 
 \setupMPpage

@@ -1,20 +1,20 @@
 startsetup
 com:installalingua:
 typ:val/vars/:
-val:*name::
+val:*nome::
 var:spaziatura:impaccato,ampio::
-var:lefthyphenmin:*dimension::
-var:righthyphenmin:*dimension::
+var:lefthyphenmin:*dimensione::
+var:righthyphenmin:*dimensione::
 var:stato:inizia,termina::
-var:frasesinistra:*command::
-var:frasedestra:*command::
-var:sottofrasesinistra:*command::
-var:sottofrasedestra:*command::
-var:menzionesinistra:*command::
-var:menzionedestra:*command::
-var:citazionesinistra:*command::
-var:citazionedestra:*command::
-var:implicito:*name::
+var:frasesinistra:*comando::
+var:frasedestra:*comando::
+var:sottofrasesinistra:*comando::
+var:sottofrasedestra:*comando::
+var:menzionesinistra:*comando::
+var:menzionedestra:*comando::
+var:citazionesinistra:*comando::
+var:citazionedestra:*comando::
+var:implicito:*nome::
 stopsetup
 
 startsetup
@@ -39,45 +39,45 @@ stopsetup
 startsetup
 com:traduci:
 typ:vars/:
-var:*name:*text::
+var:*nome:*testo::
 stopsetup
 
 startsetup
 com:usacodifica:
 typ:vals/:
-val:*name::
+val:*nome::
 stopsetup
 
 startsetup
 com:usaspecialita:
 typ:vals/:
-val:reset,*name::
+val:reset,*nome::
 stopsetup
 
 startsetup
 com:definiscioutput:
 typ:val/vals/:
-val:*name::
-val:*name::
+val:*nome::
+val:*nome::
 stopsetup
 
 startsetup
 com:impostaoutput:
 typ:vals/:
-val:*name::
+val:*nome::
 stopsetup
 
 startsetup
 com:definisciambientefontdeltesto:
 typ:val/vars/:
 val:5pt,...,12pt,default::
-var:text:*dimension::
-var:script:*dimension::
-var:scriptscript:*dimension::
-var:x:*dimension::
-var:xx:*dimension::
-var:piccolo:*dimension::
-var:grande:*dimension::
+var:text:*dimensione::
+var:script:*dimensione::
+var:scriptscript:*dimensione::
+var:x:*dimensione::
+var:xx:*dimensione::
+var:piccolo:*dimensione::
+var:grande:*dimensione::
 stopsetup
 
 startsetup
@@ -122,7 +122,7 @@ stopsetup
 startsetup
 com:impostafontdeltesto:
 typ:vals/:
-val:*name, serif,regolare,roman, sans,supporto,sansserif, mono,type,teletype, grafiamanuale,calligrafico, 5pt,...,12pt:sau,ibm,12pt,serif:
+val:*nome, serif,regolare,roman, sans,supporto,sansserif, mono,type,teletype, grafiamanuale,calligrafico, 5pt,...,12pt:sau,ibm,12pt,serif:
 stopsetup
 
 startsetup
@@ -134,20 +134,20 @@ stopsetup
 startsetup
 com:definiscifont:
 typ:val/val/:
-val:*name::
+val:*nome::
 val:*file::
 stopsetup
 
 startsetup
 com:impostastrut:
 typ:vals/:
-val:si,no,cap,*text:si:
+val:si,no,cap,*testo:si:
 stopsetup
 
 startsetup
 com:impostacolore:
 typ:val/:
-val:*name:rgb:
+val:*nome:rgb:
 stopsetup
 
 startsetup
@@ -159,92 +159,92 @@ var:riduzione:si,no::
 var:rgb:si,no::
 var:cmyk:si,no::
 var:mpcmyk:si,no::
-var:coloretesto:*name::
+var:coloretesto:*nome::
 stopsetup
 
 startsetup
 com:definiscicolore:
 typ:val/vars/:
-val:*name::
-var:r:*text::
-var:g:*text::
-var:b:*text::
-var:c:*text::
-var:m:*text::
-var:y:*text::
-var:k:*text::
-var:s:*text::
+val:*nome::
+var:r:*testo::
+var:g:*testo::
+var:b:*testo::
+var:c:*testo::
+var:m:*testo::
+var:y:*testo::
+var:k:*testo::
+var:s:*testo::
 stopsetup
 
 startsetup
 com:iniziacolore:
 typ:val/stp/:
-val:*name::
-val:*text::
+val:*nome::
+val:*testo::
 stopsetup
 
 startsetup
 com:colore:
 typ:val/arg/:
-val:*text::
+val:*testo::
 stopsetup
 
 startsetup
 com:coloregrigio:
 typ:val/:
-val:*text::
+val:*testo::
 stopsetup
 
 startsetup
 com:mostracolore:
 typ:val/:
-val:*name::
+val:*nome::
 stopsetup
 
 startsetup
 com:definiscitavolozza:
 typ:val/vars/:
-val:*name::
-var:*name:*name::
+val:*nome::
+var:*nome:*nome::
 stopsetup
 
 startsetup
 com:impostatavolozza:
 typ:val/:
-val:*name::
+val:*nome::
 stopsetup
 
 startsetup
 com:definiscigruppocolori:
 typ:val/val/trips/:
-val:*name::
+val:*nome::
 val:rgb,cmyk,grigio,s:rgb:
 stopsetup
 
 startsetup
 com:mostratavolozza:
 typ:val/vals/:
-val:*name::
+val:*nome::
 val:orizzontale,verticale,nome,valore::
 stopsetup
 
 startsetup
 com:mostragruppocolori:
 typ:val/vals/:
-val:*name::
+val:*nome::
 val:orizzontale,verticale,nome,valore,numero::
 stopsetup
 
 startsetup
 com:confrontatavolozza:
 typ:val/:
-val:*name::
+val:*nome::
 stopsetup
 
 startsetup
 com:confrontagruppocolori:
 typ:val/:
-val:*name::
+val:*nome::
 stopsetup
 
 startsetup
@@ -255,7 +255,7 @@ stopsetup
 startsetup
 com:definiscitype:
 typ:val/vars/:
-val:*name::
+val:*nome::
 ivr:impostatype::
 stopsetup
 
@@ -264,63 +264,63 @@ com:impostatype:
 typ:vars/:
 var:spazio:attivo,disattivo::
 var:opzione:inclinato,normale,nessuno::
-var:stile:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...,*command::
-var:colore:*name::
+var:stile:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...,*comando::
+var:colore:*nome::
 stopsetup
 
 startsetup
 com:type:
 typ:arg/:
-val:*text::
+val:*testo::
 stopsetup
 
 startsetup
 com:typ:
 typ:arg/:
-val:*text::
+val:*testo::
 stopsetup
 
 startsetup
 com:tex:
 typ:arg/:
-val:*text::
+val:*testo::
 stopsetup
 
 startsetup
 com:arg:
 typ:arg/:
-val:*text::
+val:*testo::
 stopsetup
 
 startsetup
 com:definiscityping:
 typ:val/vars/:
-val:file,typing,*name::
+val:file,typing,*nome::
 ivr:impostatyping::
 stopsetup
 
 startsetup
 com:impostatyping:
 typ:val/vars/:
-val:file,typing,*name::
+val:file,typing,*nome::
 var:spazio:attivo,disattivo::
 var:pagina:si,no::
 var:opzione:inclinato,normale,comandi,colore,nessuno::
 var:testo:si,no::
-var:icomando:*command::
-var:vcomando:*command::
-var:ccomando:*command::
-var:prima:*command::
-var:dopo:*command::
-var:margine:*dimension,standard,si,no::
-var:marginepari:*dimension::
-var:marginedispari:*dimension::
-var:rigovuoto:*dimension,piccolo,medio,grande,standard,mezzariga,riga::
+var:icomando:*comando::
+var:vcomando:*comando::
+var:ccomando:*comando::
+var:prima:*comando::
+var:dopo:*comando::
+var:margine:*dimensione,standard,si,no::
+var:marginepari:*dimensione::
+var:marginedispari:*dimensione::
+var:rigovuoto:*dimensione,piccolo,medio,grande,standard,mezzariga,riga::
 var:escape:*\@@mssetupcharacter ::
 var:rientrasuccessivo:si,no::
-var:stile:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...,*command::
-var:colore:*name::
-var:tavolozza:*name::
+var:stile:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...,*comando::
+var:colore:*nome::
+var:tavolozza:*nome::
 var:righe:si,no,sillabato::
 stopsetup
 
@@ -332,7 +332,7 @@ stopsetup
 startsetup
 com:typefile:
 typ:arg/arg/:
-val:*name::
+val:*nome::
 val:*file::
 stopsetup
 
@@ -340,21 +340,21 @@ startsetup
 com:impostanotepdp:
 typ:vars/:
 var:conversione:numeri,lettere,Lettere,numeriromani,Numeriromani::
-var:modo:datesto,da*section::
+var:modo:datesto,da*sezione::
 var:luogo:pagina,testo,colonne,alto,nessuno::
 var:linea:attivo,disattivo::
-var:prima:*command::
-var:dopo:*command::
-var:ampiezza:*dimension::
-var:altezza:*dimension::
+var:prima:*comando::
+var:dopo:*comando::
+var:ampiezza:*dimensione::
+var:altezza:*dimensione::
 var:fonttesto:5pt,...,12pt,piccolo,grande::
-var:stile:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...,*command::
-var:distanza:*dimension::
-var:distanzacolonne:*dimension::
-var:distanzamargine:*dimension::
-var:n:*number::
-var:comandonumero:*\command#1::
-var:separa:tollerante,strict,moltostrict,*number::
+var:stile:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...,*comando::
+var:distanza:*dimensione::
+var:distanzacolonne:*dimensione::
+var:distanzamargine:*dimensione::
+var:n:*numero::
+var:comandonumero:*\comando#1::
+var:separa:tollerante,rigido,moltorigido,*numero::
 ivr:incorniciato::
 stopsetup
 
@@ -367,13 +367,13 @@ stopsetup
 startsetup
 com:notapdp:
 typ:ref/arg/:
-val:*text::
+val:*testo::
 stopsetup
 
 startsetup
 com:testonotapdp:
 typ:ref/arg/:
-val:*text::
+val:*testo::
 stopsetup
 
 startsetup
@@ -403,118 +403,118 @@ startsetup
 com:impostasottolinea:
 typ:vars/:
 var:alternativa:a,b,c::
-var:spessorelinea:*dimension::
-var:offsetfondo:*dimension::
-var:offsetcima:*dimension::
-var:colorelinea:*name::
+var:spessorelinea:*dimensione::
+var:offsetfondo:*dimensione::
+var:offsetcima:*dimensione::
+var:colorelinea:*nome::
 stopsetup
 
 startsetup
 com:sottolinea:
 typ:arg/:
-val:*text::
+val:*testo::
 stopsetup
 
 startsetup
 com:sottolinee:
 typ:wrds/:
-val:*text::
+val:*testo::
 stopsetup
 
 startsetup
 com:sopralinea:
 typ:arg/:
-val:*text::
+val:*testo::
 stopsetup
 
 startsetup
 com:sopralinee:
 typ:wrds/:
-val:*text::
+val:*testo::
 stopsetup
 
 startsetup
 com:sbarrato:
 typ:arg/:
-val:*text::
+val:*testo::
 stopsetup
 
 startsetup
 com:sbarrati:
 typ:wrds/:
-val:*text::
+val:*testo::
 stopsetup
 
 startsetup
 com:numeriromani:
 typ:arg/:
-val:*number::
+val:*numero::
 stopsetup
 
 startsetup
 com:Numeriromani:
 typ:arg/:
-val:*number::
+val:*numero::
 stopsetup
 
 startsetup
 com:numeri:
 typ:arg/:
-val:*number::
+val:*numero::
 stopsetup
 
 startsetup
 com:lettera:
 typ:arg/:
-val:*number::
+val:*numero::
 stopsetup
 
 startsetup
 com:Lettera:
 typ:arg/:
-val:*number::
+val:*numero::
 stopsetup
 
 startsetup
 com:lettere:
 typ:arg/:
-val:*number::
+val:*numero::
 stopsetup
 
 startsetup
 com:Lettere:
 typ:arg/:
-val:*number::
+val:*numero::
 stopsetup
 
 startsetup
 com:medievale:
 typ:arg/:
-val:*number::
+val:*numero::
 stopsetup
 
 startsetup
 com:mese:
 typ:arg/:
-val:*number::
+val:*numero::
 stopsetup
 
 startsetup
 com:MESE:
 typ:arg/:
-val:*number::
+val:*numero::
 stopsetup
 
 startsetup
 com:giornosettimana:
 typ:arg/:
-val:*number::
+val:*numero::
 stopsetup
 
 startsetup
 com:GIORNOSETTIMANA:
 typ:arg/:
-val:*number::
+val:*numero::
 stopsetup
 
 startsetup
@@ -527,224 +527,224 @@ stopsetup
 startsetup
 com:cap:
 typ:arg/:
-val:*text::
+val:*testo::
 stopsetup
 
 startsetup
 com:nocap:
 typ:arg/:
-val:*text::
+val:*testo::
 stopsetup
 
 startsetup
 com:CAP:
 typ:arg/:
-val:*text::
+val:*testo::
 stopsetup
 
 startsetup
 com:Cap:
 typ:arg/:
-val:*text::
+val:*testo::
 stopsetup
 
 startsetup
 com:Caps:
 typ:wrds/:
-val:*text::
+val:*testo::
 stopsetup
 
 startsetup
 com:PAROLA:
 typ:wrd/:
-val:*text::
+val:*testo::
 stopsetup
 
 startsetup
 com:PAROLE:
 typ:wrds/:
-val:*text::
+val:*testo::
 stopsetup
 
 startsetup
 com:Parola:
 typ:wrd/:
-val:*text::
+val:*testo::
 stopsetup
 
 startsetup
 com:Parole:
 typ:wrds/:
-val:*text::
+val:*testo::
 stopsetup
 
 startsetup
 com:stirato:
 typ:wrd/:
-val:*text::
+val:*testo::
 stopsetup
 
 startsetup
 com:definiscisimbolo:
 typ:val/val/:
-val:*name::
-val:*text::
+val:*nome::
+val:*testo::
 stopsetup
 
 startsetup
 com:definiscifigurasimbolo:
 typ:val/val/vars/:
-val:*name::
-val:*text::
+val:*nome::
+val:*testo::
 ivr:figuraesterna::
 stopsetup
 
 startsetup
 com:simbolo:
 typ:val/val/:
-val:*name::
-val:*name::
+val:*nome::
+val:*nome::
 stopsetup
 
 startsetup
 com:iniziasetsimboli:
 typ:val/stp/:
-val:*name::
+val:*nome::
 stopsetup
 
 startsetup
 com:impostasetsimboli:
 typ:val/:
-val:*name::
+val:*nome::
 stopsetup
 
 startsetup
 com:usasimboli:
 typ:val/:
-val:*name::
+val:*nome::
 stopsetup
 
 startsetup
 com:mostrasetsimboli:
 typ:val/:
-val:*name::
+val:*nome::
 stopsetup
 
 startsetup
 com:definisciconversione:
 typ:val/val/:
-val:*name::
-val:*command,*text::
+val:*nome::
+val:*comando,*testo::
 stopsetup
 
 startsetup
 com:convertinumero:
 typ:arg/arg/:
-val:*name::
-val:*number::
+val:*nome::
+val:*numero::
 stopsetup
 
 startsetup
 com:impostatestointestazioni:
 typ:val/var/:
 val:nl,fr,en,uk,de,es,cz,..:nl:
-var:*name:*text::
+var:*nome:*testo::
 stopsetup
 
 startsetup
 com:impostatestoetichette:
 typ:val/var/:
 val:nl,fr,en,uk,de,es,cz,..:nl:
-var:*name:*text::
+var:*nome:*testo::
 stopsetup
 
 startsetup
 com:testoinstestazioni:
 typ:arg/:
-val:*text::
+val:*testo::
 stopsetup
 
 startsetup
 com:testoetichetta:
 typ:arg/:
-val:*text::
+val:*testo::
 stopsetup
 
 startsetup
 com:impostalineemargine:
 typ:var/:
-var:livello:*number::
-var:spessore:*dimension::
+var:livello:*numero::
+var:spessore:*dimensione::
 stopsetup
 
 startsetup
 com:inizialineamargine:
 typ:val/stp/:
-val:*number::
+val:*numero::
 stopsetup
 
 startsetup
 com:lineamargine:
 typ:val/arg/:
-val:*number::
+val:*numero::
 stopsetup
 
 startsetup
 com:impostaampiezzariga:
 typ:val/:
-val:*dimension::
+val:*dimensione::
 stopsetup
 
 startsetup
 com:impostaincorniciato:
 typ:vars/:
-var:altezza:adatta,ampio,*dimension::
-var:ampiezza:adatta,ampio,*dimension::
-var:offset:nessuno,sovrapponi,implicito,*dimension::
+var:altezza:adatta,ampio,*dimensione::
+var:ampiezza:adatta,ampio,*dimensione::
+var:offset:nessuno,sovrapponi,implicito,*dimensione::
 var:luogo:basso,profondita::
 var:opzione:nessuno,vuoto::
 var:strut:si,no::
 var:allinea:no,sinistra,destra,centro,normale,alto,basso,pedap::
-var:fondo:*command::
-var:cima:*command::
+var:fondo:*comando::
+var:cima:*comando::
 var:cornice:attivo,disattivo,sovrapponi::
 var:cornicecima:attivo,disattivo::
 var:cornicefondo:attivo,disattivo::
 var:cornicesinistra:attivo,disattivo::
 var:cornicedestra:attivo,disattivo::
-var:offsetcornice:*dimension::
-var:profonditacornice:*dimension::
+var:offsetcornice:*dimensione::
+var:profonditacornice:*dimensione::
 var:angolocornice:rotondo,rettangolare::
-var:raggiocornice:*dimension::
-var:colorecornice:*name::
-var:sfondo:schermo,colore,nessuno,foreground,*name::
-var:schermosfondo:*number::
-var:coloresfondo:*name::
-var:offsetsfondo:cornice,*dimension::
-var:profonditasfondo:*dimension::
+var:raggiocornice:*dimensione::
+var:colorecornice:*nome::
+var:sfondo:schermo,colore,nessuno,foreground,*nome::
+var:schermosfondo:*numero::
+var:coloresfondo:*nome::
+var:offsetsfondo:cornice,*dimensione::
+var:profonditasfondo:*dimensione::
 var:angolosfondo:rotondo,rettangolare::
-var:raggiosfondo:*dimension::
-var:profondita:*dimension::
+var:raggiosfondo:*dimensione::
+var:profondita:*dimensione::
 var:angolo:rotondo,rettangolare::
-var:raggio:*dimension::
+var:raggio:*dimensione::
 var:vuoto:si,no::
-var:coloreprimopiano:*name::
-var:foregroundstyle:*name::
-val:*text::
+var:coloreprimopiano:*nome::
+var:foregroundstyle:*nome::
+val:*testo::
 stopsetup
 
 startsetup
 com:incorniciato:
 typ:vars/arg/:
 ivr:impostaincorniciato::
-val:*text::
+val:*testo::
 stopsetup
 
 startsetup
 com:circondato:
 typ:vars/arg/:
 ivr:impostaincorniciato::
-val:*text::
+val:*testo::
 stopsetup
 
 startsetup
@@ -757,19 +757,19 @@ startsetup
 com:impostalineesottili:
 typ:var/:
 var:interlinea:piccolo,medio,grande::
-var:n:*number::
-var:prima:*command::
-var:tra:*command::
-var:dopo:*command::
-var:colore:*name::
-var:coloresfondo:*name::
-var:altezza:*dimension,max::
-var:profondita:*dimension,max::
+var:n:*numero::
+var:prima:*comando::
+var:tra:*comando::
+var:dopo:*comando::
+var:colore:*nome::
+var:coloresfondo:*nome::
+var:altezza:*dimensione,max::
+var:profondita:*dimensione,max::
 var:alternativa:a,b,c,d::
-var:spessorelinea:*dimension::
-var:colore:*name::
+var:spessorelinea:*dimensione::
+var:colore:*nome::
 var:sfondo:colore::
-var:coloresfondo:*name::
+var:coloresfondo:*nome::
 stopsetup
 
 startsetup
@@ -785,14 +785,14 @@ stopsetup
 startsetup
 com:definiscitestoincorniciato:
 typ:val/vars/:
-val:*name::
+val:*nome::
 ivr:impostatestiincorniciati::
 stopsetup
 
 startsetup
 com:definisciincorniciato:
 typ:val/vars/:
-val:*name::
+val:*nome::
 ivr:impostatestiincorniciati::
 stopsetup
 
@@ -800,12 +800,12 @@ startsetup
 com:impostatestiincorniciati:
 typ:vars/:
 var:fonttesto:5pt,...,12pt,piccolo,grande::
-var:stile:normale,grassetto,inclinato,grassettoinclinato,type,piccolo...,*command::
-var:sinistra:*command::
-var:destra:*command::
-var:prima:*command::
-var:dopo:*command::
-var:interno:*command::
+var:stile:normale,grassetto,inclinato,grassettoinclinato,type,piccolo...,*comando::
+var:sinistra:*comando::
+var:destra:*comando::
+var:prima:*comando::
+var:dopo:*comando::
+var:interno:*comando::
 var:correzioneriga:attivo,disattivo::
 var:correzioneprofondita:attivo,disattivo::
 var:margine:standard,si,no::
@@ -838,12 +838,12 @@ stopsetup
 startsetup
 com:impostasfondo:
 typ:vars/:
-var:offsetsinistro:*dimension::
-var:offsetdestro:*dimension::
-var:offsetcima:*dimension::
-var:offsetfondo:*dimension::
-var:prima:*command::
-var:dopo:*command::
+var:offsetsinistro:*dimensione::
+var:offsetdestro:*dimensione::
+var:offsetcima:*dimensione::
+var:offsetfondo:*dimensione::
+var:prima:*comando::
+var:dopo:*comando::
 var:stato:inizia,termina::
 ivr:impostaincorniciato::
 stopsetup
@@ -863,14 +863,14 @@ stopsetup
 startsetup
 com:impostalineeriempimento:
 typ:vars/:
-var:ampiezza:adatta,ampio,*dimension::
-var:distanza:*dimension::
-var:prima:*command::
-var:dopo:*command::
-var:stile:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...,*command::
-var:n:*number::
+var:ampiezza:adatta,ampio,*dimensione::
+var:distanza:*dimensione::
+var:prima:*comando::
+var:dopo:*comando::
+var:stile:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...,*comando::
+var:n:*numero::
 var:interlinea:piccolo,medio,grande::
-var:separatore:*text::
+var:separatore:*testo::
 stopsetup
 
 startsetup
@@ -882,40 +882,40 @@ stopsetup
 startsetup
 com:impostarigheriempimento:
 typ:vars/:
-var:ampiezza:*dimension::
-var:margine:*dimension::
-var:distanza:*dimension::
-var:prima:*command::
-var:dopo:*command::
+var:ampiezza:*dimensione::
+var:margine:*dimensione::
+var:distanza:*dimensione::
+var:prima:*comando::
+var:dopo:*comando::
 stopsetup
 
 startsetup
 com:impostalineetesto:
 typ:vars/:
 var:luogo:sinistra,inmargine::
-var:prima:*command::
-var:dopo:*command::
-var:tra:*command::
-var:ampiezza:*dimension::
-var:distanza:*dimension::
+var:prima:*comando::
+var:dopo:*comando::
+var:tra:*comando::
+var:ampiezza:*dimensione::
+var:distanza:*dimensione::
 var:fonttesto:5pt,...,12pt,piccolo,grande::
-var:colore:*name::
-var:stile:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...,*command::
-var:colorelinea:*name::
+var:colore:*nome::
+var:stile:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...,*comando::
+var:colorelinea:*nome::
 stopsetup
 
 startsetup
 com:lineatesto:
 typ:val/arg/:
 val:cima,fondo::
-val:*text::
+val:*testo::
 stopsetup
 
 startsetup
 com:inizialineatesto:
 typ:val/arg/stp/:
 val:cima,fondo::
-val:*text::
+val:*testo::
 stopsetup
 
 startsetup
@@ -933,31 +933,31 @@ stopsetup
 startsetup
 com:impostalineenere:
 typ:vars/:
-var:ampiezza:*dimension,max::
-var:altezza:*dimension,max::
-var:profondita:*dimension,max::
+var:ampiezza:*dimensione,max::
+var:altezza:*dimensione,max::
+var:profondita:*dimensione,max::
 var:alternativa:a,b::
-var:distanza:*dimension::
-var:n:*number::
+var:distanza:*dimensione::
+var:n:*numero::
 stopsetup
 
 startsetup
 com:definiscisovrapposizione:
 typ:vals/val/:
-val:*name::
-val:*command::
+val:*nome::
+val:*comando::
 stopsetup
 
 startsetup
 com:usamodulo:
 typ:vals/:
-val:*name::
+val:*nome::
 stopsetup
 
 startsetup
 com:reimposta:
 typ:vals/:
-val:*name::
+val:*nome::
 stopsetup
 
 startsetup
@@ -973,36 +973,36 @@ stopsetup
 startsetup
 com:impostasistema:
 typ:vars/:
-var:risoluzione:*number::
-var:file:*text::
-var:directory:*text::
-var:casuale:normale,piccolo,medio,grande,*number::
+var:risoluzione:*numero::
+var:file:*testo::
+var:directory:*testo::
+var:casuale:normale,piccolo,medio,grande,*numero::
 stopsetup
 
 startsetup
 com:usacartella:
 typ:vals/:
-val:*name,reimposta:.:
+val:*nome,reimposta:.:
 stopsetup
 
 startsetup
 com:ped:
 typ:arg/:
-val:*text::
+val:*testo::
 stopsetup
 
 startsetup
 com:ap:
 typ:arg/:
-val:*text::
+val:*testo::
 stopsetup
 
 startsetup
 com:pedap:
 typ:val/arg/arg/:
 val:basso::
-val:*text::
-val:*text::
+val:*testo::
+val:*testo::
 stopsetup
 
 startsetup
@@ -1014,53 +1014,53 @@ stopsetup
 startsetup
 com:allineasinistra:
 typ:arg/:
-val:*text::
+val:*testo::
 stopsetup
 
 startsetup
 com:allineadestra:
 typ:arg/:
-val:*text::
+val:*testo::
 stopsetup
 
 startsetup
 com:allineacentro:
 typ:arg/:
-val:*text::
+val:*testo::
 stopsetup
 
 startsetup
 com:paroladestra:
 typ:arg/:
-val:*text::
+val:*testo::
 stopsetup
 
 startsetup
 com:inmargine:
 typ:val/ref/arg/:
 val:+,-,basso::
-val:*text::
+val:*testo::
 stopsetup
 
 startsetup
 com:inaltromargine:
 typ:val/ref/arg/:
 val:+,-,basso::
-val:*text::
+val:*testo::
 stopsetup
 
 startsetup
 com:insinistra:
 typ:val/ref/arg/:
 val:+,-,basso::
-val:*text::
+val:*testo::
 stopsetup
 
 startsetup
 com:indestra:
 typ:val/ref/arg/:
 val:+,-,basso::
-val:*text::
+val:*testo::
 stopsetup
 
 startsetup
@@ -1087,23 +1087,23 @@ startsetup
 com:testoinmargine:
 typ:val/ref/arg/:
 val:+,-,basso::
-val:*text::
+val:*testo::
 stopsetup
 
 startsetup
 com:impostablocchimargine:
 typ:vars/:
 var:luogo:inmargine,sinistra,centro,destra::
-var:stile:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...,*command::
-var:ampiezza:*dimension::
+var:stile:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...,*comando::
+var:ampiezza:*dimensione::
 var:allinea:sinistra,centro,destra,no::
-var:cima:*command::
-var:tra:*command::
-var:fondo:*command::
-var:sinistra:*command::
-var:destra:*command::
-var:prima:*command::
-var:dopo:*command::
+var:cima:*comando::
+var:tra:*comando::
+var:fondo:*comando::
+var:sinistra:*comando::
+var:destra:*comando::
+var:prima:*comando::
+var:dopo:*comando::
 stopsetup
 
 startsetup
@@ -1114,85 +1114,85 @@ stopsetup
 startsetup
 com:parte:
 typ:refs/arg/:
-val:*text::
+val:*testo::
 stopsetup
 
 startsetup
 com:titolo:
 typ:refs/arg/:
-val:*text::
+val:*testo::
 stopsetup
 
 startsetup
 com:capitolo:
 typ:refs/arg/:
-val:*text::
+val:*testo::
 stopsetup
 
 startsetup
 com:capoverso:
 typ:refs/arg/:
-val:*text::
+val:*testo::
 stopsetup
 
 startsetup
 com:sottocapoverso:
 typ:refs/arg/:
-val:*text::
+val:*testo::
 stopsetup
 
 startsetup
 com:sottosottocapoverso:
 typ:refs/arg/:
-val:*text::
+val:*testo::
 stopsetup
 
 startsetup
 com:argomento:
 typ:refs/arg/:
-val:*text::
+val:*testo::
 stopsetup
 
 startsetup
 com:sottoargomento:
 typ:refs/arg/:
-val:*text::
+val:*testo::
 stopsetup
 
 startsetup
 com:sottosottoargomento:
 typ:refs/arg/:
-val:*text::
+val:*testo::
 stopsetup
 
 startsetup
 com:appendice:
 typ:refs/arg/:
-val:*text::
+val:*testo::
 stopsetup
 
 startsetup
 com:in:
 typ:arg/arg/ref/:
-val:*text::
+val:*testo::
 stopsetup
 
 startsetup
 com:al:
 typ:arg/arg/ref/:
-val:*text::
+val:*testo::
 stopsetup
 
 startsetup
 com:intorno:
 typ:arg/ref/:
-val:*text::
+val:*testo::
 stopsetup
 
 startsetup
 com:daqualcheparte:
 typ:arg/arg/ref/:
-val:*text::
+val:*testo::
 stopsetup
 
 startsetup
@@ -1204,13 +1204,13 @@ startsetup
 com:rif:
 typ:val/ref/:
 val:t,p,r,s,e::
-val:*text::
+val:*testo::
 stopsetup
 
 startsetup
 com:riferimentotesto:
 typ:ref/arg/:
-val:*text::
+val:*testo::
 stopsetup
 
 startsetup
@@ -1221,7 +1221,7 @@ stopsetup
 startsetup
 com:riferimento:
 typ:ref/arg/:
-val:*text::
+val:*testo::
 stopsetup
 
 startsetup
@@ -1233,35 +1233,35 @@ stopsetup
 startsetup
 com:definisciriferimento:
 typ:val/refs/:
-val:*name::
+val:*nome::
 stopsetup
 
 startsetup
 com:definisciformatoriferimento:
 typ:val/vars/:
-val:*name::
-var:sinistra:*text::
-var:destra:*text::
-var:testo:*text::
-var:etichetta:*name::
+val:*nome::
+var:sinistra:*testo::
+var:destra:*testo::
+var:testo:*testo::
+var:etichetta:*nome::
 stopsetup
 
 startsetup
 com:hl:
 typ:val/:
-val:*number::
+val:*numero::
 stopsetup
 
 startsetup
 com:vl:
 typ:val/:
-val:*number::
+val:*numero::
 stopsetup
 
 startsetup
 com:vaigiu:
 typ:val/:
-val:*dimension::
+val:*dimensione::
 stopsetup
 
 startsetup
@@ -1302,63 +1302,63 @@ stopsetup
 startsetup
 com:rifai:
 typ:val/:
-val:repeat/*text::
+val:repeat/*testo::
 stopsetup
 
 startsetup
 com:impostadescrizioni:
 typ:vals/vars/:
-val:*name::
-var:stiletesta:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...,*command::
-var:stile:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...,*command::
-var:colore:*name::
-var:ampiezza:adatta,ampio,*dimension::
-var:distanza:*dimension::
-var:campione:*text::
-var:testo:*text::
+val:*nome::
+var:stiletesta:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...,*comando::
+var:stile:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...,*comando::
+var:colore:*nome::
+var:ampiezza:adatta,ampio,*dimensione::
+var:distanza:*dimensione::
+var:campione:*testo::
+var:testo:*testo::
 var:allinea:sinistra,centro,destra::
-var:margine:standard,si,no,*dimension::
+var:margine:standard,si,no,*dimensione::
 var:luogo:sinistra,destra,cima,vicino, inmargine,insinistra,indestra,sospeso::
-var:sospendi:adatta,ampio,*number::
-var:prima:*command::
-var:tra:*command::
-var:dopo:*command::
+var:sospendi:adatta,ampio,*numero::
+var:prima:*comando::
+var:tra:*comando::
+var:dopo:*comando::
 var:rientrasuccessivo:si,no::
 stopsetup
 
 startsetup
 com:impostaenumerazioni:
 typ:vals/vars/:
-val:*name::
+val:*nome::
 ivr:definiscidescrizione::
 var:luogo:sinistra,destra,cima,vicino, inmargine,insinistra,indestra,sospeso::
-var:testo:*text::
-var:livelli:*number::
+var:testo:*testo::
+var:livelli:*numero::
 var:conversione:numeri,lettere,Lettere,numeriromani,Numeriromani::
-var:modo:datesto,da*section::
+var:modo:datesto,da*sezione::
 var:blockway:si,no::
 var:numerosezione:si,numero,no::
-var:separatore:*text::
-var:stopper:*text::
-var:accoppiamento:*name::
+var:separatore:*testo::
+var:stopper:*testo::
+var:accoppiamento:*nome::
 var:modoaccoppiamento:globale,locale::
-var:numero:no,*name::
+var:numero:no,*nome::
 var:allineatitolo:no,si::
-var:inizia:*number::
+var:inizia:*numero::
 stopsetup
 
 startsetup
 com:definiscienumerazione:
 typ:vals/val/vars/:
-val:*name::
-val:*name::
+val:*nome::
+val:*nome::
 ivr:impostaenumerazioni::
 stopsetup
 
 startsetup
 com:<<enumerazione>>:
 typ:nop/par/:
-val:*text::
+val:*testo::
 stopsetup
 
 startsetup
@@ -1369,63 +1369,63 @@ stopsetup
 startsetup
 com:definiscidescrizione:
 typ:val/vars/:
-val:*name::
+val:*nome::
 ivr:impostadescrizioni::
 stopsetup
 
 startsetup
 com:<<descrizione>>:
 typ:arg/nop/par/:
-val:*text::
-val:*text::
+val:*testo::
+val:*testo::
 stopsetup
 
 startsetup
 com:inizia<<descrizione>>:
 typ:arg/stp/:
-val:*text::
+val:*testo::
 stopsetup
 
 startsetup
 com:impostarientri:
 typ:vals/vars/:
-val:*name::
-var:stile:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...,*command::
-var:stiletesta:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...,*command::
-var:ampiezza:adatta,*dimension::
-var:testo:*text::
-var:campione:*text::
-var:prima:*command::
-var:dopo:*command::
-var:distanza:*dimension::
-var:separatore:*text::
+val:*nome::
+var:stile:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...,*comando::
+var:stiletesta:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...,*comando::
+var:ampiezza:adatta,*dimensione::
+var:testo:*testo::
+var:campione:*testo::
+var:prima:*comando::
+var:dopo:*comando::
+var:distanza:*dimensione::
+var:separatore:*testo::
 stopsetup
 
 startsetup
 com:definiscirientro:
 typ:val/vars/:
-val:*name::
+val:*nome::
 ivr:impostarientri::
 stopsetup
 
 startsetup
 com:<<rientro>>:
 typ:nop/par/:
-val:*text::
+val:*testo::
 stopsetup
 
 startsetup
 com:definiscietichetta:
 typ:val/vars/:
-val:*name::
-var:testo:*text::
+val:*nome::
+var:testo:*testo::
 var:luogo:inmargine,intesto::
-var:modo:datesto,da*section::
+var:modo:datesto,da*sezione::
 var:blockway:si,no::
-var:stiletesta:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...,*command::
-var:coloretesta:*name::
-var:prima:*command::
-var:dopo:*command::
+var:stiletesta:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...,*comando::
+var:coloretesta:*nome::
+var:prima:*comando::
+var:dopo:*comando::
 stopsetup
 
 startsetup
@@ -1436,12 +1436,12 @@ stopsetup
 startsetup
 com:impostacolonne:
 typ:vars/:
-var:n:*number::
-var:ncima:*number::
+var:n:*numero::
+var:ncima:*numero::
 var:linea:attivo,disattivo::
-var:altezza:*dimension::
-var:tolleranza:moltostrict,strict,tollerante,moltotollerante,dilata::
-var:distanza:*dimension::
+var:altezza:*dimensione::
+var:tolleranza:moltorigido,rigido,tollerante,moltotollerante,dilata::
+var:distanza:*dimensione::
 var:bilanciamento:si,no::
 var:allinea:si,no,testo::
 var:rigovuoto:fisso,mezzariga,riga,flessibile,grande,medio,piccolo::
@@ -1459,26 +1459,26 @@ stopsetup
 startsetup
 com:definiscitesto:
 typ:val/val/val/val/val/:
-val:*name::
+val:*nome::
 val:intestazione,piedipagina::
-val:*text::
-val:*text::
-val:*text::
+val:*testo::
+val:*testo::
+val:*testo::
 stopsetup
 
 startsetup
 com:impostainstestazione:
 typ:val/vars/:
 val:testo,margine,bordo:testo:
-var:stato:normale,termina,inizia,vuoto,alto,nessuno, nomarcature,*name::
+var:stato:normale,termina,inizia,vuoto,alto,nessuno, nomarcature,*nome::
 var:strut:si,no::
-var:stile:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...,*command::
-var:stilesinistra:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...,*command::
-var:stiledestra:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...,*command::
-var:ampiezzasinistra:*dimension::
-var:ampiezzadestra:*dimension::
-var:prima:*command::
-var:dopo:*command::
+var:stile:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...,*comando::
+var:stilesinistra:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...,*comando::
+var:stiledestra:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...,*comando::
+var:ampiezzasinistra:*dimensione::
+var:ampiezzadestra:*dimensione::
+var:prima:*comando::
+var:dopo:*comando::
 stopsetup
 
 startsetup
@@ -1523,144 +1523,145 @@ startsetup
 com:impostatestiintestazioni:
 typ:val/val/val/:
 val:testo,margine,bordo:testo:
-val:*text,*section,data,*mark,numeropagina::
-val:*text,*section,data,*mark,numeropagina::
+val:*testo,*sezione,data,*marcatura,numeropagina::
+val:*testo,*sezione,data,*marcatura,numeropagina::
 stopsetup
 
 startsetup
 com:impostatestipdp:
 typ:val/val/val/:
 val:testo,margine,bordo:testo:
-val:*text,*section,data,*mark,numeropagina::
-val:*text,*section,data,*mark,numeropagina::
+val:*testo,*sezione,data,*marcatura,numeropagina::
+val:*testo,*sezione,data,*marcatura,numeropagina::
 stopsetup
 
 startsetup
 com:impostatestotesti:
 typ:val/val/val/:
 val:testo,margine,bordo:testo:
-val:*text,*section,data,*mark,numeropagina::
-val:*text,*section,data,*mark,numeropagina::
+val:*testo,*sezione,data,*marcatura,numeropagina::
+val:*testo,*sezione,data,*marcatura,numeropagina::
 stopsetup
 
 startsetup
 com:impostatesticima:
 typ:val/val/val/:
 val:testo,margine,bordo:testo:
-val:*text,*section,data,*mark,numeropagina::
-val:*text,*section,data,*mark,numeropagina::
+val:*testo,*sezione,data,*marcatura,numeropagina::
+val:*testo,*sezione,data,*marcatura,numeropagina::
 stopsetup
 
 startsetup
 com:impostatestifondo:
 typ:val/val/val/:
 val:testo,margine,bordo:testo:
-val:*text,*section,data,*mark,numeropagina::
-val:*text,*section,data,*mark,numeropagina::
+val:*testo,*sezione,data,*marcatura,numeropagina::
+val:*testo,*sezione,data,*marcatura,numeropagina::
 stopsetup
 
 startsetup
 com:definiscimarcatura:
 typ:val/val/:
-val:*name::
-val:*name::
+val:*nome::
+val:*nome::
 stopsetup
 
 startsetup
 com:accoppiamarcatura:
 typ:val/val/:
-val:*name::
-val:*name::
+val:*nome::
+val:*nome::
 stopsetup
 
 startsetup
-com:decouplemarcatura:
+com:separamarcatura:
 typ:val/:
-val:*name::
+val:*nome::
 stopsetup
 
 startsetup
 com:reimpostamarcatura:
 typ:val/:
-val:*name::
+val:*nome::
 stopsetup
 
 startsetup
 com:impostamarcatura:
 typ:val/var/:
-val:*name::
+val:*nome::
 var:stato:inizia,termina::
-var:separatore:*command::
+var:separatore:*comando::
 var:espansione:si,no::
 stopsetup
 
 startsetup
 com:marcatura:
 typ:val/arg/:
-val:*name::
-val:*text::
+val:*nome::
+val:*testo::
 stopsetup
 
 startsetup
 com:prendimarcatura:
 typ:val/val/:
-val:*name::
+val:*nome::
 val:primo,ultimo,precedente,entrambi,tutti,corrente::
 stopsetup
 
 startsetup
 com:nientemarcatura:
 typ:arg/:
-val:*text::
+val:*testo::
 stopsetup
 
 startsetup
 com:impostalayout:
 typ:vars/:
-var:ampiezza:*dimension,adatta,centro::
-var:altezza:*dimension,adatta,centro::
-var:backspace:*dimension::
-var:spaziocima:*dimension::
-var:margine:*dimension::
-var:marginesinistro:*dimension::
-var:marginedestro:*dimension::
-var:intestazione:*dimension::
-var:piedipagina:*dimension::
-var:cima:*dimension::
-var:fondo:*dimension::
-var:bordosinistro:*dimension::
-var:bordodestro:*dimension::
-var:distanzaintestazione:*dimension::
-var:distanzapdp:*dimension::
-var:distanzacima:*dimension::
-var:distanzafondo:*dimension::
-var:distanzamarginesinistro:*dimension::
-var:distanzamarginedestro:*dimension::
-var:distanzabordosinistro:*dimension::
-var:distanzabordodestro:*dimension::
-var:horoffset:*dimension::
-var:veroffset:*dimension::
-var:stile:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...,*command::
-var:colore:*name::
+var:ampiezza:*dimensione,adatta,centro::
+var:altezza:*dimensione,adatta,centro::
+var:backspace:*dimensione::
+var:spaziocima:*dimensione::
+var:margine:*dimensione::
+var:marginesinistro:*dimensione::
+var:marginedestro:*dimensione::
+var:intestazione:*dimensione::
+var:piedipagina:*dimensione::
+var:cima:*dimensione::
+var:fondo:*dimensione::
+var:bordosinistro:*dimensione::
+var:bordodestro:*dimensione::
+var:distanzaintestazione:*dimensione::
+var:distanzapdp:*dimensione::
+var:distanzacima:*dimensione::
+var:distanzafondo:*dimensione::
+var:distanzamarginesinistro:*dimensione::
+var:distanzamarginedestro:*dimensione::
+var:distanzabordosinistro:*dimensione::
+var:distanzabordodestro:*dimensione::
+var:horoffset:*dimensione::
+var:veroffset:*dimensione::
+var:stile:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...,*comando::
+var:colore:*nome::
 var:marcatura:attivo,disattivo,colore::
 var:luogo:sinistra,centro,destra,fondo,cima, facciasingola,doppiafaccia::
-var:scala:*dimension::
-var:nx:*number::
-var:ny:*number::
-var:dx:*dimension::
-var:dy:*dimension::
-var:righe:*number::
+var:scala:*dimensione::
+var:nx:*numero::
+var:ny:*numero::
+var:dx:*dimensione::
+var:dy:*dimensione::
+var:righe:*numero::
 var:griglia:si,no::
-var:spaziofondo:*number::
-var:cutspace:*number::
+var:spaziofondo:*numero::
+var:cutspace:*numero::
+var:distanzatesto:*numero::
 stopsetup
 
 startsetup
 com:adattalayout:
 typ:vals/vars/:
-val:*number::
-var:altezza:*dimension,max::
-var:righe:*number::
+val:*numero::
+var:altezza:*dimensione,max::
+var:righe:*numero::
 stopsetup
 
 startsetup
@@ -1676,8 +1677,8 @@ stopsetup
 
 startsetup
 com:spostaagriglia:
-typ:val/:
-val:cima,entrambi,fondo,-cima,-entrambi,-fondo, alto,centro,basso,pagina,standard,nessuno, ampio,adatta:standard:
+typ:vals/:
+val:cima,entrambi,fondo,-cima,-entrambi,-fondo, alto,centro,basso,pagina,nessuno,standard, ampio,adatta,profondita,riga,*dimensione:standard:
 stopsetup
 
 startsetup
@@ -1713,11 +1714,11 @@ startsetup
 com:impostainterlinea:
 typ:val/vars/:
 val:reimposta,piccolo,medio,grande,attivo,disattivo:piccolo:
-var:altezza:*number::
-var:profondita:*number::
-var:riga:*dimension::
-var:cima:*number::
-var:fondo:*number::
+var:altezza:*numero::
+var:profondita:*numero::
+var:riga:*dimensione::
+var:cima:*numero::
+var:fondo:*numero::
 stopsetup
 
 startsetup
@@ -1726,32 +1727,32 @@ typ:vars/:
 var:alternativa:facciasingola,doppiafaccia::
 var:luogo:intestazione,piedipagina, sinistra,destra,centro, margine,bordomargine,insinistra,indestra::
 var:conversione:numeri,lettere,Lettere,numeriromani,Numeriromani::
-var:stile:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...,*command::
-var:sinistra:*text::
-var:destra:*text::
-var:modo:datesto,da*section::
-var:testo:*text::
-var:separatorenumero:*text::
-var:separatoretesto:*text::
-var:*sectionnumber:si,no::
-var:separatore:*text::
+var:stile:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...,*comando::
+var:sinistra:*testo::
+var:destra:*testo::
+var:modo:datesto,da*sezione::
+var:testo:*testo::
+var:separatorenumero:*testo::
+var:separatoretesto:*testo::
+var:*numero sezione:si,no::
+var:separatore:*testo::
 var:strut:si,no::
 var:stato:inizia,termina::
-var:comando:*\command#1::
+var:comando:*\comando#1::
 stopsetup
 
 startsetup
 com:impostapiustretto:
 typ:vars/:
-var:sinistra:*dimension::
-var:destra:*dimension::
-var:centro:*dimension::
+var:sinistra:*dimensione::
+var:destra:*dimensione::
+var:centro:*dimensione::
 stopsetup
 
 startsetup
 com:definisci:
 typ:val/cmd/arg/:
-val:*number:0:
+val:*numero:0:
 stopsetup
 
 startsetup
@@ -1762,11 +1763,11 @@ stopsetup
 startsetup
 com:definisciiniziatermina:
 typ:val/vars/:
-val:*name::
-var:prima:*command::
-var:dopo:*command::
-var:stile:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...,*command::
-var:comandi:*command::
+val:*nome::
+var:prima:*comando::
+var:dopo:*comando::
+var:stile:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...,*comando::
+var:comandi:*comando::
 stopsetup
 
 startsetup
@@ -1774,29 +1775,29 @@ com:impostateste:
 typ:vars/:
 var:numerosezione:si,numero,no::
 var:alternativa:normale,margine,centro,testo,capoverso::
-var:separatore:*text::
-var:comando:*\command#1#2::
+var:separatore:*testo::
+var:comando:*\comando#1#2::
 stopsetup
 
 startsetup
 com:impostacaptions:
 typ:vars/:
 var:luogo:cima,fondo,nessuno,alto,basso,centro::
-var:ampiezza:adatta,ampio,max,*dimension::
-var:stiletesta:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...,*command::
-var:stile:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...,*command::
+var:ampiezza:adatta,ampio,max,*dimensione::
+var:stiletesta:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...,*comando::
+var:stile:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...,*comando::
 var:numero:si,no::
-var:tra:*command::
+var:tra:*comando::
 var:allinea:sinistra,centro,destra,no::
 var:conversione:numeri,lettere,Lettere,numeriromani,Numeriromani::
-var:modo:datesto,da*section::
-var:separatore:*text::
+var:modo:datesto,da*sezione::
+var:separatore:*testo::
 stopsetup
 
 startsetup
 com:impostacaption:
 typ:val/vars/:
-val:*name::
+val:*nome::
 ivr:impostacaptions::
 stopsetup
 
@@ -1804,18 +1805,18 @@ startsetup
 com:impostaoggettimobili:
 typ:vars/:
 var:luogo:sinistra,destra,centro::
-var:ampiezza:adatta,*dimension::
-var:prima:*command::
-var:dopo:*command::
-var:margine:*dimension::
+var:ampiezza:adatta,*dimensione::
+var:prima:*comando::
+var:dopo:*comando::
+var:margine:*dimensione::
 var:spazioprima:repeat/piccolo,repeat/medio,repeat/grande,nessuno::
 var:spaziodopo:repeat/piccolo,repeat/medio,repeat/grande,nessuno::
 var:spaziolateraleprima:repeat/piccolo,repeat/medio,repeat/grande,nessuno::
 var:spaziolateraledopo:repeat/piccolo,repeat/medio,repeat/grande,nessuno::
 var:rientrasuccessivo:si,no::
-var:ncima:*number::
-var:nfondo:*number::
-var:nrighe:*number::
+var:ncima:*numero::
+var:nfondo:*numero::
+var:nrighe:*numero::
 ivr:impostaincorniciato::
 stopsetup
 
@@ -1823,7 +1824,7 @@ startsetup
 com:impostaspezzamentooggettomobile:
 typ:vars/:
 var:conversione:numeri,lettere,Lettere,numeriromani,Numeriromani::
-var:righe:*number::
+var:righe:*numero::
 stopsetup
 
 startsetup
@@ -1854,8 +1855,8 @@ com:impostaposizionamento:
 typ:vars/:
 var:stato:inizia,sovrapponi::
 var:unita:cm,pt,em,mm,ex,es,in::
-var:fattore:*number::
-var:scala:*number::
+var:fattore:*numero::
+var:scala:*numero::
 var:offset:si,no::
 var:xstep:assoluto,relativo::
 var:ystep:assoluto,relativo::
@@ -1869,17 +1870,17 @@ stopsetup
 startsetup
 com:griglia:
 typ:vars/:
-var:x:*number::
-var:y:*number::
-var:nx:*number::
-var:ny:*number::
-var:dx:*number::
-var:dy:*number::
-var:xstep:*number::
-var:ystep:*number::
+var:x:*numero::
+var:y:*numero::
+var:nx:*numero::
+var:ny:*numero::
+var:dx:*numero::
+var:dy:*numero::
+var:xstep:*numero::
+var:ystep:*numero::
 var:offset:si,no::
-var:fattore:*number::
-var:scala:*number::
+var:fattore:*numero::
+var:scala:*numero::
 var:unita:cm,pt,em,mm,ex,es,in::
 var:luogo:sinistra,centro::
 stopsetup
@@ -1894,14 +1895,14 @@ startsetup
 com:impostariferimento:
 typ:vars/:
 var:stato:inizia,termina::
-var:*sectionnumber:si,no::
-var:prefisso:+,-,*text::
+var:*numero sezione:si,no::
+var:prefisso:+,-,*testo::
 var:interazione:etichetta,testo,tutti,simbolo::
-var:ampiezza:*dimension::
-var:sinistra:*command::
-var:destra:*command::
+var:ampiezza:*dimensione::
+var:sinistra:*comando::
+var:destra:*comando::
 var:convertifile:si,no,piccolo,grande::
-var:separatore:*text::
+var:separatore:*testo::
 var:autofile:si,no,pagina::
 var:globale:si,no::
 stopsetup
@@ -1909,7 +1910,7 @@ stopsetup
 startsetup
 com:impostaurl:
 typ:vars/:
-var:stile:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...,*command::
+var:stile:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...,*comando::
 var:alternativaurl:nessuno,entrambi,prima,dopo::
 var:spaziourl:si,no::
 stopsetup
@@ -1917,149 +1918,149 @@ stopsetup
 startsetup
 com:scriviinlistariferimenti:
 typ:val/arg/arg/:
-val:*name::
+val:*nome::
 stopsetup
 
 startsetup
 com:mettilistariferimenti:
 typ:vals/:
-val:*name::
+val:*nome::
 stopsetup
 
 startsetup
 com:definiscilistariferimenti:
 typ:val/vars/:
-val:*name::
+val:*nome::
 ivr:impostalistariferimenti::
 stopsetup
 
 startsetup
 com:impostalistariferimenti:
 typ:vals/vars/:
-val:*name::
+val:*nome::
 var:stato:inizia,termina::
-var:criterio:*section,locale,precedente,tutti::
-var:comando:*command::
-var:prima:*command::
-var:dopo:*command::
+var:criterio:*sezione,locale,precedente,tutti::
+var:comando:*comando::
+var:prima:*comando::
+var:dopo:*comando::
 stopsetup
 
 startsetup
-com:scriviinlista:
+com:scriviinelenco:
 typ:val/arg/arg/:
-val:*section,*name::
+val:*sezione,*nome::
 stopsetup
 
 startsetup
-com:scrividentrolista:
+com:scrividentroelenco:
 typ:val/arg/:
-val:*section,*name::
+val:*sezione,*nome::
 stopsetup
 
 startsetup
-com:nientelista:
+com:nienteelenco:
 typ:arg/:
-val:*text::
+val:*testo::
 stopsetup
 
 startsetup
-com:mettilista:
+com:mettielenco:
 typ:vals/vars/:
-val:*name::
-ivr:impostalista::
+val:*nome::
+ivr:impostaelenco::
 stopsetup
 
 startsetup
-com:determinacaratterstichelista:
+com:determinacarattersticheelenco:
 typ:vals/vars/:
-val:*name::
-ivr:impostalista::
+val:*nome::
+ivr:impostaelenco::
 stopsetup
 
 startsetup
-com:definiscilista:
+com:definiscielenco:
 typ:val/val/vars/:
-val:*name::
-val:*name::
-ivr:impostalista::
+val:*nome::
+val:*nome::
+ivr:impostaelenco::
 stopsetup
 
 startsetup
-com:impostalista:
+com:impostaelenco:
 typ:vals/vars/:
-val:*name::
+val:*nome::
 var:stato:inizia,termina::
 var:alternativa:a,b,c,...,nessuno,comando::
 var:accoppiamento:attivo,disattivo::
-var:criterio:*section,locale,precedente,corrente,tutti::
-var:limitipagina:*list::
-var:stile:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...,*command::
-var:stilenumero:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...,*command::
-var:stiletesto:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...,*command::
-var:stilepagina:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...,*command::
-var:colore:*name::
-var:comando:*\command#1#2#3::
-var:comandonumero:*\command#1::
-var:comandotesto:*\command#1::
-var:comandopagina:*\command#1::
+var:criterio:*sezione,locale,precedente,corrente,tutti::
+var:limitipagina:*elenco::
+var:stile:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...,*comando::
+var:stilenumero:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...,*comando::
+var:stiletesto:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...,*comando::
+var:stilepagina:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...,*comando::
+var:colore:*nome::
+var:comando:*\comando#1#2#3::
+var:comandonumero:*\comando#1::
+var:comandotesto:*\comando#1::
+var:comandopagina:*\comando#1::
 var:interazione:numerosezione,testo,numeropagina,tutti::
-var:prima:*command::
-var:dopo:*command::
-var:tra:*command::
-var:sinistra:*text::
-var:destra:*text::
+var:prima:*comando::
+var:dopo:*comando::
+var:tra:*comando::
+var:sinistra:*testo::
+var:destra:*testo::
 var:etichetta:si,no::
 var:prefisso:si,no,nessuno::
 var:numeropagina:si,no::
-var:*sectionnumber:si,no::
+var:*numero sezione:si,no::
 var:allineatitolo:si,no::
-var:margine:*dimension::
-var:ampiezza:*dimension,adatta::
-var:altezza:*dimension,adatta,ampio::
-var:profondita:*dimension,adatta,ampio::
-var:distanza:*dimension::
-var:separatore:*text::
-var:stopper:*text::
+var:margine:*dimensione::
+var:ampiezza:*dimensione,adatta::
+var:altezza:*dimensione,adatta,ampio::
+var:profondita:*dimensione,adatta,ampio::
+var:distanza:*dimensione::
+var:separatore:*testo::
+var:stopper:*testo::
 var:simbolo:nessuno,1,2,3,...::
 var:espansione:si,no,comando::
-var:ampiezzamax:*dimension::
+var:ampiezzamax:*dimensione::
 ivr:incorniciato::
 stopsetup
 
 startsetup
-com:definiscilistacombinata:
+com:definiscielencocombinato:
 typ:val/vals/vars/:
-val:*name::
-val:*list::
-ivr:impostalistacombinata::
+val:*nome::
+val:*elenco::
+ivr:impostaelencocombinato::
 stopsetup
 
 startsetup
-com:impostalistacombinata:
+com:impostaelencocombinato:
 typ:val/vars/:
-val:*name::
-var:livello:1,2,3,4,*section,corrente::
-ivr:impostalista::
+val:*nome::
+var:livello:1,2,3,4,*sezione,corrente::
+ivr:impostaelenco::
 stopsetup
 
 startsetup
-com:metti<<listacombinata>>:
+com:metti<<elencocombinato>>:
 typ:val/vars/:
-val:*name::
-ivr:impostalistacombinata::
+val:*nome::
+ivr:impostaelencocombinato::
 stopsetup
 
 startsetup
-com:completo<<listacombinata>>:
+com:completo<<elencocombinato>>:
 typ:val/vars/:
-val:*name::
-ivr:impostalistacombinata::
+val:*nome::
+ivr:impostaelencocombinato::
 stopsetup
 
 startsetup
 com:impostanumerazione:
 typ:vars/:
-var:modo:datesto,da*section::
+var:modo:datesto,da*sezione::
 var:stato:inizia,termina::
 stopsetup
 
@@ -2067,19 +2068,19 @@ startsetup
 com:impostaformule:
 typ:vars/:
 var:luogo:sinistra,destra::
-var:sinistra:*text::
-var:destra:*text::
+var:sinistra:*testo::
+var:destra:*testo::
 var:allinea:sinistra,centro,destra::
 var:strut:si,no::
-var:distanza:*dimension::
-var:margine:*dimension,standard,si,no::
-var:marginesinistro:*dimension::
-var:marginedestro:*dimension::
+var:distanza:*dimensione::
+var:margine:*dimensione,standard,si,no::
+var:marginesinistro:*dimensione::
+var:marginedestro:*dimensione::
 var:rientrasuccessivo:si,no::
-var:alternativa:*name::
-var:spazioprima:*dimension::
-var:dopo:*dimension::
-var:separatore:*text::
+var:alternativa:*nome::
+var:spazioprima:*dimensione::
+var:dopo:*dimensione::
+var:separatore:*testo::
 stopsetup
 
 startsetup
@@ -2097,9 +2098,9 @@ stopsetup
 startsetup
 com:impostarighe:
 typ:vars/:
-var:prima:*command::
-var:dopo:*command::
-var:tra:*command::
+var:prima:*comando::
+var:dopo:*comando::
+var:tra:*comando::
 var:rientro:si,no,pari,dispari::
 stopsetup
 
@@ -2112,20 +2113,20 @@ startsetup
 com:impostanumerazionecapoversi:
 typ:vars/:
 var:stato:inizia,termina,reimposta,riga::
-var:stile:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...,*command::
-var:distanza:*dimension::
+var:stile:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...,*comando::
+var:distanza:*dimensione::
 stopsetup
 
 startsetup
 com:impostanumerazionerighe:
 typ:vars/:
 var:conversione:numeri,lettere,Lettere,numeriromani,Numeriromani, testo::
-var:inizia:*number::
-var:passo:*number::
-var:ampiezza:*dimension::
+var:inizia:*numero::
+var:passo:*numero::
+var:ampiezza:*dimensione::
 var:luogo:intesto,inmargine::
-var:stile:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...,*command::
-var:prefisso:*text::
+var:stile:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...,*comando::
+var:prefisso:*testo::
 var:referencing:attivo,disattivo::
 stopsetup
 
@@ -2153,60 +2154,60 @@ stopsetup
 startsetup
 com:impostainmargine:
 typ:val/vars/:
-val:sinistra,destra,*number::
+val:sinistra,destra,*numero::
 var:luogo:sinistra,destra,entrambi::
-var:stile:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...,*command::
-var:prima:*command::
-var:dopo:*command::
+var:stile:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...,*comando::
+var:prima:*comando::
+var:dopo:*comando::
 var:allinea:interno,esterno,sinistra,destra,centro,normale,no,si::
-var:riga:*number::
-var:distanza:*dimension::
-var:separatore:*text::
+var:riga:*numero::
+var:distanza:*dimensione::
+var:separatore:*testo::
 ivr:impostaincorniciato::
 stopsetup
 
 startsetup
 com:impostanumeropagina:
 typ:vars/:
-var:numero:*number::
+var:numero:*numero::
 var:stato:inizia,termina,mantieni::
 stopsetup
 
 startsetup
 com:impostanumerosottopagina:
 typ:vars/:
-var:modo:datesto,da*section::
+var:modo:datesto,da*sezione::
 var:stato:inizia,termina,nessuno::
 stopsetup
 
 startsetup
 com:impostarigovuoto:
 typ:val/:
-val:normale,standard,riga,*dimension, grande,medio,piccolo, fisso,flessibile:normale:
+val:normale,standard,riga,*dimensione, grande,medio,piccolo, fisso,flessibile:normale:
 stopsetup
 
 startsetup
 com:definiscirigovuoto:
 typ:val/val/:
-val:*name::
+val:*nome::
 ivl:impostarigovuoto::
 stopsetup
 
 startsetup
 com:definiscidimensionicarta:
 typ:val/vars/:
-val:*name::
-var:ampiezza:*dimension::
-var:altezza:*dimension::
-var:offset:*dimension::
-var:scala:*number::
+val:*nome::
+var:ampiezza:*dimensione::
+var:altezza:*dimensione::
+var:offset:*dimensione::
+var:scala:*numero::
 stopsetup
 
 startsetup
 com:impostadimensionicarta:
 typ:vals/vals/:
-val:A3,A4,A5,A6,letter,...,CD,*name, orizzontale,riflesso,ruotato,90,180,270:A4:
-val:A3,A4,A5,A6,letter,...,*name, orizzontale,riflesso,ruotato,negativo,90,180,270:A4:
+val:A3,A4,A5,A6,letter,...,CD,*nome, orizzontale,riflesso,ruotato,90,180,270:A4:
+val:A3,A4,A5,A6,letter,...,*nome, orizzontale,riflesso,ruotato,negativo,90,180,270:A4:
 stopsetup
 
 startsetup
@@ -2226,59 +2227,59 @@ stopsetup
 startsetup
 com:definiscilogo:
 typ:val/val/val/vars/:
-val:*name::
+val:*nome::
 val:cima,intestazione,piedipagina,fondo::
 val:nessuno,pagina, bordosinistro,marginesinistro, sinistra,centro,destra, marginedestro,bordodestro::
-var:comando:*command,*text::
+var:comando:*comando,*testo::
 var:stato:inizia,termina::
 stopsetup
 
 startsetup
 com:mettiloghi:
 typ:vals/:
-val:*name::
+val:*nome::
 stopsetup
 
 startsetup
 com:impostaspaziobianco:
 typ:val/:
-val:nessuno,piccolo,medio,grande,riga,fisso,fisso,*dimension:nessuno:
+val:nessuno,piccolo,medio,grande,riga,fisso,fisso,*dimensione:nessuno:
 stopsetup
 
 startsetup
 com:impostarientro:
 typ:vals/:
-val:nessuno,piccolo,medio,grande,successivo,primo,*dimension:nessuno:
+val:nessuno,piccolo,medio,grande,successivo,primo,*dimensione:nessuno:
 stopsetup
 
 startsetup
 com:definiscibloccosezione:
 typ:val/vars/:
-val:*name::
+val:*nome::
 ivr:impostabloccosezione::
 stopsetup
 
 startsetup
 com:impostabloccosezione:
 typ:val/vars/:
-val:*name::
+val:*nome::
 var:numero:si,no::
 var:pagina:si,destra::
-var:prima:*command::
-var:dopo:*command::
+var:prima:*comando::
+var:dopo:*comando::
 stopsetup
 
 startsetup
 com:definiscisezione:
 typ:val/:
-val:*name::
+val:*nome::
 stopsetup
 
 startsetup
 com:impostasezione:
 typ:val/val/vars/:
-val:*name::
-val:*name:prefazione,testoprincipale,appendice,postfazione:
+val:*nome::
+val:*nome:prefazione,testoprincipale,appendice,postfazione:
 var:conversione:numeri,lettere,Lettere,numeriromani,Numeriromani::
 var:numeroprecedente:si,no::
 stopsetup
@@ -2286,10 +2287,10 @@ stopsetup
 startsetup
 com:impostatesta:
 typ:val/vars/:
-val:*section::
-var:stile:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...,*command::
-var:stiletesto:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...,*command::
-var:stilenumero:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...,*command::
+val:*sezione::
+var:stile:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...,*comando::
+var:stiletesto:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...,*comando::
+var:stilenumero:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...,*comando::
 var:numero:si,no::
 var:numeroproprio:si,no::
 var:pagina:sinistra,destra,si::
@@ -2297,41 +2298,42 @@ var:continua:si,no::
 var:intestazione:nessuno,vuoto,alto,nomarcature::
 var:testo:nessuno,vuoto,alto,nomarcature::
 var:piedipagina:nessuno,vuoto,alto,nomarcature::
-var:prima:*command::
-var:tra:*command::
-var:dopo:*command::
+var:prima:*comando::
+var:tra:*comando::
+var:dopo:*comando::
 var:alternativa:normale,inmargine,centro,testo::
-var:comando:*\command#1#2::
-var:comandonumero:*\command#1::
-var:comandotesto:*\command#1::
-var:separatore:*text::
-var:prefisso:+,-,*text::
+var:comando:*\comando#1#2::
+var:comandonumero:*\comando#1::
+var:comandotesto:*\comando#1::
+var:separatore:*testo::
+var:prefisso:+,-,*testo::
 var:mettitesta:si,no::
 var:incrementanumero:si,no,*file::
 var:allinea:sinistra,destra,normale,ampio::
-var:tolleranza:moltostrict,strict,tollerante,moltotollerante,dilata::
+var:allineatitolo:si,no::
+var:tolleranza:moltorigido,rigido,tollerante,moltotollerante,dilata::
 var:rientrasuccessivo:si,no::
-var:file:*name::
+var:file:*nome::
 var:espansione:si,comando,no::
 stopsetup
 
 startsetup
 com:impostanumerotesta:
 typ:val/val/:
-val:*section::
-val:*number,+*number,-*number::
+val:*sezione::
+val:*numero,+*numero,-*numero::
 stopsetup
 
 startsetup
 com:numerotesta:
 typ:val/:
-val:*section::
+val:*sezione::
 stopsetup
 
 startsetup
 com:determinanumerotesta:
 typ:val/:
-val:*section::
+val:*sezione::
 stopsetup
 
 startsetup
@@ -2347,34 +2349,34 @@ stopsetup
 startsetup
 com:definiscitesta:
 typ:val/val/:
-val:*name::
-val:*section::
+val:*nome::
+val:*sezione::
 stopsetup
 
 startsetup
 com:impostaelenco:
 typ:val/vals/vars/:
-val:*number,ogni::
+val:*numero,ogni::
 val:standard,repeat/ampio,repeat/vicino,impaccato, unpacked,stopper,unito,almargine,inmargine, autointro,lento,capoverso,intesto:standard:
-var:margine:no,standard,*dimension::
-var:ampiezza:*dimension::
-var:distanza:*dimension::
-var:fattore:*number::
-var:elementi:*number::
-var:inizia:*number::
-var:prima:*command::
-var:tra:*command::
-var:dopo:*command::
-var:sinistra:*text::
-var:destra:*text::
-var:primaditesta:*command::
-var:dopotesta:*command::
-var:stiletesta:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...,*command::
-var:stilemarcatura:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...,*command::
-var:stilesimbolo:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...,*command::
-var:stopper:*text::
-var:n:*number::
-var:simbolo:*number::
+var:margine:no,standard,*dimensione::
+var:ampiezza:*dimensione::
+var:distanza:*dimensione::
+var:fattore:*numero::
+var:elementi:*numero::
+var:inizia:*numero::
+var:prima:*comando::
+var:tra:*comando::
+var:dopo:*comando::
+var:sinistra:*testo::
+var:destra:*testo::
+var:primaditesta:*comando::
+var:dopotesta:*comando::
+var:stiletesta:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...,*comando::
+var:stilemarcatura:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...,*comando::
+var:stilesimbolo:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...,*comando::
+var:stopper:*testo::
+var:n:*numero::
+var:simbolo:*numero::
 var:allinea:sinistra,destra,normale::
 var:rientrasuccessivo:si,no::
 stopsetup
@@ -2382,7 +2384,7 @@ stopsetup
 startsetup
 com:iniziaelenco:
 typ:vals/vars/stp/:
-val:a,A,KA,n,N,m,r,R,KR,*number,continua, standard,repeat/ampio,repeat/vicino,impaccato, stopper,unito,almargine,inmargine,intro, colonne:standard:
+val:a,A,KA,n,N,m,r,R,KR,*numero,continua, standard,repeat/ampio,repeat/vicino,impaccato, stopper,unito,almargine,inmargine,intro, colonne:standard:
 ivr:impostaelenco::
 stopsetup
 
@@ -2434,77 +2436,77 @@ stopsetup
 startsetup
 com:definisciregistro:
 typ:val/val/:
-val:*singular name::
-val:*plural name::
+val:*nome singolare::
+val:*nome plurale::
 stopsetup
 
 startsetup
 com:impostaregistro:
 typ:val/val/vars/:
-val:*singular name::
-val:*name::
-var:n:*number::
+val:*nome singolare::
+val:*nome::
+var:n:*numero::
 var:bilanciamento:si,no::
 var:allinea:si,no::
-var:stile:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...,*command::
-var:stilepagina:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...,*command::
-var:stiletesto:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...,*command::
+var:stile:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...,*comando::
+var:stilepagina:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...,*comando::
+var:stiletesto:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...,*comando::
 var:indicatore:si,no::
 var:accoppiamento:si,no::
-var:*sectionnumber:si,no::
-var:criterio:*section,locale,tutti::
-var:distanza:*dimension::
+var:*numero sezione:si,no::
+var:criterio:*sezione,locale,tutti::
+var:distanza:*dimensione::
 var:simbolo:1,2,...,n,a,...,nessuno::
 var:interazione:numeropagina,testo::
 var:espansione:si,comando,no::
 var:referencing:attivo,disattivo::
-var:comando:*\command#1::
+var:comando:*\comando#1::
 var:luogo:sinistra,centro,destra::
-var:ampiezzamax:*dimension::
+var:ampiezzamax:*dimensione::
 var:riferimentoingoto:vuoto,nessuno::
 stopsetup
 
 startsetup
 com:<<registro>>:
 typ:val/idxs/:
-val:*text::
-val:*text::
+val:*testo::
+val:*testo::
 stopsetup
 
 startsetup
 com:inizia<<registro>>:
 typ:val/idxs/:
-val:*text::
-val:*text::
+val:*testo::
+val:*testo::
 stopsetup
 
 startsetup
 com:scriviinregistro:
 typ:val/val/idxs/:
-val:*singular name::
-val:*text::
-val:*text::
+val:*nome singolare::
+val:*testo::
+val:*testo::
 stopsetup
 
 startsetup
 com:accoppiato<<registro>>:
 typ:val/idx/:
-val:*text::
-val:*text::
+val:*testo::
+val:*testo::
 stopsetup
 
 startsetup
 com:accoppiaregistro:
 typ:val/:
-val:*name::
+val:*nome::
 stopsetup
 
 startsetup
 com:vedi<<registro>>:
 typ:val/arg/idxs/:
-val:*text::
-val:*text::
-val:*text::
+val:*testo::
+val:*testo::
+val:*testo::
 stopsetup
 
 startsetup
@@ -2522,42 +2524,42 @@ stopsetup
 startsetup
 com:definiscisinonimi:
 typ:val/val/val/val/:
-val:*singular name::
-val:*plural name::
-val:*command::
-val:*command::
+val:*nome singolare::
+val:*nome plurale::
+val:*comando::
+val:*comando::
 stopsetup
 
 startsetup
 com:impostasinonimi:
 typ:val/vars/:
-val:*name::
-var:stiletesto:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...,*command::
-var:stilesinonimi:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...,*command::
+val:*nome::
+var:stiletesto:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...,*comando::
+var:stilesinonimi:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...,*comando::
 var:luogo:sinistra,destra,cima,vicino, inmargine,insinistra,indestra::
-var:ampiezza:*dimension::
+var:ampiezza:*dimensione::
 var:stato:inizia,termina::
 var:criterio:tutti,usato::
 var:conversione:si,no::
 var:espansione:si,comando,no::
-var:comando:*\command#1#2#3::
+var:comando:*\comando#1#2#3::
 stopsetup
 
 startsetup
 com:<<sinonimo>>:
 typ:val/arg/arg/:
-val:*text::
-val:*text::
-val:*text::
+val:*testo::
+val:*testo::
+val:*testo::
 stopsetup
 
 startsetup
-com:completolistadi<<sinonimi>>:
+com:completoelencodi<<sinonimi>>:
 typ::
 stopsetup
 
 startsetup
-com:mettilistadi<<sinonimi>>:
+com:mettielencodi<<sinonimi>>:
 typ::
 stopsetup
 
@@ -2569,38 +2571,38 @@ stopsetup
 startsetup
 com:definisciordinamento:
 typ:val/val/val/:
-val:*singular name::
-val:*plural name::
-val:*command::
+val:*nome singolare::
+val:*nome plurale::
+val:*comando::
 stopsetup
 
 startsetup
 com:impostaordinamento:
 typ:val/vars/:
-val:*name::
-var:prima:*command::
-var:dopo:*command::
-var:comando:*\command#1::
+val:*nome::
+var:prima:*comando::
+var:dopo:*comando::
+var:comando:*\comando#1::
 var:stato:inizia,termina::
 var:criterio:tutti,usato::
-var:stile:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...,*command::
+var:stile:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...,*comando::
 var:espansione:si,comando,no::
 stopsetup
 
 startsetup
 com:<<sort>>:
 typ:val/arg/:
-val:*text::
-val:*text::
+val:*testo::
+val:*testo::
 stopsetup
 
 startsetup
-com:completolistadi<<sorts>>:
+com:completoelencodi<<sorts>>:
 typ::
 stopsetup
 
 startsetup
-com:mettilistadi<<sorts>>:
+com:mettielencodi<<sorts>>:
 typ::
 stopsetup
 
@@ -2612,27 +2614,27 @@ stopsetup
 startsetup
 com:definiscimakeup:
 typ:val/vars/:
-val:*name::
+val:*nome::
 ivr:impostamakeup::
 stopsetup
 
 startsetup
 com:iniziamakeup:
 typ:val/vars/stp/:
-val:*name::
+val:*nome::
 ivr:impostamakeup::
 stopsetup
 
 startsetup
 com:impostamakeup:
 typ:val/vars/:
-val:*name::
-var:ampiezza:*dimension::
-var:altezza:*dimension::
-var:voffset:*dimension::
-var:hoffset:*dimension::
+val:*nome::
+var:ampiezza:*dimensione::
+var:altezza:*dimensione::
+var:voffset:*dimensione::
+var:hoffset:*dimensione::
 var:pagina:sinistra,si,destra::
-var:comandi:*command::
+var:comandi:*comando::
 var:doppiafaccia:si,no,vuoto::
 var:statointestazione:normale,termina,inizia,vuoto,nessuno,nomarcature::
 var:statopdp:normale,termina,inizia,vuoto,nessuno,nomarcature::
@@ -2640,7 +2642,7 @@ var:statotesto:normale,termina,inizia,vuoto,nessuno,nomarcature::
 var:statocima:termina,inizia::
 var:statofondo:termina,inizia::
 var:statopagina:termina,inizia::
-var:colore:*name::
+var:colore:*nome::
 stopsetup
 
 startsetup
@@ -2663,10 +2665,10 @@ stopsetup
 startsetup
 com:data:
 typ:vars/vals/:
-var:d:*number::
-var:m:*number::
-var:y:*number::
-val:giorno,mese,giornosettimana,anno, dd,mm,jj,yy,d,m,j,y,referral:giorno,mese,anno:
+var:d:*numero::
+var:m:*numero::
+var:y:*numero::
+val:giorno,giorno+,mese,giornosettimana,anno, dd,dd+,mm,jj,yy,d,d+,m,j,y,referral:giorno,mese,anno:
 stopsetup
 
 startsetup
@@ -2736,7 +2738,7 @@ stopsetup
 startsetup
 com:impostaallineamento:
 typ:val/:
-val:ampiezza,sinistra,destra,centro,interno,esterno, ampio,ampio,altezza,fondo,riga,reimposta, sospeso,nothanging,sillabato,nonsillabato::
+val:ampiezza,sinistra,destra,centro,interno,esterno, ampio,ampio,altezza,fondo,riga,reimposta, sospeso,nonsospeso,sillabato,nonsillabato::
 stopsetup
 
 startsetup
@@ -2754,46 +2756,46 @@ stopsetup
 startsetup
 com:impostatolleranza:
 typ:vals/:
-val:orizzontale,verticale, dilata,spazio,moltostrict,strict,tollerante,moltotollerante:moltostrict:
+val:orizzontale,verticale, dilata,spazio,moltorigido,rigido,tollerante,moltotollerante:moltorigido:
 stopsetup
 
 startsetup
 com:tipopagina:
 typ:val/:
-val:*name::
+val:*nome::
 stopsetup
 
 startsetup
 com:elaborapagina:
 typ:vals/val/:
-val:*name::
+val:*nome::
 val:si,no:si:
 stopsetup
 
 startsetup
 com:accoppiapagina:
 typ:vals/vars/:
-val:*name::
+val:*nome::
 var:opzione:doppiafaccia::
-var:prima:*command::
-var:dopo:*command::
+var:prima:*comando::
+var:dopo:*comando::
 stopsetup
 
 startsetup
 com:posizione:
 typ:poss/arg/:
-val:*number::
-val:*number::
-val:*text::
+val:*numero::
+val:*numero::
+val:*testo::
 stopsetup
 
 startsetup
 com:impostaschermi:
 typ:vars/:
 var:metodo:punto,linea,esterno::
-var:risoluzione:*number::
-var:fattore:*number::
-var:schermo:*number::
+var:risoluzione:*numero::
+var:fattore:*numero::
+var:schermo:*numero::
 stopsetup
 
 startsetup
@@ -2808,40 +2810,40 @@ stopsetup
 startsetup
 com:iniziabuffer:
 typ:val/stp/:
-val:*name::
+val:*nome::
 stopsetup
 
 startsetup
 com:prendibuffer:
 typ:val/:
-val:*name::
+val:*nome::
 stopsetup
 
 startsetup
 com:typebuffer:
 typ:val/:
-val:*name::
+val:*nome::
 stopsetup
 
 startsetup
 com:definiscibuffer:
 typ:val/:
-val:*name::
+val:*nome::
 stopsetup
 
 startsetup
 com:impostabuffer:
 typ:val/vars/:
-val:*name::
-var:capoverso:*number::
-var:prima:*command::
-var:dopo:*command::
+val:*nome::
+var:capoverso:*numero::
+var:prima:*comando::
+var:dopo:*comando::
 stopsetup
 
 startsetup
 com:definisciblocco:
 typ:val/:
-val:*name::
+val:*nome::
 stopsetup
 
 startsetup
@@ -2852,47 +2854,47 @@ stopsetup
 startsetup
 com:nascondiblocchi:
 typ:vals/vals/:
-val:*name::
-val:*name::
+val:*nome::
+val:*nome::
 stopsetup
 
 startsetup
 com:tieniblocchi:
 typ:vals/vals/:
-val:*name::
-val:tutti,*name::
+val:*nome::
+val:tutti,*nome::
 stopsetup
 
 startsetup
 com:usablocco:
 typ:vals/vals/:
-val:*name::
-val:*name::
+val:*nome::
+val:*nome::
 stopsetup
 
 startsetup
 com:elaborablocchi:
 typ:vals/vals/:
-val:*name::
-val:*name::
+val:*nome::
+val:*nome::
 stopsetup
 
 startsetup
 com:selezionablocchi:
 typ:vals/vals/var/:
-val:*name::
-val:*name::
-var:criterio:tutti,*section::
+val:*nome::
+val:*nome::
+var:criterio:tutti,*sezione::
 stopsetup
 
 startsetup
 com:impostablocco:
 typ:vals/vars/:
-val:*name::
-var:prima:*command::
-var:dopo:*command::
-var:interno:*command::
-var:stile:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...,*command::
+val:*nome::
+var:prima:*comando::
+var:dopo:*comando::
+var:interno:*comando::
+var:stile:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...,*comando::
 var:file:*file::
 stopsetup
 
@@ -2911,14 +2913,14 @@ stopsetup
 startsetup
 com:mettiformula:
 typ:refs/arg/dis/:
-val:*text::
+val:*testo::
 val:*formula::
 stopsetup
 
 startsetup
 com:mettisottoformula:
 typ:refs/arg/dis/:
-val:*text::
+val:*testo::
 val:*formula::
 stopsetup
 
@@ -2926,34 +2928,38 @@ startsetup
 com:metti<<oggettomobile>>:
 typ:val/refs/arg/arg/:
 val:sinistra,destra,qui,cima,fondo, insinistra,indestra,inmargine,margine, pagina,opposto,sempre,forza,alto:qui:
-val:*text::
-val:*text::
+val:*testo::
+val:*testo::
 stopsetup
 
 startsetup
 com:riserva<<oggettomobile>>:
 typ:vars/val/refs/arg/:
-var:altezza:*dimension::
-var:ampiezza:*dimension::
+var:altezza:*dimensione::
+var:ampiezza:*dimensione::
 var:cornice:attivo,disattivo::
 val:sinistra,destra,qui,cima,fondo, insinistra,indestra,inmargine,margine, pagina,opposto,sempre,forza:qui:
-val:*text::
+val:*testo::
 stopsetup
 
 startsetup
 com:definiscioggettomobile:
 typ:val/val/:
-val:*singular name::
-val:*plural name::
+val:*nome singolare::
+val:*nome plurale::
 stopsetup
 
 startsetup
 com:impostaoggettomobile:
 typ:val/vars/:
-val:*name::
-var:altezza:*dimension::
-var:ampiezza:*dimension::
-var:limitipagina:*list::
+val:*nome::
+var:altezza:*dimensione::
+var:ampiezza:*dimensione::
+var:altezzamax:*dimensione::
+var:ampiezzamax:*dimensione::
+var:implicito:*nome::
+var:limitipagina:*elenco::
+var:luogo:sinistra,centro,destra::
 ivr:impostaincorniciato::
 stopsetup
 
@@ -2961,30 +2967,30 @@ startsetup
 com:inizia<<oggettomobile>>testo:
 typ:val/ref/arg/arg/stp/:
 val:sinistra,destra,alto,centro,basso,offset,alto::
-val:*text::
-val:*text::
-val:*text::
+val:*testo::
+val:*testo::
+val:*testo::
 stopsetup
 
 startsetup
-com:mettilistadi<<oggettimobili>>:
+com:mettielencodi<<oggettimobili>>:
 typ::
 stopsetup
 
 startsetup
-com:completolistadi<<oggettimobili>>:
+com:completoelencodi<<oggettimobili>>:
 typ::
 stopsetup
 
 startsetup
 com:referral:
 typ:vars/:
-var:bet:*text::
-var:ken:*text::
-var:dat:*text::
-var:da:*text::
-var:verso:*text::
-var:ref:*text::
+var:bet:*testo::
+var:ken:*testo::
+var:dat:*testo::
+var:da:*testo::
+var:verso:*testo::
+var:ref:*testo::
 stopsetup
 
 startsetup
@@ -2996,34 +3002,34 @@ stopsetup
 startsetup
 com:accoppiacarta:
 typ:val/:
-val:*name::
+val:*nome::
 stopsetup
 
 startsetup
 com:chim:
 typ:arg/arg/arg/:
-val:*text::
-val:*text::
-val:*text::
+val:*testo::
+val:*testo::
+val:*testo::
 stopsetup
 
 startsetup
 com:frazione:
 typ:arg/arg/:
-val:*text::
-val:*text::
+val:*testo::
+val:*testo::
 stopsetup
 
 startsetup
 com:punti:
 typ:val/:
-val:*number::
+val:*numero::
 stopsetup
 
 startsetup
 com:domicilio:
 typ:arg/:
-val:*text::
+val:*testo::
 stopsetup
 
 startsetup
@@ -3036,13 +3042,13 @@ startsetup
 com:impostaelementi:
 typ:vars/:
 var:luogo:sinistra,destra,inmargine,cima,fondo::
-var:simbolo:1,2,...,n,a,...,*text,nessuno::
-var:ampiezza:*dimension::
-var:n:*number,ignoto::
-var:prima:*command::
-var:tra:*command::
+var:simbolo:1,2,...,n,a,...,*testo,nessuno::
+var:ampiezza:*dimensione::
+var:n:*numero,ignoto::
+var:prima:*comando::
+var:tra:*comando::
 var:allinea:sinistra,destra,centro,margine::
-var:dopo:*command::
+var:dopo:*comando::
 stopsetup
 
 startsetup
@@ -3054,22 +3060,22 @@ stopsetup
 startsetup
 com:citazione:
 typ:arg/:
-val:*text::
+val:*testo::
 stopsetup
 
 startsetup
 com:menzione:
 typ:arg/:
-val:*text::
+val:*testo::
 stopsetup
 
 startsetup
 com:impostamenzione:
 typ:vars/:
-var:prima:*command::
-var:dopo:*command::
-var:stile:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...,*command::
-var:colore:*name::
+var:prima:*comando::
+var:dopo:*comando::
+var:stile:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...,*comando::
+var:colore:*nome::
 var:luogo:testo,margine::
 stopsetup
 
@@ -3082,15 +3088,15 @@ stopsetup
 startsetup
 com:definiscicapoversi:
 typ:val/vars/:
-val:*name::
-var:n:*number::
+val:*nome::
+var:n:*numero::
 var:linea:attivo,disattivo::
-var:altezza:adatta,*dimension::
-var:prima:*command::
-var:dopo:*command::
-var:interno:*command::
-var:distanza:*dimension::
-var:tolleranza:moltostrict,strict,tollerante,moltotollerante,dilata::
+var:altezza:adatta,*dimensione::
+var:prima:*comando::
+var:dopo:*comando::
+var:interno:*comando::
+var:distanza:*dimensione::
+var:tolleranza:moltorigido,rigido,tollerante,moltotollerante,dilata::
 var:allinea:sinistra,destra,centro::
 stopsetup
 
@@ -3107,53 +3113,53 @@ stopsetup
 startsetup
 com:impostacapoversi:
 typ:val/val/vars/:
-val:*name::
-val:*number,ogni::
-var:stile:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...,*command::
-var:ampiezza:*dimension::
-var:altezza:*dimension::
+val:*nome::
+val:*numero,ogni::
+var:stile:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...,*comando::
+var:ampiezza:*dimensione::
+var:altezza:*dimensione::
 var:allinea:sinistra,destra,centro,ampiezza::
-var:tolleranza:moltostrict,strict,tollerante,moltotollerante,dilata::
-var:distanza:*dimension::
-var:prima:*command::
-var:dopo:*command::
-var:interno:*command::
-var:comando:*command::
+var:tolleranza:moltorigido,rigido,tollerante,moltotollerante,dilata::
+var:distanza:*dimensione::
+var:prima:*comando::
+var:dopo:*comando::
+var:interno:*comando::
+var:comando:*comando::
 var:linea:attivo,disattivo::
 stopsetup
 
 startsetup
 com:impostatab:
 typ:vars/:
-var:campione:*text::
-var:ampiezza:*dimension::
-var:stiletesta:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...,*command::
+var:campione:*testo::
+var:ampiezza:*dimensione::
+var:stiletesta:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...,*comando::
 var:luogo:sinistra,destra::
 stopsetup
 
 startsetup
 com:tab:
 typ:arg/nop/par/:
-val:*text::
-val:*text::
+val:*testo::
+val:*testo::
 stopsetup
 
 startsetup
 com:iniziadocumento:
 typ:val/stp/:
-val:*name::
+val:*nome::
 stopsetup
 
 startsetup
 com:lettere:
 typ:val/:
-val:*name::
+val:*nome::
 stopsetup
 
 startsetup
 com:etichette:
 typ:val/:
-val:*name::
+val:*nome::
 stopsetup
 
 startsetup
@@ -3165,56 +3171,56 @@ stopsetup
 startsetup
 com:impostafogli:
 typ:vars/:
-var:alternativa:*number::
-var:testo:*text::
+var:alternativa:*numero::
+var:testo:*testo::
 var:dimensione:piccolo,medio,grande::
-var:stile:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...,*command::
-var:numero:*number,unito::
+var:stile:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...,*comando::
+var:numero:*numero,unito::
 stopsetup
 
 startsetup
 com:foglio:
 typ:val/:
-val:*text::
+val:*testo::
 stopsetup
 
 startsetup
 com:impostafrancobolli:
 typ:vars/:
 var:alternativa:a::
-var:n:*number,tutti::
+var:n:*numero,tutti::
 var:luogo:margine,sinistra,destra,centro::
 stopsetup
 
 startsetup
 com:definiscitabulato:
 typ:val/val/val/:
-val:*name::
-val:*name::
-val:*text::
+val:*nome::
+val:*nome::
+val:*testo::
 stopsetup
 
 startsetup
 com:iniziatabulato:
 typ:val/vars/stp/:
-val:*text::
+val:*testo::
 ivr:usafiguraesterna::
 stopsetup
 
 startsetup
 com:impostatabulato:
 typ:val/vars/:
-val:*name::
-var:unita:*dimension::
+val:*nome::
+var:unita:*dimensione::
 var:rientro:si,no::
-var:prima:*command::
-var:dopo:*command::
-var:interno:*command::
-var:EQ:*text::
-var:colorelinea:*name::
+var:prima:*comando::
+var:dopo:*comando::
+var:interno:*comando::
+var:EQ:*testo::
+var:colorelinea:*nome::
 var:allinea:sinistra,centro,destra,normale::
-var:spessorelinea:*dimension::
-var:distanza:rigovuoto,griglia,profondita,*dimension,piccolo,medio,grande,nessuno::
+var:spessorelinea:*dimensione::
+var:distanza:rigovuoto,griglia,profondita,*dimensione,piccolo,medio,grande,nessuno::
 var:fonttesto:5pt,...,12pt,piccolo,grande::
 stopsetup
 
@@ -3223,46 +3229,46 @@ com:impostatabelle:
 typ:vars/:
 var:distanza:piccolo,medio,grande::
 var:fonttesto:5pt,...,12pt,piccolo,grande::
-var:HL:*number,piccolo,medio,grande,nessuno::
-var:VL:*number,piccolo,medio,grande,nessuno::
-var:profondita:*number,strut::
-var:altezza:*number,strut::
-var:spessorelinea:*dimension::
-var:colorelinea:*name::
+var:HL:*numero,piccolo,medio,grande,nessuno::
+var:VL:*numero,piccolo,medio,grande,nessuno::
+var:profondita:*numero,strut::
+var:altezza:*numero,strut::
+var:spessorelinea:*dimensione::
+var:colorelinea:*nome::
 var:allinea:destra,centro,sinistra,normale::
-var:comandi:*command::
+var:comandi:*comando::
 var:allinea:sinistra,centro,destra,normale::
 var:sfondo:schermo,colore,nessuno::
-var:schermosfondo:*number::
-var:coloresfondo:*name::
+var:schermosfondo:*numero::
+var:coloresfondo:*nome::
 var:fonttesto:5pt,...,12pt,piccolo,grande::
 stopsetup
 
 startsetup
 com:iniziatabella:
 typ:val/stp/:
-val:*text,*name::
+val:*testo,*nome::
 stopsetup
 
 startsetup
 com:iniziatabelle:
 typ:val/stp/:
-val:*text,*name::
+val:*testo,*nome::
 stopsetup
 
 startsetup
 com:definiscimodellotabella:
 typ:val/val/val/val/:
-val:*name::
-val:*text::
-val:*text::
-val:*text::
+val:*nome::
+val:*testo::
+val:*testo::
+val:*testo::
 stopsetup
 
 startsetup
 com:usafileesterni:
 typ:val/vars/:
-val:*name::
+val:*nome::
 var:fonttesto:5pt,...,12pt,piccolo,grande::
 var:file:*file::
 stopsetup
@@ -3270,8 +3276,8 @@ stopsetup
 startsetup
 com:usafileesterno:
 typ:val/val/val/vars/:
-val:*name::
-val:*name::
+val:*nome::
+val:*nome::
 val:*file::
 var:fonttesto:5pt,...,12pt,piccolo,grande::
 stopsetup
@@ -3279,14 +3285,14 @@ stopsetup
 startsetup
 com:usafiguraesterna:
 typ:val/val/vars/:
-val:*name::
+val:*nome::
 val:*file::
-var:scala:*number::
+var:scala:*numero::
 var:fattore:max,adatta,ampio::
-var:wfactor:*number,max,ampio,adatta::
-var:hfactor:*number,max,ampio,adatta::
-var:ampiezza:*dimension::
-var:altezza:*dimension::
+var:wfactor:*numero,max,ampio,adatta::
+var:hfactor:*numero,max,ampio,adatta::
+var:ampiezza:*dimensione::
+var:altezza:*dimensione::
 var:cornice:attivo,disattivo::
 var:preimpostato:si,no::
 var:display:*file::
@@ -3310,12 +3316,12 @@ typ:var/:
 var:opzione:cornice,vuoto,test::
 var:oggetto:si,no::
 var:cornici:attivo,disattivo::
-var:ymax:*number::
-var:xmax:*number::
-var:directory:*text::
+var:ymax:*numero::
+var:xmax:*numero::
+var:directory:*testo::
 var:luogo:locale,globale,implicito,nessuno::
-var:ampiezzamax:*dimension::
-var:altezzamax:*dimension::
+var:ampiezzamax:*dimensione::
+var:altezzamax:*dimensione::
 stopsetup
 
 startsetup
@@ -3327,31 +3333,31 @@ stopsetup
 startsetup
 com:usacolonnasonoraesterna:
 typ:val/val/:
-val:*name::
+val:*nome::
 val:*file::
 stopsetup
 
 startsetup
 com:nome:
 typ:arg/:
-val:*name::
+val:*nome::
 stopsetup
 
 startsetup
 com:inizialegenda:
 typ:val/tex/{leg}nop/sep/nop/sep/nop/sep/tex/{leg}stp/:
 val:due::
-val:*text::
-val:*text::
-val:*text::
+val:*testo::
+val:*testo::
+val:*testo::
 stopsetup
 
 startsetup
 com:iniziafatto:
 typ:tex/{geg}nop/sep/nop/sep/nop/sep/tex/{geg}stp/:
-val:*text::
-val:*text::
-val:*text::
+val:*testo::
+val:*testo::
+val:*testo::
 stopsetup
 
 startsetup
@@ -3363,7 +3369,7 @@ stopsetup
 startsetup
 com:impostarotazione:
 typ:vars/:
-var:rotazione:*number::
+var:rotazione:*numero::
 ivr:impostaincorniciato::
 stopsetup
 
@@ -3375,8 +3381,8 @@ stopsetup
 startsetup
 com:scala:
 typ:vars/arg/:
-var:sx:*number::
-var:sy:*number::
+var:sx:*numero::
+var:sy:*numero::
 stopsetup
 
 startsetup
@@ -3385,9 +3391,9 @@ typ:vars/:
 var:prima:commando::
 var:tra:commando::
 var:dopo:commando::
-var:distanza:*dimension::
-var:altezza:*dimension,adatta::
-var:ampiezza:*dimension,adatta::
+var:distanza:*dimensione::
+var:altezza:*dimensione,adatta::
+var:ampiezza:*dimensione,adatta::
 var:allinea:no,sinistra,destra,centro,normale::
 stopsetup
 
@@ -3400,41 +3406,41 @@ stopsetup
 startsetup
 com:mettifiancoafianco:
 typ:arg/arg/:
-val:*text::
-val:*text::
+val:*testo::
+val:*testo::
 stopsetup
 
 startsetup
 com:mettiunosullaltro:
 typ:arg/arg/:
-val:*text::
-val:*text::
+val:*testo::
+val:*testo::
 stopsetup
 
 startsetup
 com:iniziasovrapposizione:
 typ:arg/arg/stp/:
-val:*text::
-val:*text::
+val:*testo::
+val:*testo::
 stopsetup
 
 startsetup
 com:iniziaoverview:
 typ:vals/stp/:
-val:*name::
+val:*nome::
 stopsetup
 
 startsetup
 com:impostaschermointerazione:
 typ:vars/:
-var:ampiezza:*dimension,adatta,max::
-var:altezza:*dimension,adatta,max::
-var:backspace:*dimension::
-var:spaziocima:*dimension::
-var:horoffset:*dimension::
-var:veroffset:*dimension::
+var:ampiezza:*dimensione,adatta,max::
+var:altezza:*dimensione,adatta,max::
+var:backspace:*dimensione::
+var:spaziocima:*dimensione::
+var:horoffset:*dimensione::
+var:veroffset:*dimensione::
 var:opzione:max,segnalibro::
-var:attesa:*number,nessuno::
+var:attesa:*numero,nessuno::
 stopsetup
 
 startsetup
@@ -3445,7 +3451,7 @@ stopsetup
 startsetup
 com:impostatransizionepagina:
 typ:vals/:
-val:reimposta, *number::
+val:reimposta, *numero::
 stopsetup
 
 startsetup
@@ -3457,45 +3463,45 @@ var:pagina:si,no::
 var:click:si,no::
 var:separa:si,no::
 var:display:nuovo::
-var:azioneapri:*reference::
-var:azionechiudi:*reference::
-var:azioneapripagina:*reference::
-var:azionechiudipagina:*reference::
-var:calcola:*name::
+var:azioneapri:*riferimento::
+var:azionechiudi:*riferimento::
+var:azioneapripagina:*riferimento::
+var:azionechiudipagina:*riferimento::
+var:calcola:*nome::
 var:strut:si,no::
-var:ampiezza:*dimension::
-var:altezza:*dimension::
-var:profondita:*dimension::
-var:stile:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...*command::
-var:colore:*name::
-var:colorecontrasto:*name::
-var:setsimboli:*name::
-var:titolo:*text::
-var:sottotitolo:*text::
-var:autore:*text::
-var:data:*text::
+var:ampiezza:*dimensione::
+var:altezza:*dimensione::
+var:profondita:*dimensione::
+var:stile:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...*comando::
+var:colore:*nome::
+var:colorecontrasto:*nome::
+var:setsimboli:*nome::
+var:titolo:*testo::
+var:sottotitolo:*testo::
+var:autore:*testo::
+var:data:*testo::
 stopsetup
 
 startsetup
 com:impostamenuinterazione:
 typ:vals/vars/dests/:
-val:sinistra,destra,cima,fondo,*name::
-var:prima:*command::
-var:dopo:*command::
-var:tra:*command::
-var:sinistra:*command::
-var:destra:*command::
-var:centro:*command::
+val:sinistra,destra,cima,fondo,*nome::
+var:prima:*comando::
+var:dopo:*comando::
+var:tra:*comando::
+var:sinistra:*comando::
+var:destra:*comando::
+var:centro:*comando::
 var:stato:inizia,termina,nessuno,locale::
-var:stile:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...*command::
-var:colore:*name::
-var:distanza:sovrapponi,*dimension::
+var:stile:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...*comando::
+var:colore:*nome::
+var:distanza:sovrapponi,*dimensione::
 var:stessapagina:si,vuoto,no,nessuno::
 var:riferimentoingoto:si,vuoto,no,nessuno::
-var:offsetsinistro:*dimension::
-var:offsetdestro:*dimension::
-var:offsetcima:*dimension::
-var:offsetfondo:*dimension::
+var:offsetsinistro:*dimensione::
+var:offsetdestro:*dimensione::
+var:offsetcima:*dimensione::
+var:offsetfondo:*dimensione::
 var:posizione:si,no::
 ivr:impostaincorniciato::
 stopsetup
@@ -3503,53 +3509,53 @@ stopsetup
 startsetup
 com:definiscimenuinterazione:
 typ:val/val/vars/:
-val:sinistra,destra,cima,fondo,*name::
-val:sinistra,destra,cima,fondo,*name::
+val:sinistra,destra,cima,fondo,*nome::
+val:sinistra,destra,cima,fondo,*nome::
 ivr:impostamenuinterazione::
 stopsetup
 
 startsetup
 com:iniziamenuinterattivo:
 typ:val/stp/:
-val:*name::
+val:*nome::
 stopsetup
 
 startsetup
 com:disabilitamenuinterazione:
 typ:val/refs/:
-val:sinistra,destra,cima,fondo,*name::
+val:sinistra,destra,cima,fondo,*nome::
 stopsetup
 
 startsetup
 com:usadocumentoesterno:
 typ:val/val/val/:
-val:*name::
+val:*nome::
 val:file::
-val:*text::
+val:*testo::
 stopsetup
 
 startsetup
 com:usaURL:
 typ:val/val/val/val/:
-val:*name::
-val:*text::
+val:*nome::
+val:*testo::
 val:file::
-val:*text::
+val:*testo::
 stopsetup
 
 startsetup
 com:accoppiadocumento:
 typ:val/val/val/:
-val:*name::
+val:*nome::
 val:file::
-val:*name::
-val:*text::
+val:*nome::
+val:*testo::
 stopsetup
 
 startsetup
 com:da:
 typ:ref/:
-val:*text::
+val:*testo::
 stopsetup
 
 startsetup
@@ -3562,7 +3568,7 @@ startsetup
 com:pulsantinterazione:
 typ:vars/vals/:
 ivr:impostabarrainterazione::
-val:*name::
+val:*nome::
 stopsetup
 
 startsetup
@@ -3571,11 +3577,11 @@ typ:vars/:
 var:stato:inizia,termina::
 var:alternativa:a,b,c,d,e,f,g::
 var:simbolo:si,no::
-var:ampiezza:*dimension,hoogte,adatta::
-var:altezza:*dimension,hoogte,adatta::
-var:profondita:*dimension::
-var:colore:*name::
-var:passo:*number,piccolo,medio,grande::
+var:ampiezza:*dimensione,hoogte,adatta::
+var:altezza:*dimensione,hoogte,adatta::
+var:profondita:*dimensione::
+var:colore:*nome::
+var:passo:*numero,piccolo,medio,grande::
 ivr:impostaincorniciato::
 stopsetup
 
@@ -3593,17 +3599,17 @@ startsetup
 com:impostabarrasincronizzazione:
 typ:vars/:
 var:alternativa:pagina,locale::
-var:ampiezza:*dimension,hoogte,adatta::
-var:altezza:*dimension::
-var:stile:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...,*command::
-var:colore:*name::
+var:ampiezza:*dimensione,hoogte,adatta::
+var:altezza:*dimensione::
+var:stile:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...,*comando::
+var:colore:*nome::
 ivr:impostaincorniciato::
 stopsetup
 
 startsetup
 com:barrasincronizzazione:
 typ:val/vars/:
-val:*name::
+val:*nome::
 var:alternativa:pagina,locale::
 ivr:impostabarrasincronizzazione::
 stopsetup
@@ -3617,8 +3623,8 @@ stopsetup
 startsetup
 com:definisciprofilo:
 typ:vals/vals/:
-val:*name::
-val:*name::
+val:*nome::
+val:*nome::
 stopsetup
 
 startsetup
@@ -3630,39 +3636,39 @@ stopsetup
 startsetup
 com:iniziaprofilo:
 typ:vals/stp/:
-val:*name::
+val:*nome::
 stopsetup
 
 startsetup
 com:seguiprofilo:
 typ:arg/val/:
-val:*text::
-val:*name::
+val:*testo::
+val:*nome::
 stopsetup
 
 startsetup
 com:mettisegnalibro:
 typ:vals/vals/:
-val:*name::
+val:*nome::
 stopsetup
 
 startsetup
 com:segnalibro:
 typ:val/arg/:
-val:*name::
+val:*nome::
 stopsetup
 
 startsetup
 com:iniziaversione:
 typ:vals/stp/:
-val:*number::
+val:*numero::
 stopsetup
 
 startsetup
 com:impostaversioni:
 typ:vars/:
-var:numero:*number::
-var:stile:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...,*command::
+var:numero:*numero::
+var:stile:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...,*comando::
 stopsetup
 
 startsetup
@@ -3678,100 +3684,100 @@ stopsetup
 startsetup
 com:definisciversion:
 typ:val/vals/:
-val:*name::
-val:*number::
+val:*nome::
+val:*numero::
 stopsetup
 
 startsetup
 com:seguiversione:
 typ:arg/val/:
-val:*text::
-val:*name::
+val:*testo::
+val:*nome::
 stopsetup
 
 startsetup
 com:seguiversioneprofilo:
 typ:arg/val/val/:
-val:*text::
-val:*name::
-val:*name::
+val:*testo::
+val:*nome::
+val:*nome::
 stopsetup
 
 startsetup
 com:definisciprogramma:
 typ:val/val/val/:
-val:*name::
-val:*text::
-val:*text::
+val:*nome::
+val:*testo::
+val:*testo::
 stopsetup
 
 startsetup
 com:impostaprogrammi:
 typ:vars/:
-var:directory:*text::
+var:directory:*testo::
 stopsetup
 
 startsetup
 com:programma:
 typ:val/:
-val:*name::
+val:*nome::
 stopsetup
 
 startsetup
 com:iniziafigura:
 typ:val/val/vars/stp/:
-val:*name::
+val:*nome::
 val:*file::
-var:fattore:*number::
+var:fattore:*numero::
 var:cornice:attivo,disattivo::
 stopsetup
 
 startsetup
 com:referring/figura:
 typ:poss/poss/val/:
-val:*number::
-val:*number::
-val:*number::
-val:*number::
-val:*text::
+val:*numero::
+val:*numero::
+val:*numero::
+val:*numero::
+val:*testo::
 stopsetup
 
 startsetup
 com:marcatura/figura:
 typ:poss/poss/val/:
-val:*number::
-val:*number::
-val:*number::
-val:*number::
-val:*text::
+val:*numero::
+val:*numero::
+val:*numero::
+val:*numero::
+val:*testo::
 stopsetup
 
 startsetup
 com:commento:
 typ:pos/pos/vars/arg/:
-val:*number::
-val:*number::
+val:*numero::
+val:*numero::
 ivr:impostaincorniciato::
-val:*text::
+val:*testo::
 stopsetup
 
 startsetup
 com:vaia:
 typ:arg/arg/refs/:
-val:*text::
+val:*testo::
 stopsetup
 
 startsetup
 com:vaiabox:
 typ:arg/refs/:
-val:*text::
+val:*testo::
 stopsetup
 
 startsetup
 com:pulsante:
 typ:vars/arg/refs/:
 ivr:impostapulsanti::
-val:*text::
+val:*testo::
 stopsetup
 
 startsetup
@@ -3785,99 +3791,99 @@ startsetup
 com:pulsantemenu:
 typ:val/vars/arg/refs/:
 ivr:impostaincorniciato::
-val:*text::
+val:*testo::
 stopsetup
 
 startsetup
 com:impostacommento:
 typ:vars/:
-var:ampiezza:*dimension::
-var:altezza:*dimension::
-var:colore:*name::
-var:titolo:*text::
+var:ampiezza:*dimensione::
+var:altezza:*dimensione::
+var:colore:*nome::
+var:titolo:*testo::
 var:spazio:si,no::
-var:simbolo:normale,Nuovo,Pallone,Aggiunta,Aiuto,Capoverso,Tasto::
-var:opzione:max::
+var:simbolo:normale, Nuovo,Pallone,Aggiunta,Aiuto,Capoverso,Tasto, *nome::
+var:opzione:max,buffer::
 stopsetup
 
 startsetup
 com:iniziacommento:
 typ:val/vars/stp/:
-val:*name::
+val:*nome::
 ivr:impostacommento::
 stopsetup
 
 startsetup
 com:commento:
 typ:val/vars/arg/:
-val:*name::
+val:*nome::
 ivr:impostacommento::
 stopsetup
 
 startsetup
 com:definiscicampo:
 typ:val/val/val/vals/val/:
-val:*name::
-val:*name:radio,check,push,line,text,popup,choice,combo:
-val:*name::
-val:*name::
-val:*name::
+val:*nome::
+val:*nome:radio,check,push,line,text,popup,choice,combo:
+val:*nome::
+val:*nome::
+val:*nome::
 stopsetup
 
 startsetup
 com:definiscisottocampo:
 typ:val/val/vals/:
-val:*name::
-val:*name::
-val:*name::
+val:*nome::
+val:*nome::
+val:*nome::
 stopsetup
 
 startsetup
 com:copiacampo:
 typ:val/vals/:
-val:*name::
-val:*name::
+val:*nome::
+val:*nome::
 stopsetup
 
 startsetup
 com:clonacampo:
 typ:val/vals/val/vals/:
-val:*name::
-val:*name::
-val:*name::
-val:*name::
+val:*nome::
+val:*nome::
+val:*nome::
+val:*nome::
 stopsetup
 
 startsetup
 com:campi:
 typ:val/:
-val:*name::
+val:*nome::
 stopsetup
 
 startsetup
 com:adattacampo:
 typ:val/:
-val:*name::
+val:*nome::
 stopsetup
 
 startsetup
 com:camporiempimento:
 typ:val/arg/:
-val:*text::
-val:*text::
+val:*testo::
+val:*testo::
 stopsetup
 
 startsetup
 com:tooltip:
 typ:val/arg/arg/:
 val:sinistra,destra,centro::
-val:*text::
+val:*testo::
 stopsetup
 
 startsetup
 com:mostracampi:
 typ:vals/:
-val:*name::
+val:*nome::
 stopsetup
 
 startsetup
@@ -3888,7 +3894,7 @@ stopsetup
 startsetup
 com:impostacampo:
 typ:val/vals/vars/vars/vars/:
-val:*name::
+val:*nome::
 val:etichetta,orizzontale,verticale,cornice::
 ivr:impostacampi::
 stopsetup
@@ -3896,28 +3902,28 @@ stopsetup
 startsetup
 com:impostacampi:
 typ:vals/val/vars/vars/vars/:
-val:*name::
+val:*nome::
 val:reimposta,etichetta,orizzontale,verticale,cornice::
-var:n:*number::
-var:distanza:*dimension::
-var:prima:*command::
-var:dopo:*command::
-var:tra:*command::
-var:colore:*name::
+var:n:*numero::
+var:distanza:*dimensione::
+var:prima:*comando::
+var:dopo:*comando::
+var:tra:*comando::
+var:colore:*nome::
 var:stile:normale,grassetto,inclinato,grassettoinclinato,type::
 var:allinea:sinistra,centro,destra::
 var:opzione:solalettura,richiestp,protetto,ordinato, nondisponibile, nascosto,stampabile::
-var:clickdentro:*reference::
-var:clickfuori:*reference::
-var:entraregione:*reference::
-var:esciregione:*reference::
-var:dopotasto:*reference::
-var:format:*reference::
-var:verifica:*reference::
-var:calcola:*reference::
-var:offsetcampo:*dimension::
-var:colorecornicecampo:*name::
-var:coloresfondocampo:*name::
+var:clickdentro:*riferimento::
+var:clickfuori:*riferimento::
+var:entraregione:*riferimento::
+var:esciregione:*riferimento::
+var:dopotasto:*riferimento::
+var:format:*riferimento::
+var:verifica:*riferimento::
+var:calcola:*riferimento::
+var:offsetcampo:*dimensione::
+var:colorecornicecampo:*nome::
+var:coloresfondocampo:*nome::
 ivr:incorniciato::
 stopsetup
 
@@ -3930,16 +3936,16 @@ stopsetup
 startsetup
 com:definiscistackcampi:
 typ:val/vals/vars/:
-val:*name::
-val:*name::
+val:*nome::
+val:*nome::
 ivr:impostacampi::
 stopsetup
 
 startsetup
 com:stackcampi:
 typ:val/vals/vars/:
-val:*name::
-val:*name::
+val:*nome::
+val:*nome::
 ivr:impostacampi::
 stopsetup
 
@@ -3952,32 +3958,32 @@ stopsetup
 startsetup
 com:impostaclippling:
 typ:vars/:
-var:nx:*number::
-var:ny:*number::
-var:x:*number::
-var:y:*number::
-var:ampiezza:*dimension::
-var:altezza:*dimension::
-var:hoffset:*dimension::
-var:voffset:*dimension::
-var:mp:*name::
+var:nx:*numero::
+var:ny:*numero::
+var:x:*numero::
+var:y:*numero::
+var:ampiezza:*dimensione::
+var:altezza:*dimensione::
+var:hoffset:*dimensione::
+var:voffset:*dimensione::
+var:mp:*nome::
 stopsetup
 
 startsetup
 com:mettilegenda:
 typ:arg/arg/:
-val:*text::
-val:*text::
+val:*testo::
+val:*testo::
 stopsetup
 
 startsetup
 com:impostalegenda:
 typ:vars/:
-var:n:*number::
-var:distanza:*dimension::
-var:tra:*command::
-var:ampiezza:*dimension::
-var:altezza:*dimension::
+var:n:*numero::
+var:distanza:*dimensione::
+var:tra:*comando::
+var:ampiezza:*dimensione::
+var:altezza:*dimensione::
 var:luogo:destra,fondo::
 var:fonttesto:5pt,...,12pt,piccolo,grande::
 stopsetup
@@ -3985,26 +3991,26 @@ stopsetup
 startsetup
 com:definiscilinea:
 typ:val/vars/:
-val:*name::
+val:*nome::
 ivr:impostalinea::
 stopsetup
 
 startsetup
 com:mettilinea:
 typ:val/:
-val:*name::
+val:*nome::
 stopsetup
 
 startsetup
 com:impostalinea:
 typ:val/vars/:
-val:*name::
-var:profondita:*dimension::
-var:altezza:*dimension::
-var:ampiezza:*dimension::
-var:spazioprima:*dimension::
-var:spaziodopo:*dimension::
-var:colore:*name::
+val:*nome::
+var:profondita:*dimensione::
+var:altezza:*dimensione::
+var:ampiezza:*dimensione::
+var:spazioprima:*dimensione::
+var:spaziodopo:*dimensione::
+var:colore:*nome::
 stopsetup
 
 startsetup
@@ -4016,37 +4022,37 @@ stopsetup
 startsetup
 com:impostavariabiletesto:
 typ:val/vars/:
-val:*name::
-var:sinistra:*text::
-var:destra:*text::
-var:distanza:*dimension::
-var:comando:*\command#1::
-var:strut:si,no,cap,*text::
+val:*nome::
+var:sinistra:*testo::
+var:destra:*testo::
+var:distanza:*dimensione::
+var:comando:*\comando#1::
+var:strut:si,no,cap,*testo::
 stopsetup
 
 startsetup
 com:setvariabiletesto:
 typ:val/val/:
-val:*name::
-val:*text::
+val:*nome::
+val:*testo::
 stopsetup
 
 startsetup
 com:mettivariabiletesto:
 typ:val/:
-val:*name::
+val:*nome::
 stopsetup
 
 startsetup
 com:variabiletesto:
 typ:val/:
-val:*name::
+val:*nome::
 stopsetup
 
 startsetup
 com:definiscifontgrezzo:
 typ:val/val/vars/:
-val:*name::
+val:*nome::
 val:*file::
 ivr:impostainterlinea::
 stopsetup
@@ -4054,33 +4060,33 @@ stopsetup
 startsetup
 com:passaafontgrezzo:
 typ:val/:
-val:*name::
+val:*nome::
 stopsetup
 
 startsetup
 com:definisciposizionetesto:
 typ:val/vars/:
-val:*name::
+val:*nome::
 ivr:impostaposizionamento::
 stopsetup
 
 startsetup
 com:impostaposizionetesto:
 typ:val/vars/:
-val:*name::
+val:*nome::
 ivr:impostaposizionamento::
 stopsetup
 
 startsetup
 com:posizionatesto:
 typ:val/arg/:
-val:*name::
-val:*text::
+val:*nome::
+val:*testo::
 stopsetup
 
 startsetup
 com:impostastrut:
 typ:val/:
-val:si,no,cap,*text:si:
+val:si,no,cap,*testo:si:
 stopsetup
 

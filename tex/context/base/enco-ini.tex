@@ -1409,7 +1409,7 @@
 
 % new, to be documented 
 
-\def\dontexpandencoding%
+\def\dontexpandencoding
   {\let\dohandleaccent   \donthandleaccent
    \let\dohandlecommand  \donthandlecommand
    \let\dohandlecharacter\donthandlecharacter}
@@ -1417,6 +1417,21 @@
 \def\donthandleaccent   #1{\expandafter\string\csname#1\endcsname\space}
 \def\donthandlecommand  #1{\expandafter\string\csname#1\endcsname\space}
 \def\donthandlecharacter#1{\expandafter\string\csname#1\endcsname\space}
+
+%D Still valid? To be checked: 
+
+\def\ignoreencoding
+  {\let\dohandleaccent   \doignoreaccent
+   \let\dohandlecommand  \doignorecommand
+   \let\dohandlecharacter\doignorecharacter}
+
+\def\doignoreaccent #1#2{\string#1\string#2}%
+\def\doignorecommand  #1{\string#1}
+\def\doignorecharacter#1{\string#1}
+
+\appendtoks 
+  \ignoreencoding
+\to \everycleanupfeatures 
 
 %D We preload several encodings: 
 

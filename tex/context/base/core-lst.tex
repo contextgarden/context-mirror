@@ -64,49 +64,92 @@
 % number uses the text container. We use reference mapping 
 % (define reference) to keep track of the current ref. 
 
-\def\doschrijfnaarlijst#1#2#3#4%
-  {\doifvalue{\??li#1\c!status}{\v!start}
-     {\dodoschrijfnaarlijst{#1}{#2}{#3}{#4}}}
+% \def\doschrijfnaarlijst#1#2#3#4%
+%   {\doifvalue{\??li#1\c!status}{\v!start}
+%      {\dodoschrijfnaarlijst{#1}{#2}{#3}{#4}}}
+% 
+% \def\dodoschrijfnaarlijst#1#2#3#4%
+%   {\begingroup
+%    \convertexpanded{\??li#1}{#3}\asciilistentry
+%    \makesectionformat
+%    \doifelse{\@@nmstatus}{\v!start}
+%      {\def\dopaginanummer{\noexpand\pagenumber}}
+%      {\def\dopaginanummer{0}}%
+%    % niet waterdicht, wat te doen met figuren en zo
+%    % first hack: scheelt rommel, second hack: alleen koppen
+%    \doifelsevalue{\??rf#1\c!status}{\v!start}
+%      {\doif{\@@sectionlevel\@@sectie}{0}{\autocrossdocumentfalse}}
+%      {\autocrossdocumentfalse}%
+%    % blijft nog wat zwakjes en inefficient 
+%    \ifautocrossdocument
+%      \bgroup
+%      \thisisnextinternal{#1}%
+%     %\thisisdestination{#1::\sectionformat}% 
+%      \@EA\setsectieenkoppeling\@EA{#1}%
+%      \edef\currentlevel{\@@sectionlevel\@@sectie}%
+%      \def\docommando##1% naar buiten brengen 
+%        {\def\dodocommando####1% 
+%           {\doifvalue{\??rf####1\c!status}{\v!start}
+%              {\setsectieenkoppeling{####1}%
+%               \def\level{\@@sectionlevel\@@sectie}%
+%               \ifnum\level>\currentlevel
+%                 \expanded{\definereference[##1::####1][\v!geen]}%
+%               \else\ifnum\level=\currentlevel
+%                 \expanded{\definereference[##1::####1][##1::{####1::\sectionformat}]}%
+%               \fi\fi}}%
+%         \processcommacommand[\crossdocumentelements]\dodocommando}%
+%      \processcommacommand[\crossdocumentreferences]\docommando
+%      \egroup
+%    \else
+%      \thisisnextinternal{#1}%
+%    \fi
+%    \edef\schrijfwegnaarlijst%
+%      {\writeutilitycommand%
+%         {\listentry%
+%            {#1}%
+%            {\nextinternalreference}%
+%            {#2}%
+%            {\asciilistentry}%
+%            {\sectionformat::\dopaginanummer}%
+%            {\noexpand\realfolio}}}%
+%    \schrijfwegnaarlijst
+%    \endgroup}
+%
+% adapted 
+
+\def\doschrijfnaarlijst#1%
+  {\doifelsevalue{\??li#1\c!status}{\v!start}
+     \dodoschrijfnaarlijst\gobblefourarguments{#1}}
 
 \def\dodoschrijfnaarlijst#1#2#3#4%
   {\begingroup
-   \convertexpanded{\??li#1}{#3}\asciilistentry
+   \def\currentlist{#1}%
+   \convertexpanded{\??li\currentlist}{#3}\asciilistentry
    \makesectionformat
-   \doifelse{\@@nmstatus}{\v!start}
+   \doifelse\@@nmstatus\v!start
      {\def\dopaginanummer{\noexpand\pagenumber}}
      {\def\dopaginanummer{0}}%
    % niet waterdicht, wat te doen met figuren en zo
    % first hack: scheelt rommel, second hack: alleen koppen
-   \doifelsevalue{\??rf#1\c!status}{\v!start}
-     {\doif{\@@sectionlevel\@@sectie}{0}{\autocrossdocumentfalse}}
+   \doifelsevalue{\??rf\currentlist\c!status}\v!start
+     {\doif{\@@sectionlevel\@@sectie}{0}\autocrossdocumentfalse}
      {\autocrossdocumentfalse}%
-   % blijft nog wat zwakjes en inefficient 
+   % blijft nog wat zwakjes en inefficient
    \ifautocrossdocument
      \bgroup
-     \thisisnextinternal{#1}%
-    %\thisisdestination{#1::\sectionformat}% 
-     \@EA\setsectieenkoppeling\@EA{#1}%
+     \thisisnextinternal\currentlist
+    %\thisisdestination{\currentlist::\sectionformat}%
+     \@EA\setsectieenkoppeling\@EA{\currentlist}%
      \edef\currentlevel{\@@sectionlevel\@@sectie}%
-     \def\docommando##1% naar buiten brengen 
-       {\def\dodocommando####1% 
-          {\doifvalue{\??rf####1\c!status}{\v!start}
-             {\setsectieenkoppeling{####1}%
-              \def\level{\@@sectionlevel\@@sectie}%
-              \ifnum\level>\currentlevel
-                \expanded{\definereference[##1::####1][\v!geen]}%
-              \else\ifnum\level=\currentlevel
-                \expanded{\definereference[##1::####1][##1::{####1::\sectionformat}]}%
-              \fi\fi}}%
-        \processcommacommand[\crossdocumentelements]\dodocommando}%
-     \processcommacommand[\crossdocumentreferences]\docommando
+     \processcommacommand[\crossdocumentreferences]\dododoschrijfnaarlijst
      \egroup
    \else
-     \thisisnextinternal{#1}%
+     \thisisnextinternal\currentlist
    \fi
    \edef\schrijfwegnaarlijst%
      {\writeutilitycommand%
         {\listentry%
-           {#1}%
+           {\currentlist}%
            {\nextinternalreference}%
            {#2}%
            {\asciilistentry}%
@@ -114,6 +157,20 @@
            {\noexpand\realfolio}}}%
    \schrijfwegnaarlijst
    \endgroup}
+
+\def\dododoschrijfnaarlijst#1%
+  {\def\docommando##1%
+     {\doifvalue{\??rf##1\c!status}\v!start
+        {\setsectieenkoppeling{##1}%
+         \def\level{\@@sectionlevel\@@sectie}%
+         \ifnum\level>\currentlevel
+           \expanded{\definereference[#1::##1][\v!geen]}%
+         \else\ifnum\level=\currentlevel
+           \expanded{\definereference[#1::##1][#1::{##1::\sectionformat}]}%
+         \fi\fi}}%
+   \processcommacommand[\crossdocumentelements]\docommando}
+
+% so far 
 
 \def\doschrijftussenlijst#1#2%
   {\doifvalue{\??li#1\c!status}{\v!start}
@@ -448,6 +505,8 @@
      {\ifvmode\nointerlineskip\fi}               % bij multi-line lijsten 
      {\nointerlineskip\endgraf\allowbreak}}      % 
 
+% to be documented: uitlijnen, hang 
+
 \def\dodofixdlijstelementABC#1#2#3#4#5#6% weeden
   {\endgraf
    \leftskip\getvalue{\??li#1\c!marge}% na de \endgraf !
@@ -486,17 +545,19 @@
                     {\hfill
                      \makelijstelement\v!paginanummer
                        {\dolistattributes{#1}\c!paginaletter\c!paginakleur
-                          {\getvalue{\??li#1\c!paginacommando}
+                          {\getvalue{\??li#1\c!paginacommando}%
                              {\paginaprefix\??li#1[#5]%
                               \translatednumber[#5]}}}}}}}%
          \vbox
            {\hsize\!!widthb
+\expanded{\steluitlijnenin[\getvalue{\??li#1\c!uitlijnen}]}%
             \ifdim\!!widtha<\hsize
               \hangindent=\wd2
               \dimen2=\!!widthc % \getvalue{\??li#1\c!afstand}%
               \advance\hangindent by \dimen2
               \hangafter=1
-              \ifvoid4
+\doifvalue{\??li#1\c!hang}{\v!nee}{\hangafter=0 }%
+              \ifdim\wd4=\zeropoint % \ifvoid4
                 % we kunnen gewoon afbreken aan het eind
               \else
                 \ifdim\lijstskip>\zeropoint\relax
@@ -516,12 +577,10 @@
               {\let\\=\newlineinlist
                \dontconvertfont
                \getvalue{\??li#1\c!tekstcommando}{#4}}%
-%\carryoverpar % new otherwise wrong linespacing 
+              %\carryoverpar % new otherwise wrong linespacing 
             \egroup
-            \ifvoid4
-              \ifdim\!!widtha<\hsize
-                \hfill\strut
-              \fi
+            \ifdim\wd4=\zeropoint\relax % \ifvoid4
+              % \ifdim\!!widtha<\hsize \hfill\strut \fi % spoils align 
             \else
               \nobreak\hskip.5em\lijstfill
               \box4\relax

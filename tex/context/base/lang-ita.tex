@@ -31,18 +31,21 @@
 
 \unprotect
 
+\ifx\guillemotspace\undefined \let\guillemotspace\empty \fi
+\ifx\sentencespace \undefined \let\sentencespace \empty \fi
+
 \installlanguage
   [\s!fr]
   [\c!spatiering=\v!opelkaar,
-   \c!leftsentence=\leftguillemot,
-   \c!rightsentence=\rightguillemot,
-   \c!leftsubsentence=\leftsubguillemot,
-   \c!rightsubsentence=\rightsubguillemot,
-   \c!leftquote=\leftsubguillemot,
-   \c!rightquote=\rightsubguillemot,
+   \c!leftsentence=\emdash,
+   \c!rightsentence=\emdash,
+   \c!leftsubsentence=\emdash,
+   \c!rightsubsentence=\emdash,
+   \c!leftquote=\leftguillemot,
+   \c!rightquote=\rightguillemot,
    \c!leftquotation=\leftguillemot,
    \c!rightquotation=\rightguillemot,
-   \c!datum={\v!dag,\ ,\v!maand,\ ,\v!jaar},
+   \c!datum={\v!dag+,\v!spatie,\v!maand,\v!spatie,\v!jaar},
    \c!status=\v!stop]
 
 \installlanguage

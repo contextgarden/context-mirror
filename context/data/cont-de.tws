@@ -1653,6 +1653,7 @@ var:zeilen:*Nummer::
 var:gritter:ja,nein::
 var:bottomspace:*Nummer::
 var:cutspace:*Nummer::
+var:textdistance:*Nummer::
 stopsetup
 
 startsetup
@@ -1676,8 +1677,8 @@ stopsetup
 
 startsetup
 com:amgitterneuausrichten:
-typ:val/:
-val:oben,beide,unten,-oben,-beide,-unten, hoch,mittig,tief,seite,standard,kein, breit,passend:standard:
+typ:vals/:
+val:oben,beide,unten,-oben,-beide,-unten, hoch,mittig,tief,seite,kein,standard, breit,passend,tiefe,zeile,*Dimension:standard:
 stopsetup
 
 startsetup
@@ -2309,6 +2310,7 @@ var:prefix:+,-,*Text::
 var:setzekopf:ja,nein::
 var:nummererhoehen:ja,nein,*Datei::
 var:ausrichtung:links,rechts,normal,breit::
+var:titelausrichten:ja,nein::
 var:toleranz:sehrstreng,streng,tolerant,sehrtolerant,strecken::
 var:ziehefolgendeein:ja,nein::
 var:datei:*Name::
@@ -2666,7 +2668,7 @@ typ:vars/vals/:
 var:d:*Nummer::
 var:m:*Nummer::
 var:y:*Nummer::
-val:tag,monat,wochentag,jahr, dd,mm,jj,yy,d,m,j,y,merkmal:tag,monat,jahr:
+val:tag,tag+,monat,wochentag,jahr, dd,dd+,mm,jj,yy,d,d+,m,j,y,merkmal:tag,monat,jahr:
 stopsetup
 
 startsetup
@@ -2953,7 +2955,11 @@ typ:val/vars/:
 val:*Name::
 var:hoehe:*Dimension::
 var:breite:*Dimension::
+var:maxhoehe:*Dimension::
+var:maxbreite:*Dimension::
+var:default:*Name::
 var:seitenbegrenzung:*Liste::
+var:platz:links,mittig,rechts::
 ivr:stelleumrahmtein::
 stopsetup
 
@@ -3796,8 +3802,8 @@ var:hoehe:*Dimension::
 var:farbe:*Name::
 var:titel:*Text::
 var:spatium:ja,nein::
-var:symbol:normal,Neu,Ballon,Zusatz,Hilfe,Absatz,Schluessel::
-var:option:max::
+var:symbol:normal, Neu,Ballon,Zusatz,Hilfe,Absatz,Schluessel, *Name::
+var:option:max,puffer::
 stopsetup
 
 startsetup

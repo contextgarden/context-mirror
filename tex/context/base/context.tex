@@ -15,7 +15,7 @@
 
 \catcode`\{=1 \catcode`\}=2 
 
-\def\contextversion{2002.3.27}
+\def\contextversion{2002.4.17}
 
 %D Welcome to the main module. When this module is ran through
 %D \type{initex} or \type{tex -i} or \type{whatevertex} using
@@ -99,9 +99,10 @@
 
 %D When loading the font, color and special modules, we need a
 %D bit more advanced file handling as well as some general
-%D variables, so next we load:
+%D variables, and features, so next we load:
 
 \input core-var.tex
+\input core-ins.tex
 \input core-fil.tex
 
 %D We already need some synonyms (patterns). At runtime this 
@@ -191,6 +192,7 @@
 % experimental otr 
 
 \input page-ini.tex 
+\input page-not.tex 
 \input page-one.tex 
 \input page-lay.tex 
 \input page-log.tex
@@ -264,6 +266,10 @@
 
 \input core-fig.tex % after page body 
 \input core-par.tex
+
+%D Language specific spacing. 
+
+\input lang-spa.tex
 
 %D Only the basic XML parser and remapper are part of the core. 
 %D These macrosa re loaded last since they overload and|/|or

@@ -8,11 +8,11 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
-%C details. 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
 
-%D This module needs a drastic update: can be made simplier 
-%D and faster. 
+%D This module needs a drastic update: can be made simplier
+%D and faster; code can move to core module. 
 
 %D \gdef\starttest%
 %D   {\blanko
@@ -43,7 +43,7 @@
 %D combining words, we often favor putting dashes between those
 %D words, because it facilitates reading, at least for those
 %D who are not that accustomed to it.
-%D 
+%D
 %D In \TEX\ compound words, separated by a hyphen, are not
 %D hyphenated at all. In spite of the multiple pass paragraph
 %D typesetting this can lead to parts of words sticking into
@@ -53,8 +53,8 @@
 %D like \type {|}, delimited by the same character \type {|},
 %D we get ourselves both a decent visualization (in \TEXEDIT\
 %D and colored verbatim we color these commands yellow) and an
-%D efficient way of combining words. 
-%D 
+%D efficient way of combining words.
+%D
 %D The sequence \type{||} simply leads to two words connected by
 %D a hyphen. Because we want to distinguish such a hyphen from
 %D the one inserted when \TEX\ hyphenates a word, we use a bit
@@ -115,10 +115,10 @@
 %D \starttest
 %D \test {well|_|known}
 %D \stoptest
-%D 
-%D to stress the compoundness of hyphenated words. 
 %D
-%D Of course we also have to take care of the special case: 
+%D to stress the compoundness of hyphenated words.
+%D
+%D Of course we also have to take care of the special case:
 %D
 %D \starttest
 %D \test {text||color and ||font}
@@ -168,7 +168,7 @@
 %D In the main \CONTEXT\ modules these can be tuned by a setup
 %D command. Watch the (maybe) better looking compound hyphen.
 
-% I've added \hbox's so that in mathmode we get proper chars 
+% I've added \hbox's so that in mathmode we get proper chars
 
 \def\compoundhyphen     {\hbox{-\kern-.25ex-}}
 \def\beginofsubsentence {\hbox{---}}
@@ -257,7 +257,7 @@
 %D      \let\nextnext=\relax
 %D    \fi}
 %D \stoptypen
-%D 
+%D
 %D Handling \type{(} and \type{)} is a a bit special, because
 %D \TEX\ sees them as decent hyphenation points, according to
 %D their \type{\lccode} being non||zero. For the same reason,
@@ -300,10 +300,10 @@
 
 \beginTEX
 
-\def\installdiscretionaries#1#2#3% 
+\def\installdiscretionaries#1#2#3%
   {\convertargument#1\to\ascii
-   \setevalue{\strippedcsname\mathmodediscretionary\string#1}{\ascii}% 
-   \setvalue{\strippedcsname\textmodediscretionary\string#1}{#3}%
+   \setevalue{\strippedcsname\mathmodediscretionary\string#1}{\ascii}%
+   \setvalue {\strippedcsname\textmodediscretionary\string#1}{#3}%
    \catcode`#1=\@@active
    \scratchcounter=\the\uccode`~
    \uccode`~=`#1
@@ -314,9 +314,9 @@
 
 \beginETEX \detokenize
 
-\def\installdiscretionaries#1#2#3% 
-  {\setevalue{\strippedcsname\mathmodediscretionary\string#1}{\detokenize{#1}}% 
-   \setvalue{\strippedcsname\textmodediscretionary\string#1}{#3}%
+\def\installdiscretionaries#1#2#3%
+  {\setevalue{\strippedcsname\mathmodediscretionary\string#1}{\detokenize{#1}}%
+   \setvalue {\strippedcsname\textmodediscretionary\string#1}{#3}%
    \catcode`#1=\@@active
    \scratchcounter=\the\uccode`~
    \uccode`~=`#1
@@ -337,32 +337,32 @@
 
 %D The next piece of code is a torture test for this previous
 %D macro. The \type {\relax} before the \type {\ifmmode} is
-%D needed because of the alignment scanner (in \ETEX\ this 
-%D problem is not present because there a protected macro is 
-%D not expanded. Thanks to Tobias Burnus for providing this 
-%D example. 
-%D 
+%D needed because of the alignment scanner (in \ETEX\ this
+%D problem is not present because there a protected macro is
+%D not expanded. Thanks to Tobias Burnus for providing this
+%D example.
+%D
 %D \startformule
-%D   \left|f(x_n)-{1\over2}\right| = 
+%D   \left|f(x_n)-{1\over2}\right| =
 %D      {\cases{|{1\over2}-x_n| &for $0\le x_n < {1\over2}$\cr
 %D              |x_n-{1\over2}| &for ${1\over2}<x_n\le1$   \cr}}
 %D \stopformule
 
-%D \macros 
+%D \macros
 %D   {defineactivecharacter}
 %D
-%D In \type {lang-ger.tex} we define some language specific 
+%D In \type {lang-ger.tex} we define some language specific
 %D commands for german input, like:
-%D 
+%D
 %D \starttypen
 %D \startlanguagespecifics[de]
 %D   \installcompoundcharacter "a {\moveaccent{-.1ex}\"a\midworddiscretionary}
-%D \stoplanguagespecifics 
+%D \stoplanguagespecifics
 %D \stoptypen
-%D 
-%D Occasionally we have to redefine such an active character, 
+%D
+%D Occasionally we have to redefine such an active character,
 %D like in:
-%D 
+%D
 %D \starttypen
 %D \startencoding[pdfdoc]
 %D   \startlanguagespecifics[de]
@@ -370,7 +370,7 @@
 %D   \stoplanguagespecifics
 %D \stopencoding
 %D \stoptypen
-%D 
+%D
 %D Here is the command we used:
 
 % \def\next{#2}% \unexpanded\def\next is wrong in non||etex
@@ -381,11 +381,11 @@
    \scratchcounter=\the\uccode`~
    \uccode`~=`#1\relax
    \uppercase{\def\next{~}}%
-  %\expandafter\unexpanded\expandafter\def\next{#2}% 
-   \expandafter\def\next{#2}% unexpanded goes wrong in pdfdoc 
+  %\expandafter\unexpanded\expandafter\def\next{#2}%
+   \expandafter\def\next{#2}% unexpanded goes wrong in pdfdoc
    \uccode`~=\scratchcounter}
 
-%D The next alternative also supports character numbers: 
+%D The next alternative also supports character numbers:
 
 \def\defineactivecharacter #1 #2%
   {\scratchcounter\the\uccode`~
@@ -393,8 +393,8 @@
      {\catcode #1=\@@active \uccode`~= #1\relax}
      {\catcode`#1=\@@active \uccode`~=`#1\relax}%
    \uppercase{\def\next{~}}%
-  %\expandafter\unexpanded\expandafter\def\next{#2}% 
-   \expandafter\def\next{#2}% unexpanded goes wrong in pdfdoc 
+  %\expandafter\unexpanded\expandafter\def\next{#2}%
+   \expandafter\def\next{#2}% unexpanded goes wrong in pdfdoc
    \uccode`~\scratchcounter}
 
 %D One reason for abusing the \type{~} is that it is already
@@ -402,19 +402,19 @@
 
 %D The next implementation is about 20\% faster; 1M
 %D definitions on a 1Gig machine takes about 19 seconds
-%D (against 24 for the previous alternative). 
+%D (against 24 for the previous alternative).
 
 \chardef\activehackcode=`~
 
 \def\defineactivecharacter #1 %
   {\scratchcounter\the\uccode\activehackcode
    \uccode\activehackcode\expandafter\doifnumberelse\expandafter{\string#1}\empty`#1%
-   \catcode\uccode\activehackcode\@@active 
+   \catcode\uccode\activehackcode\@@active
    \uppercase{\def\next{~}}%
    \uccode\activehackcode\scratchcounter
-   \expandafter\def\next}% unexpanded goes wrong in pdfdoc 
+   \expandafter\def\next}% unexpanded goes wrong in pdfdoc
 
-%D A goody: 
+%D A goody:
 
 \def\makecharacteractive #1 %
   {\catcode`#1\active}
@@ -500,17 +500,17 @@
      \let\nextnext=\relax
    \fi}
 
-%D The macro \type{\checkbeforediscretionary} takes care of 
-%D loners like \type{||word}, while it counterpart 
-%D \type{\checkafterdiscretionary} is responsible for handling 
-%D the comma. 
+%D The macro \type{\checkbeforediscretionary} takes care of
+%D loners like \type{||word}, while it counterpart
+%D \type{\checkafterdiscretionary} is responsible for handling
+%D the comma.
 
 %D \macros
 %D   {beginofsubsentencespacing,endofsubsentencespacing}
-%D 
-%D In the previous macros we provided two hooks which can be 
-%D used to support nested sub||sentences. In \CONTEXT\ these 
-%D hooks are used to insert a small space when needed. 
+%D
+%D In the previous macros we provided two hooks which can be
+%D used to support nested sub||sentences. In \CONTEXT\ these
+%D hooks are used to insert a small space when needed.
 
 \let\beginofsubsentencespacing=\relax
 \let\endofsubsentencespacing  =\relax
@@ -520,13 +520,13 @@
 
 \installdiscretionaries || \compoundhyphen
 
-%D \macros 
+%D \macros
 %D   {fakecompoundhyphen}
 %D
-%D In headers and footers as well as in active pieces of text 
-%D we need a dirty hack. Try to imagine what is needed to 
-%D savely break the next text across a line and at the same 
-%D time make the words interactive. 
+%D In headers and footers as well as in active pieces of text
+%D we need a dirty hack. Try to imagine what is needed to
+%D savely break the next text across a line and at the same
+%D time make the words interactive.
 %D
 %D \starttypen
 %D \goto{Some||Long||Word}
@@ -535,7 +535,7 @@
 \def\currentspaceskip%
   {\fontdimen2\font\!!plus\fontdimen3\font\!!minus\fontdimen4\font\relax}
 
-% \def\fakecompoundhyphen% wrong 
+% \def\fakecompoundhyphen% wrong
 %   {\def|##1|{\compoundhyphen\nobreak\hskip-\currentspaceskip\allowbreak}}
 
 \ifx\newsignal\undefined
@@ -549,9 +549,9 @@
   \def\fakecompoundhyphen%
     {\def|##1|%
        {\doifelsenothing{##1}{\compoundhyphen}{##1}%
-        \kern\compoundbreakpoint\allowbreak}} 
+        \kern\compoundbreakpoint\allowbreak}}
 
-\fi 
+\fi
 
 %D One of the drawbacks of this mechanism is that characters can
 %D be made active afterwards. The next alternative can be used
@@ -603,7 +603,7 @@
 %D This time we use \type{\ifnum}:
 
 \def\activedododotextmodediscretionary%
-  {\let\nextnextnext=\egroup
+  {\let\nextnextnext\egroup
    \ifx\discretionarycommand\next
      \checkafterdiscretionary
      \bgroup
@@ -615,7 +615,7 @@
    \else\ifnum\uccode`~=\nextuccode
      \prewordbreak\discretionary{-}{}{\thinspace}\postwordbreak
    \else\ifnum\uccode`_=\nextuccode
-     \prewordbreak\discretionary{\textmodediscretionary} 
+     \prewordbreak\discretionary{\textmodediscretionary}
        {\textmodediscretionary}{\textmodediscretionary}\prewordbreak
    \else\ifnum\uccode`(=\nextuccode
      \ifdim\lastskip>\!!zeropoint\relax
@@ -635,7 +635,7 @@
      \beginofsubsentence\prewordbreak\beginofsubsentencespacing
    \else\ifnum\uccode`>=\nextuccode
      \endofsubsentencespacing\prewordbreak\endofsubsentence
-   \else 
+   \else
      \checkafterdiscretionary
      \bgroup
        \checkbeforediscretionary
@@ -742,7 +742,9 @@
 
 %D Since most things in \CONTEXT\ are configurable, we
 %D slightly change the previous definition so that we can
-%D install new functionality outside this module.  
+%D install new functionality outside this module.
+
+\def\@tmd@{@@tmd@@}
 
 \def\activedododotextmodediscretionary#1#2%
   {\convertargument#2\to\discretionarytoken
@@ -750,8 +752,8 @@
      {\getvalue{\strippedcsname\textmodediscretionary\string#1}}%
    \ifx\discretionarytoken\empty
      \ifx#1\nextnext % takes care of ||| and +++ and ......
-        \prewordbreak\discretionary{\hbox{$#1$}}{}{\hbox{$#1$}}%
-         \allowbreak\postwordbreak
+       \prewordbreak\discretionary{\hbox{$#1$}}{}{\hbox{$#1$}}%
+       \allowbreak\postwordbreak
        \def\nextnextnext{\afterassignment\egroup\let\next=}%
      \else
        \checkafterdiscretionary
@@ -760,7 +762,7 @@
          \prewordbreak\hbox{\textmodediscretionary\nextnext}\allowbreak\postwordbreak
        \egroup
      \fi
-   \else\expandafter\ifx\csname @tmd@\discretionarytoken\endcsname\relax
+   \else\expandafter\ifx\csname\@tmd@\discretionarytoken\endcsname\relax
      \checkafterdiscretionary
      \bgroup
        \checkbeforediscretionary
@@ -769,15 +771,18 @@
        \allowbreak\postwordbreak
      \egroup
    \else
-     \csname @tmd@\discretionarytoken\endcsname
+     \csname\@tmd@\discretionarytoken\endcsname
    \fi\fi
-   \nextnextnext}
+   \nextnextnext} % can be \egroup so \aftergroup\ignorespaces
 
 \def\definetextmodediscretionary #1
   {\convertargument#1\to\ascii
-   \setvalue{@tmd@\ascii}}
+   \setvalue{\@tmd@\ascii}}
 
-\definetextmodediscretionary = 
+\definetextmodediscretionary {} % empty case, also handled in parser 
+  {\prewordbreak\compoundhyphen\allowbreak\postwordbreak}
+ 
+\definetextmodediscretionary =
   {\prewordbreak\textmodediscretionary}
 
 \definetextmodediscretionary ~
@@ -816,14 +821,30 @@
   {\prewordbreak\discretionary{\hbox{$|$}}{}{\hbox{$|$}}%
    \allowbreak\postwordbreak}
 
-\definetextmodediscretionary : 
-  {\prewordbreak\kern.25em:\space\ignorespaces}
+\definetextmodediscretionary :  
+  {\removeunwantedspaces\prewordbreak\kern\hspaceamount\empty{:}:}
+  %\space\aftergroup\ignorespaces}
 
-\definetextmodediscretionary ; 
-  {\prewordbreak\kern.25em;\space\ignorespaces}
+\definetextmodediscretionary ;
+  {\removeunwantedspaces\prewordbreak\kern\hspaceamount\empty{;};}
+  %\space\aftergroup\ignorespaces}
+
+\definetextmodediscretionary ?
+  {\removeunwantedspaces\prewordbreak\kern\hspaceamount\empty{?}?}
+  %\space\aftergroup\ignorespaces}
+
+\definetextmodediscretionary !
+  {\removeunwantedspaces\prewordbreak\kern\hspaceamount\empty{!}!}
+  %\space\aftergroup\ignorespaces}
 
 \definetextmodediscretionary *
   {\prewordbreak\discretionary{-}{}{\kern.05em}\prewordbreak}
+
+\ifx\hspaceamount\undefined
+
+  \def\hspaceamount#1#2{\kern.16667em}
+
+\fi
 
 %D Since we don't have to bother about active characters any
 %D longer, we end up with a pretty simple activating macro:
@@ -831,7 +852,24 @@
 \def\enableactivediscretionaries%
   {\let\dotextmodediscretionary=\activedotextmodediscretionary}
 
-%D Done somewhere else: \type {\enableactivediscretionaries}. 
+%D Done somewhere else: \type {\enableactivediscretionaries}.
+
+%D \macros 
+%D   {directdiscretionary}
+%D
+%D In those situations where the nature of characters is 
+%D less predictable, we can use the more direct approach:
+
+\def\directdiscretionary#1%
+  {\convertargument#1\to\discretionarytoken
+   \let\textmodediscretionary\compoundhyphen
+   \expandafter\ifx\csname\@tmd@\string#1\endcsname\relax
+     \prewordbreak
+     \discretionary{\hbox{#1}}{}{\hbox{#1}}%
+     \allowbreak\postwordbreak
+   \else
+     \csname\@tmd@\string#1\endcsname
+   \fi}
 
 %D \macros
 %D   {installcompoundcharacter}
@@ -840,69 +878,89 @@
 %D \PPCHTEX\ into german, he suggested to let \CONTEXT\ support
 %D the \type{german.sty} method of handling compound
 %D characters, especially the umlaut. This package is meant for
-%D use with \PLAIN\ \TEX\ as well as \LATEX. 
-%D 
+%D use with \PLAIN\ \TEX\ as well as \LATEX.
+%D
 %D I decided to implement compound character support as
 %D versatile as possible. As a result one can define his own
-%D compound character support, like: 
-%D 
+%D compound character support, like:
+%D
 %D \starttypen
 %D \installcompoundcharacter "a {\"a}
 %D \installcompoundcharacter "e {\"e}
 %D \installcompoundcharacter "i {\"i}
 %D \installcompoundcharacter "u {\"u}
 %D \installcompoundcharacter "o {\"o}
-%D \installcompoundcharacter "s {\SS} 
+%D \installcompoundcharacter "s {\SS}
 %D \stoptypen
 %D
-%D or even 
-%D 
+%D or even
+%D
 %D \starttypen
 %D \installcompoundcharacter "ck {\discretionary {k-}{k}{ck}}
 %D \installcompoundcharacter "ff {\discretionary{ff-}{f}{ff}}
 %D \stoptypen
-%D 
-%D The support is not limited to alphabetic characters, so the 
-%D next definition is also valid. 
-%D 
+%D
+%D The support is not limited to alphabetic characters, so the
+%D next definition is also valid.
+%D
 %D \starttypen
 %D \installcompoundcharacter ". {.\doifnextcharelse{\spacetoken}{}{\kern.125em}}
 %D \stoptypen
-%D 
+%D
 %D The implementation looks familiar and uses the same tricks as
-%D mentioned earlier in this module. We take care of two 
-%D arguments, which complicates things a bit.  
+%D mentioned earlier in this module. We take care of two
+%D arguments, which complicates things a bit.
 
-\def\@nc@{@nc@} % normal character 
+\def\@nc@{@nc@} % normal character
 \def\@nn@{@nn@} % normal catcode
-\def\@cc@{@cc@} % compound character 
-\def\@cs@{@cs@} % compound characters 
+\def\@cc@{@cc@} % compound character
+\def\@cs@{@cs@} % compound characters
+
+% \def\installcompoundcharacter #1#2#3 #4% {{#4}} keeps move local
+%   {\setvalue{\@nc@\string#1}{\char`#1}%
+%    \ifnum\catcode`#1=\@@active \else
+%      \setevalue{\@nn@\string#1}{\number\catcode`#1}% new
+%    \fi
+%    \def\!!stringa{#3}%
+%    \ifx\!!stringa\empty
+%      \setvalue{\@cc@\string#1\string#2}{{#4}}%
+%    \else
+%      \setvalue{\@cs@\string#1\string#2\string#3}{{#4}}%
+%    \fi
+%    \catcode`#1=\@@active
+%    \scratchcounter=\the\uccode`~
+%    \uccode`~=`#1
+%    \uppercase{\unexpanded\def~{\handlecompoundcharacter~}}%
+%    \uccode`~=\scratchcounter}
 
 \def\installcompoundcharacter #1#2#3 #4% {{#4}} keeps move local
-  {\setvalue{\@nc@\string#1}{\char`#1}%
-   \ifnum\catcode`#1=\@@active \else
-     \setevalue{\@nn@\string#1}{\number\catcode`#1}% new 
-   \fi 
-   \def\!!stringa{#3}%
-   \ifx\!!stringa\empty
-     \setvalue{\@cc@\string#1\string#2}{{#4}}% 
-   \else
-     \setvalue{\@cs@\string#1\string#2\string#3}{{#4}}%
+  {\chardef\thecompoundcharacter`#1%
+  %\@EA\def\csname\@nc@\string#1\endcsname{\char`#1}%
+   \@EA\chardef\csname\@nc@\string#1\endcsname\thecompoundcharacter
+   \ifnum\catcode\thecompoundcharacter=\@@active \else
+     \@EA\edef\csname\@nn@\string#1\endcsname
+       {\number\catcode\thecompoundcharacter}%
    \fi
-   \catcode`#1=\@@active
-   \scratchcounter=\the\uccode`~
-   \uccode`~=`#1
+   \def\!!stringa{#3}%
+   \@EA\def\csname\ifx\!!stringa\empty
+     \@cc@\string#1\string#2%
+   \else
+     \@cs@\string#1\string#2\string#3%
+   \fi\endcsname{{#4}}%
+   \catcode\thecompoundcharacter\@@active
+   \scratchcounter\uccode\activehackcode
+   \uccode\activehackcode\thecompoundcharacter
    \uppercase{\unexpanded\def~{\handlecompoundcharacter~}}%
-   \uccode`~=\scratchcounter}
+   \uccode\activehackcode\scratchcounter}
 
-%D A compound character can be reset with the following 
-%D command. 
+%D A compound character can be reset with the following
+%D command.
 %D
 %D \starttypen
 %D \restorecompoundcharacter /
-%D \stoptypen 
+%D \stoptypen
 
-\def\restorecompoundcharacter#1% new 
+\def\restorecompoundcharacter#1% new
   {\catcode`#1=\csname\@nn@\string#1\endcsname\relax}
 
 %D In handling the compound characters we have to take care of
@@ -917,35 +975,69 @@
 %D with \type{\futurelet} to prevent spaces from
 %D disappearing.
 
-\def\handlecompoundcharacter#1%
-  {\def\dohandlecompoundcharacter%
-     {\ifx\next\bgroup
-       %\def\next{\dodohandlecompoundcharacter#1}%    % handle "{ee} -> \"ee
-       %\let\next\relax                               % forget "{ee} -> ee
-        \def\next{\handlecompoundcharacterone#1}%     % ignore "{ee} -> "ee
-      \else\ifx\next\egroup
-        \def\next{\getvalue{\@nc@\string#1}}%
-      \else\ifx\next\blankspace
-        \def\next{\getvalue{\@nc@\string#1}}%
-      \else
-        \def\next{\dodohandlecompoundcharacter#1}%
-      \fi\fi\fi
-      \next}%
-   \futurelet\next\dohandlecompoundcharacter}
+% \def\handlecompoundcharacter#1%
+%   {\def\dohandlecompoundcharacter%
+%      {\ifx\next\bgroup
+%        %\def\next{\dodohandlecompoundcharacter#1}%    % handle "{ee} -> \"ee
+%        %\let\next\relax                               % forget "{ee} -> ee
+%         \def\next{\handlecompoundcharacterone#1}%     % ignore "{ee} -> "ee
+%       \else\ifx\next\egroup
+%         \def\next{\getvalue{\@nc@\string#1}}%
+%       \else\ifx\next\blankspace
+%         \def\next{\getvalue{\@nc@\string#1}}%
+%       \else
+%         \def\next{\dodohandlecompoundcharacter#1}%
+%       \fi\fi\fi
+%       \next}%
+%    \futurelet\next\dohandlecompoundcharacter}
+%
+% \def\dodohandlecompoundcharacter#1#2%
+%   {\def\dododohandlecompoundcharacter% Keep it here and
+%      {\ifx\next\bgroup               % preserve spaces!
+%         \def\next{\handlecompoundcharacterone#1#2}%
+%       \else\ifx\next\egroup
+%         \def\next{\handlecompoundcharacterone#1#2}%
+%       \else\ifx\next\blankspace
+%         \def\next{\handlecompoundcharacterone#1#2}%
+%       \else
+%         \def\next{\handlecompoundcharactertwo#1#2}%
+%       \fi\fi\fi
+%       \next}%
+%    \futurelet\next\dododohandlecompoundcharacter}
 
-\def\dodohandlecompoundcharacter#1#2%
-  {\def\dododohandlecompoundcharacter% Keep it here and 
-     {\ifx\next\bgroup               % preserve spaces!
-        \def\next{\handlecompoundcharacterone#1#2}%
-      \else\ifx\next\egroup
-        \def\next{\handlecompoundcharacterone#1#2}%
-      \else\ifx\next\blankspace
-        \def\next{\handlecompoundcharacterone#1#2}%
-      \else
-        \def\next{\handlecompoundcharactertwo#1#2}%
-      \fi\fi\fi
-      \next}%
-   \futurelet\next\dododohandlecompoundcharacter}
+\def\handlecompoundcharacter#1%
+  {\def\xhandlecompoundcharacter{\dohandlecompoundcharacter{#1}}%
+   \futurelet\next\xhandlecompoundcharacter}
+
+\def\dohandlecompoundcharacter
+  {\ifx\next\bgroup
+    %\@EA\dodohandlecompoundcharacter % handle "{ee} -> \"ee
+    %\@EA\gobbleoneargument           % forget "{ee} -> ee
+     \@EA\handlecompoundcharacterone  % ignore "{ee} -> "ee
+   \else\ifx\next\egroup
+     \@EAEAEA\donohandlecompoundcharacter
+   \else\ifx\next\blankspace
+     \@EA\@EAEAEA\@EA\donohandlecompoundcharacter
+   \else
+     \@EA\@EAEAEA\@EA\dodohandlecompoundcharacter
+   \fi\fi\fi}
+
+\def\donohandlecompoundcharacter#1{\csname\@nc@\string#1\endcsname}
+
+\def\dododohandlecompoundcharacter
+  {\ifx\next\bgroup
+     \@EA\handlecompoundcharacterone
+   \else\ifx\next\egroup
+     \@EAEAEA\handlecompoundcharacterone
+   \else\ifx\next\blankspace
+     \@EA\@EAEAEA\@EA\handlecompoundcharacterone
+   \else
+     \@EA\@EAEAEA\@EA\handlecompoundcharactertwo
+   \fi\fi\fi}
+
+\def\dodohandlecompoundcharacter#1#2% preserve space
+  {\def\xdodohandlecompoundcharacter{\dododohandlecompoundcharacter#1#2}%
+   \futurelet\next\xdodohandlecompoundcharacter}
 
 %D Besides taken care of the grouping and space tokens, we have
 %D to deal with three situations. First we look if the next
@@ -955,7 +1047,7 @@
 %D insert the first. So we have
 %D
 %D \starttypen
-%D <key><key>  <key><known>  <key><unknown>  
+%D <key><key>  <key><known>  <key><unknown>
 %D \stoptypen
 %D
 %D In later modules we will see how these commands are used.
@@ -1022,13 +1114,13 @@
 
 \endETEX
 
-%D For very obscure applications (see for an application \type 
-%D {lang-sla.tex}) we provide:  
+%D For very obscure applications (see for an application \type
+%D {lang-sla.tex}) we provide:
 
 \def\dosimplifiedcompoundcharacter#1%
   {#1}
 
-\beginTEX 
+\beginTEX
 
 \def\simplifiedcompoundcharacter#1#2%
   {\@EA\ifx\csname\@cc@\string#1\string#2\endcsname\relax
@@ -1050,10 +1142,10 @@
 
 \endETEX
 
-%D \macros 
+%D \macros
 %D   {nonbreakablespace}
 %D
-%D The following macro is taken from plain \TEX. 
+%D The following macro is taken from plain \TEX.
 
 \def\nonbreakablespace{\penalty\!!tenthousand\ }
 
@@ -1067,11 +1159,11 @@
 %D   {midworddiscretionary}
 %D
 %D If needed, one can add a discretionary hyphen using \type
-%D {\midworddiscretionary}. This macro does the same as 
-%D \PLAIN\ \TEX's \type {\-}, but, like the ones implemented 
+%D {\midworddiscretionary}. This macro does the same as
+%D \PLAIN\ \TEX's \type {\-}, but, like the ones implemented
 %D earlier, this one also looks ahead for spaces and grouping
-%D tokens. 
- 
+%D tokens.
+
 \def\domidworddiscretionary%
   {\ifx\next\blankspace\else
    \ifx\next\bgroup    \else
@@ -1082,21 +1174,21 @@
 \def\midworddiscretionary%
   {\futurelet\next\domidworddiscretionary}
 
-%D \macros 
+%D \macros
 %D   {hyphenatedurl}
-%D 
-%D For those who want to put full \URL's in a text, we offer 
-%D 
+%D
+%D For those who want to put full \URL's in a text, we offer
+%D
 %D \startbuffer
 %D \hyphenatedurl{http://optimist.optimist/optimist/optimist.optimist#optimist}
 %D \stopbuffer
-%D 
-%D \typebuffer
-%D 
-%D which breaks at the appropriate places. Watch the \type{#}
-%D hack. 
 %D
-%D When passed as argument, like in \type {\goto}, one needs 
+%D \typebuffer
+%D
+%D which breaks at the appropriate places. Watch the \type{#}
+%D hack.
+%D
+%D When passed as argument, like in \type {\goto}, one needs
 %D to substitute a \type {\\} for each \type{#}.
 %D
 %D \startbuffer
@@ -1107,25 +1199,25 @@
 
 \ifx\\\undefined \let\\\crlf \fi
 
-\chardef\urlsplitmode=1 
+\chardef\urlsplitmode=1
 
-% 0 => don't split 
+% 0 => don't split
 % 1 => . : na, rest voor
 % 2 => alles na
 % 3 => alles voor
 
-\bgroup \catcode`\~=\active \catcode`\/=\active 
+\bgroup \catcode`\~=\active \catcode`\/=\active
 
-% Why not convert to ascii first? I will redo this one! 
+% Why not convert to ascii first? I will redo this one!
 
 % \unexpanded\gdef\hyphenatedurl#1% {}{} handles accents
 %   {\bgroup
 %    \obeyhyphens
 %    \def\splitbefore##1%
 %      {\setbox\scratchbox=\hbox{##1{}{}}%
-%       \ifcase\urlsplitmode 
+%       \ifcase\urlsplitmode
 %         \box\scratchbox
-%       \or 
+%       \or
 %         \postwordbreak\box\scratchbox\prewordbreak
 %       \or
 %         \prewordbreak\discretionary{\box\scratchbox}{}{\box\scratchbox}\prewordbreak
@@ -1141,7 +1233,7 @@
 %         \prewordbreak\discretionary{##1{}{}}{}{##1{}{}}\prewordbreak
 %       \else
 %         \prewordbreak\discretionary{}{##1{}{}}{##1{}{}}\prewordbreak
-%       \fi}% 
+%       \fi}%
 %    \def\flushurl%
 %      {\savedurl\let\savedurl\empty}%
 %    \def\\%
@@ -1152,9 +1244,9 @@
 %    \handletokens#1\with\scanurl
 %    \egroup}
 %
-% Better (a mere copy with \dohyphens): 
+% Better (a mere copy with \dohyphens):
 
-\bgroup \catcode`\~=\active \catcode`\/=\active 
+\bgroup \catcode`\~=\active \catcode`\/=\active
 
 \unexpanded\gdef\hyphenatedurl#1% {}{} handles accents
   {\bgroup
@@ -1164,9 +1256,9 @@
    \obeyhyphens
    \def\splitbefore##1%
      {\setbox\scratchbox=\hbox{##1{}{}}%
-      \ifcase\urlsplitmode 
+      \ifcase\urlsplitmode
         \box\scratchbox
-      \or 
+      \or
         \postwordbreak\box\scratchbox\prewordbreak
       \or
         \prewordbreak\discretionary{\box\scratchbox}{}{\box\scratchbox}\prewordbreak
@@ -1182,7 +1274,7 @@
         \prewordbreak\discretionary{##1{}{}}{}{##1{}{}}\prewordbreak
       \else
         \prewordbreak\discretionary{}{##1{}{}}{##1{}{}}\prewordbreak
-      \fi}% 
+      \fi}%
    \def\flushurl%
      {\savedurl\let\savedurl\empty}%
    \def\\%
@@ -1195,10 +1287,10 @@
 
 \egroup
 
-%D This would be better, but it spoils \type {\~} and so:  
+%D This would be better, but it spoils \type {\~} and so:
 %D
-%D \starttypen 
-%D \convertargument#1\to\ascii 
+%D \starttypen
+%D \convertargument#1\to\ascii
 %D \expandafter\handletokens\ascii\with\scanurl
 %D \stoptypen
 
@@ -1208,27 +1300,27 @@
   {\ifx#1\~%
      \flushurl\splitbefore\~%
    \else\ifx#1\#%
-     \flushurl\splitbefore\#% 
+     \flushurl\splitbefore\#%
    \else\ifx#1\&%
-     \flushurl\splitbefore\&% 
+     \flushurl\splitbefore\&%
    \else\ifx#1\%%
-     \flushurl\splitbefore\%% 
+     \flushurl\splitbefore\%%
    \else\ifx#1\_%
-     \flushurl\splitbefore\_% 
+     \flushurl\splitbefore\_%
    \else\if\noexpand#1\relax
      #1%
    \else\ifnum\catcode`#1=8
-     \flushurl\splitbefore\_% 
+     \flushurl\splitbefore\_%
    \else\ifnum\catcode`#1=6
-     \flushurl\splitbefore\#% 
+     \flushurl\splitbefore\#%
    \else\ifnum\catcode`#1=4
-     \flushurl\splitbefore\&% 
+     \flushurl\splitbefore\&%
    \else\if#1\lettertilde
      \flushurl\splitbefore\~%
    \else\if#1\letterpercent
-     \flushurl\splitbefore\%%   
+     \flushurl\splitbefore\%%
    \else\if#1\letterunderscore
-     \flushurl\splitbefore\_%   
+     \flushurl\splitbefore\_%
    \else\if#1\letterquestionmark
      \flushurl\splitafter\letterquestionmark
    \else\if#1\letterat
@@ -1249,26 +1341,26 @@
      #1%
    \fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi}
 
-%D When Joop Susan asked (on the \CONTEXT\ mailing list) how 
-%D to handle url's passed as argument, the following solutions 
-%D came to my mind: 
+%D When Joop Susan asked (on the \CONTEXT\ mailing list) how
+%D to handle url's passed as argument, the following solutions
+%D came to my mind:
 %D
-%D \starttypen 
+%D \starttypen
 %D \def\whateverurl#1%
 %D   {{\def~{\string~}\useURL[dummy][#1]\goto{\url[dummy]}[URL(dummy)]}}
-%D 
+%D
 %D \def\whateverurl#1%
 %D   {{\let~\lettertilde\useURL[dummy][#1]\goto{\url[dummy]}[URL(dummy)]}}
-%D 
+%D
 %D \def\whateverurl#1%
 %D   {\convertargument#1\to\ascii
 %D    \expanded{\useURL[dummy][\ascii]}\goto{\url[dummy]}[URL(dummy)]}
-%D \stoptypen 
+%D \stoptypen
 
 %D \macros
 %D   {hyphenatedfile}
 %D
-%D For the moment we treat filenames in a similar way, 
+%D For the moment we treat filenames in a similar way,
 %D
 %D \starttypen
 %D \hyphenatedfile{here/there/filename.suffix}
@@ -1284,9 +1376,20 @@
 %    \def\next##1{##1\doif{##1}{-}{\allowbreak}}%
 %    \handletokens#1\with\next
 %    \egroup}
-% 
+%
 % {\hsize1cm\hyphenatedstring{ABXXXXXXXXXXC-12345-12345}}
 
-\protect
+%D \macros 
+%D   {disablediscretionaries,disablecompoundcharacter}
+%D 
+%D Occasionally we need to disable this mechanism. For the 
+%D moment we assume that \type {|} is used. 
 
-\endinput
+\def\disablediscretionaries   
+  {\def|##1|{\string##1}%
+   \def\directdiscretionary##1{\string##1}}
+
+\def\disablecompoundcharacters
+  {\let\handlecompoundcharacter\string}
+
+\protect \endinput

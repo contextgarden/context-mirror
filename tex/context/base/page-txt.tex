@@ -270,15 +270,27 @@
 %     {\let\textlinestatus\s!unknown}%
 %   \getvalue{\string\placelayouttextline\textlinestatus}{#1}} % {#2}
 
+% recently bugged 
+%
+% \def\placelayouttextline#1% #2 
+%   {\settextlinestatus{#1}%
+%    \ifundefined{\string\placelayouttextline\textlinestatus}%
+%      \let\textlinestatus\s!unknown
+%    \fi
+%    \csname\string\placelayouttextline\textlinestatus\endcsname{#1}} % {#2}
+
 \def\placelayouttextline#1% #2 
   {\settextlinestatus{#1}%
-   \ifundefined{\string\placelayouttextline\textlinestatus}%
-     \let\textlinestatus\s!unknown
-   \fi
-   \csname\string\placelayouttextline\textlinestatus\endcsname{#1}} % {#2}
+   \csname\string\placelayouttextline
+     \ifundefined{\string\placelayouttextline\textlinestatus}%
+       \s!unknown
+     \else
+       \textlinestatus 
+     \fi
+   \endcsname{#1}} % {#2}
 
-\letvalue{\string\placelayouttextline\v!normaal}\doplacelayouttextline
-\letvalue{\string\placelayouttextline          }\doplacelayouttextline
+\setvalue{\string\placelayouttextline\v!normaal}{\doplacelayouttextline}
+\setvalue{\string\placelayouttextline          }{\doplacelayouttextline}
 \letvalue{\string\placelayouttextline\v!geen   }\gobbletwoarguments
 \letvalue{\string\placelayouttextline\v!hoog   }\gobbletwoarguments
 
@@ -395,6 +407,7 @@
       \swapmargins
       \vskip\hoofdhoogte
       \vskip\hoofdafstand
+      \vskip\layoutparameter\c!tekstafstand
       \hbox to \zetbreedte
         {\bgroup
            \swapmargins

@@ -298,17 +298,46 @@
 \def\stelpaginanummerin%
   {\dosingleargument\dostelpaginanummerin}
 
-\def\verlaagpaginanummer%
-  {\doifinset{\@@pnstatus}{\v!start,\v!leeg,\v!geen}
-     {\verlaagnummer[\s!page]%
-      \setuserpageno{\ruwenummer[\s!page]}}}
+% long time used alternative 
+%
+% \def\verlaagpaginanummer%
+%   {\doifinset{\@@pnstatus}{\v!start,\v!leeg,\v!geen}
+%      {\verlaagnummer[\s!page]%
+%       \setuserpageno{\ruwenummer[\s!page]}}}
+% 
+% \def\verhoogpaginanummer%
+%   {\doifinset{\@@pnstatus}{\v!start,\v!leeg,\v!geen}
+%      {\verhoognummer[\s!page]%
+%       \setuserpageno{\ruwenummer[\s!page]}}%
+%    \doifinset{\@@pnstatus}{\v!handhaaf,\v!leeg}
+%      {\global\let\@@pnstatus\v!start}}
+%
+% alternative, saves some 3 sec on 10K pages on a 1G machine
+% (needed during a test / prelude to installable methods)
 
-\def\verhoogpaginanummer%
-  {\doifinset{\@@pnstatus}{\v!start,\v!leeg,\v!geen}
-     {\verhoognummer[\s!page]%
-      \setuserpageno{\ruwenummer[\s!page]}}%
-   \doifinset{\@@pnstatus}{\v!handhaaf,\v!leeg}
-     {\global\let\@@pnstatus\v!start}}
+\def\dodecrementpagenumber
+  {\verlaagnummer[\s!page]\setuserpageno{\ruwenummer[\s!page]}}
+
+\def\doincrementpagenumber
+  {\verhoognummer[\s!page]\setuserpageno{\ruwenummer[\s!page]}}
+
+\def\dosynchronizepagenumber
+  {\global\let\@@pnstatus\v!start}
+
+\def\verlaagpaginanummer{\getvalue{\??pn-\@@pnstatus}}
+\def\verhoogpaginanummer{\getvalue{\??pn+\@@pnstatus}}
+
+\letvalue{\??pn-\v!start   }\dodecrementpagenumber
+\letvalue{\??pn-\v!geen    }\dodecrementpagenumber
+\letvalue{\??pn-\v!leeg    }\dodecrementpagenumber
+
+\letvalue{\??pn+\v!start   }\doincrementpagenumber
+\letvalue{\??pn+\v!geen    }\doincrementpagenumber
+\setvalue{\??pn+\v!leeg   }{\doincrementpagenumber
+                            \dosynchronizepagenumber}
+\letvalue{\??pn+\v!handhaaf}\dosynchronizepagenumber
+
+% so far 
 
 \def\checkpagecounter%
   {\checknummer{\s!page}}
@@ -525,11 +554,11 @@
        \donexttracklevel{##1}}%
     \donexttrackcommando{\firstsection}}
 
-\unexpanded\def\completepagenumber%  
+\unexpanded\def\completepagenumber  
   {\doif{\@@nmstatus\@@pnstatus}{\v!start\v!start} 
      {\@@nmlinks\labeltexts{\v!paginanummer}{\pageprefixes\pagenumber}\@@nmrechts}}
 
-\unexpanded\def\plaatspaginanummer%
+\unexpanded\def\placepagenumber
   {\doif{\@@nmstatus\@@pnstatus}{\v!start\v!start}
      {\labeltexts{\v!paginanummer}{\pagenumber}}}
 

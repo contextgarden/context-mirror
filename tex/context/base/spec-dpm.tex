@@ -185,13 +185,14 @@
 %D \macros
 %D   {dosetupidentity}
 
-\definespecial\dosetupidentity#1#2#3#4#5%
+\definespecial\dosetupidentity#1#2#3#4#5#6%
   {\bgroup
    \enablePDFdocencoding
    \special
      {pdf: docinfo
         <</Title (#1) /Subject (#2) /Author (#3)
-          /Creator (#4) /Producer (dvipdfm)>>}%
+          /Creator (#4) /ModificationDate (#5)
+          /Keywords (#6) /Producer (dvipdfm)>>}%
    \egroup}
 
 %D \macros
@@ -256,9 +257,10 @@
 \definespecial\dosetpagetransition{\doPDFsetpagetransition}
 
 %D \macros
-%D   {doinsertcomment}
+%D   {doinsertcomment, doflushcomments}
 
 \definespecial\doinsertcomment{\doPDFinsertcomment}
+\definespecial\doflushcomments{\doPDFflushcomments}
 
 %D \macros
 %D   {dopresetlinefield,dopresettextfield,

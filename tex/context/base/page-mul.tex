@@ -256,21 +256,6 @@
 
 \def\OTRMULsomeherefloat{\OTRONEsomeherefloat}
 
-\def\getinsertionheights\to#1\\% \relax'm
-  {#1=\!!zeropoint
-   \def\doaddinsertionheight##1%
-     {\ifvoid##1\else
-        \advance#1 by 1\skip##1     
-        \advance#1 by \ht##1        
-       \fi}%
-   \doaddinsertionheight\topins
-   \doaddinsertionheight\botins
-   \ifcleverfootnotes
-     \doaddinsertionheight\savedfootins
-   \else
-     \doaddinsertionheight\footins
-   \fi}
-
 %D The local column width is available in the dimension
 %D register \type{\localcolumnwidth}, which is calculated as:
 
@@ -433,46 +418,20 @@
    \dosomebreak\allowbreak
    \restoresavedfloats}
 
-%D NEW: still to be documented!
-
-\newinsert\savedfootins
-
-\def\checkbegincolumnfootnotes%
-  {\ifcleverfootnotes
-     \doflushfootnotes
-     \ifdim\ht\footins>\zeropoint % hm, actually unknown 
-       \global\setbox\savedfootins=\box\footins
-     \else
-       \global\setbox\savedfootins=\box\voidb@x
-     \fi
-   \else
-     \global\setbox\savedfootins=\box\voidb@x
-   \fi
-   \global\skip\savedfootins=\skip\footins
-   \global\count\savedfootins=\count\footins
-   \setupfootnotes}
-
-\def\checkendcolumnfootnotes%
-  {\ifcleverfootnotes\ifvoid\savedfootins\else
-     \global\setbox\footins=\box\savedfootins
-   \fi\fi
-   \global\skip\footins=\skip\savedfootins
-   \global\count\footins=\count\savedfootins}
-
 %D Because some initializations happen three times, we
-%D defined a macro for them. The \type{\everypar{}} is
+%D defined a macro for them. Erasing \type{\everypar} is
 %D needed because we don't want anything to interfere.
 
-\def\setmulticolumnsout%
-  {\everypar{}%
+\def\setmulticolumnsout
+  {\everypar\emptytoks
    \dontcomplain
    \settopskip
    \setmaxdepth
-   \topskip=1\topskip
-   \splittopskip=\topskip
-   \splitmaxdepth=\maxdepth
-   \boxmaxdepth=\maxdepth % dangerous
-   \emergencystretch=\!!zeropoint\relax} % sometimes needed !
+   \topskip1\topskip
+   \splittopskip\topskip
+   \splitmaxdepth\maxdepth
+   \boxmaxdepth\maxdepth % dangerous
+   \emergencystretch\zeropoint\relax} % sometimes needed !
 
 %D Flushing the page comes to pasting the columns together and
 %D appending the result to box \type{\precolumnbox}, if not
@@ -689,49 +648,6 @@
 %D like for instance floats, that is already present in the
 %D boxes is preserved.
 
-% \def\splitcolumn#1from \box#2to \dimen#3 top \box#4%
-%   {\bgroup
-%    \ifdim\ht#4>\!!zeropoint
-%      \dimen0=\dimen#3\relax
-%      \dimen2=\dimen#3\relax
-%      \advance\dimen0 by -\ht#4
-%      \setbox0=\vsplit#2 to \dimen0
-%      \global\setbox#1=\vbox to \dimen2{\unvcopy#4\unvbox0}%
-%    \else
-%      \global\setbox#1=\vsplit#2 to \dimen#3
-%    \fi
-%    \egroup}
-
-% \def\splitcolumn#1from \box#2to \dimen#3 top \box#4%
-%   {\bgroup
-%    \ifdim\ht#4>\!!zeropoint
-%      \dimen0=\dimen#3\relax
-%      \dimen2=\dimen2
-%      \advance\dimen0 by -\ht#4%
-%      \columnfootnotecorrection{#1}{\dimen0}%
-%      \setbox0=\vsplit#2 to \dimen0
-%      \global\setbox#1=\vbox to \dimen2
-%        {\ifgridsnapping
-%           \dimen0=-\openstrutheight\advance\dimen0 by \topskip
-%           \vskip\dimen0\copy#4\vskip-\dimen0
-%         \else
-%           \unvcopy#4%
-%         \fi
-%         \unvbox0
-%         \fakecolumnfootnotes{#1}}%
-%    \else
-%      \ifcleverfootnotes
-%        \columnfootnotecorrection{#1}{\dimen#3}%
-%        \setbox0=\vsplit#2 to \dimen#3%
-%        \global\setbox#1=\vbox to \dimen#3%
-%          {\unvbox0
-%           \fakecolumnfootnotes{#1}}%
-%     \else
-%        \global\setbox#1=\vsplit#2 to \dimen#3%
-%      \fi
-%    \fi
-%    \egroup}
-
 \def\splitcolumn#1from \box#2to \dimen#3 top \box#4%
   {\bgroup
    \ifdim\ht#4>\zeropoint
@@ -782,10 +698,7 @@
   {\relax
    \ifcleverfootnotes
      \ifnum#1=\lastcolumnbox
-       \ifdim\ht\footins>\zeropoint
-         \vskip1\skip\footins % remove stretch and shrink 
-         \kern\ht\footins % a \vskip would be is discarded! 
-       \fi
+       \fakefootnotes
      \fi
    \fi}
 
@@ -793,34 +706,35 @@
   {\relax
    \ifcleverfootnotes
      \ifnum#1=\lastcolumnbox\relax
-       \ifdim\ht\footins>\zeropoint
-         \advance#2 by -\ht\footins
-         \advance#2 by -\skip\footins
-       \fi
+       \calculatefootnotevsize
+       \advance#2 -\footnotevsize
      \fi
    \fi}
 
 \def\overlaycolumnfootnotes%   VERVANGEN !!!
   {\relax
-   \ifcleverfootnotes\ifdim\ht\footins>\zeropoint
-     \bgroup
-     \scratchdimen=\ht\firstcolumnbox
-     \advance\scratchdimen by -\openstrutdepth % \dp\strutbox
-     \getnoflines\scratchdimen
-     \advance\noflines by -2
-     \scratchdimen=\noflines\lineheight
-     \advance\scratchdimen by \topskip
-     \setbox0=\hbox
-       {\lower\scratchdimen\vbox{\placefootnoteinserts}}%
-     \ht0=\openstrutheight % \ht\strutbox
-     \dp0=\openstrutdepth  % \dp\strutbox
-     \scratchdimen=\ht\lastcolumnbox
-     \global\setbox\lastcolumnbox=\vbox to \scratchdimen
-       {\box\lastcolumnbox
-        \vskip-\scratchdimen
-        \restoretextcolor{\box0}}%
-     \egroup
-   \fi\fi}
+   \ifcleverfootnotes
+     \checkfootnotepresence
+     \iffootnotespresent
+       \bgroup
+       \scratchdimen=\ht\firstcolumnbox
+       \advance\scratchdimen by -\openstrutdepth % \dp\strutbox
+       \getnoflines\scratchdimen
+       \advance\noflines by -2
+       \scratchdimen=\noflines\lineheight
+       \advance\scratchdimen by \topskip
+       \setbox0=\hbox
+         {\lower\scratchdimen\vbox{\placefootnoteinserts}}%
+       \ht0=\openstrutheight % \ht\strutbox
+       \dp0=\openstrutdepth  % \dp\strutbox
+       \scratchdimen=\ht\lastcolumnbox
+       \global\setbox\lastcolumnbox=\vbox to \scratchdimen
+         {\box\lastcolumnbox
+          \vskip-\scratchdimen
+          \restoretextcolor{\box0}}%
+       \egroup
+     \fi
+   \fi}
 
 %D Here comes the routine that splits the long box in columns.
 %D The macro \type{\flushcolumnfloats} can be used to flush
@@ -834,12 +748,9 @@
    \setmulticolumnsout
    \dontshowcomposition
    \dimen0=\columntextheight
-   \getinsertionheights\to\dimen2\\% toegevoegd ivm voetnoten
-   \advance\dimen2 by \precolumnboxheight
-   \dimen0=\columntextheight
    \advance\dimen0 by -\precolumnboxheight
-   \getinsertionheights\to\dimen2\\%
-   \advance\dimen0 by -\dimen2
+   \settotalinsertionheight
+   \advance\dimen0 by -\totalinsertionheight
    \ifgridsnapping % evt altijd, nog testen
      \getnoflines{\dimen0}
      \dimen0=\noflines\openlineheight

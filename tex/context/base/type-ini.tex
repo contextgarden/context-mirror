@@ -205,6 +205,7 @@
            %     [\@@typescriptone  =#1 (\typescriptone)]
            %     [\@@typescripttwo  =#2 (\typescripttwo)]
            %     [\@@typescriptthree=#3 (\typescriptthree)]}%
+           \typescriptfoundtrue
            \let\next\dostarttypescriptA
          \else
            \let\next\dostarttypescriptC
@@ -226,14 +227,16 @@
    \next}
 
 \def\dostarttypescriptA
- %{\def\stoptypescript{\typescriptfoundtrue}}
-  {\let\stoptypescript\typescriptfoundtrue}
+  {\pushmacro\fontclass}
 
 \def\dostarttypescriptB
-  {\def\stoptypescript{\popmacro\fontclass}\pushmacro\fontclass}
+  {\pushmacro\fontclass}
 
 \long\def\dostarttypescriptC#1\stoptypescript
   {}
+
+\def\stoptypescript
+  {\popmacro\fontclass}
 
 % status
 %

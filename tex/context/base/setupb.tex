@@ -2099,7 +2099,7 @@
 \stopsetup
 
 \startsetup
-  \command[\y!toonstruts]
+  \command[\y!showstruts]
   \type[]
 \stopsetup
 
@@ -3269,6 +3269,10 @@
     [\c!snijwit]
     [\c!number!]
     []
+  \variable 
+    [\c!tekstafstand]
+    [\c!number!]
+    []
 \stopsetup
 
 \startsetup
@@ -3310,11 +3314,11 @@
   \command
     [\y!verplaatsopgrid]
   \type
-    [\c!opt!\c!val!]
+    [\c!opt!\c!vals!]
   \value
     [\v!boven,\v!beide,\v!onder,-\v!boven,-\v!beide,-\v!onder,
-     \v!hoog,\v!midden,\v!laag,\v!pagina,\v!standaard,\v!geen,
-     \v!ruim,\v!passend]
+     \v!hoog,\v!midden,\v!laag,\v!pagina,\v!geen,\v!standaard,
+     \v!ruim,\v!passend,\v!diepte,\v!regel,\c!dimension!]
     [\v!standaard]
 \stopsetup
 
@@ -4902,6 +4906,10 @@
     [\v!links,\v!rechts,\v!normaal,\v!ruim]
     [\v!normaal]
   \variable
+    [\c!titeluitlijnen]
+    [\v!ja,\v!nee]
+    [\v!nee]
+  \variable
     [\c!tolerantie]
     [\v!zeerstreng,\v!streng,\v!soepel,\v!zeersoepel,\v!rek]
     [\v!soepel]
@@ -5641,8 +5649,8 @@
     [\c!number!]
     []
   \value
-    [\v!dag,\v!maand,\v!weekdag,\v!jaar, % \v!WEEKDAG,\v!MAAND, 
-     dd,mm,jj,yy,d,m,j,y,\v!kenmerk]
+    [\v!dag,\v!dag+,\v!maand,\v!weekdag,\v!jaar, % \v!WEEKDAG,\v!MAAND, 
+     dd,dd+,mm,jj,yy,d,d+,m,j,y,\v!kenmerk]
     [\v!dag,\v!maand,\v!jaar]
 \stopsetup
 
@@ -6211,9 +6219,25 @@
     [\c!dimension!]
     []
   \variable
+    [\c!maxhoogte]
+    [\c!dimension!]
+    []
+  \variable
+    [\c!maxbreedte]
+    [\c!dimension!]
+    []
+  \variable
+    [\c!default]
+    [\c!identifier!]
+    []
+  \variable
     [\c!paginaovergangen]
     [\c!list!]
     []
+  \variable
+    [\c!plaats]
+    [\v!links,\v!midden,\v!rechts]
+    [\v!midden]
   \inheritvariables
     [\y!setupframed]
     []
@@ -8161,11 +8185,13 @@
     [\v!ja]
   \variable
     [\c!symbool]
-    [\v!normaal,\v!New,\v!Balloon,\v!Addition,\v!Help,\v!Paragraph,\v!Key]
+    [\v!normaal,
+     \v!New,\v!Balloon,\v!Addition,\v!Help,\v!Paragraph,\v!Key,
+     \c!identifier!]
     [\v!normaal]
   \variable
     [\c!optie]
-    [\v!max]
+    [\v!max,\v!buffer]
     []
 \stopsetup
 

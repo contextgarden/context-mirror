@@ -55,6 +55,7 @@
 
 \newif\ifrightfloat
 \newif\ifmarginfloat
+\newif\ifedgefloat
 \newif\ifroomforfloat
 \newif\iffloatshort
 \newif\iffloatflag
@@ -188,12 +189,16 @@
 \def\finalsidefloatoutput% new 
   {\finaloutput\unvbox\normalpagebox}
 
-\def\restoreleftindent%
+\def\restoreleftindent
   {\ifrightfloat \else
-     \parskip=\zeropoint
-     \noindent
-     \vadjust{\penalty-1}%
-     \hskip\sidefloatwidth
+     \parskip\zeropoint % here ? 
+     \ifdim\sidefloatwidth>\zeropoint % new, see prikkels 
+       \noindent
+       \vadjust{\penalty-1}%
+       \hskip\sidefloatwidth
+    %\else
+    %  we have a margin or edge float 
+     \fi
    \fi}
 
 \ifx\normaleqno\undefined
@@ -215,16 +220,22 @@
 \fi 
 
 \def\leftmarginfloat#1%
-  {\global\rightfloatfalse\marginfloattrue\putsidefloat{#1}}
+  {\global\rightfloatfalse\marginfloattrue\edgefloatfalse\putsidefloat{#1}}
 
 \def\rightmarginfloat#1%
-  {\global\rightfloattrue\marginfloattrue\putsidefloat{#1}}
+  {\global\rightfloattrue\marginfloattrue\edgefloatfalse\putsidefloat{#1}}
+
+\def\leftedgefloat#1%
+  {\global\rightfloatfalse\marginfloatfalse\edgefloattrue\putsidefloat{#1}}
+
+\def\rightedgefloat#1%
+  {\global\rightfloattrue\marginfloatfalse\edgefloattrue\putsidefloat{#1}}
 
 \def\leftfloat#1%
-  {\global\rightfloatfalse\marginfloatfalse\putsidefloat{#1}}
+  {\global\rightfloatfalse\edgefloatfalse\marginfloatfalse\putsidefloat{#1}}
 
 \def\rightfloat#1%
-  {\global\rightfloattrue\marginfloatfalse\putsidefloat{#1}}
+  {\global\rightfloattrue\marginfloatfalse\edgefloatfalse\putsidefloat{#1}}
 
 \def\putsidefloat#1% crap macro 
   {\par
@@ -235,7 +246,14 @@
    \previoussidefloat
    \stallsidefloat
    \setbox\floatbox=\hbox{\vbox % pretty ugly, will be rewritten
-     {\vskip\ifmarginfloat-\sidefloattopskip\else\sidefloattopoffset\fi#1}}
+     {\vskip
+        \ifmarginfloat
+          -\sidefloattopskip
+        \else\ifedgefloat
+          -\sidefloattopskip
+        \else
+          +\sidefloattopoffset
+        \fi\fi#1}}
    \measuresidefloat
    \ifroomforfloat 
    \else
@@ -244,7 +262,6 @@
      \stallsidefloat
    \fi
    \setsidefloat}
-
 
 \def\progresssidefloat%
   {\sidefloatprogress=\sidefloatvsize
@@ -265,10 +282,12 @@
    \global\sidefloatpagetotal \pagetotal % global 
    \ifmarginfloat
      \global        \sidefloatwidth \zeropoint
+   \else\ifedgefloat
+     \global        \sidefloatwidth \zeropoint
    \else
      \global        \sidefloatwidth \wd\floatbox
      \global\advance\sidefloatwidth \floatsideskip
-   \fi
+   \fi\fi
    \global        \sidefloathsize  \hsize
    \global\advance\sidefloathsize -\sidefloatwidth
    \global        \sidefloatheight \ht\floatbox
@@ -310,17 +329,23 @@
      \ifmarginfloat
 %       \rlap{\hskip\rechtermargeafstand\hskip\rightskip\unhbox\floatbox}%
 \rlap{\tbox{\hskip\rechtermargeafstand\hskip\rightskip\unhbox\floatbox}}%
+     \else\ifedgefloat
+\rlap{\tbox{\hskip\rechtermargeafstand\hskip\rechtermargebreedte
+            \hskip\rechterrandafstand\hskip\rightskip\unhbox\floatbox}}%
      \else
        \unhbox\floatbox
-     \fi
+     \fi\fi
    \else
      \noindent
      \ifmarginfloat
 %       \llap{\unhbox\floatbox\hskip\leftskip\hskip\linkermargeafstand}%
 \llap{\tbox{\unhbox\floatbox\hskip\leftskip\hskip\linkermargeafstand}}%
+     \else\ifedgefloat
+\llap{\tbox{\unhbox\floatbox\hskip\leftskip\hskip\linkermargeafstand
+            \hskip\linkermargebreedte\hskip\linkerrandafstand}}%
      \else
        \unhbox\floatbox
-     \fi
+     \fi\fi
      \hfill
    \fi
    \egroup

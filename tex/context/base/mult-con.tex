@@ -11,7 +11,7 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-% additions are marked as % new 
+% additions are marked as % new
 
 %D In this rather large definition file we are going to tell
 %D \CONTEXT\ which constants, variables and elements we use.
@@ -224,7 +224,7 @@
                            typing                    typing % GB
                      file: file                      file
                            datei                     soubor
-                           file                      fisier 
+                           file                      fisier
 
 \stopvariables
 
@@ -344,14 +344,14 @@
                            rechtersubsatz            podvetavpravo
                            sottofrasedestra          subpropozitiedreapta
 
-               leftspeech: linkeruitspraak           leftspeech 
-                           leftspeech                leftspeech 
+               leftspeech: linkeruitspraak           leftspeech
+                           leftspeech                leftspeech
                            leftspeech                leftspeech %%%
-             middlespeech: middenuitspraak           middlespeech 
-                           middlespeech              middlespeech 
+             middlespeech: middenuitspraak           middlespeech
+                           middlespeech              middlespeech
                            middlespeech              middlespeech %%%
-              rightspeech: rechteruitspraak          rightspeech 
-                           rightspeech               rightspeech 
+              rightspeech: rechteruitspraak          rightspeech
+                           rightspeech               rightspeech
                            rightspeech               rightspeech %%%
 
                     datum: datum                     date
@@ -420,8 +420,8 @@
                    auteur: auteur                    author
                            autor                     autor
                            autore                    autor
-                 autofile: autofile                  autofile             
-                           autofile                  autofile             
+                 autofile: autofile                  autofile
+                           autofile                  autofile
                            autofile                  autofile % TB TH
                balanceren: balanceren                balance
                            ausgleichen               rovnovaha
@@ -539,7 +539,7 @@
                            file                      fisier
                 inputfile: inputfile                 inputfile
                            inputfile                 inputfile
-                           inputfile                 inputfile % !! 
+                           inputfile                 inputfile % !!
                   formaat: formaat                   size
                            groesse                   velikost
                            dimensione                dimensiune
@@ -701,7 +701,7 @@
                            colorelinea               culoarerigla
                     lijst: lijst                     list
                            liste                     seznam
-                           lista                     lista
+                           elenco                    lista
             linkerbreedte: linkerbreedte             leftwidth
                            linkerbreite              sirkavlevo
                            ampiezzasinistra          latimestanga
@@ -854,7 +854,7 @@
                            marginedispari            margineimpara
                        op: op                        at
                            bei                       u
-                           ad                        la 
+                           ad                        la
                     optie: optie                     option
                            option                    volba
                            opzione                   optiune
@@ -977,7 +977,7 @@
                            righe                     linii
                       rek: rek                       stretch
                            strecken                  natahnout
-                           dilata                    dilatat % CHECK 
+                           dilata                    dilatat % CHECK
                 resolutie: resolutie                 resolution
                            aufloesung                rozliseni
                            risoluzione               rezolutie
@@ -1285,6 +1285,14 @@
                            cbefehl                   cprikaz
                            ccomando                  comandac
 
+             tekstafstand: tekstafstand              textdistance 
+                           textdistance              textdistance 
+                           distanzatesto             textdistance % TB TH
+
+trefwoord: trefwoord keyword
+           keyword keyword
+           keyword keyword
+
 \stopconstants
 
 %D \stopcompressdefinitions
@@ -1454,7 +1462,7 @@
                            grande                    mare
                grootkorps: grootkorps                bigbodyfont
                            bigbodyfont               bigbodyfont
-                           grossofontdeltesto        bigbodyfont %% 
+                           grossofontdeltesto        bigbodyfont %%
             grotevoorkeur: grotevoorkeur             bigpreference
                            grosszuegig               vysokapriorita
                            grandepreferenza          preferintamare
@@ -1571,7 +1579,7 @@
                            piccolograssettocorsivo   micaldininclinat
                kleinkorps: kleinkorps                smallbodyfont
                            smallbodyfont             smallbodyfont
-                           piccolofontdelcorpo       smallbodyfont %% 
+                           piccolofontdelcorpo       smallbodyfont %%
                     kleur: kleur                     color
                            farbe                     barevne
                            colore                    culoare
@@ -1622,7 +1630,7 @@
                            linea                     rigla
                     lijst: lijst                     list
                            liste                     seznam
-                           lista                     lista
+                           elenco                    lista
               linkermarge: linkermarge               leftmargin
                            linkerrand                levyokraj
                            marginesinistro           marginestanga
@@ -1730,9 +1738,9 @@
                            carta                     foaie
                    scherm: scherm                    display
                            bildschirm                obrazovka
-                           schermo                   display % new 
-                omgekeerd: omgekeerd                 reverse 
-                           reverse                   reverse 
+                           schermo                   display % new
+                omgekeerd: omgekeerd                 reverse
+                           reverse                   reverse
                            invertito                 reverse % new
                   passend: passend                   fit
                            passend                   prizpusobive
@@ -1832,7 +1840,7 @@
                            tollerante                tolerant
                    spatie: spatie                    space
                            spatium                   mezera
-                           spazio                    spatiu %% check 
+                           spazio                    spatiu %% check
                 standaard: standaard                 standard
                            standard                  standardni
                            standard                  standard
@@ -1844,7 +1852,7 @@
                            termina                   stop
                    streng: streng                    strict
                            streng                    striktni
-                           strict                    strict
+                           rigido                    strict
                     strut: strut                     strut
                            strut                     strut
                            strut                     strut
@@ -1955,7 +1963,7 @@
                            moltotollerante           foartetolerant
                zeerstreng: zeerstreng                verystrict
                            sehrstreng                velmistriktni
-                           moltostrict               foartestrict % GB
+                           moltorigido               foartestrict % GB
                       zie: zie                       see
                            sieh                      viz
                            vedi                      vezi
@@ -2025,25 +2033,33 @@
                  bookmark: bookmark                  bookmark
                            bookmark                  zalozka
                            segnalibro                semncarte
-\stopvariables
 
-% nieuw, to be translated 
+% GB TB TH :
 
-\startvariables            dutch                     english
-                           german                    czech
-                           italian                   romanian
+              binnenmarge: binnenmarge               innermargin
+                           innermargin               innermargin
+                           margineinterno            innermargin
+              buitenmarge: buitenmarge               outermargin
+                           outermargin               outermargin
+                           margineesterno            outermargin
+               binnenrand: binnenrand                inneredge
+                           inneredge                 inneredge
+                           bordointerno              inneredge
+               buitenrand: buitenrand                outeredge
+                           outeredge                 outeredge
+                           bordoesterno              outeredge
 
-                  sturing: sturing                   controls 
-                           controls                  controls 
-                           controls                  controale
+                  sturing: sturing                   controls
+                           controls                  controls
+                           controlli                 controale
               niethangend: niethangend               nothanging
                            nothanging                nothanging
-                           nothanging                nothanging
-               afgebroken: afgebroken                hyphenated 
+                           nonsospeso                nothanging
+               afgebroken: afgebroken                hyphenated
                            hyphenate                 hyphenated
                            sillabato                 despsilabe
-           nietafgebroken: nietafgebroken            nothyphenated 
-                           nothyphenated             nothyphenated 
+           nietafgebroken: nietafgebroken            nothyphenated
+                           nothyphenated             nothyphenated
                            nonsillabato              nedespsilabe
 
 \stopvariables
@@ -2052,8 +2068,8 @@
                            german                    czech
                            italian                   romanian
 
-                  sturing: sturing                   controls 
-                           controls                  controls 
+                  sturing: sturing                   controls
+                           controls                  controls
                            controlli                  controale
                   globaal: globaal                   global
                            global                    globalne
@@ -2061,7 +2077,7 @@
 
 \stopconstants
 
-% so far 
+% so far
 
 %D \stopcompressdefinitions
 
@@ -2186,7 +2202,7 @@
                            etichettatura             etichetare
        samengesteldelijst: samengesteldelijst        combinedlist
                            kombiniereliste           kombinovanyseznam
-                           listacombinata           listacombinata
+                           elencocombinato           listacombinata
                    sectie: sectie                    section
                            abschnitt                 oddil
                            sezione                   sectiune
@@ -2285,10 +2301,10 @@
                            vuoti                     gol
                     lijst: lijst                     list
                            auflisten                 seznam
-                           lista                     lista
+                           elenco                    lista
                  lijstmet: lijstmet                  listof
                            auflistenvon              seznam
-                           listadi                   listade
+                           elencodi                  listade
                    lokale: lokale                    local
                            lokal                     lokalne
                            locale                    local
@@ -2321,10 +2337,10 @@
                            tabulato                  tabulate
              tabulatehead: tabulatiekop              tabulatehead
                            tabulatehead              tabulatehead
-                           testatabulato             tabulatehead % 
+                           testatabulato             tabulatehead %
              tabulatetail: tabulatiestaart           tabulatetail
                            tabulatetail              tabulatetail
-                           codatabulato              tabulatetail % 
+                           codatabulato              tabulatetail %
                     tekst: tekst                     text
                            text                      text
                            testo                     text
@@ -2376,7 +2392,7 @@
              deelomgeving: deelomgeving              localenvironment
                            lokaleumgebung            lokalnihoprostredi
                            ambientelocale            mediulocal
- 
+
 \stopelements
 
 %D \stopcompressdefinitions
@@ -2433,12 +2449,12 @@
               SearchAgain: HerhaalZoeken             SearchAgain
                            WeiterSuchen              HledatZnovu
                            CercaAncora               CautaDinNou
-                    Query: RaadpleegDocument         Query  
+                    Query: RaadpleegDocument         Query
                            Query                     Query
-                           Query                     Query % TB TH GB 
+                           Richiesta                 Query % TB TH GB
                QueryAgain: HerhaalRaadplegen         QueryAgain
                            QueryAgain                QueryAgain
-                           QueryAgain                QueryAgain % TB TH GB 
+                           RinnovaRichiesta          QueryAgain % TB TH GB
                  GotoPage: GaNaarPagina              GotoPage
                            GotoPage                  JdiNaStranku
                            VaiAPagina                LaPagina % TB
@@ -2461,7 +2477,7 @@
                            StopSound                 StopZvuk
                            FermaSuono                StopSunet % TB
                PauseSound: PauzeerGeluid             PauseSound
-                           PauseSound                PozastavitZvuk  
+                           PauseSound                PozastavitZvuk
                            PausaSuono                PauzaSunet % TB
               ResumeSound: HervatGeluid              ResumeSound
                            ResumeSound               PokracovatZvuk

@@ -471,17 +471,26 @@
 
 \def\kenmerkdatumpatroon{j,mm,dd} % jj,mm,dd changed at januari 1-1-2000 
 
+\newsignal\datesignal
+
+\def\dobetweendates%
+  {\ifdim\lastskip=\datesignal\relax\else
+     \unskip\space
+     \hskip\datesignal\relax
+   \fi}
+
 % \def\complexcurrentdate[#1]%
 %   {\bgroup
 %    \let\labellanguage\currentlanguage
-%    \def\betweendates{\let\betweendates\space}%
+%    \def\betweendates{\let\betweendates\dobetweendates}%
 %    \lowercase{\edef\!!stringa{#1}}% permits usage in \kap 
 %    \@EA\processallactionsinset\@EA
 %      [\!!stringa]
 %      [    \v!dag=>\betweendates\the\normalday,
 %         \v!maand=>\betweendates\month\normalmonth,
 %          \v!jaar=>\betweendates\the\normalyear,
-%               \ =>\ , % optimization -) 
+%           \space=>\unskip\ \hskip\datesignal,% optimization -) 
+%               \ =>\unskip\ \hskip\datesignal,% optimization -) 
 %                d=>\the\normalday,
 %                m=>\the\normalmonth,
 %                j=>\the\normalyear,
@@ -492,24 +501,15 @@
 %               jj=>\expandafter\gobbletwoarguments\the\normalyear,
 %               yy=>\expandafter\gobbletwoarguments\the\normalyear,
 %       \v!weekdag=>\betweendates\dayoftheweek\normalday\normalmonth\normalyear,
-% %       \v!MAAND=>\betweendates\MONTH\normalmonth,
-% %     \v!WEEKDAG=>\betweendates
-% %                 \bgroup
-% %                 \let\labeltext=\LABELTEXT
-% %                 \dayoftheweek\normalday\normalmonth\normalyear
-% %                 \egroup,
 %       \v!kenmerk=>\expanded{\complexcurrentdate[\kenmerkdatumpatroon]},
-%       \s!unknown=>\commalistelement
-%                   \def\betweendates{\let\betweendates\space}]%
+%       \s!unknown=>\unskip
+%                   \commalistelement
+%                   \hskip\datesignal
+%                   \def\betweendates{\let\betweendates\dobetweendates}]%
+%    \ifdim\lastskip=\datesignal\relax
+%      \unskip
+%    \fi
 %    \egroup}
-
-\newsignal\datesignal
-
-\def\dobetweendates%
-  {\ifdim\lastskip=\datesignal\relax\else
-     \unskip\space
-     \hskip\datesignal\relax
-   \fi}
 
 \def\complexcurrentdate[#1]%
   {\bgroup
@@ -519,15 +519,19 @@
    \@EA\processallactionsinset\@EA
      [\!!stringa]
      [    \v!dag=>\betweendates\the\normalday,
+         \v!dag+=>\betweendates\ordinaldaynumber\normalday,
         \v!maand=>\betweendates\month\normalmonth,
          \v!jaar=>\betweendates\the\normalyear,
+       \v!spatie=>\unskip\ \hskip\datesignal,% optimization -) 
               \ =>\unskip\ \hskip\datesignal,% optimization -) 
                d=>\the\normalday,
+              d+=>\ordinaldaynumber\normalday,
                m=>\the\normalmonth,
                j=>\the\normalyear,
                y=>\the\normalyear,
                w=>\betweendates\dayoftheweek\normalday\normalmonth\normalyear,
               dd=>\ifnum\normalday  >9 \else0\fi\the\normalday,
+             dd+=>\ordinaldaynumber{\ifnum\normalday  >9 \else0\fi\the\normalday},
               mm=>\ifnum\normalmonth>9 \else0\fi\the\normalmonth,
               jj=>\expandafter\gobbletwoarguments\the\normalyear,
               yy=>\expandafter\gobbletwoarguments\the\normalyear,
@@ -769,6 +773,4 @@
    \mathematics{\ast\ast},
    \mathematics{\ast\ast\ast}]
 
-\protect
-
-\endinput
+\protect \endinput

@@ -405,6 +405,14 @@
   \let \} \letterclosebrace
 \to \everyMPgraphic
 
+\beginTEX
+
+\ifx \honorunexpanded \undefined \else % not really needed 
+  \prependtoks \honorunexpanded \to \everyMPgraphic
+\fi 
+
+\endTEX
+
 \def\startwritingMPgraphic
   {\bgroup
    \global\advance\nofMPgraphics 1 
@@ -1535,7 +1543,7 @@
 %D cannot interfere. We use a rather safe maximum of 4000 
 %D graphics here and 8000 in \type {meta-ini}. 
 
-\newcount \maxnofMPgraphics  \maxnofMPgraphics = 4000 %8000 
+\newcount \maxnofMPgraphics  \maxnofMPgraphics = 4000 % 8000 
 \newcount \minnofMPgraphics  \minnofMPgraphics =    1
 
 \newif    \ifMPstaticgraphic \MPstaticgraphicfalse 

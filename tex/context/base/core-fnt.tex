@@ -28,6 +28,14 @@
 
 \bgroup \catcode`\|=\@@active \gdef\compound#1{|#1|} \egroup
 
+%D Here we hook some code into the clean up mechanism needed
+%D for verbatim data.  
+
+\appendtoks
+  \disablecompoundcharacters
+  \disablediscretionaries
+\to \everycleanupfeatures
+
 %D \macros
 %D   {kap,KAP,Kap,Kaps,nokap,userealcaps,usepseudocaps}
 %D
@@ -344,7 +352,8 @@
    #1{\def\textstring{#2}}%
    \ifdim\stretchedspaceamount>\zeropoint
      \def\textkern##1%
-       {\determinemidwordbreak{##1}{\stretchedbreaktokens}%
+       {% beware: ##1 may not be \box\somebox -) 
+        \determinemidwordbreak{##1}{\stretchedbreaktokens}%
         \kern\stretchedspaceamount##1\domidwordbreak}%
      \def\textskip%
        {\scratchdimen=\stretchedspaceamount
@@ -683,12 +692,5 @@
    \c!onderoffset=1.5pt,
    \c!bovenoffset=2.5pt,
    \c!lijnkleur=]
-
-%D ? ? ? 
-
-\stelkoppeltekenin
-  [\c!teken=\compoundhyphen]
   
-\protect 
-
-\endinput
+\protect \endinput

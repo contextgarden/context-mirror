@@ -122,40 +122,79 @@
 
 %D Element need a bit more work; \type {#4} consumes spaces.
 
+% \def\remapXMLunknownONE#1#2% name args
+%   {\ifremapXMLunknown\remapXMLone{\s!unknown}{#1 #2}\fi}
+% 
+% \def\remapXMLunknownTWO#1#2% name args
+%   {\ifremapXMLunknown\remapXMLtwo{\s!unknown}{#1 #2}\fi}
+% 
+% \def\remapXMLunknownTHREE#1#2% name args
+%   {\ifremapXMLunknown\remapXMLthree{\s!unknown/}{#1 #2}\fi}
+% 
+% \long\def\remapXMLelement#1#2 #3>#4% todo: we need to get rid of the end /
+%   {\ifcase\findendofXMLelement#2#3>%
+%      \if#1/%
+%        \expandafter\ifx\csname\@@XML\@@XMLmapping:#2:M\endcsname\relax
+%          \remapXMLunknownONE{#2}{}%
+%        \else
+%          \remapXMLone{#2}{}%
+%        \fi
+%      \else
+%        \expandafter\ifx\csname\@@XML\@@XMLmapping:#1#2:M\endcsname\relax
+%          \remapXMLunknownTWO{#1#2}{#3}%
+%        \else
+%          \remapXMLtwo{#1#2}{#3}%
+%        \fi
+%      \fi
+%    \else
+%      \expandafter\ifx\csname\@@XML\@@XMLmapping:#1#2:M\endcsname\relax
+%        \expandafter\ifx\csname\@@XML\@@XMLmapping:#1#2/:M\endcsname\relax
+%          \remapXMLunknownTHREE{#1#2}{#3}%
+%        \else
+%          \remapXMLthree{#1#2/}{#3}%
+%        \fi
+%      \else
+%        \remapXMLthree{#1#2}{#3}%
+%      \fi
+%    \fi#4}
+
+\def\remapXMLthreeempty#1%
+  {\remapXMLthree{#1/}}
+
 \def\remapXMLunknownONE#1#2% name args
-  {\ifremapXMLunknown\remapXMLone{\s!unknown}{#1 #2}\fi}
+  {\ifremapXMLunknown\remapXMLone\s!unknown{#1 #2}\fi}
 
 \def\remapXMLunknownTWO#1#2% name args
-  {\ifremapXMLunknown\remapXMLtwo{\s!unknown}{#1 #2}\fi}
+  {\ifremapXMLunknown\remapXMLtwo\s!unknown{#1 #2}\fi}
 
 \def\remapXMLunknownTHREE#1#2% name args
-  {\ifremapXMLunknown\remapXMLthree{\s!unknown/}{#1 #2}\fi}
+  {\ifremapXMLunknown\remapXMLthreeempty\s!unknown{#1 #2}\fi}
 
 \long\def\remapXMLelement#1#2 #3>#4% todo: we need to get rid of the end /
   {\ifcase\findendofXMLelement#2#3>%
      \if#1/%
        \expandafter\ifx\csname\@@XML\@@XMLmapping:#2:M\endcsname\relax
-         \remapXMLunknownONE{#2}{}%
+         \@EA\remapXMLunknownONE
        \else
-         \remapXMLone{#2}{}%
-       \fi
+         \@EA\remapXMLone
+       \fi{#2}\empty
      \else
        \expandafter\ifx\csname\@@XML\@@XMLmapping:#1#2:M\endcsname\relax
-         \remapXMLunknownTWO{#1#2}{#3}%
+         \@EA\remapXMLunknownTWO
        \else
-         \remapXMLtwo{#1#2}{#3}%
-       \fi
+         \@EA\remapXMLtwo
+       \fi{#1#2}{#3}%
      \fi
    \else
      \expandafter\ifx\csname\@@XML\@@XMLmapping:#1#2:M\endcsname\relax
        \expandafter\ifx\csname\@@XML\@@XMLmapping:#1#2/:M\endcsname\relax
-         \remapXMLunknownTHREE{#1#2}{#3}%
+         \@EAEAEA\remapXMLunknownTHREE
        \else
-         \remapXMLthree{#1#2/}{#3}%
+         \@EAEAEA\remapXMLthreeempty
        \fi
      \else
-       \remapXMLthree{#1#2}{#3}%
-     \fi
+       \@EA\remapXMLthree
+     \fi{#1#2}{#3}%
    \fi#4}
 
 \unexpanded\def\xmlr#1#2{\csname\@@XML\@@XMLmapping:#1:#2\endcsname}

@@ -385,6 +385,97 @@
            {\showmessage{\m!systems}{10}{##1}}}}%
    \processcommalist[#1]\docommando}
 
+% \def\recalculatelayout%
+%   {\global\linkermargebreedte \layoutparameter\c!linkermarge
+%    \global\rechtermargebreedte\layoutparameter\c!rechtermarge
+%    \global\linkerrandbreedte  \layoutparameter\c!linkerrand
+%    \global\rechterrandbreedte \layoutparameter\c!rechterrand
+%    \global\hoofdhoogte        \layoutparameter\c!hoofd
+%    \global\voethoogte         \layoutparameter\c!voet
+%    \global\onderhoogte        \layoutparameter\c!onder
+%    \global\bovenhoogte        \layoutparameter\c!boven
+%    \global\rugwit             \layoutparameter\c!rugwit
+%    \global\kopwit             \layoutparameter\c!kopwit
+%    \setlayoutdimensions % the rest of the `dimensions'
+%    \doifelse\@@lygrid\v!ja\gridsnappingtrue\gridsnappingfalse
+%    \ifgridsnapping
+%      \widowpenalty\zerocount % is gewoon beter
+%      \clubpenalty \zerocount % zeker bij grids
+%    \else
+%      \widowpenalty\defaultwidowpenalty
+%      \clubpenalty \defaultclubpenalty
+%    \fi
+%    \simplestelwitruimtein
+%    \simplestelblankoin
+%    \global\snijwit\layoutparameter\c!snijwit\relax
+%    \doifelse{\layoutparameter\c!breedte}\v!midden
+%      {\ifdim\snijwit=\zeropoint 
+%         \global\snijwit\rugwit 
+%       \fi 
+%       \global\zetbreedte\papierbreedte
+%       \global\advance\zetbreedte -\rugwit
+%       \global\advance\zetbreedte -\snijwit}
+%      {\doifelse{\layoutparameter\c!breedte}\v!passend
+%         {\ifdim\snijwit=\zeropoint 
+%            \global\snijwit\rugwit 
+%          \fi 
+%          \global\zetbreedte\papierbreedte
+%          \global\advance\zetbreedte -\snijwit
+%          \scratchdimen\rugwit
+%          \advance\scratchdimen -\linkerrandbreedte
+%          \advance\scratchdimen -\linkerrandafstand
+%          \advance\scratchdimen -\linkermargebreedte
+%          \advance\scratchdimen -\linkermargeafstand
+%          \ifdim\scratchdimen<\zeropoint
+%            \scratchdimen\zeropoint
+%          \fi
+%          \global\advance\zetbreedte -\rechtermargeafstand
+%          \global\advance\zetbreedte -\rechtermargebreedte
+%          \global\advance\zetbreedte -\rechterrandafstand
+%          \global\advance\zetbreedte -\rechterrandbreedte
+%          \global\advance\zetbreedte -\scratchdimen}
+%         {\global\zetbreedte\layoutparameter\c!breedte
+%          \ifdim\snijwit=\zeropoint 
+%            \global\snijwit\papierbreedte
+%            \global\advance\snijwit-\zetbreedte
+%            \global\advance\snijwit-\rugwit
+%          \else 
+%            % inconsistent specification 
+%          \fi}}%
+%    \scratchdimen\layoutparameter\c!bodemwit\relax
+%    \ifdim\scratchdimen=\zeropoint
+%      \scratchdimen\kopwit
+%    \fi
+%    \doifelse{\layoutparameter\c!regels}\empty
+%      {\doifelse{\layoutparameter\c!hoogte}\v!midden
+%         {\global\zethoogte\papierhoogte
+%          \global\advance\zethoogte -\kopwit
+%          \global\advance\zethoogte -\scratchdimen}
+%         {\doifelse{\layoutparameter\c!hoogte}\v!passend
+%            {\global\zethoogte\papierhoogte
+%             \global\advance\zethoogte -\scratchdimen
+%             \scratchdimen\kopwit
+%             \advance\scratchdimen -\bovenhoogte
+%             \advance\scratchdimen -\bovenafstand
+%             \ifdim\scratchdimen<\zeropoint
+%               \scratchdimen\zeropoint
+%             \fi
+%             \global\advance\zethoogte -\onderafstand
+%             \global\advance\zethoogte -\onderhoogte
+%             \global\advance\zethoogte -\scratchdimen}
+%            {\global\zethoogte\layoutparameter\c!hoogte}}}
+%      {\global\zethoogte\layoutparameter\c!regels\lineheight
+%       \global\advance\zethoogte \hoofdhoogte
+%       \global\advance\zethoogte \voethoogte}%
+%    \rugoffset\layoutparameter\c!rugoffset
+%    \kopoffset\layoutparameter\c!kopoffset
+%    \global\setdimentoatleast\zetbreedte\!!onepoint
+%    \global\setdimentoatleast\zethoogte\!!onepoint
+%    \calculatehsizes
+%    \calculatevsizes
+%    \recalculatelogos
+%    \recalculatebackgrounds}
+
 \def\recalculatelayout%
   {\global\linkermargebreedte \layoutparameter\c!linkermarge
    \global\rechtermargebreedte\layoutparameter\c!rechtermarge
@@ -443,17 +534,24 @@
            % inconsistent specification 
          \fi}}%
    \scratchdimen\layoutparameter\c!bodemwit\relax
-   \ifdim\scratchdimen=\zeropoint
-     \scratchdimen\kopwit
-   \fi
+  %\ifdim\scratchdimen=\zeropoint
+  %  \scratchdimen\kopwit
+  %\fi
+   \global\bodemwit\layoutparameter\c!bodemwit\relax
    \doifelse{\layoutparameter\c!regels}\empty
      {\doifelse{\layoutparameter\c!hoogte}\v!midden
-        {\global\zethoogte\papierhoogte
+        {\ifdim\bodemwit=\zeropoint 
+           \global\bodemwit\kopwit 
+         \fi 
+         \global\zethoogte\papierhoogte
          \global\advance\zethoogte -\kopwit
-         \global\advance\zethoogte -\scratchdimen}
+         \global\advance\zethoogte -\bodemwit}
         {\doifelse{\layoutparameter\c!hoogte}\v!passend
-           {\global\zethoogte\papierhoogte
-            \global\advance\zethoogte -\scratchdimen
+           {\ifdim\bodemwit=\zeropoint 
+             \global\bodemwit\kopwit 
+            \fi 
+            \global\zethoogte\papierhoogte
+            \global\advance\zethoogte -\bodemwit
             \scratchdimen\kopwit
             \advance\scratchdimen -\bovenhoogte
             \advance\scratchdimen -\bovenafstand
@@ -463,8 +561,19 @@
             \global\advance\zethoogte -\onderafstand
             \global\advance\zethoogte -\onderhoogte
             \global\advance\zethoogte -\scratchdimen}
-           {\global\zethoogte\layoutparameter\c!hoogte}}}
+           {\global\zethoogte\layoutparameter\c!hoogte
+            \ifdim\bodemwit=\zeropoint 
+              \global\bodemwit\papierhoogte
+              \global\advance\bodemwit-\zethoogte
+              \global\advance\bodemwit-\kopwit
+            \else 
+              % inconsistent specification 
+            \fi}}}%
      {\global\zethoogte\layoutparameter\c!regels\lineheight
+% new, was a bug 
+\global\advance\zethoogte \hoofdafstand
+\global\advance\zethoogte \voetafstand
+% so far 
       \global\advance\zethoogte \hoofdhoogte
       \global\advance\zethoogte \voethoogte}%
    \rugoffset\layoutparameter\c!rugoffset
@@ -972,6 +1081,7 @@
              \c!kopoffset=\!!zeropoint,
              \c!rugoffset=\!!zeropoint,
           \c!tekstbreedte=, % dangerous option
+          \c!tekstafstand=\!!zeropoint,
                 \c!letter=,
                  \c!kleur=,
              \c!markering=\v!uit,

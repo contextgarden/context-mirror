@@ -657,9 +657,9 @@
 
 \def\dodotracedoutput#1%
   {\writestatus{\m!otr}{start \the\outputpenalty\space in column \number\mofcolumns}%
-   \writestatus{\m!otr}{v:\the\vsize,g:\the\pagegoal,t:\the\pagetotal,f:\the\ht\footins}%
+   \writestatus{\m!otr}{v:\the\vsize,g:\the\pagegoal,t:\the\pagetotal}%
    \dodoinvokeoutput{#1}%
-   \writestatus{\m!otr}{v:\the\vsize,g:\the\pagegoal,t:\the\pagetotal,f:\the\ht\footins}%
+   \writestatus{\m!otr}{v:\the\vsize,g:\the\pagegoal,t:\the\pagetotal}%
    \writestatus{\m!otr}{stop \the\outputpenalty\space in column \number\mofcolumns}}
 
 \def\installoutput#1#2% \invoke \action 
@@ -667,12 +667,25 @@
    \edef#1{\noexpand\doinvokeoutput{\outputcounter}}% 
    \setvalue{\@@OTR\outputcounter}{#2}}
 
-\installoutput\dosynchronizeoutput
-  {\ifvoid\footins\else\insert\footins{\unvbox\footins}\fi
-   \ifvoid\topins \else\insert\topins {\unvbox\topins }\fi
-   \ifvoid\botins \else\insert\botins {\unvbox\botins }\fi
-   \unvbox\normalpagebox}
+% \installoutput\dosynchronizeoutput
+%   {\synchronizeinsertions
+%    \unvbox\normalpagebox}
            
+\installoutput\dosynchronizeoutput
+  {\unvbox\normalpagebox}
+
+% \installoutput\dosynchronizeoutput
+%   {\bgroup
+%    \setbox\scratchbox\vbox{\unvbox\normalpagebox}%
+%    \ifdim\ht\scratchbox=\zeropoint \else 
+%      \topskip\zeropoint 
+%      \unvbox\scratchbox 
+%    \fi
+%    \egroup}
+
+\def\synchronizeoutput 
+  {\dosynchronizeoutput}
+
 \newtoks\mainoutput 
 \newif\ifinotr
 
@@ -1013,16 +1026,6 @@
       \tlap{\plaatsversieaanduiding}
       \vskip.5cm}}
 
-% this will be inserts some day
-
-%\newinsert\referentieinfobox 
-%\newinsert\registerinfobox   
-%\newinsert\floatinfobox      
-
-\newbox\referentieinfobox
-\newbox\registerinfobox
-\newbox\floatinfobox
-
 \def\dotestinfo#1#2#3%
   {\ifvoorlopig\ifinpagebody\else
      \begingroup
@@ -1047,6 +1050,16 @@
        \totaltestinfo
      \fi
    \fi\fi}
+
+% this will be inserts some day
+
+% \installinsertion\referentieinfobox 
+% \installinsertion\registerinfobox   
+% \installinsertion\floatinfobox      
+
+\newbox\referentieinfobox
+\newbox\registerinfobox
+\newbox\floatinfobox
 
 \def\referentieinfo{\dotestinfo\referentieinfobox}
 \def\registerinfo  {\dotestinfo\registerinfobox}
@@ -1256,18 +1269,23 @@
 \paginageblokkeerdfalse
 
 \def\testpagina[#1][#2]%
-  {\ifpaginageblokkeerd \else
-     \ifdim\pagetotal<\pagegoal
-       \dimen0=\lineheight
-       \multiply\dimen0 by #1\relax
-       \advance\dimen0 by \pagetotal
-       \ifdim\lastskip<\parskip
-         \advance\dimen0 by \parskip
-       \fi
-       \advance\dimen0 by #2\relax
-       \ifdim\dimen0>.99\pagegoal
-         \penalty-\!!tenthousand\relax
-       \fi
+  {\relax % needed ! 
+   \ifpaginageblokkeerd \else
+     \ifdim\pagegoal<\maxdimen 
+       \ifdim\pagetotal<\pagegoal\relax
+         \dimen0=\lineheight
+         \multiply\dimen0 #1\relax
+         \advance\dimen0 \pagetotal
+         \ifdim\lastskip<\parskip
+           \advance\dimen0 \parskip
+         \fi
+         \advance\dimen0 #2\relax
+         \ifdim\dimen0>.99\pagegoal
+           \penalty-\!!tenthousand\relax
+         \fi
+       \else
+         % do nothing 
+       \fi 
      \else
        \goodbreak
      \fi

@@ -403,6 +403,9 @@
                    defineoverlay: definieeroverlay                 defineoverlay
                                   definiereoverlay                 definujprekryv
                                   definiscisovrapposizione         definesteoverlay
+                     definelayer: definieerlayer                   definelayer
+                                  definelayer                      definelayer
+                                  definelayer                      definelayer
                       background: achtergrond                      background
                                   hintergrund                      pozadi
                                   sfondo                           fundal
@@ -838,7 +841,7 @@
                                   marcatura                        marcaje
               ontkoppelmarkering: ontkoppelmarkering               decouplemarking
                                   entknuepfebeschriftung           rozpojeneznaceni
-                                  decouplemarcatura                decupleazamarcaje % GB
+                                  separamarcatura                  decupleazamarcaje % GB
                  koppelmarkering: koppelmarkering                  couplemarking
                                   verknuepfebeschriftung           propojeneznaceni
                                   accoppiamarcatura                cupleazamarcaje % GB
@@ -881,7 +884,7 @@
                        showprint: toonprint                        showprint
                                   zeigedruck                       ukazvytisk
                                   mostrastampa                     afiseazatiparire
-                      toonstruts: toonstruts                       showstruts
+                      showstruts: toonstruts                       showstruts
                                   zeigestruts                      ukazpodpery
                                   mostrastruts                     afiseazastruts
                  definepapersize: definieerpapierformaat           definepapersize
@@ -1030,43 +1033,43 @@
                                   bastablocchi                     gatablocuri
                  definieerlijst:  definieerlijst                   definelist
                                   definiereliste                   definujseznam
-                                  definiscilista                   definestelista
+                                  definiscielenco                  definestelista
     definieersamengesteldelijst:  definieersamengesteldelijst      definecombinedlist
                                   definierezusammengestellteliste  definujkombinovanyseznam
-                                  definiscilistacombinata          definestelistacombinata
+                                  definiscielencocombinato         definestelistacombinata
                     plaatslijst:  plaatslijst                      placelist
                                   platziereliste                   umistiseznam
-                                  mettilista                       punelista
+                                  mettielenco                      punelista
        plaatssamengesteldelijst:  plaatssamengesteldelijst         placecombinedlist
                                   platzierezusammengestellteliste  umistikombinovanyseznam
-                                  mettilistacombinata              punelistacombinata
+                                  mettielencocombinato             punelistacombinata
                schrijfnaarlijst:  schrijfnaarlijst                 writetolist
                                   schreibezurliste                 zapisdoseznamu
-                                  scriviinlista                    scrieinlista
+                                  scriviinelenco                   scrieinlista
              schrijftussenlijst:  schrijftussenlijst               writebetweenlist
                                   schreibezwischenliste            zapismeziseznam
-                                  scrividentrolista                scrieintreliste
+                                  scrividentroelenco               scrieintreliste
                     stellijstin:  stellijstin                      setuplist
                                   stellelisteein                   nastavseznam
-                                  impostalista                     seteazalista
+                                  impostaelenco                    seteazalista
        stelsamengesteldelijstin:  stelsamengesteldelijstin         setupcombinedlist
                                   stellezusammengestelltelisteein  nastavkombinovanyseznam
-                                  impostalistacombinata            seteazalistacombinata
+                                  impostaelencocombinato           seteazalistacombinata
            bepaallijstkenmerken:  bepaallijstkenmerken             determinelistcharacteristics
                                   bestimmelistencharakeristika     stanovcharakteristickuseznamu
-                                  determinacaratterstichelista     determinacaracteristicilelistei
+                                  determinacarattersticheelenco    determinacaracteristicilelistei
                     lijstlengte:  lijstlengte                      listlength
                                   listenlaenge                     delkaseznamu
-                                  lunghezzalista                   lungimelista
+                                  lunghezzaelenco                  lungimelista
                    lijstbreedte:  lijstbreedte                     listwidth
                                   listenbreite                     sirkaseznamu
-                                  ampiezzalista                    latimelista
+                                  ampiezzaelenco                   latimelista
                     lijsthoogte:  lijsthoogte                      listheight
                                   listenhoehe                      vyskaseznamu
-                                  altezzalista                     inaltimelista
+                                  altezzaelenco                    inaltimelista
                       geenlijst:  geenlijst                        nolist
                                   keineliste                       zadnyseznam
-                                  nientelista                      faralista
+                                  nienteelenco                     faralista
         definieerreferentielijst: definieerreferentielijst         definereferencelist
                                   definierereferenzliste           definujseznamodkazu
                                   definiscilistariferimenti        definestelistareferinte
@@ -1827,9 +1830,15 @@
                           kopwit: kopwit                           topspace
                                   kopfweite                        odsazenishora
                                   spaziocima                       spatiusus
+                        bodemwit: bodemwit                         bottomspace
+                                  bottomspace                      bottomspace
+                                  spaziofondo                      spatiujos
                           rugwit: rugwit                           backspace
                                   rumpfweite                       odsazenizleva
                                   spaziodietro                     spatiuspate % GB
+                         snijwit: snijwit                          cutspace
+                                  cutspace                         cutspace
+                                  cutspace                         cutspace % GB
                    papierbreedte: papierbreedte                    paperwidth
                                   papierbreite                     sirkapapiru
                                   ampiezzacarta                    latimehartie
@@ -1861,6 +1870,19 @@
                     useXMLfilter: gebruikXMLfilter                 useXMLfilter
                                   useXMLfilter                     useXMLfilter
                                   useXMLfilter                     useXMLfilter
+
+definecolumnset: definieerkolomgroep definecolumnset 
+                 definecolumnset     definecolumnset 
+                 definecolumnset     definecolumnset 
+ setupcolumnset: stelkolomgroepin    setupcolumnset 
+                 setupcolumnset      setupcolumnset 
+                 setupcolumnset      setupcolumnset 
+ startcolumnset: startkolomgroep     startcolumnset 
+                 startcolumnset      startcolumnset 
+                 startcolumnset      startcolumnset 
+  stopcolumnset: stopkolomgroep      stopcolumnset 
+                 stopcolumnset       stopcolumnset 
+                 stopcolumnset       stopcolumnset 
 
 \stopcommands
 

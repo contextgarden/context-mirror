@@ -122,12 +122,6 @@
      10: sabloanele -- incarcate
 \stopmessages
 
-% dutch   : \lccode`\'=`\'
-% english : \lccode`\'=0
-% german  : \lccode`\'=`\'
-% french  : \lccode`\'=`\'
-% czech   : \lccode`\'=`\'
-
 %D When loading hyphenation patterns, \TEX\ assign a number to
 %D each loaded table, starting with~0. Switching to a specific
 %D table is done by assigning the relevant number to the
@@ -143,6 +137,12 @@
 %D we don't want to spent a real one.
 
 \newcounter\loadedlanguage
+
+%D Let's start with setting the lowercase code of quotes, so
+%D that we get proper hyphenation in languages like Dutch, 
+%D French and Czech. 
+
+\lccode`\'=`\'
 
 %D \macros
 %D   {currentlanguage, setupcurrentlanguage}
@@ -245,6 +245,7 @@
             \s!patterns=,
             \s!mapping=,
             \s!encoding=,
+            \c!tekst=Ag,
             #2]%
          \doifvaluesomething{\??la#1\c!default}
            {\doifnotvalue{\??la#1\c!default}{#1}
@@ -267,6 +268,7 @@
                   \c!datum=\languagedefault{#1}\c!datum,
                   \s!mapping=\languagedefault{#1}\s!mapping,
                   \s!encoding=\languagedefault{#1}\s!encoding,
+                  \c!tekst=\languagedefault{#1}\c!tekst,
                   #2]}}}%
       \doifvalue{\??la#1\c!default}{#1}{\letvalue{\??la#1\c!default}\empty}%
        % loop in deo
@@ -433,68 +435,6 @@
 
 \ifx\synchronizepatterns\undefined \let\synchronizepatterns\relax \fi
 
-%\def\dosetnormallanguage#1#2#3#4%
-%  {\doifdefinedelse{\??la\??la#2#3}
-%     {\doifelsevaluenothing{\??la\??la#2#3}
-%        {#4}
-%        {\donetrue
-%         \setxvalue{\??la#1\s!patterns}{#3}%
-%         \normallanguage=\getvalue{\??la\??la#2#3}\relax}} % \relax is needed for lookahead problems
-%     {#4}}
-%
-% because this macro is called often, we optimize 'm
-% 
-% \def\dosetnormallanguage#1#2#3%
-%   {\@EA\ifx\csname\??la\??la#2#3\endcsname\relax
-%      \@EA\firstofoneargument
-%    \else\@EA\ifx\csname\??la\??la#2#3\endcsname\empty
-%      \@EAEAEA\firstofoneargument
-%    \else
-%      \donetrue
-%      \global\expandafter\xdef\csname\??la#1\s!patterns\endcsname{#3}%
-%      \normallanguage\csname\??la\??la#2#3\endcsname\relax % \relax is needed for lookahead problems
-%      \@EAEAEA\gobbleoneargument
-%    \fi\fi}
-% 
-% \def\setnormallanguage#1#2%
-%   {\dosetnormallanguage{#1}{:\currentencoding:\currentmapping:}{#2}{%
-%    \dosetnormallanguage{#1}{:\currentencoding:\s!default     :}{#2}{%
-%    \dosetnormallanguage{#1}{:\s!default      :\currentmapping:}{#2}{%
-%    \dosetnormallanguage{#1}{:\s!default      :\s!default     :}{#2}{}}}}}
-% 
-% \def\docomplexlanguage[#1]%
-%   {\donefalse
-%    % \def\synchronizepatterns{\setnormallanguage
-%    %   {#1}{\getvalue{\??la#1\s!patterns}}}%
-%    % called often, so :
-%    \def\synchronizepatterns{\setnormallanguage
-%      {#1}{\csname\??la#1\s!patterns\endcsname}}%
-%    \synchronizepatterns
-%    \ifdone\else
-%      \def\synchronizepatterns{\setnormallanguage{#1}{#1}}%
-%      \synchronizepatterns
-%      \ifdone\else
-%        \doifvaluesomething{\??la#1\c!default}
-%          {\def\synchronizepatterns{\setnormallanguage
-%             {#1}{\getvalue{\??la\defaultlanguage{#1}\s!patterns}}}%
-%           \synchronizepatterns
-%           \ifdone\else
-%             \setnormallanguage{#1}{\defaultlanguage{#1}}%
-%             \synchronizepatterns
-%           \fi}%
-%      \fi
-%    \fi
-%    \edef\currentlanguage{#1}%
-%    \enablelanguagespecifics[#1]%
-%    \enablemapping[\getvalue{\??la#1\s!mapping}]%
-%    \lefthyphenmin =0\getvalue{\??la#1\s!lefthyphenmin}\relax
-%    \righthyphenmin=0\getvalue{\??la#1\s!righthyphenmin}\relax
-%    \processaction
-%      [\getvalue{\??la#1\c!spatiering}]
-%      [\v!opelkaar=>\frenchspacing,
-%           \v!ruim=>\nonfrenchspacing,
-%        \s!unknown=>\frenchspacing]}
-
 \beginTEX
 
 \def\dosetnormallanguage#1#2%
@@ -530,6 +470,8 @@
 
 \endETEX
 
+\newevery \everylanguage \relax
+
 \def\setnormallanguage#1%
   {\dosetnormallanguage{:\currentencoding:\currentmapping:}{#1}{%
    \dosetnormallanguage{:\currentencoding:\s!default     :}{#1}{%
@@ -557,6 +499,7 @@
        \fi
      \fi
    \fi
+   \the\everylanguage 
    \enablelanguagespecifics[\currentlanguage]%
 % strange, what is this doing here, dangerous for {il2,ec} 
 %   \edef\languagemapping{\csname\??la\currentlanguage\s!mapping\endcsname}%
@@ -667,6 +610,9 @@
 
 \def\languagedefault#1#2%
   {\csname\??la\defaultlanguage{#1}#2\endcsname}
+
+\def\languageparameter#1%
+  {\csname\??la\defaultlanguage\currentlanguage#1\endcsname}
 
 %D \macros
 %D   {startlanguagespecifics,enablelanguagespecifics}
@@ -783,6 +729,19 @@
    \endcsname
    \csname\??la#1\??la\endcsname
    \csname\??la\languageencoding#1\??la\endcsname} % dup ?
+
+%D \macros 
+%D   {everyresetlanguagespecifics,resetlanguagespecifics}
+%D 
+%D Cleanup macros. 
+
+\newtoks\everyresetlanguagespecifics
+
+\def\resetlanguagespecifics{\the\everyresetlanguagespecifics}
+
+\appendtoks
+  \resetlanguagespecifics
+\to \everycleanupfeatures
 
 %D \macros
 %D   {leftguillemot,rightguillemot,leftsubguillemot,rightsubguillemot,

@@ -288,7 +288,7 @@
 
 \def\dodopresetJSrefvariables R#1\end%
   {\doifreferencefoundelse{#1}
-     {\donetrue\dododopresetJSvariables R{\referenceprefix#1}%
+     {\donetrue \dododopresetJSvariables R{\referenceprefix#1}%
       \donefalse\dododopresetJSvariables P{\currentrealreference}}
      {\unknownreference{#1}}% 
    \ifminimalizeJScode \else

@@ -298,14 +298,30 @@
         {\!!heighta\@@schoogte}}%
    \doif\@@scwachttijd\v!geen{\let\@@scwachttijd\zerocountervalue}}
 
-\def\initializeidentity% The macro is not to be changed;
-  {\iflocation         % only the \@@ia-variables may be set! 
-     \dosetupidentity  % ConTeXt is the producer but we 
-       {\@@iatitel}    % no longer mention the pragma site, since
-       {\@@iasubtitel} % we don't want to be bothered with
-       {\@@iaauteur}   % remarks about third party documents
-       {ConTeXt/user/\jobname.tex} % and/or associated with documents 
-       {\@@iadatum}%   % produced outside our control. 
+% The macro is not to be changed; only the \@@ia-variables
+% may be set! ConTeXt is the producer but we no longer
+% mention the pragma site, since we don't want to be bothered
+% with remarks about third party documents and/or associated
+% with documents produced outside our control. 
+
+\def\doprepareidentity 
+  {\let\!!stringa\@@iatrefwoord
+   \let\@@iatrefwoord\empty
+   \def\doprepareidentity##1{\edef\@@iatrefwoord
+     {\@@iatrefwoord\ifx\@@iatrefwoord\empty\else\space\fi##1}}%
+   \@EA\processcommacommand\@EA[\!!stringa]\doprepareidentity
+   \global\let\doprepareidentity\relax}
+
+\def\initializeidentity
+  {\iflocation         
+     \doprepareidentity
+     \expanded{\dosetupidentity  
+       {\@@iatitel}%    
+       {\@@iasubtitel}% 
+       {\@@iaauteur}%   
+       {ConTeXt/user/\jobname.tex}%
+       {\@@iadatum}%   
+       {\@@iatrefwoord}}%
      \global\let\initializeidentity\relax 
    \fi}                
 
@@ -350,7 +366,7 @@
 
 \appendtoks \initializepaper \to \everyshipout 
 
-\def\doinitializepaper%
+\def\doinitializepaper
   {\bgroup
    \berekeninteractiescherm
    \ifdim\!!widtha>\papierbreedte\ifdim\!!widtha>\zeropoint 
@@ -398,6 +414,7 @@
 
 \setvalue{\??sc\c!optie\v!max     }{1} % tzt share with driver 
 \setvalue{\??sc\c!optie\v!bookmark}{2} % tzt share with driver 
+\setvalue{\??sc\c!optie\v!passend }{3} % tzt share with driver 
 
 \def\dodosetupinteractionscreens% met a, b en \number
   {\bgroup
@@ -2298,11 +2315,11 @@
 
 \newbox\commentbox
 
-\def\doflushcomments%
+\def\doflushcommentanchors%
    {\inmarge{\hbox{\raise\ht\strutbox\box\commentbox}}}
 
-\def\flushcomments% in everypar so indirect 
-  {\ifvoid\commentbox\else \doflushcomments \fi}
+\def\flushcommentanchors% in everypar so indirect 
+  {\ifvoid\commentbox\else \doflushcommentanchors \fi}
 
 \def\stelcommentaarin%
   {\dodoubleargument\getparameters[\??cc]}
@@ -2317,10 +2334,13 @@
   {\!!widtha\@@ccbreedte
    \!!heighta\@@cchoogte
    \doifelse{\@@ccoptie}{\v!max}
-     {\def\@@ccoptie{1}}{\def\@@ccoptie{0}}%
+     {\def\@@ccopen{1}}{\def\@@ccopen{0}}%
+   \doifelse{\@@ccoptie}{\v!buffer}
+     {\def\@@cccollect{1}}{\def\@@cccollect{0}}%
    \doinsertcomment
      \@@cctitel\!!widtha\!!heighta
-     \@@cckleur\@@ccoptie\@@ccsymbool{#1}}
+     \@@cckleur\@@ccopen\@@ccsymbool
+     \@@cccollect{#1}}
 
 %\def\dopreparecommentaar#1#2%
 %  {\doifassignmentelse{#1}
@@ -2408,6 +2428,32 @@
 %   the way, it's funny that when in Acrobat we scale up the
 %   text, the symbols scale down. 
 % \stopcommentaar
+
+% \definesymbol [comment-normal][{\externalfigure[koe.pdf]}]
+% \definesymbol [comment-down]  [{\externalfigure[koe.pdf]}]
+% 
+% \def\CowSymbol#1#2%
+%  {\scale
+%     [\c!hoogte=#1]
+%     {\startMPcode
+%        loadfigure "koe.mp" number 1 ; 
+%        refill currentpicture withcolor #2 ; 
+%      \stopMPcode}}
+% 
+% \definesymbol [comment-normal]  
+%   [\CowSymbol{4ex}{red}]
+% 
+% \definesymbol [comment-down]  
+%   [\CowSymbol{4ex}{green}]
+% 
+% \setupcomment
+%   [\c!symbool={comment-normal,comment-down},
+%    \c!optie=\v!buffer]
+%
+% \setupfootertexts[\placecomments]
+
+\def\placecomments
+  {\doflushcomments}
 
 % jammer, tussen/midden had erin gemoeten; \c!commando toevoegen
 

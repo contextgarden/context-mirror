@@ -88,7 +88,7 @@
 
 %D Some safeguards: 
 
-\appendtoks \let\handlecompoundcharacter\string \to \everyMPgraphic
+\appendtoks \cleanupfeatures \to \everyMPgraphic
 
 %D Another one: 
 
@@ -564,6 +564,8 @@
 
 %D In order to communicate conveniently with the \TEX\ 
 %D engine, we introduce some typesetting variables. 
+
+% todo : backgroundoffsets 
 
 \startuseMPgraphic{init data}
   color OverlayColor, OverlayLineColor ;

@@ -294,64 +294,6 @@
 %\ruledhbox{\offsetbox[x=-1cm,y=-1cm,location=c]
 %  {\framed[width=4cm,height=4cm]{x}}}
 
-% actually this is pretty old, but temporary moved here
-
-\installdiscretionaries || \@@kpteken
-
-\newsignal\subsentencesignal
-\newcounter\subsentencelevel
-\def\subsentenceskip{.25em\relax}
-
-\def\stelkoppeltekenin%
-  {\dodoubleargument\getparameters[\??kp]}
-
-\def\beginofsubsentence%
-  {\ifdim\lastkern=\subsentencesignal
-     \unskip
-     \kern\subsentenceskip
-   \fi
-   \doglobal\increment\subsentencelevel
-   \ifnum\subsentencelevel=1
-     \leaveoutervmode
-   \fi
-   \ifodd\subsentencelevel
-     \getvalue{\??la\currentlanguage\c!leftsentence}%
-   \else
-     \getvalue{\??la\currentlanguage\c!leftsubsentence}%
-   \fi
-   \ignorespaces}
-
-\def\beginofsubsentencespacing%
-  {\kern\subsentencesignal\ignorespaces}
-
-\def\endofsubsentence%
-  {\ifodd\subsentencelevel
-     \getvalue{\??la\currentlanguage\c!rightsentence}%
-   \else
-     \getvalue{\??la\currentlanguage\c!rightsubsentence}%
-   \fi
-   \doglobal\decrement\subsentencelevel
-   \unskip
-   \kern\subsentencesignal}
-
-\def\endofsubsentencespacing%
-  {%\ifdim\lastkern=\subsentencesignal \else
-   %  \unskip
-   %\fi
-   \ifdim\lastkern=\subsentencesignal
-     \unskip
-     \hskip\subsentenceskip
-     \ignorespaces
-   \else
-     \unskip
-   \fi}
-
-% test |<|test |<|test|>| test|>| test \par
-% test|<|test|<|test|>|test|>|test     \par
-% test |<||<|test|>||>| test           \par
-
-\enableactivediscretionaries
-
 %D new and beta
 
 % \def\defineshortcut%

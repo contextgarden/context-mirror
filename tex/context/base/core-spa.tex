@@ -15,8 +15,9 @@
 
 \unprotect 
 
-\newevery \everybodyfont   \Everybodyfont   % just to be sure
-\newevery \everyfontswitch \EveryFontSwitch % just to be sure
+\newevery \everybodyfont    \Everybodyfont   % just to be sure
+\newevery \everyfontswitch  \EveryFontSwitch % just to be sure
+\newevery \everydefinedfont \relax           % just to be sure
 
 \appendtoks \presetnormallineheight \to \everybodyfont
 \appendtoks \setnormalbaselines     \to \everybodyfont
@@ -34,6 +35,8 @@
 \appendtoks \updateraggedskips \to \everyfontswitch  % under test 
 
 \prependtoks \let\par\endgraf \to \everypagebody % see \fillinline
+
+\appendtoks \simplestelspatieringin \to \everydefinedfont
 
 \def\stelfactorenin%
   {\simplestelwitruimtein
@@ -1142,7 +1145,7 @@
       \stopbaselinecorrection}%
    \vbox}
 
-\def\toonstruts%
+\def\showstruts%
   {\setteststrut}
 
 % Hieronder volgen enkele instellingen en macro's ten behoeve
@@ -1350,11 +1353,11 @@
 %D Sometimes a capstrut comes in handy
 %D
 %D \starttabulatie[|Tl|l|l|]
-%D \NC yes          \NC normal strut               \NC {\toonstruts\setupstrut[ja]\strut}  \NC \NR 
-%D \NC no           \NC no strut                   \NC {\toonstruts\setupstrut[nee]\strut}  \NC \NR 
-%D \NC kap          \NC a capital strut (i.e. Q)   \NC {\toonstruts\setupstrut[kap]\strut} \NC \NR 
-%D \NC A B \unknown \NC a character strut (e.g. A) \NC {\toonstruts\setupstrut[A]\strut}   \NC \NR 
-%D \NC              \NC a normal strut             \NC {\toonstruts\setupstrut\strut}      \NC \NR 
+%D \NC yes          \NC normal strut               \NC {\showstruts\setupstrut[ja]\strut}  \NC \NR 
+%D \NC no           \NC no strut                   \NC {\showstruts\setupstrut[nee]\strut}  \NC \NR 
+%D \NC kap          \NC a capital strut (i.e. Q)   \NC {\showstruts\setupstrut[kap]\strut} \NC \NR 
+%D \NC A B \unknown \NC a character strut (e.g. A) \NC {\showstruts\setupstrut[A]\strut}   \NC \NR 
+%D \NC              \NC a normal strut             \NC {\showstruts\setupstrut\strut}      \NC \NR 
 %D \stoptabulatie
 
 \def\setupstrut%
@@ -1867,7 +1870,7 @@
 %D \type {csname} testing since the first argument can be 
 %D anything, even a raw fontswitch. No a real improvement 
 %D (some 5 seconds on 260 seconds for the maps bibliography).  
- 
+
 \beginTEX 
 
 \unexpanded\def\dostartattributes#1#2#3%
@@ -1950,6 +1953,26 @@
 \unexpanded\def\@@dostopattributes%
   {\doglobalstopcolor
    \endgroup}
+
+%D Bonus macro, see core-sec.tex 
+
+\beginTEX
+
+\unexpanded\def\dosetfontattribute#1#2%
+  {\@EA\ifx\csname#1#2\endcsname\relax\else
+     \@EAEAEA\doconvertfont\@EA\@EA\csname#1#2\endcsname
+   \fi\empty}
+
+\endTEX
+
+\beginETEX \ifcsname
+
+\unexpanded\def\dosetfontattribute#1#2%
+  {\ifcsname#1#2\endcsname
+     \@EAEAEA\doconvertfont\@EA\@EA\csname#1#2\endcsname
+   \fi\empty}
+
+\endETEX
 
 %D Since this happens a lot, and sometimes large arguments 
 %D are passed in \type {#4}, we just copy some code:
@@ -2381,30 +2404,7 @@
   {\par
    \egroup}
 
-%\def\regellinks#1%
-%  {\noindent\leftline{{\strut#1}}}
-%
-%\def\regelrechts#1%
-%  {\noindent\rightline{{#1\strut}}}
-%
-%\def\regelmidden#1%
-%  {\noindent\centerline{{\strut#1}}}
-
-% \def\doalignline#1#2%
-%   {\dowithnextbox
-%      {\noindent\hbox to \hsize{\strut#1\unhbox\nextbox#2}}
-%      \hbox}
-% 
-% also supporting \\
-%
-% \def\doalignline#1#2%
-%   {\dowithnextbox
-%      {\noindent\hbox to \hsize
-%         {\strut#1\unhbox\nextbox#2}}
-%      \hbox\bgroup
-%        \def\\{\egroup\par\doalignline#1#2\bgroup}\let\next=}
-
-\def\doalignline#1#2%
+\def\doalignline#1#2% \\ == newline 
   {\bgroup
    \def\\{\egroup\par\doalignline{#1}{#2}\bgroup}%
    \dowithnextbox
@@ -2421,12 +2421,12 @@
 
 % indirecte commando's
 
-\setvalue{regel\v!links }{\doalignline \relax \hss  }
-\setvalue{regel\v!rechts}{\doalignline \hss   \relax}
-\setvalue{regel\v!midden}{\doalignline \hss   \hss  }
+\setvalue{\s!do\v!regel\v!links }{\doalignline \relax \hss  }
+\setvalue{\s!do\v!regel\v!rechts}{\doalignline \hss   \relax}
+\setvalue{\s!do\v!regel\v!midden}{\doalignline \hss   \hss  }
 
 \def\doregelplaats#1%
-  {\getvalue{regel#1}}
+  {\getvalue{\s!do\v!regel#1}}
 
 %D Experimental: 
 
@@ -2440,8 +2440,22 @@
       \egroup}
      \hbox}
 
-\setvalue{regel\v!binnen}{\doxalignline\relax\hss}
-\setvalue{regel\v!buiten}{\doxalignline\hss\relax}
+\setvalue{\s!do\v!regel\v!binnen}{\doxalignline\relax\hss}
+\setvalue{\s!do\v!regel\v!buiten}{\doxalignline\hss\relax}
+
+%D Better: 
+
+\def\doregelplaats#1%
+  {\getvalue{\s!do\v!regel#1}}
+
+\def\alignedline#1#2% setting default 
+  {\csname
+     \s!do\v!regel
+     \ifundefined{\s!do\v!regel#1}#2\else#1\fi
+   \endcsname}
+
+% \def\doregelplaats#1%
+%   {\alignedline{#1}\v!links}
 
 %D ... 
 
@@ -2462,10 +2476,10 @@
              \v!soepel=>\tolerance=3000,
          \v!zeersoepel=>\tolerance=4500]}}
 
-\def\steltolerantiein%
+\def\steltolerantiein
   {\dosingleargument\dosteltolerantiein}
 
-\def\woordrechts%
+\def\woordrechts
   {\groupedcommand{\hfill\hbox}{\parfillskip\zeropoint}}
 
 %D \macros
@@ -2534,25 +2548,32 @@
 %D an extra \type{\hbox} around the \type{\strutbox}.
 
 \def\definehspace
-  {\dodoubleargument\dodefinehspace}
+  {\dotripleempty\dodefinehspace}
 
-\def\dodefinehspace[#1][#2]%
-  {\setvalue{\??hs#1}{#2}}
+\def\dodefinehspace[#1][#2][#3]% #1 = optional namespace 
+  {\ifthirdargument
+     \setvalue{\??hs#1:#2}{#3}%
+   \else
+     \setvalue{\??hs:#1}{#2}%
+   \fi}
 
 \unexpanded\def\hspace
-  {\dosingleempty\dohspace}
+  {\dodoubleempty\dohspace}
 
-\def\dohspace[#1]%
+\def\dohspace[#1][#2]%
   {\ifhmode
      \removeunwantedspaces
      \hskip
-     \iffirstargument
-       \executeifdefined{\??hs#1}{#1}%
+     \ifsecondargument
+       \hspaceamount{#1}{#2}%
      \else
-       \getvalue{\??hs\s!default}%
-     \fi  
+       \hspaceamount\empty{\iffirstargument#1\else\s!default\fi}%
+     \fi
      \expandafter\ignorespaces
    \fi}  
+
+\def\hspaceamount#1#2%
+  {\executeifdefined{\??hs#1:#2}{\executeifdefined{\??hs:#2}\zeropoint}}
 
 \def\emspaceamount{\fontdimen6\font}
 \def\spaceamount  {\fontdimen2\font}
@@ -2561,7 +2582,7 @@
 \definehspace [\v!middel]  [.5\emspaceamount]
 \definehspace [\v!groot]   [1\emspaceamount]
 \definehspace [\v!normaal] [1\spaceamount] 
-\definehspace [\v!default] [\v!groot]
+\definehspace [\v!default] [\spaceamount]
 
 % Very nasty but needed for margin stuff inside colored 
 % paragraphs. 
@@ -2582,6 +2603,14 @@
          \fi
          \dostopgraphicgroup}}%
      \vbox}
+
+\def\flexiblespaceamount#1#2#3%
+         {#1\fontdimen2\font
+   \!!plus#2\fontdimen3\font
+  \!!minus#3\fontdimen4\font}
+
+\def\fixedspaceamount#1%
+         {#1\fontdimen2\font}
 
 \stelwitruimtein
   [\v!geen]
@@ -2633,5 +2662,5 @@
 
 \stelspatieringin
   [\v!opelkaar]
-
+
 \protect \endinput 

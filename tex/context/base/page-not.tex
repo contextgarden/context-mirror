@@ -1,0 +1,117 @@
+%D \module
+%D   [       file=page-not,
+%D        version=2002.4.16,
+%D          title=\CONTEXT\ Page Macros,
+%D       subtitle=Footnotes, 
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{Context Page Macros / Footnotes}
+
+%D Terrible hacks: we need to share save/restore 
+
+%D We've moved some footnote handling to a separate page 
+%D module. The macros below are used in the single and multi
+%D column page handlers and permit mixed usage of column and 
+%D page notes. 
+
+\unprotect 
+
+\installbackupinsertion\footins
+
+\def\checkbegincolumnfootnotes % should happen inside otr 
+  {\ifcleverfootnotes
+     \doflushfootnotes
+     \saveinsertionbox\footins
+   \else
+     \eraseinsertionbackup\footins
+   \fi
+   \saveinsertiondata\footins
+   \setupfootnotes}
+
+\def\checkendcolumnfootnotes
+  {\restoreinsertiondata\footins
+   \ifcleverfootnotes
+     \restoreinsertionbox\footins
+   \fi}
+
+\def\checksinglecolumnfootnotes
+  {\restoreinsertiondata\footins}
+
+\def\columnfootins % expands to an insert number 
+  {\ifcleverfootnotes
+     \backupinsertion\footins
+   \else
+     \footins
+   \fi}
+
+% wrong place 
+
+\newdimen\totalinsertionheight
+
+\def\settotalinsertionheight
+  {\totalinsertionheight\zeropoint
+   \doaddinsertionheight\topins       \to\totalinsertionheight
+   \doaddinsertionheight\botins       \to\totalinsertionheight
+   \doaddinsertionheight\columnfootins\to\totalinsertionheight}
+
+% also wrong place + wrong macro 
+
+\def\synchronizevsize
+  {\ifdim\ht\footins>\zeropoint % updates vsize 
+     \insert\footins{\unvbox\footins}%
+   \fi}
+
+% idem 
+
+\def\enablecolumnfootnotes
+  {\global\count\footins=1000
+   \global\skip\footins=1\baselineskip\relax}
+
+\def\disablecolumnfootnotes
+  {\global\count\footins=0
+   \global\skip\footins=\zeropoint}
+
+% also 
+
+\def\flushsavedcolumnfootnotes
+  {\insert\footins{\unvbox\OTRSETsavedfootnotes}}
+
+\def\savecolumnfootnotes
+  {\global\setbox\OTRSETsavedfootnotes=\vbox
+       {\unvbox\OTRSETsavedfootnotes\box\footins}}
+
+% hack 
+
+\def\savefootnotedimensions
+  {\edef\savedfootnotedimen{\the\dimen\footins}}
+
+\def\restorefootnotedimensions
+  {\dimen\footins\savedfootnotedimen}
+
+% hm 
+
+\installbackupinsertion\footins
+
+\def\checkbegincolumnfootnotes % should happen inside otr 
+  {\ifcleverfootnotes
+     \doflushfootnotes
+     \saveinsertionbox\footins
+   \else
+     \eraseinsertionbackup\footins
+   \fi
+   \saveinsertiondata\footins
+   \setupfootnotes}
+
+\def\checkendcolumnfootnotes
+  {\restoreinsertiondata\footins
+   \ifcleverfootnotes
+     \restoreinsertionbox\footins
+   \fi}
+ 
+\protect \endinput 

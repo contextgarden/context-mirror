@@ -2091,9 +2091,13 @@
 % van de + en pijlen. De +, en dus ook de pijlen, worden omhoog
 % gehaald. Dit oogt m.i. fraaier.
 
+\def\chemicalinnerclip#1%
+  {{\setbox0=\hbox{#1}\ht0\ht\strutbox\dp0\dp\strutbox\box0}}
+
 \def\chemicalraise#1#2%
-  {{\setbox0=\hbox{$#1+$}%
-    \raise\dp0\hbox{$#1#2$}}}
+  {\chemicalinnerclip
+     {\setbox0=\hbox{$#1+$}%
+      \raise\dp0\hbox{$#1#2$}}}
 
 \def\chemicalinnersign#1% todo: \@@chemicaltextcolor 
   {\chemicalraise{\@@localchemicalstyle}{#1}}
@@ -2105,13 +2109,14 @@
   {\chemicalraise{\@@localchemicalstyle}{\longrightarrow}}
 
 \def\chemicaldoubleinnerarrow#1#2% todo: \@@chemicaltextcolor 
-  {\lower.2ex\hbox
-     {\setbox0=\hbox{$\@@localchemicalstyle\longrightarrow$}%
-      \setbox2=\hbox{$\@@localchemicalstyle\longleftarrow$}%
-      \wd0=0pt\raise\ht0\box0\box2}}
+  {\chemicalinnerclip
+     {\lower.2ex\hbox
+        {\setbox0=\hbox{$\@@localchemicalstyle\longrightarrow$}%
+         \setbox2=\hbox{$\@@localchemicalstyle\longleftarrow$}%
+         \wd0=0pt\raise\ht0\box0\box2}}}
 
 \def\chemicaltwintipinnerarrow#1#2% todo: \@@chemicaltextcolor 
-  {\hbox
+  {\chemicalinnerclip
      {\setbox0=\hbox{\chemicalraise{\@@localchemicalstyle}{\longrightarrow}}%
       \setbox2=\hbox{\chemicalraise{\@@localchemicalstyle}{\longleftarrow}}%
       \wd0=0pt\box0\box2}}
@@ -2150,11 +2155,10 @@
 
 \def\chemicalinnermolecule#1#2#3% no mathop here, can generate space
   {\chemicalspace               % todo: \@@chemicaltextcolor
-   \bgroup
-   \dosetsubscripts
-   \hbox{$\@@dochemicalstyle{\@@localchemicalstyle\strut#1}$}%
-   \doresetsubscripts
-   \egroup
+   \chemicalinnerclip
+     {\dosetsubscripts
+      $\@@dochemicalstyle{\@@localchemicalstyle\strut#1}$%
+      \doresetsubscripts}%
    \chemicalspace}
 
 \def\chemicaloutermolecule#1#2#3%

@@ -155,7 +155,7 @@
 \def\vsmash  {\dosomesmash\vsmashbox\normalvbox}
 \def\hsmashed{\dosomesmash\smashbox \normalhbox}
 \def\vsmashed{\dosomesmash\smashbox \normalvbox}
-
+
 %D \macros 
 %D   {smash}
 %D
@@ -2234,6 +2234,20 @@
 
 \def\removelastskip% \ifvmode the plain tex one \fi
   {\ifvmode\ifdim\lastskip=\z@\else\vskip-\lastskip\fi\fi}
+
+%D \macros
+%D   {makestrutofbox}
+%D 
+%D This macro sets the dimensions of a box to those of a 
+%D strut. 
+
+\def\domakestrutofbox
+  {\ht\registercount\ht\strutbox
+   \dp\registercount\dp\strutbox
+   \wd\registercount\zeropoint}
+
+\def\makestrutofbox
+  {\afterassignment\domakestrutofbox\registercount}
 
 %D \macros
 %D   {raisebox,lowerbox}

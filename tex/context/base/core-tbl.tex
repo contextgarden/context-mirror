@@ -495,11 +495,11 @@
        {\copyparameters
           [\??tt#1::][\??tt\e!tabulate::]%
           [\c!afstand,\c!eenheid,\c!voor,\c!korps,\c!na,\c!binnen,\c!inspringen,
-           \c!uitlijnen,\c!lijnkleur,\c!lijndikte,EQ]}%
+           \c!marge,\c!uitlijnen,\c!lijnkleur,\c!lijndikte,EQ]}%
      \copyparameters
        [\??tt#1::#2][\??tt#1::]% 
        [\c!eenheid,\c!afstand,\c!voor,\c!korps,\c!na,\c!binnen,\c!inspringen,
-        \c!uitlijnen,\c!lijnkleur,\c!lijndikte,EQ]%
+        \c!marge,\c!uitlijnen,\c!lijnkleur,\c!lijndikte,EQ]%
      \setvalue{\e!start#1::#2}{\dofinalstarttabulate[#1][#2][#3]}%
      \setvalue{\e!start#1}{\bgroup\dosubstarttabulate[#1]}%
      \letvalue{\??tt#1\v!hoofd}\empty
@@ -521,15 +521,29 @@
 %      {\@EA\let\@EA\tabulatetailcontent\csname\??tt\currenttabulate\v!voet\endcsname}
 %      {\let\tabulatetailcontent\empty}}
 
+% \def\checkfulltabulatecontent
+%   {\doifdefinedelse{\??tt\currenttabulate\v!hoofd}
+%      {\@EA\let\@EA\tabulateheadcontent
+%         \csname\??tt\currenttabulate\v!hoofd\endcsname}
+%      {\let\tabulateheadcontent\empty}%
+%    \doifdefinedelse{\??tt\currenttabulate\v!voet}
+%      {\@EA\let\@EA\tabulatetailcontent
+%         \csname\??tt\currenttabulate\v!voet\endcsname}
+%      {\let\tabulatetailcontent\empty}}
+
 \def\checkfulltabulatecontent
-  {\doifdefinedelse{\??tt\currenttabulate\v!hoofd}
-     {\@EA\let\@EA\tabulateheadcontent
-        \csname\??tt\currenttabulate\v!hoofd\endcsname}
-     {\let\tabulateheadcontent\empty}%
-   \doifdefinedelse{\??tt\currenttabulate\v!voet}
-     {\@EA\let\@EA\tabulatetailcontent
-        \csname\??tt\currenttabulate\v!voet\endcsname}
-     {\let\tabulatetailcontent\empty}}
+  {\ifundefined{\??tt\currenttabulate\v!hoofd}%
+     \let\tabulateheadcontent\empty
+   \else
+     \@EA\let\@EA\tabulateheadcontent
+     \csname\??tt\currenttabulate\v!hoofd\endcsname
+   \fi
+   \ifundefined{\??tt\currenttabulate\v!voet}%
+     \let\tabulatetailcontent\empty
+   \else
+     \@EA\let\@EA\tabulatetailcontent
+       \csname\??tt\currenttabulate\v!voet\endcsname
+   \fi}
 
 \newconditional\tabulatesomeamble
 
@@ -641,8 +655,11 @@
 % 1 = RC column raw    RQ equal column raw   
 % 2 = HC column hook   HQ equal column hook 
 
+\newif\iftabulatefirstflushed
+
 \def\tabulateEQ%
-  {\getvalue{\??tt\currenttabulate EQ}\global\tabulateequalfalse} 
+  {\iftabulatefirstflushed\else\getvalue{\??tt\currenttabulate EQ}\fi
+   \global\tabulateequalfalse} 
 
 \def\tabulatenormalcolumn#1%
   {&\iftabulateequal\tabulateEQ\fi&\global\chardef\tabulatetype#1&}
@@ -730,6 +747,7 @@
    \def\NG{\NC\handletabulatecharalign}%
    \def\NR% next row
      {\doglobal\increment\noftabulatelines
+      \global\tabulatefirstflushedfalse
       \global\tabulateequalfalse
       \xdef\tabulatecolumn{0}%
       \resettabulatepheight
@@ -751,7 +769,13 @@
    \global\let\flushtabulated\empty
    \let\savedbar=|\let|=\nexttabulate
    \tabskip\zeropoint
+\ifdim\getvalue{\??tt\currenttabulate\c!marge}>\zeropoint
+   \!!toksa{&\hbox to \tabulateindent{}##%
+             \tabskip\getvalue{\??tt\currenttabulate\c!marge}\strut
+            &##\tabskip\zeropoint}%
+\else
    \!!toksa{&\hbox to \tabulateindent{}##\strut&##}%
+\fi
    \tabulatewidth\zeropoint
    |#1X|\relax
    \tabulatewidth\zeropoint
@@ -829,10 +853,11 @@
            \dorecurse\tabulatecolumns % was: \noftabcolumns
              {\ifvoid\csname\@@tabbox@@\recurselevel\endcsname\else
                 \gdef\flushtabulatedindeed{\the\tabulatedummy}%
-              \fi}}%
+              \fi}
+           \global\tabulatefirstflushedtrue}%
         \flushtabulatedindeed}%
    \else
-    % tabhook op alles ?
+     % tabhook op alles ?
      \def\bskip%
        {\vtop\bgroup
           \ifautotabulate\hsize\tabulatewidth\fi
@@ -920,6 +945,7 @@
    \c!na=\blanko,
    \c!afstand={\v!diepte,\v!middel},
    \c!uitlijnen=\v!normaal,
+   \c!marge=\!!zeropoint, 
    \c!inspringen=\v!nee]
 
 \protect \endinput

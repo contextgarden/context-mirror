@@ -116,17 +116,28 @@
 
   \beginETEX \fontcharwd
 
+    % division before multiplication, else overflow with "sa>5"
+
+    \newdimen\protrudethreshhold \protrudethreshhold=36pt
+
+    \def\redodefineprotrudefactor#1%
+      {\ifdim\fontdimen6\font>\protrudethreshhold
+         \divide\scratchdimen\fontdimen6\font
+         \multiply\scratchdimen\fontcharwd\prodfont#1\relax
+       \else
+         \multiply\scratchdimen\fontcharwd\prodfont#1\relax
+         \divide\scratchdimen\fontdimen6\font
+       \fi}
+
     \def\dododefineprotrudefactor#1#2#3%
       {\scratchdimen#2\lproddimen
        \ifembasedprotruding \else
-         \multiply\scratchdimen\fontcharwd\prodfont#1\relax
-         \divide\scratchdimen\fontdimen6\font
+         \redodefineprotrudefactor{#1}%
        \fi
        \lpcode\prodfont#1\scratchdimen 
        \scratchdimen#3\rproddimen
        \ifembasedprotruding \else
-         \multiply\scratchdimen\fontcharwd\prodfont#1\relax
-         \divide\scratchdimen\fontdimen6\font
+         \redodefineprotrudefactor{#1}%
        \fi
        \rpcode\prodfont#1\scratchdimen} 
 
@@ -136,18 +147,25 @@
 
     \ifx\undefined\charbox \newbox\charbox \fi 
 
+    \def\redodefineprotrudefactor
+      {\ifdim\fontdimen6\font>36pt
+         \divide\scratchdimen\fontdimen6\font
+         \multiply\scratchdimen\wd\charbox
+       \else
+         \multiply\scratchdimen\wd\charbox
+         \divide\scratchdimen\fontdimen6\font
+       \fi}
+
     \def\dododefineprotrudefactor#1#2#3%
       {\setbox\charbox{\prodfont\char#1}% ! yet untested !   
        \scratchdimen#2\lproddimen
        \ifembasedprotruding \else
-         \multiply\scratchdimen\wd\charbox
-         \divide\scratchdimen\fontdimen6\font
+         \redodefineprotrudefactor
        \fi
        \lpcode\prodfont#1\scratchdimen 
        \scratchdimen#3\rproddimen
        \ifembasedprotruding \else
-         \multiply\scratchdimen\wd\charbox
-         \divide\scratchdimen\fontdimen6\font
+         \redodefineprotrudefactor
        \fi
        \rpcode\prodfont#1\scratchdimen} 
  

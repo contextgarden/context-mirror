@@ -39,7 +39,7 @@
 %D taken into account in the pagebreak calculations. This kind
 %D of calculations are forced by using \type{\insert}.
 
-\ifx\footins\undefined \newinsert\footins \fi
+\installinsertion\footins
 
 %D \macros
 %D   {setupfootnotes,setupfootnotedefinition}
@@ -139,7 +139,6 @@
         \scratchcounter=1
       \else
         \scratchcounter=\@@vnn\relax
-       %\divide\count\footins by \scratchcounter
       \fi
       \global\endnotesfalse
       \global\bottomnotestrue
@@ -791,13 +790,6 @@
 %D \setupfootnotes[location={text,none}]
 %D \stoptypen 
 
-%\def\placefootnotesasnone#1% is grouped already 
-%  {\ifdim\ht#1>\zeropoint
-%     \@@vnvoor
-%     \setfootnotebodyfont \unvbox#1\endgraf
-%     \@@vnna 
-%   \fi}
-
 \def\placefootnotesasnone#1% is grouped already 
   {\ifdim\ht#1>\zeropoint
      \@@vnvoor
@@ -888,7 +880,7 @@
 %D \haalbuffer
 
 %D \macros
-%D   {placefootnotes}
+%D   {placefootnotes, fakefootnotes}
 %D
 %D We still have no decent command for placing footnotes
 %D somewhere else than at the bottom of the page (for which no
@@ -915,7 +907,32 @@
    \fi \fi
    \egroup}
 
-%D Now how can this mechanims be hooked into \CONTEXT\ without
+\def\fakefootnotes
+  {\ifhmode \endgraf \fi
+   \ifvmode 
+     \calculatefootnotevsize
+     \ifdim\footnotevsize>\zeropoint \kern\footnotevsize \fi
+   \fi}
+
+\newdimen\footnotevsize
+
+\def\calculatefootnotevsize
+  {\footnotevsize\zeropoint
+   \ifdim\ht\footins>\zeropoint
+     \advance\footnotevsize\ht\footins
+     \advance\footnotevsize\skip\footins
+   \fi}
+
+\newif\iffootnotespresent % global ?  
+
+\def\checkfootnotepresence
+  {\ifdim\ht\footins>\zeropoint     
+     \footnotespresenttrue
+   \else
+     \footnotespresentfalse
+   \fi}
+
+%D Now how can this mechanism be hooked into \CONTEXT\ without
 %D explictly postponing footnotes? The solution turned out to
 %D be rather simple:
 %D

@@ -8,8 +8,8 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
-%C details. 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
 
 \writestatus{loading}{Context Core Macros / Misc Commands}
 
@@ -50,17 +50,17 @@
 
 \unprotect
 
-%D \macros 
+%D \macros
 %D   {simplifiedcommands, simplifycommands}
 %D
 %D I first needed this simplification in bookmarks. Users can
-%D add their own if needed. 
+%D add their own if needed.
 
 \ifx\simplifiedcommands\undefined \newtoks\simplifiedcommands \fi
 
 \def\simplifycommands{\the\simplifiedcommands}
 
-%D A possibly growing list: 
+%D A possibly growing list:
 
 \appendtoks        \def\executesynonym#1#2#3#4{#3}\to\simplifiedcommands
 \appendtoks                              \def\ { }\to\simplifiedcommands
@@ -72,16 +72,16 @@
 \appendtoks                 \def\MetaPost{MetaFun}\to\simplifiedcommands
 \appendtoks                              \def||{-}\to\simplifiedcommands
 
-%D You would not expect the next macro in \CONTEXT, 
-%D wouldn't you? It's there to warn \LATEX\ users that 
-%D something is wrong. 
+%D You would not expect the next macro in \CONTEXT,
+%D wouldn't you? It's there to warn \LATEX\ users that
+%D something is wrong.
 
-\def\documentstyle% 
+\def\documentstyle%
   {\showmessage{\m!systems}{3}{}\stoptekst}
 
 \let\documentclass=\documentstyle
 
-% THIS WAS MAIN-002.TEX 
+% THIS WAS MAIN-002.TEX
 
 %\def\checkinterlineskip%
 %  {\ifvmode
@@ -128,7 +128,7 @@
      {\def\@@isbreedte{\hsize}}%
    \doifconversiondefinedelse{\@@issymbool}
      {\def\doitembullet##1{\convertnumber{\@@issymbool}{##1}}}
-     {\doifsymboldefinedelse{\@@issymbool} 
+     {\doifsymboldefinedelse{\@@issymbool}
         {\def\doitembullet##1{\symbol[\@@issymbool]}}{}}}
 
 \def\makeitemsandbullets#1%
@@ -636,89 +636,119 @@
    f%
    \egroup}
 
-% \newsignal\quotationsignal
-% \def\quotationskip{.125em}
-% 
-% \def\stelciterenin%
-%   {\dodoubleargument\getparameters[\??ci]}
-% 
-% \def\stelcitatenin%
-%   {\stelciterenin}
-% 
-% \def\dostartcitaat[#1]%
-%   {\bgroup
-%    \@@civoor
-%    \doifelsenothing{#1}
-%      {\let\dostopcitaat=\relax}
-%      {\startsmaller[#1]
-%       \let\dostopcitaat=\stopsmaller}%
-%    \dostartattributes\??ci\c!letter\c!kleur{}%
-%    \setbox0=\hbox{\getvalue{\??la\currentlanguage\c!leftquotation}}%
-%    \hskip-\wd0
-%    \box0\relax
-%    \ignorespaces}
-% 
-% \def\stopcitaat%
-%   {\unskip\hsmash{\getvalue{\??la\currentlanguage\c!rightquotation}}%
-%    \dostopattributes
-%    \dostopcitaat
-%    \@@cina
-%    \egroup}
-% 
-% \def\startcitaat%
-%   {\dosingleempty\dostartcitaat}
-% 
-% \def\dohandlequotation#1%
-%   {\ifdim\lastskip=\quotationsignal
-%      \unskip\hskip\quotationskip
-%    \fi
-% \ifhmode % else funny pagebeaks 
-%    \penalty\!!tenthousand\hskip\!!zeropoint      % == \prewordbreak
-% \fi
-%    \strut % new, needed below 
-%    \getvalue{\??la\currentlanguage#1}%
-%    \penalty\!!tenthousand\hskip\quotationsignal} % +- \prewordbreak
-% 
-% \unexpanded\def\citaat%
-%   {\groupedcommand
-%      {\dohandlequotation\c!leftquotation}
-%      {\dohandlequotation\c!rightquotation}}
-% 
-% \unexpanded\def\citeer%
-%   {\doifelse{\@@ciletter}{\v!normaal}
-%      {\let\next=\doquotedcite}
-%      {\let\next=\doattributedcite}%
-%    \next}
-% 
-% \def\doquotedcite%
-%   {\groupedcommand
-%      {\dohandlequotation\c!leftquote}
-%      {\dohandlequotation\c!rightquote}}
-% 
-% \def\doattributedcite%
-%   {\groupedcommand
-%      {\dostartattributes\??ci\c!letter\c!kleur}
-%      {\dostopattributes}}
-% 
-% % The previous one fails in \placefloat[left]{}{}, so instead
-% % we use the next alternative, where the first one is handled 
-% % outside group. Watch the strut. 
-% 
-% \unexpanded\def\citaat%
-%   {\dohandlequotation\c!leftquotation
-%    \groupedcommand{}{\dohandlequotation\c!rightquotation}}
-% 
-% \def\doquotedcite%
-%   {\dohandlequotation\c!leftquote
-%    \groupedcommand{}{\dohandlequotation\c!rightquote}}
-% 
-% \stelciterenin
-%   [\c!letter=\v!normaal,
-%    \c!kleur=,
-%    \c!voor=\startsmaller,
-%    \c!na=\stopsmaller]
+% actually this is pretty old, but temporary moved here
+
+\def\stelkoppeltekenin
+  {\dodoubleargument\getparameters[\??kp]}
+
+\stelkoppeltekenin
+  [\c!teken=\compoundhyphen]
+ 
+\definehspace [sentence]      [\zeropoint]
+\definehspace [intersentence] [.250em]
+
+\definesymbol
+  [\c!leftsentence]
+  [\languageparameter\c!leftsentence
+   \hskip\hspaceamount\currentlanguage{sentence}]
+
+\definesymbol
+  [\c!rightsentence]
+  [\hskip\hspaceamount\currentlanguage{sentence}%
+   \languageparameter\c!rightsentence]
+
+\definesymbol
+  [\c!leftsubsentence]
+  [\languageparameter\c!leftsubsentence
+   \hskip\hspaceamount\currentlanguage{sentence}]
+
+\definesymbol
+  [\c!rightsubsentence]
+  [\hskip\hspaceamount\currentlanguage{sentence}%
+   \languageparameter\c!rightsubsentence]
+
+\installdiscretionaries || \@@kpteken
+
+\newsignal\subsentencesignal
+\newcounter\subsentencelevel
+
+\def\beginofsubsentence%
+  {\ifdim\lastkern=\subsentencesignal
+     \unskip
+     \kern\hspaceamount\currentlanguage{intersentence}%
+   \fi
+   \doglobal\increment\subsentencelevel
+   \ifnum\subsentencelevel=1
+     \leaveoutervmode
+   \fi
+   \symbol[\ifodd\subsentencelevel\c!leftsentence   \else
+                                  \c!leftsubsentence\fi]%
+   \ignorespaces}
+
+\def\beginofsubsentencespacing%
+  {\kern\subsentencesignal\ignorespaces}
+
+\def\endofsubsentence%
+  {\symbol[\ifodd\subsentencelevel\c!rightsentence   \else
+                                  \c!rightsubsentence\fi]%
+   \doglobal\decrement\subsentencelevel
+   \unskip
+   \kern\subsentencesignal}
+
+\def\endofsubsentencespacing%
+  {\ifdim\lastkern=\subsentencesignal
+     \unskip
+     \hskip\hspaceamount\currentlanguage{intersentence}%
+     \ignorespaces
+   \else
+     \unskip
+   \fi}
+
+% test |<|test |<|test|>| test|>| test \par
+% test|<|test|<|test|>|test|>|test     \par
+% test |<||<|test|>||>| test           \par
+
+\enableactivediscretionaries
 
-\newsignal\quotationsignal \def\quotationskip{.125em}
+\definehspace [quotation]      [\zeropoint]
+\definehspace [interquotation] [.125em]
+
+\definesymbol
+  [\c!leftquotation] 
+  [\languageparameter\c!leftquotation
+   \hskip\hspaceamount\currentlanguage{quotation}]
+
+\definesymbol
+  [\c!rightquotation]
+  [\hskip\hspaceamount\currentlanguage{quotation}%
+   \languageparameter\c!rightquotation]
+
+\definesymbol
+  [\c!leftquote]     
+  [\languageparameter\c!leftquote
+   \hskip\hspaceamount\currentlanguage{quote}]
+
+\definesymbol
+  [\c!rightquote]    
+  [\hskip\hspaceamount\currentlanguage{quote}%
+   \languageparameter\c!rightquote]
+
+\definesymbol
+  [\c!leftspeech]   
+  [\languageparameter\c!leftspeech
+   \hskip\hspaceamount\currentlanguage{speech}]
+
+\definesymbol
+  [\c!rightspeech]   
+  [\hskip\hspaceamount\currentlanguage{speech}%
+   \languageparameter\c!rightspeech]
+
+\definesymbol
+  [\c!middlespeech]  
+  [\hspace\hspaceamount\currentlanguage{speech}% brr 
+   \languageparameter\c!middlespeech]
+
+\newsignal\quotationsignal
 
 \def\stelciterenin%
   {\dodoubleargument\getparameters[\??ci]}
@@ -730,15 +760,9 @@
   {\bgroup
    \dosingleempty\dostartcitaat}
 
-\def\leftquotation {\getvalue{\??la\currentlanguage\c!leftquotation }}
-\def\rightquotation{\getvalue{\??la\currentlanguage\c!rightquotation}}
-
-\def\leftquote     {\getvalue{\??la\currentlanguage\c!leftquote }}
-\def\rightquote    {\getvalue{\??la\currentlanguage\c!rightquote}}
-
 \def\leftquotationmark%
-  {\setbox\scratchbox=\hbox{\leftquotation}%
-   \doif{\@@ciplaats}{\v!marge}{\hskip-\wd\scratchbox}%
+  {\setbox\scratchbox\hbox{\leftquotation}%
+   \doif\@@ciplaats\v!marge{\hskip-\wd\scratchbox}%
    \box\scratchbox}
 
 \def\rightquotationmark%
@@ -765,16 +789,19 @@
 
 \def\dohandlequotation#1#2%
   {\ifdim\lastskip=\quotationsignal
-     \unskip\hskip\quotationskip 
+     \unskip\hskip\hspaceamount\currentlanguage{interquotation}%
    \else
      #2%
    \fi
-   \ifhmode % else funny pagebeaks 
+   \ifhmode % else funny pagebeaks
      \penalty\!!tenthousand\hskip\zeropoint      % == \prewordbreak
    \fi
-   \strut % new, needed below 
-   \getvalue{\??la\currentlanguage#1}%
+   \strut % new, needed below
+   \symbol[#1]%
    \penalty\!!tenthousand\hskip\quotationsignal} % +- \prewordbreak
+
+\def\handlequotation#1%
+  {\dohandlequotation{#1}\relax}
 
 \unexpanded\def\citaat%
   {\groupedcommand
@@ -798,8 +825,8 @@
      {\dostopattributes}}
 
 %D The previous one fails in \placefloat[left]{}{}, so instead
-%D we use the next alternative, where the first one is handled 
-%D outside group. Watch the strut. 
+%D we use the next alternative, where the first one is handled
+%D outside group. Watch the strut.
 
 \unexpanded\def\citaat%
   {\dohandlequotation\c!leftquotation\relax
@@ -822,13 +849,13 @@
 %D the low level quotation macros in such a way that a speech
 %D feature could be build on top of it. The speech opening and
 %D closing symbols are defined per language. Italian is an
-%D example of a language that has them set. 
+%D example of a language that has them set.
 
 \newcounter\speechlevel \newconditional\insidespeech
 
-\def\startspeech 
+\def\startspeech
   {\doglobal\increment\speechlevel\relax
-   \dohandlequotation\c!leftspeech\relax 
+   \dohandlequotation\c!leftspeech\relax
    \global\settrue\insidespeech
    \ignorespaces}
 
@@ -837,18 +864,18 @@
    \doglobal\decrement\speechlevel\relax
    \ifcase\speechlevel\relax \global\setfalse\insidespeech \fi}
 
-\def\dohandlespeech% indirect since called in everypar 
-  {\relax % still needed? 
+\def\dohandlespeech % indirect since called in everypar
+  {\relax % still needed?
    \ifcase\speechlevel\or\dodohandlespeech\fi}
 
-\def\dodohandlespeech%
+\def\dodohandlespeech
   {\ifconditional\insidespeech
-     \dohandlequotation\c!middlespeech\relax 
+     \dohandlequotation\c!middlespeech\relax
    \else
      \global\settrue\insidespeech
    \fi}
 
-\unexpanded\def\speech% 
+\unexpanded\def\speech
   {\doglobal\increment\speechlevel\relax
    \dohandlequotation\c!leftspeech\relax
    \groupedcommand
@@ -878,7 +905,6 @@
 \def\activiteit#1#2%
   {\sym{\tijdspan{#1}{#2}}}
 
-
 \def\dotoevoegen#1%
   {\def\next{#1}%
    \dorecurse{#1}{\inlinker{\next~+}\def\next{}\crlf}}
@@ -1099,7 +1125,7 @@
 
 \def\dokenmerk[#1]%
    {\noheaderandfooterlines
-    \bgroup  
+    \bgroup
     \getparameters
       [\??km]
       [\c!bet=\unknown,\c!dat=\unknown,\c!ken=\unknown,
@@ -1112,7 +1138,7 @@
     \assigntranslation[nl=datum,     en=date,     du=Datum,      sp=fecha]\to\@@@kmdat
     \assigntranslation[nl=kenmerk,   en=mark,     du=Kennzeichen,sp=]\to\@@@kmken
     %
-    \definetabulate[\s!dummy][|l|p|]    
+    \definetabulate[\s!dummy][|l|p|]
     \startdummy
       \NC\@@@kmbet\EQ\@@kmbet\NC\NR
       \NC\@@@kmdat\EQ\@@kmdat\NC\NR
@@ -1165,7 +1191,7 @@
    \c!boven=,
    \c!onder=\vfill]
 
-% THIS WAS MAIN-003.TEX 
+% THIS WAS MAIN-003.TEX
 
 \startmessages  dutch  library: systems
      41: externe file -- in groep -- bestaat niet
@@ -1224,7 +1250,7 @@
 % \def\mrm#1%
 %   {$\rm#1$}
 
-%D \macros 
+%D \macros
 %D   {definepairedbox, setuppairedbox, placepairedbox}
 %D
 %D Paired boxes, formally called legends, but from now on a
@@ -1232,17 +1258,17 @@
 %D typesetting some text alongside an illustration. Although
 %D there is quite some variation possible, the functionality is
 %D kept simple, if only because in most cases such pairs are
-%D typeset sober. 
-%D 
+%D typeset sober.
+%D
 %D The location specification accepts a pair, where the first
 %D keyword specifies the arrangement, and the second one the
-%D alignment. The first key of the location pair is one of 
-%D \type {left}, \type {right}, \type {top} or \type {bottom}, 
-%D while the second key can also be \type {middle}. 
+%D alignment. The first key of the location pair is one of
+%D \type {left}, \type {right}, \type {top} or \type {bottom},
+%D while the second key can also be \type {middle}.
 %D
-%D The first box is just collected in an horizontal box, but 
-%D the second one is a vertical box that gets passed the 
-%D bodyfont and alignment settings. 
+%D The first box is just collected in an horizontal box, but
+%D the second one is a vertical box that gets passed the
+%D bodyfont and alignment settings.
 
 %  \startbuffer[test]
 %  \test left   \test left,top    \test left,bottom  \test left,middle
@@ -1250,8 +1276,8 @@
 %  \test top    \test top,left    \test top,right    \test top,middle
 %  \test bottom \test bottom,left \test bottom,right \test bottom,middle
 %  \stopbuffer
-%  
-%  \def\showtest#1% 
+%
+%  \def\showtest#1%
 %    {\pagina
 %     \typebuffer[demo]
 %     \def\test##1
@@ -1263,65 +1289,65 @@
 %          {#1}
 %        \stoplinecorrection}
 %     \getbuffer[test]}
-%  
+%
 %  \startbuffer[demo]
 %  \setuplegend
 %    [width=\hsize,maxwidth=\makeupwidth,
 %     height=\vsize,maxheight=\makeupheight]
 %  \stopbuffer
-%  
+%
 %  \showtest{These examples demonstrate the default settings.}
-%  
+%
 %  \startbuffer[demo]
 %  \setuplegend
 %    [width=\textwidth,
 %     maxwidth=\textwidth]
 %  \stopbuffer
-%  
+%
 %  \showtest{\input tufte }
-%  
+%
 %  \startbuffer[demo]
 %  \setuplegend
 %    [width=.65\textwidth]
 %  \stopbuffer
-%  
+%
 %  \showtest{\input knuth }
-%  
+%
 %  \startbuffer[demo]
 %  \setuplegend
 %    [height=2cm]
 %  \stopbuffer
-%  
+%
 %  \showtest{These examples demonstrate some other settings.}
-%  
+%
 %  \startbuffer[demo]
 %  \setuplegend
 %    [width=.65\textwidth,
 %     height=2cm]
 %  \stopbuffer
-%  
+%
 %  \showtest{These examples demonstrate some other settings.}
-%  
+%
 %  \startbuffer[demo]
 %  \setuplegend
 %    [n=2,align=right,width=.5\textwidth]
 %  \stopbuffer
-%  
+%
 %  \showtest{\input zapf }
 
-%D \macros 
+%D \macros
 %D   {setuplegend, placelegend}
 %D
-%D It makes sense to typeset a legend to a figure in \TEX\ 
+%D It makes sense to typeset a legend to a figure in \TEX\
 %D and not in a drawing package. The macro \type {\placelegend}
 %D combines a figure (or something else) and its legend. This
 %D command is just a paired box.
 %D
-%D The legend is placed according to \type {location}, being 
+%D The legend is placed according to \type {location}, being
 %D \type {bottom} or \type {right}. The macro macro is used as
-%D follows. 
+%D follows.
 %D
-%D \starttypen 
+%D \starttypen
 %D \placefigure
 %D   {whow}
 %D   {\placelegend
@@ -1331,7 +1357,7 @@
 %D       \NC 2 \NC legs \NC \NR
 %D       \NC 3 \NC tail \NC \NR
 %D       \stoptabulation}}
-%D 
+%D
 %D \placefigure
 %D   {whow}
 %D   {\placelegend
@@ -1340,7 +1366,7 @@
 %D       \NC 1 \NC head \NC 3 \NC tail \NC \NR
 %D       \NC 2 \NC legs \NC   \NC      \NC \NR
 %D       \stoptabulation}}
-%D 
+%D
 %D \placefigure
 %D   {whow}
 %D   {\placelegend[n=2]
@@ -1350,33 +1376,33 @@
 %D       \NC 2 \NC legs \NC \NR
 %D       \NC 3 \NC tail \NC \NR
 %D       \stoptabulation}}
-%D 
+%D
 %D \placefigure
 %D   {whow}
 %D   {\placelegend[n=2]
 %D      {\externalfigure[cow]}
 %D      {head \par legs \par tail}}
-%D 
+%D
 %D \placefigure
 %D   {whow}
 %D   {\placelegend[n=2]
 %D      {\externalfigure[cow]}
 %D      {\startitemize[packed]
-%D       \item head \item legs \item  tail \item belly \item horns 
+%D       \item head \item legs \item  tail \item belly \item horns
 %D       \stopitemize}}
-%D 
+%D
 %D \placefigure
 %D   {whow}
 %D   {\placelegend[n=2,width=.8\hsize]
 %D      {\externalfigure[cow]}
 %D      {\startitemize[packed]
-%D       \item head \item legs \item  tail \item belly \item horns 
+%D       \item head \item legs \item  tail \item belly \item horns
 %D       \stopitemize}}
-%D \stoptypen 
+%D \stoptypen
 
 % \def\setuplegend%
 %   {\dodoubleargument\getparameters[\??ld]}
-% 
+%
 % \setuplegend
 %   [\c!n=1,
 %    \c!afstand=1em,
@@ -1385,15 +1411,15 @@
 %    \c!hoogte=\vsize,
 %    \c!korps=,
 %    \c!plaats=\v!onder]
-% 
+%
 % \def\placelegend%
 %   {\bgroup
 %    \dosingleempty\doplacelegend}
-% 
+%
 % \def\doplacelegend[#1]% watch the hsize/vsize tricks
-%   {\setuplegend[#1]%  % and don't change them 
+%   {\setuplegend[#1]%  % and don't change them
 %    \dowithnextbox
-%      {\switchtobodyfont[\@@ldkorps]% split under same regime  
+%      {\switchtobodyfont[\@@ldkorps]% split under same regime
 %       \scratchdimen=\wd\nextbox
 %       \doifelse{\@@ldplaats}{\v!rechts}
 %         {\vsize=\ht\nextbox
@@ -1435,8 +1461,8 @@
 %            \let\next=}
 %    \hbox}
 
-\newbox\firstpairedbox 
-\newbox\secondpairedbox 
+\newbox\firstpairedbox
+\newbox\secondpairedbox
 
 \def\definepairedbox%
   {\dodoubleempty\dodefinepairedbox}
@@ -1466,12 +1492,12 @@
 \def\dosetuppairedbox[#1]%
   {\getparameters[\??ld#1]}
 
-\def\placepairedbox% 
+\def\placepairedbox%
   {\bgroup\dodoubleempty\doplacepairedbox}
 
 \def\doplacepairedbox[#1][#2]% watch the hsize/vsize tricks
-  {\setuppairedbox[#1][#2]%     % and don't change them 
-   \copyparameters 
+  {\setuppairedbox[#1][#2]%     % and don't change them
+   \copyparameters
      [\??ld][\??ld#1]
      [\c!n,\c!afstand,\c!tussen,\c!voor,\c!na,
       \c!breedte,\c!hoogte,\c!maxbreedte,\c!maxhoogte,
@@ -1490,17 +1516,17 @@
    \hbox}
 
 \def\beforefirstpairedbox%
-  {\chardef\pairedlocationa=1 % left 
+  {\chardef\pairedlocationa=1 % left
    \chardef\pairedlocationb=4 % middle
    \getfromcommacommand[\@@ldplaats][1]%
-   \processaction 
+   \processaction
      [\commalistelement]
      [ \v!links=>\chardef\pairedlocationa=0,
       \v!rechts=>\chardef\pairedlocationa=1,
        \v!boven=>\chardef\pairedlocationa=2,
        \v!onder=>\chardef\pairedlocationa=3]%
    \getfromcommacommand[\@@ldplaats][2]%
-   \processaction 
+   \processaction
      [\commalistelement]
      [ \v!links=>\chardef\pairedlocationb=0,
       \v!rechts=>\chardef\pairedlocationb=1,
@@ -1511,10 +1537,10 @@
       \v!midden=>\chardef\pairedlocationb=4]}
 
 \def\betweenbothpairedboxes%
-  {\switchtobodyfont[\@@ldkorps]% split under same regime  
+  {\switchtobodyfont[\@@ldkorps]% split under same regime
    \setbox\firstpairedbox=\box\nextbox
    \ifnum\pairedlocationa<2
-     \hsize\wd\firstpairedbox % trick 
+     \hsize\wd\firstpairedbox % trick
      \hsize=\@@ldbreedte
      \scratchdimen=\wd\firstpairedbox
      \advance\scratchdimen by \@@ldafstand
@@ -1527,7 +1553,7 @@
        \egroup
      \fi
    \else
-     \hsize\wd\firstpairedbox 
+     \hsize\wd\firstpairedbox
      \hsize\@@ldbreedte % can be \hsize
      \ifdim\hsize>\@@ldmaxbreedte\relax \hsize=\@@ldmaxbreedte \fi % can be \hsize
    \fi
@@ -1538,16 +1564,16 @@
 \def\afterbothpairedboxes%
   {\setbox\secondpairedbox=\vbox
      {\ifnum\@@ldn>1 \rigidcolumnbalance\nextbox \else \box\nextbox \fi}%
-   \ifnum\pairedlocationa<2\hbox\else\vbox\fi\bgroup % hide vsize 
+   \ifnum\pairedlocationa<2\hbox\else\vbox\fi\bgroup % hide vsize
    \forgetall
-   \ifnum\pairedlocationa<2 
+   \ifnum\pairedlocationa<2
      \scratchdimen=\maxoftwoboxdimens\ht\firstpairedbox\secondpairedbox
-     \vsize=\scratchdimen 
+     \vsize=\scratchdimen
      \ifdim\scratchdimen<\@@ldhoogte\relax % can be \vsize
-       \scratchdimen=\@@ldhoogte 
+       \scratchdimen=\@@ldhoogte
      \fi
      \ifdim\scratchdimen>\@@ldmaxhoogte\relax
-       \scratchdimen=\@@ldmaxhoogte 
+       \scratchdimen=\@@ldmaxhoogte
      \fi
      \valignpairedbox\firstpairedbox \scratchdimen
      \valignpairedbox\secondpairedbox\scratchdimen
@@ -1558,10 +1584,10 @@
      \scratchdimen=\ht\secondpairedbox
      \vsize=\scratchdimen
      \ifdim\ht\secondpairedbox<\@@ldhoogte\relax % can be \vsize
-       \scratchdimen=\@@ldhoogte\relax % \relax needed 
+       \scratchdimen=\@@ldhoogte\relax % \relax needed
      \fi
      \ifdim\scratchdimen>\@@ldmaxhoogte\relax % todo: totale hoogte
-       \scratchdimen=\@@ldmaxhoogte\relax % \relax needed 
+       \scratchdimen=\@@ldmaxhoogte\relax % \relax needed
      \fi
      \ifdim\scratchdimen>\ht\secondpairedbox
        \setbox\secondpairedbox\vbox to \scratchdimen
@@ -1642,7 +1668,7 @@
         \def\next%
           {\futurelet\nexttoken\nextnext}
         \def\nextnext%
-          {\ifx\nexttoken\egroup \else % the next box is empty  
+          {\ifx\nexttoken\egroup \else % the next box is empty
              \hsize\wd0
              \steluitlijnenin[\@@couitlijnen]
              \bgroup
@@ -1799,11 +1825,11 @@
    \vbox to #1\nextbox
      {#2\relax
       \hbox to #4\nextbox
-        {#5\relax % \number removes leading spaces too 
+        {#5\relax % \number removes leading spaces too
          \edef\@@rorotatie{\number\@@rorotatie}%
          \doifelsenothing{\@@rorotatie}
            {\dostartrotation{90}}
-           {\dostartrotation{\@@rorotatie}}% 
+           {\dostartrotation{\@@rorotatie}}%
          \wd\nextbox=\!!zeropoint
          \ht\nextbox=\!!zeropoint
          \box\nextbox
@@ -1859,16 +1885,16 @@
 
 % schaal
 
-\def\doscalelikeafigure%
+\def\doscalelikeafigure
   {\doifsomething{\@@xyfactor\@@xyschaal\@@xyhfactor\@@xybreedte\@@xyhoogte}
      {\let \@@efschaal \@@xyschaal
       \let \@@effactor \@@xyfactor
-      \let \@@efbfactor\@@xybfactor 
+      \let \@@efbfactor\@@xybfactor
       \let \@@efhfactor\@@xyhfactor
       \let \@@efbreedte\@@xybreedte
       \let \@@efhoogte \@@xyhoogte
       \let \@@epx      \!!zeropoint
-      \let \@@epy      \!!zeropoint   
+      \let \@@epy      \!!zeropoint
       \edef\@@epw     {\the\wd\nextbox}%
       \edef\@@eph     {\the\ht\nextbox}%
       \setfactorfiguresize
@@ -1876,10 +1902,10 @@
       \setdimensionfiguresize
       \convertfigureinsertscale\@@epx\figx\figxsca\scax
       \convertfigureinsertscale\@@epy\figy\figysca\scay
-      \scratchdimen=\scax pt \divide\scratchdimen by 100 
+      \scratchdimen=\scax pt \divide\scratchdimen by 100
       \edef\@@xysx{\withoutpt\the\scratchdimen}%
-      \scratchdimen=\scay pt \divide\scratchdimen by 100 
-      \edef\@@xysy{\withoutpt\the\scratchdimen}}}   
+      \scratchdimen=\scay pt \divide\scratchdimen by 100
+      \edef\@@xysy{\withoutpt\the\scratchdimen}}}
 
 \def\doschaal[#1]%
   {\bgroup
@@ -1895,7 +1921,7 @@
       \dimen0=\@@xysy\ht\nextbox
       \dimen2=\@@xysy\dp\nextbox
       \dimen4=\@@xysx\wd\nextbox
-      \dimen6=\dimen0\advance\dimen6 by \dimen2 
+      \dimen6=\dimen0\advance\dimen6 by \dimen2
       \setbox\nextbox=\vbox to \dimen6
         {\ht\nextbox=\zeropoint
          \dp\nextbox=\zeropoint
@@ -1933,8 +1959,10 @@
 %
 %\spiegel{\ruledhbox{\copy0 \schaal{\box0}}}
 
-% verdelen \hsize in fracties, wordt nog wat algemener, 
-% beetje vaag nu 
+% to be used in some other places! todo!
+%
+% verdelen \hsize in fracties, wordt nog wat algemener,
+% beetje vaag nu
 %
 % \fractie[n/m,elementen,afstand]
 %
@@ -1951,20 +1979,20 @@
 
 \def\dodofractie[#1/#2,#3,#4,#5]%
   {\doifelsenothing{#3}
-     {\doifelse{\@@frn}{\v!passend}
-        {\!!counta=#2\relax}
-        {\!!counta=\@@frn\relax}}
-     {\!!counta=#3\relax}%
+     {\doifelse\@@frn\v!passend
+        {\!!counta#2\relax}
+        {\!!counta\@@frn\relax}}
+     {\!!counta#3\relax}%
    \doifelsenothing{#4}
-     {\doifelse{\@@frafstand}{\v!passend}
-        {\!!widtha=\!!zeropoint}
-        {\!!widtha=\@@frafstand}}
-     {\!!widtha=#4}%
-   \advance\!!counta by -1\relax
-   \multiply\!!widtha by \!!counta
-   \advance\hsize by -\!!widtha
-   \divide\hsize by #2\relax
-   \hsize=#1\hsize}
+     {\doifelse\@@frafstand\v!passend
+        {\!!widtha\zeropoint}
+        {\!!widtha\@@frafstand}}
+     {\!!widtha#4}%
+   \advance\!!counta -1\relax
+   \multiply\!!widtha \!!counta
+   \advance\hsize -\!!widtha
+   \divide\hsize #2\relax
+   \hsize#1\hsize}
 
 \def\dofractie[#1]%
   {\dodofractie[#1,,,,,,]}
@@ -1975,5 +2003,78 @@
 \stelfractiesin
   [\c!afstand=\tfskipsize,
    \c!n=\v!passend]
+
+%D This one is for Daniel Pittman, who wanted tight
+%D fractions. We show three versions. First the simple
+%D one using \type {\low} and \type {high}:
+%D
+%D \startbuffer
+%D \def\vfrac#1#2%
+%D   {\hbox{\high{\tx#1\kern-.25em}/\low{\kern-.25em\tx#2}}}
+%D
+%D test \vfrac{1}{2} test \vfrac{123}{456} test
+%D \stopbuffer
+%D
+%D \typebuffer {\showmakeup\haalbuffer}
+%D
+%D A better way to handle the kerning is the following, here
+%D we kind of assume that tye slash is symmetrical and has
+%D nearly zero width.
+%D
+%D \startbuffer
+%D \def\vfract#1#2%
+%D   {\hbox{\high{\tx#1}\hbox to \zeropoint{\hss/\hss}\low{\tx#2}}}
+%D \stopbuffer
+%D
+%D \typebuffer {\showmakeup\haalbuffer}
+%D
+%D The third and best alternative is the following:
+%D
+%D {\showmakeup\haalbuffer}\crlf\haalbuffer
+%D
+%D This time we measure the height of the \type {/} and
+%D shift over the maximum height and depths of this
+%D character and the fractional digits (we use 57 as
+%D sample). Here we combine all methods in one macros.
+
+\chardef\vulgarfractionmethod=3
+
+\definehspace[vulgarfraction][.25em] % [.15em]
+\definesymbol[vulgarfraction][/]     % [\raise.2ex\hbox{/}]
+
+\def\vulgarfraction#1#2%
+  {\dontleavehmode
+   \hbox
+     {\def\vulgarfraction{vulgarfraction}%
+      \ifcase\vulgarfractionmethod
+        #1\symbol[\vulgarfraction]#2%
+      \or
+        \high{\tx#1\kern-\hspaceamount\empty\vulgarfraction}%
+        \symbol[\vulgarfraction]%
+        \low {\kern-\hspaceamount\empty\vulgarfraction\tx#2}%
+      \or
+        \high{\tx#1}%
+        \hbox to \zeropoint{\hss\symbol[\vulgarfraction]\hss}%
+        \low{\tx#2}%
+      \or
+        \setbox0\hbox{\symbol[\vulgarfraction]}%
+        \setbox2\hbox{\txx57}%
+        \raise\ht0\hbox{\lower\ht2\hbox{\txx#1}}%
+        \hbox to \zeropoint{\hss\symbol[\vulgarfraction]\hss}%
+        \lower\dp0\hbox{\raise\dp2\hbox{\txx#2}}%
+      \fi}}
+
+\ifx\vfrac\undefined \let\vfrac\vulgarfraction \fi
+
+%D \starttabulate
+%D \HL
+%D \NC \bf method \NC \bf visualization \NC\NR
+%D \HL
+%D \NC 0 \NC \chardef\vulgarfractionmethod0\vulgarfraction{1}{2} \NC\NR
+%D \NC 1 \NC \chardef\vulgarfractionmethod1\vulgarfraction{1}{2} \NC\NR
+%D \NC 2 \NC \chardef\vulgarfractionmethod2\vulgarfraction{1}{2} \NC\NR
+%D \NC 3 \NC \chardef\vulgarfractionmethod3\vulgarfraction{1}{2} \NC\NR
+%D \HL
+%D \stoptabulate
 
 \protect \endinput

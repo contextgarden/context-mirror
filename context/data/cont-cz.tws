@@ -1653,6 +1653,7 @@ var:radky:*cislo::
 var:mrizka:ano,ne::
 var:bottomspace:*cislo::
 var:cutspace:*cislo::
+var:textdistance:*cislo::
 stopsetup
 
 startsetup
@@ -1676,8 +1677,8 @@ stopsetup
 
 startsetup
 com:premistinamrizku:
-typ:val/:
-val:vrsek,obe,spodek,-vrsek,-obe,-spodek, vysoko,nastred,nizko,stranka,standardni,zadny, siroky,prizpusobive:standardni:
+typ:vals/:
+val:vrsek,obe,spodek,-vrsek,-obe,-spodek, vysoko,nastred,nizko,stranka,zadny,standardni, siroky,prizpusobive,podlehloubky,radek,*dimenze:standardni:
 stopsetup
 
 startsetup
@@ -2309,6 +2310,7 @@ var:prefix:+,-,*text::
 var:umistihlavicku:ano,ne::
 var:zvysujicicislo:ano,ne,*soubor::
 var:zarovnani:vlevo,vpravo,normalni,siroky::
+var:zarovnejtitul:ano,ne::
 var:tolerance:velmistriktni,striktni,tolerantni,velmitolerantni,natahnout::
 var:odsadpristi:ano,ne::
 var:soubor:*jmeno::
@@ -2666,7 +2668,7 @@ typ:vars/vals/:
 var:d:*cislo::
 var:m:*cislo::
 var:y:*cislo::
-val:den,mesic,vsedniden,rok, dd,mm,jj,yy,d,m,j,y,znacka:den,mesic,rok:
+val:den,den+,mesic,vsedniden,rok, dd,dd+,mm,jj,yy,d,d+,m,j,y,znacka:den,mesic,rok:
 stopsetup
 
 startsetup
@@ -2953,7 +2955,11 @@ typ:val/vars/:
 val:*jmeno::
 var:vyska:*dimenze::
 var:sirka:*dimenze::
+var:maxvyska:*dimenze::
+var:maxsirka:*dimenze::
+var:implicitni:*jmeno::
 var:hranicestranky:*seznam::
+var:misto:vlevo,nastred,vpravo::
 ivr:nastavoramovani::
 stopsetup
 
@@ -3796,8 +3802,8 @@ var:vyska:*dimenze::
 var:barva:*jmeno::
 var:titul:*text::
 var:mezera:ano,ne::
-var:symbol:normalni,Novy,Bublinka,Pridavek,Napoveda,Odstavec,Klavesa::
-var:volba:max::
+var:symbol:normalni, Novy,Bublinka,Pridavek,Napoveda,Odstavec,Klavesa, *jmeno::
+var:volba:max,buffer::
 stopsetup
 
 startsetup

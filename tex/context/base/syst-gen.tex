@@ -162,32 +162,68 @@
 
 \chardef\protectionthreshold=2
 
+% \def\unprotect
+%   {\ifcase\protectionlevel
+%      \edef\doprotectcharacters%
+%        {\catcode`\noexpand @=\the\catcode`@
+%         \catcode`\noexpand !=\the\catcode`!
+%         \catcode`\noexpand ?=\the\catcode`? }%
+%      \let\protect\doprotect
+%    \fi
+%    \catcode`@=11
+%    \catcode`!=11
+%    \catcode`?=11
+%    \advance\protectionlevel 1
+%    \ifnum\protectionlevel>\protectionthreshold
+%      \message{<unprotect \the\protectionlevel>}%
+%    \fi}
+% 
+% \def\doprotect%
+%   {\ifnum\protectionlevel=1
+%      \doprotectcharacters
+%      \let\doprotectcharacters\relax
+%      \let\protect\normalprotect
+%    \fi
+%    \ifnum\protectionlevel>\protectionthreshold
+%      \message{<protect \the\protectionlevel>}%
+%    \fi
+%    \advance\protectionlevel -1 }
+
+\def\saveprotectedcharacters
+  {\edef\doprotectcharacters
+     {\catcode`\noexpand @\the\catcode`@
+      \catcode`\noexpand !\the\catcode`!
+      \catcode`\noexpand ?\the\catcode`? }}
+
+\def\setprotectedcharacters
+  {\catcode`@=11
+   \catcode`!=11
+   \catcode`?=11 }
+
 \def\unprotect
   {\ifcase\protectionlevel
-     \edef\doprotectcharacters%
-       {\catcode`\noexpand @=\the\catcode`@
-        \catcode`\noexpand !=\the\catcode`!
-        \catcode`\noexpand ?=\the\catcode`? }%
+     \saveprotectedcharacters
      \let\protect\doprotect
    \fi
-   \catcode`@=11
-   \catcode`!=11
-   \catcode`?=11
+   \setprotectedcharacters
    \advance\protectionlevel 1
-   \ifnum\protectionlevel>\protectionthreshold
-     \message{<unprotect \the\protectionlevel>}%
+   \ifnum\protectionlevel>\protectionthreshold 
+     \reportunprotection 
    \fi}
 
-\def\doprotect%
-  {\ifnum\protectionlevel=1
+\def\doprotect
+  {\ifcase\protectionlevel\or
      \doprotectcharacters
      \let\doprotectcharacters\relax
      \let\protect\normalprotect
    \fi
    \ifnum\protectionlevel>\protectionthreshold
-     \message{<protect \the\protectionlevel>}%
+     \reportprotection 
    \fi
    \advance\protectionlevel -1 }
+
+\def\reportunprotection{\message{<unprotect \the\protectionlevel>}}
+\def\reportprotection  {\message{<protect   \the\protectionlevel>}}
 
 \ifx\everyeof\undefined 
 
@@ -204,6 +240,14 @@
 %D macro.
 
 \unprotect
+
+%D So, now we can redefine a previously defined macro as 
+%D follows:  
+
+\def\setprotectedcharacters
+  {\catcode`@\@@letter
+   \catcode`!\@@letter
+   \catcode`?\@@letter}
 
 %D \macros
 %D   {@@escape,@@begingroup,@@endgroup,@@mathshift,@@alignment,

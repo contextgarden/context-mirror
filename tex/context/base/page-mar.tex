@@ -65,14 +65,16 @@
    \forgetall % added, else problems with 'center' and nested itemize
    \mindermeldingen
    \hsize#1\relax
-   \ifnum\margetekstnummer=0
-     \def\margetekstnummer{#2}%
-   \fi
-\doifnumberelse{\margetekstnummer}
-  {\ifnum\margetekstnummer>25 % to be translated 
-     \writestatus{\m!systems}{potential margin stack overflow (\margetekstnummer)}%
-   \fi}
-  {}%
+   \doifnumberelse\margetekstnummer
+     {\ifcase\margetekstnummer\relax
+        \def\margetekstnummer{#2}%
+      \fi}
+     {}%
+   \doifnumberelse\margetekstnummer
+     {\ifnum\margetekstnummer>25 % to be translated 
+       \writestatus{\m!systems}{potential margin stack overflow (\margetekstnummer)}%
+     \fi}
+     {}% 
    \processaction
      [\getvalue{\??im\margetekstnummer\c!uitlijnen}]
      [     \v!ja=>\setvalue{\??im\margetekstnummer\c!uitlijnen}{#2},
@@ -224,6 +226,7 @@
 
 \def\dodoinmarge[#1][#2][#3][#4][#5]#6%
   {\ignorespaces
+   \bgroup\postponefootnotes % group is (somehow) needed
    \doifinsetelse{\v!laag}{#4}
      {\lowinmargintrue}
      {\lowinmarginfalse}%
@@ -239,6 +242,7 @@
                     #2{#6}%
                   \fi]%
    \rawpagereference{\s!mar}{#5}%
+   \flushfootnotes\egroup % don't forget the group 
    \ignorespaces}
 
 \def\inlinker%

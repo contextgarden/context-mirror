@@ -37,7 +37,7 @@
         {\setbox0=\hbox{\hskip-\maxdimen\getobject{SYM}{#1}}%
          \smashbox0\box0}}}
 
-\def\presetfieldsymbols[#1]%
+\def\presetfieldsymbols[#1]% slow 
   {\def\dopresetfieldsymbols##1%
      {\processcommalist[##1]\dopresetfieldsymbol}%
    \@EA\processcommalist\@EA[#1]\dopresetfieldsymbols}

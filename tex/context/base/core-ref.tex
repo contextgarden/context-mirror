@@ -198,9 +198,10 @@
 %D different alphabet and needs accented entries in registers.
 
 \appendtoks
-  \def\dohandleaccent #1#2{\string#1\string#2}%
-  \def\dohandlecommand  #1{\string#1}%
-\to\everyreference
+ %\def\dohandleaccent #1#2{\string#1\string#2}%
+ %\def\dohandlecommand  #1{\string#1}%
+  \cleanupfeatures 
+\to \everyreference
 
 %D Why do we have to write down references? \TEX, and therefore
 %D \CONTEXT\ is a batch processing system. During the
@@ -1242,6 +1243,73 @@
 %    \@EA\dodoifreferencefoundelse\@EA{\primaryreference}{#2}{#3}%
 %    \doresetgotowhereever} % to prevent problems with direct goto's
 
+% \def\doifreferencefoundelse#1#2#3% REF \cs
+%   {\checkreferences
+%    \bgroup
+%      \the\everyreference
+%      \let\referenceprefix\empty
+%      \expandreferences{#1}%
+%    \egroup
+%    \doresetgotowhereever
+%    \global\nofsecondaryreferences 0
+%    \ifcase\nofexpandedreferences\relax % #1 can be number -)
+%      % no ref
+%    \or
+%      % one ref
+%    \or
+%      % two refs
+%      \ifenablereferencechains \iflocation
+%        \global\secondaryreferencetrue
+%        \xdef\secondaryreference{\csname REF::2\endcsname}%
+%        \bgroup
+%          \let\unharmedreferenceprefix\referenceprefix
+%          %\bgroup
+%            \dodoifreferencefoundelse\secondaryreference
+%            \global\nofsecondaryreferences 1
+%            \ifreferencefound
+%              #2%
+%            \else
+%              \dostartnoto#3\dostopnoto
+%            \fi
+%          %\egroup
+%        \egroup
+%      \fi \fi
+%    \else
+%      % more than two refs
+%      \ifenablereferencechains \iflocation
+%        \global\secondaryreferencetrue
+%        \scratchcounter2
+%        \loop
+%          \xdef\secondaryreference{\csname REF::\number\scratchcounter\endcsname}%
+%          \bgroup
+%            \let\unharmedreferenceprefix\referenceprefix
+%            %\bgroup
+%              \dodoifreferencefoundelse\secondaryreference
+%              \global\advance\nofsecondaryreferences 1
+%              \ifreferencefound
+%                #2%
+%              \else
+%                \global\advance\nofsecondaryreferences -1
+%                \dostartnoto#3\dostopnoto
+%              \fi
+%            %\egroup
+%          \egroup
+%          \ifnum\scratchcounter<\nofexpandedreferences\relax
+%            \advance\scratchcounter 1
+%        \repeat
+%      \fi \fi
+%    \fi
+%    \global\secondaryreferencefalse
+%    \xdef\primaryreference{\csname REF::1\endcsname}%
+%    \bgroup
+%      \let\unharmedreferenceprefix\referenceprefix
+%      %\bgroup
+%        \dodoifreferencefoundelse\primaryreference
+%        \ifreferencefound#2\else#3\fi
+%      %\egroup
+%    \egroup
+%    \doresetgotowhereever} % to prevent problems with direct goto's
+
 \def\doifreferencefoundelse#1#2#3% REF \cs
   {\checkreferences
    \bgroup
@@ -1261,16 +1329,15 @@
        \global\secondaryreferencetrue
        \xdef\secondaryreference{\csname REF::2\endcsname}%
        \bgroup
+%%\let\doifreferencefoundelse\localdoifreferencefoundelse
          \let\unharmedreferenceprefix\referenceprefix
-         %\bgroup
-           \dodoifreferencefoundelse\secondaryreference
+         \dodoifreferencefoundelse\secondaryreference
+         \ifreferencefound
            \global\nofsecondaryreferences 1
-           \ifreferencefound
-             #2%
-           \else
-             \dostartnoto#3\dostopnoto
-           \fi
-         %\egroup
+           #2%
+         \else
+           \dostartnoto#3\dostopnoto
+         \fi
        \egroup
      \fi \fi
    \else
@@ -1281,17 +1348,15 @@
        \loop
          \xdef\secondaryreference{\csname REF::\number\scratchcounter\endcsname}%
          \bgroup
+%%\let\doifreferencefoundelse\localdoifreferencefoundelse
            \let\unharmedreferenceprefix\referenceprefix
-           %\bgroup
-             \dodoifreferencefoundelse\secondaryreference
+           \dodoifreferencefoundelse\secondaryreference
+           \ifreferencefound
              \global\advance\nofsecondaryreferences 1
-             \ifreferencefound
-               #2%
-             \else
-               \global\advance\nofsecondaryreferences -1
-               \dostartnoto#3\dostopnoto
-             \fi
-           %\egroup
+             #2%
+           \else
+             \dostartnoto#3\dostopnoto
+           \fi
          \egroup
          \ifnum\scratchcounter<\nofexpandedreferences\relax
            \advance\scratchcounter 1
@@ -1301,13 +1366,23 @@
    \global\secondaryreferencefalse
    \xdef\primaryreference{\csname REF::1\endcsname}%
    \bgroup
+%%\let\doifreferencefoundelse\localdoifreferencefoundelse
      \let\unharmedreferenceprefix\referenceprefix
-     %\bgroup
-       \dodoifreferencefoundelse\primaryreference
-       \ifreferencefound#2\else#3\fi
-     %\egroup
+     \dodoifreferencefoundelse\primaryreference
+     \ifreferencefound#2\else#3\fi
    \egroup
    \doresetgotowhereever} % to prevent problems with direct goto's
+
+%D The following local redefinition permits the usage of 
+%D nested \type {\doifreferencefoundelse}; see for an 
+%D example the local test for file|/|url references. This is
+%D a fuzzy part of this mechanism and a result of the choice
+%D to let speed prevail over beauty in resolving chained 
+%D references with symbolic (defined) references. 
+
+\def\localdoifreferencefoundelse#1#2#3%
+  {\dodoifreferencefoundelse{#1}%
+   \ifreferencefound#2\else#3\fi}
 
 %D Somewhere else we will properly define \type {\dostartgoto};
 %D the noto alternative takes care of undefined references in
@@ -1547,11 +1622,11 @@
      {\currentreferencespecial::\currentreferenceoperation}%
 %   \doifdefinedelse{\s!do\v!test\currentreferencespecial}
 %     {\getvalue{\s!do\v!test\currentreferencespecial}%
-%        {\global\referencefoundtrue}
+%        {\global\referencefoundtrue}%
 %        {\global\referencefoundfalse}}
 %     {\global\referencefoundtrue}%
-   \executeifdefined{\s!do\v!test\currentreferencespecial}
-     {\global\referencefoundtrue\gobbletwoarguments}
+   \executeifdefined{\s!do\v!test\currentreferencespecial}%
+     {\global\referencefoundtrue\gobbletwoarguments}%
      {\global\referencefoundtrue}{\global\referencefoundfalse}%
 %   \ifcsname\s!do\v!test\currentreferencespecial\endcsname
 %     \csname\s!do\v!test\currentreferencespecial\endcsname
@@ -1565,7 +1640,9 @@
 %D file and, when enabled, in the left margin of the text.
 
 \def\reportreferenceerror#1#2%
-  {\ifvoorlopig\ifinpagebody\else
+  {\bgroup
+   \the\everyreference % cleanup : etc in french 
+   \ifvoorlopig\ifinpagebody\else
      \doifsomething{#2}
        {\inlinker
           {\infofont
@@ -1576,7 +1653,8 @@
    \doifpredefinedreferenceelse
      {}
      {\predefinereference
-      \showmessage{\m!references}{#1}{[\unharmedreferenceprefix][#2]}}}
+      \showmessage{\m!references}{#1}{[\unharmedreferenceprefix][#2]}}%
+   \egroup}
 
 \def\unknownreference{\reportreferenceerror1}
 \def\illegalreference{\reportreferenceerror4}
@@ -2890,16 +2968,16 @@
 %D
 %D The fastest implementation would be:
 
-\definespecialtest\v!file    {\setfalse\forceURLlocation\handlespecialFILEandURL}
-\definespecialtest\v!URL     {\settrue \forceURLlocation\handlespecialFILEandURL}
-\definespecialtest\v!url     {\settrue \forceURLlocation\handlespecialFILEandURL}
+\definespecialtest\v!file{\setfalse\forceURLlocation\handlespecialFILEandURL}
+\definespecialtest\v!URL {\settrue \forceURLlocation\handlespecialFILEandURL}
+\definespecialtest\v!url {\settrue \forceURLlocation\handlespecialFILEandURL}
 
 \definespeciallocation\v!file{\setfalse\forceURLlocation\handlespecialallocationFILEandURL}
 \definespeciallocation\v!URL {\settrue \forceURLlocation\handlespecialallocationFILEandURL}
 \definespeciallocation\v!url {\settrue \forceURLlocation\handlespecialallocationFILEandURL}
 
 \def\handlespecialFILEandURL%
-  {\doifreferencefoundelse
+  {\localdoifreferencefoundelse
      {\currentreferenceoperation::\currentreferencearguments}}
 
 \def\handlespecialallocationFILEandURL
@@ -2922,7 +3000,7 @@
 %D An better alternative, slower but error aware, is
 
 \definespecialtest\v!actie
-  {\doifreferencefoundelse\currentreferenceoperation}
+  {\localdoifreferencefoundelse\currentreferenceoperation}
 
 \definespeciallocation\v!actie
   {\handleexecreference}
