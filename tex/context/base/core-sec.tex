@@ -1089,14 +1089,6 @@
   {\xdef\@@kolevel{\getvalue{\??se\@@sectie\c!level}}%
    \nobreak}
 
-%\def\dolocalheadsetup#1%  koppeling met standaard kopcommando / engels
-%  {\forgetall
-%   \doifvaluesomething{\??ko#1\c!uitlijnen}
-%     {\ExpandFirstAfter\setupalign[\getvalue{\??ko#1\c!uitlijnen}]}%
-%   \doifvaluesomething{\??ko#1\c!tolerantie}
-%     {\ExpandFirstAfter\setuptolerance[\getvalue{\??ko#1\c!tolerantie}]}%
-%   \def\\{\crlf\strut\ignorespaces}}
-
 \def\dolocalheadsetup#1%  koppeling met standaard kopcommando / engels
   {\forgetall         %  traag dus ...
    \doifvaluesomething{\??ko#1\c!align} % wordt al expanded in spa

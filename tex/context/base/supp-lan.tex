@@ -409,14 +409,30 @@
 
 \chardef\activehackcode=`~
 
-\def\defineactivecharacter #1 %
-  {\scratchcounter\the\uccode\activehackcode
+% \def\defineactivecharacter #1 %
+%   {\scratchcounter\the\uccode\activehackcode
+%    \uccode\activehackcode\expandafter\doifnumberelse
+%      \expandafter{\string#1}\empty`#1%
+%    \catcode\uccode\activehackcode\@@active
+%    \uppercase{\def\next{~}}%
+%    \uccode\activehackcode\scratchcounter
+%    \expandafter\def\next}% unexpanded goes wrong in pdfdoc
+
+%D But ...
+
+\def\defineactivecharacter #1 #2%
+  {\scratchcounter\uccode\activehackcode
    \uccode\activehackcode\expandafter\doifnumberelse
      \expandafter{\string#1}\empty`#1%
    \catcode\uccode\activehackcode\@@active
    \uppercase{\def\next{~}}%
    \uccode\activehackcode\scratchcounter
-   \expandafter\def\next}% unexpanded goes wrong in pdfdoc
+   % unexpanded goes wrong in pdfdoc
+   \@EA\@EA\@EA\def\@EA\next\@EA{\@EA\dohandleactivecharacter\next{#2}}}
+
+\let\dohandleactivecharacter\secondoftwoarguments
+
+\def\donthandleactivecharacter#1#2{\noexpand#1}
 
 %D A goody:
 

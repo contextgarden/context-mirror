@@ -187,13 +187,15 @@
 
     function set_request (command,option) {
         exa_command = command ;
-        if (option == "") {
+        if (exa_command == "") {
+            exa_option = option ;
+        } else { if (option == "") {
             exa_option = "" ;
         } else { if (option.indexOf("--")<0) {
             exa_option = "--action=" + option ;
         } else {
             exa_option = option ;
-        } }
+        } } }
     }
 
     function assemble_request ( ) {

@@ -1863,32 +1863,32 @@
 %
 % \def\dostarttextbackgroundpar
 %   {\endgraf % new
-%    \getvalue{\??td\currenttextbackground\c!voor}%
+%    \getvalue{\??td\currenttextbackground\c!before}%
 %    \noindent\fpos\currentparbackground\ignorespaces
 %    \bgroup
 %    \nobreak \vskip-\lineheight \nobreak
-%    \doassignsomeskip\getvalue{\??td\currenttextbackground\c!bovenoffset}\to\scratchskip
+%    \doassignsomeskip\getvalue{\??td\currenttextbackground\c!topoffset}\to\scratchskip
 %    \kern\scratchskip\nobreak
-%    \dosetleftskipadaption{\getvalue{\??td\currenttextbackground\c!linkeroffset}}%
+%    \dosetleftskipadaption{\getvalue{\??td\currenttextbackground\c!leftoffset}}%
 %    \advance\leftskip\leftskipadaption
-%    \dosetleftskipadaption{\getvalue{\??td\currenttextbackground\c!rechteroffset}}%
+%    \dosetleftskipadaption{\getvalue{\??td\currenttextbackground\c!rightoffset}}%
 %    \advance\rightskip\leftskipadaption
-%    \dostartattributes{\??td\currenttextbackground}\c!letter\c!kleur{}%
-%    \geenwitruimte
+%    \dostartattributes{\??td\currenttextbackground}\c!style\c!color{}%
+%    \nowhitespace
 %    \seteffectivehsize
 %    \par}
 %
 % \def\dostoptextbackgroundpar
 %   {\par
 %    \dostopattributes
-%    \doassignsomeskip\getvalue{\??td\currenttextbackground\c!onderoffset}\to\scratchskip
+%    \doassignsomeskip\getvalue{\??td\currenttextbackground\c!bottomoffset}\to\scratchskip
 %    \kern\scratchskip\nobreak
 %    \nobreak \vskip-\lineheight \nobreak
-%    \geenwitruimte
+%    \nowhitespace
 %    \egroup
 %    \nobreak \noindent \strut \hfill \kern\zeropoint \tpos\currentparbackground
 %    \endgraf % new
-%    \getvalue{\??td\currenttextbackground\c!na}}
+%    \getvalue{\??td\currenttextbackground\c!after}}
 
 \def\dostarttextbackgroundpar
   {\endgraf % new

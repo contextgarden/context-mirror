@@ -713,8 +713,8 @@
 %      \!!doneafalse
 %    \fi
 %    \if!!donea
-%      \ifcase\csname\??am\??am\csname#1\c!zelfdepagina\endcsname\endcsname\relax
-%        \copycsname#1\c!kleur\endcsname\csname#1\c!contrastkleur\endcsname
+%      \ifcase\csname\??am\??am\csname#1\c!samepage\endcsname\endcsname\relax
+%        \copycsname#1\c!color\endcsname\csname#1\c!contrastkleur\endcsname
 %        \@EAEAEA\dosetlocationboxyes
 %      \or
 %        \@EAEAEA\dosetlocationboxempty
@@ -729,7 +729,7 @@
 %
 % \def\setlocationboxnop#1%
 %   {\locationclickfalse
-%    \ifcase\csname\??am\??am\csname#1\c!onbekendeverwijzing\endcsname\endcsname\relax
+%    \ifcase\csname\??am\??am\csname#1\c!unknownreference\endcsname\endcsname\relax
 %      \@EA\dosetlocationboxyes
 %    \or
 %      \@EA\dosetlocationboxempty
@@ -741,14 +741,14 @@
 %
 % \def\setlocationbox#1[#2]#3[#4]%
 %   {\bgroup % really needed !
-%    \edef\permittedreferences{\csname#1\c!blokkade\endcsname}%
+%    \edef\permittedreferences{\csname#1\c!obstruction\endcsname}%
 %    \doifreferencepermittedelse{#4}
 %      {\setlocationboxyes{#1}[#2]{#3}[#4]}
 %      {\setlocationboxnop{#1}[#2]{#3}[#4]}%
 %    \egroup}
 %
 % \def\setlocationboxraw#1[#2]#3[#4]%
-%   {\localframed[#1][#2]{\dolocationattributes{#1}\c!letter\c!kleur{#3}}}
+%   {\localframed[#1][#2]{\dolocationattributes{#1}\c!style\c!color{#3}}}
 
 \def\setlocationboxyes#1[#2]#3[#4]%
   {\locationclicktrue
@@ -2243,45 +2243,45 @@
          \struttedbox{\tbox{\dodocomment{#3}}\hss}}}%
    \ignorespaces}
 
-% \startcommentaar
+% \startcomment
 %   hello beautiful\\world
-% \stopcommentaar
+% \stopcomment
 %
-% \startcommentaar[hallo]
+% \startcomment[hello]
 %   hello << \'e\'erste >>
 %   beautiful
 %   world
-% \stopcommentaar
+% \stopcomment
 %
-% \startcommentaar[hallo][kleur=groen,breedte=4cm,hoogte=3cm]
+% \startcomment[hello][color=green,width=4cm,height=3cm]
 %   hello \leftguillemot\ \'e\'erste \rightguillemot\
 %   beautiful
 %   world
 % \stopcommentaar
 %
-% \startcommentaar[hallo][kleur=groen,breedte=4cm,hoogte=3cm]
+% \startcomment[hello][color=green,width=4cm,height=3cm]
 %   hello \leftguillemot\ \'e\'erste \rightguillemot\ test
 %
 %   beautiful
 %
 %   world
-% \stopcommentaar
+% \stopcomment
 %
-% \startcommentaar[symbool=Balloon]
+% \startcomment[symbol=Balloon]
 %   Do we want this kind of rubish? And, why isn't this and
 %   some more features related to text annotations so poorly
 %   (actually not) documented? Anyhow, by providing this
 %   functionality we demonstrate that \pdfTeX\ can do it. By
 %   the way, it's funny that when in Acrobat we scale up the
 %   text, the symbols scale down.
-% \stopcommentaar
+% \stopcomment
 
-% \definesymbol [comment-normal][{\externalfigure[koe.pdf]}]
-% \definesymbol [comment-down]  [{\externalfigure[koe.pdf]}]
+% \definesymbol [comment-normal][{\externalfigure[cow.pdf]}]
+% \definesymbol [comment-down]  [{\externalfigure[cow.pdf]}]
 %
 % \def\CowSymbol#1#2%
 %  {\scale
-%     [\c!hoogte=#1]
+%     [\c!height=#1]
 %     {\startMPcode
 %        loadfigure "koe.mp" number 1 ;
 %        refill currentpicture withcolor #2 ;
@@ -2294,8 +2294,8 @@
 %   [\CowSymbol{4ex}{green}]
 %
 % \setupcomment
-%   [\c!symbool={comment-normal,comment-down},
-%    \c!optie=\v!buffer]
+%   [\c!symbol={comment-normal,comment-down},
+%    \c!option=\v!buffer]
 %
 % \setupfootertexts[\placecomments]
 

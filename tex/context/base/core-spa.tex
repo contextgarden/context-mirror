@@ -1081,7 +1081,7 @@
 
 \defineblank [\s!default] [\v!white]
 \defineblank [\v!height]  [\strutheight]
-\defineblank [\v!depth]  [\strutdepth]
+\defineblank [\v!depth]   [\strutdepth]
 
 \let\currentindentation=\empty
 
@@ -2347,14 +2347,14 @@
 \def\dosetraggedhbox#1%
   {\processaction % slow
      [#1]
-     [   \v!left=>\def\raggedbox{\doregelplaats\v!left  },
-        \v!right=>\def\raggedbox{\doregelplaats\v!right },
-       \v!middle=>\def\raggedbox{\doregelplaats\v!middle},
-        \v!inner=>\def\raggedbox{\doregelplaats\v!inner },
-        \v!outer=>\def\raggedbox{\doregelplaats\v!outer },
-    \v!flushleft=>\def\raggedbox{\doregelplaats\v!right },
-   \v!flushright=>\def\raggedbox{\doregelplaats\v!left  },
-       \v!center=>\def\raggedbox{\doregelplaats\v!middle},
+     [   \v!left=>\def\raggedbox{\doalignedline\v!left  },
+        \v!right=>\def\raggedbox{\doalignedline\v!right },
+       \v!middle=>\def\raggedbox{\doalignedline\v!middle},
+        \v!inner=>\def\raggedbox{\doalignedline\v!inner },
+        \v!outer=>\def\raggedbox{\doalignedline\v!outer },
+    \v!flushleft=>\def\raggedbox{\doalignedline\v!right },
+   \v!flushright=>\def\raggedbox{\doalignedline\v!left  },
+       \v!center=>\def\raggedbox{\doalignedline\v!middle},
        \v!normal=>\let\raggedbox\hbox,
       \s!default=>\let\raggedbox\hbox,
       \s!unknown=>\let\raggedbox\hbox]}
@@ -2363,8 +2363,8 @@
   {\expanded{\dodosetraggedcommand{#1}}}
 
 \def\dodosetraggedcommand#1% beware: #1=empty is ignored, keep that!
-  {\let\raggedcommand\relax
-   \let\raggedtopcommand\empty
+  {\let\raggedcommand      \relax
+   \let\raggedtopcommand   \empty
    \let\raggedbottomcommand\empty
    \chardef\raggedoneliner\zerocount
    \doifsomething{#1}
@@ -3495,7 +3495,7 @@
 \letvalue{\s!do\v!line\v!flushright}\leftaligned
 \letvalue{\s!do\v!line\v!center    }\midaligned
 
-\def\doregelplaats#1{\csname\s!do\v!line#1\endcsname}
+\def\doalignedline#1{\csname\s!do\v!line#1\endcsname}
 
 %D Experimental:
 
@@ -3556,7 +3556,7 @@
 
 %D Better:
 
-\def\doregelplaats#1{\csname\s!do\v!line#1\endcsname}
+\def\doalignedline#1{\csname\s!do\v!line#1\endcsname}
 
 \def\alignedline#1#2% setting default
   {\csname
@@ -3564,7 +3564,7 @@
      \ifundefined{\s!do\v!line#1}#2\else#1\fi
    \endcsname}
 
-% \def\doregelplaats#1%
+% \def\doalignedline#1%
 %   {\alignedline{#1}\v!links}
 
 %D ...
@@ -4129,10 +4129,10 @@
   [\v!standard,
    \v!big]
 
-\defineblank[\v!default] [\currentblanko]
-\defineblank[\v!before]    [\v!default]
-\defineblank[\v!inbetween]  [\v!default]
-\defineblank[\v!after]      [\v!before]
+\defineblank[\v!default]  [\currentblanko]
+\defineblank[\v!before]   [\v!default]
+\defineblank[\v!inbetween][\v!default]
+\defineblank[\v!after]    [\v!before]
 
 \setupinterlinespace
   [\c!minheight=0pt, % only special purpose

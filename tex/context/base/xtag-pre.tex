@@ -156,6 +156,14 @@
   {\executeifdefined{XMLcdatamethod\number\XMLcdatamethod}{\begingroup\processXMLcdata}}
 
 %D \starttyping
+%D <!ELEMENT ...">
+%D <!ATTLIST ...">
+%D \stoptyping
+
+\defineXMLescape [ATTLIST]{\gobbleuntil>}
+\defineXMLescape [ELEMENT]{\gobbleuntil>}
+
+%D \starttyping
 %D <!ENTITY crap "very new [&#x7B;] crap">
 %D <!ENTITY crap SYSTEM "crapfile.xml">
 %D <!ENTITY crap SYSTEM "crapfile.pdf" NDATA ignoredanyway>

@@ -291,17 +291,10 @@
 %D problems; somehow \type {\numexpr} cannot look beyond this
 %D sign, and expects a number.
 
-\def\utfunichar #1%
-  {{\tttf U\low{\unicodenumber{#1}}}}
-
-\def\utfunisplit#1%
-  {{\tttf U\low{\unicodepair{#1}}}}
-
-\def\utfuniboth #1%
-  {{\tttf U\low{\unicodenumber{#1\relax}->\unicodepair{#1}}}}
-
-\def\utfunientity #1%
-  {{\tttf\&\#\unicodehexnumber{#1};}}
+\def\utfunichar   #1{{\tttf U\low{\unicodenumber{#1}}}}
+\def\utfunisplit  #1{{\tttf U\low{\unicodepair{#1}}}}
+\def\utfuniboth   #1{{\tttf U\low{\unicodenumber{#1\relax}->\unicodepair{#1}}}}
+\def\utfunientity #1{{\tttf\&\#\unicodehexnumber{#1};}}
 
 %D The character itself is accessed and typeset by:
 %D

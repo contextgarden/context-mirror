@@ -96,22 +96,6 @@
 %D (On the 824 pages maps bibliography runtime went down from
 %D 309 to 299 seconds.)
 
-% \def\checkbackground#1%
-%   {\edef\!!stringe{\??ma#1}%
-%    \doifelsevaluenothing{\!!stringe\c!achtergrond   }
-%   {\doifelsevaluenothing{\!!stringe\c!voorgrondkleur}
-%          {\doifelsevalue{\!!stringe\c!kader       }\v!aan\!!doneatrue
-%          {\doifelsevalue{\!!stringe\c!linkerkader }\v!aan\!!doneatrue
-%          {\doifelsevalue{\!!stringe\c!rechterkader}\v!aan\!!doneatrue
-%          {\doifelsevalue{\!!stringe\c!bovenkader  }\v!aan\!!doneatrue
-%          {\doifelsevalue{\!!stringe\c!onderkader  }\v!aan\!!doneatrue
-%                                                          \!!doneafalse}}}}}
-%                                                          \!!doneatrue}
-%                                                          \!!doneatrue
-%    \if!!donea
-%      \expandafter\setusage\else\expandafter\resetusage
-%    \fi{\??ma#1}}
-
 \def\checkbackground#1%
   {\edef\!!stringe{\??ma#1}%
    \doifelsevaluenothing{\!!stringe\c!background   }

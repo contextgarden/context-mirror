@@ -316,9 +316,7 @@
      {\@EA\handleTBLcell\celltag[#1]{#3}}}
 
 \long\def\parseTH[#1]#2\eTH
-  {\parseTD
-     [#1,\c!color=\tbltblheadcolor,\c!style=\tbltblheadstyle,%
-      \c!aligncharacter=\v!no]#2\eTD}
+  {\parseTD[#1,\c!color=\tbltblheadcolor,\c!style=\tbltblheadstyle,\c!aligncharacter=\v!no]#2\eTD}
 
 %D new
 
@@ -337,17 +335,10 @@
 \long\def\bTABLEbody{\dosingleempty\doTABLEbody}
 \long\def\bTABLEfoot{\dosingleempty\doTABLEfoot}
 
-\long\def\doTABLEhead[#1]#2\eTABLEhead
-  {\appendtoks\doTABLEsection[#1]{#2}\to\TBLhead}
-
-\long\def\doTABLEnext[#1]#2\eTABLEnext
-  {\appendtoks\doTABLEsection[#1]{#2}\to\TBLnext}
-
-\long\def\doTABLEbody[#1]#2\eTABLEbody
-  {\appendtoks\doTABLEsection[#1]{#2}\to\TBLbody}
-
-\long\def\doTABLEfoot[#1]#2\eTABLEfoot
-  {\appendtoks\doTABLEsection[#1]{#2}\to\TBLfoot}
+\long\def\doTABLEhead[#1]#2\eTABLEhead{\appendtoks\doTABLEsection[#1]{#2}\to\TBLhead}
+\long\def\doTABLEnext[#1]#2\eTABLEnext{\appendtoks\doTABLEsection[#1]{#2}\to\TBLnext}
+\long\def\doTABLEbody[#1]#2\eTABLEbody{\appendtoks\doTABLEsection[#1]{#2}\to\TBLbody}
+\long\def\doTABLEfoot[#1]#2\eTABLEfoot{\appendtoks\doTABLEsection[#1]{#2}\to\TBLfoot}
 
 \long\def\doTABLEsection[#1]#2%
   {\def\setupTBLsection{\getparameters[\@@tbl\@@tbl][#1]}%
@@ -1129,8 +1120,7 @@
    \bgroup
    \localframed
      [\@@tbl\@@tbl]
-     [#3,\c!width=\widthTBL,
-      \c!background=,\c!frame=\v!off]% 25% faster
+     [#3,\c!width=\widthTBL,\c!background=,\c!frame=\v!off]% 25% faster
      {\bTBLCELL\TBLcharalign{#2}{#4}\eTBLCELL}%
    \egroup}
 

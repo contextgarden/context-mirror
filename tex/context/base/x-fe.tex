@@ -50,7 +50,7 @@
 
 \defineXMLcommand
   [fe:definefontsynonym]
-  [name=,file,encoding=]
+  [name=,file=,encoding=]
   {\doifelsenothing{\XMLop{encoding}}
      {\expanded{\definefontsynonym[\XMLop{name}][\XMLop{file}][encoding=\XMLop{encoding}]}}
      {\expanded{\definefontsynonym[\XMLop{name}][\XMLop{file}]}}}

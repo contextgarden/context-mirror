@@ -61,7 +61,7 @@
 \unprotect
 
 \definesorting [flowchart] [flowcharts] [\v!none] % no access
-\setupsorting    [flowchart] [\c!state=\v!stop]    % off by default
+\setupsorting  [flowchart] [\c!state=\v!stop]     % off by default
 
 \def\@FLOW@{@FLOW@}
 \def\@FLOC@{@FLOC@}
@@ -133,6 +133,13 @@
    % convenience commands
    \let\locate     \doFLOWlocate
    \let\connect    \doFLOWconnect}
+
+\let\FLOWcell       \s!unknown
+\let\FLOWshape      \s!unknown
+\let\FLOWdestination\s!unknown
+\let\FLOWfocus      \s!unknown
+\let\FLOWoverlay    \empty
+\let\FLOWtext       \empty
 
 \def\doFLOWname#1%
   {\def\FLOWcell{#1}\setFLOWname\FLOWname{name_#1}\ignorespaces}
@@ -288,9 +295,9 @@
    \increment(\includeFLOWy,0\FLOWiy)\decrement\includeFLOWy
    \def\dodoincludeFLOWchart##1%
      {\doifdefined{\@FLOW@-##1}
-        {\pushmacro\dohandleflowchart
+        {\globalpushmacro\dohandleflowchart % was local
          \gdef\dohandleflowchart[####1][####2]%
-           {\popmacro\dohandleflowchart
+           {\globalpopmacro\dohandleflowchart % was local
             \resetFLOWlocation
             \processFLOWbuffer{####1}}%
          \getvalue{\@FLOW@-##1}}}%
@@ -382,7 +389,7 @@
    \insidefloattrue
    \forgetall
    \dontcomplain
-   \offinterlineskip
+   % \offinterlineskip % we now explicitly use \nointerlineskip later on
    \def\dohandleflowchart[##1][##2]%
      {\def\currentFLOWnumber{##1}%
       \getparameters[\@@FLOW][##2]}%
@@ -400,8 +407,8 @@
    \ifcase\@@FLOWny\relax \let\@@FLOWny\FLOWheight \fi
    \doifnothing{\@@FLOWmaxwidth\@@FLOWmaxheight}{\FLOWscalingfalse}%
    \ifFLOWscaling
-     \doifnothing{\@@FLOWmaxwidth}{\let\@@FLOWmaxwidth\maxdimen}%
-     \doifnothing{\@@FLOWmaxheight} {\let\@@FLOWmaxheight \maxdimen}%
+     \doifnothing{\@@FLOWmaxwidth }{\let\@@FLOWmaxwidth \maxdimen}%
+     \doifnothing{\@@FLOWmaxheight}{\let\@@FLOWmaxheight\maxdimen}%
      \scratchcounter=\bodyfontpoints
      \doloop  % NOG FONTSWITCH OM EX EN EM TE LATEN WERKEN
        {\ifnum\scratchcounter>1 % NU DIMENSIONS IN TERMS OF BODYFONTSIZE
@@ -432,7 +439,7 @@
         \fi}%
      \expanded{\switchtobodyfont[\the\scratchcounter pt]}%
      \forgetall
-     \offinterlineskip
+     % \offinterlineskip % needed ?
    \else\ifx\@@FLOWbodyfont\empty\else
      \expanded{\switchtobodyfont[\@@FLOWbodyfont]}% \expanded ?
    \fi\fi
@@ -472,7 +479,7 @@
      [\@@FLOWoffset]
      [      \v!none=>\scratchdimen=-2.5\scratchdimen,
          \v!overlay=>\scratchdimen=-2.5\scratchdimen,
-       \v!standard=>\scratchdimen=\scratchdimen,
+        \v!standard=>\scratchdimen=\scratchdimen,
          \s!unknown=>\scratchdimen=\@@FLOWoffset,
          \s!default=>\scratchdimen=-2.5\scratchdimen]%
    \edef\@@FLOW@@offset{\the\scratchdimen}%
@@ -589,7 +596,8 @@
             \c!unit=pt,\c!location=\v!middle]}%
       \wd6\wd0\ht6\ht0\dp6\dp0
       \setbox8\vbox
-        {\forgetall\offinterlineskip
+        {\forgetall
+         \offinterlineskip
          \vskip\@@FLOW@@offset
          \dostepwiserecurse\@@FLOWy\@@FLOWny\plusone
            {\vbox to \FLOWgridheight
@@ -812,31 +820,78 @@
    \egroup
    \ignorespaces}
 
-\def\doprocessFLOWcellD#1,#2\end  % kan ook met area
-  {\!!counta=#1\relax
-   \!!countb=#2\relax
-   \!!countc=\@@FLOWx
-   \!!countd=\@@FLOWy
+% pass D
+
+\def\dophaseoneFLOWcellX#1#2%
+  {\!!counta#1\relax
+   \!!countb#2\relax
+   \!!countc\@@FLOWx
+   \!!countd\@@FLOWy
    \advance\!!countc \@@FLOWnx
    \advance\!!countd \@@FLOWny
-   \advance\!!countc -1
-   \advance\!!countd -1
+   \advance\!!countc \minusone
+   \advance\!!countd \minusone
         \ifnum\!!counta<\@@FLOWx\relax  \donefalse
    \else\ifnum\!!counta>\!!countc       \donefalse
    \else\ifnum\!!countb<\@@FLOWy\relax  \donefalse
    \else\ifnum\!!countb>\!!countd       \donefalse
    \else                                \donetrue
+   \fi\fi\fi\fi}
+
+\def\dophasetwoFLOWcellX
+  {\advance\!!counta -\@@FLOWx
+   \advance\!!counta \plusone
+   \advance\!!countb -\@@FLOWy
+   \advance\!!countb \plusone
+   \dimen0=\FLOWgridwidth
+   \dimen0=\!!counta\dimen0
+   \advance\dimen0 -\FLOWgridwidth
+   \dimen4=\FLOWgridwidth
+   \advance\dimen4 -\FLOWshapewidth
+   \advance\dimen0 .5\dimen4
+   \dimen2=\FLOWgridheight
+   \dimen2=\!!countb\dimen2
+   \dimen4=\FLOWgridheight
+   \advance\dimen4 -\FLOWshapeheight
+   \advance\dimen2 -.5\dimen4
+   \edef\FLOWdx{\the\dimen0}%
+   \edef\FLOWdy{\the\dimen2}}
+
+\def\positionFLOWzero% assumes \FLOWdx and \FLOWdy are set
+  {\setbox0\hbox{\hskip\FLOWdx\lower\FLOWdy\box0}%
+   \smashbox0\box0
+   \nointerlineskip} % new, needed since we somehow reset that
+
+\def\doFLOWtlabel#1#2#3%
+  {\scratchdimen\ifcase#2 \zeropoint\else\@@FLOWdy\fi
+   \setbox0\hbox{\hskip\dimen2\raise\scratchdimen
+     \hbox{\raise\dimen4\hbox{#1{\strut#3}}}}%
+   \positionFLOWzero}%
+
+\def\doFLOWblabel#1#2#3%
+  {\scratchdimen\ifcase#2 \zeropoint\else\@@FLOWdy\fi
+   \setbox0\hbox{\hskip\dimen2\raise-\scratchdimen
+     \hbox{#1{\strut#3}}}%
+   \positionFLOWzero}%
+
+\def\doFLOWllabel#1#2#3%
+  {\scratchdimen\ifcase#2 \zeropoint\else\@@FLOWdx\fi
+   \setbox0\hbox{\hskip-\scratchdimen\raise\dimen6
+     \hbox{#1{\strut#3}}}%
+   \positionFLOWzero}%
+
+\def\doFLOWrlabel#1#2#3%
+  {\scratchdimen\ifcase#2 \zeropoint\else\@@FLOWdx\fi
+   \setbox0\hbox{\hskip\dimen0\hskip\scratchdimen
+   \hbox{\raise\dimen6\hbox{#1{\strut#3}}}}%
+   \positionFLOWzero}
+
+\def\doprocessFLOWcellD#1,#2\end
+  {\dophaseoneFLOWcellX{#1}{#2}%
+   \ifdone
+     \dophasetwoFLOWcellX
      \doglobal\addtocommalist\FLOWcell\FLOWcells
-     \advance\!!counta -\@@FLOWx\advance\!!counta \plusone
-     \advance\!!countb -\@@FLOWy\advance\!!countb \plusone
-     \dimen0=\FLOWgridwidth\dimen0=\!!counta\dimen0
-     \advance\dimen0 -\FLOWgridwidth
-     \dimen4=\FLOWgridwidth\advance\dimen4 -\FLOWshapewidth
-     \advance\dimen0 .5\dimen4
-     \dimen2=\FLOWgridheight\dimen2=\!!countb\dimen2
-     \dimen4=\FLOWgridheight\advance\dimen4 -\FLOWshapeheight
-     \advance\dimen2 -.5\dimen4
-     \setbox0=\hbox
+     \setbox0\hbox
        {\ifx\FLOWalign\empty\else
           \setupframed
             [\c!align=\v!normal,\c!bottom=\vfill,\c!top=\vfill]%
@@ -857,37 +912,12 @@
           [\c!frame=\v!off,
            \c!width=\FLOWshapewidth,\c!height=\FLOWshapeheight]
           {\FLOWtext}}%
-     \showFLOWhelp0
-     \ifx\FLOWdestination\empty\else
-       \setbox0=\hbox
-         {\setupinteraction[\c!color=,\c!contrastcolor=]%
-          \gotobox{\box0}[\FLOWdestination]}%
-     \fi
-     \edef\FLOWdx{\the\dimen0}%
-     \edef\FLOWdy{\the\dimen2}%
-     \def\positionFLOWzero% assumes \FLOWdx and \FLOWdy are set
-       {\setbox0=\hbox{\hskip\FLOWdx\lower\FLOWdy\box0}%
-        \smashbox0\box0}%
-     \def\doFLOWtlabel##1##2##3%
-       {\scratchdimen=\ifcase##2 \!!zeropoint\else\@@FLOWdy\fi
-        \setbox0=\hbox{\hskip\dimen2\raise\scratchdimen
-          \hbox{\raise\dimen4\hbox{##1{\strut##3}}}}%
-        \positionFLOWzero}%
-     \def\doFLOWblabel##1##2##3%
-       {\scratchdimen=\ifcase##2 \zeropoint\else\@@FLOWdy\fi
-        \setbox0=\hbox{\hskip\dimen2\raise-\scratchdimen
-          \hbox{##1{\strut##3}}}%
-        \positionFLOWzero}%
-     \def\doFLOWllabel##1##2##3%
-       {\scratchdimen=\ifcase##2 \zeropoint\else\@@FLOWdx\fi
-        \setbox0=\hbox{\hskip-\scratchdimen\raise\dimen6
-          \hbox{##1{\strut##3}}}%
-        \positionFLOWzero}%
-     \def\doFLOWrlabel##1##2##3%
-       {\scratchdimen=\ifcase##2 \zeropoint\else\@@FLOWdx\fi
-        \setbox0=\hbox{\hskip\dimen0\hskip\scratchdimen
-        \hbox{\raise\dimen6\hbox{##1{\strut##3}}}}%
-        \positionFLOWzero}%
+       \showFLOWhelp0
+       \ifx\FLOWdestination\empty\else
+         \setbox0\hbox
+           {\setupinteraction[\c!color=,\c!contrastcolor=]%
+            \gotobox{\box0}[\FLOWdestination]}%
+       \fi
      \positionFLOWzero
      \dimen0=\FLOWshapewidth \dimen2=.5\dimen0
      \dimen4=\FLOWshapeheight\dimen6=.5\dimen4
@@ -904,7 +934,7 @@
      \ifnum#1=\!!countc      \doFLOWrlabel  \rightbox1\rFLOWexit \fi
      \ifnum#2=\@@FLOWy\relax \doFLOWtlabel    \topbox1\tFLOWexit \fi
      \ifnum#2=\!!countd      \doFLOWblabel \bottombox1\bFLOWexit \fi
-   \fi\fi\fi\fi}
+   \fi}
 
 % Pass E
 
@@ -914,55 +944,141 @@
    \let\doprocessFLOWcell\doprocessFLOWcellE
    \expandafter\doprocessFLOWcell\FLOWlocation\end}
 
-\def\doprocessFLOWcellE#1,#2\end  % redundant
-  {\ifx\FLOWoverlay\empty \else
-   \!!counta=#1\relax
-   \!!countb=#2\relax
-   \!!countc=\@@FLOWx
-   \!!countd=\@@FLOWy
+\def\dophaseoneFLOWcellX#1#2%
+  {\!!counta#1\relax
+   \!!countb#2\relax
+   \!!countc\@@FLOWx
+   \!!countd\@@FLOWy
    \advance\!!countc \@@FLOWnx
    \advance\!!countd \@@FLOWny
    \advance\!!countc \minusone
    \advance\!!countd \minusone
-   \ifnum\!!counta<\@@FLOWx\relax
-     \donefalse
-   \else\ifnum\!!counta>\!!countc
-     \donefalse
-   \else\ifnum\!!countb<\@@FLOWy\relax
-     \donefalse
-   \else\ifnum\!!countb>\!!countd
-     \donefalse
-   \else
-     \donetrue
-   \fi\fi\fi\fi
+        \ifnum\!!counta<\@@FLOWx\relax  \donefalse
+   \else\ifnum\!!counta>\!!countc       \donefalse
+   \else\ifnum\!!countb<\@@FLOWy\relax  \donefalse
+   \else\ifnum\!!countb>\!!countd       \donefalse
+   \else                                \donetrue
+   \fi\fi\fi\fi}
+
+\def\dophasetwoFLOWcellX
+  {\advance\!!counta -\@@FLOWx
+   \advance\!!counta \plusone
+   \advance\!!countb -\@@FLOWy
+   \advance\!!countb \plusone
+   \dimen0=\FLOWgridwidth
+   \dimen0=\!!counta\dimen0
+   \advance\dimen0 -\FLOWgridwidth
+   \dimen4=\FLOWgridwidth
+   \advance\dimen4 -\FLOWshapewidth
+   \advance\dimen0 .5\dimen4
+   \dimen2=\FLOWgridheight
+   \dimen2=\!!countb\dimen2
+   \dimen4=\FLOWgridheight
+   \advance\dimen4 -\FLOWshapeheight
+   \advance\dimen2 -.5\dimen4
+   \edef\FLOWdx{\the\dimen0}%
+   \edef\FLOWdy{\the\dimen2}}
+
+\def\positionFLOWzero% assumes \FLOWdx and \FLOWdy are set
+  {\setbox0\hbox{\hskip\FLOWdx\lower\FLOWdy\box0}%
+   \smashbox0\box0
+   \nointerlineskip}%
+
+\def\doFLOWtlabel#1#2#3%
+  {\scratchdimen\ifcase#2 \zeropoint\else\@@FLOWdy\fi
+   \setbox0\hbox{\hskip\dimen2\raise\scratchdimen
+     \hbox{\raise\dimen4\hbox{#1{\strut#3}}}}%
+   \positionFLOWzero}%
+
+\def\doFLOWblabel#1#2#3%
+  {\scratchdimen\ifcase#2 \zeropoint\else\@@FLOWdy\fi
+   \setbox0\hbox{\hskip\dimen2\raise-\scratchdimen
+     \hbox{#1{\strut#3}}}%
+   \positionFLOWzero}%
+
+\def\doFLOWllabel#1#2#3%
+  {\scratchdimen\ifcase#2 \zeropoint\else\@@FLOWdx\fi
+   \setbox0\hbox{\hskip-\scratchdimen\raise\dimen6
+     \hbox{#1{\strut#3}}}%
+   \positionFLOWzero}%
+
+\def\doFLOWrlabel#1#2#3%
+  {\scratchdimen\ifcase#2 \zeropoint\else\@@FLOWdx\fi
+   \setbox0\hbox{\hskip\dimen0\hskip\scratchdimen
+   \hbox{\raise\dimen6\hbox{#1{\strut#3}}}}%
+   \positionFLOWzero}
+
+\def\doprocessFLOWcellD#1,#2\end
+  {\dophaseoneFLOWcellX{#1}{#2}%
    \ifdone
-     \advance\!!counta -\@@FLOWx\advance\!!counta \plusone
-     \advance\!!countb -\@@FLOWy\advance\!!countb \plusone
-     \dimen0=\FLOWgridwidth\dimen0=\!!counta\dimen0
-     \advance\dimen0 -\FLOWgridwidth
-     \dimen4=\FLOWgridwidth\advance\dimen4 -\FLOWshapewidth
-     \advance\dimen0 .5\dimen4
-     \dimen2=\FLOWgridheight\dimen2=\!!countb\dimen2
-     \dimen4=\FLOWgridheight\advance\dimen4 -\FLOWshapeheight
-     \advance\dimen2 -.5\dimen4
-     \edef\FLOWdx{\the\dimen0}%
-     \edef\FLOWdy{\the\dimen2}%
-     \setbox0=\hbox
-       {\framed
+     \dophasetwoFLOWcellX
+     \doglobal\addtocommalist\FLOWcell\FLOWcells
+     \setbox0\hbox
+       {\ifx\FLOWalign\empty\else
+          \setupframed
+            [\c!align=\v!normal,\c!bottom=\vfill,\c!top=\vfill]%
+          \@EA\processallactionsinset\@EA
+            [\FLOWalign]
+            [t=>{\setupframed[\c!bottom=\vfill,\c!top=]},
+             b=>{\setupframed[\c!bottom=,\c!top=\vfill]},
+             l=>{\setupframed[\c!align=\v!right]},
+             r=>{\setupframed[\c!align=\v!left]},
+             m=>{\setupframed[\c!align=\v!middle]},
+             c=>{\setupframed[\c!align=\v!middle]}]%
+        \fi
+        \doifelse\FLOWshape{none} % {\v!none}
+          {\setupframed[\c!offset=\v!overlay]}
+         %{\setupframed[\c!offset=.5\bodyfontsize]}%
+          {\setupframed[\c!offset=\@@FLOSoffset]}%
+        \framed
           [\c!frame=\v!off,
-           \c!background={\@@FLOWbackground,\FLOWoverlay},
-           \c!backgroundcolor=\@@FLOSbackgroundcolor,
            \c!width=\FLOWshapewidth,\c!height=\FLOWshapeheight]
-          {}}%
-     \setbox0=\hbox{\hskip\FLOWdx\lower\FLOWdy\box0}%
-     \smashbox0
-     \box0
-   \fi
- \fi}
+          {\FLOWtext}}%
+       \showFLOWhelp0
+       \ifx\FLOWdestination\empty\else
+         \setbox0\hbox
+           {\setupinteraction[\c!color=,\c!contrastcolor=]%
+            \gotobox{\box0}[\FLOWdestination]}%
+       \fi
+     \positionFLOWzero
+     \dimen0=\FLOWshapewidth \dimen2=.5\dimen0
+     \dimen4=\FLOWshapeheight\dimen6=.5\dimen4
+     \boxoffset=.5\bodyfontsize
+     \doFLOWtlabel   \righttopbox0\tFLOWlabel
+     \doFLOWblabel\rightbottombox0\bFLOWlabel
+     \doFLOWllabel    \lefttopbox0\lFLOWlabel
+     \doFLOWrlabel   \righttopbox0\rFLOWlabel
+     \doFLOWtlabel        \topbox0\tcFLOWlabel % for me only
+     \doFLOWblabel     \bottombox0\bcFLOWlabel % for me only
+     \doFLOWllabel       \leftbox0\lcFLOWlabel % for me only
+     \doFLOWrlabel      \rightbox0\rcFLOWlabel % for me only
+     \ifnum#1=\@@FLOWx\relax \doFLOWllabel   \leftbox1\lFLOWexit \fi
+     \ifnum#1=\!!countc      \doFLOWrlabel  \rightbox1\rFLOWexit \fi
+     \ifnum#2=\@@FLOWy\relax \doFLOWtlabel    \topbox1\tFLOWexit \fi
+     \ifnum#2=\!!countd      \doFLOWblabel \bottombox1\bFLOWexit \fi
+   \fi}
+
+\def\doprocessFLOWcellE#1,#2\end  % redundant
+  {\ifx\FLOWoverlay\empty \else
+     \dophaseoneFLOWcellX{#1}{#2}%
+     \ifdone
+       \dophasetwoFLOWcellX
+       \edef\FLOWdx{\the\dimen0}%
+       \edef\FLOWdy{\the\dimen2}%
+       \setbox0\hbox
+         {\framed
+            [%\c!frame=\v!off,
+             \c!background={\@@FLOWbackground,\FLOWoverlay},
+             \c!backgroundcolor=\@@FLOSbackgroundcolor,
+             \c!width=\FLOWshapewidth,\c!height=\FLOWshapeheight]
+            {}}%
+       \positionFLOWzero
+     \fi
+   \fi}
 
 % Pass F
 
-\def\checkFLOWautofocus%
+\def\checkFLOWautofocus
   {\def\@@FLOWminx{100}\let\@@FLOWminy\@@FLOWminx
    \def\@@FLOWmaxx  {0}\let\@@FLOWmaxy\@@FLOWmaxx
    \def\@@FLOWabsx  {0}\let\@@FLOWabsy\@@FLOWabsx

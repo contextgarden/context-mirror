@@ -3532,9 +3532,8 @@
 
 \def\dodefinealternativestyle[#1][#2][#3]%
   {\def\docommando##1%
-     {\doifundefined{##1}
-        {\setvalue{##1}{\groupedcommand{#2}{}}}%
-      \setvalue{\@letter@##1}{#2}%
+     {\doifundefined{##1}{\setvalue{##1}{\groupedcommand{#2}{}}}%
+      \setvalue{\@letter@  ##1}{#2}%
       \setvalue{\@noletter@##1}{#3}}%
    \processcommalist[#1]\docommando}
 

@@ -1306,6 +1306,7 @@ sub ScanContent {
     my ($ConTeXtInput) = @_;
     open( TEX, $ConTeXtInput );
     while (<TEX>) {
+        next if (/^\%/) ;
         if (
 /\\(starttekst|stoptekst|startonderdeel|startdocument|startoverzicht)/
           )
@@ -1692,6 +1693,8 @@ if ($JobSuffix =~ /\_fo$/i) {
                     if ($class eq 'job') {
                         if ($key eq 'stylefile') {
                             print TMP "\\environment $value\n" ;
+                        } elsif ($key eq 'module') {
+                            print TMP "\\usemodule[$value]\n" ;
                         } elsif ($key eq 'interface') {
                             $ConTeXtInterface = $value ;
                         }
@@ -1834,9 +1837,9 @@ if ($JobSuffix =~ /\_fo$/i) {
         }
         if (($dosish) && (!$Problems) && ($PdfOpen)) {
             if ($Result ne '') {
-                system("pdfopen --file $Result.pdf")
+                system("pdfopen --file $Result.pdf") if -f "$Result.pdf"
             } else {
-                system("pdfopen --file $JobName.pdf")
+                system("pdfopen --file $JobName.pdf") if -f "$JobName.pdf"
             }
         }
     }
@@ -2218,7 +2221,7 @@ sub RunOneFormat {
     }
     if ($Problems) {
         $Problems = 0;
-        if ( $TeXExecutable =~ /etex|eetex|pdfetex|pdfeetex|pdfxtex|xpdfetex|eomega|aleph/io ) {
+        if ( $TeXExecutable =~ /etex|eetex|pdfetex|pdfeetex|pdfxtex|xpdfetex|eomega|aleph|xetex/io ) {
             $TeXPrefix = "*";
         }
         my $CurrentPath = cwd();

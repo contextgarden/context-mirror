@@ -329,10 +329,6 @@
 \chardef\margincontentmethod  \plusthree % beware: 1 = old method
 \chardef\marginpagecheckmethod\plusone
 
-\beginOMEGA \vadjust
-  \chardef\marginpagecheckmethod\plustwo
-\endOMEGA
-
 \def\margincontentextralines{1}        % old method, play safe
 \def\nofmargincontentlines  {0}
 
@@ -650,19 +646,27 @@
    \savemargincontentlines
    \ifdone
      \advance\margincontentheight \margincontentextralines\lineheight
-     \bgroup % preserve \margincontentheight
-     \advance\margincontentheight \pagetotal
-     \ifdim\margincontentheight>\pagegoal
-       \egroup
-       \ifcase\marginpagecheckmethod\or
-         \vadjust pre {\page}%
-       \or
-         \setmargincontentpenalties
+     \ifdim\pagegoal>\pagetotal
+       \bgroup % preserve \margincontentheight
+       \advance\margincontentheight \pagetotal
+       \ifdim\margincontentheight>\pagegoal
+         \egroup
+         \ifcase\marginpagecheckmethod
+           % disabled
+         \or
+           \setmargincontentpenalties
+         \or
+           % potentially dangerous, maybe better a \goodbreak; the problem is that
+           % there can be a penalty there, which we then overload and we also introduce
+           % nasty side effects, so, we drop this option
+           % \vadjust pre {\page}%
+         \fi
+       \else
+         \egroup
        \fi
-     \else
-       \egroup
      \fi
    \else % We need the above because interlinepenalties overrule vadjusted \nobreaks.
+     % a  bit dangerous
      \vadjust{\nobreak}%
    \fi
    \egroup}
@@ -764,7 +768,7 @@
 
 % more efficient (5K less fotmat file)
 %
-% \letvalue{\??im\v!binnen\c!plaats}\v!binnen \letvalue{\??im\v!binnen\c!uitlijnen}\v!binnen
-% \letvalue{\??im\v!buiten\c!plaats}\v!buiten \letvalue{\??im\v!buiten\c!uitlijnen}\v!binnen
+% \letvalue{\??im\v!inner\c!location}\v!inner \letvalue{\??im\v!inner\c!align}\v!inner
+% \letvalue{\??im\v!outer\c!location}\v!outer \letvalue{\??im\v!outer\c!align}\v!inner
 
 \protect \endinput

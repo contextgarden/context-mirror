@@ -279,11 +279,8 @@
 
 \letvalue{\e!stop\v!setups}\relax
 
-\unexpanded \def\setups % {..} or [..]
-  {\doifnextcharelse\bgroup\dosetupsA\dosetupsB}
-
-\unexpanded \def\setup % {..} or [..]
-  {\doifnextcharelse\bgroup\dosetups\dosetupsC}
+\unexpanded \def\setups{\doifnextcharelse\bgroup\dosetupsA\dosetupsB} % {..} or [..]
+\unexpanded \def\setup {\doifnextcharelse\bgroup\dosetups \dosetupsC} % {..} or [..]
 
 \def\dosetupsA  #1{\processcommacommand[#1]\dosetups} % {..}
 \def\dosetupsB[#1]{\processcommacommand[#1]\dosetups} % [..]
@@ -297,35 +294,28 @@
 \def\doifsetupselse#1% to be done: grid
   {\doifdefinedelse{\??su:#1}}
 
-\def\startsetups % for international purposes
-  {\bgroup\doifnextcharelse[{\startsetupsA\stopsetups}{\startsetupsB\stopsetups}}
+\chardef\setupseolmode\plusone
 
-\def\startlocalsetups % for nested purposes
-  {\bgroup\doifnextcharelse[{\startsetupsA\stoplocalsetups}{\startsetupsB\stoplocalsetups}}
+\def\startsetups     {\xxstartsetups\plusone  \stopsetups     } \let\stopsetups     \relax
+\def\startlocalsetups{\xxstartsetups\plusone  \stoplocalsetups} \let\stoplocalsetups\relax
+\def\startrawsetups  {\xxstartsetups\zerocount\stoprawsetups  } \let\stoprawsetups  \relax
 
-\let\stopsetups     \relax
-\let\stoplocalsetups\relax
+\def\xxstartsetups#1#2%
+  {\bgroup\chardef\setupseolmode#1\doifnextcharelse[{\startsetupsA#2}{\startsetupsB#2}}
 
-\def\startsetupsA#1%
-  {\catcode`\^^M\@@ignore
+\def\startsetupsA#1% [ ] delimited
+  {\ifcase\setupseolmode\or\catcode`\^^M\@@ignore\fi
    \dotripleempty\dostartsetups[#1]}
 
-\def\startsetupsB#1#2 % space delimited / kind of obsolete
-  {\catcode`\^^M\@@ignore
+\def\startsetupsB#1#2 % space delimited
+  {\ifcase\setupseolmode\or\catcode`\^^M\@@ignore\fi
    \dodostartsetups#1\empty{#2}}
 
+\def\startsetupsC[#1][#2][#3]{\dodostartsetups#1{#2}{#3}}   % [..] [..]
+\def\startsetupsD[#1][#2][#3]{\dodostartsetups#1\empty{#2}} % [..]
+
 \def\dostartsetups
-  {\ifthirdargument
-     \@EA\startsetupsC
-   \else
-     \@EA\startsetupsD
-    \fi}
-
-\def\startsetupsC[#1][#2][#3]% [..] [..]
-  {\dodostartsetups#1{#2}{#3}}
-
-\def\startsetupsD[#1][#2][#3]% [..]
-  {\dodostartsetups#1\empty{#2}}
+  {\ifthirdargument\@EA\startsetupsC\else\@EA\startsetupsD\fi}
 
 \long\def\dodostartsetups#1#2#3% watch out: not \grabuntil
   {\dograbuntil#1{\egroup\long\setvalue{\??su#2:#3}}}
@@ -363,7 +353,7 @@
 %     {\ifsecondargument
 %        \catcode`\<=\@@active
 %        \def<{\ifmmode\expandafter\normalless\else\expandafter\doshortcut\fi}%
-%        \getparameters[\??te#1][\c!commandos=,\c!commando=,\c!letter=,\c!kleur=,#2]%
+%        \getparameters[\??te#1][\c!commands=,\c!command=,\c!style=,\c!color=,#2]%
 %      \else
 %        \defineshortcut[][#1]%
 %      \fi}
@@ -381,17 +371,17 @@
 %
 % \def\dododoshortcut#1:#2\end
 %   {\doifelsenothing{#2}
-%      {\doifundefinedelse{\??te\c!commandos}
+%      {\doifundefinedelse{\??te\c!commands}
 %         {\shortcut}
 %         {\@EA\dodododoshortcut\@EA\??te\@EA:\shortcut:\end}}
-%      {\doifundefinedelse{\??te#1\c!commandos}
+%      {\doifundefinedelse{\??te#1\c!commands}
 %         {\shortcut}
 %         {\dodododoshortcut\??te#1:#2\end}}%
 %    \egroup}
 %
 % \def\dodododoshortcut#1:#2:\end
-%   {\getvalue{#1\c!commandos}%
-%    \doattributes{#1}\c!letter\c!kleur{\getvalue{#1\c!commando}{#2}}}
+%   {\getvalue{#1\c!commands}%
+%    \doattributes{#1}\c!style\c!color{\getvalue{#1\c!command}{#2}}}
 
 \def\defineshortcut
   {\dotripleargument\dodefineshortcut}

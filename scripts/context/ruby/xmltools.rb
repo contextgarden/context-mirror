@@ -91,8 +91,13 @@ class Commands
                     output.xputs("<file name='#{bn}'>\n", 4)
                 end
                 output.xputs("<base>#{bn.sub(/\..*$/,'')}</base>\n", 6)
-                output.xputs("<type>#{bn.sub(/^.*\./,'')}</type>\n", 6)
-                output.xputs("<size>#{File.stat(f).size}</size>\n", 6)
+                if File.stat(f).file? then
+                    bt = bn.sub(/^.*\./,'')
+                    if bt != bn then
+                        output.xputs("<type>#{bt}</type>\n", 6)
+                    end
+                    output.xputs("<size>#{File.stat(f).size}</size>\n", 6)
+                end
                 output.xputs("<date>#{File.stat(f).mtime.strftime("%Y-%m-%d %H:%M")}</date>\n", 6)
                 output.xputs("</file>\n", 4)
             end

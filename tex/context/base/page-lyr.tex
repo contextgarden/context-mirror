@@ -510,19 +510,12 @@
 
 \let\placelayer\flushlayer
 
-% \def\tightlayer[#1]%
-%   {\hbox
-%      {\def\currentlayer{#1}% todo: left/right
-%       \hsize\layerparameter\c!breedte
-%       \vsize\layerparameter\c!hoogte
-%       \composedlayer{#1}}}
-
 \def\tightlayer[#1]%
   {\hbox
      {\def\currentlayer{#1}% todo: left/right
-      \setbox\nextbox\emptybox        % hoogte/breedte are \wd\nextbox/\ht\nextbox
-      \hsize\layerparameter\c!width % \overlaywidth   = \hsize
-      \vsize\layerparameter\c!height  % \overlaywheight = \vsize
+      \setbox\nextbox\emptybox       % hoogte/breedte are \wd\nextbox/\ht\nextbox
+      \hsize\layerparameter\c!width  % \overlaywidth   = \hsize
+      \vsize\layerparameter\c!height % \overlaywheight = \vsize
       \composedlayer{#1}}}
 
 %D \macros

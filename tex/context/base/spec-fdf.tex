@@ -1651,7 +1651,7 @@
      \xdef\FDFcollection{\FDFcollection\space\PDFobjectreference}%
    \fi}
 
-\prependtoksonce \flushFDFnames \to \everylastshipout % test \everybye
+\appendtoksonce \flushFDFnames \to \everylastshipout % test \everybye / was \prependtoksonce
 
 %D \macros
 %D   {defineFDFfonts,

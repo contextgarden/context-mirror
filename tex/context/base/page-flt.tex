@@ -1077,11 +1077,11 @@
 %
 % \def\dosetfloatcaption#1#2#3% name will change
 %   {\def\dofloattekst%
-%      {{\doattributes{\??kj#1}\c!letter\c!kleur{#3}}}%
-%    \doifelsevalue{\??kj#1\c!nummer}{\v!ja}
+%      {{\doattributes{\??kj#1}\c!sttle\c!color{#3}}}%
+%    \doifelsevalue{\??kj#1\c!number}\v!yes
 %      {\def\dofloatnummer%
 %         {{\xdef\floatcaptionnumber{#1}%
-%           \hbox{\doattributes{\??kj#1}\c!kopletter\c!kopkleur
+%           \hbox{\doattributes{\??kj#1}\c!headstyle\c!headcolor
 %              {\strut#2\floatcaptionsuffix}}}%
 %           \ConvertToConstant\doifnot{#3}{}
 %             {\tfskip\emergencystretch=.5em}}}
@@ -1186,9 +1186,9 @@
 \newbox\tempfloatbox
 \newbox\tempcaptionbox
 
-%\stelblokkopjesin[\c!breedte=5cm]
-%\stelblokkopjesin[\c!uitlijnen=\v!links]
-%\stelblokkopjesin[\c!uitlijnen=\v!rechts]
+%\stelblokkopjesin[\c!width=5cm]
+%\stelblokkopjesin[\c!align=\v!left]
+%\stelblokkopjesin[\c!align=\v!right]
 
 \def\docheckcaptioncontent#1#2#3#4%
   {\ifnofloatcaption \else
@@ -1853,35 +1853,6 @@
 \appendtoks\the\everytopofpage     \to\everystarttext
 \appendtoks\global\everytopofpage{}\to\everystoptext
 
-% \def\douitstellen
-%   {\the\everytopofpage
-%    \ifvoid\collectedpagefloats\else
-%      % message
-%      \unvbox\collectedpagefloats
-%    \fi
-%    \ifinuitstellen\else\ifcase\nofpostponedblocks\else % The \nof-test is
-%      \bgroup % we need the color/font switch, else problems inside split verbatim
-%      \setnormalcatcodes % uitstellen in verbatim
-%      \edef\savedtopofpagecolor{\topofpagecolor}%
-%      \doifsomething\savedtopofpagecolor\restorecolormode % \stopcolormode
-%      \restoreglobalbodyfont
-%      \global\pagetotal\zeropoint                   % recently added and
-%      \global\inuitstellentrue                      % definitely needed else
-%      \dorecurse\nofpostponedblocks                 % we can loose or disorder
-%        {\haalbuffer[buf-\recurselevel]}            % floats; anyhow, this
-%      \doflushfloats % new but potential dangerous  % mechanism is still
-%      \doglobal\newcounter\nofpostponedblocks       % suboptimal and needs a
-%      \global\inuitstellenfalse                     % proper analysis
-%      \doifsomething\savedtopofpagecolor\startcolormode\savedtopofpagecolor
-%      \egroup
-%    \fi\fi}
-%
-% \setvalue{\e!start\v!uitstellen}%
-%   {\doglobal\increment\nofpostponedblocks
-%    \showmessage\m!layouts3\nofpostponedblocks
-%    \dostartbuffer[buf-\nofpostponedblocks]
-%      [\e!start\v!uitstellen][\e!stop\v!uitstellen]}
-
 % \startpostponing [pagenumber] [+pageoffset]
 %
 % \startpostponing[2]
@@ -1903,7 +1874,7 @@
 
 % \ifinuitstellen: handhaven, want gebruikt in stijlen ! ! ! ! !
 
-\def\douitstellen
+\def\dopostponeblock
   {\bgroup % new may 2004
    \setsystemmode\v!postponing % new may 2004
    \the\everytopofpage

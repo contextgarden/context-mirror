@@ -785,11 +785,19 @@
 % Euler (AMS)
 
 \starttypescript [math] [euler] [default]
-  \definefontsynonym [Euler-Extension] [euex10]
-  \definefontsynonym [Euler-Italic]    [eurm10]
-  \definefontsynonym [Euler-SymbolA]   [euex10]
-  \definefontsynonym [Euler-SymbolB]   [eusm10]
-  \definefontsynonym [Euler-SymbolC]   [eufm10]
+  \definefontsynonym [Euler-Roman]      [zeurm10]
+  \definefontsynonym [Euler-Extension]  [zeuex10]
+  \definefontsynonym [Euler-Symbol]     [zeusm10]
+  \definefontsynonym [Euler-Fraktur]    [eufm10]
+  \definefontsynonym [CharterRomanMath] [bchr8r] [encoding=8r]
+\stoptypescript
+
+\starttypescript [boldmath,bfmath] [euler] [default]
+  \definefontsynonym [Euler-Roman-Bold]     [zeurb10]
+  \definefontsynonym [Euler-Extension]      [zeuex10]
+  \definefontsynonym [Euler-Symbol-Bold]    [zeusb10]
+  \definefontsynonym [Euler-Fraktur-Bold]   [eufb10]
+  \definefontsynonym [CharterRomanBoldMath] [bchb8r] [encoding=8r]
 \stoptypescript
 
 % AMS (AMS)

@@ -2948,12 +2948,14 @@
 
 \def\complexsetlocalhsize[#1]% don't change !
   {\localhsize\hsize
- % \advance\localhsize -\parindent % changed anyway
+   \ifnum\hangafter<\zerocount
+     \advance\localhsize\ifdim\hangindent>\zeropoint-\fi\hangindent
+   \fi
    \advance\localhsize -\leftskip
    \advance\localhsize -\rightskip
    \advance\localhsize #1\relax}
 
-\def\simplesetlocalhsize%
+\def\simplesetlocalhsize
   {\complexsetlocalhsize[\zeropoint]}
 
 \definecomplexorsimple\setlocalhsize

@@ -107,50 +107,31 @@
 %D
 %D Let's give this a try:
 
-\let\nopv!geen     \v!none
-\let\posv!groot    \v!big
-\let\posv!middel   \v!medium
-\let\posv!klein    \v!small
-\edef\negv!groot {-\v!big }
-\edef\negv!middel{-\v!medium}
-\edef\negv!klein {-\v!small }
-
-%\def\assigndimension#1#2#3#4#5%
-%  {\edef\!!stringa{#1}%
-%   \ifx\!!stringa\nopv!geen  #2=\zeropoint\else
-%   \ifx\!!stringa\posv!groot #2=#5\else
-%   \ifx\!!stringa\posv!middel#2=#4\else
-%   \ifx\!!stringa\posv!klein #2=#3\else
-%   \ifx\!!stringa\negv!groot #2=-#5\else
-%   \ifx\!!stringa\negv!middel#2=-#4\else
-%   \ifx\!!stringa\negv!klein #2=-#3\else
-%                             #2=#1\fi\fi\fi\fi\fi\fi\fi}
-%
-%\def\assignalfadimension#1#2#3#4#5%
-%  {\edef\!!stringa{#1}%
-%   \ifx\!!stringa\posv!groot \edef#2{#5}\else
-%   \ifx\!!stringa\posv!middel\edef#2{#4}\else
-%   \ifx\!!stringa\posv!klein \edef#2{#3}\else
-%   \ifx\!!stringa\nopv!geen  \edef#2{0}\else
-%                             \edef#2{#1}\fi\fi\fi\fi}
+\let\nopv!none     \v!none
+\let\posv!big      \v!big
+\let\posv!middle   \v!medium
+\let\posv!small    \v!small
+\edef\negv!big   {-\v!big}
+\edef\negv!middle{-\v!medium}
+\edef\negv!small {-\v!small}
 
 \def\assigndimension#1#2#3#4#5%
   {\edef\!!stringa{#1}%
-   #2=\ifx\!!stringa\nopv!geen   \zeropoint\else
-      \ifx\!!stringa\posv!groot  #5\else
-      \ifx\!!stringa\posv!middel #4\else
-      \ifx\!!stringa\posv!klein  #3\else
-      \ifx\!!stringa\negv!groot -#5\else
-      \ifx\!!stringa\negv!middel-#4\else
-      \ifx\!!stringa\negv!klein -#3\else
+   #2=\ifx\!!stringa\nopv!none   \zeropoint\else
+      \ifx\!!stringa\posv!big    #5\else
+      \ifx\!!stringa\posv!middle #4\else
+      \ifx\!!stringa\posv!small  #3\else
+      \ifx\!!stringa\negv!big   -#5\else
+      \ifx\!!stringa\negv!middle-#4\else
+      \ifx\!!stringa\negv!small -#3\else
                                  #1\fi\fi\fi\fi\fi\fi\fi}
 
 \def\assignalfadimension#1#2#3#4#5%
   {\edef\!!stringa{#1}%
-   \edef#2{\ifx\!!stringa\posv!groot #5\else
-           \ifx\!!stringa\posv!middel#4\else
-           \ifx\!!stringa\posv!klein #3\else
-           \ifx\!!stringa\nopv!geen   0\else
+   \edef#2{\ifx\!!stringa\posv!big   #5\else
+           \ifx\!!stringa\posv!middle#4\else
+           \ifx\!!stringa\posv!small #3\else
+           \ifx\!!stringa\nopv!none   0\else
                                      #1\fi\fi\fi\fi}}
 
 %D \macros
@@ -186,23 +167,16 @@
      [#1]
      [   \v!small=>\edef#2{#3},
         \v!medium=>\edef#2{#4},
-         \v!big=>\edef#2{#5},
+           \v!big=>\edef#2{#5},
        \s!unknown=>\edef#2{#1}]}
 
 %D Or faster:
 
-%\def\assignvalue#1#2#3#4#5%
-%  {\edef\!!stringa{#1}%
-%   \ifx\!!stringa\posv!groot \edef#2{#5}\else
-%   \ifx\!!stringa\posv!middel\edef#2{#4}\else
-%   \ifx\!!stringa\posv!klein \edef#2{#3}\else
-%                             \edef#2{#1}\fi\fi\fi}
-
 \def\assignvalue#1#2#3#4#5%
   {\edef\!!stringa{#1}%
-   \edef#2{\ifx\!!stringa\posv!groot #5\else
-           \ifx\!!stringa\posv!middel#4\else
-           \ifx\!!stringa\posv!klein #3\else
+   \edef#2{\ifx\!!stringa\posv!big   #5\else
+           \ifx\!!stringa\posv!middle#4\else
+           \ifx\!!stringa\posv!small #3\else
                                      #1\fi\fi\fi}}
 
 %D \macros

@@ -409,9 +409,9 @@
    \global\negateprintboxfalse
    \processallactionsinset
      [#1]
-     [   \v!landscape=>\global\chardef#2\plusone,
-      \v!mirrored=>\global\chardef#5\plusone,
-       \v!rotated=>\gdef#3{90}\gdef#4{270},
+     [ \v!landscape=>\global\chardef#2\plusone,
+        \v!mirrored=>\global\chardef#5\plusone,
+         \v!rotated=>\gdef#3{90}\gdef#4{270},
         \v!negative=>\global\negateprintboxtrue,
                  90=>\gdef#3{90}\gdef#4{270},
                 180=>\gdef#3{180}\gdef#4{0},
@@ -422,7 +422,7 @@
   \def\calculatepaperoffsets#1%
     {\scratchdimen\getvalue{\??pp#1\c!offset}%
      \global\advance\paperwidth -2\scratchdimen
-     \global\advance\paperheight  -2\scratchdimen}
+     \global\advance\paperheight-2\scratchdimen}
 
 \fi
 
@@ -638,13 +638,13 @@
   {\doublesidedprintfalse
    \ExpandFirstAfter\processallactionsinset
      [\@@lylocation]
-     [      \v!middle=>{\setuppapersize[\c!left=\hss,\c!right=\hss,\c!top=\vss,\c!bottom=\vss]},
+     [     \v!middle=>{\setuppapersize[\c!left=\hss,\c!right=\hss,\c!top=\vss,\c!bottom=\vss]},
              \v!left=>{\setuppapersize[\c!left=,\c!right=\hss]},
             \v!right=>{\setuppapersize[\c!left=\hss,\c!right=]},
-             \v!bottom=>{\setuppapersize[\c!top=\vss,\c!bottom=]},
-             \v!top=>{\setuppapersize[\c!top=,\c!bottom=\vss]},%
+           \v!bottom=>{\setuppapersize[\c!top=\vss,\c!bottom=]},
+              \v!top=>{\setuppapersize[\c!top=,\c!bottom=\vss]},%
       \v!doublesided=>\doublesidedprinttrue,
-       \v!singlesided=>\doublesidedprintfalse]}
+      \v!singlesided=>\doublesidedprintfalse]}
 
 \def\definelayout
   {\dodoubleargument\dodefinelayout}
@@ -691,13 +691,13 @@
 \let\@@zaheight=\!!zeropoint
 
 \def\dopushpagedimensions
-  {\xdef\oldteksthoogte{\the\textheight}%
-   \xdef\oldvoethoogte {\the\footerheight}%
+  {\xdef\oldtextheight  {\the\textheight  }%
+   \xdef\oldfooterheight{\the\footerheight}%
    \global\let\@@zaheight\@@zaheight}
 
 \def\dopoppagedimensions
-  {\global\textheight\oldteksthoogte
-   \global\footerheight\oldvoethoogte
+  {\global\textheight  \oldtextheight
+   \global\footerheight\oldfooterheight
    \recalculatelayout
    \global\let\pushpagedimensions\dopushpagedimensions
    \global\let\poppagedimensions\relax}

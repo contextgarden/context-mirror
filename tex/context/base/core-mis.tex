@@ -280,19 +280,7 @@
           \c!distance=\getvalue{\??al#1\c!distance}]}%
    \setupparagraphs[#1][1][\c!distance=0em]}
 
-% nog monster
-%
-%\assignwidth
-%  {\!!widtha}
-%  {\getvalue{\??dd#1\c!breedte}}
-%  {\doifelsevaluenothing{\??dd#1\c!monster}
-%     {\hskip
-%     {\doattributes
-%        {\??al#1}\c!letter\c!kleur
-%        {\getvalue{\??dd#1\c!monster}}}}
-%  {0pt}
-
-\def\defineparagraphs%
+\def\defineparagraphs
   {\dodoubleargument\dodefineparagraphs}
 
 \def\dosetupparagraphs[#1][#2][#3]%
@@ -1900,19 +1888,19 @@
 %
 % \def\dodocombination
 %   {\vbox
-%      {\forgetall % \setupwhitespace[\v!geen]%
+%      {\forgetall % \setupwhitespace[\v!none]%
 %       \let\next\vbox
 %       \ExpandFirstAfter\processallactionsinset
-%         [\combinationparameter\c!plaats]
-%         [  \v!boven=>\let\next\tbox,
-%           \v!midden=>\let\next\halfwaybox]%
+%         [\combinationparameter\c!location]
+%         [   \v!top=>\let\next\tbox,
+%          \v!middle=>\let\next\halfwaybox]%
 %       \next{\copy0}%
 %       \ifdim\ht2>\zeropoint % beter dan \wd2, nu \strut mogelijk
-%         \@@cotussen
+%         \combinationparameter\c!inbetween
 %         %\vtop % wrong code
 %         %  {\nointerlineskip  % recently added
 %         %   \hsize\wd0
-%         %   \setupalign[\combinationparameter\c!uitlijnen]%  % \raggedcenter
+%         %   \setupalign[\combinationparameter\c!align]%  % \raggedcenter
 %         %   \begstrut\unhbox2\endstrut}%
 %         \box2
 %       \fi}%
@@ -1924,15 +1912,15 @@
 %          {\cr\noalign
 %             {\forgetall % \setupwhitespace[\v!geen]% no
 %              \nointerlineskip
-%              \combinationparameter\c!na
-%              \combinationparameter\c!voor
+%              \combinationparameter\c!before
+%              \combinationparameter\c!after
 %              \vss
 %              \nointerlineskip}%
 %           \global\horcombination\maxhorcombination\relax
 %           \docombination}%
 %      \else
 %        \def\next
-%          {&&&\hskip\combinationparameter\c!afstand&\docombination}%
+%          {&&&\hskip\combinationparameter\c!distance&\docombination}%
 %      \fi
 %    \else
 %      \def\next
@@ -1942,12 +1930,12 @@
 
 % \def\dodocombination
 %   {\vbox
-%      {\forgetall % \setupwhitespace[\v!geen]%
+%      {\forgetall % \setupwhitespace[\v!none]%
 %       \let\next\vbox
 %       \ExpandFirstAfter\processallactionsinset
 %         [\combinationparameter\c!plaats]
-%         [  \v!boven=>\let\next\tbox,
-%           \v!midden=>\let\next\halfwaybox]%
+%         [   \v!top=>\let\next\tbox,
+%          \v!middle=>\let\next\halfwaybox]%
 %       \next{\copy0}%
 %       % we need to save the caption for a next alignment line
 %       \saveoncombinationstack2}%
@@ -1959,18 +1947,18 @@
 %          {\cr
 %           \flushcombinationstack
 %           \noalign
-%             {\forgetall % \setupwhitespace[\v!geen]% no
+%             {\forgetall % \setupwhitespace[\v!none]% no
 %              \global\setbox\combinationstack\emptybox
 %              \nointerlineskip
-%              \combinationparameter\c!na
-%              \combinationparameter\c!voor
+%              \combinationparameter\c!after
+%              \combinationparameter\c!before
 %              \vss
 %              \nointerlineskip}%
 %           \global\horcombination\maxhorcombination\relax
 %           \docombination}%
 %      \else
 %        \def\next
-%          {&&&\hskip\combinationparameter\c!afstand&\docombination}%
+%          {&&&\hskip\combinationparameter\c!distance&\docombination}%
 %      \fi
 %    \else
 %      \def\next
@@ -2185,7 +2173,7 @@
 %   {\bgroup
 %    \hbox\bgroup % compatibility hack
 %    \dowithnextbox
-%      {\edef\@@rorotatie{#1}%
+%      {\edef\@@rorotation{#1}%
 %       \setbox\nextbox\vbox{\flushnextbox}%
 %       \dostoprotate
 %       \egroup}}
@@ -2193,16 +2181,16 @@
 % \def\dodostoprotate#1#2#3#4#5#6%
 %   {\dontshowcomposition
 %    \scratchdimen\nextboxht\advance\scratchdimen\nextboxdp
-%    \doif\@@roplaats\v!hoog
+%    \doif\@@rolocation\v!high
 %      {\setbox\nextbox\vbox{\hbox{\raise\nextboxdp\flushnextbox}}}%
 %    \setbox\nextbox\vbox to #1
 %      {#2\relax
 %       \hbox to #4
 %         {#5\relax % \number removes leading spaces too
-%          \edef\@@rorotatie{\number\@@rorotatie}%
-%          \doifelsenothing\@@rorotatie
+%          \edef\@@rorotation{\number\@@rorotation}%
+%          \doifelsenothing\@@rorotation
 %            {\dostartrotation{90}}
-%            {\dostartrotation{\@@rorotatie}}%
+%            {\dostartrotation{\@@rorotation}}%
 %          \nextboxwd\zeropoint
 %          \nextboxht\zeropoint
 %         %\nextboxdp\zeropoint
@@ -2215,7 +2203,7 @@
 %    \egroup}
 %
 % \def\dostoprotate
-%   {\!!counta\@@rorotatie
+%   {\!!counta\@@rorotation
 %    \divide\!!counta 90
 %    \ifcase\!!counta
 %      \dodostoprotate\nextboxht\relax\vfill\nextboxwd\relax\hfill
@@ -2230,7 +2218,7 @@
 %    \or
 %      \dodostoprotate\nextboxht\relax\vfill\nextboxwd\relax\hfill
 %    \else
-%      \def\@@rotatie{90}%
+%      \def\@@rotation{90}%
 %      \dodostoprotate\nextboxht\relax\vfill\nextboxwd\relax\hfill
 %    \fi}
 %
@@ -2244,11 +2232,11 @@
 %   {\bgroup\complexorsimpleempty\rotate}
 %
 % \setuprotate
-%   [\c!rotatie=90,
-%    \c!breedte=\v!passend,
-%    \c!hoogte=\v!passend,
+%   [\c!rotation=90,
+%    \c!width=\v!fir,
+%    \c!height=\v!fit,
 %    \c!offset=\v!overlay,
-%    \c!kader=\v!uit]
+%    \c!frame=\v!off]
 
 % The previous implementation is replaced by one that supports
 % rotation over arbitrary angles.
@@ -2449,61 +2437,7 @@
 %       \hbox to .2\hsize{\hss\ruledhbox{\rotate[location=high]  {\ruledhbox{\bfb   (high)}}}}}
 %    \stoplinecorrection}
 
-% schaal
-
-% \def\doscalelikeafigure
-%   {\doifsomething{\@@xyfactor\@@xyhfactor\@@xybfactor\@@xyschaal
-%                   \@@xybreedte\@@xyhoogte\@@xyregels}
-%      {\let \@@efschaal \@@xyschaal
-%       \let \@@effactor \@@xyfactor
-%       \let \@@efbfactor\@@xybfactor
-%       \let \@@efhfactor\@@xyhfactor
-%       \let \@@efbreedte\@@xybreedte
-%       \let \@@efhoogte \@@xyhoogte
-%       \let \@@efregels \@@xyregels
-%       \let \@@epx      \!!zeropoint
-%       \let \@@epy      \!!zeropoint
-%       \edef\@@epw     {\the\nextboxwd}%
-%       \edef\@@eph     {\the\nextboxht}%
-%       \checkfiguresettings
-%       \setfactorfiguresize
-%       \setscalefiguresize
-%       \setdimensionfiguresize
-%       \convertfigureinsertscale\@@epx\figx\figxsca\scax
-%       \convertfigureinsertscale\@@epy\figy\figysca\scay
-%       \scratchdimen\scax\points\divide\scratchdimen 100
-%       \edef\@@xysx{\withoutpt\the\scratchdimen}%
-%       \scratchdimen\scay\points\divide\scratchdimen 100
-%       \edef\@@xysy{\withoutpt\the\scratchdimen}}}
-
-% \def\doschaal[#1]%
-%   {\bgroup
-%    \forgetall
-%    \getparameters
-%      [\??xy]
-%      [\c!schaal=,\c!breedte=,\c!hoogte=,\c!regels=,
-%       \c!factor=,\c!hfactor=,\c!bfactor=,
-%       \c!sx=1,\c!sy=1,#1]%
-%    \dowithnextbox
-%      {\dontshowcomposition
-%       \ifdim\nextboxht>\zeropoint \ifdim\nextboxwd>\zeropoint
-%         \doscalelikeafigure
-%         \dimen0=\@@xysy\nextboxht
-%         \dimen2=\@@xysy\nextboxdp
-%         \dimen4=\@@xysx\nextboxwd
-%         \dimen6=\dimen0\advance\dimen6 \dimen2
-%         \setbox\nextbox\vbox to \dimen6
-%           {\nextboxht\zeropoint
-%            \nextboxdp\zeropoint
-%            \vfill % erbij
-%            \dostartscaling\@@xysx\@@xysy\flushnextbox\dostopscaling}%
-%         \nextboxht\dimen0
-%         \nextboxdp\dimen2
-%         \nextboxwd\dimen4
-%       \fi \fi
-%       \flushnextbox
-%       \egroup}
-%    \hbox}
+% scale
 
 \def\doscalelikeafigure % quite dirty and potential interference possible
   {\doifsomething{\@@xyfactor\@@xyhfactor\@@xywfactor\@@xyscale

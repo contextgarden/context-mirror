@@ -93,4 +93,25 @@
      {\setxvalue{\??cr#5}{\hexcolorpattern{#6}}}
      {\dodododefinecolor#1#2#3#4[#5][#6]}}
 
+%D For Adam Lindsay and his XeTeX special driver:
+
+% because we intercept the zero condition, the .23pt in 1.23pt will disappear in the
+% ifcase zero part branch
+
+\def\colorhexcomponent#1%
+  {\ifdim#1\points<.005\points
+     00\else\lchexnumbers{\the\dimexpr(255\dimexpr(#1\points)\relax+.5\points)\relax}%
+   \fi}
+
+% the faster one
+
+\newdimen\hex@color@a \hex@color@a=.005pt
+\newdimen\hex@color@b \hex@color@b=.5pt
+\chardef \hex@color@c             =255
+
+\def\colorhexcomponent#1%
+  {\ifdim#1\points<\hex@color@a
+     00\else\lchexnumbers{\the\dimexpr(#1\points*\hex@color@c+\hex@color@b)\relax}%
+   \fi}
+
 \protect \endinput

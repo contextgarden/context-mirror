@@ -61,8 +61,8 @@
 
 \unprotect
 
-\chardef\linetablesplitstatus\zerocount
-\chardef\linetableheadstatus \zerocount
+\chardef\linetablesplitstate\zerocount
+\chardef\linetableheadstate \zerocount
 
 \edef\??ler{\??le:r:}
 \edef\??lec{\??le:c:}
@@ -315,7 +315,7 @@
        \else
          % after, later
        \fi
-       \chardef\linetableheadstatus\plusthree
+       \chardef\linetableheadstate\plusthree
        \global\setbox\tablebox\zerocount\emptybox % here
      \fi
      % reset \linetablerow will be an option, currently
@@ -378,7 +378,7 @@
    \relax
    %\message{\the\linetablecolumn,\the\linetablesubcol}\wait
    % from now on the column counter is already incremented
-   \ifcase\linetablesplitstatus
+   \ifcase\linetablesplitstate
      \iflinetablepreroll \else
        \box\linetablecell
        % the columncounter is one ahead !
@@ -485,7 +485,7 @@
      [\v!no=>{\setuplinetable[\c!stretch=\maxdimen]},% no stretch
        \v!yes=>{\setuplinetable[\c!stretch=\zeropoint]}]% max stretch
    \chardef\linetablerepeat\linetableparameter\c!nleft
-   \chardef\linetablesplitstatus % =
+   \chardef\linetablesplitstate % =
      \ifdim\linetableparameter\c!maxwidth>\zeropoint
        \zerocount \else \plusone
      \fi
@@ -530,7 +530,7 @@
 
 \def\stoplinetablerun
   {\globallet\linetableline\!!maxcard
-   \chardef\linetableheadstatus\zerocount % blocked
+   \chardef\linetableheadstate\zerocount % blocked
    \flushlinetableparts
    \iflinetablepreroll \else
      \linetableparameter\c!after
@@ -579,19 +579,19 @@
   {\dosingleempty\dolinetableBR}
 
 \def\dolinetableBR[#1]% #1 not yet implemented
-  {\ifnum\linetableheadstatus=1\else
+  {\ifnum\linetableheadstate=1\else
      \doglobal\increment\linetablerow
      \doglobal\increment\linetablerows
    \fi
    \global\linetablecolumn\plusone
    \global\linetablesubcol\plusone
-%   \linetableheight\linetablerparameter\c!hoogte
+%   \linetableheight\linetablerparameter\c!height
 %
 %   \ifx\linetableheight\empty
 %     % nothing
-%   \else\ifx\linetableheight\v!passend
+%   \else\ifx\linetableheight\v!fit
 %     % keep it simple
-%   \else\ifx\linetableheight\v!regel
+%   \else\ifx\linetableheight\v!line
 %     \chardef\linetablemode\plusone
 %   \else
 %     \!!heighta\linetableheight
@@ -651,7 +651,7 @@
    \fi \fi}
 
 \def\flushlinetablehead
-  {\ifcase\linetableheadstatus
+  {\ifcase\linetableheadstate
      % 0 blocked
    \or
      % 1 doing head
@@ -659,9 +659,9 @@
      % 2 head done
    \or
      % 3 trigger flush
-     \chardef\linetableheadstatus\plusone
+     \chardef\linetableheadstate\plusone
      \the\@@linetablehead\relax
-     \chardef\linetableheadstatus\plustwo
+     \chardef\linetableheadstate\plustwo
    \fi}
 
 \def\linetableNC % first time special treatment
@@ -706,7 +706,7 @@
   {\ifinlinetable
      \@@linetablehead\emptytoks
    \fi
-   \chardef\linetableheadstatus3 % full
+   \chardef\linetableheadstate3 % full
    \@@linetablehead{#1}%
    \ifinlinetable
      \flushlinetablehead

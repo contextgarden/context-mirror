@@ -577,7 +577,7 @@
 %D {\ovalbox}.
 
 \def\dostrokedroundbox\width#1\height#2\depth#3\radius#4\toggle#5\left#6\\%
-  {\doif{#5}{\v!on}{\ovalbox{#1}{#2}{#3}{\ruledlinewidth}{#4}{\v!on}{\v!off}}}
+  {\doif{#5}\v!on{\ovalbox{#1}{#2}{#3}{\ruledlinewidth}{#4}\v!on\v!off}}
 
 %D The next few macros are probably the most misused ones in
 %D \CONTEXT. They deal with putting rules around boxes, provide
@@ -1538,40 +1538,40 @@
 %D \dontcomplain
 %D \startlinecorrection
 %D \halign{#\enskip&#\enskip&#\enskip&#\enskip&#\enskip&#\cr
-%D   \framed[width=.2\hsize, height=.2\hsize, align=]       {a\par b\par c}&
-%D   \framed[width=.2\hsize, height=broad,     align=]       {a\par b\par c}&
-%D   \framed[width=.2\hsize, height=fit,  align=]       {a\par b\par c}&
-%D   \framed[width=fit,  height=.2\hsize, align=]       {a\par b\par c}&
-%D   \framed[width=fit,  height=broad,     align=]       {a\par b\par c}&
-%D   \framed[width=fit,  height=fit,  align=]       {a\par b\par c}\cr
+%D   \framed[width=.2\hsize, height=.2\hsize, align=]      {a\par b\par c}&
+%D   \framed[width=.2\hsize, height=broad,    align=]      {a\par b\par c}&
+%D   \framed[width=.2\hsize, height=fit,      align=]      {a\par b\par c}&
+%D   \framed[width=fit,      height=.2\hsize, align=]      {a\par b\par c}&
+%D   \framed[width=fit,      height=broad,    align=]      {a\par b\par c}&
+%D   \framed[width=fit,      height=fit,      align=]      {a\par b\par c}\cr
 %D   \noalign{\vskip1em}
-%D   \framed[width=.2\hsize, height=.2\hsize, align=yes]     {a\par b\par c}&
-%D   \framed[width=.2\hsize, height=broad,     align=yes]     {a\par b\par c}&
-%D   \framed[width=.2\hsize, height=fit,  align=yes]     {a\par b\par c}&
-%D   \framed[width=fit,  height=.2\hsize, align=yes]     {a\par b\par c}&
-%D   \framed[width=fit,  height=broad,     align=yes]     {a\par b\par c}&
-%D   \framed[width=fit,  height=fit,  align=yes]     {a\par b\par c}\cr
+%D   \framed[width=.2\hsize, height=.2\hsize, align=yes]   {a\par b\par c}&
+%D   \framed[width=.2\hsize, height=broad,    align=yes]   {a\par b\par c}&
+%D   \framed[width=.2\hsize, height=fit,      align=yes]   {a\par b\par c}&
+%D   \framed[width=fit,      height=.2\hsize, align=yes]   {a\par b\par c}&
+%D   \framed[width=fit,      height=broad,    align=yes]   {a\par b\par c}&
+%D   \framed[width=fit,      height=fit,      align=yes]   {a\par b\par c}\cr
 %D   \noalign{\vskip1em}
 %D   \framed[width=.2\hsize, height=.2\hsize, align=right] {a\par b\par c}&
-%D   \framed[width=.2\hsize, height=broad,     align=right] {a\par b\par c}&
-%D   \framed[width=.2\hsize, height=fit,  align=right] {a\par b\par c}&
-%D   \framed[width=fit,  height=.2\hsize, align=right] {a\par b\par c}&
-%D   \framed[width=fit,  height=broad,     align=right] {a\par b\par c}&
-%D   \framed[width=fit,  height=fit,  align=right] {a\par b\par c}\cr
+%D   \framed[width=.2\hsize, height=broad,    align=right] {a\par b\par c}&
+%D   \framed[width=.2\hsize, height=fit,      align=right] {a\par b\par c}&
+%D   \framed[width=fit,      height=.2\hsize, align=right] {a\par b\par c}&
+%D   \framed[width=fit,      height=broad,    align=right] {a\par b\par c}&
+%D   \framed[width=fit,      height=fit,      align=right] {a\par b\par c}\cr
 %D   \noalign{\vskip1em}
 %D   \framed[width=.2\hsize, height=.2\hsize, align=left]  {a\par b\par c}&
-%D   \framed[width=.2\hsize, height=broad,     align=left]  {a\par b\par c}&
-%D   \framed[width=.2\hsize, height=fit,  align=left]  {a\par b\par c}&
-%D   \framed[width=fit,  height=.2\hsize, align=left]  {a\par b\par c}&
-%D   \framed[width=fit,  height=broad,     align=left]  {a\par b\par c}&
-%D   \framed[width=fit,  height=fit,  align=left]  {a\par b\par c}\cr
+%D   \framed[width=.2\hsize, height=broad,    align=left]  {a\par b\par c}&
+%D   \framed[width=.2\hsize, height=fit,      align=left]  {a\par b\par c}&
+%D   \framed[width=fit,      height=.2\hsize, align=left]  {a\par b\par c}&
+%D   \framed[width=fit,      height=broad,    align=left]  {a\par b\par c}&
+%D   \framed[width=fit,      height=fit,      align=left]  {a\par b\par c}\cr
 %D   \noalign{\vskip1em}
 %D   \framed[width=.2\hsize, height=.2\hsize, align=middle] {a\par b\par c}&
-%D   \framed[width=.2\hsize, height=broad,     align=middle] {a\par b\par c}&
-%D   \framed[width=.2\hsize, height=fit,  align=middle] {a\par b\par c}&
-%D   \framed[width=fit,  height=.2\hsize, align=middle] {a\par b\par c}&
-%D   \framed[width=fit,  height=broad,     align=middle] {a\par b\par c}&
-%D   \framed[width=fit,  height=fit,  align=middle] {a\par b\par c}\cr}
+%D   \framed[width=.2\hsize, height=broad,    align=middle] {a\par b\par c}&
+%D   \framed[width=.2\hsize, height=fit,      align=middle] {a\par b\par c}&
+%D   \framed[width=fit,      height=.2\hsize, align=middle] {a\par b\par c}&
+%D   \framed[width=fit,      height=broad,    align=middle] {a\par b\par c}&
+%D   \framed[width=fit,      height=fit,      align=middle] {a\par b\par c}\cr}
 %D \stoplinecorrection
 %D \blank[2*groot]
 %D \egroup
@@ -2487,7 +2487,6 @@
    % \setlocalhsize    % can have framed texts alongside sidefloats
      \checksidefloat
      \setlocalhsize
-     \advance\localhsize-\hangindent
    \else
      \localhsize\hsize
    \fi\fi}

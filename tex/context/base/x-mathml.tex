@@ -25,24 +25,4 @@
 % \useXMLfilter[mea,meb,mec,meh,men,meo,mer]
 % \useXMLfilter[mxa,mxb,mxc,mxh,mxn,mxo,mxr]
 
-%D For simple inline math, we first provide:
-
-\newcount\xmlmathlevel % todo : nesting ! ! ! !
-
-\defineXMLenvironment [m] \startXMLinlinemath \stopXMLinlinemath
-
-\def\startXMLinlinemath
-  {\ifmmode
-     \advance\xmlmathlevel1\relax
-   \else
-     \xmlmathlevel1$%
-   \fi}
-
-\def\stopXMLinlinemath
-  {\ifcase\xmlmathlevel\or
-     $\xmlmathlevel0\relax
-   \else
-     \advance\xmlmathlevel-1\relax
-   \fi}
-
 \endinput

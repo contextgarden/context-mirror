@@ -1901,15 +1901,6 @@
         \vtop{\vskip12pt\box2\vskip6pt}}%
    \endgroup}
 
-% \def\dodostartfigure[#1][#2][#3]#4\stopfigure
-%   {\doifelse\v!test\@@exoptie
-%      {\teststartfigure[#1][#2][#3]#4\teststopfigure
-%       \let\@@exhokjes\v!aan}
-%      {\let\@@exhokjes\v!uit}%
-%    \setvalue{\??ef\??ef#1}%
-%      {\dosingleempty{\placestartfigure[#1][#2][#3]#4\placestopfigure}}%
-%    \doifundefined{#1}{\setvalue{#1}{\getexternalfigure{#1}}}}
-
 \def\dodostartfigure[#1][#2][#3]#4\stopfigure
   {\doifelse\v!test\@@exoption
      {\teststartfigure[#1][#2][#3]#4\teststopfigure

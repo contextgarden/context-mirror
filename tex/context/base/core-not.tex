@@ -256,29 +256,29 @@
    % \footnoteparameter and not \noteparameter (**)
    \setnotedistance
    \count\currentnoteins\plusthousand
-   \ExpandBothAfter\doifcommonelse{\v!columns,\v!lastcolumn}{\footnoteparameter\c!location} % **
-     {\chardef\clevernotes\plustwo}
-     {\ExpandBothAfter\doifinsetelse{\v!firstcolumn}{\footnoteparameter\c!location} % **
-       {\chardef\clevernotes\plusone}
-       {\chardef\clevernotes\zerocount}}%
-    \ifcase\clevernotes\relax
-      % notes not in column areas
-      \ifnum\noteparameter\c!n=\zerocount
-        \settextnotes
-        \scratchcounter\plusone
-      \else
-        \setcolumnnotes
-        \scratchcounter\noteparameter\c!n\relax
-        \divide\count\currentnoteins \scratchcounter
-      \fi
-      \ExpandBothAfter\doifinsetelse\v!page{\footnoteparameter\c!location} % **
-        {\global\endnotesfalse
-         \ExpandBothAfter\doifinsetelse\v!high{\footnoteparameter\c!location} % **
-           {\global\bottomnotesfalse}
-           {\global\bottomnotestrue}}
-        {\global\endnotestrue
-         \global\bottomnotestrue
-         \postponenotes}%
+   \expanded{\doifcommonelse{\v!columns,\v!lastcolumn}{\footnoteparameter\c!location}}% **
+       {\chardef\clevernotes\plustwo}
+       {\expanded{\doifinsetelse{\v!firstcolumn}{\footnoteparameter\c!location}}% **
+          {\chardef\clevernotes\plusone}%
+          {\chardef\clevernotes\zerocount}}%
+   \ifcase\clevernotes\relax
+     % notes not in column areas
+     \ifnum\noteparameter\c!n=\zerocount
+       \settextnotes
+       \scratchcounter\plusone
+     \else
+       \setcolumnnotes
+       \scratchcounter\noteparameter\c!n\relax
+       \divide\count\currentnoteins \scratchcounter
+     \fi
+     \ExpandBothAfter\doifinsetelse\v!page{\footnoteparameter\c!location} % **
+       {\global\endnotesfalse
+        \ExpandBothAfter\doifinsetelse\v!high{\footnoteparameter\c!location} % **
+          {\global\bottomnotesfalse}
+          {\global\bottomnotestrue}}
+       {\global\endnotestrue
+        \global\bottomnotestrue
+        \postponenotes}%
     \else
       % notes in column areas
       \ifnum\@@kln=\zerocount % brrr dependency on \??kl
@@ -1032,48 +1032,44 @@
 %D   {fakenotes}
 
 \def\fakenotes
-  {\ifhmode
-     \endgraf
-   \fi
-   \ifvmode
+  {\ifhmode\endgraf\fi\ifvmode
      \calculatetotalclevernoteheight
+     \ifdim\totalnoteheight>\zeropoint \kern\totalnoteheight \fi
+   \fi}
+
+\def\fakepagenotes
+  {\ifhmode\endgraf\fi\ifvmode
+     \calculatetotalpagenoteheight
      \ifdim\totalnoteheight>\zeropoint \kern\totalnoteheight \fi
    \fi}
 
 \newdimen\totalnoteheight
 
-\def\docalculatetotalnoteheight
-  {\ifdim\ht\currentnoteins>\zeropoint
-     \ifcase\clevernotes % tricky here ! ! ! to be sorted out ! ! !
-       \ifdim\ht\currentnoteins>\zeropoint
-         \advance\totalnoteheight\ht  \currentnoteins
-         \advance\totalnoteheight\skip\currentnoteins
-       \fi
-     \else
-       \ifdim\ht\currentbackupnoteins>\zeropoint
-         \advance\totalnoteheight\ht  \currentbackupnoteins
-         \advance\totalnoteheight\skip\currentbackupnoteins
-       \fi
-     \fi
+
+\def\doaddtototalnoteheight#1%
+  {\ifdim\ht#1>\zeropoint
+     \advance\totalnoteheight\ht  #1%
+     \advance\totalnoteheight\skip#1%
    \fi}
 
-\def\calculatetotalnoteheight
-  {\totalnoteheight\zeropoint
-   \processnotes\docalculatetotalnoteheight}
+\def\docalculatetotalnoteheight
+  {\ifcase\clevernotes % tricky here ! ! ! to be sorted out ! ! !
+     \doaddtototalnoteheight\currentnoteins
+   \else
+     \doaddtototalnoteheight\currentbackupnoteins
+   \fi}
 
 \def\docalculatetotalclevernoteheight
-  {\ifdim\ht\currentnoteins>\zeropoint
-     \ifcase\clevernotes\else % tricky here ! ! ! to be sorted out ! ! !
-       \ifdim\ht\currentnoteins>\zeropoint
-         \advance\totalnoteheight\ht  \currentnoteins
-         \advance\totalnoteheight\skip\currentnoteins
-       \fi
-     \fi
+  {\ifcase\clevernotes \else % tricky here ! ! ! to be sorted out ! ! !
+     \doaddtototalnoteheight\currentnoteins
    \fi}
 
-\def\calculatetotalclevernoteheight
-  {\totalnoteheight\zeropoint
-   \processnotes\docalculatetotalclevernoteheight}
+\def\docalculatetotalpagenoteheight
+  {\doaddtototalnoteheight\currentnoteins}
+
+\def\calculatetotalnoteheight      {\totalnoteheight\zeropoint\processnotes\docalculatetotalnoteheight}
+\def\calculatetotalclevernoteheight{\totalnoteheight\zeropoint\processnotes\docalculatetotalclevernoteheight}
+\def\calculatetotalpagenoteheight  {\totalnoteheight\zeropoint\processnotes\docalculatetotalpagenoteheight}
 
 \newif\ifnotespresent
 

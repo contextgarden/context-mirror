@@ -65,6 +65,20 @@
 
 \installlanguage [sp] [\s!es] % old times context
 
+\installlanguage
+  [\s!ca]
+  [\c!spacing=\v!packed,
+   \c!leftsentence=---,
+   \c!rightsentence=---,
+   \c!leftsubsentence=---,
+   \c!rightsubsentence=---,
+   \c!leftquote=\upperleftsinglesixquote,
+   \c!rightquote=\upperrightsingleninequote,
+   \c!leftquotation=\upperleftdoublesixquote,
+   \c!rightquotation=\upperrightdoubleninequote,
+   \c!date={\v!day,\ ,\v!month,\ ,\v!year},
+   \c!state=\v!stop]
+
 % Note GB left|/|right (sub)sentences are for \quote {incisi}.
 
 \installlanguage
@@ -132,6 +146,7 @@
 
 \installlanguage [french]      [\s!fr]
 \installlanguage [spanish]     [\s!es]
+\installlanguage [catalan]     [\s!ca]
 \installlanguage [italian]     [\s!it]
 \installlanguage [latin]       [\s!la]
 \installlanguage [portuguese]  [\s!pt]
@@ -141,6 +156,7 @@
 
 \setupheadtext [\s!fr] [\v!content=Table des mati\`eres]
 \setupheadtext [\s!es] [\v!content=\'Indice]
+\setupheadtext [\s!ca] [\v!content=\'Index de continguts]
 \setupheadtext [\s!it] [\v!content=Indice]
 \setupheadtext [\s!la] [\v!content=Quod in libro continetur] %Argumentum
 \setupheadtext [\s!pt] [\v!content=Conte\'udo]
@@ -148,6 +164,7 @@
 
 \setupheadtext [\s!fr] [\v!tables=Tables]
 \setupheadtext [\s!es] [\v!tables=Tablas]
+\setupheadtext [\s!ca] [\v!tables=Taules]
 \setupheadtext [\s!it] [\v!tables=Tabelle]
 \setupheadtext [\s!la] [\v!tables=Tabulae]
 \setupheadtext [\s!pt] [\v!tables=Tabelas]
@@ -155,6 +172,7 @@
 
 \setupheadtext [\s!fr] [\v!figures=Figures]
 \setupheadtext [\s!es] [\v!figures=Ilustraci\'ons]
+\setupheadtext [\s!ca] [\v!figures=Figures]
 \setupheadtext [\s!it] [\v!figures=Figure]
 \setupheadtext [\s!la] [\v!figures=Imagines]
 \setupheadtext [\s!pt] [\v!figures=Figuras]
@@ -163,12 +181,14 @@
 \setupheadtext [\s!fr] [\v!graphics=Graphiques]
 \setupheadtext [\s!es] [\v!graphics=Gr\'aficos]
 \setupheadtext [\s!it] [\v!graphics=Grafici]
+\setupheadtext [\s!ca] [\v!graphics=Gr\`afiques]
 \setupheadtext [\s!la] [\v!graphics=Typi]
 \setupheadtext [\s!pt] [\v!graphics=Gr\'aficos]
 \setupheadtext [\s!ro] [\v!graphics=Grafice]
 
 \setupheadtext [\s!fr] [\v!intermezzi=Interm\`edes]
 \setupheadtext [\s!es] [\v!intermezzi=intermedios]
+\setupheadtext [\s!ca] [\v!intermezzi=intermedis]
 \setupheadtext [\s!it] [\v!intermezzi=Intermezzi]
 \setupheadtext [\s!la] [\v!intermezzi=Intermissa]
 \setupheadtext [\s!pt] [\v!intermezzi=Interm\'edios]
@@ -176,6 +196,7 @@
 
 \setupheadtext [\s!fr] [\v!index=Index]
 \setupheadtext [\s!es] [\v!index=\'Indice]
+\setupheadtext [\s!ca] [\v!index=\'Index alfab\`etic]
 \setupheadtext [\s!it] [\v!index=Indice]
 \setupheadtext [\s!la] [\v!index=Indices]
 \setupheadtext [\s!pt] [\v!index=\'Indice]
@@ -183,6 +204,7 @@
 
 \setupheadtext [\s!fr] [\v!abbreviations=Abr\'eviations]
 \setupheadtext [\s!es] [\v!abbreviations=Abreviaci\'ons]
+\setupheadtext [\s!ca] [\v!abbreviations=Abreviacions]
 \setupheadtext [\s!it] [\v!abbreviations=Abbreviazioni]
 \setupheadtext [\s!la] [\v!abbreviations=Notae]
 \setupheadtext [\s!pt] [\v!abbreviations=Abreviaturas]
@@ -190,6 +212,7 @@
 
 \setupheadtext [\s!fr] [\v!logos=Logos]
 \setupheadtext [\s!es] [\v!logos=Logotipos]
+\setupheadtext [\s!ca] [\v!logos=Logotips]
 \setupheadtext [\s!it] [\v!logos=Logotipi]
 \setupheadtext [\s!la] [\v!logos=Typi negotiales]
 \setupheadtext [\s!pt] [\v!logos=Logotipos]
@@ -197,6 +220,7 @@
 
 \setupheadtext [\s!fr] [\v!units=Unit\'es]
 \setupheadtext [\s!es] [\v!units=Unidads]
+\setupheadtext [\s!ca] [\v!units=Unitats]
 \setupheadtext [\s!it] [\v!units=Unit\`a]
 \setupheadtext [\s!la] [\v!units=Modi]
 \setupheadtext [\s!pt] [\v!units=Unidades]
@@ -204,6 +228,7 @@
 
 \setuplabeltext [\s!fr] [\v!table=Table ]
 \setuplabeltext [\s!es] [\v!table=Tablas ]
+\setuplabeltext [\s!ca] [\v!table=Taules ]
 \setuplabeltext [\s!it] [\v!table=Tabella ]
 \setuplabeltext [\s!la] [\v!table=Tabula ]
 \setuplabeltext [\s!pt] [\v!table=Tabela ]
@@ -211,6 +236,7 @@
 
 \setuplabeltext [\s!fr] [\v!figure=Figure ]
 \setuplabeltext [\s!es] [\v!figure=Ilustraci\'on ]
+\setuplabeltext [\s!ca] [\v!figure=Figura ]
 \setuplabeltext [\s!it] [\v!figure=Fig. ]
 \setuplabeltext [\s!la] [\v!figure=Imago ]
 \setuplabeltext [\s!pt] [\v!figure=Figura ]
@@ -218,6 +244,7 @@
 
 \setuplabeltext [\s!fr] [\v!intermezzo=Interm\`ede ]
 \setuplabeltext [\s!es] [\v!intermezzo=intermedio ]
+\setuplabeltext [\s!ca] [\v!intermezzo=Intermedi ]
 \setuplabeltext [\s!it] [\v!intermezzo=Intermezzo ]
 \setuplabeltext [\s!la] [\v!intermezzo=Intermissum ]
 \setuplabeltext [\s!pt] [\v!intermezzo=Interm\'edio ]
@@ -225,6 +252,7 @@
 
 \setuplabeltext [\s!fr] [\v!graphic=Illustration ]
 \setuplabeltext [\s!es] [\v!graphic=Gr\'afico ]
+\setuplabeltext [\s!ca] [\v!graphic=Gr\'afica ]
 \setuplabeltext [\s!it] [\v!graphic=Grafico ]
 \setuplabeltext [\s!la] [\v!graphic=Typus ]
 \setuplabeltext [\s!pt] [\v!graphic=Gr\'afico ]
@@ -232,6 +260,7 @@
 
 \setuplabeltext [\s!fr] [\v!chapter=]
 \setuplabeltext [\s!es] [\v!chapter=]
+\setuplabeltext [\s!ca] [\v!chapter=]
 \setuplabeltext [\s!it] [\v!chapter=]
 \setuplabeltext [\s!la] [\v!chapter=]
 \setuplabeltext [\s!pt] [\v!chapter=]
@@ -239,6 +268,7 @@
 
 \setuplabeltext [\s!fr] [\v!section=]
 \setuplabeltext [\s!es] [\v!section=]
+\setuplabeltext [\s!ca] [\v!section=]
 \setuplabeltext [\s!it] [\v!section=]
 \setuplabeltext [\s!la] [\v!section=]
 \setuplabeltext [\s!pt] [\v!section=]
@@ -246,6 +276,7 @@
 
 \setuplabeltext [\s!fr] [\v!subsection=]
 \setuplabeltext [\s!es] [\v!subsection=]
+\setuplabeltext [\s!ca] [\v!subsection=]
 \setuplabeltext [\s!it] [\v!subsection=]
 \setuplabeltext [\s!la] [\v!subsection=]
 \setuplabeltext [\s!pt] [\v!subsection=]
@@ -253,6 +284,7 @@
 
 \setuplabeltext [\s!fr] [\v!subsubsection=]
 \setuplabeltext [\s!es] [\v!subsubsection=]
+\setuplabeltext [\s!ca] [\v!subsubsection=]
 \setuplabeltext [\s!it] [\v!subsubsection=]
 \setuplabeltext [\s!la] [\v!subsubsection=]
 \setuplabeltext [\s!pt] [\v!subsubsection=]
@@ -260,6 +292,7 @@
 
 \setuplabeltext [\s!fr] [\v!subsubsubsection=]
 \setuplabeltext [\s!es] [\v!subsubsubsection=]
+\setuplabeltext [\s!ca] [\v!subsubsubsection=]
 \setuplabeltext [\s!it] [\v!subsubsubsection=]
 \setuplabeltext [\s!la] [\v!subsubsubsection=]
 \setuplabeltext [\s!pt] [\v!subsubsubsection=]
@@ -267,6 +300,7 @@
 
 \setuplabeltext [\s!fr] [\v!appendix=]
 \setuplabeltext [\s!es] [\v!appendix=]
+\setuplabeltext [\s!ca] [\v!appendix=]
 \setuplabeltext [\s!it] [\v!appendix=]
 \setuplabeltext [\s!la] [\v!appendix=]
 \setuplabeltext [\s!pt] [\v!appendix=]
@@ -274,6 +308,7 @@
 
 \setuplabeltext [\s!fr] [\v!part=Partie ]
 \setuplabeltext [\s!es] [\v!part=Parte ]
+\setuplabeltext [\s!ca] [\v!part=Part ]
 \setuplabeltext [\s!it] [\v!part=Parte ]
 \setuplabeltext [\s!la] [\v!part=Pars ]
 \setuplabeltext [\s!pt] [\v!part=Parte ]
@@ -281,6 +316,7 @@
 
 \setuplabeltext [\s!fr] [\v!line=ligne ]
 \setuplabeltext [\s!es] [\v!line=l\'\i nea ]
+\setuplabeltext [\s!ca] [\v!line=l\'\i nia ]
 \setuplabeltext [\s!it] [\v!line=riga ]
 \setuplabeltext [\s!la] [\v!line=versus ]
 \setuplabeltext [\s!pt] [\v!line=linha ]
@@ -288,6 +324,7 @@
 
 \setuplabeltext [\s!fr] [\v!lines=lignes ]
 \setuplabeltext [\s!es] [\v!lines=l\'\i neas ]
+\setuplabeltext [\s!ca] [\v!lines=l\'\i nies ]
 \setuplabeltext [\s!it] [\v!lines=righe ]
 \setuplabeltext [\s!la] [\v!lines=versus ]
 \setuplabeltext [\s!pt] [\v!lines=linhas ]
@@ -318,6 +355,19 @@
 \setuplabeltext [\s!es]   [\v!october=octubre]
 \setuplabeltext [\s!es]  [\v!november=noviembre]
 \setuplabeltext [\s!es]  [\v!december=deciembre]
+
+\setuplabeltext [\s!ca]   [\v!january=gener]
+\setuplabeltext [\s!ca]  [\v!february=febrer]
+\setuplabeltext [\s!ca]     [\v!march=mar\,c]
+\setuplabeltext [\s!ca]     [\v!april=abril]
+\setuplabeltext [\s!ca]       [\v!may=maig]
+\setuplabeltext [\s!ca]      [\v!june=juny]
+\setuplabeltext [\s!ca]      [\v!july=juliol]
+\setuplabeltext [\s!ca]    [\v!august=agost]
+\setuplabeltext [\s!ca] [\v!september=septembre]
+\setuplabeltext [\s!ca]   [\v!october=octubre]
+\setuplabeltext [\s!ca]  [\v!november=novembre]
+\setuplabeltext [\s!ca]  [\v!december=decembre]
 
 \setuplabeltext [\s!it]   [\v!january=gennaio]
 \setuplabeltext [\s!it]  [\v!february=febbraio]
@@ -387,6 +437,14 @@
 \setuplabeltext [\s!es]    [\v!friday=viernes]
 \setuplabeltext [\s!es]  [\v!saturday=s\'abado]
 
+\setuplabeltext [\s!ca]    [\v!sunday=diumenge]
+\setuplabeltext [\s!ca]    [\v!monday=dilluns]
+\setuplabeltext [\s!ca]   [\v!tuesday=dimarts]
+\setuplabeltext [\s!ca] [\v!wednesday=dimecres]
+\setuplabeltext [\s!ca]  [\v!thursday=dijous]
+\setuplabeltext [\s!ca]    [\v!friday=divendres]
+\setuplabeltext [\s!ca]  [\v!saturday=dissabte]
+
 \setuplabeltext [\s!it]    [\v!sunday=domenica]
 \setuplabeltext [\s!it]    [\v!monday=luned\`\i]
 \setuplabeltext [\s!it]   [\v!tuesday=marted\`\i]
@@ -453,6 +511,7 @@
 
 %D \ShowAllLanguageValues [\s!fr] [french]     franse slag
 %D \ShowAllLanguageValues [\s!es] [spanish]    spaans benauwd
+%D \ShowAllLanguageValues [\s!ca] [catalan]    catalaans ...
 %D \ShowAllLanguageValues [\s!it] [italian]    italiaanse ...
 %D \ShowAllLanguageValues [\s!la] [latin]      latijnse missen
 %D \ShowAllLanguageValues [\s!pt] [portuguese] portugese ...

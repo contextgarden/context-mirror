@@ -115,7 +115,14 @@ module CommandBase
 
         files = Array.new
         pattern.split(' ').each do |p|
-            p = '**/' + p if recurse
+            if recurse then
+                if p =~ /^(.*)(\/.*?)$/i then
+                    p = $1 + '/**' + $2
+                else
+                    p = '**/' + p
+                end
+                p.gsub!(/[\\\/]+/, '/')
+            end
             files.push(Dir.glob(p))
         end
         files.flatten.sort do |a,b|

@@ -23,6 +23,51 @@
 
 \ifx\normalcompound\undefined \let\normalcompound=| \fi
 
+% in xtag-ini:
+
+\def\doexecuteXMLhexcharacter#1\relax{\getXMLcharacter{"#1}}
+
+% in xtag-map:
+
+\unexpanded\def\xmlrent#1{\doXMLentity#1;}
+
+% In 2005 we will abandon support for font encodings that don't have
+% the ascii characters { } $ etc in their normal slot, i.e. latin modern
+% instead of computer modern. Then we can also clean up some of the ugly
+% xml internals that are a result from the need to deal with funny
+% encodings.
+%
+% a solution:
+%
+% \defineXMLargument[ctx:c]{\getXMLcharacter}
+% \defineXMLargument[ctx:e]{\getXMLentity   }
+% \defineXMLargument[ctx:u]{\unicodechar    }
+%
+% \bgroup \catcode`\<=\active \catcode`\&=\active
+%
+% \gdef\dontexpandutf
+%   {\def\getXMLcharacter##1{<ctx:c>##1</ctx:c>}%
+%    \def\getXMLentity   ##1{<ctx:e>##1</ctx:e>}%
+%    \def\unicodechar    ##1{<ctx:u>##1</ctx:u>}}
+%
+% \egroup
+%
+% more generic
+
+\def\XMLexpanded#1%
+  {\bgroup
+   \honorunexpanded
+%    \dontexpandencoding
+%    \dontexpandutf
+   \let\dohandleactivecharacter\donthandleactivecharacter
+   \xdef\@@globalexpanded{#1}%
+   \egroup
+   \@@globalexpanded}
+
+\def\setXMLexpandedmark#1#2% using a tok prevents unwanted expansion in mark
+  {\XMLexpanded{\scratchtoks{\enableXML#2}}%
+   \expanded{\normalsetnormalmark{#1}{\the\scratchtoks}}}
+
 \def\checksoundtrack#1%
   {\iflocation
      \doifdefined{\??sd:#1}{\doifvaluesomething{\??sd:#1}
@@ -570,7 +615,7 @@
 %    \dontshowcomposition
 %    \inleftmargin{\vsmash
 %      {\switchtobodyfont[7pt,tt]%
-%       \framed[\c!uitlijnen=\v!rechts]{\thepardata}}}%
+%       \framed[\c!align=\v!right]{\thepardata}}}%
 %    \endgroup}
 %
 % \def\startshowpardata
@@ -702,8 +747,8 @@
 %   {\begingroup
 %    \def\currentlayer{#1}% todo: left/right
 %    \setbox\nextbox\emptybox        % hoogte/breedte are \wd\nextbox/\ht\nextbox
-%    \hsize\layerparameter\c!breedte % \overlaywidth   = \hsize
-%    \vsize\layerparameter\c!hoogte  % \overlaywheight = \vsize
+%    \hsize\layerparameter\c!width   % \overlaywidth   = \hsize
+%    \vsize\layerparameter\c!height  % \overlaywheight = \vsize
 %    \hbox to \hsize{\composedlayer{#1}}%
 %    \endgroup}
 
@@ -746,8 +791,8 @@
 %         {\doifvalue{##1\c!variant}\v!verborgen{\let\next\phantom}}%
 %       \next
 %         {\localframed[##1]
-%            [\c!kaderkleur=rollover,\c!achtergrondkleur=rollover,\c!kleur=rollover]%
-%            {\dolocationattributes{##1}\c!letter\c!kleur{#3}}}}%
+%            [\c!framecolor=rollover,\c!backgroundcolor=rollover,\c!color=rollover]%
+%            {\dolocationattributes{##1}\c!style\c!color{#3}}}}%
 %    \iffirstargument
 %      \ifsecondargument
 %        \def\setlocationbox##1{\dosetlocationbox[\??am#1]{##1}[#2]}%
@@ -766,7 +811,7 @@
 %    \nextsystemfield
 %    \setupfield
 %      [rollbutton]
-%      [\c!kader=\v!uit,\c!offset=\v!overlay,\c!klikuit={#4}]%
+%      [\c!frame=\v!off,\c!offset=\v!overlay,\c!klickoff={#4}]%
 %    \definefield
 %      [\currentsystemfield][push][rollbutton]
 %      [rsym:\nofrollovers:n,%

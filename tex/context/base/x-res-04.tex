@@ -249,7 +249,7 @@
          {\let\figurepathlist\figurefilebasepath
           \normalcalculateexternalfigure
             [#1][#2][\figurefilebase.pdf]%
-            [\c!pagina=\figurefilepage,#4][#5][#6]}
+            [\c!page=\figurefilepage,#4][#5][#6]}
          {\@EA\stripspaces\@EA\from\figurefilename\to\figurefilename
           \normalcalculateexternalfigure
             [#1][#2][\figurefilename][#4][#5][#6]}%
@@ -280,8 +280,8 @@
         [r=\XMLop{r},g=\XMLop{g},b=\XMLop{b},s=\XMLop{s},%
          c=\XMLop{c},m=\XMLop{m},y=\XMLop{y},k=\XMLop{k}]%
        \framed
-         [\c!kader=\v!uit,\c!offset=\v!overlay,
-          \c!achtergrond=\v!kleur,\c!achtergrondkleur=XMLRLcolor]
+         [\c!frame=\v!off,\c!offset=\v!overlay,
+          \c!background=\v!color,\c!backgroundcolor=XMLRLcolor]
          {\box\foundexternalfigure}}}
 
 \defineXMLsingular [rl:viewport] [\??cp] % []
@@ -292,7 +292,7 @@
         {\box\foundexternalfigure}}%
    \global\setbox\foundexternalfigure\vbox
      {\scale
-        [\c!hoogte=\figurewidth,\c!hoogte=\figureheight]
+        [\c!width=\figurewidth,\c!height=\figureheight]
         {\box\foundexternalfigure}}}
 
 \defineXMLsingular [rl:dimensions] [width=,height=]

@@ -79,10 +79,10 @@
 
 % betere protectie
 
-\letvalue{\??mk\??mk \v!previous}\gettopmark
-\letvalue{\??mk\??mk \v!first}\getfirstmark
-\letvalue{\??mk\??mk\v!last}\getbotmark
-\letvalue{\??mk\??mk\v!current}\getcurrentmark
+\letvalue{\??mk\??mk\v!previous}\gettopmark
+\letvalue{\??mk\??mk\v!first   }\getfirstmark
+\letvalue{\??mk\??mk\v!last    }\getbotmark
+\letvalue{\??mk\??mk\v!current }\getcurrentmark
 
 % todo: make it work in balancing
 %
@@ -98,8 +98,8 @@
 %   \stopcolumns
 % \stoptext
 
-\letvalue{\??mk\??mk\v!column:\v!first }\getsplitfirstmark
-\letvalue{\??mk\??mk\v!column:\v!last}\getsplitbottommark
+\letvalue{\??mk\??mk\v!column:\v!first}\getsplitfirstmark
+\letvalue{\??mk\??mk\v!column:\v!last }\getsplitbottommark
 
 \ifx\decouplemarking\undefined \def\decouplemarking[#1]{} \fi
 
@@ -108,7 +108,7 @@
      [\c!expansion=\v!no,  % saves a macro
       \c!separator={ --- }, % watch the spaces
       \c!limittext=\@@kolimittext,
-        \c!state=\v!start]%
+          \c!state=\v!start]%
    \decouplemarking[#1]%  % no coupling with sections
    \setevalue{\??mk#1\c!coupling}{#2}%
    \expandafter\newmark\csname\??mk#2\endcsname
@@ -185,8 +185,8 @@
       \setfullsectionnumber{\??mk#1}%
       \processaction % slow
         [#2]
-        [  \v!both=>{\fetchtwomarks[#1]},
-           \v!all=>{\fetchallmarks[#1]},
+        [   \v!both=>{\fetchtwomarks[#1]},
+             \v!all=>{\fetchallmarks[#1]},
          \s!default=>{\fetchmark    [#1][\v!first]},
          \s!unknown=>{\fetchmark    [#1][#2]}]%
       \egroup}}
