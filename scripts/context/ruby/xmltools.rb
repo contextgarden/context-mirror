@@ -8,7 +8,7 @@
 # This script will harbor some handy manipulations on tex
 # related files.
 
-banner = ['XMLTools', 'version 1.0', '2002/2004', 'PRAGMA ADE/POD']
+banner = ['XMLTools', 'version 1.1', '2002/2004', 'PRAGMA ADE/POD']
 
 unless defined? ownpath
     ownpath = $0.sub(/[\\\/][a-z0-9\-]*?\.rb/i,'')
@@ -18,20 +18,47 @@ end
 require 'xmpl/switch'
 require 'exa/logger'
 
+class String
+
+    def astring(n=10)
+        gsub(/(\d+)/o) do $1.to_s.rjust(n) end.gsub(/ /o, '0')
+    end
+
+    def xstring
+        if self =~ /\'/o then
+            "\"#{self.gsub(/\"/, '&quot;')}\""
+        else
+            "\'#{self}\'"
+        end
+    end
+
+end
+
+class Array
+
+    def asort(n=10)
+        sort {|x,y| x.astring(n) <=> y.astring(n)}
+    end
+
+end
+
 class Commands
 
     include CommandBase
 
     def dir
 
+        @xmlns     = "xmlns='http://www.pragma-ade.com/rlg/xmldir.rng'"
+
         pattern    = @commandline.option('pattern')
         recurse    = @commandline.option('recurse')
         stripname  = @commandline.option('stripname')
+        longname   = @commandline.option('longname')
         url        = @commandline.option('url')
         outputfile = @commandline.option('output')
         root       = @commandline.option('root')
 
-        def generate(output,files,url,root)
+        def generate(output,files,url,root,longname)
 
             class << output
                 def xputs(str,n=0)
@@ -40,14 +67,14 @@ class Commands
             end
 
             dirname = ''
-            output.xputs("<?xml xmlns='http://www.pragma-ade.com/rlg/xmldir.rng'?>\n\n")
+            output.xputs("<?xml version='1.0'?>\n\n")
             if ! root || root.empty? then
-                rootatt = ''
+                rootatt = @xmlns
             else
-                rootatt = " root='#{root}'"
+                rootatt = " #{@xmlns} root='#{root}'"
             end
             if url.empty? then
-                output.xputs("<files#{rootatt}>\n")
+                output.xputs("<files #{rootatt}>\n")
             else
                 output.xputs("<files url='#{url}'#{rootatt}>\n")
             end
@@ -58,7 +85,11 @@ class Commands
                     output.xputs("<directory name='#{dn}'>\n", 2)
                     dirname = dn
                 end
-                output.xputs("<file name='#{bn}'>\n", 4)
+                if longname && dn != '.' then
+                    output.xputs("<file name='#{dn}/#{bn}'>\n", 4)
+                else
+                    output.xputs("<file name='#{bn}'>\n", 4)
+                end
                 output.xputs("<base>#{bn.sub(/\..*$/,'')}</base>\n", 6)
                 output.xputs("<type>#{bn.sub(/^.*\./,'')}</type>\n", 6)
                 output.xputs("<size>#{File.stat(f).size}</size>\n", 6)
@@ -106,7 +137,7 @@ class Commands
             end
         end
 
-        generate(output, globbed(pattern, recurse), url, root)
+        generate(output, globbed(pattern, recurse), url, root, longname)
 
         output.close if output
 
@@ -191,6 +222,88 @@ class Commands
 
     end
 
+    def analyze
+
+        file   = @commandline.argument('first')
+        result = @commandline.option('output')
+
+        if FileTest.file?(file) then
+            if data = IO.read(file) then
+                report("xml file #{file} loaded")
+                elements   = Hash.new
+                attributes = Hash.new
+                entities   = Hash.new
+                data.scan(/<([^>\s\/\!\?]+)([^>]*?)>/o) do
+                    element, attributelist = $1, $2
+                    if elements.key?(element) then
+                        elements[element] += 1
+                    else
+                        elements[element] = 1
+                    end
+                    attributelist.scan(/\s*([^\=]+)\=([\"\'])(.*?)(\2)/) do
+                        key, value = $1, $3
+                        attributes[element] = Hash.new unless attributes.key?(element)
+                        attributes[element][key] = Hash.new unless attributes[element].key?(key)
+                        if attributes[element][key].key?(value) then
+                            attributes[element][key][value] += 1
+                        else
+                            attributes[element][key][value] = 1
+                        end
+                    end
+                end
+                data.scan(/\&([^\;]+)\;/o) do
+                    entity = $1
+                    if entities.key?(entity) then
+                        entities[entity] += 1
+                    else
+                        entities[entity] = 1
+                    end
+                end
+                result = file.gsub(/\..*?$/, '') + '.xlg' if result.empty?
+                if f = File.open(result,'w') then
+                    report("saving report in #{result}")
+                    f.puts "<?xml version='1.0'?>\n"
+                    f.puts "<document>\n"
+                    if entities.length>0 then
+                        f.puts "  <entities>\n"
+                        entities.keys.asort.each do |entity|
+                            f.puts "    <entity name=#{entity.xstring} n=#{entities[entity].to_s.xstring}/>\n"
+                        end
+                        f.puts "  </entities>\n"
+                    end
+                    if elements.length>0 then
+                        f.puts "  <elements>\n"
+                        elements.keys.sort.each do |element|
+                            if attributes.key?(element) then
+                                f.puts "    <element name=#{element.xstring} n=#{elements[element].to_s.xstring}>\n"
+                                if attributes.key?(element) then
+                                    attributes[element].keys.asort.each do |attribute|
+                                        f.puts "      <attribute name=#{attribute.xstring}>\n"
+                                        attributes[element][attribute].keys.asort.each do |value|
+                                            f.puts "        <instance value=#{value.xstring} n=#{attributes[element][attribute][value].to_s.xstring}/>\n"
+                                        end
+                                        f.puts "      </attribute>\n"
+                                    end
+                                end
+                                f.puts "    </element>\n"
+                            else
+                                f.puts "    <element name=#{element.xstring} n=#{elements[element].to_s.xstring}/>\n"
+                            end
+                        end
+                        f.puts "  </elements>\n"
+                    end
+                    f.puts "</document>\n"
+                else
+                    report("unable to open file '#{result}'")
+                end
+            else
+                report("unable to load file '#{file}'")
+            end
+        else
+            report("unknown file '#{file}'")
+        end
+    end
+
 end
 
 logger      = EXA::ExaLogger.new(banner.shift)
@@ -198,8 +311,9 @@ commandline = CommandLine.new
 
 commandline.registeraction('dir',     'generate directory listing')
 commandline.registeraction('mmlpages','generate graphic from mathml')
+commandline.registeraction('analyze', 'report entities and elements')
 
-# commandline.registeraction('dir',     'filename --pattern= --output= [--recurse --stripname --url --root]')
+# commandline.registeraction('dir',     'filename --pattern= --output= [--recurse --stripname --longname --url --root]')
 # commandline.registeraction('mmlpages','filename [--eps --jpg --png --style= --mode=]')
 
 commandline.registeraction('ls')
@@ -208,6 +322,7 @@ commandline.registeraction('help')
 commandline.registeraction('version')
 
 commandline.registerflag('stripname')
+commandline.registerflag('longname')
 commandline.registerflag('recurse')
 
 commandline.registervalue('pattern')

@@ -149,9 +149,10 @@
 
 \def\addsomebackground#1#2#3#4% area box width height / zero test added
   {\ifsomebackgroundfound#1\ifdim#3>\zeropoint\ifdim#4>\zeropoint
+     \doifvaluesomething{\??ma#1\c!setups}{\setups[\getvalue{\??ma#1\c!setups}]}% should not produce funny spaces !
      \setbox#2\vbox\fastlocalframed
        [\??ma#1]
-       [\c!component=#1,\c!strut=\v!no,\c!offset=\v!overlay,%
+       [\c!component=#1,\c!strut=\v!no,\c!offset=\v!overlay,\c!setups=,%
         \c!width=#3,\c!height=#4]
        {\dp#2\zeropoint\box#2}%
    \fi\fi\fi}
@@ -345,41 +346,21 @@
       \vfilll}%
   \smashbox#1}
 
-% \def\dodopagebodybackground#1#2%
-%   {\ifdim#2>\zeropoint % added, faster
-%      \setbox\scratchbox\vbox to #2
-%        \bgroup\hbox\bgroup
-%          \swapmargins
-%          \goleftonpage
-%          \dododopagebodybackground\linkerrandbreedte  #2#1\v!linkerrand
-%          \hskip\linkerrandafstand
-%          \dododopagebodybackground\linkermargebreedte #2#1\v!linkermarge
-%          \hskip\linkermargeafstand
-%          \dododopagebodybackground\zetbreedte         #2#1\v!tekst
-%          \hskip\rechtermargeafstand
-%          \dododopagebodybackground\rechtermargebreedte#2#1\v!rechtermarge
-%          \hskip\rechterrandafstand
-%          \dododopagebodybackground\rechterrandbreedte #2#1\v!rechterrand
-%        \egroup\egroup
-%      \wd\scratchbox\zeropoint
-%      \box\scratchbox\relax
-%    \fi}
-
 \def\dodopagebodybackground#1#2%
   {\ifdim#2>\zeropoint % added, faster
      \setbox\scratchbox\vbox to #2
        \bgroup\hbox\bgroup
        % \swapmargins
          \goleftonpage
-         \dododopagebodybackground\leftedgewidth  #2#1\v!leftedge
+         \dododopagebodybackground\leftedgewidth   #2#1\v!leftedge
          \hskip\leftedgedistance
          \dododopagebodybackground\leftmarginwidth #2#1\v!leftmargin
          \hskip\leftmargindistance
-         \dododopagebodybackground\makeupwidth         #2#1\v!text
+         \dododopagebodybackground\makeupwidth     #2#1\v!text
          \hskip\rightmargindistance
          \dododopagebodybackground\rightmarginwidth#2#1\v!rightmargin
          \hskip\rightedgedistance
-         \dododopagebodybackground\rightedgewidth #2#1\v!rightedge
+         \dododopagebodybackground\rightedgewidth  #2#1\v!rightedge
        \egroup\egroup
      \wd\scratchbox\zeropoint
      \box\scratchbox\relax
@@ -389,9 +370,10 @@
   {\ifsomebackgroundfound{#3#4}%
      \ifdim#2>\zeropoint\relax
        \ifdim#1>\zeropoint\relax
+         \doifvaluesomething{\??ma#3#4\c!setups}{\setups[\getvalue{\??ma#3#4\c!setups}]}% should not produce funny spaces !
          \fastlocalframed
            [\??ma#3#4]
-           [\c!component=#3-#4,\c!width=#1,\c!height=#2,\c!offset=\v!overlay]
+           [\c!component=#3-#4,\c!width=#1,\c!height=#2,\c!offset=\v!overlay,\c!setups=]
            {\getvalue{\??ma#3#4\c!command}}% {\hsize=#1\vsize=#2....}
        \else
          \hskip#1%
@@ -620,40 +602,6 @@
      \resetglobal \expandafter\gobbleoneargument
    \fi}
 
-% \def\doaddlocalbackground#1%
-%   {\scratchdimen\dp#1%
-%    \edef\next
-%      {\noexpand\redoglobal\wd#1\the\wd#1%
-%       \noexpand\redoglobal\ht#1\the\ht#1%
-%       \noexpand\dodoglobal\dp#1\the\dp#1}%
-%    \dp#1\zeropoint
-%    \redoglobal\setbox#1\hbox
-%      {\fastlocalframed
-%         [\??ma\v!lokaal]
-%         [\c!kader=\v!uit,
-%          \c!offset=\v!overlay,
-%          \c!achtergrond=\localbackground]%
-%         {\registerMPlocaltextarea{\box#1}}}%
-%    \ifdim\naturalfloatdepth>\zeropoint % maybe take difference
-%      \redoglobal\setbox#1\hbox{\lower\scratchdimen\box#1}%
-%    \fi
-%    \doglobal\increment\localpositionnumber % afterwards !
-%    \next}
-
-% \def\doaddlocalbackground#1%
-%   {\edef\next
-%      {\noexpand\redoglobal\wd#1\the\wd#1%
-%       \noexpand\redoglobal\ht#1\the\ht#1%
-%       \noexpand\dodoglobal\dp#1\the\dp#1}%
-%    \dodoglobal\setbox#1\hbox
-%      {\fastlocalframed
-%         [\??ma\v!lokaal]
-%         [\c!component=local,\c!kader=\v!uit,\c!offset=\v!overlay,%
-%          \c!achtergrond=\localbackground]%
-%         {\registerMPlocaltextarea{\box#1}}}%
-%    \next
-%    \doglobal\increment\localpositionnumber\relax} % afterwards !
-
 \def\doaddlocalbackground#1%
   {\edef\next
      {\noexpand\redoglobal\wd#1\the\wd#1%
@@ -662,7 +610,7 @@
    \dodoglobal\setbox#1\hbox
      {\fastlocalframed
         [\??ma\v!local]
-        [\c!component=local,\c!frame=\v!off,\c!offset=\v!overlay,%
+        [\c!component=local,\c!frame=\v!off,\c!offset=\v!overlay,\c!setups=,%
          \c!width=\wd#1,hoogte=\ht#1,% no diepte=\dp#1 in cont-exp.tex, to be checked !
          \c!background=\localbackground]%
         {\registerMPlocaltextarea{\box#1}}}%

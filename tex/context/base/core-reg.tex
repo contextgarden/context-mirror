@@ -963,23 +963,15 @@
       \c!unknownreference=\v!empty,
       \c!expansion=]%
    \presetheadtext[#1=\Word{#1}]%
-   \setvalue{#1}%
-     {\doregister{#1}}%
-   \setvalue{\e!coupled#1}%
-     {\dolinkedregister{#1}}%
-   \setvalue{\s!set#1}%
-     {\dosetregister{#1}}%
-   \setvalue{\s!reset#1}%
-     {\doresetregister{#1}}%
    \addutilityreset{#1}%
-   \setvalue{\e!see#1}%
-     {\dozieregister{#1}}%
-   \setvalue{\e!place#1}%
-     {\placeregister[#1]}%
-   \setvalue{\e!complete#1}%
-     {\completeregister[#1]}%
-   \setvalue{\e!setup#1\e!in}[##1]%
-     {\getparameters[\??id#1][##1]}}
+   \setvalue{#1}{\doregister{#1}}%
+   \setvalue{\e!coupled#1}{\dolinkedregister{#1}}%
+   \setvalue{\s!set#1}{\dosetregister{#1}}%
+   \setvalue{\s!reset#1}{\doresetregister{#1}}%
+   \setvalue{\e!see#1}{\dozieregister{#1}}%
+   \setvalue{\e!place#1}{\placeregister[#1]}%
+   \setvalue{\e!complete#1}{\completeregister[#1]}%
+   \setvalue{\e!setup#1\e!endsetup}[##1]{\getparameters[\??id#1][##1]}}
 
 \def\defineregister%
   {\dodoubleargument\dodefineregister}

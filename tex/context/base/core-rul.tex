@@ -2150,41 +2150,6 @@
 %D
 %D which looks like: \thinrules[n=2]
 
-% \def\thinrule%
-%   {\strut
-%    \leaders
-%      \hrule\!!height.5\linewidth\!!depth.5\linewidth
-%      \hfill
-%    \strut}
-
-% \def\thinrule%
-%   {\strut
-%    \bgroup
-%    \startcolor[\@@dlkleur]%
-%    \doif{\@@dlhoogte}{\v!max}{\def\@@dlhoogte{1}}%
-%    \doif{\@@dldiepte}{\v!max}{\def\@@dldiepte{1}}%
-%    \freezedimensionwithunit\@@dlhoogte{\strutht}%
-%    \freezedimensionwithunit\@@dldiepte{\strutdp}%
-%    \leaders
-%      \hrule\!!height\@@dlhoogte\!!depth\@@dldiepte
-%      \hfill
-%    \stopcolor
-%    \donefalse
-%    \processaction
-%      [\@@dlvariant]
-%      [\v!a=>,
-%       \v!b=>\dimen0=.5\linewidth\dimen2=\dimen0\donetrue,
-%       \v!c=>\dimen2=\@@dldiepte\dimen0=-\dimen2\donetrue
-%             \advance\dimen0\linewidth]%
-%    \ifdone
-%      \hfillneg
-%      \leaders
-%        \hrule\!!height\dimen0\!!depth\dimen2
-%        \hfill
-%    \fi
-%    \egroup
-%    \strut}
-
 \def\thinrule
   {\strut
    \bgroup
@@ -2259,37 +2224,6 @@
 \def\setupthinrules
   {\dosingleargument\dosetupthinrules}
 
-% \def\dothinrules[#1]%
-%   {\bgroup
-%    \dosetupthinrules[#1]%
-%    \@@dlvoor
-%    \assignvalue{\@@dlinterlinie}{\@@dlinterlinie}{1.0}{1.5}{2.0}%
-%    \spacing\@@dlinterlinie
-%    \dorecurse
-%      {\@@dln}
-%      {\ifnum\recurselevel=\@@dln \dothinrulesnobreak \else
-%       \ifnum\recurselevel=2      \dothinrulesnobreak \fi\fi
-%                                  \thinrule
-%       \ifnum\recurselevel<\@@dln \endgraf            \fi}%
-%    \@@dlna
-%    \egroup}
-
-% \def\dothinrules[#1]%
-%   {\bgroup
-%    \dosetupthinrules[#1]%
-%    \@@dlvoor
-%    \assignvalue{\@@dlinterlinie}{\@@dlinterlinie}{1.0}{1.5}{2.0}%
-%    \spacing\@@dlinterlinie
-%    \dorecurse
-%      {\@@dln}
-%      {\ifnum\recurselevel=\@@dln \dothinrulesnobreak \else
-%       \ifnum\recurselevel=2      \dothinrulesnobreak \fi\fi
-%                                  \thinrule
-%      %\ifnum\recurselevel<\@@dln \endgraf \fi}%
-%       \ifnum\recurselevel<\@@dln \endgraf \geenwitruimte \@@dltussen \fi}%
-%    \@@dlna
-%    \egroup}
-
 \def\dothinrules[#1]%
   {\bgroup
    \dosetupthinrules[#1]%
@@ -2314,13 +2248,13 @@
      {\carryoverpar\egroup}
      {\@@dlafter\egroup}}
 
-\def\thinrules%
+\def\thinrules
   {\dosingleempty\dothinrules}
 
 %D A couple of examples are given below.
 %D
 %D \startbuffer
-%D \setupthinrules[n=3,inbetween=,color=gray  ]
+%D \setupthinrules[n=3,inbetween=,color=gray]
 %D
 %D test test \thinrules\ test test \par
 %D test test \thinrules [color=green] test test \par

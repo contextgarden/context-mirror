@@ -532,18 +532,36 @@
 %    \appendtoPDFdocumentcolorspaces
 %      {/#1 \the\pdflastobj\space0 R}}
 
+\def\doPDFregisterspotcolorname#1#2%
+  {\bgroup
+   \let\ascii\empty
+   \def\docommand##1%
+     {\edef\ascii{\ascii
+       \ifx\nexthandledtoken\space
+         \letterhash20%
+       \else\ifx\nexthandledtoken\blankspace
+         \letterhash20%
+       \else
+         ##1%
+       \fi\fi}}%
+   \expanded{\handletokens#2}\with\docommand
+   \letgvalue{@@pdf@@scn@@#1}\ascii
+   \egroup}
+
 \def\doPDFregistersomespotcolor#1#2#3#4#5#6#7% name fractions names p's space domain function
   {\bgroup
    \let\spotpops\empty
    \ifcase#2\or
-     \def\PDFspotcolornames{/Separation /#1}%
+     %def\PDFspotcolornames{/Separation /#1}%
+     \edef\PDFspotcolornames{/Separation /\executeifdefined{@@pdf@@scn@@#1}{#1}}%
      \def\PDFspotcolordomain{0.0 1.0}%
    \else
      \dorecurse{#2}{\edef\spotpops{\spotpops pop }}%
      \let\PDFspotcolornames \empty
      \let\PDFspotcolordomain\empty
      \def\dospotcolorcommand##1%
-       {\edef\PDFspotcolornames {\PDFspotcolornames/##1\space}%
+       {%\edef\PDFspotcolornames {\PDFspotcolornames/##1\space}%
+        \edef\PDFspotcolornames {\PDFspotcolornames/\executeifdefined{@@pdf@@scn@@##1}{##1}\space}%
         \edef\PDFspotcolordomain{\PDFspotcolordomain 0.0 1.0\space}}%
      \processcommacommand[#3]\dospotcolorcommand
      \edef\PDFspotcolornames{/DeviceN [\PDFspotcolornames]}%
@@ -565,7 +583,8 @@
    \let\PDFspotcolornames \empty
    \let\PDFspotcolordomain\empty
    \def\docommand##1%
-     {\edef\PDFspotcolornames {\PDFspotcolornames/##1\space}%
+     {%\edef\PDFspotcolornames {\PDFspotcolornames/##1\space}%
+      \edef\PDFspotcolornames{\PDFspotcolornames/\executeifdefined{@@pdf@@scn@@##1}{##1}\space}%
       \edef\PDFspotcolordomain{\PDFspotcolordomain 0.0 1.0\space}}%
    \processcommacommand[#3,None]\docommand
    \let\PDFcolorindexvector\empty

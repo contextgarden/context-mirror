@@ -3602,8 +3602,7 @@
 
 \def\noconvertfont#1% #2%
   {\doifdefinedelse{\@noletter@#1}
-     {\doifelsenothing{#1}\gobbleoneargument\@@donoconvertfont}
-     {\firstofoneargument}%
+     {\doifelsenothing{#1}\gobbleoneargument\@@donoconvertfont}\gobbleoneargument
    {#1}} % {#2}}
 
 %D Extras:

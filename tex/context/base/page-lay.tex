@@ -763,7 +763,7 @@
       \processcommalist[#1]\docommando
       \adaptpagedimensions}}
 
-\def\adaptlayout%
+\def\adaptlayout
   {\dodoubleempty\doadaptlayout}
 
 % describe interface
@@ -1173,53 +1173,53 @@
 
 \setuplayout
   [             \c!topspace=.08417508418\paperheight,  %  2.5cm
-                 \c!top=\!!zeropoint,
-          \c!topdistance=\!!zeropoint,
-                 \c!header=.06734006734\paperheight,  %  2.0cm
+                     \c!top=\!!zeropoint,
+             \c!topdistance=\!!zeropoint,
+                  \c!header=.06734006734\paperheight,  %  2.0cm
           \c!headerdistance=\!!zeropoint,
-                \c!height=.84175084175\paperheight,  % 25.0cm
-           \c!footerdistance=\layoutparameter\c!headerdistance,
+                  \c!height=.84175084175\paperheight,  % 25.0cm
+          \c!footerdistance=\layoutparameter\c!headerdistance,
                   \c!footer=.06734006734\paperheight,  %  2.0cm
           \c!bottomdistance=\layoutparameter\c!topdistance,
-                 \c!bottom=\!!zeropoint,
-                \c!backspace=.11904761905\paperwidth, %  2.5cm
-                  \c!edge=\!!zeropoint,
-           \c!edgedistance=\layoutparameter\c!margindistance,
-                 \c!margin=.12649983170\paperwidth, %  snijwit-2*afstand
+                  \c!bottom=\!!zeropoint,
+               \c!backspace=.11904761905\paperwidth, %  2.5cm
+                    \c!edge=\!!zeropoint,
+            \c!edgedistance=\layoutparameter\c!margindistance,
+                  \c!margin=.12649983170\paperwidth, %  snijwit-2*afstand
           \c!margindistance=.02008341748\paperwidth, %  12.0pt
-            \c!leftedge=\layoutparameter\c!edge,
-     \c!leftedgedistance=\layoutparameter\c!edgedistance,
-           \c!leftmargin=\layoutparameter\c!margin,
-    \c!leftmargindistance=\layoutparameter\c!margindistance,
-               \c!width=.71428571429\paperwidth, %  15.0cm
-   \c!rightmargindistance=\layoutparameter\c!margindistance,
-          \c!rightmargin=\layoutparameter\c!margin,
-    \c!rightedgedistance=\layoutparameter\c!edgedistance,
-           \c!rightedge=\layoutparameter\c!edge,
-             \c!veroffset=\!!zeropoint,
-              \c!bottomspace=\!!zeropoint,
-             \c!horoffset=\!!zeropoint,
-               \c!cutspace=\!!zeropoint,
-          \c!textwidth=, % dangerous option -> centered / local
-            \c!textmargin=, % dangerous option -> both sides
-          \c!textdistance=\!!zeropoint, % shift down on grid
-                \c!style=,
-                 \c!color=,
-             \c!marking=\v!off,
+                \c!leftedge=\layoutparameter\c!edge,
+        \c!leftedgedistance=\layoutparameter\c!edgedistance,
+              \c!leftmargin=\layoutparameter\c!margin,
+      \c!leftmargindistance=\layoutparameter\c!margindistance,
+                   \c!width=.71428571429\paperwidth, %  15.0cm
+     \c!rightmargindistance=\layoutparameter\c!margindistance,
+             \c!rightmargin=\layoutparameter\c!margin,
+       \c!rightedgedistance=\layoutparameter\c!edgedistance,
+               \c!rightedge=\layoutparameter\c!edge,
+               \c!veroffset=\!!zeropoint,
+             \c!bottomspace=\!!zeropoint,
+               \c!horoffset=\!!zeropoint,
+                \c!cutspace=\!!zeropoint,
+               \c!textwidth=, % dangerous option -> centered / local
+              \c!textmargin=, % dangerous option -> both sides
+            \c!textdistance=\!!zeropoint, % shift down on grid
+                   \c!style=,
+                   \c!color=,
+                 \c!marking=\v!off,
                 \c!location=, % \v!singlesided, but empty is signal
-                \c!scale=1,
-                    \c!nx=1,
-                    \c!ny=1,
-                    \c!dx=\!!zeropoint,
-                    \c!dy=\!!zeropoint,
-                  \c!grid=\v!no,
-                \c!preset=,
-                \c!setups=\systemsetupsprefix\s!default,
-            \c!clipoffset=\!!zeropoint,
-                \c!lines=0,
-                \c!paper=, % for foxet
-                \c!page=, % for foxet
-              \c!columns=1,
+                   \c!scale=1,
+                      \c!nx=1,
+                      \c!ny=1,
+                      \c!dx=\!!zeropoint,
+                      \c!dy=\!!zeropoint,
+                    \c!grid=\v!no,
+                  \c!preset=,
+                  \c!setups=\systemsetupsprefix\s!default,
+              \c!clipoffset=\!!zeropoint,
+                   \c!lines=0,
+                   \c!paper=, % for foxet
+                    \c!page=, % for foxet
+                 \c!columns=1,
           \c!columndistance=\!!zeropoint]
 
 %D First we define a whole range of (DIN) papersizes,

@@ -13,6 +13,9 @@
 
 \writestatus{loading}{Context XML Macros (math ml)}
 
+% I will reimplement this one without mapping since we now have more
+% tricks available
+
 %\enablemathpunctuation
 
 % First some general formula element definitions.
@@ -60,6 +63,7 @@
 \defineXMLargument [math]  \doXMLmath
 \defineXMLargument [imath] \doXMLimath
 \defineXMLargument [dmath] \doXMLdmath
+\defineXMLargument [m]     \doXMLimath
 
 \unexpanded\def\doXMLmath {\ifhmode\@EA\doXMLimath\else\@EA\doXMLdmath\fi}
 \unexpanded\def\doXMLimath{\XMLremapdata[mml]{$}{$}}

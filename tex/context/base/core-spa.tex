@@ -13,18 +13,21 @@
 
 \writestatus{loading}{Context Spacing Macros}
 
+% to be sorted out: dependencies, orderof initialization
+
 \unprotect
 
 \newevery \everybodyfont    \Everybodyfont   % just to be sure
 \newevery \everyfontswitch  \EveryFontSwitch % just to be sure
 \newevery \everydefinedfont \relax           % just to be sure
 
+\appendtoks \spacing               1\to \everybodyfont
 \appendtoks \presetnormallineheight \to \everybodyfont
-\appendtoks \setnormalbaselines     \to \everybodyfont
-\appendtoks \setstrut               \to \everybodyfont
+\appendtoks \setnormalbaselines     \to \everybodyfont % check if redundant
+\appendtoks \setstrut               \to \everybodyfont % check if redundant
 \appendtoks \settopskip             \to \everybodyfont
 \appendtoks \setmaxdepth            \to \everybodyfont
-\appendtoks \spacing               1\to \everybodyfont
+%appendtoks \spacing               1\to \everybodyfont
 \appendtoks \simplesetupindenting   \to \everybodyfont
 \appendtoks \simplesetupblank       \to \everybodyfont
 \appendtoks \simplesetupwhitespace  \to \everybodyfont
@@ -32,11 +35,11 @@
 \appendtoks \simplesetupspacing     \to \everybodyfont % nieuw
 \appendtoks \setdisplayskips        \to \everybodyfont % nieuw
 
-\appendtoks \updateraggedskips \to \everyfontswitch  % under test
+\appendtoks \updateraggedskips      \to \everyfontswitch  % under test
 
-\prependtoks \let\par\endgraf \to \everypagebody % see \fillinline
+\prependtoks \let\par\endgraf       \to \everypagebody % see \fillinline
 
-\appendtoks \simplesetupspacing \to \everydefinedfont
+\appendtoks \simplesetupspacing     \to \everydefinedfont
 
 \def\stelfactorenin
   {\simplesetupwhitespace
@@ -135,6 +138,7 @@
 
 \def\presetnormallineheight
   {\edef\normallineheight{\@@itline}%
+%  done elsewhere : \spacing\!!plusone % new per 10/08/2004, else problems in otr / !! needed
    \iflocalinterlinespace \else
      \doifdefined\bodyfontinterlinespecs
        {\doifsomething\bodyfontinterlinespace
@@ -153,20 +157,20 @@
      \let\strutheightfactor\@@itheight
      \let\strutdepthfactor \@@itdepth
    \fi
-   \let\minimumstrutheight\@@itminheight
-   \let\minimumstrutdepth \@@itmindepth
+   \let\minimumstrutheight \@@itminheight
+   \let\minimumstrutdepth  \@@itmindepth
    \let\minimallinedistance\@@itdistance
-   \let\normallineheight\@@itline % let ! ! ! ! ! ivm ex
-   \let\topskipfactor\@@ittop
-   \let\maxdepthfactor\@@itbottom
-   \let\baselinegluefactor\@@itstretch
+   \let\normallineheight   \@@itline % let ! ! ! ! ! ivm ex
+   \let\topskipfactor      \@@ittop
+   \let\maxdepthfactor     \@@itbottom
+   \let\baselinegluefactor \@@itstretch
    \setfontparameters % redundant, can be \setstrut, test first
    \updateraggedskips} % yes indeed
 
 \def\setuprelativeinterlinespace[#1]%
   {\processallactionsinset % \regelwit = dummy !
      [#1]
-     [     \v!on=>\oninterlineskip,
+     [      \v!on=>\oninterlineskip,
            \v!off=>\offinterlineskip,
          \v!reset=>\setfontparameters,% just \setstrut, test first
        \s!unknown=>\assignvalue{#1}\regelwit{1.00}{1.25}{1.50}%
@@ -1771,29 +1775,32 @@
      \lineheight\normallineheight
    \fi
    \openlineheight\spacingfactor\lineheight
-\ifdim\minimumstrutheight>\zeropoint
-   \openstrutheight\minimumstrutheight % new
-\else
-   \openstrutheight\strutheightfactor\openlineheight
-\fi
-\ifdim\minimumstrutdepth>\zeropoint
-   \openstrutdepth \minimumstrutdepth % new
-\else
-   \openstrutdepth \strutdepthfactor \openlineheight
-\fi
-\scratchdimen\minimumstrutdepth
-\advance\scratchdimen\minimumstrutheight
-\ifdim\scratchdimen>\zeropoint
-  \openlineheight\openstrutheight % new
-  \advance\openlineheight\openstrutdepth % new
-\fi
+   \openstrutheight \ifdim\minimumstrutheight>\zeropoint
+     \minimumstrutheight % new
+   \else
+     \strutheightfactor\openlineheight
+   \fi
+   \openstrutdepth \ifdim\minimumstrutdepth>\zeropoint
+     \minimumstrutdepth % new
+   \else
+     \strutdepthfactor \openlineheight
+   \fi
+   \begingroup % avoid interference
+   \scratchdimen\minimumstrutdepth
+   \advance\scratchdimen\minimumstrutheight
+   \ifdim\scratchdimen>\zeropoint
+     \endgroup
+     \openlineheight\openstrutheight % new
+     \advance\openlineheight\openstrutdepth % new
+   \else
+     \endgroup
+   \fi
    \normalbaselineskip\openlineheight
      \!!plus\baselinegluefactor\openlineheight
      \!!minus\baselinegluefactor\openlineheight
    \normallineskip\minimallinedistance\relax % \onepoint\relax
    \normallineskiplimit\zeropoint\relax
    \normalbaselines}
-
 
 \def\setspacingfactor#1\to#2\by#3\\%
   {\strutdimen#2\points
@@ -1808,8 +1815,8 @@
    \else
      \edef\spacingfactor{#1}%
    \fi
-   \setspacingfactor\systemtopskipfactor \to\topskipfactor \by#1\\%
-   \setspacingfactor\systemmaxdepthfactor\to\maxdepthfactor\by#1\\%
+   \setspacingfactor\systemtopskipfactor \to\topskipfactor \by#1\\% why no \spacingfactor ?
+   \setspacingfactor\systemmaxdepthfactor\to\maxdepthfactor\by#1\\% why no \spacingfactor ?
    \setnormalbaselines
    \setstrut}
 
@@ -2250,18 +2257,18 @@
 \def\dosinglenarrower#1%
   {\processaction
      [#1]
-     [    \v!left=>\global\advance\ctxleftskip  \@@slleft,
+     [     \v!left=>\global\advance\ctxleftskip  \@@slleft,
          \v!middle=>\global\advance\ctxmidskip   \@@slmiddle,
-         \v!right=>\global\advance\ctxrightskip \@@slright,
+          \v!right=>\global\advance\ctxrightskip \@@slright,
            \v!none=>,
         \s!unknown=>\global\advance\ctxmidskip \commalistelement]}
 
 \def\donarrower[#1]%
   {\processaction
      [#1]
-     [    \v!left=>\global\advance\ctxleftskip  \@@slleft,
+     [     \v!left=>\global\advance\ctxleftskip  \@@slleft,
          \v!middle=>\global\advance\ctxmidskip   \@@slmiddle,
-         \v!right=>\global\advance\ctxrightskip \@@slright,
+          \v!right=>\global\advance\ctxrightskip \@@slright,
            \v!none=>,% handy for delimitedtexts
         \s!unknown=>{\dorepeatwithcommand[#1]\dosinglenarrower}]}
 
@@ -2736,7 +2743,6 @@
    % \@EAEAEA\doconvertfont\@EA\@EA\csname#1#2\endcsname
      \@EA\doconvertfont\csname#1#2\@EA\endcsname
    \fi}
-
 
 \unexpanded\def\@@dostopattributes
   {\doglobalstopcolor

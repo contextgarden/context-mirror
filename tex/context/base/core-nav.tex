@@ -157,6 +157,14 @@
 %D In the macros that deal with making areas into hyperlinks,
 %D we use:
 
+\newbox\driverresources
+
+\def\collectdriverresource#1%
+  {\global\setbox\driverresources\hbox{\box\driverresources#1}}
+
+\def\flushdriverresources
+  {\ifvoid\driverresources\else\box\driverresources\fi}
+
 \def\dostartgoto\data#1\start#2\stop#3\dostopgoto
   {\ifsecondaryreference
      \bgroup\setbox0\hbox{#2#3}\egroup
@@ -190,7 +198,8 @@
              \dimen0\wd0\box0\kern-\dimen0\smashbox2\box2\kern\dimen0
            \else
              \smashbox2\box2\box0
-           \fi}%
+           \fi
+           \flushdriverresources}%
         \resetgoto}%
    \fi}
 

@@ -1662,7 +1662,7 @@
 
 \def\placeheadmargintexts#1%
   {\the\everyheadstart
-   \doifvalue{\??ko#1\c!margintext}\v!yes\placemargintexts}
+   \doifvalue{\??ko#1\c!margintext}\v!yes\placemargincontent}
 
 \def\doplaceheadtext#1#2#3#4%
   {\beginheadplacement{#1}%
@@ -2133,14 +2133,10 @@
          \definemarking[#1\v!number][#2\v!number]%
          \doifundefined{\??li#1}{\definelist[#1][#2]}}}%
    \addtocommalist{#1}\@@kolist
-   \setevalue{\??sk#1}%
-     {\getvalue{\??ko#1\c!coupling}}%
-   \setevalue{\??by#1}%
-     {\getvalue{\??ko#1\c!section}}%
-   \setevalue{\??by\v!by#1}%
-     {\getvalue{\??ko#1\c!section}}%
-   \setvalue{#1}%
-     {\dodoubleempty\dosomekop[#1]}}
+   \setevalue{\??sk#1}{\getvalue{\??ko#1\c!coupling}}%
+   \setevalue{\??by#1}{\getvalue{\??ko#1\c!section}}%
+   \setevalue{\??by\v!by#1}{\getvalue{\??ko#1\c!section}}%
+   \setvalue{#1}{\dodoubleempty\dosomekop[#1]}}
 
 \def\definehead
   {\dodoubleemptywithset\dodefinehead}

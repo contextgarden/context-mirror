@@ -426,13 +426,13 @@
      [\getvalue{#1\c!textsize}]
      [  \v!small=>\def\@@localchemicalstyle{\scriptscriptstyle},
        \v!medium=>\def\@@localchemicalstyle{\ifsmallchemicaltext\scriptscriptstyle\else\scriptstyle\fi},
-        \v!big=>\def\@@localchemicalstyle{\ifsmallchemicaltext\scriptstyle\else\textstyle\fi},
+          \v!big=>\def\@@localchemicalstyle{\ifsmallchemicaltext\scriptstyle\else\textstyle\fi},
       \s!unknown=>\def\@@localchemicalstyle{\getvalue{#1\c!textsize}}]%
    \processaction
      [\getvalue{#1\c!scale}]
      [  \v!small=>\def\@@localchemicalscale{500},
        \v!medium=>\def\@@localchemicalscale{625},
-        \v!big=>\def\@@localchemicalscale{750},
+          \v!big=>\def\@@localchemicalscale{750},
       \s!unknown=>\def\@@localchemicalscale{\getvalue{#1\c!scale}}]}
 
 \def\@@currentchemicalformat

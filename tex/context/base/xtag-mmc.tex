@@ -87,10 +87,8 @@
 
 \def\MMLcenotation#1%
   {\doifelse\@@MMLenotationsymbol\v!no
-     {\def\MMLcsep%
-        {\unskip{\rm e}\ignorespaces}}
-     {\def\MMLcsep##1\empty
-        {\doifelse\@@MMLenotationsymbol{dot}\cdot\times10^{##1}}}%
+     {\def\MMLcsep         {\unskip{\rm e}\ignorespaces}}
+     {\def\MMLcsep##1\empty{\doifelse\@@MMLenotationsymbol{dot}\cdot\times10^{##1}}}%
    #1\empty}
 
 \def\MMLcCI#1% #2% can be sped up with \doifundefined ...
@@ -126,10 +124,7 @@ complex-cartesian=>\let\next\MMLccartesian,
   {{\bi#1}}
 
 \def\MMLcCIfunction#1%
-  {\doifMMLoperatorelse{#1}
-     {\let\next\MMLcCIdefault}
-     {\let\next\MMLcFNdefault}%
-   \next{}{#1}}
+  {\doifMMLoperatorelse{#1}\MMLcCIdefault\MMLcFNdefault{}{#1}}
 
 \def\MMLcCIdefault#1#2% #1=dummy
   {#2%\!% \getXMLentity{NegThinSpace}% looks bad in A(x)
@@ -167,8 +162,8 @@ complex-cartesian=>\let\next\MMLccartesian,
          \processaction
            [\@@MMLbasesymbol]
            [\v!characters=>\MMLcCNbasestring BODH,
-              \v!text=>\MMLcCNbasestring{BIN}{OCT}{DEC}{HEX},
-            \s!unknown=>\MMLcCNbase]$}}}}
+                  \v!text=>\MMLcCNbasestring{BIN}{OCT}{DEC}{HEX},
+               \s!unknown=>\MMLcCNbase]$}}}}
      {#1}}
 
 \def\MMLcCNbasedata#1%
@@ -266,10 +261,9 @@ complex-cartesian=>\let\next\MMLccartesian,
   {\doifXMLRchildelse{ci}{#2}
      {\collectXMLRchild{ci}{#2}%
       \@EA\doifMMLoperatorelse\@EA{\the\XMLRtoks}
-        {\let\next\MMLcFNoperator}
-        {\let\next\MMLcFNdefault}}
-     {\let\next\MMLcFNdefault}%
-   \next{#1}{#2}}
+        \MMLcFNoperator\MMLcFNdefault}
+     {\MMLcFNdefault}%
+   {#1}{#2}}
 
 \def\MMLcFNdefault#1#2% neg space needed because of \left
   {#2\!% \getXMLentity{NegThinSpace}%
@@ -541,13 +535,19 @@ complex-cartesian=>\let\next\MMLccartesian,
 
 \remapXMLsingular [times] [CPA] \MMLcTIMES
 
-\setupMMLappearance[times][\c!symbol=\v!no]
+\setupMMLappearance[times][\c!symbol=\v!no] %
+\setupMMLappearance[times][\c!auto=\v!yes]  % new, auto catches cn cn cn
 
 \def\MMLcTIMES#1#2#3\empty
   {\setMMLcreset{\MMLcfunctionlist,\MMLcconstructlist}%
-   \doifelse\@@MMLtimessymbol\v!yes
+   \doifelse\@@MMLtimesauto\v!no
+     {\let\@@MMLtimes@@symbol\@@MMLtimessymbol}
+     {\doifelseXMLRneighbors{cn}{#3}
+        {\let\@@MMLtimes@@symbol\@@MMLtimesauto}
+        {\let\@@MMLtimes@@symbol\v!no}}%
+   \doifelse\@@MMLtimes@@symbol\v!yes
      {\encapsulateXMLR{}{\times}{}{#3\empty}}
-     {\doifelse\@@MMLtimessymbol{dot}
+     {\doifelse\@@MMLtimes@@symbol{dot}
         {\encapsulateXMLR{}{\cdot}{}{#3\empty}}
         {#3\empty}}}
 

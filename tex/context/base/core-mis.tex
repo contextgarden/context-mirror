@@ -84,8 +84,8 @@
 \appendtoks                          \def\TeX{TeX}\to\simplifiedcommands
 \appendtoks                  \def\ConTeXt{ConTeXt}\to\simplifiedcommands
 \appendtoks                \def\MetaPost{MetaPost}\to\simplifiedcommands
-\appendtoks                \def\MetaPost{MetaFont}\to\simplifiedcommands
-\appendtoks                 \def\MetaPost{MetaFun}\to\simplifiedcommands
+\appendtoks                \def\MetaFont{MetaFont}\to\simplifiedcommands
+\appendtoks                  \def\MetaFun{MetaFun}\to\simplifiedcommands
 \appendtoks                              \def||{-}\to\simplifiedcommands
 
 % THIS WAS MAIN-002.TEX
@@ -263,7 +263,7 @@
       \c!top=\vss,
       \c!bottom=\vfill,
       #2]%
-   \setvalue{\e!setup#1\e!in}%
+   \setvalue{\e!setup#1\e!endsetup}%
      {\setupparagraphs[#1]}%
    \dorecurse
       {\getvalue{\??al#1\c!n}}
@@ -1598,7 +1598,7 @@
       \c!align=,
       \c!location=\v!bottom,
       #2]%
-   \setvalue{\e!setup#1\e!in}{\setuppairedbox[#1]}%
+   \setvalue{\e!setup#1\e!endsetup}{\setuppairedbox[#1]}%
    \setvalue{\e!place#1}{\placepairedbox[#1]}}
 
 \def\setuppairedbox

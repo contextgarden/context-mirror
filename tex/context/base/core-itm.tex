@@ -1059,7 +1059,7 @@
       \def\currentitemgroup{#1}%
       \setvalue{\e!start#1}{\startitemgroup[#1]}%
       \setvalue{\e!stop#1}{\stopitemgroup}%
-      \setvalue{\e!setup#1\e!in}{\setupitemgroup[#1]}%
+      \setvalue{\e!setup#1\e!endsetup}{\setupitemgroup[#1]}%
       \getparameters[\??ig#1][\c!levels=3,#2]%
       \ifnum\getvalue{\??ig#1\c!levels}<\maxitemlevel\relax
         \letvalue{\??ig#1\c!levels}\maxitemlevel

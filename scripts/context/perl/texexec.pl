@@ -170,6 +170,7 @@ my $PdfCopy          = 0;
 my $LogFile          = "";
 my $MpyForce         = 0;
 my $InpPath          = "";
+my $AutoPath         = 0;
 my $RunPath          = "";
 my $Arguments        = "";
 my $Pretty           = 0;
@@ -239,6 +240,7 @@ my $MakeMpy = '';
     "paper=s"        => \$PaperFormat,
     "passon=s"       => \$PassOn,
     "path=s"         => \$InpPath,
+    "autopath"       => \$AutoPath,
     "pdf"            => \$ProducePdfT,
     "pdm"            => \$ProducePdfM,
     "pdx"            => \$ProducePdfX,
@@ -1055,6 +1057,8 @@ sub MakeOptionFile {
     open( OPT, ">$JobName.top" );
     print OPT "\% $JobName.top\n";
     print OPT "\\unprotect\n";
+    $ModeFile =~ s/\\/\//gio ; # do this at top of file
+    $Result =~ s/\\/\//gio ; # do this at top of file
     if ( $ModeFile ne '' ) { print OPT "\\readlocfile{$ModeFile}{}{}" }
     if ( $Result   ne '' ) { print OPT "\\setupsystem[file=$Result]\n" }
     elsif ($Suffix) { print OPT "\\setupsystem[file=$JobName$Suffix]\n" }
@@ -1640,9 +1644,23 @@ sub isXMLfile {
 
 sub RunConTeXtFile {
     my ( $JobName, $JobSuffix ) = @_;
+if ($AutoPath) {
+    if ($JobName =~ /^(.*)[\/\\](.*?)$/o) {
+        $InpPath = $1 ;
+        $JobName = $2 ;
+    }
+}
     $JobName =~ s/\\/\//goi;
     $InpPath =~ s/\\/\//goi;
     my $OriSuffix = $JobSuffix;
+if ($JobSuffix =~ /\_fo$/i) {
+    if (! -f $JobName) {
+        print "stripping funny suffix : _fo\n";
+        $JobName =~ s/\_fo$//io ;
+        $JobSuffix =~ s/\_fo$//io ;
+        $OriSuffix =~ s/\_fo$//io ;
+    }
+}
     if (($dosish) && ($PdfClose)) {
         my $ok = system("pdfclose --file $JobName.pdf") if -e "$JobName.pdf" ;
         if (($Result ne '') && (-e "$Result.pdf")) {

@@ -3412,7 +3412,7 @@
      \douseexternaldocument[#1][#2][#4]%
      \doglobal\addtocommalist{#1}\crossdocumentreferences
      \def\docommando##1%
-       {\globalletvalue{\??rf##1\c!state}\v!start % for fast checking
+       {\letgvalue{\??rf##1\c!state}\v!start % for fast checking
         \doglobal\addtocommalist{##1}\crossdocumentelements}%
      \processcommalist[#3]\docommando
      \ifutilitydone

@@ -172,24 +172,17 @@
    \fi}
 
 \def\dodefinesynonyms[#1][#2][#3][#4]%
-  {\setvalue{\e!setup#2\e!in}%
-     {\dodoubleargument\getparameters[\??sm#1]}%
-   \iffourthargument
-     \unexpanded\def#4##1%
-       {\getsynonymmeaning{#1}{\??sm:#1:}{##1}}%
+  {\iffourthargument
+     \unexpanded\def#4##1{\getsynonymmeaning{#1}{\??sm:#1:}{##1}}%
      \ifthirdargument
-       \unexpanded\def#3##1%
-         {\getvalue{\??sm:#1:##1}}%
+       \unexpanded\def#3##1{\getvalue{\??sm:#1:##1}}%
      \fi
-     \setvalue{#1}%
-       {\dotripleempty\docomplexsynonym[\??sm:#1:][#1]}%
+     \setvalue{#1}{\dotripleempty\docomplexsynonym[\??sm:#1:][#1]}%
    \else
      \ifthirdargument
-       \unexpanded\def#3##1%
-         {\getsynonymmeaning{#1}{}{##1}}%
+       \unexpanded\def#3##1{\getsynonymmeaning{#1}{}{##1}}%
      \fi
-     \setvalue{#1}%
-       {\dotripleempty\docomplexsynonym[][#1]}%
+     \setvalue{#1}{\dotripleempty\docomplexsynonym[][#1]}%
    \fi
    \dosetupsynonyms
      [#1]%
@@ -208,21 +201,15 @@
       \c!after=,
       \c!indentnext=\v!no,
       \c!expansion=]%
-   \presetheadtext % changes the \if...argument
-     [#2=\Word{#2}]%
-   \setvalue{\s!set#1}%
-     {\dosetsynonym{#1}}%
-   \setvalue{\s!reset#1}%
-     {\doresetsynonym{#1}}%
-   \setvalue{\s!check#1}##1%
-     {\checkdefined{synoniemen}{#1}{##1}}%
+   \presetheadtext[#2=\Word{#2}]% changes the \if...argument
    \addutilityreset{#1}%
-   \setvalue{\e!load#2}%
-     {\dolaadsynoniemen{#1}{#2}}%
-   \setvalue{\e!place\e!listof#2}%
-     {\doplaatslijstmetsynoniemen{#1}{#2}}%
-   \setvalue{\e!complete\e!listof#2}%
-     {\dovolledigelijstmetsynoniemen{#1}{#2}}}
+   \setvalue{\e!setup#2\e!endsetup}{\dodoubleargument\getparameters[\??sm#1]}% to be obsolete
+   \setvalue{\s!set#1}{\dosetsynonym{#1}}%
+   \setvalue{\s!reset#1}{\doresetsynonym{#1}}%
+   \setvalue{\s!check#1}##1{\checkdefined{synoniemen}{#1}{##1}}%
+   \setvalue{\e!load#2}{\dolaadsynoniemen{#1}{#2}}%
+   \setvalue{\e!place\e!listof#2}{\doplaatslijstmetsynoniemen{#1}{#2}}%
+   \setvalue{\e!complete\e!listof#2}{\dovolledigelijstmetsynoniemen{#1}{#2}}}
 
 \def\definesynonyms
   {\doquadrupleempty\dodefinesynonyms}
@@ -344,35 +331,26 @@
       \c!before=,
       \c!after=\endgraf,
       \c!expansion=]%
-   \presetheadtext[#2=\Word{#2}]%
-   \setvalue{\e!setup#2\e!in}[##1]% vervalt tzt, soort oo-mode
-     {\getparameters[\??so#1][##1]}%
    \ifthirdargument
      \ConvertConstantAfter\doifnot{#3}\v!none
        {\ifx#3\relax \else
           \def#3##1{\getvalue{\??so:#1:##1}}
         \fi}%
-     \setvalue{#1}%
-       {\dotripleempty\docomplexsort[\??so:#1:][#1]}%
+     \setvalue{#1}{\dotripleempty\docomplexsort[\??so:#1:][#1]}%
    \else
-     \setvalue{#1}%
-       {\dotripleempty\docomplexsort[][#1]}%
+     \setvalue{#1}{\dotripleempty\docomplexsort[][#1]}%
    \fi
-   \setvalue{\s!set#1}%
-     {\dosetsorteren{#1}}%
-   \setvalue{\s!reset#1}%
-     {\doresetsorteren{#1}}%
    \addutilityreset{#1}%
-   \setvalue{\e!load#2}%
-     {\dolaadsorteren{#1}{#2}}%
-   \setvalue{\s!check#1}##1%
-     {\checkdefined{sorteren}{#1}{##1}}%
-   \setvalue{\e!place\e!listof#2}%
-     {\doplaatslijstmetsorteren{#1}}%
-   \setvalue{\e!complete\e!listof#2}%
-     {\dovolledigelijstmetsorteren{#1}{#2}}}
+   \presetheadtext[#2=\Word{#2}]% after \ifthirdargument -)
+   \setvalue{\e!setup#2\e!endsetup}[##1]{\getparameters[\??so#1][##1]}% to be obsolete
+   \setvalue{\s!set#1}{\dosetsorteren{#1}}%
+   \setvalue{\s!reset#1}{\doresetsorteren{#1}}%
+   \setvalue{\e!load#2}{\dolaadsorteren{#1}{#2}}%
+   \setvalue{\s!check#1}##1{\checkdefined{sorteren}{#1}{##1}}%
+   \setvalue{\e!place\e!listof#2}{\doplaatslijstmetsorteren{#1}}%
+   \setvalue{\e!complete\e!listof#2}{\dovolledigelijstmetsorteren{#1}{#2}}}
 
-\def\definesorting%
+\def\definesorting
   {\dotripleempty\dodefinesorting}
 
 \definesynonyms
@@ -393,6 +371,7 @@
 \definesorting
   [\v!logo]
   [\v!logos]
+% no [\logogram]
 
 \definesynonyms
   [\v!unit]

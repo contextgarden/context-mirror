@@ -617,6 +617,22 @@
    #2\empty
    \popmacro\xmlr}
 
+\def\doifelseXMLRneighbors#1#2%
+  {\XMLRtoks\emptytoks
+   \pushmacro\xmlr
+   \donefalse
+   \let\prevXMLRchild\empty
+   \def\xmlr##1##2##3##4%
+      {\doif{##1}{#1}{\doif{##1}\prevXMLRchild{\donetrue}}%
+       \def\prevXMLRchild{##1}}%
+   #2\empty
+   \popmacro\xmlr
+   \ifdone
+     \expandafter\firstoftwoarguments
+   \else
+     \expandafter\secondoftwoarguments
+   \fi}
+
 \def\collectbetweenXMLRchild#1#2#3%
   {\XMLRtoks\emptytoks
    \pushmacro\xmlr
@@ -667,7 +683,7 @@
 \def\countXMLRchildren#1%
   {\pushmacro\xmlr
    \nofXMLRchildren=0
-   \def\xmlr##1##2##3##4{\advance\nofXMLRchildren 1 }
+   \def\xmlr##1##2##3##4{\advance\nofXMLRchildren\plusone}
    #1\empty
    \popmacro\xmlr}
 
@@ -675,7 +691,7 @@
   {\pushmacro\xmlr
    \nofXMLRchildren=0
    \def\xmlr##1##2##3##4%
-     {\rawdoifinsetelse{##1}{#1}{\advance\nofXMLRchildren 1 }{}}
+     {\rawdoifinsetelse{##1}{#1}{\advance\nofXMLRchildren\plusone}{}}
    #2\empty
    \popmacro\xmlr}
 

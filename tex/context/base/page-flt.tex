@@ -1160,6 +1160,7 @@
 
 \def\putcompletecaption#1#2#3#4%
   {\noindent
+   \xdef\lastcaptiontag{\strut#2\floatcaptionsuffix}%
    \xdef\floatcaptionnumber{#1}%
    \dostartattributes{\??kj#1}\c!style\c!color\empty
      \ifnofloatnumber
@@ -1293,7 +1294,7 @@
 
 % \def\dopreparestackcaptionaut#1#2#3#4%
 %   {\doifsomething\@@kjkjuitlijnen
-%      {\ExpandBothAfter\doifnotinset\v!midden\@@kjkjuitlijnen
+%      {\ExpandBothAfter\doifnotinset\v!middle\@@kjkjuitlijnen
 %         {\let\captionovershoot\!!zeropoint}}%
 %    \ifdim\wd\tempfloatbox>\hsize
 %      % float is wider than \hsize
@@ -1338,11 +1339,12 @@
 %           \putcompletecaption{#4}{#2}{#3}{0}}%
 %      \else
 %        % just over a line, don't use an overshoot
-%        \doifinsetelse\@@kjkjuitlijnen{\v!links,\v!rechts}
+%        % \doifinsetelse\@@kjkjuitlijnen{\v!left,\v!right}
+%        \expanded{\doifcommonelse{\@@kjkjuitlijnen}}{\v!left,\v!right,\v!flushleft,\v!flushright}
 %          {\dosetraggedvbox\@@kjkjuitlijnen
 %           \setbox\tempcaptionbox\raggedbox
 %             {\hsize\scratchdimen
-%              \raggedcenter
+%              % strange : \raggedcenter
 %              \putcompletecaption{#4}{#2}{#3}{0}}}
 %          {% nicer
 %           \setbox\tempcaptionbox\cbox
@@ -1355,36 +1357,37 @@
   {\doifsomething\@@kjkjuitlijnen
      {\ExpandBothAfter\doifnotinset\v!middle\@@kjkjuitlijnen
         {\let\captionovershoot\!!zeropoint}}%
-   \ifdim\wd\tempfloatbox>\hsize
+   \edef\captionhsize{\the\wd\tempfloatbox}%
+   \ifdim\captionhsize>\hsize
      % float is wider than \hsize
      \dosetraggedvbox\@@kjkjuitlijnen
      \setbox\scratchbox\raggedbox % trial run
-       {\hsize\wd\tempfloatbox
+       {\hsize\captionhsize
         \notesenabledfalse
         \putcompletecaption{#4}{#2}{#3}{0}}%
      \ifdim\ht\scratchbox>\lineheight % more lines
        \dosetraggedvbox\@@kjkjuitlijnen
        \setbox\tempcaptionbox\raggedbox
-         {\hsize\wd\tempfloatbox
+         {\hsize\captionhsize
           \advance\hsize -\captionovershoot\relax
           \ifdim\hsize<\captionminwidth\relax
-            \hsize\wd\tempfloatbox
+            \hsize\captionhsize
           \fi
           \putcompletecaption{#4}{#2}{#3}{0}}%
      \else
        \setbox\tempcaptionbox\raggedbox
-         {\hsize\wd\tempfloatbox
+         {\hsize\captionhsize
           \putcompletecaption{#4}{#2}{#3}{0}}%
      \fi
    \else
      % float is smaller of equal to \hsize
-     \ifdim\wd\tempfloatbox<\captionminwidth\relax
+     \ifdim\captionhsize<\captionminwidth\relax
        \scratchdimen\captionminwidth % float smaller than min width
-     \else
-       \scratchdimen\wd\tempfloatbox % float width
+       \edef\captionhsize{\the\scratchdimen}%
      \fi
      \setbox\scratchbox\vbox     % test with overshoot
-       {\advance\scratchdimen \captionovershoot
+       {\scratchdimen\captionhsize
+        \advance\scratchdimen \captionovershoot
         \advance\scratchdimen 3em % an average word length
         \ifdim\scratchdimen<\hsize \hsize\scratchdimen \fi
         \notesenabledfalse
@@ -1393,20 +1396,21 @@
        % at least an average word longer than a line
        \dosetraggedvbox\@@kjkjuitlijnen
        \setbox\tempcaptionbox\raggedbox
-         {\advance\scratchdimen \captionovershoot
+         {\scratchdimen\captionhsize
+          \advance\scratchdimen \captionovershoot
           \ifdim\scratchdimen<\hsize \hsize\scratchdimen \fi
           \putcompletecaption{#4}{#2}{#3}{0}}%
      \else
        % just over a line, don't use an overshoot
-       \doifinsetelse\@@kjkjuitlijnen{\v!left,\v!right}
+       \expanded{\doifcommonelse{\@@kjkjuitlijnen}}{\v!left,\v!right,\v!flushleft,\v!flushright}
          {\dosetraggedvbox\@@kjkjuitlijnen
           \setbox\tempcaptionbox\raggedbox
-            {\hsize\scratchdimen
-% strange :           \raggedcenter
+            {\hsize\captionhsize
+             % strange : \raggedcenter
              \putcompletecaption{#4}{#2}{#3}{0}}}
          {% nicer
           \setbox\tempcaptionbox\cbox
-            {\hsize\scratchdimen
+            {\hsize\captionhsize
              \putcompletecaption{#4}{#2}{#3}{0}}}%
      \fi
    \fi}
@@ -2138,26 +2142,26 @@
 \def\installfloathandler#1#2% #1=keyword #2=handler
   {\setvalue{\string\floatmethod#1}{#2}}
 
-\installfloathandler \v!here         \someherefloat
-\installfloathandler \v!force      \somefixdfloat
+\installfloathandler \v!here        \someherefloat
+\installfloathandler \v!force       \somefixdfloat
 \installfloathandler \v!left        \someleftsidefloat
 \installfloathandler \v!right       \somerightsidefloat
 \installfloathandler \v!text        \sometextfloat
-\installfloathandler \v!top        \sometopfloat
-\installfloathandler \v!bottom        \somebottomfloat
-\installfloathandler \v!margin        \somemarginfloat
-\installfloathandler \v!opposite        \somefacefloat
-\installfloathandler \v!page       \somepagefloat
-\installfloathandler \v!inmargin      \someinmarginfloat
-\installfloathandler \v!inleft     \someinleftmarginfloat
-\installfloathandler \v!inright    \someinrightmarginfloat
+\installfloathandler \v!top         \sometopfloat
+\installfloathandler \v!bottom      \somebottomfloat
+\installfloathandler \v!margin      \somemarginfloat
+\installfloathandler \v!opposite    \somefacefloat
+\installfloathandler \v!page        \somepagefloat
+\installfloathandler \v!inmargin    \someinmarginfloat
+\installfloathandler \v!inleft      \someinleftmarginfloat
+\installfloathandler \v!inright     \someinrightmarginfloat
 \installfloathandler \v!leftmargin  \someinleftmarginfloat
 \installfloathandler \v!rightmargin \someinrightmarginfloat
-\installfloathandler \v!leftedge   \someinleftedgefloat
-\installfloathandler \v!rightedge  \someinrightedgefloat
+\installfloathandler \v!leftedge    \someinleftedgefloat
+\installfloathandler \v!rightedge   \someinrightedgefloat
 
-\installfloathandler \v!backspace       \somebackspacefloat
-\installfloathandler \v!cutspace      \somecutspacefloat
+\installfloathandler \v!backspace   \somebackspacefloat
+\installfloathandler \v!cutspace    \somecutspacefloat
 
 \installfloathandler {tblr} \someslotfloat
 \installfloathandler {lrtb} \someslotfloat

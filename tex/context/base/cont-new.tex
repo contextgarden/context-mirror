@@ -21,6 +21,83 @@
 
 \writestatus{\m!systems}{beware: some patches loaded from cont-new.tex!}
 
+\ifx\normalcompound\undefined \let\normalcompound=| \fi
+
+\def\checksoundtrack#1%
+  {\iflocation
+     \doifdefined{\??sd:#1}{\doifvaluesomething{\??sd:#1}
+       {\doinsertsoundtrack{\getvalue{\??sd:#1}}{#1}\@@sdoption
+        % brr, \..empty not really needed and maybe even wrong;
+        % also, not here but in driver
+        % well, no: sounds need to be reinitialize each time (i.e., be on page), so no
+        }}% \letgvalueempty{\??sd:#1}}}%
+   \fi}
+
+\def\placemargincontent
+  {\ifcase\margintextcollected\else % was level check
+     \bgroup
+       \redoconvertfont % !!
+       \chardef\graphicvadjustmode\zerocount
+       \doflushmargincontents
+     \egroup
+   \fi}
+
+\def\noconvertfont#1% #2%
+  {\doifdefinedelse{\@noletter@#1}
+     {\doifelsenothing{#1}\gobbleoneargument\@@donoconvertfont}\gobbleoneargument
+   {#1}} % {#2}}
+
+\appendtoks
+  \spacing\!!plusone % new per 10/08/2004, else problems in otr / !! needed
+\to \everyforgetall
+
+% \dorecurse{50}
+%   {[before normal] \input thuan
+%    \placefigure{normal}{\framed[height=1cm,width=8cm]{}}
+%    \placefigure{normal}{\framed[height=2cm,width=8cm]{}}
+%    [before force] \input thuan
+%    \placefigure[force]{force}{\framed[height=8cm,width=8cm]{}}}
+
+\chardef\fixedfloatmethod=3
+
+\def\OTRONEsomefixdfloat % [#1]
+  {\docheckiffloatfits
+   \ifroomforfloat\else
+     \ifzeropt\pagetotal
+       % let's assume that there is room
+     \else
+       \ifcase\fixedfloatmethod
+         % disabled
+       \or % 1 (old method)
+         \goodbreak
+       \or % 2 (safe method)
+         \page
+       \or % 3 (keeps in stream)
+         \vskip-.5\floatheight % play safe
+         \vskip\textheight
+       \fi
+     \fi
+   \fi
+   \showmessage\m!floatblocks9\empty
+   \someherefloat} % [#1]
+
+%D Ok, I got tired of making dediccated clean up macros using the
+%D same mechanism again and again, so now we have:
+%D
+%D \starttyping
+%D \def\xxxx{abc.d} \replacecharacters\xxxx{a.}{-} \xxxx
+%D \stoptyping
+
+\def\replacecharacters#1#2#3% macro characters replacement
+  {\bgroup
+   \edef\ascii{#1}%
+   \obeylccodes % watch how this is optimized!
+   \def\docommand##1{\lccode\expandafter`\csname##1\endcsname=\expandafter`\csname#3\endcsname}%
+   \handletokens#2\with\docommand
+   \lowercase\@EA{\@EA\xdef\@EA\globalascii\@EA{\ascii}}%
+   \egroup
+   \dodoglobal\let#1\globalascii}
+
 \def\resetsetups[#1]%
   {\ifundefined{\??su\ifgridsnapping\v!grid\fi:#1}%
      \letbeundefined{\??su:#1}%
@@ -349,7 +426,7 @@
 \long\def\startexpanded#1\stopexpanded % beware, this time no \noexpand before #1
   {\long\xdef\@@expanded{#1}\@@expanded}
 
-\tracefonthandlingtrue
+% \tracefonthandlingtrue
 
 \def\parseTR[#1][#2]% [#2] is dummy that kills spaces / no #3 argument
   {\def\currentcol{0}\increment\maximumrow
@@ -398,6 +475,30 @@
    \edef\celltag{{\maximumrow}{\currentcol}}%
    \@EA\settbltxt\@EA\maximumrow\@EA\currentcol\@EA
      {\@EA\handleTBLcell\celltag[#1]{#3}}}
+
+% new, still to be improved
+%
+% \dorecurse{10}
+%   {\input thuan
+%    \placefigure{}{\framed[height=1.5cm]{test}}
+%    \placefloatplaceholder}
+
+\def\placefloatplaceholder
+  {\ifroomforfloat \else
+     \scratchdimen\pagegoal
+     \advance\scratchdimen-\pagetotal
+     \advance\scratchdimen-3\lineheight
+     \ifdim\scratchdimen>\zeropoint
+       \startlinecorrection[blank]
+       \mhbox{\inframed{\labeltexts{placeholder}{\lastcaptiontag}}}%
+       \stoplinecorrection
+     \else
+       \allowbreak
+     \fi
+   \fi}
+
+\setuplabeltext
+  [placeholder={, moved}]
 
 \newif\ifpercentdimendone
 

@@ -974,6 +974,8 @@
 %D
 %D In \PDF\ sounds can be embedded like movies.
 
+\ifx\everygoto\undefined \newtoks\everygoto \fi
+
 \let\currentsound\s!unknown
 
 \def\doPDFinsertsoundtrack#1#2#3%
@@ -983,7 +985,8 @@
    \@EA\processallactionsinset\@EA
      [#3]
      [\v!repeat=>\edef\pdf@@actions{\pdf@@actions /Mode /Repeat }]%
-   \flushatshipout % since it can be buried in a chained box
+\collectdriverresource
+%    \flushatshipout % since it can be buried in a chained box
      {\doPDFannotation width 0pt height 0pt data
         {/Subtype /Movie
          /Border [0 0 0]
@@ -2785,6 +2788,11 @@
   {\doPDFregistergrayspotcolor{None}{1}%
    \globallet\doPDFregisternonecolor\relax}
 
+\def\doPDFregisterspotcolorname#1#2% implemented in the driver
+  {}
+
+\definespecial\doregisterspotcolorname{\doPDFregisterspotcolorname}
+
 % \def\doPDFregisterrgbspotcolor#1#2#3#4%
 %   {\doPDFregistersomespotcolor
 %      {#1}{RGB}{[0.0 1.0 0.0 1.0 0.0 1.0]}%
@@ -2799,6 +2807,7 @@
 %   {\doPDFregistersomespotcolor
 %      {#1}{Gray}{[0.0 1.0]}%
 %      {{pop}}}
+
 
 \def\doPDFregisterrgbspotcolor#1#2#3#4#5#6#7% name noffractions names p's r g b
   {\doPDFregistersomespotcolor{#1}{#2}{#3}{#4}{RGB}{0.0 1.0 0.0 1.0 0.0 1.0}%
