@@ -8,7 +8,7 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See licen-en.pdf for 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
 %C details. 
 
 \writestatus{loading}{Context System Macro's / Extras}
@@ -129,7 +129,6 @@
 %D \macros
 %D   {newcounter,
 %D    increment,decrement}
-%D   {}
 %D
 %D Unfortunately the number of \COUNTERS\ in \TEX\ is limited,
 %D but fortunately we can store numbers in a macro. We can
@@ -273,7 +272,6 @@
 
 %D \macros
 %D   {strippedcsname}
-%D   {}
 %D
 %D The next macro can be very useful when using \type{\csname}
 %D like in: 
@@ -291,7 +289,6 @@
 %D   {newconditional, 
 %D    settrue, setfalse, 
 %D    ifconditional}
-%D   {}
 %D 
 %D \TEX's lacks boolean variables, although the \PLAIN\ format 
 %D implements \type{\newif}. The main disadvantage of this 
@@ -391,15 +388,15 @@
 \def\recursedepth%
   {\the\outerrecurse}
 
+\let\nextrecurse\relax
+
 \long\def\dostepwiserecurse#1#2#3#4%
-  {\ifcase#2\relax
+  {%\let\nextrecurse\relax
+   \ifcase#2\relax
      \let\recurselevel\zerocountervalue
-     \let\next\relax
+     \let\nextrecurse\relax
    \else
      \global\advance\outerrecurse by 1
-%     \innerrecurse=#1\setevalue{\@@irecurse\recursedepth}{\the\innerrecurse}%
-%     \innerrecurse=#2\setevalue{\@@nrecurse\recursedepth}{\the\innerrecurse}%
-%     \innerrecurse=#3\setevalue{\@@srecurse\recursedepth}{\the\innerrecurse}%
      \setevalue{\@@irecurse\recursedepth}{\number#1}%
      \setevalue{\@@nrecurse\recursedepth}{\number#2}%
      \setevalue{\@@srecurse\recursedepth}{\number#3}%
@@ -407,16 +404,16 @@
      \else
        \setevalue{\@@drecurse\recursedepth}{>}%
        \long\setvalue{\@@arecurse\recursedepth}{#4}%
-       \let\next\dodorecurse
+       \let\nextrecurse\dodorecurse
      \fi\fi
      \ifnum#3<0\relax\ifnum#1<#2\relax
      \else
        \setevalue{\@@drecurse\recursedepth}{<}%
        \long\setvalue{\@@arecurse\recursedepth}{#4}%
-       \let\next\dodorecurse
+       \let\nextrecurse\dodorecurse
      \fi\fi
    \fi
-   \next}
+   \nextrecurse}
 
 \def\donorecurse%
   {}
@@ -424,7 +421,7 @@
 \def\dododorecurse%
   {\edef\recurselevel{\getvalue{\@@irecurse\recursedepth}}%
    \getvalue{\@@arecurse\recursedepth}%
-\edef\recurselevel{\getvalue{\@@irecurse\recursedepth}}%
+   \edef\recurselevel{\getvalue{\@@irecurse\recursedepth}}%
    \innerrecurse=\recurselevel
    \advance\innerrecurse by \getvalue{\@@srecurse\recursedepth}\relax
    \setevalue{\@@irecurse\recursedepth}{\the\innerrecurse}%
@@ -582,7 +579,6 @@
 
 %D \macros
 %D   {newevery,everyline,EveryLine,EveryPar}
-%D   {}
 %D
 %D Lets skip to something quite different. It's common use
 %D to use \type{\everypar} for special purposes. In \CONTEXT\
@@ -770,7 +766,6 @@
 
 %D \macros
 %D   {ExpandFirstAfter,ExpandSecondAfter,ExpandBothAfter}
-%D   {}
 %D
 %D These three commands support expansion of arguments before
 %D executing the commands that uses them. We can best
@@ -834,7 +829,6 @@
 
 %D \macros
 %D   {ConvertToConstant,ConvertConstantAfter}
-%D   {}
 %D
 %D When comparing arguments with a constant, we can get into
 %D trouble when this argument consists of tricky expandable
@@ -1143,7 +1137,7 @@
 %D 
 %D \starttypen
 %D \kleur[groen] 
-%D   {as gras} 
+%D   {as grass} 
 %D \stoptypen
 %D 
 %D was not interpreted as one would expect. This is due to the
@@ -1177,7 +1171,6 @@
 
 %D \macros
 %D   {checkdefined}
-%D   {}
 %D
 %D The bigger the system, the greater the change that
 %D user defined commands collide with those that are part of
@@ -1199,7 +1192,6 @@
 
 %D \macros
 %D   {GotoPar,GetPar}
-%D   {}
 %D
 %D Typesetting a paragraph in a special way can be done by
 %D first grabbing the contents of the paragraph and processing
@@ -1255,6 +1247,8 @@
 \newtoks\BeforePar
 \newtoks\AfterPar
 
+\let\endoflinetoken=^^M
+
 \def\doGotoPar%
   {\ifx\nextchar\blankspace
      \let\donext\GotoPar
@@ -1292,7 +1286,6 @@
 
 %D \macros
 %D   {dowithpargument,dowithwargument}
-%D   {}
 %D
 %D The next macros are a variation on \type{\GetPar}. When
 %D macros expect an argument, it interprets a grouped sequence
@@ -1410,7 +1403,6 @@
 
 %D \macros
 %D   {dorepeat,dorepeatwithcommand}
-%D   {}
 %D
 %D When doing repetitive tasks, we stromgly advice to use
 %D \type{\dorecurse}. The next alternative however, suits
@@ -1558,7 +1550,6 @@
 %D \macros
 %D   {makecounter,pluscounter,minuscounter,
 %D    resetcounter,setcounter,countervalue}
-%D   {}
 %D
 %D Declaring, setting and resetting \COUNTERS\ can be doen
 %D with the next set of commands.
@@ -1642,14 +1633,13 @@
 %D values. Only one level is saved. 
 
 \def\savecounter#1%
-  {\expanded{\setgvalue{!#1}{\getvalue{#1}}}}
+  {{\scratchcounter=\getvalue {#1}\setxvalue{!#1}{\the\scratchcounter}}}
 
 \def\restorecounter#1%
-  {\expanded{\setgvalue{#1}{\getvalue{!#1}}}}
+  {{\scratchcounter=\getvalue{!#1}\setxvalue {#1}{\the\scratchcounter}}}
 
 %D \macros
 %D   {beforesplitstring,aftersplitstring}
-%D   {}
 %D
 %D These both commands split a string at a given point in two
 %D parts, so \type{x.y} becomes \type{x} or \type{y}.
@@ -1677,7 +1667,6 @@
 
 %D \macros
 %D   {removesubstring}
-%D   {}
 %D
 %D A first application of the two routines defined above is:
 %D
@@ -1697,8 +1686,7 @@
    \next}
 
 %D \macros
-%D   {addtocommalist,removefromcommalist}
-%D   {}
+%D   {appendtocommalist,addtocommalist,removefromcommalist}
 %D
 %D When working with comma separated lists, one sooner or
 %D later want the tools to append or remove items from such a
@@ -1706,10 +1694,10 @@
 %D there. This means that every item in the list is unique.
 %D
 %D \starttypen
-%D \addtocommalist      {alfa}  \naam
-%D \addtocommalist      {beta}  \naam
-%D \addtocommalist      {gamma} \naam
-%D \removefromcommalist {beta}  \naam
+%D \addtocommalist      {alfa}  \name
+%D \addtocommalist      {beta}  \name
+%D \addtocommalist      {gamma} \name
+%D \removefromcommalist {beta}  \name
 %D \stoptypen
 %D
 %D These commands can be prefixed with \type{\doglobal}. The
@@ -1725,6 +1713,20 @@
 %D \stoptypen
 %D
 %D Removing an item takes more time than adding one.
+%D
+%D A fast appending alternative, without any testing, is 
+%D also provided: 
+%D
+%D \starttypen
+%D \appendtocommalist {something} \name
+%D \stoptypen
+
+\def\appendtocommalist#1#2%
+  {\ifx#2\empty
+     \dodoglobal\edef#2{#1}%
+   \else % no test on empty 
+     \dodoglobal\edef#2{#2,#1}%
+   \fi}
 
 \def\addtocommalist#1#2%
   {\doifelse{#2}{}
@@ -1762,6 +1764,61 @@
    \doremovefromcommalist{}{#1}{#2}%
    \dofrontstrip#2%
    \dodoglobal\edef#2{#2}}
+
+%D \macros 
+%D   {replaceincommalist}
+%D
+%D The next macro can be used to replace an indexed element 
+%D in a commalist:
+%D
+%D \starttypen 
+%D \replaceincommalist\MyList{2}
+%D \stoptypen 
+%D
+%D Element~2 will be replaced by the current meaning of the macro 
+%D \type {\newcommalistelement}. The old meaning is saved in 
+%D \type {\commalistelement}. The replacement honors grouped items,  
+%D like in: 
+%D
+%D \starttypen
+%D \def\MyList{a,b,c,d,e,f}   \replaceincommalist\MyList{3}
+%D \def\MyList{a,b,c,d,e,f}   \replaceincommalist\MyList{3}
+%D \def\MyList{a,{b,c},d,e,f} \replaceincommalist\MyList{3}
+%D \def\MyList{a,b,c,{d,e,f}} \replaceincommalist\MyList{3}
+%D \stoptypen 
+
+\let\newcommalistelement\empty
+
+\def\replaceincommalist#1#2% #1 = commalistelement #2 = position starts at 1
+  {\def\doreplaceincommalist##1%
+     {\ifnum\commalistcounter=#2\relax
+        \ifnum\commalistcounter=1
+          \let\newcommalist\newcommalistelement
+        \else
+          \@EA\@EA\@EA\def\@EA\@EA\@EA\newcommalist\@EA\@EA\@EA{\@EA\newcommalist\@EA,\newcommalistelement}%
+        \fi
+        \def\commalistelement{##1}%
+      \else
+        \ifnum\commalistcounter=1
+          \ifx\nexttoken\bgroup % is known -)
+            \def\newcommalist{{##1}}%
+          \else
+            \def\newcommalist{##1}%
+          \fi
+        \else
+          \ifx\nexttoken\bgroup % is known -)
+            \@EA\def\@EA\newcommalist\@EA{\newcommalist,{##1}}%
+          \else
+            \@EA\def\@EA\newcommalist\@EA{\newcommalist,##1}%
+          \fi
+        \fi
+      \fi
+      \advance\commalistcounter by 1 }%
+   \let\commalistelement\empty
+   \let\newcommalist\empty
+   \commalistcounter=1
+   \@EA\processcommalist\@EA[#1]\doreplaceincommalist
+   \dodoglobal\let#1\newcommalist}
 
 %D \macros 
 %D   {globalprocesscommalist}
@@ -1858,7 +1915,6 @@
 
 %D \macros
 %D   {swapdimens,swapmacros}
-%D   {}
 %D
 %D Simple but effective are the next two macros. There name
 %D exactly states their purpose. The \type{\scratchdimen} and
@@ -1995,7 +2051,6 @@
 %D   {doifvalue,doifnotvalue,doifelsevalue,
 %D    doifnothing,doifsomething,doifelsenothing,
 %D    doifvaluenothing,doifvaluesomething,doifelsevaluenothing}
-%D   {}
 %D
 %D These long named \type{\if} commands can be used to access
 %D macros (or variables) that are normally accessed by using
@@ -2003,32 +2058,53 @@
 %D tokens per call. Anyone familiar with the not||values
 %D ones, can derive their meaning from the definitions.
 
-           \def\doifvalue#1{\doif{\getvalue{#1}}}
-        \def\doifnotvalue#1{\doifnot{\getvalue{#1}}}
-       \def\doifelsevalue#1{\doifelse{\getvalue{#1}}}
+           \def\doifvalue#1{\doif    {\csname#1\endcsname}}
+        \def\doifnotvalue#1{\doifnot {\csname#1\endcsname}}
+       \def\doifelsevalue#1{\doifelse{\csname#1\endcsname}}
 
-         \def\doifnothing#1{\doif{#1}{}}
-       \def\doifsomething#1{\doifnot{#1}{}}
+         \def\doifnothing#1{\doif    {#1}{}}
+       \def\doifsomething#1{\doifnot {#1}{}}
      \def\doifelsenothing#1{\doifelse{#1}{}}
 
-    \def\doifvaluenothing#1{\doif{\getvalue{#1}}{}}
-  \def\doifvaluesomething#1{\doifnot{\getvalue{#1}}{}}
-\def\doifelsevaluenothing#1{\doifelse{\getvalue{#1}}{}}
+    \def\doifvaluenothing#1{\doif    {\csname#1\endcsname}{}}
+  \def\doifvaluesomething#1{\doifnot {\csname#1\endcsname}{}}
+\def\doifelsevaluenothing#1{\doifelse{\csname#1\endcsname}{}}
 
-%D Faster:
+%D Faster but spoiling inheritance (copying parameters):
+%D
+%D \starttypen 
+%D \def\doifelsevaluesomething#1#2#3%
+%D   {\expandafter\ifx\csname#1\endcsname\empty#3\else#2\fi}
+%D 
+%D \def\doifvaluesomething#1#2%
+%D   {\expandafter\ifx\csname#1\endcsname\empty\else#2\fi}
+%D
+%D \def\doifvaluenothing#1#2%
+%D   {\expandafter\ifx\csname#1\endcsname\empty#2\fi}
+%D \stoptypen
+%D
+%D Slightly more efficient:
 
-\def\doifelsevaluesomething#1#2#3%
-  {\expandafter\ifx\csname#1\endcsname\empty#3\else#2\fi}
+    \def\doifnothing{\doif    {}}
+  \def\doifsomething{\doifnot {}}
+\def\doifelsenothing{\doifelse{}}
 
-\def\doifvaluesomething#1#2%
-  {\expandafter\ifx\csname#1\endcsname\empty\else#2\fi}
+%D \macros
+%D   {doifemptyelsevalue, doifemptyvalue, doifnotemptyvalue}
+%D  
+%D Also handy: 
 
-\def\doifvaluenothing#1#2%
-  {\expandafter\ifx\csname#1\endcsname\empty#2\fi}
+\long\def\doifemptyelsevalue#1#2#3%
+  {\@EA\ifx\csname#1\endcsname\empty#2\else#3\fi}
+
+\long\def\doifemptyvalue#1#2%
+  {\@EA\ifx\csname#1\endcsname\empty#2\fi}
+
+\long\def\doifnotemptyvalue#1#2%
+  {\@EA\ifx\csname#1\endcsname\empty\else#2\fi}
 
 %D \macros
 %D   {DOIF,DOIFELSE,DOIFNOT}
-%D   {}
 %D
 %D \TEX\ is case sensitive. When comparing arguments, this
 %D feature sometimes is less desirable, for instance when we
@@ -2076,7 +2152,6 @@
 
 %D \macros
 %D   {stripcharacters,stripspaces}
-%D   {}
 %D
 %D The next command was needed first when we implemented
 %D the \CONTEXT\ interactivity macros. When we use labeled
@@ -2110,14 +2185,13 @@
    \let\!!strippedstring=\empty
    \edef\!!stringa{#2}%
    \@EA\dostripcharacter\!!stringa#1\end
-   \let#3=\!!strippedstring}
+   \dodoglobal\let#3=\!!strippedstring}
 
 \def\stripspaces\from#1\to#2%
   {\stripcharacter{ }\from#1\to#2}
 
 %D \macros
 %D   {executeifdefined}
-%D   {}
 %D
 %D \CONTEXT\ uses one auxiliary file for all data concerning
 %D tables of contents, references, two||pass optimizations,
@@ -2173,7 +2247,6 @@
 
 %D \macros
 %D   {doifsomespaceelse}
-%D   {}
 %D
 %D The next command checks a string on the presence of a space
 %D and executed a command accordingly.
@@ -2197,7 +2270,6 @@
 
 %D \macros
 %D   {adaptdimension,balancedimensions}
-%D   {}
 %D
 %D Again we introduce some macros that are closely related to
 %D an interface aspect of \CONTEXT. The first command can be
@@ -2247,7 +2319,6 @@
 
 %D \macros
 %D   {processconcanatedlist}
-%D   {}
 %D
 %D Maybe a bit late, but here is a more general version of the
 %D \type{\processcommalist} command. This time we don't handle
@@ -2281,7 +2352,6 @@
 
 %D \macros
 %D   {processassignlist}
-%D   {}
 %D
 %D Is possible to combine an assignment list with one
 %D containing keywords. Assignments are treated accordingly,
@@ -2303,7 +2373,6 @@
 
 %D \macros
 %D   {DoAfterFi,DoAfterFiFi}
-%D   {}
 %D
 %D Sometimes \type{\fi}'s can get into the way. We can reach
 %D over such a troublemaker with:
@@ -2410,6 +2479,7 @@
 %D \type{lang-ini}.
 
 \def\dontleavehmode{\ifmmode\else$ $\fi}
+
 
 %D \macros
 %D   {uppercasestring,lowercasestring}
@@ -2696,6 +2766,188 @@
 %   \doprocesscontent}
 %
 %\endETEX
+
+%D \macros 
+%D   {dogobblesingleempty, dogobbledoubleempty}
+%D
+%D These two macros savely grab and dispose two arguments. 
+
+\def\dogobblesingleempty%
+  {\dosingleempty\dodogobblesingleempty}
+
+\def\dogobbledoubleempty%
+  {\dodoubleempty\dodogobbledoubleempty}
+
+\def\dodogobblesingleempty    [#1]{}
+\def\dodogobbledoubleempty[#1][#2]{}
+
+%D \macros
+%D   {sortcommalist,sortcommacommand,
+%D    donumericcompare,comparedresult}
+%D 
+%D Sometimes we need to sort a commalist, so here is Taco's
+%D solution. This will in many cases be a list that is stored
+%D in a \type{\csname}, so both commalist and commacommands are
+%D supported. The sorting algorithm is very simple, so the list
+%D should not be too long or sorting will be very slow. 
+%D
+%D \starttypen 
+%D \sortcommalist[10,2,4,5,6,1,2,3,4,10,20]\donumericcompare
+%D
+%D \def\test{10,2,4,5,6,1,2,3,4,10,20}  
+%D
+%D \sortcommacommand[\test]\donumericcompare
+%D \stoptypen 
+%D
+%D In both cases, the result is available in the macro \type 
+%D {\sortedcommalist}.
+%D 
+%D Parameter \type{#2} is a macro that should accept two
+%D parameters, and it has to decide which one is larger, by
+%D setting the counter \type{\comparedresult} to~0 (for equal),
+%D 1~(if it's first argument is larger), or~2 (if it's second
+%D argument is larger).  
+%D
+%D As said, these macro are largely written by Taco, and are 
+%D (maybe therefore) also the first application of \type 
+%D {\replaceincommalist}. 
+
+\newcount\comparedresult
+
+\def\sortcommacommand[#1]%
+  {\@EA\sortcommalist\@EA[#1]}
+
+\def\sortcommalist[#1]#2%
+   {\getcommalistsize[#1]%
+    \let\sortedcommalist\empty
+    \ifnum\commalistsize>1
+      \let\comparecommand#2%
+      \processcommalist[#1]\dosortcommacommand
+    \fi}
+
+\def\dosortcommacommand#1%
+   {\ifx\sortedcommalist\empty
+      \def\sortedcommalist{#1}%
+    \else
+      \def\!!tempa{#1}%
+      \ifx\!!tempa\empty\else
+        \scratchcounter=1
+        \@EA\getcommalistsize\@EA[\sortedcommalist]%
+        \@EA\processcommalist\@EA[\sortedcommalist]\docompareitems
+      \fi
+    \fi}
+
+%D All those \type{\expandafter}'s are there because I do not
+%D want to use \type{\edef}.
+
+\def\docompareitems#1%
+   {\doifnotempty{#1}
+      {\@EA\comparecommand\@EA{\!!tempa}{#1}\relax
+      %\ifcase\compareresult % equal 
+       \ifnum\comparedresult<2
+         \ifnum\scratchcounter=\commalistsize
+           \@EA\@EA\@EA\def\@EA\@EA\@EA\sortedcommalist
+           \@EA\@EA\@EA{\@EA\sortedcommalist\@EA,\!!tempa}%
+         \fi
+      %\or % new element larger
+      %  \ifnum\scratchcounter=\commalistsize
+      %    \@EA\@EA\@EA\def\@EA\@EA\@EA\sortedcommalist
+      %    \@EA\@EA\@EA{\@EA\sortedcommalist\@EA,\!!tempa}%
+      %  \fi
+       \else % old element larger
+         \@EA\def\@EA\newcommalistelement\@EA{\!!tempa,#1}%
+         \replaceincommalist\sortedcommalist\scratchcounter
+         \quitcommalist
+       \fi}%
+       \advance\scratchcounter 1 }
+
+%D The macro \type{\donumericcompare} considers everything 
+%D that is not a number to be larger than any number.
+
+\def\donumericcompare#1#2%
+   {\doifnumberelse{#1}
+      {\doifnumberelse{#2}
+         {\ifnum#1>#2\relax 
+            \comparedresult=1       % #1 is larger
+          \else\ifnum#1<#2\relax
+            \comparedresult=2       % #2 is larger
+          \else
+            \comparedresult=0       % both are equal
+          \fi\fi}
+         {\comparedresult=2 }}
+      {\comparedresult=1 }}
+
+%D \macros 
+%D   {firstofoneargument, firstoftwoarguments, firstofthreearguments 
+%D    secondoftwoarguments, secondofthreearguments, 
+%D    thirdofthreearguments}
+%D
+%D The next six macros (dedicated to Taco) can conveniently 
+%D used to select arguments. Their names explain their 
+%D functionality. 
+
+\def\firstofoneargument        #1{#1}
+\def\firstoftwoarguments     #1#2{#1}
+\def\firstofthreearguments #1#2#3{#1}
+\def\secondoftwoarguments    #1#2{#2}
+\def\secondofthreearguments#1#2#3{#2}
+\def\thirdofthreearguments #1#2#3{#3}
+
+%D \macros
+%D   {@saveprimitive}
+%D 
+%D The next definition originates in the \type {amsgen} package. In 
+%D case some preceding package redefined a primitive that we also 
+%D want to redefine, we had better do some checking to make sure 
+%D that we are able to save the primitive meaning for internal use. 
+%D Primitive control sequences can be distinguished by the fact that 
+%D \type {\string} and \type {\meaning} return the same information.  
+
+\def\@saveprimitive#1#2%
+ {\begingroup
+  \edef\@tempa{\string#1}%
+  \edef\@tempb{\meaning#1}%
+  \ifx\@tempa\@tempb 
+    \global\let#2#1%
+    \debuggerinfo{prim}{Saving \string#1 as \string#2}%
+  \else
+    \edef\@tempb{\meaning#2}%
+    \ifx\@tempa\@tempb
+      \debuggerinfo{prim}{Saving \string#1 as \string#2}%
+    \else
+      \debuggerinfo{prim}{Can't define \string#2 properly; 
+        primitive \noexpand#1 is no longer primitive}%
+    \fi
+  \fi
+  \endgroup}
+
+\def\saveprimitive#1%
+   {\begingroup
+    \@EA\edef\@EA\@tempa\@EA{\@EA\gobbleoneargument\string#1}%
+    \@EA\let\csname normal\@tempa\endcsname\relax
+    \@EA\@saveprimitive\@EA#1\csname normal\@tempa\endcsname 
+    \endgroup }
+
+%D In this macro, the message only shows up when the debugging 
+%D is turned on. 
+
+%D \macros
+%D   {emptytoks}
+%D
+%D Constant empty token register, analogous to \type {\empty}.
+
+\newtoks\emptytoks
+
+%D \macros 
+%D   {@True, @False, @Not, @And}
+%D
+%D Some predicate logic functions, used in for instance the 
+%D math module.  
+
+\def\@True    {00}
+\def\@False   {01}
+\def\@Not   #1{0\ifcase#11 \or\@EA 1\else \@EA 0\fi}
+\def\@And #1#2{0\ifcase#1#2 \@EA 0\else \@EA 1\fi}
 
 \protect
 

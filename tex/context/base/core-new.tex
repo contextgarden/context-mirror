@@ -8,7 +8,7 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See licen-en.pdf for 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
 %C details. 
 
 \writestatus{loading}{Context Core Macros / New Ones}
@@ -30,6 +30,8 @@
 %
 % \startnotmode [list]
 % \stopnotmode
+
+% to be implemented: mode naar texutil/scherm + message  
 
 \let\currentmode=\empty
 
@@ -68,7 +70,128 @@
 
 \long\def\dostartnotmode[#1]#2\stopnotmode%
   {\dodoifnotmode{#1}{#2}}
+
+% actually this is pretty old, but temporary moved here 
 
+\installdiscretionaries || \@@kpteken
+
+\newsignal\subsentencesignal
+\newcounter\subsentencelevel
+\def\subsentenceskip{.25em\relax}
+
+\def\stelkoppeltekenin%
+  {\dodoubleargument\getparameters[\??kp]}
+
+\def\beginofsubsentence%
+  {\ifdim\lastkern=\subsentencesignal
+     \unskip
+     \kern\subsentenceskip
+   \fi
+   \doglobal\increment\subsentencelevel
+   \ifnum\subsentencelevel=1
+     \leaveoutervmode
+   \fi
+   \ifodd\subsentencelevel
+     \getvalue{\??la\currentlanguage\c!leftsentence}%
+   \else
+     \getvalue{\??la\currentlanguage\c!leftsubsentence}%
+   \fi
+   \ignorespaces}
+
+\def\beginofsubsentencespacing%
+  {\kern\subsentencesignal\ignorespaces}
+
+\def\endofsubsentence%
+  {\ifodd\subsentencelevel
+     \getvalue{\??la\currentlanguage\c!rightsentence}%
+   \else
+     \getvalue{\??la\currentlanguage\c!rightsubsentence}%
+   \fi
+   \doglobal\decrement\subsentencelevel
+   \unskip
+   \kern\subsentencesignal}
+
+\def\endofsubsentencespacing%
+  {%\ifdim\lastkern=\subsentencesignal \else
+   %  \unskip
+   %\fi
+   \ifdim\lastkern=\subsentencesignal
+     \unskip
+     \hskip\subsentenceskip
+     \ignorespaces
+   \else
+     \unskip
+   \fi}
+
+% test |<|test |<|test|>| test|>| test \par
+% test|<|test|<|test|>|test|>|test     \par
+% test |<||<|test|>||>| test           \par
+
+\enableactivediscretionaries
+
+%D new and beta 
+
+\def\defineshortcut%
+  {\dodoubleargument\dodefineshortcut}
+
+\bgroup
+
+  \catcode`\<=\@@active 
+
+  \gdef\dodefineshortcut[#1][#2]%
+    {\ifsecondargument
+       \catcode`\<=\@@active 
+       \def<{\ifmmode\expandafter\normalless\else\expandafter\doshortcut\fi}%
+       \getparameters[\??te#1][\c!commandos=,\c!commando=,\c!letter=,\c!kleur=,#2]%
+     \else
+       \defineshortcut[][#1]%   
+     \fi}
+
+\egroup
+
+\def\doshortcut% 
+  {\bgroup
+   \catcode`\>=\@@other
+   \dodoshortcut}
+
+\def\dodoshortcut#1>% 
+  {\def\shortcut{#1}%
+   \dododoshortcut#1:\end}
+
+\def\dododoshortcut#1:#2\end 
+  {\doifelsenothing{#2}
+     {\doifundefinedelse{\??te\c!commandos}
+        {\shortcut} 
+        {\@EA\dodododoshortcut\@EA\??te\@EA:\shortcut:\end}}
+     {\doifundefinedelse{\??te#1\c!commandos}
+        {\shortcut} 
+        {\dodododoshortcut\??te#1:#2\end}}%
+   \egroup}
+
+\def\dodododoshortcut#1:#2:\end
+  {\getvalue{#1\c!commandos}%
+   \doattributes{#1}\c!letter\c!kleur{\getvalue{#1\c!commando}{#2}}}
+
+%D \defineshortcut     [\c!letter=\v!type]
+%D \defineshortcut [b] [\c!letter=\v!vet]
+%D \defineshortcut [e] [\c!letter=\em] 
+%D \defineshortcut [t] [\c!letter=\v!type]
+%D \defineshortcut [c] [\c!letter=\v!kap]
+%D \defineshortcut [k] [\c!letter=\v!kap]
+%D \defineshortcut [u] [\c!letter=\v!type,\c!commando=\hyphenatedurl]
+%D 
+%D test <ziezo> test \par
+%D test test <t:ziezo> \par
+%D test test <b:ziezo> \par
+%D test test <w:ziezo> \par
+%D zus<>zo zus<:>zo zus<::>zo \par
+%D test test <t:ziezo> dat (ziezo)             \par
+%D test test <t::ziezo> dat (:ziezo)           \par
+%D test test <t:ziezo:> dat (ziezo:)           \par
+%D test test <t:zi:ezo:> dat (zi:ezo:)         \par
+%D well, <u:http://www.pragma-ade.nl> looks fuzzy \par
+%D $10<20$
+
 \protect 
 
 \endinput

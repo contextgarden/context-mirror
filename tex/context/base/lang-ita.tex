@@ -8,7 +8,7 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See licen-en.pdf for 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
 %C details. 
 
 %  Latin, Italian, Rhaeto-Romanic, Rumanian, Sardian
@@ -60,6 +60,20 @@
    \c!datum={\v!dag,\ ,\v!maand,\ ,\v!jaar},
    \c!status=\v!stop]
 
+\installlanguage % the same as italian 
+  [\s!la]
+  [\c!spatiering=\v!opelkaar,
+   \c!leftsentence=---,
+   \c!rightsentence=---,
+   \c!leftsubsentence=---,
+   \c!rightsubsentence=---,
+   \c!leftquote=\upperleftsinglesixquote,
+   \c!rightquote=\lowerrightsingleninequote,
+   \c!leftquotation=\upperleftdoublesixquote,
+   \c!rightquotation=\lowerrightdoubleninequote,
+   \c!datum={\v!dag,\ ,\v!maand,\ ,\v!jaar},
+   \c!status=\v!stop]
+
 \installlanguage
   [\s!pt]
   [\c!spatiering=\v!opelkaar,
@@ -81,6 +95,7 @@
 \installlanguage [french]      [\s!fr]
 \installlanguage [spanish]     [\s!sp]
 \installlanguage [italian]     [\s!it]
+\installlanguage [latin]       [\s!la]
 \installlanguage [portuguese]  [\s!pt]
 
 %D Labels and header texts. 
@@ -88,112 +103,134 @@
 \setupheadtext [\s!fr] [\v!inhoud=Table des mati\`eres]
 \setupheadtext [\s!sp] [\v!inhoud=\'Indice]
 \setupheadtext [\s!it] [\v!inhoud=Indice]
+\setupheadtext [\s!la] [\v!inhoud=Quod in libro continetur] %Argumentum
 \setupheadtext [\s!pt] [\v!inhoud=Conte\'ud]
 
 \setupheadtext [\s!fr] [\v!tabellen=Tables]
 \setupheadtext [\s!sp] [\v!tabellen=Tablas]
 \setupheadtext [\s!it] [\v!tabellen=Tabelle]
+\setupheadtext [\s!la] [\v!tabellen=Tabulae]
 \setupheadtext [\s!pt] [\v!tabellen=Tabelas]
 
 \setupheadtext [\s!fr] [\v!figuren=Figures]
 \setupheadtext [\s!sp] [\v!figuren=Ilustraci\'ons]
 \setupheadtext [\s!it] [\v!figuren=Illustrazioni]
+\setupheadtext [\s!la] [\v!figuren=Imagines]
 \setupheadtext [\s!pt] [\v!figuren=Figuras]
 
 \setupheadtext [\s!fr] [\v!grafieken=Graphiques]
 \setupheadtext [\s!sp] [\v!grafieken=Gr\'aficos]
 \setupheadtext [\s!it] [\v!grafieken=Grafice]
+\setupheadtext [\s!la] [\v!grafieken=Typi]
 \setupheadtext [\s!pt] [\v!grafieken=Gr\'aficos]
 
 \setupheadtext [\s!fr] [\v!intermezzos=Interm\`edes]
 \setupheadtext [\s!sp] [\v!intermezzos=intermedios]
 \setupheadtext [\s!it] [\v!intermezzos=Intermezzi]
+\setupheadtext [\s!la] [\v!intermezzos=Intermissa]
 \setupheadtext [\s!pt] [\v!intermezzos=Intermezzi]
 
 \setupheadtext [\s!fr] [\v!index=Index]
 \setupheadtext [\s!sp] [\v!index=\'Indice]
 \setupheadtext [\s!it] [\v!index=Indice]
+\setupheadtext [\s!la] [\v!index=Indices]
 \setupheadtext [\s!pt] [\v!index=\'Indice]
 
 \setupheadtext [\s!fr] [\v!afkortingen=Abr\'eviations]
 \setupheadtext [\s!sp] [\v!afkortingen=Abreviaci\'ons]
 \setupheadtext [\s!it] [\v!afkortingen=Abbreviazioni]
+\setupheadtext [\s!la] [\v!afkortingen=Notae]
 \setupheadtext [\s!pt] [\v!afkortingen=Abreviaturas]
 
 \setupheadtext [\s!fr] [\v!logos=Logos]
 \setupheadtext [\s!sp] [\v!logos=Logotipos]
 \setupheadtext [\s!it] [\v!logos=Logotipi]
+\setupheadtext [\s!la] [\v!logos=Typi negotiales]
 \setupheadtext [\s!pt] [\v!logos=Logotipos]
 
 \setupheadtext [\s!fr] [\v!eenheden=Unit\'es]
 \setupheadtext [\s!sp] [\v!eenheden=Unidads]
 \setupheadtext [\s!it] [\v!eenheden=Unit\`a]
+\setupheadtext [\s!la] [\v!eenheden=Modi]
 \setupheadtext [\s!pt] [\v!eenheden=Unidades]
 
 \setuplabeltext [\s!fr] [\v!tabel=Table ]
 \setuplabeltext [\s!sp] [\v!tabel=Tablas ]
 \setuplabeltext [\s!it] [\v!tabel=Tabella ]
+\setuplabeltext [\s!la] [\v!tabel=Tabula ]
 \setuplabeltext [\s!pt] [\v!tabel=Tabela ]
 
 \setuplabeltext [\s!fr] [\v!figuur=Figure ]
 \setuplabeltext [\s!sp] [\v!figuur=Ilustraci\'on ]
 \setuplabeltext [\s!it] [\v!figuur=Illustrazione ]
+\setuplabeltext [\s!la] [\v!figuur=Imago ]
 \setuplabeltext [\s!pt] [\v!figuur=Figura ]
 
 \setuplabeltext [\s!fr] [\v!intermezzo=Interm\`ede ]
 \setuplabeltext [\s!sp] [\v!intermezzo=intermedio ]
 \setuplabeltext [\s!it] [\v!intermezzo=Intermezzo ]
+\setuplabeltext [\s!la] [\v!intermezzo=Intermissum ]
 \setuplabeltext [\s!pt] [\v!intermezzo=Intermezzo ]
 
 \setuplabeltext [\s!fr] [\v!grafiek=Illustration ]
 \setuplabeltext [\s!sp] [\v!grafiek=Gr\'afico ]
 \setuplabeltext [\s!it] [\v!grafiek=Grafica ]
+\setuplabeltext [\s!la] [\v!grafiek=Typus ]
 \setuplabeltext [\s!pt] [\v!grafiek=Gr\'afico ]
 
 \setuplabeltext [\s!fr] [\v!hoofdstuk=]
 \setuplabeltext [\s!sp] [\v!hoofdstuk=]
 \setuplabeltext [\s!it] [\v!hoofdstuk=]
+\setuplabeltext [\s!la] [\v!hoofdstuk=]
 \setuplabeltext [\s!pt] [\v!hoofdstuk=]
 
 \setuplabeltext [\s!fr] [\v!paragraaf=]
 \setuplabeltext [\s!sp] [\v!paragraaf=]
 \setuplabeltext [\s!it] [\v!paragraaf=]
+\setuplabeltext [\s!la] [\v!paragraaf=]
 \setuplabeltext [\s!pt] [\v!paragraaf=]
 
 \setuplabeltext [\s!fr] [\v!sub\v!paragraaf=]
 \setuplabeltext [\s!sp] [\v!sub\v!paragraaf=]
 \setuplabeltext [\s!it] [\v!sub\v!paragraaf=]
+\setuplabeltext [\s!la] [\v!sub\v!paragraaf=]
 \setuplabeltext [\s!pt] [\v!sub\v!paragraaf=]
 
 \setuplabeltext [\s!fr] [\v!sub\v!sub\v!paragraaf=]
 \setuplabeltext [\s!sp] [\v!sub\v!sub\v!paragraaf=]
 \setuplabeltext [\s!it] [\v!sub\v!sub\v!paragraaf=]
+\setuplabeltext [\s!la] [\v!sub\v!sub\v!paragraaf=]
 \setuplabeltext [\s!pt] [\v!sub\v!sub\v!paragraaf=]
 
 \setuplabeltext [\s!fr] [\v!sub\v!sub\v!sub\v!paragraaf=]
 \setuplabeltext [\s!sp] [\v!sub\v!sub\v!sub\v!paragraaf=]
 \setuplabeltext [\s!it] [\v!sub\v!sub\v!sub\v!paragraaf=]
+\setuplabeltext [\s!la] [\v!sub\v!sub\v!sub\v!paragraaf=]
 \setuplabeltext [\s!pt] [\v!sub\v!sub\v!sub\v!paragraaf=]
 
 \setuplabeltext [\s!fr] [\v!bijlage=]
 \setuplabeltext [\s!sp] [\v!bijlage=]
 \setuplabeltext [\s!it] [\v!bijlage=]
+\setuplabeltext [\s!la] [\v!bijlage=]
 \setuplabeltext [\s!pt] [\v!bijlage=]
 
 \setuplabeltext [\s!fr] [\v!deel=Section ]
 \setuplabeltext [\s!sp] [\v!deel=Parte ]
 \setuplabeltext [\s!it] [\v!deel=Parte ]
+\setuplabeltext [\s!la] [\v!deel=Pars ]
 \setuplabeltext [\s!pt] [\v!deel=Parte ]
 
-\setuplabeltext [\s!fr] [\v!regel=ligne]
-\setuplabeltext [\s!sp] [\v!regel=l\'\i nea]
-\setuplabeltext [\s!it] [\v!regel=riga]
-\setuplabeltext [\s!pt] [\v!regel=linha]
+\setuplabeltext [\s!fr] [\v!regel=ligne ]
+\setuplabeltext [\s!sp] [\v!regel=l\'\i nea ]
+\setuplabeltext [\s!it] [\v!regel=riga ]
+\setuplabeltext [\s!la] [\v!regel=versus ]
+\setuplabeltext [\s!pt] [\v!regel=linha ]
 
-\setuplabeltext [\s!fr] [\v!regels=lignes]
-\setuplabeltext [\s!sp] [\v!regels=l\'\i neas]
-\setuplabeltext [\s!it] [\v!regels=rige]
-\setuplabeltext [\s!pt] [\v!regels=linhas]
+\setuplabeltext [\s!fr] [\v!regels=lignes ]
+\setuplabeltext [\s!sp] [\v!regels=l\'\i neas ]
+\setuplabeltext [\s!it] [\v!regels=rige ]
+\setuplabeltext [\s!la] [\v!regels=versus ]
+\setuplabeltext [\s!pt] [\v!regels=linhas ]
 
 \setuplabeltext [\s!fr]   [\v!january=janvier]
 \setuplabeltext [\s!fr]  [\v!february=f\'evrier]
@@ -234,6 +271,19 @@
 \setuplabeltext [\s!it]  [\v!november=novembre]
 \setuplabeltext [\s!it]  [\v!december=dicembre]
 
+\setuplabeltext [\s!la]   [\v!january=Ianuarius]
+\setuplabeltext [\s!la]  [\v!february=Februarius]
+\setuplabeltext [\s!la]     [\v!march=Martius]
+\setuplabeltext [\s!la]     [\v!april=Aprilis]
+\setuplabeltext [\s!la]       [\v!may=Maius]
+\setuplabeltext [\s!la]      [\v!june=Iunius]
+\setuplabeltext [\s!la]      [\v!july=Iulius]   % formerly Quintilis
+\setuplabeltext [\s!la]    [\v!august=Augustus] % formerly Sextilis
+\setuplabeltext [\s!la] [\v!september=September]
+\setuplabeltext [\s!la]   [\v!october=October]
+\setuplabeltext [\s!la]  [\v!november=November]
+\setuplabeltext [\s!la]  [\v!december=December]
+
 \setuplabeltext [\s!pt]   [\v!january=janeiro]
 \setuplabeltext [\s!pt]  [\v!february=fevereiro]
 \setuplabeltext [\s!pt]     [\v!march=mar\c{c}o]
@@ -271,6 +321,14 @@
 \setuplabeltext [\s!it]    [\v!friday=venerd\`\i]
 \setuplabeltext [\s!it]  [\v!saturday=sabato]
 
+\setuplabeltext [\s!la]    [\v!sunday=Dies Solis]
+\setuplabeltext [\s!la]    [\v!monday=Dies Lunae]
+\setuplabeltext [\s!la]   [\v!tuesday=Dies Martis]
+\setuplabeltext [\s!la] [\v!wednesday=Dies Mercuri]
+\setuplabeltext [\s!la]  [\v!thursday=Dies Iovis]
+\setuplabeltext [\s!la]    [\v!friday=Dies Veneris]
+\setuplabeltext [\s!la]  [\v!saturday=Dies Saturni]
+
 \setuplabeltext [\s!pt]    [\v!sunday=domingo]
 \setuplabeltext [\s!pt]    [\v!monday=segunda-feira]
 \setuplabeltext [\s!pt]   [\v!tuesday=ter\c{c}a-feira]
@@ -282,6 +340,7 @@
 %D \ShowAllLanguageValues [\s!fr] [french]     franse slag
 %D \ShowAllLanguageValues [\s!sp] [spanish]    spaans benauwd
 %D \ShowAllLanguageValues [\s!it] [italian]    italiaanse ...
+%D \ShowAllLanguageValues [\s!la] [latin]      latijnse missen 
 %D \ShowAllLanguageValues [\s!pt] [portuguese] portugese ...
 
 \protect

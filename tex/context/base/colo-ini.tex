@@ -8,7 +8,7 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See licen-en.pdf for 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
 %C details. 
 
 \writestatus{loading}{Context Color Macros}
@@ -106,6 +106,21 @@
       9: -- Farbraum wird nicht unterstuetzt
      10: -- Farbraum wird unterstuetzt 
      11: Farbe wird in Grau umgewandelt
+\stopmessages
+
+\startmessages  czech  library: colors
+  title: barva
+      1: system -- je globalne aktivovana
+      2: system -- je lokalne activovana
+      3: -- neni definovana
+      4: system -- je nacten
+      5: neznamy system --
+      6: palette -- je k dispozici
+      7: palette -- neni k dispozici
+      8: (naplatna) specifikace -- v barve -- bude cerna
+      9: -- prostor barev neni podporovan
+     10: -- prostor barev je podporovan
+     11: barva je prevedena na sed
 \stopmessages
 
 %D \macros
@@ -452,38 +467,10 @@
    \doconvertCMYKtoCMY#3\k#4\to\@@cl@@y
    \let\@@cl@@k=\@@cl@@z}
 
-%D We already mentioned that colors interfere with building
-%D the pagebody. This means that when the page is composed,
-%D the colors temporary have to be reset. After the page is
-%D shipped out, we have to revive the current color. 
-%D 
-%D We use \type{\marks} to keep track of colors across page 
-%D boundaries. Unfortunately standard \TEX\ supports only one mark, 
-%D and using this one for color support only would be a waste. 
-%D We therefore use an adapted version of J.~Fox's multiple mark
-%D mechanism as (re|)|implemented in \module{supp-mrk}. 
-
-\doifdefinedelse{newmark}
-  {\newmark\colormark}  
-  {\def\colormark#1{}}
-
-%D Using this mark mechanism with lots of colors has one 
-%D major drawback: \TEX's memory tends to overflow when 
-%D very colorful text is stored in a global box. Even worse is that
-%D the processing time grows considerably. We therefore support
-%D local as well as global color switching. 
-%D 
-%D Of the next macros, \type{\popcolor} is to be used after
-%D the actual \type{\shipout} and \type{\startcolorpage} and
-%D \type{\stopcolorpage} are called when entering and leaving
-%D the \type{\pagebody} builder. In case of emergencies
-%D \type{\pushcolor} can be used to undo the current color, 
-%D for instance when insertions are appended to the page.  
-
 %D Before we present the color macros, we first define the 
 %D setup command. This command takes care of setting up the 
-%D booleans that control local and global behavior and 
-%D conversion to other color spaces. 
+%D booleans that control local and global behavior (more on 
+%D that later) and conversion to other color spaces. 
 
 \newif\ifincolor
 \newif\iflocalcolor
@@ -611,8 +598,8 @@
   {\xdef\currentcolor{\getvalue{\??cl\the\colorlevel C}}%
    \global\advance\colorlevel by \@@colorplus1
    \setxvalue{\??cl\the\colorlevel C}{#1}%
-   \debuggerinfo{\m!colors}
-     {start #1 at level \the\colorlevel}%
+  %\debuggerinfo{\m!colors}
+  %  {start #1 at level \the\colorlevel}%
    \doifelsenothing{#1}
      {\setxvalue{\??cl\the\colorlevel C}{\currentcolor}%
       \setgvalue{\??cl\the\colorlevel S}{\donoglobalstopcolor}}
@@ -638,8 +625,8 @@
 \def\donoglobalstopcolor%
   {\ifnum\colorlevel=0 \else
      \xdef\currentcolor{\getvalue{\??cl\the\colorlevel C}}%
-     \debuggerinfo{\m!colors}
-       {stop \currentcolor\normalspace at level \the\colorlevel}%
+    %\debuggerinfo{\m!colors}
+    %  {stop \currentcolor\normalspace at level \the\colorlevel}%
      \global\advance\colorlevel by \@@colorminus1
    \fi}
 
@@ -714,32 +701,57 @@
 %D \stopkleur
 %D \stopbuffer
 %D 
-%D \startvoorbeeld
+%D \startopelkaar
 %D \haalbuffer
-%D \stopvoorbeeld
+%D \stopopelkaar
 %D 
 %D These quotes are typeset by saying:
 %D 
 %D \typebuffer
+ 
+%D We already mentioned that colors interfere with building
+%D the pagebody. This means that when the page is composed,
+%D the colors temporary have to be reset. After the page is
+%D shipped out, we have to revive the current color. 
 %D 
+%D We use \type{\marks} to keep track of colors across page 
+%D boundaries. Unfortunately standard \TEX\ supports only one mark, 
+%D and using this one for color support only would be a waste. 
+%D We therefore use an adapted version of J.~Fox's multiple mark
+%D mechanism as (re|)|implemented in \module{supp-mrk}. 
+
+\doifdefinedelse{newmark}
+  {\newmark\colormark}  
+  {\def\colormark#1{}}
+
+%D Using this mark mechanism with lots of colors has one 
+%D major drawback: \TEX's memory tends to overflow when 
+%D very colorful text is stored in a global box. Even worse is that
+%D the processing time grows considerably. We therefore support
+%D local as well as global color switching. 
+%D 
+%D Of the next macros, \type{\popcolor} is to be used after
+%D the actual \type{\shipout} and \type{\startcolorpage} and
+%D \type{\stopcolorpage} are called when entering and leaving
+%D the \type{\pagebody} builder. In case of emergencies
+%D \type{\pushcolor} can be used to undo the current color, 
+%D for instance when insertions are appended to the page.  
+%D
 %D Out of efficiency we only use marks when needed. The next 
 %D macro tries to find out if indeed a mark should be set. 
 %D This macro uses the boolean \type{\ifinpagebody}, which can 
 %D be defined and set in the module that handles the pagebody. 
 
 \def\docolormark#1%
-  {\ifinpagebody \else
-     \iflocalcolor \else
-       \dodocolormark{#1}%
-     \fi
-   \fi}
+  {\iflocalcolor \else \ifinpagebody \else \ifinframed \else 
+     \dodocolormark{#1}%
+   \fi \fi \fi}
 
 \let\lastcolormark=\empty
 
 \def\dodocolormark#1%
   {\doifnot{#1}{\lastcolormark}
      {\xdef\lastcolormark{#1}%
-     %\expandafter\colormark\expandafter{\lastcolormark}}}
       \expandafter\setmark\expandafter\colormark\expandafter{\lastcolormark}}}
 
 %D \macros
@@ -752,26 +764,15 @@
 \def\pushcolor%
   {\stopcolormode} 
 
-%\def\popcolor%
-%  {\doifsomething{\botcolormark}
-%     {\debuggerinfo{\m!colors}{popping \botcolormark}%
-%      \startcolormode{\botcolormark}}}
-%
-%\def\popsplitcolor% 
-%  {\getsplitmarks\colormark  % hier wel 
-%   \doifsomething{\botcolormark}
-%     {\debuggerinfo{\m!colors}{split popping \botcolormark}%
-%      \startcolormode{\botcolormark}}}
-
 \def\popcolor%
   {\doifsomething{\getbotmark\colormark}
-     {\debuggerinfo{\m!colors}{popping \getbotmark\colormark}%
+     {%\debuggerinfo{\m!colors}{popping \getbotmark\colormark}%
       \startcolormode{\getbotmark\colormark}}}
 
 \def\popsplitcolor% 
   {\getsplitmarks\colormark  % hier wel 
    \doifsomething{\getsplitbotmark\colormark}
-     {\debuggerinfo{\m!colors}{split popping \getsplitbotmark\colormark}%
+     {%\debuggerinfo{\m!colors}{split popping \getsplitbotmark\colormark}%
       \startcolormode{\getsplitbotmark\colormark}}}
 
 %D \macros
@@ -805,8 +806,8 @@
    \def\@@colorminus{+}%
    \let\docolormark=\gobbleoneargument
    \edef\savedcolorlevel{\the\colorlevel}%
-   \localstartcolor[black]%
-   \global\colorlevel=0 }
+   \global\colorlevel=0       % before \localstartcolor of  
+   \localstartcolor[black]}   % course, ugly bug removed
 
 \def\stopcolorpage%
   {\localstopcolor
@@ -1515,15 +1516,15 @@
 %D We default to the colors defined in \module{colo-rgb} and
 %D support both \kap{RGB} and \kap{CMYK} output. 
 
-\setupcolor
-  [\v!rgb]
-
 \setupcolors
   [\c!status=\v!stop,
    \c!conversie=\v!ja,
    \c!reductie=\v!nee,
    \c!rgb=\v!ja,
    \c!cmyk=\v!ja]
+
+\setupcolor
+  [\v!rgb]
 
 %D As we can see, color support is turned off by default. 
 %D Reduction of gray colors to gray scales is turned on. 

@@ -1,0 +1,59 @@
+%D \module
+%D   [       file=enco-mis,
+%D        version=1999.11.11,
+%D          title=\CONTEXT\ Encoding Macros,
+%D       subtitle=Missing Glyphs,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
+%C details. 
+
+%D In this file we collect some definitions that construct 
+%D pseudo characters. Some day we will move some definitions 
+%D from \type {plain.tex} to this file. Some definitions are 
+%D derived from definitions in the \LATEX\ distribution, 
+%D especially Johannes Braams' Babel system.  
+
+\startmapping[\s!default] 
+
+\defineuppercasecom \dj  \DJ
+\defineuppercasecom \Dj  \dj
+\defineuppercasecom \DJ  \dj
+
+\stopmapping 
+
+\definecharacter dj {\pseudoencodeddj}
+\definecharacter Dj {\pseudoencodedDJ}
+\definecharacter DJ {\pseudoencodedDJ}
+
+\unprotect 
+
+\def\pseudoencodeddj% like in babel 
+  {\leavevmode\hbox\bgroup
+   \setbox0=\hbox{d}%
+   \dimen0=\ht0
+   \advance\dimen0 by 1ex
+   \dimen0=.45\dimen0
+   \dimen2\expandafter\withoutpt\the\fontdimen1\font\dimen0
+   \advance\dimen2 by .5ex
+   \rlap{\raise\dimen0\hbox{\kern\dimen2\vbox{\hrule\!!height0.1ex\!!width0.3em}}}%
+   \box0
+   \egroup}
+
+\def\pseudoencodedDJ% like in babel 
+  {\leavevmode
+   \hbox\bgroup
+   \setbox0=\hbox{D}%
+   \dimen0=.55\ht0
+   \dimen2\expandafter\withoutpt\the\fontdimen1\font\dimen0
+   \advance\dimen2 by .15ex 
+   \advance\dimen2 by -.15\fontdimen7\font 
+   \dimen4\expandafter\withoutpt\the\fontdimen7\font\dimen0
+   \rlap{\raise\dimen0\hbox{\kern\dimen2\vbox{\hrule\!!height0.1ex\!!width0.33em}}}%
+   \box0
+   \egroup}
+
+\protect \endinput 

@@ -8,7 +8,7 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See licen-en.pdf for 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
 %C details. 
 
 %D This module implements some box manipulation macros. Some
@@ -57,7 +57,6 @@
 %D \macros
 %D   {hsmash,vsmash,
 %D    hsmashed,vsmashed}
-%D   {}
 %D
 %D While the previous macros expected a \BOX, the next act on a
 %D content. They are some subtle differences betreen the smash
@@ -144,8 +143,7 @@
   {\doiftextelse{#1}{#2}{}}
 
 %D \macros
-%D   {dowithnextbox,
-%D    nextbox}
+%D   {dowithnextbox,nextbox}
 %D
 %D Sometimes we want a macro to grab a box and do something
 %D on the content. One could pass an argument to a box, but
@@ -171,7 +169,7 @@
 %D    \dowithnextbox\handlefloat\vbox}
 %D \stoptypen
 %D
-%D in stead of:
+%D instead of:
 %D
 %D \starttypen
 %D \def\getfloat#1%
@@ -826,8 +824,6 @@
 %D the first two lines would have ended up in the text. This
 %D macro can be useful when building complicated menus, headers
 %D and footers and|/|or margin material.
-%D
-%D {\em This macro still needs some improvement.}
 
 \def\sbox%  in handleiding, voorbeeld \inlinker{xx} \extern..
   {\dowithnextbox
@@ -892,7 +888,7 @@
      \bgroup
        \mindermeldingen
        \forgetall
-       \setbox0=\hbox{\vrule\!!width\!!zeropoint#1}%
+       \setbox0=\hbox{\vrule\!!width \!!zeropoint#1}%
        \setbox2=\vbox{\hrule\!!height\!!zeropoint#1}%
        \advance\vsize by \ht2
        \advance\hsize by \wd0
@@ -975,7 +971,7 @@
 %D footnotes.
 %D
 %D Men kan het proces van breken enigzins beinvloeden met de 
-%D volgende twee swithes:
+%D volgende twee switches:
 
 \newif\ifalignrigidcolumns      
 \newif\ifstretchrigidcolumns    
@@ -984,7 +980,8 @@
 %D individuele kolommen op naar \type{\vsize}.
 
 \def\setrigidcolumnhsize#1#2#3%
-  {\hsize=#1\relax
+  {\xdef\savedrigidhsize{\the\hsize}%
+   \hsize=#1\relax
    \global\chardef\rigidcolumns=#3\relax
    \scratchdimen=-#2\relax
    \multiply\scratchdimen by #3\relax
@@ -997,28 +994,35 @@
    \ifnum\rigidcolumns=1
      \ifinner\ifhmode\box\else\unvbox\fi\else\unvbox\fi\rigidcolumnbox
    \else
-     \line
+     \hbox to \savedrigidhsize % was \hsize
        {\vbadness=10000
         \tabskip\!!zeropoint
+        \setbox\rigidcolumnbox=\vbox
+          {\unvbox\rigidcolumnbox
+           \unpenalty\removelastskip}% get rid of \blank's
         \splittopskip=\openstrutheight
-        %\scratchdimen=\ht\rigidcolumnbox      % sensitive for overflow
-        %\divide\scratchdimen by \rigidcolumns % therefore we need the hack:
-        \scratchdimen=1pt 
+       %\scratchdimen=\ht\rigidcolumnbox      % sensitive for overflow
+       %\divide\scratchdimen by \rigidcolumns % therefore we need the hack:
+        \scratchdimen=1pt
         \divide\scratchdimen by \rigidcolumns
         \expanded{\scratchdimen=\withoutpt{\the\scratchdimen}\ht\rigidcolumnbox}%
-        \advance\scratchdimen by \ht\strutbox 
+        \advance\scratchdimen by \ht\strutbox
         \valign{##\vfill\cr\dorigidcolumnsplits}}%
    \fi}
 
 \def\dorigidcolumnsplits%
   {\ifnum\rigidcolumns>0
      \setbox\scratchbox=\vsplit\rigidcolumnbox to \scratchdimen
-     \ifalignrigidcolumns
-       \vbox to \ifstretchrigidcolumns\vsize\else\scratchdimen\fi
-         {\unvbox\scratchbox}%
-     \else
-       \vbox{\unvbox\scratchbox}%
-     \fi
+     \hbox to \hsize
+       \bgroup
+         \ifalignrigidcolumns
+           \vbox to \ifstretchrigidcolumns\vsize\else\scratchdimen\fi
+             {\unvbox\scratchbox}%
+         \else
+           \vbox{\unvbox\scratchbox}%
+         \fi
+         \hss
+       \egroup
      \doglobal\decrement\rigidcolumns
      \cr
      \ifnum\rigidcolumns>0\noalign{\hfil}\fi
@@ -1056,7 +1060,7 @@
      \multiply\dimen0 by 1024
    \else
      \message{cropping \baselineskip to 16pt}%
-     \baselineskip=\maxdimen
+     \dimen0=\maxdimen
    \fi
    \divide\dimen0 by \hsize
    \multiply\dimen0 by 64
@@ -1074,6 +1078,33 @@
    \ht0=\vboxtohboxfactor\wd0
    \box0
    \egroup}
+
+% % to be done: start halfway a line combined with one line 
+% % extra to start with (skip) and one line less than counted.
+% 
+% \def\stopvboxtohbox%
+%   {\egroup
+%    \setbox2=\vbox
+%      {\forgetall\unhcopy0\par\xdef\globalvhlines{\the\prevgraf}}%
+%    \setbox2=\vbox
+%      {\unvbox2
+%       \setbox2=\lastbox
+%       \setbox2=\hbox{\unhbox2}%
+%       \xdef\globalvhwidth{\the\wd2}}%
+%    \decrement\globalvhlines
+%    \dimen0=\globalvhwidth
+%    \dimen0=\vboxtohboxfactor\dimen0
+%    \advance\dimen0 by \globalvhlines\lineheight
+%    \dp0=\!!zeropoint
+%    \ht0=\dimen0
+%   %\writestatus{guessed size}
+%   %  {w:\the\wd0\space\space
+%   %   b:\the\baselineskip\space
+%   %   l:\globalvhlines\space
+%   %   e:\globalvhwidth\space
+%   %   h:\the\dimen0}%
+%    \box0
+%    \egroup}
 
 \def\convertvboxtohbox%
   {\setvboxtohbox
@@ -1443,6 +1474,38 @@
       \box\nextbox
       \egroup}
      \hbox}
+
+%D \macros
+%D   {boxofsize}
+%D
+%D Sometimes we need to construct a box with a height or 
+%D width made up of several dimensions. Instead of cumbersome 
+%D additions, we can use: 
+%D
+%D \starttypen
+%D \boxofsize \vbox 10cm 3cm -5cm {the text to be typeset}
+%D \stoptypen
+%D
+%D This example demonstrates that one can use positive and 
+%D negative values. Dimension registers are also accepted.
+
+\newdimen\sizeofbox
+
+\def\boxofsize#1%
+  {\bgroup
+   \sizeofbox\!!zeropoint
+   \scratchdimen\!!zeropoint
+   \def\docommando%
+     {\advance\sizeofbox\scratchdimen
+      \futurelet\next\dodocommando}%
+   \def\dodocommando%
+     {\ifx\next\bgroup
+        \expanded{\egroup#1 to \the\sizeofbox}%
+      \else
+        \@EA\afterassignment\@EA\docommando\@EA\scratchdimen
+      \fi}%
+   \docommando}
+
 
 %D Some new, still undocumented features:
 
@@ -1482,12 +1545,97 @@
       \egroup}
      \vbox}
 
-% Handy:
+%D Some more undocumented macros (used in m-chart). 
+
+\newif\iftraceboxplacement % \traceboxplacementtrue
+
+\def\boxcursor%
+  {\iftraceboxplacement
+     \bgroup
+     \setbox0=\hbox
+       {\hskip-1pt\vrule\!!width2pt\!!height2pt\!!depth2pt}%
+     \wd0=\!!zeropoint\ht0=\!!zeropoint\dp0=\!!zeropoint\box0
+     \egroup
+   \else
+     \hbox
+       {\vrule\!!width\!!zeropoint\!!height\!!zeropoint\!!depth\!!zeropoint}%
+   \fi}
+
+\def\placedbox%
+  {\iftraceboxplacement\ruledhbox\else\hbox\fi}
+
+\newdimen\boxoffset
+
+\def\rightbox#1%
+  {\hbox
+     {\setbox0=\placedbox{#1}%
+      \dimen0=.5\ht0\advance\dimen0 by -.5\dp0
+      \boxcursor\hskip\boxoffset\lower\dimen0\box0}}
+
+\def\leftbox#1%
+  {\hbox
+     {\setbox0=\placedbox{#1}%
+      \dimen0=.5\ht0\advance\dimen0 by -.5\dp0
+      \boxcursor\hskip-\wd0\hskip-\boxoffset\lower\dimen0\box0}}
+
+\def\topbox#1%
+  {\hbox
+     {\setbox0=\placedbox{#1}%
+      \dimen0=\boxoffset\advance\dimen0 by \dp0
+      \boxcursor\hskip-.5\wd0\raise\dimen0\box0}}
+
+\def\bottombox#1%
+  {\hbox
+     {\setbox0=\placedbox{#1}%
+      \dimen0=\boxoffset\advance\dimen0 by \ht0
+      \boxcursor\hskip-.5\wd0\lower\dimen0\box0}}
+
+\def\lefttopbox#1%
+  {\hbox
+     {\setbox0=\placedbox{#1}%
+      \dimen0=\boxoffset\advance\dimen0 by \dp0
+      \advance\boxoffset\wd0
+      \boxcursor\hskip-\boxoffset\raise\dimen0\box0}}
+
+\def\righttopbox#1%
+  {\hbox
+     {\setbox0=\placedbox{#1}%
+      \dimen0=\boxoffset\advance\dimen0 by \dp0
+      \boxcursor\hskip\boxoffset\raise\dimen0\box0}}
+
+\def\leftbottombox#1%
+  {\hbox
+     {\setbox0=\placedbox{#1}%
+      \dimen0=\boxoffset\advance\dimen0 by \ht0
+      \advance\boxoffset\wd0
+      \boxcursor\hskip-\boxoffset\lower\dimen0\box0}}
+
+\def\rightbottombox#1%
+  {\hbox
+     {\setbox0=\placedbox{#1}%
+      \dimen0=\boxoffset\advance\dimen0 by \ht0
+      \boxcursor\hskip\boxoffset\lower\dimen0\box0}}
+
+\let\topleftbox    \lefttopbox
+\let\toprightbox   \righttopbox
+\let\bottomleftbox \leftbottombox
+\let\bottomrightbox\rightbottombox
+
+\def\middlebox#1%
+  {\hbox{\setbox0=\placedbox{#1}\boxoffset=-.5\wd0\rightbox{\box0}}}
+
+%D \macros 
+%D   {removedepth, obeydepth}
+%D
+%D While \type {\removedepth} removes the preceding depth, 
+%D \type {\obeydepth} makes sure we have depth. Both macros 
+%D leave the \type {\prevdepth} untouched. 
 
 \def\removedepth%
-  {\ifvmode\ifdim\prevdepth>\!!zeropoint
-     \kern-\prevdepth
-   \fi\fi}
+  {\ifvmode \ifdim\prevdepth>\!!zeropoint \kern-\prevdepth \fi \fi}
+
+\def\obeydepth%
+  {\par \removedepth \ifvmode \kern\dp\strutbox \fi}
 
 % maybe some day we need this
 %

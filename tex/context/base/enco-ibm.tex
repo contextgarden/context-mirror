@@ -2,61 +2,62 @@
 %D   [       file=enco-ibm,
 %D        version=1995.1.1,
 %D          title=\CONTEXT\ Encoding Macros,
-%D       subtitle=IBM Keys,
+%D       subtitle=The Good Old MSDOS IBM codepage,
 %D         author=Hans Hagen,
 %D           date=\currentdate,
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See licen-en.pdf for 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
 %C details. 
 
 %D This module activates the \kap{IBM PC} high \ASCII\ 
 %D characters, such as â and ·. 
 
-\unprotect
+\startregime [ibm]
 
-\catcode`\â=\@@active \unexpanded\defâ{\"e} 
-\catcode`\Ç=\@@active \unexpanded\defÇ{\'e}
-\catcode`\ä=\@@active \unexpanded\defä{\`e}
-\catcode`\à=\@@active \unexpanded\defà{\^e} 
+\defineactivecharacter â {\"e} 
+\defineactivecharacter Ç {\'e}
+\defineactivecharacter ä {\`e}
+\defineactivecharacter à {\^e} 
 
-\catcode`\Ñ=\@@active \unexpanded\defÑ{\"a}
-\catcode`\†=\@@active \unexpanded\def†{\'a}
-\catcode`\Ö=\@@active \unexpanded\defÖ{\`a}
-\catcode`\É=\@@active \unexpanded\defÉ{\^a}
+\defineactivecharacter Ñ {\"a}
+\defineactivecharacter † {\'a}
+\defineactivecharacter Ö {\`a}
+\defineactivecharacter É {\^a}
 
-\catcode`\î=\@@active \unexpanded\defî{\"o}
-\catcode`\¢=\@@active \unexpanded\def¢{\'o}
-\catcode`\ï=\@@active \unexpanded\defï{\`o}
-\catcode`\ì=\@@active \unexpanded\defì{\^o}
+\defineactivecharacter î {\"o}
+\defineactivecharacter ¢ {\'o}
+\defineactivecharacter ï {\`o}
+\defineactivecharacter ì {\^o}
 
-\catcode`\ã=\@@active \unexpanded\defã{\"\dotlessi}
-\catcode`\°=\@@active \unexpanded\def°{\'\dotlessi}
-\catcode`\ç=\@@active \unexpanded\defç{\`\dotlessi}
-\catcode`\å=\@@active \unexpanded\defå{\^\dotlessi}
+\defineactivecharacter ã {\"\dotlessi}
+\defineactivecharacter ° {\'\dotlessi}
+\defineactivecharacter ç {\`\dotlessi}
+\defineactivecharacter å {\^\dotlessi}
 
-\catcode`\Å=\@@active \unexpanded\defÅ{\"u}
-\catcode`\£=\@@active \unexpanded\def£{\'u}
-\catcode`\ó=\@@active \unexpanded\defó{\`u}
-\catcode`\ñ=\@@active \unexpanded\defñ{\^u}
+\defineactivecharacter Å {\"u}
+\defineactivecharacter £ {\'u}
+\defineactivecharacter ó {\`u}
+\defineactivecharacter ñ {\^u}
 
-\catcode`\ê=\@@active \unexpanded\defê{\'E}
-\catcode`\é=\@@active \unexpanded\defé{\"A}
-\catcode`\ö=\@@active \unexpanded\defö{\"U}
+\defineactivecharacter ê {\'E}
+\defineactivecharacter é {\"A}
+\defineactivecharacter ö {\"U}
 
-\catcode`\á=\@@active \unexpanded\defá{\c c}
-\catcode`\Ä=\@@active \unexpanded\defÄ{\c C}
+\defineactivecharacter á {\c c}
+\defineactivecharacter Ä {\c C}
 
-\catcode`\§=\@@active \unexpanded\def§{\~n}
+\defineactivecharacter § {\~n}
 
-\catcode`\·=\@@active \unexpanded\def·{\SS}  
+\defineactivecharacter · {\SS}  
 
-\catcode`\Æ=\@@active 
-\catcode`\Ø=\@@active 
+\defineactivecharacter Æ {\ifvmode\leavevmode\fi\leftguillemot\prewordbreak}
+\defineactivecharacter Ø {\prewordbreak\rightguillemot}
 
-\unexpanded\defÆ{\ifvmode\leavevmode\fi\leftguillemot\prewordbreak}
-\unexpanded\defØ{\prewordbreak\rightguillemot}
+\stopregime 
+
+\enableregime[windows]
 
 %D The next section will be changed as soon as we get grip on
 %D the other encodings.
@@ -101,7 +102,5 @@
 %D \appendtoks\lccode`Æ=`<\to\everysanitize
 %D \appendtoks\lccode`Ø=`<\to\everysanitize
 %D \stoptypen
-
-\protect
 
 \endinput

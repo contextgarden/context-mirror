@@ -1,0 +1,115 @@
+% == introduction == 
+%
+% This is 'texexec.ini', the file used by texexec to determine where 
+% to find files, what TeX to use, what flags to pass, etc. Although 
+% TeXexec tries to locate things itself, a little help is sometimes 
+% needed. One can influence texexec by setting some variables. These 
+% are only needed when the automatic determined settings fail. 
+% 
+% == interfacing ==
+% 
+% UsedInterfaces  nl,en  the formats generated with --make
+% UserInterface   nl     the default format used
+%
+% == binaries == 
+% 
+% TeXExecutable      pdfetex  the TeX binary to use 
+% MpExecutable       mpost    the MetaPost binary to use  
+% MpToTeXExecutable  mpto     the MetaPost to TeX converter
+% DviToMpExecutable  dvitomp  the DVI to MetaPost converter
+%
+% == flags == 
+%           
+% TeXFormatFlag  &     the format introducer  
+% TeXVirginFlag  -ini  the format generation switch
+%
+% == paths == 
+%
+% TeXFormatPath   texmf/...               fmt files 
+% ConTeXtPath     texmf/tex/context/base  sources
+% SetupPath       texmf/tex/base/user     cont-sys/usr file
+% TeXScriptsPath  texmf/context/perltk    scripts
+%
+% == the main shell setting ==
+%
+% As shown below, one can define his/her own sections. We default to 
+% the teTeX/fpTeX web2c based settings. 
+
+set  TeXShell  to  tetex 
+%set TeXShell  to  fptex 
+%set TeXShell  to  miktex
+%set TeXShell  to  private 
+
+% == setting up the variables ==
+%
+% Here are some general defaults. They can be overruled later.  
+
+set  UsedInterfaces     to  en,nl,de,uk
+set  UserInterface      to  en
+set  TeXExecutable      to  tex 
+set  MpExecutable       to  mpost 
+set  MpToTeXExecutable  to  mpto
+set  DviToMpExecutable  to  dvitomp
+
+% For teTeX the next settings will do.
+
+for  tetex  set  UsedInterfaces  to  en,nl,de,uk 
+for  tetex  set  UserInterface   to  en 
+for  tetex  set  TeXExecutable   to  pdfetex
+
+% These also apply to fpTeX. 
+
+for  fptex  set  UsedInterfaces  to  en,nl,de,uk 
+for  fptex  set  UserInterface   to  en 
+for  fptex  set  TeXExecutable   to  pdfetex
+
+% MikTeX users probably have to set up some paths too.
+
+for  miktex  set  UsedInterfaces  to  en,nl,de,uk
+for  miktex  set  UserInterface   to  en
+for  miktex  set  TeXExecutable   to  pdftex
+for  miktex  set  TeXFormatFlag   to  &
+for  miktex  set  TeXVirginFlag   to  --initialize
+
+% These are the settings used on some machines at PRAGMA ADE that 
+% don't use the texmf tree. They can serve as an example for local 
+% settings. Local settings should either be added to the previous 
+% one, or go without the 'for' directives. Consider these 
+% settings as an example. 
+
+for  private  set  UsedInterfaces  to  en,nl
+for  private  set  UserInterface   to  nl
+for  private  set  TeXExecutable   to  pdfetex
+for  private  set  TeXFormatFlag   to  & 
+for  private  set  TeXVirginFlag   to  -ini
+for  private  set  TeXFormatPath   to  t:/tex/web2c/fmt/
+for  private  set  ConTeXtPath     to  t:/pragma/sources/
+for  private  set  SetupPath       to  t:/pragma/perl/ 
+for  private  set  TeXScriptsPath  to  t:/pragma/perl/
+
+% == read this too == 
+%
+% If this file is called 'texexec.rme', copy it to 'texexec.ini', 
+% check the settings above, change them according to your TeX
+% distribution, and say: 
+%
+%   texexec  --verbose
+% 
+% When set up properly, you should see your local settings fly by. 
+% When these settings are ok, the next call should work: 
+%
+%   texexec  --make
+%
+% and you should be able to process a file by saying
+%
+%   texexec  filename
+%
+% See 'mtexexec.pdf' for more information on the flags you can use with
+% 'texexec'. Also make sure you have the 'texutil' script installed in 
+% the same path as 'texexec'. 
+
+% Experimental 
+%
+% set  TcXPath     to  d:/tex/texmf/web2c
+% set  FmtLanguage to  pl 
+% set  FmtBodyFont to  plr 

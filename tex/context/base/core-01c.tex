@@ -8,8 +8,8 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See licen-en.pdf for 
-%C details. 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
 
 \writestatus{loading}{Context Core Macros (c)}
 
@@ -25,6 +25,10 @@
 
 \startmessages  german  library: systems
      41: Externe Datei -- in Gruppe -- existiert nicht
+\stopmessages
+
+\startmessages  czech  library: systems
+     41: externi soubor -- ve skupine -- neexistuje
 \stopmessages
 
 %I n=Formules+
@@ -53,79 +57,11 @@
 %I   \leg symbool \\ symbool \\ betekenis \\ dimensie \\
 %I \stoplegenda
 
-% \newif\ifdoublelegends
-% 
-% \def\legendaspacing%
-%   {\hskip.5em}
-% 
-% \def\dostartlegenda[#1]%
-%   {\witruimte
-%    \blanko
-%    \bgroup
-%    \doifelse{#1}{\v!twee}
-%      {\doublelegendstrue
-%       \let\leg=\doubleleg}
-%      {\doublelegendsfalse
-%       \let\leg=\singleleg}%
-%    \tabskip=\!!zeropoint
-%    \halign
-%    \bgroup
-%    \hskip\leftskip
-%    $##$\hfil
-%    &\hfil\legendaspacing##\legendaspacing\hfil
-%    &\ifdoublelegends$##$\hfil\fi
-%    &\ifdoublelegends\hfil\legendaspacing##\legendaspacing\hfil\fi
-%    &##\unskip\hfil\legendaspacing\legendaspacing
-%    &$\rm##$\hfill\cr}
-% 
-% \def\singleleg#1\\#2\\#3\\%
-%   {#1&\doifsomething{#1}{=}&
-%    &&
-%    #2\unskip&
-%    #3\cr}
-% 
-% \def\doubleleg#1\\#2\\#3\\#4\\%
-%   {#1&\doifsomething{#1}{\doifnot{#1}{ }{=}}&
-%    #2&\doifsomething{#2}{\doifnot{#2}{ }{=}}&
-%    #3\unskip&
-%    #4\cr}
-% 
-% \def\startlegenda%
-%   {\dosingleempty\dostartlegenda}
-% 
-% \def\stoplegenda%
-%   {\egroup
-%    \egroup
-%    \blanko}
-% 
-% % tzt: \crlf == \\ \\ \leg \\ afh kolom
-% 
-% \def\startgegeven%
-%   {\witruimte
-%    \blanko
-%    \bgroup
-%    \tabskip=\!!zeropoint
-%    \halign
-%    \bgroup
-%    \hskip\leftskip##\unskip\hfil
-%    &\legendaspacing\legendaspacing\hfil$##$&\hfil\legendaspacing##\legendaspacing\hfil&
-%    $\rm##$\hfil\cr}
-% 
-% \def\stopgegeven%
-%   {\egroup
-%    \egroup
-%    \blanko}
-% 
-% \def\geg#1\\#2\\#3\\%
-%   {#1&
-%    #2&=&
-%    #3\cr}
-
 \definetabulate
-  [\e!legenda]      
-  [|emj1|i1|mR|]    
+  [\e!legenda]
+  [|emj1|i1|mR|]
 
-\setuptabulate 
+\setuptabulate
   [\e!legenda]
   [\c!eenheid=.75em,\c!binnen=\setquicktabulate\leg,EQ={=}]
 
@@ -134,10 +70,10 @@
   [|emj1|emk1|i1|mR|]
 
 \definetabulate
-  [\e!gegeven]      
-  [|R|ecmj1|i1mR|]    
+  [\e!gegeven]
+  [|R|ecmj1|i1mR|]
 
-\setuptabulate 
+\setuptabulate
   [\e!gegeven]
   [\c!eenheid=.75em,\c!binnen=\setquicktabulate\geg,EQ={=}]
 
@@ -149,6 +85,137 @@
 
 % \def\mrm#1%
 %   {$\rm#1$}
+
+%D \macros 
+%D   {setuplegend, placelegend}
+%D
+%D It makes sense to typeset a legend to a figure in \TEX\ and
+%D not in a drawing package. The macro \type {\placelegend}
+%D combines a figure (or something else) and its legend. 
+%D
+%D \showsetup{placelegend}
+%D
+%D The legend is placed according to \type {location}, being 
+%D \type {bottom} or \type {right}. The macro macro is used as
+%D follows. 
+%D
+%D \starttypen 
+%D \placefigure
+%D   {whow}
+%D   {\placelegend
+%D      {\externalfigure[cow]}
+%D      {\starttabulation
+%D       \NC 1 \NC head \NC \NR
+%D       \NC 2 \NC legs \NC \NR
+%D       \NC 3 \NC tail \NC \NR
+%D       \stoptabulation}}
+%D 
+%D \placefigure
+%D   {whow}
+%D   {\placelegend
+%D      {\externalfigure[cow]}
+%D      {\starttabulation[|l|l|l|l|]
+%D       \NC 1 \NC head \NC 3 \NC tail \NC \NR
+%D       \NC 2 \NC legs \NC   \NC      \NC \NR
+%D       \stoptabulation}}
+%D 
+%D \placefigure
+%D   {whow}
+%D   {\placelegend[n=2]
+%D      {\externalfigure[cow]}
+%D      {\starttabulation
+%D       \NC 1 \NC head \NC \NR
+%D       \NC 2 \NC legs \NC \NR
+%D       \NC 3 \NC tail \NC \NR
+%D       \stoptabulation}}
+%D 
+%D \placefigure
+%D   {whow}
+%D   {\placelegend[n=2]
+%D      {\externalfigure[cow]}
+%D      {head \par legs \par tail}}
+%D 
+%D \placefigure
+%D   {whow}
+%D   {\placelegend[n=2]
+%D      {\externalfigure[cow]}
+%D      {\startitemize[packed]
+%D       \item head \item legs \item  tail \item belly \item horns 
+%D       \stopitemize}}
+%D 
+%D \placefigure
+%D   {whow}
+%D   {\placelegend[n=2,width=.8\hsize]
+%D      {\externalfigure[cow]}
+%D      {\startitemize[packed]
+%D       \item head \item legs \item  tail \item belly \item horns 
+%D       \stopitemize}}
+%D \stoptypen 
+%D
+%D There are a few more parameters: 
+%D
+%D \showsetup{setuplegend}
+
+\def\setuplegend%
+  {\dodoubleargument\getparameters[\??ld]}
+
+\setuplegend
+  [\c!n=1,
+   \c!afstand=1em,
+   \c!tussen={\blanko[\v!middel]},
+   \c!breedte=\hsize,
+   \c!hoogte=\vsize,
+   \c!korps=,
+   \c!plaats=\v!onder]
+
+\def\placelegend%
+  {\bgroup
+   \dosingleempty\doplacelegend}
+
+\def\doplacelegend[#1]% watch the hsize/vsize tricks
+  {\setuplegend[#1]%  % and don't change them 
+   \dowithnextbox
+     {\switchtobodyfont[\@@ldkorps]% split under same regime  
+      \scratchdimen=\wd\nextbox
+      \doifelse{\@@ldplaats}{\v!rechts}
+        {\vsize=\ht\nextbox
+         \vsize=\@@ldhoogte
+         \hsize=\zetbreedte
+         \advance\hsize by -\scratchdimen
+         \advance\hsize by -\@@ldafstand
+         \plaatsnaastelkaar{\box\nextbox}\bgroup}
+        {\hsize\scratchdimen
+         \plaatsonderelkaar{\box\nextbox}\bgroup}%
+       \hsize\@@ldbreedte
+       \doif{\@@ldplaats}{\v!rechts}{\hskip\@@ldafstand}%
+       \ifnum\@@ldn>1
+         \setrigidcolumnhsize\hsize\@@ldafstand\@@ldn
+       \fi
+       \dowithnextbox
+         {\doifelse{\@@ldplaats}{\v!rechts}
+            {\vbox to \vsize
+               {\ifnum\@@ldn>1
+                  \rigidcolumnbalance\nextbox
+                \else
+                  \box\nextbox
+                \fi
+                \vfill}}
+            {\vbox
+               {\@@ldtussen
+                \ifnum\@@ldn>1
+                  \rigidcolumnbalance\nextbox
+                \else
+                  \box\nextbox
+                \fi}}%
+          \egroup\egroup}%
+         \vbox
+           \bgroup
+           \forgetall
+           \tolerantTABLEbreaktrue % hm.
+           \blanko[\v!blokkeer]%
+           \everypar{\begstrut}%
+           \let\next=}
+   \hbox}
 
 %I n=Combinaties
 %I c=\startcombinatie,\stelcombinatiesin
@@ -357,7 +424,7 @@
 
 \def\plaatsondernaastelkaar#1#2%
   {\bgroup
-   \def\plaatsonderelkaar%
+   \def\doplaatsondernaastelkaar%
      {#2\cr\omit\bgroup#2%
       \aftergroup#2%
       \aftergroup\cr
@@ -366,7 +433,7 @@
       \let\next=}%
    #1\bgroup##\cr
    \omit\bgroup#2%
-   \aftergroup\plaatsonderelkaar
+   \aftergroup\doplaatsondernaastelkaar
    \let\next=}
 
 \def\plaatsonderelkaar%

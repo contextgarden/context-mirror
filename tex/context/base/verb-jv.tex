@@ -8,7 +8,7 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See licen-en.pdf for 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
 %C details. 
 
 \writestatus{loading}{Context Support Macros / Pretty JavaScript Verbatim}
@@ -69,12 +69,11 @@
 
 \gdef\JVsetcontrols%
   {\PLsetcontrols
-   \def\obeyedline%
+   \def\flushrestofverbatimline%
      {\endPLtypesix
       \ifcase\JVcommentlevel \inPLcommentfalse \fi
       \PLverbosefalse
-      \PLverboseskipped=0 
-      \oldobeyedline}}
+      \PLverboseskipped=0}}
 
 \gdef\JVsetvariables
   {\PLsetvariables
@@ -122,9 +121,6 @@
   {\endPLtypesix
    \handlenextnextpretty\dododoJVtypefourthree\dodododoPLtypefourthree}
 
-% \gdef\dododoJVtypefourthree%
-%   {\handlenewpretty\dodododoPLtypefourthree}
-
 \gdef\dododoJVtypefourthree%
   {\ifnewpretty\expandafter\handlenewpretty\fi\dodododoJVtypefourthree}
 
@@ -134,7 +130,12 @@
    \else
      \global\inPLcommenttrue
      \PLverbosecorrection
-     \beginofpretty[\!!prettyone]\getpretties{#1}{#2}\endofpretty
+     \ifnaturaltextext
+       \let\next\naturaltextext
+     \else
+       \def\next{\beginofpretty[\!!prettyone]\getpretties{#1}{#2}\endofpretty}%
+     \fi
+     \expandafter\next
    \fi}
 
 \gdef\JVtypefourfour%
@@ -147,7 +148,9 @@
      \global\advance\JVcommentlevel by -1
      \ifcase\JVcommentlevel \global\inPLcommentfalse \fi
    \else
-     \beginofpretty[\!!prettyfour]#1\endofpretty\expandafter#2%
+     \endPLtypesix
+     \beginofpretty[\!!prettyfour]\getpretty{#1}\endofpretty
+     \expandafter#2%
    \fi}
 
 %D We need different (less) reserved words. This list replaces

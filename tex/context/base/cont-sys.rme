@@ -1,0 +1,75 @@
+%D \module
+%D   [       file=cont-sys,
+%D        version=1995.10.10,
+%D          title=\CONTEXT\ Miscellaneous Macros,
+%D       subtitle=System Specific Setups,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
+%C details. 
+
+\unprotect
+
+% Some examples of missing font sets and font files:   
+%
+% \setupbodyfont [ber] % berry names
+%
+% \definefilesynonym [font-lbr] [font-cmr] 
+%
+% \definefontsynonym [Courier-Bold]        [Courier]
+% \definefontsynonym [Courier-BoldOblique] [Courier]
+%
+% \definefontsynonym [gbhei]   [gbsong]
+% \definefontsynonym [gbheisl] [gbsong]
+% \definefontsynonym [gbheisl] [gbsong]
+%
+% Setting up a global figure path (beware, \c!gebied may change): 
+%
+% \setupexternalfigures
+%   [\c!gebied={e:/fig/eps,t:/pragma/metapost/symbols}]
+%
+% Loading a specific special driver: 
+%
+% \setupoutput 
+%   [dviwindo]
+%
+% Enabling \CONTEXT\ navigation symbols: 
+%
+% \usesymbols
+%   [nav] 
+%
+% \setupsymbolset
+%   [navigation 1]
+%
+% \stelinteractiein
+%   [\c!symboolset=navigation 1]
+%
+% Changing language defaults: 
+% 
+% \setuplanguage
+%   [nl]
+%   [\c!leftquote=\upperleftsinglesixquote,
+%    \c!leftquotation=\upperleftdoublesixquote]
+%
+% \protect 
+%
+% Loading local preferences: 
+%
+% \input prag-gen % company styles 
+% \input prag-log % more company styles 
+%
+% Enabling run time \METAPOST\ (also enable \write18 in texmf.cnf):
+
+\runMPgraphicstrue 
+\recycleMPslotstrue 
+
+% Enabling nested pretty printing:
+
+\newprettytrue 
+
+% So far. 
+
+\endinput

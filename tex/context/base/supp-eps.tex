@@ -8,7 +8,7 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See licen-en.pdf for 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
 %C details. 
 
 \ifx \undefined \writestatus \input supp-mis.tex \relax \fi
@@ -48,6 +48,11 @@
 %D are typesetting sources and putting eps coded logos into 
 %D a heading. Temporary restoring the \CATCODES\ is done in 
 %D the calling routine.  
+%D
+%D The creator as well as external support for specials are 
+%D analyzed as well and their status is available in \type 
+%D {\EPScreator} and \type {\EPSshading}. The boundingbox 
+%D components are available in \type {\EPSllx} etc. 
 
 \unprotect
 
@@ -56,10 +61,13 @@
 \let\EPSurx\!!zeropoint \let\MPurx\EPSurx % in fast mode we set
 \let\EPSury\!!zeropoint \let\MPury\EPSury % them to 0pt. 
 
+\chardef\EPSfound=0 \chardef\EPScreator=0 \chardef\EPSspecial=0 
+
 \def\dogetEPSboundingbox#1#2#3#4#5%
   {\bgroup
    \global\chardef\EPSfound=0
    \global\chardef\EPScreator=0 
+   \global\chardef\EPSspecial=0
    \uncatcodespecials
    \def\doprocessEPSline%
      {\expandafter\checkEPSboundingbox\fileline:. \end}%
@@ -90,6 +98,7 @@
 \gdef\EPSexactboundingboxtag{%ExactBoundingBox}  
 \gdef\EPScreatortag         {%Creator}  
 \gdef\EPSmetaposttag        { MetaPost :. }  
+\gdef\EPSmetapostspecialtag {%MetaPostSpecial}  
 \egroup  
 
 \long\def\checkEPSboundingbox#1#2:#3\end%
@@ -109,7 +118,9 @@
        \expandafter \getEPSboundingbox #3 . . . \end
        \global\chardef\EPSfound=2
        \dofinishfile
-     \fi\fi\fi\fi
+     \else\ifx\!!stringa\EPSmetapostspecialtag % only before finish! 
+       \global\chardef\EPSspecial=1
+     \fi\fi\fi\fi\fi
    \else\ifnum\EPSfound>0
      \dofinishfile
    \fi\fi}

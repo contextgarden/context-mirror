@@ -8,7 +8,7 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See licen-en.pdf for 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
 %C details. 
 
 %D The macros described here used to be part of the \type
@@ -32,8 +32,13 @@
 \stopmessages
 
 \startmessages  german  library: symbols
-  title: symbole
+  title: Symbole
       1: Lade Symboldatei --    
+\stopmessages
+
+\startmessages  czech  library: symbols
+  title: symboly
+      1: nacita se soubor symbolu --    
 \stopmessages
 
 %D \macros
@@ -224,24 +229,16 @@
 %D We predefine some common symbols and conversions that will
 %D be understood by many commands. 
 
-% \definesymbol [1] [$\bullet$]
-% \definesymbol [2] [$-$]
-%  \definesymbol [3] [$\star$]
-% \definesymbol [4] [$\triangleright$]
-% \definesymbol [5] [$\circ$]
-% \definesymbol [6] [\hbox{\setsmallbodyfont\raise\!!onepoint\hbox{$\bigcirc$}}]
-% \definesymbol [7] [$\bigcirc$]
-% \definesymbol [8] [\hbox{\hsmash{$\sqcup$}$\sqcap$}]
-
 \definesymbol [\v!geen]   []
-\definesymbol [bullet]    [$\bullet$]
-\definesymbol [dash]      [$-$]
-\definesymbol [star]      [$\star$]
-\definesymbol [triangle]  [$\triangleright$]
-\definesymbol [circle]    [$\circ$]
+\definesymbol [bullet]    [\mathematics{\bullet}]
+\definesymbol [dash]      [\mathematics{-}]
+\definesymbol [star]      [\mathematics{\star}]
+\definesymbol [triangle]  [\mathematics{\triangleright}]
+\definesymbol [circle]    [\mathematics{\circ}]
 \definesymbol [medcircle] [\hbox{\setsmallbodyfont\raise\!!onepoint\hbox{$\bigcirc$}}]
-\definesymbol [bigcircle] [$\bigcirc$]
+\definesymbol [bigcircle] [\mathematics{\bigcirc}]
 \definesymbol [square]    [\hbox{\hsmash{$\sqcup$}$\sqcap$}]
+\definesymbol [diamond]   [\mathematics{\diamond}]
 
 \definesymbol [1] [{\symbol[bullet]}]
 \definesymbol [2] [{\symbol[dash]}]
@@ -288,10 +285,10 @@
 \def\gotobegincharacter%
   {\hbox
      {\dogotocharacter\blacktriangleleft
-        {\setbox0=\hbox{$\triangleleft$}%
+        {\setbox0=\hbox{\mathematics{\triangleleft}}%
          \vrule\!!width.085ex\!!height1.075\ht0\!!depth\dp0
          \kern-.11ex\box0} 
-        {\setbox0=\hbox{$\blacktriangleleft$}%
+        {\setbox0=\hbox{\mathematics{\blacktriangleleft}}%
          \setbox2=\hbox{\vrule\!!height\ht0\!!depth\dp0\!!width.25ex}%
          \hbox{\lower.03ex\box2\kern-.35ex\box0}}}}
 
@@ -301,7 +298,7 @@
         {\setbox0=\hbox{\mathematics{\triangleright}}%
          \copy0\kern-.11ex 
          \vrule\!!width.085ex\!!height1.075\ht0\!!depth\dp0}  
-        {\setbox0=\hbox{$\blacktriangleright$}%
+        {\setbox0=\hbox{\mathematics{\blacktriangleright}}%
          \setbox2=\hbox{\vrule\!!height\ht0\!!depth\dp0\!!width.25ex}%
          \hbox{\box0\kern-.35ex\lower.03ex\box2}}}}
 
@@ -309,7 +306,7 @@
   {\mathematics{\dogotocharacter\blacktriangleright\triangleleft\blacktriangleleft}}
 
 \def\goforwardcharacter%
-  {\mathematics{\dogotocharacter\blacktriangleleft\triangleright\blacktriangleright}}
+  {\mathematics{\dogotocharacter\blacktriangleright\triangleright\blacktriangleright}}
 
 \def\gonowherecharacter%
   {\mathematics{\bullet}}

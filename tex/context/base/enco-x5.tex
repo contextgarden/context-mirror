@@ -1,0 +1,235 @@
+%D \module
+%D   [     file=enco-x5,
+%D      version=1999.12.12,
+%D        title=\CONTEXT\ Encoding Macros,
+%D     subtitle=Vietnamese Encoding,
+%D       author=J. Hagen,
+%D         date=\currentdate,
+%D    copyright=J. Hagen]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
+%C details. 
+
+%D This module is derived from the some files Han The Thanh 
+%D prepared for \LATEX. The dual accent support is still 
+%D preliminary, but works ok. 
+
+\startencoding[x5]
+
+\defineaccentcommand `  0
+\defineaccentcommand '  1
+\defineaccentcommand ^  2
+\defineaccentcommand ~  3
+\defineaccentcommand "  4
+\defineaccentcommand d  5
+\defineaccentcommand r  6
+\defineaccentcommand v  7
+\defineaccentcommand u  8
+\defineaccentcommand =  9
+\defineaccentcommand . 10
+
+\defineaccentcommand h 12
+
+\defineaccent `  A 128
+\defineaccent '  A 129
+\defineaccent ~  A 130
+\defineaccent h  A 131
+\defineaccent d  A 132
+\defineaccent ^  A 133
+\defineaccent ` ^A 134
+\defineaccent ' ^A 135
+\defineaccent ~ ^A 136
+\defineaccent h ^A 137
+\defineaccent d ^A 138
+\defineaccent u  A 139
+\defineaccent ` uA 140
+\defineaccent ' uA 141
+\defineaccent ~ uA 142
+\defineaccent h uA 143
+\defineaccent d uA 144
+\defineaccent `  E 145
+\defineaccent '  E 146
+\defineaccent ~  E 147
+\defineaccent h  E 148
+\defineaccent d  E 149
+\defineaccent ^  E 150
+\defineaccent ` ^E 151
+\defineaccent ' ^E 152
+\defineaccent ~ ^E 153
+\defineaccent h ^E 154
+\defineaccent d ^E 155
+\defineaccent `  I 156
+\defineaccent '  I 157
+\defineaccent ~  I 158
+\defineaccent h  I 159
+\defineaccent d  I 192
+\defineaccent `  O 193
+\defineaccent '  O 194
+\defineaccent ~  O 195
+\defineaccent h  O 196
+\defineaccent d  O 197
+\defineaccent ^  O 198
+\defineaccent ` ^O 199
+\defineaccent ' ^O 200
+\defineaccent ~ ^O 201
+\defineaccent h ^O 202
+\defineaccent d ^O 203
+\defineaccent h  O 204
+\defineaccent ` hO 205
+\defineaccent ' hO 206
+\defineaccent ~ hO 207
+\defineaccent h hO 208
+\defineaccent d hO 209
+\defineaccent `  U 210
+\defineaccent '  U 211
+\defineaccent ~  U 212
+\defineaccent h  U 213
+\defineaccent d  U 214
+\defineaccent h  U 215
+\defineaccent ` hU 216
+\defineaccent ' hU 217
+\defineaccent ~ hU 218
+\defineaccent h hU 219
+\defineaccent d hU 220
+\defineaccent `  Y 221
+\defineaccent '  Y 222
+\defineaccent ~  Y 223
+\defineaccent h  Y  26
+\defineaccent d  Y  28
+\defineaccent `  a 160
+\defineaccent '  a 161
+\defineaccent ~  a 162
+\defineaccent h  a 163
+\defineaccent d  a 164
+\defineaccent ^  a 165
+\defineaccent ` ^a 166
+\defineaccent ' ^a 167
+\defineaccent ~ ^a 168
+\defineaccent h ^a 169
+\defineaccent d ^a 170
+\defineaccent u  a 171
+\defineaccent ` ua 172
+\defineaccent ' ua 173
+\defineaccent ~ ua 174
+\defineaccent h ua 175
+\defineaccent d ua 176
+\defineaccent `  e 177
+\defineaccent '  e 178
+\defineaccent ~  e 179
+\defineaccent h  e 180
+\defineaccent d  e 181
+\defineaccent ^  e 182
+\defineaccent ` ^e 183
+\defineaccent ' ^e 184
+\defineaccent ~ ^e 185
+\defineaccent h ^e 186
+\defineaccent d ^e 187
+\defineaccent `  i 188
+\defineaccent '  i 189
+\defineaccent ~  i 190
+\defineaccent h  i 191
+\defineaccent d  i 224
+\defineaccent `  o 225
+\defineaccent '  o 226
+\defineaccent ~  o 227
+\defineaccent h  o 228
+\defineaccent d  o 229
+\defineaccent ^  o 230
+\defineaccent ` ^o 231
+\defineaccent ' ^o 232
+\defineaccent ~ ^o 233
+\defineaccent h ^o 234
+\defineaccent d ^o 235
+\defineaccent h  o 236
+\defineaccent ` ho 237
+\defineaccent ' ho 238
+\defineaccent ~ ho 239
+\defineaccent h ho 240
+\defineaccent d ho 241
+\defineaccent `  u 242
+\defineaccent '  u 243
+\defineaccent ~  u 244
+\defineaccent h  u 245
+\defineaccent d  u 246
+\defineaccent h  u 247
+\defineaccent ` hu 248
+\defineaccent ' hu 249
+\defineaccent ~ hu 250
+\defineaccent h hu 251
+\defineaccent d hu 252
+\defineaccent `  y 253
+\defineaccent '  y 254
+\defineaccent ~  y 255
+\defineaccent h  y  27
+\defineaccent d  y  29
+
+\definecharacter i  25
+\definecharacter DJ 30
+\definecharacter dj 31
+
+\definecommand b  {\xfiveencodedb}
+\definecommand c  {\xfiveencodedc}
+\definecommand aa {\xfiveencodeda}
+\definecommand AA {\xfiveencodedaa}
+
+\stopencoding 
+
+\def\xfiveencodedb#1%
+  {\o@lign
+     {\relax
+      #1%
+      \crcr
+      \hidewidth
+      \sh@ft{29}%
+      \vbox to.2ex{\hbox{\char9}\vss}%
+      \hidewidth}}
+
+\def\xfiveencodedc#1%
+  {\leavevmode
+   \setbox\z@\hbox{#1}%
+   \ifdim\ht\z@ = 1ex
+     \accent11 #1
+   \else
+     {\ooalign{\hidewidth\char11\hidewidth\crcr\unhbox\z@}}%
+   \fi}
+
+\def\xfiveencodedaa%
+  {\accent23a}
+
+\def\xfiveencodedAA%
+  {\leavevmode
+   \setbox\z@\hbox{h}%
+   \dimen@\ht\z@
+   \advance\dimen@ -1ex
+   \rlap{\raise.67\dimen@\hbox{\char23}}A}
+
+\endinput 
+
+% \quotesinglbase     13
+% \guilsinglleft      14
+% \guilsinglright     15
+% \textquotedblleft   16
+% \textquotedblright  17
+% \quotedblbase       18
+% \guillemotleft      19
+% \guillemotright     20
+% \textendash         21
+% \textemdash         22
+% \textcompwordmark   23
+% \textperthousand    \% \char 24 
+% \textpertenthousand \%\char 24\char 24 
+% \textvisiblespace   32
+% \textquotedbl       `\"
+% \textdollar         `\$
+% \textquoteright     `\'
+% \textless           `\<
+% \textgreater        `\>
+% \textbackslash      `\
+% \textasciicircum    `\^
+% \textunderscore     95
+% \textquoteleft      `\`
+% \textbraceleft      `\{
+% \textbar            `\|
+% \textbraceright     `\}
+% \textasciitilde     `\~

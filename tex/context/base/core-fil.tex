@@ -8,7 +8,7 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See licen-en.pdf for 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
 %C details. 
 
 \writestatus{loading}{Context Core Macros / File Support}
@@ -32,6 +32,11 @@
 \startmessages  german  library: files
    title: files
        1: Dateisynonym -- wird bereits fuer -- benutzt
+\stopmessages
+
+\startmessages  czech  library: files
+   title: soubory
+       1: synonymum souboru -- je jiz pouzito pro --
 \stopmessages
 
 %D \macros 
@@ -67,7 +72,9 @@
   {\doifdefined{\??fs#1}
      {\doifnotvalue{\??fs#1}{#2} 
         {\showmessage{\m!files}{1}{#1 (#2),\getvalue{\??fs#1}}}}%
-   \setevalue{\??fs#1}{#2}}
+   \doifelse{#1}{#2}
+     {\letbeundefined{\??fs#1}{#2}}
+     {\setevalue{\??fs#1}{#2}}}
     
 %D \macros 
 %D   {truefilename}
@@ -107,7 +114,7 @@
 %D 
 %D Most of \CONTEXT is preloaded in the format file. Some very
 %D domain specific typesetting topics are however dealt with in
-%D separate modules, e.g. typesettingof chemical structure
+%D separate modules, e.g. typesetting of chemical structure
 %D formulas. These modules are loaded by: 
 %D 
 %D \showsetup{\y!usemodule}
@@ -115,21 +122,31 @@
 %D More information on the specific modules can be found in
 %D their dedicated manuals. 
 
+\newconditional\moduleisloaded
+
 \def\dododousemodules#1#2%
-  {\makeshortfilename[#1\truefilename{#2}]%
-   \doifundefinedelse{\shortfilename\v!aan}
-     {\setgvalue{\shortfilename\v!aan}{}%
-      \startreadingfile
-      \readsysfile{\shortfilename}%
-        {\showmessage{\m!systems}{5}{#1#2}}%
-        {\showmessage{\m!systems}{6}{#1#2}}%
-      \stopreadingfile}
-     {\showmessage{\m!systems}{7}{#2}}}
+  {\ifconditional\moduleisloaded\else
+     \makeshortfilename[#1\truefilename{#2}]%
+     \doifundefinedelse{\shortfilename\v!aan}
+       {\setgvalue{\shortfilename\v!aan}{}%
+        \startreadingfile
+        \readsysfile{\shortfilename}%
+          {\showmessage{\m!systems}{5}{#2}%
+           \settrue\moduleisloaded}%
+          {}%
+        \stopreadingfile}
+       {\showmessage{\m!systems}{7}{#2}%
+        \settrue\moduleisloaded}%
+   \fi}
 
 \def\dodousemodules#1%
-  {\dododousemodules\f!moduleprefix {#1}%
+  {\setfalse\moduleisloaded
+   \dododousemodules\f!moduleprefix {#1}%
    \dododousemodules\f!styleprefix  {#1}%
-   \dododousemodules\f!privateprefix{#1}}
+   \dododousemodules\f!privateprefix{#1}%
+   \ifconditional\moduleisloaded\else
+     \showmessage{\m!systems}{6}{#1}%
+   \fi}
 
 \def\dousemodules[#1]%
   {\doifsomething{#1}{\processcommalist[#1]\dodousemodules}%
@@ -145,6 +162,32 @@
 
 % %D The definition shows that the language specific settings 
 % %D are activated after loading all the modules specified. 
+
+%D \macros
+%D   {ifprotectbuffers, bufferprefix,
+%D    TEXbufferfile, MPgraphicfile}
+%D
+%D The next switch enables protection of temporary filenames, 
+%D which is needed when we process more files on one path at
+%D the same time.  
+
+\newif\ifprotectbuffers
+
+\def\bufferprefix%
+  {\ifprotectbuffers\jobname-\fi}
+
+% also 
+
+\def\TEXbufferfile#1%
+  {\bufferprefix#1.\f!temporaryextension}
+
+%D We also redefine: 
+
+\def\MPgraphicfile%
+   {\bufferprefix mp\ifMPrun run\else graph\fi}
+
+\def\convertMPcolorfile%
+   {\bufferprefix metacmyk.tmp}
 
 \protect
 

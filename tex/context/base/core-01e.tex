@@ -8,63 +8,63 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See licen-en.pdf for 
-%C details. 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
 
 \writestatus{loading}{Context Core Macros (e)}
 
 \unprotect
 
-% \ifprocesspreviousparagraphs       
+% \ifprocesspreviousparagraphs
 %
 % \nofskippedparagraphs
-% \paragraphnumber      
-% \nofparagraphs        
-% 
-% \dosetparagraph   
-% \doresetparagraph 
-% \dobeforeparagraph   
-% \doafterparagraph  
-% \dobeforeskipparagraph   
-% \doafterskipparagraph  
+% \paragraphnumber
+% \nofparagraphs
 %
-% \pushparagraphs\endcommand       alle alineas tot \endcommand laden 
+% \dosetparagraph
+% \doresetparagraph
+% \dobeforeparagraph
+% \doafterparagraph
+% \dobeforeskipparagraph
+% \doafterskipparagraph
+%
+% \pushparagraphs\endcommand       alle alineas tot \endcommand laden
 % \pushmoreparagraphs\endcommand   alle alineas tot \endcommand toevoegen
-% \popparagraphs                   alle alineas oproepen 
-% \popparagraphs[a,b,c]            enkele alineas oproepen [geen] 
+% \popparagraphs                   alle alineas oproepen
+% \popparagraphs[a,b,c]            enkele alineas oproepen [geen]
 %
-% tzt een optionele prefix: 
+% tzt een optionele prefix:
 %
-% \pushparagraphs[xxx]\endcommand  alle alineas tot \endcommand laden 
-% \popparagraphs[xxx]              alle alineas oproepen 
-% \popparagraphs[xxx][a,b,c]       enkele alineas oproepen 
+% \pushparagraphs[xxx]\endcommand  alle alineas tot \endcommand laden
+% \popparagraphs[xxx]              alle alineas oproepen
+% \popparagraphs[xxx][a,b,c]       enkele alineas oproepen
 %
 % \numberparagraphs
 % \numberparagraphlines
 % \resetparagraphlines
 
-\newif\ifprocesspreviousparagraphs  % public 
-\newif\ifprocessallparagraphs       % private 
+\newif\ifprocesspreviousparagraphs  % public
+\newif\ifprocessallparagraphs       % private
 
-\newcounter\totalnofparagraphs       % private 
-\newcounter\globalparagraphnumber    % private 
+\newcounter\totalnofparagraphs       % private
+\newcounter\globalparagraphnumber    % private
 \newcounter\discardedparagraphs      % private
 \newcounter\mostrecentparagraphtotal % public
 
-\let\dosetparagraph        = \relax % public 
-\let\doresetparagraph      = \relax % public 
-\let\dobeforeparagraph     = \relax % public 
-\let\doafterparagraph      = \relax % public 
-\let\dobeforeskipparagraph = \relax % public 
-\let\doafterskipparagraph  = \relax % public 
+\let\dosetparagraph        = \relax % public
+\let\doresetparagraph      = \relax % public
+\let\dobeforeparagraph     = \relax % public
+\let\doafterparagraph      = \relax % public
+\let\dobeforeskipparagraph = \relax % public
+\let\doafterskipparagraph  = \relax % public
 
-\def\paragraphnumber      {} % public 
-\def\nofparagraphs        {} % public 
-\def\nofskippedparagraphs {} % public 
+\def\paragraphnumber      {} % public
+\def\nofparagraphs        {} % public
+\def\nofskippedparagraphs {} % public
 
-\def\paragraphprefix {paragraph} % private 
+\def\paragraphprefix {paragraph} % private
 
-% voorlopig, wordt nog class 
+% voorlopig, wordt nog class
 
 \def\resetparagraphlines%
   {\global\linenumber=1\relax}
@@ -72,14 +72,14 @@
 \def\numberparagraphs% instelbaar maken en slimmer ivm breedte regelnummer !!!!!
   {\processpreviousparagraphstrue
    \def\dosetparagraph%
-     {\bgroup   
+     {\bgroup
       \resetparagraphlines
       \EveryPar
         {\strut\inlinkermarge{\tf{\tx\paragraphnumber}\kern2em}%
          \ignorespaces}}
    \def\doresetparagraph%
      {\resetparagraphlines
-      \egroup}}    
+      \egroup}}
 
 \def\numberparagraphlines%
   {\processpreviousparagraphstrue
@@ -97,13 +97,13 @@
    \def\doafterskipparagraph%
      {\startregelnummeren[\v!verder]}}
 
-\def\dopushparagraphs#1%  
+\def\dopushparagraphs#1%
   {\global\let\mostrecentparagraphtotal=\totalnofparagraphs
    \ifx#1\undefined
      \let#1=\relax
    \fi
    \convertargument#1\to\asciiA
-   \convertargument{ }\to\asciiB  % lege regel 
+   \convertargument{ }\to\asciiB  % lege regel
    \def\dopushparagraph##1\par%
      {\convertargument##1\to\asciiC
       \doifelse{\asciiC}{\asciiA}
@@ -114,7 +114,7 @@
                \ifnum\totalnofparagraphs>0\nofskippedparagraphs\relax
                  \setgvalue{\paragraphprefix\totalnofparagraphs}%
                    {##1}%
-               \else                
+               \else
                  \setgvalue{\paragraphprefix\totalnofparagraphs}%
                    {\skipparagraph##1\par}%
                \fi}}%
@@ -129,20 +129,20 @@
 \def\pushmoreparagraphs%
   {\dopushparagraphs}
 
-\def\dododopopparagraph#1% no grouping, i.v.m. sidefloats 
+\def\dododopopparagraph#1% no grouping, i.v.m. sidefloats
   {\ifnum#1>\totalnofparagraphs\relax
    \else
      \let\paragraphnumber=\globalparagraphnumber
      \decrement(\paragraphnumber,\discardedparagraphs)%
      \dobeforeparagraph
-     \ifhmode\indentation\fi\getvalue{\paragraphprefix#1}\par  
+     \ifhmode\indentation\fi\getvalue{\paragraphprefix#1}\par
      \doafterparagraph
    \fi}
 
 \long\def\skipparagraph#1\par%
   {\doglobal\increment\discardedparagraphs
    \ifprocessallparagraphs
-     \dobeforeskipparagraph 
+     \dobeforeskipparagraph
      \ifhmode\indentation\fi#1\par
      \doafterskipparagraph
    \fi}
@@ -160,7 +160,7 @@
 \def\processpreviousparagraphs[#1]% process previous ones
   {\ifprocesspreviousparagraphs
      \bgroup
-     \getfromcommacommand[#1][1]% tzt snelle \..command.. testen 
+     \getfromcommacommand[#1][1]% tzt snelle \..command.. testen
      \let\totalnofparagraphs=\commalistelement
      \decrement\totalnofparagraphs
      \let\dodopopparagraph=\dodoprocessparagraph
@@ -170,7 +170,7 @@
 
 \def\dopopparagraphs[#1]%
   {\doifnotinset{#1}{\v!geen,0}
-     {\dosetparagraph    
+     {\dosetparagraph
       \doglobal\newcounter\globalparagraphnumber
       \doglobal\newcounter\discardedparagraphs
       \doifelse{#1}{}
@@ -214,108 +214,108 @@
 % \numberparagraphs
 %
 % \def\nofskippedparagraphs{1}
-% 
+%
 % \pushparagraphs\ThatsIt
-% 
+%
 % \ruledbaseline eerste eerste eerste eerste eerste eerste
 % eerste eerste eerste eerste eerste eerste eerste eerste
 % eerste eerste eerste eerste eerste eerste eerste eerste
 % eerste eerste eerste eerste eerste eerste eerste eerste
 % eerste eerste eerste eerste eerste eerste eerste eerste
-% eerste eerste eerste eerste eerste 
-% 
+% eerste eerste eerste eerste eerste
+%
 % \ruledbaseline eerste eerste eerste eerste eerste eerste
 % eerste eerste eerste eerste eerste eerste eerste eerste
 % eerste eerste eerste eerste eerste eerste eerste eerste
 % eerste eerste eerste eerste eerste eerste eerste eerste
 % eerste eerste eerste eerste eerste eerste eerste eerste
-% eerste eerste eerste eerste eerste 
-% 
+% eerste eerste eerste eerste eerste
+%
 % \ruledbaseline tweede tweede tweede tweede tweede tweede
 % tweede tweede tweede tweede tweede tweede tweede tweede
 % tweede tweede tweede tweede tweede tweede tweede tweede
 % tweede tweede tweede tweede tweede tweede tweede tweede
 % tweede tweede tweede tweede tweede tweede tweede tweede
 % tweede tweede tweede tweede tweede tweede tweede tweede
-% tweede tweede tweede tweede tweede 
-% 
+% tweede tweede tweede tweede tweede
+%
 % \skipparagraph \ruledbaseline skipped skipped skipped
 % skipped skipped skipped skipped skipped skipped skipped
 % skipped skipped skipped skipped skipped skipped skipped
-% skipped skipped 
-% 
+% skipped skipped
+%
 % \ruledbaseline derde derde derde derde derde derde derde
 % derde derde derde derde derde derde derde derde derde derde
 % derde derde derde derde derde derde derde derde derde derde
 % derde derde derde derde derde derde derde derde derde derde
 % derde derde derde derde derde derde derde derde derde derde
-% derde derde derde derde derde derde derde derde derde derde 
-% 
+% derde derde derde derde derde derde derde derde derde derde
+%
 % \skipparagraph \ruledbaseline skipped skipped skipped
 % skipped skipped skipped skipped skipped skipped skipped
 % skipped skipped skipped skipped skipped skipped skipped
-% skipped skipped skipped 
-% 
+% skipped skipped skipped
+%
 % \ruledbaseline vierde vierde vierde vierde vierde vierde
 % vierde vierde vierde vierde vierde vierde vierde vierde
 % vierde vierde vierde vierde vierde vierde vierde vierde
-% vierde vierde vierde vierde 
-% 
+% vierde vierde vierde vierde
+%
 % \ruledbaseline vijfde vijfde vijfde vijfde vijfde vijfde
 % vijfde vijfde vijfde vijfde vijfde vijfde vijfde vijfde
 % vijfde vijfde vijfde vijfde vijfde vijfde vijfde vijfde
 % vijfde vijfde vijfde vijfde vijfde vijfde vijfde vijfde
-% vijfde vijfde vijfde 
-% 
+% vijfde vijfde vijfde
+%
 % \skipparagraph \ruledbaseline skipped skipped skipped
 % skipped skipped skipped skipped skipped skipped skipped
 % skipped skipped skipped skipped skipped skipped skipped
-% skipped skipped skipped 
-% 
+% skipped skipped skipped
+%
 % \ThatsIt
-% 
+%
 % \popparagraphs
-% 
+%
 % \countparagraphs
-% 
+%
 % \blanko[2*groot]
-% 
+%
 % nofparagraphs:~\nofparagraphs
-% 
-% \pagina 
-% 
+%
+% \pagina
+%
 % \popparagraphs[1]
 % \popparagraphs[2]
 % \popparagraphs[3]
 % \popparagraphs[4]
 % \popparagraphs[5]
-% 
-% \pagina 
-% 
+%
+% \pagina
+%
 % \ruledvbox{\popparagraphs[1,2,3,4,5]}
-% 
-% \pagina 
+%
+% \pagina
 
-% PAS OP: VERVALLEN 
-% 
+% PAS OP: VERVALLEN
+%
 % \newif\ifprocesspreviousparagraphs
 % \newif\ifprocessallparagraphs
-% 
+%
 % \newcounter\nofskippedparagraphs
 % \newcounter\nofmidskippedparagraphs
-% 
+%
 % \def\alineanummer  {}
-% 
+%
 % \newcounter\nofalineas
-% 
-% \def\laadalineas#1%  alinea = class 
+%
+% \def\laadalineas#1%  alinea = class
 %   {\doglobal\newcounter\nofalineas
 %    \doglobal\decrement(\nofalineas,\nofskippedparagraphs)%
 %    \ifx#1\undefined
 %      \let#1=\relax
 %    \fi
 %    \convertargument#1\to\asciiA
-%    \convertargument{ }\to\asciiB  % lege regel 
+%    \convertargument{ }\to\asciiB  % lege regel
 %    \def\dolaadalinea##1\par%
 %      {\convertargument##1\to\asciiC
 %       \doifelse{\asciiC}{\asciiA}
@@ -327,15 +327,15 @@
 %          \let\next=\dolaadalinea}
 %       \next}%
 %    \dolaadalinea}
-% 
-% % De constructie \edef\alineanummer{#1} is nodig voor 
-% % bijvoorbeeld: 
-% % 
+%
+% % De constructie \edef\alineanummer{#1} is nodig voor
+% % bijvoorbeeld:
+% %
 % % \EveryPar{\strut\inlinker{\alineanummer}}
 % %
-% % Laten we dit weg, dan wordt het vorige nummer gebruikt. 
-% 
-% \def\dododohaalalinea#1% geen grouping, i.v.m. sidefloats 
+% % Laten we dit weg, dan wordt het vorige nummer gebruikt.
+%
+% \def\dododohaalalinea#1% geen grouping, i.v.m. sidefloats
 %   {\edef\localalineanummer{#1}%
 %    \ifnum\localalineanummer>\nofalineas\relax
 %    \else
@@ -345,30 +345,30 @@
 %      \else
 %        \let\alineanummer=\empty
 %      \fi
-%      \dopreparagraph 
-%      \doeveryparagraph\getvalue{alinea\localalineanummer}\par  
-%      \dopostparagraph 
+%      \dopreparagraph
+%      \doeveryparagraph\getvalue{alinea\localalineanummer}\par
+%      \dopostparagraph
 %    \fi}
-% 
+%
 % \long\def\geenalinea#1\par%
 %   {\ifprocessallparagraphs
 %      \let\alineanummer=\relax
-%      \dopostparagraph % fool around a bit 
+%      \dopostparagraph % fool around a bit
 %      #1\par
-%      \dopreparagraph  % ugly but effective 
+%      \dopreparagraph  % ugly but effective
 %    \fi
 %    \doglobal\increment\nofmidskippedparagraphs}
-% 
+%
 % \def\dodohaalalinea%
 %   {\dododohaalalinea}
-% 
+%
 % \def\dodoverwerkalinea#1%
 %   {\ifprocesspreviousparagraphs
 %      \bgroup
 %      \setbox0=\vbox{\dododohaalalinea{#1}}%
 %      \egroup
 %    \fi}
-% 
+%
 % \def\verwerkvorigealineas[#1]% process previous ones
 %   {\ifprocesspreviousparagraphs
 %      \bgroup
@@ -379,16 +379,16 @@
 %      \haalalineas
 %      \egroup
 %    \fi}
-% 
+%
 % \let \dosetparagraph   = \relax
 % \let \doresetparagraph = \relax
 % \let \dopreparagraph   = \relax
 % \let \dopostparagraph  = \relax
 % \let \doeveryparagraph = \relax
-% 
+%
 % \def\dohaalalineas[#1]%
 %   {\doifnotinset{#1}{\v!geen,0}
-%      {\dosetparagraph 
+%      {\dosetparagraph
 %       \doglobal\newcounter\globalalineanummer
 %       \doglobal\newcounter\nofmidskippedparagraphs
 %       \doifelse{#1}{}
@@ -399,7 +399,7 @@
 %         {\doglobal\increment\globalalineanummer
 %          \ifnum\globalalineanummer>\nofalineas\relax
 %            \let\dohaalalinea=\relax
-%          \else  
+%          \else
 %            \ifprocessallparagraphs
 %              \dodohaalalinea\globalalineanummer
 %            \else
@@ -413,7 +413,7 @@
 %          \dohaalalinea}%
 %       \dohaalalinea
 %       \doresetparagraph}}
-% 
+%
 % \def\haalalineas%
 %   {\dosingleempty\dohaalalineas}
 

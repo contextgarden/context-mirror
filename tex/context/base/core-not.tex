@@ -8,7 +8,7 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See licen-en.pdf for 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
 %C details. 
 
 \writestatus{loading}{Context Core Macros / Footnote Handling}
@@ -17,6 +17,8 @@
 %D file.
 
 \unprotect
+
+% splitskips setten 
 
 %D Footnotes are can be characterized by three components:
 %D
@@ -61,7 +63,8 @@
 %D rearanged paragraph, typeset by the algoritms on pages 398
 %D and~389. We definitely did not reinvent that wheel.
 
-\newif\ifendnotes \endnotesfalse
+\newif\ifendnotes    \endnotesfalse
+\newif\ifbottomnotes \bottomnotestrue
 
 %D The footnoterule can be a graphic and therefore calling this
 %D setup macro at every skipswitch is tricky (many many MP
@@ -94,22 +97,29 @@
 \def\setupfootnotes%
   {\dosingleempty\dosetupfootnotes}
 
+\def\dodofootnoterule%
+  {\color
+     [\@@vnlijnkleur]
+     {\hrule\!!width.2\hsize\!!height\@@vnlijndikte\!!depth\!!zeropoint}
+   \kern\strutdepth}
+
 \def\dosetupfootnotes[#1]%
   {\getparameters[\??vn][#1]%
    \processaction
      [\@@vnlijn]
-     [    \v!aan=>\def\footnoterule{\hrule \!!width .2\hsize},
-          \v!uit=>\let\footnoterule=\relax,
-      \s!unknown=>\let\footnoterule=\@@vnlijn]%
+     [    \v!aan=>\let\dofootnoterule=\dodofootnoterule,
+          \v!uit=>\let\dofootnoterule=\relax,
+      \s!default=>\let\dofootnoterule=\relax,
+      \s!unknown=>\let\dofootnoterule=\@@vnlijn]%
    \setbox0=\vbox
      {\forgetall
       \@@vnvoor
-      \footnoterule 
+      \dofootnoterule 
       \@@vnna}%
    \skip\footins=\ht0
    \count\footins=1000
    \setbox0=\box\voidb@x % \somehow \box0 is used
-   \doifelse{\@@vnplaats}{\v!kolommen}
+   \ExpandBothAfter\doifinsetelse{\v!kolommen}{\@@vnplaats}
      {\cleverfootnotestrue % global ? 
       \ifnum\@@kln=0 
         \scratchcounter=1
@@ -118,6 +128,7 @@
        %\divide\count\footins by \scratchcounter
       \fi
       \global\endnotesfalse
+      \global\bottomnotestrue
       \setcleverfootnotes}
      {\cleverfootnotesfalse
       \ifnum\@@vnn=0 
@@ -128,9 +139,13 @@
         \scratchcounter=\@@vnn\relax
         \divide\count\footins by \scratchcounter
       \fi 
-      \doifelse{\@@vnplaats}{\v!pagina}
-        {\global\endnotesfalse}
+      \ExpandBothAfter\doifinsetelse{\v!pagina}{\@@vnplaats}
+        {\global\endnotesfalse
+         \ExpandBothAfter\doifinsetelse{\v!hoog}{\@@vnplaats}
+           {\global\bottomnotesfalse}
+           {\global\bottomnotestrue}}
         {\global\endnotestrue
+         \global\bottomnotestrue
          \postponefootnotes}}%
    \dimen\footins=\@@vnhoogte
    \multiply\dimen\footins by \scratchcounter}
@@ -247,15 +262,58 @@
 %D \stoptypen
 %D
 %D which can be handy while for instance typesetting tables
-%D of contents.
+%D of contents. The pagewise footnote numbering is dedicated 
+%D to Han The Thanh, who needed it first.  
+
+%\newif\iffootnotesenabled \footnotesenabledtrue
+%
+%\def\dofootnote#1%
+%  {\iffootnotesenabled
+%     \doifelse{#1}{-}
+%       {\let\footnotenumber=\empty}
+%       {\verhoognummer[\v!voetnoot]%
+%        \maakhetnummer[\v!voetnoot]%
+%        \rawtextreference{\s!fnt}{#1}{\hetnummer}%
+%        \let\footnotenumber=\hetnummer}%
+%     \expandafter\dostartfootnote
+%   \else
+%     \expandafter\gobbleoneargument
+%   \fi}
 
 \newif\iffootnotesenabled \footnotesenabledtrue
 
+\newconditional\pagewisefootnotes % saves two hash entries
+
+\def\lastfootnotepage{1}
+
+\def\domovednote#1#2%
+  {\ifconditional\pagewisefootnotes
+     \doifreferencefoundelse{\s!fnt:t:\internalfootreference}
+       {\let\savedrealreference\currentrealreference
+        \doifreferencefoundelse{\s!fnt:f:\internalfootreference}    
+          {\ifnum\savedrealreference<\currentrealreference\relax\symbol[#1]\else
+           \ifnum\savedrealreference>\currentrealreference\relax\symbol[#2]\fi\fi}
+          {}}
+       {}
+   \fi}
+
 \def\dofootnote#1%
   {\iffootnotesenabled
+     \doglobal\increment\internalfootreference
+     \doifelse{\@@vnwijze}{\v!per\v!pagina}
+       {\settrue\pagewisefootnotes}
+       {\setfalse\pagewisefootnotes}%
      \doifelse{#1}{-}
        {\let\footnotenumber=\empty}
-       {\verhoognummer[\v!voetnoot]%
+       {\ifconditional\pagewisefootnotes
+          \doifreferencefoundelse{\s!fnt:t:\internalfootreference}
+            {\ifnum\currentrealreference>\lastfootnotepage\relax
+               \global\let\lastfootnotepage\currentrealreference
+               \resetnummer[\v!voetnoot]%
+             \fi}
+            {}%
+        \fi
+        \verhoognummer[\v!voetnoot]%
         \maakhetnummer[\v!voetnoot]%
         \rawtextreference{\s!fnt}{#1}{\hetnummer}%
         \let\footnotenumber=\hetnummer}%
@@ -295,34 +353,45 @@
      \hoog{\kern\@@vnafstand}% gets the font right, hack !
    \fi
    \ignorespaces
-   \doglobal\increment\internalfootreference
    \nobreak
    \iflocation
-     \naarbox{\hoog{\footnotenumber}}[\s!fnt:t:\internalfootreference]%
+     \naarbox
+       {\hoog{\tx\footnotenumber\domovednote\v!vorigepagina\v!volgendepagina}}
+       [\s!fnt:t:\internalfootreference]%
      \rawreference{\s!fnt}{\s!fnt:f:\internalfootreference}{}%
    \else
-     \hoog{\footnotenumber}%
+     \hoog{\tx\footnotenumber\domovednote\v!vorigepagina\v!volgendepagina}%
+     \ifconditional\pagewisefootnotes
+       \rawreference{\s!fnt}{\s!fnt:f:\internalfootreference}{}%
+     \fi
    \fi
    \localfootinsert\footins\bgroup
      \forgetall
      \setfootnotebodyfont
      \redoconvertfont % to undo \undo calls in in headings etc
-     \interlinepenalty=\interfootnotelinepenalty
      \splittopskip\ht\strutbox  % not actually needed here
      \splitmaxdepth\dp\strutbox % not actually needed here
      \def\linkermargeafstand{\@@vnmargeafstand}%
      \def\rechtermargeafstand{\@@vnmargeafstand}%
+     \ifcase\@@vnn\relax % new 31-07-99 ; always ? 
+       \doifnotinset{\@@vnbreedte}{\v!passend,\v!ruim}{\hsize\@@vnbreedte}%
+     \fi
      \startpushfootnote
        {\ifx\footnotenumber\empty \else
           \iflocation
-            \naarbox{\@@vnnummercommando\footnotenumber}[\s!fnt:f:\internalfootreference]%
+            \naarbox{\@@vnnummercommando
+              {\footnotenumber\domovednote\v!volgendepagina\v!vorigepagina}}%
+              [\s!fnt:f:\internalfootreference]%
           \else
-            \@@vnnummercommando\footnotenumber
+            \@@vnnummercommando
+              {\footnotenumber\domovednote\v!volgendepagina\v!vorigepagina}%
           \fi
         \fi
         \iflocation
           \rawreference{\s!fnt}{\s!fnt:t:\internalfootreference}{}%
-        \fi}%
+        \else\ifconditional\pagewisefootnotes
+          \rawreference{\s!fnt}{\s!fnt:t:\internalfootreference}{}%
+        \fi\fi}%
      \bgroup
      \aftergroup\dostopfootnote
      \begstrut
@@ -349,7 +418,7 @@
   {\iffootnotesenabled
      \bgroup
      \unskip
-     \naarbox{\hoog{\currenttextreference}}[#1]%
+     \naarbox{\hoog{\tx\currenttextreference}}[#1]%
      \egroup
    \fi}
 
@@ -361,27 +430,56 @@
 \let\startpopfootnotes = \relax
 \let\stoppopfootnotes  = \relax
 
+% \def\placefootnoteinserts%
+%   {%\ifvoid\footins \else % unsafe, strange 
+%    \ifdim\ht\footins>\!!zeropoint\relax
+%      \ifendnotes \else
+%        \@@vnvoor
+%        \dofootnoterule  % alleen in ..mode
+%        \bgroup
+%        \setfootnotebodyfont
+%        \localframed 
+%          [\??vn]
+%          [\c!breedte=\v!passend,
+%           \c!hoogte=\v!passend,
+%           \c!strut=\v!nee,
+%           \c!offset=\v!overlay]
+%          {\startpopfootnotes % == \vbox 
+%           \ifdim\dp\footins=\!!zeropoint % this hack is needed because \vadjust
+%             \hbox{\lower\dp\strutbox\box\footins}% % in margin number placement 
+%           \else                          % hides the (always) present depth
+%             \box\footins
+%           \fi
+%           \stoppopfootnotes}%
+%        \egroup
+%        \@@vnna   
+%      \fi
+%    \fi}
+
 \def\placefootnoteinserts%
   {%\ifvoid\footins \else % unsafe, strange 
    \ifdim\ht\footins>\!!zeropoint\relax
      \ifendnotes \else
        \@@vnvoor
-       \footnoterule  % alleen in ..mode
+       \dofootnoterule  % alleen in ..mode
        \bgroup
        \setfootnotebodyfont
+       \setbox0=\hbox
+         {\startpopfootnotes
+          \setfootnotebodyfont   
+          \ifcase\@@vnn\unvbox\else\box\fi\footins
+          \stoppopfootnotes}%
        \localframed 
          [\??vn]
          [\c!breedte=\v!passend,
           \c!hoogte=\v!passend,
           \c!strut=\v!nee,
-          \c!offset=\v!overlay]
-         {\startpopfootnotes % == \vbox 
-          \ifdim\dp\footins=\!!zeropoint % this hack is needed because \vadjust
-            \hbox{\lower\dp\strutbox\box\footins}% % in margin number placement 
-          \else                          % hides the (always) present depth
-            \box\footins
-          \fi
-          \stoppopfootnotes}%
+          \c!offset=\v!overlay]   
+         {\ifdim\dp0=\!!zeropoint           % this hack is needed because \vadjust
+            \hbox{\lower\dp\strutbox\box0}% % in margin number placement 
+          \else                             % hides the (always) present depth
+            \box0
+          \fi}%
        \egroup
        \@@vnna   
      \fi
@@ -439,16 +537,24 @@
         \unvbox\postponedfootnotes
         \gobbletwoarguments}}
 
-\def\doflushfootnotes%
-  {\bgroup
-     \scratchdimen=\pagegoal
-     \advance\scratchdimen by -\pagetotal
-     \ifdim\scratchdimen<\ht\postponedfootnotes
-       \message{[moved footnote]}%
-     \fi
-   \egroup
-   \global\let\localfootinsert=\insert
-   \insert\footins\bgroup\unvbox\postponedfootnotes\egroup}
+\def\doflushfootnotes% also called directly, \ifvoid is needed ! 
+  {\ifendnotes \else 
+     \ifvoid\postponedfootnotes 
+       \global\let\localfootinsert=\insert
+     \else
+       \bgroup
+         \ifdim\ht\postponedfootnotes>\!!zeropoint
+           \scratchdimen=\pagegoal
+           \advance\scratchdimen by -\pagetotal
+           \ifdim\scratchdimen<\ht\postponedfootnotes
+             \message{[moved footnote]}%
+           \fi
+         \fi
+       \egroup
+       \global\let\localfootinsert=\insert
+       \insert\footins\bgroup\unvbox\postponedfootnotes\egroup
+     \fi 
+   \fi}
 
 \def\flushfootnotes%
   {\ifinpagebody \else \ifinner \else
@@ -478,7 +584,7 @@
             \endofshapebox
             \reshapebox{\hbox{\unhbox\shapebox}}%
             \vbox{\flushshapebox}}}%
-       \localframed 
+      \localframed 
         [\??vn]
         [\c!breedte=\v!passend,
           \c!hoogte=\v!passend,
@@ -502,6 +608,8 @@
 %D \showsetup{\y!startlocalfootnotes}
 %D \showsetup{\y!placelocalfootnotes}
 
+\def\defaultfootnotewidth{\zetbreedte}
+
 \newbox\localpostponedfootnotes
 
 \def\collectlocalfootnotes%
@@ -514,6 +622,8 @@
 \def\dostartlocalfootnotes[#1]%
   {\let\autopostponefootnotes=\postponefootnotes
    \let\postponefootnotes=\collectlocalfootnotes
+   \def\defaultfootnotewidth%
+     {\ifdim\hsize<\zetbreedte\hsize\else\zetbreedte\fi}%
    \setupfootnotes[#1]%
    \savenumber[\v!voetnoot]%
    \resetnummer[\v!voetnoot]%
@@ -616,7 +726,8 @@
 %D we already used a footnote specific font setting macro.
 
 \def\setfootnotebodyfont%
-  {\restoreglobalbodyfont
+  {\let\setfootnotebodyfont\relax
+   \restoreglobalbodyfont
    \switchtobodyfont[\@@vnkorps]}
 
 %D The footnote mechanism defaults to a traditional one
@@ -634,11 +745,15 @@
    \c!letter=,
    \c!kleur=,
    \c!na=,
+   \c!lijnkleur=,
+   \c!lijndikte=\linewidth,
    \c!kader=\v!uit,
    \c!margeafstand=.5em,
    \c!kolomafstand=1em,
    \c!afstand=.125em,
-   \c!breedte=\zetbreedte,
+  %\c!breedte=\zetbreedte,
+  %\c!breedte=\ifdim\hsize<\zetbreedte\hsize\else\zetbreedte\fi,
+   \c!breedte=\defaultfootnotewidth,
    \c!hoogte=\teksthoogte,
    \c!nummercommando=\hoog,
    \c!n=1]

@@ -2,26 +2,26 @@
 %D   [       file=spec-fdf,
 %D        version=1998.05.18,
 %D          title=\CONTEXT\ \PDF\ Macros,
-%D       subtitle=Adobe \PDF/\FDF\ version 2.1, 
+%D       subtitle=Adobe \PDF/\FDF\ version 2.1,
 %D         author=Hans Hagen,
 %D           date=\currentdate,
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See licen-en.pdf for 
-%C details. 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
 
 \unprotect
 
-%D \macros 
+%D \macros
 %D   {setPDFdestination}
-%D 
-%D \PDF\ destinations should obey the specifications laid down 
-%D in the \PDF\ reference manual. The next macro strips illegal 
-%D characters from the destination name. 
-%D 
+%D
+%D \PDF\ destinations should obey the specifications laid down
+%D in the \PDF\ reference manual. The next macro strips illegal
+%D characters from the destination name.
+%D
 %D The \ACROBAT\ programs are not bug free. By setting the next
-%D switch, we will at least try to prevent problems. 
+%D switch, we will at least try to prevent problems.
 
 \newif\ifovercomePDFbugs \overcomePDFbugstrue
 
@@ -38,14 +38,14 @@
 %D \macros
 %D   {sanitizePDFstring}
 %D
-%D This macro at least tries to convert a arbitrary string 
-%D into a sequence of characters valid for \PDF\ bookmarks and 
-%D alike. It's a slow one, that uses \type{\lccode}'s to 
-%D change the glyph as well as converts sensisitve ones into a 
+%D This macro at least tries to convert a arbitrary string
+%D into a sequence of characters valid for \PDF\ bookmarks and
+%D alike. It's a slow one, that uses \type{\lccode}'s to
+%D change the glyph as well as converts sensisitve ones into a
 %D \PDF\ command sequence, so \type{(} becomes \type{\(}.  In
-%D fact we translate the string to lowercase inactive and non 
-%D special characters, limit their number and finaly convert 
-%D some of the characters to save ones. 
+%D fact we translate the string to lowercase inactive and non
+%D special characters, limit their number and finaly convert
+%D some of the characters to save ones.
 
 \chardef\maxPDFstringsize=60
 
@@ -58,7 +58,7 @@
    \lccode`\\=1 \lccode`/ =1
    \lowercase{\convertargument#1\to\ascii}%
    % by integrating the split in the loop below
-   % \splitofftokens\maxPDFstringsize\from\ascii\to\ascii 
+   % \splitofftokens\maxPDFstringsize\from\ascii\to\ascii
    % we diminish the processing time considerably
    \scratchcounter=\maxPDFstringsize
    \def\docommando##1%
@@ -72,38 +72,36 @@
           \xdef#2{#2##1}%
         \fi
       \fi}%
-   %\global\let#2=\empty 
+   %\global\let#2=\empty
    % or to permit #2 to be \ascii too:
    \@EA\global\@EA\let\@EA#2\@EA\empty
    \@EA\handletokens\ascii\with\docommando
    \egroup}
 
-%D \macros 
-%D   {doPDFdestination,   
-%D    doPDFaction,        
-%D    doPDFannotation,    
-%D    doPDFtextannotation,    
-%D    doPDFannotationobject, 
-%D    doPDFdictionaryobject, 
-%D    doPDFarrayobject,      
-%D    doPDFaddtocatalog,     
-%D    doPDFpageattribute,    
-%D    doPDFpagesattribute,    
-%D    doPDFbookmark,         
+%D \macros
+%D   {doPDFdestination,
+%D    doPDFaction,
+%D    doPDFannotation,
+%D    doPDFannotationobject,
+%D    doPDFdictionaryobject,
+%D    doPDFarrayobject,
+%D    doPDFaddtocatalog,
+%D    doPDFpageattribute,
+%D    doPDFpagesattribute,
+%D    doPDFbookmark,
 %D    defaultobjectreference,
 %D    doPDFgetobjectreference}
-%D 
+%D
 %D This module deals with \PDF\ support, including fill||in
 %D forms. Before we present the largely unreadable bunch of
 %D macros, we introduce the here||not||defined low level
 %D interface macros. These must be provided by the special
-%D drivers \type{pdf} (\ACROBAT) and \type{tpd} (\PDFTEX). 
-%D 
+%D drivers \type{pdf} (\ACROBAT) and \type{tpd} (\PDFTEX).
+%D
 %D \starttypen
 %D \doPDFdestination        name #1
 %D \doPDFaction             width #1 height #2 action #3
-%D \doPDFannotation         width #1 height #2 data #3 % 'negative' 
-%D \doPDFtextannotation     width #1 height #2 data #3 % 'positive' 
+%D \doPDFannotation         width #1 height #2 data #3 
 %D \doPDFannotationobject   class #1 name #2 width #3 height #4 data #5
 %D \doPDFdictionaryobject   class #1 name #2 data #3
 %D \doPDFarrayobject        class #1 name #2 data #3
@@ -112,17 +110,17 @@
 %D \doPDFpagesattribute     #1
 %D \doPDFbookmark           level #1 n #2 text #3 page #4 open #5
 %D
-%D \defaultobjectreference  #1#2   % class name 
-%D \doPDFgetobjectreference #1#2#3 % class name \PDFobjectreference 
+%D \defaultobjectreference  #1#2   % class name
+%D \doPDFgetobjectreference #1#2#3 % class name \PDFobjectreference
 %D \stoptypen
 %D
 %D The keywords reflect their use. For the moment we stick to
-%D keywords, because that way at we get an indication of what 
-%D we're doing. 
+%D keywords, because that way at we get an indication of what
+%D we're doing.
 
 \startspecials[fdf]
 
-%D Due to the fact that \PDFTEX\ has a different concept of 
+%D Due to the fact that \PDFTEX\ has a different concept of
 %D page attributes, we need:
 
 \let\doPDFresetpageattributes=\relax
@@ -137,42 +135,38 @@
   \fi
 \fi
 
-%D \macros 
+%D \macros
 %D   {doPDFsetupscreen}
-%D 
+%D
 %D Opposite to \DVI\ drivers, \PDF\ ones must know which what
-%D page dimensions they are dealing. We also use the 
-%D opportunity to launch full screen.
+%D page dimensions they are dealing. We also use the
+%D opportunity to launch full screen (1) or show bookmarks (2).
 
-\def\doPDFsetupscreen#1#2#3#4#5#6% watch the extra argument 
+\def\doPDFsetupscreen#1#2#3#4#5#6% watch the extra argument
   {\bgroup
    \!!widtha=#4sp
    \advance\!!widtha by #2sp
    \!!heighta=-#5sp
-   \!!heightb=#1% extra argument 
+   \!!heightb=#1% extra argument
    \advance\!!heightb by -#3sp
    \advance\!!heighta by \!!heightb
    \ScaledPointsToWholeBigPoints{#2}\left
    \ScaledPointsToWholeBigPoints{\number\!!heighta}\bottom
-   \ScaledPointsToWholeBigPoints{\number\!!widtha}\width
+   \ScaledPointsToWholeBigPoints{\number\!!widtha }\width
    \ScaledPointsToWholeBigPoints{\number\!!heightb}\height
    \doPDFpagesattribute
      {/CropBox [\left\space\bottom\space\width\space\height]}%
    \doPDFaddtocatalog
-     {/PageMode \ifcase#6 /UseNone \else /FullScreen\fi}%
+     {/PageMode \ifcase#6 /UseNone\or/FullScreen\or/UseOutlines\fi}%
    \egroup}
 
-%D \macros 
-%D   {doPDFsetupopenaction,doPDFsetupcloseaction}
+%D \macros
+%D   {doPDFsetupopenaction,doPDFsetupcloseaction,
+%D    doPDFsetupopenpageaction,doPDFsetupclosepageaction}
 %D
-%D Setting the open and close actions is kind of fuzzy 
-%D because action chains are derived from the reference 
-%D mechanism. 
-
-% \def\doPDFsetopenaction% some day a real reference
-%   {\doPDFaddtocatalog
-%      {/OpenAction << /S /ResetForm 
-%             /Next << /S /GoTo /D [0\PDFpageviewwrd] >> >>}}
+%D Setting the open and close actions is kind of fuzzy
+%D because action chains are derived from the reference
+%D mechanism.
 
 \let\lastPDFaction\empty
 
@@ -182,14 +176,37 @@
 \def\doPDFsetupcloseaction%
   {\doPDFaddtocatalog{/CloseAction \lastPDFaction}}
 
+\let\PDFopenpageaction \empty
+\let\PDFclosepageaction\empty
+
+\def\doPDFsetupopenpageaction%
+  {\global\let\PDFopenpageaction\lastPDFaction}
+
+\def\doPDFsetupclosepageaction%
+  {\global\let\PDFclosepageaction\lastPDFaction}
+
+\def\checkPDFpageactions%
+  {\donefalse
+   \ifx\PDFopenpageaction \empty\!!doneafalse\else\donetrue\!!doneatrue\fi
+   \ifx\PDFclosepageaction\empty\!!donebfalse\else\donetrue\!!donebtrue\fi
+   \ifdone
+     \doPDFpageattribute
+       {/AA <<\if!!donea/O \PDFopenpageaction \fi
+              \if!!doneb/C \PDFclosepageaction\fi>>}%
+   \fi
+   \global\let\PDFopenpageaction \empty
+   \global\let\PDFclosepageaction\empty}
+
+\appendtoks \checkPDFpageactions \to \everyshipout
+
 %D \macros
 %D   {doPDFstartthisislocation}
-%D 
+%D
 %D Next we define the macros that deal with hyperreferencing,
 %D graphic inclusion and general document features. These are
 %D the olderst ones. I won't comment much because one needs
 %D knowledge of \PDF\ itself, and explaning \PDF\ is beyond
-%D this documentation. 
+%D this documentation.
 
 \def\doPDFstartthisislocation#1%
   {\bgroup
@@ -204,9 +221,9 @@
 %D    doPDFstartgotoJS}
 %D
 %D The goto macros use the switch \type{\ifsecondaryreference}
-%D to determine if actions should be linked. 
+%D to determine if actions should be linked.
 
-\def\doPDFstartgotolocation#1#2#3#4#5#6% 
+\def\doPDFstartgotolocation#1#2#3#4#5#6%
   {\bgroup
    \doifelsenothing{#3}
      {\setPDFdestination{#5}%
@@ -216,25 +233,26 @@
            {\let\PDFfile\empty}
            {\doifparentfileelse{#4}
               {\let\PDFfile\empty}
-              {\uppercasestring R /F (#4.pdf)\to\PDFfile}}% /GotoR
+              {\setreferencefilename R /F (#4.pdf)\to\PDFfile 
+               \ifgotonewwindow\edef\PDFfile{\PDFfile\space/NewWindow true}\fi}}%
          \edef\action%
            {/S /GoTo\PDFfile\space /D (\PDFdestination)}}}
      {\doifelsenothing{#4}
         {\let\PDFfile\empty
          \let\PDFdestination\empty}
-        {\uppercasestring/#4\to\PDFfile
+        {\setreferencefilename/#4\to\PDFfile
          \setPDFdestination{#5}%
          \doifsomething{\PDFdestination}
            {\edef\PDFdestination{\URLhash\PDFdestination}}}%
-      \edef\action
+      \edef\action%
         {/S /URI /URI (#3\PDFfile\PDFdestination)}}%
    \ifx\action\empty\else
      \ifsecondaryreference
        \savesecondaryPDFreference\action
      \else
        \getsecondaryPDFreferences
-       \doPDFaction 
-         width #1 height #2 
+       \doPDFaction
+         width #1 height #2
          action {\action \secondaryPDFreferences}%
      \fi
    \fi
@@ -251,16 +269,17 @@
           {\let\PDFfile\empty}
           {\doifparentfileelse{#4}
              {\let\PDFfile\empty}
-             {\uppercasestring R /F (#4.pdf)\to\PDFfile}}% /GotoR
+             {\setreferencefilename R /F (#4.pdf)\to\PDFfile % becomes /GotoR
+              \ifgotonewwindow\edef\PDFfile{\PDFfile\space/NewWindow true}\fi}}%
         \edef\action%
-          {/S /GoTo\PDFfile\space 
+          {/S /GoTo\PDFfile\space
            /D [\PDFdestination\PDFpageviewwrd]}%
       \else
         \let\action\empty
       \fi}
      {\doifelsenothing{#4}
         {\let\PDFfile\empty}
-        {\uppercasestring/#4\to\PDFfile}%
+        {\setreferencefilename/#4\to\PDFfile}%
       \edef\action%
         {/S /URI /URI (#3\PDFfile)}}%
    \ifx\action\empty\else
@@ -268,8 +287,8 @@
        \savesecondaryPDFreference\action
      \else
        \getsecondaryPDFreferences
-       \doPDFaction 
-         width #1 height #2 
+       \doPDFaction
+         width #1 height #2
          action {\action \secondaryPDFreferences}%
      \fi
    \fi
@@ -277,15 +296,15 @@
 
 \def\doPDFstartgotoJS#1#2#3%
   {\bgroup
-   \doPSsanitizeJScode#3\to\sanitizedJScode 
+   \doPSsanitizeJScode#3\to\sanitizedJScode
    \edef\action%
      {/S /JavaScript /JS (\sanitizedJScode)}%
    \ifsecondaryreference
      \savesecondaryPDFreference\action
    \else
      \getsecondaryPDFreferences
-     \doPDFaction 
-       width #1 height #2 
+     \doPDFaction
+       width #1 height #2
        action {\action \secondaryPDFreferences}%
    \fi
    \egroup}
@@ -293,13 +312,13 @@
 %D \macros
 %D   {doPDFstartexecutecommand}
 %D
-%D At the cost of much auxiliary placeholders, we can pretty 
-%D fast convert the command asked for. This is how \PDF\ 
-%D looks like. 
+%D At the cost of much auxiliary placeholders, we can pretty
+%D fast convert the command asked for. This is how the \PDF\
+%D code looks like.
 
 \def\PDFmoviecode%
-  {/Movie 
-   /T (movie \ifx\argumentA\empty\currentmovie\else\argumentA\fi) 
+  {/Movie
+   /T (movie \ifx\argumentA\empty\currentmovie\else\argumentA\fi)
    /Operation\space}
 
 \def\PDFexecutestart  {\PDFmoviecode /Play}
@@ -308,18 +327,18 @@
 \def\PDFexecuteresume {\PDFmoviecode /Resume}
 
 \def\PDFformcode#1%
-  {\doFDFiffieldset{#1}/Fields [\doFDFgetfieldset{#1}]\fi}
+  {\doFDFiffieldset{#1}{/Field [\doFDFgetfieldset{#1}]}}
 
-\chardef\PDFsubmitformat=0 % 0=FDF 1=HTML
+\chardef\PDFsubmitformat=1 % 0=FDF 1=HTML
 
 \def\PDFexecuteimport {/Named /N /AcroForm:ImportFDF}
 \def\PDFexecuteexport {/Named /N /AcroForm:ExportFDF}
 \def\PDFexecutereset  {/ResetForm  \PDFformcode\argumentA}
-\def\PDFexecutesubmit {/SubmitForm \PDFformcode\argumentB 
-                       /F (\argumentA)
-                       /Flags \ifnum\PDFsubmitformat=1 12\fi}
-                      %/Flags \ifnum\PDFsubmitformat=1  4\fi}
-
+\def\PDFexecutesubmit {/SubmitForm \PDFformcode\argumentB
+                      %/Flags \ifnum\PDFsubmitformat=1 12\fi
+                      %/Flags \ifnum\PDFsubmitformat=1  4\fi
+                       /F (\argumentA)}
+                       
 \def\PDFexecutehide   {/Hide /T (\argumentA) /H true}
 \def\PDFexecuteshow   {/Hide /T (\argumentA) /H false}
 
@@ -337,6 +356,7 @@
 \def\PDFexecuteswap        {/Named /N /FullScreen}
 \def\PDFexecutesearch      {/Named /N /Find}
 \def\PDFexecutesearchagain {/Named /N /FindAgain}
+\def\PDFexecutegotopage    {/Named /N /GoToPage}
 
 \def\doPDFstartexecutecommand#1#2#3#4%
   {\doifdefined{PDFexecute#3}
@@ -350,8 +370,8 @@
         \savesecondaryPDFreference\action
       \else
         \getsecondaryPDFreferences
-        \doPDFaction 
-          width #1 height #2 
+        \doPDFaction
+          width #1 height #2
           action {\action \secondaryPDFreferences}%
       \fi
       \egroup}}
@@ -360,7 +380,7 @@
 %D   {doPDFstartrunprogram}
 %D
 %D Running programs is possible, but rather non portable, and
-%D therefore ill advized. 
+%D therefore ill advized.
 
 \def\doPDFstartrunprogram#1#2#3%
   {\bgroup
@@ -373,18 +393,18 @@
      \savesecondaryPDFreference\action
    \else
      \getsecondaryPDFreferences
-     \doPDFaction 
-       width #1 height #2 
+     \doPDFaction
+       width #1 height #2
        action {\action \secondaryPDFreferences}%
    \fi
    \egroup}
 
-%D \macros 
+%D \macros
 %D   {doPDFstartgotoprofile}
 %D
 %D Far from perfect, but nevertheless present, is the profile
-%D handler. We want to misuse article threads for reder 
-%D profiles. 
+%D handler. We want to misuse article threads for reder
+%D profiles.
 
 \def\doPDFstartgotoprofile#1#2#3% to be done: file
   {\bgroup
@@ -396,8 +416,8 @@
         \savesecondaryPDFreference\action
       \else
         \getsecondaryPDFreferences
-        \doPDFaction 
-          width #1 height #2 
+        \doPDFaction
+          width #1 height #2
           action {\action \secondaryPDFreferences}%
       \fi}%
    \egroup}
@@ -405,12 +425,12 @@
 %D \macros
 %D   {doPDFsetpagetransition}
 %D
-%D This array holds a reasonable selection of transitions 
-%D (watch out: \type{replace} is not in this list). Most of 
+%D This array holds a reasonable selection of transitions
+%D (watch out: \type{replace} is not in this list). Most of
 %D the transitions look awful anyway. By the way, \CONTEXT\ is
-%D able to select transitions randomly. 
+%D able to select transitions randomly.
 
-\def\pagetransitions  
+\def\pagetransitions
   {{split,in,vertical},{split,in,horizontal},
    {split,out,vertical},{split,out,horizontal},
    {blinds,horizontal},{blinds,vertical},
@@ -419,14 +439,14 @@
    dissolve,
    {glitter,east},{glitter,south}}
 
-%D Again, we use macros as placeholders for \PDF\ key||value 
-%D pairs. 
+%D Again, we use macros as placeholders for \PDF\ key||value
+%D pairs.
 
-\def\PDFpagesplit    {/S /Split    }      
+\def\PDFpagesplit    {/S /Split    }
 \def\PDFpageblinds   {/S /Blinds   }
 \def\PDFpagebox      {/S /Box      }
-\def\PDFpagewipe     {/S /Wipe     }      
-\def\PDFpagedissolve {/S /Dissolve }   
+\def\PDFpagewipe     {/S /Wipe     }
+\def\PDFpagedissolve {/S /Dissolve }
 \def\PDFpageglitter  {/S /Glitter  }
 \def\PDFpagereplace  {/S /R        }
 
@@ -443,30 +463,37 @@
   {\doifdefined{PDFpage#1}
      {\edef\PDFpagetransitions{\PDFpagetransitions\getvalue{PDFpage#1}}}}
 
-\def\doPDFsetpagetransition#1%
+\def\doPDFsetpagetransition#1#2%
   {\let\PDFpagetransitions\empty
    \processcommalist[#1]\dodoPDFsetpagetransition
-   \doPDFpageattribute{/Trans <<\PDFpagetransitions>>}}
+   \doPDFpageattribute
+    %{\ifnum#2>0 /Dur #2 \fi
+     {\ifnum0<0#2 /Dur #2 \fi
+      \ifx\PDFpagetransitions\empty\else/Trans <<\PDFpagetransitions>>\fi}}
 
 %D \macros
 %D   {doPDFinsertmov}
 %D
-%D Most of the annotations we use here are of type {\em 
+%D Most of the annotations we use here are of type {\em
 %D link}, but here is another one: the {\em movie} annotation.
-%D The driver module must implement \type {setcurrentmovie}. 
+%D The driver module must implement \type {setcurrentmovie}.
 
 \def\doPDFinsertmov#1#2#3#4#5#6#7#8#9%
   {\bgroup
    \setcurrentmovie{#1}%
    \ScaledPointsToBigPoints{#7}\width
    \ScaledPointsToBigPoints{#8}\height
-   \edef\pdf@@posterize{\ifcase#9 \or/Poster true\fi}%
-   \doPDFannotation width #7 height #8 data 
+   \let\pdf@@options\empty
+   \def\pdf@@actions{/ShowControls false }%
+   \@EA\processallactionsinset\@EA
+     [#9]
+     [\v!herhaal=>\edef\pdf@@actions{\pdf@@actions /Mode /Repeat },
+      \v!preview=>\edef\pdf@@options{\pdf@@options /Poster true  }]%
+   \doPDFannotation width #7 height #8 data
      {/Subtype /Movie
       /T (movie \currentmovie)
-      /Movie << /F (#1)
-                /Aspect [\width\space \height] \pdf@@posterize >>
-      /A << /ShowControls false >>}
+      /Movie << /F (#1) /Aspect [\width\space\height] \pdf@@options >>
+      /A << \pdf@@actions>>}
    \egroup}
 
 %D \macros
@@ -474,25 +501,25 @@
 %D
 %D Well, here is the dreadfull bookmark, rather useless because
 %D only standard encoding is possible, no typography is done,
-%D and a maximum of 32~characters is advized. 
+%D and a maximum of 32~characters is advized.
 
 \def\doPDFinsertbookmark#1#2#3#4#5% level sublevels text page open=1
-  {\bgroup 
+  {\bgroup
    \sanitizePDFdocencoding#3\to\bookmarktext % uses scratchcounter
    \scratchcounter=#4%
-   \advance\scratchcounter by -1  
+   \advance\scratchcounter by -1
   %\sanitizePDFstring#3\to\bookmarktext
-   \doPDFbookmark level #1 n #2 text {\bookmarktext}   
-      page {\the\scratchcounter} open #5 
+   \doPDFbookmark level #1 n #2 text {\bookmarktext}
+      page {\the\scratchcounter} open #5
    \egroup}
 
-%D The next section of this module is dedicated to form 
-%D support. These macros are complicated by the fact that 
-%D cloning is possible. 
+%D The next section of this module is dedicated to form
+%D support. These macros are complicated by the fact that
+%D cloning is possible.
 
 %D \macros
 %D   {FDFflag...,FDFplus...}
-%D 
+%D
 %D The \type{/FT} key determines the type of field: text,
 %D button or choice. The latter two come in several disguises,
 %D which are set by flipping bits in the \type{/Ff}. Other bits
@@ -507,25 +534,25 @@
 \def\FDFflagEdit         {262144} % 19
 
 %D The next bits (watch how strange the bits are organized)
-%D take care of the states: 
+%D take care of the states:
 
-\def\FDFflagReadOnly          {1} %  1 
-\def\FDFflagRequired          {2} %  2 
-\def\FDFflagNoExport          {4} %  3 
-\def\FDFflagPassword       {8192} % 14 
-\def\FDFflagSort         {524288} % 20 
+\def\FDFflagReadOnly          {1} %  1
+\def\FDFflagRequired          {2} %  2
+\def\FDFflagNoExport          {4} %  3
+\def\FDFflagPassword       {8192} % 14
+\def\FDFflagSort         {524288} % 20
 
-%D There is a second, again bitset oriented, \type{/F} flag: 
+%D There is a second, again bitset oriented, \type{/F} flag:
 
 \def\FDFplusInvisible         {1} %  1
-\def\FDFplusHidden            {2} %  2 
-\def\FDFplusPrintable         {4} %  3 
+\def\FDFplusHidden            {2} %  2
+\def\FDFplusPrintable         {4} %  3
 
 %D \macros
 %D   {setFDFswitches}
 %D
-%D The non||type bits are mapped onto user||interface 
-%D swithes, to be used later on: 
+%D The non||type bits are mapped onto user||interface
+%D swithes, to be used later on:
 
 \def\@@FDFflag{FDFflag}
 \def\@@FDFplus{FDFplus}
@@ -539,16 +566,16 @@
 \letvalue       {\@@FDFplus\v!verborgen}=\FDFplusHidden
 \letvalue       {\@@FDFplus\v!printbaar}=\FDFplusPrintable
 
-%D A set of switches is collected into the flags we mentioned 
-%D before by the next macro (we don't handle negations yet, 
+%D A set of switches is collected into the flags we mentioned
+%D before by the next macro (we don't handle negations yet,
 %D but do take care of redundancy):
 
 \def\FDFflag{0}
 \def\FDFplus{0}
 
 \def\setFDFswitches[#1]%
-  {\bgroup            
-   \!!counta=0        
+  {\bgroup
+   \!!counta=0
    \!!countb=0
    \def\docommando##1%
      {\doifsomething{##1}
@@ -564,7 +591,7 @@
 %D \macros
 %D   {setFDFvalues}
 %D
-%D Menu items are passed as an array of \type{(string)}'s and 
+%D Menu items are passed as an array of \type{(string)}'s and
 %D the content of this array is build with:
 
 \let\FDFvalues\empty
@@ -580,12 +607,12 @@
    \@EA\processcommalist\@EA[#1]\docommando}
 
 %D This macro accepts comma separated \type{visual=>result}
-%D pairs. 
+%D pairs.
 
 %D \macros
 %D   {setFDFalignment}
-%D 
-%D Text and line fields can be entered and showed in three 
+%D
+%D Text and line fields can be entered and showed in three
 %D alternative alingments, indicated by a digit:
 
 \def\FDFalign{0}
@@ -593,22 +620,22 @@
 \def\setFDFalignment[#1]%
   {\processaction
      [#1]
-     [ \v!links=>\edef\FDFalign{2},    % raggedleft 
-      \v!midden=>\edef\FDFalign{1},    % raggedcenter 
+     [ \v!links=>\edef\FDFalign{2},    % raggedleft
+      \v!midden=>\edef\FDFalign{1},    % raggedcenter
       \v!rechts=>\edef\FDFalign{0}]}   % raggedright
 
 %D \macros
 %D   {setFDFattributes}
-%D 
+%D
 %D The weak part of (at least version 2.1 \PDF) is that only
 %D default fonts are handled well. Another restriction is that
 %D the encoding vector must be the standard \PDF\ document one.
 %D Although the \PDF\ reference explictly states that one could
-%D use the normal text operators, leading is not yet handled. 
+%D use the normal text operators, leading is not yet handled.
 %D
-%D For the moment the current \CONTEXT\ font is mapped onto 
-%D one best suitable default font. The color attribute is 
-%D less problematic and is directly derived from the \CONTEXT\ 
+%D For the moment the current \CONTEXT\ font is mapped onto
+%D one best suitable default font. The color attribute is
+%D less problematic and is directly derived from the \CONTEXT\
 %D color.
 
 \def\FDFattributes{/Helv 12 Tf 0 g 14.4 TL}
@@ -634,7 +661,7 @@
          {\doifdefinedelse{FDF\fontstyle}
             {\xdef\FDFattributes{\getvalue{FDF\fontstyle}}}
             {\xdef\FDFattributes{\FDFrm}}}%
-       \doglobal\addtocommalist\FDFattributes\FDFusedfonts 
+       \doglobal\addtocommalist\FDFattributes\FDFusedfonts
        \xdef\FDFattributes% move up with "x.y Ts"
          {/\FDFattributes\space\size\space Tf\space\PDFcolor{#2}}%
        \doifelsenothing{#3}
@@ -650,10 +677,10 @@
 
 %D \macros
 %D   {setFDFactions}
-%D 
+%D
 %D Depending on the type of the field, one can assign
 %D \JAVASCRIPT\ code to a mouse event or keystroke. The next
-%D preparation macro shows what events are handled. 
+%D preparation macro shows what events are handled.
 
 \let\FDFactions\empty
 
@@ -671,11 +698,11 @@
    \fi
    \setFDFaction A#2}% mouseup             % becomes U !
 
-%D The event handler becomes something: 
-%D 
+%D The event handler becomes something:
+%D
 %D \starttypen
-%D /AA << /D << /S ... >> ... /C << /S ... >> 
-%D /A << /S /JavaScript /JS (...) >> 
+%D /AA << /D << /S ... >> ... /C << /S ... >>
+%D /A << /S /JavaScript /JS (...) >>
 %D \stoptypen
 
 \def\setFDFaction#1#2%
@@ -691,7 +718,7 @@
             \xdef\sanitizedJScode{\sanitizedJScode\space\JScode}}
            {\invalidreference{##1}}}
         {\unknownreference{##1}}}%
-   \@EA\processcommalist\@EA[#2]\setFDFaction % one level expansion 
+   \@EA\processcommalist\@EA[#2]\setFDFaction % one level expansion
    \ifx\sanitizedJScode\empty \else
      \xdef\FDFactions%
        {\FDFactions /#1 << /S /JavaScript /JS (\sanitizedJScode) >> }%
@@ -701,15 +728,15 @@
 %D \macros
 %D   {testFDFactions}
 %D
-%D This rather confusion prone series of script can be tested 
+%D This rather confusion prone series of script can be tested
 %D with:
-%D 
+%D
 %D \starttypen
 %D \testFDFactions
 %D \stoptypen
-%D 
-%D which simply redefined the previous macro to one that prints 
-%D a message to the console. 
+%D
+%D which simply redefined the previous macro to one that prints
+%D a message to the console.
 
 \def\testFDFactions%
   {\def\setFDFaction##1##2%
@@ -718,27 +745,39 @@
       \edef\FDFactions%
         {\FDFactions /##1 << /S /JavaScript /JS (\sanitizedJScode) >> }}}
 
-%D \macros 
+%D \macros
+%D   {doFDFregistercalculationset}
+%D 
+%D There is at most one calculation order list, which defines
+%D the order in which fields are calculated. 
+
+\let\PDFcalculationset\empty
+
+\def\doFDFregistercalculationset#1%
+  {\def\PDFcalculationset{#1}}
+
+%D \macros
 %D   {registerFDFobject,everylastshipout}
 %D
-%D Officially one needs to embed some general datastructures 
-%D that tell the viewer what fields are present in the file, as 
+%D Officially one needs to embed some general datastructures
+%D that tell the viewer what fields are present in the file, as
 %D well as what resources they use. The next mechanism does that
-%D job automatically when one registers the field. 
+%D job automatically when one registers the field.
 
 \def\flushFDFnames%
   {\ifbuildFDFdictionary
      \ifx\FDFcollection\empty\else
-       \ifbuildFDFencodingvector 
-         \doPDFdictionaryobject class FDF name local:encodingvector data 
+       \ifbuildFDFencodingvector
+         \doPDFdictionaryobject class FDF name local:encodingvector data
            \FDFencodingvector
        \fi
        \defineFDFfonts
        \doPDFarrayobject class FDF name local:fields data \FDFcollection
        \doPDFgetobjectreference{FDF}{local:fields}\PDFobjectreference
-       \doPDFdictionaryobject class FDF name local:acroform data 
+       \doPDFdictionaryobject class FDF name local:acroform data
          {/Fields \PDFobjectreference\space
-          /DR << /Font << \FDFfonts >> >> 
+          \doFDFiffieldset\PDFcalculationset{/CO [\doFDFgetfieldset\PDFcalculationset]}
+          /DR << /Font << \FDFfonts >> >>
           /DA (/Helv 10 Tf 0 g)}%
        \doPDFgetobjectreference{FDF}{local:acroform}\PDFobjectreference
        \doPDFaddtocatalog
@@ -767,8 +806,8 @@
 %D    ifbuildFDFdictionary,
 %D    ifbuildFDFencodingvector}
 %D
-%D Another datastruture concerns the fonts used. We only 
-%D define the fonts we use. 
+%D Another datastruture concerns the fonts used. We only
+%D define the fonts we use.
 
 \newif\ifbuildFDFdictionary     \buildFDFdictionarytrue
 \newif\ifbuildFDFencodingvector \buildFDFencodingvectortrue
@@ -778,15 +817,15 @@
    \processcommacommand[\FDFusedfonts]\defineFDFfont}
 
 \def\defineFDFfont#1%
-  {\ifbuildFDFencodingvector 
+  {\ifbuildFDFencodingvector
      \doPDFgetobjectreference{FDF}{local:encodingvector}\PDFobjectreference
    \fi
-   \doPDFdictionaryobject class FDF name local:#1 data 
-     {/Type /Font 
-      /Subtype /Type1 
+   \doPDFdictionaryobject class FDF name local:#1 data
+     {/Type /Font
+      /Subtype /Type1
       /Name /#1
       \ifbuildFDFencodingvector /Encoding \PDFobjectreference\space\fi
-      /BaseFont /\getvalue{FDFname#1}}%  
+      /BaseFont /\getvalue{FDFname#1}}%
    \doPDFgetobjectreference{FDF}{local:#1}\PDFobjectreference
    \edef\FDFfonts{\FDFfonts \space/#1 \PDFobjectreference}}
 
@@ -803,56 +842,56 @@
 \def\FDFnameCour {Courier}
 \def\FDFnameCoBo {Courier-Bold}
 \def\FDFnameCoOb {Courier-Oblique}
-\def\FDFnameCoBO {Courier-BoldOblique} 
+\def\FDFnameCoBO {Courier-BoldOblique}
 
 %D And a big one:
 
 \def\FDFencodingvector
-  {/Type /Encoding 
-   /Differences 
-     [ 24 /breve /caron /circumflex /dotaccent /hungarumlaut /ogonek 
-          /ring /tilde 
-       39 /quotesingle 
-       96 /grave 
-      128 /bullet /dagger /daggerdbl /ellipsis /emdash /endash /florin 
-          /fraction /guilsinglleft /guilsinglright /minus /perthousand 
+  {/Type /Encoding
+   /Differences
+     [ 24 /breve /caron /circumflex /dotaccent /hungarumlaut /ogonek
+          /ring /tilde
+       39 /quotesingle
+       96 /grave
+      128 /bullet /dagger /daggerdbl /ellipsis /emdash /endash /florin
+          /fraction /guilsinglleft /guilsinglright /minus /perthousand
           /quotedblbase /quotedblleft /quotedblright /quoteleft
-          /quoteright /quotesinglbase /trademark /fi /fl /Lslash /OE 
-          /Scaron /Ydieresis /Zcaron /dotlessi /lslash /oe /scaron 
-          /zcaron 
+          /quoteright /quotesinglbase /trademark /fi /fl /Lslash /OE
+          /Scaron /Ydieresis /Zcaron /dotlessi /lslash /oe /scaron
+          /zcaron
       164 /currency
-      166 /brokenbar  
+      166 /brokenbar
       168 /dieresis /copyright /ordfeminine
-      172 /logicalnot /.notdef /registered /macron /degree /plusminus 
-          /twosuperior /threesuperior /acute /mu 
+      172 /logicalnot /.notdef /registered /macron /degree /plusminus
+          /twosuperior /threesuperior /acute /mu
       183 /periodcentered /cedilla /onesuperior /ordmasculine
-      188 /onequarter /onehalf /threequarters 192 /Agrave /Aacute 
-          /Acircumflex /Atilde /Adieresis /Aring /AE /Ccedilla /Egrave 
-          /Eacute /Ecircumflex /Edieresis /Igrave /Iacute /Icircumflex 
-          /Idieresis /Eth /Ntilde /Ograve /Oacute /Ocircumflex /Otilde 
-          /Odieresis /multiply /Oslash /Ugrave /Uacute /Ucircumflex 
-          /Udieresis /Yacute /Thorn /germandbls /agrave /aacute 
-          /acircumflex /atilde /adieresis /aring /ae /ccedilla /egrave 
+      188 /onequarter /onehalf /threequarters 192 /Agrave /Aacute
+          /Acircumflex /Atilde /Adieresis /Aring /AE /Ccedilla /Egrave
+          /Eacute /Ecircumflex /Edieresis /Igrave /Iacute /Icircumflex
+          /Idieresis /Eth /Ntilde /Ograve /Oacute /Ocircumflex /Otilde
+          /Odieresis /multiply /Oslash /Ugrave /Uacute /Ucircumflex
+          /Udieresis /Yacute /Thorn /germandbls /agrave /aacute
+          /acircumflex /atilde /adieresis /aring /ae /ccedilla /egrave
           /eacute /ecircumflex /edieresis /igrave /iacute /icircumflex
           /idieresis /eth /ntilde /ograve /oacute /ocircumflex /otilde
-          /odieresis /divide /oslash /ugrave /uacute /ucircumflex 
+          /odieresis /divide /oslash /ugrave /uacute /ucircumflex
           /udieresis /yacute /thorn /ydieresis ]}
 
-%D \macros  
+%D \macros
 %D   {currentFDFmode,currentFDFparent,currentFDFkids,currenrFDFroot}
 %D
-%D There are three more quasi global interfacing variables 
-%D that need to be set. 
+%D There are three more quasi global interfacing variables
+%D that need to be set.
 
 \let\currentFDFmode  =\fieldlonermode
-\let\currentFDFkids  =\empty  
-\let\currentFDFparent=\empty  
-\let\currentFDFroot  =\empty  
+\let\currentFDFkids  =\empty
+\let\currentFDFparent=\empty
+\let\currentFDFroot  =\empty
 
 %D \macros
 %D   {dosetfieldstatus}
 %D
-%D And here comes the special that deals with them. 
+%D And here comes the special that deals with them.
 
 \definespecial\dosetfieldstatus#1#2#3#4%
   {\chardef\currentFDFmode=#1%
@@ -863,38 +902,38 @@
 %D \macros
 %D   {dosetuppageview}
 %D
-%D Because this command will seldom be called, we can permit 
-%D slow action processing. We need three settings, one for 
-%D direct \PDF\ inclusion, the other as \PDFTEX\ keyword, an 
-%D a last one for form. All determine in what way the 
-%D screen is adapted when going to a destination. Watch the 
-%D space. 
+%D Because this command will seldom be called, we can permit
+%D slow action processing. We need three settings, one for
+%D direct \PDF\ inclusion, the other as \PDFTEX\ keyword, an
+%D a last one for form. All determine in what way the
+%D screen is adapted when going to a destination. Watch the
+%D space.
 
 \def\PDFpageviewkey{  fit}
 \def\PDFpageviewwrd{ /Fit}
-\def\PDFpageview   {/View [\PDFpageviewwrd] } 
+\def\PDFpageview   {/View [\PDFpageviewwrd] }
 
 \definespecial\dosetuppageview#1%
   {%\processaction
    %  [#1]
    %  [\v!passend=>\def\PDFpageviewkey{   fit}%
    %               \def\PDFpageviewwrd{  /Fit},
-   %   \v!breedte=>\def\PDFpageviewkey{  fith}%   % watch the v-h 
+   %   \v!breedte=>\def\PDFpageviewkey{  fith}%   % watch the v-h
    %               \def\PDFpageviewwrd{ /FitH},   % swapping here
-   %    \v!hoogte=>\def\PDFpageviewkey{  fitv}%   % and here and 
+   %    \v!hoogte=>\def\PDFpageviewkey{  fitv}%   % and here and
    %               \def\PDFpageviewwrd{ /FitV},   % here too
    %      \v!geen=>\def\PDFpageviewkey{   xyz}%
    %               \def\PDFpageviewwrd{  /XYZ 0 0 0},
    %   \s!unknown=>\def\PDFpageviewkey{  fitv}%
-   %               \def\PDFpageviewwrd{ /FitV}]% 
-  }%\edef\PDFpageview{/View [\PDFpageviewwrd] }} 
+   %               \def\PDFpageviewwrd{ /FitV}]%
+  }%\edef\PDFpageview{/View [\PDFpageviewwrd] }}
 
-%D \macros 
+%D \macros
 %D   {setFDFkids}
 %D
-%D Clones as well as radiofields (which themselves can have 
-%D cloned components) need a list fo kids. The next macro 
-%D builds one. 
+%D Clones as well as radiofields (which themselves can have
+%D cloned components) need a list fo kids. The next macro
+%D builds one.
 
 \def\setFDFkids[#1][#2]% tag commalist
   {\let\FDFkids\empty
@@ -903,15 +942,15 @@
       \edef\FDFkids{\FDFkids\PDFobjectreference\space}}%
    \@EA\processcommalist\@EA[#2]\docommando}
 
-%D \macros 
+%D \macros
 %D   {doFDFpresetlinefield,doFDFpresettextfield,
 %D    doFDFpresetchoicefield,doFDFpresetpopupfield,doFDFpresetcombofield,
 %D    doFDFpresetpushfield,doFDFpresetcheckfield,
 %D    doFDFpresetradiofield,doFDFpresetradiorecord}
-%D 
+%D
 %D I would say: read the \PDF\ reference manual first and see
 %D what happens here next. Lucky us that they have so much in
-%D common. 
+%D common.
 
 \def\doFDFpresetlinefield#1#2#3#4#5#6#7#8#9%
   {\bgroup
@@ -921,7 +960,7 @@
    \setFDFactions[#9]%
    \ifcase\currentFDFmode
      \doPDFannotationobject class FDF name #1 width #2 height #3 data
-       {/Subtype /Widget /T (#1) /FT /Tx 
+       {/Subtype /Widget /T (#1) /FT /Tx
         /MaxLen \ifcase0#5 1000 \else#5 \fi
         /DV (#4) /V ()
         /Ff \FDFflag\space
@@ -934,7 +973,7 @@
    \or
      \setFDFkids[kids:][\currentFDFkids]%
      \doPDFdictionaryobject class FDF name #1 data
-       {/T (#1) /FT /Tx 
+       {/T (#1) /FT /Tx
         /MaxLen \ifcase0#5 1000 \else#5 \fi
         /Kids [\FDFkids]
         /DV (#4) /V ()
@@ -949,7 +988,7 @@
      \doPDFgetobjectreference{FDF}{\currentFDFparent}\PDFobjectreference
      \global\objectreferencingtrue
      \doPDFannotationobject class FDF name kids:#1 width #2 height #3 data
-       {/Subtype /Widget 
+       {/Subtype /Widget
         /Parent \PDFobjectreference
         /Ff \FDFflag\space
         /F \FDFplus\space
@@ -961,7 +1000,7 @@
      \doPDFgetobjectreference{FDF}{\currentFDFparent}\PDFobjectreference
      \global\objectreferencingtrue
      \doPDFannotationobject class FDF name kids:#1 width #2 height #3 data
-       {/Subtype /Widget 
+       {/Subtype /Widget
         /Parent \PDFobjectreference
         /F \FDFplus}%
    \fi
@@ -978,8 +1017,8 @@
    \setFDFactions[#8]%
    \ifcase\currentFDFmode
      \doPDFannotationobject class FDF name #1 width #2 height #3 data
-       {/Subtype /Widget 
-        /T (#1) /FT /Ch 
+       {/Subtype /Widget
+        /T (#1) /FT /Ch
         /DV (#4) /V ()
         /Ff \FDFflag\space
         /F \FDFplus\space
@@ -991,7 +1030,7 @@
    \or
      \setFDFkids[kids:][\currentFDFkids]%
      \doPDFdictionaryobject class FDF name #1 data
-       {/T (#1) /FT /Ch 
+       {/T (#1) /FT /Ch
         /Kids [\FDFkids]
         /DV (#4) /V ()
         /Ff \FDFflag\space
@@ -1005,7 +1044,7 @@
      \doPDFgetobjectreference{FDF}{\currentFDFparent}\PDFobjectreference
      \global\objectreferencingtrue
      \doPDFannotationobject class FDF name kids:#1 width #2 height #3 data
-       {/Subtype /Widget 
+       {/Subtype /Widget
         /Parent \PDFobjectreference
         /Ff \FDFflag\space
         /F \FDFplus\space
@@ -1016,7 +1055,7 @@
      \doPDFgetobjectreference{FDF}{\currentFDFparent}\PDFobjectreference
      \global\objectreferencingtrue
      \doPDFannotationobject class FDF name kids:#1 width #2 height #3 data
-       {/Subtype /Widget 
+       {/Subtype /Widget
         /Parent \PDFobjectreference
         /F \FDFplus}%
    \fi
@@ -1038,18 +1077,18 @@
      \doFDFappearance{On}{#6}%
      \doFDFdefault{#6}{#4}%
      \doPDFannotationobject class FDF name #1 width #2 height #3 data
-       {/Subtype /Widget /T (#1) /FT /Btn  
+       {/Subtype /Widget /T (#1) /FT /Btn
         \ifFDFvalues /DV (\FDFdefault) /V ()\fi
         /Ff \FDFflag\space
         /F \FDFplus\space
         \FDFappearance\space
         \FDFactions}%
      \registerFDFobject{#1}%
-   \or 
+   \or
      \doFDFdefault{#6}{#4}%
      \setFDFkids[kids:][\currentFDFkids]%
      \doPDFdictionaryobject class FDF name #1 data
-       {/T (#1) /FT /Btn 
+       {/T (#1) /FT /Btn
         /Kids [\FDFkids]
         \ifFDFvalues /DV (\FDFdefault) /V ()\fi
         /Ff \FDFflag\space
@@ -1062,7 +1101,7 @@
      \doPDFgetobjectreference{FDF}{\currentFDFparent}\PDFobjectreference
      \global\objectreferencingtrue
      \doPDFannotationobject class FDF name kids:#1 width #2 height #3 data
-       {/Subtype /Widget 
+       {/Subtype /Widget
         /Parent \PDFobjectreference\space
         /Ff \FDFflag\space
         /F \FDFplus\space
@@ -1074,7 +1113,7 @@
      \doPDFgetobjectreference{FDF}{\currentFDFparent}\PDFobjectreference
      \global\objectreferencingtrue
      \doPDFannotationobject class FDF name kids:#1 width #2 height #3 data
-       {/Subtype /Widget 
+       {/Subtype /Widget
         /Parent \PDFobjectreference\space
         /F \FDFplus\space
         \FDFappearance}%
@@ -1091,6 +1130,7 @@
 
 \def\doFDFpresetradiofield#1#2#3#4#5#6#7%
   {\bgroup
+   \FDFvaluestrue
    \setFDFswitches[#4]%
    \setFDFactions[#7]%
    \ifcase\currentFDFmode
@@ -1117,7 +1157,7 @@
      \doPDFgetobjectreference{FDF}{\currentFDFparent}\PDFobjectreference
      \global\objectreferencingtrue
      \doPDFannotationobject class FDF name kids:#1 width #2 height #3 data
-       {/Subtype /Widget 
+       {/Subtype /Widget
         /Parent \PDFobjectreference\space
         /F \FDFplus\space
         \FDFappearance\space
@@ -1127,22 +1167,22 @@
      \doPDFgetobjectreference{FDF}{\currentFDFparent}\PDFobjectreference
      \global\objectreferencingtrue
      \doPDFannotationobject class FDF name kids:#1 width #2 height #3 data
-       {/Subtype /Widget 
+       {/Subtype /Widget
         /Parent \PDFobjectreference\space
         /F \FDFplus\space
         \FDFappearance\space}
    \fi
    \egroup}
 
-\def\doFDFpresetradiorecord#1#2#3#4#5% 
+\def\doFDFpresetradiorecord#1#2#3#4#5%
   {\bgroup
    \setFDFswitches[Radio,NoToggleToOff,#3]%
    \setFDFkids[][#4]%
    \setFDFactions[#5]%
    \doPDFdictionaryobject class FDF name #1 data
-     {/Subtype /Widget /FT /Btn /T (#1) /Rect [0 0 0 0] 
+     {/Subtype /Widget /FT /Btn /T (#1) /Rect [0 0 0 0]
       /DV /#2 % /V ()
-      /H /N 
+      /H /N
       /Ff \FDFflag\space /F \FDFplus\space /Kids [\FDFkids]
       \FDFactions}%
    \egroup}
@@ -1150,77 +1190,76 @@
 %D At the cost of some more references, we can save bytes,
 %D by sharing appearance dictionaries. Surprise:
 
-\def\dodoFDFappearance#1#2% 
+\def\dodoFDFappearance#1#2%
   {\ifx#2\empty\else
      \dogetcommacommandelement1\from#2\to\commalistelement
      \ifx\commalistelement\empty\else
        \doPDFgetobjectreference{SYM}\commalistelement\PDFobjectreference
-       \edef\N{\N /#1 \PDFobjectreference\space}%
+       \edef\N{\ifFDFvalues\N /#1 \fi\PDFobjectreference\space}%
      \fi
      \dogetcommacommandelement2\from#2\to\commalistelement
      \ifx\commalistelement\empty\else
        \doPDFgetobjectreference{SYM}\commalistelement\PDFobjectreference
-       \edef\R{\R /#1 \PDFobjectreference\space}%
+       \edef\R{\ifFDFvalues\R /#1 \fi\PDFobjectreference\space}%
      \fi
      \dogetcommacommandelement3\from#2\to\commalistelement
      \ifx\commalistelement\empty\else
        \doPDFgetobjectreference{SYM}\commalistelement\PDFobjectreference
-       \edef\D{\D /#1 \PDFobjectreference\space}%
+       \edef\D{\ifFDFvalues\D /#1 \fi\PDFobjectreference\space}%
        \def\FDFappearance{/H /P}%
      \fi
    \fi}
 
-\def\redoFDFappearance#1% 
+\def\redoFDFappearance#1%
   {\ifx#1\empty\else
-     \dogetcommacommandelement1\from#1\to\commalistelement
-     \dogetcommacommandelement3\from\commalistelement\to\commalistelement
+     \dogetcommacommandelement3\from#1\to\commalistelement
      \ifx\commalistelement\empty\else
        \def\FDFappearance{/H /P}%
      \fi
    \fi}
 
-\def\doFDFappearance#1#2% 
+\def\doFDFappearance#1#2%
   {\dogetcommacommandelement1\from#2,\to\yes
    \dogetcommacommandelement2\from#2,\to\no
    \def\FDFappearance{/H /N}%
-   \doifobjectfoundelse{FDF}{ap:#1:\yes:\no} 
+   \doifobjectfoundelse{FDF}{ap:#1:\yes:\no}
      {\redoFDFappearance\yes
       \redoFDFappearance\no}
-     {\presetobject{FDF}{ap:#1:\yes:\no}% funny hack 
+     {\presetobject{FDF}{ap:#1:\yes:\no}% funny hack
       \let\N\empty\let\R\empty\let\D\empty
       \dodoFDFappearance{#1}\yes
       \dodoFDFappearance{Off}\no
-      \doPDFdictionaryobject class FDF name {ap:#1:\yes:\no} data 
-        {\ifx\N\empty\else /N <<\N>>\fi 
-         \ifx\R\empty\else /R <<\R>>\fi 
-         \ifx\D\empty\else /D <<\D>>\fi}}% 
+      \doPDFdictionaryobject class FDF name {ap:#1:\yes:\no} data
+        {\ifx\N\empty\else/N \ifFDFvalues<<\N>>\else\N\fi\fi
+         \ifx\R\empty\else/R \ifFDFvalues<<\R>>\else\R\fi\fi
+         \ifx\D\empty\else/D \ifFDFvalues<<\D>>\else\D\fi\fi}}%
    \doPDFgetobjectreference{FDF}{ap:#1:\yes:\no}\PDFobjectreference
    \edef\FDFappearance{\FDFappearance /AP \PDFobjectreference}}
 
-\def\doFDFdefault#1#2% 
+\def\doFDFdefault#1#2%
   {\dogetcommacommandelement1\from#1,\to\commalistelement
    \dogetcommacommandelement1\from\commalistelement\to\commalistelement
    \doifelse{\commalistelement}{#2} % kan ook met \ifx
      {\def\FDFdefault{On}}{\def\FDFdefault{Off}}}
 
-%D The three appearances {\em normal}, \type{roll over} and 
-%D \type{push down} are passed as comma separated triplets, 
+%D The three appearances {\em normal}, \type{roll over} and
+%D \type{push down} are passed as comma separated triplets,
 %D that is, the second argument can look like:
-%D 
+%D
 %D \starttypen
 %D {yes,ok,fine},{no,rubish,awful}
 %D \stoptypen
 
 %D \macros
 %D   {doFDFdefinefieldset,doFDFgetfieldset,doFDFiffieldset}
-%D 
-%D Field sets, the ones we use in submitting and resetting 
+%D
+%D Field sets, the ones we use in submitting and resetting
 %D fields, are implemented using the next low level specials:
-%D 
+%D
 %D \starttypen
 %D \doFDFdefinefieldset{TAG}{name,name,...}
 %D \doFDFgetfieldset{TAG}
-%D \doFDFiffieldset{TAG}
+%D \doFDFiffieldset{TAG}{sequence}
 %D \stoptypen
 
 \def\doFDFdefinefieldset#1#2% tag commalist
@@ -1228,14 +1267,14 @@
    \def\docommando##1%
      {\doPDFgetobjectreference{FDF}{##1}\PDFobjectreference
       \edef\FDFfieldset{\FDFfieldset\PDFobjectreference\space}}%
-   \processcommacommand[#2]\docommando % nb: command 
+   \processcommacommand[#2]\docommando % nb: command
    \setevalue{FDF:set:#1}{\FDFfieldset}}
 
 \def\doFDFgetfieldset#1%
   {\getvalue{FDF:set:#1}}
 
-\def\doFDFiffieldset#1%
-  {\ifundefined{FDF:set:#1}\else}
+\def\doFDFiffieldset#1#2%
+  {\ifundefined{FDF:set:#1}\else#2\fi}
 
 %D In the goto specials we took care of secondary references.
 %D Here we define the macros used.
@@ -1262,58 +1301,58 @@
 %D   {loadFDFfields, showFDFfields,
 %D    getFDFfield, setFDFfield}
 %D
-%D Once filled in, we can export or submit the field in the 
+%D Once filled in, we can export or submit the field in the
 %D \FDF\ file format. Such a file can be loaded by
 %D
 %D \starttypen
 %D \loadFDFfields{fiel-ini}
 %D \stoptypen
 %D
-%D or inspected by 
+%D or inspected by
 %D
 %D \starttypen
 %D \showFDFfields{fiel-ini}
 %D \stoptypen
 %D
-%D After both commands, one can use 
+%D After both commands, one can use
 %D
 %D \starttypen
 %D \getFDFfield{name}
 %D \setFDFfield{name}{value}
 %D \stoptypen
 %D
-%D to inspect and overrule the data. 
-%D 
+%D to inspect and overrule the data.
+%D
 %D By default \CONTEXT\ calls the perl script \type{fdf2tex}.
 %D This script reads the \type{fdf} file and produces a file
 %D named \type{filename.fdt}. If one disables the call to this
-%D script, by saying: 
-%D 
+%D script, by saying:
+%D
 %D \starttypen
 %D \runFDFconverterfalse
 %D \stoptypen
-%D 
-%D or when \CONTEXT\ cannot find the \type{fdt} file, it tries 
-%D to interpret the \type{fdf} file directly. Both mechanisms 
-%D are rather crude. 
+%D
+%D or when \CONTEXT\ cannot find the \type{fdt} file, it tries
+%D to interpret the \type{fdf} file directly. Both mechanisms
+%D are rather crude.
 
 \newif\ifrunFDFconverter \runFDFconvertertrue
 
 %D The \PERL\ script produces a file formatted as:
-%D 
+%D
 %D \starttypen
 %D \beginFDFobject
-%D \beginFDFdata  
+%D \beginFDFdata
 %D \beginFDFfields
 %D \FDFfield[name=,value=]
 %D \endFDFfields
-%D \endFDFdata 
+%D \endFDFdata
 %D \endFDFobject
 %D \stoptypen
 %D
-%D One reason for using key value pairs is that we cannot be 
-%D sure or the order in which the name and value are given 
-%D (actually the reverse). 
+%D One reason for using key value pairs is that we cannot be
+%D sure or the order in which the name and value are given
+%D (actually the reverse).
 
 \def\PERLloadFDFfields#1%
   {\bgroup
@@ -1332,48 +1371,48 @@
    \egroup}
 
 %D The next macro does the same job, but now in the \TEX\ way
-%D of doing things. Easy eh? 
+%D of doing things. Easy eh?
 
 \bgroup
 
-\catcode`\/=\@@other 
+\catcode`\/=\@@other
 \global\let\normalslash=/
-\catcode`\/=\@@escape 
+\catcode`\/=\@@escape
 
 \gdef\TEXloadFDFfields#1%
   {\bgroup
    \setbox0=\hbox
      {\global\let\allFDFfields\empty
-      \scratchcounter=0 
+      \scratchcounter=0
       \escapechar=-1
-      \catcode`\/=\@@escape 
+      \catcode`\/=\@@escape
       \catcode`\(=\@@begingroup
       \catcode`\)=\@@endgroup
       \catcode`\%=\@@letter
       \let/A =\relax \let/AS =\relax \let/Kids=\relax \let/Fields=\relax
       \let/F =\relax \let/ID =\relax \let/SetF=\relax \let/setFf =\relax
-      \let/Ff=\relax \let/Opt=\relax \let/ClrF=\relax \let/ClrFf =\relax 
+      \let/Ff=\relax \let/Opt=\relax \let/ClrF=\relax \let/ClrFf =\relax
       \let/AP=\relax \let/FDF=\relax \let/Root=\relax
-      \def/T##1{\check\Title{##1}} 
+      \def/T##1{\check\Title{##1}}
       \def/V{\bgroup\catcode`\/=\@@other\futurelet\next/doV}
       \def/doV{\ifx\next\normalslash\@EA/doVb\else\@EA/doVa\fi}
       \def/doVa##1{\egroup\check\Value{##1}}
       \def/doVb##1##2 {\egroup\check\Value{##2}} % watch the space
       \def\check##1##2%
         {\def##1{##2}
-         \advance\scratchcounter by 1 
+         \advance\scratchcounter by 1
          \ifodd\scratchcounter \else
            \convertcommand\Title\to\asciiA
            \global\setFDFfield{\asciiA}{\Value}
            \doglobal\addtocommalist\Title\allFDFfields
-         \fi} 
+         \fi}
       \ReadFile{#1.fdf}}%
    \egroup}
 
 \egroup
 
-%D Whatever mechanism is used, the next macros can be used to 
-%D fetch the values. 
+%D Whatever mechanism is used, the next macros can be used to
+%D fetch the values.
 
 \def\getFDFfield#1%
   {\getvalue{FDFfield::#1}}
@@ -1381,7 +1420,7 @@
 \def\setFDFfield#1#2%
   {\setevalue{FDFfield::#1}{#2}}
 
-%D Of course the fields are only present when the file is 
+%D Of course the fields are only present when the file is
 %D loaded.
 
 \def\loadFDFfields#1%
@@ -1397,18 +1436,19 @@
    \processcommacommand[\allFDFfields]\docommando
    \egroup}
 
-%D \macros 
+%D \macros
 %D   {sanitizePDFdocencoding}
 %D
 %D We already dealt with the encoding vector. Conversion from
 %D \TEX\ \ASCII\ encoding to the other one, is accomplished by
-%D the next few macros. Wach out: we don't group here. 
+%D the next few macros. Wach out: we don't group here.
 
-%D This will be reimplemented using the mapping mechsnism. 
+%D This will be reimplemented using the mapping mechanism.
 
 \long\def\sanitizePDFdocencoding#1\to#2%
   {\enablePDFcrlf
    \enablePDFdocencoding
+\honorunexpanded
    \edef#2{#1}}
 
 \bgroup
@@ -1416,76 +1456,34 @@
 \gdef\enablePDFcrlf%
   {\def\\{\string\r}%
    \def\par{\\\\}%
-   \catcode`\^^M=\@@active
+   \catcode`\^^M=\@@active%
    \let^^M=\\}
 \egroup
 
-% \def\enablePDFdocencoding% 
-%   {\def\"##1{\if##1A\string ^^c4\else\if##1a\string ^^e4\else
-%              \if##1E\string ^^cb\else\if##1e\string ^^eb\else
-%              \if##1I\string ^^cf\else\if##1i\string ^^ef\else
-%              \if##1O\string ^^d6\else\if##1o\string ^^f6\else
-%              \if##1U\string ^^dc\else\if##1u\string ^^fc\else
-%              \if##1y\string ^^ff\else
-%                \string\"##1%
-%              \fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi}%
-%    \def\'##1{\if##1A\string ^^c1\else\if##1a\string ^^e1\else
-%              \if##1E\string ^^c9\else\if##1e\string ^^e9\else
-%              \if##1I\string ^^cd\else\if##1i\string ^^ed\else
-%              \if##1O\string ^^d3\else\if##1o\string ^^f3\else
-%              \if##1U\string ^^da\else\if##1u\string ^^fa\else
-%              \if##1Y\string ^^dd\else\if##1y\string ^^fd\else
-%                \string\'##1%
-%              \fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi}%
-%    \def\^##1{\if##1A\string ^^c2\else\if##1a\string ^^e2\else
-%              \if##1E\string ^^ca\else\if##1e\string ^^ea\else
-%              \if##1I\string ^^ce\else\if##1i\string ^^ee\else
-%              \if##1O\string ^^d4\else\if##1o\string ^^f4\else
-%              \if##1U\string ^^db\else\if##1u\string ^^fb\else
-%                \string\^##1%
-%              \fi\fi\fi\fi\fi\fi\fi\fi\fi\fi}%
-%    \def\`##1{\if##1A\string ^^c0\else\if##1a\string ^^e0\else
-%              \if##1E\string ^^c8\else\if##1e\string ^^e8\else
-%              \if##1I\string ^^cc\else\if##1i\string ^^ec\else
-%              \if##1O\string ^^d2\else\if##1o\string ^^f2\else
-%              \if##1U\string ^^d9\else\if##1u\string ^^f9\else
-%                \string\`##1%
-%              \fi\fi\fi\fi\fi\fi\fi\fi\fi\fi}%
-%    \def\~##1{\if##1A\string ^^c3\else\if##1a\string ^^e3\else
-%              \if##1N\string ^^d1\else\if##1n\string ^^f1\else
-%              \if##1O\string ^^d5\else\if##1o\string ^^f5\else
-%                \string\~##1%\string 
-%              \fi\fi\fi\fi\fi\fi}%
-%    \def\,##1{\if##1C\string ^^c7\else\if##1c\string ^^e7\else
-%                \string\,##1%
-%              \fi\fi}%
-%    \def\<##1{\if##1<\string ^^ab\else
-%                \string\<##1%
-%              \fi}%
-%    \def\>##1{\if##1>\string ^^bb\else
-%                \string\>##1%
-%              \fi}%
-%    \def\AE{\string ^^c6}\def\ae{\string ^^e6}%
-%    \def\oA{\string ^^c5}\def\oa{\string ^^e5}%
-%    \def\oe{\string ^^9c}\def\ss{\string ^^df}}%
-
-\def\enablePDFdocencoding% 
-  {\setencoding[pdfdoc]\simplifycommands}
+\def\enablePDFdocencoding%
+  {\reducetocoding[pdfdoc]\simplifycommands}
 
 %D A bit out of place, but useful:
 
-\newevery\everysetfield\relax 
+\newevery\everysetfield\relax
 
-\appendtoks \enablePDFcrlf        \to \everysetfield
 \appendtoks \enablePDFdocencoding \to \everysetfield
+\appendtoks \enablePDFcrlf        \to \everysetfield
 
 %D \macros
 %D   {doPDFinsertcomment}
-%D 
-%D An example its use is the next special, one that deals with 
-%D text annotations. 
+%D
+%D An example its use is the next special, one that deals with
+%D text annotations.
 
-\long\def\doPDFinsertcomment#1#2#3#4#5#6% title width height color open data 
+\def\PDFcommentNew       {/Insert} 
+\def\PDFcommentBalloon   {/Comment} 
+\def\PDFcommentAddition  {/NewParagraph}
+\def\PDFcommentHelp      {/Help} 
+\def\PDFcommentParagraph {/Paragraph} 
+\def\PDFcommentKey       {/Key } 
+
+\long\def\doPDFinsertcomment#1#2#3#4#5#6#7% title width height color open data 
   {\bgroup
    \doifelsenothing{#1} 
      {\let\PDFidentifier\empty}
@@ -1493,36 +1491,46 @@
    \doifelsenothing{#4} 
      {\let\PDFattributes\empty}
      {\def\PDFattributes{/C \FDFcolor{#4}}}%
-   \sanitizePDFdocencoding#6\to\PDFdata
-   \doPDFtextannotation width #2 height #3 data 
-     {/Subtype /Text 
-      \ifcase#5 \else/Open false\fi
-      /Contents (\PDFdata)
-      \PDFidentifier
-      \PDFattributes}%
+   \doifundefinedelse{PDFcomment#6} 
+     {\let\PDFcomment\empty}
+     {\def\PDFcomment{/Name \getvalue{PDFcomment#6} }}%
+   \sanitizePDFdocencoding#7\to\PDFdata
+   \setbox\scratchbox=\vbox to #3sp
+     {\vfill
+      \doPDFannotation width #2 height #3 data 
+        {/Subtype /Text 
+         \ifcase#5 \else/Open false\fi
+         /Contents (\PDFdata)
+         \PDFcomment
+         \PDFidentifier
+         \PDFattributes}}%
+   \wd\scratchbox=\!!zeropoint
+   \ht\scratchbox=\!!zeropoint
+   \dp\scratchbox=\!!zeropoint
+   \box\scratchbox
    \egroup}
 
-%D Hooked into \CONTEXT, this special supports 
-%D 
+%D Hooked into \CONTEXT, this special supports
+%D
 %D \starttypen
 %D \startcomment
 %D   hello beautiful\\world
 %D \stopcomment
-%D 
+%D
 %D \startcomment[hello]
 %D   de \'e\'erste keer
-%D   the f\'irst time 
+%D   the f\'irst time
 %D \stopcommen
-%D 
+%D
 %D \startcommentaar[hallo][kleur=groen,breedte=4cm,hoogte=3cm]
-%D   first 
-%D 
+%D   first
+%D
 %D   second
 %D \stopcommentaar
 %D \stoptypen
-%D 
+%D
 %D So, special characters, forced linebreaks using \type{\\}
-%D and \type{\par} are handled in the appropriate way. 
+%D and \type{\par} are handled in the appropriate way.
 
 %D \macros
 %D  {doPDFovalbox}
@@ -1539,12 +1547,12 @@
 \def\doPDFovalbox#1#2#3#4#5#6#7%
   {\bgroup
    \dimen0=#4sp\divide\dimen0 by 2
-   \doPDFovalcalc{0} {+\dimen0}\xmin
+   \doPDFovalcalc{0}{+\dimen0}\xmin
    \doPDFovalcalc{#1}{-\dimen0}\xmax
    \doPDFovalcalc{#2}{-\dimen0}\ymax
    \doPDFovalcalc{-#3}{+\dimen0}\ymin
    \advance\dimen0 by #5sp
-   \doPDFovalcalc{0} {+\dimen0}\xxmin
+   \doPDFovalcalc{0}{+\dimen0}\xxmin
    \doPDFovalcalc{#1}{-\dimen0}\xxmax
    \doPDFovalcalc{#2}{-\dimen0}\yymax
    \doPDFovalcalc{-#3}{+\dimen0}\yymin
@@ -1554,6 +1562,9 @@
    \edef\dofill{#7}%
    \setbox0=\hbox
      {\ifnum\dostroke\dofill>0
+        \ifPDFstrokecolor\else\ifnum\dostroke=1
+          \writestatus{\m!colors}{pdf stroke color will fail}\wait
+        \fi\fi
         \PDFcode
           {q
            \stroke\space w
@@ -1581,25 +1592,29 @@
 %D In \PDF\ there are two color states, one for strokes and one
 %D for fills. This means that we have to set the color in a
 %D rather redundant looking way. Unfortunately this makes the
-%D \PDF\ file much larger than needed.
+%D \PDF\ file much larger than needed. We can save few bytes
+%D by not setting the stroke color. Due to zip compression we 
+%D only save a few percent.
+
+% \newif\ifPDFstrokecolor \PDFstrokecolortrue
 
 \def\doPDFstartgraymode#1%
-  {\PDFcode{#1 g #1 G}}
+  {\PDFcode{#1 g\ifPDFstrokecolor\space#1 G\fi}}
 
 \def\doPDFstopgraymode%
-  {\PDFcode{0 g 0 G}}
+  {\PDFcode{0 g\ifPDFstrokecolor\space0 G\fi}}
 
 \def\doPDFstartrgbcolormode#1#2#3%
-  {\PDFcode{#1 #2 #3 rg #1 #2 #3 RG}}
+  {\PDFcode{#1 #2 #3 rg\ifPDFstrokecolor\space#1 #2 #3 RG\fi}}
 
 \def\doPDFstartcmykcolormode#1#2#3#4%
-  {\PDFcode{#1 #2 #3 #4 k #1 #2 #3 #4 K}}
+  {\PDFcode{#1 #2 #3 #4 k\ifPDFstrokecolor\space#1 #2 #3 #4 K\fi}}
 
 \def\doPDFstartgraycolormode#1%
-  {\PDFcode{#1 g #1 G}}
+  {\PDFcode{#1 g\ifPDFstrokecolor\space#1 G\fi}}
 
 \def\doPDFstopcolormode%
-  {\PDFcode{0 g 0 G}}
+  {\PDFcode{0 g\ifPDFstrokecolor\space0 G\fi}}
 
 %D \macros
 %D   {doPDFstartrotation,doPDFstoprotation}
@@ -1647,14 +1662,19 @@
 %D
 %D When producing output for an image setter, sometimes negative
 %D output is needed.
-
+   
 \def\doPDFstartnegative%
-  {\writestatus{system}{negative not yet supported}}
+  {\ifx\initializePDFnegative\undefined\else
+     \initializePDFnegative
+     \PDFcode{/GSnegative gs}%
+   \fi}
 
 \def\doPDFstopnegative%
-  {}
+  {\ifx\initializePDFnegative\undefined\else
+     \PDFcode{/GSpositive gs}%
+   \fi}
 
-%D And that was all. 
+%D And that was all.
 
 \stopspecials
 

@@ -8,7 +8,7 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See licen-en.pdf for 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
 %C details. 
 
 \writestatus{loading}{Context Core Macros / Object Handling}
@@ -30,6 +30,14 @@
      31: doppeltes Object --
 \stopmessages
 
+\startmessages  czech  library: references
+     30: neznamy objekt --
+     31: duplicitni object --
+\stopmessages
+
+%D \macros 
+%D   {setobject,getobject,ifinobject}
+%D
 %D Boxes can be considered reuable objects. Unfortunaltely once
 %D passed to the \DVI\ file, such objects cannot be reused. In
 %D \PDF\ however, reusing is possible and sometimes even a
@@ -37,8 +45,7 @@
 %D 
 %D During the \TEX\ processing run, boxes can serve the purpose
 %D of objects, and the \DVI\ driver module implements objects
-%D using boxes. Only when \ETEX\ is widespread, and therefore
-%D the limit on 256 boxes is removed, this becomes useful. 
+%D using packed boxes. 
 %D 
 %D The \PDF\ and \PDFTEX\ driver modules implement objects
 %D using \PDF\ forms. There is no (real) restriction on the
@@ -53,9 +60,16 @@
 %D \setobject{class}{name}\somebox{}
 %D \getobject{class}{name}
 %D \stoptypen
-%D
-%D Here \type{\somebox} can be whatever box specification 
-%D suits \TEX. 
+%D 
+%D Here \type{\somebox} can be whatever box specification suits
+%D \TEX. We save the dimensions of an object, although some
+%D drivers will do so themselves. This means that when for
+%D instance using \PDFTEX\ we could save a hash entry plus some
+%D 20+ memory locations per object by delegating this
+%D housekeeping to the driver. The current approach permits 
+%D us to keep the box characteristic too. 
+
+\newif\ifinobject
 
 \def\presetobject#1#2%
   {\doifundefined{\r!object#1::#2}
@@ -71,26 +85,33 @@
    {#1}{#2}}
 
 \def\dosetobject#1#2%   
-  {\dowithnextbox       
+  {\bgroup
+   \inobjecttrue
+   \dowithnextbox       
      {\bgroup
       \dontshowcomposition % rather fuzzy in \setxvalue ... \hbox
       \setxvalue{\r!object#1::#2}% 
         {\noexpand\dohandleobject{#1}{#2} 
            {\ifhbox\nextbox\hbox\else\vbox\fi}
-           {\the\wd\nextbox}{\the\ht\nextbox}{\the\dp\nextbox}}%
-      \dostartobject{#1}{#2}
+          %{\the\wd\nextbox}{\the\ht\nextbox}{\the\dp\nextbox}}%
+           {\number\wd\nextbox}{\number\ht\nextbox}{\number\dp\nextbox}}%
+      \dostartobject
+        {#1}{#2}
         {\number\wd\nextbox}{\number\ht\nextbox}{\number\dp\nextbox}%
       \box\nextbox
       \dostopobject
+      \egroup
       \egroup}}
 
 \def\dogetobject#1#2#3#4#5#6%
   {\initializepaper
    \bgroup
    \dontshowcomposition
-   \setbox0=\vbox to #5{\vfill\doinsertobject{#1}{#2}}% 
+%   \setbox0=\vbox to #5{\vfill\doinsertobject{#1}{#2}}% 
+   \setbox0=\vbox to #5sp{\vfill\doinsertobject{#1}{#2}}% 
    \setbox0=#3{\box0}%
-   \wd0=#4\ht0=#5\dp0=#6\relax
+%   \wd0=#4\ht0=#5\dp0=#6\relax
+   \wd0=#4sp\ht0=#5sp\dp0=#6sp%
    \box0
    \egroup}
 
@@ -104,13 +125,16 @@
 %D \getobjectdimensions{class}{name}
 %D \stoptypen
 %D
-%D The results are reproted in \type {\objectwidth}, \type 
+%D The results are reported in \type {\objectwidth}, \type 
 %D {\objectheight} and \type {\objectdepth}. 
 
 \def\dogetobjectdimensions#1#2#3#4#5#6% 
-  {\def\objectwidth {#4}%
-   \def\objectheight{#5}%
-   \def\objectdepth {#6}}
+%  {\def\objectwidth {#4}%
+%   \def\objectheight{#5}%
+%   \def\objectdepth {#6}}
+  {\def\objectwidth {#4sp}%
+   \def\objectheight{#5sp}%
+   \def\objectdepth {#6sp}}
 
 \def\getobjectdimensions#1#2%
   {\let\dohandleobject\dogetobjectdimensions
@@ -119,9 +143,13 @@
    \let\objectdepth \!!zeropoint
    \getvalue{\r!object#1::#2}}
 
-%D We keep track of object references by means of the cross 
-%D reference mechanism. Normally, objects are defined before 
-%D they are used, but forward referencing sometimes occurs. 
+%D Apart from this kind of objects, that have typeset content, 
+%D we can have low level driver specific objects. Both types 
+%D can have references to internal representations, hidden for 
+%D the user. We keep track of such references by means of a 
+%D dedicated cross reference mechanism. Normally, objects are 
+%D defined before they are used, but forward referencing 
+%D sometimes occurs. 
 %D 
 %D \starttypen
 %D \dosetobjectreference {class} {identifier} {reference value}
@@ -181,7 +209,7 @@
 \def\setreferenceobject%
   {\global\objectreferencingtrue\normalsetobject}
 
-%D \macro
+%D \macros
 %D   {doifobjectfoundelse,doifobjectreferencefoundelse}
 %D
 %D To prevent redundant definition of objects, one can use 
@@ -199,7 +227,7 @@
   {\checkobjectreferences
    \doifundefinedelse{\r!driver#1::#2}{#4}{#3}}
 
-%D \macro
+%D \macros
 %D   {doifobjectssupportedelse}
 %D
 %D Starting with reuse of graphics, we will implement object 

@@ -1,0 +1,126 @@
+%D \module
+%D   [       file=core-hlp,
+%D        version=1998.10.10,
+%D          title=\CONTEXT\ Core Macros,
+%D       subtitle=Help (Experimental),
+%D         author={Hans Hagen \& Ton Otten},
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
+%C details. 
+
+%D This is an experimental and private module, so the interface
+%D and functionality can change. Pieces of code will be moved
+%D to other modules. More features are possible but will be 
+%D interfaces later. See m-chart for an application. 
+
+\unprotect 
+
+\defineframedtext
+  [\e!helptext]
+
+\setupframedtexts
+  [\e!helptext]
+  [\c!breedte=.75\textwidth,
+   \c!uitlijnen=\v!normaal,
+   \c!kader=\v!uit,
+   \c!achtergrond=\v!raster]
+
+\newcounter     \nofhelpdataentries
+\newconditional \somehelpdatadefined
+
+\appendtoks \getpagehelpdata   \to \beforeeverypage
+\appendtoks \resetpagehelpdata \to \aftereverypage
+
+\def\getpagehelpdata%
+  {\iflocation
+     \let\pagehelpdata\empty
+     \ifconditional\somehelpdatadefined
+       \definetwopasslist{hlp:\realfolio}%
+       \doloop
+         {\gettwopassdata{hlp:\realfolio}%
+          \iftwopassdatafound
+            \addtocommalist\twopassdata\pagehelpdata
+          \else
+            \exitloop
+          \fi}%
+     \fi
+     \ifx\pagehelpdata\empty \else
+       \useJSscripts[fld]%
+       \definereference[HideHelp][JS(Hide_Fields)]% for the moment 
+     \fi
+   \fi}
+
+\def\setpagehelpdata#1%
+  {\iflocation\expanded{\dosetpagehelpdata{#1}}\fi}
+
+\def\dosetpagehelpdata#1%
+  {\doglobal\increment\nofhelpdataentries
+   \writeutilitycommand
+     {\twopassentry%
+        {hlp:\realfolio}%
+        {\nofhelpdataentries}%
+        {#1}}}
+
+\def\resetpagehelpdata% 
+  {\global\let\pagehelpdata\empty
+   \definereference[HideHelp][]}
+
+\setvalue{\e!start\e!helptext}[#1]%
+  {\iflocation
+     \global\settrue\somehelpdatadefined
+     \setvalue{\e!stop\e!helptext}%
+       {\definesymbol[helpinfo:#1][\helptext{\getbuffer[\e!helptext]}]%
+        \dopresetfieldsymbol{helpinfo:#1}}%
+   \else
+     \letvalue{\e!stop\e!helptext}\relax
+   \fi
+   \dostartbuffer[\e!helptext][\e!start\e!helptext][\e!stop\e!helptext]}
+
+\def\dohelpdata#1%
+  {\setbox0=\hbox
+     {\startoverlay
+        {\box0}
+        {\definemainfield[help:#1][check][helpsetup][helpinfo:#1][helpinfo:#1]%
+         \fitfield[help:#1]}
+      \stopoverlay}}
+
+\def\helpdata%
+  {\iflocation
+     \bgroup
+    %\getpagehelpdata
+     \ifx\pagehelpdata\empty \else
+       \setupfields[\v!reset]%
+       \setupfield
+         [helpsetup]
+         [\c!breedte=\v!passend,
+          \c!hoogte=\v!passend,
+          \c!kader=\v!uit,
+          \c!optie={\v!alleenleesbaar,\v!verborgen}]%
+       \setbox0=\box\voidb@x
+       \processcommacommand[\pagehelpdata]\dohelpdata
+       \box0
+     \fi
+     \egroup  
+   \fi}
+
+\def\dohelpbutton[#1][#2]%
+  {\iflocation 
+     \ifsecondargument
+       \setpagehelpdata{#2}\button[#1]{}[JS(Vide_Fields{help:#2})]%
+     \else
+       \setpagehelpdata{#1}\button    {}[JS(Vide_Fields{help:#1})]%
+     \fi
+   \fi}
+
+\def\helpbutton%
+  {\dodoubleempty\dohelpbutton}
+
+\def\doifhelpinfo#1#2%
+  {\iflocation\doifsymboldefinedelse{helpinfo:#1}{#2}{}\fi}
+
+\protect 
+
+\endinput 

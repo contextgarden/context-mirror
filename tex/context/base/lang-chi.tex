@@ -1,0 +1,91 @@
+%D \module
+%D   [       file=lang-chi,
+%D        version=1998.10.10,
+%D          title=\CONTEXT\ Language Macros,
+%D       subtitle=Chinese,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D    suggestions=Wang Lei,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{Context Language Macros / Chinese}
+
+%D This module is coded using the \UNICODE\ support built in
+%D \CONTEXT. Therefore, \type {\uchar} is used instead of latin
+%D characters.
+
+\unprotect
+
+\definesystemconstant {chinese}   \definesystemconstant {cn}
+
+\installlanguage[\s!cn][\c!status=\v!start]
+
+\setupheadtext [\s!cn]      [\v!inhoud=\uchar{196}{191}\uchar{194}{188}]
+\setupheadtext [\s!cn]    [\v!tabellen=\uchar{196}{191}\uchar{177}{237}]
+\setupheadtext [\s!cn]     [\v!figuren=\uchar{196}{191}\uchar{205}{188}]
+\setupheadtext [\s!cn]   [\v!grafieken=Graphics]
+\setupheadtext [\s!cn] [\v!intermezzos=Intermezzos]
+\setupheadtext [\s!cn]       [\v!index=\uchar{203}{247}\uchar{210}{253}]
+\setupheadtext [\s!cn] [\v!afkortingen=Abbreviations]
+\setupheadtext [\s!cn]       [\v!logos=Logos]
+\setupheadtext [\s!cn]    [\v!eenheden=Units]
+
+\setuplabeltext [\s!cn]      [\v!tabel=\uchar{177}{237} ]
+\setuplabeltext [\s!cn]     [\v!figuur=\uchar{205}{188} ]
+\setuplabeltext [\s!cn] [\v!intermezzo=Intermezzo ]
+\setuplabeltext [\s!cn]    [\v!grafiek=Illustration ]
+\setuplabeltext [\s!cn]    [\v!bijlage=]
+\setuplabeltext [\s!cn]       [\v!deel={\cnencoding\cnencodedintro,\cnencoding\cnencodedpart}]
+\setuplabeltext [\s!cn]  [\v!hoofdstuk={\cnencoding\cnencodedintro,\cnencoding\cnencodedchapter}]
+\setuplabeltext [\s!cn]  [\v!paragraaf={\cnencoding\cnencodedintro,\cnencoding\cnencodedsection}]
+\setuplabeltext [\s!cn]      [\v!regel=line ]
+\setuplabeltext [\s!cn]     [\v!regels=lines ]
+
+\setuplabeltext [\s!cn]             [\v!sub\v!paragraaf=]
+\setuplabeltext [\s!cn]       [\v!sub\v!sub\v!paragraaf=]
+\setuplabeltext [\s!cn] [\v!sub\v!sub\v!sub\v!paragraaf=]
+
+%D One can specify a split labeltext, as demonstrated in
+%D the definition of the \type {part} label. Unfortunately
+%D the glyphs of both part depend on the encoding. Therefore,
+%D we have an encoding section here.
+
+\def\cnencoding{\enableencoding[\chineseencoding]} % ugly and temporary
+
+\startencoding[gbk]
+  \definecommand cnencodedintro   {\uchar{181}{218}}
+  \definecommand cnencodedpart    {\uchar{178}{191}\uchar{183}{214}}
+  \definecommand cnencodedchapter {\uchar{213}{194}}
+  \definecommand cnencodedsection {\uchar{189}{218}}
+\stopencoding
+
+\startencoding[big5]
+  \definecommand cnencodedintro   {\uchar{178}{196}}
+  \definecommand cnencodedpart    {\uchar{179}{161}\uchar{164}{192}}
+  \definecommand cnencodedchapter {\uchar{179}{185}}
+  \definecommand cnencodedsection {\uchar{184} {96}}
+\stopencoding
+
+%D From this definition one can deduce that language, input 
+%D encoding, font encoding, and glyph meaning form a pretty 
+%D complex four dimensional space.
+
+\startlanguagespecifics[\s!cn]
+
+\stelsectiein[\v!sectionlevel-1][\c!conversie=\s!chinese]
+\stelsectiein[\v!sectionlevel-2][\c!conversie=\s!chinese]
+\stelsectiein[\v!sectionlevel-3][\c!conversie=\s!chinese]
+\stelsectiein[\v!sectionlevel-4][\c!conversie=\s!chinese]
+\stelsectiein[\v!sectionlevel-5][\c!conversie=\s!chinese]
+\stelsectiein[\v!sectionlevel-6][\c!conversie=\s!chinese]
+\stelsectiein[\v!sectionlevel-7][\c!conversie=\s!chinese]
+
+% \stelblokkopjesin[\c!conversie=\s!chinese]
+
+\stoplanguagespecifics
+
+\protect \endinput

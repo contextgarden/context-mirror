@@ -8,7 +8,7 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See licen-en.pdf for 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
 %C details. 
 
 %D \TEX\ operates on files, so one wouldn't wonder that there
@@ -41,7 +41,6 @@
 
 %D \macros
 %D   {pushendofline,popendofline}
-%D   {}
 %D
 %D When we are loading files in the middle of the typesetting
 %D process, for instance when we load references, we have to be
@@ -59,6 +58,8 @@
 %D Just to be sure, we save the current meaning of \type{^^M} 
 %D in \type{\poppedendofline}. 
 
+\chardef\poppedendofline=\the\catcode`\^^M
+
 \def\pushendofline
   {\chardef\poppedendofline=\the\catcode`\^^M\relax
    \catcode`\^^M=\@@comment\relax}
@@ -68,7 +69,6 @@
 
 %D \macros
 %D   {scratchread, scratchwrite}
-%D   {}
 %D
 %D We define a scratch file for reading. Keep in mind that
 %D the number of files is limited to~16, so use this one when
@@ -76,6 +76,17 @@
 
 \ifx\undefined\scratchread  \newread \scratchread  \fi
 \ifx\undefined\scratchwrite \newwrite\scratchwrite \fi
+
+%D \macros 
+%D   {unlinkfile} 
+%D
+%D Sometimes we want to make sure a file is deleted, so here
+%D is a macro that does the job. It's named after the \PERL\ 
+%D one. 
+
+\def\unlinkfile#1%  
+  {\immediate\openout\scratchwrite=#1\immediate\closeout\scratchwrite}
+
 
 %D \macros
 %D   {doprocessfile,fileline,fileprocessedtrue,dofinishfile}
@@ -94,6 +105,8 @@
 %D see if indeed some content was found.
 
 \newif\iffileprocessed
+
+\let\fileline\empty
 
 \def\doprocessfile#1#2#3%
   {\openin#1=#2\relax
@@ -117,7 +130,7 @@
    \fi}
 
 %D \macros 
-%D   {pathplusfile}
+%D   {pathplusfile,sanitizefilename}
 %D 
 %D Use \type{\pathplusfile} to compose a full file name, like
 %D in: 
@@ -128,7 +141,23 @@
 %D
 %D By default, this expands into {\tt \pathplusfile{path}{file}}. 
 
-\def\pathplusfile#1#2{#1/#2}
+\def\pathplusfile#1#2{#1\f!pathseparator#2}
+
+%D For the moment, we limit sanitizing to taking care of 
+%D active \type {/}.  
+
+\bgroup 
+ 
+\catcode`\/=\@@active 
+
+\gdef\sanitizefilename#1\to#2%
+  {\bgroup
+   \let/=\f!pathseparator
+   \expanded{\xdef\noexpand\sanitizedfilename{#1}}%
+   \egroup
+   \let#2\sanitizedfilename}
+
+\egroup
 
 %D \macros
 %D   {readfile,ReadFile,maxreadlevel,
@@ -160,7 +189,7 @@
 %D When some \TEX\ implementation starts looking for a file, it
 %D normally first looks in the current directory. When no file
 %D is found, \TEX\ starts searching on the path where format
-%D and/or style files are stored. Depending on the implementation
+%D and|/|or style files are stored. Depending on the implementation
 %D this can considerably slow down processing speed.
 %D
 %D In \CONTEXT, we support a project||wise ordening of files.
@@ -189,10 +218,11 @@
 
 \let\normalinput=\input
 
-\def\maxreadlevel {3}
+\def\maxreadlevel{3}
 
 \def\doreadfile#1#2#3%
-  {\immediate\openin\scratchread=#1\relax
+  {\sanitizefilename#1\to\readfilename
+   \immediate\openin\scratchread=\readfilename\relax
    \ifeof\scratchread
      \immediate\closein\scratchread
      \decrement\readlevel
@@ -204,7 +234,7 @@
    \else
      \immediate\closein\scratchread
      #2%
-     \normalinput #1\relax
+     \normalinput\readfilename\relax
    \fi}
 
 \def\readfile#1%
@@ -421,12 +451,14 @@
      \catcode`#1=\@@other
    \fi}
 
-\def\startreadingfile%
+\def\startreadingfile% beter een every 
   {\doglobal\increment\readingfilelevel
    \setxvalue{popfilecharacters::\readingfilelevel}%
-     {\noexpand\popfilecharacter{"}{\the\catcode`"}%
+     {\noexpand\popfilecharacter{/}{\the\catcode`/}%
+      \noexpand\popfilecharacter{"}{\the\catcode`"}%
       \noexpand\popfilecharacter{<}{\the\catcode`<}%
       \noexpand\popfilecharacter{>}{\the\catcode`>}}%
+   \pushfilecharacter{/}%
    \pushfilecharacter{"}%
    \pushfilecharacter{<}%
    \pushfilecharacter{>}}

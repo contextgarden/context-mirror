@@ -8,7 +8,7 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See licen-en.pdf for 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
 %C details. 
 
 %D Because this module is quite independant of system macros,
@@ -86,7 +86,6 @@
 
 %D \macros
 %D   {verbatimfont}
-%D   {}
 %D
 %D When we are typesetting verbatim we use a non||proportional
 %D (mono spaced) font. Normally this font is available by
@@ -98,7 +97,6 @@
 
 %D \macros
 %D   {obeyedspace, obeyedtab, obeyedline, obeyedpage}
-%D   {}
 %D
 %D We have followed Knuth in naming macros that make \SPACE,
 %D \NEWLINE\ and \NEWPAGE\ active and assigning them
@@ -127,7 +125,6 @@
 %D \macros
 %D   {obeytabs, obeylines, obeypages,
 %D    ignoretabs, ignorelines, ignorepages}
-%D   {}
 %D
 %D Next we take care of \NEWLINE\ and \NEWPAGE\ and because we
 %D want to be able to typeset listings that contain \TAB, we
@@ -168,7 +165,6 @@
 
 %D \macros
 %D   {settabskips}
-%D   {}
 %D
 %D The macro \type{\settabskip} can be used to enable tab
 %D handling. Processing tabs is sometimes needed when one
@@ -188,7 +184,6 @@
 
 %D \macros
 %D   {processinlineverbatim}
-%D   {}
 %D
 %D Although the inline verbatim commands presented here will be
 %D extended and embedded in the core modules of \CONTEXT,
@@ -223,7 +218,7 @@
 %D construction to keep the closing command local.
 
 \def\setupinlineverbatim%
-  {\verbatimfont
+  {\verbatimfont \spaceskip=.5em \xspaceskip=\spaceskip
    \let\obeytabs=\ignoretabs
    \let\obeylines=\ignorelines
    \let\obeypages=\ignorepages
@@ -255,7 +250,6 @@
 
 %D \macros
 %D   {processingverbatim}
-%D   {}
 %D
 %D Typesetting a file in most cases results in more than one
 %D page. Because we don't want problems with files that are
@@ -406,7 +400,6 @@
 
 %D \macros
 %D   {processdisplayverbatim}
-%D   {}
 %D
 %D We can define a display verbatim environment with the
 %D command \type{\processdisplayverbatim} in the following way:
@@ -452,7 +445,7 @@
    \expandafter\let\csname\verbatimname\endcsname=\relax
    \edef\endofverbatimcommand{\csname\verbatimname\endcsname}%
    \edef\endofverbatimcommand{\meaning\endofverbatimcommand}%
-   \verbatimfont
+   \verbatimfont \spaceskip=.5em \xspaceskip=\spaceskip
    \setupcopyverbatim
    \initializeverbatimline
    \copyverbatimline}
@@ -483,7 +476,6 @@
 %D    setcatcodes,uncatcodespecials,
 %D    uncatcodecharacters,
 %D    setnaturalcatcodes}
-%D   {}
 %D
 %D As its name says, \type{\uncatcodecharacters} resets the
 %D \CATCODE\ of characters. When we use an upper bound of
@@ -543,7 +535,6 @@
 %D   {localcatcodes,
 %D    restorecatcodes,
 %D    beginrestorecatcodes,endrestorecatcodes}
-%D   {}
 %D
 %D We're not finished dealing \CATCODES\ yet. In \CONTEXT\ we
 %D use only one auxiliary file, which deals with tables of
@@ -645,7 +636,6 @@
 
 %D \macros
 %D   {iflinepar}
-%D   {}
 %D
 %D A careful reader will see that \type{\linepar} is reset.
 %D This boolean can be used to determine if the current line is
@@ -666,6 +656,9 @@
 %    \global\lineparfalse
 %    \obeyedline\par}
 
+\let\beginverbatimline\relax
+\let\endverbatimline  \relax
+
 \long\def\dodoverbatimline#1% we don't want to group
   {\bgroup                  % due to pretty status 
    \iflinepar\else\EveryPar{}\fi
@@ -680,13 +673,24 @@
    \dokeepverbatimlinedata
    \doopenupverbatimline
    \the\everyline\strut
-   \processverbatimline{#1\relax}%
+   \beginverbatimline
+   \processverbatimline{#1\relax\flushrestofverbatimline}%
+   \endverbatimline
    \global\lineparfalse
    \obeyedline\par}
 
 %D \macros
+%D   {flushrestofverbatimline}
+%D
+%D Some pretty drivers will collect tokens for the sake of 
+%D testing on keywords. This collected string needs to be 
+%D flushed. The \type {\relax} can serve as signal that there
+%D is nothing more to be interpreted. 
+
+\let\flushrestofverbatimline\empty
+
+%D \macros
 %D   {obeyemptylines,verbatimbaselineskip}
-%D   {}
 %D
 %D Empty lines in verbatim can lead to white space on top of
 %D a new page. Because this is not what we want, we turn
@@ -728,7 +732,6 @@
 
 %D \macros
 %D   {EveryPar, EveryLine}
-%D   {}
 %D
 %D In this module we've reserved \type{\everypar} for the
 %D things to be done with paragraphs and \type{\everyline} for
@@ -816,7 +819,7 @@
    \processingverbatimtrue
    \global\linepartrue
    \uncatcodecharacters
-   \verbatimfont
+   \verbatimfont \spaceskip=.5em \xspaceskip=\spaceskip
    \frenchspacing
    \obeyspaces
    \obeytabs
@@ -1001,10 +1004,18 @@
 %D
 %D We'll show some more examples:
 %D
+%D \startbuffer[pretty]
+%D \installnewpretty R \red
+%D \installnewpretty G \green
+%D \installnewpretty B \blue
+%D \stopbuffer
+%D
+%D \haalbuffer[pretty]
+%D
 %D \startbuffer
-%D %%\R{Red
-%D %%\G\Green
-%D %%\B[Blue
+%D %%\ R{Red
+%D %%\ G\Green
+%D %%\ B[Blue
 %D \stopbuffer
 %D
 %D {\newprettytrue\typebuffer}
@@ -1013,6 +1024,10 @@
 %D
 %D \typebuffer
 %D
+%D along with: 
+%D 
+%D \typebuffer[pretty]
+%D 
 %D When needed, one can use grouping.
 %D
 %D \startbuffer
@@ -1024,7 +1039,8 @@
 %D
 %D \typebuffer
 %D
-%D This leads to:
+%D Here we tell the visualizer that the \type +{+ should be 
+%D treated like a \type +[+ so we get:
 %D
 %D {\newprettytrue\typebuffer}
 %D
@@ -1078,8 +1094,56 @@
 \installnewpretty P \setupprettyPLtype
 \installnewpretty T \setupprettyTEXtype
 
+%D \macros 
+%D   {ifnaturaltextext}
+%D
+%D When one uses \ETEX, switching to normal \TEX\ is possible 
+%D too. We also introduce a switch that can be used in the 
+%D drivers and set in higher level shell macros. 
+
+\newif\ifnaturaltextext
+
+\beginETEX \scantokens
+
+%\def\naturaltextext#1#2\relax%
+%  {\bgroup\prettynaturalfont{\restorecatcodes\scantokens{\ignorespaces#2}}\egroup}
+
+\def\naturaltextext#1\relax%
+  {\bgroup
+   \prettynaturalfont{\restorecatcodes\scantokens{\ignorespaces#1}}%
+   \egroup}
+
+\endETEX
+
+\beginTEX
+
+%\def\naturaltextext#1%
+%  {\disableprettynow}
+
+\def\naturaltextext%
+  {\disableprettynow}
+
+\endTEX
+
+\installnewpretty N \naturaltextext
+
+%D When seen in action this gives: 
+%D 
+%D \startbuffer
+%D \startTEX
+%D \def\mathematics#1%         %%\ N  usage: \type {\mathematics{x^2}}
+%D   {\ifmmode#1\else$#1$\fi}  %%\ N  becomes: \mathematics{X^2}
+%D \stopTEX
+%D \stopbuffer
+%D 
+%D \haalbuffer 
+%D 
+%D This is keyed in as: 
+%D 
+%D \typebuffer 
+
 %D This means that when the interpreter modules support this
-%D mechanism, by default we have four options at available.
+%D mechanism, by default we have some keys already available.
 
 \def\newpretty#1%
   {\getprettydata{#1}%
@@ -1217,7 +1281,7 @@
   {\doifincsnameelse{\space#1\space}}
 
 %D \macros 
-%D   {prettyidentifierfont,prettyvariablefont}
+%D   {prettyidentifierfont,prettyvariablefont,prettynaturalfont}
 %D
 %D When one want to typeset identifiers and system variables 
 %D in a different typeface, one has to set the next two 
@@ -1225,6 +1289,7 @@
 
 \let\prettyidentifierfont=\relax
 \let\prettyvariablefont  =\relax
+\let\prettynaturalfont   =\relax
 
 %D The interpreter macros are loaded at run time. The main
 %D reason lays in the fact that we don't want to have the
@@ -1240,9 +1305,58 @@
 %D \stoptypen
 %D
 %D In \CONTEXT\ we follow a different thread, and therefore all
-%D macros in the additional modules use \type{\gdef}'s and
-%D \type{\doglobal}'s. Manipulating \type{\globaldef} is
+%D macros in the additional modules use \type {\gdef}'s and
+%D \type {\doglobal}'s. Manipulating \type {\globaldef} is
 %D possible but leads to fuzzy situations.
+
+%D \macros
+%D   {ifdisablepretty,disablepretynow,disableprettyafterwards}
+%D
+%D Although for pretty printing \PERL\ and \JAVASCRIPT\ code
+%D one has to implement a bit more clever mechanism, the next
+%D switches can be used to turn off prety printing. The 
+%D boolean turns on this feature. 
+
+\newif\ifdisablepretty  \disableprettyfalse
+\newif\ifprettydisabled \prettydisabledfalse
+
+\def\disableprettynow%
+  {\ifdisablepretty\ifprettydisabled\else 
+     \let\prettyidentifierfont\relax
+     \let\prettyvariablefont\relax
+     \let\prettycomment\relax
+     \def\beginofpretty[##1]{}%
+     \let\endofpretty\relax
+     \prettydisabledtrue
+   \fi\fi}
+
+\def\disableprettyafterwards%
+  {\ifdisablepretty\ifprettydisabled\else
+     \def\endofpretty{\normalendofpretty\disableprettynow}%
+   \fi\fi}
+
+\def\enableprettynow%
+  {\prettydisabledfalse
+   \let\prettyidentifierfont\normalprettyidentifierfont
+   \let\prettyvariablefont  \normalprettyvariablefont  
+   \let\prettynaturalfont   \normalprettynaturalfont  
+   \let\beginofpretty       \normalbeginofpretty
+   \let\endofpretty         \normalendofpretty}
+
+%D This feature is hooked into the verbatim line handling 
+%D routine with:
+
+\def\beginverbatimline%
+  {\prettydisabledfalse
+   \ifnewpretty\else\let\handlenewpretty\empty\fi % moved 
+   \let\normalprettyidentifierfont\prettyidentifierfont
+   \let\normalprettyvariablefont  \prettyvariablefont  
+   \let\normalprettynaturalfont   \prettynaturalfont  
+   \let\normalbeginofpretty       \beginofpretty
+   \let\normalendofpretty         \endofpretty}
+
+\def\endverbatimline%
+  {\enableprettynow}
 
 %D The rest of this module is dedicated to non \CONTEXT\ users
 %D and shows an example of an verbatim environment based on the
@@ -1295,6 +1409,8 @@
 
   \def\type%
     {\bgroup
+     \def\_{\string_}%
+     \def\^{\string^}%
      \presettyping
      \processinlineverbatim{\egroup}}
 
@@ -1339,6 +1455,7 @@
   \input verb-mp
   \input verb-pl
   \input verb-jv
+  \input verb-sql
 
   \def\startTEX%
     {\bgroup \everypar{}%
@@ -1360,10 +1477,16 @@
      \let\obeycharacters=\setupprettyJVtype
      \processdisplayverbatim{\stopJV}}
 
+  \def\startSQL%
+    {\bgroup \everypar{}%
+     \let\obeycharacters=\setupprettySQLtype
+     \processdisplayverbatim{\stopSQL}}
+
   \let\stopTEX=\egroup
   \let\stopMP =\egroup
   \let\stopPL =\egroup
   \let\stopJV =\egroup
+  \let\stopSQL=\egroup
 
 \fi
 
@@ -1585,7 +1708,7 @@
      \expandafter\let\csname\verbatimname\endcsname=\relax
      \expandafter\convertargument\csname\verbatimname\endcsname
        \to\endofverbatimcommand
-     \verbatimfont
+     \verbatimfont \spaceskip=.5em \xspaceskip=\spaceskip
      \setupcopyverbatim
      \initializeverbatimline
      \copyverbatimline}

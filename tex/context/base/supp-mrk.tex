@@ -8,7 +8,7 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See licen-en.pdf for 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
 %C details. 
 
 %D Remark: due to the lack of \type {\clearmark}, the \ETEX\ 
@@ -409,47 +409,81 @@
 %D
 %D However, I prefer the less \type{\cs} hungry ones. Beware, 
 %D these ones (and the next) do no longer support direct marks. 
+%D 
+%D \starttypen 
+%D \newif\ifexpandmarks   \expandmarkstrue
+%D 
+%D \let\newmark           \newmarks
+%D \let\gettopmark        \topmarks
+%D \let\getbottommark     \botmarks
+%D \let\getfirstmark      \firstmarks
+%D \let\getsplitbottommark\splitbotmarks
+%D \let\getsplitfirstmark \splitfirstmarks
+%D 
+%D \let\getbotmark        \botmarks
+%D \let\getsplitbotmark   \splitbotmarks
+%D \let\getsplittopmark   \splitfirstmarks
+%D 
+%D \long\def\setmark#1#2%
+%D   {\ifexpandmarks
+%D      \expanded{\normalmarks#1{#2}}%
+%D    \else
+%D      \normalmarks#1{#2}%
+%D    \fi}
+%D \stoptypen
 
-\newif\ifexpandmarks   \expandmarkstrue
+%D Resetting marks in not compatible with the old method. 
+%D Here a node is inserted, which can interfere badly. In 
+%D fact, a real \type {\clearmarks\name} is needed. 
+%D
+%D \starttypen 
+%D \def\resetmark#1% 
+%D   {\marks#1{}}
+%D \stoptypen
 
-\let\newmark           \newmarks
-\let\gettopmark        \topmarks
-\let\getbottommark     \botmarks
-\let\getfirstmark      \firstmarks
-\let\getsplitbottommark\splitbotmarks
-\let\getsplitfirstmark \splitfirstmarks
+%D A possible macro solution is presented here. When discussing
+%D \type {\clearmarks} on the \ETEX\ discussion list, Chris
+%D Rowley suggested to use a reset flag. Although suitable, a
+%D more natural low level solution would be better. So, for the
+%D moment, we could end up with a solution similar to the macro 
+%D based multiple marks as implemented before. Alas, this 
+%D alternative is useless too, because it does not synchronize 
+%D well with previous values. 
 
-\let\getbotmark        \botmarks
-\let\getsplitbotmark   \splitbotmarks
-\let\getsplittopmark   \splitfirstmarks
+\def\@m@{@m@}
+
+\def\newmark#1%
+  {\newmarks#1%
+   \expandafter\gdef\csname\@m@\number#1\endcsname{0}}
 
 \long\def\setmark#1#2%
-  {\ifexpandmarks
+  {\expandafter\gdef\csname\@m@\number#1\endcsname{1}%
+   \ifexpandmarks
      \expanded{\normalmarks#1{#2}}%
    \else
      \normalmarks#1{#2}%
    \fi}
 
-%D Resetting marks in not compatible with the old method. 
-%D Here a node is inserted, which can interfere badly. In 
-%D fact, a real \type {\clearmarks\name} is needed. 
+\def\gettopmark        {\getsomemark\topmarks}
+\def\getbottommark     {\getsomemark\botmarks}
+\def\getfirstmark      {\getsomemark\firstmarks}
+\def\getsplitbottommark{\getsomemark\splitbotmarks}
+\def\getsplitfirstmark {\getsomemark\splitfirstmarks}
 
-\def\resetmark#1% interferes ! test this one on the big manual footers 
-  {\marks#1{}}
+\def\getsomemark#1#2%
+  {\ifnum\csname\@m@\number#2\endcsname=1 #1#2\fi}
 
-%D What a hack! 
-
-\newcount\resettedmarks
-
-\def\clearmarks#1% a rather memory hungry alternative 
-  {\edef\rubish{\topmarks#1\botmarks#1\firstmarks#1}%
-   \ifx\rubish\empty\else
-    %\global\advance\resettedmarks by 1 \message{(m:\the\resettedmarks)}%
-     \newmarks#1%
-   \fi}
+\def\clearmarks#1%
+  {\expandafter\gdef\csname\@m@\number#1\endcsname{0}}
 
 \def\resetmark% 
   {\clearmarks}
+
+\let\getbotmark      \getbottommark
+\let\getsplitbotmark \getsplitbottommark
+\let\getsplittopmark \getsplitfirstmark
+
+%D Hm. 
 
 \def\noninterferingmarks%
   {\let\savedsetmark\setmark

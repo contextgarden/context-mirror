@@ -8,8 +8,8 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See licen-en.pdf for 
-%C details. 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
 
 \writestatus{loading}{Context Core Macros (b)}
 
@@ -34,7 +34,7 @@
 %I
 %I Mogelijke plaatsen zijn links, rechts, onder, boven en
 %I inmarge. Als breedte wordt de breedte van de totale tekst
-%I opgegeven. Het aantal is facultatief, eventueel kan er 
+%I opgegeven. Het aantal is facultatief, eventueel kan er
 %I 'onbekend' worden meegegeven. Uitlijnen is 'ja' of 'nee'.
 %P
 %I Indien gewenst, kan de instelling direkt achter \item worden
@@ -57,19 +57,19 @@
 
 %\def\checkinterlineskip%
 %  {\ifvmode
-%     \ifdim\lastskip>\!!zeropoint\relax 
-%       \nointerlineskip 
-%     \else\ifdim\lastkern>\!!zeropoint\relax 
-%       \nointerlineskip 
+%     \ifdim\lastskip>\!!zeropoint\relax
+%       \nointerlineskip
+%     \else\ifdim\lastkern>\!!zeropoint\relax
+%       \nointerlineskip
 %     \fi\fi
 %   \fi}
 
-\def\horitems#1#2% #1=breedte #2=commandos 
+\def\horitems#1#2% #1=breedte #2=commandos
   {\dimen0=#1\relax
    \divide\dimen0 by \nofitems
    \!!counta=0\relax
    \def\docommando##1%
-     {\advance\!!counta by 1\relax   
+     {\advance\!!counta by 1\relax
       \processaction
         [\@@isuitlijnen]
         [  \v!links=>\hbox to \dimen0{\strut##1\hss},
@@ -78,11 +78,11 @@
            \v!marge=>\ifnum\!!counta=1\hss\else\hfill\fi
                      \strut##1%
                      \ifnum\!!counta=\nofitems\hss\else\hfill\fi,
-         \s!default=>\hbox to \dimen0{\hss\strut##1\hss}, % midden  
+         \s!default=>\hbox to \dimen0{\hss\strut##1\hss}, % midden
          \s!unknown=>\hbox to \dimen0{\strut##1\hss}]}%   % links
    \hbox to #1{\hss#2\hss}}
 
-\def\veritems#1#2% #1=breedte #2=commandos 
+\def\veritems#1#2% #1=breedte #2=commandos
   {\dimen0=#1\relax
    \def\docommando##1%
      {\ifdim\dimen0<\!!zeropoint\relax   % the - was a signal
@@ -101,7 +101,7 @@
    \doifdefinedelse{\??cv\@@issymbool}
      {\def\doitembullet##1{\convertnumber{\@@issymbool}{##1}}}
      {\doifdefined{\??ss\@@issymbool}
-        {\def\doitembullet##1{\symbol[\@@issymbool]}}}}  
+        {\def\doitembullet##1{\symbol[\@@issymbool]}}}}
 
 \def\makeitemsandbullets#1%
   {\doifelse{\@@isn}{\v!onbekend}
@@ -133,7 +133,7 @@
      {\forgetall
       \doifsomething{\@@issymbool}
         {\doifnot{\@@issymbool}{\v!geen}
-           {\box2   
+           {\box2
             \@@istussen
             \nointerlineskip}}%
       \box0}%
@@ -151,18 +151,18 @@
    \dostopitems}
 
 \setvalue{doitems\v!inmarge}#1%
-  {\dostartitems{#1}{\veritems}{-1.5em}%  - is a signal 
+  {\dostartitems{#1}{\veritems}{-1.5em}%  - is a signal
    \noindent\hbox{\llap{\box2\hskip\linkermargeafstand}\box0}%
    \dostopitems}
 
 \setvalue{doitems\v!links}#1%
   {\advance\hsize by -1.5em\relax
-   \dostartitems{#1}{\veritems}{1.5em}%  
+   \dostartitems{#1}{\veritems}{1.5em}%
    \noindent\hbox{\box2\box0}%
    \dostopitems}
 
 \setvalue{doitems\v!rechts}#1%
-  {\dostartitems{#1}{\veritems}{0em}%  
+  {\dostartitems{#1}{\veritems}{0em}%
    \noindent\hbox{\box0\hskip-\wd2\box2}%
    \dostopitems}
 
@@ -180,7 +180,7 @@
      {\let\@@isplaats\v!links}%
    \getvalue{doitems\@@isplaats}}
 
-\definecomplexorsimpleempty\items 
+\definecomplexorsimpleempty\items
 
 %I n=Tabulatie (1)
 %I c=\definieeralineas,\stelalineasin
@@ -196,14 +196,14 @@
 %I   \startnaam .... \naam .... \naam .... \stopnaam
 %I
 %I of (soms verwarrend):
-%I 
+%I
 %I   \naam .... \naam .... \naam .... \naam
-%I 
+%I
 %I of (lekker kort):
-%I 
+%I
 %I   \naam .... \\ .... \\ .... \\
-%I 
-%I waarbij het aantal malen .... \naam  of \\ gelijk is 
+%I
+%I waarbij het aantal malen .... \naam  of \\ gelijk is
 %I aan n. Naast \naam en \\ is ook \volgendenaam toegestaan.
 %P
 %I Het is mogelijk per kolom een en ander in te stellen met
@@ -215,7 +215,7 @@
 
 % Te zijner tijd [plaats=boven,onder,midden] implementeren,
 % in dat geval moet eerst de maximale hoogte worden bepaald.
-% 
+%
 % Overigens kan een en ander mooier met \halign.
 
 \def\dodefinieeralineas[#1][#2]%
@@ -266,7 +266,7 @@
           \c!afstand=\getvalue{\??al#1\c!afstand}]}%
    \stelalineasin[#1][1][\c!afstand=0em]}
 
-% nog monster 
+% nog monster
 %
 %\assignwidth
 %  {\!!widtha}
@@ -281,7 +281,7 @@
 \def\definieeralineas%
   {\dodoubleargument\dodefinieeralineas}
 
-\def\dostelalineasin[#1][#2][#3]% 
+\def\dostelalineasin[#1][#2][#3]%
   {\doifelse{#2}{\v!elk}
      {\dorecurse
         {\getvalue{\??al#1\c!n}}
@@ -327,15 +327,15 @@
    \hsize=\!!widtha  % setting \wd afterwards removed
    \getvalue{\??al#1\the\alteller\c!binnen}%
    \edef\!!stringa{\getvalue{\??al#1\the\alteller\c!uitlijnen}}%  nodig?
-   \expandafter\steluitlijnenin\expandafter[\!!stringa]% 
+   \expandafter\steluitlijnenin\expandafter[\!!stringa]%
    \edef\!!stringa{\getvalue{\??al#1\the\alteller\c!tolerantie}}% nodig?
    \expandafter\steltolerantiein\expandafter[\!!stringa]%
    \ignorespaces
    \endgraf
    \ignorespaces
-   % 
-   % Nadeel van de onderstaande constructie is dat \everypar 
-   % binnen een groep kan staan en zo steeds \begstruts 
+   %
+   % Nadeel van de onderstaande constructie is dat \everypar
+   % binnen een groep kan staan en zo steeds \begstruts
    % worden geplaatst. Mooi is anders dus moet het anders!
    %
    % Hier is \Everypar niet nodig.
@@ -353,7 +353,7 @@
    \fi
    \getvalue{\??al#1\the\alteller\c!onder}%
    \egroup
-   \ifdim\wd0=\!!zeropoint % no data 
+   \ifdim\wd0=\!!zeropoint % no data
      \wd0=\!!widtha
    \fi
    \box0
@@ -434,7 +434,7 @@
    \doordefinieren
      [tab]
      [\c!kopletter=\@@takopletter,
-      \c!kopkleur=\@@takleur,                            
+      \c!kopkleur=\@@takleur,
       \c!monster=\@@tamonster,
       \c!breedte=\@@tabreedte,
       \c!voor=\@@tavoor,
@@ -463,16 +463,16 @@
 %I   \promille                       promilage
 %I   \dollar                         dollar teken
 %I   \sterling                       pound sterling teken
-%I   \florijn                        gulden teken 
+%I   \florijn                        gulden teken
 
-% The following macro's are derived from PPCHTEX and 
-% therefore take some LaTeX font-switching into account. 
+% The following macro's are derived from PPCHTEX and
+% therefore take some LaTeX font-switching into account.
 
 \newif\ifloweredsubscripts
 
-% Due to some upward incompatibality of LaTeX to LaTeX2.09 
-% and/or LaTeX2e we had to force \@@chemieletter. Otherwise 
-% some weird \nullfont error comes up. 
+% Due to some upward incompatibality of LaTeX to LaTeX2.09
+% and/or LaTeX2e we had to force \@@chemieletter. Otherwise
+% some weird \nullfont error comes up.
 
 \doifundefined{@@chemieletter}{\def\@@chemieletter{\rm}}
 
@@ -533,7 +533,7 @@
   {\mathematics{^\circ}}
 
 \def\inch%
-  {\hbox{\rm\char125\relax}} 
+  {\hbox{\rm\char125\relax}}
 
 \def\breuk#1#2%
   {\mathematics{#1\over#2}}
@@ -562,9 +562,9 @@
    \egroup}
 
 % \definieeralineas[test][n=3]
-% 
+%
 % \stelalineasin[test][3][breedte=4cm,uitlijnen=links]
-% 
+%
 % \startopelkaar
 % \test hans \\ ton \\ \bedrag{1.000,--} \\
 % \test hans \\ ton \\ \bedrag{~.~~1,--} \\
@@ -619,15 +619,15 @@
 % for compatibility
 
 \def\unknown%
-  {\punten[3]}
+  {\dontleavehmode\punten[3]}
 
-% currency 
+% currency
 
 \def\dollar%
   {\bgroup
-   \ifnum\fam=\itfam 
-     \sl 
-   \else\ifnum\fam=\bifam 
+   \ifnum\fam=\itfam
+     \sl
+   \else\ifnum\fam=\bifam
      \bs
    \fi\fi
    \$%
@@ -636,11 +636,11 @@
 \def\sterling%
   {\bgroup
    \ifnum\fam=\bffam
-     \bi 
+     \bi
    \else\ifnum\fam=\bifam
-     \bi 
+     \bi
    \else\ifnum\fam=\bsfam
-     \bi 
+     \bi
    \else
      \it
    \fi\fi\fi
@@ -650,11 +650,11 @@
 \def\florijn%
   {\bgroup
    \ifnum\fam=\bffam
-     \bi 
+     \bi
    \else\ifnum\fam=\bifam
-     \bi 
+     \bi
    \else\ifnum\fam=\bsfam
-     \bi 
+     \bi
    \else
      \it
    \fi\fi\fi
@@ -672,21 +672,21 @@
 %I   tekst
 %I   \stopcitaat
 %I
-%I Rond de tekst worden in de marge dubbele quotes 
-%I geplaatst. Ook bij dit commando kunnen tussen [] maten 
+%I Rond de tekst worden in de marge dubbele quotes
+%I geplaatst. Ook bij dit commando kunnen tussen [] maten
 %I worden opgegeven:
 %I
 %I   \startcitaat[2*links,rechts]
 %I
-%I In de lopende tekst kan gebruik worden gemaakt van: 
+%I In de lopende tekst kan gebruik worden gemaakt van:
 %I
 %I   \citaat{tekst}
 %I   \citeer{tekst}
 %I
-%I Het eerste commando levert dubbele quotes en het tweede 
-%I enkele quotes. 
+%I Het eerste commando levert dubbele quotes en het tweede
+%I enkele quotes.
 %P
-%I Er zijn twee varianten (1 en 2) beschikbaar die kunnen 
+%I Er zijn twee varianten (1 en 2) beschikbaar die kunnen
 %I worden ingesteld met:
 %I
 %I   \stelciterenin
@@ -724,20 +724,32 @@
 \def\startcitaat%
   {\dosingleempty\dostartcitaat}
 
-\def\handlequotation#1%
-  {\ifdim\lastkern=\quotationsignal
-     \unskip
-     \hskip\quotationskip
+% \def\dohandlequotation#1%
+%   {\ifdim\lastkern=\quotationsignal
+%      \unskip
+%      \hskip\quotationskip
+%    \fi
+%    \strut % new, needed below 
+%    \getvalue{\??la\currentlanguage#1}%
+%    \kern\quotationsignal}
+
+%D Better hyphenation (\prewordbreak look alike added):
+
+\def\dohandlequotation#1%
+  {\ifdim\lastskip=\quotationsignal
+     \unskip\hskip\quotationskip
    \fi
+   \penalty\!!tenthousand\hskip\!!zeropoint      % == \prewordbreak
+   \strut % new, needed below 
    \getvalue{\??la\currentlanguage#1}%
-   \kern\quotationsignal}
+   \penalty\!!tenthousand\hskip\quotationsignal} % +- \prewordbreak
 
-\def\citaat%
+\unexpanded\def\citaat%
   {\groupedcommand
-     {\handlequotation\c!leftquotation}
-     {\handlequotation\c!rightquotation}}
+     {\dohandlequotation\c!leftquotation}
+     {\dohandlequotation\c!rightquotation}}
 
-\def\citeer%
+\unexpanded\def\citeer%
   {\doifelse{\@@ciletter}{\v!normaal}
      {\let\next=\doquotedcite}
      {\let\next=\doattributedcite}%
@@ -745,20 +757,32 @@
 
 \def\doquotedcite%
   {\groupedcommand
-     {\handlequotation\c!leftquote}
-     {\handlequotation\c!rightquote}}
+     {\dohandlequotation\c!leftquote}
+     {\dohandlequotation\c!rightquote}}
 
 \def\doattributedcite%
   {\groupedcommand
      {\dostartattributes\??ci\c!letter\c!kleur}
      {\dostopattributes}}
+
+% The previous one fails in \placefloat[left]{}{}, so instead
+% we use the next alternative, where the first one is handled 
+% outside group. Watch the strut. 
+
+\unexpanded\def\citaat%
+  {\dohandlequotation\c!leftquotation
+   \groupedcommand{}{\dohandlequotation\c!rightquotation}}
+
+\def\doquotedcite%
+  {\dohandlequotation\c!leftquote
+   \groupedcommand{}{\dohandlequotation\c!rightquote}}
 
-% Tijden horen hier niet thuis en zullen in een aparte 
+% Tijden horen hier niet thuis en zullen in een aparte
 % module worden ondergebracht. voorlopig handhaven we ze nog
 % even. Een implementatie met \doordefinieren zou beter voldoen
-% omdat een en ander dan instelbaar wordt. Het is trouwens 
-% zowieso beter het commando \tijd te reserveren voor de 
-% systeemtijd. 
+% omdat een en ander dan instelbaar wordt. Het is trouwens
+% zowieso beter het commando \tijd te reserveren voor de
+% systeemtijd.
 
 % %I n=Tijden
 % %I c=\tijd,\tijdspan,\activiteit
@@ -831,13 +855,13 @@
 %I
 %I   \tekstlijn
 %I   \tekstlijn[onder]{}
-%I 
+%I
 %I Daarnaast zijn beschikbaar:
-%I 
-%I   \starttekstlijn{tekst}   
+%I
+%I   \starttekstlijn{tekst}
 %I   \stoptekstlijn
 %I
-%I waarbij de plaats dus boven is. 
+%I waarbij de plaats dus boven is.
 %P
 %I Een en ander kan worden ingesteld met het commando:
 %I
@@ -847,7 +871,7 @@
 %I De breedte heeft betrekking op de lengte van de lijn voor
 %I de tekst. Mogelijke plaatsen zijn links en inmarge.
 
-% nog eens \definieertekstlijn 
+% nog eens \definieertekstlijn
 
 \def\steltekstlijnenin%
   {\dodoubleargument\getparameters[\??tl]}
@@ -895,7 +919,7 @@
    \doifelse{#1}{}
      {\hrule\!!depth\linewidth\!!height\!!zeropoint}
      {\docomplextekstlijn{#1}}%
-   \@@tlna  
+   \@@tlna
    \pagina[\v!voorkeur]}
 
 \def\complextekstlijn[#1]#2%
@@ -918,7 +942,7 @@
   {\dobottomtekstlijn{}%
    \egroup}
 
-%I n=Invullijnen 
+%I n=Invullijnen
 %I c=\invullijnen,\stelinvullijnenin,\invultekst
 %I
 %I Ten behoeve van invullijsten is het volgende commando
@@ -942,8 +966,8 @@
 %I
 %I   \stelinvullijnenin[n=,breedte=,afstand=,letter=,voor=,
 %I     na=,scheider=]
-%I 
-%I De afstand heeft betrekking op de afstand tussen de 
+%I
+%I De afstand heeft betrekking op de afstand tussen de
 %I scheider en de lijnen.
 %I
 %I Het volgende commando plaatst een tekst op een zelfde
@@ -965,7 +989,7 @@
      {\setbox0=\hbox to \@@ilbreedte}
         {\doattributes
            \??il\c!letter\c!kleur
-           {\strut#3\hfill   
+           {\strut#3\hfill
             \doifsomething{\@@ilscheider}
               {\hbox spread \@@ilafstand{\@@ilscheider\hss}}}}%
    \hangindent=\wd0\relax
@@ -1023,15 +1047,15 @@
    \stelinvulregelsin[#1]%
    \advance\rightskip by \@@ivbreedte
    \parfillskip\!!zeropoint
-   #2\hfill  
+   #2\hfill
    \dimen0=\@@ivbreedte
    \advance\dimen0 by -\@@ivafstand
    \rlap
      {\hskip\@@ivafstand
       \vrule\!!width\dimen0\!!height\linewidth}%
-   \par % ! 
+   \par % !
    \endgroup
-   \par % ! 
+   \par % !
    \@@ilna}
 
 \definecomplexorsimpleempty\invulregel
@@ -1192,7 +1216,7 @@
 %I waarbij mogelijke varianten zijn: normaal apa en normaal.
 %I Nummeren kan 'ja' of 'nee' zijn; links en rechts
 %I hebben betrekking op de weergave in de tekst en zijn
-%I standaard [ en ]. 
+%I standaard [ en ].
 
 % Dit wordt:
 %
@@ -1262,15 +1286,15 @@
 \def\publicatie#1[#2]%
   {\@@pblinks\in{#1}[#2]\@@pbrechts}
 
-%I n=Kenmerken 
+%I n=Kenmerken
 %I c=\kenmerk,\kenmerkdatum
 %I
 %I Er kan een kenmerk worden gezet met het commando:
 %I
 %I   \kenmerk[bet=,ken=,dat=,van=,aan=,ref=]
 %I
-%I waarbij de verplichte parameters staan voor 'betreft', 
-%I 'kenmerk' en 'datum' en de optionele voor 'van', 'aan' en 
+%I waarbij de verplichte parameters staan voor 'betreft',
+%I 'kenmerk' en 'datum' en de optionele voor 'van', 'aan' en
 %I 'referentie'.
 %I
 %I Een kenmerk-datum kan worden gezet met het commando:
@@ -1287,56 +1311,83 @@
 \def\kenmerkdatum%
   {\currentdate[\v!kenmerk]}
 
+% \def\dokenmerk[#1]%
+%    {\geenhoofdenvoetregels
+%     \getparameters
+%       [\??km]
+%       [\c!bet=\unknown,
+%        \c!dat=\unknown,
+%        \c!ken=\unknown,
+%        \c!van=,
+%        \c!aan=,
+%        \c!ref=,
+%        #1]%
+%     \bgroup  % moet anders, hoort niet in 01b
+%     \assigntranslation[nl=referentie,en=reference,du=Referenz,sp=referencia]\to\@@@kmref
+%     \assigntranslation[nl=van,en=from,du=Von,sp=de]\to\@@@kmvan
+%     \assigntranslation[nl=aan,en=to,du=An,sp=a]\to\@@@kmaan
+%     \assigntranslation[nl=betreft,en=concerns,du=Betreff,sp=]\to\@@@kmbet
+%     \assigntranslation[nl=datum,en=date,du=Datum,sp=fecha]\to\@@@kmdat
+%     \assigntranslation[nl=kenmerk,en=mark,du=Kennzeichen,sp=]\to\@@@kmken
+%     \doifelsenothing{\@@kmvan\@@kmaan}
+%       {\def\@@dokmvanaan{}}
+%       {\def\@@dokmvanaan{&\omit\cr}}%
+%     \doifelsenothing{\@@kmvan}
+%       {\def\@@dokmvan{}}
+%       {\def\@@dokmvan{\@@@kmvan&\@@kmvan\cr}}%
+%     \doifelsenothing{\@@kmaan}
+%       {\def\@@dokmaan{}}
+%       {\def\@@dokmaan{\@@@kmaan&\@@kmaan\cr}}%
+%     \doifelsenothing{\@@kmref}
+%       {\def\@@dokmref{}}
+%       {\def\@@dokmref{&\omit\cr\@@@kmref&\@@kmref\cr}}%
+%     \witruimte
+%     \tabskip=\!!zeropoint
+%     \noindent\halign
+%       \bgroup
+%       ##~&:~##\hfil\cr
+%       \@@@kmbet&\@@kmbet\cr
+%       \@@@kmdat&\@@kmdat\cr
+%       \@@@kmken&\kap{\@@kmken}\cr
+%       \@@dokmvanaan
+%       \@@dokmvan
+%       \@@dokmaan
+%       \@@dokmref
+%       \egroup
+%     \egroup}
+
 \def\dokenmerk[#1]%
    {\geenhoofdenvoetregels
+    \bgroup  
     \getparameters
       [\??km]
-      [\c!bet=\onbekend,
-       \c!dat=\onbekend,
-       \c!ken=\onbekend,
-       \c!van=,
-       \c!aan=,
-       \c!ref=,
-       #1]%
-    \bgroup  % moet anders, hoort niet in 01b  
-    \assigntranslation[nl=referentie,en=reference,du=Referenz,sp=referencia]\to\@@@kmref
-    \assigntranslation[nl=van,en=from,du=Von,sp=de]\to\@@@kmvan
-    \assigntranslation[nl=aan,en=to,du=An,sp=a]\to\@@@kmaan
-    \assigntranslation[nl=betreft,en=concerns,du=Betreff,sp=]\to\@@@kmbet
-    \assigntranslation[nl=datum,en=date,du=Datum,sp=fecha]\to\@@@kmdat
-    \assigntranslation[nl=kenmerk,en=mark,du=Kennzeichen,sp=]\to\@@@kmken
-    \doifelsenothing{\@@kmvan\@@kmaan}
-      {\def\@@dokmvanaan{}}
-      {\def\@@dokmvanaan{&\omit\cr}}%
-    \doifelsenothing{\@@kmvan}
-      {\def\@@dokmvan{}}
-      {\def\@@dokmvan{\@@@kmvan&\@@kmvan\cr}}%
-    \doifelsenothing{\@@kmaan}
-      {\def\@@dokmaan{}}
-      {\def\@@dokmaan{\@@@kmaan&\@@kmaan\cr}}%
-    \doifelsenothing{\@@kmref}
-      {\def\@@dokmref{}}
-      {\def\@@dokmref{&\omit\cr\@@@kmref&\@@kmref\cr}}%
-    \witruimte
-    \tabskip=\!!zeropoint
-    \noindent\halign
-      \bgroup
-      ##~&:~##\hfil\cr
-      \@@@kmbet&\@@kmbet\cr
-      \@@@kmdat&\@@kmdat\cr
-      \@@@kmken&\kap{\@@kmken}\cr
-      \@@dokmvanaan
-      \@@dokmvan
-      \@@dokmaan
-      \@@dokmref
-      \egroup
+      [\c!bet=\unknown,\c!dat=\unknown,\c!ken=\unknown,
+       \c!van=,        \c!aan=,        \c!ref=,        #1]%
+    % moet anders, hoort niet in 01b
+    \assigntranslation[nl=referentie,en=reference,du=Referenz,   sp=referencia]\to\@@@kmref
+    \assigntranslation[nl=van,       en=from,     du=Von,        sp=de]\to\@@@kmvan
+    \assigntranslation[nl=aan,       en=to,       du=An,         sp=a]\to\@@@kmaan
+    \assigntranslation[nl=betreft,   en=concerns, du=Betreff,    sp=]\to\@@@kmbet
+    \assigntranslation[nl=datum,     en=date,     du=Datum,      sp=fecha]\to\@@@kmdat
+    \assigntranslation[nl=kenmerk,   en=mark,     du=Kennzeichen,sp=]\to\@@@kmken
+    %
+    \definetabulate[\s!dummy][|le|p|]    
+    \startdummy
+      \NC\@@@kmbet\NC\@@kmbet\NC\NR
+      \NC\@@@kmdat\NC\@@kmdat\NC\NR
+      \NC\@@@kmken\NC\kap{\@@kmken}\NC\NR
+      \doifsomething{\@@kmvan\@@kmaan}{\NC\NC\NC\NR}%
+      \doifsomething{\@@kmvan}{\NC\@@@kmvan\NC\@@kmvan\NC\NR}%
+      \doifsomething{\@@kmaan}{\NC\@@@kmaan\NC\@@kmaan\NC\NR}%
+      \doifsomething{\@@kmref}{\NC\NC\NC\NR\NC\@@@kmref\NC\@@kmref\NC\NR}%
+    \stopdummy
     \egroup}
 
 \def\kenmerk%
   {\dosingleargument\dokenmerk}
 
-% NIEUW NIEUW NIEUW NIEUW NIEUW NIEUW NIEUW NIEUW NIEUW NIEUW NIEUW 
-% NIEUW NIEUW NIEUW NIEUW NIEUW NIEUW NIEUW NIEUW NIEUW NIEUW NIEUW 
+% NIEUW NIEUW NIEUW NIEUW NIEUW NIEUW NIEUW NIEUW NIEUW NIEUW NIEUW
+% NIEUW NIEUW NIEUW NIEUW NIEUW NIEUW NIEUW NIEUW NIEUW NIEUW NIEUW
 
 \def\??ri{@@ri}
 
@@ -1373,8 +1424,8 @@
    boven=,
    onder=\vfill]
 
-% NIEUW NIEUW NIEUW NIEUW NIEUW NIEUW NIEUW NIEUW NIEUW NIEUW NIEUW 
-% NIEUW NIEUW NIEUW NIEUW NIEUW NIEUW NIEUW NIEUW NIEUW NIEUW NIEUW 
+% NIEUW NIEUW NIEUW NIEUW NIEUW NIEUW NIEUW NIEUW NIEUW NIEUW NIEUW
+% NIEUW NIEUW NIEUW NIEUW NIEUW NIEUW NIEUW NIEUW NIEUW NIEUW NIEUW
 
 % Standaardinstellingen
 

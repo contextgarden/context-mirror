@@ -8,8 +8,8 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See licen-en.pdf for 
-%C details. 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
 
 \writestatus{loading}{Context Extra Macros (a)}
 
@@ -35,24 +35,31 @@
       2: Haupbestand --
       3: Nebenbestand --
 \stopmessages
+
+\startmessages  czech  library: addresses
+  title: adresy
+      1: --
+      2: primarni baze --
+      3: sekundarni baze --
+\stopmessages
 
 %I n=Kontakten
 %I c=\laadkontakten
-%I 
-%I De onderstaande commando's werken samen met het programma 
+%I
+%I De onderstaande commando's werken samen met het programma
 %I TeXAdres.
 %I
-%I  \laadkontakten[naam,groep,...] 
+%I  \laadkontakten[naam,groep,...]
 %I
-%I Dit commando doorzoekt eerst de file 'texadres.tao' en 
+%I Dit commando doorzoekt eerst de file 'texadres.tao' en
 %I vervolgens de file 'texadres.tae' op naam en groep. Bij
-%I elk gevonden adres (naam of groepslid) wordt het commando 
-%I \doemetkontakt{logisch} aangeroepen. 
+%I elk gevonden adres (naam of groepslid) wordt het commando
+%I \doemetkontakt{logisch} aangeroepen.
 %I
 %I De waarden van de verschillende velden zijn op te roepen met
-%I het commando \kontaktwaarde{veldnaam}. Let op: het in 
-%I bijvoorbeeld een adres opgenomen commando \\ moet men zelf 
-%I definieren, bijvoorbeeld: \def\\{\endgraf}. 
+%I het commando \kontaktwaarde{veldnaam}. Let op: het in
+%I bijvoorbeeld een adres opgenomen commando \\ moet men zelf
+%I definieren, bijvoorbeeld: \def\\{\endgraf}.
 %P
 %I TeXAdres zet alle files op een gebied met de extensie 'tai'
 %I om in een file met de extensie 'tao' of 'tae'. Een invoerfile
@@ -67,12 +74,12 @@
 %I      \...{...}
 %I      \postadres{...}
 %I    \eindvankontakt{...}
-%P 
-%I De invoerfile bevat zowel definities van kontakten als van 
-%I groepen. 
-%I 
+%P
+%I De invoerfile bevat zowel definities van kontakten als van
+%I groepen.
+%I
 %I Een kontakt wordt als volgt gedefinieerd:
-%I 
+%I
 %I   < kontakt   >
 %I
 %I   [ logisch   ]  hagenj
@@ -86,26 +93,26 @@
 %I   [ info      ]  ach ja
 %P
 %I Een groep wordt als volgt gedefinieerd:
-%I 
+%I
 %I   < groep     >
 %I
-%I   [ logisch   ]  werkgroep 
+%I   [ logisch   ]  werkgroep
 %I   [ naam      ]
 %I   [ lid       ]  ottenaf
 %I   [ lid       ]  hagenj
 %I   [ lid       ]  jonkerj
 %I   [ lid       ]  marlecvan
 
-% In eerste instantie leek het werken met % voor te skippen 
-% regels mij een aardige oplossing. Echter, het opslurpen van 
-% een heel blok tot \eindvankontakt gaat net zo snel. 
-% 
-% Hoewel het mechanisme inmiddels uitstekend is te combineren 
-% met het tekstblok-mechanisme, wordt vooralsnog deze snelle  
-% variant gebruikt. 
+% In eerste instantie leek het werken met % voor te skippen
+% regels mij een aardige oplossing. Echter, het opslurpen van
+% een heel blok tot \eindvankontakt gaat net zo snel.
 %
-% Om conflicten te voorkomen met reeds gedefinieerde commando's, 
-% zoals \naam, wordt enkele malen \bgroup..\egroup gebruikt. 
+% Hoewel het mechanisme inmiddels uitstekend is te combineren
+% met het tekstblok-mechanisme, wordt vooralsnog deze snelle
+% variant gebruikt.
+%
+% Om conflicten te voorkomen met reeds gedefinieerde commando's,
+% zoals \naam, wordt enkele malen \bgroup..\egroup gebruikt.
 
 \newevery \everykontakt \EveryKontakt
 
@@ -136,7 +143,7 @@
      \resetkontaktwaarde}
 
 \def\skipkontakt%
-  {\long\def\next##1\eindvankontakt%   
+  {\long\def\next##1\eindvankontakt%
      {\def\next####1{\egroup}\next}%
    \next}
 
@@ -152,7 +159,7 @@
       \kontaktoktrue}
      {\kontaktokfalse}%
    \def\checkkontakt##1%
-     {\rawdoifinsetelse{##1}{\gevraagdekontakten}{\kontaktoktrue}{}}%  
+     {\rawdoifinsetelse{##1}{\gevraagdekontakten}{\kontaktoktrue}{}}%
    \def\lidvangroep##1%
      {\doifsomething{##1}
         {\rawprocesscommalist[##1]\checkkontakt}%
@@ -175,12 +182,12 @@
         \else
           \let\next=\relax
         \fi
-      \fi  
+      \fi
       \next}%
    \def\eindvankontakt##1%
      {\relax
-      \egroup  
-      \the\everykontakt 
+      \egroup
+      \the\everykontakt
       \doemetkontakt{##1}}%
    \showmessage{\m!addresses}{1}{\gevraagdekontakten}%
    \readsysfile{texadres.tao}{\showmessage{\m!addresses}{2}{(tao)}}{\relax}%

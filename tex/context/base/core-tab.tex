@@ -8,17 +8,16 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See licen-en.pdf for 
-%C details. 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
 
 \writestatus{loading}{Context Core Macros / TaBlE Embedding}
 
 % e-tex: reverse rows or vadjust or ... in tables
 % \ifalign
 % \xhrule : calls for 'special' with width
-
-% BUG: 
-% 
+% BUG:
+%
 % \starttabel[|l|l|]
 % \HL
 % \RL\FR \VL Head 1 \VL Head 2 \VL\FR
@@ -64,7 +63,6 @@
 
 % THIS RENEWED MODULE WORKS OK BUT STILL LOOKS BAD
 
-
 %D We felt no need to write our own table building macros,
 %D simply because Michael Wichura made a terrific one. This
 %D package is quite complete and well documented. In \CONTEXT\
@@ -92,7 +90,7 @@
 \newif\ifsplittables
 
 %D \macros
-%D   {iftracetable}
+%D   {iftracetables}
 %D
 %D When I documented this module, I felt the need for tracing
 %D options. After implementing this feature, I also added
@@ -414,60 +412,85 @@
 %D To keep things verbose, as well as to show what \TABLE\
 %D commands we affect, we show some meanings.
 
-\def\normalTABLEshortrule  {\!ttShortHrule}                               % \-
-\def\normalTABLElongrule   {\!ttLongHrule}                                % \=
-\def\normalTABLEfullrule   {\!ttFullHrule}                                % \_
-\def\normalTABLEendofrow   {\!ttEndOfRow}                                 % \\
-\def\normalTABLEsimplebar  {\unskip\!ttRightGlue&&}                       % |
+\def\normalTABLEshortrule  {\!ttShortHrule} % \-
+\def\normalTABLElongrule   {\!ttLongHrule} % \=
+\def\normalTABLEfullrule   {\!ttFullHrule} % \_
+\def\normalTABLEendofrow   {\!ttEndOfRow} % \\
+\def\normalTABLEsimplebar  {\unskip\!ttRightGlue&&} % |
 \def\normalTABLEcomplexbar {\unskip\!ttRightGlue&\omit\!ttAlternateVrule} % \|
-\def\normalTABLEquote      {\unskip\!ttRightGlue&\omit&}                  % "
+\def\normalTABLEquote      {\unskip\!ttRightGlue&\omit&} % "
 \def\normalTABLElineformat {\normalTABLEendofrow+}
 \def\normalTABLElineending {\normalTABLEendofrow0 }
 \def\normalTABLEsinglerule {&\normalTABLElongrule&}
 \def\normalTABLEmultirule#1{&\use{#1}\normalTABLElongrule&}
 
-%D The next hack is dedicated to Tobias, who found out that 
-%D paragraph entries don't break well. 
+%D The next hack is dedicated to Tobias, who found out that
+%D paragraph entries don't break well.
 
 \def\TABLEhack{\hskip\!!zeropoint}
 
-%D The first attemp to solve this problem was: 
+%D The first attemp to solve this problem was:
 %D
 %D \starttypen
 %D \def\normalTABLEquote%
 %D   {\unskip\TABLEhack\!ttRightGlue&\omit&\TABLEhack}
 %D \stoptypen
 %D
-%D But, as usual, this interfered with \type {\omit}. 
+%D But, as usual, this interfered with \type {\omit}.
 %D
-%D The next attempt is redefining some core \TABLE\ macro: 
+%D The next attempt is redefining some core \TABLE\ macro:.
+%D This works ok, but breaks for instance the~\type{b}
+%D key handling.
+%D
+%D \starttypen
+%D \def\!tfAdjoinPriorColumn%
+%D   {\ifnum\!taColumnNumber=0
+%D      \!taPreamble=\!taRuleColumnTemplate
+%D    ...
+%D    \if!taOnceOnlyTabskip
+%D      \!thToksEdef\!taDataColumnTemplate=
+%D        {\TABLEhack####\TABLEhack\tabskip\the\!taLastRegularTabskip}
+%D    \else
+%D      \!taDataColumnTemplate{\TABLEhack##\TABLEhack}%
+%D    \fi
+%D    ...
+%D    \ReadFormatKeys}
+%D \stoptypen
 
-\def\!tfAdjoinPriorColumn%
-  {\ifnum\!taColumnNumber=0
-     \!taPreamble=\!taRuleColumnTemplate 
-     \ifnum\TracingFormats>0 \!tfShowRuleTemplate\fi
-  \else
-    \ifx\!tfRowOfWidths\empty \else \!tfUpdateRowOfWidths\fi
-    \!thToksEdef\!taDataColumnTemplate=
-      {\the\!taLeftGlue \the\!taDataColumnTemplate \the\!taRightGlue}%
-    \ifnum\TracingFormats>0 \!tfShowTemplates\fi
-    \!thToksEdef\!taPreamble=
-      {\the\!taPreamble&\the\!taDataColumnTemplate&\the\!taRuleColumnTemplate}%
-  \fi
-  \advance\!taColumnNumber 1
-  \if!taOnceOnlyTabskip              
-    \!thToksEdef\!taDataColumnTemplate=
-      {\TABLEhack####\TABLEhack\tabskip\the\!taLastRegularTabskip}
-  \else
-    \!taDataColumnTemplate{\TABLEhack##\TABLEhack}%
-  \fi
-  \!taRuleColumnTemplate{}%
-  \!taLeftGlue{\hfil}%     
-  \!taRightGlue{\hfil}%         
-  \!taMinimumColumnWidth=0pt
-  \def\!tfWidthText{}%
-  \!taOnceOnlyTabskipfalse 
-  \ReadFormatKeys}
+% \def\BeginTableParBox#1%
+%   {\vtop\bgroup
+%      \hsize=#1
+%      \normalbaselines
+%      \let~=\!ttTie
+%      \let\-=\!ttDH
+%      \the\EveryTableParBox
+%      \begstrut}  % added
+%
+% \def\EndTableParBox%
+%     {\endstrut % added
+%      \MakeStrut{0pt}{\StrutDepthFactor\StrutUnit}%
+%    \egroup}
+
+\newdimen\TABLEparheight
+
+\def\BeginTableParBox#1%
+  {\setbox\scratchbox=\vtop\bgroup % \setbox added
+     \hsize=#1
+     \normalbaselines
+     \let~=\!ttTie
+     \let\-=\!ttDH
+     \blanko[\v!blokkeer] % added
+     \the\EveryTableParBox}
+
+\def\EndTableParBox%
+  {\removelastskip % added
+  %\MakeStrut{0pt}{\StrutDepthFactor\StrutUnit}       % removed
+   \egroup % finishes the \vtop begun by \BeginTableParbox
+   \getboxheight\scratchdimen\of\box\scratchbox\relax % added
+   \ifdim\scratchdimen>\TABLEparheight                % added
+     \global\TABLEparheight=\scratchdimen             % added
+   \fi                                                % added
+   \box\scratchbox}
 
 %D To give an impression of what the (well documented) source
 %D of \TABLE\ looks like, we first implement an alternative for
@@ -649,22 +672,52 @@
 %D \NC C{identifier} \NC column entry color          \NC\AR
 %D \HL
 %D \stoptabel
+
+%D To be compatible with the tabulate environment, we also
+%D support the \type {l}, \type {c} and \type {r} keys for
+%D paragraph entries.
+
+\letvalue{!tk<\string l>}=\undefined
+\letvalue{!tk<\string c>}=\undefined
+\letvalue{!tk<\string r>}=\undefined
+\letvalue{!tk<\string x>}=\undefined % not that needed
+
+\NewFormatKey c%
+  {\prependtoks\raggedcenter\to\!taDataColumnTemplate
+   \ReadFormatKeys \LeftGlue\hfil \RightGlue\hfil}
+
+\NewFormatKey l%
+  {\prependtoks\raggedright\to\!taDataColumnTemplate
+   \ReadFormatKeys \LeftGlue{} \RightGlue\hfil}
+
+\NewFormatKey r%
+  {\prependtoks\raggedleft\to\!taDataColumnTemplate
+   \ReadFormatKeys \LeftGlue\hfil \RightGlue{}}
+
+\NewFormatKey x%
+  {\prependtoks\notragged\to\!taDataColumnTemplate
+   \ReadFormatKeys \LeftGlue\hfil \RightGlue{}}
+
+\appendtoks \TABLEparalignment \to \EveryTableParBox
 
 %D Later on, we're going to implement multiple page table
 %D support, therefore the next \TABLE\ macro needs to be
-%D slightly adapted, i.c. the penalty is removed.
+%D slightly adapted, i.c. the penalty is removed. We also
+%D add basic color support.
 
 \def\!ttFullHruleA%
   {\!ttGetHalfRuleThickness
+   \startglobalTABLEcolor % added
    \hrule\!thHeight\dimen0\!thDepth\dimen0
-   %\penalty0
+   \stopglobalTABLEcolor  % added
+   %\penalty0 % removed
    \egroup}
 
 %D We'll see that when we want to give a vertical rule a color,
 %D we have to set and reset states. After heavy testing it
 %D proved most useful to extend a \TABLE\ primitive with some
 %D hooks. One thing to keep in mind is that \type{&} keeps
-%D assignments local.
+%D assignments local. Again, we add basic color support.
 
 \let\TABLEbeforebar=\empty
 \let\TABLEafterbar =\empty
@@ -672,6 +725,7 @@
 \def\!ttInsertVrule%
   {\hfil
    \TABLEbeforebar % added
+   \startglobalTABLEcolor % added
    \vrule \!thWidth
      \ifnum\!tgCode=1
        \ifx\!tgValue\empty
@@ -683,11 +737,45 @@
      \else
        \!tgValue
      \fi
+   \stopglobalTABLEcolor % added
    \TABLEafterbar % added
    \hfil
    &}
 
-%D We already shows the next one, but here we slightly adapt
+%D The next two macros are only adapted to basis rule
+%D color support.
+
+\def\!tfSetVrule%
+  {\!thToksEdef\!taRuleColumnTemplate=
+      {\noexpand\hfil
+       \noexpand\startglobalTABLEcolor % added
+       \noexpand\vrule
+       \noexpand\!thWidth
+       \ifnum\!tgCode=1
+         \ifx\!tgValue\empty
+           \the\LineThicknessFactor
+         \else
+           \!tgValue
+         \fi
+         \!taLTU
+       \else
+         \!tgValue
+       \fi
+       ####%
+       \noexpand\hfil
+       \noexpand\stopglobalTABLEcolor % added
+       \the\!taRuleColumnTemplate}
+  \!tfAdjoinPriorColumn}
+
+\def\!ttShortHruleA%
+  {\!ttGetHalfRuleThickness
+   \startglobalTABLEcolor % added
+   \leaders\hrule\!thHeight\dimen0\!thDepth\dimen0\hfill
+   \stopglobalTABLEcolor % added
+   \null
+   \ignorespaces}
+
+%D We already showed the next one, but here we slightly adapt
 %D the macro by adding an \type{\expandafter}. The space after
 %D \type{#1} is crucial!
 
@@ -838,16 +926,18 @@
 %D The optional third and fourth arguments define which table
 %D head and tail to use.
 %D
-%D \starttype
+%D \starttypen
 %D \definetabletemplate[test][|||][before][after]
 %D \stoptypen
 %D
 %D This also means that one can define table heads and tails
 %D by name!
 %D
+%D \starttypen
 %D \starttablehead[before]
 %D \HL \VL first \VL second \VL \SR \HL
 %D \stoptablehead
+%D \stoptypen
 %D
 %D Templates defined this way get protected names, that cannot
 %D conflict with existing commands.
@@ -1074,7 +1164,7 @@
 % \def\dosetTABLEtail[#1]#2\end{\setvalue{@@TABLEtail#1}{#2}}
 
 %D The second argument is a dummy one, by scanning for it, we
-%D get rid of interfering spaces. 
+%D get rid of interfering spaces.
 
 \def\setTABLEhead{\dodoubleempty\dosetTABLEhead}
 \def\setTABLEtail{\dodoubleempty\dosetTABLEtail}
@@ -1164,8 +1254,8 @@
 \def\complexorsimpleTable#1#2%
   {\getvalue{\if[\noexpand#2\s!complex\else\s!simple\fi\c!Table#1}#2}
 
-%D The next one is used in \type{\VL} cum suis and honours 
-%D the next grouping. 
+%D The next one is used in \type{\VL} cum suis and honours
+%D the next grouping.
 
 \def\docomplexorsimpleTable#1#2%
   {\ifx\next\bgroup\@EA#2\else\@EA\dodocomplexorsimpleTable\@EA#1\@EA#2\fi}
@@ -1325,7 +1415,7 @@
 \def\TableMR%
   {\ifTABLEgrayline \else
      \ifnum\TABLEaction=\TABLErule
-       \writestatus{TABLE}{change \string\MR\space  into \string\FR/\string\SR}%
+       \writestatus{TABLE}{change \string\MR\space into \string\FR/\string\SR}%
      \else\ifnum\TABLEaction=\TABLElastrow
        \writestatus{TABLE}{change \string\MR\space into \string\FR}%
      \fi\fi
@@ -1438,6 +1528,10 @@
   {\ifsplittables
      \setbox0=\hbox{\AugmentedTableStrut{#1}{#2}}%
      \getboxheight\dimen0\of\box0\relax
+     \ifdim\TABLEparheight>\dimen0         % new
+       \dimen0=\TABLEparheight             % new
+       \global\TABLEparheight=\!!zeropoint % new
+     \fi                                   % new
      \ifTABLEgrayline \else
        \global\advance\TABLEheight by \dimen0
      \fi
@@ -1480,7 +1574,7 @@
    \fi}
 
 %D When tables are split, the spacing before and after a
-%D horizontal rule is corrected according to whet we expect.
+%D horizontal rule is corrected according to what we expect.
 
 \def\endofTABLEline[#1][#2->#3]#4#5%
   {\ifx#2#3\else
@@ -1587,7 +1681,8 @@
      {\getvalue{eVL\the\currentTABLEcolumn}%
       \global\letvalue{eVL\the\currentTABLEcolumn}=\empty}%
    \edef\@@tiVLwidth{\getvalue{wVL\the\currentTABLEcolumn}}%
-   \expanded{\normalTABLEcomplexbar{\@@tiVLwidth}}}
+   \expanded{\normalTABLEcomplexbar\@@tiVLwidth\space}}% \relax breaks \use
+
 
 \def\resetVLvalues%
   {\dostepwiserecurse{0}{\maxTABLEcolumn}{1}
@@ -1890,6 +1985,7 @@
    \else
      \TABLEnoalign\bgroup
        \global\let\nextTABLEgrayline=\executeTABLEgrayline
+       \global\let\TABLEgrayline\empty % new
        \let\BL=\doTableBL
        \let\BC=\doTableBC
        \expandafter\doTableBC
@@ -1902,6 +1998,7 @@
 \def\TableBL%
   {\TABLEnoalign\bgroup
      \global\let\nextTABLEgrayline=\executeTABLEgrayline
+     \global\let\TABLEgrayline\empty % new
      \let\BL=\doTableBL
      \let\CL=\doTableCL
      \let\RL=\doTableRL
@@ -1968,6 +2065,7 @@
 \def\TableCL%
   {\TABLEnoalign\bgroup
      \global\let\nextTABLEgrayline=\executeTABLEgrayline
+     \global\let\TABLEgrayline\empty % new
      \let\BL=\doTableBL
      \let\CL=\doTableCL
      \let\RL=\doTableRL
@@ -1977,7 +2075,7 @@
 \def\doTableCL%
   {\complexorsimpleTable{CL}}
 
-\def\simpleTableCL%  nog eens \"e\"en lijn van maken
+\def\simpleTableCL%  nog eens \'e\'en lijn van maken
   {\BL[\the\maxTABLEcolumn,c,\lastTABLEc]}
 
 \def\complexTableCL[#1]%
@@ -1987,6 +2085,7 @@
 \def\TableRL%
   {\TABLEnoalign\bgroup
      \global\let\nextTABLEgrayline=\executeTABLEgrayline
+     \global\let\TABLEgrayline\empty % new
      \let\BL=\doTableBL
      \let\CL=\doTableCL
      \let\RL=\doTableRL
@@ -2113,13 +2212,13 @@
    \fi}
 
 \def\gobbleTableBCL#1%
-  {\ifx#1\BC                        \let\next=\doTableBC \else
-   \ifx#1\BL                        \let\next=\doTableBL \else
-   \ifx#1\SR \setTableBCL\SR\SR     \let\next=\egroup    \else
-   \ifx#1\FR \setTableBCL\FR\FR     \let\next=\egroup    \else
-   \ifx#1\MR \setTableBCL\MR\MR     \let\next=\egroup    \else
-   \ifx#1\LR \setTableBCL\LR\LR     \let\next=\egroup    \else
-             \setTableBCL#1\SR      \let\next=\egroup
+  {\ifx#1\BC                    \let\next=\doTableBC \else
+   \ifx#1\BL                    \let\next=\doTableBL \else
+   \ifx#1\SR \setTableBCL\SR\SR \let\next=\egroup    \else
+   \ifx#1\FR \setTableBCL\FR\FR \let\next=\egroup    \else
+   \ifx#1\MR \setTableBCL\MR\MR \let\next=\egroup    \else
+   \ifx#1\LR \setTableBCL\LR\LR \let\next=\egroup    \else
+             \setTableBCL #1\SR \let\next=\egroup
    \fi\fi\fi\fi\fi\fi
    \next}
 
@@ -2177,7 +2276,6 @@
      \global\chardef\TABLEendofrowheight=\TABLErowzero
      \global\chardef\TABLEendofrowdepth =\TABLErowfactor
    \fi}
-
 
 \def\defineTABLEshorthands%
   {\def\TWO  {\use{2}}%
@@ -2215,6 +2313,13 @@
 
 \def\dosteltabellenin[#1]%
   {\getparameters[\??ti][#1]%
+   \processaction
+     [\@@tiuitlijnen]
+     [ \v!rechts=>\def\TABLEparalignment{\raggedright},
+        \v!links=>\def\TABLEparalignment{\raggedleft},
+       \v!midden=>\def\TABLEparalignment{\raggedcenter},
+      \s!default=>\def\TABLEparalignment{\notragged},
+      \s!unknown=>\def\TABLEparalignment{\notragged}]%
    \assignalfadimension{\@@tiVL}{\@@tiVLwidth} {2}{4}{6}%
    \assignalfadimension{\@@tiHL}{\@@tiHLheight}{2}{4}{6}}
 
@@ -2227,11 +2332,107 @@
    \NormalTLTU         ={.1pt}%
    \NormalTSU          ={\normalbaselineskip\divide\StrutUnit by 12 }%
    \NormalTableUnits}
+
+%D And then I wrote the tabulate environment. That
+%D alternative supports setting the rule thickness and color,
+%D so here is the table alternative.
+
+\let\startglobalTABLEcolor\empty
+\let\stopglobalTABLEcolor \empty
+
+\def\localTABLEsetup%
+  {\@@ticommandos\relax
+   % bodyfont
+   \expanded{\switchtobodyfont[\@@tikorps]}%
+   % linecolor
+   \doifsomething{\@@tilijnkleur}
+     {\def\startglobalTABLEcolor{\localstartcolor[\@@tilijnkleur]}%
+      \def\stopglobalTABLEcolor {\localstopcolor}}%
+   % linethickness
+   \LineThicknessFactor=4
+   \scratchdimen=\@@tilijndikte
+   \divide\scratchdimen by \LineThicknessFactor
+   \expanded{\NormalTLTU={\the\scratchdimen}}%
+   % spacing, was depth=4 height=8 (counters, sigh, now macros)
+   \doifelse{\@@tihoogte}{\v!strut}
+     {\let\StrutHeightFactor\@@ithoogte}
+     {\let\StrutHeightFactor\@@tihoogte}%
+   \doifelse{\@@tidiepte}{\v!strut}
+     {\let\StrutDepthFactor\@@itdiepte}
+     {\let\StrutDepthFactor\@@tidiepte}%
+   \scratchdimen=\StrutHeightFactor pt \multiply\scratchdimen by 10
+   \edef\StrutHeightFactor{\@EA\withoutpt\the\scratchdimen}%
+   \scratchdimen=\StrutDepthFactor  pt \multiply\scratchdimen by 10
+   \edef\StrutDepthFactor{\@EA\withoutpt\the\scratchdimen}%
+   % units
+   \NormalTSU={\normalbaselineskip\divide\StrutUnit by 12 }%
+   \NormalTableUnits}
+
+\def\OpenUp#1#2%
+  {\scratchdimen=\StrutHeightFactor pt \advance\scratchdimen by #1pt
+   \edef\StrutHeightFactor{\@EA\withoutpt\the\scratchdimen}%
+   \scratchdimen=\StrutDepthFactor  pt \advance\scratchdimen by #2pt
+   \edef\StrutDepthFactor{\@EA\withoutpt\the\scratchdimen}}
+
+%D As one can see, we didn't only add color, but also more
+%D control over spacing.
+%D
+%D \startbuffer[a]
+%D \starttabel[|c|]
+%D \HL
+%D \VL \strut test \VL \FR
+%D \VL \strut test \VL \MR
+%D \VL \strut test \VL \MR
+%D \VL \strut test \VL \LR
+%D \HL
+%D \stoptabel
+%D \stopbuffer
+%D
+%D \startbuffer[b]
+%D \starttabulatie[|c|]
+%D \HL
+%D \NC test \NC \NR
+%D \NC test \NC \NR
+%D \NC test \NC \NR
+%D \NC test \NC \NR
+%D \HL
+%D \stoptabulatie
+%D \stopbuffer
+%D
+%D In the next example, the first table is defined as:
+%D
+%D \typebuffer[a]
+%D
+%D and the second one as:
+%D
+%D \typebuffer[b]
+%D
+%D The first table is typeset using the default height and
+%D depth factors .8 and .4. The second table has both factors
+%D set to \type {strut}, and the third table shows what
+%D happens when we set the values to zero. The rightmost table
+%D is typeset using the tabulate environment.
+%D
+%D \startcombinatie
+%D   {$\vcenter{\haalbuffer[a]}$}
+%D     {h=.8 d=.4}
+%D   {\steltabellenin[hoogte=strut,diepte=strut]$\vcenter{\haalbuffer[a]}$}
+%D     {h=d=\type{strut}}
+%D   {\steltabellenin[hoogte=0,diepte=0]$\vcenter{\haalbuffer[a]}$}
+%D     {h=d=0}
+%D   {$\vcenter{\haalbuffer[b]}$}
+%D     {tabulate}
+%D \stopcombinatie
 
 \steltabellenin
   [HL=\v!middel,
    VL=\v!middel,
    NL=\v!klein,
+   \c!uitlijnen=\v!rechts,
+   \c!diepte=.40, % \v!strut
+   \c!hoogte=.80, % \v!strut
+   \c!lijndikte=\linewidth,
+   \c!lijnkleur=,
    \c!afstand=\v!middel,
    \c!korps=\the\bodyfontsize,
    \c!commandos=,

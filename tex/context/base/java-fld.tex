@@ -8,7 +8,7 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See licen-en.pdf for 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
 %C details. 
 
 % nu nog alles geladen, moet dus anders
@@ -125,7 +125,7 @@
   event.value = Sanitized_TeX_String(event.value) ; 
 \stopJScode
 
-\startJSpreamble {Do_With_Field} 
+\startJSpreamble {Do_With_Field} used now 
 
 var visible_field  = new Array() ; % no garbage collection ! 
 var visible_fields = 0 ; 
@@ -135,13 +135,16 @@ function Hide_When_Down ()
 
 function Hide_Field ( Name ) 
   { var v = this.getField(Name) ; 
-    if (v) { v.hidden = true } }
+    if (v) 
+      { % this.dirty = false ; 
+        v.hidden = true } }
 
 function Vide_Field ( Name ) 
   { var v = this.getField(Name) ;   
     if (v) 
       { ++visible_fields ; 
         visible_field[visible_fields] = Name ;  
+        % this.dirty = false ; 
         v.hidden = false } } 
 
 function Hide_Fields () 
@@ -199,31 +202,33 @@ function Flip_Fields ( Name )
 
 \startJScode{Forget_Changes}  this.dirty = false   \stopJScode
 
-\startJSpreamble {Walk_Field} used later 
+\definereference[ForgetChanges][JS(Forget_Changes)]
 
-function Walk_Field ( FieldSet ) 
-  { var i = 1 ; 
-    while (true) 
-      { v = this.getField(FieldSet+":"+i) ; 
-        if (v) 
-          { if (v.value=="On") 
-              { v.value = "Off" ; 
-                var ii = i ; ii++ ; 
-                v = this.getField(FieldSet+":"+ii) ; 
-                if (!v) 
-                  { v = this.getField(FieldSet+":"+1) }
-                if (v) 
-                  { v.value = "On" }
-                break }  
-            i++ } 
-        else
-          { break } } }
-
-\stopJSpreamble
-
-\startJScode {Walk_Field} uses {Walk_Field} 
-  Walk_Field (JS_S_1) ; 
-\stopJScode
+% \startJSpreamble {Walk_Field} used later 
+% 
+% function Walk_Field ( FieldSet ) 
+%   { var i = 1 ; 
+%     while (true) 
+%       { v = this.getField(FieldSet+":"+i) ; 
+%         if (v) 
+%           { if (v.value=="On") 
+%               { v.value = "Off" ; 
+%                 var ii = i ; ii++ ; 
+%                 v = this.getField(FieldSet+":"+ii) ; 
+%                 if (!v) 
+%                   { v = this.getField(FieldSet+":"+1) }
+%                 if (v) 
+%                   { v.value = "On" }
+%                 break }  
+%             i++ } 
+%         else
+%           { break } } }
+% 
+% \stopJSpreamble
+% 
+% \startJScode {Walk_Field} uses {Walk_Field} 
+%   Walk_Field (JS_S_1) ; 
+% \stopJScode
 
 \startJSpreamble {Walk_Field} used later 
 

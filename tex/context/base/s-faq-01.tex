@@ -8,7 +8,7 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See licen-en.pdf for 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
 %C details. 
 
 \usemodule[faq-00]
@@ -35,25 +35,37 @@
 \setupinteraction
   [state=start,
    page=yes,
-   color=red,
+   color=darkred,
+   contrastcolor=black,
    menu=on]
 
 \setupcolors
   [state=start]
 
 \setupbackgrounds
+  [state=repeat]
+
+\setupbackgrounds
   [page]
   [offset=3pt]
 
 \setupbackgrounds
-  [text,bottom]
+  [text]
+  [text]
+  [background={screen,go-on}]
+
+\setupbackgrounds
+  [bottom]
   [text]
   [background=screen]
 
 \setupframedtexts
-  [background=color,
+  [background=MyFrame,
    backgroundcolor=white,
-   framecolor=red]
+   framecolor=darkred,
+   frame=overlay]
+
+\defineoverlay[go-on][\overlaybutton{forward}]
 
 \useexternaldocument
   [paperfaq]
@@ -62,7 +74,8 @@
 
 \setupregister
   [index]
-  [coupling=yes]
+  [coupling=yes,
+   interaction=text]
 
 \coupleregister
   [index]
@@ -72,12 +85,15 @@
 
 \setupinteractionmenu
   [bottom, bottom 1, bottom 2]
-  [background=color,
+  [background=MyFrame,
    backgroundcolor=white,
    color=black,
-   framecolor=red,
+   contrastcolor=black,
+   frame=overlay,
+   framecolor=darkred,
    dummy=yes,
    middle=\hskip1em,
+   height=\bottomheight,
    distance=overlay]
 
 \setupinteractionmenu
@@ -116,8 +132,9 @@
    \bgroup
    \tfx\setstrut
    \framed
-     [framecolor=red,
-      background=color,
+     [frame=overlay,
+      framecolor=darkred,
+      background=MyFrame,
       backgroundcolor=white]
      {\AuthorOfFAQ}
     \egroup}
@@ -133,7 +150,7 @@
    \blank[3*big]
    \midaligned{\tta \ListOfFAQ}
    \vfill
-   \midaligned{\tta pragma@pi.net}
+   \midaligned{\tta pragma@wxs.nl}
    \blank[3*big]
    \stopstandardmakeup}
 
@@ -163,7 +180,7 @@
 \def\EndFAQ%
   {\stopframedtext
    \egroup 
-   \button[frame=off,offset=overlay]{\copy0}[faq:\CurrentNOfFAQ]
+   \button[color=,contrastcolor=,frame=overlay,offset=overlay]{\copy0}[faq:\CurrentNOfFAQ]
    \vskip6pt}
 
 \def\AllFAQs%
@@ -174,5 +191,16 @@
    \setupblock[question][before=\BeginFAQ,after=\EndFAQ]
    \pagereference[faqs]
    \useblocks[question]}
+
+\def\MyFrame%
+  {\startreusableMPgraphic{Frame:\overlaywidth:\overlayheight}
+     path p ; p := unitsquare xscaled \overlaywidth yscaled \overlayheight ;
+     pickup pencircle scaled 2pt ; 
+     fill p withcolor \MPcolor{\overlaycolor} ;
+     draw p withcolor \MPcolor{\overlaylinecolor} ;
+   \stopreusableMPgraphic
+   \reuseMPgraphic{Frame:\overlaywidth:\overlayheight}}
+
+\defineoverlay[MyFrame][\MyFrame]
 
 \endinput

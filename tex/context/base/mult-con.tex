@@ -8,11 +8,14 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See licen-en.pdf for 
-%C details. 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
 
 %D In this rather large definition file we are going to tell
 %D \CONTEXT\ which constants, variables and elements we use.
+%D
+%D The German translations were provided by Tobias Burnus, 
+%D and the Czech ones by Tom Hudec. 
 
 \writestatus{loading}{Context Multilingual Macros / Constants}
 
@@ -23,13 +26,13 @@
 
 %D \startcompressdefinitions
 
-\startvariables       dutch                english             german
+\startvariables       dutch   english   german   czech
 
-                een:  een                  one                 eins
-               twee:  twee                 two                 zwei
-               drie:  drie                 three               drei
-               vier:  vier                 four                vier
-               vijf:  vijf                 five                fuenf
+                een:  een     one       eins     jedna
+               twee:  twee    two       zwei     dve
+               drie:  drie    three     drei     tri
+               vier:  vier    four      vier     ctyri
+               vijf:  vijf    five      fuenf    pet
 
 \stopvariables
 
@@ -39,42 +42,42 @@
 
 %D \startcompressdefinitions
 
-\startvariables  dutch       english     german
+\startvariables  dutch       english     german       czech
 
-        sunday:  zondag      sunday      sonntag
-        monday:  maandag     monday      montag
-       tuesday:  dinsdag     tuesday     dienstag
-     wednesday:  woensdag    wednesday   mittwoch
-      thursday:  donderdag   thursday    donnerstag
-        friday:  vrijdag     friday      freitag
-      saturday:  zaterdag    saturday    samstag
+        sunday:  zondag      sunday      sonntag      nedele
+        monday:  maandag     monday      montag       pondeli
+       tuesday:  dinsdag     tuesday     dienstag     utery
+     wednesday:  woensdag    wednesday   mittwoch     streda
+      thursday:  donderdag   thursday    donnerstag   ctvrtek
+        friday:  vrijdag     friday      freitag      patek
+      saturday:  zaterdag    saturday    samstag      sobota
 
 \stopvariables
 
-\startvariables  dutch       english     german
+\startvariables  dutch       english     german      czech
 
-       january:  januari     January     Januar
-      february:  februari    February    Februar
-         march:  maart       March       Maerz
-         april:  april       April       April
-           may:  mei         May         Mai
-          june:  juni        June        Juni
-          july:  juli        July        Juli
-        august:  augustus    August      August
-     september:  september   September   September
-       october:  oktober     October     Oktober
-      november:  november    November    November
-      december:  december    December    Dezember
+       january:  januari     January     Januar      leden
+      february:  februari    February    Februar     unor
+         march:  maart       March       Maerz       brezen
+         april:  april       April       April       duben
+           may:  mei         May         Mai         kveten
+          june:  juni        June        Juni        cerven
+          july:  juli        July        Juli        cervenec
+        august:  augustus    August      August      srpen
+     september:  september   September   September   zari
+       october:  oktober     October     Oktober     rijen
+      november:  november    November    November    listopad
+      december:  december    December    Dezember    prosinec
 
 \stopvariables
 
 %D Next we introduce some general label bound variables:
 
-\startvariables  dutch       english     german
+\startvariables  dutch       english     german     czech
 
-      oppagina:  oppagina    atpage      aufseite
-     hierboven:  hierboven   hencefore   vorher
-     hieronder:  hieronder   hereafter   nachher
+      oppagina:  oppagina    atpage      aufseite   nastrane
+     hierboven:  hierboven   hencefore   vorher     vyse
+     hieronder:  hieronder   hereafter   nachher    nize
 
 \stopvariables
 
@@ -87,37 +90,62 @@
 %D \startcompressdefinitions
 
 \startvariables       dutch                english             german
+                      czech
 
        sectionlevel:  sectie               section             abschnitt
+                      oddil
 
                deel:  deel                 part                teil
+                      cast
           hoofdstuk:  hoofdstuk            chapter             kapitel
+                      kapitola
           onderwerp:  onderwerp            subject             thema
+                      tema
           paragraaf:  paragraaf            section             absatz
+                      sekce
               titel:  titel                title               titel
+                      titul
+
+         margetitel:  margetitel           margintitle         marginaltitel
+                      margetitel % TOM
 
              inhoud:  inhoud               content             inhalt
+                      obsah
            inhouden:  inhouden             contents            inhalte
+                      obsah
 
             bijlage:  bijlage              appendix            anhang
+                      dodatek
            bijlagen:  bijlagen             appendices          anhaenge
+                      dodatky
          hoofdtekst:  hoofdtekst           bodypart            haupttext
+                      hlavnicast
        hoofdteksten:  hoofdteksten         bodymatter          haupttexte
+                      hlavnicasti
           inleiding:  inleiding            frontpart           einleitung
+                      prednicast
         inleidingen:  inleidingen          frontmatter         einleitungen
+                      prednicasti
          uitleiding:  uitleiding           backpart            epilog
+                      epilog
        uitleidingen:  uitleidingen         backmatter          epiloge
+                      epilogy
 
            voetnoot:  voetnoot             footnote            fussnote
+                      poznamkapodcarou
 
             systeem:  systeem              system              systeme
+                      system
 
 \stopvariables
 
 \startvariables       dutch                english             german
+                      czech
 
               typen:  typen                typing              tippen
+                      typing
                file:  file                 file                datei
+                      soubor
 
 \stopvariables
 
@@ -130,33 +158,55 @@
 %D \startcompressdefinitions
 
 \startvariables       dutch                english             german
+                      czech
 
             formule:  formule              formula             formel
+                      rovnice
            formules:  formules             formulae            formeln
+                      rovnice
 
              figuur:  figuur               figure              abbildung
+                      obrazek
             figuren:  figuren              figures             abbildungen
+                      obrazky
               tabel:  tabel                table               tabelle
+                      tabulka
            tabellen:  tabellen             tables              tabellen
+                      tabulky
             grafiek:  grafiek              graphic             grafik
+                      graf
           grafieken:  grafieken            graphics            grafiken
+                      grafy
          intermezzo:  intermezzo           intermezzo          intermezzo
+                      intermezzo
         intermezzos:  intermezzos          intermezzi          intermezzi
+                      intermezzi
 
               index:  index                index               index
+                      rejstrik
             indices:  indices              indices             indizies
+                      rejstriky
 
           afkorting:  afkorting            abbreviation        abkuerzung
+                      zkratka
         afkortingen:  afkortingen          abbreviations       abkuerzungen
+                      zkratky
                logo:  logo                 logo                logo
+                      logo
               logos:  logos                logos               logos
+                      loga
             eenheid:  eenheid              unit                einheit
+                      jednotka
            eenheden:  eenheden             units               einheiten
+                      jednotky
 
               regel:  regel                line                zeile
+                      radek
              regels:  regels               lines               zeilen
+                      radky
 
          framedtext:  kadertekst           framedtext          umrahmtertext
+                      oramovanytext
 
 \stopvariables
 
@@ -170,298 +220,609 @@
 %D \startcompressdefinitions
 
 \startconstants        dutch                english              german
+                       czech
 
        leftquotation:  linkercitaat         leftquotation        linkerzitat
+                       citacevlevo
       rightquotation:  rechtercitaat        rightquotation       rechterzitat
+                       citacevpravo
            leftquote:  linkerciteer         leftquote            linkerzitieren
+                       citovatvlevo
           rightquote:  rechterciteer        rightquote           rechterzitieren
+                       citovatvpravo
         leftsentence:  linkerzin            leftsentence         linkersatz
+                       vetavlevo
        rightsentence:  rechterzin           rightsentence        rechtersatz
+                       vetavpravo
      leftsubsentence:  linkersubzin         leftsubsentence      linkersubsatz
+                       podvetavlevo
     rightsubsentence:  rechtersubzin        rightsubsentence     rechtersubsatz
+                       podvetavpravo
 
                datum:  datum                date                 datum
+                       datum
 
              voorwit:  voorwit              spacebefore          vorspatium
+                       mezerapred
                nawit:  nawit                spaceafter           nachspatium
+                       mezeraza
           zijvoorwit:  zijvoorwit           sidespacebefore      nebenvorspatium
+                       bocnimezerapred
             zijnawit:  zijnawit             sidespaceafter       nebennachspatium
+                       bocnimezeraza
 
                  aan:  aan                  to                   zu
+                       na
           aanduiding:  aanduiding           indicator            indikator
+                       indikator
          achtergrond:  achtergrond          background           hintergrund
+                       pozadi
    achtergronddiepte:  achtergronddiepte    backgrounddepth      hintergrundtiefe
+                       hloubkapozadi
      achtergrondhoek:  achtergrondhoek      backgroundcorner     hintergrundwinkel
+                       rohpozadi
     achtergrondkleur:  achtergrondkleur     backgroundcolor      hintergrundfarbe
+                       barvapozadi
    achtergrondoffset:  achtergrondoffset    backgroundoffset     hintergrundoffset
+                       offsetpozadi
    achtergrondraster:  achtergrondraster    backgroundscreen     hintergrundraster
+                       rastrpozadi
    achtergrondstraal:  achtergrondstraal    backgroundradius     hintergrundradius
+                       polomerpozadi
                adres:  adres                address              adresse
+                       adresa
            afsluiter:  afsluiter            stopper              abschnitttrenner
+                       predel
              afstand:  afstand              distance             abstand
+                       vzdalenost
         assenstelsel:  assenstelsel         axis                 achsen
+                       osa
               auteur:  auteur               author               autor
+                       autor
           balanceren:  balanceren           balance              ausgleichen
+                       rovnovaha
              bfactor:  bfactor              wfactor              bfaktor
+                       sfaktor
               binnen:  binnen               inner                innen
+                       vnitrni
               blanko:  blanko               blank                blanko
+                       prazdny
             blokkade:  blokkade             obstruction          gesperrt
+                       prekazka
            blokwijze:  blokwijze            blockway             blockauf
+                       dobloku
                boven:  boven                top                  oben
+                       vrsek
         bovenafstand:  bovenafstand         topdistance          obenabstand
+                       vzdalenostvrsku
           bovenkader:  bovenkader           topframe             obenrahmen
+                       vrchniramecek
          bovenoffset:  bovenoffset          topoffset            obenoffset
+                       offsetvrsku
          bovenstatus:  bovenstatus          topstate             statusoben
+                       statusvrsku
              breedte:  breedte              width                breite
-          maxbreedte:  maxbreedte           maxwidth            maxbreite
+                       sirka
+          maxbreedte:  maxbreedte           maxwidth             maxbreite
+                       maxsirka
                 bron:  bron                 source               quelle
+                       zdroj
             commando:  commando             command              befehl
+                       prikaz
            commandos:  commandos            commands             befehle
+                       prikazy
        contrastkleur:  contrastkleur        contrastcolor        kontrastfarbe
+                       kontrastnibarva
            conversie:  conversie            conversion           konversion
+                       konverze
            criterium:  criterium            criterium            kriterium
+                       kriterium
                datum:  datum                date                 datum
-             default:  default              default              norm
+                       datum
+             default:  default              default              default
+                       implicitni
               diepte:  diepte               depth                tiefe
+                       hloubka
      dieptecorrectie:  dieptecorrectie      depthcorrection      tiefekorrektur
+                       korekcehloubky
                dikte:  dikte                thickness            dicke
+                       tloustka
             doorgaan:  doorgaan             continue             fortsetzen
+                       pokracovat
         dubbelzijdig:  dubbelzijdig         doublesided          doppelseitig
+                       dvoustranny
                dummy:  dummy                dummy                dummy
+                       dummy
              eenheid:  eenheid              unit                 einheit
+                       jednotka
          eigennummer:  eigennummer          ownnumber            eigenenummer
+                       vlastnicislo
            evenmarge:  evenmarge            evenmargin           geraderand
+                       sudamarginalie
             expansie:  expansie             expansion            expansion
+                       expanzen
               factor:  factor               factor               faktor
+                       faktor
+      converteerfile:  converteerfile       convertfile          konvertieredatei
+                       converteerfile % TOM
                 file:  file                 file                 datei
+                       soubor
              formaat:  formaat              size                 groesse
-           autofocus:  autofocus            autofocus            autofocus 
-               focus:  focus                focus                focus 
+                       velikost
+           autofocus:  autofocus            autofocus            autofocus
+                       autoostreni
+               focus:  focus                focus                focus
+                       zaostreni
               gebied:  gebied               directory            verzeichnis
+                       adresar
                 grid:  grid                 grid                 gritter
-               groot:  groot                big                  gross
+                       mrizka
+               groot:  groot                big                  gross        velky
                 haal:  haal                 get                  hole
+                       ziskat
                 hang:  hang                 hang                 haengend
+                       viset
+             herhaal:  herhaal              repeat               wiederholen
+                       opakovat
              hfactor:  hfactor              hfactor              hfaktor
+                       vfaktor
                 hoek:  hoek                 corner               winkel
+                       roh
              hoffset:  hoffset              hoffset              hoffset
+                       hoffset
               hokjes:  hokjes               frames               umrahmen
+                       ramecky
                hoofd:  hoofd                header               kopfzeile
+                       zahlavi
         hoofdafstand:  hoofdafstand         headerdistance       kopfzeilenabstand
+                       vzdalenostzahlavi
          hoofdstatus:  hoofdstatus          headerstate          kopfzeilenstatus
+                       statuszahlavi
               hoogte:  hoogte               height               hoehe
+                       vyska
            maxhoogte:  maxhoogte            maxheight            maxhoehe
+                       maxvyska
              huidige:  huidige              current              aktuell
+                       aktualni
                   in:  in                   in                   in
+                       v
           inspringen:  inspringen           indenting            einziehen
+                       odsazovani
           interactie:  interactie           interaction          interaktion
+                       interakce
           interlinie:  interlinie           interlinespace       zeilenabstande
+                       meziradkovamezera
                items:  items                items                posten
+                       polozky
                kader:  kader                frame                rahmen
+                       ramecek
          kaderdiepte:  kaderdiepte          framedepth           rahmentiefe
+                       hloubkaramecku
            kaderhoek:  kaderhoek            framecorner          rahmenwinkel
+                       rohramecku
           kaderkleur:  kaderkleur           framecolor           rahmenfarbe
+                       barvaramecku
          kaderoffset:  kaderoffset          frameoffset          rahmenoffset
+                       offsetramecku
          kaderstraal:  kaderstraal          frameradius          rahmenradius
+                       polomerramecku
             kantlijn:  kantlijn             marginedge           marginalkante
+                       textovahrana
        kantlijntekst:  kantlijntekst        marginedgetext       marginalkantetext
+                       textmarginalnihookraje
                klein:  klein                small                klein
+                       male
                kleur:  kleur                color                farbe
+                       barva
                kolom:  kolom                column               spalte
+                       sloupec
         kolomafstand:  kolomafstand         columndistance       spaltenabstand
+                       vzdalenostsloupcu
             kopkleur:  kopkleur             headcolor            kopffarbe
+                       barvahlavy
            kopletter:  kopletter            headstyle            kopfstil
+                       stylhlavy
                kopna:  kopna                afterhead            nachkopf
+                       pohlave
            kopoffset:  kopoffset            veroffset            kopfoffset
+                       offsethlavy
            koppeling:  koppeling            coupling             verknuepfung
+                       propojeni
+         koppelwijze:  koppelwijze          couplingway          verkopplungsart
+                       zpusobpropojeni
              kopvoor:  kopvoor              beforehead           vorkopf
+                       predhlavou
               kopwit:  kopwit               topspace             kopfspatium
+                       svrchnimezera
                korps:  korps                bodyfont             fliesstext
+                       zakladnifont
                label:  label                label                label
+                       popisek
                 leeg:  leeg                 empty                leer
+                       prazdne
               letter:  letter               style                stil
+                       pismeno
                 lijn:  lijn                 rule                 linie
+                       linka
            lijndikte:  lijndikte            rulethickness        liniendicke
+                       tloustkalinky
            lijnkleur:  lijnkleur            rulecolor            linienfarbe
+                       barvalinky
                lijst:  lijst                list                 liste
+                       seznam
        linkerbreedte:  linkerbreedte        leftwidth            linkerbreite
+                       sirkavlevo
          linkerkader:  linkerkader          leftframe            linkerrahmen
+                       ramecekvlevo
          linkerkleur:  linkerkleur          leftcolor            linkerfarbe
+                       barvavlevo
         linkerletter:  linkerletter         leftstyle            linkerstil
+                       stylvlevo
          linkermarge:  linkermarge          leftmargin           linkerrand
+                       levyokraj
   linkermargeafstand:  linkermargeafstand   leftmargindistance   linkerrandabstand
+                       vzdalenostlevehookraje
         linkeroffset:  linkeroffset         leftoffset           linkeroffset
+                       levyoffset
           linkerrand:  linkerrand           leftedge             linkekante
+                       levahrana
    linkerrandafstand:  linkerrandafstand    leftedgedistance     linkerkantenabstand
+                       vzdalenostlevehrany
          linkertekst:  linkertekst          lefttext             linkertext
+                       textvlevo
                links:  links                left                 links
+                       vlevo
                 logo:  logo                 logo                 logo
+                       logo
                logos:  logos                logos                logos
+                       loga
               lokaal:  lokaal               local                lokal
+                       lokalni
                marge:  marge                margin               marginalie
+                       marginalie
         margeafstand:  margeafstand         margindistance       marginalabstand
+                       vzdalenostokraje
           margetekst:  margetekst           margintext           marginaltext
+                       margetekst % TOM: must be unique 
            markering:  markering            marking              beschriftung
+                       znaceni
             markleur:  markleur             marcolor             beschrfarbe
+                       barvaznacky
            marletter:  marletter            marstyle             beschrstil
+                       stylsnacky
                 menu:  menu                 menu                 menue
+                       menu
              methode:  methode              method               methode
+                       metoda
               midden:  midden               middle               mittig
+                       stredni
          middentekst:  middentekst          middletext           mittigertext
+                       strednitext
                  min:  min                  min                  min
+                       min
              monster:  monster              sample               muster
+                       vzor
                   na:  na                   after                nach
+                       po
                 naam:  naam                 name                 name
+                       jmeno
           nacommando:  nacommando           commandafter         zumbefehl
+                       prikazpo
               nboven:  nboven               ntop                 noben
+                       nvrsek
               niveau:  niveau               level                niveau
+                       uroven
              niveaus:  niveaus              levels               niveaus
+                       urovne
               nonder:  nonder               nbottom              nunten
+                       nspodek
                 norm:  norm                 norm                 norm
+                       norm
              nregels:  nregels              nlines               zzeile
+                       nradky
               nummer:  nummer               number               nummer
+                       cislo
       nummercommando:  nummercommando       numbercommand        nummerbefehl
+                       ciselnyprikaz
             nummeren:  nummeren             numbering            nummerierung
+                       cislovani
          nummerkleur:  nummerkleur          numbercolor          nummernfarbe
+                       barvacisla
         nummerletter:  nummerletter         numberstyle          nummernstil
+                       stylcisla
       nummerscheider:  nummerscheider       numberseparator      nummernseperator
+                       oddelovaccisla
               object:  object               object               objekt
+                       objekt
               offset:  offset               offset               offset
+                       offset
                onder:  onder                bottom               unten
+                       spodek
         onderafstand:  onderafstand         bottomdistance       abstandunten
+                       vzdalenostspodku
           onderkader:  onderkader           bottomframe          untenrahmen
+                       ramecekspodku
          onderoffset:  onderoffset          bottomoffset         untenoffset
+                       offsetspodku
          onderstatus:  onderstatus          bottomstate          untenstatus
+                       statusspodku
          onevenmarge:  onevenmarge          oddmargin            ungeraderand
+                       lichyokraj
                   op:  op                   at                   bei
+                       op % TOM: not 'na', since that's already taken by aan:
                optie:  optie                option               option
+                       volba
               pagina:  pagina               page                 seite
+                       strana
       paginacommando:  paginacommando       pagecommand          seitenbefehl
+                       strankovyprikaz
          paginakleur:  paginakleur          pagecolor            seitenfarbe
+                       barvastrany
         paginaletter:  paginaletter         pagestyle            seitenstil
+                       stylstrany
         paginanummer:  paginanummer         pagenumber           seitennummer
+                       cislostrany
     paginaovergangen:  paginaovergangen     pageboundaries       seitenbegrenzung
+                       hranicestrany
                palet:  palet                palet                palette
+                       paleta
               papier:  papier               paper                papier
+                       papir
               plaats:  plaats               location             platz
+                       misto
      plaatsafsluiter:  plaatsafsluiter      placestopper         setzetrenner
+                       predelmista
             plaatsen:  plaatsen             place                platziere
+                       plaatsen % TOM: must be unique, 'to place' or 'place it'
            plaatskop:  plaatskop            placehead            setzekopf
+                       hlavamista
               prefix:  prefix               prefix               prefix
+                       prefix
               preset:  preset               preset               voreinstellung
-             preview:  preview              preview              preview
+                       prednastaveni
+             preview:  preview              preview              vorschau
+                       nahled
                 punt:  punt                 dot                  punkt
-                pijl:  pijl                 arrow                arrow % TOBIAS 
+                       tecka
+                pijl:  pijl                 arrow                pfeil
+                       sipka
                 rand:  rand                 edge                 kante
+                       hrana
          randafstand:  randafstand          edgedistance         kantenabstand
+                       vzdalenosthrany
               raster:  raster               screen               raster
+                       rastr
       rechterbreedte:  rechterbreedte       rightwidth           rechterbreite
+                       sirkavpravo
         rechterkader:  rechterkader         rightframe           rechterrahmen
+                       ramecekvpravo
         rechterkleur:  rechterkleur         rightcolor           rechterfarbe
+                       barvavpravo
        rechterletter:  rechterletter        rightstyle           rechterstil
+                       stylvpravo
         rechtermarge:  rechtermarge         rightmargin          rechterrand
+                       pravyokraj
  rechtermargeafstand:  rechtermargeafstand  rightmargindistance  rechterrandabstand
+                       vzdalenostpravehookraje
        rechteroffset:  rechteroffset        rightoffset          rechterabstand
+                       pravyoffset
          rechterrand:  rechterrand          rightedge            rechtekante
+                       pravahrana
   rechterrandafstand:  rechterrandafstand   rightedgedistance    rechterkantenabstand
+                       vzdalenostpravehrany
         rechtertekst:  rechtertekst         righttext            rechtertext
+                       textvpravo
               rechts:  rechts               right                rechts
+                       vpravo
             reductie:  reductie             reduction            reduktion
+                       redukce
            refereren:  refereren            referencing          referieren
+                       odkazujici
                regel:  regel                line                 zeile
+                       radek
       regelcorrectie:  regelcorrectie       linecorrection       zeilekorrektur
+                       korekceradku
               regels:  regels               lines                zeilen
+                       radky
            resolutie:  resolutie            resolution           aufloesung
+                       rozliseni
              rotatie:  rotatie              rotation             rotation
+                       rotace
            rugoffset:  rugoffset            horoffset            rumpfabstand
+                       horoffset
               rugwit:  rugwit               backspace            rumpfspatium
+                       zpetnamezera
+            richting:  richting             direction            richtung
+                       richting % TOM
               schaal:  schaal               scale                format
+                       meritko
             scheider:  scheider             separator            seperator
+                       oddelovac
               scherm:  scherm               display              bildschirm
+                       obrazovka
                scope:  scope                scope                bereich
+                       rozsah
               sectie:  sectie               section              abschnitt
+                       oddil
         sectienummer:  sectienummer         sectionnumber        abschnittsnummer
+                       cislooddilu
                soort:  soort                family               familie
+                       rodina
               spatie:  spatie               space                spatium
+                       mezera
           spatiering:  spatiering           spacing              spatiumausgleich
+                       mezerovani
     springvolgendein:  springvolgendein     indentnext           ziehefolgendeein
+                       odsadpristi
                 stap:  stap                 step                 schritt
+                       krok
                start:  start                start                start
+                       start
               status:  status               state                status
+                       status
                 stop:  stop                 stop                 stop
+                       stop
               straal:  straal               radius               radius
-              streep:  streep               dash                 dash % TOBIAS
+                       polomer
+              streep:  streep               dash                 strich
+                       pomlcka
                  sub:  sub                  sub                  unter
+                       pod
             subtitel:  subtitel             subtitle             untertitel
+                       podtitulek
              symbool:  symbool              symbol               symbol
-          symboolset:  symboolset           symbolset            symbolset 
+                       symbol
+          symboolset:  symboolset           symbolset            symbolset
+                       sadasymbolu
             symkleur:  symkleur             symcolor             symfarbe
+                       barvasymbolu
            symletter:  symletter            symstyle             symstil
+                       stylsymboly
             synoniem:  synoniem             synonym              synonym
+                       synonymum
        synoniemkleur:  synoniemkleur        synonymcolor         synonymfarbe
-      synoniemletter:  synoniemletter       synonymstyle         synonymstil
+                       barvasynonyma
+      synoniemletter:  synoniemletter       synonymstyle         synonymstil        stylsynonyma
                  tab:  tab                  tab                  tab
+                       tab
                teken:  teken                sign                 zeichen
+                       znak
                tekst:  tekst                text                 text
+                       text
        tekstcommando:  tekstcommando        textcommand          textbefehl
+                       textovyprikaz
         tekstformaat:  tekstformaat         textsize             textgroesse
+                       velikosttextu
           tekstkleur:  tekstkleur           textcolor            textfarbe
+                       barvatextu
          tekstletter:  tekstletter          textstyle            textstil
+                       styltextu
        tekstscheider:  tekstscheider        textseparator        textseparator
+                       oddelovactextu
          tekststatus:  tekststatus          textstate            textstatus
+                       statustextu
                titel:  titel                title                titel
+                       titul
       titeluitlijnen:  titeluitlijnen       aligntitle           titelausrichten
+                       zarovnejtitul
           tolerantie:  tolerantie           tolerance            toleranz
+                       tolerance
               tussen:  tussen               inbetween            zwischen
+                       mezi
                 type:  type                 type                 typ
+                       type
            uitlijnen:  uitlijnen            align                ausrichtung
+                       zarovnani
            urlspatie:  urlspatie            urlspace             urlspatium
+                       prostorurl
           urlvariant:  urlvariant           urlalternative       urlalternative
+                       urlalternativa
                  van:  van                  from                 von
+                       z
              variant:  variant              alternative          alternative
+                       alternativa
              verhoog:  verhoog              increment            erhoehen
+                       zvysit
        verhoognummer:  verhoognummer        incrementnumber      nummererhoehen
+                       zvysujicicislo
           verwijzing:  verwijzing           reference            referenz
+                       odkaz
  onbekendeverwijzing:  onbekendeverwijzing  unknownreference     unbekantereferenz
+                       neznamyodkaz
                 voet:  voet                 footer               fusszeile
+                       upati
          voetafstand:  voetafstand          footerdistance       fusszeilenabstand
+                       vzdalenostupati
           voetstatus:  voetstatus           footerstate          fusszeilenstatus
+                       statusupati
              voffset:  voffset              voffset              voffset
+                       voffset
             volgende:  volgende             next                 folgende
+                       dalsi
                 voor:  voor                 before               vor
+                       pred
         voorcommando:  voorcommando         commandbefore        vorbefehl
+                       predchoziprikaz
               vorige:  vorige               previous             vorige
+                       predchozi
         vorigenummer:  vorigenummer         previousnumber       vorigenummer
+                       predchozicislo
+           wachttijd:  wachttijd            delay                wartezeit
+                       wachttijd % TOM
                wijze:  wijze                way                  art
+                       zpusob
+           willekeur:  willekeur            random               zufaellig
+                       willekeur % TOM
                  wit:  wit                  white                weiss
+                       bily
              xfactor:  xfactor              xfactor              xfaktor
+                       xfaktor
                 xmax:  xmax                 xmax                 xmax
+                       xmax
              xoffset:  xoffset              xoffset              xoffset
+                       xoffset
              xschaal:  xschaal              xscale               xformat
+                       xmeritko
                xstap:  xstap                xstep                xschritt
+                       xkrok
              yfactor:  yfactor              yfactor              yfaktor
+                       yfaktor
                 ymax:  ymax                 ymax                 ymax
+                       ymax
              yoffset:  yoffset              yoffset              yoffset
+                       yoffset
              yschaal:  yschaal              yscale               yformat
+                       ymeritko
                ystap:  ystap                ystep                yschritt
+                       ykrok
         zelfdepagina:  zelfdepagina         samepage             selbeseite
+                       stejnastrana
                  zij:  zij                  side                 objektabstand
+                       zij % TOM: was strana must be unique, see pagina:
 
 veldachtergrondkleur:  veldachtergrondkleur fieldbackgroundcolor feldhintergrundfarbe
+                       barvapozadipole
       veldkaderkleur:  veldkaderkleur       fieldframecolor      feldrahmenfarbe
+                       barvarameckupole
           veldoffset:  veldoffset           fieldoffset          feldoffset
+                       offsetpole
 
-           openactie:  openactie            openaction           oeffenaktion 
+           openactie:  openactie            openaction           oeffenaktion
+                       otevriakci
           sluitactie:  sluitactie           closeaction          schliessenaktion
+                       zavriakci
+
+     openpaginaactie:  openpaginaactie      openpageaction       openpageaction       
+                       openpageaction  % TOBIAS % TOM      
+    sluitpaginaactie:  sluitpaginaactie     closepageaction      closepageaction      
+                       closepageaction % TOBIAS % TOM      
 
               klikin:  klikin               clickin              klickin
+                       klikuvnitr
              klikuit:  klikuit              clickout             klickaus
+                       klikvne
             gebiedin:  gebiedin             regionin             regionin
+                       oblastuvnitr
            gebieduit:  gebieduit            regionout            regionaus
+                       oblastvne
              natoets:  natoets              afterkey             nachtaste
+                       klavesapo
           formatteer:  formatteer           format               formatieren
+                       formatovat
             valideer:  valideer             validate             validieren
+                       validovat
              bereken:  bereken              calculate            berechnen
+                       pocitat
+
+                klik:  klik                 click                klick  
+                       klik % TOM
+
+           vcommando:  vcommando            vcommand             vbefehl
+                       vcommando % TOM
+           icommando:  icommando            icommand             ibefehl
+                       icommando % TOM
+           ccommando:  ccommando            ccommand             cbefehl
+                       ccommando % TOM
 
 \stopconstants
 
@@ -474,230 +835,480 @@ veldachtergrondkleur:  veldachtergrondkleur fieldbackgroundcolor feldhintergrund
 %D \startcompressdefinitions
 
 \startvariables       dutch                english             german
+                      czech
 
                 aan:  aan                  on                  an
+                      na
           aanelkaar:  aanelkaar            serried             kleinerabstand
+                      semknuto
         aansluitend:  aansluitend          joinedup            keinabstand
+                      spojeno
            absoluut:  absoluut             absolute            absolut
+                      absolutni
         achtergrond:  achtergrond          background          hintergrund
+                      pozadi
           achteruit:  achteruit            backward            rueckwaerts
+                      zpet
               actie:  actie                action              aktion
+                      akce
           afsluiter:  afsluiter            stopper             trenner
+                      predel
+             alinea:  alinea               paragraph           absaetze
+                      odstavce % TOBIAS % TOM -> singular 
               alles:  alles                all                 alles
+                      vse
              altijd:  altijd               always              immer
+                      vzdy
           autointro:  autointro            autointro           autointro
+                      autouvod
               beide:  beide                both                beide
+                      obe
              binnen:  binnen               inner               innen
+                      vnitrni
              blanko:  blanko               blank               blanko
+                      prazdny
            blokkeer:  blokkeer             disable             sperren
+                      zablokovat
               boven:  boven                top                 oben
+                      vrsek
               breed:  breed                wide                breit
+                      siroky
             breedte:  breedte              width               breite
+                      sirka
+             buffer:  buffer               buffer              puffer
+                      buffer
              buiten:  buiten               outer               aussen
+                      vnejsi
             cijfers:  cijfers              numbers             ziffern
+                      cisla
             Cijfers:  Cijfers              Numbers             Ziffern
+                      Cisla
            commando:  commando             command             befehl
+                      prikaz
           commandos:  commandos            commands            befehle
+                      prikazy
             concept:  concept              concept             konzept
+                      koncept
                 dag:  dag                  day                 tag
+                      den
               datum:  datum                date                datum
+                      datum
             default:  default              default             default
+                      implicitni
          definitief:  definitief           final               endfassung
+                      finalni
              diepte:  diepte               depth               tiefe
+                      hloubka
        dubbelzijdig:  dubbelzijdig         doublesided         doppelseitig
+                      dvoustranny
              eerste:  eerste               first               erste
+                      prvni
                 elk:  elk                  each                jede
+                      kazdy
         enkelzijdig:  enkelzijdig          singlesided         einzelseitig
+                      jednostranny
              ergens:  ergens               somewhere           irgendwo
+                      nekde
             nergens:  nergens              nowhere             nirgens
+                      nikde
                even:  even                 even                gerade
+                      sude
              extern:  extern               external            extern
+                      externi
                file:  file                 file                datei
+                      soubor
            flexibel:  flexibel             flexible            flexibel
+                      prizpusobivy
             forceer:  forceer              force               zwinge
+                      sila
            gebruikt:  gebruikt             used                verwende
+                      uzito
                geen:  geen                 none                kein
+                      zadny
       geenmarkering:  geenmarkering        nomarking           keinebeschriftung
+                      zadneznaceni
             geenwit:  geenwit              nowhite             keinweiss
+                      zadnabila
           geroteerd:  geroteerd            rotated             gedreht
+                      otoceno
          gespiegeld:  gespiegeld           mirrored            gespiegelt
+                      zrcadleno
             globaal:  globaal              global              global
+                      globalni
                grid:  grid                 grid                gritter
+                      mrizka
               groot:  groot                big                 gross
+                      velky
       grotevoorkeur:  grotevoorkeur        bigpreference       grosszuegig
+                      velkaprednost
               grijs:  grijs                gray                grau
+                      seda
          halveregel:  halveregel           halfline            halbezeile
+                      pulradku
            handhaaf:  handhaaf             keep                behalte
+                      drzet
             hangend:  hangend              hanging             haengend
+                      visici
             herhaal:  herhaal              repeat              wiederholen
+                      opakovat
             herstel:  herstel              fix                 stellewiederher
+                      fixuj
                hier:  hier                 here                hier
+                      zde
               hoofd:  hoofd                header              kopfzeile
+                      zahlavi
                hoog:  hoog                 high                hoch
+                      vysoko
              hoogte:  hoogte               height              hoehe
+                      vyska
         horizontaal:  horizontaal          horizontal          horizontal
+                      horizontalni
             huidige:  huidige              current             aktuell
-             italic:  italic               italic              italic 
+                      aktualni
+             italic:  italic               italic              italic
+                      kurziva
            inlinker:  inlinker             inleft              imlinken
+                      vlevo
             inmarge:  inmarge              inmargin            imrand
+                      naokraji
           inrechter:  inrechter            inright             imrechten
+                      vpravo
             intekst:  intekst              intext              imtext
+                      dotextu
               intro:  intro                intro               intro
+                      uvod
                 its:  its                  its                 its
+                      pol
                  ja:  ja                   yes                 ja
+                      ano
                jaar:  jaar                 year                jahr
+                      rok
               kader:  kader                frame               rahmen
+                      ramecek
            kantlijn:  kantlijn             marginedge          marginalkante
+                      textovahrana
                 kap:  kap                  cap                 kap
+                      kap
            kapitaal:  kapitaal             capital             versalien
+                      verzalky
             kenmerk:  kenmerk              referral            merkmal
+                      znacka
               klein:  klein                small               klein
+                      male
        kleinnormaal:  kleinnormaal         smallnormal         kleinnormal
+                      malenormalni
         kleinschuin:  kleinschuin          smallslanted        kleingeneigt
+                      malesklonene
      kleinschuinvet:  kleinschuinvet       smallslantedbold    kleingeneigtfett
+                      malesklonenetucne
         kleinitalic:  kleinitalic          smallitalic         kleinitalic
+                      malekurzivni
      kleinitalicvet:  kleinitalicvet       smallitalicbold     kleinitalicfett
+                      malekurzivnitucne
           kleintype:  kleintype            smalltype           kleintippen
+                      maletype
            kleinvet:  kleinvet             smallbold           kleinfett
+                      maletucne
      kleinvetschuin:  kleinvetschuin       smallboldslanted    kleinfettgeneigt
+                      maletucnesklonene
      kleinvetitalic:  kleinvetitalic       smallbolditalic     kleinfettitalic
+                      maletucnekurzivni
               kleur:  kleur                color               farbe
+                      barva
            kolommen:  kolommen             columns             spalten
+                      sloupce
                 kop:  kop                  head                kopf
+                      hlava
                laag:  laag                 low                 tief
+                      nizko
             laatste:  laatste              last                letzte
+                      posledni
               label:  label                label               label
+                      popisek
                lang:  lang                 tall                lang
+                      vysoky
                leeg:  leeg                 empty               leer
+                      prazdne
              Letter:  Letter               Character           Buchstabe
+                      Pismeno
              letter:  letter               character           buchstabe
+                      pismeno
             Letters:  Letters              Characters          Buchstaben
+                      Pismena
             letters:  letters              characters          buchstaben
+                      pismena
             liggend:  liggend              landscape           querformat
+                      nasirku
                lijn:  lijn                 rule                linie
+                      linka
         linkermarge:  linkermarge          leftmargin          linkerrand
+                      levyokraj
        linkerpagina:  linkerpagina         leftpage            linkerseite
+                      levastrana
          linkerrand:  linkerrand           leftedge            linkekante
+                      levahrana
               links:  links                left                links
+                      vlevo
              lokaal:  lokaal               local               lokal
+                      lokalni
+              nieuw:  nieuw                new                 neu
+                      nieuw % TOM
               MAAND:  MAAND                MONTH               MONAT
+                      MESIC
               maand:  maand                month               monat
+                      mesic
                 mar:  mar                  mar                 mar
+                      mar
               marge:  marge                margin              marginalie
+                      marginalie
                 max:  max                  max                 max
+                      max
           mediaeval:  mediaeval            mediaeval           mittelalterlich
+                      stredoveky
              middel:  middel               medium              mittel
+                      stredni
              midden:  midden               middle              mittig
+                      stredni
                  na:  na                   after               nach
+                      po
                naam:  naam                 name                name
+                      jmeno
               naast:  naast                opposite            gegenueber
+                      opacny
                 nee:  nee                  no                  nein
+                      ne
            negatief:  negatief             negative            negativ
+                      negativ
                niet:  niet                 not                 nicht
+                      ne
               nooit:  nooit                never               nie
+                      nikdy
             normaal:  normaal              normal              normal
+                      normalni
              nummer:  nummer               number              nummer
+                      cislo
              offset:  offset               offset              offset
+                      offset
            onbekend:  onbekend             unknown             unbekannt
+                      neznamy
               onder:  onder                bottom              unten
+                      spodek
              oneven:  oneven               odd                 ungerade
+                      liche
            opelkaar:  opelkaar             packed              gepackt
+                      zhustene
+          vanelkaar:  vanelkaar            unpacked            ungepackt
+                      vanelkaar % TOM
              opmaak:  opmaak               markup              umbruch
+                      zlom
             opmarge:  opmarge              atmargin            amrand
+                      naokraji
             overlay:  overlay              overlay             overlay
+                      prekryv
              pagina:  pagina               page                seite
+                      strana
        paginanummer:  paginanummer         pagenumber          seitennummer
+                      cislostrany
              papier:  papier               paper               papier
+                      papir
              scherm:  scherm               display             bildschirm
+                      obrazovka
             passend:  passend              fit                 passend
+                      prizpusobivy
                 per:  per                  by                  pro
+                      skrz
          postscript:  postscript           postscript          postscript
+                      postscript
+            preview:  preview              preview             vorschau
+                      nahled
           programma:  programma            program             programm
+                      program
                punt:  punt                 dot                 punkt
+                      tecka
                 ran:  ran                  ran                 ran
+                      rozsah
                rand:  rand                 edge                kante
+                      hrana
              raster:  raster               screen              raster
-              recht:  recht                rectangular         rechteckig    
+                      rastr
+              recht:  recht                rectangular         rechteckig
+                      pravouhly
        rechtermarge:  rechtermarge         rightmargin         rechterrand
+                      pravyokraj
       rechterpagina:  rechterpagina        rightpage           rechterseite
+                      pravastrana
         rechterrand:  rechterrand          rightedge           rechterkante
+                      pravahrana
              rechts:  rechts               right               rechts
+                      vpravo
               regel:  regel                line                zeile
+                      radek
            relatief:  relatief             relative            relativ
+                      relativni
               reset:  reset                reset               zuruecksetzten
+                      reset
             Romeins:  Romeins              Romannumerals       Roemischezahlen
+                      Rimskecislice
             romeins:  romeins              romannumerals       roemischezahlen
-             grieks:  grieks               greek               greek 
-             Grieks:  Grieks               Greek               Greek 
+                      rimskecislice
+             grieks:  grieks               greek               griechisch
+                      recky
+             Grieks:  Grieks               Greek               Griechisch
+                      Recky
                rond:  rond                 round               rund
+                      kolo
              roteer:  roteer               rotate              drehe
+                      otoc
+                rek:  rek                  stretch             strecken
+                      rek % TOM
                ruim:  ruim                 broad               breit
+                      siroky
              schuin:  schuin               slanted             geneigt
+                      sklonene
           schuinvet:  schuinvet            slantedbold         geneigtfett
+                      sklonenetucne
           italicvet:  italicvet            italicbold          italicfett
+                      kurzivnitucne
        sectienummer:  sectienummer         sectionnumber       abschnittsnummer
+                      cislooddilu
                smal:  smal                 narrow              schmall
+                      uzky
              soepel:  soepel               tolerant            tolerant
+                      tolerantni
           standaard:  standaard            standard            standard
+                      standardni
               start:  start                start               start
+                      start
                stop:  stop                 stop                stop
+                      stop
              streng:  streng               strict              streng
+                      striktni
+              strut:  strut                strut               strut
+                      strut 
                 sub:  sub                  sub                 unter
+                      pod
                 sym:  sym                  sym                 sym
+                      sym
             symbool:  symbool              symbol              symbol
+                      symbol
               tekst:  tekst                text                text
+                      text
                back:  terug                back                zurueck
+                      zpet
                test:  test                 test                test
+                      test
              tussen:  tussen               inbetween           zwischen
+                      mezi
                type:  type                 type                tippen
+                      type
                 uit:  uit                  off                 aus
+                      pryc
                 url:  url                  url                 url
+                      url
                 URL:  URL                  URL                 URL
+                      URL
                vast:  vast                 fixed               fest
-                los:  los                  loose               lose 
+                      fixne
+                los:  los                  loose               lose
+                      uvolnene
              verder:  verder               continue            fortsetzten
+                      pokracovat
           vertikaal:  vertikaal            vertical            vertikal
+                      vertikalne
                 vet:  vet                  bold                fett
+                      tucne
           vetschuin:  vetschuin            boldslanted         fettgeneigt
+                      tucnesklonene
           vetitalic:  vetitalic            bolditalic          fettitalic
+                      tucnekurzivni
             viertal:  viertal              quadruple           viertel
+                      ctyrnasobny
                voet:  voet                 footer              fusszeile
+                      upati
            volgende:  volgende             next                folgende
+                      dalsi
                voor:  voor                 before              vor
+                      pred
+          voorgrond:  voorgrond            foreground          vordergrund
+                      voorgrond % TOM
            voorkeur:  voorkeur             preference          einstellung
+                      nastaveni
           voorlopig:  voorlopig            temporary           temporaer
+                      docasny
             vooruit:  vooruit              forward             vorwaerts
+                      vpred
              vorige:  vorige               previous            vorig
+                      predchozi
              waarde:  waarde               value               wert
+                      hodnota
                week:  week                 week                woche
+                      tyden
             weekdag:  weekdag              weekday             wochentag
+                      vsedniden
             WEEKDAG:  WEEKDAG              WEEKDAY             WOCHENTAG
+                      VSEDNIDEN
         willekeurig:  willekeurig          random              zufaellig
+                      nahodny
                 wit:  wit                  white               weiss
+                      bily
                zeer:  zeer                 very                sehr
+                      velmi
          zeersoepel:  zeersoepel           verytolerant        sehrtolerant
+                      velmitolerantni
          zeerstreng:  zeerstreng           verystrict          sehrstreng
+                      velmistriktni
                 zie:  zie                  see                 sieh
+                      viz
 
-          smallcaps:  smallcaps            smallcaps           smallcaps 
+          smallcaps:  smallcaps            smallcaps           smallcaps
+                      maleverzalky
+              WOORD:  WOORD                WORD                WORT
+                      WOORD % TOM
 
        eerstepagina:  eerstepagina         firstpage           ersteseite
+                      prvnistrana
        vorigepagina:  vorigepagina         previouspage        vorigeseite
+                      predchozistrana
      volgendepagina:  volgendepagina       nextpage            folgendeseite
+                      dalsistrana
       laatstepagina:  laatstepagina        lastpage            letzteseite
+                      poslednistrana
     eerstesubpagina:  eerstesubpagina      firstsubpage        ersteunterseite
+                      prvnipodstrana
     vorigesubpagina:  vorigesubpagina      previoussubpage     vorigeunterseite
+                      predchozipodstrana
   volgendesubpagina:  volgendesubpagina    nextsubpage         folgendeunterseite
+                      dalsipodstrana
    laatstesubpagina:  laatstesubpagina     lastsubpage         letzteunterseite
+                      poslaednipodstrana
+
+  volgendeevenpagina: volgendeevenpagina   nextevenpage        naechstegeradeseite
+                      volgendeevenpagina % TOM
+volgendeonevenpagina: volgendeonevenpagina nextoddpage         naechsteungeradeseite
+                      volgendeonevenpagina % TOM
+    vorigeevenpagina: vorigeevenpagina     previousevenpage    vorigegeradeseite
+                      vorigeevenpagina % TOM
+  vorigeonevenpagina: vorigeonevenpagina   previousoddpage     vorigeungeradeseite
+                      vorigeonevenpagina % TOM
 
      alleenleesbaar:  alleenleesbaar       readonly            nurlesbar
+                      pouzeprocteni
           verplicht:  verplicht            required            obligatorisch
+                      pozadovane
           beschermd:  beschermd            protected           geschuetzt
+                      chranene
          gesorteerd:  gesorteerd           sorted              sortiert
+                      tridene
     nietbeschikbaar:  nietbeschikbaar      unavailable         nichtverfuegbar
+                      nedostupne
           verborgen:  verborgen            hidden              versteckt
+                      skryte
           printbaar:  printbaar            printable           druckbar
- 
+                      tisknutelne
+
+           bookmark:  bookmark             bookmark            bookmark
+                      bookmark 
+
 \stopvariables
 
 %D \stopcompressdefinitions
@@ -736,20 +1347,32 @@ veldachtergrondkleur:  veldachtergrondkleur fieldbackgroundcolor feldhintergrund
 %D \startcompressdefinitions
 
 \startvariables       dutch                english             german
+                      czech
 
        calligraphic:  calligrafie          calligraphic        kalligraphie
+                      krasopisne
         handwritten:  handschrift          handwritten         handschrift
+                      rukopisne
           sansserif:  schreefloos          sansserif           grotesk
+                      bezserifu
               roman:  romaan               roman               antiqua
+                      antikva
            teletype:  teletype             teletype            fernschreiber
+                      dalnopis
 
                type:  type                 type                tippen
+                      type
 
-              serif:  serif                serif               serif 
-            regular:  regular              regular             regular 
+              serif:  serif                serif               serif
+                      serif
+            regular:  regular              regular             regular
+                      radne
             support:  support              support             support
-               sans:  sans                 sans                sans  
+                      podpora
+               sans:  sans                 sans                sans
+                      sans
                mono:  mono                 mono                mono
+                      mono
 
 \stopvariables
 
@@ -764,23 +1387,40 @@ veldachtergrondkleur:  veldachtergrondkleur fieldbackgroundcolor feldhintergrund
 %D \startcompressdefinitions
 
 \startsetupvariables  dutch                english             german
+                      czech
 
       doornummering:  doornummering        enumeration         nummerierung
+                      vycet
       doordefinitie:  doordefinitie        description         beschreibung
+                      popis
          doorsprong:  doorsprong           indentation         einzug
+                      odsazovani
           doorlabel:  doorlabel            labeling            beschriften
+                      oznacovani
  samengesteldelijst:  samengesteldelijst   combinedlist        kombiniereliste
+                      kombinovanyseznam
              sectie:  sectie               section             abschnitt
+                      oddil
            register:  register             register            register
+                      rejstrik
            synoniem:  synoniem             synonym             synonym
+                      synonymum
          synoniemen:  synoniemen           synonyms            synonyme
+                      synonyma
             sorteer:  sorteer              sort                sortiere
+                      trid
            sorteren:  sorteren             sorts               sortieren
+                      tridit
                naam:  naam                 name                name
+                      jmeno
                blok:  blok                 block               block
+                      blok
             blokken:  blokken              blocks              bloecke
-             alinea:  alinea               paragraphs          absaetze
+                      bloky
+             alinea:  alinea               paragraph           absaetze
+                      odstavce % TOBIAS % TOM -> singular 
          framedtext:  kadertekst           framedtext          umrahmtertext
+                      oramovanytext
 
 \stopsetupvariables
 
@@ -793,47 +1433,93 @@ veldachtergrondkleur:  veldachtergrondkleur fieldbackgroundcolor feldhintergrund
 %D \startcompressdefinitions
 
 \startelements        dutch                english             german
+                      czech
 
            beginvan:  beginvan             begin               anfang
+                      zacatek
              buffer:  buffer               buffer              puffer
+                      buffer
          commentaar:  commentaar           comment             kommentar
+                      komentar
             eindvan:  eindvan              end                 ende
+                      konec
             formule:  formule              formula             formel
+                      rovnice
          gekoppelde:  gekoppelde           coupled             verknuepft
+                      propojeny
                haal:  haal                 get                 get
+                      ziskat
       huidigelokale:  huidigelokale        currentlocal        aktuelllokal
+                      aktualnelokalni
                  in:  in                   -                   ein
+                      v % TOM needed?
        instellingen:  instellingen         setups              einstellungen
+                      nastaveni
      interactiemenu:  interactiemenu       interactionmenu     interaktionsmenue
+                      interaktivnimenu
                laad:  laad                 load                laden
+                      nacist
                leeg:  leeg                 empty               leer
+                      prazdne
                lege:  lege                 empty               leer
-% TOBIAS, what does this auf in auflisten mean? 
+                      prazdne
               lijst:  lijst                list                auflisten
+                      seznam
            lijstmet:  lijstmet             listof              auflistenvon
+                      seznam
              lokale:  lokale               local               lokal
+                      lokalni
              opmaak:  opmaak               makeup              umbruch
+                      zlom
              plaats:  plaats               place               platziere
+                      misto
           reserveer:  reserveer            reserve             reservieren
+                      rezervovat
               start:  start                start               start
+                      start
                stel:  stel                 setup               stelle
+                      nastaveni
                stop:  stop                 stop                stop
+                      stop
            tabelkop:  tabelkop             tablehead           tabellenueberschrift
+                      zahlavitabulky
         tabelstaart:  tabelstaart          tabletail           tabellenende
+                      konectabulky
            tabulate:  tabulatie            tabulate            tabulator
+                      tabelator
               tekst:  tekst                text                text
+                      text
                type:  type                 type                type
+                      type
          uitstellen:  uitstellen           postponing          verschieben
+                      odlozit
           verbergen:  verbergen            hiding              verbergen
+                      skryt
             verhoog:  verhoog              increment           erhoehen
+                      zvysit
            volgende:  volgende             next                folgende
+                      dalsi
           volledige:  volledige            complete            vollende
+                      uplny
              vorige:  vorige               previous            vorige
+                      predchozi
        vorigelokale:  vorigelokale         previouslocal       voriglokal
+                      predchozilokalni
                 zie:  zie                  see                 sieh
+                      viz
+           register:  register             register            register
+                      rejstrik
 
             gegeven:  gegeven              fact                gegeben
+                      fakt
             legenda:  legenda              legend              legende
+                      legenda
+
+           helptext:  helptekst            helptext            hilfetext
+                      helptekst % TOM
+
+        pagecomment:  paginacommentaar     pagecomment         pagecomment 
+                      pagecomment % TOBIAS % TOM 
 
 \stopelements
 
@@ -846,34 +1532,82 @@ veldachtergrondkleur:  veldachtergrondkleur fieldbackgroundcolor feldhintergrund
 %D \startcompressdefinitions
 
 \startvariables      dutch             english              german
+                     czech
 
          FirstPage:  EerstePagina      FirstPage            ErsteSeite
+                     PrvniStrana
       PreviousPage:  VorigePagina      PreviousPage         VorigeSeite
+                     PredchoziStrana
           NextPage:  VolgendePagina    NextPage             FolgendeSeite
+                     DalsiStrana
           LastPage:  LaatstePagina     LastPage             LetzteSeite
+                     PosledniStrana
       PreviousJump:  VorigeSprong      PreviousJump         VorigerSprung
+                     PredchoziSkok
           NextJump:  VolgendeSprong    NextJump             NaechsterSprung
+                     DalsiSkok
         SwapViewer:  WisselViewer      SwapViewer           WechseleViewer
+                     ZamenitProhlizec
         ExitViewer:  VerlaatViewer     ExitViewer           BeendeViewer
+                     SkoncitProhlizec
      CloseDocument:  SluitDocument     CloseDocument        SchliesseDokument
+                     ZavritDokument
       SaveDocument:  BewaarDocument    SaveDocument         SpeichereDokument
+                     UlozitDokument
         ViewerHelp:  ViewerHelp        ViewerHelp           ViewerHilfe
+                     NapovedaProhlizece
      PrintDocument:  PrintDocument     PrintDocument        DruckeDokument
+                     VytisknoutDokument
     SearchDocument:  DoorzoekDocument  SearchDocument       DokumentDurchsuchen
+                     ProhledatDokument
        SearchAgain:  HerhaalZoeken     SearchAgain          WeiterSuchen
+                     HledatZnovu
+          GotoPage:  GaNaarPagina      GotoPage             GotoPage % Tobias
+                     GaNaarPagina % TOM
 
         StartMovie:  StartFilm         StartMovie           StartFilm
+                     SpustitFilmu
          StopMovie:  StopFilm          StopMovie            StopFilm
+                     ZastavitFilm
         PauseMovie:  PauzeerFilm       PauseMovie           PauseFilm
+                     PozastavitFilm
        ResumeMovie:  HervatFilm        ResumeMovie          FortsetzenFilm
+                     PokracovatVeFilmu
 
           SaveForm:  BewaarFormulier   SaveForm             SpeicheFormular
+                     UlozitFormular
           LoadForm:  LaadFormulier     LoadForm             LadeFormular
+                     NacistFormular
          ResetForm:  ResetFormulier    ResetForm            ZuruecksetzenFormular
+                     ResetFormulare
         SubmitForm:  VerzendFormulier  SubmitForm           VersendeFormular
+                     PoslatFormular
 
          HideField:  VerbergVeld       HideField            VerbergeFeld
+                     SkryjPole
          ShowField:  ToonVeld          ShowField            ZeigeFeld
+                     UkazPole
+
+\stopvariables
+
+%D Here are some symbol names. We capitalize them because they are
+%D viewer specific.
+
+\startvariables      dutch             english              german
+                     czech
+
+               New:  Nieuw             New                  Neu
+                     Nieuw % TOM
+           Balloon:  Ballon            Balloon              Ballon
+                     Ballon % TOM
+          Addition:  Toevoeging        Addition             Zusatz
+                     Toevoeging % TOM
+              Help:  Help              Help                 Hilfe
+                     Help % TOM
+         Paragraph:  Paragraaf         Paragraph            Absatz
+                     Paragraaf % TOM
+               Key:  Sleutel           Key                  Schluessel
+                     Sleutel % TOM
 
 \stopvariables
 

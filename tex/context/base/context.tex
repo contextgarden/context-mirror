@@ -8,10 +8,12 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See licen-en.pdf for 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
 %C details. 
 
-\def\contextversion{1999.3.31}
+\catcode`\{=1 \catcode`\}=2 
+
+\def\contextversion{1999.12.30}
 
 %D Welcome to the main module. When this module is ran through
 %D \type{initex} or \type{tex -i} or \type{whatevertex} using
@@ -42,6 +44,11 @@
 \input mult-con.tex
 \input mult-com.tex
 
+%D We also use some third party macros. These are loaded by
+%D saying:
+
+\input thrd-ran.tex
+
 %D Now we're ready for some general support modules. These
 %D modules implement some basic typesetting functionality.
 
@@ -57,17 +64,13 @@
 \input supp-mps.tex
 \input supp-tpi.tex
 \input supp-mat.tex
+\input supp-ran.tex
 
 %D Verbatim typestting is implemented in a separate class of
 %D modules. The pretty typesetting modules are loaded at run
 %D time.
 
 \input verb-ini.tex  % replaces supp-ver
-
-%D We also use some third party macros. These are loaded by
-%D saying:
-
-\input thrd-ran
 
 %D When loading the font, color and special modules, we need a
 %D bit more advanced file handling as well as some general
@@ -85,7 +88,7 @@
 %D just go for the best there is and load \TABLE. Just to be
 %D sure we do it here, before we redefine \type{|}.
 
-\input thrd-tab.tex   % \doinputonce{table}
+\input thrd-tab.tex   
 
 %D Here comes the last support modules. They take care of
 %D some language specific things.
@@ -117,11 +120,12 @@
 \input lang-cel.tex
 \input lang-ger.tex
 \input lang-grk.tex
-\input lang-hnl.tex
 \input lang-ind.tex
 \input lang-ita.tex
 \input lang-sla.tex
 \input lang-ura.tex
+
+\input lang-vn.tex    % vietnamese, will be grouped 
 
 %D All kind of symbols are handles in:
 
@@ -133,13 +137,14 @@
 \input core-gen.tex
 \input core-mak.tex
 \input core-mat.tex
+\input core-dat.tex
 \input core-grd.tex
 \input core-ver.tex
 \input core-vis.tex
 \input core-con.tex
 \input core-rul.tex
-\input core-tab.tex
 \input core-new.tex
+\input core-tab.tex
 \input core-nav.tex
 \input core-ref.tex
 \input core-obj.tex
@@ -148,11 +153,22 @@
 \input core-pag.tex
 \input core-tbl.tex
 \input core-mis.tex
+\input core-mps.tex
 
-%D How about fill||in fields?
+%D A few more languages, that have specifics use core 
+%D functionality: 
+
+\input lang-chi.tex
+
+%D How about fill||in fields and related stuff?
 
 \input java-ini.tex
 \input core-fld.tex
+\input core-hlp.tex
+
+%D Registers can depend on fields, so we load that now.
+
+\input core-reg.tex
 
 %D Of course we do need fonts. There are no \TFM\ files
 %D loaded yet, so the format file is independant of their
@@ -160,6 +176,7 @@
 %D instead of italian.
 
 \input font-ini.tex
+\input font-uni.tex
 
 %D Now we're ready for more core modules.
 
@@ -174,8 +191,8 @@
 \input core-01d.tex
 \input core-01e.tex
 
-\input core-02a.tex
-\input core-02b.tex
+%      core-02a.tex % obsolete, replaced by core-dat.tex
+%      core-02b.tex
 %      core-02c.tex
 \input core-02d.tex
 
@@ -240,16 +257,29 @@
 
 \stopinterface
 
+\startinterface czech
+
+\writestring{Tento balik je zalozen na Plain TeXu. Pouziva prizpusobenou verzi}
+\writestring{rozsireneho znackovaciho mechanismu J. Foxe (1987) a nekolik casti}
+\writestring{sidefloat mechanismu D. Comenetze (1993). Vetsina prikazu Plain TeXu}
+\writestring{D. E. Knutha (\fmtversion) je dostupna a muze byt bez problemu pouzita.}
+\writestring{Tento balik pouziva balik TaBlE, ktery vytvoril M. J. Wichura (1988).}
+\writestring{Je generovano jen nekolik pomocnych souboru, z nichz nektere musi byt}
+\writestring{zpracovany programem TeXUtil (\utilityversion). Aktualni verze}
+\writestring{blok-maker je \blockversion.}
+
+\stopinterface
+
 \edef\copyrightversion%
   {Copyright 1990-\the\normalyear\normalspace / 
    PRAGMA ADE / J. Hagen - A.F. Otten}
 
 \writeline\writestring{\copyrightversion}\writeline
 
-%D Except from english, no hyphenation patterns are loaded
-%D yet. Users can specify their needs in the next module:
-
-\input cont-usr.tex
+% %D Except from english, no hyphenation patterns are loaded
+% %D yet. Users can specify their needs in the next module:
+%
+% \input cont-usr.tex
 
 %D Let's quit this file when doing a \type {cont-..} generation.
 
@@ -260,7 +290,14 @@
 \next 
 
 %D Unless we're generating a \type {cont-..} format, we also 
-%D set:
+%D do the following. 
+
+%D Except from english, no hyphenation patterns are loaded
+%D yet. Users can specify their needs in the next module:
+
+\loaduserspecifications 
+
+%D Next we default to the same language as the interface. 
 
 \unprotect
 
@@ -293,9 +330,20 @@
 
 \stopinterface 
 
-\setupbodyfont [cmr,rm,12pt]
+\startinterface czech 
+
+  \installlanguage [\s!cz] [\c!status=\v!start]
+
+  \appendtoks \language     [\s!cz] \to \everyjob
+  \appendtoks \mainlanguage [\s!cz] \to \everyjob
+
+\stopinterface 
 
 \protect
+
+%D Finally we load some fonts. 
+
+\setupbodyfont [cmr,rm,12pt]
 
 %D Now dumping the format is all that's left to be done.
 

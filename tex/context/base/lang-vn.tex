@@ -1,0 +1,83 @@
+%D \module
+%D   [       file=lang-vn,
+%D        version=1999.12.12, 
+%D          title=\CONTEXT\ Language Macros,
+%D       subtitle=Vietnamese,
+%D         author={Hans Hagen \& Han The Thanh},
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
+%C details. 
+
+\unprotect 
+
+\definesystemconstant {vietnamese} \definesystemconstant {vn}
+
+\installlanguage
+  [\s!vn]
+  [\c!spatiering=\v!opelkaar,
+   \c!leftsentence=---,
+   \c!rightsentence=---,
+   \c!leftsubsentence=---,
+   \c!rightsubsentence=---,
+   \c!leftquote=\lowerleftsingleninequote,
+   \c!rightquote=\upperrightsingleninequote,
+   \c!leftquotation=\lowerleftdoubleninequote,
+   \c!rightquotation=\upperrightdoubleninequote,
+   \c!datum={{Ng\`ay },dd,{ th\'ang },\v!maand,{ n\u a m },yy},
+   \c!status=\v!stop]
+
+\installlanguage [vietnamese] [\s!vn]
+
+\installlanguage [\s!vn] [\c!status=\v!start]
+
+\setupheadtext [\s!vn] [\v!inhoud=M\d{u}c l\d{u}c]
+\setupheadtext [\s!vn] [\v!tabellen=Danh s\'ach b\h{a}ng]
+\setupheadtext [\s!vn] [\v!figuren=Danh s\'ach h\`inh v\~e]
+\setupheadtext [\s!vn] [\v!grafieken=Graphics]
+\setupheadtext [\s!vn] [\v!intermezzos=Intermezzos]
+\setupheadtext [\s!vn] [\v!index=Ch\h{i} s\'{^o}]
+\setupheadtext [\s!vn] [\v!afkortingen=Abbreviations]
+\setupheadtext [\s!vn] [\v!logos=Logos]
+\setupheadtext [\s!vn] [\v!eenheden=Units]
+
+\setuplabeltext [\s!vn] [\v!tabel=B\h{a}ng]
+\setuplabeltext [\s!vn] [\v!figuur=H\`inh]
+\setuplabeltext [\s!vn] [\v!intermezzo=intermezzo]
+\setuplabeltext [\s!vn] [\v!grafiek=graphic]
+\setuplabeltext [\s!vn] [\v!hoofdstuk=chapter]
+\setuplabeltext [\s!vn] [\v!paragraaf=] % not set 
+\setuplabeltext [\s!vn] [\v!sub\v!paragraaf=] % not set 
+\setuplabeltext [\s!vn] [\v!sub\v!sub\v!paragraaf=] % not set 
+\setuplabeltext [\s!vn] [\v!sub\v!sub\v!sub\v!paragraaf=] % not set 
+\setuplabeltext [\s!vn] [\v!bijlage=] % not set 
+\setuplabeltext [\s!vn] [\v!deel=Ph\`{^a} n ]
+\setuplabeltext [\s!vn] [\v!regel=line ]
+\setuplabeltext [\s!vn] [\v!regels=lines ]
+
+\setuplabeltext [\s!vn]    [\v!sunday=Sunday]
+\setuplabeltext [\s!vn]    [\v!monday=Monday]
+\setuplabeltext [\s!vn]   [\v!tuesday=Tuesday]
+\setuplabeltext [\s!vn] [\v!wednesday=Wednesday]
+\setuplabeltext [\s!vn]  [\v!thursday=Thursday]
+\setuplabeltext [\s!vn]    [\v!friday=Friday]
+\setuplabeltext [\s!vn]  [\v!saturday=Saturday]
+
+\setuplabeltext [\s!vn]   [\v!january=gi\^e ng]
+\setuplabeltext [\s!vn]  [\v!february=hai]
+\setuplabeltext [\s!vn]     [\v!march=ba]
+\setuplabeltext [\s!vn]     [\v!april=t\h{u}]
+\setuplabeltext [\s!vn]       [\v!may=n\u a m]
+\setuplabeltext [\s!vn]      [\v!june=s\'au]
+\setuplabeltext [\s!vn]      [\v!july=b\h{a}y]
+\setuplabeltext [\s!vn]    [\v!august=t\'am]
+\setuplabeltext [\s!vn] [\v!september=ch\'in] 
+\setuplabeltext [\s!vn]   [\v!october=m\h{u}\`{ho}i]
+\setuplabeltext [\s!vn]  [\v!november=m\h{u}\`{ho}im\d{^o}t]
+\setuplabeltext [\s!vn]  [\v!december=m\h{u}\`{ho}ihai]
+
+\protect 
+
+\endinput 

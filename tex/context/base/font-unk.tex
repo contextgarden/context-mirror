@@ -8,7 +8,7 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See licen-en.pdf for 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
 %C details. 
 
 %D This module is rather important, because it enables us to 
@@ -24,7 +24,7 @@
 \definefontsynonym [SerifBoldSlanted]   [unknown]
 \definefontsynonym [SerifCaps]          [unknown]
 
-\definefontsynonym [Sans]               
+\definefontsynonym [Sans]               [unknown]
 \definefontsynonym [SansBold]           [unknown]
 \definefontsynonym [SansItalic]         [unknown]
 \definefontsynonym [SansSlanted]        [unknown]
@@ -145,20 +145,20 @@
    itc=SansItalic sa c,
    itd=SansItalic sa d,
     sl=SansSlanted sa 1,
-   ita=SansSlanted sa a,
-   itb=SansSlanted sa b,
-   itc=SansSlanted sa c,
-   itd=SansSlanted sa d,
+   sla=SansSlanted sa a,
+   slb=SansSlanted sa b,
+   slc=SansSlanted sa c,
+   sld=SansSlanted sa d,
     bi=SansBoldItalic sa 1,
-   ita=SansBoldItalic sa a,
-   itb=SansBoldItalic sa b,
-   itc=SansBoldItalic sa c,
-   itd=SansBoldItalic  sa d,
+   bia=SansBoldItalic sa a,
+   bib=SansBoldItalic sa b,
+   bic=SansBoldItalic sa c,
+   bid=SansBoldItalic  sa d,
     bs=SansBoldSlanted sa 1,
-   ita=SansBoldSlanted sa a,
-   itb=SansBoldSlanted sa b,
-   itc=SansBoldSlanted sa c,
-   itd=SansBoldSlanted sa d,
+   bsa=SansBoldSlanted sa a,
+   bsb=SansBoldSlanted sa b,
+   bsc=SansBoldSlanted sa c,
+   bsd=SansBoldSlanted sa d,
     sc=SansCaps sa 1,
    sca=SansCaps sa a,
    scb=SansCaps sa b,
@@ -166,21 +166,41 @@
    scd=SansCaps sa d]
 
 \definebodyfont [default] [tt]
-  [ tf=Mono sa 1,
-   tfa=Mono sa a,
-   tfb=Mono sa b,
-   tfc=Mono sa c,
-   tfd=Mono sa d,
-    sl=MonoSlanted sa 1,
-   sla=MonoSlanted sa a,
-   slb=MonoSlanted sa b,
-   slc=MonoSlanted sa c,
-   sld=MonoSlanted sa d,
-    it=MonoItalic sa 1,
-   ita=MonoItalic sa a,
-   itb=MonoItalic sa b,
-   itc=MonoItalic sa c,
-   itd=MonoItalic sa d]
+  [ tf=Mono            sa 1,
+   tfa=Mono            sa a,
+   tfb=Mono            sa b,
+   tfc=Mono            sa c,
+   tfd=Mono            sa d,
+    bf=MonoBold        sa 1,
+   bfa=MonoBold        sa a,
+   bfb=MonoBold        sa b,
+   bfc=MonoBold        sa c,
+   bfd=MonoBold        sa d,
+    it=MonoItalic      sa 1,
+   ita=MonoItalic      sa a,
+   itb=MonoItalic      sa b,
+   itc=MonoItalic      sa c,
+   itd=MonoItalic      sa d,
+    sl=MonoSlanted     sa 1,
+   sla=MonoSlanted     sa a,
+   slb=MonoSlanted     sa b,
+   slc=MonoSlanted     sa c,
+   sld=MonoSlanted     sa d,
+    bi=MonoBoldItalic  sa 1,
+   bia=MonoBoldItalic  sa a,
+   bib=MonoBoldItalic  sa b,
+   bic=MonoBoldItalic  sa c,
+   bid=MonoBoldItalic  sa d,
+    bs=MonoBoldSlanted sa 1,
+   bsa=MonoBoldSlanted sa a,
+   bsb=MonoBoldSlanted sa b,
+   bsc=MonoBoldSlanted sa c,
+   bsd=MonoBoldSlanted sa d,
+    sc=MonoCaps        sa 1,
+   sca=MonoCaps        sa a,
+   scb=MonoCaps        sa b,
+   scc=MonoCaps        sa c,
+   scd=MonoCaps        sa d]
 
 \definebodyfont [default] [mm]
   [mr=MathRoman sa 1,
@@ -193,14 +213,14 @@
 \definebodyfont [default] [hw]
   [ tf=Handwriting sa 1,
    tfa=Handwriting sa a,
-   tfb=Handwriting sa b
+   tfb=Handwriting sa b,
    tfc=Handwriting sa c,
    tfd=Handwriting sa d]
 
 \definebodyfont [default] [cg]
   [ tf=Calligraphy sa 1,
    tfa=Calligraphy sa a,
-   tfb=Calligraphy sa b
+   tfb=Calligraphy sa b,
    tfc=Calligraphy sa c,
    tfd=Calligraphy sa d]
 

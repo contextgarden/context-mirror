@@ -8,12 +8,14 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See licen-en.pdf for 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
 %C details. 
 
 %D This environment can be used to typeset interactive
 %D presentations. This module was first used at the 1997 \TUG\
 %D meeting.
+
+\usemodule[pre-general] % mode=step 
 
 %D \macros
 %D   {language}
@@ -59,7 +61,7 @@
 %D the width and height of the page and start up full screen.
 
 \setuppapersize
-  [S6]
+  [S6][S6]
 
 \setuplayout
   [topspace=12pt,
@@ -142,7 +144,7 @@
      \framed
        [framecolor=white,linethickness=1pt,
         height=\bottomheight,strut=no]
-       {\interactionbar[alternative=f,width=.5\textwidth,height=1ex]}
+       {\interactionbar[alternative=f,width=.5\makeupwidth,height=1ex]}
    \fi}
 
 %D \macros
@@ -188,7 +190,7 @@
 
 \def\StartTitlePage%
   {\startstandardmakeup
-   \bfd
+   \bfd\setupinterlinespace
    \setupalign[middle]
    \vfil
    \let\\=\vfil}
@@ -236,9 +238,11 @@
 %D \macros
 %D   {setuphead}
 %D
-%D We use our own command for typesetting the titles. We hide
-%D sectionnumbers from viewing. Each topic is followed by a
-%D list of subjects that belong to the topic.
+%D Because chapters and sections do not make sense in 
+%D presentations, we use our own command for typesetting the 
+%D titles. Sectionnumbers are of course hidden from viewing. 
+%D Each topic is followed by a list of subjects that belong 
+%D to the topic.
 
 \setuphead
   [Topic, Nopic, Subject]
@@ -261,7 +265,7 @@
 %D
 %D The command used to typeset the head lines is rather simple.
 %D We just center the framed title. The frame macro optimizes
-%D the alignment and at the same time enables us to typset a
+%D the alignment and at the same time enables us to typeset a
 %D nice colored rule.
 
 \def\HeadLine#1#2%
@@ -289,7 +293,9 @@
 %D   {\midaligned{#2}}
 %D \stoptypen
 %D
-%D But why should we complicate things when we can say:
+%D But why should we complicate things when we can use 
+%D alternative~\type{g}. The test is only needed if one 
+%D does not automatically goes a new page with each subject. 
 
 \def\PlaceSubjectList%
   {\blank
@@ -340,18 +346,19 @@
 %D
 %D Because topic lines can be rather long, so we use \type 
 %D {\limitatetext} to limit their length to the width of the 
-%D right edge. This macro is part of the support macros.
+%D right edge. When needed, some dots are added (\unknown). 
+%D This macro is part of the collection of low level support 
+%D macros.
 
 \def\TopicLine#1#2#3%
-  {\limitatetext{#2}{\rightedgewidth}{...}
-   \par}
+  {\limitatetext{#2}{\rightedgewidth}{\unknown}\par} 
 
 %D \macros
 %D   {setuptexttexts, button}
 %D 
 %D During a presentation, we want to use the cursor to point to
 %D parts of the text. Furthermore we want to be able to jump to
-%D the next page, without too much positioning on buttons.
+%D the next page, without the need to move the cursor on buttons.
 %D Therefore we make the text part of the screen into an
 %D invisible button. 
 
@@ -365,7 +372,8 @@
 %D   {setupsubpagenumber}
 %D
 %D The left bottom navigation bar shows the subpages, which will
-%D be counted by topic.
+%D be counted by text. One can change this in the preentation 
+%D itself by saying \type {[way=byTopic]}. 
 
 \setupsubpagenumber
   [way=bytext, % Topic,

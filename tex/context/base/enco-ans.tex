@@ -8,7 +8,7 @@
 %D    copyright=J. Hagen]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See licen-en.pdf for 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
 %C details. 
 
 %D This is \YandY's texnansi encoding vector, which combines 
@@ -116,21 +116,35 @@
 \defineaccent " {\dotlessi} 239
 \defineaccent ^ {\dotlessi} 238
 
-\definecharacter ae 230
-\definecharacter oe 156
-\definecharacter o  248
+\defineaccent ` {\i} 236
+\defineaccent ' {\i} 237
+\defineaccent " {\i} 239
+\defineaccent ^ {\i} 238
+
+\defineaccent c C 199
+\defineaccent c c 231
+
 \definecharacter AE 198
+\definecharacter ae 230
 \definecharacter OE 140
+\definecharacter oe 156
 \definecharacter O  216
+\definecharacter o  248
 \definecharacter ss 223
+\definecharacter SS 223
 
 \definecharacter aa 229
 \definecharacter AA 197
 
-\definecharacter cc 231
-\definecharacter CC 199
+%D Some accents are positioned somewhere else. 
+
+\defineaccentcommand . 5
+\defineaccentcommand H 6
 
 %D The next piece of code is rather ugly: 
+
+\defineaccentcommand b {\texnansiencodedb}
+\defineaccentcommand c {\texnansiencodedc}
 
 \def\texnansiencodedb#1%
   {\oalign{#1\crcr\hidewidth\vbox to.2ex{\hbox{\char175}\vss}\hidewidth}}
@@ -138,9 +152,6 @@
 \def\texnansiencodedc#1%
   {\setbox0\hbox{#1}\ifdim\ht0=1ex\accent184 #1\else
      {\ooalign{\hidewidth\char184\hidewidth\crcr\unhbox0}}\fi}
-
-\definecommand b {\texnansiencodedb}
-\definecommand c {\texnansiencodedc}
 
 %D We still have to take care of: 
 %D

@@ -1,0 +1,236 @@
+%D \module
+%D   [     file=enco-ec,
+%D      version=1999.16.7,
+%D        title=\CONTEXT\ Encoding Macros,
+%D     subtitle=\LATEX\ EC Encoding,
+%D       author=Taco Hoekwater,
+%D         date=\currentdate,
+%D    copyright={Hans Hagen \& Taco Hoekwater}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D This is \LATEX2e's T1 encoding vector. All standard \LATEX\
+%D accents will work, including \type{\k}. The only accent that
+%D does not work is \type{\t} (there is no tie in T1 encoding).
+%D
+%D Annoyingly, most \POSTSCRIPT\ fonts do not have \type
+%D {\dotlessj}, and T1 encoding does not make the various
+%D prebuilts with \type {j} available.
+%D
+%D There is hardly a point in supporting TS1 encoding.
+
+\startmapping[ec]
+
+%D The case mappings are fairly simple. 
+
+\definecasemaps 128 to 156 lc 0 uc 0
+
+%D 157 Idotaccent
+%D 158 dcroat (with bar)
+%D 159 sectionmark
+
+\definecasemaps 160 to 188 lc +32 uc 0
+
+%D 189 exclamdown
+%D 190 questiondown
+%D 191 sterling pound
+
+\definecasemaps 192 to 255 lc 0 uc -32
+
+%D So far for the mapping.
+
+\stopmapping
+
+\startencoding[ec]
+
+\defineaccent u A 128
+\defineaccent v C 131
+\defineaccent v D 132
+\defineaccent v E 133
+\defineaccent u G 135
+\defineaccent v l 137 % Lcaron
+\defineaccent v N 140
+\defineaccent H O 142
+\defineaccent v R 144
+\defineaccent v S 146
+\defineaccent v T 148
+\defineaccent H U 150
+\defineaccent r U 151
+\defineaccent v Z 154
+\defineaccent . Z 155
+\defineaccent . I 157
+\defineaccent = d 158
+
+\defineaccent u a 160
+\defineaccent v c 163
+\defineaccent v d 164
+\defineaccent v e 165
+\defineaccent u g 167
+\defineaccent v l 169
+\defineaccent v n 172
+\defineaccent H o 174
+\defineaccent v r 176
+\defineaccent v s 178
+\defineaccent v t 180
+\defineaccent H u 182
+\defineaccent r u 183
+\defineaccent v z 186
+\defineaccent . z 187
+
+\defineaccent ' C 130
+\defineaccent ' L 136
+\defineaccent ' N 139
+\defineaccent ' R 143
+\defineaccent ' S 145
+\defineaccent " Y 152
+\defineaccent ' Z 153
+\defineaccent ' c 162
+\defineaccent ' l 168
+\defineaccent ' n 171
+\defineaccent ' r 175
+\defineaccent ' s 177
+\defineaccent " y 184
+\defineaccent ' z 185
+\defineaccent ` A 192
+\defineaccent ' A 193
+\defineaccent ^ A 194
+\defineaccent ~ A 195
+\defineaccent " A 196
+\defineaccent r A 197
+\defineaccent ` E 200
+\defineaccent ' E 201
+\defineaccent ^ E 202
+\defineaccent " E 203
+\defineaccent ` I 204
+\defineaccent ' I 205
+\defineaccent ^ I 206
+\defineaccent " I 207
+\defineaccent ~ N 209
+\defineaccent ` O 210
+\defineaccent ' O 211
+\defineaccent ^ O 212
+\defineaccent ~ O 213
+\defineaccent " O 214
+\defineaccent ` U 217
+\defineaccent ' U 218
+\defineaccent ^ U 219
+\defineaccent " U 220
+\defineaccent ' Y 221
+\defineaccent ` a 224
+\defineaccent ' a 225
+\defineaccent ^ a 226
+\defineaccent ~ a 227
+\defineaccent " a 228
+\defineaccent r a 229
+\defineaccent ` e 232
+\defineaccent ' e 233
+\defineaccent ^ e 234
+\defineaccent " e 235
+\defineaccent ` i 236
+\defineaccent ' i 237
+\defineaccent ^ i 238
+\defineaccent " i 239
+\defineaccent ~ n 241
+\defineaccent ` o 242
+\defineaccent ' o 243
+\defineaccent ^ o 244
+\defineaccent ~ o 245
+\defineaccent " o 246
+\defineaccent ` u 249
+\defineaccent ' u 250
+\defineaccent ^ u 251
+\defineaccent " u 252
+\defineaccent ' y 253
+
+\defineaccent ` {\dotlessi} 236
+\defineaccent ' {\dotlessi} 237
+\defineaccent " {\dotlessi} 239
+\defineaccent ^ {\dotlessi} 238
+
+\defineaccent ` {\i} 236
+\defineaccent ' {\i} 237
+\defineaccent " {\i} 239
+\defineaccent ^ {\i} 238
+
+%D These are special, see below.
+
+\defineaccent k A 129
+\defineaccent k E 134
+\defineaccent k a 161
+\defineaccent k e 166
+\defineaccent c T 149
+\defineaccent c S 147
+\defineaccent c C 199
+\defineaccent c c 231
+\defineaccent c s 179
+\defineaccent c t 181
+
+\definecharacter ae 230
+\definecharacter AE 198
+\definecharacter oe 247
+\definecharacter OE 215
+\definecharacter o  248
+\definecharacter O  216
+\definecharacter ss 255
+\definecharacter SS 223
+
+\definecharacter th 254
+\definecharacter TH 222
+
+\definecharacter ng 173
+\definecharacter NG 141
+
+\definecharacter ij 188
+\definecharacter IJ 156
+
+%D These two are strictly unneeded:
+
+\definecharacter aa 229
+\definecharacter AA 197
+
+\definecharacter l 170
+\definecharacter L 138
+
+\definecharacter i 25
+\definecharacter j 26
+
+%D Next come the accent||commands.
+
+\defineaccentcommand `  0
+\defineaccentcommand '  1
+\defineaccentcommand ^  2
+\defineaccentcommand ~  3
+\defineaccentcommand "  4
+\defineaccentcommand H  5
+\defineaccentcommand r  6
+\defineaccentcommand v  7
+\defineaccentcommand u  8
+\defineaccentcommand =  9
+\defineaccentcommand . 10
+
+%D The ogonek does not normally exist in \CONTEXT.
+
+% The rather weird construction that follows is needed because
+% otherwise (using \type {\definecommand}) the pre||built
+% chars are never used.
+
+\defineaccentcommand b {\ecencodedb}
+\defineaccentcommand c {\ecencodedc}
+\defineaccentcommand k {\ecencodedk}
+
+\def\ecencodedb#1%
+  {\oalign{#1\crcr\hidewidth\vbox to.2ex{\hbox{\char9}\vss}\hidewidth}}
+
+\def\ecencodedc#1%
+  {\setbox0\hbox{#1}\ifdim\ht0=1ex\accent11 #1\else
+     {\ooalign{\hidewidth\char11\hidewidth\crcr\unhbox0}}\fi}
+
+\def\ecencodedk#1%
+  {\setbox0\hbox{#1}\ifdim\ht0=1ex\accent12 #1\else
+     {\ooalign{\hidewidth\char12\hidewidth\crcr\unhbox0}}\fi}
+
+\stopencoding
+
+\endinput

@@ -8,7 +8,7 @@
 %D    copyright=J. Hagen]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See licen-en.pdf for 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
 %C details. 
 
 %D This Czech/Slovak encoding is dedicated to Han The Thanh. 
@@ -16,6 +16,8 @@
 %D definition file is (still) sort of beta. 
 
 \startmapping[il2]
+
+\definecasemap 127 to 255    % we map them all to themselves
 
 \definecasemap 165 181 165   \definecasemap 169 185 169 
 \definecasemap 171 187 171   \definecasemap 174 190 174 
@@ -89,52 +91,56 @@
 
 \defineaccent r u    ^^f9    \defineaccent r U   ^^d9
 
-\def\csencodedrA%
-   {\leavevmode\setbox0\hbox{h}\dimen@\ht0\advance\dimen@-1ex%
-    \rlap{\raise.67\dimen@\hbox{\char'27}}A}
+\defineaccent r A {\ilencodedrA}
 
-                             \defineaccent r A    {\csencodedrA}
+\def\ilencodedrA%
+   {\leavevmode\hbox\bgroup
+    \setbox0\hbox{h}%
+    \dimen0=\ht0
+    \advance\dimen0 by -1ex
+    \rlap{\raise.67\dimen0\hbox{\char'27}}A%
+    \egroup}
 
 \definecharacter ae 26  \definecharacter AE 29
 \definecharacter oe 27  \definecharacter OE 30
 \definecharacter o  28  \definecharacter O  31
 \definecharacter i  16
-\definecharacter j  17
-                        \definecharacter SS 25
+\definecharacter j  17  \definecharacter SS 25
 
 %D Some rather \PLAIN\ \TEX\ redefinitions. 
 
-\def\csencodedb#1
-  {\oalign{\null#1\crcr\hidewidth\sh@ft{29}%
-     \vbox to.2ex{\hbox{\char22}\vss}\hidewidth}}
+\defineaccentcommand b {\ilencodedb}
+\defineaccentcommand c {\ilencodedc}
+\defineaccentcommand d {\ilencodedd}
 
-\def\csencodedc#1
+\def\ilencodedb#1
+  {\oalign%
+     {\null#1\crcr\hidewidth\sh@ft{29}%
+      \vbox to.2ex{\hbox{\char22}\vss}\hidewidth}}
+
+\def\ilencodedc#1
   {\setbox\z@\hbox{#1}\ifdim\ht\z@=1ex\accent24 #1\else
      {\ooalign{\unhbox\z@\crcr\hidewidth\char24\hidewidth}}\fi}
 
-\def\csencodedd#1%
+\def\ilencodedd#1%
   {\oalign{\null#1\crcr\hidewidth\sh@ft{08}.\hidewidth}}
-
-\definecommand b {\csencodedb}
-\definecommand c {\csencodedc}
-\definecommand d {\csencodedd}
 
 %D Some less \PLAIN\ ones: 
 
-\redefinecommand l 
-\redefinecommand L 
+\definecharacter l {\ilencodedl}
+\definecharacter L {\ilencodedL}
 
-\def\csencodedl%
+\def\ilencodedl%
   {{\char32l}}
 
-\def\csencodedL% I don't like the \leavevmode here, better \enterhmode
-  {\leavevmode\setbox0\hbox{L}\hbox to\wd0{\hss\char32L}}
-
-\definecommand l {\csencodedl}
-\definecommand L {\csencodedL}
+\def\ilencodedL% I don't like the \leavevmode here, better \enterhmode
+  {\leavevmode\hbox\bgroup
+   \setbox0\hbox{L}%
+   \hbox to\wd0{\hss\char32L}%
+   \egroup}
 
 \stopcoding
-
+
 % \everyuppercase, font/language specifics ?
 
 % \uccode152=152 \lccode152=184
@@ -177,3 +183,4 @@
 % \defineaccent " u    '374   \defineaccent " U    '334
 % \defineaccent r u    '371   \defineaccent r U    '331
 
+\endinput

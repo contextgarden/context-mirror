@@ -8,13 +8,23 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See licen-en.pdf for 
-%C details. 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
 
 \writestatus{loading}{Context Core Macros / Multi Column Output}
 
 \unprotect
 
+% check \count<insert> multiplications  
+
+% some day try this in balancing routine 
+%
+% \ifdim\pagetotal>\pagegoal
+%   \eject
+% \else
+%   \goodbreak
+% \fi
+ 
 %D The following macro's implement a multi||column output
 %D routine. The original implementation was based on Donald
 %D Knuth's implementation, which was adapted by Craig Platt to
@@ -70,8 +80,25 @@
       9: Ausrichtung ueberpruefen
      10: (weniger als) 1 Zeile uebrig
      11: Gleitobjekt zu breit fuer Spalte
-     12: Gleitobjekt in naechste Zeile verschoben / -- 
+     12: Gleitobjekt in naechste Zeile verschoben / --
      13: breites Gleitobjekt an den Anfang der Spalten verschoben
+\stopmessages
+
+\startmessages  czech  library: columns
+  title: sloupce
+      1: je mozno pouze -- sloupcu
+      2: pouzijte \string\filbreak\space jako alternativu
+      3: problem, vypina se vyvazovani
+      4: horni plovouci objekt jeste neni podporovan
+      5: spodni plovouci objekt jeste neni podporovan
+      6: -- plovouci objekt(y) odlozeny
+      7: vyvazovani ukonceno po 100 krocich
+      8: vyvazeno v -- krocich
+      9: kontrola nerovnost
+     10: zbyl (mene nez) 1 radek
+     11: plovouci objekt je pro sloupec prilis siroky
+     12: plovouci objekt je presunut do nasledujiciho sloupce / -- 
+     13: siroky plovouci objekt je presunut nad sloupce
 \stopmessages
 
 %D This completely new implementation can handle enough
@@ -135,6 +162,9 @@
 %D     put the bottom line on the baseline \\
 %D \interface \type{\ifnormalbottom} \\
 %D     put the bottom line at the baseline \\
+%D
+%D \interface \type{\ifreversecolumns} \\
+%D     reverse the order in wich columns are flushed \\
 %D
 %D \interface \type{\usercolumnwidth} \\
 %D     the calculated width of a column \\
@@ -205,16 +235,16 @@
 
 % %D In fact, the column height and width are set by means of
 % %D two macro's. One can change their meaning if needed:
-% 
+%
 % \def\setcolumntextheight%
 %   {\def\columntextheight{\teksthoogte}}
-% 
-% \def\setcolumntextwidth% 
+%
+% \def\setcolumntextwidth%
 %   {\def\columntextwidth{\zetbreedte}}
 
 %D Both macros are redefined in \CONTEXT\ when backgrounds
-%D are applied to columns. The final values are used when 
-%D flushing the columns. 
+%D are applied to columns. The final values are used when
+%D flushing the columns.
 
 \newcount\nofcolumns        \nofcolumns=2
 
@@ -279,25 +309,43 @@
 %D \type{\firstcolumnbox} and \type{\lastcolumnbox} are handled
 %D outside these macro's.
 
-\def\dohandlemidcolumns#1%
-  {\dorecurse
-     {\nofcolumns}
-     {\ifnum\recurselevel>1
-        \ifnum\recurselevel<\nofcolumns\relax
-           \edef\currentcolumnbox{\getvalue{\@@txtcol\recurselevel}}%
-           \edef\currenttopcolumnbox{\getvalue{\@@topcol\recurselevel}}%
-           \let\currentcolumn=\recurselevel
-           #1\relax
-        \fi
-      \fi}}
+%\def\dohandlemidcolumns#1%
+%  {\dorecurse
+%     {\nofcolumns}
+%     {\ifnum\recurselevel>1
+%        \ifnum\recurselevel<\nofcolumns\relax
+%           \edef\currentcolumnbox{\getvalue{\@@txtcol\recurselevel}}%
+%           \edef\currenttopcolumnbox{\getvalue{\@@topcol\recurselevel}}%
+%           \let\currentcolumn=\recurselevel
+%           #1\relax
+%        \fi
+%      \fi}}
+%
+%\def\dohandleallcolumns#1%
+%  {\dorecurse
+%     {\nofcolumns}
+%     {\edef\currentcolumnbox{\getvalue{\@@txtcol\recurselevel}}%
+%      \edef\currenttopcolumnbox{\getvalue{\@@topcol\recurselevel}}%
+%      \let\currentcolumn=\recurselevel
+%      #1\relax}}
+
+\def\dohandlecolumn#1%
+  {\edef\currentcolumnbox   {\getvalue{\@@txtcol\recurselevel}}%
+   \edef\currenttopcolumnbox{\getvalue{\@@topcol\recurselevel}}%
+   \let\currentcolumn=\recurselevel
+   #1\relax}
 
 \def\dohandleallcolumns#1%
-  {\dorecurse
-     {\nofcolumns}
-     {\edef\currentcolumnbox{\getvalue{\@@txtcol\recurselevel}}%
-      \edef\currenttopcolumnbox{\getvalue{\@@topcol\recurselevel}}%
-      \let\currentcolumn=\recurselevel
-      #1\relax}}
+  {\dorecurse{\nofcolumns}{\dohandlecolumn{#1}}}
+
+\def\dohandlerevcolumns#1%
+  {\dostepwiserecurse{\nofcolumns}{1}{-1}{\dohandlecolumn{#1}}}
+
+\def\dohandlemidcolumns#1%
+  {\dohandleallcolumns
+     {\ifnum\recurselevel>1\relax\ifnum\recurselevel<\nofcolumns\relax
+        \dohandlecolumn{#1}%
+      \fi\fi}}
 
 %D Going to a new columns is done by means of a
 %D \type{\ejectcolumn}. The following definition does not
@@ -352,8 +400,8 @@
   {#1=\!!zeropoint
    \def\doaddinsertionheight##1%
      {\ifvoid##1\else
-        \advance#1 by \skip##1
-        \advance#1 by \ht##1
+        \advance#1 by 1\skip##1     
+        \advance#1 by \ht##1        
        \fi}%
    \doaddinsertionheight\topins
    \doaddinsertionheight\botins
@@ -376,9 +424,9 @@
    \advance\localcolumnwidth by -\nofcolumns\intercolumnwidth
    \advance\localcolumnwidth by \intercolumnwidth
    \divide\localcolumnwidth  by \nofcolumns
-\dimen0=\columntextoffset
-\multiply\dimen0 by 2
-\advance\localcolumnwidth by -\dimen0
+   \dimen0=\columntextoffset
+   \multiply\dimen0 by 2
+   \advance\localcolumnwidth by -\dimen0
    \usercolumnwidth=\localcolumnwidth
    \hsize=\localcolumnwidth} % we don't do it \global
 
@@ -389,9 +437,9 @@
 
 \def\setcolumnvsize%
   {%\global\vsize=\columntextheight
-\global\vsize=-\columntextoffset
-\global\multiply\vsize by 2
-\global\advance\vsize by \columntextheight
+   \global\vsize=-\columntextoffset
+   \global\multiply\vsize by 2
+   \global\advance\vsize by \columntextheight
    \ifdim\partialpageheight>\!!zeropoint
      \global\advance\vsize by -\partialpageheight
    \fi
@@ -466,11 +514,7 @@
    \global\savedpagetotal=\pagetotal
    \global\singlecolumnout=\output
    \global\output={\global\setbox\partialpage=\vbox{\unvbox\normalpagebox}}%
-   \bgroup
-   \holdinginserts=1
-   \eject
-   \egroup
-%   \holdinginserts=0
+   \eject % no \holdinginserts=1, can make footnote disappear ! 
    \global\partialpageheight=\ht\partialpage
    \global\output={\continuousmulticolumnsout}%
    \setcolumnfloats
@@ -501,7 +545,8 @@
 \def\endmulticolumns%
   {%\par
    \vskip\lineheight\vskip-\lineheight % take footnotes into account
-   \dontshowcomposition    
+   \dontshowcomposition
+\doflushcolumnfloat % added recently
    \doflushcolumnfloats % added recently
    \flushfootnotes
    \par
@@ -532,21 +577,18 @@
 
 \def\checkbegincolumnfootnotes%
   {\ifcleverfootnotes
-     \doflushfootnotes 
-     \ifdim\ht\footins>\!!zeropoint
+     \doflushfootnotes
+     \ifdim\ht\footins>\!!zeropoint % hm, actually unknown 
        \global\setbox\savedfootins=\box\footins
      \else
        \global\setbox\savedfootins=\box\voidb@x
      \fi
-     \global\skip\savedfootins=\skip\footins
-     \global\count\savedfootins=\count\footins
-     \setupfootnotes
    \else
-     \global\skip\savedfootins=\skip\footins
      \global\setbox\savedfootins=\box\voidb@x
-     \global\count\savedfootins=\count\footins
-     \setupfootnotes
-   \fi}
+   \fi
+   \global\skip\savedfootins=\skip\footins
+   \global\count\savedfootins=\count\footins
+   \setupfootnotes}
 
 \def\checkendcolumnfootnotes%
   {\ifcleverfootnotes\ifvoid\savedfootins\else
@@ -567,7 +609,7 @@
    \topskip=1\topskip
    \splittopskip=\topskip
    \splitmaxdepth=\maxdepth
-   \boxmaxdepth=\maxdepth % dangerous 
+   \boxmaxdepth=\maxdepth % dangerous
    \emergencystretch=\!!zeropoint\relax} % sometimes needed !
 
 %D Flushing the page comes to pasting the columns together and
@@ -606,6 +648,70 @@
         \edef\maxcolumndepth{\the\dp\currentcolumnbox}%
       \fi}}
 
+% \def\flushcolumnedpage%
+%   {\bgroup
+%    \forgetall
+%    \setmulticolumnsout
+%    \showcomposition
+%    \setmaxcolumndimensions
+%    \postprocesscolumns
+%    \dohandleallcolumns % \hbox i.v.m. \showcomposition
+%      {\global\setbox\currentcolumnbox=\hbox to \localcolumnwidth
+%         {\box\currentcolumnbox
+%          \global\wd\currentcolumnbox=\localcolumnwidth
+%          \ifheightencolumns
+%            \global\ht\currentcolumnbox=\fixedcolumnheight
+%          \fi}}%
+%    \setmaxcolumndimensions
+%    \overlaycolumnfootnotes
+%    \setbox0=\vbox
+%      {\hbox to \finalcolumntextwidth
+%         {\dohandleallcolumns
+%            {\finishcolumnbox{\hbox
+%               {\ifx\finishcolumnbox\relax\else\strut\fi
+%                \box\currentcolumnbox}}%
+%             \ifnum\currentcolumn<\nofcolumns
+%               \hfil
+%             \fi}}}%
+%    \scratchdimen=\!!zeropoint
+%    \dohandleallcolumns
+%      {\ifdim-\ht\currenttopcolumnbox<\scratchdimen
+%         \scratchdimen=-\ht\currenttopcolumnbox
+%       \fi
+%       \global\setbox\currenttopcolumnbox=\box\voidb@x}%
+%    \advance\scratchdimen by \ht0
+%    \setbox2=\hbox to \columntextwidth
+%      {\vrule\!!width\!!zeropoint\!!height\scratchdimen\!!depth\dp0
+%       \dostepwiserecurse{2}{\nofcolumns}{1}{\hfil\betweencolumns}\hfil}%
+%    \setbox0=\hbox
+%      {\box0\hskip-\columntextwidth\color[black]{\box2}}%
+%    \ifvoid\partialpage \else
+%      \ifgridsnapping % do you believe this junk?
+%        \scratchdimen=\savedpagetotal
+%        \advance\scratchdimen by -\ht\partialpage
+%        \advance\scratchdimen by -\dp\partialpage
+%        \advance\scratchdimen by -\topskip
+%        \box\partialpage
+%        \kern\scratchdimen
+%      \else
+%        \unvbox\partialpage
+%      \fi
+%    \fi
+%    \global\partialpageheight=\!!zeropoint
+%    \setvsize
+%    \dosomebreak\nobreak
+%    \ifgridsnapping \else
+%      \dimen0=\topskip
+%      \advance\dimen0 by -\openstrutheight
+%      \nointerlineskip
+%      \vskip-\dimen0
+%    \fi
+%    \prevdepth\openstrutdepth
+%    \nointerlineskip
+%    \dp0=\!!zeropoint
+%    \box0
+%    \egroup}
+
 \def\flushcolumnedpage%
   {\bgroup
    \forgetall
@@ -624,13 +730,16 @@
    \overlaycolumnfootnotes
    \setbox0=\vbox
      {\hbox to \finalcolumntextwidth
-        {\dohandleallcolumns
+        {\ifreversecolumns
+           \@EA\dohandlerevcolumns
+         \else
+           \@EA\dohandleallcolumns
+         \fi
            {\finishcolumnbox{\hbox
               {\ifx\finishcolumnbox\relax\else\strut\fi
                \box\currentcolumnbox}}%
-            \ifnum\currentcolumn<\nofcolumns
-              \hfil
-            \fi}}}%
+            \hfil}%
+         \unskip}}%
    \scratchdimen=\!!zeropoint
    \dohandleallcolumns
      {\ifdim-\ht\currenttopcolumnbox<\scratchdimen
@@ -639,14 +748,14 @@
       \global\setbox\currenttopcolumnbox=\box\voidb@x}%
    \advance\scratchdimen by \ht0
    \setbox2=\hbox to \columntextwidth
-     {\vrule\!!width\!!zeropoint\!!height\scratchdimen\!!depth\dp0 
+     {\vrule\!!width\!!zeropoint\!!height\scratchdimen\!!depth\dp0
       \dostepwiserecurse{2}{\nofcolumns}{1}{\hfil\betweencolumns}\hfil}%
    \setbox0=\hbox
      {\box0\hskip-\columntextwidth\color[black]{\box2}}%
    \ifvoid\partialpage \else
-     \ifgridsnapping % do you believe this junk? 
-       \scratchdimen=\savedpagetotal 
-       \advance\scratchdimen by -\ht\partialpage 
+     \ifgridsnapping % do you believe this junk?
+       \scratchdimen=\savedpagetotal
+       \advance\scratchdimen by -\ht\partialpage
        \advance\scratchdimen by -\dp\partialpage
        \advance\scratchdimen by -\topskip
        \box\partialpage
@@ -664,7 +773,7 @@
      \nointerlineskip
      \vskip-\dimen0
    \fi
-   \prevdepth\openstrutdepth 
+   \prevdepth\openstrutdepth
    \nointerlineskip
    \dp0=\!!zeropoint
    \box0
@@ -672,7 +781,7 @@
 
 %D In case one didn't notice, finaly \type{\finishcolumnbox} is
 %D applied to all boxes. One can use these hooks for special
-%D purposes. But there is more:
+%D purposes.
 %D
 %D Once upon a time I wanted to manipulate the individual lines
 %D in a column. This feature is demonstrated in the two examples
@@ -750,6 +859,15 @@
 \let\postprocesscolumnline=\undefined
 \let\postprocesscolumnbox =\undefined
 
+%D \macros
+%D   {reversecolumnstrue} 
+%D
+%D We can force the macro that takes care of combining 
+%D the columns, to flush them in the revere order. Of 
+%D course, by default we don't reverse. 
+
+\newif\ifreversecolumns 
+ 
 %D Here comes the simple splitting routine. It's a bit
 %D longer than expected because of ragging bottoms or not.
 %D This part can be a bit shorter but I suppose that I will
@@ -865,8 +983,8 @@
    \ifcleverfootnotes
      \ifnum#1=\lastcolumnbox
        \ifdim\ht\footins>\!!zeropoint
-         \vskip\skip\footins
-         \vskip\ht\footins
+         \vskip1\skip\footins % remove stretch and shrink 
+         \kern\ht\footins % a \vskip would be is discarded! 
        \fi
      \fi
    \fi}
@@ -912,7 +1030,7 @@
 
 \def\continuousmulticolumnsout%
   {\bgroup
-\forgetall
+   \forgetall
    \setmulticolumnsout
    \dontshowcomposition
    \dimen0=\columntextheight
@@ -930,15 +1048,22 @@
      {\splitcurrentcolumn from \box\normalpagebox to \dimen0}
    \setbox\restofpage=\vbox{\unvbox\normalpagebox}%
    \ifinheritcolumns
-     \ifr@ggedbottom
+     \ifr@ggedbottom % vreemd 
+%\ifbottomnotes % can better be a state 
        \dohandleallcolumns
-         {\global\setbox\currentcolumnbox=\vbox to \dimen0
+         {\global\setbox\currentcolumnbox=\vbox to \ht\firstcolumnbox
             {\dimen0=\dp\currentcolumnbox
              \unvbox\currentcolumnbox
              \vskip-\dimen0
              \vskip\openstrutdepth % \dp\strutbox
              \prevdepth\openstrutdepth % \dp\strutbox
              \vfill}}%
+%\else
+%  \dimen0=\ht\firstcolumnbox
+%\fi
+\ifbottomnotes \else
+  \dimen0=\ht\firstcolumnbox
+\fi
      \fi
      \ifn@rmalbottom
        \advance\dimen0 by \maxdepth
@@ -969,6 +1094,8 @@
    \unvbox\restofpage
    % \penalty\outputpenalty % gaat gruwelijk mis in opsommingen
    \egroup}
+
+
 
 %D And this is the balancing stuff. Again, part of the routine
 %D is dedicated to handling ragged bottoms, but here we also
@@ -1010,12 +1137,14 @@
        \setbox2=\vbox{\unvcopy\firstcolumnbox}%
        \dimen4=\!!zeropoint
        \dohandleallcolumns
-         {\setbox4=\vbox{\unvcopy\currentcolumnbox
-% rather new, test this on pdftex-z.tex
-\unpenalty\unskip\unpenalty\unskip}% maybe better in main splitter
-%\writestatus{balance}{\the\currentcolumnbox: \the\ht4}%
-          \dimen6=\ht4
-          \ifdim\dimen6>\dimen4 \dimen4=\dimen6 \fi}%
+         {\setbox4=\vbox 
+            {\unvcopy\currentcolumnbox
+            %rather new, test this on pdftex-z.tex
+             \unpenalty\unskip\unpenalty\unskip}% maybe better in main splitter
+            %\writestatus{balance}{\the\currentcolumnbox: \the\ht4}%
+             \dimen6=\ht4
+             \ifdim\dimen6>\dimen4 \dimen4=\dimen6 \fi}%
+\advance\dimen4 by -.0005pt % get rid of accurracy problem, pretty new  
        \ifnum\count255>100\relax
          \donefalse
        \else\ifdim\dimen4>\ht2
@@ -1154,7 +1283,8 @@
    \let\flushcolumnfloats=\noflushcolumnfloats}
 
 \def\setlocalcolumnfloats%
-  {\everypar={\flushfootnotes\flushcolumnfloat\flushmargincontents\checkindentation}
+  {\everypar=
+     {\flushfootnotes\flushcolumnfloat\flushmargincontents\checkindentation}%
    \let\flushcolumnfloat=\doflushcolumnfloat
    \let\doroomfloat=\docolumnroomfloat
    \let\flushcolumnfloats=\doflushcolumnfloats
@@ -1262,13 +1392,13 @@
    \else
      \bgroup
      \getcolumnstatus\column\count255\total\dimen0\goal\dimen2\\%
-     \advance\dimen0 by 2\openlineheight % nog nodig ? 
+     \advance\dimen0 by 2\openlineheight % nog nodig ?
 %\ifnum\count255=\nofcolumns
 %  \getinsertionheight
 % %\message{\insertionheight}\wait
-%  \advance\dimen0 by \insertionheight 
+%  \advance\dimen0 by \insertionheight
 %\fi
-     \setbox\scratchbox=\vbox 
+     \setbox\scratchbox=\vbox % tricky met objecten ?
        {\blanko[\@@bkvoorwit]
         \snaptogrid\vbox{\copy\floatbox}}%
      \advance\dimen0 by \ht\scratchbox
@@ -1303,11 +1433,14 @@
        \ifdim\wd\floatbox>\hsize
          \doresavefloat
        \else
+%         \setbox2=\vbox
+%           {\blanko[\@@bkvoorwit]
+%            \snaptogrid\vbox{\copy\floatbox}%
+%            \blanko[\@@bknawit]
          \setbox2=\vbox
            {\blanko[\@@bkvoorwit]
-            \snaptogrid\vbox{\copy\floatbox}%
-            \blanko[\@@bknawit]}%
-         \advance\dimen0 by \ht2
+            \snaptogrid\vbox{\copy\floatbox}}%
+         \advance\dimen0 by \ht2 
          \ifdim\dimen0>\dimen2
            \ifnum\count255<\nofcolumns
              \advance\count255 by 1
@@ -1336,7 +1469,9 @@
            \par
            \ifdim\prevdepth<\!!zeropoint\relax % anders bovenaan kolom witruimte
            \else
+\nobreak
              \blanko[\@@bkvoorwit]
+\nobreak
            \fi
            \flushfloatbox
            \blanko[\@@bknawit]
@@ -1383,6 +1518,8 @@
             \advance\dimen0 by \intercolumnwidth
             \dimen2=\hsize
             \advance\dimen2 by \intercolumnwidth
+\advance\dimen0 by .5pt 
+\advance\dimen2 by .5pt 
             \divide\dimen0 by \dimen2
             \count0=\dimen0
             \advance\count0 by 1
@@ -1394,7 +1531,12 @@
               \advance\dimen0 by \count0\intercolumnwidth
               \advance\dimen0 by -\intercolumnwidth
               \global\setbox\floatbox=\hbox to \dimen0
-                {\hss\hbox{\copy\floatbox}\hss}%
+               %{\hss\hbox{\copy\floatbox}\hss}%
+                {\processaction[\@@bkplaats] % how easy to forget 
+                   [  \v!links=>\copy\floatbox\hss,
+                     \v!rechts=>\hss\copy\floatbox,
+                    \s!default=>\hss\copy\floatbox\hss,
+                    \s!unknown=>\hss\copy\floatbox\hss]}%
             \fi
             \showmessage{\m!columns}{13}{}%
           \else
@@ -1438,3 +1580,13 @@
 \protect
 
 \endinput
+
+% border case, should fit on one page 
+%
+% \startkolommen 
+% 
+% 1 \input tufte  \par \plaatsfiguur{}{\omlijnd[breedte=\hsize,hoogte=3cm]{1}}
+% 2 \input tufte  \par \plaatsfiguur{}{\omlijnd[breedte=\hsize,hoogte=3cm]{2}}
+% 3 \input tufte  \par \plaatsfiguur{}{\omlijnd[breedte=\hsize,hoogte=3cm]{3}}
+% 
+% \stopkolommen

@@ -8,19 +8,22 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See licen-en.pdf for 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
 %C details. 
 
 %D These macros are written as generic as possible. Some
 %D general support macro's are loaded from a small module
 %D especially made for non \CONTEXT\ use. In this module I
 %D use a matrix transformation macro written by Tanmoy
-%D Bhattacharya. Thanks to extensive testing of Sebastian
+%D Bhattacharya. Thanks to extensive testing by Sebastian
 %D Ratz I was able to complete this module within reasonable
-%D time. First we take care of non||\CONTEXT\ use:
+%D time. This module has support for \METAPOST\ extensions 
+%D built in.
 
-\ifx \undefined \writestatus           \input supp-mis.tex \relax \fi
-\ifx \undefined \convertPDFtoPDF \else \expandafter \endinput     \fi 
+%D First we take care of non||\CONTEXT\ use:
+
+\ifx \undefined \writestatus          \input supp-mis.tex \relax \fi
+\ifx \undefined \convertMPtoPDF \else \expandafter \endinput     \fi 
 
 %D This module handles some \PDF\ conversion and insertions
 %D topics. By default, the macros use the \PDFTEX\ primitive
@@ -35,6 +38,54 @@
 \else
   \let\PDFcode=\pdfliteral
 \fi
+
+%D \macros 
+%D   {pdfimage,pdfimages}
+%D
+%D Starting with pdftex version 14, images are included more
+%D natural to the form embedding. This enables alternative 
+%D images to be embedded. 
+%D
+%D \starttypen
+%D \pdfimage  <optional dimensions> {file}
+%D \pdfimages <optional dimensions> {high res file} {low res file}
+%D \stoptypen
+%D
+%D The first one replaces the pre||version||14 original, 
+%D while the latter provides alternative images. 
+
+\ifx\pdftexversion\undefined
+
+  \writestatus{\m!systems}{Why not use pdf(e)TeX binaries?}
+
+\else\ifnum\pdftexversion>13
+
+  \def\pdfimage#1#%
+    {\dopdfimage{#1}}
+
+  \def\dopdfimage#1#2%
+    {\immediate\pdfximage#1{#2}%
+     \pdfrefximage\pdflastximage}
+
+  \def\pdfimages#1#%
+    {\dopdfimages{#1}}
+
+  \def\dopdfimages#1#2#3%
+    {\immediate\pdfximage#1{#2}%
+     \immediate\pdfobj
+       {[ << /Image \the\pdflastximage\space0 R 
+             /DefaultForPrinting true >> ]}%
+     \immediate\pdfximage#1 
+       attr {/Alternates \the\pdflastobj\space0 R}{#3}%
+     \pdfrefximage\pdflastximage}
+
+%D For old times sake: 
+
+  \let\pdfform    =\pdfxform
+  \let\pdflastform=\pdflastxform
+  \let\pdfrefform =\pdfrefxform
+
+\fi\fi
 
 %D \macros
 %D   {convertPDFtoPDF}
@@ -274,11 +325,13 @@
 \def \PSconcat           {concat}
 \def \PSdtransform       {dtransform}
 
-\def \PSnfont            {nfont}
-
+\def \PSnfont            {nfont}    % was needed for TUG98 proceedings 
+\def \PSspecial          {special}  % extensions to MetaPost
+ 
 \def \PSBoundingBox      {BoundingBox:}
 \def \PSHiResBoundingBox {HiResBoundingBox:}
 \def \PSExactBoundingBox {ExactBoundingBox:}
+\def \PSMetaPostSpecial  {MetaPostSpecial:}
 \def \PSPage             {Page:}
 
 %D By the way, the \type {setcmykcolor} operator is not
@@ -367,12 +420,17 @@
 %D When we reset the stack, we can assume that all further
 %D comment is to be ignored as well as handled in strings.
 %D By redefining the reset macro after the first call, we
-%D save some run time.
+%D save some run time. Only use this macro after all 
+%D comments are processed and use the simple alternative 
+%D when dealing with comments. 
+
+\def\doresetMPstack%
+  {\nofMParguments=0 }
 
 \def\resetMPstack%
   {\catcode`\%=\@@active
    \let\handleMPgraphic=\handleMPendgraphic
-   \def\resetMPstack{\nofMParguments=0 }%
+   \let\resetMPstack\doresetMPstack
    \resetMPstack}
 
 %D The arguments are saved with the preceding command
@@ -480,59 +538,62 @@
        \ifx\somestring\PSmoveto
          \edef\lastMPmoveX{\gMPa1}%
          \edef\lastMPmoveY{\gMPa2}%
-         \pdfliteral{\!MP{\gMPa1} \!MP{\gMPa2} m}%
+         \PDFcode{\!MP{\gMPa1} \!MP{\gMPa2} m}%
          \resetMPstack
        \else\ifx\somestring\PSnewpath
          \let\handleMPsequence=\handleMPpath
        \else\ifx\somestring\PSgsave
-         \pdfliteral{q}%
+         \PDFcode{q}%
          \resetMPstack
        \else\ifx\somestring\PSgrestore
-         \pdfliteral{Q}%
+         \PDFcode{Q}%
          \resetMPstack
        \else\ifx\somestring\PSdtransform  % == setlinewidth
          \let\handleMPsequence=\handleMPdtransform
        \else\ifx\somestring\PSconcat
-         \pdfliteral{\gMPa1 \gMPa2 \gMPa3 \gMPa4 \gMPa5 \gMPa6 cm}%
+         \PDFcode{\gMPa1 \gMPa2 \gMPa3 \gMPa4 \gMPa5 \gMPa6 cm}%
          \resetMPstack
        \else\ifx\somestring\PSsetrgbcolor
-         \pdfliteral{\!MP{\gMPa1} \!MP{\gMPa2} \!MP{\gMPa3} rg 
+         \PDFcode{\!MP{\gMPa1} \!MP{\gMPa2} \!MP{\gMPa3} rg 
                      \!MP{\gMPa1} \!MP{\gMPa2} \!MP{\gMPa3} RG}%
          \resetMPstack
        \else\ifx\somestring\PSsetcmykcolor
-         \pdfliteral{\!MP{\gMPa1} \!MP{\gMPa2} \!MP{\gMPa3} \!MP{\gMPa4} k 
+         \PDFcode{\!MP{\gMPa1} \!MP{\gMPa2} \!MP{\gMPa3} \!MP{\gMPa4} k 
                      \!MP{\gMPa1} \!MP{\gMPa2} \!MP{\gMPa3} \!MP{\gMPa4} K}% 
          \resetMPstack
        \else\ifx\somestring\PSsetgray
-         \pdfliteral{\!MP{\gMPa1} g \!MP{\gMPa1} G}%
+         \PDFcode{\!MP{\gMPa1} g \!MP{\gMPa1} G}%
          \resetMPstack
        \else\ifx\somestring\PStranslate
-         \pdfliteral{1 0 0 1 \gMPa1 \gMPa2 cm}%
+         \PDFcode{1 0 0 1 \gMPa1 \gMPa2 cm}%
          \resetMPstack
        \else\ifx\somestring\PSsetdash
          \handleMPsetdash
          \resetMPstack
        \else\ifx\somestring\PSsetlinejoin
-         \pdfliteral{\gMPa1 j}%
+         \PDFcode{\gMPa1 j}%
          \resetMPstack
        \else\ifx\somestring\PSsetmiterlimit
-         \pdfliteral{\gMPa1 M}%
+         \PDFcode{\gMPa1 M}%
          \resetMPstack
        \else\ifx\somestring\PSfshow
          \handleMPfshow
          \resetMPstack
        \else\ifx\somestring\PSsetlinecap
-         \pdfliteral{\gMPa1 J}%
+         \PDFcode{\gMPa1 J}%
          \resetMPstack
        \else\ifx\somestring\PSrlineto
-         \pdfliteral{\!MP{\lastMPmoveX} \!MP{\lastMPmoveY} l S}%
+         \PDFcode{\!MP{\lastMPmoveX} \!MP{\lastMPmoveY} l S}%
          \resetMPstack
        \else\ifx\somestring\PSscale
-         \pdfliteral{\gMPa1 0 0 \gMPa2 0 0 cm}%
+         \PDFcode{\gMPa1 0 0 \gMPa2 0 0 cm}%
+         \resetMPstack
+       \else\ifx\somestring\PSspecial
+         \handleMPspecialcommand
          \resetMPstack
        \else
          \handleMPgraphic{#1#2}%
-       \fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi
+       \fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi
      \fi
    \else
      \edef\somestring{#1#2}%
@@ -562,9 +623,11 @@
      \let\handleMPsequence=\finishMPgraphic
    \else\ifx\somestring\PSPage
      \let\handleMPsequence=\handleMPpage
+   \else\ifx\somestring\PSMetaPostSpecial
+     \let\handleMPsequence=\handleMPspecialcomment
    \else
      \setMPargument{#1}% kan weg
-   \fi\fi\fi\fi\fi}
+   \fi\fi\fi\fi\fi\fi}
 
 \let\handleMPgraphic=\handleMPbegingraphic
 
@@ -602,7 +665,7 @@
      \xdef\MPheight{\the\dimen2}%
      \chardef\currentMPboundingbox=#1\relax
    \fi
-   \nofMParguments=0
+   \doresetMPstack
    \let\handleMPsequence=\dohandleMPsequence
    \let\next=\handleMPsequence
    \ifskipemptyMPgraphic
@@ -612,12 +675,26 @@
    \fi
    \next}
 
+%D Unless defined otherwise, we simply ignore specialcomments. 
+
+\def\handleMPspecialcomment%
+  {\doresetMPstack
+   \let\handleMPsequence=\dohandleMPsequence
+   \handleMPsequence}
+
 %D We use the \type{page} comment as a signal that
 %D stackbuilding can be started.
 
 \def\handleMPpage #1 #2
-  {\nofMParguments=0
+  {\doresetMPstack
    \donetrue
+   \let\handleMPsequence=\dohandleMPsequence
+   \handleMPsequence}
+
+%D The same applies to the special extensions. 
+
+\def\handleMPspecialcommand 
+  {\doresetMPstack
    \let\handleMPsequence=\dohandleMPsequence
    \handleMPsequence}
 
@@ -790,15 +867,15 @@
    \nofMPsegments=1
    \loop
      \expandafter\ifcase\getMPkeyword{\the\nofMPsegments}\relax
-       \pdfliteral{\!MP{\gMPs1} \!MP{\gMPs2} l}%
+       \PDFcode{\!MP{\gMPs1} \!MP{\gMPs2} l}%
      \or
-       \pdfliteral{\!MP{\gMPs1} \!MP{\gMPs2} \!MP{\gMPs3} \!MP{\gMPs4} \!MP{\gMPs5} \!MP{\gMPs6} c}%
+       \PDFcode{\!MP{\gMPs1} \!MP{\gMPs2} \!MP{\gMPs3} \!MP{\gMPs4} \!MP{\gMPs5} \!MP{\gMPs6} c}%
      \or
-       \pdfliteral{\!MP{\lastMPmoveX} \!MP{\lastMPmoveY} l S}%
+       \PDFcode{\!MP{\lastMPmoveX} \!MP{\lastMPmoveY} l S}%
      \or
        \edef\lastMPmoveX{\gMPs1}%
        \edef\lastMPmoveY{\gMPs2}%
-       \pdfliteral{\!MP{\lastMPmoveX} \!MP{\lastMPmoveY} m}%
+       \PDFcode{\!MP{\lastMPmoveX} \!MP{\lastMPmoveY} m}%
      \fi
      \advance\nofMPsegments by 1\relax
    \ifnum\nofMPsegments<\scratchcounter
@@ -810,23 +887,23 @@
    \loop
      \expandafter\ifcase\getMPkeyword{\the\nofMPsegments}\relax
        \doMPconcat{\gMPs1}\a{\gMPs2}\b%
-       \pdfliteral{\!MP{\a} \!MP{\b} l}%
+       \PDFcode{\!MP{\a} \!MP{\b} l}%
      \or
        \doMPconcat{\gMPs1}\a{\gMPs2}\b%
        \doMPconcat{\gMPs3}\c{\gMPs4}\d%
        \doMPconcat{\gMPs5}\e{\gMPs6}\f%
-       \pdfliteral{\!MP{\a} \!MP{\b} \!MP{\c} \!MP{\d} \!MP{\e} \!MP{\f} c}%
+       \PDFcode{\!MP{\a} \!MP{\b} \!MP{\c} \!MP{\d} \!MP{\e} \!MP{\f} c}%
      \or
        \bgroup
        \noMPtranslate
        \doMPconcat\lastMPmoveX\a\lastMPmoveY\b%
-       \pdfliteral{\!MP{\a} \!MP{\b} l S}%
+       \PDFcode{\!MP{\a} \!MP{\b} l S}%
        \egroup
      \or
        \edef\lastMPmoveX{\gMPs1}%
        \edef\lastMPmoveY{\gMPs2}%
        \doMPconcat\lastMPmoveX\a\lastMPmoveY\b%
-       \pdfliteral{\!MP{\a} \!MP{\b} m}%
+       \PDFcode{\!MP{\a} \!MP{\b} m}%
      \fi
      \advance\nofMPsegments by 1\relax
    \ifnum\nofMPsegments<\scratchcounter
@@ -1155,10 +1232,13 @@
 %D The path is output using the values saved on the stack. If
 %D needed, all coordinates are recalculated.
 
+\def\finishMPpath%
+  {\PDFcode{\ifcase\finiMPpath W n\or S\or f\or B\fi}}
+
 \def\processMPpath%
   {\flushMPpath
    \closeMPpath
-   \PDFcode{\ifcase\finiMPpath W n\or S\or f\or B\fi}%
+   \finishMPpath
    \let\handleMPsequence=\dohandleMPsequence
    \resetMPstack
    \nofMPsegments=0
@@ -1235,14 +1315,37 @@
 %D \convertMPtoPDF{mp-pra-1.eps}{.5}{.5}
 %D \stoptypen
 
+%D \macros 
+%D   {makeMPintoPDFobject,lastPDFMPobject}
+%D
+%D For experts there are a few more options. When attributes
+%D are to be added, the code muts be embedded in an object 
+%D accompanied with the appropriate directives. One can 
+%D influence this process with \type {\makeMPintoPDFobject}.
+%D
+%D This option defaults to~0, because \CONTEXT\ takes care 
+%D of objects at another level, which saves some bytes.  
+%D
+%D \starttabulatie[|l|l|p|]
+%D \NC 0 \NC never    \NC don't use an object    \NC\NR
+%D \NC 1 \NC always   \NC always use an object   \NC\NR
+%D \NC 2 \NC optional \NC use object when needed \NC\NR
+%D \stoptabulatie 
+%D 
+%D The last object number used is avaliable in the macro 
+%D \type {\lastPDFMPobject}.
+
+\chardef\makeMPintoPDFobject=0 \def\lastPDFMPobject{0}
+
+%D The additional code needed can be made available in the 
+%D (global) macro \type {\currentPDFresources}.
+
+\let\currentPDFresources\empty  
+
 \def\processMPtoPDFfile% file xscale yscale 
   {\bgroup
    \let\finishMPgraphic=\egroup
    \doprocessMPtoPDFfile}
-
-\ifx\deleteMPgraphic\undefined
-  \def\deleteMPgraphic#1{}
-\fi
 
 \def\doprocessMPtoPDFfile#1#2#3% file xscale yscale 
   {\setMPspecials
@@ -1263,12 +1366,22 @@
      \forgetall
      \offinterlineskip
      \PDFcode{q}%
+     \startMPresources
      \doprocessMPtoPDFfile{#1}{#2}{#3}}
 
 \def\finishMPgraphic%
-  {\PDFcode{Q}%
+  {\stopMPresources
+   \PDFcode{Q}%
    \egroup
    \wd0=\MPwidth
+   \ifx\pdftexversion\undefined\else\ifnum\pdftexversion<14 % for the moment 
+     \chardef\makeMPintoPDFobject=0 
+   \fi\fi
+   \ifcase\makeMPintoPDFobject\or
+     \setbox0=
+   \or\ifx\currentPDFresources\empty\else
+     \chardef\makeMPintoPDFobject=1 \setbox0=
+   \fi\fi
    \vbox to \MPheight
      {\forgetall
       \vfill
@@ -1276,7 +1389,29 @@
         \MPxoffset\space \MPyoffset\space cm}%
       \box0
       \PDFcode{Q}}%
+   \ifcase\makeMPintoPDFobject\or
+     \immediate\pdfxform attr{\currentPDFresources}0%
+     \xdef\lastPDFMPobject{\the\pdflastxform}%
+     \pdfrefxform\lastPDFMPobject
+     \global\let\currentPDFresources\empty
+   \fi
    \egroup}
+
+%D \macros 
+%D   {deleteMPgraphic,
+%D    startMPresources,
+%D    stopMPresources}
+%D 
+%D Here are a few hooks for \CONTEXT\ specific things. 
+
+\ifx\deleteMPgraphic\undefined
+  \def\deleteMPgraphic#1{}
+\fi
+
+\ifx\startMPresources\undefined
+  \let\startMPresources\relax
+  \let\stopMPresources\relax
+\fi
 
 %D \macros
 %D   {twodigitMPoutput}

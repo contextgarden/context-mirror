@@ -8,7 +8,7 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See licen-en.pdf for 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
 %C details. 
 
 \writestatus{loading}{Context Core Macros / Verbatim}
@@ -26,6 +26,11 @@
 \startmessages  german  library: verbatims
   title: verbatim
       1: Datei -- existiert nicht 
+\stopmessages
+
+\startmessages  czech  library: verbatims
+  title: verbatim
+      1: soubor -- neexistuje
 \stopmessages
 
 \unprotect
@@ -51,7 +56,9 @@
      {\def\prettyidentifier{MP}}
   {\doifinstringelse{\prettyidentifier}{javascript,js,java,jv,JAVASCRIPT,JS,JAVA,JV}
      {\def\prettyidentifier{JV}}
-     {\def\prettyidentifier{TEX}}}}}%
+  {\doifinstringelse{\prettyidentifier}{sql,SQL}
+     {\def\prettyidentifier{SQL}}
+      {\def\prettyidentifier{TEX}}}}}}%
    \doifundefined{setuppretty\prettyidentifier type}%
      {\bgroup
       \setbox0=\hbox % get rid of spaces when in-line \newpretty loading
@@ -65,22 +72,26 @@
      {\def\setupprettytype{\getvalue{setuppretty\prettyidentifier type}}}
      {\let\setupprettytype=\relax}}
 
-\installnewpretty M {\setupprettiesintype{MP}\setupprettytype}
-\installnewpretty P {\setupprettiesintype{PL}\setupprettytype}
+\installnewpretty M {\setupprettiesintype {MP}\setupprettytype}
+\installnewpretty P {\setupprettiesintype {PL}\setupprettytype}
 \installnewpretty T {\setupprettiesintype{TEX}\setupprettytype}
-\installnewpretty J {\setupprettiesintype{JV}\setupprettytype}
+\installnewpretty J {\setupprettiesintype {JV}\setupprettytype}
+\installnewpretty S {\setupprettiesintype{SQL}\setupprettytype}
 
 \def\setupcommonverbatim#1%
-  {\def\verbatimfont         {\tttf}%
-   \def\prettyidentifierfont {\ttsl}%
-   \def\prettyvariablefont   {}%
-   \def\prettyidentifier     {TEX}%
-   \doifvalue{#1\c!spatie}{\v!aan}
-     {\def\obeyspaces{\setcontrolspaces}}%
-   \doifvalue{#1\c!tab}{\v!aan}
-     {\def\obeytabs{\settabskips}}%
-   \doifvalue{#1\c!pagina}{\v!nee}
-     {\def\obeypages{\ignorepages}}%
+  {\def\verbatimfont{\tttf}%
+   \def\prettyidentifier{TEX}%
+   %
+   \doifelsevalue{#1\c!tekst}{\v!ja}
+     {\naturaltextexttrue}{\naturaltextextfalse}%
+   \def\prettyidentifierfont{\getvalue{#1\c!icommando}}%
+   \def\prettyvariablefont  {\getvalue{#1\c!vcommando}}%
+   \def\prettynaturalfont   {\getvalue{#1\c!ccommando}}%
+   %
+   \doifvalue{#1\c!spatie}{\v!aan}{\def\obeyspaces{\setcontrolspaces}}%
+   \doifvalue{#1\c!tab}   {\v!aan}{\def\obeytabs  {\settabskips}}%
+   \doifvalue{#1\c!pagina}{\v!nee}{\def\obeypages {\ignorepages}}%
+   %
    \ExpandFirstAfter\processaction
      [\getvalue{#1\c!optie}]
      [     \v!geen=>\let\obeycharacters=\relax,
@@ -142,6 +153,7 @@
 
 \unexpanded\def\type%
   {\bgroup
+   \getvalue{\getvalue{\??ty\c!kleur}}% hm, assumes \somecolor
    \catcode`\<=\@@other
    \catcode`\>=\@@other
    \futurelet\next\dotype}
@@ -326,11 +338,13 @@
      \let\next=\relax
    \else\ifx\next\bgroup
      \let\next=\relax
+   \else\ifx\next\egroup % takes care of \type{} 
+     \let\next=\relax
    \else\ifx\next\activeleftargument
      \let\next=\relax
    \else
      \let\next=\string
-   \fi\fi\fi
+   \fi\fi\fi\fi
    \next}
 \egroup
 
@@ -348,12 +362,20 @@
 
 %D \macros
 %D   {setuptype}
-%D   {}
 %D
 %D Some characteristics of \type{\type} can be set up by:
 
 \def\setuptype%
   {\dodoubleargument\getparameters[\??ty]}
+
+%D The setups for inline verbatim default to:
+
+\setuptype
+  [\c!spatie=\v!uit,
+    \c!kleur=,
+   \c!pagina=\v!nee,
+      \c!tab=\v!nee,
+    \c!optie=\v!normaal]
 
 %D \macros
 %D   {typ,obeyhyphens}
@@ -380,7 +402,6 @@
 
 %D \macros
 %D   {tex,arg,mat,dis}
-%D   {}
 %D
 %D Sometimes, for instance when we pass verbatim text as an
 %D argument, the fixed \CATCODES\ interfere with our wishes. An
@@ -506,57 +527,15 @@
 \def\dostarttyping#1%
   {\getvalue{\??tp#1\c!voor}%
    \startopelkaar % includes \bgroup
+   \startcolor[\getvalue{\??tp#1\c!kleur}]%
    \initializetyping{#1}%
    \expandafter\processdisplayverbatim\expandafter{\s!stop#1}}
 
 \def\dostoptyping#1%
-  {\stopopelkaar  % includes \egroup
+  {\stopcolor
+   \stopopelkaar  % includes \egroup
    \getvalue{\??tp#1\c!na}%
    \doifvalue{\??tp#1\c!springvolgendein}{\v!nee}{\noindentation}}
-
-%D \macros
-%D   {definetyping}
-%D
-%D For most users the standard \type{\start}||\type{\stop}||pair
-%D will suffice, but for documentation purposes the next
-%D definition command can be of use:
-%D
-%D \starttypen
-%D \definetyping[extratyping][margin=3em]
-%D
-%D \startextratyping
-%D these extra ones are indented by 1 em
-%D \stopextratyping
-%D \stoptypen
-%D
-%D The definitions default to the standard typing values. 
-
-\def\presettyping[#1][#2]% 
-  {\copyparameters
-     [\??tp#1][\??tp]
-     [\c!voor,\c!na,\c!spatie,\c!pagina,\c!tab,
-      \c!optie,\c!palet,\c!marge,\c!evenmarge,\c!onevenmarge,
-      \c!springvolgendein,\c!blanko,\c!escape]%
-   \getparameters
-     [\??tp#1]
-     [#2]}
-
-\def\dodefinetyping[#1][#2]%
-  {\setvalue{\e!start#1}{\dostarttyping{#1}}%
-   \setvalue{\e!stop#1}{\dostoptyping{#1}}%
-   \presettyping[#1][#2]}
-
-\def\definetyping%
-  {\dodoubleempty\dodefinetyping}
-
-\definetyping[\v!typen]
-
-\definetyping[MP] [\c!optie=MP]
-\definetyping[PL] [\c!optie=PL]
-\definetyping[PM] [\c!optie=PL]
-\definetyping[JS] [\c!optie=JS]
-\definetyping[JV] [\c!optie=JV]
-\definetyping[TEX][\c!optie=TEX]
 
 %D \macros
 %D   {setuptyping}
@@ -589,6 +568,77 @@
 
 \def\setuptyping%
   {\dodoubleempty\dosetuptyping}
+
+%D The setups for display verbatim and file verbatim are
+%D shared. One can adapt the extra defined typing environments,
+%D but they also default to the values below. Watch the 
+%D alternative escape character. 
+
+\setuptyping
+  [          \c!voor=\blanko,
+               \c!na=\blanko,
+            \c!kleur=,
+           \c!spatie=\v!uit,  
+           \c!pagina=\v!nee,
+              \c!tab=\v!aan,
+            \c!optie=\v!geen,
+            \c!palet=colorpretty,
+            \c!tekst=\v!nee,
+        \c!icommando=\ttsl,
+        \c!vcommando=,
+        \c!ccommando=\tf,
+ \c!springvolgendein=\v!ja,
+            \c!marge=\!!zeropoint,
+        \c!evenmarge=\!!zeropoint, 
+      \c!onevenmarge=\!!zeropoint,
+           \c!blanko=\v!regel,
+           \c!escape=/]
+
+%D \macros
+%D   {definetyping}
+%D
+%D For most users the standard \type{\start}||\type{\stop}||pair
+%D will suffice, but for documentation purposes the next
+%D definition command can be of use:
+%D
+%D \starttypen
+%D \definetyping[extratyping][margin=3em]
+%D
+%D \startextratyping
+%D these extra ones are indented by 1 em
+%D \stopextratyping
+%D \stoptypen
+%D
+%D The definitions default to the standard typing values. 
+
+\def\presettyping[#1][#2]% 
+  {\copyparameters
+     [\??tp#1][\??tp]
+     [\c!voor,\c!na,\c!spatie,\c!pagina,\c!tab,\c!kleur,
+      \c!tekst,\c!icommando,\c!vcommando,\c!ccommando,
+      \c!optie,\c!palet,\c!marge,\c!evenmarge,\c!onevenmarge,
+      \c!springvolgendein,\c!blanko,\c!escape]%
+   \getparameters
+     [\??tp#1]
+     [#2]}
+
+\def\dodefinetyping[#1][#2]%
+  {\setvalue{\e!start#1}{\dostarttyping{#1}}%
+   \setvalue{\e!stop#1}{\dostoptyping{#1}}%
+   \presettyping[#1][#2]}
+
+\def\definetyping%
+  {\dodoubleempty\dodefinetyping}
+
+\definetyping[\v!typen]
+
+\definetyping[MP] [\c!optie=MP]
+\definetyping[PL] [\c!optie=PL]
+\definetyping[PM] [\c!optie=PL]
+\definetyping[JS] [\c!optie=JS]
+\definetyping[JV] [\c!optie=JV]
+\definetyping[SQL][\c!optie=SQL]
+\definetyping[TEX][\c!optie=TEX]
 
 %D We use the \CONTEXT\ color system for switching to and from
 %D color mode. We can always redefine these colors afterwards.
@@ -631,6 +681,8 @@
 \definepalet [JVgraypretty]   [graypretty]
 \definepalet [JScolorpretty]  [colorpretty]
 \definepalet [JSgraypretty]   [graypretty]
+\definepalet [SQLcolorpretty] [colorpretty]
+\definepalet [SQLgraypretty]  [graypretty]
 
 %D We can use some core color commands. These are faster than
 %D the standard color switching ones and work ok on a line by 
@@ -641,9 +693,98 @@
 \def\beginofpretty[#1]{\startcolormode{\prettypalet:#1}}
 \def\endofpretty      {\stopcolormode}
 
+%D In the verbatim module, there are some examples given of 
+%D the more obscure features of the verbatim environments.
+%D
+%D \startbuffer
+%D \startTEX
+%D \def\mathematics#1%         % usage: \type {\mathematics{x^2}}
+%D   {\ifmmode#1\else$#1$\fi}  % becomes: \mathematics{x^2}
+%D \stopTEX
+%D \stopbuffer
+%D 
+%D \typebuffer 
+%D 
+%D This gives, as can be expected: 
+%D 
+%D \haalbuffer
+%D   
+%D When we want to see some typeset \TEX\ too, we can say: 
+%D
+%D \startbuffer
+%D \startTEX
+%D \def\mathematics#1%         %%\ N  usage: \type {\mathematics{x^2}}
+%D   {\ifmmode#1\else$#1$\fi}  %%\ N  becomes: \mathematics{x^2}
+%D \stopTEX
+%D \stopbuffer
+%D
+%D \typebuffer 
+%D
+%D or: 
+%D
+%D \haalbuffer
+%D
+%D In a similar way: 
+%D
+%D \startbuffer
+%D \startSQL
+%D select *       -- indeed, here we {\em do} select 
+%D   from tableA
+%D   where 1 = 2
+%D \stopSQL
+%D \stopbuffer
+%D
+%D \typebuffer 
+%D
+%D gives: 
+%D
+%D \haalbuffer 
+%D
+%D The next examples sow how we can directly call for natural
+%D \TEX\ comments:  
+%D 
+%D \startbuffer
+%D \setuptyping
+%D   [TEX]
+%D   [tekst=ja]
+%D 
+%D \startTEX
+%D \def\mathematics#1%         % usage: \type {\mathematics{x^2}}
+%D   {\ifmmode#1\else$#1$\fi}  % becomes: \mathematics{x^2}
+%D \stopTEX
+%D 
+%D \setuptyping
+%D   [SQL]
+%D   [tekst=ja,palet=,icommando=\bf,vcommando=,ccommando=\it]
+%D 
+%D \startSQL
+%D select *       -- indeed, here we {\em do} select 
+%D   from tableA
+%D   where 1 = 2
+%D \stopSQL
+%D 
+%D \setuptyping
+%D   [SQL]
+%D   [ccommando=\tf\underbar]
+%D 
+%D \startSQL
+%D select *       -- indeed, here we {\em do} select 
+%D   from tableA
+%D   where 1 = 2
+%D \stopSQL
+%D \stopbuffer
+%D
+%D \typebuffer
+%D
+%D Now watch: 
+%D
+%D \haalbuffer
+%D
+%D The natural \TEX\ typesetting was introduced when Tobias 
+%D and Berend started using verbatim \JAVASCRIPT\ and \SQL.
+
 %D \macros
 %D   {EveryPar, EveryLine, iflinepar}
-%D   {}
 %D
 %D One of the features of these commands is the support of
 %D \type{\EveryPar}, \type{\EveryLine} and \type{\iflinepar}.
@@ -665,6 +806,7 @@
   {\getvalue{\??tp\v!file\c!voor}%
    \doiffileelse{#1}
      {\startopelkaar % includes \bgroup
+      \startcolor[\getvalue{\??tp\v!file\c!kleur}]%
       \doifinset{\getvalue{\??tp\v!file\c!optie}}{\v!commandos,\v!schuin,\v!normaal}
         {\setuptyping[\v!file][\c!optie=\v!geen]}%
       \doifvalue{\??tp\v!file\c!optie}{\v!kleur}
@@ -672,6 +814,7 @@
          \letvalue{\??tp\v!file\c!optie}=\prettyidentifier}%
       \initializetyping\v!file
       \processfileverbatim{#1}%
+      \stopcolor
       \stopopelkaar}  % includes \egroup
      {{\tttf[\makemessage{\m!verbatims}{1}{#1}]}% 
       \showmessage{\m!verbatims}{1}{#1}}%
@@ -690,36 +833,9 @@
 
 \def\filename#1{{\tttf\hyphenatedfile{#1}}}
 
-%D The setups for inline verbatim default to:
-
-\setuptype
-  [\c!spatie=\v!uit,
-   \c!pagina=\v!nee,
-      \c!tab=\v!nee,
-    \c!optie=\v!normaal]
-
-%D The setups for display verbatim and file verbatim are
-%D shared. One can adapt the extra defined typing environments,
-%D but they also default to the values below. Watch the 
-%D alternative escape character. 
-
-\setuptyping
-  [          \c!voor=\blanko,
-               \c!na=\blanko,
-           \c!spatie=\v!uit,  
-           \c!pagina=\v!nee,
-              \c!tab=\v!aan,
-            \c!optie=\v!geen,
-            \c!palet=colorpretty,
- \c!springvolgendein=\v!ja,
-            \c!marge=\!!zeropoint,
-        \c!evenmarge=\!!zeropoint, 
-      \c!onevenmarge=\!!zeropoint,
-           \c!blanko=\v!regel,
-           \c!escape=/]
+%D This leaves some settings: 
 
 \permitshiftedendofverbatim
-
 \optimizeverbatimtrue
 
 \protect

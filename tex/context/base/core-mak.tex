@@ -8,7 +8,7 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See licen-en.pdf for 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
 %C details. 
 
 \writestatus{loading}{Context Core Macros / General Makeup Commands}
@@ -28,6 +28,7 @@
       \c!rechts=\hss,
       \c!regelcorrectie=\v!uit,
       \c!dieptecorrectie=\v!uit,
+      \c!marge=\v!standaard,
       %\c!voor=,
       %\c!na=, 
      #2]%
@@ -46,6 +47,7 @@
       \getparameters[#1][#2]%
       \getvalue{#1\c!voor}%
       \doifvalue{#1\c!regelcorrectie}  {\v!aan} {\startbaselinecorrection}%
+      \doifinset{\getvalue{#1\c!marge}}{\v!standaard,\v!ja}{\noindent}% 
       \hbox to \localhsize
         {\getvalue{#1\c!links}%
          \box\nextbox

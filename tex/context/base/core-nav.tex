@@ -8,7 +8,7 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See licen-en.pdf for 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
 %C details. 
 
 \writestatus{loading}{Context Core Macros / Navigation}
@@ -40,16 +40,16 @@
 %D 
 %D The other settings are:
 %D 
-%D \showsetup{\y!stelinteractiein}
+%D \showsetup{\y!setupinteraction}
 %D 
 %D In the special driver modules we introduced a switch that
 %D forces page destinations (instead of named ones). We set
 %D this switch here. 
 
-\def\stelinteractiein%
-  {\dosingleargument\dostelinteractiein}
+\def\setupinteraction%
+  {\dosingleargument\dodosetupinteraction}
 
-\def\dostelinteractiein[#1]%
+\def\dodosetupinteraction[#1]% % \dosetupinteraction == special 
   {\getparameters[\??ia][#1]%
    \dosetuppageview{\@@iascherm}%     
    \doifelse{\@@iastatus}{\v!start}
@@ -61,9 +61,17 @@
         \showmessage{\m!interactions}{3}{\ifusepagedestinations\space(PAGE)\fi}%
         \global\locationfalse
       \fi}%
+   \doifsomething{\@@iabereken}
+     {\doregistercalculationset\@@iabereken}%
    \doifelse{\@@iastrut}{\v!ja}
      {\locationstruttrue}
      {\locationstrutfalse}%
+   \doifelse{\@@iaklik}{\v!ja}
+     {\highlighthyperlinkstrue}
+     {\highlighthyperlinksfalse}%
+   \doifelse{\@@iascherm}{\v!nieuw}
+     {\gotonewwindowtrue}
+     {\gotonewwindowfalse}%
    \doifelse{\@@iapagina}{\v!ja}
      {\global\usepagedestinationstrue}
      {\global\usepagedestinationsfalse}}
@@ -73,13 +81,21 @@
 \def\dolocationstartup%
   {\iflocation
      \dosetupinteraction
-     \handlereferenceactions\@@iaopenactie\dosetupopenaction
+     \handlereferenceactions\@@iaopenactie \dosetupopenaction
      \handlereferenceactions\@@iasluitactie\dosetupcloseaction
      \setupinteractionscreens
      \global\let\dolocationstartup=\relax
    \fi}
 
 \appendtoks \dolocationstartup \to \everyshipout
+
+\def\dolocationpagecheck%
+  {\iflocation
+     \handlereferenceactions\@@iaopenpaginaactie \doPDFsetupopenpageaction
+     \handlereferenceactions\@@iasluitpaginaactie\doPDFsetupclosepageaction
+   \fi}
+
+\appendtoks \dolocationpagecheck \to \everyshipout
 
 %D The next few macros are really horrible. For proper
 %D navigation a in||line hypertext fragment must have
@@ -292,15 +308,20 @@
 %
 % \definereference [AtOpenInitializeForm] [\v!geen] 
 
-\stelinteractiein % start fit page and reset form 
+\setupinteraction % start fit page and reset form 
   [\c!status=\v!stop,
    \c!pagina=\v!nee,
+   \c!klik=\v!ja,
+   \c!scherm=,
   %\c!openactie={\v!eerstepagina,AtOpenInitializeForm},
    \c!openactie={\v!eerstepagina,\v!ResetForm},
    \c!sluitactie=,
+   \c!openpaginaactie=,
+   \c!sluitpaginaactie=,
    \c!scherm=\v!passend,
    \c!menu=\v!uit,
    \c!letter=\v!vet,
+   \c!bereken=,
    \c!strut=\v!ja,
    \c!kleur=interactioncolor,
    \c!contrastkleur=interactioncontrastcolor,  

@@ -8,7 +8,7 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See licen-en.pdf for 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
 %C details. 
 
 %D This module implements the (for the moment still simple)
@@ -30,6 +30,8 @@
       6: taal -- is niet gedefinieerd
       7: taal specifieke opties [--] introduceren een skip van --
       8: taal specifieke opties [--] naadloos toegevoegd
+      9: taal -- is actief
+     10: patronen --geladen 
 \stopmessages
 
 \startmessages  english  library: linguals
@@ -42,6 +44,8 @@
       6: language -- is undefined
       7: language specific options [--] introduce a -- skip
       8: language specific options [--] seamless appended
+      9: language -- is active
+     10: patterns --loaded
 \stopmessages
 
 \startmessages  german  library: linguals
@@ -54,12 +58,31 @@
       6: Sprache -- ist undefiniert
       7: Sprachenspezifische Option [--] fuegt eine Luecke von -- ein
       8: Sprachenspezifische Option [--] nahtlos hinzugefuegt
+      9: Sprache -- ist aktiv
+     10: Trennmuster --geladen  
+\stopmessages
+
+% TOM: 9 and 10 
+
+\startmessages  czech  library: linguals
+  title: jazyky
+      1: vzory -- pro -- nacteny (n=--)
+      2: zadne vzory -- pro -- (n=--)
+      3: deleni slov -- pro -- nacteno (n=--)
+      4: zadne deleni slov -- pro -- (n=--)
+      5: vzory pro -- nenacteny
+      6: jazyk -- neni definovan
+      7: specificke volby jazyka [--] zavadeji -- (zavlecenou) mezeru
+      8: specificke volby jazyka [--] bez mezer pripojeny
+      9: language -- is active
+     10: vzory --nacteny 
 \stopmessages
 
 % dutch   : \lccode`\'=`\'
 % english : \lccode`\'=0
 % german  : \lccode`\'=`\'
 % french  : \lccode`\'=`\'
+% czech   : \lccode`\'=`\'
 
 %D When loading hyphenation patterns, \TEX\ assign a number to
 %D each loaded table, starting with~0. Switching to a specific
@@ -78,13 +101,17 @@
 \newcounter\loadedlanguage
 
 %D \macros
-%D   {currentlanguage}
+%D   {currentlanguage, setcurrentlanguage}
 %D
 %D Instead of numbers,we are going to use symbolic names for
 %D the languages. The current langage is saved in the macro
-%D \type{\currentlanguage}.
+%D \type {\currentlanguage}. The setup macro is mainly used 
+%D for cosmetic purposes. 
 
-\let\currentlanguage = \empty
+\let\currentlanguage=\empty
+
+\def\setupcurrentlanguage[#1]%
+  {\edef\currentlanguage{#1}} 
 
 %D \macros
 %D   {installlanguage}
@@ -123,12 +150,28 @@
    \expanded{\noexpand\uppercase{\noexpand\edef\noexpand\ascii{#1}}}%
    \doifundefined{\ascii}{\setvalue{\ascii}{\language[#2]}}}      
 
+%D \macros
+%D   {preloadlanguages}
+%D
 %D We first try to load the files defined as file synonym 
 %D for \type {lang-*.pat} and \type {lang-*.hyp}. After that we
-%D fall back on those files. 
+%D fall back on those files. The macro \type {\preloadpatterns} 
+%D reports which patterns are loaded and what hyphenmin 
+%D values are set. 
+
+\let\preloadedpatterns\empty
+
+\def\showpatterns#1%
+  {\getvalue{\??la#1\s!lefthyphenmin}%
+   -#1-%
+   \getvalue{\??la#1\s!righthyphenmin} }
+
+\def\preloadlanguages% 
+  {\doifsomething{\preloadedpatterns}
+     {\showmessage{\m!linguals}{10}{\preloadedpatterns}}}
 
 \def\doinstalllanguage[#1][#2]%
-  {\doifinstringelse{=}{#2}
+  {\ConvertConstantAfter\doifinstringelse{=}{#2}
      {\doifdefinedelse{\??la#1\c!status}
         {\getparameters[\??la#1][#2]}
         {\setvalue{\l!prefix!#1}{#1}%
@@ -172,8 +215,10 @@
                   \s!mapping=\languagedefault{#1}\s!mapping,
                   \s!encoding=\languagedefault{#1}\s!encoding,
                   #2]}}}%
-      \doifvalue{\??la#1\c!default}{#1} {\letvalue{\??la#1\c!default}\empty}%
-      \doifvalue{\??la#1\s!patterns}{#1}{\letvalue{\??la#1\c!default}\empty}%
+      \doifvalue{\??la#1\c!default}{#1}{\letvalue{\??la#1\c!default}\empty}%
+% loop in deo
+% \doifvalue{\??la#1\s!patterns}{#1}{\letvalue{\??la#1\c!default}\empty}%
+%
       \doifelsevalue{\??la#1\c!status}{\v!start}
         {\doifelsevaluenothing{\??la#1\s!patterns}
            {\edef\languagesuffix{#1}}
@@ -182,20 +227,19 @@
            {\normallanguage=\loadedlanguage
             \letvalue{\??la\??la\languagesuffix}=\loadedlanguage
             \bgroup
+            \scratchtoks=\everyjob % we don't want additional junk put there
+            \let\showpatterns\relax
             \startencoding[\getvalue{\??la\languagesuffix\s!encoding}]%
-            \usemapping[\getvalue{\??la\languagesuffix\s!mapping}]%
-           %\readsysfile{\f!languageprefix\languagesuffix.\f!patternsextension}
-           %  {\setxvalue{\??la#1\s!patterns}{\languagesuffix}%
-           %   \showmessage{\m!linguals}{1}{\languagesuffix,#1,\loadedlanguage}}
-           %  {\showmessage{\m!linguals}{2}{\languagesuffix,#1,\loadedlanguage}}%
-           %\readsysfile{\f!languageprefix\languagesuffix.\f!hyphensextension}
-           %  {\showmessage{\m!linguals}{3}{\languagesuffix,#1,\loadedlanguage}}
-           %  {\showmessage{\m!linguals}{4}{\languagesuffix,#1,\loadedlanguage}}%
+            \enablemapping[\getvalue{\??la\languagesuffix\s!mapping}]%
+\startreadingfile
+\let\dohandleaccent\donthandleaccent % no checking done
             \readsysfile{\truefilename{\f!languageprefix\languagesuffix.\f!patternsextension}}
               {\setxvalue{\??la#1\s!patterns}{\languagesuffix}%
+               \xdef\preloadedpatterns{\preloadedpatterns\showpatterns{\languagesuffix}}%
                \showmessage{\m!linguals}{1}{\languagesuffix,#1,\loadedlanguage}}
               {\readsysfile{\f!languageprefix\languagesuffix.\f!patternsextension}
                  {\setxvalue{\??la#1\s!patterns}{\languagesuffix}%
+                  \xdef\preloadedpatterns{\preloadedpatterns\showpatterns{\languagesuffix}}%
                   \showmessage{\m!linguals}{1}{\languagesuffix,#1,\loadedlanguage}}
                  {\showmessage{\m!linguals}{2}{\languagesuffix,#1,\loadedlanguage}}}%
             \readsysfile{\truefilename{\f!languageprefix\languagesuffix.\f!hyphensextension}}
@@ -203,7 +247,9 @@
               {\readsysfile{\f!languageprefix\languagesuffix.\f!hyphensextension}
                  {\showmessage{\m!linguals}{3}{\languagesuffix,#1,\loadedlanguage}}
                  {\showmessage{\m!linguals}{4}{\languagesuffix,#1,\loadedlanguage}}}%
+\stopreadingfile
             \stopencoding
+            \global\everyjob=\scratchtoks
             \egroup
             \increment\loadedlanguage}
            {\bgroup
@@ -213,7 +259,7 @@
             \egroup}}
         {\showmessage{\m!linguals}{5}{#1}}}
      {\setvalue{\l!prefix!#1}{#2}% 
-      \dodoinstalllanguage{#1}{#2}}} 
+      \dodoinstalllanguage{#1}{#2}}}
 
 % ^^ \language[#1] gave unwanted side effect of loading language specifics 
 
@@ -314,7 +360,7 @@
    \fi          
    \edef\currentlanguage{#1}%
    \enablelanguagespecifics[#1]%
-   \usemapping[\getvalue{\??la#1\s!mapping}]%
+   \enablemapping[\getvalue{\??la#1\s!mapping}]%
    \lefthyphenmin =0\getvalue{\??la#1\s!lefthyphenmin}\relax
    \righthyphenmin=0\getvalue{\??la#1\s!righthyphenmin}\relax
    \processaction
@@ -400,7 +446,7 @@
 %D be sure, we check on spurious spaces.
 
 \def\languageencoding%
-  {\ifx\characterencoding\@plain@\else
+  {\ifx\characterencoding\nocharacterencoding \else
      \characterencoding-%
    \fi}
 
@@ -415,9 +461,9 @@
       \bgroup
       \setbox0=\hbox{\enablelanguagespecifics[##1]}%
       \ifdim\wd0>\!!zeropoint
-        \showmessage{\m!linguals}{7}{##1,\the\wd0\space}\wait
+        \showmessage{\m!linguals}{7}{\currentencoding-##1,\the\wd0\space}\wait
       \else
-        \showmessage{\m!linguals}{8}{##1}%
+        \showmessage{\m!linguals}{8}{\currentencoding-##1}%
       \fi
       \egroup
       \doif{##1}{\currentmainlanguage}
@@ -428,12 +474,14 @@
 %D define \type{\do} in such a way that \type{{ }} is removed
 %D and the language key is gobbled.
 
-%\def\enablelanguagespecifics[#1]%
-%  {\long\def\do##1##2{##2}%
-%   \getvalue{\??la#1\??la}}
-
 \def\enablelanguagespecifics[#1]%
   {\long\def\do##1##2{##2}%
+   \doifvaluesomething{\??la#1\c!default}
+     {\getvalue{\??la\getvalue{\??la#1\c!default}\??la}%
+      \getvalue{\??la\languageencoding\getvalue{\??la#1\c!default}\??la}}%
+   % or 
+   %\doifvaluesomething{\??la#1\c!default}
+   %  {\expanded{\enablelanguagespecifics[\getvalue{\??la#1\c!default}]}}%
    \getvalue{\??la#1\??la}%
    \getvalue{\??la\languageencoding#1\??la}}
 
@@ -482,17 +530,24 @@
 
 %D Yes I know, they are ugly: 
 
-\unexpanded\def\leftguillemot%
+\def\leftguillemot%
   {\dontleavehmode\hbox{\raise.25ex\hbox{$\scriptscriptstyle\ll$}}}
 
-\unexpanded\def\rightguillemot%
+\def\rightguillemot%
   {\hbox{\raise.25ex\hbox{$\scriptscriptstyle\gg$}}}
 
-\unexpanded\def\leftsubguillemot%
+\def\leftsubguillemot%
   {\dontleavehmode\hbox{\raise.25ex\hbox{$\scriptscriptstyle<$}}}
 
-\unexpanded\def\rightsubguillemot%
+\def\rightsubguillemot%
   {\hbox{\raise.25ex\hbox{$\scriptscriptstyle>$}}}
+
+%D We enable proper substititutions by: 
+
+\redefinecharacter leftguillemot 
+\redefinecharacter rightguillemot  
+\redefinecharacter leftsubguillemot 
+\redefinecharacter rightsubguillemot  
 
 %D Just like with subsentence boundary symbols, quotes
 %D placement depends on the current language, therefore we show
@@ -517,22 +572,23 @@
 %D    \stopregelcorrectie
 %D    \blanko}
 %D
-%D \ShowLanguageValues [nl] [dutch]      nederlandse zuinigheid
-%D \ShowLanguageValues [en] [english]    engelse humor
-%D \ShowLanguageValues [de] [german]     duitse degelijkheid
-%D \ShowLanguageValues [fr] [french]     franse slag
-%D \ShowLanguageValues [sp] [spanish]    spaans benauwd
-%D \ShowLanguageValues [it] [italian]    italiaanse ...
-%D \ShowLanguageValues [da] [danish]     deense ...
-%D \ShowLanguageValues [pt] [portuguese] portugese ...
-%D \ShowLanguageValues [sv] [swedish]    zweedse ...
-%D \ShowLanguageValues [pl] [polish]     poolse ...
-%D \ShowLanguageValues [fi] [finnish]    finse ...
 %D \ShowLanguageValues [af] [afrikaans]  afrikaanse ...
-%D \ShowLanguageValues [no] [norwegian]  noorse ...
-%D \ShowLanguageValues [tr] [turkish]    turks fruit
 %D \ShowLanguageValues [cz] [czech]      tjechisch tex  
 %D \ShowLanguageValues [cz] [slovak]     slowaakse ... 
+%D \ShowLanguageValues [da] [danish]     deense ...
+%D \ShowLanguageValues [de] [german]     duitse degelijkheid
+%D \ShowLanguageValues [en] [english]    engelse humor
+%D \ShowLanguageValues [fi] [finnish]    finse ...
+%D \ShowLanguageValues [fr] [french]     franse slag
+%D \ShowLanguageValues [it] [italian]    italiaanse ...
+%D \ShowLanguageValues [la] [latin]      latijnse missen 
+%D \ShowLanguageValues [nl] [dutch]      nederlandse zuinigheid
+%D \ShowLanguageValues [no] [norwegian]  noorse ...
+%D \ShowLanguageValues [pl] [polish]     poolse ...
+%D \ShowLanguageValues [pt] [portuguese] portugese ...
+%D \ShowLanguageValues [sp] [spanish]    spaans benauwd
+%D \ShowLanguageValues [sv] [swedish]    zweedse ...
+%D \ShowLanguageValues [tr] [turkish]    turks fruit
 
 %D We support a lot of languages. These are specified and 
 %D loaded in separate files, according to their roots. Here 
@@ -565,6 +621,7 @@
 %D \NC \s!fr        \NC french       \NC italic    \NC\FR
 %D \NC \s!sp        \NC spanish      \NC italic    \NC\MR    
 %D \NC \s!it        \NC italian      \NC italic    \NC\MR    
+%D \NC \s!la        \NC latin        \NC italic    \NC\MR    
 %D \NC \s!pt        \NC portuguese   \NC italic    \NC\LR    
 %D \HL 
 %D \stoptabel
@@ -607,27 +664,16 @@
 %D is one of the few places outside the interface modules where
 %D \type{\startinterface} is used. 
 
-%  \language[\s!en] \mainlanguage[\currentlanguage]
+\let\normaldoublequote ="
+\let\normalforwardslash=/
 
-% \startinterface dutch      \appendtoks \language[\s!nl]\to \everyjob \stopinterface
-% \startinterface english    \appendtoks \language[\s!en]\to \everyjob \stopinterface
-% \startinterface german     \appendtoks \language[\s!de]\to \everyjob \stopinterface
-% 
-% \startinterface czech      \appendtoks \language[\s!cz]\to \everyjob \stopinterface
-% 
-% \startinterface french     \appendtoks \language[\s!fr]\to \everyjob \stopinterface
-% \startinterface spanish    \appendtoks \language[\s!sp]\to \everyjob \stopinterface
-% \startinterface italian    \appendtoks \language[\s!it]\to \everyjob \stopinterface
-% \startinterface danish     \appendtoks \language[\s!da]\to \everyjob \stopinterface
-% \startinterface portuguese \appendtoks \language[\s!pt]\to \everyjob \stopinterface
-% \startinterface swedish    \appendtoks \language[\s!sv]\to \everyjob \stopinterface
-% \startinterface polish     \appendtoks \language[\s!pl]\to \everyjob \stopinterface
-% \startinterface finish     \appendtoks \language[\s!fi]\to \everyjob \stopinterface
-% \startinterface afrikaans  \appendtoks \language[\s!af]\to \everyjob \stopinterface
-% \startinterface norwegian  \appendtoks \language[\s!no]\to \everyjob \stopinterface
-% \startinterface turkish    \appendtoks \language[\s!tr]\to \everyjob \stopinterface
- 
-% \appendtoks \mainlanguage[\currentlanguage] \to \everyjob
+%D We default to english: 
+
+\setupcurrentlanguage[\s!en]
+
+\appendtoks\mainlanguage[\currentlanguage]\to\everyjob
+
+\appendtoks\showmessage{\m!linguals}{9}{\currentlanguage}\to\everyjob
 
 \protect
 

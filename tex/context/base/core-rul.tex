@@ -8,7 +8,7 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See licen-en.pdf for 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
 %C details. 
 
 \writestatus{loading}{Context Core Macros / Ruled Stuff Handling}
@@ -232,7 +232,7 @@
 %D \macros
 %D   {defineoverlay, 
 %D    overlaywidth, overlayheight, overlaydepth,
-%D    overlaycolor}
+%D    overlaycolor, overlaylinecolor, overlaylinewidth}
 %D 
 %D Before we define the macro that actually takes card of the
 %D backgrounds, we introduce overlays. An overlay is something
@@ -243,7 +243,7 @@
 %D \defineoverlay
 %D   [fancy]
 %D   [{\externfiguur
-%D       [gene-011]
+%D       [mp-cont.502]
 %D       [breedte=\overlaywidth, 
 %D        hoogte=\overlayheight]}]
 %D \stopbuffer
@@ -287,9 +287,14 @@
 %D 
 %D The resulting box is lowered to the right depth. 
   
-\def\overlaywidth {\the\vsize}    % We preset the variables 
-\def\overlayheight{\the\hsize}    % to some reasonable default
-\def\overlaydepth {\!!zeropoint}  % values. 
+\def\overlaywidth      {\the\vsize}     % We preset the variables 
+\def\overlayheight     {\the\hsize}     % to some reasonable default
+\let\overlaydepth       \!!zeropoint    % values. The attributes 
+\let\overlaycolor       \empty          % of the frame can be (are) 
+\let\overlaylinewidth   \!!zeropoint    % set somewhere else. 
+\let\overlaylinecolor   \empty          %
+
+\newtoks\everyoverlay
 
 \def\defineoverlay%
   {\dodoubleargument\dodefineoverlay}
@@ -302,17 +307,17 @@
 \long\def\executedefinedoverlay#1\\#2\\#3#4#5#6#7#8#9% 
   {\bgroup 
    \scratchdimen=#3%
-   \edef\overlaywidth {\the\scratchdimen}%
+   \edef\overlaywidth{\the\scratchdimen}%
    \scratchdimen=#4%
    \advance\scratchdimen by #5%
    \edef\overlayheight{\the\scratchdimen}%
    \scratchdimen=#5%
-   \edef\overlaydepth {\the\scratchdimen}%
+   \edef\overlaydepth{\the\scratchdimen}%
    \edef\overlaycolor{#6}%
    %\writestatus
    %  {overlay}
    %  {#1\space w=\overlaywidth/h+d=\overlayheight/d=\overlaydepth]}%
-   \setbox0=\hbox{\lower\overlaydepth\hbox{#2}}% 
+   \setbox0=\hbox{\lower\overlaydepth\hbox{\the\everyoverlay#2}}% 
    \dimen0=\wd0 \advance\dimen0 by -\overlaywidth
    \dimen2=\ht0 \advance\dimen2 by -#4% not \overlayheight
    \wd0=\overlaywidth
@@ -360,10 +365,10 @@
         {\dimen2}{\dimen4}{\dimen6}{#3}{#4}{#5}{#6}}%
    \setbox\extraframebox=\hbox
      {\vbox{\moveleft\dimen0\box\extraframebox}}%
-   \wd\extraframebox=\wd#2%
-   \ht\extraframebox=\ht#2%
-   \dp\extraframebox=\dp#2%
-   \box\extraframebox\hskip-\wd#2%
+   \wd\extraframebox=\backgroundwidth
+   \ht\extraframebox=\backgroundheight
+   \dp\extraframebox=\backgrounddepth
+   \box\extraframebox\hskip-\backgroundwidth
    \egroup}
 
 \def\dobackgroundbox#1\background#2\color#3\raster#4\offset#5\corner
@@ -377,8 +382,17 @@
       \def\docommando##1%
         {\dodobackgroundbox{##1}{#1}{#3}{#4}{#6}{#7}}%
       \hbox
-        {\expanded{\rawprocesscommalist[#2]\noexpand\docommando}%
-         \box#1}}}
+        {\edef\backgroundwidth {\the\wd#1}%
+         \edef\backgroundheight{\the\ht#1}%
+         \edef\backgrounddepth {\the\dp#1}% 
+         \edef\foregroundbox{\box#1}%
+         \expanded{\rawprocesscommalist[#2]\noexpand\docommando}%
+         \box#1}}} 
+
+%D One can explictly insert the foreground box. For that 
+%D purpose we introduce the overlay \tyupe {foreground}.  
+
+\defineoverlay[\v!voorgrond][\foregroundbox]
 
 %D We can specify overlays as a comma separated list of 
 %D overlays, a sometimes handy feature.
@@ -403,7 +417,8 @@
       \ht\extraframebox=\ht#1%
       \dp\extraframebox=\dp#1%
       \hbox
-        {\copy#1\hskip-\wd#1%
+        {%\copy#1\hskip-\wd#1%
+         \box#1\hskip-\wd\extraframebox % faster 
          \doifelsenothing{#2} % speeds up a little
            {\box\extraframebox}
            {\color[#2]{\box\extraframebox}}}}}
@@ -524,8 +539,8 @@
      [\c!breedte,\c!hoogte,\c!offset,\c!leeg,
       \c!straal,\c!hoek,\c!diepte,\c!kader,\c!kaderkleur,
       \c!bovenkader,\c!onderkader,\c!linkerkader,\c!rechterkader,
-      \c!lijndikte,\c!kaderoffset,\c!achtergrondoffset,
-      \c!achtergrond,\c!achtergrondraster,\c!achtergrondkleur,
+      \c!lijndikte,\c!kaderoffset,\c!achtergrond,
+      \c!achtergrondoffset,\c!achtergrondraster,\c!achtergrondkleur,
       \c!uitlijnen,\c!onder,\c!boven,\c!strut,\c!plaats]%
    \copyparameters[#1\c!achtergrond][#1]
      [\c!straal,\c!hoek,\c!diepte]%
@@ -535,16 +550,23 @@
 \def\setupframed%
   {\dodoubleargument\getparameters[\??oi]}
 
+%D \macros
+%D   {ifinframed}
+%D 
 %D The normal case first presets all parameters and next starts
 %D looking for the user supplied ones. The first step is
 %D omitted in the local case, because these are preset at
 %D declaration time and keep their values unless explictly
 %D changed. By presetting the variables everytime the normal
 %D command is called, we can use this command nested, without
-%D the unwanted side effect of inheritance.
+%D the unwanted side effect of inheritance. The boolean is 
+%D used to speed up the color stack.
+
+\newif\ifinframed 
 
 \def\localframed%
   {\bgroup
+   \inframedtrue 
    \dodoubleargument\startlocalframed}
 
 %D Before we go into details, we present (and implement) the
@@ -554,15 +576,10 @@
 %D dimensions and specific settings concerning aligment and
 %D offsets.
 
-%\let\backgroundcolor\empty
-%\let\framecolor     \empty
-
 \def\startlocalframed[#1][#2]%
   {\bgroup
    \edef\@@framed{#1}%
    \getparameters[\@@framed][#2]%
-  %\edef\backgroundcolor{\getvalue{\@@framed\c!achtergrondkleur}}% 
-  %\edef\framecolor     {\getvalue{\@@framed\c!kaderkleur}}%
    \edef\localoffset{\getvalue{\@@framed\c!offset}}%
    \edef\localwidth{\getvalue{\@@framed\c!breedte}}%
    \edef\localheight{\getvalue{\@@framed\c!hoogte}}%
@@ -715,7 +732,10 @@
    \ifboxisoverlaid \else
      \dolocateframebox
    \fi
-   \doframedbox
+   \doifelsevalue{\@@framed\c!kader}{\v!overlay}
+     {\edef\overlaylinecolor{\getvalue{\@@framed\c!kaderkleur}}%
+      \edef\overlaylinewidth{\the\linewidth}}%
+     {\doframedbox}%
    \doifvaluesomething{\@@framed\c!achtergrond}
      {\dobackedbox}%
    \doifelsevalue{\@@framed\c!plaats}{\v!laag}
@@ -1188,7 +1208,7 @@
 %D frame as well as the background an additional offset and
 %D even a bit more depth. The blue outline is the frame, the
 %D red box is the background and the small black outline is the
-%D vsiualization of the resulting box, that is, we applied
+%D visualization of the resulting box, that is, we applied
 %D \type{\ruledhbox} to the result.
 
 %D \startuitstellen
@@ -1489,12 +1509,9 @@
 
 \def\dodrawmarginrule%
   {\setbox0=\hbox
-     {\vrule
-        \!!height\strutheight
-        \!!depth\strutdepth
-        \!!width\@@kadikte}%
-   \vsmashbox0
-   \box0}
+     {\vrule\!!depth\strutdepth\!!height\strutheight\!!width\@@kadikte}%
+  \smashbox0 % no \vsmash !!!
+  \box0}
 
 \def\drawmarginrule%
   {\strut\inlinker{\dodrawmarginrule}}
@@ -1835,7 +1852,8 @@
       \c!achtergrond=,
       \c!achtergrondkleur=,
       \c!achtergrondraster=\@@rsraster,
-      \c!regelcorrectie=\v!aan,
+      \c!regelcorrectie=\v!aan,        
+      \c!marge=\v!standaard,
       #2]%
    \setvalue{\e!start#1}{\dostartframedtext[#1]}%
    \setvalue{\e!stop#1}{\dostopframedtext[#1]}
@@ -2309,7 +2327,8 @@
 %D adding a dummy line.
 
 \def\dostartbackground%
-  {\bgroup
+  {\endgraf
+   \bgroup
    \setbox0=\vbox\bgroup
    \vbox to \lineheight{}\vskip\!!zeropoint
    \blanko[\v!blokkeer]
@@ -2389,7 +2408,8 @@
        \pagina
      \fi
    \ifdim\ht0>\!!zeropoint \repeat
-   \egroup}
+   \egroup
+   \endgraf}
 
 %D As a bonus we also have a short command, that is of not
 %D much use, but kept there for historic reasons.
@@ -2462,7 +2482,7 @@
    \c!raster=0.95]
 
 \setupblackrules
-  [\c!n=1,
+  [\c!n=3,
    \c!breedte=1em,
    \c!hoogte=1ex,
    \c!diepte=\!!zeropoint,
@@ -2519,9 +2539,9 @@
    \c!straal=.5\bodyfontsize,
    \c!hoek=\v!recht,
    \c!kader=\v!uit,
+   \c!kleur=,
    \c!diepte=\!!zeropoint,
    \c!achtergrond=\v!raster,
-   \c!kleur=,
    \c!achtergrondkleur=\@@agkleur,
    \c!raster=\@@rsraster]
 
