@@ -14,6 +14,7 @@
 \writestatus{loading}{Context Color Macros / hexadecimal}
 
 % \edef\testcolor{\string#FFC0C0}
+% \edef\testcolor{\string#55}
 %
 % \setupcolors[state=start]
 %
@@ -37,19 +38,27 @@
 
 \chardef\hexcolorprefix=`#
 
-\def\hexcolorspec   #1{\expandafter\dohexcolorspec   #1}
-\def\hexcolorpattern#1{\expandafter\dohexcolorpattern#1}
+\def\hexcolorspec   #1{\expandafter\dohexcolorspec   #1\empty\empty\empty\empty\relax}
+\def\hexcolorpattern#1{\expandafter\dohexcolorpattern#1\empty\empty\empty\empty\relax}
 
 \def\hexcolorcomponent#1%
   {\ifnum"#1=\zerocount0\else\ifnum"#1=\plusone1\else
      \expandafter\withoutpt\the\dimexpr("#1\hexcolorfraction)%
    \fi\fi}
 
-\def\dohexcolorspec#1#2#3#4#5#6#7%
-  {r=\hexcolorcomponent{#2#3},g=\hexcolorcomponent{#4#5},b=\hexcolorcomponent{#6#7}}
+\def\dohexcolorspec#1#2#3#4#5#6#7#8\relax
+  {\ifx#4\empty
+     s=\hexcolorcomponent{#2#3}%
+   \else
+     r=\hexcolorcomponent{#2#3},g=\hexcolorcomponent{#4#5},b=\hexcolorcomponent{#6#7}%
+   \fi}
 
-\def\dohexcolorpattern#1#2#3#4#5#6#7%
-  {0R:\hexcolorcomponent{#2#3}:\hexcolorcomponent{#4#5}:\hexcolorcomponent{#6#7}:0:0}
+\def\dohexcolorpattern#1#2#3#4#5#6#7#8\relax
+  {0\ifx#4\empty
+     S:\hexcolorcomponent{#2#3}%
+   \else
+     R:\hexcolorcomponent{#2#3}:\hexcolorcomponent{#4#5}:\hexcolorcomponent{#6#7}%
+   \fi:0:0}
 
 \def\doifhexcolorelse#1%
   {\expandafter\dodoifhexcolorelse#10\od} % 0 is a dirty trick to catch an empty #1

@@ -39,10 +39,18 @@
   {\csname\s!check\currentpropertytype property\endcsname
    \global\expandafter\let\csname\??py\s!check\currentproperty\endcsname\empty}
 
+% \def\checkproperty[#1]%
+%   {\bgroup
+%    \def\currentproperty{#1}%
+%    \docheckproperty
+%    \egroup}
+%
+% oeps, was wrong, no reset
+
 \def\checkproperty[#1]%
   {\bgroup
    \def\currentproperty{#1}%
-   \docheckproperty
+   \csname\??py\s!check\currentproperty\endcsname
    \egroup}
 
 \unexpanded\def\property[#1]%

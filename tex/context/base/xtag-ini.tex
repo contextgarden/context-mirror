@@ -862,6 +862,15 @@
      \csname\@@XMLdepth:\the\numexpr(\XMLdepth-#1)\endcsname
    \fi}
 
+% \def\XMLpureancestor#1%
+%   {\csname
+%      \ifnum\numexpr(\XMLdepth-#1)>\zerocount
+%        \@@XMLdepth:\the\numexpr(\XMLdepth-#1)%
+%      \else
+%        \s!empty
+%      \fi
+%    \endcsname}
+
 \def\XMLpureparent
   {\XMLpureancestor\plusone}
 
@@ -1217,14 +1226,9 @@
    \else                              \@EAEAEA \crapXMLentity
    \fi\fi{#1}}
 
-\def\execXMLentity#1%
-  {\csname\@@XMLentity:#1\endcsname}
-
-\def\crapXMLentity#1%
-  {\inframed[\c!offset=.1ex]{\tttf#1}}
-
-\def\autoXMLentity#1%
-  {\ifcsname#1\endcsname\csname#1\endcsname\fi}
+\def\execXMLentity#1{\csname\@@XMLentity:#1\endcsname}
+\def\crapXMLentity#1{\inframed[\c!offset=.1ex]{\tttf#1}}
+\def\autoXMLentity#1{\ifcsname#1\endcsname\csname#1\endcsname\fi}
 
 \unexpanded\def\getXMLentity{\expandedXMLentity}
 

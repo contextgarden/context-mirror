@@ -1883,6 +1883,7 @@
      \fpos\currentparbackground
    \fi
    \bgroup
+   \endgraf % we need a vertical nobreak - 29/06/2004
    \nobreak \vskip-\lineheight \nobreak
    \doassignsomeskip\getvalue{\??td\currenttextbackground\c!bovenoffset}\to\scratchskip
    \ifgridsnapping \else \ifdim\textbackgroundskip>\zeropoint
@@ -1892,10 +1893,10 @@
    \advance\leftskip\leftskipadaption
    \dosetleftskipadaption{\getvalue{\??td\currenttextbackground\c!rechteroffset}}%
    \advance\rightskip\leftskipadaption
-% new
-\dosetraggedcommand{\getvalue{\??td\currenttextbackground\c!uitlijnen}}%
-\raggedcommand
-%
+   % new
+   \dosetraggedcommand{\getvalue{\??td\currenttextbackground\c!uitlijnen}}%
+   \raggedcommand
+   %
    \dostartattributes{\??td\currenttextbackground}\c!letter\c!kleur\empty
    \geenwitruimte
    \seteffectivehsize

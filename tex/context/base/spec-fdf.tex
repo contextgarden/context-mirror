@@ -3018,8 +3018,8 @@
 
 \def\flushPDFtextlayers
   {\ifx\PDFtextlayers\empty \else
-       \driverreferenced \doPDFarrayobject class PDF name textlayers data {\PDFtextlayers}%
-       \doPDFgetobjectreference{PDF}{textlayers}\!!stringa
+     \driverreferenced \doPDFarrayobject class PDF name textlayers data {\PDFtextlayers}%
+     \doPDFgetobjectreference{PDF}{textlayers}\!!stringa
      \ifx\PDFvidelayers\empty
        \def\!!stringb{[null]}%
      \else
