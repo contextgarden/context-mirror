@@ -27,13 +27,13 @@ stopsetup
 startsetup
 com:limba:
 typ:val/:
-val:nl,fr,en,uk,de,es,cz,..:nl:
+val:nl,fr,en,uk,de,es,cz,..::
 stopsetup
 
 startsetup
 com:limbaprincipala:
 typ:val/:
-val:nl,fr,en,uk,de,es,cz,..:nl:
+val:nl,fr,en,uk,de,es,cz,..::
 stopsetup
 
 startsetup
@@ -1878,7 +1878,7 @@ stopsetup
 startsetup
 com:seteazaliniesilabe:
 typ:var/:
-var:semn:--,---,-,~,),(,=,/::
+var:semn:--,---,-,~,(,),=,/::
 stopsetup
 
 startsetup

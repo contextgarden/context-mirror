@@ -10,17 +10,17 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
-%C details. 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
 
 % texexec --use=xml-format yourfile.x** [--mode=packed,wide]
 %
 % pdftotext yourfile.pdf yournewfile.x**
 
-\doifnothing  {\inputfilename}    {\end} 
-\doiffileelse {\inputfilename} {} {\end} 
+\doifnothing  {\inputfilename}    {\end}
+\doiffileelse {\inputfilename} {} {\end}
 
-% The following makes pdftotext too slow: 
+% The following makes pdftotext too slow:
 %
 % \definepapersize
 %   [mine]
@@ -39,23 +39,23 @@
 % \setuppapersize
 %   [A0][A0]
 %
-% but normal A4 combined with 1 pt font size is the best 
+% but normal A4 combined with 1 pt font size is the best
 %
-% An alternative is to use a small size, but this leads to 
-% too many messages 
+% An alternative is to use a small size, but this leads to
+% too many messages
 %
 % \setupbodyfont
 %   [1pt,tt]
 %
-% so we stick to a more normal alternive.  
+% so we stick to a more normal alternive.
 
-\unprotect 
+\unprotect
 
 % \setuplayout
 %   [backspace=0cm,
 %    topspace=0cm,
-%   %width=40em, 
-%    width=middle, 
+%   %width=40em,
+%    width=middle,
 %    height=middle,
 %    header=0cm,
 %    footer=0cm]
@@ -63,19 +63,19 @@
 \setuplayout
   [\c!rugwit=0cm,
    \c!kopwit=0cm,
-  %\c!breedte=40em, 
-   \c!breedte=\v!midden, 
+  %\c!breedte=40em,
+   \c!breedte=\v!midden,
    \c!hoogte=\v!midden,
    \c!hoofd=0cm,
    \c!voet=0cm]
 
-% \setupbodyfont  [tt,10pt]  
+% \setupbodyfont  [tt,10pt]
 % \setuptolerance [verytolerant]
 % \setupalign     [broad,right]
 % \setupXMLfile   [level=2]
 
 
-\setupbodyfont  [tt,10pt]  
+\setupbodyfont  [tt,10pt]
 \setuptolerance [\v!zeersoepel]
 \setupalign     [\v!ruim,\v!rechts]
 \setupXMLfile   [\c!niveau=2]
@@ -94,16 +94,16 @@
 
 \stopmode
 
-\protect 
+\protect
 
-% The main text: 
+% The main text:
 
 \def\XMLbannerprocessor#1{\string<\string ?xml #1\string ?\string>\endgraf}
 
 \defineXMLprocessor [xml] {\XMLbannerprocessor}
 
-\starttext 
+\starttext
 
   \dontcomplain \showXMLfile{\inputfilename}
 
-\stoptext 
+\stoptext

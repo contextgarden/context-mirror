@@ -27,13 +27,13 @@ stopsetup
 startsetup
 com:sprache:
 typ:val/:
-val:nl,fr,en,uk,de,es,cz,..:nl:
+val:nl,fr,en,uk,de,es,cz,..::
 stopsetup
 
 startsetup
 com:hauptsprache:
 typ:val/:
-val:nl,fr,en,uk,de,es,cz,..:nl:
+val:nl,fr,en,uk,de,es,cz,..::
 stopsetup
 
 startsetup
@@ -1878,7 +1878,7 @@ stopsetup
 startsetup
 com:stellebindestrichein:
 typ:var/:
-var:zeichen:--,---,-,~,),(,=,/::
+var:zeichen:--,---,-,~,(,),=,/::
 stopsetup
 
 startsetup

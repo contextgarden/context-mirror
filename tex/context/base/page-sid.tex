@@ -53,6 +53,9 @@
 
 \newbox\floatbottom
 
+\newcount\sidefloatsidelines
+\newcount\sidefloatlinesdone
+
 % 1 = backspace
 % 2 = leftedge
 % 3 = leftmargin
@@ -270,7 +273,8 @@
    \fi
    % == \forgetsidefloats
    \global\sidefloatvsize\nofloatvsize
-   \global\floatshortfalse
+   % \global\sidefloatsidelines\zerocount % no, we flush before a side float
+   \global\floatshortfalse                % so this will get lost
    \global\floatflagfalse}
 
 \def\flushsidefloatsafterpar
@@ -280,10 +284,12 @@
       \ifdim\oldpagetotal=\pagetotal \else
         \global\let\checksidefloat\dochecksidefloat
         \flushsidefloats
+        \global\sidefloatsidelines\zerocount % here !
       \fi}}
 
 \def\forgetsidefloats
   {\global\sidefloatvsize\nofloatvsize
+   \global\sidefloatsidelines\zerocount
    \global\floatshortfalse
    \global\floatflagfalse}
 
@@ -342,6 +348,7 @@
    \else
      \finalsidefloatoutput % new
      \global\sidefloatvsize\nofloatvsize
+     \global\sidefloatsidelines\zerocount
      \poppenalties
    \fi}
 
@@ -465,6 +472,12 @@
    \or % 4 grid
      \scratchdimen\zeropoint
    \fi
+   % new
+   \global\sidefloatlinesdone\zerocount
+   \ifnum\sidefloatsidelines>\zerocount
+     \advance\scratchdimen\sidefloatsidelines\lineheight
+   \fi
+   % new
    \global\setbox\floatbox\hbox
      {\vbox{\vskip\scratchdimen\nointerlineskip\box\floatbox}}%
    \ifnum\sidefloattype<4
@@ -594,6 +607,29 @@
 \def\iffirstsidefloatparagraph
   {\ifcase\sidefloatparagraph\or}
 
+% without sidefloat lines
+%
+% \def\setsidefloatparagraph
+%   {%\advance\sidefloatprogress \sidefloatbottomskip
+%    %\!!counta\sidefloatprogress
+%    \scratchdimen\sidefloatprogress
+%    \advance\scratchdimen \strutht
+%    \advance\scratchdimen -10sp % new, needed in prikkels, prevent rounding errors
+%    \!!counta\scratchdimen
+%    \divide\!!counta \baselineskip
+%    \ifnum\!!counta>0
+%      \hangindent \ifnum\sidefloattype>4 -\fi\sidefloatwidth
+%      \hangafter-\!!counta
+%    \fi
+%    \global\advance\sidefloatparagraph \plusone
+%    \iftracesidefloats
+%      \hskip-\sidefloatwidth
+%      \color[darkgray]%
+%        {\vrule\!!height.5\s!pt\!!depth.5\s!pt\!!width\sidefloatwidth
+%        %\hskip-.25\bodyfontsize\showstruts\strut\hskip.25\bodyfontsize}%
+%         \llap{\showstruts\strut\hskip.25\bodyfontsize}}%
+%    \fi}
+
 \def\setsidefloatparagraph
   {%\advance\sidefloatprogress \sidefloatbottomskip
    %\!!counta\sidefloatprogress
@@ -601,10 +637,42 @@
    \advance\scratchdimen \strutht
    \advance\scratchdimen -10sp % new, needed in prikkels, prevent rounding errors
    \!!counta\scratchdimen
-   \divide\!!counta \baselineskip
+   \divide\!!counta \baselineskip\relax
    \ifnum\!!counta>0
-     \hangindent \ifnum\sidefloattype>4 -\fi\sidefloatwidth
-     \hangafter-\!!counta
+     % new from here
+     \ifcase\sidefloatsidelines\else
+       \ifcase\sidefloatlinesdone
+         \global\sidefloatlinesdone\!!counta
+       \else
+         \scratchcounter\sidefloatlinesdone
+         \advance\scratchcounter-\!!counta
+         \global\sidefloatsidelines-\scratchcounter
+       \fi
+     \fi
+     \ifnum\sidefloatsidelines>\zerocount
+       \scratchtoks\emptytoks
+       \scratchcounter\sidefloatsidelines
+       \scratchdimen\hsize
+       \advance\scratchdimen-\sidefloatwidth
+       \dorecurse\sidefloatsidelines
+         {\appendtoks \zeropoint \hsize \to \scratchtoks}%
+       \ifnum\!!counta>\sidefloatsidelines
+         \advance\!!counta -\sidefloatsidelines\relax
+         \advance\scratchcounter\!!counta
+         \dorecurse\!!counta
+           {\ifnum\sidefloattype>4
+              \appendtoks \zeropoint \scratchdimen \to \scratchtoks
+            \else
+              \appendtoks \sidefloatwidth \scratchdimen \to \scratchtoks
+            \fi}%
+       \fi
+       \advance\scratchcounter \plusone
+       \parshape \scratchcounter \the\scratchtoks \zeropoint \hsize\relax
+     \else
+       % new till here
+       \hangindent \ifnum\sidefloattype>4 -\fi\sidefloatwidth
+       \hangafter-\!!counta
+     \fi
    \fi
    \global\advance\sidefloatparagraph \plusone
    \iftracesidefloats

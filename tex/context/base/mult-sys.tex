@@ -8,8 +8,8 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
-%C details. 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
 
 %D In boring module we define a lot of obscure but useful
 %D system constants. By doing so we save lots of memory while
@@ -59,7 +59,7 @@
 \definesystemconstant {usenglish}   \definesystemconstant {us}
 \definesystemconstant {greek}       \definesystemconstant {gr}
 
-%D For proper \UNICODE\ support we need a few font related 
+%D For proper \UNICODE\ support we need a few font related
 %D constants.
 
 \definesystemconstant {BoldItalic}
@@ -125,7 +125,7 @@
 \def\!!plus   {plus}
 \def\!!minus  {minus}
 \def\!!fill   {fill}
-\def\!!to     {to} 
+\def\!!to     {to}
 
 %D The same goes for some \CONTEXT\ constants, used in the
 %D definition of private commands:
@@ -330,8 +330,8 @@
 
 \ifx\z@\undefined \newdimen\zeropoint \else \let\zeropoint\z@ \fi
 
-\newcount\medcard \medcard\!!medcard % used in font module 
-\newcount\maxcard \maxcard\!!maxcard % used in font module 
+\newcount\medcard \medcard\!!medcard % used in font module
+\newcount\maxcard \maxcard\!!maxcard % used in font module
 
 \ifx\thousandpoint\undefined \newdimen\thousandpoint \fi
 
@@ -348,7 +348,7 @@
 \definesystemvariable {ag}   % AchterGrond
 \definesystemvariable {al}   % ALinea's
 \definesystemvariable {am}   % interActieMenu
-\definesystemvariable {an}   % ANchor 
+\definesystemvariable {an}   % ANchor
 \definesystemvariable {as}   % AlignmentSwitch
 \definesystemvariable {ba}   % synchronisatieBAlk
 \definesystemvariable {be}   % startstop (BeginEnd)
@@ -372,14 +372,15 @@
 \definesystemvariable {cr}   % kleur (ColoR)
 \definesystemvariable {cs}   % kleur (ColorSeparation
 \definesystemvariable {cv}   % ConVersie
+\definesystemvariable {cy}   % CrYteria
 \definesystemvariable {da}   % DAte
-\definesystemvariable {dc}   % DroppedCaps 
+\definesystemvariable {dc}   % DroppedCaps
 \definesystemvariable {dd}   % DoorDefinieren
 \definesystemvariable {de}   % DEel
 \definesystemvariable {dl}   % DunneLijnen
 \definesystemvariable {dn}   % DoorNummeren
 \definesystemvariable {do}   % DefinieerOpmaak
-\definesystemvariable {du}   % DUmmy 
+\definesystemvariable {du}   % DUmmy
 \definesystemvariable {ds}   % DoorSpringen
 \definesystemvariable {ef}   % ExternFiguur
 \definesystemvariable {ec}   % EnCoding
@@ -442,7 +443,7 @@
 \definesystemvariable {mb}   % MargeBlokken
 \definesystemvariable {mg}   % Metapost paGe
 \definesystemvariable {mk}   % MarKering
-\definesystemvariable {mt}   % inline MaTh 
+\definesystemvariable {mt}   % inline MaTh
 \definesystemvariable {mo}   % Math Options
 \definesystemvariable {nm}   % Nummering
 \definesystemvariable {np}   % NaastPlaatsen
@@ -460,7 +461,7 @@
 \definesystemvariable {ox}   % OffsetBox
 \definesystemvariable {pa}   % PAlet
 \definesystemvariable {pb}   % PuBlicatie
-\definesystemvariable {pc}   % PageComment    
+\definesystemvariable {pc}   % PageComment
 \definesystemvariable {pe}   % PagEhandler
 \definesystemvariable {pf}   % ProFiel
 \definesystemvariable {pg}   % KoppelPagina
@@ -478,7 +479,7 @@
 \definesystemvariable {rl}   % ReferentieLijst
 \definesystemvariable {rn}   % RegelNummer
 \definesystemvariable {ro}   % ROteren
-\definesystemvariable {rr}   % linenotes 
+\definesystemvariable {rr}   % linenotes
 \definesystemvariable {rs}   % RaSters
 \definesystemvariable {rt}   % RoosTers
 \definesystemvariable {rv}   % ReserVeerfiguur
@@ -506,7 +507,7 @@
 \definesystemvariable {ta}   % TAb
 \definesystemvariable {tb}   % TekstBlokken
 \definesystemvariable {td}   % TextbackgrounDs
-\definesystemvariable {te}   % TEmplate 
+\definesystemvariable {te}   % TEmplate
 \definesystemvariable {tf}   % TypeFace
 \definesystemvariable {tg}   % Tex paGe
 \definesystemvariable {ti}   % TabelInstellingen
@@ -558,9 +559,9 @@
 \defineinterfaceconstant {y} {y}
 \defineinterfaceconstant {k} {k}
 \defineinterfaceconstant {a} {a} % alternative
-\defineinterfaceconstant {t} {t} % transparency 
-\defineinterfaceconstant {p} {p} % percentage 
- 
+\defineinterfaceconstant {t} {t} % transparency
+\defineinterfaceconstant {p} {p} % percentage
+
 \defineinterfaceconstant {t} {t}
 \defineinterfaceconstant {h} {h}
 \defineinterfaceconstant {b} {b}
@@ -610,8 +611,8 @@
 \definefileconstant {filfilename} {cont-fil}
 \definefileconstant {modfilename} {cont-mod}
 
-%D The next two files specify user settings as well as 
-%D \TEXEXEC\ settings when generating a format. 
+%D The next two files specify user settings as well as
+%D \TEXEXEC\ settings when generating a format.
 
 \definefileconstant {usrfilename} {cont-usr}
 \definefileconstant {fmtfilename} {cont-fmt}
@@ -725,7 +726,7 @@
       3: -- -- replaces a macro, use CAPITALS!
 \stopmessages
 
-% 1: to be adapted 
+% 1: to be adapted
 
 \startmessages  german library: check
   title: check

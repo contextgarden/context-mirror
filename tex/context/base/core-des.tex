@@ -8,12 +8,12 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
-%C details. 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
 
 \writestatus{loading}{Context Core Macros / Descriptions}
 
-\unprotect 
+\unprotect
 
 % Dit kan en moet dus anders:
 %
@@ -50,8 +50,7 @@
   {\doattributes
      {\??dd#1}\c!kopletter\c!kopkleur
      {\getvalue{\??dd#1\c!commando}{#4}}% NAAR BUITENSTE NIVEAU !
-   \rawreference\s!def{#2}{#3}} % brrr moet in #4 
-
+   \rawreference\s!def{#2}{#3}} % brrr moet in #4
 
 \setvalue{@@definitie\v!links}#1%
   {\@@definitiehang{#1}\@@definitielinkspure\@@definitielinkshang}
@@ -223,11 +222,11 @@
    \noindent\ignorespaces
    \advance\leftskip -\leftskipadaption \relax
    \ifdim\leftskipadaption=\zeropoint
-     \leftskipadaption1.5em % just some default  
-     \ifnum\insidedefinition=\plusone 
+     \leftskipadaption1.5em % just some default
+     \ifnum\insidedefinition=\plusone
        \ifdim\leftskip>\zeropoint \relax
          \leftskipadaption\leftskip
-       \fi 
+       \fi
      \fi
    \fi
    \ifnum\insidedefinition=\plusone
@@ -243,52 +242,12 @@
    \ignorespaces
    \@@dodefinitie{#1}}
 
-%D A new key 'titeluitlijnen' in definitions. 
+%D A new key 'titeluitlijnen' in definitions.
 
 \chardef\insidedefinition=0
 
 \let\@@leftdefinitieskip \!!zeropoint
 \let\@@rightdefinitieskip\!!zeropoint
-
-% \def\@@dostartdefinitie#1[#2]#3%
-%   {\getvalue{\??dd#1\c!voor}%
-%    \begingroup
-%    \doadaptleftskip{\getvalue{\??dd#1\c!marge}}%
-%    \showcomposition
-%    \setbox\@@definitiebox\hbox
-%      {\forgetall
-%       \mindermeldingen
-%       \def\\{\crcr}%
-%       \doifelsevalue{\??dd#1\c!plaats}\v!aanelkaar
-%         {\@@definitiewoord{#1}[#2]{#3}{#3}}
-%         {\@@definitiewoord{#1}[#2]{#3}{\vbox{\halign{\strut##\hss\cr#3\crcr}}}}}%
-%    \!!widthb\getvalue{\??dd#1\c!afstand}\relax
-%    \ifdim\!!widthb=\zeropoint\relax
-%      \doifvalue{\??dd#1\c!breedte}\v!ruim{\!!widthb=1em}%
-%    \fi
-%    \assignwidth
-%      {\!!widtha}
-%      {\getvalue{\??dd#1\c!breedte}}
-%      {\doifelsevaluenothing{\??dd#1\c!monster}
-%         {\ifhbox\@@definitiebox\unhcopy\else\copy\fi \@@definitiebox}
-%         {\doattributes
-%            {\??dd#1}\c!kopletter\c!kopkleur
-%            {\getvalue{\??dd#1\c!tekst}\getvalue{\??dd#1\c!monster}}}}
-%      {\!!widthb}%
-% %   \parindent\zeropoint\relax
-%    \doifelsevalue{\??dd#1\c!titeluitlijnen}\v!nee
-%      {\edef\@@leftdefinitieskip {\the\leftskip }%
-%       \edef\@@rightdefinitieskip{\the\rightskip}}
-%      {\ifcase\insidedefinition 
-%         \edef\@@leftdefinitieskip {\the\leftskip }%
-%         \edef\@@rightdefinitieskip{\the\rightskip}%
-%       \fi}%
-% \expanded{\inspringen[\getvalue{\??dd#1\c!inspringen}]}%
-%    \ifcase\insidedefinition % better a system mode 
-%      \chardef\insidedefinition\plusone
-%    \or
-%      \chardef\insidedefinition\plustwo
-%    \fi} % now happens elsewhere : \noindent\ignorespaces
 
 \def\@@dostartdefinitie#1[#2]#3%
   {\getvalue{\??dd#1\c!voor}%
@@ -300,23 +259,21 @@
      \doifvalue{\??dd#1\c!breedte}\v!ruim{\!!widthb=1em}%
    \fi
    % temp hack, we need to avoid this kind of preprocessing
-   \setbox\@@definitiebox\hbox % preroll 
+   \setbox\@@definitiebox\hbox % preroll
      {\forgetall
-      \trialtypesettingtrue 
+      \trialtypesettingtrue
       \mindermeldingen
       \def\\{\crcr}%
-      \doattributes
-        {\??dd#1}\c!kopletter\c!kopkleur
-        {\getvalue{\??dd#1\c!commando}{\begstrut
-           \getvalue{\??dd#1\c!tekst}#3\endstrut}}}%
-   % so far 
+      \@@definitiewoord{#1}[#2]{#3}%
+        {\begstrut\getvalue{\??dd#1\c!tekst}\ignorespaces#3\endstrut}}%
+   % so far
    \assignwidth
-     {\!!widtha}
-     {\getvalue{\??dd#1\c!breedte}}
-     {\doifelsevaluenothing{\??dd#1\c!monster}
-        {\ifhbox\@@definitiebox\unhcopy\else\copy\fi \@@definitiebox}
-        {\doattributes
-           {\??dd#1}\c!kopletter\c!kopkleur
+     {\!!widtha}%
+     {\getvalue{\??dd#1\c!breedte}}%
+     {\doifelsevaluenothing{\??dd#1\c!monster}%
+        {% preroll can move here (test first)
+         \ifhbox\@@definitiebox\unhcopy\else\copy\fi \@@definitiebox}%
+        {\@@definitiewoord{#1}[#2]{#3}%
            {\getvalue{\??dd#1\c!tekst}\getvalue{\??dd#1\c!monster}}}}
      {\!!widthb}%
    \setbox\@@definitiebox\hbox
@@ -332,19 +289,19 @@
    \doifelsevalue{\??dd#1\c!titeluitlijnen}\v!nee
      {\edef\@@leftdefinitieskip {\the\leftskip }%
       \edef\@@rightdefinitieskip{\the\rightskip}}
-     {\ifcase\insidedefinition 
+     {\ifcase\insidedefinition
         \edef\@@leftdefinitieskip {\the\leftskip }%
         \edef\@@rightdefinitieskip{\the\rightskip}%
       \fi}%
    \expanded{\inspringen[\getvalue{\??dd#1\c!inspringen}]}%
-   \ifcase\insidedefinition % better a system mode 
+   \ifcase\insidedefinition % better a system mode
      \chardef\insidedefinition\plusone
    \or
      \chardef\insidedefinition\plustwo
    \fi} % now happens elsewhere : \noindent\ignorespaces
 
 \def\@@stopdefinitie#1%
-  {\par % maybe better after \dostopattributes 
+  {\par % maybe better after \dostopattributes
    \dostopattributes
    \endgroup
    \getvalue{\??dd#1\c!na}%
@@ -361,7 +318,7 @@
 %    \AfterPar{\@@stopdefinitie{#1}}%
 %    \GetPar}
 %
-% nicer and better: 
+% nicer and better:
 
 \def\@@somedefinitie#1[#2]#3%
   {\dowithpar
@@ -508,8 +465,8 @@
 %      \hbox
 %        {\let\normalkap\relax % sorry, uppercase causes troubles
 %         \doattributes        % \nocase primitive needed
-%           {\??dd#2#1}\c!kopletter\c!kopkleur 
-%           {\getvalue{\??dd#1\c!commando}% hook for taco 
+%           {\??dd#2#1}\c!kopletter\c!kopkleur
+%           {\getvalue{\??dd#1\c!commando}% hook for taco
 %              {\showdntext{#2#1}%
 %               \domakednnummer{#1}{#2}{#3}}}%
 %         \iflocation\ifcase\definitiekoppeling \else
@@ -518,7 +475,7 @@
 % %             {\in[\localconnection]}{}% genereert > of <
 %         \fi\fi}%
 %      \doifnot{#5}{-}{\rawreference\s!num{#5}{#3{#1}}}%
-%    \else % Why was this strange expansion needed? 
+%    \else % Why was this strange expansion needed?
 %      \hbox
 %        {\edef\!!stringa{\showdnpuretext{#2#1}}% nog eens testen binnen \expanded
 %         \expanded{\doattributes{\??dd#1}\noexpand\c!kopletter\noexpand\c!kopkleur
@@ -542,7 +499,10 @@
      [\getvalue{\??dd#1\??dd\c!nummer}]
      [\c!sectienummer=\getvalue{\??dd#1\c!sectienummer}]%
    \if!!donea
-     \getvalue{\e!volgende#2#1}%
+\iftrialtypesetting\startlocal\fi
+     \getvalue{\e!volgende#2#1}% tricky but we need the preroll
+\iftrialtypesetting\stoplocal\fi
+     % \getvalue{\e!volgende#2#1}%
      \iflocation
        \bgroup
        \letvalue{\??dd#1\c!sectienummer}\v!ja
@@ -563,7 +523,7 @@
      \let\normalkap\relax % sorry, uppercase causes troubles
      \doattributes        % \nocase primitive needed
        {\??dd#1}\c!kopletter\c!kopkleur
-       {\getvalue{\??dd#1\c!commando}% hook for taco 
+       {\getvalue{\??dd#1\c!commando}% hook for taco
           {\showdntext{#2#1}%
            \domakednnummer{#1}{#2}{#3}}}%
      \iflocation\ifcase\definitiekoppeling \else
@@ -572,7 +532,7 @@
          {\in[\localconnection]}\donothing % genereert > of <
      \fi\fi
      \doifnot{#5}{-}{\rawreference\s!num{#5}{#3{#1}}}%
-   \else % Why was this strange expansion needed? 
+   \else % Why was this strange expansion needed?
      \edef\!!stringa{\showdnpuretext{#2#1}}% nog eens testen binnen \expanded
      \expanded{\doattributes{\??dd#1}\noexpand\c!kopletter\noexpand\c!kopkleur
        {\noexpand\getvalue{\??dd#1\c!commando}{\!!stringa}}}%
@@ -632,10 +592,10 @@
    \rawreference\s!num{#2}{\showdnnummer{\doornummer}}}
 
 \def\dodosteldoornummerenin[#1][#2]%
-  {\getparameters[\??dd#1][#2]% 
+  {\getparameters[\??dd#1][#2]%
    \doifdefined{\??dd#1\c!start}
      {\stelnummerin[#1][\c!start=\getvalue{\??dd#1\c!start}]}%
-   \stelnummerin[#1][\c!conversie=\getvalue{\??dd#1\c!conversie}]} 
+   \stelnummerin[#1][\c!conversie=\getvalue{\??dd#1\c!conversie}]}
 
 \def\dosteldoornummerenin[#1][#2]%
   {\ConvertToConstant\doifelse{#2}{}
@@ -664,7 +624,7 @@
      {\doifelsenothing{#4}
         {\getparameters[\??dd#3#1]%
            [\c!tekst=#1,\??dd\c!nummer=#1,\c!conversie=,
-            \c!afsluiter=, 
+            \c!afsluiter=,
             \c!links=,\c!rechts=,\c!koppeling=,\c!koppelwijze=,#4]}%
         {\copyparameters[\??dd#3#1][\??dd#3#4]
            [\c!plaats,\c!kopletter,\c!letter,\c!kleur,\c!kopkleur,
@@ -762,8 +722,8 @@
    \parindent\zeropoint
    \hskip#2\!!widtha\indent\box2%
    \hangindent#3\!!widtha
-   \doattributes{\??ds#1}\c!letter\c!kleur\empty 
-   \AfterPar% must be redone 
+   \doattributes{\??ds#1}\c!letter\c!kleur\empty
+   \AfterPar% must be redone
      {\endgroup
       \getvalue{\??ds#1\c!na}}%
    \GetPar}
@@ -792,10 +752,10 @@
 %      {\getvalue{\e!volgende#1}[#2]}%
 %    \egroup
 %    \getvalue{\s!number#1\c!na}}%
-% 
+%
 % \def\dovolgendedoorlabel[#1][#2]%
 %   {\volgendenummer[#1][\s!lab][#2]}
-% 
+%
 % \def\dodoorlabelen[#1][#2]%
 %   {\definieernummer
 %      [#1][\c!voor=,\c!na=,\c!kopletter=,\c!wijze=\@@nrwijze,#2]%
@@ -804,7 +764,7 @@
 %    \setvalue{\e!verhoog #1}{\verhoognummer[#1]}%
 %    \setvalue{\e!volgende#1}{\dodoubleempty\dovolgendedoorlabel[#1]}%
 %    \setvalue{\c!huidige #1}{\huidigenummer[#1]}}
-% 
+%
 % \def\doorlabelen%
 %   {\dodoubleargumentwithset\dodoorlabelen}
 
@@ -823,18 +783,18 @@
   {\getparameters
      [\??lb#1]
      [\c!wijze=\@@nrwijze,\c!commando=,\c!plaats=,#2]%
-   % downward compatible 
+   % downward compatible
    \processaction
      [\getvalue{\??lb#1\c!plaats}]
      [  \v!inmarge=>\setvalue{\??lb#1\c!commando}{\inmarge  },
        \v!inlinker=>\setvalue{\??lb#1\c!commando}{\inlinker },
       \v!inrechter=>\setvalue{\??lb#1\c!commando}{\inrechter},
           \v!marge=>\setvalue{\??lb#1\c!commando}{\inmarge  }]%
-   % inefficient, we need to redesign this command 
-   \definieernummer 
+   % inefficient, we need to redesign this command
+   \definieernummer
      [#1]
      [\c!wijze=\getvalue{\??lb#1\c!wijze}]%
-   % generated commands 
+   % generated commands
    \setvalue           {#1}{\dodoubleempty\dodoorlabel[#1]}%
    \setvalue{\s!reset   #1}{\resetnummer[#1]}%
    \setvalue{\e!verhoog #1}{\verhoognummer[#1]}%
@@ -903,4 +863,4 @@
    \c!afstand=1em,
    \c!scheider={ :}]
 
-\protect \endinput 
+\protect \endinput

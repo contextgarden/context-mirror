@@ -17,8 +17,8 @@
 
 \unprotect
 
-% WATCH OUT: don't change this model else trialtypesetting 
-% compatibility problems 
+% WATCH OUT: don't change this model else trialtypesetting
+% compatibility problems
 
 % watch out, cells expand pretty late on a per row basis
 
@@ -100,10 +100,10 @@
 
 %  \HR : rule with lineheight
 
-%  \autotabulaterule : with lineheight, not first/last 
-%  \autotabulateline : spaced, not first/last 
-%  \tabulaterule     : with lineheight 
-%  \tabulateline     : spaced 
+%  \autotabulaterule : with lineheight, not first/last
+%  \autotabulateline : spaced, not first/last
+%  \tabulaterule     : with lineheight
+%  \tabulateline     : spaced
 
 % tricky: align scans ahead, over # and expands ones before
 % while doing
@@ -200,7 +200,7 @@
    \fi}
 
 \def\initializetablebox#1%
-  {\ifundefined{\@@tabbox@@\number#1}
+  {\ifundefined{\@@tabbox@@\number#1}%
      \expandafter\newbox\csname\@@tabbox@@\number#1\endcsname
    \else
      \global\setbox\csname\@@tabbox@@\number#1\endcsname\box\voidb@x
@@ -225,7 +225,6 @@
 
 \def\checktabulatehook
   {\ifnum\tabulatetype<\plustwo
-    %\global\let\tabulatehook\relax
      \global\let\tabulatehook\notabulatehook
    \else
      \global\let\tabulatehook\dotabulatehook
@@ -414,14 +413,14 @@
 %    \settabulatepreamble}
 
 % \startbuffer
-%   \toplinebox{\framed[width=3cm,height=2cm]{tufte}} 
+%   \toplinebox{\framed[width=3cm,height=2cm]{tufte}}
 % \stopbuffer
 % \starttabulate[|p(fixed)|p|]
-%   \dorecurse{100}{\NC \getbuffer \NC test \par test \par \NC \NR} 
-% \stoptabulate 
+%   \dorecurse{100}{\NC \getbuffer \NC test \par test \par \NC \NR}
+% \stoptabulate
 % \starttabulate[|p(fit)|p|]
-%   \dorecurse{100}{\NC \getbuffer \NC test \par test \par \NC \NR} 
-% \stoptabulate 
+%   \dorecurse{100}{\NC \getbuffer \NC test \par test \par \NC \NR}
+% \stoptabulate
 
 \def\dogettabulatewidth(#1)%
   {\processallactionsinset
@@ -454,7 +453,6 @@
    \tabulateemath   \emptytoks
    \tabulatefont    \emptytoks
    \tabulatesettings\emptytoks
-  %\doglobal\increment\tabulatecolumns
    \global\advance\tabulatecolumns\plusone
    \settabulatepreamble#1\relax\relax % permits i without n
    \ifcase\tabulatemodus\relax
@@ -470,15 +468,14 @@
        \dodosettabulatepreamble{\bskip\tabulateraggedleft  }\eskip \or
        \dodosettabulatepreamble{\bskip\tabulateraggedcenter}\eskip \fi
    \or % auto width
-    %\doglobal\increment\nofautotabulate
      \global\advance\nofautotabulate\plusone
      \ifcase\tabulatealign\relax
        \dodosettabulatepreamble \bskip                      \eskip \or
        \dodosettabulatepreamble{\bskip\tabulateraggedright }\eskip \or
        \dodosettabulatepreamble{\bskip\tabulateraggedleft  }\eskip \or
        \dodosettabulatepreamble{\bskip\tabulateraggedcenter}\eskip \fi
-   \or % simple 
-     \dodosettabulatepreamble \xbskip \xeskip 
+   \or % simple
+     \dodosettabulatepreamble \xbskip \xeskip
    \fi
    \futurelet\next\donexttabulate}
 
@@ -489,7 +486,7 @@
 
 \def\splitofftabulatebox
   {\dontcomplain
-   \global\setbox\tabulatebox
+   \global\setbox\tabulatebox % % % global ? % % %
      \vsplit\tablebox\tabulatecolumn to \lineheight
    \setbox\tabulatebox\vbox
      {\unvbox\tabulatebox}%
@@ -514,22 +511,10 @@
      \global\tabulatemaxpheight\scratchdimen
    \fi}
 
-% \def\handletabulatepbreak
-%   {\TABLEnoalign
-%      {\ifhandletabulatepbreak \ifnum\tabulatemaxplines>\plusone
-%         \ifnum\tabulateminplines=\plusone
-%           \dotabulatenobreak
-%         \fi
-%         \doglobal\increment\tabulateminplines
-%         \ifnum\tabulateminplines=\tabulatemaxplines\relax
-%           \dotabulatenobreak
-%         \fi
-%       \fi \fi}}
-
 \def\handletabulatepbreak
   {\TABLEnoalign
      {\ifhandletabulatepbreak
-        \iftabulatenopbreak  
+        \iftabulatenopbreak
           \dotabulatenobreak
         \else\ifnum\tabulatemaxplines>\plusone
           \ifnum\tabulateminplines=\plusone
@@ -615,13 +600,13 @@
 %      \@EA\let\@EA\tabulatetailcontent
 %        \csname\??tt\currenttabulate\v!voet\endcsname
 %    \fi}
-% 
+%
 % \newconditional\tabulatesomeamble
-% 
+%
 % % \def\fulltabulatecontent
 % %   {\tabulatecontent}
-% 
-% \def\fulltabulatecontent 
+%
+% \def\fulltabulatecontent
 %   {\ifx\tabulateheadcontent\empty\else
 %      \TABLEnoalign{\global\settrue\tabulatesomeamble}%
 %      \tabulateheadcontent
@@ -633,7 +618,7 @@
 %      \tabulatetailcontent
 %    \fi}
 %
-% the previous code breaks on first \HL 
+% the previous code breaks on first \HL
 
 \newconditional\tabulatesomeamble
 
@@ -659,7 +644,7 @@
 %   {\tabulateheadcontent
 %    \tabulatecontent
 %    \tabulatetailcontent}
- 
+
 \def\fulltabulatecontent
   {\tabulateheadcontent
    \tabulatecontent
@@ -700,15 +685,15 @@
    \fi
    \next}
 
-% The much neede hook: 
+% The much neede hook:
 
 \newtoks\everytabulate
 
-% An example of its usage: 
+% An example of its usage:
 
 \appendtoks \optimizeverbatimfalse \to \everytabulate
 
-% A status variable: 
+% A status variable:
 
 \chardef\tabulatepass=0
 
@@ -719,7 +704,7 @@
      \getvalue{\??tt\currenttabulate\c!voor}%
    \fi
    \bgroup
-\resetcharacteralign
+   \resetcharacteralign
    % todo: spacing around tabulate when bodyfont is set
    % expansion en test needed ?
    \doifelsevalue{\??tt\currenttabulate\c!splitsen}\v!ja
@@ -783,7 +768,7 @@
 % \def\tabulateequalcolumn#1%
 %   {&\tabulateEQ&\global\chardef\tabulatetype#1&}
 %
-% however, \unskip en \ignorespaces permit usage in complex XML/\starttabulate 
+% however, \unskip en \ignorespaces permit usage in complex XML/\starttabulate
 
 \def\tabulatenormalcolumn#1%
   {\unskip&\iftabulateequal\tabulateEQ\fi&\global\chardef\tabulatetype#1&%
@@ -850,7 +835,7 @@
    % for the moment this one
    \strut\hskip\getvalue{\??tt\currenttabulate\c!marge}%
    % neg values are ok !
-   \hskip\tabulateindent % new august 2003 
+   \hskip\tabulateindent % new august 2003
    \dodotabulaterule
      {\!!heighta.5\lineheight
       \advance\!!heighta-\strutdepth
@@ -869,8 +854,8 @@
 \def\doregistertabulateparoptions
   {\iftrialtypesetting \else
      \registerparoptions
-     \ifinsidefloat 
-       % that is, an unbreakable one 
+     \ifinsidefloat
+       % that is, an unbreakable one
        \global\let\registertabulateparoptions\empty
      \else
        % unsafe in crossing pages, at each b...
@@ -906,8 +891,8 @@
 \def\handletabulatedigits{\digits}
 
 %D Beware, we cannot use \type {\unexpanded} on \type {\HL}
-%D cum suis, since \TEX's hard coded noalign lookahead fails 
-%D on it! I mistakenly added this for a while. 
+%D cum suis, since \TEX's hard coded noalign lookahead fails
+%D on it! I mistakenly added this for a while.
 
 % \def\processtabulate[|#1|]% in the process of optimizing
 %   {\tabulateunit\getvalue{\??tt\currenttabulate\c!eenheid}%
@@ -940,7 +925,7 @@
 %    \unexpanded \def\HQ{\tabulateequalcolumn 2}%
 %    \unexpanded \def\NG{\NC\handletabulatecharalign}%
 %    \unexpanded \def\NN{\NC\handletabulatedigits}% new, undocumented, test first
-%    \unexpanded \def\ND{\NC\handletabulatedigits}% same, for old times sake 
+%    \unexpanded \def\ND{\NC\handletabulatedigits}% same, for old times sake
 %    \def\HR % horizontal rule line (break untested)
 %      {\TABLEnoalign
 %         {\ifnum\noftabulatelines=\totalnoftabulatelines
@@ -1098,7 +1083,7 @@
 %           % \begstrut % interferes with pre-\pars
 %           % evt: \appendtoks\begstrut\to\everypar
 %           \ignorespaces}%
-%      \def\eskip % vertical strut added august 2003  
+%      \def\eskip % vertical strut added august 2003
 %        {\par\verticalstrut\vskip-\struttotal\egroup}%
 %    \fi
 %    \let\totalnoftabulatelines\noftabulatelines
@@ -1179,8 +1164,6 @@
       \s!unknown=>\def\@@tabulatealign{0}]%
    \let\pretabskip\!!zeropoint
    \def\postabskip{.5\tabulateunit}%
-  %\doglobal\newcounter\tabulatecolumns
-  %\doglobal\newcounter\nofautotabulate
    \global\tabulatecolumns\zerocount
    \global\nofautotabulate\zerocount
    \doglobal\newcounter\noftabulatelines
@@ -1197,9 +1180,9 @@
    \unexpanded \def\HQ{\tabulateequalcolumn 2}%
    \unexpanded \def\NG{\NC\handletabulatecharalign}%
    \unexpanded \def\NN{\NC\handletabulatedigits}% new, undocumented, test first
-   \unexpanded \def\ND{\NC\handletabulatedigits}% same, for old times sake 
-   \def\tabulaterule{\HR}% a rule with lineheight 
-   \def\tabulateline{\HL}% just a spaced rule 
+   \unexpanded \def\ND{\NC\handletabulatedigits}% same, for old times sake
+   \def\tabulaterule{\HR}% a rule with lineheight
+   \def\tabulateline{\HL}% just a spaced rule
    \def\tabulateautorule{\doHR\plusone}%
    \def\tabulateautoline{\doHL\plusone}%
    \def\HR{\doHR\zerocount}
@@ -1226,7 +1209,8 @@
            \fi\fi
          \fi
          \global\tabulatefirstflushedfalse}}%
-   \let\HL\empty \let\SR\NR \let\AR\NR
+   \let\HL\empty % not needed
+   \let\SR\NR    \let\AR\NR
    \let\FL\empty \let\FR\NR
    \let\ML\empty \let\MR\NR
    \let\LL\empty \let\LR\NR
@@ -1347,7 +1331,7 @@
           % \begstrut % interferes with pre-\pars
           % evt: \appendtoks\begstrut\to\everypar
           \ignorespaces}%
-     \def\eskip % vertical strut added august 2003  
+     \def\eskip % vertical strut added august 2003
        {\par\verticalstrut\vskip-\struttotal\egroup}%
    \fi
    \let\totalnoftabulatelines\noftabulatelines
@@ -1356,14 +1340,14 @@
    \doglobal\newcounter\noftabulatelines
    \def\doHL##1%
      {\TABLEnoalign
-        {\ifnum\noftabulatelines=\zerocount                  
+        {\ifnum\noftabulatelines=\zerocount
            \ifcase##1\or
              \@EAEAEA\FL
            \fi
          \else\ifnum\noftabulatelines=\totalnoftabulatelines
            \ifcase##1\or
              \@EA\@EAEAEA\@EA\LL
-           \fi 
+           \fi
          \else
            \@EAEAEA\ML
          \fi\fi}}%
@@ -1371,7 +1355,7 @@
      {\TABLEnoalign
         {\globallet\TABLEautoline\dotabulatelinerule
          \ifcase##1\or
-           \ifnum\noftabulatelines=\zerocount 
+           \ifnum\noftabulatelines=\zerocount
              \gdef\TABLEautoline{\TABLEnoalign{}}%
            \else\ifnum\noftabulatelines=\totalnoftabulatelines
              \gdef\TABLEautoline{\TABLEnoalign{}}%
@@ -1390,10 +1374,11 @@
       \TABLEautoline
       \TABLEnoalign
         {\dotabulatenobreak}}%
-   \doifvalue{\??tt\currenttabulate\c!lijn}\v!regel
+   \doifelsevalue{\??tt\currenttabulate\c!lijn}\v!regel
      {\let\HL              \HR
       \let\tabulateautoline\tabulateautorule
       \let\tabulateline    \tabulaterule}%
+     {\def\HL{\doHL\zerocount}}%
    \def\tablebaselinecorrection
      {\def\dobaselinecorrection
         {\vskip-\prevdepth
@@ -1449,9 +1434,9 @@
    \fi
    \egroup}
 
-%D \startypen 
+%D \startypen
 %D \setuptabulate[split=no,rule=line]
-%D 
+%D
 %D \starttabulate
 %D \NC tufte \NC \input tufte \NC \NR \tabulateautorule
 %D \NC tufte \NC \input tufte \NC \NR \tabulateautorule
@@ -1459,8 +1444,8 @@
 %D \NC tufte \NC \input tufte \NC \NR \tabulateautorule
 %D \NC tufte \NC \input tufte \NC \NR \tabulateautorule
 %D \NC tufte \NC \input tufte \NC \NR \tabulateautorule
-%D \stoptabulate 
-%D \stoptypen 
+%D \stoptabulate
+%D \stoptypen
 
 % \starttabulatie[|mc|]
 % \NC \digits{100.000,00} \NC\NR

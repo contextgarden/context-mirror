@@ -1,8 +1,8 @@
 %D \module
 %D   [       file=type-exa,
-%D        version=2001.04.12, 
+%D        version=2001.04.12,
 %D          title=\CONTEXT\ Typescript Macros,
-%D       subtitle=Example scripts, 
+%D       subtitle=Example scripts,
 %D         author=Hans Hagen,
 %D           date=\currentdate,
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
@@ -25,7 +25,7 @@
 \starttypescript [postscript] [texnansi,ec,8r]
 
 \definetypeface [postscript] [rm] [serif] [times]     [default] [encoding=\typescripttwo]
-\definetypeface [postscript] [mm] [math]  [times]     [default] 
+\definetypeface [postscript] [mm] [math]  [times]     [default]
 \definetypeface [postscript] [ss] [sans]  [helvetica] [default] [rscale=.9,encoding=\typescripttwo]
 \definetypeface [postscript] [tt] [mono]  [courier]   [default] [rscale=1.1,encoding=\typescripttwo]
 
@@ -43,10 +43,18 @@
 \starttypescript [palatino] [texnansi,ec,8r]
 
 \definetypeface [palatino] [rm] [serif] [palatino]        [default] [encoding=\typescripttwo]
-\definetypeface [palatino] [mm] [math]  [palatino]        [default] [encoding=\typescripttwo]
-\definetypeface [palatino] [tt] [mono]  [computer-modern] [default] [rscale=1.075]
+\definetypeface [palatino] [mm] [math]  [palatino]        [default] [encoding=default]
+\definetypeface [palatino] [tt] [mono]  [computer-modern] [default] [rscale=1.075,encoding=\typescripttwo]
 
-% to do (rscaled): tt->computer-modern ss->??
+\stoptypescript
+
+\starttypescript [fourier] [ec]
+
+\definetypeface [fourier] [rm] [serif] [fourier]      [default] [encoding=ec]
+\definetypeface [fourier] [mm] [math]  [fourier]      [default] [encoding=default]
+\definetypeface [fourier] [tt] [mono]  [latin-modern] [default] [rscale=1.070,encoding=ec]
+
+\usemathcollection[fou]
 
 \stoptypescript
 
@@ -58,7 +66,7 @@
 \definetypeface [lucida] [mm] [math]        [lucida] [default] [encoding=\typescripttwo]
 \definetypeface [lucida] [hw] [handwriting] [lucida] [default] [encoding=\typescripttwo]
 
-\usemathcollection[lbr] 
+\usemathcollection[lbr]
 
 \stoptypescript
 

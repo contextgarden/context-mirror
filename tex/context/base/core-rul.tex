@@ -28,7 +28,7 @@
 %D preset value of .4pt equals the default hard coded \TEX\
 %D rule width.
 
-\newdimen\linewidth  
+\newdimen\linewidth
 
 \def\dosetuplinewidth[#1]%
   {\assigndimension{#1}\linewidth{.2\s!pt}{.4\s!pt}{.6\s!pt}}
@@ -800,8 +800,8 @@
      \boxhasheighttrue
      \!!heighta\localheight
    \fi\fi
-   \ifboxhasheight 
-     % obey user set height, also downward compatible  
+   \ifboxhasheight
+     % obey user set height, also downward compatible
    \else
      \doifvaluesomething{\@@framed\c!regels}
        {\ifcase\framedparameter\c!regels\else
@@ -1438,11 +1438,11 @@
   {\framednoflines\zerocount
    \framedlastlength\zeropoint}
 
-% The next implementation is frozen! It preserves the depth, 
-% otherwise we get problems with framed display math and auto 
-% width. 
+% The next implementation is frozen! It preserves the depth,
+% otherwise we get problems with framed display math and auto
+% width.
 
-\def\doreshapeframedbox % frozen 
+\def\doreshapeframedbox % frozen
   {\beginofshapebox
    \unvcopy\framebox
    \endofshapebox
@@ -1597,7 +1597,7 @@
 %D possible.
 
 \def\vboxedhairline
-  {\bgroup         
+  {\bgroup
    \dimen2=\ifboxhasoffset \localoffset \else \zeropoint \fi
    \dimen4=\dimen2
    \advance\dimen4 \ruledlinewidth
@@ -2147,14 +2147,14 @@
      {\ifnum\recurselevel=\@@dln \dothinrulesnobreak \else
       \ifnum\recurselevel=2      \dothinrulesnobreak \fi\fi
                                  \thinrule
-      \ifnum\recurselevel<\@@dln\relax 
-        % test needed, else messed up whitespace 
-        \ifx\@@dltussen\empty 
-          \softbreak 
+      \ifnum\recurselevel<\@@dln\relax
+        % test needed, else messed up whitespace
+        \ifx\@@dltussen\empty
+          \softbreak
         \else
           \endgraf
           \geenwitruimte
-          \@@dltussen 
+          \@@dltussen
         \fi
       \fi}%
    \doifelsenothing\@@dlna
@@ -2454,7 +2454,7 @@
       \egroup
       \forgetall
       \vskip-\lineheight
-      % will be an option, not default 
+      % will be an option, not default
       % \setbaselinecorrections
       % \donegbotbaselinecorrection
       \verticalstrut}
@@ -2481,8 +2481,8 @@
      \bgroup
        \blanko[\v!blokkeer]%
        \let\\=\endgraf
-       \getvalue{\??kd#1\c!binnen}%   % kleur naar outer level 
-       \dostartattributes{\??kd#1}\c!letter\c!kleur\empty 
+       \getvalue{\??kd#1\c!binnen}%   % kleur naar outer level
+       \dostartattributes{\??kd#1}\c!letter\c!kleur\empty
        \bgroup
        \aftergroup\docloseframedtext
        \let\next=}
@@ -2961,7 +2961,7 @@
 %D \stopachtergrond
 %D \egroup
 
-%D New, for the moment private; let's see when GB finds out 
+%D New, for the moment private; let's see when GB finds out
 %D about this one and its obscure usage. It's used in:
 %D
 %D \startbuffer
@@ -2971,23 +2971,23 @@
 %D    backgroundoffset=3pt,
 %D    background=color,
 %D    backgroundcolor=green]
-%D 
+%D
 %D \setuptabulate
 %D   [tabulate]
 %D   [frame=tabulateframe]
-%D 
+%D
 %D \setuptables
 %D   [frame=tabulateframe]
-%D 
-%D \input tufte 
-%D 
+%D
+%D \input tufte
+%D
 %D \starttabulate[|l|l|]
-%D \NC test \NC test \NC \NR \NC test \NC test \NC \NR 
-%D \NC test \NC test \NC \NR \NC test \NC test \NC \NR 
+%D \NC test \NC test \NC \NR \NC test \NC test \NC \NR
+%D \NC test \NC test \NC \NR \NC test \NC test \NC \NR
 %D \stoptabulate
-%D 
-%D \input tufte 
-%D 
+%D
+%D \input tufte
+%D
 %D \starttable[|l|l|]
 %D \NC test \NC test \NC \AR \NC test \NC test \NC \AR
 %D \NC test \NC test \NC \AR \NC test \NC test \NC \AR
@@ -2996,15 +2996,15 @@
 %D
 %D \typebuffer
 
-% test this on demo-bbv/demo-bbi ! 
-% 
+% test this on demo-bbv/demo-bbi !
+%
 % \def\startframedcontent[#1]%
 %   {\bgroup
 %    \doifelse{#1}\v!uit
 %      {\let\stopframedcontent\egroup}
 %      {\doifdefinedelse{\??kd#1\c!kader}
 %         {\doifelsevalue{\??kd#1\c!regelcorrectie}\v!ja
-%            {\ifinsidefloat % binnen \stopframedcontent 
+%            {\ifinsidefloat % binnen \stopframedcontent
 %               \def\stopframedcontent
 %                 {\framedtextparameter{#1}\c!rechts
 %                  \egroup
@@ -3082,7 +3082,7 @@
    \doifvalue{\??fc#1\c!breedte}\v!passend
      {\letvalue{\??fc#1\c!breedte}\v!vast}%
    \ifinsidefloat
-     \donefalse 
+     \donefalse
    \else
      \doifelsevalue{\??fc#1\c!regelcorrectie}\v!ja\donetrue\donefalse
    \fi
@@ -3094,8 +3094,8 @@
 %D \macros
 %D   {backgroundline}
 %D
-%D For the moment an undocumented feature, but a cancidate 
-%D for going public. 
+%D For the moment an undocumented feature, but a cancidate
+%D for going public.
 
 \def\backgroundline[#1]%
  %{\doifsomething{#1}{\dobackgroundline{#1}}\hbox}

@@ -1,62 +1,62 @@
-% == introduction == 
+% == introduction ==
 %
-% This is 'texexec.ini', the file used by texexec to determine where 
-% to find files, what TeX to use, what flags to pass, etc. Although 
-% TeXexec tries to locate things itself, a little help is sometimes 
-% needed. One can influence texexec by setting some variables. These 
-% are only needed when the automatic determined settings fail. 
-% 
+% This is 'texexec.ini', the file used by texexec to determine where
+% to find files, what TeX to use, what flags to pass, etc. Although
+% TeXexec tries to locate things itself, a little help is sometimes
+% needed. One can influence texexec by setting some variables. These
+% are only needed when the automatic determined settings fail.
+%
 % == interfacing ==
-% 
+%
 % UsedInterfaces  nl,en  the formats generated with --make
 % UserInterface   nl     the default format used
 %
-% == binaries == 
-% 
-% TeXExecutable      pdfetex  the TeX binary to use 
-% MpExecutable       mpost    the MetaPost binary to use  
+% == binaries ==
+%
+% TeXExecutable      pdfetex  the TeX binary to use
+% MpExecutable       mpost    the MetaPost binary to use
 % MpToTeXExecutable  mpto     the MetaPost to TeX converter
 % DviToMpExecutable  dvitomp  the DVI to MetaPost converter
 %
-% == Scripts == 
+% == Scripts ==
 %
-% DviSpecialScript   dvispec  the DVI special filter script 
+% DviSpecialScript   dvispec  the DVI special filter script
 %
-% == flags == 
-%           
-% TeXFormatFlag  &     the format introducer  
+% == flags ==
+%
+% TeXFormatFlag  &     the format introducer
 % TeXVirginFlag  -ini  the format generation switch
 %
-% == paths == 
+% == paths ==
 %
-% TeXFormatPath   texmf/...               fmt files 
+% TeXFormatPath   texmf/...               fmt files
 % ConTeXtPath     texmf/tex/context/base  sources
 % SetupPath       texmf/tex/base/user     cont-sys/usr file
 % TeXScriptsPath  texmf/context/perltk    scripts
 % TeXFontsPath    texmf                   font files
 %
-% MpFormatPath    TeXFormatPath           mem files  
+% MpFormatPath    TeXFormatPath           mem files
 %
 % == the main shell setting ==
 %
-% As shown below, one can define his/her own sections. We default to 
-% the teTeX/fpTeX web2c based settings. 
+% As shown below, one can define his/her own sections. We default to
+% the teTeX/fpTeX web2c based settings.
 
-set  TeXShell  to  tetex 
-%set TeXShell  to  fptex 
+set  TeXShell  to  tetex
+%set TeXShell  to  fptex
 %set TeXShell  to  miktex
-%set TeXShell  to  private 
+%set TeXShell  to  private
 
 % == setting up the variables ==
 %
-% Here are some general defaults. They can be overruled later.  
+% Here are some general defaults. They can be overruled later.
 
-set  UsedInterfaces     to  en nl metafun mptopdf 
+set  UsedInterfaces     to  en nl metafun mptopdf
 set  UserInterface      to  en
 
-set  TeXExecutable      to  tex 
+set  TeXExecutable      to  tex
 
-set  MpExecutable       to  mpost 
+set  MpExecutable       to  mpost
 set  MpToTeXExecutable  to  mpto
 set  DviToMpExecutable  to  dvitomp
 set  DviSpecialScript   to  dvispec
@@ -72,28 +72,32 @@ set  TeXFontsPath       to  l:/tex/texmf;l:/tex/texmf-local;
 
 % For teTeX the next settings will do.
 
+% -default-translate-file=cp8bit -file-line-error-style
+
 for  tetex  set  TeXHashExecutable to  mktexlsr
 for  tetex  set  TeXExecutable     to  pdfetex
 for  tetex  set  TeXVirginFlag     to  -ini
-for  tetex  set  TeXPassString     to  -progname=context 
-for  tetex  set  TeXBatchFlag      to  -int=batchmode 
+for  tetex  set  TeXPassString     to  -progname=context
+for  tetex  set  TeXBatchFlag      to  -int=batchmode
 for  tetex  set  TeXNonStopFlag    to  -int=nonstopmode
 for  tetex  set  MpToTeXExecutable to  mpto
-for  tetex  set  MpVirginFlag      to  -ini 
+for  tetex  set  MpVirginFlag      to  -ini
 for  tetex  set  MpPassString      to  -progname=mpost
-for  tetex  set  MpBatchFlag       to  -int=batchmode 
+for  tetex  set  MpBatchFlag       to  -int=batchmode
 for  tetex  set  MpNonStopFlag     to  -int=nonstopmode
 
-% These also apply to fpTeX. 
+% These also apply to fpTeX.
+
+% -default-translate-file=cp8bit -file-line-error-style
 
 for  fptex  set  TeXHashExecutable to  mktexlsr
 for  fptex  set  TeXExecutable     to  pdfetex
 for  fptex  set  TeXVirginFlag     to  -ini
-for  fptex  set  TeXPassString     to  -progname=context 
-for  fptex  set  TeXBatchFlag      to  -int=batchmode 
+for  fptex  set  TeXPassString     to  -progname=context
+for  fptex  set  TeXBatchFlag      to  -int=batchmode
 for  tetex  set  TeXNonStopFlag    to  -int=nonstopmode
 for  fptex  set  MpToTeXExecutable to  mpto
-for  fptex  set  MpVirginFlag      to  -ini 
+for  fptex  set  MpVirginFlag      to  -ini
 for  fptex  set  MpPassString      to  -progname=mpost
 for  fptex  set  MpBatchFlag       to  -int=batchmode
 for  tetex  set  MpNonStopFlag     to  -int=nonstopmode
@@ -103,40 +107,40 @@ for  tetex  set  MpNonStopFlag     to  -int=nonstopmode
 for  miktex  set  TeXHashExecutable to  initexmf --update-fndb
 for  miktex  set  TeXExecutable     to  pdfetex
 for  miktex  set  TeXVirginFlag     to  --initialize
-for  miktex  set  TeXPassString     to  --alias=context 
-for  miktex  set  TeXBatchFlag      to  --interaction=batchmode 
+for  miktex  set  TeXPassString     to  --alias=context
+for  miktex  set  TeXBatchFlag      to  --interaction=batchmode
 for  miktex  set  TeXNonStopFlag    to  --interaction=nonstopmode
 for  miktex  set  MpToTeXExecutable to  mptotex
 for  miktex  set  MpVirginFlag      to  --initialize
 for  miktex  set  MpPassString      to  --alias=mpost
-for  miktex  set  MpBatchFlag       to  --interaction=batchmode 
+for  miktex  set  MpBatchFlag       to  --interaction=batchmode
 for  miktex  set  MpNonStopFlag     to  --interaction=nonstopmode
 
 for  miktex  set  TeXFormatFlag     to  --undump=
 for  miktex  set  MpFormatFlag      to  --undump=
 
-% These are the settings used on some machines at PRAGMA ADE that 
-% don't use the texmf tree. They can serve as an example for local 
-% settings. Local settings should either be added to the previous 
-% one, or go without the 'for' directives. Consider these 
-% settings as an example. 
+% These are the settings used on some machines at PRAGMA ADE that
+% don't use the texmf tree. They can serve as an example for local
+% settings. Local settings should either be added to the previous
+% one, or go without the 'for' directives. Consider these
+% settings as an example.
 
 for  private  set  UsedInterfaces  to  en nl
 for  private  set  UserInterface   to  nl
 for  private  set  ConTeXtPath     to  t:/sources/
-for  private  set  SetupPath       to  t:/perl/ 
+for  private  set  SetupPath       to  t:/perl/
 for  private  set  TeXScriptsPath  to  t:/perl/
 
-% == read this too == 
+% == read this too ==
 %
-% If this file is called 'texexec.rme', copy it to 'texexec.ini', 
+% If this file is called 'texexec.rme', copy it to 'texexec.ini',
 % check the settings above, change them according to your TeX
-% distribution, and say: 
+% distribution, and say:
 %
 %   texexec  --verbose
-% 
-% When set up properly, you should see your local settings fly by. 
-% When these settings are ok, the next call should work: 
+%
+% When set up properly, you should see your local settings fly by.
+% When these settings are ok, the next call should work:
 %
 %   texexec  --make
 %
@@ -145,11 +149,11 @@ for  private  set  TeXScriptsPath  to  t:/perl/
 %   texexec  filename
 %
 % See 'mtexexec.pdf' for more information on the flags you can use with
-% 'texexec'. Also make sure you have the 'texutil' script installed in 
-% the same path as 'texexec'. 
+% 'texexec'. Also make sure you have the 'texutil' script installed in
+% the same path as 'texexec'.
 
-% Experimental 
+% Experimental
 %
 % set  TcXPath     to  d:/tex/texmf/web2c
-% set  FmtLanguage to  pl 
-% set  FmtBodyFont to  plr 
+% set  FmtLanguage to  pl
+% set  FmtBodyFont to  plr

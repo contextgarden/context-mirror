@@ -8,8 +8,8 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
-%C details. 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
 
 \writestatus{loading}{Germanic Languages}
 
@@ -17,11 +17,11 @@
 %D many of the first translations were done by Tobias. Later
 %D on, corrections were made by users. If you have suggestions,
 %D or feel that your name missing here, don't hesitate to send
-%D us an email. 
+%D us an email.
 %D
 %D \starttabulate[|lB|l|]
 %D \NC Norwegian \NC Hans Fredrik Nordhaug \NC \NR
-%D \NC Danish    \NC Arne Jorgensen        \NC \NR % check the o 
+%D \NC Danish    \NC Arne Jorgensen        \NC \NR % check the o
 %D \NC Afrikaans \NC                       \NC \NR
 %D \stoptabulate
 
@@ -129,16 +129,16 @@
 
 %D Hey look, some experiment:
 
-\installlanguage % eight bit dutch 
+\installlanguage % eight bit dutch
   [nlx]
   [\c!spatiering=\v!opelkaar,
    \c!default=\s!nl,
    \c!status=\v!stop]
 
-\installlanguage % old german 
+\installlanguage % old german
   [deo]
   [\c!spatiering=\v!opelkaar,
-   \c!default=\s!de, 
+   \c!default=\s!de,
    \c!status=\v!stop]
 
 %D And some alternative (but very real) english patterns:
@@ -155,7 +155,7 @@
 
 %D For compatibility reasons we also define:
 
-\installlanguage [du]          [\s!de] % old times context 
+\installlanguage [du]          [\s!de] % old times context
 %installlanguage [sp]          [\s!es] % old times context /lang-ita
 
 \installlanguage [usenglish]   [\s!us]
@@ -167,14 +167,14 @@
 \installlanguage [swedish]     [\s!sv]
 \installlanguage [afrikaans]   [\s!af]
 \installlanguage [norwegian]   [\s!no]
-\installlanguage [norsk]       [\s!no] % bonus switch 
+\installlanguage [norsk]       [\s!no] % bonus switch
 
 % GERMAN
 %
 % %D The next section is dedicated to Tobias Burnus.
-% 
+%
 % \startlanguagespecifics[\s!de]
-% 
+%
 %   \installcompoundcharacter "a {\moveaccent{-.1ex}\"a\midworddiscretionary}
 %   \installcompoundcharacter "e {\moveaccent{-.1ex}\"e\midworddiscretionary}
 %   \installcompoundcharacter "i {\moveaccent{-.1ex}\"\i\midworddiscretionary}
@@ -182,7 +182,7 @@
 %   \installcompoundcharacter "u {\moveaccent{-.1ex}\"u\midworddiscretionary}
 %   \installcompoundcharacter "s {\SS}
 %   \installcompoundcharacter "z {\SS}
-% 
+%
 %   \installcompoundcharacter "A {\smashaccent\"A}
 %   \installcompoundcharacter "E {\smashaccent\"E}
 %   \installcompoundcharacter "I {\smashaccent\"I}
@@ -190,11 +190,11 @@
 %   \installcompoundcharacter "U {\smashaccent\"U}
 %   \installcompoundcharacter "Z {SZ}
 %   \installcompoundcharacter "S {SS}
-% 
+%
 % \stoplanguagespecifics
-% 
+%
 % \startlanguagespecifics[\s!de]
-% 
+%
 %   \installcompoundcharacter "ck {\discretionary {k-}{k}{ck}}
 %   \installcompoundcharacter "ff {\discretionary{ff-}{f}{ff}}
 %   \installcompoundcharacter "ll {\discretionary{ll-}{l}{ll}}
@@ -203,7 +203,7 @@
 %   \installcompoundcharacter "pp {\discretionary{pp-}{p}{pp}}
 %   \installcompoundcharacter "rr {\discretionary{rr-}{r}{rr}}
 %   \installcompoundcharacter "tt {\discretionary{tt-}{t}{tt}}
-% 
+%
 %   \installcompoundcharacter "CK {\discretionary {K-}{K}{CK}}
 %   \installcompoundcharacter "FF {\discretionary{FF-}{F}{FF}}
 %   \installcompoundcharacter "LL {\discretionary{LL-}{L}{LL}}
@@ -212,15 +212,15 @@
 %   \installcompoundcharacter "PP {\discretionary{PP-}{P}{PP}}
 %   \installcompoundcharacter "RR {\discretionary{RR-}{R}{RR}}
 %   \installcompoundcharacter "TT {\discretionary{TT-}{T}{TT}}
-% 
+%
 % \stoplanguagespecifics
-% 
+%
 % \startlanguagespecifics[\s!de]
-% 
+%
 %   \installcompoundcharacter "` {\handlequotation\c!leftquotation}
 %   \installcompoundcharacter "' {\handlequotation\c!rightquotation}
 %   \installcompoundcharacter ". {\kern.1em\ignorespaces}
-% 
+%
 %   \def\setupDElanguage%
 %     {\setuplanguage
 %        [\s!de]
@@ -228,23 +228,23 @@
 %         \c!rightsentence=\rightguillemot,
 %         \c!leftsubsentence=\leftsubguillemot,
 %         \c!rightsubsentence=\rightsubguillemot]}
-%  
+%
 %   \installcompoundcharacter "<   {{\setupDElanguage|<|}}
 %   \installcompoundcharacter ">   {{\setupDElanguage|>|}}
-% 
+%
 % \stoplanguagespecifics
-% 
+%
 % %D An experimental hack:
-% 
+%
 % \startencoding[pdfdoc]
-%   \startlanguagespecifics[\s!de]% hm, a % is needed  
+%   \startlanguagespecifics[\s!de]% hm, a % is needed
 %     \defineactivecharacter " {\"} % no {\simplifiedcompoundcharacter"}
 %   \stoplanguagespecifics
 % \stopencoding
-% 
+%
 % \startencoding[ec]
 %   \startlanguagespecifics[\s!de]%
-%     \installcompoundcharacter "a {\"a} 
+%     \installcompoundcharacter "a {\"a}
 %     \installcompoundcharacter "e {\"e}
 %     \installcompoundcharacter "i {\"\i}
 %     \installcompoundcharacter "o {\"o}
@@ -256,10 +256,10 @@
 %     \installcompoundcharacter "U {\"U}
 %   \stoplanguagespecifics
 % \stopencoding
-% 
+%
 % \startencoding[texnansi]
 %   \startlanguagespecifics[\s!de]%
-%     \installcompoundcharacter "a {\"a} 
+%     \installcompoundcharacter "a {\"a}
 %     \installcompoundcharacter "e {\"e}
 %     \installcompoundcharacter "i {\"\i}
 %     \installcompoundcharacter "o {\"o}
@@ -271,19 +271,19 @@
 %     \installcompoundcharacter "U {\"U}
 %   \stoplanguagespecifics
 % \stopencoding
-% 
-% %D This hack should be perfected.  
+%
+% %D This hack should be perfected.
 
 %% NORWEGIAN
 %
-%  These three letters (in this order) are the 
+%  These three letters (in this order) are the
 %  last in the norwegian alphabet (and hence should
-%  come after z in the latin alphabet). 
+%  come after z in the latin alphabet).
 %  I'm not sure about the syntax for
 %  \definesortkey so I left some of it open ...
 %
-% \startlanguagespecifics[\s!no] 
-% 
+% \startlanguagespecifics[\s!no]
+%
 %   \definesortkey {\ae}{z}{b}{\ae}
 %   \definesortkey {\AE}{z}{b}{\AE}
 %   \definesortkey {\o}{z} {c}{\o}
@@ -469,7 +469,7 @@
 \setuplabeltext [\s!en] [\v!regel=line ]
 \setuplabeltext [\s!nl] [\v!regel=regel ]
 \setuplabeltext [\s!de] [\v!regel=Zeile ]
-\setuplabeltext [\s!da] [\v!regel=linie ] % or linje 
+\setuplabeltext [\s!da] [\v!regel=linie ] % or linje
 \setuplabeltext [\s!sv] [\v!regel=rad ]
 \setuplabeltext [\s!af] [\v!regel=re\ediaeresis l ]
 \setuplabeltext [\s!no] [\v!regel=linje ]
@@ -477,7 +477,7 @@
 \setuplabeltext [\s!en] [\v!regels=lines ]
 \setuplabeltext [\s!nl] [\v!regels=regels ]
 \setuplabeltext [\s!de] [\v!regels=Zeilen ]
-\setuplabeltext [\s!da] [\v!regels=linier ] % or linjer 
+\setuplabeltext [\s!da] [\v!regels=linier ] % or linjer
 \setuplabeltext [\s!sv] [\v!regels=rader ]
 \setuplabeltext [\s!af] [\v!regels=re\ediaeresis ls ]
 \setuplabeltext [\s!no] [\v!regels=linjer ]
@@ -667,9 +667,9 @@
 \setuplabeltext [\s!no] [\v!hieronder=se forneden]
 \setuplabeltext [\s!no]       [\v!zie=se ]
 
-%D ... and to be completed! 
+%D ... and to be completed!
 
-%D Next we implement couple of ordinal mumber converters: 
+%D Next we implement couple of ordinal mumber converters:
 
 \def\enordinaldaynumber#1%
   {#1\ifnum\lasttwodigits{#1}=11
@@ -697,6 +697,4 @@
 %D \ShowAllLanguageValues [\s!af] [afrikaans] afrikaanse gasvryheid
 %D \ShowAllLanguageValues [\s!no] [norwegian] noorse ...
 
-\protect
-
-\endinput
+\protect \endinput

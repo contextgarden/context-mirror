@@ -2,14 +2,14 @@
 %D   [       file=supp-num,
 %D        version=1998.05.15,
 %D          title=\CONTEXT\ Support Macros,
-%D       subtitle=Number (Digit) Handling, 
+%D       subtitle=Number (Digit) Handling,
 %D         author=Hans Hagen,
 %D           date=\currentdate,
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
-%C details. 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
 
 \writestatus{loading}{Context Support Macros / Number (Digit) Handling}
 
@@ -22,63 +22,63 @@
 %D normalizes number patterns depending on the language set.
 %D
 %D \starttypen
-%D This will never be a \digits{1.000.000} seller. 
+%D This will never be a \digits{1.000.000} seller.
 %D \stoptypen
 %D
 %D or
 %D
 %D \starttypen
-%D I will never grow longer than \digits 1.86 \Meter. 
+%D I will never grow longer than \digits 1.86 \Meter.
 %D \stoptypen
 %D
 %D The different modes are shown in:
 %D
 %D \startbuffer
-%D \setdigitmode 1 \digits 12.345,90 \digits 12.345.000 \digits 1,23 
-%D \setdigitmode 2 \digits 12.345,90 \digits 12.345.000 \digits 1,23 
-%D \setdigitmode 3 \digits 12.345,90 \digits 12.345.000 \digits 1,23 
-%D \setdigitmode 4 \digits 12.345,90 \digits 12.345.000 \digits 1,23 
-%D \setdigitmode 5 \digits 12.345,90 \digits 12.345.000 \digits 1,23 
-%D \setdigitmode 6 \digits 12.345,90 \digits 12.345.000 \digits 1,23 
+%D \setdigitmode 1 \digits 12.345,90 \digits 12.345.000 \digits 1,23
+%D \setdigitmode 2 \digits 12.345,90 \digits 12.345.000 \digits 1,23
+%D \setdigitmode 3 \digits 12.345,90 \digits 12.345.000 \digits 1,23
+%D \setdigitmode 4 \digits 12.345,90 \digits 12.345.000 \digits 1,23
+%D \setdigitmode 5 \digits 12.345,90 \digits 12.345.000 \digits 1,23
+%D \setdigitmode 6 \digits 12.345,90 \digits 12.345.000 \digits 1,23
 %D \stopbuffer
 %D
 %D \typebuffer
 %D
-%D This is typset as: 
+%D This is typset as:
 %D
 %D \startregels
 %D \haalbuffer
 %D \stopregels
 %D
-%D The sign can be typeset as is or within the space of a 
-%D digit. 
+%D The sign can be typeset as is or within the space of a
+%D digit.
 %D
 %D \startbuffer
-%D \setdigitsign 0 \digits +12.345,90 
-%D \setdigitmode 1 \digits +12.345,90  
-%D \setdigitmode 2 \digits +12.345,90  
-%D \setdigitmode 3 \digits +12.345,90  
+%D \setdigitsign 0 \digits +12.345,90
+%D \setdigitmode 1 \digits +12.345,90
+%D \setdigitmode 2 \digits +12.345,90
+%D \setdigitmode 3 \digits +12.345,90
 %D \stopbuffer
 %D
 %D \typebuffer
 %D
-%D This is typset as: 
+%D This is typset as:
 %D
 %D \startregels
 %D \haalbuffer
 %D \stopregels
 
 \chardef\digitoutputmode=1 % 0..6
-\chardef\digitsignmode  =0 % 0..3 
+\chardef\digitsignmode  =0 % 0..3
 
 \def\setdigitmode{\chardef\digitoutputmode}
 \def\setdigitsign{\chardef\digitsignmode}
 
 %D The digit modes are:
-%D 
+%D
 %D \startopsomming[opelkaar]
 %D \som periods      \& comma
-%D \som commas       \& period 
+%D \som commas       \& period
 %D \som thinmuskips  \& comma
 %D \som thinmuskips  \& period
 %D \som thickmuskips \& comma
@@ -86,12 +86,12 @@
 %D \stopopsomming
 
 \let\collecteddigits \empty \chardef\digitinputmode =1
-\let\saveddigits     \empty \chardef\skipdigit      =0 
+\let\saveddigits     \empty \chardef\skipdigit      =0
 \let\savedpowerdigits\empty \chardef\powerdigits    =0
 
-%D The first stage of the \type {\digit} macro takes care of 
-%D the grouped call, the other branch handles the fuzzy 
-%D delimited calls. 
+%D The first stage of the \type {\digit} macro takes care of
+%D the grouped call, the other branch handles the fuzzy
+%D delimited calls.
 
 % \unexpanded\def\digits
 %   {\bgroup\let~@\doifnextcharelse\bgroup\dodigits\grabdigit}
@@ -112,22 +112,22 @@
 \def\grabdigit
   {\futurelet\next\scandigit}
 
-%D Watch the test for \type {\nextobeyedline}, because the 
-%D endofline token can be \type {\def'd}, not \type {\let}'d, 
-%D we need to do an indirect test (see \type {verb-ini.tex}) 
-%D for details. 
-%D 
-%D \starttypen 
+%D Watch the test for \type {\nextobeyedline}, because the
+%D endofline token can be \type {\def'd}, not \type {\let}'d,
+%D we need to do an indirect test (see \type {verb-ini.tex})
+%D for details.
+%D
+%D \starttypen
 %D \def           ^^M{\obeyedline}
 %D \def\nextbeyedline{\obeyedline}
-%D \stoptypen 
- 
-\ifx\normalmathshift\undefined \let\normalmathshift=$ \fi 
+%D \stoptypen
+
+\ifx\normalmathshift\undefined \let\normalmathshift=$ \fi
 
 \def\scandigit
   {\ifx\next\blankspace
      \let\next\handledigits
-   \else\ifx\next\nextobeyedline % the indirect one 
+   \else\ifx\next\nextobeyedline % the indirect one
      \let\next\handledigits
    \else\ifx\next\bgroup
      \let\next\handledigits
@@ -142,7 +142,7 @@
 
 %D We store the power||of||ten (to be signaled by \type {^},
 %D \type {e} or~\type {E}) in a seperate macro so that we can
-%D typeset it in superscript. The space placeholders are 
+%D typeset it in superscript. The space placeholders are
 %D replaced by a \type {@}.
 
 \def\savedigit#1#2%
@@ -179,7 +179,7 @@
 \let\handlemathdigits\firstofoneargument
 \let\handletextdigits\mathematics
 
-\def\handledigits  
+\def\handledigits
   {%\ifcase\powerdigits
    %  \edef\collecteddigits{\collecteddigits\saveddigits}%
    %\else
@@ -192,8 +192,8 @@
    \fi
    \egroup}
 
-%D Although we could do with one pass, a second pass for 
-%D handling the stored sequence is more readable. 
+%D Although we could do with one pass, a second pass for
+%D handling the stored sequence is more readable.
 
 \def\dohandledigits
   {\mathcode`\,="013B \mathcode`\.="013A % pretty hard coded
@@ -218,9 +218,9 @@
    \egroup}
 
 
-%D The signs can be made smaller and sqeezed into the width 
+%D The signs can be made smaller and sqeezed into the width
 %D of a digit. Watch the \type {\fontdimen22} trickery (this
-%D font related register stored the math axis). 
+%D font related register stored the math axis).
 
 % \def\scandigits#1%
 %   {\if#1.\doscandigit1\chardef\skipdigit0\else
@@ -243,10 +243,10 @@
 % \def\digitnop
 %   {\hphantom{0}\chardef\skipdigit1}
 
-% 0,= 
-% 0,==  second = results in delta(00,=) 
-% 0,-   is invalid, should be = but we try to catch this error  
-% 0,--  is invalid, but catched as == 
+% 0,=
+% 0,==  second = results in delta(00,=)
+% 0,-   is invalid, should be = but we try to catch this error
+% 0,--  is invalid, but catched as ==
 
 \def\digitzeroamount
   {\digitsgn\zeroamount
@@ -262,7 +262,7 @@
    \if#1@\digitnop \else
    \if#1_\digitnop \else
    \if#1/\digitsgn{\hphantom{+}}\chardef\skipdigit0\else
-   \if#1-\ifcase\digitsepbox\digitsgn-\else
+   \if#1-\ifcase\skipdigit\digitsgn-\else
            \box\digitsepbox\digitzeroamount \fi\chardef\skipdigit0\else
    \if#1+\digitsgn+\chardef\skipdigit0\else
    \if#1=\box\digitsepbox\digitzeroamount \chardef\skipdigit0\else
@@ -282,19 +282,19 @@
    \fi
    \chardef\skipdigit0\relax}
 
-% strange, does not work 
+% strange, does not work
 %
 % \def\digitnop
 %   {\hphantom{\box\digitsepbox}%
 %    \hphantom{0}\chardef\skipdigit1\relax}
 %
-% while this works 
+% while this works
 
 \def\digitnop
   {\hbox{\hphantom{\box\digitsepbox}}%
    \hphantom{0}\chardef\skipdigit1\relax}
 
-% but this doesn't 
+% but this doesn't
 %
 % \def\digitnop
 %   {\hphantom{\box\digitsepbox0}%
@@ -315,30 +315,30 @@
           \digitsgn\scriptscriptfont\scriptscriptstyle\fi}%
    \fi}
 
-\ifx\undefined\zeroamount \def\zeroamount{-} \fi 
-\ifx\undefined\positive   \def\positive  {+} \fi 
-\ifx\undefined\negative   \def\negative  {-} \fi 
+\ifx\undefined\zeroamount \def\zeroamount{-} \fi
+\ifx\undefined\positive   \def\positive  {+} \fi
+\ifx\undefined\negative   \def\negative  {-} \fi
 
 %D The digit parser handles a bunch of special characters as
 %D well as different formats. We strongly suggest you to use
-%D the grouped call. 
-%D 
+%D the grouped call.
+%D
 %D \starttabulatie[|l|l|l|]
-%D \NC \type{.} \NC , . \NC comma or period \NC \NR 
-%D \NC \type{,} \NC , . \NC comma or period \NC \NR 
-%D \NC \type{@} \NC \NC invisible space \NC \NR 
-%D \NC \type{_} \NC \NC invisible space \NC \NR 
-%D \NC \type{/} \NC \NC invisible sign \NC \NR 
-%D \NC \type{-} \NC $-$ \NC minus sign \NC \NR 
-%D \NC \type{+} \NC $+$ \NC plus sign \NC \NR 
-%D \NC \type{s} \NC \NC invisible high sign \NC \NR 
-%D \NC \type{p} \NC $\positive$ \NC high plus sign \NC \NR 
-%D \NC \type{m} \NC $\negative$ \NC high minus sign \NC \NR 
-%D \NC \type{n} \NC $\negative$ \NC high minus (negative) sign \NC \NR 
-%D \NC \type{=} \NC $\zeroamount$ \NC zero padding \NC \NR 
+%D \NC \type{.} \NC , . \NC comma or period \NC \NR
+%D \NC \type{,} \NC , . \NC comma or period \NC \NR
+%D \NC \type{@} \NC \NC invisible space \NC \NR
+%D \NC \type{_} \NC \NC invisible space \NC \NR
+%D \NC \type{/} \NC \NC invisible sign \NC \NR
+%D \NC \type{-} \NC $-$ \NC minus sign \NC \NR
+%D \NC \type{+} \NC $+$ \NC plus sign \NC \NR
+%D \NC \type{s} \NC \NC invisible high sign \NC \NR
+%D \NC \type{p} \NC $\positive$ \NC high plus sign \NC \NR
+%D \NC \type{m} \NC $\negative$ \NC high minus sign \NC \NR
+%D \NC \type{n} \NC $\negative$ \NC high minus (negative) sign \NC \NR
+%D \NC \type{=} \NC $\zeroamount$ \NC zero padding \NC \NR
 %D \stoptabulatie
 %D
-%D These triggers are used in the following examples. 
+%D These triggers are used in the following examples.
 %D
 %D \startbuffer
 %D \digits 12
@@ -365,21 +365,21 @@
 %D \digits s123.222,00e-12
 %D \digits p123.222,00e-12
 %D \stopbuffer
-%D 
+%D
 %D \typebuffer
-%D 
+%D
 %D \startregels
 %D \haalbuffer
 %D \stopregels
 
-%D \macros 
+%D \macros
 %D   {Digits}
 %D
 %D We also permit:
 
 \let\Digits=\digits
 
-%D These macros are complicated by the fact that we also 
+%D These macros are complicated by the fact that we also
 %D have to support cases like:
 %D
 %D \starttypen
@@ -391,9 +391,9 @@
 %D \stoptypen
 %D
 %D The latter case shows us that trailing non digits are to
-%D be passed untreated. 
+%D be passed untreated.
 %D
-%D Another interesting case is: 
+%D Another interesting case is:
 %D
 %D \starttypen
 %D \digits 123.222,00^10
@@ -416,7 +416,7 @@
 
 \def\digittemplate #1 %
   {\chardef\digitinputmode\zerocount
-   \handletokens#1\with\scandigittemplate}  
+   \handletokens#1\with\scandigittemplate}
 
 \def\scandigittemplate#1%
   {\if     #1.\ifcase\digitinputmode\chardef\digitinputmode1 \fi% period

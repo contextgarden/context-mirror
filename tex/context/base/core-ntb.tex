@@ -256,7 +256,18 @@
    \executeifdefined{\@@tblprefix\c!y#1}\donothing
    \executeifdefined{\@@tblprefix\c!x#2}\donothing
    \executeifdefined{\@@tblprefix\c!x#2\c!y#1}\donothing
+   \global\letcscsname\@@tblsplitafter\csname\@@tbl\@@tbl\c!na\endcsname
    \relax}
+
+\globallet\@@tblsplitafter\relax
+
+% split + page:
+%
+% \bTABLE[split=yes]
+% \bTR \bTD left \eTD\bTD right \eTD\eTR
+% \bTR[after=\pagina] \bTD left \eTD\bTD right \eTD\eTR
+% \bTR \bTD left \eTD\bTD right \eTD\eTR
+% \eTABLE
 
 % \long\def\parseTR[#1][#2]#3\eTR% [#2] is dummy that kills spaces
 %   {\def\currentcol{0}\increment\maximumrow#3}
@@ -502,7 +513,10 @@
    \noalign
      {\nointerlineskip
       \allowbreak
-      \bgroup
+      \bgroup % protect local vars
+        \@@tblsplitafter
+      \egroup
+      \bgroup % protect local vars
         \increment\rowTBL\relax
         \ifnum\rowTBL>\noftblheadlines\relax
           \ifnum\rowTBL<\maximumrow\relax
@@ -795,7 +809,7 @@
            \let\xxrowTBL\xrowTBL
            % calculate cummulative height
            \dimen4=\dimen2
-           \dorecurse{\!!countb}
+           \dorecurse\!!countb
              {\ifnum\xxrowTBL=\xrowTBL\else
                 \advance\dimen4 \gettblhei\xxrowTBL
               \fi
@@ -806,7 +820,7 @@
              \divide\dimen0 \!!countb
              \let\xxrowTBL\xrowTBL
              \settblhei\xrowTBL{\the\dimen2}%
-             \dorecurse{\!!countb}
+             \dorecurse\!!countb
                {\dorecurse\maximumcol
                   {\ifnum\recurselevel=\xcolTBL\else
                      \scratchdimen\gettblht\xxrowTBL\recurselevel

@@ -16,34 +16,34 @@
 
 \unprotect
 
-% \def\fontrange#1%  
+% \def\fontrange#1%
 %   {\dofontrange{#1 =\bodyfontsize}}
-% 
-% \def\dofontrange#1%  
+%
+% \def\dofontrange#1%
 %   {\dodofontrange#1 \relax}% \fontstringA
-% 
-% \def\dodofontrange#1 #2 %  
+%
+% \def\dodofontrange#1 #2 %
 %   {\ifdim\bodyfontsize#2%
 %      #1\expandafter\gobbleuntilrelax
 %    \else
 %      \expandafter\dodofontrange
 %    \fi}
-% 
+%
 % \definefont
 %   [crap]
 %   [\fontrange
-%      {Regular        <10pt 
-%       RegularBold    <12pt 
-%       RegularSlanted <15pt 
+%      {Regular        <10pt
+%       RegularBold    <12pt
+%       RegularSlanted <15pt
 %       Regular} sa 1]
 %
 % may be better:
-% 
+%
 % \definefontrange
 %   [crap]
-%   [Regular        <10pt 
-%    RegularBold    <12pt 
-%    RegularSlanted <15pt] 
+%   [Regular        <10pt
+%    RegularBold    <12pt
+%    RegularSlanted <15pt]
 %   [Regular sa 1]
 %
 %
@@ -475,17 +475,17 @@
 %D \kap{THIS}: \ruledhbox{$\rm \scriptstyle scriptstyle: THIS$}
 %D or \ruledhbox{\kap{x style: THIS}} makes a big difference.
 
-%D The \type{x..d} sizes should be used grouped. If you 
-%D don't group them, i.e. call them in a row, \CONTEXT\ will 
-%D not be able to sort out your intention (\type {x} inside 
-%D \type {d} inside \type {x}. etc.). The following table 
-%D demonstrates this: 
-%D 
+%D The \type{x..d} sizes should be used grouped. If you
+%D don't group them, i.e. call them in a row, \CONTEXT\ will
+%D not be able to sort out your intention (\type {x} inside
+%D \type {d} inside \type {x}. etc.). The following table
+%D demonstrates this:
+%D
 %D \def\FontState{\setstrut\ruledhbox{\strut Hello}}
-%D 
+%D
 %D \starttabulatie[|||||]
 %D \HL
-%D \NC \rlap{\quad\bf grouped} \NC \NC \type {\tx} \NC \type {\txx} \NC \NR 
+%D \NC \rlap{\quad\bf grouped} \NC \NC \type {\tx} \NC \type {\txx} \NC \NR
 %D \HL
 %D \NC \type{\tfx}  \NC \tfx  \FontState \NC \tfx \tx \FontState \NC \tfx \txx \FontState  \NC \NR
 %D \NC \type{\tfxx} \NC \tfxx \FontState \NC \tfxx\tx \FontState \NC \tfxx\txx \FontState  \NC \NR
@@ -497,61 +497,61 @@
 %D \NC \type{\tfx}  \NC \tfx  \FontState \NC \tfx \tx \FontState \NC \tfx \txx \FontState  \NC \NR
 %D \NC \type{\tfxx} \NC \tfxx \FontState \NC \tfxx\tx \FontState \NC \tfxx\txx \FontState  \NC \NR
 %D \HL
-%D \stoptabulatie 
-%D 
+%D \stoptabulatie
+%D
 %D \blanko
-%D 
+%D
 %D \starttabulatie[|||||]
 %D \HL
-%D \NC \rlap{\quad\bf stacked} \NC \NC \type {\tx} \NC \type {\txx} \NC \NR 
+%D \NC \rlap{\quad\bf stacked} \NC \NC \type {\tx} \NC \type {\txx} \NC \NR
 %D \HL
-%D \NC \type{\tfx}  
-%D \NC \tfx                                   \FontState 
-%D \NC \tfx                              \tx  \FontState  
-%D \NC \tfx                              \txx \FontState  
-%D \NC \NR 
-%D \NC \type{\tfxx}  
-%D \NC \tfx\tfxx                              \FontState 
-%D \NC \tfx\tfxx                         \tx  \FontState   
-%D \NC \tfx\tfxx                         \txx \FontState  
-%D \NC \NR 
-%D \NC \type{\tf}     
-%D \NC \tfx\tfxx\tf                           \FontState 
-%D \NC \tfx\tfxx\tf                      \tx  \FontState   
-%D \NC \tfx\tfxx\tf                      \txx \FontState  
-%D \NC \NR 
-%D \NC \type{\tfa}    
-%D \NC \tfx\tfxx\tf\tfa                       \FontState 
-%D \NC \tfx\tfxx\tf\tfa                  \tx  \FontState 
-%D \NC \tfx\tfxx\tf\tfa                  \txx \FontState 
-%D \NC \NR 
-%D \NC \type{\tfb}    
+%D \NC \type{\tfx}
+%D \NC \tfx                                   \FontState
+%D \NC \tfx                              \tx  \FontState
+%D \NC \tfx                              \txx \FontState
+%D \NC \NR
+%D \NC \type{\tfxx}
+%D \NC \tfx\tfxx                              \FontState
+%D \NC \tfx\tfxx                         \tx  \FontState
+%D \NC \tfx\tfxx                         \txx \FontState
+%D \NC \NR
+%D \NC \type{\tf}
+%D \NC \tfx\tfxx\tf                           \FontState
+%D \NC \tfx\tfxx\tf                      \tx  \FontState
+%D \NC \tfx\tfxx\tf                      \txx \FontState
+%D \NC \NR
+%D \NC \type{\tfa}
+%D \NC \tfx\tfxx\tf\tfa                       \FontState
+%D \NC \tfx\tfxx\tf\tfa                  \tx  \FontState
+%D \NC \tfx\tfxx\tf\tfa                  \txx \FontState
+%D \NC \NR
+%D \NC \type{\tfb}
 %D \NC \tfx\tfxx\tf\tfa\tfb                   \FontState
-%D \NC \tfx\tfxx\tf\tfa\tfb              \tx  \FontState 
-%D \NC \tfx\tfxx\tf\tfa\tfb              \txx \FontState 
-%D \NC \NR 
-%D \NC \type{\tfc}    
-%D \NC \tfx\tfxx\tf\tfa\tfb\tfc               \FontState 
-%D \NC \tfx\tfxx\tf\tfa\tfb\tfc          \tx  \FontState 
-%D \NC \tfx\tfxx\tf\tfa\tfb\tfc          \txx \FontState 
-%D \NC \NR 
-%D \NC \type{\tfd}    
-%D \NC \tfx\tfxx\tf\tfa\tfb\tfd               \FontState 
-%D \NC \tfx\tfxx\tf\tfa\tfb\tfd          \tx  \FontState 
-%D \NC \tfx\tfxx\tf\tfa\tfb\tfd          \txx \FontState 
-%D \NC \NR 
-%D \NC \type{\tfx}    
+%D \NC \tfx\tfxx\tf\tfa\tfb              \tx  \FontState
+%D \NC \tfx\tfxx\tf\tfa\tfb              \txx \FontState
+%D \NC \NR
+%D \NC \type{\tfc}
+%D \NC \tfx\tfxx\tf\tfa\tfb\tfc               \FontState
+%D \NC \tfx\tfxx\tf\tfa\tfb\tfc          \tx  \FontState
+%D \NC \tfx\tfxx\tf\tfa\tfb\tfc          \txx \FontState
+%D \NC \NR
+%D \NC \type{\tfd}
+%D \NC \tfx\tfxx\tf\tfa\tfb\tfd               \FontState
+%D \NC \tfx\tfxx\tf\tfa\tfb\tfd          \tx  \FontState
+%D \NC \tfx\tfxx\tf\tfa\tfb\tfd          \txx \FontState
+%D \NC \NR
+%D \NC \type{\tfx}
 %D \NC \tfx\tfxx\tf\tfa\tfb\tfc\tfx           \FontState
-%D \NC \tfx\tfxx\tf\tfa\tfb\tfc\tfx      \tx  \FontState 
-%D \NC \tfx\tfxx\tf\tfa\tfb\tfc\tfx      \txx \FontState 
-%D \NC \NR 
-%D \NC \type{\tfxx}   
-%D \NC \tfx\tfxx\tf\tfa\tfb\tfc\tfx\tfxx      \FontState 
-%D \NC \tfx\tfxx\tf\tfa\tfb\tfc\tfx\tfxx \tx  \FontState 
-%D \NC \tfx\tfxx\tf\tfa\tfb\tfc\tfx\tfxx \txx \FontState 
-%D \NC \NR 
+%D \NC \tfx\tfxx\tf\tfa\tfb\tfc\tfx      \tx  \FontState
+%D \NC \tfx\tfxx\tf\tfa\tfb\tfc\tfx      \txx \FontState
+%D \NC \NR
+%D \NC \type{\tfxx}
+%D \NC \tfx\tfxx\tf\tfa\tfb\tfc\tfx\tfxx      \FontState
+%D \NC \tfx\tfxx\tf\tfa\tfb\tfc\tfx\tfxx \tx  \FontState
+%D \NC \tfx\tfxx\tf\tfa\tfb\tfc\tfx\tfxx \txx \FontState
+%D \NC \NR
 %D \HL
-%D \stoptabulatie 
+%D \stoptabulatie
 
 %D \macros
 %D   {mf}
@@ -707,7 +707,7 @@
 %D although for instance unboxing goes ok. Therefore we
 %D introduce:
 
-% better use \dowithnextboxcontent 
+% better use \dowithnextboxcontent
 
 \def\normalmbox
   {\normalhbox\bgroup\mf
@@ -1209,7 +1209,7 @@
 \def\saverelativefontsize#1#2% #1=rm|ss|.. #2=waarde
   {\setxvalue{\fontclass#1\s!rscale}{#2}}
 
-\beginTEX 
+\beginTEX
 
 \def\checkrelativefontsize#1%
   {\edef\relativefontsize
@@ -1240,14 +1240,14 @@
 \def\@fs@{@fs@}
 
 % \def\parsefontspec#1%
-%   {\xdef\somefontspec{#1\space\relax}% 
+%   {\xdef\somefontspec{#1\space\relax}%
 %    \@EA\doparsefontspec\somefontspec]% =>#1 \relax]
 %    \donoparsefontspec}
 %
 % but, better:
 
 \def\parsefontspec#1%
-  {\xdef\somefontspec{#1\space}% 
+  {\xdef\somefontspec{#1\space}%
    \@EA\doparsefontspec\somefontspec\relax]% =>#1 \relax]
    \donoparsefontspec}
 
@@ -1263,7 +1263,7 @@
    #2}
 
 \def\setnaturalfontspec#1]%
-  {\@fs@scaled\plusthousand\relax} 
+  {\@fs@scaled\plusthousand\relax}
 
 \def\setforcedfontspec#1 #2\relax]%
   {\csname\@fs@#1\endcsname#2\relax}
@@ -1299,7 +1299,7 @@
 \def\setsamofontspec#1\relax
   {\checkfontscale#1\end\scaledfont
    \scaledfont\localrelativefontsize\scaledfont
-   \ifautofontsize\scaledfont\currentfontbodyscale\scaledfont\fi 
+   \ifautofontsize\scaledfont\currentfontbodyscale\scaledfont\fi
    \xdef\somefontspec{ at \the\scaledfont}}
 
 \def\getfontparameters
@@ -1331,12 +1331,12 @@
 
 \newif\ifskipfontcharacteristics \skipfontcharacteristicstrue
 
-%D When fontclasses are used, we define the font global, 
-%D since namespaces are used. Otherwise we parse the specs 
+%D When fontclasses are used, we define the font global,
+%D since namespaces are used. Otherwise we parse the specs
 %D each time.
 
-% wrong: this way we cannot set encoding etc 
-% 
+% wrong: this way we cannot set encoding etc
+%
 % \def\donoparsefontspec#1%
 %   {\edef\fontfile{\truefontname\somefontname}%
 %    \ifx\fontfile\s!unknown \let\fontfile\defaultfontfile \fi
@@ -1350,7 +1350,7 @@
    \ifx\fontfile\s!unknown \let\fontfile\defaultfontfile \fi
    \edef\lastfontname{\fontfile\somefontspec}%
    \ifx\fontclass\empty
-     \expandafter\definefontlocal 
+     \expandafter\definefontlocal
    \else
      \expandafter\definefontglobal
    \fi} % #1 == \cs
@@ -1359,16 +1359,16 @@
   {\expandafter\font\csname#1\endcsname\lastfontname\relax}
 
 \def\definefontglobal#1% stores \somefontname=Mono and \fontfile=cmtt10
-  {\expandafter\xdef\csname#1\endcsname 
-     {\noexpand\csname#1:\endcsname 
+  {\expandafter\xdef\csname#1\endcsname
+     {\noexpand\csname#1:\endcsname
       \noexpand\reactivatefont{\somefontname}{\fontfile}}%
    \global\expandafter\font\csname#1:\endcsname\lastfontname}
 
 \def\reactivatefont#1%#2%
   {\def\somefontname{#1}\def\fontfile}%{#2}}
 
-% can be handy for tracing purposes 
-% 
+% can be handy for tracing purposes
+%
 % \def\reportfontdefinition
 %   {\bgroup
 %    \expanded{\infofont
@@ -1647,11 +1647,11 @@
 %D
 %D The implementation one looks familiar:
 
-% The simple implementation is: 
+% The simple implementation is:
 %
 % \def\definefont
 %   {\dodoubleargument\dodefinefont}
-% 
+%
 % \def\dodefinefont[#1][#2]%
 %   {\doifinstringelse{ }{#2}
 %      {\unexpanded\setvalue{#1}{\dododefinefont{#1}{#2}}}
@@ -1676,19 +1676,19 @@
 %     {\setupinterlinespace[#3]\setupspacing}
 %     {\doifassignmentelse{#3}
 %        {\setupinterlinespace[#3]\setupspacing}
-%        {\setups[#3]}}} % so, we can have setups associated to fonts ! 
+%        {\setups[#3]}}} % so, we can have setups associated to fonts !
 
 \def\redodefinefont#1#2#3%
   {\dododefinefont{#1}{#2}%
    \doifsetupselse{#3}
-     {\setups[#3]} % don't forget to document this ! 
+     {\setups[#3]} % don't forget to document this !
      {\setuplocalinterlinespace[#3]%
-      \setupspacing}} % needed ? 
+      \setupspacing}} % needed ?
 
 % \def\defineclassfont
 %   {\doquadrupleempty\dodefineclassfont}
-% 
-% \def\dodefineclassfont[#1][#2][#3][#4]%  #2 = class 
+%
+% \def\dodefineclassfont[#1][#2][#3][#4]%  #2 = class
 %   {\iffourthargument
 %      \definefont[#1][#2#3][#4]%
 %   %\else\ifthirdargument
@@ -1710,7 +1710,7 @@
 \def\dododefinefont#1#2%
   {\edef\lastfontidentifier{#1}%
    \let\localrelativefontsize\defaultrelativefontsize
-   \let\localabsolutefontsize\fontbody 
+   \let\localabsolutefontsize\fontbody
    \parsefontspec{#2}\rawfontidentifier
    \let\localrelativefontsize\defaultrelativefontsize % not needed
    \csname\rawfontidentifier\endcsname
@@ -1726,7 +1726,7 @@
      \def\localrelativefontsize{#1}%
      \def\localabsolutefontsize{#2}%
      \parsefontspec{#4}\newfontidentifier
-     \let\localrelativefontsize\defaultrelativefontsize % not needed 
+     \let\localrelativefontsize\defaultrelativefontsize % not needed
    \fi
    \csname\newfontidentifier\endcsname
    \autofontsizefalse
@@ -1746,7 +1746,7 @@
      \def\localrelativefontsize{#1}%
      \def\localabsolutefontsize{#2}%
      \parsefontspec{#4}\newfontidentifier
-     \let\localrelativefontsize\defaultrelativefontsize % not needed 
+     \let\localrelativefontsize\defaultrelativefontsize % not needed
    \fi
    \csname\newfontidentifier\endcsname
    \autofontsizefalse
@@ -2216,7 +2216,7 @@
 
 \def\xdodefinebodyfont[#1][#2][#3]% body|identifier style defs|identifier
   {%\writestatus{[#1]}{[#2][#3]}%
-   \checkrelativefontsize{#2}% rather new, inherit from other defs 
+   \checkrelativefontsize{#2}% rather new, inherit from other defs
    \ifundefined{#2}\expanded{\definefontstyle[#2][#2]}\fi % new
    \processcommalist[#1]{\dododefinebodyfont{#2}{#3}}%
    \let\relativefontsize\defaultrelativefontsize}
@@ -2446,7 +2446,7 @@
 %         \ifcase#2#3 \else.#2\ifcase#3 \else#3\fi\fi % not: \ifcase#2#3\else ...
 %       \fi
 %       pt}}
-% 
+%
 % \def\normalizebodyfontsize#1\to#2%
 %   {\scratchdimen#1\relax
 %    \@EA\@EA\@EA\donormalizedbodyfontsize
@@ -2467,7 +2467,7 @@
         \ifcase#2#3 \else.#2\ifcase#3 \else#3\fi\fi % not: \ifcase#2#3\else ...
       \fi
       \s!pt}}
- 
+
 \normalizebodyfontsize\bodyfontsize\to\normalizedglobalbodyfontsize
 \normalizebodyfontsize\bodyfontsize\to\normalizedlocalbodyfontsize
 \normalizebodyfontsize\bodyfontsize\to\normalizedbodyfontsize
@@ -2957,7 +2957,7 @@
      \let\tx\normaltx
      \let\txx\normaltxx
    \fi\fi}
- 
+
 \def\setcurrentfontxalternative#1%
   {\checknestedxfontsize
    \dosetcurrentfontxxxalternative{#1}1\c!x\scriptstyle
@@ -2967,7 +2967,7 @@
   {\checknestedxfontsize
    \dosetcurrentfontxxxalternative{#1}2\c!xx\scriptscriptstyle
    \let\tx\empty
-   \let\txx\empty}   
+   \let\txx\empty}
 
 % This alterative is not really needed, but for old time's sake
 % we keep it there. We can speed it up when needed.
@@ -3275,10 +3275,10 @@
 %D On behalf of {\frac Tobias Burnus}, we define some more of
 %D these. Later we will link these names to real file names.
 
-\definefont [frak] [Fraktur      sa *] 
-\definefont [goth] [Gothic       sa *] 
-\definefont [cal]  [Calligraphic sa *] 
-\definefont [bbd]  [Blackboard   sa *] 
+\definefont [frak] [Fraktur      sa *]
+\definefont [goth] [Gothic       sa *]
+\definefont [cal]  [Calligraphic sa *]
+\definefont [bbd]  [Blackboard   sa *]
 
 \definefontsynonym [Fraktur]      [Serif]
 \definefontsynonym [Gothic]       [Serif]
@@ -3288,15 +3288,15 @@
 %D \macros
 %D   {fraktur, gothic, calligraphic, blackboard}
 %D
-%D These macros assume that we use text fonts, and not math 
-%D families. 
- 
+%D These macros assume that we use text fonts, and not math
+%D families.
+
 % \def\fraktur     #1{\mathematics{\frak#1}}
 % \def\gothic      #1{\mathematics{\goth#1}}
 % \def\calligraphic#1{\mathematics{\cal #1}}
 % \def\blackboard  #1{\mathematics{\bbd #1}}
 
-\ifx\mathtext\undefined \let\mathtext\hbox \fi 
+\ifx\mathtext\undefined \let\mathtext\hbox \fi
 
 \def\fraktur     #1{\mathortext\mathtext\donothing{\frak#1}}
 \def\gothic      #1{\mathortext\mathtext\donothing{\goth#1}}
@@ -3778,7 +3778,7 @@
 %D \macros
 %D   {showkerning}
 %D
-%D A goody is: 
+%D A goody is:
 %D
 %D \showkerning{Can you guess what kerning is?}
 
@@ -3891,6 +3891,14 @@
 
 \endTEX
 
+%D The next macro can be used to make decisions based on the shape:
+
+\def\doifitalicelse#1#2%
+  {\ifx\fontalternative\c!sl#1\else
+   \ifx\fontalternative\c!it#1\else
+   \ifx\fontalternative\c!bs#1\else
+   \ifx\fontalternative\c!bi#1\else#2\fi\fi\fi\fi}
+
 %D For an example of usage of the following command,
 %D see \type {cont-log.tex}.
 %D
@@ -3902,17 +3910,24 @@
 %D Since we know what scaling it to be applied, we can
 %D implement a much faster alternative:
 
-\def\symbolicfont#1%
+\def\symbolicscaledfont#1#2%
   {\scaledfont\fontbody
-   \font\definedfont\truefontname{\glyphfontfile{#1}} at
+   \scaledfont#1\scaledfont
+   \font\definedfont\truefontname{\glyphfontfile{#2}} at
      \currentfontbodyscale\scaledfont
    \definedfont}
 
+\def\symbolicfont
+  {\symbolicscaledfont\plusone}
+
 \unexpanded\def\getglyph#1#2% slow, faster, much faster
-  %{{\definefont[\s!dummy][\glyphfontfile{#1} sa \currentfontscale]\dummy#2}}
-  %{{\definefont[\s!dummy][\glyphfontfile{#1} sa *]\dummy#2}}
-  %{{\symbolicfont{#1}#2}}
-   {{\symbolicfont{#1}\doifnumberelse{#2}\char\donothing#2}}
+ %{{\definefont[\s!dummy][\glyphfontfile{#1} sa \currentfontscale]\dummy#2}}
+ %{{\definefont[\s!dummy][\glyphfontfile{#1} sa *]\dummy#2}}
+ %{{\symbolicfont{#1}#2}}
+  {{\symbolicfont{#1}\doifnumberelse{#2}\char\donothing#2}}
+
+\unexpanded\def\getscaledglyph#1#2#3%
+  {{\symbolicscaledfont{#1}{#2}\doifnumberelse{#3}\char\donothing#3}}
 
 \unexpanded\def\getrawglyph#1#2% for simple symbols
   {{\scaledfont\fontbody

@@ -1,13 +1,9 @@
 eval '(exit $?0)' && eval 'exec perl -S $0 ${1+"$@"}' && eval 'exec perl -S $0 $argv:q'
         if 0;
 
-#D We started with a hack provided by Thomas Esser. This
-#D expression replaces the unix specific line \type
-#D {#!/usr/bin/perl}.
-
 #D \module
 #D   [       file=texutil.pl,
-#D        version=1999.03.14, % 1999.11.05
+#D        version=2003.09.16,
 #D          title=pre- and postprocessing utilities,
 #D       subtitle=\TEXUTIL,
 #D         author=Hans Hagen,
@@ -25,6 +21,10 @@ eval '(exit $?0)' && eval 'exec perl -S $0 ${1+"$@"}' && eval 'exec perl -S $0 $
 #  Thanks to Sebastian Rahtz     for the eps to PDF method
 #  Thanks to Fabrice   Popineau  for windows bin code
 
+#D We started with a hack provided by Thomas Esser. This
+#D expression replaces the unix specific line \type
+#D {#!/usr/bin/perl}.
+
 #  undocumented:
 #
 #  --analyze  file.pdf  : reports some statistics
@@ -40,7 +40,7 @@ eval '(exit $?0)' && eval 'exec perl -S $0 ${1+"$@"}' && eval 'exec perl -S $0 $
 #D binary version, like scanning illustrations other than \EPS.
 #D I would suggest to keep an eye on the version number:
 
-$Program = "TeXUtil 7.5 - ConTeXt / PRAGMA ADE 1992-2003" ;
+$Program = "TeXUtil 8.0 - ConTeXt / PRAGMA ADE 1992-2003" ;
 
 #D By the way, this is my first \PERL\ script, which means
 #D that it will be improved as soon as I find new and/or more
@@ -125,6 +125,7 @@ my $dosish = ($Config{'osname'} =~ /^(ms)?dos|^os\/2|^(ms|cyg)win/i) ;
    "purgeall"       => \$PurgeAllFiles,
    "analyze"        => \$AnalyzeFile,
    "filter"         => \$FilterPages,
+   "sciteapi"       => \$SciteApi,
    "help"           => \$ProcessHelp,
    "silent"         => \$ProcessSilent,
    "verbose"        => \$ProcessVerbose,
@@ -800,6 +801,7 @@ sub InitializeKeys
           { my $p = checked_path($_) . 'kpsewhich' ;
             if ((-e $p)||(-e $p . '.exe'))
               { $kpsewhich = $p ; last } } }
+    $kpsewhich = "\"$kpsewhich\"" if ($kpsewhich =~ m/^[^\"].* /) ;
     while (<TEX>)
       { chomp ;
         my $Filter ;
@@ -2690,12 +2692,12 @@ my @texonlysuffixes =
 my @texnonesuffixes =
   ("tuo","tub","top") ;
 
-if ($PurgeAllFiles) 
-  { push @forsuresuffixes, @texnonesuffixes  ; @texnonesuffixes = [] } 
+if ($PurgeAllFiles)
+  { push @forsuresuffixes, @texnonesuffixes  ; @texnonesuffixes = [] }
 
 sub PurgeFiles # no my in foreach
   { my $pattern = $ARGV[0] ; my $strippedname ;
-    my @files = () ; 
+    my @files = () ;
     if ($pattern eq '')
       { $pattern = "*.*" ;
         @files = glob $pattern }
@@ -2704,7 +2706,7 @@ sub PurgeFiles # no my in foreach
         @files = glob $pattern ;
         $pattern = $ARGV[0] . ".*" ;
         push(@files,glob $pattern) }
-    @files = sort @files ; 
+    @files = sort @files ;
     print "         purging files : $pattern\n\n" ;
     foreach $file (@dontaskprefixes)
       { if (-e $file)
@@ -2773,21 +2775,63 @@ sub AnalyzeFile
     print "                 links : $Link ($Named named / $Script scripts / $Cross files)\n" ;
     print "               widgets : $Widget\n" }
 
-sub FilterPages # temp feature / no reporting 
+sub FilterPages # temp feature / no reporting
   { my $filename = $ARGV[0] ;
-    return unless "$filename.pdf" || -f "$filename.pdf" ; 
-    $old = '' ; $num = 0 ; 
-    if (open(PDF,"<$filename.pdf") && open(TUO,">>$filename.tuo")) 
-      { binmode PDF ; 
-        while (<PDF>) 
-          { chomp ; 
-            if (($_ eq '/Type /Page') && ($old =~ /^(\d+)\s+0\s+obj/o)) 
-              { ++$n ; $p = $1 ; 
+    return unless -f "$filename.pdf" ;
+    $old = '' ; $num = 0 ;
+    if (open(PDF,"<$filename.pdf") && open(TUO,">>$filename.tuo"))
+      { binmode PDF ;
+        while (<PDF>)
+          { chomp ;
+            if (($_ eq '/Type /Page') && ($old =~ /^(\d+)\s+0\s+obj/o))
+              { ++$n ; $p = $1 ;
                 print TUO "\\objectreference{PDFP}{$n}{$p}{$n}\n" }
             else
-              { $old = $_ } } 
-       close(PDF) ; 
-       close(TUO) } }  
+              { $old = $_ } }
+       close(PDF) ;
+       close(TUO) } }
+
+sub GenerateSciteApi # ugly, not generic, but fast
+  { my $filename = $ARGV[0] ;
+    my $commands = 0 ;
+    my $environments = 0 ;
+    my %collection ;
+    return unless -f "$filename.xml" ;
+    print "        scite api file : $filename-scite.api\n" ;
+    print "      scite lexer file : $filename-scite.properties\n" ;
+    if (open(XML,"<$filename.xml"))
+      { while (<XML>)
+          { chomp ;
+            if (/\<cd\:command\s+name=\"(.*?)\"\s+type=\"environment\".*?\>/o)
+              { $environments++ ;
+                $collection{"start$1"} = '' ;
+                $collection{"stop$1"} = '' }
+            elsif (/\<cd\:command\s+name=\"(.*?)\".*?\>/o)
+              { $commands++ ;
+                $collection{"$1"} = '' } }
+       close(XML) ;
+       if (open(API,">$filename-scite.api"))
+         { foreach $name (keys %collection)
+             { print API "\\$name\n" }
+           print API "\n" ;
+           close(API) }
+       if (open(API,">$filename-scite.properties"))
+         { my $i = 0 ;
+           my $interface = 'en' ;
+           if ($filename =~ /cont\-(..)/o)
+             { $interface = $1 }
+           print API "keywordclass.macros.context.$interface=" ;
+           foreach $name (keys %collection)
+             { if ($i==0)
+                 { print API "\\\n    " ;
+                   $i = 5 }
+               else
+                 { $i-- }
+               print API "$name " }
+           print API "\n" ;
+           close(API) } }
+    print "              commands : $commands\n" ;
+    print "          environments : $environments\n" }
 
 #D We're done! All this actions and options are organized in
 #D one large conditional:
@@ -2807,6 +2851,7 @@ elsif  ($PurgeFiles       ) { PurgeFiles       }
 elsif  ($PurgeAllFiles    ) { PurgeFiles       }
 elsif  ($AnalyzeFile      ) { AnalyzeFile      }
 elsif  ($FilterPages      ) { FilterPages      }
+elsif  ($SciteApi         ) { GenerateSciteApi }
 elsif  ($ProcessHelp      ) { ShowHelpInfo     } # redundant
 else                        { ShowHelpInfo     }
 

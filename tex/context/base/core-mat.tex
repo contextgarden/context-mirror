@@ -8,8 +8,8 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
-%C details. 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
 
 % engels maken
 
@@ -24,11 +24,11 @@
      \expandafter\secondoftwoarguments
    \fi}
 
-% force text mode, will be overloaded later 
+% force text mode, will be overloaded later
 
-\ifx\text\undefined \let\text\hbox \fi 
+\ifx\text\undefined \let\text\hbox \fi
 
-% will move to page-ini 
+% will move to page-ini
 
 \newevery \everybeginofpar \EveryBeginOfPar
 \newevery \everyendofpar   \EveryEndOfPar
@@ -36,15 +36,34 @@
 \def\bpar{\the\everybeginofpar}
 \def\epar{\the\everyendofpar\endgraf}
 
-\newdimen\lastlinewidth 
+\newdimen\lastlinewidth
+
+% does not work at all
+%
+% \def\setlastlinewidth
+%   {\resetlastlinewidth
+%    \ifmmode\else\ifhmode\else\ifoptimizedisplayspacing
+%      \bgroup
+%      \forgetdisplayskips
+%      $$\global\lastlinewidth\predisplaysize$$
+%      \vskip-\baselineskip
+%      \egroup
+%    \fi\fi\fi}
+
+% test \par \dorecurse{10}{test } \moveformula \startformula test \stopformula test \endgraf
+% test \par \dorecurse{10}{test } \startformula test \stopformula test \endgraf
+% \dorecurse{30}{\bpar \dorecurse\recurselevel{test } \epar \startformula formula \stopformula}
 
 \def\setlastlinewidth
   {\resetlastlinewidth
-   \ifmmode\else\ifhmode\else\ifoptimizedisplayspacing
+   \ifoptimizedisplayspacing\ifmmode\else\ifhmode
      \bgroup
      \forgetdisplayskips
-     $$\global\lastlinewidth\predisplaysize$$
-     \vskip-\baselineskip
+     \everymath\emptytoks
+     \everydisplay\emptytoks
+     $$\strut\global\lastlinewidth\predisplaysize$$
+     \vskip-\lineheight
+     \vskip\zeropoint
      \egroup
    \fi\fi\fi}
 
@@ -106,7 +125,7 @@
 
 % so far for unused stuff
 
-\def\forgetdisplayskips % to do 
+\def\forgetdisplayskips % to do
   {\abovedisplayskip     \zeropoint
    \belowdisplayskip     \zeropoint
    \abovedisplayshortskip\zeropoint
@@ -144,7 +163,7 @@
        \edef\hetsubnummer{#4}%
      \fi
      \doifsomething{#3}{\rawreference\s!for{#3}{\hetnummer\hetsubnummer}}%
-     \rm % nodig ? 
+     \rm % nodig ?
      \@@fmnummercommando
        {\dostartattributes\??fm\c!nummerletter\c!nummerkleur
         \strut
@@ -211,7 +230,7 @@
    \c!afstand=1em]
 
 \def\currentformula          {}
-\def\predisplaysizethreshhold{3em}
+\def\predisplaysizethreshhold{2em} % was 3em
 
 \def\leftdisplayskip    {\leftskip}
 \def\rightdisplayskip   {\rightskip}
@@ -223,23 +242,27 @@
   {\doifnotvalue{\??fm\currentformula\c!voorwit}\v!geen
      {\blanko[\getvalue{\??fm\currentformula\c!voorwit}]}}
 
-\def\afterdisplayspace 
+\def\afterdisplayspace
   {\doifnotvalue{\??fm\currentformula\c!nawit}\v!geen
      {\blanko[\getvalue{\??fm\currentformula\c!nawit}]}}
 
 \def\setpredisplaysize#1%
   {\predisplaysize#1\relax
-   \ifdim\predisplaysize>\zeropoint
-     \advance\predisplaysize \predisplaysizethreshhold
-   \fi
-   \advance\predisplaysize \displayindent % needed ? 
-   \ifdim\predisplaysize>\hsize
-     \predisplaysize\hsize
+   \ifdim\predisplaysize<\maxdimen
+     \ifdim\predisplaysize>\zeropoint
+       \advance\predisplaysize \predisplaysizethreshhold
+     \fi
+     \advance\predisplaysize \displayindent % needed ?
+     \ifdim\predisplaysize>\hsize
+       \predisplaysize\hsize
+     \fi
+   \else
+     \predisplaysize\zeropoint
    \fi}
 
 \def\setdisplaydimensions
-  {\displayindent\leftdisplayskip 
-   \advance\displayindent\leftdisplaymargin 
+  {\displayindent\leftdisplayskip
+   \advance\displayindent\leftdisplaymargin
    \displaywidth\hsize
    \ifdim\hangindent>\zeropoint
      \advance\displayindent\hangindent
@@ -255,11 +278,11 @@
 \def\dostartformula#1%
   {\dodoubleempty\dodostartformula[#1]}
 
-\def\dodostartformula[#1][#2]% setting leftskip adaption is slow ! 
-  {\bgroup 
+\def\dodostartformula[#1][#2]% setting leftskip adaption is slow !
+  {\bgroup
    \switchtoformulabodyfont[#2]%
    \def\currentformula{#1}%
-   \doifvaluesomething{\??fm\currentformula\c!marge}% so we test first 
+   \doifvaluesomething{\??fm\currentformula\c!marge}% so we test first
      {\dosetleftskipadaption{\getvalue{\??fm\currentformula\c!marge}}%
       \edef\leftdisplaymargin{\the\leftskipadaption}}% overloaded
    \long\def\dostartformula##1{\bgroup\let\dostopformula\egroup}%
@@ -287,7 +310,7 @@
   {\begingroup
    \switchtoformulabodyfont[#1]%
    % not : \def\doformula[##1]##2{\mathematics{##2}}%
-   \mathematics{#2}%   
+   \mathematics{#2}%
    \endgroup}
 
 \let\doplaceformulanumber\empty
@@ -295,37 +318,38 @@
 \def\dostopformula
   {\doplaceformulanumber
    \getvalue{\e!stop\getvalue{\??fm\currentformula\c!variant}\v!formule}%
-    \resetlastlinewidth
-    \nonoindentation
-    \dochecknextindentation{\??fm\currentformula}%
-    \egroup}
+   \resetlastlinewidth
+   \nonoindentation
+   \dochecknextindentation{\??fm\currentformula}%
+   \egroup}
 
 \newif\ifinformula
 
 \def\startdisplaymath
   {\ifgridsnapping
-     \beforedisplayspace   
+     \beforedisplayspace
      \snapmathtogrid\vbox
-     \bgroup 
-     \informulatrue   
-    %\forgetall % breaks side floats 
+     \bgroup
+     \informulatrue
+    %\forgetall % breaks side floats
    \else
      \bgroup
-     \informulatrue   
-    %\forgetall % otherwise backgrounds fail 
-     \ifdim\lastskip<\!!zeropoint\else
+     \informulatrue
+    %\forgetall % otherwise backgrounds fail
+     \ifdim\lastskip<\zeropoint\else
        \par
        \ifvmode \ifdim\parskip>\zeropoint\relax
          \vskip-\parskip
        \fi \fi
      \fi
-     \beforedisplayspace   
+     \doif\displaygridcorrection{-\v!boven}{\kern-\strutht}% new, currently only option/default
+     \beforedisplayspace
      \par
      \ifvmode
        \verticalstrut
        \vskip-\struttotal
        \vskip-\baselineskip
-     \fi 
+     \fi
    \fi
    $$\setdisplaydimensions
    \setpredisplaysize\lastlinewidth
@@ -334,29 +358,31 @@
 \def\stopdisplaymath
   {\stopinnermath
    $$%
-   \ifgridsnapping 
+   \ifgridsnapping
      \egroup
      \afterdisplayspace
    \else
      \par\ifvmode\ifdim\parskip>\zeropoint\vskip-\parskip\fi\fi
      \afterdisplayspace
      \egroup
-   \fi} 
+   \fi
+   \globallet\displaylinecorrection\empty
+   \gdef\displaygridcorrection{\displaygridsnapping}}
 
-\newif\ifclipdisplaymath \clipdisplaymathtrue 
+\newif\ifclipdisplaymath \clipdisplaymathtrue
 \def\displaymathclipfactor{1.1}
 
-\def\snapmathtogrid % to do \dp 
+\def\snapmathtogrid % to do \dp
   {\dowithnextbox
      {\bgroup
       \donefalse
-      \ifclipdisplaymath 
-        \ifdim\nextboxht<\displaymathclipfactor\lineheight 
+      \ifclipdisplaymath
+        \ifdim\nextboxht<\displaymathclipfactor\lineheight
           \donetrue
-        \fi 
+        \fi
       \fi
       \ifdone
-        \nextboxht\lineheight 
+        \nextboxht\lineheight
       \else
         \getnoflines\nextboxht
         \setbox\nextbox\vbox to \noflines\lineheight
@@ -364,24 +390,32 @@
         \setbox\nextbox\hbox{\lower\strutdepth\flushnextbox}%
       \fi
       \snaptogrid[\displaygridcorrection]\hbox{\flushnextbox}%
-      \gdef\displaygridcorrection{\displaygridsnapping}%
       \egroup}}
 
 \def\displaygridcorrection{\displaygridsnapping}
+\let\displaygridcorrection\empty
 
 \def\moveformula
   {\dosingleempty\domoveformula}
 
-\def\domoveformula[#1]% brr gaat mogelijk fout 
-  {\ifgridsnapping
-     \iffirstargument
-       \xdef\displaygridcorrection{#1}%
-     \else
-       \gdef\displaygridcorrection{-\v!boven}% handy with short preline
-     \fi
+% \def\domoveformula[#1]% brr gaat mogelijk fout
+%   {\ifgridsnapping
+%      \iffirstargument
+%        \xdef\displaygridcorrection{#1}%
+%      \else
+%        \gdef\displaygridcorrection{-\v!boven}% handy with short preline
+%      \fi
+%    \else
+%      \gdef\displaygridcorrection{\displaygridsnapping}%
+%    \fi}
+
+\def\domoveformula[#1]% brr gaat mogelijk fout
+  {\iffirstargument
+     \xdef\displaygridcorrection{#1}%
    \else
-     \gdef\displaygridcorrection{\displaygridsnapping}%
-   \fi}
+     \gdef\displaygridcorrection{-\v!boven}% handy with short preline
+   \fi
+   \globallet\displaylinecorrection\displaygridcorrection}
 
 \let\startinnermath\empty
 \let\stopinnermath \empty
@@ -389,14 +423,14 @@
 \def\defineformulaalternative
   {\dotripleargument\dodefineformulaalternative}
 
-\def\dodefineformulaalternative[#1][#2][#3]%  
+\def\dodefineformulaalternative[#1][#2][#3]%
   {\setvalue{\e!start#1\v!formule}{#2}%
    \setvalue{\e!stop #1\v!formule}{#3}}
 
 \defineformulaalternative[\s!default][\startdisplaymath][\stopdisplaymath]
 
-% sp = single line paragraph  sd = single line display 
-% mp = multi  line paragraph  md = multy  line display 
+% sp = single line paragraph  sd = single line display
+% mp = multi  line paragraph  md = multy  line display
 
 \defineformulaalternative[single][\startdisplaymath][\stopdisplaymath]
 \defineformulaalternative[multi] [\startdisplaymath][\stopdisplaymath]
@@ -426,29 +460,29 @@
 % in m-math
 %
 % \defineformulaalternative[multi][\begindmath][\enddmath]
-% 
-% \fakewords{20}{40}\epar 
+%
+% \fakewords{20}{40}\epar
 % \plaatsformule {a} $$              \fakespacingformula $$
-% \fakewords{20}{40}\epar 
+% \fakewords{20}{40}\epar
 % \plaatsformule {b} \startformule   \fakespacingformula \stopformule
 % \plaatsformule {b} \startformule   \fakespacingformula \stopformule
-% \fakewords{20}{40}\epar 
+% \fakewords{20}{40}\epar
 % \plaatsformule {c} \startmdformule \fakespacingformula \stopmdformule
 % \plaatsformule {c} \startmdformule \fakespacingformula \stopmdformule
-% \fakewords{20}{40}\epar 
+% \fakewords{20}{40}\epar
 % \plaatsformule {d} \startmpformule \fakespacingformula \stopmpformule
 % \plaatsformule {d} \startmpformule \fakespacingformula \stopmpformule
-% \fakewords{20}{40}\epar 
+% \fakewords{20}{40}\epar
 % \plaatsformule {e} \startsdformule \fakespacingformula \stopsdformule
 % \plaatsformule {e} \startsdformule \fakespacingformula \stopsdformule
-% \fakewords{20}{40}\epar 
+% \fakewords{20}{40}\epar
 % \plaatsformule {f} \startspformule \fakespacingformula \stopspformule
 % \plaatsformule {f} \startspformule \fakespacingformula \stopspformule
 % \fakewords{20}{40}
 
 % \convertcommand\next\to\ascii \getfirstcharacter\ascii
 % \ifx\firstcharacter\letterbackslash % a \cs
- 
+
 \def\plaatsformule
   {\settrue\incrementformulanumber
    \dodoubleempty\doplaatsformule}
@@ -487,7 +521,7 @@
 \let\normalreqno\eqno
 \let\normalleqno\leqno
 
-\def\dodoplaatsformule[#1]#2% messy, needs a clean up 
+\def\dodoplaatsformule[#1]#2% messy, needs a clean up
   {\doifelse{#1}{-}
      {\setfalse\handleformulanumber}
      {\doifelse{#2}{-}
@@ -495,7 +529,7 @@
         {\settrue\handleformulanumber}}%
    \ifconditional\handleformulanumber
      \def\formulenummer
-       {%\global\let\subformulenummer\doformulenummer % no, bug 
+       {%\global\let\subformulenummer\doformulenummer % no, bug
         \doformulenummer[#1][#2]}%
      \def\subformulenummer
        {\setfalse\incrementformulanumber
@@ -509,7 +543,7 @@
      \def\formulenummer{\doformulenummer[#1][#2]}%
      \global\let\subformulenummer\doformulenummer
      \global\let\doplaceformulanumber\empty
-   \fi} 
+   \fi}
 
 %D We need a hook into the plain math alignment macros
 %D
@@ -533,7 +567,7 @@
 %D Here we implement a basic math alignment mechanism. Numbers
 %D are also handled. The macros \type {\startinnermath} and
 %D \type {\stopinnermath} can be overloaded in specialized
-%D modules. 
+%D modules.
 
 \def\startinnermath
   {\getvalue{\e!start\??fm\getvalue{\??fm\currentformula\c!uitlijnen}}}
@@ -548,170 +582,170 @@
   {\setvalue{\e!start\??fm#1}{#2}%
    \setvalue{\e!stop \??fm#1}{#3}}
 
-\newif\iftracemath 
+\newif\iftracemath
 
 \def\mathhbox
-  {\iftracemath\ruledhbox\else\hbox\fi}  
+  {\iftracemath\ruledhbox\else\hbox\fi}
 
 \def\startmathbox#1#2%
   {\hsize\displaywidth
    \global\let\@eqno \empty \def\eqno {\gdef\@eqno }%
    \global\let\@leqno\empty \def\leqno{\gdef\@leqno}%
-   % added 
+   % added
    \let\normalreqno\eqno
    \let\normalleqno\leqno
-   % added 
+   % added
    \doplaceformulanumber
    \mathhbox to \displaywidth\bgroup
      \mathinnerstrut
      $\displaystyle
-     \ifx\@leqno\empty\else \ifcase#2 
+     \ifx\@leqno\empty\else \ifcase#2
        \rlap{\@leqno}%
      \else
        \@leqno\hskip\getvalue{\??fm\currentformula\c!afstand}%
-     \fi \fi 
+     \fi \fi
      #1}
 
 \def\stopmathbox#1#2%
   {$#1%
-   \ifx\@eqno\empty\else \ifcase#2 
+   \ifx\@eqno\empty\else \ifcase#2
      \llap{\@eqno}%
    \else
      \hskip\getvalue{\??fm\currentformula\c!afstand}\@eqno
-   \fi \fi 
+   \fi \fi
    \egroup}
 
 \defineinnermathhandler\v!rechts{\startmathbox\empty1}{\stopmathbox\hfill0}
 \defineinnermathhandler\v!links {\startmathbox\hfill0}{\stopmathbox\empty1}
 \defineinnermathhandler\v!midden{\startmathbox\hfill0}{\stopmathbox\hfill0}
 
-%D [The examples below are in english and don't process in the 
+%D [The examples below are in english and don't process in the
 %D  documentation style, which will be english some day.]
-%D 
+%D
 %D Normally a formula is centered, but in case you want to
 %D align it left or right, you can set up formulas to behave
 %D that way. Normally a formula will adapt is left indentation
-%D to the environment: 
-%D 
+%D to the environment:
+%D
 %D \startbuffer
-%D \fakewords{20}{40}\epar 
+%D \fakewords{20}{40}\epar
 %D \startitemize
-%D \item \fakewords{20}{40}\epar 
+%D \item \fakewords{20}{40}\epar
 %D       \placeformula \startformula \fakeformula \stopformula
-%D \item \fakewords{20}{40}\epar 
+%D \item \fakewords{20}{40}\epar
 %D \stopitemize
-%D \fakewords{20}{40}\epar 
+%D \fakewords{20}{40}\epar
 %D \stopbuffer
-%D 
+%D
 %D % \getbuffer
-%D 
+%D
 %D In the next examples we explicitly align formulas to the
 %D left (\type {\raggedleft}), center and right (\type
-%D {\raggedright}): 
-%D 
+%D {\raggedright}):
+%D
 %D \startbuffer
-%D \setupformulas[align=left]   
+%D \setupformulas[align=left]
 %D \startformula\fakeformula\stopformula
-%D \setupformulas[align=middle] 
+%D \setupformulas[align=middle]
 %D \startformula\fakeformula\stopformula
-%D \setupformulas[align=right]  
+%D \setupformulas[align=right]
 %D \startformula\fakeformula\stopformula
 %D \stopbuffer
-%D 
+%D
 %D \typebuffer
-%D 
-%D Or in print: 
-%D 
+%D
+%D Or in print:
+%D
 %D % {\getbuffer}
-%D 
-%D With formula numbers these formulas look as follows: 
-%D 
+%D
+%D With formula numbers these formulas look as follows:
+%D
 %D \startbuffer
-%D \setupformulas[align=left]   
+%D \setupformulas[align=left]
 %D \placeformula \startformula\fakeformula\stopformula
-%D \setupformulas[align=middle] 
+%D \setupformulas[align=middle]
 %D \placeformula \startformula\fakeformula\stopformula
-%D \setupformulas[align=right]  
+%D \setupformulas[align=right]
 %D \placeformula \startformula\fakeformula\stopformula
 %D \stopbuffer
-%D 
+%D
 %D % {\getbuffer}
-%D 
-%D This was keyed in as: 
-%D 
+%D
+%D This was keyed in as:
+%D
 %D \typebuffer
-%D 
-%D When tracing is turned on (\type {\tracemathtrue}) you can 
-%D visualize the bounding box of the formula, 
-%D 
+%D
+%D When tracing is turned on (\type {\tracemathtrue}) you can
+%D visualize the bounding box of the formula,
+%D
 %D % {\tracemathtrue\getbuffer}
-%D 
-%D As you can see, the dimensions are the natural ones, but if 
-%D needed you can force a normalized line: 
-%D 
+%D
+%D As you can see, the dimensions are the natural ones, but if
+%D needed you can force a normalized line:
+%D
 %D \startbuffer
 %D \setupformulas[strut=yes]
 %D \placeformula \startformula \fakeformula \stopformula
 %D \stopbuffer
-%D 
+%D
 %D \typebuffer
-%D 
-%D This time we get a more spacy result. 
-%D 
+%D
+%D This time we get a more spacy result.
+%D
 %D % {\tracemathtrue\getbuffer}
-%D 
+%D
 %D We will now show a couple of more settings and combinations
 %D of settings. In centered formulas, the number takes no space
-%D 
+%D
 %D \startbuffer
 %D \setupformulas[align=middle]
 %D \startformula \fakeformula \stopformula
 %D \placeformula \startformula \fakeformula \stopformula
 %D \stopbuffer
-%D 
+%D
 %D \typebuffer % {\tracemathtrue\getbuffer}
-%D 
+%D
 %D You can influence the placement of the whole box with the
-%D parameters \type {leftmargin} and \type {rightmargin}. 
-%D 
+%D parameters \type {leftmargin} and \type {rightmargin}.
+%D
 %D \startbuffer
 %D \setupformulas[align=right,leftmargin=3em]
 %D \startformula \fakeformula \stopformula
 %D \placeformula \startformula \fakeformula \stopformula
-%D 
+%D
 %D \setupformulas[align=left,rightmargin=1em]
 %D \startformula \fakeformula \stopformula
 %D \placeformula \startformula \fakeformula \stopformula
 %D \stopbuffer
-%D 
+%D
 %D \typebuffer % {\tracemathtrue\getbuffer}
-%D 
-%D You can also inherit the margin from the environment. 
-%D 
+%D
+%D You can also inherit the margin from the environment.
+%D
 %D \startbuffer
 %D \setupformulas[align=right,margin=standard]
 %D \startformula \fakeformula \stopformula
 %D \placeformula \startformula \fakeformula \stopformula
 %D \stopbuffer
-%D 
+%D
 %D \typebuffer % {\tracemathtrue\getbuffer}
-%D 
+%D
 %D The distance between the formula and the number is only
-%D applied when the formula is left or right aligned. 
-%D 
+%D applied when the formula is left or right aligned.
+%D
 %D \startbuffer
 %D \setupformulas[align=left,distance=2em]
 %D \startformula \fakeformula \stopformula
 %D \placeformula \startformula \fakeformula \stopformula
 %D \stopbuffer
-%D 
+%D
 %D \typebuffer % {\tracemathtrue\getbuffer}
 
-%D \macros 
+%D \macros
 %D   {big..}
 %D
-%D Because they are related to the bodyfontsize, we redefine 
-%D some \PLAIN\ macros. 
+%D Because they are related to the bodyfontsize, we redefine
+%D some \PLAIN\ macros.
 
 \def\@@dobig#1#2%
   {{\hbox{$\left#2\vbox\!!to#1\bodyfontsize{}\right.\n@space$}}}
@@ -721,37 +755,37 @@
 \def\bigg{\@@dobig{1.45}}
 \def\Bigg{\@@dobig{1.75}}
 
-%D \macros 
+%D \macros
 %D   {bordermatrix}
 %D
-%D We already redefined \type {\bordermatrix} in \type 
+%D We already redefined \type {\bordermatrix} in \type
 %D {font-ini}.
 
-%D \macros 
+%D \macros
 %D   {setuptextformulas}
 %D
-%D This command sets up in||line math. Most features deals 
-%D with grid snapping and are experimental. 
+%D This command sets up in||line math. Most features deals
+%D with grid snapping and are experimental.
 
-\newevery \everysetuptextformulas \relax 
+\newevery \everysetuptextformulas \relax
 
 \def\setuptextformulas
   {\dosingleempty\dosetuptextformulas}
 
 \def\dosetuptextformulas[#1]%
-  {\getparameters[\??mt][#1]%   
+  {\getparameters[\??mt][#1]%
    \the\everysetuptextformulas}
 
 %D \macros
 %D   {super, sub}
 %D
-%D \TEX\ uses \type{^} and \type{_} for entering super- and 
-%D subscript mode. We want however a bit more control than 
-%D normally provided, and therefore provide \type {\super} 
-%D and \type{sub}. 
+%D \TEX\ uses \type{^} and \type{_} for entering super- and
+%D subscript mode. We want however a bit more control than
+%D normally provided, and therefore provide \type {\super}
+%D and \type{sub}.
 
-\global\let\normalsuper=^ 
-\global\let\normalsuber=_ 
+\global\let\normalsuper=^
+\global\let\normalsuber=_
 
 \newcount\supersubmode
 
@@ -761,29 +795,29 @@
 
 % \def\dodosuper#1{\normalsuper{\the\everysupersub#1}}
 % \def\dodosuber#1{\normalsuber{\the\everysupersub#1}}
-% 
+%
 % \def\dosuper{\ifx\next\bgroup\expandafter\dodosuper\else\normalsuper\fi}
 % \def\dosuber{\ifx\next\bgroup\expandafter\dodosuber\else\normalsuber\fi}
-% 
+%
 % \def\super{\futurelet\next\dosuper}
 % \def\suber{\futurelet\next\dosuber}
 %
 % \def\super#1{\normalsuper{\the\everysupersub#1}}
 % \def\suber#1{\normalsuber{\the\everysupersub#1}}
 
-\appendtoks 
-  \gridsupsubstyle 
+\appendtoks
+  \gridsupsubstyle
 \to \everysupersub
 
-\appendtoks 
+\appendtoks
   \doifelse\@@mtformaat\v!klein
-    {\let\gridsupsubstyle    \scriptscriptstyle 
+    {\let\gridsupsubstyle    \scriptscriptstyle
      \let\gridsupsubbodyfont \setsmallbodyfont}%
     {\let\gridsupsubstyle    \scriptstyle
      \let\gridsupsubbodyfont \relax}%
-\to \everysetuptextformulas 
+\to \everysetuptextformulas
 
-\setuptextformulas 
+\setuptextformulas
   [\c!formaat=\v!normaal]
 
 \def\dogridsupsub#1#2%
@@ -797,7 +831,7 @@
    \endgroup}
 
 \def\gridsupsub
-  {\ifconditional\crazymathsnapping  
+  {\ifconditional\crazymathsnapping
      \ifgridsnapping
        \@EAEAEA\dogridsupsub
      \else
@@ -810,7 +844,7 @@
 \def\normalsupsub#1#2%
   {^{\the\everysupersub#1}_{\the\everysupersub#2}}
 
-\appendtoks 
+\appendtoks
   \let\gridsupsubstyle   \relax
   \let\gridsupsubbodyfont\relax
   \let\gridsupsub        \normalsupsub
@@ -821,8 +855,8 @@
 \def\supsub#1#2{\super{#1}\suber{#2}}
 \def\subsup#1#2{\suber{#1}\super{#2}}
 
-%\def\super#1{\gridsupsub{#1}{}} % 
-%\def\suber#1{\gridsupsub{}{#1}} % 
+%\def\super#1{\gridsupsub{#1}{}} %
+%\def\suber#1{\gridsupsub{}{#1}} %
 %
 %\def\supsub#1#2{\gridsupsub{#1}{#2}}
 %\def\subsup#1#2{\gridsupsub{#2}{#1}}
@@ -830,33 +864,33 @@
 \def\gridsuper#1{\gridsupsub{#1}{}}
 \def\gridsuber#1{\gridsupsub{}{#1}}
 
-% \let\sup\super % math char 
+% \let\sup\super % math char
 % \let\sub\suber
 
-% test set: 
+% test set:
 %
 % \startbuffer
 % \sform{x\frac{1}{2}}
 % \sform{x\sup{\frac{1}{2}} + x\sup{2} + 2}
 % \sform{x\supsub{\frac{1}{2}}{\frac{1}{2}} + x\sup{2} + 2}
 % \stopbuffer
-% 
-% \typebuffer 
-% 
+%
+% \typebuffer
+%
 % \startlines
 % \getbuffer
 % \stoplines
-% 
+%
 % \startbuffer
-% $x\frac{1}{2}$ 
+% $x\frac{1}{2}$
 % $x\sup{\frac{1}{2}} + x^2 + 2$
 % $x\supsub{\frac{1}{2}}{\frac{1}{2}} + x^2 + 2$
 % \stopbuffer
-% 
-% \typebuffer 
-% 
+%
+% \typebuffer
+%
 % \start
-% \enablesupersub 
+% \enablesupersub
 % \enableautomath
 % \startlines
 % \getbuffer
@@ -865,9 +899,9 @@
 
 %D \macros
 %D   {enablesupersub}
-%D 
-%D We can let \type {^} and \type {_} act like \type {\super} 
-%D and \type {\sub} by saying \type {\enablesupersub}. 
+%D
+%D We can let \type {^} and \type {_} act like \type {\super}
+%D and \type {\sub} by saying \type {\enablesupersub}.
 
 \bgroup
 \catcode`\^=\@@active
@@ -882,8 +916,8 @@
 %D \macros
 %D   {enableautomath}
 %D
-%D The next one can be dangerous, but handy in controlled 
-%D situations.  
+%D The next one can be dangerous, but handy in controlled
+%D situations.
 
 \bgroup \catcode`\$=\active
 
@@ -899,20 +933,25 @@
 
 \egroup
 
-%D \macros 
-%D   {...} 
+%D \macros
+%D   {...}
 %D
-%D New and experimental: snapping big inline math! 
+%D New and experimental: snapping big inline math!
 
-\newconditional\halfcrazymathlines % \settrue\halfcrazymathlines 
+\newconditional\halfcrazymathlines % \settrue\halfcrazymathlines
 \newconditional\crazymathsnapping  % \settrue\crazymathsnapping
 
-\appendtoks 
- \doifelse\@@mtgrid\v!ja
-   {\settrue \crazymathsnapping }{\setfalse\crazymathsnapping}%
- \doifelse\@@mtstap\v!halveregel
-   {\settrue \halfcrazymathlines}{\setfalse\halfcrazymathlines}%
-\to \everysetuptextformulas 
+% \appendtoks
+%  \doifelse\@@mtgrid\v!ja
+%    {\settrue \crazymathsnapping }{\setfalse\crazymathsnapping}%
+%  \doifelse\@@mtstap\v!halveregel
+%    {\settrue \halfcrazymathlines}{\setfalse\halfcrazymathlines}%
+% \to \everysetuptextformulas
+
+\appendtoks
+ \doifelse\@@mtgrid\v!ja        \settrue\setfalse\crazymathsnapping
+ \doifelse\@@mtstap\v!halveregel\settrue\setfalse\halfcrazymathlines
+\to \everysetuptextformulas
 
 \setuptextformulas
   [\c!grid=\v!ja,
@@ -932,15 +971,15 @@
 
 \def\flushcrazymathbox
   {\nextboxht\strutheight
-   \nextboxdp\strutdepth 
+   \nextboxdp\strutdepth
    \hbox{\iftracegridsnapping\ruledhbox\fi{\flushnextbox}}}
 
-% possible pdftex bug: 
+% possible pdftex bug:
 %
-% \dorecurse{100}{gest \vadjust     {\strut} \par} \page 
-% \dorecurse{100}{gest \vadjust pre {\strut} \par} \page 
+% \dorecurse{100}{gest \vadjust     {\strut} \par} \page
+% \dorecurse{100}{gest \vadjust pre {\strut} \par} \page
 %
-% duplicate depth compensation with pre 
+% duplicate depth compensation with pre
 
 \def\snappedinlineformula
   {\dosingleempty\dosnappedinlineformula}
@@ -958,22 +997,22 @@
 
 \def\inlinemathmargin{1pt}
 
-\settrue\autocrazymathsnapping 
+\settrue\autocrazymathsnapping
 
-% FROM NOW ON, CHANGES AS OPTIONS 
+% FROM NOW ON, CHANGES AS OPTIONS
 
-% TODO: SKYLINE (PREV LINE POS SCAN) 
+% TODO: SKYLINE (PREV LINE POS SCAN)
 
 \def\dosnappedinlineformula[#1]#2%
-  {\ifvmode\dontleavehmode\fi % tricky 
-   \strut % prevents funny space at line break  
+  {\ifvmode\dontleavehmode\fi % tricky
+   \strut % prevents funny space at line break
    \begingroup % interesting: \bgroup can make \vadjust disappear
-   \ifconditional\crazymathsnapping  
+   \ifconditional\crazymathsnapping
      \ifgridsnapping
        \ifx\pdftexversion\undefined
          \donefalse
        \else
-         \checktextbackgrounds % we need pos tracking, to be made less redundant 
+         \checktextbackgrounds % we need pos tracking, to be made less redundant
          \donetrue
        \fi
      \else
@@ -982,13 +1021,13 @@
    \else
      \donefalse
    \fi
-   \!!doneafalse % forced or not auto 
+   \!!doneafalse % forced or not auto
    \!!donebfalse % too heigh
-   \!!donecfalse % too low 
-   \!!donedfalse % less before 
-   \!!doneefalse % less after 
+   \!!donecfalse % too low
+   \!!donedfalse % less before
+   \!!doneefalse % less after
    \ifdone
-     \setbox\nextbox\hbox{$#2$}% 
+     \setbox\nextbox\hbox{$#2$}%
      \iftracegridsnapping
        \setbox\nextbox\ruledhbox
          {\incolortrue\localcolortrue
@@ -1001,46 +1040,46 @@
         \doif{##1}<{\!!donedtrue}%
         \doif{##1}>{\!!doneetrue}}%
      \processcommalist[#1]\docommando
-\if!!doneb 
+\if!!doneb
   \if!!donec \else
     \setfalse\halfcrazymathlines
-  \fi 
+  \fi
 \else
-  \if!!donec 
+  \if!!donec
     \setfalse\halfcrazymathlines
   \fi
-\fi 
+\fi
      \donefalse
      \if!!donea
        \donetrue
 \scratchdimen \nextboxht
 \advance\scratchdimen .5\lineheight
-\nextboxht\scratchdimen 
+\nextboxht\scratchdimen
 \scratchdimen \nextboxdp
 \advance\scratchdimen .5\lineheight
-\nextboxdp\scratchdimen 
+\nextboxdp\scratchdimen
      \else\ifdim\nextboxht>\strutht
-       \donetrue 
+       \donetrue
      \else\ifdim\nextboxdp>\strutdp
-       \donetrue 
+       \donetrue
      \fi\fi\fi
      \ifconditional\autocrazymathsnapping \else \if!!donea \else
-       % don't compensate, just snap to strut 
+       % don't compensate, just snap to strut
        \donefalse
-       % signal for next else, snap line to strut  
-       \!!doneatrue 
+       % signal for next else, snap line to strut
+       \!!doneatrue
      \fi \fi
    \fi
    \ifdone
-     % analyze height 
-     \scratchdimen\inlinemathmargin 
+     % analyze height
+     \scratchdimen\inlinemathmargin
      \advance\scratchdimen \strutht
      \ifdim\nextboxht<\scratchdimen \else \!!donebtrue \fi
-     % analyze depth 
-     \scratchdimen\inlinemathmargin 
+     % analyze depth
+     \scratchdimen\inlinemathmargin
      \advance\scratchdimen \strutdp
-     \ifdim\nextboxdp<\scratchdimen \else \!!donectrue \fi 
-     % analyzed or forced 
+     \ifdim\nextboxdp<\scratchdimen \else \!!donectrue \fi
+     % analyzed or forced
      \ifdone
        \global\advance\crazymathhack\plusone
        \donefalse
@@ -1052,7 +1091,7 @@
        \ifnum\MPp\crazymathtag=\zerocount \donefalse \fi
        \ifdim\MPy\crazymathtag=\zeropoint \donefalse \fi
        \ifdone
-         % same page and same line 
+         % same page and same line
        \else
          \global\let\lastcrazymathprelines \!!zerocount
          \global\let\lastcrazymathpostlines\!!zerocount
@@ -1060,7 +1099,7 @@
          \xdef\lastcrazymathline{\MPy\crazymathtag}%
        \fi
        \if!!doneb
-       % \getrawnoflines\nextboxht 
+       % \getrawnoflines\nextboxht
          \scratchdimen\nextboxht
          \advance\scratchdimen-\strutht
          \getnoflines\scratchdimen
@@ -1069,7 +1108,7 @@
          \advance\noflines-\lastcrazymathprelines\relax
          \ifnum\noflines>\zerocount
            \xdef\lastcrazymathprelines{\the\scratchcounter}%
-           \scratchdimen\noflines\lineheight 
+           \scratchdimen\noflines\lineheight
            \ifconditional\halfcrazymathlines
              \advance\scratchdimen-.5\lineheight
            \fi
@@ -1077,10 +1116,10 @@
            \setbox\scratchbox\null
            \wd\scratchbox2\bodyfontsize
            \ht\scratchbox\scratchdimen
-           \dp\scratchbox\strutdepth 
-           %%% top correction code (see below) 
-           \normalvadjust pre 
-             {%\allowbreak % sometimes breaks spacing 
+           \dp\scratchbox\strutdepth
+           %%% top correction code (see below)
+           \normalvadjust pre
+             {%\allowbreak % sometimes breaks spacing
               \forgetall
               \crazymathindent
               \iftracegridsnapping
@@ -1092,18 +1131,18 @@
               \endgraf
               \nobreak}%
          \else\ifnum\scratchcounter>\zerocount
-           \normalvadjust pre 
+           \normalvadjust pre
              {\nobreak}%
          \fi\fi
        \fi
        \if!!donec
-       % \getrawnoflines\nextboxdp 
+       % \getrawnoflines\nextboxdp
          \scratchdimen\nextboxdp
          \advance\scratchdimen-\strutdp
-         \getnoflines\scratchdimen 
+         \getnoflines\scratchdimen
          \if!!donee \advance\noflines\minusone \fi
          \scratchcounter\noflines
-         \advance\noflines-\lastcrazymathpostlines\relax     
+         \advance\noflines-\lastcrazymathpostlines\relax
          \ifnum\noflines>\zerocount
            \donetrue
          \else\ifnum\lastcrazymathpostlines=\zerocount
@@ -1120,11 +1159,11 @@
            \global\let\lastcrazymathpostlines\!!plusone
          \fi
          \hbox{\setposition\crazymathtag\flushcrazymathbox}%
-         \scratchdimen\noflines\lineheight 
-         \advance\scratchdimen-\lineheight 
+         \scratchdimen\noflines\lineheight
+         \advance\scratchdimen-\lineheight
          \advance\scratchdimen+\strutheight
 \ifdim\scratchdimen>\zeropoint \else
-  \scratchdimen=\strutheight % todo : test for half lines 
+  \scratchdimen=\strutheight % todo : test for half lines
 \fi
          \ifconditional\halfcrazymathlines
            \advance\scratchdimen-.5\lineheight
@@ -1133,7 +1172,7 @@
          \wd\scratchbox2\bodyfontsize
          \ht\scratchbox\scratchdimen
          \dp\scratchbox\strutdepth
-         \normalvadjust 
+         \normalvadjust
            {\forgetall
             \crazymathindent
             \iftracegridsnapping
@@ -1148,8 +1187,8 @@
               \allowbreak
             \else
               \vskip-\lineheight
-              \vskip \lineheight  
-           \fi}% 
+              \vskip \lineheight
+           \fi}%
        \else
          \hbox{\setposition\crazymathtag\flushcrazymathbox}%
        \fi
@@ -1159,14 +1198,14 @@
    \else\if!!donea
      \flushcrazymathbox
    \else
-     \mathematics{#2}%     
+     \mathematics{#2}%
    \fi\fi
    \endgroup}
 
 
-%%% top correction code 
+%%% top correction code
 %%%
-%%% correct for fuzzy top of page situations 
+%%% correct for fuzzy top of page situations
 %
 % \scratchdimen\lastcrazymathprelines\lineheight
 % \advance\scratchdimen\MPy\crazymathtag
@@ -1176,33 +1215,33 @@
 % \dimen0=\MPy\crazytexttag
 % \advance\dimen0 \MPh\crazytexttag
 % \advance\scratchdimen-\dimen0\relax
-% % do we need correction at all 
+% % do we need correction at all
 % \ifdim\scratchdimen>\strutdepth\relax
 %   \donefalse
 % \else\ifdim\scratchdimen<\zeropoint
 %   \donefalse
 % \else
 %   \donetrue
-% \fi\fi 
-% % analysis done 
+% \fi\fi
+% % analysis done
 % \donefalse
 % \ifdone
 %   \edef\crazymathcorrection{\the\scratchdimen}%
 %   \advance\scratchdimen-\dp\scratchbox
-%   \dp\scratchbox-\scratchdimen 
+%   \dp\scratchbox-\scratchdimen
 % \else
 %   \let\crazymathcorrection\zeropoint
-% \fi 
+% \fi
 %
 %%%
-%%% keep the previous code 
+%%% keep the previous code
 %%%
 
 \let\tform\mathematics
 \let\gform\snappedinlineformula
 
-% test set: 
-% 
+% test set:
+%
 % \startbuffer
 % Crazy math \gform {1+x} or \gform {\dorecurse {100} {1+} 1 =
 % 101} and even gore crazy \gform {2^{2^2}_{1_1}}
@@ -1213,23 +1252,23 @@
 % {2}}}}+}x=10}\dorecurse{20} { super crazy math}: \tform
 % {\dorecurse {30} {\gform {\sqrt {\frac {x^{5^5}} {3}}}+
 % \gform {\sqrt {\frac {x^{5^5}} {\frac {1} {2}}}}+ }x = 10},
-% and we're\dorecurse {20} { done}! 
+% and we're\dorecurse {20} { done}!
 % \stopbuffer
-% 
+%
 % \setupcolors[state=start] \setuppapersize[S6][S6]
 %
-% \showgrid \tracegridsnappingtrue \showstruts 
-% 
-% \starttext 
+% \showgrid \tracegridsnappingtrue \showstruts
+%
+% \starttext
 % \setuplayout[grid=yes,lines=15]\getbuffer \page
 % \setuplayout[grid=yes,lines=16]\getbuffer \page
 % \setuplayout[grid=yes,lines=17]\getbuffer \page
 % \setuplayout[grid=yes,lines=18]\getbuffer \page
 % \setuplayout[grid=yes,lines=19]\getbuffer \page
-% \stoptext 
-% 
-% test 
-% 
+% \stoptext
+%
+% test
+%
 % \startregels
 % \gform[<]{35 \cdot p^{\frac{3}{4}} = 70}
 % \gform{12{,}4 \cdot d^3 = 200}
@@ -1265,12 +1304,12 @@
 % \gform{\frac{2{,}25}{p} = 0{,}35}
 % \gform{4{,}50 + \frac{300}{k} = 4{,}70}
 % \gform{\frac{1200}{k+12} - 42 = 6}
-% \stopregels 
+% \stopregels
 
 %D \macro
 %D   {restoremathstyle}
 %D
-%D We can pick up the current math style by calling \type 
+%D We can pick up the current math style by calling \type
 %D {\restoremathstyle}.
 
 \def\restoremathstyle
@@ -1287,7 +1326,7 @@
 %D \macros
 %D   {mathstyle}
 %D
-%D If one want to be sure that something is typeset in the 
+%D If one want to be sure that something is typeset in the
 %D appropriate style, \type {\mathstyle} can be used:
 %D
 %D \starttypen
@@ -1301,13 +1340,13 @@
      {\scriptstyle      #1}%
      {\scriptscriptstyle#1}}
 
-%D Something similar can be used in the (re|)|definition 
-%D of \type {\text}. This version is a variation on the one 
-%D in the math module (see \type{m-math} and|/|or \type 
-%D {m-newmat}). 
+%D Something similar can be used in the (re|)|definition
+%D of \type {\text}. This version is a variation on the one
+%D in the math module (see \type{m-math} and|/|or \type
+%D {m-newmat}).
 
 \unexpanded\def\mathtext
-  {\mathortext\domathtext\hbox} 
+  {\mathortext\domathtext\hbox}
 
 \def\domathtext#1%
   {\mathchoice
@@ -1320,20 +1359,20 @@
  %{\hbox{\everymath{#1}\switchtobodyfont  [#2]#3}} % 15 sec
   {\hbox{\everymath{#1}\setcurrentfontbody{#2}#3}} %  3 sec (no math)
 
-%D Because we may overload \type {\text} in other (structuring) 
+%D Because we may overload \type {\text} in other (structuring)
 %D macros, we say:
 
-\appendtoks \let\text\mathtext \to \everymath 
+\appendtoks \let\text\mathtext \to \everymath
 
 %D \macros
 %D   {frac, xfrac, xxfrac}
 %D
-%D This is another one Tobias asked for. It replaces the 
-%D primitive \type {\over}. We also take the opportunity to 
-%D handle math style restoring, which makes sure units and 
-%D chemicals come out ok. 
-%D 
-%D \starttypen 
+%D This is another one Tobias asked for. It replaces the
+%D primitive \type {\over}. We also take the opportunity to
+%D handle math style restoring, which makes sure units and
+%D chemicals come out ok.
+%D
+%D \starttypen
 %D \def\frac#1#2%
 %D   {\relax
 %D    \ifmmode
@@ -1341,58 +1380,58 @@
 %D    \else
 %D       $\frac{#1}{#2}$%
 %D    \fi}
-%D \stoptypen 
-%D 
-%D Better is: 
-%D 
-%D \starttypen 
+%D \stoptypen
+%D
+%D Better is:
+%D
+%D \starttypen
 %D \def\frac#1#2%
 %D   {\relax\mathematics{{{\mathstyle{#1}}\over{\mathstyle{#2}}}}}
-%D \stoptypen 
-%D 
+%D \stoptypen
+%D
 %D The \type {\frac} macro kind of replaces the awkward \type
 %D {\over} primitive. Say that we have the following formulas:
-%D 
+%D
 %D \startbuffer[sample]
-%D test $\frac  {1}{2}$ test $$1 + \frac  {1}{2} = 1.5$$ 
-%D test $\xfrac {1}{2}$ test $$1 + \xfrac {1}{2} = 1.5$$ 
-%D test $\xxfrac{1}{2}$ test $$1 + \xxfrac{1}{2} = 1.5$$ 
+%D test $\frac  {1}{2}$ test $$1 + \frac  {1}{2} = 1.5$$
+%D test $\xfrac {1}{2}$ test $$1 + \xfrac {1}{2} = 1.5$$
+%D test $\xxfrac{1}{2}$ test $$1 + \xxfrac{1}{2} = 1.5$$
 %D \stopbuffer
-%D 
+%D
 %D \typebuffer[sample]
-%D 
-%D With the most straightforward definitions, we get: 
-%D 
+%D
+%D With the most straightforward definitions, we get:
+%D
 %D \startbuffer[code]
 %D \def\dofrac#1#2#3{\relax\mathematics{{{#1{#2}}\over{#1{#3}}}}}
-%D 
+%D
 %D \def\frac  {\dofrac\mathstyle}
 %D \def\xfrac {\dofrac\scriptstyle}
 %D \def\xxfrac{\dofrac\scriptscriptstyle}
 %D \stopbuffer
-%D 
+%D
 %D \typebuffer[code] \getbuffer[code,sample]
-%D 
-%D Since this does not work well, we can try: 
-%D 
+%D
+%D Since this does not work well, we can try:
+%D
 %D \startbuffer[code]
 %D \def\xfrac #1#2{\hbox{$\dofrac\scriptstyle      {#1}{#2}$}}
 %D \def\xxfrac#1#2{\hbox{$\dofrac\scriptscriptstyle{#1}{#2}$}}
 %D \stopbuffer
-%D 
+%D
 %D \typebuffer[code] \getbuffer[code,sample]
-%D 
-%D This for sure looks better than: 
-%D 
+%D
+%D This for sure looks better than:
+%D
 %D \startbuffer[code]
 %D \def\xfrac #1#2{{\scriptstyle      \dofrac\relax{#1}{#2}}}
 %D \def\xxfrac#1#2{{\scriptscriptstyle\dofrac\relax{#1}{#2}}}
 %D \stopbuffer
-%D 
+%D
 %D \typebuffer[code] \getbuffer[code,sample]
-%D 
-%D So we stick to the next definitions (watch the local 
-%D overloading of \type {\xfrac}).  
+%D
+%D So we stick to the next definitions (watch the local
+%D overloading of \type {\xfrac}).
 
 \def\dofrac#1#2#3{\relax\mathematics{{{#1{#2}}\over{#1{#3}}}}}
 
@@ -1405,8 +1444,8 @@
                 \dofrac\scriptscriptstyle{#1}{#2}%
                 \endgroup}
 
-%D The \type {xx} variant looks still ugly, so maybe it's 
-%D best to say: 
+%D The \type {xx} variant looks still ugly, so maybe it's
+%D best to say:
 
 \def\xxfrac#1#2{\begingroup
                 \dofrac\scriptscriptstyle
@@ -1420,9 +1459,9 @@
 
 %D The next macro, \type {\ch}, is \PPCHTEX\ aware. In
 %D formulas one can therefore best use \type {\ch} instead of
-%D \type {\chemical}, especially in fractions. 
+%D \type {\chemical}, especially in fractions.
 
-\ifx\mathstyle\undefined 
+\ifx\mathstyle\undefined
   \let\mathstyle\relax
 \fi
 
@@ -1438,38 +1477,38 @@
 %D \macros
 %D   {/}
 %D
-%D Just to be sure, we restore the behavior of some typical 
-%D math characters. 
+%D Just to be sure, we restore the behavior of some typical
+%D math characters.
 
-\bgroup 
+\bgroup
 
-\catcode`\/=\@@other    \global           \let\normalforwardslash/ 
+\catcode`\/=\@@other    \global           \let\normalforwardslash/
 \catcode`\/=\@@active \doglobal\appendtoks\let/\normalforwardslash\to\everymath
 
 \egroup
 
-%D These macros were first needed by Frits Spijker (also 
-%D known as Gajes) for typesetting the minus sign that is 
-%D keyed into scientific calculators. 
- 
-% This is the first alternative, which works okay for the 
-% minus, but less for the plus. 
+%D These macros were first needed by Frits Spijker (also
+%D known as Gajes) for typesetting the minus sign that is
+%D keyed into scientific calculators.
+
+% This is the first alternative, which works okay for the
+% minus, but less for the plus.
 %
 % \def\dodoraisedmathord#1#2#3%
 %   {\mathord{{#2\raise.#1ex\hbox{#2#3}}}}
-% 
+%
 % \def\doraisedmathord#1%
 %   {\mathchoice
 %      {\dodoraisedmathord5\tf  #1}%
 %      {\dodoraisedmathord5\tf  #1}%
 %      {\dodoraisedmathord4\tfx #1}%
 %      {\dodoraisedmathord3\tfxx#1}}
-% 
+%
 % \def\negative{\doraisedmathord-}
 % \def\positive{\doraisedmathord+}
 %
-% So, now we use the monospaced signs, that we also 
-% define as symbol, so that they can be overloaded.  
+% So, now we use the monospaced signs, that we also
+% define as symbol, so that they can be overloaded.
 
 \def\dodoraisedmathord#1#2#3%
   {\mathord{{#2\raise.#1ex\hbox{#2\symbol[#3]}}}}
@@ -1496,12 +1535,12 @@
 \definesymbol[negative]  [\getglyph{Mono}{-}]
 \definesymbol[zeroamount][\getglyph{Mono}{-}]
 
-\def\negative  {\doraisedmathord{negative}} 
+\def\negative  {\doraisedmathord{negative}}
 \def\positive  {\doraisedmathord{positive}}
 \def\zeroamount{\donumbermathord{zeroamount}}
 
-%D How negative such a symbol looks is demonstrated in: 
-%D $\negative 10^{\negative 10^{\negative 10}}$. 
+%D How negative such a symbol looks is demonstrated in:
+%D $\negative 10^{\negative 10^{\negative 10}}$.
 
 \setupformulas
   [\c!wijze=\@@nrwijze,
@@ -1517,4 +1556,4 @@
    \c!nawit=\@@fmvoorwit,
    \c!grid=]
 
-\protect \endinput 
+\protect \endinput

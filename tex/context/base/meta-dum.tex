@@ -45,16 +45,16 @@
 % to transparent colors
 
 \startuseMPgraphic{placeholder}{width,height,color}
-  numeric w, h, d, r ; color c, b, cc ; path p ; boolean t ; 
-  t := is_transparent(\MPvar{color}) ;  
+  numeric w, h, d, r ; color c, b, cc ; path p ; boolean t ;
+  t := is_transparent(\MPvar{color}) ;
   c := not_transparent(\MPvar{color}) ;
-  b := not_transparent(white) ; 
+  b := not_transparent(white) ;
   w := \MPvar{width} ;
   h := \MPvar{height} ;
   r := \MPvar{reduction} ;
   d := max(w,h) ;
   p := unitsquare xyscaled (w,h) ;
-  cc := r[.5c,b] ; 
+  cc := r[.5c,b] ;
   fill p withcolor if t : transparent(1,.5,cc) else : cc fi ;
   for i := 1 upto 60 :
     cc := r[c randomized(.3,.9),b] ;
@@ -82,14 +82,14 @@
   {\getpaletsize[placeholder]%
    \ifx\figurereplacementcycle\relax
      \getrandomnumber \figurereplacementcycle \!!plusone \paletsize
-     \globallet \figurereplacementcycle \figurereplacementcycle 
+     \globallet \figurereplacementcycle \figurereplacementcycle
    \else
      \doglobal\increment\figurereplacementcycle
-   \fi 
+   \fi
    \ifnum\figurereplacementcycle>\paletsize
      \globallet\figurereplacementcycle\!!plusone
    \fi
-   \weightGRAYfalse % monochrome anyway 
+   \weightGRAYfalse % monochrome anyway
    \defineoverlay
      [\s!dummy]
      [\useMPgraphic
@@ -111,14 +111,14 @@
          \doifelse{#1}\s!dummy  \!!doneafalse\!!doneatrue
          \doifelse{#2}\s!dummy  \!!donebfalse\!!donebtrue
          \doifelse{#3}\s!unknown\!!donecfalse\!!donectrue
-         \if!!donea 
+         \if!!donea
            name: \expanded{\verbatimstring{#1}}\strut\endgraf
          \fi
-         \if!!doneb  
-           \if!!donea file: \else \if!!donec file: \fi \fi  
+         \if!!doneb
+           \if!!donea file: \else \if!!donec file: \fi \fi
            \expanded{\verbatimstring{#2}}\strut\endgraf
          \fi
-         \if!!donec  
+         \if!!donec
            state: \expanded{\verbatimstring{#3}}\strut\endgraf
          \fi}}}
 

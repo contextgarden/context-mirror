@@ -13,48 +13,62 @@
 
 \writestatus{loading}{Context Core Macros / Misc Commands}
 
-\startmessages  dutch  library: systems
-  title: systeem
-      3: probeer LaTeX eens
-\stopmessages
-
-\startmessages  english  library: systems
-  title: system
-      3: try LaTeX
-\stopmessages
-
-\startmessages  german  library: systems
-  title: system
-      3: Versuche LaTeX
-\stopmessages
-
-\startmessages  czech  library: systems
-  title: system
-      3: zkuste LaTeX
-\stopmessages
-
-\startmessages  italian  library: systems
-  title: sistema
-      3: provare LaTeX
-\stopmessages
-
-\startmessages  norwegian  library: systems
-  title: system
-      3: forsøker LaTeX
-\stopmessages
-
-\startmessages  romanian  library: systems
-  title: sistem
-      3: incercati LaTeX
-\stopmessages
+% Obsolete
+%
+% \startmessages  dutch  library: systems
+%   title: systeem
+%       3: probeer LaTeX eens
+% \stopmessages
+%
+% \startmessages  english  library: systems
+%   title: system
+%       3: try LaTeX
+% \stopmessages
+%
+% \startmessages  german  library: systems
+%   title: system
+%       3: Versuche LaTeX
+% \stopmessages
+%
+% \startmessages  czech  library: systems
+%   title: system
+%       3: zkuste LaTeX
+% \stopmessages
+%
+% \startmessages  italian  library: systems
+%   title: sistema
+%       3: provare LaTeX
+% \stopmessages
+%
+% \startmessages  norwegian  library: systems
+%   title: system
+%       3: forsøker LaTeX
+% \stopmessages
+%
+% \startmessages  romanian  library: systems
+%   title: sistem
+%       3: incercati LaTeX
+% \stopmessages
+%
+% %D You would not expect the next macro in \CONTEXT,
+% %D wouldn't you? It's there to warn \LATEX\ users that
+% %D something is wrong.
+% %D
+% %D Obsolete now:
+% %
+% % \def\documentstyle{\showmessage\m!systems3\empty\stoptekst}
+% %
+% % \let\documentclass=\documentstyle
+% %D \macros
+% %D   {simplifiedcommands, simplifycommands}
+% %D
+% %D I first needed this simplification in bookmarks. Users can
+% %D add their own if needed.
 
 \unprotect
 
-%D \macros
-%D   {simplifiedcommands, simplifycommands}
-%D
-%D I first needed this simplification in bookmarks. Users can
-%D add their own if needed.
+%D Sometimes (for instance in bookmarks) we need to simplify macro
+%D behaviour, so here is the hook.
 
 \ifx\simplifiedcommands\undefined \newtoks\simplifiedcommands \fi
 
@@ -71,15 +85,6 @@
 \appendtoks                \def\MetaPost{MetaFont}\to\simplifiedcommands
 \appendtoks                 \def\MetaPost{MetaFun}\to\simplifiedcommands
 \appendtoks                              \def||{-}\to\simplifiedcommands
-
-%D You would not expect the next macro in \CONTEXT,
-%D wouldn't you? It's there to warn \LATEX\ users that
-%D something is wrong.
-
-\def\documentstyle
-  {\showmessage\m!systems3\empty\stoptekst}
-
-\let\documentclass=\documentstyle
 
 % THIS WAS MAIN-002.TEX
 
@@ -555,7 +560,7 @@
 \unexpanded\def\unknown
   {\dontleavehmode\punten[3]}
 
-\def\midboundarycharacter#1#2% 
+\def\midboundarycharacter#1#2%
   {%\nobreak
    \hskip\hspaceamount\currentlanguage{#2}%
    \languageparameter#1%
@@ -579,7 +584,7 @@
 
 \stelkoppeltekenin
   [\c!teken=\compoundhyphen]
- 
+
 \definehspace [sentence]      [\zeropoint]
 \definehspace [intersentence] [.250em]
 
@@ -659,31 +664,31 @@
 \definehspace [speech] [\hspaceamount\currentlanguage{quotation}]
 
 \definesymbol
-  [\c!leftquotation] 
+  [\c!leftquotation]
   [\leftboundarycharacter\c!leftquotation{quotation}]
 
 \definesymbol
-  [\c!rightquotation] 
+  [\c!rightquotation]
   [\rightboundarycharacter\c!rightquotation{quotation}]
 
 \definesymbol
-  [\c!leftquote]      
+  [\c!leftquote]
   [\leftboundarycharacter\c!leftquote{quote}]
 
 \definesymbol
-  [\c!rightquote]     
+  [\c!rightquote]
   [\rightboundarycharacter\c!rightquote{quote}]
 
 \definesymbol
-  [\c!leftspeech]   
+  [\c!leftspeech]
   [\leftboundarycharacter\c!leftspeech{speech}]
 
 \definesymbol
-  [\c!rightspeech]  
+  [\c!rightspeech]
   [\rightboundarycharacter\c!rightspeech{speech}]
 
 \definesymbol
-  [\c!middlespeech] 
+  [\c!middlespeech]
   [\leftboundarycharacter\c!middlespeech{speech}]
 
 %%%%% will be replaced by delimitedtext %%%%%
@@ -766,7 +771,7 @@
 
 \unexpanded\def\citaat
   {\dohandlequotation\c!leftquotation\relax
-   \groupedcommand \donothing 
+   \groupedcommand \donothing
      {\dohandlequotation\c!rightquotation\removelastskip}}
 
 \def\doquotedcite
@@ -824,7 +829,7 @@
 
 \appendtoks \dohandlespeech \to \everypar
 
-% this will replace the quotation and speed definitions 
+% this will replace the quotation and speed definitions
 
 \newsignal\delimitedtextignal
 
@@ -840,7 +845,7 @@
   {\doifassignmentelse{#2}
      {\getparameters
         [\??ci#1]
-        [\c!plaats=\v!marge, % \v!tekst \v!alinea 
+        [\c!plaats=\v!marge, % \v!tekst \v!alinea
          \c!voorwit=,
          \c!nawit=\delimitedtextparameter\c!voorwit,
          \c!letter=\v!normaal,
@@ -855,7 +860,7 @@
          \c!niveau=0,
          \c!herhaal=\v!nee,
         #2]}%
-     {\doifdefined{#2} 
+     {\doifdefined{#2}
         {\copyparameters[\??ci#1][\??ci#2]
            [\c!plaats,\c!voorwit,\c!nawit,\c!letter,\c!kleur,
             \c!linkermarge,\c!rechtermarge,\c!springvolgendein,
@@ -888,21 +893,21 @@
    \doifinsetelse{\delimitedtextparameter\c!plaats}{\v!alinea,\v!marge}%
      {\dosingleempty\dostartdelimitedtextpar}\dostartdelimitedtexttxt}
 
-\def\dostartdelimitedtextpar[#1]%                                     
+\def\dostartdelimitedtextpar[#1]%
   {\let\dostopdelimitedtext\dostopdelimitedtextpar
    \doifsomething{\delimitedtextparameter\c!voorwit}
      {\blanko[\delimitedtextparameter\c!voorwit]}%
    \delimitedtextparameter\c!voor
-   % nicer: 
+   % nicer:
    % \doadaptleftskip {\delimitedtextparameter\c!linkermarge}%
    % \doadaptrightskip{\delimitedtextparameter\c!rechtermarge}%
-   % backward compatible: 
+   % backward compatible:
    \doifelsenothing{#1}
      {\doadaptleftskip {\delimitedtextparameter\c!linkermarge}%
       \doadaptrightskip{\delimitedtextparameter\c!rechtermarge}%
       \let\dodostopdelimitedtextpar\endgraf}
      {\startsmaller[#1]\let\dodostopdelimitedtextpar\stopsmaller}%
-   % so far 
+   % so far
    \dochecknextindentation{\??ci\currentdelimitedtext}%
    \dostartattributes{\??ci\currentdelimitedtext}\c!letter\c!kleur\empty
    \leftdelimitedtextmark
@@ -930,25 +935,25 @@
    \dohandledelimitedtext\c!rechts
    \dostopattributes}
 
-\def\stopdelimitedtext 
+\def\stopdelimitedtext
   {\dostopdelimitedtext
    \doglobal\decrementvalue{\??ci\currentdelimitedtext\c!niveau}%
    \egroup}
 
 \def\delimitedtext[#1]%
-  {\pushmacro\currentdelimitedtext 
+  {\pushmacro\currentdelimitedtext
    \def\currentdelimitedtext{#1}%
    \doifinsetelse{\delimitedtextparameter\c!plaats}{\v!alinea,\v!marge}%
      \dodelimitedtextpar\dodelimitedtexttxt}
 
-% shortcuts 
+% shortcuts
 
 \def\startdelimited{\startdelimitedtext}
 \def\stopdelimited {\stopdelimitedtext}  % no let, dynamically assigned
 \def\delimited     {\delimitedtext}
 
 \def\leftdelimitedtextmark
-  {\dontleavehmode 
+  {\dontleavehmode
    \setbox\scratchbox\hbox{\delimitedtextparameter\c!links}%
    \doif{\delimitedtextparameter\c!plaats}\v!marge{\hskip-\wd\scratchbox}%
    \box\scratchbox}
@@ -989,7 +994,7 @@
 
 \def\doquoteddelimited
   {\dohandledelimitedtext\c!links\relax
-   \groupedcommand 
+   \groupedcommand
      \donothing
      {\dohandledelimitedtext\c!rechts
       \removelastskip
@@ -1006,27 +1011,27 @@
 %   [\c!links={\symbol[\c!leftquotation]},
 %    \c!rechts={\symbol[\c!rightquotation]},
 %    \c!linkermarge=\v!standaard]
-% 
+%
 % \definedelimitedtext
 %   [\v!citeer][\v!citaat]
-% 
+%
 % \setupdelimitedtext
 %   [\v!citeer]
-%   [\c!plaats=\v!tekst, 
+%   [\c!plaats=\v!tekst,
 %    \c!links={\symbol[\c!leftquote]},
 %    \c!rechts={\symbol[\c!rightquote]}]
-% 
+%
 % \definedelimitedtext
 %   [\v!spraak][\v!citaat]
-% 
+%
 % \setupdelimitedtext
 %   [\v!spraak]
 %   [\c!herhaal=\v!ja,
 %    \c!links={\symbol[\c!leftspeech]},
 %    \c!midden={\symbol[\c!middlespeech]},
 %    \c!rechts={\symbol[\c!rightspeech]}]
-% 
-% % how do we call an tight quote 
+%
+% % how do we call an tight quote
 % %
 % % \definedelimitedtext
 % %    [x\v!citaat][\v!citaat]
@@ -1035,11 +1040,11 @@
 % %   [x\v!citaat]
 % %   [\c!springvolgendein=\v!nee,
 % %    \c!voorwit=\v!geenwit]
-% 
+%
 % \def\stelciterenin{\setupdelimitedtext[\v!citaat]}
 % \def\stelcitatenin{\setupdelimitedtext[\v!citeer]}
 
-% seldom used, move from kernel to run time module 
+% seldom used, move from kernel to run time module
 
 % Tijden horen hier niet thuis en zullen in een aparte
 % module worden ondergebracht. voorlopig handhaven we ze nog
@@ -1061,7 +1066,7 @@
 \def\activiteit#1#2%
   {\sym{\tijdspan{#1}{#2}}}
 
-% seldom used, move from kernel to run time module 
+% seldom used, move from kernel to run time module
 
 \def\dotoevoegen#1%
   {\def\next{#1}%
@@ -1080,10 +1085,10 @@
 
 \definecomplexorsimpleempty\toevoegen
 
-% seldom used, move from kernel to run time module 
+% seldom used, move from kernel to run time module
 
-\def\basegrid 
-  {\dosingleempty\dobasegrid} 
+\def\basegrid
+  {\dosingleempty\dobasegrid}
 
 \def\dobasegrid[#1]%
   {\begingroup
@@ -1282,7 +1287,7 @@
    \c!links={[},
    \c!rechts={]}]
 
-% only used at pragma, move from kernel to run time module 
+% only used at pragma, move from kernel to run time module
 
 \def\kenmerkdatum
   {\currentdate[\v!kenmerk]}
@@ -1695,7 +1700,7 @@
 %      \fi
 %      \ifdim\scratchdimen>\ht\secondpairedbox
 %        \setbox\secondpairedbox\vbox to \scratchdimen
-%          {\ifnum\pairedlocationa=3 \vss\fi % 
+%          {\ifnum\pairedlocationa=3 \vss\fi %
 %           \box\secondpairedbox
 %           \ifnum\pairedlocationa=2 \vss\fi}% \kern\zeropoint
 %      \fi
@@ -1738,7 +1743,7 @@
      \fi
      \ifdim\scratchdimen>\ht\secondpairedbox
        \setbox\secondpairedbox\vbox to \scratchdimen
-         {\ifnum\pairedlocationa=3 \vss\fi % 
+         {\ifnum\pairedlocationa=3 \vss\fi %
           \box\secondpairedbox
           \ifnum\pairedlocationa=2 \vss\fi}% \kern\zeropoint
      \fi
@@ -1775,7 +1780,7 @@
 
 \definepairedbox[\v!legenda]
 
-%D Goody: 
+%D Goody:
 
 \newevery \everyinsidefloat \relax
 
@@ -1870,9 +1875,9 @@
         \afterassignment\next\let\nexttoken=}
   \hbox}
 
-% stupid version, does not align top stuff when captions, 
+% stupid version, does not align top stuff when captions,
 % keep as example
-% 
+%
 % \def\dodocombination
 %   {\vbox
 %      {\forgetall % \setupwhitespace[\v!geen]%
@@ -1881,10 +1886,10 @@
 %         [\combinationparameter\c!plaats]
 %         [  \v!boven=>\let\next\tbox,
 %           \v!midden=>\let\next\halfwaybox]%
-%       \next{\copy0}% 
+%       \next{\copy0}%
 %       \ifdim\ht2>\zeropoint % beter dan \wd2, nu \strut mogelijk
 %         \@@cotussen
-%         %\vtop % wrong code 
+%         %\vtop % wrong code
 %         %  {\nointerlineskip  % recently added
 %         %   \hsize\wd0
 %         %   \setupalign[\combinationparameter\c!uitlijnen]%  % \raggedcenter
@@ -1897,7 +1902,7 @@
 %      \ifnum\horcombination=\zerocount
 %        \def\next
 %          {\cr\noalign
-%             {\forgetall % \setupwhitespace[\v!geen]% no 
+%             {\forgetall % \setupwhitespace[\v!geen]% no
 %              \nointerlineskip
 %              \combinationparameter\c!na
 %              \combinationparameter\c!voor
@@ -1961,14 +1966,14 @@
 
 \newbox\combinationstack
 
-\def\saveoncombinationstack#1% 
+\def\saveoncombinationstack#1%
   {\global\setbox\combinationstack\hbox
      {\hbox{\box#1}\unhbox\combinationstack}}
 
 \def\flushcombinationstack
   {\noalign
      {\ifdim\ht\combinationstack>\zeropoint
-\nointerlineskip % nieuw 
+\nointerlineskip % nieuw
         \@@cotussen
         \global\horcombination\maxhorcombination
         \globallet\doflushcombinationstack\dodoflushcombinationstack
@@ -1997,7 +2002,7 @@
   [\c!breedte=\v!passend,
    \c!hoogte=\v!passend,
    \c!afstand=1em,
-   \c!plaats=\v!onder, % can be something {top,left} 
+   \c!plaats=\v!onder, % can be something {top,left}
    \c!voor=\blanko,
    \c!tussen={\blanko[\v!middel]},
    \c!letter=,
@@ -2097,7 +2102,7 @@
 %          #6}
 %       #3}%
 %    \egroup}
-% 
+%
 % \def\dostoprotate%
 %   {\!!counta=\@@rorotatie
 %    \divide\!!counta by 90
@@ -2115,7 +2120,7 @@
 %      \def\@@rotatie{90}%
 %      \dodostoprotate\ht\relax\vfill\wd\relax\hfill
 %    \fi}
-% 
+%
 % \def\dorotatebox#1% {angle} \hbox/\vbox/\vtop
 %   {\bgroup
 %    \hbox\bgroup % compatibility hack
@@ -2178,8 +2183,8 @@
      \dodostoprotate\nextboxht\relax\vfill\nextboxwd\relax\hfill
    \fi}
 
-%D A couple of examples, demonstrating how the depth ios 
-%D taken care of: 
+%D A couple of examples, demonstrating how the depth ios
+%D taken care of:
 %D
 %D \startbuffer
 %D test\rotate[frame=on, rotation=0]  {gans}%
@@ -2188,7 +2193,7 @@
 %D test\rotate[frame=on, rotation=270]{gans}%
 %D test
 %D \stopbuffer
-%D 
+%D
 %D \typebuffer \getbuffer
 
 \def\complexrotate[#1]%
@@ -2465,18 +2470,18 @@
 %D \HL
 %D \stoptabulate
 
-%D Under construction: 
+%D Under construction:
 %D
-%D \starttypen 
+%D \starttypen
 %D \commalistsentence[aap,noot,mies]
 %D \commalistsentence[aap,noot]
 %D \commalistsentence[aap]
-%D \stoptypen 
+%D \stoptypen
 
 \let\handlecommalistsentence\firstofoneargument
 
 \def\commalistsentence[#1]%
-  {\bgroup 
+  {\bgroup
    \getcommalistsize[#1]%
    \ifcase\commalistsize\relax
      \def\serializedcommalist{#1}%
@@ -2484,7 +2489,7 @@
      \let\serializedcommalist\empty
      \scratchcounter\zerocount
      \def\docommando##1%
-       {\advance\scratchcounter \plusone 
+       {\advance\scratchcounter \plusone
         \ifnum\scratchcounter=\plusone
           \scratchtoks{\handlecommalistsentence{##1}}%
         \else
@@ -2500,7 +2505,7 @@
    \serializedcommalist
    \egroup}
 
-\ifx\textcomma\undefined \def\textcomma{,} \fi 
+\ifx\textcomma\undefined \def\textcomma{,} \fi
 
 \setuplabeltext [\s!nl] [and-1=\textcomma\ , and-2= en ]
 \setuplabeltext [\s!en] [and-1=\textcomma\ , and-2=\textcomma\ and ]

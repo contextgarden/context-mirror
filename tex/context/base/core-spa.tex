@@ -1754,11 +1754,32 @@
 
 % We stellen enkele penalties anders in dan Plain TEX:
 
-\def\defaultwidowpenalty{2000} % was: 1000
-\def\defaultclubpenalty {2000} % was:  800
+% oud
+%
+% \widowpenalty=\defaultwidowpenalty\relax
+% \clubpenalty =\defaultclubpenalty \relax
 
-\widowpenalty=\defaultwidowpenalty\relax
-\clubpenalty =\defaultclubpenalty \relax
+\newif\ifgridsnapping % to be sure
+
+\def\defaultwidowpenalty    {2000} % was: 1000
+\def\defaultclubpenalty     {2000} % was:  800
+
+\def\defaultgridwidowpenalty   {0}
+\def\defaultgridclubpenalty    {0}
+
+\def\synchronizecriteria
+  {\dosingleempty\dosynchronizecriteria}
+
+\def\dosynchronizecriteria[#1]%
+  {\ifgridsnapping
+     \widowpenalty\defaultgridwidowpenalty
+     \clubpenalty \defaultgridclubpenalty
+   \else
+     \widowpenalty\defaultwidowpenalty
+     \clubpenalty \defaultclubpenalty
+   \fi}
+
+\synchronizecriteria
 
 % Bovendien definieren we enkele extra \fill's:
 
@@ -2000,11 +2021,15 @@
 
 \setvalue{\@@ragged@@command\v!binnen}% not yet perfect
   {\signalrightpage % may interfere
-   \getvalue{\@@ragged@@command\doifrightpageelse\v!rechts\v!links}}
+   \doifrightpageelse
+     {\getvalue{\@@ragged@@command\v!rechts}}
+     {\getvalue{\@@ragged@@command\v!links}}}
 
 \setvalue{\@@ragged@@command\v!buiten}% not yet perfect
   {\signalrightpage % may interfere
-   \getvalue{\@@ragged@@command\doifrightpageelse\v!links\v!rechts}}
+   \doifrightpageelse
+     {\getvalue{\@@ragged@@command\v!links}}
+     {\getvalue{\@@ragged@@command\v!rechts}}}
 
 % Nodig i.v.m. inspringen eerste alineas
 

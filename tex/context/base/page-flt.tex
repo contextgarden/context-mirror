@@ -16,6 +16,9 @@
 %D This module is currently a mess, due to splitting float
 %D handlers over specific otr's. Consider it work in progress.
 
+%D Some of the sidefloat settings should move to page-sid; now it's quite
+%D fuzzy the way the variables are set/reset.
+
 \unprotect
 
 % naar supp-box.tex
@@ -422,6 +425,9 @@
          \global\advance\sidefloatdownshift##1\lineheight}%
       \expanded{\dorepeatwithcommand[#1]}\movedownsidefloat}%
    \egroup}
+
+\def\hangsidefloat[#1]%
+  {\global\sidefloatsidelines#1\relax}
 
 \def\xdocompletefloat#1#2#3#4#5#6%
   {\ifextrafloatactions
@@ -1197,6 +1203,21 @@
 %\stelblokkopjesin[\c!uitlijnen=\v!links]
 %\stelblokkopjesin[\c!uitlijnen=\v!rechts]
 
+\def\docheckcaptioncontent#1#2#3#4%
+  {\ifnofloatcaption \else
+     \setbox\tempcaptionbox\hbox
+       {\trialtypesettingtrue\footnotesenabledfalse\putcompletecaption{#4}{#2}{#3}{0}}%
+     % new, \placefigure{\XMLflush{somecaption}}{} passes earlier empty check
+     % so here we misuse the scratch box; actually this means that the previous
+     % test can go away (some day, when i redo this module)
+     \ifdim\wd\tempcaptionbox=\zeropoint
+       \global\emptyfloatcaptiontrue
+       \ifnofloatnumber
+         \global\nofloatcaptiontrue
+       \fi
+     \fi
+   \fi}
+
 \def\dosetpagfloat#1#2#3#4% \copy wegwerken
   {\bgroup
    \setlocalfloathsize
@@ -1210,14 +1231,12 @@
    \def\locatefloat
      {\chardef\alignstrutmode\zerocount
       \alignedline\@@flflplaats\v!midden}%
+   \docheckcaptioncontent{#1}{#2}{#3}{#4}%
    \ifnofloatcaption
-     \dopreparenocaption{#1}{#2}{#3}{#4}
+     \dopreparenocaption{#1}{#2}{#3}{#4}%
      \edef\width{\the\wd\floatbox}%
      \doglobal\addlocalbackgroundtobox\floatbox
    \else
-     \setbox\tempcaptionbox\hbox
-       {\trialtypesettingtrue
-        \footnotesenabledfalse\putcompletecaption{#4}{#2}{#3}{0}}%
      % todo: installable maken, variant/method=auto vs macro
      \doifinsetelse\@@kjkjplaats{\v!hoog,\v!midden,\v!laag}
        {\dopreparesidecaption{#1}{#2}{#3}{#4}}
@@ -1494,11 +1513,10 @@
    %\showcomposition
    \setbox\tempfloatbox\vbox{\borderedfloatbox{#4}}%
    \addlocalbackgroundtobox\tempfloatbox % no \doglobal
+   \docheckcaptioncontent{#1}{#2}{#3}{#4}%
    \ifnofloatcaption
      \global\setbox\floatbox\vbox{\box\tempfloatbox}%
    \else
-     \setbox\tempcaptionbox\hbox
-       {\forgetall\putcompletecaption{#4}{#2}{#3}{0}}%
      \doifelse\@@kjkjbreedte\v!max
        {\dosetraggedvbox\@@kjkjuitlijnen
         \setbox\tempcaptionbox\raggedbox

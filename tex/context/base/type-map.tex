@@ -1,8 +1,8 @@
 %D \module
 %D   [       file=type-map,
-%D        version=2001.04.12, 
+%D        version=2001.04.12,
 %D          title=\CONTEXT\ Typescript Macros,
-%D       subtitle=Mapfile scripts, 
+%D       subtitle=Mapfile scripts,
 %D         author=Hans Hagen,
 %D           date=\currentdate,
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
@@ -11,66 +11,69 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
+%D Beware, this may change to run time loading once pdftex can do
+%D that per page.
+
 %D We cannot be too clever here since loading the mapfile is
-%D a time sensitive operation. Better to load a couple more 
-%D then to run into problems. 
+%D a time sensitive operation. Better to load a couple more
+%D then to run into problems.
 
 \starttypescript [map] [all]
   \loadmapfile[original-ams-cmr.map]
   \loadmapfile[original-ams-euler.map]
-\stoptypescript 
+\stoptypescript
 
 \starttypescript [map] [lm]
   \loadmapfile[original-ams-lmr.map]
-\stoptypescript 
+\stoptypescript
 
 \starttypescript [map] [il2]
   \loadmapfile[il2-ams-cmr.map]
-\stoptypescript 
+\stoptypescript
 
 \starttypescript [map] [pl0]
   \loadmapfile[pl0-ams-cmr.map]
-\stoptypescript 
+\stoptypescript
 
 % beware, this one will not handle \usetypescript [map] [x,y]
-% 
-% \starttypescript [map] [ec,texnansi,8r] 
+%
+% \starttypescript [map] [ec,texnansi,8r]
 %   \loadmapfile[\typescripttwo-urw-times.map]
 %   \loadmapfile[\typescripttwo-urw-helvetica.map]
-% \stoptypescript 
+% \stoptypescript
 
 \starttypescript [map] [8r]
   \loadmapfile[8r-adobe-utopia.map]
   \loadmapfile[8r-bit-charter.map]
   \loadmapfile[8r-public-antp.map]
   \loadmapfile[8r-public-antt.map]
-  \loadmapfile[8r-urw-bookman.map] 
+  \loadmapfile[8r-urw-bookman.map]
   \loadmapfile[8r-urw-courier.map]
   \loadmapfile[8r-urw-helvetica.map]
   \loadmapfile[8r-urw-palatino.map]
   \loadmapfile[8r-urw-times.map]
   \loadmapfile[8r-urw-zapfchan.map]
-\stoptypescript 
+\stoptypescript
 
 \starttypescript [map] [ec]
   \loadmapfile[ec-adobe-utopia.map]
   \loadmapfile[ec-bit-charter.map]
   \loadmapfile[ec-public-antp.map]
   \loadmapfile[ec-public-antt.map]
-  \loadmapfile[ec-urw-bookman.map] 
+  \loadmapfile[ec-urw-bookman.map]
   \loadmapfile[ec-urw-courier.map]
   \loadmapfile[ec-urw-helvetica.map]
   \loadmapfile[ec-urw-palatino.map]
   \loadmapfile[ec-urw-times.map]
   \loadmapfile[ec-urw-zapfchan.map]
-\stoptypescript 
+\stoptypescript
 
-\starttypescript [map] [texnansi] 
+\starttypescript [map] [texnansi]
   \loadmapfile[texnansi-adobe-utopia.map]
   \loadmapfile[texnansi-bit-charter.map]
   \loadmapfile[texnansi-public-antp.map]
   \loadmapfile[texnansi-public-antt.map]
-  \loadmapfile[texnansi-urw-bookman.map] 
+  \loadmapfile[texnansi-urw-bookman.map]
   \loadmapfile[texnansi-urw-courier.map]
   \loadmapfile[texnansi-urw-helvetica.map]
   \loadmapfile[texnansi-urw-palatino.map]
@@ -81,28 +84,31 @@
 \starttypescript [map] [ec,texnansi,8r]
   \loadmapfile[original-youngryu-px.map]
   \loadmapfile[original-youngryu-tx.map]
-\stoptypescript 
+\stoptypescript
 
-% to do 
+% to do
 
 \starttypescript [map] [default]
   \loadmapfile[original-micropress-informal.map]
-\stoptypescript 
+\stoptypescript
 
-\starttypescript [map] [texnansi] 
+\starttypescript [map] [texnansi]
   \loadmapfile[texnansi-bh-lucida.map]
-\stoptypescript 
+\stoptypescript
 
-\starttypescript [map] [ec] 
+\starttypescript [map] [ec]
   \loadmapfile[ec-bh-lucida.map]
-\stoptypescript 
+  % this may change to original-*.map
+  \loadmapfile[fourier.map]
+  \loadmapfile[fourier-utopia-expert.map]
+\stoptypescript
 
-\starttypescript [map] [8r] 
+\starttypescript [map] [8r]
   \loadmapfile[8r-bh-lucida.map]
-\stoptypescript 
+\stoptypescript
 
-%\starttypescript [math] [helvetica] [all] 
+%\starttypescript [math] [helvetica] [all]
 %  \loadmapfile[original-micropress-helvetica.map]
-%\stoptypescript 
+%\stoptypescript
 
-\endinput 
+\endinput

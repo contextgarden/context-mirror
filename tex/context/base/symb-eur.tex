@@ -8,8 +8,8 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
-%C details. 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
 
 \definefontsynonym [EuroSerif]            [eurose]
 \definefontsynonym [EuroSerifBold]        [euroseb]
@@ -33,18 +33,18 @@
 \definefontsynonym [EuroMonoBoldSlanted]  [euromobi]
 
 \loadmapfile [original-adobe-euro.map]
- 
+
 \definesymbol [euro] [\getglyph{Euro}{\char160}]
 
 \startencoding[default]
 
   \definecharacter texteuro {\symbol[euro]}
 
-\stopencoding 
+\stopencoding
 
 \unexpanded\def\euro{\doiftextelse\texteuro\texteuro{\symbol[euro]}}
 
-% ok for one font series, but not for mixed sets 
+% ok for one font series, but not for mixed sets
 %
 % \unexpanded\def\euro
 %   {\doiftextelse \texteuro \texteuro
@@ -53,14 +53,14 @@
 %D The next table shows the complete set of symbols:
 %D
 %D \starttabulate[|l|c|c|c|c|c|c|]
-%D \NC           \NC \tex{tf}    \NC \tex{bf}    \NC \tex{sl} 
+%D \NC           \NC \tex{tf}    \NC \tex{bf}    \NC \tex{sl}
 %D               \NC \tex{it}    \NC \tex{bs}    \NC \tex{bi}    \NC\NR
-%D \NC \rm Serif \NC \rm\tf\euro \NC \rm\bf\euro \NC \rm\sl\euro 
+%D \NC \rm Serif \NC \rm\tf\euro \NC \rm\bf\euro \NC \rm\sl\euro
 %D               \NC \rm\it\euro \NC \rm\bs\euro \NC \rm\bi\euro \NC\NR
-%D \NC \ss Sans  \NC \ss\tf\euro \NC \ss\bf\euro \NC \ss\sl\euro 
+%D \NC \ss Sans  \NC \ss\tf\euro \NC \ss\bf\euro \NC \ss\sl\euro
 %D               \NC \ss\it\euro \NC \ss\bs\euro \NC \ss\bi\euro \NC\NR
-%D \NC \tt Mono  \NC \tt\tf\euro \NC \tt\bf\euro \NC \tt\sl\euro 
-%D               \NC \tt\it\euro \NC \tt\bs\euro \NC \tt\bi\euro \NC\NR  
+%D \NC \tt Mono  \NC \tt\tf\euro \NC \tt\bf\euro \NC \tt\sl\euro
+%D               \NC \tt\it\euro \NC \tt\bs\euro \NC \tt\bi\euro \NC\NR
 %D \stoptabulate
 
-\endinput 
+\endinput

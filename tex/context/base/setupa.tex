@@ -96,7 +96,7 @@ sectionnumber:  Abschnittnummer
          name:  jmeno
          text:  text
       section:  sekce
-sectionnumber:  sekcecislo % ? 
+sectionnumber:  sekcecislo % ?
      singular:  jmeno v singularu
        plural:  jmeno v pluralu
        matrix:  n*m
@@ -144,7 +144,7 @@ sectionnumber:  numero sezione
           name:  nume
           text:  text
        section:  sectiune
- sectionnumber:  sectiunenumar % ? 
+ sectionnumber:  sectiunenumar % ?
       singular:  nume singular
         plural:  nume pluram
         matrix:  n*m
@@ -165,12 +165,12 @@ sectionnumber:  numero sezione
 
 % Enkele letter-instellingen
 
-\def\setupnumfont  {}
-\def\setuptxtfont  {\tttf}
-\def\setupvarfont  {\ttsl}
-\def\setupoptfont  {\ttsl}
-\def\setupalwcolor {}
-\def\setupoptcolor {darkgray}
+\def\setupnumfont {}
+\def\setuptxtfont {\tttf}
+\def\setupvarfont {\ttsl}
+\def\setupoptfont {\ttsl}
+\def\setupalwcolor{}
+\def\setupoptcolor{darkgray}
 
 % Het onderstaande is nodig om \type af te handelen in
 % argumenten. Standaard gebeurt dit niet.
@@ -194,7 +194,7 @@ sectionnumber:  numero sezione
 \gdef \verbatimsetupvariablepart{\def<<##1>>{\stpr{##1}}}
 \gdef  \protectsetupvariablepart{\def<<##1>>{\string\stpv{##1}}}
 \gdef\visualizesetupvariablepart{\def<<##1>>{\stpv{##1}}}
-\gdef \naturalsetupvariablepart{\def<<##1>>{\string<\string<##1\string>\string>}}
+\gdef  \naturalsetupvariablepart{\def<<##1>>{\string<\string<##1\string>\string>}}
 
 \egroup
 
@@ -267,14 +267,14 @@ sectionnumber:  numero sezione
 
 \unprotect
 
-\def\@@setup    {@@setup}
-\def\c!stp      {}
-\def\c!setupref {stp}
-\def\??stp      {@@stp}
+\def\@@setup   {@@setup}
+\def\c!stp     {}
+\def\c!setupref{stp}
+\def\??stp     {@@stp}
 
 \def\c!setup!variable!#1{{\setupvarfont\getmessage{setup}{#1}}}
 \def\c!setup!command! #1{{\setupvarfont\texescape\getmessage{setup}{command}#1}}
-   
+
 \def\c!command!      {\c!setup!variable!{command}}
 \def\c!dimension!    {\c!setup!variable!{dimension}}
 \def\c!filename!     {\c!setup!variable!{file}}
@@ -284,7 +284,7 @@ sectionnumber:  numero sezione
 \def\c!number!       {\c!setup!variable!{number}}
 \def\c!reference!    {\c!setup!variable!{reference}}
 \def\c!plural!       {\c!setup!variable!{plural}}
-\def\c!singular!     {\c!setup!variable!{singula}}
+\def\c!singular!     {\c!setup!variable!{singular}}
 \def\c!text!         {\c!setup!variable!{text}}
 \def\c!formula!      {\c!setup!variable!{formula}}
 \def\c!font!         {\c!setup!variable!{file}}
@@ -334,6 +334,10 @@ sectionnumber:  numero sezione
 \def\c!wrds!   {\breaksetup\leftargument.. \breaksetup\c!dots!\ \breaksetup..\rightargument\breaksetup}
 \def\c!par!    {\breaksetup\texescape par\breaksetup}
 \def\c!opt!    #1{{\setupoptfont{#1}}}
+
+\def\c!opt!        #1{\ifx#1\c!or!\@EA\c!doropt!\else\@EA\c!noropt!\fi#1}
+\def\c!doropt! #1#2#3{{\setupoptfont{#1#2#3}}}
+\def\c!noropt!     #1{{\setupoptfont{#1}}}
 
 \definieerregister
   [texmacro]
@@ -368,7 +372,7 @@ sectionnumber:  numero sezione
 
 \newcount\v!dotnumber!
 
-\def\c!dots!%
+\def\c!dots!
   {\ifv!numberingdots!
      \global\advance\v!dotnumber! by 1\relax
      .{\setupnumfont\the\v!dotnumber!}.%
@@ -391,7 +395,7 @@ sectionnumber:  numero sezione
    \veryraggedright
    \noindent
    \hangindent=\@@stpbreedte
-   \writesetupparbox{\getinterfaceconstant{#1}}%
+   \writesetupparbox{\let\c!setup!variable!\firstofoneargument\getinterfaceconstant{#1}}%
    \processcommalist[#2]\dowritesetupparameter
    \doifcommonelse{#3}{#2}{}{\underbar{#3}}%
    \endgraf
@@ -459,7 +463,7 @@ sectionnumber:  numero sezione
    \variable[..=..][\getmessage{setup}{see} \inheritsetup{#1}\next#3][]%
    \egroup}
 
-\def\stelsetupin%
+\def\stelsetupin
   {\dodoubleargument\getparameters[\??stp]}
 
 \bgroup \catcode`<=\active
@@ -486,7 +490,7 @@ sectionnumber:  numero sezione
 
 \def\setsetupreference#1\to#2%
   {\bgroup
-   \verbatimsetupvariablepart 
+   \verbatimsetupvariablepart
    \let\subsetup=\subsetupreference
    \xdef#2{\c!setupref:#1}%
    \egroup}
@@ -497,7 +501,7 @@ sectionnumber:  numero sezione
    \egroup}
 
 \def\checkparametervalues#1#2#3%
-  {\setbox0=\hbox{\getinterfaceconstant{#1}}%
+  {\setbox0=\hbox{\let\c!setup!variable!\firstofoneargument\getinterfaceconstant{#1}}%
    \ifdim\wd0\morecharacter\dimen0\relax
      \dimen0=\wd0
    \fi}
@@ -513,7 +517,7 @@ sectionnumber:  numero sezione
      [#1]
      {\raise.15ex\hbox{$\gobackwardcharacter\hskip.5em\goforwardcharacter$}}}
 
-\def\dointeractivesetup%
+\def\dointeractivesetup
   {\ifv!alwaysinteractive!
      \dointeractivesetupsymbol\setupalwcolor
    \fi
@@ -545,7 +549,7 @@ sectionnumber:  numero sezione
 
 \newcounter\currentsetupnumber
 
-\def\dosetupreference%
+\def\dosetupreference
   {\doifundefinedelse{done::\currentsetupreference}
      {\pagereference[\currentsetupnumber]%
       \pagereference[\currentsetupreference]%
@@ -591,7 +595,7 @@ sectionnumber:  numero sezione
          {\let\subsetup=\gobbleoneargument
           \redefinesetupconstants
           \setuptxtfont\setstrut\strut
-          \visualizesetupvariablepart 
+          \visualizesetupvariablepart
           \writetexcommand{#2}#3%
           \ifbreaksetup\hfill\else\hss\fi
           \ifnum\@@stpverwijzing>0
@@ -656,7 +660,7 @@ sectionnumber:  numero sezione
    \egroup
    \@@stpna}
 
-\def\setup%
+\def\setup
   {\@@stpvoor
    \bgroup
    \catcode`\<=\@@active
@@ -665,7 +669,7 @@ sectionnumber:  numero sezione
    \shortsetupfalse
    \dosetup}
 
-\def\shortsetup%
+\def\shortsetup
   {\@@stpvoor
    \bgroup
    \catcode`\<=\@@active
@@ -674,17 +678,17 @@ sectionnumber:  numero sezione
    \shortsetuptrue
    \dosetup}
 
-\def\startsetupfile%
+\def\startsetupfile
   {\bgroup
    \catcode`\<=\active
    \unprotect}
 
-\def\stopsetupfile%
+\def\stopsetupfile
   {\protect
    \egroup
    \endinput}
 
-\def\startsetup#1\command[#2]#3\type[#4]#5\stopsetup%
+\def\startsetup#1\command[#2]#3\type[#4]#5\stopsetup
   {\bgroup
    \verbatimsetupvariablepart
    \doglobal\increment\currentsetupnumber\relax
@@ -701,7 +705,7 @@ sectionnumber:  numero sezione
    \expanded{\texcommando[#2*]{#2}}%
    \egroup}
 
-\let\documenteduntilhere=\relax
+\let\documenteduntilhere\relax
 
 \definieerblok  [dutch, english, german, czech, italian]
 \verbergblokken [dutch, english, german, czech, italian]
@@ -713,12 +717,12 @@ sectionnumber:  numero sezione
    \c!verwijzing=0,
    \c!criterium=\v!gebruikt]
 
-\def\plaatssetup%
+\def\plaatssetup
   {\bgroup
    \getvalue{\e!plaats\e!lijstmet texcommandos}
    \egroup}
 
-\def\plaatselkesetup% for fun purposes only
+\def\plaatselkesetup % for fun purposes only
   {\bgroup
    \stelsetupin[\c!verwijzing=2]%
    \setupreferencing[\c!status=\v!stop]%
@@ -729,11 +733,8 @@ sectionnumber:  numero sezione
 \let\placesetup     \plaatssetup
 \let\placeeverysetup\plaatselkesetup
 
-
 \bgroup \catcode`\<=\active \def<{\lesscharacter} \egroup
 
 % \showmessage{setup}{1}{} \catcode`\<=\active
 
-\protect
-
-\endinput
+\protect \endinput

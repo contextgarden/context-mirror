@@ -8,17 +8,17 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
-%C details. 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
 
-%D This module looks like crap, is not documented, will 
-%D change, and used to be called modu-*.tex. 
+%D This module looks like crap, is not documented, will
+%D change, and used to be called modu-*.tex.
 
-% todo: 
-% 
-% file inclusions -> hyperlinks 
+% todo:
+%
+% file inclusions -> hyperlinks
 
-\mainlanguage[en] % better not here 
+\mainlanguage[en] % better not here
 
 \usemodule[eenheid]
 
@@ -32,15 +32,16 @@
 % title    -> category
 % subtitle -> subtitle
 
-% herzien ivm fonts 
+% herzien ivm fonts
 
-% nog eens \interface \\ \\ verder doorvoeren 
+% nog eens \interface \\ \\ verder doorvoeren
 
 \def\resetmodule%
   {\getrawparameters
      [Module]
      [       file=\jobname,
           version={\currentdate[\v!jaar,{.},\v!maand,{.},\v!dag]},
+           system=\CONTEXT,
             title=,
          subtitle=,
            author=Hans Hagen,
@@ -59,13 +60,13 @@
   {\dosingleempty\dostartmodule}
 
 \def\complexmodule[#1]%
-  {\startglobal % i.v.m. \bgroup in \startdocumentation  
+  {\startglobal % i.v.m. \bgroup in \startdocumentation
    \getrawparameters[Module][#1]
-   \stopglobal  % i.v.m. \bgroup in \startdocumentation  
+   \stopglobal  % i.v.m. \bgroup in \startdocumentation
    \moduletitel}
 
 \def\stopmodule%
-  {\pagina  
+  {\pagina
    \plaatsregister
      [\v!index]
      [\c!balanceren=\v!ja,
@@ -78,59 +79,59 @@
 \definecomplexorsimple\module
 
 % \startmode[atpragma]
-% 
-%   \def\TitelPagina#1% can be done more efficient 
+%
+%   \def\TitelPagina#1% can be done more efficient
 %     {\startMPrun
-%         mpgraph := #1 ; 
-%         input mp-cont ; 
+%         mpgraph := #1 ;
+%         input mp-cont ;
 %      \stopMPrun
 %      \externalfigure
 %        [\bufferprefix mprun.#1]
 %        [\c!hoogte=\vsize,
 %         \c!breedte=\hsize]}
-% 
+%
 %   \defineoverlay[titelpagina][\TitelPagina{512}]
-% 
+%
 % \stopmode
 
 \startuseMPgraphic{titlepage}
 
-  width  := PaperWidth ; 
-  height := PaperHeight ; 
+  width  := PaperWidth ;
+  height := PaperHeight ;
 
-  color local_red, local_white, local_blue ; 
+  color local_red, local_white, local_blue ;
 
   local_white := white ;
 
-  local_blue := local_white randomized (.6,.8) ; 
-  local_red  := local_white randomized (.3,.4) ; 
+  local_blue := local_white randomized (.6,.8) ;
+  local_red  := local_white randomized (.3,.4) ;
 
-  u := width/400 ; 
+  u := width/400 ;
 
-  def a_module (expr dx, dy) =  
-    picture p ; p := image 
-      ( ddy := 0 ; sx := 60u ; 
-        for i=1 upto (4 randomized 2) : 
+  def a_module (expr dx, dy) =
+    picture p ; p := image
+      ( ddy := 0 ; sx := 60u ;
+        for i=1 upto (4 randomized 2) :
           sy := 7u randomized 3u ;
-          fill unitsquare xyscaled(sx,sy) shifted (0,ddy) 
+          fill unitsquare xyscaled(sx,sy) shifted (0,ddy)
             withcolor local_red ;
-          ddy := ddy + sy + 4u ; 
-        endfor ) ; 
-    p := p shifted (dx,dy) shifted - center p ; 
+          ddy := ddy + sy + 4u ;
+        endfor ) ;
+    p := p shifted (dx,dy) shifted - center p ;
     fill boundingbox p enlarged 8u withcolor local_white ;
-    fill boundingbox p enlarged 4u withcolor local_blue ; 
-    draw p ; 
-  enddef ; 
+    fill boundingbox p enlarged 4u withcolor local_blue ;
+    draw p ;
+  enddef ;
 
   set_grid(width, height, width/15, height/15) ;
   forever:
     if new_on_grid(uniformdeviate width,uniformdeviate height):
-      a_module(dx,dy) ; 
+      a_module(dx,dy) ;
     fi ;
     exitif grid_full ;
   endfor ;
 
-  clip currentpicture to unitsquare xyscaled(width,height) ; 
+  clip currentpicture to unitsquare xyscaled(width,height) ;
 \stopuseMPgraphic
 
 \defineoverlay
@@ -138,8 +139,8 @@
   [\useMPgraphic{titlepage}]
 
 % When run at \PRAGMA, we use a slightly different graphic,
-% so that we can recognize an original. Users are not 
-% supposed to mimick this feature. 
+% so that we can recognize an original. Users are not
+% supposed to mimick this feature.
 
 \doifmode{atpragma}{\readfile{s-mod-04.tex}{}{}}
 
@@ -171,24 +172,24 @@
        \edef\ModuleNumber{0\ModuleNumber}
      \fi\fi
      \setupbackgrounds
-       [\v!pagina] 
+       [\v!pagina]
        [\c!achtergrond=titelpagina]
    \fi
    \startmakeup[\v!standaard][\c!hoofdstatus=\v!geen,\c!voetstatus=\v!geen]
-     \switchtobodyfont[14.4pt,ss] 
+     \switchtobodyfont[14.4pt,ss]
      \bgroup
        \def\CONTEXT {Con\kern-.15em\TeX t}
        \def\TEXUTIL {\TeX Util}
        \def\PPCHTEX {PPCH\TeX}
        \def\METAPOST{MetaPost}
        \hfill
-         {\definedfont[SansBold at 96pt]\setstrut   
-          \TitleFrame{\CONTEXT}}    
+         {\definedfont[SansBold at 96pt]\setstrut
+          \TitleFrame{\Modulesystem}}
        \vfill
        \definetabulate[temp][|l|l|]%
-       \switchtobodyfont[17.3pt,ss] 
+       \switchtobodyfont[17.3pt,ss]
        \hfill
-         {\bf\setstrut 
+         {\bf\setstrut
           \TitleFrame
             {\insidefloattrue\setuptabulate[\c!voor=,\c!na=]%
              \starttemp
@@ -199,7 +200,7 @@
                \doifsomething{\Moduleauthor}
                  {\NC author \EQ \Moduleauthor \NC\NR}%
                   \NC date \EQ \currentdate \NC\NR
-              %\doifsomething{\Modulesuggestions} % todo: generates space 
+              %\doifsomething{\Modulesuggestions} % todo: generates space
               %  {\NC suggestions \NC \Modulesuggestions \NC\NR}%
              \stoptemp}}
      \egroup
@@ -234,7 +235,7 @@
     [definition]
 
   \setuptyping
-    [definition]  
+    [definition]
     [\c!voor={\pagina[\v!voorkeur]}\blanko\PresetParagraphNumber\CompressDefinitions,
      \c!na=\ResetParagraphNumber\blanko,
      \c!optie=\Moduletype]
@@ -243,7 +244,7 @@
 
 \startmode[nocode]
 
-% \definieerbuffer[definition] % ignore 
+% \definieerbuffer[definition] % ignore
 
   \long\def\startdefinition#1\stopdefinition{}
 
@@ -286,18 +287,18 @@
      {}%
    \EveryLine
      {\ShowParagraphNumberA}%
-   \EveryPar 
+   \EveryPar
      {\vadjust{\nobreak}%
       \ShowParagraphNumberB}}
 
-\EveryPar % skip one 
-  {\EveryPar 
+\EveryPar % skip one
+  {\EveryPar
      {\doglobal\newcounter\NOfMarginLines}}
 
 \def\dodomargeaanduidingen[#1]#2%
   {\def\docommando##1%
      {\indent\hbox
-        {\ifx#2\relax 
+        {\ifx#2\relax
            \index{##1}%
          \else
            \index{#2{##1}}%
@@ -337,17 +338,17 @@
 
 \def\doshowelements[#1][#2]
   {\bgroup
-   \processXMLbuffer 
-   \typebuffer 
+   \processXMLbuffer
+   \typebuffer
    \setupcolors[\c!status=\v!stop]
    \showXSDcomponent[#1][#2]
    \egroup}
 
-% \macros{a,b}        
-% \macros{a,b}{b}     
-% \macros[a]{a,b}{b}  
+% \macros{a,b}
+% \macros{a,b}{b}
+% \macros[a]{a,b}{b}
 
-% weg ermee 
+% weg ermee
 
 \definieeralineas [interface] [\c!n=2]
 \stelalineasin    [interface] [1] [\c!breedte=4cm]
@@ -421,7 +422,7 @@
   \HL
 \stoptabel
 \stopbuffer
- 
+
 \startbuffer[lang-d]
 \starttabel[|l|l|]
   \HL
@@ -462,18 +463,18 @@
         \language[#1]%
         \let\normalbar=|
         \starttabel[||||]
-        \HL 
+        \HL
         \VL \THREE{\bf subsentence symbol and quotes} \VL\SR
         \HL
         \VL \citaat{#3 #4} \VL \citeer{#2} \VL \let|=\normalbar |<||<|#3|>|#4|>| \VL\SR
         \VL \citaat{#3 #4} \VL \citeer{#2} \VL |<||<|#3|>|#4|>| \VL\SR
-        \HL 
+        \HL
         \stoptabel
         \egroup
       \hss}}
-  
+
 \gdef\doShowAllLanguageValues [#1] [#2] #3 #4
-  {\vbox 
+  {\vbox
      {\ShowTextsValues [#1] [#2]
       \vskip2em
       \ShowLanguageValues  [#1] [#2] #3 #4 }
@@ -487,12 +488,12 @@
 
 \protect
 
-%D Command references: 
+%D Command references:
 
 \input setupa
 \input setupb
 
-\unprotect 
+\unprotect
 
 \def\showsetup%
   {\doglobal\newcounter\CurrentArgument
@@ -503,4 +504,4 @@
   [\c!achtergrond=\v!raster,
    \c!kader=\v!uit]
 
-\protect \endinput 
+\protect \endinput

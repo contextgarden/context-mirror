@@ -453,13 +453,7 @@
    \global\kopwit             \layoutparameter\c!kopwit
    \setlayoutdimensions % the rest of the `dimensions'
    \doifelse\@@lygrid\v!ja\gridsnappingtrue\gridsnappingfalse
-   \ifgridsnapping
-     \widowpenalty\zerocount % is gewoon beter
-     \clubpenalty \zerocount % zeker bij grids
-   \else
-     \widowpenalty\defaultwidowpenalty
-     \clubpenalty \defaultclubpenalty
-   \fi
+   \synchronizecriteria[\layoutparameter\c!criterium]% see elsewhere
    \simplesetupwhitespace
    \simplesetupblank
    \global\snijwit\layoutparameter\c!snijwit
@@ -591,7 +585,7 @@
 
 \appendtoks \checklayout \to \everystarttext
 
-\def\checkcurrentlayout % public and used in naw, so keep this name 
+\def\checkcurrentlayout % public and used in naw, so keep this name
   {\ifundefined{\??ly\realfolio\c!status}%
      \doifoddpageelse\checkcurrentoddlayout\checkcurrentevenlayout
    \else
@@ -634,7 +628,7 @@
   {\getparameters[\??ly#1][\c!status=\v!start,#2]}
 
 \def\dodosetuplayout[#1][#2]%
-  {\ConvertToConstant\doifnot{#2}\v!reset % #2 ? 
+  {\ConvertToConstant\doifnot{#2}\v!reset % #2 ?
      {\getparameters[\??ly#1][#2]%
       \checkforems[#2]}}
 
@@ -1199,6 +1193,7 @@
                     \c!dx=\!!zeropoint,
                     \c!dy=\!!zeropoint,
                   \c!grid=\v!nee,
+             \c!criterium=\s!default,
             \c!clipoffset=\!!zeropoint,
                 \c!regels=0,
               \c!kolommen=1,

@@ -11,20 +11,20 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-%D This module contains all kind of macros for moving content 
-%D around. Many macros here come from other modules, but 
-%D depencies made it more clear to isolate them. 
+%D This module contains all kind of macros for moving content
+%D around. Many macros here come from other modules, but
+%D depencies made it more clear to isolate them.
 
-% \placeornament 
+% \placeornament
 
-\unprotect 
+\unprotect
 
 % \definelayer[\v!tekst-2][\c!positie=\v!ja]
 % \definelayer[\v!tekst-1][\c!positie=\v!ja]
 % \definelayer[\v!tekst+1][\c!positie=\v!ja]
 % \definelayer[\v!tekst+2][\c!positie=\v!ja]
 
-% we need to set the size, else we get dimensions depending 
+% we need to set the size, else we get dimensions depending
 % on the content, which in itsel fis ok, but can lead to loops
 % due to rounding errors (happened in demo-obv)
 
@@ -34,7 +34,7 @@
 \definelayer[\v!tekst+2][\c!positie=\v!ja,\c!breedte=\overlaywidth,\c!hoogte=\overlayheight]
 
 \def\internaltextoverlay#1% will become more generic and installable
-  {\startoverlay          % i.e. probably an overlay by itself 
+  {\startoverlay          % i.e. probably an overlay by itself
      {\positionoverlay{\v!tekst#1}} % see later
      {\composedlayer  {\v!tekst#1}}
    \stopoverlay}
@@ -43,11 +43,11 @@
 %  {\hbox to \zeropoint{\positionoverlay{\v!tekst#1}\hss}%
 %   \composedlayer{\v!tekst#1}}
 
-% todo: share info, so that tuo will be smaller 
+% todo: share info, so that tuo will be smaller
 
 \defineoverlay[\v!tekst-2][\internaltextoverlay{-2}]
 \defineoverlay[\v!tekst-1][\internaltextoverlay{-1}]
-\defineoverlay[\v!tekst+1][\internaltextoverlay{+1}]  
+\defineoverlay[\v!tekst+1][\internaltextoverlay{+1}]
 \defineoverlay[\v!tekst+2][\internaltextoverlay{+2}]
 
 % to be documented
@@ -90,7 +90,7 @@
          \c!hoogte=\ht\scratchbox,
          \c!offset=\!!zeropoint,
          #2,#3]
-        {\setlayer[#1]{\flushnextbox}}% 
+        {\setlayer[#1]{\flushnextbox}}%
       \framed
         [#2,
          \c!achtergrond=anchor,
@@ -133,7 +133,7 @@
      [#1]
      [\c!status=\v!start,
       \c!x=\!!zeropoint,\c!y=\!!zeropoint,
-      \c!offset=\!!zeropoint,\c!rotatie=, % geen 0 ! 
+      \c!offset=\!!zeropoint,\c!rotatie=, % geen 0 !
       \c!hoffset=\!!zeropoint,\c!voffset=\!!zeropoint,
       \c!plaats=rb,\c!hoek=,#2]}
 
@@ -151,7 +151,7 @@
   {\bgroup
    \forgetall
    \dontcomplain
-   \dowithnextbox 
+   \dowithnextbox
      {\ifundefined{\@@collectorbox#1}%
         \writestatus{collector}{unknown layer #1}%
       \else
@@ -162,7 +162,7 @@
 
 \def\collectorparameter#1{\csname\??cb\currentcollector#1\endcsname}
 
-\def\dodosetcollector[#1][#2]% todo: keep reference point 
+\def\dodosetcollector[#1][#2]% todo: keep reference point
   {\def\currentcollector{#1}%
    \chardef\collectorbox\csname\@@collectorbox#1\endcsname
    \getparameters[\??cb#1][#2]%
@@ -198,7 +198,7 @@
          \fi}}%
    \setbox\nextbox\hbox
      {\alignedbox[\collectorparameter\c!plaats]\vbox{\flushnextbox}}%
-   \boxmaxdepth\zeropoint % really needed, nice example 
+   \boxmaxdepth\zeropoint % really needed, nice example
    \global\advance\boxhdisplacement\@@layerxpos
    \ifdim\boxhdisplacement<\zeropoint
      \global\setbox\collectorbox\hbox
@@ -230,9 +230,9 @@
    % combine height and depth into depth only (later flushed as height)
    \global\setbox\collectorbox\hbox
      {\lower\ht\collectorbox\box\collectorbox}%
-   % just to be sure 
+   % just to be sure
    \ifdim\wd\collectorbox<\@@layerxsiz
-     \global\wd\collectorbox\@@layerxsiz 
+     \global\wd\collectorbox\@@layerxsiz
    \fi}
 
 \def\flushcollector[#1]%
@@ -251,19 +251,19 @@
 \def\composedcollector#1{\flushcollector[#1]}
 
 \def\resetcollector[#1]%
-  {\ifundefined{\@@collectorbox#1}\else 
+  {\ifundefined{\@@collectorbox#1}\else
      \global\setbox\csname\@@collectorbox#1\endcsname\emptybox
    \fi}
 
 \def\adaptcollector
   {\dodoubleargument\doadaptcollector}
 
-\def\doadaptcollector[#1][#2]% 
+\def\doadaptcollector[#1][#2]%
   {\bgroup
    \def\currentcollector{#1}%
    \chardef\collectorbox\csname\@@collectorbox#1\endcsname
    \getparameters
-     [\??cb#1][\c!voffset=\zeropoint,\c!hoffset=\zeropoint,#2]% 
+     [\??cb#1][\c!voffset=\zeropoint,\c!hoffset=\zeropoint,#2]%
    \scratchdimen\wd\collectorbox
    \advance\scratchdimen\collectorparameter\c!hoffset
    \global\wd\collectorbox\scratchdimen
@@ -291,14 +291,14 @@
 \def\docollectedtext[#1][#2]#3%
   {\bgroup
    \dowithnextbox
-     {\setcollector 
+     {\setcollector
         [caption]
         {\flushnextbox}%
-      \setcollector 
+      \setcollector
         [caption][#1]
         {\getparameters[\??du][#2]%
          \dosetfontattribute\??du\c!letter\setupinterlinespace
-         \framed % watch the special setting of kader/overlay 
+         \framed % watch the special setting of kader/overlay
            [\c!kader=\v!overlay,#2]
            {\doattributes\??du\c!letter\c!kleur{#3}}}%
       \composedcollector{caption}%
@@ -310,13 +310,13 @@
 %   [background=color,backgroundcolor=white,offset=0pt]
 %   {gans}
 %   {\externalfigure[koe][width=3cm]}
-% 
+%
 % \collectedtext
 %   [rotation=90,corner={right,bottom},location={right,top}]
 %   [frame=on,offset=0pt]
 %   {gans}
 %   {\externalfigure[koe][width=3cm]}
-% 
+%
 % \collectedtext
 %   [rotation=90,corner={left,bottom},location={left,top}]
 %   [frame=on,offset=0pt]
@@ -362,13 +362,13 @@
 %   [background=color,backgroundcolor=white,offset=0pt]
 %   {gans}
 %   {\externalfigure[koe][width=3cm]}
-% 
+%
 % \layeredtext
 %   [rotation=90,corner={right,bottom},location={right,top}]
 %   [frame=on,offset=0pt]
 %   {gans}
 %   {\externalfigure[koe][width=3cm]}
-% 
+%
 % \layeredtext
 %   [rotation=90,corner={left,bottom},location={left,top}]
 %   [frame=on,offset=0pt]
@@ -399,36 +399,36 @@
 %   [rotation=90,corner={right,bottom},location={right,top},
 %    hoffset=-.25ex]
 %   [frame=on,background=color,backgroundcolor=red,offset=0pt]
-% 
+%
 % \ruledhbox{\affiliation{gans}{\externalfigure[koe][width=3cm]}}
-% 
+%
 % \defineornament
 %   [affiliation]
 %   [rotation=90,corner={right,bottom},location={right,top},
 %    hoffset=-.25ex,alternative=b]
 %   [frame=on,background=color,backgroundcolor=red,offset=0pt]
-% 
+%
 % \ruledhbox{\affiliation{gans}{\externalfigure[koe][width=3cm]}}
-% 
+%
 % \defineornament
 %   [affiliation]
 %   [rotation=90,corner={right,bottom},location={left,top},
 %    hoffset=.25ex,voffset=.25ex,alternative=a]
 %   [background=color,style=\ss\tfxx,backgroundcolor=white,offset=0pt]
-% 
+%
 % \affiliation{photo}{\externalfigure[molen][width=3cm]}
-% 
+%
 % \defineornament
 %   [affiliation]
 %   [rotation=90,corner={right,bottom},location={left,top},
 %    hoffset=.25ex,voffset=.25ex,alternative=b]
 %   [background=color,style=\ss\tfxx,backgroundcolor=white,offset=0pt]
-% 
+%
 % \affiliation{drawing}{\externalfigure[hakker][width=3cm]}
 
-% pas op: aanpassen aan nieuwe layer hoek ankers en columnset 
+% pas op: aanpassen aan nieuwe layer hoek ankers en columnset
 
-\newcounter\nofbleeds % per pag 
+\newcounter\nofbleeds % per pag
 
 \def\setupbleeding
   {\dodoubleempty\getparameters[\??bg]}
@@ -451,30 +451,30 @@
 \def\bleedheight{\the\vsize}%
 
 \def\dobleed[#1]#2%
-  {\hbox\bgroup  
+  {\hbox\bgroup
    \xdef\bleedwidth {\the\hsize}%
    \xdef\bleedheight{\the\vsize}%
    \doglobal\increment\nofbleeds
    \getparameters[\??bg][#1]%
    \!!doneafalse % left
-   \!!donebfalse % right 
+   \!!donebfalse % right
    \!!donecfalse % top
-   \!!donedfalse % bottom  
+   \!!donedfalse % bottom
    % replace this part ! todo: default location
    \processaction
      [\@@bgplaats]
-     [ t=>\!!donectrue\let\@@bghoffset\!!zeropoint, 
+     [ t=>\!!donectrue\let\@@bghoffset\!!zeropoint,
        b=>\!!donedtrue\let\@@bghoffset\!!zeropoint,
-       l=>\!!doneatrue\let\@@bgvoffset\!!zeropoint, 
+       l=>\!!doneatrue\let\@@bgvoffset\!!zeropoint,
        r=>\!!donebtrue\let\@@bgvoffset\!!zeropoint,
-      bl=>\!!doneatrue\!!donedtrue,   
-      lb=>\!!doneatrue\!!donedtrue,   
-      br=>\!!donebtrue\!!donedtrue,   
-      rb=>\!!donebtrue\!!donedtrue,  
-      tl=>\!!doneatrue\!!donectrue,  
-      lt=>\!!doneatrue\!!donectrue,  
-      tr=>\!!donebtrue\!!donectrue,  
-      rt=>\!!donebtrue\!!donectrue]%  
+      bl=>\!!doneatrue\!!donedtrue,
+      lb=>\!!doneatrue\!!donedtrue,
+      br=>\!!donebtrue\!!donedtrue,
+      rb=>\!!donebtrue\!!donedtrue,
+      tl=>\!!doneatrue\!!donectrue,
+      lt=>\!!doneatrue\!!donectrue,
+      tr=>\!!donebtrue\!!donectrue,
+      rt=>\!!donebtrue\!!donectrue]%
    \doifelse\@@bgrek\v!ja\donetrue\donefalse
    \scratchdimen\@@bgbreedte
    \ifdone
@@ -505,7 +505,7 @@
      {\setbox\scratchbox\topskippedbox{\box\scratchbox}}%
    \setbox\scratchbox\hbox to \@@bgbreedte
      {\if!!donea\hss\fi\box\scratchbox\if!!doneb\hss\fi}%
-   \if!!doned 
+   \if!!doned
      \setbox\scratchbox\hbox
        {\lower\bleedheight\hbox{\raise\@@bghoogte\box\scratchbox}}%
    \fi
@@ -525,24 +525,24 @@
 
 % \placefigure[left]{none}
 %   {\bleed[width=5cm,height=3cm,location=lt]{\externalfigure[koe][bleed]}}
-% 
-% \input tufte 
-% 
+%
+% \input tufte
+%
 % \placefigure[left]{none}
 %   {\bleed[width=5cm,height=3cm,location=l]{\externalfigure[koe][bleed]}}
-% 
-% \input tufte 
-% 
+%
+% \input tufte
+%
 % \placefigure[right]{none}
 %   {\bleed[width=5cm,height=3cm,location=r]{\externalfigure[koe][bleed]}}
-% 
-% \input tufte 
-% 
+%
+% \input tufte
+%
 % \placesomefloat[right]{none}
 %   {\bleed[width=5cm,height=3cm,location=rb]{\externalfigure[koe][bleed]}}
-% 
-% \input tufte 
-% 
+%
+% \input tufte
+%
 % \placefigure
 %   [top,none]
 %   {} % no caption
@@ -551,7 +551,7 @@
 %       voffset=3mm,
 %       width=0cm,
 %       height=6\lineheight,
-%       page=yes, % correct for topskip 
+%       page=yes, % correct for topskip
 %       location=lt]
 %      {\externalfigure[koe][bleed][frame=on]}}
 
@@ -605,49 +605,61 @@
 % \setupbackgrounds
 %   [page]
 %   [background=pagefigures]
-% 
+%
 % \definelayer
 %   [pagefigures]
 %   [x=-2mm,
 %    y=-2mm,
 %    width=\paperwidth,
 %    height=\paperheight]
-% 
+%
 % \definelayerpreset [lefttop]     [corner={left,top},location={right,bottom}]
 % \definelayerpreset [righttop]    [corner={right,top},location={left,bottom}]
 % \definelayerpreset [leftbottom]  [corner={left,bottom},location={right,top}]
 % \definelayerpreset [rightbottom] [corner={right,bottom},location={left,top}]
 % \definelayerpreset [middle]      [corner=middle,location=middle]
-% 
+%
 % \setlayer[pagefigures][preset=lefttop]
 % \setlayer[pagefigures][preset=righttop]
 % \setlayer[pagefigures][preset=leftbottom]
 % \setlayer[pagefigures][preset=rightbottom]
 
-\definelayerpreset 
+\definelayerpreset
   [\v!links\v!boven]
-  [\c!hoek={\v!links,\v!boven},%
-   \c!plaats={\v!rechts,\v!onder}]
+  [\c!hoek={\v!links,\v!boven},\c!plaats={\v!rechts,\v!onder}]
 
-\definelayerpreset 
+\definelayerpreset
   [\v!rechts\v!boven]
-  [\c!hoek={\v!rechts,\v!boven},%
-   \c!plaats={\v!links,\v!onder}]
+  [\c!hoek={\v!rechts,\v!boven},\c!plaats={\v!links,\v!onder}]
 
-\definelayerpreset 
+\definelayerpreset
   [\v!links\v!onder]
-  [\c!hoek={\v!links,\v!onder},%
-   \c!plaats={\v!rechts,\v!boven}]
+  [\c!hoek={\v!links,\v!onder},\c!plaats={\v!rechts,\v!boven}]
 
-\definelayerpreset 
-  [\v!rechts\v!onder] 
-  [\c!hoek={\v!rechts,\v!onder},%
-   \c!plaats={\v!links,\v!boven}]
+\definelayerpreset
+  [\v!rechts\v!onder]
+  [\c!hoek={\v!rechts,\v!onder},\c!plaats={\v!links,\v!boven}]
 
-\definelayerpreset 
-  [\v!midden]      
+\definelayerpreset
+  [\v!midden]
   [\c!hoek=\v!midden,\c!plaats=\v!midden]
-
+
+\definelayerpreset
+  [\v!midden\v!boven]
+  [\c!plaats=\v!onder,\c!hoffset=.5\layerwidth]
+
+\definelayerpreset
+  [\v!midden\v!onder]
+  [\c!plaats=\v!boven,\c!hoffset=.5\layerwidth,\c!voffset=\layerheight]
+
+\definelayerpreset
+  [\v!midden\v!links]
+  [\c!plaats=\v!rechts,\c!voffset=.5\layerwidth]
+
+\definelayerpreset
+  [\v!midden\v!rechts]
+  [\c!plaats=\v!links,\c!hoffset=\layerwidth,\c!voffset=.5\layerheight]
+  
 \def\alignedbox
   {\dodoubleempty\doalignedbox[]}
 
@@ -710,8 +722,8 @@
 \def\offsetbox
   {\dodoubleempty\dooffsetbox[]}
 
-% left/right/top/bottomoffset -> dimensions change 
-% x/y                         -> dimensions don't change 
+% left/right/top/bottomoffset -> dimensions change
+% x/y                         -> dimensions don't change
 
 \def\dooffsetbox[#1][#2]%
   {\bgroup
@@ -745,7 +757,7 @@
         \scratchdimen\nextboxht
         \advance\scratchdimen\nextboxdp
         \nextboxht\scratchdimen
-        \nextboxdp\zeropoint      
+        \nextboxdp\zeropoint
       \fi
       \freezedimenmacro\@@oxbreedte
       \freezedimenmacro\@@oxhoogte
@@ -762,15 +774,15 @@
       \egroup}#1}
 
 % \useMPlibrary[pre] \setupbackgrounds[page][background=pagegrid]
-% 
+%
 % \placefigure[left,none]{}{\offset[leftoffset=1cm]{\externalfigure[koe][breedte=3cm]}}
-% \input tufte 
+% \input tufte
 % \placefigure[left,none]{}{\offset[rightoffset=1cm]{\externalfigure[koe][breedte=3cm]}}
-% \input tufte 
+% \input tufte
 % \placefigure[left,none]{}{\offset[topoffset=1cm]{\externalfigure[koe][breedte=3cm]}}
-% \input tufte 
+% \input tufte
 % \placefigure[left,none]{}{\offset[bottomoffset=1cm]{\externalfigure[koe][breedte=3cm]}}
-% \input tufte 
+% \input tufte
 
 \def\offset {\dodoubleempty\dooffsetbox [\hbox]} % yes or no
 \def\aligned{\dosingleempty\doalignedbox[\hbox]} % yes or no
@@ -792,14 +804,14 @@
 % \ltabbed{\romeins{3}}{\romeins{1}} test \endgraf
 % \ltabbed{\romeins{3}}{\romeins{2}} test \endgraf
 % \ltabbed{\romeins{3}}{\romeins{3}} test \endgraf
-% 
+%
 % \rtabbed{\romeins{3}}{\romeins{1}} test \endgraf
 % \rtabbed{\romeins{3}}{\romeins{2}} test \endgraf
 % \rtabbed{\romeins{3}}{\romeins{3}} test \endgraf
-% 
+%
 % \ctabbed{\romeins{3}}{\romeins{1}} test \endgraf
 % \ctabbed{\romeins{3}}{\romeins{2}} test \endgraf
-% \ctabbed{\romeins{3}}{\romeins{3}} test \endgraf  
+% \ctabbed{\romeins{3}}{\romeins{3}} test \endgraf
 
 % alternative, if done, then other name
 %
@@ -815,24 +827,24 @@
 %    \processcommalist[#3]\docommando
 %    \hbox to \scratchdimen{#1#4#2}%
 %    \egroup}
-% 
+%
 % \def\ltabbed{\dotabbed\relax\hss}
 % \def\rtabbed{\dotabbed\hss  \relax}
 % \def\ctabbed{\dotabbed\hss  \hss}      \let\mtabbed\ctabbed
-% 
+%
 % \ltabbed{\romeins{10},\romeins{2000},\romeins{15}}{\romeins{10}}   test \endgraf
 % \ltabbed{\romeins{10},\romeins{2000},\romeins{15}}{\romeins{15}}   test \endgraf
 % \ltabbed{\romeins{10},\romeins{2000},\romeins{15}}{\romeins{2000}} test \endgraf
-% 
+%
 % \rtabbed{\romeins{10},\romeins{2000},\romeins{15}}{\romeins{10}}   test \endgraf
 % \rtabbed{\romeins{10},\romeins{2000},\romeins{15}}{\romeins{15}}   test \endgraf
 % \rtabbed{\romeins{10},\romeins{2000},\romeins{15}}{\romeins{2000}} test \endgraf
-% 
+%
 % \ctabbed{\romeins{10},\romeins{2000},\romeins{15}}{\romeins{10}}   test \endgraf
 % \ctabbed{\romeins{10},\romeins{2000},\romeins{15}}{\romeins{15}}   test \endgraf
 % \ctabbed{\romeins{10},\romeins{2000},\romeins{15}}{\romeins{2000}} test \endgraf
 
-% to be documented 
+% to be documented
 
 \def\phantombox[#1]%
   {\hbox\bgroup
@@ -848,4 +860,4 @@
    \box\scratchbox
    \egroup}
 
-\protect \endinput 
+\protect \endinput
