@@ -17,46 +17,6 @@
 
 \unprotect
 
-%I n=Items
-%I c=\items,\stelitemsin
-%I
-%I Met het commando \items kunnen invullijsten worden
-%I gegenereerd:
-%I
-%I   \items{alternatief1,alternatief2,...,alternatiefN}
-%I
-%I Als in plaats van een alternatief een - wordt gegeven,
-%I dan wordt ruimte opengelaten.
-%I
-%I De wijze waarop items worden weergegeven wordt ingesteld
-%I met het commando:
-%I
-%I   \stelitemsin[plaats=,symbool=,breedte=,n=,voor=,
-%I     tussen=,na=,uitlijnen=]
-%I
-%I Mogelijke plaatsen zijn links, rechts, onder, boven en
-%I inmarge. Als breedte wordt de breedte van de totale tekst
-%I opgegeven. Het aantal is facultatief, eventueel kan er
-%I 'onbekend' worden meegegeven. Uitlijnen is 'ja' of 'nee'.
-%P
-%I Indien gewenst, kan de instelling direkt achter \item worden
-%I geplaatst:
-%I
-%I   \items[plaats=,symbool=,...]{alternatief1,...}
-%I
-%I In plaats van een symbool kan ook een van de volgende
-%I aanduidingen worden meegegeven:
-%I
-%I   a   a, b, c, d, ...
-%I   A   A, B, C, D, ...
-%I   n   1, 2, 3, 4, ...
-%I   r   i, ii, iii, ...
-%I   R   I, II, III, ...
-%I
-%I Eventueel kan een nummer worden meegegeven. In dat
-%I geval wordt het overeenkomstige symbool van de
-%I opsomming gebruikt (1--n).
-
 %\def\checkinterlineskip%
 %  {\ifvmode
 %     \ifdim\lastskip>\!!zeropoint\relax
@@ -96,14 +56,14 @@
       \fi\fi}%
    \vbox{#2}}
 
-\def\dostelitemsin[#1]%  maakt direkt gebruik van \??ss en \??cv
+\def\dostelitemsin[#1]%
   {\getparameters[\??is][#1]%
    \doif{\@@isbreedte}{\v!onbekend}
      {\def\@@isbreedte{\hsize}}%
-   \doifdefinedelse{\??cv\@@issymbool}
+   \doifconversiondefinedelse{\@@issymbool}
      {\def\doitembullet##1{\convertnumber{\@@issymbool}{##1}}}
-     {\doifdefined{\??ss\@@issymbool}
-        {\def\doitembullet##1{\symbol[\@@issymbool]}}}}
+     {\doifsymboldefinedelse{\@@issymbool} 
+        {\def\doitembullet##1{\symbol[\@@issymbool]}}{}}}
 
 \def\makeitemsandbullets#1%
   {\doifelse{\@@isn}{\v!onbekend}
@@ -184,36 +144,6 @@
 
 \definecomplexorsimpleempty\items
 
-%I n=Tabulatie (1)
-%I c=\definieeralineas,\stelalineasin
-%I
-%I Er kunnen paragrafen in meerdere kolommen worden gezet na
-%I het commando:
-%I
-%I   \definieeralineas[naam][n=,voor=,na=,afstand=,
-%I     hoogte=,lijn=,binnen=]
-%I
-%I Kolommen worden vervolgens gezet met:
-%I
-%I   \startnaam .... \naam .... \naam .... \stopnaam
-%I
-%I of (soms verwarrend):
-%I
-%I   \naam .... \naam .... \naam .... \naam
-%I
-%I of (lekker kort):
-%I
-%I   \naam .... \\ .... \\ .... \\
-%I
-%I waarbij het aantal malen .... \naam  of \\ gelijk is
-%I aan n. Naast \naam en \\ is ook \volgendenaam toegestaan.
-%P
-%I Het is mogelijk per kolom een en ander in te stellen met
-%I het commando:
-%I
-%I   \stelalineasin[naam][kolomnummer][afstand=,breedte=,
-%I     hoogte=,boven=,onder=,letter=,binnen=,lijn=,
-%I     uitlijnen=,tolerantie=]
 
 % Te zijner tijd [plaats=boven,onder,midden] implementeren,
 % in dat geval moet eerst de maximale hoogte worden bepaald.
@@ -405,21 +335,6 @@
    \par
    \getvalue{\??al#1\c!na}}%
 
-%I n=Tabulatie (2)
-%I c=\steltabin,\tab
-%I
-%I Eenvoudige tabulatie is mogelijk met het commando:
-%I
-%I   \tab{tekst} tekst tekst tekst .....
-%I
-%I Instelling vindt plaats met het commando:
-%I
-%I   \steltabin[monster=,breedte=,kopletter=,voor,na=]
-%I
-%I Dit commando is een vereenvoudigde variant van het
-%I commando \doordefinieren. In de regel kan volstaan
-%I worden met het opgeven van een monster. Dit is het
-%I woord dat de breedte bepaalt.
 
 \def\dosteltabin[#1]%
   {\getparameters[\??ta]
@@ -444,27 +359,6 @@
 \def\steltabin%
   {\dosingleargument\dosteltabin}
 
-%I n=Diversen
-%I c=\celsius,\bedrag,\breuk
-%I c=\procent,\promille
-%I
-%I De volgende commando's vatten (vooral mathematische)
-%I zetcommando's samen:
-%I
-%I   \chem{symbool}{onder}{boven}    chemische symbolen
-%I   \celsius{graden}                graden Celsius (..~øC)
-%I   \breuk{boven}{onder}            breuken («)
-%I   \bedrag{getal}                  geldbedragen (Ÿ~..)
-%I   \punten[n]                      puntjes (. . .)
-%I   \ongeveer                       plus-minus (ñ)
-%I   \inch                           inch ('')
-%I   \doorsnede                      \circ doorsneden met /
-%I   \graden                         ø (^\circ)
-%I   \procent                        percentage (vgl promille)
-%I   \promille                       promilage
-%I   \dollar                         dollar teken
-%I   \sterling                       pound sterling teken
-%I   \florijn                        gulden teken
 
 % The following macro's are derived from PPCHTEX and
 % therefore take some LaTeX font-switching into account.
@@ -662,37 +556,6 @@
    f%
    \egroup}
 
-%I n=Citaten
-%I c=\startcitaat,\citaat,\stelcitatenin
-%I c=\citeer,\stelciterenin
-%I
-%I Als variant op \startsmaller is het volgende commando
-%I beschikbaar:
-%I
-%I   \startcitaat
-%I   tekst
-%I   \stopcitaat
-%I
-%I Rond de tekst worden in de marge dubbele quotes
-%I geplaatst. Ook bij dit commando kunnen tussen [] maten
-%I worden opgegeven:
-%I
-%I   \startcitaat[2*links,rechts]
-%I
-%I In de lopende tekst kan gebruik worden gemaakt van:
-%I
-%I   \citaat{tekst}
-%I   \citeer{tekst}
-%I
-%I Het eerste commando levert dubbele quotes en het tweede
-%I enkele quotes.
-%P
-%I Er zijn twee varianten (1 en 2) beschikbaar die kunnen
-%I worden ingesteld met:
-%I
-%I   \stelciterenin
-%I     [letter=]
-
 \newsignal\quotationsignal
 \def\quotationskip{.125em}
 
@@ -787,15 +650,6 @@
 \def\activiteit#1#2%
   {\sym{\tijdspan{#1}{#2}}}
 
-%I n=Toevoegen
-%I c=\toevoegen
-%I
-%I Er kan witruimte worden gemarkeerd met het commando:
-%I
-%I   \toevoegen[instelling]{korte tekst}
-%I
-%I waarbij als instellingen mogelijk zijn: klein, middel of
-%I groot.
 
 \def\dotoevoegen#1%
   {\def\next{#1}%
@@ -814,25 +668,6 @@
 
 \definecomplexorsimpleempty\toevoegen
 
-%I n=Roosters
-%I c=\rooster
-%I
-%I Er kunnen roosters (te vergelijken met ruitjespapier)
-%I worden gemaakt met:
-%I
-%I   \rooster[nx=,ny=,dx=,dy=,eenheid=,xstap=,ystap=,
-%I     offset=,schaal=,factor=]
-%I
-%I De instelling [nx=20,ny=20,dx=.5,dy=.5,eenheid=cm] levert
-%I een patroon van 10cm bij 10cm van hokjes van 0.5cm op.
-%I
-%I Met '.stap' kunnen getallen langs de assen worden gezet.
-%I als 0 wordt ingevuld (default), dan worden geen getallen
-%I gezet. Met offset (ja of nee) kan men aangeven of de
-%I getallen langs de assen binnen of buiten de box rond
-%I het rooster vallen (vergelijk \stelpositionerenin).
-%I
-%I !! Dit commando wordt nog aangepast/uitgebreid. !!
 
 \def\dorooster[#1]%
   {\begingroup
@@ -945,33 +780,6 @@
 \def\rooster%
   {\dosingleempty\dorooster}
 
-%I n=Literatuurlijsten
-%I c=\stelpublicatiesin,\startpublicatie,\publicatie
-%I
-%I Literatuurlijsten kunnen worden opgemaakt met het commando:
-%I
-%I \startpublicatie[referentie]
-%I   \naam ....
-%I   \titel ....
-%I   \jaar ....
-%I   \plaats ....
-%I   \uitgever ....
-%I \stoppublicatie
-%I
-%I Een publicatie wordt opgeroepen met:
-%I
-%I   \publicatie[referentie]
-%P
-%I Het formaat kan worden ingesteld met het commando:
-%I
-%I   \stelpublicatiesin[variant=,voor=,na=,nummeren=,
-%I     breedte=,kopletter=,links=,rechts=]
-%I
-%I waarbij mogelijke varianten zijn: normaal apa en normaal.
-%I Nummeren kan 'ja' of 'nee' zijn; links en rechts
-%I hebben betrekking op de weergave in de tekst en zijn
-%I standaard [ en ].
-
 % Dit wordt:
 %
 %   \doorverwijzen[naam][instellingen] enz.
@@ -1040,27 +848,6 @@
 \def\publicatie#1[#2]%
   {\@@pblinks\in{#1}[#2]\@@pbrechts}
 
-%I n=Kenmerken
-%I c=\kenmerk,\kenmerkdatum
-%I
-%I Er kan een kenmerk worden gezet met het commando:
-%I
-%I   \kenmerk[bet=,ken=,dat=,van=,aan=,ref=]
-%I
-%I waarbij de verplichte parameters staan voor 'betreft',
-%I 'kenmerk' en 'datum' en de optionele voor 'van', 'aan' en
-%I 'referentie'.
-%I
-%I Een kenmerk-datum kan worden gezet met het commando:
-%I
-%I   \kenmerkdatum
-%I
-%I zodat een kenmerk er bijvoorbeeld uitziet als:
-%I
-%I   \kenmerk
-%I     [bet=rekening eerste termijn,
-%I      ken=\kenmerkdatum.sork.gvk / afo,
-%I      dat=\currentdate]
 
 \def\kenmerkdatum%
   {\currentdate[\v!kenmerk]}

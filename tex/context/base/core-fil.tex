@@ -39,6 +39,16 @@
        1: synonymum souboru -- je jiz pouzito pro --
 \stopmessages
 
+\startmessages  italian  library: files
+   title: file
+       1: sinonimo file -- già in uso per --
+\stopmessages
+
+\startmessages  norwegian  library: files
+   title: filer 
+       1: filesynonym -- er allerede brukt for --
+\stopmessages
+
 %D \macros 
 %D   {definefilesynonym}
 %D
@@ -184,10 +194,10 @@
 %D We also redefine: 
 
 \def\MPgraphicfile%
-   {\bufferprefix mp\ifMPrun run\else graph\fi}
+  {\bufferprefix mp\ifMPrun run\else graph\fi}
 
 \def\convertMPcolorfile%
-   {\bufferprefix metacmyk.tmp}
+  {\bufferprefix metacmyk.tmp}
 
 %D Temporarily here: 
 

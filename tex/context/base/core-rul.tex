@@ -164,10 +164,18 @@
 %D A quite valid way of letting drivers do the job, is giving
 %D a solid rule a gray texture.  
 
+\def\raster[#1]%
+  {\groupedcommand{\startraster[#1]}{\stopraster}}
+
 \def\setgraybox\width#1\height#2\depth#3\raster#4\corner#5\radius#6\\%
-  {\startraster[#4]%
-   \dofilledbox\width#1\height#2\depth#3\corner#5\radius#6\\%
-   \stopraster}
+  {\doifelsenothing{#4} % avoid black rules when no gray
+     {\dophantombox\width#1\height#2\depth#3\corner#5\radius#6\\}
+     {\raster[#4]%
+     {\dofilledbox \width#1\height#2\depth#3\corner#5\radius#6\\}}}
+
+%D The auxiliary macro is defined as: 
+
+\def\dophantombox#1\\{\hphantom{\dofilledbox#1\\}}
 
 %D We don't have to stick to a \TEX\ drawn rule, but 
 %D also can use rounded or even fancier shapes, as we will 
@@ -218,19 +226,18 @@
 
 \def\setcolorbox\width#1\height#2\depth#3\color#4\corner#5\radius#6\\%
   {\ifincolor
-     \doifsomething{#4}
-       {\startcolor[#4]%
-        \dofilledbox\width#1\height#2\depth#3\corner#5\radius#6\\%
-        \stopcolor}%
+     \doifcolorelse{#4}{\color[#4]%
+    {\dofilledbox \width#1\height#2\depth#3\corner#5\radius#6\\}}
+    {\dophantombox\width#1\height#2\depth#3\corner#5\radius#6\\}%
    \else
-     \dofilledbox\width#1\height#2\depth#3\corner#5\radius#6\\%
+     \dophantombox\width#1\height#2\depth#3\corner#5\radius#6\\%
    \fi}
 
 \def\colorbox%
   {\setcolorbox}
 
 %D \macros
-%D   {defineoverlay, 
+%D   {defineoverlay,doifoverlayelse, 
 %D    overlaywidth, overlayheight, overlaydepth,
 %D    overlaycolor, overlaylinecolor, overlaylinewidth}
 %D 
@@ -287,12 +294,12 @@
 %D 
 %D The resulting box is lowered to the right depth. 
   
-\def\overlaywidth      {\the\vsize}     % We preset the variables 
-\def\overlayheight     {\the\hsize}     % to some reasonable default
-\let\overlaydepth       \!!zeropoint    % values. The attributes 
-\let\overlaycolor       \empty          % of the frame can be (are) 
-\let\overlaylinewidth   \!!zeropoint    % set somewhere else. 
-\let\overlaylinecolor   \empty          %
+\def\overlaywidth      {\the\vsize\space} % We preset the variables 
+\def\overlayheight     {\the\hsize\space} % to some reasonable default
+\let\overlaydepth       \!!zeropoint      % values. The attributes 
+\let\overlaycolor       \empty            % of the frame can be (are) 
+\let\overlaylinewidth   \!!zeropoint      % set somewhere else. 
+\let\overlaylinecolor   \empty            %
 
 \newtoks\everyoverlay
 
@@ -301,23 +308,23 @@
 
 \def\dodefineoverlay[#1][#2]%
   {\def\docommando##1%
-     {\setvalue{executeoverlay##1}{\executedefinedoverlay##1\\#2\\}}%
+     {\setvalue{\??ov##1}{\executedefinedoverlay##1\\#2\\}}%
    \processcommalist[#1]\docommando}
 
 \long\def\executedefinedoverlay#1\\#2\\#3#4#5#6#7#8#9% 
   {\bgroup 
    \scratchdimen=#3%
-   \edef\overlaywidth{\the\scratchdimen}%
+   \edef\overlaywidth{\the\scratchdimen\space}%
    \scratchdimen=#4%
    \advance\scratchdimen by #5%
-   \edef\overlayheight{\the\scratchdimen}%
+   \edef\overlayheight{\the\scratchdimen\space}%
    \scratchdimen=#5%
-   \edef\overlaydepth{\the\scratchdimen}%
+   \edef\overlaydepth{\the\scratchdimen\space}%
    \edef\overlaycolor{#6}%
-\prependtoks
-  \hsize=\overlaywidth
-  \vsize=\overlayheight
-\to\everyoverlay
+   \prependtoks
+     \hsize=\overlaywidth
+     \vsize=\overlayheight
+   \to\everyoverlay
    %\writestatus
    %  {overlay}
    %  {#1\space w=\overlaywidth/h+d=\overlayheight/d=\overlaydepth]}%
@@ -339,12 +346,17 @@
 \def\executeoverlay#1#2#3#4#5#6#7%
   {}
 
+%D For testing we provide: 
+
+\def\doifoverlayelse#1%
+  {\doifdefinedelse{\??ov#1}}
+
 %D We predefine two already familiar backgrounds: 
 
-\setvalue{executeoverlay\v!raster}#1#2#3#4#5#6#7%
+\setvalue{\??ov\v!raster}#1#2#3#4#5#6#7%
   {\graybox\width#1\height#2\depth#3\raster#5\corner#6\radius#7\\}
 
-\setvalue{executeoverlay\v!kleur}#1#2#3#4#5#6#7%
+\setvalue{\??ov\v!kleur}#1#2#3#4#5#6#7%
   {\colorbox\width#1\height#2\depth#3\color#4\corner#6\radius#7\\}
 
 %D After all these preparations, the background macro does no
@@ -358,21 +370,30 @@
 %D \som a \TEX\ or driver based method
 %D \stopopsomming
 %D 
-%D Here we go: 
+%D The macro can be extended by adding commands to the token 
+%D list register \type {\everybackgroundbox}. For this 
+%D purpose, the name of the current background is available in 
+%D \type {\currentbackgound}.
 
 \newbox\extraframebox
 
+\newtoks\everybackgroundbox
+
+\let\currentbackground\empty
+
 \def\dodobackgroundbox#1#2#3#4#5#6%
   {\bgroup
+   \def\currentbackground{#1}%
+   \the\everybackgroundbox
    \setbox\extraframebox=\hbox
-     {\executeifdefined{executeoverlay#1}\gobblesevenarguments
+     {\executeifdefined{\??ov\currentbackground}\gobblesevenarguments
         {\dimen2}{\dimen4}{\dimen6}{#3}{#4}{#5}{#6}}%
    \setbox\extraframebox=\hbox
      {\vbox{\moveleft\dimen0\box\extraframebox}}%
-   \wd\extraframebox=\backgroundwidth
+   \wd\extraframebox=\!!zeropoint % \backgroundwidth
    \ht\extraframebox=\backgroundheight
    \dp\extraframebox=\backgrounddepth
-   \box\extraframebox\hskip-\backgroundwidth
+   \box\extraframebox % \hskip-\backgroundwidth
    \egroup}
 
 \def\dobackgroundbox#1\background#2\color#3\raster#4\offset#5\corner
@@ -383,18 +404,20 @@
       \dimen2=\wd#1\advance\dimen2 by 2\dimen0
       \dimen4=\ht#1\advance\dimen4 by  \dimen0
       \dimen6=\dp#1\advance\dimen6 by  \dimen0\advance\dimen6 by #8\relax
+      \edef\backgroundwidth {\the\wd#1}%  
+      \edef\backgroundheight{\the\ht#1}%
+      \edef\backgrounddepth {\the\dp#1}% 
+     %\edef\foregroundbox{\box#1}%
+      \def\foregroundbox% fuzzy but needed hack, this \vss, otherwise 
+        {\vbox to \backgroundheight{\vss\box#1\vss}}% vertical shift
       \def\docommando##1%
         {\dodobackgroundbox{##1}{#1}{#3}{#4}{#6}{#7}}%
-      \hbox
-        {\edef\backgroundwidth {\the\wd#1}%
-         \edef\backgroundheight{\the\ht#1}%
-         \edef\backgrounddepth {\the\dp#1}% 
-         \edef\foregroundbox{\box#1}%
-         \expanded{\rawprocesscommalist[#2]\noexpand\docommando}%
-         \box#1}}} 
+      \hbox to \backgroundwidth % in case 'foreground' is uses as overlay
+        {\expanded{\rawprocesscommalist[#2]\noexpand\docommando}%
+         \box#1\hss}}}
 
 %D One can explictly insert the foreground box. For that 
-%D purpose we introduce the overlay \tyupe {foreground}.  
+%D purpose we introduce the overlay \type {foreground}.  
 
 \defineoverlay[\v!voorgrond][\foregroundbox]
 
@@ -536,6 +559,8 @@
 %D mere fact that this way we can use the optional argument
 %D grabbers.
 
+\def\defaultframeoffset{.25ex}
+
 \unexpanded\def\framed%
   {\bgroup
    \presetlocalframed[\??ol]%
@@ -576,7 +601,6 @@
 
 \def\localframed%
   {\bgroup
-   \inframedtrue 
    \dodoubleempty\startlocalframed}
 
 %D Before we go into details, we present (and implement) the
@@ -592,16 +616,154 @@
 %D backgrounds, when \type {#2} sets the offset to \type
 %D {overlay}, both offsets become invalid. 
 
+% \def\startlocalframed[#1][#2]% beware, also on cont-loc! 
+%   {\bgroup
+%    \inframedtrue 
+%    \edef\@@framed{#1}% 
+%    % this piece of pre expansion is needed 
+%    \scratchdimen\getvalue{\@@framed\c!kaderoffset}%  
+%    \setevalue{\@@framed\c!kaderoffset}{\the\scratchdimen}% 
+%    \doifnotvalue{\@@framed\c!achtergrondoffset}{\v!kader}  
+%      {\scratchdimen\getvalue{\@@framed\c!achtergrondoffset}%  
+%       \setevalue{\@@framed\c!achtergrondoffset}{\the\scratchdimen}}% 
+%    % to prevent deadlock in case of self refering 
+%    \ifsecondargument % faster 
+%      \getparameters[\@@framed][#2]% here ! 
+%    \fi
+%    % beware, both the frame and background offset can be overruled 
+%    \edef\localoffset{\getvalue{\@@framed\c!offset}}%
+%    \edef\localwidth {\getvalue{\@@framed\c!breedte}}%
+%    \edef\localheight{\getvalue{\@@framed\c!hoogte}}%
+%    \edef\localformat{\getvalue{\@@framed\c!uitlijnen}}%
+%    \edef\localstrut {\getvalue{\@@framed\c!strut}}%
+%    \doifvaluesomething{\@@framed\c!lijndikte} % nested \framed inherits 
+%      {\linewidth=\getvalue{\@@framed\c!lijndikte}}%
+%    \doifelsenothing{\localformat}
+%      {\boxhasformatfalse}
+%      {\boxhasformattrue
+%       \dosetraggedcommand{\localformat}%
+%       \edef\beforeframedbox{\raggedtopcommand\getvalue{\@@framed\c!boven}}%
+%       \edef\afterframedbox {\getvalue{\@@framed\c!onder}\raggedbottomcommand}}%
+%    \doifelse{\localoffset}{\v!geen}
+%      {\boxhasoffsetfalse
+%       \boxhasstrutfalse
+%       \boxisoverlaidfalse
+%       \@@localoffset=\linewidth}
+%      {\doifelse{\localoffset}{\v!overlay}
+%         {\boxhasoffsetfalse
+%          \boxhasstrutfalse
+%          \boxisoverlaidtrue
+%          \@@localoffset=\!!zeropoint}
+%         {\boxhasoffsettrue
+%          \boxhasstruttrue
+%          \boxisoverlaidfalse
+%          \ifx\localoffset\v!default % new per 2-6-2000
+%            \let\localoffset\defaultframeoffset
+%            \letvalue{\@@framed\c!offset}\defaultframeoffset
+%          \else
+%            \let\defaultframeoffset\localoffset
+%          \fi
+%          \@@localoffset=\localoffset
+%          \advance\@@localoffset by \linewidth}}%
+%    \doifelse{\localwidth}{\v!passend}
+%      {\ifboxhasformat
+%         \boxhaswidthtrue
+%         \!!widtha=\hsize
+%       \else
+%         \boxhaswidthfalse
+%       \fi}
+%      {\boxhaswidthtrue
+%       \doifelse{\localwidth}{\v!ruim}
+%         {\!!widtha=\hsize}
+%         {\!!widtha=\localwidth}}%
+%    \doifelse{\localheight}{\v!passend}
+%      {\boxhasheightfalse} % no longer: \boxhasstrutfalse
+%      {\doifelse{\localheight}{\v!ruim}
+%         {\boxhasheightfalse}
+%         {\boxhasheighttrue
+%          \!!heighta=\localheight}}%
+%    \ifdim\!!widtha=\hsize
+%      \parindent=\!!zeropoint
+%      \setlocalhsize
+%      \!!widtha=\localhsize
+%    \fi
+%    \advance\!!widtha  by -2\@@localoffset
+%    \advance\!!heighta by -2\@@localoffset
+%    \doif{\localstrut}{\v!nee} 
+%      {\boxhasstrutfalse}%
+%    \ifboxhasstrut
+%      \setstrut
+%      \let\localbegstrut=\begstrut
+%      \let\localendstrut=\endstrut
+%      \let\localstrut   =\strut
+%    \else
+%      \let\localbegstrut=\pseudobegstrut % was: \relax
+%      \let\localendstrut=\pseudoendstrut % was: \relax
+%      \let\localstrut   =\pseudostrut    % was: \relax
+%     %\ifboxhasheight\ifdim\!!heighta<\ht\strutbox % saveguard 
+%     %  \let\localbegstrut=\relax                  % but not that 
+%     %  \let\localstrut   =\relax                  % save afterall
+%     %\fi\fi
+%    \fi
+%    \ifboxhasheight
+%      \let\\=\vboxednewline
+%      \ifboxhaswidth
+%        \let\hairline=\vboxedhairline
+%        \ifboxhasformat
+%          \let\next=\doformatboxSomeFormat
+%        \else
+%          \let\next=\doformatboxNoFormat
+%        \fi
+%      \else
+%        \let\hairline=\hboxedhairline
+%        \ifboxhasformat
+%          \let\next=\doformatboxHeight
+%        \else
+%          \let\next=\doformatboxVSize
+%        \fi
+%      \fi
+%    \else
+%      \ifboxhaswidth
+%        \ifboxhasformat
+%          \let\hairline=\vboxedhairline
+%          \let\\=\vboxednewline
+%          \let\next=\doformatboxWidth
+%        \else
+%          \let\hairline=\hboxedhairline
+%          \let\\=\hboxednewline
+%          \let\next=\doformatboxHSize
+%        \fi
+%      \else
+%        \let\hairline=\hboxedhairline
+%        \let\\=\hboxednewline
+%        \let\next=\doformatboxNoSize
+%      \fi
+%    \fi
+%    \def\dowithframedbox%
+%      {\let\postprocessframebox\undefined %new
+%       \aftergroup\stoplocalframed}%
+%    \edef\framedwidth % a new feature  
+%      {\ifdim\!!widtha >\!!zeropoint\the\!!widtha \else\!!zeropoint\fi}%  
+%    \edef\framedheight% a new feature  
+%      {\ifdim\!!heighta>\!!zeropoint\the\!!heighta\else\!!zeropoint\fi}% 
+%    \afterassignment\dowithframedbox
+%    \setbox\framebox=\next}
+
 \def\startlocalframed[#1][#2]%
   {\bgroup
+   \inframedtrue 
    \edef\@@framed{#1}% 
+   % this piece of pre expansion is needed 
    \scratchdimen\getvalue{\@@framed\c!kaderoffset}%  
    \setevalue{\@@framed\c!kaderoffset}{\the\scratchdimen}% 
-   \scratchdimen\getvalue{\@@framed\c!achtergrondoffset}%  
-   \setevalue{\@@framed\c!achtergrondoffset}{\the\scratchdimen}% 
+   \doifnotvalue{\@@framed\c!achtergrondoffset}{\v!kader}  
+     {\scratchdimen\getvalue{\@@framed\c!achtergrondoffset}%  
+      \setevalue{\@@framed\c!achtergrondoffset}{\the\scratchdimen}}% 
+   % to prevent deadlock in case of self refering 
    \ifsecondargument % faster 
      \getparameters[\@@framed][#2]% here ! 
    \fi
+   % beware, both the frame and background offset can be overruled 
    \edef\localoffset{\getvalue{\@@framed\c!offset}}%
    \edef\localwidth{\getvalue{\@@framed\c!breedte}}%
    \edef\localheight{\getvalue{\@@framed\c!hoogte}}%
@@ -609,45 +771,59 @@
    \edef\localstrut{\getvalue{\@@framed\c!strut}}%
    \doifvaluesomething{\@@framed\c!lijndikte}
      {\linewidth=\getvalue{\@@framed\c!lijndikte}}%
-   \doifelsenothing{\localformat}
-     {\boxhasformatfalse}
-     {\boxhasformattrue
-      \dosetraggedcommand{\localformat}%
-      \edef\beforeframedbox{\raggedtopcommand\getvalue{\@@framed\c!boven}}%
-      \edef\afterframedbox {\getvalue{\@@framed\c!onder}\raggedbottomcommand}}%
-   \doifelse{\localoffset}{\v!geen}
-     {\boxhasoffsetfalse
-      \boxhasstrutfalse
-      \boxisoverlaidfalse
-      \@@localoffset=\linewidth}
-     {\doifelse{\localoffset}{\v!overlay}
-        {\boxhasoffsetfalse
-         \boxhasstrutfalse
-         \boxisoverlaidtrue
-         \@@localoffset=\!!zeropoint}
-        {\boxhasoffsettrue
-         \boxhasstruttrue
-         \boxisoverlaidfalse
-         \@@localoffset=\localoffset
-         \advance\@@localoffset by \linewidth}}%
-   \doifelse{\localwidth}{\v!passend}
-     {\ifboxhasformat
-        \boxhaswidthtrue
-        \!!widtha=\hsize
-      \else
-        \boxhaswidthfalse
-      \fi}
-     {\doifelse{\localwidth}{\v!ruim}
-        {\boxhaswidthtrue
-         \!!widtha=\hsize}
-        {\boxhaswidthtrue
-         \!!widtha=\localwidth}}%
-   \doifelse{\localheight}{\v!passend}
-     {\boxhasheightfalse} % no longer: \boxhasstrutfalse
-     {\doifelse{\localheight}{\v!ruim}
-        {\boxhasheightfalse}
-        {\boxhasheighttrue
-         \!!heighta=\localheight}}%
+   \ifx\localformat\empty
+     \boxhasformatfalse
+   \else
+     \boxhasformattrue
+     \dosetraggedcommand{\localformat}%
+     \edef\beforeframedbox{\raggedtopcommand\getvalue{\@@framed\c!boven}}%
+     \edef\afterframedbox {\getvalue{\@@framed\c!onder}\raggedbottomcommand}%
+   \fi
+   \ifx\localoffset\v!geen
+     \boxhasoffsetfalse
+     \boxhasstrutfalse
+     \boxisoverlaidfalse
+     \@@localoffset=\linewidth
+   \else\ifx\localoffset\v!overlay
+     \boxhasoffsetfalse
+     \boxhasstrutfalse
+     \boxisoverlaidtrue
+     \@@localoffset=\!!zeropoint
+   \else
+     \boxhasoffsettrue
+     \boxhasstruttrue
+     \boxisoverlaidfalse
+     \ifx\localoffset\v!default % new per 2-6-2000
+       \let\localoffset\defaultframeoffset
+       \letvalue{\@@framed\c!offset}\defaultframeoffset
+     \else
+       \let\defaultframeoffset\localoffset
+     \fi
+     \@@localoffset=\localoffset
+     \advance\@@localoffset by \linewidth
+   \fi\fi
+   \ifx\localwidth\v!passend
+     \ifboxhasformat
+       \boxhaswidthtrue
+       \!!widtha=\hsize
+     \else
+       \boxhaswidthfalse
+     \fi
+   \else\ifx\localwidth\v!ruim
+     \boxhaswidthtrue
+     \!!widtha=\hsize
+   \else
+     \boxhaswidthtrue
+     \!!widtha=\localwidth
+   \fi\fi
+   \ifx\localheight\v!passend
+     \boxhasheightfalse % no longer: \boxhasstrutfalse
+   \else\ifx\localheight\v!ruim
+     \boxhasheightfalse
+   \else
+     \boxhasheighttrue
+     \!!heighta=\localheight
+   \fi\fi
    \ifdim\!!widtha=\hsize
      \parindent=\!!zeropoint
      \setlocalhsize
@@ -655,8 +831,9 @@
    \fi
    \advance\!!widtha  by -2\@@localoffset
    \advance\!!heighta by -2\@@localoffset
-   \doif{\localstrut}{\v!nee} 
-     {\boxhasstrutfalse}%
+   \ifx\localstrut\v!nee 
+     \boxhasstrutfalse
+   \fi
    \ifboxhasstrut
      \setstrut
      \let\localbegstrut=\begstrut
@@ -715,7 +892,9 @@
    \afterassignment\dowithframedbox
    \setbox\framebox=\next}
 
-
+\let\afterframedbox \relax
+\let\beforeframedbox\relax
+ 
 %D Carefull analysis of this macro will learn us that not all
 %D branches in the last conditionals can be encountered, that
 %D is, some assignments to \type{\next} will never occur.
@@ -739,6 +918,8 @@
      \doif{\localwidth}{\v!passend}
        {\ifreshapeframebox\doreshapeframedbox\fi
         \boxhaswidthfalse}%
+   \else
+     \resetshapeframebox
    \fi
    \ifboxhaswidth
      \wd\framebox=\!!widtha
@@ -759,9 +940,9 @@
    \ifx\postprocessframebox\undefined \else
      \postprocessframebox\framebox
    \fi
-   \doifelsevalue{\@@framed\c!kader}{\v!overlay}
-     {\edef\overlaylinecolor{\getvalue{\@@framed\c!kaderkleur}}%
-      \edef\overlaylinewidth{\the\linewidth}}%
+   \edef\overlaylinecolor{\getvalue{\@@framed\c!kaderkleur}}%
+   \edef\overlaylinewidth{\the\linewidth}%
+   \doifnotvalue{\@@framed\c!kader}{\v!overlay} % faster -) 
      {\doframedbox}%
    \doifvaluesomething{\@@framed\c!achtergrond}
      {\dobackedbox}%
@@ -947,17 +1128,12 @@
 %D putting rules around boxes, inserting offsets and aligning
 %D text. Each step is handled by separate macros.
 
-\def\dooffsetframebox%
-  {\doifinstringelse{\getvalue{\@@framed\c!offset}}{\v!geen\c!offset}
-     {}{\doifelsevaluenothing{\@@framed\c!offset}
-        {}{\edef\do{\kern\getvalue{\@@framed\c!offset}}%
-           \setbox\framebox=\vbox{\do\hbox{\do\box\framebox\do}\do}}}}
+\def\dowidenframebox#1% 
+  {\setbox\framebox=\vbox 
+     {\kern#1\hbox{\kern#1\box\framebox\kern#1}\kern#1}}
 
-\def\dolocateframebox%
-  {\setbox\framebox=\vbox
-     {\kern\linewidth
-      \hbox{\kern\linewidth\box\framebox\kern\linewidth}
-      \kern\linewidth}}
+\def\dooffsetframebox{\dowidenframebox\localoffset}
+\def\dolocateframebox{\dowidenframebox\linewidth  }
 
 %D Let's hope that the next few examples show us enough of
 %D what needs to be done by the auxiliary macros.
@@ -1044,12 +1220,17 @@
 %D have to take care of additional offsets.
 
 \def\dobackedbox%
+  {\doifelsevalue{\@@framed\c!achtergrondoffset}{\v!kader} % new 
+     {\dodobackedbox\c!kaderoffset}
+     {\dodobackedbox\c!achtergrondoffset}}
+
+\def\dodobackedbox#1%
   {\setbox\framebox=\vbox
      {\dobackgroundbox\framebox
         \background \getvalue{\@@framed\c!achtergrond}%
         \color      \getvalue{\@@framed\c!achtergrondkleur}%
         \raster     \getvalue{\@@framed\c!achtergrondraster}%
-        \offset     \getvalue{\@@framed\c!achtergrondoffset}%
+        \offset     \getvalue{\@@framed#1}%
         \corner     \getvalue{\@@framed\c!achtergrondhoek}%
         \radius     \getvalue{\@@framed\c!achtergrondstraal}%
         \depth      \getvalue{\@@framed\c!achtergronddiepte}\\}}
@@ -1200,18 +1381,33 @@
 %D \egroup
 %D \stopuitstellen
 
+%D \macros 
+%D   {framednoflines, framedlastlength}
+%D
 %D It is possible to let the frame macro calculate the width
 %D of a centered box automatically (\type{\v!passend}). When
 %D doing so, we need to reshape the box:
+
+\newcount\framednoflines  
+\newdimen\framedlastlength 
+
+\def\resetshapeframebox%
+  {\framednoflines=0
+   \framedlastlength=\!!zeropoint}
 
 \def\doreshapeframedbox%
   {\beginofshapebox
    \unvcopy\framebox
    \endofshapebox
    \global\@@globalwidth=\!!zeropoint
+   \resetshapeframebox
    \reshapebox
      {\setbox0=\hbox
         {\strut\ifhbox\shapebox\unhbox\else\box\fi\shapebox}%
+      \global\advance\framednoflines by 1
+      \ifdim\framedlastlength>\!!zeropoint\else
+        \global\framedlastlength=\wd0
+      \fi
       \ifdim\wd0>\@@globalwidth
         \global\@@globalwidth=\wd0
       \fi}%
@@ -1230,7 +1426,13 @@
         \reshapebox{\hbox to \hsize{\ifhbox\shapebox\unhbox\else\box\fi\shapebox}}%
         \innerflushshapebox}%
      \dp\framebox=\dp\strutbox
-   \fi}
+   \fi
+   \ifdim\framedlastlength=\!!zeropoint\global\framednoflines=\wd\framebox\fi
+   \ifcase\framednoflines\global\framednoflines=1\fi}
+
+%D The two variables \type {\framednoflines} and \type 
+%D {\framedlastlength} can be used in a second pass to 
+%D optimized framed material. 
 
 %D The examples on the next page show how one can give the
 %D frame as well as the background an additional offset and
@@ -1783,8 +1985,7 @@
   {\ifoptimizethinrules\penalty500\fi} 
 
 %D \macros
-%D   {startframedtext, setupframedtexts,
-%D    defineframedtext, start<<framedtext>>, <<framedtext>>}
+%D   {startframedtext, setupframedtexts, defineframedtext}
 %D
 %D The general framing command we discussed previously, is not
 %D entirely suited for what we call framed texts, as for
@@ -2076,7 +2277,7 @@
   {\bgroup
    \advance\hsize by -\rightskip
    \advance\hsize by -\leftskip
-   \setbox0=\hbox to \hsize 
+   \setbox\scratchbox=\hbox to \hsize 
      {\dimen4=.5ex
       \dimen6=-.5ex
       \advance\dimen4 by .5\linewidth
@@ -2093,9 +2294,9 @@
       \fi
       \color[\@@tllijnkleur]
         {\leaders\hrule\!!height\dimen4\!!depth\dimen6\hfill}}%
-   \ht0=\ht\strutbox
-   \dp0=\dp\strutbox
-   \noindent\box0
+   \ht\scratchbox=\ht\strutbox
+   \dp\scratchbox=\dp\strutbox
+   \noindent\box\scratchbox
    \egroup}
 
 \def\dotoptextrule#1%
@@ -2113,7 +2314,7 @@
    \fi
    \dimen0=\dp\strutbox
    \ifdim\prevdepth<\dp\strutbox
-     \ifdim\prevdepth>\!!zeropoint
+     \ifdim\prevdepth>\!!zeropoint 
        \advance\dimen0 by -\prevdepth
      \fi
    \fi
@@ -2493,7 +2694,7 @@
 \setupframed
   [\c!breedte=\v!passend,
    \c!hoogte=\v!ruim,
-   \c!offset=0.25ex,
+   \c!offset=0.25ex,  % \defaultframeoffset
    \c!leeg=\v!nee,
    \c!kader=\v!aan,
    \c!bovenkader=,

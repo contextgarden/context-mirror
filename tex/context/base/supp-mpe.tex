@@ -8,86 +8,98 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
-%C details. 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
 
 %D This module is still experimental and deals with some
 %D extensions to \METAPOST. When using \POSTSCRIPT\ output,
 %D these extensions can be supplied by means of proper
 %D preamble definitions, but when producing \PDF\ we have to
 %D set up the appropriate datastructures ourselves. It acts as
-%D a plug in into \type {supp-pdf}. As soon as we need more 
-%D extensions, we will generalize these macro. 
+%D a plug in into \type {supp-pdf}. As soon as we need more
+%D extensions, we will generalize these macro. Some 
+%D definitions will move to the special drivers. 
 
 \writestatus{loading}{MetaPost Special Extensions}
 
 %D We implement extensions by using the \METAPOST\ special
 %D mechanism. Opposite to \TEX's specials, the \METAPOST\ ones
 %D are flushed before or after the graphic data, but thereby
-%D are no longer connected to a position. 
-%D 
+%D are no longer connected to a position.
+%D
 %D We implement specials by overloading the \type {fill}
 %D operator. By counting the fills, we can let the converter
 %D treat the appropriate fill in a special way. The
 %D specification of the speciality can have two forms,
-%D determined by the setting of a boolean variable: 
+%D determined by the setting of a boolean variable:
 %D
-%D \starttypen 
-%D _inline_shading_ := false ; % comment like code (default)
-%D _inline_shading_ := true  ; % command like code 
-%D \stoptypen 
-%D 
-%D When the specification is embedded as comment, it looks 
-%D like: 
+%D \starttypen
+%D _inline_specials_ := false ; % comment like code (default)
+%D _inline_specials_ := true  ; % command like code
+%D \stoptypen
 %D
-%D \starttypen 
-%D %%MetaPostSpecial <size> <data> <number> <identifier> 
-%D \stoptypen 
+%D When the specification is embedded as comment, it looks
+%D like:
 %D
-%D The in||line alternative is more tuned for \POSTSCRIPT, 
+%D \starttypen
+%D %%MetaPostSpecial <size> <data> <number> <identifier>
+%D \stoptypen
+%D
+%D The in||line alternative is more tuned for \POSTSCRIPT,
 %D since it permits us to define a macro \type {special}.
 %D
-%D \starttypen 
+%D \starttypen
 %D inline  : <data> <number> <identifier> <size> special
-%D \stoptypen 
-%D 
+%D \stoptypen
+%D
 %D The \type {identifier} determines what to do, and the data
 %D can be used to accomplish this. A type~2 shading function
 %D has identifier~2. Alltogether, the number of parameters is
 %D specified in \type {size}. The \type {number} is the number
 %D of the fill that needs the special treatment. For a type~2
 %D and~3 shaded fill, the datablock contains the following
-%D data: 
-%D 
-%D \starttypen 
-%D from to n inner_r g b x y        outer_r g b x y        
-%D from to n inner_r g b x y radius outer_r g b x y radius 
+%D data:
+%D
+%D \starttypen
+%D from to n inner_r g b x y        outer_r g b x y
+%D from to n inner_r g b x y radius outer_r g b x y radius
 %D \stoptypen
-%D 
-%D The implementation below, saves the data on the stack in 
-%D a way similar to the macros in \type {supp-pdf.tex}, and 
-%D just overload a few already defined handlers. That way, 
-%D the existing macros are still generic. \voetnoot {Actually, 
-%D the macros here are just as generic.}  
-%D 
+%D
+%D The implementation below saves the data on the stack in
+%D a way similar to the macros in \type {supp-pdf.tex}, and
+%D just overload a few already defined handlers. That way,
+%D the existing macros are still generic. \voetnoot {Actually,
+%D the macros here are just as generic.}
+%D
 %D Currently the only extension concerns shading, which is
 %D accomplished by handling yet another value of \type
-%D {\finiMPpath}. The recource disctionary is stored and 
-%D later picked up by the general \CONTEXT\ figure inclusion 
-%D macros. 
+%D {\finiMPpath}. The recource disctionary is stored and
+%D later picked up by the general \CONTEXT\ figure inclusion
+%D macros.
 
-\unprotect 
+\unprotect
 
-\newcount\currentPDFshade      % global count 
-\newcount\currentMPshade       % local count 
-\newcount\currentMPfill        % local count 
-\chardef\inlineMPspecials=0    % only needed for stack resetting 
+%D The \type {%%MetaPostSpecials: version.revision signal} line
+%D triggers this module into handling color specifications kind
+%D of special. We need this safeguard for non||special 
+%D usage. 
+
+\chardef\MPspecialversion  = 0  % specials when >1
+\chardef\MPspecialrevision = 0  % specials when >1
+\chardef\MPspecialsignal   = 0  % passed on by graphic
+
+\newcount\currentPDFshade  % 0  % global (document wide) counter
+\chardef\inlineMPspecials  = 1  % only needed for stack resetting
+
 \let\currentMPshades\empty
 
-\def\dohandleMPspecialcomment#1 
+%D This macro handles the special definitions that are 
+%D passed as comment. 
+
+\def\dohandleMPspecialcomment#1
   {\setMPargument{#1}%
-   \advance\scratchcounter by -1 
-   \ifcase\scratchcounter 
+   \advance\scratchcounter by -1
+   \ifcase\scratchcounter
      \handleMPspecialcommand
      \donetrue
      \doresetMPstack
@@ -97,10 +109,10 @@
      \expandafter\dohandleMPspecialcomment
    \fi}
 
-\def\handleMPspecialcomment #1 % number of arguments 
+\def\handleMPspecialcomment #1 % number of arguments
   {\doresetMPstack
    \scratchcounter=#1\relax
-   \ifcase\scratchcounter % when zero, inline shading is used 
+   \ifcase\scratchcounter % when zero, inline shading is used
      \chardef\inlineMPspecials=1
      \let\handleMPsequence=\dohandleMPsequence
      \expandafter\handleMPsequence
@@ -109,12 +121,41 @@
      \expandafter\dohandleMPspecialcomment
    \fi}
 
+%D When defined inline, we use another macro to handle the 
+%D definitions. Actually, this macro is called by the 
+%D previous ones. 
+
+\def\handleMPspecialcommand%
+  {\ifcase\inlineMPspecials\or
+     \advance\nofMParguments by -1 % pop the size
+   \fi
+   \doifundefinedelse{\MPspecial}
+     {\message{[unknown \MPspecial]}}
+     {\getvalue{\MPspecial}}%
+   \ifcase\inlineMPspecials
+     \doresetMPstack % 0
+   \else
+     \resetMPstack   % 1
+   \fi}
+
+%D This macro triggers special support. Currently, the 
+%D version and revision number are not used. Any version number
+%D greater than zero will enable special support.  
+
+\def\handleMPspecialscomment #1.#2 #3 % version.revision signal
+  {\doresetMPstack
+   \chardef\MPspecialversion =#1 
+   \chardef\MPspecialrevision=#2 
+   \chardef\MPspecialsignal  =#3 
+   \let\handleMPsequence=\dohandleMPsequence
+   \handleMPsequence}
+
+%D In case of \PDF, we need to prepare resourcs. 
+
 \def\startMPresources%
   {\global\let\currentMPshades\empty
-   \global\currentMPfill=0
-   \global\currentMPshade=0
    \ifx\currentPDFresources\empty\else
-     \message{unused resources before shade \the\currentPDFshade}%
+      \message{unused resources before shade \the\currentPDFshade}%
    \fi
    \global\let\currentPDFresources\empty}
 
@@ -130,42 +171,124 @@
   {\edef\currentMPspecial{\gMPs{#1}}}
 
 \def\stopMPshading%
-  {\global\advance\currentPDFshade by 1 
-   \global\advance\currentMPshade by 1 
-   \setevalue{mps:Sh:\currentMPspecial}% non global !!
-     {\the\currentPDFshade}% 
-   \xdef\currentMPshades%
-     {\currentMPshades/Sh\the\currentPDFshade\space\the\pdflastobj\space0 R }}
+  {\global\advance\currentPDFshade by 1
+   \setxvalue{obj:Sh:\currentMPspecial}% 
+     {/Sh\the\currentPDFshade\space\the\pdflastobj\space0 R }%
+   \setxvalue{mps:Sh:\currentMPspecial}%
+     {\the\currentPDFshade}}
 
-\def\processMPpath% 
-  {\global\advance\currentMPfill by 1 
-   \ifnum\finiMPpath=2 \ifx\currentMPshades\empty \else
-     \doifdefined{mps:Sh:\the\currentMPfill}
-       {\chardef\finiMPpath=4 \PDFcode{q /Pattern cs}}%
-   \fi \fi
+%D Since colors are not subjected to transformations, we can
+%D only use colors as signal. In our case, we use a dummy colored
+%D path with a red color component of \type {0.n}, so \type
+%D {0.001} is the first path and \type {0.010} the tenth. Since
+%D \METAPOST strips trailing zeros, we have to padd the string.
+
+\ifx\normalhandleMPrgbcolor\undefined % in case we reload this module
+
+  \let\normalhandleMPrgbcolor \handleMPrgbcolor
+  \let\normalhandleMPcmykcolor\handleMPcmykcolor
+  \let\normalhandleMPgraycolor\handleMPgraycolor
+
+\fi 
+
+%D When we are using \CONTEXT, we will fall back to the 
+%D better color conversion routines. This also has the advantage
+%D that we don't have to parse and convert the file. In this 
+%D alternative, \type {\!MP} is not (yet) supported.
+
+\ifCONTEXT
+
+  \def\normalhandleMPrgbcolor%
+    {\dostartcolormodeR\gMPa1:\gMPa2:\gMPa3\od}
+
+  \def\normalhandleMPcmykcolor%
+    {\dostartcolormodeC\gMPa1:\gMPa2:\gMPa3:\gMPa4\od}
+
+  \def\normalhandleMPgraycolor%
+    {\dostartcolormodeS\gMPa1\od}
+
+\fi
+
+% In the previous macros we use the special drivers. A more
+% direct approach would have been: 
+%
+% \def\doPDFstartrgbcolormode#1#2#3%   
+%   {\PDFcode{#1 #2 #3 rg #1 #2 #3 RG}}
+%
+% \def\doPDFstartcmykcolormode#1#2#3#4%
+%   {\PDFcode{#1 #2 #3 #4 k #1 #2 #3 #4 K}}
+%
+% \def\doPDFstartgraycolormode#1%      
+%   {\PDFcode{#1 g #1 G}}
+%
+% \appendtoks
+%   \let\dostartrgbcolormode \doPDFstartrgbcolormode
+%   \let\dostartcmykcolormode\doPDFstartcmykcolormode
+%   \let\dostartgraycolormode\doPDFstartgraycolormode
+% \to \everyMPtoPDFconversion
+
+%D Now we can handle special color signals. We only do this 
+%D when special are detected. 
+
+\def\MPrgbnumber#1{\expandafter\doMPrgbnumber#1000.0000\relax}
+\def\doMPrgbnumber#1.#2#3#4#5\relax{#2#3#4}
+
+\def\handleMPrgbcolor%
+  {\setMPcolor
+   \ifcase\MPspecialversion
+     \resetMPcolor\normalhandleMPrgbcolor
+   \else\ifnum\MPrgbnumber\lastMPrvalue=\MPspecialsignal
+     % consider it to be a signal
+   \else
+     \resetMPcolor\normalhandleMPrgbcolor
+   \fi\fi}
+
+\def\handleMPcmykcolor%
+  {\resetMPcolor\normalhandleMPcmykcolor}
+
+\def\handleMPgraycolor%
+  {\resetMPcolor\normalhandleMPgraycolor}
+
+\def\resetMPcolor%
+  {\def\lastMPrvalue{0.0}%
+   \def\lastMPgvalue{0.0}%
+   \def\lastMPbvalue{0.0}}
+
+\def\setMPcolor%
+  {\edef\lastMPrvalue{\gMPa1}%
+   \edef\lastMPgvalue{\gMPa2}%
+   \edef\lastMPbvalue{\gMPa3}}
+
+\resetMPcolor 
+
+%D The path processing macro is slightly extended. 
+
+\def\processMPpath%
+  {\ifcase\MPspecialversion\else
+     \ifnum\MPrgbnumber\lastMPrvalue=\MPspecialsignal 
+       \scratchcounter=\MPrgbnumber\lastMPbvalue
+       \edef\currentMPspecial{\the\scratchcounter}%
+       \ifnum\finiMPpath=2 
+         \doifdefined{mps:Sh:\currentMPspecial}
+            {\edef\currentMPshade{\getvalue{obj:Sh:\currentMPspecial}}% 
+             \doifinstringelse{\currentMPshade}{\currentMPshades}
+               {}{\xdef\currentMPshades{\currentMPshades\currentMPshade}}% 
+             \chardef\finiMPpath=4 \PDFcode{q /Pattern cs}}%
+       \fi
+     \fi
+   \fi
    \flushMPpath
    \closeMPpath
    \PDFcode
-     {\ifcase\finiMPpath 
-        W n\or S\or f\or B\or W n /Sh\getvalue{mps:Sh:\the\currentMPfill} sh Q%
+     {\ifcase\finiMPpath
+        W n\or S\or f\or B\or W n /Sh\getvalue{mps:Sh:\currentMPspecial} sh Q%
       \fi}%
    \let\handleMPsequence=\dohandleMPsequence
    \resetMPstack
    \nofMPsegments=0
    \handleMPsequence}
 
-\def\handleMPspecialcommand%
-  {\ifcase\inlineMPspecials\or
-     \advance\nofMParguments by -1 % pop the size 
-   \fi
-   \doifundefinedelse{\MPspecial}
-     {\message{[unknown \MPspecial]}} 
-     {\getvalue{\MPspecial}}% 
-   \ifcase\inlineMPspecials 
-     \doresetMPstack % 0 
-   \else             
-     \resetMPstack   % 1 
-   \fi}
+%D Specials are define and recalled using: 
 
 \def\MPspecial%
   {MP special \gMPs\nofMParguments}
@@ -177,8 +300,8 @@
 %D but users will seldom encounter those complications. Here
 %D we only show a few simple examples, but many other
 %D alternatives are possible by setting up the functions built
-%D in \PDF\ in the appropriate way. 
-%D 
+%D in \PDF\ in the appropriate way.
+%D
 %D Shading has to do with interpolation between two or more
 %D points or user supplied ranges. In \PDF, the specifications
 %D of a shade has to be encapsulated in objects and passed on
@@ -186,49 +309,49 @@
 %D simulate three dimensional shades as well and define simple
 %D functions using a limited set of \POSTSCRIPT\ primitives.
 %D Given the power of \METAPOST\ and these \PDF\ features, we
-%D can achieve superb graphic effects. 
-%D 
+%D can achieve superb graphic effects.
+%D
 %D Since everything is hidden in \TEX\ and \METAPOST\ graphics,
-%D we can stick to high level \CONTEXT\ command, as shown in 
+%D we can stick to high level \CONTEXT\ command, as shown in
 %D the following exmples.
-%D 
+%D
 %D \startbuffer
 %D \startuniqueMPgraphic{CircularShade}
 %D   path  p ; p := unitsquare xscaled \overlaywidth yscaled \overlayheight ;
 %D   circular_shade(p,0,.2red,.9red) ;
 %D \stopuniqueMPgraphic
-%D 
+%D
 %D \startuniqueMPgraphic{LinearShade}
 %D   path  p ; p := unitsquare xscaled \overlaywidth yscaled \overlayheight ;
 %D   linear_shade(p,0,.2blue,.9blue) ;
 %D \stopuniqueMPgraphic
-%D 
+%D
 %D \startuniqueMPgraphic{DuotoneShade}
 %D   path  p ; p := unitsquare xscaled \overlaywidth yscaled \overlayheight ;
 %D   linear_shade(p,2,.5green,.5red) ;
 %D \stopuniqueMPgraphic
 %D \stopbuffer
-%D 
-%D \typebuffer 
-%D 
+%D
+%D \typebuffer
+%D
 %D \haalbuffer
-%D 
-%D These graphics can be hooked into the overlay mechanism, 
+%D
+%D These graphics can be hooked into the overlay mechanism,
 %D which is available in many commands.
-%D 
+%D
 %D \startbuffer
 %D \defineoverlay[demo 1][\uniqueMPgraphic{CircularShade}]
 %D \defineoverlay[demo 2][\uniqueMPgraphic  {LinearShade}]
 %D \defineoverlay[demo 3][\uniqueMPgraphic {DuotoneShade}]
 %D \stopbuffer
-%D 
-%D \typebuffer 
-%D 
+%D
+%D \typebuffer
+%D
 %D \haalbuffer
-%D 
-%D These backgrounds can for instance be applied to \type 
-%D {\framed}: 
-%D 
+%D
+%D These backgrounds can for instance be applied to \type
+%D {\framed}:
+%D
 %D \startbuffer
 %D \setupframed[breedte=3cm,hoogte=2cm,kader=uit]
 %D \startcombinatie[3*1]
@@ -237,17 +360,17 @@
 %D   {\framed[achtergrond=demo 3]{\bfd \white Demo 3}} {}
 %D \stopcombinatie
 %D \stopbuffer
-%D 
-%D \typebuffer 
-%D 
+%D
+%D \typebuffer
+%D
 %D \startregelcorrectie
 %D \haalbuffer
 %D \stopregelcorrectie
-%D 
-%D There are a few more alternatives, determined by the second 
+%D
+%D There are a few more alternatives, determined by the second
 %D parameter passed to \type {circular_shade} and alike.
-%D 
-%D \def\SomeShade#1#2#3#4#5% 
+%D
+%D \def\SomeShade#1#2#3#4#5%
 %D   {\startuniqueMPgraphic{Shade-#1}
 %D      width := \overlaywidth ;
 %D      height := \overlayheight ;
@@ -256,87 +379,87 @@
 %D    \stopuniqueMPgraphic
 %D    \defineoverlay[Shade-#1][\uniqueMPgraphic{Shade-#1}]%
 %D    \framed[achtergrond=Shade-#1,breedte=2cm,hoogte=2cm,kader=uit]{}}
-%D 
+%D
 %D \startregelcorrectie
 %D \startcombinatie[5*1]
-%D   {\SomeShade{10}{circular}{0}{.3blue}{.9blue}} {circular 0}  
-%D   {\SomeShade{11}{circular}{1}{.3blue}{.9blue}} {circular 1}  
-%D   {\SomeShade{12}{circular}{2}{.3blue}{.9blue}} {circular 2}  
-%D   {\SomeShade{13}{circular}{3}{.3blue}{.9blue}} {circular 3}  
-%D   {\SomeShade{14}{circular}{4}{.3blue}{.9blue}} {circular 4}  
+%D   {\SomeShade{10}{circular}{0}{.3blue}{.9blue}} {circular 0}
+%D   {\SomeShade{11}{circular}{1}{.3blue}{.9blue}} {circular 1}
+%D   {\SomeShade{12}{circular}{2}{.3blue}{.9blue}} {circular 2}
+%D   {\SomeShade{13}{circular}{3}{.3blue}{.9blue}} {circular 3}
+%D   {\SomeShade{14}{circular}{4}{.3blue}{.9blue}} {circular 4}
 %D \stopcombinatie
 %D \stopregelcorrectie
-%D 
+%D
 %D \blanko
-%D 
+%D
 %D \startregelcorrectie
 %D \startcombinatie[5*1]
-%D   {\SomeShade{20}{circular}{0}{.9green}{.3green}} {circular 0}  
-%D   {\SomeShade{21}{circular}{1}{.9green}{.3green}} {circular 1}  
-%D   {\SomeShade{22}{circular}{2}{.9green}{.3green}} {circular 2}  
-%D   {\SomeShade{23}{circular}{3}{.9green}{.3green}} {circular 3}  
-%D   {\SomeShade{24}{circular}{4}{.9green}{.3green}} {circular 4}  
+%D   {\SomeShade{20}{circular}{0}{.9green}{.3green}} {circular 0}
+%D   {\SomeShade{21}{circular}{1}{.9green}{.3green}} {circular 1}
+%D   {\SomeShade{22}{circular}{2}{.9green}{.3green}} {circular 2}
+%D   {\SomeShade{23}{circular}{3}{.9green}{.3green}} {circular 3}
+%D   {\SomeShade{24}{circular}{4}{.9green}{.3green}} {circular 4}
 %D \stopcombinatie
 %D \stopregelcorrectie
-%D 
+%D
 %D \blanko
-%D 
+%D
 %D \startregelcorrectie
 %D \startcombinatie[4*1]
-%D   {\SomeShade{30}{linear}{0}{.3red}{.9red}} {linear 0}  
-%D   {\SomeShade{31}{linear}{1}{.3red}{.9red}} {linear 1}  
-%D   {\SomeShade{32}{linear}{2}{.3red}{.9red}} {linear 2}  
-%D   {\SomeShade{33}{linear}{3}{.3red}{.9red}} {linear 3}  
+%D   {\SomeShade{30}{linear}{0}{.3red}{.9red}} {linear 0}
+%D   {\SomeShade{31}{linear}{1}{.3red}{.9red}} {linear 1}
+%D   {\SomeShade{32}{linear}{2}{.3red}{.9red}} {linear 2}
+%D   {\SomeShade{33}{linear}{3}{.3red}{.9red}} {linear 3}
 %D \stopcombinatie
 %D \stopregelcorrectie
-%D 
+%D
 %D These macros closely cooperate with the \METAPOST\ module
 %D \type {mp-spec.mp}, which is part of the \CONTEXT\
-%D distribution. 
-%D 
-%D The low level (\PDF) implementation is based on the \TEX\ 
-%D based \METAPOST\ to \PDF\ converter. Shading is supported 
-%D by overloading the \type {fill} operator as implemented 
-%D earlier. In \PDF\ type~2 and~3 shading functions are 
-%D specified in terms of: 
-%D 
+%D distribution.
+%D
+%D The low level (\PDF) implementation is based on the \TEX\
+%D based \METAPOST\ to \PDF\ converter. Shading is supported
+%D by overloading the \type {fill} operator as implemented
+%D earlier. In \PDF\ type~2 and~3 shading functions are
+%D specified in terms of:
+%D
 %D \starttabulatie[|Tl|l|]
-%D \NC /Domain \NC sort of meeting range \NC \NR 
-%D \NC /C0     \NC inner shade \NC \NR 
-%D \NC /C1     \NC outer shade \NC \NR 
-%D \NC /N      \NC smaller values, bigger inner circles \NC \NR 
+%D \NC /Domain \NC sort of meeting range \NC \NR
+%D \NC /C0     \NC inner shade \NC \NR
+%D \NC /C1     \NC outer shade \NC \NR
+%D \NC /N      \NC smaller values, bigger inner circles \NC \NR
 %D \stoptabulatie
 
-\defineMPspecial{2} 
-  {\startMPshading{14}% type 2 
-   \immediate\pdfobj 
+\defineMPspecial{2}
+  {\startMPshading{14}% type 2
+   \immediate\pdfobj
      {<</FunctionType 2
-        /Domain [\gMPs1 \gMPs2]          
-        /C0 [\gMPs4 \gMPs5 \gMPs6]       
-        /C1 [\gMPs9 \gMPs{10} \gMPs{11}] 
-        /N \gMPs3>>}%                       
-   \immediate\pdfobj 
+        /Domain [\gMPs1 \gMPs2]
+        /C0 [\gMPs4 \gMPs5 \gMPs6]
+        /C1 [\gMPs9 \gMPs{10} \gMPs{11}]
+        /N \gMPs3>>}%
+   \immediate\pdfobj
      {<</ShadingType 2
         /ColorSpace /DeviceRGB
         /Function \the\pdflastobj\space 0 R
-        /Coords [\gMPs7 \gMPs8 \gMPs{12} \gMPs{13}]  
+        /Coords [\gMPs7 \gMPs8 \gMPs{12} \gMPs{13}]
         /Extend [true true]>>}%
    \stopMPshading}
 
-\defineMPspecial{3} 
-  {\startMPshading{16}% type 3 
-   \immediate\pdfobj 
+\defineMPspecial{3}
+  {\startMPshading{16}% type 3
+   \immediate\pdfobj
      {<</FunctionType 2
-        /Domain [\gMPs1 \gMPs2]          
-        /C0 [\gMPs4 \gMPs5 \gMPs6] 
-        /C1 [\gMPs{10} \gMPs{11} \gMPs{12}] 
-        /N \gMPs3>>}%                      
-   \immediate\pdfobj 
+        /Domain [\gMPs1 \gMPs2]
+        /C0 [\gMPs4 \gMPs5 \gMPs6]
+        /C1 [\gMPs{10} \gMPs{11} \gMPs{12}]
+        /N \gMPs3>>}%
+   \immediate\pdfobj
      {<</ShadingType 3
         /ColorSpace /DeviceRGB
         /Function \the\pdflastobj\space 0 R
-        /Coords [\gMPs7 \gMPs8 \gMPs9 \gMPs{13} \gMPs{14} \gMPs{15}]  
+        /Coords [\gMPs7 \gMPs8 \gMPs9 \gMPs{13} \gMPs{14} \gMPs{15}]
         /Extend [true true]>>}%
    \stopMPshading}
 
-\protect \endinput 
+\protect \endinput

@@ -154,11 +154,22 @@
    \ScaledPointsToWholeBigPoints{\number\!!heighta}\bottom
    \ScaledPointsToWholeBigPoints{\number\!!widtha }\width
    \ScaledPointsToWholeBigPoints{\number\!!heightb}\height
-   \doPDFpagesattribute
+   \xdef\currentPDFcropbox% \doPDFpagesattribute
      {/CropBox [\left\space\bottom\space\width\space\height]}%
-   \doPDFaddtocatalog
+   \xdef\currentPDFpagemode% \doPDFaddtocatalog  
      {/PageMode \ifcase#6 /UseNone\or/FullScreen\or/UseOutlines\fi}%
    \egroup}
+
+\global\let\currentPDFcropbox \empty
+\global\let\currentPDFpagemode\empty
+
+\appendtoks % hack to prevent duplicates
+  \ifcase\realfolio\or\doPDFaddtocatalog{\currentPDFpagemode}\fi
+\to\everyshipout
+
+\appendtoks
+  \doPDFpageattribute{\currentPDFcropbox}%
+\to\everyshipout
 
 %D \macros
 %D   {doPDFsetupopenaction,doPDFsetupcloseaction,
@@ -223,6 +234,8 @@
 %D The goto macros use the switch \type{\ifsecondaryreference}
 %D to determine if actions should be linked.
 
+\def\locationfilesuffix{pdf}
+
 \def\doPDFstartgotolocation#1#2#3#4#5#6%
   {\bgroup
    \doifelsenothing{#3}
@@ -233,8 +246,9 @@
            {\let\PDFfile\empty}
            {\doifparentfileelse{#4}
               {\let\PDFfile\empty}
-              {\setreferencefilename R /F (#4.pdf)\to\PDFfile 
-               \ifgotonewwindow\edef\PDFfile{\PDFfile\space/NewWindow true}\fi}}%
+              {\setreferencefilename#4.\locationfilesuffix\to\PDFfile 
+               \edef\PDFfile%
+                 {R /F (\PDFfile)\ifgotonewwindow\space/NewWindow true \fi}}}%
          \edef\action%
            {/S /GoTo\PDFfile\space /D (\PDFdestination)}}}
      {\doifelsenothing{#4}
@@ -269,8 +283,9 @@
           {\let\PDFfile\empty}
           {\doifparentfileelse{#4}
              {\let\PDFfile\empty}
-             {\setreferencefilename R /F (#4.pdf)\to\PDFfile % becomes /GotoR
-              \ifgotonewwindow\edef\PDFfile{\PDFfile\space/NewWindow true}\fi}}%
+             {\setreferencefilename#4.\locationfilesuffix\to\PDFfile 
+              \edef\PDFfile%
+                {R /F (\PDFfile)\ifgotonewwindow\space/NewWindow true \fi}}}%
         \edef\action%
           {/S /GoTo\PDFfile\space
            /D [\PDFdestination\PDFpageviewwrd]}%
@@ -334,14 +349,11 @@
 \def\PDFformcode#1%
   {\doFDFiffieldset{#1}{/Field [\doFDFgetfieldset{#1}]}}
 
-\chardef\PDFsubmitformat=1 % 0=FDF 1=HTML
-
 \def\PDFexecuteimportform  {/Named /N /AcroForm:ImportFDF}
 \def\PDFexecuteexportform  {/Named /N /AcroForm:ExportFDF}
 \def\PDFexecuteresetform   {/ResetForm  \PDFformcode\argumentA}
 \def\PDFexecutesubmitform  {/SubmitForm \PDFformcode\argumentB
-                           %/Flags \ifnum\PDFsubmitformat=1 12\fi
-                           %/Flags \ifnum\PDFsubmitformat=1  4\fi
+                            /Flags \ifnum\submitoutputformat=2 12\else4\fi
                             /F (\argumentA)}
                        
 \def\PDFexecutehide        {/Hide /T (\argumentA) /H true}
@@ -362,6 +374,9 @@
 \def\PDFexecutesearch      {/Named /N /Find}
 \def\PDFexecutesearchagain {/Named /N /FindAgain}
 \def\PDFexecutegotopage    {/Named /N /GoToPage}
+\def\PDFexecutequery       {/Named /N /AcroSrch:Query}
+\def\PDFexecutequeryagain  {/Named /N /AcroSrch:NextHit}
+
 
 \def\doPDFstartexecutecommand#1#2#3#4%
   {\doifdefined{PDFexecute#3}
@@ -513,10 +528,11 @@
 \def\doPDFinsertsoundtrack#1#2#3% 
   {\bgroup
    \xdef\currentsound{#2}%
-   \doPDFannotation width 0 height 0 data
-     {/Subtype /Movie
-      /T (sound \currentsound)
-      /Movie <</F (#1)>>}%
+   \flushatshipout % since it can be buried in a chained box
+     {\doPDFannotation width 0 height 0 data
+        {/Subtype /Movie
+         /T (sound \currentsound)
+         /Movie <</F (#1)>>}}%
    \egroup}
 
 %D \macros

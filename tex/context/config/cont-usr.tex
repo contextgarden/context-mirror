@@ -39,12 +39,27 @@
 \definefilesynonym [lang-no.pat]  [nohyph.tex]
 \definefilesynonym [lang-pl.pat]  [plhyph.tex]
 \definefilesynonym [lang-pt.pat]  [pthyph.tex]
+\definefilesynonym [lang-ro.pat]  [rohyph.tex]
 \definefilesynonym [lang-sk.pat]  [skhyph.tex]
 \definefilesynonym [lang-sp.pat]  [sphyph.tex]
 \definefilesynonym [lang-sv.pat]  [sehyph.tex]
 \definefilesynonym [lang-tr.pat]  [trhyph.tex]
 \definefilesynonym [lang-uk.pat]  [ukhyphen.tex]
 \definefilesynonym [lang-us.pat]  [ushyph1.tex]
+
+%D When the dutch spelling changed, new patterns were
+%D constructed. For long these were named \type {dutch96.pat}.
+%D From 2000 however, the old \type {nehyph} files were
+%D replaced by \type {nehyph96.tex}. Typical something that
+%D you have to find out by accident. The names of hyphenation
+%D files as well as their coding is one of the dark areas of
+%D \TEX\ distributions. 
+
+\doiffileelse{nehyph96.tex}
+  {\definefilesynonym[lang-nl.pat][nehyph96.tex]}
+  {\doiffileelse{dutch96.pat}
+     {\definefilesynonym[lang-nl.pat][dutch96.pat]}
+     {\definefilesynonym[lang-nl.pat][nehyph.tex]}}
 
 %D Pattern files are (can be) encoded! And, alas, not all
 %D pattern files are self contained, which is why (for the 
@@ -79,8 +94,9 @@
 % \installlanguage [\s!no] [\c!status=\v!start] % norwegian 
 % \installlanguage [\s!pl] [\c!status=\v!start] % polish
 % \installlanguage [\s!pt] [\c!status=\v!start] % portuguese 
+% \installlanguage [\s!ro] [\c!status=\v!start] % romanian 
 % \installlanguage [\s!sk] [\c!status=\v!start] % slovak
-% \installlanguage [\s!sp] [\c!status=\v!start] % spanish    
+% \installlanguage [\s!es] [\c!status=\v!start] % spanish    
 % \installlanguage [\s!sv] [\c!status=\v!start] % swedish   
 % \installlanguage [\s!tr] [\c!status=\v!start] % turkish    
 % \installlanguage [\s!uk] [\c!status=\v!start] % english uk   
@@ -105,8 +121,9 @@
 % \setupcurrentlanguage[\s!no]
 % \setupcurrentlanguage[\s!pl]
 % \setupcurrentlanguage[\s!pt]
+% \setupcurrentlanguage[\s!ro]
 % \setupcurrentlanguage[\s!sk]
-% \setupcurrentlanguage[\s!sp]
+% \setupcurrentlanguage[\s!es]
 % \setupcurrentlanguage[\s!sv]
 % \setupcurrentlanguage[\s!tr]
 
@@ -118,6 +135,13 @@
 
 % \definefilesynonym [font-cmr] [font-csr] % czech & slovak 
 % \definefilesynonym [font-cmr] [font-plr] % polish 
+
+%D In some languages, compound characters, like \type {"e} 
+%D are used to get accented and non latin characters. 
+
+  \useencoding[fde] % german 
+% \useencoding[fro] % romanian
+% \useencoding[fpl] % polish 
 
 %D Don't remove the next few lines. 
 

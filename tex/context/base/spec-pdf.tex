@@ -187,6 +187,9 @@
 \definefileinsertion{yy}{mov}{\doPDFinsertmov}
 \definefileinsertion{tr}{mov}{\doPDFinsertmov}
 
+\definefileinsertion{yy}{avi}{\doPDFinsertmov}
+\definefileinsertion{tr}{avi}{\doPDFinsertmov}
+
 %D \macros
 %D   {doinsertsoundtrack}
 %D
@@ -433,25 +436,22 @@
 %D Next come our housekeeping macros. 
 
 \def\doPDFaddtocatalog#1%
-  {\special
-     {\@@insertpostscriptretain
-        [ {Catalog} << #1 >>
-          /PUT
-        pdfmark}}
+  {\doifsomething{#1}
+     {\special
+        {\@@insertpostscriptretain
+           [ {Catalog} << #1 >> /PUT pdfmark}}}
 
 \def\doPDFpageattribute#1%
-  {\special
-     {\@@insertpostscriptretain
-        [ {ThisPage} #1
-          /PUT
-        pdfmark}}
+  {\doifsomething{#1}
+     {\special
+        {\@@insertpostscriptretain
+           [ {ThisPage} << #1 >> /PUT pdfmark}}}
 
 \def\doPDFpagesattribute#1%
-  {\special
-     {\@@insertpostscriptretain
-        [ #1
-          /PAGES
-        pdfmark}}
+  {\doifsomething{#1}
+     {\special
+        {\@@insertpostscriptretain
+           [ #1 /PAGES pdfmark}}}
 
 \let\doPDFresetpageattributes=\relax
 

@@ -57,6 +57,18 @@
       2: neznama preambule --
 \stopmessages
 
+\startmessages  italian  library: javascript
+  title: javascript
+      1: caricamento dello script set --
+      2: preambolo sconosciuto --
+\stopmessages
+
+\startmessages  norwegian library: javascript
+  title: javascript
+      1: leser inn scriptsett --
+      2: ukjent 'preamble' --
+\stopmessages
+
 %D \TEX\ is not the right tool to check the \JAVA\ code; the
 %D most we can do is reporting some passed variables: 
 
@@ -643,8 +655,8 @@
 %D \stoptypen
 %D 
 %D The not so complicated implementation of this macro is:
-
-\def\douseJSscripts#1%
+    
+\def\dodouseJSscripts#1%
   {\doifelse{#1}{\v!reset}
      {\let\allJSpreambles=\empty}
      {\doifundefined{\c!file\f!javascriptprefix#1}
@@ -658,8 +670,12 @@
             \stopreadingfile}%
         \egroup}}}
 
-\def\useJSscripts[#1]%
-  {\processcommalist[#1]\douseJSscripts}
+\def\douseJSscripts[#1][#2]%
+  {\processcommalist[#1]\dodouseJSscripts
+   \processcommalist[#2]\useJSpreamblenow}
+
+\def\useJSscripts%
+  {\dodoubleempty\douseJSscripts}
 
 \protect 
 

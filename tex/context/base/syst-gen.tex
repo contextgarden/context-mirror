@@ -240,7 +240,7 @@
 \newmuskip \scratchmuskip
 \newbox    \scratchbox
 \newtoks   \scratchtoks
-\newif     \ifdone
+\newif     \ifdone    
 
 %D \macros
 %D   {ifCONTEXT}
@@ -319,6 +319,26 @@
 
 \def\expanded#1%
   {\edef\@@expanded{\noexpand#1}\@@expanded}
+
+%D \macros 
+%D   {expandoneargafter,expandtwoargsafter}
+%D
+%D These two commands make macros more readable by hiding a 
+%D lot of \type {\expandafter}'s. They expand the arguments
+%D after the first command.
+%D
+%D \starttypen
+%D \expandoneargafter \command{\abc}
+%D \expandtwoargsafter\command{\abc}{\def}
+%D \stoptypen
+%D
+%D These commands expect the arguments to be macros. 
+
+\def\expandoneargafter#1#2%
+  {\@EA#1\@EA{#2}}
+
+\def\expandtwoargsafter#1#2#3%
+  {\@EA\@EA\@EA#1\@EA\@EA\@EA{\@EA#2\@EA}\@EA{#3}}
 
 %D \macros
 %D   {gobbleoneargument,gobble...arguments}
@@ -465,16 +485,15 @@
 \def\resetvalue#1%
   {\expandafter\let\csname#1\endcsname\empty}
 
-%D \macros
-%D   {showvalue,showargument}
+%D \macros 
+%D   {globallet}
 %D
-%D A handy macro for testing purposes only, is the following: 
+%D In \CONTEXT\ of May 2000 using \type {\globallet} 
+%D instead of the two tokens will save us some 
+%D $300\times4=1200$ bytes of format file on a 32~bit 
+%D system. So: 
 
-\def\showvalue#1%
-  {\expandafter\show\csname#1\endcsname}
-
-\def\showargument#1%
-  {\convertargument#1\to\ascii\show\ascii}
+\def\globallet{\global\let}
 
 %D \macros
 %D   {donottest,unexpanded}
@@ -493,7 +512,7 @@
 %D \stoptypen
 %D
 %D This double definition can be made transparant by using 
-%D \type{\protecte}, as in:
+%D \type{\unexpanded}, as in:
 %D 
 %D \starttypen
 %D \unexpanded\def\somecommand{... ... ...}
@@ -527,7 +546,7 @@
 %D therefore explictly gobble \type{#1}. 
 
 %D \macros
-%D   {honorunexpanded}
+%D   {honorunexpanded,forceunexpanded}
 %D
 %D The fact that many macros have the same prefix, could have
 %D a negative impact on searching in the hash table. Because
@@ -549,7 +568,6 @@
 \def\dosetunexpanded#1#2%
   {\@EA#1\@EA{\@EA#2\@EA}%
      \@EA{\@EA\donottest\csname\s!do\@EA\string\csname#2\endcsname\endcsname}%
-%   \@EA#1{\s!do\@EA\string\csname#2\endcsname}}
    \@EA#1\@EA{\@EA\s!do\@EA\string\csname#2\endcsname}}
 
 \def\docomunexpanded#1#2%
@@ -565,8 +583,15 @@
       \fi#1}%
    \futurelet\next\dounexpanded}
 
-\def\honorunexpanded%
+\def\honorunexpanded% for writing to a file or message 
   {\def\donottest##1{\expandafter\gobblethreearguments\string##1}}
+
+\def\forceunexpanded% for preventing expansion in \xdef
+  {\def\donottest##1%
+     {\expandafter\noexpand\csname\expandafter\gobblefourarguments\string##1\endcsname}}
+
+\def\resetunexpanded%
+  {\let\donottest\doprocesstest}
 
 \endTEX
 
@@ -574,6 +599,8 @@
 
 \let \unexpanded      \normalprotected
 \let \honorunexpanded \relax
+\let \forceunexpanded \relax
+\let \resetunexpanded \relax
 
 \endETEX
 
@@ -1296,14 +1323,14 @@
 %D \startbuffer
 %D \def\dosomething#1{(#1)}
 %D
-%D \processcommalist [\hbox{$a,b,c,d,e,f$}] \dosomething \par
-%D \processcommalist [{a,b,c,d,e,f}]        \dosomething \par
-%D \processcommalist [{a,b,c},d,e,f]        \dosomething \par
-%D \processcommalist [a,b,{c,d,e},f]        \dosomething \par
-%D \processcommalist [a{b,c},d,e,f]         \dosomething \par
-%D \processcommalist [{a,b}c,d,e,f]         \dosomething \par
-%D \processcommalist []                     \dosomething \par
-%D \processcommalist [{[}]                  \dosomething \par
+%D 1: \processcommalist [\hbox{$a,b,c,d,e,f$}] \dosomething \par
+%D 2: \processcommalist [{a,b,c,d,e,f}]        \dosomething \par
+%D 3: \processcommalist [{a,b,c},d,e,f]        \dosomething \par
+%D 4: \processcommalist [a,b,{c,d,e},f]        \dosomething \par
+%D 5: \processcommalist [a{b,c},d,e,f]         \dosomething \par
+%D 6: \processcommalist [{a,b}c,d,e,f]         \dosomething \par
+%D 7: \processcommalist []                     \dosomething \par
+%D 8: \processcommalist [{[}]                  \dosomething \par
 %D \stopbuffer
 %D 
 %D \typebuffer
@@ -1439,11 +1466,14 @@
 %D use of this macro has its limits.
 
 % why the \toks0? still needed? 
+% 
+% \def\processcommacommand[#1]%
+%   {\edef\commacommand{#1}% 
+%    \toks0=\expandafter{\expandafter[\commacommand]}%
+%    \expandafter\processcommalist\the\toks0 }
 
 \def\processcommacommand[#1]%
-  {\edef\commacommand{#1}% 
-   \toks0=\expandafter{\expandafter[\commacommand]}%
-   \expandafter\processcommalist\the\toks0 }
+  {\expanded{\processcommalist[#1]}}
 
 %D The argument to \type{\command} is not delimited. Because
 %D we often use \type{[]} as delimiters, we also have:
@@ -1582,8 +1612,8 @@
 %D       \advance\processlevel by -1\relax}}
 %D \stoptypen
 %D
-%D The gain of speed in the (again) next implementation is around
-%D 20\%, depending on the application.
+%D The gain of speed in the (again) next implementation is 
+%D around 20\%, depending on the application.
 
 \newcount\processlevel
 
@@ -1854,12 +1884,6 @@
 %D run time, simply because the less tokens we pass, the faster
 %D \TEX\ runs. So finally the definition became: 
 
-\def\p!doifinstringelse#1#2%
-  {\def\pp!doifinstringelse##1#1##2##3\war%
-    %{\csname\if##2@iffalse\else iftrue\fi\endcsname}%
-     {\csname if\if##2@fals\else tru\fi e\endcsname}%
-   \expanded{\pp!doifinstringelse#2#1@@\noexpand\war}} % expand #2 here
-
 \long\def\doifinstringelse#1#2#3#4%
   {\edef\@@@instring{#1}% expand #1 here 
    \@EA\p!doifinstringelse\@EA{\@@@instring}{#2}% 
@@ -1867,6 +1891,24 @@
    \else
      #4%
    \fi}
+
+\beginTEX
+
+\def\p!doifinstringelse#1#2%
+  {\def\pp!doifinstringelse##1#1##2##3\war%
+     {\csname if\if##2@fals\else tru\fi e\endcsname}%
+   \expanded{\pp!doifinstringelse#2#1@@\noexpand\war}} % expand #2 here
+
+\endTEX
+
+\beginETEX \unless
+
+\def\p!doifinstringelse#1#2%
+  {\def\pp!doifinstringelse##1#1##2##3\war%
+     {\unless\if##2@}%
+   \expanded{\pp!doifinstringelse#2#1@@\noexpand\war}} % expand #2 here
+
+\endETEX
 
 %D The next alternative proved to be upto twice as fast on
 %D tasks like checking reserved words in pretty verbatim
@@ -2009,7 +2051,7 @@
 
 \def\rawprocessaction[#1]#2[#3]%
   {\edef\!!stringa{#1}%
-   \edef\!!stringb{undefined}%
+   \edef\!!stringb{undefined}% better \!!undefined 
    \let\!!processaction\!!stringb
    \ifx\!!stringa\empty
      \@EA\p!rawprocessaction\@EA[\s!default][#3]%
@@ -2023,6 +2065,13 @@
    \else
      \!!processaction
    \fi}
+
+% not needed
+%
+% \def\rawprocessallactionsinset[#1]#2[#3]%
+%   {\def\docommando##1%
+%      {\rawprocessaction[##1][#3]}%
+%    \processcommalist[#1]\docommando}
 
 %D When we process the list \type{a,b,c,d,e}, the raw routine 
 %D takes over 30\% less time, when we feed $20+$ character 
@@ -2412,6 +2461,11 @@
    \toks0=\expandafter{\expandafter[\commacommand]}%
    \expandafter\getcommalistsize\the\toks0 }
 
+% to be tested first 
+%
+% \def\getcommacommandsize[#1]%
+%   {\expanded{\getcommalistsize[#1]}}
+
 % \def\p!dogetfromcommalist#1%
 %   {\advance\commalistcounter -1
 %    \ifcase\commalistcounter
@@ -2431,10 +2485,13 @@
    \commalistcounter=#3\relax
    \processcommalist[#1]\p!dogetfromcommalist}
 
-\def\getfromcommacommand[#1]% why so complicated, still needed?
-  {\edef\commacommand{#1}%
-   \toks0=\expandafter{\expandafter[\commacommand]}%
-   \expandafter\getfromcommalist\the\toks0 }
+% \def\getfromcommacommand[#1]% why so complicated, still needed?
+%   {\edef\commacommand{#1}%
+%    \toks0=\expandafter{\expandafter[\commacommand]}%
+%    \expandafter\getfromcommalist\the\toks0 }
+
+\def\getfromcommacommand[#1]% 
+  {\expanded{\getfromcommalist[#1]}}
 
 %D Because 0, 1 and~2 are often asked for, we optimize this 
 %D macro for those cases. The indirect call however slows 
@@ -2622,7 +2679,7 @@
 \chardef\noexpectedarguments=0
 \chardef\expectedarguments  =0
 
-\def\dogetargument#1#2#3#4% redefined in mult-ini
+\long\def\dogetargument#1#2#3#4% redefined in mult-ini
   {\doifnextcharelse{#1}
      {\let\expectedarguments\noexpectedarguments
       #3\dodogetargument}
@@ -3066,45 +3123,92 @@
 
 %D \macros
 %D   {dosinglegroupempty,dodoublegroupempty,dotriplegroupempty,
-%D    doquadruplegroupempty}
+%D    doquadruplegroupempty, doquintuplegroupempty}
 %D 
 %D We've already seen some commands that take care of 
 %D optional arguments between \type{[]}. The next two commands 
 %D handle the ones with \type{{}}. They are called as: 
 %D 
 %D \starttypen
-%D \dosinglegroupempty \IneedONEargument
-%D \dodoublegroupempty \IneedTWOarguments
-%D \dotriplegroupempty \IneedTHREEarguments
-%D \dotriplegroupempty \IneedFOURarguments
+%D \dosinglegroupempty    \ineedONEargument
+%D \dodoublegroupempty    \ineedTWOarguments
+%D \dotriplegroupempty    \ineedTHREEarguments
+%D \doquadruplegroupempty \ineedFOURarguments
+%D \doquintuplegroupempty \ineedFIVEarguments
 %D \stoptypen
 %D 
-%D where \type{\IneedONEargument} takes one and the others 
+%D where \type{\ineedONEargument} takes one and the others 
 %D two and three arguments. These macro's were first needed in 
 %D \PPCHTEX. 
+%D 
+%D \starttypen
+%D \def\dogetgroupargument#1#2% redefined in mult-ini
+%D   {\def\nextnextargument%
+%D      {\ifx\nextargument\bgroup  
+%D         \let\expectedarguments\noexpectedarguments
+%D         \def\nextargument{#1\dodogetargument}%
+%D       %\else\ifx\nextargument\lineending % this can be an option
+%D       %  \def\nextargument{\bgroup\def\\ {\egroup\dogetgroupargument#1#2}\\}%
+%D       %\else\ifx\nextargument\blankspace % but it may never be default
+%D       %  \def\nextargument{\bgroup\def\\ {\egroup\dogetgroupargument#1#2}\\}%
+%D       \else
+%D         \ifnum\expectedarguments>\noexpectedarguments
+%D           \writestatus
+%D              {setup}
+%D              {\the\expectedarguments\space argument(s) expected
+%D               in line \the\inputlineno\space}%
+%D         \fi
+%D         \let\expectedarguments\noexpectedarguments
+%D         \def\nextargument{#2\dodogetargument{}}%
+%D       \fi%\fi\fi                 % so let's get rid of it
+%D       \nextargument}%
+%D    \futurelet\nextargument\nextnextargument}
+%D \stoptypen 
+%D
+%D In order to catch \type {\nextargument}'s that expand to 
+%D \type {\if} and friends, in practice we will use a 
+%D slightly more complicated macro. 
 
-\def\dogetgroupargument#1#2% redefined in mult-ini
-  {\def\nextnextargument%
-     {\ifx\nextargument\bgroup  
+\let\normalif     \if
+\let\normalifx    \ifx
+\let\normalifnum  \ifnum
+\let\normalifcase \ifcase
+\let\normalor     \or
+\let\normalelse   \else
+\let\normalfi     \fi
+
+\def\beginrobusttest
+  {\bgroup
+   \let\if\relax\let\ifx\relax\let\ifnum\relax\let\ifcase\relax
+   \let\or\relax\let\else\relax\let\fi\relax}
+
+\let\endrobusttest\egroup
+
+\def\dogetgroupargument#1#2%
+  {\def\nextnextargument%  
+     {\normalifx\nextargument\bgroup 
+        \endrobusttest
         \let\expectedarguments\noexpectedarguments
         \def\nextargument{#1\dodogetargument}%
-      %\else\ifx\nextargument\lineending % this can be an option
-      %  \def\nextargument{\bgroup\def\\ {\egroup\dogetgroupargument#1#2}\\}%
-      %\else\ifx\nextargument\blankspace % but it may never be default
-      %  \def\nextargument{\bgroup\def\\ {\egroup\dogetgroupargument#1#2}\\}%
-      \else
+     %\normalelse\normalifx\nextargument\lineending % this can be an option
+     %  \def\nextargument{\bgroup\def\\ {\egroup\dogetgroupargument#1#2}\\}%
+     %\normalelse\normalifx\nextargument\blankspace % but may never be default
+     %  \def\nextargument{\bgroup\def\\ {\egroup\dogetgroupargument#1#2}\\}%
+      \normalelse
+        \endrobusttest
         \ifnum\expectedarguments>\noexpectedarguments
           \writestatus
-             {setup}
-             {\the\expectedarguments\space argument(s) expected
-              in line \the\inputlineno\space}%
+            {setup}
+            {\the\expectedarguments\space argument(s) expected
+             in line \the\inputlineno\space}%
         \fi
         \let\expectedarguments\noexpectedarguments
         \def\nextargument{#2\dodogetargument{}}%
-      \fi%\fi\fi                 % so let's get rid of it
+      \normalfi%\normalfi\normalfi                  % so let's get rid of it
       \nextargument}%
+   \beginrobusttest
    \futurelet\nextargument\nextnextargument}
- 
+
 \def\dosinglegroupempty#1%
   {\def\dodogetargument%
      {#1}%
@@ -3137,7 +3241,20 @@
       \dogetgroupargument\secondargumenttrue\secondargumentfalse}%
    \dogetgroupargument\firstargumenttrue\firstargumentfalse}
 
-%D These macros explictly take care of spaces, which means 
+\def\doquintuplegroupempty#1%
+  {\def\dodogetargument##1%
+     {\def\dodogetargument####1%
+        {\def\dodogetargument########1%
+           {\def\dodogetargument################1%
+             {\def\dodogetargument%
+                {#1{##1}{####1}{########1}{################1}}%
+              \dogetgroupargument\fifthargumenttrue\fifthargumentfalse}%   
+            \dogetgroupargument\fourthargumenttrue\fourthargumentfalse}%   
+         \dogetgroupargument\thirdargumenttrue\thirdargumentfalse}%
+      \dogetgroupargument\secondargumenttrue\secondargumentfalse}%
+   \dogetgroupargument\firstargumenttrue\firstargumentfalse}
+
+%D These macros can explictly take care of spaces, which means 
 %D that the next definition and calls are valid:
 %D 
 %D \starttypen
@@ -3220,6 +3337,7 @@
 %    \egroup}
 
 \chardef\statuswidth=15
+\newcount\statuscounter
 
 \def\writestring%
   {\immediate\write16}
@@ -3228,28 +3346,35 @@
   {\writestring{}}
 
 \def\dosplitstatus#1%
-  {\advance\scratchcounter 1
-   \ifnum\scratchcounter<\statuswidth
-     \edef\messagecontentA{\messagecontentA#1}%
-     \expandafter\dosplitstatus
-   \else
+  {\advance\statuscounter -1
+   \ifcase\statuscounter
      \expandafter\nosplitstatus
+   \else
+     \@EA\scratchtoks\@EA{\the\scratchtoks#1}%
+     \expandafter\dosplitstatus
    \fi}
 
 \def\nosplitstatus#1\end%
   {}
 
-\gdef\writestatus#1#2%
+\def\writestatus#1#2%
   {\bgroup
-   \let\messagecontentA\empty
-   \edef\messagecontentB{#2}%  maybe it's \the\scratchcounter
-   \scratchcounter=0
+   \scratchtoks\emptytoks
+   \statuscounter=\statuswidth
    \expandafter\dosplitstatus#1%
      \space\space\space\space\space\space\space
      \space\space\space\space\space\space\space
      \space\space\space\space\space\space\end
-   \writestring{\messagecontentA\space:\space\messagecontentB}%
+   \expanded{\writestring{\the\scratchtoks\space:\space#2}}%
    \egroup}
+
+%D \macros
+%D   {emptytoks}
+%D
+%D For this we need an empty token register, analogous 
+%D to \type {\empty}.
+
+\newtoks\emptytoks
 
 %D \macros
 %D   {debuggerinfo}

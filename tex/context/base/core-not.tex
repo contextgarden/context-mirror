@@ -98,10 +98,12 @@
   {\dosingleempty\dosetupfootnotes}
 
 \def\dodofootnoterule%
-  {\color
-     [\@@vnlijnkleur]
-     {\hrule\!!width.2\hsize\!!height\@@vnlijndikte\!!depth\!!zeropoint}
-   \kern\strutdepth}
+  {\ifvmode
+     \color
+       [\@@vnlijnkleur]
+       {\hrule\!!width.2\hsize\!!height\@@vnlijndikte\!!depth\!!zeropoint}
+     \kern\strutdepth
+   \fi}
 
 \def\dosetupfootnotes[#1]%
   {\getparameters[\??vn][#1]%
@@ -150,6 +152,12 @@
    \dimen\footins=\@@vnhoogte
    \multiply\dimen\footins by \scratchcounter}
 
+\ifx\setfootnotehsize\undefined
+
+  \def\setfootnotehsize{\hsize=\@@vnbreedte} % can be overloaded
+
+\fi 
+
 \def\setcleverfootnotes%
   {\def\startpushfootnote  {\bgroup % wellicht ooit kopuitlijnen 
                             \stelinmargein[\c!uitlijnen=\v!links]%
@@ -160,7 +168,8 @@
    \def\stoppopfootnotes   {}}
 
 \def\setcolumnfootnotes% 
-  {\def\startpushfootnote  {\setrigidcolumnhsize\@@vnbreedte\@@vnkolomafstand\@@vnn
+  {\def\startpushfootnote  {\setfootnotehsize % possibly overloaded 
+                            \setrigidcolumnhsize\hsize\@@vnkolomafstand\@@vnn
                             \bgroup
                             \stelinmargein[\c!uitlijnen=\v!links]%
                             \getvalue{\e!start\??vn\??vn}}%
@@ -177,7 +186,7 @@
                             \stopvboxtohbox}%
    \def\startpopfootnotes  {\vbox\bgroup % \doifdimenelse
                             \doifnotinset{\@@vnbreedte}{\v!passend,\v!ruim}
-                              {\hsize=\@@vnbreedte}}% 
+                              {\setfootnotehsize}}% 
    \def\stoppopfootnotes   {\convertvboxtohbox\egroup}}
 
 %D The numbers that accompany a footnote are generated using
@@ -348,6 +357,8 @@
 
 \def\dostartfootnote% nog gobble als in pagebody
   {\bgroup
+  %\restorecatcodes % to be tested first 
+   \ignorelines % makes footnotes work in \startlines ... \stoplines
    \unskip\unskip
    \ifdim\lastkern=\footnotesignal
      \high{\kern\@@vnafstand}% gets the font right, hack !
@@ -374,7 +385,8 @@
      \def\linkermargeafstand{\@@vnmargeafstand}%
      \def\rechtermargeafstand{\@@vnmargeafstand}%
      \ifcase\@@vnn\relax % new 31-07-99 ; always ? 
-       \doifnotinset{\@@vnbreedte}{\v!passend,\v!ruim}{\hsize\@@vnbreedte}%
+       \doifnotinset{\@@vnbreedte}{\v!passend,\v!ruim}
+         {\setfootnotehsize}%
      \fi
      \startpushfootnote
        {\ifx\footnotenumber\empty \else
@@ -429,32 +441,6 @@
 
 \let\startpopfootnotes = \relax
 \let\stoppopfootnotes  = \relax
-
-% \def\placefootnoteinserts%
-%   {%\ifvoid\footins \else % unsafe, strange 
-%    \ifdim\ht\footins>\!!zeropoint\relax
-%      \ifendnotes \else
-%        \@@vnvoor
-%        \dofootnoterule  % alleen in ..mode
-%        \bgroup
-%        \setfootnotebodyfont
-%        \localframed 
-%          [\??vn]
-%          [\c!breedte=\v!passend,
-%           \c!hoogte=\v!passend,
-%           \c!strut=\v!nee,
-%           \c!offset=\v!overlay]
-%          {\startpopfootnotes % == \vbox 
-%           \ifdim\dp\footins=\!!zeropoint % this hack is needed because \vadjust
-%             \hbox{\lower\dp\strutbox\box\footins}% % in margin number placement 
-%           \else                          % hides the (always) present depth
-%             \box\footins
-%           \fi
-%           \stoppopfootnotes}%
-%        \egroup
-%        \@@vnna   
-%      \fi
-%    \fi}
 
 \def\placefootnoteinserts%
   {%\ifvoid\footins \else % unsafe, strange 
@@ -516,7 +502,8 @@
 \newbox\postponedfootnotes
 
 \def\autopostponefootnotes%
-  {\gdef\localfootinsert%
+%  {\gdef\localfootinsert%
+  {\def\localfootinsert%
      {\ifinner
         %\message{[postponed footnote]}%
         \global\setbox\postponedfootnotes=\vbox\bgroup
@@ -531,7 +518,8 @@
 \def\postponefootnotes%
   {\let\autopostponefootnotes=\postponefootnotes
    \let\postponefootnotes\relax % prevent loops 
-   \gdef\localfootinsert%
+%   \gdef\localfootinsert%
+   \def\localfootinsert%
      {%\message{[postponed footnote]}%
       \global\setbox\postponedfootnotes=\vbox\bgroup
         \unvbox\postponedfootnotes
@@ -540,7 +528,8 @@
 \def\doflushfootnotes% also called directly, \ifvoid is needed ! 
   {\ifendnotes \else 
      \ifvoid\postponedfootnotes 
-       \global\let\localfootinsert=\insert
+%       \global\let\localfootinsert=\insert
+       \let\localfootinsert=\insert
      \else
        \bgroup
          \ifdim\ht\postponedfootnotes>\!!zeropoint
@@ -551,7 +540,8 @@
            \fi
          \fi
        \egroup
-       \global\let\localfootinsert=\insert
+%       \global\let\localfootinsert=\insert
+       \let\localfootinsert=\insert
        \insert\footins\bgroup\unvbox\postponedfootnotes\egroup
      \fi 
    \fi}

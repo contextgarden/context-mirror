@@ -13,7 +13,7 @@
 
 \catcode`\{=1 \catcode`\}=2 
 
-\def\contextversion{2000.5.11}
+\def\contextversion{2000.10.22}
 
 %D Welcome to the main module. When this module is ran through
 %D \type{initex} or \type{tex -i} or \type{whatevertex} using
@@ -28,6 +28,7 @@
 %D minimal as possible.
 
 \input syst-tex.tex  
+\input syst-etx.tex  
 \input syst-gen.tex
 \input syst-ext.tex
 \input syst-new.tex
@@ -35,6 +36,12 @@
 %D To enable selective loading, we say:
 
 \CONTEXTtrue
+
+%D In order to conveniently load files, we need a few 
+%D support modules.  
+
+\input supp-ini.tex
+\input supp-fil.tex
 
 %D After this we're ready for the multi||lingual interface
 %D modules.
@@ -52,8 +59,6 @@
 %D Now we're ready for some general support modules. These
 %D modules implement some basic typesetting functionality.
 
-\input supp-ini.tex
-\input supp-fil.tex
 \input supp-box.tex
 \input supp-mrk.tex
 \input supp-vis.tex
@@ -66,8 +71,14 @@
 \input supp-tpi.tex
 \input supp-mat.tex
 \input supp-ran.tex
+\input supp-ali.tex
 
-%D Verbatim typestting is implemented in a separate class of
+%D The next module deals with language specific typographic 
+%D extensions. 
+
+\input typo-ini.tex  
+
+%D Verbatim typesetting is implemented in a separate class of
 %D modules. The pretty typesetting modules are loaded at run
 %D time.
 
@@ -164,8 +175,19 @@
 \input core-pag.tex
 \input core-tbl.tex
 \input core-mis.tex
-\input core-mps.tex
 \input core-int.tex
+\input core-ntb.tex
+
+%D Like languages, fonts, encodings and symbols, \METAPOST\ 
+%D support is also organized in its own class of modules. 
+
+\input meta-ini.tex
+\input meta-pag.tex
+\input meta-fig.tex
+
+%D On which the next one depends:
+
+\input core-pos.tex
 
 %D A few more languages, that have specifics using core 
 %D functionality: 
@@ -198,7 +220,7 @@
 \input main-002.tex % still to be split  
 \input main-003.tex % still to be split  
 
-\input core-fig.tex
+\input core-fig.tex % after page body 
 \input core-par.tex
 
 %D The next two modules implement some additional
@@ -276,6 +298,21 @@
 
 \stopinterface
 
+\startinterface italian
+
+\writestring{Questo pacchetto è basato sul Plain TeX. Usa una versione adattata del}
+\writestring{meccanismo di marcatura esteso di J. Fox (1987) ad alcune parti del}
+\writestring{meccanismo per i float laterali di D. Comenetz (1993). La maggior parte}
+\writestring{Plain TeX di D.E. Knuth (\fmtversion) è disponibile e può essere usata}
+\writestring{senza problemi. Questo pacchetto usa TaBlE, un pacchetto progettato e}
+\writestring{con diritti di copia di M.J. Wichura (1988). Solo qualche file ausiliario}
+\writestring{viene generato, alcuni dei quali devono essere elaborati da TeXUtil}
+\writestring{(\utilityversion). La versione attuale del blocco è \blockversion.}
+\writestring{}
+\writestring{L'INTERFACCIA UTENTE ITALIANA E' ANCORA IN VIA DI SVILUPPO!}
+
+\stopinterface
+
 \edef\copyrightversion%
   {Copyright 1990-\the\normalyear\normalspace / 
    PRAGMA ADE / J. Hagen - A.F. Otten}
@@ -345,6 +382,15 @@
 
 \stopinterface 
 
+\startinterface italian 
+
+  \installlanguage [\s!it] [\c!status=\v!start]
+
+  \appendtoks \language     [\s!it] \to \everyjob
+  \appendtoks \mainlanguage [\s!it] \to \everyjob
+
+\stopinterface 
+
 \protect
 
 %D Finally we load some fonts. 
@@ -353,6 +399,6 @@
 
 %D Now dumping the format is all that's left to be done.
 
-\dump
+\errorstopmode \dump
 
 \endinput

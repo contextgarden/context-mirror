@@ -8,8 +8,8 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
-%C details. 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
 
 \writestatus{loading}{Context Core Macros / Sectioning}
 
@@ -37,7 +37,19 @@
       2: konec oddilu (sekce) --
 \stopmessages
 
-\unprotect 
+\startmessages  italian  library: structures
+  title: struttura
+      1: inizio del blocco (sezione) --
+      2: fine del blocco (sezione) --
+\stopmessages
+
+\startmessages  norwegian  library: structures
+  title: struktur
+      1: starten av blokk -- (seksjon)
+      2: slutten av blokk -- (seksjon)
+\stopmessages
+
+\unprotect
 
 \def\dodochecknummer#1#2#3%
   {\bgroup
@@ -125,7 +137,7 @@
    \huidigenummer[#1]%
    \rawreference{#2}{#3}{\hetnummer}}
 
-% sectioning 
+% sectioning
 
 \newcount\nofsections
 
@@ -152,7 +164,7 @@
 \setvalue{\??by\v!per         }{\v!tekst}
 \setvalue{\??by\v!per\v!tekst }{\v!tekst}
 \setvalue{\??by\v!per\v!alles }{\v!tekst}
-\setvalue{\??by\v!per\v!pagina}{\v!tekst} % see footnotes 
+\setvalue{\??by\v!per\v!pagina}{\v!tekst} % see footnotes
 
 %%%%%%%%% old
 
@@ -165,7 +177,7 @@
 \def\stelsectiein%
   {\dodoubleargument\dostelsectiein}
 
-%%%%%%%%% new, multilingual 
+%%%%%%%%% new, multilingual
 
 \def\dostelsectiein[#1][#2][#3]%
   {\ifthirdargument
@@ -255,10 +267,10 @@
 % \def\@@sectionconversion#1%
 %   {\getvalue{\??cv\getvalue{\??se#1\@@sectieblok\c!conversie}}}
 
-% suited for chinese too: 
+% suited for chinese too:
 
 \def\@@sectionconversion#1#2% a doublure with \@@shortsectionnumber
-  {\ifnum#2=0 0\else % else troubles with \uchar 
+  {\ifnum#2=0 0\else % else troubles with \uchar
      \@EA\ifx\csname\??se#1\@@sectieblok\c!conversie\endcsname\relax
        \@EA\ifx\csname\??se#1\c!conversie\endcsname\relax
          #2%
@@ -398,7 +410,7 @@
      \@@sectionconversion{#1}{\@@sectionvalue{#1}}%
    \fi}
 
-% suited for chinese too: 
+% suited for chinese too:
 
 \def\@@shortsectionnumber#1%
   {\@EA\ifx\csname\??se#1\@@sectieblok\c!conversie\endcsname\relax
@@ -424,11 +436,12 @@
 
 \def\dostartsectieblok#1#2%
   {\begingroup
-   \doaroundsectieblok{#1}%
-   \getvalue{\??sb#1}%  
-   \expandafter\csname#2true\endcsname % vervangen door mode
-   \enablemode[\systemmodeprefix#1]%
-   \getvalue{\??sb\@@sectieblok\c!voor}% don't move
+   \doaroundsectieblok{#1}%            % going to a new page or so
+   \getvalue{\??sb#1}%                 % set name of section block
+   \getsectieblokomgeving{#1}%         % special settings, grouped
+  %\expandafter\csname#2true\endcsname % obsolete
+   \enablemode[\systemmodeprefix#1]%   % can be used in conditionals
+   \getvalue{\??sb\@@sectieblok\c!voor}% this one is not to be moved!
    \showmessage{\m!structures}{1}{\@@sectieblokken}}
 
 \def\dostopsectieblok%
@@ -443,10 +456,43 @@
 \def\stelsectieblokin%
   {\dodoubleargument\dostelsectieblokin}
 
-% We used to use the first char as id, but a counter is 
-% better, because in english we get a name clash. 
+\long\def\setsectieblokomgeving#1#2%
+  {\long\setvalue{\??sb\s!do#1}{\do{#2}}}
 
-\newcounter\currentsectionblock 
+\def\getsectieblokomgeving#1%
+  {\let\do\firstofoneargument\getvalue{\??sb\s!do#1}}
+
+\setvalue{\e!start\e!sectieblokomgeving}%
+  {\dosingleargument\dostartsectieblokomgeving}
+
+\def\dostartsectieblokomgeving[#1]% evt \pushendofline \popendofline
+  {\long\def\do##1##2{\setsectieblokomgeving{#1}{##1##2}}%
+   \grabuntil{\e!stop\e!sectieblokomgeving}{\getvalue{\??sb\s!do#1}}}
+
+%D \starttypen
+%D \startsectionblockenvironment[frontpart]
+%D   \setuppagenumbering[conversion=romannumerals]
+%D \stopsectionblockenvironment
+%D
+%D \startsectionblockenvironment[bodypart]
+%D   \setuppagenumber[number=1]
+%D \stopsectionblockenvironment
+%D
+%D \startsectionblockenvironment[frontpart]
+%D   \setuppagenumbering[conversion=character]
+%D \stopsectionblockenvironment
+%D
+%D \starttext
+%D   \startfrontmatter \chapter{test} \stopfrontmatter
+%D   \startbodymatter  \chapter{test} \stopbodymatter
+%D   \startappendices  \chapter{test} \stopappendices
+%D \stoptext
+%D \stoptypen
+
+% We used to use the first char as id, but a counter is
+% better, because in english we get a name clash.
+
+\newcounter\currentsectionblock
 
 \def\dodefinieersectieblok[#1][#2][#3]%
   {\getparameters
@@ -457,7 +503,8 @@
       %\c!na=,
       #3]%
    \expandafter\newif\csname if#2\endcsname
-   \doglobal\increment\currentsectionblock 
+   \doglobal\increment\currentsectionblock
+   \setsectieblokomgeving{#1}{}%
    \setevalue{\??sb#1}%
      {\noexpand\dosetlocalsectieblok{\currentsectionblock}{#1}{#2}}%
    \setvalue{\e!start#2}%
@@ -557,17 +604,17 @@
 
 %\def\dolocalkopsetup#1%  koppeling met standaard kopcommando / engels
 %  {\forgetall
-%   \doifvaluesomething{\??ko#1\c!uitlijnen}  
+%   \doifvaluesomething{\??ko#1\c!uitlijnen}
 %     {\ExpandFirstAfter\steluitlijnenin[\getvalue{\??ko#1\c!uitlijnen}]}%
-%   \doifvaluesomething{\??ko#1\c!tolerantie} 
+%   \doifvaluesomething{\??ko#1\c!tolerantie}
 %     {\ExpandFirstAfter\steltolerantiein[\getvalue{\??ko#1\c!tolerantie}]}%
 %   \def\\{\crlf\strut\ignorespaces}}
 
 \def\dolocalkopsetup#1%  koppeling met standaard kopcommando / engels
   {\forgetall
-   \doifvaluesomething{\??ko#1\c!uitlijnen}  
+   \doifvaluesomething{\??ko#1\c!uitlijnen}
      {\expanded{\steluitlijnenin[\getvalue{\??ko#1\c!uitlijnen}]}}%
-   \doifvaluesomething{\??ko#1\c!tolerantie} 
+   \doifvaluesomething{\??ko#1\c!tolerantie}
      {\expanded{\steltolerantiein[\getvalue{\??ko#1\c!tolerantie}]}}%
    \def\\{\crlf\strut\ignorespaces}}
 
@@ -651,7 +698,7 @@
 
 \def\setsomeheadconversion#1#2%
    {\someheadconversionfalse
-    \doifelsevalue{\??ko#1\c!eigennummer}{\v!ja} 
+    \doifelsevalue{\??ko#1\c!eigennummer}{\v!ja}
       {\def\someheadconversion{#2}}
       {\bepaalkopnummer[#1]%
        \@EA\ifx\csname\??se\@@sectie\@@sectieblok\c!kopconversie\endcsname\relax
@@ -674,11 +721,11 @@
            \def\someheadconversion%
              {\fullsectionnumber{#1}{\getvalue{\??se\@@sectie\@@sectieblok\c!kopconversie}}{#2}}%
          \fi
-       \fi}} 
+       \fi}}
 
-\def\writtenfullsectionnumber{\string\fullsectionnumber}
-\def\ignoredfullsectionnumber#1#2#3{#3}
-\let\storedfullsectionnumber\relax
+           \def\writtenfullsectionnumber      {\string\fullsectionnumber}
+           \def\ignoredfullsectionnumber#1#2#3{#3}
+           \let \storedfullsectionnumber       \relax
 \unexpanded\def\naturalfullsectionnumber#1#2#3{\sectiebloklabel{#1}{\getvalue{\??cv#2}{#3}}}
 \unexpanded\def\limitedfullsectionnumber#1#2#3{\getvalue{\??cv#2}{#3}}
 
@@ -694,7 +741,7 @@
 
 % \dodododosomekop IS NON GROUPED, SO WE NEED TO RESTORE !!!!
 %
-% dit kan dus beter \everyaroundhead zijn 
+% dit kan dus beter \everyaroundhead zijn
 
 \def\dodododosomekop#1[#2]#3#4#5% % pas met \ExpandFirstAfter op bij twee||taligheid
   {\flushingcolumnfloatsfalse     % #3=#1=redundant
@@ -745,7 +792,7 @@
        \getvalue{\e!volgende\@@sectie}%
        \getvalue{\??ko#1\c!tussen}%
        \ifkopnummer
-\setsomeheadconversion{#1}{#4}% 
+\setsomeheadconversion{#1}{#4}%
 \ifsomeheadconversion
          \let\fullsectionnumber\naturalfullsectionnumber
          \doplaatskopnummertekst
@@ -780,7 +827,7 @@
            {\marking[#1]{#5}%
             \doifelsevalue{\??ko#1\c!eigennummer}{\v!ja} % rommelig omdat
               {\edef\finalsectionnumber{#4}}             % #4 al is toegekend
-              {\bepaalkopnummer[#1]}% migreert naar 3e argument 
+              {\bepaalkopnummer[#1]}% migreert naar 3e argument
             \expanded{\marking[#1\v!nummer]{\finalsectionnumber}}}%
          \writesection{#1}{#4}{#5}%
  \fi
@@ -818,7 +865,7 @@
        \resetsectionmarks[\@@sectie]%
        \marking[#1]{#5}%
        \doifelsevalue{\??ko#1\c!eigennummer}{\v!ja}
-         {\edef\finalsectionnumber{#4}}  
+         {\edef\finalsectionnumber{#4}}
          {\bepaalkopnummer[#1]}%
        \expanded{\marking[#1\v!nummer]{\finalsectionnumber}}%
        \ExpandFirstAfter\soortpagina[\@@koppeling]%
@@ -869,7 +916,7 @@
 
 \def\doplaatskoptekst#1#2#3#4%
   {\beginheadplacement{#1}%
-   \setbox0=\hbox
+   \setbox0=\ifvertical\vbox\else\hbox\fi % \vhbox
      {\getvalue{\??ko#1\c!commando}
         {} % no number
         {\doattributes
@@ -897,7 +944,7 @@
 
 \def\doplaatskopnummertekst#1#2#3#4#5%
   {\beginheadplacement{#1}%
-   \setbox0=\hbox
+   \setbox0=\ifvertical\vbox\else\hbox\fi % \vhbox
      {\getvalue{\??ko#1\c!commando}%
         {\doattributes{\??ko#1}\c!letter\c!kleur
            {\doattributes{\??ko#1}\c!nummerletter\c!nummerkleur
@@ -953,27 +1000,35 @@
    \startsynchronisatie}
 
 \def\endheadplacement#1#2%
-  {\doifvaluenothing{\??ko#1\c!file}{\locationfalse}%
+  {\doifelsevalue{\??rf#1\c!status}{\v!start}
+     {\doifvaluenothing{\??ko#1\c!file}{\autocrossdocumentfalse}}
+     {\autocrossdocumentfalse}%
+   % no message needed here, should be a proper switch
+   \let\unknownreference\relax
+   %
    \ifdisplaysectionhead
      \let\headlastlinewidth\!!zeropoint
      \snaptogrid\hbox
        {\iflocation
           \ifautocrossdocument
-            \naarbox{\box0}[\getvalue{\??ko#1\c!file}::#1]%
+            \doifreferencefoundelse{\getvalue{\??ko#1\c!file}::#1}
+              {\edef\currentinnerreference{\s!aut:\currenttextreference}% stored in
+               \gotoouterlocation{}{\box0}}                             % text slot
+              {\hbox{\box0}}%
           \else
             \hbox{\box0}%
           \fi
         \else
           \hbox{\box0}%
-        \fi
-        \doflushfootnotes}% new
+        \fi}%
+     \doflushfootnotes % new, not really needed
      \endgraf
      \nointerlineskip
      \dosomebreak\nobreak
      #2%
    \else
      \strut
-     \doflushfootnotes % new
+     \doflushfootnotes % new, here since we're in par mode
      \iflocation
        \ifautocrossdocument
          \hhboxindent=\ifcontinuoushead\headlastlinewidth\else\!!zeropoint\fi
@@ -1003,7 +1058,6 @@
    \stopsynchronisatie
    \egroup
    \egroup
-   \doflushfootnotes % new, still needed?
    \ifdisplaysectionhead
      \doifvalue{\??ko#1\c!springvolgendein}{\v!nee}{\noindentation}%
    \else
@@ -1088,8 +1142,8 @@
 
 \def\plaatskopalinea#1#2%
   {\vbox
-    {\localkopsetup
-     \begstrut\doifsomething{#1}{#1\hskip\numberheaddistance}#2}}
+     {\localkopsetup
+      \begstrut\doifsomething{#1}{#1\hskip\numberheaddistance}#2}}
 
 \def\plaatskopnormaal#1#2%
   {\doifelsenothing{#1}
@@ -1124,7 +1178,7 @@
 
 \def\plaatskopintekst#1#2%
   {\bgroup
-   \localkopsetup % no stretch in distance 
+   \localkopsetup % no stretch in distance
    \doifsomething{#1}{{#1}\kern\numberheaddistance}{\begstrut#2}%
    \egroup}
 
@@ -1469,7 +1523,7 @@
   [\v!sub\v!sub\v!sub\v!sub\v!paragraaf]
   [\c!breedte=7em]
 
-% hm 
+% hm
 
 \stelnummeringin % na instellen hoofdteksten !
   [\c!variant=\v!enkelzijdig,
@@ -1485,7 +1539,7 @@
    \c!tekstscheider=\tfskip,
    \c!status=\v!start,
    \c!commando=,
-   \c!letter=\v!normaal,
+   \c!letter=, % \v!normaal, % empty, otherwise conflict 
    \c!kleur=]
 
-\protect \endinput 
+\protect \endinput

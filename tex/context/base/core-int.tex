@@ -47,6 +47,22 @@
       4: zadna strankova synchronizace (--) v hmode
 \stopmessages
 
+\startmessages  italian  library: interactions
+  title: interazione
+      1: rapporto -- x -- (b x a)
+      2: attiva
+      3: inattiva
+      4: sincronizzazione di pagina (--) non disponibile in hmode
+\stopmessages
+
+\startmessages  norwegian  library: interactions
+  title: interaksjon
+      1: forholdstall -- x -- (b x h)
+      2: aktiv
+      3: inaktiv
+      4: ingen sidesynkronisering (--) i hmode
+\stopmessages
+
 \startmessages  dutch  library: versions
   title: versie
       1: er mankeert een @+
@@ -73,6 +89,20 @@
       1: postradam @+
       2: oznacuji se strany
       3: oznacene strany: --
+\stopmessages
+
+\startmessages  italian  library: versions
+  title: version
+      1: @+ mancante
+      2: marcatura pagine
+      3: pagine selezionate: --
+\stopmessages
+
+\startmessages  norwegian  library: versions
+  title: versjon
+      1: manglende @+
+      2: markerer sider
+      3: valgte sider: --
 \stopmessages
 
 \unprotect
@@ -271,20 +301,44 @@
 
 \def\initializeidentity% The macro is not to be changed;
   {\iflocation         % only the \@@ia-variables may be set! 
-     \dosetupidentity  % Although ConTeXt is the producer
-       {\@@iatitel}    % we no longer set this field, since
+     \dosetupidentity  % ConTeXt is the producer but we 
+       {\@@iatitel}    % no longer mention the pragma site, since
        {\@@iasubtitel} % we don't want to be bothered with
        {\@@iaauteur}   % remarks about third party documents
-       {\jobname.tex}  % and/or associated with documents 
+       {ConTeXt/user/\jobname.tex} % and/or associated with documents 
        {\@@iadatum}%   % produced outside our control. 
      \global\let\initializeidentity\relax 
    \fi}                
 
 \appendtoks \initializeidentity \to \everyshipout 
 
+% \def\initializepaper%
+%   {\bgroup
+%    \doif\@@pcstatus\v!start\locationfalse
+%    \iflocation % without screen settings
+%      \egroup
+%      \dosetuppaper
+%        {\papierformaat}
+%        {\the\papierbreedte}
+%        {\the\papierhoogte}%
+%    \else
+%      \egroup
+%      \dosetuppaper
+%        {\printpapierformaat}
+%        {\the\printpapierbreedte}
+%        {\the\printpapierhoogte}%
+%    \fi}
+
 \def\initializepaper%
   {\bgroup
-   \doif\@@pcstatus\v!start\locationfalse
+  %\doif\@@pcstatus\v!start\locationfalse
+  %\doifsomething
+  %  {\@@pplinks\@@pprechts\@@ppboven\@@pponder}\locationfalse 
+   \ifx\@@pplinks \empty  \else\locationfalse\fi
+   \ifx\@@pprechts\empty  \else\locationfalse\fi
+   \ifx\@@ppboven \empty  \else\locationfalse\fi
+   \ifx\@@pponder \empty  \else\locationfalse\fi
+   \ifx\@@pcstatus\v!start     \locationfalse\fi
    \iflocation % without screen settings
      \egroup
      \dosetuppaper
@@ -298,6 +352,8 @@
        {\the\printpapierbreedte}
        {\the\printpapierhoogte}%
    \fi}
+
+\appendtoks \initializepaper \to \everyshipout 
 
 \def\doinitializepaper%
   {\bgroup
@@ -314,6 +370,8 @@
      {\the\papierhoogte}%
    \egroup}
 
+\let\@@pcscreendata\empty
+
 \def\dosetupinteractionscreens% met a, b en \number
   {\doifnot{\@@pcstatus}{\v!start}
      {\bgroup
@@ -324,8 +382,16 @@
          \v!bookmark=>\!!counte=2,
           \s!unknown=>\!!counte=0,
           \s!default=>\!!counte=0]%
-      \showmessage{\m!interactions}{1} % niet waterdicht
-        {\@EA\withoutpt\the\!!widtha,\@EA\withoutpt\the\!!heighta}%
+      \edef\temp%
+        {{\number\rugoffset}{\number\kopoffset}%
+         {\number\!!widtha}{\number\!!heighta}%
+         {\the\!!counte}}%
+      \doifnot{\the\!!widtha\the\!!heighta}{\@@pcscreendata}
+        {\xdef\@@pcscreendata{\the\!!widtha\the\!!heighta}%
+         \showmessage{\m!interactions}{1} % niet waterdicht
+           {\@EA\withoutpt\the\!!widtha,\@EA\withoutpt\the\!!heighta}}%
+      % need to be split: dimensions for each page 
+      % and mode per document and only once ! 
       \dosetupscreen
         {\number\rugoffset}{\number\kopoffset}
         {\number\!!widtha}{\number\!!heighta}
@@ -338,6 +404,8 @@
      \let\initializepaper\doinitializepaper
      \let\setupinteractionscreens\dosetupinteractionscreens
    \fi}
+
+\appendtoks \setupinteractionscreens \to \everyshipout 
 
 \def\stelinteractieschermin%
   {\dosingleempty\dostelinteractieschermin}
@@ -610,7 +678,7 @@
          \c!achtergrond=\locationboxbackground,
          #2]
         {\dolocationattributes{#1}\c!letter\c!kleur{#3}}}%
-   \hbox{#4{\box\locationbox}}}%{\copy\locationbox}}}
+   \hbox{#4{\box\locationbox}}}
 
 \def\setlocationboxyes#1[#2]#3[#4]%
   {\ifx\currentouterreference\empty
@@ -657,20 +725,10 @@
      \global\skippedmenuitemtrue
    \fi}
 
-%\def\setlocationbox#1[#2]#3[#4]%
-%  {\doifinstringelse{#4}{\getvalue{#1\c!blokkade}}
-%     {\setlocationboxnop{#1}[#2]{#3}[#4]}
-%     {\doifreferencefoundelse{#4}
-%        {\setlocationboxyes{#1}[#2]{#3}[#4]}
-%        {\setlocationboxnop{#1}[#2]{#3}[#4]%
-%         \unknownreference{#4}}}}
-
 \def\setlocationbox#1[#2]#3[#4]%
   {\doifreferencepermittedelse{#4}{\getvalue{#1\c!blokkade}}
      {\setlocationboxyes{#1}[#2]{#3}[#4]}
      {\setlocationboxnop{#1}[#2]{#3}[#4]}}
-
-%\dolocationattributes{#1}\c!letter\c!kleur{#3}}}%
 
 \def\dodosetlocationcommanditem#1#2#3[#4]#5\\%
   {\bgroup
@@ -712,6 +770,8 @@
    \unskip
    \getvalue{\??am#1#5}}
 
+\newcounter\currentamposition
+
 \def\setamboxcommands#1#2%
   {\def\@@amboxcommand##1\\%
      {\bgroup
@@ -721,26 +781,31 @@
       \fi
       \egroup
       \ignorespaces}%
+   \doglobal\newcounter\currentamposition %%% experiment 
    \def\raw[##1]##2\\%
      {\@@amboxcommand\naarbox{\ignorespaces##2\unskip}[##1]\\}%
    \def\but[##1]##2\\%
-     {\@@amboxcommand\setlocationbox{\??am#1}[]{\ignorespaces##2\unskip}[##1]\\}%
+     {\@@amboxcommand\do@@amposition{#1}{##1}{\setlocationbox{\??am#1}[]{\ignorespaces##2\unskip}[##1]}\\}%
    \def\got[##1]##2\\% pas op! offset 
      {\@@amboxcommand\setlocationbox{\??am#1}[\c!kader=\v!uit,\c!achtergrond=]{\ignorespaces##2\unskip}[##1]\\}%
    \def\nop##1\\%
      {\@@amboxcommand\phantom{\localframed[\??am#1][]{}}\\}%
    \def\txt##1\\%
      {\@@amboxcommand\localframed[\??am#1][\c!kader=\v!uit,\c!achtergrond=]{\ignorespaces##1\unskip}\\}%
-   \def\rul##1\\%
+   \def\rul##1\\% ook \do@@amposition ! 
      {\@@amboxcommand\localframed[\??am#1][]{\ignorespaces##1\unskip}\\}%
    \def\com##1\\%
      {\ignorespaces##1\unskip\ignorespaces}}
+
+\ifx\do@@amposition\undefined
+  \let\do@@amposition\gobbletwoarguments % hook for positional thingies
+\fi
 
 \def\@@amhbox#1#2#3#4%
   {\testinteractiemenu{#3}%
    \iflocationmenupermitted
      \bgroup
-\showcomposition
+     \showcomposition
      \def\dolocationcommand##1%
        {\dosetlocationcommanditem{#3}{##1}}%
      \dimen0=\zetbreedte
@@ -751,6 +816,7 @@
      \setbox0=\hbox to \dimen0
        {\forgetall
         \executeamboxcommands{#3}{#4}\c!links\c!midden\c!rechts}%
+     \setbox0=\hbox{\do@@ammenuposition{#3}{\box0}}%
      \wd0=\zetbreedte
      % geen \ht=#2 setting (yet)
      \hskip-\pagebackgroundhoffset
@@ -765,7 +831,7 @@
   {\testinteractiemenu{#3}%
    \iflocationmenupermitted
      \bgroup
-\showcomposition
+     \showcomposition
      \dimen0=\teksthoogte
      \advance\dimen0 by \pagebackgroundvoffset
      \advance\dimen0 by \pagebackgroundvoffset
@@ -777,6 +843,7 @@
         \stelblankoin[\v!standaard]%   % (tijdelijk) is aangepast.
         \hsize#2\relax
         \executeamboxcommands{#3}{#4}\c!voor\c!tussen\c!na}%
+     \setbox0=\vbox{\hbox{\do@@ammenuposition{#3}{\box0}}}%
      \setbox0=\vbox
        {\vskip-\pagebackgroundvoffset
         \vskip\getvalue{\??am#3\c!bovenoffset}%
@@ -790,6 +857,10 @@
    \else
      #1\relax
    \fi}
+
+\ifx\do@@ammenuposition\undefined
+  \let\do@@ammenuposition\gobbleoneargument % hook for positional thingies
+\fi
 
 \setvalue{\??am\s!do\v!rechts}%
   {\@@amvbox{\dodummypageskip\v!rechts}\rechterrandbreedte}
@@ -876,9 +947,13 @@
 \def\dodefinieerinteractiemenu[#1][#2][#3]%
   {\ConvertToConstant\doifelse{#3}{}
      {\setvalue{\??am\c!menu#1}%
-        {\extendedmenufalse\dointeractiemenu{#1}{#2}}}
+        {\extendedmenufalse\dointeractiemenu{#1}{#2}}%
+      \setvalue{\@@dodolijstelement#1}%
+        {\def\dosomelijstelement{\dodomenulijstelement{#1}}}} % of #2 ?  
      {\setvalue{\??am\c!menu#1}%
         {\extendedmenufalse\dointeractiemenu{#1}{}}%
+      \setvalue{\@@dodolijstelement#1}%
+        {\def\dosomelijstelement{\dodomenulijstelement{#1}}}%
       \presetlocalframed[\??am#1]%
       \letvalue{\??am#1\c!blokkade}\empty
       \edef\!!stringe{\getvalue{\??am#2}}%
@@ -904,6 +979,23 @@
 
 \def\definieerinteractiemenu%
   {\dotripleempty\dodefinieerinteractiemenu}
+
+\def\dodomenulijstelement#1#2#3#4#5#6#7% 
+  {\setbox0=\hbox
+     {\let\gotolocation\gobbleoneargument % hack to catch last []
+      \docheckrealreferencepage{#7}%
+      \setlocationboxyes
+        {\??am#1}% % needed !
+        []% no settings
+        {\doifelsenothing{\??li#2\c!maxbreedte}
+           {#5}
+           {\limitatetext
+              {#5}
+              {\getvalue{\??li#2\c!maxbreedte}}
+              {\unknown}}}% % needed ! 
+        []}% normally the destination, catch by gobble
+   \@@amboxcommand\do@@amposition{#1}{#7}% beware, we pass the pagenumber
+     {\ignorespaces\linklisttoelement{#2}{#3}{#6}{#7}{\box0}\unskip}\\}
 
 \processbetween{\e!interactiemenu}\dostartinteractiemenu
 
@@ -1546,8 +1638,11 @@
      \def\stopprofiel%
        {\processprofile1[#1]%
         \egroup}%
-     \DoAfterFi\processprofile0[#1]%
-   \fi}
+     \def\next{\processprofile0[#1]}% % \DoAfterFi \processprofile0[#1]%
+   \else                              % ^^^^^^^^^^ will be obsolete 
+     \let\next\relax                  % since ugly and never used 
+   \fi
+   \next}
 
 \let\stopprofiel=\relax
 
@@ -1962,22 +2057,26 @@
 %   text, the symbols scale down. 
 % \stopcommentaar
 
+% jammer, tussen/midden had erin gemoeten; \c!commando toevoegen
+
+\def\registermenucommand#1%
+  {\noindent#1\space}
+
 \def\doregistermenubuttons[#1][#2]% [menu id] [register]
   {\bgroup
    \ifsecondargument
      \stelinteractiemenuin
        [#1][\c!onbekendeverwijzing=\v!ja,\c!zelfdepagina=\v!ja]%
      \def\docommando##1%
-       {\noindent
-        \menubutton[#1]{##1}[#2:##1]%
-        \space}%
+       {\registermenucommand{\menubutton[#1]{##1}[#2:##1]}}%
    \else
      \def\docommando##1%
-       {\noindent
-        \button[\c!onbekendeverwijzing=\v!ja,\c!zelfdepagina=\v!ja]{##1}[#1:##1]%
-        \space}%
+       {\registermenucommand
+          {\button
+             [\c!onbekendeverwijzing=\v!ja,\c!zelfdepagina=\v!ja]
+             {##1}[#1:##1]}}%
    \fi
-   \handletokens abcdefghijklmnopqrstuvwxyz\with\docommando
+   \handletokens abcdefghijklmnopqrstuvwxyz\with\docommando % moet anders 
    \egroup}
 
 \def\registermenubuttons%
@@ -2040,6 +2139,7 @@
 \stelinteractiemenuin
   [\v!links,\v!rechts,\v!boven,\v!onder]
   [\c!offset=.25em,
+   \c!positie=\v!nee,
    \c!kader=\v!aan,
    \c!achtergrond=,
    \c!achtergrondkleur=,

@@ -8,14 +8,8 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
-%C details. 
-
-% E-tex   : a primitive that tells us that \write18 works
-% E-tex   : \executeMetaPost filename
-% ConTeXt : automatic flush at end of job
-
-% The MP generation support is still experimental.
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
 
 %D \METAPOST\ is John Hobbys alternative for \METAFONT\ and
 %D produces superior \POSTSCRIPT\ code. In this module we
@@ -63,7 +57,8 @@
 %D This is implemented as:
 
 \long\def\startMPgraphic#1\stopMPgraphic%
-  {\startwritingMPgraphic
+  {\checkMPTEXgraphic{#1}%
+   \startwritingMPgraphic
    \writeMPgraphic{#1}%
    \stopwritingMPgraphic}
 
@@ -72,7 +67,7 @@
 %D
 %D If we just want to run \METAPOST\ code, that is, not to
 %D explictly generate a figure in terms of \type{beginfig} and
-%D \type{endfig}, we can use: 
+%D \type{endfig}, we can use:
 %D
 %D \starttypen
 %D \startMPgraphic
@@ -97,22 +92,24 @@
 
 \ifCONTEXT
 
-  \long\def\dostartMPrun#1#2\stopMPrun% 
+  \long\def\dostartMPrun#1#2\stopMPrun%
     {\bgroup
      \MPruntrue
      \doifsomething{#1}{\def\MPgraphicfile{#1}}%
+     \checkMPTEXgraphic{#2}%
      \startwritingMPgraphic
      \writeMPgraphic{#2}%
      \stopwritingMPgraphic
      \egroup}
-  
+
   \def\startMPrun%
     {\dosinglegroupempty\dostartMPrun}
 
 \else
 
-  \long\def\startMPrun#1\stopMPrun% 
+  \long\def\startMPrun#1\stopMPrun%
     {\MPruntrue
+     \checkMPTEXgraphic{#1}%
      \startwritingMPgraphic
      \writeMPgraphic{#1}%
      \stopwritingMPgraphic
@@ -139,7 +136,7 @@
 %D \stoptypen
 
 %D \macros
-%D   {ifrunMPgraphics,ifinsertMPgraphics}
+%D   {ifrunMPgraphics,ifrunMPTEXgraphics,ifinsertMPgraphics}
 %D
 %D These macros look a bit more complicated that one would
 %D expect at first sight. This is due to the two ways of
@@ -147,8 +144,9 @@
 %D paragraph. Which method is used, the direct or indirect
 %D one, depends on a boolean.
 
-\newif\ifrunMPgraphics    \runMPgraphicsfalse
-\newif\ifinsertMPgraphics \insertMPgraphicstrue
+\newif\ifrunMPgraphics     \runMPgraphicsfalse
+\newif\ifrunMPTEXgraphics  \runMPTEXgraphicsfalse
+\newif\ifinsertMPgraphics  \insertMPgraphicstrue
 
 %D If set to true, one can do with a single pass, else one must
 %D process the \METAPOST\ file \type{mpgraph} between two
@@ -157,8 +155,9 @@
 \ifx\MPgraphicfile\undefined
 
   \def\MPgraphicfile{mp\ifMPrun run\else graph\fi}
+  \def\MPruntimefile{mprun}
 
-\fi 
+\fi
 
 %D \macros
 %D   {MPgraphic}
@@ -167,7 +166,7 @@
 %D processed at once, which means that we reuse this file many
 %D times. When however the execution is delayed, all graphics
 %D are saved in a separate figure. The current graphic is
-%D characterized bij a \COUNTER. This counter is available 
+%D characterized bij a \COUNTER. This counter is available
 %D in \type{\MPgraphic}.
 
 \newcount\currentMPgraphic
@@ -179,7 +178,7 @@
 % %D
 % %D If one want to reuse grapics, one can save much redundant
 % %D run time by setting the next switch to true.
-% 
+%
 % \newif\ifreuseMPgraphics \reuseMPgraphicstrue
 
 %D The three macros responsible for writing the graphic
@@ -189,16 +188,16 @@
 %D   {MPinclusions, startMPinclusions, MPinitializations}
 %D
 %D One can include for instance common input commands by
-%D passing them to \type{\MPinclusions}: 
+%D passing them to \type{\MPinclusions}:
 %D
 %D \starttypen
 %D \MPinclusions{input mp-mine}
 %D \stoptypen
 %D
-%D The token register \type {\MPinitializations} is expanded 
-%D before all other inclusions. 
+%D The token register \type {\MPinitializations} is expanded
+%D before all other inclusions.
 
-\newtoks \MPinitializations 
+\newtoks \MPinitializations
 
 \long\def\startMPinclusions#1\stopMPinclusions%
   {\long\def\theMPinclusions%
@@ -226,13 +225,18 @@
 \ifx \overlayheight    \undefined \def \overlayheight    {3cm} \fi
 \ifx \overlaylinewidth \undefined \def \overlaylinewidth {0pt} \fi
 
-\long\def\writeMPgraphic#1%
-  {\bgroup
-   \edef\overlaywidth     {\overlaywidth    \space}%
+\def\presetMPdefinitions%
+  {\edef\overlaywidth     {\overlaywidth    \space}%
    \edef\overlayheight    {\overlayheight   \space}%
    \edef\overlaylinewidth {\overlaylinewidth\space}%
+   \edef\currentwidth     {\the\hsize       \space}%
+   \edef\currentheight    {\the\vsize       \space}}
+
+\long\def\writeMPgraphic#1% \expanded testen
+  {\bgroup
+   \presetMPdefinitions
+   \let\par=\space
    \iflongMPlines
-     \let\par=\empty
      \long\def\flush##1##2\par%
        {\ifx##1\relax \else
           \immediate\write\MPwrite{##1##2}%
@@ -249,42 +253,93 @@
    \fi
    \egroup}
 
-%D The \type {;} aware method (the \type {\else} branch) also 
-%D takes care of \type {btex}||\type {etex}, \type 
-%D {verbatimtex}||\type {etex}. The space after \type {tex} 
-%D is essential, since it protects \type {text}. 
+%D The \type {;} aware method (the \type {\else} branch) also
+%D takes care of \type {btex}||\type {etex}, \type
+%D {verbatimtex}||\type {etex}. The space after \type {tex}
+%D is essential, since it protects \type {text}.
+
+\newif\ifMPTEXgraphic
 
 \def\dowriteMPgraphicline%
   {\futurelet\next\dodowriteMPgraphicline}
 
+%D A first version:
+%D
+%D \starttypen
+%D \long\def\dodowriteMPgraphicline#1tex #2#3etex#4\MPend%
+%D   {\ifx\next\empty\else\ifx\next\relax\else
+%D      \bgroup
+%D      \let\par=\space
+%D      \ifx#2\relax
+%D        \immediate\write\MPwrite{#1;}%
+%D       \egroup
+%D     \else
+%D       \global\MPTEXgraphictrue
+%D        \convertargument#2#3\to\ascii
+%D        \immediate\write\MPwrite{#1tex \ascii etex}%
+%D        \egroup
+%D        \dowriteMPgraphicline#4tex \relax etex\MPend
+%D      \fi
+%D    \fi\fi}
+%D \stoptypen
+
+%D The next alternative also handles inclusions well.
+
+\newtoks \everyMPTEXgraphic
+
+\long\def\checkMPTEXgraphic#1%
+  {\expandafter\convertargument   #1\to\asciiA
+               \convertargument etex\to\asciiB
+               \convertargument text\to\asciiC 
+   \expandtwoargsafter\doifinstringelse{\asciiB}{\asciiA}
+     {\global\MPTEXgraphictrue}
+     {\expandtwoargsafter\doifinstringelse{\asciiC}{\asciiA}
+        {\global\MPTEXgraphictrue}
+        {\global\MPTEXgraphicfalse}}}
+
+\def\flushMPTEXgraphic%
+  {\ifMPTEXgraphic \ifx\everyMPTEXgraphic\emptytoks \else
+     \immediate\write\MPwrite{verbatimtex \the\everyMPTEXgraphic\space etex;}%
+   \fi \fi}
+
 \long\def\dodowriteMPgraphicline#1tex #2#3etex#4\MPend%
   {\ifx\next\empty\else\ifx\next\relax\else
      \bgroup
-     \let\par=\empty
+     \let\par=\space
      \ifx#2\relax
-       \immediate\write\MPwrite{#1;}%
+       \iflongMPlines
+         \immediate\write\MPwrite{#1;}%
+       \else
+         \edef\ascii{#1}%
+         \long\def\flush##1##2;%
+           {\ifx##1\relax \else
+              \immediate\write\MPwrite{##1##2;}%
+              \expandafter\flush
+            \fi}%
+         \expandafter\flush\ascii\empty;\relax;%
+       \fi
        \egroup
      \else
        \convertargument#2#3\to\ascii
-       \immediate\write\MPwrite{#1tex \ascii etex}% 
+       \immediate\write\MPwrite{#1tex \ascii etex}%
        \egroup
        \dowriteMPgraphicline#4tex \relax etex\MPend
      \fi
    \fi\fi}
 
 %D This stripper is suboptimal in the sense that more
-%D \type{;}'s are output than feasible. Anyhow, \METAPOST\ 
-%D can handle this and users may consider it being a sort 
-%D of error prevention bonus. 
+%D \type{;}'s are output than feasible. Anyhow, \METAPOST\
+%D can handle this and users may consider it being a sort
+%D of error prevention bonus.
 
 %D \macros
 %D   {everyMPgraphic}
 %D
-%D Because some graphics interact with \TEX\ (i.e.\ \CONTEXT), we 
+%D Because some graphics interact with \TEX\ (i.e.\ \CONTEXT), we
 %D provide a hook for additional actions: \type {\everyMPgraphic}.
 
-\bgroup 
-\catcode`\%=12\gdef\percentletter{%} 
+\bgroup
+\catcode`\%=12\gdef\percentletter{%}
 \egroup
 
 \newtoks\everyMPgraphic
@@ -293,27 +348,35 @@
   {\immediate\write\MPwrite{mpgraph:=\the\currentMPgraphic;}}
 
 \def\startwritingMPgraphic%
-  {\ifMPrun \else 
+  {\bgroup
+   \def\_{\string_}%
+   \def\&{\string&}%
+   \def\{{\iftrue \string{\else}\fi}%
+   \def\}{\iffalse{\else\string}\fi}%
+   \ifMPrun \else
      \allocateMPslot\currentMPgraphic
    \fi
+   \enableincludeMPgraphics
    \ifrunMPgraphics
      \the\everyMPgraphic
      \xdef\MPgraphic{\the\currentMPgraphic}%
      \immediate\openout\MPwrite=\MPgraphicfile.mp
-     \immediate\write\MPwrite{\percentletter\space runtime generated graphic}%
+     \immediate\write\MPwrite{\percentletter\space runtime generated graphics of job "\jobname"}%
      \writeMPgraph
      \setMPrandomseed
-     \theMPinclusions
+     \theMPinclusions % no reset here !
    \else
      \xdef\MPgraphic{\the\currentMPgraphic}%
+     \the\everyMPgraphic
      \ifnum\currentMPgraphic=1
-       \the\everyMPgraphic
        \immediate\openout\MPwrite=\MPgraphicfile.mp
+       \immediate\write\MPwrite{\percentletter\space collected graphics of job "\jobname"}%
        \writeMPgraph
        \setMPrandomseed
-       \theMPinclusions
      \fi
+     \theMPinclusions \let\theMPinclusions\relax % reset here !
    \fi
+   \flushMPTEXgraphic
    \ifMPrun \else
      \immediate\write\MPwrite{beginfig(\the\currentMPgraphic);}%
    \fi
@@ -321,12 +384,13 @@
    \global\let\stopwritingMPgraphic=\dostopwritingMPgraphic}
 
 \def\dostopwritingMPgraphic%
-  {\ifMPrun \else 
+  {\ifMPrun \else
      \immediate\write\MPwrite{endfig;}%
    \fi
    \ifrunMPgraphics
      \dodostopwritingMPgraphic
-   \fi}
+   \fi
+   \egroup}
 
 \def\dodostopwritingMPgraphic%
   {\ifnum\currentMPgraphic>0
@@ -346,8 +410,8 @@
 \let\stopwritingMPgraphic=\relax
 \let\flushMPgraphics     =\relax
 
-%D By default each graphic gets its own slot (number). Later 
-%D on we will define a recycle bin.   
+%D By default each graphic gets its own slot (number). Later
+%D on we will define a recycle bin.
 
 \def  \allocateMPslot#1{\global\advance#1 by 1 }
 \def\deallocateMPslot#1{}
@@ -355,13 +419,13 @@
 %D \macros
 %D   {setMPrandomseed}
 %D
-%D Did you notice the random seed initialization? This is 
-%D needed because \METAPOST\ has a rather poor initialization, 
-%D which in some implementations depends on the time in 
-%D minutes. So, in quick successive runs, random is not that 
-%D random. 
+%D Did you notice the random seed initialization? This is
+%D needed because \METAPOST\ has a rather poor initialization,
+%D which in some implementations depends on the time in
+%D minutes. So, in quick successive runs, random is not that
+%D random.
 
-\newif\ifsetMPrandomseed % false by default
+\newif\ifsetMPrandomseed \setMPrandomseedtrue % false by default
 
 \def\setMPrandomseed%
   {\ifsetMPrandomseed \ifx\getrandomnumber\undefined \else
@@ -369,8 +433,8 @@
      \writeMPgraphic{randomseed := \localMPseed ;}%
    \fi\fi}
 
-%D This feature has become optional. Thanks to Fabrice Popineau, 
-%D \METAPOST\ can now do a far better job! 
+%D This feature has become optional. Thanks to Fabrice Popineau,
+%D \METAPOST\ can now do a far better job!
 
 %D \macros
 %D   {flushMPgraphics}
@@ -380,7 +444,7 @@
 %D every \type{\stopMPgraphic}. Therefore we need to say:
 %D
 %D \starttypen
-%D \flushMPgraphic
+%D \flushMPgraphics
 %D \stoptypen
 %D
 %D else the file is closed without writing the \METAPOST\ end
@@ -406,7 +470,8 @@
 \newbox\MPgraphicbox
 
 \def\doloadcurrentMPgraphic#1%
-  {\loadMPgraphic{\MPgraphicfile.\the\currentMPgraphic}{#1}}
+  {\loadMPgraphic{\MPgraphicfile.\the\currentMPgraphic}{#1}%
+   \deallocateMPslot\currentMPgraphic} % added
 
 \ifCONTEXT
   \def\loadcurrentMPgraphic{\dosinglegroupempty\doloadcurrentMPgraphic}
@@ -437,7 +502,7 @@
 %D to be reused. When the next switch is set, graphics are
 %D cached.
 
-\newif\ifuseMPbox  \useMPboxtrue 
+\newif\ifuseMPbox  \useMPboxtrue
 
 \def\douseMPbox#1%
   {\setobject{MP}{#1}
@@ -449,49 +514,61 @@
    \setgvalue{#1}%
      {\getobject{MP}{#1}}}
 
+% More save is to use a number for {MP}{#1} which permits
+% redefinition. I have to test it first.
+%
+% \newcounter\MPobjectcounter
+%
+% \def\douseMPbox#1%
+%   {\doglobal\increment\MPobjectcounter
+%    \setobject{MP}{\MPobjectcounter}
+%      \vbox
+%        {\forgetall
+%         \loadMPgraphic{\MPgraphicfile.\the\currentMPgraphic}{}%
+%         \deallocateMPslot\currentMPgraphic
+%         \placeMPgraphic}%
+%    \setxvalue{#1}%
+%      {\noexpand\getobject{MP}{\MPobjectcounter}}}
+
 \def\nouseMPbox#1%
   {\setxvalue{#1}%
      {\noexpand\forgetall
       \noexpand\loadMPgraphic{\MPgraphicfile.\the\currentMPgraphic}{}%
+      \deallocateMPslot\currentMPgraphic
       \noexpand\placeMPgraphic}}
 
 \ifCONTEXT \else \let\douseMPbox=\nouseMPbox          \fi
 \ifCONTEXT \else \let\doifobjectssupportedelse=\relax \fi
 
 % \long\def\startreusableMPgraphic#1#2\stopreusableMPgraphic%
-%   {%\reuseMPgraphicstrue
-%    \doifundefined{MP:#1}
-%      {\startMPgraphic#2\stopMPgraphic
-%       \doifobjectssupportedelse{}{\useMPboxfalse}% 
-%       \ifuseMPbox
-%         \douseMPbox{MP:#1}%
-%       \else
-%         \nouseMPbox{MP:#1}%
-%       \fi}}
-
-%\long\def\startreusableMPgraphic#1#2\stopreusableMPgraphic%
-%  {\doifundefined{MP:#1}
-%     {\long\setgvalue{MP:#1}%
+%   {\ifundefined{MP:#1}%
+%      \long\setgvalue{MP:#1}%
 %        {\startMPgraphic#2\stopMPgraphic
-%         \doifobjectssupportedelse{}{\useMPboxfalse}% 
+%         \doifobjectssupportedelse{}{\useMPboxfalse}%
 %         \ifuseMPbox
 %           \douseMPbox{MP:#1}%
 %         \else
 %           \nouseMPbox{MP:#1}%
 %         \fi
-%         \getvalue{MP:#1}}}}
+%         \getvalue{MP:#1}}%
+%    \fi}
+
+\long\def\handlereusableMPgraphic#1#2%
+  {\bgroup
+   \enableincludeMPgraphics
+   \startMPgraphic#2\stopMPgraphic
+   \doifobjectssupportedelse{}{\useMPboxfalse}%
+   \ifuseMPbox
+     \douseMPbox{MP:#1}%
+   \else
+     \nouseMPbox{MP:#1}%
+   \fi
+   \getvalue{MP:#1}%
+   \egroup}
 
 \long\def\startreusableMPgraphic#1#2\stopreusableMPgraphic%
-  {\ifundefined{MP:#1}% 
-     \long\setgvalue{MP:#1}%
-       {\startMPgraphic#2\stopMPgraphic
-        \doifobjectssupportedelse{}{\useMPboxfalse}% 
-        \ifuseMPbox
-          \douseMPbox{MP:#1}%
-        \else
-          \nouseMPbox{MP:#1}%
-        \fi
-        \getvalue{MP:#1}}%
+  {\ifundefined{MP:#1}%
+     \long\setgvalue{MP:#1}{\handlereusableMPgraphic{#1}{#2}}%
    \fi}
 
 \def\reuseMPgraphic#1%
@@ -503,15 +580,57 @@
 %D The every||time||it's||used original one is defined below.
 %D This one makes sense when the graphic uses random numbers.
 
+\long\def\handleuseMPgraphic#1#2%
+  {\bgroup
+   \enableincludeMPgraphics
+   \startMPgraphic#2\stopMPgraphic
+   \loadMPgraphic{\MPgraphicfile.\the\currentMPgraphic}{}%
+   \deallocateMPslot\currentMPgraphic
+   \placeMPgraphic
+   \egroup}
+
 \long\def\startuseMPgraphic#1#2\stopuseMPgraphic%
-  {%\reuseMPgraphicstrue
-   \long\setgvalue{MP:#1}%
-     {\startMPgraphic#2\stopMPgraphic
-      \loadMPgraphic{\MPgraphicfile.\the\currentMPgraphic}{}%
-      \deallocateMPslot\currentMPgraphic
-      \placeMPgraphic}}
+  {\long\setgvalue{MP:#1}{\handleuseMPgraphic{#1}{#2}}}
+
+\long\def\startusableMPgraphic#1#2\stopusableMPgraphic% dummy
+  {\long\setgvalue{MP:#1}{\handleuseMPgraphic{#1}{#2}}} % unsafe {}{}
 
 \let\useMPgraphic=\reuseMPgraphic
+
+%D \macro
+%D   {doifMPgraphicelse}
+%D
+%D For (mainly internal) pusposes we provide a test macro.
+
+\def\doifMPgraphicelse#1%
+  {\doifdefinedelse{MP:#1}}
+
+%D \macros
+%D   {includeMPgraphic}
+%D
+%D In a graphic one can call up another (predefined one)
+%D like:
+%D
+%D \starttypen
+%D \startuseMPgraphic{a}
+%D   fill fullcircle scaled 100 ;
+%D \stopuseMPgraphic
+%D
+%D \startuseMPgraphic{b}
+%D   \includeMPgraphic{a}
+%D   fill fullsquare rotated 45 scaled 50 withcolor red ;
+%D \stopuseMPgraphic
+%D
+%D \useMPgraphic{b}
+%D \stoptypen
+
+\def\includeMPgraphic#1%
+ %{\getvalue{MP:#1}}
+  {\csname MP:#1\endcsname}
+
+\def\enableincludeMPgraphics%
+  {\let\handleuseMPgraphic     \secondoftwoarguments
+   \let\handlereusableMPgraphic\secondoftwoarguments}
 
 %D We didn't yet define the macro responsible for processing
 %D the graphic from within \TEX.
@@ -524,11 +643,26 @@
    \fi}
 
 %D \macros
+%D   {useMETAFUNformat}
+%D
+%D For faster running, one can generate a format, saying
+%D
+%D \startypen
+%D mpost -ini context
+%D \stoptypen
+%D
+%D (The resulting \type {mem} file should be moved to the
+%D right location. Watch out for misatching \type {progname}
+%D directives, since they can clutter memory.
+
+\newif\ifuseMETAFUNformat
+
+%D \macros
 %D   {executeMetaPost, executeMETAPOST, executesystemcommand}
 %D
 %D With \type{\executeMETAPOST} being defined as:
 
-\ifx\undefined\executeMetaPost
+\ifx\undefined\executeMETAPOST
   \def\executeMETAPOST#1{\executesystemcommand{\executeMetaPost{#1}}}
 \fi
 
@@ -539,7 +673,39 @@
 \fi
 
 \ifx\undefined\executeMetaPost
-  \def\executeMetaPost#1{mpost #1}
+
+  \ifx\undefined\interactionmode \chardef\interactionmode=255 \fi
+
+% \def\executeMPOST#1%
+%   {mpost
+%     \ifcase\interactionmode -int=batchmode \fi
+%     \ifuseMETAFUNformat -progname=mpost -mem=metafun \fi #1}
+
+  \def\MPOSTbatchswitch {-int=batchmode}
+  \def\MPOSTformatswitch{-progname=mpost -mem=}
+
+  \def\executeMPOST#1%
+    {mpost 
+      \ifcase\interactionmode \MPOSTbatchswitch\space \fi
+      \ifuseMETAFUNformat \MPOSTformatswitch metafun \fi #1}
+
+  \def\executeMPTEX#1%
+    {texexec
+       --batch \ifcase\interactionmode --logfile='mptex.log' \fi
+       --output=dvips
+       \ifuseMETAFUNformat --mpformat=metafun \fi --mptex --nomp --once #1}
+
+  \def\executeMetaPost#1%
+    {\ifrunMPTEXgraphics
+       \ifMPTEXgraphic
+         \executeMPTEX{#1}%
+       \else
+         \executeMPOST{#1}%
+       \fi
+     \else
+       \executeMPOST{#1}%
+     \fi}
+
 \fi
 
 %D \macros
@@ -555,7 +721,13 @@
     {\ifx\undefined\externalfigure
        \message{[insert file #1 here]}%
      \else
-       \externalfigure[#1][\c!type=\c!mps,\c!object=\v!nee,#2]%
+       \externalfigure
+         [#1]
+         [\c!type=\c!mps,\c!object=\v!nee,
+          \c!symbool=\v!ja,\c!reset=\v!ja,
+          \c!maxbreedte=,\c!maxhoogte=,
+          \c!kader=\v!uit,\c!achtergrond=,
+          #2]%
      \fi}
 
 \fi
@@ -565,40 +737,40 @@
 %D of its use can be found in the modules \type{supp-tpi} and
 %D \type{prag-log}.
 
-%D This module can be used in \PLAIN\ \TEX too. When using 
+%D This module can be used in \PLAIN\ \TEX too. When using
 %D \DVIPS, just try to process:
-%D 
+%D
 %D \starttypen
 %D \input supp-mps
 %D
 %D \runMPgraphicstrue
-%D 
+%D
 %D \def\insertMPfile#1#2%
 %D   {\special{psfile=#1}}
-%D 
+%D
 %D \startuseMPgraphic{1}
 %D   prologues := 1;
 %D   draw (0,0) withpen pencircle scaled 100;
 %D \stopuseMPgraphic
-%D 
+%D
 %D \useMPgraphic{1}
 %D \stoptypen
-%D 
+%D
 %D Don't forget to enable \type{\write18}. When does not say
-%D \type{\runMPgraphicstrue}, the \METAPOST\ scratch file 
+%D \type{\runMPgraphicstrue}, the \METAPOST\ scratch file
 %D must be closed by saying
-%D 
+%D
 %D \starttypen
 %D \flushMPgraphics
 %D \stoptypen
 %D
 %D When using the indirect method, one has to process the file
-%D \type{mpgraph.mp} between two successive \TEX\ runs. 
-
-%D For some reason, \METAPOST\ needs the public domain \DVI\ to
-%D \POSTSCRIPT\ converter \DVIPS. This symbiosis originates in
-%D the need to include the fonts (glyphs) that \METAPOST\ uses
-%D in the \POSTSCRIPT\ file. Driver independancy was one of my
+%D \type{mpgraph.mp} between two successive \TEX\ runs.
+%D
+%D \METAPOST\ needs the public domain \DVI\ to \POSTSCRIPT\
+%D converter \DVIPS. This symbiosis originates in the need to
+%D include the fonts (glyphs) that \METAPOST\ uses in the
+%D \POSTSCRIPT\ file. Driver independancy was one of my
 %D prerequisites for using \METAPOST, so I decided to build
 %D this kind of support myself. Personally I consider driver
 %D dependancy a drawback for the dissemination of such a
@@ -655,9 +827,9 @@
 %D that handles the inclusion. The characters are in the file
 %D but made invisible.
 %D
-%D In \CONTEXT\ font handling is intergrated in the figure 
+%D In \CONTEXT\ font handling is intergrated in the figure
 %D inclusion macros. A decent plain \TEX\ alternative is:
-%D 
+%D
 %D \starttypen
 %D \def\includeMPgraphic#1%
 %D   {\hbox\bgroup
@@ -676,10 +848,10 @@
 %D          urx=\EPSurx\space
 %D          ury=\EPSury\space}}%
 %D    \egroup}
-%D \stoptypen  
+%D \stoptypen
 %D
-%D This macro needs \type {supp-eps.tex} and provided no 
-%D scaling. For \LATEX\ users the next one wil do: 
+%D This macro needs \type {supp-eps.tex} and provided no
+%D scaling. For \LATEX\ users the next one wil do:
 %D
 %D \starttypen
 %D \def\includeMPgraphic#1#%
@@ -688,8 +860,8 @@
 %D      {\includeMPfonts{##1}%
 %D       \includegraphics[type=mps,#1]{##1}%  or whatever type they use
 %D       \egroup}%
-%D    \includeMPgraphics} 
-%D \stoptypen  
+%D    \includeMPgraphics}
+%D \stoptypen
 
 %D We scan the graphics file for the \type{fshow} operator,
 %D that is, lines that start with \type{(}. If found it
@@ -769,7 +941,7 @@
 %D   {\font\temp=#2 at #3bp\temp#1}
 %D \stoptypen
 %D
-%D While processing some \TUG~98 proceedings, I also had to 
+%D While processing some \TUG~98 proceedings, I also had to
 %D deal with:
 %D
 %D \starttypen
@@ -777,7 +949,7 @@
 %D (T) ANTTB 7.13086 nfont fshow
 %D \stoptypen
 %D
-%D which comes to rounding sizes. This is something 
+%D which comes to rounding sizes. This is something
 %D experimental.
 
 \def\PSnfont{nfont}
@@ -789,8 +961,8 @@
      \ifdim\scratchdimen<1pt
        \def\size{1pt}%
      \else
-       \advance\scratchdimen by .5pt 
-       \def\size##1.##2\relax{\def\size{##1pt}}% 
+       \advance\scratchdimen by .5pt
+       \def\size##1.##2\relax{\def\size{##1pt}}%
        \expandafter\size\the\scratchdimen\relax
      \fi
    \else
@@ -860,7 +1032,7 @@
 %D saves time in a succesive passes and can't harm, simply
 %D because MP can generate them anew.
 
-\def\convertMPcolorpath{} 
+\def\convertMPcolorpath{}
 \def\convertMPcolorfile{metacmyk.tmp}
 
 \def\convertMPcolors#1%
@@ -935,9 +1107,9 @@
         \withoutpt{\the\dimen2} \space
         \withoutpt{\the\dimen4} \space
         \withoutpt{\the\dimen6} \space setcmykcolor #4}%
-    \fi
-    \egroup
-    \donetrue} % needed for message
+   \fi
+   \egroup
+   \donetrue} % needed for message
 
 \def\handleMPcopy%
   {\immediate\write\scratchwrite{\fileline}}
@@ -1068,7 +1240,7 @@
 %D   {experimental}
 %D
 %D Some experimental macros:
-%D 
+%D
 %D \starttypen
 %D \startMPdrawing
 %D \stopMPdrawing
@@ -1076,10 +1248,11 @@
 %D \popMPdrawing
 %D \resetMPdrawing
 %D \ifMPdrawingdone
+%D \getMPdrawing
 %D \MPdivten[number]
 %D \stoptypen
 %D
-%D These macros are used in \PPCHTEX. 
+%D These macros are used in \PPCHTEX.
 
 \let\MPdrawingdata\empty
 
@@ -1089,7 +1262,7 @@
 \def\resetMPdrawing%
   {\global\let\MPdrawingdata\empty
    \global\MPdrawingdonefalse}
- 
+
 \def\pushMPdrawing%
   {\pushmacro\MPdrawingdata
    \global\let\MPdrawingdata\empty}
@@ -1097,32 +1270,27 @@
 \def\popMPdrawing%
   {\popmacro\MPdrawingdata}
 
-% \def\getMPdrawing%
-%   {\ifMPdrawingdone
-%      \bgroup
-%      \setbox0=\hbox
-%        {\expandafter\startMPgraphic\MPdrawingdata\stopMPgraphic
-%         \loadcurrentMPgraphic\empty
-%         \placeMPgraphic}%
-%      \ifMPshiftdrawing 
-%        \dimen0=\MPllx bp 
-%        \dimen2=\MPlly bp
-%        \hbox{\hskip\dimen0\raise\dimen2\box0}%
-%      \else
-%        \box0
-%      \fi
-%      \egroup
-%    \fi}
-
 \def\getMPdrawing%
   {\ifMPdrawingdone
      \expandafter\startMPgraphic\MPdrawingdata\stopMPgraphic
      \loadcurrentMPgraphic\empty
+     \deallocateMPslot\currentMPgraphic % new
      \placeMPgraphic
    \fi}
 
-\long\def\startMPdrawing#1\stopMPdrawing%
-  {\long\xdef\MPdrawingdata{\MPdrawingdata#1}}
+\def\startMPdrawing%
+  {\dosingleempty\dostartMPdrawing}
+
+\long\def\dostartMPdrawing[#1]#2\stopMPdrawing%
+  {\relax
+   \bgroup
+   \enableincludeMPgraphics
+   \presetMPdefinitions
+   \doifelse{#1}{-}
+     {\convertargument#2\to\asciiA}
+     {\long\def\asciiA{#2}}%
+   \long\xdef\MPdrawingdata{\MPdrawingdata\asciiA}%
+   \egroup}
 
 \def\MPdivten[#1]%
   {\@EA\@EA\@EA\doMPdivten\@EA\@EA\@EA[\@EA#1]}
@@ -1147,27 +1315,29 @@
 \def\dodoMPdivtenE        #1#2{#1.#2}
 \def\dodoMPdivtenF          #1{.#1}
 
-%D \macros 
+%D \macros
 %D   {startMPclip,grabMPclippath}
 %D
-%D We can use \METAPOST\ to calculate arbitrary clipping 
-%D paths. Such a path is defined by (for instance): 
+%D We can use \METAPOST\ to calculate arbitrary clipping
+%D paths. Such a path is defined by (for instance):
 %D
 %D \starttypen
 %D \startMPclip{window}
-%D    clip currentpicture to fullcircle xscaled \width yscaled \height ; 
+%D    clip currentpicture to fullcircle xscaled \width yscaled \height ;
 %D \stopMPclip
 %D \stoptypen
 %D
 %D Such a path can be extracted (processed) by:
 %D
-%D \starttypen 
-%D \grabMPpath{window}{method}{width}{height}{default path}
+%D \starttypen
+%D \grabMPclippath{window}{method}{width}{height}{default path}
 %D \stoptypen
 %D
-%D Currently only method 1 makes sense; it produces \PDF\ 
-%D code. This macro only makes sense when hooked into a 
-%D special routine. 
+%D Currently only method 1 makes sense; it produces \PDF\
+%D code. This macro only makes sense when hooked into a
+%D special routine.
+
+\let\MPclippath\empty
 
 \long\def\startMPclip#1#2\stopMPclip%
   {\long\setgvalue{MPC:#1}%
@@ -1181,7 +1351,7 @@
      {\getvalue{MPC:#1}%
       \setxvalue{MPC:#1}{\noexpand\xdef\noexpand\MPclippath{\MPclippath}}}%
      {\xdef\MPclippath{#5}}%
-   \ifcase#2\else
+   \ifcase#2\else % method 1 :
      \doglobal\stripcharacter urveto\from\MPclippath\to\MPclippath
      \doglobal\stripcharacter  oveto\from\MPclippath\to\MPclippath
      \doglobal\stripcharacter  ineto\from\MPclippath\to\MPclippath
@@ -1189,27 +1359,34 @@
    \egroup}
 
 %D We pose some restrictions to the \METAPOST\ code and pickup
-%D the last path in the file. 
+%D the clip path from the file.
+%D
+%D We turn the slash into a comment. The \type {\hbox} grabs spaces
+%D and the \type {%} triggers the grabber. Next we filter the
+%D clipping path, or actually, the first path.
 
 \bgroup
 \catcode`\%=\@@active
 \catcode`\/=\@@comment
-\gdef\dograbMPclippath/                  / the slash is now comment  
-  {\setbox\scratchbox=\hbox\bgroup/      / the box grabs spaces    
-   \catcode`\%=\@@active                 / the % token is a trigger 
-   \obeylines\let\obeyedline\space       / lines are ignores
-   \def%##1newpath##2closepath##3showpage/ we only need the path 
-     {\xdef\MPclippath{##2}\endinput}/   / and can ignore the rest 
+\gdef\dograbMPclippath/
+  {\setbox\scratchbox=\hbox\bgroup/
+   \catcode`\%=\@@active
+   \obeylines\let\obeyedline\space
+   \def\do##1newpath##2closepath##3\od/
+     {\xdef\MPclippath{##2}\endinput}/
+   \def%##1%%EOF/
+     {\do##1newpathclosepath\od\endinput}/
    \readfile{\MPgraphicfile.\the\currentMPgraphic}{}{}/
+   \deallocateMPslot\currentMPgraphic / new
    \egroup}
 \egroup
 
 %D \macros
 %D   {recycleMPslots}
 %D
-%D When coding and embedding many \METAPOST\ figures in a 
-%D document, one can save quite some disk space by using 
-%D \PDFTEX\ and setting the next switch: 
+%D When coding and embedding many \METAPOST\ figures in a
+%D document, one can save quite some disk space by using
+%D \PDFTEX\ and setting the next switch:
 
 \newif\ifrecycleMPslots \recycleMPslotsfalse
 
@@ -1240,10 +1417,36 @@
     %\message{[MP slot - \number#1]}%
    \fi}
 
-%D Experimental:
+%D Experimental and overloaded later, since we need to be
+%D more clever due to \METAPOST's limit of 4~open files.
 
 \def\MPdatafile%
-  {mp-\the\currentMPgraphic.tmp}
+  {mp-\the\currentMPgraphic.mpd}
+
+\def\getMPdata%
+  {\input \MPdatafile\relax}
+
+%D \macros
+%D   {MPtoks, MPbox}
+%D
+%D For convenience, we provide some scratch registers:
+
+\ifx\undefined\MPtoks \newtoks\MPtoks \fi
+\ifx\undefined\MPbox  \newbox \MPbox  \fi
+
+%D \macros
+%D   {startMPcode}
+%D
+%D We can save some typing with:
+%D
+%D \starttypen
+%D \startMPcode whatever \stopMPcode
+%D \stoptypen
+%D
+%D this automatically places the graphic
+
+\long\def\startMPcode#1\stopMPcode%
+  {\startuseMPgraphic{@@}#1\stopuseMPgraphic\useMPgraphic{@@}}
 
 \protect
 

@@ -49,6 +49,10 @@
   [state=repeat]
 
 \setupbackgrounds
+  [page]
+  [backgroundcolor=white]
+
+\setupbackgrounds
   [text][text]
   [background={HashFrameA,NextPage},
    backgroundoffset=20pt]
@@ -113,7 +117,7 @@
      {}[forward]}
 
 \def\StartTitlePage%
-  {\setupbackgrounds[page][background={TitleGraphic,NextPage}]
+  {\setupbackgrounds[page][background={color,TitleGraphic,NextPage}]
    \setupbackgrounds[text][text][background=]
    \setupinteraction[menu=off]
    \setupinteractionbar[state=stop]
@@ -131,7 +135,7 @@
    \setuplayout[width=430pt,rightedge=110pt]
    \setupinteraction[menu=on]
    \setupinteractionbar[state=start]
-   \setupbackgrounds[page][background=]
+   \setupbackgrounds[page][background=color]
    \setupbackgrounds[text][text][background={HashFrameA,NextPage}]}
 
 \def\TitlePage#1%

@@ -37,9 +37,9 @@
 % rt!list -> \definereference
 % rt!exec -> \definereference
 %
-% not, because the current implementation permits to
-% determine the page state and is more efficient.
-
+% but for the moment will not do so, if only because 
+% the current implementation permits us to determine 
+% the page state and is also more efficient 
 
 \unprotect
 
@@ -85,6 +85,28 @@
      21: dokument -- nacten
      22: dokument -- neni interaktivni
      23: obskurni (nejasna) reference -- (prefix=--)
+\stopmessages
+
+\startmessages  italian  library: references
+  title: riferimenti
+      1: riferimento sconosciuto --
+      2: riferimento duplicato -- a pagina --
+      3: riferimento di tipo sconosciuto --
+      4: riferimento illecito --
+     21: documento -- caricato
+     22: il documento -- non è interattivo
+     23: riferimento ambiguo -- (prefisso=--)
+\stopmessages
+
+\startmessages  norwegian  library: references
+  title: referanser
+      1: ukjent referanse --
+      2: duplikat referanse -- på side --
+      3: ukjent referansetype --
+      4: ulovlig referanse --
+     21: dokument -- er lest inn
+     22: dokument -- er ikke interaktivt
+     23: obskur referanse -- (Prefix=--)
 \stopmessages
 
 %D This module deals with referencing. In \CONTEXT\ referencing
@@ -259,18 +281,55 @@
 %D In practice this comes to giving \type {\mainreference} a
 %D appropriate meaning and loading the utility file.
 
-%\def\setreferences%
-%  {\def\mainreference##1##2##3##4##5%
-%     {\doifundefinedelse{\r!cross\fileprefix##1##2}
-%        {\setglobalcrossreference{##1##2}{##3}{##4}{##5}}
-%        {\showmessage{\m!references}{2}{[##1][##2],##4}}}}
+% \def\setreferences%
+%   {\def\mainreference##1##2##3##4##5%
+%      {\doifundefinedelse{\r!cross\fileprefix##1##2}
+%         {\setglobalcrossreference{##1##2}{##3}{##4}{##5}}
+%         {\showmessage{\m!references}{2}{[##1][##2],##4}}}}
 
-\def\setreferences%
+% \def\setreferences%
+%   {\the\everyreference % we're grouped anyway
+%    \def\mainreference##1##2##3##4##5%
+%      {\doifundefinedelse{\r!cross\fileprefix##1##2}
+%         {\setglobalcrossreference{##1##2}{##3}{##4}{##5}}
+%         {\ifcase0##4\else\showmessage{\m!references}{2}{[##1][##2],##4}\fi}}}
+
+%D For a long time the only way to access an external file was
+%D to use the file prefix (\type {somefile::}. However, when
+%D you split up a document, redefining the references may be
+%D such a pain, that another approach is feasible. By setting
+%D the \type {autofile} variable to \type {yes} or \type
+%D {page}, you can access the reference directly. The latter
+%D case nills the prefix method, thereby saving some memory. 
+%D 
+%D \starttabulatie[||||]
+%D \NC filename::tag \NC page(filename::pnum) \NC tag     \NC\NR
+%D \NC   $\star$     \NC                      \NC         \NC\NR
+%D \NC   $\star$     \NC $\star$              \NC $\star$ \NC\NR
+%D \NC               \NC $\star$              \NC         \NC\NR
+%D \stoptabulatie
+
+\chardef\autocrossfilereferences=0
+
+\def\setreferences% some day, filename will be stored in ref record
   {\the\everyreference % we're grouped anyway
    \def\mainreference##1##2##3##4##5%
      {\doifundefinedelse{\r!cross\fileprefix##1##2}
-        {\setglobalcrossreference{##1##2}{##3}{##4}{##5}}
-        {\ifcase0##4\else\showmessage{\m!references}{2}{[##1][##2],##4}\fi}}}
+        {\ifcase\autocrossfilereferences
+           \setglobalcrossreference{##1##2}{##3}{##4}{##5}%
+         \or
+           \setglobalcrossreference{##1##2}{##3}{##4}{##5}%
+           \doifundefinedelse{\r!cross##1##2}     
+             {\expanded{\definereference[##1##2][\fileprefix##1##2]}}
+             {\showmessage{\m!references}{2}{[##1][##2],##4 (auto \currentutilityfilename)}}%
+         \or
+           \doifundefinedelse{\r!cross##1##2}     
+             {\expanded{\definereference[##1##2][\noexpand\v!pagina(\fileprefix##4)]}}
+             {\showmessage{\m!references}{2}{[##1][##2],##4 (auto \currentutilityfilename)}}%
+         \fi}
+        {\ifcase0##4\else
+           \showmessage{\m!references}{2}{[##1][##2],##4 (\currentutilityfilename)}%
+         \fi}}}
 
 \def\resetreferences%
   {\let\mainreference=\gobblefivearguments}
@@ -291,6 +350,15 @@
 
 \newtoks\everycheckreferences
 
+%D When we load references, the file name is stored in a 
+%D list. 
+
+\let\loadedreferences\empty 
+
+%D We only load references ones. 
+
+\newconditional\jobreferencesloaded
+
 %D This token list is expanded after the references are loaded.
 %D This hook can be used to initialize mechanisms that depend
 %D on the reference mechsnism. An example can be found in the
@@ -305,12 +373,27 @@
    \egroup
    \the\everycheckreferences}
 
+% \def\usereferences[#1]%
+%   {\bgroup
+%    \checkreferences % Load job ones first! 
+%    \setbox0=\hbox
+%      {\doonlyonce{references:#1}{\doutilities{references}{#1}{}{}{}}}%
+%   \egroup}
+
 \def\usereferences[#1]%
-  {\bgroup
-   \checkreferences
-   \setbox0=\hbox
-     {\doonlyonce{references:#1}{\doutilities{references}{#1}{}{}{}}}%
-   \egroup}
+  {\bgroup\setbox\scratchbox=\hbox\bgroup
+   \checkreferences 
+   \doifparentfileelse{#1}
+     {\ifconditional\jobreferencesloaded\else
+        \doutilities{references}{#1}{}{}{}%
+        \global\settrue\jobreferencesloaded
+      \fi}
+     {\ExpandBothAfter\doifnotinset{#1}{\loadedreferences}
+        {\doutilities{references}{#1}{}{}{}%
+         \ifx\fileprefix\empty\else
+           \doglobal\addtocommalist{#1}\loadedreferences
+         \fi}}
+   \egroup\egroup}
 
 %D As mentioned we will also use the cross reference mechanism
 %D for navigational purposes. The main reason for this is that
@@ -800,6 +883,9 @@
        \ifx\currentreferencespecial\empty
          \ifx\currentouterreference\empty
            \docheckinnerreference
+           \ifreferencefound \else
+             \checkglobalfilereferences
+           \fi 
          \else
            \docheckouterreference
          \fi
@@ -822,6 +908,9 @@
          \ifx\currentreferencespecial\empty
            \ifx\currentouterreference\empty
              \docheckinnerreference
+             \ifreferencefound \else
+               \checkglobalfilereferences
+             \fi 
            \else
              \docheckouterreference
            \fi
@@ -833,8 +922,6 @@
          \fi
        \fi
      \fi
-%    \doif{\currentfullreference}{\v!geen} % DOCUMENT THIS ONE!
-%      {\global\referencefoundfalse}
      \iftracereferences
        \doshowcurrentreference\space
        \writestatus{\m!references}{\currentreferenceshow}%
@@ -868,6 +955,9 @@
        \ifx\currentreferencespecial\empty
          \ifx\currentouterreference\empty
            \docheckinnerreference
+           \ifreferencefound \else
+             \checkglobalfilereferences
+           \fi 
          \else
            \docheckouterreference
          \fi
@@ -890,6 +980,9 @@
          \ifx\currentreferencespecial\empty
            \ifx\currentouterreference\empty
              \docheckinnerreference
+             \ifreferencefound \else
+               \checkglobalfilereferences
+             \fi 
            \else
              \docheckouterreference
            \fi
@@ -901,8 +994,6 @@
          \fi
        \fi
      \fi
-%     \doif{\currentfullreference}{\v!geen} % DOCUMENT THIS ONE!
-%       {\global\referencefoundfalse}%
      \iftracereferences
        \doshowcurrentreference\space
        \writestatus{\m!references}{\currentreferenceshow}%
@@ -912,6 +1003,26 @@
    \egroup}
 
 \endETEX
+
+%D Although this can be considered a hack, we provide the 
+%D option to locate unknown references in other (loaded) files.
+%D This can be dangerous, since there can be conflicting 
+%D definitions. 
+
+\newconditional\autoglobalfilereferences 
+
+\def\checkglobalfilereferences%
+  {\ifconditional\autoglobalfilereferences 
+     \processcommacommand[\loadedreferences]\docheckglobalfilereference
+   \fi}
+
+\def\docheckglobalfilereference#1% 
+  {\doifdefined{\r!cross#1::\currentinnerreference}
+     {\def\currentouterreference{#1}%
+      \edef\currentfullreference%
+        {\currentouterreference::\currentinnerreference}%
+      \global\referencefoundtrue
+      \quitcommalist}}
 
 %D For most situations, we could use:
 %D
@@ -1340,15 +1451,28 @@
 %D uppercase here, since the suffix is handled in the special
 %D driver. Conversion is taken care of by: 
 %D 
-%D \startypen
+%D \starttypen
 %D \setreferencefilename somefilename\to\SomeFileName
 %D \stoptypen 
 
+% \def\setreferencefilename#1\to#2%
+%   {\doifelse{\@@converteerfile}{\v!ja} % boolean is sneller 
+%      {\uppercasestring#1\to#2}
+%      {\edef#2{#1}}}
+
+\chardef\referencefilecase=0
+
 \def\setreferencefilename#1\to#2%
-  {\doifelsevalue{\??rf\c!converteerfile}{\v!ja} % boolean is sneller 
-     {\uppercasestring#1\to#2}
-     {\edef#2{#1}}}
- 
+  {\ifcase\referencefilecase
+     \edef#2{#1}%              
+   \or
+     \uppercasestring#1\to#2%  
+   \or
+     \lowercasestring#1\to#2%
+   \else
+     \edef#2{#1}%
+   \fi}
+
 %D Internal references can best be set using the next few
 %D macros. Setting such references to unique values is
 %D completely up to the macros that call them.
@@ -1569,8 +1693,8 @@
 \setglobalsystemreference \rt!exec \v!ResumeMovie    {resumemovie}
 \setglobalsystemreference \rt!exec \v!ResumeSound    {resumesound}
 \setglobalsystemreference \rt!exec \v!SaveDocument   {save}
-\setglobalsystemreference \rt!exec \v!SearchAgain    {searchagain}
 \setglobalsystemreference \rt!exec \v!SearchDocument {search}
+\setglobalsystemreference \rt!exec \v!SearchAgain    {searchagain}
 \setglobalsystemreference \rt!exec \v!StartMovie     {startmovie}
 \setglobalsystemreference \rt!exec \v!StartSound     {startsound}
 \setglobalsystemreference \rt!exec \v!StopMovie      {stopmovie}
@@ -1581,6 +1705,8 @@
 \setglobalsystemreference \rt!exec \v!HideField      {hide}
 \setglobalsystemreference \rt!exec \v!ShowField      {show}
 \setglobalsystemreference \rt!exec \v!GotoPage       {gotopage}
+\setglobalsystemreference \rt!exec \v!Query          {query}
+\setglobalsystemreference \rt!exec \v!QueryAgain     {queryagain}
 
 %D Executing the command looks alike the previous goto macros.
 
@@ -1644,23 +1770,37 @@
         \v!label=>\let\dowantedreference=\dolabelonlyreference,
         \v!tekst=>\let\dowantedreference=\dotextonlyreference,
       \v!symbool=>\let\dowantedreference=\dosymbolreference]%
-  %\doifelse{\@@rfstrut}{\v!ja} % some day an option 
-  %  {\referencetruttrue}
-  %  {\referencestrutfalse}%
-   \ifx\@@rfprefix\s!unknown
-     % retain the current value
-   \else\ifx\@@rfprefix\empty
-     \let\referenceprefix=\empty
-   \else\ifx\@@rfprefix\incrementreferenceprefix
-     \advance\prefixcounter by 1
-     \edef\referenceprefix{\the\prefixcounter:}%
-     \let\@@rfprefix\s!unknown
-   \else\ifx\@@rfprefix\decrementreferenceprefix
-     \let\referenceprefix=\empty
-     \let\@@rfprefix\s!unknown
-   \else
-     \edef\referenceprefix{\@@rfprefix:}%
-   \fi\fi\fi\fi}
+   \chardef\autocrossfilereferences=0
+   \processaction
+     [\@@rfautofile]
+     [     \v!ja=>\chardef\autocrossfilereferences=1,
+       \v!pagina=>\chardef\autocrossfilereferences=2]%
+   \chardef\referencefilecase=0
+   \processaction[\@@rfconverteerfile]
+     [   \v!ja=>\chardef\referencefilecase=1,  
+      \v!groot=>\chardef\referencefilecase=1,  
+      \v!klein=>\chardef\referencefilecase=2]%
+   % \doifelse{\@@rfstrut}{\v!ja} % some day an option 
+   %   {\referencetruttrue}{\referencestrutfalse}%
+   %
+   % This is a typical example where \ifx\@@rfprefix\s!unknown fails:
+   %
+   \doifnot{\@@rfprefix}{\s!unknown} % retain the current value
+     {\ifx\@@rfprefix\empty          
+        \let\referenceprefix=\empty
+      \else\ifx\@@rfprefix\incrementreferenceprefix
+        \advance\prefixcounter by 1
+        \edef\referenceprefix{\the\prefixcounter:}%
+        \let\@@rfprefix\s!unknown
+      \else\ifx\@@rfprefix\decrementreferenceprefix
+        \let\referenceprefix=\empty
+        \let\@@rfprefix\s!unknown
+      \else
+        \edef\referenceprefix{\@@rfprefix:}%
+      \fi\fi\fi}%
+   \doifelse{\@@rfglobaal}{\v!ja}
+     {\settrue \autoglobalfilereferences}
+     {\setfalse\autoglobalfilereferences}}
 
 \def\incrementreferenceprefix{+}
 \def\decrementreferenceprefix{-}
@@ -1774,8 +1914,8 @@
   {\dontleavehmode
    \bgroup
    \def\thecurrentsubtextreference%
-     {\limitatetext{\currentsubtextreference}{\@@rfbreedte}{...}}%
-  %\leaveoutervmode
+     {\limitatetext{\currentsubtextreference}{\@@rfbreedte}{\unknown}}%
+  %\leaveoutervmode % no 
    \@@rflinks
    \doifreferencefoundelse{#1}
      {\let\crlf\space
@@ -1908,9 +2048,13 @@
 % better: 
 
 \def\docompletereference#1#2[#3]%
-  {\doifsomespaceelse{#2}
-     {\donaarspace{\dotextprefix{#2}#1}[#3]}
-     {\donaarfixed{\dotextprefix{#2}#1}[#3]}}
+  {\iflocationsplit
+     \doifsomespaceelse{#2}
+       {\donaarspace{\dotextprefix{#2}#1}[#3]}
+       {\donaarfixed{\dotextprefix{#2}#1}[#3]}%
+   \else
+     \donaarfixed{\dotextprefix{#2}#1}[#3]%
+   \fi}
 
 \def\dolabelonlyreference#1#2[#3]%
   {\doifsomespaceelse{#2}
@@ -1959,7 +2103,8 @@
         \c!label=,  % can be {left}{right}
         \c!commando=\in,
         #2]%
-     \unexpanded\setvalue{#1}{\doexecutereferenceformat{#1}}%
+     \unexpanded\setvalue{#1}%
+       {\dontleavehmode\doexecutereferenceformat{#1}}%
    \fi}
 
 \def\noexecutelabelreferenceformat#1%
@@ -2063,20 +2208,29 @@
 \newcount\similarreference % 0=noppes 1=create/refer 2,3,..=refer
 
 \def\donaarspace#1[#2]%
-  {\ifsecondaryreference\setbox0=\hbox\fi % due to space insertion
-   {\let\donaarspace=\donaarfixed
-    \iflocation
-      \def\processisolatedword##1%
-        {\ifisolatedwords\ifsharesimilarreferences
-           \global\advance\similarreference by 1
-         \fi\fi
-         \hbox{\gotolocation{#2}{##1\presetgoto}}}%
-      \doattributes\??ia\c!letter\c!kleur
-        {\processisolatedwords{#1}\processisolatedword}%
-      \global\similarreference=0
-    \else
-      #1\relax % \relax prevents #1's next macros from gobbling \fi
-    \fi}}
+  {\iflocationsplit 
+     \ifsecondaryreference\setbox0=\hbox\fi % due to space insertion
+       {\let\donaarspace=\donaarfixed
+        \iflocation
+          \def\processisolatedword##1%
+            {\ifisolatedwords\ifsharesimilarreferences
+               \global\advance\similarreference by 1
+             \fi\fi
+             \hbox{\gotolocation{#2}{##1\presetgoto}}}%
+          \doattributes\??ia\c!letter\c!kleur
+            {\processisolatedwords{#1}\processisolatedword}%
+        \else
+          #1\relax % \relax prevents #1's next macros from gobbling \fi
+        \fi}%
+   \else
+     \iflocation
+       \doattributes\??ia\c!letter\c!kleur
+         {\gotolocation{#2}{#1\presetgoto}}%
+     \else
+       #1\relax % \relax prevents #1's next macros from gobbling \fi
+     \fi
+   \fi
+   \global\similarreference=0 }
 
 \def\donaarfixed#1[#2]%
   {{\iflocation
@@ -2142,21 +2296,29 @@
 
 \def\dogebruikexterndocument[#1][#2][#3]%
   {\bgroup
-   \doifelsenothing{#1}
-     {\dogebruikexterndocument[#2][#2][#3]}
-     {\doifelsenothing{#3}
-        {\dogebruikexterndocument[#1][#2][#2]}
-        {\doifsomething{#2}
-           {\setgvalue{\v!file:::#1}{\doexternaldocument[][#2][#3]}% just \do
-            \doifparentfileelse{#2}
-              {\showmessage{\m!references}{21}{#2}}
-              {\bgroup  % prevents wrong loading of \jobname
-                 \def\fileprefix{#1::}%
-                 \let\setglobalcrossreference=\setoutercrossreference
-                 \usereferences[#2]%
-               \egroup  % when called nested
-               \showmessage{\m!references}{21}{#2}}}}}%
+   \ifsecondargument
+     \doifelsenothing{#1}
+       {\dogebruikexterndocument[#2][#2][#3]}
+       {\doifelsenothing{#3}
+          {\dogebruikexterndocument[#1][#2][#2]}
+          {\doifsomething{#2}
+             {\setgvalue{\v!file:::#1}{\doexternaldocument[][#2][#3]}% just \do
+              \doif{\@@rfstatus}{\v!start}
+                {\doifparentfileelse{#2}
+                   {\showmessage{\m!references}{21}{#2}}
+                   {\dodogebruikexterndocument{#1}{#2}}}}}}%
+   \else
+     \dodogebruikexterndocument{#1}{#1}%
+   \fi
    \egroup}
+
+\def\dodogebruikexterndocument#1#2%
+  {\bgroup % prevents wrong loading of \jobname
+     \def\fileprefix{#1::}%
+     \let\setglobalcrossreference=\setoutercrossreference
+     \usereferences[#2]%
+   \egroup % when called nested
+   \showmessage{\m!references}{21}{#2}}
 
 %D The \URL\ alternative takes four arguments:
 %D
@@ -2329,8 +2491,18 @@
      {\docomplexuit[#1]}
      {\docomplexuit[#1::]}}
 
+% \def\docomplexuit[#1::#2]%
+%   {\bgroup
+%    \doifdefinedelse{\v!file:::#1}
+%      {\def\doexternaldocument[##1][##2][##3]%
+%         {\naar{##3}[#1::#2]}%
+%       \getvalue{\v!file:::#1}}
+%      {\tttf[#1]}%
+%    \egroup}
+
 \def\docomplexuit[#1::#2]%
-  {\bgroup
+  {\dontleavehmode % added, but probably not needed
+   \bgroup
    \doifdefinedelse{\v!file:::#1}
      {\def\doexternaldocument[##1][##2][##3]%
         {\naar{##3}[#1::#2]}%
@@ -2652,16 +2824,16 @@
 \def\docoupledocument[#1][#2][#3][#4]%
   {\ifthirdargument
      \begingroup
-     \def\dolijstelement##1##2##3##4##5##6%
+     \def\dolijstelement##1##2##3##4##5##6% 2=aut 6=pag / 2 goes into text ref slot 
        {\global\utilitydonetrue %{Watch the braces here below!}
-       %\setglobalcrossreference{{##1::\strippedlistentry[##5]}}{}{}{##6}}%
-        \setglobalcrossreference{{##1::\strippedlistentry[##5]}}{}{##6}{}}%
+        \setglobalcrossreference{{##1::\strippedlistentry[##5]}}{}{##6}{##2}}%
      \def\usereferences[##1]%
        {\setbox0=\vbox{\doutilities{#3}{##1}{#3}{}{}}}%
      \dogebruikexterndocument[#1][#2][#4]%
      \doglobal\addtocommalist{#1}\crossdocumentreferences
      \def\docommando##1%
-       {\doglobal\addtocommalist{##1}\crossdocumentelements}%
+       {\setxvalue{\??rf##1\c!status}{\v!start}% for fast checking 
+        \doglobal\addtocommalist{##1}\crossdocumentelements}%
      \processcommalist[#3]\docommando
      \ifutilitydone
        \global\autocrossdocumenttrue
@@ -2796,8 +2968,8 @@
          \checkinteractiebalk{1.5em}\v!ruim\!!zeropoint % brrrrr
          \setbox2=\hbox
            {\setupsymbolset[\@@iasymboolset]%
-            \localframed[\??ib][]{\symbol[\v!vorigepagina]}}%
-         \!!heighta=\ht2
+            \localframed[\??ib][#1,\c!achtergrond=]{\symbol[\v!vorigepagina]}}%
+         \!!heighta=\ht2 % needed because we default to nothing
          \stelinteractiebalkin[#1,\c!strut=\v!nee]%
          \setupinteraction[\c!breedte=\!!zeropoint]%
         %\!!counta=1
@@ -2827,6 +2999,7 @@
             \edef\localreference{##1}%
             \dodocomplexbutton\??ib
               [\c!hoogte=\!!heighta,\c!breedte=\!!widtha]%
+% funny buggy left over: [\c!breedte=\!!widtha]%
               {\dontleavehmode\symbol[\localreference]}%
               [\localreference]%
             \hss}%
@@ -2912,6 +3085,7 @@
 
 \setupreferencing
   [\c!status=\v!start,
+   \c!autofile=\v!nee,
    \v!deel\c!nummer=\v!ja,
    \v!hoofdstuk\c!nummer=\v!nee,
    \c!interactie=\v!alles,
@@ -2919,12 +3093,13 @@
   %\c!urlspatie=\v!nee,
   %\c!urlletter=,
   %\c!urlkleur=,
-   \c!converteerfile=\v!ja,
+   \c!converteerfile=\v!nee, 
   %\c!strut=\v!nee, % some day an option 
    \c!prefix=,
    \c!breedte=.75\zetbreedte,
    \c!links=\citaat\bgroup,
    \c!rechts=\egroup,
+   \c!globaal=\v!nee,
    \c!scheider=~]
 
 \setupurl

@@ -155,6 +155,18 @@
       \fi}}
 
 %D \macros
+%D   {oldstylenumerals,oldstyleromannumerals}
+%D
+%D These conversions are dedicated to Frans Goddijn. 
+
+\unexpanded\def\oldstylenumerals#1%
+  {{\os\number#1}}
+
+\unexpanded\def\oldstyleromannumerals#1%
+  {{\leftrulefalse\rightrulefalse\ss\txx\boxrulewidth=.15ex
+    \ruledhbox spread .15em{\hss\uppercased{\romannumerals{#1}}\hss}}}
+
+%D \macros
 %D   {protectconversion}
 %D
 %D The previous two commands are not robust enough to be
@@ -578,6 +590,9 @@
 
 \defineconversion [g]  [\greeknumerals]
 \defineconversion [G]  [\Greeknumerals]
+
+\defineconversion [o]  [\oldstylenumerals]
+\defineconversion [or] [\oldstyleromannumerals]
 
 \defineconversion [\v!letter]    [\character]
 \defineconversion [\v!Letter]    [\Character]

@@ -8,21 +8,21 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
-%C details. 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+% to do: \localpushmacro/\localpopmacro (dosetflowchart etc) 
 
 %D This is an experimental module. Pieces of code will be moved
-%D to other modules. More features are possible but will be 
+%D to other modules. More features are possible but will be
 %D interfaces later. 
 %D
-%D When finished this module will be documented. The main macro 
-%D is a rather big one. I'm not sure if splitting it up is wise.
-
-% The 1pt offset is due to 'error' in pdftex form placement, 
-% version 14a+ will be ok. This needs checking.
+%D When finished this module will be documented. The main macro
+%D is still a rather big one and there is some redundant and
+%D slow code that needs a clean up. 
 
 % arrow, dash
-% crossing 
+% crossing
 % \goto -> \normalgoto
 % class -> class:name (ref prefix)
 % c, automatisch geen overlap zoeken
@@ -46,7 +46,9 @@
 % y       : y offset (clipping)
 % nx      : minimaal aantal cellen horizontaal
 % ny      : minimaal aantal cellen vertikaal
-
+%
+% shape none en geen equivalent maken 
+%
 % kaderkleur achtergrondkleur
 % lijnkleur lijndikte
 % focus focuskaderkleur focusachtergrondkleur
@@ -56,83 +58,159 @@
 
 \unprotect
 
-\def\setFLOWname#1#2%
-  {\bgroup
+\definieersorteren [flowchart] [flowcharts] [\v!geen] % no access
+\stelsorterenin    [flowchart] [\c!status=\v!stop]    % off by default 
+
+\def\@FLOW@{@FLOW@}
+\def\@FLOC@{@FLOC@}
+\def\@FLOX@{@FLOX@}
+
+\def\@@FLOW{@@FLOW}
+\def\@@FLOL{@@FLOL}
+\def\@@FLOS{@@FLOS}
+\def\@@FLOF{@@FLOF}
+\def\@@FLOT{@@FLOT}
+\def\@@FLOX{@@FLOX}
+
+\def\@@MPx {@@MPx}
+\def\@@MPy {@@MPy}
+
+\def\FLOWbufferprefix{flw-}
+
+\def\setFLOWname#1#2% funny hack that makes sure that we get
+  {\bgroup          % names that are acceptable for METAPOST
    \lccode`0=`a\lccode`1=`b\lccode`2=`c\lccode`3=`d\lccode`4=`e%
    \lccode`5=`f\lccode`6=`g\lccode`7=`h\lccode`8=`i\lccode`9=`j%
    \lccode` =`\_\lccode`-=`\_\lccode`_=`\_%
    \lowercase{\gdef#1{#2}}%
    \egroup}
 
+% een gobble als default is sneller, en dan alleen setten als
+% nodig
+
 \def\resetFLOWcell%
-  {\global\let\FLOWname       \empty
+  {% variables
+   \global\let\FLOWname       \empty
    \global\let\FLOWalign      \empty
    \global\let\FLOWshape      \empty
    \global\let\FLOWlocation   \empty
-   \global\let\FLOWtext       \empty
+   \global\let\FLOWtext       \empty 
    \global\let\FLOWhelp       \empty
    \global\let\FLOWdestination\empty
    \global\let\FLOWoverlay    \empty
    \global\let\FLOWfocus      \empty
    \global\let\tFLOWlabel     \empty
    \global\let\bFLOWlabel     \empty
-   \global\let\bcFLOWlabel    \empty
    \global\let\lFLOWlabel     \empty
    \global\let\rFLOWlabel     \empty
-   \def\name           ##1{\def\FLOWcell{##1}\setFLOWname\FLOWname{name_##1}\ignorespaces}%
-   \def\shape          ##1{\gdef\FLOWshape{##1}\ignorespaces}%
-   \def\destination    ##1{\gdef\FLOWdestination{##1}\ignorespaces}%
-   \def\location       ##1{\setFLOWlocation##1\end\ignorespaces}%
-   \def\focus          ##1{\gdef\FLOWfocus{##1}\ignorespaces}%
-   \def\overlay        ##1{\gdef\FLOWoverlay{##1}\ignorespaces}%
-   \def\figure         ##1{\defineoverlay
-                             [dummy]
-                             [{\externalfigure
-                                 [##1]
-                                 [\c!breedte=\overlaywidth,
-                                  \c!hoogte=\overlayheight]}]%
-                           \overlay{dummy}}%
-   \def\dotext    [##1]##2{\gdef\FLOWalign{##1}\gdef\FLOWtext{##2}}%
-   \def\text              {\dosingleempty\dotext}%
-   \def\comment   [##1]##2{\ignorespaces\dogobblesingleempty}%
-   \def\label     [##1]##2{\setgvalue{##1FLOWlabel}{##2}\ignorespaces}%
-   \def\help           ##1{\gdef\FLOWhelp{##1}\ignorespaces}%
-   \def\connection[##1]##2{\ignorespaces}%
-   \def\connect           {\connection}%
-   \def\locate            {\location}}
+   \global\let\bcFLOWlabel    \empty
+   \global\let\tcFLOWlabel    \empty
+   \global\let\lcFLOWlabel    \empty
+   \global\let\rcFLOWlabel    \empty
+   \global\let\tFLOWexit      \empty
+   \global\let\bFLOWexit      \empty
+   \global\let\lFLOWexit      \empty
+   \global\let\rFLOWexit      \empty
+   % commands
+   \let\name       \doFLOWname
+   \let\shape      \doFLOWshape
+   \let\destination\doFLOWdestination
+   \let\location   \doFLOWlocation
+   \let\focus      \doFLOWfocus
+   \let\overlay    \doFLOWoverlay
+   \let\figure     \doFLOWfigure
+   \let\text       \doFLOWtext
+   \let\comment    \doFLOWcomment
+   \let\label      \doFLOWlabel
+   \let\help       \doFLOWhelp
+   \let\connection \doFLOWconnection
+   \let\exit       \doFLOWexit
+   % convenience commands
+   \let\locate     \doFLOWlocate
+   \let\connect    \doFLOWconnect}
+
+\def\doFLOWname#1%
+  {\def\FLOWcell{#1}\setFLOWname\FLOWname{name_#1}\ignorespaces}
+
+\def\doFLOWshape#1%
+  {\gdef\FLOWshape{#1}\ignorespaces}
+
+\def\doFLOWdestination#1%
+  {\gdef\FLOWdestination{#1}\ignorespaces}
+
+\def\doFLOWlocation#1%
+  {\setFLOWlocation#1\end\ignorespaces}
+
+\def\doFLOWfocus#1%
+  {\gdef\FLOWfocus{#1}\ignorespaces}
+
+\def\doFLOWoverlay#1%
+  {\gdef\FLOWoverlay{#1}\ignorespaces}
+
+\def\doFLOWfigure#1%
+  {\defineoverlay
+     [\s!dummy]
+     [{\externalfigure
+         [#1]
+         [\c!breedte=\overlaywidth,
+          \c!hoogte=\overlayheight]}]%
+   \overlay{\s!dummy}}
+
+\def\doFLOWtext%
+  {\dosingleempty\dodoFLOWtext}
+
+\def\dodoFLOWtext[#1]#2%
+  {\gdef\FLOWalign{#1}\gdef\FLOWtext{#2}}
+
+\def\doFLOWcomment[#1]#2%
+  {\ignorespaces\dogobblesingleempty}
+
+\def\doFLOWlabel[#1]#2% wordt dit gebruikt ?
+  {\setgvalue{#1FLOWlabel}{#2}\ignorespaces}
+
+\def\doFLOWhelp#1%
+  {\gdef\FLOWhelp{#1}\ignorespaces}
+
+\def\doFLOWconnection[#1]#2%
+  {\ignorespaces}
+
+\def\doFLOWconnect%
+  {\connection}
+
+\def\doFLOWlocate%
+  {\location}
+
+\def\doFLOWexit[#1]#2%
+  {\setgvalue{#1FLOWexit}{#2}\ignorespaces}
 
 \def\startFLOWchart%
   {\bgroup
    \let\stopFLOWchart\egroup
-   \obeylines              % lelijk, buffers nog eens fatsoeneren
+   \obeylines % lelijk, buffers nog eens fatsoeneren
    \dodoubleempty\dostartFLOWchart}
 
 \def\dostartFLOWchart[#1][#2]%
   {\doglobal\increment\nofFLOWcharts
-   \setxvalue{FLOW-#1}%
+   \flowchart{#1}%
+   \setxvalue{\@FLOW@-#1}%
      {\noexpand\dosetFLOWchart[\nofFLOWcharts][#2]}%
-   \dostartbuffer[flw-\nofFLOWcharts][startFLOWchart][stopFLOWchart]}
+   \dostartbuffer[\FLOWbufferprefix\nofFLOWcharts][startFLOWchart][stopFLOWchart]}
 
-\def\setupFLOWcharts%
-  {\dodoubleargument\getparameters[@@FLOW]}
-
-\def\setupFLOWlines%
-  {\dodoubleargument\getparameters[@@FLOL]}
-
-\def\setupFLOWshapes%
-  {\dodoubleargument\getparameters[@@FLOS]}
-
-\def\setupFLOWfocus%
-  {\dodoubleargument\getparameters[@@FLOF]}
+\def\setupFLOWcharts{\dodoubleargument\getparameters[\@@FLOW]}
+\def\setupFLOWlines {\dodoubleargument\getparameters[\@@FLOL]}
+\def\setupFLOWshapes{\dodoubleargument\getparameters[\@@FLOS]}
+\def\setupFLOWfocus {\dodoubleargument\getparameters[\@@FLOF]}
+\def\setupFLOWsets  {\dodoubleargument\getparameters[\@@FLOX]}
 
 \setupFLOWcharts
   [\c!optie=,
+   \c!korps=,
    \c!punt=,  % private option
    \c!breedte=12\bodyfontsize,
    \c!hoogte=7\bodyfontsize,
    \c!maxbreedte=,
    \c!maxhoogte=,
-   \c!offset=0pt, % auto offset: .5\bodyfontsize,
+   \c!offset=\v!standaard, % == auto offset
    \c!dx=2\bodyfontsize,
    \c!dy=2\bodyfontsize,
    \c!nx=0, % 1,
@@ -173,10 +251,10 @@
    \c!lijndikte=\@@FLOSlijndikte,
    \c!offset=\@@FLOSoffset]
 
-\definecolor[FLOWfocuscolor]      [s=.2]
-\definecolor[FLOWlinecolor]       [s=.5]
-\definecolor[FLOWframecolor]      [s=.7]
-\definecolor[FLOWbackgroundcolor] [s=.9]
+\definecolor [FLOWfocuscolor]      [s=.2]
+\definecolor [FLOWlinecolor]       [s=.5]
+\definecolor [FLOWframecolor]      [s=.7]
+\definecolor [FLOWbackgroundcolor] [s=.9]
 
 \newcounter\includeFLOWx
 \newcounter\includeFLOWy
@@ -188,17 +266,15 @@
   {\pushmacro\includeFLOWx
    \pushmacro\includeFLOWy
    \getparameters[FLOWi][x=1,y=1,#2]%
-   \increment(\includeFLOWx,0\FLOWix)%
-   \decrement(\includeFLOWx,1)%
-   \increment(\includeFLOWy,0\FLOWiy)%
-   \decrement(\includeFLOWy,1)%
+   \increment(\includeFLOWx,0\FLOWix)\decrement\includeFLOWx
+   \increment(\includeFLOWy,0\FLOWiy)\decrement\includeFLOWy
    \def\dodoincludeFLOWchart##1%
-     {\doifdefined{FLOW-##1}
+     {\doifdefined{\@FLOW@-##1}
         {\pushmacro\dosetFLOWchart
-         \def\dosetFLOWchart[####1][####2]%
+         \gdef\dosetFLOWchart[####1][####2]%
            {\popmacro\dosetFLOWchart
-            \haalbuffer[flw-####1]}%
-         \getvalue{FLOW-##1}}}%
+            \haalbuffer[\FLOWbufferprefix####1]}%
+         \getvalue{\@FLOW@-##1}}}%
    \processcommalist[#1]\dodoincludeFLOWchart
    \popmacro\includeFLOWx
    \popmacro\includeFLOWy}
@@ -216,7 +292,7 @@
    left, right}
 
 \def\FLOWlines%
-  {up, down, left, right} 
+  {up, down, left, right}
 
 \def\FLOWsetconnect#1%
   {\donefalse
@@ -248,93 +324,44 @@
 
 \newif\ifFLOWscaling \FLOWscalingtrue
 
+\def\@@FLOW@@offset{\@@FLOWoffset}
+
 \def\getFLOWchart%
   {\dodoubleempty\dogetFLOWchart}
 
 \def\dogetFLOWchart[#1][#2]%
-  {\doifundefinedelse{FLOW-#1}
+  {\doifundefinedelse{\@FLOW@-#1}
      {\writestatus{FLOW}{unknown chart #1}%
       \framed
         [\c!breedte=12\bodyfontsize,\c!hoogte=8\bodyfontsize]
         {\tttf [chart #1]}}
      {\dodogetFLOWchart[#1][#2]}}
 
-\def\dodogetFLOWchart[#1][#2]%
-  {\bgroup
-\forgetall
-\offinterlineskip
+\def\dodogetFLOWchart[#1][#2]% to be split a bit more
+  {\vbox\bgroup
+   \forgetall
+   \dontcomplain
+   \offinterlineskip
    \def\dosetFLOWchart[##1][##2]%
      {\def\currentFLOWnumber{##1}%
-      \getparameters[@@FLOW][##2]}%
-   \getvalue{FLOW-#1}%
-   \getparameters[@@FLOW][#2]% dubbelop ?
+      \getparameters[\@@FLOW][##2]}%
+   \getvalue{\@FLOW@-#1}%
+   \getparameters[\@@FLOW][#2]% dubbelop ?
    \doifsomething{\@@FLOWautofocus}
-     {\def\@@FLOWminx{100}\let\@@FLOWminy\@@FLOWminx
-      \def\@@FLOWmaxx  {0}\let\@@FLOWmaxy\@@FLOWmaxx
-      \def\@@FLOWabsx  {0}\let\@@FLOWabsy\@@FLOWabsx
-      \def\startFLOWcell%
-        {\resetFLOWcell}%
-      \def\dodolocation##1##2##3##4%
-        {\ifnum##1##2##4\relax
-           \!!counta=##1\advance\!!counta by ##31\relax
-           \edef##4{\ifnum\!!counta<1 1\else\the\!!counta\fi}%
-         \fi}%
-      \def\dolocation##1,##2\end%
-        {\ifnum##1>\@@FLOWabsx\def\@@FLOWabsx{##1}\fi
-         \ifnum##2>\@@FLOWabsy\def\@@FLOWabsy{##2}\fi
-         \ExpandBothAfter\doifinset{\FLOWcell}{\@@FLOWautofocus}
-           {\dodolocation{##1}<-\@@FLOWminx
-            \dodolocation{##1}>+\@@FLOWmaxx
-            \dodolocation{##2}<-\@@FLOWminy
-            \dodolocation{##2}>+\@@FLOWmaxy}}%
-      \def\stopFLOWcell%
-        {\expandafter\dolocation\FLOWlocation\end}%
-      \haalbuffer[flw-\currentFLOWnumber]%
-     %\message{AUTOSHAPE 1: (\@@FLOWminx,\@@FLOWminy)->(\@@FLOWmaxx,\@@FLOWmaxy)}%
-      \ifnum\@@FLOWabsx<\@@FLOWmaxx\let\@@FLOWmaxx\@@FLOWabsx\fi
-      \ifnum\@@FLOWabsy<\@@FLOWmaxy\let\@@FLOWmaxy\@@FLOWabsy\fi
-     %\message{AUTOSHAPE 2: (\@@FLOWminx,\@@FLOWminy)->(\@@FLOWmaxx,\@@FLOWmaxy)}%
-      \donetrue
-      \ifnum\@@FLOWminx=100 \donefalse\fi
-      \ifnum\@@FLOWminy=100 \donefalse\fi
-      \ifnum\@@FLOWmaxx=0   \donefalse\fi
-      \ifnum\@@FLOWmaxy=0   \donefalse\fi
-      \def\do##1##2##3##4%
-        {\ifdone
-           \let##1=##2%
-           \!!counta=##3%
-           \advance\!!counta 1\advance\!!counta -##2\relax
-           \ifnum\!!counta<1 \!!counta=1 \fi
-           \edef##4{\the\!!counta}%
-         \else
-           \def##1{1}\def##4{0}%   {1}%
-         \fi}%
-      \do\@@FLOWx\@@FLOWminx\@@FLOWmaxx\@@FLOWnx
-      \do\@@FLOWy\@@FLOWminy\@@FLOWmaxy\@@FLOWny}%
+     {\checkFLOWautofocus}%
   %\message{AUTOSHAPE 3: (\@@FLOWx,\@@FLOWy)->(\@@FLOWnx,\@@FLOWny)}\wait
    \let\FLOWwidth \@@FLOWnx
    \let\FLOWheight\@@FLOWny
-   \def\getFLOWlocation##1,##2\end%
-     {\ifnum0##1>\FLOWwidth \edef\FLOWwidth {##1}\fi
-      \ifnum0##2>\FLOWheight\edef\FLOWheight{##2}\fi}%
-   \long\def\startFLOWcell##1\stopFLOWcell%
-     {\resetFLOWcell
-      \ignorespaces##1\unskip
-      \expandafter\getFLOWlocation\FLOWlocation\end
-      \ignorespaces}%
-   \haalbuffer[flw-\currentFLOWnumber]%
-   \ifcase\@@FLOWnx\relax
-     \let\@@FLOWnx\FLOWwidth
-   \fi
-   \ifcase\@@FLOWny\relax
-     \let\@@FLOWny\FLOWheight
-   \fi
+   \let\startFLOWcell\startFLOWcellA
+   \haalbuffer[\FLOWbufferprefix\currentFLOWnumber]%
+   \ifcase\@@FLOWnx\relax \let\@@FLOWnx\FLOWwidth  \fi
+   \ifcase\@@FLOWny\relax \let\@@FLOWny\FLOWheight \fi
    \doifnothing{\@@FLOWmaxbreedte\@@FLOWmaxhoogte}{\FLOWscalingfalse}%
-   \ifFLOWscaling 
+   \ifFLOWscaling
      \doifnothing{\@@FLOWmaxbreedte}{\let\@@FLOWmaxbreedte\maxdimen}%
      \doifnothing{\@@FLOWmaxhoogte} {\let\@@FLOWmaxhoogte \maxdimen}%
      \scratchcounter=\bodyfontpoints
-     \doloop  % NOG FONTSWITCH OM EX EN EM TE LATEN WERKEN 
+     \doloop  % NOG FONTSWITCH OM EX EN EM TE LATEN WERKEN
        {\ifnum\scratchcounter>1 % NU DIMENSIONS IN TERMS OF BODYFONTSIZE
           \bodyfontsize=\the\scratchcounter pt
           \dimen0=\@@FLOWmaxbreedte
@@ -364,7 +391,9 @@
      \expanded{\switchtobodyfont[\the\scratchcounter pt]}%
      \forgetall
      \offinterlineskip
-   \fi
+   \else\ifx\@@FLOWkorps\empty\else
+     \expanded{\switchtobodyfont[\@@FLOWkorps]}% \expanded ? 
+   \fi\fi
    \global\let\FLOWcells\empty
    \dimen0=\@@FLOWbreedte
    \edef\FLOWshapewidth{\the\dimen0}%
@@ -397,44 +426,47 @@
      \scratchdimen=\@@FLOLstraal
      \edef\@@FLOLstraal{\the\scratchdimen}%
    \fi
-   \ifdim\@@FLOWoffset=\!!zeropoint
-     \edef\@@FLOWoffset{\the\scratchdimen}%
-   \else
-     \scratchdimen=\@@FLOWoffset
-     \edef\@@FLOWoffset{\the\scratchdimen}%
-   \fi
+   \processaction % magic 2.5
+     [\@@FLOWoffset]
+     [      \v!geen=>\scratchdimen=-2.5\scratchdimen,
+         \v!overlay=>\scratchdimen=-2.5\scratchdimen,
+       \v!standaard=>\scratchdimen=\scratchdimen,
+         \s!unknown=>\scratchdimen=\@@FLOWoffset,
+         \s!default=>\scratchdimen=-2.5\scratchdimen]%
+   \edef\@@FLOW@@offset{\the\scratchdimen}%
    \forgetall
    \offinterlineskip
    \resetMPdrawing
    \doglobal\newcounter\FLOWcomment
    \startMPdrawing
-     input mp-chart.mp ;
+     input mp-char.mp ;
      grid_width             := \FLOWgridwidth ;
      grid_height            := \FLOWgridheight ;
      shape_width            := \FLOWshapewidth ;
      shape_height           := \FLOWshapeheight ;
      connection_line_width  := \@@FLOLlijndikte ;
-     connection_smooth_size := \@@FLOLstraal ; % 2.5connection_line_width ;
-     connection_arrow_size  := \@@FLOLstraal ; % 2.5connection_line_width ;
-     connection_dash_size   := \@@FLOLstraal ; % 2.5connection_line_width ;
-   \stopMPdrawing
-%   \def\getFLOWlocation##1,##2\end%
-%     {\ifnum0##1>\FLOWwidth \edef\FLOWwidth {##1}\fi
-%      \ifnum0##2>\FLOWheight\edef\FLOWheight{##2}\fi}%
-%  \long\def\startFLOWcell##1\stopFLOWcell%
-%     {\resetFLOWcell
-%      \ignorespaces##1\unskip
-%      \expandafter\getFLOWlocation\FLOWlocation\end
-%      \ignorespaces}%
-%   \haalbuffer[flw-\currentFLOWnumber]%
-%   \ifnum\@@FLOWnx\@@FLOWny=11 % listig
-%     \let\@@FLOWnx\FLOWwidth
-%     \let\@@FLOWny\FLOWheight
-%   \fi
-   \startMPdrawing
+     connection_smooth_size := \@@FLOLstraal ;
+     connection_arrow_size  := \@@FLOLstraal ;
+     connection_dash_size   := \@@FLOLstraal ;
+%  \stopMPdrawing
+%  \def\getFLOWlocationX##1,##2\end%
+%    {\ifnum0##1>\FLOWwidth \edef\FLOWwidth {##1}\fi
+%     \ifnum0##2>\FLOWheight\edef\FLOWheight{##2}\fi}%
+%  \long\def\startFLOWcellX##1\stopFLOWcell%
+%    {\resetFLOWcell
+%     \ignorespaces##1\unskip
+%     \expandafter\getFLOWlocationX\FLOWlocation\end
+%     \ignorespaces}%
+%  \let\startFLOWcell\startFLOWcellX
+%  \haalbuffer[\FLOWbufferprefix\currentFLOWnumber]%
+%  \ifnum\@@FLOWnx\@@FLOWny=11 % listig
+%    \let\@@FLOWnx\FLOWwidth
+%    \let\@@FLOWny\FLOWheight
+%  \fi
+%  \startMPdrawing
      begin_chart(0,\FLOWwidth,\FLOWheight);
      reverse_y := true ;
-     chart_offset := \@@FLOWoffset ;
+     chart_offset := \@@FLOW@@offset ;
    \stopMPdrawing
    \doifelsenothing{\@@FLOWachtergrondkleur}
      {\startMPdrawing
@@ -448,7 +480,7 @@
         show_con_points := true ;
         show_mid_points := true ;
         show_all_points := true ;
-      \stopMPdrawing}
+      \stopMPdrawing}%
    \processaction % private
      [\@@FLOWpunt]
      [     \v!ja=>\startMPdrawing
@@ -459,86 +491,10 @@
       \s!unknown=>\startMPdrawing
                     show_\@@FLOWpunt_points := true ;
                   \stopMPdrawing]%
-   \long\def\startFLOWcell##1\stopFLOWcell%
-     {\resetFLOWcell
-      \ignorespaces##1\unskip
-      \setxvalue{FLOW-loc-\FLOWname}{\FLOWlocation}%
-      \ifx\FLOWshape\empty 
-        \global\let\FLOWshape\@@FLOSdefault 
-      \fi
-      \doifnot{\FLOWshape}{\v!geen}
-        {\ExpandBothAfter\doifinsetelse{\FLOWshape}{\FLOWshapes}
-           {\edef\FLOWshapetag{shape_\FLOWshape}%
-            \@EA\setFLOWname\@EA\FLOWshapetag\@EA{\FLOWshapetag}}
-           {\doifnumberelse{\FLOWshape}
-              {\let\FLOWshapetag\FLOWshape}
-              {\let\FLOWshapetag\empty}}%
-         \ifx\FLOWshapetag\empty \else
-           \ExpandBothAfter\doifinsetelse{\FLOWshape}{\FLOWlines}
-             {\chardef\FLOWstate=0 }
-             {\ExpandBothAfter\doifcommonelse{\FLOWcell,\FLOWfocus}{\@@FLOWfocus}
-                {\chardef\FLOWstate=1 }
-                {\chardef\FLOWstate=2 }}%
-           \startMPdrawing
-             begin_sub_chart ;
-             \ifcase\FLOWstate
-               shape_line_color := \MPcolor{\@@FLOLkleur} ;
-               shape_fill_color := \MPcolor{\@@FLOLkleur} ;
-               shape_line_width := \@@FLOLlijndikte ;
-             \or
-               shape_line_color := \MPcolor{\@@FLOFkaderkleur} ;
-               shape_fill_color := \MPcolor{\@@FLOFachtergrondkleur} ;
-               shape_line_width := \@@FLOFlijndikte ;
-             \or
-               shape_line_color := \MPcolor{\@@FLOSkaderkleur} ;
-               shape_fill_color := \MPcolor{\@@FLOSachtergrondkleur} ;
-               shape_line_width := \@@FLOSlijndikte ;
-             \fi
-             \ifx\FLOWoverlay\empty
-               peepshape := false ;
-             \else
-               peepshape := true ;
-             \fi
-             new_shape(\FLOWlocation,\FLOWshapetag) ;
-             end_sub_chart ;
-           \stopMPdrawing
-         \fi}%
-      \ignorespaces}%
-   \haalbuffer[flw-\currentFLOWnumber]%
-   \long\def\startFLOWcell##1\stopFLOWcell%
-     {\resetFLOWcell
-      \def\connection[####1]####2%
-        {\doglobal\increment\FLOWcomment
-         \setFLOWname\otherFLOWname{name_####2}%
-         \doifdefinedelse{FLOW-loc-\FLOWname}
-           {\edef\FLOWfrom{\getvalue{FLOW-loc-\FLOWname}}}
-           {\edef\FLOWfrom{0,0}}%
-         \doifdefinedelse{FLOW-loc-\otherFLOWname}
-           {\edef\FLOWto  {\getvalue{FLOW-loc-\otherFLOWname}}}
-           {\edef\FLOWto  {0,0}}%
-         \FLOWsetconnect{####1}%
-         \ifx\cFLOWfrom\empty\else
-           \doifelse{\@@FLOLhoek}{\v!rond}
-             {\startMPdrawing smooth     := true  ; \stopMPdrawing}
-             {\startMPdrawing smooth     := false ; \stopMPdrawing}%
-           \doifelse{\@@FLOLstreep}{\v!ja}
-             {\startMPdrawing dashline   := true  ; \stopMPdrawing}
-             {\startMPdrawing dashline   := false ; \stopMPdrawing}%
-           \doifelse{\@@FLOLpijl}{\v!ja}
-             {\startMPdrawing arrowtip   := true  ; \stopMPdrawing}
-             {\startMPdrawing arrowtip   := false ; \stopMPdrawing}%
-           \doifelse{\@@FLOLoffset}{\v!geen}
-             {\startMPdrawing touchshape := true  ; \stopMPdrawing}
-             {\startMPdrawing touchshape := false ; \stopMPdrawing}%
-           \startMPdrawing
-             connection_line_color := \MPcolor{\@@FLOLkleur} ;
-             connection_line_width := \@@FLOLlijndikte ;
-             connect_\cFLOWfrom_\cFLOWto (\FLOWfrom,\zFLOWfrom) (\FLOWto,\zFLOWto) ;
-           \stopMPdrawing
-         \fi
-         \ignorespaces}%
-      \ignorespaces##1\unskip}%
-   \haalbuffer[flw-\currentFLOWnumber]%
+   \let\startFLOWcell\startFLOWcellB
+   \haalbuffer[\FLOWbufferprefix\currentFLOWnumber]%
+   \let\startFLOWcell\startFLOWcellC
+   \haalbuffer[\FLOWbufferprefix\currentFLOWnumber]%
    \startMPdrawing
      clip_chart(\@@FLOWx,\@@FLOWy,\@@FLOWnx,\@@FLOWny) ;
      end_chart ;
@@ -548,213 +504,34 @@
    \def\MPmessage##1%
      {\writestatus{MP charts}{##1}}%
    \def\MPposition##1##2##3%
-     {\setvalue{MPx##1}{##2}\setvalue{MPy##1}{##3}}%
+     {\setvalue{\@@MPx##1}{##2}\setvalue{\@@MPy##1}{##3}}%
    \def\MPclippath##1##2##3##4%
      {\def\clipMPllx{##1bp}\def\clipMPlly{##2bp}%
       \def\clipMPurx{##3bp}\def\clipMPury{##4bp}}%
    \def\MPareapath##1##2##3##4%
      {\def\areaMPllx{##1bp}\def\areaMPlly{##2bp}%
       \def\areaMPurx{##3bp}\def\areaMPury{##4bp}}%
-   \readfile{\MPdatafile}{}{}%
+   \getMPdata 
    \doglobal\newcounter\FLOWcomment
-   \long\def\startFLOWcell##1\stopFLOWcell%
-     {\resetFLOWcell
-      \ignorespaces##1\unskip
-      \def\doprocessFLOWcell####1,####2\end  % kan ook met area
-        {\!!counta=####1\relax
-         \!!countb=####2\relax
-         \!!countc=\@@FLOWx
-         \!!countd=\@@FLOWy
-         \advance\!!countc \@@FLOWnx
-         \advance\!!countd \@@FLOWny
-         \advance\!!countc -1
-         \advance\!!countd -1
-         \ifnum\!!counta<\@@FLOWx\relax
-           \donefalse
-         \else\ifnum\!!counta>\!!countc
-           \donefalse
-         \else\ifnum\!!countb<\@@FLOWy\relax
-           \donefalse
-         \else\ifnum\!!countb>\!!countd
-           \donefalse
-         \else
-           \donetrue
-           \doglobal\addtocommalist\FLOWcell\FLOWcells
-           \advance\!!counta by -\@@FLOWx\advance\!!counta by 1
-           \advance\!!countb by -\@@FLOWy\advance\!!countb by 1
-           \dimen0=\FLOWgridwidth\dimen0=\!!counta\dimen0
-           \advance\dimen0 by -\FLOWgridwidth
-           \dimen4=\FLOWgridwidth\advance\dimen4 by -\FLOWshapewidth
-           \advance\dimen0 by .5\dimen4
-           \dimen2=\FLOWgridheight\dimen2=\!!countb\dimen2
-           \dimen4=\FLOWgridheight\advance\dimen4 by -\FLOWshapeheight
-           \advance\dimen2 by -.5\dimen4
-           \setbox0=\hbox
-             {\ifx\FLOWalign\empty\else
-                \setupframed
-                  [\c!uitlijnen=\v!normaal,\c!onder=\vfill,\c!boven=\vfill]%
-                \@EA\processallactionsinset\@EA
-                  [\FLOWalign]
-                  [t=>{\setupframed[\c!onder=\vfill,\c!boven=]},
-                   b=>{\setupframed[\c!onder=,\c!boven=\vfill]},
-                   l=>{\setupframed[\c!uitlijnen=\v!rechts]},
-                   r=>{\setupframed[\c!uitlijnen=\v!links]},
-                   m=>{\setupframed[\c!uitlijnen=\v!midden]},
-                   c=>{\setupframed[\c!uitlijnen=\v!midden]}]%
-              \fi
-              \doifelse{\FLOWshape}{\v!geen}
-                {\setupframed[\c!offset=\v!overlay]}
-                {\setupframed[\c!offset=.5\bodyfontsize]}%
-              \framed
-                [\c!kader=\v!uit,\c!breedte=\FLOWshapewidth,\c!hoogte=\FLOWshapeheight]
-                {\FLOWtext}}%
-           \showFLOWhelp0
-           \ifx\FLOWdestination\empty\else
-             \setbox0=\hbox
-               {\setupinteraction[\c!kleur=,\c!contrastkleur=]%
-                \naarbox{\box0}[\FLOWdestination]}%
-           \fi
-           \edef\FLOWdx{\the\dimen0}%
-           \edef\FLOWdy{\the\dimen2}%
-           \def\positionFLOWzero%
-             {\setbox0=\hbox{\hskip\FLOWdx\lower\FLOWdy\box0}%
-              \smashbox0
-              \box0} %
-           \positionFLOWzero
-           \dimen0=\FLOWshapewidth \dimen2=.5\dimen0
-           \dimen4=\FLOWshapeheight\dimen6=.5\dimen4
-           \boxoffset=.5\bodyfontsize
-           \setbox0=\hbox{\hskip\dimen2\raise\dimen4
-             \hbox{\righttopbox{\strut\tFLOWlabel}}}%
-           \positionFLOWzero
-           \setbox0=\hbox{\hskip\dimen2
-             \hbox{\rightbottombox{\strut\bFLOWlabel}}}%
-           \positionFLOWzero
-           \setbox0=\hbox{\raise\dimen6
-             \hbox{\lefttopbox {\strut\lFLOWlabel}}}%
-           \positionFLOWzero
-           \setbox0=\hbox{\hskip\dimen0\raise\dimen6
-             \hbox{\righttopbox{\strut\rFLOWlabel}}}%
-           \positionFLOWzero
-           \setbox0=\hbox{\hskip\dimen2 % for me only
-             \hbox{\bottombox{\strut\bcFLOWlabel}}}%
-           \positionFLOWzero
-         \fi\fi\fi\fi}%
-      \expandafter\doprocessFLOWcell\FLOWlocation\end
-      \def\connection[####1]####2%
-        {\doglobal\increment\FLOWcomment
-         \ignorespaces}%
-      \def\comment[####1]####2%
-        {\bgroup
-         \let\FLOW  \middlebox
-         \let\FLOWb \bottombox
-         \let\FLOWbl\bottomleftbox
-         \let\FLOWbr\bottomrightbox
-         \let\FLOWt \topbox
-         \let\FLOWtl\topleftbox
-         \let\FLOWtr\toprightbox
-         \let\FLOWl \leftbox
-         \let\FLOWlt\lefttopbox
-         \let\FLOWlb\leftbottombox
-         \let\FLOWr \rightbox
-         \let\FLOWrt\righttopbox
-         \let\FLOWrb\rightbottombox
-         \let\FLOWc \middlebox
-         \ifcase0\getvalue{MPx\FLOWcomment}\getvalue{MPy\FLOWcomment}\relax
-         \else
-           \ifdim\getvalue{MPx\FLOWcomment}bp<\areaMPllx\relax\else
-             \ifdim\getvalue{MPx\FLOWcomment}bp>\areaMPurx\relax\else
-               \ifdim\getvalue{MPy\FLOWcomment}bp<\areaMPlly\relax\else
-                 \ifdim\getvalue{MPy\FLOWcomment}bp>\areaMPury\relax\else
-                   \dimen0=\getvalue{MPx\FLOWcomment}bp
-                   \advance\dimen0 by -\@@FLOWoffset
-                   \advance\dimen0 by -\clipMPllx
-                   \dimen2=\clipMPury
-                   \advance\dimen2 by -\@@FLOWoffset
-                   \advance\dimen2 by -\getvalue{MPy\FLOWcomment}bp
-                   \setbox0=\hbox{\strut####2}%
-                   \boxoffset=.5\bodyfontsize
-                   \setbox0=\hbox
-                     {\hskip\dimen0\lower\dimen2\getvalue{FLOW####1}{\box0}}%
-                   \wd0=\!!zeropoint\ht0=\!!zeropoint\dp0=\!!zeropoint
-                   \box0
-                 \fi
-               \fi
-             \fi
-           \fi
-         \fi
-         \egroup
-         \ignorespaces}%
-      \ignorespaces##1\unskip
-      \ignorespaces}%
+   \let\startFLOWcell\startFLOWcellD
    \setbox2=\vbox to \ht0
      {\forgetall%%%\offinterlineskip
-      \haalbuffer[flw-\currentFLOWnumber]\vss}%
+      \haalbuffer[\FLOWbufferprefix\currentFLOWnumber]\vss}%
    \setbox2=\hbox
-     {\hskip\@@FLOWoffset\lower\@@FLOWoffset\box2}%
+     {\hskip\@@FLOW@@offset\lower\@@FLOW@@offset\box2}%
    \wd2=\wd0\ht2=\ht0\dp2=\dp0
-   %%%%%%%%
-   \long\def\startFLOWcell##1\stopFLOWcell%
-     {\resetFLOWcell
-      \ignorespaces##1\unskip
-      \def\doprocessFLOWcell####1,####2\end  % redundant
-        {\ifx\FLOWoverlay\empty \else
-           \!!counta=####1\relax
-           \!!countb=####2\relax
-           \!!countc=\@@FLOWx
-           \!!countd=\@@FLOWy
-           \advance\!!countc \@@FLOWnx
-           \advance\!!countd \@@FLOWny
-           \advance\!!countc -1
-           \advance\!!countd -1
-           \ifnum\!!counta<\@@FLOWx\relax
-             \donefalse
-           \else\ifnum\!!counta>\!!countc
-             \donefalse
-           \else\ifnum\!!countb<\@@FLOWy\relax
-             \donefalse
-           \else\ifnum\!!countb>\!!countd
-             \donefalse
-           \else
-             \donetrue
-           \fi\fi\fi\fi
-           \ifdone
-             \advance\!!counta by -\@@FLOWx\advance\!!counta by 1
-             \advance\!!countb by -\@@FLOWy\advance\!!countb by 1
-             \dimen0=\FLOWgridwidth\dimen0=\!!counta\dimen0
-             \advance\dimen0 by -\FLOWgridwidth
-             \dimen4=\FLOWgridwidth\advance\dimen4 by -\FLOWshapewidth
-             \advance\dimen0 by .5\dimen4
-             \dimen2=\FLOWgridheight\dimen2=\!!countb\dimen2
-             \dimen4=\FLOWgridheight\advance\dimen4 by -\FLOWshapeheight
-             \advance\dimen2 by -.5\dimen4
-             \edef\FLOWdx{\the\dimen0}%
-             \edef\FLOWdy{\the\dimen2}%
-             \setbox0=\hbox
-               {\framed
-                  [\c!kader=\v!uit,
-                   \c!achtergrond={\@@FLOWachtergrond,\FLOWoverlay},
-                   \c!achtergrondkleur=\@@FLOSachtergrondkleur,
-                   \c!breedte=\FLOWshapewidth,\c!hoogte=\FLOWshapeheight]
-                  {}}%
-             \setbox0=\hbox{\hskip\FLOWdx\lower\FLOWdy\box0}%
-             \smashbox0
-             \box0
-           \fi
-         \fi}%
-      \expandafter\doprocessFLOWcell\FLOWlocation\end}%
+   \let\startFLOWcell\startFLOWcellE
    \setbox4=\vbox to \ht0
      {\forgetall%%%\offinterlineskip
-      \haalbuffer[flw-\currentFLOWnumber]\vss}%
+      \haalbuffer[\FLOWbufferprefix\currentFLOWnumber]\vss}%
    \setbox4=\hbox
-     {\hskip\@@FLOWoffset\lower\@@FLOWoffset\box4}%
+     {\hskip\@@FLOW@@offset\lower\@@FLOW@@offset\box4}%
    \wd4=\wd0\ht4=\ht0\dp4=\dp0
-   %%%%%%%%
    \doifelse{\@@FLOWoptie}{\v!test}
      {\setbox6=\vbox
         {\forgetall
-         \vskip\@@FLOWoffset
-         \hskip\@@FLOWoffset
+         \vskip\@@FLOW@@offset
+         \hskip\@@FLOW@@offset
          \rooster
            [\c!x=\@@FLOWx,\c!nx=\@@FLOWnx,\c!dx=\withoutpt\FLOWgridwidth,
             \c!y=\@@FLOWy,\c!ny=\@@FLOWny,\c!dy=\withoutpt\FLOWgridheight,
@@ -763,11 +540,11 @@
       \wd6=\wd0\ht6=\ht0\dp6=\dp0
       \setbox8=\vbox
         {\forgetall\offinterlineskip
-         \vskip\@@FLOWoffset
+         \vskip\@@FLOW@@offset
          \dostepwiserecurse{\@@FLOWy}{\@@FLOWny}{1}
            {\vbox to \FLOWgridheight
               {\vfill
-               \hskip\@@FLOWoffset
+               \hskip\@@FLOW@@offset
                \hbox
                  {\dostepwiserecurse{\@@FLOWx}{\@@FLOWnx}{1}
                     {\hbox to \FLOWgridwidth
@@ -780,13 +557,13 @@
                         \hfill}}}
                \vfill}}}%
       \wd8=\wd0\ht8=\ht0\dp8=\dp0
-      \framed 
+      \framed
         [\c!offset=\v!overlay,\c!kaderkleur=green]
         {\hbox{\box4\hskip-\wd0\box0\hskip-\wd2\box2\hskip-\wd6\box6\hskip-\wd8\box8}}}
      {\framed
         [\c!offset=\v!overlay,
          \c!kader=\@@FLOWkader,
-\c!lijndikte=\@@FLOWlijndikte,
+         \c!lijndikte=\@@FLOWlijndikte,
          \c!kaderkleur=\@@FLOWkaderkleur,
          \c!achtergrond=\@@FLOWachtergrond,
          \c!achtergrondkleur=\@@FLOWachtergrondkleur]
@@ -794,41 +571,408 @@
   %\message{[\FLOWcells]}\wait
    \egroup}
 
+% Pass A
+
+\long\def\startFLOWcellA#1\stopFLOWcell%
+  {\resetFLOWcell
+   \ignorespaces#1\unskip
+   \expandafter\getFLOWlocationA\FLOWlocation\end
+   \ignorespaces}
+
+\def\getFLOWlocationA#1,#2\end%
+  {\ifnum0#1>\FLOWwidth \edef\FLOWwidth {#1}\fi
+   \ifnum0#2>\FLOWheight\edef\FLOWheight{#2}\fi}
+
+% Pass B
+%
+% beware: the - after \@FLOC@ is needed since name can be 
+% empty and we don't want to redefine \@FLOC@ itself by 
+% mistake 
+
+\long\def\startFLOWcellB#1\stopFLOWcell% 
+  {\resetFLOWcell\ignorespaces#1\unskip% 
+   \setxvalue{\@FLOC@-\FLOWname}{\FLOWlocation}% kost veel cs's
+   \ifx\FLOWshape\empty
+     \global\let\FLOWshape\@@FLOSdefault
+   \fi
+   \doifnot{\FLOWshape}{none} % {\v!geen}
+     {\ExpandBothAfter\doifinsetelse{\FLOWshape}{\FLOWshapes}
+        {\edef\FLOWshapetag{shape_\FLOWshape}% beter \expanded
+         \@EA\setFLOWname\@EA\FLOWshapetag\@EA{\FLOWshapetag}}
+        {\doifnumberelse{\FLOWshape}
+           {\let\FLOWshapetag\FLOWshape}
+           {\let\FLOWshapetag\empty}}%
+      \ifx\FLOWshapetag\empty \else
+        \ExpandBothAfter\doifinsetelse{\FLOWshape}{\FLOWlines}
+          {\chardef\FLOWstate=0 }
+          {\ExpandBothAfter\doifcommonelse{\FLOWcell,\FLOWfocus}{\@@FLOWfocus}
+             {\chardef\FLOWstate=1 }
+             {\chardef\FLOWstate=2 }}%
+        \startMPdrawing
+          begin_sub_chart ;
+          \ifcase\FLOWstate
+            shape_line_color := \MPcolor{\@@FLOLkleur} ;
+            shape_fill_color := \MPcolor{\@@FLOLkleur} ;
+            shape_line_width := \@@FLOLlijndikte ;
+          \or
+            shape_line_color := \MPcolor{\@@FLOFkaderkleur} ;
+            shape_fill_color := \MPcolor{\@@FLOFachtergrondkleur} ;
+            shape_line_width := \@@FLOFlijndikte ;
+          \or
+            shape_line_color := \MPcolor{\@@FLOSkaderkleur} ;
+            shape_fill_color := \MPcolor{\@@FLOSachtergrondkleur} ;
+            shape_line_width := \@@FLOSlijndikte ;
+          \fi
+         %\ifx\FLOWoverlay\empty
+         %  peepshape := false ;
+         %\else
+         %  peepshape := true ;
+         %\fi
+          peepshape := \ifx\FLOWoverlay\empty false \else true \fi ;
+          new_shape(\FLOWlocation,\FLOWshapetag) ;
+          end_sub_chart ;
+        \stopMPdrawing
+      \fi}%
+   \ignorespaces}
+
+% Pass C
+
+\long\def\startFLOWcellC#1\stopFLOWcell%
+  {\resetFLOWcell
+   \ignorespaces#1\unskip % makes sure that vars are set 
+   \let\connection\doFLOWconnectionC
+   \ignorespaces#1\unskip}
+
+\def\FLOWorigin{0,0}
+
+\def\doFLOWconnectionC[#1]#2%
+  {\doglobal\increment\FLOWcomment
+   \setFLOWname\otherFLOWname{name_#2}%
+   \doifdefinedelse{\@FLOC@-\FLOWname}
+     {\edef\FLOWfrom{\getvalue{\@FLOC@-\FLOWname}}}
+     {\let \FLOWfrom \FLOWorigin}%
+   \ifx\FLOWfrom\FLOWorigin \else
+     \doifdefinedelse{\@FLOC@-\otherFLOWname}
+       {\edef\FLOWto  {\getvalue{\@FLOC@-\otherFLOWname}}}
+       {\let \FLOWto   \FLOWorigin}%
+     \ifx\FLOWto\FLOWorigin \else 
+       \FLOWsetconnect{#1}%
+       \ifx\cFLOWfrom\empty \else
+         \doifelse{\@@FLOLhoek}{\v!rond}
+           {\startMPdrawing smooth     := true  ; \stopMPdrawing}
+           {\startMPdrawing smooth     := false ; \stopMPdrawing}%
+         \doifelse{\@@FLOLstreep}{\v!ja}
+           {\startMPdrawing dashline   := true  ; \stopMPdrawing}
+           {\startMPdrawing dashline   := false ; \stopMPdrawing}%
+         \doifelse{\@@FLOLpijl}{\v!ja}
+           {\startMPdrawing arrowtip   := true  ; \stopMPdrawing}
+           {\startMPdrawing arrowtip   := false ; \stopMPdrawing}%
+         \doifelse{\@@FLOLoffset}{none} % {\v!geen}
+           {\startMPdrawing touchshape := true  ; \stopMPdrawing}
+           {\startMPdrawing touchshape := false ; \stopMPdrawing}%
+         \startMPdrawing
+           connection_line_color := \MPcolor{\@@FLOLkleur} ;
+           connection_line_width := \@@FLOLlijndikte ;
+           connect_\cFLOWfrom_\cFLOWto (\FLOWfrom,\zFLOWfrom) (\FLOWto,\zFLOWto) ;
+         \stopMPdrawing
+       \fi
+     \fi 
+   \fi
+   \ignorespaces}
+
+% Pass D
+
+\long\def\startFLOWcellD#1\stopFLOWcell%
+  {\resetFLOWcell
+   \ignorespaces#1\unskip % presets vars
+   \let\doprocessFLOWcell\doprocessFLOWcellD
+   \expandafter\doprocessFLOWcellD\FLOWlocation\end
+   \let\connection\doFLOWconnectionD
+   \let\comment\doFLOWcommentD
+   \ignorespaces#1\unskip\ignorespaces}
+
+\def\doFLOWconnectionD[#1]#2%
+  {\doglobal\increment\FLOWcomment
+   \ignorespaces}
+
+\def\doFLOWcommentD[#1]#2%
+  {\bgroup
+   \let\FLOW  \middlebox
+   \let\FLOWb \bottombox
+   \let\FLOWbl\bottomleftbox
+   \let\FLOWbr\bottomrightbox
+   \let\FLOWt \topbox
+   \let\FLOWtl\topleftbox
+   \let\FLOWtr\toprightbox
+   \let\FLOWl \leftbox
+   \let\FLOWlt\lefttopbox
+   \let\FLOWlb\leftbottombox
+   \let\FLOWr \rightbox
+   \let\FLOWrt\righttopbox
+   \let\FLOWrb\rightbottombox
+   \let\FLOWc \middlebox
+%\ifdefined{FLOW#1}%
+   \ifcase0\getvalue{\@@MPx\FLOWcomment}\getvalue{\@@MPy\FLOWcomment}\relax
+   \else
+     \ifdim\getvalue{\@@MPx\FLOWcomment}bp<\areaMPllx\relax\else
+       \ifdim\getvalue{\@@MPx\FLOWcomment}bp>\areaMPurx\relax\else
+         \ifdim\getvalue{\@@MPy\FLOWcomment}bp<\areaMPlly\relax\else
+           \ifdim\getvalue{\@@MPy\FLOWcomment}bp>\areaMPury\relax\else
+             \dimen0=\getvalue{\@@MPx\FLOWcomment}bp
+             \advance\dimen0 by -\@@FLOW@@offset
+             \advance\dimen0 by -\clipMPllx
+             \dimen2=\clipMPury
+             \advance\dimen2 by -\@@FLOW@@offset
+             \advance\dimen2 by -\getvalue{\@@MPy\FLOWcomment}bp
+             \setbox0=\hbox{\strut#2}%
+             \boxoffset=.5\bodyfontsize
+             \setbox0=\hbox
+               {\hskip\dimen0\lower\dimen2\getvalue{FLOW#1}{\box0}}%
+             \wd0=\!!zeropoint\ht0=\!!zeropoint\dp0=\!!zeropoint
+             \box0
+           \fi
+         \fi
+       \fi
+     \fi
+   \fi
+%\fi
+   \egroup
+   \ignorespaces}
+
+\def\doprocessFLOWcellD#1,#2\end  % kan ook met area
+  {\!!counta=#1\relax
+   \!!countb=#2\relax
+   \!!countc=\@@FLOWx
+   \!!countd=\@@FLOWy
+   \advance\!!countc \@@FLOWnx
+   \advance\!!countd \@@FLOWny
+   \advance\!!countc -1
+   \advance\!!countd -1
+        \ifnum\!!counta<\@@FLOWx\relax  \donefalse
+   \else\ifnum\!!counta>\!!countc       \donefalse
+   \else\ifnum\!!countb<\@@FLOWy\relax  \donefalse
+   \else\ifnum\!!countb>\!!countd       \donefalse
+   \else                                \donetrue
+     \doglobal\addtocommalist\FLOWcell\FLOWcells
+     \advance\!!counta by -\@@FLOWx\advance\!!counta by 1
+     \advance\!!countb by -\@@FLOWy\advance\!!countb by 1
+     \dimen0=\FLOWgridwidth\dimen0=\!!counta\dimen0
+     \advance\dimen0 by -\FLOWgridwidth
+     \dimen4=\FLOWgridwidth\advance\dimen4 by -\FLOWshapewidth
+     \advance\dimen0 by .5\dimen4
+     \dimen2=\FLOWgridheight\dimen2=\!!countb\dimen2
+     \dimen4=\FLOWgridheight\advance\dimen4 by -\FLOWshapeheight
+     \advance\dimen2 by -.5\dimen4
+     \setbox0=\hbox
+       {\ifx\FLOWalign\empty\else
+          \setupframed
+            [\c!uitlijnen=\v!normaal,\c!onder=\vfill,\c!boven=\vfill]%
+          \@EA\processallactionsinset\@EA
+            [\FLOWalign]
+            [t=>{\setupframed[\c!onder=\vfill,\c!boven=]},
+             b=>{\setupframed[\c!onder=,\c!boven=\vfill]},
+             l=>{\setupframed[\c!uitlijnen=\v!rechts]},
+             r=>{\setupframed[\c!uitlijnen=\v!links]},
+             m=>{\setupframed[\c!uitlijnen=\v!midden]},
+             c=>{\setupframed[\c!uitlijnen=\v!midden]}]%
+        \fi
+        \doifelse{\FLOWshape}{none} % {\v!geen}
+          {\setupframed[\c!offset=\v!overlay]}
+          {\setupframed[\c!offset=.5\bodyfontsize]}%
+        \framed
+          [\c!kader=\v!uit,\c!breedte=\FLOWshapewidth,\c!hoogte=\FLOWshapeheight]
+          {\FLOWtext}}%
+     \showFLOWhelp0
+     \ifx\FLOWdestination\empty\else
+       \setbox0=\hbox
+         {\setupinteraction[\c!kleur=,\c!contrastkleur=]%
+          \naarbox{\box0}[\FLOWdestination]}%
+     \fi
+     \edef\FLOWdx{\the\dimen0}%
+     \edef\FLOWdy{\the\dimen2}%
+     \def\positionFLOWzero% assumes \FLOWdx and \FLOWdy are set 
+       {\setbox0=\hbox{\hskip\FLOWdx\lower\FLOWdy\box0}%
+        \smashbox0\box0}% 
+     \def\doFLOWtlabel##1##2##3%
+       {\scratchdimen=\ifcase##2 \!!zeropoint\else\@@FLOWdy\fi
+        \setbox0=\hbox{\hskip\dimen2\raise\scratchdimen
+          \hbox{\raise\dimen4\hbox{##1{\strut##3}}}}%
+        \positionFLOWzero}%
+     \def\doFLOWblabel##1##2##3%
+       {\scratchdimen=\ifcase##2 \!!zeropoint\else\@@FLOWdy\fi
+        \setbox0=\hbox{\hskip\dimen2\raise-\scratchdimen
+          \hbox{##1{\strut##3}}}%
+        \positionFLOWzero}%
+     \def\doFLOWllabel##1##2##3%
+       {\scratchdimen=\ifcase##2 \!!zeropoint\else\@@FLOWdx\fi
+        \setbox0=\hbox{\hskip-\scratchdimen\raise\dimen6
+          \hbox{##1{\strut##3}}}%
+        \positionFLOWzero}%
+     \def\doFLOWrlabel##1##2##3%
+       {\scratchdimen=\ifcase##2 \!!zeropoint\else\@@FLOWdx\fi
+        \setbox0=\hbox{\hskip\dimen0\hskip\scratchdimen
+        \hbox{\raise\dimen6\hbox{##1{\strut##3}}}}%
+        \positionFLOWzero}%
+     \positionFLOWzero
+     \dimen0=\FLOWshapewidth \dimen2=.5\dimen0
+     \dimen4=\FLOWshapeheight\dimen6=.5\dimen4
+     \boxoffset=.5\bodyfontsize
+     \doFLOWtlabel   \righttopbox0\tFLOWlabel
+     \doFLOWblabel\rightbottombox0\bFLOWlabel
+     \doFLOWllabel    \lefttopbox0\lFLOWlabel
+     \doFLOWrlabel   \righttopbox0\rFLOWlabel
+     \doFLOWtlabel        \topbox0\tcFLOWlabel % for me only 
+     \doFLOWblabel     \bottombox0\bcFLOWlabel % for me only 
+     \doFLOWllabel       \leftbox0\lcFLOWlabel % for me only 
+     \doFLOWrlabel      \rightbox0\rcFLOWlabel % for me only 
+     \ifnum#1=\@@FLOWx\relax \doFLOWllabel   \leftbox1\lFLOWexit \fi
+     \ifnum#1=\!!countc      \doFLOWrlabel  \rightbox1\rFLOWexit \fi
+     \ifnum#2=\@@FLOWy\relax \doFLOWtlabel    \topbox1\tFLOWexit \fi
+     \ifnum#2=\!!countd      \doFLOWblabel \bottombox1\bFLOWexit \fi
+   \fi\fi\fi\fi}
+
+% Pass E 
+
+\long\def\startFLOWcellE#1\stopFLOWcell%
+  {\resetFLOWcell
+   \ignorespaces#1\unskip
+   \let\doprocessFLOWcell\doprocessFLOWcellE
+   \expandafter\doprocessFLOWcell\FLOWlocation\end}
+
+\def\doprocessFLOWcellE#1,#2\end  % redundant
+  {\ifx\FLOWoverlay\empty \else
+   \!!counta=#1\relax
+   \!!countb=#2\relax
+   \!!countc=\@@FLOWx
+   \!!countd=\@@FLOWy
+   \advance\!!countc \@@FLOWnx
+   \advance\!!countd \@@FLOWny
+   \advance\!!countc -1
+   \advance\!!countd -1
+   \ifnum\!!counta<\@@FLOWx\relax
+     \donefalse
+   \else\ifnum\!!counta>\!!countc
+     \donefalse
+   \else\ifnum\!!countb<\@@FLOWy\relax
+     \donefalse
+   \else\ifnum\!!countb>\!!countd
+     \donefalse
+   \else
+     \donetrue
+   \fi\fi\fi\fi
+   \ifdone
+     \advance\!!counta by -\@@FLOWx\advance\!!counta by 1
+     \advance\!!countb by -\@@FLOWy\advance\!!countb by 1
+     \dimen0=\FLOWgridwidth\dimen0=\!!counta\dimen0
+     \advance\dimen0 by -\FLOWgridwidth
+     \dimen4=\FLOWgridwidth\advance\dimen4 by -\FLOWshapewidth
+     \advance\dimen0 by .5\dimen4
+     \dimen2=\FLOWgridheight\dimen2=\!!countb\dimen2
+     \dimen4=\FLOWgridheight\advance\dimen4 by -\FLOWshapeheight
+     \advance\dimen2 by -.5\dimen4
+     \edef\FLOWdx{\the\dimen0}%
+     \edef\FLOWdy{\the\dimen2}%
+     \setbox0=\hbox
+       {\framed
+          [\c!kader=\v!uit,
+           \c!achtergrond={\@@FLOWachtergrond,\FLOWoverlay},
+           \c!achtergrondkleur=\@@FLOSachtergrondkleur,
+           \c!breedte=\FLOWshapewidth,\c!hoogte=\FLOWshapeheight]
+          {}}%
+     \setbox0=\hbox{\hskip\FLOWdx\lower\FLOWdy\box0}%
+     \smashbox0
+     \box0
+   \fi
+ \fi}
+
+% Pass F
+
+\def\checkFLOWautofocus%
+  {\def\@@FLOWminx{100}\let\@@FLOWminy\@@FLOWminx
+   \def\@@FLOWmaxx  {0}\let\@@FLOWmaxy\@@FLOWmaxx
+   \def\@@FLOWabsx  {0}\let\@@FLOWabsy\@@FLOWabsx
+   \let\startFLOWcell\startFLOWcellF
+   \haalbuffer[\FLOWbufferprefix\currentFLOWnumber]%
+  %\message{AUTOSHAPE 1: (\@@FLOWminx,\@@FLOWminy)->(\@@FLOWmaxx,\@@FLOWmaxy)}%
+   \ifnum\@@FLOWabsx<\@@FLOWmaxx\let\@@FLOWmaxx\@@FLOWabsx\fi
+   \ifnum\@@FLOWabsy<\@@FLOWmaxy\let\@@FLOWmaxy\@@FLOWabsy\fi
+  %\message{AUTOSHAPE 2: (\@@FLOWminx,\@@FLOWminy)->(\@@FLOWmaxx,\@@FLOWmaxy)}%
+   \donetrue
+   \ifnum\@@FLOWminx=100 \donefalse\fi
+   \ifnum\@@FLOWminy=100 \donefalse\fi
+   \ifnum\@@FLOWmaxx=0   \donefalse\fi
+   \ifnum\@@FLOWmaxy=0   \donefalse\fi
+   \doFLOWcheckF\@@FLOWx\@@FLOWminx\@@FLOWmaxx\@@FLOWnx
+   \doFLOWcheckF\@@FLOWy\@@FLOWminy\@@FLOWmaxy\@@FLOWny}
+
+\def\startFLOWcellF#1\stopFLOWcell%
+  {\resetFLOWcell
+   \ignorespaces#1\unskip
+   \expandafter\doFLOWlocationF\FLOWlocation\end}%
+
+\def\doFLOWlocationF#1,#2\end%
+  {\ifnum#1>\@@FLOWabsx\def\@@FLOWabsx{#1}\fi
+   \ifnum#2>\@@FLOWabsy\def\@@FLOWabsy{#2}\fi
+   \ExpandBothAfter\doifinset{\FLOWcell}{\@@FLOWautofocus}
+     {\dodoFLOWlocationF{#1}<-\@@FLOWminx
+      \dodoFLOWlocationF{#1}>+\@@FLOWmaxx
+      \dodoFLOWlocationF{#2}<-\@@FLOWminy
+      \dodoFLOWlocationF{#2}>+\@@FLOWmaxy}}
+
+\def\dodoFLOWlocationF#1#2#3#4%
+  {\ifnum#1#2#4\relax
+     \!!counta=#1\advance\!!counta by #31\relax
+     \edef#4{\ifnum\!!counta<1 1\else\the\!!counta\fi}%
+   \fi}
+
+\def\doFLOWcheckF#1#2#3#4%
+  {\ifdone
+     \let#1=#2%
+     \!!counta=#3%
+     \advance\!!counta 1\advance\!!counta -#2\relax
+     \ifnum\!!counta<1 \!!counta=1 \fi
+     \edef#4{\the\!!counta}%
+   \else
+     \def#1{1}\def#4{0}% no {1}
+   \fi}
+
 % \useFLOWchart[name][parent][setting,setting][additional settings]
 % \useFLOWchart[name][parent][additional settings]
+
+\let\currentFLOWchart\empty
 
 \def\useFLOWchart
   {\doquadrupleempty\douseFLOWchart}
 
 \def\douseFLOWchart[#1][#2][#3][#4]% name parent sets mainsettings
   {\iffourthargument
-     \setvalue{FLOW--#1}[##1]{\setgetFLOWchart[#2][#3][#4,##1]}%
+     \setvalue{\@FLOW@--#1}[##1]{\setgetFLOWchart[#2][#3][#4,##1]}%
    \else
      \checkparameters[#3]%
      \ifparameters
-       \setvalue{FLOW--#1}[##1]{\setgetFLOWchart[#2][][#3,##1]}%
+       \setvalue{\@FLOW@--#1}[##1]{\setgetFLOWchart[#2][][#3,##1]}%
      \else
-       \setvalue{FLOW--#1}[##1]{\setgetFLOWchart[#2][#3][##1]}%
+       \setvalue{\@FLOW@--#1}[##1]{\setgetFLOWchart[#2][#3][##1]}%
      \fi
    \fi}
 
 \def\setgetFLOWchart[#1][#2][#3]%
-   {\def\docommando##1%
-      {}% cell line focus 
+   {\def\docommando##1{}% cell line focus ? 
     \processcommalist[#2]\docommando
     \getFLOWchart[#1][#3]}
 
 \def\doFLOWchart[#1][#2]%
   {\hbox\bgroup\vbox\bgroup % vmode suppresses spaces
-   \doifundefinedelse{FLOW--#1}
+\def\currentFLOWchart{#1}%
+   \doifundefinedelse{\@FLOW@--#1}
      {\getFLOWchart[#1][#2]}
-     {\getvalue{FLOW--#1}[#2]}%
+     {\getvalue{\@FLOW@--#1}[#2]}%
    \egroup\egroup}
 
 \def\FLOWchart%
   {\dodoubleempty\doFLOWchart}
 
-%D A hook into the help system. 
+%D A hook into the help system.
 
 \def\showFLOWhelp#1%
   {\doifhelpinfo{\FLOWhelp}
@@ -842,7 +986,7 @@
            {\forgetall\offinterlineskip\box#1\box\scratchbox}%
          \box#1}}}
 
-%D The next section is dedicated to splitting up charts. 
+%D The next section is dedicated to splitting up charts.
 
 \def\getFLOWsize[#1]%
   {\bgroup\let\dodogetFLOWchart\dogetFLOWsize\FLOWchart[#1]\egroup}
@@ -854,14 +998,15 @@
       \def\getFLOWlocation##1,##2\end%
         {\ifnum0##1>\FLOWmaxwidth \xdef\FLOWmaxwidth {##1}\fi
          \ifnum0##2>\FLOWmaxheight\xdef\FLOWmaxheight{##2}\fi}%
+      \resetFLOWcell
       \long\def\startFLOWcell##1\stopFLOWcell%
-        {\resetFLOWcell##1\expandafter\getFLOWlocation\FLOWlocation\end}%
+        {{##1\expandafter\getFLOWlocation\FLOWlocation\end}}%
       \def\dosetFLOWchart[##1][##2]%
-        {\haalbuffer[flw-##1]}%
-      \getvalue{FLOW-#1}}}
+        {\haalbuffer[\FLOWbufferprefix##1]}%
+      \getvalue{\@FLOW@-#1}}}
 
 \def\setupFLOWsplit%
-  {\dodoubleargument\getparameters[@@FLOT]}
+  {\dodoubleargument\getparameters[\@@FLOT]}
 
 \setupFLOWsplit%
   [\c!nx=3,\c!ny=3,
@@ -870,67 +1015,180 @@
    \c!markering=\v!aan,
    \c!voor=,\c!na=]
 
+\def\FLOWsplitx {1}
+\def\FLOWsplity {1}
+\def\FLOWsplitnx{1}
+\def\FLOWsplitny{1}
+
 \def\FLOWcharts%
   {\dodoubleempty\doFLOWcharts}
+
+%D While splitting, the following variables are available:
+%D
+%D \starttypen
+%D \FLOWsplitnx \FLOWsplitny \FLOWsplitx \FLOWsplity
+%D \stoptypen
 
 \def\doFLOWcharts[#1][#2]%
   {\bgroup
    \getFLOWsize[#1]%
-   \def\@@FLOTx{1}%                  
-   \doloop 
-     {\def\@@FLOTy{1}%                  
-      \doloop 
+   \dodoFLOWcharts\relax
+   \global\let\FLOWsplitnx\FLOWsplitx
+   \global\let\FLOWsplitny\FLOWsplity
+   \dodoFLOWcharts{\dododoFLOWcharts[#1][#2]}%
+   \egroup}
+
+\def\dodoFLOWcharts#1%
+  {\def\@@FLOTx{1}%
+   \global\let\FLOWsplitx\@@FLOTx
+   \doloop
+     {\def\@@FLOTy{1}%
+      \global\let\FLOWsplity\@@FLOTy
+      \doloop
         {\bgroup
-         \scratchcounter=\FLOWmaxwidth 
+         \scratchcounter=\FLOWmaxwidth
          \advance\scratchcounter by -\@@FLOTx
          \advance\scratchcounter by 1
          \ifnum\scratchcounter<\@@FLOTnx\edef\@@FLOTnx{\the\scratchcounter}\fi
-         \scratchcounter=\FLOWmaxheight 
+         \scratchcounter=\FLOWmaxheight
          \advance\scratchcounter by -\@@FLOTy
          \advance\scratchcounter by 1
          \ifnum\scratchcounter<\@@FLOTny\edef\@@FLOTny{\the\scratchcounter}\fi
-         \doifnot{\@@FLOTmarkering}{\v!aan}{\let\cuthbox\relax}%
-         \@@FLOTvoor
-         \cuthbox
-           {\@@FLOTcommando
-              {\FLOWchart[#1][#2,
-                 \c!x=\@@FLOTx,\c!nx=\@@FLOTnx,
-                 \c!y=\@@FLOTy,\c!ny=\@@FLOTny]}}%
-         \@@FLOTna
+         #1% does something with the float, or not
          \egroup
          \increment(\@@FLOTy,\@@FLOTny)%
          \ifnum\@@FLOTy>\FLOWmaxheight
            \exitloop
-         \else  
+         \else
+           \doglobal\increment\FLOWsplity
            \decrement(\@@FLOTy,\@@FLOTdy)%
          \fi}%
       \increment(\@@FLOTx,\@@FLOTnx)%
-      \ifnum\@@FLOTx>\FLOWmaxwidth 
+      \ifnum\@@FLOTx>\FLOWmaxwidth
         \exitloop
-      \else  
+      \else
+        \doglobal\increment\FLOWsplitx
         \decrement(\@@FLOTx,\@@FLOTdx)%
-      \fi}%
+      \fi}}
+
+\def\dododoFLOWcharts[#1][#2]%
+  {\bgroup
+   \@@FLOTvoor
+   \doifnot{\@@FLOTmarkering}{\v!aan}{\let\cuthbox\hbox}%
+   \cuthbox
+     {\@@FLOTcommando
+        {\FLOWchart[#1][#2,
+           \c!x=\@@FLOTx,\c!nx=\@@FLOTnx,
+           \c!y=\@@FLOTy,\c!ny=\@@FLOTny]}}%
+   \@@FLOTna
    \egroup}
 
-%D An example of splitting is given below: 
-%D 
-%D \starttypen 
+%D An example of splitting is given below:
+%D
+%D \starttypen
 %D \setupFLOWsplit
 %D   [nx=5,ny=10,
 %D    dx=0,dy=0,
 %D    before=,
 %D    after=\pagina]
-%D 
+%D
 %D \FLOWcharts[mybigflow]
-%D \stoptypen 
+%D \stoptypen
 %D
-%D Or, one can say: 
+%D Or, one can say:
 %D
-%D \starttypen 
+%D \starttypen
 %D \splitsplaatsblok
 %D   {\plaatsfiguur{What a big flowchart this is!}}
 %D   {\FLOWcharts[mybigflow]}
+%D \stoptypen
+
+%D \macros 
+%D   {typeFLOWchart}
+%D
+%D For documentation purposes the following macro is 
+%D provided. Watch the use of the first and last line hooks, 
+%D which is needed because the start and stop commands are 
+%D not part of the buffer. 
+
+\def\typeFLOWchart[#1]%
+  {\bgroup
+   \def\dosetFLOWchart[##1][##2]{\typebuffer[\FLOWbufferprefix##1]}%
+   \convertargument\startFLOWchart[#1]\to\firstverbatimfileline
+   \convertargument     \stopFLOWchart\to\lastverbatimfileline
+   \getvalue{\@FLOW@-#1}
+   \egroup}   
+
+%D New: 
+%D
+%D \starttypen 
+%D \setupFLOWcharts[command=\Whow]
+%D 
+%D \startFLOWset[convert-en] % [tag][convert-en]  
+%D   \subFLOWchart[a][x=1,y=1,nx=3,ny=3]
+%D   \subFLOWchart[b][x=1,y=2,nx=3,ny=3]
+%D   \subFLOWchart[c][x=2,y=1,nx=3,ny=3]
+%D \stopFLOWset
+%D 
+%D \def\Whow#1%
+%D   {\ifnum\currentFLOWset=1 \framed{Some Chart}\fi}
+%D 
+%D \handleFLOWset[convert-en] % [tag] 
+%D 
+%D \def\Whow#1%
+%D   {\stelhoofdin[status=hoog]
+%D    \startstandardmakeup
+%D    \centerbox{#1}
+%D    \stopstandardmakeup}
+%D 
+%D \handleFLOWset[convert-en] % [tag] 
 %D \stoptypen 
+
+\def\startFLOWset%
+  {\dodoubleempty\dostartFLOWset}
+
+\def\dostartFLOWset[#1][#2]#3\stopFLOWset% tag name data 
+  {\ifsecondargument
+     \long\setvalue{\@FLOX@#1}{\dohandleFLOWset{#1}{#2}{#3}}%
+   \else
+     \long\setvalue{\@FLOX@#1}{\dohandleFLOWset{#1}{#1}{#3}}%
+   \fi}
+
+\long\def\dohandleFLOWset#1#2#3% tag name data 
+  {\bgroup
+   \def\subFLOWchart%
+     {\dodoubleempty\dosubFLOWchart}%
+   \def\dosubFLOWchart[##1][##2]% subtag settings 
+     {\ifsecondargument
+        \dodohandleFLOWset{#1}{##1}{#2}{##2}% 
+      \else
+        \subFLOWchart[][##1]%
+      \fi}%
+   #3%
+   \egroup}
+
+\def\dodohandleFLOWset#1#2#3#4% tag subtag name settings 
+  {\increment\currentFLOWset
+   \bgroup
+   \@@FLOXcommando
+     {\ifnum\currentFLOWset=1 \pagereference[#1]\fi
+      \doifsomething{#2}
+        {\setupreferencing[\c!prefix=]%              
+         \pagereference[#1:#2]% -:#1:#2 
+         \setupreferencing[\c!prefix=#1:#2]}%              
+      \FLOWchart[#3][#4]}%
+   \egroup}
+
+\def\FLOWset[#1]% 
+  {\newcounter\currentFLOWset
+   \doifdefinedelse{\@FLOX@#1}
+     {\getvalue{\@FLOX@#1}}
+     {\dodohandleFLOWset{#1}{}{#1}{}}}
+
+\newcounter\currentFLOWset
+
+\setupFLOWsets
+  [\c!commando=]
 
 \protect
 

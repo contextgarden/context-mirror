@@ -29,6 +29,14 @@
       9: aktualne ne vice nez -- urovne/urovni vyctu
 \stopmessages
 
+\startmessages  italian  library: layouts
+      9: attualmente non più di -- livelli di elencazione
+\stopmessages
+
+\startmessages  norwegian  library: layouts
+      9: for øyeblikket maksimalt -- nivåer i opplisting
+\stopmessages
+
 \unprotect 
 
 % - meerdere niveaus (moet niet moeilijk zijn)
@@ -111,6 +119,8 @@
      {\getparameters[\??op\itemlevel][#2]}%
      {\getparameters[\??op#1][#2]}}
 
+\newconditional\inlinelistitem \setfalse\inlinelistitem
+
 \def\dododostelopsomminginconstant[#1][#2#3#4]% * permits [2]
   {\processaction
      [#2#3#4]
@@ -125,6 +135,7 @@
           \v!inmarge*=>{\doassign[\??op#1][\c!breedte=-2em]},               % signal
           \v!opmarge*=>\doifnot{#1}{1}{\doassign[\??op#1][\c!breedte=0em]}, % signal
          \v!kolommen*=>\packitems,
+\v!intekst*=>\settrue\inlinelistitem, % new 
               \v!los*=>\optimizeitemsfalse,
            \v!alinea*=>{\paragraphitemstrue
                         \packitems},
@@ -213,7 +224,9 @@
          \setgvalue{\??op\c!symbool\s!local\itemlevel}%
            {\convertnumber{#1}{\countervalue{\s!itemcount\itemlevel}}}%
          \def\listitem%
-           {\getvalue{\??op\c!symbool\s!local\itemlevel}\tempsymbool}%
+           {\getvalue{\??op\itemlevel\c!links}% new
+            \getvalue{\??op\c!symbool\s!local\itemlevel}\tempsymbool
+            \getvalue{\??op\itemlevel\c!rechts}}% new
          \let\docommando\gobbleoneargument}
        {\let\listitem\empty}}}
 
@@ -230,9 +243,25 @@
    \multiply#2 by \getvalue{\??op#1\c!factor}\relax
    \advance#2 by \getvalue{\??op#1\c!breedte}\relax}
 
+% The next conditionals deal with \item \startitemize. It 
+% looks like a hack to skip back, but that way we preserve 
+% the indentation and bullet placement. It's a rather 
+% untested feature. 
+
+\newconditional\concatnextitem     \setfalse\concatnextitem
+\newconditional\autoconcatnextitem \settrue \autoconcatnextitem
+\newsignal     \itemsignal         
+
 \def\dodostartopsomming[#1][#2]%
-  {\ifhmode
-     \par
+  {\setfalse\inlinelistitem % new, no indent (leftskip)
+   \setfalse\concatnextitem % new, concat
+   \ifhmode 
+      \ifconditional\autoconcatnextitem % new, concat 
+        \ifdim\lastskip=\itemsignal     % new, concat
+          \settrue\concatnextitem       % new, concat 
+        \fi                             % new, concat 
+      \fi                               % new, concat 
+      \par
    \fi
    \ifnum\itemlevel=\maxitemlevel\relax
      \showmessage{\m!layouts}{9}{\maxitemlevel}%
@@ -351,7 +380,9 @@
    \fi\fi
    \calculatelistwidth{\itemlevel}{\dimen0}%
    \ifdim\dimen0>\!!zeropoint\relax
+\ifconditional\inlinelistitem\else
      \advance\leftskip by \dimen0\relax
+\fi
    \fi}
 
 \def\dostartopsomming[#1][#2]%
@@ -445,11 +476,15 @@
      \else
        \calculatelistwidth{\itemlevel}{\dimen0}%
      \fi
+\ifconditional\inlinelistitem
+     \hbox to \dimen0{\ifsubsom\llap{+}\fi\box8\hfill}%
+\else
      \llap{\hbox to \dimen0{\ifsubsom\llap{+}\fi\box8\hfill}}%
+\fi 
    \fi
    \setevalue{\??op\c!symbool\itemlevel}%
-    %{\getvalue{\??op\c!symbool\s!local\itemlevel}}% problems with \uchar 
-     {\noexpand\getvalue{\??op\c!symbool\s!local\itemlevel}}%
+    {\getvalue{\??op\c!symbool\s!local\itemlevel}}% still problems with \uchar ? 
+    %{\noexpand\getvalue{\??op\c!symbool\s!local\itemlevel}}% no, spoils subrefs  
    \kopsomfalse
    \subsomfalse
    \symsomfalse
@@ -459,6 +494,9 @@
 \def\complexdosom[#1]%
   {\par
    \ignorespaces
+   \ifconditional\concatnextitem % new, concat 
+     \dosomebreak\nobreak        % new, concat 
+   \fi                           % new, concat 
    \doadvanceitem
    \ifnum\itemcolumndepth=0\relax\ifnum\noflistelements>0\relax
      \dosomebreak\nobreak
@@ -483,6 +521,11 @@
    \else
      \itemuse\c!tussen
    \fi
+   \ifconditional\concatnextitem % new, concat 
+     \vskip-\lastskip            % new, concat 
+     \vskip-\lineheight          % new, concat 
+     \nobreak                    % new, concat 
+   \fi                           % new, concat 
    \ignorespaces
    \dolistitem
    \ifpackeditems
@@ -498,6 +541,8 @@
          \rawreference{\s!lst}{#1}{\itemreference}%
          \egroup}}%
    \strut % added 11-08-99 
+   \setfalse\concatnextitem % new, concat 
+   \hskip\itemsignal        % new, concat 
    \ignorespaces}
 
 \def\complexsom[#1]#2\par% todo: no two pass data 

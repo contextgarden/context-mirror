@@ -72,8 +72,8 @@
 %D \type {\groupedcommand}. 
 
 \def\usepseudocaps%
-  {\def\cap@@uppercase{\the\everyuppercase\uppercase}%
-   \def\cap@@lowercase{\the\everylowercase\lowercase}%
+  {\def\cap@@uppercase{\the\everyuppercase\uppercased}%
+   \def\cap@@lowercase{\the\everylowercase\lowercased}%
    \def\cap@@visualize{\tx}}
 
 \def\userealcaps%
@@ -145,12 +145,15 @@
      {\definealternativestyle[\v!kapitaal][\normalkap][\normalkap]%
       \definealternativestyle[\v!smallcaps][\sc][\sc]%
       \let\kap\normalkap}
-     {\definealternativestyle[\v!kapitaal][\normalkap][\uppercase]%
-      \definealternativestyle[\v!smallcaps][\sc][\uppercase]%
+     {\definealternativestyle[\v!kapitaal][\normalkap][\uppercased]%
+      \definealternativestyle[\v!smallcaps][\sc][\uppercased]%
       \def\kap{\doconvertfont{\v!kapitaal}}}% 
    \doifelse{\@@kksc}{\v!ja}
      {\userealcaps}
      {\usepseudocaps}}
+
+\ifx\uppercased\undefined \let\uppercased\uppercase \fi
+\ifx\lowercased\undefined \let\lowercased\lowercase \fi
 
 \setupcapitals
   [\c!titel=\v!ja,
@@ -201,8 +204,10 @@
 \def\processwords#1%
   {\doprocesswords#1 \od\unskip}
 
+\let\processword\relax
+
 \unexpanded\def\Words%
-  {\let\processwords=\Word 
+  {\let\processword=\Word 
    \processwords}
 
 \unexpanded\def\WORD#1%
@@ -277,21 +282,70 @@
 %D
 %D The default skip can be set with:
 
-\def\stretchedspaceamount{.25em} 
+% \def\stretchedspacefactor{4}
+% \def\stretchedspaceamount{.25em} 
+%
+% \unexpanded\def\stretcheduppercase#1%
+%   {\bgroup
+%    \the\everyuppercase
+%    \uppercase{\def\textstring{#1}}%
+%    \ifdim\stretchedspaceamount>\!!zeropoint
+%      \def\textkern%
+%        {\kern\stretchedspaceamount}%
+%      \def\textskip%
+%        {\scratchdimen=\stretchedspaceamount
+%         \hskip\stretchedspacefactor\scratchdimen}%
+%      \@EA\processtokens\@EA\relax\@EA\textkern\@EA\relax\@EA
+%        \textskip\@EA{\textstring}%
+%    \else
+%      \textstring
+%    \fi
+%    \egroup}
 
-\unexpanded\def\stretcheduppercase#1%
+\def\stretchedspacefactor{4}
+\def\stretchedspaceamount{.25em} 
+\def\stretchedbreaktokens{.@/}
+
+\unexpanded\def\stretcheduppercase#1% 
   {\bgroup
    \the\everyuppercase
    \uppercase{\def\textstring{#1}}%
    \ifdim\stretchedspaceamount>\!!zeropoint
-     \def\textkern{\kern \stretchedspaceamount}%
-     \def\textskip{\hskip\stretchedspaceamount}%
-     \@EA\processtokens\@EA\relax\@EA\textskip\@EA\relax\@EA
-       {\@EA\textkern\@EA\textkern\@EA}\@EA{\textstring}%
+     \def\textkern##1%
+       {\determinemidwordbreak{##1}{\stretchedbreaktokens}%
+        \kern\stretchedspaceamount##1\domidwordbreak}%
+     \def\textskip%
+       {\scratchdimen=\stretchedspaceamount
+        \hskip\stretchedspacefactor\scratchdimen}%
+     \@EA\processtokens\@EA\relax\@EA\textkern\@EA\relax\@EA
+       \textskip\@EA{\textstring}%
    \else
      \textstring
    \fi
    \egroup}
+
+%D An auxiliary macro, see for usage \type {\stretcheduppercase}. 
+
+\let\domidwordbreak\relax
+
+\def\setmidwordbreaktoken#1%
+  {\sfcode`#1=5000\relax} 
+
+\def\determinemidwordbreak#1#2%
+  {\edef\midwordbreaktokens{#2}%
+   \ifx\midwordbreaktokens\empty 
+     \global\let\domidwordbreak\relax
+   \else 
+     \setbox\scratchbox=\hbox
+       {\expandafter\handletokens\midwordbreaktokens\with\setmidwordbreaktoken
+        a\space \!!dimena=\the\lastskip
+        #1\space\!!dimenb=\the\lastskip \relax % needed 
+        \ifdim\!!dimena=\!!dimenb
+          \global\let\domidwordbreak\relax
+        \else
+          \global\let\domidwordbreak\allowbreak
+        \fi}%
+   \fi}
 
 %D \macros
 %D   {underbar,underbars,
@@ -377,10 +431,10 @@
 
 \unexpanded\def\dodounderbar#1%
   {\bgroup
-   \dimen0=1.5\normallineskip  
+   \dimen0=\@@ononderoffset
    \dimen0=\underbarlevel\dimen0
    \ifdone \else
-     \advance\dimen0 by -\normallineskip
+    %\advance\dimen0 by -1pt 
      \advance\dimen0 by -\ht\strutbox 
    \fi
    \dimen2=\dimen0
@@ -431,7 +485,7 @@
 
 \def\dooverstrike#1%
   {\bgroup
-   \dimen0=2.5\normallineskip
+   \dimen0=\@@onbovenoffset
    \dimen2=\dimen0
    \advance\dimen2 by \@@onlijndikte
    \dododounderbar{\dimen2}{-\dimen0}{#1}%
@@ -492,7 +546,8 @@
    \fi}
 
 \def\dohighlow#1#2#3#4#5%
-  {\bgroup
+  {\dontleavehmode
+   \bgroup
    \scratchdimen= 
      \ifdim\fontdimen5\textfont2=1ex\fontdimen#2\textfont2\else#3ex\fi
    \advance\scratchdimen by #4ex
@@ -507,7 +562,8 @@
 \unexpanded\def\low {\dohighlow\lower{16}{.48}{0}}
 
 \unexpanded\def\lohi#1#2%
-  {\hbox
+  {\dontleavehmode
+   \hbox
      {\setbox4=\hbox{\dohighlow\lower{16}{.48}{.1}{#1}}%
       \setbox6=\hbox{\dohighlow\raise{14}{.86}{.1}{#2}}%
       \ifdim\wd4<\wd6
@@ -516,11 +572,48 @@
         \wd6=\!!zeropoint\box6\box4
       \fi}}
 
+%D \macros
+%D   {setupinitial,placeinitial,checkinitial}
+%D 
+%D {\em To be documented.}
+%D
+%D \starttypen
+%D \setupinitial[state=start] \placeinitial \input tufte 
+%D \stoptypen 
+%D
+%D and 
+%D
+%D \starttypen
+%D \def\bpar{\ifvmode\checkinitial\fi}
+%D \def\epar{\ifhmode\par\fi\checkinitial}
+%D \stoptypen 
+
+%  to do: more fine tuning 
+
+\def\setupinitial%
+  {\dodoubleempty\getparameters[\??dc]}
+
+\definefontsynonym[Initial][Regular] % prefered initial identifier
+\definefontsynonym[initial][Initial] % internal but accepted too
+
+\setupinitial
+  [\c!status=\v!stop,
+   \c!n=3,
+   \s!font=initial]
+
+\def\placeinitial%
+  {\doif{\@@dcstatus}{\v!start} 
+     {\ifnum\@@dcn>0 \AutoDroppedCaps \fi}}
+
+\let\checkinitial\CheckDroppedCaps
+
 %D This module has only a few setups:
 
 \setupunderbar
   [\c!variant=a,
-   \c!lijndikte=\linewidth]
+   \c!lijndikte=\linewidth,
+   \c!onderoffset=1.5pt,
+   \c!bovenoffset=2.5pt]
   
 \protect 
 

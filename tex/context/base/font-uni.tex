@@ -37,6 +37,14 @@
      21: Verwenden von (pdf)eTeX ist sicherer
 \stopmessages
 
+\startmessages  italian  library: fonts
+     21: l'uso di (pdf)eTeX è più sicuro
+\stopmessages
+
+\startmessages  norwegian  library: fonts
+     21: å bruke (pdf)eTeX er tryggere 
+\stopmessages
+
 \unprotect 
 
 %D \macros 
@@ -391,7 +399,7 @@
          \definefontsynonym[#2\s!Italic]     [#2\s!Regular]%
          \definefontsynonym[#2\s!BoldSlanted][#2\s!Slanted]%
          \definefontsynonym[#2\s!BoldItalic] [#2\s!Italic]}%
-      \setvalue{#1}{\enableunicodefont{#1}}}}
+      \unexpanded\setvalue{#1}{\enableunicodefont{#1}}}}
 
 \def\setupunicodefont%
   {\dodoubleempty\dosetupunicodefont}

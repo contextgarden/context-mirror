@@ -74,6 +74,9 @@
    \doifelse{\@@iaklik}{\v!ja}
      {\highlighthyperlinkstrue}
      {\highlighthyperlinksfalse}%
+   \doifelse{\@@iasplitsen}{\v!ja}
+     {\locationsplittrue}
+     {\locationsplitfalse}%
    \doifelse{\@@iascherm}{\v!nieuw}
      {\gotonewwindowtrue}
      {\gotonewwindowfalse}%
@@ -125,6 +128,7 @@
 %D This macro stores the current strut values. 
 
 \newif\iflocationstrut
+\newif\iflocationsplit
 
 \def\resetgoto%
   {\global\let\@@ia@@hoogte=\!!zeropoint
@@ -319,7 +323,8 @@
    \c!klik=\v!ja,
    \c!scherm=,
   %\c!openactie={\v!eerstepagina,AtOpenInitializeForm},
-   \c!openactie={\v!eerstepagina,\v!ResetForm},
+  %\c!openactie={\v!eerstepagina,\v!ResetForm},
+   \c!openactie=\v!ResetForm,
    \c!sluitactie=,
    \c!openpaginaactie=,
    \c!sluitpaginaactie=,
@@ -328,6 +333,7 @@
    \c!letter=\v!vet,
    \c!bereken=,
    \c!strut=\v!ja,
+   \c!splitsen=\v!ja,
    \c!kleur=interactioncolor,
    \c!contrastkleur=interactioncontrastcolor,  
    \c!symboolset=,

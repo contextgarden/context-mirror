@@ -163,6 +163,8 @@
 \def\checkutilityfile%
   {}
 
+\def\currentutilityfilename{\jobname}
+
 \long\def\doutilities#1#2#3#4#5% % introduceren in utility file
   {\restorecatcodes
    \resetutilities
@@ -170,9 +172,13 @@
      {\getvalue{\s!set##1}}%           % in een pass worden gedaan,
    \processcommacommand[#1]\docommando % zie bijvoorbeeld lijsten
    \begingroup
+   \def\currentutilityfilename{#2}%
    \footnotesenabledfalse
    \doinpututilitiestrue
    \global\utilitydonefalse
+\catcode`\\=\@@escape
+\catcode`\{=\@@begingroup
+\catcode`\}=\@@endgroup
    \catcode`\%=\@@comment\relax
    \pushendofline % geeft problemen zodra andere file wordt ingelezen
    \ifunprotectutilities % nog nodig ?

@@ -209,7 +209,6 @@
 %D
 %D \macros
 %D   {getnoflines}
-%D   {}
 %D
 %D Het commando \type{\getnoflines} converteert een hoogte
 %D (dimensie) in een aantal regels en kent dit toe aan
@@ -310,7 +309,7 @@
         \forcepresnaptrue
       \fi
       \ifforcepresnap
-        \vbox{\strut}\nobreak\vskip-\openlineheight
+        \vbox{\hsize\!!zeropoint\strut}\nobreak\vskip-\openlineheight
       \fi
       %
       \ifdim\ht\nextbox>\ht\strutbox
@@ -444,26 +443,27 @@
    \fi}
 
 \def\setgridbox#1#2#3%
-  {\setbox#1=\ruledvbox to #3
+  {\setbox#1=\ruledvbox to #3 % given size 
      {\forgetall
       \offinterlineskip
       \hsize=#2
-      \getnoflines{#3}%
-      \vskip\topskip
-      \vskip-\ht\strutbox
-      \scratchdimen=#2\advance\scratchdimen by \lineheight
-      \dorecurse
-        {\noflines}
-        {\strut
-         \hskip-.5\lineheight
-         \rlap
-           {\hskip\scratchdimen\hskip2pt\infofont
-            \hbox to 1em{\hss\recurselevel}}%
-         \vrule
-           \!!height .5\testrulewidth
-           \!!depth .5\testrulewidth
-           \!!width \scratchdimen
-         \par}
+      \ruledvbox % calculated size 
+        {\getnoflines{#3}%
+         \vskip\topskip
+         \vskip-\ht\strutbox
+         \scratchdimen=#2\advance\scratchdimen by \lineheight
+         \dorecurse
+           {\noflines}
+           {\strut
+            \hskip-.5\lineheight
+            \rlap
+              {\hskip\scratchdimen\hskip2pt\infofont
+               \hbox to 1em{\hss\recurselevel}}%
+            \vrule
+              \!!height .5\testrulewidth
+              \!!depth .5\testrulewidth
+              \!!width \scratchdimen
+            \par}}
       \vfill}}
 
 %D Some intervention macros:

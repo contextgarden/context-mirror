@@ -123,6 +123,36 @@
      11: barva je prevedena na sed
 \stopmessages
 
+\startmessages  italian  library: colors
+  title: colore
+      1: sistema -- attivato globalmente
+      2: sistema -- attivato localmente
+      3: -- non definito
+      4: sistema -- caricato
+      5: sistema -- sconosciuto 
+      6: tavolozza -- resa disponibile
+      7: tavolozza -- non disponibile
+      8: specifica -- del colore -- convertita in nero
+      9: spazio dei colori -- non supportato
+     10: spazio dei colori -- supportato
+     11: il colore è convertito in grigio
+\stopmessages
+
+\startmessages  norwegian  library: colors
+  title: farge
+      1: system -- er aktivert globalt
+      2: system -- er aktivert lokalt
+      3: -- er udefinert
+      4: system -- er lest inn 
+      5: ukjent system --
+      6: palett -- er tilgjengelig
+      7: palett -- er ikke tilgjengelig
+      8: spesifikasjon -- for farge -- gir kun svart
+      9: -- fargerom er ikke støttet
+     10: -- fargerom er støttet 
+     11: fargen vil bli vist som grå
+\stopmessages
+
 %D \macros
 %D   {definecolor}
 %D
@@ -256,7 +286,7 @@
 
 \newif\ifRGBsupported
 \newif\ifCMYKsupported
-\newif\ifconverttoGRAY
+\newif\ifconverttoGRAY % obsolete
 \newif\ifpreferGRAY
 \newif\ifGRAYprefered
 \newif\ifreduceCMYK
@@ -272,14 +302,19 @@
 
 %D Color modes are entered using the next set of commands. 
 %D The \type{\stop} alternatives are implemented in a way 
-%D that permits non||grouped use.
+%D that permits non||grouped use. 
+%D
+%D The, for this module redundant, check if we are in color 
+%D mode is needed when we use these macros in other modules.  
 
 \def\dostartcolormodeR#1:#2:#3\od%
   {\bgroup
-   \def\@@cl@@r{#1}\def\@@cl@@g{#2}\def\@@cl@@b{#3}%
+   %\def\@@cl@@r{#1}\def \@@cl@@g{#2}\def \@@cl@@b{#3}%
+   \edef\@@cl@@r{#1}\edef\@@cl@@g{#2}\edef\@@cl@@b{#3}%
    \ifpreferGRAY\ifx\@@cl@@r\@@cr@@g\ifx\@@cl@@r\@@cl@@b
      \GRAYpreferedtrue
    \fi\fi\fi
+   \ifincolor\else\RGBsupportedfalse\CMYKsupportedfalse\fi
    \ifGRAYprefered
      \dostartgraycolormode\@@cl@@r
    \else\ifRGBsupported
@@ -295,10 +330,12 @@
 
 \def\dostartcolormodeC#1:#2:#3:#4\od%
   {\bgroup
-   \def\@@cl@@c{#1}\def\@@cl@@m{#2}\def\@@cl@@y{#3}\def\@@cl@@k{#4}%
+   %\def\@@cl@@c{#1}\def \@@cl@@m{#2}\def \@@cl@@y{#3}\def \@@cl@@k{#4}%
+   \edef\@@cl@@c{#1}\edef\@@cl@@m{#2}\edef\@@cl@@y{#3}\edef\@@cl@@k{#4}%
    \ifpreferGRAY\ifx\@@cl@@k\@@cl@@z\ifx\@@cl@@c\@@cr@@m\ifx\@@cl@@c\@@cl@@y
      \GRAYpreferedtrue
    \fi\fi\fi\fi
+   \ifincolor\else\RGBsupportedfalse\CMYKsupportedfalse\fi 
    \ifGRAYprefered
      \dostartgraycolormode\@@cl@@c
    \else\ifCMYKsupported
@@ -336,13 +373,15 @@
   {\getvalue{dostartcolormode#1}}  
 
 \def\startcolormode#1% 
-  {\doifcolorelse{#1}
-     {\getcurrentcolorspecs{#1}%
-      \expandafter\dostartcolormode\currentcolorspecs\od}
-     {\dostopcolormode}}
+  {\ifincolor
+     \doifcolorelse{#1}
+       {\getcurrentcolorspecs{#1}%
+        \expandafter\dostartcolormode\currentcolorspecs\od}
+       {\dostopcolormode}%
+   \fi}
 
 \def\stopcolormode%
-  {\dostopcolormode}
+  {\ifincolor\dostopcolormode\fi}
 
 %D We use some reserved names for local color components. 
 %D Consistent use of these scratch variables saves us 
@@ -429,15 +468,25 @@
    \doconvertRGBtoCMYK#3\to\@@cl@@y
    \let\@@cl@@k=\@@cl@@z}
 
+%D The following switch is mainly meant for (hidden) 
+%D documentation purposes. 
+
+\newif\ifweightGRAY \weightGRAYtrue
+
+\def\nGRAYfactor{333.333}
+\def\rGRAYfactor{\ifweightGRAY300\else\nGRAYfactor\fi}
+\def\gGRAYfactor{\ifweightGRAY590\else\nGRAYfactor\fi}
+\def\bGRAYfactor{\ifweightGRAY110\else\nGRAYfactor\fi}
+
 \def\convertRGBtoGRAY#1#2#3%  
   {\scratchdimen=#1\s!pt
-   \scratchdimen=300\scratchdimen
+   \scratchdimen=\rGRAYfactor\scratchdimen
    \scratchcounter=\scratchdimen
    \scratchdimen=#2\s!pt
-   \scratchdimen=590\scratchdimen
+   \scratchdimen=\gGRAYfactor\scratchdimen
    \advance\scratchcounter by \scratchdimen
    \scratchdimen=#3\s!pt
-   \scratchdimen=110\scratchdimen
+   \scratchdimen=\bGRAYfactor\scratchdimen
    \advance\scratchcounter by \scratchdimen
    \advance\scratchcounter by \!!medcard
    \divide\scratchcounter by \!!maxcard 
@@ -1476,27 +1525,28 @@
 
 \def\MPcolor#1%
   {\ifMPgraphics
-     \@EA\@EA\@EA\doMPcolor\csname\??cr#1\endcsname::::\end
+     \@EA\@EA\@EA\doMPcolor\csname\??cr#1\endcsname:::::\end
    \else
      #1%
    \fi}
 
-\def\doMPcolor#1:#2:#3:#4:#5\end%
+\def\doMPcolor#1:#2:#3:#4:#5:#6\end%
   {\if     #1R(#2,#3,#4)%
-   \else\if#1C(1-#2+#5,1-#3+#5,1-#4+#5)%
+   \else\if#1C(1-#2-#5,1-#3-#5,1-#4-#5)%
+%   \else\if#1C(1-#2+#5,1-#3+#5,1-#4+#5)%
    \else\if#1S(#2,#2,#2)% 
    \else      (0,0,0)%
    \fi\fi\fi}
-
+ 
 %D \macros 
 %D   {PDFcolor,FDFcolor}
 %D 
 %D Similar alternatives are avaliable for \PDF:
 
 \def\PDFcolor#1%
-  {\@EA\@EA\@EA\doPDFcolor\csname\??cr#1\endcsname::::\end}
+  {\@EA\@EA\@EA\doPDFcolor\csname\??cr#1\endcsname:::::\end}
    
-\def\doPDFcolor#1:#2:#3:#4:#5\end%
+\def\doPDFcolor#1:#2:#3:#4:#5:#6\end%
   {\if     #1R#2 #3 #4 rg%
    \else\if#1C#2 #3 #4 #5 k%
    \else\if#1S#2 g%
@@ -1504,9 +1554,9 @@
    \fi\fi\fi}
 
 \def\FDFcolor#1%
-  {\@EA\@EA\@EA\doFDFcolor\csname\??cr#1\endcsname::::\end}
+  {\@EA\@EA\@EA\doFDFcolor\csname\??cr#1\endcsname:::::\end}
    
-\def\doFDFcolor#1:#2:#3:#4:#5\end%
+\def\doFDFcolor#1:#2:#3:#4:#5:#6\end%
   {[\if     #1R#2 #3 #4%
     \else\if#1C#2 #3 #4 #5%
     \else\if#1S#2%

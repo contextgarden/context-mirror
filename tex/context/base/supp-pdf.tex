@@ -1,6 +1,6 @@
 %D \module
 %D   [       file=supp-pdf,
-%D        version=2000.04.28,
+%D        version=2000.10.14,
 %D          title=\CONTEXT\ Support Macros,
 %D       subtitle=\METAPOST\ to \PDF\ conversion,
 %D         author=Hans Hagen,
@@ -33,14 +33,16 @@
 
 \unprotect
 
-\ifx\pdfliteral\undefined
-  \def\PDFcode#1{\message{[ignored pdfliteral: #1]}}
-\else
-  \let\PDFcode\pdfliteral
+\ifx\PDFcode\undefined
+  \ifx\pdfliteral\undefined
+    \def\PDFcode#1{\special{PDF: #1}}
+  \else
+    \let\PDFcode\pdfliteral
+  \fi
 \fi
 
 %D \macros 
-%D   {pdfimage,pdfimages}
+%D   {pdfimage,pdfimages,pdfclippedimage}
 %D
 %D Starting with pdftex version 14, images are included more
 %D natural to the form embedding. This enables alternative 
@@ -53,12 +55,21 @@
 %D
 %D The first one replaces the pre||version||14 original, 
 %D while the latter provides alternative images. 
+%D 
+%D The next macro is dedicated to Maarten Gelderman, who 
+%D needed to paste prepared \PDF\ pages into conference 
+%D proceedings.
+%D 
+%D \starttypen
+%D \pdfclippedimage <optional dimensions> {file} {l} {r} {t} {b} 
+%D \stoptypen
 
 \ifx\pdftexversion\undefined
-
   \writestatus{\m!systems}{Why not use pdf(e)TeX binaries?}
+  \protect\expandafter\endinput 
+\fi
 
-\else\ifnum\pdftexversion>13
+\ifnum\pdftexversion>13
 
   \def\pdfimage#1#%
     {\dopdfimage{#1}}
@@ -79,13 +90,33 @@
        attr {/Alternates \the\pdflastobj\space0 R}{#3}%
      \pdfrefximage\pdflastximage}
 
+  \def\pdfclippedimage#1#% specs {file}{left}{right}{top}{bottom} 
+    {\dopdfclippedimage{#1}}
+
+  \def\dopdfclippedimage#1#2#3#4#5#6% 
+    {\bgroup
+     \pdfximage#1{#2}%
+     \setbox\scratchbox=\hbox
+       {\pdfrefximage\pdflastximage}%
+     \hsize=\wd\scratchbox
+     \advance\hsize by -#3 
+     \advance\hsize by -#4 
+     \vsize=\ht\scratchbox
+     \advance\vsize by -#5 
+     \advance\vsize by -#6 
+     \setbox\scratchbox=\vbox to \vsize
+       {\vskip-#5\hbox to \hsize{\hskip-#3\box\scratchbox\hss}}%
+     \pdfxform\scratchbox
+     \pdfrefxform\pdflastxform
+     \egroup}
+
 %D For old times sake: 
 
   \let\pdfform    =\pdfxform
   \let\pdflastform=\pdflastxform
   \let\pdfrefform =\pdfrefxform
 
-\fi\fi
+\fi
 
 %D \macros
 %D   {convertPDFtoPDF}
@@ -332,6 +363,7 @@
 \def \PSHiResBoundingBox {HiResBoundingBox:}
 \def \PSExactBoundingBox {ExactBoundingBox:}
 \def \PSMetaPostSpecial  {MetaPostSpecial:}
+\def \PSMetaPostSpecials {MetaPostSpecials:}
 \def \PSPage             {Page:}
 
 %D By the way, the \type {setcmykcolor} operator is not
@@ -554,15 +586,13 @@
          \PDFcode{\gMPa1 \gMPa2 \gMPa3 \gMPa4 \gMPa5 \gMPa6 cm}%
          \resetMPstack
        \else\ifx\somestring\PSsetrgbcolor
-         \PDFcode{\!MP{\gMPa1} \!MP{\gMPa2} \!MP{\gMPa3} rg 
-                     \!MP{\gMPa1} \!MP{\gMPa2} \!MP{\gMPa3} RG}%
+         \handleMPrgbcolor
          \resetMPstack
        \else\ifx\somestring\PSsetcmykcolor
-         \PDFcode{\!MP{\gMPa1} \!MP{\gMPa2} \!MP{\gMPa3} \!MP{\gMPa4} k 
-                     \!MP{\gMPa1} \!MP{\gMPa2} \!MP{\gMPa3} \!MP{\gMPa4} K}% 
+         \handleMPcmykcolor
          \resetMPstack
        \else\ifx\somestring\PSsetgray
-         \PDFcode{\!MP{\gMPa1} g \!MP{\gMPa1} G}%
+         \handleMPgraycolor
          \resetMPstack
        \else\ifx\somestring\PStranslate
          \PDFcode{1 0 0 1 \gMPa1 \gMPa2 cm}%
@@ -602,6 +632,22 @@
    \fi
    \handleMPsequence}
 
+%D Since colors are not sensitive to transformations, they 
+%D are sometimes used for signaling. Therefore, we handle them 
+%D separately. The next macro can be redefined if needed. 
+
+\def\handleMPrgbcolor%
+  {\PDFcode{\!MP{\gMPa1} \!MP{\gMPa2} \!MP{\gMPa3} rg 
+            \!MP{\gMPa1} \!MP{\gMPa2} \!MP{\gMPa3} RG}}
+
+\def\handleMPcmykcolor%
+  {\PDFcode{\!MP{\gMPa1} \!MP{\gMPa2} \!MP{\gMPa3} \!MP{\gMPa4} k 
+            \!MP{\gMPa1} \!MP{\gMPa2} \!MP{\gMPa3} \!MP{\gMPa4} K}}
+
+\def\handleMPgraycolor%
+  {\PDFcode{\!MP{\gMPa1} g 
+            \!MP{\gMPa1} G}}
+
 %D Beginning and ending the graphics is taken care of by the
 %D macro \type{\handleMPgraphic}, which is redefined when
 %D the first graphics operator is met.
@@ -624,11 +670,13 @@
      \let\handleMPsequence=\finishMPgraphic
    \else\ifx\somestring\PSPage
      \let\handleMPsequence=\handleMPpage
+   \else\ifx\somestring\PSMetaPostSpecials
+     \let\handleMPsequence=\handleMPspecialscomment
    \else\ifx\somestring\PSMetaPostSpecial
      \let\handleMPsequence=\handleMPspecialcomment
    \else
      \setMPargument{#1}% kan weg
-   \fi\fi\fi\fi\fi\fi}
+   \fi\fi\fi\fi\fi\fi\fi}
 
 \let\handleMPgraphic=\handleMPbegingraphic
 
@@ -683,6 +731,8 @@
   {\doresetMPstack
    \let\handleMPsequence=\dohandleMPsequence
    \handleMPsequence}
+
+\let\handleMPspecialscomment\handleMPspecialcomment
 
 %D We use the \type{page} comment as a signal that
 %D stackbuilding can be started.
@@ -743,14 +793,14 @@
       \else
         \scratchcounter=1
         \def\dodo##1%
-          {\edef\!!stringa{##1}\ifx\!!stringa\space\char32\else##1\fi}%
+          {\edef\!!stringa{##1}\ifx\!!stringa\space\MPspacechar\else##1\fi}%
         \def\do(##1{\dodo{##1}}%
-        \gMPa\scratchcounter\space
+        \gMPa\scratchcounter\MPspacechar 
         \let\do\relax
         \loop
           \advance\scratchcounter by 1
-          \ifnum\scratchcounter<\nofMParguments
-            [\gMPa\scratchcounter]\space
+          \ifnum\scratchcounter<\nofMParguments\relax
+            \gMPa\scratchcounter\MPspacechar
         \repeat
         \def\do##1){\dodo{##1}}%
         \gMPa\scratchcounter
@@ -777,6 +827,25 @@
    \wd\scratchbox\!!zeropoint
    \box\scratchbox
    \egroup}
+
+%D You could consider the following definition to be the most
+%D natural one. 
+
+\def\MPspacechar% normal case 
+  {\space}
+
+%D However, the following implementation is more robust, since
+%D some fonts have funny visible spaces in the space slot. This
+%D gives a mismatch between the space that \METAPOST\ took into
+%D account and the \quote {natural} space. This only happens in
+%D labels, since \type {btex}||\type {etex} thingies don't have
+%D spaces. This phenomena showed up when preparing the
+%D \METAFUN\ manual, where Palatino fonts are used. We can 
+%D safely assume that \METAPOST\ considers \type {\char32} to 
+%D be the space.  
+
+\def\MPspacechar% 
+  {\setbox\scratchbox=\hbox{\char32}\kern\wd\scratchbox}%
 
 %D Most operators are just converted and keep their
 %D arguments. Dashes however need a bit different treatment,
@@ -1359,6 +1428,8 @@
 
 \let\currentPDFresources\empty  
 
+\newtoks\everyMPtoPDFconversion
+
 \def\convertMPtoPDF#1#2#3%
   {\bgroup
    \setbox\scratchbox=\vbox\bgroup
@@ -1374,6 +1445,7 @@
 
 \def\doprocessMPtoPDFfile#1#2#3% file xscale yscale 
   {\setMPspecials
+   \the\everyMPtoPDFconversion
    \catcode`\^^M=\@@endofline
    \startMPscanning
    \let\do=\empty
@@ -1406,7 +1478,7 @@
    \ifcase\makeMPintoPDFobject
      \box\scratchbox
    \or
-     \immediate\pdfxform attr{\currentPDFresources}\scratchbox
+     \immediate\pdfxform resources{\currentPDFresources}\scratchbox
      \xdef\lastPDFMPobject{\the\pdflastxform}%
      \pdfrefxform\lastPDFMPobject
      \global\let\currentPDFresources\empty
@@ -1415,6 +1487,8 @@
    \fi
    \egroup}
 
+% funny clip in viewer
+%
 % \setbox\scratchbox=\vbox
 %   {\forgetall
 %    \dimen0=\MPllx bp
@@ -1425,7 +1499,7 @@
 %    \wd\scratchbox=\!!zeropoint
 %    \hbox
 %      {\PDFcode{q \MPxscale\space 0 0 \MPyscale\space 0 0 cm}%
-%       \lower\MPheight\box\scratchbox
+%       \lower\MPshift\box\scratchbox
 %       \PDFcode{Q}}}%
 
 %D \macros 

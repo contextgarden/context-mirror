@@ -116,13 +116,52 @@
 %D fact that the offsets depend on the design of the glyphs 
 %D used. 
 
-\let\DroppedIndent\zeropoint \def\DroppedLines{0}
+\let\DroppedIndent\!!zeropoint \def\DroppedLines{0}
 
 \def\DroppedString%
   {ABCDEFGHIJKLMNOPQRSTUVWXYZ}
 
-\def\DroppedCaps#1#2#3#4#5#6#7% 
-  {\ExpandBothAfter\doifinstringelse{#7}{\DroppedString} % 
+% \def\DroppedCaps#1#2#3#4#5#6#7% 
+%   {\ExpandBothAfter\doifinstringelse{#7}{\DroppedString} % 
+%      {\ifvmode % this one is \EveryPar save, precede by \par if needed
+%         \vskip#6\baselineskip
+%         \penalty-200
+%         \vskip-#6\baselineskip
+%       \fi
+%       \ifhmode
+%         \hskip-\parindent
+%       \fi
+%       \setbox0=\hbox
+%         {\definefont[temp][#2 at #3]\temp#1{#7}\hskip#4}%
+%          \ifdim\dp0>\dp\strutbox % one of those Q's , will be option
+%            \setbox2=\hbox{\raise\dp0\hbox{\lower\dp\strutbox\copy0}}%
+%            \ht2=\ht0 \dp0=\dp\strutbox \setbox0=\box2
+%          \fi
+%       \setbox0=\hbox
+%         {\lower#5\box0}%
+%       \ht0=\ht\strutbox
+%       \dp0=\dp\strutbox
+%       \edef\DroppedIndent{\the\wd0}%
+%       \edef\DroppedLines {\number#6}%
+%       \hangindent\DroppedIndent
+%       \hangafter-\DroppedLines
+%       \noindent
+%       \hskip-\DroppedIndent
+%       \vbox{\forgetall\box0}%
+%       \nobreak
+%       \ignorespaces} % Could be a one character word ! 
+%      {\edef\DroppedIndent{0pt}%
+%       \edef\DroppedLines {\number\maxdimen}%
+%       #7}}
+
+\let\globaldropcaps\global % will be an option, but on by default
+
+\chardef\DroppedStatus=0 % 0=done 1=starting 2=doing 3=error
+
+\def\DroppedCaps#1#2#3#4#5#6#7% does not yet handle accented chars
+  {\convertargument            #7\to\asciia
+   \convertcommand \DroppedString\to\asciib
+   \ExpandBothAfter\doifinstringelse{\asciia}{\asciib}
      {\ifvmode % this one is \EveryPar save, precede by \par if needed
         \vskip#6\baselineskip
         \penalty-200
@@ -141,19 +180,21 @@
         {\lower#5\box0}%
       \ht0=\ht\strutbox
       \dp0=\dp\strutbox
-      \edef\DroppedIndent{\the\wd0}%
-      \edef\DroppedLines {\number#6}%
-      \hangindent\DroppedIndent
-      \hangafter-\DroppedLines
+      \globaldropcaps\edef\DroppedIndent{\the\wd0}%
+      \globaldropcaps\edef\DroppedLines {\number#6}%
+      \globaldropcaps\chardef\DroppedStatus=2
+      \globaldropcaps\hangindent\DroppedIndent
+      \globaldropcaps\hangafter-\DroppedLines
       \noindent
       \hskip-\DroppedIndent
       \vbox{\forgetall\box0}%
       \nobreak
-      \ignorespaces} % Could be a one character word ! 
-     {\edef\DroppedIndent{0pt}%
-      \edef\DroppedLines {\number\maxdimen}%
-      #7}}
-
+      \let\next=\ignorespaces} % Could be a one character word !
+     {\globaldropcaps\edef\DroppedIndent{0pt}%
+      \globaldropcaps\edef\DroppedLines {\number\maxdimen}%
+      \globaldropcaps\chardef\DroppedStatus=3
+      \def\next{#7}}%
+   \next}
 
 %D Before we go to the next topic, we summarize this command:
 %D
@@ -162,6 +203,66 @@
 %D   {command} {font} 
 %D   {height} {hoffset} {voffset} {lines}
 %D \stoptypen
+
+%D \macros 
+%D   {AutoDroppedCaps, CheckDroppedCaps}
+%D
+%D {\em To be documented.}
+
+% example usage 
+%
+% \def\bpar{\ifvmode\CheckDroppedCaps\fi}
+% \def\epar{\ifhmode\par\fi\CheckDroppedCaps}
+
+\newcount\lastprevgraf
+\newcount\droppedlines
+
+\def\CheckDroppedCaps%
+  {\global\lastprevgraf\prevgraf}
+
+\def\AutoDroppedCaps% will be proper core stuff since it
+  {\globaldropcaps\chardef\DroppedStatus=1
+   \global\lastprevgraf=0
+   \global\droppedlines=0
+   \EveryPar{\doAutoDroppedCaps}}
+
+\let\AutoDroppedNext\relax
+  
+\def\doAutoDroppedCaps%
+  {\ifcase\DroppedStatus % done
+     \let\next\relax  
+   \or % starting
+   % \ifnum\lastprevgraf>0 % tricky, probably a wrong par 
+   %   \globaldropcaps\chardef\DroppedStatus=3 % and inhibits dropped
+   %   \let\next\relax % caps after titles and more than once
+   % \else % so let's nill this rubishly code fragment 
+       \def\next{\NiceDroppedCaps{}{\@@dcfont}{.125em}{\@@dcn}}%
+   % \fi % and hope for the best 
+   \or % doing
+     \global\advance\droppedlines by \lastprevgraf
+     \ifnum\droppedlines=0
+       \globaldropcaps\chardef\DroppedStatus=0
+       \let\next\relax
+     \else\ifnum\droppedlines>0
+       \ifnum\droppedlines<\DroppedLines\relax
+         \globaldropcaps\hangindent=\DroppedIndent
+         \globaldropcaps\hangafter=-\DroppedLines
+         \globaldropcaps\advance\hangafter by \droppedlines
+         \hskip-\parindent
+         \let\next\AutoDroppedNext
+       \else
+         \globaldropcaps\chardef\DroppedStatus=0
+         \let\next\relax
+       \fi
+     \else
+       \globaldropcaps\chardef\DroppedStatus=0
+       \let\next\relax
+     \fi\fi
+   \or % error
+     \globaldropcaps\chardef\DroppedStatus=0
+     \let\next\relax
+   \fi
+   \next}
 
 %D \macros 
 %D   {LineDroppedCaps, NiceDroppedCaps}

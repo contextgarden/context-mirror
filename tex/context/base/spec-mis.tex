@@ -121,6 +121,15 @@
  
 \fi
 
+%D When submitting forms, we need to communicate the format.
+
+\chardef\submitoutputformat=0 % 0=unknown 1=HTML 2=FDF
+
+\def\setsubmitoutputformat#1%
+  {\doifinsetelse{#1}{FDF,fdf}
+     {\chardef\submitoutputformat=2} 
+     {\chardef\submitoutputformat=1}} 
+
 \protect
 
 \endinput

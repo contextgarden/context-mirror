@@ -13,7 +13,18 @@
 
 %D This module implements the multi||lingual interface to
 %D \CONTEXT. These capabilities concern messages, commands and
-%D parameters.
+%D parameters. Currently the following interfaces are 
+%D supported: 
+%D 
+%D \starttabulatie[|l|l|c|c|]
+%D \NC\bf language\NC\bf translator \NC\bf messages\NC\bf interface\NC\NR
+%D \NC dutch     \NC Hans Hagen           \NC yes \NC yes \NC\NR 
+%D \NC english   \NC Hans Hagen           \NC yes \NC yes \NC\NR 
+%D \NC german    \NC Tobias Burnus        \NC yes \NC yes \NC\NR 
+%D \NC czech     \NC Tom Hudec            \NC yes \NC yes \NC\NR 
+%D \NC italian   \NC Giuseppe Bilotta     \NC yes \NC yes \NC\NR 
+%D \NC norwegian \NC Hans Fredrik Nordhaug\NC yes \NC no  \NC\NR 
+%D \stoptabulatie
 
 \writestatus{loading}{Context Multilingual Macros / Initialization}
 
@@ -180,6 +191,17 @@
 %D not ask for interface specifications when these are already
 %D defined (like in cont-nl.tex and alike).
 
+\ifx\undefined\scratchwrite \newwrite\scratchwrite \fi
+\ifx\undefined\scratchread  \newwrite\scratchread  \fi
+
+\immediate\openin\scratchread=mult-def.tex % may overload the defaults
+
+\ifeof\scratchread % no high level commands yet 
+  \immediate\closein\scratchread
+\else 
+  \immediate\closein\scratchread \input mult-def.tex 
+\fi
+
 \ifx\defaultinterface\undefined
 
   \def\defaultinterface{english}
@@ -205,7 +227,7 @@
   \def\selectinterface%
     {\writestatus{interface}{defining \currentinterface\space interface}%
      \writeline
-     \writestatus{interface}{using \currentresponses\space messages}%
+     \writestatus{interface}{using    \currentresponses\space messages}%
      \writeline
      \let\selectinterface\relax}
 
@@ -388,7 +410,7 @@
    \fi
    \next}
 
-\gdef\startmessages #1 library: #2
+\def\startmessages #1 library: #2
   {\definemessageconstant{#2}% handy for modules
    \bgroup
    \obeylines
@@ -400,6 +422,40 @@
          \futurelet\next\getinterfacemessage}}
      {\long\def\next##1\stopmessages{\egroup}}%
    \next}
+
+%D Here, the messages are stored in a way that saves hash
+%D entries, i.e. they are packed in one macro per library.
+%D This was important in the days when we used \TEX's with
+%D hash tables of about 10.000. The next, less efficient way
+%D of storing the message, makes \CONTEXT\ run upto 5\%
+%D faster by storing each message in a macro. In July 2000,
+%D this costs some 185 additional hash entries, and since
+%D we run large \TEX's, let do it!
+
+\def\startmessages #1 library: #2
+  {\definemessageconstant{#2}% handy for modules
+   \bgroup
+   \obeylines
+   \doifinsetelse{#1}{\currentresponses,all}
+     {\def\next%
+        {\def\currentmessagelibrary{#2}%
+         \futurelet\next\getinterfacemessage}}
+     {\long\def\next##1\stopmessages{\egroup}}%
+   \next}
+
+\def\findinterfacemessage#1#2%
+  {\edef#2{\getvalue{\??ms\currentmessagelibrary#1}}}
+
+\def\doaddinterfacemessage#1#2%
+  {\doifdefined{\??ms\currentmessagelibrary#1}
+     {\debuggerinfotrue % we consider this an important error
+      \debuggerinfo
+        {message}
+        {duplicate tag #1
+         in library \currentmessagelibrary\space
+         of interface \currentresponses}}%
+   \setxvalue{\??ms\currentmessagelibrary#1}{#2}%
+   \futurelet\next\getinterfacemessage}
 
 %D \macros
 %D   {ifshowwarnings, ifshowmessages}
@@ -461,7 +517,7 @@
 %D These macros are called upon quite often and so we optimized
 %D them a bit.
 
-\def\dosetvalue#1#2#3%  
+\def\dosetvalue#1#2#3%
   {\let\c!internal!\c!internal!n
    \p!doifundefined{\k!prefix!#2}%
      \let\c!internal!\c!internal!y
@@ -473,7 +529,7 @@
      \@EA\def\csname#1\csname\k!prefix!#2\endcsname\endcsname{#3}%
    \fi}
 
-\def\dosetevalue#1#2#3%  
+\def\dosetevalue#1#2#3%
   {\let\c!internal!\c!internal!n
    \p!doifundefined{\k!prefix!#2}%
      \let\c!internal!\c!internal!y
@@ -485,7 +541,7 @@
      \@EA\edef\csname#1\csname\k!prefix!#2\endcsname\endcsname{#3}%
    \fi}
 
-\def\docopyvalue#1#2#3%  
+\def\docopyvalue#1#2#3%
   {\let\c!internal!\c!internal!n
    \p!doifundefined{\k!prefix!#3}%
      \let\c!internal!\c!internal!y
@@ -502,11 +558,11 @@
 \def\doresetvalue#1#2%
   {\dosetvalue{#1}{#2}{}}
 
-%\def\dogetvalue#1#2%  
+%\def\dogetvalue#1#2%
 %  {\csname#1\csname\k!prefix!#2\endcsname\endcsname}
 
 %D Although maybe not clearly visible, there is a
-%D considerable profit in further optimalization. By expanding
+%D considerable profit in further optimization. By expanding
 %D the embedded \type {\csname} we can reduce the format file
 %D by about 5\% (60~KB out of 1.9~MB).
 
@@ -523,11 +579,11 @@
        \endcsname\@EA{\csname#2\csname\k!prefix!#3\endcsname\endcsname}%
    \fi}
 
-%D The next alternatives are slightly faster. 
+%D The next alternatives are slightly faster.
 
 \beginTEX
 
-\def\dosetvalue#1#2#3%  
+\def\dosetvalue#1#2#3%
   {\let\c!internal!\c!internal!n
    \@EA\ifx\csname\k!prefix!#2\endcsname\relax
      \let\c!internal!\c!internal!y
@@ -537,7 +593,7 @@
      \@EA\def\csname#1\csname\k!prefix!#2\endcsname\endcsname{#3}%
    \fi}
 
-\def\dosetevalue#1#2#3%  
+\def\dosetevalue#1#2#3%
   {\let\c!internal!\c!internal!n
    \@EA\ifx\csname\k!prefix!#2\endcsname\relax
      \let\c!internal!\c!internal!y
@@ -547,7 +603,7 @@
      \@EA\edef\csname#1\csname\k!prefix!#2\endcsname\endcsname{#3}%
    \fi}
 
-\def\dosetgvalue#1#2#3%  
+\def\dosetgvalue#1#2#3%
   {\let\c!internal!\c!internal!n
    \@EA\ifx\csname\k!prefix!#2\endcsname\relax
      \let\c!internal!\c!internal!y
@@ -557,7 +613,7 @@
      \@EA\gdef\csname#1\csname\k!prefix!#2\endcsname\endcsname{#3}%
    \fi}
 
-\def\docopyvalue#1#2#3% 
+\def\docopyvalue#1#2#3%
   {\let\c!internal!\c!internal!n
    \@EA\ifx\csname\k!prefix!#3\endcsname\relax
      \let\c!internal!\c!internal!y
@@ -575,7 +631,7 @@
 
 \beginETEX \protected
 
-\def\dosetvalue#1#2#3%  
+\def\dosetvalue#1#2#3%
   {\let\c!internal!\c!internal!n
    \ifcsname\k!prefix!#2\endcsname
      \let\c!internal!\c!internal!y
@@ -585,7 +641,7 @@
      \@EA\def\csname#1#2\endcsname{#3}%
    \fi}
 
-\def\dosetevalue#1#2#3%  
+\def\dosetevalue#1#2#3%
   {\let\c!internal!\c!internal!n
    \ifcsname\k!prefix!#2\endcsname
      \let\c!internal!\c!internal!y
@@ -595,7 +651,7 @@
      \@EA\edef\csname#1#2\endcsname{#3}%
    \fi}
 
-\def\dosetgvalue#1#2#3%  
+\def\dosetgvalue#1#2#3%
   {\let\c!internal!\c!internal!n
    \ifcsname\k!prefix!#2\endcsname
      \let\c!internal!\c!internal!y
@@ -605,7 +661,7 @@
      \@EA\gdef\csname#1#2\endcsname{#3}%
    \fi}
 
-\def\docopyvalue#1#2#3%  
+\def\docopyvalue#1#2#3%
   {\let\c!internal!\c!internal!n
    \ifcsname\k!prefix!#3\endcsname
      \let\c!internal!\c!internal!y
@@ -647,7 +703,7 @@
      \fi
    \fi}
 
-\def\dogetargument#1#2#3#4%
+\long\def\dogetargument#1#2#3#4%
   {\doifnextcharelse{#1}
      {\let\expectedarguments\noexpectedarguments
       #3\dodogetargument}
@@ -674,6 +730,28 @@
         \def\nextargument{#2\dodogetargument{}}%
       \fi%\fi\fi                 % so let's get rid of it
       \nextargument}%
+   \futurelet\nextargument\nextnextargument}
+
+\def\dogetgroupargument#1#2%
+  {\def\nextnextargument%  
+     {\normalifx\nextargument\bgroup 
+        \endrobusttest
+        \let\expectedarguments\noexpectedarguments
+        \def\nextargument{#1\dodogetargument}%
+     %\normalelse\normalifx\nextargument\lineending % this can be an option
+     %  \def\nextargument{\bgroup\def\\ {\egroup\dogetgroupargument#1#2}\\}%
+     %\normalelse\normalifx\nextargument\blankspace % but may never be default
+     %  \def\nextargument{\bgroup\def\\ {\egroup\dogetgroupargument#1#2}\\}%
+      \normalelse
+        \endrobusttest
+        \ifnum\expectedarguments>\noexpectedarguments
+          \showmessage{check}{2}{\the\expectedarguments,\the\inputlineno}%
+        \fi
+        \let\expectedarguments\noexpectedarguments
+        \def\nextargument{#2\dodogetargument{}}%
+      \normalfi%\normalfi\normalfi                  % so let's get rid of it
+      \nextargument}%
+   \beginrobusttest
    \futurelet\nextargument\nextnextargument}
 
 \def\checkdefined#1#2#3%
@@ -966,8 +1044,6 @@
 
 %D The next few macros come into action when we generate
 %D interface log files:
-
-\ifx\undefined\scratchwrite \newwrite\scratchwrite \fi
 
 \newif\iflogginginterface
 
@@ -1286,12 +1362,12 @@
 %D \stoptypen
 %D
 %D Giving \type{\interfaced{breedte}} results in \type{width}
-%D or, when not defined, in \type{breedte} itself. This 
-%D macro is used in the font switching mechanism. 
+%D or, when not defined, in \type{breedte} itself. This
+%D macro is used in the font switching mechanism.
 
 \beginTEX
 
-\def\interfaced#1% 
+\def\interfaced#1%
   {\expandafter\ifx\csname\k!prefix!#1\endcsname\relax
      #1%
    \else
@@ -1302,7 +1378,7 @@
 
 \beginETEX \ifcsname
 
-\def\interfaced#1% 
+\def\interfaced#1%
   {\ifcsname\k!prefix!#1\endcsname
      \csname\k!prefix!#1\endcsname
    \else
@@ -1336,7 +1412,7 @@
 
 \ifx\undefined\normaldump
   \newtoks\everydump
-  \let\normaldump\dump 
+  \let\normaldump\dump
   \def\dump{\the\everydump\normaldump}
 \fi
 

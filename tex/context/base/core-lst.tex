@@ -56,6 +56,12 @@
 %       \schrijfwegnaarlijst
 %       \endgroup}}
 
+% Auto cross document links work by either using logical or 
+% page references, depending on the general settings. The 
+% locations are stored in global references where the auto tag
+% number uses the text container. We use reference mapping 
+% (define reference) to keep track of the current ref. 
+
 \def\doschrijfnaarlijst#1#2#3#4%
   {\doifvalue{\??li#1\c!status}{\v!start}
      {\begingroup
@@ -66,24 +72,26 @@
         {\def\dopaginanummer{0}}%
       % niet waterdicht, wat te doen met figuren en zo
       % first hack: scheelt rommel, second hack: alleen koppen
-      \ExpandBothAfter\rawdoifinsetelse{#1}{\crossdocumentelements}
+      \doifelsevalue{\??rf#1\c!status}{\v!start}
         {\doif{\@@sectionlevel\@@sectie}{0}{\autocrossdocumentfalse}}
         {\autocrossdocumentfalse}%
-      % blijft nog wat zwakjes
+      % blijft nog wat zwakjes en inefficient 
       \ifautocrossdocument
         \bgroup
-        \thisisdestination{#1::\sectionformat}%
+        \thisisnextinternal{#1}%
+       %\thisisdestination{#1::\sectionformat}% 
         \@EA\setsectieenkoppeling\@EA{#1}%
         \edef\currentlevel{\@@sectionlevel\@@sectie}%
-        \def\docommando##1%
-          {\def\dodocommando####1%
-             {\setsectieenkoppeling{####1}%
-              \def\level{\@@sectionlevel\@@sectie}%
-              \ifnum\level>\currentlevel
-                \expanded{\definereference[##1::####1][\v!geen]}%
-              \else\ifnum\level=\currentlevel
-                \expanded{\definereference[##1::####1][##1::{####1::\sectionformat}]}%
-              \fi\fi}%
+        \def\docommando##1% 
+          {\def\dodocommando####1% 
+             {\doifvalue{\??rf####1\c!status}{\v!start}
+                {\setsectieenkoppeling{####1}%
+                 \def\level{\@@sectionlevel\@@sectie}%
+                 \ifnum\level>\currentlevel
+                   \expanded{\definereference[##1::####1][\v!geen]}%
+                 \else\ifnum\level=\currentlevel
+                   \expanded{\definereference[##1::####1][##1::{####1::\sectionformat}]}%
+                 \fi\fi}}%
            \processcommacommand[\crossdocumentelements]\dodocommando}%
         \processcommacommand[\crossdocumentreferences]\docommando
         \egroup
@@ -301,26 +309,28 @@
                      \strut\splitlistsymbol\getvalue{\??li#1\c!scheider}%
                      \doifvalue{\??li#1\c!label}{\v!ja}{\rightlabeltext{#1}}}]}
 
+\def\@@dodolijstelement{dodolijstelement}
+
 \def\dosomelijstelement#1#2#3{#1 #2 \translatednumber[#3]}
 
-\def\dodolijstelementa{\let\dosomelijstelement\dodofixdlijstelementABC}
-\def\dodolijstelementb{\let\dosomelijstelement\dodofixdlijstelementABC}
-\def\dodolijstelementc{\let\dosomelijstelement\dodofixdlijstelementABC}
-\def\dodolijstelementd{\let\dosomelijstelement\dodofixdlijstelementD}
-\def\dodolijstelemente{\let\dosomelijstelement\dodofixdlijstelementE}
-\def\dodolijstelementf{\let\dosomelijstelement\dodofixdlijstelementF}
-\def\dodolijstelementg{\let\dosomelijstelement\dodofixdlijstelementG}
+\setvalue{\@@dodolijstelement a}{\let\dosomelijstelement\dodofixdlijstelementABC}
+\setvalue{\@@dodolijstelement b}{\let\dosomelijstelement\dodofixdlijstelementABC}
+\setvalue{\@@dodolijstelement c}{\let\dosomelijstelement\dodofixdlijstelementABC}
+\setvalue{\@@dodolijstelement d}{\let\dosomelijstelement\dodofixdlijstelementD}
+\setvalue{\@@dodolijstelement e}{\let\dosomelijstelement\dodofixdlijstelementE}
+\setvalue{\@@dodolijstelement f}{\let\dosomelijstelement\dodofixdlijstelementF}
+\setvalue{\@@dodolijstelement g}{\let\dosomelijstelement\dodofixdlijstelementG}
 
-\setvalue{dodolijstelement\v!geen}%
+\setvalue{\@@dodolijstelement\v!geen}%
   {\def\dosomelijstelement{\dodofreevlijstelement}}
 
-\setvalue{dodolijstelement\v!vertikaal}%
+\setvalue{\@@dodolijstelement\v!vertikaal}%
   {\def\dosomelijstelement{\dodofreevlijstelement}}
 
-\setvalue{dodolijstelement\v!horizontaal}%
+\setvalue{\@@dodolijstelement\v!horizontaal}%
   {\def\dosomelijstelement{\dodofreehlijstelement}}
 
-\setvalue{dodolijstelement\v!commando}%
+\setvalue{\@@dodolijstelement\v!commando}%
   {\let\dosomelijstelement\dodocommandlijstelement}
 
 % Here I learned something new: \leftskip can be changed
@@ -336,7 +346,7 @@
 
 \def\dolijstelement#1#2#3#4#5#6% pas op: wordt ook elders gedefinieerd
   {\doiftoclevelelse[#5]
-     {\getvalue{dodolijstelement\getvalue{\??li#1\c!variant}}%
+     {\getvalue{\@@dodolijstelement\getvalue{\??li#1\c!variant}}%
       %\showcomposition
       \let\@@iabreedte=\!!zeropoint  % moet boolean worden
       \bgroup
@@ -589,11 +599,12 @@
 \def\strippedlistentry[#1::#2::#3]{#1::#2}%
 
 \def\linklisttoelement#1#2#3#4#5% % list location format page data
-  {\ifautocrossdocument
-     \gotodestination{}{}{#1::\strippedlistentry[#3]}{#4}{#5}%
-   \else
+  {%\ifautocrossdocument
+   % \gotodestination{}{}{#1::\strippedlistentry[#3]}{#4}{#5}%
+   %\else
      \gotonextinternal{#1}{#2}{#4}{#5}%
-   \fi}
+   %\fi}
+   }
 
 \def\schrijfnaarlijst[#1]#2#3%
   {\doifsomething{#1}

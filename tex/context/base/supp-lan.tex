@@ -508,8 +508,23 @@
 \def\currentspaceskip%
   {\fontdimen2\font\!!plus\fontdimen3\font\!!minus\fontdimen4\font\relax}
 
-\def\fakecompoundhyphen%
-  {\def|##1|{\compoundhyphen\nobreak\hskip-\currentspaceskip\allowbreak}}
+% \def\fakecompoundhyphen% wrong 
+%   {\def|##1|{\compoundhyphen\nobreak\hskip-\currentspaceskip\allowbreak}}
+
+\ifx\newsignal\undefined
+
+   \let\fakecompoundhyphen\relax
+
+\else
+
+  \newsignal\compoundbreakpoint
+
+  \def\fakecompoundhyphen%
+    {\def|##1|%
+       {\doifelsenothing{##1}{\compoundhyphen}{##1}%
+        \kern\compoundbreakpoint\allowbreak}} 
+
+\fi 
 
 %D One of the drawbacks of this mechanism is that characters can
 %D be made active afterwards. The next alternative can be used
@@ -623,8 +638,8 @@
 %D \type{\ifnum} or \type{\ifdim} statements.
 
 %D And then came the Polish users, and who can deny them? Like
-%D the German \TEX\ users demand an active \type {"}, the
-%D Polish cannot do without the \type {/}. The next alternative
+%D the German \TEX\ users demand an active \type {"}, some
+%D Polish users like using the \type {/}. The next alternative
 %D is a bit slower but far the most robust alternative. As a
 %D bonus it also offers \type {|^|} and even \type {|||} which
 %D both result in a breakable|^|bar.
@@ -745,11 +760,15 @@
 %D arguments, which complicates things a bit.  
 
 \def\@nc@{@nc@} % normal character 
+\def\@nn@{@nn@} % normal catcode
 \def\@cc@{@cc@} % compound character 
 \def\@cs@{@cs@} % compound characters 
 
 \def\installcompoundcharacter #1#2#3 #4% {{#4}} keeps move local
   {\setvalue{\@nc@\string#1}{\char`#1}%
+   \ifnum\catcode`#1=\@@active \else
+     \setevalue{\@nn@\string#1}{\number\catcode`#1}% new 
+   \fi 
    \def\!!stringa{#3}%
    \ifx\!!stringa\empty
      \setvalue{\@cc@\string#1\string#2}{{#4}}% 
@@ -761,6 +780,16 @@
    \uccode`~=`#1
    \uppercase{\unexpanded\def~{\handlecompoundcharacter~}}%
    \uccode`~=\scratchcounter}
+
+%D A compound character can be reset with the following 
+%D command. 
+%D
+%D \starttypen
+%D \restorecompoundcharacter /
+%D \stoptypen 
+
+\def\restorecompoundcharacter#1% new 
+  {\catcode`#1=\getvalue{\@nn@\string#1}\relax}
 
 %D In handling the compound characters we have to take care of
 %D \type{\bgroup} and \type{\egroup} tokens, so we end up with
@@ -967,8 +996,51 @@
 
 \bgroup \catcode`\~=\active \catcode`\/=\active 
 
+% why not convert to ascii first? 
+
+% \unexpanded\gdef\hyphenatedurl#1% {}{} handles accents
+%   {\bgroup
+%    \obeyhyphens
+%    \def\splitbefore##1%
+%      {\setbox\scratchbox=\hbox{##1{}{}}%
+%       \ifcase\urlsplitmode 
+%         \box\scratchbox
+%       \or 
+%         \postwordbreak\box\scratchbox\prewordbreak
+%       \or
+%         \prewordbreak\discretionary{\box\scratchbox}{}{\box\scratchbox}\prewordbreak
+%       \else
+%         \postwordbreak\box\scratchbox\prewordbreak
+%       \fi}%
+%    \def\splitafter##1%
+%      {\ifcase\urlsplitmode
+%         ##1{}{}%
+%       \or
+%         \prewordbreak\discretionary{##1{}{}}{}{##1{}{}}\prewordbreak
+%       \or
+%         \prewordbreak\discretionary{##1{}{}}{}{##1{}{}}\prewordbreak
+%       \else
+%         \prewordbreak\discretionary{}{##1{}{}}{##1{}{}}\prewordbreak
+%       \fi}% 
+%    \def\flushurl%
+%      {\savedurl\let\savedurl\empty}%
+%    \def\\%
+%      {\spliturl\#}%
+%    \let\~=\tildeletter \let~=\~%
+%    \let\/=\slashletter \let/=\/%
+%    \let\savedurl\empty
+%    \handletokens#1\with\scanurl
+%    \egroup}
+%
+% Better (a mere copy with \dohyphens): 
+
+\bgroup \catcode`\~=\active \catcode`\/=\active 
+
 \unexpanded\gdef\hyphenatedurl#1% {}{} handles accents
   {\bgroup
+   \ifnum\hyphenpenalty<10000 \else
+     \def\discretionary##1##2##3{##1\allowbreak##2}%
+   \fi
    \obeyhyphens
    \def\splitbefore##1%
      {\setbox\scratchbox=\hbox{##1{}{}}%
@@ -1000,6 +1072,15 @@
    \let\savedurl\empty
    \handletokens#1\with\scanurl
    \egroup}
+
+\egroup
+
+%D This would be better, but it spoils \type {\~} and so:  
+%D
+%D \starttypen 
+%D \convertargument#1\to\ascii 
+%D \expandafter\handletokens\ascii\with\scanurl
+%D \stoptypen
 
 \egroup
 
@@ -1048,6 +1129,22 @@
      #1%
    \fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi}
 
+%D When Joop Susan asked (on the \CONTEXT\ mailing list) how 
+%D to handle url's passed as argument, the following solutions 
+%D came to my mind: 
+%D
+%D \starttypen 
+%D \def\whateverurl#1%
+%D   {{\def~{\string~}\useURL[dummy][#1]\goto{\url[dummy]}[URL(dummy)]}}
+%D 
+%D \def\whateverurl#1%
+%D   {{\let~\tildeletter\useURL[dummy][#1]\goto{\url[dummy]}[URL(dummy)]}}
+%D 
+%D \def\whateverurl#1%
+%D   {\convertargument#1\to\ascii
+%D    \expanded{\useURL[dummy][\ascii]}\goto{\url[dummy]}[URL(dummy)]}
+%D \stoptypen 
+
 %D \macros
 %D   {hyphenatedfile}
 %D
@@ -1058,6 +1155,17 @@
 %D \stoptypen
 
 \let\hyphenatedfile\hyphenatedurl
+
+% to be finished
+%
+% \def\hyphenatedstring#1%
+%   {\bgroup
+%    \nohyphens
+%    \def\next##1{##1\doif{##1}{-}{\allowbreak}}%
+%    \handletokens#1\with\next
+%    \egroup}
+% 
+% {\hsize1cm\hyphenatedstring{ABXXXXXXXXXXC-12345-12345}}
 
 \protect
 

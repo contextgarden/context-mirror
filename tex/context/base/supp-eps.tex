@@ -19,7 +19,7 @@
 %D were put in \type{supp-pdf}, I considered it more suitable
 %D to give the \EPS\ macros their own module. 
 
-\writestatus{loading}{Context Support Macros / PDF}
+\writestatus{loading}{Context Support Macros / EPS}
 
 %D \macros
 %D   {dogetEPSboundingbox}
@@ -61,13 +61,17 @@
 \let\EPSurx\!!zeropoint \let\MPurx\EPSurx % in fast mode we set
 \let\EPSury\!!zeropoint \let\MPury\EPSury % them to 0pt. 
 
-\chardef\EPSfound=0 \chardef\EPScreator=0 \chardef\EPSspecial=0 
+\chardef\EPSfound  =0 
+\chardef\EPScreator=0 
+\chardef\EPSspecial=0 
+\chardef\EPSstatus =0 
 
 \def\dogetEPSboundingbox#1#2#3#4#5%
   {\bgroup
    \global\chardef\EPSfound=0
    \global\chardef\EPScreator=0 
    \global\chardef\EPSspecial=0
+   \global\chardef\EPSstatus=0
    \uncatcodespecials
    \def\doprocessEPSline%
      {\expandafter\checkEPSboundingbox\fileline:. \end}%
@@ -86,6 +90,7 @@
      #4=\!!zeropoint
      #5=\!!zeropoint
    \fi
+  %\message{[bbox #1: \EPSllx\space\EPSurx\space\EPSlly\space\EPSury]}%
    \global\let\MPllx\EPSllx \global\let\MPlly\EPSlly
    \global\let\MPurx\EPSurx \global\let\MPury\EPSury}
 
@@ -98,6 +103,8 @@
 \gdef\EPScreatortag         {%Creator}  
 \gdef\EPSmetaposttag        { MetaPost :. }  
 \gdef\EPSmetapostspecialtag {%MetaPostSpecial}  
+\gdef\EPSmetapostspecialstag{%MetaPostSpecials}  
+\gdef\EPSpagetag            {%Page}  
 \egroup  
 
 \long\def\checkEPSboundingbox#1#2:#3\end%
@@ -118,10 +125,22 @@
        \global\chardef\EPSfound=2
        \dofinishfile
      \else\ifx\!!stringa\EPSmetapostspecialtag % only before finish! 
-       \global\chardef\EPSspecial=1
-     \fi\fi\fi\fi\fi
+       \global\chardef\EPSspecial=1 % ah, we've met some MP extensions 
+     \else\ifx\!!stringa\EPSmetapostspecialstag % only before finish! 
+       \global\chardef\EPSspecial=1 % ah, we've met some MP extensions 
+     \else\ifx\!!stringa\EPSpagetag 
+       \global\chardef\EPSstatus=1 % we passed MP font defs 
+     \fi\fi\fi\fi\fi\fi\fi
    \else\ifnum\EPSfound>0
-     \dofinishfile
+     \ifnum\EPScreator=1 % that is, we are dealing with MP output
+       \ifcase\EPSstatus
+         % we've run into MP fontdefs
+       \or
+         \dofinishfile
+       \fi
+     \else
+       \dofinishfile
+     \fi
    \fi\fi}
 
 \def\getEPSboundingbox #1 #2 #3 #4 #5\end%

@@ -107,6 +107,11 @@
 \def\obeyedline  {\par}
 \def\obeyedpage  {\vfill\eject}
 
+%D Because we will introduce a status variable, we can define
+%D a better \type {\obeyedspace}. 
+
+\def\obeyedspace {\ifprocessingverbatim\hbox{ }\else\space\fi}
+
 %D \macros
 %D   {controlspace,setcontrolspaces}
 %D
@@ -183,6 +188,19 @@
 \egroup
 
 %D \macros
+%D   {processingverbatim}
+%D 
+%D Typesetting a file in most cases results in more than one
+%D page. Because we don't want problems with files that are
+%D read in during the construction of the page, we set \type
+%D {\ifprocessingverbatim}, so the output routine can adapt
+%D its behavior. Originally we used \type {\scratchread}, but
+%D because we want to support nesting, we decided to use a
+%D separate input file. 
+
+\newif\ifprocessingverbatim
+
+%D \macros
 %D   {processinlineverbatim}
 %D
 %D Although the inline verbatim commands presented here will be
@@ -238,6 +256,7 @@
 
 \def\processinlineverbatim#1%
   {\bgroup
+   \processingverbatimtrue
    \localcatcodestrue % TeX processes paragraph's
    \def\endofverbatimcommand{#1\egroup}%
    \bgroup
@@ -247,19 +266,6 @@
 %D The closing command is executed afterwards as an internal
 %D command and therefore should not be given explicitly when
 %D typesetting inline verbatim.
-
-%D \macros
-%D   {processingverbatim}
-%D
-%D Typesetting a file in most cases results in more than one
-%D page. Because we don't want problems with files that are
-%D read in during the construction of the page, we set
-%D \type{\ifprocessingverbatim}, so the output routine can
-%D adapt its behavior. Originally we used
-%D \type{\scratchread}, but because we want to support nesting,
-%D we decided to use a separate input file.
-
-\newif\ifprocessingverbatim
 
 %D \macros
 %D   {optimizeverbatim}
@@ -286,7 +292,7 @@
 %D   {\nobreak\hrule width 10cm\par\penalty500} % == \nobreak
 %D
 %D \def\doverbatimgoodbreak%
-%D   {\nobreak\hrule width 3cm \par\penalty100} % >> \goodbreak
+%D   {\nobreak\hrule width 3cm \par\penalty\linepenalty}
 %D
 %D \starttypen
 %D test
@@ -321,7 +327,7 @@
   {\ifoptimizeverbatim\penalty500\fi} 
 
 \def\doverbatimgoodbreak%
-  {\ifoptimizeverbatim\penalty100\fi} 
+  {\ifoptimizeverbatim\penalty\linepenalty\fi}
 
 \def\doflushverbatimline%
   {\expandafter\dodoverbatimline\expandafter{\savedverbatimline}}
@@ -475,7 +481,7 @@
 %D \macros
 %D   {eightbitcharacters,
 %D    setcatcodes,uncatcodespecials,
-%D    uncatcodecharacters,
+%D    uncatcodecharacters,uncatcodespacetokens,
 %D    setnaturalcatcodes}
 %D
 %D As its name says, \type{\uncatcodecharacters} resets the
@@ -507,7 +513,10 @@
      {\ifnum\catcode\scratchcounter=\@@letter\relax\else
         \catcode\scratchcounter=\@@other
       \fi}%
-   \catcode`\   =\@@space
+   \uncatcodespacetokens}
+
+\def\uncatcodespacetokens%
+  {\catcode`\   =\@@space
    \catcode`\^^L=\@@ignore
    \catcode`\^^M=\@@endofline
    \catcode`\^^?=\@@ignore}
@@ -550,13 +559,16 @@
 %D The previous macros call for \type{\savecatcode}, which is
 %D implemented as:
 
+\def\@@aa@@{@@aa@@}
+\def\@@cc@@{@@cc@@}
+
 \newif\iflocalcatcodes
 
 \def\savecatcode%
   {\iflocalcatcodes \else
      \saverestoreactivecatcode
-       {\@EA\let\csname @@aa@@\the\scratchcounter\endcsname=~}%
-     \@EA\chardef\csname @@cc@@\the\scratchcounter\endcsname
+       {\@EA\let\csname\@@aa@@\the\scratchcounter\endcsname=~}%
+     \@EA\chardef\csname\@@cc@@\the\scratchcounter\endcsname
        =\catcode\scratchcounter
    \fi}
 
@@ -564,9 +576,9 @@
 
 \def\restorecatcode%
   {\@EA\catcode\@EA\scratchcounter\@EA=
-     \csname @@cc@@\the\scratchcounter\endcsname
+     \csname\@@cc@@\the\scratchcounter\endcsname
    \saverestoreactivecatcode
-     {\@EA\let\@EA~\@EA=\csname @@aa@@\the\scratchcounter\endcsname}}
+     {\@EA\let\@EA~\@EA=\csname\@@aa@@\the\scratchcounter\endcsname}}
 
 %D Especially when we enable pretty printing, we need to 
 %D restore the meaning of active characters too. Just think of 
@@ -603,6 +615,22 @@
      \let\beginrestorecatcodes=\bgroup
      \let\endrestorecatcodes  =\egroup
    \fi}
+
+%D \macros 
+%D   {makeallletter}
+%D
+%D With \type {\makeallletter} each character ($>0$) gets the 
+%D category code 12. 
+
+% \newtoks\makeallothertoks
+%
+% \dorecurse{255}
+%  {\@EA\appendtoks\@EA\catcode\recurselevel=\@@other\to\makeallothertoks}
+%
+% \def\makeallother{\the\makeallothertoks}
+
+\def\makeallother%
+  {\dorecurse{255}{\catcode\recurselevel=\@@other}}
 
 %D The main copying routine of display verbatim does an
 %D ordinary string||compare on the saved closing command and
@@ -784,13 +812,13 @@
 
 \let\endoftabskipping=\relax
 
-\def\processverbatimline#1{#1} % remove the fake grouping
-
 \def\doprocesstabskipline#1%
   {\bgroup
    \scratchcounter=1
    \dodoprocesstabskipline#1\relax\endoftabskipping
    \egroup}
+
+\def\processverbatimline#1{#1} % remove the fake grouping
 
 %D \macros
 %D   {processfileverbatim}
@@ -828,21 +856,36 @@
    \obeypages
    \obeycharacters
    \ignoreeofs
+   \catcode`\^^M=\@@ignore % \par is already taken care of 
    \openin\verbatiminput=#1\relax
    \skipfirstverbatimlinefalse
    \initializeverbatimline
    \def\readline%
-     {\read\verbatiminput to \verbatimline
+     {\ifx\firstverbatimfileline\empty 
+        \read\verbatiminput to \verbatimline
+      \else
+        \let\verbatimline\firstverbatimfileline
+        \let\firstverbatimfileline\empty
+      \fi
       \ifeof\verbatiminput
-        \presetlastverbatimline
-        \let\readline=\relax
+        \ifx\lastverbatimfileline\empty 
+          \presetlastverbatimline
+          \let\readline=\relax
+        \else % we will re-enter the \ifeof branch twice  
+          \presetnormalverbatimline
+          \def\readline% 
+            {\let\verbatimline\lastverbatimfileline
+             \let\lastverbatimfileline\empty}%
+        \fi
+      \else\ifx\verbatimline\empty
+        \presetemptyverbatimline
       \else\ifx\verbatimline\emptyline
         \presetemptyverbatimline
       \else\ifx\verbatimline\emptypage
         \presetemptyverbatimline
       \else
         \presetnormalverbatimline
-      \fi\fi\fi
+      \fi\fi\fi\fi
       \handleverbatimline
       \readline}%
    \ifeof\verbatiminput \else
@@ -851,6 +894,24 @@
    \closein\verbatiminput
    \egroup
    \ignorespaces}
+
+%D \macros 
+%D   {firstverbatimfileline, lastverbatimfileline}
+%D
+%D The following two macros can be set to achieve special 
+%D effects, like:
+%D
+%D \starttypen
+%D \convertargument\StartFake{something}\to\firstverbatimfileline
+%D \convertargument\StopFake\to\firstverbatimfileline
+%D \stoptypen 
+%D
+%D These hooks were needed for typesetting flowchart 
+%D definitions verbatim, since the temporary files does not 
+%D have the start and stop commands embedded. 
+ 
+\let\firstverbatimfileline\empty
+\let\lastverbatimfileline \empty
 
 %D One can use the different \type{\obeysomething} commands to
 %D influence the behavior of these macro's. We use for instance
@@ -1729,6 +1790,27 @@
       \fi%
       \handleverbatimline%
       \copyverbatimline}}
+
+%D As a bonus, we provide the next alternative, which takes
+%D end tags like \type {Hello World!}. 
+
+  \def\processtaggeddisplayverbatim#1%
+    {\par
+     \let\endofdisplayverbatim\relax
+     \convertargument#1\to\endofverbatimcommand
+     \bgroup
+     \parindent\!!zeropoint
+     \ifdim\lastskip<\parskip
+       \removelastskip
+       \vskip\parskip
+     \fi
+     \parskip\!!zeropoint
+     \processingverbatimtrue
+     \verbatimfont \spaceskip=.5em \xspaceskip=\spaceskip
+     \global\linepartrue % needed for paragraph numbering 
+     \setupcopyverbatim
+     \initializeverbatimline
+     \copyverbatimline}
 
 \fi
 

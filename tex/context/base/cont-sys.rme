@@ -63,12 +63,22 @@
 %
 % Enabling run time \METAPOST\ (also enable \write18 in texmf.cnf):
 
-\runMPgraphicstrue 
-\recycleMPslotstrue 
+   \runMPgraphicstrue 
+\runMPTEXgraphicstrue
+  \recycleMPslotstrue 
+\useMETAFUNformattrue
 
 % Enabling nested pretty printing:
 
-\newprettytrue 
+       \newprettytrue 
+
+% Protect filenames: 
+
+  \protectbufferstrue
+
+% not really needed
+
+% \runutilityfiletrue 
 
 % So far. 
 

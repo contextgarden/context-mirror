@@ -1,0 +1,72 @@
+%D \module
+%D   [     file=enco-pro,
+%D      version=2000.29.9,
+%D        title=\CONTEXT\ Encoding Macros,
+%D     subtitle=Protruding Factors, 
+%D       author=Hans Hagen,
+%D         date=\currentdate,
+%D    copyright=Hans Hagen]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D This is an experimental definition file. The protruding 
+%D values we use here are those found from \THANH's thesis. 
+
+\unprotect 
+
+\definecharactercode leftupperninequote   92 
+\definecharactercode rightupperninequote  34 
+\definecharactercode endash              123
+\definecharactercode emdash              124
+
+\startfonthandling[defpunc]
+
+  \defineprotrudefactor !  0  .2
+  \defineprotrudefactor '  0  .7
+  \defineprotrudefactor ` .7   0
+  \defineprotrudefactor ( .05  0   
+  \defineprotrudefactor )  0  .05
+  \defineprotrudefactor ,  0  .7
+  \defineprotrudefactor -  0  .7
+  \defineprotrudefactor .  0  .7
+  \defineprotrudefactor :  0  .5
+  \defineprotrudefactor ;  0  .5
+
+  \defineprotrudefactor rightupperninequote  0 .5
+  \defineprotrudefactor leftupperninequote  .5  0 
+  \defineprotrudefactor endash               0 .3  
+  \defineprotrudefactor emdash               0 .2  
+
+\stopfonthandling
+
+\startfonthandling[defalph]
+
+  \defineprotrudefactor A .05 .05
+  \defineprotrudefactor F  0  .05
+  \defineprotrudefactor J .05   0
+  \defineprotrudefactor K  0  .05 
+  \defineprotrudefactor L  0  .05
+  \defineprotrudefactor T .05 .05
+  \defineprotrudefactor V .05 .05
+  \defineprotrudefactor W .05 .05
+  \defineprotrudefactor X .05 .05
+  \defineprotrudefactor Y .05 .05
+  
+  \defineprotrudefactor k  0  .05 
+  \defineprotrudefactor r  0  .05
+  \defineprotrudefactor t  0  .05 
+  \defineprotrudefactor v .05 .05
+  \defineprotrudefactor w .05 .05
+  \defineprotrudefactor x .05 .05
+  \defineprotrudefactor y .05 .05
+ 
+\stopfonthandling
+
+\definefonthandling [normal]      [defpunc,defalph]
+\definefonthandling [slanted]     [defpunc]         [\c!rechts=1.5]
+\definefonthandling [bold]        [defpunc,defalph]
+\definefonthandling [boldslanted] [defpunc]         [\c!links=1.5]
+
+\protect \endinput 

@@ -843,15 +843,16 @@
   {\doifundefined{fieldstack:#1}
      {\setgvalue{fieldstack:#1}{\dodofieldstack[#1][#2][#3]}}}
 
-\def\dodofieldstack[#1][#2][#3]%
+\def\dodofieldstack[#1][#2][#3]% start=n, 0 == leeg 
   {\bgroup
+   \getparameters[\??fd][\c!start=1,#3]%
    \setupfields[\v!reset]%
    \definesymbol[\v!leeg][]%
-   \useJSscripts[fld]%
+   \useJSscripts[fld][FieldStack]%
    \newcounter\stackedfieldnumber
    \def\dododofieldstack##1%
      {\increment\stackedfieldnumber
-      \ifnum\stackedfieldnumber=1
+      \ifnum\stackedfieldnumber=\@@fdstart\relax
         \definefield[#1:\stackedfieldnumber][check][#1][##1,\v!leeg][##1]%
       \else
         \definefield[#1:\stackedfieldnumber][check][#1][##1,\v!leeg][\v!leeg]%
@@ -879,6 +880,20 @@
 
 \def\fieldstack%
   {\dotripleempty\dofieldstack}
+
+%D When submitting a form, we need to tell the driver module
+%D that we want \FDF\ or \HTML. 
+
+\def\setupforms%
+  {\dodoubleargument\getparameters[\??fr]}
+
+\def\checksubmitform#1%
+  {\setsubmitoutputformat{\@@frmethode}}
+
+\setexecutecommandcheck {submitform} \checksubmitform
+
+\setupforms
+  [\c!methode=HTML]
 
 \protect
 

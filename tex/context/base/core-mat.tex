@@ -44,7 +44,7 @@
 %D and \type{sub}. 
 
 \global\let\normalsuper=^ 
-\global\let\normalsub  =_ 
+\global\let\normalsuber=_ 
 
 \newcount\supersubmode
 
@@ -53,16 +53,16 @@
 \appendtoks \advance\supersubmode by 1 \to \everysupersub
 
 % \def\dodosuper#1{\normalsuper{\the\everysupersub#1}}
-% \def\dodosub  #1{\normalsub  {\the\everysupersub#1}}
+% \def\dodosuber#1{\normalsuber{\the\everysupersub#1}}
 % 
 % \def\dosuper{\ifx\next\bgroup\expandafter\dodosuper\else\normalsuper\fi}
-% \def\dosub  {\ifx\next\bgroup\expandafter\dodosub  \else\normalsub  \fi}
+% \def\dosuber{\ifx\next\bgroup\expandafter\dodosuber\else\normalsuber\fi}
 % 
-% \def\super  {\futurelet\next\dosuper}
-% \def\sub    {\futurelet\next\dosub  }
+% \def\super{\futurelet\next\dosuper}
+% \def\suber{\futurelet\next\dosuber}
 
 \def\super#1{\normalsuper{\the\everysupersub#1}}
-\def\sub  #1{\normalsub  {\the\everysupersub#1}}
+\def\suber#1{\normalsuber{\the\everysupersub#1}}
 
 %D \macros
 %D   {enablesupersub}
@@ -75,9 +75,9 @@
 \catcode`\_=\@@active
 \gdef\enablesupersub%
   {\catcode`\^=\@@active
-   \def^{\ifmmode\expandafter\super\else\expandafter\donormalsuper\fi}%
+   \def^{\ifmmode\expandafter\super\else\expandafter\normalsuper\fi}%
    \catcode`\_=\@@active
-   \def_{\ifmmode\expandafter\sub  \else\expandafter\donormalsub  \fi}}
+   \def_{\ifmmode\expandafter\suber\else\expandafter\normalsuber\fi}}
 \egroup
 
 %D \macro

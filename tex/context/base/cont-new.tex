@@ -18,222 +18,32 @@
 
 \writestatus{\m!systems}{beware: some patches loaded from cont-new.tex!}
 
-%D Hm. Needed for low level calls, like in verbatim. 
+%D Interesting, saves keystrokes, but also dangerous.
 
-\def\startcolormode#1% 
-  {\ifincolor
-     \doifcolorelse{#1}
-       {\getcurrentcolorspecs{#1}%
-        \expandafter\dostartcolormode\currentcolorspecs\od}
-       {\dostopcolormode}%
-   \fi}
+%\def\checkMPbackground%
+%  {\doifoverlayelse\currentbackground
+%     {}
+%     {\doifMPgraphicelse\currentbackground
+%        {\defineoverlay[\currentbackground][\useMPgraphic{\currentbackground}]}
+%        {}}}
+%
+%\appendtoks \checkMPbackground \to \everybackgroundbox
 
-\def\stopcolormode%
-  {\ifincolor\dostopcolormode\fi}
+%D Better (no zero dimension mp figs) and faster:  
 
-%D New table stuff. 
-
-\readfile{supp-ali}{}{} % alignment stuff
-\readfile{core-ntb}{}{} % new table mechanism 
-
-\ifx\alignmentclass\undefined \else % [|lg{.}|] \NG 12.34 \NC
-
-\gdef\handletabulatecharalign#1 % space delimited ! 
-  {\edef\alignmentclass{\tabulatecolumn}%
-   \edef\alignmentcharacter{\getvalue{\@@tabalign@@\tabulatecolumn}}%
-   \ifcase\tabulatepass\or
-     \setfirstpasscharacteralign\checkalignment{#1}%
-   \fi % force hsize 
-   \setsecondpasscharacteralign\checkalignment{#1}}
-
-\fi
-
-%D A funny (but rather stupid) one. 
-
-\def\removebottomthings%
-  {\dorecurse{5}{\unskip\unkern\unpenalty}}
-
-%D We also support broad here: 
-
-\def\dosetraggedcommand#1% 
-  {\expanded{\dodosetraggedcommand{#1}}}
- 
-\def\dodosetraggedcommand#1% 
-  {\doifinsetelse{\v!ruim} {#1}{\!!doneatrue}{\!!doneafalse}%
-   \doifinsetelse{\v!breed}{#1}{\!!donebtrue}{\!!donebfalse}%
-   \let\raggedcommand\relax
-   \let\raggedtopcommand\empty
-   \let\raggedbottomcommand\empty
-   \ExpandFirstAfter\processallactionsinset
-     [#1]
-     [  \v!links=>\if!!donea      \def\raggedcommand{\veryraggedleft}%
-                  \else           \def\raggedcommand{\raggedleft}%
-                  \fi,
-       \v!rechts=>\if!!donea      \def\raggedcommand{\veryraggedright}%
-                  \else           \def\raggedcommand{\raggedright}%
-                  \fi,
-       \v!midden=>\if!!doneb      \def\raggedcommand{\raggedwidecenter}%
-                  \else\if!!donea \def\raggedcommand{\veryraggedcenter}%
-                  \else           \def\raggedcommand{\raggedcenter}%
-                  \fi\fi,
-         \v!hoog=>\let\raggedbottomcommand\vfilll, % bonus, pretty strong 
-         \v!laag=>\let\raggedtopcommand   \vfilll, % used with \framed 
-          \v!nee=>\def\raggedcommand{\raggedright},
-           \v!ja=>\let\raggedcommand\relax,
-      \v!normaal=>\let\raggedcommand\relax]}
-
-%D Sometimes a capstrut comes in handy
-%D
-%D \starttabulatie[|Tl|l|l|]
-%D \NC yes          \NC normal strut               \NC {\toonstruts\setupstrut[ja]\strut}  \NC \NR 
-%D \NC no           \NC no strut                   \NC {\toonstruts\setupstrut[nee]\strut}  \NC \NR 
-%D \NC kap          \NC a capital strut (i.e. Q)   \NC {\toonstruts\setupstrut[kap]\strut} \NC \NR 
-%D \NC A B \unknown \NC a character strut (e.g. A) \NC {\toonstruts\setupstrut[A]\strut}   \NC \NR 
-%D \NC              \NC a normal strut             \NC {\toonstruts\setupstrut\strut}      \NC \NR 
-%D \stoptabulatie
-
-\def\setstrut%
-  {\setstrutdimen\strutheight\strutheightfactor\spacingfactor
-   \setstrutdimen\strutdepth \strutdepthfactor \spacingfactor
-   \dosetstrut}
-
-\def\setcharstrut#1%
-  {\setbox\strutbox=\hbox{#1}% 
-   \edef\strutheight{\the\ht\strutbox}%
-   \edef\strutdepth {\the\dp\strutbox}%
-   \dosetstrut}
-
-\def\setcapstrut% could be M, but Q has descender
-  {\setcharstrut{Q}} 
-
-\def\setupstrut%
-  {\dosingleempty\dosetupstrut}
-
-\def\dosetupstrut[#1]%
-  {\processaction
-     [#1]
-     [     \v!ja=>\setstrut,
-          \v!nee=>\setnostrut,
-          \v!kap=>\setcapstrut,
-      \s!default=>\setstrut,
-      \s!unknown=>\setcharstrut{\commalistelement}]}
-
-%D Centered looks nicer: 
-
-\def\dosetstrut%
-  {\let\strut=\normalstrut
-   \setbox\strutbox=\normalhbox
-     {\normalhbox to \!!zeropoint
-        {% \hss % new, will be option 
-         \vrule
-           \!!width \strutwidth
-           \!!height\strutheight
-           \!!depth \strutdepth
-         \hss}}}
-
-%D in case of no color we don't want to see the rules 
-
-\def\dophantombox#1\\{\hphantom{\dofilledbox#1\\}}
-
-\def\raster[#1]%
-  {\groupedcommand{\startraster[#1]}{\stopraster}}
-
-\def\setgraybox\width#1\height#2\depth#3\raster#4\corner#5\radius#6\\%
-  {\doifelsenothing{#4}
-     {\dophantombox\width#1\height#2\depth#3\corner#5\radius#6\\}
-     {\raster[#4]%
-     {\dofilledbox \width#1\height#2\depth#3\corner#5\radius#6\\}}}
-
-\def\setcolorbox\width#1\height#2\depth#3\color#4\corner#5\radius#6\\%
-  {\ifincolor
-     \doifcolorelse{#4}{\color[#4]%
-    {\dofilledbox \width#1\height#2\depth#3\corner#5\radius#6\\}}
-    {\dophantombox\width#1\height#2\depth#3\corner#5\radius#6\\}%
+\def\dododopagebodybackground#1#2#3#4%
+  {\ifsomebackgroundfound{#3#4}%
+     \ifdim#1>\!!zeropoint\relax
+       \ifdim#2>\!!zeropoint\relax
+         \localframed
+           [\??ma#3#4]
+           [\c!breedte=#1,\c!hoogte=#2,\c!offset=\v!overlay]
+           {\getvalue{\??ma#3#4\c!commando}}% {\hsize=#1\vsize=#2....}
+       \fi
+     \fi
    \else
-     \dophantombox\width#1\height#2\depth#3\corner#5\radius#6\\%
+     \hskip#1%
    \fi}
-
-%D more and more
-
-\def\lhbox{\dowithnextbox{\hbox to \hsize{\box\nextbox\hss    }}\hbox}
-\def\mhbox{\dowithnextbox{\hbox to \hsize{\hss\box\nextbox\hss}}\hbox}
-\def\rhbox{\dowithnextbox{\hbox to \hsize{\hss\box\nextbox    }}\hbox}
-
-\let\lefthbox =\lhbox 
-\let\midhbox  =\mhbox 
-\let\righthbox=\rhbox
-
-%D to be tested
-
-\def\docomplexuit[#1::#2]%
-  {\dontleavehmode % added, but probably not needed
-   \bgroup
-   \doifdefinedelse{\v!file:::#1}
-     {\def\doexternaldocument[##1][##2][##3]%
-        {\naar{##3}[#1::#2]}%
-      \getvalue{\v!file:::#1}}
-     {\tttf[#1]}%
-   \egroup}
-
-%D Makes sense:
-
-\def\removelastskip% \ifvmode the plain tex one \fi
-  {\ifvmode\ifdim\lastskip=\z@\else\vskip-\lastskip\fi\fi}
-
-%D More hyphention control, will be combined with hz setup.
-
-\def\nohyphens%
-  {\ifx\dohyphens\relax
-     \edef\dohyphens%
-       {\hyphenpenalty\the\hyphenpenalty
-        \exhyphenpenalty\the\exhyphenpenalty\relax}%
-   \fi
-   \hyphenpenalty\@M\exhyphenpenalty\@M}
-
-\let\dohyphens\relax
-
-%D Better (a mere copy with \dohyphens): 
-
-\bgroup \catcode`\~=\active \catcode`\/=\active 
-
-\unexpanded\gdef\hyphenatedurl#1% {}{} handles accents
-  {\bgroup
-   \ifnum\hyphenpenalty<10000 \else
-     \def\discretionary##1##2##3{##1\allowbreak##2}%
-   \fi
-   \obeyhyphens
-   \def\splitbefore##1%
-     {\setbox\scratchbox=\hbox{##1{}{}}%
-      \ifcase\urlsplitmode 
-        \box\scratchbox
-      \or 
-        \postwordbreak\box\scratchbox\prewordbreak
-      \or
-        \prewordbreak\discretionary{\box\scratchbox}{}{\box\scratchbox}\prewordbreak
-      \else
-        \postwordbreak\box\scratchbox\prewordbreak
-      \fi}%
-   \def\splitafter##1%
-     {\ifcase\urlsplitmode
-        ##1{}{}%
-      \or
-        \prewordbreak\discretionary{##1{}{}}{}{##1{}{}}\prewordbreak
-      \or
-        \prewordbreak\discretionary{##1{}{}}{}{##1{}{}}\prewordbreak
-      \else
-        \prewordbreak\discretionary{}{##1{}{}}{##1{}{}}\prewordbreak
-      \fi}% 
-   \def\flushurl%
-     {\savedurl\let\savedurl\empty}%
-   \def\\%
-     {\spliturl\#}%
-   \let\~=\tildeletter \let~=\~%
-   \let\/=\slashletter \let/=\/%
-   \let\savedurl\empty
-   \handletokens#1\with\scanurl
-   \egroup}
-
-\egroup
 
 %D A prelude to strategies. Note for myself: overloads
 %D previous stuff from local pragma test files.
@@ -291,9 +101,11 @@
 \def\doifstrategyvariable   #1#2{\doifstrategyvariableelse{#1}{#2}{}}
 \def\doifnotstrategyvariable#1#2{\doifstrategyvariableelse{#1}{}{#2}}
 
-%D New: only at start of columns; may change !
+%D New: only at start of columns; may change ! Rather 
+%D interwoven and therefore to be integrated when the multi 
+%D column modules are merged. 
 
-\definesystemvariable {ks}   % KolomSpan
+%  already taken care of: \definesystemvariable{ks}
 
 \def\setupcolumnspan[#1]%
   {\getparameters[\??ks][#1]}
@@ -312,16 +124,14 @@
   {\bgroup
    \setupcolumnspan[#1]%
    \forgetall
-%
-       \ifbinnenkolommen
-         \advance\hsize by \intercolumnwidth
-         \hsize=\@@ksn\hsize
-         \advance\hsize by -\intercolumnwidth
-       \fi
-%
+   \ifbinnenkolommen
+     \advance\hsize by \intercolumnwidth
+     \hsize=\@@ksn\hsize
+     \advance\hsize by -\intercolumnwidth
+   \fi
    \dowithnextbox
      {\setbox\columnspanbox=\box\nextbox
-\ifbinnenkolommen\wd\columnspanbox=\hsize\fi
+      \ifbinnenkolommen\wd\columnspanbox=\hsize\fi
       \postprocesscolumnspanbox\columnspanbox
       \scratchdimen=\ht\columnspanbox
       \setbox\columnspanbox=\hbox % depth to be checked, probably option!
@@ -353,11 +163,6 @@
       \prevdepth\dp\strutbox
       \egroup}
      \vbox\bgroup
-%       \ifbinnenkolommen
-%         \advance\hsize by \intercolumnwidth
-%         \hsize=\@@ksn\hsize
-%         \advance\hsize by -\intercolumnwidth
-%       \fi
       %\topskipcorrection % becomes an option ! 
        \EveryPar{\begstrut\EveryPar{}}} % also ! 
 
@@ -367,147 +172,14 @@
 \def\stopcolumnspan%
   {\egroup}
 
-%D A test:
-
-\def\EndTableParBox%
-  {\removelastskip % added
-  %\MakeStrut{0pt}{\StrutDepthFactor\StrutUnit}       % removed
-\par
-\ifnum\prevgraf>0
-  \strut
-  \vskip-\lineheight
-\fi
-   \egroup % finishes the \vtop begun by \BeginTableParbox
-   \getboxheight\scratchdimen\of\box\scratchbox\relax % added
-   \ifdim\scratchdimen>\TABLEparheight                % added
-     \global\TABLEparheight=\scratchdimen             % added
-   \fi                                                % added
-   \box\scratchbox}
-
-%D A few local optimizations and new features:
-
-\readfile {cont-loc} {} {}
-
-%D For Ton:
+%D For Ton. Do be documented.
 
 \def\plaatsexterndocument[#1]%
   {\def\doexternaldocument[##1][##2][##3]%
      {\readlocfile{##2}{}{}}%
    \getvalue{\v!file:::#1}}
 
-%D For me:
-
-\beginTEX
-
-\def\p!doifinstringelse#1#2%
-  {\def\pp!doifinstringelse##1#1##2##3\war%
-     {\csname if\if##2@fals\else tru\fi e\endcsname}%
-   \expanded{\pp!doifinstringelse#2#1@@\noexpand\war}} % expand #2 here
-
-\endTEX
-
-\beginETEX \unless
-
-\def\p!doifinstringelse#1#2%
-  {\def\pp!doifinstringelse##1#1##2##3\war%
-     {\unless\if##2@}%
-   \expanded{\pp!doifinstringelse#2#1@@\noexpand\war}} % expand #2 here
-
-\endETEX
-
-%D For Willy's nested commented buffers:
-
-\def\processnextbufferline#1#2#3%
-  {\relax % checken waarom eerdere macro dit nodig heeft / supp-mps run
-   \convertargument#1 \to\next
-   \doifinstringelse{\delcharacter\texcommentsymbol}{\delcharacter\next}
-     {\def\next{#3}}
-     {\doifinstringelse{\endofblock}{\next}
-        {\ifnum\nestedbufferlevel=0\relax % \relax ?
-           \def\next{#2}%
-         \else
-           \decrement\nestedbufferlevel\relax
-           \def\next{#3}%
-         \fi}
-        {\doifinstringelse{\beginofblock}{\next}
-           {\increment\nestedbufferlevel\relax
-            \def\next{#3}}
-           {\def\next{#3}}}}%
-   \next}
-
-%D Some day:
-
-% \definieermarkering[\v!margetitel]
-%
-% \def\complexmargewoord[#1][#2]#3%
-%   {\doglobal\increment\margincontent
-%    \stelinmargein[\margincontent][]% see next macro
-%    \@EA\setgvalue\@EA{\@EA\??im\@EA\margincontent\@EA}\@EA
-%      {\@EA\stelinmargein\@EA[\margincontent][]%  see next macro
-%       \flushmargincontent[#1][#2]{#3}%
-%       \markeer[\v!margetitel]{#3}}}
-
-%D Undocumented and still under development.
-
-\def\startsimplecolumns%
-  {\dosingleempty\dostartsimplecolumns}
-
-\def\dostartsimplecolumns[#1]%
-  {\bgroup
-   \getparameters[\??kl][\c!breedte=\hsize,\c!afstand=1em,\c!n=2,#1]%
-   \setrigidcolumnhsize\@@klbreedte\@@klafstand\@@kln
-   \setbox\scratchbox=\vbox\bgroup
-   \forgetall} % \blanko[\v!blokkeer]
-
-\def\stopsimplecolumns%
-  {\removebottomthings 
-   \egroup
-   \rigidcolumnbalance\scratchbox
-   \egroup}
-
-%D Improved: 
-
-\newbox\rigidcolumnbox
-
-\def\rigidcolumnbalance#1%
-  {\ifnum\rigidcolumns=1 % tzt ook h/d correctie
-     \ifinner\ifhmode\box\else\unvbox\fi\else\unvbox\fi#1\relax 
-   \else
-     \vbox
-       {\forgetall
-        \dontcomplain
-        \setbox\rigidcolumnbox=\vbox
-          {\line{}\goodbreak\unvbox#1\removebottomthings}%
-        \splittopskip=\openstrutheight 
-        \setbox\scratchbox=\vsplit\rigidcolumnbox to \!!zeropoint
-        \scratchdimen=\ht\rigidcolumnbox      
-        \divide\scratchdimen by \rigidcolumns 
-        \getnoflines\scratchdimen 
-        \scratchdimen=\noflines\lineheight
-        \setbox\scratchbox=\hbox to \savedrigidhsize
-          {\dorecurse{\rigidcolumns}
-             {\setbox\scratchbox=\vsplit\rigidcolumnbox to \scratchdimen
-              \dp\scratchbox=\openstrutdepth
-              \vtop
-                \ifalignrigidcolumns to 
-                  \ifstretchrigidcolumns\vsize\else\scratchdimen\fi
-                \fi
-               {\unvbox\scratchbox}%
-              \hfill}%
-           \hfillneg}%
-       \advance\scratchdimen by -\openstrutdepth
-       \setbox\scratchbox\hbox{\raise\scratchdimen\box\scratchbox}
-       \dp\scratchbox=\openstrutdepth
-       \ht\scratchbox=\scratchdimen
-       \box\scratchbox}
-   \fi}
-
-%D Is this a better default?
-
-\def\doverbatimgoodbreak%
-  {} % instead of {\ifoptimizeverbatim\penalty100\fi}
-
-%D Hm:
+%D Far from complete. 
 
 \def\startgeheel%
   {\startregelcorrectie
@@ -516,56 +188,12 @@
 \def\stopgeheel
   {\stopregelcorrectie}
 
-%D Under construction:
-
-\def\resetpositions%
-  {\let\someposition=\gobblesevenarguments   % old
-   \let\pxypos      =\gobblefourarguments    % new
-   \let\pxywhdpos   =\gobblesevenarguments}  % new
-
-\resetpositions
-
-%D Some more box stuff, related to positioning (under 
-%D construction). Nice stuff for a tips and tricks maps 
-%D article. 
-%D
-%D \starttypen 
-%D \raisebox{100pt}\hbox{test} 
-%D \raisebox50pt\hbox{test} 
-%D \hsmash{\raisebox{100pt}\hbox{test}} 
-%D \stoptypen 
-
-\def\doraiselowerbox#1#2% a nice trick us used to accept 
-  {\def\next%           % both direct and {} dimensions 
-     {\dowithnextbox
-        {\setbox\nextbox=\hbox{#1\scratchdimen\box\nextbox}%
-         \ht\nextbox=\ht\strutbox
-         \dp\nextbox=\dp\strutbox
-         \box\nextbox}}%
-   \afterassignment\next\scratchdimen=#2}
-
-\def\raisebox{\doraiselowerbox\raise}
-\def\lowerbox{\doraiselowerbox\raise}
-
-%D It's more convenient to use \type {\columnwidth} instead 
-%D of messing around with boxes each time.
-
-\newdimen\columnwidth
-\newdimen\gutterwidth
-
-\def\determinecolumnwidth% 
-  {\bgroup
-   \setbox\scratchbox=\hbox
-     {\setcolumnhsize
-      \global\columnwidth=\usercolumnwidth
-      \global\gutterwidth=\intercolumnwidth}%
-   \egroup}
-
-%D The next line can be uncommented when Taco's extensions to
-%D \quote {\TEX\ The Program} are used.
-
-% \readfile {syst-eet} {} {}
+%D No more news. 
 
 \protect
+
+%D A few local optimizations and new features, if defined: 
+
+\readfile {cont-loc} {} {}
 
 \endinput

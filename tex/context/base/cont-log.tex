@@ -38,7 +38,7 @@
    \kern-.125emX}
 
 \def\ConTeXt%
-  {C%
+                  {C%
    \CMRkern-.0333emo%
    \CMRkern-.0333emn%
    \CMRkern-.0333em\TeX%
@@ -98,14 +98,26 @@
      10 at \currentfontscale\bodyfontsize
    \logofont}
 
+%\unexpanded\def\MetaFont% 
+%  {\hbox{\setMFPfont METAFONT}}
+%
+%\unexpanded\def\MetaPost% 
+%  {\hbox{\setMFPfont METAPOST}}
+
+\def\MetaHyphen% there is no hyphenchar in this font 
+  {\discretionary{\vrule\!!height.33em\!!depth-.27em\!!width.33em}{}{}}
+
 \unexpanded\def\MetaFont% 
- {{\setMFPfont METAFONT}}
+ {{\setMFPfont META\MetaHyphen FONT}}
 
 \unexpanded\def\MetaPost% 
- {{\setMFPfont METAPOST}}
+ {{\setMFPfont META\MetaHyphen POST}}
+
+\unexpanded\def\MetaFun% 
+ {MetaFun}
 
 %D \macros
-%D  {TEX, METAFONT, METAPOST,
+%D  {TEX, METAFONT, METAPOST, METAFUN,
 %D   PICTEX, TABLE,      
 %D   CONTEXT, PPCHTEX, 
 %D   AMSTEX, LATEX, LAMSTEX}
@@ -119,6 +131,7 @@
 \def\METAPOST {\MetaPost}
 \def\PPCHTEX  {\PPCHTeX}
 \def\CONTEXT  {\ConTeXt}
+\def\METAFUN  {\MetaFun}
 
 \def\TEX      {\TeX}
 \def\LATEX    {\LaTeX}
@@ -142,9 +155,9 @@
 
 %D Some placeholders: 
 
-\def\eTeX     {\mathematics{\varepsilon}-\TEX}
-\def\pdfTeX   {pdf\TEX}
-\def\pdfeTeX  {pdfe-\TEX}
+\def\eTeX     {\mathematics{\varepsilon}-\TeX}
+\def\pdfTeX   {pdf\TeX}
+\def\pdfeTeX  {pdfe-\TeX}
 
 \let\ETEX     \eTeX
 \let\PDFTEX   \pdfTeX

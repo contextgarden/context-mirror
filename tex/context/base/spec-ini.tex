@@ -66,6 +66,28 @@
       7: neznamy ovladac (driver) --
 \stopmessages
 
+\startmessages  italian  library: specials
+  title: specialità
+      1: -- caricato
+      2: non è permesso un annidamento maggiore --
+      3: -- reimpostato
+      4: il comando -- non esiste
+      5: caricamento del file di definizione --
+      6: annidamento non permesso
+      7: driver sconosciuto --
+\stopmessages
+
+\startmessages  norwegian  library: specials
+  title: specials
+      1: -- er lest inn
+      2: dypere 'nesting' er ikke tillatt --
+      3: -- er tilbakestilt
+      4: kommando -- eksisterer ikke
+      5: leser inn definisjonsfil for --
+      6: 'nesting' er ikke tillatt
+      7: ukjent driver --
+\stopmessages
+
 \startmessages  dutch  library: interactions
      21: -- code tussengevoegd
 \stopmessages
@@ -80,6 +102,14 @@
 
 \startmessages  czech  library: interactions
      21: -- kod vlozen
+\stopmessages
+
+\startmessages  italian  library: interactions
+     21: codice -- inserito
+\stopmessages
+
+\startmessages  norwegian  library: interactions
+     21: -- kode satt inn / tilføyd
 \stopmessages
 
 %D \TEX\ produces files in the \DVI\ format. This format is
@@ -272,11 +302,11 @@
    \addtocommalist\currentspecial\preloadedspecials}
 
 \def\startspecials%
-  {\pushmacro\currentspecial
+  {\localpushmacro\currentspecial
    \dodoubleempty\dostartspecials}
 
 \def\stopspecials%
-  {\popmacro\currentspecial
+  {\localpopmacro\currentspecial
    \protect}
  
 %D \macros

@@ -11,10 +11,22 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
 %C details. 
 
+\writestatus{loading}{Germanic Languages}
+
+%D The framework of this module is set up by Hans Hagen while
+%D many of the first translations were done by Tobias. Later
+%D on, corrections were made by users. If you have suggestions,
+%D or feel that your name missing here, don't hesitate to send
+%D us an email. 
+%D
+%D \starttabulate[|lB|l|]
+%D \NC Norwegian \NC Hans Fredrik Nordhaug \NC \NR
+%D \NC Danish    \NC Arne Jorgensen        \NC \NR % check the o 
+%D \NC Afrikaans \NC                       \NC \NR
+%D \stoptabulate
+
 %  Danish, Faeroese, Icelandic, Norwegian, Swedish, German, Yiddish
 %  Afrikaans, Dutch, English, Flemush, Frisian, Plattdeutsch
-
-\writestatus{loading}{Germanic Languages}
 
 \unprotect
 
@@ -63,16 +75,15 @@
 \installlanguage
   [\s!da]
   [\c!spatiering=\v!opelkaar,
-   \c!leftsentence=---,
-   \c!rightsentence=---,
-   \c!leftsubsentence=---,
-   \c!rightsubsentence=---,
-   \c!leftquote=\upperleftsinglesixquote,
-   \c!rightquote=\upperrightsingleninequote,
-   \c!leftquotation=\upperleftdoublesixquote,
-   \c!rightquotation=\upperrightdoubleninequote,
-   \c!datum={\v!jaar,\ ,\v!maand,\ ,\v!dag},
-   \c!status=\v!stop]
+   \c!leftsentence={\hbox{--\hskip.5em}},
+   \c!rightsentence={\hbox{\hskip.5em--}},
+   \c!leftsubsentence={--},
+   \c!rightsubsentence={--},
+   \c!leftquote=\lowerleftsingleninequote,
+   \c!rightquote=\upperrightsinglesixquote,
+   \c!leftquotation=\lowerleftdoubleninequote,
+   \c!rightquotation=\upperrightdoublesixquote,
+   \c!datum={\v!dag,{.},\ ,\v!maand,\ ,\v!jaar}]
 
 \installlanguage
   [\s!sv]
@@ -113,7 +124,7 @@
    \c!rightquote=\upperrightsingleninequote,
    \c!leftquotation=\upperleftdoublesixquote,
    \c!rightquotation=\upperrightdoubleninequote,
-   \c!datum={\v!jaar,\ ,\v!maand,\ ,\v!dag},
+   \c!datum={\v!dag,{.},\ ,\v!maand,\ ,\v!jaar},
    \c!status=\v!stop]
 
 %D Hey look, some experiment:
@@ -145,6 +156,7 @@
 %D For compatibility reasons we also define:
 
 \installlanguage [du]          [\s!de] % old times context 
+\installlanguage [sp]          [\s!es] % old times context 
 
 \installlanguage [usenglish]   [\s!us]
 \installlanguage [ukenglish]   [\s!uk]
@@ -155,109 +167,145 @@
 \installlanguage [swedish]     [\s!sv]
 \installlanguage [afrikaans]   [\s!af]
 \installlanguage [norwegian]   [\s!no]
+\installlanguage [norsk]       [\s!no] % bonus switch 
 
-%D The next section is dedicated to Tobias Burnus.
+% GERMAN
+%
+% %D The next section is dedicated to Tobias Burnus.
+% 
+% \startlanguagespecifics[\s!de]
+% 
+%   \installcompoundcharacter "a {\moveaccent{-.1ex}\"a\midworddiscretionary}
+%   \installcompoundcharacter "e {\moveaccent{-.1ex}\"e\midworddiscretionary}
+%   \installcompoundcharacter "i {\moveaccent{-.1ex}\"\i\midworddiscretionary}
+%   \installcompoundcharacter "o {\moveaccent{-.1ex}\"o\midworddiscretionary}
+%   \installcompoundcharacter "u {\moveaccent{-.1ex}\"u\midworddiscretionary}
+%   \installcompoundcharacter "s {\SS}
+%   \installcompoundcharacter "z {\SS}
+% 
+%   \installcompoundcharacter "A {\smashaccent\"A}
+%   \installcompoundcharacter "E {\smashaccent\"E}
+%   \installcompoundcharacter "I {\smashaccent\"I}
+%   \installcompoundcharacter "O {\smashaccent\"O}
+%   \installcompoundcharacter "U {\smashaccent\"U}
+%   \installcompoundcharacter "Z {SZ}
+%   \installcompoundcharacter "S {SS}
+% 
+% \stoplanguagespecifics
+% 
+% \startlanguagespecifics[\s!de]
+% 
+%   \installcompoundcharacter "ck {\discretionary {k-}{k}{ck}}
+%   \installcompoundcharacter "ff {\discretionary{ff-}{f}{ff}}
+%   \installcompoundcharacter "ll {\discretionary{ll-}{l}{ll}}
+%   \installcompoundcharacter "mm {\discretionary{mm-}{m}{mm}}
+%   \installcompoundcharacter "nn {\discretionary{nn-}{n}{nn}}
+%   \installcompoundcharacter "pp {\discretionary{pp-}{p}{pp}}
+%   \installcompoundcharacter "rr {\discretionary{rr-}{r}{rr}}
+%   \installcompoundcharacter "tt {\discretionary{tt-}{t}{tt}}
+% 
+%   \installcompoundcharacter "CK {\discretionary {K-}{K}{CK}}
+%   \installcompoundcharacter "FF {\discretionary{FF-}{F}{FF}}
+%   \installcompoundcharacter "LL {\discretionary{LL-}{L}{LL}}
+%   \installcompoundcharacter "MM {\discretionary{MM-}{M}{MM}}
+%   \installcompoundcharacter "NN {\discretionary{NN-}{N}{NN}}
+%   \installcompoundcharacter "PP {\discretionary{PP-}{P}{PP}}
+%   \installcompoundcharacter "RR {\discretionary{RR-}{R}{RR}}
+%   \installcompoundcharacter "TT {\discretionary{TT-}{T}{TT}}
+% 
+% \stoplanguagespecifics
+% 
+% \startlanguagespecifics[\s!de]
+% 
+%   \installcompoundcharacter "` {\handlequotation\c!leftquotation}
+%   \installcompoundcharacter "' {\handlequotation\c!rightquotation}
+%   \installcompoundcharacter ". {\kern.1em\ignorespaces}
+% 
+%   \def\setupDElanguage%
+%     {\setuplanguage
+%        [\s!de]
+%        [\c!leftsentence=\leftguillemot,
+%         \c!rightsentence=\rightguillemot,
+%         \c!leftsubsentence=\leftsubguillemot,
+%         \c!rightsubsentence=\rightsubguillemot]}
+%  
+%   \installcompoundcharacter "<   {{\setupDElanguage|<|}}
+%   \installcompoundcharacter ">   {{\setupDElanguage|>|}}
+% 
+% \stoplanguagespecifics
+% 
+% %D An experimental hack:
+% 
+% \startencoding[pdfdoc]
+%   \startlanguagespecifics[\s!de]% hm, a % is needed  
+%     \defineactivecharacter " {\"} % no {\simplifiedcompoundcharacter"}
+%   \stoplanguagespecifics
+% \stopencoding
+% 
+% \startencoding[ec]
+%   \startlanguagespecifics[\s!de]%
+%     \installcompoundcharacter "a {\"a} 
+%     \installcompoundcharacter "e {\"e}
+%     \installcompoundcharacter "i {\"\i}
+%     \installcompoundcharacter "o {\"o}
+%     \installcompoundcharacter "u {\"u}
+%     \installcompoundcharacter "A {\"A}
+%     \installcompoundcharacter "E {\"E}
+%     \installcompoundcharacter "I {\"I}
+%     \installcompoundcharacter "O {\"O}
+%     \installcompoundcharacter "U {\"U}
+%   \stoplanguagespecifics
+% \stopencoding
+% 
+% \startencoding[texnansi]
+%   \startlanguagespecifics[\s!de]%
+%     \installcompoundcharacter "a {\"a} 
+%     \installcompoundcharacter "e {\"e}
+%     \installcompoundcharacter "i {\"\i}
+%     \installcompoundcharacter "o {\"o}
+%     \installcompoundcharacter "u {\"u}
+%     \installcompoundcharacter "A {\"A}
+%     \installcompoundcharacter "E {\"E}
+%     \installcompoundcharacter "I {\"I}
+%     \installcompoundcharacter "O {\"O}
+%     \installcompoundcharacter "U {\"U}
+%   \stoplanguagespecifics
+% \stopencoding
+% 
+% %D This hack should be perfected.  
 
-\startlanguagespecifics[\s!de]
-
-  \installcompoundcharacter "a {\moveaccent{-.1ex}\"a\midworddiscretionary}
-  \installcompoundcharacter "e {\moveaccent{-.1ex}\"e\midworddiscretionary}
-  \installcompoundcharacter "i {\moveaccent{-.1ex}\"\i\midworddiscretionary}
-  \installcompoundcharacter "o {\moveaccent{-.1ex}\"o\midworddiscretionary}
-  \installcompoundcharacter "u {\moveaccent{-.1ex}\"u\midworddiscretionary}
-  \installcompoundcharacter "s {\SS}
-  \installcompoundcharacter "z {\SS}
-
-  \installcompoundcharacter "A {\smashaccent\"A}
-  \installcompoundcharacter "E {\smashaccent\"E}
-  \installcompoundcharacter "I {\smashaccent\"I}
-  \installcompoundcharacter "O {\smashaccent\"O}
-  \installcompoundcharacter "U {\smashaccent\"U}
-  \installcompoundcharacter "Z {SZ}
-  \installcompoundcharacter "S {SS}
-
-\stoplanguagespecifics
-
-\startlanguagespecifics[\s!de]
-
-  \installcompoundcharacter "ck {\discretionary {k-}{k}{ck}}
-  \installcompoundcharacter "ff {\discretionary{ff-}{f}{ff}}
-  \installcompoundcharacter "ll {\discretionary{ll-}{l}{ll}}
-  \installcompoundcharacter "mm {\discretionary{mm-}{m}{mm}}
-  \installcompoundcharacter "nn {\discretionary{nn-}{n}{nn}}
-  \installcompoundcharacter "pp {\discretionary{pp-}{p}{pp}}
-  \installcompoundcharacter "rr {\discretionary{rr-}{r}{rr}}
-  \installcompoundcharacter "tt {\discretionary{tt-}{t}{tt}}
-
-  \installcompoundcharacter "CK {\discretionary {K-}{K}{CK}}
-  \installcompoundcharacter "FF {\discretionary{FF-}{F}{FF}}
-  \installcompoundcharacter "LL {\discretionary{LL-}{L}{LL}}
-  \installcompoundcharacter "MM {\discretionary{MM-}{M}{MM}}
-  \installcompoundcharacter "NN {\discretionary{NN-}{N}{NN}}
-  \installcompoundcharacter "PP {\discretionary{PP-}{P}{PP}}
-  \installcompoundcharacter "RR {\discretionary{RR-}{R}{RR}}
-  \installcompoundcharacter "TT {\discretionary{TT-}{T}{TT}}
-
-\stoplanguagespecifics
-
-\startlanguagespecifics[\s!de]
-
-  \installcompoundcharacter "` {\handlequotation\c!leftquotation}
-  \installcompoundcharacter "' {\handlequotation\c!rightquotation}
-  \installcompoundcharacter ". {\kern.1em\ignorespaces}
-
-  \def\setupDElanguage%
-    {\setuplanguage
-       [\s!de]
-       [\c!leftsentence=\leftguillemot,
-        \c!rightsentence=\rightguillemot,
-        \c!leftsubsentence=\leftsubguillemot,
-        \c!rightsubsentence=\rightsubguillemot]}
- 
-  \installcompoundcharacter "<   {{\setupDElanguage|<|}}
-  \installcompoundcharacter ">   {{\setupDElanguage|>|}}
-
-\stoplanguagespecifics
-
-%D An experimental hack:
-
-\startencoding[pdfdoc]
-  \startlanguagespecifics[\s!de]% hm, a % is needed  
-    \defineactivecharacter " {\"} % no {\simplifiedcompoundcharacter"}
-  \stoplanguagespecifics
-\stopencoding
-
-\startencoding[ec]
-  \startlanguagespecifics[\s!de]%
-    \installcompoundcharacter "a {\"a} 
-    \installcompoundcharacter "e {\"e}
-    \installcompoundcharacter "i {\"\i}
-    \installcompoundcharacter "o {\"o}
-    \installcompoundcharacter "u {\"u}
-    \installcompoundcharacter "A {\"A}
-    \installcompoundcharacter "E {\"E}
-    \installcompoundcharacter "I {\"I}
-    \installcompoundcharacter "O {\"O}
-    \installcompoundcharacter "U {\"U}
-  \stoplanguagespecifics
-\stopencoding
-
-\startencoding[texnansi]
-  \startlanguagespecifics[\s!de]%
-    \installcompoundcharacter "a {\"a} 
-    \installcompoundcharacter "e {\"e}
-    \installcompoundcharacter "i {\"\i}
-    \installcompoundcharacter "o {\"o}
-    \installcompoundcharacter "u {\"u}
-    \installcompoundcharacter "A {\"A}
-    \installcompoundcharacter "E {\"E}
-    \installcompoundcharacter "I {\"I}
-    \installcompoundcharacter "O {\"O}
-    \installcompoundcharacter "U {\"U}
-  \stoplanguagespecifics
-\stopencoding
-
-%D This hack should be perfected.  
+%% NORWEGIAN
+%
+%  These three letters (in this order) are the 
+%  last in the norwegian alphabet (and hence should
+%  come after z in the latin alphabet). 
+%  I'm not sure about the syntax for
+%  \definesortkey so I left some of it open ...
+%
+% \startlanguagespecifics[\s!no] 
+% 
+%   \definesortkey {\ae}{z}{b}{\ae}
+%   \definesortkey {\AE}{z}{b}{\AE}
+%   \definesortkey {\o}{z} {c}{\o}
+%   \definesortkey {\O}{z} {c}{\O}
+%   \definesortkey {\aa}{z}{d}{\aa}
+%   \definesortkey {\AA}{z}{d}{\AA}
+%
+% \stoplanguagespecifics
+%
+%  Active characters - just for texnansi encoding now.
+%  Will the other encodings be the same?
+%
+% \startencoding[texnansi]
+%   \startlanguagespecifics[\s!no]%
+%     \defineactivecharacter æ {\ae{}}
+%     \defineactivecharacter Æ {\AE{}}
+%     \defineactivecharacter ø {\o{}}
+%     \defineactivecharacter Ø {\O{}}
+%     \defineactivecharacter å {\aa{}}
+%     \defineactivecharacter Å {\AA{}}
+%   \stoplanguagespecifics
+% \stopencoding
 
 \setupheadtext [\s!en] [\v!inhoud=Contents]
 \setupheadtext [\s!nl] [\v!inhoud=Inhoud]
@@ -270,34 +318,34 @@
 \setupheadtext [\s!en] [\v!tabellen=Tables]
 \setupheadtext [\s!nl] [\v!tabellen=Tabellen]
 \setupheadtext [\s!de] [\v!tabellen=Tabellen]
-\setupheadtext [\s!da] [\v!tabellen=Tablen]
+\setupheadtext [\s!da] [\v!tabellen=Tabeller]
 \setupheadtext [\s!sv] [\v!tabellen=Tabellen]
 \setupheadtext [\s!af] [\v!tabellen=Tabelle]
-\setupheadtext [\s!no] [\v!tabellen=Tabellen]
+\setupheadtext [\s!no] [\v!tabellen=Tabeller]
 
 \setupheadtext [\s!en] [\v!figuren=Figures]
 \setupheadtext [\s!nl] [\v!figuren=Figuren]
 \setupheadtext [\s!de] [\v!figuren=Abbildungen]
-\setupheadtext [\s!da] [\v!figuren=Figuren]
+\setupheadtext [\s!da] [\v!figuren=Figurer]
 \setupheadtext [\s!sv] [\v!figuren=Figuren]
 \setupheadtext [\s!af] [\v!figuren=Figure]
-\setupheadtext [\s!no] [\v!figuren=Avbildningen]
+\setupheadtext [\s!no] [\v!figuren=Figurer]
 
 \setupheadtext [\s!en] [\v!grafieken=Graphics]
 \setupheadtext [\s!nl] [\v!grafieken=Grafieken]
 \setupheadtext [\s!de] [\v!grafieken=Graphiken]
-\setupheadtext [\s!da] [\v!grafieken=Grafiken]
+\setupheadtext [\s!da] [\v!grafieken=Grafik]
 \setupheadtext [\s!sv] [\v!grafieken=Grafiskt]
 \setupheadtext [\s!af] [\v!grafieken=Grafieke]
-\setupheadtext [\s!no] [\v!grafieken=Grafikken]
+\setupheadtext [\s!no] [\v!grafieken=Grafikk]
 
 \setupheadtext [\s!en] [\v!intermezzos=Intermezzos]
 \setupheadtext [\s!nl] [\v!intermezzos=Intermezzo's]
 \setupheadtext [\s!de] [\v!intermezzos=Intermezzi]
-\setupheadtext [\s!da] [\v!intermezzos=Intermezzos]
+\setupheadtext [\s!da] [\v!intermezzos=Intermezzoer]
 \setupheadtext [\s!sv] [\v!intermezzos=Intermezzot]
 \setupheadtext [\s!af] [\v!intermezzos=Intermezzos]
-\setupheadtext [\s!no] [\v!intermezzos=Intermezzos]
+\setupheadtext [\s!no] [\v!intermezzos=Intermesso]
 
 \setupheadtext [\s!en] [\v!index=Index]
 \setupheadtext [\s!nl] [\v!index=Index]
@@ -310,26 +358,26 @@
 \setupheadtext [\s!en] [\v!afkortingen=Abbreviations]
 \setupheadtext [\s!nl] [\v!afkortingen=Afkortingen]
 \setupheadtext [\s!de] [\v!afkortingen=Abk\"urzungen]
-\setupheadtext [\s!da] [\v!afkortingen=Abbreviations]
+\setupheadtext [\s!da] [\v!afkortingen=Forkortelser]
 \setupheadtext [\s!sv] [\v!afkortingen=F\"orkortningen]
 \setupheadtext [\s!af] [\v!afkortingen=Afkortings]
-\setupheadtext [\s!no] [\v!afkortingen=Forkortelsen]
+\setupheadtext [\s!no] [\v!afkortingen=Forkortelser]
 
 \setupheadtext [\s!en] [\v!logos=Logos]
 \setupheadtext [\s!nl] [\v!logos=Logo's]
 \setupheadtext [\s!de] [\v!logos=Logos]
-\setupheadtext [\s!da] [\v!logos=Logos]
+\setupheadtext [\s!da] [\v!logos=Logoer]
 \setupheadtext [\s!sv] [\v!logos=Logo]
 \setupheadtext [\s!af] [\v!logos=Logos]
-\setupheadtext [\s!no] [\v!logos=Logos]
+\setupheadtext [\s!no] [\v!logos=Logoer]
 
 \setupheadtext [\s!en] [\v!eenheden=Units]
 \setupheadtext [\s!nl] [\v!eenheden=Eenheden]
 \setupheadtext [\s!de] [\v!eenheden=Einheiten]
-\setupheadtext [\s!da] [\v!eenheden=Enheden]
+\setupheadtext [\s!da] [\v!eenheden=Enheder]
 \setupheadtext [\s!sv] [\v!eenheden=Enheten]
 \setupheadtext [\s!af] [\v!eenheden=Eenhede]
-\setupheadtext [\s!no] [\v!eenheden=Enheten]
+\setupheadtext [\s!no] [\v!eenheden=Enheter]
 
 \setuplabeltext [\s!en] [\v!tabel=Table ]
 \setuplabeltext [\s!nl] [\v!tabel=Tabel ]
@@ -345,7 +393,7 @@
 \setuplabeltext [\s!da] [\v!figuur=Figur ]
 \setuplabeltext [\s!sv] [\v!figuur=Figur ]
 \setuplabeltext [\s!af] [\v!figuur=Figuur ]
-\setuplabeltext [\s!no] [\v!figuur=Avbildning ]
+\setuplabeltext [\s!no] [\v!figuur=Figur ]
 
 \setuplabeltext [\s!en] [\v!intermezzo=Intermezzo ]
 \setuplabeltext [\s!nl] [\v!intermezzo=Intermezzo ]
@@ -353,7 +401,7 @@
 \setuplabeltext [\s!da] [\v!intermezzo=Intermezzo ]
 \setuplabeltext [\s!sv] [\v!intermezzo=Intermezzo ]
 \setuplabeltext [\s!af] [\v!intermezzo=Intermezzo ]
-\setuplabeltext [\s!no] [\v!intermezzo=Intermezzo ]
+\setuplabeltext [\s!no] [\v!intermezzo=Intermesso ]
 
 \setuplabeltext [\s!en] [\v!grafiek=Graphic ]
 \setuplabeltext [\s!nl] [\v!grafiek=Grafiek ]
@@ -406,7 +454,7 @@
 \setuplabeltext [\s!en] [\v!bijlage=]
 \setuplabeltext [\s!nl] [\v!bijlage=]
 \setuplabeltext [\s!de] [\v!bijlage=]
-\setuplabeltext [\s!da] [\v!bijlage=]
+\setuplabeltext [\s!da] [\v!bijlage=] % [\v!bijlage=bilag]
 \setuplabeltext [\s!sv] [\v!bijlage=]
 \setuplabeltext [\s!af] [\v!bijlage=] % [\v!bijlage=bylae]
 \setuplabeltext [\s!no] [\v!bijlage=]
@@ -422,7 +470,7 @@
 \setuplabeltext [\s!en] [\v!regel=line ]
 \setuplabeltext [\s!nl] [\v!regel=regel ]
 \setuplabeltext [\s!de] [\v!regel=Zeile ]
-\setuplabeltext [\s!da] [\v!regel=linie ]
+\setuplabeltext [\s!da] [\v!regel=linie ] % or linje 
 \setuplabeltext [\s!sv] [\v!regel=rad ]
 \setuplabeltext [\s!af] [\v!regel=re\"el ]
 \setuplabeltext [\s!no] [\v!regel=linje ]
@@ -430,10 +478,10 @@
 \setuplabeltext [\s!en] [\v!regels=lines ]
 \setuplabeltext [\s!nl] [\v!regels=regels ]
 \setuplabeltext [\s!de] [\v!regels=Zeilen ]
-\setuplabeltext [\s!da] [\v!regels=linien ]
+\setuplabeltext [\s!da] [\v!regels=linier ] % or linjer 
 \setuplabeltext [\s!sv] [\v!regels=raden ]
 \setuplabeltext [\s!af] [\v!regels=re\"els ]
-\setuplabeltext [\s!no] [\v!regels=linjen ]
+\setuplabeltext [\s!no] [\v!regels=linjer ]
 
 \setuplabeltext [\s!en]   [\v!january=January]
 \setuplabeltext [\s!en]  [\v!february=February]
@@ -514,7 +562,7 @@
 \setuplabeltext [\s!af]  [\v!december=desember]
 
 \setuplabeltext [\s!no]   [\v!january=januar]
-\setuplabeltext [\s!no]  [\v!february=februae]
+\setuplabeltext [\s!no]  [\v!february=februar]
 \setuplabeltext [\s!no]     [\v!march=mars]
 \setuplabeltext [\s!no]     [\v!april=april]
 \setuplabeltext [\s!no]       [\v!may=mai]
@@ -600,7 +648,19 @@
 \setuplabeltext [\s!de]  [\v!oppagina=auf Seite ]
 \setuplabeltext [\s!de] [\v!hierboven=siehe oben]
 \setuplabeltext [\s!de] [\v!hieronder=siehe unten]
-\setuplabeltext [\s!de]       [\v!zie=sieh ]
+\setuplabeltext [\s!de]       [\v!zie=siehe ]
+
+\setuplabeltext [\s!da]    [\v!pagina=Side ]
+\setuplabeltext [\s!da]  [\v!oppagina=p\aa\ side ]
+\setuplabeltext [\s!da] [\v!hierboven=se foroven]
+\setuplabeltext [\s!da] [\v!hieronder=se forneden]
+\setuplabeltext [\s!da]       [\v!zie=se ]
+
+\setuplabeltext [\s!no]    [\v!pagina=Side ]
+\setuplabeltext [\s!no]  [\v!oppagina=p\aa\ side ]
+\setuplabeltext [\s!no] [\v!hierboven=se foroven]
+\setuplabeltext [\s!no] [\v!hieronder=se forneden]
+\setuplabeltext [\s!no]       [\v!zie=se ]
 
 %D ... and to be completed! 
 

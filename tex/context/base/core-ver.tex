@@ -1,6 +1,6 @@
 %D \module
 %D   [       file=core-ver,
-%D        version=1996.06.01,
+%D        version=2000.05.09,
 %D          title=\CONTEXT\ Core Macros,
 %D       subtitle=Verbatim,
 %D         author=Hans Hagen,
@@ -33,6 +33,16 @@
       1: soubor -- neexistuje
 \stopmessages
 
+\startmessages  italian  library: verbatims
+  title: verbatim
+      1: il file -- non esiste
+\stopmessages
+
+\startmessages  norwegian  library: verbatims
+  title: verbatim
+      1: fil -- eksisterer ikke 
+\stopmessages
+
 \unprotect
 
 % \type{ <crlf> char} geeft bagger
@@ -46,41 +56,104 @@
 \def\prettyidentifier {TEX}
 \def\prettypalet      {}
 
+% \def\setupprettiesintype#1%
+%   {\edef\prettyidentifier{#1}%
+%    \doifinstringelse{\prettyidentifier}{tex,TEX}
+%      {\def\prettyidentifier{TEX}}
+%   {\doifinstringelse{\prettyidentifier}{perl,pl,pm,PERL,PL,PM}
+%      {\def\prettyidentifier{PL}}
+%   {\doifinstringelse{\prettyidentifier}{metapost,mp,metafont,mf,METAPOST,MP,METAFONT,MF}
+%      {\def\prettyidentifier{MP}}
+%   {\doifinstringelse{\prettyidentifier}{javascript,js,java,jv,JAVASCRIPT,JS,JAVA,JV}
+%      {\def\prettyidentifier{JV}}
+%   {\doifinstringelse{\prettyidentifier}{sql,SQL}
+%      {\def\prettyidentifier{SQL}}
+%   {\doifinstringelse{\prettyidentifier}{pascal,pas,PAS,modula,mod,MOD,delphi,DELPHI}
+%      {\def\prettyidentifier{PAS}}
+%   {\doifinstringelse{\prettyidentifier}{eiffel,e,E,EIFFEL}
+%      {\def\prettyidentifier{EIF}}
+%   {\doifinstringelse{\prettyidentifier}{xml,XML}
+%      {\def\prettyidentifier{XML}}
+%       {\def\prettyidentifier{TEX}}}}}}}}}%
+%    \doifundefined{setuppretty\prettyidentifier type}%
+%      {\bgroup
+%       \setbox0=\hbox % get rid of spaces when in-line \newpretty loading
+%         {\restorecatcodes % also needed when loading during \newpretty 
+%          \startreadingfile % restore < and > if needed
+%          \lowercasestring verb-\prettyidentifier.tex\to\filename
+%          \readsysfile{\filename}{}{}
+%          \stopreadingfile}%
+%       \egroup}%
+%    \doifdefinedelse{setuppretty\prettyidentifier type}%
+%      {\def\setupprettytype{\getvalue{setuppretty\prettyidentifier type}}}
+%      {\let\setupprettytype=\relax}}
+
+\def\installprettytype%
+  {\dodoubleargument\doinstallprettytype}
+
+\def\doinstallprettytype[#1][#2]% map #1 onto #2 
+  {\uppercasestring#1\to\asciiA
+   \uppercasestring#2\to\asciiB
+   \setevalue{\??ty\??ty\asciiA}{\asciiB}}
+
 \def\setupprettiesintype#1%
-  {\edef\prettyidentifier{#1}%
-   \doifinstringelse{\prettyidentifier}{tex,TEX}
-     {\def\prettyidentifier{TEX}}
-  {\doifinstringelse{\prettyidentifier}{perl,pl,pm,PERL,PL,PM}
-     {\def\prettyidentifier{PL}}
-  {\doifinstringelse{\prettyidentifier}{metapost,mp,metafont,mf,METAPOST,MP,METAFONT,MF}
-     {\def\prettyidentifier{MP}}
-  {\doifinstringelse{\prettyidentifier}{javascript,js,java,jv,JAVASCRIPT,JS,JAVA,JV}
-     {\def\prettyidentifier{JV}}
-  {\doifinstringelse{\prettyidentifier}{sql,SQL}
-     {\def\prettyidentifier{SQL}}
-      {\def\prettyidentifier{TEX}}}}}}%
+  {\uppercasestring#1\to\ascii   
+   \edef\prettyidentifier%
+     {\ifundefined{\??ty\??ty\ascii}TEX%
+      \else\getvalue{\??ty\??ty\ascii}\fi}%
    \doifundefined{setuppretty\prettyidentifier type}%
      {\bgroup
       \setbox0=\hbox % get rid of spaces when in-line \newpretty loading
         {\restorecatcodes % also needed when loading during \newpretty 
          \startreadingfile % restore < and > if needed
          \lowercasestring verb-\prettyidentifier.tex\to\filename
-         \readsysfile{\filename}{}{}
+         \readsysfile{\filename}{}{}%
          \stopreadingfile}%
       \egroup}%
    \doifdefinedelse{setuppretty\prettyidentifier type}%
      {\def\setupprettytype{\getvalue{setuppretty\prettyidentifier type}}}
      {\let\setupprettytype=\relax}}
 
+\installprettytype [TEX]        [TEX]
+
+\installprettytype [PERL]       [PL]
+\installprettytype [PL]         [PL]
+\installprettytype [PM]         [PL]
+
+\installprettytype [METAPOST]   [MP]
+\installprettytype [METAFONT]   [MP]
+\installprettytype [MP]         [MP]
+\installprettytype [MF]         [MP]
+
+\installprettytype [JAVASCRIPT] [JV]
+\installprettytype [JAVA]       [JV]
+\installprettytype [JS]         [JV]
+\installprettytype [JV]         [JV]
+
+\installprettytype [SQL]        [SQL]
+
+\installprettytype [PASCAL]     [PAS]
+\installprettytype [PAS]        [PAS]
+\installprettytype [MODULA]     [PAS]
+\installprettytype [MOD]        [PAS]
+
+\installprettytype [EIFFEL]     [EIF]
+\installprettytype [EIF]        [EIF]
+\installprettytype [E]          [EIF]
+
+\installprettytype [XML]        [XML]
+
 \installnewpretty M {\setupprettiesintype {MP}\setupprettytype}
 \installnewpretty P {\setupprettiesintype {PL}\setupprettytype}
 \installnewpretty T {\setupprettiesintype{TEX}\setupprettytype}
 \installnewpretty J {\setupprettiesintype {JV}\setupprettytype}
 \installnewpretty S {\setupprettiesintype{SQL}\setupprettytype}
+\installnewpretty W {\setupprettiesintype{PAS}\setupprettytype} % Wirth
+\installnewpretty E {\setupprettiesintype{EIF}\setupprettytype}
+\installnewpretty X {\setupprettiesintype{XML}\setupprettytype}
 
 \def\setupcommonverbatim#1%
-  {\def\verbatimfont{\tttf}%
-   \def\prettyidentifier{TEX}%
+  {\def\prettyidentifier{TEX}%
    %
    \doifelsevalue{#1\c!tekst}{\v!ja}
      {\naturaltextexttrue}{\naturaltextextfalse}%
@@ -106,8 +179,8 @@
         \s!unknown=>\setupprettiesintype{\getvalue{#1\c!optie}}%
                     \let\obeycharacters=\setupprettytype
                     \let\obeytabs=\ignoretabs]%
-   \edef\prettypalet%
-     {\prettyidentifier\getvalue{#1\c!palet}}}
+   \def\verbatimfont{\getvalue{#1\c!letter}}%
+   \setupverbatimcolor{#1}}
 
 %D The verbatim commands have a rather long and turbulent
 %D history. Most users of \CONTEXT\ probably will never use
@@ -153,7 +226,7 @@
 
 \unexpanded\def\type%
   {\bgroup
-   \getvalue{\getvalue{\??ty\c!kleur}}% hm, assumes \somecolor
+   \verbatimcolor
    \catcode`\<=\@@other
    \catcode`\>=\@@other
    \futurelet\next\dotype}
@@ -321,10 +394,36 @@
      \fi
    \fi}
 
+%\def\setupcommandsintype#1%
+%  {\setupgroupedtype
+%   \edef\!!stringa{\getvalue{#1\c!escape}}%
+%   \@EA\catcode\@EA`\!!stringa=\@@escape}
+
 \def\setupcommandsintype#1%
   {\setupgroupedtype
-   \edef\!!stringa{\getvalue{#1\c!escape}}%
-   \@EA\catcode\@EA`\!!stringa=\@@escape}
+   \edef\\{\getvalue{#1\c!escape}}%
+   \letvalue{\\}=\\% for instance \/=/ 
+   \@EA\catcode\@EA`\\=\@@escape
+   \def\BTEX##1\ETEX##2% ##2 gobbles active space 
+     {\naturaltextext##1\unskip\relax}}
+
+%D The following lines show what happens when we set 
+%D \type {option=commands}. 
+%D 
+%D \startbuffer
+%D \starttyping
+%D test//test test/BTEX \footnote{test test test}/ETEX test
+%D test//test test/BTEX \footnote{test test test}/ETEX  test
+%D test test test/BTEX \bf(nota bene)/ETEX test
+%D test test test /BTEX \bf(nota bene)/ETEX  test
+%D \stoptyping
+%D \stopbuffer
+%D 
+%D % \bgroup\setuptyping[option=commands]\getbuffer\egroup
+%D 
+%D this was keyed in as: 
+%D 
+%D \typebuffer
 
 \def\setupslantedtype%
   {\setupgroupedtype
@@ -357,7 +456,7 @@
 
 \def\initializetype%
   {\let\obeylines=\ignorelines
-   \setupcommonverbatim{\??ty}%
+   \setupcommonverbatim\??ty
    \setupinlineverbatim}
 
 %D \macros
@@ -373,6 +472,7 @@
 \setuptype
   [\c!spatie=\v!uit,
     \c!kleur=,
+   \c!letter=\tttf,
    \c!pagina=\v!nee,
       \c!tab=\v!nee,
     \c!optie=\v!normaal]
@@ -514,7 +614,11 @@
            \v!geen=>\scratchskip=\!!zeropoint,
         \s!unknown=>\scratchskip=\commalistelement]%
    \ifgridsnapping
-     \edef\verbatimbaselineskip{\the\baselineskip}% 
+     \ifdim\scratchskip=.5\baselineskip\relax  
+       \edef\verbatimbaselineskip{\the\scratchskip}% new 
+     \else
+       \edef\verbatimbaselineskip{\the\baselineskip}% 
+     \fi
    \else
      \edef\verbatimbaselineskip{\the\scratchskip}% 
    \fi
@@ -527,12 +631,12 @@
 \def\dostarttyping#1%
   {\getvalue{\??tp#1\c!voor}%
    \startopelkaar % includes \bgroup
-   \startcolor[\getvalue{\??tp#1\c!kleur}]%
    \initializetyping{#1}%
+   \startverbatimcolor
    \expandafter\processdisplayverbatim\expandafter{\s!stop#1}}
 
 \def\dostoptyping#1%
-  {\stopcolor
+  {\stopverbatimcolor
    \stopopelkaar  % includes \egroup
    \getvalue{\??tp#1\c!na}%
    \doifvalue{\??tp#1\c!springvolgendein}{\v!nee}{\noindentation}}
@@ -584,9 +688,10 @@
             \c!optie=\v!geen,
             \c!palet=colorpretty,
             \c!tekst=\v!nee,
+           \c!letter=\tttf,
         \c!icommando=\ttsl,
         \c!vcommando=,
-        \c!ccommando=\tf,
+        \c!ccommando=\tttf,
  \c!springvolgendein=\v!ja,
             \c!marge=\!!zeropoint,
         \c!evenmarge=\!!zeropoint, 
@@ -614,7 +719,7 @@
 \def\presettyping[#1][#2]% 
   {\copyparameters
      [\??tp#1][\??tp]
-     [\c!voor,\c!na,\c!spatie,\c!pagina,\c!tab,\c!kleur,
+     [\c!voor,\c!na,\c!spatie,\c!pagina,\c!tab,\c!kleur,\c!letter,
       \c!tekst,\c!icommando,\c!vcommando,\c!ccommando,
       \c!optie,\c!palet,\c!marge,\c!evenmarge,\c!onevenmarge,
       \c!springvolgendein,\c!blanko,\c!escape]%
@@ -632,13 +737,20 @@
 
 \definetyping[\v!typen]
 
-\definetyping[MP] [\c!optie=MP]
-\definetyping[PL] [\c!optie=PL]
-\definetyping[PM] [\c!optie=PL]
-\definetyping[JS] [\c!optie=JS]
-\definetyping[JV] [\c!optie=JV]
-\definetyping[SQL][\c!optie=SQL]
-\definetyping[TEX][\c!optie=TEX]
+\definetyping[MP]    [\c!optie=MP]
+\definetyping[PL]    [\c!optie=PL]
+\definetyping[PM]    [\c!optie=PL]
+\definetyping[JS]    [\c!optie=JS]
+\definetyping[JV]    [\c!optie=JV]
+\definetyping[SQL]   [\c!optie=SQL]
+\definetyping[TEX]   [\c!optie=TEX]
+\definetyping[PAS]   [\c!optie=PAS]
+\definetyping[PASCAL][\c!optie=PAS]
+\definetyping[MOD]   [\c!optie=PAS]
+\definetyping[MODULA][\c!optie=PAS]
+\definetyping[DELPHI][\c!optie=PAS]
+\definetyping[EIFFEL][\c!optie=EIF]
+\definetyping[XML]   [\c!optie=XML]
 
 %D We use the \CONTEXT\ color system for switching to and from
 %D color mode. We can always redefine these colors afterwards.
@@ -669,29 +781,65 @@
 
 % ---> naar verb-* ? of predefine als undefined? 
 
-\definepalet [TEXcolorpretty] [colorpretty]
-\definepalet [TEXgraypretty]  [graypretty]
-\definepalet [PLcolorpretty]  [colorpretty]
-\definepalet [PLgraypretty]   [graypretty]
-\definepalet [PMcolorpretty]  [colorpretty]
-\definepalet [PMgraypretty]   [graypretty]
-\definepalet [MPcolorpretty]  [colorpretty]
-\definepalet [MPgraypretty]   [graypretty]
-\definepalet [JVcolorpretty]  [colorpretty]
-\definepalet [JVgraypretty]   [graypretty]
-\definepalet [JScolorpretty]  [colorpretty]
-\definepalet [JSgraypretty]   [graypretty]
-\definepalet [SQLcolorpretty] [colorpretty]
-\definepalet [SQLgraypretty]  [graypretty]
+\definepalet [TEXcolorpretty]    [colorpretty]
+\definepalet [TEXgraypretty]     [graypretty]
+\definepalet [PLcolorpretty]     [colorpretty]
+\definepalet [PLgraypretty]      [graypretty]
+\definepalet [PMcolorpretty]     [colorpretty]
+\definepalet [PMgraypretty]      [graypretty]
+\definepalet [MPcolorpretty]     [colorpretty]
+\definepalet [MPgraypretty]      [graypretty]
+\definepalet [JVcolorpretty]     [colorpretty]
+\definepalet [JVgraypretty]      [graypretty]
+\definepalet [JScolorpretty]     [colorpretty]
+\definepalet [JSgraypretty]      [graypretty]
+\definepalet [SQLcolorpretty]    [colorpretty]
+\definepalet [SQLgraypretty]     [graypretty]
+\definepalet [PAScolorpretty]    [colorpretty]
+\definepalet [PASgraypretty]     [graypretty]
+\definepalet [EIFcolorpretty]    [colorpretty]
+\definepalet [EIFgraypretty]     [graypretty]
+\definepalet [XMLcolorpretty]    [colorpretty]
+\definepalet [XMLgraypretty]     [graypretty]
+
+% Some real in-depth knowlegde of palets: `palet:color' it is!
 
 %D We can use some core color commands. These are faster than
 %D the standard color switching ones and work ok on a line by 
 %D line basis.
+%D
+%D \starttypen
+%D \def\setupverbatimcolor#1%
+%D   {\edef\prettypalet{\prettyidentifier\getvalue{#1\c!palet}}%
+%D    \def\beginofpretty[##1]{\startcolormode{\prettypalet:##1}}%
+%D    \def\endofpretty       {\stopcolormode}}
+%D \stoptypen
+%D
+%D Since we support a global color too, the folowing 
+%D definition is better: 
 
-% Some real in-depth knowlegde of palets: `palet:color' it is!
+\def\setupverbatimcolor#1% fast and local versus slow and global 
+  {\doifelsevaluenothing{#1\c!kleur} 
+     {\def\beginofpretty[##1]{\startcolormode{\prettypalet:##1}}%
+      \let\endofpretty        \stopcolormode
+      \let\startverbatimcolor \relax
+      \let\stopverbatimcolor  \relax
+      \let\verbatimcolor      \relax}
+     {\def\beginofpretty[##1]{\startcolor[\prettypalet:##1]}% 
+      \let\endofpretty        \stopcolor
+      \def\startverbatimcolor{\startcolor[\getvalue{#1\c!kleur}]}%
+      \let\stopverbatimcolor  \stopcolor
+      \def\verbatimcolor     {\getvalue{\getvalue{#1\c!kleur}}}}%
+   \doifelsevaluenothing{#1\c!palet}
+     {\let\prettypalet\empty
+      \let\endofpretty\relax
+      \def\beginofpretty[##1]{}}
+     {\edef\prettypalet{\prettyidentifier\getvalue{#1\c!palet}}}}
 
-\def\beginofpretty[#1]{\startcolormode{\prettypalet:#1}}
-\def\endofpretty      {\stopcolormode}
+\let\prettypalet       \empty
+\let\startverbatimcolor\relax
+\let\stopverbatimcolor \relax
+\let\verbatimcolor     \relax
 
 %D In the verbatim module, there are some examples given of 
 %D the more obscure features of the verbatim environments.
@@ -802,23 +950,28 @@
 
 \presettyping[\v!file][]
 
-\def\typefile#1%
-  {\getvalue{\??tp\v!file\c!voor}%
-   \doiflocfileelse{\pathplusfile\f!currentpath{#1}}
+\definecomplexorsimple\typefile
+
+\def\simpletypefile%
+  {\complextypefile[\v!file]}
+
+\def\complextypefile[#1]#2%
+  {\getvalue{\??tp#1\c!voor}%
+   \doiflocfileelse{\pathplusfile\f!currentpath{#2}}
      {\startopelkaar % includes \bgroup
-      \startcolor[\getvalue{\??tp\v!file\c!kleur}]%
-      \doifinset{\getvalue{\??tp\v!file\c!optie}}{\v!commandos,\v!schuin,\v!normaal}
-        {\setuptyping[\v!file][\c!optie=\v!geen]}%
-      \doifvalue{\??tp\v!file\c!optie}{\v!kleur}
-        {\expandafter\aftersplitstring#1\at.\to\prettyidentifier
-         \letvalue{\??tp\v!file\c!optie}=\prettyidentifier}%
-      \initializetyping\v!file
-      \processfileverbatim{\pathplusfile\f!currentpath{#1}}%
-      \stopcolor
+      \doifinset{\getvalue{\??tp#1\c!optie}}{\v!commandos,\v!schuin,\v!normaal}
+        {\setuptyping[#1][\c!optie=\v!geen]}%
+      \doifvalue{\??tp#1\c!optie}{\v!kleur}
+        {\expandafter\aftersplitstring#2\at.\to\prettyidentifier
+         \letvalue{\??tp#1\c!optie}=\prettyidentifier}%
+      \initializetyping{#1}%
+      \startverbatimcolor
+      \processfileverbatim{\pathplusfile\f!currentpath{#2}}%
+      \stopverbatimcolor
       \stopopelkaar}  % includes \egroup
-     {{\tttf[\makemessage{\m!verbatims}{1}{#1}]}% 
-      \showmessage{\m!verbatims}{1}{#1}}%
-   \getvalue{\??tp\v!file\c!na}}
+     {{\tttf[\makemessage{\m!verbatims}{1}{#2}]}% 
+      \showmessage{\m!verbatims}{1}{#2}}%
+   \getvalue{\??tp#1\c!na}}
 
 %D \macros 
 %D   {filename}

@@ -1,0 +1,215 @@
+\ifx\undefined\unprotect \catcode`\@=11 \fi 
+
+%D Constants to be used with \type {\grouptype}.
+
+\chardef\@@bottomlevelgroup   =  0
+\chardef\@@simplegroup        =  1
+\chardef\@@hboxgroup          =  2
+\chardef\@@adjustedhboxgroup  =  3
+\chardef\@@vboxgroup          =  4
+\chardef\@@vtopgroup          =  5
+\chardef\@@aligngroup         =  6
+\chardef\@@noaligngroup       =  7
+\chardef\@@outputgroup        =  8
+\chardef\@@mathgroup          =  9
+\chardef\@@discretionarygroup = 10
+\chardef\@@insertgroup        = 11
+\chardef\@@vcentergroup       = 12
+\chardef\@@mathchoicegroup    = 13
+\chardef\@@semisimplegroup    = 14
+\chardef\@@mathshiftgroup     = 15
+\chardef\@@mathleftgroup      = 16
+
+\chardef\@@vadjustgroup       = \@@insertgroup
+
+%D Constants to be used with \type {\interactionmode}.
+
+\chardef\@@batchmode     = 0
+\chardef\@@nonstopmode   = 1
+\chardef\@@scrollmode    = 2
+\chardef\@@errorstopmode = 3
+
+%D Constants to be used with \type {\nodetype}.
+
+\chardef\@@charnode          =  0
+\chardef\@@hlistnode         =  1
+\chardef\@@vlistnode         =  2
+\chardef\@@rulenode          =  3
+\chardef\@@insertnode        =  4
+\chardef\@@marknode          =  5
+\chardef\@@adjustnode        =  6
+\chardef\@@ligaturenode      =  7
+\chardef\@@discretionarynode =  8
+\chardef\@@whatsitnode       =  9
+\chardef\@@mathnode          = 10
+\chardef\@@gluenode          = 11
+\chardef\@@kernnode          = 12
+\chardef\@@penaltynode       = 13
+\chardef\@@unsetnode         = 14
+\chardef\@@mathsnode         = 15
+
+%D Constants to be used with \type {\iftype}.
+
+\chardef\@@charif     =  1
+\chardef\@@catif      =  2
+\chardef\@@numif      =  3
+\chardef\@@dimif      =  4
+\chardef\@@oddif      =  5
+\chardef\@@vmodeif    =  6
+\chardef\@@hmodeif    =  7
+\chardef\@@mmodeif    =  8
+\chardef\@@innerif    =  9
+\chardef\@@voidif     = 10
+\chardef\@@hboxif     = 11
+\chardef\@@vboxif     = 12
+\chardef\@@xif        = 13
+\chardef\@@eofif      = 14
+\chardef\@@trueif     = 15
+\chardef\@@falseif    = 16
+\chardef\@@caseif     = 17
+\chardef\@@definedif  = 18
+\chardef\@@csnameif   = 19
+\chardef\@@fontcharif = 20
+
+%D Just in case we are not using \ETEX, we define some out of
+%D range constants.
+
+\beginTEX
+
+\chardef\grouptype       = 255
+\chardef\interactionmode = 255
+\chardef\nodetype        = 255
+\chardef\iftype          = 255
+
+\endTEX
+
+%D Of course we want even bigger log files, so we copied this
+%D from the \ETEX\ source files. 
+
+\beginETEX \tracing... 
+
+\def\tracingall%
+  {\tracingonline    =\@ne
+   \tracingcommands  =\thr@@
+   \tracingstats     =\tw@
+   \tracingpages     =\@ne
+   \tracingoutput    =\@ne
+   \tracinglostchars =\tw@
+   \tracingmacros    =\tw@
+   \tracingparagraphs=\@ne
+   \tracingrestores  =\@ne
+   \showboxbreadth   =\maxdimen
+   \showboxdepth     =\maxdimen
+   \tracinggroups    =\@ne
+   \tracingifs       =\@ne
+   \tracingscantokens=\@ne
+   \tracingnesting   =\@ne
+   \tracingassigns   =\tw@
+   \errorstopmode}
+
+\def\loggingall%
+  {\tracingall 
+   \tracingonline=\z@}
+
+\def\tracingnone%
+  {\tracingassigns   =\z@
+   \tracingnesting   =\z@
+   \tracingscantokens=\z@
+   \tracingifs       =\z@
+   \tracinggroups    =\z@
+   \showboxdepth     =\thr@@
+   \showboxbreadth   =5
+   \tracingrestores  =\z@
+   \tracingparagraphs=\z@
+   \tracingmacros    =\z@
+   \tracinglostchars =\@ne
+   \tracingoutput    =\z@
+   \tracingpages     =\z@
+   \tracingstats     =\z@
+   \tracingcommands  =\z@
+   \tracingonline    =\z@ }
+
+\endETEX
+
+%D Just to be sure: 
+
+\ifx\eTeX\undefined
+
+  \def\eTeX{$\varepsilon$-\TeX}
+
+\fi
+
+%D In \ETEX\ we have lots of registers, so we redefine a few 
+%D low level macros. We reserve some extra space for inserts 
+%D and as soon as we near the end of the first register 
+%D memory bank (often some 10 less than 255), we switch to the 
+%D slower range \@@medallocation||\@@maxallocation. 
+
+\beginETEX \new...
+
+%D First we redefine the plain \TEX\ register allocation macros.
+
+\def\newcount   {\myalloc@0\count   \countdef   \@@maxallocation}
+\def\newdimen   {\myalloc@1\dimen   \dimendef   \@@maxallocation}
+\def\newskip    {\myalloc@2\skip    \skipdef    \@@maxallocation}
+\def\newmuskip  {\myalloc@3\muskip  \muskipdef  \@@maxallocation}
+\def\newbox     {\myalloc@4\box     \mathchardef\@@maxallocation}
+\def\newtoks    {\myalloc@5\toks    \toksdef    \@@maxallocation}
+\def\newread    {\myalloc@6\read    \chardef    \@@minallocation}
+\def\newwrite   {\myalloc@7\write   \chardef    \@@minallocation}
+\def\newmarks   {\myalloc@8\marks   \mathchardef\@@maxallocation}
+\def\newlanguage{\myalloc@9\language\chardef    \@@minallocation}
+
+%D Since in \CONTEXT\ we only have one math family left we 
+%D redefine \type {\newfam}.
+
+\def\newfam#1{\chardef#1=15 } 
+
+%D Therefore we should reset the related counter. 
+
+\count18=1 
+
+%D We use some constants in the tests.
+
+\mathchardef\@@minallocation=   16
+\mathchardef\@@medallocation=  256
+\mathchardef\@@maxallocation=32767
+
+%D I cannot imagine that more than~8 extra insert classes 
+%D are needed, so we say:
+
+\chardef\@@insallocation=8 
+
+%D My low level allocation macro now comes down to: 
+
+\def\myalloc@#1#2#3#4#5%
+  {\global\advance\count1#1by\@ne
+   \ifnum\count1#1>\@@medallocation \else 
+     \global\advance\insc@unt by -\@@insallocation
+     \ifnum\count1#1<\insc@unt \else
+       \global\count1#1=\@@medallocation % \wait
+     \fi
+     \global\advance\insc@unt by +\@@insallocation
+   \fi
+   \ifnum\count1#1>#4%
+     \global\count1#1=#4%
+     \errmessage{No room for (\string#2) \string#5}%
+   \fi
+   \allocationnumber=\count1#1%
+   \global#3#5=\allocationnumber
+   \wlog{\string#5=\string#2\the\allocationnumber}}
+
+\endETEX
+
+%D These macros can be checked by tests like:
+%D
+%D \starttypen 
+%D \let\wlog\message \dorecurse{1000}{\newcount\dummy}
+%D \stoptypen 
+
+%D A few bonus bindings. 
+
+\let\normalprotected  = \protected
+\let\normalunexpanded = \unexpanded
+
+\ifx\undefined\unprotect \catcode`\@=12 \fi \endinput

@@ -13,12 +13,6 @@
 
 %D This module is still to be split and documented. 
 
-% nog oplossen: voetnoot setten ivm later veranderde
-% witruimte; probleem: als lijn graphic
-
-% The %I etc thing will be replaced by documentation. Some
-% years ago they served as helpinfo blocks for our editor.
-
 \writestatus{loading}{Context Core Macros (1)}
 
 \newevery \everybodyfont \Everybodyfont % just to be sure
@@ -51,7 +45,6 @@
 
 \protect
 
-
 \unprotect
 
 \startmessages  dutch  library: systems
@@ -178,6 +171,68 @@
      27: verze
 \stopmessages
 
+\startmessages  italian  library: systems
+  title: sistema
+      1: caricamento dei file supplementari posticipato (typemode)
+      2: -- caricato
+      3: provare LaTeX
+      4: comando -- già definito
+      5: macro del modulo -- caricate
+      6: nessuna macro trovata nel modulo --
+      7: macro del modulo -- già caricate
+      8: nuova versione del file supplementare, seconda passata necessaria
+      9: -- non trovato/elaborato
+     10: non usare em in --
+     11: costruzione di un semplice supplemento
+     12: file di supplemento non ordinato, usare texutil
+     13: marcatura -- definita --
+     14: nuova pagina obbligata in lista a --
+     15: salvataggio del buffer --
+     16: composizione del buffer --
+     17: composizione verbatim del buffer --
+     18: sinonimo -- -- non esistente
+     19: significato (sinonimi) di -- caricato
+     20: significato (specie) di -- caricato
+     21: nessuna informazione supplementare caricata
+     22: usare un file supplementare valido
+     23: -- sistemato a --
+     24: Oggetti mobili
+     25: Riferimenti
+     26: Registri
+     27: Versione
+\stopmessages
+
+\startmessages  norwegian  library: systems
+  title: system
+      1: innlesning av hjelpefila utsatt (typemode)
+      2: -- er lest inn
+      3: forsøker LaTeX
+      4: kommando -- er allerede definert
+      5: makroene i modul  -- er lest inn
+      6: ingen makroer funnet i modul ---
+      7: makroene i modul -- er allerede lest inn
+      8: ny versjon av hjelpefil, andre gjennomkjøring nødvendig
+      9: -- ikke funnet/behandlet
+     10: ikke bruk em i --
+     11: lager enkel hjelpefil
+     12: hjelpefila er ikke sortert, bruk texutil
+     13: markering -- definert --
+     14: tvunget sideskift i liste ved --
+     15: lagrer Buffer --
+     16: tegnsetter buffer --
+     17: tegnsetter verbatim-buffer --
+     18: synonym -- -- eksisterer ikke
+     19: betydning (synonymer) av -- er lest inn
+     20: betydning (sorterer) av -- er lest inn
+     21: hjelpefila er ikke lest inn
+     22: bruk en gyldig hjelpefil
+     23: -- arrangert på --
+     24: Flytblokker
+     25: Referanser
+     26: Registere
+     27: Versjon
+\stopmessages
+
 \startmessages  dutch  library: floatblocks
   title: plaatsblokken
       1: -- hernummerd / -- => --
@@ -242,6 +297,38 @@
      12: nedefinovano
 \stopmessages
 
+\startmessages  italian  library: floatblocks
+ title: oggetti mobili
+      1: -- rinumerato / -- => --
+      2: -- salavto
+      3: -- mosso
+      4: -- sistemato
+      5: ordine aggiustato
+      6: n di top floats limitato a --
+      7: n di bottom floats limitato a --
+      8: meno di -- righe
+      9: ordine disturbato
+     10: -- limitato
+     11: nessun oggetto specificato
+     12: non definito
+\stopmessages
+
+\startmessages  norwegian  library: floatblocks
+ title: flytblokker
+      1: -- renummerert / -- => --
+      2: -- lagret
+      3: -- flyttet
+      4: -- plassert
+      5: rekkefølge tilpasset
+      6: maksimalt -- flytblokker øverst
+      7: maksimalt -- flytblokker nederst
+      8: mindre enn -- linjer
+      9: rekkefølge endret
+     10: -- begrenset
+     11: ingen blokk oppgitt
+     12: udefinert
+\stopmessages
+
 \startmessages  dutch  library: layouts
   title: layout
       1: teksthoogte aangepast met -- op pagina --
@@ -296,6 +383,34 @@
       8: pocita se pozadi
      10: -- a -- nedava dohromady 1.0
      11: svisla mezera -- neni povolena v pevnem radkovem rejstriku
+\stopmessages
+
+\startmessages  italian  library: layouts
+  title: layout
+      1: altezza del testo adattata con -- a pagina --
+      2: posizionato testo posticipato -- volte
+      3: testo posticipato -- volte
+      4: blocchi in margine attivi
+      5: blocchi in margine inattivi
+      6: gruppo di sottopagine -- elaborato (dimensione --)
+      7: calcolo dello spazio per logo
+      8: calcolo dello sfondo
+     10: -- e -- non sommano a 1.0
+     11: spaziatura -- non permessa in modo griglia
+\stopmessages
+
+\startmessages  norwegian  library: layouts
+  title: layout
+      1: teksthøyde tilpasset med -- på side --
+      2: -- ganger forskjøvet tekst plassert
+      3: -- ganger tekst forskjøvet 
+      4: margblokker aktive
+      5: margblokker inaktive
+      6: delside sett -- behandlet (størrelse --)
+      7: beregner plass for logo
+      8: beregner bakgrunn
+     10: -- og -- er ikke 1.0 til sammen
+     11: mellomrom -- ikke tillatt i gridmodus
 \stopmessages
 
 % \CONTEXTtrue % Now we know that we can use ConTeXt commands.
@@ -466,13 +581,15 @@
   {\emergencystretch\!!zeropoint\relax}
 
 \def\forgetall%
-  {\let\par=\endgraf  % i.v.m. getpar etc
-   \notragged
-   \forgetparskip
-   \forgetparindent
-   \forgetbothskips
-   \forgetspacing     % i.v.m. funny spacing in pagebody
-   \everypar{}}       % indeed!
+  {\the\everyforgetall}
+
+\appendtoks \let\par=\endgraf   \to \everyforgetall % i.v.m. getpar etc
+\appendtoks \notragged          \to \everyforgetall 
+\appendtoks \forgetparskip      \to \everyforgetall  
+\appendtoks \forgetparindent    \to \everyforgetall 
+\appendtoks \forgetbothskips    \to \everyforgetall 
+\appendtoks \forgetspacing      \to \everyforgetall % i.v.m. funny spacing in pagebody
+\appendtoks \everypar\emptytoks \to \everyforgetall % indeed!
 
 \def\localvbox#1#%
   {\vbox#1\bgroup
@@ -509,6 +626,10 @@
 \newskip\leftskipadaption
 
 \def\doadaptleftskip#1%
+  {\dosetleftskipadaption{#1}%
+   \advance\leftskip by \leftskipadaption}
+
+\def\dosetleftskipadaption#1%
   {\leftskipadaption\!!zeropoint
    \processaction[#1] % \ExpandFirstAfter
      [\v!standaard=>\leftskipadaption=
@@ -516,8 +637,7 @@
              \v!ja=>\leftskipadaption=
                     \ifdim\voorwit=\!!zeropoint\@@sllinks\else\voorwit\fi,
             \v!nee=>,
-        \s!unknown=>\leftskipadaption=#1]%
-   \advance\leftskip by \leftskipadaption}
+        \s!unknown=>\leftskipadaption=#1]}
 
 \def\herhaal            {\dorepeat}
 \def\herhaler           {\repeater}
@@ -609,18 +729,6 @@
 
 \catcode`\^^L=\@@endofline
 
-%I n=Struts
-%I c=\strut,\setnostrut,\setstrut,\toonstruts,\pseudostrut
-%I
-%I Struts zijn onzichtbare 'karakters' met alleen een hoogte
-%I en diepte. De volgende commando's hebben betrekking op
-%I struts
-%I
-%I   \strut
-%I   \setstrut
-%I   \setnostrut
-%I   \toonstruts
-
 \def\toonstruts%
   {\setteststrut}
 
@@ -674,6 +782,7 @@
 \def\baselinegluefactor     {0}
 
 \def\normallineheight       {\baselinefactor ex}
+\def\minimallinedistance    {\lineskip} 
 
 \def\strutheight            {0pt}
 \def\strutdepth             {0pt}
@@ -736,7 +845,7 @@
      \openlineheight
      \!!plus\baselinegluefactor\openlineheight
      \!!minus\baselinegluefactor\openlineheight
-   \normallineskip\!!onepoint\relax
+   \normallineskip\minimallinedistance\relax % \!!onepoint\relax
    \normallineskiplimit\!!zeropoint\relax
    \normalbaselines}
 
@@ -776,18 +885,66 @@
 % The double \hbox construction enables us to \backtrack
 % boxes.
 
+% \def\setstrut%
+%   {\setstrutdimen\strutheight\strutheightfactor\spacingfactor
+%    \setstrutdimen\strutdepth \strutdepthfactor \spacingfactor
+%    \let\strut=\normalstrut
+%    \setbox\strutbox=\normalhbox
+%      {\normalhbox
+%         {\vrule
+%            \!!width  \strutwidth
+%            \!!height \strutheight
+%            \!!depth  \strutdepth
+%            \normalkern-\strutwidth}}}
+
 \def\setstrut%
   {\setstrutdimen\strutheight\strutheightfactor\spacingfactor
    \setstrutdimen\strutdepth \strutdepthfactor \spacingfactor
-   \let\strut=\normalstrut
-   \setbox\strutbox=\normalhbox
-     {\normalhbox
-        {\vrule
-           \!!width  \strutwidth
-           \!!height \strutheight
-           \!!depth  \strutdepth
-           \normalkern-\strutwidth}}}
+   \dosetstrut}
 
+\def\setcharstrut#1%
+  {\setbox\strutbox=\hbox{#1}% 
+   \edef\strutheight{\the\ht\strutbox}%
+   \edef\strutdepth {\the\dp\strutbox}%
+   \dosetstrut}
+
+\def\setcapstrut% could be M, but Q has descender
+  {\setcharstrut{Q}} 
+
+%D Centered looks nicer: 
+
+\def\dosetstrut%
+  {\let\strut=\normalstrut
+   \setbox\strutbox=\normalhbox
+     {\normalhbox to \!!zeropoint
+        {% \hss % new, will be option 
+         \vrule
+           \!!width \strutwidth
+           \!!height\strutheight
+           \!!depth \strutdepth
+         \hss}}}
+%D Sometimes a capstrut comes in handy
+%D
+%D \starttabulatie[|Tl|l|l|]
+%D \NC yes          \NC normal strut               \NC {\toonstruts\setupstrut[ja]\strut}  \NC \NR 
+%D \NC no           \NC no strut                   \NC {\toonstruts\setupstrut[nee]\strut}  \NC \NR 
+%D \NC kap          \NC a capital strut (i.e. Q)   \NC {\toonstruts\setupstrut[kap]\strut} \NC \NR 
+%D \NC A B \unknown \NC a character strut (e.g. A) \NC {\toonstruts\setupstrut[A]\strut}   \NC \NR 
+%D \NC              \NC a normal strut             \NC {\toonstruts\setupstrut\strut}      \NC \NR 
+%D \stoptabulatie
+
+\def\setupstrut%
+  {\dosingleempty\dosetupstrut}
+
+\def\dosetupstrut[#1]% yet undocumented 
+  {\processaction
+     [#1]
+     [     \v!ja=>\setstrut,
+          \v!nee=>\setnostrut,
+          \v!kap=>\setcapstrut,
+      \s!default=>\setstrut,
+      \s!unknown=>\setcharstrut{\commalistelement}]}
+
 \def\setteststrut%
   {\def\strutwidth{.8pt}%
    \setstrut}
@@ -844,6 +1001,10 @@
 
 \def\setfontparameters%
   {\the\everybodyfont}
+
+%D Handy: 
+
+\def\baselinedistance{\the\lineheight}
 
 %D We need \type{\normaloffinterlineskip} because the new
 %D definition contains an assignment, and |<|don't ask me
@@ -1180,110 +1341,6 @@
 \def\startglobal {\dostartglobaldefs<+}
 \def\stopglobal  {\dostopglobaldefs}
 
-%I n=Zetspiegel
-%I c=\stellayoutin,\definieerpapierformaat,\stelpapierformaatin
-%I c=\paslayoutaan
-%I
-%I De zetspiegel is het door de tekst gevormde vlak.
-%I Hiertoe behoren ¢¢k de hoofd- en voetmarge. De zetspiegel
-%I wordt ingesteld met:
-%I
-%I   \stellayoutin[breedte=,hoogte=,rugwit=,kopwit=]
-%I
-%I Er dienen maten te worden ingevuld, waarbij de eenheid
-%I direkt achter het getal staat: 10pt, 100mm, 5cm, 3.5in.
-%I
-%I De parameters hebben de volgende betekenis:
-%I
-%I   breedte    breedte van het tekstvlak, inclusief marges
-%I   hoogte     hoogte van het tekstvlak, inclusief marges
-%I   rugwit     witruimte aan de binnenzijde, zonder marge
-%I   kopwit     witruimte aan de bovenzijde, zonder marge
-%P
-%I Rond de zetspiegel vinden we marges, randen, het hoofd en
-%I de voet. Ook deze worden ingesteld met:
-%I
-%I   \stellayoutin[breedte=,hoogte=,rugwit=,kopwit=]
-%I
-%I   hoofd      hoogte van de bovenmarge binnen de zetspiegel
-%I   voet       hoogte van de ondermarge binnen de zetspiegel
-%I   marge      breedte van de marge naast de zetspiegel
-%I
-%I en
-%I
-%I   rand       breedte van de rand naast de marge
-%I   boven      hoogte van de rand boven het hoofd
-%I   onder      hoogte van de rand onder de voet
-%I
-%I Alleen het hoofd en de voet hangen dus samen met de
-%I zetspiegel.
-%P
-%I Eventueel kunnen de linker- en rechtermarge en apart
-%I worden ingesteld:
-%I
-%I   \stellayoutin[linkermarge=,rechtermarge=]
-%I
-%I Het zelfde geldt voor de randen. In dat geval wordt bij
-%I dubbelzijdig zetten gespiegeld. Oppassen dus!
-%I
-%I De afstanden tussen marges, randen enz. kunnen worden
-%I ingesteld met:
-%I
-%I   bovenafstand, onderafstand
-%I   hoofdafstand,voetafstand
-%I   linkermargeafstand,rechtermargeafstand,
-%I   linkerrandafstand,rechterrandafstand
-%P
-%I De zetspiegel kan (tijdelijk) worden aangepast met het
-%I commando:
-%I
-%I   \paslayoutaan[hoogte=]
-%I
-%I Men dient een positieve (+) of negatieve (-) maat op te
-%I geven. De zethoogte blijft gelijk, maar de teksthoogte
-%I wordt aangepast ten koste van de voethoogte. Eventueel
-%I kan 'max' worden opgegeven.
-%I
-%I Er kan een reeks aanpassingen worden opgegeven:
-%I
-%I   \paslayoutaan[nr,nr,nr,...][hoogte=]
-%I
-%I Hierbij is staat nr voor het paginanummer, dat wil
-%I zeggen: het volgnummer in de tekst.
-%I
-%I Bij voorlopige versies wordt onderaan de pagina de
-%I aanpassing weergegeven.
-%P
-%I Beeldmerken en achtergronden worden uit oogpunt van
-%I verwerkingssnelheid niet vaker berekend dan nodig. Mocht
-%I om een of andere reden een beeldmerk of achtergrond niet
-%I overeenkomen komen met de wensen, dan kan herberekenen
-%I worden geforceerd met:
-%I
-%I   \stellayoutin[reset]
-%P
-%I Het papierformaat is in te stellen met het commando
-%I
-%I   \stelpapierformaatin[DIN-formaat]
-%I
-%I Mogelijke DIN-formaten zijn A4 tot en met A9. De
-%I afmetingen van een A4 zijn:
-%I
-%I   breedte : 21.0cm =  8.18in = 589pt
-%I   hoogte  : 29.7cm = 11.58in = 834pt
-%I
-%I Optioneel kan men het printer papierformaat instellen door
-%I een tweede argument mee te geven. Standaard wordt
-%I uitgegaan van A4.
-%I
-%I   \stelpapierformaatin[A5][A4]
-%I
-%P Men kan zelf een papierformaat definieren met
-%I
-%I   \definieerpapierformaat [naam] [hoogte=,breedte=]
-%I
-%I waarbij de offset betrekking heeft op dubbelzijdig zetten.
-
 \ifx\stelpapierformaatin\undefined
   \let\stelpapierformaatin\relax
 \fi
@@ -1352,6 +1409,8 @@
 
 \def\dodostelpapierformaatin[#1][#2]%
   {\ifsecondargument
+     \xdef\herstelpapierformaat%
+       {\noexpand\stelpapierformaatin[#1][#2]}%
      \dostelpapierrichtingin{#1}\paperlandscape\paperrotation\paperreverse\papermirror
      \dostelpapierrichtingin{#2}\printlandscape\printrotation\printreverse\printmirror
      \def\docommando##1%
@@ -1360,7 +1419,7 @@
            \global\papierhoogte=\getvalue{\??pp##1\c!hoogte}%
            \calculatepaperoffsets{##1}%
            \xdef\papierformaat{##1}}}}%
-     \processcommalist[#1]\docommando
+     \processcommacommand[#1]\docommando
      \doifdefinedelse{\??pp#1\c!schaal}
        {\edef\papierschaal{\getvalue{\??pp#1\c!schaal}}}
        {\edef\papierschaal{1}}%
@@ -1369,7 +1428,7 @@
           {\global\printpapierbreedte=\getvalue{\??pp##1\c!breedte}%
            \global\printpapierhoogte=\getvalue{\??pp##1\c!hoogte}%
            \xdef\printpapierformaat{##1}}}}%
-     \processcommalist[#2]\docommando
+     \processcommacommand[#2]\docommando
      \ifnum\paperlandscape>0
        \doglobal\swapdimens\papierbreedte\papierhoogte
      \fi
@@ -1390,8 +1449,10 @@
    \else\iffirstargument
      \stelpapierformaatin[#1][#2]%
    \else\ifx\papierformaat\undefined\else
-     \stelpapierformaatin[\papierformaat][\printpapierformaat]%
+     \herstelpapierformaat
    \fi\fi\fi}
+
+\let\herstelpapierformaat\relax
 
 \def\stelpapierformaatin%
   {\dodoubleempty\dostelpapierformaatin}
@@ -1431,9 +1492,11 @@
    \doifelse{\@@lybreedte}{\v!midden}
      {\global\zetbreedte=\papierbreedte
       \global\advance\zetbreedte by -\rugwit
-      \doifelsenothing{\@@lysnijwit}
-        {\global\advance\zetbreedte by -\rugwit}
-        {\global\advance\zetbreedte by -\@@lysnijwit}}
+      \scratchdimen=\@@lysnijwit\relax
+      \ifdim\scratchdimen=\!!zeropoint
+        \scratchdimen=\rugwit
+      \fi
+      \global\advance\zetbreedte by -\scratchdimen}
      {\doifelse{\@@lybreedte}{\v!passend}
         {\global\zetbreedte=\papierbreedte
          \global\advance\zetbreedte by -\rugwit
@@ -1457,16 +1520,18 @@
      {\doifelse{\@@lyhoogte}{\v!midden}
         {\global\zethoogte=\papierhoogte
          \global\advance\zethoogte by -\kopwit
-         \doifelsenothing{\@@lybodemwit}
-           {\global\advance\zethoogte by -\kopwit}
-           {\global\advance\zethoogte by -\@@lybodemwit}}
+         \scratchdimen=\@@lybodemwit\relax
+         \ifdim\scratchdimen=\!!zeropoint
+           \scratchdimen=\kopwit
+         \fi
+         \global\advance\zethoogte by -\scratchdimen}
         {\doifelse{\@@lyhoogte}{\v!passend}
            {\global\zethoogte=\papierhoogte
             \global\advance\zethoogte by -\kopwit
             \scratchdimen=\kopwit
             \advance\scratchdimen by -\bovenhoogte
             \advance\scratchdimen by -\bovenafstand
-              \ifdim\scratchdimen<\!!zeropoint
+            \ifdim\scratchdimen<\!!zeropoint
               \scratchdimen=\!!zeropoint
             \fi
             \global\advance\zethoogte by -\onderafstand
@@ -1481,10 +1546,7 @@
    \calculatehsizes
    \calculatevsizes
    \global\newlogostrue
-   \global\newbackgroundtrue
-   \setMPpagedata}
-
-\ifx\setMPpagedata\undefined \let\setMPpagedata\relax \fi
+   \global\newbackgroundtrue}
 
 \def\checklayout%
   {\doifsomething{\@@lyregels}
@@ -1590,23 +1652,6 @@
 \def\paslayoutaan%
   {\dodoubleempty\dopaslayoutaan}
 
-%I n=Margeblokken
-%I c=\startmargeblok,\stelmargeblokkenin
-%I
-%I voorlopig:
-%I
-%I   \stelmargeblokkenin
-%I     [plaats=,breedte,letter=,uitlijnen=,
-%I      voor=,na=,links=,rechts=,boven=,onder=,tussen=]
-%I
-%I plaats = inmarge, links, rechts, midden
-%I links, rechts, voor, na = rule
-%I boven, onder, tussen = skip
-%I status=
-%I
-%I \startmargeblok
-%I \stopmargeblok
-
 \newif\ifmargeblokken
 
 \def\dostelmargeblokkenin[#1]%
@@ -1632,10 +1677,8 @@
 \def\dosomenextfloat[#1]%
   {\global\setbox\marginbox=\vbox
      {\hsize\@@mbbreedte
-      \unvbox\marginbox
-      \ifvoid\marginbox\else
-        \@@mbtussen
-      \fi
+      \unvcopy\marginbox
+      \ifvoid\marginbox\else\expandafter\@@mbtussen\fi
       \box\floatbox\filbreak}%
    \ifdim\ht\marginbox>\teksthoogte
      \dosavefloatinfo
@@ -1735,42 +1778,6 @@
    \egroup
    \@@mbna}
 
-%I n=Uitstellen
-%I c=\startuitstellen
-%I
-%I Zetcommando's kunnen in een wachtrij worden gezet en na
-%I een pagina worden uitgevoerd. Dit gebeurt met het commando:
-%I
-%I   \startuitstellen
-%I     ...
-%I   \stopuitstellen
-%I
-%I Dit kan handig zijn bij bijvoorbeeld grote tussen te voegen
-%I figuren, tabellen, formulieren enz.
-%I
-%I   \startuitstellen
-%I     \plaatsfiguur[pagina][]{...}{...}
-%I   \stopuitstellen
-%I
-%I Er kunnen meerdere commando's in de wachtrij worden
-%I geplaatst.
-%P
-%I Het mechanisme werkt nog niet vlekkeloos. Zo wordt
-%I nog gerekend met waarden van de vorige pagina. Dit heeft
-%I bijvoorbeeld als gevolg dat figuren kunnen worden
-%I opgespaard.
-%I
-%I Het kan gebeuren dat een (te) groot figuur er voor zorgt
-%I dat ook andere figuren worden verplaatst. De volgorde
-%I blijft immers gehandhaafd. In dat geval kan zo'n groot
-%I figuur worden verplaatst naar de eerstvolgende voor de
-%I handliggende pagina:
-%I
-%I   \startuitstellen
-%I     \plaatsfiguur[pagina][]{...}{...}
-%I     \pagina
-%I   \stopuitstellen
-
 \newcounter\nofpostponedblocks
 
 \newif\ifinuitstellen
@@ -1825,7 +1832,7 @@
 
 \def\dostelsubpaginanummerin[#1]%
   {\doifelse{#1}{\v!reset}
-     {\resetnummer[\s!subpage]}
+     {\resetsubpaginanummer} % \resetnummer[\s!subpage]
      {\getparameters[\??sn][#1]%
       \processaction
         [\@@snstatus]
@@ -2052,7 +2059,7 @@
    \fi}
 
 \def\myshipout#1%
-  {\voorpagina
+  {\voorpagina % voor de pagebody dus !  
    \dontshowcomposition
    \ifarrangingpages
      \actualarrange
@@ -2280,8 +2287,10 @@
 \ifbottomnotes
     \ht0=\!!zeropoint
 \fi
+%% \setbox0= % todo, there must be a faster way to kill funny depths 
    \vbox to \teksthoogte
      {\box0\box2\ifbottomnotes\else\vfill\fi}%
+%% \dp0=\!!zeropoint \box0 % new
    \egroup}
 
 \def\dodummypageskip#1%
@@ -2347,6 +2356,7 @@
       \hss}% new 
    \ht0=\teksthoogte
    \wd0=\zetbreedte
+\dp0=\!!zeropoint % new, maybe a reason for small shifts 
    \ifshowgrid
      \setgridbox2\zetbreedte\teksthoogte
      \hbox{\color[red]{\box2}\hskip-\zetbreedte\box0}%
@@ -2662,8 +2672,8 @@
   {\getallmarks
    \the\everypagebody
    \startcolorpage
-   \gotonextsubpage
-   \dontshowboxes
+   \gotonextsubpage  % nog eens: als in pagina (tbv standaard opmaak)
+   \dontshowboxes    % dan hier blokkeren en verderop resetten
    \naastpagina
    \checkreferences
    \checkmargeblokken
@@ -2763,30 +2773,9 @@
 \def\dooutput%
   {\finaloutput\unvbox\normalpagebox}
 
+\maxdeadcycles=1000
+
 \output={\dooutput}
-
-%I n=Beeldmerken
-%I c=\definieerbeeldmerk,\plaatsbeeldmerken
-%I
-%I In het hoofd of in de voet kan een logo worden gezet met
-%I het commando:
-%I
-%I   \plaatsbeeldmerken[naam]
-%I
-%I Plaatsen kan dan ook pas nadat een beeldmerk is gedefinieerd:
-%I
-%I   \definieerbeeldmerk[naam][lokatie][plaats][commando=,status=]
-%I
-%I waarbij status 'start' of 'stop' kan zijn. In geval van
-%I 'start' wordt op elke bladzijde het logo geplaatst.
-%I
-%I Mogelijke lokaties zijn 'boven', 'hoofd', 'voet' en 'onder' en
-%I als plaats kan worden opgegeven 'linkerrand', 'linkermarge',
-%I 'links', 'midden', 'rechts', 'rechtermarge' en 'rechterrand'.
-%I
-%I Logo's worden boven, onder of in de hoofd- of voetregel gezet,
-%I zo hoog of laag mogelijk. Verdere positionering zal dus in
-%I het commando moeten plaatsvinden!
 
 \newbox\leftlogos
 \newbox\rightlogos
@@ -2930,38 +2919,6 @@
        {\copy\rightlogos}%
    \fi}
 
-%I n=Spatiering
-%I c=\stelspatieringin
-%I c=\omlaag,\opelkaar,\spatie,\vastespaties
-%I
-%I De ruimte na interpunctie worden ingesteld met:
-%I
-%I   \stelspatieringin[instelling]
-%I
-%I waarbij de volgende instellingen mogelijk zijn:
-%I
-%I   ruim              flexibele ruimte na interpunctie
-%I   opelkaar          een spatie na interpunctie
-%I
-%I Bij een smalle layout levert de instelling 'ruim' minder
-%I in de marge uitstekende (niet af te breken) woorden op.
-%I
-%P
-%I Andere commando's zijn:
-%I
-%I   \omlaag[afstand]      een vaste afstand omlaag
-%I   \opelkaar             ruimte tussen regels weghalen
-%I
-%I   \spatie               een (harde) spatie
-%I   \geenspatie           geen vorige/volgende spatie
-%I
-%I   \hfil \hfill \hfilll  opvullen met horizontaal wit
-%I   \vfil \vfill \vfilll  opvullen met vertikaal wit
-%I
-%I   \strut                karakter-box zonder breedte
-%I
-%I   \vastespaties         geeft ~ de breedte van een cijfer
-
 % \frenchspacing leidt soms tot afbreken tussen -, vandaar
 % de variant \newfrenchspacing.
 
@@ -3010,51 +2967,6 @@
   {\nointerlineskip
    \vskip#1 }
 
-%I n=Witruimte
-%I c=\stelwitruimtein,\witruimte,\geenwitruimte
-%I c=\startopelkaar,\startvanelkaar
-%I c=\startregelcorrectie,\corrigeerwitruimte
-%I
-%I De afstand tussen paragrafen is in te stellen met:
-%I
-%I   \stelwitruimtein[maat]
-%I
-%I In te vullen op de plaats van 'maat' (12pt, 1cm) of een
-%I van de aanduidingen klein, middel of groot. Als niets
-%I wordt meegegeven, dus alleen \stelwitruimtein, dan
-%I wordt de ingestelde witruimte aangepast aan het formaat
-%I letter.
-%I
-%I Voor elke lege regel in de ASCII-file voegt TEX de
-%I ingestelde witruimte tussen.
-%I
-%I Het commando \witruimte dwingt witruimte af en het
-%I commando \geenwitruimte maakt witruimte ongedaan.
-%I
-%I Behalve met de hier beschreven witruimte-commando's is de
-%I witruimte tussen paragrafen te be‹nvloeden met behulp van
-%I de elders beschreven blanko-commando's.
-%P
-%I Een stuk tekst kan zonder witruimte worden gezet door het
-%I tussen de volgende commando's op te nemen:
-%I
-%I   \startopelkaar
-%I   \stopopelkaar
-%I
-%I Waarbij een optioneel argument [blanko] mogelijk is. De
-%I tegenhanger hiervan is:
-%I
-%I   \startvanelkaar
-%I   \stopvanelkaar
-%P
-%I TeX handelt de interlinie van een (omlijnde) box of een
-%I rule anders af dan van een regel tekst. In dergelijke
-%I gevallen kan de volgende constructie worden gebruikt:
-%I
-%I   \startregelcorrectie
-%I     \omlijnd{tekst}
-%I   \stopregelcorrectie
-
 \newskip\tussenwit
 \tussenwit=\!!zeropoint
 
@@ -3246,27 +3158,6 @@
       \stopbaselinecorrection}%
    \vbox}
 
-%I n=Regelafstand
-%I c=\stelinterliniein
-%I
-%I De regelafstand is in te stellen met het commando:
-%I
-%I   \stelinterliniein[factor]
-%I
-%I Invulmogelijkheden voor 'factor' zijn: klein (1.00),
-%I middel (1.25), groot (1.50) of een getal. OOk kan
-%I aan of uit worden opgegeven.
-%I
-%I Als het commando zonder [factor] wordt gegeven, dan
-%I worden de interlinie aangepast aan het formaat van het
-%I actuele letterformaat. Een aan het formaat aangepaste
-%I interlinie kan ook worden ingesteld met:
-%I
-%I   \stelinterliniein[reset,factor]
-%I
-%I In z'n eenvoudigste vorm \stelinterliniein wordt de
-%I interlinie aangepast aan het formaat letter.
-
 %D There are two ways to influence the interline spacing. The
 %D most general and often most consistent way is using
 %D
@@ -3323,11 +3214,12 @@
         \let\@@itdiepte=\strutdepthfactor
       \else
         \let\strutheightfactor=\@@ithoogte
-        \let\strutdepthfactor =\@@itdiepte
+        \let\strutdepthfactor=\@@itdiepte
       \fi
-      \let\normallineheight=\@@itregel
-      \let\topskipfactor   =\@@itboven
-      \let\maxdepthfactor  =\@@itonder
+      \let\minimallinedistance=\@@itafstand
+      \let\normallineheight=\@@itregel % let ! ! ! ! ! ivm ex 
+      \let\topskipfactor=\@@itboven
+      \let\maxdepthfactor=\@@itonder
       \setfontparameters % redundant \setstrut
       \updateraggedskips} % yes indeed
      {\processallactionsinset % \regelwit = dummy !
@@ -3345,65 +3237,6 @@
    \localinterlinespacefalse}
 
 \definecomplexorsimple\stelinterliniein
-
-%I n=Blanko
-%I c=\blanko,\geenblanko,\stelblankoin
-%I c=\startregelcorrectie
-%I
-%I Behalve met de hier beschreven blanko-commando's is de
-%I witruimte tussen paragrafen te be‹nvloeden met behulp van
-%I de elders beschreven witruimte-commando's.
-%I
-%I Het commando
-%I
-%I   \blanko[sprong]
-%I
-%I voegt witruimte tussen paragrafen toe.
-%I
-%I Mogelijke instellingen voor 'sprong' zijn: terug, klein,
-%I middel, groot. Per blanko is elke combinatie van
-%I instellingen toegestaan. Ook een veelvoud van een instelling
-%I is mogelijk. Enkele voorbeelden:
-%I
-%I   \blanko[terug,3*groot]
-%I   \blanko[klein,middel]
-%P
-%I Naast de genoemde instellingen zijn enkele bijzondere
-%I instellingen mogelijk:
-%I
-%I   wit         tussenvoegen van \witruimte
-%I   geenwit     terugspringen van \witruimte
-%I   blokkeer    overslaan van de volgende \blanko
-%I   reset       opheffen van \blanko[blokkeer]
-%I   forceer     afdwingen van een blanko (bovenaan)
-%I
-%I Ook deze instellingen zijn in combinatie met andere te
-%I gebruiken. Een voorbeeld: \blanko[forceer,wit,2*middel].
-%I
-%I Het commando \blanko (zonder instelling) is gelijk aan
-%I \blanko[groot].
-%I
-%I Het commando \geenblanko maakt het commando \blanko
-%I ongedaan.
-%P
-%I Met het commando's
-%I
-%I   \stelblankoin[maat]
-%I
-%I is het mogelijk de spronggrootte in te stellen. De maat
-%I kan worden opgegeven in getallen en eenheden (12pt, 1cm).
-%I De standaard instellingen krijgt met met 'normaal',
-%I regelafstanden met 'regel'.
-%I
-%I Het commando \stelblankoin (zonder argument) past de sprong
-%I aan het formaat letter aan.
-%P
-%I Rond omlijnde tekst, of algemener: rond lijnen, wordt
-%I geen witruimte gegenereerd. Wil men dit wel, dan dient men
-%I de betreffende tekst te omringen met:
-%I
-%I   \startregelcorrectie
-%I   \stopregelcorrectie
 
 % In earlier versions \type{\bigskipamount} was
 % \type{\ht\strutbox} and the stretch was plus or minus
@@ -3528,6 +3361,7 @@
      \par
      \ifvmode
        \ifblankoforceer\ifdim\prevdepth>\!!zeropoint\else
+         % -1000pt signals top of page or column (\ejectcolumn)
          \vbox{\strut}\kern-\lineheight
        \fi\fi
        \ifblankoblokkeer
@@ -3763,34 +3597,15 @@
         \noexpand\blankoflexibelfalse
       \fi}}
 
+\def\inhibitblank% the fast, local way
+  {\endgraf\ifvmode\prevdepth\newprevdepth\fi}
+
 %D Now. 
 
 \definieerblanko
   [\s!default]
   [\v!wit]
 
-%I n=Inspringen
-%I c=\inspringen,\nietinspringen,\welinspringen
-%I c=\stelinspringenin
-%I
-%I Het inspringen van de eerste regel van een paragraaf
-%I wordt ingesteld met het commando:
-%I
-%I   \inspringen[parameter]
-%I
-%I waarbij als parameter kan worden meegegeven:
-%I
-%I   niet       de volgende paragraaf niet inspringen
-%I   nooit      de volgende paragrafen niet inspringen
-%I   altijd     de volgende paragrafen inspringen
-%I
-%I De mate van inspringen wordt ingesteld met:
-%I
-%I   \stelinspringenin[maat]
-%I
-%I waarbij maat staat voor een TeX-maat of het woord klein,
-%I middel, groot of geen.
-
 \let\currentvoorwit=\empty
 
 \newdimen\voorwit
@@ -3834,37 +3649,6 @@
 \def\nietinspringen{\inspringen[\v!nee,\v!volgende]}
 \def\welinspringen {\inspringen[\v!ja,\v!eerste]}
 
-%I n=Positioneren
-%I c=\startpositioneren,\stelpositionerenin
-%I
-%I Er kan (binnen zekere grenzen) gepositioneerd worden met
-%I de commando's:
-%I
-%I   \startpositioneren
-%I   \stoppositioneren
-%I
-%I met daartussen
-%I
-%I   \positioneer(x,y){...}
-%I
-%I waarbij x en y alleen getallen worden ingevuld. Ongewenste
-%I spaties moeten zonodig met worden voorkomen met een %-teken.
-%P
-%I Een en ander kan worden ingesteld met:
-%I
-%I   \stelpositionerenin[eenheid=,factor=,schaal=,xstap=,
-%I     ystap=,xoffset=,yoffset=,offset=]
-%I
-%I Standaard is de eenheid cm en de factor 1. Mogelijke
-%I stapaanduidingen zijn 'absoluut' en 'relatief'. Deze
-%I instellingen kunnen \resetpositioneren worden hersteld.
-%I
-%I Als men negatieve coordinaten (of een negatieve offset)
-%I gebruikt, dan kan het soms wenselijk zijn het nulpunt te
-%I laten samenvallen met de linkerbovenhoek van de omringende
-%I box. In dat geval kan met offset=nee instellen. De negatieve
-%I posities vallen in dat geval buiten de box.
-
 % Het gebruik van \skip's spaart \dimen's.
 
 \newskip\xpositie
@@ -3924,7 +3708,7 @@
 \resetpositioneren
 
 \def\stelpositionerenin%
-  {\resetpositioneren%
+  {\resetpositioneren
    \dodoubleargument\getparameters[\??ps]}%
 
 % \def\positioneer(#1,#2)#3% \nextbox
@@ -3981,50 +3765,32 @@
 \def\dopositioneer[#1]#2(#3,#4)%
   {\dowithnextbox
      {\bgroup
-      \stelpositionerenin[#1]%
+      \getparameters[\??ps][#1]%
       \dontcomplain
       \berekenpositioneren{#3}{\@@psxstap}{\xpositie}
         {\@@psxoffset}{\wd\nextbox}{\xafmeting}{\xoffset}
         {\@@psxschaal}{\@@psxfactor}%
-      \scratchdimen=\ht\nextbox \advance\scratchdimen \dp\nextbox
+      \scratchdimen=\ht\nextbox \advance\scratchdimen by \dp\nextbox
       \berekenpositioneren{#4}{\@@psystap}{\ypositie}
         {\@@psyoffset}{\scratchdimen}{\yafmeting}{\yoffset}
         {\@@psyschaal}{\@@psyfactor}%
-      \setbox\nextbox=\hbox
-        {\hskip\xpositie\lower\ypositie\box\nextbox}%
-      \smashbox\nextbox
-      \box\nextbox
+      \vbox to \!!zeropoint % kan beter. 
+        {\vskip\ypositie
+         \hbox to \!!zeropoint
+           {\hskip\xpositie
+            \box\nextbox
+            \hskip-\xpositie}%
+         \vskip-\ypositie}%
+      \xdef\dopoppositioneer%
+       {\xpositie=\the\xpositie
+        \ypositie=\the\ypositie
+        \noexpand\def\noexpand\@@psxoffset{\@@psxoffset}%
+        \noexpand\def\noexpand\@@psyoffset{\@@psyoffset}}%
       \egroup
+      \dopoppositioneer
       \ignorespaces}
    \hbox}
 
-%I n=Kolommen
-%I c=\stelkolommenin,\startkolommen,\kolom
-%I
-%I Tekst kan in kolommen worden gezet. Het aantal kolommen
-%I en het al dan niet opnemen van een vertikale lijn kan
-%I worden ingesteld.
-%I
-%I   \stelkolommenin[n=,lijn=,tolerantie=,afstand=,
-%I      balanceren=,uitlijnen=,hoogte=]
-%I
-%I Hierin staat n voor het aantal kolommen. Aan lijn
-%I kan aan of uit worden toegekend. Aan voor en na kan
-%I een commando worden toegekend, bijvoorbeeld ~~.
-%I
-%I Mogelijke waarden voor de tolerantie zijn: zeerstreng,
-%I streng, soepel en zeersoepel.
-%P
-%I De in kolommen te zetten tekst moet worden opgenomen
-%I tussen de commando's:
-%I
-%I   \startkolommen
-%I   \stopkolommen
-%I
-%I Er wordt naar een nieuwe kolom gesprongen met:
-%I
-%I   \kolom
-
 \newif\ifbinnenkolommen
 \newif\if@@klbalanceren
 \newif\if@@kluitlijnen
@@ -4143,30 +3909,60 @@
 
 \definecomplexorsimpleempty\startkolommen
 
+%\def\kolom%
+%  {\ifbinnenkolommen
+%     \ejectcolumn
+%   \fi}
+
+\def\preferredejectcolumn%
+  {\goodbreak}
+
+% \def\forcedejectcolumn%
+%   {\vfil
+%    \penalty-200
+%    \prevdepth=-1000pt % signals top of column to \blanko
+%    \vfilneg}
+
+\def\forcedejectcolumn%                               
+  {\par                                                % todo: since 
+   {\testrulewidth\!!zeropoint\ruledvskip\teksthoogte} % we misuse a 
+   \penalty-200                                        % side effect
+   \vskip-\teksthoogte
+   \prevdepth=-1000pt} % signals top of column to \blanko
+
 \def\kolom%
+  {\dosingleempty\dokolom}
+
+\def\dokolom[#1]%
   {\ifbinnenkolommen
-     \ejectcolumn
+     \iffirstargument
+       \processaction
+         [#1]
+         [      \v!ja=>\forcedejectcolumn,
+          \v!voorkeur=>\preferredejectcolumn]%
+     \else
+       \preferredejectcolumn
+     \fi
    \fi}
 
-%I n=Kader
-%I c=\toonkader,\tooninstellingen,\toonlayout
-%I
-%I Met behulp van de drie commando's:
-%I
-%I   \toonkader
-%I   \tooninstellingen
-%I
-%I kan de zetspiegel zichtbaar worden gemaakt, of eventueel
-%I met:
-%I
-%I   \toonkader [rand,tekst,marge]
-%I
-%I Het commando:
-%I
-%I   \toonlayout
-%I
-%I genereert enkele (linker en rechter) pagina's.
+%D Undocumented and still under development.
 
+\def\startsimplecolumns%
+  {\dosingleempty\dostartsimplecolumns}
+
+\def\dostartsimplecolumns[#1]%
+  {\bgroup
+   \getparameters[\??kl][\c!breedte=\hsize,\c!afstand=1em,\c!n=2,#1]%
+   \setrigidcolumnhsize\@@klbreedte\@@klafstand\@@kln
+   \setbox\scratchbox=\vbox\bgroup
+   \forgetall} % \blanko[\v!blokkeer]
+
+\def\stopsimplecolumns%
+  {\removebottomthings 
+   \egroup
+   \rigidcolumnbalance\scratchbox
+   \egroup}
+
 \def\dotoonkader[#1][#2]%
   {\ifsecondargument
      \stelachtergrondenin
@@ -4410,58 +4206,6 @@
    \herhaal[4*\tooninstellingen\pagina]
    \egroup}
 
-%I n=Uitlijnen
-%I c=\startuitlijnen,\steluitlijnenin,\steltolerantiein
-%I c=\regellinks,\regelrechts,\regelmidden,
-%I c=\woordrechts
-%I
-%I De regelval kan worden ingesteld met:
-%I
-%I   \steluitlijnenin[instelling]
-%I
-%I waarbij de volgende instellingen mogelijk zijn:
-%I
-%I   links      links niet uitvullen
-%I   midden     links/rechts niet uitvullen = centreren
-%I   rechts     rechts niet uitvullen
-%I   breedte    uitvullen over breedte (default)
-%I   beide      wisselend (afhankelijk bladzijde)
-%I   onder      onderkant niet uitgelijnd (default)
-%I   hoogte     uitvullen over hoogte (op baseline)
-%I   regel      uitvullen over hoogte (binnen kader)
-%I   reset      uitvullen over breedte en hoogte
-%I
-%I In combinatie met links, midden en rechts kan 'ruim'
-%I worden opgegeven.
-%P
-%I Aanvullend zijn de volgende commando's beschikbaar:
-%I
-%I   \startuitlijnen[instelling]
-%I   \stopuitlijnen
-%I
-%I Een regel kan op verschillende manieren worden uitgelijnd
-%I met behulp van de commando's:
-%I
-%I   \regellinks{tekst}
-%I   \regelrechts{tekst}
-%I   \regelmidden{tekst}
-%I
-%I Aan het eind van een paragraaf kan een stukje tekst
-%I worden geplaatst met:           \woordrechts{ziezo}
-%P
-%I De tolerantie waarbinnen het uitlijnen plaatsvindt kan
-%I worden ingesteld met:
-%I
-%I   \steltolerantiein[instelling]
-%I
-%I Mogelijke waarden zijn: zeerstreng, streng, soepel en
-%I zeersoepel.
-%I
-%I Standaard heeft de tolerantie betrekking op horizontaal
-%I uitlijnen. Vertikaal kan het uitlijnen worden beinvloed
-%I door het trefwoord 'vertikaal' mee te geven. Standaard
-%I geldt [vertikaal,streng] en [horizontaal,zeerstreng].
-
 \definetwopasslist{\s!paragraph}
 
 \newcounter\nofraggedparagraphs
@@ -4493,6 +4237,8 @@
      #2\relax
    \fi}
 
+% \let\doifrightpageelse\setraggedparagraphmode
+
 % De onderstaande macro's zijn opgenomen in Plain TeX.
 %
 % \def\raggedright%
@@ -4511,27 +4257,51 @@
 %
 % en worden hieronder wat aangepast.
 
+% the three boolean will become obsolete some day in favour 
+% of \bottomraggedness
+
+\chardef\bottomraggedness=0 % 0=ragged 1=normal/align 2=baseline
+
+\def\bottomalignlimit{3\lineheight}
+
 \newif\ifn@rmalbottom
 \newif\ifr@ggedbottom
 \newif\ifb@selinebottom
 
-\def\normalbottom%
-  {\n@rmalbottomtrue
-   \r@ggedbottomfalse
-   \b@selinebottomfalse
-   \settopskip}
-
 \def\raggedbottom%
-  {\n@rmalbottomfalse
+  {\chardef\bottomraggedness=0
+   \n@rmalbottomfalse
    \r@ggedbottomtrue
    \b@selinebottomfalse
    \settopskip}
 
+\def\alignbottom%
+  {\chardef\bottomraggedness=1
+   \n@rmalbottomtrue
+   \r@ggedbottomfalse
+   \b@selinebottomfalse
+   \settopskip}
+
 \def\baselinebottom%
-  {\n@rmalbottomfalse
+  {\chardef\bottomraggedness=2
+   \n@rmalbottomfalse
    \r@ggedbottomfalse
    \b@selinebottomtrue
    \settopskip}
+
+\let\normalbottom=\alignbottom % downward compatible
+
+% so, the new one will be
+% 
+% \chardef\bottomraggedness=0 % 0=ragged 1=normal/align 2=baseline
+% 
+% \def\bottomalignlimit{3\lineheight} % will be settable 
+% 
+% \def\raggedbottom  {\chardef\bottomraggedness=0 \settopskip}
+% \def\alignbottom   {\chardef\bottomraggedness=1 \settopskip}
+% \def\baselinebottom{\chardef\bottomraggedness=2 \settopskip}
+%
+% \let\normalbottom  =\alignbottom
 
 % \hyphenpenalty  = ( 2.5 * \hsize ) / \raggedness
 % \tolerance     >= 1500 % was 200
@@ -4543,14 +4313,33 @@
 \def\rightraggedness  {2\bodyfontsize}
 \def\middleraggedness {6\bodyfontsize}
 
+%D More hyphenation control, will be combined with align 
+%D setup. 
+
+\def\nohyphens%
+  {\ifx\dohyphens\relax
+     \edef\dohyphens%
+       {\hyphenpenalty\the\hyphenpenalty
+        \exhyphenpenalty\the\exhyphenpenalty\relax}%
+   \fi
+   \hyphenpenalty\@M
+   \exhyphenpenalty\@M}
+
+\let\dohyphens\relax
+
+%D To prevent unwanted side effects, we also have to check 
+%D for hyphens here: 
+
 \def\setraggedness#1%
   {\ifnum\tolerance<1500\relax       % small values have
      \tolerance=1500\relax           % unwanted side effects
-   \fi                               %
-   \spaceskip=2.5\hsize              % we misuse these
-   \xspaceskip=#1\relax              % registers for temporary
-   \divide\spaceskip by \xspaceskip  % storage; they are
-   \hyphenpenalty=\spaceskip}        % changed anyway
+   \fi                               
+   \spaceskip=2.5\hsize              % we misuse these registers
+   \xspaceskip=#1\relax              % for temporary storage;
+   \divide\spaceskip by \xspaceskip  % they are changed anyway
+   \ifx\dohyphens\relax               
+     \hyphenpenalty=\spaceskip       % \else no hyphens is active 
+   \fi}                              
 
 \let\updateraggedskips\relax
 
@@ -4639,6 +4428,10 @@
         \v!rechts=>\if!!donea\veryraggedright \else\raggedright \fi,
         \v!midden=>\if!!doneb\raggedwidecenter\else
                    \if!!donea\veryraggedcenter\else\raggedcenter\fi\fi,
+       \v!hangend=>\enableprotruding,
+   \v!niethangend=>\disableprotruding,
+    \v!afgebroken=>\dohyphens,
+\v!nietafgebroken=>\nohyphens,
          \v!reset=>\notragged\normalbottom]}
 
 \def\dosteluitlijnenin[#1]%
@@ -4726,90 +4519,6 @@
 \def\woordrechts%
   {\groupedcommand{\hfill\hbox}{\parfillskip\!!zeropoint}}
 
-%I n=Margeteksten
-%I c=\inmarge,\inlinker,\inrechter,\stelinmargein
-%I c=\margetitel,\figuurinmarge
-%I c=\oplinker
-%I
-%I Een paragraaf kan worden ingeluid met een tekst in
-%I de marge:
-%I
-%I   \inmarge{tekst}
-%I   \inlinker{tekst}
-%I   \inrechter{tekst}
-%I
-%I Met \\ kan binnen een margetekst naar een volgende regel
-%I worden gesprongen.
-%P
-%I Het onderstaande commando kan gebruikt worden om een
-%I paragraafaanduiding in de marge te plaatsen. Het commando
-%I moet aan het begin van de paragraaf staan. Er wordt
-%I gecontroleerd of een en ander nog op de bladzijde past.
-%I
-%I   \margetitel{tekst}
-%I
-%I Tussen \margetitel{tekst} en de volgende alinea mag,
-%I omwille van de overzichtelijkheid, een lege regels staan.
-%I Als dit commando wordt gebruikt na een commando als
-%I \paragraaf, kan het controlemechanisme leiden tot een
-%I ongewenste overgang naar een nieuwe bladzijde. In dat
-%I geval kan beter het volgende commando worden gebruikt.
-%I
-%I   \margewoord{tekst}
-%I
-%I Dit commando komt overeen met \inmarge, alleen is bij
-%I \margewoord de lege regel toegestaan.
-%P
-%I Er kan eventueel voor {tekst} een [referentie] worden
-%I meegegeven. In dat geval kan worden verwezen naar het
-%I paginanummer waarop het margewoord staat.
-%I
-%I Als TeX twijfelt in welke marge het woord moet staan, is
-%I een tweede verwerkingsslag nodig. Als een margewoord bij
-%I herhaling verkeerd wordt geplaatst, dan kan het
-%I automatisme worden verstoord door [+] mee te geven. Een
-%I margewoord kan lager worden gezet met [laag]. Combinaties
-%I kunnen ook:
-%I
-%I   \margewoord[+,laag][referentie]{woord}
-%P
-%I De wijze van weergeven kan worden ingesteld met het
-%I commando:
-%I
-%I   \stelinmargein[letter=,plaats=,voor=,na=,uitlijnen=]
-%I
-%I Als plaats kan links, rechts of beide worden meegegeven. In
-%I het laatste geval hangt de plaats af van het
-%I enkel/dubbelzijdig zetten.
-%I
-%I Uitlijnen kent twee instellingen: 'ja' en 'nee'. Inhet
-%I eerste geval (default) worden de margewoorden tegen de
-%I kantlijn geplaatst.
-%P
-%I Vooruitlopend op meer commando's is er al vast het
-%I commando:
-%I
-%I   \oplinker{tekst}
-%I
-%I Dit commando kan bijvoorbeeld worden gebruikt binnen
-%I een midden-uitgelijnde tekst. Het commando is nog niet
-%I definitief en robuust.
-
-% %P
-% %I Aanvullend zijn commando's beschikbaar om figuren in
-% %I de marge te plaatsen:
-% %I
-% %I   \figuurinmarge{figuur}
-% %I   \figuurinlinker{figuur}
-% %I   \figuurinrechter{figuur}
-
-%T n=margetitel
-%T m=mar
-%T a=m
-%T
-%T \margetitel{?}
-%T
-
 \newif\iflowinmargin
 
 \def\stelinmargein%
@@ -4856,6 +4565,11 @@
    \ifnum\margetekstnummer=0
      \def\margetekstnummer{#2}%
    \fi
+\doifnumberelse{\margetekstnummer}
+  {\ifnum\margetekstnummer>25 % to be translated 
+     \writestatus{\m!systems}{potential margin stack overflow (\margetekstnummer)}%
+   \fi}
+  {}%
    \processaction
      [\getvalue{\??im\margetekstnummer\c!uitlijnen}]
      [     \v!ja=>\setvalue{\??im\margetekstnummer\c!uitlijnen}{#2},
@@ -4925,7 +4639,16 @@
    \ht0=\!!zeropoint
    \dp0=\!!zeropoint
    \gdef\margestrutheight{\the\ht\strutbox}%
-   \vadjust{\box0}}
+  %\vadjust{\box0}} % fails in high math lines, let it be  
+  %\hbox{\lower\dp\strutbox\box0}} % alas, wrong lapping, therefore useless 
+   \dopositionmarginbox0}
+
+%D This approach permits us to implement a better mechanism 
+%D later.  
+
+\ifx\dopositionmarginbox\undefined
+  \def\dopositionmarginbox#1{\vadjust{\box#1}}
+\fi
 
 \def\doinlinker#1%
   {\doplacemargintext
@@ -5037,6 +4760,41 @@
      \expandafter\doflushmargincontents % speed up the \fi scan by
    \fi}                                 % using a \do..
 
+% \def\doflushmargincontents% % links + rechts
+%   {\bgroup
+%    \forgetall
+%    \global\marginheight\!!zeropoint
+%    \dorecurse{\margincontent}
+%      {\bgroup
+%       \edef\margetekstafstand {\getvalue{\??im\recurselevel\c!afstand}}%
+%       \edef\margetekstregels  {\getvalue{\??im\recurselevel\c!regel}}%
+%       \edef\margetekstscheider{\getvalue{\??im\recurselevel\c!scheider}}%
+%       \let\margetekstnummer=\recurselevel
+%       \getvalue{\??im\recurselevel}%
+%       \global\setvalue{\??im\recurselevel}{}%
+%       \egroup}%
+%    \ifdim\marginheight>\lineheight % This is something real dirty!
+%      \advance\marginheight by \pagetotal
+%      \advance\marginheight by \lineheight  % a sort of bonus
+%      \ifdim\marginheight>\pagegoal
+%        \xdef\restoreinterlinepenalty%
+%          {\global\let\restoreinterlinepenalty\relax
+%           \global\interlinepenalty=\the\interlinepenalty}%
+%        \global\interlinepenalty=10000
+%      \fi
+%    \else % We need the above because interlinepenalties overrule vadjusted \nobreaks.
+%      %\vadjust
+%      %  {\forgetall
+%      %   \global\advance\marginheight by \lineheight
+%      %   \global\divide\marginheight by \lineheight
+%      %   \dorecurse{\number\marginheight}
+%      %     {\nobreak\vskip\lineheight}%
+%      %   \kern-\number\marginheight\lineheight}%
+%      \vadjust{\nobreak}%
+%    \fi
+%    \doglobal\newcounter\margincontent
+%    \egroup}
+
 \def\doflushmargincontents% % links + rechts
   {\bgroup
    \forgetall
@@ -5050,7 +4808,14 @@
       \getvalue{\??im\recurselevel}%
       \global\setvalue{\??im\recurselevel}{}%
       \egroup}%
-   \ifdim\marginheight>\lineheight % This is something real dirty!
+\ifbinnenkolommen 
+  \donetrue  % how fuzzy 
+\else\ifdim\marginheight>\lineheight\relax 
+  \donetrue  % how dirty 
+\else 
+  \donefalse % how needed
+\fi\fi
+\ifdone
      \advance\marginheight by \pagetotal
      \advance\marginheight by \lineheight  % a sort of bonus
      \ifdim\marginheight>\pagegoal
@@ -5071,6 +4836,8 @@
    \fi
    \doglobal\newcounter\margincontent
    \egroup}
+
+% Some day: \definieermarkering[\v!margetitel]
 
 \def\docomplexmargewoord#1#2#3%
   {\@EA\setgvalue\@EA{\@EA\??im\@EA\margincontent\@EA}\@EA
@@ -5247,40 +5014,6 @@
   {\doquintupleempty\doinmarge
      [\@@implaats][\woordinlinker][\woordinrechter]}
 
-%I n=Paginanummer
-%I c=\stelpaginanummerin,\stelsubpaginanummerin
-%I
-%I Het paginanummer kan worden ingesteld met het commando:
-%I
-%I   \stelpaginanummerin[nummer=,status=]
-%I
-%I Het nummeren kan gedurende een of meerdere pagina's worden
-%I stilgezet door in plaats van een nummer start, stop of
-%I handhaaf mee te geven.
-%I
-%I Het paginanummer is oproepbaar met:
-%I
-%I   \paginanummer
-%I
-%I en het totaal aantal paginanummers met:
-%I
-%I   \totaalaantalpaginas
-%P
-%I Er zijn subnummers beschikbaar. De wijze van nummeren
-%I wordt ingesteld met:
-%I
-%I   \stelsubpaginanummerin[wijze=,status=]
-%I
-%I De status kan 'stop', 'start' of 'geen' zijn. In het
-%I laatste geval wordt gewoon doorgenummerd, maar wordt het
-%I nummer niet geplaatst.
-%I
-%I Standaard wordt 'perdeel' genummerd. De subnummers zijn
-%I oproepbaar met:
-%I
-%I    \subpaginanummer
-%I    \aantalsubpaginas
-
 % Standaard is \count0 in Plain TeX de paginateller. Omwille
 % van de afhandeling van lokaal nummeren, definieren we
 % echter een eigen nummer.
@@ -5292,12 +5025,17 @@
    \c!status=\@@nmstatus,
    \c!start=1]
 
+% \@@pnstatus global, but \@@nmstatus local and only start/stop
+
+\global\let\@@pnstatus\@@pnstatus
+
 \def\dostelpaginanummerin[#1]%
   {\getparameters
      [\??pn]
-     [\c!status=\v!start,
+     [%\c!status=\v!start,
       \c!nummer=,
       #1]%
+   \global\let\@@pnstatus\@@pnstatus
    \doifsomething{\@@pnnummer}
      {\setnummer[\s!page]{\@@pnnummer}%
       \setuserpageno{\ruwenummer[\s!page]}}}
@@ -5306,45 +5044,20 @@
   {\dosingleargument\dostelpaginanummerin}
 
 \def\verlaagpaginanummer%
-  {\doif{\@@pnstatus}{\v!start}
+  {\doifinset{\@@pnstatus}{\v!start,\v!leeg,\v!geen}
      {\verlaagnummer[\s!page]%
       \setuserpageno{\ruwenummer[\s!page]}}}
 
 \def\verhoogpaginanummer%
-  {\processaction
-     [\@@pnstatus]
-     [    \v!start=>{\verhoognummer[\s!page]%
-                     \setuserpageno{\ruwenummer[\s!page]}},
-       \v!handhaaf=>{\doassign[\??pn][\c!status=\v!start]}]}
+  {\doifinset{\@@pnstatus}{\v!start,\v!leeg,\v!geen}
+     {\verhoognummer[\s!page]%
+      \setuserpageno{\ruwenummer[\s!page]}}%
+   \doifinset{\@@pnstatus}{\v!handhaaf,\v!leeg}
+     {\global\let\@@pnstatus\v!start}}
 
 \def\checkpagecounter%
   {\checknummer{\s!page}}
 
-%I n=Pagina
-%I c=\pagina
-%I
-%I Het volgende commando kan worden gebruikt om pagina's af
-%I te dwingen of blokkeren:
-%I
-%I   \pagina[instelling]
-%I
-%I Waarbij als instelling kan worden gegeven:
-%I
-%I   ja             een geforceerde paginaovergang met \vfill
-%I   opmaak         een geforceerde paginaovergang zonder \vfill
-%I   nee            bij voorkeur geen paginaovergang
-%I   voorkeur       bij voorkeur de paginaovergang hier (3)
-%I   grotevoorkeur  bij voorkeur de paginaovergang hier (7)
-%I   links          ga naar een linker pagina
-%I   rechts         ga naar een rechter pagina
-%I   leeg           een lege pagina
-%I   blokkeer       blokkeer ja ... grotevoorkeur (1 pagina)
-%I   reset          het blokkering ja ... grotevoorkeur op
-%I
-%I Als geen instelling wordt meegegeven (\pagina), wordt een
-%I overgang geforceerd. Als een nummer wordt meegegeven, wordt
-%I naar de opgegeven pagina gegaan.
-
 \newif\ifpaginageblokkeerd
 \paginageblokkeerdfalse
 
@@ -5405,11 +5118,11 @@
                        \fi
                      \fi},
   \v!grotevoorkeur=>{\ifpaginageblokkeerd\else
-                      \ifbinnenkolommen
-                        \dosomebreak\goodbreak
-                      \else
-                        \testpagina[5][\!!zeropoint]%
-                      \fi
+                       \ifbinnenkolommen
+                         \dosomebreak\goodbreak
+                       \else
+                         \testpagina[5][\!!zeropoint]%
+                       \fi
                      \fi},
            \v!leeg=>{\ejectinsert
                      \ejectpage
@@ -5524,146 +5237,6 @@
      \global\rightpagetrue
    \fi}
 
-%I n=Hoofdteksten
-%I c=\stelnummeringin
-%I c=\stelhoofdtekstenin,\stelvoettekstenin,\stelhoofdin,\stelvoetin
-%I c=\stelboventekstenin,\stelondertekstenin,\stelbovenin,\stelonderin
-%I
-%I Zogeheten hoofd- en/of voetteksten kan men instellen
-%I met:
-%I
-%I   \stelhoofdtekstenin [linker tekst] [rechter tekst]
-%I   \stelvoettekstenin  [linker tekst] [rechter tekst]
-%I
-%I Bij dubbelzijdig zetten worden de linker en rechter
-%I teksten gespiegeld.
-%I
-%I In plaats van een tekst kunnen de woorden 'hoofdstuk',
-%I 'paragraaf' en 'deel' worden meegegeven. Ook kan het
-%I woord 'datum' worden meegegeven.
-%P
-%I Als men op de even en oneven pagina's een andere tekst
-%I wil hebben, dan kan men een tweede paar meegeven. In dat
-%I geval zijn er dus vier argumenten: [][][][].
-%I
-%I Als men in de marge of randen teksten wil, kan men dat
-%I direct achter het commando aangeven:
-%I
-%I   \stelhoofdtekstenin [lokatie] [links] [rechts]
-%I   \stelvoettekstenin  [lokatie] [links] [rechts]
-%I
-%I Mogelijke lokaties zijn: tekst, marge en rand.
-%P
-%I In de tekst opgenomen commando's kunnen soms voor
-%I problemen zorgen. Commando's kan men daarom laten
-%I voorafgaan \geentest, bijvoorbeeld:
-%I
-%I   \stelvoettekstenin[\geentest\lastigcommando][]
-%I
-%I Meestal geven commando's geen problemen. Wel moet men
-%I oppassen met []. Accolades zijn hiervoor de oplossing:
-%I
-%I   \stelvoettekstenin[{{\huidigedatum[mm,/,jj]}}][]
-%I
-%I of
-%I
-%I   \stelvoettekstenin[\geentest{\huidigedatum[mm,/,jj]}][]
-%P
-%I De wijze van nummeren wordt gedefinieerd met:
-%I
-%I   \stelnummeringin[variant=,plaats=,conversie=,
-%I     links=,rechts=,tekst=,tekstscheider=,nummerscheider,
-%I     wijze=,blok=,status=,letter=,<sectie>nummer=,commando=]
-%I
-%I De plaats van het nummer hangt af van het eerste
-%I meegegeven argument:
-%I
-%I   enkelzijdig             dubbelzijdig
-%I
-%I   links, rechts           kantlijn (links of rechts)
-%I   marge                   marge (links of rechts)
-%I   midden                  midden
-%I   inlinker, inrechter     inlinker, inrechter
-%P
-%I Met plaats geeft men tevens aan of het nummer in het hoofd
-%I of in de voet komt {hoofd,midden}. Met 'nummerscheider' geeft
-%I men aan wat er binnen een (eventueel) samengestelde nummer
-%I als scheider wordt gezet, standaard: 2-3. Met 'tekstscheider'
-%I geeft men aan wat er tussen het paginanummer en een hoofd- of
-%I voettekst wordt gezet (in geval van plaatsen op de marge).
-%I
-%I Liefhebbers kunnen aan 'commando' een eigen commando om het
-%I nummer te zetten meegeven. Dit eigen commando krijgt als
-%I argument het paginanummer mee.
-%I
-%I Het is mogelijk een dubbelzijdige tekst met enkelzijdige
-%I marges te zetten:
-%I
-%I   \stelnummeringin[variant={enkelzijdig,dubbelzijdig}]
-%I
-%I In dit geval worden de hoofd- en voetregels dus wel
-%I gespiegeld en hebben commando's als \pagina[rechts] betekenis.
-%P
-%I Als 'conversie' is mogelijk: cijfers, letters, Letters,
-%I romeins en Romeins. Als 'status' kan 'start' of 'stop'
-%I worden meegegeven. Op deze manier kan het aangeven van
-%I een paginanummer worden aan- en uitgezet.
-%I
-%I Er kan per sectienummer (deelnummer, hoofdstuknummer enz.)
-%I worden ingesteld of het zichtbaar is ('ja' of 'nee').
-%I
-%I Mogelijke wijzen van nummeren zijn: perdeel of perhoofdstuk.
-%P
-%I Hoofd- en voetregels blijven achterwege of juist niet na het
-%I commando:
-%I
-%I   \geenhoofdenvoetregels
-%I   \welhoofdenvoetregels
-%I
-%I of na:
-%I
-%I   \stelhoofdin[lokatie][linkerletter=,rechterletter=,
-%I     letter=,linkerbreedte=,rechterbreedte=,voor=,na=]
-%I   \stelvoetin[locatie][linkerletter=,rechterletter=,
-%I     letter=,linkerbreedte=,rechterbreedte=,voor=,na=]
-%I
-%I mogelijke lokaties zijn: tekst, marge en rand. Als [lokatie]
-%I wordt wegelaten, dan wordt tekst verondersteld.
-%I
-%I Als de breedte wordt ingesteld, dan wordt de weergegeven
-%I tekst zonodig ingekort en gevolgd door ...
-%P
-%I Het is mogelijk het plaatsen van hoofd- en voetregels
-%I stop te zetten:
-%I
-%I   \stelhoofdin[status=]
-%I   \stelvoetin[status=]
-%I
-%I Aan status kunnen de olgende aarden worden toegekend:
-%I
-%I   geen      de kop/voet vervalt (de tekst schuift omhoog)
-%I   leeg      de kop/voet blijft 1 pagina leeg
-%I   hoog      de kop/voet vervalt 1 pagina leeg (idem)
-%I   normaal   de kop/voet wordt gezet
-%I   stop      de kop/voet blijft vanaf nu leeg
-%I   start     de kop/voet wordt vanaf nu weer gevuld
-%I
-%I Het is ook mogelijk bij \stelhoofdin en \stelvoetin als
-%I parameters [voor=] en [na=] mee te geven. De toegekende
-%I commando's worden in dat geval voor en na het hoofd en de
-%I de voet uitgevoerd.
-%P
-%I Boven het hoofd en onder de voet is ook ruimte. Deze kan
-%I worden gedefinieerd met vergelijkbare commando's:
-%I
-%I   \stelboventekstenin[...][...][...]
-%I   \stelondertekstenin[...][...][...]
-%I
-%I   \stelbovenin[...]
-%I   \stelonderin[...]
-%I
-%I   \geenbovenenonderregels
-%I   \welbovenenonderregels
 
 % De onderstaande macro's lijken op het eerste gezicht vrij
 % ingewikkeld en omslachtig. Dit is het gevolg van een
@@ -5717,8 +5290,8 @@
            {\ConvertConstantAfter\doifelse{\v!paginanummer}{#6}
               {\@@plaatspaginanummer}
               {\ConvertConstantAfter\doifelse{\v!datum}{#6}
-                 {\currentdate}
-                 {\opeenregel\dolimitateteksten{#1#2#5}{#6}}}}}}%
+                 {\currentdate}   % #6{}{}{} -> {} needed for lookahead macros, like \uniqueMPgraphic
+                 {\opeenregel\dolimitateteksten{#1#2#5}{#6{}{}{}}}}}}}%
   \egroup}
 
 \def\dodoteksten#1#2#3#4#5#6%
@@ -5953,10 +5526,6 @@
   \def\placepositionanchors{\vskip\teksthoogte}
 \fi
 
-%\def\@@plaatspaginascheider%
-%  {\doif{\@@nmstatus}{\v!start}%
-%     {\@@nmtekstscheider}}
-
 \def\@@nmin     {} % kan vervallen  (upward compatibility)
 \def\@@nmplaats {} % mag {plaats, in} zijn
 
@@ -6068,11 +5637,13 @@
    \egroup}
 
 \unexpanded\def\@@plaatspaginanummer% called in empty tests
-  {\doif{\@@nmstatus}{\v!start}%
+ %{\doif{\@@pnstatus}{\v!start}
+  {\doif{\@@nmstatus\@@pnstatus}{\v!start\v!start}
      {{\@@nmcommando{\doattributes\??nm\c!letter\c!kleur{\volledigepaginanummer}}}}}
 
-\def\@@plaatspaginascheider%
-  {\doif{\@@nmstatus}{\v!start}%
+\def\@@plaatspaginascheider% still used ? 
+ %{\doif{\@@pnstatus}{\v!start}%
+  {\doif{\@@nmstatus\@@pnstatus}{\v!start\v!start}
      {\@@nmtekstscheider}}
 
 \def\userfolio%  naast realfolio
@@ -6081,46 +5652,37 @@
 \def\pagenumber%
   {\userfolio}
 
-\def\volledigepaginanummer%   alleen voor paginanummers !!
-  {\@@nmlinks
-   \def\donexttrackcommando##1%
-     {\doifvalue{\??nm##1\v!nummer}{\v!ja}  % v
-        {\ifnum\countervalue{\??se##1}>0\relax
-           \getvalue{##1\c!nummer}\@@nmnummerscheider
-         \fi}%
-      \doifsomething{\@@nmtekst}
-        {\@@nmtekst\@@nmnummerscheider}%
-      \donexttracklevel{##1}}%
-   \donexttrackcommando{\firstsection}%
-   \pagenumber
-   \@@nmrechts}
+\def\pageprefixes%
+  {\def\donexttrackcommando##1%
+      {\doifvalue{\??nm##1\v!nummer}{\v!ja}  % v
+         {\ifnum\countervalue{\??se##1}>0\relax
+            \getvalue{##1\c!nummer}\@@nmnummerscheider
+          \fi}%
+       \doifsomething{\@@nmtekst}
+         {\@@nmtekst\@@nmnummerscheider}%
+       \donexttracklevel{##1}}%
+    \donexttrackcommando{\firstsection}}
+
+\unexpanded\def\volledigepaginanummer%  
+  {\doif{\@@nmstatus\@@pnstatus}{\v!start\v!start} 
+     {\@@nmlinks\labeltexts{\v!paginanummer}{\pageprefixes\pagenumber}\@@nmrechts}}
+
+\unexpanded\def\plaatspaginanummer%
+  {\doif{\@@nmstatus\@@pnstatus}{\v!start\v!start}
+     {\labeltexts{\v!paginanummer}{\pagenumber}}}
 
 \def\translatednumber[#1::#2::#3]%
   {#3}
 
-%I n=Selecteren
-%I c=\soortpagina,\verwerkpagina,\koppelpagina
-%I
-%I Het is mogelijk pagina's te markeren en selectief te
-%I verwerken. Markering vindt plaats met het commando:
-%I
-%I   \soortpagina[aanduiding]
-%I
-%I en selecteren vindt plaats met:
-%I
-%I   \verwerkpagina[aanduiding,...][instelling]
-%I
-%I waarbij de instelling 'ja' of 'nee' is en meerdere
-%I aanduidingen worden gescheiden door een comma.
-%P
-%I Er kunnen commando's worden gekoppeld aan pagina's:
-%I
-%I   \koppelpagina[aanduiding,...][voor=,na=,optie=]
-%I
-%I De opgegeven commando's worden voor respectievelijk na het
-%I vrijgeven van de pagina uitgevoerd.
-
 % hier nog uti blokkeren
+
+% don't change this / test case:
+%
+% \setupbackgrounds[state=repeat]
+% \setupbackgrounds[text][text][background=whatever]
+% \couplepage[chapter][before={\defineoverlay[whatever][ON]}]
+% \setuphead[chapter][before={\pagetype[chapter]}] 
+% \chapter{First} \page test \chapter{second} \page test 
 
 \newif\ifgeselecteerd
 \geselecteerdtrue
@@ -6283,70 +5845,6 @@
 \unexpanded\def\referencepagenumber[#1]%
   {\paginaprefix\??rf[#1]\translatednumber[#1]}
 
-%I n=Regels
-%I c=\startregels,\stelregelsin
-%I c=\startregelnummeren,\stelregelnummerenin
-%I c=\crlf
-%I c=\startregel,\stopregel,\eenregel,\inregel
-%I
-%I Het is mogelijk de indeling in regels zoals die in de ruwe
-%I tekst wordt gehanteerd af te dwingen. Er wordt in dit
-%I geval niet ingesprongen. De regels worden gezet tussen de
-%I twee commando's:
-%I
-%I   \startregels
-%I
-%I     ...................................................
-%I
-%I   \stopregels
-%P
-%I Er kan met betrekking tot regels een en ander worden
-%I ingesteld:
-%I
-%I   \stelregelsin[voor=,na=,inspringen=]
-%I
-%I Aan 'inspringen' kan men 'ja', 'nee', 'even' of 'oneven'
-%I toekennen.
-%P
-%I Het is mogelijk regels te nummeren door ze tussen de
-%I volgende commando's te plaatsen:
-%I
-%I   \startregelnummeren
-%I   \stopregelnummeren
-%I
-%I Als de regelovergangen moeten worden gehandhaafd, dan moet
-%I \startregels voor \startregelnummeren worden gegeven.
-%I
-%I Het nummeren begint steeds opnieuw bij 1. Als verder moet
-%I worden genummeren, dan kan achter \startregelnummeren
-%I [verder] worden meegegeven.
-%I
-%I Standaard worden regels alinea-gewijs genummerd. Als men
-%I over een paginagrens wil nummeren, dan moet [opelkaar]
-%I worden meegegeven.
-%P
-%I De wijze van nummeren kan worden ingesteld met:
-%I
-%I   \stelregelnummerenin[conversie=,start=,stap=,letter=,
-%I     plaats=,breedte=,letter=]
-%I
-%I Als 'conversie' kan worden meegegeven: cijfers, letters,
-%I Letters, romeins of Romeins. Aan 'start' en 'stap' kan
-%I een getal worden toegekend, aan 'letter' een trefwoord,
-%I aan 'breedte' een maat (bij voorkeur in ex) en aan
-%I 'plaats' het trefwoord 'inmarge' of 'intekst'.
-%P
-%I Er kan worden overgegaan naar een nieuwe regel met:
-%I
-%I   \crlf
-%P
-%I .... testfase ...
-%I
-%I \startregel[tag] ... \stopregel[tag]
-%I \eenregel[tag]
-%I
-%I \inregel[tag]
-
 \newif\ifinregels
 \newif\ifregelnummersinmarge
 
@@ -6415,6 +5913,10 @@
 \newif\ifinregelnummeren
 
 % het gebruik van \setlocalreference scheelt een hash entry
+
+\def\dodoshowlinenumber% for use elsewhere, to be extended 
+  {\doschrijfregelnummer
+   \global\advance\linenumber by 1\relax}%
 
 \def\regelweergave%
   {\convertnumber\@@rnconversie\linenumber}%
@@ -6677,49 +6179,6 @@
      \doshowparagraphnumberA
    \fi}
 
-%I n=Opmaak
-%I c=\definieeropmaak,\testopmaak,\startstandaardopmaak
-%I
-%I Het is mogelijk een lege pagina op te maken. Hiertoe wordt
-%I een blok gereserveerd met het commando:
-%I
-%I  \definieeropmaak[naam][breedte=,hoogte=,voffset=,
-%I    hoffset=,pagina=,commandos=,voor=,na=,dubbelzijdig=]
-%I
-%I Hierbij wordt bij de eerste vier parameters een getal
-%I meegegeven (5cm, 24pt, enz.). Met 'pagina' geeft men aan
-%I of naar een nieuwe pagina wordt gesprongen (standaard
-%I 'rechts'). Aan de 'commandos' kunnen commando's worden
-%I toekend die tijdens de opmaak gelden. Aan de laatste twee
-%I parameters toegekende commando's worden voor en na het
-%I opmaken van de pagina uitgevoerd. De opgemaakte pagina
-%I kan worden geselecteerd op naam. Met 'dubbelzijdig' geeft
-%I men aan of er een lege achterkant moet worden opgemaakt
-%I (standaard: ja). Dit geldt aleen bij dubbelzijdig zetten.
-%I
-%I Naast het bovenstaande commando is er het commando:
-%I
-%I  \stelopmaakin[naam][instellingen]
-%P
-%I Na het geven van dit commando zijn twee commando's
-%I beschikbaar: \startnaamopmaak en \stopnaamopmaak. Tussen
-%I deze twee commando's kunnen zetopdrachten en teksten
-%I worden opgenomen. Een en ander wordt op een lege bladzijde
-%I gezet.
-%I
-%I Met het commando \testopmaak kunnen hulplijnen worden
-%I opgeroepen.
-%I
-%I De commando's \startstandaardopmaak en \stopstandaardopmaak
-%I maken het opmaken binnen de standaard-layout mogelijk.
-%P
-%I Eventueel kunnen de volgende twee commando's worden gebruikt
-%I om een pagina op te maken met hoofd- en voetregels.
-%I
-%I   \startopmaak
-%I     .....
-%I   \stopopmaak
-
 \newbox\opmaak
 
 \def\setopmaaklayout[#1]%
@@ -6849,31 +6308,6 @@
 \def\stelopmaakin%
   {\dodoubleargument\dostelopmaakin}
 
-%I n=Smaller
-%I c=\startsmaller,\stelsmallerin
-%I
-%I Een paragraaf kan smaller gezet worden met behulp van de
-%I commando's:
-%I
-%I   \startsmaller[afstand]
-%I   \stopsmaller
-%I
-%I Als maat wordt links, rechts, midden of een combinatie
-%I hiervan meegegeven. Eventueel wordt geen afstand meegegeven.
-%I
-%I De linker, rechter of dubbele inspringing kan worden
-%I ingesteld met:
-%I
-%I   \stelsmallerin[links=,rechts=,midden=]
-%I
-%I Enkele voorbeelden van smelelr zetten zijn:
-%I
-%I   \startsmaller[2*links,rechts]
-%I   \stopsmaller
-%I
-%I   \startsmaller[midden,rechts]
-%I   \stopsmaller
-
 \newskip\linkssmaller
 \newskip\rechtssmaller
 \newskip\middensmaller
@@ -6918,33 +6352,6 @@
 \def\stelsmallerin%
   {\dodoubleargument\getparameters[\??sl]}
 
-%I n=Boxen
-%I c=\definieerhbox,\cbox,\lbox,\rbox,\sbox
-%I
-%I Het is mogelijk een tekst in een blok met een vaste
-%I omvang te zetten. Dit is vergelijkbaar met het opmaken
-%I van een tabel.
-%I
-%I   \hbox?{tekst}       (horizontaal blok)
-%I
-%I De box wordt eerst gedefinieerd met:
-%I
-%I   \definieerhbox[?][maat]
-%I
-%I Er kan een links, rechts of midden uitgelijnde \vbox worden
-%I gezet met de commando:
-%I
-%I   \lbox{tekst\\tekst\\tekst} of \lbox to <maat>{...}
-%I   \rbox{tekst\\tekst\\tekst} of \rbox to <maat>{...}
-%I   \cbox{tekst\\tekst\\tekst} of \cbox to <maat>{...}
-%I
-%I Het commando \\ forceert een overgang naar een nieuwe regel.
-%I
-%I Een (hoge) box kan een gedwongen hoogte gelijk aan die
-%I van een strut krijgen met:
-%I
-%I   \sbox{box}
-
 \def\dodefinieerhbox[#1][#2]%
   {\setvalue{hbox#1}##1%
      {\hbox to #2{\begstrut##1\endstrut\hss}}}
@@ -6986,159 +6393,55 @@
       \s!default=>\let\raggedbox\hbox,
       \s!unknown=>\let\raggedbox\hbox]}
 
-\def\dosetraggedcommand#1% ook ruim,rechts en zo
-  {\processaction
-     [#1]
-     [  \v!links=>\def\raggedcommand{\raggedleft},
-       \v!rechts=>\def\raggedcommand{\raggedright},
-       \v!midden=>\def\raggedcommand{\raggedcenter},
-          \v!nee=>\def\raggedcommand{\raggedright},
-      \v!normaal=>\let\raggedcommand\relax,
-      \s!default=>\def\raggedcommand{\raggedcenter},
-      \s!unknown=>\let\raggedcommand\relax]}
-
-%I n=Blokken
-%I c=\stelplaatsblokkenin,\stelblokkopjesin
-%I c=\definieerplaatsblok,\stelplaatsblokin
-%I c=\reserveer,\leeg,\plaats,\volledigelijstmet,\plaatslijstmet
-%I
-%I Figuren, tabellen, grafieken enz. kunnen in de tekst
-%I worden geplaatst met het commando:
-%I
-%I   \plaats<bloknaam>[voorkeur][referentie]{titel}{blok}
-%I
-%I Als voorkeur kan worden opgegeven:
-%I
-%I   hier         bij voorkeur op deze plaats in de tekst
-%I   forceer      per se op deze plaats in de tekst
-%I   pagina       op een nieuwe pagina
-%I   boven        bovenaan de huidige pagina
-%I   onder        onderaan de huidige pagina
-%I
-%I   links        links in de paragraaf
-%I   rechts       rechts in de paragraaf
-%I
-%I   inlinker     in linker marge (gelijke hoogte)
-%I   inrechter    in rechter marge (gelijke hoogte)
-%I   inmarge      in linker/rechter marge (gelijke hoogte)
-%I   marge        in de marge
-%P
-%I Als er op de huidige bladzijde geen plaats is, dan wordt
-%I standaard de figuur verplaatst (eerste vier opties) en/of
-%I wordt overgegaan naar een nieuwe bladzijde (laatste twee
-%I opties.
-%I
-%I Men kan plaatsen afdwingen door het trefwoord altijd
-%I mee te geven: \plaats[hier,altijd][]{}{}. Er zijn dan
-%I twee runs nodig, omdat de nummering van de blokken moet
-%I worden aangepast.
-%I
-%I Als in plaats van een titel 'geen' wordt meegegeven, wordt
-%I geen titel geplaatst.
-%I
-%I Als het blok nog onbekend is, kan in plaats van het blok
-%I een van de volgende commando's worden meegegeven:
-%I
-%I   \leeg<bloknaam>
-%I   \lege<bloknaam>
-%P
-%I Het is mogelijk ruimte voor een blok te reserveren:
-%I
-%I   \reserveer<bloknaam>[hoogte=,breedte=,kader=][voorkeur]
-%I     [referentie]{titel}
-%I
-%I Beide commando's kunnen ook gegeven worden zonder [],
-%I dus in de vorm
-%I
-%I   \plaats<bloknaam>{titel}{blok}
-%I   \reserveer<bloknaam>{titel}
-%I
-%I Ten behoeve van een consistente verwijzing wordt het
-%I commando:
-%I
-%I   \in<bloknaam>[referentie]
-%I
-%I gedefinieerd. Dit levert in de tekst op:
-%I
-%I   'in <bloknaam> <nummer>'
-%P
-%I Blokken kunnen worden gedefinieerd met het commando:
-%I
-%I   \definieerplaatsblok[blok][blokken]
-%I
-%I Hierna zijn de volgende commando's beschikbaar:
-%I
-%I   \plaatsblok[plaats][referentie]{titel}{blok}
-%I   \reserveerblok[afmetingen][plaats][referentie]{titel}
-%I   \leegblok
-%I
-%I Het is mogelijk een en ander in te stellen met het
-%I commando:
-%I
-%I   \stelplaatsblokin[blok][hoogte=,breedte=,kader=,
-%I     bovenkader=,onderkader=,linkerkader=,rechterkader=,
-%I     paginaovergangen=]
-%I
-%I De hoogte en breedte hebben betrekking op de te reserveren
-%I ruimte.
-%P
-%I Naast de eerder genoemde commando's zijn nog beschikbaar:
-%I
-%I   \plaatslijstmetblokken
-%I   \volledigelijstmetblokken
-%I
-%I en een (extra) commando om tekst naast een blok (hier met
-%I de naam 'blok') te plaatsen:
-%I
-%I   \startbloktekst[plaats][referentie]{kop}{blok}
-%I     ...
-%I   \stopbloktekst
-%I
-%I Mogelijke plaatsen zijn 'links', 'rechts', 'hoog', 'laag' en
-%I 'midden'. Ook is een combinatie van deze instellingen
-%I mogelijk, bijvoorbeeld [links,hoog]. De instelling 'offset'
-%I resulteert in een verschuiving van 1 regel.
-%P
-%I Blokken die tussen de tekst staan kunnen links, rechts of in
-%I het midden worden uitgelijnd. De plaats wordt ingesteld met:
-%I
-%I   \stelplaatsblokkenin[plaats=,breedte=,kader=,bovenkader=,
-%I     onderkader=,linkerkader=,rechterkader=,offset=,voorwit=,
-%I     nawit=,marge=]
-%I
-%I De genummerde kopjes bij blokken kunnen worden ingesteld
-%I met:
-%I
-%I   \stelblokkopjesin[plaats=,voor=,tussen=,na=,letter=,
-%I      kopletter=,breedte=,nummer=,uitlijnen=]
-%I
-%I waarbij als plaats kan worden meegegeven: 'boven', 'onder',
-%I 'geen', 'hoog', 'laag' of 'midden'. Als breedte kan 'passend'
-%I of 'max' worden meegegeven. De parameter nummer kan 'ja' of
-%I 'nee' zijn. Als breedte=max, dan wordt het kopje over de
-%I hele breedte geplaatst. In dat geval kan uitlijnen worden
-%I ingesteld: 'links', 'midden' of 'rechts'.
-%P
-%I Als er geen plaats is, worden plaatsblokken tijdelijk
-%I achtergehouden. De opgespaarde blokken worden op de
-%I volgende bladzijde(n) geplaatst. Dit plaatsen is te
-%I beinvloeden met:
-%I
-%I   \stelplaatsblokkenin[nboven=,nonder=,nregels=]
-%I
-%I Standaard worden maximaal 2 blokken bovenaan de
-%I bladzijde geplaatst en 0 blokken onder. Er wordt overgegaan
-%I op een nieuwe bladzijde als het aantal regels groter is
-%I dan 4. Deze waarden kunnen worden ingesteld.
-%P
-%I Kopjes boven lijsten en labels voor nummers kunnen worden
-%I ingesteld met de elders beschreven commando's:
-%I
-%I   \stellabeltekstin[label=...]
-%I   \stelkoptekstin[tekst=...]
-%I
-%I Standaard zijn deze ingesteld op de opgegeven namen.
+% \def\dosetraggedcommand#1% ook ruim,rechts en zo
+%   {\processaction
+%      [#1]
+%      [  \v!links=>\def\raggedcommand{\raggedleft},
+%        \v!rechts=>\def\raggedcommand{\raggedright},
+%        \v!midden=>\def\raggedcommand{\raggedcenter},
+%           \v!nee=>\def\raggedcommand{\raggedright},
+%       \v!normaal=>\let\raggedcommand\relax,
+%       \s!default=>\def\raggedcommand{\raggedcenter},
+%       \s!unknown=>\let\raggedcommand\relax]}
 
+\def\dosetraggedcommand#1% 
+  {\expanded{\dodosetraggedcommand{#1}}}
+ 
+\def\dodosetraggedcommand#1% 
+  {\doifinsetelse{\v!ruim} {#1}{\!!doneatrue}{\!!doneafalse}%
+   \doifinsetelse{\v!breed}{#1}{\!!donebtrue}{\!!donebfalse}%
+   \let\raggedcommand\relax
+   \let\raggedtopcommand\empty
+   \let\raggedbottomcommand\empty
+   \!!donectrue
+   \ExpandFirstAfter\processallactionsinset
+     [#1]
+     [  \v!links=>\if!!donea      \def\raggedcommand{\veryraggedleft}%
+                  \else           \def\raggedcommand{\raggedleft}%
+                  \fi
+                  \!!donecfalse,                    % {\v!links,\v!midden}
+       \v!rechts=>\if!!donea      \def\raggedcommand{\veryraggedright}%
+                  \else           \def\raggedcommand{\raggedright}%
+                  \fi
+                  \!!donecfalse,                    % {\v!rechts,\v!midden}
+       \v!midden=>\if!!donec
+                    \if!!doneb      \def\raggedcommand{\raggedwidecenter}%
+                    \else\if!!donea \def\raggedcommand{\veryraggedcenter}%
+                    \else           \def\raggedcommand{\raggedcenter}%
+                    \fi\fi
+                    \!!donecfalse                   % {\v!midden,\v!midden}
+                  \else
+                    \let\raggedbottomcommand\vfilll % bonus, pretty strong 
+                    \let\raggedtopcommand   \vfilll % used with \framed for 
+                  \fi,                              % instance in tables
+         \v!hoog=>\let\raggedbottomcommand\vfilll,  % and since we lack a 
+         \v!laag=>\let\raggedtopcommand   \vfilll,  % proper keyword, but
+         \v!laho=>\let\raggedbottomcommand\vfilll   % we do support the 
+                  \let\raggedtopcommand   \vfilll,  % ugly laho (lohi)
+          \v!nee=>\def\raggedcommand{\raggedright},
+           \v!ja=>\let\raggedcommand\relax,
+      \v!normaal=>\let\raggedcommand\relax]}
+
 \def\stelplaatsblokkenin%
   {\dodoubleargument\getparameters[\??bk]}
 
@@ -7171,7 +6474,8 @@
         \hsize=\@@mbbreedte}%
    \fi
    \global\insidefloattrue
-   \dowithnextbox
+   \dowithnextboxcontent
+     {\postponefootnotes} % new 
      {\docompletefloat
         {#1}{#3}{#1}{#2}{#1}{#4}
         {\box\nextbox}}%
@@ -7432,7 +6736,8 @@
    \witruimte
    \previoussidefloat
    \stallsidefloat
-   \setbox\floatbox=\hbox{\vbox{\vskip\sidefloattopoffset#1}}
+   \setbox\floatbox=\hbox{\vbox % pretty ugly, will be rewritten
+     {\vskip\ifmarginfloat-\sidefloattopskip\else\sidefloattopoffset\fi#1}}
    \measuresidefloat
    \ifroomforfloat
      \setsidefloat
@@ -7995,7 +7300,8 @@
    \blanko[\@@bkvoorwit]%
    \flushfloatbox
    \blanko[\@@bknawit]%
-   \doinsertfloatinfo}
+   \doinsertfloatinfo
+   \doif{\@@bkspringvolgendein}{\v!nee}{\noindentation}} % new 
 
 \def\somefixdfloat[#1]%
   {\doroomfloat
@@ -8020,7 +7326,8 @@
             \v!rechts=>\rightfloat{\box\floatbox},
           \v!inlinker=>\leftmarginfloat{\box\floatbox},
          \v!inrechter=>\rightmarginfloat{\box\floatbox},
-           \v!inmarge=>{\doinmargenormal\leftmarginfloat\rightmarginfloat[]{\box\floatbox}}]%
+           \v!inmarge=>{\doinmargenormal\leftmarginfloat
+                        \rightmarginfloat{\box\floatbox}}]%
      \doifinset{\v!lang}{#1}
        {\flushsidefloatsafterpar}%
    \fi}
@@ -8047,6 +7354,7 @@
       \setbox\floattext=\vbox to \floattextheight}
      {\setbox\floattext=\vbox}%
    \bgroup
+\forgetall\stelblankoin\stelwitruimtein % new, also needed for footnotes
    \blanko[\v!blokkeer]
    \hsize\floattextwidth
    \ignorespaces}
@@ -8258,10 +7566,10 @@
      {\doregelplaats\@@flflplaats}%
    \ConvertToConstant\doifelse{#3}{\v!geen}
      {\global\setbox\floatbox=\vbox % pas op als wd groter dan hsize
-        {\ifbinnenkolommen\ifdim\wd4>\hsize
-           \let\locatefloat\relax
-         \fi\fi
-         \locatefloat{\box4}}}  
+        {\ifbinnenkolommen\ifdim\wd4>\hsize  
+           \let\locatefloat\relax            
+         \fi\fi                              
+         \locatefloat{\copy4}}}  % we need \wd4 later 
      {\setbox2=\hbox  
         {\footnotesenabledfalse\putcompletecaption{#4}{#2}{#3}{0}}%
       \doifinsetelse{\@@kjkjplaats}{\v!hoog,\v!midden,\v!laag}
@@ -8303,10 +7611,11 @@
                         \hsize=0.9\wd4
                         \putcompletecaption{#4}{#2}{#3}{0}}%
                    \else
-                     \setbox0=\vbox
-                       {\forgetall
-                        \hsize=1.0\wd4
-                        \putcompletecaption{#4}{#2}{#3}{0}}%
+                    %\setbox2=\vbox % was 0, bug
+                    %  {\forgetall
+                    %   \hsize=1.0\wd4
+                    %   \putcompletecaption{#4}{#2}{#3}{0}}%
+                     \setbox2=\hbox{\putcompletecaption{#4}{#2}{#3}{0}}% 
                    \fi
                  \else
                    \setbox0=\vbox
@@ -8326,20 +7635,24 @@
                         \fi
                         \putcompletecaption{#4}{#2}{#3}{0}}%
                    \else
-                     \setbox0=\vbox
-                       {\forgetall
-                        \dimen2=1.5\dimen0\relax
-                        \ifdim\dimen2<\hsize
-                          \hsize=\dimen2\relax
-                        \fi
-                        \putcompletecaption{#4}{#2}{#3}{0}}%
+                    %\setbox2=\vbox % was 0, bug
+                    %  {\forgetall
+                    %   \dimen2=1.5\dimen0\relax
+                    %   \ifdim\dimen2<\hsize
+                    %     \hsize=\dimen2\relax
+                    %   \fi
+                    %   \putcompletecaption{#4}{#2}{#3}{0}}%
+                     \setbox2=\hbox{\putcompletecaption{#4}{#2}{#3}{0}}% 
                    \fi
                  \fi}
                 {\dosetraggedvbox{\@@kjkjuitlijnen}%
                  \setbox2=\raggedbox
                    {\hsize\@@kjkjbreedte
                     \putcompletecaption{#4}{#2}{#3}{0}}}%
-              \fi}}%
+            \else
+              \setbox2=\hbox % we want footnotes ! 
+                {\putcompletecaption{#4}{#2}{#3}{0}}%
+            \fi}}%
       \global\setbox\floatbox=\vbox
         {\forgetall
          \processaction
@@ -8377,12 +7690,31 @@
                              \tfskip
                              \copy4}},
               \v!geen=>\locatefloat{\copy4}]}}%
-   \ifdim\wd4>\hsize
-     \global\setbox\floatbox=
-       \hbox to \ifbinnenkolommen\wd4\else\hsize\fi
-         {\hss\box\floatbox\hss}%
-   \fi
+  % extended: 
+   \postcenterfloatbox{\wd4}%
+  %\ifdim\wd4>\hsize
+  %  \global\setbox\floatbox=
+  %    \hbox to \ifbinnenkolommen\wd4\else\hsize\fi
+  %      {\hss\box\floatbox\hss}%
+  %\fi
    \egroup}
+
+\newif\ifpostponecolumnfloats \postponecolumnfloatsfalse % don't change 
+
+\def\postcenterfloatbox#1%
+  {\ifbinnenkolommen
+     \ifpostponecolumnfloats
+       \scratchdimen=\makeupwidth
+     \else
+       \scratchdimen=#1\relax
+     \fi
+   \else\ifdim#1>\hsize
+     \scratchdimen=\hsize
+   \else
+     \scratchdimen=\wd\floatbox
+   \fi\fi
+   \global\setbox\floatbox=\hbox to \scratchdimen
+     {\hfill\box\floatbox\hfill}} % geen \hss, gaat mis in kolommen ! 
 
 \def\dosetparfloat#1#2#3#4%
   {\bgroup
@@ -8436,7 +7768,7 @@
      \edef\@@kjkjplaats   {\getvalue{\??kj#4\c!plaats}}%
      \edef\@@kjkjuitlijnen{\getvalue{\??kj#4\c!uitlijnen}}%
      \edef\@@flflplaats   {\getvalue{\??fl#4\c!plaats}}%
-      \ifparfloat
+     \ifparfloat
        \dosetparfloat{#1}{#2}{#3}{#4}%
      \else
        \dosetpagfloat{#1}{#2}{#3}{#4}%
@@ -8532,76 +7864,6 @@
    #4%
    \pagina[\v!ja]}
 
-%I n=Figuren
-%I c=\plaatsfiguur,\reserveerfiguur,\startfiguurtekst
-%I c=\leegfiguur,\volledigelijstmetfiguren
-%I c=\plaatstabel,\reserveertabel,\starttabeltekst
-%I c=\legetabel,\volledigelijstmettabellen
-%I
-%I Figuren en tabellen (gebruik ..tabel.. in plaats van
-%I ..figuur..) kunnen in de tekst worden geplaatst met het
-%I commando:
-%I
-%I   \plaatsfiguur[plaats][referentie]{titel}{figuur}
-%I
-%I Als voorkeur kan worden opgegeven 'hier', 'forceer',
-%I 'pagina', 'boven', 'onder', 'links' en 'rechts'. In plaats
-%I van een titel kan 'geen' worden meegegeven, in dat geval
-%I wordt geen titel geplaatst. Eventueel kan in combinatie
-%I met links en rechts 'lang' worden opgegeven.
-%I
-%I De volgorde kan worden afgedwongen met 'altijd',
-%I bijvoorbeeld [hier,altijd]. In dat geval wordt bij een
-%I volgende run zonodig de nummering aangepast.
-%I
-%I In plaats van een titel kan {geen} worden ingevuld. In
-%I dat geval blijft de titel achterwege.
-%P
-%I Het is mogelijk ruimte voor een figuur te reserveren:
-%I
-%I   \reserveerfiguur[hoogte=,breedte=,kader=][voorkeur]
-%I     [referentie]{titel}
-%P
-%I Een lijst met figuren kan worden opgeroepen met:
-%I
-%I   \plaatslijstmetfiguren
-%I   \volledigelijstmetfiguren
-%I
-%I Men kan een tekst naast een figuur zetten met:
-%I
-%I   \startfiguurtekst[plaats][referentie]{kop}{figuur}
-%I     ...
-%I   \stopfiguurtekst
-%I
-%I Mogelijke plaatsen zijn (combinaties van) 'links', 'rechts',
-%I 'hoog', 'laag' en 'midden'. Met 'offset' dwingt men een
-%I verschuiving omlaag van van 1 regel af.
-%I
-%I Zie verder onder plaatsblokken.
-
-%I n=Tabellen
-%I
-%I Zie figuren.
-
-%I n=Intermezzo
-%I
-%I Zie figuren.
-
-%I n=Grafieken
-%I
-%I Zie figuren.
-
-%T n=figuur
-%T m=fig
-%T a=f
-%T
-%T \plaatsfiguur
-%T    [hier]
-%T    [fig:]
-%T    {}
-%T    {\naam{?}}
-%T
-
 \definieernummer
   [\??si]
   [\c!wijze=\v!per\v!tekst,
@@ -8652,53 +7914,6 @@
 \def\splitsplaatsblok%
   {\dosingleempty\dosplitsplaatsblok}
 
-%I n=Formules
-%I c=\plaatsformule,\plaatssubformule,\stelformulesin
-%I
-%I Formules kunnen in de tekst worden geplaatst met
-%I het commando:
-%I
-%I   \plaatsformule[referentie]subnummer$$formule$$
-%I
-%I Dit commando handelt de witruimtes om de formules af en
-%I plaatst nummers. Als geen nummer nodig is, en dus ook
-%I geen referentie, dan moet met het commando als volgt
-%I gebruiken:
-%I
-%I   \plaatsformule-$$...$$ of \plaatsformule[-]$$...$$
-%I
-%I Als het nummer niet moet worden opgehoogd, gebruikt men
-%I
-%I   \plaatssubformule[referentie]subnummer$$formule$$
-%P
-%I PAS OP:
-%I
-%I Binnen een aantal wiskundige commando's, zoals
-%I \displaylines, moet men het nummer zelf plaatsen. Dit
-%I kan gebeuren met: \formulenummer of \subformulenummer.
-%I Ook hier kan een [referentie] en een {subnummer} worden
-%I meegegeven.
-%I
-%I \plaatsformule
-%I   $$\displaylines
-%I       {x \hfill\formulenummer[eerste]{}\cr
-%I        y \hfill\cr
-%I        z \hfill\formulenummer[derde]{}\cr}
-%I   $$
-%P
-%I De wijze waarop formules worden genummerd kan worden
-%I be‹nvloed door het commando:
-%I
-%I   \stelformulesin[links=,rechts=,plaats=]
-%I
-%I De nummers kunnen links en rechts worden gezet. Standaard
-%I worden de symbolen ( en ) gebruikt.
-%I
-%I Tussen twee formules kan witruimte worden geforceerd met
-%I het commando:
-%I
-%I   \blanko[formule]
-
 \abovedisplayskip      = \!!zeropoint\relax
 \abovedisplayshortskip = \!!zeropoint\relax   % evt. 0pt minus 3pt
 \belowdisplayskip      = \!!zeropoint\relax
@@ -8780,7 +7995,7 @@
      \belowdisplayskip\!!zeropoint
      \abovedisplayshortskip\!!zeropoint
      \belowdisplayshortskip\!!zeropoint
-\vbox{\strut}\vskip-2\lineheight % Why 2 and not 1?
+\vbox{\strut}\vskip-2\openlineheight % Why 2 and not 1? ; 'open' is new 
      $$\def\dostopformula{$$\egroup}}
 
 \def\plaatsformule%
@@ -8849,17 +8064,6 @@
    \ignorespaces
    \endgroup}
 
-%I n=Naast
-%I c=\startnaast,\stelnaastplaatsenin
-%I
-%I Experiment:
-%I
-%I \startnaast
-%I ...
-%I \stopnaast
-%I
-%I \stelnaastplaatsenin[status=]
-
 \newbox\facingbox
 \newbox\facingpage
 
@@ -8915,43 +8119,6 @@
 \def\stelnaastplaatsenin%
   {\dosingleargument\dostelnaastplaatsenin}
 
-%I n=Achtergronden
-%I c=\stelachtergrondenin
-%I
-%I Achter de tekst kan een achtergrond worden geplaatst.
-%I Voor de afzonderlijke elementen van een tekst wordt een
-%I achtergrond gedefinieerd met het commando:
-%I
-%I   \stelachtergrondenin
-%I    [boven,hoofd,tekst,voet,onder]
-%I    [linkerrand,rechterrand,linkermarge,reachtermarge,tekst]
-%I    [achtergrond=,kleur=,raster=]
-%I
-%I Voor de hele bladzijde gebruiken we:
-%I
-%I   \stelachtergrondenin
-%I    [pagina]
-%I    [achtergrond=,kleur=,raster=]
-%P
-%I Het is mogelijk elk blok iets ruimer om de tekst te
-%I plaatsen met:
-%I
-%I   \stelachtergrondenin
-%I    [pagina]
-%I    [offset=,diepte=]
-%I
-%I Een offset van .25\korpsgrootte en een diepte van
-%I .5\korpsgrootte voldoen aardig.
-%I
-%I Er kunnen ronde hoeken worden gezet met:
-%I
-%I   \stelachtergrondenin
-%I    [pagina]
-%I    [hoek=,straal=]
-%I
-%I Hierbij kan voor hoek de instelling rond of recht worden
-%I meegegeven en voor straal een dimensie.
-
 % Don't use \@@mawhatevercommand directly, use \getvalue instead.
 
 \newif\ifnewbackground
@@ -9246,93 +8413,6 @@
      \egroup
    \fi}
 
-%I n=File-management
-%I c=\starttekst,\startprojekt,\startonderdeel,\startprodukt
-%I c=\startomgeving,\startdeelomgeving
-%I
-%I Een eenvoudige tekst wordt gestart en gestopt met de
-%I commando's:
-%I
-%I   \starttekst
-%I   \stoptekst
-%P
-%I Het is mogelijk een projektstructuur op te zetten. Per
-%I projekt wordt een file aangemaakt waarin de volgende
-%I commando's voorkomen:
-%I
-%I   \startprojekt naam
-%I   \stopprojekt
-%I
-%I Als deze file in TeX wordt geladen, dan worden alle
-%I produkten achter elkaar gezet.
-%I
-%I Een produkt wordt gedefinieerd met:
-%I
-%I   \startprodukt naam
-%I   \stopprodukt
-%I
-%I Deze file kan zelfstandig door TeX worden gehaald.
-%P
-%I Een omgeving wordt gedefinieerd door:
-%I
-%I   \startomgeving naam
-%I   \stopomgeving
-%I
-%I Een onderdeel wordt gedefinieerd door:
-%I
-%I   \startonderdeel naam
-%I   \stoponderdeel
-%I
-%I Files worden eerst gezocht op het actuele gebied. Als een
-%I file niet aanwezig is wordt op de 'roots' gezocht.
-%I
-%I Een onderdeel kan zelfstandig door TeX worden gehaald.
-%P
-%I Binnen een projekt, produkt, omgeving of onderdeel komen
-%I de volgende instellingen voor (tussen haakjes=facultatief):
-%I
-%I                     projekt  omgeving produkt  onderdeel
-%I
-%I   \projekt naam                           *        *
-%I   \omgeving naam      (*)      (*)       (*)      (*)
-%I   \produkt naam        *
-%I   \onderdeel naam                        (*)      (*)
-%I
-%I Binnen een omgeving kunnen deelomgevingen worden gedefinieerd
-%I die alleen voor bepaalde produkten, onderdelen enz. gelden.
-%I
-%I   \startdeelomgeving[naam,...,naam]
-%I     commando's
-%I   \stopdeelomgeving
-%P
-%I Het programma TeXEdit doorzoekt bij het aanmaken van een
-%I file-menu de hele tekst op de genoemde commando's. Bij een
-%I lange tekst kan dit misschien 'te' lang duren. Met het
-%I commando:
-%I
-%I   \geenfilesmeer
-%I
-%I kan worden aangegeven dat er geen structuurcommando's meer
-%I volgen.
-%I
-%I Ten behoeve van TeXUtil moet in plaats van het commando
-%I \input het commando \verwerkfile{naam} worden gebruikt.
-%P
-%I Als men standaard een en ander wil instellen, dan kan men
-%I dit doen in de file 'cont-sys.tex'. Deze file wordt direkt
-%I na het opstarten geladen cq. uitgevoerd. Daarnaast wordt,
-%I indien aanwezig, de file 'cont-new.tex' geladen.
-
-%T n=starttekst
-%T m=sta
-%T a=x
-%T
-%T \starttekst
-%T
-%T ?
-%T
-%T \stoptekst
-
 \def\currentproject     {}
 \def\currentproduct     {}
 \def\currentenvironment {}
@@ -9348,7 +8428,7 @@
 
 \setvalue{\c!file::0}{\jobname}
 
-\def\processedfile%
+\def\processedfile% is used in styles, don't change ! 
   {\getvalue{\c!file::\fileprocesslevel}}
 
 %\def\processfile#1%
@@ -9392,7 +8472,7 @@
         {\addtocommalist{##1}\allinputpaths}}%
    \processcommalist[#1]\docommando}
 
-\def\registreerfileinfo[#1#2]#3%
+\def\registreerfileinfo[#1#2]#3% geen \showmessage ? 
   {\writestatus{\m!systems}{#1#2 file #3 at line \the\inputlineno}%
    \immediatewriteutility{f #1 {#3}}}
 
@@ -9428,8 +8508,8 @@
    \loadallsystemfiles\f!filfilename
    \loadallsystemfiles\f!sysfilename}
 
-%D Loading of \type {cont-usr.tex} and \type {cont-exe.tex} 
-%D (the one generated by texexec). 
+%D Loading of \type {cont-usr.tex} (edited by the user) 
+%D and \type {cont-fmt.tex} (generated by texexec). 
 
 \def\loaduserspecifications
   {\readsysfile{\f!usrfilename}
@@ -9452,19 +8532,20 @@
 % \newevery \everyjob \EveryJob
 % \appendtoks ... \to \everyjob
 
-\prependtoks \showcontextbanner \to \everyjob
+\prependtoks \showcontextbanner   \to \everyjob
 
-\appendtoks  \loadsystemfiles   \to \everyjob
-\appendtoks  \preloadfonts      \to \everyjob
-\appendtoks  \settopskip        \to \everyjob
-\appendtoks  \preloadlanguages  \to \everyjob
-\appendtoks  \preloadspecials   \to \everyjob
-\appendtoks  \openspecialfile   \to \everyjob
-\appendtoks  \checkutilityfile  \to \everyjob
-\appendtoks  \openutilities     \to \everyjob
-\appendtoks  \loadoptionfile    \to \everyjob
-\appendtoks  \loadtwopassdata   \to \everyjob
-\appendtoks  \setupfootnotes    \to \everyjob % pas op: hangt af van korps
+\appendtoks \loadsystemfiles      \to \everyjob
+\appendtoks \preloadfonts         \to \everyjob
+\appendtoks \settopskip           \to \everyjob
+\appendtoks \preloadlanguages     \to \everyjob
+\appendtoks \preloadspecials      \to \everyjob
+\appendtoks \openspecialfile      \to \everyjob
+\appendtoks \checkutilityfile     \to \everyjob
+\appendtoks \openutilities        \to \everyjob
+\appendtoks \loadoptionfile       \to \everyjob
+\appendtoks \loadtwopassdata      \to \everyjob
+\appendtoks \setupfootnotes       \to \everyjob % depends on bodyfont
+\appendtoks \initializeMPgraphics \to \everyjob % after loading system files
 
 \appendtoks \pagina[\v!laatste] \pagina           \to \everybye
 \appendtoks \ifarrangingpages\poparrangedpages\fi \to \everybye
@@ -9760,43 +8841,6 @@
    \wd0=\!!zeropoint
    \box0\relax}
 
-%I n=Commando's
-%I c=\definieer,\naam
-%I c=\gebruikcommandos
-%I
-%I Het is mogelijk eigen commando's te definieren met behulp
-%I van het commando:
-%I
-%I   \definieer[aantal argumenten]\commando{betekenis}
-%I
-%I Een argument kan worden opgeroepen door een # gevolgd
-%I een nummer, bijvoorbeeld #2.
-%I
-%I   \definieer\test{ziezo}                  \ziezo
-%I   \definieer[1]\test{ziezo #1}            \ziezo{}
-%I   \definieer[2]\test{ziezo #1 en #2}      \ziezo{}{}
-%P
-%I In commandonamen mogen alleen karakters voorkomen. Mocht
-%I onverhoopt een cijfer nodig zijn, dan kunnen dergelijke
-%I commando's worden opgeroepen met:
-%I
-%I   \naam{}
-%I
-%I In een aantal gevallen, bijvoorbeeld bij het wegschrijven
-%I naar lijsten, worden commando's \noexpand-ed. Dit is
-%I bijvoorbeeld het geval bij synoniemen en sorteren, als
-%I het criterium ongelijk is aan 'alles'. Dergelijke (zelf)
-%I gedefinieerde commando's dienen eerst te worden
-%I geactiveerd met :
-%I
-%I   \gebruikcommandos{\commando}
-%I
-%I Er mogen meerdere commando's tegelijk worden opgegeven:
-%I
-%I   \gebruikcommandos{\alfa,\beta,gamma}
-%I
-%I waarbij de \ facultatief is. Er wordt niets gezet!
-
 % \docommando kan niet worden gebruikt omdat deze macro
 %  soms lokaal wordt gebruikt
 
@@ -9858,33 +8902,6 @@
    \processcommalist[#1]\docommando
    \egroup}
 
-%I n=Groeperen
-%I c=\start,\definieerstartstop
-%I
-%I Met behulp van de volgende commando's kan de werking van
-%I andere commando's worden beperkt:
-%I
-%I   \start[label]
-%I   \stop[label]
-%I
-%I Men is vrij in de keuze van het commentaar. Het gebruik
-%I van deze commando's komt overeen met het gebruiken van {}.
-%P
-%I Er kunnen \start-\stop-paren worden gedefinieerd en
-%I ingesteld met:
-%I
-%I   \definieerstartstop[label][voor=,na=,commandos=,
-%I     letter=]
-%I
-%I De aan 'voor' en 'na' toegekende commando's worden voor
-%I \start en na \stop uitgevoerd; de aan 'commando'
-%I toegekende commando's direct na \start.
-%I
-%I Naast het \start-\stop-paar is ook het verkorte commando
-%I beschikbaar:
-%I
-%I   \label{tekst}
-
 \def\complexstart[#1]{\bgroup\getvalue{\e!start#1}}
 \def\complexstop [#1]{\getvalue{\e!stop #1}\egroup}
 
@@ -9933,16 +8950,6 @@
 \def\copyright
   {\omcirkeld{c}}
 
-%I n=Systeem
-%I c=\stelsysteemin
-%I
-%I Systeemvariabelen kunnen worden ingesteld met het
-%I commando:
-%I
-%I   \stelsysteemin[resolutie=,korps=]
-%I
-%I Aan 'resolutie' dient het aantal dpi (300).
-
 \def\dosetupsystem[#1]%
   {\getparameters[\??sv][#1]%
    \setuprandomize[\@@svwillekeur]%
@@ -9966,6 +8973,8 @@
          \s!unknown=>\time=#1]%    
       \nextrandom   
       \egroup}}
+
+\def\outputfilename{\@@svfile} 
 
 % Default-instellingen (verborgen)
 
@@ -9979,8 +8988,9 @@
 
 \setupsystem
   [\c!gebied=,
-   \c!resolutie=300dpi,
+   \c!resolutie=600dpi,
    \c!willekeur=,
+   \c!file=\jobname,
    \c!korps=\normalizedlocalbodyfontsize] % of iets anders
 
 % Pas op:
@@ -9991,7 +9001,6 @@
 
 \stellayoutin
   [             \c!kopwit=.08417508418\papierhoogte,  % .08333  2.5cm
-                %\c!boven=.03367003367\papierhoogte,  % .03331  1.0cm
                  \c!boven=\!!zeropoint,
           \c!bovenafstand=\!!zeropoint,
                  \c!hoofd=.06734006734\papierhoogte,  % .06667  2.0cm
@@ -10002,11 +9011,8 @@
           \c!onderafstand=\@@lybovenafstand,
                  \c!onder=\!!zeropoint,
                 \c!rugwit=.11904761905\papierbreedte, %         2.5cm
-                 %\c!rand=.14285714286\papierbreedte, %         3.0cm
                   \c!rand=\!!zeropoint,
            \c!randafstand=\@@lymargeafstand,
-                %\c!marge=\@@lyrugwit,
-                %\c!marge=.07888078409\papierbreedte, % rugwit-2*afstand
                  \c!marge=.12649983170\papierbreedte, % snijwit-2*afstand
           \c!margeafstand=.02008341748\papierbreedte, %        12.0pt
             \c!linkerrand=\@@lyrand,
@@ -10023,7 +9029,7 @@
           \c!tekstbreedte=, % dangerous here \tekstbreedte
                 \c!letter=,
              \c!markering=\v!uit,
-                \c!plaats=\v!enkelzijdig,
+                \c!plaats=, % \v!enkelzijdig, but empty is signal 
                 \c!schaal=1,
                     \c!nx=1,
                     \c!ny=1,
@@ -10031,8 +9037,8 @@
                     \c!dy=\!!zeropoint,
                   \c!grid=\v!nee,
                 \c!regels=,
-               \c!snijwit=,
-              \c!bodemwit=]
+               \c!snijwit=\!!zeropoint,
+              \c!bodemwit=\!!zeropoint]
 
 % instellingen hierop terugvallen, bijvoorbeeld de volgende:
 
@@ -10106,6 +9112,7 @@
    \c!diepte=.28,
    \c!boven=1.0,
    \c!onder=0.4,
+   \c!afstand=1pt,
    \c!regel=2.8ex]
 
 \stelkolommenin
@@ -10468,6 +9475,7 @@
    \c!nawit=\v!groot,
    \c!zijvoorwit=\@@bkvoorwit,
    \c!zijnawit=\@@bknawit,
+   \c!springvolgendein=\v!nee,
    \c!marge=1em,
    \c!nboven=2,
    \c!nonder=0,
@@ -10519,7 +9527,8 @@
   [\v!definitief]
 
 \stelpaginanummerin
-  [\c!nummer=1]
+  [\c!status=\v!start,
+   \c!nummer=1]
 
 \stelsubpaginanummerin
   [\c!wijze=\v!per\v!deel,

@@ -161,7 +161,7 @@
 \ifnocontextobject \@@comment    \do \chardef\@@comment    = 14 \fi
 
 %D \macros 
-%D   {@EA,expanded}
+%D   {@EA,expanded,expandoneargafter,expandtwoargsafter}
 %D
 %D Also needed: 
 
@@ -169,6 +169,12 @@
 
 \def\expanded#1%
   {\edef\@@expanded{\noexpand#1}\@@expanded}
+
+\def\expandoneargafter#1#2%
+  {\@EA#1\@EA{#2}}
+
+\def\expandtwoargsafter#1#2#3%
+  {\@EA\@EA\@EA#1\@EA\@EA\@EA{\@EA#2\@EA}\@EA{#3}}
 
 %D \macros
 %D   {everyline,EveryLine,EveryPar}
@@ -248,7 +254,7 @@
 \fi
 
 %D \macros
-%D   {setvalue,getvalue,letvalue,setgvalue}
+%D   {setvalue,setevalue,setxvalue,getvalue,letvalue,setgvalue}
 %D
 %D The next two macros expand their argument to
 %D \type{\argument}. The first one is used to define macro's
@@ -257,9 +263,11 @@
 \ifnocontextobject \setvalue \do
 
   \def\setvalue #1{\expandafter\def\csname#1\endcsname}
+  \def\setevalue#1{\expandafter\edef\csname#1\endcsname}
+  \def\setgvalue#1{\expandafter\gdef\csname#1\endcsname}
+  \def\setxvalue#1{\expandafter\xdef\csname#1\endcsname}
   \def\getvalue #1{\csname#1\endcsname}
   \def\letvalue #1{\expandafter\let\csname#1\endcsname}
-  \def\setgvalue#1{\expandafter\gdef\csname#1\endcsname}
 
 \fi
 
@@ -309,7 +317,8 @@
 \fi
 
 %D \macros
-%D   {withoutpt}
+%D   {withoutpt,
+%D    ScaledPointsToBigPoints,ScaledPointsToWholeBigPoints}
 %D
 %D \TEX\ lacks some real datastructure. We can however use
 %D \DIMENSIONS. This kind of trickery is needed when we want
@@ -330,6 +339,14 @@
     {\scratchdimen=#1sp\relax
      \scratchdimen=.996264\scratchdimen
      \edef#2{\withoutpt{\the\scratchdimen}}}
+
+  \def\ScaledPointsToWholeBigPoints#1#2%  
+    {\scratchdimen=#1sp
+     \scratchdimen=.996264\scratchdimen    
+     \scratchcounter=\scratchdimen
+     \advance\scratchcounter by 32768
+     \divide\scratchcounter by 65536
+     \edef#2{\the\scratchcounter}}
 
 \fi
 
@@ -432,7 +449,7 @@
 \fi
 
 %D \macros
-%D   {dostepwiserecurse}
+%D   {dostepwiserecurse, dorecurse, doloop, exitloop}
 %D 
 %D The next loop macro is a real weak one, and does not offer 
 %D the full \CONTEXT\ functionality, let alone nesting, but 
@@ -452,12 +469,102 @@
      \advance\recursecounter by #3\relax
    \repeat}
 
+\def\dorecurse#1%
+  {\dostepwiserecurse{1}{#1}{1}}
+
+\def\doloop%
+  {\dostepwiserecurse{1}{\maxdimen}{1}}
+
+\def\exitloop%
+  {\recursecounter=\maxdimen}
+
+%D \macros 
+%D   {doifdefined,doifundefined,
+%D    doifdefinedelse,doifundefinedelse}
+%D
+%D These alteratives are not robust but suitable for simple 
+%D usage. 
+
+\ifnocontextobject \doifdefined \do
+
+  \def\doifdefinedelse#1#2#3%
+    {\expandafter\ifx\csname#1\endcsname\relax#3\else#2\fi}
+
+  \def\doifundefinedelse#1#2#3%
+    {\expandafter\ifx\csname#1\endcsname\relax#2\else#3\fi}
+
+  \def\doifdefined#1#2%
+    {\expandafter\ifx\csname#1\endcsname\relax\else#2\fi}
+
+  \def\doifundefined#1#2%
+    {\expandafter\ifx\csname#1\endcsname\relax#2\fi}
+
+\fi
+
+%D \macros
+%D   {doifinstringelse}
+%D
+%D It seems like we end up with more and more macros here. 
+%D Sigh. 
+
+\ifnocontextobject \doifinstringelse \do
+
+  \def\p!doifinstringelse#1#2%
+    {\def\pp!doifinstringelse##1#1##2##3\war%
+       {\csname if\if##2@fals\else tru\fi e\endcsname}%
+     \expanded{\pp!doifinstringelse#2#1@@\noexpand\war}} 
+
+  \long\def\doifinstringelse#1#2#3#4%
+    {\edef\@@@instring{#1}% 
+     \@EA\p!doifinstringelse\@EA{\@@@instring}{#2}#3\else#4\fi}
+
+\fi
+
 %D \macros
 %D   {twodigitrounding}
 %D
 %D We don't support rounding outside \CONTEXT. Sorry. 
 
 \def\twodigitrounding#1{#1}
+
+%D \macros 
+%D   {lineheight}
+%D
+%D In \CONTEXT\ we have \type{\lineheight}, which in many 
+%D cases matches \type {\baselineskip}. 
+
+\ifnocontextobject \lineheight \do
+
+  \def\lineheight{\baselineskip}
+
+\fi 
+
+%D \macros 
+%D   {dohandletokens}
+%D
+%D The following macro is the simplified version, but good 
+%D enough for day to day hacks. 
+%D
+%D \starttypen 
+%D \dohandletokens some text\with\somemacro
+%D \stoptypen 
+
+\ifnocontextobject \dohandletokens \do
+
+\def\dodohandletokens%
+  {\ifx\next\end \else
+     \docommando{\next}%
+     \expandafter\dohandletokens
+   \fi}
+
+\def\dohandletokens%
+  {\afterassignment\dodohandletokens\let\next= }
+
+\long\def\handletokens#1\with#2%
+  {\let\docommando=#2%
+   \dohandletokens#1\end}
+
+\fi
 
 %D That's it. Please forget this junk and take a look at how
 %D it should be done.

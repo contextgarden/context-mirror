@@ -30,7 +30,13 @@
 \writestatus{loading}{Context Support Macros / Files}
 
 \unprotect
-
+
+\ifx\undefined\f!pathseparator
+  \def\f!pathseparator{/} 
+  \def\f!currentpath  {.}
+  \def\f!parentpath   {..}
+\fi
+
 %D \macros 
 %D   {normalwrite, normalimmediate}
 %D
@@ -86,7 +92,6 @@
 
 \def\unlinkfile#1%  
   {\immediate\openout\scratchwrite=#1\immediate\closeout\scratchwrite}
-
 
 %D \macros
 %D   {doprocessfile,fileline,fileprocessedtrue,dofinishfile}
@@ -95,7 +100,7 @@
 %D line by line basis. 
 %D 
 %D \starttypen
-%D \processfile \identifier {name} \action
+%D \doprocessfile \identifier {name} \action
 %D \stoptypen
 %D 
 %D The first argument can for instance be \type{\scratchread}.
@@ -130,7 +135,7 @@
    \fi}
 
 %D \macros 
-%D   {pathplusfile,sanitizefilename}
+%D   {pathplusfile,assignfullfilename,sanitizefilename}
 %D 
 %D Use \type{\pathplusfile} to compose a full file name, like
 %D in: 
@@ -142,6 +147,21 @@
 %D By default, this expands into {\tt \pathplusfile{path}{file}}. 
 
 \def\pathplusfile#1#2{#1\f!pathseparator#2}
+
+%D This one constructs a filename from a (possible empty) 
+%D path and filename. % The special \type {system} is ignored.
+
+\def\assignfullfilename#1#2\to#3%
+  {\doifelsenothing{#1}
+     {\edef#3{#2}}
+     {\edef#3{#1\f!pathseparator#2}}}
+
+% \def\assignfullfilename#1#2\to#3%
+%   {\doifelsenothing{#1}
+%      {\edef#3{#2}}
+%      {\doifelse{#1}{system} % special case, honors default searching
+%         {\edef#3{#2}}
+%         {\edef#3{#1\f!pathseparator#2}}}}
 
 %D For the moment, we limit sanitizing to taking care of 
 %D active \type {/}.  
@@ -405,12 +425,27 @@
 %D \starttypen 
 %D \doifparentfileelse{filename}{yes}{no}
 %D \stoptypen
+%D 
+%D Since \TEXEXEC\ (and thereby \CONTEXT) supports renaming of
+%D the outputfile, we also need to check on that alternative
+%D name. 
+
+\ifx\outputfilename\undefined \def\outputfilename{\jobname} \fi
+
+% \def\doifparentfileelse#1#2#3%
+%   {\edef\!!stringa{#1}%
+%    \edef\!!stringb{\jobname}%
+%    \edef\!!stringc{\outputfilename}%
+%    \convertcommand\!!stringa\to\!!stringa
+%    \convertcommand\!!stringb\to\!!stringb
+%    \convertcommand\!!stringc\to\!!stringc
+%    \ifx\!!stringa\!!stringb#2\else  
+%    \ifx\!!stringa\!!stringc#2\else
+%                            #3\fi\fi}
 
 \def\doifparentfileelse#1#2#3%
-  {\edef\!!stringa{#1}%
-   \@EA\convertargument\!!stringa\to\!!stringa
-   \@EA\def\@EA\!!stringb\@EA{\jobname}%
-   \ifx\!!stringa\!!stringb#2\else#3\fi}
+  {\doifsamestringelse{#1}{\jobname}       {#2}
+  {\doifsamestringelse{#1}{\outputfilename}{#2}{#3}}}
 
 % \newcounter\readingfilelevel
 %

@@ -48,8 +48,23 @@
 %
 % this one fails in removing system modes 
 
+% \def\enablemode[#1]%
+%   {\expanded{\addtocommalist{#1}\noexpand\currentmode}}
+
+%D Sometimes, we want to prevent a mode for being set. Think
+%D of situations where a style enables a mode, but an outer
+%D level style does not want that. Preventing can be
+%D considered a permanent disabling on forehand. 
+
+\let\preventedmodes\empty
+
+\def\preventmode[#1]%
+  {\expanded{\addtocommalist{#1}\noexpand\preventedmodes}}
+
 \def\enablemode[#1]%
-  {\expanded{\addtocommalist{#1}\noexpand\currentmode}}
+  {\expanded
+     {\doifnotinset{#1}{\preventedmodes}
+        {\noexpand\addtocommalist{#1}\noexpand\currentmode}}}
 
 \def\disablemode[#1]%
   {\expanded{\removefromcommalist{#1}\noexpand\currentmode}}

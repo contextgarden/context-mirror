@@ -79,6 +79,38 @@
      12: -- preskoceno
 \stopmessages
 
+\startmessages  italian  library: textblocks
+  title: blocchi di testo
+      1: nuova versione, seconda passata necessaria
+      2: scrittura dei blocchi su --
+      3: lettura dei blocchi da --
+      4: seconda passata necessaria
+      5: -- non nascosto
+      6: -- nascosto ed elaborato
+      7: -- nascosto
+      8: -- composto
+      9: -- non composto
+     10: -- caricato ed elaborato
+     11: -- caricato e composto
+     12: -- saltato
+\stopmessages
+
+\startmessages  norwegian  library: textblocks
+  title: tekstblokker
+      1: ny versjon, andre gjennomkjøring nødvendig
+      2: skriver blokker til --
+      3: leser blokker fra --
+      4: andre gjennomkjøring nødvendig
+      5: -- ikke skjult
+      6: -- skjult og behandlet
+      7: -- skjult
+      8: -- tegnsatt
+      9: -- ikke tegnsatt
+     10: -- lest inn og behandlet
+     11: -- lest inn og tegnsatt
+     12: -- utelatt
+\stopmessages
+
 \unprotect 
 
 % PAS OP! 
@@ -109,6 +141,12 @@
    \fi
    \egroup}
 
+\def\resetbuffer%
+  {\dosingleempty\doresetbuffer}
+
+\def\doresetbuffer[#1]%
+  {\unlinkfile{\TEXbufferfile{\iffirstargument#1\else\jobname\fi}}}
+
 % \EveryPar%
 %   {\doglobal\newcounter\NOfLines}
 %
@@ -117,26 +155,25 @@
 %    \hskip-3em%
 %    \hbox to 3em{\hss\NOfLines\hskip1em}}
 
+%D For Willy's nested commented buffers, we need the \type 
+%D {\delcharacter} trick. 
+
 \def\processnextbufferline#1#2#3%
   {\relax % checken waarom eerdere macro dit nodig heeft / supp-mps run
    \convertargument#1 \to\next
-   \ifx\next\emptybufferline
-     \ifsegmentatebuffer \emptybufferlinetrue \fi
-     \def\next{#3}%
-   \else
-     \emptybufferlinefalse
-     \doifinstringelse{\endofblock}{\next}
-       {\ifnum\nestedbufferlevel=0\relax % \relax ?
-          \def\next{#2}%
-        \else
-          \decrement\nestedbufferlevel\relax
-          \def\next{#3}%
-        \fi}
-       {\doifinstringelse{\beginofblock}{\next}
-          {\increment\nestedbufferlevel\relax
-           \def\next{#3}}
-          {\def\next{#3}}}%
-   \fi
+   \doifinstringelse{\delcharacter\texcommentsymbol}{\delcharacter\next}
+     {\def\next{#3}}
+     {\doifinstringelse{\endofblock}{\next}
+        {\ifnum\nestedbufferlevel=0\relax % \relax ?
+           \def\next{#2}%
+         \else
+           \decrement\nestedbufferlevel\relax
+           \def\next{#3}%
+         \fi}
+        {\doifinstringelse{\beginofblock}{\next}
+           {\increment\nestedbufferlevel\relax
+            \def\next{#3}}
+           {\def\next{#3}}}}%
    \next}
 
 \def\dostartbuffer%
@@ -153,7 +190,7 @@
    \next}
 
 \def\dododostartbuffer[#1][#2][#3][#4]%
-  {\showmessage{\m!systems}{15}{#2}%
+  {%\showmessage{\m!systems}{15}{#2}%
    \doifelsevalue{\??bu#1\c!alinea}{\v!ja}
      {\segmentatebuffertrue}
      {\doifnumberelse{\getvalue{\??bu#1\c!alinea}} 
@@ -175,8 +212,10 @@
       \egroup
       \getvalue{#4}}%
    \doifelsenothing{#2}
-     {\immediate\openout\tmpblocks=\TEXbufferfile{\jobname}}
-     {\immediate\openout\tmpblocks=\TEXbufferfile{#2}}%
+     {\message{<\TEXbufferfile{\jobname}>}%
+      \immediate\openout\tmpblocks=\TEXbufferfile{\jobname}}
+     {\message{<\TEXbufferfile{#2}>}%
+      \immediate\openout\tmpblocks=\TEXbufferfile{#2}}%
    \ifsegmentatebuffer 
      \immediate\write\tmpblocks{\string\startbufferparagraph}%
    \fi
@@ -197,7 +236,7 @@
 
 \def\dobuffer#1[#2]#3%
   {\def\dodobuffer##1%
-      {\showmessage{\m!systems}{#1}{##1}%
+      {%\showmessage{\m!systems}{#1}{##1}%
        \beginrestorecatcodes
        \doifdefinedelse{\??bu##1\c!nummer}
          {#3{\TEXbufferfile{def-\getvalue{\??bu##1\c!nummer}}}{}{}}
@@ -497,7 +536,7 @@
    \endrestorecatcodes}
 
 \def\setupcopyblock%
-  {\dostepwiserecurse{1}{255}{1}{\catcode\recurselevel=\@@other}%
+  {\makeallother % \dostepwiserecurse{1}{255}{1}{\catcode\recurselevel=\@@other}%
    \obeylines}
 
 \def\writeoutblocks%
@@ -514,13 +553,13 @@
 
 \bgroup
 \obeylines
-\gdef\copyblocklineAB#1
+\long\gdef\copyblocklineAB#1
   {\processnextblocklineAB{#1}%
      {\closeblock}%
      {\writeoutblocks{#1}%
       \writetmpblock{#1}%
       \copyblocklineAB}}
-\gdef\skipblocklineAB#1
+\long\gdef\skipblocklineAB#1
   {\processnextblocklineAB{#1}%
      {\closeblock}%
      {\skipblocklineAB}}
@@ -541,13 +580,13 @@
 
 \bgroup
 \obeylines
-\gdef\copyblockline#1
+\long\gdef\copyblockline#1
   {\processnextblockline{#1}%
      {\closeblock}%
      {\writeoutblocks{#1}%
       \writetmpblock{#1}%
       \copyblockline}}
-\gdef\skipblockline#1
+\long\gdef\skipblockline#1
   {\processnextblockline{#1}%
      {\closeblock}%
      {\skipblockline}}
@@ -856,6 +895,47 @@
 
 \def\beginvanblok[#1]%  % er wordt ook gechecked op \eindvanblok[..]
   {\getvalue{\e!beginvan#1}}
+
+\def\forceerblokken[#1]%
+  {\def\docommando##1%
+     {\setvalue{\e!beginvan##1}%
+        {\setblocklevel+\bgroup
+         \dodoubleempty\doforceerblok[##1]}%
+      \setvalue{\e!eindvan##1}%
+        {\getvalue{\??tb##1\c!na}%
+         \egroup\setblocklevel-}}%
+   \processcommalist[#1]\docommando}
+
+\def\doforceerblok[#1][#2]%
+  {\doifassignmentelse{#2}
+     {\settrue \blockassignmentstatus}
+     {\setfalse\blockassignmentstatus}%
+   \ifconditional\blockassignmentstatus
+     \dosetupblockparameters[#1][#2]%
+   \fi
+   \getvalue{\??tb#1\c!voor}%
+   \doattributes{\??tb#1}\c!letter\c!kleur{}%
+   \getvalue{\??tb#1\c!binnen}}
+
+\def\passeerblokken[#1]%
+  {\def\docommando##1%
+     {\setvalue{\e!beginvan##1}%
+        {\setblocklevel+\bgroup
+         \obeylines % here, since we look ahead 
+         \dodoubleempty\dopasseerblok[##1]}%}%
+      \setvalue{\e!eindvan##1}%
+        {}}%
+   \processcommalist[#1]\docommando}
+
+\def\dopasseerblok[#1][#2]%
+  {\def\closeblock%
+     {\egroup\setblocklevel-}%
+   \checkcopyingblocks
+   \obeylines
+   \@EA\@EA\@EA\convertargument\@EA\string\csname\e!eindvan#1\endcsname\to\endofblockA
+   \@EA\convertargument\string\eindvanblok[#1]\to\endofblockB % MULTI LINGUAL MAKEN
+   \setupcopyblock
+   \skipblocklineAB}
 
 % the buffer mechanism handles nesting, add some switch
 

@@ -157,7 +157,8 @@
 
   \gdef\dobeginETEX#1 
     {\egroup\immediate\write16%
-       {line \the\inputlineno: inserting E-TEX code \detokenize{#1}}}
+      %{line \the\inputlineno: inserting E-TEX code \detokenize{#1}}}
+       {system (E-TEX) : [line \the\inputlineno] \detokenize{#1}}}
 
   \global\let\endETEX\relax
 
@@ -168,29 +169,29 @@
 %D Well, this redefintion of \type {\input} fails on \ETEX, 
 %D because of some \type {\cs\fi} constructs. So now we use:
 
-\beginETEX etex.src etexdefs.lib 
-
-  \def\input#1%
-    {\bgroup
-     \skipmessage{\string\input}%
-     \expandafter\ifx\expandafter#1\csname l@ngdefnfile\endcsname    
-       \let\input\egroup
-     \else
-       \def\input##1 {\egroup}%
-     \fi
-     \input}
-
-  \normalinput     etex.src \relax 
-  \normalinput etexdefs.lib \relax 
-
-  \let\fmtversion\normalfmtversion
-
-  \savinghyphcodes=1
-
-\endETEX
-
-\let\normalprotected  = \protected
-\let\normalunexpanded = \unexpanded
+% \beginETEX etex.src etexdefs.lib 
+% 
+%   \def\input#1%
+%     {\bgroup
+%      \skipmessage{\string\input}%
+%      \expandafter\ifx\expandafter#1\csname l@ngdefnfile\endcsname    
+%        \let\input\egroup
+%      \else
+%        \def\input##1 {\egroup}%
+%      \fi
+%      \input}
+% 
+%   \normalinput     etex.src \relax 
+%   \normalinput etexdefs.lib \relax 
+% 
+%   \let\fmtversion\normalfmtversion
+% 
+%   \savinghyphcodes=1
+% 
+% \endETEX
+%
+% \let\normalprotected  = \protected
+% \let\normalunexpanded = \unexpanded
 
 %D We restore some redefined primitives to their old meaning. 
 
@@ -220,6 +221,10 @@
 %D in the \type{log} file. 
 
 \def\wlog#1{} 
+
+% \let\normalwlog\wlog 
+%
+% \def\wlog#1{\normalwlog{system (\string\wlog) : #1}}
 
 %D To prevent clashes, we slightly redefine the phantom 
 %D macros: we let them hide their behaviour by grouping. 

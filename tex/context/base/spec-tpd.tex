@@ -169,10 +169,11 @@
 
 \definefileinsertion{tpd}{mps}#1#2#3#4#5#6#7#8#9%
   {\hbox
-     {\convertMPcolors{#1}%
+     {%\convertMPcolors{#1}% plugged in supp-mpe
       \scratchdimen=#3pt \PointsToReal{.01\scratchdimen}\xscale
       \scratchdimen=#4pt \PointsToReal{.01\scratchdimen}\yscale
-      \convertMPtoPDF{#1}\xscale\yscale}}
+      \convertMPtoPDF{#1}\xscale\yscale
+      \global\let\PDFimagereference\empty}}
 
 %D The old, \TEX\ base \PDF\ insertion macro:
 %D 
@@ -263,6 +264,7 @@
 %D general \PDF\ one.
 
 \definefileinsertion{tpd}{mov}{\doPDFinsertmov}
+\definefileinsertion{tpd}{avi}{\doPDFinsertmov}
 
 %D \macros 
 %D   {doinsertsoundtrack}
@@ -357,6 +359,11 @@
 \def\dogetfiguresizepng{\dogetTPDfiguresize\normaldogetfiguresizepng}
 \def\dogetfiguresizetif{\dogetTPDfiguresize\normaldogetfiguresizetif}
 \def\dogetfiguresizejpg{\dogetTPDfiguresize\normaldogetfiguresizejpg}
+
+\appendtoks \let\dogetfiguresizepdf\normaldogetfiguresizepdf \to \everyresetspecials
+\appendtoks \let\dogetfiguresizepng\normaldogetfiguresizepng \to \everyresetspecials
+\appendtoks \let\dogetfiguresizetif\normaldogetfiguresizetif \to \everyresetspecials
+\appendtoks \let\dogetfiguresizejpg\normaldogetfiguresizejpg \to \everyresetspecials
 
 %D \macros
 %D   {doregisterfigure}

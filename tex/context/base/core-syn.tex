@@ -327,7 +327,9 @@
      \dowritesort{#2}{#4}{#4}%
    \fi}
 
-\def\dodefinieersorteren[#1][#2][#3]%
+% if #3=\relax or \v!geen, then no command but still protected
+
+\def\dodefinieersorteren[#1][#2][#3]% 
   {\getparameters[\??so#1]
      [%\c!commando=, % we test for defined !
       \c!status=\v!start,
@@ -336,11 +338,13 @@
       \c!voor=,
       \c!na=\endgraf]%
    \presetheadtext[#2=\Word{#2}]%
-   \setvalue{\e!stel#2\e!in}[##1]%      vervalt tzt
+   \setvalue{\e!stel#2\e!in}[##1]% vervalt tzt, soort oo-mode 
      {\getparameters[\??so#1][##1]}%
    \ifthirdargument
-     \def#3##1%
-       {\getvalue{\??so:#1:##1}}
+     \ConvertConstantAfter\doifnot{#3}{\v!geen}
+       {\ifx#3\relax \else
+          \def#3##1{\getvalue{\??so:#1:##1}}
+        \fi}%
      \setvalue{#1}%
        {\dotripleempty\docomplexsort[\??so:#1:][#1]}%
    \else

@@ -1,0 +1,118 @@
+%D \module
+%D   [     file=enco-fde,
+%D      version=2000.08.20,
+%D        title=\CONTEXT\ Encoding Macros,
+%D     subtitle=German Input Filter,
+%D       author=Hans Hagen,
+%D         date=\currentdate,
+%D    copyright=Hans Hagen]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D These definitions used to be part of lang-ger.tex.
+
+\unprotect
+
+\startlanguagespecifics[\s!de]
+
+  \installcompoundcharacter "a {\moveaccent{-.1ex}\"a\midworddiscretionary}
+  \installcompoundcharacter "e {\moveaccent{-.1ex}\"e\midworddiscretionary}
+  \installcompoundcharacter "i {\moveaccent{-.1ex}\"\i\midworddiscretionary}
+  \installcompoundcharacter "o {\moveaccent{-.1ex}\"o\midworddiscretionary}
+  \installcompoundcharacter "u {\moveaccent{-.1ex}\"u\midworddiscretionary}
+  \installcompoundcharacter "s {\sz}
+  \installcompoundcharacter "z {\sz}
+
+
+  \installcompoundcharacter "A {\smashaccent\"A}
+  \installcompoundcharacter "E {\smashaccent\"E}
+  \installcompoundcharacter "I {\smashaccent\"I}
+  \installcompoundcharacter "O {\smashaccent\"O}
+  \installcompoundcharacter "U {\smashaccent\"U}
+  \installcompoundcharacter "Z {SZ}
+  \installcompoundcharacter "S {SS}
+
+\stoplanguagespecifics
+
+\startlanguagespecifics[\s!de]
+
+  \installcompoundcharacter "ck {\discretionary {k-}{k}{ck}}
+  \installcompoundcharacter "ff {\discretionary{ff-}{f}{ff}}
+  \installcompoundcharacter "ll {\discretionary{ll-}{l}{ll}}
+  \installcompoundcharacter "mm {\discretionary{mm-}{m}{mm}}
+  \installcompoundcharacter "nn {\discretionary{nn-}{n}{nn}}
+  \installcompoundcharacter "pp {\discretionary{pp-}{p}{pp}}
+  \installcompoundcharacter "rr {\discretionary{rr-}{r}{rr}}
+  \installcompoundcharacter "tt {\discretionary{tt-}{t}{tt}}
+
+  \installcompoundcharacter "CK {\discretionary {K-}{K}{CK}}
+  \installcompoundcharacter "FF {\discretionary{FF-}{F}{FF}}
+  \installcompoundcharacter "LL {\discretionary{LL-}{L}{LL}}
+  \installcompoundcharacter "MM {\discretionary{MM-}{M}{MM}}
+  \installcompoundcharacter "NN {\discretionary{NN-}{N}{NN}}
+  \installcompoundcharacter "PP {\discretionary{PP-}{P}{PP}}
+  \installcompoundcharacter "RR {\discretionary{RR-}{R}{RR}}
+  \installcompoundcharacter "TT {\discretionary{TT-}{T}{TT}}
+
+\stoplanguagespecifics
+
+\startlanguagespecifics[\s!de]
+
+  \installcompoundcharacter "` {\handlequotation\c!leftquotation}
+  \installcompoundcharacter "' {\handlequotation\c!rightquotation}
+  \installcompoundcharacter ". {\kern.1em\ignorespaces}
+
+  \def\setupDElanguage%
+    {\setuplanguage
+       [\s!de]
+       [\c!leftsentence=\leftguillemot,
+        \c!rightsentence=\rightguillemot,
+        \c!leftsubsentence=\leftsubguillemot,
+        \c!rightsubsentence=\rightsubguillemot]}
+ 
+  \installcompoundcharacter "<   {{\setupDElanguage|<|}}
+  \installcompoundcharacter ">   {{\setupDElanguage|>|}}
+
+\stoplanguagespecifics
+
+%D An experimental hack:
+
+\startencoding[pdfdoc]
+  \startlanguagespecifics[\s!de]% hm, a % is needed  
+    \defineactivecharacter " {\"} % no {\simplifiedcompoundcharacter"}
+  \stoplanguagespecifics
+\stopencoding
+
+\startencoding[ec]
+  \startlanguagespecifics[\s!de]%
+    \installcompoundcharacter "a {\"a} 
+    \installcompoundcharacter "e {\"e}
+    \installcompoundcharacter "i {\"\i}
+    \installcompoundcharacter "o {\"o}
+    \installcompoundcharacter "u {\"u}
+    \installcompoundcharacter "A {\"A}
+    \installcompoundcharacter "E {\"E}
+    \installcompoundcharacter "I {\"I}
+    \installcompoundcharacter "O {\"O}
+    \installcompoundcharacter "U {\"U}
+  \stoplanguagespecifics
+\stopencoding
+
+\startencoding[texnansi]
+  \startlanguagespecifics[\s!de]%
+    \installcompoundcharacter "a {\"a} 
+    \installcompoundcharacter "e {\"e}
+    \installcompoundcharacter "i {\"\i}
+    \installcompoundcharacter "o {\"o}
+    \installcompoundcharacter "u {\"u}
+    \installcompoundcharacter "A {\"A}
+    \installcompoundcharacter "E {\"E}
+    \installcompoundcharacter "I {\"I}
+    \installcompoundcharacter "O {\"O}
+    \installcompoundcharacter "U {\"U}
+  \stoplanguagespecifics
+\stopencoding
+
+\protect \endinput 

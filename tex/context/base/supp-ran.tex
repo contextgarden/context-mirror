@@ -37,9 +37,8 @@
 %D The randomseed can be set by: 
 %D
 %D \starttypen
-%D \setrandomseed{number>0]
+%d \setrandomseed{number>0]
 %D \stoptypen
-
 
 \ifx\nextrandom\undefined
 
@@ -56,7 +55,8 @@
 
 \else
 
-  \let\normalnextrandom=\nextrandom
+  \let\normalnextrandom  = \nextrandom
+  \let\restorerandomseed = \relax
 
   \def\nextrandom%
     {\bgroup
@@ -65,10 +65,27 @@
      \let\month=\normalmonth  
      \let\year =\normalyear
      \normalnextrandom
-     \global\let\nextrandom=\normalnextrandom
+     \gdef\nextrandom{\restorerandomseed\normalnextrandom}%
      \egroup}
 
+  % avoid scratch dimens 0 and 2 
+
+  \unprotect 
+
+  \def\setrandim#1#2#3% dimen register, minimum length, maximum length
+    {\scratchdimen=#2\edef\!!stringa{\number\scratchdimen}%
+     \scratchdimen=#3\edef\!!stringb{\number\scratchdimen}%
+     \setrannum\ranval\!!stringa\!!stringb
+     #1\ranval sp\relax}
+
+  \protect 
+
 \fi
+
+\def\freezerandomseed%
+  {\xdef\restorerandomseed%
+     {\global\randomi\number\randomi
+      \global\let\noexpand\restorerandomseed\relax}}
 
 \let\getrandomcount = \setrannum
 \let\getrandomdimen = \setrandim

@@ -46,8 +46,9 @@
 \definesystemconstant {norwegian}   \definesystemconstant {no}
 \definesystemconstant {polish}      \definesystemconstant {pl}
 \definesystemconstant {portuguese}  \definesystemconstant {pt}
+\definesystemconstant {romanian}    \definesystemconstant {ro}
 \definesystemconstant {slovak}      \definesystemconstant {sk}
-\definesystemconstant {spanish}     \definesystemconstant {sp}
+\definesystemconstant {spanish}     \definesystemconstant {es}
 \definesystemconstant {swedish}     \definesystemconstant {sv}
 \definesystemconstant {turkish}     \definesystemconstant {tr}
 \definesystemconstant {ukenglish}   \definesystemconstant {uk}
@@ -64,6 +65,10 @@
 \definesystemconstant {Italic}
 \definesystemconstant {BoldSlanted}
 \definesystemconstant {BoldItalic}
+
+\definesystemconstant {Serif} \definesystemconstant {Regular}
+\definesystemconstant {Sans}  \definesystemconstant {Support}
+\definesystemconstant {Mono}  \definesystemconstant {Type}
 
 %D As the name of their define command states, the next set of
 %D constants is used in the message macro's.
@@ -145,6 +150,8 @@
 
 \definesystemconstant  {done}
 
+\definesystemconstant  {font}
+
 %D A more experienced \TEX\ user will recognize the next four
 %D constants. We need these because font-definitions are
 %D partially english.
@@ -162,6 +169,7 @@
 \definesystemconstant  {encoding}
 \definesystemconstant  {mapping}
 \definesystemconstant  {patterns}
+\definesystemconstant  {handling}
 
 %D Just to be complete we define the standard \TEX\ units.
 
@@ -334,6 +342,7 @@
 \definesystemvariable {cr}   % kleur (ColoR)
 \definesystemvariable {cv}   % ConVersie
 \definesystemvariable {da}   % DAte
+\definesystemvariable {dc}   % DroppedCaps 
 \definesystemvariable {dd}   % DoorDefinieren
 \definesystemvariable {de}   % DEel
 \definesystemvariable {dl}   % DunneLijnen
@@ -351,6 +360,7 @@
 \definesystemvariable {fl}   % Floats
 \definesystemvariable {fm}   % ForMules
 \definesystemvariable {fp}   % FilegroeP
+\definesystemvariable {fr}   % ForM
 \definesystemvariable {fs}   % FileSynonym
 \definesystemvariable {ft}   % FonTs
 \definesystemvariable {ia}   % Interactie
@@ -374,6 +384,7 @@
 \definesystemvariable {ko}   % KOp(pen)
 \definesystemvariable {kp}   % KopPelteken
 \definesystemvariable {kr}   % KoRps
+\definesystemvariable {ks}   % KolomSpan
 \definesystemvariable {kt}   % KonTakten
 \definesystemvariable {kw}   % KontaktWaarde
 \definesystemvariable {la}   % LAnguage
@@ -386,6 +397,7 @@
 \definesystemvariable {ly}   % LaYout
 \definesystemvariable {ma}   % MargeAchtergrond
 \definesystemvariable {mb}   % MargeBlokken
+\definesystemvariable {mp}   % MetaPost
 \definesystemvariable {mk}   % MarKering
 \definesystemvariable {nm}   % Nummering
 \definesystemvariable {np}   % NaastPlaatsen
@@ -396,6 +408,7 @@
 \definesystemvariable {oo}   % OpsOmmingen
 \definesystemvariable {op}   % OPsomming
 \definesystemvariable {os}   % OffSet
+\definesystemvariable {ov}   % OVerlay
 \definesystemvariable {pa}   % PAlet
 \definesystemvariable {pb}   % PuBlicatie
 \definesystemvariable {pc}   % PageComment    
@@ -420,6 +433,7 @@
 \definesystemvariable {sc}   % SCherm
 \definesystemvariable {sd}   % SounD
 \definesystemvariable {se}   % SEctie
+\definesystemvariable {sh}   % ShapeText
 \definesystemvariable {si}   % SplIt
 \definesystemvariable {sk}   % SectieKop
 \definesystemvariable {sl}   % SmalLer
@@ -538,6 +552,7 @@
 \definefileconstant {javascriptprefix}   {java-}
 \definefileconstant {languageprefix}     {lang-}
 \definefileconstant {specialprefix}      {spec-}
+\definefileconstant {metapostprefix}     {meta-}
 \definefileconstant {moduleprefix}       {m-}
 \definefileconstant {styleprefix}        {s-}
 \definefileconstant {privateprefix}      {p-}
@@ -593,6 +608,7 @@
 \defineinterfaceconstant {jpg}  {jpg}
 \defineinterfaceconstant {pdf}  {pdf}
 \defineinterfaceconstant {png}  {png}
+\defineinterfaceconstant {avi}  {avi}
 \defineinterfaceconstant {mov}  {mov}
 \defineinterfaceconstant {tex}  {tex}
 \defineinterfaceconstant {tmp}  {tmp}
@@ -636,6 +652,20 @@
       1: postradam '=' po '--' na radku --
       2: ocekavam -- argument(y) na radku --
       3: -- -- nahrazuje makro, uzijte VERZALKY!
+\stopmessages
+
+\startmessages  italian library: check
+  title: controllo
+      1: '=' mancante dopo '--' alla riga --
+      2: -- argomento/i attesi alla riga --
+      3: -- -- sostituisce una macro, usare le MAIUSCOLE!
+\stopmessages
+
+\startmessages  norwegian library: check
+  title: kontroll
+      1: manglende '=' etter '--' i linje --
+      2: -- argument forventet i linje --
+      3: -- -- overskygger en makro, bruk STORE BOKSTAVER!
 \stopmessages
 
 \fi

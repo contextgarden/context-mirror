@@ -41,6 +41,16 @@
       1: nacita se soubor symbolu --    
 \stopmessages
 
+\startmessages  italian  library: symbols
+  title: simboli
+      1: caricamento gruppo di simboli --
+\stopmessages
+
+\startmessages  norwegian  library: symbols
+  title: symboler
+      1: leser inn symbolsett --
+\stopmessages
+
 %D \macros
 %D   {definesymbol, symbol}
 %D 
@@ -63,34 +73,48 @@
 %D \definesymbol [level 5] [$\star$]
 %D \stoptypen
 
+% ss:tag     -> symbol 
+% ss:set:tag -> symbol out of set 
+% sstag      -> list of symbols in set  
+
 \def\dodefinesymbol[#1][#2]%
   {\ifx\currentsymbolset\empty
-     \setvalue{\??ss#1}{#2}%
+     \setvalue{\??ss:#1}{#2}%
    \else
-     \doifundefinedelse{\??ss:\currentsymbolset}
+     \doifundefinedelse{\??ss\currentsymbolset}
        {\let\currentsymbollist\empty}
-       {\edef\currentsymbollist{\csname\??ss:\currentsymbolset\endcsname}}%
+       {\edef\currentsymbollist{\csname\??ss\currentsymbolset\endcsname}}%
      \addtocommalist{#1}\currentsymbollist
-     \setvalue{\??ss\currentsymbolset#1}{#2}%
-     \letvalue{\??ss:\currentsymbolset}\currentsymbollist
+     \setvalue{\??ss:\currentsymbolset:#1}{#2}%
+     \letvalue{\??ss\currentsymbolset}\currentsymbollist
    \fi}
 
 \def\definesymbol%
   {\dodoubleargument\dodefinesymbol}
 
-\def\dosymbol[#1][#2]%
-  {\ifsecondargument
-     \doifdefinedelse{\??ss#1#2}
-       {\getvalue{\??ss#1#2}}
-       {\doifdefinedelse{\??ss#2}{\getvalue{\??ss#2}}{#2}}%
-   \else
-     \doifdefinedelse{\??ss\currentsymbolset#1}
-       {\getvalue{\??ss\currentsymbolset#1}}
-       {\doifdefinedelse{\??ss#1}{\getvalue{\??ss#1}}{#1}}%
-   \fi}
-
 \unexpanded\def\symbol%      % This one always gobbles spaces, 
   {\dodoubleempty\dosymbol}  % so never change it again!
+
+\def\dosymbol[#1][#2]% 
+  {\ifsecondargument
+     \doifdefinedelse{\??ss:#1:#2}
+       {\dodosymbol{#1:#2}}
+       {\doifdefinedelse{\??ss:#2}{\dodosymbol{#2}}{#2}}%
+   \else\ifx\currentsymbolset\empty
+     \doifdefinedelse{\??ss:#1}{\dodosymbol{#1}}{#1}%
+   \else
+     \doifdefinedelse{\??ss:\currentsymbolset:#1}
+       {\dodosymbol{\currentsymbolset:#1}}
+       {\doifdefinedelse{\??ss:#1}{\dodosymbol{#1}}{#1}}%
+   \fi\fi}
+
+\def\dodosymbol#1%
+  {{\the\everysymbol\getvalue{\??ss:#1}}}
+
+\newtoks\everysymbol
+
+% % % % %
+% this should go in symb-fig, to be loaded after core-fig
 
 %D \macros
 %D   {definefiguresymbol}
@@ -104,13 +128,21 @@
 
 \def\defaultsymbolfactor{10}
 
-\def\dodefinefiguresymbol[#1][#2][#3]%
-  {\ifsecondargument
-     \definesymbol[#1][{\externalfigure[#2][\c!symbool=\v!ja,\c!hfactor=\defaultsymbolfactor,#3]}]%
-   \fi}
-  
+\def\dohandlefiguresymbol#1#2% 
+  {\externalfigure[#1][\c!reset=\v!ja,\c!symbool=\v!ja,\c!hfactor=\defaultsymbolfactor,#2]}
+
+\appendtoks \resetexternalfigures \to \everysymbol
+
 \def\definefiguresymbol%
   {\dotripleempty\dodefinefiguresymbol}
+
+\def\dodefinefiguresymbol[#1][#2][#3]%
+  {\ifsecondargument
+     \definesymbol[#1][\dohandlefiguresymbol{#2}{#3}]%
+   \fi}
+
+% but for the moment we keep it here
+% % % % % % 
 
 %\def\objectsymbol[#1]%
 %  {\dopresetfieldsymbol{#1}\dogetfieldsymbol{#1}}
@@ -121,8 +153,12 @@
 %D A handy private one: 
 
 \def\doifsymboldefinedelse#1#2#3%
-  {\doifdefinedelse{\??ss\currentsymbolset#1}
-      {#2}{\doifdefinedelse{\??ss#1}{#2}{#3}}}    
+  {\ifx\currentsymbolset\empty
+     \doifdefinedelse{\??ss:#1}{#2}{#3}%
+   \else
+     \doifdefinedelse{\??ss:\currentsymbolset:#1}
+       {#2}{\doifdefinedelse{\??ss:#1}{#2}{#3}}%
+   \fi}
 
 %D \macros
 %D   {setupsymbolset,startsymbolset}
@@ -156,13 +192,15 @@
 
 \let\currentsymbolset\empty
 
-\def\startsymbolset[#1]%
-  {\def\currentsymbolset{:#1:}} 
+\def\startsymbolset%
+  {\localpushmacro\currentsymbolset
+   \setupsymbolset}
 
 \def\stopsymbolset%
-  {\let\currentsymbolset\empty}
+  {\localpopmacro\currentsymbolset}
 
-\let\setupsymbolset\startsymbolset
+\def\setupsymbolset[#1]%
+  {\def\currentsymbolset{#1}} 
 
 %D \macros
 %D   {showsymbolset}
@@ -174,13 +212,13 @@
    \blanko
    \getparameters[\??ss][\c!n=5,#2]%
    \setupsymbolset[#1]%
-   \doifdefined{\??ss:\currentsymbolset}
+   \doifdefined{\??ss\currentsymbolset}
      {\global\let\allfigures=\empty
       \doglobal\newcounter\figurecounter
       \setupcolors[\c!status=\v!start]% to prevent mps color conversion 
       \mindermeldingen
-      \def\doshowsymbols%
-        {\expanded{\globalprocesscommalist[\getvalue{\??ss:\currentsymbolset}]\noexpand\docommando}}%
+      \def\doshowsymbols% global needed due to grouping in alignment
+        {\expanded{\globalprocesscommalist[\getvalue{\??ss\currentsymbolset}]\noexpand\docommando}}%
       \def\docommando##1%
         {\vbox
            {\forgetall

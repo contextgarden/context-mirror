@@ -96,19 +96,19 @@
 %D \TEX\ uses \type{^} and \type{_} for entering super- and 
 %D subscript mode. We want however a bit more control than 
 %D normally provided, and therefore provide \type {\super} 
-%D and \type{suber}. 
+%D and \type{\suber} (\type {\sub} is already taken). 
 
 \global\let\normalsuper=^ 
 \global\let\normalsuber=_ 
 
-\newcount\supsubmode
+\newcount\supersubmode
 
-\newevery\everysupsub \EverySupSub
+\newevery\everysupersub \EverySuperSub
 
-\appendtoks \advance\supsubmode by 1\relax \to \everysupsub
+\appendtoks \advance\supersubmode by 1\relax \to \everysupersub
 
-% \def\dodosuper#1{\normalsuper{\the\everysupsub#1}}
-% \def\dodosuber#1{\normalsuber{\the\everysupsub#1}}
+% \def\dodosuper#1{\normalsuper{\the\everysupersub#1}}
+% \def\dodosuber#1{\normalsuber{\the\everysupersub#1}}
 % 
 % \def\dosuper{\ifx\next\bgroup\expandafter\dodosuper\else\normalsuper\fi}
 % \def\dosuber{\ifx\next\bgroup\expandafter\dodosuber\else\normalsuber\fi}
@@ -116,8 +116,8 @@
 % \def\super{\futurelet\next\dosuper}
 % \def\suber{\futurelet\next\dosuber}
 
-\def\super#1{\normalsuper{\the\everysupsub#1}}
-\def\suber#1{\normalsuber{\the\everysupsub#1}}
+\def\super#1{\normalsuper{\the\everysupersub#1}}
+\def\suber#1{\normalsuber{\the\everysupersub#1}}
 
 %D \macros
 %D   {enablesupsub}

@@ -260,15 +260,26 @@
 %D searching till it's sure that no other glue component if
 %D found. This search can be canceled by using \type{\relax}
 %D when possible and needed. 
+%D 
+%D \starttypen
+%D \def\newskimen#1%
+%D   {\ifx#1\undefined
+%D      \ifnum\count11>\count12
+%D        \newskip#1\relax
+%D      \else
+%D        \newdimen#1\relax
+%D      \fi
+%D    \fi} 
+%D \stoptypen
+%D 
+%D In order to make this macro work in plain \TEX\ too, we 
+%D use the following alternative, which fools \TEX\ about 
+%D the new commands being \type {\outer} ones. 
 
 \def\newskimen#1%
   {\ifx#1\undefined
-     \ifnum\count11>\count12
-       \newskip#1\relax
-     \else
-       \newdimen#1\relax
-     \fi
-   \fi} 
+     \csname new\ifnum\count11>\count12 skip\else dimen\fi\endcsname#1%
+   \fi}
 
 %D \macros
 %D   {strippedcsname}
@@ -629,30 +640,62 @@
 %D The real implementation is a bit more complicated but we 
 %D prefer something more versatile. 
 
-\def\DoWithEvery#1%
-  {\csname if\strippedcsname#1\endcsname \else
-     \edef\next%
-       {\@EA\noexpand\csname old\strippedcsname#1\endcsname=
-          {\the#1}}%
-     \next
-   \fi
-   \edef\next%
-     {\noexpand#1=
-        {\@EA\the\csname old\strippedcsname#1\endcsname\the\scratchtoks}}%
-   \next
-   \csname\strippedcsname#1true\endcsname}
+% the old one 
+% 
+% \def\DoWithEvery#1%
+%   {\csname if\strippedcsname#1\endcsname \else
+%      \edef\next%
+%        {\@EA\noexpand\csname old\strippedcsname#1\endcsname=
+%           {\the#1}}%
+%      \next
+%    \fi
+%    \edef\next%
+%      {\noexpand#1=
+%         {\@EA\the\csname old\strippedcsname#1\endcsname\the\scratchtoks}}%
+%    \next
+%    \csname\strippedcsname#1true\endcsname}
+% 
+% \def\dowithevery#1%
+%   {\@EA\afterassignment\csname do\strippedcsname#1\endcsname\scratchtoks}
+% 
+% \def\newevery#1#2%
+%   {\ifx#1\undefined\newtoks#1\fi
+%    \ifx#2\relax\else\ifx#2\undefined
+%      \@EA\newtoks\csname old\strippedcsname#1\endcsname
+%      \@EA\newif  \csname  if\strippedcsname#1\endcsname
+%      \@EA\def    \csname  do\strippedcsname#2\endcsname{\DoWithEvery#1}%
+%      \def#2{\dowithevery#2}%
+%    \fi\fi}
+%
+% cleaner and more efficient 
 
 \def\dowithevery#1%
-  {\@EA\afterassignment\csname do\strippedcsname#1\endcsname\scratchtoks}
+  {\def\dodowithevery%
+     {\ifcase\csname c\strippedcsname#1\endcsname \expandafter\chardef
+        \csname c\strippedcsname#1\endcsname=1
+        \csname t\strippedcsname#1\endcsname=#1%
+      \fi
+      \edef\next%
+        {#1={\the\csname t\strippedcsname#1\endcsname\the\scratchtoks}}%
+      \next}%
+   \afterassignment\dodowithevery\scratchtoks}
 
-\def\newevery#1#2%
-  {\ifx#1\undefined\newtoks#1\fi
+\bgroup \let\newtoks\relax % plain safe (\outer) 
+
+\gdef\newevery#1#2%
+  {\ifx#1\undefined\csname newtoks\endcsname#1\fi % plain safe (\outer) 
    \ifx#2\relax\else\ifx#2\undefined
-     \@EA\newtoks\csname old\strippedcsname#1\endcsname
-     \@EA\newif  \csname  if\strippedcsname#1\endcsname
-     \@EA\def    \csname  do\strippedcsname#2\endcsname{\DoWithEvery#1}%
-     \def#2{\dowithevery#2}%
+     \expandafter\newtoks\csname t\strippedcsname#1\endcsname
+     \expandafter\chardef\csname c\strippedcsname#1\endcsname=0
+     \def#2{\dowithevery#1}%
    \fi\fi}
+
+\egroup
+
+%D The first \type {\outer} hack is needed to trick \TEX\ 
+%D into thinking that \type {\newtoks} is no outer macro, 
+%D the second hack is needed due to some funny interaction 
+%D between outer macros and \type {\if} at expansion time. 
 
 %D This one permits definitions like: 
 
@@ -742,25 +785,26 @@
 
 \long\def\convertargument#1\to#2%
   {\long\def\convertedargument{#1}%
-   \dodoglobal\edef#2%
-     {\convertedcommand\convertedargument}}
+   \dodoglobal\edef#2{\convertedcommand\convertedargument}}
 
 \long\def\convertcommand#1\to#2%
-  {\dodoglobal\edef#2%
-     {\convertedcommand#1}}
+  {\dodoglobal\edef#2{\convertedcommand#1}}
 
 \endTEX
 
 %D In \ETEX\ we can use \type {\detokenize} and gain some
 %D speed, but in general far less that 1\% for \type
 %D {\convertargument} and nil for \type {\convertcommand}. 
+%D This macro is more robust than the pure \TEX\ one, 
+%D something I found out when primitives like \type 
+%D {\jobname}.
 
 \beginETEX \detokenize 
 
-\def\convertargument#1\to#2%
+\long\def\convertargument#1\to#2%
   {\dodoglobal\edef#2{\detokenize{#1}}}
 
-\def\convertcommand#1\to#2% 
+\long\def\convertcommand#1\to#2% 
   {\@EA\dodoglobal\@EA\edef\@EA#2\@EA{\@EA\detokenize\@EA{#1}}}
 
 \endETEX
@@ -776,6 +820,46 @@
 %D
 %D The \type{-}, the delimiter \type{\\\\} and the the second 
 %D argument are completely redundant.
+
+% this does not work ok yet 
+% 
+% %D As said, the \TEX\ alternative fails on expanding primitives,
+% %D like in: 
+% %D 
+% %D \starttypen
+% %D \convertcommand\jobname\to\ascii
+% %D \stoptypen
+% %D 
+% %D Because these primitives convert to themselves, we can use 
+% %D the backslash as a signal to treat them different. At the 
+% %D cost of slightly more overhead we can therefore define a 
+% %D more robust alternative. The catcode trickery is needed to
+% %D get the backslash into the test as character (and not as 
+% %D escape, letter or whatever code else). 
+% 
+% \beginTEX 
+% 
+% \let\dodoconvertargument\doconvertargument
+% 
+% \bgroup
+%   \catcode`\*=\@@escape
+%   \catcode`\\=\@@other
+%   *gdef*doconvertargument#1%
+%     {*ifx#1\*else*expandafter*dodoconvertargument*fi#1}
+% *egroup
+% 
+% \endTEX
+
+%D \macros
+%D   {showvalue,showargument}
+%D
+%D A handy macro for testing purposes only, is the following: 
+
+\def\showvalue#1%
+  {\expandafter\show\csname#1\endcsname}
+
+\def\showargument#1%
+  {\convertargument#1\to\ascii\show\ascii}
 
 %D \macros
 %D   {doifmeaningelse}
@@ -794,6 +878,20 @@
 \def\doifmeaningelse#1#2#3#4%
   {\edef\!!stringa{\meaning#1}%
    \def\!!stringb{#2}\edef\!!stringb{\meaning\!!stringb}%
+   \ifx\!!stringa\!!stringb#3\else#4\fi}
+
+%D \macros
+%D   {doifsamestringselse}
+%D
+%D The next comparison macro converts the arguments into 
+%D expanded strings. This command can be used to compare for 
+%D instance \type {\jobname} with a name stored in a macro. 
+
+\def\doifsamestringelse#1#2#3#4%
+  {\edef\!!stringa{#1}%
+   \edef\!!stringb{#2}%
+   \convertcommand\!!stringa\to\!!stringa
+   \convertcommand\!!stringb\to\!!stringb   
    \ifx\!!stringa\!!stringb#3\else#4\fi}
 
 %D \macros
@@ -839,11 +937,6 @@
   {\def\!!stringa{#2}%
    \edef\!!stringb{#3}%
    \@EA#1\@EA{\@EA\!!stringa\@EA}\@EA{\!!stringb}}
-
-% \def\ExpandSecondAfter#1#2#3%
-%   {\toks0={#2}%
-%    \edef\!!stringa{#3}%
-%    \@EA\@EA\@EA#1\@EA\@EA\@EA{\@EA\the\@EA\toks0\@EA}\@EA{\!!stringa}}
 
 \def\ExpandBothAfter#1#2#3%
   {\edef\!!stringa{#2}%
@@ -1844,10 +1937,12 @@
 \def\replaceincommalist#1#2% #1 = commalistelement #2 = position starts at 1
   {\def\doreplaceincommalist##1%
      {\ifnum\commalistcounter=#2\relax
-        \ifnum\commalistcounter=1
-          \let\newcommalist\newcommalistelement
-        \else
-          \@EA\@EA\@EA\def\@EA\@EA\@EA\newcommalist\@EA\@EA\@EA{\@EA\newcommalist\@EA,\newcommalistelement}%
+        \ifx\newcommalistelement\empty\else
+          \ifnum\commalistcounter=1
+            \let\newcommalist\newcommalistelement
+          \else
+            \@EA\@EA\@EA\def\@EA\@EA\@EA\newcommalist\@EA\@EA\@EA{\@EA\newcommalist\@EA,\newcommalistelement}%
+          \fi
         \fi
         \def\commalistelement{##1}%
       \else
@@ -1992,16 +2087,31 @@
 %D \pushmacro\macro
 %D \popmacro\macro
 %D \stoptypen
+%D
+%D Beware: global! 
 
 \def\@s@{@s@}
 
-\def\pushmacro#1% across groups ! 
+\def\globalpushmacro#1% 
   {\@EA\doglobal\@EA\increment\csname\@s@:\string#1\endcsname
    \global\@EA\let\csname\csname\@s@:\string#1\endcsname:\string#1\endcsname#1}
 
-\def\popmacro#1%
+\def\globalpopmacro#1% \global\let
   {\global\@EA\let\@EA#1\csname\csname\@s@:\string#1\endcsname:\string#1\endcsname
    \@EA\doglobal\@EA\decrement\csname\@s@:\string#1\endcsname}
+
+% this one can be used to push a value over an \egroup
+
+\def\localpushmacro#1% 
+  {\@EA\doglobal\@EA\increment\csname\@s@::\string#1\endcsname
+   \global\@EA\let\csname\csname\@s@::\string#1\endcsname::\string#1\endcsname#1}
+
+\def\localpopmacro#1% \local\let
+  {\@EA\let\@EA#1\csname\csname\@s@::\string#1\endcsname::\string#1\endcsname
+   \global\@EA\decrement\csname\@s@::\string#1\endcsname}
+
+\let\pushmacro\globalpushmacro
+\let\popmacro \globalpopmacro
 
 %D \macros
 %D   {setlocalhsize}
@@ -2024,7 +2134,7 @@
 
 \def\complexsetlocalhsize[#1]% don't change !
   {\localhsize=\hsize
-   \advance\localhsize by -\parindent 
+ % \advance\localhsize by -\parindent % changed anyway
    \advance\localhsize by -\leftskip
    \advance\localhsize by -\rightskip
    \advance\localhsize by #1\relax}
@@ -2062,30 +2172,68 @@
 %D The list of tokens may contain spaces, while \type{\\},
 %D \type{{}} and \type{\ } are handled as space too.
 
+% \def\dodoprocesstokens%
+%   {\ifx\next\lastcharacter
+%      \after
+%      \let\next=\relax
+%    \else\ifx\next\bgroup
+%      \def\next%
+%        {\dowithnextbox
+%           {\before\box\nextbox
+%            \let\before=\between
+%            \doprocesstokens}
+%            \hbox\bgroup}%          
+%    \else
+%      \expandafter\if\space\next 
+%        \before\white
+%      \else
+%        \before\next
+%      \fi
+%      \let\before=\between
+%      \let\next=\doprocesstokens
+%    \fi\fi
+%    \next}
+% 
+% \def\doprocesstokens% the space after = is essential
+%   {\afterassignment\dodoprocesstokens\let\next= }
+% 
+% \def\processtokens#1#2#3#4#5%
+%   {\bgroup
+%    \def\lastcharacter{\lastcharacter}%
+%    \def\space{ }%
+%    \let\\=\space
+%    \def\before{#1}%
+%    \def\between{#2}%
+%    \def\after{#3}%
+%    \def\white{#4}%
+%    \doprocesstokens#5\lastcharacter
+%    \egroup}
+
 \def\dodoprocesstokens%
-  {\ifx\next\lastcharacter
+  {\ifx\nextprocessedtoken\lastcharacter
      \after
-     \let\next=\relax
-   \else\ifx\next\bgroup
-     \def\next%
+     \let\nextprocessedtoken=\relax
+   \else\ifx\nextprocessedtoken\bgroup
+     \def\nextprocessedtoken%
        {\dowithnextbox
-          {\before\box\nextbox
-           \let\before=\between
+          {\before{\box\nextbox}%
+           \let\before\between
            \doprocesstokens}
            \hbox\bgroup}%          
    \else
-     \expandafter\if\space\next 
-       \before\white
+     \expandafter\if\space\nextprocessedtoken 
+       \after\white
+       \let\before\savedbefore
      \else
-       \before\next
+       \before\nextprocessedtoken
+       \let\before\between
      \fi
-     \let\before=\between
-     \let\next=\doprocesstokens
+     \let\nextprocessedtoken=\doprocesstokens
    \fi\fi
-   \next}
+   \nextprocessedtoken}
 
 \def\doprocesstokens% the space after = is essential
-  {\afterassignment\dodoprocesstokens\let\next= }
+  {\afterassignment\dodoprocesstokens\let\nextprocessedtoken= }
 
 \def\processtokens#1#2#3#4#5%
   {\bgroup
@@ -2096,6 +2244,7 @@
    \def\between{#2}%
    \def\after{#3}%
    \def\white{#4}%
+   \let\savedbefore\before
    \doprocesstokens#5\lastcharacter
    \egroup}
 
@@ -2408,12 +2557,14 @@
 %D
 %D However, we want to handle all situations, like: 
 %D 
-%D \starttypen 
+%D \startbuffer
 %D \processseparatedlist[{aap noot}]  [ ]{\def\xxx} \show\xxx
 %D \processseparatedlist[{aap} {noot}][ ]{\def\xxx} \show\xxx
 %D \processseparatedlist[aap {noot}]  [ ]{\def\xxx} \show\xxx
 %D \processseparatedlist[aap noot]    [ ]{\def\xxx} \show\xxx
-%D \stoptypen
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
 %D
 %D Therefore we smuggle a \type {\relax} in front of the 
 %D argument, which we remove afterwards. 
@@ -2434,6 +2585,41 @@
 
 \def\processseparatedlist[%
   {\doprocessseparatedlist\relax}
+
+%D \macros 
+%D   {processlist}
+%D
+%D An even more general list processing macro is the 
+%D following one:
+%D
+%D \starttypen
+%D \processlist{beginsym}{endsym}{separator}\docommando list 
+%D \stoptypen
+%D 
+%D This one supports arbitrary open and close symbols as well
+%D as user defined separators. 
+%D
+%D \starttypen
+%D \processlist(){=>}\docommando(a=>b=>c=>d)
+%D \stoptypen
+
+\def\processlist#1#2#3#4%
+  {\def\doprocesslist##1#2%
+     {\def\dodoprocesslist####1####2#3%
+        {\ifx#2####1%
+           \let\dodoprocesslist\relax
+         \else\ifx#2####2%
+           \let\dodoprocesslist\relax
+         \else\ifx\blankspace####2%
+           #4{####1}%
+         \else
+           #4{####1####2}%
+         \fi\fi\fi
+         \dodoprocesslist}%
+      \expandafter\dodoprocesslist\gobbleoneargument##1#3#2#3}%
+   \def\dodoprocesslist#1%
+     {\doprocesslist\relax}%
+   \dodoprocesslist}
 
 % %D \macros 
 % %D   {dohonorgroupedargument}
@@ -2468,24 +2654,26 @@
      {\p!dodogetparameter[##1==\relax]}%
    \processcommalist[#2]\p!dogetparameter}
 
-%D \macros
-%D   {DoAfterFi,DoAfterFiFi}
-%D
-%D Sometimes \type{\fi}'s can get into the way. We can reach
-%D over such a troublemaker with:
-%D
-%D \starttypen
-%D \DoAfterFi{some commands}
-%D \DoAfterFiFi{some commands}
-%D \stoptypen
-%D
-%D It saves us a \type{\next} construction. Skipping
-%D \type{\else...\fi} is more tricky, so this one is not
-%D provided.
-
-\def\DoAfterFi#1\fi{\fi#1}
-\def\DoAfterFiFi#1\fi#2\fi{\fi\fi#1}
-
+% too ugly 
+%
+% %D \macros
+% %D   {DoAfterFi,DoAfterFiFi}
+% %D
+% %D Sometimes \type{\fi}'s can get into the way. We can reach
+% %D over such a troublemaker with:
+% %D
+% %D \starttypen
+% %D \DoAfterFi{some commands}
+% %D \DoAfterFiFi{some commands}
+% %D \stoptypen
+% %D
+% %D It saves us a \type{\next} construction. Skipping
+% %D \type{\else...\fi} is more tricky, so this one is not
+% %D provided.
+% 
+% \def\DoAfterFi#1\fi{\fi#1}
+% \def\DoAfterFiFi#1\fi#2\fi{\fi\fi#1}
+ 
 %D \macros
 %D   {untextargument
 %D    untexcommand}
@@ -2577,7 +2765,6 @@
 
 \def\dontleavehmode{\ifmmode\else$ $\fi}
 
-
 %D \macros
 %D   {uppercasestring,lowercasestring}
 %D
@@ -2636,7 +2823,7 @@
 %D \starttypen
 %D \def\dodohandletokens%
 %D   {\ifx\next\end \else
-%D      \docommando\next
+%D      \docommando{\next}%
 %D      \expandafter\dohandletokens
 %D    \fi}
 %D 
@@ -2725,22 +2912,14 @@
 %D 
 %D \unprotect\haalbuffer[next]\protect
 %D 
-%D That's why we finally end up with a macro that looks ahead
-%D by using an assignment, this time by using
-%D \type{\futurelet}, and grabbing an argument as well. That
-%D way we can handle both the sentinal and the blank space. 
-
-\def\dodohandletokens#1%
-  {\ifx\next\blankspace
-     \dododohandletokens{ }%
-   \fi
-   \ifx#1\end \else
-     \dododohandletokens{#1}%
-     \expandafter\dohandletokens
-   \fi}
+%D That's why we finally end up with a macro that looks 
+%D ahead by using an assignment, this time by using \type 
+%D {\futurelet}, and grabbing an argument as well. That
+%D way we can handle the sentinal, a blank space and grouped 
+%D tokens. 
 
 \def\dohandletokens% 
-  {\futurelet\next\dodohandletokens}
+  {\futurelet\nexthandledtoken\dodohandletokens}
 
 \long\def\handletokens#1\with#2%
   {\global\let\dododohandletokens=#2% 
@@ -2750,20 +2929,72 @@
 %D use in alignments, I decided to use another placeholder, one
 %D that is not sensitive to the global assignment. 
 
-%D So our example finaly shows up as:
+%D This alternatives does not handle grouped tokens well, so
+%D next we had (for a short moment): 
+%D
+%D \starttypen
+%D \def\dodohandletokens#1%
+%D  {\ifx\nexthandledtoken\blankspace
+%D     \dododohandletokens{ }%
+%D   \fi
+%D   \ifx#1\end \else
+%D     \dododohandletokens{#1}%
+%D     \expandafter\dohandletokens
+%D   \fi}
+%D \stoptypen 
+%D
+%D This one failed on a trailing space, something we 
+%D encounter in \JAVASCRIPT\ cleaning. 
+%D
+%D \starttypen
+%D \def\dodohandletokens#1%
+%D   {\ifx\nexthandledtoken\blankspace
+%D      \dododohandletokens{ }%
+%D    \fi
+%D    \ifx\nexthandledtoken\end \else
+%D      \dododohandletokens{#1}%
+%D      \expandafter\dohandletokens
+%D    \fi}
+%D \stoptypen 
+%D
+%D So, now we have:
+
+\def\dodohandletokens%
+  {\ifx\nexthandledtoken\blankspace
+     \def\next * {\dododohandletokens{ }\dohandletokens}%
+   \else\ifx\nexthandledtoken\end
+     \let\next\gobbletwoarguments
+   \else
+     \long\def\next *##1{\dododohandletokens{##1}\dohandletokens}%
+   \fi\fi
+   \next *}
+
+%D This macro is tested on: 
+%D 
+%D \def\xxx#1{[#1]}
+%D 
+%D \startregels
+%D \handletokens         abc\with\xxx     
+%D \handletokens       a b c\with\xxx
+%D \handletokens     a  b  c\with\xxx
+%D \handletokens      a{bc}d\with\xxx
+%D \handletokens a\space bc \with\xxx
+%D \stopregels
+%D
+%D And our previous example shows up as:
 %D 
 %D \haalbuffer[example]
 
-% %D \macros 
-% %D   {iftrialtypesetting}
-% %D 
-% %D The next boolean is at first sight a strange one. Sometimes
-% %D one does a trial typesetting run, for instance to determine
-% %D dimensions. Some mechanisms, like object inclusion, can fail
-% %D on such trials. Temporary setting the next boolean to true,
-% %D helps a lot. 
-% 
-% \newif\iftrialtypesetting
+%D \macros 
+%D   {iftrialtypesetting}
+%D 
+%D The next boolean is at first sight a strange one. Sometimes
+%D one does a trial typesetting run, for instance to determine
+%D dimensions. Some mechanisms, like object inclusion, can fail
+%D on such trials. Temporary setting the next boolean to true,
+%D helps a lot. 
+
+\newif\iftrialtypesetting
 
 %D \macros
 %D   {startlocal, startglobal}
@@ -2983,12 +3214,12 @@
 %D used to select arguments. Their names explain their 
 %D functionality. 
 
-\def\firstofoneargument        #1{#1}
-\def\firstoftwoarguments     #1#2{#1}
-\def\firstofthreearguments #1#2#3{#1}
-\def\secondoftwoarguments    #1#2{#2}
-\def\secondofthreearguments#1#2#3{#2}
-\def\thirdofthreearguments #1#2#3{#3}
+\long\def\firstofoneargument        #1{#1}
+\long\def\firstoftwoarguments     #1#2{#1}
+\long\def\firstofthreearguments #1#2#3{#1}
+\long\def\secondoftwoarguments    #1#2{#2}
+\long\def\secondofthreearguments#1#2#3{#2}
+\long\def\thirdofthreearguments #1#2#3{#3}
 
 %D \macros
 %D   {@saveprimitive}
@@ -3027,13 +3258,6 @@
 
 %D In this macro, the message only shows up when the debugging 
 %D is turned on. 
-
-%D \macros
-%D   {emptytoks}
-%D
-%D Constant empty token register, analogous to \type {\empty}.
-
-\newtoks\emptytoks
 
 %D \macros 
 %D   {@True, @False, @Not, @And}

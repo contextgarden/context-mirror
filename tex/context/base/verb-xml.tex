@@ -1,0 +1,409 @@
+%D \module
+%D   [       file=verb-xml,
+%D        version=2000.05.09,
+%D          title=\CONTEXT\ Verbatim Macros,
+%D       subtitle=Pretty XML verbatim,
+%D         author=Berend de Boer,
+%D           date=2000.05.08,
+%D      copyright={Berend de Boer \& Hans Hagen}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
+%C details. 
+
+% This module will be cleaned up a bit in the process of more
+% flexible verbatim options.
+
+\writestatus{loading}{Context Support Macros / Pretty XML Verbatim}
+
+\unprotect
+
+%D Formats XML more or less like XMLWriter (http://XMLwriter.net)
+%D does.
+%D
+%D Known bugs:
+%D - CDATA not handled yet.
+%D
+%D Expects well-formed XML. Else parsing errors may occur, because
+%D this XML state machine is not robust.
+%D
+%D Examples:
+%D
+%D \startXML
+%D <?xml version="1.0" encoding="ISO-8859-1" ?>
+%D <!-- comment: example of a <resource> tag -->
+%D <resources>
+%D   <resource id="5">
+%D     <capacity>
+%D       <kind>1</kind>
+%D       <value>100</value>
+%D     </capacity>
+%D   </resource>
+%D </resources>
+%D \stopXML 
+%D
+%D Another format:
+%D
+%D \startXML
+%D <?xml version="1.0" encoding="ISO-8859-1" ?>
+%D <address id="10"/>
+%D \stopXML
+%D
+%D A typical setup:
+%D
+%D \setuptyping[XML]
+%D   [margin=1cm,
+%D   before={\switchtobodyfont[9pt]\blank[medium]},
+%D   after={\switchtobodyfont[11pt]\blank[medium]},
+%D   letter=\ss]
+%D
+
+\gdef\setupprettyXMLtype%
+  {\def\prettyidentifier{XML}%
+   \XMLsetvariables
+   \XMLsetcontrols
+   \XMLsetspecials
+   \XMLsethandlers}
+
+\gdef\XMLsetvariables
+  {\global\inXMLpifalse
+   \global\inXMLtagfalse
+   \global\inXMLvaluefalse
+   \global\inXMLspecialfalse
+   \global\inXMLcommentfalse
+   \global\inXMLtagnamefalse
+   \global\inXMLattributefalse}
+
+\gdef\XMLsetcontrols%
+  {\saveprettycontrols
+   \def\obeyedspace%
+     {\XMLstartattribute
+      \oldobeyedspace}%
+   \def\flushrestofverbatimline%
+     {\endXMLtagname}%
+   \let\obeytabs=\ignoretabs}
+
+\gdef\XMLsetspecials%
+  {\setpretty`\<=10 \setpretty`\>=11
+   \setpretty`\?=12 \setpretty`\/=13
+   \setpretty`\!=14 \setpretty`\-=15
+   \setpretty`\\=17 
+ % \setpretty`\0=17 
+ % \setpretty`\1=17 \setpretty`\2=17 \setpretty`\3=17
+ % \setpretty`\4=17 \setpretty`\5=17 \setpretty`\6=17
+ % \setpretty`\7=17 \setpretty`\8=17 \setpretty`\9=17
+   \setpretty`\==16
+   \setpretty`\"=20
+   \setpretty`\(=30 \setpretty`\)=30 \setpretty`\,=30
+   \setpretty`\*=30 \setpretty`\+=30 \setpretty`\#=30
+   \setpretty`\:=30
+   \setpretty`\&=40 }
+
+\gdef\XMLsethandlers%
+  {%\installprettyhandler 17 \XMLnormal
+   \installprettyhandler 10 \XMLwhattag
+   \installprettyhandler 11 \XMLstoptag
+   \installprettyhandler 12 \XMLtypeonetwo
+   \installprettyhandler 13 \XMLtypeonethree
+   \installprettyhandler 14 \XMLtypeonefour
+   \installprettyhandler 15 \XMLtypeonefive
+   \installprettyhandler 16 \XMLtypeonesix
+   \installprettyhandler 20 \XMLdoublequote
+   \installprettyhandler 30 \XMLtypethree
+   \installprettyhandler 40 \XMLampersand}
+
+\doglobal\newif\ifinXMLpi
+\doglobal\newif\ifinXMLtag
+\doglobal\newif\ifinXMLvalue
+\doglobal\newif\ifinXMLspecial
+\doglobal\newif\ifinXMLcomment
+\doglobal\newif\ifinXMLtagname
+\doglobal\newif\ifinXMLattribute
+
+% the list of actions to be executed per state
+
+% test if we have a normal tag, processing instruction or a special,
+% i.e. <, <? or <!
+
+%\gdef\XMLnormal#1{\getpretty{#1}}
+
+\gdef\XMLwhattag%
+  {\handlenextnextpretty\XMLdowhattag\XMLstarttag}
+
+\gdef\XMLdowhattag#1#2%
+  {\ifinXMLcomment
+     \let\next=\getpretties
+   \else
+     \getprettydata{#2}%
+     \ifnum\prettytype=12
+       \let\next=\XMLstartpi
+     \else\ifnum\prettytype=14
+       \let\next=\XMLstartspecial
+     \else
+       \let\next=\XMLstarttag
+     \fi\fi
+   \fi
+   \next{#1}{#2}}
+
+% formats <?
+
+\gdef\XMLstartpi#1#2%
+  {\beginofpretty[\!!prettythree]\getpretties{#1}{#2}\endofpretty%
+   \beginofpretty[\!!prettyone]%
+   \global\inXMLtagtrue
+   \global\inXMLpitrue
+   \global\inXMLtagnametrue}
+
+% format <! (<!--, <!DOCTYPE, <![CDATA[ and such
+
+\gdef\XMLstartspecial#1#2%
+  {\beginofpretty[\!!prettythree]\getpretties{#1}{#2}\endofpretty%
+   \beginofpretty[\!!prettyone]%
+   \global\inXMLtagtrue
+   \global\inXMLspecialtrue
+   \global\inXMLtagnametrue}
+
+
+% formats plain <
+\gdef\XMLstarttag#1%
+  {\beginofpretty[\!!prettythree]\getpretty{#1}\endofpretty
+   \beginofpretty[\!!prettyone]%
+   \global\inXMLtagtrue
+   \global\inXMLtagnametrue}
+
+
+% catch >
+
+\gdef\XMLstoptag#1%
+  {\ifinXMLcomment
+     \getpretty{#1}%
+   \else
+     \ifinXMLvalue
+       \getpretty{#1}%
+     \else
+       \endXMLtagname
+       \beginofpretty[\!!prettythree]\getpretty{#1}\endofpretty
+       \doXMLstoptag
+     \fi
+   \fi}
+
+\gdef\doXMLstoptag%
+  {\global\inXMLpifalse       % either end process instruction
+   \global\inXMLspecialfalse  % or special
+   \global\inXMLtagfalse      % and tag ends always
+   \global\inXMLtagnamefalse} % just to be sure
+
+% end typeset name of tag
+% because called often, we also use it to end the default 
+% attribute color.
+
+\gdef\endXMLtagname%
+ {\ifinXMLtagname
+    \endofpretty
+    \inXMLtagnamefalse
+  \else
+     \XMLstopattribute
+  \fi}
+
+% start attribute formatting inside a tag if applicable
+
+\gdef\XMLstartattribute%
+  {\ifinXMLcomment
+   \else
+     \endXMLtagname
+     \ifinXMLtag
+       \doXMLstartattribute
+     \fi
+   \fi}
+
+\gdef\XMLstopattribute%
+  {\ifinXMLattribute
+     \endofpretty
+     \inXMLattributefalse
+   \fi}
+
+\gdef\doXMLstartattribute
+  {\inXMLattributetrue
+   \beginofpretty[\!!prettythree]}
+
+% `?' character, needed to recognize <? (see above)
+
+\gdef\XMLtypeonetwo%
+  {\endXMLtagname
+   \handlenextnextpretty\doXMLtypeonetwo\doXMLout}
+
+\gdef\doXMLtypeonetwo#1#2%
+  {\getprettydata{#2}%
+   \ifnum\prettytype=11
+     \let\next=\dododoXMLtypeonetwo
+   \else
+     \let\next=\dodoXMLtypeonetwo
+   \fi
+   \next{#1}#2}
+
+\gdef\dodoXMLtypeonetwo#1%
+  {\ifinXMLcomment
+     \getpretty{#1}%
+   \else
+     \ifinXMLtag
+       \ifinXMLvalue
+         \getpretty{#1}%
+       \else
+         \beginofpretty[\!!prettytwo]\getpretty{#1}\endofpretty          
+       \fi
+     \else
+       \getpretty{#1}%
+     \fi
+   \fi}
+
+\gdef\dododoXMLtypeonetwo#1#2%
+  {\ifinXMLcomment
+     \getpretties{#1}{#2}%
+   \else
+     \ifinXMLtag
+       \ifinXMLvalue
+         \getpretties{#1}{#2}%
+       \else
+         \beginofpretty[\!!prettythree]\getpretties{#1}{#2}\endofpretty
+         \doXMLstoptag
+       \fi
+     \else
+       \getpretties{#1}{#2}%
+     \fi
+   \fi}
+
+% '/' character, catch /> and </, do nothing else
+
+\gdef\XMLtypeonethree#1%
+  {\ifinXMLcomment
+     \getpretty{#1}%
+   \else
+     \ifinXMLtag
+       \ifinXMLvalue
+         \getpretty{#1}%
+       \else
+         \endofpretty
+         \beginofpretty[\!!prettythree]\getpretty{#1}\endofpretty
+         \beginofpretty[\!!prettyone]%
+       \fi
+     \else
+       \getpretty{#1}%
+     \fi
+   \fi}
+
+%  used to parse <!
+
+\gdef\XMLtypeonefour#1%
+  {\getpretty{#1}}
+
+% used to parse <!-- and -->
+% when <! is parsed we already assumed this is a comment
+% when -- is encountered, we only need to see if --> is ahead
+% so the comment can stop.
+
+\gdef\XMLtypeonefive%
+ {\endXMLtagname
+  \handlenextnextpretty\doXMLtypeonefive\doXMLout}
+
+\gdef\doXMLtypeonefive#1#2%
+  {\getprettydata{#2}%
+   \ifnum\prettytype=15
+     \ifinXMLcomment
+       \let\next=\dodoXMLtypeonefive
+     \else
+       \ifinXMLspecial
+         \let\next=\startXMLcomment
+       \else
+         \let\next=\doXMLouttwo
+       \fi
+     \fi
+   \else
+     \let\next=\doXMLouttwo
+   \fi
+   \next{#1}#2}
+
+\gdef\startXMLcomment#1#2%
+  {\beginofpretty[\!!prettyfour]\getpretties{#1}{#2}%
+   \global\inXMLcommenttrue}
+
+\gdef\dodoXMLtypeonefive#1% encountered - 
+  {\getpretty{#1}\handlenextnextpretty\dododoXMLtypeonefive\doXMLout} 
+
+\gdef\dododoXMLtypeonefive#1#2%
+  {\getprettydata{#2}#1#2%
+   \ifnum\prettytype=11 
+     \endofpretty
+     \global\inXMLcommentfalse
+   \fi}  
+
+%\gdef\doXMLout#1%
+%  {\getpretty{#1}}
+%
+%\gdef\doXMLouttwo#1#2%
+%  {\getpretties{#1}{#2}}
+
+\global\let\doXMLout   \getpretty
+\global\let\doXMLouttwo\getpretties
+
+% '=' inside tags needs to be blue
+
+\gdef\XMLtypeonesix#1%
+  {\ifinXMLtag
+      \endofpretty
+      \beginofpretty[\!!prettythree]\getpretty{#1}\endofpretty
+      \beginofpretty[\!!prettyone]%
+   \else
+      \getpretty{#1}%
+   \fi}
+
+% catch attribute value parts
+
+\gdef\XMLdoublequote#1%
+  {\ifinXMLcomment
+      \getpretty{#1}%
+    \else
+      \ifinXMLtag
+       \ifinXMLvalue
+         \global\inXMLvaluefalse
+         \beginofpretty[\!!prettythree]\getpretty{#1}\endofpretty
+         \beginofpretty[\!!prettyone]%
+       \else
+         \endofpretty
+         \beginofpretty[\!!prettythree]\getpretty{#1}\endofpretty
+         \global\inXMLvaluetrue
+       \fi
+     \else
+       \getpretty{#1}%
+     \fi
+   \fi}
+
+% symbols like `(', `)' and `,' should be green
+
+\gdef\XMLtypethree#1%  
+  {\ifinXMLcomment
+     \getpretty{#1}%
+   \else
+     \ifinXMLtag
+       \endXMLtagname
+       \ifinXMLvalue
+         \getpretty{#1}%
+       \else
+         \beginofpretty[\!!prettytwo]\getpretty{#1}\endofpretty
+         \XMLstartattribute% again
+       \fi
+     \else
+       \getpretty{#1}%
+     \fi
+   \fi}
+
+% special characters with `&'
+
+\gdef\XMLampersand#1%
+  {\ifinXMLcomment
+     \getpretty{#1}%
+   \else
+     \endXMLtagname
+     \beginofpretty[\!!prettytwo]\getpretty{#1}\endofpretty 
+   \fi}
+
+\protect \endinput 

@@ -487,12 +487,13 @@
 
 \def\EndTableParBox%
   {\removelastskip % added
-  %\MakeStrut{0pt}{\StrutDepthFactor\StrutUnit}       % removed
+  %\MakeStrut{0pt}{\StrutDepthFactor\StrutUnit}         % removed
+   \par \ifnum\prevgraf>0 \strut \vskip-\lineheight \fi % added
    \egroup % finishes the \vtop begun by \BeginTableParbox
-   \getboxheight\scratchdimen\of\box\scratchbox\relax % added
-   \ifdim\scratchdimen>\TABLEparheight                % added
-     \global\TABLEparheight=\scratchdimen             % added
-   \fi                                                % added
+   \getboxheight\scratchdimen\of\box\scratchbox\relax   % added
+   \ifdim\scratchdimen>\TABLEparheight                  % added
+     \global\TABLEparheight=\scratchdimen               % added
+   \fi                                                  % added
    \box\scratchbox}
 
 %D To give an impression of what the (well documented) source

@@ -54,9 +54,9 @@
 \definecolor [darkyellow]    [r=.8,  g=.8,  b=.6]
 \definecolor [middleyellow]  [r=1,   g=1,   b=.2]
 
-\definecolor [darkgray]      [r=.5,  g=.5,  b=.5]
-\definecolor [middlegray]    [r=.7,  g=.7,  b=.7]
-\definecolor [lightgray]     [r=.9,  g=.9,  b=.9]
+\definecolor [darkgray]      [s=.5]
+\definecolor [middlegray]    [s=.7]
+\definecolor [lightgray]     [s=.9]
 
 %D These colors are mapped to interface dependant colornames.
 
@@ -112,6 +112,7 @@
   \definecolor [gelb]          [yellow]
 
   \definecolor [weiss]         [white]
+  \definecolor [grau]          [gray]
   \definecolor [schwarz]       [black]
 
   \definecolor [dunkelrot]     [darkred]
@@ -143,43 +144,86 @@
 
 \startinterface czech
 
-  \definecolor [cervena]       [red]
-  \definecolor [zelena]        [green]
-  \definecolor [modra]         [blue]
+  \definecolor [cervena]        [red]
+  \definecolor [zelena]         [green]
+  \definecolor [modra]          [blue]
 
-  \definecolor [azurova]       [cyan]
-  \definecolor [fialova]       [magenta]
-  \definecolor [zluta]         [yellow]
+  \definecolor [azurova]        [cyan]
+  \definecolor [fialova]        [magenta]
+  \definecolor [zluta]          [yellow]
 
-  \definecolor [bila]          [white]
-  \definecolor [cerna]         [black]
+  \definecolor [bila]           [white]
+  \definecolor [cerna]          [black]
 
-  \definecolor [tmavecervena]  [darkred]
-  \definecolor [strednecervena][middlered]
-  \definecolor [svetlecervena] [lightred]
+  \definecolor [tmavecervena]   [darkred]
+  \definecolor [strednecervena] [middlered]
+  \definecolor [svetlecervena]  [lightred]
 
-  \definecolor [tmavezelena]   [darkgreen]
-  \definecolor [strednezelena] [middlegreen]
-  \definecolor [svetlezelena]  [lightgreen]
+  \definecolor [tmavezelena]    [darkgreen]
+  \definecolor [strednezelena]  [middlegreen]
+  \definecolor [svetlezelena]   [lightgreen]
 
-  \definecolor [tmavemodra]    [darkblue]
-  \definecolor [strednemodra]  [middleblue]
-  \definecolor [svetlemodra]   [lightblue]
+  \definecolor [tmavemodra]     [darkblue]
+  \definecolor [strednemodra]   [middleblue]
+  \definecolor [svetlemodra]    [lightblue]
 
-  \definecolor [tmaveazurova]  [darkcyan]
-  \definecolor [stredneazurova][middlecyan]
+  \definecolor [tmaveazurova]   [darkcyan]
+  \definecolor [stredneazurova] [middlecyan]
 
-  \definecolor [tmavefialova]  [darkmagenta]
-  \definecolor [strednefialova][middlemagenta]
+  \definecolor [tmavefialova]   [darkmagenta]
+  \definecolor [strednefialova] [middlemagenta]
 
-  \definecolor [tmavezluta]    [darkyellow]
-  \definecolor [strednezluta]  [middleyellow]
+  \definecolor [tmavezluta]     [darkyellow]
+  \definecolor [strednezluta]   [middleyellow]
 
-  \definecolor [tmaveseda]     [darkgray]
-  \definecolor [stredneseda]   [middlegray]
-  \definecolor [svetleseda]    [lightgray]
+  \definecolor [tmaveseda]      [darkgray]
+  \definecolor [stredneseda]    [middlegray]
+  \definecolor [svetleseda]     [lightgray]
 
 \stopinterface
+
+\startinterface italian
+
+  \definecolor [rosso]         [red]
+  \definecolor [verde]         [green]
+  \definecolor [blu]           [blue]
+
+  \definecolor [cyan]          [cyan]
+  \definecolor [magenta]       [magenta]
+  \definecolor [giallo]        [yellow]
+
+  \definecolor [bianco]        [white]
+  \definecolor [grigio]        [gray]
+  \definecolor [nero]          [black]
+
+  \definecolor [rossoscuro]    [darkred]
+  \definecolor [rossomedio]    [middlered]
+  \definecolor [rossochiaro]   [lightred]
+
+  \definecolor [verdescuro]    [darkgreen]
+  \definecolor [verdemedio]    [middlegreen]
+  \definecolor [verdechiaro]   [lightgreen]
+
+  \definecolor [bluscuro]      [darkblue]
+  \definecolor [blumedio]      [middleblue]
+  \definecolor [bluchiaro]     [lightblue]
+
+  \definecolor [cyanscuro]     [darkcyan]
+  \definecolor [cyanchiaro]    [middlecyan]      
+
+  \definecolor [magentascuro]  [darkmagenta]    
+  \definecolor [magentachiaro] [middlemagenta]  
+
+
+  \definecolor [gialloscuro]     [darkyellow]
+  \definecolor [giallomedio]     [middleyellow]
+
+  \definecolor [grigioscuro]     [darkgray]
+  \definecolor [grigiomedio]     [middlegray]
+  \definecolor [grigiochiaro]    [lightgray]
+
+\stopinterface
+
 
 %D Like colors, we first define the english colorgroups. These
 %D colorgroups are tuned for distinctive gray scale printing.
@@ -340,18 +384,33 @@
 \stopinterface
 
 \startinterface czech
-  \definecolorgroup [seda]    [gray]
-  \definecolorgroup [cervena] [red]
-  \definecolorgroup [zelena]  [green]
-  \definecolorgroup [modra]   [blue]
-  \definecolorgroup [azurova] [cyan]
-  \definecolorgroup [fialova] [magenta]
-  \definecolorgroup [zluta]   [yellow]
-  \definecolorgroup [cervena*][red*]
-  \definecolorgroup [zelena*] [green*]
-  \definecolorgroup [modra*]  [blue*]
-  \definecolorgroup [zluta*]  [yellow*]
+  \definecolorgroup [seda]     [gray]
+  \definecolorgroup [cervena]  [red]
+  \definecolorgroup [zelena]   [green]
+  \definecolorgroup [modra]    [blue]
+  \definecolorgroup [azurova]  [cyan]
+  \definecolorgroup [fialova]  [magenta]
+  \definecolorgroup [zluta]    [yellow]
+  \definecolorgroup [cervena*] [red*]
+  \definecolorgroup [zelena*]  [green*]
+  \definecolorgroup [modra*]   [blue*]
+  \definecolorgroup [zluta*]   [yellow*]
 \stopinterface
+
+\startinterface italian
+  \definecolorgroup [grigio]  [gray]
+  \definecolorgroup [rosso]   [red]
+  \definecolorgroup [verde]   [green]
+  \definecolorgroup [blu]     [blue]
+  \definecolorgroup [ciano]   [cyan]
+  \definecolorgroup [magenta] [magenta]
+  \definecolorgroup [giallo]  [yellow]
+  \definecolorgroup [rosso*]  [red*]
+  \definecolorgroup [verde*]  [green*]
+  \definecolorgroup [blu*]    [blue*]
+  \definecolorgroup [giallo*] [yellow*]
+\stopinterface
+
 
 %D The next set of color palets is quite language independant.
 %D These palets are meant as examples.

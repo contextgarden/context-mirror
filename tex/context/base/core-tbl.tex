@@ -129,7 +129,15 @@
 
 \newbox     \tabulatebox
 
-\let\handletabulatecharalign\empty
+% [|lg{.}|] => \NG 12.34 \NC
+
+\gdef\handletabulatecharalign#1 % space delimited ! 
+  {\edef\alignmentclass{\tabulatecolumn}%
+   \edef\alignmentcharacter{\getvalue{\@@tabalign@@\tabulatecolumn}}%
+   \ifcase\tabulatepass\or
+     \setfirstpasscharacteralign\checkalignment{#1}%
+   \fi % force hsize 
+   \setsecondpasscharacteralign\checkalignment{#1}}
 
 \def\noftabcolumns{16} % quick and dirty stack
 
@@ -685,6 +693,7 @@
    \setbox0=\vbox % outside if because of line counting
      {\footnotesenabledfalse
       \let\tabulateindent\!!zeropoint
+\trialtypesettingtrue
       \@EA\halign\@EA{\the\!!toksa\cr\tabulatecontent\crcr}}%
    \ifnum\nofautotabulate>0
      \tabulatewidth\hsize

@@ -18,6 +18,12 @@
 \writestatus{loading}{Context Support Macros / Boxes}
 
 \unprotect
+
+%D First a hack to make this module loadable in plain \TEX. 
+
+\ifx\outer\relax \else
+  \def\newbox{\alloc@4\box\chardef\insc@unt} 
+\fi 
 
 %D \macros
 %D   {nextdepth}
@@ -111,8 +117,7 @@
 %D \stoptypen
 
 \def\getboxheight#1\of#2\box#3%
-  {#1=\ht#3%
-   \advance#1 by \dp#3\relax}
+  {#1=\ht#3\advance#1 by \dp#3\relax}
 
 %D \macros
 %D   {doiftextelse, doiftext}
@@ -183,15 +188,15 @@
    \afterassignment\dododowithnextbox
    \setbox\nextbox}
 
+\def\dododowithnextbox%
+  {\aftergroup\dodowithnextbox}
+
 % Better but first to be checked:
 %
 %\long\def\dowithnextbox#1%
 %  {\bgroup\long\def\dodowithnextbox{#1\egroup}%
 %   \afterassignment\dododowithnextbox
 %   \setbox\nextbox}
-
-\def\dododowithnextbox%
-  {\aftergroup\dodowithnextbox}
 
 %D So in fact we get:
 %D
@@ -225,7 +230,29 @@
 %D \stoptypen
 %D
 %D This alternative also accepts \type{\box0} and alike, but
-%D we don't really need this functionality now.
+%D we don't really need this functionality now. 
+
+%D \macros
+%D   {dowithnextboxcontent}
+%D
+%D But, occasionally we do need to pass some local settings 
+%D without wanting to use additional grouping. Therefore we 
+%D provide:  
+%D
+%D \starttypen
+%D \dowithnextboxcontent{inside}{after}{box content}
+%D \stoptypen
+
+\long\def\dowithnextboxcontent#1#2% inside, after 
+  {\long\def\dodowithnextbox{#2}%
+   \def\dododowithnextbox{#1\aftergroup\dodowithnextbox}%
+   \afterassignment\dododowithnextbox
+   \setbox\nextbox}
+
+%D Now we can redefine \type {\dowithnextbox} as follows: 
+
+\def\dowithnextbox%
+  {\dowithnextboxcontent{}}
 
 %D \macros
 %D   {beginofshapebox,
@@ -363,7 +390,7 @@
 
 \newcount\shapecounter
 
-\def\reshapebox#1%
+\def\reshapebox#1% 
   {\doreshapebox
      {#1}
      {\penalty\shapepenalty}
@@ -376,50 +403,50 @@
        \unvcopy\oldshapebox
        \setbox\newshapebox=\box\voidb@x
        \shapecounter=0
-       \loop
-         \someshapelefttrue
-         \ifdim\lastskip=\!!zeropoint\relax
-           \ifdim\lastkern=\!!zeropoint\relax
-             \ifnum\lastpenalty=0
-               \setbox\shapebox=\lastbox
-               \ifvoid\shapebox
-                 \unskip\unpenalty\unkern
-               \else
-                 \ifdim\wd\shapebox=\shapesignal\relax
-                   \someshapeleftfalse
-                 \else
-                   \shapecounter=0
-                   \setbox\newshapebox=
-                     \normalvbox{#1\unvbox\newshapebox}
-                 \fi
-               \fi
-             \else
-               \shapepenalty=\lastpenalty
-               \setbox\newshapebox=
-                 \normalvbox{#2\unvbox\newshapebox}
-               \unpenalty
-             \fi
-           \else
-             \shapekern=\lastkern
-             \setbox\newshapebox=
-               \normalvbox{#3\unvbox\newshapebox}
-             \unkern
-           \fi
-         \else
-           \shapeskip=\lastskip
-           \setbox\newshapebox=
-             \normalvbox{#4\unvbox\newshapebox}
-           \unskip
-         \fi
-       \ifnum\shapecounter>100 % can be less
-         \message{<<forced exit from shapebox>>}%
-         \someshapeleftfalse
-       \else
-         \advance\shapecounter by 1
-       \fi
-       \ifsomeshapeleft \repeat
+       \doloop{\dodoreshapebox{#1}{#2}{#3}{#4}}%
        \unvbox\newshapebox
      \egroup}
+
+\def\dodoreshapebox#1#2#3#4% \shapebox, \shapepenalty, \shapekern, \shapeskip
+  {\ifdim\lastskip=\!!zeropoint\relax
+     \ifdim\lastkern=\!!zeropoint\relax
+       \ifnum\lastpenalty=0
+         \setbox\shapebox=\lastbox
+         \ifvoid\shapebox
+           \unskip\unpenalty\unkern
+         \else
+           \ifdim\wd\shapebox=\shapesignal\relax
+             \exitloop
+           \else
+             \shapecounter=0
+             \setbox\newshapebox=
+               \normalvbox{#1\unvbox\newshapebox}
+           \fi
+         \fi
+       \else
+         \shapepenalty=\lastpenalty
+         \setbox\newshapebox=
+           \normalvbox{#2\unvbox\newshapebox}
+         \unpenalty
+       \fi
+     \else
+       \shapekern=\lastkern
+       \setbox\newshapebox=
+         \normalvbox{#3\unvbox\newshapebox}
+       \unkern
+     \fi
+   \else
+     \shapeskip=\lastskip
+     \setbox\newshapebox=
+       \normalvbox{#4\unvbox\newshapebox}
+     \unskip
+   \fi
+   \ifnum\shapecounter>100 % can be less
+     \message{<<forced exit from shapebox>>}%
+     \exitloop
+   \else
+     \advance\shapecounter by 1
+   \fi}
 
 \def\beginofshapebox%
   {\setbox\oldshapebox=\normalvbox
@@ -493,6 +520,21 @@
 %D \som \type{\shapekern}
 %D \som \type{\shapeskip}
 %D \stopopsomming
+
+%D \macros
+%D   {shapedhbox}
+%D
+%D When constructing a new box, using the content of \type 
+%D {\shapebox}, one can best use \type {\shapedhbox} instead 
+%D of \type {\hbox}, since it manages the height and depth of
+%D the line. 
+
+\def\shapedhbox%
+  {\dowithnextbox
+     {\ht\nextbox=\!!zeropoint
+      \dp\nextbox=\!!zeropoint
+      \box\nextbox}
+   \hbox}
 
 %D \macros
 %D   {hyphenatedword,
@@ -586,32 +628,48 @@
 %D third argument into account, which leads to a bit more
 %D complex macro than needed at first sight.
 
+% \def\dodoboundtext#1%
+%   {\setbox0=\hbox{\unhcopy0 #1}%
+%    \ifdim\wd0>\dimen0
+%      \let\dodoboundtext=\gobbleoneargument
+%    \else
+%      #1\relax
+%    \fi}
+% 
+% \def\doboundtext#1#2#3%
+%   {\hbox
+%      {\setbox0=\hbox{#1}%
+%       \dimen0=#2\relax
+%       \ifdim\wd0>\dimen0
+%         \setbox2=\hbox{#3}%
+%         \advance\dimen0 by -\wd2
+%         \setbox0=\hbox{}%
+%         \processtokens
+%           {\dodoboundtext}
+%           {\dodoboundtext}
+%           {}
+%           {\space}
+%           {#1}%
+%         \box2
+%       \else
+%         \box0
+%       \fi}}
+
 \def\dodoboundtext#1%
-  {\setbox0=\hbox{\unhcopy0 #1}%
-   \ifdim\wd0>\dimen0
-     \let\dodoboundtext=\gobbleoneargument
-   \else
-     #1\relax
-   \fi}
+  {\setbox2=\hbox{#1}%
+   \advance\dimen0 by -\wd2
+   \ifdim\dimen0>\!!zeropoint\relax#1\fi}%
 
 \def\doboundtext#1#2#3%
   {\hbox
      {\setbox0=\hbox{#1}%
       \dimen0=#2\relax
       \ifdim\wd0>\dimen0
-        \setbox2=\hbox{#3}%
-        \advance\dimen0 by -\wd2
-        \setbox0=\hbox{}%
-        \processtokens
-          {\dodoboundtext}
-          {\dodoboundtext}
-          {}
-          {\space}
-          {#1}%
-        \box2
-      \else
-        \box0
-      \fi}}
+        \setbox0=\hbox{#3}%
+        \advance\dimen0 by -\wd0
+        \handletokens#1\with\dodoboundtext
+      \fi
+      \box0}}
 
 %D \macros
 %D   {limitatetext}
@@ -630,33 +688,104 @@
 
 \ifx\fakecompoundhyphen\undefined \let\fakecompoundhyphen\relax \fi
 
-\unexpanded\def\limitatetext%
-  {\bgroup
-   \dowithnextbox\dolimitatetext\hbox}
+%D The simple alternative is as follows: 
+%D
+%D \starttypen
+%D \unexpanded\def\limitatetext%
+%D   {\bgroup % evt \setstrut 
+%D    \fakecompoundhyphen % dangerous ! ! ! ! ! ! ! ! !
+%D    \dowithnextbox\dolimitatetext\hbox}
+%D 
+%D \def\dolimitatetext#1#2%
+%D   {\doifelsenothing{#1}
+%D      {\unhbox\nextbox}
+%D      {\widowpenalty=0
+%D       \clubpenalty=0
+%D       \scratchdimen=#1\relax
+%D       \ifdim\wd\nextbox>\scratchdimen
+%D         \setbox\scratchbox=\hbox{ #2}%
+%D         \advance\scratchdimen by -\wd\scratchbox
+%D         \setbox\nextbox=\vbox
+%D           {\hsize=\scratchdimen
+%D            \hfuzz\maxdimen
+%D            \veryraggedright
+%D            \strut\unhcopy\nextbox}%
+%D         \ifdim\ht\nextbox>\ht\strutbox \else
+%D           \setbox\scratchbox\null % overfull and not split 
+%D         \fi
+%D         \setbox\nextbox=\vbox % if omitted: missing brace reported
+%D           {\splittopskip=\openstrutheight
+%D            \setbox\nextbox=\vsplit\nextbox to \ht\strutbox
+%D            \unvbox\nextbox
+%D            \setbox\nextbox=\lastbox
+%D            \global\setbox1=\hbox
+%D              {\unhbox\nextbox\unskip\kern\!!zeropoint\box\scratchbox\unskip}}%
+%D         \unhbox1
+%D       \else
+%D         \unhbox\nextbox
+%D       \fi}%
+%D    \egroup}
+%D \stoptypen 
+%D
+%D The next alternative accepts a negative width. A negative
+%D value crops the beginning. The macro thereby becomes less
+%D readable, which is why we kept the original here too. 
 
+\unexpanded\def\limitatetext%
+  {\bgroup % evt \setstrut 
+   \fakecompoundhyphen % dangerous ! ! ! ! ! ! ! ! !
+   \dowithnextbox\dolimitatetext\hbox}
+ 
 \def\dolimitatetext#1#2%
   {\doifelsenothing{#1}
      {\unhbox\nextbox}
-     {\fakecompoundhyphen
-      \widowpenalty=0
+     {\widowpenalty=0
       \clubpenalty=0
       \scratchdimen=#1\relax
+      \ifdim\scratchdimen<\!!zeropoint\relax % we'll take the last line 
+        \donefalse 
+        \scratchdimen=-\scratchdimen
+      \else
+        \donetrue
+      \fi
       \ifdim\wd\nextbox>\scratchdimen
-        \setbox\scratchbox=\hbox{ #2}%
+        \setbox\scratchbox=\hbox{\ifdone\space#2\else#2\space\fi}%
         \advance\scratchdimen by -\wd\scratchbox
+        \setbox0=\box\nextbox
         \setbox\nextbox=\vbox
           {\hsize=\scratchdimen
            \hfuzz\maxdimen
            \veryraggedright
-           \strut\unhbox\nextbox}%
-        \setbox\nextbox=\vbox % if omitted: missing brace reported
-          {\splittopskip=\openstrutheight
-           \setbox\nextbox=\vsplit\nextbox to \ht\strutbox
-           \unvbox\nextbox
-           \setbox\nextbox=\lastbox
-           \global\setbox1=\hbox
-             {\unhbox\nextbox\unskip\kern\!!zeropoint\box\scratchbox\unskip}}%
-        \unhbox1
+           \strut
+           \ifdone \else
+             \parfillskip=\!!zeropoint
+             \rightskip=\!!zeropoint
+             \hskip\!!zeropoint \!!plus 1\!!fill % \hsize 
+           \fi 
+           \unhcopy0}%
+        \ifdim\ht\nextbox>\ht\strutbox 
+          \setbox\nextbox=\vbox % if omitted: missing brace reported
+            {\splittopskip=\openstrutheight
+             \ifdone
+               \setbox\nextbox=\vsplit\nextbox to \ht\strutbox
+             \else
+               \doloop
+                 {\setbox0=\vsplit\nextbox to \ht\strutbox
+                  \ifdim\ht\nextbox>\ht\strutbox \else \exitloop \fi}%
+             \fi
+             \unvbox\nextbox
+             \setbox\nextbox=\lastbox
+             \global\setbox1=\hbox
+               {\ifdone
+                  \unhbox\nextbox\unskip\kern\!!zeropoint\box\scratchbox
+                \else
+                  \box\scratchbox\unhbox\nextbox
+                \fi
+                \unskip}}%
+          \unhbox1
+        \else
+          \unhbox0
+        \fi
       \else
         \unhbox\nextbox
       \fi}%
@@ -757,6 +886,8 @@
 %D In order to prevent problems with nested isolated words, we
 %D do process them, but only split at the outermost level. 
 
+\newskip\isolatedlastskip
+
 \def\processisolatedwords#1#2% todo: vbox ipv hbox ivm afbreken!
   {\bgroup                   % todo: doloop       
    \fakecompoundhyphen
@@ -768,7 +899,7 @@
    \global\let\localbetweenisolatedwords\betweenisolatedwords 
    \setbox0=\hbox    % we default to spaces, but from inside out
      {\ignorespaces#1% \localbetweenisolatedwords can be overruled 
-      \xdef\isolatedlastskip{\the\lastskip}}%
+      \global\isolatedlastskip=\lastskip}%
    \setbox2=\vbox
      {%\hyphenpenalty10000       % this one fails in \url breaking, 
       \lefthyphenmin=\!!maxcard  % but this trick works ok, due to them
@@ -792,11 +923,20 @@
              \vbox                  % outer \hbox needed 
                {\unvbox4            % for nested use   
                 \setbox4=\lastbox
-                \hbox{#2{\hbox{\unhbox4}}}}}% 
-        \ifdim\ht2>\!!zeropoint \localbetweenisolatedwords \repeat
+                \hbox{#2{\hbox
+                  {\unhbox4
+                   \unskip\unpenalty % remove end of line stuff
+                   \global\dimen1=\lastkern}}}}}% 
+        \ifdim\ht2>\!!zeropoint\relax 
+          \ifdim\dimen1=\compoundbreakpoint
+            \allowbreak
+          \else
+            \localbetweenisolatedwords
+          \fi
+        \repeat
         \unskip}%
       \unhbox0\unskip
-      \ifdim\isolatedlastskip=\!!zeropoint\else % added
+      \ifdim\isolatedlastskip=\!!zeropoint\relax\else % added
         \hskip\isolatedlastskip
       \fi
     \fi
@@ -1003,45 +1143,41 @@
    \advance\hsize by \scratchdimen
    \divide\hsize by #3\relax}
 
-\def\rigidcolumnbalance#1%
-  {\global\chardef\rigidcolumnbox=#1\relax
-   \ifnum\rigidcolumns=1
-     \ifinner\ifhmode\box\else\unvbox\fi\else\unvbox\fi\rigidcolumnbox
-   \else
-     \hbox to \savedrigidhsize % was \hsize
-       {\vbadness=10000
-        \tabskip\!!zeropoint
-        \setbox\rigidcolumnbox=\vbox
-          {\unvbox\rigidcolumnbox
-           \unpenalty\removelastskip}% get rid of \blank's
-       %\splittopskip=\openstrutheight
-        \splittopskip=\!!zeropoint
-       %\scratchdimen=\ht\rigidcolumnbox      % sensitive for overflow
-       %\divide\scratchdimen by \rigidcolumns % therefore we need the hack:
-        \scratchdimen=1pt
-        \divide\scratchdimen by \rigidcolumns
-        \expanded{\scratchdimen=\withoutpt{\the\scratchdimen}\ht\rigidcolumnbox}%
-        \advance\scratchdimen by \ht\strutbox
-        \valign{##\vfill\cr\dorigidcolumnsplits}}%
-   \fi}
+\newbox\rigidcolumnbox
 
-\def\dorigidcolumnsplits%
-  {\ifnum\rigidcolumns>0
-     \setbox\scratchbox=\vsplit\rigidcolumnbox to \scratchdimen
-     \hbox to \hsize
-       \bgroup
-         \ifalignrigidcolumns
-           \vbox to \ifstretchrigidcolumns\vsize\else\scratchdimen\fi
-             {\unvbox\scratchbox}%
-         \else
-           \vbox{\unvbox\scratchbox}%
-         \fi
-         \hss
-       \egroup
-     \doglobal\decrement\rigidcolumns
-     \cr
-     \ifnum\rigidcolumns>0\noalign{\hfil}\fi
-     \expandafter\dorigidcolumnsplits
+\def\rigidcolumnbalance#1%
+  {\ifnum\rigidcolumns=1 % tzt ook h/d correctie
+     \ifinner\ifhmode\box\else\unvbox\fi\else\unvbox\fi#1\relax 
+   \else
+     \vbox
+       {\forgetall
+        \dontcomplain
+        \setbox\rigidcolumnbox=\vbox
+          {\line{}\goodbreak\unvbox#1\removebottomthings}%
+        \splittopskip=\openstrutheight 
+        \setbox\scratchbox=\vsplit\rigidcolumnbox to \!!zeropoint
+        \scratchdimen=\ht\rigidcolumnbox      
+        \divide\scratchdimen by \rigidcolumns 
+        \getnoflines\scratchdimen 
+        \scratchdimen=\noflines\lineheight
+        \setbox\scratchbox=\hbox to \savedrigidhsize
+          {\dorecurse{\rigidcolumns}
+             {\setbox\scratchbox=\vsplit\rigidcolumnbox to \scratchdimen
+              \dp\scratchbox=\openstrutdepth
+              \setbox\scratchbox=\vtop
+                \ifalignrigidcolumns to 
+                  \ifstretchrigidcolumns\vsize\else\scratchdimen\fi
+                \fi
+               {\unvbox\scratchbox}%
+              \wd\scratchbox=\hsize
+              \box\scratchbox
+              \hfill}%
+           \hfillneg}%
+       \advance\scratchdimen by -\openstrutdepth
+       \setbox\scratchbox\hbox{\raise\scratchdimen\box\scratchbox}
+       \dp\scratchbox=\openstrutdepth
+       \ht\scratchbox=\scratchdimen
+       \box\scratchbox}
    \fi}
 
 %D \macros
@@ -1492,6 +1628,19 @@
       \egroup}
      \hbox}
 
+%D \macros 
+%D   {lhbox,mhbox,rhbox}
+%D
+%D A few more boxes. 
+
+\def\lhbox{\dowithnextbox{\hbox to \hsize{\box\nextbox\hss    }}\hbox}
+\def\mhbox{\dowithnextbox{\hbox to \hsize{\hss\box\nextbox\hss}}\hbox}
+\def\rhbox{\dowithnextbox{\hbox to \hsize{\hss\box\nextbox    }}\hbox}
+
+\let\lefthbox =\lhbox 
+\let\midhbox  =\mhbox 
+\let\righthbox=\rhbox
+
 %D \macros
 %D   {boxofsize}
 %D
@@ -1641,6 +1790,71 @@
 \def\middlebox#1%
   {\hbox{\setbox0=\placedbox{#1}\boxoffset=-.5\wd0\rightbox{\box0}}}
 
+%D \macros 
+%D   {initializeboxstack,savebox,foundbox}
+%D
+%D At the cost of some memory, but saving box registers, we 
+%D have implemented a box repository. 
+%D
+%D \starttypen 
+%D \initializeboxstack{one}
+%D 
+%D \savebox{one}{a}{test a}
+%D \savebox{one}{p}{test p}
+%D \savebox{one}{q}{test q}
+%D 
+%D \hbox{a:\foundbox{one}{a}} \par
+%D \hbox{q:\foundbox{one}{q}} \par
+%D \hbox{p:\foundbox{one}{p}} \par
+%D \hbox{x:\foundbox{one}{x}} \par
+%D \hbox{y:\foundbox{two}{a}} \par
+%D \stoptypen 
+
+\def\@@stackbox{boxstack:b:}
+\def\@@stackmax{boxstack:m:}
+\def\@@stacktag{boxstack:t:}
+
+\def\initializeboxstack#1%
+  {\ifundefined{\@@stackbox#1}%
+     \@EA\newbox\csname\@@stackbox#1\endcsname
+   \else
+     \@EA\global\@EA\setbox\csname\@@stackbox#1\endcsname\vbox{}%
+   \fi
+   % actually we should erase the old values
+   \setgvalue{\@@stackmax#1}{0}}
+
+\def\savebox#1#2% stack name 
+  {\dowithnextbox
+     {\doifdefined{\@@stackbox#1}
+        {\@EA\doglobal\@EA\increment\csname\@@stackmax#1\endcsname
+         \setxvalue{\@@stacktag#2}{\csname\@@stackmax#1\endcsname}%
+         \global\setbox\csname\@@stackbox#1\endcsname=\vbox
+           {\forgetall
+            \setbox\scratchbox=\vbox{\box\nextbox}
+            \ht\scratchbox=\!!onepoint
+            \dp\scratchbox=\!!zeropoint
+            \unvbox\csname\@@stackbox#1\endcsname
+            \offinterlineskip
+            \allowbreak
+            \box\scratchbox}}}%
+   \vbox}
+
+\def\foundbox#1#2%
+  {\vbox
+     {\doifdefined{\@@stackbox#1}
+        {\doifdefined{\@@stacktag#2}
+           {\setbox\scratchbox=\vbox
+              {\splittopskip\!!zeropoint
+               \setbox0=\copy\csname\@@stackbox#1\endcsname
+               \dimen0=\getvalue{\@@stacktag#2}pt     
+               \advance\dimen0 by -\!!onepoint
+               \setbox2=\vsplit0 to \dimen0
+               \ifdim\ht0>\!!onepoint
+                 \setbox0=\vsplit0 to \!!onepoint
+               \fi
+               \unvbox0\setbox0=\lastbox\unvbox0}%
+            \unvbox\scratchbox}}}}
+
 %D \macros
 %D   {removedepth, obeydepth}
 %D
@@ -1653,6 +1867,42 @@
 
 \def\obeydepth%
   {\par \removedepth \ifvmode \kern\dp\strutbox \fi}
+
+%D \macros
+%D   {removebottomthings, removelastskip}
+%D
+%D A funny (but rather stupid) one, plus a redefinition. 
+
+\def\removebottomthings%
+  {\dorecurse{5}{\unskip\unkern\unpenalty}}
+
+\def\removelastskip% \ifvmode the plain tex one \fi
+  {\ifvmode\ifdim\lastskip=\z@\else\vskip-\lastskip\fi\fi}
+
+%D \macros
+%D   {raisebox,lowerbox}
+%D
+%D Some more box stuff, related to positioning (under 
+%D construction). Nice stuff for a tips and tricks maps 
+%D article. 
+%D
+%D \starttypen 
+%D \raisebox{100pt}\hbox{test} 
+%D \raisebox50pt\hbox{test} 
+%D \hsmash{\raisebox{100pt}\hbox{test}} 
+%D \stoptypen 
+
+\def\doraiselowerbox#1#2% a nice trick us used to accept 
+  {\def\next%           % both direct and {} dimensions 
+     {\dowithnextbox
+        {\setbox\nextbox=\hbox{#1\scratchdimen\box\nextbox}%
+         \ht\nextbox=\ht\strutbox
+         \dp\nextbox=\dp\strutbox
+         \box\nextbox}}%
+   \afterassignment\next\scratchdimen=#2}
+
+\def\raisebox{\doraiselowerbox\raise}
+\def\lowerbox{\doraiselowerbox\raise}
 
 % maybe some day we need this
 %

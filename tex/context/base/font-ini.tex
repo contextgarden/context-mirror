@@ -71,6 +71,34 @@
      10: neznamy font --
 \stopmessages
 
+\startmessages  italian  library: fonts
+  title: font del corpo
+      1: codifica --
+      2: variante -- caricata
+      3: variante sconosciuta --
+      4: corpo del testo -- non definito
+      5: stile -- non definito
+      6: -- caricato
+      7: formato sconosciuto --
+      8: stile -- definito 
+      9: mappatura -- caricata
+     10: file di font sconosciuto --
+\stopmessages
+
+\startmessages  norwegian  library: fonts
+  title: hovedfont
+      1: koding --
+      2: variant -- er lest inn
+      3: ukjent variant --
+      4: hovedfont -- er ikke definert
+      5: stil -- er ikke definert
+      6: -- er lest inn
+      7: ukjent format --
+      8: stil -- definert
+      9: avbildning -- er lest inn
+     10: ukjent fontfil --
+\stopmessages
+
 %D This module is one of the oldest modules of \CONTEXT. The
 %D macros below evolved out of the \PLAIN\ \TEX\ macros and
 %D therefore use a similar naming scheme (\type{\rm},
@@ -535,16 +563,16 @@
 %D families for {\ss sans serif} and \type{teletype} we use the
 %D more general \type{\tffam}, which stands for typeface.
 
-\newfam\bsfam  %  8  (ConTeXt)  BoldSlanted
-\newfam\bifam  %  9  (ConTeXt)  BoldItalic
-\newfam\scfam  %  A  (ConTeXt)  SmallCaps
-\newfam\tffam  %  B  (ConTeXt)  TypeFace
+\chardef\bsfam=8  %  \newfam\bsfam  %  8  (ConTeXt)  BoldSlanted
+\chardef\bifam=9  %  \newfam\bifam  %  9  (ConTeXt)  BoldItalic
+\chardef\scfam=10 %  \newfam\scfam  %  A  (ConTeXt)  SmallCaps
+\chardef\tffam=11 %  \newfam\tffam  %  B  (ConTeXt)  TypeFace
 
 %D Because Taco needs a few more math families, we reuse
 %D family~7 for all those typefaces that have no related
 %D family, and therefore are grouped into one.
 
-\let\nnfam\ttfam  %  7  (ReUsed)   NoName
+\chardef\nnfam=7  %  \let\nnfam\ttfam  %  7  (ReUsed)  NoName
 
 %D Normally \type{\mrfam} equals \type{\tffam}, but a more
 %D distinctive alternatives are possible, for instance the
@@ -555,13 +583,21 @@
 %D needed for the \AMS\ Symbol Fonts and Extended Lucida
 %D Bright.
 
-\newfam\mafam  %  C  (ConTeXt)  Math A Fam (AmsTeX A)
-\newfam\mbfam  %  D  (ConTeXt)  Math B Fam (AmsTeX B)
-\newfam\mcfam  %  E  (ConTeXt)  Math C Fam
+\chardef\mafam=12 %  \newfam\mafam  %  C  (ConTeXt)  Math A Fam (AmsTeX A)
+\chardef\mbfam=13 %  \newfam\mbfam  %  D  (ConTeXt)  Math B Fam (AmsTeX B)
+\chardef\mcfam=14 %  \newfam\mcfam  %  E  (ConTeXt)  Math C Fam
+\chardef\mdfam=15 %  \newfam\mdfam  %  F  (ConTeXt)  Math D Fam (MathTime)
 
 %D Because there are 16~families and because \type{\ttfam}
-%D is reused, at the moment we have one families left:~F.
-%D
+%D is reused, at the moment we have no so many families 
+%D left. By default, we map any newly defined family on the 
+%D last one (F).
+
+\def\newfam#1{\chardef#1=15 } 
+
+%D This hack is also needed because in \ETEX\ we are going 
+%D to reuse the \type {\newfam} allocation counter. 
+
 %D To ease the support of font packages, we als define
 %D shortcuts to these familynames. This is necessary because
 %D the family names are in fact \type{\chardef}'s, which means
@@ -572,7 +608,7 @@
 
 \def\hexnumber#1%
   {\ifcase#1 0\or 1\or 2\or 3\or 4\or 5\or 6\or 7\or
-             8\or 9\or A\or B\or C\or D\or E\or F\fi}
+             8\or 9\or A\or B\or C\or D\or E\or F\else 0\fi}
 
 \edef\hexmrfam {\hexnumber\mrfam}  \edef\hexbsfam {\hexnumber\bsfam}
 \edef\hexmifam {\hexnumber\mifam}  \edef\hexbifam {\hexnumber\bifam}
@@ -581,8 +617,7 @@
 \edef\hexitfam {\hexnumber\itfam}  \edef\hexmafam {\hexnumber\mafam}
 \edef\hexslfam {\hexnumber\slfam}  \edef\hexmbfam {\hexnumber\mbfam}
 \edef\hexbffam {\hexnumber\bffam}  \edef\hexmcfam {\hexnumber\mcfam}
-
-\edef\hexnnfam {\hexnumber\nnfam}
+\edef\hexnnfam {\hexnumber\nnfam}  \edef\hexmdfam {\hexnumber\mdfam}
 
 %D \macros 
 %D   {lchexnumber,uchexnumber,lchexnumbers}
@@ -593,7 +628,7 @@
 
 \def\lchexnumber#1%
   {\ifcase#1 0\or 1\or 2\or 3\or 4\or 5\or 6\or 7\or
-             8\or 9\or a\or b\or c\or d\or e\or f\fi}
+             8\or 9\or a\or b\or c\or d\or e\or f\else 0\fi}
 
 \let\uchexnumber=\hexnumber
 
@@ -705,73 +740,135 @@
 %D These macros enable the use of definitions like \type{sa
 %D \magfactor3} which saves us both (mis|)|calculations and
 %D potential mistypings.
-%D
-%D Because \type{sa} is not a \TEX\ supported alternative, we
-%D have to test for it ourselves. In doing so, we need an
-%D auxiliary \DIMENSION. We cannot use \type{\scratchdimen}
-%D because font loading can happen at any moment due to
-%D postponed loading. We could instead have used dirty grouping
-%D tricks, but this one works too.
+%D 
+%D Because \type {sa} (scaled at) and \type {mo} (mapped on)
+%D are not low level \TEX\ supported alternatives, we have to
+%D test for it ourselves. In doing so, we need an auxiliary
+%D \DIMENSION. We cannot use \type{\scratchdimen} because font
+%D loading can happen at any moment due to postponed loading.
+%D We could instead have used dirty grouping tricks, but this
+%D one works too. 
+
+%%% \newdimen\scaledfont
+%%% 
+%%% REPLACED
+%%%  
+%%%  % \def\docalculatefont#1 sa #2sa#3*#4*#5*% The spaces are needed!
+%%%  %   {\edef\fontscale{#2}%
+%%%  %    \ifx\fontscale\empty
+%%%  %      \expandafter\font\csname#4#5\endcsname=#1\relax
+%%%  %    \else
+%%%  %      \scaledfont=#4\relax
+%%%  %      \expandafter\font\csname#4#5\endcsname=#1 at \fontscale\scaledfont\relax
+%%%  %    \fi}
+%%%  
+%%%  \def\splitfontdefinition#1 #2 #3 #4\end%
+%%%    {\def\somefontname{#1}%
+%%%     \doifelse{#2}{*}
+%%%       {\let\somefontspec=\empty}
+%%%       {\def\somefontspec{ #2 #3}}}
+%%%  
+%%%  % \def\docalculatefont#1 sa #2sa#3*#4*#5*% The spaces are needed!
+%%%  %   {\edef\fontscale{#2}%
+%%%  %    \expandafter\splitfontdefinition#1 * * \end
+%%%  %    \ifx\fontscale\empty \else
+%%%  %      \scaledfont=#4\relax
+%%%  %      \def\somefontspec{ at \fontscale\scaledfont}%
+%%%  %    \fi
+%%%  %    \expandafter\font\csname#4#5\endcsname=
+%%%  %      \truefilename{\somefontname}\somefontspec\relax}
+%%%  
+%%%  %D We also accept \type{sa a}||\type{sa d} as specification.
+%%%  
+%%%  \def\checkfontscale#1#2\end% should be optimized
+%%%    {\doifnumberelse{#1}{}
+%%%       {\doifdefinedelse{\??ft\s!default#1}
+%%%          {\edef\fontscale{\getvalue{\??ft\s!default#1}}}
+%%%          {\edef\fontscale{1}}}}
+%%%  
+%%%  % \def\docalculatefont#1 sa #2sa#3*#4*#5*% The spaces are needed!
+%%%  %   {\edef\fontscale{#2}%
+%%%  %    \expandafter\splitfontdefinition#1 * * \end
+%%%  %    \ifx\fontscale\empty \else
+%%%  %      \expandafter\checkfontscale#2 \end % #2 can be "a " (space!)
+%%%  %      \scaledfont=#4\relax
+%%%  %      \def\somefontspec{ at \fontscale\scaledfont}%
+%%%  %    \fi
+%%%  %    \expandafter\font\csname#4#5\endcsname=
+%%%  %      \truefilename{\somefontname}\somefontspec\relax}
+%%%  
+%%%  \def\defaultfontfile{cmtt10}
+%%%  \edef\nullfontname  {\fontname\nullfont}
+%%%  \edef\dummyfontname {font\strippedcsname\\}
+%%%  
+%%%  \def\docalculatefont#1 sa #2sa#3*#4*#5*% The spaces are needed!
+%%%    {\edef\fontscale{#2}%
+%%%     \expandafter\splitfontdefinition#1 * * \end
+%%%     \ifx\fontscale\empty \else
+%%%       \expandafter\checkfontscale#2 \end % #2 can be "a " (space!)
+%%%       \scaledfont=#4\relax
+%%%       \def\somefontspec{ at \fontscale\scaledfont}%
+%%%     \fi
+%%%     \edef\fontfile{\truefontname\somefontname}%
+%%%     \ifx\fontfile\s!unknown
+%%%       \let\fontfile\defaultfontfile
+%%%     \else 
+%%%       \edef\fontdata{\truefontdata\somefontname}%
+%%%       \ifx\fontdata\empty \else
+%%%        %\@EA\getparameters\@EA[\@EA\fontfile\@EA]\@EA[\fontdata]%
+%%%         \@EA\rawgetparameters\@EA[\@EA\fontfile\@EA]\@EA[\fontdata]%
+%%%       \fi
+%%%     \fi
+%%%     % faster 
+%%%     %\expandafter\font\csname#4#5\endcsname\fontfile\somefontspec\relax
+%%%     % nicer
+%%%     \edef\lastfontname{\fontfile\somefontspec}%
+%%%     \expandafter\font\csname#4#5\endcsname\lastfontname
+%%%     \expandafter\font\csname\dummyfontname\endcsname\lastfontname\relax}
+%%%     % safer but sometimes introducing newlines in the log 
+%%%     %\batchmode
+%%%     %\font\lastloadedfont\fontfile\somefontspec\relax
+%%%     %\errorstopmode
+%%%     %\edef\lastfontname{\fontname\lastloadedfont}%
+%%%     %\ifx\lastfontname\nullfontname
+%%%     %  \showmessage{\m!fonts}{10}{\fontfile}%
+%%%     %  \expandafter\font\csname#4#5\endcsname=\defaultfontfile\somefontspec\relax
+%%%     %\else
+%%%     %  \expandafter\let\csname#4#5\endcsname\lastloadedfont
+%%%     %\fi}
 
 \newdimen\scaledfont
 
-% \def\docalculatefont#1 sa #2sa#3*#4*#5*% The spaces are needed!
-%   {\edef\fontscale{#2}%
-%    \ifx\fontscale\empty
-%      \expandafter\font\csname#4#5\endcsname=#1\relax
-%    \else
-%      \scaledfont=#4\relax
-%      \expandafter\font\csname#4#5\endcsname=#1 at \fontscale\scaledfont\relax
-%    \fi}
+\def\parsefontspec[#1]% 
+  {\edef\somefontspec{#1}%
+   \@EA\@EA\@EA\doparsefontspec\@EA\somefontspec\space\relax]}
 
-\def\splitfontdefinition#1 #2 #3 #4\end%
-  {\def\somefontname{#1}%
-   \doifelse{#2}{*}
-     {\let\somefontspec=\empty}
-     {\def\somefontspec{ #2 #3}}}
-
-% \def\docalculatefont#1 sa #2sa#3*#4*#5*% The spaces are needed!
-%   {\edef\fontscale{#2}%
-%    \expandafter\splitfontdefinition#1 * * \end
-%    \ifx\fontscale\empty \else
-%      \scaledfont=#4\relax
-%      \def\somefontspec{ at \fontscale\scaledfont}%
-%    \fi
-%    \expandafter\font\csname#4#5\endcsname=
-%      \truefilename{\somefontname}\somefontspec\relax}
-
-%D We also accept \type{sa a}||\type{sa d} as specification.
-
-\def\checkfontscale#1#2\end%
-  {\doifnumberelse{#1}{}
-     {\doifdefinedelse{\??ft\s!default#1}
-        {\edef\fontscale{\getvalue{\??ft\s!default#1}}}
-        {\edef\fontscale{1}}}}
-
-% \def\docalculatefont#1 sa #2sa#3*#4*#5*% The spaces are needed!
-%   {\edef\fontscale{#2}%
-%    \expandafter\splitfontdefinition#1 * * \end
-%    \ifx\fontscale\empty \else
-%      \expandafter\checkfontscale#2 \end % #2 can be "a " (space!)
-%      \scaledfont=#4\relax
-%      \def\somefontspec{ at \fontscale\scaledfont}%
-%    \fi
-%    \expandafter\font\csname#4#5\endcsname=
-%      \truefilename{\somefontname}\somefontspec\relax}
-
-\def\defaultfontfile{cmtt10}
-\edef\nullfontname  {\fontname\nullfont}
-\edef\dummyfontname {font\strippedcsname\\}
-
-\def\docalculatefont#1 sa #2sa#3*#4*#5*% The spaces are needed!
-  {\edef\fontscale{#2}%
-   \expandafter\splitfontdefinition#1 * * \end
-   \ifx\fontscale\empty \else
-     \expandafter\checkfontscale#2 \end % #2 can be "a " (space!)
-     \scaledfont=#4\relax
+\def\doparsefontspec#1 #2#3]#4#5%
+  {\ifx#2\relax
+     \let\somefontname\somefontspec
+     \let\somefontspec\empty
+     \donoparsefontspec{#5}% 
+   \else
+     \@EA\dodoparsefontspec\@EA[\somefontspec]{#4}{#5}% 
+   \fi}
+      
+\def\dodoparsefontspec[#1 #2#3#4]#5#6% [spec]{sa/mo size}{name}
+  {\edef\somefontname{#1}%
+   \edef\fontscale% 
+     {\ifx#2s\ifx#3a#4\fi\else  % sa = scaled at
+      \ifx#2m\ifx#3o#4\fi\fi\fi}% mo = mapped on 
+   \ifx\fontscale\empty
+     \edef\somefontspec{ #2#3#4}%
+   \else
+     \expandafter\checkfontscale\fontscale\end 
+     \scaledfont=#5\relax
+     \ifx#2m\setmappedfontsize\scaledfont\fi
      \def\somefontspec{ at \fontscale\scaledfont}%
    \fi
-   \edef\fontfile{\truefontname\somefontname}%
+   \donoparsefontspec{#6}}
+
+\def\donoparsefontspec#1%
+  {\edef\fontfile{\truefontname\somefontname}%
    \ifx\fontfile\s!unknown
      \let\fontfile\defaultfontfile
    \else 
@@ -781,23 +878,37 @@
        \@EA\rawgetparameters\@EA[\@EA\fontfile\@EA]\@EA[\fontdata]%
      \fi
    \fi
-   % faster 
-   %\expandafter\font\csname#4#5\endcsname\fontfile\somefontspec\relax
-   % nicer
-   \edef\lastfontname{\fontfile\somefontspec}%
-   \expandafter\font\csname#4#5\endcsname\lastfontname
-   \expandafter\font\csname\dummyfontname\endcsname\lastfontname\relax}
-   % safer but sometimes introducing newlines in the log 
-   %\batchmode
-   %\font\lastloadedfont\fontfile\somefontspec\relax
-   %\errorstopmode
-   %\edef\lastfontname{\fontname\lastloadedfont}%
-   %\ifx\lastfontname\nullfontname
-   %  \showmessage{\m!fonts}{10}{\fontfile}%
-   %  \expandafter\font\csname#4#5\endcsname=\defaultfontfile\somefontspec\relax
-   %\else
-   %  \expandafter\let\csname#4#5\endcsname\lastloadedfont
-   %\fi}
+   \edef\lastfontname{\fontfile\somefontspec}% not really needed
+   \expandafter\font\csname#1\endcsname\lastfontname
+   % the second \font definition prevents fuzzy font refs 
+   % \expandafter\font\csname\dummyfontname\endcsname\lastfontname
+   % but somehow they changed tex so that it does not matter any more
+   \relax} 
+
+\def\defaultfontfile{cmtt10}
+\edef\nullfontname  {\fontname\nullfont}
+\edef\dummyfontname {font\strippedcsname\\}
+
+%  safer but sometimes introducing newlines in the log 
+%
+%  \batchmode
+%  \font\lastloadedfont\fontfile\somefontspec\relax
+%  \errorstopmode
+%  \edef\lastfontname{\fontname\lastloadedfont}%
+%  \ifx\lastfontname\nullfontname
+%    \showmessage{\m!fonts}{10}{\fontfile}%
+%    \expandafter\font\csname#1\endcsname=\defaultfontfile\somefontspec\relax
+%  \else
+%    \expandafter\let\csname#1\endcsname\lastloadedfont
+%  \fi
+
+%D We also accept \type{sa a}||\type{sa d} as specification.
+
+\def\checkfontscale#1#2\end% should be optimized
+  {\doifnumberelse{#1}{}
+     {\doifdefinedelse{\??ft\s!default#1}
+        {\edef\fontscale{\getvalue{\??ft\s!default#1}}}
+        {\edef\fontscale{1}}}}
 
 %D The duplicate font definition, using the ever the same dummy
 %D font name, results in less fuzzy error messages. In the log
@@ -878,9 +989,10 @@
 %D one for local use:
 %D
 %D \starttypen
-%D \definefont[Some][LucidaBright at 100pt]    \Some some text
-%D \definefont[More][LucidaBright scaled 3000] \More more text
-%D \definefont[Last][LucidaBright sa 5.4]      \Last last text
+%D \definefont[Some][LucidaBright at 100pt]    \Some some 
+%D \definefont[More][LucidaBright scaled 3000] \More more 
+%D \definefont[Nice][LucidaBright mp 2]        \Nice nice 
+%D \definefont[Text][LucidaBright sa 5.4]      \Text last 
 %D \stoptypen
 %D
 %D The implementation one looks familiar:
@@ -888,26 +1000,40 @@
 \def\definefont%
   {\dodoubleargument\dodefinefont}
 
-% \def\dodefinefont[#1][#2]% 
-%   {\unexpanded\setvalue{#1}{\dododefinefont{#1}#2 sa sa*}}
-%
-% A more friendly version, which defaults to \type {sa 1} is: 
+%%%  REPLACED
+%%%  
+%%%  \def\dodefinefont[#1][#2]% 
+%%%    {\doifinstringelse{ }{#2}
+%%%       {\unexpanded\setvalue{#1}{\dododefinefont{#1}#2 sa sa*}}
+%%%       {\dodefinefont[#1][#2 sa 1]}}
+%%%  
+%%%  \def\dododefinefont#1#2sa #3sa#4*%
+%%%    {\edef\fontscale{#3}%
+%%%     \expandafter\splitfontdefinition#2 * * \end
+%%%     \ifx\fontscale\empty\else % new 2000/8/31
+%%%       \expandafter\checkfontscale#3 \end 
+%%%     \fi
+%%%     \expandafter\font\csname#1\endcsname=\truefontname\somefontname
+%%%       \ifx\fontscale\empty
+%%%         \somefontspec
+%%%       \else
+%%%         \space at \fontscale\bodyfontsize
+%%%       \fi
+%%%     \getvalue{#1}}
 
 \def\dodefinefont[#1][#2]% 
   {\doifinstringelse{ }{#2}
-     {\unexpanded\setvalue{#1}{\dododefinefont{#1}#2 sa sa*}}
+     {\unexpanded\setvalue{#1}{\dododefinefont{#1}{#2}}}
      {\dodefinefont[#1][#2 sa 1]}}
 
-\def\dododefinefont#1#2sa #3sa#4*%
-  {\edef\fontscale{#3}%
-   \expandafter\splitfontdefinition#2 * * \end
-   \expandafter\font\csname#1\endcsname=\truefontname\somefontname
-     \ifx\fontscale\empty
-       \somefontspec
-     \else
-       \space at \fontscale\bodyfontsize
-     \fi
-   \getvalue{#1}}
+%D The * makes the switch local, so that we can redefine a 
+%D logical name and/or change the size in between. 
+
+% \def\dododefinefont#1#2%
+%  {\parsefontspec[#2]{\bodyfontsize}{#1}\getvalue{#1}}
+
+\def\dododefinefont#1#2% 
+  {\parsefontspec[#2]{\bodyfontsize}{*#1*}\getvalue{*#1*}}
 
 %D I considered checking for mistakenly use of \PLAIN's
 %D \type{\magstep}'s but although it would take only a few
@@ -919,11 +1045,54 @@
 %D \definebodyfont [12pt] [rm] [hyphenchar=45]
 %D \stoptypen
 
+%%% REPLACED
+%%% 
+%%% \beginTEX
+%%% 
+%%% \def\dodoloadfont#1#2#3#4%
+%%%   {\edef\calculatedfont{\csname\??ft#1#2#3\endcsname\space}%
+%%%    \expandafter\docalculatefont\calculatedfont sa sa*#1*#2#3*%
+%%%    \@EA\hyphenchar\csname#1#2#3\endcsname=
+%%%      \@EA\ifx\csname\??ft#1#2\s!hyphenchar\endcsname\relax
+%%%        #4%
+%%%      \else
+%%%        \csname\??ft#1#2\s!hyphenchar\endcsname
+%%%      \fi\relax
+%%%    \csname#1#2#3\endcsname}
+%%% 
+%%% \endTEX
+%%% 
+%%% \beginETEX \ifcsname
+%%% 
+%%% \def\dodoloadfont#1#2#3#4%
+%%%   {\edef\calculatedfont{\csname\??ft#1#2#3\endcsname\space}%
+%%%    \expandafter\docalculatefont\calculatedfont sa sa*#1*#2#3*%
+%%%    \@EA\hyphenchar\csname#1#2#3\endcsname=
+%%%      \ifcsname\??ft#1#2\s!hyphenchar\endcsname
+%%%        \csname\??ft#1#2\s!hyphenchar\endcsname
+%%%      \else
+%%%        #4%
+%%%      \fi\relax
+%%%    \csname#1#2#3\endcsname}
+%%% 
+%%% \endETEX
+
+%D The loading macro is used in two macros. One of them takes
+%D care of fixed width teletype fonts.
+
+\def\doloadfont#1#2#3%
+  {%\debuggerinfo{\m!fonts}{loaded #1#2#3}%
+   \dodoloadfont{#1}{#2}{#3}{45}}
+
+\def\doloadttfont#1#2#3%
+  {%\debuggerinfo{\m!fonts}{loaded fixed #1#2#3}%
+   \dodoloadfont{#1}{#2}{#3}{-1}}
+
 \beginTEX
 
 \def\dodoloadfont#1#2#3#4%
-  {\edef\calculatedfont{\csname\??ft#1#2#3\endcsname\space}%
-   \expandafter\docalculatefont\calculatedfont sa sa*#1*#2#3*%
+  {\edef\calculatedfont{[\csname\??ft#1#2#3\endcsname]}%
+   \@EA\parsefontspec\calculatedfont{#1}{#1#2#3}%
    \@EA\hyphenchar\csname#1#2#3\endcsname=
      \@EA\ifx\csname\??ft#1#2\s!hyphenchar\endcsname\relax
        #4%
@@ -937,8 +1106,8 @@
 \beginETEX \ifcsname
 
 \def\dodoloadfont#1#2#3#4%
-  {\edef\calculatedfont{\csname\??ft#1#2#3\endcsname\space}%
-   \expandafter\docalculatefont\calculatedfont sa sa*#1*#2#3*%
+  {\edef\calculatedfont{[\csname\??ft#1#2#3\endcsname]}%
+   \@EA\parsefontspec\calculatedfont{#1}{#1#2#3}%
    \@EA\hyphenchar\csname#1#2#3\endcsname=
      \ifcsname\??ft#1#2\s!hyphenchar\endcsname
        \csname\??ft#1#2\s!hyphenchar\endcsname
@@ -949,16 +1118,58 @@
 
 \endETEX
 
-%D The loading macro is used in two macros. One of them takes
-%D care of fixed width teletype fonts.
+%D \macros
+%D   {mapfontsize}
+%D
+%D For special purposes, like in math, you may want to use
+%D slightly different sizes than the ones given. This happens
+%D for instance with the Math Times fonts. Mapped font sizes
+%D can be specified by using the \type {mo} key instead of
+%D \type {sa} in font definitions. 
+%D
+%D \startbuffer
+%D \mapfontsize[10pt][11pt]     
+%D \mapfontsize[11pt][12pt]     
+%D \mapfontsize[12pt][13pt]    
+%D
+%D \definefont[test][Serif]\test TEST \par
+%D \definefont[test][Serif sa 5]\test TEST \par
+%D \definefont[test][Serif mo 5]\test TEST \par
+%D \definefont[test][Serif sa d]\test TEST \par
+%D \definefont[test][Serif at 60pt]\test TEST \par
+%D \definefont[test][Serif scaled 6000]\test TEST \par
+%D \stopbuffer
+%D
+%D \typebuffer
+%D
+%D \startopelkaar
+%D \haalbuffer
+%D \stopopelkaar
 
-\def\doloadfont#1#2#3%
-  {%\debuggerinfo{\m!fonts}{loaded #1#2#3}%
-   \dodoloadfont{#1}{#2}{#3}{45}}
+\def\mapfontsize%
+  {\dodoubleargument\domapfontsize}
 
-\def\doloadttfont#1#2#3%
-  {%\debuggerinfo{\m!fonts}{loaded fixed #1#2#3}%
-   \dodoloadfont{#1}{#2}{#3}{-1}}
+\def\domapfontsize[#1][#2]%
+  {\scratchdimen#1\relax % \relax is really needed here
+   \setvalue{\??ft*\the\scratchdimen}{#2}}
+
+\beginTEX
+
+\def\setmappedfontsize#1%
+  {\expandafter\ifx\csname\??ft*\the#1\endcsname\relax\else
+     #1=\csname\??ft*\the#1\endcsname
+   \fi}
+
+\endTEX
+
+\beginETEX \ifcsname
+
+\def\setmappedfontsize#1%
+  {\ifcsname\??ft*\the#1\endcsname
+     #1=\csname\??ft*\the#1\endcsname
+   \fi}
+
+\endETEX
 
 %D \macros
 %D   {getfontname}
@@ -1340,7 +1551,6 @@
 %D These macros show that quite some definitions take place.
 %D Fonts are not loaded yet! This means that at format
 %D generation time, no font files are preloaded.
-%D
 
 % %D We could have use \type{\unexpanded\setvalue} instead of
 % %D the \type{\donottest} prefixes. However, this would lead to
@@ -1479,7 +1689,7 @@
 %D All things related to fonts are grouped into files with
 %D names like \type{font-cmr}. These files are loaded by:
 
-\def\resetfontdefinitionfile#1%
+\def\resetfontdefinitionfile[#1]%
   {\letbeundefined{\c!file\f!fontprefix#1}}
 
 \def\doreadfontdefinitionfile#1%
@@ -2140,7 +2350,6 @@
 
 \def\dosettypeface#1#2%
   {\doifdefinedelse{@\normalizedbodyfontsize#1#2@} % the definition bound one
-%     {\edef\characterencoding{\getvalue{@\normalizedbodyfontsize#1#2@}}}
      {\enablecoding[\getvalue{@\normalizedbodyfontsize#1#2@}]}
      {\enablecoding[\s!default]}%
    \edef\fontalternative{#2}%
@@ -2153,6 +2362,8 @@
      {\expandafter\fam\getvalue{\c!nn\s!fam}}%
    \getvalue{#1#2}%
    \ifcase\currentxfontsize\or\tx\or\txx\fi
+   \doifdefined{\purefontname\font\s!handling} % the file bound one
+     {\enablehandling[\getvalue{\purefontname\font\s!handling}]}%
    \doifdefined{\purefontname\font\s!encoding} % the file bound one
      {\enablecoding[\getvalue{\purefontname\font\s!encoding}]}%
    \doifdefinedelse{\purefontname\font\s!mapping} % the file bound one
@@ -2723,8 +2934,90 @@
 %     \fi
 %     \font\temp=\truefontname{#1} at \bodyfontsize \temp#2\relax}}
 
-\def\getglyph#1#2%
-  {{\definefont[\s!dummy][#1 sa \currentfontscale]\dummy#2}}
+% \def\getglyph#1#2%
+%   {{\definefont[\s!dummy][#1 sa \currentfontscale]\dummy#2}}
+
+\def\fontstringA%
+  {\ifx\fontstyle\c!rm     \s!Serif \else
+   \ifx\fontstyle\c!ss      \s!Sans \else
+   \ifx\fontstyle\c!tt      \s!Mono \else
+                           \s!Serif \fi\fi\fi}
+
+\def\fontstringB%
+  {\ifx\fontstyle\c!rm   \s!Regular \else
+   \ifx\fontstyle\c!ss   \s!Support \else
+   \ifx\fontstyle\c!tt      \s!Type \else
+                           \s!Serif \fi\fi\fi}
+
+\def\fontstringC%
+  {\ifnum\fam=\bffam        \s!Bold \else
+   \ifnum\fam=\slfam     \s!Slanted \else
+   \ifnum\fam=\itfam      \s!Italic \else
+   \ifnum\fam=\bsfam \s!BoldSlanted \else
+   \ifnum\fam=\bifam  \s!BoldItalic \s!Regular \fi\fi\fi\fi\fi}
+
+\beginETEX \ifcsname
+
+\def\glyphfontfile#1%
+  {#1%
+   \ifcsname\??ff#1\fontstringA\fontstringC\endcsname
+     \fontstringA\fontstringC
+   \else\ifcsname\??ff#1\fontstringB\fontstringC\endcsname
+     \fontstringB\fontstringC
+   \else\ifcsname\??ff#1\fontstringA\endcsname
+     \fontstringA
+   \else\ifcsname\??ff#1\fontstringB\endcsname
+     \fontstringB
+   \else\ifcsname\??ff#1\fontstringC\endcsname
+     \fontstringC
+   \fi\fi\fi\fi\fi}
+
+\endETEX
+
+\beginTEX \ifcsname
+
+\def\glyphfontfile#1%
+  {#1%
+   \expandafter\ifx\csname\??ff#1\fontstringA\fontstringC\endcsname\relax
+     \expandafter\ifx\csname\??ff#1\fontstringB\fontstringC\endcsname\relax
+       \expandafter\ifx\csname\??ff#1\fontstringA\endcsname\relax
+         \expandafter\ifx\csname\??ff#1\fontstringB\endcsname\relax
+           \expandafter\ifx\csname\??ff#1\fontstringC\endcsname\relax
+           \else \fontstringC             \fi
+           \else \fontstringB             \fi
+           \else \fontstringA             \fi
+           \else \fontstringB\fontstringC \fi
+           \else \fontstringA\fontstringC \fi}
+
+\endTEX
+
+\def\getglyph#1#2% 
+  {{\definefont[\s!dummy][\glyphfontfile{#1} sa \currentfontscale]\dummy#2}}
+
+%D The last implementation of \type {\getglyph} permits 
+%D definitions like: 
+%D 
+%D \starttypen
+%D \definefontsynonym [EuroSans]            [eurose]
+%D \definefontsynonym [EuroSansBold]        [euroseb]
+%D \definefontsynonym [EuroSansItalic]      [eurosei]
+%D \definefontsynonym [EuroSansSlanted]     [eurosei]
+%D \definefontsynonym [EuroSansBoldItalic]  [eurosebi]
+%D \definefontsynonym [EuroSansBoldSlanted] [eurosebi]
+%D 
+%D \definesymbol [euro] [\getglyph{Euro}{\char160}]
+%D 
+%D \def\euro{\symbol[euro]}
+%D \stoptypen
+%D
+%D These definitions guarantee that the next calls work okay: 
+%D
+%D \starttypen
+%D \ss \tf\euro \bf\euro \sla\euro \itd\euro \bs\euro \bic\euro
+%D \stoptypen
+%D 
+%D The shape as well as the size is adapted to the current
+%D environment. 
 
 %D Fonts can only be used when loaded. In \CONTEXT\ we
 %D postpone the loading of fonts, even when we load \PLAIN.
@@ -2774,7 +3067,7 @@
 %D
 %D We are going to redefine \type{\ss} but for those wo still
 %D want to have access to the german \SS, we save it's value in
-%D \type{\SS}. Ok, I should have used \type{\sf} insead of
+%D \type{\SS}. Ok, I should have used \type{\sf} instead of
 %D \type{\ss} in the first place.
 
 \ifx\undefined\SS \let\SS=\ss \fi
