@@ -285,8 +285,8 @@
 \unexpanded \def\setup % {..} or [..]
   {\doifnextcharelse\bgroup\dosetups\dosetupsC}
 
-\def\dosetupsA  #1{\processcommalist[#1]\dosetups} % {..}
-\def\dosetupsB[#1]{\processcommalist[#1]\dosetups} % [..]
+\def\dosetupsA  #1{\processcommacommand[#1]\dosetups} % {..}
+\def\dosetupsB[#1]{\processcommacommand[#1]\dosetups} % [..]
 \def\dosetupsC[#1]{\dosetups{#1}} % [..]
 
 \def\dosetups#1% the grid option will be extended to other main modes

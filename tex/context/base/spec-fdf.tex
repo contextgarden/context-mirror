@@ -881,6 +881,7 @@
    \edef\pdf@@actions{\pdf@@actions /ShowControls \ifdone true\else false\fi}%
    \doPDFannotation width #7 height #8 data
      {/Subtype /Movie
+      /Border [0 0 0]
       /T (movie \currentmovie)
       /Movie << /F (#1) /Aspect [\width\space\height] \pdf@@options >>
       /A << \pdf@@actions >>}%
@@ -903,6 +904,7 @@
    \flushatshipout % since it can be buried in a chained box
      {\doPDFannotation width 0pt height 0pt data
         {/Subtype /Movie
+         /Border [0 0 0]
          /T (sound \currentsound)
          /Movie <</F (#1)>>%
          \ifx\pdf@@actions\empty\else/A << \pdf@@actions >>\fi}}%

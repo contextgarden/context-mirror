@@ -1,0 +1,100 @@
+%D \module
+%D   [       file=m-layout,
+%D        version=2004.01.16,
+%D          title=\CONTEXT\ Modules,
+%D       subtitle=Additional Layouts,
+%D         author={Hans Hagen \& Ton Otten},
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE/ Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D This is a preliminary module, don't depend on these dimensions yet.
+
+\readsysfile{lang-frq}\donothing\donothing
+\readsysfile{lang-frd}\donothing\donothing
+
+\unprotect
+
+%def\layouthwratio{\withoutpt{\the\dimexpr(8\paperheight/\dimexpr(\paperwidth/ 8192))}}
+%def\layouthwratio{\withoutpt{\the\dimexpr(4\paperheight/\dimexpr(\paperwidth/16384))}}
+%def\layouthwratio{\withoutpt{\the\dimexpr(2\paperheight/\dimexpr(\paperwidth/32768))}}
+
+\def\layouthwratio
+  {\withoutpt{\the\dimexpr(2\paperheight/(\paperwidth/32768))}}
+
+\def\layouthfheight
+  {\dimexpr(\layoutparameter\c!hoofd+\layoutparameter\c!hoofdafstand+
+            \layoutparameter\c!voet +\layoutparameter\c!voetafstand )}
+
+\startsetups[preset-1]
+
+  \xdef\layoutwidth {\dimexpr(\layoutparameter\c!breedte)}
+  \gdef\layoutheight{\dimexpr(\layouthwratio\dimexpr(\layoutwidth)+\layouthfheight)}
+
+\stopsetups
+
+\definelayout
+  [preset-1-1]
+  [\c!preset=preset-1,
+   \c!rugwit=\dimexpr((\paperwidth-\layoutwidth)/2),
+   \c!breedte=\dimexpr(2\paperwidth/3),
+   \c!snijwit=\dimexpr((\paperwidth-\layoutwidth)/2),
+   \c!marge=\dimexpr((\paperwidth-\layoutwidth)/3),
+   \c!hoofd=2\lineheight,
+   \c!hoofdafstand=\lineheight,
+   \c!hoogte=\v!midden, % \layoutheight
+   \c!voetafstand=\layoutparameter\c!hoofdafstand, % \lineheight,
+   \c!voet=\layoutparameter\c!hoofd, % 2\lineheight,
+   \c!kopwit=\dimexpr(1\dimexpr(\paperheight-(\layoutheight+\layouthfheight))/3),
+   \c!bodemwit=\dimexpr(2\dimexpr(\paperheight-(\layoutheight+\layouthfheight))/3)]
+
+\startsetups[preset-2]
+
+  \gdef\layouthstep{\dimexpr(\paperwidth /\layoutparameter\c!kolommen)}
+  \gdef\layoutvstep{\dimexpr(\paperheight/\layoutparameter\c!kolommen)}
+
+\stopsetups
+
+\definelayout
+  [preset-2-1]
+  [\c!preset=preset-2,
+   \c!kolommen=12,
+   \c!rugwit=\layouthstep,
+   \c!breedte=\v!midden,
+   \c!snijwit=2\layouthstep,
+   \c!marge=\layouthstep,
+   \c!hoofd=2\lineheight,
+   \c!hoofdafstand=\lineheight,
+   \c!hoogte=\v!midden, % \layoutheight
+   \c!voetafstand=\layoutparameter\c!hoofdafstand,
+   \c!voet=\layoutparameter\c!hoofd,
+   \c!kopwit=\dimexpr(\layoutvstep-\layoutparameter\c!hoofd-\layoutparameter\c!hoofdafstand),
+   \c!bodemwit=\dimexpr(2\layoutvstep-\layoutparameter\c!hoofd-\layoutparameter\c!hoofdafstand)]
+
+\definelayout
+  [preset-2-2]
+  [\c!preset=preset-2,
+   \c!kolommen=12,
+   \c!rugwit=\layouthstep,
+   \c!breedte=\v!midden,
+   \c!snijwit=2\layouthstep,
+   \c!marge=\layouthstep,
+   \c!hoofd=2\lineheight,
+   \c!hoofdafstand=\lineheight,
+   \c!hoogte=\v!midden, % \layoutheight
+   \c!voetafstand=\layoutparameter\c!hoofdafstand,
+   \c!voet=\layoutparameter\c!hoofd,
+   \c!kopwit=\layoutvstep,
+   \c!bodemwit=\layoutvstep] % maybe 1.5
+
+%                                                     \setuplayout[preset-1-1] test \showframe \page
+% \setuplayout[preset-1-1][width=65\averagecharwidth] \setuplayout[preset-1-1] test \showframe \page
+%                                                     \setuplayout[preset-2-1] test \showframe \page
+% \setuplayout[preset-2-1][columns=10]                \setuplayout[preset-2-1] test \showframe \page
+%                                                     \setuplayout[preset-2-2] test \showframe \page
+% \setuplayout[preset-2-2][columns=10]                \setuplayout[preset-2-2] test \showframe \page
+
+\protect \endinput
