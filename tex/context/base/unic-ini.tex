@@ -239,7 +239,8 @@
 %D \NC 5        \NC       \NC \star  \NC \star\NC       \NC \TraceUnic5\NC \NR
 %D \NC 6        \NC \star \NC \star  \NC \star\NC       \NC \TraceUnic6\NC \NR 
 %D \NC 7        \NC       \NC        \NC      \NC \star \NC \TraceUnic7\NC \NR 
-%D \NC otherwise\NC       \NC        \NC \star\NC       \NC \TraceUnic8\NC \NR
+%D \NC 8        \NC \star \NC        \NC      \NC       \NC \TraceUnic8\NC \NR 
+%D \NC otherwise\NC       \NC        \NC \star\NC       \NC \TraceUnic9\NC \NR
 %D \stoptabulatie
 
 %D \macros
@@ -256,7 +257,8 @@
      \expandafter\utfunihashchar  \or 
      \expandafter\utfunihashsplit \or 
      \expandafter\utfunihashboth  \or  
-     \@EA\string\@EA\unicodechar  \else
+     \@EA\string\@EA\unicodechar  \or
+     \expandafter\utfunientity    \else
      \expandafter\utfunihash           
   \fi}
 
@@ -297,6 +299,9 @@
 
 \def\utfuniboth #1%
   {{\tttf U\low{\unicodenumber{#1\relax}->\unicodepair{#1}}}}
+
+\def\utfunientity #1%
+  {{\tttf\&\#\unicodehexnumber{#1};}}
 
 %D The character itself is accessed and typeset by:  
 %D
@@ -523,9 +528,13 @@
      \@EA\utfunifontglyph
    \fi}
 
+\def\utfunihushcommand
+  {\@EAEAEA\string\utfunihashglyph}
+
 \def\utfunihashcommand
   {\ifcase\utfunihashmode
-     \@EA\utfunihashcommand 
+   % \@EA\@EAEAEA\@EA\string\@EA\utfunihashglyph
+     \@EA\utfunihushcommand
    \else 
      \@EA\utfunifontcommand
    \fi}

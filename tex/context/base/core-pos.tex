@@ -480,6 +480,7 @@
      \initializenextposition
      \def\currentposition{#1}%
      \dosetposition\currentposition
+     \traceposstring\llap\green{\currentposition>}%
      \dopositionaction\currentposition
    \fi}
 
@@ -690,20 +691,20 @@
 \def\epos#1{\removelastspace\hpos{e:#1}{\strut}}
 
 \def\fpos#1%
-  {\setpositionplus{b:#1}\parposcounter\hbox{\strut}%
+  {\setpositionplus{b:#1}\parposcounter\horizontalstrut
    \ignorespaces}
 
 \def\tpos#1%
   {\removelastspace
-   \setpositionplus{e:#1}\parposcounter\hbox{\strut}}
+   \setpositionplus{e:#1}\parposcounter\horizontalstrut}
 
 \def\ffpos#1%
-  {\setpositionplus{b:#1}\parposcounter\hbox{\strut}\wpos{#1}%
+  {\setpositionplus{b:#1}\parposcounter\horizontalstrut\wpos{#1}%
    \ignorespaces}
 
 \def\ttpos#1%
   {\removelastspace
-   \setpositionplus{e:#1}\parposcounter\hbox{\strut}}
+   \setpositionplus{e:#1}\parposcounter\horizontalstrut}
 
 \def\wpos#1%
   {\dontleavehmode\vadjust % may disappear if buried
@@ -817,31 +818,73 @@
 %D   {action when not overlapping}
 %D \stoptypen
 
-\def\doifoverlappingelse#1#2#3#4%
-  {\ifnum\MPp{#1}=\MPp{#2}\relax
-     \bgroup
-     \donefalse
+% \def\doifoverlappingelse#1#2#3#4%
+%   {\relax\ifnum\MPp{#1}=\MPp{#2}\relax
+%      \bgroup
+%      \donefalse
+%      \def\check##1##2%
+%        {\ifdone\else
+%           \ifdim\dimen1##1<\dimen0 \else \ifdim\dimen1##1>\dimen2 \else
+%             \ifdim\dimen1##2<\dimen4 \else \ifdim\dimen1##2>\dimen6 \else
+%               \donetrue
+%             \fi\fi
+%           \fi\fi
+%         \fi}%
+%      \dimen 0=\MPx{#1}%
+%      \dimen 2=\MPx{#1}\advance\dimen 2  \MPw{#1}%
+%      \dimen 4=\MPy{#1}\advance\dimen 4 -\MPd{#1}%
+%      \dimen 6=\MPy{#1}\advance\dimen 6  \MPh{#1}%
+%      \dimen10=\MPx{#2}%
+%      \dimen12=\MPx{#2}\advance\dimen12  \MPw{#2}%
+%      \dimen14=\MPy{#2}\advance\dimen14 -\MPd{#2}%
+%      \dimen16=\MPy{#2}\advance\dimen16  \MPh{#2}%
+%     %\message{\the\dimen 0-\the\dimen 2,\the\dimen 4-\the\dimen 6}\wait
+%     %\message{\the\dimen10-\the\dimen12,\the\dimen14-\the\dimen16}\wait
+%      \check04\check24\check26\check06\ifdone\egroup#3\else\egroup#4\fi
+%    \else
+%      #4%
+%    \fi}
+
+\newdimen\overlappingmargin \overlappingmargin\zeropoint
+
+\def\doifoverlappingelse#1#2%
+  {\begingroup
+   \donefalse
+   \edef\!!stringa{#1}\edef\!!stringb{#2}%
+   \ifnum\MPp\!!stringa=\MPp\!!stringb\relax
      \def\check##1##2%
-       {\ifdone\else
-          \ifdim\dimen1##1<\dimen0 \else \ifdim\dimen1##1>\dimen2 \else
-            \ifdim\dimen1##2<\dimen4 \else \ifdim\dimen1##2>\dimen6 \else
-              \donetrue
-            \fi\fi
+       {\ifdim##1<\!!dimena \else \ifdim##1>\!!dimenb \else
+          \ifdim##2<\!!dimenc \else \ifdim##2>\!!dimend \else
+            \donetrue
           \fi\fi
-        \fi}%
-     \dimen 0=\MPx{#1}%
-     \dimen 2=\MPx{#1}\advance\dimen 2  \MPw{#1}%
-     \dimen 4=\MPy{#1}\advance\dimen 4 -\MPd{#1}%
-     \dimen 6=\MPy{#1}\advance\dimen 6  \MPh{#1}%
-     \dimen10=\MPx{#2}%
-     \dimen12=\MPx{#2}\advance\dimen12  \MPw{#2}%
-     \dimen14=\MPy{#2}\advance\dimen14 -\MPd{#2}%
-     \dimen16=\MPy{#2}\advance\dimen16  \MPh{#2}%
-    %\message{\the\dimen 0-\the\dimen 2,\the\dimen 4-\the\dimen 6}\wait
-    %\message{\the\dimen10-\the\dimen12,\the\dimen14-\the\dimen16}\wait
-     \check04\check24\check26\check06\ifdone\egroup#3\else\egroup#4\fi
+        \fi\fi}%
+     \!!dimena\MPx\!!stringa
+     \!!dimenb\MPx\!!stringa\advance\!!dimenb \MPw\!!stringa
+     \!!dimenc\MPy\!!stringa\advance\!!dimenc-\MPd\!!stringa
+     \!!dimend\MPy\!!stringa\advance\!!dimend \MPh\!!stringa
+     \!!dimene\MPx\!!stringb
+     \!!dimenf\MPx\!!stringb\advance\!!dimenf \MPw\!!stringb
+     \!!dimeng\MPy\!!stringb\advance\!!dimeng-\MPd\!!stringb
+     \!!dimenh\MPy\!!stringb\advance\!!dimenh \MPh\!!stringb
+     \ifdim\overlappingmargin=\zeropoint\else
+       \advance\!!dimena-\overlappingmargin
+       \advance\!!dimenb+\overlappingmargin
+       \advance\!!dimenc-\overlappingmargin
+       \advance\!!dimend+\overlappingmargin
+       \advance\!!dimene-\overlappingmargin
+       \advance\!!dimenf+\overlappingmargin
+       \advance\!!dimeng-\overlappingmargin
+       \advance\!!dimenh+\overlappingmargin
+     \fi 
+     \check\!!dimene\!!dimeng \ifdone \else
+     \check\!!dimene\!!dimenh \ifdone \else
+     \check\!!dimenf\!!dimeng \ifdone \else
+     \check\!!dimenf\!!dimenh \fi \fi \fi
+   \fi
+   \ifdone
+     \endgroup\expandafter\firstoftwoarguments
    \else
-     #4%
+     \endgroup\expandafter\secondoftwoarguments
    \fi}
 
 %D \macros
@@ -2084,6 +2127,38 @@
 \def\stackposdown {\dostackposbox{\lower\lineheight\flushnextbox}}
 \def\stackposleft {\dostackposbox{\copy\nextbox\hskip\nextboxwd\hskip\stackposdistance}}
 \def\stackposright{\dostackposbox{\hskip\stackposdistance\hskip\nextboxwd\flushnextbox}}
+
+%D \macros
+%D   {stackeddown}
+%D 
+%D However, a better implementation is possible with the
+%D following macro. We now have an extra key \type {stack} for
+%D margin settings. When set to \type {yes}, this macro comes
+%D into action. 
+
+\def\stackeddown 
+  {\dowithnextbox
+     {\doglobal\increment\currentautopos
+      \hpos{\POSstackprefix\currentautopos}
+        {\edef\next
+           {\nextboxht\the\nextboxht
+            \nextboxdp\the\nextboxdp
+            \nextboxwd\the\nextboxwd}%
+         \let\previousautopos\currentautopos
+         \scratchdimen\zeropoint
+         \doloop
+           {\decrement\previousautopos
+            \doifoverlappingelse{\POSstackprefix\currentautopos}{\POSstackprefix\previousautopos}
+              {\advance\scratchdimen\MPh{\POSstackprefix\previousautopos}%
+               \advance\scratchdimen\MPd{\POSstackprefix\previousautopos}}%
+              \exitloop
+            \ifnum\previousautopos<\zerocount\exitloop\fi}%
+         \ifdim\scratchdimen>\zeropoint
+           \setbox\nextbox \hbox % \iftracepositons\ruledhbox\else\hbox\fi
+             {\lower\scratchdimen\flushnextbox}%
+           \next
+         \fi
+         \flushnextbox}}}
 
 %D The next hack make sure that margin texts near faulty
 %D strutted lines are handled ok.

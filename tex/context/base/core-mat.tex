@@ -314,10 +314,18 @@
      \informulatrue   
     %\forgetall % otherwise backgrounds fail 
      \ifdim\lastskip<\!!zeropoint\else
-       \par\ifvmode\ifdim\parskip>\zeropoint\relax\vskip-\parskip\fi\fi
+       \par
+       \ifvmode \ifdim\parskip>\zeropoint\relax
+         \vskip-\parskip
+       \fi \fi
      \fi
      \beforedisplayspace   
-     \par\ifvmode\vbox{\strut}\vskip-2\baselineskip\fi 
+     \par
+     \ifvmode
+       \verticalstrut
+       \vskip-\struttotal
+       \vskip-\baselineskip
+     \fi 
    \fi
    $$\setdisplaydimensions
    \setpredisplaysize\lastlinewidth
@@ -449,54 +457,27 @@
   {\setfalse\incrementformulanumber
    \dodoubleempty\doplaatsformule}
 
-% \def\doplaatsformule[#1][#2]% #2 = dummy, gobbles spaces
-%   {\def\redoplaatsformule
-%      {\bgroup\def\dostartformula####1{\relax}%
-%       \ifx\next\bgroup
-%         \@EA\moreplaatsformule % [ref]{}
-%       \else\if\next\relax % a \cs
-%         \egroup \@EA\@EA\@EA\dodoplaatsformule % [ref]\start 
-%       \else
-%         \egroup \@EA\@EA\@EA\dispplaatsformule % [ref]$$
-%       \fi\fi
-%       [#1]{}}%
-%    \futurelet\next\redoplaatsformule}
-% 
-% \long\def\moreplaatsformule[#1]#2#3#4% #2 dummy #4 gobbles spaces
-%   {\def\redoplaatsformule%
-%      {\if\next\relax % a \cs
-%         \egroup \expandafter\dodoplaatsformule % [ref]{}\start
-%       \else
-%         \egroup \expandafter\dispplaatsformule % [ref]{}$$
-%       \fi
-%       [#1]{#3}}%
-%    \futurelet\next\redoplaatsformule#4}
-
 \def\doplaatsformule[#1][#2]% #2 = dummy, gobbles spaces
   {\def\redoplaatsformule
      {\bgroup\def\dostartformula####1{\relax}%
       \ifx\next\bgroup
         \@EA\moreplaatsformule % [ref]{}
       \else
-        \convertcommand\next\to\ascii 
-        \getfirstcharacter\ascii
-        \ifx\firstcharacter\letterbackslash % a \cs
-          \egroup \@EAEAEA\dodoplaatsformule % [ref]\start 
-        \else
-          \egroup \@EAEAEA\dispplaatsformule % [ref]$$
-        \fi
-      \fi
-      [#1]{}}%
+        \expandafter\convertargument\e!start\to\asciiA
+        \expandafter\convertargument\next   \to\asciiB
+        \ExpandBothAfter\doifincsnameelse\asciiA\asciiB
+          {\egroup \@EA\dodoplaatsformule}% [ref]\start
+          {\egroup \@EA\dispplaatsformule}% [ref]$$
+      \fi[#1]{}}%
    \futurelet\next\redoplaatsformule}
 
 \long\def\moreplaatsformule[#1]#2#3#4% #2 dummy #4 gobbles spaces
   {\def\redoplaatsformule
-     {\convertcommand\next\to\ascii \getfirstcharacter\ascii
-      \ifx\firstcharacter\letterbackslash % a \cs
-        \egroup \expandafter\dodoplaatsformule % [ref]{}\start
-      \else
-        \egroup \expandafter\dispplaatsformule % [ref]{}$$
-      \fi
+     {\expandafter\convertargument\e!start\to\asciiA
+      \expandafter\convertargument\next   \to\asciiB
+      \ExpandBothAfter\doifincsnameelse\asciiA\asciiB
+        {\egroup \dodoplaatsformule}% [ref]\start
+        {\egroup \dispplaatsformule}% [ref]$$
       [#1]{#3}}%
    \futurelet\next\redoplaatsformule#4}
 
@@ -561,7 +542,7 @@
   {\getvalue{\e!stop \??fm\getvalue{\??fm\currentformula\c!uitlijnen}}}
 
 \def\mathinnerstrut
-  {\doifvalue{\??fm\currentformula\c!strut}{\v!ja}{\strut}}
+  {\doifvalue{\??fm\currentformula\c!strut}\v!ja\strut}
 
 \long\def\defineinnermathhandler#1#2#3%
   {\setvalue{\e!start\??fm#1}{#2}%
@@ -964,6 +945,25 @@
 \def\snappedinlineformula
   {\dosingleempty\dosnappedinlineformula}
 
+%D \starttabulatie[|Tl|l|]
+%D \NC - \NC half lines        \NC \NR
+%D \NC + \NC full lines        \NC \NR
+%D \NC = \NC force             \NC \NR
+%D \NC < \NC force, minus pre  \NC \NR
+%D \NC > \NC force, minus post \NC \NR
+%D \stoptabulatie
+
+\newif\if!!donee
+\newif\if!!donef
+
+\def\inlinemathmargin{1pt}
+
+\settrue\autocrazymathsnapping 
+
+% FROM NOW ON, CHANGES AS OPTIONS 
+
+% TODO: SKYLINE (PREV LINE POS SCAN) 
+
 \def\dosnappedinlineformula[#1]#2%
   {\ifvmode\dontleavehmode\fi % tricky 
    \strut % prevents funny space at line break  
@@ -982,31 +982,66 @@
    \else
      \donefalse
    \fi
+   \!!doneafalse % forced or not auto 
+   \!!donebfalse % too heigh
+   \!!donecfalse % too low 
+   \!!donedfalse % less before 
+   \!!doneefalse % less after 
    \ifdone
      \setbox\nextbox\hbox{$#2$}% 
-     \ifdim\nextboxht>\strutheight\relax
+     \iftracegridsnapping
+       \setbox\nextbox\ruledhbox
+         {\incolortrue\localcolortrue
+          \backgroundline[gray]{\showstruts\strut\flushnextbox}}%
+     \fi
+     \def\docommando##1%
+       {\doif{##1}-{\settrue \halfcrazymathlines}%
+        \doif{##1}+{\setfalse\halfcrazymathlines}%
+        \doif{##1}={\!!doneatrue}%
+        \doif{##1}<{\!!donedtrue}%
+        \doif{##1}>{\!!doneetrue}}%
+     \processcommalist[#1]\docommando
+\if!!doneb 
+  \if!!donec \else
+    \setfalse\halfcrazymathlines
+  \fi 
+\else
+  \if!!donec 
+    \setfalse\halfcrazymathlines
+  \fi
+\fi 
+     \donefalse
+     \if!!donea
        \donetrue
-     \else\ifdim\nextboxdp>\strutdepth\relax
-       \donetrue
-     \else
+\scratchdimen \nextboxht
+\advance\scratchdimen .5\lineheight
+\nextboxht\scratchdimen 
+\scratchdimen \nextboxdp
+\advance\scratchdimen .5\lineheight
+\nextboxdp\scratchdimen 
+     \else\ifdim\nextboxht>\strutht
+       \donetrue 
+     \else\ifdim\nextboxdp>\strutdp
+       \donetrue 
+     \fi\fi\fi
+     \ifconditional\autocrazymathsnapping \else \if!!donea \else
+       % don't compensate, just snap to strut 
        \donefalse
-     \fi\fi
+       % signal for next else, snap line to strut  
+       \!!doneatrue 
+     \fi \fi
    \fi
    \ifdone
-     \ifdim\nextboxht<\lineheight\relax
-       \ifdim\nextboxdp<\strutheight\relax
-         \donetrue
-       \else
-         \donefalse
-       \fi
-     \else
-       \donefalse
-     \fi  
+     % analyze height 
+     \scratchdimen\inlinemathmargin 
+     \advance\scratchdimen \strutht
+     \ifdim\nextboxht<\scratchdimen \else \!!donebtrue \fi
+     % analyze depth 
+     \scratchdimen\inlinemathmargin 
+     \advance\scratchdimen \strutdp
+     \ifdim\nextboxdp<\scratchdimen \else \!!donectrue \fi 
+     % analyzed or forced 
      \ifdone
-       \flushcrazymathbox
-     \else
-       \doif{#1}-{\settrue \halfcrazymathlines}%
-       \doif{#1}+{\setfalse\halfcrazymathlines}% 
        \global\advance\crazymathhack\plusone
        \donefalse
        \ifnum\MPp\crazymathtag=\lastcrazymathpage\relax
@@ -1024,67 +1059,61 @@
          \xdef\lastcrazymathpage{\MPp\crazymathtag}%
          \xdef\lastcrazymathline{\MPy\crazymathtag}%
        \fi
-       \getrawnoflines\nextboxht
-       \scratchcounter\noflines
-       \advance\noflines-\lastcrazymathprelines\relax
-       \ifnum\noflines>\zerocount
-         \xdef\lastcrazymathprelines{\the\scratchcounter}%
-         \scratchdimen\noflines\lineheight 
-         \ifconditional\halfcrazymathlines
-           \advance\scratchdimen-.5\lineheight
-         \fi
-         \advance\scratchdimen-\strutdepth
-         \setbox\scratchbox\null
-         \wd\scratchbox2\bodyfontsize
-         \ht\scratchbox\scratchdimen
-         \dp\scratchbox\strutdepth 
-         % % correct for fuzzy top of page situations 
-         % \scratchdimen\lastcrazymathprelines\lineheight
-         % \advance\scratchdimen\MPy\crazymathtag
-         % \advance\scratchdimen\lineheight
-         % \advance\scratchdimen\topskip
-         % \advance\scratchdimen-\strutheight
-         % \dimen0=\MPy\crazytexttag
-         % \advance\dimen0 \MPh\crazytexttag
-         % \advance\scratchdimen-\dimen0\relax
-         % % do we need correction at all 
-         % \ifdim\scratchdimen>\strutdepth\relax
-         %   \donefalse
-         % \else\ifdim\scratchdimen<\zeropoint
-         %   \donefalse
-         % \else
-         %   \donetrue
-         % \fi\fi 
-         % % analysis done 
-         % \donefalse
-         % \ifdone
-         %   \edef\crazymathcorrection{\the\scratchdimen}%
-         %   \advance\scratchdimen-\dp\scratchbox
-         %   \dp\scratchbox-\scratchdimen 
-         % \else
-         %   \let\crazymathcorrection\zeropoint
-         % \fi 
-         \normalvadjust pre 
-           {%\allowbreak % sometimes breaks spacing 
-            \forgetall
-            \crazymathindent
-            \iftracegridsnapping\ruledhbox\fi{\box\scratchbox}%
-            \endgraf
-            \nobreak}%
-       \else\ifnum\scratchcounter>\zerocount
-         \normalvadjust pre 
-           {\nobreak}%
-       \fi\fi
-       \getrawnoflines\nextboxdp
-       \scratchcounter\noflines
-       \advance\noflines-\lastcrazymathpostlines\relax     
-       \ifnum\noflines>\zerocount
-         \donetrue
-       \else\ifnum\lastcrazymathpostlines=\zerocount
-         \donetrue
+       \if!!doneb
+       % \getrawnoflines\nextboxht 
+         \scratchdimen\nextboxht
+         \advance\scratchdimen-\strutht
+         \getnoflines\scratchdimen
+         \if!!doned \advance\noflines\minusone \fi
+         \scratchcounter\noflines
+         \advance\noflines-\lastcrazymathprelines\relax
+         \ifnum\noflines>\zerocount
+           \xdef\lastcrazymathprelines{\the\scratchcounter}%
+           \scratchdimen\noflines\lineheight 
+           \ifconditional\halfcrazymathlines
+             \advance\scratchdimen-.5\lineheight
+           \fi
+           \advance\scratchdimen-\strutdepth
+           \setbox\scratchbox\null
+           \wd\scratchbox2\bodyfontsize
+           \ht\scratchbox\scratchdimen
+           \dp\scratchbox\strutdepth 
+           %%% top correction code (see below) 
+           \normalvadjust pre 
+             {%\allowbreak % sometimes breaks spacing 
+              \forgetall
+              \crazymathindent
+              \iftracegridsnapping
+                \setbox\scratchbox\hbox
+                  {\incolortrue\localcolortrue\green
+                   \ruledhbox{\box\scratchbox}}%
+              \fi
+              \box\scratchbox
+              \endgraf
+              \nobreak}%
+         \else\ifnum\scratchcounter>\zerocount
+           \normalvadjust pre 
+             {\nobreak}%
+         \fi\fi
+       \fi
+       \if!!donec
+       % \getrawnoflines\nextboxdp 
+         \scratchdimen\nextboxdp
+         \advance\scratchdimen-\strutdp
+         \getnoflines\scratchdimen 
+         \if!!donee \advance\noflines\minusone \fi
+         \scratchcounter\noflines
+         \advance\noflines-\lastcrazymathpostlines\relax     
+         \ifnum\noflines>\zerocount
+           \donetrue
+         \else\ifnum\lastcrazymathpostlines=\zerocount
+           \donetrue
+         \else
+           \donefalse
+         \fi\fi
        \else
          \donefalse
-       \fi\fi
+       \fi
        \ifdone
          \xdef\lastcrazymathpostlines{\the\scratchcounter}%
          \ifnum\lastcrazymathpostlines=\zerocount
@@ -1092,28 +1121,82 @@
          \fi
          \hbox{\setposition\crazymathtag\flushcrazymathbox}%
          \scratchdimen\noflines\lineheight 
+         \advance\scratchdimen-\lineheight 
+         \advance\scratchdimen+\strutheight
+\ifdim\scratchdimen>\zeropoint \else
+  \scratchdimen=\strutheight % todo : test for half lines 
+\fi
          \ifconditional\halfcrazymathlines
            \advance\scratchdimen-.5\lineheight
          \fi
-         \advance\scratchdimen+\strutheight
          \setbox\scratchbox\null
-         \wd\scratchbox\bodyfontsize
+         \wd\scratchbox2\bodyfontsize
          \ht\scratchbox\scratchdimen
          \dp\scratchbox\strutdepth
          \normalvadjust 
            {\forgetall
             \crazymathindent
-            \iftracegridsnapping\ruledhbox\fi{\box\scratchbox}%
+            \iftracegridsnapping
+              \setbox\scratchbox\hbox
+                {\incolortrue\localcolortrue\blue
+                 \ruledhbox{\box\scratchbox}}%
+            \fi
+            \box\scratchbox
             \endgraf
-            \allowbreak}% else we stick below the text bottom
+            % precaution: else we stick below the text bottom
+            \ifconditional\halfcrazymathlines
+              \allowbreak
+            \else
+              \vskip-\lineheight
+              \vskip \lineheight  
+           \fi}% 
        \else
          \hbox{\setposition\crazymathtag\flushcrazymathbox}%
        \fi
+     \else
+       \flushcrazymathbox
      \fi
+   \else\if!!donea
+     \flushcrazymathbox
    \else
      \mathematics{#2}%     
-   \fi
+   \fi\fi
    \endgroup}
+
+
+%%% top correction code 
+%%%
+%%% correct for fuzzy top of page situations 
+%
+% \scratchdimen\lastcrazymathprelines\lineheight
+% \advance\scratchdimen\MPy\crazymathtag
+% \advance\scratchdimen\lineheight
+% \advance\scratchdimen\topskip
+% \advance\scratchdimen-\strutheight
+% \dimen0=\MPy\crazytexttag
+% \advance\dimen0 \MPh\crazytexttag
+% \advance\scratchdimen-\dimen0\relax
+% % do we need correction at all 
+% \ifdim\scratchdimen>\strutdepth\relax
+%   \donefalse
+% \else\ifdim\scratchdimen<\zeropoint
+%   \donefalse
+% \else
+%   \donetrue
+% \fi\fi 
+% % analysis done 
+% \donefalse
+% \ifdone
+%   \edef\crazymathcorrection{\the\scratchdimen}%
+%   \advance\scratchdimen-\dp\scratchbox
+%   \dp\scratchbox-\scratchdimen 
+% \else
+%   \let\crazymathcorrection\zeropoint
+% \fi 
+%
+%%%
+%%% keep the previous code 
+%%%
 
 \let\tform\mathematics
 \let\gform\snappedinlineformula
@@ -1121,15 +1204,15 @@
 % test set: 
 % 
 % \startbuffer
-% Crazy math \sform {1+x} or \sform {\dorecurse {100} {1+} 1 =
-% 101} and even gore crazy \sform {2^{2^2}_{1_1}}
-% again\dorecurse {20} { and again} \sform {\sqrt {\frac
+% Crazy math \gform {1+x} or \gform {\dorecurse {100} {1+} 1 =
+% 101} and even gore crazy \gform {2^{2^2}_{1_1}}
+% again\dorecurse {20} { and again} \gform {\sqrt {\frac
 % {x^{5^5}} {\frac {1} {2}}}} even gore\dorecurse {50} { and
-% gore} \iform {\dorecurse {12} {\sform {\sqrt {\frac
-% {x^{5^5}} {3}}}+\sform {\sqrt {\frac {x^{5^5}} {\frac {1}
-% {2}}}}+}x=10}\dorecurse{20} { super crazy math}: \iform
-% {\dorecurse {30} {\sform {\sqrt {\frac {x^{5^5}} {3}}}+
-% \sform {\sqrt {\frac {x^{5^5}} {\frac {1} {2}}}}+ }x = 10},
+% gore} \tform {\dorecurse {12} {\gform {\sqrt {\frac
+% {x^{5^5}} {3}}}+\gform {\sqrt {\frac {x^{5^5}} {\frac {1}
+% {2}}}}+}x=10}\dorecurse{20} { super crazy math}: \tform
+% {\dorecurse {30} {\gform {\sqrt {\frac {x^{5^5}} {3}}}+
+% \gform {\sqrt {\frac {x^{5^5}} {\frac {1} {2}}}}+ }x = 10},
 % and we're\dorecurse {20} { done}! 
 % \stopbuffer
 % 
@@ -1144,6 +1227,45 @@
 % \setuplayout[grid=yes,lines=18]\getbuffer \page
 % \setuplayout[grid=yes,lines=19]\getbuffer \page
 % \stoptext 
+% 
+% test 
+% 
+% \startregels
+% \gform[<]{35 \cdot p^{\frac{3}{4}} = 70}
+% \gform{12{,}4 \cdot d^3 = 200}
+% \gform{a \cdot x^b}.
+% \gform{12x^6 \cdot \negative 3x^4}
+% \gform{\frac{12x^6}{\negative 3x^4}}
+% \gform{(4x^2)^3}
+% \gform{4x \sqrt{x} \cdot 3x^2}
+% \gform{\frac{2x^4}{4x \sqrt{x}}}
+% \gform{y = a \cdot x^b}.
+% \gform{y_1 = \frac{15x^2}{x}}
+% \gform{y_2 = x \cdot \sqrt{x}}
+% \gform{y_3 = \frac{6x^3}{x^2}}
+% \gform[<]{y_4 = \left(2x^2\right)^{\frac{1}{2}}}
+% \gform{y_1 = \frac{4x^5}{x^2}}
+% \gform{y_2 = 4 \cdot \sqrt{x}}
+% \gform{y_3 = 4x^3}
+% \gform{y_4 = \frac{100x}{\sqrt{x}}}
+% \gform[<]{y_5 = 4 \cdot x^{\frac{1}{2}}}
+% \gform{y_6 = \frac{1}{2} x \cdot 4x^2}
+% \gform{y_7 = 2 \cdot x^3}
+% \gform{y_8 = 100 \cdot x^{\frac{1}{2}}}
+% \gform{4x^8 \cdot 8x^3}
+% \gform{\frac{4x^8}{8x^3}}
+% \gform{\left(\negative3x^4\right)^3}
+% \gform{x^3 \sqrt{x} \cdot 3x^2}
+% \gform{\frac{6x^3}{x^2 \sqrt{x}}}
+% \gform{\frac{6}{2x^4}}
+% \gform{\frac{1}{3x^6}}
+% \gform{\frac{12x^8}{4x^{10}}}
+% \gform{\frac{4}{\sqrt{x}}}
+% \gform{\frac{1}{2x \sqrt{x}}}
+% \gform{\frac{2{,}25}{p} = 0{,}35}
+% \gform{4{,}50 + \frac{300}{k} = 4{,}70}
+% \gform{\frac{1200}{k+12} - 42 = 6}
+% \stopregels 
 
 %D \macro
 %D   {restoremathstyle}

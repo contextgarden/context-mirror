@@ -2200,6 +2200,7 @@ var:distance:*dimension::
 var:separator:*text::
 var:width:*dimension::
 var:distance:*dimension::
+var:stack:yes,no::
 ivr:setupframed::
 stopsetup
 
@@ -2336,7 +2337,7 @@ stopsetup
 
 startsetup
 com:setuphead:
-typ:val/vars/:
+typ:vals/vars/:
 val:*section::
 var:style:normal,bold,slanted,boldslanted,type,cap,small...,*command::
 var:textstyle:normal,bold,slanted,boldslanted,type,cap,small...,*command::

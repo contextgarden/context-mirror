@@ -2200,6 +2200,7 @@ var:afstand:*maat::
 var:scheider:*tekst::
 var:breedte:*maat::
 var:afstand:*maat::
+var:stapel:ja,nee::
 ivr:stelomlijndin::
 stopsetup
 
@@ -2336,7 +2337,7 @@ stopsetup
 
 startsetup
 com:stelkopin:
-typ:val/vars/:
+typ:vals/vars/:
 val:*sectie::
 var:letter:normaal,vet,schuin,vetschuin,type,kap,klein...,*commando::
 var:tekstletter:normaal,vet,schuin,vetschuin,type,kap,klein...,*commando::

@@ -551,6 +551,12 @@
 \edef\charactermapping    {@\s!default @}
 \edef\characterregime     {@\s!default @}
 
+% todo, else \d j == \dj, print file and check  
+
+\def\accentprefix   {}%{*}
+\def\commandprefix  {}%{=}
+\def\characterprefix{}%{-}
+
 %D \macros
 %D   {startcoding, reducetocoding}
 %D
@@ -565,17 +571,17 @@
 % etex : \ifcsname 
 
 \def\donthandleaccent#1#2% \empty makes #2={} save % no \unexpanded 
-  {\ifundefined{\characterencoding#1\string#2\empty}% 
+  {\ifundefined{\accentprefix\characterencoding#1\string#2\empty}% 
      #2%
    \else
-     \csname\characterencoding#1\string#2\empty\endcsname
+     \csname\accentprefix\characterencoding#1\string#2\empty\endcsname
    \fi}
 
 \def\donthandlecommand#1% % no \unexpanded, otherwise pdfdoc will fail 
-  {\ifundefined{\characterencoding#1}% as well as hyph patterns
+  {\ifundefined{\commandprefix\characterencoding#1}% as well as hyph patterns
      #1%
    \else
-     \csname\characterencoding#1\endcsname
+     \csname\commandprefix\characterencoding#1\endcsname
    \fi}
 
 \def\enableencoding
@@ -705,28 +711,28 @@
 \def\dododefineaccent#1 #2 #3 %
   {\setvalue{#1}{\dohandleaccent{#1}}%
    \doifnumberelse{\string#3}
-     {\setvalue{\characterencoding#1\string#2}{\char#3 }} % space added
-     {\setvalue{\characterencoding#1\string#2}{#3}}}
+     {\setvalue{\accentprefix\characterencoding#1\string#2}{\char#3 }} % space added
+     {\setvalue{\accentprefix\characterencoding#1\string#2}{#3}}}
 
 \beginTEX
 
 \def\dohandleaccent#1#2%
-  {\@EA\ifx\csname\characterencoding#1\string#2\empty\endcsname\relax 
-     \@EA\ifx\csname\nocharacterencoding#1\string#2\empty\endcsname\relax
-       \@EA\ifx\csname\characterencoding#1\endcsname\relax
-%         \@EA\ifx\csname\nocharacterencoding#1\endcsname\relax
+  {\@EA\ifx\csname\accentprefix\characterencoding#1\string#2\empty\endcsname\relax 
+     \@EA\ifx\csname\accentprefix\nocharacterencoding#1\string#2\empty\endcsname\relax
+       \@EA\ifx\csname\accentprefix\characterencoding#1\endcsname\relax
+%         \@EA\ifx\csname\accentprefix\nocharacterencoding#1\endcsname\relax
 %           \donormaltextaccent{#1}{#2}%
 %         \else
-           \csname\nocharacterencoding#1\endcsname{#2}%
+           \csname\accentprefix\nocharacterencoding#1\endcsname{#2}%
 %         \fi
        \else
-         \csname\characterencoding#1\endcsname{#2}%
+         \csname\accentprefix\characterencoding#1\endcsname{#2}%
        \fi
      \else
-       \csname\nocharacterencoding#1\string#2\empty\endcsname
+       \csname\accentprefix\nocharacterencoding#1\string#2\empty\endcsname
      \fi
    \else
-     \csname\characterencoding#1\string#2\empty\endcsname
+     \csname\accentprefix\characterencoding#1\string#2\empty\endcsname
    \fi}
 
 \endTEX
@@ -734,14 +740,14 @@
 \beginETEX \ifcsname
 
 \def\dohandleaccent#1#2%
-  {\ifcsname\characterencoding#1\string#2\empty\endcsname 
-     \csname\characterencoding#1\string#2\empty\endcsname
-   \else\ifcsname\nocharacterencoding#1\string#2\empty\endcsname
-     \csname\nocharacterencoding#1\string#2\empty\endcsname
-   \else\ifcsname\characterencoding#1\endcsname
-     \csname\characterencoding#1\endcsname{#2}%
-   \else%\ifcsname\nocharacterencoding#1\endcsname
-     \csname\nocharacterencoding#1\endcsname{#2}%
+  {\ifcsname\accentprefix\characterencoding#1\string#2\empty\endcsname 
+     \csname\accentprefix\characterencoding#1\string#2\empty\endcsname
+   \else\ifcsname\accentprefix\nocharacterencoding#1\string#2\empty\endcsname
+     \csname\accentprefix\nocharacterencoding#1\string#2\empty\endcsname
+   \else\ifcsname\accentprefix\characterencoding#1\endcsname
+     \csname\accentprefix\characterencoding#1\endcsname{#2}%
+   \else%\ifcsname\accentprefix\nocharacterencoding#1\endcsname
+     \csname\accentprefix\nocharacterencoding#1\endcsname{#2}%
 %   \else
 %     \donormaltextaccent{#1}{#2}%
    \fi\fi\fi}%\fi}
@@ -766,18 +772,18 @@
 \def\definecharacter#1 #2 %
   {\ifundefined{#1}\setvalue{#1}{\dohandlecharacter{#1}}\fi
    \doifnumberelse{\string#2}
-     {\setvalue{\characterencoding\string#1}{\char#2 }% watch the space
+     {\setvalue{\characterprefix\characterencoding\string#1}{\char#2 }% watch the space
       \doautosetregime{#1}{#2}}
-     {\setvalue{\characterencoding\string#1}{#2}}}
+     {\setvalue{\characterprefix\characterencoding\string#1}{#2}}}
 
 % better 
 % 
 % \def\definecharacter#1 #2 %
 %   {\ifundefined{#1}\setvalue{#1}{\dohandlecharacter{#1}}\fi
 %    \doifnumberelse{\string#2}
-%      {\setevalue{\characterencoding\string#1}{\noexpand\charofnum{\number#2}}% watch the space
+%      {\setevalue{\characterprefix\characterencoding\string#1}{\noexpand\charofnum{\number#2}}% watch the space
 %       \doautosetregime{#1}{#2}}
-%      {\setvalue{\characterencoding\string#1}{#2}}}
+%      {\setvalue{\characterprefix\characterencoding\string#1}{#2}}}
 % 
 % \def\charofnum#1{\char#1 }
 % \def\byteofnum#1{\rawcharacter{#1}}
@@ -785,7 +791,7 @@
 \beginTEX
 
 \def\dohandlecharacter#1%
-  {\csname\expandafter\ifx\csname\characterencoding#1\endcsname\relax
+  {\csname\characterprefix\expandafter\ifx\csname\characterprefix\characterencoding#1\endcsname\relax
      \nocharacterencoding\else\characterencoding\fi#1\endcsname}
 
 \endTEX
@@ -793,20 +799,20 @@
 \beginETEX \ifcsname
 
 \def\dohandlecharacter#1%
-  {\csname\ifcsname\characterencoding#1\endcsname
+  {\csname\characterprefix\ifcsname\characterprefix\characterencoding#1\endcsname
      \characterencoding\else\nocharacterencoding\fi#1\endcsname}
 
 \endETEX
 
 \def\defaultcharacter#1%
-  {\csname\nocharacterencoding\strippedcsname#1\endcsname}
+  {\csname\characterprefix\nocharacterencoding\strippedcsname#1\endcsname}
 
 %D Instead of numbers, a command may be entered.
 
 \def\definecommand#1 #2 %
   {\setvalue{\string#1}{\dohandlecommand{#1}}%
   %\redefinecommand #1 % just to be sure
-   \setvalue{\characterencoding\string#1}{#2}}
+   \setvalue{\commandprefix\characterencoding\string#1}{#2}}
  
 %D Here we see that redefining accents is characters is more
 %D or less the same as redefining commands. We also could have
@@ -884,8 +890,8 @@
 
 \def\dodefineaccentcommand#1 #2 % \string toegevoegd 
   {\doifnumberelse{\string#2}
-     {\setvalue{\characterencoding\string#1}##1{{\accent#2 ##1}}}
-     {\setvalue{\characterencoding\string#1}##1{{#2##1}}}%
+     {\setvalue{\accentprefix\characterencoding\string#1}##1{{\accent#2 ##1}}}
+     {\setvalue{\accentprefix\characterencoding\string#1}##1{{#2##1}}}%
    \unprotectfontcharacters}
 
 %D We don't have to define them for the default \PLAIN\ case. 
@@ -974,17 +980,11 @@
   {% no \unexpanded, else pdfdoc fails 
    \setvalue{\string#1}{\dohandlecommand{#1}}}%
 
-% \unexpanded\def\dohandlecommand#1%
-%   {\doifdefinedelse{\characterencoding#1}
-%      {\def\next{\getvalue{\characterencoding#1}}}
-%      {\def\next{\getvalue{\nocharacterencoding#1}}}%
-%    \next}
-
 \beginETEX \ifcsname
 
 \def\dohandlecommand#1%
-   {\csname
-      \ifcsname\characterencoding#1\endcsname
+   {\csname\commandprefix
+      \ifcsname\commandprefix\characterencoding#1\endcsname
         \characterencoding
       \else
         \nocharacterencoding
@@ -996,8 +996,8 @@
 \beginTEX 
 
 \def\dohandlecommand#1%
-  {\csname
-     \expandafter\ifx\csname\characterencoding#1\endcsname\relax
+  {\csname\commandprefix
+     \expandafter\ifx\csname\commandprefix\characterencoding#1\endcsname\relax
        \nocharacterencoding
      \else
        \characterencoding
@@ -1331,6 +1331,7 @@
 
 \definecommand ` {\buildtextaccent\textgrave}
 \definecommand ' {\buildtextaccent\textacute}
+\definecommand r {\buildtextaccent\textring}
 \definecommand v {\buildtextaccent\textcaron}
 \definecommand u {\buildtextaccent\textbreve}
 \definecommand = {\buildtextaccent\textmacron}

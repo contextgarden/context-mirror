@@ -2200,6 +2200,7 @@ var:distanza:*dimensione::
 var:separatore:*testo::
 var:ampiezza:*dimensione::
 var:distanza:*dimensione::
+var:stack:si,no::
 ivr:impostaincorniciato::
 stopsetup
 
@@ -2336,7 +2337,7 @@ stopsetup
 
 startsetup
 com:impostatesta:
-typ:val/vars/:
+typ:vals/vars/:
 val:*sezione::
 var:stile:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...,*comando::
 var:stiletesto:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...,*comando::

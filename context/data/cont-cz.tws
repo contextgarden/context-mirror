@@ -2200,6 +2200,7 @@ var:vzdalenost:*dimenze::
 var:oddelovac:*text::
 var:sirka:*dimenze::
 var:vzdalenost:*dimenze::
+var:stack:ano,ne::
 ivr:nastavoramovani::
 stopsetup
 
@@ -2336,7 +2337,7 @@ stopsetup
 
 startsetup
 com:nastavnadpis:
-typ:val/vars/:
+typ:vals/vars/:
 val:*sekce::
 var:pismeno:normalni,tucne,sklonene,tucnesklonene,opis,kap,male...,*prikaz::
 var:styltextu:normalni,tucne,sklonene,tucnesklonene,opis,kap,male...,*prikaz::

@@ -33,18 +33,59 @@
 \def\OTRONEsethsize
   {\global\hsize\tekstbreedte}
 
+% keep (original one) 
+%
+% \def\OTRONEsetvsize
+%    {\ifdim\vsize=\teksthoogte \else
+%       \bgroup
+%       \scratchdimen-\vsize
+%       \advance\scratchdimen \teksthoogte
+%       \global\advance\vsize \scratchdimen
+%       \relax \ifdim\pagegoal<\maxdimen
+%         \advance\scratchdimen \pagegoal
+%         \global\pagegoal\scratchdimen
+%       \fi
+%       \egroup
+%    \fi}
+%
+% no (keep) 
+%
+% \def\OTRONEsetvsize
+%   {\ifdim\vsize=\teksthoogte \else
+%      \bgroup
+%      \scratchdimen-\vsize
+%      \advance\scratchdimen \teksthoogte
+%      \ifgridsnapping
+%        \getrawnoflines\scratchdimen
+%        \scratchdimen\noflines\openlineheight
+%        \ifdim\scratchdimen>\noflinesheight % available afterwards
+%          \advance\scratchdimen-\openlineheight
+%        \fi
+%        \ifdim\scratchdimen<\zeropoint
+%          \scratchdimen\zeropoint
+%        \fi
+%      \fi
+%      \global\advance\vsize \scratchdimen
+%      \relax \ifdim\pagegoal<\maxdimen
+%        \advance\scratchdimen \pagegoal
+%        \global\pagegoal\scratchdimen
+%      \fi
+%      \egroup
+%   \fi}
+
 \def\OTRONEsetvsize
-  {\ifdim\vsize=\teksthoogte \else
-     \bgroup
-     \scratchdimen-\vsize
-     \advance\scratchdimen \teksthoogte
-     \global\advance\vsize \scratchdimen
-     \relax
-     \ifdim\pagegoal<\maxdimen
-       \advance\scratchdimen \pagegoal
-       \global\pagegoal\scratchdimen
+  {\ifgridsnapping
+     \ifcase\layoutlines
+       \getrawnoflines\teksthoogte
+     \else
+       \noflines\layoutlines
      \fi
-     \egroup
+     \global\vsize\noflines\openlineheight 
+   \else
+     \global\vsize\teksthoogte
+   \fi
+   \ifdim\pagegoal<\maxdimen
+     \global\pagegoal\vsize
    \fi}
 
 % \def\OTRONEdopagecontents#1#2% \box<n> \unvbox<n> 
@@ -479,16 +520,18 @@
      \wd\floatbox\floatwidth
      \processfirstactioninset
        [#1]
-       [     \v!links=>\leftfloat{\box\floatbox},
-            \v!rechts=>\rightfloat{\box\floatbox},
-          \v!inlinker=>\leftmarginfloat{\box\floatbox},
+       [     \v!links=>\leftfloat       {\box\floatbox},
+            \v!rechts=>\rightfloat      {\box\floatbox},
+          \v!inlinker=>\leftmarginfloat {\box\floatbox},
          \v!inrechter=>\rightmarginfloat{\box\floatbox},
-       \v!linkermarge=>\leftmarginfloat{\box\floatbox},
+       \v!linkermarge=>\leftmarginfloat {\box\floatbox},
       \v!rechtermarge=>\rightmarginfloat{\box\floatbox},
-        \v!linkerrand=>\leftedgefloat{\box\floatbox},
-       \v!rechterrand=>\rightedgefloat{\box\floatbox},
+        \v!linkerrand=>\leftedgefloat   {\box\floatbox},
+       \v!rechterrand=>\rightedgefloat  {\box\floatbox},
+            \v!rugwit=>\backspacefloat  {\box\floatbox},
+           \v!snijwit=>\cutspacefloat   {\box\floatbox},
            \v!inmarge=>{\doinmargenormal\leftmarginfloat
-                        \rightmarginfloat{\box\floatbox}}]%
+                       \rightmarginfloat{\box\floatbox}}]%
      \doifinset\v!lang{#1}\flushsidefloatsafterpar
    \fi}
 

@@ -2396,7 +2396,7 @@
          \doifvalue{\??kd#1\c!dieptecorrectie}\v!aan % new, inside box
            {\bgroup
             \verticalstrut
-            \vskip-\lineheight}%
+            \vskip-\struttotal}%
          \blanko[\v!blokkeer]% plaatst signal
          \doconvertfont{\getvalue{\??kd#1\c!letter}}\empty
          \def\dostopframedtext{\dodostopframedtext{#1}{#2}}}
@@ -2410,7 +2410,7 @@
    \removelastskip
    \doifvalue{\??kd#1\c!dieptecorrectie}\v!aan % local and global
      {\forgetall
-      \vskip-\lineheight
+      \vskip-\struttotal
       \verticalstrut
       \egroup
       \forgetall
@@ -2561,7 +2561,7 @@
    \ht\scratchbox\strutht
    \dp\scratchbox\strutdp
    \noindent\box\scratchbox
-%\nobreak\verticalstrut\kern-\lineheight
+%\nobreak\verticalstrut\kern-\struttotal
 % evt \witruimte
    \egroup}
 

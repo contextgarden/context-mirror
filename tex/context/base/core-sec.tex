@@ -11,6 +11,8 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
+% nummeren per sectieblok implementeren 
+
 % this module needs a clean up, currently some manipulations
 % take place multiple times
 
@@ -127,7 +129,7 @@
   {\bgroup
    \doifinstringelse{.0}{.#2}  
      {\doifnot{#3}\v!per
-        {%\debuggerinfo{\m!systems}{number #1 #3 becomes \getnumbervariable{#1\c!wijze}}%
+        {%\debuggerinfo\m!systems{number #1 #3 becomes \getnumbervariable{#1\c!wijze}}%
          \setevalue{\@@thenumber{#1}\c!wijze}{#3}% geen \xdef, gaat mis met \subpage
          \dochecknummer{#1}}} % tricky and ugly
      {\doifnotvalue{\@@thenumber{#1}\s!check}{#2}
@@ -746,7 +748,8 @@
      \@@shortsectionnumber{#1}%
    \fi}
 
-
+% suited for chinese too:
+%
 % \def\@@shortsectionnumber#1%
 %   {\@EA\ifx\csname\??se#1\@@sectieblok\c!conversie\endcsname\relax
 %      \@@sectionvalue{#1}%
@@ -755,6 +758,21 @@
 %    \fi}
 %
 % obey eigennummer 
+%
+% \def\@@shortsectionnumber#1%
+%  {\@EA\ifx\csname\??se#1\c!eigennummer\endcsname\relax
+%     \@EA\ifx\csname\??se#1\@@sectieblok\c!conversie\endcsname\relax
+%       \@EA\ifx\csname\??se#1\c!conversie\endcsname\relax
+%         \@@sectionvalue{#1}%
+%       \else
+%         \@@sectionconversion{#1}{\@@sectionvalue{#1}}%
+%       \fi
+%     \else
+%       \@@sectionconversion{#1}{\@@sectionvalue{#1}}%
+%     \fi
+%   \else
+%     \csname\??se#1\c!eigennummer\endcsname
+%   \fi}
 
 \def\@@shortsectionnumber#1%
   {\@EA\ifx\csname\??se#1\c!eigennummer\endcsname\relax
@@ -769,19 +787,6 @@
      \fi
    \else
      \csname\??se#1\c!eigennummer\endcsname
-   \fi}
-
-% suited for chinese too:
-
-\def\@@shortsectionnumber#1%
-  {\@EA\ifx\csname\??se#1\@@sectieblok\c!conversie\endcsname\relax
-     \@EA\ifx\csname\??se#1\c!conversie\endcsname\relax
-       \@@sectionvalue{#1}%
-     \else
-       \@@sectionconversion{#1}{\@@sectionvalue{#1}}%
-     \fi
-   \else
-     \@@sectionconversion{#1}{\@@sectionvalue{#1}}%
    \fi}
 
 \def\dosetlocalsectieblok#1#2#3% new \edef's 
@@ -1013,6 +1018,8 @@
 % \hoofdstuk {tekst}
 % \hoofdstuk tekst
 % \hoofdstuk <niets>
+
+\let\finalsectionnumber\empty
 
 \def\dofinalsectionnumber
   {\ifundefined{\@@sectie\c!nummer}\else
@@ -1521,13 +1528,13 @@
 
 \def\doplaatskoptekst#1#2#3#4%
   {\beginheadplacement{#1}%
-   \iflegekop
-     \setbox0\ifvertical\vbox\else\hbox\fi to \zeropoint
+   \iflegekop % = needed
+     \setbox0=\ifvertical\vbox\else\hbox\fi to \zeropoint
        {\headnumbercontentfalse
         \resetsystemmode\v!sectienummer
         #2}%
      \makestrutofbox0
-   \else
+   \else % = needed
      \setbox0=\ifvertical\vbox\else\hbox\fi % \vhbox
        {\headnumbercontentfalse
         \resetsystemmode\v!sectienummer
@@ -1536,6 +1543,7 @@
         % outerside font determines distance
         \dosetfontattribute{\??ko#1}\c!letter
         % but we don't want color to influence user commands 
+% todo: get the if-else out of it 
         \getvalue{\??ko#1\c!commando}        
           {} % no number
           {\dostartattributes{\??ko#1}\c!letter\c!kleur\empty 
@@ -1566,14 +1574,14 @@
 
 \def\doplaatskopnummertekst#1#2#3#4#5% maybe move modes outside box
   {\beginheadplacement{#1}%
-   \iflegekop
-     \setbox0\ifvertical\vbox\else\hbox\fi to \zeropoint
+   \iflegekop % = needed 
+     \setbox0=\ifvertical\vbox\else\hbox\fi to \zeropoint
        {\doiftextelse{#3}
           {\setsystemmode  \v!sectienummer\headnumbercontenttrue }
           {\resetsystemmode\v!sectienummer\headnumbercontentfalse}%
         #2}%
      \makestrutofbox0
-   \else
+   \else % = needed
      \setbox0=\ifvertical\vbox\else\hbox\fi % \vhbox
        {\doiftextelse{#3}
           {\setsystemmode  \v!sectienummer\headnumbercontenttrue }
@@ -1873,7 +1881,6 @@
       \c!tekstletter=\getvalue{\??ko#1\c!letter},
       \c!nummerkleur=\getvalue{\??ko#1\c!kleur},
       \c!tekstkleur=\getvalue{\??ko#1\c!kleur}]%
-%   \ConvertToConstant\doifinstringelse{=}{#2}
    \doifassignmentelse{#2}
      {\getparameters
         [\??ko#1]
@@ -1917,8 +1924,9 @@
                \c!hoofd,\c!tekst,\c!voet,\c!scheider,
                \c!nummer,\c!eigennummer,\c!plaatskop,\c!verhoognummer,
                \c!letter,\c!kleur,\c!afstand,\c!variant,\c!springvolgendein,
-              %\c!nummerletter,\c!tekstletter,
-              %\c!expansie, % why njet ?
+               % new per 20/03/3002 (o-pbu-l) / was too confusing 
+               \c!nummerletter,\c!tekstletter,\c!expansie, 
+               %
                \c!uitlijnen,\c!titeluitlijnen,\c!tolerantie,\c!grid,
                \c!nummercommando,\c!tekstcommando,\c!margetekst]}}%
       \getparameters[\??ko#1][#2]%
@@ -1942,8 +1950,9 @@
             \c!hoofd,\c!tekst,\c!voet,
             \c!nummer,\c!eigennummer,\c!plaatskop,\c!verhoognummer,
             \c!letter,\c!kleur,\c!afstand,\c!variant,\c!springvolgendein,
-           %\c!nummerletter,\c!tekstletter,
-           %\c!expansie, % why njet ?
+            % new per 20/03/3002 (o-pbu-l) / was too confusing 
+            \c!nummerletter,\c!tekstletter,\c!expansie, 
+            %
             \c!uitlijnen,\c!titeluitlijnen,\c!tolerantie,\c!grid,
             \c!nummercommando,\c!tekstcommando,\c!margetekst]%
 \getparameters[\??ko#1][\c!expansie=]% iig een value, rather fuzzy

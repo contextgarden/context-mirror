@@ -619,8 +619,10 @@
 \def\calculatecurrenttime
 % {\DoDiv\time by60to\scratchcounter\edef\currenthour  {\the\scratchcounter}%
 %  \DoMod\time by60to\scratchcounter\edef\currentminute{\the\scratchcounter}}
-  {\dosetdivision\time{60}\scratchcounter\edef\currenthour  {\the\scratchcounter}%
-   \dosetmodulo  \time{60}\scratchcounter\edef\currentminute{\the\scratchcounter}}
+  {\dosetdivision\time{60}\scratchcounter
+   \edef\currenthour  {\ifnum\scratchcounter<10 0\fi \the\scratchcounter}%
+   \dosetmodulo  \time{60}\scratchcounter
+   \edef\currentminute{\ifnum\scratchcounter<10 0\fi \the\scratchcounter}}
 
 \appendtoks \calculatecurrenttime \to \everyjob
 

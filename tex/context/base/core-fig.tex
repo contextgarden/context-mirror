@@ -869,8 +869,11 @@
    \let\@@efextension #1%
    \let\@@efobject    \v!nee
    \let\@@efpreset    \v!nee
-   \ifx\@@efbreedte\empty\def\@@efbreedte{4cm}\fi
-   \ifx\@@efhoogte \empty\def\@@efhoogte {3cm}\fi}
+   \ifx\@@efbreedte\empty
+     \def\@@efbreedte{8\lineheight}% 4cm 
+   \ifx\@@efhoogte\empty
+     \def\@@efhoogte{6\lineheight}%  3cm 
+   \fi}
 
 \def\presetfiguremov{\presetundefinedfigure\c!mov}
 \def\presetfigureavi{\presetundefinedfigure\c!avi}
@@ -929,7 +932,8 @@
    \getparameters
      [\??ep]
      [\c!e=\s!unknown,
-      \c!w=15\korpsgrootte,\c!h=10\korpsgrootte,
+     %\c!w=15\korpsgrootte,\c!h=10\korpsgrootte,
+      \c!w=8\lineheight,\c!h=6\lineheight,
       \c!x=\!!zeropoint,\c!y=\!!zeropoint,
       \c!t=,\c!s=,\c!a=,\c!f=\@@effilename]%
    \getparameters
@@ -976,9 +980,9 @@
         \let\@@efextension\c!tmp
       \fi
       \let\@@eftype\c!tex}%
-   %\@EA\doifnumberelse\@EA{\@@efextension} % new, test first
-   %{\def\@@eftype{\c!mps}}
-   %{%
+   \@EA\doifnumberelse\@EA{\@@efextension} % new, test first
+   {\def\@@eftype{\c!mps}}
+   {%
    \processaction
      [\@@efextension]
      [   \c!tex=>\let\@@eftype\c!tex,
@@ -987,7 +991,7 @@
                  \edef\@@effilename{\@@effilepref\@@effilename},
          \c!avi=>\presetfigureavi,
          \c!mov=>\presetfiguremov]%
-   %}%
+   }%
    \edef\figuretypes{\figuretypes,\c!tex}%
    \ifx\@@eftype\c!tex
      % Since tex code can have positional stuff and worse, 
@@ -1336,10 +1340,10 @@
      %\c!kader=\ifincolor\v!uit\else\v!aan\fi]
      %\c!kader=\ifincolor\@@efkader\else\v!aan\fi]}%
       \c!kader=\@@efkader]}%
-     {\ttx \nohyphens
-           name:  \expanded{\verbatimstring{#1}}\\%
-           file:  \expanded{\verbatimstring{#2}}\\%
-           state: \expanded{\verbatimstring{#3}}}}
+     {\tt\tfxx \nohyphens
+        name:  \expanded{\verbatimstring{#1}}\\%
+        file:  \expanded{\verbatimstring{#2}}\\%
+        state: \expanded{\verbatimstring{#3}}}}
 
 \newtoks\externalfigureresets
 \newtoks\externalfigurepostprocessors
@@ -1511,7 +1515,8 @@
 \def\doexternalfigure[#1][#2][#3]%
   {\bgroup
    \doifelsenothing{#1}
-     {\framed[\c!breedte=4cm,\c!hoogte=3cm]{external\\figure}}
+    %{\framed[\c!breedte=4cm,\c!hoogte=3cm]{external\\figure}}
+     {\framed[\c!breedte=8\lineheight,\c!hoogte=6\lineheight]{external\\figure}}
      {\doifundefinedelse{\??ef\??ef#1}
         {\useexternalfigure[\s!dummy][#1][#2][#3]%
          \getexternalfigure{\s!dummy}[#3]}

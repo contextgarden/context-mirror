@@ -639,7 +639,7 @@
    \let\currentsubtextreference\empty
    \let\currentsubsubtextreference\empty}
 
-\def\dodosettextreferences#1#2#3#4\end%
+\def\dodosettextreferences#1#2#3#4\end
   {\def\currenttextreference{#1}%
    \def\currentsubtextreference{#2}%
    \def\currentsubsubtextreference{#3}}
@@ -968,7 +968,7 @@
 %        \fi
 %      \fi
 %      \ifreferencefound \else
-%        \let\referenceprefix=\empty
+%        \let\referenceprefix\empty
 %        \@EA\ifx\csname\specialREFidentifier#1\endcsname\relax\else
 %          \@EA\@EA\@EA\splitofffullreference\@EA\@EA\@EA % 1 level
 %             {\csname\specialREFidentifier#1\endcsname}%
@@ -1007,7 +1007,7 @@
 \def\dodoexpandreferences#1REF(#2#3)#4\relax
   {\ifx#2\relax
      \@EA\ifx\csname\specialREFidentifier#1\endcsname\relax
-       \global\advance\nofexpandedreferences 1
+       \global\advance\nofexpandedreferences \plusone
        \@EA\xdef\csname REF::\number\nofexpandedreferences\endcsname{#1}%
      \else
        \edef\expandedreference{\csname\specialREFidentifier#1\endcsname,}%
@@ -1104,7 +1104,7 @@
      \ifcsname\specialREFidentifier#1\endcsname
        \edef\expandedreference{\csname\specialREFidentifier#1\endcsname,}%
      \else
-       \global\advance\nofexpandedreferences 1
+       \global\advance\nofexpandedreferences \plusone
        \@EA\xdef\csname REF::\number\nofexpandedreferences\endcsname{#1}%
      \fi
    \else
@@ -1125,7 +1125,7 @@
    \fi}
 
 \def\expandreferences#1%
-  {\global\nofexpandedreferences0
+  {\global\nofexpandedreferences\zerocount
    \doexpandreferences#1,],}
 
 \def\dodoifreferencefoundelse#1%
@@ -1313,7 +1313,7 @@
      \expandreferences{#1}%
    \egroup
    \doresetgotowhereever
-   \global\nofsecondaryreferences 0
+   \global\nofsecondaryreferences \zerocount
    \ifcase\nofexpandedreferences\relax % #1 can be number -)
      % no ref
    \or
@@ -1328,7 +1328,7 @@
          \let\unharmedreferenceprefix\referenceprefix
          \dodoifreferencefoundelse\secondaryreference
          \ifreferencefound
-           \global\nofsecondaryreferences 1
+           \global\nofsecondaryreferences \plusone
            #2%
          \else
            \dostartnoto#3\dostopnoto
@@ -1339,7 +1339,7 @@
      % more than two refs
      \ifenablereferencechains \iflocation
        \global\secondaryreferencetrue
-       \scratchcounter2
+       \scratchcounter\plustwo
        \loop
          \xdef\secondaryreference{\csname REF::\number\scratchcounter\endcsname}%
          \bgroup
@@ -1347,14 +1347,14 @@
            \let\unharmedreferenceprefix\referenceprefix
            \dodoifreferencefoundelse\secondaryreference
            \ifreferencefound
-             \global\advance\nofsecondaryreferences 1
+             \global\advance\nofsecondaryreferences \plusone
              #2%
            \else
              \dostartnoto#3\dostopnoto
            \fi
          \egroup
          \ifnum\scratchcounter<\nofexpandedreferences\relax
-           \advance\scratchcounter 1
+           \advance\scratchcounter \plusone
        \repeat
      \fi \fi
    \fi
@@ -1442,8 +1442,8 @@
 
 \beginETEX
 
-\def\docheckinnerreference%
-  {\global\let\predefinedreference=\currentinnerreference
+\def\docheckinnerreference
+  {\global\let\predefinedreference\currentinnerreference
    \ifx\currentreferencearguments\empty
      \ifcsname\r!cross\referenceprefix\currentfullreference\endcsname
        \global\referencefoundtrue
@@ -1469,8 +1469,8 @@
 
 \beginTEX
 
-\def\docheckinnerreference%
-  {\global\let\predefinedreference=\currentinnerreference
+\def\docheckinnerreference
+  {\global\let\predefinedreference\currentinnerreference
    \ifx\currentreferencearguments\empty
      \@EA\ifx\csname\r!cross\referenceprefix\currentfullreference\endcsname\relax
        \let\referenceprefix\empty
@@ -1529,7 +1529,7 @@
 
 \beginTEX
 
-\def\dodocheckouterreference%
+\def\dodocheckouterreference
   {\@EA\ifx\csname\specialREFidentifier\currentfullreference\endcsname\relax
      \ifstrictouterreferences
        \global\referencefoundfalse
@@ -1630,14 +1630,14 @@
      \doifsomething{#2}
        {\inlinker
           {\infofont
-           \dimen0=\linkermargebreedte
-           \advance\dimen0 by -2em
-           \doboundtext{#2}{\dimen0}{..}->}}%
+           \scratchdimen\linkermargebreedte
+           \advance\scratchdimen -2em
+           \doboundtext{#2}\scratchdimen{..}->}}%
    \fi\fi
    \doifpredefinedreferenceelse
      {}
      {\predefinereference
-      \showmessage{\m!references}{#1}{[\unharmedreferenceprefix][#2]}}%
+      \showmessage\m!references{#1}{[\unharmedreferenceprefix][#2]}}%
    \egroup}
 
 \def\unknownreference{\reportreferenceerror1}
@@ -1646,15 +1646,13 @@
 %D Although not actually needed, we default the unharmed
 %D reference prefix to the normal one.
 
-\def\unharmedreferenceprefix%
-  {\referenceprefix}
+\def\unharmedreferenceprefix{\referenceprefix}
 
 %D When a reference is not found, we typeset a placeholder
 %D (two glyphs are often enough to represent the reference
 %D text).
 
-\def\dummyreference%
-  {{\tttf ??}}
+\def\dummyreference{{\tttf ??}}
 
 %D To prevent repetitive messages concerning a reference
 %D being defined, we set such an unknown reference to an empty
@@ -1662,13 +1660,13 @@
 
 \let\predefinedreference\s!unknown
 
-% \def\predefinereference%
+% \def\predefinereference
 %   {\setgvalue{\r!cross\predefinedreference}{\rt!cross{}{}{}{}}%
 %    \setgvalue{\r!cross\unharmedreferenceprefix\predefinedreference}{\rt!cross{}{}{}{}}}
 
 \def\dummypredefinedreference{\r!cross{}{}{}{}}
 
-\def\predefinereference%
+\def\predefinereference
   {\global\@EA\let\csname\r!cross\predefinedreference    \endcsname\dummypredefinedreference
    \global\@EA\let\csname\r!cross\unharmedreferenceprefix\endcsname\dummypredefinedreference}
 
@@ -1683,7 +1681,7 @@
 %    \doifelse{\getvalue{\r!cross\referenceprefix\predefinedreference}}{{}{}{}}
 %      {\egroup#1}{\egroup#2}}
 
-\def\doifpredefinedreferenceelse% \referenceprefix added
+\def\doifpredefinedreferenceelse % \referenceprefix added
   {\@EA\ifx\csname\r!cross\referenceprefix\predefinedreference\endcsname\dummypredefinedreference
      \expandafter\firstoftwoarguments
    \else
@@ -1914,7 +1912,7 @@
 %   {\gotodestination{}{}{\s!aut\iftraceinternalreferences:#1\fi:#2}}
 
 \def\thisisnextinternal#1%
-  {\global\advance\locationcount 1
+  {\global\advance\locationcount \plusone
    \ifinternalnamedreferences
      \thisisdestination{\s!aut\iftraceinternalreferences:#1\fi:\nextinternalreference}%
    \fi}
@@ -2174,7 +2172,7 @@
 
 % \newif\ifreferencestrut % some day an option
 
-\def\setupreferencing%
+\def\setupreferencing
   {\dosingleargument\dosetupreferencing}
 
 \def\dosetupreferencing[#1]%
@@ -2191,20 +2189,20 @@
         \v!label=>\let\dowantedreference\dolabelonlyreference,
         \v!tekst=>\let\dowantedreference\dotextonlyreference,
       \v!symbool=>\let\dowantedreference\dosymbolreference]%
-   \chardef\autocrossfilereferences=0
+   \chardef\autocrossfilereferences\zerocount
    \processaction
      [\@@rfautofile]
-     [     \v!ja=>\chardef\autocrossfilereferences=1,
-       \v!pagina=>\chardef\autocrossfilereferences=2]%
-   \chardef\referencefilecase=0
+     [     \v!ja=>\chardef\autocrossfilereferences\plusone,
+       \v!pagina=>\chardef\autocrossfilereferences\plustwo]%
+   \chardef\referencefilecase\zerocount
    \processaction[\@@rfconverteerfile]
-     [   \v!ja=>\chardef\referencefilecase=1,
-      \v!groot=>\chardef\referencefilecase=1,
-      \v!klein=>\chardef\referencefilecase=2]%
-  %\doifelse{\@@rfstrut}{\v!ja} % some day an option
-  %  {\referencetruttrue}{\referencestrutfalse}%
+     [   \v!ja=>\chardef\referencefilecase\plusone,
+      \v!groot=>\chardef\referencefilecase\plusone,
+      \v!klein=>\chardef\referencefilecase\plustwo]%
+  %\doifelse\@@rfstrut\v!ja % some day an option
+  %  \referencetruttrue\referencestrutfalse
    \setupreferenceprefix[\@@rfprefix]%
-   \doifelse{\@@rfglobaal}{\v!ja}
+   \doifelse\@@rfglobaal\v!ja
      {\settrue \autoglobalfilereferences}
      {\setfalse\autoglobalfilereferences}}
 
@@ -2286,8 +2284,7 @@
 %D \haalbuffer
 %D \stopregels
 
-\def\ref%
-  {\dodoubleargument\doref}
+\def\ref{\dodoubleargument\doref}
 
 \def\reftypep{\currentpagereference}
 \def\reftypet{\currenttextreference}
@@ -2645,12 +2642,12 @@
 
 \def\donaarspace#1[#2]%
   {\iflocationsplit
-     \ifsecondaryreference\setbox0=\hbox\fi % due to space insertion
-       {\let\donaarspace=\donaarfixed
+     \ifsecondaryreference\setbox0\hbox\fi % due to space insertion
+       {\let\donaarspace\donaarfixed
         \iflocation
           \def\processisolatedword##1%
             {\ifisolatedwords\ifsharesimilarreferences
-               \global\advance\similarreference 1
+               \global\advance\similarreference \plusone
              \fi\fi
              \hbox{\gotolocation{#2}{##1\presetgoto}}}%
           \doattributes\??ia\c!letter\c!kleur
@@ -2975,7 +2972,7 @@
 \definespeciallocation\v!URL {\settrue \forceURLlocation\handlespecialallocationFILEandURL}
 \definespeciallocation\v!url {\settrue \forceURLlocation\handlespecialallocationFILEandURL}
 
-\def\handlespecialFILEandURL%
+\def\handlespecialFILEandURL
   {\localdoifreferencefoundelse
      {\currentreferenceoperation::\currentreferencearguments}}
 
@@ -3027,13 +3024,13 @@
 %D The latter gives access to the description of the program,
 %D being the last argument to the definition command.
 
-\def\stelprogrammasin%
+\def\stelprogrammasin
   {\dodoubleargument\getparameters[\??pr]}
 
 \def\dodefinieerprogramma[#1][#2][#3]%
   {\setgvalue{\v!programma:::#1}{\doprogramma{#2}{#3}}}
 
-\def\definieerprogramma%
+\def\definieerprogramma
   {\dotripleargument\dodefinieerprogramma}
 
 \def\programma#1[#2]%

@@ -44,4 +44,19 @@ input mp-grph.mp ;
 input mp-grid.mp ; 
 input mp-func.mp ; 
 
+string metafunversion ;
+
+metafunversion = "metafun"                       & " " &
+                 decimal year                    & "-" &
+                 decimal month                   & "-" &
+                 decimal day                     & " " &
+                 decimal (time div 60)           & ":" &
+                 decimal (time-(time div 60)*60) ;
+
+let normalend = end ;
+
+def end =
+  message "" ; message metafunversion ; message "" ; normalend ;
+enddef ;
+
 dump ; endinput .

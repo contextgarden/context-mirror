@@ -1021,19 +1021,19 @@
    \c!voor=\blanko,\c!na=\pagina,
    \c!letter=\v!kleinnormaal,\c!kleur=]
 
-\def\resetremaininglistlength%
+\def\resetremaininglistlength
   {\dodoubleempty\doresetremaininglistlength}
 
 \def\doresetremaininglistlength[#1][#2]%
   {\bepaallijstkenmerken[#1][#2]% \determinelistcharacteristics[#1][#2]%
    \xdef\listlengthcounter{\number\utilitylistlength}}
 
-\def\showremaininglistlength%
+\def\showremaininglistlength
   {\bgroup
    \ifnum\listlengthcounter>\plusone
      \scratchdimen\pagetotal
      \setbox\scratchbox\vbox
-       {\@@llvoor\par\hbox{\strut}\par\hbox{\strut}\par\@@llna}
+       {\@@llvoor\par\horizontalstrut\par\horizontalstrut\par\@@llna}%
      \advance\scratchdimen \ht\scratchbox
      \advance\scratchdimen \dp\scratchbox
      \ifdim\scratchdimen>\pagegoal

@@ -580,6 +580,7 @@
 % \definelayerpreset [righttop]    [corner={right,top},location={left,bottom}]
 % \definelayerpreset [leftbottom]  [corner={left,bottom},location={right,top}]
 % \definelayerpreset [rightbottom] [corner={right,bottom},location={left,top}]
+% \definelayerpreset [middle]      [corner=middle,location=middle]
 % 
 % \setlayer[pagefigures][preset=lefttop]
 % \setlayer[pagefigures][preset=righttop]
@@ -605,6 +606,10 @@
   [\v!rechts\v!onder] 
   [\c!hoek={\v!rechts,\v!onder},%
    \c!plaats={\v!links,\v!boven}]
+
+\definelayerpreset 
+  [\v!midden]      
+  [\c!hoek=\v!midden,\c!plaats=\v!midden]
 
 \def\alignedbox
   {\dodoubleempty\doalignedbox[]}

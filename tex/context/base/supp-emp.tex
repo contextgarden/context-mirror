@@ -96,7 +96,7 @@
 %D for the next line segment. So, at each point specified by
 %D \type {\EMlineto} we need to know the coordinates. 
 
-\def\EMmoveto%
+\def\EMmoveto
   {\EMgetposition\EMlastmovex\EMlastmovey}
 
 %D The primitives \type {\pdflastxpos} and \type
@@ -112,13 +112,13 @@
 
 \def\EMlinewd{.4}
 
-\def\EMlineto%
+\def\EMlineto
   {\bgroup
    \EMgetposition\EMlastlinex\EMlastliney
-   \count0=\EMlastmovex \advance\count0 by -\EMlastlinex
-   \count2=\EMlastmovey \advance\count2 by -\EMlastliney
-   \divide\count0 by 65536
-   \divide\count2 by 65536
+   \count0=\EMlastmovex \advance\count0 -\EMlastlinex
+   \count2=\EMlastmovey \advance\count2 -\EMlastliney
+   \divide\count0 65536
+   \divide\count2 65536
    \pdfliteral{\EMlinewd\space w 0 0 m \the\count0 \space\the\count2 \space l S}%
    \global\let\EMlastmovex\EMlastlinex
    \global\let\EMlastmovey\EMlastliney
@@ -127,7 +127,7 @@
 %D We need a fresh start, so we first set the current position 
 %D to zero. 
 
-\def\resetEMspecials%
+\def\resetEMspecials
   {\gdef\EMlastmovex{0}\gdef\EMlastmovey{0}}
 
 %D Next comes the macro that keeps track of the position. The
@@ -162,7 +162,7 @@
 \def\EMgetposition#1#2%
   {\bgroup
    \pdfsavepos
-   \global\advance\EMcounter by 1
+   \global\advance\EMcounter 1
    \expandafter\write\expandafter\EMfile\expandafter
      {\expandafter\noexpand\expandafter\EMsetpos\number\EMcounter
       \space\number\pdflastxpos\space\number\pdflastypos}%
@@ -193,7 +193,7 @@
    \closein\scratchread
    \immediate\openout\EMfile=\EMfilename\relax}
 
-\def\stopEMspecials%
+\def\stopEMspecials
   {\closeout\EMfile}
 
 %D Just to be sure, we test if \type {\scratchread} is defined, 
@@ -266,7 +266,7 @@
 
 \ifx\dosetpositionpt\undefined \else % context part
 
-\edef\EMlinewd{\the\linewidth}
+% \edef\EMlinewd{\expandafter\withoutpt\the\linewidth}
 
 %D A few pages ago, we mentioned that \CONTEXT\ has built||in 
 %D position tracking. This means that when we want to implement
@@ -281,7 +281,7 @@
 \newskip \EMlastmovex \newskip \EMlastmovey
 \newskip \EMlastlinex \newskip \EMlastliney
 
-\def\resetEMspecials%
+\def\resetEMspecials
   {\global\EMlastmovex=0pt \global\EMlastmovey=\EMlastmovex}
 
 \resetEMspecials \appendtoks\resetEMspecials\to\everyshipout
@@ -300,10 +300,10 @@
    \global#1=\POSx\EMvariable
    \global#2=\POSy\EMvariable}
 
-\def\EMmoveto%
+\def\EMmoveto
   {\EMgetposition\EMlastmovex\EMlastmovey}
 
-\def\EMlineto%
+\def\EMlineto
   {\EMgetposition\EMlastlinex\EMlastliney
    \global\advance\EMlastmovex -\EMlastlinex
    \global\advance\EMlastmovey -\EMlastliney
@@ -364,7 +364,7 @@
   {\bgroup           % context alone, but it's a hack anyway
    \dimen0=#1\relax
    \count0=\dimen0
-   \divide\count0 by 65536
+   \divide\count0 65536
    \ifcase\pdfoutput 
      \special{em:linewidth \the\dimen0}%     
    \fi

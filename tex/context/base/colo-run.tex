@@ -122,9 +122,16 @@
          \doshowgroup1\doshowgroup2\doshowgroup3\doshowgroup4%
          \doshowgroup5\doshowgroup6\doshowgroup7\doshowgroup8}}}
 
-\gdef\showcolor[#1]%
+\gdef\showcolor
+  {\dosingleempty\doshowcolor}
+
+\gdef\doshowcolor[#1]%
   {\bgroup
-     \setupcolor[#1]
+     \iffirstargument
+       \let\colorlist\empty
+       \let\colorstyle\empty
+       \setupcolor[#1]%
+     \fi
      \stelwitruimtein[\v!geen]
      \def\rule
        {\vrule\!!width4em\!!height\strutht\!!depth\strutdp}

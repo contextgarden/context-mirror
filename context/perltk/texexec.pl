@@ -1317,12 +1317,13 @@ sub ScanContent
           { $ConTeXtInterface = "en" ; last }
         elsif (/\\(usa|imposta|ambiente)/)
           { $ConTeXtInterface = "it" ; last }
-        elsif (/(hoogte|breedte|letter)=/)
-          { $ConTeXtInterface = "nl" ; last }
         elsif (/(height|width|style)=/)
           { $ConTeXtInterface = "en" ; last }
         elsif (/(hoehe|breite|schrift)=/)
           { $ConTeXtInterface = "de" ; last }
+        # brr, can be \c!
+        elsif (/(hoogte|breedte|letter)=/)
+          { $ConTeXtInterface = "nl" ; last }
         elsif (/(altezza|ampiezza|stile)=/)
           { $ConTeXtInterface = "it" ; last }
         elsif (/externfiguur/)
@@ -1426,6 +1427,7 @@ sub RunTeXutil
 
 sub PurgeFiles
   { my $JobName = shift ;
+    print "\n         purging files : $JobName\n" ;
     RunPerlScript($TeXUtil, "--purge $JobName" ) } 
 
 sub RunTeXMP

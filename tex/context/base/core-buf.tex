@@ -789,7 +789,7 @@
         \def\next
           {\def\dobeforeblock####1####2%
              {\begingroup
-              \globaldefs=-1\relax}%
+              \globaldefs\minusone}%
            \def\doafterblock####1####2%
              {\endgroup}%
            \copyblock{#1}{#3#4}}}%
@@ -860,7 +860,7 @@
         {\bgroup\obeylines\dotripleempty\dohandhaafblok[##1][#2]}}%
    \processcommalist[#1]\docommando}
 
-\def\handhaafblokken%
+\def\handhaafblokken
   {\dodoubleempty\dohandhaafblokken}
 
 \newconditional\processblockstatus

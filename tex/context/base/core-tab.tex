@@ -476,7 +476,7 @@
   {\removelastskip                                   % itemize or so
    \par
    \ifnum\prevgraf>\zerocount                        % we want at least
-     \strut \geenwitruimte \vskip-\lineheight        % one line of text
+     \verticalstrut \geenwitruimte \vskip-\struttotal% one line of text
      \egroup
      \ifdim\dp\scratchbox>\lineheight                % see (*) for an
        \getnoflines{\dp\scratchbox}%                 % example of where
@@ -1265,7 +1265,7 @@
 
 \def\removeTABLEtopskip
   {\ifinsidefloat
-     \hbox{\strut}\kern-\lineheight
+     \verticalstrut\kern-\struttotal
    \else
      \hbox{}\kern-\topskip
    \fi}

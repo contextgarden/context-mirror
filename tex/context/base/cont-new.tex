@@ -17,9 +17,217 @@
 
 \unprotect
 
-% startplaats 
+%%%%%%%% todo: \chardef\snapstruts=1 => d=l-h 
 
 \writestatus{\m!systems}{beware: some patches loaded from cont-new.tex!}
+
+\appendtoks\optimizeverbatimfalse\to\everytabulate
+
+\def\centertogrid % meant for special situations 
+  {\ifgridsnapping
+     \dowithnextboxcontent
+       {\ignorespaces}
+       {\bgroup
+        \par
+        \scratchdimen\nextboxht
+        \advance\scratchdimen \nextboxdp
+        \getnoflines\scratchdimen
+        \setbox\nextbox\vbox to \noflines\lineheight
+          {\forgetall
+           \vss
+           \topbaselinecorrection
+           \copy\nextbox
+           \botbaselinecorrection
+           \vss}%
+        \setbox\nextbox\hbox{\lower\strutdp\flushnextbox}%
+        \noindent\snaptogrid\vbox{\flushnextbox}%
+        \egroup}
+       \vbox % was \hbox
+   \fi}
+
+% \strut Bruggetje 
+% \startlinecorrection
+% \startcombination
+%   {\framed{test}} {} {\framed{test}} {}
+% \stopcombination
+% \stoplinecorrection
+% \strut Bruggetje 
+% \startlinecorrection
+% \startcombination[2*2]
+%   {\framed{test}} {} {\framed{test}} {}
+%   {\framed{test}} {} {\framed{test}} {}
+% \stopcombination
+% \stoplinecorrection
+% \strut Bruggetje 
+% \startlinecorrection[blank]
+% \startcombination
+%   {\framed{test}} {} {\framed{test}} {}
+% \stopcombination
+% \stoplinecorrection
+% \strut Bruggetje 
+% \startlinecorrection[blank]
+% \startcombination[2*2]
+%   {\framed{test}} {} {\framed{test}} {}
+%   {\framed{test}} {} {\framed{test}} {}
+% \stopcombination
+% \stoplinecorrection
+% \strut Bruggetje 
+% \startlinecorrection
+% \startcombination
+%   {\framed[lines=1]{test}} {} {\framed[lines=1]{test}} {}
+% \stopcombination
+% \stoplinecorrection
+% \strut Bruggetje 
+% \startlinecorrection
+% \startcombination[2*2]
+%   {\framed[lines=1]{test}} {} {\framed[lines=1]{test}} {}
+%   {\framed[lines=1]{test}} {} {\framed[lines=1]{test}} {}
+% \stopcombination
+% \stoplinecorrection
+% \strut Bruggetje 
+% \startlinecorrection[blank]
+% \startcombination
+%   {\framed[lines=1]{test}} {} {\framed[lines=1]{test}} {}
+% \stopcombination
+% \stoplinecorrection
+% \strut Bruggetje 
+% \startlinecorrection[blank]
+% \startcombination[2*2]
+%   {\framed[lines=1]{test}} {} {\framed[lines=1]{test}} {}
+%   {\framed[lines=1]{test}} {} {\framed[lines=1]{test}} {}
+% \stopcombination
+% \stoplinecorrection
+
+% needed for extreme 
+
+\definesystemvariable{ie}
+
+% \def\definetest[#1]#2%
+%   {\long\setvalue{\??ie#1}{#2}}
+
+\def\definetest
+  {\dodoubleempty\dodefinetest}
+
+\def\dodefinetest[#1][#2]#3%
+  {\setgvalue{\??ie#1}{#3}%
+   \ifsecondargument
+      \processaction
+        [#2]
+        [% first test true, rest depends   
+         \v!volgende=>\setgvalue{\??ie#1}{\setgvalue{\??ie#1}{#3}\firstoftwoarguments},
+         % rest true if first true 
+         % \v!eerste=>\setgvalue{\??ie#1}{#3{\letgvalue{\??ie#1}%
+         %              \firstoftwoarguments\firstoftwoarguments}%
+         %              \secondoftwoarguments},
+         % always true 
+               \v!ja=>\letgvalue{\??ie#1}\firstoftwoarguments,
+         % always false
+              \v!nee=>\letgvalue{\??ie#1}\secondoftwoarguments]%
+   \fi}
+
+\def\doperformtest#1%
+  {\executeifdefined{\??ie#1}\secondoftwoarguments}
+
+\def\definecolumnsethsize#1#2#3#4% will be improved/speed up
+  {\bgroup
+   \def\OTRSETidentifier{#1}%
+   \ifcase\columnsetlevel\relax
+     \mofcolumns\plusone
+     \OTRSETinitializecolumns
+     \OTRSETassignwidths
+     \OTRSETsethsize
+   \fi 
+   \!!counta#2\!!countb#3\docalculatecolumnsetspan
+   \expandafter\egroup\expandafter\edef\expandafter
+     #4\expandafter{\the\!!widtha}}
+
+% so far 
+
+\def\setstrut
+  {\strutdimen\normallineheight       
+   \strutdimen\strutheightfactor\strutdimen           
+   \strutdimen\spacingfactor\strutdimen           
+   \edef\strutheight{\the\strutdimen}% 
+   \strutdimen\normallineheight     
+   \ifgridsnapping
+     \advance\strutdimen-\strutheight 
+   \else
+     \strutdimen\strutdepthfactor\strutdimen         
+     \strutdimen\spacingfactor\strutdimen         
+   \fi
+   \edef\strutdepth{\the\strutdimen}% 
+   \dosetstrut}
+
+% \setupinteraction[state=start]
+% 
+% \useattachment[whatever][test.tex]
+% 
+% % \setupattachments[\c!symbool={symbol-normal,symbol-down}]
+% 
+% \starttext \attachment[whatever] \stoptext
+
+\definesystemvariable{at}
+
+\def\useattachment
+  {\dotripleempty\douseattachment}
+
+\def\douseattachment[#1][#2][#3]% 
+  {\setgvalue{\??at :#1}{#2}%
+   \setgvalue{\??at::#1}{#3}%
+   \doifvaluenothing{\??at :#1}{\setxvalue{\??at :#1}{#1}}%
+   \doifvaluenothing{\??at::#1}{\setxvalue{\??at::#1}{\getvalue{\??at:#1}}}}
+
+\def\attachment[#1]%
+  {\ifundefined{\??at:#1}\else \iflocation
+     \doif\@@atstatus\v!start
+       {\doiffileelse{\getvalue{\??at:#1}}%
+          {\doPDFattachfile
+             {\getvalue{\??at::#1}}%
+             {1em}{1ex}\@@atkleur\@@atsymbool
+             {\getvalue{\??at:#1}}}%
+          {}}%
+   \fi \fi}
+
+\def\setupattachments
+  {\dodoubleempty\getparameters[\??at]}
+
+\setupattachments
+  [\c!status=\v!start,
+   \c!kleur=\@@iakleur,
+   \c!symbool=]
+
+% test this prikkels/pascal margin text before heads (mode 
+% 1) as well as uitwerkingen (mode 2) 
+
+%chardef\graphicvadjustmode=0 % fake 
+%chardef\graphicvadjustmode=1 % normal 
+\chardef\graphicvadjustmode=2 % normal + compensate (== default)  
+
+\def\placemargintexts % to be documented and translated
+  {\ifcase\margincontent\else           
+     \bgroup
+       \chardef\graphicvadjustmode\zerocount 
+       \doflushmargincontents 
+     \egroup
+   \fi}                                 
+
+\def\graphicvadjust % bad, those low level color calls here
+  {\dowithnextboxcontent
+     {\forgetall}
+     {\ifcase\graphicvadjustmode \@EA \fakedvadjust \else \@EA\normalvadjust \fi 
+        {\dostartgraphicgroup
+         \localstarttextcolor
+         \unvbox\nextbox
+         \localstoptextcolor
+         \dostopgraphicgroup
+         \ifcase\graphicvadjustmode \or \or
+           % corrects for one line paragraphs 
+           \nointerlineskip
+           \kern-\struttotal
+           \nointerlineskip
+           \verticalstrut
+         \fi}}%
+     \vbox}
 
 \def\removefunnytabulateline
   {\ifhmode
@@ -32,41 +240,6 @@
 %    \tabulatecontent
 %    \tabulatetailcontent
 %    \removefunnytabulateline}
-
-\newsignal\strutsignal \setfalse\sigstruts
-
-\def\begstrut
-  {\relax\ifcase\strutht\else
-     \ifconditional\sigstruts
-       \noindent\hbox{\strut}%
-       \normalpenalty\@M % \!!tenthousand
-       \normalhskip-\strutsignal
-       \normalhskip\strutsignal
-     \else
-       \strut
-       \normalpenalty\@M % \!!tenthousand
-       \normalhskip\zeropoint
-     \fi
-     \ignorespaces
-   \fi}
-
-\def\endstrut
-  {\relax\ifhmode\ifcase\strutht\else
-     \ifconditional\sigstruts
-       \ifdim\lastskip=\strutsignal 
-         \unskip\unskip\unpenalty\setbox\scratchbox\lastbox
-       \else
-         \normalpenalty\@M % \!!tenthousand
-         \normalhskip\zeropoint
-         \strut
-       \fi
-     \else
-       \removeunwantedspaces
-       \normalpenalty\@M % \!!tenthousand
-       \normalhskip\zeropoint
-       \strut
-     \fi
-   \fi\fi}
 
 \def\showexternalfigured
   {\bgroup
@@ -129,7 +302,7 @@
         \advance\scratchdimen-\strutdepth
         \getnoflines\scratchdimen
         \struttedbox{\flushnextbox}%
-        \dorecurse\noflines{\vbox{\hsize\zeropoint\strut}}%
+        \dorecurse\noflines\verticalstrut
       \else
         \flushnextbox
       \fi}%
@@ -397,7 +570,7 @@
 %
 %\defineclassfontsynonym [KopFont] [officina] [SerifBold]
 
-\def\startkolomopmaak % don't change
+\def\startcolumnmakeup % don't change
   {\bgroup
    \getrawnoflines\teksthoogte % teksthoogte kan topskip hebben, dus raw
    \scratchdimen\noflines\lineheight
@@ -407,12 +580,13 @@
    \ifcase\showgridstate\vbox\else\ruledvbox\fi to \scratchdimen\bgroup
    \forgetall} % ! don't change 
 
-\def\stopkolomopmaak
+\def\stopcolumnmakeup
   {\egroup
    \dp\scratchbox\zeropoint
    \wd\scratchbox\tekstbreedte
    \box\scratchbox
-   \egroup}
+   \egroup
+   \synchronizehsize}
 
 % todo : hoe komt box er uit
 

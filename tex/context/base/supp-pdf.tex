@@ -210,8 +210,8 @@
    \ScaledPointsToBigPoints{\number\dimen0}\PDFyoffset
    \dimen0=#4\dimen0=#6\dimen0
    \xdef\PDFheight{\the\dimen0}%
-   \global\let\PDFxoffset=\PDFxoffset
-   \global\let\PDFyoffset=\PDFyoffset}
+   \global\let\PDFxoffset\PDFxoffset
+   \global\let\PDFyoffset\PDFyoffset}
 
 \def\setPDFmediabox#1[#2 #3 #4 #5]#6\done%
   {\dimen2=#2bp\dimen2=-\dimen2
@@ -1791,7 +1791,7 @@
 
 % strange rounding/clip in pdftex/viewer
 % 
-% \def\finishMPgraphic% 
+% \def\finishMPgraphic
 %   {\stopMPresources
 %    \egroup
 %    \ifx\pdftexversion\undefined\else\ifnum\pdftexversion<14 % for the moment 

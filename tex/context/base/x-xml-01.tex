@@ -48,12 +48,20 @@
 %
 % so: 
 
-\definedfont [Mono at 1pt] 
+\setupbodyfont
+  [tt,10pt]  
+
+\setuptolerance
+  [verytolerant]
+
+\setupalign
+  [broad,right]
 
 \setuplayout
   [backspace=0cm,
    topspace=0cm,
-   width=40em, 
+   width=middle, 
+%   width=40em, 
    height=middle,
    header=0cm,
    footer=0cm]

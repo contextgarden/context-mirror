@@ -167,9 +167,9 @@
    \else
      \edef\nextlink  {0\getvalue{\s!link:#1:l}}%
    \fi
-   \edef\writelink%
-     {\writeutilitycommand%
-        {\twopassentry%
+   \edef\writelink
+     {\writeutilitycommand
+        {\twopassentry
            {\s!link:#1}%
            {\numberoflinks}%
            {\noexpand\realfolio}}}%
@@ -225,13 +225,13 @@
       \edef\prevlink   {0##4}%
       \edef\currentlink{0##5}}%
    \expanded{\next[\getvalue{\s!link:#1:}]}%
-   \edef\nextlink%
+   \edef\nextlink
      {0\iftwopassdatafound\twopassdata\else\lastlink\fi}%
    \setxvalue{\s!link:#1:}%
      {\firstlink:\lastlink:\noflinks:\currentlink:\nextlink}%
-   \edef\writelink%
-     {\writeutilitycommand%
-        {\twopassentry%
+   \edef\writelink
+     {\writeutilitycommand
+        {\twopassentry
            {\s!link:#1}%
            {\numberoflinks}%
            {\noexpand\realfolio}}}%
@@ -2112,15 +2112,22 @@
 \newbox\commentbox
 
 \def\doflushcommentanchors
-   {\inmarge{\hbox{\raise\strutht\box\commentbox}}}
+   {\processaction
+      [\@@ccplaats]
+      [     \v!inmarge=>\let\next\inmarge,
+         \v!linkerrand=>\let\next\inleftedge,
+        \v!rechterrand=>\let\next\inrightedge,
+        \v!linkermarge=>\let\next\inleftmargin,
+       \v!rechtermarge=>\let\next\inrightmargin]%
+    \next{\hbox{\raise\strutht\box\commentbox}}}
 
 \def\flushcommentanchors % in everypar so indirect
   {\ifvoid\commentbox\else \doflushcommentanchors \fi}
 
-\def\stelcommentaarin
+\def\setupcomment
   {\dodoubleargument\getparameters[\??cc]}
 
-\setvalue{\e!start\v!commentaar}% the dummy triple gobbles trailing spaces
+\setvalue{\e!start\v!comment}% the dummy triple gobbles trailing spaces
   {\dotripleempty\dostartcommentaar}
 
 \def\commentaar
@@ -2130,9 +2137,9 @@
   {\!!widtha\@@ccbreedte
    \!!heighta\@@cchoogte
    \doifelse\@@ccoptie\v!max
-     {\def\@@ccopen{1}}{\def\@@ccopen{0}}%
+     {\let\@@ccopen   \!!plusone}{\let\@@ccopen   \!!zerocount}%
    \doifelse\@@ccoptie\v!buffer
-     {\def\@@cccollect{1}}{\def\@@cccollect{0}}%
+     {\let\@@cccollect\!!plusone}{\let\@@cccollect\!!zerocount}%
    \doinsertcomment
      \@@cctitel\!!widtha\!!heighta
      \@@cckleur\@@ccopen\@@ccsymbool
@@ -2157,7 +2164,7 @@
          \egroup}}%
      {\long\def\docommando##1%
         {\egroup}}%
-   \grabuntil{\e!stop\v!commentaar}\docommando}
+   \grabuntil{\e!stop\v!comment}\docommando}
 
 \def\docommentaar[#1][#2]#3%
   {\doif\@@ccstatus\v!start
@@ -2434,7 +2441,7 @@
 \stelpaginaovergangenin
   [\v!reset]
 
-\stelcommentaarin
+\setupcomment
   [\c!status=\v!start,
    \c!marge=2.5em,
    \c!afstand=1em,
@@ -2444,6 +2451,7 @@
    \c!titel=,
    \c!spatie=\v!nee,
    \c!symbool=\v!normaal,
+   \c!plaats=\v!inmarge,
    \c!optie=]
 
 \stelversiesin    % beware, @ is made active here,

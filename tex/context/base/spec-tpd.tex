@@ -210,8 +210,8 @@
 \definefileinsertion{tpd}{mps}#1#2#3#4#5#6#7#8#9%
   {\hbox
      {%\convertMPcolors{#1}% plugged in supp-mpe
-      \scratchdimen=#3pt \PointsToReal{.01\scratchdimen}\xscale
-      \scratchdimen=#4pt \PointsToReal{.01\scratchdimen}\yscale
+      \scratchdimen#3\s!pt \PointsToReal{.01\scratchdimen}\xscale
+      \scratchdimen#4\s!pt \PointsToReal{.01\scratchdimen}\yscale
       \convertMPtoPDF{#1}\xscale\yscale
       \global\let\PDFimagereference\empty}}
 
@@ -261,7 +261,7 @@
 \def\checkpdfimagepagenumber#1%
   {\let\pdfimagepagenumber\empty
    \getfromcommacommand[#1][1]%
-   \doifnumberelse{\commalistelement}
+   \doifnumberelse\commalistelement
      {\ifcase\commalistelement\else
         \edef\pdfimagepagenumber{page \commalistelement}%
        %\message{(pdf image \pdfimagepagenumber)}%
@@ -349,7 +349,7 @@
         \else\ifx\PDFfigurereference\empty
           \donetrue
         \else
-          \doifinstringelse{\filesuffix}{\c!png,\c!jpg}\donetrue\donefalse
+          \doifinstringelse\filesuffix{\c!png,\c!jpg}\donetrue\donefalse
         \fi\fi}
        {\donefalse}%
      \ifdone
@@ -360,13 +360,13 @@
           \xdef\PDFimagereference{\the\pdflastximage}%
           \xdef\nofinsertpages{\the\pdflastximagepages}%
           \pdfrefximage\pdflastximage}%
-       #6=\wd\foundexternalfigure
-       #7=\ht\foundexternalfigure
+       #6\wd\foundexternalfigure
+       #7\ht\foundexternalfigure
        \global\let\PDFfigurereference\empty
        \global\let\PDFimageattributes\empty
      \else
-       #6=\zeropoint
-       #7=\zeropoint
+       #6\zeropoint
+       #7\zeropoint
      \fi
   \else
     #1{#2}{#3}{#4}{#5}{#6}{#7}% \normaldogetfiguresize...
@@ -376,14 +376,14 @@
 
 \def\dogetTPDfiguresize#1#2#3#4#5#6#7%
   {\ifmeasureTPDfiguresize
-     #4=\zeropoint
-     #5=\zeropoint
+     #4\zeropoint
+     #5\zeropoint
      \doifvalidpdfimagefileelse{#2}
-       {\global\setbox\foundexternalfigure=\vbox{\pdfimage{#2}}%
-        #6=\wd\foundexternalfigure
-        #7=\ht\foundexternalfigure}
-       {#6=\zeropoint
-        #7=\zeropoint}%
+       {\global\setbox\foundexternalfigure\vbox{\pdfimage{#2}}%
+        #6\wd\foundexternalfigure
+        #7\ht\foundexternalfigure}
+       {#6\zeropoint
+        #7\zeropoint}%
   \else
     #1{#2}{#3}{#4}{#5}{#6}{#7}% \normaldogetfiguresize...
   \fi}
@@ -429,8 +429,7 @@
 %D Drawing frames with round corners is inherited from the
 %D main module.
 
-\definespecial\doovalbox%
-  {\doPDFovalbox}
+\definespecial\doovalbox {\doPDFovalbox}
 
 %D \macros
 %D   {dostartgraymode,dostopgraymode,
@@ -443,25 +442,25 @@
 %D
 %D These are implemented in the main \PDF\ module.
 
-\definespecial\dostartgraymode      {\doPDFstartgraymode}
-\definespecial\dostopgraymode       {\doPDFstopgraymode}
-\definespecial\dostartrgbcolormode  {\doPDFstartrgbcolormode}
-\definespecial\dostartcmykcolormode {\doPDFstartcmykcolormode}
-\definespecial\dostartgraycolormode {\doPDFstartgraycolormode}
-\definespecial\dostartspotcolormode {\doPDFstartspotcolormode}
-\definespecial\dostopcolormode      {\doPDFstopcolormode}
-\definespecial\dostartrotation      {\doPDFstartrotation}
-\definespecial\dostoprotation       {\doPDFstoprotation}
-\definespecial\dostartscaling       {\doPDFstartscaling}
-\definespecial\dostopscaling        {\doPDFstopscaling}
-\definespecial\dostartmirroring     {\doPDFstartmirroring}
-\definespecial\dostopmirroring      {\doPDFstopmirroring}
-\definespecial\dostartnegative      {\doPDFstartnegative}
-\definespecial\dostopnegative       {\doPDFstopnegative}
+\definespecial\dostartgraymode     {\doPDFstartgraymode}
+\definespecial\dostopgraymode      {\doPDFstopgraymode}
+\definespecial\dostartrgbcolormode {\doPDFstartrgbcolormode}
+\definespecial\dostartcmykcolormode{\doPDFstartcmykcolormode}
+\definespecial\dostartgraycolormode{\doPDFstartgraycolormode}
+\definespecial\dostartspotcolormode{\doPDFstartspotcolormode}
+\definespecial\dostopcolormode     {\doPDFstopcolormode}
+\definespecial\dostartrotation     {\doPDFstartrotation}
+\definespecial\dostoprotation      {\doPDFstoprotation}
+\definespecial\dostartscaling      {\doPDFstartscaling}
+\definespecial\dostopscaling       {\doPDFstopscaling}
+\definespecial\dostartmirroring    {\doPDFstartmirroring}
+\definespecial\dostopmirroring     {\doPDFstopmirroring}
+\definespecial\dostartnegative     {\doPDFstartnegative}
+\definespecial\dostopnegative      {\doPDFstopnegative}
 
-\definespecial\doregistercmykspotcolor {\doPDFregistercmykspotcolor}
-\definespecial\doregisterrgbspotcolor  {\doPDFregisterrgbspotcolor}
-\definespecial\doregistergrayspotcolor {\doPDFregistergrayspotcolor}
+\definespecial\doregistercmykspotcolor{\doPDFregistercmykspotcolor}
+\definespecial\doregisterrgbspotcolor {\doPDFregisterrgbspotcolor}
+\definespecial\doregistergrayspotcolor{\doPDFregistergrayspotcolor}
 
 \def\doPDFregistersomespotcolor#1#2#3#4%
   {\immediate \pdfobj stream attr
@@ -478,8 +477,8 @@
 %D For transparency, we need to implement a couple of 
 %D auxiliary macros. If needed, we will generalize tham later.
 
-\definespecial\dostarttransparency  {\doPDFstarttransparency}
-\definespecial\dostoptransparency   {\doPDFstoptransparency}
+\definespecial\dostarttransparency{\doPDFstarttransparency}
+\definespecial\dostoptransparency {\doPDFstoptransparency}
 
 \PDFtransparencysupportedtrue
 
@@ -526,7 +525,7 @@
 \definespecial\dostartclipping#1#2#3%
   {\PointsToBigPoints{#2}\width
    \PointsToBigPoints{#3}\height
-   \grabMPclippath{#1}{1}{\width}{\height}
+   \grabMPclippath{#1}{1}\width\height
      {0 0 m \width\space 0 l \width \height l 0 \height l}%
    \pdfliteral
      {q 0 w \MPclippath\space W n}}
@@ -541,8 +540,8 @@
 %D Nothing special is needed to enable \PDF\ commands and
 %D interaction. We stick with a message.
 
-\definespecial\dosetupinteraction%
-  {\showmessage{\m!interactions}{21}{pdftex}}
+\definespecial\dosetupinteraction
+  {\showmessage\m!interactions{21}{pdftex}}
 
 \definespecial\dosetupopenaction {\doPDFsetupopenaction}
 \definespecial\dosetupcloseaction{\doPDFsetupcloseaction}
@@ -666,7 +665,7 @@
 
 \definespecial\dobeginofprofile#1#2#3#4%
   {\setPDFdestination{#1}%
-   \doifsomething{\PDFdestination}
+   \doifsomething\PDFdestination
      {\pdfthread
         width #2 height #3
         attr {/Title (\PDFdestination)} % can be omitted
@@ -766,12 +765,12 @@
   \definespecial\dostartobject#1#2#3#4#5%
     {\bgroup
      \setbox\nextbox\vbox\bgroup
-     \def\dodostopobject%
+     \def\dodostopobject
        {\egroup
         \pdfform\nextbox
         \dosetobjectreference{#1}{#2}{\the\pdflastform}}}
 
-  \definespecial\dostopobject%
+  \definespecial\dostopobject
     {\dodostopobject
      \egroup}
 
@@ -1123,6 +1122,13 @@
    \immediate\pdfobj{<</Type /ExtGState /TR /Identity>>}%
    \appendtoPDFdocumentextgstates{/GSpositive \the\pdflastobj\space0 R}%
    \global\let\initializePDFnegative\relax}
+
+%D File embedding: 
+
+\def\doPDFfilestreamobject class #1 name #2 file #3%
+  {\immediate\pdfobj stream file{#3}%
+   \doPDFdictionaryobject class {#1} name {#2} data
+     {/Type /Filespec /F (#3) /EF <</F \the\pdflastobj\space0 R>>}}
 
 % %D We can set \METAPOST\ prologues to~2:
 

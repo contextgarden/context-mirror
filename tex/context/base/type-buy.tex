@@ -322,4 +322,48 @@
 
 \stoptypescript
 
+% utopia (already in other files) 
+% 
+% \starttypescript [map] [ec,8r,texnansi]
+%   \loadmapfile [\typefaceencoding-adobe-utopia]
+% \stoptypescript
+% 
+% \starttypescript [serif] [utopia] [name]
+% 
+%   \definefontsynonym [Serif]           [Utopia-Regular]
+%   \definefontsynonym [SerifItalic]     [Utopia-Italic]
+%   \definefontsynonym [SerifSlanted]    [Utopia-Slanted]
+%   \definefontsynonym [SerifBold]       [Utopia-Bold]
+%   \definefontsynonym [SerifBoldItalic] [Utopia-BoldItalic]
+%   \definefontsynonym [SerifBoldSlanted][Utopia-BoldSlanted]
+% 
+% \stoptypescript
+% 
+% \starttypescript [serif] [utopia] [texnansi]
+% 
+%   \definefontsynonym [Utopia-Regular]     [texnansi-utrg] [encoding=texnansi]
+%   \definefontsynonym [Utopia-Italic]      [texnansi-uti]  [encoding=texnansi]
+%   \definefontsynonym [Utopia-Slanted]     [texnansi-uti]  [encoding=texnansi]
+%   \definefontsynonym [Utopia-Bold]        [texnansi-utb]  [encoding=texnansi]
+%   \definefontsynonym [Utopia-BoldItalic]  [texnansi-utbi] [encoding=texnansi] 
+%   \definefontsynonym [Utopia-BoldSlanted] [texnansi-utbi] [encoding=texnansi]
+% 
+% \stoptypescript
+
+% kabel 
+ 
+ \starttypescript [map] [ec,8r,texnansi]
+   \loadmapfile [\typefaceencoding-itc-kabel]
+ \stoptypescript
+ 
+ \starttypescript [sans] [kabel] [texnansi]
+ 
+   \definefontsynonym [ItcKabel-Bold]   [texnansi-kbb] [encoding=texnansi]
+   \definefontsynonym [ItcKabel-Demi]   [texnansi-kbd] [encoding=texnansi]
+   \definefontsynonym [ItcKabel-Medium] [texnansi-kbm] [encoding=texnansi]
+   \definefontsynonym [ItcKabel-Ultra]  [texnansi-kbu] [encoding=texnansi] 
+   \definefontsynonym [ItcKabel-Book]   [texnansi-kbw] [encoding=texnansi] 
+
+ \stoptypescript
+
 \endinput 

@@ -27,6 +27,10 @@ if unknown OnRightPage :
   boolean OnRightPage ; OnRightPage := true ;
 fi ;
 
+if unknown OnOddPage :
+  boolean OnOddPage ; OnOddPage := true ;
+fi ;
+
 if unknown InPageBody :
   boolean InPageBody ; InPageBody := false ;
 fi ;
@@ -239,6 +243,10 @@ RightEdgeWidth      :=    0.0pt     ;
 
 PageOffset          :=    0.0pt     ; 
 PageDepth           :=    0.0pt     ; 
+
+LayoutColumns       :=    0         ;
+LayoutColumnDistance:=    0.0pt     ;              
+LayoutColumnWidth   :=    0.0pt     ;
 
 LeftEdge             :=  -4 ; Top             := -40 ;
 LeftEdgeSeparator    :=  -3 ; TopSeparator    := -30 ; 

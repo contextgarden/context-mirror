@@ -2682,7 +2682,7 @@ my @dontasksuffixes =
      "mprun.mp",  "mprun.mpd",  "mprun.mpo",  "mprun.mpy") ;
 my @forsuresuffixes =
   ("tui","tup","ted","tes","top",
-   "log","tmp","run","bck",
+   "log","tmp","run","bck","rlg",
    "mpt","mpx","mpd","mpo") ;
 my @texonlysuffixes =
   ("dvi","ps","pdf") ;
@@ -2694,11 +2694,17 @@ if ($PurgeAllFiles)
 
 sub PurgeFiles # no my in foreach
   { my $pattern = $ARGV[0] ; my $strippedname ;
+    my @files = () ; 
     if ($pattern eq '')
-      { $pattern  = "*.*" }
+      { $pattern = "*.*" ;
+        @files = glob $pattern }
     else
-      { $pattern .= "-.*" }
-    my @files = sort glob $pattern ;
+      { $pattern = $ARGV[0] . "-*.*" ;
+        @files = glob $pattern ;
+        $pattern = $ARGV[0] . ".*" ;
+        push(@files,glob $pattern) }
+    @files = sort @files ; 
+    print "         purging files : $pattern\n\n" ;
     foreach $file (@dontaskprefixes)
       { if (-e $file)
           { RemoveContextFile($file) } }

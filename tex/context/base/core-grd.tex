@@ -297,31 +297,14 @@
      \expandafter\dodosnaptogrid
    \fi}
 
-% \def\forcedpresnapcorrection
-%   {\ifforcepresnap
-%      % we don't want top of page space  when 'top' option 
-%      %\vbox{\strut}\nobreak\vskip-\openlineheight
-%      \vbox{\strut}\vskip-\openlineheight
-%    \fi}
-% 
-%\def\forcedpresnapcorrection
-%  {\ifforcepresnap
-%     \ifvmode \else \par \fi
-%     \ifdim\prevdepth<\zeropoint \else
-%       \vskip-\prevdepth
-%       \vskip\strutdepth 
-%       \prevdepth\strutdepth 
-%     \fi
-%   \fi}
-
 \def\forcedpresnapcorrection % test this on 'details'
   {\ifforcepresnap
      \ifvmode \else \par \fi % new 
      % we don't want top of page space  when 'top' option 
-     %\vbox{\strut}\nobreak\vskip-\openlineheight
-     %\vbox{\strut}\vskip-\openlineheight
+     %\verticalstrut\nobreak\vskip-\struttotal
+     %\verticalstrut\vskip-\struttotal
      % nobreak really needed 
-     \allowbreak\vbox{\strut}\nobreak\vskip-\openlineheight 
+     \allowbreak\verticalstrut\nobreak\vskip-\struttotal
      %\ifdim\pagetotal>\topskip \else
        % eigenlijk signal 
        %\writestatus{grid}{removing dummy at top of page}%
@@ -403,7 +386,7 @@
 %               \getrawnoflines\scratchdimen
 %               \advance\scratchdimen-\noflines\lineheight
 %               \vskip\scratchdimen % disappears at top of page
-%               \dorecurse\noflines{\vbox{\strut}\nobreak}%
+%               \dorecurse\noflines{\verticalstrut\nobreak}%
 %             \else \ifdim\scratchdimen=\zeropoint
 %               % nothing to skip 
 %             \else % disappears at top of page 
@@ -604,7 +587,7 @@
               \getrawnoflines\scratchdimen
               \advance\scratchdimen-\noflines\lineheight
               \vskip\scratchdimen % disappears at top of page
-              \dorecurse\noflines{\vbox{\strut}\nobreak}%
+              \dorecurse\noflines{\verticalstrut\nobreak}%
             \else \ifdim\scratchdimen=\zeropoint
               % nothing to skip 
             \else % disappears at top of page 
@@ -767,32 +750,30 @@
        \hbox
    \fi}
 
-% The old one (to be kept):
-% 
-% \def\centertogrid
-%   {\ifgridsnapping
-%      \dowithnextbox
-%        {\bgroup
-%         \par
-%         \scratchdimen\nextboxht
-%         \advance\scratchdimen \nextboxdp
-%         \getnoflines\scratchdimen
-%         \setbox\nextbox\vbox to \noflines\lineheight
-%           {\forgetall
-%            \vskip\zeropoint \!!plus \nextboxht
-%            \copy\nextbox
-%            \kern.5\strutdp % VOORLOPIGE WAARDE
-%            \vskip\zeropoint \!!plus \nextboxdp}
-%         \noindent\snaptogrid\vbox{\flushnextbox}%
-%         \egroup}
-%        \hbox
-%    \fi}
-%
-% The new implementation, using one of the placement 
-% options, will be configurable some day ... 
+\def\centertogrid % meant for special situations 
+  {\ifgridsnapping
+     \dowithnextboxcontent
+       {\ignorespaces}
+       {\bgroup
+        \par
+        \scratchdimen\nextboxht
+        \advance\scratchdimen \nextboxdp
+        \getnoflines\scratchdimen
+        \setbox\nextbox\vbox to \noflines\lineheight
+          {\forgetall
+           \vskip\zeropoint \!!plus \nextboxht
+           \copy\nextbox
+           \kern.5\strutdp % VOORLOPIGE WAARDE
+           \vskip\zeropoint \!!plus \nextboxdp}%
+        \noindent\snaptogrid\vbox{\flushnextbox}%
+        \egroup}
+       \vbox % was \hbox
+   \fi}
 
-\def\centertogrid % usage: see ie pascal / stepcharts 
-  {\snaptogrid[\v!midden,.5\strutdp]\vbox} 
+% The next implementation is sub-optimal
+%
+% \def\centertogrid % usage: see ie pascal / stepcharts 
+%   {\snaptogrid[\v!midden,.5\strutdp]\vbox} 
 
 \ifx\startbaselinecorrection\undefined \wait \fi % change order
 
@@ -949,8 +930,9 @@
 %     \bgroup
 %     \endgraf
 %     \forgetall
-%     \vbox{\strut}
-%     \kern-2\lineheight
+%     \verticalstrut
+%     \kern-\struttotal
+%     \kern-\lineheight
 %     \nobreak
 %     \vskip\lineheight 
 %     \egroup
@@ -970,8 +952,8 @@
 
 \def\dosyncfuzzyvskip
   {\ifvmode\ifdim\lastskip<\lineheight\ifdim\lastskip>\zeropoint
-     \bgroup
-       \endgraf\forgetall\vbox{\strut}\nobreak\vskip\lineheight 
+     \bgroup      % - added 28/2/2003: check this, there was no - 
+       \endgraf\forgetall\verticalstrut\nobreak\vskip-\struttotal
      \egroup
    \fi\fi\fi}
 

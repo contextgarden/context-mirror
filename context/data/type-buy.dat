@@ -82,3 +82,13 @@
 
 --en=? --ve=linotype --co=univers --re
 --en=? --ve=linotype --co=univers --so=linotype/univers --ma --in
+
+# adobe utopia 
+# 
+# --en=? --ve=adobe --co=utopia --re
+# --en=? --ve=adobe --co=utopia --so=adobe/utopia --ma --in
+
+# itc kabel 
+
+--en=? --ve=itc --co=kabel --re
+--en=? --ve=itc --co=kabel --so=itc/kabel --ma --in

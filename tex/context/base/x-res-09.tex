@@ -22,8 +22,10 @@
   {\setups[rl:usage]%
    \egroup}
 
+\defineXMLsave [rl:base]    % base
 \defineXMLsave [rl:type]    % figure
 \defineXMLsave [rl:state]   % found|missing
+\defineXMLsave [rl:label]   % label
 \defineXMLsave [rl:file]    % filename
 \defineXMLsave [rl:suffix]  % filesuffix
 \defineXMLsave [rl:comment] % text 
@@ -46,10 +48,11 @@
 \startsetups[rl:usage]
 
 \starttabulate[|lw(4.5em)|p|]
+  \XMLrlentry {base}   {rl:base}   {0}
   \XMLrlentry {type}   {rl:type}   {0}
   \XMLrlentry {state}  {rl:state}  {0}
   \XMLrlentry {file}   {rl:file}   {0}
-  \XMLrlentry {name}   {rl:name}   {0}
+  \XMLrlentry {label}  {rl:label}  {0}
   \XMLrlentry {suffix} {rl:suffix} {0}
   \XMLrlentry {page}   {rl:page}   {0}
   \XMLrlentry {width}  {rl:width}  {1}

@@ -356,6 +356,8 @@ boolean snap_multi_par_tops   ; snap_multi_par_tops   := true ;
 boolean local_multi_par_area  ; local_multi_par_area  := false ; 
 boolean ignore_multi_par_page ; ignore_multi_par_page := false ; 
 
+boolean one_piece_multi_par   ; one_piece_multi_par   := false ; 
+
 def simplify_multi_pars = % boundingbox ipv shape als optie
   for i := 1 upto nofmultipars :
     multipars[i] := boundingbox multipars[i] ;
@@ -965,6 +967,10 @@ fi ;
   if span_multi_column_pars :
     endgroup ;
   fi ;
+
+  % quick hack for gb: 
+
+  one_piece_multi_par := (nofmultipars=1) and (pn=tn) ;
 
 enddef ;
 

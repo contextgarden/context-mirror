@@ -117,30 +117,52 @@
    \inobjecttrue
    \dowithnextbox{\dododosetobject{#1}{#2}{#3}\egroup}}
 
+% \def\dododosetobject#1#2#3%
+%   {\blabelgroup
+%    \dontshowcomposition % rather fuzzy in \setxvalue ... \hbox
+%    \@EA\xdef\csname\r!object#2::#3\endcsname
+%      {\noexpand\dohandleobject{#2}{#3}% 
+%         {\ifhbox\nextbox\hbox\else\vbox\fi}%
+%        %{\the\nextboxwd}{\the\nextboxht}{\the\nextboxdp}}%
+%         {\number\nextboxwd}{\number\nextboxht}{\number\nextboxdp}}%
+%    \expanded % freeze the dimensions since \dostartobject may use \nextbox
+%      {\dostartobject
+%         {#2}{#3}{\the\nextboxwd}{\the\nextboxht}{\the\nextboxdp}}%
+%    \ifcase#1\relax\else \ifdim\objectoffset>\zeropoint
+%      \scratchdimen\objectoffset
+%      \edef\width {\the\nextboxwd}%
+%      \edef\height{\the\nextboxht}%
+%      \edef\depth {\the\nextboxdp}%
+%      \setbox\nextbox\vbox spread 2\scratchdimen
+%        {\forgetall
+%         \vss\hbox spread 2\scratchdimen{\hss\flushnextbox\hss}\vss}%
+%      \setbox\nextbox\hbox
+%        {\hskip-\scratchdimen\lower\scratchdimen\flushnextbox}% 
+%      \nextboxwd\width
+%      \nextboxht\height
+%      \nextboxdp\depth
+%    \fi \fi
+%    \flushnextbox
+%    \dostopobject
+%    \elabelgroup}
+
 \def\dododosetobject#1#2#3%
   {\blabelgroup
    \dontshowcomposition % rather fuzzy in \setxvalue ... \hbox
+   \scratchdimen\objectoffset 
    \@EA\xdef\csname\r!object#2::#3\endcsname
      {\noexpand\dohandleobject{#2}{#3}% 
         {\ifhbox\nextbox\hbox\else\vbox\fi}%
        %{\the\nextboxwd}{\the\nextboxht}{\the\nextboxdp}}%
-        {\number\nextboxwd}{\number\nextboxht}{\number\nextboxdp}}%
+        {\number\nextboxwd}{\number\nextboxht}{\number\nextboxdp}%
+        {\number\scratchdimen}}%
    \expanded % freeze the dimensions since \dostartobject may use \nextbox
      {\dostartobject
         {#2}{#3}{\the\nextboxwd}{\the\nextboxht}{\the\nextboxdp}}%
    \ifcase#1\relax\else \ifdim\objectoffset>\zeropoint
-     \scratchdimen\objectoffset
-     \edef\width {\the\nextboxwd}%
-     \edef\height{\the\nextboxht}%
-     \edef\depth {\the\nextboxdp}%
      \setbox\nextbox\vbox spread 2\scratchdimen
-       {\forgetall
+       {\forgetall \offinterlineskip
         \vss\hbox spread 2\scratchdimen{\hss\flushnextbox\hss}\vss}%
-     \setbox\nextbox\hbox
-       {\hskip-\scratchdimen\lower\scratchdimen\flushnextbox}% 
-     \nextboxwd\width
-     \nextboxht\height
-     \nextboxdp\depth
    \fi \fi
    \flushnextbox
    \dostopobject
@@ -151,7 +173,27 @@
    \let\dohandleobject\dogetobject
    \csname\r!object#1::#2\endcsname}
 
-\def\dogetobject#1#2#3#4#5#6%
+% \def\dogetobject#1#2#3#4#5#6%
+%   {\initializepaper
+%    \forgetall 
+%    \dontshowcomposition
+%    \setbox\scratchbox\vbox
+%      {\doinsertobject{#1}{#2}}%
+%    \setbox\scratchbox#3%
+%      {\vbox to #5\s!sp  
+%         {\ifdim\ht\scratchbox>#5\s!sp 
+%     % or \ifdim\wd\scratchbox>#4\s!sp
+%            \vss\hbox to #4\s!sp{\hss\box\scratchbox\hss}\vss
+%          \else
+%            \vss\box\scratchbox
+%          \fi}}%
+%    \wd\scratchbox#4\s!sp
+%    \ht\scratchbox#5\s!sp
+%    \dp\scratchbox#6\s!sp
+%    \box\scratchbox
+%    \elabelgroup}
+
+\def\dogetobject#1#2#3#4#5#6#7%
   {\initializepaper
    \forgetall 
    \dontshowcomposition
@@ -165,6 +207,9 @@
          \else
            \vss\box\scratchbox
          \fi}}%
+   \scratchdimen#7\s!sp
+   \setbox\nextbox\hbox
+     {\hskip-\scratchdimen\lower\scratchdimen\flushnextbox}% 
    \wd\scratchbox#4\s!sp
    \ht\scratchbox#5\s!sp
    \dp\scratchbox#6\s!sp
@@ -180,10 +225,16 @@
 %D The results are reported in \type {\objectwidth}, \type 
 %D {\objectheight} and \type {\objectdepth}. 
 
-\def\dogetobjectdimensions#1#2#3#4#5#6% 
+% \def\dogetobjectdimensions#1#2#3#4#5#6% 
+%   {\def\objectwidth {#4\s!sp}%
+%    \def\objectheight{#5\s!sp}%
+%    \def\objectdepth {#6\s!sp}}
+
+\def\dogetobjectdimensions#1#2#3#4#5#6#7% 
   {\def\objectwidth {#4\s!sp}%
    \def\objectheight{#5\s!sp}%
-   \def\objectdepth {#6\s!sp}}
+   \def\objectdepth {#6\s!sp}%
+   \def\objectmargin{#7\s!sp}}
 
 \def\getobjectdimensions#1#2%
   {\let\dohandleobject\dogetobjectdimensions
@@ -242,6 +293,12 @@
    \fi
    \setxvalue{\r!driver#1::#2}{#3}%
    \elabelgroup}
+
+\def\dosetdriverreference
+  {\driverreferenced\dosetobjectreference}
+
+\def\driverreferenced
+  {\global\objectreferencingfalse}
 
 \def\defaultobjectreference#1#2{0}
 

@@ -699,16 +699,16 @@
 %D More save is to use a number for {MP}{#1} which permits
 %D redefinition. 
 
-\newcounter\MPobjectcounter
+\newcount\MPobjectcounter
 
 \def\douseMPbox#1%
-  {\doglobal\increment\MPobjectcounter
-   \setobject{MP}{\MPobjectcounter}\vbox 
+  {\global\advance\MPobjectcounter\plusone
+   \setobject{MP}{\number\MPobjectcounter}\vbox 
      {\forgetall
       \loadMPgraphic{\MPgraphicfile.\the\currentMPgraphic}{}%
       \deallocateMPslot\currentMPgraphic
       \placeMPgraphic}%
-   \setxvalue{#1}{\noexpand\getobject{MP}{\MPobjectcounter}}}
+   \setxvalue{#1}{\noexpand\getobject{MP}{\number\MPobjectcounter}}}
 
 \def\nouseMPbox#1%
   {\setxvalue{#1}%

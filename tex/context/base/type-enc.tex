@@ -18,70 +18,94 @@
 
 % Free fonts.
 
-% Computer Modern Roman (AMS)
+% Computer Modern Roman (AMS/BJ)
 
-\starttypescript [all] [computer-modern] [lm] 
+\starttypescript [all] [computer-modern] [lm] % will be ec
 
-  % the encoding vector is not yet okay ! 
+  % map 
+  
+  \loadmapfile[lm_ec.map]
 
-  \definefontsynonym [cmb10]    [lmb10]    [encoding=texnansi]
-  \definefontsynonym [cmbx10]   [lmbx10]   [encoding=texnansi]
-  \definefontsynonym [cmbx12]   [lmbx12]   [encoding=texnansi]
-  \definefontsynonym [cmbx5]    [lmbx5]    [encoding=texnansi]
-  \definefontsynonym [cmbx6]    [lmbx6]    [encoding=texnansi]
-  \definefontsynonym [cmbx7]    [lmbx7]    [encoding=texnansi]
-  \definefontsynonym [cmbx8]    [lmbx8]    [encoding=texnansi]
-  \definefontsynonym [cmbx9]    [lmbx9]    [encoding=texnansi]
-  \definefontsynonym [cmbxsl10] [lmbxsl10] [encoding=texnansi]
-  \definefontsynonym [cmbxti10] [lmbxti10] [encoding=texnansi]
-  \definefontsynonym [cmcsc10]  [lmcsc10]  [encoding=texnansi]
-  \definefontsynonym [cmitt10]  [lmitt10]  [encoding=texnansi]
-  \definefontsynonym [cmr10]    [lmr10]    [encoding=texnansi]
-  \definefontsynonym [cmr12]    [lmr12]    [encoding=texnansi]
-  \definefontsynonym [cmr17]    [lmr17]    [encoding=texnansi]
-  \definefontsynonym [cmr5]     [lmr5]     [encoding=texnansi]
-  \definefontsynonym [cmr6]     [lmr6]     [encoding=texnansi]
-  \definefontsynonym [cmr7]     [lmr7]     [encoding=texnansi]
-  \definefontsynonym [cmr8]     [lmr8]     [encoding=texnansi]
-  \definefontsynonym [cmr9]     [lmr9]     [encoding=texnansi]
-  \definefontsynonym [cmsl10]   [lmsl10]   [encoding=texnansi]
-  \definefontsynonym [cmsl12]   [lmsl12]   [encoding=texnansi]
-  \definefontsynonym [cmsl8]    [lmsl8]    [encoding=texnansi]
-  \definefontsynonym [cmsl9]    [lmsl9]    [encoding=texnansi]
-  \definefontsynonym [cmsltt10] [lmsltt10] [encoding=texnansi]
-  \definefontsynonym [cmss10]   [lmss10]   [encoding=texnansi]
-  \definefontsynonym [cmss12]   [lmss12]   [encoding=texnansi]
-  \definefontsynonym [cmss17]   [lmss17]   [encoding=texnansi]
-  \definefontsynonym [cmss8]    [lmss8]    [encoding=texnansi]
-  \definefontsynonym [cmss9]    [lmss9]    [encoding=texnansi]
-  \definefontsynonym [cmssbx10] [lmssbx10] [encoding=texnansi]
-  \definefontsynonym [cmssdc10] [lmssdc10] [encoding=texnansi]
-  \definefontsynonym [cmssi10]  [lmssi10]  [encoding=texnansi]
-  \definefontsynonym [cmssi12]  [lmssi12]  [encoding=texnansi]
-  \definefontsynonym [cmssi17]  [lmssi17]  [encoding=texnansi]
-  \definefontsynonym [cmssi8]   [lmssi8]   [encoding=texnansi]
-  \definefontsynonym [cmssi9]   [lmssi9]   [encoding=texnansi]
-  \definefontsynonym [cmtcsc10] [lmtcsc10] [encoding=texnansi]
-  \definefontsynonym [cmti10]   [lmti10]   [encoding=texnansi]
-  \definefontsynonym [cmti12]   [lmti12]   [encoding=texnansi]
-  \definefontsynonym [cmti7]    [lmti7]    [encoding=texnansi]
-  \definefontsynonym [cmti8]    [lmti8]    [encoding=texnansi]
-  \definefontsynonym [cmti9]    [lmti9]    [encoding=texnansi]
-  \definefontsynonym [cmtt10]   [lmtt10]   [encoding=texnansi]
-  \definefontsynonym [cmtt12]   [lmtt12]   [encoding=texnansi]
-  \definefontsynonym [cmtt8]    [lmtt8]    [encoding=texnansi]
-  \definefontsynonym [cmtt9]    [lmtt9]    [encoding=texnansi]
+  % Regular 
 
-  \definefontsynonym [cmbsl10]  [lmbsl10]  [encoding=texnansi]
-  \definefontsynonym [cmssbi10] [lmssbi10] [encoding=texnansi]
-  \definefontsynonym [cmssdi10] [lmssdi10] [encoding=texnansi]
-  \definefontsynonym [cmssq8]   [lmssq8]   [encoding=texnansi]
-  \definefontsynonym [cmssqb8]  [lmssqb8]  [encoding=texnansi]
-  \definefontsynonym [cmssqbi8] [lmssqbi8] [encoding=texnansi]
-  \definefontsynonym [cmssqi8]  [lmssqi8]  [encoding=texnansi]
+  \definefontsynonym [cmr5]     [lmr5_ec]     [encoding=ec]
+  \definefontsynonym [cmr6]     [lmr6_ec]     [encoding=ec]
+  \definefontsynonym [cmr7]     [lmr7_ec]     [encoding=ec]
+  \definefontsynonym [cmr8]     [lmr8_ec]     [encoding=ec]
+  \definefontsynonym [cmr9]     [lmr9_ec]     [encoding=ec]
+  \definefontsynonym [cmr10]    [lmr10_ec]    [encoding=ec]
+  \definefontsynonym [cmr12]    [lmr12_ec]    [encoding=ec]
+  \definefontsynonym [cmr17]    [lmr17_ec]    [encoding=ec]
+  
+  \definefontsynonym [cmbx5]    [lmbx5_ec]    [encoding=ec]
+  \definefontsynonym [cmbx6]    [lmbx6_ec]    [encoding=ec]
+  \definefontsynonym [cmbx7]    [lmbx7_ec]    [encoding=ec]
+  \definefontsynonym [cmbx8]    [lmbx8_ec]    [encoding=ec]
+  \definefontsynonym [cmbx9]    [lmbx9_ec]    [encoding=ec]
+  \definefontsynonym [cmbx10]   [lmbx10_ec]   [encoding=ec]
+  \definefontsynonym [cmbx12]   [lmbx12_ec]   [encoding=ec]
+
+  \definefontsynonym [cmsl10]   [lmro10_ec]   [encoding=ec]
+  \definefontsynonym [cmsl12]   [lmro12_ec]   [encoding=ec]
+  \definefontsynonym [cmsl8]    [lmro8_ec]    [encoding=ec]
+  \definefontsynonym [cmsl9]    [lmro9_ec]    [encoding=ec]
+  
+  \definefontsynonym [cmti7]    [lmri7_ec]    [encoding=ec]
+  \definefontsynonym [cmti8]    [lmri8_ec]    [encoding=ec]
+  \definefontsynonym [cmti9]    [lmri9_ec]    [encoding=ec]
+  \definefontsynonym [cmti10]   [lmri10_ec]   [encoding=ec]
+  \definefontsynonym [cmti12]   [lmri12_ec]   [encoding=ec]
+  
+  \definefontsynonym [cmb10]    [lmb10_ec]    [encoding=ec]
+  \definefontsynonym [cmbsl10]  [lmbo10_ec]   [encoding=ec]
+  \definefontsynonym [cmbxsl10] [lmbxo10_ec]  [encoding=ec]
+  \definefontsynonym [cmbxti10] [lmbxi10_ec]  [encoding=ec]
+
+  \definefontsynonym [cmcsc10]  [lmcsc10_ec]  [encoding=ec]
+  \definefontsynonym [cmcscsl10][lmcsco10_ec] [encoding=ec]
+
+  % Mono 
+
+  \definefontsynonym [cmtt8]    [lmtt8_ec]    [encoding=ec]
+  \definefontsynonym [cmtt9]    [lmtt9_ec]    [encoding=ec]
+  \definefontsynonym [cmtt10]   [lmtt10_ec]   [encoding=ec]
+  \definefontsynonym [cmtt12]   [lmtt12_ec]   [encoding=ec]
+
+  \definefontsynonym [cmitt10]  [lmtti10_ec]  [encoding=ec]
+  \definefontsynonym [cmsltt10] [lmtto10_ec]  [encoding=ec]
+
+  \definefontsynonym [cmvtt10]  [lmvtt10_ec]  [encoding=ec]
+  \definefontsynonym [cmvtti10] [lmvtto_ec]   [encoding=ec]
+
+  \definefontsynonym [cmcsc10]  [lmcsc10_ec]  [encoding=ec]
+
+  % Sans 
+
+  \definefontsynonym [cmss8]    [lmss8_ec]    [encoding=ec]
+  \definefontsynonym [cmss9]    [lmss9_ec]    [encoding=ec]
+  \definefontsynonym [cmss10]   [lmss10_ec]   [encoding=ec]
+  \definefontsynonym [cmss12]   [lmss12_ec]   [encoding=ec]
+  \definefontsynonym [cmss17]   [lmss17_ec]   [encoding=ec]
+  
+  \definefontsynonym [cmssi10]  [lmsso10_ec]  [encoding=ec]
+  \definefontsynonym [cmssi12]  [lmsso12_ec]  [encoding=ec]
+  \definefontsynonym [cmssi17]  [lmsso17_ec]  [encoding=ec]
+  \definefontsynonym [cmssi8]   [lmsso8_ec]   [encoding=ec]
+  \definefontsynonym [cmssi9]   [lmsso9_ec]   [encoding=ec]
+  
+  \definefontsynonym [cmssq8]   [lmssq8_ec]   [encoding=ec]
+  \definefontsynonym [cmssqb8]  [lmssqbx8_ec] [encoding=ec]
+  \definefontsynonym [cmssqbi8] [lmssqbo8_ec] [encoding=ec]
+  \definefontsynonym [cmssqi8]  [lmssqo8_ec]  [encoding=ec]
+  
+  \definefontsynonym [cmssbx10] [lmssbx10_ec] [encoding=ec]
+  \definefontsynonym [cmssdc10] [lmssdc10_ec] [encoding=ec]
+  \definefontsynonym [cmssbi10] [lmssbo10_ec] [encoding=ec]
+  \definefontsynonym [cmssdi10] [lmssdo10_ec] [encoding=ec]
+
 \stoptypescript
 
-\starttypescript [all] [computer-modern] [ec]
+\starttypescript [all] [computer-modern] [ec] % will become ae
   \definefontsynonym [cmb10]    [aeb10]    [encoding=ec,handling=glm]
   \definefontsynonym [cmbx10]   [aebx10]   [encoding=ec,handling=glm]
   \definefontsynonym [cmbx12]   [aebx12]   [encoding=ec,handling=glm]

@@ -116,7 +116,7 @@
 
 \fi
 
-\def\presetnormallineheight%
+\def\presetnormallineheight
   {\edef\normallineheight{\@@itregel}%
    \iflocalinterlinespace \else
      \doifdefined\bodyfontinterlinespecs
@@ -282,7 +282,7 @@
 %      \ifvmode          %in pos fonts gaat dit mis
 %        \ifblankoforceer%\ifdim\prevdepth>\zeropoint\else
 %          % -1000pt signals top of page or column (\ejectcolumn)
-%          \vbox{\strut}\kern-\lineheight
+%          \verticalstrut\kern-\struttotal
 %        \fi
 %        \ifblankoblokkeer
 %          \global\doeblankofalse
@@ -536,261 +536,7 @@
 
 % Overloaded in cont-new!
 
-% \def\docomplexdoblanko[#1]% pas op \relax's zijn nodig ivm volgende \if
-%   {\global\blankoresetfalse
-%    \global\blankoblokkeerfalse
-%    \global\blankogeenwitfalse
-%    \global\lokaalblankoflexibelfalse
-%    \global\lokaalblankovastfalse
-%    \global\blankoskip\zeropoint
-%    \global\blankoforceerfalse
-%    \blankobuitenfalse
-%    \expanded{\rawprocesscommalist[#1]}\doblanko
-%    \ifdim\blankoskip=\zeropoint\relax
-%      \iflokaalblankoflexibel
-%        \doglobal\advance\blankoskip \currentblanko
-%      \else\iflokaalblankovast
-%        \doglobal\advance\blankoskip \currentblanko
-%      \fi\fi
-%    \fi
-%    \ifblankobuiten
-%    \else
-%      \par
-%      \ifvmode          %in pos fonts gaat dit mis
-%        \ifblankoforceer%\ifdim\prevdepth>\zeropoint\else
-%          % -1000pt signals top of page or column (\ejectcolumn)
-%          \verticalstrut
-%          \kern-\lineheight
-%        \fi
-%        \ifblankoblokkeer
-%          \global\doeblankofalse
-%          \edef\oldprevdepth{\the\prevdepth}%
-%          \prevdepth\newprevdepth
-%        \else
-%          \global\doeblankotrue
-%        \fi
-%        \ifblankoreset
-%          \global\doeblankotrue
-%          \ifdim\prevdepth=\newprevdepth
-%            \prevdepth\oldprevdepth
-%          \fi
-%        \fi
-%        \ifdoeblanko
-%          \ifdim\lastskip<\blankoskip\relax
-%            % else when \blanko[2*groot] + \blanko[3*groot] with parskip
-%            % equaling 1*groot, gives a groot=\parskip so adding a small
-%            % value makes it distinguishable; can also be done at parskip
-%            % setting time (better)
-%            \global\advance\blankoskip \mindimen\relax % = skip
-%            % test this on 2* + 3* and parskip groot
-%            \ifblankogeenwit
-%              \global\advance\blankoskip -\parskip
-%            \else
-%              \ifdim\lastskip=\parskip
-%              \else  % force this due to previous comment
-%                \ifdim\parskip>\zeropoint\relax
-%                  \ifdim\blankoskip<\parskip\relax
-%                    \global\blankoskip\zeropoint
-%                  \else
-%                    \global\advance\blankoskip -\parskip
-%                  \fi
-%                \fi
-%              \fi
-%            \fi
-%            \ifblankoflexibel \else
-%              \blankoskip1\blankoskip
-%            \fi
-%            \iflokaalblankovast
-%              \blankoskip1\blankoskip
-%            \fi
-%            \iflokaalblankoflexibel
-%              \blankoskip1\blankoskip
-%                \!!plus\skipgluefactor\blankoskip
-%                \!!minus\skipgluefactor\blankoskip
-%            \fi
-%            \ifdim\prevdepth=\newprevdepth
-%              % blokkeer
-%            \else
-%              \iffuzzyvskip
-%                \removelastfuzzyvskip
-%                \fuzzyvskip\blankoskip\relax
-%              \else
-%                \removelastskip
-%                \vskip\blankoskip\relax
-%              \fi
-%            \fi
-%          \else
-%            \iffuzzyvskip
-%              \removelastfuzzyvskip
-%              \fuzzyvskip\blankoskip\relax
-%            \fi
-%          \fi
-%        \fi
-%      \fi
-%    \fi
-%    \global\fuzzyvskipfalse
-%    \presetindentation}
-
 \newsignal\noblanksignal
-
-% \def\docomplexdoblanko[#1]% pas op \relax's zijn nodig ivm volgende \if
-%   {\global\blankoresetfalse
-%    \global\blankoblokkeerfalse
-%    \global\blankogeenwitfalse
-%    \global\lokaalblankoflexibelfalse
-%    \global\lokaalblankovastfalse
-%    \global\blankoskip\zeropoint
-%    \global\blankoforceerfalse
-%    \blankobuitenfalse
-%    \expanded{\rawprocesscommalist[#1]}\doblanko
-%    \ifdim\blankoskip=\zeropoint\relax
-%      \iflokaalblankoflexibel
-%        \doglobal\advance\blankoskip \currentblanko
-%      \else\iflokaalblankovast
-%        \doglobal\advance\blankoskip \currentblanko
-%      \fi\fi
-%    \fi
-%    \ifblankobuiten
-%    \else
-%      \par
-%      \ifvmode          %in pos fonts gaat dit mis
-%        \ifblankoforceer%\ifdim\prevdepth>\zeropoint\else
-%          % -1000pt signals top of page or column (\ejectcolumn)
-%          \vbox{\strut}\kern-\lineheight
-%        \fi
-%        \ifblankoblokkeer
-%          \global\doeblankofalse
-%          \ifgridsnapping
-%            \ifdim\prevdepth<\zeropoint
-%              % brrr
-%            \else
-%              % dirty trick: smaller blanks are ignored after
-%              % a larger one, so 10 lines is probably safe; first make
-%              % sure that we honor penalties
-%              \scratchcounter\lastpenalty
-%              % now comes the trick (cross our fingers that this works
-%              % well in multi columns; maybe an ifinner test is needed
-%              % \vskip-10\lineheight
-%              %    \ifnum\scratchcounter=\zerocount \else \penalty\lastpenalty \fi
-%              %    \vskip 10\lineheight
-%              % allas, this leads to overfull pages, so we try this:
-%              \kern-\noblanksignal
-%              \ifnum\scratchcounter=\zerocount
-%              \else
-%                \penalty\lastpenalty
-%              \fi
-%              \kern\noblanksignal
-%              % end-of-dirty-trick
-%            \fi
-%          \else
-%            \ifdim\prevdepth<\zeropoint
-%              % brrr
-%            \else
-%              % ensure at least a proper prevdepth, this should be
-%              % an option
-%              \vskip-\prevdepth
-%              \vskip\strutdepth
-%              \prevdepth\strutdepth
-%            \fi
-%            % the old crappy piece of code
-%            \edef\oldprevdepth{\the\prevdepth}%
-%            \prevdepth\newprevdepth
-%          \fi
-%        \else
-%          \global\doeblankotrue
-%        \fi
-%        \ifblankoreset
-%          \global\doeblankotrue
-%          \ifgridsnapping
-%             % let's play safe and not fool around with the depth, if
-%             % only because it took a lot of effort to sort out the grid
-%             % stuff in the first place
-%          \else
-%            \ifdim\prevdepth=\newprevdepth
-%              \prevdepth\oldprevdepth
-%            \fi
-%          \fi
-%        \fi
-%        \ifdoeblanko
-%          \ifdim1\lastskip<1\blankoskip\relax
-%            % else when \blanko[2*groot] + \blanko[3*groot] with parskip
-%            % equaling 1*groot, gives a groot=\parskip so adding a small
-%            % value makes it distinguishable; can also be done at parskip
-%            % setting time (better)
-%            \global\advance\blankoskip \mindimen\relax % = skip
-%            % test this on 2* + 3* and parskip groot
-%            \ifblankogeenwit
-%              \global\advance\blankoskip -\parskip
-%            \else
-%              \ifdim\lastskip=\parskip
-%              \else  % force this due to previous comment
-%                \ifdim\parskip>\zeropoint\relax
-%                  \ifdim\blankoskip<\parskip\relax
-%                    \global\blankoskip\zeropoint
-%                  \else
-%                    \global\advance\blankoskip -\parskip
-%                  \fi
-%                \fi
-%              \fi
-%            \fi
-%            \ifblankoflexibel \else
-%              \blankoskip1\blankoskip
-%            \fi
-%            \iflokaalblankovast
-%              \blankoskip1\blankoskip
-%            \fi
-%            \iflokaalblankoflexibel
-%              \blankoskip1\blankoskip
-%                \!!plus\skipgluefactor\blankoskip
-%                \!!minus\skipgluefactor\blankoskip
-%            \fi
-%            \ifgridsnapping
-%              \ifdim\lastkern=\noblanksignal
-%                \global\doeblankofalse
-%              \fi
-%            \else
-%              \ifdim\prevdepth=\newprevdepth
-%                \global\doeblankofalse
-%              \fi
-%            \fi
-%            \ifdoeblanko
-%              \iffuzzyvskip
-%                \removelastfuzzyvskip
-%                \fuzzyvskip\blankoskip\relax
-%              \else
-%                \removelastskip
-%                \vskip\blankoskip\relax
-%              \fi
-%            \fi
-%          \else
-%            \iffuzzyvskip
-%              \removelastfuzzyvskip
-%              \fuzzyvskip\blankoskip\relax
-%            \else
-%              % new, test this on pascal
-%              \ifdim\blankoskip<\zeropoint
-%                \advance\blankoskip-\lastskip
-%                \removelastskip
-%                \ifdim\blankoskip>\zeropoint
-%                  \vskip\blankoskip
-%                \else
-%                  \vskip\zeropoint
-%                \fi
-%              \else
-%                % also new
-%                \ifdim\blankoskip=\zeropoint
-%                  \ifblankogeenwit
-%                    \geenwitruimte
-%                  \fi
-%                \fi
-%              \fi
-%            \fi
-%          \fi
-%        \fi
-%      \fi
-%    \fi
-%    \global\fuzzyvskipfalse
-%    \presetindentation}
 
 \def\docomplexdoblanko[#1]% pas op \relax's zijn nodig ivm volgende \if
   {\global\blankoresetfalse
@@ -815,7 +561,7 @@
      \ifvmode          %in pos fonts gaat dit mis
        \ifblankoforceer%\ifdim\prevdepth>\zeropoint\else
          % -1000pt signals top of page or column (\ejectcolumn)
-         \vbox{\strut}\kern-\lineheight
+         \bgroup\forgeteverypar\verticalstrut\egroup\kern-\struttotal
        \fi
        \ifblankoblokkeer
          \global\doeblankofalse
@@ -1570,13 +1316,15 @@
 \def\toonregelcorrectie   {\showbaselinecorrection}
 \def\regelcorrectie       {\baselinecorrection}
 
-\definecomplexorsimpleempty\startregelcorrectie
 
 % \prevdepth crosses pageboundaries!
 
 \let\dorondomregelcorrectie=\relax
 
-\def\complexstartregelcorrectie[#1]%
+\def\startregelcorrectie
+  {\dodoubleempty\dostartregelcorrectie}
+
+\def\dostartregelcorrectie[#1][#2]% #2 gobbles spaces
   {\bgroup
    \processaction
      [#1]
@@ -1585,7 +1333,8 @@
       \s!unknown=>{\def\dorondomregelcorrectie{\blanko[#1]}}]%
    \dorondomregelcorrectie
    \startbaselinecorrection
-   \offbaselinecorrection}
+   \offbaselinecorrection
+   \ignorespaces}
 
 \def\stopregelcorrectie
   {\stopbaselinecorrection
@@ -1599,9 +1348,10 @@
       \stopbaselinecorrection}%
    \vbox}
 
-\def\verticalstrut{\vbox{\hsize\zeropoint\strut}}
+\def\verticalstrut  {\normalvbox{\hsize\zeropoint\strut}}
+\def\horizontalstrut{\normalhbox                {\strut}}
 
-\def\showstruts%
+\def\showstruts
   {\setteststrut}
 
 % Hieronder volgen enkele instellingen en macro's ten behoeve
@@ -1648,6 +1398,7 @@
 \newdimen\openstrutheight
 \newdimen\openstrutdepth
 \newdimen\topskipgap
+\newdimen\struttotal
 
 \def\strutheightfactor      {.72}
 \def\strutdepthfactor       {.28}
@@ -1692,7 +1443,7 @@
      \vskip-\openstrutheight
    \fi
    \verticalstrut
-   \vskip-\openlineheight}
+   \vskip-\struttotal}
 
 \def\settopskip % the extra test is needed for the lbr family
   {\topskip\systemtopskipfactor\globalbodyfontsize
@@ -1729,7 +1480,7 @@
    \normalbaselines}
 
 \def\setspacingfactor#1\to#2\by#3\\%
-  {\strutdimen#2pt\relax
+  {\strutdimen#2\s!pt
    \strutdimen#3\strutdimen
    \edef#1{\withoutpt{\the\strutdimen}}}
 
@@ -1776,7 +1527,7 @@
 % The double \hbox construction enables us to \backtrack
 % boxes.
 
-% \def\setstrut%
+% \def\setstrut
 %   {\setstrutdimen\strutheight\strutheightfactor\spacingfactor
 %    \setstrutdimen\strutdepth \strutdepthfactor \spacingfactor
 %    \let\strut=\normalstrut
@@ -1816,7 +1567,13 @@
            \!!width \strutwidth
            \!!height\strutheight
            \!!depth \strutdepth
-         \hss}}}
+         \hss}}%
+   \struttotal\strutht
+   \advance\struttotal\strutdp}
+
+%D The dimen \type {\struttotal} holds the exact size of the
+%D strut; occasionally a one scaled point difference can show 
+%D up with the lineheight. 
 
 %D Sometimes a capstrut comes in handy
 %D
@@ -1846,20 +1603,60 @@
   {\def\strutwidth{.8pt}%
    \setstrut}
 
+% simple version 
+%
+% \def\begstrut
+%   {\relax\ifcase\strutht\else
+%      \strut
+%      \normalpenalty\@M % \!!tenthousand
+%      \normalhskip\zeropoint
+%      \ignorespaces
+%    \fi}
+% 
+% \def\endstrut
+%   {\relax\ifhmode\ifcase\strutht\else
+%      \removeunwantedspaces
+%      \normalpenalty\@M % \!!tenthousand
+%      \normalhskip\zeropoint
+%      \strut
+%    \fi\fi}
+
+% when enabled, sigstruts will remove themselves if nothing 
+% goes inbetween
+
+\newsignal\strutsignal \setfalse\sigstruts 
+
 \def\begstrut
   {\relax\ifcase\strutht\else
-     \strut
-     \normalpenalty\@M % \!!tenthousand
-     \normalhskip\zeropoint
+     \ifconditional\sigstruts
+       \noindent\horizontalstrut
+       \normalpenalty\@M % \!!tenthousand
+       \normalhskip-\strutsignal
+       \normalhskip\strutsignal
+     \else
+       \strut
+       \normalpenalty\@M % \!!tenthousand
+       \normalhskip\zeropoint
+     \fi
      \ignorespaces
    \fi}
 
 \def\endstrut
   {\relax\ifhmode\ifcase\strutht\else
-     \removeunwantedspaces
-     \normalpenalty\@M % \!!tenthousand
-     \normalhskip\zeropoint
-     \strut
+     \ifconditional\sigstruts
+       \ifdim\lastskip=\strutsignal 
+         \unskip\unskip\unpenalty\setbox\scratchbox\lastbox
+       \else
+         \normalpenalty\@M % \!!tenthousand
+         \normalhskip\zeropoint
+         \strut
+       \fi
+     \else
+       \removeunwantedspaces
+       \normalpenalty\@M % \!!tenthousand
+       \normalhskip\zeropoint
+       \strut
+     \fi
    \fi\fi}
 
 \newbox\nostrutbox \setbox\nostrutbox\normalhbox{\normalhbox{}}
@@ -1872,7 +1669,7 @@
 
 % unsave:
 %
-% \def\pseudostrut%
+% \def\pseudostrut
 %   {\bgroup
 %    \setnostrut
 %    \normalstrut
@@ -1886,7 +1683,7 @@
 %
 % so:
 
-\def\pseudostrut%
+\def\pseudostrut
   {\noindent} % better: \dontleavehmode
 
 \let\pseudobegstrut\pseudostrut
@@ -2808,13 +2605,13 @@
    \updateraggedskips}
 
 \def\dosetraggedskips#1#2#3#4#5#6#7%
-  {\chardef\raggedstatus#1\relax
-   \leftskip1\leftskip\!!plus#2\relax   % zie: Tex By Topic 8.1.3
-   \rightskip1\rightskip\!!plus#3\relax % zie: Tex By Topic 8.1.3
-   \spaceskip#4\relax
-   \xspaceskip#5\relax
+  {\chardef    \raggedstatus#1\relax
+   \leftskip   1\leftskip\!!plus#2\relax  % zie: Tex By Topic 8.1.3
+   \rightskip  1\rightskip\!!plus#3\relax % zie: Tex By Topic 8.1.3
+   \spaceskip  #4\relax
+   \xspaceskip #5\relax
    \parfillskip\zeropoint\!!plus#6\relax
-   \parindent#7\relax}
+   \parindent  #7\relax}
 
 % \def\notragged%
 %   {\setraggedskips{0}{0em}{0em}{0em}{0em}{1fil}{\parindent}}
@@ -2940,12 +2737,17 @@
   {\par
    \egroup}
 
+\chardef\alignstrutmode=1
+
 \def\doalignline#1#2% \\ == newline
   {\bgroup
    \setlocalhsize % new
    \def\\{\egroup\par\doalignline{#1}{#2}\bgroup}%
    \dowithnextbox
-     {\noindent\hbox to \localhsize{\strut#1\unhbox\nextbox#2}\egroup}
+     {\noindent
+      \hbox to \localhsize
+        {\ifcase\alignstrutmode\or\strut\fi
+          #1\unhbox\nextbox#2}\egroup}
      \hbox}
 
 % directe commando's
@@ -2962,8 +2764,7 @@
 \setvalue{\s!do\v!regel\v!rechts}{\doalignline \hss   \relax}
 \setvalue{\s!do\v!regel\v!midden}{\doalignline \hss   \hss  }
 
-\def\doregelplaats#1%
-  {\getvalue{\s!do\v!regel#1}}
+\def\doregelplaats#1{\csname\s!do\v!regel#1\endcsname}
 
 %D Experimental:
 
@@ -2973,7 +2774,8 @@
    \def\\{\egroup\par\doxalignline{#1}{#2}\bgroup}% inefficient
    \dowithnextbox
      {\noindent\hbox to \localhsize
-        {\strut\signalrightpage
+        {\ifcase\alignstrutmode\or\strut\fi
+         \signalrightpage
          \doifrightpageelse{#1\unhbox\nextbox#2}{#2\unhbox\nextbox#1}}%
       \egroup}
      \hbox}
@@ -2983,8 +2785,7 @@
 
 %D Better:
 
-\def\doregelplaats#1%
-  {\getvalue{\s!do\v!regel#1}}
+\def\doregelplaats#1{\csname\s!do\v!regel#1\endcsname}
 
 \def\alignedline#1#2% setting default
   {\csname

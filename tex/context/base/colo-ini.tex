@@ -456,6 +456,8 @@
      {\showmessage\m!colors4\colorstyle}
      {\showmessage\m!colors5\colorstyle}}
 
+\let\usecolors\setupcolor
+
 %D When typesetting for paper, we prefer using the \kap{CMYK}
 %D color space, but for on||screen viewing we prefer \kap{RGB}
 %D (the previous implementation supported only this scheme).
@@ -1957,6 +1959,12 @@
       \processcommalist[#2]\dododefinepalet}
      {\doifdefined{\??pa#2}
         {\expanded{\dodefinepalet[#1][\getvalue{\??pa\??pa#2}]}}}}
+
+\let\paletsize\!!zerocount
+
+\def\getpaletsize[#1]%
+  {\getcommacommandsize[\getvalue{\??pa\??pa#1}]%
+   \edef\paletsize{\number\commalistsize}}
 
 %D \macros
 %D   {setuppalet}

@@ -435,8 +435,8 @@
    \hangindent\zeropoint
    \everypar\emptytoks
    \ifdim\pagetotal=\zeropoint \else
-     \vbox{\forgetall\strut}%
-     \vskip-\openlineheight
+     \verticalstrut
+     \vskip-\struttotal
    \fi
    \global\savedpagetotal\pagetotal
    \global\singlecolumnout\output
@@ -703,8 +703,8 @@
            \flushshapebox
            \everypar\emptytoks
            \parskip\zeropoint % = \forgetall
-           \strut\endgraf
-           \vskip-\lineheight
+           \verticalstrut
+           \vskip-\struttotal
            \vfil}}%
    \fi
    \ifx\postprocesscolumnbox\undefined \else
@@ -1045,7 +1045,7 @@
 %D interface, which acts like:
 %D
 %D \starttypen
-%D \startcolumns[n=4,balance=no,stretch=no,line=on]
+%D \startcolumns[n=4,balance=no]
 %D   some text
 %D \stopcolumns
 %D \stoptypen
@@ -1056,9 +1056,7 @@
 %D \starttypen
 %D \setupcolumns
 %D   [n=2,
-%D    balance=yes,
-%D    stretch=text,
-%D    line=off]
+%D    balance=yes]
 %D \stoptypen
 %D
 %D In this case, stretching is according to the way it's
@@ -1584,7 +1582,10 @@
 
 \def\dostartsimplecolumns[#1]%
   {\bgroup
-   \getparameters[\??kl][\c!breedte=\hsize,\c!afstand=1em,\c!n=2,#1]%
+   \getparameters[\??kl]
+     [\c!breedte=\hsize,\c!afstand=1.5\korpsgrootte,%
+      \c!n=2,\c!regels=0,#1]%
+   \let\rigidcolumnlines\@@klregels
    \setrigidcolumnhsize\@@klbreedte\@@klafstand\@@kln
    \setbox\scratchbox\vbox\bgroup
    \forgetall} % \blanko[\v!blokkeer]

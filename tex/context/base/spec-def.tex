@@ -888,7 +888,16 @@
 \installspecial [\dostarttransparency] [or] [2]
 \installspecial [\dostoptransparency]  [or] [0]
 
-%D Some suitable special collections are defined below.
+%D \macros
+%D   {doattachfile}
+%D
+%D \starttypen
+%D \doattachfile{title}{width}{height}{color}{symbol}{file}
+%D \stoptypen
+
+\installspecial [\doattachfile] [or] [6]
+
+%D We define a couple of backends: 
 
 \defineoutput [dvipsone] [dvi,ps,yy]
 \defineoutput [dviwindo] [dvi,ps,yy,win]

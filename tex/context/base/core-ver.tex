@@ -128,7 +128,7 @@
 \installnewpretty I {\setupprettiesintype{EIF}\setupprettytype} % E taken
 \installnewpretty X {\setupprettiesintype{XML}\setupprettytype}
 
- \def\setupcommonverbatim#1%
+\def\setupcommonverbatim#1%
   {\eightbitcharactersfalse % obey regime / encoding 
    %
    \def\prettyidentifier{TEX}%
@@ -146,6 +146,7 @@
    \doifvalue{#1\c!tab} \s!ascii{\chardef\tabskipmode2}% quit on >127 
    \doifvalue{#1\c!pagina}\v!nee{\def\obeypages {\ignorepages}}%
    %
+   \ignorehyphens % default 
    \ExpandFirstAfter\processaction
      [\getvalue{#1\c!regels}]
      [        \v!ja=>\obeybreakpoints,
@@ -565,27 +566,46 @@
 %D works all right, but a decent hyphenation support of
 %D \type{\tt} text will be implemented soon. 
 
+% \def\obeyhyphens
+%   {\def\obeyedspace{\hskip\spaceskip}%
+%    \edef\savedfont{\the\font}%
+%    \ttsl\hyphenchar\font45
+%    \tttf\hyphenchar\font45
+%    \savedfont
+%    \spaceskip.5em\!!plus.25em\!!minus.25em\relax}
+% 
+% \def\obeybreakpoints
+%   {\def\obeyedspace{\hskip\spaceskip}%
+%    \spaceskip.5em
+%    \veryraggedright}
+
 \def\obeyhyphens
-  {\def\obeyedspace{\hskip\spaceskip}%
-   \edef\savedfont{\the\font}%
-   \ttsl\hyphenchar\font=45
-   \tttf\hyphenchar\font=45
-   \savedfont
-   \spaceskip.5em\!!plus.25em\!!minus.25em\relax}
+  {\def\obeyedspace {\hskip\spaceskip}%
+   \def\controlspace{\hskip\zeropoint\hbox{\char32}\hskip\zeropoint}%
+   \spaceskip.25em\!!plus.5em\!!minus.25em\relax}
 
 \def\obeybreakpoints
-  {\def\obeyedspace{\hskip\spaceskip}%
-   \spaceskip.5em
+  {\ignorehyphens
    \veryraggedright}
 
+\def\ignorehyphens
+  {\def\obeyedspace {\null\hskip\spaceskip\null}%
+   \def\controlspace{\null\hskip\zeropoint\hbox{\char32}\hskip\zeropoint\null}%
+   \spaceskip.5em\relax}
+ 
 %\unexpanded\def\typ
 %  {\bgroup
 %   \obeyhyphens
 %   \futurelet\next\dotype}
 
+%\unexpanded\def\typ
+%  {\bgroup
+%   \obeyhyphens
+%   \futurelet\next\dodotype}
+
 \unexpanded\def\typ
   {\bgroup
-   \obeyhyphens
+   \let\@@tyregels\v!afgebroken
    \futurelet\next\dodotype}
 
 %D \macros

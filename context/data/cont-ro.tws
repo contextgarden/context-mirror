@@ -2200,6 +2200,7 @@ var:distanta:*dimensiune::
 var:separator:*text::
 var:latime:*dimensiune::
 var:distanta:*dimensiune::
+var:stack:da,nu::
 ivr:seteazainconjurat::
 stopsetup
 
@@ -2336,7 +2337,7 @@ stopsetup
 
 startsetup
 com:seteazatitlu:
-typ:val/vars/:
+typ:vals/vars/:
 val:*sectiune::
 var:stil:normal,aldin,inclinat,aldininclinat,type,cap,mic...,*comanda::
 var:stiltext:normal,aldin,inclinat,aldininclinat,type,cap,mic...,*comanda::

@@ -332,12 +332,17 @@
 %D define some shortcuts to the local scatchregisters~0, 2, 4,
 %D 6 and~8.
 
-\newcount\!!counta \toksdef\!!toksa=0 \dimendef\!!dimena=0 \chardef\!!boxa=0
-\newcount\!!countb \toksdef\!!toksb=2 \dimendef\!!dimenb=2 \chardef\!!boxb=2
-\newcount\!!countc \toksdef\!!toksc=4 \dimendef\!!dimenc=4 \chardef\!!boxc=4
-\newcount\!!countd \toksdef\!!toksd=6 \dimendef\!!dimend=6 \chardef\!!boxd=6
-\newcount\!!counte \toksdef\!!tokse=8 \dimendef\!!dimene=8 \chardef\!!boxe=8
-\newcount\!!countf
+\newcount\!!counta \toksdef\!!toksa=0 \dimendef\!!dimena= 0 \chardef\!!boxa=0
+\newcount\!!countb \toksdef\!!toksb=2 \dimendef\!!dimenb= 2 \chardef\!!boxb=2
+\newcount\!!countc \toksdef\!!toksc=4 \dimendef\!!dimenc= 4 \chardef\!!boxc=4
+\newcount\!!countd \toksdef\!!toksd=6 \dimendef\!!dimend= 6 \chardef\!!boxd=6
+\newcount\!!counte \toksdef\!!tokse=8 \dimendef\!!dimene= 8 \chardef\!!boxe=8
+\newcount\!!countf                    \dimendef\!!dimenf=10 
+                                      \dimendef\!!dimeng=12
+                                      \dimendef\!!dimenh=14
+                                      \dimendef\!!dimeni=16
+                                      \dimendef\!!dimenj=18
+
 
 \let\!!stringa=\empty \let\!!stringb=\empty \let\!!stringc=\empty
 \let\!!stringd=\empty \let\!!stringe=\empty \let\!!stringf=\empty
@@ -346,8 +351,8 @@
 \newdimen\!!widthb \newdimen\!!heightb \newdimen\!!depthb
 \newdimen\!!widthc \newdimen\!!heightc \newdimen\!!depthc
 
-\newif\if!!donea   \newif\if!!doneb    
-\newif\if!!donec   \newif\if!!doned
+\newif\if!!donea   \newif\if!!doneb    \newif\if!!donec   
+\newif\if!!doned   \newif\if!!donee    \newif\if!!donef   
 
 \ifx  \z@\undefined \else \let\zeropoint\z@   \fi
 \ifx \@ne\undefined \else \let\plusone  \@ne  \fi

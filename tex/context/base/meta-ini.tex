@@ -238,7 +238,7 @@
    \getvalue{\@@MPG\overlaystamp:#1}%
    \elabelgroup}
 
-\long\def\startuniqueMPgraphic%
+\long\def\startuniqueMPgraphic
   {\dodoublegroupempty\dostartuniqueMPgraphic}
 
 \long\def\dostartuniqueMPgraphic#1#2#3\stopuniqueMPgraphic%
@@ -268,7 +268,7 @@
    \deallocateMPslot\currentMPgraphic
    \elabelgroup}
 
-\long\def\startuseMPgraphic% 
+\long\def\startuseMPgraphic
   {\dodoublegroupempty\dostartuseMPgraphic}
 
 \long\def\dostartuseMPgraphic#1#2#3\stopuseMPgraphic% 
@@ -276,7 +276,7 @@
    \long\setgvalue{\@@MPG#1}{\handleuseMPgraphic{#1}{#2}{#3}}%
    \elabelgroup}
 
-\long\def\startusableMPgraphic% % redundant but handy 
+\long\def\startusableMPgraphic % redundant but handy 
   {\dodoublegroupempty\dostartusableMPgraphic}
 
 \long\def\dostartusableMPgraphic#1#2#3\stopusableMPgraphic% 
@@ -328,6 +328,36 @@
    \let\handlereusableMPgraphic\thirdofthreearguments}
 
 % todo: each code/page/buffer a var class  
+
+%D \macros 
+%D   {startuniqueMPpagegraphic,uniqueMPpagegraphic}
+%D
+%D Experimental.  
+
+\def\MPpageprefix{\doifoddpageelse oe:}
+
+\def\overlaypagestamp
+  {\MPpageprefix\overlaywidth:\overlayheight:\overlaydepth
+   :\MPcolor\overlaycolor:\MPcolor\overlaylinecolor}
+
+\long\def\startuniqueMPpagegraphic
+  {\dodoublegroupempty\dostartuniqueMPpagegraphic}
+
+\long\def\dostartuniqueMPpagegraphic#1#2#3\stopuniqueMPpagegraphic
+  {\blabelgroup
+   \long\setgvalue{\@@MPG o:#1}{\handleuniqueMPgraphic{o:#1}{#2}{#3}}%
+   \long\setgvalue{\@@MPG e:#1}{\handleuniqueMPgraphic{e:#1}{#2}{#3}}%
+   \elabelgroup}
+
+\unexpanded\def\uniqueMPpagegraphic
+  {\dodoublegroupempty\douniqueMPpagegraphic}
+
+\def\douniqueMPpagegraphic#1#2%
+  {\blabelgroup
+   \let\overlaystamp\overlaypagestamp 
+   \setupMPvariables[#1][#2]%
+   \getvalue{\@@MPG\MPpageprefix#1}{}%
+   \elabelgroup}
 
 %D One way of defining a stamp is: 
 %D 
@@ -436,7 +466,7 @@
 
 %D For the moment, the next one is a private macro: 
 
-\def\processMPbuffer%
+\def\processMPbuffer
   {\dosingleempty\doprocessMPbuffer}
 
 \def\doprocessMPbuffer[#1]%

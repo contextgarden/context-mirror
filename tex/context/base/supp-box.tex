@@ -785,8 +785,8 @@
      \else
        % give the previous line a normal depth
        \donetrue
-       {\everypar\emptytoks\normalvbox{\strut}}\nobreak
-       \kern-\lineheight % geen \vskip
+       {\forgeteverypar\verticalstrut}\nobreak
+       \kern-\struttotal % geen \vskip
        \kern-\parskip
      % \vskip-\strutdp
      \fi\fi\fi
@@ -1475,7 +1475,7 @@
      \normalhbox}
 
 %D \macros
-%D   {setrigidcolumnhsize,rigidcolumnbalance}
+%D   {setrigidcolumnhsize,rigidcolumnbalance,rigidcolumnlines}
 %D
 %D These macros are copied from the \TEX book, page~397, and
 %D extended by a macro that sets the \type{\hsize}.
@@ -1500,7 +1500,7 @@
 \def\setrigidcolumnhsize#1#2#3%
   {\xdef\savedrigidhsize{\the\hsize}%
    \hsize#1\relax
-   \global\chardef\rigidcolumns=#3\relax
+   \global\chardef\rigidcolumns#3\relax
    \scratchdimen -#2\relax
    \multiply\scratchdimen #3\relax
    \advance\scratchdimen  #2\relax
@@ -1508,6 +1508,8 @@
    \divide\hsize #3\relax}
 
 \newbox\rigidcolumnbox
+
+\let\rigidcolumnlines\!!zerocount
 
 \def\rigidcolumnbalance#1%
   {\ifnum\rigidcolumns=1 % tzt ook h/d correctie
@@ -1520,9 +1522,13 @@
           {\line{}\goodbreak\unvbox#1\removebottomthings}%
         \splittopskip\openstrutheight 
         \setbox\scratchbox\vsplit\rigidcolumnbox to \zeropoint
-        \scratchdimen\ht\rigidcolumnbox      
-        \divide\scratchdimen \rigidcolumns 
-        \getnoflines\scratchdimen 
+        \ifcase\rigidcolumnlines\relax
+          \scratchdimen\ht\rigidcolumnbox      
+          \divide\scratchdimen \rigidcolumns 
+          \getnoflines\scratchdimen 
+        \else
+          \noflines\rigidcolumnlines % to be sure 
+        \fi
         \scratchdimen\noflines\lineheight
         \setbox\scratchbox\normalhbox to \savedrigidhsize
           {\dorecurse\rigidcolumns

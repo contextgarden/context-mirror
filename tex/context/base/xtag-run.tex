@@ -100,10 +100,13 @@
        \ifcase\@XMLnofelements\else\@@xftussen\fi 
      \fi 
    \fi
-   \hangindent2em 
+   % no, too fragile: \hangindent2em  
+\ifcase\kindofXMLelement\or\or
+  \getvalue{\@@XMLshow::\currentXMLelement}\relax
+\fi
    \indent 
    \bgroup
-     \localcolortrue
+     % \localcolortrue
      \advance\XMLlevel \minusone
      \DoMod\XMLlevel by\XMLprettycycle to\scratchcounter
      \advance\scratchcounter \plusone
@@ -122,14 +125,17 @@
      \string>%
      \stopcolor
    \egroup 
+\ifcase\kindofXMLelement\or
+  \getvalue{\@@XMLshow::\currentXMLelement}\relax
+\fi
    \ifnum\XMLlevel<\@@xfniveau\relax
      \ifnum\kindofXMLelement=1\else
        \doglobal\increment\@XMLnofelements\relax
        \ifcase\@XMLnofelements\else\@@xftussen\fi 
      \fi 
    \fi
-   \ifXMLunspacepretty\ignorespaces\fi} 
-
+   \ifXMLunspacepretty\ignorespaces\fi}
+   
 \gdef\nextXMLtext{\blank\@XMLlevel+\@XMLelement1\par}
 \gdef\prevXMLtext{\par\@XMLelement0\par\@XMLlevel-\blank}
 \gdef\nextXMLpara{\nextXMLline\par}
@@ -187,6 +193,10 @@
 \gdef\showXMLemp[#1]%
   {\setXMLshow\defineXMLsingular\someXMLword\relax[#1]}
 
+\gdef\showXMLbreak[#1]%
+  {\def\docommando##1{\setvalue{\@@XMLshow::##1}{\hskip\zeropoint}}%
+   \processcommalist[#1]\docommando}
+
 \gdef\doautoshowXMLelement
   {\ifcase\kindofXMLelement
      \or \nextXMLpara \or \prevXMLpara \or \someXMLline
@@ -212,6 +222,8 @@
      \ifautoXMLshow \let\executeXMLelement\autoshowXMLelement \fi
      \let\executeXMLentity\@XMLentity
      \enableXML\verbatimXML
+\enableregime[utf]%
+\chardef\utfunicodetracer8
      \readfile{\truefilename{#1}}\donothing\donothing\endgraf
      \removelastskip % really needed 
    \stopopelkaar

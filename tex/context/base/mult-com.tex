@@ -814,9 +814,6 @@ stelnummerin: stelnummerin setupnumber
                                   setupitemgroups                  setupitemgroups
                                   setupitemgroups                  setupitemgroups
 
-%                 setupitemgroups: stelopsommingenin                setupitemizations
-%                                  stelleaufzaehlungenein           nastavvycty
-%                                  impostaelencazioni               setareitemization
 %                    startitemize: startopsomming                   startitemize
 %                                  startaufzaehlung                 startvycet
 %                                  iniziaelenco                     startenumerare
@@ -1695,7 +1692,7 @@ moveformula: verplaatsformule  moveformula
                         geentest: geentest                         donttest
                                   keintest                         zadnytest
                                   notest                           nutesta
-                stelcommentaarin: stelcommentaarin                 setupcomment
+                    setupcomment: stelcommentaarin                 setupcomment
                                   stellekommentarein               nastavkomentar
                                   impostacommento                  seteazacomentariu
                       commentaar: commentaar                       comment
@@ -1825,6 +1822,19 @@ definecolumnbreak: definieerkolomovergang  definecolumnbreak
 \stopcommands
 
 % ^ ^ ^ nadenken over \settextvariable vs \setuptextvariable in nl
+
+%D For downward compatibilities sake: 
+
+\startcommands                    dutch                            english
+                                  german                           czech
+                                  italian                          romanian
+
+
+                 setupitemgroups: stelopsommingenin                setupitemizations
+                                  stelleaufzaehlungenein           nastavvycty
+                                  impostaelencazioni               setareitemization
+
+\stopcommands
 
 %D \stopcompressdefinitions
 
@@ -1990,6 +2000,14 @@ definecolumnset: definieerkolomgroep        definecolumnset
   stopcolumnset: stopkolomgroep             stopcolumnset
                  stopcolumnset              stopcolumnset
                  terminagruppocolonne       stopcolumnset
+
+startcolumnmakeup: startkolomopmaak  startcolumnmakeup
+                   startcolumnmakeup startcolumnmakeup
+                   startcolumnmakeup startcolumnmakeup
+
+ stopcolumnmakeup: stopkolomopmaak   stopcolumnmakeup
+                   stopcolumnmakeup  stopcolumnmakeup
+                   stopcolumnmakeup  stopcolumnmakeup
 
   usetypescript: gebruiktypescript          usetypescript
                  usetypescript              usetypescript

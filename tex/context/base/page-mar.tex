@@ -72,10 +72,11 @@
      \donothing
    \doifnumberelse\margetekstnummer
      {\ifnum\margetekstnummer>25 % to be translated 
-       \writestatus\m!systems{potential margin stack overflow (\margetekstnummer)}%
+        \writestatus\m!systems{potential margin stack overflow (\margetekstnummer)}%
       \fi}
      \donothing
-   \processaction
+   % todo
+   \processallactionsinset
      [\getvalue{\??im\margetekstnummer\c!uitlijnen}]
      [     \v!ja=>\setvalue{\??im\margetekstnummer\c!uitlijnen}{#2},
           \v!nee=>\setvalue{\??im\margetekstnummer\c!uitlijnen}{\v!normaal},
@@ -96,10 +97,36 @@
         \begstrut#6\endstrut\endgraf
       \dostopattributes
       \@@imna}%
+   \doif\@@imstapel\v!ja    
+     {\setbox0\vbox{\stackeddown\vbox{\box0}}}% new 
    \ht0\strutht
    \box0
    \egroup
    #5\relax}
+
+%D The stacker permits constructs like:
+%D 
+%D \starttypen 
+%D \stelinmargein[stapel=ja]
+%D 
+%D \inlinker{test 1}test\break
+%D \inlinker{test 2}test\break
+%D \inlinker{test 1} 
+%D \input tufte
+%D \inlinker{test 1} 
+%D \inlinker{test 2} 
+%D \inlinker{test 3}
+%D \input tufte
+%D \inlinker{test 1} 
+%D \inlinker{test 2\endgraf test 3} 
+%D \inlinker{test 4}
+%D \input tufte
+%D \inlinker{test 1}
+%D \inlinker{test 2\endgraf test 3}
+%D \inlinker{test 4\endgraf test 5\endgraf test 6}
+%D \inlinker{test 7\endgraf test 8\endgraf test 9}
+%D \input tufte
+%D \stoptypen 
 
 \def\plaatsmargetekstscheider
   {\ifnum\margincontent>\zerocount
@@ -169,7 +196,7 @@
 \def\doinlinker#1%
   {\doplacemargintext
      {\linkermargetekstblok{#1}\hskip\leftmargintextdistance}
-     \llap\!!zeropoint}
+     \llap\zeropoint}
 
 \def\doinrechter#1%
   {\doplacemargintext
@@ -180,7 +207,7 @@
 \newif      \iftrackingmarginnotes
 \newif      \ifrightmargin            % documenteren
 
-\definetwopasslist{\s!margin}
+\definetwopasslist\s!margin
 
 \def\domarginreference
   {\doglobal\increment\nofmarginnotes\relax
@@ -230,8 +257,8 @@
   {\ignorespaces
    \bgroup\postponefootnotes % group is (somehow) needed
    \doifinsetelse\v!laag{#4}
-     {\lowinmargintrue}
-     {\lowinmarginfalse}%
+     \lowinmargintrue
+     \lowinmarginfalse
    \processaction
      [#1]
      [  \v!links=>#2{#6},
@@ -393,7 +420,7 @@
      {\stelinmargein[#1][]% needed when par start outside group
       \doflushmargincontent[][]{#2}}}
 
-\def\margewoord%
+\def\margewoord
   {\dodoubleempty\complexmargewoord}
 
 \def\margetitel{\margewoord}
@@ -435,17 +462,20 @@
    \popindentation
    \ignorespaces}
 
-\def\inleftside#1%
+\def\inleftedge#1%
   {\inleftmargin
      {#1\relax
       \hskip\linkermargebreedte
       \hskip\linkerrandafstand}}
 
-\def\inrightside#1%
+\def\inrightedge#1%
   {\inrightmargin
      {\hskip\rechtermargebreedte
       \hskip\rechterrandafstand
       #1}}
+
+\let\inleftside \inleftedge
+\let\inrightside\inrightedge
 
 %D We want to keep things efficient and therefore only handle
 %D situations like:
@@ -507,6 +537,7 @@
    \c!kleur=,
    \c!plaats=\v!beide,
    \c!uitlijnen=\v!binnen,
+   \c!stapel=\v!nee,
    \c!voor=,
    \c!na=]
 

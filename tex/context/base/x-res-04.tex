@@ -176,14 +176,14 @@
 \stopXMLmapping 
 
 \def\getfigurefilename#1#2%
-  {\ifnum\figurebasemode=2 \loadfigurebase{#1} \fi
+  {\ifnum\figurebasemode=\plustwo \loadfigurebase{#1} \fi
    \startnointerference
      \traceXMLelementsfalse
+     \resetfigurefilebase
+     \doglobal\newcounter\figurefilepage
      \autoXMLnamespace[rl]
      \startXMLmapping[rl:find]
-       \resetfigurefilebase
        \xdef\figurefilebase{#1}
-       \doglobal\newcounter\figurefilepage
        \def\askedlabel{#2}
        \doifelseXMLelement{rl:rl:\askedlabel}
          {\enableXMLelements\flushXMLelement{rl:rl:\askedlabel}}
@@ -191,12 +191,13 @@
      \stopXMLmapping
    \stopnointerference}
 
-% todo: niet toegekendede naam doorgeven aan calculate en pad 
+% todo: niet toegekende naam doorgeven aan calculate en pad 
 % in padstring 
 
 \def\dogetfigurefilename#1%
   {\ifx\figurefilename\empty
      \bgroup
+     \doglobal\newcounter\figurefilepage
      \globalletempty\figurefilelabel
      \globalletempty\figurefileoriginal
      \globalletempty\figurefilefile

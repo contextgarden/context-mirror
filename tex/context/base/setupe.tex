@@ -142,9 +142,9 @@
 
 \def\c!repeat! {} 
 \def\c!tex!  #1{\addtypespec{command}{#1}\doanother{tex}}    
-\def\c!or! #1#2{\doline{\space\space\space\space<choice>}%
+\def\c!or! #1#2{\doline{\space\space\space\space<cd:choice>}%
                 #1#2%
-                \doline{\space\space\space\space</choice>}}  
+                \doline{\space\space\space\space</cd:choice>}}  
 
 % wrapper 
 
@@ -163,8 +163,11 @@
 
 \bgroup \catcode`\<=\@@other
 
-\unexpanded\gdef\dostring#1#2#3{\immediate\write\scratchwrite{#1<#2cd:#3>}}
-           \gdef\doline      #1{\immediate\write\scratchwrite{#1}}
+\unexpanded\gdef\dostring#1#2#3%
+  {\immediate\write\scratchwrite{#1<#2cd:#3>}} % todo 
+
+\gdef\doline#1%
+  {\immediate\write\scratchwrite{#1}}
 
 \egroup
 

@@ -32,6 +32,7 @@
   InPageBody         := \ifinpagebody true \else false \fi ;
   def LoadPageState =
     OnRightPage         :=      \MPonrightpage ;
+    OnOddPage           :=      \MPonoddpage ;
     RealPageNumber      :=  \the\realpageno ;
     PageNumber          :=  \the\pageno ;
     NOfPages            :=      \lastpage ;
@@ -73,20 +74,24 @@
     OuterEdgeWidth      :=  \the\outeredgewidth ;
     PageOffset          :=  \the\pageoffset ;
     PageDepth           :=  \the\pagedepth ;
+    LayoutColumns       := \the\layoutcolumns ;
+    LayoutColumnDistance:= \the\layoutcolumndistance ;
+    LayoutColumnWidth   := \the\layoutcolumnwidth ;
   enddef ;
 \stopuseMPgraphic
 
 \def\MPonrightpage{true}
+\def\MPonoddpage  {true}
 
-\def\freezeMPpagelayout%
-  {% the \edef\MPonrightpage{....} alternative is slower
-   \doifbothsides
+\def\freezeMPpagelayout
+  {\doifbothsides
      \def\MPonrightpage{true}%
    \orsideone
      \def\MPonrightpage{true}%
    \orsidetwo
      \def\MPonrightpage{false}%
-   \od}
+   \od
+   \edef\MPonoddpage{\doifoddpageelse{true}{false}}}
 
 \iffixedlayoutdimensions
 

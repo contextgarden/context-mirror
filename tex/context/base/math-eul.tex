@@ -1,127 +1,103 @@
 %D \module
 %D   [       file=math-eul,
-%D        version=2001.04.12,
+%D        version=2003.02.03, 
 %D          title=\CONTEXT\ Math Macros,
-%D       subtitle=Euler Specials,
-%D         author={Hans Hagen \& Taco Hoekwater},
+%D       subtitle=Virtual Euler Specials,
+%D         author={Hans Hagen \& Taco Hoekwater \& Adam Lindsay},
 %D           date=\currentdate,
 %D      copyright=\PRAGMA]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
-%C details.
+%C details. Further modified by Adam Lindsay.
 
-\unprotect
+\unprotect 
 
-\startmathcollection[eul]
+%D We follow the following mappings from type-eul:
+%D  mr [MathRoman]      [Euler-Roman]     [zeurm10]
+%D  mi [MathItalic]     [Euler-Italic]    [zeurm10]
+%D  ex [MathExtension]  [Euler-Extension] [zeuex10]
+%D  sy [MathSymbol]     [Euler-Symbol]    [zeusm10]
+%D  mb [MathBeta]       [Charter-Roman]   [bchr8r]
+%D  mc [MathGamma]      [Euler-Fraktur]   [eufm10]
+%D
+%D The inclusion of Bitstream Charter was originally for the text accents.
+%D Obviously, it's not a proper ``MathBeta'' font.
 
-\definemathcharacter [0] [alpha] [mi] [30]
-\definemathcharacter [1] [alpha] [mi] [31]
-\definemathcharacter [2] [alpha] [mi] [32]
-\definemathcharacter [3] [alpha] [mi] [33]
-\definemathcharacter [4] [alpha] [mi] [34]
-\definemathcharacter [5] [alpha] [mi] [35]
-\definemathcharacter [6] [alpha] [mi] [36]
-\definemathcharacter [7] [alpha] [mi] [37]
-\definemathcharacter [8] [alpha] [mi] [38]
-\definemathcharacter [9] [alpha] [mi] [39]
 
+%D The varrho and varsigma characters don't exist in eulervm, 
+%D so we point at the normal types.
+\startmathcollection [eul]
+\definemathsymbol [varrho]     [nothing] [vargreek] ["1A]
+\definemathsymbol [varsigma]   [nothing] [vargreek] ["1B]
 \stopmathcollection
 
-\startmathcollection[eul]
-
-\definemathsymbol [intop]          [op]      [ma] ["52]
-\definemathsymbol [ointop]         [op]      [ma] ["48]
-\definemathsymbol [coprod]         [op]      [ma] ["60]
-\definemathsymbol [prod]           [op]      [ma] ["51]
-\definemathsymbol [sum]            [op]      [ma] ["50]
-\definemathsymbol [braceld]        [nothing] [ma] ["7A]
-\definemathsymbol [bracerd]        [nothing] [ma] ["7B]
-\definemathsymbol [bracelu]        [nothing] [ma] ["7C]
-\definemathsymbol [braceru]        [nothing] [ma] ["7D]
-\definemathsymbol [infty]          [ord]     [ma] ["31]
-\definemathsymbol [nearrow]        [rel]     [ma] ["25]
-\definemathsymbol [searrow]        [rel]     [ma] ["26]
-\definemathsymbol [nwarrow]        [rel]     [ma] ["2D]
-\definemathsymbol [swarrow]        [rel]     [ma] ["2E]
-\definemathsymbol [Leftrightarrow] [rel]     [ma] ["2C]
-\definemathsymbol [Leftarrow]      [rel]     [ma] ["28]
-\definemathsymbol [Rightarrow]     [rel]     [ma] ["29]
-\definemathsymbol [leftrightarrow] [rel]     [ma] ["24]
-\definemathsymbol [leftarrow]      [rel]     [ma] ["20]
-\definemathsymbol [gets]           [rel]     [ma] ["20] % leftarrow 
-\definemathsymbol [rightarrow]     [rel]     [ma] ["21]
-\definemathsymbol [to]             [rel]     [ma] ["21] % rightarrow
-\definemathsymbol [uparrow]        [rel]     [ma] ["22] [ex] ["78]
-\definemathsymbol [downarrow]      [rel]     [ma] ["23] [ex] ["79]
-\definemathsymbol [updownarrow]    [rel]     [ma] ["6C] [ex] ["3F]
-\definemathsymbol [Uparrow]        [rel]     [ma] ["2A] [ex] ["7E]
-\definemathsymbol [Downarrow]      [rel]     [ma] ["2B] [ex] ["7F]
-\definemathsymbol [Updownarrow]    [rel]     [ma] ["6D] [ex] ["77]
-
-\definemathsymbol [leftharpoonup]    [rel] [ma] ["18]
-\definemathsymbol [leftharpoondown]  [rel] [ma] ["19]
-\definemathsymbol [rightharpoonup]   [rel] [ma] ["1A]
-\definemathsymbol [rightharpoondown] [rel] [ma] ["1B]
-
+\startmathcollection [eul]
+\definemathcharacter [!]   [close] [mc] ["21]
+\definemathcharacter [(]   [open]  [mc] ["28]
+\definemathcharacter [)]   [close] [mc] ["29]
+\definemathcharacter [+]   [bin]   [mc] ["2B]
+\definemathcharacter [:]   [rel]   [sy] ["BA]
+\definemathcharacter [;]   [punct] [sy] ["BB]
+\definemathcharacter [=]   [rel]   [mi] ["82]
+\definemathcharacter [?]   [close] [sy] ["BF]
+\definemathcharacter [91]  [open]  [sy] ["DB] % [
+\definemathcharacter [93]  [close] [sy] ["DD] % ]
 \stopmathcollection
 
-\startmathcollection[eul]
-
-\definemathcharacter [+]  [bin]   [mc] ["2B]
-\definemathcharacter [-]  [bin]   [mc] ["2D]
-\definemathcharacter [!]  [ord]   [mc] ["21]
-\definemathcharacter [(]  [open]  [mc] ["28]
-\definemathcharacter [)]  [close] [mc] ["29]
-\definemathcharacter [91] [open]  [mc] ["5B]
-\definemathcharacter [93] [close] [mc] ["5D]
-\definemathcharacter [=]  [rel]   [mc] ["3D]
-
-\definemathcharacter [(]  [nothing] [mc] ["28] [ex] ["00]
-\definemathcharacter [)]  [nothing] [mc] ["29] [ex] ["01]
-\definemathcharacter [91] [nothing] [mc] ["5B] [ex] ["02]
-\definemathcharacter [93] [nothing] [mc] ["5D] [ex] ["03]
-
+\startmathcollection [eul]
+\definemathcharacter [(]   [nothing] [sy] ["A8] [ex] ["00]
+\definemathcharacter [)]   [nothing] [sy] ["A9] [ex] ["01]
+\definemathcharacter [91]  [nothing] [sy] ["DB] [ex] ["02] % [
+\definemathcharacter [93]  [nothing] [sy] ["DD] [ex] ["03] % ]
+\definemathcharacter [/]   [nothing] [mi] ["3D] [ex] ["0E]
 \stopmathcollection
 
-\startmathcollection[eul]
-
-\definemathsymbol [Gamma]   [alpha] [mi] ["00]
-\definemathsymbol [Delta]   [alpha] [mi] ["01]
-\definemathsymbol [Theta]   [alpha] [mi] ["02]
-\definemathsymbol [Lambda]  [alpha] [mi] ["03]
-\definemathsymbol [Xi]      [alpha] [mi] ["04]
-\definemathsymbol [Pi]      [alpha] [mi] ["05]
-\definemathsymbol [Sigma]   [alpha] [mi] ["06]
-\definemathsymbol [Upsilon] [alpha] [mi] ["07]
-\definemathsymbol [Phi]     [alpha] [mi] ["08]
-\definemathsymbol [Psi]     [alpha] [mi] ["09]
-\definemathsymbol [Omega]   [alpha] [mi] ["0A]
-
+\startmathcollection [eul]
+\definemathsymbol [hbar]     [nothing] [mi] ["80]
 \stopmathcollection
 
-\startmathcollection[eul]
-
-\definemathsymbol [Relbar]    [rel]     [mr] ["3D]
-\definemathsymbol [aleph]     [ord]     [sy] ["40] % ? 
-\definemathsymbol [lbrace]    [open]    [mb] ["66] [ma] ["08] 
-\definemathsymbol [rbrace]    [close]   [mb] ["67] [ma] ["09] 
-\definemathsymbol [leq]       [rel]     [mb] ["14] 
-\definemathsymbol [le]        [rel]     [mb] ["14] 
-\definemathsymbol [geq]       [rel]     [mb] ["15] 
-\definemathsymbol [ge]        [rel]     [mb] ["15] 
-\definemathsymbol [Re]        [ord]     [mb] ["3C]
-\definemathsymbol [Im]        [ord]     [mb] ["3D]
-\definemathsymbol [vert]      [nothing] [mb] ["6A] [ex] ["0C] 
-\definemathsymbol [backslash] [nothing] [mb] ["6E] [ex] ["0F] 
-
+%D I used my discretion in substituting Charter here for the CM glyphs 
+%D brought in by the eulervm virtual font
+\startmathcollection [eul]
+\definemathsymbol [ddagger]         [bin] [mb] ["87]
+\definemathsymbol [dagger]          [bin] [mb] ["86]
 \stopmathcollection
 
-\startmathcollection[eul]
-
-\definemathcommand [varsigma] {\sigma}
-\definemathcommand [varrho]   {\rho}
-
+\startmathcollection [eul]
+\definemathsymbol [colon] [punct] [sy] ["BA]
 \stopmathcollection
 
-\protect \endinput
+%D This is very hackish; it brings in text accents from the 
+%D well-matched Bitstream Charter.
+\startmathcollection [eul]
+\definemathsymbol [acute]     [accent] [mb] ["B4] 
+\definemathsymbol [grave]     [accent] [mb] ["1E] 
+\definemathsymbol [ddot]      [accent] [mb] ["A8] 
+\definemathsymbol [tilde]     [accent] [mb] ["98] 
+\definemathsymbol [bar]       [accent] [mb] ["AF] 
+\definemathsymbol [breve]     [accent] [mb] ["0B] 
+\definemathsymbol [check]     [accent] [mb] ["10] 
+%\definemathsymbol [hat]       [accent] [mc] ["5E] 
+\definemathsymbol [hat]       [accent] [mb] ["88] 
+\definemathsymbol [dot]       [accent] [mb] ["01] 
+\stopmathcollection
+
+\startmathcollection [eul]
+\definemathsymbol [lgroup]      [open]    [sy] ["A8] [ex] ["3A] % ?
+\definemathsymbol [rgroup]      [close]   [sy] ["A9] [ex] ["3B] % ?
+\stopmathcollection
+
+\startmathcollection [eul]
+\definemathsymbol [dag]  [box] [mb] ["86]
+\definemathsymbol [ddag] [box] [mb] ["87]
+\definemathsymbol [S]    [box] [mb] ["A7]
+\definemathsymbol [P]    [box] [mb] ["B6]
+%%% originals before substituting Charter characters
+%\definemathsymbol [dag]  [box] [sy] ["79]
+%\definemathsymbol [ddag] [box] [sy] ["7A]
+%\definemathsymbol [S]    [box] [sy] ["78]
+%\definemathsymbol [P]    [box] [sy] ["7B]
+\stopmathcollection
+
+\protect \endinput 
