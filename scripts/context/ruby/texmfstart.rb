@@ -34,7 +34,7 @@ if $mswindows then
     GetLongPathName  = Win32API.new('kernel32', 'GetLongPathName',  ['P','P','N'], 'N')
 
     def dowith_pathname (filename,filemethod)
-        filename.gsub!(/\\/o,'/')
+        filename = filename.gsub(/\\/o,'/') # no gsub! because filename can be frozen
         case filename
             when /\;/o then
                 # could be a path spec

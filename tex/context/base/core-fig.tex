@@ -983,6 +983,7 @@
       \c!maxwidth=\@@exmaxwidth,\c!maxheight=\@@exmaxheight,
       \c!scale=,\c!width=,\c!height=,\c!display=,\c!lines=,\c!grid=,
      %\c!foregroundcolor=,
+      \c!color=,
       \c!factor=,\c!hfactor=,\c!wfactor=]%
    \doif\@@efextension\c!mov\presetfiguremov
    \doif\@@efextension\c!avi\presetfigureavi
@@ -1012,6 +1013,11 @@
      {\getparameters[\??ef]
         [\c!background={\v!foreground,\v!color},
          \c!backgroundcolor=\@@efforegroundcolor]}%
+   \doifsomething\@@efcolor
+     {\doifcolorelse\@@efcolor
+        {\checkpredefinedcolor[\@@efcolor]%
+         \doregisterfigurecolor\@@efcolor}}%
+        \donothing
    %
    \doif\@@efreset\v!yes \resetexternalfigures
    \doif\@@eftype \c!mov\presetfiguremov

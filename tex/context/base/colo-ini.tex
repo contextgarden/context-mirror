@@ -1116,6 +1116,32 @@
    \flushatshipout{\hbox{\localcolortrue\color[#1]}}% index one
    \egroup}
 
+\def\checkpredefinedcolor[#1]%
+  {\ifcase\internalspotcolorsize{#1}\relax
+     \@EA\predefinecolor\or\@EA\predefinecolor\else\@EA\predefineindexcolor
+   \fi[#1]}
+
+%D \startbuffer
+%D \definecolor [blue]   [c=1,m=.38,y=0,k=.64] % pantone pms 2965 uncoated m
+%D \definecolor [yellow] [c=0,m=.28,y=1,k=.06] % pantone pms  124 uncoated m
+%D
+%D \definecolor [blue-100]   [blue]   [p=1]
+%D \definecolor [yellow-100] [yellow] [p=1]
+%D
+%D \definemultitonecolor [pdftoolscolor] [blue=.12,yellow=.28] [c=.1,m=.1,y=.3,k=.1]
+%D
+%D \useexternalfigure[demofig][mill.png][object=no]
+%D
+%D \startcombination[4*1]
+%D   {\externalfigure[demofig]}                      {no color}
+%D   {\externalfigure[demofig][color=pdftoolscolor]} {indexed duotone}
+%D   {\externalfigure[demofig][color=blue-100]}      {spot color}
+%D   {\externalfigure[demofig][color=yellow-100]}    {spot color}
+%D \stopcombination
+%D \stopbuffer
+%D
+%D \getbuffer \typebuffer
+
 %D Transparency is handled similar for all three color modes. We
 %D can turn transparency off with the following switch:
 
@@ -2601,6 +2627,14 @@
     \else\if#1P#5%
     \else       0%
     \fi\fi\fi\fi]}
+
+% a few more obscure ones:
+
+\def\internalspotcolorname#1{\handlecolorwith\dointernalspotcolorname\csname\??cr#1\endcsname:::::::\end}
+\def\internalspotcolorsize#1{\handlecolorwith\dointernalspotcolorsize\csname\??cr#1\endcsname:::::::\end}
+
+\def\dointernalspotcolorname#1:#2:#3:#4:#5:#6:#7:#8\end{\if#1P\ifcase0#3 #1\else#2\fi\else#1\fi}
+\def\dointernalspotcolorsize#1:#2:#3:#4:#5:#6:#7:#8\end{\if#1P\ifcase0#3  0\else#3\fi\else 0\fi}
 
 %D \macros
 %D   {everyshapebox}

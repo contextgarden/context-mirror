@@ -33,6 +33,7 @@ eval '(exit $?0)' && eval 'exec perl -w -S $0 ${1+"$@"}' && eval 'exec perl -w -
 #D everything. Well, the result is a messy script like this ... Sorry.
 
 use strict ;
+
 #~ use warnings ; # strange warnings, todo
 
 # todo: second run of checksum of mp file with --nomprun changes

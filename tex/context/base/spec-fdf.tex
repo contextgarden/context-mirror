@@ -1328,19 +1328,19 @@
 \def\@@FDFflag{FDFflag}
 \def\@@FDFplus{FDFplus}
 
-\letvalue  {\@@FDFflag\v!readonly}=\FDFflagReadOnly
-\letvalue       {\@@FDFflag\v!required}=\FDFflagRequired
-\letvalue       {\@@FDFflag\v!protected}=\FDFflagPassword
+\letvalue    {\@@FDFflag\v!readonly}=\FDFflagReadOnly
+\letvalue    {\@@FDFflag\v!required}=\FDFflagRequired
+\letvalue   {\@@FDFflag\v!protected}=\FDFflagPassword
 \letvalue      {\@@FDFflag\v!sorted}=\FDFflagSort
 \letvalue {\@@FDFflag\v!unavailable}=\FDFflagNoExport
-\letvalue    {\@@FDFflag\v!nocheck}=\FDFflagDoNotSpellCheck
-\letvalue            {\@@FDFflag\v!fixed}=\FDFflagDoNotScroll
-\letvalue            {\@@FDFflag\v!file}=\FDFflagFileSelect
+\letvalue     {\@@FDFflag\v!nocheck}=\FDFflagDoNotSpellCheck
+\letvalue       {\@@FDFflag\v!fixed}=\FDFflagDoNotScroll
+\letvalue        {\@@FDFflag\v!file}=\FDFflagFileSelect
 
-\letvalue       {\@@FDFplus\v!hidden}=\FDFplusHidden
-\letvalue       {\@@FDFplus\v!printable}=\FDFplusPrintable
+\letvalue      {\@@FDFplus\v!hidden}=\FDFplusHidden
+\letvalue   {\@@FDFplus\v!printable}=\FDFplusPrintable
 
-\letvalue            {\@@FDFplus\v!auto}=\FDFplusAutoView
+\letvalue        {\@@FDFplus\v!auto}=\FDFplusAutoView
 
 %D A set of switches is collected into the flags we mentioned
 %D before by the next macro (we don't handle negations yet,
@@ -2833,6 +2833,12 @@
 \def\doPDFregistergrayindexcolor#1#2#3#4#5% name noffractions names p's s
   {\doPDFregistersomeindexcolor{#1}{#2}{#3}{#4}{Gray}{0.0 1.0}%
      {pop}}
+
+\def\doPDFregisterfigurecolor#1%
+  {\dogetobjectreference
+     {PDF\ifcase\internalspotcolorsize{#1} CS\or CS\else IX\fi}
+     {\internalspotcolorname{#1}}
+     \PDFimagecolorreference}
 
 %D \macros
 %D   {doPDFstartrotation,doPDFstoprotation}

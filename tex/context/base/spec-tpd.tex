@@ -384,6 +384,13 @@
 %D themselves have alternatives, especially cylcic
 %D dependencies.
 
+% some day we will do a proper check on bitmap depth,
+%
+% \pdfobj reserveobjnum\relax
+% \pdfximage colorspace \pdflastobj {some file}
+% ... \pdflastximagecolordepth ...
+% \immediate\pdfobj useobjnum \pdflastobj {some spec}
+
 \ifx\@@DriverImageBox\undefined \def\@@DriverImageBox{artbox} \fi
 
 \ifnum\pdftexversion>13
@@ -398,6 +405,18 @@
      \xdef\pdfimageattributes
        {attr {/Alternates \the\pdflastobj\space0 R}}%
    \fi}
+
+\global\let\PDFimagecolorreference\empty
+
+\def\checkpdfimagecolorspecs
+  {\ifx\pdflastximagecolordepth \undefined
+     \global\let\pdfimagecolorspecs\empty
+   \else\ifx\PDFimagecolorreference\empty
+     \global\let\pdfimagecolorspecs\empty
+   \else
+     \xdef\pdfimagecolorspecs{colorspace \PDFimagecolorreference\space}%
+   \fi\fi
+   \global\let\PDFimagecolorreference\empty}
 
 \def\dogetTPDfiguresize#1#2#3#4#5#6#7%
   {\ifmeasureTPDfiguresize
@@ -416,9 +435,14 @@
        \the\everyPDFximage
        \checkpdfimagepagenumber{#3}%
        \checkpdfimageattributes
+       \checkpdfimagecolorspecs
        \global\setbox\foundexternalfigure\hbox
          {\immediate\pdfximage
-            \pdfimageattributes \pdfimagepagenumber \@@DriverImageBox {#2}%
+            \pdfimageattributes
+            \pdfimagecolorspecs
+            \pdfimagepagenumber
+            \@@DriverImageBox
+            {#2}%
           \xdef\PDFimagereference{\the\pdflastximage}%
           \xdef\nofinsertpages{\the\pdflastximagepages}%
           \pdfrefximage\pdflastximage}%
@@ -530,6 +554,8 @@
 \definespecial\doregistercmykindexcolor{\doPDFregistercmykindexcolor}
 \definespecial\doregisterrgbindexcolor {\doPDFregisterrgbindexcolor}
 \definespecial\doregistergrayindexcolor{\doPDFregistergrayindexcolor}
+
+\definespecial\doregisterfigurecolor{\doPDFregisterfigurecolor}
 
 \definespecial\dostartnonecolormode{\doPDFstartnonecolormode}
 \definespecial\doregisternonecolor {\doPDFregisternonecolor}
