@@ -43,11 +43,12 @@
     <fo:page-sequence master-reference='test'>
         <fo:flow flow-name='xsl-region-body'>
             <fo:block-container space-after='12pt' id='y'>
-            <fo:block>digits:         <fo:page-number-citation ref-id='format n'/>       </fo:block>
-            <fo:block>characters:     <fo:page-number-citation ref-id='format a'/>       </fo:block>
-            <fo:block>romannumerals:  <fo:page-number-citation ref-id='format i'/>       </fo:block>
-            <fo:block>complex format: <fo:page-number-citation ref-id='complex format'/> </fo:block>
-            <fo:block>no format:      <fo:page-number-citation ref-id='no format'/>      </fo:block>
+                <fo:block>digits:         <fo:page-number-citation ref-id='format n'/>       </fo:block>
+                <fo:block>characters:     <fo:page-number-citation ref-id='format a'/>       </fo:block>
+                <fo:block>romannumerals:  <fo:page-number-citation ref-id='format i'/>       </fo:block>
+                <fo:block>complex format: <fo:page-number-citation ref-id='complex format'/> </fo:block>
+                <fo:block>no format:      <fo:page-number-citation ref-id='no format'/>      </fo:block>
+            </fo:block-container>
         </fo:flow>
     </fo:page-sequence>
 

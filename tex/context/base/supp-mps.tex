@@ -650,7 +650,7 @@
      \immediate\openout\MPwrite=\MPgraphicfile.mp
      \ifx\MPinputtranslation\empty\else
        \immediate\write\MPwrite{\MPinputtranslation}%
-       \immediate\write\MPwrite{verbatimtex \MPinputtranslation etex ;}
+       \immediate\write\MPwrite{verbatimtex \MPinputtranslation etex ;}%
      \fi
      \immediate\write\MPwrite{\letterpercent\space #2 graphics of job "\jobname"}%
      \writeMPgraph

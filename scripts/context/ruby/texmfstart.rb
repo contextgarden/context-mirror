@@ -9,6 +9,8 @@
 # info      : j.hagen@xs4all.nl
 # www       : www.pragma-pod.com / www.pragma-ade.com
 
+# no special requirements, i.e. no exa modules/classes used
+
 # texmfstart [switches] filename [optional arguments]
 #
 # ruby2exe texmfstart --help -> avoids stub test
@@ -29,7 +31,7 @@ if $mswindows then
     require "Win32API"
 
     GetShortPathName = Win32API.new('kernel32', 'GetShortPathName', ['P','P','N'], 'N')
-    GetLongPathName = Win32API.new('kernel32', 'GetLongPathName', ['P','P','N'], 'N')
+    GetLongPathName  = Win32API.new('kernel32', 'GetLongPathName',  ['P','P','N'], 'N')
 
     def dowith_pathname (filename,filemethod)
         filename.gsub!(/\\/o,'/')
@@ -83,12 +85,23 @@ end
 
 $applications = Hash.new
 $suffixinputs = Hash.new
+$predefined   = Hash.new
 
 $suffixinputs['pl']  = 'PERLINPUTS'
 $suffixinputs['rb']  = 'RUBYINPUTS'
 $suffixinputs['py']  = 'PYTHONINPUTS'
 $suffixinputs['jar'] = 'JAVAINPUTS'
 $suffixinputs['pdf'] = 'PDFINPUTS'
+
+$predefined['texexec']  = 'texexec.pl'
+$predefined['texutil']  = 'texutil.pl'
+$predefined['texfont']  = 'texfont.pl'
+$predefined['examplex'] = 'examplex.rb'
+$predefined['concheck'] = 'concheck.rb'
+$predefined['textools'] = 'textools.rb'
+$predefined['pdftools'] = 'pdftools.rb'
+$predefined['exatools'] = 'exatools.rb'
+$predefined['xmltools'] = 'xmltools.rb'
 
 $scriptlist   = 'rb|pl|py|jar'
 $documentlist = 'pdf|ps|eps|htm|html'
@@ -131,6 +144,24 @@ def launch(filename)
     end
 end
 
+def expanded(arg)
+    arg.gsub(/kpse\:(\S+)/o) do
+        original, resolved = $1, ''
+        begin
+            resolved = `kpsewhich -progname=#{program} -format=\"other text files\" #{file}`.chomp
+        rescue
+            resolved = ''
+        end
+        if resolved.empty? then
+            report("#{original} is not resolved") unless $report
+            original
+        else
+            report("#{original} is resolved to #{resolved}") unless $report
+            resolved
+        end
+    end
+end
+
 def runoneof(application,fullname,browserpermitted)
     if browserpermitted && launch(fullname) then
         return true
@@ -140,28 +171,28 @@ def runoneof(application,fullname,browserpermitted)
         applications = $applications[application]
         if applications.class == Array then
             if $report then
-                print [fullname,$arguments].join(' ')
+                print [fullname,expanded($arguments)].join(' ')
                 return true
             else
                 applications.each do |a|
-                    if system([a,fullname,$arguments].join(' ')) then
+                    if system([a,fullname,expanded($arguments)].join(' ')) then
                         return true
                     end
                 end
             end
         elsif applications.empty? then
             if $report then
-                print [fullname,$arguments].join(' ')
+                print [fullname,expanded($arguments)].join(' ')
                 return true
             else
-                return system([fullname,$arguments].join(' '))
+                return system([fullname,expanded($arguments)].join(' '))
             end
         else
             if $report then
-                print [applications,fullname,$arguments].join(' ')
+                print [applications,fullname,expanded($arguments)].join(' ')
                 return true
             else
-                return system([applications,fullname,$arguments].join(' '))
+                return system([applications,fullname,expanded($arguments)].join(' '))
             end
         end
         return false
@@ -173,11 +204,11 @@ def report(str)
 end
 
 def usage
-    print "version  : 1.04 - 2003/2004 - www.pragma-ade.com\n"
+    print "version  : 1.05 - 2003/2004 - www.pragma-ade.com\n"
     print("\n")
     print("usage    : texmfstart [switches] filename [optional arguments]\n")
     print("\n")
-    print("switches : --verbose --report --browser\n")
+    print("switches : --verbose --report --browser --direct\n")
     print("           --program --file   --page    --arguments\n")
     print("           --make    --lmake  --wmake\n")
     print("\n")
@@ -186,21 +217,23 @@ def usage
     print("           texmfstart showcase.pdf\n")
     print("           texmfstart --page=2 --file=showcase.pdf\n")
     print("           texmfstart --program=yourtex yourscript.pl arg-1 arg-2\n")
+    print("           texmfstart --direct xsltproc kpse:somefile.xsl somefile.xml\n")
+    print("           texmfstart bin:xsltproc kpse:somefile.xsl somefile.xml\n")
 end
 
 # somehow registration does not work out (at least not under windows)
 
 def registered?(filename)
-    return ENV['texmfstart.'+filename] != nil
+    return ENV["texmfstart.#{filename}"] != nil
 end
 
 def registered(filename)
-    return ENV['texmfstart.'+filename]
+    return ENV["texmfstart.#{filename}"]
 end
 
 def register(filename,fullname)
     if fullname && ! fullname.empty? then # && FileTest.file?(fullname)
-        ENV['texmfstart.'+filename] = fullname
+        ENV["texmfstart.#{filename}"] = fullname
         return true
     else
         return false
@@ -208,6 +241,10 @@ def register(filename,fullname)
 end
 
 def find(filename,program)
+    if $predefined.key?(filename) then
+        report("expanding '#{filename}' to '#{$predefined[filename]}'")
+        filename = $predefined[filename]
+    end
     if registered?(filename) then
         report("already located '#{filename}'")
         return registered(filename)
@@ -219,7 +256,7 @@ def find(filename,program)
     else
         suffixlist = [$scriptlist.split('|'),$documentlist.split('|')].flatten
     end
-    # first we honor a given path or
+    # first we honor a given path
     if filename =~ /[\\\/]/ then
         report("trying to honor '#{filename}'")
         suffixlist.each do |suffix|
@@ -392,6 +429,14 @@ def run(fullname)
     return false
 end
 
+def direct(fullname)
+    begin
+        return system([fullname.sub(/^bin\:/, ''),expanded($arguments)].join(' '))
+    rescue
+        return false
+    end
+end
+
 def make(filename,windows=false,linux=false)
     basename = filename.dup
     basename.sub!(/\.[^.]+?$/, '')
@@ -408,14 +453,15 @@ def make(filename,windows=false,linux=false)
         program = 'texmfstart' if $indirect || ! program || program.empty?
         begin
             if windows && f = open(basename+'.bat','w') then
-                f.puts("@echo off\n")
-                f.puts("#{program} #{filename} %*\n")
+                f.binmode
+                f.write("@echo off\015\012")
+                f.write("#{program} #{filename} %*\015\012")
                 f.close
                 report("windows stub '#{basename}.bat' made")
-            end
-            if linux && f = open(basename,'w') then
-                f.puts("#!/bin/sh\n")
-                f.puts("#{program} #{filename} $@\n")
+            elsif linux && f = open(basename,'w') then
+                f.binmode
+                f.write("#!/bin/sh\012")
+                f.write("#{program} #{filename} $@\012")
                 f.close
                 report("unix stub '#{basename}' made")
             end
@@ -434,6 +480,7 @@ $directives  = hashed(ARGV)
 $help        = $directives['help']      || false
 $filename    = $directives['file']      || ''
 $program     = $directives['program']   || 'context'
+$direct      = $directives['direct']    || false
 $page        = $directives['page']      || 0
 $browser     = $directives['browser']   || false
 $report      = $directives['report']    || false
@@ -477,7 +524,8 @@ elsif $make then
     end
 elsif $browser && $filename =~ /^http\:\/\// then
     launch($filename)
+elsif $direct || $filename =~ /^bin\:/ then
+    direct($filename)
 else
-    # run(find($filename,$program))
     run(find(shortpathname($filename),$program))
 end

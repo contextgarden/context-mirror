@@ -134,7 +134,8 @@
    \loadallsystemfiles\f!filfilename
      \donothing
    \loadallsystemfiles\f!sysfilename
-     {\doglobal\appendtoks
+     {\loadallsystemfiles{\f!sysfilename.rme}\donothing % new, fall back
+      \doglobal\appendtoks
         \loadallsystemfiles\f!errfilename\donothing
       \to\everygoodbye}}
 

@@ -929,12 +929,10 @@
   {\iffirstargument
      \begingroup
      \def\currentregister{#1}%
-     \expanded % the expansion is needed because we don't want \v!'s in the tuo file (french)
-       {\plaatsvolledig
-          {\noexpand\systemsuppliedchapter}%
-          {\currentregister}%
-          {\noexpand\headtext{\currentregister}}%
-          {\noexpand\placeregister[\currentregister][#2]}}%
+     % the expansion is needed because we don't want \v!'s in the tuo file (french)
+     \expanded{\systemsuppliedchapter[\currentregister]{\noexpand\headtext{\currentregister}}}%
+     \placeregister[\currentregister][#2]%
+     \page[\v!yes]%
      \endgroup
    \fi}
 

@@ -154,31 +154,31 @@
   {\processaction
      [#2#3#4]
      [   \v!packed*=>\packitems,
-            \v!intro*=>\itemintrotrue,
-        \v!autointro*=>\autoitemintrotrue,
-             \v!broad*=>\setitemparameter{#1}\c!factor{1},
-        #2#3*\v!broad*=>\setitemparameter{#1}\c!factor{#2#3},
-          #2*\v!broad*=>\setitemparameter{#1}\c!factor{#2},
-            \v!text*=>\textitemstrue
-                       \settrue\inlinelistitem
-                       \dosetuppackeditemgroup{#1}%
-                       \packitems,
-         \v!columns*=>\packitems,
-            \v!margin*=>\setitemparameter{#1}\c!width{-2em}, % signal
-          \v!inmargin*=>\setitemparameter{#1}\c!width{-2em}, % signal
-          \v!atmargin*=>\doifnot{#1}{1}{\setitemparameter{#1}\c!width{0em}}, % signal
-          \v!intext*=>\settrue\inlinelistitem, % new
-              \v!loose*=>\optimizeitemsfalse,
-           \v!paragraph*=>\paragraphitemstrue
-                       \packitems,
-      \v!joinedup*=>\dosetuppackeditemgroup{#1}%
-                       \packitems,
+          \v!intro*=>\itemintrotrue,
+      \v!autointro*=>\autoitemintrotrue,
+          \v!broad*=>\setitemparameter{#1}\c!factor{1},
+     #2#3*\v!broad*=>\setitemparameter{#1}\c!factor{#2#3},
+       #2*\v!broad*=>\setitemparameter{#1}\c!factor{#2},
+           \v!text*=>\textitemstrue
+                     \settrue\inlinelistitem
+                     \dosetuppackeditemgroup{#1}%
+                     \packitems,
+        \v!columns*=>\packitems,
+         \v!margin*=>\setitemparameter{#1}\c!width{-2em}, % signal
+       \v!inmargin*=>\setitemparameter{#1}\c!width{-2em}, % signal
+       \v!atmargin*=>\doifnot{#1}{1}{\setitemparameter{#1}\c!width{0em}}, % signal
+         \v!intext*=>\settrue\inlinelistitem, % new
+          \v!loose*=>\optimizeitemsfalse,
+      \v!paragraph*=>\paragraphitemstrue
+                     \packitems,
+       \v!joinedup*=>\dosetuppackeditemgroup{#1}%
+                     \packitems,
         \v!serried*=>\setitemparameter{#1}\c!factor{-1},
    #2#3*\v!serried*=>\setitemparameter{#1}\c!factor{-#2#3},
      #2*\v!serried*=>\setitemparameter{#1}\c!factor{-#2},
         \v!stopper*=>\setitemparameter{#1}\c!placestopper\v!yes,
-        \v!unpacked*=>\packeditemsfalse,
-        \v!standard*=>\dosetupstandarditemgroup{#1}]}
+       \v!unpacked*=>\packeditemsfalse,
+       \v!standard*=>\dosetupstandarditemgroup{#1}]}
 
 \def\dosetupstandarditemgroup#1%
   {\getparameters
@@ -195,8 +195,8 @@
 
 \def\dosetuppackeditemgroup#1%
   {\letitemparameter{#1}\c!beforehead\empty
-   \letitemparameter{#1}\c!afterhead  \empty
-   \letitemparameter{#1}\c!before   \empty
+   \letitemparameter{#1}\c!afterhead \empty
+   \letitemparameter{#1}\c!before    \empty
    \letitemparameter{#1}\c!after     \empty
    \letitemparameter{#1}\c!inbetween \empty}
 
@@ -412,23 +412,24 @@
         \processfirstactioninset
           [#1]
           [  \v!one=>\!!counta1\relax,
-            \v!two=>\!!counta2\relax,
-            \v!three=>\!!counta3\relax,
+             \v!two=>\!!counta2\relax,
+           \v!three=>\!!counta3\relax,
             \v!four=>\!!counta4\relax,
             \v!five=>\!!counta5\relax,
          \s!unknown=>\@EA\!!counta\getitemparameter\itemlevel\c!n]%
         % new
-        \edef\columneditemleftskip{\the\leftskip}%
-        \def\postprocesscolumnbox##1%
-          {\scratchdimen\columneditemleftskip
-           \divide\scratchdimen \nofcolumns
-           \hbox{\hskip\columneditemleftskip\hbox{\box##1}}}%
-        \scratchdimen-\columneditemleftskip
-        \multiply\scratchdimen \nofcolumns
-        \advance\scratchdimen \columneditemleftskip
-        \advance\scratchdimen \hsize
-        \edef\columntextwidth{\the\scratchdimen}%
-        \leftskip\zeropoint
+% now handled in column routines
+%         \edef\columneditemleftskip{\the\leftskip}%
+%         \def\postprocesscolumnbox##1%
+%           {\scratchdimen\columneditemleftskip
+%            \divide\scratchdimen \nofcolumns
+%            \hbox{\hskip\columneditemleftskip\hbox{\box##1}}}%
+%         \scratchdimen-\columneditemleftskip
+%         \multiply\scratchdimen \nofcolumns
+%         \advance\scratchdimen \columneditemleftskip
+%         \advance\scratchdimen \hsize
+%         \edef\columntextwidth{\the\scratchdimen}%
+%         \leftskip\zeropoint
         % so far
         \startcolumns
           [\c!n=\!!counta, % netter \??op\itemlevel\c!n
@@ -492,6 +493,20 @@
        \advance\leftskip \dimen0\relax
      \fi
    \fi}
+
+% test / example
+%
+% \startnarrower[left] \startcolumns[n=3] \startitemize
+% \item \input ward \item \input ward \item \input ward
+% \stopitemize \stopcolumns\stopnarrower \blank
+%
+% \startnarrower[left] \startitemize[columns,three]
+% \item \input ward \item \input ward \item \input ward
+% \stopitemize \stopnarrower \blank
+%
+% \setupitemize[leftmargin=1.5em] \startitemize[columns,three]
+% \item \input ward \item \input ward \item \input ward
+% \stopitemize \blank
 
 \def\stopitemgroup
   {\iftextitems

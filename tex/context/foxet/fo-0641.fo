@@ -6,11 +6,11 @@
 
     <fo:layout-master-set>
         <fo:simple-page-master master-name='test' margin='2cm'>
+            <fo:region-body   margin='2cm' background-color='gray'   fe:background-height='1cm' background-image="url('hacker.jpg')" clip='rect(1cm,1cm,1cm,1cm)' />
             <fo:region-before extent='2cm' background-color='red'    fe:background-height='1cm' background-image="url('hacker.jpg')" background-repeat='repeat-x' />
             <fo:region-after  extent='2cm' background-color='green'  fe:background-height='2cm' background-image="url('hacker.jpg')" background-repeat='repeat-y' />
             <fo:region-start  extent='2cm' background-color='blue'   fe:background-height='1cm' background-image="url('hacker.jpg')" background-repeat='no-repeat'/>
             <fo:region-end    extent='2cm' background-color='yellow' fe:background-height='2cm' background-image="url('hacker.jpg')" background-repeat='repeat'   />
-            <fo:region-body   margin='2cm' background-color='gray'   fe:background-height='1cm' background-image="url('hacker.jpg')" clip='rect(1cm,1cm,1cm,1cm)' />
         </fo:simple-page-master>
     </fo:layout-master-set>
 

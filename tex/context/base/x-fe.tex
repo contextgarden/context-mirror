@@ -108,11 +108,15 @@
   \stopTEXpage
 \stopsetups
 
-\mapXMLvalue {fe:tracing} {true}  {\tracingFOtrue}
-\mapXMLvalue {fe:tracing} {false} {\tracingFOfalse}
+\useMPlibrary[pre]
+
+\mapXMLvalue {fe:tracing}  {true}  {\tracingFOtrue}
+\mapXMLvalue {fe:tracing}  {false} {\tracingFOfalse}
+\mapXMLvalue {fe:testgrid} {true}  {\setupbackgrounds[page][background=pagegrid]}
 
 \startsetups fe:setup
-  \XMLval{fe:tracing}{\XMLop{fe:tracing}}{}
+  \XMLval{fe:tracing} {\XMLop{fe:tracing}} {}
+  \XMLval{fe:testgrid}{\XMLop{fe:testgrid}}{}
 \stopsetups
 
 \protect \endinput

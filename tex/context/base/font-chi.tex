@@ -215,45 +215,47 @@
 %
 % chinese classes: left=1|right=2|center=3
 
-\def\analyzechineseunicodeglyph%
-  {\chardef\chineseSstatus=0\getvalue{uc\the\unicodeposition}\relax}
+\chardef\plusfour=4
 
-\def\analyzechineseunicodeenviroment%
+\def\analyzechineseunicodeglyph
+  {\chardef\chineseSstatus\zerocount\getvalue{uc\the\unicodeposition}\relax}
+
+\def\analyzechineseunicodeenviroment
   {% left
-   \ifx (\nextglyph              \chardef\chineseAstatus=1 \else
-   \ifx [\nextglyph              \chardef\chineseAstatus=1 \else
+   \ifx (\nextglyph              \chardef\chineseAstatus\plusone   \else
+   \ifx [\nextglyph              \chardef\chineseAstatus\plusone   \else
    % right
-   \ifx ,\nextglyph              \chardef\chineseAstatus=2 \else
-   \ifx .\nextglyph              \chardef\chineseAstatus=2 \else
-   \ifx ?\nextglyph              \chardef\chineseAstatus=2 \else
-   \ifx ;\nextglyph              \chardef\chineseAstatus=2 \else
-   \ifx :\nextglyph              \chardef\chineseAstatus=2 \else
-   \ifx !\nextglyph              \chardef\chineseAstatus=2 \else
-   \ifx )\nextglyph              \chardef\chineseAstatus=2 \else
-   \ifx ]\nextglyph              \chardef\chineseAstatus=2 \else
+   \ifx ,\nextglyph              \chardef\chineseAstatus\plustwo   \else
+   \ifx .\nextglyph              \chardef\chineseAstatus\plustwo   \else
+   \ifx ?\nextglyph              \chardef\chineseAstatus\plustwo   \else
+   \ifx ;\nextglyph              \chardef\chineseAstatus\plustwo   \else
+   \ifx :\nextglyph              \chardef\chineseAstatus\plustwo   \else
+   \ifx !\nextglyph              \chardef\chineseAstatus\plustwo   \else
+   \ifx )\nextglyph              \chardef\chineseAstatus\plustwo   \else
+   \ifx ]\nextglyph              \chardef\chineseAstatus\plustwo   \else
    % space
-   \ifx\nextglyph\blankspace     \chardef\chineseAstatus=3 \else
-   \ifx\nextglyph\space          \chardef\chineseAstatus=3 \else
-                                 \chardef\chineseAstatus=0
+   \ifx\nextglyph\blankspace     \chardef\chineseAstatus\plusthree \else
+   \ifx\nextglyph\space          \chardef\chineseAstatus\plusthree \else
+                                 \chardef\chineseAstatus\zerocount
    % unknown
    \fi\fi\fi\fi\fi \fi\fi\fi\fi\fi \fi\fi
    % maybe save the last skip?
-   \chardef\chineseBstatus=\ifdim\lastskip=\!!zeropoint 4 \else0 \fi
-   \ifdim\lastskip=\chineseLsignal \chardef\chineseBstatus=1 \else
-   \ifdim\lastskip=\chineseRsignal \chardef\chineseBstatus=2 \else
-   \ifdim\lastskip=\chineseSsignal \chardef\chineseBstatus=3 \else
+   \chardef\chineseBstatus\ifdim\lastskip=\zeropoint\plusfour\else\zerocount\fi
+   \ifdim\lastskip=\chineseLsignal \chardef\chineseBstatus\plusone   \else
+   \ifdim\lastskip=\chineseRsignal \chardef\chineseBstatus\plustwo   \else
+   \ifdim\lastskip=\chineseSsignal \chardef\chineseBstatus\plusthree \else
      \scratchskip=\lastskip \unskip
-     \ifdim\lastskip=\chineseLsignal \chardef\chineseBstatus=1 \else
-     \ifdim\lastskip=\chineseRsignal \chardef\chineseBstatus=2 \else
-     \ifdim\lastskip=\chineseSsignal \chardef\chineseBstatus=3 \else
+     \ifdim\lastskip=\chineseLsignal \chardef\chineseBstatus\plusone   \else
+     \ifdim\lastskip=\chineseRsignal \chardef\chineseBstatus\plustwo   \else
+     \ifdim\lastskip=\chineseSsignal \chardef\chineseBstatus\plusthree \else
        \space\scratchskip=\lastskip \unskip
        \setbox\scratchbox=\hbox\bgroup
          (\space
          \ifdim\lastskip=\scratchskip
-           \egroup \chardef\chineseBstatus=1
+           \egroup \chardef\chineseBstatus\plusone
          \else
            \egroup
-           \ifdim\scratchskip=\!!zeropoint \chardef\chineseBstatus=4 \fi
+           \ifdim\scratchskip=\zeropoint \chardef\chineseBstatus\plusfour \fi
          \fi
      \fi\fi\fi
    \fi\fi\fi}
@@ -362,11 +364,11 @@
        \nointerlineskip
      \fi
      \ifcase\prevchineseSstatus\relax
-       \ifnum\chineseSstatus=2 \par\nobreak\else\allowbreak\fi
+       \ifnum\chineseSstatus=\plustwo \par\nobreak\else\allowbreak\fi
      \or % left
        \par\nobreak
      \or % right
-       \ifnum\chineseSstatus=2 \par\nobreak\else\allowbreak\fi
+       \ifnum\chineseSstatus=\plustwo \par\nobreak\else\allowbreak\fi
      \fi
      \global\chardef\prevchineseSstatus\chineseSstatus % pagebody ...
      \box\scratchbox\par
@@ -390,13 +392,11 @@
   {\bgroup
    \def\maxnofcolumns{25}%
    \verticalchinesetrue
-   \global\chardef\prevchineseSstatus=0
+   \global\chardef\prevchineseSstatus\zerocount
    \let\nochinese\nochineseinvertical
    \doif\@@vtn\v!fit
-     {\dimen0=\textwidth
-      \advance\dimen0 \@@vtdistance
-      \dimen2=\bodyfontsize
-      \advance\dimen2 \@@vtdistance
+     {\dimen0=\textwidth    \advance\dimen0 \@@vtdistance
+      \dimen2=\bodyfontsize \advance\dimen2 \@@vtdistance
       \divide\dimen0 \number\dimen2
       \edef\@@vtn{\number\dimen0}}%
    \startcolumns
@@ -519,22 +519,25 @@
 
 \newif\iftracechinese
 
-\def\showchinesetracelegend%
+\def\showchinesetracelegend
   {\definetabulate[\s!dummy][|c|l|l|l|]%
    \startdummy
-     \HL \NC \bf key \NC \bf meaning \NC \bf glyph \NC \bf keys \NC \NR \HL
-     \NC u \NC unknown character type \NC \color[green]{current} \NC u l r \NC\NR
-     \NC l \NC left boundary character \NC \color[red]{previous} \NC u l r c n \NC\NR
-     \NC r \NC right boundary character \NC \color[blue]{next} \NC u l r s \NC\NR
-     \NC c \NC chinese character \NC \NC \NC\NR
-     \NC s \NC following space \NC \NC \NC\NR
-     \NC n \NC no preceding space \NC \NC \NC\NR \HL
+     \HL
+     \NC \bf key \NC \bf meaning        \NC \bf glyph              \NC \bf keys  \NC\NR
+     \HL
+     \NC u \NC unknown character type   \NC \color[green]{current} \NC u l r     \NC\NR
+     \NC l \NC left boundary character  \NC \color[red]{previous}  \NC u l r c n \NC\NR
+     \NC r \NC right boundary character \NC \color[blue]{next}     \NC u l r s   \NC\NR
+     \NC c \NC chinese character        \NC                        \NC           \NC\NR
+     \NC s \NC following space          \NC                        \NC           \NC\NR
+     \NC n \NC no preceding space       \NC                        \NC           \NC\NR
+     \HL
    \stopdummy}
 
-\def\tracedchineseglyph%
+\def\tracedchineseglyph
   {\leavevmode
    \ruledhbox
-     {\setbox\scratchbox=\hbox{\insertunicodeglyph}%
+     {\setbox\scratchbox\hbox{\insertunicodeglyph}%
       \hbox to \wd\scratchbox
         {\localcolortrue
          \copy\scratchbox
@@ -782,7 +785,7 @@
 \def\arabicchinesenumber#1%
   {\expandafter\doarabicchinesenumber\number#1@\relax}
 
-\def\doarabicchinesenumber#1#2\relax%
+\def\doarabicchinesenumber#1#2\relax
   {\if#1@\else
      \chinesedigit{#1}\empty
      \doarabicchinesenumber#2\relax
@@ -889,12 +892,12 @@
 
 \setupunicodefont
   [chinese]
-  [   \c!scale=\chineseunicodescale,
-      \c!height=\chineseunicodeheight,
-      \c!depth=\chineseunicodedepth,
+  [     \c!scale=\chineseunicodescale,
+       \c!height=\chineseunicodeheight,
+        \c!depth=\chineseunicodedepth,
    \c!conversion=\chinesenumber,
-   \c!commands=\setchineseencoding, % needed for digits
-    \c!command=\handlechineseunicodeglyph]
+     \c!commands=\setchineseencoding, % needed for digits
+      \c!command=\handlechineseunicodeglyph]
 
 %D For the moment, this encoding is implemented rather ugly. The
 %D trick is to move the encoding value from the current font
@@ -902,7 +905,7 @@
 
 \let\chineseencoding\empty
 
-\def\setchineseencoding% normally SomeChineseRegular
+\def\setchineseencoding % normally SomeChineseRegular
   {\getfontfileparameters\unicodestyle
    \ifx\currentfontfileencoding\undefined \else
      \let\chineseencoding\currentfontfileencoding
@@ -949,73 +952,73 @@
 %D In addition to these fonts, we (pre|)|define some commonly
 %D used fonts:
 
-\definefontsynonym [SimplifiedChineseSongTiRegular]    [gbsong]   [encoding=gbk]
-\definefontsynonym [SimplifiedChineseSongTiSlanted]    [gbsongsl] [encoding=gbk]
-\definefontsynonym [SimplifiedChineseSongTiBold]       [gbsong]   [encoding=gbk]
-\definefontsynonym [SimplifiedChineseSongTiBoldSlanted][gbsongsl] [encoding=gbk]
+\definefontsynonym [SimplifiedChineseSongTiRegular]        [gbsong]   [encoding=gbk]
+\definefontsynonym [SimplifiedChineseSongTiSlanted]        [gbsongsl] [encoding=gbk]
+\definefontsynonym [SimplifiedChineseSongTiBold]           [gbsong]   [encoding=gbk]
+\definefontsynonym [SimplifiedChineseSongTiBoldSlanted]    [gbsongsl] [encoding=gbk]
 
-\definefontsynonym [TraditionalChineseSongTiRegular]  [b5song]   [encoding=big5]
-\definefontsynonym [TraditionalChineseSongTiSlanted]  [b5songsl] [encoding=big5]
-\definefontsynonym [TraditionalChineseSongTiBold]     [b5song]   [encoding=big5]
-\definefontsynonym [TraditionalChineseSongTiBoldSlanted][b5songsl] [encoding=big5]
+\definefontsynonym [TraditionalChineseSongTiRegular]       [b5song]   [encoding=big5]
+\definefontsynonym [TraditionalChineseSongTiSlanted]       [b5songsl] [encoding=big5]
+\definefontsynonym [TraditionalChineseSongTiBold]          [b5song]   [encoding=big5]
+\definefontsynonym [TraditionalChineseSongTiBoldSlanted]   [b5songsl] [encoding=big5]
 
-\definefontsynonym [SimplifiedChineseHeiTiRegular]     [gbhei]   [encoding=gbk]
-\definefontsynonym [SimplifiedChineseHeiTiSlanted]     [gbheisl] [encoding=gbk]
-\definefontsynonym [SimplifiedChineseHeiTiBold]        [gbhei]   [encoding=gbk]
-\definefontsynonym [SimplifiedChineseHeiTiBoldSlanted] [gbheisl] [encoding=gbk]
+\definefontsynonym [SimplifiedChineseHeiTiRegular]         [gbhei]    [encoding=gbk]
+\definefontsynonym [SimplifiedChineseHeiTiSlanted]         [gbheisl]  [encoding=gbk]
+\definefontsynonym [SimplifiedChineseHeiTiBold]            [gbhei]    [encoding=gbk]
+\definefontsynonym [SimplifiedChineseHeiTiBoldSlanted]     [gbheisl]  [encoding=gbk]
 
-\definefontsynonym [TraditionalChineseHeiTiRegular]    [b5hei]   [encoding=big5]
-\definefontsynonym [TraditionalChineseHeiTiSlanted]    [b5heisl] [encoding=big5]
-\definefontsynonym [TraditionalChineseHeiTiBold]       [b5hei]   [encoding=big5]
-\definefontsynonym [TraditionalChineseHeiTiBoldSlanted][b5heisl] [encoding=big5]
+\definefontsynonym [TraditionalChineseHeiTiRegular]        [b5hei]    [encoding=big5]
+\definefontsynonym [TraditionalChineseHeiTiSlanted]        [b5heisl]  [encoding=big5]
+\definefontsynonym [TraditionalChineseHeiTiBold]           [b5hei]    [encoding=big5]
+\definefontsynonym [TraditionalChineseHeiTiBoldSlanted]    [b5heisl]  [encoding=big5]
 
-\definefontsynonym [SimplifiedChineseKaiTiRegular]     [gbkai]   [encoding=gbk]
-\definefontsynonym [SimplifiedChineseKaiTiSlanted]     [gbkaisl] [encoding=gbk]
-\definefontsynonym [SimplifiedChineseKaiTiBold]        [gbkai]   [encoding=gbk]
-\definefontsynonym [SimplifiedChineseKaiTiBoldSlanted] [gbkaisl] [encoding=gbk]
+\definefontsynonym [SimplifiedChineseKaiTiRegular]         [gbkai]    [encoding=gbk]
+\definefontsynonym [SimplifiedChineseKaiTiSlanted]         [gbkaisl]  [encoding=gbk]
+\definefontsynonym [SimplifiedChineseKaiTiBold]            [gbkai]    [encoding=gbk]
+\definefontsynonym [SimplifiedChineseKaiTiBoldSlanted]     [gbkaisl]  [encoding=gbk]
 
-\definefontsynonym [TraditionalChineseKaiTiRegular]     [b5kai]   [encoding=big5]
-\definefontsynonym [TraditionalChineseKaiTiSlanted]     [b5kaisl] [encoding=big5]
-\definefontsynonym [TraditionalChineseKaiTiBold]        [b5kai]   [encoding=big5]
-\definefontsynonym [TraditionalChineseKaiTiBoldSlanted] [b5kaisl] [encoding=big5]
+\definefontsynonym [TraditionalChineseKaiTiRegular]        [b5kai]    [encoding=big5]
+\definefontsynonym [TraditionalChineseKaiTiSlanted]        [b5kaisl]  [encoding=big5]
+\definefontsynonym [TraditionalChineseKaiTiBold]           [b5kai]    [encoding=big5]
+\definefontsynonym [TraditionalChineseKaiTiBoldSlanted]    [b5kaisl]  [encoding=big5]
 
-\definefontsynonym [SimplifiedChineseFangSongRegular]     [gbfs]   [encoding=gbk]
-\definefontsynonym [SimplifiedChineseFangSongSlanted]     [gbfssl] [encoding=gbk]
-\definefontsynonym [SimplifiedChineseFangSongBold]        [gbfs]   [encoding=gbk]
-\definefontsynonym [SimplifiedChineseFangSongBoldSlanted] [gbfssl] [encoding=gbk]
+\definefontsynonym [SimplifiedChineseFangSongRegular]      [gbfs]     [encoding=gbk]
+\definefontsynonym [SimplifiedChineseFangSongSlanted]      [gbfssl]   [encoding=gbk]
+\definefontsynonym [SimplifiedChineseFangSongBold]         [gbfs]     [encoding=gbk]
+\definefontsynonym [SimplifiedChineseFangSongBoldSlanted]  [gbfssl]   [encoding=gbk]
 
-\definefontsynonym [TraditionalChineseFangSongRegular]     [b5fs]   [encoding=big5]
-\definefontsynonym [TraditionalChineseFangSongSlanted]     [b5fssl] [encoding=big5]
-\definefontsynonym [TraditionalChineseFangSongBold]        [b5fs]   [encoding=big5]
-\definefontsynonym [TraditionalChineseFangSongBoldSlanted] [b5fssl] [encoding=big5]
+\definefontsynonym [TraditionalChineseFangSongRegular]     [b5fs]     [encoding=big5]
+\definefontsynonym [TraditionalChineseFangSongSlanted]     [b5fssl]   [encoding=big5]
+\definefontsynonym [TraditionalChineseFangSongBold]        [b5fs]     [encoding=big5]
+\definefontsynonym [TraditionalChineseFangSongBoldSlanted] [b5fssl]   [encoding=big5]
 
-\definefontsynonym [SimplifiedChineseLiShuRegular]     [gbli]   [encoding=gbk]
-\definefontsynonym [SimplifiedChineseLiShuSlanted]     [gblisl] [encoding=gbk]
-\definefontsynonym [SimplifiedChineseLiShuBold]        [gbli]   [encoding=gbk]
-\definefontsynonym [SimplifiedChineseLiShuBoldSlanted] [gblisl] [encoding=gbk]
+\definefontsynonym [SimplifiedChineseLiShuRegular]         [gbli]     [encoding=gbk]
+\definefontsynonym [SimplifiedChineseLiShuSlanted]         [gblisl]   [encoding=gbk]
+\definefontsynonym [SimplifiedChineseLiShuBold]            [gbli]     [encoding=gbk]
+\definefontsynonym [SimplifiedChineseLiShuBoldSlanted]     [gblisl]   [encoding=gbk]
 
-\definefontsynonym [TraditionalChineseLiShuRegular]     [b5li]   [encoding=big5]
-\definefontsynonym [TraditionalChineseLiShuSlanted]     [b5lisl] [encoding=big5]
-\definefontsynonym [TraditionalChineseLiShuBold]        [b5li]   [encoding=big5]
-\definefontsynonym [TraditionalChineseLiShuBoldSlanted] [b5lisl] [encoding=big5]
+\definefontsynonym [TraditionalChineseLiShuRegular]        [b5li]     [encoding=big5]
+\definefontsynonym [TraditionalChineseLiShuSlanted]        [b5lisl]   [encoding=big5]
+\definefontsynonym [TraditionalChineseLiShuBold]           [b5li]     [encoding=big5]
+\definefontsynonym [TraditionalChineseLiShuBoldSlanted]    [b5lisl]   [encoding=big5]
 
 %D The following definitions provide us the commands to switch
 %D to these fonts.
 
-\defineunicodefont [SimSongTi]   [SimplifiedChineseSongTi]  [chinese]
-\defineunicodefont [TraSongTi]   [TraditionalChineseSongTi] [chinese]
+\defineunicodefont [SimSongTi]   [SimplifiedChineseSongTi]    [chinese]
+\defineunicodefont [TraSongTi]   [TraditionalChineseSongTi]   [chinese]
 
-\defineunicodefont [SimHeiTi]    [SimplifiedChineseHeiTi]  [chinese]
-\defineunicodefont [TraHeiTi]    [TraditionalChineseHeiTi] [chinese]
+\defineunicodefont [SimHeiTi]    [SimplifiedChineseHeiTi]     [chinese]
+\defineunicodefont [TraHeiTi]    [TraditionalChineseHeiTi]    [chinese]
 
-\defineunicodefont [SimKaiTi]    [SimplifiedChineseKaiTi]  [chinese]
-\defineunicodefont [TraKaiTi]    [TraditionalChineseKaiTi] [chinese]
+\defineunicodefont [SimKaiTi]    [SimplifiedChineseKaiTi]     [chinese]
+\defineunicodefont [TraKaiTi]    [TraditionalChineseKaiTi]    [chinese]
 
 \defineunicodefont [SimFangSong] [SimplifiedChineseFangSong]  [chinese]
 \defineunicodefont [TraFangSong] [TraditionalChineseFangSong] [chinese]
 
-\defineunicodefont [SimLiShu]    [SimplifiedChineseLiShu]  [chinese]
-\defineunicodefont [TraLiShu]    [TraditionalChineseLiShu] [chinese]
+\defineunicodefont [SimLiShu]    [SimplifiedChineseLiShu]     [chinese]
+\defineunicodefont [TraLiShu]    [TraditionalChineseLiShu]    [chinese]
 
 % \definealternativestyle [ChineseTitleFont] [\bfd\SimKaiTi] []
 
@@ -1035,7 +1038,7 @@
 %D Use the next macro when you want the next item to be put
 %D tight to the previous chinese character.
 
-\def\stillchinese%
+\def\stillchinese
   {\hskip\chineseSsignal\relax}
 
 %D \macros

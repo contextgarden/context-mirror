@@ -303,6 +303,7 @@ if ($Foxet) {
     $ProducePdfT = 1 ;
     $ForceXML    = 1 ;
     $Modules     = "foxet" ;
+    $Purge       = 1 ;
 }
 
 # a set file (like blabla.bat) can set paths now
@@ -2178,19 +2179,22 @@ sub LocatedFormatPath {
     my $FormatPath = shift;
     my $EnginePath = shift;
     if ( ( $FormatPath eq '' ) && ( $kpsewhich ne '' ) ) {
-        $FormatPath = `$kpsewhich --show-path=fmt`;
+        $FormatPath = `$kpsewhich --expand-var=\$TEXFORMATS` ;
         chomp $FormatPath;
+        if ($FormatPath eq '') {
+            $FormatPath = `$kpsewhich --show-path=fmt`;
+            chomp $FormatPath;
+        }
         $FormatPath =~ s/\.+\;//o;     # should be a sub
         $FormatPath =~ s/\;.*//o;
         $FormatPath =~ s/\!//go;
+        $FormatPath =~ s/\\/\//go;
         $FormatPath =~ s/\/\//\//go;
-        $FormatPath =~ s/\\\\/\//go;
         $FormatPath =~ s/[\/\\]$//;
-        $FormatPath .= '/';
-
         if ( ( $FormatPath ne '' ) && $Verbose ) {
             print "    located formatpath : $FormatPath\n";
         }
+        $FormatPath .= '/';
     }
 
     if ($UseEnginePath && ($FormatPath ne '' && ($FormatPath !~ /$EnginePath\/$/))) {
@@ -2208,7 +2212,7 @@ sub RunOneFormat {
     my @TeXFormatPath;
     my $TeXPrefix = "";
     if ( ( $fmtutil ne "" ) && ( $FormatName !~ /metafun|mptopdf/io ) ) {
-# could not happen, not supported any more
+        # could not happen, not supported any more
         my $cmd = "$fmtutil --byfmt $FormatName";
         if ($Verbose) { print "\n$cmd\n\n" }
         MakeUserFile;    # this works only when the path is kept

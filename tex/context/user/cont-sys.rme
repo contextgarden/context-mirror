@@ -51,9 +51,9 @@
 % \usetypescript[adobekb] [\defaultencoding]
 
 % You can let \CONTEXT\ load the map files for \PDFTEX.
-%
-% \autoloadmapfilestrue
-%
+
+\autoloadmapfilestrue
+
 % (1) use this when you have a big mapfile
 %
 % \preloadmapfile[original-base.map]
@@ -72,21 +72,21 @@
 % \resetmapfiles \usetypescript [map] [base] [all]
 %
 % (3) or this if it's a slow one:
-%
-% \resetmapfiles
-%
-% \loadmapfile[original-base.map]
-% \loadmapfile[ec-base.map]
-% \loadmapfile[8r-base.map]
-% \loadmapfile[qx-base.map]
-% \loadmapfile[texnansi-base.map]
-% \loadmapfile[original-ams-cmr.map]
-% \loadmapfile[original-ams-euler.map]
-% \loadmapfile[original-public-lm.map]
-% \loadmapfile[original-public-plr.map]
-% \loadmapfile[original-public-csr.map]
-% \loadmapfile[texnansi-public-lm.map]
-% \loadmapfile[ec-public-lm.map]
+
+\resetmapfiles
+
+\loadmapfile[original-base.map]
+\loadmapfile[ec-base.map]
+\loadmapfile[8r-base.map]
+\loadmapfile[qx-base.map]
+\loadmapfile[texnansi-base.map]
+\loadmapfile[original-ams-cmr.map]
+\loadmapfile[original-ams-euler.map]
+\loadmapfile[original-public-lm.map]
+\loadmapfile[original-public-plr.map]
+\loadmapfile[original-public-csr.map]
+\loadmapfile[texnansi-public-lm.map]
+\loadmapfile[ec-public-lm.map]
 
 % When you have your own fonts installed, you may want to predefine:
 %

@@ -78,7 +78,9 @@
 
 %D A possibly growing list:
 
-\appendtoks        \def\executesynonym#1#2#3#4{#3}\to\simplifiedcommands
+%appendtoks        \def\executesynonym#1#2#3#4{#3}\to\simplifiedcommands
+%appendtoks             \def\executesort#1#2#3{#3}\to\simplifiedcommands
+
 \appendtoks                              \def\ { }\to\simplifiedcommands
 \appendtoks\def\type#1{\string\\\strippedcsname#1}\to\simplifiedcommands
 \appendtoks                          \def\TeX{TeX}\to\simplifiedcommands
@@ -107,10 +109,10 @@
      {\advance\!!counta \plusone
       \processaction
         [\@@isalign]
-        [  \v!left=>\hbox to \scratchdimen{\strut##1\hss},
-          \v!right=>\hbox to \scratchdimen{\hss\strut##1},
+        [   \v!left=>\hbox to \scratchdimen{\strut##1\hss},
+           \v!right=>\hbox to \scratchdimen{\hss\strut##1},
           \v!middle=>\hbox to \scratchdimen{\hss\strut##1\hss},
-           \v!margin=>\ifnum\!!counta=\plusone\hss\else\hfill\fi
+          \v!margin=>\ifnum\!!counta=\plusone\hss\else\hfill\fi
                      \strut##1%
                      \ifnum\!!counta=\nofitems\hss\else\hfill\fi,
          \s!default=>\hbox to \scratchdimen{\hss\strut##1\hss}, % midden
@@ -1625,19 +1627,19 @@
    \getfromcommacommand[\@@ldlocation][1]%
    \processaction
      [\commalistelement]
-     [ \v!left=>\chardef\pairedlocationa0,
-      \v!right=>\chardef\pairedlocationa1,
-       \v!top=>\chardef\pairedlocationa2,
-       \v!bottom=>\chardef\pairedlocationa3]%
+     [  \v!left=>\chardef\pairedlocationa0,
+       \v!right=>\chardef\pairedlocationa1,
+         \v!top=>\chardef\pairedlocationa2,
+      \v!bottom=>\chardef\pairedlocationa3]%
    \getfromcommacommand[\@@ldlocation][2]%
    \processaction
      [\commalistelement]
-     [ \v!left=>\chardef\pairedlocationb0,
-      \v!right=>\chardef\pairedlocationb1,
+     [  \v!left=>\chardef\pairedlocationb0,
+       \v!right=>\chardef\pairedlocationb1,
         \v!high=>\chardef\pairedlocationb2,
-       \v!top=>\chardef\pairedlocationb2,
-        \v!low=>\chardef\pairedlocationb3,
-       \v!bottom=>\chardef\pairedlocationb3,
+         \v!top=>\chardef\pairedlocationb2,
+         \v!low=>\chardef\pairedlocationb3,
+      \v!bottom=>\chardef\pairedlocationb3,
       \v!middle=>\chardef\pairedlocationb4]}
 
 \def\betweenbothpairedboxes

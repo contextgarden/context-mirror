@@ -1691,7 +1691,7 @@
 %D \CONTEXT only defines lowcased macros.
 
 \def\showdefinederror#1#2%
-  {\writestatus{system}{#1 #2 replaces a macro, use CAPITALS!}}
+  {\writestatus\m!systems{#1 #2 replaces a macro, use CAPITALS!}}
 
 \def\checkdefined#1#2#3%
   {\doifdefined{#3}{\showdefinederror{#2}{#3}}}
@@ -3998,7 +3998,7 @@
 %D way we can handle the sentinal, a blank space and grouped
 %D tokens.
 
-\def\dohandletokens
+\def\dohandletokens % \nexthandledtoken is part of interface
   {\futurelet\nexthandledtoken\dodohandletokens}
 
 \long\def\handletokens#1\with#2%

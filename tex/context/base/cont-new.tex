@@ -31,6 +31,23 @@
 
 \unexpanded\def\xmlrent#1{\doXMLentity#1;}
 
+% And so, after a few years of keeping this potentially dangerous
+% speedup in cont-exp, we now move it to the kernel: the next
+% patch is 30\% faster on main interface (seconds) (9->7 sec on
+% 1 million calls). Another speed up is still under testing.
+
+\startinterface english
+
+  \def\dosetevalue  #1#2{\@EA\edef\csname#1#2\endcsname}
+  \def\dosetgvalue  #1#2{\@EA\gdef\csname#1#2\endcsname}
+  \def\dosetvalue   #1#2{\@EA\def \csname#1#2\endcsname}
+  \def\docopyvalue#1#2#3{\@EA\def \csname#1#3\@EA\endcsname\@EA{\csname#2#3\endcsname}}
+
+\stopinterface
+
+\def\XMLprocess#1%
+  {\begingroup\enableXML\XMLflush{#1}\endgroup}
+
 % In 2005 we will abandon support for font encodings that don't have
 % the ascii characters { } $ etc in their normal slot, i.e. latin modern
 % instead of computer modern. Then we can also clean up some of the ugly
@@ -125,6 +142,30 @@
    \fi
    \showmessage\m!floatblocks9\empty
    \someherefloat} % [#1]
+
+%D \starttyping
+%D {\sanitizePDFdocencoding test \CONTEXT\  test \to\oeps\stripstring\oeps\tttf[\oeps]}
+%D \stoptyping
+
+\def\stripstring#1% #1 is \cs
+  {\bgroup
+   \convertcommand#1\to\ascii
+   \global\let\globalascii\empty
+   \donefalse
+   \expandafter\handletokens\ascii\with\dostripstring
+   \egroup
+   \let#1\globalascii}
+
+\def\dostripstring#1%
+  {\ifx#1\blankspace
+     \donetrue
+   \else
+     \ifdone\ifx\globalascii\empty\else
+       \xdef\globalascii{\globalascii\space}%
+       \donefalse
+     \fi\fi
+     \xdef\globalascii{\globalascii#1}%
+   \fi}
 
 %D Ok, I got tired of making dediccated clean up macros using the
 %D same mechanism again and again, so now we have:
@@ -557,8 +598,13 @@
      \global\percentdimendonefalse
      \def\%{\dimexpr(#1/100)\global\percentdimendonetrue\ignorespaces}| scantokens add's a space
      \catcode`%=\@@active
+     \catcode`\\=\@@escape
      \let%\%|
-     \global\globalscratchdimen\scantokens\@EA{\@@expanded}| i'm lazy and use etex
+\scratchdimen#1|
+\xdef\@@expanded{\@@expanded\scratchdimen\!!zeropoint}| trick: when 1.2 => .2\scratchdimen and 0pt typeset
+\startnointerference
+      \global\globalscratchdimen\scantokens\@EA{\@@expanded}| i'm lazy and use etex
+\stopnointerference
      \egroup
      #1\globalscratchdimen
    \fi}
@@ -566,7 +612,7 @@
 
 \bgroup
 
-\obeylines
+\obeylines % don't remove %'s !
 
 \gdef\collapsedspace#1%
   {\ifx#1^^M%

@@ -9,7 +9,7 @@
         <fo:simple-page-master master-name='test' margin='2cm'>
             <fo:region-body margin='2cm'
                 background-color='gray'
-                background-image='hacker.jpg'
+                background-image="url('hacker.jpg')"
                 background-position-horizontal='10%'
                 background-position-vertical='20%'
                 background-repeat='no-repeat'/>

@@ -516,15 +516,22 @@
 
 % The following macros are used in XML handling.
 
-\long\def\dowithstringed#1#2#3#4% " ' space
-  {\if#4"\@EA#1\else\if#4'\@EAEAEA#2\else\@EAEAEA#3\fi\fi#4}
+% \long\def\dowithstringed#1#2#3#4% " ' space
+%   {\if#4"\@EA#1\else\if#4'\@EAEAEA#2\else\@EAEAEA#3\fi\fi#4}
+%
+% \def\unstringed
+%   {\dowithstringed\unstringdouble\unstringsingle\unstringspaced}
+%
+% \long\def\unstringdouble"#1"{#1}
+% \long\def\unstringsingle'#1'{#1}
+% \long\def\unstringspaced #1 {#1}
 
-\def\unstringed
-  {\dowithstringed\unstringdouble\unstringsingle\unstringspaced}
+\long\def\unstringed#1% " ' space
+  {\csname\ifcsname @u@s@#1\endcsname @u@s@#1\else\s!empty\fi\endcsname#1}
 
-\long\def\unstringdouble"#1"{#1}
-\long\def\unstringsingle'#1'{#1}
-\long\def\unstringspaced #1 {#1}
+\long\setvalue{@u@s@"}#1#2"{#2}
+\long\setvalue{@u@s@'}#1#2'{#2}
+\long\setvalue{@u@s@ }#1#2 {#2}
 
 \def\grabstring
   {\dowithstringed\grabstringdouble\grabstringsingle\grabstringspaced}

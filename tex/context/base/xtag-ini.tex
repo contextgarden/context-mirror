@@ -40,7 +40,7 @@
 
   \bgroup \obeylines
 
-    \gdef\startXMLdefinitions%
+    \gdef\startXMLdefinitions% keep %
       {\bgroup\obeylines\dostartXMLdefinitions}
 
     \gdef\dostartXMLdefinitions #1
@@ -2274,8 +2274,12 @@
      #4%
    \fi}
 
-\def\setXMLpar#1#2%
-  {\@EA\def\csname\@@XMLvariable:#1:#2\endcsname}
+% \def\setXMLpar#1#2%
+%   {\@EA\def\csname\@@XMLvariable:#1:#2\endcsname}
+
+\def\letXMLpar #1#2{\@EA \let\csname\@@XMLvariable:#1:#2\endcsname}
+\def\setXMLpar #1#2{\@EA \def\csname\@@XMLvariable:#1:#2\endcsname}
+\def\setXMLepar#1#2{\@EA\edef\csname\@@XMLvariable:#1:#2\endcsname}
 
 % ancestor arguments:
 %

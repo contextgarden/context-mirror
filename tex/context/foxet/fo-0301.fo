@@ -24,22 +24,22 @@
                   before<fo:character character='@' vertical-align='+3pt' />after
                 </fo:block>
                 <fo:block>
-                  before<fo:character character='@' glyph-orientation-horizontal='0'  />after
-                  before<fo:character character='@' glyph-orientation-horizontal='90' />after
-                  before<fo:character character='@' glyph-orientation-horizontal='180'/>after
-                  before<fo:character character='@' glyph-orientation-horizontal='270'/>after
+                  before<fo:character character='@' glyph-orientation-horizontal='0deg'  />after
+                  before<fo:character character='@' glyph-orientation-horizontal='90deg' />after
+                  before<fo:character character='@' glyph-orientation-horizontal='180deg'/>after
+                  before<fo:character character='@' glyph-orientation-horizontal='270deg'/>after
                 </fo:block>
                 <fo:block>
-                  before<fo:character character='@' glyph-orientation-horizontal='0'   vertical-align='super'/>after
-                  before<fo:character character='@' glyph-orientation-horizontal='90'  vertical-align='super'/>after
-                  before<fo:character character='@' glyph-orientation-horizontal='180' vertical-align='super'/>after
-                  before<fo:character character='@' glyph-orientation-horizontal='270' vertical-align='super'/>after
+                  before<fo:character character='@' glyph-orientation-horizontal='0deg'   vertical-align='super'/>after
+                  before<fo:character character='@' glyph-orientation-horizontal='90deg'  vertical-align='super'/>after
+                  before<fo:character character='@' glyph-orientation-horizontal='180deg' vertical-align='super'/>after
+                  before<fo:character character='@' glyph-orientation-horizontal='270deg' vertical-align='super'/>after
                 </fo:block>
                 <fo:block>
-                  before<fo:character character='@' glyph-orientation-horizontal='0'   vertical-align='3pt'/>after
-                  before<fo:character character='@' glyph-orientation-horizontal='90'  vertical-align='3pt'/>after
-                  before<fo:character character='@' glyph-orientation-horizontal='180' vertical-align='3pt'/>after
-                  before<fo:character character='@' glyph-orientation-horizontal='270' vertical-align='3pt'/>after
+                  before<fo:character character='@' glyph-orientation-horizontal='0deg'   vertical-align='3pt'/>after
+                  before<fo:character character='@' glyph-orientation-horizontal='90deg'  vertical-align='3pt'/>after
+                  before<fo:character character='@' glyph-orientation-horizontal='180deg' vertical-align='3pt'/>after
+                  before<fo:character character='@' glyph-orientation-horizontal='270deg' vertical-align='3pt'/>after
                 </fo:block>
                 <fo:block>
                   before<fo:character character='@' vertical-align='super' text-altitude='10pt'/>after

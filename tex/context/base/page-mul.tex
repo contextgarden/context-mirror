@@ -264,8 +264,8 @@
 %D register \type{\localcolumnwidth}, which is calculated as:
 
 \def\setcolumnhsize % beware, this one is available for use in macros
-  {\setbox0\hbox{\parindent\zeropoint\betweencolumns}%
-   \intercolumnwidth\wd0
+  {\setbox\scratchbox\hbox{\parindent\zeropoint\betweencolumns}%
+   \intercolumnwidth\wd\scratchbox
    \localcolumnwidth\columntextwidth
    \advance\localcolumnwidth -\leftskip
    \advance\localcolumnwidth -\rightskip
@@ -276,9 +276,9 @@
    \advance\localcolumnwidth -\nofcolumns\intercolumnwidth
    \advance\localcolumnwidth  \intercolumnwidth
    \divide \localcolumnwidth  \nofcolumns
-   \dimen0=\columntextoffset
-   \multiply\dimen0 2
-   \advance\localcolumnwidth -\dimen0
+   \scratchdimen\columntextoffset
+   \multiply\scratchdimen \plustwo
+   \advance\localcolumnwidth -\scratchdimen
    \usercolumnwidth\localcolumnwidth
    \hsize\localcolumnwidth} % we don't do it \global
 

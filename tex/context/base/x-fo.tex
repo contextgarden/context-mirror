@@ -17,6 +17,25 @@
 
 % beware: aftergroup vs egroup/endgroup
 
+\unprotect
+
+% syst-new.tex
+
+\long\def\unstringed#1% " ' space
+  {\csname\ifcsname @u@s@#1\endcsname @u@s@#1\else\s!empty\fi\endcsname#1}
+
+\long\setvalue{@u@s@"}#1#2"{#2}
+\long\setvalue{@u@s@'}#1#2'{#2}
+\long\setvalue{@u@s@ }#1#2 {#2}
+
+% xtag-ini
+
+\def\letXMLpar #1#2{\@EA \let\csname\@@XMLvariable:#1:#2\endcsname}
+\def\setXMLpar #1#2{\@EA \def\csname\@@XMLvariable:#1:#2\endcsname}
+\def\setXMLepar#1#2{\@EA\edef\csname\@@XMLvariable:#1:#2\endcsname}
+
+\protect
+
 %D Most time went into figuring out the specifications, especially
 %D because there are no examples included. Samples that circulate on the
 %D web are often border cases and torture test and don't have much to do
@@ -212,11 +231,11 @@
    border-right-color=\XMLop{border-end-color},
    border-right-style=\XMLop{border-end-style},
    border-right-width=\XMLop{border-end-width},
-   padding=0pt,
-   padding-before=\XMLop{padding},
-   padding-after=\XMLop{padding},
-   padding-start=\XMLop{padding},
-   padding-end=\XMLop{padding},
+   padding=,% 0pt,
+   padding-before=0pt,%\XMLop{padding},
+   padding-after=0pt,%\XMLop{padding},
+   padding-start=0pt,%\XMLop{padding},
+   padding-end=0pt,%\XMLop{padding},
    padding-top=\XMLop{padding-before},
    padding-bottom=\XMLop{padding-after},
    padding-left=\XMLop{padding-start},
@@ -234,9 +253,9 @@
 \extendXMLattributeset
   [fo:inherited]
   [font=,
-   font-family=Times,
+   font-family=,% Times,
    font-selection-strategy=,
-   font-size=12pt,
+   font-size=,% 12pt,
    font-size-adjust=1,
    font-style=normal,
    font-variant=normal,
@@ -258,11 +277,11 @@
 
 \defineXMLattributeset
   [fo:margin-block]
-  [margin=0pt,
-   margin-top=\XMLop{margin},
-   margin-bottom=\XMLop{margin},
-   margin-left=\XMLop{margin},
-   margin-right=\XMLop{margin},
+  [margin=, % 0pt,
+   margin-top=0pt,% \XMLop{margin},
+   margin-bottom=0pt,% \XMLop{margin},
+   margin-left=0pt,% \XMLop{margin},
+   margin-right=0pt,% \XMLop{margin},
    space-before=0pt,
    space-after=0pt,
    space-before.precedence=,
@@ -498,9 +517,14 @@
 
 \defineXMLattributeset
   [fo:writing-mode]
-  [text-altitude=,
-   text-depth=,
+  [%text-altitude=,
+   %text-depth=,
    unicode-bidi=]
+
+\extendXMLattributeset % for practical reasons we inherit along the whole chain
+  [fo:inherited]       % unless we implement relax skipping
+  [text-altitude=,
+   text-depth=]
 
 \extendXMLattributeset
   [fo:inherited]
@@ -795,12 +819,13 @@ leader-pattern-width=12pt,
      {fo:simple-page-master-do}
      {fo:simple-page-master}}
 
-% reference-orientation=0,
+% reference-orientation=0deg,
 % writing-mode=
 
 \defineXMLenvironment
   [fo:simple-page-master-do]
-  [\XMLattributeset{fo:margin-block},
+  [\XMLattributeset{fo:inherited}, % added
+   \XMLattributeset{fo:margin-block},
    page-height=29.7cm,
    page-width=21cm]
   {\directsetup{fo:simple-page-master:start}}
@@ -808,12 +833,13 @@ leader-pattern-width=12pt,
 
 % not needed any more:
 
-\mapXMLvalue {fo:reference-orientation}   {90}   {90}
-\mapXMLvalue {fo:reference-orientation}  {180}  {180}
-\mapXMLvalue {fo:reference-orientation}  {270}  {270}
-\mapXMLvalue {fo:reference-orientation}  {-90}  {270}
-\mapXMLvalue {fo:reference-orientation} {-180}  {180}
-\mapXMLvalue {fo:reference-orientation} {-270}   {90}
+\mapXMLvalue {fo:reference-orientation}    {0deg}    {0}
+\mapXMLvalue {fo:reference-orientation}   {90deg}   {90}
+\mapXMLvalue {fo:reference-orientation}  {180deg}  {180}
+\mapXMLvalue {fo:reference-orientation}  {270deg}  {270}
+\mapXMLvalue {fo:reference-orientation}  {-90deg}  {270}
+\mapXMLvalue {fo:reference-orientation} {-180deg}  {180}
+\mapXMLvalue {fo:reference-orientation} {-270deg}   {90}
 
 \startsetups fo:simple-page-master:start
 
@@ -834,6 +860,8 @@ leader-pattern-width=12pt,
         height=\XMLop{page-height}]}
 
   \checkFOpadding {fo:region-body}
+  \checkFOmargin  {fo:region-body}
+  \checkFOmargin  {fo:simple-page-master-do}
 
   \writestatus{XML-FO}{defining layout '\directsetup{fo:layout:kind}'}
 
@@ -850,7 +878,7 @@ leader-pattern-width=12pt,
                                  \XMLpar{fo:region-body}{margin-right}{0pt}),
            topspace=\the\dimexpr(\XMLpar{fo:simple-page-master-do}{margin-top}{0pt}+
                                  \XMLpar{fo:region-body}{padding-top}{0pt}+
-                                 \XMLpar{fo:region-body}{margin-top}  {0pt}),
+                                 \XMLpar{fo:region-body}{margin-top}{0pt}),
         bottomspace=\the\dimexpr(\XMLpar{fo:simple-page-master-do}{margin-top}{0pt}+
                                  \XMLpar{fo:region-body}{padding-bottom}{0pt}+
                                  \XMLpar{fo:region-body}{margin-bottom}{0pt})]}
@@ -884,6 +912,7 @@ leader-pattern-width=12pt,
   [fo:region-body]
   [\XMLattributeset{fo:border-padding-background},
    \XMLattributeset{fo:margin-block},
+   fe:z-order=above,
    clip=,
    column-count=1,
    column-gap=12pt,
@@ -900,11 +929,14 @@ leader-pattern-width=12pt,
 \mapXMLvalue {fo:odd-or-even}   {odd}   {odd}
 \mapXMLvalue {fo:odd-or-even}   {even}  {even}
 
-\mapXMLvalue {fo:page-position} {even}  {even}
-\mapXMLvalue {fo:page-position} {odd}   {odd}
+\mapXMLvalue {fo:page-position} {any}   {rest}    % todo
 \mapXMLvalue {fo:page-position} {first} {current}
-\mapXMLvalue {fo:page-position} {blank} {blank}   % todo
+\mapXMLvalue {fo:page-position} {last}  {last}    % todo
 \mapXMLvalue {fo:page-position} {rest}  {rest}    % todo
+
+%mapXMLvalue {fo:blank-or-not-blank} {any}       {} % todo
+%mapXMLvalue {fo:blank-or-not-blank} {not-blank} {} % todo
+%mapXMLvalue {fo:blank-or-not-blank} {blank}     {} % todo
 
 % check this one esp default value
 
@@ -918,7 +950,6 @@ leader-pattern-width=12pt,
        {fo:page-position}
        {fo:conditional-page-master-reference}
        {page-position}
-%        {\XMLop{master-reference}}}
        {\XMLpar{fo:page-sequence-master}{master-reference}{any}}}
 
 \stopsetups
@@ -1024,6 +1055,7 @@ leader-pattern-width=12pt,
 
     \checkFOposition{fo:region-\currentcommalistitem}{background}
     \checkFOpadding {fo:region-\currentcommalistitem}
+    \checkFOmargin  {fo:region-\currentcommalistitem}
 
   \stopprocesscommalist
 
@@ -1085,7 +1117,11 @@ leader-pattern-width=12pt,
   {\doifnot{\XMLpar{fo:#1}{background-image}{none}}{none}
      {\setFOimagename{\XMLpar{fo:#1}{background-image}{dummy}}%
       \FObgpositionH#2%
-      \setpercentdimen\FObgpositionH{\XMLpav{fo:background-location}{fo:#1}{background-position-horizontal}{}}%
+      \setpercentdimen\FObgpositionH{\XMLpav
+        {fo:background-location}
+        {fo:#1}
+        {background-position-horizontal}
+        {\XMLpar{fo:#1}{background-position-horizontal}{}}}%
       \ifpercentdimendone
         \skip0\zeropoint plus \FObgpositionH
         \skip2\zeropoint plus \dimexpr(#2-\FObgpositionH)%
@@ -1094,7 +1130,9 @@ leader-pattern-width=12pt,
         \skip2\zeropoint plus 1fill\relax
       \fi
       \FObgpositionV#3%
-      \setpercentdimen\FObgpositionV{\XMLpav{fo:background-location}{fo:#1}{background-position-vertical}{}}%
+      \setpercentdimen\FObgpositionV{\XMLpav
+        {fo:background-location}{fo:#1}{background-position-vertical}
+        {\XMLpar{fo:#1}{background-position-vertical}{}}}%
       \ifpercentdimendone
         \skip4\zeropoint plus \FObgpositionV
         \skip6\zeropoint plus \dimexpr(#3-\FObgpositionV)%
@@ -1193,10 +1231,14 @@ leader-pattern-width=12pt,
 
   \directsetup{fo:regions:check}
 
+  \checkFOmargin{fo:simple-page-master-do}
+
   \FOscratchML \XMLpar{fo:simple-page-master-do}{margin-left}  \zeropoint
   \FOscratchMR \XMLpar{fo:simple-page-master-do}{margin-right} \zeropoint
   \FOscratchMT \XMLpar{fo:simple-page-master-do}{margin-top}   \zeropoint
   \FOscratchMB \XMLpar{fo:simple-page-master-do}{margin-bottom}\zeropoint
+
+  \doif{\XMLpar{fo:region-body}{fe:z-order}{above}}{below}{\directsetup{fo:regions:process:body}}
 
   \FOscratchRB \XMLpar{fo:region-before}        {extent}       \zeropoint
   \FOscratchRA \XMLpar{fo:region-after}         {extent}       \zeropoint
@@ -1211,6 +1253,14 @@ leader-pattern-width=12pt,
        {\directsetup{fo:regions:process:false:true}}
        {\directsetup{fo:regions:process:false:false}}}
 
+  \doif{\XMLpar{fo:region-body}{fe:z-order}{above}}{above}{\directsetup{fo:regions:process:body}}
+
+\stopsetups
+
+\startsetups fo:regions:process:body
+
+  \bgroup
+
   \FOscratchRB \XMLpar{fo:region-body}{margin-top}   \zeropoint
   \FOscratchRA \XMLpar{fo:region-body}{margin-bottom}\zeropoint
   \FOscratchRS \XMLpar{fo:region-body}{margin-left}  \zeropoint
@@ -1223,6 +1273,8 @@ leader-pattern-width=12pt,
     {\FOscratchMT+\FOscratchRA}
     {\paperwidth -\FOscratchML-\FOscratchMR-\FOscratchRS-\FOscratchRE}
     {\paperheight-\FOscratchMT-\FOscratchMB-\FOscratchRB-\FOscratchRA}
+
+  \egroup
 
 \stopsetups
 
@@ -1354,16 +1406,12 @@ leader-pattern-width=12pt,
    \XMLattributeset{fo:margin-block},
    \XMLattributeset{fo:relative-position},
    \XMLattributeset{fo:keeps-and-breaks},
-   text-depth=,
-   text-altitude=,
+%    text-depth=,
+%    text-altitude=,
    span=,
    visibility=]
   {\beginXMLelement\directsetup{fo:block:start}}
   {\directsetup{fo:block:stop}\endXMLelement}
-
-\newdimen \dFOlineheight
-
-\let\FOlineheight\empty
 
 \startsetups fo:block:start
 
@@ -1383,24 +1431,9 @@ leader-pattern-width=12pt,
 
   \directsetup{fo:font:setup}
 
-  % \setupinterlinespace, no, interferes with columnset and lineheight
+  % \setupinterlinespace % no, interferes with columnset and lineheight
 
-  \edef\xFOlineheight{\XMLop{line-height}}
-
-  \ifx\xFOlineheight\FOlineheight \else
-
-     \let\FOlineheight\xFOlineheight
-     \dFOlineheight 2.8ex
-     \setpercentdimen\dFOlineheight\FOlineheight
-     \ifpercentdimendone
-       \expanded{\setupinterlinespace[line=\dFOlineheight]}%
-     \else\ifx\FOlineheight\empty \else
-       \doifdimensionelse\FOlineheight
-         {\expanded{\setupinterlinespace[line=\FOlineheight]}}
-         {\expanded{\setupinterlinespace[\FOlineheight]}}%
-     \fi \fi
-
-  \fi
+  \directsetup{fo:line-height:setup}
 
   \directsetup{fo:indent:setup}
 
@@ -1591,8 +1624,6 @@ leader-pattern-width=12pt,
 \mapXMLvalue {fo:font-size} {larger}   {\dFOfontsize1.20\dFOfontsize}
 
 \newdimen\dFOfontsize
-\newdimen\dFOdepth
-\newdimen\dFOheight
 
 % evt class Times Helvetica
 
@@ -1636,10 +1667,10 @@ leader-pattern-width=12pt,
 
 \startsetups fo:fonts:reset
 
-  \dFOfontsize=12pt
+  \dFOfontsize=\bodyfontsize
 
-  \def\FOfontsize      {12pt}
-  \def\FOfontfamily    {Times}
+  \def\FOfontsize      {10pt}% {12pt}
+  \def\FOfontfamily    {}% {Times}
   \def\FOfontweight    {normal}
   \def\FOfontstyle     {normal}
   \def\FOfontvariant   {normal}
@@ -1708,10 +1739,17 @@ leader-pattern-width=12pt,
 
   \donefalse
 
-  \ifx\xFOfont\empty \else
+  \ifx\xFOfont\empty \else \ifx\xFOfont\relax \else
     \let\FOfont\xFOfont
     \checkFOfont\FOfont
-  \fi
+  \fi \fi
+
+  \ifx\xFOfontsize\empty \else \ifx\xFOfontsize\FOfontsize \else
+    \let\FOfontsize\xFOfontsize
+    \doifXMLvalelse{fo:font-size}\FOfontsize
+      {\XMLval{fo:font-size}\FOfontsize\empty}
+      {\setpercentdimen\dFOfontsize\FOfontsize}
+  \fi \fi
 
   \ifx\xFOfontsize\empty \else
     \let\FOfontsize\xFOfontsize
@@ -1741,42 +1779,59 @@ leader-pattern-width=12pt,
 
   \ifdone
     \setFOfontname
-    \edef\xFOfontdefinition{\FOfontname\space    at \the\dimexpr(\FOfontsizeadjust\dFOfontsize)}
+    \ifx\FOfontname\empty \else
+      \edef\xFOfontdefinition{\FOfontname\space at \the\dimexpr(\FOfontsizeadjust\dFOfontsize)}
+    \fi
   \else
     \edef\xFOfontdefinition{\purefontname{\font} at \the\dimexpr(\FOfontsizeadjust\dFOfontsize)}
   \fi
 
-  \ifx\FOfontdefinition\xFOfontdefinition \else
+  \ifx\xFOfontdefinition\empty \else \ifx\FOfontdefinition\xFOfontdefinition \else
     \let\FOfontdefinition\xFOfontdefinition
     \expanded{\definedfont[\FOfontdefinition]}
-  \fi
+  \fi \fi
 
-  \edefXMLop\xFOtextdepth   {text-depth}
-  \edefXMLop\xFOtextaltitude{text-altitude}
-  \edefXMLop\xFOlineheight  {line-height}
+\stopsetups
+
+\newdimen\dFOlineheight
+\newdimen\dFOdepth
+\newdimen\dFOaltitude
+
+\let\FOlineheight  \empty
+\let\FOtextdepth   \empty
+\let\FOtextaltitude\empty
+
+\startsetups fo:line-height:setup
+
+  \edefXMLinh\xFOtextdepth   {text-depth}
+  \edefXMLinh\xFOtextaltitude{text-altitude}
+  \edefXMLinh\xFOlineheight  {line-height}
 
   \ifx\xFOtextdepth\empty \else \ifx\xFOtextdepth\FOtextdepth \else
-     \let\FOtextdepth\xFOtextdepth
-     \doifnot\FOtextdepth{use-font-metrics}
-       {\setstrut \dFOdepth=\strutdepth
-        \setpercentdimen\dFOdepth\FOtextdepth
-        \setupinterlinespace[mindepth=\dFOdepth]}
+    \let\FOtextdepth\xFOtextdepth
+    \doifnot\FOtextdepth{use-font-metrics}
+      {\setstrut \dFOdepth\strutdepth
+       \setpercentdimen\dFOdepth\FOtextdepth
+       \setupinterlinespace[mindepth=\dFOdepth]}
   \fi \fi
 
   \ifx\xFOtextaltitude\empty \else \ifx\xFOtextaltitude\FOtextaltitude \else
     \let\FOtextaltitude\xFOtextaltitude
     \doifnot\FOtextaltitude{use-font-metrics}
-      {\setstrut \dFOheight=\strutheight
-       \setpercentdimen\dFOheight\FOtextaltitude
-       \setupinterlinespace[minheight=\dFOheight]}
+      {\setstrut \dFOaltitude\strutheight \advance\dFOaltitude\strutdepth
+       \setpercentdimen\dFOaltitude\FOtextaltitude
+       \setupinterlinespace[minheight=\dFOaltitude]}
   \fi \fi
 
   \ifx\xFOlineheight\empty \else \ifx\xFOlineheight\FOlineheight \else
     \let\FOlineheight\xFOlineheight
-    \doifnot\FOlineheight{use-font-metrics}
-      {\setstrut \dFOheight=\strutheight
-       \setpercentdimen\dFOheight\FOlineheight
-       \setupinterlinespace[line=\dFOheight]}
+    \doifelse\FOlineheight{normal}
+      {\dFOlineheight2.8ex
+       \setupinterlinespace[line=\dFOlineheight]}
+      {\doifnot\FOlineheight{use-font-metrics}
+         {\setstrut \dFOlineheight\strutheight \advance\dFOlineheight\strutdepth
+          \setpercentdimen\dFOlineheight\FOlineheight
+          \setupinterlinespace[line=\dFOlineheight]}}
   \fi \fi
 
 \stopsetups
@@ -1875,11 +1930,15 @@ leader-pattern-width=12pt,
    \FOcontainerWW\textwidth
    \FOcontainerHH\textheight
    \def\FOlayername{\XMLpar{fo:flow}{flow-name}{xsl-region-body}}
+
+   \iftracingFO \tracelayerstrue \fi
+
    \directsetup{fo:preset:layer}
 
-   \setlayer
+   \setlayerframed
      [\XMLpar{fo:flow}{flow-name}{xsl-region-body}]
-     [width=\FOcontainerW,
+     [frame=off,
+      width=\FOcontainerW,
       height=\FOcontainerH]
 
    \bgroup
@@ -1938,8 +1997,8 @@ leader-pattern-width=12pt,
    alignment-adjust=,
    baseline-shift=,
    dominant-baseline=,
-   text-depth=,
-   text-altitude=,
+%    text-depth=,
+%    text-altitude=,
    keep-with-next=,
    keep-with-previous=,
    score-spaces=,
@@ -1985,10 +2044,11 @@ leader-pattern-width=12pt,
 
 \startsetups fo:character:orient
 
-  \doifsomethingXMLop{glyph-orientation-horizontal}
-    {\rotate[rotation=-\XMLop{glyph-orientation-horizontal}]}
+%   \rotate[rotation=-\XMLop{glyph-orientation-horizontal}]
 
-  {\XMLop{character}}
+  \doifsomethingXMLop{glyph-orientation-horizontal}
+    {\rotate[rotation=\XMLval{fo:reference-orientation}{\XMLop{glyph-orientation-horizontal}}{0}]}
+    {\XMLop{character}}
 
 \stopsetups
 
@@ -2019,7 +2079,7 @@ leader-pattern-width=12pt,
 
 % \XMLattributeset{fo:aural},
 % display-align=,
-% line-height=,
+% height=,
 % text-align=,
 
 \defineXMLenvironmentsave
@@ -2077,21 +2137,22 @@ leader-pattern-width=12pt,
   % leeg maken vars gaat ook goed, dan een \externalfigure
 
   \setbox\scratchbox\hbox
-    {\ifdim\FOgraphicheight>\zeropoint
+    {\setFOimagename{\XMLpar{fo:external-graphic}{src}{dummy}}
+     \ifdim\FOgraphicheight>\zeropoint
        \ifdim\FOgraphicwidth>\zeropoint
-         \externalfigure[\XMLop{src}][height=\FOgraphicheight,width=\FOgraphicwidth]
+         \externalfigure[\FOimagename][height=\FOgraphicheight,width=\FOgraphicwidth]
        \else
-         \externalfigure[\XMLop{src}][height=\FOgraphicheight]
+         \externalfigure[\FOimagename][height=\FOgraphicheight]
        \fi
      \else
        \ifdim\FOgraphicwidth>\zeropoint
-         \externalfigure[\XMLop{src}][width=\FOgraphicwidth]
+         \externalfigure[\FOimagename][width=\FOgraphicwidth]
        \else
-         \externalfigure[\XMLop{src}]
+         \externalfigure[\FOimagename]
        \fi
      \fi}
 
-  \XMLval{external-graphic:align}{\XMLop{vertical-align}}{}{\box\scratchbox}
+  \dontleavehmode \XMLval{external-graphic:align}{\XMLop{vertical-align}}{}{\box\scratchbox}
 
 \stopsetups
 
@@ -2398,8 +2459,8 @@ leader-pattern-width=12pt,
    alignment-baseline=,
    baseline-shift=,
    dominant-baseline=,
-   text-depth=,
-   text-altitude=,
+%    text-depth=,
+%    text-altitude=,
    keep-with-next=,
    keep-with-previous=,
    letter-spacing=,
@@ -2456,9 +2517,9 @@ leader-pattern-width=12pt,
    keep-with-next=,
    keep-with-previous=,
    score-spaces=,
-   text-altitude=,
+%    text-altitude=,
    text-decoration=,
-   text-depth=,
+%    text-depth=,
    text-shadow=,
    visibility=]
   {\directsetup{fo:page-number:process}}
@@ -2514,9 +2575,9 @@ leader-pattern-width=12pt,
    keep-with-next=,
    keep-with-previous=,
    score-spaces=,
-   text-altitude=,
+%    text-altitude=,
    text-decoration=,
-   text-depth=,
+%    text-depth=,
    text-shadow=,
    visibility=]
   {\directsetup{fo:page-number-citation:process}}
@@ -2651,8 +2712,8 @@ leader-pattern-width=12pt,
    border-end-precedence=,
    border-start-precedence=,
    visibility=]
-  {\beginXMLelement\bTABLEfoot}
-  {\eTABLEfoot\endXMLelement}
+  {\beginXMLelement\bTABLEhead}
+  {\eTABLEhead\endXMLelement}
 
 % \XMLattributeset{fo:aural},
 
@@ -2668,8 +2729,8 @@ leader-pattern-width=12pt,
    border-end-precedence=,
    border-start-precedence=,
    visibility=]
-  {\beginXMLelement\bTABLEhead}
-  {\eTABLEhead\endXMLelement}
+  {\beginXMLelement\bTABLEfoot}
+  {\eTABLEfoot\endXMLelement}
 
 % \XMLattributeset{fo:aural},
 
@@ -2710,13 +2771,15 @@ leader-pattern-width=12pt,
    keep-with-next=,
    keep-with-previous=,
    visibility=]
-  {\beginXMLelement\bTR}
-  {\eTR\endXMLelement}
+  {\beginXMLelement\bTR\inTABLErowtrue}
+  {\eTR\inTABLErowfalse\endXMLelement}
 
 % \XMLattributeset{fo:aural},
 % display-align=,
 % relative-align=,
 % empty-cells=,
+
+\newif\ifinTABLErow
 
 \defineXMLnested
   [fo:table-cell]
@@ -2737,7 +2800,9 @@ leader-pattern-width=12pt,
    number-rows-spanned=1,
    starts-row=,
    width=]
-  {\doif{\XMLop{starts-row}}{true}{\bTR}%
+  {\doif{\XMLop{starts-row}}{true}
+     {\ifinTABLErow\eTR\inTABLErowfalse\fi}%
+   \ifinTABLErow\else\bTR\inTABLErowtrue\fi
    \doifelsenothing{\XMLop{background-color}}
      {\let\FoTableBG\empty}
      {\checkhexcolor[\XMLop{background-color}]%
@@ -2753,7 +2818,8 @@ leader-pattern-width=12pt,
    \ignorespaces}
   {\removeunwantedspaces
    \eTD
-   \doif{\XMLop{ends-row}}{true}{\eTR}}
+   \doif{\XMLop{ends-row}}{true}
+     {\eTR\inTABLErowfalse}}
 
 %D Element: fo:list-block fo:list-item fo:list-body fo:list-item-label
 
@@ -2775,8 +2841,8 @@ leader-pattern-width=12pt,
    break-after=,
    break-before=,
    keep-with-next=,
-   keep-with-previous=,
-   space-between-list-rows=] % ? mentioned in bradley
+%  space-between-list-rows=, % ? mentioned in bradley
+   keep-with-previous=]
   {\beginXMLelement\directsetup{fo:list:start}}
   {\directsetup{fo:list:stop}\endXMLelement}
 
@@ -2786,14 +2852,15 @@ leader-pattern-width=12pt,
   \directsetup{fe:setup}
   \disablemode[fo:in-list]
   % \forgetall, no!
-  \directsetup{fo:space:before}
+%   \directsetup{fo:break-and-space:before}
+  \directsetup{fo:indent:setup}
   \begingroup
 \stopsetups
 
 \startsetups fo:list:stop
   \endgraf
   \endgroup
-  \directsetup{fo:space:after}
+%   \directsetup{fo:break-and-space:after}
   \endgroup
 \stopsetups
 
@@ -2801,6 +2868,12 @@ leader-pattern-width=12pt,
 % relative-align=,
 % intrusion-displace=,
 % keep-together=,
+
+% The list model is plain stupid. Instead of just defining a few mechanism
+% or using some kind of type attribute, a strange mechanism of functions is
+% used. Why on the one hand introduce redundant attributes and on the other
+% hand safe a few elements. A proper segmentation of the problem would have
+% brought better solutions.
 
 \defineXMLenvironment
   [fo:list-item]
@@ -2820,68 +2893,140 @@ leader-pattern-width=12pt,
 
 % check what is needed
 
-\newdimen\FOlistitemlabelhsize      \newdimen\FOlistitembodyhsize
+\newdimen\FOlistitemlabelhsize      \newdimen\FOlistitembodyhsize     \newdimen\FOlistitemdistance
 \newdimen\FOlistitemlabelleftskip   \newdimen\FOlistitembodyleftskip
 \newdimen\FOlistitemlabelrightskip  \newdimen\FOlistitembodyrightskip
-
-% keep-together=,
 
 \defineXMLnestedsave
   [fo:list-item-body]
   [\XMLattributeset{fo:inherited},
-   id=,
+   id=, % keep-together=,
    \XMLattributeset{fo:accessibility}]
-
-% keep-together=,
 
 \defineXMLnestedsave
   [fo:list-item-label]
   [\XMLattributeset{fo:inherited},
-   id=,
-  \XMLattributeset{fo:accessibility}]
+   id=, % keep-together=,
+   \XMLattributeset{fo:accessibility}]
 
 \startsetups fo:list-item:start
 
   \bgroup
 
-  \startmode[fo:in-list]
-
-   \doifsomething{\XMLpar{fo:list-block}{space-between-list-rows}{}}
-     {\vskip\XMLpar{fo:list-block}{space-between-list-rows}{}} % todo ! ! ! !
-
-  \stopmode
+%   \startmode[fo:in-list]
+%    \doifsomething{\XMLpar{fo:list-block}{space-between-list-rows}{}}
+%      {\vskip\XMLpar{fo:list-block}{space-between-list-rows}{}} % todo ! ! ! !
+%   \stopmode
 
   \enablemode[fo:in-list]
 
 \stopsetups
 
+% todo : relative-align in list item
+
+\newif\ifFOlabelend
+\newif\ifFObodystart
+
 \startsetups fo:list-item:stop
 
-  % 24 pt en 6pt in fo:root instellen
+  % 24pt en 6pt in fo:root instellen
 
   \edefXMLinh \FOprodis {provisional-distance-between-starts}
   \edefXMLinh \FOprolab {provisional-label-separation}
 
-  \FOlistitemlabelhsize    \ifx\FOprodis\empty 24pt\else \FOprodis\fi
-  \FOlistitemlabelrightskip\ifx\FOprolab\empty  6pt\else \FOprolab\fi
+  \edef\FOprodis{\ifx\FOprodis\empty24pt\else\FOprodis\fi}
+  \edef\FOprolab{\ifx\FOprolab\empty 6pt\else\FOprolab\fi}
 
-  \edefXMLinh \FOstartindent {start-indent}
-  \edefXMLinh \FOendindent   {end-indent}
+  \setlocalhsize
 
-%   \FOlistitemlabelleftskip \ifx\FOstartindent\empty 0pt\else \FOstartindent\fi
-%   \FOlistitembodyrightskip \ifx\FOendindent  \empty 0pt\else \FOendindent  \fi
+  \FOlistitemlabelleftskip \zeropoint
+  \FOlistitemlabelrightskip\zeropoint
+  \FOlistitembodyleftskip  \zeropoint
+  \FOlistitembodyrightskip \zeropoint
+
+  \doifelse{\XMLpar{fo:list-item-label}{end-indent}  {}}{label-end()} \FOlabelendtrue \FOlabelendfalse
+  \doifelse{\XMLpar{fo:list-item-body} {start-indent}{}}{body-start()}\FObodystarttrue\FObodystartfalse
+
+  \setpercentdimen\FOlistitemlabelleftskip {\XMLpar{fo:list-item-label}{start-indent}{0pt}}
+  \setpercentdimen\FOlistitembodyrightskip {\XMLpar{fo:list-item-body} {end-indent}  {0pt}}
+
+  % maybe i need to implement something configurable
+
+  \ifFObodystart
+    \ifFOlabelend
+      \FOlistitemlabelrightskip\dimexpr(\localhsize-\FOlistitemlabelleftskip-\FOprodis+\FOprolab)
+      \FOlistitembodyleftskip\dimexpr(\FOlistitemlabelleftskip+\FOprodis)
+      \FOlistitemlabelhsize\dimexpr(\FOprodis-\FOprolab)
+    \else
+      \setpercentdimen\FOlistitemlabelrightskip{\XMLpar{fo:list-item-label}{end-indent}{0pt}}
+      \FOlistitemlabelhsize\dimexpr(\localhsize-\FOlistitemlabelleftskip-\FOlistitemlabelrightskip)
+      \FOlistitembodyleftskip\dimexpr(\FOlistitemlabelleftskip+\FOlistitemlabelhsize+\FOprolab)
+    \fi
+    \FOlistitemdistance  \dimexpr(\FOprolab)
+  \else
+    \setpercentdimen\FOlistitembodyleftskip{\XMLpar{fo:list-item-body}{start-indent}{0pt}}
+    \ifFOlabelend
+      \FOlistitemlabelrightskip\dimexpr(\localhsize-\FOlistitembodyleftskip+\FOprolab)
+      \FOlistitemlabelhsize\dimexpr(\localhsize-\FOlistitemlabelleftskip-\FOlistitemlabelrightskip)
+      \FOlistitemdistance  \dimexpr(\FOprolab)
+    \else
+      \setpercentdimen\FOlistitemlabelrightskip{\XMLpar{fo:list-item-label}{end-indent}{0pt}}
+      \FOlistitemlabelhsize\dimexpr(\localhsize-\FOlistitemlabelleftskip-\FOlistitemlabelrightskip)
+      \FOlistitemdistance  \dimexpr(\FOlistitembodyleftskip-\FOlistitemlabelleftskip-\FOlistitemlabelhsize)
+    \fi
+  \fi
+
+  % is this fall back permitted ?
+
+  \ifzeropt\FOlistitemlabelleftskip \ifzeropt\FOlistitemlabelrightskip
+    \FOlistitembodyleftskip\FOprodis
+    \FOlistitemdistance\FOprolab
+    \FOlistitemlabelhsize\dimexpr(\FOlistitembodyleftskip-\FOlistitemdistance)
+  \fi \fi
+
+  %
+
+  \FOlistitembodyhsize\localhsize
+
+  \advance\FOlistitembodyhsize-\FOlistitembodyleftskip
+  \advance\FOlistitembodyhsize-\FOlistitembodyrightskip
+
+  \doifelse{\XMLpar{fo:list-item}{display-align}{}}{center}
+    {\directsetup{fo:list-item:display}}
+    {\directsetup{fo:list-item:text}}
+
+  \egroup
+
+\stopsetups
+
+\startsetups fo:list-item:display
+
+  \endgraf
 
   \advance\leftskip \FOlistitemlabelleftskip
-  \advance\leftskip \FOlistitemlabelhsize
-  \advance\leftskip \FOlistitemlabelrightskip
+  \advance\rightskip\FOlistitembodyrightskip
 
+  \dontleavehmode \valign\bgroup\forgetall\vss##\vss\cr
+    \iftracingFO\ruledvtop\else\vbox\fi{\hsize\FOlistitemlabelhsize\XMLflush{fo:list-item-label}}\cr
+    \iftracingFO\ruledvtop\else\vbox\fi{\hsize\FOlistitembodyhsize \XMLflush{fo:list-item-body}}\cr
+  \egroup
+
+% \dontleavehmode \placesidebyside % or maybe paired boxes (legends)
+%   {\ruledvtop{\forgetall\hsize\FOlistitemlabelhsize\XMLflush{fo:list-item-label}}}
+%   {\ruledvtop{\forgetall\hsize\FOlistitembodyhsize \XMLflush{fo:list-item-body}}}
+
+  \endgraf
+
+\stopsetups
+
+\startsetups fo:list-item:text
+
+  \advance\leftskip \FOlistitembodyleftskip
   \advance\rightskip\FOlistitembodyrightskip
 
   \setupparagraphintro[first][\directsetup{fo:list-item-label:process}]
   \setupparagraphintro[next] [\begstrut\resetpenalties\clubpenalties]
   \XMLflush{fo:list-item-body}\endstrut
-
-  \egroup
 
 \stopsetups
 
@@ -2897,7 +3042,7 @@ leader-pattern-width=12pt,
   \egroup
   \getnoflines{\dimexpr(\ht\FOitembox+\dp\FOitembox)}
   \setpenalties\clubpenalties\noflines\maxdimen
-  \strut\llap{\box\FOitembox\hskip\FOlistitemlabelrightskip}
+  \strut\llap{\box\FOitembox\hskip\FOlistitemdistance}
 
 \stopsetups
 
@@ -2998,7 +3143,8 @@ leader-pattern-width=12pt,
 
 \defineXMLenvironment % todo: all inheritable
   [fo:wrapper]
-  [\XMLattributeset{fo:inherited},\XMLattributeset{fe:tracing},
+  [\XMLattributeset{fo:inherited},
+   \XMLattributeset{fe:tracing},
    \XMLattributeset{fo:fonts},
    \XMLattributeset{fo:hyphenation}]
   {\beginXMLelement\begingroup\directsetup{fo:wrapper}}
@@ -3164,31 +3310,55 @@ leader-pattern-width=12pt,
      \expandafter\docheckFOposition
    \fi#3}
 
-\def\checkFOpadding#1%
-  {\edef\FOattribute{\XMLpar{#1}{padding}\empty}%
+\def\checkFOpadding{\def\FOatt{padding}\checkFOquadruple}
+\def\checkFOmargin {\def\FOatt{margin}\checkFOquadruple}
+
+\def\checkFOquadruple#1%
+  {\edef\FOattribute{\XMLpar{#1}\FOatt\empty}%
    \ifx\FOattribute\empty\else
      \edef\FOtag{#1}%
-     \edef\FOatt{padding}%
      \scratchcounter\zerocount
-     \expanded{\docheckFOpadding\FOattribute\space\relax\space\relax}\od
+     \expanded{\docheckFOquadruple\FOattribute\space\relax\space\relax}\od
+     \ifcase\scratchcounter
+       \let\FOattributeT\FOattribute
+       \let\FOattributeR\FOattribute
+       \let\FOattributeB\FOattribute
+       \let\FOattributeL\FOattribute
+     \or % (tblr)
+       \let\FOattributeT\FOattribute
+       \let\FOattributeR\FOattribute
+       \let\FOattributeB\FOattribute
+       \let\FOattributeL\FOattribute
+     \or % (tb)(lr)
+       \let\FOattributeB\FOattributeT
+       \let\FOattributeL\FOattributeR
+     \or % (t)(lr)(b)
+       \let\FOattributeL\FOattributeR
+     \or % (t)(r)(b)(l)
+       % already ok
+     \fi
+     \letXMLpar\FOtag{\FOatt-top}\FOattributeT
+     \letXMLpar\FOtag{\FOatt-right}\FOattributeR
+     \letXMLpar\FOtag{\FOatt-bottom}\FOattributeB
+     \letXMLpar\FOtag{\FOatt-left}\FOattributeL
    \fi}
 
-\def\docheckFOpadding#1#2 #3%
+\def\docheckFOquadruple#1#2 #3%
   {\ifx#1\relax
      \expandafter\noFOchecks
    \else
      \advance\scratchcounter\plusone
      \ifcase\scratchcounter
      \or
-       \setXMLpar\FOtag{\FOatt-top}{#1#2}%
+      \edef\FOattributeT{#1#2}%
      \or
-       \setXMLpar\FOtag{\FOatt-bottom}{#1#2}%
+      \edef\FOattributeR{#1#2}%
      \or
-       \setXMLpar\FOtag{\FOatt-left}{#1#2}%
+      \edef\FOattributeB{#1#2}%
      \or
-       \setXMLpar\FOtag{\FOatt-right}{#1#2}%
+      \edef\FOattributeL{#1#2}%
      \fi
-     \expandafter\docheckFOpadding
+     \expandafter\docheckFOquadruple
    \fi#3}
 
 % \def\setFOimagename#1%
@@ -3269,12 +3439,16 @@ leader-pattern-width=12pt,
    \def/##1 {}}% todo linespacing
 \egroup
 
+\globallet\xFOattribute\empty
+
 \def\checkFOfont#1%
   {\FOfonttoks\emptytoks
    \bgroup
    \catcode`\\=\@@escape
    \catcode`\{=\@@begingroup
    \catcode`\}=\@@endgroup
+% \catcode`\:=\@@letter
+% \catcode`\-=\@@letter
    \setcheckFOfontX
    \xdef\xFOattribute{#1 }%
    \setbox\scratchbox\hbox{\scantokens\@EA{\xFOattribute}}%
@@ -3283,7 +3457,7 @@ leader-pattern-width=12pt,
    \egroup
    \the\FOfonttoks
    \ifx\xFOattribute\empty\else
-     \expanded{\docheckFOfont\xFOattribute\space\relax\space\relax}\od
+      \expanded{\docheckFOfont\xFOattribute\space\relax\space\relax}\od
    \fi
    \directsetup{fo:font:family:check}}
 
@@ -3297,7 +3471,7 @@ leader-pattern-width=12pt,
        {\doifelsenothing{\XMLval{fo:weight}{#1#2}{}}
           {\doifelsenothing{\XMLval{fo:variant}{#1#2}{}}
              {\doifelsenothing{\XMLval{fo:style}{#1#2}{}}
-                {\setpercentdimen\FOfontsize{#1#2}}
+                {\setpercentdimen\dFOfontsize{#1#2}}
                 {\edef\FOfontstyle{\XMLval{fo:style}{#1#2}{}}}}
              {\edef\FOfontvariant{\XMLval{fo:variant}{#1#2}{}}}}
           {\edef\FOfontweight{\XMLval{fo:weight}{#1#2}{}}}}%

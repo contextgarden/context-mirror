@@ -7,11 +7,11 @@
     <fo:layout-master-set>
         <fo:simple-page-master master-name='test'
                 margin-top='1cm' margin-bottom='2cm' margin-left='3cm' margin-right='4cm'>
+            <fo:region-body   margin='2cm' background-color='gray'  />
             <fo:region-before extent='1cm' background-color='red'   precedence='true'/>
             <fo:region-after  extent='1cm' background-color='green' precedence='true'/>
             <fo:region-start  extent='1cm' background-color='blue'  />
             <fo:region-end    extent='1cm' background-color='yellow'/>
-            <fo:region-body   margin='2cm' background-color='gray'  />
         </fo:simple-page-master>
     </fo:layout-master-set>
 

@@ -352,6 +352,8 @@ class Commands
 
     def replace
 
+        report('replace file')
+
         if newname = @commandline.argument('first') then
             if newname && ! newname.empty? then
                 report
@@ -462,35 +464,66 @@ class Commands
         return used
     end
 
-    def touchcontextfile
-        maincontextfile = 'context.tex'
-        unless FileTest.file?(maincontextfile) then
-            begin
-                maincontextfile = `kpsewhich -progname=context #{maincontextfile}`.chomp
-            rescue
-                maincontextfile = ''
-            end
-        end
-        touchfile(maincontextfile) unless maincontextfile.empty?
-    end
-
     def downcasefilenames
-        if @commandline.option('recurse') then
-            files = Dir.glob('**/*')
-        else
-            files = Dir.glob('*')
-        end
-        if files && files.length>0 then
+
+        report('downcase filenames')
+
+        force = @commandline.option('force')
+
+        # if @commandline.option('recurse') then
+            # files = Dir.glob('**/*')
+        # else
+            # files = Dir.glob('*')
+        # end
+        # if files && files.length>0 then
+
+        if files = findfiles() then
             files.each do |oldname|
                 if FileTest.file?(oldname) then
                     newname = oldname.downcase
                     if oldname != newname then
-                        begin
-                            File.rename(oldname,newname)
-                        rescue
-                            report("#{oldname} == #{oldname}\n")
+                        if force then
+                            begin
+                                File.rename(oldname,newname)
+                            rescue
+                                report("#{oldname} == #{oldname}\n")
+                            else
+                                report("#{oldname} => #{newname}\n")
+                            end
                         else
-                            report("#{oldname} => #{newname}\n")
+                            report("(#{oldname} => #{newname})\n")
+                        end
+                    end
+                end
+            end
+        end
+    end
+
+    def stripformfeeds
+
+        report('strip formfeeds')
+
+        force = @commandline.option('force')
+
+        if files = findfiles() then
+            files.each do |filename|
+                if FileTest.file?(filename) then
+                    begin
+                        data = IO.readlines(filename).join('')
+                    rescue
+                    else
+                        if data.gsub!(/\n*\f\n*/io,"\n\n") then
+                            if force then
+                                if f = open(filename,'w') then
+                                    report("#{filename} is stripped\n")
+                                    f.puts(data)
+                                    f.close
+                                else
+                                    report("#{filename} cannot be stripped\n")
+                                end
+                            else
+                                report("#{filename} will be stripped\n")
+                            end
                         end
                     end
                 end
@@ -499,41 +532,6 @@ class Commands
     end
 
     private # specific
-
-    def touchfile(filename)
-
-        if FileTest.file?(filename) then
-            if data = IO.read(filename) then
-                timestamp = Time.now.strftime('%Y.%m.%d')
-                begin
-                    data.gsub!(/\\contextversion\{(\d+)\.(\d+)\.(\d+)\}/) do
-                        "\\contextversion{#{timestamp}}"
-                    end
-                rescue
-                else
-                    begin
-                        File.delete(filename+'.old')
-                    rescue
-                    end
-                    begin
-                        File.copy(filename,filename+'.old')
-                    rescue
-                    end
-                    begin
-                        if f = File.open(filename,'w') then
-                            f.puts(data)
-                            f.close
-                        end
-                    rescue
-                    end
-                end
-                report("#{filename} is touched as #{timestamp}")
-            end
-        else
-            report("#{filename} is not found")
-        end
-
-    end
 
     def movefiles(from_path,to_path,suffix,&block)
         obsolete = 'obsolete'
@@ -642,19 +640,19 @@ end
 logger      = EXA::ExaLogger.new(banner.shift)
 commandline = CommandLine.new
 
-commandline.registeraction('touchcontextfile', '') # private
-commandline.registeraction('downcasefilenames', '') # private
+commandline.registeraction('removemapnames'   , '[pattern]   [--recurse]')
+commandline.registeraction('restoremapnames'  , '[pattern]   [--recurse]')
+commandline.registeraction('hidemapnames'     , '[pattern]   [--recurse]')
+commandline.registeraction('videmapnames'     , '[pattern]   [--recurse]')
+commandline.registeraction('findfile'         , 'filename    [--recurse]')
+commandline.registeraction('unzipfiles'       , '[pattern]   [--recurse]')
+commandline.registeraction('fixafmfiles'      , '[pattern]   [--recurse]')
+commandline.registeraction('mactodos'         , '[pattern]   [--recurse]')
+commandline.registeraction('fixtexmftrees'    , '[texmfroot] [--force]')
+commandline.registeraction('replace'          , 'filename    [--force]')
+commandline.registeraction('downcasefilenames', '[--recurse] [--force]') # not yet documented
+commandline.registeraction('stripformfeeds'   , '[--recurse] [--force]') # not yet documented
 
-commandline.registeraction('removemapnames'  , '[pattern]   [--recurse]')
-commandline.registeraction('restoremapnames' , '[pattern]   [--recurse]')
-commandline.registeraction('hidemapnames'    , '[pattern]   [--recurse]')
-commandline.registeraction('videmapnames'    , '[pattern]   [--recurse]')
-commandline.registeraction('findfile'        , 'filename    [--recurse]')
-commandline.registeraction('unzipfiles'      , '[pattern]   [--recurse]')
-commandline.registeraction('fixafmfiles'     , '[pattern]   [--recurse]')
-commandline.registeraction('mactodos'        , '[pattern]   [--recurse]')
-commandline.registeraction('fixtexmftrees'   , '[texmfroot] [--force]')
-commandline.registeraction('replace'         , 'filename    [--force]')
 commandline.registeraction('help')
 commandline.registeraction('version')
 
