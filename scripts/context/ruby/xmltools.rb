@@ -73,6 +73,7 @@ class Commands
             else
                 rootatt = " #{@xmlns} root='#{root}'"
             end
+            rootatt += " timestamp='#{Time.now}'"
             if url.empty? then
                 output.xputs("<files #{rootatt}>\n")
             else

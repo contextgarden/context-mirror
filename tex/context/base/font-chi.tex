@@ -217,8 +217,8 @@
 
 \chardef\plusfour=4
 
-\def\analyzechineseunicodeglyph
-  {\chardef\chineseSstatus\zerocount\getvalue{uc\the\unicodeposition}\relax}
+\def\analyzechineseunicodeglyph % beware, no zerocount !
+  {\chardef\chineseSstatus0\getvalue{uc\the\unicodeposition}\relax}
 
 \def\analyzechineseunicodeenviroment
   {% left

@@ -38,13 +38,13 @@
 % \setupencoding [\s!default=texnansi]
 %
 % or:
-%
-% \setupencoding [\s!default=ec]
-%
+
+\setupencoding [\s!default=ec]
+
 % If you want the default berry names:
-%
-% \usetypescript [berry] [\defaultencoding]
-%
+
+\usetypescript [berry] [\defaultencoding]
+
 % If you run into missing font metrics kind of problems,
 % you may want to uncomment:
 %
