@@ -13,7 +13,7 @@
 
 \catcode`\{=1 \catcode`\}=2 
 
-\def\contextversion{2001.4.23}
+\def\contextversion{2001.4.30}
 
 %D Welcome to the main module. When this module is ran through
 %D \type{initex} or \type{tex -i} or \type{whatevertex} using
@@ -113,7 +113,8 @@
 %D load additional definition modules when needed.
 
 \input enco-ini.tex 
-\input regi-ini.tex % new 
+\input hand-ini.tex 
+\input regi-ini.tex 
 \input lang-ini.tex
 
 \input colo-ini.tex
@@ -218,7 +219,7 @@
 
 \input type-ini.tex
 
-\input math-ini.tex
+\input math-ini.tex % after enco-ini.tex 
 
 %D Now we're ready for more core modules.
 

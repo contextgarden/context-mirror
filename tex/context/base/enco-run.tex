@@ -1,8 +1,8 @@
 %D \module
-%D   [     file=enco-inf,
+%D   [     file=enco-run,
 %D      version=2000.27.12, % moved to runtime module 
 %D        title=\CONTEXT\ Encoding Macros,
-%D     subtitle=Ending Related Tracing,
+%D     subtitle=Runtime Macros,
 %D       author=Hans Hagen,
 %D         date=\currentdate,
 %D    copyright=Hans Hagen \& Ton Otten]
@@ -31,20 +31,23 @@
 
 \gdef\showaccents%
   {\bgroup
-   \savefont
-   \setuptextrules[\c!letter=]
+  %\savefont
+   \setuptextrules[\c!korps=,\c!letter=]
    \starttextrule{\visualizecharacterslegend}
-   \restorefont\stelinterliniein
+   \witruimte
+  %\restorefont\stelinterliniein
    \visualizecharacters
    \def\do##1%
      {{\def\dodo####1%
          {\hss\hbox to 1em{\hss\expanded{##1####1\recurselevel}\hss}}%
        \hbox to \hsize
-         {\localcolortrue 
+         {\strut
+          \localcolortrue 
           \hbox to 2em{\tttf\string##1\hss}%
           \dorecurse{26}{\dodo\character}}%
        \hbox to \hsize
-         {\localcolortrue 
+         {\strut
+          \localcolortrue 
           \hskip2em
           \dorecurse{26}{\dodo\Character}}}%
        \par}
@@ -56,9 +59,10 @@
 
 \gdef\showcharacters%
   {\bgroup
-   \savefont
-   \setuptextrules[\c!letter=]
+  %\savefont
+   \setuptextrules[\c!korps=,\c!letter=]
    \starttextrule{\visualizecharacterslegend}
+   \witruimte
    \dontcomplain
    \forgetall
    \def\startencoding[##1]{}
@@ -66,34 +70,34 @@
    \dimen0=\!!zeropoint
    \dimen2=\!!zeropoint
    \def\definecharacter ##1 ##2 %
-     {\setbox0=\hbox{\getvalue{##1}}%
+     {\setbox0=\hbox spread 1em{\getvalue{##1}}%
       \ifdim\wd0>\dimen0 \dimen0=\wd0 \fi
       \setbox2=\hbox spread 1em{\box0 ##1}
       \ifdim\wd2>\dimen2 \dimen2=\wd2 \fi}%
    \readsysfile{\f!encodingprefix def}{}{}
-   \advance\dimen0 by 1em
    \edef\encwidth{\the\dimen0}
    \dimen0=\hsize
    \advance\dimen0 2em
    \advance\dimen2 2em
-   \divide \dimen0 by \dimen2 
+   \divide \dimen0 by \dimen2 \advance\dimen0 1sp 
    \edef\enccols{\number\dimen0}
    \visualizecharacters
    \startcolumns[\c!n=\enccols,\c!afstand=2em]
-   \restorefont\stelinterliniein
+  %\restorefont\stelinterliniein
    \def\definecharacter ##1 ##2 %
-     {\hbox{\localcolortrue\hbox to \encwidth{\getvalue{##1}\hss}##1}\par}
+     {\hbox{\strut\localcolortrue\hbox to \encwidth{\getvalue{##1}\hss}##1}\par}
    \readsysfile{\f!encodingprefix def}{}{}
    \stopcolumns
    \stoptextrule
    \egroup}
 
 \gdef\showhyphenations#1%
-  {\hbox 
-     {language: \currentlanguage/\the\normallanguage\quad
-      font:     \fontname\font\quad
-      encoding: \currentencoding\quad 
-      mapping:  \currentencoding\quad 
-      sample:   \hyphenatedword{#1}}}
+  {\starttabulate[|le|l|]
+   \NC language \NC \currentlanguage (code:\the\normallanguage) \NC \NR
+   \NC font     \NC \fontname\font      \NC \NR
+   \NC encoding \NC \currentencoding    \NC \NR
+   \NC mapping  \NC \currentencoding    \NC \NR
+   \NC sample   \NC \hyphenatedword{#1} \NC \NR
+   \stoptabulate}
 
 \protect \endinput 

@@ -89,6 +89,74 @@
    #1\endcsname}
 
 \endTEX
+
+%D Because a command can have a different meaning in math 
+%D and in text mode, we provide a selector. We also provide 
+%D the pure alternatives as \type {\mathcharacter} and \type
+%D {\textcharacter}. 
+
+\ifx\dohandlecommand\undefined \wait \fi % troubles ! 
+
+\let\mathcharacter\dohandlemathtoken
+\let\textcharacter\dohandlecommand % better \dohandletexttoken
+
+\beginETEX \ifcsname
+
+\def\dohandlemathtoken#1%
+  {\csname
+     \ifmmode
+       \ifcsname\@mt@\mathcollection#1\endcsname
+         \@mt@\mathcollection
+       \else\ifcsname\@mt@\nomathcollection#1\endcsname
+         \@mt@\nomathcollection
+       \else\ifcsname\characterencoding#1\endcsname
+         \characterencoding
+       \else
+         \nocharacterencoding
+       \fi\fi\fi
+     \else
+       \ifcsname\characterencoding#1\endcsname
+         \characterencoding
+       \else
+         \nocharacterencoding
+       \fi
+     \fi
+   #1\endcsname}
+
+\endETEX
+
+\beginTEX 
+
+\def\dohandlemathtoken#1%
+  {\csname
+     \ifmmode
+       \@EA\ifx\csname\@mt@\mathcollection#1\endcsname\relax
+         \@EA\ifx\csname\@mt@\nomathcollection#1\endcsname\relax 
+           \@EA\ifcsname\characterencoding#1\endcsname
+             \nocharacterencoding
+           \else
+             \characterencoding
+           \fi
+         \else
+           \@mt@\nomathcollection
+         \fi
+       \else
+         \@mt@\mathcollection
+       \fi\fi\fi
+     \else
+       \@EA\ifcsname\characterencoding#1\endcsname
+         \nocharacterencoding
+       \else
+         \characterencoding
+       \fi
+     \fi
+   #1\endcsname}
+
+\endTEX
+
+%D Now we redefine the text encoding handler. 
+
+\let\dohandlecommand\dohandlemathtoken
 
 \def\definefamilysynonym%
   {\dotripleempty\dodefinefamilysynonym}
@@ -277,9 +345,11 @@
 \def\autoenablemathcollection%
   {\doifdefinedelse{\@mc@\fontclass\@mc@}
      {\enablemathcollection[\getvalue{\@mc@\fontclass\@mc@}]}
-     {\enablemathcollection[\s!default]}}
+     {\enablemathcollection[\s!default]}} % ? ? ?
 
 \appendtoks\autoenablemathcollection\to\mathstrategies
+
+\fetchruntimecommand \showmathcharacters {\f!mathprefix\s!run}
 
 \edef\hexmrfam {0} \edef\hexbsfam {8}
 \edef\hexmifam {1} \edef\hexbifam {9}

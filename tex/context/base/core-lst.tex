@@ -445,7 +445,8 @@
      {\doassign[\??li#1][\c!interactie=\v!alles]}%
    \makelijstelement\v!alles
      {\hbox to \hsize
-        {\!!widthb=\hsize
+        {\dostartattributes{\??li#1}\c!letter\c!kleur{}% new
+         \!!widthb=\hsize
          \setbox2=\hbox \ifdim\!!widtha>\!!zeropoint to \!!widtha \fi
            {\makelijstelement\v!sectienummer
               {\dolistattributes{#1}\c!nummerletter\c!nummerkleur
@@ -498,7 +499,8 @@
               \box4\relax
               \relax
             \fi}%
-         \hss}}%
+         \hss
+         \dostopattributes}}% new 
    \nointerlineskip % anders verkeerde spatiering bij multi-line
    \endgraf
    \allowbreak

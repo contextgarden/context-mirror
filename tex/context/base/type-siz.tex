@@ -13,18 +13,6 @@
 
 \unprotect 
 
-%\starttypescript [serif] [default] [size] 
-%  \definebodyfont 
-%    [17.3pt,14.4pt,12pt,11pt,10pt,9pt,8pt,7pt,6pt,5pt,4pt] 
-%    [\tsvar{style}{rm}] [default]
-%\stoptypescript 
-
-\starttypescript [casual] [default] [size] 
-  \definebodyfont 
-    [17.3pt,14.4pt,12pt,11pt,10pt,9pt,8pt,7pt,6pt,5pt,4pt] 
-    [rm] [default]
-\stoptypescript 
-
 \starttypescript [serif] [default] [size] 
   \definebodyfont 
     [17.3pt,14.4pt,12pt,11pt,10pt,9pt,8pt,7pt,6pt,5pt,4pt] 
@@ -54,6 +42,24 @@
     [17.3pt,14.4pt,12pt,11pt,10pt,9pt,8pt,7pt,6pt,5pt,4pt] 
     [mm] [boldmath]
 \stoptypescript
+
+\starttypescript [handwriting] [default] [size] 
+  \definebodyfont 
+    [17.3pt,14.4pt,12pt,11pt,10pt,9pt,8pt,7pt,6pt,5pt,4pt] 
+    [hw] [default]
+\stoptypescript 
+
+\starttypescript [calligraphy] [default] [size] 
+  \definebodyfont 
+    [17.3pt,14.4pt,12pt,11pt,10pt,9pt,8pt,7pt,6pt,5pt,4pt] 
+    [cg] [default]
+\stoptypescript 
+
+\starttypescript [casual] [default] [size] % maps onto rm ! 
+  \definebodyfont 
+    [17.3pt,14.4pt,12pt,11pt,10pt,9pt,8pt,7pt,6pt,5pt,4pt] 
+    [rm] [default]
+\stoptypescript 
 
 \starttypescript [all] [dtp] [size]
 
@@ -357,7 +363,7 @@
    it=cmitt10 at 12pt]
 
 \definebodyfont [11pt] [tt] 
-  [tf=cmtt10   at 11pt,
+  [tf=cmtt10 at 11pt,
    sl=cmsltt10 at 11pt,
    it=cmitt10 at 11pt]
 
@@ -404,6 +410,16 @@
 \stoptypescript 
 
 \starttypescript [math] [computer-modern] [size] 
+
+% hack to prevent mapping of filenames, watch the space! 
+
+\definefontsynonym[xcmr12][cmr12 ]
+\definefontsynonym[xcmr10][cmr10 ]
+\definefontsynonym[xcmr9] [cmr9 ]
+\definefontsynonym[xcmr8] [cmr8 ]
+\definefontsynonym[xcmr7] [cmr7 ]
+\definefontsynonym[xcmr6] [cmr6 ]
+\definefontsynonym[xcmr5] [cmr5 ]
 
 \definebodyfont [12pt] [mm] 
   [mr=xcmr12,
@@ -464,16 +480,6 @@
    ex=cmex10 sa 1,
    mi=cmmi12 sa 1,
    sy=cmsy10 sa 1]
-
-% hack to prevent mapping of filenames, watch the space! 
-
-\definefontsynonym[xcmr12][cmr12 ]
-\definefontsynonym[xcmr10][cmr10 ]
-\definefontsynonym[xcmr9] [cmr9 ]
-\definefontsynonym[xcmr8] [cmr8 ]
-\definefontsynonym[xcmr7] [cmr7 ]
-\definefontsynonym[xcmr6] [cmr6 ]
-\definefontsynonym[xcmr5] [cmr5 ]
 
 \stoptypescript 
 

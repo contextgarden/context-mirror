@@ -17,10 +17,14 @@ eval '(exit $?0)' && eval 'exec perl -S $0 ${1+"$@"}' && eval 'exec perl -S $0 $
 
 # use File::Copy ; # not in every perl 
 
-$program = "MPtoPDF 1.0" ;
+use Config ;
+
+$program = "MPtoPDF 1.1" ;
 $pattern = $ARGV[0] ;
 $done    = 0 ;
 $report  = '' ;
+
+my $dosish  = ($Config{'osname'} =~ /dos|win/i) ;
 
 sub CopyFile # agressive copy, works for open files like in gs 
   { my ($From,$To) = @_ ; 
@@ -51,12 +55,15 @@ else
 foreach $file (@files)
   { $_ = $file ;
     if (s/\.(\d+)$// && -e $file)
-     { system ("pdftex \&mptopdf \\relax $file") ;
-       rename ("$_.pdf", "$_-$1.pdf") ;
-       if (-e "$_.pdf") { CopyFile ("$_.pdf", "$_-$1.pdf") }
-       if ($done) { $report .= " +" }
-       $report .= " $_-$1.pdf" ;
-       ++$done } }
+      { if ($dosish)  
+           { system ("pdftex -progname=pdftex -fmt=mptopdf   \\relax $file") }
+        else
+          { system ("pdftex -progname=pdftex -fmt=mptopdf \\\\relax $file") }
+        rename ("$_.pdf", "$_-$1.pdf") ;
+        if (-e "$_.pdf") { CopyFile ("$_.pdf", "$_-$1.pdf") }
+        if ($done) { $report .= " +" }
+        $report .= " $_-$1.pdf" ;
+        ++$done } }
 
 if ($done)
   { print "\n$program: $pattern is converted to$report\n" }

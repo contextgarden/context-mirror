@@ -496,9 +496,19 @@
      {\doifelse{#2}{\v!oneven}
         {\dorecurse{\@@ipn}
            {\ifodd\recurselevel\relax\dofilterpage{#1}{\recurselevel}\fi}}
-        {\def\docommando##1{\ifnum##1>\@@ipn\else\dofilterpage{#1}{##1}\fi}%
+        {\def\dodocommando##1%
+           {\ifnum##1>\@@ipn\else\dofilterpage{#1}{##1}\fi}%
+         \def\docommando##1%
+           {\dowithrange{##1}\dodocommando}%
          \processcommalist[#2]\docommando}}%
    \egroup}
+
+\def\dowithrange#1#2% #2 takes number
+  {\beforesplitstring#1\at :\to\fromrange
+   \aftersplitstring #1\at :\to\torange
+   \ifx\torange\empty\let\torange\fromrange\fi
+   \dostepwiserecurse{\fromrange}{\torange}{1}
+     {#2{\recurselevel}}}
 
 \def\dofilterpage#1#2%
   {\hbox to \tekstbreedte

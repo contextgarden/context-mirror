@@ -236,6 +236,8 @@
 %D \type{\input} when needed, for instance when loading third 
 %D party libraries. 
 
+\newevery \everyreadfile \EveryReadFile
+
 \let\normalinput=\input
 
 \def\maxreadlevel{3}
@@ -253,9 +255,13 @@
      \fi
    \else
      \immediate\closein\scratchread
-     #2%                                         % we skip over the \fi 
-     \@EA\normalinput\@EA\readfilename\@EA\relax % so that we can end a  
-   \fi}                                          % document here too
+     #2%               % we skip over the \fi 
+     \@EA\dodoreadfile % so that we can end a  
+   \fi}                % document here too
+
+\def\dodoreadfile%
+  {\the\everyreadfile % hook, for instance for \enableXML 
+   \normalinput\readfilename\relax} 
 
 \def\readfile#1%
   {\let\readlevel=\maxreadlevel

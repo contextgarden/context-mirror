@@ -1006,11 +1006,17 @@
 
 \def\doparsefontspec#1 #2%
   {\def\somefontname{#1}%
-   \ifx#2\relax
-     \expandafter\setnaturalfontspec
+   \ifx#1\relax\relax % space before filename 
+     \@EA\doparsefontspec
    \else
-     \expandafter\setforcedfontspec
-   \fi#2}
+     \ifx#2\relax
+       \@EA\@EA\@EA\setnaturalfontspec
+     \else
+       \@EA\@EA\@EA\setforcedfontspec
+     \fi
+   \fi
+   #2}
+
 
 \def\setnaturalfontspec#1]%
   {\@fs@scaled\!!thousand}
@@ -1022,7 +1028,7 @@
   {\scaledfont#1pt%
    \scaledfont\dorelativefontsize\scaledfont
    \ifautofontsize\scaledfont\currentfontbodyscale\scaledfont\fi
-   \scratchcounter\scaledfont
+   \scratchcounter\scaledfont % \scaledfont is now pretty large 
    \advance\scratchcounter \!!medcard
    \divide\scratchcounter \!!maxcard
    \edef\somefontspec{ scaled \the\scratchcounter}}
@@ -1050,50 +1056,95 @@
      \def\somefontspec{ at \scaledfont}%
    \fi}
 
-\def\getglobalfontparameters%
-  {\expandafter\setglobalfontparameter\fontdata,]=,}
-
-\def\setglobalfontparameter#1=#2,%
-  {\if]#1\else
-     \expandafter\gdef\csname\fontfile#1\endcsname{#2}%
-     \expandafter\setglobalfontparameter
-   \fi}
+% \def\getfontparameters%
+%   {\expandafter\setfontparameter\fontdata,]=,}
+% 
+% \def\getglobalfontparameters%
+%   {\expandafter\setglobalfontparameter\fontdata,]=,}
+% 
+% \def\setfontparameter#1=#2,%
+%   {\if]#1\else
+%      \expandafter\def\csname\fontfile#1\endcsname{#2}%
+%      \expandafter\setfontparameter
+%    \fi}
+% 
+% \def\setglobalfontparameter#1=#2,%
+%   {\if]#1\else
+%      \expandafter\gdef\csname\fontfile#1\endcsname{#2}%
+%      \expandafter\setglobalfontparameter
+%    \fi}
+% 
+% \def\donoparsefontspec#1%
+%   {\edef\fontfile{\truefontname\somefontname}%
+%   %\writestatus{specifying}{\somefontname/\fontfile/\somefontspec}%
+%    \ifx\fontfile\s!unknown
+%     %\writestatus{missing}{\somefontname}%
+%      \let\fontfile\defaultfontfile
+%    \else
+%      \edef\fontdata{\truefontdata\fontfile}%
+%      \ifx\fontdata\empty \else
+%       %\writestatus{storing}{\fontfile\space(\fontdata)]}%
+%        \ifx\fontclass\empty 
+%          \getfontparameters
+%        \else
+%          \getglobalfontparameters
+%        \fi
+%      \fi
+%    \fi
+%    \edef\lastfontname{\fontfile\somefontspec}% not really needed
+%   %\writestatus{tfmloading}{[#1] [\lastfontname][\the\scaledfont]}%
+%    \ifx\fontclass\empty\else\global\fi 
+%    \expandafter\font\csname#1\endcsname\lastfontname\relax
+%    \the\everyfont % new
+%    % the second \font definition prevents fuzzy font refs
+%    % \expandafter\font\csname\dummyfontname\endcsname\lastfontname
+%    % but somehow they changed tex so that it does not matter any more
+%    \relax}
 
 \def\getfontparameters%
-  {\expandafter\setfontparameter\fontdata,]=,}
+  {\expandafter\setfontparameter\@@fontdata,]=,}
+
+\def\getglobalfontparameters%
+  {\expandafter\setglobalfontparameter\@@fontdata,]=,}
 
 \def\setfontparameter#1=#2,%
   {\if]#1\else
-     \expandafter\def\csname\fontfile#1\endcsname{#2}%
+     \expandafter\def\csname\??ff\@@fontfile#1\endcsname{#2}%
      \expandafter\setfontparameter
    \fi}
 
+\def\setglobalfontparameter#1=#2,%
+  {\if]#1\else
+     \expandafter\gdef\csname\??ff\@@fontfile#1\endcsname{#2}%
+     \expandafter\setglobalfontparameter
+   \fi}
+
+\let\@@fontencoding\empty
+\let\@@fontmapping \empty
+\let\@@fonthandling\empty
+\let\@@skewchar    \empty 
+\let\@@hyphenchar  \empty % todo, will go to encoding 
+
+\newif\ifskipfontcharacteristics % \skipfontcharacteristicstrue
+
 \def\donoparsefontspec#1%
   {\edef\fontfile{\truefontname\somefontname}%
-  %\writestatus{specifying}{\somefontname/\fontfile/\somefontspec}%
-   \ifx\fontfile\s!unknown
-    %\writestatus{missing}{\somefontname}%
-     \let\fontfile\defaultfontfile
-   \else
-     \edef\fontdata{\truefontdata\fontfile}%
-     \ifx\fontdata\empty \else
-      %\writestatus{storing}{\fontfile\space(\fontdata)]}%
-       \ifx\fontclass\empty 
-         \getfontparameters
-       \else
-         \getglobalfontparameters
-       \fi
-     \fi
-   \fi
-   \edef\lastfontname{\fontfile\somefontspec}% not really needed
-  %\writestatus{tfmloading}{[#1] [\lastfontname][\the\scaledfont]}%
+   \ifx\fontfile\s!unknown \let\fontfile\defaultfontfile \fi
+   \edef\lastfontname{\fontfile\somefontspec}% 
    \ifx\fontclass\empty\else\global\fi 
    \expandafter\font\csname#1\endcsname\lastfontname\relax
-   \the\everyfont % new
-   % the second \font definition prevents fuzzy font refs
-   % \expandafter\font\csname\dummyfontname\endcsname\lastfontname
-   % but somehow they changed tex so that it does not matter any more
+   \the\everyfont 
    \relax}
+
+%D An additional the second \type {\font} definition can
+%D prevent fuzzy font refs 
+%D 
+%D \starttypen 
+%D \expandafter\font\csname\dummyfontname\endcsname\lastfontname
+%D \stoptypen 
+%D 
+%D but somehow they changed \TEX\ so that it does not matter
+%D any more. 
 
 \def\defaultfontfile{cmtt10}
 \edef\nullfontname  {\fontname\nullfont}
@@ -1166,24 +1217,83 @@
 %D data: \type {\truefontdata{\truefontname{Lucida-Bright}}}
 %D \stopregels
 
+% \def\definefontsynonym%
+%   {\dotripleempty\dodefinefontsynonym}
+% 
+% \def\dodefinefontsynonym[#1][#2][#3]%
+%   {\ifthirdargument
+%      \setevalue{\??ff#1}{#2}%
+%      \ifx\fontclass\empty\else\global\fi
+%      \setevalue{\??ff\??ff#2}{#3}%
+%    \else
+%      \setevalue{\??ff\fontclass#1}{#2}%
+%    \fi}
+
 \def\definefontsynonym%
   {\dotripleempty\dodefinefontsynonym}
 
 \def\dodefinefontsynonym[#1][#2][#3]%
   {\ifthirdargument
-     \setevalue{\??ff#1}{#2}%
-     \ifx\fontclass\empty\else\global\fi
-     \setevalue{\??ff\??ff#2}{#3}%
+     \setevalue{\??ff\fontclass#1}{#2}% here fontclass ? 
+     \edef\@@fontdata{#3}%
+     \ifx\@@fontdata\empty \else
+       \edef\@@fontfile{#2}%
+       \ifx\fontclass\empty 
+         \getfontparameters
+       \else
+         \getglobalfontparameters
+       \fi
+     \fi
    \else
      \setevalue{\??ff\fontclass#1}{#2}%
    \fi}
 
+\def\setupfontsynonym%
+  {\dodoubleempty\dosetupfontsynonym}
+
+\def\dosetupfontsynonym[#1][#2]%
+  {\edef\@@fontdata{#2}%
+   \ifx\@@fontdata\empty \else  
+     \edef\@@fontfile{#1}%
+     \ifx\fontclass\empty 
+       \getfontparameters
+     \else
+       \getglobalfontparameters
+     \fi
+   \fi}
+
 \beginTEX
 
-\def\truefontdata#1%
-  {\expandafter\ifx\csname\??ff\??ff#1\endcsname\relax
+%\def\truefontdata#1#2% font var 
+%  {\expandafter\ifx\csname\??ff#1#2\endcsname\relax
+%     \expandafter\ifx\csname\??ff\fontclass#1\endcsname\relax
+%       \expandafter\ifx\csname\??ff#1\endcsname\relax
+%       \else
+%         \expandafter\truefontdata\csname\??ff#1\endcsname#2%  
+%       \fi
+%     \else
+%       \expandafter\truefontdata\csname\??ff\fontclass#1\endcsname#2%  
+%     \fi
+%   \else
+%     \csname\??ff#1#2\endcsname
+%   \fi}
+
+\def\truefontdata#1#2% font var 
+  {\expandafter\ifx\csname\??ff#2\endcsname\relax
+     \expandafter\ifx\csname\??ff#1#2\endcsname\relax
+       \expandafter\ifx\csname\??ff\fontclass#1\endcsname\relax
+         \expandafter\ifx\csname\??ff#1\endcsname\relax
+         \else
+           \expandafter\truefontdata\csname\??ff#1\endcsname#2%  
+         \fi
+       \else
+         \expandafter\truefontdata\csname\??ff\fontclass#1\endcsname#2%  
+       \fi
+     \else
+       \csname\??ff#1#2\endcsname
+     \fi
    \else
-     \csname\??ff\??ff#1\endcsname
+     \csname\??ff#2\endcsname
    \fi}
 
 \def\truefontname#1%
@@ -1201,10 +1311,25 @@
 
 \beginETEX \ifcsname
 
-\def\truefontdata#1%
-  {\ifcsname\??ff\??ff#1\endcsname
-     \csname\??ff\??ff#1\endcsname
-   \fi}
+%\def\truefontdata#1#2% font var 
+%  {\ifcsname\??ff#1#2\endcsname
+%     \csname\??ff#1#2\endcsname
+%   \else\ifcsname\??ff\fontclass#1\endcsname
+%     \expandafter\truefontdata\csname\??ff\fontclass#1\endcsname#2%  
+%   \else\ifcsname\??ff#1\endcsname
+%     \expandafter\truefontdata\csname\??ff#1\endcsname#2%  
+%   \fi\fi\fi}
+
+\def\truefontdata#1#2% font var 
+  {\ifcsname\??ff#2\endcsname
+     \csname\??ff#2\endcsname
+   \else\ifcsname\??ff#1#2\endcsname
+     \csname\??ff#1#2\endcsname
+   \else\ifcsname\??ff\fontclass#1\endcsname
+     \expandafter\truefontdata\csname\??ff\fontclass#1\endcsname#2%  
+   \else\ifcsname\??ff#1\endcsname
+     \expandafter\truefontdata\csname\??ff#1\endcsname#2%  
+   \fi\fi\fi\fi}
 
 \def\truefontname#1%
   {\ifcsname\??ff\fontclass#1\endcsname
@@ -1233,11 +1358,16 @@
 %D \def\currentfontfileencoding{texnansi}
 %D \stoptypen
 
-\def\@@currentfontfile{currentfontfile}
+% \def\@@currentfontfile{currentfontfile}
+%
+% \def\getfontfileparameters#1%
+%   {\edef\fontdata{\truefontdata{\truefontname{#1}}}%
+%    \expanded{\getparameters[\@@currentfontfile][\fontdata]}}
 
 \def\getfontfileparameters#1%
-  {\edef\fontdata{\truefontdata{\truefontname{#1}}}%
-   \expanded{\getparameters[\@@currentfontfile][\fontdata]}}
+  {\edef\currentfontfileencoding{\truefontdata{#1}\s!encoding}% 
+   \edef\currentfontfilemapping {\truefontdata{#1}\s!mapping }% 
+   \edef\currentfontfilehandling{\truefontdata{#1}\s!handling}}
 
 %D \macros
 %D   {definefont}
@@ -1267,13 +1397,16 @@
 
 \newif\ifautofontsize \autofontsizetrue
 
+\let\lastfontidentifier\empty
+
 \def\dododefinefont#1#2%
   {\dosetrelativefontsize{#1}%
    \parsefontspec{#2}{**#1**}%
-   \getvalue{**#1**}%
    \doresetrelativefontsize
+   \csname**#1**\endcsname
+   \autofontsizefalse 
+   \edef\lastfontidentifier{#1}%
    \setfontcharacteristics
-   \autofontsizefalse
    \the\everyfontswitch}
 
 \def\xxdododefinefont#1#2% \autofontsizetrue is set by calling routine
@@ -1283,9 +1416,12 @@
      \doresetrelativefontsize
    \fi
    \csname*\fontclass#1\fontsize*\endcsname
-   \setfontcharacteristics 
-   \autofontsizefalse
-   \the\everyfontswitch}
+   \autofontsizefalse 
+   \edef\lastfontidentifier{#1}%
+   \ifskipfontcharacteristics \else
+     \setfontcharacteristics
+     \the\everyfontswitch
+   \fi}
 
 %D I considered checking for mistakenly use of \PLAIN's
 %D \type{\magstep}'s but although it would take only a few
@@ -1743,7 +1879,7 @@
    \fi
    \dostorerelativefontsize{\fontclass#2#1#3#4#5}%
    \iflocalclassfonts
-     \letbeundefined{*#2#1#3#4#5*}%
+     \letbeundefined{*\fontclass#2#1#3#4#5*}%
      \unexpanded
        \setvalue{#2#1#3#4#5}{\xxdododefinefont
          {#2#1#3#4#5}{#6}}%
@@ -1761,8 +1897,8 @@
      \fi
    \fi}
 
-\def\checkbodyfont#1#2#3#4% body style alternative size / global
-  {% beware: #4 can be empty
+\def\checkbodyfont#1#2#3#4% body style alt size / gdef % #4 can be empty
+  {%\def\c!mm!{#2}\ifx\c!mm!\c!mm \else % test first 
    \unexpanded\setgvalue   {#2#4}{\setcurrentfontstylesize           {#2}{#4}}% \rma
    \unexpanded\setgvalue   {#3#4}{\setcurrentfontalternativesize     {#3}{#4}}% \sla
    \unexpanded\setgvalue {#2#3#4}{\setcurrentfontstylealternativesize{#2}{#3}{#4}}% \rmsla
@@ -1773,7 +1909,8 @@
    \unexpanded\setgvalue {#3\c!x}{\setcurrentfontxalternative        {#3}}% \slx
    \unexpanded\setgvalue{#3\c!xx}{\setcurrentfontxxalternative       {#3}}% \slxx
    \unexpanded\setgvalue   {#2#3}{\setcurrentfontstylealternative    {#2}{#3}}}% \rmsl
-
+   %\fi}
+ 
 \def\dodefinedefaultbodyfont[#1][#2][#3]% sizes styles identifier
   {\def\dododefinedefaultbodyfont##1%
      {\def\dodododefinedefaultbodyfont####1%
@@ -2235,7 +2372,11 @@
 
 \def\synchronizefont%
   {\let\fontstrategy\dofontstrategy
-   \the\fontstrategies}
+   \the\fontstrategies
+   \ifskipfontcharacteristics 
+     \setfontcharacteristics
+     \the\everyfontswitch  
+   \fi}
 
 \beginTEX
 
@@ -2428,8 +2569,9 @@
 \chardef\defaultskewcharsy='60
 
 \def\dosetskewchar#1%
-  {\skewchar\font=\ifundefined{\purefontname\font\s!skewchar}%
-     #1\else\csname\purefontname\font\s!skewchar\endcsname\fi}
+ %{\skewchar\font=\ifundefined{\purefontname\font\s!skewchar}%
+ %   #1\else\csname\purefontname\font\s!skewchar\endcsname\fi}
+  {\skewchar\font=\ifx\@@fontskewchar\empty#1\else\@@fontskewchar\fi}
 
 %D The previous macros show that it's is not always
 %D neccessary to define the whole bunch of fonts, take for
@@ -2550,75 +2692,36 @@
 
 %D The font specific features are bound to the filename.
 
-% This can be made faster by testing for a mapping change
-% here, but there is only a reason for doing that for mixed
-% cases.
+\def\updatefontparameters%
+  {\edef\@@fontencoding{\truefontdata\fontfile    \s!encoding}% 
+   \edef\@@fontmapping {\truefontdata\fontfile    \s!mapping }% 
+   \edef\@@fonthandling{\truefontdata\somefontname\s!handling}% 
+   \edef\@@fontskewchar{\truefontdata\fontfile    \s!skewchar}}
 
 \def\setfontcharacteristics%
-  {\doifdefinedelse{\purefontname\font\s!handling} % the file bound one
-     {\enablehandling[\getvalue{\purefontname\font\s!handling}]}%
-     {\enablehandling[\s!default]}%
-   \doifdefinedelse{\purefontname\font\s!encoding} % the file bound one
-     {\enablecoding[\getvalue{\purefontname\font\s!encoding}]}%
-     {\enablecoding[\s!default]}%
-   \doifdefinedelse{\purefontname\font\s!mapping} % the file bound one
-     {\enablemapping[\getvalue{\purefontname\font\s!mapping}]}%
-     {\doifdefinedelse{\purefontname\font\s!encoding}
-        {\enablemapping[\getvalue{\purefontname\font\s!encoding}]}
-        {\enablemapping[\s!default]}}}
-
-\beginTEX 
-
-\def\setfontcharacteristics%
-  {\enablehandling
-     [\@EA\ifx\csname\purefontname\font\s!handling\endcsname\relax % the file bound one
+  {\updatefontparameters
+   \enableencoding
+     [\ifx\@@fontencoding\empty
         \s!default
       \else
-        \csname\purefontname\font\s!handling\endcsname
-      \fi]%
-   \enablecoding
-     [\@EA\ifx\csname\purefontname\font\s!encoding\endcsname\relax % the file bound one
-        \s!default
-      \else
-        \csname\purefontname\font\s!encoding\endcsname
+        \@@fontencoding
       \fi]%
    \enablemapping
-     [\@EA\ifx\csname\purefontname\font\s!mapping\endcsname\relax % the file bound one
-      \@EA\ifx\csname\purefontname\font\s!encoding\endcsname\relax
-        \s!default
+     [\ifx\@@fontmapping\empty
+        \ifx\@@fontencoding\empty
+          \s!default
+        \else
+          \@@fontencoding
+        \fi
       \else
-        \csname\purefontname\font\s!encoding\endcsname
-      \fi\else
-        \csname\purefontname\font\s!mapping\endcsname
-      \fi]}
-
-\endTEX
-
-\beginETEX \ifcsname
-
-\def\setfontcharacteristics%
-  {\enablehandling
-     [\ifcsname\purefontname\font\s!handling\endcsname % the file bound one
-        \csname\purefontname\font\s!handling\endcsname
-      \else
-        \s!default
+        \@@fontmapping
       \fi]%
-   \enablecoding
-     [\ifcsname\purefontname\font\s!encoding\endcsname % the file bound one
-        \csname\purefontname\font\s!encoding\endcsname
-      \else
+   \enablehandling
+     [\ifx\@@fonthandling\empty
         \s!default
-      \fi]%
-   \enablemapping
-     [\ifcsname\purefontname\font\s!mapping\endcsname % the file bound one
-        \csname\purefontname\font\s!mapping\endcsname
-      \else\ifcsname\purefontname\font\s!encoding\endcsname
-        \csname\purefontname\font\s!encoding\endcsname
       \else
-        \s!default
-      \fi\fi]}
-
-\endETEX
+        \@@fonthandling
+      \fi][\lastfontidentifier]}
 
 %D The next auxilliary macro is an alternative to \type
 %D {\fontname}.
@@ -3453,7 +3556,7 @@
    \s!scriptscript=\!!ninepoint,
               \c!x=\!!twelvepoint,
              \c!xx=\!!tenpoint,
-          \c!groot=\!!fourteenpointfour,
+          \c!groot=17.3pt,
           \c!klein=\!!twelvepoint]
 
 \definebodyfontenvironment

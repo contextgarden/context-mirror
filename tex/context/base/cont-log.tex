@@ -50,10 +50,18 @@
 \def\PRAGMA%
   {Pragma ADE}
 
-\def\LaTeX%
-  {L%
-   \kern-.30em\raise.3ex\hbox{\txx A}%
-   \kern-.18em\TeX}
+%\def\LaTeX%
+%  {L%
+%   \kern-.30em\raise.3ex\hbox{\txx A}%
+%   \kern-.18em\TeX}
+
+\def\LaTeX% requested by erik frambach 
+  {{\setbox\scratchbox\hbox{L}%
+    \scratchdimen=\ht\scratchbox
+    \setbox\scratchbox\hbox{\txx A}%
+    L\kern-.55\wd\scratchbox
+    \raise\scratchdimen\hbox{\lower\ht\scratchbox\copy\scratchbox}%
+    \kern-.2\wd\scratchbox\TeX}}
 
 \def\TaBlE%
   {T%

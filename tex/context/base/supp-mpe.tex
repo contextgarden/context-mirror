@@ -98,8 +98,8 @@
 
 \def\dohandleMPspecialcomment#1
   {\setMPargument{#1}%
-   \advance\scratchcounter by -1
-   \ifcase\scratchcounter
+   \advance\scratchcounter by -1\relax
+   \ifcase\scratchcounter\relax
      \handleMPspecialcommand
      \donetrue
      \doresetMPstack
@@ -182,6 +182,8 @@
 %D path with a red color component of \type {0.n}, so \type
 %D {0.001} is the first path and \type {0.010} the tenth. Since
 %D \METAPOST strips trailing zeros, we have to padd the string.
+
+\newif\ifMPcmyk 
 
 \ifx\normalhandleMPrgbcolor\undefined % in case we reload this module
 

@@ -41,8 +41,8 @@
 \def\usetypescript%
   {\dotripleempty\dousetypescript}
 
-\let\typescriptone\empty
-\let\typescripttwo\empty
+\let\typescriptone  \empty
+\let\typescripttwo  \empty
 \let\typescriptthree\empty
 
 \def\dousetypescript[#1][#2][#3]% also loads type-loc, a user file
@@ -119,13 +119,16 @@
 
 \long\def\dostarttypescript[#1][#2][#3]#4\stoptypescript
   {\iffirstargument
-     \dochecktypescript{#1}{\typescriptone}\ifdone
-     \dochecktypescript{#2}{\typescripttwo}\ifdone
+     \dochecktypescript{#1}{\typescriptone  }\ifdone
+     \dochecktypescript{#2}{\typescripttwo  }\ifdone
      \dochecktypescript{#3}{\typescriptthree}\ifdone
        %\writestatus 
        \debuggerinfo
          {typescript}
-         {\currenttypefile: [#1] [#2] [#3]}%
+         {\currenttypefile: pat=scr 
+            [\typescriptone  =#1] 
+            [\typescripttwo  =#2] 
+            [\typescriptthree=#3]}%
         #4\typescriptfoundtrue
      \fi\fi\fi
    \else\iffirsttypescriptpass
@@ -174,19 +177,19 @@
      \let\relativefontsize\@@tsrscale
      \let\savedfontclass\fontclass
      \setcurrentfontclass{#1}
-\def\@@tslabel{#1}
-\def\@@tsstyle{#2}
-\def\@@tsfont {#3}
-\def\@@tssize {#4}
+     \def\@@tslabel{#1}
+     \def\@@tsstyle{#2}
+     \def\@@tsfont {#3}
+     \def\@@tssize {#4}
      \writestatus
        {typeface}
        {[#1] [#2] [#3] [#4]}%
      \expanded{\usetypescript[#3][#4][name,default,\@@tsencoding,special]} 
      \expanded{\usetypescript[#3][#5][size]}          
-\let\@@tslabel\empty
-\let\@@tsstyle\empty
-\let\@@tsfont \empty
-\let\@@tssize \empty
+     \let\@@tslabel\empty
+     \let\@@tsstyle\empty
+     \let\@@tsfont \empty
+     \let\@@tssize \empty
      \setcurrentfontclass\savedfontclass           
      \def\relativefontsize{1}
    \else\ifthirdargument
@@ -197,24 +200,29 @@
   {\doifundefined{\??tf#1\s!default}{\setgvalue{\??tf#1\s!default}{#2}}%
    \doifundefined{#1}{\setgvalue{#1}{\switchtotypeface[#1][#2]}}}
 
-\def\setuptypeface%
+\def\setuptypeface% [class] [settings]
   {\doquadrupleempty\doswitchtotypeface[\setupbodyfont][\fontclass]}
 
-\def\switchtotypeface%
+\def\switchtotypeface% [class] [settings]
   {\doquadrupleempty\doswitchtotypeface[\switchtobodyfont][\globalfontclass]}
 
 \def\doswitchtotypeface[#1][#2][#3][#4]% 
-  {\setcurrentfontclass{#3}%
+  {%\doifinsetelse{\s!default,\v!reset}{#3}
+   %  {\setcurrentfontclass\empty}
+   %  {\setcurrentfontclass{#3}}%
+   \setcurrentfontclass{#3}%
    \let\globalfontclass#2%
    \iffourthargument
      #1[#4]%
-   \else\ifx\fontclass\empty
-     #1[\c!rm]%
    \else
-     \doifdefinedelse{\??tf\fontclass\s!default}
-       {#1[\getvalue{\??tf\fontclass\s!default}]}
-       {#1[\c!rm]}%
-   \fi\fi
+     \ifx\fontclass\empty
+       #1[\c!rm]%
+     \else
+       \doifdefinedelse{\??tf\fontclass\s!default}
+         {#1[\getvalue{\??tf\fontclass\s!default}]}
+         {#1[\c!rm]}%
+     \fi
+   \fi
    \tf}
 
 \def\usetypefile[#1]%
@@ -229,9 +237,10 @@
 
 \def\doreadfontdefinitionfile#1#2% #1 = set/switch state
   {\ifundefined{\??tf#2\c!default}%
-     \pushmacro\typescriptone\edef\typescriptone{\truetypescript{#2}}
-     \pushmacro\typescripttwo\let \typescripttwo \empty
-     \pushmacro\typescriptthree\let \typescriptthree \empty
+     \setcurrentfontclass\empty
+     \pushmacro\typescriptone \edef\typescriptone {\truetypescript{#2}}
+     \pushmacro\typescripttwo  \let\typescripttwo  \empty
+     \pushmacro\typescriptthree\let\typescriptthree\empty
      \typescriptfoundfalse
      \dodousetypescript{\f!typeprefix pre}
      \popmacro\typescriptthree
@@ -240,6 +249,7 @@
      \iftypescriptfound \else
        \normaldoreadfontdefinitionfile{#1}{#2}
      \fi
+     \setcurrentfontclass\empty
    \else\ifcase#1\relax
      \switchtotypeface[#2]%
    \else

@@ -34,6 +34,7 @@
 
 \definesystemconstant {afrikaans}   \definesystemconstant {af}
 \definesystemconstant {chinese}     \definesystemconstant {cn}
+\definesystemconstant {croation}    \definesystemconstant {hr}
 \definesystemconstant {czech}       \definesystemconstant {cz}
 \definesystemconstant {danish}      \definesystemconstant {da}
 \definesystemconstant {dutch}       \definesystemconstant {nl}
@@ -41,6 +42,7 @@
 \definesystemconstant {finish}      \definesystemconstant {fi}
 \definesystemconstant {french}      \definesystemconstant {fr}
 \definesystemconstant {german}      \definesystemconstant {de}
+\definesystemconstant {hungarian}   \definesystemconstant {hu}
 \definesystemconstant {italian}     \definesystemconstant {it}
 \definesystemconstant {latin}       \definesystemconstant {la}
 \definesystemconstant {norwegian}   \definesystemconstant {no}
@@ -53,19 +55,17 @@
 \definesystemconstant {turkish}     \definesystemconstant {tr}
 \definesystemconstant {ukenglish}   \definesystemconstant {uk}
 \definesystemconstant {usenglish}   \definesystemconstant {us}
-\definesystemconstant {croation}    \definesystemconstant {hr}
-\definesystemconstant {hungarian}   \definesystemconstant {hu}
 
 %D For proper \UNICODE\ support we need a few font related 
 %D constants.
 
-\definesystemconstant {Unicode}
-\definesystemconstant {Regular}
-\definesystemconstant {Bold}
-\definesystemconstant {Slanted}
-\definesystemconstant {Italic}
-\definesystemconstant {BoldSlanted}
 \definesystemconstant {BoldItalic}
+\definesystemconstant {BoldSlanted}
+\definesystemconstant {Bold}
+\definesystemconstant {Italic}
+\definesystemconstant {Regular}
+\definesystemconstant {Slanted}
+\definesystemconstant {Unicode}
 
 \definesystemconstant {Serif} \definesystemconstant {Regular}
 \definesystemconstant {Sans}  \definesystemconstant {Support}
@@ -76,11 +76,12 @@
 
 \definemessageconstant {colors}
 \definemessageconstant {columns}
-\definemessageconstant {files}
+\definemessageconstant {encodings}
 \definemessageconstant {figures}
+\definemessageconstant {files}
 \definemessageconstant {floatblocks}
 \definemessageconstant {fonts}
-\definemessageconstant {encodings}
+\definemessageconstant {handlings}
 \definemessageconstant {interactions}
 \definemessageconstant {javascript}
 \definemessageconstant {layouts}
@@ -91,8 +92,8 @@
 \definemessageconstant {symbols}
 \definemessageconstant {systems}
 \definemessageconstant {textblocks}
-\definemessageconstant {versions}
 \definemessageconstant {verbatims}
+\definemessageconstant {versions}
 
 %D The word \type{height} takes 6~token memory cells. The
 %D control sequence \type{\height} on the other hand uses only
@@ -561,6 +562,7 @@
 
 \definefileconstant {colorprefix}        {colo-}
 \definefileconstant {encodingprefix}     {enco-}
+\definefileconstant {handlingprefix}     {hand-}
 \definefileconstant {regimeprefix}       {regi-}
 \definefileconstant {typeprefix}         {type-}
 \definefileconstant {fontprefix}         {font-}

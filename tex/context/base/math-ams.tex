@@ -13,9 +13,11 @@
 
 \unprotect 
 
+% maybe we should just include these into the default tex one
+
 \definefamilysynonym [ams] [blackboard] [mb]
 
-\startmathcollection[ams]
+\startmathcollection [default] % [ams]
 
 \definemathsymbol [varGamma]   [ord] [letters] ["00]
 \definemathsymbol [varDelta]   [ord] [letters] ["01]
@@ -37,7 +39,7 @@
 
 \stopmathcollection
 
-\startmathcollection[ams]
+\startmathcollection [default] % [ams]
 
 \definemathsymbol [boxdot]              [bin]   [ma] ["00]
 \definemathsymbol [boxplus]             [bin]   [ma] ["01]
@@ -177,7 +179,7 @@
 
 \stopmathcollection
 
-\startmathcollection[ams]
+\startmathcollection [default] % [ams]
 
 \definemathsymbol [lvertneqq]           [rel]   [mb] ["00]
 \definemathsymbol [gvertneqq]           [rel]   [mb] ["01]
@@ -275,7 +277,7 @@
 
 \stopmathcollection  
 
-\startmathcollection[ams]
+\startmathcollection [default] % [ams]
 
 \definemathcommand [yen]            [nothing] {\mathhexbox{\hexmafam}55}
 \definemathcommand [checkmark]      [nothing] {\mathhexbox{\hexmafam}58}
@@ -307,7 +309,7 @@
      \mathaccent"0\purefamilyhex{ex}65{#1}%
    \fi}
 
-\startmathcollection[ams]
+\startmathcollection [default] % [ams]
 
 \definemathcommand [widehat]   {\AMSwidehat}
 \definemathcommand [widetilde] {\AMSwidetilde}

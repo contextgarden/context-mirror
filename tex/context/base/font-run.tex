@@ -57,12 +57,12 @@
          &\hfil##\hfil&\vrule##&\hfil##\hfil&##\vrule
          \tabskip=\!!zeropoint\cr
          \noalign{\hrule}
-         &\multispan{29}{\vrule\hfil\tttf\strut\title\hfil\vrule}\cr
+         &\multispan{29}{\vrule\hfil\tttf\strut\title\hfil
+          \llap{\string\mr\hbox to 1em{\hss:\hss}$\mr Ag$\quad}\vrule}\cr
          \noalign{\hrule}\next{}{\tt\string}{}
          \noalign{\hrule}\next{\tt\string\rm}{\rm}{Ag}
          \noalign{\hrule}\next{\tt\string\ss}{\ss}{Ag}
          \noalign{\hrule}\next{\tt\string\tt}{\tt}{Ag}
-         \noalign{\hrule}\next{\tt\string$}{$}{Ag$}
          \noalign{\hrule}}}
    \stopbaselinecorrection}
 
@@ -131,22 +131,22 @@
                \dostepwiserecurse{0}{15}{1}
                  {\let\col\recurselevel
                   \scratchcounter="\hexnumber\row\hexnumber\col\relax
-\iffontchar\font\scratchcounter
-                  \setbox\scratchbox\ruledhbox{\black\char\scratchcounter}%
-                  \ifdim\wd\scratchbox>\!!zeropoint\relax
-                    \donetrue \else \donefalse
+                  \iffontchar\font\scratchcounter
+                    \setbox\scratchbox\ruledhbox{\black\char\scratchcounter}%
+                    \ifdim\wd\scratchbox>\!!zeropoint\relax
+                      \donetrue \else \donefalse
+                    \fi
+                  \else
+                    \setbox\scratchbox\hbox{\gray\vrule\!!width1ex\!!height.5ex\!!depth.5ex}%
                   \fi
-\else
-                  \setbox\scratchbox\hbox{\gray\vrule\!!width1ex\!!height.5ex\!!depth.5ex}%
-\fi
                   \startoverlay
                     {\tf\vbox to 2.5em 
                        {\vss
                         \hbox to 2.5em 
                           {\dummy\ifdim\fontdimen2\font=\!!zeropoint
-\setbox\scratchbox=\hbox
-  {\raise.5\dp\scratchbox\hbox
-     {\lower.5\ht\scratchbox\copy\scratchbox}}%
+                           \setbox\scratchbox=\hbox
+                             {\raise.5\dp\scratchbox\hbox
+                                {\lower.5\ht\scratchbox\copy\scratchbox}}%
                              \ht\scratchbox\!!zeropoint
                              \dp\scratchbox\!!zeropoint
                            \else

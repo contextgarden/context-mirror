@@ -896,18 +896,40 @@
 %D command to redefine accent handling commands too.
 
 \def\redefinecommand#1 %
- {%{\def\!!stringa{\nocharacterencoding#1}%
-  % \doifundefined{\!!stringa}
-  %   {\doifundefined{#1}{\letvalue{#1}\relax}%
-  %    \@EA\letvalue\@EA\!!stringa\csname#1\endcsname}%
-   % no \unexpanded, else pdfdoc fails 
+  {% no \unexpanded, else pdfdoc fails 
    \setvalue{\string#1}{\dohandlecommand{#1}}}%
 
-\unexpanded\def\dohandlecommand#1%
-  {\doifdefinedelse{\characterencoding#1}
-     {\def\next{\getvalue{\characterencoding#1}}}
-     {\def\next{\getvalue{\nocharacterencoding#1}}}%
-   \next}
+% \unexpanded\def\dohandlecommand#1%
+%   {\doifdefinedelse{\characterencoding#1}
+%      {\def\next{\getvalue{\characterencoding#1}}}
+%      {\def\next{\getvalue{\nocharacterencoding#1}}}%
+%    \next}
+
+\beginETEX \ifcsname
+
+\def\dohandlecommand#1%
+   {\csname
+      \ifcsname\characterencoding#1\endcsname
+        \characterencoding
+      \else
+        \nocharacterencoding
+      \fi
+    #1\endcsname}
+     
+\endETEX
+
+\beginTEX 
+
+\def\dohandlecommand#1%
+  {\csname
+     \expandafter\ifx\csname\characterencoding#1\endcsname\relax
+       \nocharacterencoding
+     \else
+       \characterencoding
+     \fi
+   #1\endcsname}
+     
+\endTEX
 
 % %D \macros
 % %D   {redefinecharacter}
@@ -964,109 +986,7 @@
 \fetchruntimecommand \showaccents      {\f!encodingprefix\s!run}
 \fetchruntimecommand \showcharacters   {\f!encodingprefix\s!run}
 \fetchruntimecommand \showhyphenations {\f!encodingprefix\s!run}
-
-%D {\em The next section is experimental and implements font 
-%D specific features, like hanging punctuation.}
-
-\let\fonthandling\empty
-
-\def\startfonthandling[#1]%
-  {\def\fonthandling{#1}%
-   \doifundefined{\@fha@\fonthandling}
-     {\expanded{\newtoks\csname\@fha@\fonthandling\endcsname}}}
-
-\def\stopfonthandling%
-  {\let\fonthandling\empty}
-
-\def\setfonttoks%
-  {\@EA\let\@EA\fonttoks\csname\@fha@\fonthandling\endcsname}
-
-\def\definefonthandling%
-  {\dotripleempty\dodefinefonthandling}
-
-\def\dodefinefonthandling[#1][#2][#3]%
-  {\setvalue{\@fha@\@fha@#1}{#2}%
-   \getparameters[\@fha@\@fha@#1][\c!links=1,\c!rechts=1,#3]}
-
-\def\setupfonthandling%
-  {\dodoubleempty\dosetupfonthandling}
-
-\def\dosetupfonthandling[#1][#2]%
-  {\getparameters[\@fha@\@fha@#1][#2]}  
-
-\def\doenablehandling#1%
-  {\doifdefined{\@fha@#1}{\@EA\the\csname\@fha@#1\endcsname}}
-
-\def\enablehandling[#1]%
-  {\doifdefinedelse{\@fha@\@fha@#1}%
-     {\setprotrudingfactor
-        {\getvalue{\@fha@\@fha@#1\c!links}}
-        {\getvalue{\@fha@\@fha@#1\c!rechts}}%
-      \edef\fonthandling{\getvalue{\@fha@\@fha@#1}}%
-      \@EA\rawprocesscommalist\@EA[\fonthandling]\doenablehandling}
-     {\edef\fonthandling{#1}% new
-      \doenablehandling{#1}}}
-
-\ifx\undefined\pdfprotrudechars % we don't use pdftex 
-
-  \def\defineprotrudefactor#1 #2 #3 {}
-  \def\setprotrudingfactor      #1#2{}
-  \def\enableprotruding             {}
-  \def\disableprotruding            {}
-
-\else
-
-  \newdimen\lproddimen 
-  \newdimen\rproddimen 
-  \let\prodfont\font 
-
-  \def\enableprotruding {\pdfprotrudechars=2 }
-  \def\disableprotruding{\pdfprotrudechars=0 }
-
-  \appendtoks \disableprotruding \to \everyforgetall % Here or not here? 
-
-  \def\setprotrudingfactor#1#2%
-    {\lproddimen=#1pt\multiply\lproddimen\!!thousand\divide\lproddimen \!!maxcard\relax
-     \rproddimen=#2pt\multiply\rproddimen\!!thousand\divide\rproddimen \!!maxcard\relax}
-
-  \setprotrudingfactor{1}{1} 
-
-  \def\dodefineprotrudefactor#1 #2 #3 %
-    {\scratchdimen=#2\lproddimen\lpcode\prodfont#1=\number\scratchdimen 
-     \scratchdimen=#3\rproddimen\rpcode\prodfont#1=\number\scratchdimen}
- 
-  \def\dodefinefonthandling[#1][#2][#3]%
-    {\setvalue{\@fha@\@fha@#1}{#2}%
-     \getparameters[\@fha@\@fha@#1][\c!links=1,\c!rechts=1,#3]}
-  
-  \def\defineprotrudefactor#1 #2 #3 %
-    {\setfonttoks
-     \doifnumberelse{\string#1}
-       {\appendtoks\dodefineprotrudefactor #1 #2 #3 \to\fonttoks} % 
-       {\appendtoks\dodefineprotrudefactor`#1 #2 #3 \to\fonttoks}}% 
-
-  \def\defineprotrudefactor#1 #2 #3 %
-    {\setfonttoks
-     \doifnumberelse{\string#1}
-       {\appendtoks\dodefineprotrudefactor #1 #2 #3 \to\fonttoks} 
-       {\doifcharactercodeelse{#1}
-          {\@EA\appendtoks\@EA\dodefineprotrudefactor\charactercode #2 #3 \to\fonttoks} 
-          {\appendtoks\dodefineprotrudefactor`#1 #2 #3 \to\fonttoks}}} 
-
-\fi
-
-%D {\em Another experiment: named glyphs. Incomplete yet.}
-
-\def\definecharactercode#1 #2 %
-  {\setvalue{\characterencoding-#1}{#2}}
-
-\def\doifcharactercodeelse#1#2#3%
-  {\doifdefinedelse{\characterencoding-\string#1}
-     {\edef\charactercode{\getvalue{\characterencoding-#1}\space}#2}
-     {#3}}
-
-%D {\em So far for the experiment.}
-
+
 %D \macros
 %D   {everyuppercase, EveryUppercase,
 %D    everyuppercase, EveryUppercase}

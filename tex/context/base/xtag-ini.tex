@@ -196,6 +196,12 @@
    .relax* needed for successive .if's  
   E
 
+.gdef.enableXMLelements*
+  B.catcode`.<=.@@active .unexpanded.def<B.doXMLelementE*
+   .catcode`.>=.@@other*
+   .relax* needed for successive .if's  
+  E
+
 .egroup
 
 %D An element can be singular or paired. A singular element is

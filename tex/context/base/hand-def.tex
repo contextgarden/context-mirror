@@ -1,0 +1,317 @@
+%D \module
+%D   [     file=hand-def, % was enco-pro
+%D      version=2000.29.9,
+%D        title=\CONTEXT\ Handling Macros,
+%D     subtitle=Default Protruding Factors, 
+%D       author=Hans Hagen,
+%D         date=\currentdate,
+%D    copyright=Hans Hagen]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D This is an experimental definition file. The protruding 
+%D values we use here are those found from \THANH's thesis. 
+
+\startfonthandling [pure]
+
+  \defineprotrudefactor , 0 1
+  \defineprotrudefactor . 0 1
+  \defineprotrudefactor : 0 1
+  \defineprotrudefactor ; 0 1
+
+  \defineprotrudefactor hyphen 0 1
+  \defineprotrudefactor endash 0 .5 
+  \defineprotrudefactor emdash 0 .5
+
+\stopfonthandling
+
+\startfonthandling [punctuation]
+
+  \defineprotrudefactor !  0  .2
+  \defineprotrudefactor '  0  .7
+  \defineprotrudefactor ` .7   0
+  \defineprotrudefactor ( .05  0   
+  \defineprotrudefactor )  0  .05
+  \defineprotrudefactor [ .05  0   
+  \defineprotrudefactor ]  0  .05
+  \defineprotrudefactor ,  0  .7
+  \defineprotrudefactor -  0  .7
+  \defineprotrudefactor .  0  .7
+  \defineprotrudefactor :  0  .5
+  \defineprotrudefactor ;  0  .5
+
+  \defineprotrudefactor rightupperninequote  0 .5
+  \defineprotrudefactor leftupperninequote  .5  0 
+  \defineprotrudefactor endash               0 .3  
+  \defineprotrudefactor emdash               0 .2  
+
+  \defineprotrudefactor hyphen               0 .7
+
+\stopfonthandling
+
+\startfonthandling [alpha]
+
+  \defineprotrudefactor A .05 .05
+  \defineprotrudefactor F  0  .05
+  \defineprotrudefactor J .05   0
+  \defineprotrudefactor K  0  .05  
+  \defineprotrudefactor L  0  .05
+  \defineprotrudefactor T .05 .05
+  \defineprotrudefactor V .05 .05
+  \defineprotrudefactor W .05 .05
+  \defineprotrudefactor X .05 .05
+  \defineprotrudefactor Y .05 .05
+  
+  \defineprotrudefactor k  0  .05 
+  \defineprotrudefactor r  0  .05
+  \defineprotrudefactor t  0  .05 
+  \defineprotrudefactor v .05 .05
+  \defineprotrudefactor w .05 .05
+  \defineprotrudefactor x .05 .05
+  \defineprotrudefactor y .05 .05
+
+\stopfonthandling
+
+\startfonthandling [extended]
+
+  \inheritprotrudefactor Acircumflex A 
+  \inheritprotrudefactor acircumflex a
+  \inheritprotrudefactor Ccircumflex C
+  \inheritprotrudefactor ccircumflex c
+  \inheritprotrudefactor Ecircumflex E
+  \inheritprotrudefactor ecircumflex e
+  \inheritprotrudefactor Gcircumflex G
+  \inheritprotrudefactor gcircumflex g
+  \inheritprotrudefactor Hcircumflex H
+  \inheritprotrudefactor hcircumflex h
+  \inheritprotrudefactor Icircumflex I
+  \inheritprotrudefactor icircumflex i
+  \inheritprotrudefactor Jcircumflex J
+  \inheritprotrudefactor jcircumflex j
+  \inheritprotrudefactor Ocircumflex O
+  \inheritprotrudefactor ocircumflex o
+  \inheritprotrudefactor Scircumflex S
+  \inheritprotrudefactor scircumflex s
+  \inheritprotrudefactor Ucircumflex U
+  \inheritprotrudefactor ucircumflex u
+  \inheritprotrudefactor Wcircumflex W
+  \inheritprotrudefactor wcircumflex w
+  \inheritprotrudefactor Ycircumflex Y
+  \inheritprotrudefactor ycircumflex y
+  
+  \inheritprotrudefactor Agrave A
+  \inheritprotrudefactor agrave a
+  \inheritprotrudefactor Egrave E
+  \inheritprotrudefactor egrave e
+  \inheritprotrudefactor Igrave I
+  \inheritprotrudefactor igrave i
+  \inheritprotrudefactor Ograve O
+  \inheritprotrudefactor ograve o
+  \inheritprotrudefactor Ugrave U
+  \inheritprotrudefactor ugrave u
+  \inheritprotrudefactor Ygrave Y
+  \inheritprotrudefactor ygrave y
+  
+  \inheritprotrudefactor Atilde A
+  \inheritprotrudefactor atilde a
+  \inheritprotrudefactor Itilde I
+  \inheritprotrudefactor itilde i
+  \inheritprotrudefactor Ntilde N
+  \inheritprotrudefactor ntilde n
+  \inheritprotrudefactor Otilde O
+  \inheritprotrudefactor otilde o
+  \inheritprotrudefactor Utilde U
+  \inheritprotrudefactor utilde u
+  
+  \inheritprotrudefactor Adiaeresis A  
+  \inheritprotrudefactor adiaeresis a
+  \inheritprotrudefactor Ediaeresis E
+  \inheritprotrudefactor ediaeresis e
+  \inheritprotrudefactor Idiaeresis I
+  \inheritprotrudefactor idiaeresis i
+  \inheritprotrudefactor Odiaeresis O
+  \inheritprotrudefactor odiaeresis o
+  \inheritprotrudefactor Udiaeresis U
+  \inheritprotrudefactor udiaeresis u
+  \inheritprotrudefactor Ydiaeresis Y
+  \inheritprotrudefactor ydiaeresis y
+  
+  \inheritprotrudefactor Aacute A
+  \inheritprotrudefactor aacute a
+  \inheritprotrudefactor Cacute C
+  \inheritprotrudefactor cacute c
+  \inheritprotrudefactor Eacute E
+  \inheritprotrudefactor eacute e
+  \inheritprotrudefactor Iacute I
+  \inheritprotrudefactor iacute i
+  \inheritprotrudefactor Lacute L
+  \inheritprotrudefactor lacute l
+  \inheritprotrudefactor Nacute N
+  \inheritprotrudefactor nacute n
+  \inheritprotrudefactor Oacute O
+  \inheritprotrudefactor oacute o
+  \inheritprotrudefactor Racute R
+  \inheritprotrudefactor racute r
+  \inheritprotrudefactor Sacute s
+  \inheritprotrudefactor sacute s
+  \inheritprotrudefactor Uacute U
+  \inheritprotrudefactor uacute u
+  \inheritprotrudefactor Yacute Y
+  \inheritprotrudefactor yacute y
+  \inheritprotrudefactor Zacute Z
+  \inheritprotrudefactor zacute z
+  
+  \inheritprotrudefactor Dstroke D
+  \inheritprotrudefactor dstroke d
+  \inheritprotrudefactor Hstroke H
+  \inheritprotrudefactor hstroke h
+  \inheritprotrudefactor Tstroke T
+  \inheritprotrudefactor tstroke t
+  
+  \inheritprotrudefactor Cdotaccent C 
+  \inheritprotrudefactor cdotaccent c
+  \inheritprotrudefactor Edotaccent E
+  \inheritprotrudefactor edotaccent e
+  \inheritprotrudefactor Gdotaccent G
+  \inheritprotrudefactor gdotaccent g
+  \inheritprotrudefactor Idotaccent I
+  \inheritprotrudefactor idotaccent i
+  \inheritprotrudefactor Zdotaccent Z
+  \inheritprotrudefactor zdotaccent z
+  
+  \inheritprotrudefactor Amacron A
+  \inheritprotrudefactor amacron a
+  \inheritprotrudefactor Emacron E
+  \inheritprotrudefactor emacron e
+  \inheritprotrudefactor Imacron I
+  \inheritprotrudefactor imacron i
+  \inheritprotrudefactor Omacron O
+  \inheritprotrudefactor omacron o 
+  \inheritprotrudefactor Umacron U
+  \inheritprotrudefactor umacron u
+  
+  \inheritprotrudefactor Ccedilla C
+  \inheritprotrudefactor ccedilla c
+  \inheritprotrudefactor Kcedilla K
+  \inheritprotrudefactor kcedilla k
+  \inheritprotrudefactor Lcedilla L
+  \inheritprotrudefactor lcedilla l
+  \inheritprotrudefactor Ncedilla N
+  \inheritprotrudefactor ncedilla n
+  \inheritprotrudefactor Rcedilla R
+  \inheritprotrudefactor rcedilla r
+  \inheritprotrudefactor Scedilla S
+  \inheritprotrudefactor scedilla s
+  \inheritprotrudefactor Tcedilla T
+  \inheritprotrudefactor tcedilla t
+  
+  \inheritprotrudefactor Ohungarumlaut O
+  \inheritprotrudefactor ohungarumlaut o
+  \inheritprotrudefactor Uhungarumlaut U
+  \inheritprotrudefactor uhungarumlaut u
+
+  \inheritprotrudefactor Aogonek A
+  \inheritprotrudefactor aogonek a
+  \inheritprotrudefactor Eogonek E
+  \inheritprotrudefactor eogonek e
+  \inheritprotrudefactor Iogonek I
+  \inheritprotrudefactor iogonek i
+  \inheritprotrudefactor Uogonek U
+  \inheritprotrudefactor uogonek u
+  
+  \inheritprotrudefactor Aring A
+  \inheritprotrudefactor aring a
+  \inheritprotrudefactor Uring U
+  \inheritprotrudefactor uring u
+  
+  \inheritprotrudefactor Abreve A
+  \inheritprotrudefactor abreve a
+  \inheritprotrudefactor Ebreve E
+  \inheritprotrudefactor ebreve e
+  \inheritprotrudefactor Gbreve G
+  \inheritprotrudefactor gbreve g
+  \inheritprotrudefactor Ibreve I
+  \inheritprotrudefactor ibreve i
+  \inheritprotrudefactor Obreve O
+  \inheritprotrudefactor obreve o
+  \inheritprotrudefactor Ubreve U
+  \inheritprotrudefactor ubreve u
+  
+  \inheritprotrudefactor Ccaron C
+  \inheritprotrudefactor ccaron c
+  \inheritprotrudefactor Dcaron D
+  \inheritprotrudefactor dcaron d
+  \inheritprotrudefactor Ecaron E
+  \inheritprotrudefactor ecaron e
+  \inheritprotrudefactor Lcaron L
+  \inheritprotrudefactor lcaron l
+  \inheritprotrudefactor Ncaron N
+  \inheritprotrudefactor ncaron n
+  \inheritprotrudefactor Rcaron R
+  \inheritprotrudefactor rcaron r
+  \inheritprotrudefactor Scaron S
+  \inheritprotrudefactor scaron s
+  \inheritprotrudefactor Tcaron T
+  \inheritprotrudefactor tcaron t
+  \inheritprotrudefactor Ycaron Y
+  \inheritprotrudefactor ycaron y
+  \inheritprotrudefactor Zcaron Z
+  \inheritprotrudefactor zcaron z
+  
+  \inheritprotrudefactor AEligature E
+  \inheritprotrudefactor aeligature e
+  \inheritprotrudefactor Lstroke    I
+  \inheritprotrudefactor lstroke    o
+  \inheritprotrudefactor Ostroke    O
+  \inheritprotrudefactor ostroke    o
+  \inheritprotrudefactor OEligature O
+  \inheritprotrudefactor oeligature o
+  
+  \inheritprotrudefactor Ssharp     S
+  \inheritprotrudefactor ssharp     s
+  \inheritprotrudefactor IJligature J
+  \inheritprotrudefactor ijligature j
+  
+  \inheritprotrudefactor aumlaut a
+  \inheritprotrudefactor eumlaut e
+  \inheritprotrudefactor iumlaut i
+  \inheritprotrudefactor oumlaut o
+  \inheritprotrudefactor uumlaut u
+  
+  \inheritprotrudefactor Aumlaut A
+  \inheritprotrudefactor Eumlaut E
+  \inheritprotrudefactor Iumlaut I
+  \inheritprotrudefactor Oumlaut O
+  \inheritprotrudefactor Uumlaut U
+  
+  \inheritprotrudefactor Lslash L 
+  \inheritprotrudefactor lslash l
+  \inheritprotrudefactor Dslash D
+  \inheritprotrudefactor dslash d 
+  \inheritprotrudefactor Oslash O 
+  \inheritprotrudefactor oslash o 
+  
+  \inheritprotrudefactor Eszett S 
+  \inheritprotrudefactor eszett s 
+  
+  \inheritprotrudefactor Thorn P
+  \inheritprotrudefactor thorn p
+
+\stopfonthandling
+
+\unprotect 
+
+\definefonthandling [pure] [pure]
+
+% slanted/italic is yet incomplete 
+
+\definefonthandling [normal]      [punctuation,alpha,extended]
+\definefonthandling [bold]        [punctuation,alpha,extended]
+\definefonthandling [slanted]     [punctuation] [\c!rechts=1.5]
+\definefonthandling [italic]      [punctuation] [\c!rechts=1.5]
+\definefonthandling [boldslanted] [punctuation] [\c!rechts=1.5]
+\definefonthandling [bolditalic]  [punctuation] [\c!rechts=1.5]
+
+\protect \endinput 

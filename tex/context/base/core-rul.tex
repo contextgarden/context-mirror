@@ -2221,6 +2221,8 @@
    \ht\scratchbox=\ht\strutbox
    \dp\scratchbox=\dp\strutbox
    \noindent\box\scratchbox
+%\nobreak\vbox{\strut}\kern-\lineheight
+% evt \witruimte
    \egroup}
 
 \def\dotoptextrule#1%
@@ -2280,7 +2282,7 @@
    \def\dounknowntextrule{\domiddletextrule}
    \dotoptextrule{#1}
    \bgroup
-   \switchtobodyfont[\@@tlkorps]}
+   \doifsomething{\@@tlkorps}{\switchtobodyfont[\@@tlkorps]}}
 
 \def\stoptextrule%
   {\par

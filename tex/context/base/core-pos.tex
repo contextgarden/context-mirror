@@ -795,6 +795,23 @@ fi ;
 
 \newcounter\currentmarginpos
 
+% \def\dopositionmarginbox#1%
+%   {\bgroup
+%    \ifrepositionmarginbox
+%      \doglobal\increment\currentmarginpos
+%      \setposition{\s!margin:\currentmarginpos}% 
+%      \scratchdimen=\MPy{\s!margin:\currentmarginpos}%
+%      \doglobal\increment\currentmarginpos
+%      \advance\scratchdimen by -\MPy{\s!margin:\currentmarginpos}%
+%      \advance\scratchdimen by -\dp\strutbox
+%      \setbox#1=\hbox
+%        {\setposition{\s!margin:\currentmarginpos}\raise\scratchdimen\box#1}%
+%      \dp#1=\!!zeropoint
+%      \ht#1=\!!zeropoint
+%    \fi
+%    \vadjust{\box#1}%
+%    \egroup}
+
 \def\dopositionmarginbox#1%
   {\bgroup
    \ifrepositionmarginbox
@@ -804,6 +821,12 @@ fi ;
      \doglobal\increment\currentmarginpos
      \advance\scratchdimen by -\MPy{\s!margin:\currentmarginpos}%
      \advance\scratchdimen by -\dp\strutbox
+     % new 
+     \setbox#1=\hbox
+       {\hskip-\MPx{\s!margin:\currentmarginpos}%
+        \hskip\MPx{head:\realfolio}%
+        \box#1}%
+     % so far 
      \setbox#1=\hbox
        {\setposition{\s!margin:\currentmarginpos}\raise\scratchdimen\box#1}%
      \dp#1=\!!zeropoint
