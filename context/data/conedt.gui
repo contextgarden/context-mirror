@@ -1,0 +1,719 @@
+// -*- ASCII:EDT -*-
+// -------------------------------------------------------------------
+//
+// IMPORTANT: Check WinEdt's Preferences| Init Data Dialog to see
+// which WinEdt.gui file is being used by the program. By default
+// the file %B\WinEdt.gui defining 24-bit bitmaps is being used
+// unless WinEdt detected one of the following settings during its
+// installation:
+//
+//   (1) The screen has less than 800 pxl horizontal resolution
+//   (2) The color scheme under 16-bit is being used (this can be
+//       changed in Windows  Control Panel| Screen Dialog)
+//
+// In such case the old 16 color (smaller) interface
+// (%B\Bitmaps\Gui-Old\WinEdt.gui) is being used...
+//
+// GUI Page Control: Ends with End;
+//
+//      Tab Name, isDragDrop or Fixed
+//Page(!"Editor",  "+");
+//Nonempty Second String defines this Page as a Drag and Drop Panel
+//
+//      Hint, Macro (OnClick)
+//Item(!"sum",!"Ins('\sum')");
+//
+//   Flat Top +DX   R   C   W   H    Bitmap File
+//Group(1,  0,  4,  2, 15, 23, 20, "%B\Bitmaps\GreekLow.bmp");
+//Group(#0..1,#0..99,#0..99,#1..99,#1..99,#9..99,#9..99,!");
+//
+// !"..." Indicates non-expandable strings (faster)
+//
+// By default the buttons are displayed in flat mode. You can
+// change them to 3-d by changing the first parameter in all
+// Groups from 1 to 0!
+//
+// -------------------------------------------------------------------
+//
+// Improved GUI
+// ============
+//
+// This is a modification of the standard winedt.gui with the
+// following features:
+//
+// - If text is selected in the document and a TeX-command with one
+// or more parameters is inserted from this GUI, the selected text is
+// pasted into the first pair of brackets of the TeX-command. This
+// behavior differs from the original GUI, in which selected text
+// gets replaced by the TeX-command.
+//
+// - If no text is selected, this GUI behaves as the standard one,
+// i.e. inserts the TeX-Command and moves the cursor inside the first
+// pair of brackets.
+//
+// Modifications done by Stephan Matthiesen
+//   (stephan@met.ed.ac.uk) on 6 April 1998
+//
+// -------------------------------------------------------------------
+
+Height(46); // Client's Height
+
+// End; // Remove the comment to disable GUI Control and
+        // reduce the startup time by up to 3 sec.
+
+//Page(!"Editor",!"+"); // Tool Bar Panel: Drag Tool Bar Buttons
+//Page(!"Shell",!"+");  // Tool Bar Panel: Drag Tool Bar Buttons
+
+Page(!"Math");
+  Group(1,  0,  0,  2,  7, 23, 23, "%B\Bitmaps\Gui\MathSym.bmp");
+    Item(!"sum",!"Ins('\sum')");
+    Item(!"prod",!"Ins('\prod')");
+    Item(!"coprod",!"Ins('\coprod')");
+    Item(!"int",!"Ins('\int')");
+    Item(!"oint",!"Ins('\oint')");
+    Item(!"bigcap",!"Ins('\bigcap')");
+    Item(!"bigcup",!"Ins('\bigcup')");
+    Item(!"bigsqcup",!"Ins('\bigsqcup')");
+    Item(!"bigvee",!"Ins('\bigvee')");
+    Item(!"bigwedge",!"Ins('\bigwedge')");
+    Item(!"bigodot",!"Ins('\bigodot')");
+    Item(!"bigotimes",!"Ins('\bigotimes')");
+    Item(!"bigoplus",!"Ins('\bigoplus')");
+    Item(!"biguplus",!"Ins('\biguplus')");
+  Group(1,  0, 10,  2,  5, 23, 23, "%B\Bitmaps\Gui\MathAcc.bmp");
+    Item(!"hat",!"IfSel(""0"",""="",""Ins('\hat{}');CMD('Char Left')"",""InsLabel('','\hat{','}')"")");
+    Item(!"check",!"IfSel(""0"",""="",""Ins('\check{}');CMD('Char Left')"",""InsLabel('','\check{','}')"")");
+    Item(!"breve",!"IfSel(""0"",""="",""Ins('\breve{}');CMD('Char Left')"",""InsLabel('','\breve{','}')"")");
+    Item(!"acute",!"IfSel(""0"",""="",""Ins('\acute{}');CMD('Char Left')"",""InsLabel('','\acute{','}')"")");
+    Item(!"grave",!"IfSel(""0"",""="",""Ins('\grave{}');CMD('Char Left')"",""InsLabel('','\grave{','}')"")");
+    Item(!"tilde",!"IfSel(""0"",""="",""Ins('\tilde{}');CMD('Char Left')"",""InsLabel('','\tilde{','}')"")");
+    Item(!"bar",!"IfSel(""0"",""="",""Ins('\bar{}');CMD('Char Left')"",""InsLabel('','\bar{','}')"")");
+    Item(!"vec",!"IfSel(""0"",""="",""Ins('\vec{}');CMD('Char Left')"",""InsLabel('','\vec{','}')"")");
+    Item(!"dot",!"IfSel(""0"",""="",""Ins('\dot{}');CMD('Char Left')"",""InsLabel('','\dot{','}')"")");
+    Item(!"ddot",!"IfSel(""0"",""="",""Ins('\ddot{}');CMD('Char Left')"",""InsLabel('','\ddot{','}')"")");
+  Group(1,  0, 10,  2,  6, 35, 23, "%B\Bitmaps\Gui\MathCon.bmp");
+    Item(!"widetilde",!"IfSel(""0"",""="",""Ins('\widetilde{}');CMD('Char Left')"",""InsLabel('','\widetilde{','}')"")");
+    Item(!"widehat",!"IfSel(""0"",""="",""Ins('\widehat{}');CMD('Char Left')"",""InsLabel('','\widehat{','}')"")");
+    Item(!"overleftarrow",!"IfSel(""0"",""="",""Ins('\overleftarrow{}');CMD('Char Left')"",""InsLabel('','\overleftarrow{','}')"")");
+    Item(!"overrightarrow",!"IfSel(""0"",""="",""Ins('\overrightarrow{}');CMD('Char Left')"",""InsLabel('','\overrightarrow{','}')"")");
+    Item(!"overline",!"IfSel(""0"",""="",""Ins('\overline{}');CMD('Char Left')"",""InsLabel('','\overline{','}')"")");
+    Item(!"overbrace",!"IfSel(""0"",""="",""Ins('\overbrace{}');CMD('Char Left')"",""InsLabel('','\overbrace{','}')"")");
+    Item(!"underbrace",!"IfSel(""0"",""="",""Ins('\underbrace{}');CMD('Char Left')"",""InsLabel('','\underbrace{','}')"")");
+    Item(!"underline",!"IfSel(""0"",""="",""Ins('\underline{}');CMD('Char Left')"",""InsLabel('','\underline{','}')"")");
+    Item(!"sqrt",!"IfSel(""0"",""="",""Ins('\sqrt{}');CMD('Char Left')"",""InsLabel('','\sqrt{','}')"")");
+    Item(!"sqrt[n]",!"IfSel(""0"",""="",""Ins('\sqrt[n]{}');CMD('Char Left')"",""InsLabel('','\sqrt[n]{','}')"")");
+    Item(!"f'",!"Ins('''')");
+    Item(!"\frac{abc}{xyz}",!"IfSel(""0"",""="",""Ins('\frac{}{}');CMD('Char Left');CMD('Char Left');CMD('Char Left')"",""InsLabel('','\frac{','}{}');CMD('Char Left')"")");
+  Group(1,  0, 10,  2,  3, 30, 23, "%B\Bitmaps\Gui\Math.bmp");
+    Item(!"x^{k}",!"IfSel(""0"",""="",""Ins('^{}');CMD('Char Left')"",""InsLabel('','^{','}')"")");
+    Item(!"mathbf",!"IfSel(""0"",""="",""Ins('\mathbf{}');CMD('Char Left')"",""InsLabel('','\mathbf{','}')"")");
+    Item(!"mathbb",!"IfSel(""0"",""="",""Ins('\mathbb{}');CMD('Char Left')"",""InsLabel('','\mathbb{','}')"")");
+    Item(!"x_{k}",!"IfSel(""0"",""="",""Ins('_{}');CMD('Char Left')"",""InsLabel('','_{','}')"")");
+    Item(!"mathcal",!"IfSel(""0"",""="",""Ins('\mathcal{}');CMD('Char Left')"",""InsLabel('','\mathcal{','}')"")");
+    Item(!"mathrm",!"IfSel(""0"",""="",""Ins('\mathrm{}');CMD('Char Left')"",""InsLabel('','\mathrm{','}')"")");
+
+Page(!"Greek");
+  Group(1,  0,  0,  2,  6, 23, 23, "%B\Bitmaps\Gui\GreekUpp.bmp");
+    Item(!"Gamma",!"Ins('\Gamma')");
+    Item(!"Delta",!"Ins('\Delta')");
+    Item(!"Theta",!"Ins('\Theta')");
+    Item(!"Lambda",!"Ins('\Lambda')");
+    Item(!"Xi",!"Ins('\Xi')");
+    Item(!"Pi",!"Ins('\Pi')");
+    Item(!"Sigma",!"Ins('\Sigma')");
+    Item(!"Upsilon",!"Ins('\Upsilon')");
+    Item(!"Phi",!"Ins('\Phi')");
+    Item(!"Psi",!"Ins('\Psi')");
+    Item(!"Omega",!"Ins('\Omega')");
+    Item(!"$",!"Ins('$')");
+  Group(1,  0, 10,  2, 15, 23, 23, "%B\Bitmaps\Gui\GreekLow.bmp");
+    Item(!"alpha",!"Ins('\alpha')");
+    Item(!"beta",!"Ins('\beta')");
+    Item(!"gamma",!"Ins('\gamma')");
+    Item(!"delta",!"Ins('\delta')");
+    Item(!"epsilon",!"Ins('\epsilon')");
+    Item(!"varepsilon",!"Ins('\varepsilon')");
+    Item(!"zeta",!"Ins('\zeta')");
+    Item(!"eta",!"Ins('\eta')");
+    Item(!"theta",!"Ins('\theta')");
+    Item(!"vartheta",!"Ins('\vartheta')");
+    Item(!"iota",!"Ins('\iota')");
+    Item(!"kappa",!"Ins('\kappa')");
+    Item(!"lambda",!"Ins('\lambda')");
+    Item(!"mu",!"Ins('\mu')");
+    Item(!"nu",!"Ins('\nu')");
+    Item(!"xi",!"Ins('\xi')");
+    Item(!"o",!"Ins('o')");
+    Item(!"pi",!"Ins('\pi')");
+    Item(!"varpi",!"Ins('\varpi')");
+    Item(!"rho",!"Ins('\rho')");
+    Item(!"varrho",!"Ins('\varrho')");
+    Item(!"sigma",!"Ins('\sigma')");
+    Item(!"varsigma",!"Ins('\varsigma')");
+    Item(!"tau",!"Ins('\tau')");
+    Item(!"upsilon",!"Ins('\upsilon')");
+    Item(!"phi",!"Ins('\phi')");
+    Item(!"varphi",!"Ins('\varphi')");
+    Item(!"chi",!"Ins('\chi')");
+    Item(!"psi",!"Ins('\psi')");
+    Item(!"omega",!"Ins('\omega')");
+ Group(1,  0, 15,  2, 2, 23, 23, "%B\Bitmaps\Gui\Hebrew.bmp");
+   Item(!"digamma",!"Ins('\digamma')");
+   Item(!"beth",!"Ins('\beth')");
+   Item(!"gimel",!"Ins('\gimel')");
+   Item(!"daleth",!"Ins('\daleth')");
+
+Page(!"Symbols");
+  Group(1,  0,  0,  2,11, 23, 23, "%B\Bitmaps\Gui\Sym1.bmp");
+    Item(!"aleph",!"Ins('\aleph')");
+    Item(!"hbar",!"Ins('\hbar')");
+    Item(!"imath",!"Ins('\imath')");
+    Item(!"jmath",!"Ins('\jmath')");
+    Item(!"ell",!"Ins('\ell')");
+    Item(!"wp",!"Ins('\wp')");
+    Item(!"Re",!"Ins('\Re')");
+    Item(!"Im",!"Ins('\Im')");
+    Item(!"prime",!"Ins('\prime')");
+    Item(!"emptyset",!"Ins('\emptyset')");
+    Item(!"angle",!"Ins('\angle')");
+    Item(!"infty",!"Ins('\infty')");
+    Item(!"partial",!"Ins('\partial')");
+    Item(!"nabla",!"Ins('\nabla')");
+    Item(!"triangle",!"Ins('\triangle')");
+    Item(!"forall",!"Ins('\forall')");
+    Item(!"exists",!"Ins('\exists')");
+    Item(!"neg",!"Ins('\neg')");
+    Item(!"surd",!"Ins('\surd')");
+    Item(!"top",!"Ins('\top')");
+    Item(!"bot",!"Ins('\bot')");
+    Item(!"backslash",!"Ins('\backslash')");
+  Group(1,  0, 10,  2, 4, 23, 23, "%B\Bitmaps\Gui\Sym2.bmp");
+    Item(!"flat",!"Ins('\flat')");
+    Item(!"natural",!"Ins('\natural')");
+    Item(!"sharp",!"Ins('\sharp')");
+    Item(!"¦¦",!"Ins('\|')");
+    Item(!"clubsuit",!"Ins('\clubsuit')");
+    Item(!"diamondsuit",!"Ins('\diamondsuit')");
+    Item(!"heartsuit",!"Ins('\heartsuit')");
+    Item(!"spadesuit",!"Ins('\spadesuit')");
+  Group(1,  0, 10,  2, 3, 23, 23, "%B\Bitmaps\Gui\Sym3.bmp");
+    Item(!"dag",!"Ins('\dag')");
+    Item(!"ddag",!"Ins('\ddag')");
+    Item(!"S",!"Ins('\S')");
+    Item(!"P",!"Ins('\P')");
+    Item(!"copyright",!"Ins('\copyright')");
+    Item(!"pounds",!"Ins('\pounds')");
+  Group(1,  0, 15,  2, 2, 23, 23, "%B\Bitmaps\Gui\Sym4.bmp");
+    Item(!"checkmark",!"Ins('\checkmark')");
+    Item(!"maltese",!"Ins('\maltese')");
+    Item(!"circledR",!"Ins('\circledR')");
+    Item(!"yen",!"Ins('\yen')");
+  Group(1,  0, 10,  2, 2, 23, 23, "%B\Bitmaps\Gui\Sym5.bmp");
+    Item(!"ulcorner",!"Ins('\ulcorner')");
+    Item(!"urcorner",!"Ins('\urcorner')");
+    Item(!"llcorner",!"Ins('\llcorner')");
+    Item(!"lrcorner",!"Ins('\lrcorner')");
+  Group(1,  0, 10,  2, 4, 29, 23, "%B\Bitmaps\Gui\Sym6.bmp");
+    Item(!"diamond",!"Ins('\diamond')");
+    Item(!"mho",!"Ins('\mho')");
+    Item(!"ldots",!"Ins('\ldots')");
+    Item(!"cdots",!"Ins('\cdots')");
+    Item(!"Box",!"Ins('\Box')");
+    Item(!"cdot",!"Ins('\cdot')");
+    Item(!"vdots",!"Ins('\vdots')");
+    Item(!"ddots",!"Ins('\ddots')");
+
+Page(!"International");
+  Group(1,  0,  0,  2, 7, 23, 23, "%B\Bitmaps\Gui\Foreign1.bmp");
+    Item(!"\`{o}",!"IfSel(""0"",""="",""Ins('\`{}');CMD('Char Left')"",""InsLabel('','\`{','}')"")");
+    Item(!"\'{o}",!"IfSel(""0"",""="",""Ins('\''{}');CMD('Char Left')"",""InsLabel('','\''{','}')"")");
+    Item(!"\^{o}",!"IfSel(""0"",""="",""Ins('\^{}');CMD('Char Left')"",""InsLabel('','\^{','}')"")");
+    Item(!"\""{o}",!"IfSel(""0"",""="",""Ins('\""""{}');CMD('Char Left')"",""InsLabel('','\""""{','}')"")");
+    Item(!"\~{o}",!"IfSel(""0"",""="",""Ins('\~{}');CMD('Char Left')"",""InsLabel('','\~{','}')"")");
+    Item(!"\={o}",!"IfSel(""0"",""="",""Ins('\={}');CMD('Char Left')"",""InsLabel('','\={','}')"")");
+    Item(!"\.{o}",!"IfSel(""0"",""="",""Ins('\.{}');CMD('Char Left')"",""InsLabel('','\.{','}')"")");
+    Item(!"\u{o}",!"IfSel(""0"",""="",""Ins('\u{}');CMD('Char Left')"",""InsLabel('','\u{','}')"")");
+    Item(!"\v{o}",!"IfSel(""0"",""="",""Ins('\v{}');CMD('Char Left')"",""InsLabel('','\v{','}')"")");
+    Item(!"\H{o}",!"IfSel(""0"",""="",""Ins('\H{}');CMD('Char Left')"",""InsLabel('','\H{','}')"")");
+    Item(!"\t{oo}",!"IfSel(""0"",""="",""Ins('\t{}');CMD('Char Left')"",""InsLabel('','\t{','}')"")");
+    Item(!"\c{o}",!"IfSel(""0"",""="",""Ins('\c{}');CMD('Char Left')"",""InsLabel('','\c{','}')"")");
+    Item(!"\d{o}",!"IfSel(""0"",""="",""Ins('\d{}');CMD('Char Left')"",""InsLabel('','\d{','}')"")");
+    Item(!"\b{o}",!"IfSel(""0"",""="",""Ins('\b{}');CMD('Char Left')"",""InsLabel('','\b{','}')"")");
+  Group(1,  0, 10,  2, 6, 23, 23, "%B\Bitmaps\Gui\Foreign2.bmp");
+    Item(!"\oe",!"Ins('\oe')");
+    Item(!"\ae",!"Ins('\ae')");
+    Item(!"\aa",!"Ins('\aa')");
+    Item(!"\o",!"Ins('\o')");
+    Item(!"\l",!"Ins('\l')");
+    Item(!"?`",!"Ins('?`')");
+    Item(!"\OE",!"Ins('\OE')");
+    Item(!"\AE",!"Ins('\AE')");
+    Item(!"\AA",!"Ins('\AA')");
+    Item(!"\O",!"Ins('\O')");
+    Item(!"\L",!"Ins('\L')");
+    Item(!"!`",!"Ins('!`')");
+  Group(1,  0, 15,  2, 7, 23, 23, "%B\Bitmaps\Gui\Foreign3.bmp");
+    Item(!" \""{a} ",!"Ins('\""{a}')");
+    Item(!" \""{e} ",!"Ins('\""{e}')");
+    Item(!" \""{i} ",!"Ins('\""{\i}')");
+    Item(!" \""{o} ",!"Ins('\""{o}')");
+    Item(!" \""{u} ",!"Ins('\""{u}')");
+    Item(!" \""{y} ",!"Ins('\""{y}')");
+    Item(!" \ss ",!"Ins('\ss')");
+    Item(!" \""{A} ",!"Ins('\""{A}')");
+    Item(!" \""{E} ",!"Ins('\""{E}')");
+    Item(!" \""{I} ",!"Ins('\""{I}')");
+    Item(!" \""{O} ",!"Ins('\""{O}')");
+    Item(!" \""{U} ",!"Ins('\""{U}')");
+    Item(!" \""{Y} ",!"Ins('\""{Y}')");
+    Item(!" \SS ",!"Ins('\SS')");
+  Group(1,  0, 10,  2, 7, 23, 23, "%B\Bitmaps\Gui\Foreign4.bmp");
+    Item(!" \c{c} ",!"Ins('\c{c}')");
+    Item(!" \`{e} ",!"Ins('\`{e}')");
+    Item(!" \'{e} ",!"Ins('\''{e}')");
+    Item(!" \^{e} ",!"Ins('\^{e}')");
+    Item(!" \`{o} ",!"Ins('\`{o}')");
+    Item(!" \'{o} ",!"Ins('\''{o}')");
+    Item(!" \^{o} ",!"Ins('\^{o}')");
+    Item(!" \c{C} ",!"Ins('\c{C}')");
+    Item(!" \`{E} ",!"Ins('\`{E}')");
+    Item(!" \'{E} ",!"Ins('\''{E}')");
+    Item(!" \^{E} ",!"Ins('\^{E}')");
+    Item(!" \`{O} ",!"Ins('\`{O}')");
+    Item(!" \'{O} ",!"Ins('\''{O}')");
+    Item(!" \^{O} ",!"Ins('\^{O}')");
+
+// Page(!"Typeface");
+//   Group(1, 0, 4, 2, 5, 78, 23, "%B\Bitmaps\Gui\Typeface.bmp");
+//     Item(!"\emph{...}",!"IfSel(""0"",""="",""Ins('\emph{}');CMD('Char Left')"",""InsLabel('','\emph{','}')"")");
+//     Item(!"\textrm{...}",!"IfSel(""0"",""="",""Ins('\textrm{}');CMD('Char Left')"",""InsLabel('','\textrm{','}')"")");
+//     Item(!"\textbf{...}",!"IfSel(""0"",""="",""Ins('\textbf{}');CMD('Char Left')"",""InsLabel('','\textbf{','}')"")");
+//     Item(!"\textsf{...}",!"IfSel(""0"",""="",""Ins('\textsf{}');CMD('Char Left')"",""InsLabel('','\textsf{','}')"")");
+//     Item(!"\texttt{...}",!"IfSel(""0"",""="",""Ins('\texttt{}');CMD('Char Left')"",""InsLabel('','\texttt{','}')"")");
+//     Item(!"\textmd{...}",!"IfSel(""0"",""="",""Ins('\textmd{}');CMD('Char Left')"",""InsLabel('','\textmd{','}')"")");
+//     Item(!"\textit{...}",!"IfSel(""0"",""="",""Ins('\textit{}');CMD('Char Left')"",""InsLabel('','\textit{','}')"")");
+//     Item(!"\textsc{...}",!"IfSel(""0"",""="",""Ins('\textsc{}');CMD('Char Left')"",""InsLabel('','\textsc{','}')"")");
+//     Item(!"\textsl{...}",!"IfSel(""0"",""="",""Ins('\textsl{}');CMD('Char Left')"",""InsLabel('','\textsl{','}')"")");
+//     Item(!"\verb""...""",!"IfSel(""0"",""="",""Ins('\verb""""""""');CMD('Char Left')"",""InsLabel('','\verb""""','""""')"")");
+//   Group(1,  0, 10,  1, 2, 50, 46, "%B\Bitmaps\Gui\Remove.bmp");
+//     Item(!'Remove Typeface',!'SubLabel("\","{","}","","","")');
+//     Item(!'Remove Verbatim',!'SubLabel("\","""","""","","","")');
+
+Page(!"Functions(x)  ...");
+  Group(1,  0,  0,  2, 3, 50, 23, "%B\Bitmaps\Gui\Funct1.bmp");
+    Item(!"arccos",!"Ins('\arccos')");
+    Item(!"arcsin",!"Ins('\arcsin')");
+    Item(!"arctan",!"Ins('\arctan')");
+    Item(!"lim",!"Ins('\lim')");
+    Item(!"liminf",!"Ins('\liminf')");
+    Item(!"limsup",!"Ins('\limsup')");
+  Group(1,  0, 10,  2, 6, 40, 23, "%B\Bitmaps\Gui\Funct2.bmp");
+    Item(!"arg",!"Ins('\arg')");
+    Item(!"cos",!"Ins('\cos')");
+    Item(!"cosh",!"Ins('\cosh')");
+    Item(!"cot",!"Ins('\cot')");
+    Item(!"coth",!"Ins('\coth')");
+    Item(!"csc",!"Ins('\csc')");
+    Item(!"ker",!"Ins('\ker')");
+    Item(!"lg",!"Ins('\lg')");
+    Item(!"ln",!"Ins('\ln')");
+    Item(!"log",!"Ins('\log')");
+    Item(!"max",!"Ins('\max')");
+    Item(!"min",!"Ins('\min')");
+  Group(1,  0,  0,  2, 6, 40, 23, "%B\Bitmaps\Gui\Funct3.bmp");
+    Item(!"det",!"Ins('\det')");
+    Item(!"dim",!"Ins('\dim')");
+    Item(!"exp",!"Ins('\exp')");
+    Item(!"gcd",!"Ins('\gcd')");
+    Item(!"hom",!"Ins('\hom')");
+    Item(!"inf",!"Ins('\inf')");
+    Item(!"sec",!"Ins('\sec')");
+    Item(!"sin",!"Ins('\sin')");
+    Item(!"sinh",!"Ins('\sinh')");
+    Item(!"sup",!"Ins('\sup')");
+    Item(!"tan",!"Ins('\tan')");
+    Item(!"tanh",!"Ins('\tanh')");
+
+Page(!"{  }  ...");
+  Group(1,  0,  0,  2,8, 23, 23, "%B\Bitmaps\Gui\Delim.bmp");
+    Item(!"(",!"Ins('(')");
+    Item(!"[",!"Ins('[')");
+    Item(!"{",!"Ins('\{')");
+    Item(!"lfloor",!"Ins('\lfloor')");
+    Item(!"lceil",!"Ins('\lceil')");
+    Item(!"langle",!"Ins('\langle')");
+    Item(!"/",!"Ins('/')");
+    Item(!"¦",!"Ins('|')");
+    Item(!")",!"Ins(')')");
+    Item(!"]",!"Ins(']')");
+    Item(!"}",!"Ins('\}')");
+    Item(!"rfloor",!"Ins('\rfloor')");
+    Item(!"rceil",!"Ins('\rceil')");
+    Item(!"rangle",!"Ins('\rangle')");
+    Item(!"backslash",!"Ins('\backslash')");
+    Item(!"¦",!"Ins('\|')");
+  Group(1,  0, 20,  2,3, 23, 23, "%B\Bitmaps\Gui\Delim2.bmp");
+    Item(!"uparrow",!"Ins('\uparrow')");
+    Item(!"downarrow",!"Ins('\downarrow')");
+    Item(!"updownarrow",!"Ins('\updownarrow')");
+    Item(!"Uparrow",!"Ins('\Uparrow')");
+    Item(!"Downarrow",!"Ins('\Downarrow')");
+    Item(!"Updownarrow",!"Ins('\Updownarrow')");
+  Group(1,  0, 15,  2, 3, 35, 23, "%B\Bitmaps\Gui\Quad.bmp");
+    Item(!"Math Space: quad",!"Ins('\quad')");
+    Item(!"Math Space: qquad",!"Ins('\qquad')");
+    Item(!"Math Space: -3/18 quad",!"Ins('\!')");
+    Item(!"Math Space:  3/18 quad",!"Ins('\,')");
+    Item(!"Math Space:  4/18 quad",!"Ins('\:')");
+    Item(!"Math Space:  5/18 quad",!"Ins('\;')");
+  Group(1,  0, 20,  2,2, 50, 23, "%B\Bitmaps\Gui\Delim3.bmp");
+    Item(!"\left",!"Ins('\left')");
+    Item(!"\begin",!"Ins('\begin')");
+    Item(!"\right",!"Ins('\right')");
+    Item(!"\end",!"Ins('\end')");
+
+Page(!"<>=  ...");
+  Group(1,  0,  0,  2,10, 23, 23, "%B\Bitmaps\Gui\Rel1.bmp");
+    Item(!"<",!"Ins('<')");
+    Item(!"leq",!"Ins('\leq')");
+    Item(!"prec",!"Ins('\prec')");
+    Item(!"preceq",!"Ins('\preceq')");
+    Item(!"ll",!"Ins('\ll')");
+    Item(!"subset",!"Ins('\subset')");
+    Item(!"subseteq",!"Ins('\subseteq')");
+    Item(!"sqsubseteq",!"Ins('\sqsubseteq')");
+    Item(!"in",!"Ins('\in')");
+    Item(!"vdash",!"Ins('\vdash')");
+    Item(!">",!"Ins('>')");
+    Item(!"geq",!"Ins('\geq')");
+    Item(!"succ",!"Ins('\succ')");
+    Item(!"succeq",!"Ins('\succeq')");
+    Item(!"gg",!"Ins('\gg')");
+    Item(!"supset",!"Ins('\supset')");
+    Item(!"supseteq",!"Ins('\supseteq')");
+    Item(!"sqsupseteq",!"Ins('\sqsupseteq')");
+    Item(!"ni",!"Ins('\ni')");
+    Item(!"dashv",!"Ins('\dashv')");
+  Group(1,  0, 20,  2, 8, 23, 23, "%B\Bitmaps\Gui\Rel2.bmp");
+    Item(!"equiv",!"Ins('\equiv')");
+    Item(!"sim",!"Ins('\sim')");
+    Item(!"simeq",!"Ins('\simeq')");
+    Item(!"asymp",!"Ins('\asymp')");
+    Item(!"approx",!"Ins('\approx')");
+    Item(!"cong",!"Ins('\cong')");
+    Item(!"neq",!"Ins('\neq')");
+    Item(!"doteq",!"Ins('\doteq')");
+    Item(!"models",!"Ins('\models')");
+    Item(!"perp",!"Ins('\perp')");
+    Item(!"mid",!"Ins('\mid')");
+    Item(!"parallel",!"Ins('\parallel')");
+    Item(!"smile",!"Ins('\smile')");
+    Item(!"frown",!"Ins('\frown')");
+    Item(!"propto",!"Ins('\propto')");
+    Item(!"bowtie",!"Ins('\bowtie')");
+  Group(1,  0, 20,  2, 2, 23, 23, "%B\Bitmaps\Gui\Rel3.bmp");
+    Item(!"lhd",!"Ins('\lhd')");
+    Item(!"rhd",!"Ins('\rhd')");
+    Item(!"unlhd",!"Ins('\unlhd')");
+    Item(!"unrhd",!"Ins('\unrhd')");
+
+Page(!"+ / -  ...");
+  Group(1,  0,  0,  2,16, 23, 23, "%B\Bitmaps\Gui\MathOper.bmp");
+    Item(!"pm",!"Ins('\pm')");
+    Item(!"mp",!"Ins('\mp')");
+    Item(!"times",!"Ins('\times')");
+    Item(!"div",!"Ins('\div')");
+    Item(!"ast",!"Ins('\ast')");
+    Item(!"star",!"Ins('\star')");
+    Item(!"circ",!"Ins('\circ')");
+    Item(!"bullet",!"Ins('\bullet')");
+    Item(!"cdot",!"Ins('\cdot')");
+    Item(!"cap",!"Ins('\cap')");
+    Item(!"cup",!"Ins('\cup')");
+    Item(!"uplus",!"Ins('\uplus')");
+    Item(!"sqcap",!"Ins('\sqcap')");
+    Item(!"sqcup",!"Ins('\sqcup')");
+    Item(!"vee",!"Ins('\vee')");
+    Item(!"wedge",!"Ins('\wedge')");
+    Item(!"setminus",!"Ins('\setminus')");
+    Item(!"wr",!"Ins('\wr')");
+    Item(!"diamond",!"Ins('\diamond')");
+    Item(!"bigtriangleup",!"Ins('\bigtriangleup')");
+    Item(!"bigtriangledown",!"Ins('\bigtriangledown')");
+    Item(!"triangleleft",!"Ins('\triangleleft')");
+    Item(!"triangleright",!"Ins('\triangleright')");
+    Item(!"oplus",!"Ins('\oplus')");
+    Item(!"ominus",!"Ins('\ominus')");
+    Item(!"otimes",!"Ins('\otimes')");
+    Item(!"oslash",!"Ins('\oslash')");
+    Item(!"odot",!"Ins('\odot')");
+    Item(!"bigcirc",!"Ins('\bigcirc')");
+    Item(!"dagger",!"Ins('\dagger')");
+    Item(!"ddagger",!"Ins('\ddagger')");
+    Item(!"amalg",!"Ins('\amalg')");
+  Group(1,  0, 10,  2, 2, 23, 23, "%B\Bitmaps\Gui\Arrows.bmp");
+    Item(!"nearrow",!"Ins('\nearrow')");
+    Item(!"searrow",!"Ins('\searrow')");
+    Item(!"nwarrow",!"Ins('\nwarrow')");
+    Item(!"swarrow",!"Ins('\swarrow')");
+  Group(1,  0, 10,  2, 4, 35, 23, "%B\Bitmaps\Gui\Arrows0.bmp");
+    Item(!"longrightarrow",!"Ins('\longrightarrow')");
+    Item(!"longleftarrow",!"Ins('\longleftarrow')");
+    Item(!"longleftrightarrow",!"Ins('\longleftrightarrow')");
+    Item(!"longmapsto",!"Ins('\longmapsto')");
+    Item(!"Longrightarrow",!"Ins('\Longrightarrow')");
+    Item(!"Longleftarrow",!"Ins('\Longleftarrow')");
+    Item(!"Longleftrightarrow",!"Ins('\Longleftrightarrow')");
+    Item(!"Space",!"Ins(' ')");
+
+Page(!"--->  ...");
+  Group(1,  0,  0,  2,10, 23, 23, "%B\Bitmaps\Gui\Arrows1.bmp");
+    Item(!"leftarrow",!"Ins('\leftarrow')");
+    Item(!"Leftarrow",!"Ins('\Leftarrow')");
+    Item(!"rightarrow",!"Ins('\rightarrow')");
+    Item(!"Rightarrow",!"Ins('\Rightarrow')");
+    Item(!"leftrightarrow",!"Ins('\leftrightarrow')");
+    Item(!"Leftrightarrow",!"Ins('\Leftrightarrow')");
+    Item(!"mapsto",!"Ins('\mapsto')");
+    Item(!"hookleftarrow",!"Ins('\hookleftarrow')");
+    Item(!"leftharpoonup",!"Ins('\leftharpoonup')");
+    Item(!"leftharpoondown",!"Ins('\leftharpoondown')");
+    Item(!"rightleftharpoons",!"Ins('\rightleftharpoons')");
+    Item(!"hookrightarrow",!"Ins('\hookrightarrow')");
+    Item(!"rightharpoonup",!"Ins('\rightharpoonup')");
+    Item(!"rightharpoondown",!"Ins('\rightharpoondown')");
+    Item(!"uparrow",!"Ins('\uparrow')");
+    Item(!"Uparrow",!"Ins('\Uparrow')");
+    Item(!"downarrow",!"Ins('\downarrow')");
+    Item(!"Downarrow",!"Ins('\Downarrow')");
+    Item(!"updownarrow",!"Ins('\updownarrow')");
+    Item(!"Updownarrow",!"Ins('\Updownarrow')");
+  Group(1,  0, 15,  2, 8, 23, 23, "%B\Bitmaps\Gui\Arrows2.bmp");
+    Item(!"leftleftarrows",!"Ins('\leftleftarrows')");
+    Item(!"rightrightarrows",!"Ins('\rightrightarrows')");
+    Item(!"leftrightarrows",!"Ins('\leftrightarrows')");
+    Item(!"rightleftarrows",!"Ins('\rightleftarrows')");
+    Item(!"Lleftarrow",!"Ins('\Lleftarrow')");
+    Item(!"Rrightarrow",!"Ins('\Rrightarrow')");
+    Item(!"leftrightharpoons",!"Ins('\leftrightharpoons')");
+    Item(!"rightleftharpoons",!"Ins('\rightleftharpoons')");
+    Item(!"twoheadleftarrow",!"Ins('\twoheadleftarrow')");
+    Item(!"twoheadrightarrow",!"Ins('\twoheadrightarrow')");
+    Item(!"leftarrowtail",!"Ins('\leftarrowtail')");
+    Item(!"rightarrowtail",!"Ins('\rightarrowtail')");
+    Item(!"looparrowleft",!"Ins('\looparrowleft')");
+    Item(!"looparrowright",!"Ins('\looparrowright')");
+    Item(!"curvearrowleft",!"Ins('\curvearrowleft')");
+    Item(!"curvearrowright",!"Ins('\curvearrowright')");
+  Group(1,  0, 10,  2, 8, 25, 23, "%B\Bitmaps\Gui\Arrows3.bmp");
+    Item(!"circlearrowleft",!"Ins('\circlearrowleft')");
+    Item(!"circlearrowright",!"Ins('\circlearrowright')");
+    Item(!"dashleftarrow",!"Ins('\dashleftarrow')");
+    Item(!"dashrightarrow",!"Ins('\dashrightarrow')");
+    Item(!"Lsh",!"Ins('\Lsh')");
+    Item(!"Rsh",!"Ins('\Rsh')");
+    Item(!"upuparrows",!"Ins('\upuparrows')");
+    Item(!"downdownarrows",!"Ins('\downdownarrows')");
+    Item(!"upharpoonleft",!"Ins('\upharpoonleft')");
+    Item(!"upharpoonright",!"Ins('\upharpoonright')");
+    Item(!"downharpoonleft",!"Ins('\downharpoonleft')");
+    Item(!"downharpoonright",!"Ins('\downharpoonright')");
+    Item(!"rightsquigarrow",!"Ins('\rightsquigarrow')");
+    Item(!"leftrightsquigarrow",!"Ins('\leftrightsquigarrow')");
+    Item(!"multimap",!"Ins('\multimap')");
+    Item(!"Space",!"Ins(' ')");
+  Group(1,  0, 10,  2, 3, 23, 23, "%B\Bitmaps\Gui\Arrows4.bmp");
+    Item(!"nleftarrow",!"Ins('\nleftarrow')");
+    Item(!"nrightarrow",!"Ins('\nrightarrow')");
+    Item(!"nLeftarrow",!"Ins('\nLeftarrow')");
+    Item(!"nRightarrow",!"Ins('\nRightarrow')");
+    Item(!"nleftrightarrow",!"Ins('\nleftrightarrow')");
+    Item(!"nLeftrightarrow",!"Ins('\nLeftrightarrow')");
+
+Page(!"AMS");
+  Group(1,  0,  0,  2,13, 23, 23, "%B\Bitmaps\Gui\Ams1.bmp");
+    Item(!"hbar",!"Ins('\hbar')");
+    Item(!"hslash",!"Ins('\hslash')");
+    Item(!"backprime",!"Ins('\backprime')");
+    Item(!"varnothing",!"Ins('\varnothing')");
+    Item(!"vartriangle",!"Ins('\vartriangle')");
+    Item(!"triangledown",!"Ins('\triangledown')");
+    Item(!"circledS",!"Ins('\circledS')");
+    Item(!"bigstar",!"Ins('\bigstar')");
+    Item(!"angle",!"Ins('\angle')");
+    Item(!"sphericalangle",!"Ins('\sphericalangle')");
+    Item(!"measuredangle",!"Ins('\measuredangle')");
+    Item(!"nexists",!"Ins('\nexists')");
+    Item(!"Game",!"Ins('\Game')");
+    Item(!"blacktriangle",!"Ins('\blacktriangle')");
+    Item(!"blacktriangledown",!"Ins('\blacktriangledown')");
+    Item(!"square",!"Ins('\square')");
+    Item(!"blacksquare",!"Ins('\blacksquare')");
+    Item(!"lozenge",!"Ins('\lozenge')");
+    Item(!"blacklozenge",!"Ins('\blacklozenge')");
+    Item(!"complement",!"Ins('\complement')");
+    Item(!"mho",!"Ins('\mho')");
+    Item(!"eth",!"Ins('\eth')");
+    Item(!"Finv",!"Ins('\Finv')");
+    Item(!"diagup",!"Ins('\diagup')");
+    Item(!"diagdown",!"Ins('\diagdown')");
+    Item(!"Bbbk",!"Ins('\Bbbk')");
+  Group(1,  0, 10,  2,12, 23, 23, "%B\Bitmaps\Gui\Ams2.bmp");
+    Item(!"dotplus",!"Ins('\dotplus')");
+    Item(!"smallsetminus",!"Ins('\smallsetminus')");
+    Item(!"ltimes",!"Ins('\ltimes')");
+    Item(!"rtimes",!"Ins('\rtimes')");
+    Item(!"Cap",!"Ins('\Cap')");
+    Item(!"Cup",!"Ins('\Cup')");
+    Item(!"boxplus",!"Ins('\boxplus')");
+    Item(!"leftthreetimes",!"Ins('\leftthreetimes')");
+    Item(!"rightthreetimes",!"Ins('\rightthreetimes')");
+    Item(!"curlywedge",!"Ins('\curlywedge')");
+    Item(!"curlyvee",!"Ins('\curlyvee')");
+    Item(!"circleddash",!"Ins('\circleddash')");
+    Item(!"barwedge",!"Ins('\barwedge')");
+    Item(!"veebar",!"Ins('\veebar')");
+    Item(!"doublebarwedge",!"Ins('\doublebarwedge')");
+    Item(!"boxminus",!"Ins('\boxminus')");
+    Item(!"boxtimes",!"Ins('\boxtimes')");
+    Item(!"boxdot",!"Ins('\boxdot')");
+    Item(!"circledast",!"Ins('\circledast')");
+    Item(!"circledcirc",!"Ins('\circledcirc')");
+    Item(!"centerdot",!"Ins('\centerdot')");
+    Item(!"divideontimes",!"Ins('\divideontimes')");
+    Item(!"intercal",!"Ins('\intercal')");
+    Item(!"Space",!"Ins(' ')");
+  Group(1,  0, 10,  2, 2, 23, 23, "%B\Bitmaps\Gui\Ams3.bmp");
+    Item(!"blacktriangleleft",!"Ins('\blacktriangleleft')");
+    Item(!"blacktriangleright",!"Ins('\blacktriangleright')");
+    Item(!"therefore",!"Ins('\therefore')");
+    Item(!"because",!"Ins('\because')");
+Page(!"AMS  =<>");
+  Group(1,  0,  0,  2,11, 23, 23, "%B\Bitmaps\Gui\AmsRel1.bmp");
+    Item(!"leqq",!"Ins('\leqq')");
+    Item(!"geqq",!"Ins('\geqq')");
+    Item(!"leqslant",!"Ins('\leqslant')");
+    Item(!"geqslant",!"Ins('\geqslant')");
+    Item(!"eqslantless",!"Ins('\eqslantless')");
+    Item(!"eqslantgtr",!"Ins('\eqslantgtr')");
+    Item(!"lesssim",!"Ins('\lesssim')");
+    Item(!"gtrsim",!"Ins('\gtrsim')");
+    Item(!"lessapprox",!"Ins('\lessapprox')");
+    Item(!"gtrapprox",!"Ins('\gtrapprox')");
+    Item(!"approxeq",!"Ins('\approxeq')");
+    Item(!"lessdot",!"Ins('\lessdot')");
+    Item(!"gtrdot",!"Ins('\gtrdot')");
+    Item(!"lll",!"Ins('\lll')");
+    Item(!"ggg",!"Ins('\ggg')");
+    Item(!"lessgtr",!"Ins('\lessgtr')");
+    Item(!"gtrless",!"Ins('\gtrless')");
+    Item(!"lesseqgtr",!"Ins('\lesseqgtr')");
+    Item(!"gtreqless",!"Ins('\gtreqless')");
+    Item(!"lesseqqgtr",!"Ins('\lesseqqgtr')");
+    Item(!"gtreqqless",!"Ins('\gtreqqless')");
+    Item(!"doteqdot",!"Ins('\doteqdot')");
+  Group(1,  0,  0,  2,11, 23, 23, "%B\Bitmaps\Gui\AmsRel2.bmp");
+    Item(!"eqcirc",!"Ins('\eqcirc')");
+    Item(!"risingdotseq",!"Ins('\risingdotseq')");
+    Item(!"circeq",!"Ins('\circeq')");
+    Item(!"fallingdotseq",!"Ins('\fallingdotseq')");
+    Item(!"triangleq",!"Ins('\triangleq')");
+    Item(!"backsim",!"Ins('\backsim')");
+    Item(!"thicksim",!"Ins('\thicksim')");
+    Item(!"backsimeq",!"Ins('\backsimeq')");
+    Item(!"thickapprox",!"Ins('\thickapprox')");
+    Item(!"subseteqq",!"Ins('\subseteqq')");
+    Item(!"supseteqq",!"Ins('\supseteqq')");
+    Item(!"Subset",!"Ins('\Subset')");
+    Item(!"Supset",!"Ins('\Supset')");
+    Item(!"sqsubset",!"Ins('\sqsubset')");
+    Item(!"sqsupset",!"Ins('\sqsupset')");
+    Item(!"preccurlyeq",!"Ins('\preccurlyeq')");
+    Item(!"succcurlyeq",!"Ins('\succcurlyeq')");
+    Item(!"curlyeqprec",!"Ins('\curlyeqprec')");
+    Item(!"curlyeqsucc",!"Ins('\curlyeqsucc')");
+    Item(!"precsim",!"Ins('\precsim')");
+    Item(!"succsim",!"Ins('\succsim')");
+    Item(!"precapprox",!"Ins('\precapprox')");
+  Group(1,  0,  0,  2, 9, 23, 23, "%B\Bitmaps\Gui\AmsRel3.bmp");
+    Item(!"succapprox",!"Ins('\succapprox')");
+    Item(!"vartriangleleft",!"Ins('\vartriangleleft')");
+    Item(!"vartriangleright",!"Ins('\vartriangleright')");
+    Item(!"trianglelefteq",!"Ins('\trianglelefteq')");
+    Item(!"trianglerighteq",!"Ins('\trianglerighteq')");
+    Item(!"vDash",!"Ins('\vDash')");
+    Item(!"Vdash",!"Ins('\Vdash')");
+    Item(!"Vvdash",!"Ins('\Vvdash')");
+    Item(!"smallsmile",!"Ins('\smallsmile')");
+    Item(!"smallfrown",!"Ins('\smallfrown')");
+    Item(!"bumpeq",!"Ins('\bumpeq')");
+    Item(!"Bumpeq",!"Ins('\Bumpeq')");
+    Item(!"shortmid",!"Ins('\shortmid')");
+    Item(!"shortparallel",!"Ins('\shortparallel')");
+    Item(!"between",!"Ins('\between')");
+    Item(!"pitchfork",!"Ins('\pitchfork')");
+    Item(!"varpropto",!"Ins('\varpropto')");
+    Item(!"backepsilon",!"Ins('\backepsilon')");
+
+Page(!"AMS NOT =<>");
+  Group(1,  0,  0,  2,10, 23, 23, "%B\Bitmaps\Gui\AmsNegRel1.bmp");
+    Item(!"nless",!"Ins('\nless')");
+    Item(!"ngtr",!"Ins('\ngtr')");
+    Item(!"nleq",!"Ins('\nleq')");
+    Item(!"ngeq",!"Ins('\ngeq')");
+    Item(!"nleqslant",!"Ins('\nleqslant')");
+    Item(!"ngeqslant",!"Ins('\ngeqslant')");
+    Item(!"nleqq",!"Ins('\nleqq')");
+    Item(!"ngeqq",!"Ins('\ngeqq')");
+    Item(!"lneq",!"Ins('\lneq')");
+    Item(!"gneq",!"Ins('\gneq')");
+    Item(!"lneqq",!"Ins('\lneqq')");
+    Item(!"gneqq",!"Ins('\gneqq')");
+    Item(!"lvertneqq",!"Ins('\lvertneqq')");
+    Item(!"gvertneqq",!"Ins('\gvertneqq')");
+    Item(!"lnsim",!"Ins('\lnsim')");
+    Item(!"gnsim",!"Ins('\gnsim')");
+    Item(!"lnapprox",!"Ins('\lnapprox')");
+    Item(!"gnapprox",!"Ins('\gnapprox')");
+    Item(!"nprec",!"Ins('\nprec')");
+    Item(!"nsucc",!"Ins('\nsucc')");
+  Group(1,  0,  0,  2,10, 23, 23, "%B\Bitmaps\Gui\AmsNegRel2.bmp");
+    Item(!"npreceq",!"Ins('\npreceq')");
+    Item(!"nsucceq",!"Ins('\nsucceq')");
+    Item(!"precneqq",!"Ins('\precneqq')");
+    Item(!"succneqq",!"Ins('\succneqq')");
+    Item(!"precnsim",!"Ins('\precnsim')");
+    Item(!"succnsim",!"Ins('\succnsim')");
+    Item(!"precnapprox",!"Ins('\precnapprox')");
+    Item(!"succnapprox",!"Ins('\succnapprox')");
+    Item(!"nsim",!"Ins('\nsim')");
+    Item(!"ncong",!"Ins('\ncong')");
+    Item(!"nshortmid",!"Ins('\nshortmid')");
+    Item(!"nshortparallel",!"Ins('\nshortparallel')");
+    Item(!"nmid",!"Ins('\nmid')");
+    Item(!"nparallel",!"Ins('\nparallel')");
+    Item(!"nvdash",!"Ins('\nvdash')");
+    Item(!"nvDash",!"Ins('\nvDash')");
+    Item(!"nVdash",!"Ins('\nVdash')");
+    Item(!"nVDash",!"Ins('\nVDash')");
+    Item(!"ntriangleleft",!"Ins('\ntriangleleft')");
+    Item(!"ntriangleright",!"Ins('\ntriangleright')");
+  Group(1,  0,  0,  2, 7, 23, 23, "%B\Bitmaps\Gui\AmsNegRel3.bmp");
+    Item(!"ntrianglelefteq",!"Ins('\ntrianglelefteq')");
+    Item(!"ntrianglerighteq",!"Ins('\ntrianglerighteq')");
+    Item(!"nsubseteq",!"Ins('\nsubseteq')");
+    Item(!"nsupseteq",!"Ins('\nsupseteq')");
+    Item(!"nsubseteqq",!"Ins('\nsubseteqq')");
+    Item(!"nsupseteqq",!"Ins('\nsupseteqq')");
+    Item(!"subsetneq",!"Ins('\subsetneq')");
+    Item(!"supsetneq",!"Ins('\supsetneq')");
+    Item(!"varsubsetneq",!"Ins('\varsubsetneq')");
+    Item(!"varsupsetneq",!"Ins('\varsupsetneq')");
+    Item(!"subsetneqq",!"Ins('\subsetneqq')");
+    Item(!"supsetneqq",!"Ins('\supsetneqq')");
+    Item(!"varsubsetneqq",!"Ins('\varsubsetneqq')");
+    Item(!"varsupsetneqq",!"Ins('\varsupsetneqq')");
+
+End;
+
+____________________________________________________________________

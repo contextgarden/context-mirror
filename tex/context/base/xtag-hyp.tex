@@ -1,0 +1,49 @@
+%D \module
+%D   [       file=xtag-hyp,
+%D        version=2003.11.24,
+%D          title=\CONTEXT\ XML Support,
+%D       subtitle=hyphenation support,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{Context XML Macros (hyphenation)}
+
+%D This filter is kind of obsolete, since \UTF\ is not
+%D limited to \XML.  So, here we only enable \UTF\ support.
+
+\defineXMLenvironment [hyphenations] [language=\currentlanguage,regime=utf,encoding=\defaultencoding]
+  {\startnointerference
+   \defineXMLargument [hyphenation] \hyphenation
+   \language[\XMLop{language}]%
+   \enableregime[\XMLop{regime}]%
+   \enableencoding[\XMLop{encoding}]}
+  {\stopnointerference}
+
+\endinput
+
+% \mainlanguage[nl] \setupbodyfont[pos] \useXMLfilter[utf,hyp]
+%
+% \starttext
+%
+% \hyphenatedword{pati\ediaeresis nten}
+% \hyphenatedword{pati\ediaeresis ntenorganisatie}
+% \hyphenatedword{pati\ediaeresis ntenplatform}
+%
+% \startXMLdata
+%   <hyphenations language='nl' regime='utf'>
+%     <hyphenation>pa-tiën-ten</hyphenation>
+%     <hyphenation>pa-tiën-ten-or-ga-ni-sa-tie</hyphenation>
+%     <hyphenation>pa-tiën-ten-plat-form</hyphenation>
+%   </hyphenations>
+% \stopXMLdata
+%
+% \hyphenatedword{pati\ediaeresis nten}
+% \hyphenatedword{pati\ediaeresis ntenorganisatie}
+% \hyphenatedword{pati\ediaeresis ntenplatform}
+%
+% \stoptext

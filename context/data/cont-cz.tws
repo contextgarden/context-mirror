@@ -357,7 +357,10 @@ var:vzdalenostsloupcu:*dimenze::
 var:vzdalenostokraje:*dimenze::
 var:n:*cislo::
 var:ciselnyprikaz:*\prikaz#1::
+var:textovyprikaz:*\prikaz#1::
 var:split:tolerantni,striktni,velmistriktni,*cislo::
+var:styltextu:normalni,tucne,sklonene,tucnesklonene,opis,kap,male...,*prikaz::
+var:barvatextu:*jmeno::
 ivr:oramovani::
 stopsetup
 
@@ -1654,7 +1657,7 @@ var:horoffset:*dimenze::
 var:offsethlavicky:*dimenze::
 var:pismeno:normalni,tucne,sklonene,tucnesklonene,opis,kap,male...,*prikaz::
 var:barva:*jmeno::
-var:znaceni:zap,vyp,barevne,rastr::
+var:znaceni:zap,vyp,barevne,rastr,text::
 var:misto:vlevo,nastred,vpravo,spodek,vrsek, jednostranne,dvoustranny::
 var:meritko:*dimenze::
 var:nx:*cislo::
@@ -2521,6 +2524,7 @@ var:prikaz:*\prikaz#1::
 var:misto:vlevo,nastred,vpravo::
 var:maxsirka:*dimenze::
 var:neznamyodkaz:prazdne,zadny::
+var:alternativa:a,b,A,B::
 stopsetup
 
 startsetup
@@ -3432,6 +3436,7 @@ startsetup
 com:nastavotoceni:
 typ:vars/:
 var:rotace:*cislo::
+var:misto:normalni,vysoko,prizpusobive,siroky,podlehloubky::
 ivr:nastavoramovani::
 stopsetup
 

@@ -357,7 +357,10 @@ var:columndistance:*dimension::
 var:margindistance:*dimension::
 var:n:*number::
 var:numbercommand:*\command#1::
+var:textcommand:*\command#1::
 var:split:tolerant,strict,verystrict,*number::
+var:textstyle:normal,bold,slanted,boldslanted,type,cap,small...,*command::
+var:textcolor:*name::
 ivr:framed::
 stopsetup
 
@@ -1654,7 +1657,7 @@ var:horoffset:*dimension::
 var:veroffset:*dimension::
 var:style:normal,bold,slanted,boldslanted,type,cap,small...,*command::
 var:color:*name::
-var:marking:on,off,color,screen::
+var:marking:on,off,color,screen,text::
 var:location:left,middle,right,bottom,top, singlesided,doublesided::
 var:scale:*dimension::
 var:nx:*number::
@@ -2521,6 +2524,7 @@ var:command:*\command#1::
 var:location:left,middle,right::
 var:maxwidth:*dimension::
 var:unknownreference:empty,none::
+var:alternative:a,b,A,B::
 stopsetup
 
 startsetup
@@ -3432,6 +3436,7 @@ startsetup
 com:setuprotate:
 typ:vars/:
 var:rotation:*number::
+var:location:normal,high,fit,broad,depth::
 ivr:setupframed::
 stopsetup
 

@@ -8,8 +8,8 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
-%C details. 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
 
 \writestatus{loading}{Context Core Macros / Navigation}
 
@@ -17,14 +17,14 @@
 
 %D Support for interactive document is very present in
 %D \CONTEXT\ and interwoven in many modules. This means that in
-%D this module, where we deal with some common navigational 
-%D features, there will be quite some forward references. 
-%D 
+%D this module, where we deal with some common navigational
+%D features, there will be quite some forward references.
+%D
 %D When I started implementing hypertext support, the macros
 %D were mostly dealing with things related to locations, that
 %D is click in this location and goto that one. The
 %D functionality of many macro depends on the output medium:
-%D paper or screen. The next boolean holds the state: 
+%D paper or screen. The next boolean holds the state:
 
 \newif\iflocation  \def\ifinteractief{\iflocation} % upw comp
 
@@ -33,29 +33,29 @@
 \newbox\locationbox
 
 %D There is no interaction at all unless enabled by saying:
-%D 
+%D
 %D \starttypen
 %D \setupinteraction[state=start]
 %D \stoptypen
-%D 
+%D
 %D The other settings are:
-%D 
+%D
 %D \showsetup{\y!setupinteraction}
-%D 
+%D
 %D In the special driver modules we introduced a switch that
 %D forces page destinations (instead of named ones). We set
-%D this switch here. 
+%D this switch here.
 
-\def\setinteractionparameter#1#2% use with case, no checking done 
+\def\setinteractionparameter#1#2% use with case, no checking done
   {\setvalue{\??ia#1}{#2}}      % pass #2, can be \blabla
 
-\def\resetinteractionparameter#1% use with case, no checking done 
+\def\resetinteractionparameter#1% use with case, no checking done
   {\letvalue{\??ia#1}\empty}
 
 \def\setupinteraction
   {\dosingleargument\dodosetupinteraction}
 
-\def\dodosetupinteraction[#1]% % \dosetupinteraction == special 
+\def\dodosetupinteraction[#1]% % \dosetupinteraction == special
   {\getparameters[\??ia][#1]%
    \doifelse\@@iastatus\v!start
      {\iflocation\else
@@ -67,9 +67,9 @@
         \global\locationfalse
       \fi}%
    \iflocation
-     \setsystemmode  \v!interactie 
+     \setsystemmode  \v!interactie
    \else
-     \resetsystemmode\v!interactie 
+     \resetsystemmode\v!interactie
    \fi
    \dosetuppageview\@@iafocus
    \doifsomething\@@iabereken
@@ -116,22 +116,22 @@
 %D comfortable properties, so we must force some minimal
 %D dimensions. On the other hand button, and here I mean those
 %D pieces of text with fancy outlines and/or backgrounds, often
-%D have fixed, preset dimensions. 
-%D 
+%D have fixed, preset dimensions.
+%D
 %D To make things even worse, if we choose to let the optimal
 %D dimensions depend on the height and depth of a strut, a not
 %D too uncommon practice in \TEX, we have to deal with the fact
 %D that such a strut, set inside a box, is unknown too the
-%D outside world. 
-%D 
-%D The solution lays in passing the strut characteristics in 
-%D a proper way, in our case by applying \type{\presetgoto}: 
-%D 
-%D \starttypen 
+%D outside world.
+%D
+%D The solution lays in passing the strut characteristics in
+%D a proper way, in our case by applying \type{\presetgoto}:
+%D
+%D \starttypen
 %D {some piece of text \presetgoto}
 %D \stoptypen
-%D 
-%D This macro stores the current strut values. 
+%D
+%D This macro stores the current strut values.
 
 \newif\iflocationstrut
 \newif\iflocationsplit
@@ -139,7 +139,7 @@
 \def\resetgoto
   {\globallet\@@ia@@hoogte\!!zeropoint
    \globallet\@@ia@@diepte\!!zeropoint}
- 
+
 \resetgoto
 
 \def\presetgoto
@@ -154,7 +154,7 @@
      \globallet\@@ia@@diepte\@@iadiepte
    \fi}
 
-%D In the macros that deal with making areas into hyperlinks, 
+%D In the macros that deal with making areas into hyperlinks,
 %D we use:
 
 \def\dostartgoto\data#1\start#2\stop#3\dostopgoto
@@ -174,7 +174,7 @@
           \buttonheight\ht0
         \fi
         \ifdim\dp0<\@@ia@@diepte\relax
-          \dimen0=\@@ia@@diepte\relax % = ! 
+          \dimen0=\@@ia@@diepte\relax % = !
         \else
           \dimen0\dp0
         \fi
@@ -183,28 +183,28 @@
           {\lower\dimen0\hbox
              {\mindermeldingen
               \dimen0=.5\wd0 % direct skipping is faster of course
-              \advance\dimen0 -.5\buttonwidth % buts this is nicer 
+              \advance\dimen0 -.5\buttonwidth % buts this is nicer
               \hskip\dimen0#2#3}}% when visualizing things
-        \naturalhbox % needed for omega / moved from plus-omg  
+        \naturalhbox % needed for omega / moved from plus-omg
           {\ifreversegoto
              \dimen0\wd0\box0\kern-\dimen0\smashbox2\box2\kern\dimen0
-           \else 
+           \else
              \smashbox2\box2\box0
            \fi}%
         \resetgoto}%
    \fi}
 
-%D The secondary references are processed but not typeset. The 
-%D special driver must collect the data needed. 
+%D The secondary references are processed but not typeset. The
+%D special driver must collect the data needed.
 
 %D The width of the active area depends on the dimensions
 %D preset, the actual dimens and/or the height and depth of the
-%D strut. 
-%D 
+%D strut.
+%D
 %D Normally the hyper active area is laid on top of the text.
 %D This enables stacking hyperlinks on top of each other. When,
 %D for some reason the opposite is prefered, one can use the
-%D next boolean to signal this wish. 
+%D next boolean to signal this wish.
 
 \newif\ifreversegoto \reversegotofalse
 
@@ -213,11 +213,11 @@
 %D possibly click. We've already seen a few macros that deal
 %D with this visualization, something we definitely do not let
 %D up to the viewer. One way of telling is using a distinctive
-%D typeface, another way is using color. 
-%D 
+%D typeface, another way is using color.
+%D
 %D There are two colors involved: one for normal hyperlinks,
 %D and one for those that point to the currentpage, the
-%D contrast color. 
+%D contrast color.
 
 \definecolor [interactioncolor]         [r=0,  g=.6, b=0]
 \definecolor [interactioncontrastcolor] [r=.8, g=0,  b=0]
@@ -228,7 +228,7 @@
 %D The next few macros are responsible for highlighting hyper
 %D links. The first one, \type{\showlocation}, is used in those
 %D situations where the typeface is handled by the calling
-%D macro. 
+%D macro.
 
 \def\interactioncolor
   {\iflocation
@@ -244,7 +244,7 @@
 \def\showlocation#1%
   {\iflocation\color[\@@iakleur]{#1\presetgoto}\else#1\fi}
 
-%D When local color settings are to be used, we can use the 
+%D When local color settings are to be used, we can use the
 %D next macro, where \type{#1} is a tag like \type{\??tg} and
 %D \type{#2} some text.
 
@@ -255,8 +255,8 @@
      #2%
    \fi}
 
-%D When we're dealing with pure page references, contrast 
-%D colors are used when we are already at the page mentioned. 
+%D When we're dealing with pure page references, contrast
+%D colors are used when we are already at the page mentioned.
 
 \def\showcontrastlocation#1#2#3% the \@EA is needed
   {\iflocation
@@ -272,15 +272,15 @@
    \fi}
 
 %D The next simple macro can be used in color specifications,
-%D like \type{\color[\locationcolor{green}]}. 
+%D like \type{\color[\locationcolor{green}]}.
 
 \def\locationcolor#1%
   {\iflocation#1\fi}
 
-%D More tokens are spend when we want both typeface and color 
-%D highlighting. 
+%D More tokens are spend when we want both typeface and color
+%D highlighting.
 
-\def\dolocationattributes#1#2#3#4% 
+\def\dolocationattributes#1#2#3#4%
   {\bgroup
    \let\fontattribute\empty
    \let\colorattribute\empty
@@ -296,7 +296,7 @@
 \def\navigating
   {\dolocationattributes\??ia\c!letter\c!kleur}
 
-%D Although not decently supported in current viewers, a 
+%D Although not decently supported in current viewers, a
 %D provisory hiding mechanims is implemented. Areas marked as
 %D such, are visible on screen, but invisible on paper. Don't
 %D trust this mechanism yet!
@@ -309,7 +309,7 @@
 \let\startinteractie = \relax
 \let\stopinteractie  = \relax
 
-% in the future: 
+% in the future:
 %
 % eerst boolean invoeren bij menu, achtergrond, balk, button
 % enz; verder startinteractie een argument meegeven {#1} ->
@@ -321,11 +321,11 @@
    \ifnum\normalmonth<10 0\fi\the\normalmonth
    \ifnum\normalday  <10 0\fi\the\normalday}
 
-% happens in core-fld 
+% happens in core-fld
 %
-% \definereference [AtOpenInitializeForm] [\v!geen] 
+% \definereference [AtOpenInitializeForm] [\v!geen]
 
-\setupinteraction % start fit page and reset form 
+\setupinteraction % start fit page and reset form
   [\c!status=\v!stop,
    \c!pagina=\v!nee,
    \c!klik=\v!ja,
@@ -345,15 +345,15 @@
    \c!strut=\v!ja,
    \c!splitsen=\v!ja,
    \c!kleur=interactioncolor,
-   \c!contrastkleur=interactioncontrastcolor,  
+   \c!contrastkleur=interactioncontrastcolor,
    \c!symboolset=,
    \c!breedte=1em,
    \c!hoogte=\!!zeropoint,
    \c!diepte=\!!zeropoint,
-   \c!titel=\jobname, % needed for fdf/x 
+   \c!titel=\jobname, % needed for fdf/x
    \c!subtitel=,
    \c!auteur=,
    \c!trefwoord=,
    \c!datum=\@@iatimestamp]
 
-\protect \endinput 
+\protect \endinput

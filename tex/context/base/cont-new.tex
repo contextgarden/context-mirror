@@ -15,11 +15,315 @@
 %D excellent place for hacks, patches, extensions and new
 %D features.
 
+% todo: mp-new
 \unprotect
 
 \writestatus{\m!systems}{beware: some patches loaded from cont-new.tex!}
+
+% todo : test low level translation (nl->en) and optimize script
 
-\def\showsetupsdefinition[#1]{\showvalue{\??su:#1}}
+% \readfile{cont-exp}\donothing\donothing % speed up (5-20%)
+
+\def\doiffontcharelse#1#2%
+  {\bgroup
+   \definedfont[#1]%
+   \iffontchar\font#2\relax
+     \egroup\expandafter\firstoftwoarguments
+   \else
+     \egroup\expandafter\secondoftwoarguments
+   \fi}
+
+\unexpanded\def\asciistr#1{\convertargument#1\to\ascii{\verbatimfont\ascii}}
+
+\def\shapedhbox                  % lines with non strutted dimensions have
+  {\expanded{\dowithnextbox      % interlineskip so if we want the original
+     {\nextboxht\the\ht\shapebox % spacing, we need to preserve the original
+      \nextboxdp\the\dp\shapebox % height and depth which is definitely
+      \noexpand\flushnextbox}}   % needed if we apply struts to the 'new'
+   \normalhbox}                  % box or do something that changed ist size
+
+\def\inrightmargin#1% new: hsize correction
+  {\pushindentation
+   \rlap
+     {\hskip\tekstbreedte
+      %\hskip-\hsize
+      %\hskip\hsize
+      \hskip-\rightskip
+      \hskip\rechtermargeafstand
+      \hsize\rechtermargebreedte
+      #1}%
+   \popindentation
+   \ignorespaces}
+
+\def\rechtermargetekstblok#1% new: hsize correction
+  {\maakmargetekstblok \rightmargintextwidth \v!rechts \v!links
+     {\hskip\margetekstafstand\hskip\tekstbreedte\hskip-\hsize }{\rlap{\plaatsmargetekstscheider}}
+     {#1}}
+
+\def\douniqueMPpagegraphic#1#2%
+  {\blabelgroup
+   \let\overlaystamp\overlaypagestamp
+   \setupMPvariables[\MPpageprefix#1][#2]% prefix is new here
+   \getvalue{\@@MPG\MPpageprefix#1}{}%
+   \elabelgroup}
+
+\prependtoks \setnormalcatcodes  \to \everyTEXinputmode
+\appendtoks  \processingXMLfalse \to \everyTEXinputmode
+
+\let\normalenableXML\enableXML % some day we move the normal \enableXML into the toks
+
+\prependtoks \normalenableXML    \to \everyXMLinputmode
+\appendtoks  \processingXMLtrue  \to \everyXMLinputmode
+
+\def\enableXML {\setinputmode[XML]}
+\def\disableXML{\setinputmode[TEX]}
+
+\def\checkvariables
+  {\dodoubleargument\docheckvariables}
+
+\def\docheckvariables
+  {\dogetparameters\docheckrawvalue}
+
+\def\docheckrawvalue#1#2#3%
+  {\doifundefined   {\??vars:#1:#2}{\setvalue{\??vars:#1:#2}{#3}}
+  {\doifvaluenothing{\??vars:#1:#2}{\setvalue{\??vars:#1:#2}{#3}}}}
+
+\beginTEX
+
+  % else the skip aborts the reshape process
+
+  \def\shapefill{\vskip\onepoint\!!plus\lineheight\!!minus\lineheight\relax}
+
+\endTEX
+
+\beginETEX
+
+  \def\shapefill{\vskip\zeropoint\!!plus\lineheight\!!minus\lineheight\relax}
+
+\endETEX
+
+\beginETEX \lastnodetype
+
+\def\dodoreshapebox#1#2#3#4% \shapebox, \shapepenalty, \shapekern, \shapeskip
+  {\ifnum\lastnodetype=\@@gluenode % \ifcase\lastskip % \ifdim\lastskip=\zeropoint\relax
+     \shapeskip\lastskip
+     \global\setbox\tmpshapebox\normalvbox{#4\unvbox\tmpshapebox}%
+     \unskip
+   \else\ifnum\lastnodetype=\@@kernnode % \ifcase\lastkern % \ifdim\lastkern=\zeropoint\relax
+     \shapekern\lastkern
+     \global\setbox\tmpshapebox\normalvbox{#3\unvbox\tmpshapebox}%
+     \unkern
+   \else\ifnum\lastnodetype=\@@penaltynode % \ifcase\lastpenalty % \ifnum\lastpenalty=\zerocount
+     \shapepenalty\lastpenalty
+     \global\setbox\tmpshapebox\normalvbox{#2\unvbox\tmpshapebox}%
+     \unpenalty
+   \else
+     \setbox\shapebox\lastbox
+     \ifvoid\shapebox
+       \unskip\unpenalty\unkern
+     \else
+       \ifdim\wd\shapebox=\shapesignal\relax
+         \exitloop
+       \else
+         \shapecounter\zerocount
+         \global\setbox\tmpshapebox\normalvbox{#1\unvbox\tmpshapebox}%
+       \fi
+     \fi
+   \fi\fi\fi
+   \ifnum\shapecounter>100 % can be less
+     \message{<<forced exit from shapebox>>}%
+     \global\setbox\tmpshapebox\copy\oldshapebox
+     \exitloop
+   \else
+     \advance\shapecounter \plusone
+   \fi}
+
+\endETEX
+
+\let\normaltype\type
+
+\beginTEX
+
+  \unexpanded\def\retype#1{\bgroup\convertargument#1\to\ascii\@EA\normaltype\@EA{\ascii}\egroup}
+
+\endTEX
+
+\beginETEX
+
+  \unexpanded\def\retype#1{\scantokens{\normaltype{#1}}}
+
+\endETEX
+
+\def\simplifytype{\let\type\retype}
+
+% \ruledhbox
+%   {\startignorespaces
+%      \def\oeps{a}
+%      \startignorespaces
+%        \def\oeps{a}
+%      \stopignorespaces
+%      \def\oeps{a}
+%    \stopignorespaces
+%    \oeps}
+
+\newsignal\boissignal
+\newcount \boislevel
+
+\long\def\startignorespaces
+  {\advance\boislevel\plusone
+   \ifcase\boislevel\or \ifhmode
+     \hskip\boissignal
+   \fi \fi
+   \ignorespaces}
+
+\long\def\stopignorespaces
+  {\ifcase\boislevel\or \ifhmode
+    \doloop
+      {\ifdim\lastskip=\zeropoint
+         \exitloop
+       \else\ifdim\lastskip=\boissignal
+         \unskip
+         \exitloop
+       \else
+         \unskip
+       \fi\fi}%
+   \fi \fi
+   \advance\boislevel\minusone}
+
+\defineblankmethod [\v!synchroniseer] {\verticalstrut\vskip-2\lineheight\verticalstrut}
+
+% \vtop{\blank[synchronize]\blank[line]test}
+
+\def\minimalhbox#1#%
+  {\dowithnextbox
+     {\bgroup
+      \setbox\scratchbox\hbox#1{\hss}%
+      \ifdim\nextboxwd<\wd\scratchbox\nextboxwd\wd\scratchbox\fi
+      \flushnextbox
+      \egroup}
+     \hbox}
+
+% manual
+%
+% externfiguur     -> grid        =ja|hoogte|diepte|halveregel|passend -> helemaal in details
+% stelplaatsblokin -> zijuitlijnen=hoogte|diepte|regel|halveregel|grid -> halveregel in 'details'
+
+% TODO: TEST FIRST, NO CORRECTION NEEDED IN GRID MODE, EVT OPTION
+
+\def\OTRONEsomeherefloat[#1]% spacing between two successive must be better
+  {\baselinecorrection                           % not really needed in grid mode:
+  %\ifgridsnapping \else \baselinecorrection \fi % ! ! ! test test test ! ! ! !
+   \doplacefloatbox
+   \doinsertfloatinfo
+   \dochecknextindentation\??bk}
+
+% todo: switch koppelen aan par scheelt pos
+
+% to be documented: \startspread .. \stopspread
+
+% to be documented primarydef p crossed d
+% to be documented PlainTextArea
+
+% manual
+%
+% Sometimes the demands are getting pretty weird:
+%
+% \startitemize
+%   \item test
+%   \item test
+%   \headsym{xx} test \par test
+% \stopitemize
+
+\beginETEX \lastnodetype
+
+\def\removeunwantedspaces
+  {\ifhmode
+     \doloop{\ifnum\lastnodetype=\@@gluenode\unskip\else\exitloop\fi}%
+   \fi}
+
+\endETEX
+
+% \def\dodimchoice#1#2#3%
+%   {\ifx#3\relax
+%      #1\@EA\gobbleuntilrelax
+%    \else\ifdim#1#2%
+%      #3\@EAEAEA\gobbleuntilrelax
+%    \else
+%      \@EAEAEA\dodimchoice
+%    \fi\fi{#1}}
+
+% \def\donumchoice#1#2#3%
+%   {\ifx#3\relax
+%      #1\@EA\gobbleuntilrelax
+%    \else\ifnum#1#2%
+%      #3\@EAEAEA\gobbleuntilrelax
+%    \else
+%      \@EAEAEA\dodimchoice
+%    \fi\fi{#1}}
+
+% \def\dimchoice#1#2{\dodimchoice{#1}#2\empty\relax}
+% \def\numchoice#1#2{\donumchoice{#1}#2\empty\relax}
+
+\def\gobbleuntilempty#1\empty{}
+
+\def\dodimchoice#1#2#3%
+  {\ifdim#1#2%
+     #3\@EA\gobbleuntilempty
+   \else
+     \@EA\dodimchoice
+   \fi{#1}}
+
+\def\donumchoice#1#2#3%
+  {\ifnum#1#2%
+     #3\@EA\gobbleuntilempty
+   \else
+     \@EA\dodimchoice
+   \fi{#1}}
+
+\def\dimchoice#1#2{\dodimchoice{#1}#2{=#1}{#1}\empty}
+\def\numchoice#1#2{\donumchoice{#1}#2{=#1}{#1}\empty}
+
+% \the\dimexpr(\dimchoice {7pt}{{<10pt}{8pt}{<12pt}{9pt}{<15pt}{10pt}{=11pt}{12pt}})
+% \the\dimexpr(\dimchoice{11pt}{{<10pt}{8pt}{<12pt}{9pt}{<15pt}{10pt}{=11pt}{12pt}})
+% \the\dimexpr(\dimchoice{14pt}{{<10pt}{8pt}{<12pt}{9pt}{<15pt}{10pt}{=11pt}{12pt}})
+
+\def\showsetupsdefinition[#1]{\showvalue{\??su:#1}} % temp hack for debugging
+
+% documentation : \setupregister[alternative=a|b|A|B]
+
+\def\pushXMLmeaning#1%
+  {\@EA\pushmacro\csname\@@XMLelement:#1/\endcsname
+   \@EA\pushmacro\csname\@@XMLelement:#1\endcsname
+   \@EA\pushmacro\csname\@@XMLelement:/#1\endcsname}
+
+\def\popXMLmeaning#1%
+  {\@EA\popmacro\csname\@@XMLelement:#1/\endcsname
+   \@EA\popmacro\csname\@@XMLelement:#1\endcsname
+   \@EA\popmacro\csname\@@XMLelement:/#1\endcsname}
+
+\def\defineXMLstore {\doquadrupleargument\dodefineXMLstore[\saveXMLasdata]}
+\def\defineXMLgstore{\doquadrupleargument\dodefineXMLstore[\gsaveXMLasdata]}
+
+\def\dodefineXMLstore[#1][#2][#3][#4]% element attribute prefix % will become faster
+  {\defineXMLargument[#2][#3=\s!dummy]{#1{#4:\XMLop{#3}}}}
+
+\def\countXMLchildren[#1]#2%
+  {\startnointerference
+     \doglobal\newcounter\nofXMLchildren
+     \defineXMLargument[#1]{\doglobal\increment\nofXMLchildren}%
+     \startXMLignore
+       #2%
+     \stopXMLignore
+   \stopnointerference}
+
+\unprotected \def\traceposstring#1#2#3%
+  {\iftracepositions
+     \smashedhbox%
+       {#1{\infofont#2#3}%
+        \scratchdimen.5\points
+        \kern-2\scratchdimen
+        \vrule\!!width4\scratchdimen\!!height\scratchdimen\!!depth\scratchdimen}%
+   \fi}
 
 % will be a MyWay
 %
@@ -61,7 +365,23 @@
 
 % new, continuous blocks, \som \par \startdoorlopendblok ...
 
-\def\startdoorlopendblok % fo rspecial cases, don't change it too much
+% \startitemize
+%   \item                                      bagger
+%   \item                                      bagger
+%   \item          \startdoorlopendblok        bagger \stopdoorlopendblok
+%   \item \endgraf \startdoorlopendblok        bagger \stopdoorlopendblok
+%   \item \endgraf \startdoorlopendblok \strut bagger \stopdoorlopendblok
+%   \item \startdoorlopendblok
+%         \starttabulate
+%         \NC test \NC test \NC \NR
+%         \NC test \NC test \NC \NR
+%         \NC test \NC test \NC \NR
+%         \stoptabulate
+%         \stopdoorlopendblok
+%   \item test
+% \stopitemize
+
+\def\startdoorlopendblok % for special cases, don't change it too much and don't rely on it
   {\ifhmode\endgraf\nobreak\fi % don't remove the \nobreak
    \dowithnextboxcontent
      {\setlocalhsize \hsize\localhsize \forgetall}
@@ -81,28 +401,24 @@
          \nobreak
          \advance\noflines\minusone
          \dorecurse\noflines{\crlf\nobreak}}%
-         \verticalstrut
-         \endgraf
-         \nobreak
-         \offinterlineskip
-         \kern-2\lineheight
-         \nobreak
-         \unvbox\nextbox
+      \verticalstrut
+      \endgraf
+      \nobreak
+      \offinterlineskip
+      \kern-2\lineheight % 2\lineheight when no vertical struts in main \vbox
+      \nobreak
+      \unvbox\nextbox
       \prevdepth\strutdepth
       % evt (eerst testen) een signal zodat een direct volgend blok goed gaat)
       \egroup}
      \vbox\bgroup
+       \vskip-\lineheight \verticalstrut\endgraf
        \insidefloattrue
-       \inhibitblank}
+       \doinhibitblank} % beware, no \inhibitblank ! ! ! ! ! !
 
 \def\stopdoorlopendblok
-  {\egroup}
-
-\def\defineXMLstore {\doquadrupleargument\dodefineXMLstore[\saveXMLasdata]}
-\def\defineXMLgstore{\doquadrupleargument\dodefineXMLstore[\gsaveXMLasdata]}
-
-\def\dodefineXMLstore[#1][#2][#3][#4]% element attribute prefix % will become faster
-  {\defineXMLargument[#2][#3=\s!dummy]{#1{#4:\XMLop{#3}}}}
+  {\endgraf\verticalstrut\endgraf\kern-2\lineheight
+   \egroup}
 
 % Just a simple and fast hanger, for usage in macros.
 
@@ -205,15 +521,6 @@
   {\def\@@meta{#1:}%
    \prepareMPvariables{#2}}
 
-\def\countXMLchildren[#1]#2%
-  {\startnointerference
-     \doglobal\newcounter\nofXMLchildren
-     \defineXMLargument[#1]{\doglobal\increment\nofXMLchildren}%
-     \startXMLignore
-       #2%
-     \stopXMLignore
-   \stopnointerference}
-
 \def\processlinetableXMLfile#1%
   {\bgroup
    \let\startlinetable\donothing
@@ -301,45 +608,6 @@
      #4\expandafter{\the\!!widtha}}
 
 % so far
-
-% test this prikkels/pascal margin text before heads (mode
-% 1) as well as uitwerkingen (mode 2)
-
-%chardef\graphicvadjustmode=0 % fake
-%chardef\graphicvadjustmode=1 % normal
-\chardef\graphicvadjustmode=2 % normal + compensate (== default)
-
-\def\placemargintexts % to be documented and translated
-  {\ifcase\margincontent\else
-     \bgroup
-       \chardef\graphicvadjustmode\zerocount
-       \doflushmargincontents
-     \egroup
-   \fi}
-
-\def\graphicvadjust % bad, those low level color calls here
-  {\dowithnextboxcontent
-     {\forgetall}
-     {\ifcase\graphicvadjustmode \@EA \fakedvadjust \else \@EA\normalvadjust \fi
-        {\dostartgraphicgroup
-         \localstarttextcolor
-         \unvbox\nextbox
-         \localstoptextcolor
-         \dostopgraphicgroup
-         \ifcase\graphicvadjustmode \or \or
-           % corrects for one line paragraphs
-           \nointerlineskip
-           \kern-\struttotal
-           \nointerlineskip
-           \verticalstrut
-         \fi}}%
-     \vbox}
-
-\def\removefunnytabulateline
-  {\ifhmode
-     \strut\crcr
-     \TABLEnoalign{\kern-\lineheight}%
-   \fi}
 
 % between alignment lines certain rules apply, and even a
 % simple test can mess up a table, which is why we have a
@@ -797,60 +1065,7 @@
 \def\gobbleparameters{\doquadrupleempty\dogobbleparameters}
 \def\dogobbleparameters[#1][#2][#3][#4]{}
 
-\def\defineTABLEdivisions
-  {\global\TABLEdivisionfalse % in start
-   \let\DL\TableDL
-   \let\DC\TableDC
-   \let\DV\TableDV
-   \let\DR\TableDR}
-
-\def\defineTABLErules
-  {\let\VL\TableVL
-   \let\VC\TableVC
-   \let\HL\TableHL
-   \let\HC\TableHC
-   \let\VS\TableVS
-   \let\VD\TableVD
-   \let\VT\TableVT}
-
-\def\TableVS{\gdef\@VLn{1}\VL}
-\def\TableVD{\gdef\@VLn{2}\VL}
-\def\TableVT{\gdef\@VLn{3}\VL}
-
-\def\@VLn{1}
-\def\@VLd{.125em}
-
-\def\do!ttInsertVrule % will be merged in 2005
-  {\vrule \!thWidth
-   \ifnum\!tgCode=1
-     \ifx\!tgValue\empty
-       \LineThicknessFactor
-     \else
-       \!tgValue
-     \fi
-     \LineThicknessUnit
-   \else
-     \!tgValue
-   \fi
-   \hskip\@VLd}
-
-\def\!ttInsertVrule%
-  {\hfil
-   \TABLEbeforebar % added
-   \startglobalTABLEcolor % added
-   % we could do without this speedup, some day merge 'm
-   \ifcase\@VLn\or
-     \do!ttInsertVrule
-     \unskip
-   \else
-     \dorecurse\@VLn\do!ttInsertVrule
-     \gdef\@VLn{1}%
-     \unskip
-   \fi
-   \stopglobalTABLEcolor % added
-   \TABLEafterbar % added
-   \hfil
-   &}
+% documentation
 
 % \starttable[|||]
 % \HL

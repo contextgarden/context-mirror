@@ -1,29 +1,29 @@
-% interface=en 
+% interface=en
 
 %M \usemodule [contml] \autoXMLnamespace [context]
 %M \definefilesynonym [context] [x-contml.xsd]
 
 %D \module
 %D   [       file=x-contml,
-%D        version=mid 2001, 
+%D        version=mid 2001,
 %D          title=\CONTEXT\ XML Support,
-%D       subtitle=Basic \CONTEXT\ commands, 
+%D       subtitle=Basic \CONTEXT\ commands,
 %D         author=Hans Hagen,
 %D           date=\currentdate,
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
-%C details. 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
 
-% This module provides some basic \XML\ elements. These definitions 
-% are highly experimental and serve as a playground for interface 
+% This module provides some basic \XML\ elements. These definitions
+% are highly experimental and serve as a playground for interface
 % development.
 
 \unprotect
 
 %D \elements {include}
-%D 
+%D
 %D \startbuffer
 %D You can include another file in the current document with the
 %D <element>include</element> element. When including the file, &context;
@@ -56,7 +56,7 @@
 %D
 %D \showelements [context] [compound]
 
-\let\normalcompound=|
+\ifx\normalcompound\undefined \let\normalcompound=| \fi
 
 % \defineXMLsingular [context:compound] [token=]
 %   {\expanded{\normalcompound\XMLop{token}}|}
@@ -89,10 +89,10 @@
 %D \elements {pageref,textref,lineref}
 %D
 %D \startbuffer
-%D You can ask for a page (<pageref label="lastpage">the last pagenumber 
+%D You can ask for a page (<pageref label="lastpage">the last pagenumber
 %D is</pageref> aka page <pageref label="lastpage"/>), text or line reference
-%D with the following three elements. The label may be any valid &context; 
-%D reference label. 
+%D with the following three elements. The label may be any valid &context;
+%D reference label.
 %D \stopbuffer
 %D
 %D \showelements [context] [references]
@@ -145,9 +145,9 @@
 %D \elements {verbatim,typing,line,verb,type}
 %D
 %D \startbuffer
-%D Although the following method can be used to typeset a piece of code 
+%D Although the following method can be used to typeset a piece of code
 %D verbatim
-%D 
+%D
 %D <![CDATA[
 %D Dit \is nogal verbatim !
 %D Dit is {nogal} verbatim !
@@ -164,7 +164,7 @@
 %D \stopbuffer
 %D
 %D The element to tag in<compound/>line verbatim is <type><verb></type>.
-%D 
+%D
 %D \showelements [context] [verbatim]
 
 \defineXMLenvironment [context:verbatim]
@@ -182,10 +182,10 @@
 %D \elements {itemize,item}
 %D
 %D \startbuffer
-%D Itemized lists are quite common in documents, al least in the ones that 
-%D we produce. For the moment we only provide a few options, later we will 
-%D hook it into the &context; attribute handler. 
-%D 
+%D Itemized lists are quite common in documents, al least in the ones that
+%D we produce. For the moment we only provide a few options, later we will
+%D hook it into the &context; attribute handler.
+%D
 %D <itemize type="a">
 %D   <item label="bla"> test </item>
 %D   <item> test </item>
@@ -196,7 +196,7 @@
 %D   <item> test <em>what?</em></item>
 %D </itemize>
 %D \stopbuffer
-%D 
+%D
 %D \showelements [context] [itemize]
 
 \defineXMLenvironment [context:itemize] [type=,packed=]
@@ -215,21 +215,21 @@
 %D \elements {fixed}
 %D
 %D \startbuffer
-%D Something fixed will end up at the place where it defined in the input 
-%D stream. The main idea behind this element is that it gives you control 
-%D over the placement. 
-%D 
+%D Something fixed will end up at the place where it defined in the input
+%D stream. The main idea behind this element is that it gives you control
+%D over the placement.
+%D
 %D <itemize>
-%D   <item> 
+%D   <item>
 %D     <fixed align="high">
 %D       <content>
 %D         <externalfigure file="koe" frame="on" height="1cm" />
 %D       </content>
 %D     </fixed>
-%D   </item> 
+%D   </item>
 %D </itemize>
 %D \stopbuffer
-%D 
+%D
 %D \showelements [context] [fixed]
 
 \defineXMLenvironment [context:fixed] [type=figure,location=,label=]
@@ -248,10 +248,10 @@
 %D \elements {float}
 %D
 %D \startbuffer
-%D A floating body will be placed at the first location available, unless 
-%D a location is specified. As with the <element>fixed</element> element, 
+%D A floating body will be placed at the first location available, unless
+%D a location is specified. As with the <element>fixed</element> element,
 %D you can prvide a caption.
-%D 
+%D
 %D <float type="figure">
 %D   <content>
 %D     <externalfigure file="koe" frame="on" height="3cm" />
@@ -259,7 +259,7 @@
 %D   <caption>This is a cow!</caption>
 %D </float>
 %D \stopbuffer
-%D 
+%D
 %D \showelements [context] [float]
 
 \defineXMLenvironment [context:float] [type=figure,location=here,label=]
@@ -276,17 +276,17 @@
 %D
 %D \startbuffer
 %D The previous examples already demonstrated how we can include a graphic:
-%D 
+%D
 %D <verbatim>
 %D <line><externalfigure file="koe" width="5cm" /></line>
 %D </verbatim>
 %D \stopbuffer
-%D 
+%D
 %D \showelements [context] [externalfigure]
 
 \defineXMLsingular [context:externalfigure] [\??ef] [base=,label=,file=]
   {\bgroup % \getXMLta \expandXMLta \expandXMLtp{file}%
-   \expandXMLta \getXMLta % expand entities first 
+   \expandXMLta \getXMLta % expand entities first
    \doifelsenothing{\XMLtp{label}}
      {\expanded{\externalfigure[\XMLtp{file}][\XMLta]}}
      {\doifsomething{\XMLtp{base}}{\usefigurebase[\XMLtp{base}]}%
@@ -296,11 +296,11 @@
 %D \elements {quotation,quote}
 %D
 %D \startbuffer
-%D There is a (not so) subtle difference between a display 
+%D There is a (not so) subtle difference between a display
 %D <quotation>quotation</quotation> and an <quote>in<compound/>line</quote>
-%D one. 
+%D one.
 %D \stopbuffer
-%D 
+%D
 %D \showelements [context] [table]
 
 \defineXMLgrouped [context:quote]     \quote
@@ -402,10 +402,10 @@
 
 %D \elements {hide}
 %D
-%D \startbuffer 
-%D This is the way to [<hide>this is gone</hide>] something for the 
-%D typesetting engine. Normally this element is only used for testing 
-%D purposes.   
+%D \startbuffer
+%D This is the way to [<hide>this is gone</hide>] something for the
+%D typesetting engine. Normally this element is only used for testing
+%D purposes.
 %D \stopbuffer
 %D
 %D \showelements [context] [tabulate]
@@ -415,22 +415,22 @@
 %D \elements {unknown}
 %D
 %D \startbuffer
-%D We can go on and on and <unknown/> with defining elements that map onto 
+%D We can go on and on and <unknown/> with defining elements that map onto
 %D &context; commands, but why not just use &tex; input syntax then?
 %D \stopbuffer
-%D 
+%D
 %D \showelements [context] [unknown]
 
 \defineXMLsingular [context:unknown] \unknown
 
-%D A (for the moment) private one. 
+%D A (for the moment) private one.
 
 \defineXMLargument [context:element] \type
 
-%D The following common schema definitions apply: 
+%D The following common schema definitions apply:
 %D
 %D {\setupcolors[state=stop]\showXSDcomponent[context][definitions]}
- 
+
 \defineXMLargument [context:chapter] [label=] {\chapter[\XMLop{label}]}
 \defineXMLargument [context:section] [label=] {\section[\XMLop{label}]}
 \defineXMLargument [context:subsection] [label=] {\subsection[\XMLop{label}]}
@@ -448,19 +448,19 @@
 \defineXMLenvironment [context:backmatter]  \startbackmatter  \stopbackmatter
 \defineXMLenvironment [context:appendices]  \startappendices  \stopappendices
 
-\defineXMLargument [context:index] [key=] 
+\defineXMLargument [context:index] [key=]
   {\doifelsenothingXMLop{key}{\index}{\expanded{\index[\XMLop{key}]}}}
 
 % \enableXMLfiledata
 
-% Needed for example (stickers and so): 
+% Needed for example (stickers and so):
 
-\defineXMLenvironment [context:makeup] 
+\defineXMLenvironment [context:makeup]
   \startstandardmakeup \stopstandardmakeup
 
 \protect \endinput
 
-% TO DO 
+% TO DO
 
 \defineXMLenvironment [combination] [columns=2,rows=1]
   {\scratchtoks\emptytoks

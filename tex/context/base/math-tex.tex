@@ -1,6 +1,6 @@
 %D \module
 %D   [       file=math-tex,
-%D        version=2001.04.12, 
+%D        version=2001.04.12,
 %D          title=\CONTEXT\ Math Macros,
 %D       subtitle=Plain Specials,
 %D         author={Hans Hagen \& Taco Hoekwater},
@@ -11,14 +11,14 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-\unprotect 
+\unprotect
 
-\mathcode`\ ="8000 \mathcode`\_="8000 \mathcode`\'="8000 
+\mathcode`\ ="8000 \mathcode`\_="8000 \mathcode`\'="8000
 
 \definefamilysynonym [default] [lcgreek]    [mi]
 \definefamilysynonym [default] [ucgreek]    [mr]
 \definefamilysynonym [default] [vargreek]   [mi]
-%definefamilysynonym [default] [blackboard] [mb] % extra font 
+%definefamilysynonym [default] [blackboard] [mb] % extra font
 
 \startmathcollection [default]
 
@@ -76,7 +76,7 @@
 \definemathsymbol [Mu]      [alpha] [ucgreek] ["4D] % M
 \definemathsymbol [Nu]      [alpha] [ucgreek] ["4E] % N
 \definemathsymbol [Xi]      [alpha] [ucgreek] ["04]
-\definemathsymbol [Omicron] [alpha] [ucgreek] ["4F] % O 
+\definemathsymbol [Omicron] [alpha] [ucgreek] ["4F] % O
 \definemathsymbol [Pi]      [alpha] [ucgreek] ["05]
 \definemathsymbol [Rho]     [alpha] [ucgreek] ["52] % R
 \definemathsymbol [Sigma]   [alpha] [ucgreek] ["06]
@@ -89,8 +89,8 @@
 
 \stopmathcollection
 
-% The \mfunction macro is an alternative for \hbox with a 
-% controlable font switch. 
+% The \mfunction macro is an alternative for \hbox with a
+% controlable font switch.
 
 \startmathcollection[default]
 
@@ -163,9 +163,9 @@
 \definemathcharacter [91]  [open]  [mr] ["5B] % [
 \definemathcharacter [92]  [ord]   [sy] ["6E] % \
 \definemathcharacter [93]  [close] [mr] ["5D] % ]
-\definemathcharacter [123] [open]  [sy] ["66] % { 
-\definemathcharacter [124] [ord]   [sy] ["6A] % | 
-\definemathcharacter [125] [close] [sy] ["67] % } 
+\definemathcharacter [123] [open]  [sy] ["66] % {
+\definemathcharacter [124] [ord]   [sy] ["6A] % |
+\definemathcharacter [125] [close] [sy] ["67] % }
 
 \stopmathcollection
 
@@ -178,12 +178,12 @@
 \definemathcharacter [<]   [nothing] [sy] ["68] [ex] ["0A]
 \definemathcharacter [>]   [nothing] [sy] ["69] [ex] ["0B]
 \definemathcharacter [/]   [nothing] [mr] ["2F] [ex] ["0E]
-\definemathcharacter [124] [nothing] [sy] ["6A] [ex] ["0C] % | 
-\definemathcharacter [92]  [nothing] [sy] ["6E] [ex] ["0F] % \ 
+\definemathcharacter [124] [nothing] [sy] ["6A] [ex] ["0C] % |
+\definemathcharacter [92]  [nothing] [sy] ["6E] [ex] ["0F] % \
 
 \stopmathcollection
 
-\def\PLAINangle%
+\def\PLAINangle
   {{\vbox{\ialign{$\m@th\scriptstyle##$\crcr
     \not\mathrel{\mkern14mu}\crcr
     \noalign{\nointerlineskip}
@@ -207,7 +207,7 @@
 \definemathsymbol [bot]      [nothing] [sy] ["3F]
 
 \definemathcommand [hbar]  {{\mathchar'26\mkern-9muh}}
-\definemathcommand [surd]  {{\mathchar"1270}}          % ? 
+\definemathcommand [surd]  {{\mathchar"1270}}          % ?
 \definemathcommand [angle] {\PLAINangle}
 
 \stopmathcollection
@@ -364,22 +364,22 @@
 \definemathsymbol [leftharpoondown]  [rel] [mi] ["29]
 \definemathsymbol [rightharpoonup]   [rel] [mi] ["2A]
 \definemathsymbol [rightharpoondown] [rel] [mi] ["2B]
-\definemathsymbol [lhook]            [rel] [mi] ["2C] 
+\definemathsymbol [lhook]            [rel] [mi] ["2C]
 \definemathsymbol [rhook]            [rel] [mi] ["2D]
 
 \stopmathcollection
 
-\def\PLAINldots%
+\def\PLAINldots
   {\ldotp\ldotp\ldotp}
 
-\def\PLAINcdots%
+\def\PLAINcdots
   {\cdotp\cdotp\cdotp}
 
-\def\PLAINvdots%
+\def\PLAINvdots
   {\vbox{\baselineskip4\p@ \lineskiplimit\z@
    \kern6\p@\hbox{.}\hbox{.}\hbox{.}}}
 
-\def\PLAINddots%
+\def\PLAINddots
    {\mkern1mu\raise7\p@\vbox{\kern7\p@\hbox{.}}\mkern2mu
     \raise4\p@\hbox{.}\mkern2mu\raise\p@\hbox{.}\mkern1mu}
 
@@ -404,16 +404,16 @@
 
 \startmathcollection[default]
 
-\definemathsymbol [acute]     [accent] [mr] ["13] 
-\definemathsymbol [grave]     [accent] [mr] ["12] 
-\definemathsymbol [ddot]      [accent] [mr] ["7F] 
-\definemathsymbol [tilde]     [accent] [mr] ["7E] 
-\definemathsymbol [bar]       [accent] [mr] ["16] 
-\definemathsymbol [breve]     [accent] [mr] ["15] 
-\definemathsymbol [check]     [accent] [mr] ["14] 
-\definemathsymbol [hat]       [accent] [mr] ["5E] 
+\definemathsymbol [acute]     [accent] [mr] ["13]
+\definemathsymbol [grave]     [accent] [mr] ["12]
+\definemathsymbol [ddot]      [accent] [mr] ["7F]
+\definemathsymbol [tilde]     [accent] [mr] ["7E]
+\definemathsymbol [bar]       [accent] [mr] ["16]
+\definemathsymbol [breve]     [accent] [mr] ["15]
+\definemathsymbol [check]     [accent] [mr] ["14]
+\definemathsymbol [hat]       [accent] [mr] ["5E]
 \definemathsymbol [vec]       [accent] [mi] ["7E] % [ord]
-\definemathsymbol [dot]       [accent] [mr] ["5F] 
+\definemathsymbol [dot]       [accent] [mr] ["5F]
 \definemathsymbol [widetilde] [accent] [ex] ["65] % [ord]
 \definemathsymbol [widehat]   [accent] [ex] ["62] % [ord]
 
@@ -421,30 +421,30 @@
 
 \startmathcollection[default]
 
-\definemathsymbol [lmoustache]  [open]    [ex] ["7A] [ex] ["40] 
-\definemathsymbol [rmoustache]  [close]   [ex] ["7B] [ex] ["41] 
+\definemathsymbol [lmoustache]  [open]    [ex] ["7A] [ex] ["40]
+\definemathsymbol [rmoustache]  [close]   [ex] ["7B] [ex] ["41]
 \definemathsymbol [lgroup]      [open]    [mr] ["28] [ex] ["3A] % ?
 \definemathsymbol [rgroup]      [close]   [mr] ["29] [ex] ["3B] % ?
-\definemathsymbol [arrowvert]   [nothing] [sy] ["6A] [ex] ["3C] 
+\definemathsymbol [arrowvert]   [nothing] [sy] ["6A] [ex] ["3C]
 \definemathsymbol [Arrowvert]   [nothing] [sy] ["6B] [ex] ["3D]
-\definemathsymbol [bracevert]   [nothing] [ex] ["3E] % ?  
-\definemathsymbol [Vert]        [nothing] [sy] ["6B] [ex] ["0D] 
-\definemathsymbol [vert]        [nothing] [sy] ["6A] [ex] ["0C] 
+\definemathsymbol [bracevert]   [nothing] [ex] ["3E] % ?
+\definemathsymbol [Vert]        [nothing] [sy] ["6B] [ex] ["0D]
+\definemathsymbol [vert]        [nothing] [sy] ["6A] [ex] ["0C]
 \definemathsymbol [uparrow]     [rel]     [sy] ["22] [ex] ["78]
 \definemathsymbol [downarrow]   [rel]     [sy] ["23] [ex] ["79]
-\definemathsymbol [updownarrow] [rel]     [sy] ["6C] [ex] ["3F] 
-\definemathsymbol [Uparrow]     [rel]     [sy] ["2A] [ex] ["7E] 
-\definemathsymbol [Downarrow]   [rel]     [sy] ["2B] [ex] ["7F] 
-\definemathsymbol [Updownarrow] [rel]     [sy] ["6D] [ex] ["77] 
-\definemathsymbol [backslash]   [nothing] [sy] ["6E] [ex] ["0F] 
-\definemathsymbol [rangle]      [close]   [sy] ["69] [ex] ["0B] 
-\definemathsymbol [langle]      [open]    [sy] ["68] [ex] ["0A] 
-\definemathsymbol [rbrace]      [close]   [sy] ["67] [ex] ["09] 
-\definemathsymbol [lbrace]      [open]    [sy] ["66] [ex] ["08] 
-\definemathsymbol [rceil]       [close]   [sy] ["65] [ex] ["07] 
-\definemathsymbol [lceil]       [open]    [sy] ["64] [ex] ["06] 
-\definemathsymbol [rfloor]      [close]   [sy] ["63] [ex] ["05] 
-\definemathsymbol [lfloor]      [open]    [sy] ["62] [ex] ["04] 
+\definemathsymbol [updownarrow] [rel]     [sy] ["6C] [ex] ["3F]
+\definemathsymbol [Uparrow]     [rel]     [sy] ["2A] [ex] ["7E]
+\definemathsymbol [Downarrow]   [rel]     [sy] ["2B] [ex] ["7F]
+\definemathsymbol [Updownarrow] [rel]     [sy] ["6D] [ex] ["77]
+\definemathsymbol [backslash]   [nothing] [sy] ["6E] [ex] ["0F]
+\definemathsymbol [rangle]      [close]   [sy] ["69] [ex] ["0B]
+\definemathsymbol [langle]      [open]    [sy] ["68] [ex] ["0A]
+\definemathsymbol [rbrace]      [close]   [sy] ["67] [ex] ["09]
+\definemathsymbol [lbrace]      [open]    [sy] ["66] [ex] ["08]
+\definemathsymbol [rceil]       [close]   [sy] ["65] [ex] ["07]
+\definemathsymbol [lceil]       [open]    [sy] ["64] [ex] ["06]
+\definemathsymbol [rfloor]      [close]   [sy] ["63] [ex] ["05]
+\definemathsymbol [lfloor]      [open]    [sy] ["62] [ex] ["04]
 
 \definemathsymbol [sqrt]        [radical] [sy] ["70] [ex] ["70]
 
@@ -455,7 +455,7 @@
 \def\PLAINbigg{\@@dobig{1.45}}
 \def\PLAINBigg{\@@dobig{1.75}}
 
-\startrawmathcollection [default] 
+\startrawmathcollection [default]
 
 \definemathcommand [bigl]  [open]  [one] {\big}
 \definemathcommand [bigm]  [rel]   [one] {\big}
@@ -505,19 +505,19 @@
 \definemathcommand [r@@t]      {\PLAINroot}
 \definemathcommand [matrix]    {\PLAINmatrix}
 
-\definemathcommand [over]      {\normalover} % hack, to do  
+\definemathcommand [over]      {\normalover} % hack, to do
 
 \stoprawmathcollection
 
-\def\{{\lbrace} 
-\def\}{\rbrace} 
+\def\{{\lbrace}
+\def\}{\rbrace}
 
-%def\bbd{\fam\purefamily{blackboard}}  
+%def\bbd{\fam\purefamily{blackboard}}
 %def\cal{\fam\purefamily{calfamily}}
 
 \def\mit{\fam\purefamily{mitfamily}}
 
-\def\Bbb{\blackboard} % conforming amstex 
+\def\Bbb{\blackboard} % conforming amstex
 
 \startmathcollection[default]
 
@@ -530,6 +530,6 @@
 \stopmathcollection
 
 \definemathpunctuation . mathperiod textperiod
-\definemathpunctuation , mathcomma  textcomma 
+\definemathpunctuation , mathcomma  textcomma
 
-\protect \endinput 
+\protect \endinput

@@ -8,47 +8,47 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
-%C details. 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
 
-\unprotect 
+\unprotect
 
-\startunicodevector 0 
+\startunicodevector 0
   \ifcase\numexpr(#1-159)
-    \@@unknownchar\or 
+    \@@unknownchar\or
     \@@unknownchar\or % NO-BREAK SPACE
-    exclamdown\or 
-    textcent\or 
-    textsterling\or 
-    textcurrency\or 
-    textyen\or 
-    textbrokenbar\or 
-    sectionmark\or 
-    textdiaeresis\or 
-    copyright\or 
-    \@@unknownchar\or %  FEMININE ORDINAL INDICATOR
+    exclamdown\or
+    textcent\or
+    textsterling\or
+    textcurrency\or
+    textyen\or
+    textbrokenbar\or
+    sectionmark\or
+    textdiaeresis\or
+    copyright\or
+    ordfeminine\or    %  FEMININE ORDINAL INDICATOR
     \@@unknownchar\or %  LEFT-POINTING DOUBLE ANGLE QUOTATION MARK
-    textlognot\or 
-    softhyphen\or 
-    registered\or 
-    textmacron\or 
+    textlognot\or
+    softhyphen\or
+    registered\or
+    textmacron\or
     textdegree\or
-    textpm\or 
+    textpm\or
     \@@unknownchar\or %  SUPERSCRIPT TWO
     \@@unknownchar\or %  SUPERSCRIPT THREE
-    textacute\or 
+    textacute\or
     \@@unknownchar\or %  MICRO SIGN
     \@@unknownchar\or %  PILCROW SIGN
     \@@unknownchar\or %  MIDDLE DOT
-    textcedilla\or 
+    textcedilla\or
     \@@unknownchar\or %  SUPERSCRIPT ONE
-    \@@unknownchar\or %  MASCULINE ORDINAL INDICATOR
+    ordmasculine\or   %  MASCULINE ORDINAL INDICATOR
     \@@unknownchar\or %  RIGHT-POINTING DOUBLE ANGLE QUOTATION MARK
     \@@unknownchar\or %  VULGAR FRACTION ONE QUARTER
     \@@unknownchar\or %  VULGAR FRACTION ONE HALF
     \@@unknownchar\or %  VULGAR FRACTION THREE QUARTERS
     questiondown\or
-    Agrave\or 
+    Agrave\or
     Aacute\or
     Acircumflex\or
     Atilde\or
@@ -64,7 +64,7 @@
     Iacute\or
     Icircumflex\or
     Idiaeresis\or
-    \@@unknownchar\or % Eth\or 
+    \@@unknownchar\or % Eth\or
     Ntilde\or
     Ograve\or
     Oacute\or
@@ -96,7 +96,7 @@
     iacute\or
     icircumflex\or
     idiaeresis\or
-    \@@unknownchar\or % eth\or 
+    \@@unknownchar\or % eth\or
     ntilde\or
     ograve\or
     oacute\or
@@ -112,48 +112,48 @@
     yacute\or
     thorn\or
     ydiaeresis\else
-    \@@unknownchar   
+    \@@unknownchar
   \fi
 \stopunicodevector
 
-% 20\% faster: 
+% 20\% faster:
 
-\startunicodevector 0 
+\startunicodevector 0
   \expandafter\strippedcsname
-  \ifcase\numexpr(#1-159)!\@@unknownchar\or 
+  \ifcase\numexpr(#1-159)!\@@unknownchar\or
     \unknownchar   \or % NO-BREAK SPACE
-    \exclamdown    \or 
-    \textcent      \or 
-    \textsterling  \or 
-    \textcurrency  \or 
-    \textyen       \or 
-    \textbrokenbar \or 
-    \sectionmark   \or 
-    \textdiaeresis \or 
-    \copyright     \or 
-    \unknownchar   \or %  FEMININE ORDINAL INDICATOR
+    \exclamdown    \or
+    \textcent      \or
+    \textsterling  \or
+    \textcurrency  \or
+    \textyen       \or
+    \textbrokenbar \or
+    \sectionmark   \or
+    \textdiaeresis \or
+    \copyright     \or
+    \ordfeminine   \or %  FEMININE ORDINAL INDICATOR
     \unknownchar   \or %  LEFT-POINTING DOUBLE ANGLE QUOTATION MARK
-    \textlognot    \or 
-    \softhyphen    \or 
-    \registered    \or 
-    \textmacron    \or 
+    \textlognot    \or
+    \softhyphen    \or
+    \registered    \or
+    \textmacron    \or
     \textdegree    \or
-    \textpm        \or 
+    \textpm        \or
     \unknownchar   \or %  SUPERSCRIPT TWO
     \unknownchar   \or %  SUPERSCRIPT THREE
-    \textacute     \or 
+    \textacute     \or
     \unknownchar   \or %  MICRO SIGN
     \unknownchar   \or %  PILCROW SIGN
     \unknownchar   \or %  MIDDLE DOT
-    \textcedilla   \or 
+    \textcedilla   \or
     \unknownchar   \or %  SUPERSCRIPT ONE
-    \unknownchar   \or %  MASCULINE ORDINAL INDICATOR
+    \ordmasculine  \or   %  MASCULINE ORDINAL INDICATOR
     \unknownchar   \or %  RIGHT-POINTING DOUBLE ANGLE QUOTATION MARK
     \unknownchar   \or %  VULGAR FRACTION ONE QUARTER
     \unknownchar   \or %  VULGAR FRACTION ONE HALF
     \unknownchar   \or %  VULGAR FRACTION THREE QUARTERS
     \questiondown  \or
-    \Agrave        \or 
+    \Agrave        \or
     \Aacute        \or
     \Acircumflex   \or
     \Atilde        \or
@@ -169,7 +169,7 @@
     \Iacute        \or
     \Icircumflex   \or
     \Idiaeresis    \or
-    \unknownchar   \or % \Eth \or 
+    \unknownchar   \or % \Eth \or
     \Ntilde        \or
     \Ograve        \or
     \Oacute        \or
@@ -201,7 +201,7 @@
     \iacute        \or
     \icircumflex   \or
     \idiaeresis    \or
-    \unknownchar   \or % \eth \or 
+    \unknownchar   \or % \eth \or
     \ntilde        \or
     \ograve        \or
     \oacute        \or
@@ -217,8 +217,8 @@
     \yacute        \or
     \thorn         \or
     \ydiaeresis    \else
-    \unknownchar   
+    \unknownchar
   \fi
 \stopunicodevector
 
-\protect \endinput 
+\protect \endinput

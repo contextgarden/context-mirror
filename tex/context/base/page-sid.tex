@@ -247,7 +247,7 @@
           \iftracesidefloats
             \color[darkgray]%
               {\baselinerulefalse
-               \boxrulewidth.5\s!pt
+               \boxrulewidth.5\points
                \ruledhbox{\strut\kern\sidefloatwidth}}%
           \fi
           \par
@@ -385,6 +385,118 @@
 
 \fi
 
+% \def\putsidefloat#1% grid (4) is rather experimental
+%   {\par
+%    \witruimte
+%    % moved here dec 2001
+%    {\everypar\emptytoks\forgetall\verticalstrut\vskip-\struttotal}% moved
+%    \checksidefloatshift
+%    \ifdim\sidefloatshift=\zeropoint \relax
+%      \ifnum\sidefloattype=4
+%        \global\advance\sidefloatshift\sidefloatextrashift
+%        \global\sidefloatextrashift\zeropoint
+%      \else\ifnum\sidefloattype=5
+%        \global\advance\sidefloatshift\sidefloatextrashift
+%        \global\sidefloatextrashift\zeropoint
+%      \fi\fi
+%    \else
+%      \ifnum\sidefloattype<4
+%        \global\chardef\sidefloattype4
+%      \else\ifnum\sidefloattype>5
+%        \global\chardef\sidefloattype5
+%      \fi\fi
+%    \fi
+%    \previoussidefloat
+%    \stallsidefloat
+%   %\global\setbox\floatbox\hbox
+%   %  {\ifmarginfloat\else\ifrightfloat\else\kern\sidefloatleftshift\fi\fi
+%   %   \hskip\ifrightfloat-\sidefloatextrashift\else\sidefloatshift\fi
+%   %   \vbox{#1\ifnum\sidefloatalign=4 \removedepth\fi}%
+%   %   \kern\ifrightfloat\sidefloatshift\else-\sidefloatextrashift\fi
+%   %   \ifmarginfloat\else\ifrightfloat\kern\sidefloatrightshift\fi\fi}%
+%    \global\setbox\floatbox\hbox % no \hskip, but \kern here
+%      {\ifnum\sidefloattype=4
+%         \hskip\sidefloatleftshift
+%       \else\ifnum\sidefloattype=1
+%         \hskip\sidefloatleftshift
+%       \fi\fi
+%       \ifnum\sidefloattype>4
+%         \hskip-\sidefloatextrashift
+%       \else
+%         \hskip\sidefloatshift
+%       \fi
+%       \vbox{#1\ifnum\sidefloatalign=4 \removedepth\fi}%
+%       \ifnum\sidefloattype>4
+%         \kern\sidefloatshift
+%       \else
+%         \kern-\sidefloatextrashift
+%       \fi
+%       \ifnum\sidefloattype=8
+%         \kern\sidefloatrightshift
+%       \else\ifnum\sidefloattype=5
+%         \kern\sidefloatrightshift
+%       \fi\fi}%
+%    \ifnum\sidefloatalign=4
+%      \getnoflines{\ht\floatbox}%
+%      \scratchdimen\noflines\lineheight
+%      \advance\scratchdimen-\strutdepth
+%      \getrawnoflines\sidefloattopskip
+%      \advance\scratchdimen\noflines\lineheight
+%      % todo: maybe rounding problem here
+%      % \global\setbox\floatbox\hbox{\lower\lineheight\box\floatbox}%
+%      \global\setbox\floatbox\hbox{\lower\strutdepth\box\floatbox}%
+%      \global\ht\floatbox\scratchdimen
+%      \global\dp\floatbox\zeropoint
+%    \fi
+%    \ifcase\sidefloatalign \else
+%      \global\sidefloattopskip\zeropoint
+%    \fi
+%    \scratchdimen
+%      \ifnum\sidefloattype<4
+%        \sidefloattopskip
+%      \else\ifnum\sidefloattype>5
+%        \sidefloattopskip
+%      \else
+%        \zeropoint
+%      \fi\fi
+%    % the top of the box is at the previous baseline
+%    \ifcase\sidefloatalign
+%        % 0 normal
+%      \advance\scratchdimen\strutdepth % == \sidefloattopoffset
+%    \or % 1 height
+%      \advance\scratchdimen\strutdepth % == \sidefloattopoffset
+%    \or % 2 line
+%    \or % 3 depth
+%      \advance\scratchdimen\lineheight
+%      \advance\scratchdimen\strutdepth
+%    \or % 4 grid
+%      \scratchdimen\zeropoint
+%    \fi
+%    % new
+%    \global\sidefloatlinesdone\zerocount
+%    \ifnum\sidefloatsidelines>\zerocount
+%      \advance\scratchdimen\sidefloatsidelines\lineheight
+%    \fi
+%    % new
+%    \global\setbox\floatbox\hbox
+%      {\vbox{\vskip\scratchdimen\nointerlineskip\box\floatbox}}%
+%    \ifnum\sidefloattype<4
+%      \global\sidefloattopskip\zeropoint
+%    \else\ifnum\sidefloattype>5
+%      \global\sidefloattopskip\zeropoint
+%    \fi\fi
+%    \global\sidefloatdownshift\zeropoint
+%    \measuresidefloat
+%    \ifroomforfloat \else
+%      \tosssidefloat
+%      \measuresidefloat
+%      \stallsidefloat
+%    \fi
+%    \setsidefloat}
+
+% externfiguur     -> grid        =ja|hoogte|diepte|halveregel|passend -> helemaal in details
+% stelplaatsblokin -> zijuitlijnen=hoogte|diepte|regel|halveregel|grid -> halveregel in 'details'
+
 \def\putsidefloat#1% grid (4) is rather experimental
   {\par
    \witruimte
@@ -471,6 +583,8 @@
      \advance\scratchdimen\strutdepth
    \or % 4 grid
      \scratchdimen\zeropoint
+   \or
+     \advance\scratchdimen\strutheight
    \fi
    % new
    \global\sidefloatlinesdone\zerocount
@@ -479,7 +593,11 @@
    \fi
    % new
    \global\setbox\floatbox\hbox
-     {\vbox{\vskip\scratchdimen\nointerlineskip\box\floatbox}}%
+     {\vbox
+        {\vskip\scratchdimen
+         \nointerlineskip
+         \box\floatbox
+         \ifnum\sidefloatalign=5 \vskip-\lineheight \fi}}%
    \ifnum\sidefloattype<4
      \global\sidefloattopskip\zeropoint
    \else\ifnum\sidefloattype>5
@@ -539,7 +657,7 @@
      \dimen2 .99\pagegoal
    \or
      % method 2 : tight
-     \advance\dimen0 -\!!onepoint
+     \advance\dimen0 -\onepoint
    \fi
    \relax % really needed ! ! ! !
    \ifdim\dimen0>\dimen2
@@ -625,7 +743,7 @@
 %    \iftracesidefloats
 %      \hskip-\sidefloatwidth
 %      \color[darkgray]%
-%        {\vrule\!!height.5\s!pt\!!depth.5\s!pt\!!width\sidefloatwidth
+%        {\vrule\!!height.5\points\!!depth.5\points\!!width\sidefloatwidth
 %        %\hskip-.25\bodyfontsize\showstruts\strut\hskip.25\bodyfontsize}%
 %         \llap{\showstruts\strut\hskip.25\bodyfontsize}}%
 %    \fi}
@@ -678,7 +796,7 @@
    \iftracesidefloats
      \hskip-\sidefloatwidth
      \color[darkgray]%
-       {\vrule\!!height.5\s!pt\!!depth.5\s!pt\!!width\sidefloatwidth
+       {\vrule\!!height.5\points\!!depth.5\points\!!width\sidefloatwidth
        %\hskip-.25\bodyfontsize\showstruts\strut\hskip.25\bodyfontsize}%
         \llap{\showstruts\strut\hskip.25\bodyfontsize}}%
    \fi}

@@ -2828,18 +2828,12 @@
      \fi
    \fi}
 
-\def\doassign[#1][#2]%
-  {\p!doassign\dosetvalue[#1][#2==\relax]}
-
-\def\doeassign[#1][#2]%
-  {\p!doassign\dosetevalue[#1][#2==\relax]}
-
-\def\undoassign[#1][#2]%
-  {\p!doassign\doresetvalue[#1][#2==\relax]}
+\def\doassign  [#1][#2]{\p!doassign\dosetvalue  [#1][#2==\relax]}
+\def\doeassign [#1][#2]{\p!doassign\dosetevalue [#1][#2==\relax]}
+\def\undoassign[#1][#2]{\p!doassign\doresetvalue[#1][#2==\relax]}
 
 \def\doassignempty[#1][#2=#3]%
-  {\doifundefined{#1#2}
-     {\dosetvalue{#1}{#2}{#3}}}
+  {\ifundefined{#1#2}\dosetvalue{#1}{#2}{#3}\fi}
 
 %D \macros
 %D   {getparameters,geteparameters,getgparameters,
@@ -3944,8 +3938,8 @@
 %D We will see some real applications of this command in the
 %D core modules.
 
-\def\definestartstopcommand#1#2#3#4% can be done with \expanded
-  {\def\!stringa{#3}%
+\def\definestartstopcommand#1#2#3#4% can be done with \expanded ot better, toks
+  {\def\!stringa{#3}%              % but let's keep this unuded one crappy
    \def\!stringb{\e!start#2}%
    \def\!stringc{#4}%
    \def\!stringd{\e!stop#2}%

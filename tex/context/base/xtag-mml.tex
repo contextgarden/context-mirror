@@ -15,13 +15,13 @@
 
 %\enablemathpunctuation
 
-% First some general formula element definitions.  
+% First some general formula element definitions.
 
-\defineXMLenvironment [formula] [label=,sublabel=]   
+\defineXMLenvironment [formula] [label=,sublabel=]
   {\dostartXMLformula\placeformula}
   {\dostopXMLformula}
 
-\defineXMLenvironment [subformula] [label=,sublabel=]   
+\defineXMLenvironment [subformula] [label=,sublabel=]
   {\dostartXMLformula\placesubformula}
   {\dostopXMLformula}
 
@@ -55,7 +55,7 @@
 
 \def\setupMMLappearance[#1]{\dodoubleargument\getparameters[@@MML#1]}
 
-\defineXMLdirective [mathml] \setupMMLappearance 
+\defineXMLdirective [mathml] \setupMMLappearance
 
 \defineXMLargument [math]  \doXMLmath
 \defineXMLargument [imath] \doXMLimath
@@ -92,7 +92,7 @@
 
 \def\mathopnolimits#1{\mathop{\rm#1}\nolimits}
 
-% Auxiliary macros 
+% Auxiliary macros
 
 \bgroup \obeylines
 
@@ -100,21 +100,21 @@
   {\bgroup\obeylines\xdefineMMLentity}
 
 \gdef\xdefineMMLentity #1 #2 #3 #4
-  {\egroup\dodefineMMLentity{#1}{#2}{#3}{#4}} 
+  {\egroup\dodefineMMLentity{#1}{#2}{#3}{#4}}
 
 \global\let\dodefineMMLentity\gobblefourarguments
 
 \gdef\defineMMLsynonym
   {\bgroup\obeylines\xdefineMMLsynonym}
 
-\gdef\xdefineMMLsynonym #1 #2 
-  {\egroup\dodefineMMLsynonym{#1}{#2}} 
+\gdef\xdefineMMLsynonym #1 #2
+  {\egroup\dodefineMMLsynonym{#1}{#2}}
 
 \global\let\dodefineMMLsynonym\gobbletwoarguments
 
-\egroup  
+\egroup
 
-% some more 
+% some more
 
 \def\showMMLentity#1%
   {\bgroup
@@ -134,7 +134,7 @@
   \def\blackboard{\ifx\Bbb\undefined\else\expandafter\Bbb\fi}
 \fi
 
-% basic entities, greek  
+% basic entities, greek
 
 \defineXMLentity [alpha]      {\mathematics \alpha}
 \defineXMLentity [beta]       {\mathematics \beta}
@@ -309,9 +309,9 @@
 \defineXMLentity [product]          {\prod}
 \defineXMLentity [lim]              {\lim}
 
-\defineXMLentity [exp]              {\exp}
-\defineXMLentity [ln]               {\ln}
-\defineXMLentity [log]              {\log}
+\defineXMLentity [exp]              {\mathopnolimits{exp}} % {\exp}
+\defineXMLentity [ln]               {\mathopnolimits{ln}}  % {\ln}
+\defineXMLentity [log]              {\mathopnolimits{log}} % {\log}
 
 \defineXMLentity [sin]              {\mathopnolimits{sin}}
 \defineXMLentity [arcsin]           {\mathopnolimits{arcsin}}
@@ -399,7 +399,7 @@
 \def\somespaceentity#1#2%
   {\mathortext
      {\mskip#1mu}
-     {\unskip\hskip#2em\strut\hskip\!!zeropoint\ignorespaces}\relax}
+     {\unskip\hskip#2em\strut\hskip\zeropoint\ignorespaces}\relax}
 
 \defineXMLentity [VeryThinSpace]         {\somespaceentity {2}{.125}}
 \defineXMLentity [ThinSpace]             {\somespaceentity {3}{.25}}
@@ -420,8 +420,8 @@
 \defineXMLentity [medsp]   {\getXMLentity{MediumSpace}}
 \defineXMLentity [thicksp] {\getXMLentity{ThickSpace}}
 
-\defineXMLentity [larr]         {\getXMLentity{LeftArrow}}  
-\defineXMLentity [rarr]         {\getXMLentity{RightArrow}} 
+\defineXMLentity [larr]         {\getXMLentity{LeftArrow}}
+\defineXMLentity [rarr]         {\getXMLentity{RightArrow}}
 
 \defineXMLentity [lbrace]       {\normalordelimiter{\{}{\left \{}}
 \defineXMLentity [rbrace]       {\normalordelimiter{\}}{\right\}}}
@@ -439,7 +439,7 @@
 \defineXMLentity [lparent]      {\getXMLentity{lparenthesis}}
 \defineXMLentity [rparent]      {\getXMLentity{rparenthesis}}
 
-\bgroup 
+\bgroup
 \catcode`\{=12 \doglobal\convertargument{\to\mmllbrace
 \catcode`\}=12 \doglobal\convertargument}\to\mmlrbrace
 \egroup

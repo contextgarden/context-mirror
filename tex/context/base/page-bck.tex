@@ -96,6 +96,22 @@
 %D (On the 824 pages maps bibliography runtime went down from
 %D 309 to 299 seconds.)
 
+% \def\checkbackground#1%
+%   {\edef\!!stringe{\??ma#1}%
+%    \doifelsevaluenothing{\!!stringe\c!achtergrond   }
+%   {\doifelsevaluenothing{\!!stringe\c!voorgrondkleur}
+%          {\doifelsevalue{\!!stringe\c!kader       }\v!aan\!!doneatrue
+%          {\doifelsevalue{\!!stringe\c!linkerkader }\v!aan\!!doneatrue
+%          {\doifelsevalue{\!!stringe\c!rechterkader}\v!aan\!!doneatrue
+%          {\doifelsevalue{\!!stringe\c!bovenkader  }\v!aan\!!doneatrue
+%          {\doifelsevalue{\!!stringe\c!onderkader  }\v!aan\!!doneatrue
+%                                                          \!!doneafalse}}}}}
+%                                                          \!!doneatrue}
+%                                                          \!!doneatrue
+%    \if!!donea
+%      \expandafter\setusage\else\expandafter\resetusage
+%    \fi{\??ma#1}}
+
 \def\checkbackground#1%
   {\edef\!!stringe{\??ma#1}%
    \doifelsevaluenothing{\!!stringe\c!achtergrond   }
@@ -109,8 +125,10 @@
                                                          \!!doneatrue}
                                                          \!!doneatrue
    \if!!donea
-     \expandafter\setusage\else\expandafter\resetusage
-   \fi{\??ma#1}}
+     \setusage  \!!stringe
+   \else
+     \resetusage\!!stringe
+   \fi}
 
 \def\ifsomebackgroundfound#1%
   {\ifusage{\??ma#1}}
@@ -131,10 +149,9 @@
 
 \def\addsomebackground#1#2#3#4% area box width height / zero test added
   {\ifsomebackgroundfound#1\ifdim#3>\zeropoint\ifdim#4>\zeropoint
-     \setbox#2\vbox\localframed
+     \setbox#2\vbox\fastlocalframed
        [\??ma#1]
-       [\c!component=#1,
-        \c!strut=\v!nee,\c!offset=\v!overlay,
+       [\c!component=#1,\c!strut=\v!nee,\c!offset=\v!overlay,%
         \c!breedte=#3,\c!hoogte=#4]
        {\dp#2\zeropoint\box#2}%
    \fi\fi\fi}
@@ -188,14 +205,14 @@
 
 \def\addtextbackground#1%
   {\ifconditional\hiddenbackgroundenabled
-     \addsomebackground\v!verborgen#1\zetbreedte\teksthoogte % mine ! 
-   \fi 
+     \addsomebackground\v!verborgen#1\zetbreedte\teksthoogte % mine !
+   \fi
    \addsomebackground\v!tekst#1\zetbreedte\teksthoogte}
 
 % \def\addtextbackground#1%
 %   {\ifconditional\hiddenbackgroundenabled
-%      \addsomebackground\v!verborgen   #1\zetbreedte\teksthoogte % mine ! 
-%    \fi 
+%      \addsomebackground\v!verborgen   #1\zetbreedte\teksthoogte % mine !
+%    \fi
 %    \doifbothsidesoverruled
 %      \addsomebackground\v!rechtertekst#1\zetbreedte\teksthoogte
 %    \orsideone
@@ -209,8 +226,8 @@
 %D As said, these are cached in dedicated boxes. The offsets
 %D and depth of the page are used for alignment purposes.
 
-\newdimen\pageoffset % bleed 
-\newdimen\pagedepth  
+\newdimen\pageoffset % bleed
+\newdimen\pagedepth
 
 \let\pagebackgroundhoffset = \!!zeropoint
 \let\pagebackgroundvoffset = \!!zeropoint
@@ -227,7 +244,7 @@
 %D We need a bit more clever mechanism in order to handle
 %D layers well. This means that we cannot calculate both
 %D background at the same time since something may have
-%D changed halfway a page. 
+%D changed halfway a page.
 
 \chardef\newrightbackground0
 \chardef\newleftbackground 0
@@ -241,24 +258,24 @@
      \global\chardef\newleftbackground\plusone
      \global\setbox\leftbackground\emptybox
      \global\setbox\rightbackground\emptybox
-   \fi 
+   \fi
    \doifbothsides
      \ifcase\newleftbackground \else
-       \showmessage\m!layouts8\empty
+       % \showmessage\m!layouts8\empty
        \setbackgroundbox\leftbackground\relax
        \global\chardef\newleftbackground\zerocount
        \global\chardef\newrightbackground\zerocount
      \fi
    \orsideone
      \ifcase\newleftbackground \else
-       \showmessage\m!layouts8\empty
+       % \showmessage\m!layouts8\empty
        \setbackgroundbox\leftbackground\relax
        \global\chardef\newleftbackground\zerocount
       %\global\chardef\newrightbackground\zerocount
      \fi
    \orsidetwo
      \ifcase\newrightbackground \else
-       \showmessage\m!layouts8\empty
+       % \showmessage\m!layouts8\empty
        \setbackgroundbox\rightbackground\doswapmargins
        \global\chardef\newrightbackground\zerocount
      \fi
@@ -267,7 +284,7 @@
 
 \def\addmainbackground#1% todo: dimension spec
   {\ifsomebackground
-     \setbackgroundboxes 
+     \setbackgroundboxes
      \setbox#1\vbox
        {\offinterlineskip
         \doifmarginswapelse
@@ -277,7 +294,7 @@
    \fi}
 
 \def\setbackgroundoffsets
-  {\ifsomebackground \ifnewbackground 
+  {\ifsomebackground \ifnewbackground
      \global\let\pagebackgroundhoffset\!!zeropoint
      \global\let\pagebackgroundvoffset\!!zeropoint
      \global\let\pagebackgrounddepth  \!!zeropoint
@@ -321,7 +338,7 @@
   \smashbox#1}
 
 \def\dodopagebodybackground#1#2%
-  {\ifdim#2>\zeropoint % added, faster 
+  {\ifdim#2>\zeropoint % added, faster
      \setbox\scratchbox\vbox to #2
        \bgroup\hbox\bgroup
          \swapmargins
@@ -344,10 +361,9 @@
   {\ifsomebackgroundfound{#3#4}%
      \ifdim#2>\zeropoint\relax
        \ifdim#1>\zeropoint\relax
-         \localframed
+         \fastlocalframed
            [\??ma#3#4]
-           [\c!component=#3-#4,
-            \c!breedte=#1,\c!hoogte=#2,\c!offset=\v!overlay]
+           [\c!component=#3-#4,\c!breedte=#1,\c!hoogte=#2,\c!offset=\v!overlay]
            {\getvalue{\??ma#3#4\c!commando}}% {\hsize=#1\vsize=#2....}
        \else
          \hskip#1%
@@ -533,17 +549,17 @@
 
 \let\docommando\relax
 
-%D The hidden layer can be populated by extending the 
+%D The hidden layer can be populated by extending the
 %D following comma separated list. This only happens in core
-%D modules. 
+%D modules.
 
-% todo page-2   .. page+2   achter pagina -> bleed 
+% todo page-2   .. page+2   achter pagina -> bleed
 %      spread-2 .. spread+2 achter spread -> spread (repeat 2 times)
 
 \def\enablehiddenbackground
   {\global\settrue\hiddenbackgroundenabled
-   \global\somebackgroundtrue 
-   \recalculatebackgrounds}   
+   \global\somebackgroundtrue
+   \recalculatebackgrounds}
 
 \def\disablehiddenbackground
   {\global\setfalse\hiddenbackgroundenabled}
@@ -555,8 +571,8 @@
   [\v!verborgen]
   [\c!achtergrond=\hiddenbackground]
 
-% The next series is used in local (for instance floating) 
-% backgrounds. 
+% The next series is used in local (for instance floating)
+% backgrounds.
 
 \presetlocalframed
   [\??ma\v!lokaal]
@@ -584,16 +600,16 @@
 %       \noexpand\dodoglobal\dp#1\the\dp#1}%
 %    \dp#1\zeropoint
 %    \redoglobal\setbox#1\hbox
-%      {\localframed
+%      {\fastlocalframed
 %         [\??ma\v!lokaal]
 %         [\c!kader=\v!uit,
 %          \c!offset=\v!overlay,
 %          \c!achtergrond=\localbackground]%
 %         {\registerMPlocaltextarea{\box#1}}}%
-%    \ifdim\naturalfloatdepth>\zeropoint % maybe take difference 
+%    \ifdim\naturalfloatdepth>\zeropoint % maybe take difference
 %      \redoglobal\setbox#1\hbox{\lower\scratchdimen\box#1}%
-%    \fi 
-%    \doglobal\increment\localpositionnumber % afterwards ! 
+%    \fi
+%    \doglobal\increment\localpositionnumber % afterwards !
 %    \next}
 
 \def\doaddlocalbackground#1%
@@ -602,17 +618,15 @@
       \noexpand\redoglobal\ht#1\the\ht#1%
       \noexpand\dodoglobal\dp#1\the\dp#1}%
    \dodoglobal\setbox#1\hbox
-     {\localframed
+     {\fastlocalframed
         [\??ma\v!lokaal]
-        [\c!component=local,
-         \c!kader=\v!uit,
-         \c!offset=\v!overlay,
+        [\c!component=local,\c!kader=\v!uit,\c!offset=\v!overlay,%
          \c!achtergrond=\localbackground]%
         {\registerMPlocaltextarea{\box#1}}}%
    \next
-   \doglobal\increment\localpositionnumber\relax} % afterwards ! 
+   \doglobal\increment\localpositionnumber\relax} % afterwards !
 
-% Test how previous macro behaves with depth: 
+% Test how previous macro behaves with depth:
 %
 % \startcolumnset
 % \input tufte

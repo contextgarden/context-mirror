@@ -8,8 +8,8 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
-%C details. 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
 
 \writestatus{loading}{Context Core Macros / File Support}
 
@@ -17,15 +17,15 @@
 
 % NOT YET DOCUMENTED !!
 %
-% overal \normalinput 
- 
+% overal \normalinput
+
 \startmessages  dutch  library: files
-   title: files 
+   title: files
        1: file synoniem -- is al in gebruik voor --
 \stopmessages
 
 \startmessages  english  library: files
-   title: files 
+   title: files
        1: file synonym -- is already used for --
 \stopmessages
 
@@ -45,7 +45,7 @@
 \stopmessages
 
 \startmessages  norwegian  library: files
-   title: filer 
+   title: filer
        1: filesynonym -- er allerede brukt for --
 \stopmessages
 
@@ -54,28 +54,28 @@
        1: sinonimul fisierelor -- este folosit deja pentru --
 \stopmessages
 
-%D \macros 
+%D \macros
 %D   {definefilesynonym}
 %D
-%D One of the problems with loading files is that their names 
-%D can depend on the interface language. We therefore need a 
-%D method to define filesynonyms. The actual synonyms are 
+%D One of the problems with loading files is that their names
+%D can depend on the interface language. We therefore need a
+%D method to define filesynonyms. The actual synonyms are
 %D defined elsewhere, but look like:
-%D 
+%D
 %D \starttypen
 %D \definefilesynonym [chemic]  [chemie]
 %D \definefilesynonym [einheit] [eenheid]
 %D \definefilesynonym [unit]    [eenheid]
 %D \stoptypen
-%D 
+%D
 %D So we can say in english:
-%D 
+%D
 %D \starttypen
 %D \usemodules[pictex,chemic,unit]
 %D \stoptypen
-%D 
+%D
 %D and in dutch:
-%D 
+%D
 %D \starttypen
 %D \usemodules[pictex,chemie,eenheid]
 %D \stoptypen
@@ -85,23 +85,23 @@
 
 \def\dodefinefilesynonym[#1][#2]%
   {\doifdefined{\??fs#1}
-     {\doifnotvalue{\??fs#1}{#2} 
+     {\doifnotvalue{\??fs#1}{#2}
         {\showmessage\m!files1{#1 (#2),\getvalue{\??fs#1}}}}%
    \doifelse{#1}{#2}
      {\letbeundefined{\??fs#1}{#2}}
      {\setevalue{\??fs#1}{#2}}}
-    
-%D \macros 
+
+%D \macros
 %D   {truefilename}
 %D
-%D At the system level such a filename can be called upon by 
+%D At the system level such a filename can be called upon by
 %D saying:
-%D 
+%D
 %D \starttypen
 %D \truefilename{filename/filesynonym}
 %D \stoptypen
-%D 
-%D The implementation shows that nesting is supported. 
+%D
+%D The implementation shows that nesting is supported.
 
 \def\truefilename#1%
   {\ifundefined{\??fs#1}%
@@ -114,7 +114,7 @@
 %D   {makeshortfilename}
 %D
 %D To prevent cross platform problems with filenames, we
-%D lowercase them as well as only use the first 8~characters. 
+%D lowercase them as well as only use the first 8~characters.
 
 \def\domakeshortfilename[#1#2#3#4#5#6#7#8#9]%
   {\lowercase{\edef\shortfilename{#1#2#3#4#5#6#7#8.}}%
@@ -126,24 +126,24 @@
 
 %D \macros
 %D   {usemodule}
-%D 
+%D
 %D Most of \CONTEXT is preloaded in the format file. Some very
 %D domain specific typesetting topics are however dealt with in
 %D separate modules, e.g. typesetting of chemical structure
-%D formulas. These modules are loaded by: 
-%D 
+%D formulas. These modules are loaded by:
+%D
 %D \showsetup{\y!usemodule}
-%D 
+%D
 %D More information on the specific modules can be found in
-%D their dedicated manuals. We use \type {\next} so that we 
-%D can \type {\end} in modules. 
+%D their dedicated manuals. We use \type {\next} so that we
+%D can \type {\end} in modules.
 
 \newconditional\moduleisloaded
 
-\def\dododousemodules#1#2% no \unprotect/\protect when loading, 
-  {\relax                % since we need to use ? ! unprotected   
+\def\dododousemodules#1#2% no \unprotect/\protect when loading,
+  {\relax                % since we need to use ? ! unprotected
    \ifconditional\moduleisloaded % sometimes (see xtag-map)
-     \let\next\relax
+     \let\next\relax % or: \expandafter\gobbleoneargument
    \else
      \makeshortfilename[#1\truefilename{#2}]%
      \doifelseflagged\shortfilename
@@ -159,16 +159,16 @@
            \stopreadingfile}}%
    \fi
    \next}
- 
-\def\dodousemodules#1#2% 
-  {\setfalse\moduleisloaded 
+
+\def\dodousemodules#1#2%
+  {\setfalse\moduleisloaded
    \doifelsenothing{#1}
-     {\dododousemodules\f!moduleprefix {#2}% 
+     {\dododousemodules\f!moduleprefix {#2}%
       \dododousemodules\f!privateprefix{#2}%
       \dododousemodules\f!styleprefix  {#2}%
       \dododousemodules\f!xstyleprefix {#2}%
       \dododousemodules\f!thirdprefix  {#2}%
-      \dododousemodules\empty          {#2}}% new, fall back on raw name  
+      \dododousemodules\empty          {#2}}% new, fall back on raw name
      {\dododousemodules{#1-}{#2}}%
    \ifconditional\moduleisloaded\else
      \showmessage\m!systems6{#2}%
@@ -191,33 +191,33 @@
 
 % \usemodule[t][speech]
 
-%D We also support a singular call, which saves us for 
+%D We also support a singular call, which saves us for
 %D frustrations when we do a typo.
 
 \let\usemodule=\usemodules
 
-% %D The definition shows that the language specific settings 
-% %D are activated after loading all the modules specified. 
+% %D The definition shows that the language specific settings
+% %D are activated after loading all the modules specified.
 
 %D \macros
 %D   {ifprotectbuffers, bufferprefix,
 %D    TEXbufferfile, MPgraphicfile}
 %D
-%D The next switch enables protection of temporary filenames, 
+%D The next switch enables protection of temporary filenames,
 %D which is needed when we process more files on one path at
-%D the same time.  
+%D the same time.
 
 \newif\ifprotectbuffers
 
 \def\bufferprefix{\ifprotectbuffers\jobname-\fi}
 
-% The following filenames are defined here: 
+% The following filenames are defined here:
 
 \def\TEXbufferfile   #1{\bufferprefix#1.\f!temporaryextension}
 \def\MPgraphicfile     {\bufferprefix mp\ifMPrun run\else graph\fi}
 \def\convertMPcolorfile{\bufferprefix metacmyk.tmp}
 
-%D The next few macros ar eused for some internal (rather 
+%D The next few macros ar eused for some internal (rather
 %D old already) extensions.
 
 \def\definieerfilegroep
@@ -243,13 +243,13 @@
   {\getvalue{\e!stop#1#2}%
    \getvalue{\??fp#1\c!na}}
 
-%D To save memory, we implement some seldomly used commands 
-%D in a lazy way. Nota bene: such runtime definitions are 
-%D global. 
+%D To save memory, we implement some seldomly used commands
+%D in a lazy way. Nota bene: such runtime definitions are
+%D global.
 %D
-%D \starttypen 
+%D \starttypen
 %D \fetchruntimecommand\showaccents{\f!encodingprefix ...}
-%D \stoptypen 
+%D \stoptypen
 
 \def\fetchruntimecommand#1#2%
   {\def#1{\dofetchruntimecommand#1{#2}}}
@@ -259,15 +259,15 @@
      {\let#1\undefined
       \startreadingfile
       \startnointerference % \bgroup
-      \cleanupfeatures % better \setnormalcatcodes / test first 
+      \cleanupfeatures % better \setnormalcatcodes / test first
       \readfile{#2}\donothing\donothing
       \stopnointerference  % \egroup
       \stopreadingfile
-      \doglobal\setflag{#2}}% 
+      \doglobal\setflag{#2}}%
    \ifx#1\undefined
      \writestatus{\m!systems}{command \string#1 not found in file #2}%
      \def#1{{\infofont[unknown command \string#1]}}%
-   \fi 
+   \fi
    #1}
 
 %D To be documented and probably moved
@@ -279,6 +279,6 @@
 
 \stelexternebronnenin[url=]
 
-%D This module will be perfected / changed / weeded. 
- 
+%D This module will be perfected / changed / weeded.
+
 \protect \endinput

@@ -1,24 +1,25 @@
 %D \module
+%D \module
 %D   [       file=meta-ini,
 %D        version=1999.07.10,
-%D          title=\METAPOST\ Graphics, 
-%D       subtitle=Initialization, 
+%D          title=\METAPOST\ Graphics,
+%D       subtitle=Initialization,
 %D         author=Hans Hagen,
 %D           date=\currentdate,
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
-%C details. 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
 
-% currently the running color influences the mp graphic in 
-% pdftex, but this will change [i.e. become optional]; one 
-% problem is that pdf has no grouping with regards to the 
-% color  
+% currently the running color influences the mp graphic in
+% pdftex, but this will change [i.e. become optional]; one
+% problem is that pdf has no grouping with regards to the
+% color
 
 \writestatus{loading}{MetaPost Graphics / Initializations}
 
-\unprotect 
+\unprotect
 
 \startmessages  dutch  library: metapost
   title: metapost
@@ -60,17 +61,17 @@
 %D \METAPOST\ inclusion in \CONTEXT. Some basic macros will be
 %D extended. Since some support is depends on \METAPOST\
 %D macros. so let's first preload a few auxiliary \METAPOST\
-%D files. 
+%D files.
 
-\maxnofMPgraphics = 4000 % metafun disables the 4K boundary 
+\maxnofMPgraphics = 4000 % metafun disables the 4K boundary
 
-\appendtoks 
-  if unknown context_tool : input mp-tool ; fi ;  
-  if unknown context_spec : input mp-spec ; fi ;  
-  if unknown context_grph : input mp-grph ; fi ;  
-\to \MPinitializations 
+\appendtoks
+  if unknown context_tool : input mp-tool ; fi ;
+  if unknown context_spec : input mp-spec ; fi ;
+  if unknown context_grph : input mp-grph ; fi ;
+\to \MPinitializations
 
-%D Since we want lables to follow the document settings, we 
+%D Since we want lables to follow the document settings, we
 %D also set the font related variables.
 
 \appendtoks
@@ -78,36 +79,36 @@
   defaultscale := \the\bodyfontsize/10pt ; % not good yet
 \to \MPinitializations
 
-%D In order to support fancy text features (like outline 
-%D fonts), we set: 
+%D In order to support fancy text features (like outline
+%D fonts), we set:
 
 \appendtoks
-  graphictextformat := "context" ; 
-  graphictextdirective "\the\everyMPTEXgraphic" ; 
+  graphictextformat := "context" ;
+  graphictextdirective "\the\everyMPTEXgraphic" ;
 \to \MPinitializations
 
-%D A signal that we're in combines \CONTEXT||\METAFUN mode: 
+%D A signal that we're in combines \CONTEXT||\METAFUN mode:
 
 \appendtoks
-  string contextversion ; contextversion := "\contextversion" ; 
+  string contextversion ; contextversion := "\contextversion" ;
 \to \MPinitializations
 
-%D Some safeguards: 
+%D Some safeguards:
 
 \appendtoks \cleanupfeatures \to \everyMPgraphic
 
-%D Another one: 
+%D Another one:
 
 \prependtoks \MPstaticgraphictrue \to \everyoverlay
 \prependtoks \MPstaticgraphictrue \to \everypagebody
 
 %D We save the number of graphics for the sake of \TEXEXEC.
 
-\newcounter\totalnofMPgraphics 
+\newcounter\totalnofMPgraphics
 
-\def\thenofMPgraphics{\the\nofMPgraphics} % from supp-mps 
+\def\thenofMPgraphics{\the\nofMPgraphics} % from supp-mps
 
-\appendtoks 
+\appendtoks
   \savecurrentvalue\totalnofMPgraphics\thenofMPgraphics
 \to \everybye
 
@@ -166,49 +167,49 @@
 
 \def\MPrawvar#1#2{\csname#1:#2\endcsname}
 
-%D \macros 
+%D \macros
 %D   {startuniqueMPgraphic, uniqueMPgraphic}
 %D
 %D This macros is probably of most use to myself, since I like
 %D to use graphics that adapt themselves. The next \METAPOST\
-%D kind of graphic is both unique and reused when possible. 
-%D 
-%D \starttypen 
+%D kind of graphic is both unique and reused when possible.
+%D
+%D \starttypen
 %D \defineoverlay[example][\uniqueMPgraphic{test}]
 %D
 %D \startuniqueMPgraphic {test}
-%D   draw unitsquare xscaled \overlaywidth yscaled \overlayheight ; 
-%D \stopuniqueMPgraphic 
+%D   draw unitsquare xscaled \overlaywidth yscaled \overlayheight ;
+%D \stopuniqueMPgraphic
 %D \stoptypen
 
-%D For educational purposes, we show the original version 
-%D first. This one used a rather simple method for determining 
-%D the uniqueness. 
+%D For educational purposes, we show the original version
+%D first. This one used a rather simple method for determining
+%D the uniqueness.
 %D
-%D \starttypen 
+%D \starttypen
 %D \long\def\startuniqueMPgraphic#1#2\stopuniqueMPgraphic%
 %D   {\setvalue{\@@MPG#1}%
 %D      {\startreusableMPgraphic{\overlaystamp:#1}#2\stopreusableMPgraphic
 %D       \reuseMPgraphic{\overlaystamp:#1}}}
-%D 
+%D
 %D \def\uniqueMPgraphic#1%
 %D   {\getvalue{\@@MPG#1}}
-%D \stoptypen 
- 
+%D \stoptypen
+
 %\def\overlaystamp% watch the \MPcolor, since colors can be redefined
 %  {\overlaywidth:\overlayheight:\overlaydepth
 %   :\MPcolor{\overlaycolor}:\MPcolor{\overlaylinecolor}}
- 
+
 \def\overlaystamp% watch the \MPcolor, since colors can be redefined
   {\overlaywidth:\overlayheight:\overlaydepth
-   :\MPcolor\overlaycolor:\MPcolor\overlaylinecolor} 
+   :\MPcolor\overlaycolor:\MPcolor\overlaylinecolor}
 
 %D A better approach is to let additional variables play a role
 %D in determining the uniqueness. In the next macro, the
 %D second, optional, argument is used to guarantee the
 %D uniqueness, as well as prepare variables for passing them to
-%D \METAPOST. 
-%D 
+%D \METAPOST.
+%D
 %D \starttypen
 %D \startuniqueMPgraphic{meta:hash}{gap,angle,...}
 %D \stoptypen
@@ -261,7 +262,7 @@
    \prepareMPvariables{#2}%
    \enableincludeMPgraphics
    \startMPgraphic#3\stopMPgraphic
-   \ifMPrun \else % see mfun-004 : processing buffer 
+   \ifMPrun \else % see mfun-004 : processing buffer
      \loadMPgraphic{\MPgraphicfile.\the\currentMPgraphic}{}%
      \placeMPgraphic
    \fi
@@ -271,15 +272,15 @@
 \long\def\startuseMPgraphic
   {\dodoublegroupempty\dostartuseMPgraphic}
 
-\long\def\dostartuseMPgraphic#1#2#3\stopuseMPgraphic% 
+\long\def\dostartuseMPgraphic#1#2#3\stopuseMPgraphic%
   {\blabelgroup
    \long\setgvalue{\@@MPG#1}{\handleuseMPgraphic{#1}{#2}{#3}}%
    \elabelgroup}
 
-\long\def\startusableMPgraphic % redundant but handy 
+\long\def\startusableMPgraphic % redundant but handy
   {\dodoublegroupempty\dostartusableMPgraphic}
 
-\long\def\dostartusableMPgraphic#1#2#3\stopusableMPgraphic% 
+\long\def\dostartusableMPgraphic#1#2#3\stopusableMPgraphic%
   {\blabelgroup
    \long\setgvalue{\@@MPG#1}{\handleuseMPgraphic{#1}{#2}{#3}}%
    \elabelgroup}
@@ -327,12 +328,12 @@
   {\let\handleuseMPgraphic     \thirdofthreearguments
    \let\handlereusableMPgraphic\thirdofthreearguments}
 
-% todo: each code/page/buffer a var class  
+% todo: each code/page/buffer a var class
 
-%D \macros 
+%D \macros
 %D   {startuniqueMPpagegraphic,uniqueMPpagegraphic}
 %D
-%D Experimental.  
+%D Experimental.
 
 \def\MPpageprefix{\doifoddpageelse oe:}
 
@@ -354,19 +355,19 @@
 
 \def\douniqueMPpagegraphic#1#2%
   {\blabelgroup
-   \let\overlaystamp\overlaypagestamp 
+   \let\overlaystamp\overlaypagestamp
    \setupMPvariables[#1][#2]%
    \getvalue{\@@MPG\MPpageprefix#1}{}%
    \elabelgroup}
 
-%D One way of defining a stamp is: 
-%D 
-%D \starttypen 
+%D One way of defining a stamp is:
+%D
+%D \starttypen
 %D \def\extendMPoverlaystamp#1%
 %D   {\def\docommando##1%
 %D      {\edef\overlaystamp{\overlaystamp:\MPvariable{##1}}}%
 %D    \processcommalist[#1]\docommando}
-%D \stoptypen 
+%D \stoptypen
 
 %D Since we need to feed \METAPOST\ with expanded dimensions,
 %D we introduce a dedicated expansion engine.
@@ -378,20 +379,31 @@
      \doprepareMPvariable{\@@framed\@@meta#1}%
    \fi}
 
+% \startlines
+% \def\xxx{\lineheight}     \doprepareMPvariable{xxx} \xxx
+% \def\xxx{2pt}             \doprepareMPvariable{xxx} \xxx
+% \def\xxx{2}               \doprepareMPvariable{xxx} \xxx
+% \def\xxx{\scratchcounter} \doprepareMPvariable{xxx} \xxx
+% \def\xxx{red}             \doprepareMPvariable{xxx} \xxx
+% \def\xxx{0.4}             \doprepareMPvariable{xxx} \xxx
+% \stoplines
+
 \def\doprepareMPvariable#1%
-  {\doifelsenothing{\getvalue{#1}}
+  {\edef\theMPvariable{\getvalue{#1}}%
+   \doifelsenothing\theMPvariable
      {\setevalue{#1}{\MPcolor{black}}}
-     {\edef\!!stringa{\getvalue{#1}}%
-      \convertcommand\!!stringa\to\ascii % otherwise problems 
+     {\convertcommand\theMPvariable\to\ascii % otherwise problems
       \doifcolorelse \ascii              % with 2\bodyfontsize
-        {\setevalue{#1}{\MPcolor{\getvalue{#1}}}}
-        {% can be aux macro 
-         \setbox\scratchbox\hbox{\scratchdimen\getvalue{#1}sp}%
+        {\setevalue{#1}{\MPcolor\theMPvariable}}
+        {% can be aux macro
+         \setbox\scratchbox\hbox{\scratchdimen\theMPvariable sp}%
          \ifdim\wd\scratchbox=\zeropoint
-           \scratchcounter\getvalue{#1}\relax
-           \setevalue{#1}{\the\scratchcounter}%
+         % \scratchcounter\theMPvariable
+         % \setevalue{#1}{\the\scratchcounter}%
+         % also accepts 0.number :
+           \setevalue{#1}{\number\theMPvariable}%
          \else
-           \scratchdimen\getvalue{#1}\relax
+           \scratchdimen\theMPvariable
            \setevalue{#1}{\the\scratchdimen}%
          \fi}}}
 
@@ -411,44 +423,44 @@
 %D \macros
 %D   {MPdatafile}
 %D
-%D We redefine a macro from \type {supp-mps.tex}: 
+%D We redefine a macro from \type {supp-mps.tex}:
 
 \def\MPdatafile
   {\bufferprefix mpd-\the\currentMPgraphic.mpd}
 
-%D \macros 
-%D   {MPrunfile} 
+%D \macros
+%D   {MPrunfile}
 %D
-%D This one is more abstract and does not assume knowledge 
-%D of buffer prefixes. 
+%D This one is more abstract and does not assume knowledge
+%D of buffer prefixes.
 
-\def\MPrunfile#1% 
+\def\MPrunfile#1%
   {\bufferprefix mprun.#1}
 
-%D We also have to make sure that \METAPOST\ knows this: 
+%D We also have to make sure that \METAPOST\ knows this:
 
-\appendtoks 
+\appendtoks
   if not known _data_prefix_ :
-    string _data_prefix_ , _data_suffix_ ; 
+    string _data_prefix_ , _data_suffix_ ;
   fi ;
-  _data_prefix_ := "\bufferprefix mpd-" ; 
-  _data_suffix_ := ".mpd" ; 
-\to \MPinitializations 
+  _data_prefix_ := "\bufferprefix mpd-" ;
+  _data_suffix_ := ".mpd" ;
+\to \MPinitializations
 
 %D \macros
 %D   {getMPdata}
 %D
-%D The current data is loaded with: 
+%D The current data is loaded with:
 
 \def\getMPdata
   {\startreadingfile
    \readlocfile\MPdatafile\donothing\donothing
    \stopreadingfile}
 
-%D When we collect graphics in one file, we run into 
-%D troubles, since \METAPOST\ has a built in limit (of 4) 
-%D on the number of files it can handle. It's therefore 
-%D better to collect all data in one file and filter it. 
+%D When we collect graphics in one file, we run into
+%D troubles, since \METAPOST\ has a built in limit (of 4)
+%D on the number of files it can handle. It's therefore
+%D better to collect all data in one file and filter it.
 
 \def\getMPdata
   {\long\def\MPdata##1##2%
@@ -457,14 +469,14 @@
    \readlocfile{\MPgraphicfile.mpd}\donothing\donothing
    \stopreadingfile}
 
-%D We have to enable this mechanism with: 
+%D We have to enable this mechanism with:
 
-\appendtoks 
+\appendtoks
   boolean collapse_data ; collapse_data := true ;
-  _data_suffix_ := ".mpd" ; % overloads previous one 
-\to \MPinitializations 
+  _data_suffix_ := ".mpd" ; % overloads previous one
+\to \MPinitializations
 
-%D For the moment, the next one is a private macro: 
+%D For the moment, the next one is a private macro:
 
 \def\processMPbuffer
   {\dosingleempty\doprocessMPbuffer}
@@ -474,32 +486,32 @@
      {\doprocessMPbuffer[\jobname]}
      {\bgroup
       \setnormalcatcodes
-     %\let\par\empty % oeps, this makes dvi mode graphics hang when not found  
+     %\let\par\empty % oeps, this makes dvi mode graphics hang when not found
       \!!toksa\emptytoks
       \def\copyMPbufferline{\expandafter\appendtoks\fileline\to\!!toksa}%
       \def\dodoprocessMPbuffer##1%
         {\doprocessfile\scratchread{\TEXbufferfile{##1}}\copyMPbufferline}%
       \processcommalist[#1]\dodoprocessMPbuffer
-      \@EA\startMPcode\the\!!toksa\stopMPcode % more efficient 
+      \@EA\startMPcode\the\!!toksa\stopMPcode % more efficient
       \egroup}}
 
 \def\runMPbuffer
   {\dosingleempty\dorunMPbuffer}
 
-\def\dorunMPbuffer[#1]% processing only 
-  {{\MPruntrue\doprocessMPbuffer[#1]}} 
+\def\dorunMPbuffer[#1]% processing only
+  {{\MPruntrue\doprocessMPbuffer[#1]}}
 
-%D \macros 
+%D \macros
 %D   {startMPenvironment, resetMPenvironment}
 %D
-%D In order to synchronize the main \TEX\ run and the runs 
-%D local to \METAPOST, environments can be passed. 
+%D In order to synchronize the main \TEX\ run and the runs
+%D local to \METAPOST, environments can be passed.
 
 \ifx\everyMPTEXgraphic\undefined
   \newtoks\everyMPTEXgraphic
-\fi 
+\fi
 
-%D A more generar of passing environments is: 
+%D A more generar of passing environments is:
 
 \def\startMPenvironment%                % second arg gobbles spaces, so
   {\dodoubleempty\dostartMPenvironment} % that reset gives \emptytoks
@@ -512,38 +524,38 @@
    \expandafter\appendtoks\ascii\to\everyMPTEXgraphic}
 
 \def\resetMPenvironment
-  {\everyMPTEXgraphic\emptytoks % = is really needed ! 
+  {\everyMPTEXgraphic\emptytoks % = is really needed !
    \startMPenvironment
      \global\loadfontfileoncetrue
-   \stopMPenvironment} 
+   \stopMPenvironment}
 
 \startMPenvironment
   \global\loadfontfileoncetrue
 \stopMPenvironment
 
-%D This command takes \type {[reset]} as optional 
-%D argument. 
+%D This command takes \type {[reset]} as optional
+%D argument.
 %D
-%D \starttypen 
+%D \starttypen
 %D \startMPenvironment
 %D   \setupbodyfont[pos,14.4pt]
 %D \stopMPenvironment
 %D
 %D \startMPcode
-%D   draw btex \sl Hans Hagen etex scaled 5 ; 
+%D   draw btex \sl Hans Hagen etex scaled 5 ;
 %D \stopMPcode
-%D \stoptypen 
+%D \stoptypen
 %D
-%D The \type {\resetMPenvironment} is a quick way to erase 
-%D the token list. 
+%D The \type {\resetMPenvironment} is a quick way to erase
+%D the token list.
 
-%D We don't want spurious files, do we? 
+%D We don't want spurious files, do we?
 
 %\def\initializeMPgraphics
-%  {%\ifx\bufferprefix\empty \else 
+%  {%\ifx\bufferprefix\empty \else
 %     \immediate\openout\MPwrite\MPgraphicfile.mp
 %     \immediate\write\MPwrite{end.}%
-%     \immediate\closeout\MPwrite 
+%     \immediate\closeout\MPwrite
 %   }%\fi}
 
 \def\initializeMPgraphicfile
@@ -567,8 +579,8 @@
    \fi
    \egroup}
 
-%D Loading specific \METAPOST\ related definitions is 
-%D accomplished by: 
+%D Loading specific \METAPOST\ related definitions is
+%D accomplished by:
 
 \def\douseMPlibrary#1%
   {\doifundefined{\c!file\f!javascriptprefix#1}
@@ -585,7 +597,7 @@
 %D \macros
 %D   {setMPtext, MPtext, MPstring, MPbetex}
 %D
-%D To be documented: 
+%D To be documented:
 %D
 %D \starttyping
 %D \setMPtext{identifier}{text}
@@ -593,51 +605,51 @@
 %D \MPtext  {identifier}
 %D \MPstring{identifier}
 %D \MPbetex {identifier}
-%D \stoptyping 
+%D \stoptyping
 
 \def\@@MPT{@MPT@}
 
 \def\forceMPTEXgraphic
   {\long\def\checkMPTEXgraphic##1{\global\MPTEXgraphictrue}}
 
-\def\setMPtext#1#2% todo : #1 must be made : safe 
+\def\setMPtext#1#2% todo : #1 must be made : safe
   {%\forceMPTEXgraphic
    \convertargument#2\to\ascii
    \dodoglobal\letvalue{\@@MPT#1}\ascii}
 
-\def\MPtext       #1{\getvalue{\@@MPT#1}} 
-\def\MPstring    #1{"\getvalue{\@@MPT#1}"} 
+\def\MPtext       #1{\getvalue{\@@MPT#1}}
+\def\MPstring    #1{"\getvalue{\@@MPT#1}"}
 \def\MPbetex #1{btex \getvalue{\@@MPT#1} etex}
 
-%D Unfortunately \METAPOST\ does not have \CMYK\ support 
-%D built in, but by means of specials we can supply the 
-%D information needed to handle them naturaly. 
+%D Unfortunately \METAPOST\ does not have \CMYK\ support
+%D built in, but by means of specials we can supply the
+%D information needed to handle them naturaly.
 
-\newif\ifMPcmykcolors \MPcmykcolorstrue 
-\newif\ifMPspotcolors \MPspotcolorstrue 
+\newif\ifMPcmykcolors \MPcmykcolorstrue
+\newif\ifMPspotcolors \MPspotcolorstrue
 
 \appendtoks
-  cmykcolors := \ifMPcmykcolors true \else false \fi ;   
-  spotcolors := \ifMPspotcolors true \else false \fi ;   
-\to \MPinitializations 
+  cmykcolors := \ifMPcmykcolors true \else false \fi ;
+  spotcolors := \ifMPspotcolors true \else false \fi ;
+\to \MPinitializations
 
-%D In order to communicate conveniently with the \TEX\ 
-%D engine, we introduce some typesetting variables. 
+%D In order to communicate conveniently with the \TEX\
+%D engine, we introduce some typesetting variables.
 
-% todo : backgroundoffsets 
+% todo : backgroundoffsets
 
 \startuseMPgraphic{init data}
   color OverlayColor, OverlayLineColor ;
   %
-  OverlayWidth     := \overlaywidth ; 
-  OverlayHeight    := \overlayheight ; 
-  OverlayDepth     := \overlayheight ; 
-  OverlayColor     := \MPcolor{\overlaycolor} ; 
+  OverlayWidth     := \overlaywidth ;
+  OverlayHeight    := \overlayheight ;
+  OverlayDepth     := \overlayheight ;
+  OverlayColor     := \MPcolor{\overlaycolor} ;
   OverlayLineWidth := \overlaylinewidth ;
-  OverlayLineColor := \MPcolor{\overlaylinecolor} ; 
+  OverlayLineColor := \MPcolor{\overlaylinecolor} ;
   %
   BaseLineSkip := \the\baselineskip ;
-  LineHeight   := \the\baselineskip ; 
+  LineHeight   := \the\baselineskip ;
   BodyFontSize := \the\bodyfontsize ;
   %
   TopSkip     := \the\topskip ;
@@ -649,27 +661,27 @@
   %
   EmWidth  := \the\fontdimen6\font ;
   ExHeight := \the\fontdimen5\font ;
-  % 
+  %
   PageNumber     := \the\pageno ;
   RealPageNumber := \the\realpageno ;
-  LastPageNumber := \lastpage ; 
+  LastPageNumber := \lastpage ;
 \stopuseMPgraphic
 
-\appendtoks 
-  \includeMPgraphic{init data} 
+\appendtoks
+  \includeMPgraphic{init data}
 \to \MPinitializations
 
 \appendtoks
   \baselineskip1\baselineskip
-  \lineheight  1\lineheight 
+  \lineheight  1\lineheight
   \topskip     1\topskip
 \to \everyMPgraphic
 
-% this will become (more efficient) 
+% this will become (more efficient)
 %
 % \startuseMPgraphic{init data}
 %   tx1 := \the\baselineskip ;
-%   tx2 := \the\baselineskip ; 
+%   tx2 := \the\baselineskip ;
 %   tx3 := \the\bodyfontsize ;
 %   tx4 := \strutheight ;
 %   tx5 := \strutdepth ;
@@ -678,8 +690,8 @@
 %   tx8 := \the\fontdimen6\font ;
 %   tx9 := \the\fontdimen5\font ;
 % \stopuseMPgraphic
-% 
-% def map_tx_variables = 
+%
+% def map_tx_variables =
 %   BaseLineSkip  := tx1 ;
 %   LineHeight    := tx2 ;
 %   BodyFontSize  := tx3 ;
@@ -689,16 +701,16 @@
 %   Currentheight := tx7 ;
 %   EmWidth       := tx8 ;
 %   ExHeight      := tx9 ;
-% enddef ; 
+% enddef ;
 %
-% extra_begin_fig .... 
+% extra_begin_fig ....
 
-%D Alas, the prologue settings differ per driver. 
+%D Alas, the prologue settings differ per driver.
 
-\ifx\undefined\MPprologues \def\MPprologues{0} \fi 
+\ifx\undefined\MPprologues \def\MPprologues{0} \fi
 
-\appendtoks 
-  prologues := \MPprologues ; 
+\appendtoks
+  prologues := \MPprologues ;
 \to \MPinitializations
 
 \appendtoks
@@ -706,36 +718,36 @@
   \def\MPOSTdriver{dvips}%
 \to \everyresetspecials
 
-%D \macros 
+%D \macros
 %D   {PDFMPformoffset}
 %D
-%D In \PDF, forms are clipped and therefore we have to take 
-%D precautions to get this right. Since this is related to 
-%D objects, we use the same offset as used there.  
+%D In \PDF, forms are clipped and therefore we have to take
+%D precautions to get this right. Since this is related to
+%D objects, we use the same offset as used there.
 
 \def\PDFMPformoffset{\objectoffset}
 
-%D \macros 
+%D \macros
 %D   {insertMPfile}
 %D
 %D Bypassing the special driver and figure mechanism is not
 %D that nice but saves upto 5\% time in embedding \METAPOST\
 %D graphics by using the low level \PDF\ converter directly,
 %D given of course that we use \PDFTEX. As a result we need to
-%D fool around with the object trigger. 
+%D fool around with the object trigger.
 
 \newtoks\everyinsertMPfile
 
 %D First we present the reasonable fast alternative that we
-%D happily used for some time. 
-%D 
-%D \starttypen 
+%D happily used for some time.
+%D
+%D \starttypen
 %D \def\insertMPfile#1#2%
 %D   {\ifx\undefined\externalfigure
 %D      \message{[insert file #1 here]}%
 %D    \else
 %D      \bgroup
-%D      \the\everyinsertMPfile 
+%D      \the\everyinsertMPfile
 %D      \externalfigure
 %D        [#1]
 %D        [\c!type=\c!mps,\c!object=\v!nee,%
@@ -745,9 +757,9 @@
 %D         #2]%
 %D      \egroup
 %D    \fi}
-%D \stoptypen 
+%D \stoptypen
 %D
-%D However, on a 1 Gig Pentium, the next alternative saves 
+%D However, on a 1 Gig Pentium, the next alternative saves
 %D us 20 seconds run time for the 300 page \METAFUN\ manual:
 
 \def\insertMPfile#1#2%
@@ -784,21 +796,21 @@
 %D optimizations are a bit tricky since we must make sure that
 %D special resources end up in the (PDF) files. Because the
 %D \METAPOST\ to \PDF\ can handle objects itself, it is not
-%D that complicated. 
+%D that complicated.
 
-%D We hook a couple of initializations into the graphic 
-%D macros. 
+%D We hook a couple of initializations into the graphic
+%D macros.
 
-\appendtoks 
+\appendtoks
   \let\figuretypes\c!mps
-  \runutilityfilefalse 
+  \runutilityfilefalse
   \consultutilityfilefalse
 \to \everyinsertMPfile
 
-%D One more: (still needed?) 
+%D One more: (still needed?)
 
-\appendtoks 
-  def initialize_form_numbers = 
+\appendtoks
+  def initialize_form_numbers =
     do_initialize_numbers ;
   enddef ;
 \to \MPinitializations
@@ -810,36 +822,36 @@
     unitsquare xysized(HSize,VSize)
   enddef ;
   vardef PageFraction =
-    if \lastpage>1 : (\realfolio-1)/(\lastpage-1) else : 1 fi 
-  enddef ; 
+    if \lastpage>1 : (\realfolio-1)/(\lastpage-1) else : 1 fi
+  enddef ;
 \to \MPinitializations
 
-%D And some more. These are not really needed since we 
-%D don't use the normal figure inclusion macros any longer. 
+%D And some more. These are not really needed since we
+%D don't use the normal figure inclusion macros any longer.
 
-\appendtoks 
-  \externalfigurepostprocessors\emptytoks % safeguard 
+\appendtoks
+  \externalfigurepostprocessors\emptytoks % safeguard
 \to \everyinsertMPfile
 
 %D We also take care of disabling fancy figure features, that
-%D can terribly interfere when dealing with symbols, 
-%D background graphics and running (postponed) graphics. 
-%D You won't believe me if I tell you what funny side effects 
-%D can occur. One took me over a day to uncover when 
-%D processing the screen version of the \METAFUN\ manual. 
+%D can terribly interfere when dealing with symbols,
+%D background graphics and running (postponed) graphics.
+%D You won't believe me if I tell you what funny side effects
+%D can occur. One took me over a day to uncover when
+%D processing the screen version of the \METAFUN\ manual.
 
-%D For my eyes only: 
+%D For my eyes only:
 
 \def\doifelseMPgraphic#1{\doifdefinedelse{\@@MPG#1}}
 
-%D New: 
+%D New:
 
-% \appendtoks \closeMPgraphicfiles \to \everystoptext 
+% \appendtoks \closeMPgraphicfiles \to \everystoptext
 
 \protect \endinput
 
-% also: 
+% also:
 %
 % linecap  := rounded ;
-% linejoin := rounded ; 
+% linejoin := rounded ;
 % drawoptions () ;

@@ -21,27 +21,27 @@
 
 %D Interfacing between this and other modules is handled by
 %D the following macros. The current state of a text line
-%D (header, footer, etc.) is checked by: 
-%D 
-%D \starttypen 
-%D \resetlayoutlines
-%D \stoptypen 
-%D 
-%D The main text box is finished by the following macro: 
-%D 
-%D \starttypen 
+%D (header, footer, etc.) is checked by:
+%D
+%D \starttypen
+%D \resetlayouttextlines
+%D \stoptypen
+%D
+%D The main text box is finished by the following macro:
+%D
+%D \starttypen
 %D \getmainbox <box> <\vbox|\unvbox>
-%D \stoptypen 
-%D 
-%D The text lines are collected with: 
-%D 
-%D \starttypen 
+%D \stoptypen
+%D
+%D The text lines are collected with:
+%D
+%D \starttypen
 %D \gettextboxes
-%D \stoptypen 
-%D 
-%D It is possible to extens the default content of the text 
-%D areas by appending content to the following token list 
-%D registers: 
+%D \stoptypen
+%D
+%D It is possible to extens the default content of the text
+%D areas by appending content to the following token list
+%D registers:
 
 \newtoks\toptextcontent     \newtoks\leftedgetextcontent
 \newtoks\headertextcontent  \newtoks\leftmargintextcontent
@@ -51,9 +51,9 @@
 \newtoks\texttextcontent
 
 %D \macros
-%D  {setuptop, setupheader, setuptext, 
+%D  {setuptop, setupheader, setuptext,
 %D   setupfooter, setupbottom}
-%D 
+%D
 %D The macros in this module sometimes look a bit more complicated
 %D than needed, which is a direct result of the fact that their
 %D ancestors are quite old and upward compatibility is a must.
@@ -74,7 +74,7 @@
     %\getparameters[\??tk#1\v!tekst][#2]%
      \getparameters[\??tk#1][#2]%
    \fi
-  %\checkcurrentlayout % no 
+  %\checkcurrentlayout % no
    \calculatevsizes}
 
 \def\setuptop    {\dotripleempty\dosetuplayouttext[\v!boven]}
@@ -85,7 +85,7 @@
 
 %D \macros
 %D  {noheaderandfooterlines,notopandbottomlines}
-%D 
+%D
 %D Although not really needed, the following shortcuts
 %D sometimes come in handy.
 %D
@@ -101,9 +101,9 @@
    \setupbottom[\c!status=\v!leeg]}
 
 %D \macros
-%D  {setuptoptexts, setupheadertexts, setuptexttexts, 
+%D  {setuptoptexts, setupheadertexts, setuptexttexts,
 %D   setupfootertexts, setupbottomtexts}
-%D 
+%D
 %D The next macros take one or more arguments. The exact setup
 %D depends on the number of arguments. Although not that
 %D intuitive, the current scheme evolved out of the original.
@@ -199,8 +199,8 @@
            {\ConvertConstantAfter\doifelse{\v!paginanummer}{#6}
               {\@@plaatspaginanummer}
               {\ConvertConstantAfter\doifelse{\v!datum}{#6}
-                 {\currentdate} 
-                 {% #6{}{}{} -> {} needed for macros that look 
+                 {\currentdate}
+                 {% #6{}{}{} -> {} needed for macros that look
                   % ahead, like \uniqueMPgraphic
                   \opeenregel\dolimitatetexts{#1#2#5}{#6{}{}{}}}}}}}%
   \egroup}
@@ -211,8 +211,8 @@
 \def\dolimitatetexts#1#2%
   {\doifelsevaluenothing{#1}{#2}{\limitatetext{#2}{\getvalue{#1}}{\unknown}}}
 
-%D The placement of text is hooked into the token lists 
-%D associated to the area at hand. 
+%D The placement of text is hooked into the token lists
+%D associated to the area at hand.
 
 \appendtoks \placelayouttextline\v!boven\bovenhoogte \to    \toptextcontent
 \appendtoks \placelayouttextline\v!hoofd\hoofdhoogte \to \headertextcontent
@@ -256,28 +256,28 @@
 %     {\getvalue{\string\placelayouttextline\textlinestatus}{#1}{#2}}
 %     {\getvalue{\string\placelayouttextline\s!unknown}{#1}{#2}}}
 %
-%\def\placelayouttextline#1% #2 
+%\def\placelayouttextline#1% #2
 %  {\settextlinestatus{#1}%
 %   \doifundefined{\string\placelayouttextline\textlinestatus}
 %     {\let\textlinestatus\s!unknown}%
 %   \getvalue{\string\placelayouttextline\textlinestatus}{#1}} % {#2}
 
-% recently bugged 
+% recently bugged
 %
-% \def\placelayouttextline#1% #2 
+% \def\placelayouttextline#1% #2
 %   {\settextlinestatus{#1}%
 %    \ifundefined{\string\placelayouttextline\textlinestatus}%
 %      \let\textlinestatus\s!unknown
 %    \fi
 %    \csname\string\placelayouttextline\textlinestatus\endcsname{#1}} % {#2}
 
-\def\placelayouttextline#1% #2 
+\def\placelayouttextline#1% #2
   {\settextlinestatus{#1}%
    \csname\string\placelayouttextline
      \ifundefined{\string\placelayouttextline\textlinestatus}%
        \s!unknown
      \else
-       \textlinestatus 
+       \textlinestatus
      \fi
    \endcsname{#1}} % {#2}
 
@@ -306,10 +306,6 @@
 \setvalue{\string\placelayouttextline\s!unknown}#1#2%
   {\bgroup % new
    \resettextlinestatus{#1}%
-  %\setlocallayoutline{#1\textlinestatus}%
-  %\setlocallayoutline{#1\v!tekst\textlinestatus}%
-  %\setlocallayoutline{#1\v!marge\textlinestatus}%
-  %\setlocallayoutline{#1\v!rand\textlinestatus}%
    \getvalue{\??tk#1\textlinestatus}%
    \getvalue{\??tk#1\v!tekst\textlinestatus}%
    \getvalue{\??tk#1\v!marge\textlinestatus}%
@@ -317,29 +313,21 @@
    \doplacelayouttextline{#1}{#2}%
    \egroup}
 
-% \def\setlocallayoutline#1%
-%   {\ifundefined{\??tk#1}\else\getvalue{\??tk#1}\fi}
-
 %D The following macro has to be called after a page
 %D is flushed.
 
-%\def\resetlayoutline#1% beware: global assignment
-%  {\doifvalue{\??tk#1\v!tekst\c!status}\v!hoog
-%     {\resettextlinestatus{#1}%
-%      \donetrue}}
-
-\def\resetlayoutline#1% beware: global assignment
+\def\resetlayouttextline#1% beware: global assignment
   {\doifvalue{\??tk#1\c!status}\v!hoog
      {\resettextlinestatus{#1}%
       \donetrue}}
 
-\def\resetlayoutlines
+\def\resetlayouttextlines
   {\donefalse
-   \resetlayoutline\v!boven
-   \resetlayoutline\v!hoofd
-   \resetlayoutline\v!tekst
-   \resetlayoutline\v!voet
-   \resetlayoutline\v!onder
+   \resetlayouttextline\v!boven
+   \resetlayouttextline\v!hoofd
+   \resetlayouttextline\v!tekst
+   \resetlayouttextline\v!voet
+   \resetlayouttextline\v!onder
    \ifdone
      \doglobal\calculatevsizes
      \recalculatebackgrounds
@@ -375,6 +363,7 @@
       \vskip-\teksthoogte
       \the\texttextcontent
       \vskip\teksthoogte
+      \the\everyendoftextbody
       \vskip\voetafstand
       \ifdim\voethoogte>\zeropoint
         \the\footertextcontent
@@ -440,10 +429,10 @@
    \box\scratchpagebox}
 
 %D The main text area has to be combined with some additional
-%D (tracing) information. 
+%D (tracing) information.
 
 \def\settextpagecontent#1#2#3% #2 and #3 will disappear
-  {\setbox#1\hbox to \zetbreedte 
+  {\setbox#1\hbox to \zetbreedte
      {\hss                        % so don't change this
       \vbox to \teksthoogte
         {\offinterlineskip
@@ -455,12 +444,12 @@
       \hss}%
    \dp#1\zeropoint}
 
-\def\addtextgridlayer#1% tzt run time 
+\def\addtextgridlayer#1% tzt run time
   {\ifcase\showgridstate\else % 1=bottom 2=top
      \setgridbox\scratchbox\zetbreedte\teksthoogte
      \setbox#1\hbox
        {\ifcase\showgridstate\or\or\box#1\hskip-\zetbreedte\fi
-        \bgroup % color 
+        \bgroup % color
 \startlayoutcomponent{gridcolumns}{grid columns}%
         \incolortrue
         \ifcase\layoutcolumns\else
@@ -485,9 +474,9 @@
         \ifcase\showgridstate\or\hskip-\zetbreedte\box#1\fi}%
    \fi}
 
-%D The placement of a whole line is handled by the next two 
+%D The placement of a whole line is handled by the next two
 %D macros. These are hooked into the general purpose token
-%D list registers mentioned before. 
+%D list registers mentioned before.
 
 \def\ignoredlinebreak{\unskip\space\ignorespaces}
 
@@ -581,35 +570,35 @@
       \stoplayoutcomponent
       \getvalue{\??tk#2#3\c!na}}}
 
-%D Although it is far better to use backgrounds for this 
-%D purpose, one can add a rule in the following way. This 
-%D method makes the rules disappear in case of an empty text 
-%D line. Consider this a feature. 
+%D Although it is far better to use backgrounds for this
+%D purpose, one can add a rule in the following way. This
+%D method makes the rules disappear in case of an empty text
+%D line. Consider this a feature.
 %D
-%D \starttypen 
+%D \starttypen
 %D \setupheadertexts[left][right]
-%D 
+%D
 %D \setupheader[text][after=\hrule,style=bold]
-%D 
+%D
 %D \starttext
 %D   \input tufte \page
 %D   \setupheader[state=empty]
 %D   \input tufte \page
 %D \stoptext
-%D \stoptypen 
+%D \stoptypen
 
-%D The next twosome will be done differently (using an 
+%D The next twosome will be done differently (using an
 %D existing auxiliary macro).
 
 % \def\@@nmpre#1{\setbox0\hbox{#1}\ifdim\wd0=\zeropoint\else\unhbox0\tfskip\fi}
 % \def\@@nmpos#1{\setbox0\hbox{#1}\ifdim\wd0=\zeropoint\else\tfskip\unhbox0\fi}
 
-% cleaner 
+% cleaner
 
 \def\@@nmpre#1{\doiftext{#1}{{#1}\tfskip}}
 \def\@@nmpos#1{\doiftext{#1}{\tfskip{#1}}}
 
-% newer 
+% newer
 
 \def\@@nmprepos#1#2#3#4#5%
   {\doifelsenothing\@@nmbreedte
@@ -619,7 +608,7 @@
 \def\@@nmpre{\@@nmprepos\empty\tfskip\relax\hss}
 \def\@@nmpos{\@@nmprepos\tfskip\empty\hss\relax}
 
-%D This code will move to \type {page-flt.tex}. 
+%D This code will move to \type {page-flt.tex}.
 
 \appendtoks
   \plaatsrechtermargeblok \hskip-\rechtermargebreedte
@@ -629,9 +618,9 @@
   \plaatslinkermargeblok \hskip-\linkermargebreedte
 \to \leftmargintextcontent
 
-%D The next hook will later be used for keeping track of 
-%D positions, i.e.\ it will provide a proper (page 
-%D dependent) reference point. 
+%D The next hook will later be used for keeping track of
+%D positions, i.e.\ it will provide a proper (page
+%D dependent) reference point.
 
 \ifx\undefined\placepositionanchors
   \def\placepositionanchors{\vskip\teksthoogte}
@@ -639,24 +628,24 @@
 
 %D \macros
 %D   {definetext}
-%D 
+%D
 %D Some macros ago, we implemented the \type {status} option
-%D \type {unknown}. This one is used to take care of 
-%D symbolic texts handlers. 
+%D \type {unknown}. This one is used to take care of
+%D symbolic texts handlers.
 %D
 %D \showsetup{\y!definetext}
-%D 
-%D The next example demonstrates how we can use this 
-%D mechanism to provide page (event) dependent text lines. 
-%D 
-%D \starttypen 
+%D
+%D The next example demonstrates how we can use this
+%D mechanism to provide page (event) dependent text lines.
+%D
+%D \starttypen
 %D \definetext[hoofdstuk][voet][paginanummer]
 %D \stelkopin[hoofdstuk][hoofd=hoog,voet=hoofdstuk]
 %D \setupheadertexts[paginanummer]
 %D \setupfootertexts[links][rechts]
 %D \hoofdstuk{eerste} \dorecurse{20}{\input tufte \relax}
 %D \hoofdstuk{tweede} \dorecurse{20}{\input tufte \relax}
-%D \stoptypen 
+%D \stoptypen
 
 \def\definetext
   {\doseventupleempty\dodefinetext}
@@ -674,8 +663,8 @@
      \setvalue{\??tk  #2#1}{\dosixtupleempty\dosetuptexts[#2][#3]}%
    \fi\fi\fi\fi}
 
-%D The rest of this file is dedicated to setting up the 
-%D texts. This code is not that impressive. 
+%D The rest of this file is dedicated to setting up the
+%D texts. This code is not that impressive.
 
 \setupheadertexts [\v!tekst] [] []
 \setupheadertexts [\v!marge] [] []
@@ -718,15 +707,15 @@
 %    \resetlayouttekst[#1][\v!rand]}
 
 %D We combine a lot of similar settings in a macro that
-%D we will later dispose. 
+%D we will later dispose.
 
 \def\dodocommando[#1][#2]%
   {\getparameters
      [\??tk#1#2]
-     [%\c!status=\v!normaal, % moved 
-      \c!voor=,  % both global and local are used  
-      \c!na=,    % both global and local are used  
-      \c!strut=, % the local one, not (yet) used 
+     [%\c!status=\v!normaal, % moved
+      \c!voor=,  % both global and local are used
+      \c!na=,    % both global and local are used
+      \c!strut=, % the local one, not (yet) used
       \c!letter=\getvalue{\??tk#1\c!letter},% hm, got lost
       \c!kleur=\getvalue{\??tk#1\c!kleur},  % hm, got lost
       \c!linkertekst=,
@@ -734,8 +723,8 @@
       \c!rechtertekst=,
       \c!kantlijntekst=,
       \c!margetekst=,
-      \c!breedte=]% 
-   \inheritparameter[\??tk#1#2][\c!linkerletter  ][\c!letter ]% 
+      \c!breedte=]%
+   \inheritparameter[\??tk#1#2][\c!linkerletter  ][\c!letter ]%
    \inheritparameter[\??tk#1#2][\c!rechterletter ][\c!letter ]%
    \inheritparameter[\??tk#1#2][\c!linkerkleur   ][\c!kleur  ]%
    \inheritparameter[\??tk#1#2][\c!rechterkleur  ][\c!kleur  ]%
@@ -757,7 +746,7 @@
 \let\dodocommando\relax
 
 %D While the header and footer lines are moved away from the
-%D main text, the top and bottom lines are centered. 
+%D main text, the top and bottom lines are centered.
 
 \setuptop   [\c!status=\v!normaal,\c!voor=\vss,\c!na=\vss,\c!strut=]
 \setupheader[\c!status=\v!normaal,\c!voor=,    \c!na=\vss,\c!strut=\v!ja]

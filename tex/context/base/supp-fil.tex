@@ -8,8 +8,8 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
-%C details. 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
 
 %D \TEX\ operates on files, so one wouldn't wonder that there
 %D is a separate module for file support. In \CONTEXT\ files
@@ -24,7 +24,7 @@
 %D
 %D When dealing with files we can load them as a whole, using
 %D the \type{\input} primitive or load them on a line||by||line
-%D basis, using \type{\read}. Writing is always done line by 
+%D basis, using \type{\read}. Writing is always done line by
 %D line, using \type{\write}.
 
 \writestatus{loading}{Context Support Macros / Files}
@@ -32,15 +32,15 @@
 \unprotect
 
 \ifx\undefined\f!pathseparator
-  \def\f!pathseparator{/} 
+  \def\f!pathseparator{/}
   \def\f!currentpath  {.}
   \def\f!parentpath   {..}
 \fi
 
-%D \macros 
+%D \macros
 %D   {normalwrite, normalimmediate}
 %D
-%D We save a few primitives first. 
+%D We save a few primitives first.
 
 \let\normalwrite\write
 \let\normalimmediate\immediate
@@ -61,8 +61,8 @@
 %D \popendofline
 %D \stoptypen
 %D
-%D Just to be sure, we save the current meaning of \type{^^M} 
-%D in \type{\poppedendofline}. 
+%D Just to be sure, we save the current meaning of \type{^^M}
+%D in \type{\poppedendofline}.
 
 \chardef\poppedendofline\catcode`\^^M
 
@@ -78,24 +78,24 @@
 %D
 %D We define a scratch file for reading. Keep in mind that
 %D the number of files is limited to~16, so use this one when
-%D possible. We also define a scratch output file. 
+%D possible. We also define a scratch output file.
 
 \ifx\undefined\scratchread  \newread \scratchread  \fi
 \ifx\undefined\scratchwrite \newwrite\scratchwrite \fi
 
-%D \macros 
-%D   {unlinkfile} 
+%D \macros
+%D   {unlinkfile}
 %D
 %D Sometimes we want to make sure a file is deleted, so here
-%D is a macro that does the job. It's named after the \PERL\ 
-%D one. 
+%D is a macro that does the job. It's named after the \PERL\
+%D one.
 
-\def\unlinkfile#1%  
+\def\unlinkfile#1%
   {\immediate\openout\scratchwrite=#1\immediate\closeout\scratchwrite}
 
-%D \macros 
+%D \macros
 %D   {writeln}
-%D 
+%D
 %D This saves a few tokens:
 
 \def\writeln#1{\write#1{}}
@@ -115,17 +115,17 @@
 %D \macros
 %D   {doprocessfile,fileline,fileprocessedtrue,dofinishfile}
 %D
-%D The next macro offers a framework for processing files on a 
-%D line by line basis. 
-%D 
+%D The next macro offers a framework for processing files on a
+%D line by line basis.
+%D
 %D \starttypen
 %D \doprocessfile \identifier {name} \action
 %D \stoptypen
-%D 
+%D
 %D The first argument can for instance be \type{\scratchread}.
 %D The action must do something with \type{\fileline}, which
-%D holds the current line. One can halfway step out using 
-%D \type{\dofinishfile} and ise \type{\iffileprocessed} to 
+%D holds the current line. One can halfway step out using
+%D \type{\dofinishfile} and ise \type{\iffileprocessed} to
 %D see if indeed some content was found.
 
 \newif\iffileprocessed
@@ -153,35 +153,35 @@
      \expandafter\doprocessline
    \fi}
 
-%D \macros 
+%D \macros
 %D   {pathplusfile,assignfullfilename,sanitizefilename}
-%D 
+%D
 %D Use \type{\pathplusfile} to compose a full file name, like
-%D in: 
+%D in:
 %D
 %D \starttypen
 %D \pathplusfile{path}{file}
 %D \stoptypen
 %D
-%D By default, this expands into {\tt \pathplusfile{path}{file}}. 
+%D By default, this expands into {\tt \pathplusfile{path}{file}}.
 
 \def\pathplusfile#1#2{#1\f!pathseparator#2}
 
-%D This one constructs a filename from a (possible empty) 
-%D path and filename. 
+%D This one constructs a filename from a (possible empty)
+%D path and filename.
 
 \def\assignfullfilename#1#2\to#3%
   {\doifelsenothing{#1}
      {\edef#3{#2}}
      {\edef#3{#1\f!pathseparator#2}}}
 
-%D For the moment, we limit sanitizing to taking care of 
-%D active \type {/}.  
+%D For the moment, we limit sanitizing to taking care of
+%D active \type {/}.
 
-\bgroup % todo: _ cleanup 
- 
-\catcode`\/=\@@active 
-\catcode`\:=\@@active 
+\bgroup % todo: _ cleanup
+
+\catcode`\/=\@@active
+\catcode`\:=\@@active
 
 \gdef\sanitizefilename#1\to#2%
   {\bgroup
@@ -198,7 +198,7 @@
 \chardef\kindoffile=0 % 0=normal 1=full path spec (or http)
 
 \def\checkfilename#1%
-  {\doifinstringelse{@@/}{@@#1}%    unix: /full/path 
+  {\doifinstringelse{@@/}{@@#1}%    unix: /full/path
      {\chardef\kindoffile\plusone}
      {\doifinstringelse{:/}{#1}%  windows: e:/full/path or http://
         {\chardef\kindoffile\plusone}
@@ -221,14 +221,14 @@
 %D Many \TEX\ implementations have laid out some strategy for
 %D locating files. This can lead to unexpected results,
 %D especially when one loads files that are not found in the
-%D current directory. Let's give an example of this. In 
-%D \CONTEXT\ illustrations can be defined in an external file. 
+%D current directory. Let's give an example of this. In
+%D \CONTEXT\ illustrations can be defined in an external file.
 %D The resizing macro first looks if an illustration is defined
-%D in the local definitions file. When no such file is found, 
-%D it searches for a global file and when this file is not 
-%D found either, the illustration itself is scanned for 
+%D in the local definitions file. When no such file is found,
+%D it searches for a global file and when this file is not
+%D found either, the illustration itself is scanned for
 %D dimensions. One can imagine what happens if an adapted,
-%D localy stored illustration, is scaled according to 
+%D localy stored illustration, is scaled according to
 %D dimensions stored somewhere else.
 %D
 %D When some \TEX\ implementation starts looking for a file, it
@@ -248,25 +248,25 @@
 %D We first present an earlier implementation of
 %D \type{\readfile}. This command backtracks parent
 %D directories, upto a predefined level. Users can change this
-%D level, but we default to~3.  
+%D level, but we default to~3.
 %D
 %D \starttypen
 %D \def\maxreadlevel {3}
 %D \stoptypen
 %D
-%D This is a pseudo \COUNTER. 
+%D This is a pseudo \COUNTER.
 %D
-%D We use \type{\normalinput} instead of \type{\input} 
-%D because we want to be able to redefine the original 
-%D \type{\input} when needed, for instance when loading third 
-%D party libraries. 
+%D We use \type{\normalinput} instead of \type{\input}
+%D because we want to be able to redefine the original
+%D \type{\input} when needed, for instance when loading third
+%D party libraries.
 
 \newevery \everybeforereadfile \EveryBeforeReadFile
 \newevery \everyafterreadfile  \EveryAfterReadFile
 
 \let \everyreadfile \everybeforereadfile
 
-\ifx\normalinput\undefined \let\normalinput\input \fi 
+\ifx\normalinput\undefined \let\normalinput\input \fi
 
 \newif\iftracefiles
 
@@ -277,39 +277,39 @@
 %    \checkfilename\readfilename
 %    \ifcase\kindoffile
 %      \iftracefiles\writestatus\m!systems{searching for \readfilename\space on #1}\fi
-%      % not a full path or url, check for existence 
+%      % not a full path or url, check for existence
 %      \doifelsenothing{#1}
 %        {\def\next{\redoreadfile\readfilename{#3}{#4}}}%
 %        {\def\next{\redoreadfile{\pathplusfile{#1}{\readfilename}}{#3}{#4}}}%
 %    \else
-%      % a full path or url, no further checking done  
+%      % a full path or url, no further checking done
 %      \iftracefiles\writestatus\m!systems{assuming present \readfilename}\fi
 %      \def\next{#3\dodoreadfile}%
 %    \fi
 %    \next}
 
-\newconditional\trackfilenames \settrue\trackfilenames 
+\newconditional\trackfilenames \settrue\trackfilenames
 
 \let\trackedfilename\empty
 
 \def\doreadfile#1#2#3#4%
   {\sanitizefilename#2\to\readfilename
-   \let\trackedfilename\readfilename 
+   \let\trackedfilename\readfilename
    \ifconditional\trackfilenames
      \ifundefined{fn..\trackedfilename}\donetrue\else\donefalse\fi
    \else
      \donetrue
-   \fi 
+   \fi
    \ifdone
      \checkfilename\readfilename
      \ifcase\kindoffile
        \iftracefiles\writestatus\m!systems{searching for \readfilename\space on #1}\fi
-       % not a full path or url, check for existence 
+       % not a full path or url, check for existence
        \doifelsenothing{#1}
          {\def\next{\redoreadfile\readfilename{#3}{#4}}}%
          {\def\next{\redoreadfile{\pathplusfile{#1}{\readfilename}}{#3}{#4}}}%
      \else
-       % a full path or url, no further checking done  
+       % a full path or url, no further checking done
        \doiffileexistselse\readfilename
          {\iftracefiles\writestatus\m!systems{located \readfilename}\fi
           \def\next{#3\dodoreadfile}}%
@@ -336,12 +336,12 @@
 %        \def\next{#3}%
 %      \fi
 %    \else
-%      \immediate\closein\scratchread 
+%      \immediate\closein\scratchread
 %      \edef\readfilename{#1}%
 %      \iftracefiles\writestatus\m!systems{#1 located}\fi
 %      \def\next{#2\dodoreadfile}%
 %    \fi
-%    \next}               
+%    \next}
 
 \def\redoreadfile#1#2#3%
   {\doiffileexistselse{#1}%
@@ -356,20 +356,20 @@
       \else
         \def\next{#3}%
       \fi}%
-   \next}               
+   \next}
 
-% \def\dodoreadfile % we provide hooks, for instance for \enableXML 
-%   {\the\everybeforereadfile 
+% \def\dodoreadfile % we provide hooks, for instance for \enableXML
+%   {\the\everybeforereadfile
 %    \normalinput\readfilename\relax
-%    \the\everyafterreadfile} 
+%    \the\everyafterreadfile}
 
-\def\dodoreadfile % we provide hooks, for instance for \enableXML 
+\def\dodoreadfile % we provide hooks, for instance for \enableXML
   {\ifconditional\trackfilenames
      \setxvalue{fn..\trackedfilename}{\readfilename}%
    \fi
-   \the\everybeforereadfile 
+   \the\everybeforereadfile
    \normalinput\readfilename\relax
-   \the\everyafterreadfile} 
+   \the\everyafterreadfile}
 
 \def\readfile% #1%
   {\let\readlevel\maxreadlevel
@@ -382,8 +382,8 @@
 %D \macros
 %D   {readjobfile,readlocfile,readsysfile,
 %D    readfixfile,readsetfile}
-%D 
-%D This implementation honnors the third situation, but we 
+%D
+%D This implementation honnors the third situation, but we
 %D still can get unwanted files loaded and/or can get involved
 %D in extensive searching.
 %D
@@ -393,12 +393,12 @@
 %D backtracks~\readlevel\ directories, including the current
 %D one.
 
-\def\readjobfile#1% current path, no backtracking 
+\def\readjobfile#1% current path, no backtracking
   {\newcounter\readlevel
   %\doreadfile{\pathplusfile{\f!currentpath}{#1}}}
    \doreadfile\f!currentpath{#1}}
 
-\def\readlocfile#1% current path, backtracking 
+\def\readlocfile#1% current path, backtracking
   {\let\readlevel\maxreadlevel
   %\doreadfile{\pathplusfile{\f!currentpath}{#1}}}
    \doreadfile\f!currentpath{#1}}
@@ -407,26 +407,26 @@
 %D \type{\readsysfile} is not bound to the current directory
 %D and obeys the \TEX\ implementation.
 
-% \def\readsysfile#1% current path, obeys tex search 
+% \def\readsysfile#1% current path, obeys tex search
 %   {\let\readlevel\maxreadlevel
 %   %\doreadfile{#1}}
 %    \doreadfile\empty{#1}}
 
-\def\readsysfile#1% current path, obeys tex search 
+\def\readsysfile#1% current path, obeys tex search
   {\newcounter\readlevel
   %\doreadfile{#1}}
    \doreadfile\empty{#1}}
 
 %D Of the last two, \type{\readfixfile} searches on the
 %D directory specified and backtracks too, while
-%D \type{\readsetfile} does only search on the specified path. 
+%D \type{\readsetfile} does only search on the specified path.
 
-\def\readfixfile#1#2% specified path, backtracking 
+\def\readfixfile#1#2% specified path, backtracking
   {\let\readlevel\maxreadlevel
   %\doreadfile{\pathplusfile{#1}{#2}}}
    \doreadfile{#1}{#2}}
 
-\def\readsetfile#1#2% specified path, no backtracking 
+\def\readsetfile#1#2% specified path, no backtracking
   {\newcounter\readlevel
   %\doreadfile{\pathplusfile{#1}{#2}}}
    \doreadfile{#1}{#2}}
@@ -440,7 +440,7 @@
      {\readjobfile{#1}{#2}
         {\readsysfile{#1}{#2}{#3}}}}
 
-%D So now we've got ourselves five file loading commands: 
+%D So now we've got ourselves five file loading commands:
 %D
 %D \starttypen
 %D \readfile                {filename} {before loading} {not found}
@@ -501,9 +501,9 @@
 %D \doiffileelse {filename} {before loading} {not found}
 %D \stoptypen
 %D
-%D We use \type{\next} here, because we want to close the 
-%D file first. We also provide the alternatives: 
-%D 
+%D We use \type{\next} here, because we want to close the
+%D file first. We also provide the alternatives:
+%D
 %D \starttypen
 %D \doiflocfileelse {filename} {before loading} {not found}
 %D \stoptypen
@@ -546,11 +546,11 @@
 
 %D \macros
 %D   {doonlyonce, doinputonce, doendinputonce}
-%D   
+%D
 %D Especially macropackages need only be loaded once.
 %D Repetitive loading not only costs time, relocating registers
 %D often leads to abortion of the processing because \TEX's
-%D capacity is limited. One can prevent multiple execution and 
+%D capacity is limited. One can prevent multiple execution and
 %D loading by using one of both:
 %D
 %D \starttypen
@@ -559,7 +559,7 @@
 %D \doendinputonce{filename}
 %D \stoptypen
 %D
-%D This command obeys the standard method for locating files. 
+%D This command obeys the standard method for locating files.
 
 \long\def\doonlyonce#1#2%
   {\doifundefined{@@@#1@@@}{\setgvalue{@@@#1@@@}{}#2}}
@@ -570,21 +570,24 @@
 \def\doendinputonce#1%
   {\doifdefined{@@@#1@@@}\endinput}
 
+\def\forgetdoingonce#1%
+  {\global\letbeundefined{@@@#1@@@}}
+
 %D \macros
 %D   {doifparentfileelse}
 %D
-%D The test \type{\doifelse{\jobname}{filename}} does not give 
-%D the desired result, simply because \type{\jobname} expands 
-%D to characters with \CATCODE~12, while the characters in 
-%D \type{filename} have \CATCODE~11. So we can better use: 
-%D 
-%D \starttypen 
+%D The test \type{\doifelse{\jobname}{filename}} does not give
+%D the desired result, simply because \type{\jobname} expands
+%D to characters with \CATCODE~12, while the characters in
+%D \type{filename} have \CATCODE~11. So we can better use:
+%D
+%D \starttypen
 %D \doifparentfileelse{filename}{yes}{no}
 %D \stoptypen
-%D 
+%D
 %D Since \TEXEXEC\ (and thereby \CONTEXT) supports renaming of
 %D the outputfile, we also need to check on that alternative
-%D name. 
+%D name.
 
 \ifx\outputfilename\undefined \def\outputfilename{\jobname} \fi
 
@@ -593,10 +596,10 @@
   {\doifsamestringelse{#1}{\jobname.\c!tex}{#2}
   {\doifsamestringelse{#1}{\outputfilename}{#2}{#3}}}}
 
-\def\normalless    {<} % geen \let ! 
-\def\normalmore    {>} % geen \let ! 
-\def\normalequal   {=} % geen \let ! 
-\def\normaldblquote{"} % geen \let ! 
+\def\normalless    {<} % geen \let !
+\def\normalmore    {>} % geen \let !
+\def\normalequal   {=} % geen \let !
+\def\normaldblquote{"} % geen \let !
 
 \newcounter\readingfilelevel
 
@@ -608,9 +611,9 @@
 
 \ifx\\\undefined \let\\\relax \fi
 
-%D This changing catcodes is a direct result from the fact 
-%D that we support some long standing conventions with 
-%D regards to active characters (german ", polish /, 
+%D This changing catcodes is a direct result from the fact
+%D that we support some long standing conventions with
+%D regards to active characters (german ", polish /,
 %D french : and ;).
 
 \def\startreadingfile% beter een every en \setnormalcatcodes
@@ -643,51 +646,51 @@
   {\getvalue{\string\readingfilelevel::\readingfilelevel}%
    \doglobal\decrement\readingfilelevel}
 
-%% % gebruikt voor normale (!) files, will change to proper 
+%% % gebruikt voor normale (!) files, will change to proper
 %% % installer maybe combined with verb module push/popper
-%% 
-%% \def\startreadingfile% beter een every 
+%%
+%% \def\startreadingfile% beter een every
 %%   {\doglobal\increment\readingfilelevel
 %%    \setxvalue{popfilecharacters::\readingfilelevel}%
 %%      {%\expnormalcatcodes
 %%       \expspecialcatcodes}%
 %%   %\setnormalcatcodes
 %%    \setspecialcatcodes}
-%% 
+%%
 %% \def\stopreadingfile%
 %%   {\getvalue{popfilecharacters::\readingfilelevel}%
 %%    \doglobal\decrement\readingfilelevel}
-%% 
+%%
 %% \ifx\\\undefined \let\\\relax \fi
 %% \ifx\!\undefined \let\!\relax \fi
 %% \ifx\?\undefined \let\?\relax \fi
-%% 
+%%
 %% \def\expnormalcatcodes%
 %%   {\catcode`\noexpand\!=\the\catcode`\! \catcode`\noexpand\?=\the\catcode`\?%
-%%    \catcode`\noexpand\&=\the\catcode`\& 
+%%    \catcode`\noexpand\&=\the\catcode`\&
 %%    \catcode`\noexpand\#=\the\catcode`\# \catcode`\noexpand\$=\the\catcode`\$%
 %%    \catcode`\noexpand\%=\the\catcode`\% \catcode`\noexpand\\=\the\catcode`\\%
 %%    \catcode`\noexpand\^=\the\catcode`\^ \catcode`\noexpand\_=\the\catcode`\_%
 %%    \catcode`\noexpand\{=\the\catcode`\{ \catcode`\noexpand\}=\the\catcode`\}}
-%% 
+%%
 %% \def\setnormalcatcodes%
 %%   {%\ifcase\protectionlevel
 %%      \catcode`\!=\@@other  \catcode`\?=\@@other
 %%    %\else
 %%    %  \catcode`\!=\@@letter \catcode`\?=\@@letter
 %%    %\fi
-%%    \catcode`\&=\@@alignment   
-%%    \catcode`\#=\@@parameter   \catcode`\$=\@@mathshift 
+%%    \catcode`\&=\@@alignment
+%%    \catcode`\#=\@@parameter   \catcode`\$=\@@mathshift
 %%    \catcode`\%=\@@comment     \catcode`\\=\@@escape
-%%    \catcode`\^=\@@superscript \catcode`\_=\@@subscript  
+%%    \catcode`\^=\@@superscript \catcode`\_=\@@subscript
 %%    \catcode`\{=\@@begingroup  \catcode`\}=\@@endgroup}
-%% 
+%%
 %% \def\expspecialcatcodes%
 %%   {\catcode`\noexpand/=\the\catcode`/%
 %%    \catcode`\noexpand"=\the\catcode`"%
 %%    \catcode`\noexpand<=\the\catcode`<%
 %%    \catcode`\noexpand>=\the\catcode`>}
-%% 
+%%
 %% \def\setspecialcatcodes%
 %%   {\catcode`/=\@@other
 %%    \catcode`"=\@@other

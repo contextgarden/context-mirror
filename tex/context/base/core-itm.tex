@@ -283,17 +283,42 @@
 
 \def\unknownitemsymbol{?}
 
+% \def\setitemmark#1% % en pas op: resets \docommando
+%   {\doifelsenothing{#1}
+%      {\edef\currentitemsymbol{\itemlevel}}
+%      {\edef\currentitemsymbol{#1}}%
+%    \doifsymboldefinedelse\currentitemsymbol
+%      {\setxvalue{\@@globalitemsymbol\itemlevel}{\currentitemsymbol}%
+%       \setgvalue{\@@localitemsymbol \itemlevel}{\unknownitemsymbol}%
+%       \def\listitem{\symbol[\currentitemsymbol]}%
+%       \let\docommando\gobbleoneargument}
+%      {\doifconversiondefinedelse\currentitemsymbol
+%         {\setxvalue{\@@globalitemsymbol\itemlevel}{\currentitemsymbol}%
+%          \setgvalue{\@@localitemsymbol \itemlevel}%
+%            {\convertnumber{\currentitemsymbol}{\countervalue{\@@itemcounter\itemlevel}}}%
+%          \iftextitems
+%            \doifsomething{\getitemparameter\itemlevel\c!linkertekst}
+%              {\let\tempsymbol\empty}%
+%          \fi
+%          \def\listitem
+%            {\getitemparameter\itemlevel
+%               {\iftextitems\c!linkertekst\else\c!links\fi}%
+%             \getvalue{\@@localitemsymbol\itemlevel}\tempsymbol
+%             \getitemparameter\itemlevel
+%               {\iftextitems\c!rechtertekst\else\c!rechts\fi}}%
+%          \let\docommando\gobbleoneargument}
+%        {\let\listitem\empty}}}
+
 \def\setitemmark#1% % en pas op: resets \docommando
-  {\doifelsenothing{#1}
-     {\edef\currentitemsymbol{\itemlevel}}
-     {\edef\currentitemsymbol{#1}}%
-   \doifsymboldefinedelse\currentitemsymbol
-     {\setxvalue{\@@globalitemsymbol\itemlevel}{\currentitemsymbol}%
+  {\doifsymboldefinedelse{#1}
+     {\edef\currentitemsymbol{#1}%
+      \setxvalue{\@@globalitemsymbol\itemlevel}{\currentitemsymbol}%
       \setgvalue{\@@localitemsymbol \itemlevel}{\unknownitemsymbol}%
       \def\listitem{\symbol[\currentitemsymbol]}%
-      \let\docommando\gobbleoneargument}
-     {\doifconversiondefinedelse\currentitemsymbol
-        {\setxvalue{\@@globalitemsymbol\itemlevel}{\currentitemsymbol}%
+      \let\@@opsymbool\empty}% \let\docommando\gobbleoneargument}
+     {\doifconversiondefinedelse{#1}
+        {\edef\currentitemsymbol{#1}%
+         \setxvalue{\@@globalitemsymbol\itemlevel}{\currentitemsymbol}%
          \setgvalue{\@@localitemsymbol \itemlevel}%
            {\convertnumber{\currentitemsymbol}{\countervalue{\@@itemcounter\itemlevel}}}%
          \iftextitems
@@ -306,8 +331,8 @@
             \getvalue{\@@localitemsymbol\itemlevel}\tempsymbol
             \getitemparameter\itemlevel
               {\iftextitems\c!rechtertekst\else\c!rechts\fi}}%
-         \let\docommando\gobbleoneargument}
-       {\let\listitem\empty}}}
+        \let\@@opsymbool\empty}%\let\docommando\gobbleoneargument}
+       {}}}
 
 \def\calculatelistwidth#1#2% distance deals with 'broad'
   {#2=\getitemparameter{#1}\c!afstand\relax
@@ -464,6 +489,105 @@
    \fi
    \expanded{\redostartitemgroup[\itemgroupoptions]}}% [#2]
 
+% \def\redostartitemgroup[#1][#2]%
+%   {\setfalse\inlinelistitem % new, no indent (leftskip)
+%    \setfalse\concatnextitem % new, concat
+%    \ifhmode
+%      \ifconditional\autoconcatnextitem % new, concat
+%        \ifdim\lastskip=\itemsignal     % new, concat
+%          \settrue\concatnextitem       % new, concat
+%        \fi                             % new, concat
+%      \fi                               % new, concat
+%      \iftextitems\else\doifnotinset\v!tekst{#1}\par\fi % suboptimal
+%    \fi
+%    \begingroup
+%    \ifnum\itemlevel=\plusone % NIEUW
+%      \doadaptleftskip{\getitemparameter1\c!marge}%
+%    \fi
+%    \dosetraggedcommand{\getitemparameter\itemlevel\c!uitlijnen}\raggedcommand
+%    \doifsomething{\getitemparameter\itemlevel\c!inspringen}
+%      {% is \expanded needed?
+%       \expanded{\setupindenting[\getitemparameter\itemlevel\c!inspringen]}}%
+%    \doifinset\v!kolommen{#1}%
+%      {\ifbinnenkolommen\else\ifnum\itemcolumndepth=\zerocount
+%         \globallet\itemcolumndepth\itemlevel
+%         \getitemparameter\itemlevel\c!voor
+%         \processfirstactioninset
+%           [#1]
+%           [  \v!een=>\!!counta1\relax,
+%             \v!twee=>\!!counta2\relax,
+%             \v!drie=>\!!counta3\relax,
+%             \v!vier=>\!!counta4\relax,
+%             \v!vijf=>\!!counta5\relax,
+%          \s!unknown=>\@EA\!!counta\getitemparameter\itemlevel\c!n]%
+%         % new
+%         \edef\columneditemleftskip{\the\leftskip}%
+%         \def\postprocesscolumnbox##1%
+%           {\scratchdimen\columneditemleftskip
+%            \divide\scratchdimen \nofcolumns
+%            \hbox{\hskip\columneditemleftskip\hbox{\box##1}}}%
+%         \scratchdimen-\columneditemleftskip
+%         \multiply\scratchdimen \nofcolumns
+%         \advance\scratchdimen \columneditemleftskip
+%         \advance\scratchdimen \hsize
+%         \edef\columntextwidth{\the\scratchdimen}%
+%         \leftskip\zeropoint
+%         % so far
+%         \startkolommen
+%           [\c!n=\!!counta, % netter \??op\itemlevel\c!n
+%            \c!hoogte=,
+%            \c!lijn=\v!uit,
+%            \c!balanceren=\v!ja,
+%            \c!uitlijnen=\v!nee]%
+%       \fi\fi}%
+%    \doifinsetelse\v!intro{#1}\itemintrotrue\itemintrofalse
+%    \doglobal\increment\noflists
+%    \let\currentlist\noflists
+%    \newcounter\noflistelements
+%    \headitemfalse
+%    \subitemfalse
+%    \symbolitemfalse
+%    \let\marsymbol\relax
+%    \globallet\somdestination\empty
+%    \let\symsymbol\empty
+%    \the\itemgroupcommands
+%    \setitemlevel{#1}%
+%   %\getitemparameter\itemlevel\empty
+%    \doifelsenothing{#1} % iffirstargument
+%      {\edef\@@opsymbool{\getitemparameter\itemlevel\c!symbool}%
+%       \letgvalueempty{\@@globalitemsymbol\itemlevel}%
+%       \global\letitemparameter\itemlevel\v!verder\empty
+%       \setitemmark\@@opsymbool
+%       \dosetupitemgroupvariable[\itemlevel][#2]}
+%      {\dosetupitemgroupconstant[\itemlevel][#1]%
+%       \dosetupitemgroupvariable[\itemlevel][#2]%
+%       \doifinsetelse\v!verder{#1}% \noexpand, else problems in non-etex with chinese
+%         {\edef\@@opsymbool{\noexpand\getvalue{\@@globalitemsymbol\itemlevel}}%
+%          \getitemparameter\itemlevel\v!verder}
+%         {\edef\@@opsymbool{\noexpand\getitemparameter{\itemlevel}{\c!symbool}}%
+%          \global\setitemparameter\itemlevel\v!verder
+%            {\dosetupitemgroupconstant[\itemlevel][#1]%
+%             \dosetupitemgroupvariable[\itemlevel][#2]}}%
+%       \def\docommando##1% \setitemmark resets \docommando
+%         {\doifnot{##1}{0}{\setitemmark{##1}}}%
+%       \processcommalist[#1,\@@opsymbool]\docommando}%
+%    \ifautoitemintro\ifnum\prevgraf<3
+%      \itemintrotrue
+%    \fi\fi
+%    \ifparagraphitems
+%      \ifnum\itemlevel>\plusone
+%        \letitemparameter\itemlevel\c!tussen\empty
+%      \fi
+%    \else\ifpackeditems
+%      \letitemparameter\itemlevel\c!tussen\empty
+%    \fi\fi
+%    \calculatelistwidth\itemlevel{\dimen0}%
+%    \ifdim\dimen0>\zeropoint\relax
+%      \ifconditional\inlinelistitem\else
+%        \advance\leftskip \dimen0\relax
+%      \fi
+%    \fi}
+
 \def\redostartitemgroup[#1][#2]%
   {\setfalse\inlinelistitem % new, no indent (leftskip)
    \setfalse\concatnextitem % new, concat
@@ -528,11 +652,12 @@
    \the\itemgroupcommands
    \setitemlevel{#1}%
   %\getitemparameter\itemlevel\empty
+   \let\listitem\empty % ** start value
    \doifelsenothing{#1} % iffirstargument
      {\edef\@@opsymbool{\getitemparameter\itemlevel\c!symbool}%
       \letgvalueempty{\@@globalitemsymbol\itemlevel}%
       \global\letitemparameter\itemlevel\v!verder\empty
-      \setitemmark\@@opsymbool
+    % \setitemmark\@@opsymbool % ** default value
       \dosetupitemgroupvariable[\itemlevel][#2]}
      {\dosetupitemgroupconstant[\itemlevel][#1]%
       \dosetupitemgroupvariable[\itemlevel][#2]%
@@ -545,7 +670,14 @@
             \dosetupitemgroupvariable[\itemlevel][#2]}}%
       \def\docommando##1% \setitemmark resets \docommando
         {\doifnot{##1}{0}{\setitemmark{##1}}}%
-      \processcommalist[#1,\@@opsymbool]\docommando}%
+    % \processcommalist[#1,\@@opsymbool]\docommando
+      \processcommalist[#1]\docommando}% ** preset sequence or provided sequence
+   \ifx\listitem\empty
+     \setitemmark\@@opsymbool % ** default value
+     \ifx\listitem\empty
+       \edef\currentitemsymbol{\itemlevel}% ** fall back
+     \fi
+   \fi
    \ifautoitemintro\ifnum\prevgraf<3
      \itemintrotrue
    \fi\fi
@@ -647,6 +779,22 @@
 \appendtoks \letvalue\v!kop \itemgrouphead    \to \itemgroupcommands
 \appendtoks \letvalue\v!its \itemgroupitems   \to \itemgroupcommands
 \appendtoks \letvalue\v!mar \itemgroupmargin  \to \itemgroupcommands
+
+% Sometimes the user demands get pretty weird:
+%
+% \startitemize
+%   \item test
+%   \item test
+%   \headsym{xx} test \par test
+% \stopitemize
+
+\def\itemgroupheadsym#1%
+  {\def\symsymbol{\doitemattributes\itemlevel\c!symletter\c!symkleur{#1}}%
+   \symbolitemtrue
+   \headitemtrue
+   \doitemgrouphead}
+
+\appendtoks \let\headsym    \itemgroupheadsym \to \itemgroupcommands
 
 \def\itembreak   % -10
   {\flushnotes\penalty-5\relax}
@@ -840,15 +988,24 @@
 \definecomplexorsimpleempty\head
 \definecomplexorsimpleempty\doitemgrouphead
 
+% \def\sym#1%
+%   {\noindent
+%    \begingroup
+%    \setbox\scratchbox\hbox{\trialtypesettingtrue#1}%
+%    \setbox\scratchbox\hbox
+%      \ifdim\wd\scratchbox<1em to 1.5\else spread 1\fi em{#1\hfil}%
+%    \hangindent\wd\scratchbox
+%    \box\scratchbox
+%    \endgroup
+%    \ignorespaces}
+
 \def\sym#1%
   {\noindent
    \begingroup
-   \setbox\scratchbox\hbox{#1}%
+   \setbox\scratchbox\hbox{\trialtypesettingtrue#1}%
    \setbox\scratchbox\hbox
      \ifdim\wd\scratchbox<1em to 1.5\else spread 1\fi em{#1\hfil}%
-   \hangindent\wd\scratchbox
-   \box\scratchbox
-   \endgroup
+   \expanded{\box\scratchbox\endgroup\hangindent\the\wd\scratchbox}%
    \ignorespaces}
 
 \setupitemgroups % undocumented

@@ -1,8 +1,8 @@
 %D \module
-%D   [       file=page-app, % from meta-fig 
+%D   [       file=page-app, % from meta-fig
 %D        version=1998.01.15,
 %D          title=\CONTEXT\ Core Macros,
-%D       subtitle=Independent page building, 
+%D       subtitle=Independent page building,
 %D         author=Hans Hagen,
 %D           date=\currentdate,
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
@@ -11,16 +11,16 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-\writestatus{loading}{Context Page Macros / Applications} 
+\writestatus{loading}{Context Page Macros / Applications}
 
-%D The fitting page code is moved from \type {meta-fig} to 
-%D here. 
+%D The fitting page code is moved from \type {meta-fig} to
+%D here.
 
-\unprotect 
+\unprotect
 
 \def\dostartfittingpage[#1][#2]%
-  {\pagina % this is kind of tricky! there can be preceding page refs 
-   \bgroup % resulting in a zero height page; test fig-make ! 
+  {\pagina % this is kind of tricky! there can be preceding page refs
+   \bgroup % resulting in a zero height page; test fig-make !
    \dontcomplain
    \setbox\scratchbox\hbox
      \bgroup
@@ -45,8 +45,8 @@
    \edef\fittingwd{\the\wd\scratchbox}%
    \edef\fittinght{\the\ht\scratchbox}%
    \startlocallayout
-   \ifdim\fittinght<\lineheight 
-     % write status : too small 
+   \ifdim\fittinght<\lineheight
+     % write status : too small
      \setbox\scratchbox\vbox to \lineheight{\vss\box\scratchbox\vss}%
      \edef\fittinght{\the\lineheight}%
    \fi
@@ -60,7 +60,7 @@
    \stoplocallayout
    \egroup}
 
-%D \TEX\ pages (for \METAPOST\ pages, see \type {meta-fig}): 
+%D \TEX\ pages (for \METAPOST\ pages, see \type {meta-fig}):
 
 \presetlocalframed[\??tg]
 
@@ -86,7 +86,7 @@
    \c!hoogte=\v!passend,
    \c!kader=\v!uit]
 
-%D Application pages (for an example, see \type {m-pstric}): 
+%D Application pages (for an example, see \type {m-pstric}):
 
 \def\@@texapp{texapp}
 \def\@@texdim{texdim}
@@ -108,26 +108,26 @@
    \bgroup
    \let\f!temporaryextension\c!tex
    \setbuffer[\@@texapp]%
-     \starttext 
-     #2% preamble 
+     \starttext
+     #2% preamble
      \startTEXpage[#1]%
-\topskip\zeropoint
+       \topskip\zeropoint
        \setbox\scratchbox\hbox{#3}%
-       \saveTEXapplication02% dimensions 
+       \saveTEXapplication02% dimensions
        \box\scratchbox
      \stopTEXpage
-     \stoptext 
+     \stoptext
    \endbuffer
    \egroup
    \doifelse\jobsuffix{dvi}\donetrue\donefalse
    \executesystemcommand{texexec \bufferprefix\@@texapp.tex --once --batch}%
-   \ifdone % eps 
+   \ifdone % eps
      \executesystemcommand{dvips -E* -o \@@texapp.eps \@@texapp}%
-   \else % pdf 
+   \else % pdf
      \executesystemcommand{dvips \bufferprefix\@@texapp}%
      \executesystemcommand{ps2pdf \bufferprefix\@@texapp.ps \bufferprefix\@@texapp.pdf}%
    \fi
-   \restoreTEXapplication % dimensions 
+   \restoreTEXapplication % dimensions
    \setbox\scratchbox\hbox
      {\expanded{\externalfigure
         [\bufferprefix\@@texapp.\ifdone eps\else pdf\fi]
@@ -140,4 +140,4 @@
    \box\scratchbox
    \egroup}
 
-\protect \endinput 
+\protect \endinput

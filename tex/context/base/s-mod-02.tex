@@ -8,29 +8,29 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
-%C details. 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
 
-%D This module looks like crap, is not documented, will 
-%D change, and used to be called modu-*.tex. 
+%D This module looks like crap, is not documented, will
+%D change, and used to be called modu-*.tex.
 
 % Macro's
 
-\input s-mod-00.tex
+\usemodule[mod-00]
 
-% todo: internationalize + setups 
+% todo: internationalize + setups
 
 \stelkopin[paragraaf][expansie=commando]
 
 \def\complexmodule[#1]% redefined
-  {\startglobaal % i.v.m. \bgroup in \startdocumentation  
+  {\startglobaal % i.v.m. \bgroup in \startdocumentation
    \getparameters[Module][#1]
-   \stopglobaal  % i.v.m. \bgroup in \startdocumentation  
+   \stopglobaal  % i.v.m. \bgroup in \startdocumentation
    \paragraaf{\Modulesubtitle}
    \SchrijfLijstenWeg}
 
 \def\stopmodule% redefined
-  {\pagina  
+  {\pagina
    \bepaalregisterkenmerken
      [index]
      [criterium=paragraaf]
@@ -119,7 +119,7 @@
    \MaakLijstMetGroups
    \plaatsinhoud[criterium=hoofdstuk,niveau=paragraaf]}
 
-% Layout 
+% Layout
 
 \stelkorpsin
   [9pt,ams]
@@ -153,11 +153,14 @@
 \stelsetupin
   [verwijzing=3]
 
-\definieerkleur [texprettyone]     [r=.8, g=0,  b=0]  % red
-\definieerkleur [texprettytwo]     [r=0,  g=.6, b=0]  % green
+\definieerkleur [AchtergrondKleur] [s=.6]
+\definieerkleur [ButtonKleur]      [r=.2,g=.2,b=.6]
+\definieerkleur [TekstKleur]       [r=.6,g=.2,b=.2]
 
-\definieerkleur [AchtergrondKleur] [s=.5]  % [r=1,g=1,b=.7]
-\definieerkleur [ButtonKleur]      [s=.85] % [r=.1,g=.5,b=.8]
+\definieerkleur [colorprettyone]   [r=.6,g=.0,b=.0]  % red
+\definieerkleur [colorprettytwo]   [r=.0,g=.6,b=.0]  % green
+\definieerkleur [colorprettythree] [r=.0,g=.0,b=.6]  % blue
+\definieerkleur [colorprettyfour]  [r=.6,g=.6,b=.0]  % yellow
 
 \stelinteractiein
   [status=start,
@@ -169,14 +172,14 @@
 \stelachtergrondenin
   [pagina]
   [achtergrond=kleur,
-   kleur=AchtergrondKleur,
-   offset=2.5pt]  % this offset influences the menus! 
+   achtergrondkleur=AchtergrondKleur,
+   offset=2.5pt]  % this offset influences the menus!
 
 \stelachtergrondenin
   [tekst,voet]
   [tekst,linkermarge]
   [achtergrond=kleur,
-   kleur=wit]
+   achtergrondkleur=wit]
 
 \stelsubpaginanummerin
   [wijze=perparagraaf,
@@ -240,24 +243,24 @@
 
 \def\TitelBlad#1%
   {\startstandaardopmaak
-     \definefont[GrootFont] [SansBold at 72pt] 
-     \definefont[MiddelFont][Sans at 32pt] 
-     \definefont[KleinFont] [Sans at 24pt] 
+     \definefont[GrootFont] [SansBold at 72pt]
+     \definefont[MiddelFont][Sans at 32pt]
+     \definefont[KleinFont] [Sans at 24pt]
      \startkleur[AchtergrondKleur]
-     \vskip12pt 
+     \vskip12pt
      \regelmidden{\GrootFont\setstrut\strut    Con\TeX t}
-     \vskip24pt 
-     \regelmidden{\MiddelFont\setstrut\strut   #1} 
+     \vskip24pt
+     \regelmidden{\MiddelFont\setstrut\strut   #1}
      \vskip24pt
      \regelmidden{\KleinFont\setstrut\strut    Hans Hagen}
      \vfilll
-     \regelmidden{\KleinFont\setstrut\strut    PRAGMA ADE} 
-     \vskip24pt 
+     \regelmidden{\KleinFont\setstrut\strut    PRAGMA ADE}
+     \vskip24pt
      \regelmidden{\KleinFont\setstrut\strut    www.pragma-ade.nl --- \currentdate}
-     \vskip12pt 
+     \vskip12pt
      \stopkleur
    \stopstandaardopmaak}
- 
+
 \def\ColofonBlad%
   {\startmode[atpragma]
    \pagina
@@ -271,9 +274,9 @@
      \PlaatsPragmaLogo[ADE]
      \vfill
      \startsmaller[3*midden]
-     This is the official documentation of \CONTEXT\ version 
+     This is the official documentation of \CONTEXT\ version
      \kenmerkdatum, a \TEX\ macropackage developed by J.~Hagen
-     \& A.F.~Otten, who both hold the copyrights. 
+     \& A.F.~Otten, who both hold the copyrights.
      \stopsmaller
      \vfill
      \pagina
@@ -297,40 +300,39 @@
 \stellijstin
   [FileNames]
   [commando=\FileNameEntry,
+   na=\endgraf,
    variant=geen]
 
 \stellijstin
   [FileGroups]
   [commando=\FileGroupEntry,
-   na=\hss, 
+   na=\hss,
    variant=geen]
 
 \def\FileNameEntry#1#2#3%
-  {\strut\hbox{#2}}
+  {\strut\hbox{#2}\endgraf}
 
 \def\FileGroupEntry#1#2#3%
-  {\strut#2}
+  {\strut#2\endgraf}
 
 \def\MaakLijstMetItems%
   {\setbox\LijstMetItems=\vbox
      {\ss\bf
-      \stelinteractiein[kleur=ButtonKleur]
-      \plaatslijst[GroupItems][criterium=hoofdstuk]}}
+      \plaatslijst[GroupItems][kleur=ButtonKleur,contrastkleur=wit,criterium=hoofdstuk]}}
 
 \def\MaakLijstMetNames%
-  {\setbox\LijstMetNames=\vbox 
+  {\setbox\LijstMetNames=\vbox
      {\hsize\rechterrandbreedte
-      \ss\bf\stelinterliniein 
-      \stelinteractiein[kleur=ButtonKleur]
+      \ss\bf\stelinterliniein
       \startsimplecolumns[afstand=10pt]
-        \plaatslijst[FileNames][criterium=hoofdstuk]
+        \plaatslijst[FileNames][kleur=ButtonKleur,contrastkleur=wit,criterium=hoofdstuk]
       \stopsimplecolumns}}
 
 \def\MaakLijstMetGroups%
   {\setbox\LijstMetGroups=\hbox to \tekstbreedte
      {\ss\bf
       \stelinteractiein[kleur=ButtonKleur]%
-      \plaatslijst[FileGroups][criterium=alles]\unskip\unskip}}
+      \plaatslijst[FileGroups][kleur=ButtonKleur,contrastkleur=wit,criterium=alles]\unskip\unskip}}
 
 \setbox\LijstMetGroups=\hbox{}
 
@@ -344,6 +346,7 @@
   [status=start,
    kader=uit,
    kleur=AchtergrondKleur,
+   contrastkleur=wit,
    letter=\ss\bf,
    hoogte=15pt,
    offset=0pt,
@@ -353,7 +356,7 @@
 
 \startinteractiemenu[rechts]
   \boxofsize \vbox \teksthoogte \voetafstand \voethoogte 5pt
-    \bgroup                                                  
+    \bgroup
       \copy\LijstMetNames
       \vfill
       \but [\FileGroup:inhoud]   local contents \\
@@ -396,7 +399,7 @@
 \stelvoettekstenin
   [marge]
   [\tt\Modulefile]
-  []  
+  []
 
 \stelvoettekstenin
   [tekst]
@@ -408,4 +411,4 @@
 \steltolerantiein
   [zeersoepel]
 
-\endinput 
+\endinput

@@ -654,8 +654,8 @@
 
 \def\synchronizehsize     {\OTRcommand\synchronizehsize}
 
-\def\gotonextpage         {\OTRcommand\gotonextpage }
-\def\gotonextpageX        {\OTRcommand\gotonextpageX} % will become obsolete
+\def\gotonextpage {\OTRcommand\gotonextpage }
+\def\gotonextpageX{\OTRcommand\gotonextpageX} % will become obsolete
 
 % beter een \installotr#1 met #1 = macro en auto test
 
@@ -863,8 +863,13 @@
 %D on the baseline, as is the case with preceding pages.
 %D Also, a \type {\vfil} better than a \type {\vfill}.
 
-\def\eject         {\par\penalty-\@M } % == {\par\break} % plain
-\def\supereject    {\par\penalty-\@MM} % also plain
+% to be replaced by \page[now] \page[final] / merged
+
+% \def\eject         {\par\penalty-\@M } % == {\par\break} % plain
+% \def\supereject    {\par\penalty-\@MM} % also plain
+
+\def\eject         {\par\penalty-\@M \resetpagebreak} % == {\par\break} % plain
+\def\supereject    {\par\penalty-\@MM\resetpagebreak} % also plain
 
 \def\doejectpage   {\par\ifdim\pagetotal>\pagegoal\else\normalvfil\fi}
 \def\ejectpage     {\doejectpage\eject}
@@ -1025,7 +1030,7 @@
      [  \v!concept=>\chardef\conceptmode\plusone,% simple banner
            \v!file=>\chardef\conceptmode\plustwo,% full banner
       \v!voorlopig=>\chardef\conceptmode\plustwo % full banner plus
-                    \overfullrule5\s!pt]}        % info in the margin
+                    \overfullrule5\points]}      % info in the margin
 
 \def\versie
   {\dosingleargument\doversie}
@@ -1198,11 +1203,23 @@
       \box#1}%
    \dp#1\zeropoint}
 
-\newif\ifpagebodyornaments \pagebodyornamentstrue
+% \newif\ifpagebodyornaments \pagebodyornamentstrue
+%
+% \appendtoks
+%   \global\pagebodyornamentstrue
+% \to \everyaftershipout
+
 \newif\ifarrangingpages    \arrangingpagesfalse
 
+\chardef\pageornamentstate\zerocount % 0=on 1=one-off 2=always-off
+
+\def\pagebodyornamentstrue {\chardef\pageornamentstate\zerocount} % for a while
+\def\pagebodyornamentsfalse{\chardef\pageornamentstate\plusone}   % for a while
+
 \appendtoks
-  \global\pagebodyornamentstrue
+  \ifcase\pageornamentstate\or
+    \chardef\pageornamentstate\zerocount
+  \fi
 \to \everyaftershipout
 
 \let\poparrangedpages\relax
@@ -1223,59 +1240,6 @@
 
 \newif\ifsavepagebody \newbox\savedpagebody
 
-% \def\buildpagebody#1#2%
-%   {\ifsavepagebody\global\setbox\savedpagebody\fi
-%    \vbox
-%      {\beginrestorecatcodes
-%       \forgetall  % igv problemen, check: \boxmaxdepth\maxdimen
-%       \boxmaxdepth\maxdimen % new
-%       \mindermeldingen
-%       \setbox\pagebox\vbox
-%         {\offinterlineskip
-%          \ifpagebodyornaments
-% %           \getbackgroundbox
-% %           \getlogobox
-%            \bgroup % else footnotes get inconsistent font/baseline
-%            % \doconvertfont\@@lyletter\empty
-%              \dostartattributes\??ly\c!letter\c!kleur\empty
-%                \offinterlineskip
-%                \gettextboxes
-%              \dostopattributes
-%            \egroup
-%          \fi
-%          \getmainbox#1#2}% including footnotes
-%       \ifpagebodyornaments
-%         \addmainbackground \pagebox
-%         \addlogobackground \pagebox
-%       \fi
-%       \buildpagebox        \pagebox
-%       \addstatusinfo       \pagebox
-%       \ifpagebodyornaments
-%         \addpagebackground \pagebox
-%       \fi
-%       \registerpageposition\pagebox
-%       \ifarrangingpages
-%         \shiftpaperpagebox \pagebox % \v!papier
-%       \else
-%         \clippagebox       \pagebox
-%         \addpagecutmarks   \pagebox
-%         \replicatepagebox  \pagebox
-%         \scalepagebox      \pagebox
-%         \mirrorpaperbox    \pagebox
-%         \rotatepaperbox    \pagebox
-%         \addpagecolormarks \pagebox
-%         \centerpagebox     \pagebox
-%         \addprintbackground\pagebox
-%         \mirrorprintbox    \pagebox
-%         \rotateprintbox    \pagebox
-%         \shiftprintpagebox \pagebox % \v!pagina
-%         \offsetprintbox    \pagebox
-%         \negateprintbox    \pagebox
-%       \fi
-%       \box\pagebox
-%       \endrestorecatcodes}%
-%    \ifsavepagebody\copy\savedpagebody\fi}
-
 % beware, \??ly is used before defined, i.e. bad module design
 
 \setuplayout[\c!methode=\v!normaal]
@@ -1292,7 +1256,7 @@
       \executeifdefined{\??ly\c!methode\@@lymethode}%
         {\getvalue{\??ly\c!methode\v!normaal}}#1#2%
       % the finishing touch
-      \ifpagebodyornaments
+      \ifcase\pageornamentstate
         \addpagebackground \pagebox
       \fi
       \registerpageposition\pagebox
@@ -1321,7 +1285,7 @@
 \setvalue{\??ly\c!methode\v!normaal}#1#2%
   {\setbox\pagebox\vbox
      {\offinterlineskip
-      \ifpagebodyornaments
+      \ifcase\pageornamentstate
         \bgroup % else footnotes get inconsistent font/baseline
           \dostartattributes\??ly\c!letter\c!kleur\empty
             \offinterlineskip
@@ -1330,7 +1294,7 @@
         \egroup
       \fi
       \getmainbox#1#2}% including footnotes
-   \ifpagebodyornaments
+   \ifcase\pageornamentstate
      \addmainbackground \pagebox
      \addlogobackground \pagebox
    \fi
@@ -1371,7 +1335,7 @@
    \dotoks\aftereverypage
    \resetpagebreak
    \updatelistreferences
-   \resetlayoutlines % will go to \aftereverypage
+   \resetlayouttextlines % will go to \aftereverypage
    \stopcolorpage
    \the\everyafterpagebody}
 
@@ -1385,6 +1349,8 @@
 
 \newif\ifpaginageblokkeerd \paginageblokkeerdfalse
 
+\chardef\testpagemethod=0
+
 \def\testpage
   {\dodoubleempty\dotestpage}
 
@@ -1403,8 +1369,21 @@
          \advance\scratchdimen#2\relax
        \fi
        % quite inaccurate, better pagegoal 1pt or so
-       \ifdim\scratchdimen>.99\pagegoal
-         \penalty-\!!tenthousand\relax
+       \ifcase\testpagemethod
+         \ifdim\scratchdimen>.99\pagegoal
+           \penalty-\!!tenthousand\relax
+         \fi
+       \or
+         \advance\scratchdimen-\pagegoal
+         \ifdim\scratchdimen>-\lineheight
+           \penalty-\!!tenthousand\relax
+         \fi
+       \or
+         \getnoflines\pagegoal
+         \advance\scratchdimen-\noflines\lineheight \relax
+         \ifdim\scratchdimen>-\lineheight
+           \penalty-\!!tenthousand\relax
+         \fi
        \fi
      \fi
    \else
@@ -1446,7 +1425,7 @@
   {\global\paginageblokkeerdfalse}
 
 \def\simplifypagebreak
-  {\def\pagebreak{\goodbreak}}
+  {\def\dopagebreak[##1]{\goodbreak}}
 
 \def\executepagebreakhandler#1%
   {\edef\@@pagespecification{#1}%
@@ -1459,18 +1438,45 @@
 \long\def\installpagebreakhandler#1#2%
   {\long\setvalue{\??pe:#1}{#2}}
 
-\definecomplexorsimple\pagebreak
+% \definecomplexorsimple\pagebreak
 
-\def\simplepagebreak
-  {\flushnotes
-   \executepagebreakhandler\v!ja}
+% \def\simplepagebreak
+%   {\executepagebreakhandler\v!ja}
 
-\def\complexpagebreak[#1]% if empty, do nothing and avoid processing,
-  {\flushnotes        % see head's; watch how we group
-   \doifsomething{#1}{\bgroup\executepagebreakhandlers{#1}\egroup}}
+% \def\complexpagebreak[#1]% if empty, do nothing and avoid processing,
+%   {\flushnotes           % see head's; watch how we group
+%    \doifsomething{#1}{\bgroup\executepagebreakhandlers{#1}\egroup}}
+
+\def\pagebreak
+  {\dosingleempty\dopagebreak}
+
+\def\dopagebreak[#1]% so, page ornaments are reset after a pagebreak command, unless set
+  {\bgroup
+   \edef\prevrealpageno{\the\realpageno}%
+   \ifcase\pageornamentstate \or
+     % disable reset after shipout
+     \global\chardef\pageornamentstate\plustwo
+   \fi
+   \iffirstargument % or if empty i.e. []
+     \flushnotes\executepagebreakhandlers{#1}%
+   \else % so, no pagebreak when \pagebreak[] ! ! !
+     \flushnotes\executepagebreakhandler\v!ja
+   \fi
+   \ifnum\prevrealpageno<\realpageno
+     \global\chardef\pageornamentstate\zerocount
+   \fi
+   \egroup}
 
 \def\executepagebreakhandlers#1%
   {\processcommacommand[#1]\executepagebreakhandler}
+
+\installpagebreakhandler \s!dummy
+  {\ejectinsert
+   \gotonextpage
+   \ejectdummypage}
+
+\installpagebreakhandler \v!kader
+  {\page\bgroup\showframe\page[\v!leeg]\egroup}
 
 \installpagebreakhandler \s!unknown
   {\doifinstringelse{+}\@@pagespecification
@@ -1492,7 +1498,8 @@
   {} % do nothing if empty
 
 \installpagebreakhandler  \v!reset
-  {\global\paginageblokkeerdfalse}
+  {% better not: \global\chardef\pageornamentstate\zerocount
+   \resetpagebreak}
 
 \installpagebreakhandler \v!blokkeer
   {\global\paginageblokkeerdtrue}
@@ -1512,7 +1519,9 @@
    \fi}
 
 \installpagebreakhandler \v!blanko
-  {\global\pagebodyornamentsfalse}
+  {\ifcase\pageornamentstate
+     \global\chardef\pageornamentstate\plusone
+   \fi}
 
 \installpagebreakhandler \v!nee
   {\ifpaginageblokkeerd\else
@@ -1540,10 +1549,8 @@
 \installpagebreakhandler \v!leeg
   {\ejectinsert
    \gotonextpage
-   \doifnotvalue{\??tk\v!hoofd\c!status}\v!stop
-     {\setupheader[\c!status=\v!leeg]}%
-   \doifnotvalue{\??tk\v!voet\c!status}\v!stop
-     {\setupfooter[\c!status=\v!leeg]}%
+   \doifnotvalue{\??tk\v!hoofd\c!status}\v!stop{\setupheader[\c!status=\v!leeg]}%
+   \doifnotvalue{\??tk\v!voet \c!status}\v!stop{\setupfooter[\c!status=\v!leeg]}%
    \ejectdummypage}
 
 \installpagebreakhandler \v!links
@@ -1568,13 +1575,11 @@
 
 \installpagebreakhandler \v!even
   {\pagina
-   \doifoddpageelse
-     {\resetcurrentsectionmarks\ejectdummypage}\donothing}
+   \doifoddpageelse{\resetcurrentsectionmarks\ejectdummypage}\donothing}
 
 \installpagebreakhandler \v!oneven
   {\pagina
-   \doifoddpageelse
-     \donothing{\resetcurrentsectionmarks\ejectdummypage}}
+   \doifoddpageelse\donothing{\resetcurrentsectionmarks\ejectdummypage}}
 
 \installpagebreakhandler \v!viertal % not yet ok inside columnsets
   {\ifdubbelzijdig
@@ -1606,12 +1611,10 @@
 % nb: \executepagebreakhandler\v!hoofd in other ones
 
 \installpagebreakhandler \v!hoofd
-  {\doifnotvalue{\??tk\v!hoofd\c!status}\v!stop
-     {\setupheader[\c!status=\v!leeg]}}
+  {\doifnotvalue{\??tk\v!hoofd\c!status}\v!stop{\setupheader[\c!status=\v!leeg]}}
 
 \installpagebreakhandler \v!voet
-  {\doifnotvalue{\??tk\v!voet\c!status}\v!stop
-     {\setupfooter[\c!status=\v!leeg]}}
+  {\doifnotvalue{\??tk\v!voet \c!status}\v!stop{\setupfooter[\c!status=\v!leeg]}}
 
 % \definepagebreak
 %   [chapter]

@@ -31,7 +31,7 @@
 \newdimen\linewidth
 
 \def\dosetuplinewidth[#1]%
-  {\assigndimension{#1}\linewidth{.2\s!pt}{.4\s!pt}{.6\s!pt}}
+  {\assigndimension{#1}\linewidth{.2\points}{.4\points}{.6\points}}
 
 \def\setuplinewidth
   {\dosingleargument\dosetuplinewidth}
@@ -117,7 +117,7 @@
   {\bgroup
    \forgetall
    \mindermeldingen
-   \dimen10=\!!onepoint
+   \dimen10=\onepoint
    \dimen10=\@@rsfactor\dimen10
    \dimen10=#5\dimen10
    \setbox2\hbox to #2
@@ -669,6 +669,8 @@
   {\bgroup
    \dodoubleempty\startlocalframed}
 
+\let\fastlocalframed\localframed
+
 %D Before we go into details, we present (and implement) the
 %D main framing routine. I saw no real reason for splitting the
 %D next two macros into smaller pieces. The content will be
@@ -916,6 +918,21 @@
 %D rest of the code deals with backgrounds and frames.
 
 \newif\ifreshapeframebox \reshapeframeboxtrue
+
+%D Beware: setting \type {top} and \type {bottom} to nothing, may
+%D result in a frame that is larger that the given height! try:
+%D
+%D \starttypen
+%D \framed
+%D   [height=3cm,top=,bottom=,offset=overlay]
+%D   {\strut test \shapefill \strut test}
+%D \stoptypen
+%D
+%D This is intended behaviour and not a bug! One can always set
+%D
+%D \starttypen
+%D ...,bottom=\kern0pt,...
+%D \stoptypen
 
 \def\stoplocalframed
   {\dontshowcomposition
@@ -1268,20 +1285,111 @@
 %D or free widths and heights. Each combination gets its own
 %D macro.
 
-\def\dopresetformatbox
-  {\forgetall
-   \oninterlineskip}
+% \def\dopresetformatbox
+%   {\forgetall
+%    \oninterlineskip}
+
+% \def\doformatboxSomeFormat
+%   {\vbox to \!!heighta
+%      \bgroup
+%        \dopresetformatbox
+%        \hsize\!!widtha
+%        \vsize\!!heighta
+%        \raggedcommand
+%        \dobeforeframedbox
+%        \bgroup
+%        \localbegstrut
+%        \aftergroup\localendstrut
+%        \aftergroup\doafterframedbox
+%        \aftergroup\egroup
+%        \let\next=}
+
+% \def\doformatboxNoFormat
+%   {\vbox to \!!heighta
+%      \bgroup
+%        \dopresetformatbox
+%        \hsize\!!widtha
+%        \vsize\!!heighta
+%        \raggedcenter
+%        \vss
+%        \bgroup
+%        \localbegstrut
+%        \aftergroup\localendstrut
+%        \aftergroup\vss
+%        \aftergroup\egroup
+%        \let\next=}
+
+% \def\doformatboxHeight
+%   {\vbox to \!!heighta
+%      \bgroup
+%        \dopresetformatbox
+%        \raggedcommand
+%        \vss
+%        \bgroup
+%        \aftergroup\localendstrut
+%        \aftergroup\vss
+%        \aftergroup\egroup
+%        \localbegstrut
+%        \let\next=}
+
+% \def\doformatboxWidth
+%   {\vbox
+%      \bgroup
+%        \dopresetformatbox
+%        \hsize\!!widtha
+%        \raggedcommand
+%        \dobeforeframedbox
+%        \bgroup
+%        \localbegstrut
+%        \aftergroup\localendstrut
+%        \aftergroup\doafterframedbox
+%        \aftergroup\egroup
+%        \let\next=}
+
+% \def\doformatboxVSize
+%   {\vbox to \!!heighta
+%      \bgroup
+%        \forgetall
+%        \vsize\!!heighta
+%        \vss
+%        \bgroup
+%        \aftergroup\vss
+%        \aftergroup\egroup
+%        \hbox
+%          \bgroup
+%          \aftergroup\egroup
+%          \localstrut
+%          \let\next=}
+
+% \def\doformatboxHSize
+%   {\hbox to \!!widtha
+%      \bgroup
+%        \forgetall
+%        \hss
+%        \localstrut
+%        \bgroup
+%        \aftergroup\hss
+%        \aftergroup\egroup
+%        \let\next=}
+
+% \def\doformatboxNoSize
+%   {\hbox
+%      \bgroup
+%        \localstrut
+%        \let\next=}
 
 \def\doformatboxSomeFormat
   {\vbox to \!!heighta
      \bgroup
-       \dopresetformatbox
+       \forgetall
+       \oninterlineskip
        \hsize\!!widtha
        \vsize\!!heighta
        \raggedcommand
        \dobeforeframedbox
        \bgroup
        \localbegstrut
+       \@@handleoneliner
        \aftergroup\localendstrut
        \aftergroup\doafterframedbox
        \aftergroup\egroup
@@ -1290,13 +1398,15 @@
 \def\doformatboxNoFormat
   {\vbox to \!!heighta
      \bgroup
-       \dopresetformatbox
+       \forgetall
+       \oninterlineskip
        \hsize\!!widtha
        \vsize\!!heighta
        \raggedcenter
        \vss
        \bgroup
        \localbegstrut
+       \@@handleoneliner
        \aftergroup\localendstrut
        \aftergroup\vss
        \aftergroup\egroup
@@ -1305,7 +1415,8 @@
 \def\doformatboxHeight
   {\vbox to \!!heighta
      \bgroup
-       \dopresetformatbox
+       \forgetall
+       \oninterlineskip
        \raggedcommand
        \vss
        \bgroup
@@ -1313,29 +1424,20 @@
        \aftergroup\vss
        \aftergroup\egroup
        \localbegstrut
+       \@@handleoneliner
        \let\next=}
-
-% \def\doformatboxWidth
-%   {\vbox
-%      \bgroup
-%        \dopresetformatbox
-%        \hsize\!!widtha
-%        \raggedcommand
-%        \bgroup
-%        \localbegstrut
-%        \aftergroup\localendstrut
-%        \aftergroup\egroup
-%        \let\next=}
 
 \def\doformatboxWidth
   {\vbox
      \bgroup
-       \dopresetformatbox
+       \forgetall
+       \oninterlineskip
        \hsize\!!widtha
        \raggedcommand
        \dobeforeframedbox
        \bgroup
        \localbegstrut
+       \@@handleoneliner
        \aftergroup\localendstrut
        \aftergroup\doafterframedbox
        \aftergroup\egroup
@@ -1354,6 +1456,7 @@
          \bgroup
          \aftergroup\egroup
          \localstrut
+         \@@handleoneliner
          \let\next=}
 
 \def\doformatboxHSize
@@ -1362,6 +1465,7 @@
        \forgetall
        \hss
        \localstrut
+       \@@handleoneliner
        \bgroup
        \aftergroup\hss
        \aftergroup\egroup
@@ -1371,6 +1475,7 @@
   {\hbox
      \bgroup
        \localstrut
+       \@@handleoneliner
        \let\next=}
 
 %D On the next page we show some examples of how these macros
@@ -2059,8 +2164,8 @@
      \let\@@dlhoogte\!!plusone
      \let\@@dldiepte\!!plusone
    \fi
-   \freezedimensionwithunit\@@dlhoogte{\strutht}%
-   \freezedimensionwithunit\@@dldiepte{\strutdp}%
+   \freezedimensionwithunit\@@dlhoogte\strutht
+   \freezedimensionwithunit\@@dldiepte\strutdp
    \divide\linewidth 2
    \doifelse\@@dlachtergrond\v!kleur
      {\startcolor[\@@dlachtergrondkleur]%
@@ -2475,7 +2580,7 @@
 \def\doframedtext
   {\bgroup\dodoubleempty\dodoframedtext}
 
-\def\dodoframedtext[#1][#2]%
+\def\dodoframedtext[#1][#2]% beware!
   {\expanded{\switchtobodyfont[\getvalue{\??kd#1\c!korps}]}%
    \localframed[\??kd#1][\c!strut=\v!nee,#2]%
      \bgroup
@@ -3040,6 +3145,8 @@
       \c!strut=\v!nee,
       \c!offset=\v!overlay,
       \c!regelcorrectie=\v!nee,
+      \c!links=,
+      \c!rechts=,
       #2]}
 
 \def\setupframedcontent
@@ -3086,8 +3193,11 @@
    \else
      \doifelsevalue{\??fc#1\c!regelcorrectie}\v!ja\donetrue\donefalse
    \fi
+   % plaats ?
    \ifdone\startregelcorrectie\fi
+   \getvalue{\??fc#1\c!links}% new
    \localframed[\??fc#1]{\box\framebox}%
+   \getvalue{\??fc#1\c!rechts}% new
    \ifdone\stopregelcorrectie\fi
    \egroup}
 

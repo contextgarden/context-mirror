@@ -472,7 +472,7 @@
      \blanko[\v!blokkeer]% % added
      \the\EveryTableParBox}
 
-\def\EndTableParBox 
+\def\EndTableParBox
   {\removelastskip                                   % itemize or so
    \par
    \ifnum\prevgraf>\zerocount                        % we want at least
@@ -480,15 +480,15 @@
      \egroup
      \ifdim\dp\scratchbox>\lineheight                % see (*) for an
        \getnoflines{\dp\scratchbox}%                 % example of where
-       \dp\scratchbox\zeropoint                      % saving can go 
-       \setbox\scratchbox                            % terrible wrong 
+       \dp\scratchbox\zeropoint                      % saving can go
+       \setbox\scratchbox                            % terrible wrong
          \vtop to \noflines\lineheight{\box\scratchbox}%
      \fi                                             % esp between rows
    \else                                             % of paragraphs
      \egroup
    \fi
    \getboxheight\scratchdimen\of\box\scratchbox\relax% compensate for
-   \ifdim\scratchdimen>\TABLEparheight               % funny depth of 
+   \ifdim\scratchdimen>\TABLEparheight               % funny depth of
      \global\TABLEparheight\scratchdimen             % multi-line box
    \fi                                               % i.e. vtop
    \box\scratchbox}
@@ -716,15 +716,15 @@
 
 \NewFormatKey l%
   {\prependtoks\raggedright\to\!taDataColumnTemplate
-   \ReadFormatKeys \LeftGlue{} \RightGlue\hfil}
+   \ReadFormatKeys \LeftGlue\empty \RightGlue\hfil}
 
 \NewFormatKey r%
   {\prependtoks\raggedleft\to\!taDataColumnTemplate
-   \ReadFormatKeys \LeftGlue\hfil \RightGlue{}}
+   \ReadFormatKeys \LeftGlue\hfil \RightGlue\empty}
 
 \NewFormatKey x%
   {\prependtoks\notragged\to\!taDataColumnTemplate
-   \ReadFormatKeys \LeftGlue\hfil \RightGlue{}}
+   \ReadFormatKeys \LeftGlue\hfil \RightGlue\empty}
 
 \appendtoks \TABLEparalignment \to \EveryTableParBox
 
@@ -750,21 +750,56 @@
 \let\TABLEbeforebar\empty
 \let\TABLEafterbar \empty
 
+% \def\!ttInsertVrule
+%   {\hfil
+%    \TABLEbeforebar % added
+%    \startglobalTABLEcolor % added
+%    \vrule \!thWidth
+%      \ifnum\!tgCode=\plusone
+%        \ifx\!tgValue\empty
+%          \LineThicknessFactor
+%        \else
+%          \!tgValue
+%        \fi
+%        \LineThicknessUnit
+%      \else
+%        \!tgValue
+%      \fi
+%    \stopglobalTABLEcolor % added
+%    \TABLEafterbar % added
+%    \hfil
+%    &}
+
+\def\@VLn{1}
+\def\@VLd{.125em}
+
+\def\do!ttInsertVrule % will be merged in 2005
+  {\vrule \!thWidth
+   \ifnum\!tgCode=\plusone
+     \ifx\!tgValue\empty
+       \LineThicknessFactor
+     \else
+       \!tgValue
+     \fi
+     \LineThicknessUnit
+   \else
+     \!tgValue
+   \fi
+   \hskip\@VLd}
+
 \def\!ttInsertVrule
   {\hfil
    \TABLEbeforebar % added
    \startglobalTABLEcolor % added
-   \vrule \!thWidth
-     \ifnum\!tgCode=\plusone
-       \ifx\!tgValue\empty
-         \LineThicknessFactor
-       \else
-         \!tgValue
-       \fi
-       \LineThicknessUnit
-     \else
-       \!tgValue
-     \fi
+   % we could do without this speedup, some day merge 'm
+   \ifcase\@VLn\or
+     \do!ttInsertVrule
+     \unskip
+   \else
+     \dorecurse\@VLn\do!ttInsertVrule
+     \gdef\@VLn{1}%
+     \unskip
+   \fi
    \stopglobalTABLEcolor % added
    \TABLEafterbar % added
    \hfil
@@ -815,7 +850,7 @@
 %D extensions concern the second level check, the first
 %D subbranch and advancing the column.
 
-\ifx\mscount\undefined \newcount\mscount \fi 
+\ifx\mscount\undefined \newcount\mscount \fi
 
 \def\!ttuse#1%
   {\ifnum#1>\plusone
@@ -832,10 +867,10 @@
          {\global\advance\currentTABLEcolumn #1%       % added
           \global\advance\currentTABLEcolumn \minusone % added
           \mscount#1%   \mscount is in Plain
-          \advance\mscount \m@ne
+          \advance\mscount \minusone
           \advance\mscount \mscount
           \!thLoop
-            \ifnum\mscount>\@ne
+            \ifnum\mscount>\plusone
               \sp@n % from Plain (\span\omit \advance\mscount\m@ne)
           \repeat
           \span}%
@@ -897,7 +932,7 @@
         \stopbaselinecorrection
         \goodbreak % compensates all the nobreaks
       \fi}
-     {\stopframedcontent}%
+     \stopframedcontent
    \egroup}
 
 %D Before we can grab the argument, we have to make sure that
@@ -1015,16 +1050,16 @@
 %D The third stage involves a lot of (re)sets, which we will
 %D explain later.
 
-%D The next definition is convenient and more in tune with 
-%D \CONTEXT. 
+%D The next definition is convenient and more in tune with
+%D \CONTEXT.
 
-\let \everytable \EveryTable 
+\let \everytable \EveryTable
 
-%D We immediately use this register: 
+%D We immediately use this register:
 
 \appendtoks \fixedspaces \to \everytable
 
-%D Now we can start the table. 
+%D Now we can start the table.
 
 \def\thirdstagestartTABLE#1%
   {\global\setTABLEactiontrue
@@ -1051,7 +1086,7 @@
    \forgetall % added
    \doifsomething{#1}
      {\def\TABLEformat{#1}%
-      \getTABLEnofcolumns\TABLEformat 
+      \getTABLEnofcolumns\TABLEformat
       \expandafter\BeginFormat\TABLEformat\EndFormat}}
 
 \def\finishTABLE
@@ -1553,7 +1588,7 @@
 \def\handleTABLEbreak#1#2%
   {\ifsplittables
      \setbox0\hbox{\AugmentedTableStrut{#1}{#2}}%
-     \getboxheight\dimen0\of\box0\relax    
+     \getboxheight\dimen0\of\box0\relax
      \ifdim\TABLEparheight>\dimen0         % new
        \advance\dimen0-\lineheight         % newer
        \ifdim\dimen0<\zeropoint            % newer
@@ -1632,7 +1667,7 @@
   %   \egroup
    \fi\fi
    \globalletempty\TABLEgraylinestatus
-   \globalletempty\TABLEgraylineerror 
+   \globalletempty\TABLEgraylineerror
    \expandafter\normalTABLElineformat#4#5\crcr % \crcr nodig ?
    \TABLEnoalign{\nobreak\global\setTABLEactiontrue}}
 
@@ -1653,17 +1688,17 @@
 %D \TABLE\ changes the catcode when needed.}
 
 \bgroup
-\catcode`\|=\@@active 
-\gdef\protectTABLEbar{\let|\letterbar} 
-\catcode`\|=\@@other  
+\catcode`\|=\@@active
+\gdef\protectTABLEbar{\let|\letterbar}
+\catcode`\|=\@@other
 \gdef\getTABLEnofcolumns#1%
   {\bgroup
-   \cleanupfeatures % needed ! 
-   \protectTABLEbar % is still a feature 
+   \cleanupfeatures % needed !
+   \protectTABLEbar % is still a feature
    \expanded{\convertargument#1}\to\ascii
    \@EA\doglobal\@EA\counttoken\@EA|\@EA\in\ascii\to\maxTABLEcolumn
    \global\advance\maxTABLEcolumn \minusone
-   % in case of & counting, divide by 2 
+   % in case of & counting, divide by 2
    \egroup}
 \egroup
 
@@ -1685,11 +1720,21 @@
 %D \sym{\type{\HC}} a horizontal colored line
 %D \stopopsomming
 
+% \def\defineTABLErules
+%   {\let\VL\TableVL
+%    \let\VC\TableVC
+%    \let\HL\TableHL
+%    \let\HC\TableHC}
+
 \def\defineTABLErules
   {\let\VL\TableVL
    \let\VC\TableVC
    \let\HL\TableHL
-   \let\HC\TableHC}
+   \let\HC\TableHC
+   \let\VS\TableVS
+   \let\VD\TableVD
+   \let\VT\TableVT
+   \let\VN\TableVN}
 
 \def\TableVL
   {\checkTABLEautorow
@@ -1725,6 +1770,19 @@
       \letgvalueempty{eVL\the\currentTABLEcolumn}}%
    \edef\@@tiVLwidth{\getvalue{wVL\the\currentTABLEcolumn}}%
    \expanded{\normalTABLEcomplexbar\@@tiVLwidth\space}}% \relax breaks \use
+
+% \starttable[|||]
+% \HL
+% \VL test \VS test \VL \FR
+% \VL test \VD test \VL \MR
+% \VL test \VT test \VL \LR
+% \HL
+% \stoptable
+
+\def\TableVS  {\VN1}
+\def\TableVD  {\VN2}
+\def\TableVT  {\VN3}
+\def\TableVN#1{\gdef\@VLn{#1}\VL}
 
 \def\resetVLvalues
   {\dostepwiserecurse\zerocount\maxTABLEcolumn\plusone
@@ -1751,10 +1809,8 @@
   {\docomplexorsimpleTable\complexTableVC\simpleTableVC}
 
 \def\complexTableVC[#1]%
-  {\global\setvalue{bVC\the\currentTABLEcolumn}%
-     {\localstartcolor[#1]}%
-   \global\setvalue{eVC\the\currentTABLEcolumn}%
-     {\localstopcolor}%
+  {\global\setvalue{bVC\the\currentTABLEcolumn}{\localstartcolor[#1]}%
+   \global\setvalue{eVC\the\currentTABLEcolumn}{\localstopcolor}%
    \simpleTableVC}
 
 \def\simpleTableVC
@@ -1780,7 +1836,7 @@
 
 \def\complexTableHL[#1]%
   {\TABLEnoalign
-     {\scratchcounter=0#1%
+     {\scratchcounter0#1%
       \multiply\scratchcounter \@@tiHLheight
       \edef\@@tiHLheight{\the\scratchcounter}%
       \simpleTableHL}}
@@ -1800,7 +1856,7 @@
         \expandafter\normalTABLEfullrule\@@tiHLheight
         \stopHLcommand
         \globalletempty\startHLcommand
-        \globalletempty\stopHLcommand 
+        \globalletempty\stopHLcommand
         \accountTABLElinewidth
       \fi
       \setTABLEaction\TABLErule
@@ -1900,12 +1956,19 @@
 
 \newif\ifTABLEdivision
 
+% \def\defineTABLEdivisions
+%   {\global\TABLEdivisionfalse % in start
+%    \let\DL\TableDL
+%    \let\DC\TableDC
+%    \let\DV\TableDV
+%    \let\VD\TableDV
+%    \let\DR\TableDR}
+
 \def\defineTABLEdivisions
   {\global\TABLEdivisionfalse % in start
    \let\DL\TableDL
    \let\DC\TableDC
    \let\DV\TableDV
-   \let\VD\TableDV
    \let\DR\TableDR}
 
 \def\checkTABLEdivision
@@ -1938,7 +2001,7 @@
      \fi
      %\startHLcommand
      \ifnum#1=\plusone
-       \global\advance\currentTABLEcolumn 2
+       \global\advance\currentTABLEcolumn \plustwo
        \let\next\normalTABLEsinglerule
      \else
        \ifnum#1<\maxTABLEcolumn
@@ -1952,7 +2015,7 @@
      \next
      %\stopHLcommand
      %\globalletempty\startHLcommand
-     %\globalletempty\stopHLcommand 
+     %\globalletempty\stopHLcommand
    \fi}
 
 \def\TableDV
@@ -2018,9 +2081,9 @@
    \let\RASTER    \TableRASTER
    \globallet\lastTABLEc\@@tiachtergrondkleur
    \globallet\lastTABLEr\@@tiachtergrondraster
-   \doifinsetelse\@@tiachtergrond{c,color}
-     {\global\chardef\TABLEcr1 }
-     {\global\chardef\TABLEcr2 }}
+   \doifinsetelse\@@tiachtergrond{c,color} % \v!kleur
+     {\global\chardef\TABLEcr\plusone}
+     {\global\chardef\TABLEcr\plustwo}}
 
 \def\TableBC
   {\ifTABLEgrayline
@@ -2199,12 +2262,10 @@
 % kan simpeler
 
 \def\docomplexTableCOLOR[#1]%
-  {\dodocomplexTableGL\localstartcolor\localstopcolor
-     [#1,\lastTABLEc,,]}
+  {\dodocomplexTableGL\localstartcolor \localstopcolor [#1,\lastTABLEc,,]}
 
 \gdef\docomplexTableRASTER[#1]%
-  {\dodocomplexTableGL\localstartraster\localstopraster
-     [#1,\lastTABLEr,,]}
+  {\dodocomplexTableGL\localstartraster\localstopraster[#1,\lastTABLEr,,]}
 
 \def\dodocomplexTableGL#1#2[#3,#4,#5,#6]%
   {\doifelsenothing{#4}{#1[#5]}{#1[#4]}%
@@ -2221,23 +2282,13 @@
 \def\TableBACKGROUND
   {\TableBR}
 
-\def\simpleTableRASTER#1%
-  {\docomplexTableRASTER[1]#1}
+\def\simpleTableRASTER   #1{\docomplexTableRASTER[1]#1}
+\def\complexTableRASTER[#1]{\docomplexTableRASTER[#1]}
+\def\simpleTableCOLOR      {\docomplexTableCOLOR [1]}
+\def\complexTableCOLOR [#1]{\docomplexTableCOLOR [#1]}
 
-\def\complexTableRASTER[#1]%
-  {\docomplexTableRASTER[#1]}
-
-\def\simpleTableCOLOR
-  {\docomplexTableCOLOR[1]}
-
-\def\complexTableCOLOR[#1]%
-  {\docomplexTableCOLOR[#1]}
-
-\def\TableRASTER
-  {\complexorsimpleTable{RASTER}}
-
-\def\TableCOLOR
-  {\complexorsimpleTable{COLOR}}
+\def\TableRASTER{\complexorsimpleTable{RASTER}}
+\def\TableCOLOR {\complexorsimpleTable{COLOR}}
 
 \def\addtoTABLEgrayline#1%
   {\TABLEgraytoks\expandafter{\TABLEgrayline}%
@@ -2274,7 +2325,7 @@
       \let\endTABLErow\endTABLEgrayrow
       \currentTABLEcolumn\zerocount
       \TABLEgrayline\TABLEendBCL % determine n of columns and height
-      \advance\currentTABLEcolumn \minusone 
+      \advance\currentTABLEcolumn \minusone
       \ifnum\currentTABLEcolumn>\maxTABLEcolumn
         % error message too long line
         \globalletempty\TABLEgrayline
@@ -2322,20 +2373,20 @@
 
 \def\defineTABLEshorthands%
   {\def\SPAN##1{\use{##1}}%
-   \def\TWO    {\use{2}}%
-   \def\THREE  {\use{3}}%
-   \def\FOUR   {\use{4}}%
-   \def\FIVE   {\use{5}}%
-   \def\SIX    {\use{6}}%
+   \def\TWO    {\use2}%
+   \def\THREE  {\use3}%
+   \def\FOUR   {\use4}%
+   \def\FIVE   {\use5}%
+   \def\SIX    {\use6}%
    \def\REF    {\ReFormat}}
 
 \def\defineTABLEunits
   {\processaction
      [\@@tiafstand]
-     [  \v!geen=>\OpenUp{0}{0}\def\LOW{\Lower6 },
-       \v!klein=>\OpenUp{0}{0}\def\LOW{\Lower6 }, % == baseline
-      \v!middel=>\OpenUp{1}{1}\def\LOW{\Lower7 },
-       \v!groot=>\OpenUp{2}{2}\def\LOW{\Lower8 }]%
+     [  \v!geen=>\OpenUp00\def\LOW{\Lower6 },
+       \v!klein=>\OpenUp00\def\LOW{\Lower6 }, % == baseline
+      \v!middel=>\OpenUp11\def\LOW{\Lower7 },
+       \v!groot=>\OpenUp22\def\LOW{\Lower8 }]%
    \doifelse\@@tiafstand\v!geen
      {\chardef\TABLErowfactor\zerocount}
      {\chardef\TABLErowfactor\plustwo  }}
@@ -2403,18 +2454,18 @@
    \doifelse\@@tidiepte\v!strut
      {\let\StrutDepthFactor\@@itdiepte}
      {\let\StrutDepthFactor\@@tidiepte}%
-   \scratchdimen\StrutHeightFactor \s!pt \multiply\scratchdimen 10%
+   \scratchdimen\StrutHeightFactor\points \multiply\scratchdimen 10%
    \edef\StrutHeightFactor{\@EA\withoutpt\the\scratchdimen}%
-   \scratchdimen\StrutDepthFactor  \s!pt \multiply\scratchdimen 10%
+   \scratchdimen\StrutDepthFactor \points \multiply\scratchdimen 10%
    \edef\StrutDepthFactor{\@EA\withoutpt\the\scratchdimen}%
    % units
    \NormalTSU{\normalbaselineskip\divide\StrutUnit 12 }%
    \NormalTableUnits}
 
 \def\OpenUp#1#2%
-  {\scratchdimen\StrutHeightFactor \s!pt \advance\scratchdimen #1\s!pt
+  {\scratchdimen\StrutHeightFactor \points \advance\scratchdimen #1\points
    \edef\StrutHeightFactor{\@EA\withoutpt\the\scratchdimen}%
-   \scratchdimen\StrutDepthFactor  \s!pt \advance\scratchdimen #2\s!pt
+   \scratchdimen\StrutDepthFactor  \points \advance\scratchdimen #2\points
    \edef\StrutDepthFactor{\@EA\withoutpt\the\scratchdimen}}
 
 %D As one can see, we didn't only add color, but also more

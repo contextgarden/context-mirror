@@ -269,6 +269,8 @@
 % \long\def\dostartsetups#1#2% watch out: not \grabuntil
 %   {\dograbuntil#1{\egroup\long\setvalue{\??su#2}}}
 
+% todo : \startsetups[name][XML] \setups[name][XML]
+
 \expanded
   {\long\def\@EA\noexpand\csname\e!start\v!instellingen\endcsname
      {\bgroup\noexpand\doifnextcharelse[%
@@ -277,11 +279,15 @@
 
 \letvalue{\e!stop\v!instellingen}\relax
 
-\def\setups % {..} or [..]
+\unexpanded \def\setups % {..} or [..]
   {\doifnextcharelse\bgroup\dosetupsA\dosetupsB}
+
+\unexpanded \def\setup % {..} or [..]
+  {\doifnextcharelse\bgroup\dosetups\dosetupsC}
 
 \def\dosetupsA  #1{\processcommalist[#1]\dosetups} % {..}
 \def\dosetupsB[#1]{\processcommalist[#1]\dosetups} % [..]
+\def\dosetupsC[#1]{\dosetups{#1}} % [..]
 
 \def\dosetups#1% the grid option will be extended to other main modes
   {\executeifdefined{\??su\ifgridsnapping\v!grid\fi:#1}{\csname\??su:#1\endcsname}\relax}

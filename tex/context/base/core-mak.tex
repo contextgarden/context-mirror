@@ -8,8 +8,8 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
-%C details. 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
 
 \writestatus{loading}{Context Core Macros / General Makeup Commands}
 
@@ -18,12 +18,12 @@
 % \definieerplaats[naam][instellingen]
 % \stelplaatsin[naam][instellingen]
 % \plaats<naam>[[instellingen]]
-% 
+%
 % - still undocumented and also not in setupb yet
 % - kan ook intern/direct (scheelt duplicatie), zie \framedtext
 
 \def\dodefineplacement[#1][#2]%
-  {\getparameters 
+  {\getparameters
      [\??pl#1]
      [\c!links=\hss,
       \c!rechts=\hss,
@@ -32,7 +32,7 @@
       \c!marge=\v!standaard,
       \c!grid=\v!midden,
       %\c!voor=,
-      %\c!na=, 
+      %\c!na=,
       #2]%
    \setvalue{\e!plaats#1}{\doplacement[\??pl#1]}}
 
@@ -48,8 +48,8 @@
 \def\doplacement
   {\dodoubleempty\dodoplacement}
 
-% \def\dodoplacement[#1][#2]% correctie moet mooier 
-%   {\bgroup 
+% \def\dodoplacement[#1][#2]% correctie moet mooier
+%   {\bgroup
 %    \dowithnextbox
 %      {\setlocalhsize
 %       \getparameters[#1][#2]%
@@ -66,8 +66,8 @@
 %       \egroup}
 %    \vbox}
 
-\def\dodoplacement[#1][#2]% correctie moet mooier 
-  {\bgroup 
+\def\dodoplacement[#1][#2]% correctie moet mooier
+  {\bgroup
    \dowithnextboxcontent
      {\forgetall}
      {\setlocalhsize
@@ -81,10 +81,10 @@
          \getvalue{#1\c!rechts}}%
       \ifinsidefloat \else
         \addlocalbackgroundtobox\nextbox
-      \fi 
-      \ifgridsnapping 
+      \fi
+      \ifgridsnapping
         \doifundefined{#1\c!grid}{\letvalue{#1\c!grid}\v!midden}%
-        % unchecked 
+        % unchecked
         \doifinset{\getvalue{#1\c!marge}}{\v!standaard,\v!ja}\noindent
         \snaptogrid[\getvalue{#1\c!grid}]\hbox{\flushnextbox}%
       \else
@@ -93,7 +93,7 @@
         \flushnextbox
         \doifvalue{#1\c!dieptecorrectie}\v!aan\baselinecorrection
         \doifvalue{#1\c!regelcorrectie }\v!aan\stopbaselinecorrection
-      \fi 
+      \fi
       \endgroup
       \getvalue{#1\c!na}%
       \egroup}

@@ -243,7 +243,7 @@
                     270=>\gdef\arrangedrotationO{270}\gdef\arrangedrotationE{90},
                \s!reset=>\global\arrangingpagesfalse,
              \s!unknown=>\checkinstalledpagearrangement\commalistelement]%
-        % no \s!default=> we can have aaa,,bbb      
+        % no \s!default=> we can have aaa,,bbb
      \doifcommonelse{#1}{90,270,\v!geroteerd}
        {\swapmacros\horizontalcutmarks\verticalcutmarks}{}% ugly solution
      \setuppapersize
@@ -256,7 +256,7 @@
   {\setgvalue{\??pp\??pp#1}}
 
 \def\checkinstalledpagearrangement#1% can be empty: aaa,,bbb
-  {\executeifdefined{\??pp\??pp#1}\donothing} 
+  {\executeifdefined{\??pp\??pp#1}\donothing}
 
 \def\dosetuparrangement#1#2#3#4#5#6#7#8%
   {\global\chardef\arrangedpageX     #1%
@@ -314,6 +314,10 @@
 \installpagearrangement 2*2*4 % onother one of Willy Egger
   {\dosetuparrangement{2}{1}{8}{3}{2}%
      \pusharrangedpageSIXTEENFOUR\poparrangedpagesAtoH\relax}
+
+\installpagearrangement 4SIDE
+  {\dosetuparrangement{1}{2}{4}{2}{3}%
+     \pusharrangedpageFOURSIDE\poparrangedpagesFOURSIDE\handlearrangedpageTOP}
 
 % \def\filluparrangedpages % beware: \realpageno is 1 ahead
 %   {\ifarrangingpages
@@ -327,9 +331,9 @@
 
 \def\filluparrangedpages % beware: \realpageno is 1 ahead
   {\ifarrangingpages
-     \scratchcounter\realpageno 
+     \scratchcounter\realpageno
      \advance\scratchcounter \minusone
-     \dosetmodulo\scratchcounter\arrangedpageT\scratchcounter 
+     \dosetmodulo\scratchcounter\arrangedpageT\scratchcounter
      \ifcase\scratchcounter\else
        \advance\scratchcounter \plusone
        \dostepwiserecurse\scratchcounter\arrangedpageT\plusone
@@ -516,10 +520,10 @@
 
 \def\splitoffarrangedpagesTWO
   {\splittopskip\zeropoint
-   \global\setbox\arrangedpageA\vsplit\arrangedpageB to \!!onepoint
+   \global\setbox\arrangedpageA\vsplit\arrangedpageB to \onepoint
    \scratchdimen\ht\arrangedpageB
-   \advance\scratchdimen -\!!onepoint
-   \ifdim\scratchdimen>\!!onepoint
+   \advance\scratchdimen -\onepoint
+   \ifdim\scratchdimen>\onepoint
      \setbox\scratchbox\vsplit\arrangedpageB to \scratchdimen
    \fi}
 
@@ -597,9 +601,30 @@
       \offinterlineskip
       \unvbox\arrangedpageB
       \allowbreak
-      \ht#1=\!!onepoint
-      \dp#1=\zeropoint
+      \ht#1\onepoint
+      \dp#1\zeropoint
       \vbox{\box#1}}}
+
+\def\poparrangedpagesFOURSIDE
+  {\bgroup
+   \gdef\arrangedpageN{2}%
+   \poparrangedpagesTWO
+   \let\arrangedpageA\arrangedpageC
+   \let\arrangedpageB\arrangedpageD
+   \gdef\arrangedpageN{2}%
+   \poparrangedpagesTWO
+   \egroup}
+
+\def\pusharrangedpageFOURSIDE#1%
+  {\doglobal\increment\arrangedpageN
+   \reportarrangedpage\arrangedpageN
+   \ifcase\arrangedpageN
+   \or \handlearrangedpageXandY{#1}000\arrangedpageA %  1
+   \or \handlearrangedpageXandY{#1}000\arrangedpageC %  2
+   \or \handlearrangedpageXandY{#1}000\arrangedpageB %  1
+   \or \handlearrangedpageXandY{#1}000\arrangedpageD %  2
+     \poparrangedpages
+   \fi}
 
 %D Willy Egger's sheet simulations:
 
@@ -684,15 +709,15 @@
    \fi}
 
 % % handy for stickers etc, this way we can treat them as page
-% 
+%
 % \setuppapersize [XY][A4]
 % \setuppaper     [topspace=5mm,backspace=5mm,dx=1mm,dy=1mm,nx=2,ny=6]
 % \setuplayout    [page] [topspace=5mm,backspace=5mm]
-% \setuplayout    [page] 
+% \setuplayout    [page]
 % \setuplayout    [location=middle]
 % \setuparranging [XY]
 % \showframe
-% 
+%
 % \starttext \dorecurse{30}{test \recurselevel \page} \stoptext
 
 \def\pusharrangedpageXY#1%
@@ -700,21 +725,21 @@
    \reportarrangedpage\arrangedpageN
    \doglobal\increment\arrangedpageM
    \global\setbox\arrangedpageB\hbox
-     \ifdim\@@ppbreedte>\zeropoint to \@@ppbreedte \fi 
+     \ifdim\@@ppbreedte>\zeropoint to \@@ppbreedte \fi
      {\ifvoid\arrangedpageB\else
         \unhbox\arrangedpageB\hss\hskip\@@ppdx\hss
       \fi
       \box#1}%
    \ifnum\arrangedpageM<\arrangedpageX\else
      \global\setbox\arrangedpageA\vbox
-          \ifdim\@@pphoogte>\zeropoint to \@@pphoogte \fi 
+          \ifdim\@@pphoogte>\zeropoint to \@@pphoogte \fi
        {\offinterlineskip
         \ifvoid\arrangedpageA\else
           \unvbox\arrangedpageA\vss\vskip\@@ppdy\vss
         \fi
         \box\arrangedpageB}%
      \doglobal\newcounter\arrangedpageM
-   \fi 
+   \fi
    \ifnum\arrangedpageN<\arrangedpageT\else
      \poparrangedpages
    \fi}
@@ -733,7 +758,7 @@
   {\dosetuparrangement\@@ppnx\@@ppny\@@ppxy\!!zerocount\!!zerocount
      \pusharrangedpageXY\poparrangedpagesXY\relax}
 
-\beginETEX \dimexpr 
+\beginETEX \dimexpr
 
 \definepapersize
   [XY]
@@ -744,7 +769,7 @@
   [\c!breedte=\dimexpr(\printpapierbreedte-2\dimexpr(\@@pprugwit)),
    \c!hoogte =\dimexpr(\printpapierhoogte -2\dimexpr(\@@ppkopwit))]
 
-\endETEX 
+\endETEX
 
 % \definepageshift[test][horizontal][10pt,20pt,30pt,40pt,50pt]
 % \definepageshift[test][vertical]  [10pt,20pt,30pt,40pt,50pt]
@@ -1028,6 +1053,7 @@
                   \hfilneg}
                \vfil}%
            \vfilneg}%
+           \pagina
         \ifnum\combinedpagescounter>\@@ipn \exitloop\fi}
    \else
      \doloop
@@ -1133,7 +1159,7 @@
          \vskip\@@pcoffset
          \hsize\@@pcbreedte
          \ifpagecomment
-           \getbuffer[\v!pagecomment]% 
+           \getbuffer[\v!pagecomment]%
            \global\pagecommentfalse
          \fi
          \vss}%

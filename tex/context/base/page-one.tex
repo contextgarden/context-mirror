@@ -73,6 +73,23 @@
 %      \egroup
 %   \fi}
 
+% \def\OTRONEsetvsize
+%   {\ifgridsnapping
+%      \ifcase\layoutlines
+%        \getrawnoflines\teksthoogte
+%      \else
+%        \noflines\layoutlines
+%      \fi
+%      \global\vsize\noflines\openlineheight
+%    \else
+%      \global\vsize\teksthoogte
+%    \fi
+%    \ifdim\pagegoal<\maxdimen
+%      \global\pagegoal\vsize
+%    \fi}
+
+\newdimen\oldvsize
+
 \def\OTRONEsetvsize
   {\ifgridsnapping
      \ifcase\layoutlines
@@ -85,7 +102,16 @@
      \global\vsize\teksthoogte
    \fi
    \ifdim\pagegoal<\maxdimen
-     \global\pagegoal\vsize
+     \ifdim\oldvsize=\vsize
+       % let's assume that the layout didn't change
+     \else
+       \bgroup
+         \global\oldvsize\vsize
+         \advance\vsize-\topinserted
+         \advance\vsize-\botinserted
+         \global\pagegoal\vsize
+       \egroup
+     \fi
    \fi}
 
 % \def\OTRONEdopagecontents#1#2% \box<n> \unvbox<n>
@@ -112,7 +138,7 @@
 %         \kern\maxdepth
 %         \dobotinsertions
 %       \fi\fi\fi
-%       \fakefootnotes}%
+%       \fakenotes}%
 %    \ifbottomnotes
 %      \ifgridsnapping
 %        \getnoflines\teksthoogte
@@ -196,7 +222,7 @@
         \pushcolor % moved from just after #1#2
         \dobotinsertions % added
       \fi\fi\fi
-      \fakefootnotes}%
+      \fakenotes}%
    \ifbottomnotes
      \ifgridsnapping
        \getnoflines\teksthoogte
@@ -253,6 +279,48 @@
    \fi
    \egroup}
 
+% \def\OTRONEdodosettopinserts
+%   {\ifnum\noffloatinserts<\noftopfloats
+%      \dogetfloat
+%      \ifdim\topinserted=\zeropoint
+%        \topofinserttrue
+%      \else
+%        \topofinsertfalse
+%      \fi
+%      \global\advance\topinserted \ht\floatbox
+%      \global\advance\topinserted \dp\floatbox
+%      \global\advance\topinserted \floatbottomskip\relax
+%      \ifdim\topinserted<\teksthoogte\relax
+%        \xdef\totaltopinserted{\the\topinserted}%
+%        \insert\topins
+%          {\forgetall
+%           \iftopofinsert
+%             \kern-\lineskip\par
+%             \prevdepth\maxdimen
+%           \else
+%             %\blanko[-\@@bknawit,\@@bkvoorwit]% inserts can't look back
+%             \betweenfloatblanko
+%           \fi
+%           \flushfloatbox
+%           \blanko[\@@bknawit]}%
+%        \ifsomefloatwaiting
+%          \advance\noffloatinserts \plusone
+%        \else
+%          \noffloatinserts\noftopfloats\relax
+%        \fi
+%        \dofloatflushedinfo
+%      \else
+%        \doresavefloat
+%        \noffloatinserts\noftopfloats\relax
+%      \fi
+%    \else
+%      \ifsomefloatwaiting
+%        \showmessage\m!floatblocks6{\the\noftopfloats}%
+%      \fi
+%      \let\OTRONEdodosettopinserts\relax
+%    \fi
+%    \OTRONEdodosettopinserts}
+
 \def\OTRONEdodosettopinserts
   {\ifnum\noffloatinserts<\noftopfloats
      \dogetfloat
@@ -269,6 +337,7 @@
        \insert\topins
          {\forgetall
           \iftopofinsert
+            \topskipcorrection % [xx] new: see icare topbleed
             \kern-\lineskip\par
             \prevdepth\maxdimen
           \else
@@ -334,12 +403,11 @@
    \OTRONEdodosetbotinserts}
 
 \def\OTRONEdosetbothinserts
-  {\ifflushingfloats
-     \global\topinserted\zeropoint
-     \global\botinserted\zeropoint
-   \else
-     \global\topinserted\zeropoint \OTRONEdosettopinserts
-     \global\botinserted\zeropoint \OTRONEdosetbotinserts
+  {\global\topinserted\zeropoint
+   \global\botinserted\zeropoint
+   \ifflushingfloats \else
+     \OTRONEdosettopinserts
+     \OTRONEdosetbotinserts
    \fi}
 
 % \def\OTRONEdotopinsertions
@@ -374,11 +442,23 @@
    \global\botinserted\zeropoint
    \global\nofloatpermittedfalse}
 
+% \def\OTRONEdoflushfloats
+%   {\global\flushingfloatstrue
+%    \ifsomefloatwaiting
+%      \par
+%      \ifvmode \prevdepth\maxdimen \fi % prevents whitespace
+%      \OTRONEdodoflushfloats
+%    \fi
+%    \global\savednoffloats\zerocount
+%    \global\somefloatwaitingfalse
+%    \global\flushingfloatsfalse}
+
 \def\OTRONEdoflushfloats
   {\global\flushingfloatstrue
    \ifsomefloatwaiting
      \par
-     \ifvmode \prevdepth\maxdimen \fi % prevents whitespace
+     % if kept, then option and definitely off in gridmode ! ! ! !
+     % \ifvmode \prevdepth\maxdimen \fi % prevents whitespace; problematic in icare tests
      \OTRONEdodoflushfloats
    \fi
    \global\savednoffloats\zerocount
@@ -492,7 +572,7 @@
        \dimen2 .99\pagegoal
      \or
        % method 2 : tight
-       \advance\dimen0 -\!!onepoint
+       \advance\dimen0 -\onepoint
      \fi
      \relax % really needed ! ! ! !
      \ifdim\dimen0>\dimen2
@@ -505,8 +585,11 @@
 \def\OTRONEflushsavedfloats
   {\dosetbothinserts}
 
+% TODO: TEST FIRST, NO CORRECTION NEEDED IN GRID MODE, EVT OPTION
+
 \def\OTRONEsomeherefloat[#1]% spacing between two successive must be better
-  {\baselinecorrection
+  {\baselinecorrection                           % not really needed in grid mode:
+  %\ifgridsnapping \else \baselinecorrection \fi % ! ! ! test test test ! ! ! !
    \doplacefloatbox
    \doinsertfloatinfo
    \dochecknextindentation\??bk}

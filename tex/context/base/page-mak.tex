@@ -13,23 +13,23 @@
 
 \writestatus{loading}{Context Page Macros / MakeUp}
 
-\unprotect 
+\unprotect
 
-%D \macros 
+%D \macros
 %D   {definemakeup, setupmakeup, startmakeup}
-%D 
+%D
 %D A makeup is a separate page, like a title page or colofon.
 %D There is one standard makeup page, but you can define more
-%D if needed. 
-%D 
-%D \starttypen 
+%D if needed.
+%D
+%D \starttypen
 %D \startstandardmakeup
-%D   My Fancy Title 
+%D   My Fancy Title
 %D \stopstandardmakeup
-%D \stoptypen 
-%D 
-%D The associated commands are: 
-%D 
+%D \stoptypen
+%D
+%D The associated commands are:
+%D
 %D \showsetup{\y!definemakeup}
 %D \showsetup{\y!setupmakeup}
 %D \showsetup{\y!startmakeup}
@@ -40,11 +40,12 @@
 \def\dodefinemakeup[#1][#2]%
   {\getparameters
      [\??do#1]%
-     [\c!breedte=\zetbreedte,
-      \c!hoogte=\teksthoogte,
-      \c!voffset=\!!zeropoint,
-      \c!hoffset=\!!zeropoint,
+     [\c!breedte=\zetbreedte,  % example in manual
+      \c!hoogte=\teksthoogte,  % example in manual
+      \c!voffset=\!!zeropoint, % example in manual
+      \c!hoffset=\!!zeropoint, % example in manual
       \c!commandos=,
+      \c!setups=,
       \c!pagina=\v!rechts,
       \c!dubbelzijdig=\v!leeg,
       \c!voor=,
@@ -56,7 +57,7 @@
       \c!tekststatus=\v!normaal,
       \c!hoofdstatus=\v!stop,
       \c!voetstatus=\v!stop,
-      \c!paginastatus=\v!stop,
+      \c!paginastatus=\v!stop, % in manual ! ! !
       \c!kleur=,
       \c!uitlijnen=,
       #2]%
@@ -69,17 +70,17 @@
 \def\dosetupmakeup[#1]%
   {\getparameters[\??do#1]}
 
-%D This will save us some 375 bytes in the format file. 
+%D This will save us some 375 bytes in the format file.
 
 \def\makeupparameter#1{\getvalue{\??do\currentmakeup#1}}
 
 %D The \type{\start}||\type{\stop} macros are used for both
-%D the direct and indirect way. The parameterless call will 
-%D build a simple box. 
+%D the direct and indirect way. The parameterless call will
+%D build a simple box.
 
-\newtoks\everymakeup 
+\newtoks\everymakeup
 
-\appendtoks \postponemarks \to \everymakeup 
+\appendtoks \postponemarks \to \everymakeup
 
 \let\currentmakeup\empty
 
@@ -99,7 +100,7 @@
      \expandafter   \donostartmakeup
    \fi}
 
-%D The simple case: 
+%D The simple case:
 
 \def\donostartmakeup
   {\pagina
@@ -110,13 +111,13 @@
 
 \def\donostopmakeup
   {\egroup
-   \flushmarks % new, here, else empty pages 
+   \flushmarks % new, here, else empty pages
    \pagina
    \egroup}
 
-%D The normal one: 
+%D The normal one:
 
-\newbox\makeupbox 
+\newbox\makeupbox
 
 \def\dodostartmakeup
   {\doifvaluesomething{\??do\currentmakeup\c!pagina}
@@ -124,11 +125,12 @@
    \soortpagina[\currentmakeup]%
    \setsystemmode\v!opmaak
    \setupmakeuplayout
-   \makeupparameter\c!commandos
+   \makeupparameter\c!commandos % hm, what is this one doing here ?
    \startregistercolor[\makeupparameter\c!kleur]%
    \global\setbox\makeupbox\vbox to \makeupparameter\c!hoogte
      \bgroup
-       \forgetall 
+       \forgetall
+       \setups[\makeupparameter\c!setups]%
        \hsize\makeupparameter\c!breedte
        \doifsomething{\makeupparameter\c!uitlijnen}
          {\setupalign[\makeupparameter\c!uitlijnen]}%
@@ -138,7 +140,7 @@
   {\endgraf
    \makeupparameter\c!onder
    \egroup
-   \flushmarks % new, here, else empty pages 
+   \flushmarks % new, here, else empty pages
 \stopregistercolor
    \doflushmakeup
    \egroup
@@ -162,33 +164,34 @@
    \fi}
 
 \def\doshipoutmakeup
-  {\pushmacro\@@pnstatus % new 
-   \makeupparameter\c!voor   
+  {\globalpushmacro\@@pnstatus % new
+   \makeupparameter\c!voor
    \vbox{\hbox{\color[\makeupparameter\c!kleur]{\box\makeupbox}}}%
-   \stelpaginanummerin[\c!status=\makeupparameter\c!paginastatus]% 
+   \stelpaginanummerin[\c!status=\makeupparameter\c!paginastatus]%
    \setupmakeuplayout
    \pagina
    \makeupparameter\c!na
-   \relax % voor fi 
+   \relax % voor fi
    \ifdubbelzijdig \ifodd\realpageno\else
      \processaction
        [\makeupparameter\c!dubbelzijdig]
        [  \v!ja=>\null
                  \pagina,
-               % \verlaagpaginanummer, % new 
-        \v!leeg=>\setupmakeuplayout
-                 \global\pagebodyornamentsfalse 
-                 \null\pagina]%
-               % \verlaagpaginanummer]% % new 
+               % \verlaagpaginanummer, % new
+        \v!leeg=>{\setupmakeuplayout
+                  \pagina[\v!blanko]%
+                  \null
+                  \pagina}]%
+               % \verlaagpaginanummer]% % new
    \fi \fi
- % \verlaagpaginanummer % new 
-   \popmacro\@@pnstatus} % new 
+ % \verlaagpaginanummer % new
+   \globalpopmacro\@@pnstatus} % new
 
 %D The text surrounding the main body text can be influenced
 %D by setting their associated status variables. The
-%D connection between them is made by the following macro 
+%D connection between them is made by the following macro
 
- 
+
 \def\setupmakeuplayout
   {\setupfooter[\c!status=\makeupparameter\c!voetstatus ]%
    \setupheader[\c!status=\makeupparameter\c!hoofdstatus]%
@@ -196,9 +199,9 @@
    \setupbottom[\c!status=\makeupparameter\c!onderstatus]%
    \setuptop   [\c!status=\makeupparameter\c!bovenstatus]%
    % this is needed, but no \setuplayout here; fails in texexec --fig=c
-   \recalculatelayout} 
+   \recalculatelayout}
 
-%D The standard page template is defined as follows: 
+%D The standard page template is defined as follows:
 
 \definemakeup
   [\v!standaard]
@@ -209,4 +212,16 @@
    \c!pagina=\v!rechts,
    \c!dubbelzijdig=\v!leeg]
 
-\protect \endinput 
+\definemakeup
+  [\v!tekst]
+  [\c!bovenstatus=\v!start,
+   \c!hoofdstatus=\v!start,
+   \c!tekststatus=\v!start,
+   \c!voetstatus=\v!start,
+   \c!onderstatus=\v!start,
+   \c!dubbelzijdig=\v!nee,
+   \c!pagina=,
+   \c!boven=\pseudostrut,
+   \c!onder=\obeydepth\vss]
+
+\protect \endinput

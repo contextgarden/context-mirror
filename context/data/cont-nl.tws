@@ -357,7 +357,10 @@ var:kolomafstand:*maat::
 var:margeafstand:*maat::
 var:n:*getal::
 var:nummercommando:*\commando#1::
+var:tekstcommando:*\commando#1::
 var:splitsen:soepel,streng,zeerstreng,*getal::
+var:tekstletter:normaal,vet,schuin,vetschuin,type,kap,klein...,*commando::
+var:tekstkleur:*naam::
 ivr:omlijnd::
 stopsetup
 
@@ -1654,7 +1657,7 @@ var:rugoffset:*maat::
 var:kopoffset:*maat::
 var:letter:normaal,vet,schuin,vetschuin,type,kap,klein...,*commando::
 var:kleur:*naam::
-var:markering:aan,uit,kleur,raster::
+var:markering:aan,uit,kleur,raster,tekst::
 var:plaats:links,midden,rechts,onder,boven, enkelzijdig,dubbelzijdig::
 var:schaal:*maat::
 var:nx:*getal::
@@ -2521,6 +2524,7 @@ var:commando:*\commando#1::
 var:plaats:links,midden,rechts::
 var:maxbreedte:*maat::
 var:onbekendeverwijzing:leeg,geen::
+var:variant:a,b,A,B::
 stopsetup
 
 startsetup
@@ -3432,6 +3436,7 @@ startsetup
 com:stelroterenin:
 typ:vars/:
 var:rotatie:*getal::
+var:plaats:normaal,hoog,passend,ruim,diepte::
 ivr:stelomlijndin::
 stopsetup
 

@@ -113,13 +113,27 @@
    \kern\strutdp
    \prevdepth\strutdp}
 
+% \def\baselinecorrection
+%   {\endgraf
+%    \ifvmode
+%      \ifdim\prevdepth<\maxdimen
+%        \ifdim\prevdepth<\zeropoint \else
+%          \ifdim\prevdepth<\strutdp
+%            \dobaselinecorrection
+%          \fi
+%        \fi
+%      \fi
+%    \fi}
+
 \def\baselinecorrection
   {\endgraf
    \ifvmode
      \ifdim\prevdepth<\maxdimen
        \ifdim\prevdepth<\zeropoint \else
-         \ifdim\prevdepth<\strutdp
+         \ifdim\prevdepth<\strutdepth \relax
+           \pushlastnode
            \dobaselinecorrection
+           \poplastnode
          \fi
        \fi
      \fi

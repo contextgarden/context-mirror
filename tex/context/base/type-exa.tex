@@ -13,126 +13,180 @@
 
 %D A couple of goodies:
 
-\starttypescript [modern] [ec,il2,pl0,default]
+\starttypescript [modern] [texnansi,ec,il2,pl0,default]
 
-\definetypeface [modern] [rm] [serif] [computer-modern] [computer-modern] [encoding=\typescripttwo]
-\definetypeface [modern] [ss] [sans]  [computer-modern] [computer-modern] [encoding=\typescripttwo]
-\definetypeface [modern] [tt] [mono]  [computer-modern] [computer-modern] [encoding=\typescripttwo]
-\definetypeface [modern] [mm] [math]  [computer-modern] [computer-modern] [encoding=\typescripttwo]
+  \definetypeface [modern] [rm] [serif] [latin-modern] [computer-modern] [encoding=\typescripttwo]
+  \definetypeface [modern] [ss] [sans]  [latin-modern] [computer-modern] [encoding=\typescripttwo]
+  \definetypeface [modern] [tt] [mono]  [latin-modern] [computer-modern] [encoding=\typescripttwo]
+  \definetypeface [modern] [mm] [math]  [latin-modern] [computer-modern] [encoding=\typescripttwo]
+
+\stoptypescript
+
+\starttypescript [modern-base] [texnansi,ec,il2,pl0,default]
+
+  \definetypeface [modern] [rm] [serif] [computer-modern] [default] [encoding=\typescripttwo]
+  \definetypeface [modern] [ss] [sans]  [computer-modern] [default] [encoding=\typescripttwo]
+  \definetypeface [modern] [tt] [mono]  [computer-modern] [default] [encoding=\typescripttwo]
+  \definetypeface [modern] [mm] [math]  [computer-modern] [default] [encoding=\typescripttwo]
 
 \stoptypescript
 
 \starttypescript [postscript] [texnansi,ec,8r]
 
-\definetypeface [postscript] [rm] [serif] [times]     [default] [encoding=\typescripttwo]
-\definetypeface [postscript] [mm] [math]  [times]     [default]
-\definetypeface [postscript] [ss] [sans]  [helvetica] [default] [rscale=.9,encoding=\typescripttwo]
-\definetypeface [postscript] [tt] [mono]  [courier]   [default] [rscale=1.1,encoding=\typescripttwo]
+  \definetypeface [postscript] [rm] [serif] [times]     [default] [encoding=\typescripttwo]
+  \definetypeface [postscript] [mm] [math]  [times]     [default]
+  \definetypeface [postscript] [ss] [sans]  [helvetica] [default] [rscale=.9,encoding=\typescripttwo]
+  \definetypeface [postscript] [tt] [mono]  [courier]   [default] [rscale=1.1,encoding=\typescripttwo]
 
 \stoptypescript
 
 \starttypescript [times] [texnansi,ec,8r]
 
-\definetypeface [times] [rm] [serif] [times]           [default] [encoding=\typescripttwo]
-\definetypeface [times] [ss] [sans]  [helvetica]       [default] [rscale=.9,encoding=\typescripttwo]
-\definetypeface [times] [tt] [mono]  [computer-modern] [default] [rscale=1.1]
-\definetypeface [times] [mm] [math]  [times]           [default] [encoding=\typescripttwo]
+  \definetypeface [times] [rm] [serif] [times]           [default] [encoding=\typescripttwo]
+  \definetypeface [times] [ss] [sans]  [helvetica]       [default] [rscale=.9,encoding=\typescripttwo]
+  \definetypeface [times] [tt] [mono]  [computer-modern] [default] [rscale=1.1]
+  \definetypeface [times] [mm] [math]  [times]           [default] [encoding=\typescripttwo]
+
+% \usemathcollection[default]
 
 \stoptypescript
 
 \starttypescript [palatino] [texnansi,ec,8r]
 
-\definetypeface [palatino] [rm] [serif] [palatino]        [default] [encoding=\typescripttwo]
-\definetypeface [palatino] [mm] [math]  [palatino]        [default] [encoding=default]
-\definetypeface [palatino] [tt] [mono]  [computer-modern] [default] [rscale=1.075,encoding=\typescripttwo]
+  \definetypeface [palatino] [rm] [serif] [palatino]        [default] [encoding=\typescripttwo]
+  \definetypeface [palatino] [mm] [math]  [palatino]        [default] [encoding=default]
+  \definetypeface [palatino] [tt] [mono]  [computer-modern] [default] [rscale=1.075,encoding=\typescripttwo]
+
+% \usemathcollection[default]
 
 \stoptypescript
 
 \starttypescript [fourier] [ec]
 
-\definetypeface [fourier] [rm] [serif] [fourier]      [default] [encoding=ec]
-\definetypeface [fourier] [mm] [math]  [fourier]      [default] [encoding=default]
-\definetypeface [fourier] [tt] [mono]  [latin-modern] [default] [rscale=1.070,encoding=ec]
+  \definetypeface [fourier] [rm] [serif] [fourier]      [default] [encoding=ec]
+  \definetypeface [fourier] [mm] [math]  [fourier]      [default] [encoding=default]
+  \definetypeface [fourier] [tt] [mono]  [latin-modern] [default] [rscale=1.070,encoding=ec]
 
-\usemathcollection[fou]
+  \usemathcollection[fou]
+
+\stoptypescript
+
+\starttypescript [lucida,lucidabfm] [texnansi,ec,8r]
+
+  \definetypeface [lucida] [rm] [serif]       [lucida] [default] [encoding=\typescripttwo]
+  \definetypeface [lucida] [ss] [sans]        [lucida] [default] [encoding=\typescripttwo]
+  \definetypeface [lucida] [tt] [mono]        [lucida] [default] [encoding=\typescripttwo]
+  \definetypeface [lucida] [hw] [handwriting] [lucida] [default] [encoding=\typescripttwo]
 
 \stoptypescript
 
 \starttypescript [lucida] [texnansi,ec,8r]
 
-\definetypeface [lucida] [rm] [serif]       [lucida] [default] [encoding=\typescripttwo]
-\definetypeface [lucida] [ss] [sans]        [lucida] [default] [encoding=\typescripttwo]
-\definetypeface [lucida] [tt] [mono]        [lucida] [default] [encoding=\typescripttwo]
-\definetypeface [lucida] [mm] [math]        [lucida] [default] [encoding=\typescripttwo]
-\definetypeface [lucida] [hw] [handwriting] [lucida] [default] [encoding=\typescripttwo]
+  \definetypeface [lucida] [mm] [math]        [lucida] [default] [encoding=\typescripttwo]
 
-\usemathcollection[lbr]
+\stoptypescript
+
+\starttypescript [lucidaboldmath] [texnansi,ec,8r]
+
+\definetypeface [lucidaboldmath] [rm] [serif]    [lucida] [default] [encoding=\typescripttwo] % needed ?
+\definetypeface [lucidaboldmath] [ss] [sans]     [lucida] [default] [encoding=\typescripttwo] % needed ?
+\definetypeface [lucidaboldmath] [tt] [mono]     [lucida] [default] [encoding=\typescripttwo] % needed ?
+\definetypeface [lucidaboldmath] [mm] [boldmath] [lucida] [default] [encoding=\typescripttwo]
+
+\stoptypescript
+
+\starttypescript [lucidabfm,lucidaboldmath] [texnansi,ec,8r]
+
+  \definetypeface [lucida]         [mm] [bfmath] [lucida] [default] [encoding=\typescripttwo]
+  \definetypeface [lucidaboldmath] [mm] [bfmath] [lucida] [default] [encoding=\typescripttwo]
+
+\stoptypescript
+
+\starttypescript [lucida,lucidabfm,lucidaboldmath] [texnansi,ec,8r]
+
+  \usemathcollection[lbr]
 
 \stoptypescript
 
 \starttypescript [serif] [hanging] [pure]
 
-\setupfontsynonym [Serif]            [handling=pure]
-\setupfontsynonym [SerifBold]        [handling=pure]
-\setupfontsynonym [SerifSlanted]     [handling=pure]
-\setupfontsynonym [SerifItalic]      [handling=pure]
-\setupfontsynonym [SerifBoldSlanted] [handling=pure]
-\setupfontsynonym [SerifBoldItalic]  [handling=pure]
+  \setupfontsynonym [Serif]            [handling=pure]
+  \setupfontsynonym [SerifBold]        [handling=pure]
+  \setupfontsynonym [SerifSlanted]     [handling=pure]
+  \setupfontsynonym [SerifItalic]      [handling=pure]
+  \setupfontsynonym [SerifBoldSlanted] [handling=pure]
+  \setupfontsynonym [SerifBoldItalic]  [handling=pure]
 
 \stoptypescript
 
 \starttypescript [sans] [hanging] [pure]
 
-\setupfontsynonym [Sans]            [handling=pure]
-\setupfontsynonym [SansBold]        [handling=pure]
-\setupfontsynonym [SansSlanted]     [handling=pure]
-\setupfontsynonym [SansItalic]      [handling=pure]
-\setupfontsynonym [SansBoldSlanted] [handling=pure]
-\setupfontsynonym [SansBoldItalic]  [handling=pure]
+  \setupfontsynonym [Sans]            [handling=pure]
+  \setupfontsynonym [SansBold]        [handling=pure]
+  \setupfontsynonym [SansSlanted]     [handling=pure]
+  \setupfontsynonym [SansItalic]      [handling=pure]
+  \setupfontsynonym [SansBoldSlanted] [handling=pure]
+  \setupfontsynonym [SansBoldItalic]  [handling=pure]
 
 \stoptypescript
 
 \starttypescript [mono] [hanging] [pure]
 
-\setupfontsynonym [Mono]            [handling=pure]
-\setupfontsynonym [MonoBold]        [handling=pure]
-\setupfontsynonym [MonoSlanted]     [handling=pure]
-\setupfontsynonym [MonoItalic]      [handling=pure]
-\setupfontsynonym [MonoBoldSlanted] [handling=pure]
-\setupfontsynonym [MonoBoldItalic]  [handling=pure]
+  \setupfontsynonym [Mono]            [handling=pure]
+  \setupfontsynonym [MonoBold]        [handling=pure]
+  \setupfontsynonym [MonoSlanted]     [handling=pure]
+  \setupfontsynonym [MonoItalic]      [handling=pure]
+  \setupfontsynonym [MonoBoldSlanted] [handling=pure]
+  \setupfontsynonym [MonoBoldItalic]  [handling=pure]
 
 \stoptypescript
 
 \starttypescript [serif] [hanging] [thanh]
 
-\setupfontsynonym [Serif]            [handling=normal]
-\setupfontsynonym [SerifBold]        [handling=bold]
-\setupfontsynonym [SerifSlanted]     [handling=slanted]
-\setupfontsynonym [SerifItalic]      [handling=italic]
-\setupfontsynonym [SerifBoldSlanted] [handling=boldslanted]
-\setupfontsynonym [SerifBoldItalic]  [handling=bolditalic]
+  \setupfontsynonym [Serif]            [handling=normal]
+  \setupfontsynonym [SerifBold]        [handling=bold]
+  \setupfontsynonym [SerifSlanted]     [handling=slanted]
+  \setupfontsynonym [SerifItalic]      [handling=italic]
+  \setupfontsynonym [SerifBoldSlanted] [handling=boldslanted]
+  \setupfontsynonym [SerifBoldItalic]  [handling=bolditalic]
 
 \stoptypescript
 
 \starttypescript [sans] [hanging] [thanh]
 
-\setupfontsynonym [Sans]            [handling=normal]
-\setupfontsynonym [SansBold]        [handling=bold]
-\setupfontsynonym [SansSlanted]     [handling=slanted]
-\setupfontsynonym [SansItalic]      [handling=italic]
-\setupfontsynonym [SansBoldSlanted] [handling=boldslanted]
-\setupfontsynonym [SansBoldItalic]  [handling=bolditalic]
+  \setupfontsynonym [Sans]            [handling=normal]
+  \setupfontsynonym [SansBold]        [handling=bold]
+  \setupfontsynonym [SansSlanted]     [handling=slanted]
+  \setupfontsynonym [SansItalic]      [handling=italic]
+  \setupfontsynonym [SansBoldSlanted] [handling=boldslanted]
+  \setupfontsynonym [SansBoldItalic]  [handling=bolditalic]
 
 \stoptypescript
 
 \starttypescript [mono] [hanging] [thanh]
 
-\setupfontsynonym [Mono]            [handling=normal]
-\setupfontsynonym [MonoBold]        [handling=bold]
-\setupfontsynonym [MonoSlanted]     [handling=slanted]
-\setupfontsynonym [MonoItalic]      [handling=italic]
-\setupfontsynonym [MonoBoldSlanted] [handling=boldslanted]
-\setupfontsynonym [MonoBoldItalic]  [handling=bolditalic]
+  \setupfontsynonym [Mono]            [handling=normal]
+  \setupfontsynonym [MonoBold]        [handling=bold]
+  \setupfontsynonym [MonoSlanted]     [handling=slanted]
+  \setupfontsynonym [MonoItalic]      [handling=italic]
+  \setupfontsynonym [MonoBoldSlanted] [handling=boldslanted]
+  \setupfontsynonym [MonoBoldItalic]  [handling=bolditalic]
+
+\stoptypescript
+
+\starttypescript [serif] [simple] [name]
+
+  \definefontsynonym [Simple] [cmvtt10]
+  \setupfontsynonym  [Simple] [handling=pure]
+
+\stoptypescript
+
+\starttypescript [modernvariable] [texnansi,ec,8r]
+
+  \definetypeface [modernvariable] [rm] [serif] [simple] [default] [encoding=\typescripttwo]
+  \definetypeface [modernvariable] [ss] [sans]  [modern] [default] [encoding=\typescripttwo]
+  \definetypeface [modernvariable] [tt] [mono]  [modern] [default] [encoding=\typescripttwo]
+  \definetypeface [modernvariable] [mm] [math]  [modern] [default]
 
 \stoptypescript
 

@@ -56,6 +56,17 @@ BEGIN {
   }
 }
 
+# great, glob changed to bsd glob in an incompatible way ... sigh, we now
+# have to catch a failed glob returning the pattern
+
+sub validglob {
+    my @globbed = glob(shift) ;
+    if ((@globbed) &&  (! -e $globbed[0])) {
+        return () ;
+    } else {
+        return @globbed ;
+    }
+}
 
 sub GetShortPathName {
     my ($filename) = @_;
@@ -233,7 +244,9 @@ if ($fontroot eq "")
       { $fontroot = `kpsewhich --expand-path=\\\$$installpath` }
     chomp $fontroot }
 
-$fontroot = &GetShortPathName($fontroot);
+
+if ($fontroot =~ /\s+/)  # needed for windows, spaces in name
+  { $fontroot = &GetShortPathName($fontroot) } # but ugly when not needed
 
 if ($test)
   { $vendor = $collection = "test" ;
@@ -360,12 +373,12 @@ if ($sourcepath eq "auto")
         if (-d $sourcepath)
           { # $install = 0 ;  # no copy needed
             $makepath = 1 ; # make on local if needed
-	    my @files = glob("$sourcepath/*.afm") ;
+	    my @files = validglob("$sourcepath/*.afm") ;
 	    if ($preproc)
-	      { @files = glob("$sourcepath/*.otf") ;
+	      { @files = validglob("$sourcepath/*.otf") ;
 	        report("locating : otf files") }
 	    unless (@files)
-              { @files = glob("$sourcepath/*.ttf") ;
+              { @files = validglob("$sourcepath/*.ttf") ;
 	        report("locating : ttf files") }
             if (@files)
               { if ($listing)
@@ -486,19 +499,19 @@ my @files ;
 
 sub globafmfiles
   { my ($runpath, $pattern)  = @_ ;
-    my @files = glob("$runpath/$pattern.afm") ;
+    my @files = validglob("$runpath/$pattern.afm") ;
     if ($preproc && !$lcdf)
-    { @files = glob("$runpath/$pattern.*tf") ;
-      report("locating otf files : using pattern $pattern");
-      unless (@files)
-      { @files = glob("$sourcepath/$pattern.ttf") ;
-	report("locating ttf files : using pattern $pattern") }
-#     if ($lcdf) { $extension = "otf" }
-    }
+      { @files = validglob("$runpath/$pattern.*tf") ;
+        report("locating otf files : using pattern $pattern");
+        unless (@files)
+          { @files = validglob("$sourcepath/$pattern.ttf") ;
+	        report("locating ttf files : using pattern $pattern") }
+      #     if ($lcdf) { $extension = "otf" }
+          }
     if (@files) # also elsewhere
       { report("locating afm files : using pattern $pattern") }
     else
-      { @files = glob("$runpath/$pattern.ttf") ;
+      { @files = validglob("$runpath/$pattern.ttf") ;
 	if (@files)
 	  { report("locating afm files : using ttf files") ;
 	    $extension = "ttf" ;
@@ -506,11 +519,11 @@ sub globafmfiles
                { $file =~ s/\.ttf$//io ;
 		report ("generating afm file : $file.afm") ;
 		system("ttf2afm $file.ttf -o $file.afm") }
-	    @files = glob("$runpath/$pattern.afm") }
+	    @files = validglob("$runpath/$pattern.afm") }
 	else # try doing the pre-processing earlier
 	  { report("locating afm files : using otf files") ;
 	    $extension = "otf" ;
-	    @files = glob("$runpath/$pattern.otf") ;
+	    @files = validglob("$runpath/$pattern.otf") ;
 	    foreach my $file (@files)
 	      { $file =~ s/\.otf$//io ;
 		report ("generating afm file : $file.afm") ;
@@ -521,9 +534,9 @@ sub globafmfiles
 	        }
 	      }
       	    if ($lcdf)
-	    { @files = glob("$runpath/$pattern.otf") }
+	    { @files = validglob("$runpath/$pattern.otf") }
 	    else
-	    { @files = glob("$runpath/$pattern.afm") }
+	    { @files = validglob("$runpath/$pattern.afm") }
 	  }
        }
     return @files }
@@ -542,7 +555,7 @@ else
 
 sub copy_files
   { my ($suffix,$sourcepath,$topath) = @_ ;
-    my @files = glob ("$sourcepath/$pattern.$suffix") ;
+    my @files = validglob("$sourcepath/$pattern.$suffix") ;
     return if ($topath eq $sourcepath) ;
     report ("copying files : $suffix") ;
     foreach my $file (@files)
@@ -609,7 +622,7 @@ if ($tex)
         print TEX "\n" ;
         print TEX "\\loadmapfile[$mapfile]\n" ;
         print TEX "\n" ;
-        print TEX "\\starttext\n" }
+        print TEX "\\starttext\n\n" }
     else
       { print TEX "$texdata" ;
         print TEX "\n\%appended section\n\n\\page\n\n" } }
@@ -956,7 +969,7 @@ print "\n" ; system ("mktexlsr $fontroot") ; print "\n" ;
 
 if ($show) { system ("texexec --once --silent $texfile") }
 
-@files = glob ("$identifier.*") ;
+@files = validglob("$identifier.*") ;
 
 foreach my $file (@files)
   { unless ($file =~ /(tex|pdf|log|mp|tmp)$/io) { unlink $file } }

@@ -1,0 +1,193 @@
+%D \module
+%D   [       file=font-bfm,
+%D        version=2003.11.25,
+%D          title=\CONTEXT\ Font Macros,
+%D       subtitle=Mixed Normal and Bold Math,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{Context Font Macros / Mixed Bold Math Support}
+
+%D The following example demonstrates how to use normal, bold, and mixed
+%D normal|/|bold math. Since not everyone has the Lucida on his|/|her
+%D machine we don't show the result.
+%D
+%D \starttyping
+%D \setupformulas
+%D   [method=bold]
+%D
+%D \definetypeface [mainface] [rm] [serif]    [lucida] [default] [encoding=texnansi]
+%D \definetypeface [mainface] [tt] [mono]     [lucida] [default] [encoding=texnansi]
+%D \definetypeface [mainface] [ss] [sans]     [lucida] [default] [encoding=texnansi]
+%D \definetypeface [mainface] [mm] [math]     [lucida] [default] [encoding=texnansi]
+%D \definetypeface [mainface] [mm] [bfmath]   [lucida] [default] [encoding=texnansi]
+%D
+%D \definetypeface [boldmath] [rm] [serif]    [lucida] [default] [encoding=texnansi]
+%D \definetypeface [boldmath] [tt] [mono]     [lucida] [default] [encoding=texnansi]
+%D \definetypeface [boldmath] [ss] [sans]     [lucida] [default] [encoding=texnansi]
+%D \definetypeface [boldmath] [mm] [boldmath] [lucida] [default] [encoding=texnansi]
+%D
+%D \switchtobodyfont[mainface]
+%D
+%D \startlines
+%D $\mainface x=10 \Gamma \Delta \alpha \delta \zeta$
+%D $\boldmath x=10 \Gamma \Delta \alpha \delta \zeta$
+%D \stoplines
+%D
+%D \startformula
+%D   x=12=\fontbody  \Gamma \Delta \alpha \delta \zeta
+%D \stopformula
+%D
+%D \startformula[mainface]
+%D   x=12=\fontbody  \Gamma \Delta \alpha \delta \zeta
+%D \stopformula
+%D
+%D \startformula[boldmath]
+%D   x=12=\fontbody  \Gamma \Delta \alpha \delta \zeta
+%D \stopformula
+%D
+%D \startformula[boldmath,8pt]
+%D   x=8=\fontbody  \Gamma \Delta \alpha \delta \zeta
+%D \stopformula
+%D
+%D \startformula[boldmath,12pt,small]
+%D   x=12s=\fontbody  \Gamma \Delta \alpha \delta \zeta
+%D \stopformula
+%D
+%D \startformula[boldmath,small]
+%D   x=s=\fontbody  \Gamma \Delta \alpha \delta \zeta
+%D \stopformula
+%D
+%D \startformula[boldmath,10pt]
+%D   x=10=\fontbody  \Gamma \Delta \alpha \delta \zeta
+%D \stopformula
+%D
+%D \startformula[boldmath,11pt,small]
+%D   x=11s=\fontbody  \Gamma \Delta \alpha \delta \zeta
+%D \stopformula
+%D
+%D \startformula[boldmath,9pt]
+%D   x=9=\fontbody \Gamma \Delta \alpha \delta \zeta
+%D \stopformula
+%D
+%D \startlines
+%D \formula{1=2x}
+%D \formula[boldmath]{1=2x}
+%D \formula[mainface]{1=2x}
+%D \formula[mainface]{1 \theta \Gamma = \bfm 1 \beta \hbox{\sl test}\Gamma \alpha ' x x}
+%D \formula[mainface]{1 \theta \Gamma = {\bfm 1 \beta \hbox{\sl test}\Gamma \alpha ' x} x}
+%D \stoplines
+%D \stoptyping
+
+\unprotect
+
+%D \TEX\ has some hard wired expectations about where to look for
+%D certain characters.  This means that we cannot overload the families
+%D 0 upto~3. Also, since we use C upto~F  for math as well, we are left
+%D with the range 4 upto~B.
+
+\chardef\mrbffam\itfam \edef\c!mrbf{\c!mr\c!bf} \let\hexmrbffam\hexitfam % 4 it
+\chardef\exbffam\slfam \edef\c!exbf{\c!ex\c!bf} \let\hexexbffam\hexslfam % 5 sl
+\chardef\mibffam\bffam \edef\c!mibf{\c!mi\c!bf} \let\hexmibffam\hexbffam % 6 bf
+\chardef\sybffam\nnfam \edef\c!sybf{\c!sy\c!bf} \let\hexsybffam\hexnnfam % 7 nn
+\chardef\mabffam\bsfam \edef\c!mabf{\c!ma\c!bf} \let\hexmabffam\hexbsfam % 8 bs
+\chardef\mbbffam\bifam \edef\c!mbbf{\c!mb\c!bf} \let\hexmbbffam\hexbifam % 9 bi
+\chardef\mcbffam\scfam \edef\c!mcbf{\c!mc\c!bf} \let\hexmcbffam\hexscfam % A sc
+\chardef\mdbffam\scfam \edef\c!mdbf{\c!mc\c!bf} \let\hexmdbffam\hexscfam % B tf % tricky
+
+%D The next bunch of code looks horrible and tricky but one has to keep in
+%D mind that because \TEX\ makes several passes over the math list we need to
+%D make sure that grouping is handled well. Later assignments to a family
+%D overload previous ones, the last one counts.
+
+\newtoks \boldmathstrategies
+\newtoks \boldsymbstrategies
+
+\appendtoks
+  \dosetmathfamily\mrbffam\textface\scriptface\scriptscriptface\c!mrbf\mrfallback
+  \dosetmathfamily\mibffam\textface\scriptface\scriptscriptface\c!mibf\empty
+  \dosetskewchar\defaultskewcharmi
+  \dosetmathfamily\sybffam\textface\scriptface\scriptscriptface\c!sybf\empty
+  \dosetskewchar\defaultskewcharsy
+  \dosetmathfamily\exbffam\textface\textface  \textface        \c!exbf\empty
+  \dosetmathfamily\mabffam\textface\scriptface\scriptscriptface\c!mabf\empty
+  \dosetmathfamily\mbbffam\textface\scriptface\scriptscriptface\c!mbbf\empty
+  \dosetmathfamily\mcbffam\textface\scriptface\scriptscriptface\c!mcbf\empty
+\to \boldmathstrategies
+
+\appendtoks
+  \dosetsymbfamily\mrbffam\textface\scriptface\scriptscriptface\c!mrbf
+  \dosetsymbfamily\mibffam\textface\scriptface\scriptscriptface\c!mibf
+  \dosetsymbfamily\sybffam\textface\scriptface\scriptscriptface\c!sybf
+  \dosetsymbfamily\exbffam\textface\textface  \textface        \c!exbf
+  \dosetsymbfamily\mabffam\textface\scriptface\scriptscriptface\c!mabf
+  \dosetsymbfamily\mbbffam\textface\scriptface\scriptscriptface\c!mbbf
+  \dosetsymbfamily\mcbffam\textface\scriptface\scriptscriptface\c!mcbf
+\to \boldsymbstrategies
+
+%D Here comes the real mess (due to semi||global settings en multiple
+%D passes over the math list once the input is expanded.
+
+\newevery \everyboldfacemath  \relax
+\chardef  \boldfacemathmethod \zerocount
+
+\appendtoks
+  \ifcase\boldfacemathmethod \else \the\boldmathstrategies \fi
+\to \mathstrategies
+
+\appendtoks
+  \ifcase\boldfacemathmethod \else \the\boldsymbstrategies \fi
+\to \symbstrategies
+
+\appendtoks
+  \let\mrfam\mrbffam \let\c!mr\c!mrbf \let\hexmrfam\hexmrbffam
+  \let\mifam\mibffam \let\c!mi\c!mibf \let\hexmifam\hexmibffam
+  \let\syfam\sybffam \let\c!sy\c!sybf \let\hexsyfam\hexsybffam
+  \let\exfam\exbffam \let\c!ex\c!exbf \let\hexexfam\hexexbffam
+  \let\mafam\mabffam \let\c!ma\c!mabf \let\hexmafam\hexmabffam
+  \let\mbfam\mbbffam \let\c!mb\c!mbbf \let\hexmbfam\hexmbbffam
+  \let\mcfam\mcbffam \let\c!mc\c!mcbf \let\hexmcfam\hexmcbffam
+\to \everyboldfacemath
+
+\appendtoks
+  \let\mathsubfamily\c!bf
+\to \everyboldfacemath
+
+\appendtoks
+  \synchronizemath \aftergroup\synchronizemath
+\to \everyboldfacemath
+
+%D \macros
+%D   {boldfacemath, bfm, autoboldfacemath}
+%D
+%D These are the user commands, with \type {\bfm} being the most comfortable.
+
+\def\boldfacemath    {\ifcase\boldfacemathmethod\else\the\everyboldfacemath\fi}
+\def\bfm             {\boldfacemath} % no \let, so that we can redefine
+\def\autoboldfacemath{\appendtoks\ifcase\boldfacemathmethod\else\let\bf\boldfacemath\fi\to\everymath}
+
+%D We hook this feature into the formula mechanism.
+
+\setupformulas
+  [\c!methode=\v!normaal]
+
+\appendtoks
+  \doifelse{\formulaparameter\c!methode}\v!vet
+    {\chardef\boldfacemathmethod\plusone}
+    {\chardef\boldfacemathmethod\zerocount}%
+\to \everysetupformulas
+
+%D Of course this only works when bfmath fonts are set up (see example at
+%D the top of this file) and bold math is enabled:
+%D
+%D \starttyping
+%D \setupformulas
+%D   [method=bold]
+%D \stoptyping
+
+\protect \endinput

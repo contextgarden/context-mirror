@@ -3,7 +3,7 @@
 %D      version=2000.05.07, % 1999.16.07,
 %D        title=\CONTEXT\ Encoding Macros,
 %D     subtitle=\LATEX\ EC Encoding,
-%D       author={Patrick Gundlach, Hans Hagen, Taco Hoekwater}, 
+%D       author={Patrick Gundlach, Hans Hagen, Taco Hoekwater},
 %D         date=\currentdate,
 %D    copyright=PRAGMA-ADE]
 %C
@@ -41,10 +41,10 @@
 
 %D So far for the mapping.
 
-%D The following characters are kind of dangerous, 
-%D that is, they are normally not part of fonts, unless 
-%D explicitly constructed. 
-%D 
+%D The following characters are kind of dangerous,
+%D that is, they are normally not part of fonts, unless
+%D explicitly constructed.
+%D
 %D \startopsomming[columns,two]
 %D \som \type{\dotlessj}
 %D \som \type{\IJligature}
@@ -53,18 +53,18 @@
 %D \som \type{\perthousand}
 %D \som \type{\compoundwordmark}
 % %D \som \type{\textvisiblespace}
-% %D \som \type{\tcaron} 
+% %D \som \type{\tcaron}
 % %D \som \type{\tcedilla }
 % %D \som \type{\Tcedilla}
 % %D \som \type{\ydiaeresis}
 %D \stopopsomming
 
-%D So, for the moment we nil them; we can always create 
-%D another vector if needed. 
+%D So, for the moment we nil them; we can always create
+%D another vector if needed.
 
 \stopmapping
 
-\startencoding[ec][ec] % second arg defines auto regime, needed here ? 
+\startencoding[ec][ec] % second arg defines auto regime, needed here ?
 
 \definecharacter textacute         1
 \definecharacter textbreve         8
@@ -113,12 +113,12 @@
 %definecharacter perthousand      24
 
 \definecharacter softhyphen      127 % ?
-%definecharacter compoundwordmark 23 
+%definecharacter compoundwordmark 23
 
 \definecharacter textasciicircum  94
 \definecharacter textasciitilde  126
 \definecharacter textbackslash    92
-\definecharacter textbraceleft   123 
+\definecharacter textbraceleft   123
 \definecharacter textbraceright  125
 \definecharacter textunderscore   95
 %definecharacter textvisiblespace 32
@@ -128,7 +128,7 @@
 \definecharacter quotedblleft     16
 \definecharacter quotedblright    17
 
-\definecharacter quotesingle      17 % fake 'm 
+\definecharacter quotesingle      39 % fake 'm
 \definecharacter quotesinglebase  13
 
 \definecharacter quoteleft        96

@@ -814,9 +814,21 @@
     [\c!oneargument!]
     []
   \variable
+    [\c!tekstcommando]
+    [\c!oneargument!]
+    []
+  \variable
     [\c!splitsen]
     [\v!soepel,\v!streng,\v!zeerstreng,\c!number!]
     [\v!soepel]
+  \variable
+    [\c!tekstletter]
+    [\v!normaal,\v!vet,\v!schuin,\v!vet\v!schuin,\v!type,\v!kap,\v!klein...,\c!command!]
+    []
+  \variable
+    [\c!tekstkleur]
+    [\c!identifier!]
+    []
   \inheritvariables
     [\y!framed]
     []
@@ -3255,7 +3267,7 @@
     []
   \variable
     [\c!markering]
-    [\v!aan,\v!uit,\v!kleur,\v!raster]
+    [\v!aan,\v!uit,\v!kleur,\v!raster,\v!tekst]
     [\v!uit]
   \variable
     [\c!plaats]
@@ -5420,6 +5432,10 @@
     [\c!onbekendeverwijzing]
     [\v!leeg,\v!geen]
     [\v!leeg]
+  \variable
+    [\c!variant]
+    [a,b,A,B]
+    [a]
 \stopsetup
 
 \startsetup
@@ -7446,6 +7462,10 @@
     [\c!rotatie]
     [\c!number!]
     [90]
+  \variable
+    [\c!plaats]
+    [\v!normaal,\v!hoog,\v!passend,\v!ruim,\v!diepte]
+    [\v!normaal]
   \inheritvariables
     [\y!setupframed]
     []

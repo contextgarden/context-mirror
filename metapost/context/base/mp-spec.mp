@@ -12,13 +12,13 @@
 %C details.
 
 % Spot colors are not handled by mptopdf !
-                                         
+
 % (r,g,b) => cmyk             : r=123 g=   1 b=hash
-%         => spot             : r=123 g=   2 b=hash 
+%         => spot             : r=123 g=   2 b=hash
 %         => transparent rgb  : r=123 g=   3 b=hash
 %         => transparent cmyk : r=123 g=   4 b=hash
 %         => transparent spot : r=123 g=   5 b=hash
-%         => rest             : r=123 g=n>10 b=whatever 
+%         => rest             : r=123 g=n>10 b=whatever
 
 %D This module is rather preliminary and subjected to
 %D changes. Here we closely cooperates with the \METAPOST\
@@ -32,7 +32,7 @@ if   known context_spec : endinput         ; fi ;
 boolean context_spec ; context_spec := true ;
 
 numeric _special_counter_ ; _special_counter_ :=   0 ;
-numeric _color_counter_   ; _color_counter_   :=  11 ; % < 10 reserved  
+numeric _color_counter_   ; _color_counter_   :=  11 ; % < 10 reserved
 numeric _special_signal_  ; _special_signal_  := 123 ;
 
 %D When set to \type {true}, shading will be supported. Some
@@ -49,7 +49,7 @@ string _global_specials_ ; _global_specials_ := "" ;
 string _local_specials_  ; _local_specials_  := "" ;
 
 vardef add_special_signal = % write the version number
-  if (length _global_specials_>0) or (length _local_specials_ >0) : 
+  if (length _global_specials_>0) or (length _local_specials_ >0) :
     special ("%%MetaPostSpecials: 1.0 " & decimal _special_signal_ ) ;
   fi ;
 enddef ;
@@ -60,33 +60,33 @@ vardef add_extra_specials =
 enddef ;
 
 vardef reset_extra_specials =
-  % only local ones 
+  % only local ones
   _local_specials_ := "" ;
 enddef ;
 
 boolean insidefigure ; insidefigure := false ;
 
-% todo: alleen als special gebruikt flush 
+% todo: alleen als special gebruikt flush
 
-extra_beginfig := 
-  " insidefigure := true ; " & 
-  " reset_extra_specials ; " & 
-    extra_beginfig ;  
+extra_beginfig :=
+  " insidefigure := true ; " &
+  " reset_extra_specials ; " &
+    extra_beginfig ;
 
 extra_endfig :=
   " add_special_signal ; "    &
     extra_endfig              &
   " add_extra_specials ; "    &
-  " reset_extra_specials ; "  & 
+  " reset_extra_specials ; "  &
   " insidefigure := false ; " ;
 
-def set_extra_special (expr s) = 
-  if insidefigure : 
-    _local_specials_  := _local_specials_  & s ; 
-  else : 
-    _global_specials_ := _global_specials_ & s ; 
-  fi 
-enddef ; 
+def set_extra_special (expr s) =
+  if insidefigure :
+    _local_specials_  := _local_specials_  & s ;
+  else :
+    _global_specials_ := _global_specials_ & s ;
+  fi
+enddef ;
 
 def flush_special (expr typ, siz, dat) =
   _special_counter_ := _special_counter_ + 1 ;
@@ -99,7 +99,7 @@ def flush_special (expr typ, siz, dat) =
       & decimal typ & " "
       & decimal siz
       & " special"
-      & ditto & ");" ) ; 
+      & ditto & ");" ) ;
   else :
     set_extra_special
       ( "special "
@@ -115,12 +115,12 @@ enddef ;
 
 %D The next hack is needed in case you use a version of
 %D \METAPOST\ that does not provide you the means to configure
-%D the buffer size. Patrick Gundlach suggested to use arrays 
-%D in this case. 
+%D the buffer size. Patrick Gundlach suggested to use arrays
+%D in this case.
 
-boolean bufferhack ; bufferhack := false ; % true ; 
+boolean bufferhack ; bufferhack := false ; % true ;
 
-if bufferhack : 
+if bufferhack :
 
   string _global_specials_[] ; numeric _nof_global_specials_ ;
   string _local_specials_[]  ; numeric _nof_local_specials_ ;
@@ -128,17 +128,17 @@ if bufferhack :
   _nof_global_specials_ := _nof_local_specials_ := 0 ;
 
   vardef add_special_signal = % write the version number
-    if (_nof_global_specials_>0) or (_nof_local_specials_>0) : 
+    if (_nof_global_specials_>0) or (_nof_local_specials_>0) :
       special ("%%MetaPostSpecials: 1.0 " & decimal _special_signal_ ) ;
     fi ;
   enddef ;
- 
+
   vardef add_extra_specials =
-    for i=1 upto _nof_global_specials_ : 
-      scantokens _global_specials_[i] ; 
+    for i=1 upto _nof_global_specials_ :
+      scantokens _global_specials_[i] ;
     endfor;
-    for i=1 upto _nof_local_specials_ : 
-      scantokens _local_specials_[i] ;   
+    for i=1 upto _nof_local_specials_ :
+      scantokens _local_specials_[i] ;
     endfor;
   enddef ;
 
@@ -146,27 +146,27 @@ if bufferhack :
     string _local_specials_[]  ; _nof_local_specials_ := 0 ;
   enddef ;
 
-  def set_extra_special (expr s) = 
-    if insidefigure : 
-      _local_specials_[incr(_nof_local_specials_)]   := s ;   
-    else : 
+  def set_extra_special (expr s) =
+    if insidefigure :
+      _local_specials_[incr(_nof_local_specials_)]   := s ;
+    else :
       _global_specials_[incr(_nof_global_specials_)] := s ;
-    fi 
-  enddef ; 
+    fi
+  enddef ;
 
-fi ; 
+fi ;
 
-%D So far for this hack. 
+%D So far for this hack.
 
 %D Shade allocation.
 
-newinternal shadefactor ; shadefactor := 1 ; 
+newinternal shadefactor ; shadefactor := 1 ;
 
-pair shadeoffset ; shadeoffset := origin ; 
+pair shadeoffset ; shadeoffset := origin ;
 
 vardef define_linear_shade (expr a, b, ca, cb) =
   flush_special(30, 15, "0 1 " & decimal shadefactor & " " &
-    dddecimal ca & " " & ddecimal (a shifted shadeoffset) & " " & 
+    dddecimal ca & " " & ddecimal (a shifted shadeoffset) & " " &
     dddecimal cb & " " & ddecimal (b shifted shadeoffset) ) ;
   _special_counter_
 enddef ;
@@ -188,32 +188,32 @@ boolean trace_shades ; trace_shades := false ;
 %  else         : a := llcorner p ; b := lrcorner p ;
 %  fi ;
 
-def set_linear_vector (suffix a,b)(expr p,n) = 
-  if     (n=1) : a := llcorner p ; 
+def set_linear_vector (suffix a,b)(expr p,n) =
+  if     (n=1) : a := llcorner p ;
                  b := urcorner p ;
-  elseif (n=2) : a := lrcorner p ; 
+  elseif (n=2) : a := lrcorner p ;
                  b := ulcorner p ;
-  elseif (n=3) : a := urcorner p ; 
+  elseif (n=3) : a := urcorner p ;
                  b := llcorner p ;
-  elseif (n=4) : a := ulcorner p ; 
+  elseif (n=4) : a := ulcorner p ;
                  b := lrcorner p ;
-  elseif (n=5) : a := .5[ulcorner p,llcorner p] ; 
-                 b := .5[urcorner p,lrcorner p] ; 
-  elseif (n=6) : a := .5[llcorner p,lrcorner p] ; 
-                 b := .5[ulcorner p,urcorner p] ; 
-  elseif (n=7) : a := .5[lrcorner p,urcorner p] ; 
-                 b := .5[llcorner p,ulcorner p] ; 
-  elseif (n=8) : a := .5[urcorner p,ulcorner p] ; 
-                 b := .5[lrcorner p,llcorner p] ; 
-  else         : a := .5[ulcorner p,llcorner p] ; 
-                 b := .5[urcorner p,lrcorner p] ; 
+  elseif (n=5) : a := .5[ulcorner p,llcorner p] ;
+                 b := .5[urcorner p,lrcorner p] ;
+  elseif (n=6) : a := .5[llcorner p,lrcorner p] ;
+                 b := .5[ulcorner p,urcorner p] ;
+  elseif (n=7) : a := .5[lrcorner p,urcorner p] ;
+                 b := .5[llcorner p,ulcorner p] ;
+  elseif (n=8) : a := .5[urcorner p,ulcorner p] ;
+                 b := .5[lrcorner p,llcorner p] ;
+  else         : a := .5[ulcorner p,llcorner p] ;
+                 b := .5[urcorner p,lrcorner p] ;
   fi ;
-enddef ; 
+enddef ;
 
 def linear_shade (expr p, n, ca, cb) =
   begingroup ;
   save a, b, sh ; pair a, b ;
-  set_linear_vector(a,b)(p,n) ; 
+  set_linear_vector(a,b)(p,n) ;
   fill p withshade define_linear_shade (a,b,ca,cb) ;
   if trace_shades :
     drawarrow a -- b withpen pencircle scaled 1pt ;
@@ -223,26 +223,26 @@ enddef ;
 
 vardef predefined_linear_shade (expr p, n, ca, cb) =
   save a, b, sh ; pair a, b ;
-  set_linear_vector(a,b)(p,n) ; 
+  set_linear_vector(a,b)(p,n) ;
   set_shade_vector(a,b)(p,n) ;
-  define_linear_shade (a,b,ca,cb) 
+  define_linear_shade (a,b,ca,cb)
 enddef ;
 
-def set_circular_vector (suffix ab, r)(expr p,n) = 
+def set_circular_vector (suffix ab, r)(expr p,n) =
   if     (n=1) : ab := llcorner p ;
   elseif (n=2) : ab := lrcorner p ;
   elseif (n=3) : ab := urcorner p ;
   elseif (n=4) : ab := ulcorner p ;
   else         : ab := center   p ; r := .5r ;
   fi ;
-enddef ; 
+enddef ;
 
 def circular_shade (expr p, n, ca, cb) =
   begingroup ;
   save ab, r ; pair ab ; numeric r ;
   r := (xpart lrcorner p - xpart llcorner p) ++
        (ypart urcorner p - ypart lrcorner p) ;
-  set_circular_vector(ab,r)(p,n) ; 
+  set_circular_vector(ab,r)(p,n) ;
   fill p withshade define_circular_shade(ab,ab,0,r,ca,cb) ;
   if trace_shades :
     drawarrow ab -- ab shifted (0,r) withpen pencircle scaled 1pt ;
@@ -254,14 +254,14 @@ vardef predefined_circular_shade (expr p, n, ca, cb) =
   save ab, r ; pair ab ; numeric r ;
   r := (xpart lrcorner p - xpart llcorner p) ++
        (ypart urcorner p - ypart lrcorner p) ;
-  set_circular_vector(ab,r)(p,n) ; 
-  define_circular_shade(ab,ab,0,r,ca,cb) 
+  set_circular_vector(ab,r)(p,n) ;
+  define_circular_shade(ab,ab,0,r,ca,cb)
 enddef ;
 
 %D Since a \type {fill p withshade s} syntax looks better
 %D than some macro, we implement a new primary.
 
-primarydef p withshade sc = % == p withcolor shadecolor(sh) 
+primarydef p withshade sc = % == p withcolor shadecolor(sh)
   hide (_color_counter_ := _color_counter_ + 1)
   p withcolor (_special_signal_/1000,_color_counter_/1000,sc/1000)
 enddef ;
@@ -287,7 +287,7 @@ def doexternalfigure (expr filename) text transformation =
     dddecimal (yypart t,  xpart t,  ypart t) & " " & filename) ;
   addto p contour unitsquare scaled 0 ;
   setbounds p to unitsquare transformed t ;
-  _color_counter_ := _color_counter_ + 1 ; 
+  _color_counter_ := _color_counter_ + 1 ;
   draw p withcolor (_special_signal_/1000,_color_counter_/1000,_special_counter_/1000) ;
 %draw p withcolor (_special_signal_/1000,cef/1000,_special_counter_/1000) ;
   endgroup ;
@@ -365,27 +365,27 @@ enddef ;
 
 resetcmykcolors ; boolean cmykcolors ; cmykcolors := false ; % true
 
-string cmykcolorpattern[] ; % needed for transparancies 
+string cmykcolorpattern[] ; % needed for transparancies
 
 vardef cmyk(expr c,m,y,k) =
   if cmykcolors :
-    save ok ; boolean ok ; 
+    save ok ; boolean ok ;
     if unknown cmykcolorhash[c][m][y][k] :
-      ok := false ; % not yet defined 
-    elseif cmykcolorhash[c][m][y][k] = -1 : 
-      ok := false ; % locally defined and undefined  
-    else : 
-      ok := true ;  % globally already defined 
-    fi ; 
-    if not ok : 
+      ok := false ; % not yet defined
+    elseif cmykcolorhash[c][m][y][k] = -1 :
+      ok := false ; % locally defined and undefined
+    else :
+      ok := true ;  % globally already defined
+    fi ;
+    if not ok :
       save s ; string s ; s := dddecimal (c,m,y) & " " & decimal k ;
       _cmyk_counter_ := _cmyk_counter_ + 1 ;
-      cmykcolorpattern[_cmyk_counter_/1000] := s ;  
+      cmykcolorpattern[_cmyk_counter_/1000] := s ;
       cmykcolorhash[c][m][y][k] := _cmyk_counter_ ;
-      flush_special(1, 7, decimal _cmyk_counter_ & " " & s) ; 
-      _local_specials_ := _local_specials_ & 
-        " cmykcolorhash[" & decimal c & "][" & decimal m & 
-        "][" & decimal y & "][" & decimal k & "] := -1 ; " ; 
+      flush_special(1, 7, decimal _cmyk_counter_ & " " & s) ;
+      _local_specials_ := _local_specials_ &
+        " cmykcolorhash[" & decimal c & "][" & decimal m &
+        "][" & decimal y & "][" & decimal k & "] := -1 ; " ;
     fi ;
     (_special_signal_/1000,1/1000,cmykcolorhash[c][m][y][k]/1000)
   else :
@@ -393,11 +393,11 @@ vardef cmyk(expr c,m,y,k) =
   fi
 enddef ;
 
-% newcolor truecyan, truemagenta, trueyellow ; 
+% newcolor truecyan, truemagenta, trueyellow ;
 %
-% truecyan    = cmyk (1,0,0,0) ; 
-% truemagenta = cmyk (0,1,0,0) ; 
-% trueyellow  = cmyk (0,0,1,0) ; 
+% truecyan    = cmyk (1,0,0,0) ;
+% truemagenta = cmyk (0,1,0,0) ;
+% trueyellow  = cmyk (0,0,1,0) ;
 
 %D Spot colors
 
@@ -412,32 +412,32 @@ enddef ;
 
 resetspotcolors ; boolean spotcolors ; spotcolors := false ; % true
 
-string spotcolorpattern[] ; % needed for transparancies 
+string spotcolorpattern[] ; % needed for transparancies
 
 vardef spotcolor(expr p, s) =
   if spotcolors :
-    save ok, pc_tag ; boolean ok ; string pc_tag ; 
-    pc_tag := "_pct_"&p ; 
-    if not unstringed(pc_tag) : 
-      _spotcolor_number_ := _spotcolor_number_ + 1 ; 
-      setunstringed(pc_tag,_spotcolor_number_) ; 
-    fi ; 
-    pp := getunstringed(pc_tag) ; 
+    save ok, pc_tag ; boolean ok ; string pc_tag ;
+    pc_tag := "_pct_"&p ;
+    if not unstringed(pc_tag) :
+      _spotcolor_number_ := _spotcolor_number_ + 1 ;
+      setunstringed(pc_tag,_spotcolor_number_) ;
+    fi ;
+    pp := getunstringed(pc_tag) ;
     if unknown spotcolorhash[pp][s] :
-      ok := false ; % not yet defined 
-    elseif spotcolorhash[pp][s] = -1 : 
-      ok := false ; % locally defined and undefined  
-    else : 
-      ok := true ;  % globally already defined 
-    fi ; 
-    if not ok : 
+      ok := false ; % not yet defined
+    elseif spotcolorhash[pp][s] = -1 :
+      ok := false ; % locally defined and undefined
+    else :
+      ok := true ;  % globally already defined
+    fi ;
+    if not ok :
       save ss ; string ss ; ss := p & " " & decimal s ;
       _spotcolor_counter_ := _spotcolor_counter_ + 1 ;
-      spotcolorpattern[_spotcolor_counter_/1000] := ss ;  
+      spotcolorpattern[_spotcolor_counter_/1000] := ss ;
       spotcolorhash[pp][s] := _spotcolor_counter_ ;
-      flush_special(2, 5, decimal _spotcolor_counter_ & " " & ss) ; 
-      _local_specials_ := _local_specials_ & 
-        "spotcolorhash["&decimal pp&"]["&decimal s&"]:=-1;" ;  
+      flush_special(2, 5, decimal _spotcolor_counter_ & " " & ss) ;
+      _local_specials_ := _local_specials_ &
+        "spotcolorhash["&decimal pp&"]["&decimal s&"]:=-1;" ;
     fi ;
     (_special_signal_/1000,2/1000,spotcolorhash[pp][s]/1000)
   else :
@@ -445,19 +445,19 @@ vardef spotcolor(expr p, s) =
   fi
 enddef ;
 
-%D Transparency 
+%D Transparency
 
-normaltransparent     :=  1 ; multiplytransparent   :=  2 ; 
-screentransparent     :=  3 ; overlaytransparent    :=  4 ; 
-softlighttransparent  :=  5 ; hardlighttransparent  :=  6 ; 
-colordodgetransparent :=  7 ; colorburntransparent  :=  8 ; 
-darkentransparent     :=  9 ; lightentransparent    := 10 ; 
-differencetransparent := 11 ; exclusiontransparent  := 12 ; 
+normaltransparent     :=  1 ; multiplytransparent   :=  2 ;
+screentransparent     :=  3 ; overlaytransparent    :=  4 ;
+softlighttransparent  :=  5 ; hardlighttransparent  :=  6 ;
+colordodgetransparent :=  7 ; colorburntransparent  :=  8 ;
+darkentransparent     :=  9 ; lightentransparent    := 10 ;
+differencetransparent := 11 ; exclusiontransparent  := 12 ;
 
-% nottransparent        :=  0 ; 
-% compatibletransparent := 99 ; 
+% nottransparent        :=  0 ;
+% compatibletransparent := 99 ;
 
-% fill fullcircle scaled 10cm withcolor transparant(.8,3,color) ; 
+% fill fullcircle scaled 10cm withcolor transparant(.8,3,color) ;
 
 vardef transparent(expr n, t, c) =
   save s, ss, nn, cc, is_cmyk, is_spot, ok ;
@@ -480,32 +480,32 @@ vardef transparent(expr n, t, c) =
   is_spot := (redpart   cc = _special_signal_/1000)
          and (greenpart cc = 2/1000) ;
   % build special string, fetch cmyk components
-  s := decimal nn & " " & decimal t & " " & 
-       if     is_cmyk : cmykcolorpattern[bluepart cc] 
-       elseif is_spot : spotcolorpattern[bluepart cc] 
+  s := decimal nn & " " & decimal t & " " &
+       if     is_cmyk : cmykcolorpattern[bluepart cc]
+       elseif is_spot : spotcolorpattern[bluepart cc]
        else           : dddecimal cc fi ;
   % check if this one is already used
   ss := "tr_" & s ;
   % efficiency hack
   if expandafter unknown scantokens(ss) :
-    ok := false ; % not yet defined 
-  elseif scantokens(ss) < 0  :  
-    ok := false ; % locally defined and undefined  
-  else : 
-    ok := true ;  % globally already defined 
-  fi ; 
-  if not ok : 
+    ok := false ; % not yet defined
+  elseif scantokens(ss) < 0  :
+    ok := false ; % locally defined and undefined
+  else :
+    ok := true ;  % globally already defined
+  fi ;
+  if not ok :
     if is_spot  :
       flush_special(5, 6, s) ;
     elseif is_cmyk :
       flush_special(4, 8, s) ;
-    else : 
+    else :
       flush_special(3, 7, s) ;
     fi ;
     scantokens(ss) := _special_counter_ ;
-    _local_specials_ := _local_specials_ & 
-      "scantokens(" & ditto & ss & ditto & ") := -1 ;" ; 
-  fi ; 
+    _local_specials_ := _local_specials_ &
+      "scantokens(" & ditto & ss & ditto & ") := -1 ;" ;
+  fi ;
   % go ahead
   if is_spot :
     (_special_signal_/1000,5/1000,scantokens(ss)/1000)
@@ -518,21 +518,21 @@ enddef ;
 
 %D This function returns true of false, dependent on transparency.
 
-vardef is_transparent(text t) = 
-  begingroup ; save transparent ; save _c_, _b_ ; 
+vardef is_transparent(text t) =
+  begingroup ; save transparent ; save _c_, _b_ ;
     vardef transparent(expr nn, tt, cc) = _b_ := true ; cc enddef ;
-    boolean _b_ ; _b_ := false ; 
-    color _c_ ; _c_ := t ; _b_ 
-  endgroup  
+    boolean _b_ ; _b_ := false ;
+    color _c_ ; _c_ := t ; _b_
+  endgroup
 enddef ;
 
-%D This function returns the not transparent color. 
+%D This function returns the not transparent color.
 
-vardef not_transparent(text t) = 
-  begingroup ; save transparent ; 
+vardef not_transparent(text t) =
+  begingroup ; save transparent ;
   vardef transparent(expr nn, tt, cc) = cc enddef ;
-  t endgroup 
-enddef ; 
+  t endgroup
+enddef ;
 
 %D Basic position tracking:
 
@@ -545,19 +545,19 @@ def register (expr label, width, height, offset) =
   endgroup ;
 enddef ;
 
-%D We cannot scale cmyk colors directly since this spoils 
-%D the trigger signal (such colors are no real colors). 
+%D We cannot scale cmyk colors directly since this spoils
+%D the trigger signal (such colors are no real colors).
 
 vardef scaledcmyk(expr c,m,y,k,sf) =
-  cmyk(sf*c,sf*m,sf*y,sf*k) 
+  cmyk(sf*c,sf*m,sf*y,sf*k)
 enddef ;
 
 vardef scaledcmykasrgb(expr c,m,y,k,sf) =
-  (sf*(1-c-k,1-m-k,1-y-k)) 
+  (sf*(1-c-k,1-m-k,1-y-k))
 enddef ;
 
 vardef scaledrgbascmyk(expr c,m,y,k,sf) =
-  scaledcmyk(1-c,1-m,1-y,0,sf) 
+  scaledcmyk(1-c,1-m,1-y,0,sf)
 enddef ;
 
 vardef scaledrgb(expr r,g,b,sf) =
@@ -568,6 +568,6 @@ vardef scaledgray(expr s,sf) =
   (sf*(s,s,s))
 enddef ;
 
-% spotcolor is already scaled 
+% spotcolor is already scaled
 
 endinput ;

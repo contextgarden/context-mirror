@@ -28,14 +28,6 @@
 
 \ifx\text\undefined \let\text\hbox \fi
 
-% will move to page-ini
-
-\newevery \everybeginofpar \EveryBeginOfPar
-\newevery \everyendofpar   \EveryEndOfPar
-
-\def\bpar{\the\everybeginofpar}
-\def\epar{\the\everyendofpar\endgraf}
-
 \newdimen\lastlinewidth
 
 % does not work at all
@@ -59,6 +51,7 @@
    \ifoptimizedisplayspacing\ifmmode\else\ifhmode
      \bgroup
      \forgetdisplayskips
+     \displaywidowpenalty\widowpenalty % brrr, else widowpenalty does not work
      \everymath\emptytoks
      \everydisplay\emptytoks
      $$\strut\global\lastlinewidth\predisplaysize$$
@@ -70,7 +63,7 @@
 \def\resetlastlinewidth
   {\global\lastlinewidth\zeropoint\relax}
 
-\appendtoks \setlastlinewidth \to \everyendofpar
+% not here: \appendtoks \setlastlinewidth \to \everyendofpar
 
 %D moved from main-001
 
@@ -78,18 +71,18 @@
 %
 %\newevery \everymath \EveryMath
 
-\abovedisplayskip      = \!!zeropoint
-\abovedisplayshortskip = \!!zeropoint % evt. 0pt minus 3pt
-\belowdisplayskip      = \!!zeropoint
-\belowdisplayshortskip = \!!zeropoint % evt. 0pt minus 3pt
+\abovedisplayskip      = \zeropoint
+\abovedisplayshortskip = \zeropoint % evt. 0pt minus 3pt
+\belowdisplayskip      = \zeropoint
+\belowdisplayshortskip = \zeropoint % evt. 0pt minus 3pt
 
-\predisplaypenalty     = 0
-\postdisplaypenalty    = 0  % -5000 gaat mis, zie penalty bij \paragraaf
+\predisplaypenalty     = \zerocount
+\postdisplaypenalty    = \zerocount % -5000 gaat mis, zie penalty bij \paragraaf
 
 % we don't use the skip's
 
 \def\displayskipsize#1#2% obsolete
-  {\ifdim\tussenwit>\!!zeropoint
+  {\ifdim\tussenwit>\zeropoint
      #1\tussenwit\!!plus#2\tussenwit\!!minus#2\tussenwit\relax
    \else
      #1\lineheight\!!plus#2\lineheight\!!minus#2\lineheight\relax
@@ -118,8 +111,8 @@
    \advance#1 -#3\relax}
 
 \def\setdisplayskips % obsolete
-  {\setdisplayskip\abovedisplayskip     \abovedisplayskipsize     \!!zeropoint
-   \setdisplayskip\belowdisplayskip     \belowdisplayskipsize     \!!zeropoint
+  {\setdisplayskip\abovedisplayskip     \abovedisplayskipsize     \zeropoint
+   \setdisplayskip\belowdisplayskip     \belowdisplayskipsize     \zeropoint
    \setdisplayskip\abovedisplayshortskip\abovedisplayshortskipsize\baselineskip
    \setdisplayskip\belowdisplayshortskip\belowdisplayshortskipsize\baselineskip}
 
@@ -200,6 +193,8 @@
       \setvalue{\e!start#1\v!formule}{\dostartformula{#1}}%
       \setvalue{\e!stop #1\v!formule}{\dostopformula}}}
 
+\newtoks \everysetupformulas \relax % we need a hook for extensions in modules
+
 \def\setupformulas
   {\dodoubleempty\dosetupformulas}
 
@@ -208,7 +203,11 @@
      \getparameters[\??fm#1][#2]%
    \else
      \getparameters[\??fm][#1]%
-   \fi}
+   \fi
+   \the\everysetupformulas}
+
+\def\formulaparameter#1%
+  {\csname\??fm\currentformula#1\endcsname}
 
 \setupformulas
   [\c!wijze=\@@nrwijze,
@@ -234,17 +233,15 @@
 
 \def\leftdisplayskip    {\leftskip}
 \def\rightdisplayskip   {\rightskip}
-\def\leftdisplaymargin  {\getvalue{\??fm\currentformula\c!linkermarge}}
-\def\rightdisplaymargin {\getvalue{\??fm\currentformula\c!rechtermarge}}
-\def\displaygridsnapping{\getvalue{\??fm\currentformula\c!grid}}
+\def\leftdisplaymargin  {\formulaparameter\c!linkermarge}
+\def\rightdisplaymargin {\formulaparameter\c!rechtermarge}
+\def\displaygridsnapping{\formulaparameter\c!grid}
 
 \def\beforedisplayspace
-  {\doifnotvalue{\??fm\currentformula\c!voorwit}\v!geen
-     {\blanko[\getvalue{\??fm\currentformula\c!voorwit}]}}
+  {\doifnot{\formulaparameter\c!voorwit}\v!geen{\blanko[\formulaparameter\c!voorwit]}}
 
 \def\afterdisplayspace
-  {\doifnotvalue{\??fm\currentformula\c!nawit}\v!geen
-     {\blanko[\getvalue{\??fm\currentformula\c!nawit}]}}
+  {\doifnot{\formulaparameter\c!nawit  }\v!geen{\blanko[\formulaparameter\c!nawit  ]}}
 
 \def\setpredisplaysize#1%
   {\predisplaysize#1\relax
@@ -278,12 +275,27 @@
 \def\dostartformula#1%
   {\dodoubleempty\dodostartformula[#1]}
 
+\newskip\formulaparskip
+\newskip\formulastrutht
+\newskip\formulastrutdp
+
+% hm, invoke otr in hmode in order to move skips to mvl, could be an option
+
 \def\dodostartformula[#1][#2]% setting leftskip adaption is slow !
-  {\bgroup
+  {% todo: test first
+   %
+   % \ifdim\lastskip>\zeropoint
+   %   \resetlastlinewidth % else problems with in between stuff without \epar
+   % \fi
+   \bgroup
+   \formulaparskip\parskip
+   \formulastrutdp\strutdepth
+   \formulastrutht\strutheight
    \switchtoformulabodyfont[#2]%
+   \parskip\formulaparskip
    \def\currentformula{#1}%
-   \doifvaluesomething{\??fm\currentformula\c!marge}% so we test first
-     {\dosetleftskipadaption{\getvalue{\??fm\currentformula\c!marge}}%
+   \doifsomething{\formulaparameter\c!marge}% so we test first
+     {\dosetleftskipadaption{\formulaparameter\c!marge}%
       \edef\leftdisplaymargin{\the\leftskipadaption}}% overloaded
    \long\def\dostartformula##1{\bgroup\let\dostopformula\egroup}%
    \freezedimenmacro\leftdisplayskip
@@ -300,7 +312,7 @@
    \else
      \resetlastlinewidth
    \fi
-   \getvalue{\e!start\getvalue{\??fm\currentformula\c!variant}\v!formule}}
+   \getvalue{\e!start\formulaparameter\c!variant\v!formule}}
 
 \def\switchtoformulabodyfont{\switchtobodyfont}
 
@@ -317,13 +329,57 @@
 
 \def\dostopformula
   {\doplaceformulanumber
-   \getvalue{\e!stop\getvalue{\??fm\currentformula\c!variant}\v!formule}%
+   \getvalue{\e!stop\formulaparameter\c!variant\v!formule}%
    \resetlastlinewidth
    \nonoindentation
    \dochecknextindentation{\??fm\currentformula}%
    \egroup}
 
 \newif\ifinformula
+
+% \def\startdisplaymath
+%   {\ifgridsnapping
+%      \beforedisplayspace
+%      \snapmathtogrid\vbox
+%      \bgroup
+%      \informulatrue
+%     %\forgetall % breaks side floats
+%    \else
+%      \bgroup
+%      \informulatrue
+%     %\forgetall % otherwise backgrounds fail
+%      \ifdim\lastskip<\zeropoint\else
+%        \par
+%        \ifvmode \ifdim\parskip>\zeropoint\relax
+%          \vskip-\parskip
+%        \fi \fi
+%      \fi
+%      \doif\displaygridcorrection{-\v!boven}{\kern-\strutht}% new, currently only option/default
+%      \beforedisplayspace
+%      \par
+%      \ifvmode
+%        \verticalstrut
+%        \vskip-\struttotal
+%        \vskip-\baselineskip
+%      \fi
+%    \fi
+%    $$\setdisplaydimensions
+%    \setpredisplaysize\lastlinewidth
+%    \startinnermath}
+
+% \def\stopdisplaymath
+%   {\stopinnermath
+%    $$%
+%    \ifgridsnapping
+%      \egroup
+%      \afterdisplayspace
+%    \else
+%      \par\ifvmode\ifdim\parskip>\zeropoint\vskip-\parskip\fi\fi
+%      \afterdisplayspace
+%      \egroup
+%    \fi
+%    \globallet\displaylinecorrection\empty
+%    \gdef\displaygridcorrection{\displaygridsnapping}}
 
 \def\startdisplaymath
   {\ifgridsnapping
@@ -334,13 +390,14 @@
     %\forgetall % breaks side floats
    \else
      \bgroup
+     \parskip\formulaparskip % ! !
      \informulatrue
     %\forgetall % otherwise backgrounds fail
      \ifdim\lastskip<\zeropoint\else
        \par
-       \ifvmode \ifdim\parskip>\zeropoint\relax
-         \vskip-\parskip
-       \fi \fi
+         \ifvmode \ifdim\parskip>\zeropoint\relax
+           \witruimte \vskip-\parskip % kind of forces and cancels again
+         \fi \fi
      \fi
      \doif\displaygridcorrection{-\v!boven}{\kern-\strutht}% new, currently only option/default
      \beforedisplayspace
@@ -362,7 +419,7 @@
      \egroup
      \afterdisplayspace
    \else
-     \par\ifvmode\ifdim\parskip>\zeropoint\vskip-\parskip\fi\fi
+     \par\ifvmode\ifdim\parskip>\zeropoint\witruimte\vskip-\parskip\fi\fi
      \afterdisplayspace
      \egroup
    \fi
@@ -570,13 +627,13 @@
 %D modules.
 
 \def\startinnermath
-  {\getvalue{\e!start\??fm\getvalue{\??fm\currentformula\c!uitlijnen}}}
+  {\getvalue{\e!start\??fm\formulaparameter\c!uitlijnen}}
 
 \def\stopinnermath
-  {\getvalue{\e!stop \??fm\getvalue{\??fm\currentformula\c!uitlijnen}}}
+  {\getvalue{\e!stop \??fm\formulaparameter\c!uitlijnen}}
 
 \def\mathinnerstrut
-  {\doifvalue{\??fm\currentformula\c!strut}\v!ja\strut}
+  {\doif{\formulaparameter\c!strut}\v!ja\strut}
 
 \long\def\defineinnermathhandler#1#2#3%
   {\setvalue{\e!start\??fm#1}{#2}%
@@ -602,7 +659,7 @@
      \ifx\@leqno\empty\else \ifcase#2
        \rlap{\@leqno}%
      \else
-       \@leqno\hskip\getvalue{\??fm\currentformula\c!afstand}%
+       \@leqno\hskip\formulaparameter\c!afstand
      \fi \fi
      #1}
 
@@ -611,7 +668,7 @@
    \ifx\@eqno\empty\else \ifcase#2
      \llap{\@eqno}%
    \else
-     \hskip\getvalue{\??fm\currentformula\c!afstand}\@eqno
+     \hskip\formulaparameter\c!afstand\@eqno
    \fi \fi
    \egroup}
 
@@ -898,7 +955,7 @@
 % \stop
 
 %D \macros
-%D   {enablesupersub}
+%D   {enablesupersub,enablesimplesupersub}
 %D
 %D We can let \type {^} and \type {_} act like \type {\super}
 %D and \type {\sub} by saying \type {\enablesupersub}.
@@ -912,7 +969,6 @@
    \catcode`\_=\@@active
    \def_{\ifmmode\expandafter\suber\else\expandafter\normalsuber\fi}}
 \egroup
-
 %D \macros
 %D   {enableautomath}
 %D

@@ -12,23 +12,23 @@
 %C details.
 
 \startuniqueMPgraphic{navplus}{size,color,type,mode}
-  color c ; numeric s, t ; path p ; 
+  color c ; numeric s, t ; path p ;
   t := \MPvar{type} ; c := \MPvar{color} ; s := \MPvar{size} ;
-  if \MPvar{mode} = 1 : c := .5[c,white] fi ;   
-  if    t = 1 : 
+  if \MPvar{mode} = 1 : c := .5[c,white] fi ;
+  if    t = 1 :
     p := ((0,0)--(1/2,0)--(1,1/3)--(1,1)--(0,1)--(0,0)--cycle)
       xyscaled (3,4) ;
   elseif t = 2 :
-    p := ((0,0)--(1,0)--(1,1)--(0,1)--(1/2,2/5)--(1,1)--(0,1)--cycle) 
+    p := ((0,0)--(1,0)--(1,1)--(0,1)--(1/2,2/5)--(1,1)--(0,1)--cycle)
       xyscaled (4,3) ;
-  else : 
-    p := fullsquare xyscaled (3,3) ; 
+  else :
+    p := fullsquare xyscaled (3,3) ;
   fi ;
-  draw p withpen pencircle scaled (1/2) withcolor .75white ; 
-  fill p withcolor c ;  
-  draw p withpen pencircle scaled (1/3) withcolor .5c ; 
-  currentpicture := currentpicture scaled s ; 
-  currentpicture := currentpicture shifted -center currentpicture ; 
+  draw p withpen pencircle scaled (1/2) withcolor .75white ;
+  fill p withcolor c ;
+  draw p withpen pencircle scaled (1/3) withcolor .5c ;
+  currentpicture := currentpicture scaled s ;
+  currentpicture := currentpicture shifted -center currentpicture ;
 \stopuniqueMPgraphic
 
 \setupMPvariables
@@ -47,7 +47,7 @@
   [comment-normal]
   [\uniqueMPgraphic{navplus}{type=1,color=navplus:comment}]
 \definesymbol
-  [comment-down]  
+  [comment-down]
   [\uniqueMPgraphic{navplus}{type=1,color=navplus:comment,mode=1}]
 
 \definesymbol
@@ -57,9 +57,9 @@
   [attach-down]
   [\uniqueMPgraphic{navplus}{type=2,color=navplus:attach,mode=1}]
 
-\unprotect 
+\unprotect
 
 \setupcomment    [\c!symbool={comment-normal,comment-down}]
-\setupattachments[\c!symbool={attach-normal,attach-down}] 
+\setupattachments[\c!symbool={attach-normal,attach-down}]
 
-\protect \endinput 
+\protect \endinput

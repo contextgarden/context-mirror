@@ -1,0 +1,103 @@
+% run texfont from currentpath with the fonts on subpath fontsite/500
+
+% texfont --en=texnansi --ve=linotype --co=optima       type-ghz.dat
+% texfont --en=texnansi --ve=linotype --co=optima-nova  type-ghz.dat
+% texfont --en=texnansi --ve=linotype --co=palatino     type-ghz.dat
+
+% optima
+
+\starttypescript [sans] [optima] [name]
+
+  \definefontsynonym [Sans]            [OptimaLT]
+  \definefontsynonym [SansItalic]      [OptimaLT-Italic]
+  \definefontsynonym [SansBold]        [OptimaLT-Bold]
+  \definefontsynonym [SansBoldItalic]  [OptimaLT-BoldItalic]
+
+  \definefontsynonym [SansSlanted]     [SansItalic]
+  \definefontsynonym [SansBoldSlanted] [SansBoldItalic]
+
+\stoptypescript
+
+\starttypescript [sans] [optima,optima-nova] [texnansi,ec,8r]
+
+  \loadmapfile[\typefaceencoding-linotype-optima.map]
+
+  \definefontsynonym [OptimaLT]                  [\typefaceencoding-lte50019] [encoding=\typefaceencoding]
+  \definefontsynonym [OptimaLT-Italic]           [\typefaceencoding-lte52401] [encoding=\typefaceencoding]
+  \definefontsynonym [OptimaLT-Bold]             [\typefaceencoding-lte50021] [encoding=\typefaceencoding]
+  \definefontsynonym [OptimaLT-BoldItalic]       [\typefaceencoding-lte54379] [encoding=\typefaceencoding]
+
+  \definefontsynonym [OptimaLT-Medium]           [\typefaceencoding-lte53505] [encoding=\typefaceencoding]
+  \definefontsynonym [OptimaLT-MediumItalic]     [\typefaceencoding-lte53506] [encoding=\typefaceencoding]
+  \definefontsynonym [OptimaLT-DemiBold]         [\typefaceencoding-lte53507] [encoding=\typefaceencoding]
+  \definefontsynonym [OptimaLT-DemiBoldItalic]   [\typefaceencoding-lte53508] [encoding=\typefaceencoding]
+  \definefontsynonym [OptimaLT-Black]            [\typefaceencoding-lte53509] [encoding=\typefaceencoding]
+  \definefontsynonym [OptimaLT-BlackItalic]      [\typefaceencoding-lte53510] [encoding=\typefaceencoding]
+  \definefontsynonym [OptimaLT-ExtraBlack]       [\typefaceencoding-lte53511] [encoding=\typefaceencoding]
+  \definefontsynonym [OptimaLT-ExtraBlackItalic] [\typefaceencoding-lte53512] [encoding=\typefaceencoding]
+
+\stoptypescript
+
+% optima nova
+
+\starttypescript [sans] [optima-nova] [name]
+
+  \definefontsynonym [Sans]            [OptimaNovaLT-Regular]
+  \definefontsynonym [SansItalic]      [OptimaNovaLT-Italic]
+  \definefontsynonym [SansBold]        [OptimaLT-Bold]
+  \definefontsynonym [SansBoldItalic]  [OptimaLT-BoldItalic]
+
+  \definefontsynonym [SansSlanted]     [SansItalic]
+  \definefontsynonym [SansBoldSlanted] [SansBoldItalic]
+
+\stoptypescript
+
+\starttypescript [sans] [optima-nova] [texnansi,ec,8r]
+
+  \loadmapfile[\typefaceencoding-linotype-optima-nova.map]
+
+  \definefontsynonym [OptimaNovaLT-Regular] [\typefaceencoding-lt55483] [encoding=\typefaceencoding]
+  \definefontsynonym [OptimaNovaLT-Italic]  [\typefaceencoding-lt55486] [encoding=\typefaceencoding]
+
+\stoptypescript
+
+% palatino
+
+\starttypescript [serif] [palatino] [name]
+
+  \definefontsynonym [Serif]            [PalatinoLT-Roman]
+  \definefontsynonym [SerifItalic]      [PalatinoLT-Italic]
+  \definefontsynonym [SerifBold]        [PalatinoLT-Bold]
+  \definefontsynonym [SerifBoldItalic]  [PalatinoLT-BoldItalic]
+
+  \definefontsynonym [SerifSlanted]     [SerifItalic]
+  \definefontsynonym [SerifBoldSlanted] [SerifBoldItalic]
+
+  \definefontsynonym [SerifCaps]        [Palatino-SC]
+
+\stoptypescript
+
+\starttypescript [serif] [palatino] [texnansi,ec,8r]
+
+  \loadmapfile[\typefaceencoding-linotype-palatino.map]
+
+  \definefontsynonym[PalatinoLT-Roman]        [\typefaceencoding-lte50001] [encoding=\typefaceencoding]
+  \definefontsynonym[PalatinoLT-Italic]       [\typefaceencoding-lte50002] [encoding=\typefaceencoding]
+  \definefontsynonym[PalatinoLT-Bold]         [\typefaceencoding-lte50003] [encoding=\typefaceencoding]
+  \definefontsynonym[PalatinoLT-BoldItalic]   [\typefaceencoding-lte50004] [encoding=\typefaceencoding]
+
+  \definefontsynonym[PalatinoLT-Light]        [\typefaceencoding-lte52168] [encoding=\typefaceencoding]
+  \definefontsynonym[PalatinoLT-LightItalic]  [\typefaceencoding-lte52169] [encoding=\typefaceencoding]
+  \definefontsynonym[PalatinoLT-Medium]       [\typefaceencoding-lte52170] [encoding=\typefaceencoding]
+  \definefontsynonym[PalatinoLT-MediumItalic] [\typefaceencoding-lte52171] [encoding=\typefaceencoding]
+  \definefontsynonym[PalatinoLT-Black]        [\typefaceencoding-lte52172] [encoding=\typefaceencoding]
+  \definefontsynonym[PalatinoLT-BlackItalic]  [\typefaceencoding-lte52173] [encoding=\typefaceencoding]
+  \definefontsynonym[Palatino-BoldItalicOsF]  [\typefaceencoding-pobio]    [encoding=\typefaceencoding]
+  \definefontsynonym[Palatino-BoldOsF]        [\typefaceencoding-pobos]    [encoding=\typefaceencoding]
+  \definefontsynonym[Palatino-ItalicOsF]      [\typefaceencoding-poios]    [encoding=\typefaceencoding]
+
+  \definefontsynonym[Palatino-SC]             [\typefaceencoding-posc]     [encoding=\typefaceencoding]
+
+\stoptypescript
+
+\endinput

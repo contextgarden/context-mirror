@@ -8,13 +8,13 @@
 %D      copyright=PRAGMA-ADE]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
-%C details. 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
 
-\unprotect 
+\unprotect
 
 %D We predefine some common symbols and conversions that will
-%D be understood by many commands. 
+%D be understood by many commands.
 
 \definesymbol [\v!geen]   []
 \definesymbol [bullet]    [\mathematics{\bullet}]
@@ -22,7 +22,7 @@
 \definesymbol [star]      [\mathematics{\star}]
 \definesymbol [triangle]  [\mathematics{\triangleright}]
 \definesymbol [circle]    [\mathematics{\circ}]
-\definesymbol [medcircle] [\hbox{\setsmallbodyfont\raise\!!onepoint\hbox{$\bigcirc$}}]
+\definesymbol [medcircle] [\hbox{\setsmallbodyfont\raise\onepoint\hbox{$\bigcirc$}}]
 \definesymbol [bigcircle] [\mathematics{\bigcirc}]
 \definesymbol [square]    [\mathematics{\square}]
 \definesymbol [diamond]   [\mathematics{\diamond}]
@@ -36,8 +36,8 @@
 \definesymbol [7] [{\symbol[bigcircle]}]
 \definesymbol [8] [{\symbol[square]}]
 
-%D Special hyperlinks, namely those to pages or navigational 
-%D properties, are associated with symbols. 
+%D Special hyperlinks, namely those to pages or navigational
+%D properties, are associated with symbols.
 
 \definesymbol [\v!eerstepagina]      [\gotobegincharacter]
 \definesymbol [\v!vorigepagina]      [\gobackwardcharacter]
@@ -61,19 +61,19 @@
 \definesymbol [\v!achteruit] [{\symbol[\v!vorigepagina]}]
 \definesymbol [\v!vooruit]   [{\symbol[\v!volgendepagina]}]
 
-%D The next two symbols (\symbol[P] and \symbol[S]) are 
-%D variations in their math counterparts. The following ones 
-%D {\em do} scale. 
+%D The next two symbols (\symbol[P] and \symbol[S]) are
+%D variations in their math counterparts. The following ones
+%D {\em do} scale.
 
-% todo : hook this into \textsection 
+% todo : hook this into \textsection
 
 \definesymbol[S][\getglyph{MathSymbol}{\char"78}]
 \definesymbol[P][\getglyph{MathSymbol}{\char"7B}]
 
 %D These symbols are taken from the Computer Moders Roman
 %D symbol set or, when present, from the additional symbols of
-%D the American Mathematical Society. Of course one can use 
-%D his or her own symbols by redefining them. 
+%D the American Mathematical Society. Of course one can use
+%D his or her own symbols by redefining them.
 
 \def\dogotocharacter#1#2#3%
   {\ifx#1\undefined#2\else#3\fi}
@@ -83,7 +83,7 @@
      {\dogotocharacter\blacktriangleleft
         {\setbox0=\hbox{\mathematics{\triangleleft}}%
          \vrule\!!width.085ex\!!height1.075\ht0\!!depth\dp0
-         \kern-.11ex\box0} 
+         \kern-.11ex\box0}
         {\setbox0=\hbox{\mathematics{\blacktriangleleft}}%
          \setbox2=\hbox{\vrule\!!height\ht0\!!depth\dp0\!!width.25ex}%
          \hbox{\lower.03ex\box2\kern-.35ex\box0}}}}
@@ -92,8 +92,8 @@
   {\hbox
      {\dogotocharacter\blacktriangleright
         {\setbox0=\hbox{\mathematics{\triangleright}}%
-         \copy0\kern-.11ex 
-         \vrule\!!width.085ex\!!height1.075\ht0\!!depth\dp0}  
+         \copy0\kern-.11ex
+         \vrule\!!width.085ex\!!height1.075\ht0\!!depth\dp0}
         {\setbox0=\hbox{\mathematics{\blacktriangleright}}%
          \setbox2=\hbox{\vrule\!!height\ht0\!!depth\dp0\!!width.25ex}%
          \hbox{\box0\kern-.35ex\lower.03ex\box2}}}}
@@ -124,7 +124,7 @@
 \def\gobackjumpcharacter%
   {\hbox{\gobackwardcharacter\kern-.5em\gobackwardcharacter}}
 
-%D The next two symbols are for Daniel Flipo: 
+%D The next two symbols are for Daniel Flipo:
 
 \definesymbol [Numero] [N\high{\nocap{o}\kern.2em}]
 \definesymbol [numero] [n\high{\nocap{o}\kern.2em}]
@@ -132,4 +132,4 @@
 \def\Numero{\symbol[Numero]}
 \def\numero{\symbol[numero]}
 
-\protect \endinput 
+\protect \endinput

@@ -8,8 +8,8 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
-%C details. 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
 
 \writestatus{loading}{Context Font Macros / UNICODE Support}
 
@@ -20,17 +20,17 @@
 %D characters $>127$, so as long as the two byte characters
 %D have a first character with code $>127$, we can use active
 %D characters to handle them. In an optimistic mood, I called
-%D this module the \UNICODE\ font module. In the module that 
-%D handles Chinese, we will see that some more interpretation 
-%D is involved, which is why the macros handling those 
-%D characters look ahead. 
+%D this module the \UNICODE\ font module. In the module that
+%D handles Chinese, we will see that some more interpretation
+%D is involved, which is why the macros handling those
+%D characters look ahead.
 
 \startmessages  dutch  library: fonts
      21: het is veiliger om (pdf)eTeX te gebruiken
 \stopmessages
 
 \startmessages  english  library: fonts
-     21: using (pdf)eTeX is more save 
+     21: using (pdf)eTeX is more save
 \stopmessages
 
 \startmessages  german  library: fonts
@@ -42,22 +42,22 @@
 \stopmessages
 
 \startmessages  norwegian  library: fonts
-     21: å bruke (pdf)eTeX er tryggere 
+     21: å bruke (pdf)eTeX er tryggere
 \stopmessages
 
-\unprotect 
+\unprotect
 
-%D \macros 
-%D   {handleunicodeflowglyph, uchar, 
+%D \macros
+%D   {handleunicodeflowglyph, uchar,
 %D    handleunicodeglyph, insertunicodeglyph,
 %D    unicodeposition, unicodeone, unicodetwo}
 %D
-%D For the moment \UNICODE\ support is rather primitive but 
-%D nevertheless effective. The reference to \UNICODE\ is not 
-%D entirely correct, since in many cases one will use \quote 
-%D {older} mappings, but in principle, \UNICODE\ can be 
-%D supported. 
-%D 
+%D For the moment \UNICODE\ support is rather primitive but
+%D nevertheless effective. The reference to \UNICODE\ is not
+%D entirely correct, since in many cases one will use \quote
+%D {older} mappings, but in principle, \UNICODE\ can be
+%D supported.
+%D
 %D We expect each character to come as two eight bit
 %D characters. Those doubles are handled by making all
 %D characters in the range $>127$ active, so that they can
@@ -67,64 +67,64 @@
 %D pair with \type {\string} or \type {\char}, but this was
 %D not that handy when it came to testing those values.
 %D Because in principle we are dealing with an encoding, the
-%D making active is handled in \type {enco-uni}. 
-%D 
-%D There are two commands to handle unicode characters: 
-%D 
-%D \starttypen 
+%D making active is handled in \type {enco-uni}.
+%D
+%D There are two commands to handle unicode characters:
+%D
+%D \starttypen
 %D \handleunicodeflowglyph{number}{character}
 %D \uchar{number}{number}
 %D \stoptypen
-%D 
-%D The first one can be assigned to an active character, the 
-%D second one can be used to directly access a glyph. Both 
-%D command call \type {\handleunicodeglyph} that in turn 
-%D calls \type {\insertunicodeglyph}. Both can be overruled 
-%D in specialized modules. The low level command \type 
-%D {\unicodeglyph} can best be left untouched, which is not 
+%D
+%D The first one can be assigned to an active character, the
+%D second one can be used to directly access a glyph. Both
+%D command call \type {\handleunicodeglyph} that in turn
+%D calls \type {\insertunicodeglyph}. Both can be overruled
+%D in specialized modules. The low level command \type
+%D {\unicodeglyph} can best be left untouched, which is not
 %D so much a problem because there is a hook into this macro:
-%D \type {\unicodecharcommand}. 
-%D 
+%D \type {\unicodecharcommand}.
+%D
 %D In most cases one will redefine \type {\handleunicodeglyph}
 %D in such a way that it identifies special situations first,
 %D takes some actions next, calls \type {\insertunicodeglyph},
 %D if needed with \type {\unicodecharcommand} changed, and
-%D finally does some finishing: 
-%D 
-%D \starttyping 
+%D finally does some finishing:
+%D
+%D \starttyping
 %D \def\handleunicodeglyph
-%D   {take actions based on \unicodeone-two-position cq. \nextglyph 
+%D   {take actions based on \unicodeone-two-position cq. \nextglyph
 %D    redefine \unicodecharcommand if needed
-%D    expand \insertunicodeglyph 
+%D    expand \insertunicodeglyph
 %D    take some final actions}
-%D \stoptyping 
+%D \stoptyping
 
 \newcount\unicodeposition
 
 % \def\handleunicodeflowglyph#1#2%
 %   {\def\dohandleunicodeflowglyph{\dodohandleunicodeflowglyphA{#1}{#2}}%
 %    \futurelet\nextglyph\dohandleunicodeflowglyph}
-% 
-% %D The first alternative (A) takes a character as second 
-% %D argument and is used in the primary handler introduced 
-% %D earlier. 
-% 
+%
+% %D The first alternative (A) takes a character as second
+% %D argument and is used in the primary handler introduced
+% %D earlier.
+%
 % \def\dodohandleunicodeflowglyphA#1#2%
 %   {\bgroup
-%    \def\unicodeone{#1}%  
-%    \edef\unicodetwo{\number\expandafter`\string#2}% takes also <128 ! 
+%    \def\unicodeone{#1}%
+%    \edef\unicodetwo{\number\expandafter`\string#2}% takes also <128 !
 %    \unicodeposition=\unicodeone\unicodetwo\relax
 %    \handleunicodeglyph
 %    \egroup}
-% 
-% %D The second alternative (B) takes numbers and is used in 
-% %D the \type {\uchar} command. This command takes two 
-% %D decimal numbers. 
-% 
+%
+% %D The second alternative (B) takes numbers and is used in
+% %D the \type {\uchar} command. This command takes two
+% %D decimal numbers.
+%
 % \def\dodohandleunicodeflowglyphB#1#2%
 %   {\bgroup
-%    \def\unicodeone{#1}%  
-%    \def\unicodetwo{#2}%  
+%    \def\unicodeone{#1}%
+%    \def\unicodetwo{#2}%
 %    \unicodeposition=\unicodeone\unicodetwo\relax
 %    \handleunicodeglyph
 %    \egroup}
@@ -133,9 +133,9 @@
 %   {\let\nextglyph\relax
 %    \dodohandleunicodeflowglyphB}
 
-%D The multistep approach is needed to pick up the second 
-%D token, since this token can have any value and any 
-%D catcode. 
+%D The multistep approach is needed to pick up the second
+%D token, since this token can have any value and any
+%D catcode.
 
 %\def\handleunicodeflowglyph#1%
 %  {\bgroup
@@ -147,12 +147,12 @@
 %  {\futurelet\nextglyph\dodohandleunicodeflowglyph}
 %
 %\def\dodohandleunicodeflowglyph%
-%  {\edef\unicodetwo{\the\nexttoken}% 
+%  {\edef\unicodetwo{\the\nexttoken}%
 %   \unicodeposition\unicodeone\unicodetwo\relax
 %   \handleunicodeglyph
 %   \egroup}
 
-% the \relax trick prevents eating up the space (needed for 
+% the \relax trick prevents eating up the space (needed for
 % korean
 
 \def\handleunicodeflowglyph#1#2%
@@ -170,11 +170,11 @@
    \handleunicodeglyph
    \egroup}
 
-\unexpanded\def\uchar#1#2% use as standalone glyph  
+\unexpanded\def\uchar#1#2% use as standalone glyph
   {\bgroup
    \let\nextglyph\relax
-   \edef\unicodeone{#1}%  
-   \edef\unicodetwo{#2}% 
+   \edef\unicodeone{#1}%
+   \edef\unicodetwo{#2}%
 %   \unicodeposition=\unicodeone\unicodetwo\relax
    \unicodeposition\unicodeone\unicodetwo\relax
    \handleunicodeglyph
@@ -192,105 +192,105 @@
    \edef\unicodetwo{#2}%
    \futurelet\nextglyph\dohandleucflowglyph}
 
-% Alternative, handles [char >127]{number} too. 
+% Alternative, handles [char >127]{number} too.
 %
 % \def\handleunicodeflowglyph#1%
 %   {\bgroup
 %    \edef\unicodeone{#1}%
 %    \futurelet\nexttoken\dohandleunicodeflowglyph}
-% 
+%
 % \def\dohandleunicodeflowglyph%
 %   {\ifx\nexttoken\bgroup
 %      \expandafter\dohandleunicodeflowglyphA
 %    \else
 %      \expandafter\dohandleunicodeflowglyphB
 %    \fi}
-% 
+%
 % \def\dohandleunicodeflowglyphA#1%
 %   {\chardef\nexttoken=#1\relax
 %    \dodohandleunicodeflowglyph}
-% 
+%
 % \def\dohandleunicodeflowglyphB%
 %   {\@EA\afterassignment\@EA\dodohandleunicodeflowglyph
 %      \@EA\chardef\@EA\nexttoken\@EA=\@EA`\string}
-% 
+%
 % \def\dodohandleunicodeflowglyph%
 %   {\futurelet\nextglyph\dododohandleunicodeflowglyph}
-% 
-% \def\dododohandleunicodeflowglyph% 
-%   {\edef\unicodetwo{\the\nexttoken}% 
+%
+% \def\dododohandleunicodeflowglyph%
+%   {\edef\unicodetwo{\the\nexttoken}%
 %    \unicodeposition=\unicodeone\unicodetwo\relax
 %    \handleunicodeglyph
 %    \egroup}
 %
-% Can be used with (the less byte hungry alternative): 
+% Can be used with (the less byte hungry alternative):
 %
 % sub unirecode
 %  { my ($a,$b) = @_ ;
 %    if ((ord($b)<0x80)&&($b !~ /[a-zA-Z0-9]/))
-%      { print "$b" ; ++$recoded ;  
-%       #return "\\uc\{" . ord($a) . "\}\{". ord($b) . "\}" }  
-%        return "$a\{". ord($b) . "\}" }  
+%      { print "$b" ; ++$recoded ;
+%       #return "\\uc\{" . ord($a) . "\}\{". ord($b) . "\}" }
+%        return "$a\{". ord($b) . "\}" }
 %    else
-%      { return "$a$b" } } 
+%      { return "$a$b" } }
 
 \def\insertunicodeglyph
   {\unicodeglyph\unicodeone\unicodetwo}
 
 \let\handleunicodeglyph=\insertunicodeglyph
 
-%D One can use the \type {\unicodeposition} in the macros 
-%D that handle pre and post material. 
+%D One can use the \type {\unicodeposition} in the macros
+%D that handle pre and post material.
 
-%D \macros 
+%D \macros
 %D   {unicodestyle, unicodecharcommand}
 %D
-%D Each character pair will become one glyph. Because \TEX\ 
-%D cannot handle fonts with more that 256 characters, we use 
-%D \TFM\ files for each range. The first character of the pair 
+%D Each character pair will become one glyph. Because \TEX\
+%D cannot handle fonts with more that 256 characters, we use
+%D \TFM\ files for each range. The first character of the pair
 %D is appended to the name of a font, and the second is used to
-%D access the glyph in that font. This means that a particular 
-%D font is split up in subfonts with names in the range: 
-%D 
+%D access the glyph in that font. This means that a particular
+%D font is split up in subfonts with names in the range:
+%D
 %D \starttypen
 %D <filename>80 ... <filename>ff
 %D \stoptypen
-%D 
+%D
 %D The \type {<filename>} as well as the composed name are
 %D mapped ones. The next macros take care of this mapping.
-%D Let us assume that the next mapping has taken place, 
-%D 
-%D \starttyping 
-%D \definefontsynonym [UnicodeRegular] [gbsong] 
+%D Let us assume that the next mapping has taken place,
+%D
+%D \starttyping
+%D \definefontsynonym [UnicodeRegular] [gbsong]
 %D \stoptyping
-%D 
+%D
 %D Let us also assume that we are dealing with the range \type
-%D {b1}. Given that a font name results from:  
-%D 
-%D \starttyping 
+%D {b1}. Given that a font name results from:
+%D
+%D \starttyping
 %D \truefontname{\truefontname{UnicodeRegular}b1}
 %D \stoptyping
-%D 
-%D we get \type {gbsongb1}. The outer \type {\truefontname} 
-%D takes care of additional mapping, so when we say: 
-%D 
-%D \starttyping 
-%D \definefontsynonym [gbsongb1] [gbsong-b1] 
-%D \stoptyping
-%D 
-%D the filename used will be \type {gbsong-b1}. From the next 
-%D definition it will be clear that other fontshapes are also 
-%D supported. The prefix \type {Unicode} is mapped! 
 %D
-%D The command \type {\unicodecharcommand} can be used to 
-%D handle special cases. At that moment \type {1em} is known.  
+%D we get \type {gbsongb1}. The outer \type {\truefontname}
+%D takes care of additional mapping, so when we say:
+%D
+%D \starttyping
+%D \definefontsynonym [gbsongb1] [gbsong-b1]
+%D \stoptyping
+%D
+%D the filename used will be \type {gbsong-b1}. From the next
+%D definition it will be clear that other fontshapes are also
+%D supported. The prefix \type {Unicode} is mapped!
+%D
+%D The command \type {\unicodecharcommand} can be used to
+%D handle special cases. At that moment \type {1em} is known.
 
 \def\unicodestyle
   {\truefontname\s!Unicode\fontstylesuffix}
 
 \let\unicodecharcommand\firstofoneargument
 
-% \unexpanded\def\unicodeglyph#1#2% watch the double mapping 
+% \unexpanded\def\unicodeglyph#1#2% watch the double mapping
 %   {\bgroup
 %    \bodyfontsize=\unicodescale\bodyfontsize
 %    \font\unicodefont=\truefontname{\truefontname\unicodestyle\lchexnumbers{#1}}
@@ -307,12 +307,12 @@
    \unicodestrut\unicodefont\unicodecharcommand{\char\unicodetwo\relax}%
    \egroup}
 
-%D \macros 
+%D \macros
 %D   {currentucharmapping,defineucharmapping}
 %D
-%D A (plane,char) pair can be remapped using a uchar mapping 
+%D A (plane,char) pair can be remapped using a uchar mapping
 %D function. The default mapping is to convert the plane to a
-%D lowercase hexadecimal number, and leave the number 
+%D lowercase hexadecimal number, and leave the number
 %D untouched. The current remapping is kept in a macro.
 
 \let\currentucharmapping\s!default
@@ -323,9 +323,9 @@
 \defineucharmapping{\s!default}#1#2%
   {\edef\unicodeone{\lchexnumbers{#1}}\edef\unicodetwo{#2}}
 
-%D An example of a remapping is the following: 
-%D 
-%D \starttypen 
+%D An example of a remapping is the following:
+%D
+%D \starttypen
 %D \defineucharmapping{GBK}#1#2%
 %D   {\unicodeposition=#1
 %D    \advance\unicodeposition -129
@@ -334,36 +334,38 @@
 %D    \advance\unicodeposition-\ifnum#2>127 65\else64\fi
 %D    \dorepositionunicode}
 %D \stoptypen
-%D 
-%D This maps the GBK vector onto a compact GBK one. The 
-%D auxiliary macro is defined here as a goody. 
+%D
+%D This maps the GBK vector onto a compact GBK one. The
+%D auxiliary macro is defined here as a goody.
 
 \def\dorepositionunicode
-  {\DoDiv\unicodeposition by256to\scratchcounter
-   \advance\scratchcounter 1
+  {\dosetdivision\unicodeposition{256}\scratchcounter
+  %\DoDiv\unicodeposition by256to\scratchcounter
+   \advance\scratchcounter \plusone
    \edef\unicodeone{\ifnum\scratchcounter<10 0\fi\the\scratchcounter}%
-   \DoMod\unicodeposition by256to\scratchcounter
+   \dosetmodulo\unicodeposition{256}\scratchcounter
+  %\DoMod\unicodeposition by256to\scratchcounter
    \edef\unicodetwo{\the\scratchcounter}}
 
-%D \macros 
-%D   {setunicodestrut, setunicodescale, nextglyph, 
+%D \macros
+%D   {setunicodestrut, setunicodescale, nextglyph,
 %D    handleunicodeglyph, insertunicodeglyph}
 %D
-%D A careful analysis of the previous macros, learns that the 
-%D process of mapping comes down to: 
-%D 
+%D A careful analysis of the previous macros, learns that the
+%D process of mapping comes down to:
+%D
 %D \startopsomming[opelkaar,n]
-%D \som  taking care of preceding material (and spacing) 
-%D \som  defining the font at \type {\currentfontscale} $\times$ 
-%D       \type {\unicodescale} $\times$ \type {\bodyfontsize} 
+%D \som  taking care of preceding material (and spacing)
+%D \som  defining the font at \type {\currentfontscale} $\times$
+%D       \type {\unicodescale} $\times$ \type {\bodyfontsize}
 %D \som  inserting a \type {\unicodestrut}
-%D \som  inserting the character (glyph) 
+%D \som  inserting the character (glyph)
 %D \som  executing some actions afterwards
 %D \stopopsomming
 %D
-%D The actions before and after placing the glyph, is up to 
-%D the user supplied handler. This handler (\type 
-%D {\handleunicodeglpyh}) must, at a certain moment, insert 
+%D The actions before and after placing the glyph, is up to
+%D the user supplied handler. This handler (\type
+%D {\handleunicodeglpyh}) must, at a certain moment, insert
 %D the glyph using \type {\insertunicodeglyph}
 
 \def\setunicodescale#1%
@@ -386,26 +388,26 @@
      \let\unicodestrut\empty
    \fi\fi}
 
-%D The additional scaling and strut default to: 
+%D The additional scaling and strut default to:
 
 \setunicodescale{1}
 \setunicodestrut{1}{1}
 
-%D The actual code for the additional actions as well as 
-%D specific spacing is handled outside these routines. The 
-%D character after the two that are under treatment is 
+%D The actual code for the additional actions as well as
+%D specific spacing is handled outside these routines. The
+%D character after the two that are under treatment is
 %D available in \type {\nextglyph}.
 
-%D \macros 
+%D \macros
 %D   {defineunicodefont, setupunicodefont}
 %D
-%D Apart from this rather low level implementation, we also 
-%D provide a more user friendly alternative. Given that one 
-%D has defined: 
-%D 
-%D \starttypen 
+%D Apart from this rather low level implementation, we also
+%D provide a more user friendly alternative. Given that one
+%D has defined:
+%D
+%D \starttypen
 %D \defineunicodefont
-%D   [SimChi] [SimplifiedChinese] 
+%D   [SimChi] [SimplifiedChinese]
 %D   [   \c!schaal=0.85,
 %D       \c!hoogte=1.25,
 %D       \c!diepte=1.00,
@@ -413,25 +415,25 @@
 %D    \c!conversie=\chinesenumber,
 %D     \c!commando=\handlechineseunicodeglyph]
 %D \stoptypen
-%D 
-%D Together with: 
-%D 
-%D \starttypen 
-%D \definefontsynonym [SimplifiedChineseRegular] [gbsong]  
-%D \definefontsynonym [SimplifiedChineseSlanted] [gbsongsl] 
-%D \stoptypen
-%D 
-%D we can now switch to Simplified Chinese by saying \type 
-%D {SimChi}. Some values can be changed afterwards with 
 %D
-%D \starttypen 
+%D Together with:
+%D
+%D \starttypen
+%D \definefontsynonym [SimplifiedChineseRegular] [gbsong]
+%D \definefontsynonym [SimplifiedChineseSlanted] [gbsongsl]
+%D \stoptypen
+%D
+%D we can now switch to Simplified Chinese by saying \type
+%D {SimChi}. Some values can be changed afterwards with
+%D
+%D \starttypen
 %D \setupunicodefont[SimChi][...=...]
 %D \stoptypen
 %D
-%D Specific initializations can be assigned to \type 
-%D {commands}. 
+%D Specific initializations can be assigned to \type
+%D {commands}.
 
-\beginTEX 
+\beginTEX
 
   \def\unicodeTEXwarning
      {\writeline\showmessage\m!fonts{21}\empty\writeline
@@ -473,14 +475,14 @@
 \def\setupunicodefont
   {\dodoubleempty\dosetupunicodefont}
 
-\def\dosetupunicodefont[#1][#2]% also predefines 
+\def\dosetupunicodefont[#1][#2]% also predefines
   {\doifundefined{\??uc#1\c!commando}
      {\copyparameters
         [\??uc#1][\??uc\s!default]
         [\c!hoogte,\c!diepte,\c!schaal,\c!commandos,
          \c!interlinie,\c!commando,\c!conversie]}%
    \getparameters[\??uc#1][#2]}
-   
+
 \def\enableunicodefont#1%
   {\definefontsynonym[\s!Unicode][\getvalue{\??uc#1\c!file}]%
    \def\unicodescale             {\getvalue{\??uc#1\c!schaal}}%
@@ -492,16 +494,16 @@
    \doifvalue{\??uc#1\c!interlinie}\v!ja\setupinterlinespace\relax
    \getvalue{\??uc#1\c!commandos}\relax}
 
-%D \macros 
+%D \macros
 %D   {unicodedigits}
-%D 
-%D For convenience we also predefine a number conversion 
-%D macro: 
+%D
+%D For convenience we also predefine a number conversion
+%D macro:
 
 \let\unicodedigits\number
 
-%D Because we cannot be sure of the pressence of all font 
-%D styles, we remap some by default. 
+%D Because we cannot be sure of the pressence of all font
+%D styles, we remap some by default.
 
 \definefontsynonym [\s!Unicode\s!Bold]        [\s!Unicode\s!Regular]
 \definefontsynonym [\s!Unicode\s!Slanted]     [\s!Unicode\s!Regular]
@@ -518,4 +520,4 @@
    \c!commando=\insertunicodeglyph,
    \c!conversie=\number]
 
-\protect \endinput 
+\protect \endinput

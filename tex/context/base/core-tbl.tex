@@ -567,17 +567,17 @@
        {\copyparameters
           [\??tt#1::][\??tt\v!tabulate::]%
           [\c!kader,\c!afstand,\c!eenheid,\c!voor,\c!korps,\c!na,
-           \c!binnen,\c!inspringen,\c!marge,\c!uitlijnen,
+           \c!binnen,\c!inspringen,\c!marge,\c!uitlijnen,\c!hoofd,\c!titel,
            \c!lijnkleur,\c!lijndikte,\c!splitsen,EQ]}%
      \copyparameters
        [\??tt#1::#2][\??tt#1::]%
        [\c!eenheid,\c!afstand,\c!voor,\c!korps,\c!na,
-        \c!binnen,\c!inspringen,\c!kader,\c!splitsen,
+        \c!binnen,\c!inspringen,\c!kader,\c!splitsen,\c!hoofd,\c!titel,
         \c!marge,\c!uitlijnen,\c!lijnkleur,\c!lijndikte,EQ]%
      \setvalue{\e!start#1::#2}{\dofinalstarttabulate[#1][#2][#3]}%
      \setvalue{\e!start#1}{\bgroup\dosubstarttabulate[#1]}%
-     \letvalue{\??tt#1\v!hoofd}\empty
-     \letvalue{\??tt#1\v!voet }\empty
+     \letvalue{\??tt#1-\v!hoofd}\empty
+     \letvalue{\??tt#1-\v!voet }\empty
    \else\ifsecondargument
      \definetabulate[#1][][#2]%
    \else
@@ -587,56 +587,23 @@
 \let\tabulateheadcontent\empty
 \let\tabulatetailcontent\empty
 
-% \def\checkfulltabulatecontent
-%   {\ifundefined{\??tt\currenttabulate\v!hoofd}%
-%      \let\tabulateheadcontent\empty
-%    \else
-%      \@EA\let\@EA\tabulateheadcontent
-%      \csname\??tt\currenttabulate\v!hoofd\endcsname
-%    \fi
-%    \ifundefined{\??tt\currenttabulate\v!voet}%
-%      \let\tabulatetailcontent\empty
-%    \else
-%      \@EA\let\@EA\tabulatetailcontent
-%        \csname\??tt\currenttabulate\v!voet\endcsname
-%    \fi}
-%
-% \newconditional\tabulatesomeamble
-%
-% % \def\fulltabulatecontent
-% %   {\tabulatecontent}
-%
-% \def\fulltabulatecontent
-%   {\ifx\tabulateheadcontent\empty\else
-%      \TABLEnoalign{\global\settrue\tabulatesomeamble}%
-%      \tabulateheadcontent
-%      \TABLEnoalign{\global\setfalse\tabulatesomeamble}%
-%    \fi
-%    \ignorespaces\tabulatecontent
-%    \ifx\tabulatetailcontent\empty\else
-%      \TABLEnoalign{\global\settrue\tabulatesomeamble}%
-%      \tabulatetailcontent
-%    \fi}
-%
-% the previous code breaks on first \HL
-
 \newconditional\tabulatesomeamble
 
-\def\checkfulltabulatecontent
-  {\ifundefined{\??tt\currenttabulate\v!hoofd}%
+\def\checkfulltabulatecontent % - needed, else confusion with \c!hoofd
+  {\ifundefined{\??tt\currenttabulate-\v!hoofd}%
      \let\tabulateheadcontent\empty
    \else
      \def\tabulateheadcontent
        {\TABLEnoalign{\global\settrue\tabulatesomeamble}%
-        \csname\??tt\currenttabulate\v!hoofd\endcsname
+        \csname\??tt\currenttabulate-\v!hoofd\endcsname
         \TABLEnoalign{\global\setfalse\tabulatesomeamble}}%
    \fi
-   \ifundefined{\??tt\currenttabulate\v!voet}%
+   \ifundefined{\??tt\currenttabulate-\v!voet}%
      \let\tabulatetailcontent\empty
    \else
      \def\tabulatetailcontent
        {\TABLEnoalign{\global\settrue\tabulatesomeamble}%
-        \csname\??tt\currenttabulate\v!voet\endcsname
+        \csname\??tt\currenttabulate-\v!voet\endcsname
         \TABLEnoalign{\global\setfalse\tabulatesomeamble}}%
    \fi}
 
@@ -651,19 +618,25 @@
    \tabulatetailcontent
    \removefunnytabulateline}
 
+\def\removefunnytabulateline
+  {\ifhmode
+     \strut\crcr
+     \TABLEnoalign{\kern-\lineheight}%
+   \fi}
+
 \setvalue{\e!start\v!tabulatehead}%
   {\dosingleempty\dostartstarttabulatehead}
 
 \def\dostartstarttabulatehead[#1]%
   {\processcontent{\e!stop\v!tabulatehead}\next
-     {\letvalue{\??tt\iffirstargument#1\else\v!tabulate\fi::\v!hoofd}\next}}
+     {\letvalue{\??tt\iffirstargument#1\else\v!tabulate\fi::-\v!hoofd}\next}}
 
 \setvalue{\e!start\v!tabulatetail}%
   {\dosingleempty\dostartstarttabulatetail}
 
 \def\dostartstarttabulatetail[#1]%
   {\processcontent{\e!stop\v!tabulatetail}\next
-     {\letvalue{\??tt\iffirstargument#1\else\v!tabulate\fi::\v!voet}\next}}
+     {\letvalue{\??tt\iffirstargument#1\else\v!tabulate\fi::-\v!voet}\next}}
 
 \def\dosubstarttabulate
   {\dodoubleempty\dodosubstarttabulate}
@@ -907,8 +880,6 @@
 %       \s!unknown=>\def\@@tabulatealign{0}]%
 %    \let\pretabskip\!!zeropoint
 %    \def\postabskip{.5\tabulateunit}%
-%   %\doglobal\newcounter\tabulatecolumns
-%   %\doglobal\newcounter\nofautotabulate
 %    \global\tabulatecolumns\zerocount
 %    \global\nofautotabulate\zerocount
 %    \doglobal\newcounter\noftabulatelines
@@ -926,20 +897,12 @@
 %    \unexpanded \def\NG{\NC\handletabulatecharalign}%
 %    \unexpanded \def\NN{\NC\handletabulatedigits}% new, undocumented, test first
 %    \unexpanded \def\ND{\NC\handletabulatedigits}% same, for old times sake
-%    \def\HR % horizontal rule line (break untested)
-%      {\TABLEnoalign
-%         {\ifnum\noftabulatelines=\totalnoftabulatelines
-%            \@EA\dotabulatenobreak
-%          \else
-%            \@EA\allowbreak
-%          \fi}%
-%       \dotabulatelinerule
-%       \TABLEnoalign
-%         {\ifnum\noftabulatelines=\zerocount
-%            \@EA\dotabulatenobreak
-%          \else
-%            \@EA\allowbreak
-%          \fi}}%
+%    \def\tabulaterule{\HR}% a rule with lineheight
+%    \def\tabulateline{\HL}% just a spaced rule
+%    \def\tabulateautorule{\doHR\plusone}%
+%    \def\tabulateautoline{\doHL\plusone}%
+%    \def\HR{\doHR\zerocount}
+%    \def\HL{\doHL\zerocount}
 %    \unexpanded \def\NR % next row
 %      {\doglobal\increment\noftabulatelines
 %       \global\tabulatefirstflushedfalse
@@ -951,23 +914,24 @@
 %         {\iftolerantTABLEbreak\else
 %            \ifnum\noftabulatelines=\plusone
 %              \dotabulatenobreak
-%            \else
-%              \ifnum\noftabulatelines=\minusnoftabulatelines
-%                \ifnum\tabulatemaxplines<\plustwo
-%                  \dotabulatenobreak
-%                \else
-%                  \allowbreak % needed with pbreak prevention
-%                \fi
+%            \else\ifnum\noftabulatelines=\minusnoftabulatelines
+%              \ifnum\tabulatemaxplines<\plustwo
+%                \dotabulatenobreak
 %              \else
 %                \allowbreak % needed with pbreak prevention
 %              \fi
-%            \fi
+%            \else
+%              \allowbreak % needed with pbreak prevention
+%            \fi\fi
 %          \fi
 %          \global\tabulatefirstflushedfalse}}%
-%    \let\HL\empty \let\SR\NR \let\AR\NR
+%    \let\HL\empty % not needed
+%    \let\SR\NR    \let\AR\NR
 %    \let\FL\empty \let\FR\NR
 %    \let\ML\empty \let\MR\NR
 %    \let\LL\empty \let\LR\NR
+%    \let\doHR\gobbleoneargument
+%    \let\doHL\gobbleoneargument
 %    \global\let\flushtabulated\empty
 %    \let\savedbar|\let|\nexttabulate
 %    \tabskip\zeropoint
@@ -1019,7 +983,7 @@
 %    \dontcomplain
 %    \forgetall
 %    \setbox0\vbox % outside \if because of line counting
-%      {\footnotesenabledfalse
+%      {\notesenabledfalse
 %       \let\tabulateindent\!!zeropoint
 %       \trialtypesettingtrue % very important
 %       \@EA\halign\@EA{\the\!!toksa\crcr\fulltabulatecontent\crcr}}%
@@ -1090,12 +1054,47 @@
 %    \let\minusnoftabulatelines\noftabulatelines
 %    \decrement\minusnoftabulatelines
 %    \doglobal\newcounter\noftabulatelines
-%    \def\HL{\TABLEnoalign
-%      {\ifnum\noftabulatelines=\zerocount                  \@EA    \FL\else
-%       \ifnum\noftabulatelines<\totalnoftabulatelines\relax\@EAEAEA\ML\else
-%                                                           \@EAEAEA\LL\fi\fi}}%
-%    \doifvalue{\??tt\currenttabulate\c!lijn}\v!regel
-%      {\let\HL\HR}%
+%    \def\doHL##1%
+%      {\TABLEnoalign
+%         {\ifnum\noftabulatelines=\zerocount
+%            \ifcase##1\or
+%              \@EAEAEA\FL
+%            \fi
+%          \else\ifnum\noftabulatelines=\totalnoftabulatelines
+%            \ifcase##1\or
+%              \@EA\@EAEAEA\@EA\LL
+%            \fi
+%          \else
+%            \@EAEAEA\ML
+%          \fi\fi}}%
+%    \def\doHR##1% horizontal rule line (break untested)
+%      {\TABLEnoalign
+%         {\globallet\TABLEautoline\dotabulatelinerule
+%          \ifcase##1\or
+%            \ifnum\noftabulatelines=\zerocount
+%              \gdef\TABLEautoline{\TABLEnoalign{}}%
+%            \else\ifnum\noftabulatelines=\totalnoftabulatelines
+%              \gdef\TABLEautoline{\TABLEnoalign{}}%
+%            \fi\fi
+%          \fi
+%          \dotabulatenobreak}%
+%       \TABLEautoline
+%       \TABLEnoalign
+%         {\nobreak
+%          \ifx\TABLEautoline\dotabulatelinerule\kern-\lineheight\fi
+%          \ifnum\noftabulatelines=\totalnoftabulatelines
+%            \@EA\dotabulatenobreak
+%          \else
+%            \@EA\allowbreak
+%          \fi}%
+%       \TABLEautoline
+%       \TABLEnoalign
+%         {\dotabulatenobreak}}%
+%    \doifelsevalue{\??tt\currenttabulate\c!lijn}\v!regel
+%      {\let\HL              \HR
+%       \let\tabulateautoline\tabulateautorule
+%       \let\tabulateline    \tabulaterule}%
+%      {\def\HL{\doHL\zerocount}}%
 %    \def\tablebaselinecorrection
 %      {\def\dobaselinecorrection
 %         {\vskip-\prevdepth
@@ -1136,14 +1135,12 @@
 %       \fi}}%
 %    \chardef\tabulatepass\plustwo
 %    %
-%    \startframedcontent[\getvalue{\??tt\currenttabulate\c!kader}]%
-%    %
-%    \@EA\halign\@EA{\the\!!toksa\crcr\fulltabulatecontent\crcr}%
-%    \prevdepth\strutdp % nog eens beter, temporary hack
-%    \doifvalue{\??tt\currenttabulate\c!afstand}\v!grid
-%      {\vskip-\strutdp}% experimental tm-prikkels
-%    %
-%    \stopframedcontent
+%    \startflushtabulate
+%      \@EA\halign\@EA{\the\!!toksa\crcr\fulltabulatecontent\crcr}%
+%      \prevdepth\strutdp % nog eens beter, temporary hack
+%      \doifvalue{\??tt\currenttabulate\c!afstand}\v!grid
+%        {\vskip-\strutdp}% experimental tm-prikkels
+%    \stopflushtabulate
 %    %
 %    \egroup
 %    \ifinsidefloat \else
@@ -1151,9 +1148,13 @@
 %    \fi
 %    \egroup}
 
+\chardef\tabulaterepeathead\zerocount
+
 \def\processtabulate[|#1|]% in the process of optimizing
   {\tabulateunit\getvalue{\??tt\currenttabulate\c!eenheid}%
    \checkfulltabulatecontent
+\globallet\tabulateruledepth \!!zeropoint
+\globallet\tabulateruleheight\!!zeropoint
    \ExpandFirstAfter\processaction % use \setalignmentswitch instead
      [\getvalue{\??tt\currenttabulate\c!uitlijnen}]
      [\v!normaal=>\def\@@tabulatealign{0},% = default value
@@ -1172,6 +1173,12 @@
    \global\tabulatepwidth\zeropoint
    \global\tabulateequalfalse
    \resettabulatepheight
+\ifinsidefloat \else
+  \processaction
+    [\getvalue{\??tt\currenttabulate\c!hoofd}]
+    [\v!herhaal=>\chardef\tabulaterepeathead\plusone,
+       \v!tekst=>\chardef\tabulaterepeathead\plustwo]%
+\fi
    \unexpanded \def\NC{\tabulatenormalcolumn0}%
    \unexpanded \def\RC{\tabulatenormalcolumn1}%
    \unexpanded \def\HC{\tabulatenormalcolumn2}%
@@ -1196,6 +1203,9 @@
       \unskip\unskip\crcr\flushtabulated
       \TABLEnoalign
         {\iftolerantTABLEbreak\else
+\ifconditional\tabulatesomeamble \ifcase\tabulaterepeathead \else
+  \allowbreak
+\fi \fi
            \ifnum\noftabulatelines=\plusone
              \dotabulatenobreak
            \else\ifnum\noftabulatelines=\minusnoftabulatelines
@@ -1255,7 +1265,7 @@
         \global\let\tabulatehook\notabulatehook}%
    \def\xeskip
      {\par\egroup\egroup
-   \global\let\tabulatehook\dotabulatehook}%
+      \global\let\tabulatehook\dotabulatehook}%
    \let|\savedbar
    \global\let\tabulatehook\dotabulatehook
    \doifvalue{\??tt\currenttabulate\c!inspringen}\v!nee\forgetparindent
@@ -1265,9 +1275,9 @@
      \setlocalhsize \hsize\localhsize
    \fi
    \dontcomplain
-   \forgetall
+   \forgetall % hm, interference with \forgetparindent ^^^ probably bug, to be solved
    \setbox0\vbox % outside \if because of line counting
-     {\footnotesenabledfalse
+     {\notesenabledfalse
       \let\tabulateindent\!!zeropoint
       \trialtypesettingtrue % very important
       \@EA\halign\@EA{\the\!!toksa\crcr\fulltabulatecontent\crcr}}%
@@ -1419,20 +1429,85 @@
       \fi}}%
    \chardef\tabulatepass\plustwo
    %
-   \startframedcontent[\getvalue{\??tt\currenttabulate\c!kader}]%
+   \ifcase\tabulaterepeathead
+     \startframedcontent[\getvalue{\??tt\currenttabulate\c!kader}]%
+   \else
+     \setbox\tabulatebox\vbox \bgroup
+   \fi
    %
    \@EA\halign\@EA{\the\!!toksa\crcr\fulltabulatecontent\crcr}%
    \prevdepth\strutdp % nog eens beter, temporary hack
    \doifvalue{\??tt\currenttabulate\c!afstand}\v!grid
      {\vskip-\strutdp}% experimental tm-prikkels
    %
-   \stopframedcontent
+   \ifcase\tabulaterepeathead
+     \stopframedcontent
+   \else
+     \egroup \splittabulatebox\tabulatebox
+   \fi
    %
    \egroup
    \ifinsidefloat \else
      \getvalue{\??tt\currenttabulate\c!na}%
    \fi
    \egroup}
+
+% \setuptabulate[split=yes,header=text,title=Vervolg van Tabel]
+%
+% % \starttabulatehead
+% % \NC test \NC hans\NC \NR
+% % \stoptabulatehead
+%
+% \starttabulate
+% \NC test \NC \input tufte \relax \NC \NR
+% \NC test \NC \input knuth \relax \NC \NR
+% \NC test \NC \input knuth \relax \NC \NR
+% \NC test \NC \input tufte \relax \NC \NR
+% \NC test \NC \input tufte \relax \NC \NR
+% \NC test \NC \input tufte \relax \NC \NR
+% \stoptabulate
+
+\def\splittabulatebox#1% #1 <> 0/2 / derived from the one in core-ntb.tex
+  {\ifinsidefloat
+     \unvbox#1%
+   \else
+     \ifcase\tabulaterepeathead\or
+       \setbox2\copy#1%
+       \setbox2\vsplit2 to \lineheight
+       \setbox2\vbox{\unvbox2}%
+     \fi
+     \doloop
+       {\setbox0\vsplit#1 to \onepoint % \lineheight
+        \ifdim\pagegoal<\maxdimen
+          \donetrue
+        \else\ifdim\pagetotal=\zeropoint
+          \donetrue
+        \else
+          \donefalse
+        \fi\fi
+        \ifdone
+          \setbox0\vbox{\unvbox0}%
+          \dimen0\pagetotal
+          \advance\dimen0\dp0
+          \advance\dimen0\ht0
+          \ifdim\dimen0>\pagegoal
+            \bgroup \pagina \egroup % make sure that local vars are kept
+            \ifcase\tabulaterepeathead\or
+              \unvcopy2
+            \or
+              \hbox{\strut\getvalue{\??tt\currenttabulate\c!titel}}%
+            \fi
+          \fi
+        \fi
+        % test this on icare checklists / quite hacky ! ! !
+        \ifdim\ht0>\getvalue{\??tt\currenttabulate\c!lijndikte}\else
+          \kern-2\ht0 % brrrr
+        \fi
+        %
+        \unvbox0
+        \allowbreak
+        \ifvoid#1 \exitloop \fi}%
+   \fi}
 
 %D \startypen
 %D \setuptabulate[split=no,rule=line]
@@ -1514,6 +1589,8 @@
    \c!uitlijnen=\v!normaal,
    \c!marge=\!!zeropoint,
    \c!splitsen=\v!ja,
+   \c!hoofd=\v!ja,
+   \c!titel=,
    \c!inspringen=\v!nee]
 
 \protect \endinput

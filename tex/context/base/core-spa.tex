@@ -47,6 +47,23 @@
 \def\softbreak
   {\relax\ifhmode\hskip\parfillskip\break\fi}
 
+\let\poplastnode\relax
+
+\def\pushlastnode
+  {\ifdim\lastskip=\zeropoint
+     \ifnum\lastpenalty=\zerocount
+       \ifnum\lastkern=\zerocount
+         \let\poplastnode\relax
+       \else
+         \edef\poplastnode{\kern\the\lastkern\relax}\kern-\lastkern % untested
+       \fi
+     \else
+       \edef\poplastnode{\penalty\the\lastpenalty\relax}\nobreak % untested
+     \fi
+   \else
+     \edef\poplastnode{\vskip\the\lastskip\relax}\vskip-\lastskip % \removelastskip
+   \fi}
+
 %D The dreadful sequence \type {\bgroup} \unknown\
 %D \type {\carryoverpar} \unknown\ \type {\egroup} is needed
 %D when for instance sidefloats are used in combination with
@@ -126,9 +143,9 @@
 
 \def\setupspecifiedinterlinespace[#1]%
   {\getparameters[\??it][#1]%
-   \scratchdimen0\@@ithoogte\s!pt
-   \advance\scratchdimen 0\@@itdiepte\s!pt
-   \ifdim\scratchdimen>1\s!pt
+   \scratchdimen0\@@ithoogte\points
+   \advance\scratchdimen 0\@@itdiepte\points
+   \ifdim\scratchdimen>\onepoint
      \showmessage\m!layouts{10}{\@@ithoogte,\@@itdiepte}%
      \let\@@ithoogte\strutheightfactor
      \let\@@itdiepte\strutdepthfactor
@@ -178,6 +195,8 @@
 % \type{\normalskipamount} equals the current baseline
 % distance.
 
+% can be conditionals
+
 \newif\ifblankoreset        \blankoresetfalse
 \newif\ifblankoblokkeer     \blankoblokkeerfalse
 \newif\ifblankogeenwit      \blankogeenwitfalse
@@ -185,6 +204,7 @@
 \newif\ifblankoflexibel     \blankoflexibeltrue
 \newif\ifblankobuiten
 \newif\ifblankoforceer
+\newif\ifblankogoback
 
 \newskip\blankoskip         \blankoskip=\bigskipamount
 \newskip\blankoskipamount
@@ -437,7 +457,7 @@
 \defineblankmethod [\v!reset      ]{\global\blankoresettrue}
 \defineblankmethod [\v!flexibel   ]{\global\lokaalblankoflexibeltrue}
 \defineblankmethod [\v!vast       ]{\global\lokaalblankovasttrue}
-\defineblankmethod [\v!back       ]{\geenblanko}
+\defineblankmethod [\v!back       ]{\global\blankogobacktrue} % {\geenblanko}
 \defineblankmethod [\v!halveregel ]{\ifgridsnapping\global\fuzzyvskiptrue\fi
                                     \global\advance\blankoskip .5\lineheight}
 
@@ -538,6 +558,220 @@
 
 \newsignal\noblanksignal
 
+% \def\doinhibitblank
+%   {\kern\noblanksignal}
+
+% \def\inhibitblank% the fast, local way
+%   {\endgraf\ifvmode\prevdepth\newprevdepth\fi}
+
+% \def\docomplexdoblanko[#1]% pas op \relax's zijn nodig ivm volgende \if
+%   {\global\blankoresetfalse
+%    \global\blankoblokkeerfalse
+%    \global\blankogeenwitfalse
+%    \global\lokaalblankoflexibelfalse
+%    \global\lokaalblankovastfalse
+%    \global\blankoskip\zeropoint
+%    \global\blankoforceerfalse
+%    \global\blankogobackfalse
+%    \blankobuitenfalse
+%    \expanded{\rawprocesscommalist[#1]}\doblanko
+%    \ifdim\blankoskip=\zeropoint\relax
+%      \iflokaalblankoflexibel
+%        \doglobal\advance\blankoskip \currentblanko
+%      \else\iflokaalblankovast
+%        \doglobal\advance\blankoskip \currentblanko
+%      \fi\fi
+%    \fi
+%    \ifblankobuiten
+%    \else
+%      \par
+%      \ifvmode
+%        \ifblankogoback
+%          \removelastskip
+%        \fi
+%        \ifblankoforceer
+%          % dit gaat mis in pos fonts
+%          % \ifdim\prevdepth>\zeropoint\else ...
+%          % -1000pt signals top of page or column (\ejectcolumn)
+%          \bgroup\forgeteverypar\verticalstrut\egroup\kern-\struttotal
+%        \fi
+%        \ifblankoblokkeer
+%          \global\doeblankofalse
+%          \ifgridsnapping
+%            \ifdim\prevdepth<\zeropoint
+%              % brrr
+%            \else
+%              % dirty trick: smaller blanks are ignored after
+%              % a larger one, so 10 lines is probably safe; first make
+%              % sure that we honor penalties
+%              \scratchcounter\lastpenalty
+%              % now comes the trick (cross our fingers that this works
+%              % well in multi columns; maybe an ifinner test is needed
+%              % \vskip-10\lineheight
+%              %    \ifnum\scratchcounter=\zerocount \else \penalty\lastpenalty \fi
+%              %    \vskip 10\lineheight
+%              % allas, this leads to overfull pages, so we try this:
+%              \kern-\noblanksignal
+%              \ifnum\scratchcounter=\zerocount
+%              \else
+%                \penalty\lastpenalty
+%              \fi
+%              \kern\noblanksignal
+%              % end-of-dirty-trick
+%            \fi
+%          \else
+%            \ifdim\prevdepth<\zeropoint
+%              % brrr
+%            \else
+%              % ensure at least a proper prevdepth, this should be
+%              % an option
+%              \vskip-\prevdepth
+%              \vskip\strutdepth
+%              \prevdepth\strutdepth
+%            \fi
+%            % the old crappy piece of code
+%            \edef\oldprevdepth{\the\prevdepth}%
+%            \prevdepth\newprevdepth
+%          \fi
+%        \else
+%          \global\doeblankotrue
+%        \fi
+%        \ifblankoreset
+%          \global\doeblankotrue
+%          \ifgridsnapping
+%             % let's play safe and not fool around with the depth, if
+%             % only because it took a lot of effort to sort out the grid
+%             % stuff in the first place
+%          \else
+%            \ifdim\prevdepth=\newprevdepth
+%              \prevdepth\oldprevdepth
+%            \fi
+%          \fi
+%        \fi
+%        \ifdoeblanko
+%          \ifdim1\lastskip<1\blankoskip\relax
+%            % else when \blanko[2*groot] + \blanko[3*groot] with parskip
+%            % equaling 1*groot, gives a groot=\parskip so adding a small
+%            % value makes it distinguishable; can also be done at parskip
+%            % setting time (better)
+%            \global\advance\blankoskip \mindimen\relax % = skip
+%            % test this on 2* + 3* and parskip groot
+%            \ifblankogeenwit
+%              \global\advance\blankoskip -\parskip
+%            \else
+%              \ifdim\lastskip=\parskip
+%              \else  % force this due to previous comment
+%                \ifdim\parskip>\zeropoint\relax
+%                  \ifdim\blankoskip<\parskip\relax
+%                    \global\blankoskip\zeropoint
+%                  \else
+%                    \global\advance\blankoskip -\parskip
+%                  \fi
+%                \fi
+%              \fi
+%            \fi
+%            \ifblankoflexibel \else
+%              \blankoskip1\blankoskip
+%            \fi
+%            \iflokaalblankovast
+%              \blankoskip1\blankoskip
+%            \fi
+%            \iflokaalblankoflexibel
+%              \blankoskip1\blankoskip
+%                \!!plus\skipgluefactor\blankoskip
+%                \!!minus\skipgluefactor\blankoskip
+%            \fi
+%            \ifdim\lastkern=\noblanksignal % controled and grid
+%              \global\doeblankofalse
+%            \else\ifgridsnapping\else\ifdim\prevdepth=\newprevdepth
+%              \global\doeblankofalse
+%            \fi\fi\fi
+%            \ifdoeblanko
+%              \iffuzzyvskip
+%                \removelastfuzzyvskip
+%                \fuzzyvskip\blankoskip\relax
+%              \else
+%                \removelastskip
+%                \vskip\blankoskip\relax
+%              \fi
+%            \fi
+%          \else
+%            \iffuzzyvskip
+%              \removelastfuzzyvskip
+%              \fuzzyvskip\blankoskip\relax
+%            \else
+%              % new, test this on pascal
+%              \ifdim\blankoskip<\zeropoint
+%                \advance\blankoskip-\lastskip
+%                \removelastskip
+%                \ifdim\blankoskip>\zeropoint
+%                  \vskip\blankoskip
+%                \else
+%                  \vskip\zeropoint
+%                \fi
+%              \else
+%                % also new
+%                \ifdim\blankoskip=\zeropoint
+%                  \ifblankogeenwit
+%                    \geenwitruimte
+%                  \fi
+%                \fi
+%              \fi
+%            \fi
+%          \fi
+%        \fi
+%      \fi
+%    \fi
+%    \global\fuzzyvskipfalse
+%    \presetindentation}
+
+% goback was broken:
+
+% \def\doinhibitblank
+%   {\kern\noblanksignal}
+
+% \def\inhibitblank% the fast, local way
+%   {\endgraf\ifvmode\prevdepth\newprevdepth\fi}
+
+% problem: we cannot look back in the mvl so we need 3 kinds of signals
+
+\def\noblankpsignal{1010101}
+
+\def\inhibitgridblank % was doinhibitblank
+  {\ifnum\lastpenalty<10000
+     \kern-\noblanksignal % new
+     \kern \noblanksignal
+   \else
+     \penalty\noblankpsignal
+   \fi}
+
+\def\inhibittextblank % was inhibitblank
+  {\endgraf
+   \ifvmode
+     \prevdepth\newprevdepth
+   \fi}
+
+% new macro
+%
+% \def\inhibitblank % need some work
+%   {\endgraf
+%    \ifvmode
+%      \ifgridsnapping
+%        \inhibitgridblank
+%      \else
+%        % this one spoils the grid
+%        \inhibittextblank
+%      \fi
+%    \fi}
+
+\def\doinhibitblank{\inhibitgridblank}
+\def\inhibitblank  {\inhibittextblank}
+
+% will become obsolete
+
+\ifx\undefined\savedlastskip    \newskip \savedlastskip    \fi
+\ifx\undefined\savedlastpenalty \newcount\savedlastpenalty \fi
+
 \def\docomplexdoblanko[#1]% pas op \relax's zijn nodig ivm volgende \if
   {\global\blankoresetfalse
    \global\blankoblokkeerfalse
@@ -546,6 +780,7 @@
    \global\lokaalblankovastfalse
    \global\blankoskip\zeropoint
    \global\blankoforceerfalse
+   \global\blankogobackfalse
    \blankobuitenfalse
    \expanded{\rawprocesscommalist[#1]}\doblanko
    \ifdim\blankoskip=\zeropoint\relax
@@ -558,34 +793,40 @@
    \ifblankobuiten
    \else
      \par
-     \ifvmode          %in pos fonts gaat dit mis
-       \ifblankoforceer%\ifdim\prevdepth>\zeropoint\else
+     \ifvmode
+       \ifblankogoback
+         \ifdim\lastskip>\zeropoint \vskip-\lastskip \fi
+           \savedlastskip\zeropoint
+         \else\ifdim\lastskip>\zeropoint
+           \savedlastskip\lastskip
+         \else % todo: lastnode, dan namelijk geen skip !
+           \savedlastskip\zeropoint
+       \fi\fi
+       \ifblankoforceer
+         % dit gaat mis in pos fonts
+         % \ifdim\prevdepth>\zeropoint\else ...
          % -1000pt signals top of page or column (\ejectcolumn)
          \bgroup\forgeteverypar\verticalstrut\egroup\kern-\struttotal
+         \savedlastskip\zeropoint
        \fi
+\savedlastpenalty\lastpenalty
        \ifblankoblokkeer
          \global\doeblankofalse
          \ifgridsnapping
            \ifdim\prevdepth<\zeropoint
              % brrr
            \else
-             % dirty trick: smaller blanks are ignored after
-             % a larger one, so 10 lines is probably safe; first make
-             % sure that we honor penalties
-             \scratchcounter\lastpenalty
-             % now comes the trick (cross our fingers that this works
-             % well in multi columns; maybe an ifinner test is needed
-             % \vskip-10\lineheight
-             %    \ifnum\scratchcounter=\zerocount \else \penalty\lastpenalty \fi
-             %    \vskip 10\lineheight
-             % allas, this leads to overfull pages, so we try this:
-             \kern-\noblanksignal
-             \ifnum\scratchcounter=\zerocount
-             \else
-               \penalty\lastpenalty
-             \fi
-             \kern\noblanksignal
-             % end-of-dirty-trick
+             % dirty trick: smaller blanks are ignored after a
+             % larger one, so 10 lines is probably safe; we need
+             % to make sure that we honor penalties; here comes the
+             % trick (cross our fingers that this works well in
+             % multi columns; maybe an ifinner test is needed
+             %  \scratchcounter\lastpenalty
+             %  \vskip-10\lineheight
+             %  \ifnum\scratchcounter=\zerocount \else \penalty\lastpenalty \fi
+             %  \vskip 10\lineheight
+             % alas, this leads to overfull pages, so we try this:
+             \inhibitgridblank
            \fi
          \else
            \ifdim\prevdepth<\zeropoint
@@ -599,7 +840,7 @@
            \fi
            % the old crappy piece of code
            \edef\oldprevdepth{\the\prevdepth}%
-           \prevdepth\newprevdepth
+           \prevdepth\newprevdepth % == \inhibittextblank
          \fi
        \else
          \global\doeblankotrue
@@ -617,7 +858,7 @@
          \fi
        \fi
        \ifdoeblanko
-         \ifdim1\lastskip<1\blankoskip\relax
+         \ifdim1\savedlastskip<1\blankoskip\relax
            % else when \blanko[2*groot] + \blanko[3*groot] with parskip
            % equaling 1*groot, gives a groot=\parskip so adding a small
            % value makes it distinguishable; can also be done at parskip
@@ -627,7 +868,7 @@
            \ifblankogeenwit
              \global\advance\blankoskip -\parskip
            \else
-             \ifdim\lastskip=\parskip
+             \ifdim\savedlastskip=\parskip
              \else  % force this due to previous comment
                \ifdim\parskip>\zeropoint\relax
                  \ifdim\blankoskip<\parskip\relax
@@ -649,28 +890,21 @@
                \!!plus\skipgluefactor\blankoskip
                \!!minus\skipgluefactor\blankoskip
            \fi
-%           \ifgridsnapping
-%             \ifdim\lastkern=\noblanksignal
-%               \global\doeblankofalse
-%             \fi
-%           \else
-%             \ifdim\prevdepth=\newprevdepth
-%               \global\doeblankofalse
-%             \fi
-%           \fi
-%
-           \ifdim\lastkern=\noblanksignal % controled and grid
+           \ifdim\lastkern=\noblanksignal\relax % controlled and grid
+             \global\doeblankofalse
+           \else\ifnum\savedlastpenalty=\noblankpsignal\relax % controlled and grid
              \global\doeblankofalse
            \else\ifgridsnapping\else\ifdim\prevdepth=\newprevdepth
              \global\doeblankofalse
-           \fi\fi\fi
-%
+           \fi\fi\fi\fi
            \ifdoeblanko
              \iffuzzyvskip
                \removelastfuzzyvskip
                \fuzzyvskip\blankoskip\relax
              \else
-               \removelastskip
+               \relax\ifdim\savedlastskip=\zeropoint\else
+                 \vskip-\savedlastskip
+               \fi
                \vskip\blankoskip\relax
              \fi
            \fi
@@ -681,8 +915,10 @@
            \else
              % new, test this on pascal
              \ifdim\blankoskip<\zeropoint
-               \advance\blankoskip-\lastskip
-               \removelastskip
+               \relax\ifdim\savedlastskip=\zeropoint\else
+                 \advance\blankoskip-\savedlastskip
+                 \vskip-\savedlastskip
+               \fi
                \ifdim\blankoskip>\zeropoint
                  \vskip\blankoskip
                \else
@@ -703,9 +939,6 @@
    \fi
    \global\fuzzyvskipfalse
    \presetindentation}
-
-\def\doinhibitblank
-  {\kern\noblanksignal}
 
 %D For a long time we had:
 %D
@@ -818,9 +1051,6 @@
       \else
         \noexpand\blankoflexibelfalse
       \fi}}
-
-\def\inhibitblank% the fast, local way
-  {\endgraf\ifvmode\prevdepth\newprevdepth\fi}
 
 %D Now.
 
@@ -1262,7 +1492,7 @@
 
 \newif\ifopelkaar
 
-\def\noparskipsignal {0.00001pt}
+\newsignal \noparskipsignal % \def\noparskipsignal {0.00001pt}
 \def\lastdoneparskip {0pt}
 
 \def\startopelkaar
@@ -1433,14 +1663,26 @@
 % korpsgrootte 12pt is en (2) de fonts nog niet geladen zijn
 % en de instellingen bij het laden nogmaals plaatsvinden.
 
+% \def\topskipcorrection
+%   {\ifdim\topskip>\openstrutheight
+%      % == \vskip\topskipgap
+%      \vskip\topskip
+%      \vskip-\openstrutheight
+%    \fi
+%    \verticalstrut
+%    \vskip-\struttotal}
+
 \def\topskipcorrection
+  {\simpletopskipcorrection
+   \vskip-\struttotal
+   \verticalstrut}
+
+\def\simpletopskipcorrection
   {\ifdim\topskip>\openstrutheight
      % == \vskip\topskipgap
      \vskip\topskip
      \vskip-\openstrutheight
-   \fi
-   \verticalstrut
-   \vskip-\struttotal}
+   \fi}
 
 \def\settopskip % the extra test is needed for the lbr family
   {\topskip\systemtopskipfactor\globalbodyfontsize
@@ -1472,19 +1714,19 @@
    \normalbaselineskip\openlineheight
      \!!plus\baselinegluefactor\openlineheight
      \!!minus\baselinegluefactor\openlineheight
-   \normallineskip\minimallinedistance\relax % \!!onepoint\relax
+   \normallineskip\minimallinedistance\relax % \onepoint\relax
    \normallineskiplimit\zeropoint\relax
    \normalbaselines}
 
 \def\setspacingfactor#1\to#2\by#3\\%
-  {\strutdimen#2\s!pt
+  {\strutdimen#2\points
    \strutdimen#3\strutdimen
    \edef#1{\withoutpt{\the\strutdimen}}}
 
 \def\spacing#1%
   {\ifgridsnapping
     %\doifnot{#1}{1}{\showmessage\m!layouts{11}{#1}}%
-     \ifdim#1\s!pt=1\s!pt\else\showmessage\m!layouts{11}{#1}\fi
+     \ifdim#1\points=\onepoint\else\showmessage\m!layouts{11}{#1}\fi
      \edef\spacingfactor{1}%
    \else
      \edef\spacingfactor{#1}%
@@ -1597,7 +1839,7 @@
 %D \NC              \NC a normal strut             \NC {\showstruts\setupstrut\strut}      \NC \NR
 %D \stoptabulatie
 
-\def\setupstrut%
+\def\setupstrut
   {\dosingleempty\dosetupstrut}
 
 \def\dosetupstrut[#1]% yet undocumented, todo: fontstrut
@@ -1703,7 +1945,7 @@
 \let\pseudoendstrut\removeunwantedspaces
 
 \def\resetteststrut
-  {\let\strutwidth\!!zeropoint
+  {\let\strutwidth\zeropoint
    \setstrut}
 
 \ifx\setfontparameters\undefined
@@ -1772,7 +2014,7 @@
 % expands to \widowpenalty \maxdimen \maxdimen \zeropoint
 
 \def\setpenalties#1#2#3%
-  {#1\numexpr(#2+1)\space\doexpandedrecurse{\numexpr(#2)}{#3}\zeropoint\relax}
+  {#1\numexpr(#2+1)\space\doexpandedrecurse{\numexpr(#2)}{#3}\zerocount\relax}
 
 \def\doexpandedrecurse#1#2%
   {\ifnum#1>\zerocount#2\@EA\doexpandedrecurse\@EA{\the\numexpr(#1-1)}{#2}\fi}
@@ -1797,6 +2039,8 @@
 %    \fi}
 %
 % However, we will use setups:
+
+% to be documented
 
 \def\setdefaultpenalties
   {\setups[\systemsetupsprefix\s!default]}
@@ -2027,6 +2271,7 @@
   {\let\raggedcommand\relax
    \let\raggedtopcommand\empty
    \let\raggedbottomcommand\empty
+   \chardef\raggedoneliner\zerocount
    \doifsomething{#1}
      {\doifinsetelse\v!ruim {#1}\!!doneatrue\!!doneafalse
       \doifinsetelse\v!breed{#1}\!!donebtrue\!!donebfalse
@@ -2092,6 +2337,34 @@
    \doifrightpageelse
      {\getvalue{\@@ragged@@command\v!links}}
      {\getvalue{\@@ragged@@command\v!rechts}}}
+
+\chardef\raggedoneliner\zerocount
+
+\setvalue{\@@ragged@@command\v!regel}%
+  {\chardef\raggedoneliner\plusone}
+
+\def\@@startraggedoneliner
+  {\ifcase\raggedoneliner\else
+     \dontleavehmode\hbox\bgroup
+     \ifcase\raggedstatus\or\hss\or\hss\fi
+     \ignorespaces
+     \bgroup
+     \aftergroup\removeunwantedspaces
+   \fi}
+
+\def\@@stopraggedoneliner
+  {\ifcase\raggedoneliner\else
+     \egroup
+     \ifcase\raggedstatus\or\hss\or\or\hss\fi
+     \egroup
+     \ignorespaces
+   \fi}
+
+\def\@@handleoneliner
+  {\ifcase\raggedoneliner\else
+     \@@startraggedoneliner
+     \aftergroup\@@stopraggedoneliner
+   \fi}
 
 % Nodig i.v.m. inspringen eerste alineas
 
@@ -2355,8 +2628,10 @@
      \let\dostopattributes\@@nostopattributes
    \fi
    \ifcsname#1#2\endcsname
-     \@EAEAEA\doconvertfont\@EA\@EA\csname#1#2\endcsname
+   % \@EAEAEA\doconvertfont\@EA\@EA\csname#1#2\endcsname
+     \@EA\doconvertfont\csname#1#2\@EA\endcsname
    \fi}
+
 
 \unexpanded\def\@@dostopattributes
   {\doglobalstopcolor
@@ -2382,7 +2657,8 @@
 
 \unexpanded\def\dosetfontattribute#1#2%
   {\ifcsname#1#2\endcsname
-     \@EAEAEA\doconvertfont\@EA\@EA\csname#1#2\endcsname
+   % \@EAEAEA\doconvertfont\@EA\@EA\csname#1#2\endcsname
+     \@EA\doconvertfont\csname#1#2\@EA\endcsname
    \fi\empty}
 
 \endETEX
@@ -2405,7 +2681,8 @@
      \let\dostopattributes\endgroup
    \fi
    \ifcsname#1#2\endcsname
-     \@EAEAEA\doconvertfont\@EA\@EA\csname#1#2\endcsname
+   % \@EAEAEA\doconvertfont\@EA\@EA\csname#1#2\endcsname
+     \@EA\doconvertfont\csname#1#2\@EA\endcsname
    \fi
    {#4}%
    \dostopattributes}
@@ -2816,6 +3093,14 @@
 
 \newif\if@@asragged \@@asraggedtrue % old method
 
+
+% todo
+%
+% \setuplayout[grid=yes,lines=44] \showgrid
+% \starttext
+% test \vfill test \endgraf \strut \endgraf \vskip-\lineheight \removedepth \pagina test
+% \stoptext
+
 \def\dodosetupalign[#1]%
   {\doifinsetelse\v!ruim {#1}\!!doneatrue\!!doneafalse
    \doifinsetelse\v!breed{#1}\!!donebtrue\!!donebfalse
@@ -3202,14 +3487,39 @@
 
 \let\normalvadjust\vadjust
 
+% \def\graphicvadjust % bad, those low level color calls here
+%   {\dowithnextbox
+%      {\normalvadjust
+%         {\dostartgraphicgroup
+%          \localstarttextcolor
+%          \unvbox\nextbox
+%          \localstoptextcolor
+%          \dostopgraphicgroup}}%
+%      \vbox}
+
+% test this prikkels/pascal margin text before heads (mode
+% 1) as well as uitwerkingen (mode 2)
+
+%chardef\graphicvadjustmode=0 % fake
+%chardef\graphicvadjustmode=1 % normal
+\chardef\graphicvadjustmode=2 % normal + compensate (== default)
+
 \def\graphicvadjust % bad, those low level color calls here
-  {\dowithnextbox
-     {\normalvadjust
+  {\dowithnextboxcontent
+     {\forgetall}
+     {\ifcase\graphicvadjustmode \@EA \fakedvadjust \else \@EA\normalvadjust \fi
         {\dostartgraphicgroup
          \localstarttextcolor
          \unvbox\nextbox
          \localstoptextcolor
-         \dostopgraphicgroup}}%
+         \dostopgraphicgroup
+         \ifcase\graphicvadjustmode \or \or
+           % corrects for one line paragraphs
+           \nointerlineskip
+           \kern-\struttotal
+           \nointerlineskip
+           \verticalstrut
+         \fi}}%
      \vbox}
 
 %D This works only in a properly strutted line, and is meant

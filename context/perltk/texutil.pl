@@ -40,7 +40,7 @@ eval '(exit $?0)' && eval 'exec perl -S $0 ${1+"$@"}' && eval 'exec perl -S $0 $
 #D binary version, like scanning illustrations other than \EPS.
 #D I would suggest to keep an eye on the version number:
 
-$Program = "TeXUtil 8.0 - ConTeXt / PRAGMA ADE 1992-2003" ;
+$Program = "TeXUtil 8.1 - ConTeXt / PRAGMA ADE 1992-2003" ;
 
 #D By the way, this is my first \PERL\ script, which means
 #D that it will be improved as soon as I find new and/or more
@@ -1208,19 +1208,34 @@ my $RegSep = "$SectionSeparator$SectionSeparator" ;
 sub HandleRegister # the } { makes sure that local {} is ok
   { ($SecondTag, $RestOfLine) = split(/ /, $RestOfLine, 2) ;
     ++$NOfEntries ;
+    #~ if ($SecondTag eq "s")
+      #~ { ($Class, $Location, $Key, $Entry, $SeeToo, $Page ) =
+           #~ split(/} \{/, $RestOfLine) ;
+        #~ chop $Page ;
+        #~ $Class = substr $Class, 1 ;
+        #~ $RealPage = 0 }
+    #~ else
+      #~ { ($Class, $Location, $Key, $Entry, $Page, $RealPage ) =
+           #~ split(/} \{/, $RestOfLine) ;
+        #~ chop $RealPage ;
+        #~ $Class = substr $Class, 1 ;
+        #~ $SeeToo = "" }
     if ($SecondTag eq "s")
-      { ($Class, $Location, $Key, $Entry, $SeeToo, $Page ) =
-           split(/} \{/, $RestOfLine) ;
-        chop $Page ;
-        $Class = substr $Class, 1 ;
-        $RealPage = 0 }
+      { if ($RestOfLine =~ /^\s*(.*?)\}\s\{(.*?)\}\s\{(.*?)\}\s\{(.*)\}\s\{(.*?)\}\s\{(.*?)\s*$/o)
+          { ($Class, $Location, $Key, $Entry, $SeeToo, $Page ) = ($1,$2,$3,$4,$5,$6) ;
+             chop $Page ;
+             $Class = substr $Class, 1 ;
+             $RealPage = 0 }
+        else
+          { return } }
     else
-      { ($Class, $Location, $Key, $Entry, $Page, $RealPage ) =
-           split(/} \{/, $RestOfLine) ;
-        chop $RealPage ;
-        $Class = substr $Class, 1 ;
-        $SeeToo = "" }
-    #
+      { if ($RestOfLine =~ /^\s*(.*?)\}\s\{(.*?)\}\s\{(.*?)\}\s\{(.*)\}\s\{(.*?)\}\s\{(.*?)\s*$/o)
+          { ($Class, $Location, $Key, $Entry, $Page, $RealPage ) = ($1,$2,$3,$4,$5,$6) ;
+            chop $RealPage ;
+            $Class = substr $Class, 1 ;
+            $SeeToo = "" }
+        else
+          { return } }
     $_ = $Key ;
     if (/$RegSep/)
       { ($PageHow,$Key) = split (/$RegSep/) }

@@ -377,10 +377,10 @@
            \global\printpapierhoogte\getvalue{\??pp##1\c!hoogte}%
            \xdef\printpapersize{##1}}}}%
      \processcommacommand[#2]\docommando
-     \global\setdimentoatleast\papierbreedte     \!!onepoint
-     \global\setdimentoatleast\papierhoogte      \!!onepoint
-     \global\setdimentoatleast\printpapierbreedte\!!onepoint
-     \global\setdimentoatleast\printpapierhoogte \!!onepoint
+     \global\setdimentoatleast\papierbreedte     \onepoint
+     \global\setdimentoatleast\papierhoogte      \onepoint
+     \global\setdimentoatleast\printpapierbreedte\onepoint
+     \global\setdimentoatleast\printpapierhoogte \onepoint
      \ifcase\paperlandscape\else
        \doglobal\swapdimens\papierbreedte\papierhoogte
      \fi
@@ -535,6 +535,10 @@
              % inconsistent specification
            \fi}}%
    \else
+     % beware, when the bodyfont changes (switched) this wil lchange as well; implementing
+     % a global lineheight is tricky: should we take the bodyfont ils or the one set
+     % independent of the bodyfont (before or after a layout spec); way too fuzzy, so we
+     % stick to the current method (after a night of experimenting ...2003/10/13)
      \global\zethoogte\layoutparameter\c!regels\lineheight
      % new, cleaner
      \global\advance\zethoogte-\strutheight
@@ -548,8 +552,8 @@
    \fi
    \rugoffset\layoutparameter\c!rugoffset
    \kopoffset\layoutparameter\c!kopoffset
-   \global\setdimentoatleast\zetbreedte\!!onepoint
-   \global\setdimentoatleast\zethoogte \!!onepoint
+   \global\setdimentoatleast\zetbreedte\onepoint
+   \global\setdimentoatleast\zethoogte \onepoint
    % \checkcurrentlayout % here ?
    \calculatehsizes
    \calculatevsizes
@@ -587,24 +591,44 @@
 
 \appendtoks \checklayout \to \everystarttext
 
+% \def\checkcurrentlayout % public and used in naw, so keep this name
+%   {\ifundefined{\??ly\realfolio\c!status}%
+%      \doifoddpageelse\checkcurrentoddlayout\checkcurrentevenlayout
+%    \else
+%      \doifvalue{\??ly\realfolio\c!status}\v!start
+%        {\edef\currentlayout{\realfolio}\recalculatelayout}%
+%    \fi}
+
+% \def\checkcurrentoddlayout
+%   {\ifundefined{\??ly\v!oneven\c!status}\else
+%      \doifvalue{\??ly\v!oneven\c!status}\v!start
+%        {\let\currentlayout\v!oneven\recalculatelayout}%
+%    \fi}
+
+% \def\checkcurrentevenlayout
+%   {\ifundefined{\??ly\v!even\c!status}\else
+%      \doifvalue{\??ly\v!even\c!status}\v!start
+%        {\let\currentlayout\v!even\recalculatelayout}%
+%    \fi}
+
 \def\checkcurrentlayout % public and used in naw, so keep this name
   {\ifundefined{\??ly\realfolio\c!status}%
      \doifoddpageelse\checkcurrentoddlayout\checkcurrentevenlayout
    \else
      \doifvalue{\??ly\realfolio\c!status}\v!start
-       {\edef\currentlayout{\realfolio}\recalculatelayout}%
+       {\xdef\currentlayout{\realfolio}\recalculatelayout}% new, global
    \fi}
 
 \def\checkcurrentoddlayout
   {\ifundefined{\??ly\v!oneven\c!status}\else
      \doifvalue{\??ly\v!oneven\c!status}\v!start
-       {\let\currentlayout\v!oneven\recalculatelayout}%
+       {\globallet\currentlayout\v!oneven\recalculatelayout}% new, global
    \fi}
 
 \def\checkcurrentevenlayout
   {\ifundefined{\??ly\v!even\c!status}\else
      \doifvalue{\??ly\v!even\c!status}\v!start
-       {\let\currentlayout\v!even\recalculatelayout}%
+       {\globallet\currentlayout\v!even\recalculatelayout}% new, global
    \fi}
 
 \appendtoks \checkcurrentlayout \to \everyaftershipout
@@ -634,14 +658,29 @@
      {\getparameters[\??ly#1][#2]%
       \checkforems[#2]}}
 
+% \def\dosetuplayout[#1][#2]%
+%   {\let\currentlayout\empty
+%    \ifsecondargument
+%      \dodosetuplayout[#1][#2]%
+%    \else\iffirstargument
+%      \doifassignmentelse{#1}
+%        {\dodosetuplayout[][#1]}
+%        {\doifnot{#1}\v!reset{\def\currentlayout{#1}}}%
+%    \fi\fi
+%    \recalculatelayout
+%    \checkcurrentlayout % here ?
+%    \presetcenterpagebox}
+
+% global needed for non-doublesided standardmakeup
+
 \def\dosetuplayout[#1][#2]%
-  {\let\currentlayout\empty
+  {\globallet\currentlayout\empty % new, global
    \ifsecondargument
      \dodosetuplayout[#1][#2]%
    \else\iffirstargument
      \doifassignmentelse{#1}
        {\dodosetuplayout[][#1]}
-       {\doifnot{#1}\v!reset{\def\currentlayout{#1}}}%
+       {\doifnot{#1}\v!reset{\xdef\currentlayout{#1}}}% new, global
    \fi\fi
    \recalculatelayout
    \checkcurrentlayout % here ?
@@ -835,7 +874,7 @@
   {\mirrorpagebodybox{#1}\printmirror}
 
 \def\scalepagebox#1%
-  {\ifdim\@@lyschaal pt=1pt \else
+  {\ifdim\@@lyschaal\points=\onepoint \else
      \setbox#1\vbox
        {\schaal[\c!sx=\@@lyschaal,\c!sy=\@@lyschaal]{\box#1}}%
      \papierbreedte\@@lyschaal\papierbreedte
@@ -847,29 +886,60 @@
      \negatecolorbox{#1}%
    \fi}
 
-\def\pagecutmarksymbol
-  {\the\realpageno}
+\def\pagecutmarksymbol    {\the\realpageno}
+\def\pagecutmarklength    {.5cm}
+\let\pagecutmarktoptext    \empty
+\let\pagecutmarkbottomtext \empty
 
-\def\pagecutmarklength
-  {.5cm}
+% \def\addpagecutmarks#1%
+%   {\doif\@@lymarkering\v!aan
+%      {\let\cutmarksymbol\pagecutmarksymbol
+%       \let\cutmarklength\pagecutmarklength
+%       \makecutbox{#1}}}
 
-\def\addpagecutmarks#1%
-  {\doif\@@lymarkering\v!aan
-     {\let\cutmarksymbol\pagecutmarksymbol
-      \let\cutmarklength\pagecutmarklength
-      \makecutbox{#1}}}
+% \def\addpagecolormarks % #1
+%   {\doifelse\@@lymarkering\v!kleur
+%      {\doaddpagecolormarks\colormarkbox}
+%      {\doifelse\@@lymarkering\v!raster
+%         {\doaddpagecolormarks\rastermarkbox}
+%         {\gobbleoneargument}}}
+
+% \def\doaddpagecolormarks#1#2%
+%   {\let\cutmarksymbol\pagecutmarksymbol
+%    \let\cutmarklength\pagecutmarklength
+%    \makecutbox{#2}%
+%    \ifnum\horizontalcutmarks>2 \chardef\colormarkoffset4 \fi
+%    \ifnum\verticalcutmarks  >2 \chardef\colormarkoffset4 \fi
+%    #1{#2}}
+
+\def\extrapagecutmarkbottomtext
+  {\rlap{\jobname}\hfill\currentdate\space-\space\currenttime\hfill\llap{\realfolio}}
+
+\def\makepagecutbox % #1
+  {\let\cutmarksymbol    \pagecutmarksymbol
+   \let\cutmarklength    \pagecutmarklength
+   \let\cutmarktoptext   \pagecutmarktoptext
+   \let\cutmarkbottomtext\pagecutmarkbottomtext
+   \makecutbox}
+
+\def\addpagecutmarks % #1
+  {\doifelse\@@lymarkering\v!aan
+     \makepagecutbox
+     {\doifelse\@@lymarkering\v!tekst
+        {\let\pagecutmarksymbol\empty
+         \let\pagecutmarkbottomtext\extrapagecutmarkbottomtext
+         \makepagecutbox}
+        \gobbleoneargument}}
 
 \def\addpagecolormarks % #1
   {\doifelse\@@lymarkering\v!kleur
      {\doaddpagecolormarks\colormarkbox}
      {\doifelse\@@lymarkering\v!raster
         {\doaddpagecolormarks\rastermarkbox}
-        {\gobbleoneargument}}}
+        \gobbleoneargument}}
 
 \def\doaddpagecolormarks#1#2%
-  {\let\cutmarksymbol\pagecutmarksymbol
-   \let\cutmarklength\pagecutmarklength
-   \makecutbox{#2}%
+  {\makepagecutbox{#2}%
    \ifnum\horizontalcutmarks>2 \chardef\colormarkoffset4 \fi
    \ifnum\verticalcutmarks  >2 \chardef\colormarkoffset4 \fi
    #1{#2}}
@@ -1115,12 +1185,12 @@
 %D versions.
 
 \def\startlocallayout
-  {\pushmacro\restorepapersize
-   \pushmacro\currentlayout}
+  {\globalpushmacro\restorepapersize
+   \globalpushmacro\currentlayout}
 
 \def\stoplocallayout
-  {\popmacro\currentlayout
-   \popmacro\restorepapersize
+  {\globalpopmacro\currentlayout
+   \globalpopmacro\restorepapersize
    \restorepapersize
    \setuplayout}
 

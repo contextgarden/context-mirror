@@ -1,6 +1,6 @@
 %D \module
 %D   [       file=page-lin, % copied from main-001
-%D        version=1997.03.31, 
+%D        version=1997.03.31,
 %D          title=\CONTEXT\ Core Macros,
 %D       subtitle=Line Numbering,
 %D         author=Hans Hagen,
@@ -13,7 +13,7 @@
 
 \writestatus{loading}{Context Core Macros / Line Numbering}
 
-\unprotect 
+\unprotect
 
 \newif\ifinregels % \newif\ifregelnummersinmarge
 
@@ -54,7 +54,7 @@
          \global\let\afterfirstobeyedline\relax}}%
    \def\obeyedline
      {\par
-      \let\checkindentation\relax % else problems with odd/even 
+      \let\checkindentation\relax % else problems with odd/even
       \afterfirstobeyedline
       \ifdim\lastskip>\zeropoint
         \globallet\@@rglinesteptoggle\!!zerocount
@@ -72,8 +72,8 @@
 % \def\dobetweenthelines%
 %   {\convertcommand \next      \to\!!stringa % very ugly and fuzzy
 %    \convertargument\obeyedline\to\!!stringb % but needed anyway
-%    \ifx\!!stringa\!!stringb                 % but alas, it fails 
-%      \@@rgtussen                            % hopelessly in non 
+%    \ifx\!!stringa\!!stringb                 % but alas, it fails
+%      \@@rgtussen                            % hopelessly in non
 %    \fi}                                     % etex
 
 \def\dobetweenthelines
@@ -89,7 +89,7 @@
 
 % het gebruik van \setlocalreference scheelt een hash entry
 
-\def\dodoshowlinenumber % for use elsewhere, to be extended 
+\def\dodoshowlinenumber % for use elsewhere, to be extended
   {\doschrijfregelnummer
    \global\advance\linenumber \plusone}
 
@@ -103,7 +103,7 @@
 \def\stelregelnummerenin
   {\dosingleargument\dostelregelnummerenin}
 
-\def\dostartnummerenLINE 
+\def\dostartnummerenLINE
   {\EveryPar{\schrijfregelnummer}}
 
 \def\dostopnummerenLINE
@@ -120,20 +120,20 @@
 \newevery \everylinenumber \relax
 
 \def\dodoschrijfregelnummer
-  {% beware of em's, the font is already switched ! 
+  {% beware of em's, the font is already switched !
    \setbox\scratchbox\hbox
      {\setbox0\hbox{\@@rncommando{\regelweergave}}\vsmashbox0%
       \ifcase\linenumberlocation
-        \rlap{\hbox to \@@rnbreedte{\box0\hss}}% was \llap, nog testen !! 
+        \rlap{\hbox to \@@rnbreedte{\box0\hss}}% was \llap, nog testen !!
       \or
         \inleftmargin
-          {\forgetall 
+          {\forgetall
            \doifelse\@@rnbreedte\v!marge
              {\hsize\linkermargebreedte}{\hsize\@@rnbreedte}%
            \alignedline\@@rnuitlijnen\v!rechts{\box0\hskip\@@rnafstand}}%
       \else
         \inrightmargin
-          {\forgetall 
+          {\forgetall
            \doifelse\@@rnbreedte\v!marge
              {\hsize\rechtermargebreedte}{\hsize\@@rnbreedte}%
            \alignedline\@@rnuitlijnen\v!links{\hskip\@@rnafstand\box0}}%
@@ -159,7 +159,7 @@
        %  \v!tekst=>\chardef\linenumberlocation0,
        %\s!unknown=>\chardef\linenumberlocation0,
        %\s!default=>\chardef\linenumberlocation0]%
-   \ifcase\linenumberlocation % text 
+   \ifcase\linenumberlocation % text
      \advance\leftskip \@@rnbreedte\relax
    \fi
    \chardef\@@rn@@rnmethod
@@ -170,26 +170,26 @@
       \v!regel=>\chardef\@@rn@@rnmethod1,
       \v!tekst=>\chardef\@@rn@@rnmethod2,
        \v!file=>\chardef\@@rn@@rnmethod3]%
-   \ifcase\@@rn@@rnmethod % verbatim, line by line 
+   \ifcase\@@rn@@rnmethod % verbatim, line by line
      \inregelstrue
      \let\dostartnummeren\dostartnummerenVERB
      \let\stopregelnummeren\dostopnummerenVERB
      \def\schrijfregelnummer
        {\doschrijfregelnummer
         \global\advance\linenumber \plusone}%
-   \or % text, line by line 
+   \or % text, line by line
      \let\dostartnummeren\dostartnummerenLINE
      \let\stopregelnummeren\dostopnummerenLINE
      \def\schrijfregelnummer
        {\doschrijfregelnummer
         \global\advance\linenumber \plusone}%
-   \or % text, whole lot 
+   \or % text, whole lot
      \let\dostartnummeren\dostartnummerenPAR
      \let\stopregelnummeren\dostopnummerenPAR
      \def\schrijfregelnummer
        {\global\advance\linenumber \minusone
         \doschrijfregelnummer}%
-   \or % verbatim, selective line by line 
+   \or % verbatim, selective line by line
      \inregelstrue
      \let\dostartnummeren\dostartnummerenVERB
      \let\stopregelnummeren\dostopnummerenVERB
@@ -229,13 +229,13 @@
 %   {\doifinstringelse{--}{#1}
 %      {\labeltext{\v!regels}}
 %      {\labeltext{\v!regel}}}
-% 
+%
 % \def\inregel#1[#2]%
 %   {\doifelsenothing{#1}
 %      {\in{\inregellabel{\currenttextreference}}[\@@rnprefix#2]}
 %      {\in{#1}[\@@rnprefix#2]}}
 %
-% double labels: 
+% double labels:
 
 \def\inregel#1[#2]%
   {\doifelsenothing{#1}
@@ -389,12 +389,12 @@
      [\v!start=>\let\showparagraphnumber\doshowparagraphnumberA,
        \v!stop=>\let\showparagraphnumber\relax,
       \v!regel=>\let\showparagraphnumber\doshowparagraphnumberB,
-      \v!reset=>\global\internalparagraphnumber\zerocount 
+      \v!reset=>\global\internalparagraphnumber\zerocount
                 \let\showparagraphnumber\doshowparagraphnumberA]}
 
 \def\dodoshowparagraphnumber
   {\global\advance\internalparagraphnumber \plusone
-   \inleftmargin % \tf normalizes em 
+   \inleftmargin % \tf normalizes em
      {\tf{\doattributes\??ph\c!letter\c!kleur{\the\internalparagraphnumber}}%
       \kern\@@phafstand}}
 
@@ -410,162 +410,6 @@
      \doshowparagraphnumberA
    \fi}
 
-% new, to be documented  
-
-\newcounter\linenotecounter
-\newtoks   \collectedlinenotes
-\newif     \iftracelinenotes
-
-\appendtoks
-  \the\collectedlinenotes
-\to \everylinenumber 
-
-\appendtoks 
-  \global\collectedlinenotes\emptytoks
-\to \beforeeverylinenumbering
-
-\def\handlelinenote#1#2%
-  {\bgroup
-   \expanded{\beforesplitstring#1}\at--\to\linenotelinenumber
-   \ifnum\linenotelinenumber=\linenumber\relax
-     % todo: \onlyfootnote{#1}{#2}% == configurable 
-     \setupfootnotes[\c!nummercommando=\gobbleoneargument]%
-     \footnotetext{#1: #2}% 
-   \fi
-   \egroup}
-
-\def\tracedlinenote#1%
-  {\iftracelinenotes
-     \hbox to \zeropoint
-       {\forgetall
-        \localcolortrue
-        \hsize\zeropoint
-        \hss
-        \vbox to \strutheight{\llap{\red\infofont\setstrut\linenotecounter}\vss}%
-        {\blue\vl}%
-        \vbox to \strutheight{\rlap{\red\infofont\setstrut#1}\vss}%
-        \hss}%
-      \prewordbreak
-   \fi}
-
-\def\linenote#1%
-  {\doglobal\increment\linenotecounter
-   \doifreferencefoundelse{\??rr:\linenotecounter}%
-     {\doglobal\@EA\appendtoks\@EA\handlelinenote\@EA
-        {\currenttextreference}{#1}\to\collectedlinenotes}
-     \donothing
-   \tracedlinenote\empty
-   \expanded{\eenregel[\??rr:\linenotecounter]}}
-
-\def\startlinenote[#1]#2%
-  {\doifreferencefoundelse{\??rr:#1}%
-     {\doglobal\@EA\appendtoks\@EA\handlelinenote\@EA
-        {\currenttextreference}{#2}\to\collectedlinenotes}
-     \donothing
-   \tracedlinenote{#1}%
-   \startregel[\??rr:#1]}
-
-\def\stoplinenote[#1]%
-  {\stopregel[\??rr:#1]}
-
-% \startbuffer[test]
-% \startlinenumbering[100]
-% test \linenote {oeps} test test test test test test
-% test \startlinenote [well] {oeps} test test test test test test
-% test \linenote {oeps} test test test test test test
-% test \linenote {oeps} test test test test test test
-% test \linenote {oeps} test test test test test test
-% test \linenote {oeps} test test test test test test
-% test \stoplinenote [well] test test test test test test 
-% \stoplinenumbering
-% \stopbuffer
-% 
-% {\typebuffer[test] \getbuffer[test]} \page
-% 
-% \startbuffer[setup]
-% \setuplinenumbering
-%   [align=left]
-% \stopbuffer
-% 
-% {\typebuffer[setup] \getbuffer[setup,test]} \page
-% 
-% \startbuffer[setup]
-% \setuplinenumbering
-%   [width=1em,
-%    align=left]
-% \stopbuffer
-% 
-% {\typebuffer[setup] \getbuffer[setup,test]} \page
-% 
-% \startbuffer[setup]
-% \setuplinenumbering
-%   [width=2em,
-%    distance=.5em,
-%    align=left]
-% \stopbuffer
-% 
-% {\typebuffer[setup] \getbuffer[setup,test]} \page
-% 
-% \startbuffer[setup]
-% \setuplinenumbering
-%   [width=2em,
-%    align=middle]
-% \stopbuffer
-% 
-% {\typebuffer[setup] \getbuffer[setup,test]} \page
-% 
-% \startbuffer[setup]
-% \setuplinenumbering
-%   [conversion=romannumerals,
-%    start=1,
-%    step=1,
-%    location=text,
-%    style=slanted,
-%    color=blue,
-%    width=1.5em]
-% \stopbuffer
-% 
-% {\typebuffer[setup] \startnarrower\getbuffer[setup,test]\stopnarrower} \page
-% 
-% \startbuffer[setup]
-% \setuplinenumbering
-%   [width=4em,
-%    left=--,
-%    right=--,
-%    align=middle]
-% \stopbuffer
-% 
-% {\typebuffer[setup] \getbuffer[setup,test]} \page
-% 
-% \startbuffer[setup-1]
-% \setuplinenumbering
-%   [style=\bfxx,
-%    command=\WatchThis]
-% \stopbuffer
-% 
-% \startbuffer[setup-2]
-% \def\WatchThis#1%
-%   {\ifodd\linenumber
-%      \definecolor[linecolor][red]%
-%    \else
-%      \definecolor[linecolor][green]%
-%    \fi
-%    \inframed
-%      [offset=1pt,frame=off,background=color,backgroundcolor=linecolor]
-%      {#1}}
-% \stopbuffer
-% 
-% {\typebuffer[setup-1,setup-2] \getbuffer[setup-1,setup-2,test]} \page
-% 
-% \startbuffer[setup-1]
-% \setuplinenumbering
-%   [location=inright,
-%    style=\bfxx,
-%    command=\WatchThis]
-% \stopbuffer
-% 
-% {\typebuffer[setup-1] \getbuffer[setup-1,setup-2,test]} \page
-
 \stelregelnummerenin
   [\c!methode=,
    \c!conversie=\v!cijfers,
@@ -578,7 +422,7 @@
    \c!prefix=,
    \c!refereren=\v!aan]
 
-% new 
+% new
 
 \stelregelnummerenin
   [\c!breedte=\ifcase\linenumberlocation2em\else\v!marge\fi,
@@ -592,7 +436,7 @@
   [\c!status=\v!stop,
    \c!letter=,
    \c!kleur=,
-   \c!afstand=\ifcase\linenumberlocation2em\else\!!zeropoint\fi] 
+   \c!afstand=\ifcase\linenumberlocation2em\else\!!zeropoint\fi]
 
 \stelregelsin
   [\c!voor=\blanko,
@@ -600,4 +444,4 @@
    \c!tussen=\blanko,
    \c!inspringen=\v!nee]
 
-\protect \endinput 
+\protect \endinput

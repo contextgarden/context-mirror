@@ -18,14 +18,14 @@
 \unprotect
 
 \gdef\dosetshowfonttitle#1%
-  {\tabskip\!!zeropoint
-   \parindent\!!zeropoint
+  {\tabskip\zeropoint
+   \parindent\zeropoint
    \setlocalhsize
    \doifelsenothing{#1}
      {\def\title{[\the\korpsgrootte]}}
      {\switchtobodyfont[#1]\def\title{[#1]}}
-   \doifsomething{\fontclass}
-     {\doifnot{[\fontclass]}{\title}
+   \doifsomething\fontclass
+     {\doifnot{[\fontclass]}\title
         {\edef\title{[\fontclass]\space\title}}}}
 
 \gdef\showbodyfont%
@@ -179,7 +179,7 @@
    \stopoverlay
    \nointerlineskip
    \vskip2pt
-   \edef\ascii % \noexpand needed for non etex 
+   \edef\ascii % \noexpand needed for non etex
      {name:     {\noexpand\black\fontname\font  }\quad
       encoding: {\noexpand\black\currentencoding}\quad
       mapping:  {\noexpand\black\currentmapping }\quad
@@ -223,52 +223,60 @@
   {\hbox{\type{#1}\enspace\red\ruledhbox{\black#1}}}
 
 \gdef\showligatures[#1]%
-  {\bgroup
-   \setupcolors[\c!status=\v!lokaal]%
-   \def\show##1{\hbox{\red\ruledhbox{\black##1}}}%
-   \definefont[\s!dummy][#1]\dummy
-   \starttabulate[|*{9}{c|}]
-   \NC\type{ff}\NC\type{fi}\NC\type{fl}\NC\type{ffi}\NC\type{ffl}\NC 
-      \type{``}\NC\type{''}\NC\type{--}\NC\type{---}\NC\NR 
-   \NC\show{ff}\NC\show{fi}\NC\show{fl}\NC\show{ffi}\NC\show{ffl}\NC 
-      \show{``}\NC\show{''}\NC\show{--}\NC\show{---}\NC\NR 
-   \stoptabulate
-   \egroup}
+  {\ifx\starttabulate\undefined
+     \blanko{\tttf \type {\showligatures} is only available in thr english interface}\blanko
+   \else
+     \bgroup
+     \setupcolors[\c!status=\v!lokaal]%
+     \def\show##1{\hbox{\red\ruledhbox{\black##1}}}%
+     \definefont[\s!dummy][#1]\dummy
+     \starttabulate[|*{9}{c|}]
+     \NC\type{ff}\NC\type{fi}\NC\type{fl}\NC\type{ffi}\NC\type{ffl}\NC
+        \type{``}\NC\type{''}\NC\type{--}\NC\type{---}\NC\NR
+     \NC\show{ff}\NC\show{fi}\NC\show{fl}\NC\show{ffi}\NC\show{ffl}\NC
+        \show{``}\NC\show{''}\NC\show{--}\NC\show{---}\NC\NR
+     \stoptabulate
+     \egroup
+   \fi}
 
 \gdef\showfontstrip
   {\dosingleempty\doshowfontstrip}
 
 \gdef\doshowfontstrip[#1]%
-  {\bgroup
-   \def\dofontstripa##1##2%
-     {\tttf\string##1}
-   \def\dofontstripb##1##2%
-     {\ruledhbox{\switchtobodyfont[#1]##1{##2}}}
-   \def\dofontstripc##1##2%
-     {\setbox\scratchbox\hbox{\switchtobodyfont[#1]##1{##2}}%
-      \tt\tfx\the\ht\scratchbox}%
-   \def\dofontstripd##1##2%
-     {\setbox\scratchbox\hbox{\switchtobodyfont[#1]##1{##2}}%
-      \tt\tfx\the\wd\scratchbox}%
-   \def\fontstrip##1##2##3%
-     {\NC##2\rm{##3}\NC
-         ##2\ss{##3}\NC
-         ##2\tt{##3}\NC
-         ##2\mathematics{##3}\NC
-         \tttf##1\NR}
-   \starttabulate[|c|c|c|c|c|]
-     \fontstrip\relax\dofontstripa\empty
-     \TB
-     \fontstrip\relax\dofontstripb{xxxx}
-     \fontstrip\relax\dofontstripb{12345}
-     \fontstrip\relax\dofontstripb{(Agw)}
-     \TB
-     \fontstrip{(x height)}\dofontstripc{x}
-     \fontstrip{(m  width)}\dofontstripd{m}
-   \stoptabulate
-   \egroup}
+  {\ifx\starttabulate\undefined
+     \blanko{\tttf \type {\showfontstrip} is only available in thr english interface}\blanko
+   \else
+     \bgroup
+     \def\dofontstripa##1##2%
+       {\tttf\string##1}
+     \def\dofontstripb##1##2%
+       {\ruledhbox{\switchtobodyfont[#1]##1{##2}}}
+     \def\dofontstripc##1##2%
+       {\setbox\scratchbox\hbox{\switchtobodyfont[#1]##1{##2}}%
+        \tt\tfx\the\ht\scratchbox}%
+     \def\dofontstripd##1##2%
+       {\setbox\scratchbox\hbox{\switchtobodyfont[#1]##1{##2}}%
+        \tt\tfx\the\wd\scratchbox}%
+     \def\fontstrip##1##2##3%
+       {\NC##2\rm{##3}\NC
+           ##2\ss{##3}\NC
+           ##2\tt{##3}\NC
+           ##2\mathematics{##3}\NC
+           \tttf##1\NR}
+     \starttabulate[|c|c|c|c|c|]
+       \fontstrip\relax\dofontstripa\empty
+       \TB
+       \fontstrip\relax\dofontstripb{xxxx}
+       \fontstrip\relax\dofontstripb{12345}
+       \fontstrip\relax\dofontstripb{(Agw)}
+       \TB
+       \fontstrip{(x height)}\dofontstripc{x}
+       \fontstrip{(m  width)}\dofontstripd{m}
+     \stoptabulate
+     \egroup
+   \fi}
 
-\ifx\databox\undefined \newbox\databox \fi 
+\ifx\databox\undefined \newbox\databox \fi
 
 \gdef\testminimalbaseline#1%
   {\setbox\databox\ruledhbox{#1}%
@@ -285,17 +293,21 @@
       \noexpand \NC \the\dp\databox
       \noexpand \NC \ifdim\scratchdimen<\baselineskip <
                     \else\ifdim\scratchdimen=\baselineskip =
-                    \else > \fi\fi 
+                    \else > \fi\fi
       \noexpand \NC \the\baselineskip
-      \noexpand \NC (\ifdim\scratchdimen>\baselineskip not \fi ok)  
+      \noexpand \NC (\ifdim\scratchdimen>\baselineskip not \fi ok)
       \noexpand \NC \noexpand \NR }}
 
 \gdef\showminimalbaseline
-  {\starttabulate[||T|T|T|T|T|T|T|T|T|]
-   \testminimalbaseline{\hbox to 1em{\hss\showstruts\strut\hss}}%
-   \testminimalbaseline{(/)}%
-   \testminimalbaseline{$\frac{1}{2}x^2_3$}
-   \stoptabulate}
+  {\ifx\starttabulate\undefined
+     \blanko{\tttf \type {\showminimalbaseline} is only available in thr english interface}\blanko
+   \else
+     \starttabulate[||T|T|T|T|T|T|T|T|T|]
+     \testminimalbaseline{\hbox to 1em{\hss\showstruts\strut\hss}}%
+     \testminimalbaseline{(/)}%
+     \testminimalbaseline{$\frac{1}{2}x^2_3$}
+     \stoptabulate
+   \fi}
 
 \gdef\showkerning#1%
   {\bgroup
@@ -303,5 +315,12 @@
    \setMPtext\s!dummy{#1}%
    \startMPcode draw textext(\MPstring\s!dummy);\stopMPcode
    \egroup}
+
+\def\showcharratio
+  {\dowithnextboxcontent
+     {\switchtobodyfont[10pt]}%
+     {(\expanded{\withoutpt{\the\nextboxht}},%
+       \expanded{\withoutpt{\the\nextboxdp}})}%
+     \hbox}
 
 \protect \endinput

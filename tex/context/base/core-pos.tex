@@ -121,7 +121,7 @@
 %    \dosetpositionpt\@@posy{#4}%
 %   %\setxvalue{\POSprefix#1}{\@@posp,\@@posx,\@@posy}}%
 %    \@EA\xdef\csname\POSprefix#1\endcsname{\@@posp,\@@posx,\@@posy}}%
-% 
+%
 % \def\setpospxywhd#1#2#3#4#5#6#7%
 %   {\dosetpositionnm\@@posp{#2}%
 %    \dosetpositionpt\@@posx{#3}%
@@ -131,7 +131,7 @@
 %    \dosetpositionpt\@@posd{#7}%
 %   %\setxvalue{\POSprefix#1}{\@@posp,\@@posx,\@@posy,\@@posw,\@@posh,\@@posd}}%
 %    \@EA\xdef\csname\POSprefix#1\endcsname{\@@posp,\@@posx,\@@posy,\@@posw,\@@posh,\@@posd}}%
-% 
+%
 % \def\setpospxyplus#1#2#3#4#5#6#7#8%
 %   {\dosetpositionnm\@@posp{#2}%
 %    \dosetpositionpt\@@posx{#3}%
@@ -142,25 +142,27 @@
 %   %\setxvalue{\POSprefix#1}{\@@posp,\@@posx,\@@posy,\@@posw,\@@posh,\@@posd,#8}}
 %    \@EA\xdef\csname\POSprefix#1\endcsname{\@@posp,\@@posx,\@@posy,\@@posw,\@@posh,\@@posd,#8}}
 
-%D This is real tricky! The page anchor is applied to the 
-%D page box and therefore flushed first. So, when present, it 
-%D is applied to all positions except itself. 
+%D This is real tricky! The page anchor is applied to the
+%D page box and therefore flushed first. So, when present, it
+%D is applied to all positions except itself.
 
-\chardef\positionanchormode=0 % don't relocate page origin 
-\chardef\positionanchormode=1 % relocate page origin once 
+\chardef\positionanchormode=0 % don't relocate page origin
+\chardef\positionanchormode=1 % relocate page origin once
 
 \def\pageanchor{page:0}
+
+% todo: change with each page size change
 
 \def\registerpageposition#1% this one is flushed first !
   {\ifpositioning\ifcase\realpageno\or
      \ifdim\printpapierhoogte=\papierhoogte\else
        \ifdim\printpapierbreedte=\papierbreedte\else
          \setbox#1\hbox{\hpos\pageanchor{\box#1}}%
-       \fi 
-     \fi 
+       \fi
+     \fi
    \fi\fi}
 
-\def\dosetpositionxy#1#2#3% todo: scaled points 
+\def\dosetpositionxy#1#2#3% todo: scaled points
   {\scratchdimen#2\s!sp
    \ifcase\positionanchormode\or
      \advance\scratchdimen-#3\pageanchor
@@ -352,7 +354,7 @@
 %D up. So, the third extra is fetched with,
 %D
 %D \starttypen
-%D \MPplus{identifier}{3}
+%D \MPplus{identifier}{3}{default}
 %D \stoptypen
 %D
 %D All extras (comma separated) are fetched with:
@@ -487,7 +489,7 @@
 \def\setpositiondata#1#2#3#4%
   {\iftrialtypesetting \else
      \initializenextposition
-     \hbox 
+     \hbox
        {\def\currentposition{#1}%
         \dosetpositionwhd\currentposition
           {\number#2}%
@@ -505,7 +507,7 @@
       \else
         \initializenextposition
         \hbox to \nextboxwd
-          {\def\currentposition{#1}%
+          {\edef\currentposition{#1}%
            \dosetpositionwhd\currentposition
              {\number\nextboxwd}%
              {\number\nextboxht}%
@@ -521,7 +523,7 @@
   {\iftrialtypesetting \else
      \initializenextposition
      \hbox to \nextboxwd
-       {\def\currentposition{#1}%
+       {\edef\currentposition{#1}%
         \dosetpositionplus\currentposition
           {\number#2}%
           {\number#3}%
@@ -539,7 +541,7 @@
       \else
         \initializenextposition
         \hbox to \nextboxwd
-          {\def\currentposition{#1}%
+          {\edef\currentposition{#1}%
            \dosetpositionplus\currentposition
              {\number\nextboxwd}%
              {\number\nextboxht}%
@@ -605,7 +607,7 @@
 %D        \traceposstring\clap\cyan{<#1>}%
 %D      \fi
 %D    \fi}
-%D \stoptypen 
+%D \stoptypen
 
 \def\doifpositionaction#1%
   {\ifundefined{\POSactionprefix#1::}%
@@ -631,12 +633,11 @@
 
 \def\copyposition#1#2%
   {\bgroup
-   \edef\to  {\POSprefix#1}%
+  %\edef\to  {\POSprefix#1}%
    \edef\from{\POSprefix#2}%
-  %\doifdefined\from
-  %  {\global\@EA\@EA\@EA\let\@EA\csname\@EA\to\@EA\endcsname\csname\from\endcsname}%
    \ifundefined\from\else
-     \global\@EA\@EA\@EA\let\@EA\csname\@EA\to\@EA\endcsname\csname\from\endcsname
+   % \global\@EA\@EA\@EA\let\@EA\csname\@EA\to\@EA\endcsname\csname\from\endcsname
+     \global\@EA\let\csname\POSprefix#1\@EA\endcsname\csname\from\endcsname
    \fi
    \egroup}
 
@@ -763,7 +764,7 @@
      \fi \fi \fi
    \fi \fi \fi}
 
-\chardef\parposstrut=1 % 0 => no strut data, so fall backs used 
+\chardef\parposstrut=1 % 0 => no strut data, so fall backs used
 
 \def\doregisterparoptions
   {\doglobal\increment\parposcounter
@@ -796,7 +797,7 @@
        {\hss
         \blue
         \llap{\infofont\number\parposcounter}%
-        \scratchdimen\!!onepoint
+        \scratchdimen\onepoint
         \vrule
           \!!width 4\scratchdimen
           \!!height2\scratchdimen
@@ -845,19 +846,17 @@
 %      #4%
 %    \fi}
 
-\newdimen\overlappingmargin \overlappingmargin\zeropoint
+% \newdimen\overlappingmargin \overlappingmargin\zeropoint
+%
+% \overlappingmargin-2sp % better
+
+\def\overlappingmargin{-2\s!sp}
 
 \def\doifoverlappingelse#1#2%
   {\begingroup
    \donefalse
    \edef\!!stringa{#1}\edef\!!stringb{#2}%
    \ifnum\MPp\!!stringa=\MPp\!!stringb\relax
-     \def\check##1##2%
-       {\ifdim##1<\!!dimena \else \ifdim##1>\!!dimenb \else
-          \ifdim##2<\!!dimenc \else \ifdim##2>\!!dimend \else
-            \donetrue
-          \fi\fi
-        \fi\fi}%
      \!!dimena\MPx\!!stringa
      \!!dimenb\MPx\!!stringa\advance\!!dimenb \MPw\!!stringa
      \!!dimenc\MPy\!!stringa\advance\!!dimenc-\MPd\!!stringa
@@ -875,11 +874,28 @@
        \advance\!!dimenf+\overlappingmargin
        \advance\!!dimeng-\overlappingmargin
        \advance\!!dimenh+\overlappingmargin
-     \fi 
-     \check\!!dimene\!!dimeng \ifdone \else
-     \check\!!dimene\!!dimenh \ifdone \else
-     \check\!!dimenf\!!dimeng \ifdone \else
-     \check\!!dimenf\!!dimenh \fi \fi \fi
+     \fi
+     % more often eh fb eg fg
+     \def\checkone##1##2%
+       {\ifdim##1<\!!dimena \else \ifdim##1>\!!dimenb \else
+          \ifdim##2<\!!dimenc \else \ifdim##2>\!!dimend \else
+            \donetrue
+          \fi\fi
+        \fi\fi}%
+     \def\checktwo##1##2%
+       {\ifdim##1<\!!dimene \else \ifdim##1>\!!dimenf \else
+          \ifdim##2<\!!dimeng \else \ifdim##2>\!!dimenh \else
+            \donetrue
+          \fi\fi
+        \fi\fi}%
+     \checkone\!!dimene\!!dimeng \ifdone \else
+     \checkone\!!dimene\!!dimenh \ifdone \else
+     \checkone\!!dimenf\!!dimeng \ifdone \else
+     \checkone\!!dimenf\!!dimenh \ifdone \else
+     \checktwo\!!dimena\!!dimenc \ifdone \else
+     \checktwo\!!dimena\!!dimend \ifdone \else
+     \checktwo\!!dimenb\!!dimene \ifdone \else
+     \checktwo\!!dimenb\!!dimenc \fi \fi \fi \fi \fi \fi \fi
    \fi
    \ifdone
      \endgroup\expandafter\firstoftwoarguments
@@ -1056,7 +1072,7 @@
 \def\MPanchoridentifier{mpa} % {mp-anchor}
 \def\MPoverlayposprefix{MO::}
 
-% obsolete and wrong anyway 
+% obsolete and wrong anyway
 %
 % \long\def\defineMPpositiongraphic#1%
 %   {\long\setvalue{\MPoverlayposprefix#1}}
@@ -1096,8 +1112,8 @@
 %         \vfill}%
 %    \fi}
 
-% \def\positionoverlay#1% the test prevents too many redundant positions 
-%   {\ifpositioning     % in (not used) text* position layers 
+% \def\positionoverlay#1% the test prevents too many redundant positions
+%   {\ifpositioning     % in (not used) text* position layers
 %      \vbox to \overlayheight
 %        {\doifpositionactionelse{#1::\MPanchoridentifier}%
 %           {\edef\MPanchorid{#1::\MPanchoridentifier:\MPanchornumber}%
@@ -1181,7 +1197,7 @@
 \def\handlepositionaction#1\with#2\on#3%
   {\bgroup
    \ifx\currentpositionoverlay\empty
-     \edef\!!stringa{#3}% no layer, just pos itself as anchor 
+     \edef\!!stringa{#3}% no layer, just pos itself as anchor
    \else
      \edef\!!stringa{\currentpositionoverlay::\MPanchoridentifier}%
    \fi
@@ -1212,7 +1228,7 @@
 
 \def\docleanpositionboxes#1#2#3% pos tag setups
   {\ifnum\MPp{#1}<\realpageno \else
-     \noexpand \dohandlepositionboxes{#1}{#2}{#3}% reinsert 
+     \noexpand \dohandlepositionboxes{#1}{#2}{#3}% reinsert
    \fi}
 
 \appendtoks
@@ -1326,7 +1342,7 @@
        \cleanuppositionaction{#1}%
        \egroup                % smashed is really needed else
        \smashedbox\scratchbox % we get problems with too big
-       \egroup                % overlays (s-pre-0x.tex) 
+       \egroup                % overlays (s-pre-0x.tex)
      \else
        % shouldn't happen too often
        \traceposstring\clap\cyan{<#1>}%
@@ -1601,7 +1617,7 @@
 \def\MPl#1{\MPplus{#1}20}
 \def\MPr#1{\MPplus{#1}30}
 
-\startMPpositionmethod{mpos:par} %%%%%%%%%%% will become obsolete 
+\startMPpositionmethod{mpos:par} %%%%%%%%%%% will become obsolete
   \edef\MPparcounter{\MPv\MPbself{1}{0}}%
   \doifpositionelse\MPwself
     {\startMPpositiongraphic{mpos:par}%
@@ -1726,6 +1742,7 @@
     %\xdef\nextparbackground{background:\nofparbackgrounds}%
      \xdef\nextparbackground{pbg:\nofparbackgrounds}%
    \egroup
+   % todo : \synchonizepositionpage{b:\currentparbackground}{s:\currentparbackground}%
    \setuptextbackground[#1][#2]%
    \let\dodostarttextbackground\relax
    \let\dodostoptextbackground \relax
@@ -1741,10 +1758,14 @@
      [ \v!tekst=>\let\dodostarttextbackground\dostarttextbackgroundtxt
                  \let\dodostoptextbackground \dostoptextbackgroundtxt,
       \v!alinea=>\let\dodostarttextbackground\dostarttextbackgroundpar
-                 \let\dodostoptextbackground \dostoptextbackgroundpar]%
-   \ifnum\textbackgrounddepth>\plusone % new
-     \let\dodostarttextbackground\dostarttextbackgroundtxt
-     \let\dodostoptextbackground \dostoptextbackgroundtxt
+                 \let\dodostoptextbackground \dostoptextbackgroundpar,
+        \v!geen=>\let\dodostarttextbackground\relax
+                 \let\dodostoptextbackground \relax]%
+   \ifx\dodostarttextbackground\dostarttextbackgroundpar % untested
+     \ifnum\textbackgrounddepth>\plusone % new
+       \let\dodostarttextbackground\dostarttextbackgroundtxt
+       \let\dodostoptextbackground \dostoptextbackgroundtxt
+     \fi
    \fi
    \doifelsevalue{\??td#1\c!kader}\v!aan
      {\doifelsevalue{\??td#1\c!hoek}\v!rond
@@ -1758,8 +1779,8 @@
    \startpositionoverlay{\textbackgroundoverlay{\getvalue{\??td#1\c!niveau}}}%
      \expanded
        {\setMPpositiongraphicrange % moet veel efficienter
-          {b:\currentparbackground}%
-          {e:\currentparbackground}%
+          {\btbanchor}% {b:\currentparbackground}%
+          {\etbanchor}% {e:\currentparbackground}%
           {\getvalue{\??td#1\c!methode}}%
           {self=\currentparbackground,
            mp=\getvalue{\??td#1\c!mp},
@@ -1778,6 +1799,14 @@
 \def\stoptextbackground
   {\dodostoptextbackground
    \carryoverpar\egroup}
+
+\def\starttextbackgroundmanual
+  {\dostartattributes{\??td\currenttextbackground}\c!letter\c!kleur\empty
+   \fpos\currentparbackground\ignorespaces}
+
+\def\stoptextbackgroundmanual
+  {\tpos\currentparbackground
+   \dostopattributes}
 
 \def\dostarttextbackgroundtxt
   {\ifvmode \leavevmode \fi
@@ -1819,7 +1848,7 @@
 %    \endgraf % new
 %    \getvalue{\??td\currenttextbackground\c!na}}
 
-\def\dostarttextbackgroundpar 
+\def\dostarttextbackgroundpar
   {\endgraf % new
    \getvalue{\??td\currenttextbackground\c!voor}%
    \doassignsomeskip\getvalue{\??td\currenttextbackground\c!bovenoffset}\to\scratchskip
@@ -1844,7 +1873,7 @@
    \advance\leftskip\leftskipadaption
    \dosetleftskipadaption{\getvalue{\??td\currenttextbackground\c!rechteroffset}}%
    \advance\rightskip\leftskipadaption
-% new 
+% new
 \dosetraggedcommand{\getvalue{\??td\currenttextbackground\c!uitlijnen}}%
 \raggedcommand
 %
@@ -1960,7 +1989,7 @@
   {\dodoubleempty\dodefinetextbackground}
 
 \def\dodefinetextbackground[#1][#2]%
-  {\ifsecondargument % why ? 
+  {\ifsecondargument % why ?
      \copyparameters[\??td#1][\??td]
        [\c!status,\c!plaats,\c!variant,\c!mp,\c!methode,
         \c!achtergrond,\c!achtergrondkleur,\c!hoek,\c!niveau,
@@ -2135,13 +2164,13 @@
 
 %D \macros
 %D   {stackeddown}
-%D 
+%D
 %D However, a better implementation is possible with the
 %D following macro. We now have an extra key \type {stack} for
 %D margin settings. When set to \type {yes}, this macro comes
-%D into action. 
+%D into action.
 
-\def\stackeddown 
+\def\stackeddown
   {\dowithnextbox
      {\doglobal\increment\currentautopos
       \hpos{\POSstackprefix\currentautopos}
@@ -2158,11 +2187,11 @@
                \advance\scratchdimen\MPd{\POSstackprefix\previousautopos}}%
               \exitloop
             \ifnum\previousautopos<\zerocount\exitloop\fi}%
-         \ifdim\scratchdimen>\zeropoint
-           \setbox\nextbox \hbox % \iftracepositons\ruledhbox\else\hbox\fi
+        % \ifdim\scratchdimen>\zeropoint
+           \setbox\nextbox\iftracepositions\@EA\ruledhbox\else\@EA\hbox\fi
              {\lower\scratchdimen\flushnextbox}%
            \next
-         \fi
+        % \fi
          \flushnextbox}}}
 
 %D The next hack make sure that margin texts near faulty
@@ -2430,14 +2459,14 @@
 %D   linear_shade(pxy,0,.4c,.9c) ;
 %D   anchor_area(\MPanchor{\MPvar{from}}) ;
 %D \stopMPpositiongraphic
-%D 
+%D
 %D \setMPpositiongraphic{b:x}{tableshade}{from=b:x,to=e:x,color=red}
 %D \setMPpositiongraphic{b:y}{tableshade}{from=b:y,to=e:y,color=green}
 %D \setMPpositiongraphic{b:z}{tableshade}{from=b:z,to=e:z,color=blue}
 %D \stopbuffer
 %D
 %D \typebuffer \haalbuffer
-%D 
+%D
 %D The definition of the table looks about the same as the
 %D previous one:
 %D

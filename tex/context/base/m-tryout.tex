@@ -2,29 +2,29 @@
 %D   [       file=m-tryout,
 %D        version=2002.05.10,
 %D          title=\CONTEXT\ Extra Modules,
-%D       subtitle=Tryout Features, 
+%D       subtitle=Tryout Features,
 %D         author=Hans Hagen,
 %D           date=\currentdate,
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
-%C details. 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
 
-\unprotect 
+\unprotect
 
-%D The following macros make sure that active colons work well 
-%D in French, a feature enabled with: 
-%D 
+%D The following macros make sure that active colons work well
+%D in French, a feature enabled with:
+%D
 %D \starttypen
 %D \useencoding[ffr] \mainlanguage[fr]
-%D \stoptypen 
-%D 
-%D This trick will disappear when proved robust. 
+%D \stoptypen
+%D
+%D This trick will disappear when proved robust.
 
 \startmode[activecolon]
 
-\gdef\sectionseparator{-} 
+\gdef\sectionseparator{-}
 
 \gdef\@@filterfirstpart      [#1--#2]{#1}
 \gdef\@@filtersecondpart     [#1--#2]{#2}
@@ -48,4 +48,4 @@
 
 \stopmode
 
-\protect \endinput 
+\protect \endinput

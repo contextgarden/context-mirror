@@ -1,8 +1,8 @@
 %D \module
-%D   [       file=page-not,
+%D   [       file=page-nnt,
 %D        version=2002.04.16,
 %D          title=\CONTEXT\ Page Macros,
-%D       subtitle=Footnotes, 
+%D       subtitle=Footnotes,
 %D         author=Hans Hagen,
 %D           date=\currentdate,
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
@@ -13,102 +13,58 @@
 
 \writestatus{loading}{Context Page Macros / Footnotes}
 
-%D Terrible hacks: we need to share save/restore 
+%D Terrible hacks: we need to share save/restore
 
-%D We've moved some footnote handling to a separate page 
+%D We've moved some footnote handling to a separate page
 %D module. The macros below are used in the single and multi
-%D column page handlers and permit mixed usage of column and 
-%D page notes. 
+%D column page handlers and permit mixed usage of column and
+%D page notes.
 
-\unprotect 
+\unprotect
 
-\installbackupinsertion\footins
-
-\def\checkbegincolumnfootnotes % should happen inside otr 
-  {\ifcleverfootnotes
+\def\checkbegincolumnfootnotes % should happen inside otr
+  {\ifclevernotes
      \doflushnotes
-     \saveinsertionbox\footins
+     \savenotecontent
    \else
-     \eraseinsertionbackup\footins
+     \erasenotebackup
    \fi
-   \saveinsertiondata\footins
+   \savenotedata
    \checknotes}
 
 \def\checkendcolumnfootnotes
-  {\restoreinsertiondata\footins % maybe better just \checknotes 
-   \ifcleverfootnotes
-     \restoreinsertionbox\footins
+  {\restorenotedata % maybe better just \checknotes
+   \ifclevernotes
+     \restorenotecontent
    \fi}
 
 \def\checksinglecolumnfootnotes
-  {\checknotes} % njet : \restoreinsertiondata\footins
-
-\def\columnfootins % expands to an insert number 
-  {\ifcleverfootnotes
-     \backupinsertion\footins
-   \else
-     \footins
-   \fi}
-
-% wrong place 
+  {\checknotes} % njet : \restorenotedata
 
 \newdimen\totalinsertionheight
 
 \def\settotalinsertionheight
-  {\totalinsertionheight\zeropoint
-   \addinsertionheight\topins       \to\totalinsertionheight
-   \addinsertionheight\botins       \to\totalinsertionheight
-   \addinsertionheight\columnfootins\to\totalinsertionheight}
+  {\calculatetotalnoteheight
+   \totalinsertionheight\totalnoteheight
+   \addinsertionheight\topins\to\totalinsertionheight
+   \addinsertionheight\botins\to\totalinsertionheight}
 
-% idem 
+% hm
 
-\def\enablenotes
-  {\global\count\footins1000
-   \global\skip\footins1\baselineskip\relax}
-
-\def\disablenotes
-  {\global\count\footins\zerocount
-   \global\skip\footins \zeropoint}
-
-% also 
-
-%\def\flushsavedcolumnfootnotes
-%  {\insert\footins{\unvbox\OTRSETsavedfootnotes}}
-%
-%\def\savecolumnfootnotes
-%  {\global\setbox\OTRSETsavedfootnotes\vbox
-%       {\unvbox\OTRSETsavedfootnotes\box\footins}}
-
-\newbox\savednotes
-
-\def\flushsavednotes
-  {\ifvoid\savednotes\else
-     \insert\footins{\unvbox\savednotes}%
-   \fi}
-
-\def\savenotes
-  {\global\setbox\savednotes\vbox
-     {\ifvoid\savednotes\else\unvbox\savednotes\fi
-      \box\footins}}
-
-% hm 
-
-\installbackupinsertion\footins
-
-\def\checkbegincolumnfootnotes % should happen inside otr 
-  {\ifcleverfootnotes
+\def\checkbegincolumnfootnotes % should happen inside otr
+  {\ifclevernotes
      \doflushnotes
-     \saveinsertionbox\footins
+     \savenotecontent
    \else
-     \eraseinsertionbackup\footins
+     \erasenotebackup
    \fi
-   \saveinsertiondata\footins
+   \savenotedata
    \checknotes}
 
 \def\checkendcolumnfootnotes
-  {\restoreinsertiondata\footins
-   \ifcleverfootnotes
-     \restoreinsertionbox\footins
+  {\restorenotedata
+   \ifclevernotes
+     \restorenotecontent
    \fi}
- 
-\protect \endinput 
+
+\protect \endinput

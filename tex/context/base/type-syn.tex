@@ -25,7 +25,7 @@
 
 % Computer Modern Roman : Donald Knuth
 
-\starttypescript [serif] [computer-modern] [name]
+\starttypescript [serif] [computer-modern,latin-modern] [name]
   \definefontsynonym [Serif]            [ComputerModern]
   \definefontsynonym [SerifBold]        [ComputerModern-Bold]
   \definefontsynonym [SerifItalic]      [ComputerModern-Italic]
@@ -35,7 +35,7 @@
   \definefontsynonym [SerifCaps]        [ComputerModern-Caps]
 \stoptypescript
 
-\starttypescript [sans] [computer-modern] [name]
+\starttypescript [sans] [computer-modern,latin-modern] [name]
   \definefontsynonym [Sans]             [ComputerModernSans]
   \definefontsynonym [SansBold]         [ComputerModernSans-Bold]
   \definefontsynonym [SansItalic]       [ComputerModernSans-Italic]
@@ -45,7 +45,7 @@
   \definefontsynonym [SansCaps]         [ComputerModernSans-Caps]
 \stoptypescript
 
-\starttypescript [mono] [computer-modern] [name]
+\starttypescript [mono] [computer-modern,latin-modern] [name]
   \definefontsynonym [Mono]             [ComputerModernMono]
   \definefontsynonym [MonoBold]         [ComputerModernMono-Bold]
   \definefontsynonym [MonoItalic]       [ComputerModernMono-Italic]
@@ -55,14 +55,14 @@
   \definefontsynonym [MonoCaps]         [ComputerModernMono-Caps]
 \stoptypescript
 
-\starttypescript [math] [computer-modern] [name]
+\starttypescript [math] [computer-modern,latin-modern] [name]
   \definefontsynonym [MathRoman]        [ComputerModernMath-Roman]
   \definefontsynonym [MathExtension]    [ComputerModernMath-Extension]
   \definefontsynonym [MathItalic]       [ComputerModernMath-Italic]
   \definefontsynonym [MathSymbol]       [ComputerModernMath-Symbol]
 \stoptypescript
 
-\starttypescript [serif] [computer-modern-vari] [name]
+\starttypescript [serif] [computer-modern-vari,latin-modern-vari] [name]
   \definefontsynonym [Serif]            [ComputerModernMono-Variable]
   \definefontsynonym [SerifBold]        [Serif]
   \definefontsynonym [SerifItalic]      [Serif]
@@ -74,7 +74,7 @@
 
 % This will change some day.
 
-\starttypescript [math] [computer-modern] [name]
+\starttypescript [math] [computer-modern,latin-modern] [name]
   \definefontsynonym [OldStyle]     [MathItalic]
   \definefontsynonym [Fraktur]      [eufm10]
   \definefontsynonym [Blackboard]   [msbm10]
@@ -153,12 +153,20 @@
   \definefontsynonym [MathBeta]      [LucidaNewMath-Roman]
 \stoptypescript
 
+ \definefontsynonym  [LucidaNewMath-AltDemiItalic] [lbmdo]
+  \definefontsynonym [LucidaNewMath-Arrows-Demi]   [lbmad]
+  \definefontsynonym [LucidaNewMath-Extension]     [lbme]
+  \definefontsynonym [LucidaNewMath-Demibold]      [lbmd]
+  \definefontsynonym [LucidaNewMath-DemiItalic]    [lbmdi]
+  \definefontsynonym [LucidaNewMath-Symbol-Demi]   [lbmsd]
+
 \starttypescript [boldmath] [lucida] [name]
-  \definefontsynonym [MathRoman]     [LucidaNewMath-Demibold]
+  \definefontsynonym [MathRoman]     [LucidaBright-Demi]
   \definefontsynonym [MathExtension] [LucidaNewMath-Extension]
   \definefontsynonym [MathItalic]    [LucidaNewMath-AltDemiItalic]
   \definefontsynonym [MathSymbol]    [LucidaNewMath-Symbol-Demi]
   \definefontsynonym [MathAlpha]     [LucidaNewMath-Arrows-Demi]
+  \definefontsynonym [MathBeta]      [LucidaNewMath-DemiBold]
 \stoptypescript
 
 \starttypescript [bfmath] [lucida] [name]
@@ -167,6 +175,7 @@
   \definefontsynonym [MathItalicBold]    [LucidaNewMath-AltDemiItalic]
   \definefontsynonym [MathSymbolBold]    [LucidaNewMath-Symbol-Demi]
   \definefontsynonym [MathAlphaBold]     [LucidaNewMath-Arrows-Demi]
+  \definefontsynonym [MathBetaBold]      [LucidaNewMath-DemiBold] % ??
 \stoptypescript
 
 \starttypescript [handwriting] [lucida] [name]
@@ -258,6 +267,18 @@
 
 \starttypescript [calligraphy] [chancery] [name]
   \definefontsynonym [Calligraphy] [Chancery]
+\stoptypescript
+
+% schoolbook :
+
+\starttypescript [serif] [schoolbook] [name]
+  \definefontsynonym [Serif]            [Schoolbook-Roman]
+  \definefontsynonym [SerifItalic]      [Schoolbook-Italic]
+  \definefontsynonym [SerifBold]        [Schoolbook-Bold]
+  \definefontsynonym [SerifBoldItalic]  [Schoolbook-BoldItalic]
+  \definefontsynonym [SerifSlanted]     [Schoolbook-RomanSlanted]
+  \definefontsynonym [SerifBoldSlanted] [Schoolbook-BoldSlanted]
+  \definefontsynonym [SerifCaps]        [Schoolbook-Roman-Caps]
 \stoptypescript
 
 % Utopia : Adobe

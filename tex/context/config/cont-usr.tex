@@ -8,25 +8,26 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
-%C details. 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
 
-%D In this file users can specify what hyphenation patterns 
-%D they want to load into the format file. Normally, when 
-%D using the \type {cont-..} files, this file can best be 
-%D left unchanged. The default language and font settings 
-%D done in the \type {cont-.} files take precedence! This file 
+%D In this file users can specify what hyphenation patterns
+%D they want to load into the format file. Normally, when
+%D using the \type {cont-..} files, this file can best be
+%D left unchanged. The default language and font settings
+%D done in the \type {cont-.} files take precedence! This file
 %D is subject to changes.
 
 \unprotect
 
 %D Hyphenation patterns are normally sought in filed named
-%D \type {lang-xx.pat}. When present on the system, those 
-%D patterns take precedence. (The next list is inspired on 
-%D Thomas Esser's \TETEX\ distribution.) This list will be 
+%D \type {lang-xx.pat}. When present on the system, those
+%D patterns take precedence. (The next list is inspired on
+%D Thomas Esser's \TETEX\ distribution.) This list will be
 %D adapted to the actual situation.
 
-\definefilesynonym [lang-cz.pat]  [czhyph.tex]
+%definefilesynonym [lang-cz.pat]  [czhyph.tex]   % is bound to latex (tl 8+)
+\definefilesynonym [lang-cz.pat]  [czhyphen.tex]
 \definefilesynonym [lang-da.pat]  [dkhyph.tex]
 \definefilesynonym [lang-de.pat]  [dehyphn.tex]
 \definefilesynonym [lang-en.pat]  [ushyph1.tex]
@@ -43,7 +44,8 @@
 \definefilesynonym [lang-pt.pat]  [pthyph.tex]
 \definefilesynonym [lang-ro.pat]  [rohyph.tex]
 \definefilesynonym [lang-ru.pat]  [ruenhyph.tex]
-\definefilesynonym [lang-sk.pat]  [skhyph.tex]
+%definefilesynonym [lang-sk.pat]  [skhyph.tex] % is bound to latex (tl 8+)
+\definefilesynonym [lang-sk.pat]  [skhyphen.tex]
 \definefilesynonym [lang-sv.pat]  [sehyph.tex]
 \definefilesynonym [lang-tr.pat]  [trhyph.tex]
 \definefilesynonym [lang-ua.pat]  [ukrenhyp.tex]
@@ -56,7 +58,7 @@
 %D replaced by \type {nehyph96.tex}. Typical something that
 %D you have to find out by accident. The names of hyphenation
 %D files as well as their coding is one of the dark areas of
-%D \TEX\ distributions. 
+%D \TEX\ distributions.
 
 \doiffileelse{nehyph96.tex}
   {\definefilesynonym[lang-nl.pat][nehyph96.tex]}
@@ -65,54 +67,54 @@
      {\definefilesynonym[lang-nl.pat][nehyph.tex]}}
 
 %D Pattern files are (can be) encoded! And, alas, not all
-%D pattern files are self contained, which is why (for the 
-%D moment) we specify encodings here. 
+%D pattern files are self contained, which is why (for the
+%D moment) we specify encodings here.
 
-\installlanguage [\s!cz] [\s!mapping={il2,ec},\s!encoding={il2,ec}] 
-\installlanguage [\s!hr] [\s!mapping={il2,ec},\s!encoding={il2,ec}] 
-%installlanguage [\s!pl] [\s!mapping=pl0,\s!encoding=pl0] 
-\installlanguage [\s!pl] [\s!mapping={pl0,ec},\s!encoding={pl0,ec}] 
-\installlanguage [\s!sk] [\s!mapping={il2,ec},\s!encoding={il2,ec}] 
+\installlanguage [\s!cz] [\s!mapping={il2,ec},\s!encoding={il2,ec}]
+\installlanguage [\s!hr] [\s!mapping={il2,ec},\s!encoding={il2,ec}]
+%installlanguage [\s!pl] [\s!mapping=pl0,\s!encoding=pl0]
+\installlanguage [\s!pl] [\s!mapping={pl0,ec},\s!encoding={pl0,ec}]
+\installlanguage [\s!sk] [\s!mapping={il2,ec},\s!encoding={il2,ec}]
 
-%D Sometimes these are not wanted: 
+%D Sometimes these are not wanted:
 
 %\definefilesynonym [lang-deo.pat] [dehypht.tex]  % old patterns
-%\definefilesynonym [lang-nlx.pat] [dutch96.pat]  % new patterns 
+%\definefilesynonym [lang-nlx.pat] [dutch96.pat]  % new patterns
 
-%D Additional languages can be defined here. Beware of 
-%D encoding incompatibilities. Please take a look at the 
-%D \type {cont-en.tex}, \type {cont-nl.tex}, enz.\ files 
-%D first. Normally you don't have to change a byte. 
+%D Additional languages can be defined here. Beware of
+%D encoding incompatibilities. Please take a look at the
+%D \type {cont-en.tex}, \type {cont-nl.tex}, enz.\ files
+%D first. Normally you don't have to change a byte.
 
-% \installlanguage [\s!af] [\c!status=\v!start] % afrikaans 
+% \installlanguage [\s!af] [\c!status=\v!start] % afrikaans
 % \installlanguage [\s!cz] [\c!status=\v!start] % czech
-% \installlanguage [\s!da] [\c!status=\v!start] % danish    
-% \installlanguage [\s!de] [\c!status=\v!start] % german    
-% \installlanguage [\s!en] [\c!status=\v!start] % english us  
-% \installlanguage [\s!es] [\c!status=\v!start] % spanish    
+% \installlanguage [\s!da] [\c!status=\v!start] % danish
+% \installlanguage [\s!de] [\c!status=\v!start] % german
+% \installlanguage [\s!en] [\c!status=\v!start] % english us
+% \installlanguage [\s!es] [\c!status=\v!start] % spanish
 % \installlanguage [\s!fi] [\c!status=\v!start] % finnish
-% \installlanguage [\s!fr] [\c!status=\v!start] % french     
+% \installlanguage [\s!fr] [\c!status=\v!start] % french
 % \installlanguage [\s!hr] [\c!status=\v!start] % croatian
-% \installlanguage [\s!hu] [\c!status=\v!start] % hungarian 
-% \installlanguage [\s!it] [\c!status=\v!start] % italian 
-% \installlanguage [\s!la] [\c!status=\v!start] % latin 
-% \installlanguage [\s!nl] [\c!status=\v!start] % dutch     
-% \installlanguage [\s!no] [\c!status=\v!start] % norwegian 
+% \installlanguage [\s!hu] [\c!status=\v!start] % hungarian
+% \installlanguage [\s!it] [\c!status=\v!start] % italian
+% \installlanguage [\s!la] [\c!status=\v!start] % latin
+% \installlanguage [\s!nl] [\c!status=\v!start] % dutch
+% \installlanguage [\s!no] [\c!status=\v!start] % norwegian
 % \installlanguage [\s!pl] [\c!status=\v!start] % polish
-% \installlanguage [\s!pt] [\c!status=\v!start] % portuguese 
-% \installlanguage [\s!ro] [\c!status=\v!start] % romanian 
-% \installlanguage [\s!ru] [\c!status=\v!start] % russian 
+% \installlanguage [\s!pt] [\c!status=\v!start] % portuguese
+% \installlanguage [\s!ro] [\c!status=\v!start] % romanian
+% \installlanguage [\s!ru] [\c!status=\v!start] % russian
 % \installlanguage [\s!sk] [\c!status=\v!start] % slovak
-% \installlanguage [\s!sv] [\c!status=\v!start] % swedish   
-% \installlanguage [\s!tr] [\c!status=\v!start] % turkish    
+% \installlanguage [\s!sv] [\c!status=\v!start] % swedish
+% \installlanguage [\s!tr] [\c!status=\v!start] % turkish
 % \installlanguage [\s!ua] [\c!status=\v!start] % ukrainian
-% \installlanguage [\s!uk] [\c!status=\v!start] % english uk   
+% \installlanguage [\s!uk] [\c!status=\v!start] % english uk
 
 % \installlanguage [deo]   [\c!status=\v!start] % old german
-% \installlanguage [nlx]   [\c!status=\v!start] % dutch 8 bit 
+% \installlanguage [nlx]   [\c!status=\v!start] % dutch 8 bit
 
-%D The next lines can be used for setting the language to be 
-%D used at startup time. 
+%D The next lines can be used for setting the language to be
+%D used at startup time.
 
 % \setupcurrentlanguage[\s!af]
 % \setupcurrentlanguage[\s!cz]
@@ -137,23 +139,23 @@
 % \setupcurrentlanguage[\s!tr]
 % \setupcurrentlanguage[\s!ua]
 
-%D Local font settings can go here. Normally suitable 
-%D defaults are already preloaded, almost certainly the 
-%D Computer Modern Roman typefaces or some derivate. So, the 
-%D next line is only meant as sample, take a look at the 
-%D format related files first. 
+%D Local font settings can go here. Normally suitable
+%D defaults are already preloaded, almost certainly the
+%D Computer Modern Roman typefaces or some derivate. So, the
+%D next line is only meant as sample, take a look at the
+%D format related files first.
 
-% \definefilesynonym [font-cmr] [font-csr] % czech & slovak 
-% \definefilesynonym [font-cmr] [font-plr] % polish 
+% \definefilesynonym [font-cmr] [font-csr] % czech & slovak
+% \definefilesynonym [font-cmr] [font-plr] % polish
 
-%D In some languages, compound characters, like \type {"e} 
-%D are used to get accented and non latin characters. 
+%D In some languages, compound characters, like \type {"e}
+%D are used to get accented and non latin characters.
 
-  \useencoding[fde] % german 
-% \useencoding[ffr] % french 
+  \useencoding[fde] % german
+% \useencoding[ffr] % french
 % \useencoding[fro] % romanian
-% \useencoding[fpl] % polish 
+% \useencoding[fpl] % polish
 
-%D Don't remove the next few lines. 
+%D Don't remove the next few lines.
 
-\protect \endinput 
+\protect \endinput

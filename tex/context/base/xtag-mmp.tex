@@ -21,7 +21,7 @@
   {\convertargument#2\to\asciiafter
    \@EA#1\@EA{\asciiafter}}
 
-% 
+%
 
 \def\checkMMLoperator#1#2% temp hack
   {\unspaceargument#1\to\ascii
@@ -34,7 +34,7 @@
 \def\MMLpmath#1#2%
   {\begingroup
    \getXMLarguments{mstyle}{#1}\setMMLpmathstyle{mstyle}#2%
-   \endgroup}  
+   \endgroup}
 
 \def\MMLpMI#1#2%
   {\MMLpmath{#1}{\checkMMLoperator{#2}{#2}}}
@@ -42,11 +42,11 @@
 \def\MMLpMN#1#2%
   {\begingroup\rm\MMLpmath{#1}{#2}\endgroup}
 
-\def\MMLpMO#1#2% yes or no 
+\def\MMLpMO#1#2% yes or no
   {\checkMMLoperator
      {#2}
      {\ConvertConstantAfter\doifinstringelse{\xmlrent}{#2}
-        {#2}{\hbox{\MMLpmath{#1}{\ignorespaces#2\unskip}}}}} % \hbox ? 
+        {#2}{\hbox{\MMLpmath{#1}{\ignorespaces#2\unskip}}}}} % \hbox ?
 
 \remapXMLsequence [mfenced] [CPA] \MMLpFENCED
 
@@ -64,13 +64,13 @@
    \edef\MMLpopen {\XMLpar{mfenced}{open}{}}%
    \edef\MMLpclose{\XMLpar{mfenced}{close}{}}%
    \ifx\MMLpopen\empty\else\doMMLleft\MMLpopen\fi
-   \pushmacro\MMLpopen 
+   \pushmacro\MMLpopen
    \pushmacro\MMLpclose
    \doifXMLparelse{mfenced}{separators}
      {\resetMMLseparator
       \encapsulateXMLR
         {}%
-        {\pushmacro\myspecialvert % hack 
+        {\pushmacro\myspecialvert % hack
          \def\myspecialvert{\;\vrule\;}%
          \grabMMLseparator{\XMLpar{mfenced}{separators}{}}%
          \popmacro\myspecialvert}
@@ -89,7 +89,7 @@
 
 \def\grabMMLseparator#1%
   {\increment\MMLxxcounter
-   \newcounter\MMLyycounter  
+   \newcounter\MMLyycounter
    \expanded{\dograbMMLseparator#1\noexpand\relax}}
 
 \def\dograbMMLseparator%
@@ -116,7 +116,7 @@
 
 \def\MMLpENCLOSE#1#2%
   {\getXMLarguments{menclose}{notation="" #1}%
-   \doifelse{\XMLpar{menclose}{notation}{}}{longdiv} 
+   \doifelse{\XMLpar{menclose}{notation}{}}{longdiv}
      {\overline{)#2}}
      {#2}}
 
@@ -129,8 +129,8 @@
         {\edef\theXMLpar{\XMLpar{mfrac}{linethickness}{1}}%
          \processaction
            [\theXMLpar]
-           [    thin=>\scratchdimen=.2pt, 
-              medium=>\scratchdimen=.4pt, 
+           [    thin=>\scratchdimen=.2pt,
+              medium=>\scratchdimen=.4pt,
                thick=>\scratchdimen=.8pt,
              unknown=>\setdimensionwithunit\scratchdimen{\theXMLpar}{}]%
          {{\firstXMLRelement}\above\scratchdimen{\secondXMLRelement}}}
@@ -167,7 +167,7 @@
            {\setMMLptextstyle{mstyle}%
             \ignorespaces#2\unskip\unskip}}}}
 
-\def\setMMLpstyle#1% 
+\def\setMMLpstyle#1%
   {\doifdefined{MMLpstyle:#1}{\getvalue{MMLpstyle:#1}}}
 
 \def\defineMMLstyle[#1]#2%
@@ -175,19 +175,19 @@
 
 \defineMMLstyle[normal]     {\tf} \defineMMLstyle[double-stuck] {\bf}
 \defineMMLstyle[bolditalic] {\bi} \defineMMLstyle[bold-italic]  {\bi}
-\defineMMLstyle[boldslanted]{\bs} \defineMMLstyle[bold-slanted] {\bs} 
+\defineMMLstyle[boldslanted]{\bs} \defineMMLstyle[bold-slanted] {\bs}
 \defineMMLstyle[boldnormal] {\bf} \defineMMLstyle[bold]         {\bf}
 \defineMMLstyle[slanted]    {\sl} \defineMMLstyle[normalslanted]{\sl}
 \defineMMLstyle[italic]     {\it} \defineMMLstyle[normalitalic] {\it}
 \defineMMLstyle[fraktur]    {\bf} \defineMMLstyle[bold-fraktur] {\bf}
 \defineMMLstyle[script]     {\tf} \defineMMLstyle[bold-script]  {\bf}
 
-% and all kind of other crappy names  
+% and all kind of other crappy names
 
-\def\setMMLptextstyle#1% 
+\def\setMMLptextstyle#1%
   {\setMMLpstyle{\XMLpar{#1}{fontweight}{}\XMLpar{#1}{fontstyle}{}}}
 
-\def\setMMLpmathstyle#1% 
+\def\setMMLpmathstyle#1%
   {\setMMLpstyle{\XMLpar{#1}{mathvariant}{}}}
 
 \def\doMMPpcolor#1#2%
@@ -203,7 +203,7 @@
      {#2}}
 
 \def\MMLpERROR  #1#2{\hbox{$\displaystyle#2$}}
-\def\MMLpPHANTOM#1#2{\phantom{\ignorespaces{}#2\unskip}} % watch spacing {} hack 
+\def\MMLpPHANTOM#1#2{\phantom{\ignorespaces{}#2\unskip}} % watch spacing {} hack
 \def\MMLpPADDED #1#2{#2}
 
 \remapXMLsequence [mrow] [CPA] \MMLpROW
@@ -227,7 +227,7 @@
 \def\MMLpSUBP#1#2%
   {\withnexttwoXMLRelements
      {\doifelse\@@MMLscriptsvariant\v!a
-        {{\firstXMLRelement}#1{\secondXMLRelement}} % both {} essential 
+        {{\firstXMLRelement}#1{\secondXMLRelement}} % both {} essential
         {\firstXMLRelement#1{\secondXMLRelement}}}%
    #2}
 
@@ -254,7 +254,7 @@
    {\pushmacro\doMMLfiller
     \let\doMMLfiller\gobbleoneargument
     \gdef\dodoMMLfiller{\disablefiller\mathematics{#1}}%
-    \setbox\scratchbox=\hbox 
+    \setbox\scratchbox=\hbox
       {\def\normalorfiller##1##2%
          {\gdef\dodoMMLfiller{\enablefiller#1}%
           \let\normalorfiller\gobbletwoarguments}%
@@ -310,7 +310,7 @@
      {\edef\MMLsetting{\XMLpar{mtbl}{#1}{}}#3% remap list
       \edef\theMMLpTABLEmap{#2=\MMLsetting,\theMMLpTABLEmap}}
      {}}
-    
+
 \def\doMMLpREMAP#1#2%
   {\doif{\MMLsetting}{#1}
      {\def\MMLsetting{#2}%
@@ -321,7 +321,7 @@
 \def\doMMLpTABLE#1#2%
   {\begingroup
    \getXMLarguments{mtable}
-     {columnalign="" columnspacing=".25ex" rowspacing=".25ex" 
+     {columnalign="" columnspacing=".25ex" rowspacing=".25ex"
       frame="" color="" background="" #1}%
    \setupTABLE[\c!kader=\v!uit]%
    \MMLpTABLEmapper{background}{\c!achtergrondkleur}{}%
@@ -343,10 +343,10 @@
   {\doifXMLRchildelse{mtd}{#2}
      {\bTR\ignorespaces#2\unskip\eTR}
      {\bTR\doMMLpTD{#1}{#2}\eTR}}
-    
+
 \def\doMMLpTD#1#2%
   {\getXMLarguments{mtbl}
-     {columnalign="" columnspacing="" rowspacing="" 
+     {columnalign="" columnspacing="" rowspacing=""
       frame="" color="" background="" #1}%
    \let\theMMLpTABLEmap\empty
    \MMLpTABLEmap{background}{\c!achtergrondkleur}{}%
@@ -364,7 +364,7 @@
      {\expandafter\MMLpTABLEa}
      {\expandafter\MMLpTABLEb}}
 
-\def\MMLpTABLEa#1#2% 
+\def\MMLpTABLEa#1#2%
   {\begingroup
    \doifelsenothing{#1}
      {\global\setfalse\mmlTABLEargs}
@@ -376,10 +376,10 @@
           {\ifconditional\mmlTABLEargs \else
              \doifelsenothing{##1}{##2}{\global\settrue\mmlTABLEargs}%
            \fi}%
-        \let\MMLpTR\MMLpTABLE 
-        \let\MMLpTD\MMLpTABLE 
+        \let\MMLpTR\MMLpTABLE
+        \let\MMLpTD\MMLpTABLE
         #2$}%
-   \fi      
+   \fi
    \ifconditional\mmlTABLEargs
      \let\MMLpTABLE\doMMLpTABLE
      \def\next{\MMLpTABLE{#1}}%
@@ -399,7 +399,7 @@
       \@EA\aftersplitstring\ascii\at.\to\ascii
       \scratchcounter=\ifx\ascii\empty#1\else\ascii\fi
       \unskip\unskip}%
-   \ifdim\wd\scratchbox=\!!zeropoint
+   \ifdim\wd\scratchbox=\zeropoint
      \edef\MMLpunit{#1em}%
    \else
      \edef\ascii{#1}\convertcommand\ascii\to\ascii
@@ -417,7 +417,7 @@
 
 \remapXMLsingular [mglyph] [CPA] \MMLpGLYPH
 
-\def\MMLpGLYPH#1#2% we assume \definefont usage 
+\def\MMLpGLYPH#1#2% we assume \definefont usage
   {\getXMLarguments{mglyph}{fontfamily="" index="1" alt="" #1}%
    \def\MMLpglyph{\XMLpar{mglyph}{fontfamily}{}}%
    \doifelsenothing{\MMLpglyph}
@@ -443,7 +443,7 @@
 \def\MMLpMULTISCRIPTS#1#2%
   {\pushmacro\xmlr
    \let\xmlr\pMULTISCRIPTmmlPRE
-   \donefalse \scratchcounter=0 #2\empty 
+   \donefalse \scratchcounter=0 #2\empty
    \let\xmlr\pMULTISCRIPTmmlPOST
    \donetrue  \scratchcounter=0 #2\empty
    \popmacro\xmlr}

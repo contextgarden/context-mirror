@@ -11,11 +11,13 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-%D This module is still to be split and documented. 
+%D This module is still to be split and documented.
 
 \writestatus{loading}{Context Core Macros / Maginal Things}
 
-\unprotect 
+% todo: compensate distance when setuplayout[textwidth=..]
+
+\unprotect
 
 \newif\iflowinmargin
 
@@ -71,7 +73,7 @@
       \fi}
      \donothing
    \doifnumberelse\margetekstnummer
-     {\ifnum\margetekstnummer>25 % to be translated 
+     {\ifnum\margetekstnummer>25 % to be translated
         \writestatus\m!systems{potential margin stack overflow (\margetekstnummer)}%
       \fi}
      \donothing
@@ -97,28 +99,29 @@
         \begstrut#6\endstrut\endgraf
       \dostopattributes
       \@@imna}%
-   \doif\@@imstapel\v!ja    
-     {\setbox0\vbox{\stackeddown\vbox{\box0}}}% new 
+   \doif\@@imstapel\v!ja
+     {\def\overlappingmargin{-2\s!sp}% test value, maybe .25\strutboxdp, maybe configurable
+      \setbox0\vbox{\stackeddown\vbox{\box0}}}% new
    \ht0\strutht
    \box0
    \egroup
    #5\relax}
 
 %D The stacker permits constructs like:
-%D 
-%D \starttypen 
+%D
+%D \starttypen
 %D \stelinmargein[stapel=ja]
-%D 
+%D
 %D \inlinker{test 1}test\break
 %D \inlinker{test 2}test\break
-%D \inlinker{test 1} 
+%D \inlinker{test 1}
 %D \input tufte
-%D \inlinker{test 1} 
-%D \inlinker{test 2} 
+%D \inlinker{test 1}
+%D \inlinker{test 2}
 %D \inlinker{test 3}
 %D \input tufte
-%D \inlinker{test 1} 
-%D \inlinker{test 2\endgraf test 3} 
+%D \inlinker{test 1}
+%D \inlinker{test 2\endgraf test 3}
 %D \inlinker{test 4}
 %D \input tufte
 %D \inlinker{test 1}
@@ -126,7 +129,7 @@
 %D \inlinker{test 4\endgraf test 5\endgraf test 6}
 %D \inlinker{test 7\endgraf test 8\endgraf test 9}
 %D \input tufte
-%D \stoptypen 
+%D \stoptypen
 
 \def\plaatsmargetekstscheider
   {\ifnum\margincontent>\zerocount
@@ -167,21 +170,21 @@
    \ht0\zeropoint
    \dp0\zeropoint
    \gdef\margestrutheight{\the\strutht}%
-  %\graphicvadjust{\box0}} % fails in high math lines, let it be  
-  %\hbox{\lower\strutdp\box0}} % alas, wrong lapping, therefore useless 
+  %\graphicvadjust{\box0}} % fails in high math lines, let it be
+  %\hbox{\lower\strutdp\box0}} % alas, wrong lapping, therefore useless
    \dopositionmarginbox0}
 
-%D This approach permits us to implement a better mechanism 
-%D later. We need the \type {\graphicvadjust} in order to 
-%D handle: 
-%D 
-%D \starttypen 
+%D This approach permits us to implement a better mechanism
+%D later. We need the \type {\graphicvadjust} in order to
+%D handle:
+%D
+%D \starttypen
 %D \inlinker{test} {\red \dorecurse{40}{test }\par}
 %D {\red \inlinker{test} \dorecurse{40}{test }\par}
 %D \stoptypen
-%D 
-%D The outer margin color is either black or color set as 
-%D main text color. 
+%D
+%D The outer margin color is either black or color set as
+%D main text color.
 
 \ifx\dopositionmarginbox\undefined
   \def\dopositionmarginbox#1{\graphicvadjust{\box#1}}
@@ -270,7 +273,7 @@
                     #2{#6}%
                   \fi]%
    \rawpagereference\s!mar{#5}%
-   \flushnotes\egroup % don't forget the group 
+   \flushnotes\egroup % don't forget the group
    \ignorespaces}
 
 \def\inlinker
@@ -298,7 +301,7 @@
 
 \let\restoreinterlinepenalty=\relax
 
-\def\flushmargincontents % plural 
+\def\flushmargincontents % plural
   {\restoreinterlinepenalty  % here?
    \ifcase\margincontent\else           % called quite often, so we
      \expandafter\doflushmargincontents % speed up the \fi scan by
@@ -306,13 +309,21 @@
 
 % for a manual flush in for instance headers
 
+% \def\placemargintexts % to be documented and translated
+%   {\ifcase\margincontent\else
+%      \bgroup
+%        \let\normalvadjust\fakedvadjust
+%        \doflushmargincontents
+%      \egroup
+%    \fi}
+
 \def\placemargintexts % to be documented and translated
-  {\ifcase\margincontent\else           
+  {\ifcase\margincontent\else
      \bgroup
-       \let\normalvadjust\fakedvadjust
-       \doflushmargincontents 
+       \chardef\graphicvadjustmode\zerocount
+       \doflushmargincontents
      \egroup
-   \fi}                                 
+   \fi}
 
 % \def\doflushmargincontents% % links + rechts
 %   {\bgroup
@@ -362,11 +373,11 @@
       \getvalue{\??im\recurselevel}%
       \letgvalue{\??im\recurselevel}\empty
       \egroup}%
-\ifbinnenkolommen 
-  \donetrue  % how fuzzy 
-\else\ifdim\marginheight>\lineheight\relax 
-  \donetrue  % how dirty 
-\else 
+\ifbinnenkolommen
+  \donetrue  % how fuzzy
+\else\ifdim\marginheight>\lineheight\relax
+  \donetrue  % how dirty
+\else
   \donefalse % how needed
 \fi\fi
 \ifdone
@@ -432,14 +443,14 @@
      {\mindermeldingen
       \setbox0\vtop{\forgetall\strut#1}%
       \getboxheight\dimen0\of\box0
-      \vskip-\dimen0 % waarom stond hier een \ ? 
+      \vskip-\dimen0 % waarom stond hier een \ ?
       \box0}}
 
 \def\resetmargincontent % quick hack
   {\doglobal\newcounter\margincontent}
 
 \def\resetmargetitels
-  {\resetmargincontent} 
+  {\resetmargincontent}
 
 %D \macros
 %D   {inleftside,inleftmargin,inrightmargin,inrightside}
@@ -450,30 +461,67 @@
 %D therefore embed them in some macro's that (force and)
 %D remove the indentation and restore it afterwards.
 
-% beware: no \hsize is set (yet)! 
+% beware: no \hsize is set (yet)!
+
+% \def\inleftmargin#1%
+%   {\pushindentation
+%    \llap{#1\hskip\leftskip\hskip\leftmargintextdistance}%
+%    \popindentation
+%    \ignorespaces}
+
+% \def\inrightmargin#1%
+%   {\pushindentation
+%    \rlap{\hskip\hsize\hskip-\rightskip\hskip\rightmargintextdistance#1}%
+%    \popindentation
+%    \ignorespaces}
+
+% \def\inleftedge#1%
+%   {\inleftmargin
+%      {#1\relax
+%       \hskip\linkermargebreedte
+%       \hskip\linkerrandafstand}}
+
+% \def\inrightedge#1%
+%   {\inrightmargin
+%      {\hskip\rechtermargebreedte
+%       \hskip\rechterrandafstand
+%       #1}}
+
+% \hsize added per August 2003:
 
 \def\inleftmargin#1%
   {\pushindentation
-   \llap{#1\hskip\leftskip\hskip\leftmargintextdistance}%
+   \llap
+     {\hsize\linkermargebreedte
+      #1\relax
+      \hskip\leftskip
+      \hskip\linkermargeafstand}%
    \popindentation
    \ignorespaces}
 
 \def\inrightmargin#1%
   {\pushindentation
-   \rlap{\hskip\hsize\hskip-\rightskip\hskip\rightmargintextdistance#1}%
+   \rlap
+     {\hskip\hsize
+      \hskip-\rightskip
+      \hskip\rechtermargeafstand
+      \hsize\rechtermargebreedte
+      #1}%
    \popindentation
    \ignorespaces}
 
 \def\inleftedge#1%
   {\inleftmargin
-     {#1\relax
-      \hskip\linkermargebreedte
-      \hskip\linkerrandafstand}}
+      {\hsize\linkermargebreedte
+       #1\relax
+       \hskip\linkermargebreedte
+       \hskip\linkerrandafstand}}
 
 \def\inrightedge#1%
   {\inrightmargin
      {\hskip\rechtermargebreedte
       \hskip\rechterrandafstand
+      \hsize\rechtermargebreedte
       #1}}
 
 \let\inleftside \inleftedge
@@ -500,16 +548,16 @@
 %D \egroup
 
 %D New, yet undocumented:
-%D 
-%D used for pascal: 
 %D
-%D \starttypen 
-%D \index {test} test \index {west} west \index {rest} rest 
-%D 
+%D used for pascal:
+%D
+%D \starttypen
+%D \index {test} test \index {west} west \index {rest} rest
+%D
 %D \startnarrower
 %D \placeregister[index][alternative=b,command=\atleftmargin]
 %D \stopnarrower
-%D \stoptypen 
+%D \stoptypen
 
 \def\atleftmargin#1%
   {\pushindentation
@@ -566,7 +614,7 @@
   {\iffacingpages
      \ifnum\realpageno>\plusone
        \bgroup
-       \global\pagebodyornamentsfalse
+       \chardef\pageornamentstate\plusone
        \setbox\facingpage\vbox to \zethoogte
          {\unvbox\facingpage\vfil}%
        \myshipout{\buildpagebody\box\facingpage}%
@@ -614,4 +662,4 @@
 \stelnaastplaatsenin
   [\c!status=\v!stop]
 
-\protect \endinput 
+\protect \endinput

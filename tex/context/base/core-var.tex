@@ -8,53 +8,71 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
-%C details. 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
 
 \writestatus{loading}{Context Core Macros / Variables}
 
 \unprotect
 
-%D \macros 
+%D \macros
 %D   {every...}
 %D
-%D A few every's. 
+%D A few every's.
 
-\newevery \everyshipout        \relax
-\newevery \everybeforeshipout  \relax
-\newevery \everyaftershipout   \relax
-\newevery \everylastshipout    \relax
-\newevery \everybye            \relax   
-\newevery \everygoodbye        \relax   
-\newevery \everystarttext      \relax
-\newevery \everystoptext       \relax
-\newevery \everyforgetall      \relax
+\newevery \everyshipout            \relax
+\newevery \everybeforeshipout      \relax
+\newevery \everyaftershipout       \relax
+\newevery \everylastshipout        \relax
+\newevery \everybye                \relax
+\newevery \everygoodbye            \relax
+\newevery \everystarttext          \relax
+\newevery \everystoptext           \relax
+\newevery \everyforgetall          \relax
+\newevery \everybeforepagebody     \relax
+\newevery \everyafterpagebody      \relax \let \everypagebody \everybeforepagebody % backward compatible
+\newevery \everybeforeutilityread  \relax
+\newevery \everyafterutilityread   \relax
 
-\newevery \everybeforepagebody \relax
-\newevery \everyafterpagebody  \relax
+%newevery \everybeforeutilitywrite \relax
 
-\let \everypagebody \everybeforepagebody % backward compatible 
+\newevery \everycleanupfeatures    \relax \def\cleanupfeatures{\the\everycleanupfeatures}
+\newevery \everyinsidefloat        \relax
+\newevery \everyheadstart          \relax
+\newevery \everyendoftextbody      \relax
+\newevery \everybeginofpar         \relax
+\newevery \everyendofpar           \relax
 
-\newevery \everybeforeutilityread \relax 
-\newevery \everyafterutilityread  \relax 
+%D Experimental (used in xml <p> .. </p>
 
-\newevery \everycleanupfeatures   \relax
+\def\bpar{\the\everybeginofpar\ignorespaces} % may interfere with \everypar
+\def\epar{\ifhmode\removeunwantedspaces\the\everyendofpar\fi} % test prevents problems with \bpar\epar
 
-\def\cleanupfeatures{\the\everycleanupfeatures}
-
-\newevery \everyinsidefloat \relax
-
-%D \macros 
-%D   {trialtypesetting} 
+%D \macros
+%D   {defineinputmode,setinputmode}
 %D
-%D We disable trial typesetting in the output routine, 
-%D just to be sure. 
+%D New. Some work needs to be done.
 
-\prependtoks 
+\def\defineinputmode[#1]{\@EA\newtoks\csname every#1inputmode\endcsname}
+%def\setinputmode   [#1]{\the        \csname every#1inputmode\endcsname}
+\def\setinputmode   [#1]{\the\executeifdefined{every#1inputmode}\emptytoks}
+
+\defineinputmode [TEX]
+\defineinputmode [XML]
+
+\setinputmode    [TEX]
+
+%D \macros
+%D   {trialtypesetting}
+%D
+%D We disable trial typesetting in the output routine,
+%D just to be sure.
+
+\prependtoks
   \trialtypesettingfalse
-\to \everybeforepagebody 
+\to \everybeforepagebody
 
-%D \macros 
+%D \macros
 %D   {starttextdata}
 
 \newtoks \collectedtextdata
@@ -67,29 +85,29 @@
    \global\collectedtextdata\emptytoks
    \globallet\flushtextdata\donothing}
 
-%D \macros 
+%D \macros
 %D   {ifprocessingXML}
 %D
-%D We need this one even if no \XML\ is supported.  
+%D We need this one even if no \XML\ is supported.
 
 \newif\ifprocessingXML
 
 %D \macros
 %D   {ifproductionrun}
 %D
-%D This boolean can be used to bypass certain 
-%D initializations. 
+%D This boolean can be used to bypass certain
+%D initializations.
 
-\newif\ifproductionrun 
+\newif\ifproductionrun
 
 \appendtoks \productionruntrue \to \everydump
 
-%D \macros 
+%D \macros
 %D   {everyboxedcontent, ifboxedcontent,
 %D    startboxedcontent, stopboxedcontent}
 %D
-%D This one is relatively new and will be used as a more 
-%D robust test for inner situations. 
+%D This one is relatively new and will be used as a more
+%D robust test for inner situations.
 
 \newif    \ifboxedcontent
 \newevery \everyboxedcontent \relax
@@ -99,18 +117,18 @@
 \def\startboxedcontent{\bgroup\the\everyboxedcontent}
 \let\stopboxedcontent  \egroup
 
-%D \macros 
+%D \macros
 %D   {fastmode}
 %D
-%D The command \type {\fastmode} disables some time consuming 
-%D typesetting. 
+%D The command \type {\fastmode} disables some time consuming
+%D typesetting.
 
 \newevery \everyfastmode \relax
 
-\newif\iffastmode 
+\newif\iffastmode
 
 \def\fastmode
-  {\fastmodetrue 
+  {\fastmodetrue
    \the\everyfastmode}
 
 \def\silentmode % ook hier \everysilentmode net als \fastmode
@@ -118,7 +136,7 @@
    \showwarningsfalse
    \let\writestatus\gobbletwoarguments}
 
-%D \macros 
+%D \macros
 %D   {pdfoutput}
 %D
 %D There are some fundamental differences between producing
@@ -127,25 +145,25 @@
 %D postprocessing stage. Because we must make sure that
 %D \CONTEXT\ knows what it's up to, we always default to \DVI\
 %D mode, even when users explicitly ask for \PDF\ output in the
-%D \PDFTEX\ configuration file. 
+%D \PDFTEX\ configuration file.
 
 \ifx\pdfoutput\undefined \else
 
-  \prependtoks \pdfoutput=0 \to \everyjob 
+  \prependtoks \pdfoutput=0 \to \everyjob
 
 \fi
 
 %D \macros
 %D   {setvariables,getvariable}
 %D
-%D \starttyping 
+%D \starttyping
 %D \setvariables[xx][titel=]
 %D \setvariables[xx][titel=test test]
 %D \setvariables[xx][titel=test $x=1$ test]   % fatal error reported
 %D \setvariables[xx][titel=test {$x=1$} test]
 %D \setvariables[xx][titel]                   % fatal error reported
 %D \setvariables[xx][titel=e]
-%D \stoptyping 
+%D \stoptyping
 
 \def\??vars{@@vars}
 
@@ -154,7 +172,7 @@
 \def\setgvariables{\dotripleargument\dosetvariables[\getrawgparameters]}
 \def\setxvariables{\dotripleargument\dosetvariables[\getrawxparameters]}
 
-\def\globalsetvariables % obsolete 
+\def\globalsetvariables % obsolete
   {\dotripleargument\dosetvariables[\globalgetrawparameters]}
 
 \def\dosetvariables[#1][#2][#3]%
@@ -186,8 +204,8 @@
 
 \let\currentvariableclass\empty
 
-%D We store some original meanings, maybe in \type 
-%D {math-ini}. 
+%D We store some original meanings, maybe in \type
+%D {math-ini}.
 
 \let\normalin             \in
 \let\normalover           \over
@@ -197,7 +215,7 @@
 \let\normalabovewithdelims\abovewithdelims
 \let\normalatopwithdelims \atopwithdelims
 
-%D Add-ons: 
+%D Add-ons:
 
 \let\startlayoutcomponent\gobbletwoarguments
 \let\stoplayoutcomponent \relax

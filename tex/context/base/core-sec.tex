@@ -927,7 +927,7 @@
        \advance\!!counta \!!countb
        \dosomebreak{\penalty\!!counta}%
      \else
-       \dosomebreak{\allowbreak}%
+       \dosomebreak\allowbreak
      \fi
    \fi
    \xdef\@@koniveau{\getvalue{\??se\@@sectie\c!niveau}}}
@@ -1344,8 +1344,8 @@
        \ifkopprefix
          \setupreferenceprefix[\localkopprefix]%
        \fi
-       \dosomebreak\nobreak
        \ifdisplaysectionhead
+         \dosomebreak\nobreak
          \emptyheadcorrection
          \getvalue{\??ko#1\c!na}%
        \fi
@@ -1410,8 +1410,8 @@
          {\marking[#1]{#4}%
           \marking[#1\v!nummer]{}}%
        \writesection{#1}{-}{#4}%
-       \dosomebreak\nobreak
        \ifdisplaysectionhead
+         \dosomebreak\nobreak
          \emptyheadcorrection
          \getvalue{\??ko#1\c!na}%
        \fi
@@ -1544,8 +1544,11 @@
 % \section{test test test test test test test test test test
 % test test test test test test test}
 
+\newevery \everyheadstart \relax
+
 \def\placeheadmargintexts#1%
-  {\doifvalue{\??ko#1\c!margetekst}\v!ja\placemargintexts}
+  {\the\everyheadstart
+   \doifvalue{\??ko#1\c!margetekst}\v!ja\placemargintexts}
 
 \def\doplaatskoptekst#1#2#3#4%
   {\beginheadplacement{#1}%

@@ -131,8 +131,8 @@
 
 \startJSpreamble {Field} used now
 
-function PresetFields () 
-  { this.syncAnnotScan() } 
+function PresetFields ()
+  { this.syncAnnotScan() }
 
 var visible_field  = new Array() ; % no garbage collection !
 var visible_fields = 0 ;
@@ -146,7 +146,7 @@ function Hide_Field ( Name )
     if (v)
       { v.hidden = true ;
     % { v.display = display.hidden ;
-        v.readonly = true ; 
+        v.readonly = true ;
         this.dirty = false } }
 
 function Do_Vide_Field ( Name, Closable )
@@ -156,16 +156,16 @@ function Do_Vide_Field ( Name, Closable )
         visible_field[visible_fields] = Name ;
         v.hidden = false ;
       % v.display = display.visible ;
-        if (Closable)  
-          { v.readonly = false ; 
-            v.value = "On" } 
+        if (Closable)
+          { v.readonly = false ;
+            v.value = "On" }
         this.dirty = false } }
 
 function Vide_Field ( Name )
-  { Do_Vide_Field(Name,false) } 
+  { Do_Vide_Field(Name,false) }
 
 function Vide_Hide_Field ( Name )
-  { Do_Vide_Field(Name,true) } 
+  { Do_Vide_Field(Name,true) }
 
 function Hide_Fields ()
   { while (visible_fields>0)
@@ -182,12 +182,12 @@ function Vide_Hide_Fields ( Name ) % show only one field
 
 function Toggle_Hide ( Name )
   { var v = this.getField(Name) ;
-    if (v) 
-      { v.hidden = !v.hidden ; 
+    if (v)
+      { v.hidden = !v.hidden ;
       % if v.display == display.hidden
-      %   { v.display = display.visible } 
-      % else 
-      %   { v.display = display.hidden } 
+      %   { v.display = display.visible }
+      % else
+      %   { v.display = display.hidden }
         this.dirty = false } }
 
 function Field_On ( Name )
@@ -204,7 +204,7 @@ function Toggle_Value ( Name )
       { if (v.value=="On")
           { v.value = "Off" }
         else
-          { v.value = "On" } } 
+          { v.value = "On" } }
    this.dirty = false }
 
 function Toggle_Read ( Name )
@@ -218,9 +218,9 @@ function Flip_Fields ( Name )
         if (v)
           { v.hidden = !v.hidden ;
           % if v.display == display.hidden
-          %   { v.display = display.visible } 
-          % else 
-          %   { v.display = display.hidden } 
+          %   { v.display = display.visible }
+          % else
+          %   { v.display = display.hidden }
             v.value = "On" } } }
 
 function Forget_Changes ()

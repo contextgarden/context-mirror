@@ -286,6 +286,61 @@
 \def\dosetpageregisterpage#1#2#3#4#5#6%
   {\doifreglevelelse[#5]{\dodosetpageregisterpage{#1}{#2}{#3}{#4}{#5}{#6}}{}}
 
+% \def\dodosetpageregisterpage#1#2#3#4#5#6%
+%    {\global\utilitydonetrue
+%     \c!entryletter
+%     \setregisterhowto[#3]%
+%     \def\dohandleregisterentry##1%
+%       {\bgroup
+%        \if!!donea % \strut nieuw
+%          \setbox0\hbox{\showlocation{\doregistertexthowto{#2}
+%            {\strut\limitedregisterentry{#2}{##1}}}}%
+%          \gotonextinternal{\s!ind}{#4}{#6}{\box0}%
+%        \else
+%          \doregistertexthowto{#2}{##1}%
+%        \fi
+%        \egroup
+%        \!!doneafalse}%
+%     \!!doneafalse
+%     \doifelsevalue{\??id#2\c!interactie}\v!tekst
+%       {\ifcase\currententrylevel                 \or
+%          \!!doneatrue\c!entrya\c!entryb\c!entryc \or
+%          \c!entrya\!!doneatrue\c!entryb\c!entryc \or
+%          \c!entrya\c!entryb\!!doneatrue\c!entryc \fi}
+%       {\c!entrya\c!entryb\c!entryc}%
+%     \global\let\c!entrya\relax
+%     \global\let\c!entryb\relax
+%     \global\let\c!entryc\relax
+%     \global\let\c!entryletter\relax
+%     \global\let\c!entryreference\relax
+%    % \global\firstregisterentrytrue
+%     \iffirstregisterpage
+%       \global\chardef\lastregisterpagestatus\zerocount
+%       \expandafter\hskip\getvalue{\??id#2\c!afstand}\relax
+%       \donetrue
+%     \else\ifnum#1=3
+%       |--|\relax % -- !
+%       \donetrue
+%     \else\ifnum\lastregisterpagestatus=2
+%       \donefalse % waiting for "to" pagenumber
+%     \else
+%       \registerpageseparator
+%       |\spatie|\relax % \relax needed because | looks ahead
+%       \donetrue
+%     \fi\fi\fi
+%     \ifdone
+%       \doifelsevalue{\??id#2\c!interactie}\v!paginanummer
+%         {\bgroup
+%          \setbox0\hbox
+%            {\showlocation{\doregisterpage{#2}[#5]\ifnum#1=2\/\fi}}%
+%          \gotonextinternal\s!ind{#4}{#6}{\box0}%{\copy0}%
+%          \egroup}
+%         {\hbox{\doregisterpage{#2}[#5]\ifnum#1=2\/\fi}}%
+%       \ignorespaces
+%       \global\chardef\lastregisterpagestatus#1\relax
+%     \fi
+%     \global\firstregisterpagefalse}
+
 \def\dodosetpageregisterpage#1#2#3#4#5#6%
    {\global\utilitydonetrue
     \c!entryletter
@@ -293,9 +348,14 @@
     \def\dohandleregisterentry##1%
       {\bgroup
        \if!!donea % \strut nieuw
-         \setbox0\hbox{\showlocation{\doregistertexthowto{#2}
-           {\strut\limitedregisterentry{#2}{##1}}}}%
-         \gotonextinternal{\s!ind}{#4}{#6}{\box0}%
+         %\setbox0\hbox{\showlocation{\doregistertexthowto{#2}
+         %  {\strut\limitedregisterentry{#2}{##1}}}}%
+         % \gotonextinternal\s!ind{#4}{#6}{\box0}%
+         %
+         \hhboxindent\hangindent % maybe also left and right skip
+         \setbox0\hbox{\doregistertexthowto{#2}{\strut\limitedregisterentry{#2}{##1}}}%
+         \unhhbox0\with{\gotonextinternal\s!ind{#4}{#6}{\box\hhbox}}%
+         %
        \else
          \doregistertexthowto{#2}{##1}%
        \fi
@@ -349,7 +409,7 @@
          {\doregistertexthowto{#1}{\strut\limitedregisterentry{#1}{##1}}}%
        \getvalue
          {#1\ifcase\currententrylevel\s!entrya\or\s!entryb\else\s!entryc\fi}%
-         {\doregisterpagehowto{#1}{\labeltexts{\v!zie}{#3}}}%
+         {\doregisterpagehowto{#1}{\labeltexts\v!zie{#3}}}%
        \c!entryletter\c!entrya\c!entryb\c!entryc
        \global\let\c!entrya\relax
        \global\let\c!entryb\relax
@@ -382,8 +442,7 @@
   {\getvalue{\??id#1\c!voor}%
    \vskip\lineheight\goodbreak\vskip-\lineheight
    \ifhmode\unskip\else\noindent\fi % brrr
-   \getvalue{\??id#1\c!commando}%
-     {\doattributes{\??id#1}\c!letter\c!kleur{\strut\ignorespaces#2}}%
+   \getvalue{\??id#1\c!commando}{\doattributes{\??id#1}\c!letter\c!kleur{\strut\ignorespaces#2}}%
    \getvalue{\??id#1\c!na}%
    \par\nobreak}
 
@@ -396,6 +455,9 @@
      {\doattributes{\??id#1}\c!letter\c!kleur{\strut\ignorespaces#2}}%
    \getvalue{\??id#1\c!na}%
    \nobreak}
+
+\def\doregistercharacterA[#1]#2{\doregistercharactera[#1]{\WORD{#2}}}
+\def\doregistercharacterB[#1]#2{\doregistercharacterb[#1]{\WORD{#2}}}
 
 %D Don't use \type{\string#2}; another hack isneeded, since
 %D \type {#2} can be \type {\string} itself.
@@ -496,7 +558,8 @@
     \c!entryletter
     \iflocation
       \getalllistreferences{#1}{#2}%
-      \endgraf\hangindent1em\noindent\c!entryreference
+% \endgraf
+      \hangindent1em\noindent\c!entryreference
       %
       %\thisissomeinternal{\s!lin}{\internallistreference}%
       %
@@ -538,7 +601,7 @@
           \fi}}%
       \doifvalue{\??id#1\c!nummer}\v!ja
         {\hskip\getvalue{\??id#1\c!afstand}(\commalistsize)}%
-      \doifnotvalue{\??id#1\c!interactie}{\v!tekst} % paginanummer,alles
+      \doifnotvalue{\??id#1\c!interactie}\v!tekst % paginanummer,alles
         {\def\docommando##1##2%
            {{\setbox0\hbox{\showlocation{\hbox to 1em{\hss\symbol[##2]\hss}}}%
              \ifx##1\empty
@@ -552,9 +615,11 @@
          \docommando\lastlistreference\v!volgende}%
       % tot hier
     \else
-      \endgraf\noindent\c!entryreference
+% \endgraf
+      \noindent\c!entryreference
       \limitedregisterentry{#1}{#2}%
-    \fi}
+    \fi
+\endgraf}
 
 \def\dosetregister#1%
   {\doifelsevalue{\??id#1\c!koppeling}\v!ja

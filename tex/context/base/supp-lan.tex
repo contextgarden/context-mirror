@@ -501,7 +501,7 @@
   {\ifx,\nextnext
      \def\nextnextnext{\afterassignment\egroup\let\next=}%
    \else
-     \let\nextnext=\relax
+     \let\nextnext\relax
    \fi}
 
 %D The macro \type{\checkbeforediscretionary} takes care of
@@ -1350,13 +1350,17 @@
      \flushurl\splitafter:%
    \else\if#1.%
      \flushurl\splitafter.%
+   \else\if#1(%
+     \flushurl\splitbefore(%
+   \else\if#1)%
+     \flushurl\splitafter)%
    \else
      \ifx\savedurl\empty\else
        \splitbefore\savedurl
        \let\savedurl\empty
      \fi
      #1%
-   \fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi}
+   \fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi}
 
 %D When Joop Susan asked (on the \CONTEXT\ mailing list) how
 %D to handle url's passed as argument, the following solutions

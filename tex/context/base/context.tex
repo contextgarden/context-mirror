@@ -15,7 +15,7 @@
 
 \catcode`\{=1 \catcode`\}=2
 
-\def\contextversion{2003.9.26}
+\def\contextversion{2004.1.2}
 
 %D Welcome to the main module. When this module is ran through
 %D \type{initex} or \type{tex -i} or \type{whatevertex} using
@@ -64,7 +64,8 @@
 %D We also use some third party macros. These are loaded by
 %D saying:
 
-\input thrd-ran.tex
+\input thrd-ran.tex % based on: David Carlisle
+\input thrd-trg.tex % based on: Donald Arseneau
 
 %D Now we're ready for some general support modules. These
 %D modules implement some basic typesetting functionality.
@@ -116,7 +117,7 @@
 %D just go for the best there is and load \TABLE. Just to be
 %D sure we do it here, before we redefine \type{|}.
 
-\input thrd-tab.tex
+\input thrd-tab.tex % based on: Michael Wichura
 
 %D Here comes the last support modules. They take care of
 %D some language specific things.
@@ -214,6 +215,8 @@
 \input page-mar.tex
 \input page-bck.tex
 \input page-app.tex
+\input page-flw.tex % flows - experimental
+\input page-spr.tex % spreads - experimental
 
 \input core-job.tex
 
@@ -236,6 +239,7 @@
 %D On which the next one depends:
 
 \input core-pos.tex
+\input core-snc.tex
 
 %D A few more languages, that have specifics using core
 %D functionality:
@@ -259,6 +263,7 @@
 
 \input font-ini.tex
 \input font-uni.tex
+\input font-bfm.tex
 
 \input type-ini.tex
 
@@ -271,6 +276,7 @@
 
 \input core-fnt.tex
 \input core-not.tex
+\input core-lnt.tex
 
 \input core-mis.tex
 
@@ -315,6 +321,7 @@
 %D Defaults go here (more will be moved to this module
 %D later):
 
+\input core-ini.tex
 \input core-def.tex
 
 %D At run time, a few more files are loaded, like:

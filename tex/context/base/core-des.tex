@@ -541,35 +541,35 @@
 
 \def\@@ddsetsubsubsubnummer#1%
   {\edef\doornummer{\getvalue{\??dd#1\??dd\c!nummer}}%
-   \setnummer[\v!sub\v!sub\v!sub\doornummer]}
+   \setnumber[\v!sub\v!sub\v!sub\doornummer]}
 
 \def\@@ddsetsubsubnummer#1%
   {\@@ddresetsubsubsubnummer{#1}%
-   \setnummer[\v!sub\v!sub\doornummer]}
+   \setnumber[\v!sub\v!sub\doornummer]}
 
 \def\@@ddsetsubnummer#1%
   {\@@ddresetsubsubnummer{#1}%
-   \setnummer[\v!sub\doornummer]}
+   \setnumber[\v!sub\doornummer]}
 
 \def\@@ddsetnummer#1%
   {\@@ddresetsubnummer{#1}%
-   \setnummer[\doornummer]}
+   \setnumber[\doornummer]}
 
 \def\@@ddresetsubsubsubnummer#1%
   {\edef\doornummer{\getvalue{\??dd#1\??dd\c!nummer}}%
-   \resetnummer[\v!sub\v!sub\v!sub\doornummer]}
+   \resetnumber[\v!sub\v!sub\v!sub\doornummer]}
 
 \def\@@ddresetsubsubnummer#1%
   {\@@ddresetsubsubsubnummer{#1}%
-   \resetnummer[\v!sub\v!sub\doornummer]}
+   \resetnumber[\v!sub\v!sub\doornummer]}
 
 \def\@@ddresetsubnummer#1%
   {\@@ddresetsubsubnummer{#1}%
-   \resetnummer[\v!sub\doornummer]}
+   \resetnumber[\v!sub\doornummer]}
 
 \def\@@ddresetnummer#1%
   {\@@ddresetsubnummer{#1}%
-   \resetnummer[\doornummer]}
+   \resetnumber[\doornummer]}
 
 \def\@@ddvolgendesubsubsubnummer#1[#2]%
   {\edef\doornummer{\getvalue{\??dd#1\??dd\c!nummer}}%
@@ -760,7 +760,7 @@
 %   {\definieernummer
 %      [#1][\c!voor=,\c!na=,\c!kopletter=,\c!wijze=\@@nrwijze,#2]%
 %    \setvalue           {#1}{\dodoubleempty\dodoorlabel[#1]}%
-%    \setvalue{\s!reset   #1}{\resetnummer[#1]}%
+%    \setvalue{\s!reset   #1}{\resetnumber[#1]}%
 %    \setvalue{\e!verhoog #1}{\verhoognummer[#1]}%
 %    \setvalue{\e!volgende#1}{\dodoubleempty\dovolgendedoorlabel[#1]}%
 %    \setvalue{\c!huidige #1}{\huidigenummer[#1]}}
@@ -796,7 +796,7 @@
      [\c!wijze=\getvalue{\??lb#1\c!wijze}]%
    % generated commands
    \setvalue           {#1}{\dodoubleempty\dodoorlabel[#1]}%
-   \setvalue{\s!reset   #1}{\resetnummer[#1]}%
+   \setvalue{\s!reset   #1}{\resetnumber[#1]}%
    \setvalue{\e!verhoog #1}{\verhoognummer[#1]}%
    \setvalue{\e!volgende#1}{\dodoubleempty\dovolgendedoorlabel[#1]}%
    \setvalue{\c!huidige #1}{\huidigenummer[#1]}}

@@ -357,7 +357,10 @@ var:distantacoloane:*dimensiune::
 var:distantamargine:*dimensiune::
 var:n:*numar::
 var:comandanumar:*\comanda#1::
+var:comandatext:*\comanda#1::
 var:split:tolerant,strict,foartestrict,*numar::
+var:stiltext:normal,aldin,inclinat,aldininclinat,type,cap,mic...,*comanda::
+var:culoaretext:*nume::
 ivr:framed::
 stopsetup
 
@@ -1654,7 +1657,7 @@ var:offsetoriz:*dimensiune::
 var:veroffset:*dimensiune::
 var:stil:normal,aldin,inclinat,aldininclinat,type,cap,mic...,*comanda::
 var:culoare:*nume::
-var:marcaje:on,dezactivat,culoare,ecran::
+var:marcaje:on,dezactivat,culoare,ecran,text::
 var:locatie:stanga,centru,dreapta,subsol,sus, ofata,douafete::
 var:scala:*dimensiune::
 var:nx:*numar::
@@ -2521,6 +2524,7 @@ var:comanda:*\comanda#1::
 var:locatie:stanga,centru,dreapta::
 var:latimemaxima:*dimensiune::
 var:referintanecunoscuta:gol,niciunul::
+var:alternativ:a,b,A,B::
 stopsetup
 
 startsetup
@@ -3432,6 +3436,7 @@ startsetup
 com:seteazarotare:
 typ:vars/:
 var:rotatie:*numar::
+var:locatie:normal,inalt,ajustat,broad,adancime::
 ivr:seteazainconjurat::
 stopsetup
 

@@ -8,24 +8,24 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
-%C details. 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
 
 \writestatus{loading}{Context Core Macros / Verbatim}
 
 \startmessages  dutch  library: verbatims
   title: typen
-      1: file -- bestaat niet 
+      1: file -- bestaat niet
 \stopmessages
 
 \startmessages  english  library: verbatims
   title: verbatim
-      1: file -- does not exist 
+      1: file -- does not exist
 \stopmessages
 
 \startmessages  german  library: verbatims
   title: verbatim
-      1: Datei -- existiert nicht 
+      1: Datei -- existiert nicht
 \stopmessages
 
 \startmessages  czech  library: verbatims
@@ -40,7 +40,7 @@
 
 \startmessages  norwegian  library: verbatims
   title: verbatim
-      1: fil -- eksisterer ikke 
+      1: fil -- eksisterer ikke
 \stopmessages
 
 \startmessages  romanian  library: verbatims
@@ -64,20 +64,20 @@
 \def\installprettytype%
   {\dodoubleargument\doinstallprettytype}
 
-\def\doinstallprettytype[#1][#2]% map #1 onto #2 
+\def\doinstallprettytype[#1][#2]% map #1 onto #2
   {\uppercasestring#1\to\asciiA
    \uppercasestring#2\to\asciiB
    \setevalue{\??ty\??ty\asciiA}{\asciiB}}
 
 \def\setupprettiesintype#1%
-  {\uppercasestring#1\to\ascii   
+  {\uppercasestring#1\to\ascii
    \edef\prettyidentifier%
      {\ifundefined{\??ty\??ty\ascii}TEX%
       \else\getvalue{\??ty\??ty\ascii}\fi}%
    \doifundefined{setuppretty\prettyidentifier type}%
      {\bgroup
       \setbox0\hbox % get rid of spaces when in-line \newpretty loading
-        {\restorecatcodes % also needed when loading during \newpretty 
+        {\restorecatcodes % also needed when loading during \newpretty
          \startreadingfile % restore < and > if needed
          \lowercasestring verb-\prettyidentifier.tex\to\filename
          \readsysfile\filename\donothing\donothing
@@ -87,7 +87,7 @@
      {\let\uncatcodecharacters\uncatcodeallcharacters % ugly, should be switch
       \def\setupprettytype{\getvalue{setuppretty\prettyidentifier type}}}
      {\let\setupprettytype\relax}}
-  
+
 \installprettytype [RAW]        [RAW]
 
 \installprettytype [TEX]        [TEX]
@@ -129,7 +129,7 @@
 \installnewpretty X {\setupprettiesintype{XML}\setupprettytype}
 
 \def\setupcommonverbatim#1%
-  {\eightbitcharactersfalse % obey regime / encoding 
+  {\eightbitcharactersfalse % obey regime / encoding
    %
    \def\prettyidentifier{TEX}%
    %
@@ -143,10 +143,10 @@
    \doifvalue{#1\c!spatie}\v!aan{\def\obeyspaces{\setcontrolspaces}}%
    %doifvalue{#1\c!tab}   \v!aan{\def\obeytabs  {\settabskips}}%
    \doifnotvalue{#1\c!tab}\v!uit{\def\obeytabs  {\settabskips}}%
-   \doifvalue{#1\c!tab} \s!ascii{\chardef\tabskipmode2}% quit on >127 
+   \doifvalue{#1\c!tab} \s!ascii{\chardef\tabskipmode2}% quit on >127
    \doifvalue{#1\c!pagina}\v!nee{\def\obeypages {\ignorepages}}%
    %
-   \ignorehyphens % default 
+   \ignorehyphens % default
    \ExpandFirstAfter\processaction
      [\getvalue{#1\c!regels}]
      [        \v!ja=>\obeybreakpoints,
@@ -197,7 +197,7 @@
 %D \type{<<} and \type{>>} as delimiters. This alternative can
 %D be used in situations where slanted typeseting is needed.
 
-% todo: we can use \letter... here: 
+% todo: we can use \letter... here:
 
 \def\lesscharacter {<}
 \def\morecharacter {>}
@@ -221,7 +221,7 @@
 
 \unexpanded\def\type%
   {\dotype\empty}
-   
+
 \def\dotype#1%
   {\bgroup
    \strut % new, enables leading space in \type { abc } at par start
@@ -259,7 +259,7 @@
 %    \fi\fi
 %    \verbatimcolor
 %    \next}
-% 
+%
 % \def\dodotype%
 %   {\ifx\next\bgroup
 %      \initializetype
@@ -293,25 +293,25 @@
 \def\dodotypeA
   {\initializetype
    \initializetypegrouping
-   \verbatimcolor 
+   \verbatimcolor
    \afterassignment\protectfirsttype\let\next=}
 
 \def\dodotypeB
   {\initializetype
    \setupnotypegrouping
-   \verbatimcolor 
+   \verbatimcolor
    \let\next=}
 
 \def\dodotypeC<#1%
   {\initializetype
-   \verbatimcolor 
+   \verbatimcolor
    \if#1<\else
      \setupalternativetypegrouping#1%
    \fi}
 
 \def\dodotypeD#1%
   {\initializetype
-   \verbatimcolor 
+   \verbatimcolor
    \catcode`#1=\@@endgroup}
 
 \def\dodotype%
@@ -337,10 +337,10 @@
       \egroup]%
    \def\activeleftargument%
      [\bgroup
-      \leftargument               %% this way TeXEdit can check: { 
+      \leftargument               %% this way TeXEdit can check: {
       \catcode`\}=\@@active        % ... in alignments (tables)
       \let}=\activerightargument]%
-   \let{=\activeleftargument]%    %% this way TeXEdit can check: } 
+   \let{=\activeleftargument]%    %% this way TeXEdit can check: }
 \egroup
 
 \bgroup
@@ -357,14 +357,14 @@
   {\catcode`\<=\@@begingroup
    \catcode`\>=\@@endgroup}
 
-%D When writing the manual to \CONTEXT\ and documenting this 
-%D source we needed to typeset \type{<<} and \type{>>}. Because 
-%D we wanted to do this in the natural way, we've adapted the 
-%D original definition a bit. We still show the original 
-%D because we think it's shows a bit better what we are 
-%D doing. 
-%D 
-%D \starttypen 
+%D When writing the manual to \CONTEXT\ and documenting this
+%D source we needed to typeset \type{<<} and \type{>>}. Because
+%D we wanted to do this in the natural way, we've adapted the
+%D original definition a bit. We still show the original
+%D because we think it's shows a bit better what we are
+%D doing.
+%D
+%D \starttypen
 %D \bgroup
 %D \catcode`\<=\@@active
 %D \catcode`\>=\@@active
@@ -392,14 +392,14 @@
 %D \egroup
 %D \stoptypen
 %D
-%D The final implementation looks a bit further and treats the 
-%D lone \type{<<} and \type{>>} a bit different. The \type 
-%D {\hbox{}} prevents ligatures, which unfortunately turn up 
-%D in Lucida fonts. 
+%D The final implementation looks a bit further and treats the
+%D lone \type{<<} and \type{>>} a bit different. The \type
+%D {\hbox{}} prevents ligatures, which unfortunately turn up
+%D in Lucida fonts.
 
 \def\doenterdoublelesstype
   {\ifx\next\egroup
-      \lesscharacter\hbox{}\lesscharacter 
+      \lesscharacter\hbox{}\lesscharacter
    \else
      \bgroup\switchslantedtype
      \let\doenterdoublemoretype\egroup
@@ -460,17 +460,17 @@
 %   \edef\!!stringa{\getvalue{#1\c!escape}}%
 %   \@EA\catcode\@EA`\!!stringa=\@@escape}
 
-\def\setupcommandsintype#1% can also be \string\ 
+\def\setupcommandsintype#1% can also be \string\
   {\setupgroupedtype
    \edef\\{\getvalue{#1\c!escape}}%
-   \letvalue{\\}=\\% for instance \/=/ 
+   \letvalue{\\}=\\% for instance \/=/
    \@EA\catcode\@EA`\\=\@@escape
-   \def\BTEX##1\ETEX##2% ##2 gobbles active space 
+   \def\BTEX##1\ETEX##2% ##2 gobbles active space
      {\naturaltextext##1\unskip\relax}}
 
-%D The following lines show what happens when we set 
-%D \type {option=commands}. 
-%D 
+%D The following lines show what happens when we set
+%D \type {option=commands}.
+%D
 %D \startbuffer
 %D \starttyping
 %D test//test test/BTEX \footnote{test test test}/ETEX test
@@ -479,11 +479,11 @@
 %D test test test /BTEX \bf(nota bene)/ETEX  test
 %D \stoptyping
 %D \stopbuffer
-%D 
+%D
 %D % \bgroup\setuptyping[option=commands]\getbuffer\egroup
-%D 
-%D this was keyed in as: 
-%D 
+%D
+%D this was keyed in as:
+%D
 %D \typebuffer
 
 \def\setupslantedtype
@@ -498,7 +498,7 @@
      \let\next\relax
    \else\ifx\next\bgroup
      \let\next\relax
-   \else\ifx\next\egroup % takes care of \type{} 
+   \else\ifx\next\egroup % takes care of \type{}
      \let\next\relax
    \else\ifx\next\activeleftargument
      \let\next\relax
@@ -508,7 +508,7 @@
    \next}
 \egroup
 
-\def\protectfirsttype%
+\def\protectfirsttype
   {\futurelet\next\doprotectfirsttype}
 
 %D The neccessary initializations are done by calling
@@ -558,13 +558,13 @@
 
 %D \macros
 %D   {typ,obeyhyphens,obeybreakpoints}
-%D 
+%D
 %D Although it's not clear from the macros, one character
 %D trait of this macros, which are build on top of the support
 %D module, is that they don't hyphenate. We therefore offer
 %D the alternative \type{\typ}. The current implementation
 %D works all right, but a decent hyphenation support of
-%D \type{\tt} text will be implemented soon. 
+%D \type{\tt} text will be implemented soon.
 
 % \def\obeyhyphens
 %   {\def\obeyedspace{\hskip\spaceskip}%
@@ -573,7 +573,7 @@
 %    \tttf\hyphenchar\font45
 %    \savedfont
 %    \spaceskip.5em\!!plus.25em\!!minus.25em\relax}
-% 
+%
 % \def\obeybreakpoints
 %   {\def\obeyedspace{\hskip\spaceskip}%
 %    \spaceskip.5em
@@ -592,7 +592,7 @@
   {\def\obeyedspace {\null\hskip\spaceskip\null}%
    \def\controlspace{\null\hskip\zeropoint\hbox{\char32}\hskip\zeropoint\null}%
    \spaceskip.5em\relax}
- 
+
 %\unexpanded\def\typ
 %  {\bgroup
 %   \obeyhyphens
@@ -642,9 +642,9 @@
 %D \unexpanded\def\dis{\dospecialtype{\$\$}{\$\$}}
 %D \stoptypen
 %D
-%  %D For sometime we used the better but less readable is 
+%  %D For sometime we used the better but less readable is
 %  %D alternative
-%  %D 
+%  %D
 %  %D \starttypen
 %  %D \def\doprocessgroup#1#2#3%
 %  %D   {\bgroup
@@ -656,18 +656,18 @@
 %  %D       #2}%
 %  %D    \afterassignment\doprocessgroup
 %  %D    \let\next=}
-%  %D 
+%  %D
 %  %D \def\setgroupedtype%
 %  %D   {\initializetype
 %  %D    \catcode`\{=\@@begingroup
 %  %D    \catcode`\}=\@@endgroup}
-%  %D 
+%  %D
 %  %D \unexpanded\def\tex{\doprocessgroup\setgroupedtype\texescape\relax}
 %  %D \unexpanded\def\arg{\doprocessgroup\setgroupedtype\leftargument\rightargument}
 %  %D \unexpanded\def\mat{\doprocessgroup\setgroupedtype\$\$}
 %  %D \unexpanded\def\dis{\doprocessgroup\setgroupedtype{\$\$}{\$\$}}
 %  %D \stoptypen
-%  %D 
+%  %D
 %D
 %D But since \type{\groupedcommand} became available, we use
 %D however
@@ -689,7 +689,7 @@
 %D due to the fact that we use \type{\stop...} as delimiter.
 %D The implementation inherits  some features, for instance the
 %D support of linenumbering, which can best be studied in the
-%D documented support module. 
+%D documented support module.
 
 \def\initializetyping#1%
   {%\donefalse
@@ -700,9 +700,9 @@
    \scratchskip\getvalue{\??tp#1\c!evenmarge}\relax
    \ifzeropt\scratchskip\else\donetrue\fi
    \ifdone
-     \def\doopenupverbatimline%
+     \def\doopenupverbatimline
        {\getpagestatus
-        \ifrightpage 
+        \ifrightpage
           \hskip\getvalue{\??tp#1\c!onevenmarge}\relax
         \else
           \hskip\getvalue{\??tp#1\c!evenmarge}\relax
@@ -724,13 +724,13 @@
            \v!geen=>\scratchskip\zeropoint,
         \s!unknown=>\scratchskip\commalistelement]%
    \ifgridsnapping
-     \ifdim\scratchskip=.5\baselineskip\relax  
-       \edef\verbatimbaselineskip{\the\scratchskip}% new 
+     \ifdim\scratchskip=.5\baselineskip\relax
+       \edef\verbatimbaselineskip{\the\scratchskip}% new
      \else
-       \edef\verbatimbaselineskip{\the\baselineskip}% 
+       \edef\verbatimbaselineskip{\the\baselineskip}%
      \fi
    \else
-     \edef\verbatimbaselineskip{\the\scratchskip}% 
+     \edef\verbatimbaselineskip{\the\scratchskip}%
    \fi
    \setupcommonverbatim{\??tp#1}}
 
@@ -785,27 +785,27 @@
 
 %D The setups for display verbatim and file verbatim are
 %D shared. One can adapt the extra defined typing environments,
-%D but they also default to the values below. Watch the 
-%D alternative escape character. 
+%D but they also default to the values below. Watch the
+%D alternative escape character.
 
 \setuptyping
   [          \c!voor=\blanko,
                \c!na=\blanko,
             \c!korps=,
             \c!kleur=,
-           \c!spatie=\v!uit,  
+           \c!spatie=\v!uit,
            \c!pagina=\v!nee,
               \c!tab=\s!ascii,
             \c!optie=\v!geen,
             \c!palet=colorpretty,
             \c!tekst=\v!nee,
-           \c!letter=\tttf, 
+           \c!letter=\tttf,
         \c!icommando=\ttsl,
         \c!vcommando=,
         \c!ccommando=\tttf,
  \c!springvolgendein=\v!ja,
             \c!marge=\!!zeropoint,
-        \c!evenmarge=\!!zeropoint, 
+        \c!evenmarge=\!!zeropoint,
       \c!onevenmarge=\!!zeropoint,
            \c!blanko=\v!regel,
            \c!escape=/, % beware \string\ , should also be accepted
@@ -815,8 +815,8 @@
 %D \macros
 %D   {definetype}
 %D
-%D Specific inline verbatim commands can be defined with the 
-%D following command. 
+%D Specific inline verbatim commands can be defined with the
+%D following command.
 
 \def\definetype
   {\dodoubleempty\dodefinetype}
@@ -843,9 +843,9 @@
 %D \stopextratyping
 %D \stoptypen
 %D
-%D The definitions default to the standard typing values. 
+%D The definitions default to the standard typing values.
 
-\def\presettyping[#1][#2]% 
+\def\presettyping[#1][#2]%
   {\copyparameters
      [\??tp#1][\??tp]
      [\c!voor,\c!na,\c!spatie,\c!pagina,\c!tab,\c!kleur,\c!letter,
@@ -909,7 +909,7 @@
    prettythree=grayprettythree,
     prettyfour=grayprettyfour]
 
-% ---> naar verb-* ? of predefine als undefined? 
+% ---> naar verb-* ? of predefine als undefined?
 
 \definepalet [TEXcolorpretty]    [colorpretty]
 \definepalet [TEXgraypretty]     [graypretty]
@@ -935,7 +935,7 @@
 % Some real in-depth knowlegde of palets: `palet:color' it is!
 
 %D We can use some core color commands. These are faster than
-%D the standard color switching ones and work ok on a line by 
+%D the standard color switching ones and work ok on a line by
 %D line basis.
 %D
 %D \starttypen
@@ -945,17 +945,17 @@
 %D    \def\endofpretty       {\stopcolormode}}
 %D \stoptypen
 %D
-%D Since we support a global color too, the folowing 
-%D definition is better: 
+%D Since we support a global color too, the folowing
+%D definition is better:
 
-\def\setupverbatimcolor#1% fast and local versus slow and global 
-  {\doifelsevaluenothing{#1\c!kleur} 
+\def\setupverbatimcolor#1% fast and local versus slow and global
+  {\doifelsevaluenothing{#1\c!kleur}
      {\def\beginofpretty[##1]{\startcolormode{\prettypalet:##1}}%
       \let\endofpretty        \restorecolormode % \stopcolormode
       \let\startverbatimcolor \relax
       \let\stopverbatimcolor  \relax
       \let\verbatimcolor      \relax}
-     {\def\beginofpretty[##1]{\startcolor[\prettypalet:##1]}% 
+     {\def\beginofpretty[##1]{\startcolor[\prettypalet:##1]}%
       \let\endofpretty        \stopcolor
       \def\startverbatimcolor{\startcolor[\getvalue{#1\c!kleur}]}%
       \let\stopverbatimcolor  \stopcolor
@@ -971,7 +971,7 @@
 \let\stopverbatimcolor \relax
 \let\verbatimcolor     \relax
 
-%D In the verbatim module, there are some examples given of 
+%D In the verbatim module, there are some examples given of
 %D the more obscure features of the verbatim environments.
 %D
 %D \startbuffer
@@ -980,14 +980,14 @@
 %D   {\ifmmode#1\else$#1$\fi}  % becomes: \mathematics{x^2}
 %D \stopTEX
 %D \stopbuffer
-%D 
-%D \typebuffer 
-%D 
-%D This gives, as can be expected: 
-%D 
+%D
+%D \typebuffer
+%D
+%D This gives, as can be expected:
+%D
 %D \haalbuffer
-%D   
-%D When we want to see some typeset \TEX\ too, we can say: 
+%D
+%D When we want to see some typeset \TEX\ too, we can say:
 %D
 %D \startbuffer
 %D \startTEX
@@ -996,57 +996,17 @@
 %D \stopTEX
 %D \stopbuffer
 %D
-%D \typebuffer 
+%D \typebuffer
 %D
-%D or: 
+%D or:
 %D
 %D \haalbuffer
 %D
-%D In a similar way: 
+%D In a similar way:
 %D
 %D \startbuffer
 %D \startSQL
-%D select *       -- indeed, here we {\em do} select 
-%D   from tableA
-%D   where 1 = 2
-%D \stopSQL
-%D \stopbuffer
-%D
-%D \typebuffer 
-%D
-%D gives: 
-%D
-%D \haalbuffer 
-%D
-%D The next examples sow how we can directly call for natural
-%D \TEX\ comments:  
-%D 
-%D \startbuffer
-%D \setuptyping
-%D   [TEX]
-%D   [tekst=ja]
-%D 
-%D \startTEX
-%D \def\mathematics#1%         % usage: \type {\mathematics{x^2}}
-%D   {\ifmmode#1\else$#1$\fi}  % becomes: \mathematics{x^2}
-%D \stopTEX
-%D 
-%D \setuptyping
-%D   [SQL]
-%D   [tekst=ja,palet=,icommando=\bf,vcommando=,ccommando=\it]
-%D 
-%D \startSQL
-%D select *       -- indeed, here we {\em do} select 
-%D   from tableA
-%D   where 1 = 2
-%D \stopSQL
-%D 
-%D \setuptyping
-%D   [SQL]
-%D   [ccommando=\tf\underbar]
-%D 
-%D \startSQL
-%D select *       -- indeed, here we {\em do} select 
+%D select *       -- indeed, here we {\em do} select
 %D   from tableA
 %D   where 1 = 2
 %D \stopSQL
@@ -1054,11 +1014,51 @@
 %D
 %D \typebuffer
 %D
-%D Now watch: 
+%D gives:
 %D
 %D \haalbuffer
 %D
-%D The natural \TEX\ typesetting was introduced when Tobias 
+%D The next examples sow how we can directly call for natural
+%D \TEX\ comments:
+%D
+%D \startbuffer
+%D \setuptyping
+%D   [TEX]
+%D   [tekst=ja]
+%D
+%D \startTEX
+%D \def\mathematics#1%         % usage: \type {\mathematics{x^2}}
+%D   {\ifmmode#1\else$#1$\fi}  % becomes: \mathematics{x^2}
+%D \stopTEX
+%D
+%D \setuptyping
+%D   [SQL]
+%D   [tekst=ja,palet=,icommando=\bf,vcommando=,ccommando=\it]
+%D
+%D \startSQL
+%D select *       -- indeed, here we {\em do} select
+%D   from tableA
+%D   where 1 = 2
+%D \stopSQL
+%D
+%D \setuptyping
+%D   [SQL]
+%D   [ccommando=\tf\underbar]
+%D
+%D \startSQL
+%D select *       -- indeed, here we {\em do} select
+%D   from tableA
+%D   where 1 = 2
+%D \stopSQL
+%D \stopbuffer
+%D
+%D \typebuffer
+%D
+%D Now watch:
+%D
+%D \haalbuffer
+%D
+%D The natural \TEX\ typesetting was introduced when Tobias
 %D and Berend started using verbatim \JAVASCRIPT\ and \SQL.
 
 %D \macros
@@ -1078,7 +1078,7 @@
 %D setup values are inherited from display verbatim.
 %D The implementation of \type{\typefile} is straightforward:
 
-% new feature (not yet 100\% ok) 
+% new feature (not yet 100\% ok)
 %
 % \setuptyping[file][numbering=file]
 %
@@ -1173,25 +1173,25 @@
       \egroup}%
    \getvalue{\??tp#1\c!na}}
 
-%D \macros 
+%D \macros
 %D   {filename}
 %D
 %D Typesetting filenames in monospaced fonts is possible with
-%D  
+%D
 %D \starttypen
 %D \filename{here/there/filename.suffix}
 %D \stoptypen
 %D
-%D The definition is not that spectacular. 
+%D The definition is not that spectacular.
 
 \unexpanded\def\filename#1{{\tttf\hyphenatedfile{#1}}}
 
-%D This leaves some settings: 
+%D This leaves some settings:
 
 \permitshiftedendofverbatim
 \optimizeverbatimtrue
 
-%D And a bonus macro: 
+%D And a bonus macro:
 
 \def\verbatim#1{\convertargument#1\to\ascii\ascii}
 

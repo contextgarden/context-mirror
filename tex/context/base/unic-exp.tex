@@ -13,14 +13,14 @@
 
 \writestatus{loading}{Context UNICODE Macros (expansion)}
 
-%D \macros 
+%D \macros
 %D   {expandunivector}
-%D 
-%D The \type {\expandunivector} macro can be used to expand 
-%D vectors, which leads to a faster run in case of documents 
-%D with lots of \UTF-8 code. 
+%D
+%D The \type {\expandunivector} macro can be used to expand
+%D vectors, which leads to a faster run in case of documents
+%D with lots of \UTF-8 code.
 
-\unprotect 
+\unprotect
 
 \def\expandunivector[#1]%
   {\processcommalist[#1]\doexpandunivector}
@@ -33,9 +33,11 @@
        \dorecurse{255}
          {\@EA\ifx\csname\csname\@@univector#1\endcsname\recurselevel\endcsname
             \unknownchar
-            % skip 
+            % skip
           \else
-            \@EAEAEA\let\@EA\@EA\csname\@@univector\@@univector#1:\recurselevel\endcsname
+            % \@EAEAEA\let\@EA\@EA\csname\@@univector\@@univector#1:\recurselevel\endcsname
+            %   \csname\csname\@@univector#1\endcsname\recurselevel\endcsname
+            \@EA\let\csname\@@univector\@@univector#1:\recurselevel\@EA\endcsname
               \csname\csname\@@univector#1\endcsname\recurselevel\endcsname
           \fi}%
        \letbeundefined{\@@univector#1}%
@@ -49,7 +51,7 @@
      \@@unknownchar
    \fi}
 
-%D For this purpose, we need to redefine the resolver. 
+%D For this purpose, we need to redefine the resolver.
 
 \def\doutfunihash#1#2%
   {\ifcsname\@@univector\@@univector\number#1\endcsname
@@ -57,7 +59,7 @@
    \else\ifcsname\@@univector\number#1\endcsname
      \csname\@@univector#1\endcsname{\utfmod{#2}}%
    \else
-     \@@unknownchar  
+     \@@unknownchar
    \fi\fi}
 
 \let\utfunihash\utfunihashglyph
@@ -66,4 +68,4 @@
 
 \expandunivector[0,1,2,32,33]
 
-\protect \endinput 
+\protect \endinput

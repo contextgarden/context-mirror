@@ -2855,8 +2855,11 @@
 
 \endETEX
 
-\let\pushmacro\globalpushmacro
-\let\popmacro \globalpopmacro
+% \let\pushmacro\globalpushmacro
+% \let\popmacro \globalpopmacro
+
+\let\pushmacro\localpushmacro
+\let\popmacro \localpopmacro
 
 %D \macros
 %D   {setlocalhsize}
@@ -3251,7 +3254,16 @@
    \@EA\dostripcharacter\!!stringa#1\end
    \dodoglobal\let#3\!!strippedstring}
 
-\def\stripspaces\from#1\to#2%
+\def\stripspaces\from#1\to#2% will become \unspacestring#1\from#2
+  {\stripcharacter{ }\from#1\to#2}
+
+%D \macros
+%D   {unspacestring}
+%D
+%D The next macro does the same but is more compatible with other macros,
+%D like \type {\convert...}.
+
+\def\unspacestring#1\to#2%
   {\stripcharacter{ }\from#1\to#2}
 
 %D \macros
@@ -3469,10 +3481,10 @@
 %D However, we want to handle all situations, like:
 %D
 %D \startbuffer
-%D \processseparatedlist[{aap noot}]  [ ]{\def\xxx} \show\xxx
-%D \processseparatedlist[{aap} {noot}][ ]{\def\xxx} \show\xxx
-%D \processseparatedlist[aap {noot}]  [ ]{\def\xxx} \show\xxx
-%D \processseparatedlist[aap noot]    [ ]{\def\xxx} \show\xxx
+%D \processseparatedlist[{aap noot}]  [ ]{\def\xxx} \convertcommand\xxx\to\ascii {\tttf\ascii}
+%D \processseparatedlist[{aap} {noot}][ ]{\def\xxx} \convertcommand\xxx\to\ascii {\tttf\ascii}
+%D \processseparatedlist[aap {noot}]  [ ]{\def\xxx} \convertcommand\xxx\to\ascii {\tttf\ascii}
+%D \processseparatedlist[aap noot]    [ ]{\def\xxx} \convertcommand\xxx\to\ascii {\tttf\ascii}
 %D \stopbuffer
 %D
 %D \typebuffer \getbuffer
@@ -3600,11 +3612,11 @@
 %D They remove braces and backslashes and give us something to
 %D sort.
 
-\def\untexsomething%
+\def\untexsomething
   {\begingroup
    \catcode`\{=\@@ignore
    \catcode`\}=\@@ignore
-   \escapechar=\minusone
+   \escapechar\minusone
    \dountexsomething}
 
 \long\def\dountexsomething#1#2\to#3%
@@ -3680,7 +3692,7 @@
 
 \def\dontleavehmode
   {\ifhmode\else \ifmmode\else
-     {\mathsurround\z@\everymath\emptytoks$ $}%
+     {\mathsurround\zeropoint\everymath\emptytoks$ $}%
    \fi \fi}
 
 %D \macros
@@ -4343,7 +4355,7 @@
 %D \filterfromvalues{xx}{1}
 %D \stoptypen
 %D
-%D I'll implement this when I'm in \quotation {writing dirty
+%D I'll implement this when I'm in \citaat {writing dirty
 %D macros mood}.
 
 \def\filterfromvalue#1#2#3% value max n

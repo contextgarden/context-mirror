@@ -105,9 +105,9 @@
 
 \let\geenmarkering\empty
 
-\def\fetchmark[#1][#2]% never \unexpanded
-  {\@EA\@EA\csname\??mk\??mk#2\endcsname
-     \csname\??mk\hoofdmarkering{#1}\endcsname}
+% \def\fetchmark[#1][#2]% never \unexpanded
+%   {\@EA\@EA\csname\??mk\??mk#2\endcsname
+%      \csname\??mk\hoofdmarkering{#1}\endcsname}
 
 \beginTEX
 
@@ -123,7 +123,9 @@
 
 \def\fetchmark[#1][#2]% never \unexpanded
   {\ifcsname\??mk#1\c!koppeling\endcsname
-     \@EA\@EA\csname\??mk\??mk#2\endcsname
+   % \@EA\@EA\csname\??mk\??mk#2\endcsname
+   % \csname\??mk\csname\??mk#1\c!koppeling\endcsname\endcsname
+     \csname\??mk\??mk#2\@EA\endcsname
      \csname\??mk\csname\??mk#1\c!koppeling\endcsname\endcsname
    \fi}
 

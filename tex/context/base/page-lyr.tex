@@ -125,12 +125,32 @@
 \def\setlayer
   {\dotripleempty\dosetlayer}
 
-\def\dosetlayer[#1][#2][#3]%
-  {\ifthirdargument
-     \doifnotvalue{\??ll#1\c!status}\v!stop{\dodosetlayer[#1][#2][#3]}%
-   \else
-     \doifnotvalue{\??ll#1\c!status}\v!stop{\dodosetlayer[#1][][#2]}%
-   \fi}
+\def\dosetlayer[#1][#2][#3]% #4 == box do \fi is ok
+  {\doifelsevalue{\??ll#1\c!status}\v!stop
+     {\dowithnextbox\donothing\hbox}
+     {\ifthirdargument
+        \dodosetlayer[#1][#2][#3]%
+      \else
+        \dodosetlayer[#1][][#2]%
+      \fi}}
+
+% \def\dodosetlayer[#1][#2][#3]% #2 = links/rechts
+%   {\bgroup
+%    \recalculatebackgrounds
+%    \recalculatelogos
+%    \doglobal\increment\currentlayerdata
+%    \forgetall
+%    \dontcomplain
+%    \doifvalue{\??ll#1\c!optie}\v!test\tracelayerstrue
+%    \iftracelayers\traceboxplacementtrue\fi
+%    \dowithnextbox % sneller als aparte macro
+%      {\ifundefined{\@@layerbox#1}%
+%         \writestatus{layer}{unknown layer #1}%
+%       \else
+%         \dododosetlayer[#1][#2][#3]%
+%       \fi
+%       \egroup}
+%      \hbox}
 
 \def\dodosetlayer[#1][#2][#3]% #2 = links/rechts
   {\bgroup
@@ -145,7 +165,19 @@
      {\ifundefined{\@@layerbox#1}%
         \writestatus{layer}{unknown layer #1}%
       \else
-        \dododosetlayer[#1][#2][#3]%
+        \doifelse{#2}\v!even
+          {\ifodd\realpageno
+          %  discard nextbox
+           \else
+             \dododosetlayer[#1][\v!links][#3]%
+           \fi}%
+          {\doifelse{#2}\v!oneven
+             {\ifodd\realpageno
+                \dododosetlayer[#1][\v!rechts][#3]%
+             %\else
+             %  discard nextbox
+              \fi}%
+             {\dododosetlayer[#1][#2][#3]}}%
       \fi
       \egroup}
      \hbox}
@@ -157,6 +189,9 @@
 
 \let\lastlayerxpos\!!zeropoint
 \let\lastlayerypos\!!zeropoint
+\let\lastlayerwd  \!!zeropoint
+\let\lastlayerht  \!!zeropoint
+\let\lastlayerdp  \!!zeropoint
 
 % todo left/right
 
@@ -289,14 +324,17 @@
         \doifnotvalue{\layerparameter\c!richting}\v!omgekeerd
           {\box\csname\@@layerbox#2#1\layerpage\endcsname}%
       \fi
-\doifelsevalue{\??ll#1\c!plaats}\v!grid\donetrue\donefalse
-\ifdone
-   \nextboxht\strutheight
-   \nextboxdp\strutdepth
-\else
-   \setbox\nextbox\hbox
-     {\alignedbox[\layerparameter\c!plaats]\vbox{\flushnextbox}}%
-\fi
+   \xdef\lastlayerwd{\the\wd\nextbox}%
+   \xdef\lastlayerht{\the\ht\nextbox}% % not entirely ok when grid !
+   \xdef\lastlayerdp{\the\dp\nextbox}% % not entirely ok when grid !
+   \doifelsevalue{\??ll#1\c!plaats}\v!grid\donetrue\donefalse
+   \ifdone
+     \nextboxht\strutheight
+     \nextboxdp\strutdepth
+   \else
+     \setbox\nextbox\hbox
+       {\alignedbox[\layerparameter\c!plaats]\vbox{\flushnextbox}}%
+   \fi
    \ifnum\layerparameter\c!regel=\zerocount\else % no \ifcase, can be negative
      \advance\@@layerypos \layerparameter\c!regel\lineheight
      \advance\@@layerypos \topskip
@@ -369,18 +407,33 @@
 %         \vss}%
 %    \fi}
 
+% \unexpanded\def\flushlayer[#1]%
+%   {\doifelsevalue{\??ll#1\c!dubbelzijdig}\v!ja
+%      {\doifundefinedelse{\@@layerbox#1}%
+%         {\dodoflushlayerA[#1]}
+%         {\doifbothsidesoverruled
+%            \dodoflushlayerB[#1][\v!links]%  left
+%          \orsideone
+%            \dodoflushlayerB[#1][\v!rechts]% right
+%          \orsidetwo
+%            \dodoflushlayerB[#1][\v!links]%  left
+%          \od}}
+%      {\dodoflushlayerA[#1]}}
+
 \unexpanded\def\flushlayer[#1]%
-  {\doifelsevalue{\??ll#1\c!dubbelzijdig}\v!ja
-     {\doifundefinedelse{\@@layerbox#1}%
-        {\dodoflushlayerA[#1]}
-        {\doifbothsidesoverruled
-           \dodoflushlayerB[#1][\v!links]%  left
-         \orsideone
-           \dodoflushlayerB[#1][\v!rechts]% right
-         \orsidetwo
-           \dodoflushlayerB[#1][\v!links]%  left
-         \od}}
-     {\dodoflushlayerA[#1]}}
+  {\doifelsevalue{\??ll#1\c!status}\v!volgende
+      {\global\letvalue{\??ll#1\c!status}\v!start} % dangerous, stack-built-up
+      {\doifelsevalue{\??ll#1\c!dubbelzijdig}\v!ja
+         {\doifundefinedelse{\@@layerbox#1}%
+            {\dodoflushlayerA[#1]}
+            {\doifbothsidesoverruled
+               \dodoflushlayerB\v!links [#1]%  left
+             \orsideone
+               \dodoflushlayerB\v!rechts[#1]% right
+             \orsidetwo
+               \dodoflushlayerB\v!links [#1]%  left
+             \od}}
+         {\dodoflushlayerA[#1]}}}
 
 \def\dodoflushlayerA[#1]%
   {\doifnotvalue{\??ll#1\c!status}\v!stop
@@ -389,13 +442,22 @@
         {\dodoflushlayer0{#1}{#1:\realfolio}}
       \stopoverlay}}
 
-\def\dodoflushlayerB[#1][#2]%
-  {\doifnotvalue{\??ll#1\c!status}\v!stop
+% \def\dodoflushlayerB[#1][#2]%
+%   {\doifnotvalue{\??ll#1\c!status}\v!stop
+%      {\startoverlay
+%         {\dodoflushlayer1{#1}{#1}}
+%         {\dodoflushlayer0{#1}{#1:\realfolio}}
+%         {\dodoflushlayer1{#1}{#2#1}}
+%         {\dodoflushlayer0{#1}{#2#1:\realfolio}}
+%       \stopoverlay}}
+
+\def\dodoflushlayerB#1[#2]%
+  {\doifnotvalue{\??ll#2\c!status}\v!stop
      {\startoverlay
-        {\dodoflushlayer1{#1}{#1}}
-        {\dodoflushlayer0{#1}{#1:\realfolio}}
-        {\dodoflushlayer1{#1}{#2#1}}
-        {\dodoflushlayer0{#1}{#2#1:\realfolio}}
+        {\dodoflushlayer1{#2}{#2}}
+        {\dodoflushlayer0{#2}{#2:\realfolio}}
+        {\dodoflushlayer1{#2}{#1#2}}
+        {\dodoflushlayer0{#2}{#1#2:\realfolio}}
       \stopoverlay}}
 
 % \def\dodoflushlayer#1#2#3%
@@ -506,7 +568,7 @@
 %D   register ("somepos-3",0cm,0cm,(-2cm,2cm)) ;
 %D \stopuseMPgraphic
 %D
-%D \getMLlayer[test]{\useMPgraphic{oeps}}
+%D \getMPlayer[test]{\useMPgraphic{oeps}}
 %D \stoptypen
 %D
 %D The last line is equivalent to
@@ -570,19 +632,19 @@
       \vfill}%
    \egroup}
 
-\def\resetpositioning%
+\def\resetpositioning
   {\getparameters[\??ps]
-     [\c!status=\v!start,
-      \c!eenheid=\s!cm,
-      \c!factor=1,
-      \c!schaal=1,
-      \c!xfactor=\@@psfactor,
-      \c!yfactor=\@@psfactor,
-      \c!xschaal=\@@psschaal,
-      \c!yschaal=\@@psschaal,
-      \c!xstap=\v!absoluut,
-      \c!ystap=\v!absoluut,
-      \c!xoffset=\!!zeropoint,
+     [\c!status=\v!start,%
+      \c!eenheid=\s!cm,%
+      \c!factor=1,%
+      \c!schaal=1,%
+      \c!xfactor=\@@psfactor,%
+      \c!yfactor=\@@psfactor,%
+      \c!xschaal=\@@psschaal,%
+      \c!yschaal=\@@psschaal,%
+      \c!xstap=\v!absoluut,%
+      \c!ystap=\v!absoluut,%
+      \c!xoffset=\!!zeropoint,%
       \c!yoffset=\!!zeropoint]}
 
 \def\setuppositioning%
@@ -626,7 +688,7 @@
             \flushnextbox
             \hss}
          \vss}%
-      \xdef\dopoppositioning%
+      \xdef\dopoppositioning
         {\xposition\the\xposition
          \yposition\the\yposition
          \noexpand\def\noexpand\@@psxoffset{\@@psxoffset}%
@@ -647,5 +709,5 @@
    \c!offset=\v!ja,
    \c!xoffset=\!!zeropoint,
    \c!yoffset=\!!zeropoint]
-
+
 \protect \endinput

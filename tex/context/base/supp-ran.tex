@@ -8,39 +8,39 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
-%C details. 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
 
 \writestatus{loading}{Third Party Macros / Random Number Generation}
 
 %D \macros
-%D   {getrandomcount, getrandomdimen, 
+%D   {getrandomcount, getrandomdimen,
 %D    getrandomfloat, getrandomnumber,
 %D    setrandomseed, getrandomseed}
-%D 
+%D
 %D This module load Donald Arseneau's generic file
 %D \type{random.tex}. A small shell is needed because we
-%D redefine some \TEX\ primitives. We also use different names 
+%D redefine some \TEX\ primitives. We also use different names
 %D for the two generators and add an extra one.
-%D 
+%D
 %D \starttypen
 %D \getrandomcount  \countregister {minimum} {maximum}
 %D \getrandomdimen  \dimenregister {minimum} {maximum}
 %D \getrandomnumber \macroname     {minimum} {maximum}
 %D \getrandomfloat  \macroname     {minimum} {maximum}
-%D \stoptypen 
+%D \stoptypen
 %D
 %D Of course the file \type{random.tex} needs to be present.
-%D To prevent name clashes, the \CONTEXT\ distribution 
+%D To prevent name clashes, the \CONTEXT\ distribution
 %D contains a copy in \type {thrd-ran.tex}.
 %D
-%D The randomseed can be set by: 
+%D The randomseed can be set by:
 %D
 %D \starttypen
 %d \setrandomseed{number>0}
 %D \stoptypen
 %D
-%D and get by: 
+%D and get by:
 %D
 %D \starttypen
 %D \getrandomseed\randomseed
@@ -65,9 +65,9 @@
 
   \def\normalnextrandom
     {\bgroup
-     \let\time \normaltime   
+     \let\time \normaltime
      \let\day  \normalday
-     \let\month\normalmonth  
+     \let\month\normalmonth
      \let\year \normalyear
      \verynormalnextrandom
      \egroup}
@@ -81,16 +81,16 @@
      \egroup}
 
   % avoid scratch dimens 0 and 2 (already recoded in third-ran
-  % 
-  % \unprotect 
-  %  
+  %
+  % \unprotect
+  %
   % \def\setrandim#1#2#3% dimen register, minimum length, maximum length
   %   {\scratchdimen#2\edef\!!stringa{\number\scratchdimen}%
   %    \scratchdimen#3\edef\!!stringb{\number\scratchdimen}%
   %    \setrannum\ranval\!!stringa\!!stringb
   %    #1\ranval\s!sp\relax}
-  % 
-  % \protect 
+  %
+  % \protect
 
 \fi
 
@@ -112,7 +112,7 @@
    \edef#1{\the\scratchcounter}}
 
 \def\getrandomfloat#1#2#3%
-  {\getrandomdimen\scratchdimen{#2\s!pt}{#3\s!pt}%
+  {\getrandomdimen\scratchdimen{#2\points}{#3\points}%
    \edef#1{\withoutpt\the\scratchdimen}}
 
 \unexpanded \def\setrandomseed#1%

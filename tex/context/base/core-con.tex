@@ -31,9 +31,18 @@
 %D non||sence uppercase alternative.
 %D
 %D \showsetup{\y!numbers}
+%D
+%D \starttyping
+%D \def\numbers#1{\number#1}
+%D \def\Numbers#1{\number#1}
+%D \stoptyping
+%D
+%D Due to read ahead, as in \type{[\pagenumber\space]} the space will
+%D disappear, unless we use:
 
-\def\numbers#1{\number#1}
-\def\Numbers#1{\number#1}
+\def\numbers#1{\purenumber{#1}}
+\def\Numbers#1{\purenumber{#1}}
+
 
 %D \macros
 %D   {romannumerals,Romannumerals}
@@ -54,16 +63,16 @@
 
 %D For some years we had \unknown
 %D
-%D \starttypen 
+%D \starttypen
 %D \def\Romannumerals#1%
 %D   {\uppercase\expandafter{\romannumeral#1}}
-%D \stoptypen 
-%D 
+%D \stoptypen
+%D
 %D \unknown but we need to be fully expandable in order to get
 %D the utility output file right, so now we have the following
 %D solution. It was Patrick Gundlach who first noticed this
-%D ommision. 
- 
+%D ommision.
+
 \def\Romannumerals#1%
   {\expandafter\doRomannumerals\number#1\relax}
 
@@ -71,14 +80,14 @@
   {\ifnum#1#2<10
      \ifcase0#1#2 \or I\or II\or III\or IV\or V\or VI\or VII\or VIII\or IX\fi
    \else\ifnum#1#2<100
-     \ifcase0#1   \or X\or XX\or XXX\or XL\or L\or LX\or LXX\or LXXX\or XC\fi 
-     \doRomannumerals#2\relax 
+     \ifcase0#1   \or X\or XX\or XXX\or XL\or L\or LX\or LXX\or LXXX\or XC\fi
+     \doRomannumerals#2\relax
    \else\ifnum#1#2<1000
-     \ifcase0#1   \or C\or CC\or CCC\or CD\or D\or DC\or DCC\or DCCC\or CM\fi 
-     \doRomannumerals#2\relax 
+     \ifcase0#1   \or C\or CC\or CCC\or CD\or D\or DC\or DCC\or DCCC\or CM\fi
+     \doRomannumerals#2\relax
    \else\ifnum#1#2<4000
      \ifcase0#1   \or M\or MM\or MMM\fi
-     \doRomannumerals#2\relax 
+     \doRomannumerals#2\relax
    \else
      \uppercase\expandafter{\romannumeral#1#2}%
    \fi\fi\fi\fi}
@@ -179,7 +188,7 @@
 %D \macros
 %D   {oldstylenumerals,oldstyleromannumerals}
 %D
-%D These conversions are dedicated to Frans Goddijn. 
+%D These conversions are dedicated to Frans Goddijn.
 
 \unexpanded\def\oldstylenumerals#1%
   {{\os\number#1}}
@@ -207,10 +216,10 @@
 %D possible, and because \TEX\ already uses up some of those,
 %D we save the original meanings.
 
-\savenormalmeaning\time  
-\savenormalmeaning\year  
-\savenormalmeaning\month 
-\savenormalmeaning\day   
+\savenormalmeaning\time
+\savenormalmeaning\year
+\savenormalmeaning\month
+\savenormalmeaning\day
 
 %D \macros
 %D   {month,MONTH}
@@ -280,9 +289,9 @@
 
 \def\getdayoftheweek#1#2#3%
   {\bgroup
-   \!!counta#3\relax 
+   \!!counta#3\relax
    \advance\!!counta \minusone
-   \!!countb\!!counta 
+   \!!countb\!!counta
    \multiply\!!countb 365
    \advance\!!countb \ifcase#2\relax
      0 \or  0 \or 31 \or 59 \or 90 \or120 \or151 \or
@@ -291,21 +300,21 @@
    \ifnum#2>2
      \doifleapyearelse{#3}{\advance\!!countb 1}{}\relax
    \fi
-   \!!countc\!!counta 
+   \!!countc\!!counta
 %  \DoDiv\!!countc by4to\!!countc
    \dosetdivision\!!countc4\!!countc
    \advance\!!countb \!!countc
-   \!!countc\!!counta 
+   \!!countc\!!counta
 %  \DoDiv\!!countc by100to\!!countc
    \dosetdivision\!!countc{100}\!!countc
    \advance\!!countb -\!!countc
-   \!!countc\!!counta 
+   \!!countc\!!counta
 %  \DoDiv\!!countc by400to\!!countc
    \dosetdivision\!!countc{400}\!!countc
    \advance\!!countb \!!countc
 %  \DoMod\!!countb by7to\!!countb
    \dosetmodulo\!!countb7\!!countb
-   \advance\!!countb \plusone 
+   \advance\!!countb \plusone
    \@EA\egroup\@EA\normalweekday\the\!!countb\relax}
 
 \def\dayoftheweek#1#2#3%
@@ -469,7 +478,7 @@
 %D \haalbuffer
 %D \stopregels
 
-\def\kenmerkdatumpatroon{j,mm,dd} % jj,mm,dd changed at januari 1-1-2000 
+\def\kenmerkdatumpatroon{j,mm,dd} % jj,mm,dd changed at januari 1-1-2000
 
 \newsignal\datesignal
 
@@ -483,14 +492,14 @@
 %   {\bgroup
 %    \let\labellanguage\currentlanguage
 %    \def\betweendates{\let\betweendates\dobetweendates}%
-%    \lowercase{\edef\!!stringa{#1}}% permits usage in \kap 
+%    \lowercase{\edef\!!stringa{#1}}% permits usage in \kap
 %    \@EA\processallactionsinset\@EA
 %      [\!!stringa]
 %      [    \v!dag=>\betweendates\the\normalday,
 %         \v!maand=>\betweendates\month\normalmonth,
 %          \v!jaar=>\betweendates\the\normalyear,
-%           \space=>\unskip\ \hskip\datesignal,% optimization -) 
-%               \ =>\unskip\ \hskip\datesignal,% optimization -) 
+%           \space=>\unskip\ \hskip\datesignal,% optimization -)
+%               \ =>\unskip\ \hskip\datesignal,% optimization -)
 %                d=>\the\normalday,
 %                m=>\the\normalmonth,
 %                j=>\the\normalyear,
@@ -515,15 +524,15 @@
 %   {\bgroup
 %    \let\labellanguage\currentlanguage
 %    \def\betweendates{\let\betweendates\dobetweendates}%
-%    \lowercase{\edef\!!stringa{#1}}% permits usage in \kap 
+%    \lowercase{\edef\!!stringa{#1}}% permits usage in \kap
 %    \@EA\processallactionsinset\@EA
 %      [\!!stringa]
 %      [    \v!dag=>\betweendates\the\normalday,
 %          \v!dag+=>\betweendates\ordinaldaynumber\normalday,
 %         \v!maand=>\betweendates\month\normalmonth,
 %          \v!jaar=>\betweendates\the\normalyear,
-%        \v!spatie=>\unskip\ \hskip\datesignal,% optimization -) 
-%               \ =>\unskip\ \hskip\datesignal,% optimization -) 
+%        \v!spatie=>\unskip\ \hskip\datesignal,% optimization -)
+%               \ =>\unskip\ \hskip\datesignal,% optimization -)
 %                d=>\the\normalday,
 %               d+=>\ordinaldaynumber\normalday,
 %                m=>\the\normalmonth,
@@ -550,7 +559,7 @@
   {\bgroup
    \let\labellanguage\currentlanguage
    \def\betweendates{\let\betweendates\dobetweendates}%
-   \lowercase{\edef\!!stringa{#1}}% permits usage in \kap 
+   \lowercase{\edef\!!stringa{#1}}% permits usage in \kap
    \@EA\processallactionsinset\@EA
      [\!!stringa]
      [    \v!dag=>\betweendates\the\normalday,
@@ -558,8 +567,8 @@
          \v!dag+=>\betweendates\convertnumber{\v!dag+}\normalday,
         \v!maand=>\betweendates\month\normalmonth,
          \v!jaar=>\betweendates\the\normalyear,
-       \v!spatie=>\unskip\ \hskip\datesignal,% optimization -) 
-              \ =>\unskip\ \hskip\datesignal,% optimization -) 
+       \v!spatie=>\unskip\ \hskip\datesignal,% optimization -)
+              \ =>\unskip\ \hskip\datesignal,% optimization -)
                d=>\convertnumber\v!dag\normalday,
              %d+=>\ordinaldaynumber\normalday,
               d+=>\convertnumber{\v!dag+}\normalday,
@@ -612,9 +621,9 @@
 %D \macros
 %D   {currenttime}
 %D
-%D The currenttime is actually the jobtime. You can specify 
-%D a pattern similar to the previous date macro using the 
-%D keys \type {h}, \type {m} and a separator.  
+%D The currenttime is actually the jobtime. You can specify
+%D a pattern similar to the previous date macro using the
+%D keys \type {h}, \type {m} and a separator.
 
 \def\calculatecurrenttime
 % {\DoDiv\time by60to\scratchcounter\edef\currenthour  {\the\scratchcounter}%
@@ -637,7 +646,7 @@
   {\expanded{\complexcurrenttime[\currenttimespecification]}}
 
 \definecomplexorsimple\currenttime
-   
+
 %D Because we're dealing with dates, we also introduce a few
 %D day loops:
 %D
@@ -687,7 +696,7 @@
 %D \defineconversion [set 1] [$\star$,$\bullet$,$\ast$]
 %D \stoptypen
 %D
-%D You can define a language dependent conversion with: 
+%D You can define a language dependent conversion with:
 %D
 %D \starttypen
 %D \defineconversion [en] [whatever] [\something]
@@ -702,7 +711,7 @@
 %       \processcommalist[#2]\docommando
 %       \setvalue{\??cv#1}##1{\csname\??cv#1##1\endcsname}}
 %      {\setvalue{\??cv#1}{#2}}}
-% 
+%
 % \def\defineconversion%
 %   {\dodoubleargument\dodefineconversion}
 
@@ -747,7 +756,7 @@
 %    \else
 %      \@EA\firstoftwoarguments
 %    \fi}
- 
+
 \beginETEX \ifcsname
 
 \def\convertnumber#1%
@@ -769,7 +778,7 @@
    \else
      \@EAEAEA\secondoftwoarguments
    \fi\fi}
- 
+
 \endETEX
 
 \beginTEX
@@ -853,24 +862,24 @@
 
 \defineconversion
   [set 0]
-  [{\symbol[bullet]},      
+  [{\symbol[bullet]},
    {\symbol[dash]},
-   {\symbol[star]},  
+   {\symbol[star]},
    {\symbol[triangle]},
-   {\symbol[circle]}, 
+   {\symbol[circle]},
    {\symbol[medcircle]},
-   {\symbol[bigcircle]},    
+   {\symbol[bigcircle]},
    {\symbol[square]}]
 
 \defineconversion
   [set 1]
-  [\mathematics{\star},            
+  [\mathematics{\star},
    \mathematics{\star\star},
-   \mathematics{\star\star\star},  
-   \mathematics{\ddagger}, 
-   \mathematics{\ddagger\ddagger}, 
+   \mathematics{\star\star\star},
+   \mathematics{\ddagger},
+   \mathematics{\ddagger\ddagger},
    \mathematics{\ddagger\ddagger\ddagger},
-   \mathematics{\ast},             
+   \mathematics{\ast},
    \mathematics{\ast\ast},
    \mathematics{\ast\ast\ast}]
 
@@ -900,7 +909,7 @@
    \mathematics{\P},
    \mathematics{\P\P},
    \mathematics{\P\P\P},
-   \mathematics{\S},   
+   \mathematics{\S},
    \mathematics{\S\S},
    \mathematics{\S\S\S},
    \mathematics{\ast},

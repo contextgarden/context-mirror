@@ -43,7 +43,7 @@
 \let\@@typescripttwo  \empty \let\typescripttwo  \empty
 \let\@@typescriptthree\empty \let\typescriptthree\empty
 
-\unexpanded\def\usetypescript%
+\unexpanded\def\usetypescript
   {\dotripleempty\dousetypescript}
 
 \def\dousetypescript[#1][#2][#3]%
@@ -53,12 +53,12 @@
   {\pushmacro\@@typescriptone  \edef\@@typescriptone  {\truetypescript{#1}}%
    \pushmacro\@@typescripttwo  \edef\@@typescripttwo  {\truetypescript{#2}}%
    \pushmacro\@@typescriptthree\edef\@@typescriptthree{\truetypescript{#3}}%
-   \pushmacro\typescriptone  
-   \pushmacro\typescripttwo  
+   \pushmacro\typescriptone
+   \pushmacro\typescripttwo
    \pushmacro\typescriptthree
    \pushmacro\stoptypescript
    \typescriptfoundfalse
-   \writestatus\m!fonts 
+   \writestatus\m!fonts
      {[\@@typescriptone] [\@@typescripttwo] [\@@typescriptthree]}%
    \processcommacommand[\typescriptfiles]\dododousetypescript
    \firsttypescriptpassfalse % testen
@@ -84,12 +84,12 @@
 \def\dousetypescriptonce[#1][#2][#3]%
   {\doifelseflagged{ts:#1:#2:#3}%
      {\writestatus\m!fonts{once (#1) (#2) (#3)}}
-     {\setflag{ts:#1:#2:#3}% 
-      \expanded{\dodousetypescript[#1][#2][#3]}}}      
+     {\setflag{ts:#1:#2:#3}%
+      \expanded{\dodousetypescript[#1][#2][#3]}}}
 
 % \definetypescriptsynonym[lbr][cmr]
 
-\def\definetypescriptsynonym%
+\def\definetypescriptsynonym
   {\dodoubleempty\dodefinetypescriptsynonym}
 
 \def\dodefinetypescriptsynonym[#1][#2]%
@@ -127,22 +127,22 @@
 
 \prependtoks\firsttypescriptpasstrue\to\everyjob
 
-% \def\dochecktypescript#1#2#3% script use value 
+% \def\dochecktypescript#1#2#3% script use value
 %   {\donefalse
 %    \doifelsenothing{#1}\donetrue
 %      {\doifelse{#2}{all}\donetrue
 %         {\doifelse{#1}{all}\donetrue
 %            {\fullexpandtwoargsafter\doifcommonelse{#1}{#2}\donetrue\donefalse
 %             \ifdone\let#3\commalistelement\fi}}}}
-% 
+%
 % \def\starttypescript%
 %   {\dotripleempty\dostarttypescript}
 %
 % \long\def\dostarttypescript[#1][#2][#3]#4\stoptypescript
 %   {\iffirstargument
-%      \let\typescriptone  \@@typescriptone  
-%      \let\typescripttwo  \@@typescripttwo  
-%      \let\typescriptthree\@@typescriptthree  
+%      \let\typescriptone  \@@typescriptone
+%      \let\typescripttwo  \@@typescripttwo
+%      \let\typescriptthree\@@typescriptthree
 %      \dochecktypescript{#1}\@@typescriptone  \typescriptone   \ifdone
 %      \dochecktypescript{#2}\@@typescripttwo  \typescripttwo   \ifdone
 %      \dochecktypescript{#3}\@@typescriptthree\typescriptthree \ifdone
@@ -154,7 +154,7 @@
 %             [\@@typescripttwo  =#2 (\typescripttwo)]
 %             [\@@typescriptthree=#3 (\typescriptthree)]}%
 %         #4\typescriptfoundtrue
-%      \fi\fi\fi 
+%      \fi\fi\fi
 %    \else\iffirsttypescriptpass
 %      \pushmacro\fontclass
 %      #4%
@@ -247,7 +247,7 @@
      \else
        \let\next\dostarttypescriptC
      \fi
-     \iftracetypescripts    
+     \iftracetypescripts
        \writestatus\m!fonts{\ifdone match\else pass\fi ed}%
      \fi
    \else\iffirsttypescriptpass
@@ -280,7 +280,7 @@
 % 2 reported
 % 3 preloaded
 
-% flags ipv \c!status, more flag values 
+% flags ipv \c!status, more flag values
 
 % \def\preloadmapfile[#1]%
 %   {\def\docommando##1%
@@ -290,7 +290,7 @@
 %          \doglobal\removefromcommalist{##1}\allfontmapsfiles}
 %         {\expanded{\docommando{##1.\f!fontmapextension}}}}%
 %    \expanded{\processcommalist[#1]}\docommando}
-% 
+%
 % \def\loadmapfile[#1]% last add first
 %   {\def\docommando##1%
 %      {\doifinstringelse{.}{##1}
@@ -336,11 +336,11 @@
 \def\loadallfontmapfiles
   {%\message{[\allfontmapsfiles]}%
    \ifx\allfontmapsfiles\empty \else
-     \ifautoloadmapfiles 
+     \ifautoloadmapfiles
        \ifcase\pdfoutput \else \ifx\pdfmapfile\undefined \else
          \processcommacommand[\allfontmapsfiles]\doloadfontmapfile
          \forgetmapfiles
-       \fi \fi 
+       \fi \fi
      \else
        \processcommacommand[\allfontmapsfiles]\doreportfontmapfile
        \forgetmapfiles
@@ -357,6 +357,11 @@
   {\global\let\allfontmapsfiles\empty}
 
 \forgetmapfiles
+
+\def\disablemapfiles
+  {\ifcase\pdfoutput \else \ifx\pdfmapfile\undefined \else
+     \pdfmapfile{}% this will (kind of reset) the map file loading
+   \fi \fi}
 
 % \definetypeface [#1:joke] [#2:rm]
 % \definetypeface [#1:joke] [#2:rm] [#3:...]
@@ -380,7 +385,7 @@
   {\dododefinetypeface[#1][#2]
    \iffifthargument % sixth is optional
    % \getparameters[\??ts][rscale=1,\s!encoding=\defaultencoding,#6]
-   % we need to expand since in #6 there can be a \typescripttwo 
+   % we need to expand since in #6 there can be a \typescripttwo
 \expanded{\getparameters[\??ts][\s!rscale=1,\s!encoding=\defaultencoding,#6]}%
 % toch niet \expanded{\getparameters[\??ts][\s!rscale=1,\s!encoding=\s!default,#6]}%
      \pushmacro\relativefontsize
@@ -389,7 +394,7 @@
      \let\relativefontsize\@@tsrscale
      \let\typefaceencoding\@@tsencoding
      \setcurrentfontclass{#1}
-     \saverelativefontsize{#2}{\relativefontsize}% fall back 
+     \saverelativefontsize{#2}{\relativefontsize}% fall back
     %\writestatus{typeface}{[#1] [#2] [#3] [#4]}
      \writestatus\m!fonts{[#1] [#2] [#3] [#4]}
      \usetypescript[map][\typefaceencoding]
@@ -429,9 +434,9 @@
        {#1[\getvalue{\??tf\fontclass\s!default}]}
        {#1[\c!rm]}%
    \fi \fi
-   \ifmmode\mr\else\tf\fi} % needed ? 
+   \ifmmode\mr\else\tf\fi} % needed ?
 
-\def\usetypefile[#1]% recurses on path ! 
+\def\usetypefile[#1]% recurses on path !
   {\readfile{\f!typeprefix#1}{}{}}% \relax\relax}
 
 %D For backward compatibility we reimplement the font file

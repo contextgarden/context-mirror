@@ -357,7 +357,10 @@ var:spaltenabstand:*Dimension::
 var:marginalabstand:*Dimension::
 var:n:*Nummer::
 var:nummerbefehl:*\Befehl#1::
+var:textbefehl:*\Befehl#1::
 var:split:tolerant,streng,sehrstreng,*Nummer::
+var:textstil:normal,fett,geneigt,fettgeneigt,tippen,kap,klein...,*Befehl::
+var:textfarbe:*Name::
 ivr:umrahmt::
 stopsetup
 
@@ -1654,7 +1657,7 @@ var:rumpfabstand:*Dimension::
 var:kopfoffset:*Dimension::
 var:stil:normal,fett,geneigt,fettgeneigt,tippen,kap,klein...,*Befehl::
 var:farbe:*Name::
-var:beschriftung:an,aus,farbe,raster::
+var:beschriftung:an,aus,farbe,raster,text::
 var:platz:links,mittig,rechts,unten,oben, einzelseitig,doppelseitig::
 var:format:*Dimension::
 var:nx:*Nummer::
@@ -2521,6 +2524,7 @@ var:befehl:*\Befehl#1::
 var:platz:links,mittig,rechts::
 var:maxbreite:*Dimension::
 var:unbekantereferenz:leer,kein::
+var:alternative:a,b,A,B::
 stopsetup
 
 startsetup
@@ -3432,6 +3436,7 @@ startsetup
 com:stelledrehenein:
 typ:vars/:
 var:rotation:*Nummer::
+var:platz:normal,hoch,passend,breit,tiefe::
 ivr:stelleumrahmtein::
 stopsetup
 

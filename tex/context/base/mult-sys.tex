@@ -328,7 +328,8 @@
 \def\!!twelvepoint       {12pt}
 \def\!!fourteenpointfour {14.4pt}
 
-\ifx\z@\undefined \newdimen\zeropoint \else \let\zeropoint\z@ \fi
+\ifx\z@\undefined \newdimen\zeropoint \else \let\zeropoint\z@ \fi \zeropoint = 0pt
+\ifx\p@\undefined \newdimen\onepoint  \else \let\onepoint \p@ \fi \onepoint  = 1pt
 
 \newcount\medcard \medcard\!!medcard % used in font module
 \newcount\maxcard \maxcard\!!maxcard % used in font module
@@ -336,6 +337,28 @@
 \ifx\thousandpoint\undefined \newdimen\thousandpoint \fi
 
 \thousandpoint=1000pt
+
+%D Another optimization is:
+
+\let\points\onepoint
+
+%D A rough test is:
+%D
+%D \starttypen
+%D \def\TestMe % 7.75 sec on a P4/2G
+%D   {\dimen0=10\points\dimen0=10\points\dimen0=10\points\dimen0=10\points\dimen0=10\points
+%D    \dimen0=10\points\dimen0=10\points\dimen0=10\points\dimen0=10\points\dimen0=10\points}
+%D
+%D \def\TestMe % 11.5 sec on a P4/2G
+%D   {\dimen0=10pt\dimen0=10pt\dimen0=10pt\dimen0=10pt\dimen0=10pt%
+%D   \dimen0=10pt\dimen0=10pt\dimen0=10pt\dimen0=10pt\dimen0=10pt}
+%D
+%D \def\TestMe % 12.5 sec on a P4/2G
+%D   {\dimen0=10\s!pt\dimen0=10\s!pt\dimen0=10\s!pt\dimen0=10\s!pt\dimen0=10\s!pt%
+%D    \dimen0=10\s!pt\dimen0=10\s!pt\dimen0=10\s!pt\dimen0=10\s!pt\dimen0=10\s!pt}
+%D
+%D \testfeatureonce {500000}{\TestMe}
+%D \stoptypen
 
 %D Variables are composed of a command specific tag and a user
 %D supplied variable (system constant). The first tag \type{ag}
@@ -643,6 +666,9 @@
 \definefileconstant {xstyleprefix}       {x-}
 \definefileconstant {privateprefix}      {p-}
 \definefileconstant {thirdprefix}        {t-}
+
+%definefileconstant {beforeprefix}       {b-}
+%definefileconstant {afterprefix}        {a-}
 
 %D \CONTEXT\ follows different strategies for finding files.
 %D The macros that are responsible for this 'clever' searching

@@ -71,7 +71,7 @@
      {\bgroup
       \setbuffer[pstricks]%
         \usemodule[pstric]%
-        \setbox\scratchbox=\hbox{#2}%
+        \setbox\scratchbox\hbox{#2}%
         % There is probably a nicer way to handle this
         \immediate\openout\scratchwrite=\bufferprefix dim.tmp
         \immediate\write\scratchwrite{\dimen0=\the\ht\scratchbox}%
@@ -91,9 +91,9 @@
       \readlocfile{\bufferprefix pstricks-dim.tmp}{}{}%
       % Since the graphic is put on a page (sigh) by dvips/gs
       % we need to shift it around a bit.
-      \setbox\scratchbox=\hbox
+      \setbox\scratchbox\hbox
         {\externalfigure[\bufferprefix pstricks.pdf][\c!object=\v!nee]}%
-      \setbox\scratchbox=\hbox
+      \setbox\scratchbox\hbox
         {\lower\ht\scratchbox\hbox{\raise\dimen2\box\scratchbox}}%
       \wd\scratchbox\dimen0
       \ht\scratchbox\dimen2
@@ -101,10 +101,10 @@
       \box\scratchbox
       \egroup}}
 
-\fi 
+\fi
 
 \long\def\dostartPSTRICKS[#1]#2\stopPSTRICKS
-  {\doifelse{\jobsuffix}{dvi} % will some day move to app as switch 
+  {\doifelse{\jobsuffix}{dvi} % will some day move to app as switch
      {\hbox{#2}}
      {\startTEXapplication[#1]{\usemodule[pstric]}#2\stopTEXapplication}}
 

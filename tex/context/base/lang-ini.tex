@@ -206,6 +206,7 @@
 %D values are set.
 
 \let\preloadedpatterns\empty
+\let\preloadedpmessage\empty
 
 \def\showpatterns#1%
   {\getvalue{\??la#1\s!lefthyphenmin}%
@@ -213,8 +214,8 @@
    \getvalue{\??la#1\s!righthyphenmin} }
 
 \def\preloadlanguages
-  {\doifsomething\preloadedpatterns
-     {\showmessage\m!linguals{10}\preloadedpatterns}}
+  {\doifsomething\preloadedpmessage
+     {\showmessage\m!linguals{10}\preloadedpmessage}}
 
 \let\installedlanguages\empty
 
@@ -349,13 +350,15 @@
   %\def\patterns##1{\message{#1/#2/#3/#4/##1}\normalpatterns{##1}}%
    \readsysfile{\truefilename{\f!languageprefix#2.\f!patternsextension}}
      {\setxvalue{\??la#1\s!patterns}{#2}%
-      \xdef\preloadedpatterns
-        {\preloadedpatterns
+      \xdef\preloadedpmessage
+        {\preloadedpmessage
          \number\normallanguage:\showpatterns{#2}}%
+      \doglobal\addtocommalist{#2}\preloadedpatterns
       \showmessage\m!linguals1{#2,#1,\loadedlanguage}}
      {\readsysfile{\f!languageprefix#2.\f!patternsextension}
         {\setxvalue{\??la#1\s!patterns}{#2}%
-         \xdef\preloadedpatterns{\preloadedpatterns\showpatterns{#2}}%
+         \xdef\preloadedpmessage{\preloadedpmessage\showpatterns{#2}}%
+         \doglobal\addtocommalist{#2}\preloadedpatterns
          \showmessage\m!linguals1{#2,#1,\loadedlanguage}}
         {\showmessage\m!linguals2{#2,#1,\loadedlanguage}}}%
       \readsysfile{\truefilename{\f!languageprefix#2.\f!hyphensextension}}
@@ -369,6 +372,9 @@
    \global\everyjob\scratchtoks
    \egroup
    \increment\loadedlanguage}
+
+\def\doifpatternselse#1%
+  {\expanded{\doifinsetelse{#1}{\preloadedpatterns}}}
 
 %D Since we can only load patterns in ini\TeX, we nil the
 %D loading before dumping (which saves a bit of memory, but
@@ -386,12 +392,24 @@
 %D
 %D \showsetup{\y!setuplanguage}
 
-\def\setuplanguage
-  {\dodoubleargument\dosetuplanguage}
+% \def\setuplanguage
+%   {\dodoubleargument\dosetuplanguage}
 
-\def\dosetuplanguage[#1][#2]%
-  {\getparameters[\??la#1][#2]%
-   \doif{#1}\currentlanguage\docomplexlanguage}
+% \def\dosetuplanguage[#1][#2]%
+%   {\getparameters[\??la#1][#2]%
+%    \doif{#1}\currentlanguage\docomplexlanguage}
+
+\unprotected \def\setuplanguage
+  {\dodoubleempty\dosetuplanguage}
+
+\def\dosetuplanguage[#1][#2]% handy patch for testing
+  {\ifsecondargument
+     \getparameters[\??la#1][#2]%
+     \doif{#1}\currentlanguage\docomplexlanguage
+   \else
+     \getparameters[\??la\currentlanguage][#1]%
+     \docomplexlanguage
+   \fi}
 
 %D The values \type {\c!leftsentence} and \type
 %D {\c!rightsentence} can be (and are) used to implement
@@ -464,7 +482,7 @@
      \@EAEAEA\firstofoneargument
    \else
      \donetrue
-     \global\@EA\xdef\csname\??la\currentlanguage\s!patterns\endcsname{#2}%
+     \@EA\xdef\csname\??la\currentlanguage\s!patterns\endcsname{#2}%
      \normallanguage\csname\??la\??la#1#2\endcsname\relax % \relax is needed for lookahead problems
      \@EAEAEA\gobbleoneargument
    \fi\fi}
@@ -480,7 +498,7 @@
        \@EAEAEA\firstofoneargument
      \else
        \donetrue
-       \global\@EA\xdef\csname\??la\currentlanguage\s!patterns\endcsname{#2}%
+       \@EA\xdef\csname\??la\currentlanguage\s!patterns\endcsname{#2}%
        \normallanguage\thenormallanguage\relax % \relax is needed for lookahead problems
        \@EAEAEA\gobbleoneargument
      \fi

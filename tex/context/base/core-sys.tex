@@ -2,7 +2,7 @@
 %D   [       file=core-sys, % moved from main-001
 %D        version=1997.03.31,
 %D          title=\CONTEXT\ Core Macros,
-%D       subtitle=System, 
+%D       subtitle=System,
 %D         author=Hans Hagen,
 %D           date=\currentdate,
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
@@ -13,10 +13,10 @@
 
 \writestatus{loading}{Context Core Macros (System)}
 
-\unprotect 
+\unprotect
 
-\def\outputfilename{\@@svfile} 
-\def\inputfilename {\@@svinputfile} 
+\def\outputfilename{\@@svfile}
+\def\inputfilename {\@@svinputfile}
 
 \let\jobfilesuffix\c!tex
 
@@ -31,19 +31,19 @@
 
 \appendtoks \splitjobfilename \to \everyjob
 
-% Some mechanisms (see x-res-01) use either \jobfilename or 
-% \jobfilename.somesuffix, in which case we need to use the 
-% full name if given or a default (like \jobfilename.xml); 
-% this comes down to replacing the default tex suffix. 
+% Some mechanisms (see x-res-01) use either \jobfilename or
+% \jobfilename.somesuffix, in which case we need to use the
+% full name if given or a default (like \jobfilename.xml);
+% this comes down to replacing the default tex suffix.
 
-\def\jobfullname{\jobfilename.\jobfilesuffix} 
+\def\jobfullname{\jobfilename.\jobfilesuffix}
 
-\def\setjobfullname#1% #1 = default if not given 
+\def\setjobfullname#1% #1 = default if not given
   {\doifelsenothing\jobfilename
-     {\let\jobfullname\empty}                          
+     {\let\jobfullname\empty}
      {\doif\jobfilesuffix\c!tex{\edef\jobfullname{\jobfilename.#1}}}}
 
-% ... 
+% ...
 
 \def\dosetupsystem[#1]%
   {\getparameters[\??sv][#1]%
@@ -51,57 +51,57 @@
    \beforesplitstring\@@svresolutie\at dpi\to\@@svresolutie
    \let\outputresolution\@@svresolutie
    \ifcase\@@svn
-     %                        % 0 : unknown 
-   \or 
-     \setsystemmode\v!eerste  % 1 : first run 
-   \or 
-     %                        % 2 : successive run 
-   \or 
-     \setsystemmode\v!eerste  % 3 : first and only run 
+     %                        % 0 : unknown
    \or
-     \setsystemmode\v!laatste % 4 : extra last run 
-   \fi 
+     \setsystemmode\v!eerste  % 1 : first run
+   \or
+     %                        % 2 : successive run
+   \or
+     \setsystemmode\v!eerste  % 3 : first and only run
+   \or
+     \setsystemmode\v!laatste % 4 : extra last run
+   \fi
    \splitjobfilename}
 
 \def\setupsystem
   {\dosingleargument\dosetupsystem}
 
-%D The system modes set by the setup command can be used in 
-%D situations like: 
+%D The system modes set by the setup command can be used in
+%D situations like:
 %D
 %D \starttypen
 %D \startmode[*first]
 %D   \executesystemcommand{cleanupxml text.xml clean-text.xml}
-%D \stopmode 
-%D 
-%D \starttext 
+%D \stopmode
+%D
+%D \starttext
 %D   \typefile{clean-text.xml}
 %D \stoptext
-%D \stoptypen 
+%D \stoptypen
 
 \def\setuprandomize[#1]%
   {\doifsomething{#1}
      {\bgroup
       \setrandomseed\minusone % signals thrd-ran to reseed
-      % tex's time is in minutes 
+      % tex's time is in minutes
       \processaction
         [#1]
-        [  \v!klein=>\divide\normaltime 15, %  900, 
-          \v!middel=>\divide\normaltime 30, % 1800, 
-           \v!groot=>\divide\normaltime 60, % 3600, 
+        [  \v!klein=>\divide\normaltime 15, %  900,
+          \v!middel=>\divide\normaltime 30, % 1800,
+           \v!groot=>\divide\normaltime 60, % 3600,
          \v!normaal=>,
          \s!default=>,
-         \s!unknown=>\normaltime=#1]%    
-      \nextrandom   
+         \s!unknown=>\normaltime=#1]%
+      \nextrandom
       \egroup}}
 
 \setupsystem
   [\c!gebied=,
-   \c!n=0, % 0:unknown 1: one run 2: first 3: successive 4: final run 
+   \c!n=0, % 0:unknown 1: one run 2: first 3: successive 4: final run
    \c!resolutie=600dpi,
    \c!willekeur=,
    \c!file=\jobname,
-   \c!inputfile=\outputfilename, 
+   \c!inputfile=\outputfilename,
    \c!korps=\normalizedlocalbodyfontsize] % of iets anders
 
 %D
@@ -133,11 +133,12 @@
 \definecomplexorsimple\start
 \definecomplexorsimple\stop
 
-\def\dododefinestartstop[#1][#2]%
+\def\dododefinestartstop[#1][#2]% todo: use indirect commands
   {\getparameters
      [\??be#1]
      [\c!voor=,
       \c!na=,
+      \c!tussen=,
       \c!commandos=,
       \c!letter=,
       #2]%
@@ -145,7 +146,8 @@
      {\groupedcommand
         {\getvalue{\??be#1\c!commandos}%
          \dostartattributes{\??be#1}\c!letter\c!kleur}
-        {\dostopattributes}}%
+        {\dostopattributes
+         \getvalue{\??be#1\c!tussen}}}%
    \setvalue{\e!start#1}%
      {\getvalue{\??be#1\c!voor}%
       \bgroup
@@ -230,13 +232,13 @@
    \processcommalist[#1]\docommando
    \egroup}
 
-\newif\ifforcefileexpansion % handy for document level overload 
+\newif\ifforcefileexpansion % handy for document level overload
 
-% \def\convertexpanded#1#2#3% watch the double \v!ja expansion ! 
+% \def\convertexpanded#1#2#3% watch the double \v!ja expansion !
 %   {\ExpandFirstAfter\processaction
 %      [\ifforcefileexpansion\v!ja\else\getvalue{#1\c!expansie}\fi]
 %      [       \v!ja=>{{\honorunexpanded
-%                       \dontexpandencoding % new 
+%                       \dontexpandencoding % new
 %                       \xdef\@@globalexpanded{#2}%
 %                       \xdef\@@globalexpanded{\@@globalexpanded}}%
 %                       \convertcommand\@@globalexpanded\to#3},
@@ -244,18 +246,18 @@
 %         \s!default=>{\convertargument#2\to#3},
 %         \s!unknown=>{\convertargument#2\to#3}]}
 
-%D The next implementation is about 4 times as fast on an 
-%D string of average length. Since this feature is used in 
-%D XML processing, it made sense to support this faster 
+%D The next implementation is about 4 times as fast on an
+%D string of average length. Since this feature is used in
+%D XML processing, it made sense to support this faster
 %D alternative.
 
 \def\installexpander#1{\setvalue{\s!do\c!expansie#1}}
 
-\long\def\convertexpanded#1#2#3% hm, first we need to make sure 
-  {\csname   % that we assign all exp a value   
+\long\def\convertexpanded#1#2#3% hm, first we need to make sure
+  {\csname   % that we assign all exp a value
      \s!do\c!expansie
-     \ifforcefileexpansion 
-       \v!ja 
+     \ifforcefileexpansion
+       \v!ja
      \else\@EA\ifx\csname\s!do\c!expansie\csname#1\c!expansie\endcsname\endcsname\relax
        \s!default
      \else
@@ -270,10 +272,10 @@
 \installexpander\empty     {\convertargument}
 \installexpander\v!nee     {\convertargument}
 
-\def\convertmeaning#1\to % watch the double expansion ! 
+\def\convertmeaning#1\to % watch the double expansion !
   {\bgroup
      \honorunexpanded
-     \dontexpandencoding % new 
+     \dontexpandencoding % new
      \xdef\@@globalexpanded{#1}%
      \xdef\@@globalexpanded{\@@globalexpanded}%
    \egroup
@@ -294,4 +296,4 @@
 \def\herhaler           {\repeater}
 \def\herhaalmetcommando {\dorepeatwithcommand}
 
-\protect \endinput 
+\protect \endinput

@@ -1,6 +1,6 @@
 %D \module
 %D   [       file=page-flw,
-%D        version=2003.04.19, % from test-002 (1997) profile experiment 
+%D        version=2003.04.19, % from test-002 (1997) profile experiment
 %D          title=\CONTEXT\ OTR Macros,
 %D       subtitle=Text Flows,
 %D         author=Hans Hagen,
@@ -13,13 +13,16 @@
 
 \writestatus{loading}{Context OTR Macros / Text Flows}
 
-\unprotect 
+%D This is high experimental and especially flushing may change (proper
+%D spacing is the driving force here).
+
+\unprotect
 
 \def\definetextflow
   {\dodoubleempty\dodefinetextflow}
 
 \def\dodefinetextflow[#1][#2]% flow settings
-  {\iffirstargument       
+  {\iffirstargument
      \doiftextflowcollectorelse{#1}
        {\setbox\textflowcollector{#1}\emptybox}
        {\@EA\newbox\csname\??tx:c:#1\endcsname}%
@@ -64,30 +67,30 @@
         \unvbox\textflowcollector{#1}%
       \fi}}
 
-\protect \endinput 
+\protect \endinput
 
-% Example (dutch) 
-% 
+% Example (dutch)
+%
 % \stelpapierformaatin [S6]
 % \steltolerantiein    [soepel,rek]
 % \stelkleurenin       [status=start]
 % \stelvoetin          [strut=nee]
 % \stelwitruimtein     [groot]
-% 
+%
 % \stellayoutin
 %   [rechterrand=5cm,breedte=passend,marge=0pt,randafstand=1cm,
 %    voet=4cm,voetafstand=1cm,hoofd=0cm]
-% 
-% \stelteksttekstenin[rand][][\flushtextflow{first}]
-% \stelvoettekstenin [rand][][\flushtextflow{second}]
-% \stelvoettekstenin         [\flushtextflow{third}][]
-% 
-% \definetextflow [first]  [alfa]  [breedte=\rechterrandbreedte]
-% \definetextflow [second] [beta]  [breedte=\rechterrandbreedte]
-% \definetextflow [third]  [gamma] [breedte=\voethoogte]
-% 
+%
+% \stelteksttekstenin[rand][][\vbox{\flushtextflow{alpha}}]
+% \stelvoettekstenin [rand][][\vbox{\flushtextflow{beta}}]
+% \stelvoettekstenin         [\vbox{\flushtextflow{gamma}}][]
+%
+% \definetextflow [alfa]  [breedte=\rechterrandbreedte]
+% \definetextflow [beta]  [breedte=\rechterrandbreedte]
+% \definetextflow [gamma] [breedte=\voethoogte]
+%
 % \starttekst
-% 
+%
 % \dorecurse{50}
 %   {\getrandomnumber{\funny}{0}{8}
 %    \ifcase\funny \starttextflow[alfa]  \input tufte.tex   \stoptextflow
@@ -100,5 +103,5 @@
 %    \or          {\bf MATERIE}\quad \input materie \par
 %    \else        {\bf MATERIE}\quad \input materie \par
 %    \fi}
-% 
+%
 % \stoptekst

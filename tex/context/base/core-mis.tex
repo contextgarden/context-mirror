@@ -831,7 +831,7 @@
 
 % this will replace the quotation and speed definitions
 
-\newsignal\delimitedtextignal
+\newsignal\delimitedtextsignal
 
 \def\delimitedtextparameter#1%
   {\csname\??ci
@@ -965,7 +965,7 @@
   {\bgroup
    \setbox\scratchbox\hbox{#1}%
    \ifdim\wd\scratchbox>\zeropoint
-     \ifdim\lastskip=\delimitedtextignal
+     \ifdim\lastskip=\delimitedtextsignal
        \unskip\hskip\hspaceamount\currentlanguage{interquotation}%
      \else
        #2%
@@ -975,7 +975,7 @@
      \fi
      \strut % new, needed below
      \delimitedtextparameter#1%
-     \penalty\!!tenthousand\hskip\delimitedtextignal % +- \prewordbreak
+     \penalty\!!tenthousand\hskip\delimitedtextsignal % +- \prewordbreak
    \fi
    \egroup}
 
@@ -1805,7 +1805,14 @@
      [\??co#1][#2]}
 
 \def\setupcombinations
-  {\dodoubleargument\getparameters[\??co]}
+  {\dodoubleempty\dosetupcombinations}
+
+\def\dosetupcombinations[#1][#2]%
+  {\ifsecondargument
+     \getparameters[\??co#1][#2]%
+   \else
+     \getparameters[\??co][#1]%
+   \fi}
 
 \def\startcombination
   {\dodoubleempty\dostartcombination}
@@ -1974,7 +1981,7 @@
   {\noalign
      {\ifdim\ht\combinationstack>\zeropoint
 \nointerlineskip % nieuw
-        \@@cotussen
+        \combinationparameter\c!tussen
         \global\horcombination\maxhorcombination
         \globallet\doflushcombinationstack\dodoflushcombinationstack
       \else
@@ -2135,7 +2142,7 @@
    \hbox\bgroup % compatibility hack
    \dowithnextbox
      {\edef\@@rorotatie{#1}%
-      \setbox\nextbox=\vbox{\flushnextbox}%
+      \setbox\nextbox\vbox{\flushnextbox}%
       \dostoprotate
       \egroup}}
 
@@ -2159,8 +2166,8 @@
          \dostoprotation
          #6}
       #3}%
-\nextboxdp\zeropoint
-\flushnextbox
+   \nextboxdp\zeropoint
+   \flushnextbox
    \egroup}
 
 \def\dostoprotate
@@ -2234,9 +2241,9 @@
 %       \setdimensionfiguresize
 %       \convertfigureinsertscale\@@epx\figx\figxsca\scax
 %       \convertfigureinsertscale\@@epy\figy\figysca\scay
-%       \scratchdimen\scax\s!pt \divide\scratchdimen 100
+%       \scratchdimen\scax\points\divide\scratchdimen 100
 %       \edef\@@xysx{\withoutpt\the\scratchdimen}%
-%       \scratchdimen\scay\s!pt \divide\scratchdimen 100
+%       \scratchdimen\scay\points\divide\scratchdimen 100
 %       \edef\@@xysy{\withoutpt\the\scratchdimen}}}
 
 % \def\doschaal[#1]%
@@ -2291,9 +2298,9 @@
       \setdimensionfiguresize
       \convertfigureinsertscale\@@epx\figx\figxsca\scax
       \convertfigureinsertscale\@@epy\figy\figysca\scay
-      \scratchdimen\scax\s!pt \divide\scratchdimen \plushundred
+      \scratchdimen\scax\points \divide\scratchdimen \plushundred
       \edef\@@xysx{\withoutpt\the\scratchdimen}%
-      \scratchdimen\scay\s!pt \divide\scratchdimen \plushundred
+      \scratchdimen\scay\points \divide\scratchdimen \plushundred
       \edef\@@xysy{\withoutpt\the\scratchdimen}}}
 
 \def\doschaal[#1]%

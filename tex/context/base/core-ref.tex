@@ -149,13 +149,13 @@
 
 %D These are implemented in a low level form as:
 %D
-%D \starttypen  
+%D \starttypen
 %D \def\dotextreference[#1]{\rawtextreference\s!txt{#1}} % #2
 %D \def\dopagereference[#1]{\rawpagereference\s!pag{#1}}
 %D \def\doreference    [#1]{\rawreference    \s!ref{#1}} % #2
-%D \stoptypen 
+%D \stoptypen
 %D
-%D or without expansion problems: 
+%D or without expansion problems:
 
 \def\dotextreference[#1]#2%
   {\bgroup
@@ -224,7 +224,7 @@
 \appendtoks
  %\def\dohandleaccent #1#2{\string#1\string#2}%
  %\def\dohandlecommand  #1{\string#1}%
-  \cleanupfeatures 
+  \cleanupfeatures
 \to \everyreference
 
 %D Why do we have to write down references? \TEX, and therefore
@@ -277,11 +277,11 @@
      \fi
    \fi}
 
-%D Beware: \type {#2} gobbles space in references so that 
-%D \typ {a nice ref} becomes \typ {anice ref}. 
+%D Beware: \type {#2} gobbles space in references so that
+%D \typ {a nice ref} becomes \typ {anice ref}.
 
-\def\dodowritereference#1#2#3\end#4#5#6% 
-  {\bgroup 
+\def\dodowritereference#1#2#3\end#4#5#6%
+  {\bgroup
    \global\advance\crossreferencenumber \plusone\relax
    \if#1-\if#2:%
      \let\referenceprefix\empty
@@ -508,7 +508,7 @@
 %    \getvalue{\r!cross\fileprefix#2}%
 %    \egroup}
 
-\def\copycrossreference#1#2#3% file from to / slow 
+\def\copycrossreference#1#2#3% file from to / slow
   {\bgroup
    \doifelse{#1}{}
      {\let\fileprefix\empty}
@@ -1389,12 +1389,12 @@
    \egroup
    \doresetgotowhereever} % to prevent problems with direct goto's
 
-%D The following local redefinition permits the usage of 
-%D nested \type {\doifreferencefoundelse}; see for an 
+%D The following local redefinition permits the usage of
+%D nested \type {\doifreferencefoundelse}; see for an
 %D example the local test for file|/|url references. This is
 %D a fuzzy part of this mechanism and a result of the choice
-%D to let speed prevail over beauty in resolving chained 
-%D references with symbolic (defined) references. 
+%D to let speed prevail over beauty in resolving chained
+%D references with symbolic (defined) references.
 
 \def\localdoifreferencefoundelse#1#2#3%
   {\dodoifreferencefoundelse{#1}%
@@ -1646,7 +1646,7 @@
 
 \def\reportreferenceerror#1#2%
   {\bgroup
-   \the\everyreference % cleanup : etc in french 
+   \the\everyreference % cleanup : etc in french
    \ifvoorlopig\ifinpagebody\else
      \doifsomething{#2}
        {\inlinker
@@ -1744,7 +1744,7 @@
       \ifdone#2\else#3\fi}
      {#3\unknownreference{#1}}}
 
-\def\docheckifreferencepermitted#1% 
+\def\docheckifreferencepermitted#1%
   {\ifx\currentinnerreference\empty
      \ifx\currentouterreference\empty \else
        \doifinstring{\currentouterreference::}\permittedreferences\donefalse
@@ -2089,8 +2089,8 @@
 
 \beginETEX
 
-\def\checkexecutecommand#1#2% evt geen #1 en #2 
-  {\ifx#2\empty \else \ifcsname\s!do:\s!do:#1\endcsname 
+\def\checkexecutecommand#1#2% evt geen #1 en #2
+  {\ifx#2\empty \else \ifcsname\s!do:\s!do:#1\endcsname
      \@EA\let\@EA\docheckexecutecommand\csname\s!do:\s!do:#1\endcsname
      \rawprocesscommalist[#2]\docheckexecutecommand
    \fi \fi }
@@ -2099,8 +2099,8 @@
 
 \beginTEX
 
-\def\checkexecutecommand#1#2% evt geen #1 en #2 
-  {\ifx#2\empty \else \@EA\ifx\csname\s!do:\s!do:#1\endcsname\relax \else 
+\def\checkexecutecommand#1#2% evt geen #1 en #2
+  {\ifx#2\empty \else \@EA\ifx\csname\s!do:\s!do:#1\endcsname\relax \else
      \@EA\let\@EA\docheckexecutecommand\csname\s!do:\s!do:#1\endcsname
      \rawprocesscommalist[#2]\docheckexecutecommand
    \fi \fi }
@@ -2113,7 +2113,7 @@
 %D special driver (using \type{\executecommand}).
 
 % better: [command(name)] and \definereference[name][command(name)]
-  
+
 \setglobalsystemreference \rt!exec \v!CloseDocument    {close}
 \setglobalsystemreference \rt!exec \v!ExitViewer       {exit}
 \setglobalsystemreference \rt!exec \v!FirstPage        {first}
@@ -2239,7 +2239,7 @@
    \ifx\@@rfprefix\empty
      \let\referenceprefix\empty
    \else\ifx\@@rfprefix\incrementreferenceprefix
-     \advance\prefixcounter \plusone % should be global 
+     \advance\prefixcounter \plusone % should be global
      \edef\referenceprefix{\the\prefixcounter:}%
      \let\@@rfprefix\s!unknown
    \else\ifx\@@rfprefix\decrementreferenceprefix
@@ -2356,8 +2356,8 @@
 \unexpanded\def\dospecialover[#1]%
   {\dontleavehmode
    \bgroup
-   \def\thecurrentsubtextreference%
-     {\limitatetext{\currentsubtextreference}{\@@rfbreedte}{\unknown}}%
+   \def\thecurrentsubtextreference
+     {\limitatetext\currentsubtextreference\@@rfbreedte\unknown}%
   %\leaveoutervmode % no
    \@@rflinks
    \doifreferencefoundelse{#1}
@@ -2804,7 +2804,7 @@
 
 \def\gebruikURL
   {\bgroup
-   \protectlabels 
+   \protectlabels
    \catcode`\#=12\catcode`\%=12\catcode`\/=12
    \catcode`\_=12\catcode`\~=12\catcode`\:=12
    \dodoubleempty\dogebruikURL}
@@ -2941,7 +2941,7 @@
 
 \def\simpleuit
   {\bgroup
-   \protectlabels 
+   \protectlabels
    \ifundefined{\v!file:::\otherlabel}%
      {\tttf[\otherlabel]}%
    \else
@@ -2961,7 +2961,7 @@
 \def\complexuit[#1]%
   {\dontleavehmode % added, but probably not needed
    \bgroup
-   \protectlabels % needed for active french :'s 
+   \protectlabels % needed for active french :'s
    \edef\!!stringa{#1}%
    \doifincsnameelse{::}\!!stringa\donothing{\edef\!!stringa{#1::}}%
    \@EA\docomplexuit\@EA[\!!stringa]}
@@ -3287,7 +3287,7 @@
 
 \newif\ifautocrossdocument
 
-\def\docoupledocument[#1][#2][#3][#4]% is this :/- safe ? 
+\def\docoupledocument[#1][#2][#3][#4]% is this :/- safe ?
   {\ifthirdargument
      \begingroup
      \def\dolijstelement##1##2##3##4##5##6% 2=aut 6=pag / 2 goes into text ref slot
@@ -3529,7 +3529,7 @@
 %       \c!breedte=\overlaywidth,\c!hoogte=\overlayheight]%
 %      {}}
 
-\def\complexoverlaybutton[#1]% 
+\def\complexoverlaybutton[#1]%
   {\iflocation
      \doifreferencefoundelse{#1}
        {\overlayfakebox  {#1}}

@@ -13,17 +13,17 @@
 
 %D This module implements the multi||lingual interface to
 %D \CONTEXT. These capabilities concern messages, commands and
-%D parameters. Currently the following interfaces are 
-%D supported: 
-%D 
+%D parameters. Currently the following interfaces are
+%D supported:
+%D
 %D \starttabulatie[|l|l|c|c|]
 %D \NC\bf language\NC\bf translator \NC\bf messages\NC\bf interface\NC\NR
-%D \NC dutch     \NC Hans Hagen           \NC yes \NC yes \NC\NR 
-%D \NC english   \NC Hans Hagen           \NC yes \NC yes \NC\NR 
-%D \NC german    \NC Tobias Burnus        \NC yes \NC yes \NC\NR 
-%D \NC czech     \NC Tom Hudec            \NC yes \NC yes \NC\NR 
-%D \NC italian   \NC Giuseppe Bilotta     \NC yes \NC yes \NC\NR 
-%D \NC norwegian \NC Hans Fredrik Nordhaug\NC yes \NC no  \NC\NR 
+%D \NC dutch     \NC Hans Hagen           \NC yes \NC yes \NC\NR
+%D \NC english   \NC Hans Hagen           \NC yes \NC yes \NC\NR
+%D \NC german    \NC Tobias Burnus        \NC yes \NC yes \NC\NR
+%D \NC czech     \NC Tom Hudec            \NC yes \NC yes \NC\NR
+%D \NC italian   \NC Giuseppe Bilotta     \NC yes \NC yes \NC\NR
+%D \NC norwegian \NC Hans Fredrik Nordhaug\NC yes \NC no  \NC\NR
 %D \stoptabulatie
 
 \writestatus{loading}{Context Multilingual Macros / Initialization}
@@ -196,10 +196,10 @@
 
 \immediate\openin\scratchread=mult-def.tex % may overload the defaults
 
-\ifeof\scratchread % no high level commands yet 
+\ifeof\scratchread % no high level commands yet
   \immediate\closein\scratchread
-\else 
-  \immediate\closein\scratchread \input mult-def.tex 
+\else
+  \immediate\closein\scratchread \input mult-def.tex
 \fi
 
 \ifx\defaultinterface\undefined
@@ -406,7 +406,7 @@
 
 \def\getinterfacemessage
   {\ifx\next\stopmessages
-     \egroup\expandafter\gobbleoneargument 
+     \egroup\expandafter\gobbleoneargument
    \else
      \expandafter\addinterfacemessage
    \fi}
@@ -493,7 +493,7 @@
    \fi}
 
 %D \macros
-%D   {dosetvalue,dosetevalue,dosetgvalue,docopyvalue,doresetvalue} % dogetvalue
+%D   {dosetvalue,dosetevalue,dosetgvalue,dosetxvalue,docopyvalue,doresetvalue} % dogetvalue
 %D
 %D We already defined these auxiliary macros in the system
 %D modules. Starting with this module however, we have to take
@@ -518,7 +518,7 @@
 %D These macros are called upon quite often and so we optimized
 %D them a bit.
 %D
-%D \starttypen 
+%D \starttypen
 %D \def\dosetvalue#1#2#3%
 %D   {\let\c!internal!\c!internal!n
 %D    \p!doifundefined{\k!prefix!#2}%
@@ -530,7 +530,7 @@
 %D      \let\donottest\doprocesstest
 %D      \@EA\def\csname#1\csname\k!prefix!#2\endcsname\endcsname{#3}%
 %D    \fi}
-%D 
+%D
 %D \def\dosetevalue#1#2#3%
 %D   {\let\c!internal!\c!internal!n
 %D    \p!doifundefined{\k!prefix!#2}%
@@ -542,7 +542,7 @@
 %D      \let\donottest\doprocesstest
 %D      \@EA\edef\csname#1\csname\k!prefix!#2\endcsname\endcsname{#3}%
 %D    \fi}
-%D 
+%D
 %D \def\dosetgvalue#1#2#3%
 %D   {\let\c!internal!\c!internal!n
 %D    \p!doifundefined{\k!prefix!#2}%
@@ -554,21 +554,21 @@
 %D      \let\donottest\doprocesstest
 %D      \@EA\gdef\csname#1\csname\k!prefix!#2\endcsname\endcsname{#3}%
 %D    \fi}
-%D 
-%D \def\docopyvalue#1#2#3% 
+%D
+%D \def\docopyvalue#1#2#3%
 %D   {\let\c!internal!\c!internal!n
 %D    \p!doifundefined{\k!prefix!#3}%
 %D      \let\c!internal!\c!internal!y
-%D      \let\donottest\doprocesstest % still needed ? 
+%D      \let\donottest\doprocesstest % still needed ?
 %D      \@EA\def\csname#1#3\endcsname%
 %D        {\csname#2#3\endcsname}%
 %D    \else
 %D      \let\c!internal!\c!internal!y
-%D      \let\donottest\doprocesstest % still needed ? 
+%D      \let\donottest\doprocesstest % still needed ?
 %D      \@EA\def\csname#1\csname\k!prefix!#3\endcsname\endcsname%
 %D        {\csname#2\csname\k!prefix!#3\endcsname\endcsname}%
 %D    \fi}
-%D \stoptypen 
+%D \stoptypen
 
 \def\doresetvalue#1#2%
   {\dosetvalue{#1}{#2}{}}
@@ -583,8 +583,8 @@
 %D considerable profit in further optimization. By expanding
 %D the embedded \type {\csname} we can reduce the format file
 %D by about 5\% (60~KB out of 1.9~MB).
-%D 
-%D \starttypen 
+%D
+%D \starttypen
 %D \def\docopyvalue#1#2#3%  c -> k
 %D   {\p!doifundefined{\k!prefix!#3}%
 %D      \let\donottest\doprocesstest
@@ -598,7 +598,7 @@
 %D        \endcsname\@EA{\csname#2\csname\k!prefix!#3\endcsname\endcsname}%
 %D    \fi}
 %D \stoptypen
-%D 
+%D
 %D The next alternatives are slightly faster.
 
 \beginTEX
@@ -612,7 +612,7 @@
 %      \let\c!internal!\c!internal!y
 %      \@EA\def\csname#1\csname\k!prefix!#2\endcsname\endcsname{#3}%
 %    \fi}
-% 
+%
 % \def\dosetevalue#1#2#3%
 %   {\let\c!internal!\c!internal!n
 %    \@EA\ifx\csname\k!prefix!#2\endcsname\relax
@@ -622,7 +622,7 @@
 %      \let\c!internal!\c!internal!y
 %      \@EA\edef\csname#1\csname\k!prefix!#2\endcsname\endcsname{#3}%
 %    \fi}
-% 
+%
 % \def\dosetgvalue#1#2#3%
 %   {\let\c!internal!\c!internal!n
 %    \@EA\ifx\csname\k!prefix!#2\endcsname\relax
@@ -632,8 +632,8 @@
 %      \let\c!internal!\c!internal!y
 %      \@EA\gdef\csname#1\csname\k!prefix!#2\endcsname\endcsname{#3}%
 %    \fi}
-% 
-% cleaner (not that much faster) don't pass #3 yet: 
+%
+% cleaner (not that much faster) don't pass #3 yet:
 
 \def\dosetvalue#1#2%
   {\let\c!internal!\c!internal!n
@@ -665,7 +665,17 @@
      \@EAEAEA\gdef\@EA\@EA\csname#1\csname\k!prefix!#2\endcsname\endcsname
    \fi}
 
-% so far 
+\def\dosetxvalue#1#2%
+  {\let\c!internal!\c!internal!n
+   \@EA\ifx\csname\k!prefix!#2\endcsname\relax
+     \let\c!internal!\c!internal!y
+     \@EAEAEA\xdef\@EA\@EA\csname#1#2\endcsname
+   \else
+     \let\c!internal!\c!internal!y
+     \@EAEAEA\xdef\@EA\@EA\csname#1\csname\k!prefix!#2\endcsname\endcsname
+   \fi}
+
+% so far
 
 \def\docopyvalue#1#2#3%
   {\let\c!internal!\c!internal!n
@@ -694,7 +704,7 @@
 %      \let\c!internal!\c!internal!y
 %      \@EA\def\csname#1#2\endcsname{#3}%
 %    \fi}
-% 
+%
 % \def\dosetevalue#1#2#3%
 %   {\let\c!internal!\c!internal!n
 %    \ifcsname\k!prefix!#2\endcsname
@@ -704,7 +714,7 @@
 %      \let\c!internal!\c!internal!y
 %      \@EA\edef\csname#1#2\endcsname{#3}%
 %    \fi}
-% 
+%
 % \def\dosetgvalue#1#2#3%
 %   {\let\c!internal!\c!internal!n
 %    \ifcsname\k!prefix!#2\endcsname
@@ -714,8 +724,18 @@
 %      \let\c!internal!\c!internal!y
 %      \@EA\gdef\csname#1#2\endcsname{#3}%
 %    \fi}
-% 
-% cleaner (not that much faster) don't pass #3 yet: 
+%
+% \def\dosetxvalue#1#2#3%
+%   {\let\c!internal!\c!internal!n
+%    \ifcsname\k!prefix!#2\endcsname
+%      \let\c!internal!\c!internal!y
+%      \@EA\xdef\csname#1\csname\k!prefix!#2\endcsname\endcsname{#3}%
+%    \else
+%      \let\c!internal!\c!internal!y
+%      \@EA\xdef\csname#1#2\endcsname{#3}%
+%    \fi}
+%
+% cleaner (not that much faster) don't pass #3 yet:
 %
 % \def\dosetvalue#1#2%
 %   {\let\c!internal!\c!internal!n
@@ -726,7 +746,7 @@
 %      \let\c!internal!\c!internal!y
 %      \@EAEAEA\def\@EA\@EA\csname#1#2\endcsname
 %    \fi}
-% 
+%
 % \def\dosetevalue#1#2%
 %   {\let\c!internal!\c!internal!n
 %    \ifcsname\k!prefix!#2\endcsname
@@ -736,7 +756,7 @@
 %      \let\c!internal!\c!internal!y
 %      \@EAEAEA\edef\@EA\@EA\csname#1#2\endcsname
 %    \fi}
-% 
+%
 % \def\dosetgvalue#1#2%
 %   {\let\c!internal!\c!internal!n
 %    \ifcsname\k!prefix!#2\endcsname
@@ -746,7 +766,17 @@
 %      \let\c!internal!\c!internal!y
 %      \@EAEAEA\gdef\@EA\@EA\csname#1#2\endcsname
 %    \fi}
-% 
+%
+% \def\dosetxvalue#1#2%
+%   {\let\c!internal!\c!internal!n
+%    \ifcsname\k!prefix!#2\endcsname
+%      \let\c!internal!\c!internal!y
+%      \@EAEAEA\xdef\@EA\@EA\csname#1\csname\k!prefix!#2\endcsname\endcsname
+%    \else
+%      \let\c!internal!\c!internal!y
+%      \@EAEAEA\xdef\@EA\@EA\csname#1#2\endcsname
+%    \fi}
+%
 % \def\docopyvalue#1#2#3%
 %   {\let\c!internal!\c!internal!n
 %    \ifcsname\k!prefix!#3\endcsname
@@ -760,8 +790,8 @@
 %        \csname\@EA#1\@EA#3\@EA
 %        \endcsname\@EA{\csname#2#3\endcsname}%
 %    \fi}
-% 
-% slightly more efficient (but not faster in day to day runs) 
+%
+% slightly more efficient (but not faster in day to day runs)
 
 \def\dosetvalue#1#2%
   {\let\c!internal!\c!internal!n
@@ -793,22 +823,35 @@
      \@EA\gdef\csname#1#2%\endcsname
    \fi\endcsname}
 
-\def\docopyvalue#1#2#3%
+\def\dosetxvalue#1#2%
+  {\let\c!internal!\c!internal!n
+   \ifcsname\k!prefix!#2\endcsname
+     \let\c!internal!\c!internal!y
+     \@EA\xdef\csname#1\csname\k!prefix!#2\endcsname%\endcsname
+   \else
+     \let\c!internal!\c!internal!y
+     \@EA\xdef\csname#1#2%\endcsname
+   \fi\endcsname}
+
+\def\docopyvalue#1#2#3% real tricky expansion, quite unreadable
   {\let\c!internal!\c!internal!n
    \ifcsname\k!prefix!#3\endcsname
      \let\c!internal!\c!internal!y
-     \@EAEAEA\def\@EA\@EA
-       \csname#1\csname\k!prefix!#3\endcsname
-       \endcsname\@EA{\csname#2\csname\k!prefix!#3\endcsname\endcsname}%
+   % \@EAEAEA\def\@EA\@EA
+   %   \csname#1\csname\k!prefix!#3\endcsname
+   %   \endcsname\@EA{\csname#2\csname\k!prefix!#3\endcsname\endcsname}%
+     \@EA\def\csname#1\csname\k!prefix!#3\endcsname
+       \@EA\endcsname\@EA{\csname#2\csname\k!prefix!#3\endcsname\endcsname}%
    \else
      \let\c!internal!\c!internal!y
-     \@EAEAEA\def\@EA\@EA\csname#1#3\endcsname\@EA{\csname#2#3\endcsname}%
+     %\@EAEAEA\def\@EA\@EA\csname#1#3\endcsname\@EA{\csname#2#3\endcsname}%
+     \@EA\def\csname#1#3\@EA\endcsname\@EA{\csname#2#3\endcsname}%
    \fi}
 
 \endETEX
 
-%D We can now redefine some messages that will be 
-%D introduced in the multi||lingual system module. 
+%D We can now redefine some messages that will be
+%D introduced in the multi||lingual system module.
 
 \def\showassignerror  #1#2{\showmessage\m!check1{#1,#2}\waitonfatalerror}
 \def\showargumenterror#1#2{\showmessage\m!check2{#1,#2}\waitonfatalerror}
@@ -1198,8 +1241,8 @@
 %D those reference cards for each language without further
 %D interference.
 
-%D Anno 2003 I've forgotten why the \type {\c!internal} is 
-%D still in there; it's probably a left over from an experiment. 
+%D Anno 2003 I've forgotten why the \type {\c!internal} is
+%D still in there; it's probably a left over from an experiment.
 
 \let\c!internal!y \string
 \def\c!internal!n {-}
@@ -1357,7 +1400,9 @@
         {\doifdefinedelse{#2}
            {\debuggerinfo{command}{core command #2 redefined as #1}}%
            {\debuggerinfo{command}{#2 defined as #1}}%
-         \@EAEAEA\def\@EA\csname\@EA#2\@EA\endcsname
+        %\@EAEAEA\def\@EA\csname\@EA#2\@EA\endcsname
+        %  \@EA{\csname#1\endcsname}}%
+         \@EA\def\csname#2\@EA\endcsname % ugly but faster
            \@EA{\csname#1\endcsname}}%
       \setinterfacesetupvariable{#1}{#2}}}
 
@@ -1379,7 +1424,7 @@
 
 \newif\ifinterfacetranslation
 
-% for a long time: 
+% for a long time:
 %
 % \def\getinterfaceconstant#1%
 %   {\ifinterfacetranslation
@@ -1389,7 +1434,7 @@
 %    \else
 %      #1%
 %    \fi}
-% 
+%
 % \def\getinterfacevariable#1%
 %   {\ifinterfacetranslation
 %      \doifdefinedelse{\y!prefix!#1}
@@ -1398,8 +1443,8 @@
 %    \else
 %      #1%
 %    \fi}
-% 
-% more compact 
+%
+% more compact
 
 \def\getinterfaceconstant#1%
   {\ifinterfacetranslation

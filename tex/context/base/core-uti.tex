@@ -8,15 +8,15 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
-%C details. 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
 
 \writestatus{loading}{Context Core Macros / Utility File Handling}
 
-\unprotect 
+\unprotect
 
-% todo : safe lan etc too 
-% todo : load all commands at once (tok) 
+% todo : safe lan etc too
+% todo : load all commands at once (tok)
 
 % Utility-file
 %
@@ -55,13 +55,13 @@
      {\checksectionseparator}
      {\@@utilityerrormessage\resetutilities\endinput}}
 
-\def\checksectionseparator % catches backward compatibility conflict 
+\def\checksectionseparator % catches backward compatibility conflict
   {\doifnot\sectionseparator:\endinput}
 
 \def\thisissectionseparator#1%
   {\bgroup
    \globallet\checksectionseparator\relax
-   \convertcommand \sectionseparator\to\asciiA   
+   \convertcommand \sectionseparator\to\asciiA
    \convertargument               #1\to\asciiB
    \ifx\asciiA\asciiB
      \egroup
@@ -75,17 +75,17 @@
 \def\writeutility         {\write\uti}
 \def\writeutilitycommand#1{\write\uti{c \string#1}}
 
-% less tokens 
+% less tokens
 %
 % \def\immediatewriteutility       {\immediate\writeutility}
 % \def\immediatewriteutilitycommand{\immediate\writeutilitycommand}
 %
-% more flexible (for overloading) 
+% more flexible (for overloading)
 
 \def\immediatewriteutility         {\immediate\write\uti}
 \def\immediatewriteutilitycommand#1{\immediate\write\uti{c \string#1}}
 
-% as in: 
+% as in:
 
 \def\cwriteutility#1%
   {\write\uti{\noexpand\checkedutility{\number\nofshipouts}{#1}}}
@@ -103,7 +103,7 @@
 
 \def\docheckedutility#1#2{\ifnum#1=\nofshipouts#2\else\letterpercent\fi}
 
-\prependtoks 
+\prependtoks
   \let\checkedutility\docheckedutility
 \to \everybeforeshipout
 
@@ -116,7 +116,7 @@
   %\let\immediatewriteutilitycommand\cimmediatewriteutilitycommand
    \let\checkutilities              \relax}
 
-% this trickery is used in s-pre-50 
+% this trickery is used in s-pre-50
 
 \def\openutilities
   {\immediate\openout\uti=\jobname.\f!inputextension
@@ -124,9 +124,9 @@
    \immediatewriteutilitycommand{\thisisutilityversion  {\utilityversion}}}
 
 \def\closeutilities
-  {\immediate\closeout\uti % niet echt nodig 
+  {\immediate\closeout\uti % niet echt nodig
    \reportutilityproblems
-   % should be a message : 
+   % should be a message :
    \let\writeutilitycommand         \gobbleoneargument
    \let\writeutility                \gobbleoneargument
    \let\immediatewriteutilitycommand\gobbleoneargument
@@ -166,7 +166,7 @@
 % \def\resetutilities%
 %   {\processcommacommand[\utilityresetlist]\getvalue}
 %
-% the more efficient 
+% the more efficient
 %
 % \def\addutilityreset#1%
 %   {\addtocommalist{#1}\utilityresetlist}
@@ -177,8 +177,8 @@
 % \def\resetutilities%
 %   {\processcommacommand[\utilityresetlist]\doresetutility}
 %
-% the fastest, about two times, but who cares, since this 
-% can be neglected 
+% the fastest, about two times, but who cares, since this
+% can be neglected
 
 \newtoks\utilityresetlist
 
@@ -247,11 +247,11 @@
    \resetutilities
   %\message{#1}%
    \def\docommando##1%                 % more than one utility thing
-     {\csname\s!set##1\endcsname}%     % can be handled in one pass, 
-   \processcommacommand[#1]\docommando % for instance lists 
+     {\csname\s!set##1\endcsname}%     % can be handled in one pass,
+   \processcommacommand[#1]\docommando % for instance lists
    \begingroup
    \def\currentutilityfilename{#2}%
-   \footnotesenabledfalse
+   \notesenabledfalse
    \doinpututilitiestrue
    \global\utilitydonefalse
    \catcode`\\=\@@escape
@@ -290,10 +290,10 @@
    \disableinitializevariables
    \endgroup}
 
-% Saving the sort vector: 
+% Saving the sort vector:
 
 \def\savesortkeys
-  {\startnointerference 
+  {\startnointerference
    \def\flushsortkey##1##2##3##4%
      {\convertargument{##1}{##2}{##3}{##4}\to\ascii
       \immediatewriteutility{k {\currentlanguage}{\currentencoding}\ascii}}%
@@ -302,7 +302,7 @@
    \globallet\savesortkeys\relax
    \stopnointerference}
 
-\prependtoks \savesortkeys \to \everystarttext 
+\prependtoks \savesortkeys \to \everystarttext
 
 % Commando's ten behoeve van two-pass lists. In principe
 % kan alles in een keer worden ingelezen. Omdat de macro's
@@ -320,13 +320,13 @@
 %
 % \twopassentry{\s!xxx}{nr}{data}   nr alleen voor testdoeleinden
 %
-% also: 
+% also:
 %
-% \definerawpasslist{\s!xxx}       
-% \moverawpasslist\s!xxx\to\somemacro 
+% \definerawpasslist{\s!xxx}
+% \moverawpasslist\s!xxx\to\somemacro
 
 \let\alltwopasslists\empty % with    0,0 -> stepwise commalist
-\let\allrawpasslists\empty % without 0,0 -> raw commalist 
+\let\allrawpasslists\empty % without 0,0 -> raw commalist
 
 \newif\iftwopassdatafound
 
@@ -372,9 +372,9 @@
 
 \def\doloadtwopassdata#1%
   {\doifundefined{#1:\s!list}
-     {\startnointerference 
+     {\startnointerference
       \letgvalueempty{#1:\s!list}%
-      \protectlabels 
+      \protectlabels
       \doutilities{#1\s!pass}\jobname\empty\relax\relax
       \ifx\twopassdata\empty\else
         \appendtwopasselement{#1}{0}\twopassdata
@@ -383,7 +383,7 @@
 
 \def\loadtwopassdata
   {\ifx\alltwopasslists\empty\else
-     \def\twopassdata{0,0}% end condition 
+     \def\twopassdata{0,0}% end condition
      \processcommacommand[\alltwopasslists]\doloadtwopassdata
      \globallet\alltwopassdata\empty
    \fi
@@ -415,22 +415,22 @@
 %    \ifx\twopassdata\notwopassdata
 %      \twopassdatafoundfalse
 %      \let\twopassdata\empty
-%    \else   
+%    \else
 %      \twopassdatafoundtrue
 %      \setxvalue{#3:\s!list}{#2}%
 %    \fi}
-% 
+%
 % \def\gettwopassdata#1%
 %   {\loadtwopassdata
 %   %\edef\!!stringa{\csname#1:\s!list\endcsname}%
 %   %\debuggerinfo{\m!systems}{twopass get #1 - \!!stringa}%
 %   %\expandafter\dogettwopassdata\expandafter[\!!stringa]{#1}}
 %    \expanded{\dogettwopassdata[\csname#1:\s!list\endcsname]}{#1}}
-% 
+%
 % \def\findtwopassdata#1#2%
 %   {\loadtwopassdata
 %    \expanded{\dofindtwopassdata{#1}{#2}}}
-% 
+%
 % \def\dofindtwopassdata#1#2%
 %   {\edef\!!stringa{,\csname#1:\s!list\endcsname}%
 %   %\debuggerinfo{\m!systems}{twopass find #2 - \!!stringa}%
@@ -447,14 +447,14 @@
 %   {\loadtwopassdata
 %    \edef\!!stringa{\getvalue{#1:\s!list}}%
 %    \expandafter\dogetfirsttwopassdata\expandafter[\!!stringa]{#1}}
-% 
+%
 % \def\dogetfirsttwopassdata[#1,#2]#3%
 %   {\doifelse{#1}{0}
 %      {\twopassdatafoundfalse
 %       \let\twopassdata\empty}
 %      {\twopassdatafoundtrue
 %       \edef\twopassdata{#1}}}
-% 
+%
 % \def\getlasttwopassdata#1%
 %   {\loadtwopassdata
 %    \edef\twopassdata{0}\twopassdatafoundfalse
@@ -464,7 +464,7 @@
 %         {\increment\noftwopassitems
 %          \edef\twopassdata{##1}\twopassdatafoundtrue}}%
 %    \processcommacommand[\getvalue{#1:\s!list}]\docommando}
-% 
+%
 % \def\getfromtwopassdata#1#2%
 %   {\loadtwopassdata
 %    \getfromcommacommand[\csname#1:\s!list\endcsname][#2]%
@@ -546,14 +546,14 @@
 
 % Default-instellingen (verborgen)
 
-\prependtoks \resetutilities \to \everyjob 
+\prependtoks \resetutilities \to \everyjob
 
-% left over 
+% left over
 
 \def\plaatsvolledig#1#2#3#4%   kop, ref, tit, do
   {#1[#2]{#3}#4\pagina[\v!ja]}
 
-% Experiment 
+% Experiment
 %
 %\installprogram{Hello World}
 
@@ -564,9 +564,9 @@
 % \writeplugindata{texutil}{{beta}}
 % \writeplugindata{texutil}{{gamma}}
 % \writeplugindata{texutil}{{delta}}
-% 
+%
 % \loadplugindata {plugintest}
- 
+
 \def\immediatewriteplugindata#1#2%
   {\immediatewriteutility{p u {#1} #2}}
 
@@ -578,7 +578,7 @@
 
 % \plugincommand{\command{}{}{}}
 %
-% this way we can catch undefined commands 
+% this way we can catch undefined commands
 
 \long\def\plugincommand#1%
   {\doplugincommand#1\relax}
@@ -594,10 +594,10 @@
   {}
 
 % \addutilityreset{plugintest}
-% 
+%
 % \def\resetplugintest{\let\plugintest\gobbletwoarguments}
 % \def\setplugintest  {\let\plugintest\writestatus}
-% 
+%
 % \installplugin
 %   {plugintest}
 %   {\let\plugintest\gobbletwoarguments}
@@ -608,4 +608,4 @@
    \long\setvalue{\s!reset#1}{#2}%
    \long\setvalue{\s!set  #1}{#3}}
 
-\protect \endinput 
+\protect \endinput

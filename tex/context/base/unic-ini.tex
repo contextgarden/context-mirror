@@ -50,9 +50,9 @@
 %D \NC262144(b_1-240)\NC+\NC4096(b_2-128)\NC+\NC64(b_3-128)\NC+\NC(b_4-128)\NC if 240<=b1<=247\NC \NR
 %D \stoptabulatie
 %D
-%D A lot of information abou tunicode can be found on the 
-%D web (search for Markus Kuhn and unicode and you'll 
-%D probably end up at the right place). 
+%D A lot of information abou tunicode can be found on the
+%D web (search for Markus Kuhn and unicode and you'll
+%D probably end up at the right place).
 
 %D In \ETEX\ vocabulary such a conversion looks as follows.
 %D We need the \type {`} in order to turn a character into a
@@ -222,50 +222,50 @@
 %D   {utfunicodetracer}
 %D
 %D By default, the converter produces a character representation,
-%D but for tracing purposes, you can set a trace option. 
+%D but for tracing purposes, you can set a trace option.
 
 \chardef\utfunicodetracer=0
 
 %D \def\TraceUnic#1%
-%D   {\chardef\utfunicodetracer#1\relax\enableregime[utf]Ű} 
-%D 
+%D   {\chardef\utfunicodetracer#1\relax\enableregime[utf]Ű}
+%D
 %D \starttabulatie[|c|c|c|c|c|c|]
 %D \NC option   \NC number\NC mapping\NC glyph\NC string\NC example    \NC \NR
 %D \NC 0        \NC       \NC        \NC \star\NC       \NC \TraceUnic0\NC \NR
-%D \NC 1        \NC \star \NC        \NC      \NC       \NC \TraceUnic1\NC \NR 
-%D \NC 2        \NC       \NC \star  \NC      \NC       \NC \TraceUnic2\NC \NR 
-%D \NC 3        \NC \star \NC \star  \NC      \NC       \NC \TraceUnic3\NC \NR 
-%D \NC 4        \NC \star \NC        \NC \star\NC       \NC \TraceUnic4\NC \NR 
+%D \NC 1        \NC \star \NC        \NC      \NC       \NC \TraceUnic1\NC \NR
+%D \NC 2        \NC       \NC \star  \NC      \NC       \NC \TraceUnic2\NC \NR
+%D \NC 3        \NC \star \NC \star  \NC      \NC       \NC \TraceUnic3\NC \NR
+%D \NC 4        \NC \star \NC        \NC \star\NC       \NC \TraceUnic4\NC \NR
 %D \NC 5        \NC       \NC \star  \NC \star\NC       \NC \TraceUnic5\NC \NR
-%D \NC 6        \NC \star \NC \star  \NC \star\NC       \NC \TraceUnic6\NC \NR 
-%D \NC 7        \NC       \NC        \NC      \NC \star \NC \TraceUnic7\NC \NR 
-%D \NC 8        \NC \star \NC        \NC      \NC       \NC \TraceUnic8\NC \NR 
+%D \NC 6        \NC \star \NC \star  \NC \star\NC       \NC \TraceUnic6\NC \NR
+%D \NC 7        \NC       \NC        \NC      \NC \star \NC \TraceUnic7\NC \NR
+%D \NC 8        \NC \star \NC        \NC      \NC       \NC \TraceUnic8\NC \NR
 %D \NC otherwise\NC       \NC        \NC \star\NC       \NC \TraceUnic9\NC \NR
 %D \stoptabulatie
 
 %D \macros
 %D   {unicodechar}
 %D
-%D Next we implement the character handler: 
+%D Next we implement the character handler:
 
 \def\unicodechar
-  {\ifcase\utfunicodetracer           
-     \expandafter\utfunihash      \or 
-     \expandafter\utfunichar      \or 
-     \expandafter\utfunisplit     \or 
-     \expandafter\utfuniboth      \or 
-     \expandafter\utfunihashchar  \or 
-     \expandafter\utfunihashsplit \or 
-     \expandafter\utfunihashboth  \or  
+  {\ifcase\utfunicodetracer
+     \expandafter\utfunihash      \or
+     \expandafter\utfunichar      \or
+     \expandafter\utfunisplit     \or
+     \expandafter\utfuniboth      \or
+     \expandafter\utfunihashchar  \or
+     \expandafter\utfunihashsplit \or
+     \expandafter\utfunihashboth  \or
      \@EA\string\@EA\unicodechar  \or
      \expandafter\utfunientity    \else
-     \expandafter\utfunihash           
+     \expandafter\utfunihash
   \fi}
 
 %D \macros
 %D   {unicodehexnumber}
 %D
-%D A few auxiliary macros, producing the range||char pair: 
+%D A few auxiliary macros, producing the range||char pair:
 
 \def\unicodepair#1%
   {\utfdiv{#1}:\utfmod{#1}}
@@ -277,7 +277,7 @@
 %   \expanded{\uchexnumbers{\utfmod{#1}}}}
 
 \def\unicodehexnumber#1%
-  {\ifnum#1>\maxcard 
+  {\ifnum#1>\maxcard
      \expanded{\uchexnumbers{\utfvid{#1}}}%
      \expanded{\uchexnumbers{\utfdiv{\utfdiv{#1}}}}%
    \else
@@ -289,7 +289,7 @@
 %D The following macros visualize the unicode character. The
 %D \type {\relax} in front of the \type {-} prevents lookahead
 %D problems; somehow \type {\numexpr} cannot look beyond this
-%D sign, and expects a number. 
+%D sign, and expects a number.
 
 \def\utfunichar #1%
   {{\tttf U\low{\unicodenumber{#1}}}}
@@ -303,62 +303,62 @@
 \def\utfunientity #1%
   {{\tttf\&\#\unicodehexnumber{#1};}}
 
-%D The character itself is accessed and typeset by:  
+%D The character itself is accessed and typeset by:
 %D
-%D \starttypen 
+%D \starttypen
 %D \def\utfunihash#1%
 %D   {\executeifdefined{\@@univector\utfdiv{#1}}%
 %D      \gobbleoneargument{\utfmod{#1}}}
-%D \stoptypen 
-%D 
+%D \stoptypen
+%D
 %D Again, we can provide a faster alternative, because inside
 %D the conditional executer, the argument is expanded twice,
-%D and therefore the calculation done once more than needed. 
-%D So, we make sure that the argument is expansion on 
-%D forehand. Just to remind you: \type {#1} is the \UNICODE\ 
-%D number. 
-%D 
-%D \starttypen 
+%D and therefore the calculation done once more than needed.
+%D So, we make sure that the argument is expansion on
+%D forehand. Just to remind you: \type {#1} is the \UNICODE\
+%D number.
+%D
+%D \starttypen
 %D \def\utfunihash#1%
 %D   {\@EA\executeifdefined\@EA{\@EA\@@univector\number\utfdiv{#1}}%
 %D      {\unknownchar\gobbleoneargument}{\utfmod{#1}}}
-%D \stoptypen 
-%D 
-%D In order to save calculation time, I decided to change 
-%D this definition into: 
+%D \stoptypen
+%D
+%D In order to save calculation time, I decided to change
+%D this definition into:
 
-%D \starttypen 
+%D \starttypen
 %D \def\utfunihash#1%
 %D   {\@EA\doutfunihash\@EA{\number\utfdiv{#1}}{#1}}
-%D 
+%D
 %D \def\doutfunihash#1#2%
 %D   {\ifcsname\@@univector\number#1\endcsname
 %D      \csname\csname\@@univector#1\endcsname{\utfmod{#2}}\endcsname
 %D    \else
-%D      \unknownchar  
+%D      \unknownchar
 %D    \fi}
-%D \stoptypen 
+%D \stoptypen
 %D
-%D Or leaner and meaner: 
-%D 
-%D \starttypen 
+%D Or leaner and meaner:
+%D
+%D \starttypen
 %D \def\doutfunihash#1#2%
 %D   {\csname
 %D      \ifcsname\@@univector\number#1\endcsname
 %D        \csname\@@univector#1\endcsname{\utfmod{#2}}%
 %D      \else
-%D        \@@unknownchar  
+%D        \@@unknownchar
 %D      \fi
 %D    \endcsname}
-%D \stoptypen 
-%D 
+%D \stoptypen
+%D
 %D And finaly it became:
 
 \def\doutfunihash#1#2%
   {\ifcsname\@@univector\number#1\endcsname
      \csname\@@univector#1\endcsname{\utfmod{#2}}%
    \else
-     \@@unknownchar  
+     \@@unknownchar
    \fi}
 
 \def\utfunihashglyph#1%
@@ -367,7 +367,7 @@
 \def\utfunihashcommand
   {\@EAEAEA\string\utfunihashglyph}
 
-%D For practical purposes, we handle the normal \ASCII\ 
+%D For practical purposes, we handle the normal \ASCII\
 %D characters here:
 
 \def\utfunihashglyph#1%
@@ -382,7 +382,7 @@
 
 \let\unicodeasciicharacter\rawcharacter
 
-%D Now we can say: 
+%D Now we can say:
 
 \let\utfunihash\utfunihashglyph
 
@@ -397,17 +397,17 @@
 \def\utfunihashboth #1%
   {\utfunihash{#1}\low{\infofont\unicodenumber{#1\relax}->\unicodepair{#1}}}
 
-%D Unknown characters get a placeholder. 
+%D Unknown characters get a placeholder.
 
-\unexpanded\def\unknownchar % {} prevents problems with arguments 
+\unexpanded\def\unknownchar % {} prevents problems with arguments
   {{\hbox{\vrule\!!width.5em\!!height1ex\!!depth\zeropoint}}}
 
-%D So far for the conversion macros. The optimizations we 
-%D did, brought down the runtime some 50\%, which, given that 
-%D the majority of characters will be normal \ASCII\ 
-%D characters, the penalty of conversion is not that large. 
+%D So far for the conversion macros. The optimizations we
+%D did, brought down the runtime some 50\%, which, given that
+%D the majority of characters will be normal \ASCII\
+%D characters, the penalty of conversion is not that large.
 
-%D \macros 
+%D \macros
 %D   {useunicodevector}
 %D
 %D Since we end up with many encodings, it starts making
@@ -426,33 +426,43 @@
 
 %D \macros
 %D   {startunicodevector}
-%D 
+%D
 %D A vector roughly looks as follows. By putting the text
 %D inside the name constructor, we prevent problems with
-%D partial expansion in macros and special cases. 
-%D 
-%D \starttypen 
+%D partial expansion in macros and special cases.
+%D
+%D \starttypen
 %D \startunicodevector 0
-%D   \ifcase\numexpr(#1-159)\or 
+%D   \ifcase\numexpr(#1-159)\or
 %D     \@@unknownchar\or % NO-BREAK SPACE
-%D     exclamdown\or 
-%D     textcent\or 
+%D     exclamdown\or
+%D     textcent\or
 %D     ....\else
 %D     \@@unknowncharacter
 %D   \fi
 %D \stopunicodevector
-%D \stoptypen  
-%D 
+%D \stoptypen
+%D
 %D In vector \type {unix-000} you will find another
 %D optimizations. By using as less tokens as possible, we limit
 %D the time skipping branches in the test, and save upto 20\%
-%D runtime. 
+%D runtime.
 
 \def\startunicodevector #1 #2\stopunicodevector
   {\setgvalue{\@@univector#1}##1{#2}}
 
-%D Here we provide another auxiliary macro: 
-%D 
+%D We define (as a practical example) the utf signal FEFF:
+
+\ifx\zwnbsp\undefined
+  \let\zwnbsp\relax % zerowidthnonbreakablespace
+\fi
+
+\startunicodevector 254
+  \expandafter\strippedcsname\ifnum#1<255\unknownchar\else\zwnbsp\fi
+\stopunicodevector
+
+%D Here we provide another auxiliary macro:
+%D
 %D \startbuffer
 %D \unicodeinfoline{196}{Ä}{LATIN CAPITAL LETTER A WITH DIAERESIS}
 %D \unicodeinfoline{197}{Å}{LATIN CAPITAL LETTER A WITH RING ABOVE}
@@ -461,9 +471,9 @@
 %D \unicodeinfoline{200}{È}{LATIN CAPITAL LETTER E WITH GRAVE}
 %D \unicodeinfoline{201}{É}{LATIN CAPITAL LETTER E WITH ACUTE}
 %D \stopbuffer
-%D 
+%D
 %D \typebuffer
-%D 
+%D
 %D \start \enableregime[utf]\getbuffer \stop
 
 \def\unicodeinfoline#1#2#3%
@@ -472,19 +482,19 @@
        {\hbox to 4em{\tttf\unicodehexnumber{#1}\hss}\quad
         \hbox to 1em{#2\hss}\quad
         \hbox to 9em{\tttf\unicodenumber{#1\relax}->\unicodepair{#1}\hss}\quad
-        \hbox to 9em{\tttf\let\utfunihash\utfunihashcommand#2\hss}\quad % tricky 
+        \hbox to 9em{\tttf\let\utfunihash\utfunihashcommand#2\hss}\quad % tricky
         \lowercase  {\tttf#3}}\par
    \fi}
 
-%D The next code permits utf code in hyperlinks: 
+%D The next code permits utf code in hyperlinks:
 
 \def\cleanunicodechar#1{.#1.}
 
 \appendtoks \let\unicodechar\cleanunicodechar \to \everycleanupfeatures
 
-%D We will now hook this mechanism in the existing font 
-%D handler. More documentation will follow. Probably, some 
-%D features in \type {font-uni.tex} will be generalized 
+%D We will now hook this mechanism in the existing font
+%D handler. More documentation will follow. Probably, some
+%D features in \type {font-uni.tex} will be generalized
 %D and moved here.
 
 \def\unidiv{0} \def\unimod{0}
@@ -498,11 +508,11 @@
      \char\unimod % \unicodeascii\unimod
    \else\ifcsname\@@univector\unidiv\endcsname
      \csname\doutfunihash{\unidiv}{#1}\endcsname
-   \else % so, these can be different fonts ! 
-     \unicodeglyph\unidiv\unimod % no \uchar (yet) 
+   \else % so, these can be different fonts !
+     \unicodeglyph\unidiv\unimod % no \uchar (yet)
    \fi\fi}
 
-\chardef\utfunicommandmode=0 % 1 = hex  
+\chardef\utfunicommandmode=0 % 1 = hex
 
 \def\unicodecommandchar#1#2%
   {\string\char
@@ -517,14 +527,14 @@
      \unicodecommandchar\unidiv\unimod
    \else\ifcsname\@@univector\unidiv\endcsname
      \@EA\string\csname\doutfunihash{\unidiv}{#1}\endcsname
-   \else 
+   \else
      \unicodecommandchar\unidiv\unimod
    \fi\fi}
 
 \def\utfunihash
   {\ifcase\utfunihashmode
-     \@EA\utfunihashglyph   
-   \else 
+     \@EA\utfunihashglyph
+   \else
      \@EA\utfunifontglyph
    \fi}
 
@@ -535,7 +545,7 @@
   {\ifcase\utfunihashmode
    % \@EA\@EAEAEA\@EA\string\@EA\utfunihashglyph
      \@EA\utfunihushcommand
-   \else 
+   \else
      \@EA\utfunifontcommand
    \fi}
 

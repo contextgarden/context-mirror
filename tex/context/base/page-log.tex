@@ -13,7 +13,7 @@
 
 \writestatus{loading}{Context Page Macros / Logos}
 
-\unprotect 
+\unprotect
 
 \startmessages  dutch  library: layouts
       7: beeldmerken berekenen
@@ -49,60 +49,60 @@
 %D interfere with the other ones, but an even more important
 %D reason is that logos are kind of special in the sense that
 %D they have a short life span and may change after the first
-%D page. 
+%D page.
 
 %D \macros
 %D  {recalculatelogos,addlogobackground}
 %D
 %D The interface to the other low level page building routines
 %D is provided by a macro that signals changes in layout
-%D specifications: 
-%D 
-%D \starttypen 
+%D specifications:
+%D
+%D \starttypen
 %D \recalculatelogos
-%D \stoptypen 
+%D \stoptypen
 %D
-%D as well as a simple placement macro: 
+%D as well as a simple placement macro:
 %D
-%D \starttypen 
-%D \addlogobackground <box> 
-%D \stoptypen 
+%D \starttypen
+%D \addlogobackground <box>
+%D \stoptypen
 %D
-%D In no way the following boolean switch should be used 
-%D directly. 
+%D In no way the following boolean switch should be used
+%D directly.
 
 \newif\ifnewlogos
 
 \def\recalculatelogos
-  {\global\newlogostrue} 
+  {\global\newlogostrue}
 
-%D The current state of logos is registered in a status 
-%D variable \type {\logostatus}. 
-%D 
+%D The current state of logos is registered in a status
+%D variable \type {\logostatus}.
+%D
 %D \starttabulatie[|l|l|l|]
-%D \NC 0 \NC don't place              \NC remains 0 \NC \NR 
-%D \NC 1 \NC place now                \NC remains 1 \NC \NR 
-%D \NC 2 \NC calulate and place       \NC becomes 1 \NC \NR 
-%D \NC 3 \NC calculate and place once \NC becomes 2 \NC \NR 
-%D \stoptabulatie 
+%D \NC 0 \NC don't place              \NC remains 0 \NC \NR
+%D \NC 1 \NC place now                \NC remains 1 \NC \NR
+%D \NC 2 \NC calulate and place       \NC becomes 1 \NC \NR
+%D \NC 3 \NC calculate and place once \NC becomes 2 \NC \NR
+%D \stoptabulatie
 
 \chardef\logostatus=0
 
-\def\addlogobackground#1% todo: dimension spec 
+\def\addlogobackground#1% todo: dimension spec
   {\ifcase\logostatus \else
      \ifcase\logostatus
-       % no logos to take care of  
-     \or % 1 
-       \ifnewlogos 
+       % no logos to take care of
+     \or % 1
+       \ifnewlogos
          \chardef\logostatus2
          \setlogoboxes
          \chardef\logostatus1
          \global\newlogosfalse
-       \fi 
-     \or % 2 
+       \fi
+     \or % 2
        \setlogoboxes
        \chardef\logostatus1
-     \or % 3 
+     \or % 3
        \setlogoboxes
        \global\chardef\logostatus2
      \fi
@@ -123,7 +123,7 @@
 %D bottom} touch the bounding box of the paper and are
 %D therefore not the sams as their background adn text
 %D counterparts. In addition there are {\em left}, {\em right}
-%D and {\em middle} areas as well as a {\em page} one. 
+%D and {\em middle} areas as well as a {\em page} one.
 
 \newbox\leftlogos
 \newbox\rightlogos
@@ -137,28 +137,28 @@
 
 \def\dosetlogobox#1#2%
   {\global\setbox#1\vbox to \papierhoogte
-     {\dontcomplain           % needed here ? 
-      \calculatereducedvsizes % needed here ? 
+     {\dontcomplain           % needed here ?
+      \calculatereducedvsizes % needed here ?
       \offinterlineskip
       #2\relax
       \vskip-\kopwit
-      \dodosetlogobox\v!boven\blap 
+      \dodosetlogobox\v!boven\blap
       \vskip\kopwit
-      \dodosetlogobox\v!hoofd\blap 
-      \vskip\hoofdhoogte 
+      \dodosetlogobox\v!hoofd\blap
+      \vskip\hoofdhoogte
       \vskip\hoofdafstand
-      \dodosetlogobox\v!tekst\blap 
+      \dodosetlogobox\v!tekst\blap
       \vskip\teksthoogte
-      \vskip\voetafstand 
+      \vskip\voetafstand
       \vskip\voethoogte
-      \dodosetlogobox\v!voet \tlap  
+      \dodosetlogobox\v!voet \tlap
       \vfilll
-      \dodosetlogobox\v!onder\tlap 
-      \vskip\kopwit} 
+      \dodosetlogobox\v!onder\tlap
+      \vskip\kopwit}
   \smashbox#1}
 
 \def\dodosetlogobox#1#2%
-  {\hbox % width equals \zetbreedte 
+  {\hbox % width equals \zetbreedte
      {\def\docommando##1%
         {\donefalse
          \ifnum\logostatus=3 \ExpandBothAfter
@@ -207,9 +207,9 @@
           \v!links       \v!linkermarge  \v!linkerrand
       \od}}
 
-%D The user interface is relatively simple and provides 
-%D macros for assigning logos to logo areas as well as 
-%D forcing placement. 
+%D The user interface is relatively simple and provides
+%D macros for assigning logos to logo areas as well as
+%D forcing placement.
 %D
 %D \showsetup{\y!definelogo}
 %D \showsetup{\y!placelogos}
@@ -233,4 +233,4 @@
   {\xdef\requestedlogos{\iffirstargument#1\else\definedlogos\fi}%
    \global\chardef\logostatus3 }
 
-\protect \endinput 
+\protect \endinput

@@ -914,7 +914,7 @@
 \def\doPDFfilestreamobject class #1 name #2 file #3 source #4%
   {}
 
-\def\doPDFattachfile#1#2#3#4#5#6#7#8% 
+\def\doPDFattachfile#1#2#3#4#5#6#7#8%
   {\bgroup % title width height color symbol file
    \edef\PDFfile{#8}\convertcommand\PDFfile\to\PDFfile
    % beware: the symbol may (indirectly) use the file
@@ -2084,7 +2084,7 @@
 
 \def\enablePDFdocencoding
   {\enablecoding[pdfdoc]
-   \enablelanguagespecifics[\currentlanguage]% redundant ? 
+   \enablelanguagespecifics[\currentlanguage]% redundant ?
    \simplifycommands}
 
 \long\def\sanitizePDFdocencoding#1\to#2%
@@ -2435,14 +2435,53 @@
 %D four elements of the transform matrix. We only support some
 %D fixed angles. The \type{q}'s take care of grouping.
 
-\def\doPDFstartrotation#1%
+% The original:
+%
+% \def\doPDFstartrotation#1%
+%   {\PDFcode{q}%
+%    \processaction
+%      [#1]
+%      [ 90=>\PDFcode{ 0  1 -1  0 0 0 cm},
+%       180=>\PDFcode{-1  0  0 -1 0 0 cm},
+%       270=>\PDFcode{ 0 -1  1  0 0 0 cm},
+%       360=>\PDFcode{ 1  0  0  1 0 0 cm}]}
+%
+% We cannot directly pass an angle, but have to calculate
+% factors (rx and ry). As in the \METAPOST\ to \PDF\
+% converter module we need to compensate the deformation
+% by setting (sx and sy).
+%
+% Optimized but bigger:
+%
+% \def\doPDFstartrotation#1%
+%   {\PDFcode{q}%
+%    \processaction
+%      [#1]
+%      [  0=>\PDFcode{ 1  0  0  1 0 0 cm},
+%        90=>\PDFcode{ 0  1 -1  0 0 0 cm},
+%       180=>\PDFcode{-1  0  0 -1 0 0 cm},
+%       270=>\PDFcode{ 0 -1  1  0 0 0 cm},
+%       360=>\PDFcode{ 1  0  0  1 0 0 cm},
+%        #1=>%\calculatecos{#1}% already calculated in core macro
+%            %\calculatesin{#1}% already calculated in core macro
+%            \edef\cos{\calculatedcos{#1}}%
+%            \edef\sin{\calculatedsin{#1}}%
+%            \PDFcode{\cos        \space %  cos
+%                     \sin        \space %  sin
+%                     \negated\sin\space % -sin
+%                     \cos        \space %  cos
+%                     0 0 cm}]}
+%
+% Since the sine and cosine values are preset and rounded we
+% can use the next alternative without running into inaccuracies.
+
+\def\doPDFstartrotation#1% grouped
   {\PDFcode{q}%
-   \processaction
-     [#1]
-     [ 90=>\PDFcode{ 0  1 -1  0 0 0 cm},
-      180=>\PDFcode{-1  0  0 -1 0 0 cm},
-      270=>\PDFcode{ 0 -1  1  0 0 0 cm},
-      360=>\PDFcode{ 1  0  0  1 0 0 cm}]}
+   \calculatecos{#1}% already calculated in core macro
+   \calculatesin{#1}% already calculated in core macro
+   \edef\cos{\calculatedcos{#1}}%
+   \edef\sin{\calculatedsin{#1}}%
+   \PDFcode{\cos\space\sin\space\negated\sin\space\cos\space0 0 cm}}
 
 \def\doPDFstoprotation
   {\PDFcode{Q}}
@@ -2602,24 +2641,24 @@
   {\ifx\PDFtextlayers\empty \else
        \driverreferenced \doPDFarrayobject class PDF name textlayers data {\PDFtextlayers}%
        \doPDFgetobjectreference{PDF}{textlayers}\!!stringa
-     \ifx\PDFhidelayers\empty
+     \ifx\PDFvidelayers\empty
        \def\!!stringb{[null]}%
      \else
-       \driverreferenced \doPDFarrayobject class PDF name hidelayers data {\PDFhidelayers}%
-       \doPDFgetobjectreference{PDF}{hidelayers}\!!stringb
+       \driverreferenced \doPDFarrayobject class PDF name videlayers data {\PDFvidelayers}%
+       \doPDFgetobjectreference{PDF}{videlayers}\!!stringb
      \fi
-     \ifx\PDFvidelayers\empty
+     \ifx\PDFhidelayers\empty
        \def\!!stringc{[null]}%
      \else
-       \driverreferenced \doPDFarrayobject class PDF name videlayers data {\PDFvidelayers}%
-       \doPDFgetobjectreference{PDF}{videlayers}\!!stringc
+       \driverreferenced \doPDFarrayobject class PDF name hidelayers data {\PDFhidelayers}%
+       \doPDFgetobjectreference{PDF}{hidelayers}\!!stringc
      \fi
      \doPDFaddtocatalog
        {/OCProperties
         << % display in menu
            /D  << /Order \!!stringa
-                  /On    \!!stringb
-                  /Off   \!!stringc >>
+                  /ON    \!!stringb
+                  /OFF   \!!stringc >>
            % used properties
            /OCGs \!!stringa >>}%
      \globallet\flushPDFtextlayers\relax

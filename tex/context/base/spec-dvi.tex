@@ -8,24 +8,24 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
-%C details. 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
 
 \unprotect
 
 %D \macros
-%D   {dostartobject, 
+%D   {dostartobject,
 %D    dostopobject,
 %D    doinsertobject}
 %D
-%D Reuse of object is not supported by the \DVI\ format. We 
-%D therefore just duplicate them using boxes. 
+%D Reuse of object is not supported by the \DVI\ format. We
+%D therefore just duplicate them using boxes.
 
 \startspecials[tex]
 
 \newbox\DVIobjects \newcounter\DVIobjectcounter
 
-\definespecial\dostartobject#1#2#3#4#5% 
+\definespecial\dostartobject#1#2#3#4#5%
   {\setbox\nextbox=\vbox\bgroup
      \def\dodostopobject%
        {\egroup
@@ -37,7 +37,7 @@
            \setbox\nextbox\hbox{\box\nextbox}
            \wd\nextbox\zeropoint
            \dp\nextbox\zeropoint
-           \ht\nextbox=\!!onepoint
+           \ht\nextbox\onepoint
            \allowbreak
            \box\nextbox}%
         \dosetobjectreference{#1}{#2}{\DVIobjectcounter}}}
@@ -51,10 +51,10 @@
    \splittopskip\zeropoint
    \setbox0=\copy\DVIobjects
    \dimen0=\DVIobjectreference pt
-   \advance\dimen0 -\!!onepoint
+   \advance\dimen0 -\onepoint
    \setbox2=\vsplit0 to \dimen0
-   \ifdim\ht0>\!!onepoint
-     \setbox0=\vsplit0 to \!!onepoint
+   \ifdim\ht0>\onepoint
+     \setbox0\vsplit0 to \onepoint
    \fi
    \unvbox0\setbox0=\lastbox\unhbox0
    \egroup}
@@ -64,24 +64,24 @@
 %D    dosetpositionwhd,
 %D    dosetpositionplus}
 %D
-%D The next specials only identify a position. It is up to 
+%D The next specials only identify a position. It is up to
 %D a \DVI\ postprocessing utility to merge the right commands
-%D into the utility file. Since in \CONTEXT, we only deal 
-%D with relative positions, the reference point is not so 
-%D important.  
+%D into the utility file. Since in \CONTEXT, we only deal
+%D with relative positions, the reference point is not so
+%D important.
 %D
-%D The postprocessor should translate the specials into 
-%D commands and append these to \type {jobname.tuo} using the 
-%D format: 
-%D 
+%D The postprocessor should translate the specials into
+%D commands and append these to \type {jobname.tuo} using the
+%D format:
+%D
 %D \starttypen
-%D \pospxy    {identifier}{page}{x}{y} 
+%D \pospxy    {identifier}{page}{x}{y}
 %D \pospxywhd {identifier}{page}{x}{y}{w}{h}{d}
 %D \pospxyplus{identifier}{page}{x}{y}{w}{h}{d}{list}
 %D \stoptypen
-%D 
-%D The postprocessor should, of course, provide the \type 
-%D {page}, \type {x}, and \type {y} values. 
+%D
+%D The postprocessor should, of course, provide the \type
+%D {page}, \type {x}, and \type {y} values.
 
 \definespecial\dosetposition#1%
   {\special{pos:pxy "#1"}}
@@ -92,8 +92,8 @@
 \definespecial\dosetpositionplus#1#2#3#4#5%
   {\special{pos:pxyplus "#1" #2 #3 #4 #5}}
 
-%D The next special tells the position postprocessor what 
-%D page dimensions were used.  
+%D The next special tells the position postprocessor what
+%D page dimensions were used.
 
 \let\flushDVIpositionpapersize\relax
 
@@ -101,14 +101,14 @@
 %   {\xdef\flushDVIpositionpapersize%
 %      {\special{pos:papersize #1 #2}%
 %       \global\noexpand\let\noexpand\flushDVIpositionpapersize\relax}}
-% 
+%
 % \appendtoksonce
 %   \ifspecialbasedsettings
 %     \ifpositioning\installprogram{dvipos \jobname}\fi
 %   \fi
 % \to \everystoptext
 %
-% less tokens: 
+% less tokens:
 
 \definespecial\dosetpositionpapersize#1#2%
   {\xdef\flushDVIpositionpapersize%

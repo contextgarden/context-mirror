@@ -5,7 +5,7 @@
 % constante van phantom in definitie ONE: \setchemicaltextwidth 300
 %
 % it would be interesting to rewrite this module with todays
-% experiences and new context functionality, mybe ... 
+% experiences and new context functionality, mybe ...
 
 %D \module
 %D   [       file=ppchtex (m-chemie),
@@ -18,8 +18,8 @@
 %D    suggestions={Tobias Burnus, Dirk Kuypers \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
-%C details. 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
 
 % Deze module ondersteunt het zetten van chemische
 % (structuur)formules. Hoewel de macro' zijn afgestemd op
@@ -82,13 +82,13 @@
 
 \startcommands dutch english german
 
-    gotochemical:  naarchemie       gotochemical    zurchemie        
-   setupchemical:  stelchemiein     setupchemical   stellechemieein 
-   startchemical:  startchemie      startchemical   startchemie     
-    stopchemical:  stopchemie       stopchemical    stopchemie      
-  definechemical:  definieerchemie  definechemical  definierechemie 
-        chemical:  chemie           chemical        chemie          
-         toptext:  boventekst       toptext         textueber 
+    gotochemical:  naarchemie       gotochemical    zurchemie
+   setupchemical:  stelchemiein     setupchemical   stellechemieein
+   startchemical:  startchemie      startchemical   startchemie
+    stopchemical:  stopchemie       stopchemical    stopchemie
+  definechemical:  definieerchemie  definechemical  definierechemie
+        chemical:  chemie           chemical        chemie
+         toptext:  boventekst       toptext         textueber
          bottext:  ondertekst       bottext         textunter
          midtext:  middentekst      midtext         textmitte
 
@@ -97,10 +97,10 @@
 \doifundefined{fiverm}  % In the more recent LaTeX versions
   {\font\fiverm=cmr5 }  % \fiverm is no longer (pre)defined.
 
-\doifdefinedelse{beginpicture}           % PiCTeX 
+\doifdefinedelse{beginpicture}           % PiCTeX
   {\doifdefinedelse{startMPdrawing}
      {\chardef\chemicaldrawingmode=2 }   % MetaPost
-     {\chardef\chemicaldrawingmode=0 }}  % raw 
+     {\chardef\chemicaldrawingmode=0 }}  % raw
   {\doifdefinedelse{psaxes}
      {\chardef\chemicaldrawingmode=1 }   % PSTricks
      {\chardef\chemicaldrawingmode=3 }}  % unknown
@@ -418,24 +418,16 @@
 \def\setupchemicalformat[#1]%
   {\processaction
      [\getvalue{#1\c!formaat}]
-     [  \v!klein=>\def\@@localchemicalformat%
-                    {\scriptscriptstyle},
-       \v!middel=>\def\@@localchemicalformat%
-                    {\ifsmallchemicaltext\scriptscriptstyle\else\scriptstyle\fi},
-        \v!groot=>\def\@@localchemicalformat
-                    {\ifsmallchemicaltext\scriptstyle\else\textstyle\fi},
-      \s!unknown=>\def\@@localchemicalformat%
-                    {\getvalue{#1\c!formaat}}]%
+     [  \v!klein=>\def\@@localchemicalformat{\scriptscriptstyle},
+       \v!middel=>\def\@@localchemicalformat{\ifsmallchemicaltext\scriptscriptstyle\else\scriptstyle\fi},
+        \v!groot=>\def\@@localchemicalformat{\ifsmallchemicaltext\scriptstyle\else\textstyle\fi},
+      \s!unknown=>\def\@@localchemicalformat{\getvalue{#1\c!formaat}}]%
    \processaction
      [\getvalue{#1\c!tekstformaat}]
-     [  \v!klein=>\def\@@localchemicalstyle%
-                    {\scriptscriptstyle},
-       \v!middel=>\def\@@localchemicalstyle%
-                    {\ifsmallchemicaltext\scriptscriptstyle\else\scriptstyle\fi},
-        \v!groot=>\def\@@localchemicalstyle%
-                    {\ifsmallchemicaltext\scriptstyle\else\textstyle\fi},
-      \s!unknown=>\def\@@localchemicalstyle%
-                    {\getvalue{#1\c!tekstformaat}}]%
+     [  \v!klein=>\def\@@localchemicalstyle{\scriptscriptstyle},
+       \v!middel=>\def\@@localchemicalstyle{\ifsmallchemicaltext\scriptscriptstyle\else\scriptstyle\fi},
+        \v!groot=>\def\@@localchemicalstyle{\ifsmallchemicaltext\scriptstyle\else\textstyle\fi},
+      \s!unknown=>\def\@@localchemicalstyle{\getvalue{#1\c!tekstformaat}}]%
    \processaction
      [\getvalue{#1\c!schaal}]
      [  \v!klein=>\def\@@localchemicalscale{500},
@@ -443,7 +435,7 @@
         \v!groot=>\def\@@localchemicalscale{750},
       \s!unknown=>\def\@@localchemicalscale{\getvalue{#1\c!schaal}}]}
 
-\def\@@currentchemicalformat%
+\def\@@currentchemicalformat
   {\ifinchemical
      \@@localchemicalformat
    \else
@@ -458,14 +450,14 @@
    \setupchemicalformat[\??chemical\s!chemical]%
    \ignorespaces}
 
-\def\setupchemical%
+\def\setupchemical
   {\dosingleargument\dosetupchemical}
 
-\def\@@dochemicalstyle%       % default mapping     
-  {\@@chemicalletter}           
-                                
-\def\@@dochemicalcolor%       % no mapping yet  
-  {}                             
+\def\@@dochemicalstyle%       % default mapping
+  {\@@chemicalletter}
+
+\def\@@dochemicalcolor%       % no mapping yet
+  {}
 
 \def\@@chemicalletter         %  $inner-style$  % (overloaded)
   {\@@chemicalchemicalletter} % $$outer-style$$
@@ -473,7 +465,7 @@
 \def\@@writechemicalstatus#1#2%
   {}
 
-\def\@@beginchemicallocalpicture%
+\def\@@beginchemicallocalpicture
   {\ifcase\chemicaldrawingmode
      \beginpicture
    \or
@@ -481,11 +473,11 @@
    \or
      \pushMPdrawing
      \startMPdrawing
-       %prologues := 1 ; 
-       %input mp-tool ; 
+       %prologues := 1 ;
+       %input mp-tool ;
        u := 10*\@@chemicalunit;
-       bboxmargin := 0pt ; 
-       pickup pencircle scaled 2u ; % ??? 
+       bboxmargin := 0pt ;
+       pickup pencircle scaled 2u ; % ???
      \stopMPdrawing
      \beginpicture
    \fi}
@@ -500,8 +492,8 @@
      \setbox2=\hbox
        {\MPshiftdrawingtrue\MPstaticgraphictrue\getMPdrawing}%
      \wd2=\!!zeropoint\ht2=\!!zeropoint\dp2=\!!zeropoint
-     \put {\box2} at 0 0 
-     \endpicture 
+     \put {\box2} at 0 0
+     \endpicture
      \popMPdrawing
    \fi}
 
@@ -554,11 +546,11 @@
    \or
      \setcoordinatesystem units <\@@chemicalunit,\@@chemicalunit> %
      \startMPdrawing
-      %input mp-tool ; 
-      %prologues := 1 ; 
+      %input mp-tool ;
+      %prologues := 1 ;
        u := 10*#1;
-       bboxmargin := 0pt ; 
-       pickup pencircle scaled 2u ; % ??? 
+       bboxmargin := 0pt ;
+       pickup pencircle scaled 2u ; % ???
      \stopMPdrawing
    \fi}
 
@@ -581,10 +573,10 @@
         d := 50u ; dd := 10u ;
         draw (x1,0)--(x2,0) ;
         draw (0,y1)--(0,y2) ;
-        for i=d step -d until x1: draw (i,dd)--(i,-dd) ; endfor ;  
-        for i=d step  d until x2: draw (i,dd)--(i,-dd) ; endfor ;  
-        for i=d step -d until y1: draw (-dd,i)--(dd,i) ; endfor ;  
-        for i=d step  d until y2: draw (-dd,i)--(dd,i) ; endfor ;  
+        for i=d step -d until x1: draw (i,dd)--(i,-dd) ; endfor ;
+        for i=d step  d until x2: draw (i,dd)--(i,-dd) ; endfor ;
+        for i=d step -d until y1: draw (-dd,i)--(dd,i) ; endfor ;
+        for i=d step  d until y2: draw (-dd,i)--(dd,i) ; endfor ;
      \stopMPdrawing
    \fi}
 
@@ -596,7 +588,7 @@
      \setplotsymbol({\vrule\!!height\!!widtha\!!width\!!widtha})%
    \fi}
 
-% Something for Dirk: 
+% Something for Dirk:
 
 \newcount \currentchemical
 
@@ -624,7 +616,7 @@
 %  {\bgroup
 %   \writestatus{ppchtex}{saving dimensions in ppchtex.dim}%
 %   \def\docommando##1##2##3%
-%     {\immediate\write\scratchwrite 
+%     {\immediate\write\scratchwrite
 %        {\noexpand\setchemicaldimensions{##1}{##2}{##3}}}%
 %   \immediate\openout\scratchwrite=ppchtex.dim
 %   \scratchcounter=0
@@ -637,10 +629,10 @@
 %   \egroup}
 %
 %\def\loadchemicaldimensions% oh, how nice it would be to use
-%  {\bgroup                 % one of the context read commands 
+%  {\bgroup                 % one of the context read commands
 %   \global\currentchemical=0
 %   \immediate\openin\scratchread=./ppchtex.dim
-%   \ifeof\scratchread 
+%   \ifeof\scratchread
 %     \immediate\closein\scratchread
 %     \global\skipchemicalfalse
 %   \else
@@ -678,7 +670,7 @@
    \ifnum\chemicaldrawingmode=2
      \resetMPdrawing
    \fi
-   % 
+   %
    \doif{\@@chemicalvariant}{2}
      {\@@setsecondchemicalplotsymbol}%
    %
@@ -760,7 +752,7 @@
            {-\the\!!counta}{\the\!!countb}
            {-\the\!!countc}{\the\!!countd}}}%
    \doifelse{\@@chemicaloptie}{\v!test}
-     {\def\@@writechemicalstatus##1##2% 
+     {\def\@@writechemicalstatus##1##2%
         {\convertargument##2\to\ascii
          \writestatus{##1}{\ascii}}}
      {\def\@@writechemicalstatus##1##2{}}%
@@ -811,7 +803,7 @@
      \fi
      \dimen0=\ht0
      \advance\dimen0 by \dp0
-     \inchemicalfalse % enables \chemie{} in text 
+     \inchemicalfalse % enables \chemie{} in text
      \setbox4=\alignedchemical\themidtext
      \setbox6=\alignedchemical\thetoptext
      \setbox8=\alignedchemical\thebottext
@@ -824,8 +816,8 @@
         \vss}% disables the depth
      \wd0=0pt  \wd4=0pt
      \ht2=\ht0 \dp2=\dp0
-     \ht4=\ht0 \dp4=\dp0 
-    %\setchemicaldimensions{\wd2}{\ht2}{\dp2}%  
+     \ht4=\ht0 \dp4=\dp0
+    %\setchemicaldimensions{\wd2}{\ht2}{\dp2}%
      \@@chemicalborder{\box0\box4\box2}% text on top of chemicals
      \endgroup
    %\fi
@@ -864,8 +856,8 @@
    \checkchemicaldirection{#1}{#2}%
    \!!counta=-\horchemical\edef\chemicalxoffset{\the\!!counta}%
    \!!countb=-\verchemical\edef\chemicalyoffset{\the\!!countb}%
-   \ifnum\chemicaldrawingmode=1 
-     % njet 
+   \ifnum\chemicaldrawingmode=1
+     % njet
    \else
      \setcoordinatesystem point at {\the\horchemical} {\the\verchemical}
    \fi}
@@ -875,8 +867,8 @@
    \verchemical=0
    \edef\chemicalxoffset{0}%
    \edef\chemicalyoffset{0}%
-   \ifnum\chemicaldrawingmode=1 
-     % njet 
+   \ifnum\chemicaldrawingmode=1
+     % njet
    \else
      \setcoordinatesystem point at 0 0
    \fi}
@@ -885,8 +877,8 @@
   {%\writestatus{ppchtex}{restoring \the\horchemical,\the\verchemical}%
    \edef\chemicalxoffset{\the\horchemical}%
    \edef\chemicalyoffset{\the\verchemical}%
-   \ifnum\chemicaldrawingmode=1 
-     % njet 
+   \ifnum\chemicaldrawingmode=1
+     % njet
    \else
      \setcoordinatesystem point at {\the\horchemical} {\the\verchemical}
    \fi}
@@ -993,9 +985,9 @@
         \def\undochemicaloffset{}}%
    \fi}
 
-\def\processchemicalphantom#1#2% 
+\def\processchemicalphantom#1#2%
   {\setbox0=\hbox
-     {\def\splitoff##1????{##1}% 
+     {\def\splitoff##1????{##1}%
       $\@@dochemicalstyle{\@@localchemicalformat\splitoff#2}$}%
    \dimen0=.25\wd0
    \divide\dimen0 by \@@localchemicalscale
@@ -1052,15 +1044,15 @@
   {\def\chemicalangle{#1}}
 
 \def\dosetchemicalrotation#1#2%
-  {\ifnum\chemicaldrawingmode=1 
-     % njet 
+  {\ifnum\chemicaldrawingmode=1
+     % njet
    \else
      \startrotation by {#1} {#2} %% \stoprotation (t.b.v. testen)
    \fi}
 
 \def\doresetchemicalrotation%
-  {\ifnum\chemicaldrawingmode=1 
-     % njet 
+  {\ifnum\chemicaldrawingmode=1
+     % njet
    \else
      \stoprotation
    \fi}
@@ -1095,22 +1087,22 @@
        \setchemicallocation{}%
      \else
        \iffixedchemicaltext
-         \!!counta=#2
+         \!!counta#2
        \else
          \!!counta=\chemicalrotation
-         \advance\!!counta by -1
-         \multiply\!!counta by #2
-         \advance\!!counta by #1
+         \advance\!!counta -1
+         \multiply\!!counta #2
+         \advance\!!counta #1
        \fi
        \getfromcommalist[#3][\the\!!counta]%
        \setchemicallocation\commalistelement
      \fi
      \ifchemicalpicture
-       \let\chemicaltext=\relax
+       \let\chemicaltext\relax
      \else
-       \advance\txtchemical by 1
+       \advance\txtchemical 1
        \getfromcommalist[#4][\txtchemical]%
-       \let\chemicaltext=\commalistelement
+       \let\chemicaltext\commalistelement
      \fi
    \fi
    \fixedchemicaltextfalse}
@@ -1290,7 +1282,7 @@
      \or
      % 3 : unrotated line
        \put {\stoprotation \setcoordinatesystem point at 0 0
-             \plot 0 0 {\!!counte} {\!!countf} /} 
+             \plot 0 0 {\!!counte} {\!!countf} /}
             [\chemicallineposition] at {\!!counta} {\!!countb}
      \else
      % 4 : dashed line
@@ -1348,7 +1340,7 @@
             shifted z0 ;
         \or
         % 3 : unrotated line  % nog \chemicalineposition: t/b
-          draw (origin--z3) 
+          draw (origin--z3)
             shifted (z1 rotatedaround(origin,-\chemicalangle))
             shifted z0 ;
         \else
@@ -1380,7 +1372,7 @@
         x2 := \MPdivten[\the\!!countc]u ;
         y2 := \MPdivten[\the\!!countd]u ;
         filldraw ((
-        \ifnum\chemicalangle>180 
+        \ifnum\chemicalangle>180
           z1--z2
         \else\ifnum\chemicalangle<90
           z1--(z2 shifted (-2u,+2u))--(z2 shifted (+2u,-2u))
@@ -1425,7 +1417,7 @@
         x2 := \MPdivten[\the\!!countc]u ;
         y2 := \MPdivten[\the\!!countd]u ;
         filldraw ((z1--(z2 rotatedaround(z1,5))--(z2 rotatedaround(z1,-5))
-                   --cycle) rotatedaround(origin,-\chemicalangle)) 
+                   --cycle) rotatedaround(origin,-\chemicalangle))
           shifted z0 ;
      \stopMPdrawing
      \account{#1}{#2}%
@@ -1543,7 +1535,7 @@
      \startMPdrawing
        x0 := \MPdivten[\chemicalxoffset]u ;
        y0 := \MPdivten[\chemicalyoffset]u ;
-       draw 
+       draw
         (((30.0u,0)--(50.0u,0){up}..(55.0u,7.5u)..
           (60.0u,0)..(65.0u,-7.5u)..(70.0u,0)..
           (75.0u,7.5u)..(80.0u,0)..(85.0u,-7.5u)..{up}
@@ -1587,10 +1579,10 @@
        r := \MPdivten[#3]*2u;
        x0 := \MPdivten[\chemicalxoffset]u ;
        y0 := \MPdivten[\chemicalyoffset]u ;
-       draw ((subpath (#1/45,#2/45) of (fullcircle scaled (r))) 
+       draw ((subpath (#1/45,#2/45) of (fullcircle scaled (r)))
          rotatedaround (origin,\chemicalangle+150))
          shifted z0 \ifchemicaldotted dashed withdots \fi ;
-     \stopMPdrawing     
+     \stopMPdrawing
    \fi
    \egroup}
 
@@ -1659,7 +1651,7 @@
    \@@beginchemicallocalpicture
    % alternatief: gewoon accounting, en zelf l,r afhandelen
    \ifnum\chemicaldrawingmode=1
-     % njet 
+     % njet
    \else
      \accountingon
      \let\nomoreaccounting=\accountingoff
@@ -1671,7 +1663,7 @@
 \def\skipchemical%
   {\dodoubleargument\doskipchemical}
 
-\def\complexchemical% met \expandafter 
+\def\complexchemical% met \expandafter
   {\ifinchemical
      \expandafter\dochemical
    \else
@@ -1700,8 +1692,8 @@
       \disablechemicalspecials
       \unexpandedprocessallactionsinset
         [#1]
-        [       HIGH=>\sethighsubscripts,     
-                 LOW=>\setlowsubscripts,      
+        [       HIGH=>\sethighsubscripts,
+                 LOW=>\setlowsubscripts,
                 PLUS=>\chemicalsign{+},
                GIVES=>\chemicalsinglearrow{#2}{#3},
          EQUILIBRIUM=>\chemicaldoublearrow{#2}{#3},
@@ -1727,7 +1719,7 @@
 %   \egroup}
 
 \def\dosimplechemicalA#1#2#3% % evt: {#1,\relax}
-  {\let\chemicalspace=\relax 
+  {\let\chemicalspace=\relax
    \@EA\dosimplechemical\@EA{\@@chemicalchemicaloffset,#1}{#2}{#3}%
    \egroup}
 
@@ -1825,14 +1817,15 @@
 \def\localdodochemical[#1][#2]%
   {\@@writechemicalstatus{ppchtex}{[#1][#2]}%
    %\bgroup     % koppelen en afmetingen gaat fout, vandaar:
-   \advance\levchemical by 1
+   \advance\levchemical 1
    \letvalue{\??chemical\s!unknown\the\levchemical}\unknownchemical
    \setevalue{\??chemical\c!tekst\the\levchemical}{\the\txtchemical}%
    \txtchemical=0
    \dodochemical[#1][#2]%
-   \@EA\txtchemical\@EA\csname\??chemical\c!tekst\the\levchemical\endcsname
+   % \@EA\txtchemical\@EA\csname\??chemical\c!tekst\the\levchemical\endcsname
+   \txtchemical\csname\??chemical\c!tekst\the\levchemical\endcsname
    \@EA\let\@EA\unknownchemical\csname\??chemical\s!unknown\the\levchemical\endcsname
-   \advance\levchemical by -1
+   \advance\levchemical -1
    %\egroup
    \ignorespaces}
 
@@ -1880,7 +1873,7 @@
 
 \def\dochemicaltop#1#2#3#4%
   {\vbox
-     {\@@dochemicalcolor 
+     {\@@dochemicalcolor
       \baselineskip=\chemicaltfraction\baselineskip \lineskip0pt
       \halign
         {#1###2\cr
@@ -1889,7 +1882,7 @@
 
 \def\dochemicalbottom#1#2#3#4%
   {\vtop
-     {\@@dochemicalcolor 
+     {\@@dochemicalcolor
       \baselineskip=\chemicalbfraction\baselineskip \lineskip0pt
       \halign
         {#1###2\cr
@@ -1898,19 +1891,19 @@
 
 \def\chemicalleft#1#2%
   {\hbox
-     {\@@dochemicalcolor 
+     {\@@dochemicalcolor
       $\@@dochemicalstyle{\scriptscriptstyle#1}$%
       $\@@dochemicalstyle{\@@currentchemicalformat\hskip\chemicallfraction em#2}$}}
 
 \def\chemicalright#1#2%
   {\hbox
-     {\@@dochemicalcolor 
+     {\@@dochemicalcolor
       $\@@dochemicalstyle{\@@currentchemicalformat#2\hskip\chemicalrfraction em}$%
       $\@@dochemicalstyle{\scriptscriptstyle#1}$}}
 
 \def\chemicalcentered#1%
   {\setbox0=\hbox{$\@@dochemicalstyle{\scriptscriptstyle#1}$}%
-   \setbox2=\hbox{$\@@dochemicalstyle{\@@currentchemicalformat C}$}% 
+   \setbox2=\hbox{$\@@dochemicalstyle{\@@currentchemicalformat C}$}%
    \dimen0=.5\ht2
    \advance\dimen0 by -.5\ht0
    \advance\dimen0 by \dp0
@@ -1918,13 +1911,13 @@
 
 \def\chemicalleftcentered#1#2%
   {\hbox
-     {\@@dochemicalcolor 
+     {\@@dochemicalcolor
       \chemicalcentered{#1}%
       $\@@dochemicalstyle{\@@currentchemicalformat\hskip\chemicallfraction em#2}$}}
 
 \def\chemicalrightcentered#1#2%
   {\hbox
-     {\@@dochemicalcolor 
+     {\@@dochemicalcolor
       $\@@dochemicalstyle{\@@currentchemicalformat#2\hskip\chemicalrfraction em}$%
       \chemicalcentered{#1}}}
 
@@ -1942,7 +1935,7 @@
 
 \def\chemicalsmashedleft#1%
   {\hbox\bgroup
-   \@@dochemicalcolor 
+   \@@dochemicalcolor
    \setbox0=\hbox{$\@@dochemicalstyle{\@@currentchemicalformat C}$}%
    \setbox2=\hbox{$\@@dochemicalstyle{\@@currentchemicalformat#1}$}%
    \wd2=\wd0
@@ -1951,7 +1944,7 @@
 
 \def\chemicalsmashedmiddle#1%
   {\hbox\bgroup
-   \@@dochemicalcolor 
+   \@@dochemicalcolor
    \setbox0=\hbox{$\@@dochemicalstyle{\@@currentchemicalformat C}$}%
    \setbox2=\hbox{$\@@dochemicalstyle{\@@currentchemicalformat#1}$}%
    \hbox{\hskip-.5\wd2\hskip.5\wd0\box2}
@@ -1959,7 +1952,7 @@
 
 \def\chemicalsmashedright#1%
   {\hbox\bgroup
-   \@@dochemicalcolor 
+   \@@dochemicalcolor
    \setbox0=\hbox{$\@@dochemicalstyle{\@@currentchemicalformat C}$}%
    \setbox2=\hbox{$\@@dochemicalstyle{\@@currentchemicalformat#1}$}%
    \hbox to \wd0{\hskip-\wd2\hskip\wd0\box2}%
@@ -1970,7 +1963,7 @@
 \def\chemicalforever#1#2%
   {\bgroup
    \setbox0=\hbox
-     {\@@dochemicalcolor 
+     {\@@dochemicalcolor
       $\@@dochemicalstyle{\scriptscriptstyle\hskip-.15em#2}$}%
    \wd0=0pt
    \big#1_{\hskip.1em\box0}%
@@ -2055,7 +2048,7 @@
                      \@@chemicalpostponed}
                     {\getpredefinedchemical{#1}}]}
 
-\newcount\chemicalstack % tzt \newwounter 
+\newcount\chemicalstack % tzt \newwounter
 
 \setvalue{\s!chemical\c!x1}{0}
 \setvalue{\s!chemical\c!y1}{0}
@@ -2099,7 +2092,7 @@
      {\setbox0=\hbox{$#1+$}%
       \raise\dp0\hbox{$#1#2$}}}
 
-\def\chemicalinnersign#1% todo: \@@chemicaltextcolor 
+\def\chemicalinnersign#1% todo: \@@chemicaltextcolor
   {\chemicalraise{\@@localchemicalstyle}{#1}}
 
 \def\chemicaloutersign#1%
@@ -2108,14 +2101,14 @@
 \def\chemicalsingleinnerarrow#1#2%
   {\chemicalraise{\@@localchemicalstyle}{\longrightarrow}}
 
-\def\chemicaldoubleinnerarrow#1#2% todo: \@@chemicaltextcolor 
+\def\chemicaldoubleinnerarrow#1#2% todo: \@@chemicaltextcolor
   {\chemicalinnerclip
      {\lower.2ex\hbox
         {\setbox0=\hbox{$\@@localchemicalstyle\longrightarrow$}%
          \setbox2=\hbox{$\@@localchemicalstyle\longleftarrow$}%
          \wd0=0pt\raise\ht0\box0\box2}}}
 
-\def\chemicaltwintipinnerarrow#1#2% todo: \@@chemicaltextcolor 
+\def\chemicaltwintipinnerarrow#1#2% todo: \@@chemicaltextcolor
   {\chemicalinnerclip
      {\setbox0=\hbox{\chemicalraise{\@@localchemicalstyle}{\longrightarrow}}%
       \setbox2=\hbox{\chemicalraise{\@@localchemicalstyle}{\longleftarrow}}%
@@ -2184,7 +2177,7 @@
 
 \def\chemicalsinglepicturearrow#1%
   {\lower.5ex\hbox
-      {\@@dochemicalstyle 
+      {\@@dochemicalstyle
        $\chemicalspace
         \buildrel
           \@@dochemicalstyle{\scriptstyle\quad#1\quad}%
@@ -2194,7 +2187,7 @@
 
 \def\chemicaldoublepicturearrow#1%
   {\lower.5ex\hbox
-     {\@@dochemicalstyle 
+     {\@@dochemicalstyle
       $\chemicalspace
        \buildrel
          \@@dochemicalstyle{\scriptstyle\quad#1\quad}%
@@ -2209,11 +2202,11 @@
 \def\somechemicalbond%
   {\hrule width \wd0 height .4pt}
 
-\def\dochemicalbonds#1#2#3% todo: \@@chemicaltextletter 
+\def\dochemicalbonds#1#2#3% todo: \@@chemicaltextletter
   {{\setbox0=\hbox
       {${\@@localchemicalstyle M}$}%
     \vbox to \ht0
-      {\@@dochemicalcolor 
+      {\@@dochemicalcolor
        \hsize\wd0
        \vskip.1\wd0#1\vfill#2\vfill#3\vskip.1\wd0}}}
 
@@ -2604,7 +2597,7 @@ CCD##4##5=>\processchemicaldottsegment{CC}{##4##5},
    \setchemicaltextelement  ZN  468  350
    \setchemicaltextelement  RN  860  625 % 1.25 Z
    \setchemicaltextelement  RTN 785  728 % .12 / 103 75
-   \setchemicaltextelement  RBN 935  522  
+   \setchemicaltextelement  RBN 935  522
    %
    \def\processchemical[##1##2##3##4]%
      {\processaction
@@ -2731,8 +2724,8 @@ RT##3##4=>\processchemicaltextelement{RN}{##3##4}{#1}{0}{},
    %
    \setchemicaltextelement  ZN   589 350
    \setchemicaltextelement  RN  1083 625  % 1.25 Z
-   \setchemicaltextelement  RTN 1008 755  % .12 / 130 75 
-   \setchemicaltextelement  RBN 1158 495   
+   \setchemicaltextelement  RTN 1008 755  % .12 / 130 75
+   \setchemicaltextelement  RBN 1158 495
    %
    \def\processchemical[##1##2##3##4##5]%
      {\processaction
@@ -2795,7 +2788,7 @@ RT##3##4##5=>\processchemicaltextelement{RN}{##3##4##5}{#1}{0}{},
          Z##2##3##4##5=>\processchemicaltextelement{Z}{##2##3##4##5}{#1}{0}{},
             \s!unknown=>\unknownchemical{##1##2##3##4##5}]}}
 
-\def\executechemicalSEVEN[#1]% incomplete ! 
+\def\executechemicalSEVEN[#1]% incomplete !
   {\setchemicalname SEVEN
    %
    \setchemicalmaximum        7
@@ -2818,7 +2811,7 @@ RT##3##4##5=>\processchemicaltextelement{RN}{##3##4##5}{#1}{0}{},
    \setchemicalangle 6 257.143 - - -
    \setchemicalangle 7 308.571 - - -
    %
-   \setchemicaltranslate 1 - - 
+   \setchemicaltranslate 1 - -
    \setchemicaltranslate 2 - -
    \setchemicaltranslate 3 - -
    \setchemicaltranslate 4 - -
@@ -3238,7 +3231,7 @@ RT##3##4##5=>\processchemicaltextelement{RN}{##3##4##5}{#1}{0}{},
      \putrule from {#1} {#2} to {#3} {#4}
    \or
      \psline(#1,#2)(#3,#4)%
-   \or 
+   \or
      \bgroup
      \!!counta=#1\!!countb=#2\!!countc=#3\!!countd=#4\relax
      \global\MPdrawingdonetrue
@@ -3279,7 +3272,7 @@ RT##3##4##5=>\processchemicaltextelement{RN}{##3##4##5}{#1}{0}{},
        \dimen0=\scratchcounter\dimen0
        \vcenter to \dimen0{}
        \dimen2=\@@chemicalunit
-       \dimen2=\@@chemicalrechts\dimen0  
+       \dimen2=\@@chemicalrechts\dimen0
        \vcenter{\leftskip1em\hsize\dimen2\relax\strut#2\strut}%
        \right.$]}%
 
@@ -3351,35 +3344,35 @@ RT##3##4##5=>\processchemicaltextelement{RN}{##3##4##5}{#1}{0}{},
          \noalign{\vskip.5ex}%
          $\@@dochemicalstyle{\@@localchemicalformat#2}$\cr}}}
 
-%D Here are a couple of \CONTEXT\ goodies: 
+%D Here are a couple of \CONTEXT\ goodies:
 %D
 %D \startopsomming
-%D \som styles hooked into \CONTEXT\ style mechanism 
+%D \som styles hooked into \CONTEXT\ style mechanism
 %D \som support for color and rulethickness (mp mode only)
-%D \som position tracking 
+%D \som position tracking
 %D \stopopsoming
 
-\ifCONTEXT 
+\ifCONTEXT
 
 \def\setchemicalattributes
-  {\scratchdimen\@@chemicalchemicallijndikte 
+  {\scratchdimen\@@chemicalchemicallijndikte
    \def\chemicalattributes
      {withpen pencircle scaled \the\scratchdimen\space
-      withcolor }% 
+      withcolor }%
    \doifelsenothing\@@chemicalchemicallijnkleur
      {\edef\chemicalattributes{\chemicalattributes black}}
      {\edef\chemicalattributes
         {\chemicalattributes \MPcolor{\@@chemicalchemicallijnkleur}}}%
    \startMPdrawing
-     drawoptions (\chemicalattributes) ; 
+     drawoptions (\chemicalattributes) ;
    \stopMPdrawing}
 
 \let\@@chemicalkleur\empty
 
-\def\@@dochemicalcolor 
-  {\doifsomething\@@chemicalkleur{\color[\@@chemicalkleur]}}     
+\def\@@dochemicalcolor
+  {\doifsomething\@@chemicalkleur{\color[\@@chemicalkleur]}}
 
-\def\@@dochemicalstyle 
+\def\@@dochemicalstyle
   {\doconvertfont\@@chemicalletter}
 
 \setupchemical
@@ -3394,6 +3387,6 @@ RT##3##4##5=>\processchemicaltextelement{RN}{##3##4##5}{#1}{0}{},
    #2%
    \egroup}
 
-\fi 
+\fi
 
 \protect \endinput

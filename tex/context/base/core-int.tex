@@ -25,8 +25,8 @@
       2: actief
       3: niet actief
       4: geen paginasynchronisatie (--) in hmode
-      5: onbekend attachment --  
-      6: attachment file -- bestaat niet  
+      5: onbekend attachment --
+      6: attachment file -- bestaat niet
 \stopmessages
 
 \startmessages  english  library: interactions
@@ -35,8 +35,8 @@
       2: active
       3: inactive
       4: no pagesynchronisation (--) in hmode
-      5: unknown attachment -- 
-      6: attachment file -- does not exist 
+      5: unknown attachment --
+      6: attachment file -- does not exist
 \stopmessages
 
 \startmessages  german  library: interactions
@@ -45,8 +45,8 @@
       2: aktiv
       3: inaktiv
       4: keine Seitensynchronisation (--) im hmode
-      5: unknown attachment -- 
-      6: attachment file -- does not exist 
+      5: unknown attachment --
+      6: attachment file -- does not exist
 \stopmessages
 
 \startmessages  czech  library: interactions
@@ -55,8 +55,8 @@
       2: aktivni
       3: neaktivni
       4: zadna strankova synchronizace (--) v hmode
-      5: unknown attachment -- 
-      6: attachment file -- does not exist 
+      5: unknown attachment --
+      6: attachment file -- does not exist
 \stopmessages
 
 \startmessages  italian  library: interactions
@@ -65,8 +65,8 @@
       2: attiva
       3: inattiva
       4: sincronizzazione di pagina (--) non disponibile in hmode
-      5: unknown attachment -- 
-      6: attachment file -- does not exist 
+      5: unknown attachment --
+      6: attachment file -- does not exist
 \stopmessages
 
 \startmessages  norwegian  library: interactions
@@ -75,8 +75,8 @@
       2: aktiv
       3: inaktiv
       4: ingen sidesynkronisering (--) i hmode
-      5: unknown attachment -- 
-      6: attachment file -- does not exist 
+      5: unknown attachment --
+      6: attachment file -- does not exist
 \stopmessages
 
 \startmessages  romanian  library: interactions
@@ -85,8 +85,8 @@
       2: activ
       3: inactiv
       4: nu exista sincronizare pt. pagini (--) in hmode
-      5: unknown attachment -- 
-      6: attachment file -- does not exist 
+      5: unknown attachment --
+      6: attachment file -- does not exist
 \stopmessages
 
 \startmessages  dutch  library: versions
@@ -533,7 +533,7 @@
           {\getvalue{\@@bookcount\the\!!counta}}%
         \xdef\bookmarklevellist
           {\bookmarklevellist/\bookmarktag:\bookmarklevelcount/}%
-        \advance\!!counta \minusone 
+        \advance\!!counta \minusone
         \ifnum\!!counta=\currentbookmarklevel
           \exitloop
         \fi}%
@@ -981,7 +981,7 @@
 \letvalue{\??am\v!boven }\empty
 \letvalue{\??am\v!onder }\empty
 
-% todo : \defineinteractionmenuclass 
+% todo : \defineinteractionmenuclass
 
 \def\interactiemenus[#1]%
   {\iflocation
@@ -999,8 +999,8 @@
 \setvalue{\??am\??am\c!menu\v!onder}%
   {\vertikaalinteractiemenu\v!onder\onderhoogte\c!voor\c!na}
 
-% this can be implemented with the following command (which 
-% is new, undocumented, experimental, untested, etc etc) 
+% this can be implemented with the following command (which
+% is new, undocumented, experimental, untested, etc etc)
 
 \def\defineinteractionmenuclass
   {\dodoubleargument\dodefineinteractionmenuclass}
@@ -1015,31 +1015,31 @@
            {#1}{\getvalue{\??am#1\c!hoogte}}\c!links\c!rechts}}}
 
 % \setupinteraction[menu=on,state=start]
-% 
+%
 % \defineinteractionmenuclass[test]   [vertical]
 % \defineinteractionmenuclass[another][horizontal]
-% 
+%
 % \defineinteractionmenu[test]   [left][state=start,width=4cm]
 % \defineinteractionmenu[another][top] [state=start,height=1cm]
-% 
+%
 % \startinteractionmenu[test]
-%   \but [firstpage] test-a \\ 
-%   \but [nextpage]  test-b \\ 
+%   \but [firstpage] test-a \\
+%   \but [nextpage]  test-b \\
 % \stopinteractionmenu
-% 
+%
 % \startinteractionmenu[another]
-%   \but [firstpage] test-a \\ 
-%   \but [nextpage]  test-b \\ 
+%   \but [firstpage] test-a \\
+%   \but [nextpage]  test-b \\
 % \stopinteractionmenu
-% 
-% \setupheadertexts[{\interactiemenu[another]}] 
-% 
-% \starttext 
-% 
-% test \interactionmenu[test] \page 
-% test \interactionmenu[test] \page 
-% 
-% \stoptext 
+%
+% \setupheadertexts[{\interactiemenu[another]}]
+%
+% \starttext
+%
+% test \interactionmenu[test] \page
+% test \interactionmenu[test] \page
+%
+% \stoptext
 
 %D This can save complicated menu macros when one want to
 %D keep control over parts of a menu (i.e.\ turn them on and
@@ -1078,10 +1078,10 @@
   {\dotripleempty\dodefinieerinteractiemenu}
 
 \def\dodefinieerinteractiemenu[#1][#2]% compatibility hack
-  {\convertargument#2\to\ascii        % will disappear soon 
+  {\convertargument#2\to\ascii        % will disappear soon
    \doifinstringelse[\ascii
      \dodostelinteractielijstmenuinx
-     \dododefinieerinteractiemenu   
+     \dododefinieerinteractiemenu
    [#1][#2]}
 
 % [name] [location]
@@ -1112,7 +1112,7 @@
   {\dodoubleargument\dostelinteractiemenuin}
 
 \def\dostelinteractiemenuin[#1][% compatibillity hack
-  {\doifnextcharelse\bgroup     % will disappear soon 
+  {\doifnextcharelse\bgroup     % will disappear soon
      {\dodostelinteractielijstmenuiny[#1][}
      {\dodostelinteractiemenuin      [#1][}}
 
@@ -2129,10 +2129,23 @@
 
 \newbox\commentbox
 
+% \def\doflushcommentanchors
+%    {\let\next\relax
+%     \processaction
+%       [\@@ccplaats]
+%       [     \v!inmarge=>\let\next\inmarge,
+%          \v!linkerrand=>\let\next\inleftedge,
+%         \v!rechterrand=>\let\next\inrightedge,
+%         \v!linkermarge=>\let\next\inleftmargin,
+%        \v!rechtermarge=>\let\next\inrightmargin]%
+%     \next{\hbox{\raise\strutht\box\commentbox}}}
+
 \def\doflushcommentanchors
-   {\processaction
+   {\let\next\relax, % new
+    \processaction
       [\@@ccplaats]
-      [     \v!inmarge=>\let\next\inmarge,
+      [%      \v!tekst=>\let\next\relax, % new
+            \v!inmarge=>\let\next\inmarge,
          \v!linkerrand=>\let\next\inleftedge,
         \v!rechterrand=>\let\next\inrightedge,
         \v!linkermarge=>\let\next\inleftmargin,
@@ -2185,7 +2198,7 @@
         {\egroup}}%
    \grabuntil{\e!stop\v!comment}\docommando}
 
-\letvalue{\e!stop\v!comment}\relax % handy for \expanded{...} 
+\letvalue{\e!stop\v!comment}\relax % handy for \expanded{...}
 
 \def\docommentaar[#1][#2]#3%
   {\doif\@@ccstatus\v!start
@@ -2255,14 +2268,14 @@
   {\doflushcomments}
 
 % \setupinteraction[state=start]
-% 
+%
 % \useattachment[test.tex]
 % \useattachment[whatever][test.tex]
 % \useattachment[whatever][newname][test.tex]
 % \useattachment[whatever][title][newname][test.tex]
-% 
+%
 % % \setupattachments[\c!symbool={symbol-normal,symbol-down}]
-% 
+%
 % \starttext \attachment[whatever] \stoptext
 
 \definesystemvariable{at}
@@ -2270,15 +2283,15 @@
 \def\useattachment
   {\doquadrupleempty\douseattachment}
 
-\def\douseattachment[#1][#2][#3][#4]% tag title newname filename 
+\def\douseattachment[#1][#2][#3][#4]% tag title newname filename
   {\iffourthargument
-     \setgvalue{\??at:#1}{{#2}{#3}{#4}}% tooltip kind of case 
+     \setgvalue{\??at:#1}{{#2}{#3}{#4}}% tooltip kind of case
    \else\ifthirdargument
-     \setgvalue{\??at:#1}{{#2}{#2}{#3}}% full path case 
+     \setgvalue{\??at:#1}{{#2}{#2}{#3}}% full path case
    \else\ifsecondargument
      \setgvalue{\??at:#1}{{#2}{#2}{#2}}% obvious case
    \else
-     \setgvalue{\??at:#1}{{#1}{#1}{#1}}% worst case 
+     \setgvalue{\??at:#1}{{#1}{#1}{#1}}% worst case
    \fi\fi\fi}
 
 \let\attachmenttitle\empty
@@ -2288,17 +2301,17 @@
 \def\getattachmentdata[#1]%
   {\edef\attachmenttitle{\filterfromvalue{\??at:#1}31}% description
    \edef\attachmentname {\filterfromvalue{\??at:#1}32}% new name
-   \edef\attachmentfile {\filterfromvalue{\??at:#1}33}% original 
+   \edef\attachmentfile {\filterfromvalue{\??at:#1}33}% original
    \expandafter\splitstring\attachmentname\at.\to\!!stringa\and\!!stringb
-   \ifx\!!stringb\empty % no suffix, so we need to inherit it 
+   \ifx\!!stringb\empty % no suffix, so we need to inherit it
      \expandafter\splitstring\attachmentfile\at.\to\!!stringc\and\!!stringd
      \edef\attachmentname{\attachmentname.\!!stringd}%
    \fi}
 
-\def\attachment[#1]% currently title equals newname 
-  {\iflocation 
+\def\attachment[#1]% currently title equals newname
+  {\iflocation
      \doifundefinedelse{\??at:#1}
-       {\writestatus\m!interactions6{#1}}% 
+       {\writestatus\m!interactions6{#1}}%
        {\doif\@@atstatus\v!start
           {\bgroup
            \getattachmentdata[#1]%

@@ -139,6 +139,7 @@ my $PdfSelect        = 0;
 my $PdfCombine       = 0;
 my $PdfOpen          = 0;
 my $PdfClose         = 0;
+my $AutoPdf          = 0;
 my $PrintFormat      = 'standard';
 my $ProducePdfT      = 0;
 my $ProducePdfM      = 0;
@@ -178,6 +179,7 @@ my $AllPatterns      = 0;
 my $ForceXML         = 0;
 my $Random           = 0;
 my $Filters          = '';
+my $NoMapFiles       = 0;
 
 # makempy :
 
@@ -268,8 +270,10 @@ my $MakeMpy = '';
     "translate=s"    => \$TeXTranslation,
     "pdfclose"       => \$PdfClose,
     "pdfopen"        => \$PdfOpen,
+    "autopdf"        => \$AutoPdf,
     "modefile=s"     => \$ModeFile,         # additional modes file
-    "globalfile"     => \$GlobalFile
+    "globalfile"     => \$GlobalFile,
+    "nomapfiles"     => \$NoMapFiles
 );                                          # don't check name
 
 # a set file (like blabla.bat) can set paths now
@@ -308,6 +312,10 @@ if ( $PdfArrange || $PdfSelect || $PdfCopy || $PdfCombine ) {
 if    ($ProducePdfT) { $OutputFormat = "pdftex" }
 elsif ($ProducePdfM) { $OutputFormat = "dvipdfm" }
 elsif ($ProducePdfX) { $OutputFormat = "dvipdfmx" }
+
+if ($AutoPdf) {
+    $PdfOpen = $PdfClose = 1 ;
+}
 
 if ( $RunOnce || $Pages || $TypesetFigures || $TypesetListing ) { $NOfRuns = 1 }
 
@@ -1033,13 +1041,15 @@ sub MakeOptionFile {
         && ( $Background ne '' ) )
     {
         print "    background graphic : $Background\n";
-        print OPT
-"\\defineoverlay[whatever][{\\externalfigure[$Background][\\c!factor=\\v!max]}]\n";
+        print OPT "\\defineoverlay[whatever][{\\externalfigure[$Background][\\c!factor=\\v!max]}]\n";
         print OPT "\\setupbackgrounds[\\v!pagina][\\c!achtergrond=whatever]\n";
     }
     if ($CenterPage) {
         print OPT
           "\\setuplayout[\\c!plaats=\\v!midden,\\c!markering=\\v!aan]\n";
+    }
+    if ($NoMapFiles) {
+        print OPT "\\disablemapfiles\n";
     }
     if ($NoArrange) { print OPT "\\setuparranging[\\v!blokkeer]\n" }
     elsif ( $Arrange || $PdfArrange ) {
@@ -1048,7 +1058,7 @@ sub MakeOptionFile {
             my $DupStr;
             if ($NoDuplex) { $DupStr = "" }
             else { $DupStr = ",\\v!dubbelzijdig" }
-            if ( $PrintFormat == '' ) {
+            if ( $PrintFormat eq '' ) {
                 print OPT "\\setuparranging[\\v!normaal]\n";
             } elsif ( $PrintFormat =~ /.*up/goi ) {
                 print OPT "\\setuparranging[2UP,\\v!geroteerd$DupStr]\n";
@@ -1477,15 +1487,11 @@ sub RunConTeXtFile {
     $RunPath =~ s/\\/\//goi;
     my $OriSuffix = $JobSuffix;
     if (($dosish) && ($PdfClose)) {
-        my $ok = 0 ;
-        if ($Result ne '') {
-            $ok = system("pdfclose --file $Result.pdf")
-        } else {
-            $ok = system("pdfclose --file $JobName.pdf")
+        my $ok = system("pdfclose --file $JobName.pdf") if -e "$JobName.pdf" ;
+        if (($Result ne '') && (-e "$Result.pdf")) {
+            $ok = system("pdfclose --file $Result.pdf") ;
         }
-        unless ($ok) {
-            system("pdfclose --all")
-        }
+        system("pdfclose --all") unless $ok ;
     }
     if ( -e "$JobName.$JobSuffix" ) {
         $DummyFile = ( ($ForceXML) || ( $JobSuffix =~ /xml/io ) );
@@ -2149,7 +2155,7 @@ my $mpochecksum = 0;
 
 sub checkMPgraphics {    # also see makempy
     my $MpName = shift;
-    if ( $MakeMpy != '' ) { $MpName .= " --$MakeMpy " }    # extra switches
+    if ( $MakeMpy ne '' ) { $MpName .= " --$MakeMpy " }    # extra switches
     if ($MpyForce)        { $MpName .= " --force " }       # dirty
     else {
         return 0 unless -s "$MpName.mpo" > 32;
