@@ -168,7 +168,7 @@
           \!!heighta\sidefloatvsize
           \advance\!!heighta -\pagetotal
           \ifdim\!!heighta>\zeropoint 
-            \ifnum\recurselevel>100
+            \ifnum\recurselevel>\plushundred
               \exitloop
             \fi 
           \else
@@ -357,8 +357,7 @@
    \fi
    \previoussidefloat
    \stallsidefloat
-\global
-   \setbox\floatbox\hbox
+   \global\setbox\floatbox\hbox
      {\ifmarginfloat\else\ifrightfloat\else\kern\sidefloatleftshift\fi\fi
       \ifrightfloat\else\hskip\sidefloatshift\fi
       \scratchdimen
@@ -376,18 +375,10 @@
       \or % height  
         \advance\scratchdimen\strutdepth % == \sidefloattopoffset
       \or % line
-%        \advance\scratchdimen\lineheight
       \or % depth 
         \advance\scratchdimen\lineheight
         \advance\scratchdimen\strutdepth
       \fi
-      % equivalent but more compact:
-%      \advance\scratchdimen\strutdepth\relax 
-%      \ifcase\sidefloatalign                
-%      \or
-%      \or \advance\scratchdimen\strutheight
-%      \or \advance\scratchdimen\lineheight
-%      \fi 
       \vbox{\vskip\scratchdimen\nointerlineskip#1}% 
       \ifrightfloat\kern\sidefloatshift\fi
       % no \hskip, but \kern here 
@@ -420,6 +411,45 @@
 
 \newdimen\sidefloatpagetotal
 
+% \def\measuresidefloat
+%   {\global\floatflagtrue
+%    \global\sidefloatpagetotal \pagetotal % global 
+%    \ifmarginfloat
+%      \global        \sidefloatwidth \zeropoint
+%    \else\ifedgefloat
+%      \global        \sidefloatwidth \zeropoint
+%    \else
+%      \global        \sidefloatwidth \wd\floatbox
+%      \global\advance\sidefloatwidth \floatsideskip
+%    \fi\fi
+% \ifdim\sidefloatwidth<\zeropoint
+%   \global\sidefloatwidth\zeropoint 
+% \fi 
+%    \global        \sidefloathsize  \hsize
+%    \global\advance\sidefloathsize -\sidefloatwidth
+%    \global        \sidefloatheight \ht\floatbox
+%    \global\advance\sidefloatheight \dp\floatbox
+%    \global\advance\sidefloatheight \sidefloattopskip
+%    \global        \sidefloatvsize  \sidefloatheight
+%    \global\advance\sidefloatvsize  \sidefloatpagetotal
+%    \dimen0=\sidefloatvsize
+%    \ifdim\dimen0>.99\pagegoal \relax
+%      \roomforfloatfalse
+%    \else
+%      \dimen0=\pagegoal
+%      \advance\dimen0 -\sidefloatvsize
+%      \ifdim\dimen0<\sidefloatbottomskip
+%        \global\advance\sidefloatvsize \dimen0
+%        \global\floatshorttrue
+%        \pushpenalties
+%        \global\holdinginserts\plusone
+%      \else
+%        \global\advance\sidefloatvsize \sidefloatbottomskip
+%        \global\floatshortfalse
+%      \fi
+%      \roomforfloattrue
+%    \fi}
+
 \def\measuresidefloat
   {\global\floatflagtrue
    \global\sidefloatpagetotal \pagetotal % global 
@@ -431,9 +461,9 @@
      \global        \sidefloatwidth \wd\floatbox
      \global\advance\sidefloatwidth \floatsideskip
    \fi\fi
-\ifdim\sidefloatwidth<\zeropoint
-  \global\sidefloatwidth\zeropoint 
-\fi 
+   \ifdim\sidefloatwidth<\zeropoint
+     \global\sidefloatwidth\zeropoint 
+   \fi 
    \global        \sidefloathsize  \hsize
    \global\advance\sidefloathsize -\sidefloatwidth
    \global        \sidefloatheight \ht\floatbox
@@ -441,8 +471,20 @@
    \global\advance\sidefloatheight \sidefloattopskip
    \global        \sidefloatvsize  \sidefloatheight
    \global\advance\sidefloatvsize  \sidefloatpagetotal
-   \dimen0=\sidefloatvsize
-   \ifdim\dimen0>.99\pagegoal \relax
+   \dimen0\sidefloatvsize 
+   \dimen2\pagegoal 
+   \relax
+   \ifcase\sidefloatmethod
+     % method 0 : raw 
+   \or 
+     % method 1 : safe 
+     \dimen2 .99\pagegoal 
+   \or
+     % method 2 : tight 
+     \advance\dimen0 -\!!onepoint 
+   \fi
+   \relax % really needed ! ! ! !
+   \ifdim\dimen0>\dimen2
      \roomforfloatfalse
    \else
      \dimen0=\pagegoal
@@ -458,7 +500,7 @@
      \fi
      \roomforfloattrue
    \fi}
-
+  
 % \def\setsidefloat% nilling everypar saves time and redudant pos's 
 %   {% removed here dec 2001   
 %   %{\everypar\emptytoks\forgetall\vbox{\strut}\vskip-\lineheight}%

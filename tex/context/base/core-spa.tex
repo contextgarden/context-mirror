@@ -629,6 +629,165 @@
 
 \newsignal\noblanksignal
 
+% \def\docomplexdoblanko[#1]% pas op \relax's zijn nodig ivm volgende \if
+%   {\global\blankoresetfalse
+%    \global\blankoblokkeerfalse
+%    \global\blankogeenwitfalse
+%    \global\lokaalblankoflexibelfalse
+%    \global\lokaalblankovastfalse
+%    \global\blankoskip\zeropoint
+%    \global\blankoforceerfalse
+%    \blankobuitenfalse
+%    \expanded{\rawprocesscommalist[#1]}\doblanko
+%    \ifdim\blankoskip=\zeropoint\relax
+%      \iflokaalblankoflexibel
+%        \doglobal\advance\blankoskip \currentblanko
+%      \else\iflokaalblankovast
+%        \doglobal\advance\blankoskip \currentblanko
+%      \fi\fi
+%    \fi
+%    \ifblankobuiten
+%    \else
+%      \par
+%      \ifvmode          %in pos fonts gaat dit mis
+%        \ifblankoforceer%\ifdim\prevdepth>\zeropoint\else
+%          % -1000pt signals top of page or column (\ejectcolumn)
+%          \vbox{\strut}\kern-\lineheight
+%        \fi
+%        \ifblankoblokkeer
+%          \global\doeblankofalse
+%          \ifgridsnapping
+%            \ifdim\prevdepth<\zeropoint
+%              % brrr
+%            \else
+%              % dirty trick: smaller blanks are ignored after
+%              % a larger one, so 10 lines is probably safe; first make
+%              % sure that we honor penalties
+%              \scratchcounter\lastpenalty
+%              % now comes the trick (cross our fingers that this works
+%              % well in multi columns; maybe an ifinner test is needed
+%              % \vskip-10\lineheight
+%              %    \ifnum\scratchcounter=\zerocount \else \penalty\lastpenalty \fi
+%              %    \vskip 10\lineheight
+%              % allas, this leads to overfull pages, so we try this:
+%              \kern-\noblanksignal
+%              \ifnum\scratchcounter=\zerocount
+%              \else
+%                \penalty\lastpenalty
+%              \fi
+%              \kern\noblanksignal
+%              % end-of-dirty-trick
+%            \fi
+%          \else
+%            \ifdim\prevdepth<\zeropoint
+%              % brrr
+%            \else
+%              % ensure at least a proper prevdepth, this should be
+%              % an option
+%              \vskip-\prevdepth
+%              \vskip\strutdepth
+%              \prevdepth\strutdepth
+%            \fi
+%            % the old crappy piece of code
+%            \edef\oldprevdepth{\the\prevdepth}%
+%            \prevdepth\newprevdepth
+%          \fi
+%        \else
+%          \global\doeblankotrue
+%        \fi
+%        \ifblankoreset
+%          \global\doeblankotrue
+%          \ifgridsnapping
+%             % let's play safe and not fool around with the depth, if
+%             % only because it took a lot of effort to sort out the grid
+%             % stuff in the first place
+%          \else
+%            \ifdim\prevdepth=\newprevdepth
+%              \prevdepth\oldprevdepth
+%            \fi
+%          \fi
+%        \fi
+%        \ifdoeblanko
+%          \ifdim1\lastskip<1\blankoskip\relax
+%            % else when \blanko[2*groot] + \blanko[3*groot] with parskip
+%            % equaling 1*groot, gives a groot=\parskip so adding a small
+%            % value makes it distinguishable; can also be done at parskip
+%            % setting time (better)
+%            \global\advance\blankoskip \mindimen\relax % = skip
+%            % test this on 2* + 3* and parskip groot
+%            \ifblankogeenwit
+%              \global\advance\blankoskip -\parskip
+%            \else
+%              \ifdim\lastskip=\parskip
+%              \else  % force this due to previous comment
+%                \ifdim\parskip>\zeropoint\relax
+%                  \ifdim\blankoskip<\parskip\relax
+%                    \global\blankoskip\zeropoint
+%                  \else
+%                    \global\advance\blankoskip -\parskip
+%                  \fi
+%                \fi
+%              \fi
+%            \fi
+%            \ifblankoflexibel \else
+%              \blankoskip1\blankoskip
+%            \fi
+%            \iflokaalblankovast
+%              \blankoskip1\blankoskip
+%            \fi
+%            \iflokaalblankoflexibel
+%              \blankoskip1\blankoskip
+%                \!!plus\skipgluefactor\blankoskip
+%                \!!minus\skipgluefactor\blankoskip
+%            \fi
+%            \ifgridsnapping
+%              \ifdim\lastkern=\noblanksignal
+%                \global\doeblankofalse
+%              \fi
+%            \else
+%              \ifdim\prevdepth=\newprevdepth
+%                \global\doeblankofalse
+%              \fi
+%            \fi
+%            \ifdoeblanko
+%              \iffuzzyvskip
+%                \removelastfuzzyvskip
+%                \fuzzyvskip\blankoskip\relax
+%              \else
+%                \removelastskip
+%                \vskip\blankoskip\relax
+%              \fi
+%            \fi
+%          \else
+%            \iffuzzyvskip
+%              \removelastfuzzyvskip
+%              \fuzzyvskip\blankoskip\relax
+%            \else
+%              % new, test this on pascal
+%              \ifdim\blankoskip<\zeropoint
+%                \advance\blankoskip-\lastskip
+%                \removelastskip
+%                \ifdim\blankoskip>\zeropoint
+%                  \vskip\blankoskip
+%                \else
+%                  \vskip\zeropoint
+%                \fi
+%              \else
+%                % also new
+%                \ifdim\blankoskip=\zeropoint
+%                  \ifblankogeenwit
+%                    \geenwitruimte
+%                  \fi
+%                \fi
+%              \fi
+%            \fi
+%          \fi
+%        \fi
+%      \fi
+%    \fi
+%    \global\fuzzyvskipfalse
+%    \presetindentation}
+
 \def\docomplexdoblanko[#1]% pas op \relax's zijn nodig ivm volgende \if
   {\global\blankoresetfalse
    \global\blankoblokkeerfalse
@@ -740,15 +899,22 @@
                \!!plus\skipgluefactor\blankoskip
                \!!minus\skipgluefactor\blankoskip
            \fi
-           \ifgridsnapping
-             \ifdim\lastkern=\noblanksignal
-               \global\doeblankofalse
-             \fi
-           \else
-             \ifdim\prevdepth=\newprevdepth
-               \global\doeblankofalse
-             \fi
-           \fi
+%           \ifgridsnapping
+%             \ifdim\lastkern=\noblanksignal
+%               \global\doeblankofalse
+%             \fi
+%           \else
+%             \ifdim\prevdepth=\newprevdepth
+%               \global\doeblankofalse
+%             \fi
+%           \fi
+%
+           \ifdim\lastkern=\noblanksignal % controled and grid
+             \global\doeblankofalse
+           \else\ifgridsnapping\else\ifdim\prevdepth=\newprevdepth
+             \global\doeblankofalse
+           \fi\fi\fi
+%
            \ifdoeblanko
              \iffuzzyvskip
                \removelastfuzzyvskip
@@ -787,6 +953,9 @@
    \fi
    \global\fuzzyvskipfalse
    \presetindentation}
+
+\def\doinhibitblank
+  {\kern\noblanksignal}
 
 %D For a long time we had:
 %D
@@ -944,7 +1113,7 @@
        \v!altijd=>\parindent\voorwit\relax,            % geen \indent !
         \v!nooit=>\parindent\zeropoint\relax]}
 
-\def\inspringen%
+\def\inspringen
   {\dosingleargument\doinspringen}
 
 \def\nietinspringen{\inspringen[\v!nee,\v!volgende]}
@@ -980,18 +1149,34 @@
 
 \definecomplexorsimple\stelspatieringin
 
-\bgroup
-\catcode`\~=\@@active       % eigenlijk is ~ al actief
-\gdef\fixedspaces%          % in Plain \TeX, maar we weten
-  {\catcode`\~=\@@active    % nooit wat er inmiddels is
-   \def~{\fixedspace}}      % gebeurd, vandaar.
-\egroup
+\catcode`\~=\@@active % to be sure
 
-\def\space               { }
-\def\fixedspace          {\hskip.5em\relax}
-\def\removelastspace     {\ifhmode\unskip\fi}
-\def\nospace             {\removelastspace\ignorespaces}
-\def\removeunwantedspaces{\ifhmode\unskip\unskip\unskip\unskip\unskip\fi}
+\unexpanded\def~{\nonbreakablespace}
+
+\def\space          { }
+\def\removelastspace{\ifhmode\unskip\fi}
+\def\nospace        {\removelastspace\ignorespaces}
+
+% in tables we need: 
+%
+% \def\fixedspace   {\hskip.5em\relax}
+%
+% but, since not all fonts have .5em digits:
+
+\def\fixedspace
+  {\setbox\scratchbox\hbox\ifmmode{$0$}\else{0}\fi
+   \hskip\wd\scratchbox\relax}
+
+\def\fixedspaces    
+  {\catcode`\~=\@@active
+   \def~{\fixedspace}} 
+
+% \def\removeunwantedspaces{\ifhmode\unskip\unskip\unskip\unskip\unskip\fi}
+
+\def\removeunwantedspaces
+  {\ifhmode
+     \doloop{\ifdim\lastskip>\zeropoint\unskip\else\exitloop\fi}%
+   \fi}
 
 % better, but not done:
 %
@@ -1390,7 +1575,7 @@
 \def\corrigeerwitruimte
   {\dowithnextbox
      {\startbaselinecorrection
-      \box\nextbox
+      \flushnextbox
       \stopbaselinecorrection}%
    \vbox}
 
@@ -1710,12 +1895,12 @@
 %D The plain ones:
 
 \def\offinterlineskip
-  {\baselineskip-1000\p@
+  {\baselineskip-\thousandpoint
    \lineskip\zeropoint
    \lineskiplimit\maxdimen}
 
 \def\nointerlineskip
-  {\prevdepth-1000\p@}
+  {\prevdepth-\thousandpoint}
 
 \let\normaloffinterlineskip=\offinterlineskip % knuth's original
 
@@ -2039,26 +2224,26 @@
 
 \let\checkindentation=\relax
 
-\def\donoindentation%
+\def\donoindentation
   {\ifdim\parindent=\zeropoint \else
      \bgroup \setbox\scratchbox\lastbox \egroup
    \fi}
 
-\def\noindentation% made global
+\def\noindentation % made global
   {\ifinpagebody \else
      \global\indentationfalse
-     \gdef\checkindentation%
+     \gdef\checkindentation
        {\donoindentation
         \gdef\checkindentation{\global\indentationtrue}}%
    \fi}
 
-\def\nonoindentation% bv bij floats
+\def\nonoindentation % bv bij floats
   {\ifinpagebody \else
      \global\indentationtrue
      \gdef\checkindentation{\global\indentationtrue}%
    \fi}
 
-\def\indentation%
+\def\indentation
   {\ifvmode \ifdim\parindent=\zeropoint \else
      % was : \hskip\parindent
      % can be: \indent
@@ -2068,18 +2253,18 @@
 
 % vergeten
 
-%\def\forgeteverypar%
+%\def\forgeteverypar
 %  {\everypar\emptytoks}
 
-\def\forgeteverypar%
+\def\forgeteverypar
   {\everypar{\the\neverypar}}
 
-%\def\forgetparindent%
+%\def\forgetparindent
 %  {\forgeteverypar
 %   \indentfirstparagraphtrue % recently added
 %   \stelinspringenin[\v!geen]}
 
-%\def\forgetparskip%
+%\def\forgetparskip
 %  {\stelwitruimtein[\v!geen]}
 
 \def\forgetparindent

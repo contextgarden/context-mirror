@@ -633,25 +633,18 @@
   {\ifundefined{\??tt\currenttabulate\v!hoofd}%
      \let\tabulateheadcontent\empty
    \else
-     \@EA\let\@EA\tabulateheadcontent
-     \csname\??tt\currenttabulate\v!hoofd\endcsname
+     \def\tabulateheadcontent
+       {\TABLEnoalign{\global\settrue\tabulatesomeamble}%
+        \csname\??tt\currenttabulate\v!hoofd\endcsname
+        \TABLEnoalign{\global\setfalse\tabulatesomeamble}}%
    \fi
    \ifundefined{\??tt\currenttabulate\v!voet}%
      \let\tabulatetailcontent\empty
    \else
-     \@EA\let\@EA\tabulatetailcontent
-       \csname\??tt\currenttabulate\v!voet\endcsname
-   \fi
-   \ifx\tabulateheadcontent\empty\else
-     \def\tabulateheadcontent
-       {\TABLEnoalign{\global\settrue\tabulatesomeamble}%
-        \tabulateheadcontent
-        \TABLEnoalign{\global\setfalse\tabulatesomeamble}}%
-   \fi
-   \ifx\tabulatetailcontent\empty\else
      \def\tabulatetailcontent
        {\TABLEnoalign{\global\settrue\tabulatesomeamble}%
-        \tabulatetailcontent}%
+        \csname\??tt\currenttabulate\v!voet\endcsname
+        \TABLEnoalign{\global\setfalse\tabulatesomeamble}}%
    \fi}
 
 \def\fulltabulatecontent
@@ -759,11 +752,21 @@
   {\iftabulatefirstflushed\else\getvalue{\??tt\currenttabulate EQ}\fi
    \global\tabulateequalfalse}
 
+% \def\tabulatenormalcolumn#1%
+%   {&\iftabulateequal\tabulateEQ\fi&\global\chardef\tabulatetype#1&}
+%
+% \def\tabulateequalcolumn#1%
+%   {&\tabulateEQ&\global\chardef\tabulatetype#1&}
+%
+% however, \unskip en \ignorespaces permit usage in complex XML/\starttabulate 
+
 \def\tabulatenormalcolumn#1%
-  {&\iftabulateequal\tabulateEQ\fi&\global\chardef\tabulatetype#1&}
+  {\unskip&\iftabulateequal\tabulateEQ\fi&\global\chardef\tabulatetype#1&%
+   \ignorespaces}
 
 \def\tabulateequalcolumn#1%
-  {&\tabulateEQ&\global\chardef\tabulatetype#1&}
+  {\unskip&\tabulateEQ&\global\chardef\tabulatetype#1&%
+   \ignorespaces}
 
 \def\tabulateautocolumn
   {\tabulatenormalcolumn\zerocount

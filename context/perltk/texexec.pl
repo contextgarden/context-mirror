@@ -1240,25 +1240,28 @@ sub CompareFiles # 2 = tuo
     else
       { return 0 } }
 
+#sub CheckPositions
+# { return if ($DVIspec eq '') || ($OutputFormat eq 'pdftex') ; 
+#   my $JobName = shift ; my $TuoName = "$JobName.tuo" ;
+#   if (open(POS,"$TuoName"))
+#     { seek POS, (-s $TuoName) - 5000, 0 ;
+#       while (<POS>)
+#         { if (/\% *position commands *\: *(\d*) *\(unresolved\)/io)
+#             { if ($1)
+#                 { print "         dvi positions : $1 ($DVIspec ." ;
+#                   close (POS) ;
+#                   open(POS,">>$TuoName") ;
+#                   $ENV{uc "$DVIspec.TEXFONTSDIR"} = $TeXFontsPath ;
+#                   print POS "\%\n\% extracted from dvi file by $DVIspec:\n\%\n" ;
+#                   close(POS) ;
+#                   print "." ;
+#                   RunPerlScript ($DVIspec, "$JobName >> $TuoName") ;
+#                   print ".)\n" }
+#               last } }
+#       close (POS) } }
+
 sub CheckPositions
- { return if ($DVIspec eq '') || ($OutputFormat eq 'pdftex') ; 
-   my $JobName = shift ; my $TuoName = "$JobName.tuo" ;
-   if (open(POS,"$TuoName"))
-     { seek POS, (-s $TuoName) - 5000, 0 ;
-       while (<POS>)
-         { if (/\% *position commands *\: *(\d*) *\(unresolved\)/io)
-             { if ($1)
-                 { print "         dvi positions : $1 ($DVIspec ." ;
-                   close (POS) ;
-                   open(POS,">>$TuoName") ;
-                   $ENV{uc "$DVIspec.TEXFONTSDIR"} = $TeXFontsPath ;
-                   print POS "\%\n\% extracted from dvi file by $DVIspec:\n\%\n" ;
-                   close(POS) ;
-                   print "." ;
-                   RunPerlScript ($DVIspec, "$JobName >> $TuoName") ;
-                   print ".)\n" }
-               last } }
-       close (POS) } }
+  { } 
 
 # my @ExtraPrograms = () ; 
 # 

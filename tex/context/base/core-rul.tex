@@ -846,7 +846,7 @@
    % \setbox\framebox=\next}
    % second alternative
    %\dowithnextbox
-   %  {\setbox\framebox=\box\nextbox
+   %  {\setbox\framebox\flushnextbox
    %   \let\postprocessframebox\undefined %new
    %   \stoplocalframed}
    %  \next}
@@ -2949,7 +2949,7 @@
 \def\dobackground
   {\bgroup
    \dowithnextbox
-     {\localframed[\??ag][\c!offset=\v!overlay]{\box\nextbox}\egroup}
+     {\localframed[\??ag][\c!offset=\v!overlay]{\flushnextbox}\egroup}
      \vbox}
 
 %D \stopdocumentation
@@ -3085,6 +3085,29 @@
    \localframed[\??fc#1]{\box\framebox}%
    \ifdone\stopregelcorrectie\fi
    \egroup}
+
+%D \macros
+%D   {backgroundline}
+%D
+%D For the moment an undocumented feature, but a cancidate 
+%D for going public. 
+
+\def\backgroundline[#1]%
+ %{\doifsomething{#1}{\dobackgroundline{#1}}\hbox}
+  {\doifcolorelse{#1}{\dobackgroundline{#1}\hbox}\hbox}
+
+\def\dobackgroundline#1%
+  {\dowithnextbox
+     {\hbox
+        {\localcolortrue
+         \startcolor[#1]%
+         \vrule
+           \!!width \nextboxwd
+           \!!height\nextboxht
+           \!!depth \nextboxdp
+       \stopcolor
+       \hskip-\nextboxwd
+       \flushnextbox}}}
 
 %D \macros
 %D   {encircled}

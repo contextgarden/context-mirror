@@ -1334,6 +1334,7 @@ var:voor:*commando::
 var:tussen:*commando::
 var:na:*commando::
 var:springvolgendein:ja,nee::
+var:inspringen:nooit,niet,nee,ja,altijd,eerste,volgende::
 stopsetup
 
 startsetup
@@ -1355,6 +1356,7 @@ var:koppelwijze:globaal,lokaal::
 var:nummer:nee,*naam::
 var:titeluitlijnen:nee,ja::
 var:start:*getal::
+ivr:steldoornummerenin::
 stopsetup
 
 startsetup
@@ -1838,6 +1840,7 @@ var:nboven:*getal::
 var:nonder:*getal::
 var:nregels:*getal::
 var:default:*naam::
+var:tolerantie:0,1,2::
 var:linkermargeafstand:*maat::
 var:rechtermargeafstand:*maat::
 var:zijuitlijnen:normaal,regel::
@@ -2969,7 +2972,7 @@ stopsetup
 startsetup
 com:plaats<<blok>>:
 typ:val/refs/arg/arg/:
-val:links,rechts,hier,boven,onder, inlinker,inrechter,inmarge,marge, linkermarge,rechtermarge,linkerrand,rechterrand, binnenmarge,buitenmarge,binnenrand,buitenrand, binnen,buiten,regel,hoog,laag,passend, pagina,naast,altijd,forceer,lang:hier:
+val:links,rechts,hier,boven,onder, inlinker,inrechter,inmarge,marge, linkermarge,rechtermarge,linkerrand,rechterrand, binnenmarge,buitenmarge,binnenrand,buitenrand, binnen,buiten,regel,hoog,laag,passend, pagina,naast,altijd,forceer,lang,reset, regel,hoogte,diepte:hier:
 val:*tekst::
 val:*tekst::
 stopsetup

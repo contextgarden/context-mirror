@@ -398,10 +398,30 @@
       %\egroup
        \dofloatflushedinfo
      \fi
+     % there is a chance that due to rounding errors, the float 
+     % fits on a page where it was first rejected, in which case 
+     % the prevdepth is -maxdimen and we cannot obey the grid 
      \doplacefloatbox
      \expandafter\OTRONEdodoflushfloats
    \fi}
  
+% \def\OTRONEdocheckiffloatfits % vervangen ivm downward comp
+%   {\ifnofloatpermitted
+%      \global\roomforfloatfalse
+%    \else
+%      \dimen0         \pagetotal
+%      \advance\dimen0 \ht\floatbox
+%      \advance\dimen0 \dp\floatbox
+%      \advance\dimen0 \floattopskip
+% %      \advance\dimen0 -\pageshrink  % toegevoegd
+%     %\message{c:\the\mofcolumns,t:\the\pagetotal,g:\the\pagegoal}%\wait
+%      \ifdim\dimen0>\pagegoal
+%        \global\roomforfloatfalse
+%      \else
+%        \global\roomforfloattrue
+%      \fi
+%    \fi}
+
 \def\OTRONEdocheckiffloatfits % vervangen ivm downward comp
   {\ifnofloatpermitted
      \global\roomforfloatfalse
@@ -412,7 +432,19 @@
      \advance\dimen0 \floattopskip
      \advance\dimen0 -\pageshrink  % toegevoegd
     %\message{c:\the\mofcolumns,t:\the\pagetotal,g:\the\pagegoal}%\wait
-     \ifdim\dimen0>\pagegoal
+     \dimen2\pagegoal 
+     \relax % needed 
+     \ifcase\textfloatmethod
+       % method 0 : raw 
+     \or 
+       % method 1 : safe 
+       \dimen2 .99\pagegoal 
+     \or
+       % method 2 : tight 
+       \advance\dimen0 -\!!onepoint 
+     \fi
+     \relax % really needed ! ! ! !
+     \ifdim\dimen0>\dimen2
        \global\roomforfloatfalse
      \else
        \global\roomforfloattrue

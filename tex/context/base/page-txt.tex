@@ -455,7 +455,7 @@
   {\ifcase\showgridstate\else % 1=bottom 2=top
      \setgridbox\scratchbox\zetbreedte\teksthoogte
      \setbox#1\hbox
-       {\ifcase\showgridstate\or\box#1\hskip-\zetbreedte\fi
+       {\ifcase\showgridstate\or\or\box#1\hskip-\zetbreedte\fi
         \bgroup % color 
         \incolortrue
         \ifcase\layoutcolumns\else
@@ -474,7 +474,7 @@
         \red
         \box\scratchbox
         \egroup
-        \ifcase\showgridstate\or\or\hskip-\zetbreedte\box#1\fi}%
+        \ifcase\showgridstate\or\hskip-\zetbreedte\box#1\fi}%
    \fi}
 
 %D The placement of a whole line is handled by the next two 

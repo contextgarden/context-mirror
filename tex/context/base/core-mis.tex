@@ -1627,7 +1627,7 @@
 
 \def\betweenbothpairedboxes
   {\switchtobodyfont[\@@ldkorps]% split under same regime
-   \setbox\firstpairedbox\box\nextbox
+   \setbox\firstpairedbox\flushnextbox
    \ifnum\pairedlocationa<2
      \hsize\wd\firstpairedbox % trick
      \hsize\@@ldbreedte
@@ -1650,9 +1650,52 @@
      \setrigidcolumnhsize\hsize\@@ldafstand\@@ldn
    \fi}
 
+% \def\afterbothpairedboxes
+%   {\setbox\secondpairedbox\vbox
+%      {\ifnum\@@ldn>1 \rigidcolumnbalance\nextbox \else \flushnextbox \fi}%
+%    \ifnum\pairedlocationa<2\hbox\else\vbox\fi\bgroup % hide vsize
+%    \forgetall
+%    \ifnum\pairedlocationa<2
+%      \scratchdimen\maxoftwoboxdimens\ht\firstpairedbox\secondpairedbox
+%      \vsize\scratchdimen
+%      \ifdim\scratchdimen<\@@ldhoogte\relax % can be \vsize
+%        \scratchdimen\@@ldhoogte
+%      \fi
+%      \ifdim\scratchdimen>\@@ldmaxhoogte\relax
+%        \scratchdimen\@@ldmaxhoogte
+%      \fi
+%      \valignpairedbox\firstpairedbox \scratchdimen
+%      \valignpairedbox\secondpairedbox\scratchdimen
+%    \else
+%      \scratchdimen\maxoftwoboxdimens\wd\firstpairedbox\secondpairedbox
+%      \halignpairedbox\firstpairedbox \scratchdimen
+%      \halignpairedbox\secondpairedbox\scratchdimen
+%      \scratchdimen\ht\secondpairedbox
+%      \vsize\scratchdimen
+%      \ifdim\ht\secondpairedbox<\@@ldhoogte\relax % can be \vsize
+%        \scratchdimen\@@ldhoogte\relax % \relax needed
+%      \fi
+%      \ifdim\scratchdimen>\@@ldmaxhoogte\relax % todo: totale hoogte
+%        \scratchdimen\@@ldmaxhoogte\relax % \relax needed
+%      \fi
+%      \ifdim\scratchdimen>\ht\secondpairedbox
+%        \setbox\secondpairedbox\vbox to \scratchdimen
+%          {\ifnum\pairedlocationa=3 \vss\fi % 
+%           \box\secondpairedbox
+%           \ifnum\pairedlocationa=2 \vss\fi}% \kern\zeropoint
+%      \fi
+%    \fi
+%    \ifcase\pairedlocationa
+%      \box\secondpairedbox\hskip\@@ldafstand\box\firstpairedbox \or
+%      \box\firstpairedbox \hskip\@@ldafstand\box\secondpairedbox\or
+%      \box\secondpairedbox\par  \@@ldtussen \box\firstpairedbox \or
+%      \box\firstpairedbox \par  \@@ldtussen \box\secondpairedbox\else
+%    \fi
+%    \egroup}
+
 \def\afterbothpairedboxes
   {\setbox\secondpairedbox\vbox
-     {\ifnum\@@ldn>1 \rigidcolumnbalance\nextbox \else \box\nextbox \fi}%
+     {\ifnum\@@ldn>1 \rigidcolumnbalance\nextbox \else \flushnextbox \fi}%
    \ifnum\pairedlocationa<2\hbox\else\vbox\fi\bgroup % hide vsize
    \forgetall
    \ifnum\pairedlocationa<2
@@ -1688,8 +1731,8 @@
    \ifcase\pairedlocationa
      \box\secondpairedbox\hskip\@@ldafstand\box\firstpairedbox \or
      \box\firstpairedbox \hskip\@@ldafstand\box\secondpairedbox\or
-     \box\secondpairedbox\par  \@@ldtussen \box\firstpairedbox \or
-     \box\firstpairedbox \par  \@@ldtussen \box\secondpairedbox\else
+     \box\secondpairedbox\par \nointerlineskip \@@ldtussen \box\firstpairedbox \or
+     \box\firstpairedbox \par \nointerlineskip \@@ldtussen \box\secondpairedbox\else
    \fi
    \egroup}
 
@@ -1750,7 +1793,7 @@
    \fi
    \forgetall
    \doifelse{\combinationparameter\c!hoogte}\v!passend
-     {\vbox}{\vbox to \combinationparameter\c!hoogte}%
+     \vbox {\vbox to \combinationparameter\c!hoogte}%
    \bgroup
   %\doifelsenothing{#1}
   %  {\dodostartcombination[2*1*]}
@@ -1781,9 +1824,9 @@
 
 \def\docombination % we want to add struts but still ignore an empty box
   {\dowithnextbox
-     {\setbox0\box\nextbox
+     {\setbox0\flushnextbox
       \dowithnextbox
-        {\setbox2\box\nextbox
+        {\setbox2\flushnextbox
          \dodocombination}%
       \vtop\bgroup
         \def\next
@@ -2021,9 +2064,9 @@
 %          \doifelsenothing{\@@rorotatie}
 %            {\dostartrotation{90}}
 %            {\dostartrotation{\@@rorotatie}}%
-%          \wd\nextbox\zeropoint
-%          \ht\nextbox\zeropoint
-%          \box\nextbox
+%          \nextboxwd\zeropoint
+%          \nextboxht\zeropoint
+%          \flushnextbox
 %          \dostoprotation
 %          #6}
 %       #3}%
@@ -2052,7 +2095,7 @@
 %    \hbox\bgroup % compatibility hack
 %    \dowithnextbox
 %      {\edef\@@rorotatie{#1}%
-%       \setbox\nextbox=\vbox{\box\nextbox}%
+%       \setbox\nextbox=\vbox{\flushnextbox}%
 %       \dostoprotate
 %       \egroup}}
 
@@ -2061,7 +2104,7 @@
    \hbox\bgroup % compatibility hack
    \dowithnextbox
      {\edef\@@rorotatie{#1}%
-      \setbox\nextbox=\vbox{\box\nextbox}%
+      \setbox\nextbox=\vbox{\flushnextbox}%
       \dostoprotate
       \egroup}}
 
@@ -2069,7 +2112,7 @@
   {\dontshowcomposition
    \scratchdimen\nextboxht\advance\scratchdimen\nextboxdp
    \doif\@@roplaats\v!hoog
-     {\setbox\nextbox\vbox{\hbox{\raise\nextboxdp\box\nextbox}}}%
+     {\setbox\nextbox\vbox{\hbox{\raise\nextboxdp\flushnextbox}}}%
    \setbox\nextbox\vbox to #1
      {#2\relax
       \hbox to #4
@@ -2081,12 +2124,12 @@
          \nextboxwd\zeropoint
          \nextboxht\zeropoint
         %\nextboxdp\zeropoint
-         \box\nextbox
+         \flushnextbox
          \dostoprotation
          #6}
       #3}%
 \nextboxdp\zeropoint
-\box\nextbox
+\flushnextbox
    \egroup}
 
 \def\dostoprotate
@@ -2152,8 +2195,8 @@
 %       \let \@@efregels \@@xyregels
 %       \let \@@epx      \!!zeropoint
 %       \let \@@epy      \!!zeropoint
-%       \edef\@@epw     {\the\wd\nextbox}%
-%       \edef\@@eph     {\the\ht\nextbox}%
+%       \edef\@@epw     {\the\nextboxwd}%
+%       \edef\@@eph     {\the\nextboxht}%
 %       \checkfiguresettings
 %       \setfactorfiguresize
 %       \setscalefiguresize
@@ -2175,22 +2218,22 @@
 %       \c!sx=1,\c!sy=1,#1]%
 %    \dowithnextbox
 %      {\dontshowcomposition
-%       \ifdim\ht\nextbox>\zeropoint \ifdim\wd\nextbox>\zeropoint
+%       \ifdim\nextboxht>\zeropoint \ifdim\nextboxwd>\zeropoint
 %         \doscalelikeafigure
-%         \dimen0=\@@xysy\ht\nextbox
-%         \dimen2=\@@xysy\dp\nextbox
-%         \dimen4=\@@xysx\wd\nextbox
+%         \dimen0=\@@xysy\nextboxht
+%         \dimen2=\@@xysy\nextboxdp
+%         \dimen4=\@@xysx\nextboxwd
 %         \dimen6=\dimen0\advance\dimen6 \dimen2
 %         \setbox\nextbox\vbox to \dimen6
-%           {\ht\nextbox\zeropoint
-%            \dp\nextbox\zeropoint
+%           {\nextboxht\zeropoint
+%            \nextboxdp\zeropoint
 %            \vfill % erbij
-%            \dostartscaling\@@xysx\@@xysy\box\nextbox\dostopscaling}%
-%         \ht\nextbox\dimen0
-%         \dp\nextbox\dimen2
-%         \wd\nextbox\dimen4
+%            \dostartscaling\@@xysx\@@xysy\flushnextbox\dostopscaling}%
+%         \nextboxht\dimen0
+%         \nextboxdp\dimen2
+%         \nextboxwd\dimen4
 %       \fi \fi
-%       \box\nextbox
+%       \flushnextbox
 %       \egroup}
 %    \hbox}
 
@@ -2206,8 +2249,8 @@
       \let \@@efregels \@@xyregels
       \let \@@epx      \!!zeropoint
       \let \@@epy      \!!zeropoint
-      \edef\@@epw     {\the\wd\nextbox}%
-      \edef\@@eph     {\the\ht\nextbox}%
+      \edef\@@epw     {\the\nextboxwd}%
+      \edef\@@eph     {\the\nextboxht}%
       \figwid\zeropoint \figxsca\plusone % see note * (core-fig)
       \fighei\zeropoint \figysca\plusone % see note * (core-fig)
       \checkfiguresettings
@@ -2216,9 +2259,9 @@
       \setdimensionfiguresize
       \convertfigureinsertscale\@@epx\figx\figxsca\scax
       \convertfigureinsertscale\@@epy\figy\figysca\scay
-      \scratchdimen\scax\s!pt \divide\scratchdimen 100
+      \scratchdimen\scax\s!pt \divide\scratchdimen \plushundred
       \edef\@@xysx{\withoutpt\the\scratchdimen}%
-      \scratchdimen\scay\s!pt \divide\scratchdimen 100
+      \scratchdimen\scay\s!pt \divide\scratchdimen \plushundred
       \edef\@@xysy{\withoutpt\the\scratchdimen}}}
 
 \def\doschaal[#1]%
@@ -2231,25 +2274,25 @@
       \c!sx=1,\c!sy=1,#1]%
    \dowithnextbox
      {\dontshowcomposition
-      \ifdim\ht\nextbox>\zeropoint \ifdim\wd\nextbox>\zeropoint
+      \ifdim\nextboxht>\zeropoint \ifdim\nextboxwd>\zeropoint
         \doscalelikeafigure
-        \dimen0=\@@xysy\ht\nextbox
-        \dimen2=\@@xysy\dp\nextbox
-        \dimen4=\@@xysx\wd\nextbox
+        \dimen0=\@@xysy\nextboxht
+        \dimen2=\@@xysy\nextboxdp
+        \dimen4=\@@xysx\nextboxwd
         \dimen6=\dimen0\advance\dimen6 \dimen2
 %        \setbox\nextbox\vbox to \dimen6
-%          {\ht\nextbox\zeropoint
-%           \dp\nextbox\zeropoint
+%          {\nextboxht\zeropoint
+%           \nextboxdp\zeropoint
 %           \vfill % erbij
-%           \dostartscaling\@@xysx\@@xysy\box\nextbox\dostopscaling}%
+%           \dostartscaling\@@xysx\@@xysy\flushnextbox\dostopscaling}%
         \setbox\nextbox\hbox
           {\smashbox\nextbox
-           \dostartscaling\@@xysx\@@xysy\box\nextbox\dostopscaling}%
-        \ht\nextbox\dimen0
-        \dp\nextbox\dimen2
-        \wd\nextbox\dimen4
+           \dostartscaling\@@xysx\@@xysy\flushnextbox\dostopscaling}%
+        \nextboxht\dimen0
+        \nextboxdp\dimen2
+        \nextboxwd\dimen4
       \fi \fi
-      \box\nextbox
+      \flushnextbox
       \egroup}
    \hbox}
 
@@ -2262,11 +2305,11 @@
   {\bgroup
    \dowithnextbox
      {\dontshowcomposition
-      \scratchdimen\wd\nextbox
+      \scratchdimen\nextboxwd
       \setbox\nextbox\vbox
-        {\dostartmirroring\hskip-\wd\nextbox\box\nextbox\dostopmirroring}%
-      \wd\nextbox\scratchdimen
-      \box\nextbox
+        {\dostartmirroring\hskip-\nextboxwd\flushnextbox\dostopmirroring}%
+      \nextboxwd\scratchdimen
+      \flushnextbox
       \egroup}}
 
 \def\spiegel

@@ -69,17 +69,20 @@
 \def\@@dodoglobal
   {\resetglobal\global}
 
-\def\saveglobal   
-  {\let\@@dodoglobal\dodoglobal  
-   \let\@@redoglobal\redoglobal}
+% for the moment only one level: 
 
-\def\restoreglobal
-  {\let\dodoglobal\@@dodoglobal
-   \let\redoglobal\@@redoglobal}
+\def\saveglobal                  % slower but safer 
+  {\let\@@dodoglobal\dodoglobal  % \pushmacro\dodoglobal
+   \let\@@redoglobal\redoglobal  % \pushmacro\redoglobal 
+   \resetglobal}
 
-%D A very useful application of this macro is \type{\newif}, 
+\def\restoreglobal               % slower but safer 
+  {\let\redoglobal\@@redoglobal  % \popmacro\redoglobal
+   \let\dodoglobal\@@dodoglobal} % \popmacro\dodoglobal
+   
+%D A very useful application of this macro is \type {\newif}, 
 %D \TEX's fake boolean type. Not being a primitive, 
-%D \type{\global} hopelessly fails here. But a slight 
+%D \type {\global} hopelessly fails here. But a slight 
 %D adaption of Knuth's original macro permits: 
 %D 
 %D \starttypen
@@ -701,7 +704,7 @@
 \long\def\ydorecurse#1#2%
   {\global\advance\outerrecurse \plusone
    \global\@EA\let\csname\@@irecurse\recursedepth\endcsname\recurselevel
-   \def\recurselevel{1}%
+   \let\recurselevel\!!plusone
    #2%
    \@EA\let\@EA\recurselevel\csname\@@irecurse\recursedepth\endcsname
    \global\advance\outerrecurse \minusone}
@@ -1739,49 +1742,57 @@
 
 \let\endoflinetoken=^^M
 
-\def\doGotoPar
-  {\ifx\nextchar\blankspace
-     \@EA\GotoPar
-   \else\ifx\nextchar\endoflinetoken
-     \@EAEAEA\GotoPar
-   \else
-     \@EAEAEA\dodoGotoPar
-   \fi\fi}
-
-\def\dodoGotoPar
-  {\the\BeforePar
-   \BeforePar\emptytoks
-   \nextchar}
-
-\def\GotoPar
-  {\afterassignment\doGotoPar\let\nextchar=}
+%D The original definition was:
+%D
+%D \starttypen 
+%D \def\doGotoPar
+%D   {\ifx\nextchar\blankspace
+%D      \@EA\GotoPar
+%D    \else\ifx\nextchar\endoflinetoken
+%D      \@EAEAEA\GotoPar
+%D    \else
+%D      \@EAEAEA\dodoGotoPar
+%D    \fi\fi}
+%D 
+%D \def\dodoGotoPar
+%D   {\the\BeforePar
+%D    \BeforePar\emptytoks
+%D    \nextchar}
+%D 
+%D \def\GotoPar
+%D   {\afterassignment\doGotoPar\let\nextchar=}
+%D \stoptypen 
 
 %D Its big brother \type{\GetPar} redefines the \type{\par}
 %D primitive, which can lead to unexpected results, depending
 %D in the context.
+%D
+%D \starttypen 
+%D \def\GetPar
+%D   {\expanded
+%D      {\BeforePar
+%D         {\the\BeforePar
+%D          \BeforePar\emptytoks
+%D          \bgroup
+%D          \def\par
+%D            {\egroup
+%D             \par
+%D             \the\AfterPar
+%D             \BeforePar\emptytoks
+%D             \AfterPar\emptytoks}}}%
+%D    \GotoPar}
+%D \stoptypen 
 
-\def\GetPar
-  {\expanded
-     {\BeforePar
-        {\the\BeforePar
-         \BeforePar\emptytoks
-         \bgroup
-         \def\par
-           {\egroup
-            \par
-            \the\AfterPar
-            \BeforePar\emptytoks
-            \AfterPar\emptytoks}}}%
-   \GotoPar}
-
-%D New and better alternatives: 
-
-\def\dowithpar#1#2%
-  {\def\handlepar##1\par{#1##1#2}% 
-   \def\gobblepar\par{\dowithpar{#1}{#2}}% 
-   \doifnextcharelse\par\gobblepar\handlepar}
-
-% nicer 
+%D However, we can implement a better alternative by using:
+%D
+%D \starttypen 
+%D \def\dowithpar#1#2%
+%D   {\def\handlepar##1\par{#1##1#2}% 
+%D    \def\gobblepar\par{\dowithpar{#1}{#2}}% 
+%D    \doifnextcharelse\par\gobblepar\handlepar}
+%D \stoptypen
+%D 
+%D Or, nicer 
 
 \def\redowithpar\par
   {\doifnextcharelse\par\redowithpar\dodowithpar}% 
@@ -1796,6 +1807,23 @@
 \def\dogotopar#1%
   {\def\dodogotopar{#1}% 
    \redogotopar\par}
+
+%D The previosuly defined macros now become:
+
+\def\GetPar
+  {\expanded
+     {\dowithpar
+        {\the\BeforePar
+         \BeforePar\emptytoks}
+        {\the\AfterPar
+         \BeforePar\emptytoks
+         \AfterPar\emptytoks}}}
+
+\def\GotoPar
+  {\expanded
+     {\dogotopar
+        {\the\BeforePar
+         \BeforePar\emptytoks}}}
 
 %D \macros
 %D   {dowithpargument,dowithwargument}
@@ -1972,12 +2000,32 @@
 \def\dorepeatwithcommand[#1]%
   {\dodorepeatwithcommand#1*\empty*\relax}
 
+% \long\def\dodorepeatwithcommand#1*#2#3*#4\relax#5%
+%   {\ifx#2\empty
+%      #5{#1}%
+%    \else
+%      \dorecurse{#1}{#5{#2#3}}%
+%    \fi}
+% 
+% more complex but better:
+
 \long\def\dodorepeatwithcommand#1*#2#3*#4\relax#5%
   {\ifx#2\empty
      #5{#1}%
+   \else\ifnum#1<\zerocount
+     % a la etex
+     % \dorecurse{-\numexpr(#1)}{#5{-#2#3}}%
+     % indirect
+     %\innerrecurse#1%
+     %\expanded{\dorecurse{\number-\innerrecurse}}{#5{-#2#3}}%
+     % safer:
+     \bgroup\scratchcounter#1%
+     \expanded{\egroup\noexpand\dorecurse{\number-\scratchcounter}}{#5{-#2#3}}%
+   \else\ifx#2+%
+     \dorecurse{#1}{#5{#3}}%
    \else
      \dorecurse{#1}{#5{#2#3}}%
-   \fi}
+   \fi\fi\fi}
 
 %D \macros 
 %D   {normalbgroup,normalgroup}
@@ -2118,24 +2166,39 @@
    \doifintokselse\@@scratchtoks\@@toks\donothing\dodoprependtoks}
 
 %D The test macro: 
-
-\def\doifintokselse#1#2% #1 en #2 zijn toks 
-  {\edef\!!stringa{\the#1}\convertcommand\!!stringa\to\asciiA
-   \edef\!!stringb{\the#2}\convertcommand\!!stringb\to\asciiB
-   \doifinstringelse\asciiA\asciiB}
-
+%D
+%D \starttypen 
+%D \def\doifintokselse#1#2% #1 en #2 zijn toks 
+%D   {\edef\!!stringa{\the#1}\convertcommand\!!stringa\to\asciiA
+%D    \edef\!!stringb{\the#2}\convertcommand\!!stringb\to\asciiB
+%D    \doifinstringelse\asciiA\asciiB}
+%D \stoptypen 
+%D
 %D Better: 
-
-\def\doifintokselse#1#2% #1 en #2 zijn toks 
-  {\edef\!!stringa{\the#1}\convertcommand\!!stringa\to\asciiA
-   \edef\!!stringb{\the#2}\convertcommand\!!stringb\to\asciiB
-   \doifstringinstringelse\asciiA\asciiB}
-
+%D 
+%D \starttypen 
+%D \def\doifintokselse#1#2% #1 en #2 zijn toks 
+%D   {\edef\!!stringa{\the#1}\convertcommand\!!stringa\to\asciiA
+%D    \edef\!!stringb{\the#2}\convertcommand\!!stringb\to\asciiB
+%D    \doifstringinstringelse\asciiA\asciiB}
+%D \stoptypen 
+%D 
 %D Even better:
+%D 
+%D \starttypen 
+%D \def\doifintokselse#1#2% #1 en #2 zijn toks 
+%D   {\@EA\convertargument\the#1\to\asciiA
+%D    \@EA\convertargument\the#2\to\asciiB
+%D    \doifstringinstringelse\asciiA\asciiB}
+%D \stoptypen 
+%D 
+%D The correct one (with regards to global): 
 
-\def\doifintokselse#1#2% #1 en #2 zijn toks 
-  {\@EA\convertargument\the#1\to\asciiA
+\def\doifintokselse#1#2% #1 en #2 zijn toks
+  {\saveglobal
+   \@EA\convertargument\the#1\to\asciiA
    \@EA\convertargument\the#2\to\asciiB
+   \restoreglobal
    \doifstringinstringelse\asciiA\asciiB}
 
 %D Also: 

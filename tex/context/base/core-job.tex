@@ -13,7 +13,7 @@
 
 %D This module is still to be split and documented. 
 
-\writestatus{loading}{Context Core Macros (Job Handling)}
+\writestatus{loading}{Context Core Macros / Job Handling}
 
 %S InputFile     \input
 %S InputFile     \omgeving    \environment
@@ -369,13 +369,6 @@
 \def\deelomgeving #1 %
   {\doexecutefileonce{#1}}
 
-\expanded
-  {\long\noexpand\def\csname\e!start\e!instellingen\endcsname##1 ##2\csname\e!stop\e!instellingen\endcsname%
-     {\noexpand\long\noexpand\setvalue{\??su##1}{##2}}}
-
-\long\def\startsetups#1 #2\stopsetups% for international purposes
-  {\long\setvalue{\??su#1}{#2}}
-
 \def\setups
   {\dosingleargument\dosetups}
 
@@ -392,6 +385,34 @@
 
 \def\doifsetupselse#1%
   {\doifdefinedelse{\??su#1}}
+
+\long\@EA\def\csname\e!start\e!instellingen\endcsname#1 %
+  {\bgroup
+   \catcode`\^^M=\@@ignore
+   \xdostartsetups{#1}}
+
+\expanded
+  {\long\noexpand\def\noexpand\xdostartsetups##1##2\csname\e!stop\e!instellingen\endcsname%
+     {\egroup
+      \long\noexpand\setvalue{\??su##1}{##2}}}
+
+\def\startsetups % for international purposes
+  {\bgroup\doifnextcharelse[{\startsetupsA\stopsetups}%
+                            {\startsetupsB\stopsetups}}
+
+\def\startlocalsetups % for nested purposes
+  {\bgroup\doifnextcharelse[{\startsetupsA\stoplocalsetups}%
+                            {\startsetupsB\stoplocalsetups}}
+
+\def\startsetupsA#1[#2]%
+  {\catcode`\^^M=\@@ignore
+   \dostartsetups#1{#2}}
+
+\def\startsetupsB#1#2 % space delimited
+  {\startsetupsA#1[#2]}%
+
+\long\def\dostartsetups#1#2% watch out: not \grabuntil
+  {\dograbuntil#1{\egroup\long\setvalue{\??su#2}}}
 
 % Het <pagina>-karakter (FormFeed), wordt omgezet in \par
 

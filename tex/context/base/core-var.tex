@@ -135,6 +135,55 @@
 
 \fi
 
+%D \macros
+%D   {setvariables,getvariable}
+%D
+%D \starttyping 
+%D \setvariables[xx][titel=]
+%D \setvariables[xx][titel=test test]
+%D \setvariables[xx][titel=test $x=1$ test]   % fatal error reported
+%D \setvariables[xx][titel=test {$x=1$} test]
+%D \setvariables[xx][titel]                   % fatal error reported
+%D \setvariables[xx][titel=e]
+%D \stoptyping 
+
+\def\??vars{@@vars}
+
+\def\setvariables
+  {\dotripleargument\dosetvariables[\getrawparameters]}
+
+\def\globalsetvariables
+  {\dotripleargument\dosetvariables[\globalgetrawparameters]}
+
+\def\dosetvariables[#1][#2][#3]%
+  {\errorisfataltrue
+   \def\currentvariableclass{#2}%
+   #1[\??vars:#2:][#3]%
+   \errorisfatalfalse}
+
+\beginTEX
+
+\def\getvariable#1#2% to be sped up
+  {\csname
+     \ifundefined{\??vars:#1:#2}\s!empty\else\??vars:#1:#2\fi
+   \endcsname}
+
+\endTEX
+
+\beginETEX \ifcsname
+
+\def\getvariable#1#2% to be sped up
+  {\csname
+     \ifcsname\??vars:#1:#2\endcsname\??vars:#1:#2\else\s!empty\fi
+   \endcsname}
+
+\endETEX
+
+\def\showvariable#1#2%
+  {\showvalue{\ifundefined{\??vars:#1:#2}\s!empty\else\??vars:#1:#2\fi}}
+
+\let\currentvariableclass\empty
+
 %D We store some original meanings, maybe in \type 
 %D {math-ini}. 
 

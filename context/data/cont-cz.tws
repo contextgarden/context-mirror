@@ -1334,6 +1334,7 @@ var:pred:*prikaz::
 var:mezi:*prikaz::
 var:po:*prikaz::
 var:odsadpristi:ano,ne::
+var:odsazovani:nikdy,ne,ne,ano,vzdy,prvni,dalsi::
 stopsetup
 
 startsetup
@@ -1355,6 +1356,7 @@ var:zpusobpropojeni:globalne,lokalne::
 var:cislo:ne,*jmeno::
 var:zarovnejtitul:ne,ano::
 var:start:*cislo::
+ivr:nastavvycty::
 stopsetup
 
 startsetup
@@ -1838,6 +1840,7 @@ var:nvrsek:*cislo::
 var:nspodek:*cislo::
 var:nradky:*cislo::
 var:implicitni:*jmeno::
+var:tolerance:0,1,2::
 var:vzdalenostlevehookraje:*dimenze::
 var:vzdalenostpravehookraje:*dimenze::
 var:sidealign:normalni,radek::
@@ -2969,7 +2972,7 @@ stopsetup
 startsetup
 com:umisti<<plvouciobjekt>>:
 typ:val/refs/arg/arg/:
-val:vlevo,vpravo,zde,vrsek,spodek, vlevo,vpravo,naokraji,marginalie, levyokraj,pravyokraj,levahrana,pravahrana, innermargin,outermargin,inneredge,outeredge, uvnitr,vnejsi,regel,vysoko,nizko,prizpusobive, stranka,naproti,vzdy,sila,vysoko:zde:
+val:vlevo,vpravo,zde,vrsek,spodek, vlevo,vpravo,naokraji,marginalie, levyokraj,pravyokraj,levahrana,pravahrana, innermargin,outermargin,inneredge,outeredge, uvnitr,vnejsi,regel,vysoko,nizko,prizpusobive, stranka,naproti,vzdy,sila,vysoko,reset, radek,vyska,podlehloubky:zde:
 val:*text::
 val:*text::
 stopsetup

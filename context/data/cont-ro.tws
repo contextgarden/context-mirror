@@ -1334,6 +1334,7 @@ var:inainte:*comanda::
 var:intre:*comanda::
 var:dupa:*comanda::
 var:aliniaturmator:da,nu::
+var:aliniat:niciodata,nu,nu,da,totdeauna,primul,urmatorul::
 stopsetup
 
 startsetup
@@ -1355,6 +1356,7 @@ var:modcuplare:global,local::
 var:numar:nu,*nume::
 var:alinieretitlu:nu,da::
 var:start:*numar::
+ivr:seteazaenumerare::
 stopsetup
 
 startsetup
@@ -1838,6 +1840,7 @@ var:nsus:*numar::
 var:njos:*numar::
 var:nlinii:*numar::
 var:implicit:*nume::
+var:toleranta:0,1,2::
 var:distantamarginestanga:*dimensiune::
 var:distantamarginedreapta:*dimensiune::
 var:sidealign:normal,linie::
@@ -2969,7 +2972,7 @@ stopsetup
 startsetup
 com:pune<<obiectmobil>>:
 typ:val/refs/arg/arg/:
-val:stanga,dreapta,aici,sus,subsol, instanga,indreapta,inmargine,margine, marginestanga,marginedreapta,bordurastanga,borduradreapta, innermargin,outermargin,inneredge,outeredge, intern,extern,regel,inalt,jos,ajustat, pagina,opus,totdeauna,fortat,inalt:aici:
+val:stanga,dreapta,aici,sus,subsol, instanga,indreapta,inmargine,margine, marginestanga,marginedreapta,bordurastanga,borduradreapta, innermargin,outermargin,inneredge,outeredge, intern,extern,regel,inalt,jos,ajustat, pagina,opus,totdeauna,fortat,inalt,reset, linie,inaltime,adancime:aici:
 val:*text::
 val:*text::
 stopsetup

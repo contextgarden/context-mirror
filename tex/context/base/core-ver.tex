@@ -552,6 +552,7 @@
    \c!letter=\tt\tf, % \tttf gives problems with {\tx \type...}
    \c!pagina=\v!nee,
       \c!tab=\v!nee,
+    \c!palet=colorpretty,
     \c!optie=\v!normaal]
 
 %D \macros
@@ -797,14 +798,14 @@
 %D Specific inline verbatim commands can be defined with the 
 %D following command. 
 
-\def\definetype%
+\def\definetype
   {\dodoubleempty\dodefinetype}
 
 \def\dodefinetype[#1][#2]%
   {\unexpanded\setvalue{#1}{\dotype{#1}}%
    \copyparameters
      [\??ty#1][\??ty]
-     [\c!spatie,\c!kleur,\c!letter,\c!pagina,\c!tab,\c!optie]%
+     [\c!spatie,\c!palet,\c!kleur,\c!letter,\c!pagina,\c!tab,\c!optie]%
    \getparameters[\??ty#1][#2]}
 
 %D \macros
@@ -1056,54 +1057,6 @@
 %D colorization of \TEX\ sources as valid option. The other
 %D setup values are inherited from display verbatim.
 %D The implementation of \type{\typefile} is straightforward:
-
-% \presettyping[\v!file][]
-% 
-% \definecomplexorsimple\typefile
-% 
-% \def\simpletypefile
-%   {\complextypefile[\v!file]}
-% 
-% % \def\complextypefile[#1]#2%
-% %   {\getvalue{\??tp#1\c!voor}%
-% %    \doiflocfileelse{#2}
-% %      {\startopelkaar % includes \bgroup
-% %       \doifinset{\getvalue{\??tp#1\c!optie}}{\v!commandos,\v!schuin,\v!normaal}
-% %         {\setuptyping[#1][\c!optie=\v!geen]}%
-% %       \doifvalue{\??tp#1\c!optie}{\v!kleur}
-% %         {\expandafter\aftersplitstring#2\at.\to\prettyidentifier
-% %          \letvalue{\??tp#1\c!optie}=\prettyidentifier}%
-% %       \initializetyping{#1}%
-% %       \startverbatimcolor
-% %       \processfileverbatim{\pathplusfile\f!currentpath{#2}}%
-% %       \stopverbatimcolor
-% %       \stopopelkaar}  % includes \egroup
-% %      {{\tttf[\makemessage{\m!verbatims}{1}{#2}]}% 
-% %       \showmessage{\m!verbatims}{1}{#2}}%
-% %    \getvalue{\??tp#1\c!na}}
-% 
-% \def\complextypefile[#1]#2%
-%   {\getvalue{\??tp#1\c!voor}%
-%    \doiflocfileelse{#2}
-%      {\startopelkaar % includes \bgroup
-%       \doifinset{\getvalue{\??tp#1\c!optie}}{\v!commandos,\v!schuin,\v!normaal}
-%         {\setuptyping[#1][\c!optie=\v!geen]}%
-%       \doifvalue{\??tp#1\c!optie}\v!kleur
-%         {\expandafter\aftersplitstring#2\at.\to\prettyidentifier
-%          \letvalue{\??tp#1\c!optie}\prettyidentifier}%
-%       \initializetyping{#1}%
-%       \startverbatimcolor
-%       \makelocreadfilename{#2}%
-%       \processfileverbatim\readfilename 
-%      %\processfileverbatim{\pathplusfile\f!currentpath{#2}}%
-%       \stopverbatimcolor
-%       \stopopelkaar}  % includes \egroup
-%      {\bgroup
-%       \expanded{\convertargument#2}\to\ascii
-%       \tttf[\makemessage\m!verbatims1\ascii]% 
-%       \showmessage\m!verbatims1\ascii
-%       \egroup}%
-%    \getvalue{\??tp#1\c!na}}
 
 % new feature (not yet 100\% ok) 
 %

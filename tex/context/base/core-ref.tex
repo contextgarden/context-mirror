@@ -1615,20 +1615,9 @@
    \let\unharmedreferenceprefix\empty
    \xdef\predefinedreference%
      {\currentreferencespecial::\currentreferenceoperation}%
-%   \doifdefinedelse{\s!do\v!test\currentreferencespecial}
-%     {\getvalue{\s!do\v!test\currentreferencespecial}%
-%        {\global\referencefoundtrue}%
-%        {\global\referencefoundfalse}}
-%     {\global\referencefoundtrue}%
-   \executeifdefined{\s!do\v!test\currentreferencespecial}%
+   \executeifdefined{\s!do:\v!test:\currentreferencespecial}%
      {\global\referencefoundtrue\gobbletwoarguments}%
      {\global\referencefoundtrue}{\global\referencefoundfalse}%
-%   \ifcsname\s!do\v!test\currentreferencespecial\endcsname
-%     \csname\s!do\v!test\currentreferencespecial\endcsname
-%       {\global\referencefoundtrue}{\global\referencefoundfalse}%
-%   \else
-%     \global\referencefoundtrue
-%   \fi
    \doifpredefinedreferenceelse{\global\referencefoundfalse}\donothing}
 
 %D An unknown reference is reported on the screen, in the log
@@ -2024,7 +2013,7 @@
 %D The associated test is to be defined by:
 
 \def\definespecialtest#1%
-  {\setvalue{\s!do\v!test#1}}
+  {\setvalue{\s!do:\v!test:#1}}
 
 %D This \type{\def} alike macro is to be used as:
 %D
@@ -2077,18 +2066,13 @@
 %D \stoptypen
 
 \def\setexecutecommandcheck#1#2% #2 permits \first \second
-  {\setvalue{\s!do\s!do#1}{#2}}
-
-% \def\checkexecutecommand#1#2%
-%   {\def\docheckexecutecommand##1%
-%      {\doifdefined{\s!do\s!do#1}{\getvalue{\s!do\s!do#1}{##1}}}%
-%    \processcommacommand[#2]\docheckexecutecommand}
+  {\setvalue{\s!do:\s!do:#1}{#2}}
 
 \beginETEX
 
 \def\checkexecutecommand#1#2% evt geen #1 en #2 
-  {\ifx#2\empty \else \ifcsname\s!do\s!do#1\endcsname 
-     \@EA\let\@EA\docheckexecutecommand\csname\s!do\s!do#1\endcsname
+  {\ifx#2\empty \else \ifcsname\s!do:\s!do:#1\endcsname 
+     \@EA\let\@EA\docheckexecutecommand\csname\s!do:\s!do:#1\endcsname
      \rawprocesscommalist[#2]\docheckexecutecommand
    \fi \fi }
 
@@ -2097,8 +2081,8 @@
 \beginTEX
 
 \def\checkexecutecommand#1#2% evt geen #1 en #2 
-  {\ifx#2\empty \else \@EA\ifx\csname\s!do\s!do#1\endcsname\relax \else 
-     \@EA\let\@EA\docheckexecutecommand\csname\s!do\s!do#1\endcsname
+  {\ifx#2\empty \else \@EA\ifx\csname\s!do:\s!do:#1\endcsname\relax \else 
+     \@EA\let\@EA\docheckexecutecommand\csname\s!do:\s!do:#1\endcsname
      \rawprocesscommalist[#2]\docheckexecutecommand
    \fi \fi }
 

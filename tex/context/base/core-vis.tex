@@ -388,15 +388,15 @@
 
 \def\cuthbox
   {\normalhbox\bgroup
-   \dowithnextbox{\makecutbox\nextbox\box\nextbox\egroup}\normalhbox}
+   \dowithnextbox{\makecutbox\nextbox\flushnextbox\egroup}\normalhbox}
 
 \def\cutvbox
   {\normalvbox\bgroup
-   \dowithnextbox{\makecutbox\nextbox\box\nextbox\egroup}\normalvbox}
+   \dowithnextbox{\makecutbox\nextbox\flushnextbox\egroup}\normalvbox}
 
 \def\cutvtop
   {\normalvtop\bgroup
-   \dowithnextbox{\makecutbox\nextbox\box\nextbox\egroup}\normalvtop}
+   \dowithnextbox{\makecutbox\nextbox\flushnextbox\egroup}\normalvtop}
 
 %D \macros
 %D   {colormarkbox,rastermarkbox}
@@ -728,7 +728,7 @@
 \def\dotagbox[#1]#2%
   {\bgroup
    \dowithnextbox
-     {\setbox\scratchbox\box\nextbox
+     {\setbox\scratchbox\flushnextbox
       \setbox\nextbox\ifhbox\nextbox\hbox\else\vbox\fi
         \bgroup 
           \startoverlay
@@ -737,10 +737,10 @@
                [\c!achtergrond=\v!raster,\c!achtergrondraster=1]{#2}}}
           \stopoverlay 
         \egroup
-      \wd\nextbox\the\wd\scratchbox
-      \ht\nextbox\the\ht\scratchbox
-      \dp\nextbox\the\dp\scratchbox
-      \box\nextbox
+      \nextboxwd\the\wd\scratchbox
+      \nextboxht\the\ht\scratchbox
+      \nextboxdp\the\dp\scratchbox
+      \flushnextbox
       \egroup}}
 
 \def\tagbox

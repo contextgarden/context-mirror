@@ -115,17 +115,69 @@
    \let\pospxywhd \setpospxywhd
    \let\pospxyplus\setpospxyplus}
 
+% \def\setpospxy#1#2#3#4%
+%   {\dosetpositionnm\@@posp{#2}%
+%    \dosetpositionpt\@@posx{#3}%
+%    \dosetpositionpt\@@posy{#4}%
+%   %\setxvalue{\POSprefix#1}{\@@posp,\@@posx,\@@posy}}%
+%    \@EA\xdef\csname\POSprefix#1\endcsname{\@@posp,\@@posx,\@@posy}}%
+% 
+% \def\setpospxywhd#1#2#3#4#5#6#7%
+%   {\dosetpositionnm\@@posp{#2}%
+%    \dosetpositionpt\@@posx{#3}%
+%    \dosetpositionpt\@@posy{#4}%
+%    \dosetpositionpt\@@posw{#5}%
+%    \dosetpositionpt\@@posh{#6}%
+%    \dosetpositionpt\@@posd{#7}%
+%   %\setxvalue{\POSprefix#1}{\@@posp,\@@posx,\@@posy,\@@posw,\@@posh,\@@posd}}%
+%    \@EA\xdef\csname\POSprefix#1\endcsname{\@@posp,\@@posx,\@@posy,\@@posw,\@@posh,\@@posd}}%
+% 
+% \def\setpospxyplus#1#2#3#4#5#6#7#8%
+%   {\dosetpositionnm\@@posp{#2}%
+%    \dosetpositionpt\@@posx{#3}%
+%    \dosetpositionpt\@@posy{#4}%
+%    \dosetpositionpt\@@posw{#5}%
+%    \dosetpositionpt\@@posh{#6}%
+%    \dosetpositionpt\@@posd{#7}%
+%   %\setxvalue{\POSprefix#1}{\@@posp,\@@posx,\@@posy,\@@posw,\@@posh,\@@posd,#8}}
+%    \@EA\xdef\csname\POSprefix#1\endcsname{\@@posp,\@@posx,\@@posy,\@@posw,\@@posh,\@@posd,#8}}
+
+%D This is real tricky! The page anchor is applied to the 
+%D page box and therefore flushed first. So, when present, it 
+%D is applied to all positions except itself. 
+
+\chardef\positionanchormode=0 % don't relocate page origin 
+\chardef\positionanchormode=1 % relocate page origin once 
+
+\def\pageanchor{page:0}
+
+\def\registerpageposition#1% this one is flushed first !
+  {\ifpositioning\ifcase\realpageno\or
+     \ifdim\printpapierhoogte=\papierhoogte\else
+       \ifdim\printpapierbreedte=\papierbreedte\else
+         \setbox#1\hbox{\hpos\pageanchor{\box#1}}%
+       \fi 
+     \fi 
+   \fi\fi}
+
+\def\dosetpositionxy#1#2#3% todo: scaled points 
+  {\scratchdimen#2\s!sp
+   \ifcase\positionanchormode\or
+     \advance\scratchdimen-#3\pageanchor
+   \fi
+   \xdef#1{\@EA\withoutpt\the\scratchdimen}}
+
 \def\setpospxy#1#2#3#4%
   {\dosetpositionnm\@@posp{#2}%
-   \dosetpositionpt\@@posx{#3}%
-   \dosetpositionpt\@@posy{#4}%
+   \dosetpositionxy\@@posx{#3}\MPx
+   \dosetpositionxy\@@posy{#4}\MPy
   %\setxvalue{\POSprefix#1}{\@@posp,\@@posx,\@@posy}}%
    \@EA\xdef\csname\POSprefix#1\endcsname{\@@posp,\@@posx,\@@posy}}%
 
 \def\setpospxywhd#1#2#3#4#5#6#7%
   {\dosetpositionnm\@@posp{#2}%
-   \dosetpositionpt\@@posx{#3}%
-   \dosetpositionpt\@@posy{#4}%
+   \dosetpositionxy\@@posx{#3}\MPx
+   \dosetpositionxy\@@posy{#4}\MPy
    \dosetpositionpt\@@posw{#5}%
    \dosetpositionpt\@@posh{#6}%
    \dosetpositionpt\@@posd{#7}%
@@ -134,8 +186,8 @@
 
 \def\setpospxyplus#1#2#3#4#5#6#7#8%
   {\dosetpositionnm\@@posp{#2}%
-   \dosetpositionpt\@@posx{#3}%
-   \dosetpositionpt\@@posy{#4}%
+   \dosetpositionxy\@@posx{#3}\MPx
+   \dosetpositionxy\@@posy{#4}\MPy
    \dosetpositionpt\@@posw{#5}%
    \dosetpositionpt\@@posh{#6}%
    \dosetpositionpt\@@posd{#7}%
@@ -258,17 +310,17 @@
 %D expressions.
 
 \def\doMPp  #1,#2,#3,#4,#5,#6,#7\relax{#1}
-\def\doMPx  #1,#2,#3,#4,#5,#6,#7\relax{#2pt}
-\def\doMPy  #1,#2,#3,#4,#5,#6,#7\relax{#3pt}
-\def\doMPw  #1,#2,#3,#4,#5,#6,#7\relax{#4pt}
-\def\doMPh  #1,#2,#3,#4,#5,#6,#7\relax{#5pt}
-\def\doMPd  #1,#2,#3,#4,#5,#6,#7\relax{#6pt}
-\def\doMPxy #1,#2,#3,#4,#5,#6,#7\relax{(#2pt,#3pt)}
-\def\doMPll #1,#2,#3,#4,#5,#6,#7\relax{(#2pt,#3pt-#6pt)}
-\def\doMPlr #1,#2,#3,#4,#5,#6,#7\relax{(#2pt+#4pt,#3pt-#6pt)}
-\def\doMPur #1,#2,#3,#4,#5,#6,#7\relax{(#2pt+#4pt,#3pt+#5pt)}
-\def\doMPul #1,#2,#3,#4,#5,#6,#7\relax{(#2pt,#3pt+#5pt)}
-\def\doMPpos#1,#2,#3,#4,#5,#6,#7\relax{#1,#2pt,#3pt,#4pt,#5pt,#6pt}
+\def\doMPx  #1,#2,#3,#4,#5,#6,#7\relax{#2\s!pt}
+\def\doMPy  #1,#2,#3,#4,#5,#6,#7\relax{#3\s!pt}
+\def\doMPw  #1,#2,#3,#4,#5,#6,#7\relax{#4\s!pt}
+\def\doMPh  #1,#2,#3,#4,#5,#6,#7\relax{#5\s!pt}
+\def\doMPd  #1,#2,#3,#4,#5,#6,#7\relax{#6\s!pt}
+\def\doMPxy #1,#2,#3,#4,#5,#6,#7\relax{(#2\s!pt,#3\s!pt)}
+\def\doMPll #1,#2,#3,#4,#5,#6,#7\relax{(#2\s!pt,#3\s!pt-#6\s!pt)}
+\def\doMPlr #1,#2,#3,#4,#5,#6,#7\relax{(#2\s!pt+#4\s!pt,#3\s!pt-#6\s!pt)}
+\def\doMPur #1,#2,#3,#4,#5,#6,#7\relax{(#2\s!pt+#4\s!pt,#3\s!pt+#5\s!pt)}
+\def\doMPul #1,#2,#3,#4,#5,#6,#7\relax{(#2\s!pt,#3\s!pt+#5\s!pt)}
+\def\doMPpos#1,#2,#3,#4,#5,#6,#7\relax{#1,#2\s!pt,#3\s!pt,#4\s!pt,#5\s!pt,#6\s!pt}
 
 %D As said, we will default to zero (dimensions) when a
 %D position is unknown.
@@ -383,31 +435,31 @@
 %
 % \def\setpositionbox#1%
 %   {\dowithnextbox
-%      {\hbox to \wd\nextbox
+%      {\hbox to \nextboxwd
 %         {\initializenextposition
 %          \def\currentposition{#1}%
 %          \dosetpositionwhd \currentposition
-%            {\number\wd\nextbox}%
-%            {\number\ht\nextbox}%
-%            {\number\dp\nextbox}%
+%            {\number\nextboxwd}%
+%            {\number\nextboxht}%
+%            {\number\nextboxdp}%
 %          \traceposstring\llap\green{\currentposition>}%
-%          \setbox\positionbox\box\nextbox
+%          \setbox\positionbox\flushnextbox
 %          \dopositionaction\currentposition
 %          \box\positionbox
 %          \hss}}}
 %
 % \def\setpositionplus#1#2%
 %   {\dowithnextbox
-%      {\hbox to \wd\nextbox
+%      {\hbox to \nextboxwd
 %         {\initializenextposition
 %          \def\currentposition{#1}%
 %          \dosetpositionplus \currentposition
-%            {\number\wd\nextbox}%
-%            {\number\ht\nextbox}%
-%            {\number\dp\nextbox}%
+%            {\number\nextboxwd}%
+%            {\number\nextboxht}%
+%            {\number\nextboxdp}%
 %            {#2}%
 %          \traceposstring\rlap\magenta{<\currentposition}%
-%          \setbox\positionbox\box\nextbox
+%          \setbox\positionbox\flushnextbox
 %          \dopositionaction\currentposition
 %          \box\positionbox
 %          \hss}}}
@@ -431,40 +483,69 @@
      \dopositionaction\currentposition
    \fi}
 
+\def\setpositiondata#1#2#3#4%
+  {\iftrialtypesetting \else
+     \initializenextposition
+     \hbox 
+       {\def\currentposition{#1}%
+        \dosetpositionwhd\currentposition
+          {\number#2}%
+          {\number#3}%
+          {\number#4}%
+        \traceposstring\llap\green{\currentposition>}%
+        \dopositionaction\currentposition
+        \hss}%
+   \fi}
+
 \def\setpositionbox#1%
   {\dowithnextbox
      {\iftrialtypesetting
-        \box\nextbox
+        \flushnextbox
       \else
         \initializenextposition
-        \hbox to \wd\nextbox
+        \hbox to \nextboxwd
           {\def\currentposition{#1}%
            \dosetpositionwhd\currentposition
-             {\number\wd\nextbox}%
-             {\number\ht\nextbox}%
-             {\number\dp\nextbox}%
+             {\number\nextboxwd}%
+             {\number\nextboxht}%
+             {\number\nextboxdp}%
            \traceposstring\llap\green{\currentposition>}%
-           \setbox\positionbox\box\nextbox
+           \setbox\positionbox\flushnextbox
            \dopositionaction\currentposition
            \box\positionbox
            \hss}%
       \fi}}
 
+\def\setpositiondataplus#1#2#3#4#5%
+  {\iftrialtypesetting \else
+     \initializenextposition
+     \hbox to \nextboxwd
+       {\def\currentposition{#1}%
+        \dosetpositionplus\currentposition
+          {\number#2}%
+          {\number#3}%
+          {\number#4}%
+          {#5}%
+        \traceposstring\rlap\magenta{<\currentposition}%
+        \dopositionaction\currentposition
+        \hss}%
+   \fi}
+
 \def\setpositionplus#1#2%
   {\dowithnextbox
      {\iftrialtypesetting
-        \box\nextbox
+        \flushnextbox
       \else
         \initializenextposition
-        \hbox to \wd\nextbox
+        \hbox to \nextboxwd
           {\def\currentposition{#1}%
            \dosetpositionplus\currentposition
-             {\number\wd\nextbox}%
-             {\number\ht\nextbox}%
-             {\number\dp\nextbox}%
+             {\number\nextboxwd}%
+             {\number\nextboxht}%
+             {\number\nextboxdp}%
              {#2}%
            \traceposstring\rlap\magenta{<\currentposition}%
-           \setbox\positionbox\box\nextbox
+           \setbox\positionbox\flushnextbox
            \dopositionaction\currentposition
            \box\positionbox
            \hss}%
@@ -492,52 +573,38 @@
 \let\cleanuppositionaction\gobbleoneargument
 
 %D The next one will be overloaded later.
-
-% \def\dopositionaction#1% test saves hash entry in etex
-%   {\ifundefined{\POSactionprefix#1::}\else
-%      \ifnum\MPp{#1}>\zerocount % new
-%        \bgroup
-%        \traceposstring\clap\red{<#1>}%
-%        \the\everyinsertpositionaction
-%        \the\everypositionaction
-%        \getvalue{\POSactionprefix#1::}%
-%        \cleanuppositionaction{#1}%
-%        \egroup
-%      \else
-%        % shouldn't happen too often
-%        \traceposstring\clap\cyan{<#1>}%
-%      \fi
-%    \fi}
-
-\def\dopositionaction#1% test saves hash entry in etex
-  {\ifundefined{\POSactionprefix#1::}\else
-     \ifnum\MPp{#1}>\zerocount % new
-       \setbox\scratchbox\hbox \bgroup
-         \traceposstring\clap\red{<#1>}%
-         \the\everyinsertpositionaction
-         \the\everypositionaction
-         \ifcollectMPpositiongraphics
-           % can save a lot of run time
-           \pushMPdrawing
-           \MPshiftdrawingtrue
-           \resetMPdrawing
-           \getvalue{\POSactionprefix#1::}%
-           \ifMPdrawingdone
-             \getMPdrawing
-           \fi
-           \resetMPdrawing
-           \popMPdrawing
-         \else
-           \getvalue{\POSactionprefix#1::}%
-         \fi
-         \cleanuppositionaction{#1}%
-       \egroup
-       \smashedbox\scratchbox
-     \else
-       % shouldn't happen too often
-       \traceposstring\clap\cyan{<#1>}%
-     \fi
-   \fi}
+%D
+%D \starttypen
+%D \def\dopositionaction#1% test saves hash entry in etex
+%D   {\ifundefined{\POSactionprefix#1::}\else
+%D      \ifnum\MPp{#1}>\zerocount % new
+%D        \setbox\scratchbox\hbox \bgroup
+%D          \traceposstring\clap\red{<#1>}%
+%D          \the\everyinsertpositionaction
+%D          \the\everypositionaction
+%D          \ifcollectMPpositiongraphics
+%D            % can save a lot of run time
+%D            \pushMPdrawing
+%D            \MPshiftdrawingtrue
+%D            \resetMPdrawing
+%D            \getvalue{\POSactionprefix#1::}%
+%D            \ifMPdrawingdone
+%D              \getMPdrawing
+%D            \fi
+%D            \resetMPdrawing
+%D            \popMPdrawing
+%D          \else
+%D            \getvalue{\POSactionprefix#1::}%
+%D          \fi
+%D          \cleanuppositionaction{#1}%
+%D        \egroup
+%D        \smashedbox\scratchbox
+%D      \else
+%D        % shouldn't happen too often
+%D        \traceposstring\clap\cyan{<#1>}%
+%D      \fi
+%D    \fi}
+%D \stoptypen 
 
 \def\doifpositionaction#1%
   {\ifundefined{\POSactionprefix#1::}%
@@ -695,20 +762,24 @@
      \fi \fi \fi
    \fi \fi \fi}
 
+\chardef\parposstrut=1 % 0 => no strut data, so fall backs used 
+
 \def\doregisterparoptions
   {\doglobal\increment\parposcounter
    \bgroup
      \leftskip 1\leftskip
      \rightskip1\rightskip
-     \setpositionplus
+     \setpositiondataplus
        {p:\parposcounter}%         % identifier
+       {\zeropoint}
+       {\ht\strutbox}
+       {\dp\strutbox}
        {\efficientdimen\hsize     ,% 1
         \efficientdimen\leftskip  ,% 2
         \efficientdimen\rightskip ,% 3
         \efficientdimen\hangindent,% 4
                    \the\hangafter ,% 5
         \efficientdimen\parindent }% 6
-     % no strut here ! (see stepcharts and pascal)
      \normalhbox{\registerparsymbol}%
    \egroup}
 
@@ -840,22 +911,41 @@
      \dopresetpositionanchors
    \fi}
 
+% \def\dopresetpositionanchors
+%   {\bgroup
+%    \dimen0=\ifdim\topskip>\ht\strutbox\topskip\else\ht\strutbox\fi
+%    \dimen2=\MPy\textanchor
+%    \dimen4=\dimen2
+%    \advance\dimen2 \MPh\textanchor % space is essential
+%    \advance\dimen2 -\dimen0
+%    \advance\dimen4 \dp\strutbox
+%    \dimen6=\MPx\textanchor
+%    \dimen8=\MPw\textanchor
+%    \setxvalue{\POSprefix\headanchor}%
+%      {\realfolio,\withoutpt{\the\dimen6},\withoutpt{\the\dimen2},%
+%       \withoutpt{\the\dimen8},\withoutpt{\the\dimen0},\withoutpt{\the\dp\strutbox}}%
+%    \setxvalue{\POSprefix\tailanchor}%
+%      {\realfolio,\withoutpt{\the\dimen6},\withoutpt{\the\dimen4},%
+%       \withoutpt{\the\dimen8},\withoutpt{\the\ht\strutbox},\withoutpt{\the\dp\strutbox}}%
+%   %\showanchor\textanchor\showanchor\headanchor\showanchor\tailanchor\wait
+%    \egroup}
+
 \def\dopresetpositionanchors
   {\bgroup
-   \dimen0=\ifdim\topskip>\ht\strutbox\topskip\else\ht\strutbox\fi
-   \dimen2=\MPy\textanchor
-   \dimen4=\dimen2
-   \advance\dimen2 \MPh\textanchor % space is essential
-   \advance\dimen2 -\dimen0
-   \advance\dimen4 \dp\strutbox
-   \dimen6=\MPx\textanchor
-   \dimen8=\MPw\textanchor
+   \!!dimena\ifdim\topskip>\ht\strutbox\topskip\else\ht\strutbox\fi
+   \!!dimenb\MPy\textanchor
+   \!!dimenc\!!dimenb
+   \advance\!!dimenb \MPh\textanchor % space is essential
+   \advance\!!dimenb -\!!dimena
+   \advance\!!dimenc \dp\strutbox
+   \!!dimend\MPx\textanchor
+   \!!dimene\MPw\textanchor
    \setxvalue{\POSprefix\headanchor}%
-     {\realfolio,\withoutpt{\the\dimen6},\withoutpt{\the\dimen2},%
-      \withoutpt{\the\dimen8},\withoutpt{\the\dimen0},\withoutpt{\the\dp\strutbox}}%
+     {\realfolio,\withoutpt{\the\!!dimend},\withoutpt{\the\!!dimenb},%
+      \withoutpt{\the\!!dimene},\withoutpt{\the\!!dimena},\withoutpt{\the\dp\strutbox}}%
    \setxvalue{\POSprefix\tailanchor}%
-     {\realfolio,\withoutpt{\the\dimen6},\withoutpt{\the\dimen4},%
-      \withoutpt{\the\dimen8},\withoutpt{\the\ht\strutbox},\withoutpt{\the\dp\strutbox}}%
+     {\realfolio,\withoutpt{\the\!!dimend},\withoutpt{\the\!!dimenc},%
+      \withoutpt{\the\!!dimene},\withoutpt{\the\ht\strutbox},\withoutpt{\the\dp\strutbox}}%
   %\showanchor\textanchor\showanchor\headanchor\showanchor\tailanchor\wait
    \egroup}
 
@@ -922,8 +1012,10 @@
 \def\MPanchoridentifier{mpa} % {mp-anchor}
 \def\MPoverlayposprefix{MO::}
 
-\long\def\defineMPpositiongraphic#1%
-  {\long\setvalue{\MPoverlayposprefix#1}}
+% obsolete and wrong anyway 
+%
+% \long\def\defineMPpositiongraphic#1%
+%   {\long\setvalue{\MPoverlayposprefix#1}}
 
 %D The rest of the definitions concerning such overlays may
 %D look complicated,
@@ -960,8 +1052,23 @@
 %         \vfill}%
 %    \fi}
 
-\def\positionoverlay#1% the test prevents too many redundant positions 
-  {\ifpositioning     % in (not used) text* position layers 
+% \def\positionoverlay#1% the test prevents too many redundant positions 
+%   {\ifpositioning     % in (not used) text* position layers 
+%      \vbox to \overlayheight
+%        {\doifpositionactionelse{#1::\MPanchoridentifier}%
+%           {\edef\MPanchorid{#1::\MPanchoridentifier:\MPanchornumber}%
+%            \edef\MPanchor##1{\MPpos{\MPanchorid}}%
+%            \the\everyinsertpositionaction
+%            \copyposition{#1::\MPanchoridentifier}{#1::\MPanchoridentifier:\MPanchornumber}%
+%            \hpos
+%              {#1::\MPanchoridentifier:\MPanchornumber}%
+%              {\hbox to \overlaywidth{\dopositionaction{#1::\MPanchoridentifier}\hss}}}%
+%           {\hbox to \overlaywidth{\hss}}%
+%         \vfill}%
+%    \fi}
+
+\def\positionoverlay#1% the test prevents too many redundant positions
+  {\ifpositioning     % in (not used) text* position layers
      \vbox to \overlayheight
        {\doifpositionactionelse{#1::\MPanchoridentifier}%
           {\edef\MPanchorid{#1::\MPanchoridentifier:\MPanchornumber}%
@@ -970,7 +1077,15 @@
            \copyposition{#1::\MPanchoridentifier}{#1::\MPanchoridentifier:\MPanchornumber}%
            \hpos
              {#1::\MPanchoridentifier:\MPanchornumber}%
-             {\hbox to \overlaywidth{\dopositionaction{#1::\MPanchoridentifier}\hss}}}%
+            % this is ok
+            %{\hbox to \overlaywidth{\dopositionaction{#1::\MPanchoridentifier}\hss}}}%
+            % but this one prevents cyclic runs due to
+            % rounding errors
+             {\setbox\scratchbox\hbox to \overlaywidth
+                {\dopositionaction{#1::\MPanchoridentifier}\hss}%
+                 \ht\scratchbox\overlayheight
+                 \dp\scratchbox\zeropoint
+                 \box\scratchbox}}%
           {\hbox to \overlaywidth{\hss}}%
         \vfill}%
    \fi}
@@ -1022,7 +1137,7 @@
 \def\handlepositionaction#1\with#2\on#3%
   {\bgroup
    \ifx\currentpositionoverlay\empty
-     \edef\!!stringa{#3}%
+     \edef\!!stringa{#3}% no layer, just pos itself as anchor 
    \else
      \edef\!!stringa{\currentpositionoverlay::\MPanchoridentifier}%
    \fi
@@ -1053,7 +1168,7 @@
 
 \def\docleanpositionboxes#1#2#3% pos tag setups
   {\ifnum\MPp{#1}<\realpageno \else
-     \noexpand \dohandlepositionboxes{#1}{#2}{#3}%
+     \noexpand \dohandlepositionboxes{#1}{#2}{#3}% reinsert 
    \fi}
 
 \appendtoks
@@ -1092,7 +1207,7 @@
 %    \placeMPgraphic
 %    \egroup}
 
-\newif\ifcollectMPpositiongraphics
+\newif\ifcollectMPpositiongraphics \collectMPpositiongraphicstrue
 
 \long\def\useMPpositiongraphic#1#2#3%
   {\bgroup
@@ -1112,9 +1227,40 @@
 
 % Now we need a adapted action handler:
 
+% \def\dopositionaction#1% test saves hash entry in etex
+%   {\ifundefined{\POSactionprefix#1::}\else
+%      \ifnum\MPp{#1}>\zerocount % new
+%        \bgroup
+%        \traceposstring\clap\red{<#1>}%
+%        \the\everyinsertpositionaction
+%        \the\everypositionaction
+%        \ifcollectMPpositiongraphics
+%          % can save a lot of run time
+%          \pushMPdrawing
+%          \MPshiftdrawingtrue
+%          \resetMPdrawing
+%          \getvalue{\POSactionprefix#1::}%
+%          \ifMPdrawingdone
+%            \getMPdrawing
+%          \fi
+%          \resetMPdrawing
+%          \popMPdrawing
+%        \else
+%          \getvalue{\POSactionprefix#1::}%
+%        \fi
+%        \cleanuppositionaction{#1}%
+%        \egroup
+%      \else
+%        % shouldn't happen too often
+%        \traceposstring\clap\cyan{<#1>}%
+%      \fi
+%    \fi}
+
 \def\dopositionaction#1% test saves hash entry in etex
   {\ifundefined{\POSactionprefix#1::}\else
      \ifnum\MPp{#1}>\zerocount % new
+       \bgroup
+       \setbox\scratchbox\hbox
        \bgroup
        \traceposstring\clap\red{<#1>}%
        \the\everyinsertpositionaction
@@ -1134,7 +1280,9 @@
          \getvalue{\POSactionprefix#1::}%
        \fi
        \cleanuppositionaction{#1}%
-       \egroup
+       \egroup                % smashed is really needed else
+       \smashedbox\scratchbox % we get problems with too big
+       \egroup                % overlays (s-pre-0x.tex) 
      \else
        % shouldn't happen too often
        \traceposstring\clap\cyan{<#1>}%
@@ -1231,7 +1379,7 @@
 \def\handlepositiongraphicsrange#1#2#3#4%
   {\handlepositionaction\dohandleMPpositiongraphicrange\with{#1}{#2}{#3}{#4}\on{#2}}
 
-% \def\doinsertMPpositiongraphicrange#1#2#3#4% pos tag setups
+% \def\doinsertMPpositiongraphicrange#1#2#3#4% pos pos tag setups
 %   {\donefalse
 %         \ifnum\MPp{#1}=\realpageno\relax                          \donetrue
 %    \else\ifnum\MPp{#2}=\realpageno\relax                          \donetrue
@@ -1240,7 +1388,7 @@
 %      \def\currentposition{#1}\MPpositiongraphic{#3}{#4}%
 %    \fi}
 
-\def\doinsertMPpositiongraphicrange#1#2#3#4% pos tag setups
+\def\doinsertMPpositiongraphicrange#1#2#3#4% pos pos tag setups
   {\ifnum\MPp{#1}\MPp{#2}>\zerocount
      \iflocalpositioning
        \donetrue
@@ -1409,7 +1557,7 @@
 \def\MPl#1{\MPplus{#1}20}
 \def\MPr#1{\MPplus{#1}30}
 
-\startMPpositionmethod{mpos:par}
+\startMPpositionmethod{mpos:par} %%%%%%%%%%% will become obsolete 
   \edef\MPparcounter{\MPv\MPbself{1}{0}}%
   \doifpositionelse\MPwself
     {\startMPpositiongraphic{mpos:par}%
@@ -1541,6 +1689,8 @@
      {\dopresettextbackground{#1}}%
    \dodostarttextbackground}
 
+% todo \backgroundvariable\c!variant
+
 \def\dopresettextbackground#1% todo: \backgroundparameter
   {\ExpandFirstAfter\processaction % \EFA niet echt nodig
      [\getvalue{\??td#1\c!plaats}]
@@ -1625,7 +1775,7 @@
 %    \endgraf % new
 %    \getvalue{\??td\currenttextbackground\c!na}}
 
-\def\dostarttextbackgroundpar
+\def\dostarttextbackgroundpar 
   {\endgraf % new
    \getvalue{\??td\currenttextbackground\c!voor}%
    \doassignsomeskip\getvalue{\??td\currenttextbackground\c!bovenoffset}\to\scratchskip
@@ -1653,7 +1803,7 @@
    \dostartattributes{\??td\currenttextbackground}\c!letter\c!kleur\empty
    \geenwitruimte
    \seteffectivehsize
-   \blanko[\v!blokkeer]% new
+   \doinhibitblank %   \blanko[\v!blokkeer]% new
    \par}
 
 \def\dostoptextbackgroundpar
@@ -1927,13 +2077,13 @@
          \hpos{\POSstackprefix\currentautopos}
            {\doifoverlappingelse{\POSstackprefix\currentautopos}{\POSstackprefix\previousautopos}
               {#1}
-              {\box\nextbox}}}}%
+              {\flushnextbox}}}}%
      \hbox}
 
-\def\stackposup   {\dostackposbox{\raise\lineheight\box\nextbox}}
-\def\stackposdown {\dostackposbox{\lower\lineheight\box\nextbox}}
-\def\stackposleft {\dostackposbox{\copy\nextbox\hskip\wd\nextbox\hskip\stackposdistance}}
-\def\stackposright{\dostackposbox{\hskip\stackposdistance\hskip\wd\nextbox\box\nextbox}}
+\def\stackposup   {\dostackposbox{\raise\lineheight\flushnextbox}}
+\def\stackposdown {\dostackposbox{\lower\lineheight\flushnextbox}}
+\def\stackposleft {\dostackposbox{\copy\nextbox\hskip\nextboxwd\hskip\stackposdistance}}
+\def\stackposright{\dostackposbox{\hskip\stackposdistance\hskip\nextboxwd\flushnextbox}}
 
 %D The next hack make sure that margin texts near faulty
 %D strutted lines are handled ok.
@@ -2024,7 +2174,7 @@
 
 \def\do@@ammenuposition#1%
   {\ifnum\currentamposition>0
-     \dowithnextbox{\hpos{menu:#1:\realfolio}{\box\nextbox}}\hbox
+     \dowithnextbox{\hpos{menu:#1:\realfolio}{\flushnextbox}}\hbox
    \fi}
 
 %D \macros

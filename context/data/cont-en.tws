@@ -1334,6 +1334,7 @@ var:before:*command::
 var:inbetween:*command::
 var:after:*command::
 var:indentnext:yes,no::
+var:indenting:never,not,no,yes,always,first,next::
 stopsetup
 
 startsetup
@@ -1355,6 +1356,7 @@ var:couplingway:global,local::
 var:number:no,*name::
 var:aligntitle:no,yes::
 var:start:*number::
+ivr:setupenumerations::
 stopsetup
 
 startsetup
@@ -1838,6 +1840,7 @@ var:ntop:*number::
 var:nbottom:*number::
 var:nlines:*number::
 var:default:*name::
+var:tolerance:0,1,2::
 var:leftmargindistance:*dimension::
 var:rightmargindistance:*dimension::
 var:sidealign:normal,line::
@@ -2969,7 +2972,7 @@ stopsetup
 startsetup
 com:place<<float>>:
 typ:val/refs/arg/arg/:
-val:left,right,here,top,bottom, inleft,inright,inmargin,margin, leftmargin,rightmargin,leftedge,rightedge, innermargin,outermargin,inneredge,outeredge, inner,outer,regel,high,low,fit, page,opposite,always,force,tall:here:
+val:left,right,here,top,bottom, inleft,inright,inmargin,margin, leftmargin,rightmargin,leftedge,rightedge, innermargin,outermargin,inneredge,outeredge, inner,outer,regel,high,low,fit, page,opposite,always,force,tall,reset, line,height,depth:here:
 val:*text::
 val:*text::
 stopsetup

@@ -58,12 +58,15 @@
 \def\OTRSETsetgridcell#1#2%
   {\global\setbox\csname\@otr@:\number#1:\number#2\endcsname}
 
+% \def\OTRSETgetgridcell{\box          \OTRSETgridcell}
+% \def\OTRSETsetgridcell{\global\setbox\OTRSETgridcell}
+
 \long\def\OTRSETdoifcellelse#1#2#3#4%
   {\relax\ifvoid\csname\@otr@:\number#1:\number#2\endcsname#4\else#3\fi}
 
 \beginETEX \ifcsname
 
-\def\columnerasegridboxes
+\def\columnerasegridboxes % maybe dedicated loops 
   {\bgroup
    \increment\columnmaxcells\relax
    \ifodd\realpageno
@@ -491,7 +494,7 @@
    \OTRSETsynchronizehsize} % no \OTRSETsethsize, can be mid smaller (like tabulate)
 
 % We need to make sure that we really leave the column; mid 
-% column we may end up in an empty gap, and we don;t want to 
+% column we may end up in an empty gap, and we don't want to 
 % stay there (basically such a gap is a small empty page 
 % then).  
 

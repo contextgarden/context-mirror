@@ -1334,6 +1334,7 @@ var:vor:*Befehl::
 var:zwischen:*Befehl::
 var:nach:*Befehl::
 var:ziehefolgendeein:ja,nein::
+var:einziehen:nie,nicht,nein,ja,immer,erste,folgende::
 stopsetup
 
 startsetup
@@ -1355,6 +1356,7 @@ var:verkopplungsart:global,lokal::
 var:nummer:nein,*Name::
 var:titelausrichten:nein,ja::
 var:start:*Nummer::
+ivr:stellebeschreibungein::
 stopsetup
 
 startsetup
@@ -1838,6 +1840,7 @@ var:noben:*Nummer::
 var:nunten:*Nummer::
 var:zzeile:*Nummer::
 var:default:*Name::
+var:toleranz:0,1,2::
 var:linkerrandabstand:*Dimension::
 var:rechterrandabstand:*Dimension::
 var:sidealign:normal,zeile::
@@ -2969,7 +2972,7 @@ stopsetup
 startsetup
 com:platziere<<gleitobjekt>>:
 typ:val/refs/arg/arg/:
-val:links,rechts,hier,oben,unten, imlinken,imrechten,imrand,marginalie, linkerrand,rechterrand,linkekante,rechterkante, innermargin,outermargin,inneredge,outeredge, innen,aussen,regel,hoch,tief,passend, seite,gegenueber,immer,zwinge,lang:hier:
+val:links,rechts,hier,oben,unten, imlinken,imrechten,imrand,marginalie, linkerrand,rechterrand,linkekante,rechterkante, innermargin,outermargin,inneredge,outeredge, innen,aussen,regel,hoch,tief,passend, seite,gegenueber,immer,zwinge,lang,zuruecksetzten, zeile,hoehe,tiefe:hier:
 val:*Text::
 val:*Text::
 stopsetup

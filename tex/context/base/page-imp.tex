@@ -121,7 +121,7 @@
   {\dowithnextbox
      {\global\setbox\postponedcontent\hbox to \zeropoint
         {%\hskip-\maxdimen % niet hier, gaat mis in acrobat (clipt)
-         \box\postponedcontent\box\nextbox}%
+         \box\postponedcontent\flushnextbox}%
       \global\ht\postponedcontent\zeropoint
       \global\dp\postponedcontent\zeropoint
       \global\wd\postponedcontent\zeropoint}%
@@ -162,7 +162,7 @@
         \hbox % \setbox0=\box.. is nicer
           {\setbox0\hbox{#1}% just in case there are objects there
            \setbox\scratchbox\hbox
-             {\the\everyshipout
+             {\the\everyshipout\relax
               \ifnum\realpageno=\lastpage\relax
                 \flushtextdata
                 \the\everylastshipout

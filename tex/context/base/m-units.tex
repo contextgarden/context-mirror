@@ -362,7 +362,7 @@
 \def\Kilo    {\dimensionprefix{k}}
 \def\Mega    {\dimensionprefix{M}}
 \def\Giga    {\dimensionprefix{G}}
-\def\Terra   {\dimensionprefix{T}} % for odl times sake 
+\def\Terra   {\dimensionprefix{T}} % for old times sake 
 \def\Tera    {\dimensionprefix{T}}
 \def\Peta    {\dimensionprefix{P}}
 \def\Exa     {\dimensionprefix{E}}
@@ -806,6 +806,11 @@
 \let \Second \Sec
 \let \Kubic  \Cubic
 \let \IKubic \ICubic
+
+%D Option: 
+
+% \def\Micro{\dimensionprefix{\iftextdimensions\mathematics\mu  \else\mu  \fi}}
+% \def\Times{\dimensionnopfix{\iftextdimensions\mathematics\cdot\else\cdot\fi}}
 
 \protect
 

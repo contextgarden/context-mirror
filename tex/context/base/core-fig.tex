@@ -220,11 +220,33 @@
 \let\@@efcurrentpath\empty
 \let\@@efcurrentfile\empty
 
+% \def\analyzefigurefiles
+%   {\let\externalfigurelog\empty
+%    \let\@@efcurrenttype\empty
+%    \let\@@efcurrentpath\empty
+%    \let\@@efcurrentfile\empty
+%    \doanalyzefigurefiles\doanalyzefigurefilesA
+%    \doanalyzefigurefiles\doanalyzefigurefilesB
+%    \doanalyzefigurefiles\doanalyzefigurefilesC}
+%
+% but, we also want to support direct paths, like e:/....
+
+\def\redoanalyzefigurefiles#1%
+  {\ifcase\figurestatus
+     \def\@@efcurrenttype{#1}%
+     \dododoanalyzefigurefiles\empty
+   \fi}
+
 \def\analyzefigurefiles
   {\let\externalfigurelog\empty
    \let\@@efcurrenttype\empty
    \let\@@efcurrentpath\empty
    \let\@@efcurrentfile\empty
+   \doanalyzefigurefiles\doanalyzefigurefilesA
+   \doanalyzefigurefiles\doanalyzefigurefilesB
+   \doanalyzefigurefiles\doanalyzefigurefilesC
+   % new, permits rather raw names like e:/....
+   \let\dodoanalyzefigurefiles\redoanalyzefigurefiles
    \doanalyzefigurefiles\doanalyzefigurefilesA
    \doanalyzefigurefiles\doanalyzefigurefilesB
    \doanalyzefigurefiles\doanalyzefigurefilesC}
@@ -743,31 +765,31 @@
 \def\docalculatefigurescales#1#2#3#4%
   {\dimen0=#1\relax                     % #1 = new 1-value
    \dimen2=#2\relax                     % #2 = old 1-value
-   \divide\dimen2 \!!thousand
+   \divide\dimen2 \plusthousand 
    \divide\dimen0 \dimen2
    \figxsca\dimen0                      %      x scale
    \figysca\dimen0                      %      y scale
    \dimen2=#4\relax                     % #4 = old 2-value
-   \divide\dimen2 \!!thousand
+   \divide\dimen2 \plusthousand 
    \multiply\dimen2 \dimen0
    #3=\dimen2 }                         % #3 = new 2-value
 
 \def\docalculatefigurescale#1#2#3%
   {\dimen0=#1\relax                     % #1 = new value
    \dimen2=#2\relax                     % #2 = old value
-   \divide\dimen2 \!!thousand
+   \divide\dimen2 \plusthousand 
    \divide\dimen0 \dimen2
    #3=\dimen0 }                         % #3 = schaal
 
 \def\doapplyfigurescale#1#2#3%
   {\global#1=#2\relax
    \ifcase0\@@efschaal\relax % beter: doifnum...
-     #3=\!!thousand
+     #3=\plusthousand 
    \else
      #3=\@@efschaal
    \fi\relax % important !
-   \ifnum#3=\!!thousand\else
-     \global\divide  #1 \!!thousand
+   \ifnum#3=\plusthousand\else 
+     \global\divide  #1 \plusthousand 
      \global\multiply#1 #3\relax
    \fi}
 
@@ -805,16 +827,39 @@
      {\edef\@@efhsize{\the\hsize}}
      {\let\@@efhsize\@@efbreedte}}
 
+% \def\convertfigureinsertscale#1#2#3#4%
+%   {\scratchdimen#1\relax
+%    \ifnum#3=\plusthousand\else % better 1000 100 10 ranges, evt round 2sp
+%      \divide\scratchdimen \plusthousand 
+%      \multiply\scratchdimen #3\relax
+%    \fi
+%    \scratchdimen-\scratchdimen  % beter hier - dan in driver
+%    \edef#2{\the\scratchdimen}% oeps, \the vergeten 
+%    \scratchdimen#3\s!pt
+%    \divide\scratchdimen \!!ten
+%    \edef#4{\@EA\withoutpt\@EA{\the\scratchdimen}}}
+%
+% more obscure but better: 
+
 \def\convertfigureinsertscale#1#2#3#4%
   {\scratchdimen#1\relax
-   \ifnum#3=\!!thousand\else % better 1000 100 10 ranges, evt round 2sp
-     \divide\scratchdimen \!!thousand
+   \ifnum#3=\plusthousand 
+     % == scale 1
+   \else
+     % better 1000 100 10 ranges, evt round 2sp
+     \divide\scratchdimen \plusthousand 
      \multiply\scratchdimen #3\relax
    \fi
    \scratchdimen-\scratchdimen  % beter hier - dan in driver
-   \edef#2{\the\scratchdimen}% oeps, \the vergeten 
-   \scratchdimen#3\s!pt
-   \divide\scratchdimen \!!ten
+   \edef#2{\the\scratchdimen}%
+   \scratchcounter#3\relax
+   \ifnum\scratchcounter>\plustenthousand 
+     \divide\scratchcounter \!!ten
+     \scratchdimen\the\scratchcounter\s!pt
+   \else
+     \scratchdimen\the\scratchcounter\s!pt
+     \divide\scratchdimen \!!ten
+   \fi
    \edef#4{\@EA\withoutpt\@EA{\the\scratchdimen}}}
 
 \newbox\foundexternalfigure
@@ -857,276 +902,6 @@
   {\doifsomething\@@efregels
      {\scratchdimen\@@efregels\lineheight
       \edef\@@efhoogte{\the\scratchdimen}}}
-
-% \def\calculateexternalfigure[#1][#2][#3][#4][#5][#6]%
-%   {\mindermeldingen
-%    \setupexternalfigures
-%    \the\externalfigureresets % hook, see resource libraries
-%    \global\figwid\zeropoint \figxsca\plusone % see note * 
-%    \global\fighei\zeropoint \figysca\plusone % see note * 
-%    \global\setbox\foundexternalfigure\box\voidb@x
-%    \edef\expandedfigurename{#3}% needed e.g. in [\get...] cases
-%    \expandafter\beforesplitstring\expandedfigurename\at.\to\@@effilename
-%    \expandafter\aftersplitstring \expandedfigurename\at.\to\@@efextension
-%    \doifelse\@@effilename{mprun}
-%      {\edef\@@effilepref{\bufferprefix}}
-%      {\let \@@effilepref\empty}%
-%    \edef\@@effilename{\@@effilepref\@@effilename}%
-%    \restorecatcodes  % recently added; we presume local use
-%    \def\@@eflabel{#2}%
-%    \global\let\externalfigurelog\empty
-%    \getparameters
-%      [\??ep]
-%      [\c!e=\s!unknown,
-%       \c!w=15\korpsgrootte,\c!h=10\korpsgrootte,
-%       \c!x=\!!zeropoint,\c!y=\!!zeropoint,
-%       \c!t=,\c!s=,\c!a=,\c!f=\@@effilename]%
-%    \getparameters
-%      [\??ef]
-%      [\c!type=\s!unknown,\c!methode=\@@eftype,\c!symbool=\v!nee,
-%       \c!object=\@@exobject,\c!preset=\v!ja,
-%       \c!pagina=0,\c!sturing=\v!nee,\c!preview=\v!nee,\c!herhaal=\v!nee,
-%       \c!maxbreedte=\@@exmaxbreedte,\c!maxhoogte=\@@exmaxhoogte,
-%       \c!schaal=,\c!breedte=,\c!hoogte=,\c!scherm=,\c!regels=,
-%      %\c!voorgrondkleur=,
-%       \c!splitsen=,
-%       \c!factor=,\c!hfactor=,\c!bfactor=]%
-%    \doif\@@efextension\c!mov\presetfiguremov
-%    \doif\@@efextension\c!avi\presetfigureavi
-%    #1[#4][#5][#6]%
-%    % lines -> height 
-%    \checkfiguresettings
-%    % new, color separation 
-%    \doifseparatingcolorselse
-%      {\let\@@efvoorgrondkleur\empty 
-%       \doifelsenothing\@@efsplitsen 
-%         {\splitexternalfiguresfalse}
-%         {\doifcolorchannelelse\@@efsplitsen 
-%            {\splitexternalfiguresfalse}
-%            {\let\@@efobject\v!nee 
-%             \splitexternalfigurestrue}}}
-%      {\splitexternalfiguresfalse}%
-%    % new, fake color in gray bitmaps 
-%    \doifsomething\@@efvoorgrondkleur
-%      {\getparameters[\??ef]
-%         [\c!achtergrond={\v!voorgrond,\v!kleur},
-%          \c!achtergrondkleur=\@@efvoorgrondkleur]}%
-%    %
-%    \doif\@@efreset\v!ja \resetexternalfigures
-%    \doif\@@eftype \c!mov\presetfiguremov
-%    \doif\@@eftype \c!avi\presetfigureavi
-%    % hack 
-%    \doif\@@efmethode\c!mov
-%      {\doifsomething\@@efextension{\presetundefinedfigure\@@efextension}}%
-%    % 
-%    \doif\@@eftype\v!buffer
-%      {\ifx\@@efextension\empty
-%         \let\@@efextension\c!tmp
-%       \fi
-%       \let\@@eftype\c!tex}%
-%    %\@EA\doifnumberelse\@EA{\@@efextension} % new, test first
-%    %{\def\@@eftype{\c!mps}}
-%    %{%
-%    \processaction
-%      [\@@efextension]
-%      [   \c!tex=>\let\@@eftype\c!tex,
-%          \c!tmp=>\let\@@eftype\c!tex
-%                  \edef\@@effilepref{\bufferprefix}%
-%                  \edef\@@effilename{\@@effilepref\@@effilename},
-%          \c!avi=>\presetfigureavi,
-%          \c!mov=>\presetfiguremov]%
-%    %}%
-%    \edef\figuretypes{\figuretypes,\c!tex}%
-%    \ifx\@@eftype\c!tex
-%      % Since tex code can have positional stuff and worse, 
-%      % we want to avoid interference with how objects end 
-%      % up in files, therefore: 
-%      \let\@@efobject\v!nee
-%    \fi
-%    \edef\@@efobjectname{\@@effilename-\@@eftype-\@@efextension-\@@efpagina}%
-%    \doifelse\@@efobject\v!nee
-%      \donefalse
-%      {\doifspecialavailableelse\dostartscaling
-%         {\doifobjectssupportedelse
-%            {\doifobjectfoundelse{FIG}{\@@efobjectname}{\donetrue}{\donefalse}}
-%            \donefalse}
-%         \donefalse}%
-%    % redo message, only filename  
-%    \doifparentfileelse\@@effilename
-%      {\@EA\removefromcommalist\@EA{\jobsuffix}\figuretypes
-%       \let\@@efextension\empty
-%       \showmessage\m!figures9\@@effilename
-%       \donefalse}
-%      \donothing 
-%    \ifdone
-%      \getobjectdimensions{FIG}{\@@efobjectname}%
-%      \geteparameters % e !
-%        [\??ep]
-%        [\c!x=\!!zeropoint,\c!y=\!!zeropoint,
-%         \c!w=\objectwidth,\c!h=\objectheight]%
-%      \chardef\figurestatus=5
-%      \edef\@@effullname{\@@effilepref#3}%
-%    \else
-%      \doifelse{#2}\s!figurepreset
-%        {\def\figureextension##1{\@@efextension}%
-%         \edef\@@effullname{\@@effilepref#3}}%
-%        {\ifx\@@efextension\empty
-%           \dogetcommacommandelement1\from\@@eftype\to\commalistelement
-%           \edef\@@effullname{\@@effilename.\commalistelement}%
-%           \def\figureextension##1{##1}%
-%         \else
-%           \@EA\doifnumberelse\@EA{\@@efextension}
-%             {\let\@@eftype\c!mps}\donothing
-%           \edef\@@effullname{\@@effilename.\@@efextension}%
-%           \def\figureextension##1{\@@efextension}%
-%         \fi}%
-%      \doifelse\@@efpreset\v!nee
-%        {\doifelse\@@eftype\s!unknown
-%           {\chardef\figurestatus0
-%            \let\@@eftype\figuretypes
-%            \locatepresetfigurefiles}
-%           {\chardef\figurestatus1 }}
-%        {\doifelse\@@eftype\s!unknown
-%           {\let\@@eftype\figuretypes}
-%           {\@EA\removefromcommalist\@EA{\@@eftype}\figuretypes
-%            \edef\@@eftype{\ifx\@@eftype\empty\else\@@eftype,\fi\figuretypes}}%
-%         \ifx\@@efextension\empty\else
-%           \ExpandBothAfter\doifinsetelse\@@efextension\@@eftype
-%             {\@EA\removefromcommalist\@EA{\@@efextension}\@@eftype
-%              \edef\@@eftype{\@@efextension,\@@eftype}}%
-%             \donothing
-%         \fi
-%         \doifelse{#2}\s!figurepreset
-%           {\chardef\figurestatus4
-%           %\def\@@efloadname{\f!currentpath\f!pathseparator\@@exfile}%
-%            \assignfullfilename\f!currentpath\@@exfile\to\@@efloadname
-%            \let\@@eftype\@@epe}
-%           {\chardef\figurestatus\zerocount
-%            \analyzefigurefiles}}%
-%      \let\@@epe\@@eftype
-%      \edef\@@efextension{\figureextension{\@@eftype}}% dirty trick
-%      \global\figwid\zeropoint \figxsca\plusone 
-%      \global\fighei\zeropoint \figysca\plusone
-%      \doif\v!kader\@@exoptie
-%        {\let\@@efkader\v!aan}%
-%    \fi
-%    \ifcase\figurestatus
-%      \let\@@efkader\v!aan
-%      \let\@@efobject\v!nee
-%      \showmessage\m!figures1{\@@effilename}%
-%    \or
-%      \showmessage\m!figures2{\@@effullname}%
-%    \or
-%      \showmessage\m!figures3{\@@effullname,\@@eflenttype}%
-%    \or
-%      \showmessage\m!figures4{\@@effullname}%
-%    \or
-%      \showmessage\m!figures5{\@@effullname,\@@efloadname}%
-%    \or % no message 
-%      \doifnot\@@efsymbool\v!ja
-%        {\showmessage\m!figures8{\@@effullname}}%
-%    \fi
-%    \ifdim\@@epw=\zeropoint \chardef\figurestatus1 \fi
-%    \ifdim\@@eph=\zeropoint \chardef\figurestatus1 \fi
-%    \ifnum\figurestatus=1 % unknown dimensions, take width or height or scale
-%      \setnaturalfiguresize
-%      \xdef\naturalfigurewidth{\the\figwid}%
-%      \xdef\naturalfigureheight{\the\fighei}%
-%      \let\@@efkader\v!uit
-%    \else
-%      \global\let\naturalfigurewidth\@@epw
-%      \global\let\naturalfigureheight\@@eph
-%      \setfactorfiguresize
-%      \setscalefiguresize
-%      \setdimensionfiguresize
-%    \fi
-%    \convertfigureinsertscale\@@epx\figx\figxsca\scax
-%    \convertfigureinsertscale\@@epy\figy\figysca\scay
-%    \iftraceexternalfigures
-%      \message
-%        {\externalfigurelog
-%           [\@@effullname:
-%            t={\@@eftype}\space m={\@@efmethode}\space l=\@@eflabel\space
-%            w=\number\figwid\space h=\number\fighei\space
-%            \c!sx=\scax\space\c!sy=\scay\space 
-%            ox=\figx\space oy=\figy]}%
-%    \fi
-%    \doif\v!leeg\@@exoptie
-%      {\skipexternalfigurestrue
-%       \let\@@efkader\v!uit}% ? ? 
-%    \doifelsenothing\@@efpagina % NIEUW ?? 
-%      {\let\@@efoptions\empty}
-%      {\let\@@efoptions\@@efpagina}%
-%    \doif\@@efpreview\v!ja{\addtocommalist\v!preview\@@efoptions}%
-%    \doif\@@efsturing\v!ja{\addtocommalist\v!sturing\@@efoptions}%
-%    \doif\@@efherhaal\v!ja{\addtocommalist\v!herhaal\@@efoptions}%
-%    \doif\@@eftype\c!mps
-%      {\ifcase\EPSspecial\else\ifinobject\else
-%         \@@eftrace{special mps, object forced}%
-%         \doglobal\increment\forcedMPSobject
-%         \edef\@@efobjectname{\c!mps::\forcedMPSobject}%
-%         \let\@@efobject\v!ja
-%       \fi\fi}%
-%    \global\let\lastfigureobjectname\@@efobjectname
-%    \doifelse\@@efobject\v!nee
-%      \donefalse
-%      {\doifobjectssupportedelse\donetrue\donefalse}%
-%    \ifdone
-%      \doifobjectfoundelse{FIG}\@@efobjectname
-%        \donothing
-%        {\bgroup % to be cleaned up 
-%         \figwid\@@epw % local ? 
-%         \fighei\@@eph % local ? 
-%         \scratchdimen\@@epx\scratchdimen-\scratchdimen
-%         \edef\@@epx{\the\scratchdimen}%
-%         \scratchdimen\@@epy\scratchdimen-\scratchdimen
-%         \edef\@@epy{\the\scratchdimen}%
-%        %\scratchdimen\@@epw\edef\@@epw{\the\scratchdimen}%
-%        %\scratchdimen\@@eph\edef\@@eph{\the\scratchdimen}%
-%         \setbox0\vbox to \fighei
-%           {\vfill
-%            \ifdim\wd\foundexternalfigure=\zeropoint
-%              \doinsertfile
-%                {\@@eftype,\@@efmethode}{\@@effullname,\@@eflabel}
-%                {100}{100}\@@epx\@@epy\@@epw\@@eph\@@efoptions
-%            \else\ifskipexternalfigures
-%              \ruledhbox
-%                {\backgroundline
-%                   [\@@efsplitskleur]{\fakebox\foundexternalfigure}}%
-%            \else
-%              \box\foundexternalfigure
-%            \fi\fi}%
-%         \wd0=\figwid
-%         \setobject{FIG}\@@efobjectname\vbox{\box0}%
-%         \setxvalue{\@@efobjectname\c!n}{\number\nofinsertpages}%
-%         \egroup}%
-%    \fi
-%    \xdef\figurewidth {\the\figwid}%
-%    \xdef\figureheight{\the\fighei}%
-%    \global\setbox\foundexternalfigure\vbox to \fighei
-%      {\vfill
-%       \hsize\figwid
-%       \ifdone
-%         \dimen0=\scax\s!pt\divide\dimen0 100\edef\scax{\@EA\withoutpt\the\dimen0}%
-%         \dimen0=\scay\s!pt\divide\dimen0 100\edef\scay{\@EA\withoutpt\the\dimen0}%
-%         \schaal[\c!sx=\scax,\c!sy=\scay]{\dowithfigure{\getobject{FIG}{\@@efobjectname}}}%
-%         \xdef\noffigurepages{\number\getvalue{\@@efobjectname\c!n}}%
-%       \else\ifdim\wd\foundexternalfigure=\zeropoint
-%         \dowithfigure
-%           {\doinsertfile
-%              {\@@eftype,\@@efmethode}{\@@effullname,\@@eflabel}
-%              \scax\scay\figx\figy\figwid\fighei\@@efoptions}%
-%         \xdef\noffigurepages{\number\nofinsertpages}%
-%       \else
-%         \dimen0=\scax\s!pt\divide\dimen0 100\edef\scax{\@EA\withoutpt\the\dimen0}%
-%         \dimen0=\scay\s!pt\divide\dimen0 100\edef\scay{\@EA\withoutpt\the\dimen0}%
-%         \schaal[\c!sx=\scax,\c!sy=\scay]{\dowithfigure{\box\foundexternalfigure}}%
-%         \xdef\noffigurepages{\number\nofinsertpages}%
-%       \fi\fi
-%       \global\let\appliedfigurexscale\scax
-%       \global\let\appliedfigureyscale\scay}%
-%    \global\wd\foundexternalfigure\figwid
-%    \finalizeexternalfigure{#2}{#3}}
 
 \chardef\splitexternalfigure=0 % 0 nosplit 1 split/yes 2 split/no
 
@@ -1384,8 +1159,10 @@
      {\vfill
       \hsize\figwid
       \ifdone
-        \dimen0=\scax\s!pt\divide\dimen0 100\edef\scax{\@EA\withoutpt\the\dimen0}%
-        \dimen0=\scay\s!pt\divide\dimen0 100\edef\scay{\@EA\withoutpt\the\dimen0}%
+        \scratchdimen\scax\s!pt\divide\scratchdimen \plushundred 
+        \edef\scax{\@EA\withoutpt\the\scratchdimen}%
+        \scratchdimen\scay\s!pt\divide\scratchdimen \plushundred 
+        \edef\scay{\@EA\withoutpt\the\scratchdimen}%
         \schaal[\c!sx=\scax,\c!sy=\scay]{\dowithfigure{\getobject{FIG}{\@@efobjectname}}}%
         \xdef\noffigurepages{\number\getvalue{\@@efobjectname\c!n}}%
       \else\ifdim\wd\foundexternalfigure=\zeropoint
@@ -1395,8 +1172,10 @@
              \scax\scay\figx\figy\figwid\fighei\@@efoptions}%
         \xdef\noffigurepages{\number\nofinsertpages}%
       \else
-        \dimen0=\scax\s!pt\divide\dimen0 100\edef\scax{\@EA\withoutpt\the\dimen0}%
-        \dimen0=\scay\s!pt\divide\dimen0 100\edef\scay{\@EA\withoutpt\the\dimen0}%
+        \scratchdimen\scax\s!pt\divide\scratchdimen \plushundred
+        \edef\scax{\@EA\withoutpt\the\scratchdimen}%
+        \scratchdimen\scay\s!pt\divide\scratchdimen \plushundred
+        \edef\scay{\@EA\withoutpt\the\scratchdimen}%
         \schaal[\c!sx=\scax,\c!sy=\scay]{\dowithfigure{\box\foundexternalfigure}}%
         \xdef\noffigurepages{\number\nofinsertpages}%
       \fi\fi
@@ -2112,7 +1891,7 @@
 %         \dimen0=\@@cpbreedte
 %         \dimen4=\@@cphoffset
 %       \else
-%         \dimen0=\wd\nextbox
+%         \dimen0=\nextboxwd
 %         \divide\dimen0 \@@cpnx
 %         \dimen4=\@@cpx\dimen0
 %         \advance\dimen4 -\dimen0
@@ -2121,31 +1900,31 @@
 %       \relax % sure
 %       \ifdim\@@cphoogte>\zeropoint
 %         \dimen2=\@@cphoogte
-%         \dimen6=\ht\nextbox
+%         \dimen6=\nextboxht
 %         \advance\dimen6 -\@@cpvoffset
 %         \advance\dimen6 -\dimen2
 %       \else
-%         \dimen2=\ht\nextbox
+%         \dimen2=\nextboxht
 %         \divide\dimen2 \@@cpny
 %         \dimen6=-\@@cpy\dimen2
 %         \advance\dimen6 -\@@cpsy\dimen2
 %         \advance\dimen6 \dimen2
 %         \dimen2=\@@cpsy\dimen2
-%         \advance\dimen6 \ht\nextbox
+%         \advance\dimen6 \nextboxht
 %       \fi
 %       \setbox\nextbox\hbox
-%         {\hskip-\dimen4\lower\dimen6\box\nextbox}%
-%       \wd\nextbox\zeropoint
-%       \ht\nextbox\zeropoint
-%       \dp\nextbox\zeropoint
+%         {\hskip-\dimen4\lower\dimen6\flushnextbox}%
+%       \nextboxwd\zeropoint
+%       \nextboxht\zeropoint
+%       \nextboxdp\zeropoint
 %       \setbox\nextbox\hbox
 %         {\dostartclipping\@@cpmp{\dimen0}{\dimen2}%
-%          \box\nextbox
+%          \flushnextbox
 %          \dostopclipping}%
-%       \wd\nextbox\dimen0
-%       \ht\nextbox\dimen2
-%       \dp\nextbox\zeropoint
-%       \box\nextbox
+%       \nextboxwd\dimen0
+%       \nextboxht\dimen2
+%       \nextboxdp\zeropoint
+%       \flushnextbox
 %       \egroup}%
 %    \hbox}
 
@@ -2157,7 +1936,7 @@
 %         \dimen0=\@@cpbreedte
 %         \dimen4=\@@cphoffset
 %       \else
-%         \dimen0=\wd\nextbox
+%         \dimen0=\nextboxwd
 %         \divide\dimen0 \@@cpnx
 %         \dimen4=\@@cpx\dimen0
 %         \advance\dimen4 -\dimen0
@@ -2166,41 +1945,41 @@
 %       \relax % sure
 %       \ifdim\@@cphoogte>\zeropoint
 %         \dimen2=\@@cphoogte
-%         \dimen6=\ht\nextbox
+%         \dimen6=\nextboxht
 %         \advance\dimen6 -\@@cpvoffset
 %         \advance\dimen6 -\dimen2
 %       \else
-%         \dimen2=\ht\nextbox
+%         \dimen2=\nextboxht
 %         \divide\dimen2 \@@cpny
 %         \dimen6=-\@@cpy\dimen2
 %         \advance\dimen6 -\@@cpsy\dimen2
 %         \advance\dimen6 \dimen2
 %         \dimen2=\@@cpsy\dimen2
-%         \advance\dimen6 \ht\nextbox
+%         \advance\dimen6 \nextboxht
 %       \fi
 %       \setbox\nextbox\hbox                       % old 
 %         {\advance\dimen4 -\@@cplinkeroffset      % new !
 %          \advance\dimen6  \@@cpbovenoffset       % new !
-%          \hskip-\dimen4\lower\dimen6\box\nextbox}% old 
-%       \wd\nextbox\zeropoint
-%       \ht\nextbox\zeropoint
-%       \dp\nextbox\zeropoint
+%          \hskip-\dimen4\lower\dimen6\flushnextbox}% old 
+%       \nextboxwd\zeropoint
+%       \nextboxht\zeropoint
+%       \nextboxdp\zeropoint
 %       \setbox\nextbox\hbox
 %         {\advance\dimen0 \@@cplinkeroffset        % new !
 %          \advance\dimen0 \@@cprechteroffset       % new !
 %          \advance\dimen2 \@@cpbovenoffset         % new !
 %          \advance\dimen2 \@@cponderoffset         % new !
 %          \dostartclipping\@@cpmp{\dimen0}{\dimen2}% old
-%            \box\nextbox
+%            \flushnextbox
 %          \dostopclipping}%
 %       \setbox\nextbox\hbox                      % new !
 %         {\dimen0-\@@cplinkeroffset              % new !
 %          \dimen2-\@@cpbovenoffset               % new !
-%          \hskip\dimen0\lower\dimen2\box\nextbox}% new !
-%       \wd\nextbox\dimen0
-%       \ht\nextbox\dimen2
-%       \dp\nextbox\zeropoint
-%       \box\nextbox
+%          \hskip\dimen0\lower\dimen2\flushnextbox}% new !
+%       \nextboxwd\dimen0
+%       \nextboxht\dimen2
+%       \nextboxdp\zeropoint
+%       \flushnextbox
 %       \egroup}%
 %    \hbox}
 
@@ -2215,7 +1994,7 @@
         \!!dimena\@@cpbreedte
         \!!dimenc\@@cphoffset
       \else
-        \!!dimena\wd\nextbox
+        \!!dimena\nextboxwd
         \divide\!!dimena \@@cpnx
         \!!dimenc\@@cpx\!!dimena
         \advance\!!dimenc -\!!dimena
@@ -2224,41 +2003,41 @@
       \relax % sure
       \ifdim\@@cphoogte>\zeropoint
         \!!dimenb\@@cphoogte
-        \!!dimend\ht\nextbox
+        \!!dimend\nextboxht
         \advance\!!dimend -\@@cpvoffset
         \advance\!!dimend -\!!dimenb
       \else
-        \!!dimenb\ht\nextbox
+        \!!dimenb\nextboxht
         \divide\!!dimenb \@@cpny
         \!!dimend-\@@cpy\!!dimenb
         \advance\!!dimend -\@@cpsy\!!dimenb
         \advance\!!dimend \!!dimenb
         \!!dimenb\@@cpsy\!!dimenb
-        \advance\!!dimend \ht\nextbox
+        \advance\!!dimend \nextboxht
       \fi
       \setbox\nextbox\hbox                         % old 
         {\advance\!!dimenc -\@@cplinkeroffset      % new !
          \advance\!!dimend -\@@cpbovenoffset       % new ! % - added 
-         \hskip-\!!dimenc\lower\!!dimend\box\nextbox}% old 
-      \wd\nextbox\zeropoint
-      \ht\nextbox\zeropoint
-      \dp\nextbox\zeropoint
+         \hskip-\!!dimenc\lower\!!dimend\flushnextbox}% old 
+      \nextboxwd\zeropoint
+      \nextboxht\zeropoint
+      \nextboxdp\zeropoint
       \setbox\nextbox\hbox
         {\advance\!!dimena \@@cplinkeroffset        % new !
          \advance\!!dimena \@@cprechteroffset       % new !
          \advance\!!dimenb \@@cpbovenoffset         % new !
          \advance\!!dimenb \@@cponderoffset         % new !
          \dostartclipping\@@cpmp{\!!dimena}{\!!dimenb}% old
-           \box\nextbox
+           \flushnextbox
          \dostopclipping}%
       \setbox\nextbox\hbox                      % new !
         {\!!dimena-\@@cplinkeroffset            % new !
          \!!dimenb \@@cpbovenoffset             % new ! % - removed 
-         \hskip\!!dimena\lower\!!dimenb\box\nextbox}% new !
-      \wd\nextbox\!!dimena
-      \ht\nextbox\!!dimenb
-      \dp\nextbox\zeropoint
-      \box\nextbox
+         \hskip\!!dimena\lower\!!dimenb\flushnextbox}% new !
+      \nextboxwd\!!dimena
+      \nextboxht\!!dimenb
+      \nextboxdp\zeropoint
+      \flushnextbox
       \egroup}%
    \hbox}
 

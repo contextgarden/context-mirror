@@ -32,10 +32,18 @@
 \unexpanded\def\CMRkern
   {\doifCMRfontelse{\kern}{\scratchdimen=}}
 
+% \def\TeX
+%   {T% 
+%    \kern-.1667em\lower.5ex\hbox{E}%
+%    \kern-.125emX}
+
+\def\Mkern#1%
+  {{\setbox\scratchbox\hbox{M}\kern#1\wd\scratchbox}}
+
 \def\TeX
   {T% 
-   \kern-.1667em\lower.5ex\hbox{E}%
-   \kern-.125emX}
+   \Mkern{-.1667}\lower.5ex\hbox{E}%
+   \Mkern{-.125}X}
 
 \def\ConTeXt
                   {C%

@@ -133,15 +133,15 @@
 %
 % Better, but a waste of tokens:
 %
-% \def\hsmash  {\bgroup\dowithnextbox{\hsmashbox\nextbox\box\nextbox\egroup}\normalhbox}
-% \def\vsmash  {\bgroup\dowithnextbox{\vsmashbox\nextbox\box\nextbox\egroup}\normalvbox}
-% \def\hsmashed{\bgroup\dowithnextbox{\smashbox \nextbox\box\nextbox\egroup}\normalhbox}
-% \def\vsmashed{\bgroup\dowithnextbox{\smashbox \nextbox\box\nextbox\egroup}\normalvbox}
+% \def\hsmash  {\bgroup\dowithnextbox{\hsmashbox\nextbox\flushnextbox\egroup}\normalhbox}
+% \def\vsmash  {\bgroup\dowithnextbox{\vsmashbox\nextbox\flushnextbox\nextbox\egroup}\normalvbox}
+% \def\hsmashed{\bgroup\dowithnextbox{\smashbox \nextbox\flushnextbox\nextbox\egroup}\normalhbox}
+% \def\vsmashed{\bgroup\dowithnextbox{\smashbox \nextbox\flushnextbox\nextbox\egroup}\normalvbox}
 %
 % The best:
 
 \def\dosomesmash#1% (begin|end)group ipv (b|e)group ? 
-  {\bgroup\dowithnextbox{#1\nextbox\box\nextbox\egroup}}
+  {\bgroup\dowithnextbox{#1\nextbox\flushnextbox\egroup}}
 
 \def\hsmash  {\dosomesmash\hsmashbox\normalhbox}
 \def\vsmash  {\dosomesmash\vsmashbox\normalvbox}
@@ -159,7 +159,7 @@
 %D \stoptypen
 
 \def\dosmashedbox#1%
- %{#1\bgroup\dowithnextbox{\smashbox\nextbox\box\nextbox\egroup}#1}
+ %{#1\bgroup\dowithnextbox{\smashbox\nextbox\flushnextbox\egroup}#1}
   {#1\bgroup\dowithnextbox{\smashedbox\nextbox\egroup}#1}
 
 \def\smashedhbox{\dosmashedbox\hbox}
@@ -207,7 +207,7 @@
 
 \def\finsm@sh % redefined plain macro 
   {\dowithnextbox
-     {\@EA\handletokens\@@smash\with\makesm@sh\box\nextbox}\normalhbox}
+     {\@EA\handletokens\@@smash\with\makesm@sh\flushnextbox}\normalhbox}
 
 %D \starttabulatie[|l|l|]
 %D \NC w   \NC \ruledhbox{\smash  [w]{This is some great smashing, isn't it?}} \NC \NR
@@ -332,7 +332,7 @@
      \divide\noflinesheight \openlineheight
      \noflines\noflinesheight
      #1\ifdim\noflines\openlineheight=#2\relax \else
-       \advance\noflines \plusone
+       \advance\noflines\ifdim#2>\zeropoint\plusone\else\minusone\fi 
      \fi\fi
    \fi}
 
@@ -422,7 +422,7 @@
 %D
 %D \starttypen
 %D \def\getfloat%
-%D   {\def\handlefloat{...\box\nextbox...}
+%D   {\def\handlefloat{...\flushnextbox...}
 %D    \dowithnextbox\handlefloat\normalvbox}
 %D \stoptypen
 %D
@@ -524,19 +524,19 @@
 %D way. 
 
 \def\rlap{\begingroup\dowithnextbox{\normalhbox to \zeropoint
-  {\box\nextbox\normalhss}\endgroup}\normalhbox}
+  {\flushnextbox\normalhss}\endgroup}\normalhbox}
 
 \def\llap{\begingroup\dowithnextbox{\normalhbox to \zeropoint
-  {\normalhss\box\nextbox}\endgroup}\normalhbox}
+  {\normalhss\flushnextbox}\endgroup}\normalhbox}
 
 \def\clap{\begingroup\dowithnextbox{\normalhbox to \zeropoint
-  {\normalhss\box\nextbox\normalhss}\endgroup}\normalhbox}
+  {\normalhss\flushnextbox\normalhss}\endgroup}\normalhbox}
 
 \def\tlap{\begingroup\dowithnextbox{\normalvbox to \zeropoint
-  {\normalvss\box\nextbox}\endgroup}\normalvbox}
+  {\normalvss\flushnextbox}\endgroup}\normalvbox}
 
 \def\blap{\begingroup\dowithnextbox{\normalvbox to \zeropoint
-  {\box\nextbox\normalvss}\endgroup}\normalvbox}
+  {\flushnextbox\normalvss}\endgroup}\normalvbox}
 
 %D \macros
 %D   {beginofshapebox,
@@ -830,7 +830,7 @@
   {\dowithnextbox
      {\nextboxht\zeropoint
       \nextboxdp\zeropoint
-      \box\nextbox}
+      \flushnextbox}
    \normalhbox}
 
 %D \macros
@@ -1053,7 +1053,7 @@
       \ifdim\nextboxwd>\scratchdimen
         \setbox\scratchbox\normalhbox{\ifdone\space#2\else#2\space\fi}%
         \advance\scratchdimen -\wd\scratchbox
-        \setbox0\box\nextbox
+        \setbox0\flushnextbox
         \setbox\nextbox\normalvbox
           {\hsize\scratchdimen
            \hfuzz\maxdimen
@@ -1325,7 +1325,7 @@
      {\setbox\scratchbox\normalhbox
         {\strut
          \nextboxdp\zeropoint
-         \lower\strutdepth\box\nextbox}%
+         \lower\strutdepth\flushnextbox}%
       \dp\scratchbox\strutdepth
       \ht\scratchbox\strutheight
       \box\scratchbox
@@ -1337,7 +1337,7 @@
    \dowithnextbox
      {\nextboxdp\strutdepth
       \nextboxht\strutheight
-      \box\nextbox
+      \flushnextbox
       \egroup}%
      \normalhbox}
 
@@ -1406,7 +1406,7 @@
                \dowithnextbox
                  {\hskip-\wd0
                   \hss
-                  \box\nextbox
+                  \flushnextbox
                   \hss
              \egroup
            \vss
@@ -1433,7 +1433,7 @@
    \dowithnextbox
      {\hsize\nextboxwd
       \vsize\nextboxht
-      \centeredbox#1{\box\nextbox}%
+      \centeredbox#1{\flushnextbox}%
       \egroup}
    \normalhbox}
 
@@ -1457,7 +1457,7 @@
       \setbox2\normalvbox{\hrule\!!height\zeropoint#1}%
       \hsize\ifdim\wd0=\zeropoint\hsize\else\wd0\fi
       \vsize\ifdim\ht2=\zeropoint\vsize\else\ht2\fi
-      \normalvbox to \vsize{\vss\normalhbox to \hsize{\hss\box\nextbox\hss}\vss}%
+      \normalvbox to \vsize{\vss\normalhbox to \hsize{\hss\flushnextbox\hss}\vss}%
       \egroup}%
      \normalhbox}
 
@@ -1806,11 +1806,11 @@
 % \def\dooverlaybox%
 %   {\ifhmode\unskip\fi
 %    \ifdim\nextboxht>\ht\processbox
-%      \setbox\processbox=\normalvbox to \nextboxht
+%      \setbox\processbox\normalvbox to \nextboxht
 %        {\vss\box\processbox\vss}%
 %    \else
-%      \setbox\nextbox=\normalvbox to \ht\processbox
-%        {\vss\box\nextbox\vss}%
+%      \setbox\nextbox\normalvbox to \ht\processbox
+%        {\vss\flushnextbox\vss}%
 %    \fi
 %    \scratchdimen=\wd
 %      \ifdim\nextboxwd>\wd\processbox
@@ -1821,7 +1821,7 @@
 %    \setbox\processbox=\normalhbox to \scratchdimen
 %      {\normalhbox to \scratchdimen{\hss\box\processbox\hss}%
 %       \hskip-\scratchdimen
-%       \normalhbox to \scratchdimen{\hss\box\nextbox\hss}}}
+%       \normalhbox to \scratchdimen{\hss\flushnextbox\hss}}}
 %
 % \def\startoverlay%
 %   {\bgroup
@@ -1841,7 +1841,7 @@
        {\dp\processbox\zeropoint\vss\box\processbox\vss}%
    \else
      \setbox\nextbox\normalvbox to \ht\processbox
-       {\nextboxdp\zeropoint\vss\box\nextbox\vss}%
+       {\nextboxdp\zeropoint\vss\flushnextbox\vss}%
    \fi
    \nextboxdp\scratchdimen
    \dp\processbox\scratchdimen
@@ -1854,7 +1854,7 @@
    \setbox\processbox\normalhbox to \scratchdimen
      {\normalhbox to \scratchdimen{\hss\box\processbox\hss}%
       \hskip-\scratchdimen
-      \normalhbox to \scratchdimen{\hss\box\nextbox\hss}}}
+      \normalhbox to \scratchdimen{\hss\flushnextbox\hss}}}
 
 \def\startoverlay
   {\bgroup
@@ -1883,8 +1883,8 @@
 % %D \leavevmode\haalbuffer
 %
 % \def\dohspread%
-%   {\box\nextbox
-%    \def\dohspread{\hfil\box\nextbox}}
+%   {\flushnextbox
+%    \def\dohspread{\hfil\flushnextbox}}
 %
 % \def\starthspread%
 %   {\normalhbox to \hsize \bgroup
@@ -1971,10 +1971,10 @@
       #1\nextbox#1\strutbox
       #2\nextbox\scratchdimen
       \setbox\nextbox\normalhbox
-        {\lower\nextboxdp\box\nextbox}%
+        {\lower\nextboxdp\flushnextbox}%
       #1\nextbox#1\strutbox
       #2\nextbox\scratchdimen
-      \box\nextbox
+      \flushnextbox
       \egroup}
      \normalhbox}
 
@@ -1983,9 +1983,9 @@
 %D
 %D A few more boxes. 
 
-\def\lhbox{\dowithnextbox{\normalhbox to \hsize{\box\nextbox\hss    }}\normalhbox}
-\def\mhbox{\dowithnextbox{\normalhbox to \hsize{\hss\box\nextbox\hss}}\normalhbox}
-\def\rhbox{\dowithnextbox{\normalhbox to \hsize{\hss\box\nextbox    }}\normalhbox}
+\def\lhbox{\dowithnextbox{\normalhbox to \hsize{\flushnextbox\hss    }}\normalhbox}
+\def\mhbox{\dowithnextbox{\normalhbox to \hsize{\hss\flushnextbox\hss}}\normalhbox}
+\def\rhbox{\dowithnextbox{\normalhbox to \hsize{\hss\flushnextbox    }}\normalhbox}
 
 \let\lefthbox =\lhbox 
 \let\midhbox  =\mhbox 
@@ -2047,7 +2047,7 @@
       \dimen0\nextboxht
       \nextboxht\ht\strutbox
       \nextboxdp\dp\strutbox
-      \normalhbox{\box\nextbox}
+      \normalhbox{\flushnextbox}
       \prevdepth\dp\strutbox
       \doloop
         {\advance\dimen0 -\lineheight
@@ -2260,7 +2260,7 @@
 %          \setxvalue{\@@stacktag#2}{\csname\@@stackmax#1\endcsname}%
 %          \global\setbox\csname\@@stackbox#1\endcsname=\normalvbox
 %            {\forgetall
-%             \setbox\scratchbox=\normalvbox{\box\nextbox}
+%             \setbox\scratchbox=\normalvbox{\flushnextbox}
 %             \ht\scratchbox=\!!onepoint
 %             \dp\scratchbox=\zeropoint
 %             \unvbox\csname\@@stackbox#1\endcsname
@@ -2311,7 +2311,7 @@
          \setxvalue{\@@stacklst#1}{\getvalue{\@@stacklst#1},#2}%
          \global\setbox\csname\@@stackbox#1\endcsname\normalvbox
            {\forgetall
-            \setbox\scratchbox\normalvbox{\box\nextbox}
+            \setbox\scratchbox\normalvbox{\flushnextbox}
             \ht\scratchbox\!!onepoint
             \dp\scratchbox\zeropoint
             \unvbox\csname\@@stackbox#1\endcsname
@@ -2432,10 +2432,10 @@
 \def\doraiselowerbox#1#2% a nice trick us used to accept 
   {\def\next            % both direct and {} dimensions 
      {\dowithnextbox
-        {\setbox\nextbox\normalhbox{#1\scratchdimen\box\nextbox}%
+        {\setbox\nextbox\normalhbox{#1\scratchdimen\flushnextbox}%
          \nextboxht\ht\strutbox
          \nextboxdp\dp\strutbox
-         \box\nextbox}}%
+         \flushnextbox}}%
    \afterassignment\next\scratchdimen=#2}
 
 \def\raisebox{\doraiselowerbox\raise}
@@ -2511,8 +2511,8 @@
 \def\halfwaybox
   {\dowithnextbox
      {\nextboxdp\zeropoint
-      \setbox\nextbox\normalhbox{\lower.5\nextboxht\box\nextbox}%
-      \box\nextbox}
+      \setbox\nextbox\normalhbox{\lower.5\nextboxht\flushnextbox}%
+      \flushnextbox}
    \normalhbox}
 
 %D New: 
@@ -2550,7 +2550,7 @@
 
 \def\vcenter
   {\normalvbox\bgroup
-   \dowithnextbox{\normalhbox{$\verynormalvcenter{\box\nextbox}$}\egroup}
+   \dowithnextbox{\normalhbox{$\verynormalvcenter{\flushnextbox}$}\egroup}
    \normalvbox}
 
 \prependtoks \let\vcenter\normalvcenter \to \everymath
@@ -2561,6 +2561,6 @@
 %D A not so well unhboxable bxo can be made with:
 
 \def\frozenhbox
-  {\hbox\bgroup\dowithnextbox{\hbox{\hbox{\box\nextbox}}\egroup}\hbox}
+  {\hbox\bgroup\dowithnextbox{\hbox{\hbox{\flushnextbox}}\egroup}\hbox}
 
 \protect \endinput

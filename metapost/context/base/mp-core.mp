@@ -392,21 +392,19 @@ def prepare_multi_pars (expr fn,fx,fy,fw,fh,fd,
   numeric wpos ; wpos := 3 ; initialize_box_pos(wpos,wn,wx,wy,ww,wh,wd) ;
   numeric ppos ; ppos := 4 ; initialize_box_pos(ppos,pn,px,py,pw,ph,pd) ;
 
-if local_multi_par_area : 
-  RealPageNumber := fn ; 
-  NOfTextAreas := 1 ;  
-  NOfSavedTextAreas := 0 ;  
-  TextAreas[1] := TextAreas[0] ;
-  TextColumns[1] := TextColumns[0] ;
-  nxy[fpos] := nxy[tpos] := nxy[wpos] := nxy[ppos] := RealPageNumber ;  
-
-%draw TextColumns[1] withcolor green ;
-%draw TextAreas[1] withcolor green ;
-
-elseif ignore_multi_par_page :
-  RealPageNumber := fn ; 
-  nxy[fpos] := nxy[tpos] := nxy[wpos] := nxy[ppos] := RealPageNumber ;  
-fi ; 
+  if local_multi_par_area : 
+    RealPageNumber := fn ; 
+    NOfTextAreas := 1 ;  
+    NOfSavedTextAreas := 0 ;  
+    TextAreas[1] := TextAreas[0] ;
+    TextColumns[1] := TextColumns[0] ;
+    nxy[fpos] := nxy[tpos] := nxy[wpos] := nxy[ppos] := RealPageNumber ;  
+   % draw TextColumns[1] withcolor green ;
+   % draw TextAreas[1] withcolor green ;
+  elseif ignore_multi_par_page :
+    RealPageNumber := fn ; 
+    nxy[fpos] := nxy[tpos] := nxy[wpos] := nxy[ppos] := RealPageNumber ;  
+  fi ; 
 
   numeric par_strut_height, par_strut_depth, par_line_height ;
 
@@ -988,7 +986,7 @@ def draw_box =
   draw lxy -- rxy withcolor boxlinecolor withpen pencircle scaled boxgridwidth ;
 enddef ;
 
-def draw_par  = % 1 2 11 12 
+def draw_par  = % 1 2 3 11 12 
   do_draw_par(pxy) ; do_draw_par(txy) ; do_draw_par(bxy) ;
   for i = pxy, txy, bxy :
         if boxgridtype= 1 :
@@ -997,6 +995,11 @@ def draw_par  = % 1 2 11 12
     elseif boxgridtype= 2 :
       boxgriddirection := origin ; 
       draw baseline_grid (i,boxgriddirection,false) withcolor boxgridcolor ;
+    elseif boxgridtype= 3 :
+      boxgriddirection := origin ; 
+      draw baseline_grid (i,boxgriddirection,true ) withcolor boxgridcolor ;
+      draw baseline_grid (i,boxgriddirection,true ) 
+        shifted (0,ExHeight) withcolor boxgridcolor ;
     elseif boxgridtype=11 :
       draw graphic_grid(i,boxgriddistance,boxgriddistance,boxgriddistance/2,boxgriddistance/2) ;
     elseif boxgridtype=12 :
@@ -1024,6 +1027,56 @@ def show_par  =
   draw pref withpen pencircle scaled 2pt ; 
 enddef ;
 
+def sort_multi_pars = 
+  if nofmultipars>1 :
+    begingroup ; save _p_, _n_ ; path _p_ ; numeric _n_ ; 
+      for i := 1 upto nofmultipars : 
+        if multilocs[i] = 3 :  
+          _p_ := multipars[nofmultipars] ;
+          multipars[nofmultipars] := multipars[i] ;  
+          multipars[i] := _p_ ; 
+          _n_ := multirefs[nofmultipars] ;
+          multirefs[nofmultipars] := multirefs[i] ;  
+          multirefs[i] := _n_ ; 
+          _n_ := multilocs[nofmultipars] ;
+          multilocs[nofmultipars] := multilocs[i] ;  
+          multilocs[i] := _n_ ; 
+        fi ;  
+      endfor ;
+    endgroup ; 
+  fi ; 
+enddef ; 
+
+% This collapses successive areas (possibly interrupted by 
+% floats. First we need to sort the areas, since they are 
+% normally in de order start, end, inbetween. 
+
+def collapse_multi_pars = 
+  if nofmultipars>1 :
+    begingroup ; save _nofmultipars_ ; numeric _nofmultipars_ ; 
+    _nofmultipars_ := 1 ;
+    sort_multi_pars ; % block not in order: 1, 3, 2....
+    for i:=1 upto nofmultipars-1 :
+      if (round(xpart(llcorner multipars[i]-llcorner multipars[i+1]))=0) and
+         (round(xpart(lrcorner multipars[i]-lrcorner multipars[i+1]))=0) :
+        multipars[_nofmultipars_] :=
+        multipars[_nofmultipars_] :=
+          ulcorner multipars[_nofmultipars_] -- 
+          urcorner multipars[_nofmultipars_] -- 
+         lrcorner multipars[i+1] -- 
+         llcorner multipars[i+1] -- cycle ;
+      else :
+        _nofmultipars_ := _nofmultipars_ + 1 ;
+        multipars[_nofmultipars_] := multipars[i+1] ;
+        multilocs[_nofmultipars_] := multilocs[i+1] ;
+        multirefs[_nofmultipars_] := multirefs[i+1] ;
+      fi  ;
+    endfor ;
+    nofmultipars := _nofmultipars_ ;
+    endgroup ; 
+  fi ; 
+enddef ;
+
 def draw_multi_pars  = 
   for i=1 upto nofmultipars : 
     do_draw_par(multipars[i]) ; 
@@ -1031,6 +1084,10 @@ def draw_multi_pars  =
       draw baseline_grid (multipars[i],up,true ) withcolor boxgridcolor ;
     elseif boxgridtype= 2 :
       draw baseline_grid (multipars[i],up,false) withcolor boxgridcolor ;
+    elseif boxgridtype= 3 :
+      draw baseline_grid (multipars[i],up,true ) withcolor boxgridcolor ;
+      draw baseline_grid (multipars[i],up,true ) 
+        shifted (0,ExHeight) withcolor boxgridcolor ;
     elseif boxgridtype=11 :
       draw graphic_grid(multipars[i],boxgriddistance,boxgriddistance,boxgriddistance/2,boxgriddistance/2) ;
     elseif boxgridtype=12 :

@@ -947,7 +947,8 @@
 
 %D Experimental: minimize transparency resets. 
 
-\newif\ifintransparent \newif\ifoptimizetransparency
+\newif\ifintransparent 
+\newif\ifoptimizetransparency \optimizetransparencytrue % under test 
 
 \def\conditionalstoptransparency
   {\iffilterspotcolor
@@ -1163,12 +1164,12 @@
 %D in three digits precision.
 
 \def\realcolorvalue#1%
-  {\ifnum#1>0 % important, first encountered in --modu supp-mpe 
-     \ifnum#1<10   0.00\the#1\else
-     \ifnum#1<100  0.0\the#1\else
-     \ifnum#1<1000 0.\the#1\else
-                   1\fi\fi\fi
-   \else           0\fi}
+  {\ifnum#1>\zerocount    % important, first encountered in --modu supp-mpe 
+   \ifnum#1<\plusten      0.00\the#1\else
+   \ifnum#1<\plushundred  0.0\the#1\else
+   \ifnum#1<\plusthousand 0.\the#1\else
+                          1\fi\fi\fi
+   \else                  0\fi}
 
 \def\doconvertCMYKtoRGB#1\k#2\to#3%
   {\ifdim#2\s!pt>#1\s!pt % >= problem, repaired 2/12/2002
@@ -1177,7 +1178,7 @@
      \colordimen1\s!pt
      \advance\colordimen -#1\s!pt
      \advance\colordimen -#2\s!pt
-     \multiply\colordimen \!!thousand\relax % 1000
+     \multiply\colordimen \plusthousand 
      \colorcount\colordimen
      \advance\colorcount \medcard
      \divide\colorcount \maxcard
@@ -1191,12 +1192,12 @@
 
 \def\doconvertRGBtoCMYK#1\to#2%
   {\colordimen#1\s!pt
-   \multiply\colordimen \!!thousand\relax % 1000
+   \multiply\colordimen \plusthousand 
    \colorcount\colordimen
    \advance\colorcount \medcard
    \divide\colorcount \maxcard
    \colorcount-\colorcount
-   \advance\colorcount \!!thousand\relax % 1000
+   \advance\colorcount \plusthousand 
    \edef#2{\realcolorvalue\colorcount}}
 
 \def\convertRGBtoCMYK#1#2#3%
@@ -1241,7 +1242,7 @@
    %\else
    % \colordimen\colordimen
    \fi
-   \multiply\colordimen \!!thousand\relax % 1000
+   \multiply\colordimen \plusthousand 
    \colorcount\colordimen
    \advance\colorcount \medcard
    \divide\colorcount \maxcard
@@ -1789,10 +1790,10 @@
 %D hardly pays off; they are only used in the manual. 
 
 \def\realcolorformat#1%
-  {\ifnum#1<10   0.00\the#1\else
-   \ifnum#1<100  0.0\the#1\else
-   \ifnum#1<1000 0.\the#1\else
-                 1.000\fi\fi\fi}
+  {\ifnum#1<\plusten      0.00\the#1\else
+   \ifnum#1<\plushundred  0.0\the#1\else
+   \ifnum#1<\plusthousand 0.\the#1\else
+                          1.000\fi\fi\fi}
 
 \def\colorformatseparator{ }
 
@@ -1801,7 +1802,7 @@
    \ifdim\colordimen>1\s!pt
      \colordimen1\s!pt
    \fi
-   \multiply\colordimen 1000
+   \multiply\colordimen \plusthousand
    \colorcount\colordimen
    \advance\colorcount \medcard
    \divide\colorcount \maxcard \relax

@@ -228,6 +228,20 @@
       \processcommalist[#1]\dodoprocessXMLbuffer
       \egroup}}
 
+\gdef\showXMLtext#1%
+  {\bgroup
+   \dontcomplain
+   \XMLlevel\maxcard
+   \increment\@@xfniveau % hack 
+   \tttf
+   \ifautoXMLshow \let\executeXMLelement\autoshowXMLelement \fi
+   \let\executeXMLentity\@XMLentity
+   \let\par\allowbreak\let\endgraf\par
+   \setbox\scratchbox\hbox
+     {\enableXML\verbatimXML\scantokens{#1}\removelastskip}%
+   \unhbox\scratchbox 
+   \egroup}
+
 %D 
 
 \gdef\showXSDcomponent

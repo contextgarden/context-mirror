@@ -359,6 +359,14 @@
 \ifx\plusthree\undefined \chardef\plusthree=3                 \fi
 \ifx\minusone \undefined \count\minusone \minusone=-1         \fi
 
+\ifx\@m\undefined \else \let\plusthousand   \@m \fi 
+\ifx\@M\undefined \else \let\plusttenhousand\@M \fi 
+
+\ifx\plusten        \undefined \mathchardef\plusten        =   10 \fi   
+\ifx\plushundred    \undefined \mathchardef\plushundred    =  100 \fi   
+\ifx\plusthousand   \undefined \mathchardef\plusthousand   = 1000 \fi   
+\ifx\plustenthousand\undefined \mathchardef\plustenthousand=10000 \fi   
+
 \newcount\zerocount 
 
 %D \macros
@@ -1570,7 +1578,7 @@
 
 \newcount\commalevel
 
-\def\dododoprocesscommaitem%
+\def\dododoprocesscommaitem
   {\csname\s!next\the\commalevel\endcsname}
 
 %\def\dodoprocesscommaitem%
@@ -1594,7 +1602,7 @@
      \@EAEAEA\dododoprocesscommaitem
    \fi\fi}
 
-\def\doprocesscommaitem%
+\def\doprocesscommaitem
   {\futurelet\nexttoken\dodoprocesscommaitem}
 
 %D Empty arguments are not processed. Empty items (\type{,,})
@@ -1639,7 +1647,7 @@
 \def\processcommalist[%
   {\futurelet\nexttoken\docheckcommaitem}
 
-\def\docheckcommaitem%
+\def\docheckcommaitem
   {\ifx\nexttoken]%
      \expandafter\gobblethreearguments
    \else
@@ -1656,13 +1664,13 @@
 
 %D One way of quitting a commalist halfway is:
 
-\def\quitcommalist%
+\def\quitcommalist
   {\begingroup\let\doprocesscommaitem\doquitcommalist}
 
 \def\doquitcommalist#1]%
   {\endgroup}
 
-\def\quitprevcommalist%
+\def\quitprevcommalist
   {\begingroup\let\doprocesscommaitem\doquitprevcommalist}
 
 \def\doquitprevcommalist#1]%
@@ -3288,13 +3296,13 @@
 %
 % less to pass
 
-\def\doshowargumenterror%
+\def\doshowargumenterror
   {\ifnum\expectedarguments>\noexpectedarguments
      \showargumenterror{\number\expectedarguments}{\number\inputlineno}%
    \fi
    \noshowargumenterror}
 
-\def\noshowargumenterror%
+\def\noshowargumenterror
   {\let\expectedarguments\noexpectedarguments}
 
 % \long\def\dogetargument#1#2#3#4%
@@ -4115,7 +4123,7 @@
 %D nesting is to be expected, we can reuse \type{\wait} within
 %D \type{\wait} itself.
 
-\def\wait%
+\def\wait
   {\begingroup
    \read16 to \wait
    \endgroup}
@@ -4174,10 +4182,10 @@
 \chardef\statuswidth=15
 \chardef\statuswrite=16
 
-\def\writestring%
+\def\writestring
   {\immediate\write\statuswrite}
 
-\def\writeline%
+\def\writeline
   {\writestring{}}
 
 \newcount\statuscounter
@@ -4191,7 +4199,7 @@
      \expandafter\dosplitstatus
    \fi}
 
-\def\nosplitstatus#1\end%
+\def\nosplitstatus#1\end
   {}
 
 \def\writestatus#1#2%
@@ -4206,6 +4214,12 @@
    \@EA\writestring\@EA{\the\scratchtoks\space:\space#2}%
    \endgroup}
 
+%D Because we're grouped, we could have initialized at forehand: 
+%D 
+%D \starttypen 
+%D \statuscounter\statuswidth 
+%D \stoptypen
+
 %D The next implementation saves only some 10 words of format
 %D memory, but we hardly gain any speed.
 %D
@@ -4213,7 +4227,7 @@
 %D \def\dosplitstatus#1#2#3#4#5#6#7#8#9%
 %D   {#1#2#3#4#5#6#7#8#9\dodosplitstatus}
 %D
-%D \def\dodosplitstatus#1#2#3#4#5#6\end%
+%D \def\dodosplitstatus#1#2#3#4#5#6\end
 %D   {#1#2#3#4#5}
 %D
 %D \def\writestatus#1#2%
@@ -4224,6 +4238,18 @@
 %D         \space\space\space\space\space\end
 %D         \space:\space#2}}
 %D \stoptypen
+
+%D Okay then. More obscure but slightly faster: no split grabs 
+%D the do split part and skipping the else branch has to happen 
+%D anyway, so:  
+
+\def\dosplitstatus#1%
+  {\advance\statuscounter \minusone
+   \ifcase\statuscounter
+     \expandafter\nosplitstatus
+   \fi
+   \scratchtoks\@EA{\the\scratchtoks#1}%
+   \dosplitstatus}
 
 %D \macros
 %D   {emptytoks}

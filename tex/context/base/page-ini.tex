@@ -700,7 +700,7 @@
 
 \mainoutput{\invokeoutputroutine} \output{\inotrtrue\the\mainoutput}
 
-\installoutput\synchronizeoutput
+\installoutput\synchronizeoutput % maybe add pagediscards 
   {\ifvoid\normalpagebox\else\unvbox\normalpagebox\fi}
 
 %D In order to force consistent use of variables, we 
@@ -864,7 +864,7 @@
 \def\ejectinsert
   {\flushnotes
    \bgroup
-   \noftopfloats\!!thousand
+   \noftopfloats\plusthousand
    \nofbotfloats\zerocount
    \doflushfloats
    \egroup}
@@ -954,10 +954,11 @@
 
 \maxdeadcycles=1000
 
-% will be installable tracer 
+% will be installable tracer; better use chardef 
 
 \newif\ifvoorlopig \voorlopigfalse
-\newif\ifconcept   \conceptfalse
+
+\chardef\conceptmode\zerocount
 
 \def\doplaatsversieaanduiding#1#2%
   {\doifsomething{#2}
@@ -966,7 +967,17 @@
       \!!doneatrue}}
 
 \def\plaatsversieaanduiding% nog engels maken
-  {\ifvoorlopig
+  {\ifcase\conceptmode
+     % nothing 
+   \or 
+     % simple 
+     \vskip\!!sixpoint
+     \hbox to \zetbreedte
+       {\infofont
+        Concept: \currentdate
+        \hss\reportpagedimensions}%
+   \or 
+     % extensive 
      \vskip\!!sixpoint
      \hbox to \zetbreedte
        {\infofont
@@ -976,64 +987,50 @@
         \doplaatsversieaanduiding{Onderdeel}\currentcomponent
         \if!!donea\else\ File: \jobname\fi
         \hss\reportpagedimensions}%
-   \fi
-   \ifconcept
-     \vskip\!!sixpoint
-     \hbox to \zetbreedte
-       {\infofont
-        Concept: \currentdate
-        \hss\reportpagedimensions}%
    \fi}
 
 % tot hier
 
 \def\doversie[#1]%
   {\voorlopigfalse
-   \conceptfalse
+   \chardef\conceptmode\zerocount
    \overfullrule\zeropoint
-   \processaction
+   \processaction % \v!definitief=>
      [#1]
-     [\v!voorlopig=>\voorlopigtrue\overfullrule5pt,
-        \v!concept=>\concepttrue]}
+     [  \v!concept=>\chardef\conceptmode\plusone,% simple banner 
+           \v!file=>\chardef\conceptmode\plustwo,% full banner 
+      \v!voorlopig=>\chardef\conceptmode\plustwo % full banner plus  
+                    \overfullrule5\s!pt]}        % info in the margin 
 
 \def\versie
   {\dosingleargument\doversie}
 
-%\def\addstatusinfo#1%
-%  {\ifvoorlopig \donetrue  \else 
-%   \ifconcept   \donetrue  \else 
-%                \donefalse \fi \fi 
-%   \ifdone 
-%     \setbox#1=\vbox to \papierhoogte
-%       {\vsmashbox#1\box#1 
-%        \offinterlineskip
-%        \vskip\kopwit 
-%        \hsize\papierbreedte
-%        \hfill\hbox{\plaatstestinfo\hskip.5cm}\vss
-%        \settexthoffset\hskip\texthoffset
-%        \tlap{\plaatsversieaanduiding}
-%        \vskip.5cm}%
-%   \fi} 
+%\def\addstatusinfo
+%  {\ifvoorlopig
+%     \@EA\doaddstatusinfo
+%   \else\ifcase\conceptmode  
+%     \@EAEAEA\gobbleoneargument
+%   \else
+%     \@EAEAEA\doaddstatusinfo
+%   \fi\fi}
 
 \def\addstatusinfo
-  {\ifvoorlopig
-     \@EA\doaddstatusinfo
-   \else\ifconcept  
-     \@EAEAEA\doaddstatusinfo
+  {\ifcase\conceptmode  
+     \@EA\gobbleoneargument
    \else
-     \@EAEAEA\gobbleoneargument
-   \fi\fi}
+     \@EA\doaddstatusinfo
+   \fi}
 
 \def\doaddstatusinfo#1%
   {\setbox#1\vbox to \papierhoogte
-     {\vsmashbox#1\box#1 
+     {\vsmashbox#1\box#1% 
       \offinterlineskip
       \vskip\kopwit 
       \hsize\papierbreedte
       \hfill\hbox{\plaatstestinfo\hskip.5cm}\vss
-      \settexthoffset\hskip\texthoffset
-      \tlap{\plaatsversieaanduiding}
-      \vskip.5cm}}
+      \settexthoffset\hskip\texthoffset % brrrr 
+     %\tlap{\plaatsversieaanduiding}\vskip.5cm}}
+      \vbox to 1cm{\vss\plaatsversieaanduiding\vss}}}
 
 \def\dotestinfo#1#2#3%
   {\ifvoorlopig\ifinpagebody\else
@@ -1186,8 +1183,14 @@
 \let\poparrangedpages\relax
 \let\pusharrangedpage\relax
 
-\let\shiftprintpagebox\gobbleoneargument
-\let\shiftpaperpagebox\gobbleoneargument
+\ifx\shiftprintpagebox\undefined 
+  \let\shiftprintpagebox\gobbleoneargument
+  \let\shiftpaperpagebox\gobbleoneargument
+\fi 
+
+\ifx\registerpageposition\undefined
+  \let\registerpageposition\gobbleoneargument
+\fi 
 
 \def\reportarrangedpage#1%
   {\showmessage\m!systems
@@ -1225,6 +1228,7 @@
       \ifpagebodyornaments
         \addpagebackground \pagebox
       \fi
+      \registerpageposition\pagebox
       \ifarrangingpages 
         \shiftpaperpagebox \pagebox % \v!papier
       \else
@@ -1289,30 +1293,58 @@
 
 % not here 
 
-\newif\ifpaginageblokkeerd
-\paginageblokkeerdfalse
+\newif\ifpaginageblokkeerd \paginageblokkeerdfalse
+
+\def\testpage
+  {\dodoubleempty\dotestpage}
 
-\def\testpagina[#1][#2]%
-  {\relax % needed ! 
-   \ifpaginageblokkeerd \else
-     \ifdim\pagegoal<\maxdimen 
-       \ifdim\pagetotal<\pagegoal % \relax
-         \scratchdimen\lineheight
-         \multiply\scratchdimen#1\relax
-         \advance\scratchdimen \pagetotal
-         \ifdim\lastskip<\parskip
-           \advance\scratchdimen \parskip
-         \fi
+\def\dotestpage[#1][#2]%
+  {%\relax % needed  before \if  
+   \endgraf
+   \ifpaginageblokkeerd \else \ifdim\pagegoal<\maxdimen 
+     \ifdim\pagetotal<\pagegoal % \relax
+       \scratchdimen\lineheight
+       \multiply\scratchdimen#1\relax
+       \advance\scratchdimen \pagetotal
+       \ifdim\lastskip<\parskip
+         \advance\scratchdimen \parskip
+       \fi
+       \ifsecondargument
          \advance\scratchdimen#2\relax
-         \ifdim\scratchdimen>.99\pagegoal
-           \penalty-\!!tenthousand\relax
-         \fi
-       \fi 
-     \else
-       \goodbreak
-     \fi
-   \fi}
+       \fi
+       % quite inaccurate, better pagegoal 1pt or so 
+       \ifdim\scratchdimen>.99\pagegoal 
+         \penalty-\!!tenthousand\relax
+       \fi
+     \fi 
+   \else
+     \goodbreak
+   \fi \fi}
+
+\def\testcolumn
+  {\dodoubleempty\dotestcolumn}
 
+\def\dotestcolumn[#1][#2]%
+  {%\relax % needed before \if !
+   \endgraf
+   \ifdim\pagegoal<\maxdimen \ifdim\pagetotal<\pagegoal % \relax
+     \scratchdimen\pagegoal
+     \advance\scratchdimen-\pagetotal
+     \ifdim\lastskip<\parskip 
+       \advance\scratchdimen \parskip 
+     \fi
+     \ifsecondargument
+       \advance\scratchdimen#2%
+     \fi
+     \getrawnoflines\scratchdimen % raw ! 
+   % \message{[\number#1>\number\noflines ?}\wait 
+     \ifnum#1>\noflines
+       \column 
+     \fi
+   \else
+     \penalty-\!!tenthousand % untested ! ! \column
+   \fi \fi}
+
 \let\resetcurrentsectionmarks\relax
 
 % was: \resetsectionmarks\firstsection, zie \handelpaginaaf
@@ -1402,7 +1434,7 @@
      \ifbinnenkolommen % this will move to MUL  
        \dosomebreak\goodbreak
      \else
-       \testpagina[3][\zeropoint]%
+       \testpage[3][\zeropoint]%
      \fi
     \fi}
 
@@ -1411,7 +1443,7 @@
      \ifbinnenkolommen % this will move to MUL
        \dosomebreak\goodbreak
      \else
-       \testpagina[5][\zeropoint]%
+       \testpage[5][\zeropoint]%
      \fi
    \fi}
 

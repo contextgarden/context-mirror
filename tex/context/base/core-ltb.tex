@@ -15,7 +15,12 @@
   \expandafter \endinput 
 \endTEX
 
-% Experimental, undocumented, and currently only ETeX.  
+% This module is experimental, undocumented, and currently only set up 
+% eTeX. It provides a mechanism for typesetting very large tables, 
+% spanning many pages horizontally and vertically, with repeated 
+% header lines and (entry) columns, tab tracking, color, etc. In does 
+% two passes over a table, which is why the table goes into a 
+% buffer or file. As said, tables can be real huge.   
 
 % \BH \BC .. \EC \BC .. \EC \EH % append 
 % \BR \BC .. \EC \BC .. \EC \ER 
@@ -278,7 +283,7 @@
        % forget about them 
      \else
        \doifelse{\linetableparameter\c!regels}\v!passend
-         {\scratchdimen\pagetotal}
+         {\scratchdimen\pagetotal}%
          {\scratchdimen\zeropoint}%
        \dorecurse\noflinetableparts
          {\let\linetablepart\recurselevel
@@ -710,6 +715,8 @@
 
 \doifnotmode{demo}{\endinput}
 
+% to be documented, see stan's ledger styles for an example 
+
 \setuplinetable[n=6,m={2,2,2},regels=25]
 
 \setuplinetable[c][1][width=2cm,background=color,backgroundcolor=red]

@@ -350,12 +350,12 @@
       \ifdone
         \nextboxht\lineheight 
       \else
-        \getnoflines{\ht\nextbox}%
+        \getnoflines\nextboxht
         \setbox\nextbox\vbox to \noflines\lineheight
-          {\vfill\box\nextbox\vfill}%
-        \setbox\nextbox\hbox{\lower\strutdepth\box\nextbox}%
+          {\vfill\flushnextbox\vfill}%
+        \setbox\nextbox\hbox{\lower\strutdepth\flushnextbox}%
       \fi
-      \snaptogrid[\displaygridcorrection]\hbox{\box\nextbox}%
+      \snaptogrid[\displaygridcorrection]\hbox{\flushnextbox}%
       \gdef\displaygridcorrection{\displaygridsnapping}%
       \egroup}}
 
@@ -812,7 +812,7 @@
       $\strut^{\the\everysupersub#1}_{\the\everysupersub#2}$}%
    \nextboxht\strutheight
    \nextboxdp\strutdepth
-   \box\nextbox
+   \flushnextbox
    \endgroup}
 
 \def\gridsupsub

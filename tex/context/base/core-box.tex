@@ -480,17 +480,17 @@
 
 \defineexternalfigure[bleed][\c!breedte=\bleedwidth,\c!hoogte=\bleedheight]
 
-% \placefloat[left]{none}
+% \placefigure[left]{none}
 %   {\bleed[width=5cm,height=3cm,location=lt]{\externalfigure[koe][bleed]}}
 % 
 % \input tufte 
 % 
-% \placefloat[left]{none}
+% \placefigure[left]{none}
 %   {\bleed[width=5cm,height=3cm,location=l]{\externalfigure[koe][bleed]}}
 % 
 % \input tufte 
 % 
-% \placesomefloat[right]{none}
+% \placefigure[right]{none}
 %   {\bleed[width=5cm,height=3cm,location=r]{\externalfigure[koe][bleed]}}
 % 
 % \input tufte 
@@ -558,7 +558,7 @@
 %    width=\paperwidth,
 %    height=\paperheight]
 % 
-% \definelayerpreset [lefttop]     [location=rb]
+% \definelayerpreset [lefttop]     [corner={left,top},location={right,bottom}]
 % \definelayerpreset [righttop]    [corner={right,top},location={left,bottom}]
 % \definelayerpreset [leftbottom]  [corner={left,bottom},location={right,top}]
 % \definelayerpreset [rightbottom] [corner={right,bottom},location={left,top}]
@@ -567,5 +567,202 @@
 % \setlayer[pagefigures][preset=righttop]
 % \setlayer[pagefigures][preset=leftbottom]
 % \setlayer[pagefigures][preset=rightbottom]
+
+\def\alignedbox
+  {\dodoubleempty\doalignedbox[]}
+
+% \def\doalignedbox[#1][#2]%
+%   {\bgroup
+%   %\let\iftraceboxplacement\iftracelayers % ugly
+%    \dowithnextbox
+%      {\let\next\middlebox
+%       \processaction
+%         [#2]
+%         [ t=>\let\next\topbox       , b=>\let\next\bottombox     ,
+%           l=>\let\next\leftbox      , r=>\let\next\rightbox      ,
+%          bl=>\let\next\bottomleftbox,br=>\let\next\bottomrightbox,
+%          tl=>\let\next\topleftbox   ,tr=>\let\next\toprightbox   ,
+%          lt=>\let\next\lefttopbox   ,lb=>\let\next\leftbottombox ,
+%          rt=>\let\next\righttopbox  ,rb=>\let\next\rightbottombox]%
+%       \next{\flushnextbox}%
+%       \egroup}#1}
+
+\def\doalignedbox[#1][#2]%
+  {\bgroup
+  %\let\iftraceboxplacement\iftracelayers % ugly
+   \dowithnextbox
+     {\serializecommalist[#2]%
+      \executeifdefined{\??ab\??ab\serializedcommalist}\middlebox{\flushnextbox}%
+      \egroup}#1}
+
+\setvalue{\??ab\??ab         }{\middlebox}
+\setvalue{\??ab\??ab\v!midden}{\middlebox}
+\setvalue{\??ab\??ab\v!links }{\leftbox  }
+\setvalue{\??ab\??ab\v!rechts}{\rightbox }
+\setvalue{\??ab\??ab\v!onder }{\bottombox}
+\setvalue{\??ab\??ab\v!boven }{\topbox   }
+
+\setvalue{\??ab\??ab\v!links \v!boven }{\lefttopbox}
+\setvalue{\??ab\??ab\v!links \v!onder }{\leftbottombox}
+\setvalue{\??ab\??ab\v!rechts\v!boven }{\righttopbox}
+\setvalue{\??ab\??ab\v!rechts\v!onder }{\rightbottombox}
+\setvalue{\??ab\??ab\v!boven \v!links }{\topleftbox}
+\setvalue{\??ab\??ab\v!onder \v!links }{\bottomleftbox}
+\setvalue{\??ab\??ab\v!boven \v!rechts}{\toprightbox}
+\setvalue{\??ab\??ab\v!onder \v!rechts}{\bottomrightbox}
+
+\setvalue{\??ab\??ab  c}{\middlebox}
+\setvalue{\??ab\??ab  l}{\leftbox}
+\setvalue{\??ab\??ab  r}{\rightbox}
+\setvalue{\??ab\??ab  o}{\bottombox}
+\setvalue{\??ab\??ab  b}{\topbox}
+
+\setvalue{\??ab\??ab lt}{\lefttopbox}
+\setvalue{\??ab\??ab lb}{\leftbottombox}
+\setvalue{\??ab\??ab rt}{\righttopbox}
+\setvalue{\??ab\??ab rb}{\rightbottombox}
+\setvalue{\??ab\??ab tl}{\topleftbox}
+\setvalue{\??ab\??ab bl}{\bottomleftbox}
+\setvalue{\??ab\??ab tr}{\toprightbox}
+\setvalue{\??ab\??ab br}{\bottomrightbox}
+
+\def\offsetbox
+  {\dodoubleempty\dooffsetbox[]}
+
+% left/right/top/bottomoffset -> dimensions change 
+% x/y                         -> dimensions don't change 
+
+\def\dooffsetbox[#1][#2]%
+  {\bgroup
+   \dowithnextbox
+     {\getparameters[\??ox]
+        [\c!x=\zeropoint,
+         \c!y=\zeropoint,
+         \c!breedte=\nextboxwd,
+         \c!hoogte=\nextboxht,
+         \c!diepte=\nextboxdp,
+         \c!plaats=,
+         \c!linkeroffset=\zeropoint,
+         \c!rechteroffset=\zeropoint,
+         \c!bovenoffset=\zeropoint,
+         \c!onderoffset=\zeropoint,
+         #2]%
+      \donefalse
+      \ifdim\@@oxlinkeroffset >\zeropoint\donetrue\fi
+      \ifdim\@@oxrechteroffset>\zeropoint\donetrue\fi
+      \ifdim\@@oxbovenoffset  >\zeropoint\donetrue\fi
+      \ifdim\@@oxonderoffset  >\zeropoint\donetrue\fi
+      \ifdone
+        \setbox\nextbox\vbox
+          {\forgetall\offinterlineskip
+           \vskip\@@oxbovenoffset
+           \hbox
+             {\hskip\@@oxlinkeroffset
+              \flushnextbox
+              \hskip\@@oxrechteroffset}%
+           \vskip\@@oxonderoffset}%
+        \scratchdimen\nextboxht
+        \advance\scratchdimen\nextboxdp
+        \nextboxht\scratchdimen
+        \nextboxdp\zeropoint      
+      \fi
+      \freezedimenmacro\@@oxbreedte
+      \freezedimenmacro\@@oxhoogte
+      \freezedimenmacro\@@oxdiepte
+      \setbox\nextbox\hbox
+        {\hskip\@@oxx\lower\@@oxy\hbox
+           {\doifelsenothing\@@oxplaats
+              {\flushnextbox}
+              {\alignedbox[\@@oxplaats]\hbox{\flushnextbox}}}}%
+      \nextboxwd\@@oxbreedte
+      \nextboxht\@@oxhoogte
+      \nextboxdp\@@oxdiepte
+      \flushnextbox
+      \egroup}#1}
+
+% \useMPlibrary[pre] \setupbackgrounds[page][background=pagegrid]
+% 
+% \placefigure[left,none]{}{\offset[leftoffset=1cm]{\externalfigure[koe][breedte=3cm]}}
+% \input tufte 
+% \placefigure[left,none]{}{\offset[rightoffset=1cm]{\externalfigure[koe][breedte=3cm]}}
+% \input tufte 
+% \placefigure[left,none]{}{\offset[topoffset=1cm]{\externalfigure[koe][breedte=3cm]}}
+% \input tufte 
+% \placefigure[left,none]{}{\offset[bottomoffset=1cm]{\externalfigure[koe][breedte=3cm]}}
+% \input tufte 
+
+\def\offset {\dodoubleempty\dooffsetbox [\hbox]} % yes or no
+\def\aligned{\dosingleempty\doalignedbox[\hbox]} % yes or no
+
+%\ruledhbox{\offsetbox[x=-1cm,y=-1cm,location=c]
+%  {\framed[width=4cm,height=4cm]{x}}}
+
+\def\dotabbed#1#2#3#4%
+  {\dontleavehmode
+   \bgroup
+   \setbox\scratchbox\hbox{#3}%
+   \hbox to \wd\scratchbox{#1#4#2}%
+   \egroup}
+
+\def\ltabbed{\dotabbed\relax\hss}
+\def\rtabbed{\dotabbed\hss  \relax}
+\def\ctabbed{\dotabbed\hss  \hss}      \let\mtabbed\ctabbed
+
+% \ltabbed{\romeins{3}}{\romeins{1}} test \endgraf
+% \ltabbed{\romeins{3}}{\romeins{2}} test \endgraf
+% \ltabbed{\romeins{3}}{\romeins{3}} test \endgraf
+% 
+% \rtabbed{\romeins{3}}{\romeins{1}} test \endgraf
+% \rtabbed{\romeins{3}}{\romeins{2}} test \endgraf
+% \rtabbed{\romeins{3}}{\romeins{3}} test \endgraf
+% 
+% \ctabbed{\romeins{3}}{\romeins{1}} test \endgraf
+% \ctabbed{\romeins{3}}{\romeins{2}} test \endgraf
+% \ctabbed{\romeins{3}}{\romeins{3}} test \endgraf  
+
+% alternative, if done, then other name
+%
+% \def\dotabbed#1#2#3#4%
+%   {\dontleavehmode
+%    \bgroup
+%    \scratchdimen\zeropoint
+%    \def\docommando##1%
+%      {\setbox\scratchbox\hbox{##1}%
+%       \ifdim\wd\scratchbox>\scratchdimen
+%         \scratchdimen\wd\scratchbox
+%       \fi}%
+%    \processcommalist[#3]\docommando
+%    \hbox to \scratchdimen{#1#4#2}%
+%    \egroup}
+% 
+% \def\ltabbed{\dotabbed\relax\hss}
+% \def\rtabbed{\dotabbed\hss  \relax}
+% \def\ctabbed{\dotabbed\hss  \hss}      \let\mtabbed\ctabbed
+% 
+% \ltabbed{\romeins{10},\romeins{2000},\romeins{15}}{\romeins{10}}   test \endgraf
+% \ltabbed{\romeins{10},\romeins{2000},\romeins{15}}{\romeins{15}}   test \endgraf
+% \ltabbed{\romeins{10},\romeins{2000},\romeins{15}}{\romeins{2000}} test \endgraf
+% 
+% \rtabbed{\romeins{10},\romeins{2000},\romeins{15}}{\romeins{10}}   test \endgraf
+% \rtabbed{\romeins{10},\romeins{2000},\romeins{15}}{\romeins{15}}   test \endgraf
+% \rtabbed{\romeins{10},\romeins{2000},\romeins{15}}{\romeins{2000}} test \endgraf
+% 
+% \ctabbed{\romeins{10},\romeins{2000},\romeins{15}}{\romeins{10}}   test \endgraf
+% \ctabbed{\romeins{10},\romeins{2000},\romeins{15}}{\romeins{15}}   test \endgraf
+% \ctabbed{\romeins{10},\romeins{2000},\romeins{15}}{\romeins{2000}} test \endgraf
+
+% to be documented 
+
+\def\phantombox[#1]%
+  {\hbox\bgroup
+   \getparameters
+     [\??ol]
+     [\c!breedte=\zeropoint,\c!hoogte=\zeropoint,\c!diepte=\zeropoint,#1]%
+   \setbox\scratchbox\null
+   \wd\scratchbox\@@olbreedte
+   \ht\scratchbox\@@olhoogte
+   \dp\scratchbox\@@oldiepte
+   \box\scratchbox
+   \egroup}
 
 \protect \endinput 

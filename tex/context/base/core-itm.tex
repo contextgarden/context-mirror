@@ -107,10 +107,10 @@
      \doinitializeitemgrouplevel{#1}%
    \fi}
 
-\def\doinitializeitemgrouplevel#1%
+\def\doinitializeitemgrouplevel#1% 
   {\copyparameters
      [\??op\currentitemgroup#1][\??oo]
-     [\c!breedte,\c!factor,\c!afstand,\c!uitlijnen,
+     [\c!breedte,\c!factor,\c!afstand,\c!uitlijnen,\c!optie,
       \c!letter,\c!marletter,\c!symletter,\c!kopletter,
       \c!kleur,\c!markleur,\c!symkleur,\c!kopkleur,
       \c!kopvoor,\c!kopna,\c!voor,\c!tussen,\c!na,
@@ -130,7 +130,7 @@
    \fi}
 
 \def\doitemreference#1,#2,#3\\%
-  {\ifnum\itemlevel>#1
+  {\ifnum\itemlevel>#1\relax
      \ifnum#1>\zerocount \tempsymbol \fi
      \getvalue{\@@currentitemsymbol{#2}}%
      \doitemreference#2,#3\\%
@@ -145,7 +145,7 @@
 \def\dosetupitemgroupvariable[#1]% [#2]%  niveau instellingen
   {\doifelsenothing{#1}
      {\getparameters[\??op\currentitemgroup\itemlevel]}% [#2]}%
-     {\getparameters[\??op\currentitemgroup#1]}}% [#2]}}
+     {\getparameters[\??op\currentitemgroup#1]}}%        [#2]}}
 
 \newconditional\inlinelistitem \setfalse\inlinelistitem
 
@@ -204,10 +204,15 @@
      {\dododosetupitemgroupconstant[#1][##1*]}%
    \processcommacommand[#2]\dodosetupitemgroupconstant} % expansion of #2 is handy for xml
 
+%\def\dododododosetupitemgroup[#1][#2]%
+%  {\doifassignmentelse{#2}
+%     {\dosetupitemgroupvariable[#1][#2]}
+%     {\setitemparameter{#1}\empty{\dosetupitemgroupconstant[#1][#2]}}}%
+
 \def\dododododosetupitemgroup[#1][#2]%
-  {\doifassignmentelse{#2}
-     {\dosetupitemgroupvariable[#1][#2]}
-     {\setitemparameter{#1}\empty{\dosetupitemgroupconstant[#1][#2]}}}%
+  {\doifassignmentelse{#2}%
+     {\dosetupitemgroupvariable[#1][#2]}%
+     {\setitemparameter{#1}\c!optie{#2}}}%
 
 \def\dodododosetupitemgroup[#1][#2]%
   {\ConvertToConstant\doifnot{#2}{}
@@ -335,7 +340,131 @@
        {\dodostartitemgroup[#2][]}%
    \fi}
 
-\def\dodostartitemgroup[#1][#2]%
+% \def\dodostartitemgroup[#1][#2]%
+%   {\setfalse\inlinelistitem % new, no indent (leftskip)
+%    \setfalse\concatnextitem % new, concat
+%    \ifhmode
+%      \ifconditional\autoconcatnextitem % new, concat
+%        \ifdim\lastskip=\itemsignal     % new, concat
+%          \settrue\concatnextitem       % new, concat
+%        \fi                             % new, concat
+%      \fi                               % new, concat
+%      \iftextitems\else\doifnotinset\v!tekst{#1}\par\fi % suboptimal 
+%    \fi
+%    \ifnum\itemlevel=\maxitemlevel\relax
+%      \showmessage\m!layouts9\maxitemlevel
+%      \def\itemincrement{0}%
+%    \else
+%      \def\itemincrement{1}%
+%    \fi
+%    \doglobal\increment(\itemlevel,\itemincrement)%
+%    \initializeitemgrouplevel\itemlevel % safeguard 
+%    \begingroup
+%    \ifnum\itemlevel=\plusone % NIEUW
+%      \doadaptleftskip{\getitemparameter1\c!marge}%
+%    \fi
+%    \dosetraggedcommand{\getitemparameter\itemlevel\c!uitlijnen}\raggedcommand
+%    \doifsomething{\getitemparameter\itemlevel\c!inspringen}
+%      {\expanded{\stelinspringenin[\getitemparameter\itemlevel\c!inspringen]}}%
+%    \doifinset\v!kolommen{#1}%
+%      {\ifbinnenkolommen\else\ifnum\itemcolumndepth=\zerocount
+%         \globallet\itemcolumndepth\itemlevel
+%         \getitemparameter\itemlevel\c!voor
+%         \processfirstactioninset
+%           [#1]
+%           [  \v!een=>\!!counta1\relax,
+%             \v!twee=>\!!counta2\relax,
+%             \v!drie=>\!!counta3\relax,
+%             \v!vier=>\!!counta4\relax,
+%             \v!vijf=>\!!counta5\relax,
+%          \s!unknown=>\@EA\!!counta\getitemparameter\itemlevel\c!n]%
+%         % new
+%         \edef\columneditemleftskip{\the\leftskip}%
+%         \def\postprocesscolumnbox##1%
+%           {\scratchdimen\columneditemleftskip
+%            \divide\scratchdimen \nofcolumns
+%            \hbox{\hskip\columneditemleftskip\hbox{\box##1}}}%
+%         \scratchdimen-\columneditemleftskip
+%         \multiply\scratchdimen \nofcolumns
+%         \advance\scratchdimen \columneditemleftskip
+%         \advance\scratchdimen \hsize
+%         \edef\columntextwidth{\the\scratchdimen}%
+%         \leftskip\zeropoint
+%         % so far
+%         \startkolommen
+%           [\c!n=\!!counta, % netter \??op\itemlevel\c!n
+%            \c!hoogte=,
+%            \c!lijn=\v!uit,
+%            \c!balanceren=\v!ja,
+%            \c!uitlijnen=\v!nee]%
+%       \fi\fi}%
+%    \doifinsetelse\v!intro{#1}\itemintrotrue\itemintrofalse
+%    \doglobal\increment\noflists
+%    \let\currentlist\noflists
+%    \newcounter\noflistelements
+%    \headitemfalse
+%    \subitemfalse
+%    \symbolitemfalse
+%    \let\marsymbol\relax
+%    \globallet\somdestination\empty
+%    \let\symsymbol\empty
+%    \the\itemgroupcommands
+%    \setitemlevel{#1}%
+%    \getitemparameter\itemlevel\empty
+%    \doifelsenothing{#1} % iffirstargument
+%      {\edef\@@opsymbool{\getitemparameter\itemlevel\c!symbool}%
+%       \letgvalueempty{\@@globalitemsymbol\itemlevel}%
+%       \global\letitemparameter\itemlevel\v!verder\empty
+%       \setitemmark\@@opsymbool
+%       \dosetupitemgroupvariable[\itemlevel][#2]}
+%      {\dosetupitemgroupconstant[\itemlevel][#1]%
+%       \dosetupitemgroupvariable[\itemlevel][#2]%
+%       \doifinsetelse\v!verder{#1}% \noexpand, else problems in non-etex with chinese
+%         {\edef\@@opsymbool{\noexpand\getvalue{\@@globalitemsymbol\itemlevel}}%
+%          \getitemparameter\itemlevel\v!verder}
+%         {\edef\@@opsymbool{\noexpand\getitemparameter{\itemlevel}{\c!symbool}}%
+%          \global\setitemparameter\itemlevel\v!verder
+%            {\dosetupitemgroupconstant[\itemlevel][#1]%
+%             \dosetupitemgroupvariable[\itemlevel][#2]}}%
+%       \def\docommando##1% \setitemmark resets \docommando
+%         {\doifnot{##1}{0}{\setitemmark{##1}}}% 
+%       \processcommalist[#1,\@@opsymbool]\docommando}%
+%    \ifautoitemintro\ifnum\prevgraf<3
+%      \itemintrotrue
+%    \fi\fi
+%    \ifparagraphitems
+%      \ifnum\itemlevel>\plusone
+%        \letitemparameter\itemlevel\c!tussen\empty
+%      \fi
+%    \else\ifpackeditems
+%      \letitemparameter\itemlevel\c!tussen\empty
+%    \fi\fi
+%    \calculatelistwidth\itemlevel{\dimen0}%
+%    \ifdim\dimen0>\zeropoint\relax
+%      \ifconditional\inlinelistitem\else
+%        \advance\leftskip \dimen0\relax
+%      \fi
+%    \fi}
+
+\def\dodostartitemgroup[#1]% [#2]%
+  {\relax % prevents lookahead 
+   \ifnum\itemlevel=\maxitemlevel\relax
+     \showmessage\m!layouts9\maxitemlevel
+     \let\itemincrement\zerocount
+   \else
+     \let\itemincrement\plusone
+   \fi
+   \doglobal\increment(\itemlevel,\itemincrement)%
+   \initializeitemgrouplevel\itemlevel % safeguard 
+   \edef\itemgroupoptions{\getitemparameter\itemlevel\c!optie}%
+   \ifx\itemgroupoptions\empty
+     \edef\itemgroupoptions{#1}% 
+   \else
+     \doifsomething{#1}{\edef\itemgroupoptions{\itemgroupoptions,#1}}% 
+   \fi
+   \expanded{\redostartitemgroup[\itemgroupoptions]}}% [#2]
+   
+\def\redostartitemgroup[#1][#2]%
   {\setfalse\inlinelistitem % new, no indent (leftskip)
    \setfalse\concatnextitem % new, concat
    \ifhmode
@@ -346,14 +475,6 @@
      \fi                               % new, concat
      \iftextitems\else\doifnotinset\v!tekst{#1}\par\fi % suboptimal 
    \fi
-   \ifnum\itemlevel=\maxitemlevel\relax
-     \showmessage\m!layouts9\maxitemlevel
-     \def\itemincrement{0}%
-   \else
-     \def\itemincrement{1}%
-   \fi
-   \doglobal\increment(\itemlevel,\itemincrement)%
-   \initializeitemgrouplevel\itemlevel % safeguard 
    \begingroup
    \ifnum\itemlevel=\plusone % NIEUW
      \doadaptleftskip{\getitemparameter1\c!marge}%
@@ -405,7 +526,7 @@
    \let\symsymbol\empty
    \the\itemgroupcommands
    \setitemlevel{#1}%
-   \getitemparameter\itemlevel\empty
+  %\getitemparameter\itemlevel\empty
    \doifelsenothing{#1} % iffirstargument
      {\edef\@@opsymbool{\getitemparameter\itemlevel\c!symbool}%
       \letgvalueempty{\@@globalitemsymbol\itemlevel}%
@@ -563,7 +684,7 @@
      \fi
    \fi\fi
    \noindent
-   \setbox8=\hbox
+   \setbox8\hbox
      {\ifheaditem
         \doitemattributes\itemlevel\c!kopletter\c!kopkleur{\listitem}%
       \else\ifsymbolitem
@@ -572,7 +693,7 @@
         \doitemattributes\itemlevel\c!letter\c!kleur{\listitem}%
       \fi\fi}%
    \doifsomething\somdestination
-     {\setbox8=\hbox{\naar{\box8}[\somdestination]}}%
+     {\setbox8\hbox{\naar{\box8}[\somdestination]}}%
    \globallet\somdestination\empty
    \dimen2=\getitemparameter\itemlevel\c!breedte\relax
    % new, prevents loops when symbol is (not yet found) graphic
@@ -583,9 +704,9 @@
      \llap{\ifsubitem\llap{+}\fi\box8\hskip\linkermargeafstand}%
    \else
      \ifdim\dimen2=\zeropoint\relax
-       \calculatelistwidth{1}{\dimen0}%
+       \calculatelistwidth1{\dimen0}%
      \else
-       \calculatelistwidth{\itemlevel}{\dimen0}%
+       \calculatelistwidth\itemlevel{\dimen0}%
      \fi
      \iftextitems
        \hbox{\ifsubitem+\fi\box8\hskip\fontdimen2\font}\nobreak
@@ -702,10 +823,13 @@
 
 \def\sym#1%
   {\noindent
-   \setbox0\hbox{#1}%
-   \setbox0\hbox\ifdim\wd0<1em to 1.5\else spread 1\fi em{#1\hfil}%
-   \hangindent\wd0\relax
-   \box0
+   \begingroup
+   \setbox\scratchbox\hbox{#1}%
+   \setbox\scratchbox\hbox
+     \ifdim\wd\scratchbox<1em to 1.5\else spread 1\fi em{#1\hfil}%
+   \hangindent\wd\scratchbox
+   \box\scratchbox
+   \endgroup
    \ignorespaces}
 
 \setupitemgroups % undocumented
@@ -740,6 +864,7 @@
    \c!linkertekst=(,
    \c!rechtertekst=),
    \c!start=1,
+   \c!optie=,
    \c!symbool=\itemlevel] % \v!niveau
 
 \def\defineitemgroup
@@ -766,8 +891,8 @@
 
 % keep these, needed for styles: 
 
-\def\startitemize {\startitemgroup[]} 
-\def\stopitemize  {\stopitemgroup}
-\def\setupitemize {\setupitemgroup[]}
+% \def\startitemize {\startitemgroup[]} 
+% \def\stopitemize  {\stopitemgroup}
+% \def\setupitemize {\setupitemgroup[]}
 
 \protect \endinput

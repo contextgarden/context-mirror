@@ -1156,8 +1156,8 @@
    \global\chardef\prettychar#2\relax}
 
 \def\getprettydata#1%
-  {\global\chardef\prettytype0
-   \global\chardef\prettychar0
+  {\global\chardef\prettytype\zerocount
+   \global\chardef\prettychar\zerocount
    \bgroup
    \let\handleprettytoken\setprettydata
    \setbox0\hbox{#1}% expands #1 and ignores space
@@ -1166,7 +1166,7 @@
 %D If needed the current and next token can be handled alongside:
 
 \def\getpretties#1#2%
-  {\char#1\bgroup\let\handleprettytoken=\getsecondpretty#2\egroup}
+  {\char#1\bgroup\let\handleprettytoken\getsecondpretty#2\egroup}
 
 \def\getsecondpretty#1#2%
   {\char#2}
@@ -1532,7 +1532,7 @@
 %D possible but leads to fuzzy situations.
 
 %D \macros
-%D   {ifdisablepretty,disablepretynow,disableprettyafterwards}
+%D   {ifdisablepretty,disableprettynow,disableprettyafterwards}
 %D
 %D Although for pretty printing \PERL\ and \JAVASCRIPT\ code
 %D one has to implement a bit more clever mechanism, the next

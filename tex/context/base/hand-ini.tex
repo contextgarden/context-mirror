@@ -89,8 +89,8 @@
   \appendtoks \disableprotruding \to \everyforgetall % Here or not here? 
 
   \def\setprotrudingfactor#1#2%
-    {\lproddimen=#1pt\multiply\lproddimen\!!thousand\divide\lproddimen \!!maxcard\relax
-     \rproddimen=#2pt\multiply\rproddimen\!!thousand\divide\rproddimen \!!maxcard\relax}
+    {\lproddimen=#1pt\multiply\lproddimen\plusthousand\divide\lproddimen \!!maxcard\relax
+     \rproddimen=#2pt\multiply\rproddimen\plusthousand\divide\rproddimen \!!maxcard\relax}
 
   \def\dodefineprotrudefactor#1#2 #3 #4 %
     {\ifskipprotrudingdef \else

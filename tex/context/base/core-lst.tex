@@ -128,7 +128,31 @@
               {\noexpand\realfolio}}}%
       \next % \schrijfwegnaarlijst
       \endgroup}}
+
+% experimental (no nodes in mvl), needed for naw 
 
+\def\immediatetolist[#1]#2#3#4%
+  {\begingroup
+   \convertexpanded{\??li#1}{#3}\asciilistentry
+   \makesectionformat
+   \immediatewriteutilitycommand
+     {\listentry
+        {#1}{}{#2}{\asciilistentry}%
+        {\sectionformat\sectionseparator\sectionseparator\number#4}%
+        {\realfolio}}%
+   \endgroup}
+
+\def\immediatebetweenlist[#1]#2%
+  {\begingroup
+   \convertargument#2\to\asciilistentry
+   \makesectionformat
+   \immediatewriteutilitycommand
+     {\listbetween
+        {#1}{\asciilistentry}%
+        {\sectionformat\sectionseparator\sectionseparator0}%
+        {\realfolio}}%
+   \endgroup}
+
 \def\listentry#1%
   {\executeifdefined{#1\c!lijst}\gobblefivearguments}
 
@@ -176,13 +200,13 @@
 
 \def\dodosetlijst#1%
   {\def\geenlijst{\splitsequence{\getvalue{\??li#1\c!limittext}}}% 
-   \setvalue{#1\c!tussen}{\dotussenlijst{#1}}%
+   \setvalue{#1\c!tussen}{\dotussenlijst {#1}}%
    \setvalue{#1\c!lijst }{\dolijstelement{#1}}}
 
 \def\dodoresetlijst#1%
   {\let\geenlijst\empty
    \setvalue{#1\c!tussen}{\gobblefourarguments{#1}}%
-   \setvalue{#1\c!lijst }{\gobblesixarguments{#1}}}
+   \setvalue{#1\c!lijst }{\gobblesixarguments {#1}}}
 
 \let\geenlijst\empty
 
@@ -282,8 +306,34 @@
    \dosetlistmode
    \endgroup}
 
+% th esimple appreach: 
+%
+% \def\dosettoclevel#1#2%
+%   {\dosetfilterlevel{\getvalue{#1#2\c!criterium}}\empty}
+%
+% but we want to to support selection by number:
+%
+% \starttypen
+% \placelist[section][criterium=chapter,number=1] \blank
+% \placelist[section][criterium=chapter,number=2] \blank
+% \placelist[section][criterium=chapter,number=3] \blank
+%
+% \chapter{first}  \section{AA} \section{BB}
+% \chapter{second} \section{CC} \section{DD}
+% \chapter{third}  \section{EE} \section{FF}
+% \stoptypen
+
 \def\dosettoclevel#1#2%
-  {\dosetfilterlevel{\getvalue{#1#2\c!criterium}}\empty}
+  {\ifundefined{#1#2\c!nummer}%
+     \dosetfilterlevel{\getvalue{#1#2\c!criterium}}\empty
+   \else
+     \doifelsevaluenothing{#1#2\c!nummer}%
+       {\dosetfilterlevel{\getvalue{#1#2\c!criterium}}\empty}
+       {\setsectieenkoppeling{\getvalue{#1#2\c!criterium}}%
+        \dosetfilterlevel
+          {\previoussection\@@sectie}%
+          {\getvalue{#1#2\c!nummer}}}%
+   \fi}
 
 \def\dosetlistmode
   {\iflijstgeplaatst
@@ -837,11 +887,11 @@
      {\doifelsevalue{\??rl#1\c!status}\v!start
         {\doglobal\increment\referencecounter % must be resolved due to #2 
          \referentiebutton
-           {\box\nextbox
+           {\flushnextbox
             \pagereference[\r!from\referencecounter]%
             \doschrijfnaarreferentielijst{#1}{\referencecounter}{#2}}%
            [\r!to\referencecounter]}
-        {\box\nextbox}}
+        {\flushnextbox}}
      \hbox} % \vbox ? 
 
 \def\referencelistentry#1%

@@ -194,7 +194,7 @@
 \def\dodoinstalllanguage#1#2% #2 added
   {\doifundefined{#1}{\setvalue{#1}{\complexlanguage[#2]}}%
    \expanded{\noexpand\uppercase{\noexpand\edef\noexpand\ascii{#1}}}%
-   \doifundefined\ascii{\setvalue{\ascii}{\complexlanguage[#2]}}}
+   \doifundefined\ascii{\setvalue\ascii{\complexlanguage[#2]}}}
 
 %D \macros
 %D   {preloadlanguages}
@@ -368,6 +368,15 @@
    \global\everyjob\scratchtoks
    \egroup
    \increment\loadedlanguage}
+
+%D Since we can only load patterns in ini\TeX, we nil the 
+%D loading before dumping (which saves a bit of memory, but 
+%D strangely enough not in the format).   
+
+\appendtoks 
+  \gdef\doloadpatterns{\increment\loadedlanguage\gobbletwoarguments}%
+  \globallet\dodoloadpatterns\gobblefourarguments
+\to \everydump 
 
 %D \macros
 %D   {setuplanguage}

@@ -801,7 +801,8 @@
   {\@@amboxcommand\setlocationbox{\??am\currentmenu}[\c!kader=\v!uit,\c!achtergrond=]{\ignorespaces#2\unskip}[#1]\\}%
 
 \def\menu@nop#1\\%
-  {\@@amboxcommand\phantom{\localframed[\??am\currentmenu][]{}}\\}%
+ %{\@@amboxcommand\phantom{\localframed[\??am\currentmenu][]{#1}}\\}%
+  {\@@amboxcommand\setlocationboxraw{\??am\currentmenu}[\c!kader=\v!uit,\c!achtergrond=,\c!leeg=\v!ja]{\ignorespaces#1\unskip}[]\\}%
 
 \def\menu@txt#1\\%
   {\@@amboxcommand\localframed[\??am\currentmenu][\c!kader=\v!uit,\c!achtergrond=]{\ignorespaces#1\unskip}\\}%

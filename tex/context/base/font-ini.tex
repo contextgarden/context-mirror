@@ -475,6 +475,84 @@
 %D \kap{THIS}: \ruledhbox{$\rm \scriptstyle scriptstyle: THIS$}
 %D or \ruledhbox{\kap{x style: THIS}} makes a big difference.
 
+%D The \type{x..d} sizes should be used grouped. If you 
+%D don't group them, i.e. call them in a row, \CONTEXT\ will 
+%D not be able to sort out your intention (\type {x} inside 
+%D \type {d} inside \type {x}. etc.). The following table 
+%D demonstrates this: 
+%D 
+%D \def\FontState{\setstrut\ruledhbox{\strut Hello}}
+%D 
+%D \starttabulatie[|||||]
+%D \HL
+%D \NC \rlap{\quad\bf grouped} \NC \NC \type {\tx} \NC \type {\txx} \NC \NR 
+%D \HL
+%D \NC \type{\tfx}  \NC \tfx  \FontState \NC \tfx \tx \FontState \NC \tfx \txx \FontState  \NC \NR
+%D \NC \type{\tfxx} \NC \tfxx \FontState \NC \tfxx\tx \FontState \NC \tfxx\txx \FontState  \NC \NR
+%D \NC \type{\tf}   \NC \tf   \FontState \NC \tf  \tx \FontState \NC \tf  \txx \FontState  \NC \NR
+%D \NC \type{\tfa}  \NC \tfa  \FontState \NC \tfa \tx \FontState \NC \tfa \txx \FontState  \NC \NR
+%D \NC \type{\tfb}  \NC \tfb  \FontState \NC \tfb \tx \FontState \NC \tfb \txx \FontState  \NC \NR
+%D \NC \type{\tfc}  \NC \tfc  \FontState \NC \tfc \tx \FontState \NC \tfc \txx \FontState  \NC \NR
+%D \NC \type{\tfd}  \NC \tfd  \FontState \NC \tfd \tx \FontState \NC \tfd \txx \FontState  \NC \NR
+%D \NC \type{\tfx}  \NC \tfx  \FontState \NC \tfx \tx \FontState \NC \tfx \txx \FontState  \NC \NR
+%D \NC \type{\tfxx} \NC \tfxx \FontState \NC \tfxx\tx \FontState \NC \tfxx\txx \FontState  \NC \NR
+%D \HL
+%D \stoptabulatie 
+%D 
+%D \blanko
+%D 
+%D \starttabulatie[|||||]
+%D \HL
+%D \NC \rlap{\quad\bf stacked} \NC \NC \type {\tx} \NC \type {\txx} \NC \NR 
+%D \HL
+%D \NC \type{\tfx}  
+%D \NC \tfx                                   \FontState 
+%D \NC \tfx                              \tx  \FontState  
+%D \NC \tfx                              \txx \FontState  
+%D \NC \NR 
+%D \NC \type{\tfxx}  
+%D \NC \tfx\tfxx                              \FontState 
+%D \NC \tfx\tfxx                         \tx  \FontState   
+%D \NC \tfx\tfxx                         \txx \FontState  
+%D \NC \NR 
+%D \NC \type{\tf}     
+%D \NC \tfx\tfxx\tf                           \FontState 
+%D \NC \tfx\tfxx\tf                      \tx  \FontState   
+%D \NC \tfx\tfxx\tf                      \txx \FontState  
+%D \NC \NR 
+%D \NC \type{\tfa}    
+%D \NC \tfx\tfxx\tf\tfa                       \FontState 
+%D \NC \tfx\tfxx\tf\tfa                  \tx  \FontState 
+%D \NC \tfx\tfxx\tf\tfa                  \txx \FontState 
+%D \NC \NR 
+%D \NC \type{\tfb}    
+%D \NC \tfx\tfxx\tf\tfa\tfb                   \FontState
+%D \NC \tfx\tfxx\tf\tfa\tfb              \tx  \FontState 
+%D \NC \tfx\tfxx\tf\tfa\tfb              \txx \FontState 
+%D \NC \NR 
+%D \NC \type{\tfc}    
+%D \NC \tfx\tfxx\tf\tfa\tfb\tfc               \FontState 
+%D \NC \tfx\tfxx\tf\tfa\tfb\tfc          \tx  \FontState 
+%D \NC \tfx\tfxx\tf\tfa\tfb\tfc          \txx \FontState 
+%D \NC \NR 
+%D \NC \type{\tfd}    
+%D \NC \tfx\tfxx\tf\tfa\tfb\tfd               \FontState 
+%D \NC \tfx\tfxx\tf\tfa\tfb\tfd          \tx  \FontState 
+%D \NC \tfx\tfxx\tf\tfa\tfb\tfd          \txx \FontState 
+%D \NC \NR 
+%D \NC \type{\tfx}    
+%D \NC \tfx\tfxx\tf\tfa\tfb\tfc\tfx           \FontState
+%D \NC \tfx\tfxx\tf\tfa\tfb\tfc\tfx      \tx  \FontState 
+%D \NC \tfx\tfxx\tf\tfa\tfb\tfc\tfx      \txx \FontState 
+%D \NC \NR 
+%D \NC \type{\tfxx}   
+%D \NC \tfx\tfxx\tf\tfa\tfb\tfc\tfx\tfxx      \FontState 
+%D \NC \tfx\tfxx\tf\tfa\tfb\tfc\tfx\tfxx \tx  \FontState 
+%D \NC \tfx\tfxx\tf\tfa\tfb\tfc\tfx\tfxx \txx \FontState 
+%D \NC \NR 
+%D \HL
+%D \stoptabulatie 
+
 %D \macros
 %D   {mf}
 %D
@@ -606,7 +684,7 @@
 %D \starttypen
 %D \def\mbox%
 %D   {\normalhbox\bgroup\mf
-%D    \dowithnextbox{\box\nextbox\egroup}%
+%D    \dowithnextbox{\flushnextbox\egroup}%
 %D    \normalhbox}
 %D \stoptypen
 %D
@@ -629,9 +707,11 @@
 %D although for instance unboxing goes ok. Therefore we
 %D introduce:
 
+% better use \dowithnextboxcontent 
+
 \def\normalmbox
   {\normalhbox\bgroup\mf
-   \dowithnextbox{\box\nextbox\egroup}\normalhbox}
+   \dowithnextbox{\flushnextbox\egroup}\normalhbox}
 
 % to test:
 %
@@ -1155,17 +1235,19 @@
 
 \newdimen\scaledfont
 
+\let\somefontspec\empty
+
 \def\@fs@{@fs@}
 
 % \def\parsefontspec#1%
-%   {\edef\somefontspec{#1\space\relax}% 
+%   {\xdef\somefontspec{#1\space\relax}% 
 %    \@EA\doparsefontspec\somefontspec]% =>#1 \relax]
 %    \donoparsefontspec}
 %
 % but, better:
 
 \def\parsefontspec#1%
-  {\edef\somefontspec{#1\space}% 
+  {\xdef\somefontspec{#1\space}% 
    \@EA\doparsefontspec\somefontspec\relax]% =>#1 \relax]
    \donoparsefontspec}
 
@@ -1181,7 +1263,7 @@
    #2}
 
 \def\setnaturalfontspec#1]%
-  {\@fs@scaled\!!thousand\relax}
+  {\@fs@scaled\plusthousand\relax} 
 
 \def\setforcedfontspec#1 #2\relax]%
   {\csname\@fs@#1\endcsname#2\relax}
@@ -1196,7 +1278,7 @@
    \scratchcounter\scaledfont % \scaledfont is now pretty large
    \advance\scratchcounter \medcard
    \divide\scratchcounter \maxcard
-   \edef\somefontspec{ scaled \the\scratchcounter}}
+   \xdef\somefontspec{ scaled \the\scratchcounter}}
 
 \def\@fs@at
   {\afterassignment\do@fs@at\scaledfont}
@@ -1204,7 +1286,7 @@
 \def\do@fs@at#1\relax
   {\scaledfont\localrelativefontsize\scaledfont
    \ifautofontsize\scaledfont\currentfontbodyscale\scaledfont\fi
-   \edef\somefontspec{ at \the\scaledfont}}
+   \xdef\somefontspec{ at \the\scaledfont}}
 
 \def\@fs@sa
   {\scaledfont\localabsolutefontsize
@@ -1218,7 +1300,7 @@
   {\checkfontscale#1\end\scaledfont
    \scaledfont\localrelativefontsize\scaledfont
    \ifautofontsize\scaledfont\currentfontbodyscale\scaledfont\fi 
-   \edef\somefontspec{ at \the\scaledfont}}
+   \xdef\somefontspec{ at \the\scaledfont}}
 
 \def\getfontparameters
   {\expandafter\setfontparameter\@@fontdata,]=,}
@@ -2584,11 +2666,11 @@
 
 \def\dosetsubstitutefont#1#2% #1 = set/switch state
   {\scratchdimen#2\relax
-   \advance\scratchdimen .499pt
+   \advance\scratchdimen .499\s!pt
    \dimensiontocount\scratchdimen\scratchcounter
-   \advance\scratchcounter -1
-   \ifnum\scratchcounter>3
-     \dododosetfont{#1}{\the\scratchcounter pt}{}%
+   \advance\scratchcounter \minusone
+   \ifnum\scratchcounter>\plusthree
+     \dododosetfont{#1}{\the\scratchcounter\s!pt}{}%
    \fi}
 
 % The following bunch of macros deals with the (run time)
@@ -2639,7 +2721,7 @@
 
 \let\bigmathfontsize\empty
 
-\def\synchronizebigmath%
+\def\synchronizebigmath
   {\ifx\bigmathfontsize\fontsize
      % already in sync
    \else
@@ -2709,7 +2791,7 @@
    \dosetcurrentfontalternative{#2}%
    \synchronizefont}
 
-\def\setcurrentfontstylesize#1#2% \rmsl
+\def\setcurrentfontstylesize#1#2% \rmsla
   {%\message{[8 #1 #2]}%
    \edef\fontstyle{#1}%
    \dosetcurrentfontsize{#2}%
@@ -2734,14 +2816,31 @@
 \newtoks\fontstrategies
 \newif\iftryingfont
 
+% \def\synchronizefont
+%   {\tryingfonttrue
+%    \ifx\fontclass\empty\else
+%      \let\fontstrategy\dofontclassstrategy
+%      \the\fontstrategies \relax % \relax still needed ?
+%    \fi
+%    \iftryingfont
+%      \let\fontstrategy\dofontstrategy
+%      \the\fontstrategies \relax % \relax still needed ?
+%    \fi
+%    \ifskipfontcharacteristics
+%      \setfontcharacteristics
+%      \the\everyfontswitch
+%    \fi}
+
+\let\fontstrategy\relax
+
 \def\synchronizefont
   {\tryingfonttrue
    \ifx\fontclass\empty\else
-     \let\fontstrategy\dofontclassstrategy
+     \global\let\fontstrategy\dofontclassstrategy
      \the\fontstrategies \relax % \relax still needed ?
    \fi
    \iftryingfont
-     \let\fontstrategy\dofontstrategy
+     \global\let\fontstrategy\dofontstrategy
      \the\fontstrategies \relax % \relax still needed ?
    \fi
    \ifskipfontcharacteristics
@@ -2851,11 +2950,33 @@
    \let\tx\empty
    \let\txx\empty}
 
+\def\checknestedxfontsize % option
+  {\ifcase\currentxfontsize\else\ifx\fontsize\empty\else
+     \chardef\currentxfontsize\zeropoint
+     \let\fontsize\empty
+     \let\tx\normaltx
+     \let\txx\normaltxx
+   \fi\fi}
+ 
+\def\setcurrentfontxalternative#1%
+  {\checknestedxfontsize
+   \dosetcurrentfontxxxalternative{#1}1\c!x\scriptstyle
+   \let\tx\txx}
+
+\def\setcurrentfontxxalternative#1%
+  {\checknestedxfontsize
+   \dosetcurrentfontxxxalternative{#1}2\c!xx\scriptscriptstyle
+   \let\tx\empty
+   \let\txx\empty}   
+
 % This alterative is not really needed, but for old time's sake
 % we keep it there. We can speed it up when needed.
 
-\def\setcurrentfontxstylealternative #1{\csname#1\endcsname\tfx}
-\def\setcurrentfontxxstylealternative#1{\csname#1\endcsname\tfxx}
+% \def\setcurrentfontxstylealternative #1{\csname#1\endcsname\tfx}
+% \def\setcurrentfontxxstylealternative#1{\csname#1\endcsname\tfxx}
+
+\def\setcurrentfontxstylealternative #1{\csname#1\endcsname\tx}
+\def\setcurrentfontxxstylealternative#1{\csname#1\endcsname\txx}
 
 %D These macros also show us that when we call for \type{\tx},
 %D this macro is redefined to be \type{\txx}. Therefore calls
@@ -2884,6 +3005,9 @@
 
 \unexpanded\def\tx {\setcurrentfontxalternative \fontalternative}
 \unexpanded\def\txx{\setcurrentfontxxalternative\fontalternative}
+
+\let\normaltx \tx
+\let\normaltxx\txx
 
 %D \macros
 %D   {definefontstyle}
@@ -3220,7 +3344,7 @@
 \unexpanded\def\setsmallbodyfont{\setbodyfontstep\v!klein\the\everybodyfont}
 \unexpanded\def\setbigbodyfont  {\setbodyfontstep\v!groot\the\everybodyfont}
 
-\unexpanded\def\setmainbodyfont%
+\unexpanded\def\setmainbodyfont
   {\doswitchpoints[\normalizedbodyfontsize]%
    \doswitchstyle[\fontstyle]%
    \the\everybodyfont}
@@ -3579,16 +3703,16 @@
 %D The next emphasis alternatives are for \THANH. They adapt
 %D their style as good as possible.
 
-\def\emphbf%
+\def\emphbf
   {\groupedcommand{\bf\def\emphit{\bi}\def\emphsl{\bs}}{}}
 
-\def\emphit%
+\def\emphit
   {\groupedcommand{\it\def\emphbf{\bi}\def\emphsl{\sl}}{}}
 
-\def\emphsl%
+\def\emphsl
   {\groupedcommand{\sl\def\emphbf{\bs}\def\emphit{\it}}{}}
 
-\def\emphtf%
+\def\emphtf
   {\groupedcommand{\tf\def\emphbf{\bf}\def\emphit{\it}\def\emphsl{\sl}}{}}
 
 %D \startbuffer
@@ -3713,19 +3837,19 @@
 %D {cont-log} and \type {symb-eur} for examples of symbolic
 %D definitions.
 
-\def\fontstringA%
+\def\fontstringA
   {\ifx\fontstyle\c!rm     \s!Serif \else
    \ifx\fontstyle\c!ss      \s!Sans \else
    \ifx\fontstyle\c!tt      \s!Mono \else
                            \s!Serif \fi\fi\fi}
 
-\def\fontstringB%
+\def\fontstringB
   {\ifx\fontstyle\c!rm   \s!Regular \else
    \ifx\fontstyle\c!ss   \s!Support \else
    \ifx\fontstyle\c!tt      \s!Type \else
                            \s!Serif \fi\fi\fi}
 
-\def\fontstringC%
+\def\fontstringC
   {\ifx\fontalternative\c!bf        \s!Bold \else
    \ifx\fontalternative\c!sl     \s!Slanted \else
    \ifx\fontalternative\c!it      \s!Italic \else

@@ -7,7 +7,7 @@
 % although we may assume that they will not cross page 
 % boundaries. 
 
-\def\OTRSETcheckcontent%
+\def\OTRSETcheckcontent
   {\bgroup
    \donefalse
    \def\OTRSETcheckcontent##1%
@@ -33,7 +33,7 @@
    \scratchdimen=\ht\scratchbox
    \advance\scratchdimen \OTRSETgetparameter\c!bovenoffset#1%
    \advance\scratchdimen \ht\columntopbox#1%
-\advance\scratchdimen -\getvalue{\??mc\number\mofcolumns-f}%
+   \advance\scratchdimen -\getvalue{\??mc\number\mofcolumns-f}%
    \advance\scratchdimen \ht\columnbotbox#1} % not used 
 
 \def\OTRSETdobalance% splitten in met en zonder footnotes

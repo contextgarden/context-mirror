@@ -584,12 +584,12 @@
 
 \definespecial\doflushJSpreamble#1%
   {\bgroup
-   \let\compositeJScode=\empty
+   \let\compositeJScode\empty
    \def\docommando##1%
      {\edef\sanitizedJScode{\getJSpreamble{##1}}%
       \@EA\doPSsanitizeJScode\sanitizedJScode\to\sanitizedJScode
       \immediate\pdfobj {<< /S /JavaScript /JS (\sanitizedJScode) >>}%
-      \edef\compositeJScode%
+      \edef\compositeJScode
         {\compositeJScode\space (##1) \the\pdflastobj\space 0 R}}%
    \processcommalist[#1]\docommando
    \immediate\pdfobj{<< /Names [ \compositeJScode ] >>}%

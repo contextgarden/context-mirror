@@ -123,26 +123,26 @@
    \@EA\xdef\csname\r!object#2::#3\endcsname
      {\noexpand\dohandleobject{#2}{#3}% 
         {\ifhbox\nextbox\hbox\else\vbox\fi}%
-       %{\the\wd\nextbox}{\the\ht\nextbox}{\the\dp\nextbox}}%
-        {\number\wd\nextbox}{\number\ht\nextbox}{\number\dp\nextbox}}%
+       %{\the\nextboxwd}{\the\nextboxht}{\the\nextboxdp}}%
+        {\number\nextboxwd}{\number\nextboxht}{\number\nextboxdp}}%
    \expanded % freeze the dimensions since \dostartobject may use \nextbox
      {\dostartobject
-        {#2}{#3}{\the\wd\nextbox}{\the\ht\nextbox}{\the\dp\nextbox}}%
+        {#2}{#3}{\the\nextboxwd}{\the\nextboxht}{\the\nextboxdp}}%
    \ifcase#1\relax\else \ifdim\objectoffset>\zeropoint
      \scratchdimen\objectoffset
-     \edef\width {\the\wd\nextbox}%
-     \edef\height{\the\ht\nextbox}%
-     \edef\depth {\the\dp\nextbox}%
+     \edef\width {\the\nextboxwd}%
+     \edef\height{\the\nextboxht}%
+     \edef\depth {\the\nextboxdp}%
      \setbox\nextbox\vbox spread 2\scratchdimen
        {\forgetall
-        \vss\hbox spread 2\scratchdimen{\hss\box\nextbox\hss}\vss}%
+        \vss\hbox spread 2\scratchdimen{\hss\flushnextbox\hss}\vss}%
      \setbox\nextbox\hbox
-       {\hskip-\scratchdimen\lower\scratchdimen\box\nextbox}% 
-     \wd\nextbox\width
-     \ht\nextbox\height
-     \dp\nextbox\depth
+       {\hskip-\scratchdimen\lower\scratchdimen\flushnextbox}% 
+     \nextboxwd\width
+     \nextboxht\height
+     \nextboxdp\depth
    \fi \fi
-   \box\nextbox
+   \flushnextbox
    \dostopobject
    \elabelgroup}
 

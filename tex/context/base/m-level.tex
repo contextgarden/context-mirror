@@ -1,0 +1,94 @@
+%D \module
+%D   [       file=level,
+%D        version=2002.10.20,
+%D          title=\CONTEXT\ Extra Modules,
+%D       subtitle=Catching Nesting Errors,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright=\PRAGMA]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
+%C details. 
+
+\unprotect 
+
+\newcount\currentnesting
+
+\def\startnesting#1%
+  {\global\advance\currentnesting\plusone
+   \setxvalue{level::\number\currentnesting}{#1}}
+
+\def\stopnesting#1%
+  {\edef\nestingstring{#1}%
+   \relax\ifnum\currentnesting>\zerocount
+     \doifelsevalue{level::\number\currentnesting}\nestingstring
+       {\global\advance\currentnesting\minusone}
+       {\@EA\reportnestingerror\@EA\stoptext}
+   \else
+     \@EA\reportnestingerror\@EA\stoptext
+   \fi}
+
+\def\checknesting
+  {\relax\ifnum\currentnesting>\zerocount
+     \def\nestingstring{end of document}%
+     \@EA\reportnestingerror
+   \fi}
+
+\def\reportnestingerror
+  {\endgraf
+   \global\let\checknesting\relax
+   \bgroup \definedfont[Mono at 18pt]\incolortrue 
+   \setupinterlinespace 
+   \raggedright
+   \bgroup \red 
+   \ifnum\currentnesting>\plusone
+     wrong end level 
+   \else  
+     too many end levels 
+   \fi
+   at \nestingstring\space in line \number\inputlineno
+   \ifnum\currentnesting>\zerocount, stack:\fi\endgraf
+   \egroup
+   \dostepwiserecurse\currentnesting\plusone\minusone
+     {\space\getvalue{level::\recurselevel}}
+   \endgraf
+   \egroup
+   \writestatus\m!systems{quitting due to level error}\wait
+   \batchmode}
+
+\prependtoks 
+  \checknesting
+\to \everystoptext 
+
+\protect \doifnotmode{demo}{\endinput}
+
+\starttext 
+
+% \startnesting{eerste}
+%   \startnesting{tweede}
+%     \startnesting{derde}
+%       \startnesting{vierde}
+%         test 
+%       \stopnesting{vierde}
+% \stopnesting{eerste}
+
+% \startnesting{eerste}
+%   \startnesting{tweede}
+%         test 
+%       \stopnesting{vierde}
+%     \stopnesting{derde}
+%   \stopnesting{tweede}
+% \stopnesting{eerste}
+
+\startnesting{eerste}
+  \startnesting{tweede}
+    \startnesting{derde}
+      \startnesting{vierde}
+        test 
+      \stopnesting{vierde}
+    \stopnesting{derde}
+  \stopnesting{tweede}
+\stopnesting{eerste}
+
+\stoptext 

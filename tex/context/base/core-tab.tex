@@ -1015,7 +1015,16 @@
 %D The third stage involves a lot of (re)sets, which we will
 %D explain later.
 
-\let \everytable \EveryTable % convenient and more in tune
+%D The next definition is convenient and more in tune with 
+%D \CONTEXT. 
+
+\let \everytable \EveryTable 
+
+%D We immediately use this register: 
+
+\appendtoks \fixedspaces \to \everytable
+
+%D Now we can start the table. 
 
 \def\thirdstagestartTABLE#1%
   {\global\setTABLEactiontrue
@@ -1042,8 +1051,9 @@
    \forgetall % added
    \doifsomething{#1}
      {\def\TABLEformat{#1}%
-     %\expandafter\getTABLEnofcolumns\expandafter{\TABLEformat}%
+      \getTABLEnofcolumns\TABLEformat 
       \expandafter\BeginFormat\TABLEformat\EndFormat}}
+
 
 \def\finishTABLE
   {\chuckTABLEautorow
@@ -1644,13 +1654,18 @@
 %D \TABLE\ changes the catcode when needed.}
 
 \bgroup
-\catcode`\&=\@@other
+\catcode`\|=\@@active 
+%\gdef\protectTABLEbar{\let|\letterbar} % maybe in \cleanupfeatures
+\doglobal \appendtoks \let|\letterbar \to \everycleanupfeatures  
+\catcode`\|=\@@other  
 \gdef\getTABLEnofcolumns#1%
   {\bgroup
-   \convertargument#1\to\ascii
-   \@EA\doglobal\@EA\counttoken\@EA&\@EA\in\ascii\to\maxTABLEcolumn
+   \cleanupfeatures % needed ! 
+%   \protectTABLEbar 
+   \expanded{\convertargument#1}\to\ascii
+   \@EA\doglobal\@EA\counttoken\@EA|\@EA\in\ascii\to\maxTABLEcolumn
    \global\advance\maxTABLEcolumn \minusone
-   \global\divide\maxTABLEcolumn 2
+   % in case of & counting, divide by 2 
    \egroup}
 \egroup
 
@@ -1659,7 +1674,8 @@
    \lineskiplimit\zeropoint
    \lineskip     \zeropoint
    \tabskip      \zeropoint
-   \expanded{\getTABLEnofcolumns{\the\!taPreamble}}% added
+   % does not work in normal tex
+   % \expanded{\getTABLEnofcolumns{\the\!taPreamble}}% added
    \halign \the\!taTableSpread \bgroup
    \span\the\!taPreamble
    \ifx \!tfRowOfWidths \empty \else \!tfRowOfWidths \cr \fi}

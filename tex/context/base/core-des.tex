@@ -268,8 +268,7 @@
            {\??dd#1}\c!kopletter\c!kopkleur
            {\getvalue{\??dd#1\c!tekst}\getvalue{\??dd#1\c!monster}}}}
      {\!!widthb}%
-  %\getvalue{\??dd#1\s!do\c!lokaal}%
-   \parindent\zeropoint\relax
+%   \parindent\zeropoint\relax
    \doifelsevalue{\??dd#1\c!titeluitlijnen}\v!nee
      {\edef\@@leftdefinitieskip {\the\leftskip }%
       \edef\@@rightdefinitieskip{\the\rightskip}}
@@ -277,10 +276,11 @@
         \edef\@@leftdefinitieskip {\the\leftskip }%
         \edef\@@rightdefinitieskip{\the\rightskip}%
       \fi}%
-   \ifcase\insidedefinition 
-     \chardef\insidedefinition1 
+\expanded{\inspringen[\getvalue{\??dd#1\c!inspringen}]}%
+   \ifcase\insidedefinition % better a system mode 
+     \chardef\insidedefinition\plusone
    \or
-     \chardef\insidedefinition2 
+     \chardef\insidedefinition\plustwo
    \fi} % now happens elsewhere : \noindent\ignorespaces
 
 \def\@@stopdefinitie#1%
@@ -295,11 +295,18 @@
   {\dostartattributes{\??dd#1}\c!letter\c!kleur\empty
    \ignorespaces}
 
+% \def\@@somedefinitie#1[#2]#3%
+%   {\bgroup % temporary hack
+%    \BeforePar{\executedoordefinitie{#1}[#2]{#3}}%
+%    \AfterPar{\@@stopdefinitie{#1}}%
+%    \GetPar}
+%
+% nicer and better: 
+
 \def\@@somedefinitie#1[#2]#3%
-  {\bgroup % temporary hack
-   \BeforePar{\executedoordefinitie{#1}[#2]{#3}}%
-   \AfterPar{\@@stopdefinitie{#1}}%
-   \GetPar}
+  {\dowithpar
+     {\bgroup\executedoordefinitie{#1}[#2]{#3}}%
+     {\@@stopdefinitie{#1}}}
 
 \def\@@startsomedefinitie#1[#2]#3%
   {\bgroup % temporary hack
@@ -326,7 +333,8 @@
   {\copyparameters[\??dd#1][\??dd]
      [\c!plaats,\c!kopletter,\c!letter,\c!kleur,\c!kopkleur,
       \c!breedte,\c!hang,\c!monster,\c!voor,\c!tussen,\c!na,\c!marge,
-      \c!springvolgendein,\c!uitlijnen,\c!tekst,\c!afstand,\c!commando]%
+      \c!inspringen,\c!springvolgendein,\c!uitlijnen,
+      \c!tekst,\c!afstand,\c!commando]%
    \getparameters[\??dd#1]
      [\s!do\c!status=\v!stop,
       \s!do\c!commando=\normal@@definitiewoord,
@@ -339,6 +347,7 @@
      {\dodoubleempty\@@startdefinitie[#1]}%
    \setvalue{\e!stop#1}%
      {\@@stopdefinitie{#1}}}%
+
 
 \def\@@startdefinitie[#1][#2]%
   {\doifelsevalue{\??dd#1\s!do\c!status}\v!start
@@ -527,7 +536,8 @@
       \c!breedte,\c!nummer,\c!afstand,\c!commando,
       \c!monster,\c!hang,\c!uitlijnen,\c!voor,\c!tussen,\c!na,
       \c!niveaus,\c!wijze,\c!blokwijze,\c!scheider,\c!marge,
-      \c!springvolgendein,\c!afsluiter,\c!sectienummer,\c!nummer]%
+      \c!inspringen,\c!springvolgendein,\c!afsluiter,\c!sectienummer,
+      \c!nummer]%
    \doifassignmentelse{#4}
      {\getparameters[\??dd#3#1]%
         [\c!tekst=#1,\??dd\c!nummer=#1,\c!conversie=,
@@ -541,8 +551,8 @@
            [\c!plaats,\c!kopletter,\c!letter,\c!kleur,\c!kopkleur,
             \c!breedte,\c!nummer,\c!afstand,\c!commando,\c!marge,
             \c!monster,\c!hang,\c!uitlijnen,\c!voor,\c!tussen,\c!na,
-            \c!afsluiter, 
-            \c!springvolgendein,\c!links,\c!rechts,\c!koppeling,\c!koppelwijze]%
+            \c!afsluiter,\c!inspringen,\c!springvolgendein,\c!links,\c!rechts,
+            \c!koppeling,\c!koppelwijze]%
          \getparameters[\??dd#3#1]
            [\c!tekst=#1,\??dd\c!nummer=#4,\c!conversie=,#5]}}%
    \ExpandBothAfter\doif{\getvalue{\??dd#3#1\??dd\c!nummer}}{#1}
@@ -633,8 +643,8 @@
    \parindent\zeropoint
    \hskip#2\!!widtha\indent\box2%
    \hangindent#3\!!widtha
-   \doattributes{\??ds#1}\c!letter\c!kleur{}% #4}%
-   \AfterPar%
+   \doattributes{\??ds#1}\c!letter\c!kleur\empty 
+   \AfterPar% must be redone 
      {\endgroup
       \getvalue{\??ds#1\c!na}}%
    \GetPar}
@@ -731,6 +741,7 @@
    \c!tussen=\blanko,
    \c!na=\blanko,
    \c!springvolgendein=\v!ja,
+   \c!inspringen=\v!nooit,
    \c!commando=]
 
 \steldoornummerenin
@@ -749,6 +760,7 @@
    \c!tussen=\blanko,
    \c!na=\blanko,
    \c!springvolgendein=\v!ja,
+   \c!inspringen=\v!nooit,
    \c!tekst=,
    \c!niveaus=3,                % to be upward compatible
    \c!conversie=,               % to be upward compatible

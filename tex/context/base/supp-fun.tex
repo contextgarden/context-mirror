@@ -605,16 +605,38 @@
 \def\NormalizeFontHeight{\NormalizeFontSize\ht}
 \def\NormalizeFontWidth {\NormalizeFontSize\wd} 
 
-\def\NormalizeFontSize#1#2#3#4#5%
+% \def\NormalizeFontSize#1#2#3#4#5%
+%   {\bgroup
+%    \dimen0=#4% #4 can be \ht0 or so
+%    \setbox0\hbox{\definedfont[#5 at 10pt]#3}%
+%    \ifdim\wd0>\zeropoint
+%      \dimen2=#10 % #1 is \wd or \ht
+%      \dimen4=10000pt
+%      \divide\dimen4 \dimen2
+%      \divide\dimen0 \plusthousand
+%      \dimen0=\number\dimen4\dimen0
+%      \xdef\TheNormalizedFontSize{\the\dimen0}%
+%    \else
+%      \dimen0\bodyfontsize
+%    \fi
+%    \definedfont[#5 at \the\dimen0]%
+%    \expandafter
+%    \egroup
+%    \expandafter\font\expandafter#2\fontname\font\relax}
+%
+% the familiar struggle with accuracy forces us to use: 
+
+\def\NormalizeFontSize#1#2#3#4#5% 
   {\bgroup
    \dimen0=#4% #4 can be \ht0 or so
-   \setbox0\hbox{\definedfont[#5 at 10pt]#3}%
+   \setbox0\hbox{\definedfont[#5 at 5pt]#3}% 10pt
    \ifdim\wd0>\zeropoint
      \dimen2=#10 % #1 is \wd or \ht
-     \dimen4=10000pt
+     \dimen4=\maxdimen % 10000pt
      \divide\dimen4 \dimen2
-     \divide\dimen0 1000
+     \divide\dimen0 1638 % 1000
      \dimen0=\number\dimen4\dimen0
+     \divide \dimen0 \plustwo % ...
      \xdef\TheNormalizedFontSize{\the\dimen0}%
    \else
      \dimen0\bodyfontsize
@@ -623,6 +645,8 @@
    \expandafter
    \egroup
    \expandafter\font\expandafter#2\fontname\font\relax}
+
+
 
 %D Afterwards, we have access to the calculated size by: 
 

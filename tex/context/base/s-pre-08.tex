@@ -79,7 +79,6 @@
 %D We are going to put all three elements on a layer. 
 
 \definelayer   [main]
-
 \defineoverlay [main] [\composedlayer{main}]
 
 %D The page backgrounds are as follows: 
@@ -120,10 +119,10 @@
 %D on the page so that the page is flushed. Here we also take 
 %D care of placing the page number. 
 
-\def\StartIdea%
+\def\StartIdea
   {\null \dontcomplain}
 
-\def\StopIdea%
+\def\StopIdea
   {\setlayer
      [main]
      [x=\makeupwidth,y=.5cm,hoffset=-.5cm,location=lb]
@@ -132,27 +131,31 @@
 
 %D Both texts get their position registered. 
 
-\def\StartSample%
+\def\StartSample
   {\setlayer
      [main]
      [hoffset=.75cm,voffset=.75cm]
      \bgroup \hpos {SampText:\realfolio} \bgroup \startSampleText [none]}
 
-\def\StopSample%
-  {\stopSampleText \egroup \egroup }
+\def\StopSample
+  {\stopSampleText \egroup \egroup}
 
 %D Here the position of the sample text and explanationary 
 %D text are passed on to the graphic that concerns the latter. 
 
-\def\StartText%
+% use setlayertext instead 
+
+\def\StartText
   {\setMPpositiongraphic
      {TextText:\realfolio}{text}{other=SampText:\realfolio} 
    \setlayer
      [main]
-     [x=\makeupwidth,y=\makeupheight,hoffset=-.75cm,voffset=-.75cm,location=lt]
-     \bgroup \hpos {TextText:\realfolio} \bgroup \startTextText [none]}
+     [x=\makeupwidth,y=\makeupheight,
+      hoffset=-.75cm,voffset=-.75cm,
+      location=lt]
+     \bgroup \noindent \hpos {TextText:\realfolio} \bgroup \startTextText [none]}
 
-\def\StopText%
+\def\StopText
   {\stopTextText \egroup \egroup}
 
 %D The graphics that encircle the two texts are related to
@@ -202,7 +205,7 @@
 %D In order to be complete, we also define a title page. 
 %D Here suddenly the text background shows up. 
 
-\def\StartTitlePage%
+\def\StartTitlePage
   {\startstandardmakeup
    \dontcomplain
    \setupframedtexts[TextText][width=fit]
@@ -210,7 +213,7 @@
    \bfd\setupinterlinespace
    \def\\{\blank\bfc\setupinterlinespace\def\\{\blank}}}
 
-\def\StopTitlePage%
+\def\StopTitlePage
   {\StopText
    \stopstandardmakeup}
 
@@ -237,6 +240,7 @@
     draw q withcolor (white-\MPcolor{PageColor}) ;
   fi ; 
   anchor_box(\MPanchor{\MPvar{self}}) ;
+% setbounds currentpicture to boundingbox origin ;
 \stopMPpositiongraphic
 
 \doifnotmode{demo}{\endinput}

@@ -656,6 +656,12 @@ emptylines: legeregels emptylines
                             page: pagina                           page
                                   seite                            strana
                                   pagina                           pagina
+                      testcolumn: testkolom                        testcolumn
+                                  testcolumn                       testcolumn
+                                  testcolumn                       testcolumn
+                        testpage: testpagina                       testpage
+                                  testpage                         testpage
+                                  testpage                         testpage
                     koppelpagina: koppelpagina                     couplepage
                                   doppelseite                      parovastrana
                                   accoppiapagina                   paginadubla
@@ -797,12 +803,12 @@ stelnummerin: stelnummerin setupnumber
                              ran: ran                              ran
                                   ran                              ran
                                   ran                              ran
-% new 
+% new
                  setupitemgroups: stelitemgroepenin                setupitemgroups
                                   setupitemgroups                  setupitemgroups
                                   setupitemgroups                  setupitemgroups
 
-                                  % downward compatible definitions 
+                                  % downward compatible definitions
 
                  setupitemgroups: stelopsommingenin                setupitemizations
                                   stelleaufzaehlungenein           nastavvycty
@@ -817,7 +823,7 @@ stelnummerin: stelnummerin setupnumber
                                   stopaufzaehlung                  stopvycet
                                   terminaelenco                    stopenumerare
 
-                                  % so far 
+                                  % so far
 
                     definieerkop: definieerkop                     definehead
                                   definiereueberschrift            definujnadpis
@@ -970,8 +976,8 @@ setuppaper: stelpapierin  setuppaper
                                   definierefarbe                   definujbarvu
                                   definiscicolore                  definesteculoare
 %definespotcolor: definespotcolor  definespotcolor
-%                 definespotcolor  definespotcolor    
-%                 definespotcolor  definespotcolor    
+%                 definespotcolor  definespotcolor
+%                 definespotcolor  definespotcolor
                definecolorgroup:  definieerkleurgroep              definecolorgroup
                                   definierefarbengruppe            definujskupinubarev
                                   definiscigruppocolori            definestegrupculori
@@ -1080,6 +1086,17 @@ listsymbol: lijstsymbool listsymbol
              schrijftussenlijst:  schrijftussenlijst               writebetweenlist
                                   schreibezwischenliste            zapismeziseznam
                                   scrividentroelenco               scrieintreliste
+
+% new
+
+                 immediatetolist: directnaarlijst                  immediatetolist
+                                  immediatetolist                  immediatetolist
+                                  immediatetolist                  immediatetolist
+
+            immediatebetweenlist: directtussenlijst                immediatebetweenlist
+                                  immediatebetweenlist             immediatebetweenlist
+                                  immediatebetweenlist             immediatebetweenlist
+
                     stellijstin:  stellijstin                      setuplist
                                   stellelisteein                   nastavseznam
                                   impostaelenco                    seteazalista
@@ -1408,8 +1425,8 @@ movesidefloat: verplaatszijblok  movesidefloat
                                   platziereunterformel             umistipodrovnici
                                   mettisottoformula                punesubformula
 moveformula: verplaatsformule  moveformula
-             moveformula       moveformula 
-             spostaformula       moveformula 
+             moveformula       moveformula
+             spostaformula       moveformula
                    setupformulas: stelformulesin                   setupformulae
                                   stelleformelnein                 nastavrovnice
                                   impostaformule                   seteazaformule
@@ -1780,20 +1797,20 @@ moveformula: verplaatsformule  moveformula
                                   switchtorawfont                  switchtorawfont
                                   passaafontgrezzo                 trecilafontraw
 
-  placeheadtext: plaatskoptekst           placeheadtext 
-                 placeheadtext            placeheadtext 
-                 posizionatestotesta      placeheadtext 
+  placeheadtext: plaatskoptekst           placeheadtext
+                 placeheadtext            placeheadtext
+                 posizionatestotesta      placeheadtext
 
 placeheadnumber: plaatskopnummer          placeheadnumber
                  placeheadnumber          placeheadnumber
                  posizionanumerotesta     placeheadnumber
 
-  definepagebreak: definieerpaginaovergang  definepagebreak 
-                   definepagebreak          definepagebreak 
-                   definepagebreak          definepagebreak 
-definecolumnbreak: definieerkolomovergang  definecolumnbreak 
-                   definecolumnbreak       definecolumnbreak  
-                   definecolumnbreak       definecolumnbreak  
+  definepagebreak: definieerpaginaovergang  definepagebreak
+                   definepagebreak          definepagebreak
+                   definepagebreak          definepagebreak
+definecolumnbreak: definieerkolomovergang  definecolumnbreak
+                   definecolumnbreak       definecolumnbreak
+                   definecolumnbreak       definecolumnbreak
 
 \stopcommands
 
@@ -1874,11 +1891,11 @@ definecolumnbreak: definieerkolomovergang  definecolumnbreak
               rechterrandafstand: rechterrandafstand               rightedgedistance
                                   abstandrechterrand               vzdalenostpravehookraje
                                   distanzabordodestro              distantacoltdreapta
- innermarginwidth:   binnenmargebreedte  innermarginwidth 
-                     innermarginwidth    innermarginwidth 
+ innermarginwidth:   binnenmargebreedte  innermarginwidth
                      innermarginwidth    innermarginwidth
- outermarginwidth:   buitenmargebreedte  outermarginwidth 
-                     outermarginwidth    outermarginwidth 
+                     innermarginwidth    innermarginwidth
+ outermarginwidth:   buitenmargebreedte  outermarginwidth
+                     outermarginwidth    outermarginwidth
                      outermarginwidth    outermarginwidth
 innermargindistance: binnenmargeafstand  innermargindistance
                      innermargindistance innermargindistance
@@ -1886,11 +1903,11 @@ innermargindistance: binnenmargeafstand  innermargindistance
 outermargindistance: buitenmargeafstand  outermargindistance
                      outermargindistance outermargindistance
                      outermargindistance outermargindistance
-   inneredgewidth:   binnenrandbreedte  inneredgewidth 
-                     inneredgewidth     inneredgewidth 
+   inneredgewidth:   binnenrandbreedte  inneredgewidth
                      inneredgewidth     inneredgewidth
-   outeredgewidth:   buitenrandbreedte  outeredgewidth 
-                     outeredgewidth     outeredgewidth 
+                     inneredgewidth     inneredgewidth
+   outeredgewidth:   buitenrandbreedte  outeredgewidth
+                     outeredgewidth     outeredgewidth
                      outeredgewidth     outeredgewidth
   inneredgedistance: binnenrandafstand  inneredgedistance
                      inneredgedistance  inneredgedistance
@@ -1934,9 +1951,9 @@ outermargindistance: buitenmargeafstand  outermargindistance
                       pageoffset: paginaoffset                     pageoffset
                                   pageoffset                       pageoffset
                                   pageoffset                       pageoffset
-                       pagedepth: paginadiepte                     pagedepth 
-                                  pagedepth                        pagedepth 
-                                  pagedepth                        pagedepth                        
+                       pagedepth: paginadiepte                     pagedepth
+                                  pagedepth                        pagedepth
+                                  pagedepth                        pagedepth
                        kopniveau: kopniveau                        headlevel
                                   kopfniveau                       hlavniuroven
                                   livellotesta                     niveltitlu % GB
@@ -1951,18 +1968,18 @@ outermargindistance: buitenmargeafstand  outermargindistance
                                   useXMLfilter                     useXMLfilter
                                   useXMLfilter                     useXMLfilter
 
-definecolumnset: definieerkolomgroep        definecolumnset 
-                 definecolumnset            definecolumnset 
-                 definiscigruppocolonne     definecolumnset 
- setupcolumnset: stelkolomgroepin           setupcolumnset 
-                 setupcolumnset             setupcolumnset 
-                 impostagruppocolonne       setupcolumnset 
- startcolumnset: startkolomgroep            startcolumnset 
-                 startcolumnset             startcolumnset 
-                 iniziagruppocolonne        startcolumnset 
-  stopcolumnset: stopkolomgroep             stopcolumnset 
-                 stopcolumnset              stopcolumnset 
-                 terminagruppocolonne       stopcolumnset 
+definecolumnset: definieerkolomgroep        definecolumnset
+                 definecolumnset            definecolumnset
+                 definiscigruppocolonne     definecolumnset
+ setupcolumnset: stelkolomgroepin           setupcolumnset
+                 setupcolumnset             setupcolumnset
+                 impostagruppocolonne       setupcolumnset
+ startcolumnset: startkolomgroep            startcolumnset
+                 startcolumnset             startcolumnset
+                 iniziagruppocolonne        startcolumnset
+  stopcolumnset: stopkolomgroep             stopcolumnset
+                 stopcolumnset              stopcolumnset
+                 terminagruppocolonne       stopcolumnset
 
   usetypescript: gebruiktypescript          usetypescript
                  usetypescript              usetypescript

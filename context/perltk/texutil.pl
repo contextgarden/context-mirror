@@ -396,6 +396,7 @@ elsif ($UserInterface eq "de")
     $MS{"Entries"}                 = "Eintraege" ;
     $MS{"References"}              = "Referenzen" ;
 
+    $MS{"ExtraProgram"}            = "         extra program :" ;
     $MS{"PlugInInit"}              = "    plugin initialized :" ;
     $MS{"PlugInReport"}            = "         plugin report :" ;
 
@@ -484,6 +485,7 @@ elsif ($UserInterface eq "it")
     $MS{"Entries"}                 = "voci" ;
     $MS{"References"}              = "riferimenti" ;
 
+    $MS{"ExtraProgram"}            = "         extra program :" ;
     $MS{"PlugInInit"}              = "    plugin initialized :" ;
     $MS{"PlugInReport"}            = "         plugin report :" ;
 
@@ -572,6 +574,7 @@ else
     $MS{"Entries"}                 = "entries" ;
     $MS{"References"}              = "references" ;
 
+    $MS{"ExtraProgram"}            = "         extra program :" ;
     $MS{"PlugInInit"}              = "    plugin initialized :" ;
     $MS{"PlugInReport"}            = "         plugin report :" ;
 
@@ -1007,7 +1010,8 @@ sub FlushExtra
 
 sub RunExtraPrograms
   { foreach $EP (@ExtraPrograms)
-      { system($EP) } }
+      { Report ("ExtraProgram", $EP) ;
+        system($EP) } }
 
 #D Plugins
 #D

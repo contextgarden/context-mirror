@@ -120,8 +120,8 @@
 
 \def\dodostartmakeup
   {\doifvaluesomething{\??do\currentmakeup\c!pagina}
-     {\ExpandFirstAfter\pagina[\makeupparameter\c!pagina]}
-   \soortpagina[\currentmakeup]
+     {\ExpandFirstAfter\pagina[\makeupparameter\c!pagina]}%
+   \soortpagina[\currentmakeup]%
    \setsystemmode\v!opmaak
    \setupmakeuplayout
    \makeupparameter\c!commandos
@@ -169,6 +169,7 @@
    \setupmakeuplayout
    \pagina
    \makeupparameter\c!na
+   \relax % voor fi 
    \ifdubbelzijdig \ifodd\realpageno\else
      \processaction
        [\makeupparameter\c!dubbelzijdig]
@@ -187,13 +188,16 @@
 %D by setting their associated status variables. The
 %D connection between them is made by the following macro 
 
+ 
 \def\setupmakeuplayout
   {\setupfooter[\c!status=\makeupparameter\c!voetstatus ]%
    \setupheader[\c!status=\makeupparameter\c!hoofdstatus]%
    \setuptext  [\c!status=\makeupparameter\c!tekststatus]%
    \setupbottom[\c!status=\makeupparameter\c!onderstatus]%
-   \setuptop   [\c!status=\makeupparameter\c!bovenstatus]}
- 
+   \setuptop   [\c!status=\makeupparameter\c!bovenstatus]%
+   % this is needed, but no \setuplayout here; fails in texexec --fig=c
+   \recalculatelayout} 
+
 %D The standard page template is defined as follows: 
 
 \definemakeup

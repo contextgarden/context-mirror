@@ -182,6 +182,12 @@
      [\??fl#1][\c!kader=\v!aan]%
      {\getmessage\m!floatblocks{12}}}
 
+% A complication is that we may have to handle a pagebreak 
+% first, which in turn may issue a (postponed) float. 
+% Therefore we may not trust on variable assignments before 
+% we're realy dealing with the float. Some day I'll root out
+% the global settings. 
+
 \def\docomplexplaatsblok[#1][#2]% [#3]#4%
   {\edef\floattype{#1}%
    \doifelsenothing\floattype
@@ -192,24 +198,80 @@
      {\edef\floatlocation{#2}}%
    \expanded{\dodocomplexplaatsblok[\floattype][\floatlocation]}}
 
-\def\presetfloatvariables#1#2#3#4% better a processaction 
+\def\dodocomplexplaatsblok[#1][#2][#3]#4%
+  {\flushnotes
+   \ifsomefloatwaiting
+     % this was \checkwaitingfloats spread all over
+     \doifinsetelse\v!altijd{#2}
+       {\showmessage\m!floatblocks5\empty}
+       {\doifcommonelse
+          {#2}
+          {\v!links,\v!rechts,\v!binnen,\v!buiten,%
+           \v!inlinker,\v!inrechter,\v!inmarge,%
+           \v!linkermarge,\v!rechtermarge,\v!linkerrand,\v!rechterrand,%
+           \v!binnenmarge,\v!buitenmarge,\v!binnenrand,\v!buitenrand,%
+           \v!tekst,\v!naast}% \v!pagina
+          {\doflushfloats}
+          {}}%
+     % but which should be done before using box \floatbox
+   \fi
+   \ifmargeblokken % waarschijnlijk gebroken ! ! ! !
+     \doifinset\v!marge{#2}
+       {\endgraf 
+        \bgroup\everypar{\egroup\the\everypar}%
+        \hsize\@@mbbreedte}%
+   \fi
+   \global\insidefloattrue
+   \begingroup % **
+   \the\everyinsidefloat
+   \let\@@extrafloat\empty
+   \presetmorefloatvariables{#2}%
+   \dowithnextboxcontent % better a \the\everyfloattoks
+     {\setlocalfloathsize
+      \getvalue{\??fl#1\c!binnen}%
+      \fuzzysnappingfalse 
+      \postponefootnotes} % new
+     {\xdocompletefloat{#1}{#3}{#1}{#2}{#1}{#4}% ** not yet done
+       % we need to carry over the par because of side floats
+      \doifnotinset\v!tekst{#2}{\carryoverpar\endgroup}% 
+      \ifparfloat
+        \doifinset\v!reset{#2}\forgetsidefloats
+        \doinhibitblank
+      \fi}% better move this to side floats 
+     \vbox}
+
+%\def\xxdocompletefloat#1#2%
+%  {\setbox\nextbox\hbox{\signalrightpage\flushnextbox}%
+%   \doifrightpageelse{\let\@@extrafloat#1}{\let\@@extrafloat#2}}
+
+\def\xxdocompletefloat#1#2%
+  {\rightorleftpageaction{\let\@@extrafloat#1}{\let\@@extrafloat#2}}
+
+\chardef\textfloatmethod=0 % 0=raw 1=safe (.99) 2=tight (-1pt)
+\chardef\sidefloatmethod=1 % 0=raw 1=safe (.99) 2=tight (-1pt)
+
+\def\presetfloatvariables#1#2#3#4% 
   {\doifcommonelse
      {#2}
-     {\v!links,\v!rechts,\v!inlinker,\v!inrechter,\v!inmarge,%
+     {\v!links,\v!rechts,\v!binnen,\v!buiten,%
+      \v!inlinker,\v!inrechter,\v!inmarge,%
+      \v!binnenmarge,\v!buitenmarge,\v!binnenrand,\v!buitenrand,%
       \v!linkermarge,\v!linkerrand,\v!rechtermarge,\v!rechterrand}
      {\global\parfloattrue}
      {\global\parfloatfalse}%
-   \global\sidefloatshift\zeropoint  
    \ifbinnenkolommen
      \global\parfloatfalse
    \fi
-   \calculatefloatskips{#1}%
+   \global\sidefloatshift\zeropoint  
+   \global\chardef\sidefloatmethod\getvalue{\??fl#1\c!zijmethode}%
+   \global\chardef\textfloatmethod\getvalue{\??fl#1\c!tekstmethode}%
    \global\chardef\sidefloatalign\zerocount
+   \calculatefloatskips{#1}%
    \ifparfloat
      \processaction
        [\getvalue{\??fl#1\c!zijuitlijnen}]
        [\v!hoogte=>\global\chardef\sidefloatalign\plusone,%
-         \v!regel=>\global\chardef\sidefloatalign\plustwo,%
+         \v!regel=>\global\chardef\sidefloatalign\plustwo,% (***)
         \v!diepte=>\global\chardef\sidefloatalign\plusthree]%
      \ifcase\sidefloatalign\relax
        \doifinset\v!hoogte{#2}{\global\chardef\sidefloatalign\plusone}%
@@ -240,6 +302,8 @@
      \global\nofloatcaptiontrue
    \fi \fi}
 
+% documenteren in details 
+
 \def\presetmorefloatvariables#1%
   {\doifelse\@@bklokaal\v!ja % fout keyword
      \globalcenterfloatboxtrue
@@ -251,7 +315,7 @@
        \localcenterfloatboxtrue
        \localcenterfloatboxfalse
    \fi
-   \doifnotinset\v!altijd{#1}
+   \doifnotcommon{\v!altijd,\v!hier,\v!forceer}{#1} % ! ! ! ! ! !
      {\globalcenterfloatboxfalse
       \localcenterfloatboxfalse}}
 
@@ -269,49 +333,8 @@
 \to \everyinsidefloat
 
 %\appendtoks
-%  \fuzzysnappingfalse % what is otr is 
+%  \fuzzysnappingfalse 
 %\to \everyinsidefloat
-
-\def\dodocomplexplaatsblok[#1][#2][#3]#4%
-  {\flushnotes
-   \ifsomefloatwaiting
-     % this was \checkwaitingfloats spread all over
-     \doifinsetelse\v!altijd{#2}
-       {\showmessage\m!floatblocks5\empty}
-       {\doifcommonelse
-          {#2}
-          {\v!tekst,\v!naast,% \v!pagina,
-           \v!links,\v!rechts,\v!inlinker,\v!inrechter,%
-           \v!inmarge}
-          {\doflushfloats}
-          {}}%
-     % but which should be done before using box \floatbox
-   \fi
-   \ifmargeblokken % waarschijnlijk gebroken ! ! ! !
-     \doifinset\v!marge{#2}
-       {\bgroup\everypar{\egroup\the\everypar}%
-        \hsize\@@mbbreedte}%
-   \fi
-   \global\insidefloattrue
-   \begingroup % **
-   \the\everyinsidefloat
-   \let\@@extrafloat\empty
-   \presetmorefloatvariables{#2}%
-   \dowithnextboxcontent % better a \the\everyfloattoks
-     {\setlocalfloathsize
-      \fuzzysnappingfalse 
-      \postponefootnotes} % new
-     {\xdocompletefloat{#1}{#3}{#1}{#2}{#1}{#4}%
-      % we need to carry over the par because of side floats
-      \doifnotinset\v!tekst{#2}{\carryoverpar\endgroup}} % ** not yet done
-     \vbox}
-
-%\def\xxdocompletefloat#1#2%
-%  {\setbox\nextbox\hbox{\signalrightpage\box\nextbox}%
-%   \doifrightpageelse{\let\@@extrafloat#1}{\let\@@extrafloat#2}}
-
-\def\xxdocompletefloat#1#2%
-  {\rightorleftpageaction{\let\@@extrafloat#1}{\let\@@extrafloat#2}}
 
 \def\doifrightpagefloatelse % watch out: other default ! ! !
   {\ifdubbelzijdig
@@ -332,54 +355,40 @@
 
 % \let\movesidefloat\gobbleoneargument
 
-% new : \place...[leftmargin,-2*line]
+% new : \place...[leftmargin,-2*line]; we need to catch fxtb:2*3
+% watch out: line alone aligns on the line ! ! !
 
-% (keep this) this fails on fxtb:2*3
-%
-% \def\movesidefloat[#1]%
-%   {\bgroup
-%    \donefalse
-%    \def\movesidefloat##1%
-%      {\ifdone \else
-%         \global\sidefloatdownshift\zeropoint
-%         \donetrue
-%       \fi
-%       \global\advance\sidefloatdownshift##1\lineheight}%
-%    \expanded{\dorepeatwithcommand[#1]}\domovesidefloat
-%    \egroup}
-%
-% so we need to catch the : 
+\def\movesidefloat[#1]% (-)line|x=,y=
+  {\doifassignmentelse{#1}%
+     {\bgroup
+      \getparameters[\??fl][\c!x=\zeropoint,\c!y=\zeropoint,#1]%
+      \ifgridsnapping
+        \getnoflines\@@fly
+        \global\sidefloatdownshift\noflines\lineheight
+      \else
+        \global\sidefloatdownshift\@@fly
+      \fi
+      \global\sidefloatextrashift\@@flx
+      \egroup}
+     {\movedownsidefloat[#1]}} 
 
-\def\movesidefloat[#1]%
+\def\movedownsidefloat[#1]% already in core 
   {\bgroup
    \cleanupfeatures
    \doifinstringelse{:}{#1}
      \donothing
      {\donefalse
-      \def\movesidefloat##1%
-        {\doifnumber{##1}
-           {\ifdone\else\global\sidefloatdownshift\zeropoint\donetrue\fi
-            \global\advance\sidefloatdownshift##1\lineheight}}%
-      \expanded{\dorepeatwithcommand[#1]}\domovesidefloat}%
+      \def\movedownsidefloat##1%
+        {\processaction
+           [##1]%
+           [ \v!regel=>\docommando+,%
+            +\v!regel=>\docommando+,%
+            -\v!regel=>\docommando-]}
+      \def\docommando##1%
+        {\ifdone\else\global\sidefloatdownshift\zeropoint\donetrue\fi
+         \global\advance\sidefloatdownshift##1\lineheight}%
+      \expanded{\dorepeatwithcommand[#1]}\movedownsidefloat}%
    \egroup}
-
-% or cleaner but longer:
-%
-% \def\movesidefloat[#1]%
-%   {\bgroup
-%    \def\movesidefloat##1%
-%      {\global\sidefloatdownshift\zeropoint
-%       \def\movesidefloat####1%
-%         {\global\advance\sidefloatdownshift####1\lineheight}%
-%       \movesidefloat##1}%
-%    \expanded{\dorepeatwithcommand[#1]}\domovesidefloat
-%    \egroup}
-
-\def\domovesidefloat#1%
-  {\processaction
-     [#1]%
-     [ \v!regel=>\movesidefloat+,%
-      -\v!regel=>\movesidefloat-]}
 
 \def\xdocompletefloat#1#2#3#4#5#6%
   {\ifextrafloatactions 
@@ -396,7 +405,8 @@
          \v!buitenrand=>\xxdocompletefloat\v!rechterrand \v!linkerrand,
                ininner=>\xxdocompletefloat\v!inlinker    \v!inrechter,
                inouter=>\xxdocompletefloat\v!inrechter   \v!inlinker,
-            \s!unknown=>{\movesidefloat[\commalistelement]}]%
+              \v!regel=>, % only -n*line is handled (see ***) 
+            \s!unknown=>{\movedownsidefloat[\commalistelement]}]%
      \ifx\@@extrafloat\empty
        \docompletefloat{#1}{#2}{#3}{#4}{#5}{#6}\nextbox
      \else
@@ -432,14 +442,15 @@
 %         \fi}%
 %    \fi}
 
+\newdimen\sidefloatextrashift
+
 \def\setlocalfloatdimensions#1#2#3#4% experimental / #3 box number #4 prefix
   {\global\sidefloatshift\zeropoint\relax % duplicate  
    \ifextrafloatactions
-\ifdim\sidefloatdownshift=\zeropoint\else
-  \global\setbox\floatbox\vbox
-    {\vskip\sidefloatdownshift\nointerlineskip\box\floatbox}%
-\fi
-\global\sidefloatdownshift\zeropoint
+     \ifdim\sidefloatdownshift=\zeropoint\else
+       \global\setbox\floatbox\vbox
+         {\vskip\sidefloatdownshift\nointerlineskip\box\floatbox}%
+     \fi
      \doifvaluesomething{\??fl#1\c!minbreedte}
        {\scratchdimen\getvalue{\??fl#1\c!minbreedte}\relax
         \ifdim\wd#3<\scratchdimen
@@ -471,7 +482,10 @@
                      \box#3%
                      \doifnotvalue{\??fl#1\c!plaats}\v!rechts\hss}}}}%
         \fi}%
-   \fi}
+    \advance\sidefloatshift\sidefloatextrashift
+  \fi
+  \global\sidefloatdownshift \zeropoint
+  \global\sidefloatextrashift\zeropoint}
  
 \def\docomplexstarttekstblok[#1][#2][#3]%
   {\flushnotes
@@ -528,6 +542,8 @@
       \c!kaderoffset=\@@bkkaderoffset,
      %\c!lokaal=\@@bklokaal,
       \c!paginaovergangen=,
+      \c!tekstmethode=\@@bktekstmethode,
+      \c!zijmethode=\@@bkzijmethode,
       \c!default=]%
    \stelblokkopjein
      [#1]
@@ -597,7 +613,8 @@
       \c!kader,\c!straal,\c!hoek,\c!plaats,\c!achtergrond,\c!kaderkleur,
       \c!achtergrondraster,\c!achtergrondkleur,\c!achtergrondoffset,
       \c!bovenkader,\c!onderkader,\c!linkerkader,\c!rechterkader,
-      \c!kaderoffset,\c!paginaovergangen,\c!default]%
+      \c!kaderoffset,\c!paginaovergangen,\c!default,
+      \c!tekstmethode,\c!zijmethode]%
    \copyparameters[\??kj#1][\??kj#3]
      [\c!plaats,\c!voor,\c!tussen,\c!na,
       \c!breedte,\c!kopletter,\c!kopkleur,\c!letter,\c!kleur,
@@ -649,14 +666,25 @@
 
 \let\twopassfloatdata\realpageno
 
-\def\dogetfloatdata % precedes save !
-  {\doglobal\increment\noffloatpages
-   \gettwopassdata{\s!float\s!data}%
-   \iftwopassdatafound
-     \globallet\twopassfloatdata\twopassdata
-   \else
-     \globallet\twopassfloatdata\realpageno % \realfolio
-   \fi}
+% \def\dogetfloatdata % precedes save !
+%   {\doglobal\increment\noffloatpages
+%    \gettwopassdata{\s!float\s!data}%
+%    \iftwopassdatafound
+%      \globallet\twopassfloatdata\twopassdata
+%    \else
+%      \globallet\twopassfloatdata\realpageno % \realfolio
+%    \fi}
+% 
+% \def\dosavefloatdata
+%   {\bgroup
+%    \edef\dosavefloatdata
+%      {\writeutilitycommand
+%         {\twopassentry
+%            {\s!float\s!data}%
+%            {\noffloatdata}%
+%            {\noexpand\realfolio}}}% later {}{}{}{} and \getfirst...
+%    \dosavefloatdata
+%    \egroup}
 
 \def\dosavefloatdata
   {\bgroup
@@ -665,9 +693,18 @@
         {\twopassentry
            {\s!float\s!data}%
            {\noffloatdata}%
-           {\noexpand\realfolio}}}% later {}{}{}{} and \getfirst...
+           {\noffloatpages::\noexpand\realfolio}}}% later {}{}{}{} and \getfirst...
    \dosavefloatdata
    \egroup}
+
+\def\dogetfloatdata % precedes save !
+  {\doglobal\increment\noffloatpages
+   \findtwopassdata{\s!float\s!data}{\noffloatpages::}%
+   \iftwopassdatafound
+     \globallet\twopassfloatdata\twopassdata
+   \else
+     \globallet\twopassfloatdata\realpageno % \realfolio
+   \fi}
 
 % Er wordt bij \v!altijd als dat nodig is hernummerd.
 % Daarbij wordt gebruik gemaakt van de opgeslagen nummers en
@@ -829,7 +866,7 @@
    \fi
    \egroup}
 
-\def\doplacefloatbox%
+\def\doplacefloatbox
   {%\forgetall % NJET!
    \witruimte
    \blanko[\@@bkvoorwit]
@@ -846,6 +883,8 @@
 \ifx\somefacefloat\undefined \let\somefacefloat\doplacefloatbox \fi
 \ifx\sometextfloat\undefined \let\sometextfloat\doplacefloatbox \fi
 
+% brr, wordt deze niet overladen in page-one? weg er mee 
+
 \def\somepagefloat[#1]%  links, rechts, midden, hoog, midden, laag
   {%\checkwaitingfloats{#1}%
    \global\setbox\collectedpagefloats\vbox
@@ -1544,15 +1583,66 @@
 \let\naturalfloatwidth \!!zeropoint
 \let\naturalfloatdepth \!!zeropoint
 
+% \long\def\docompletefloat#1#2#3#4#5#6#7% #7 = box number
+%   {\flushsidefloats
+%    \presetfloatvariables{#1}{#4}{#2}{#6}%
+%    \bgroup
+%   %\setlocalfloatdimensions{#1}{#4}{#7}\relax
+%    \global\setbox\floatbox\vbox{\box#7}%
+%    \xdef\naturalfloatheight{\the\ht\floatbox}%
+%    \xdef\naturalfloatwidth {\the\wd\floatbox}%
+%    \xdef\naturalfloatdepth {\the\dp\floatbox}%
+%    \dimen0 \ht\floatbox
+%    \advance\dimen0 \dp\floatbox
+%    \ifdim\dimen0=\zeropoint
+%      \showmessage\m!floatblocks{11}\empty
+%      \global\setbox\floatbox\vbox{\getvalue{\e!lege#3}}%
+%    \fi
+%    \ifnofloatcaption
+%      \global\setbox\floatbox\vbox
+%        {\unvbox\floatbox
+%         \vss % gets rid of the depth (unless tabulate)
+%         \rawpagereference\s!flt{#2}}%
+%       \egroup
+%       \dofloat{#4}{}{#6}{#1}%
+%    \else
+%      \doglobal\convertargument#6\to\asciititle % \asciititle is global
+% %     \doifelsevalue{\??kj#1\c!nummer}\v!ja
+%      \ifnofloatnumber
+%        \global\setbox\floatbox\vbox
+%          {\unvbox\floatbox % no \vss, keep the depth
+%           \rawreference\s!flt{#2}{{}{\asciititle}}}%
+%        \egroup
+%        \dofloat{#4}{}{#6}{#1}%
+%      \else
+%        \verhoognummer[#1]%
+%        \maakhetnummer[#1]%
+%        \global\setbox\floatbox\vbox
+%          {\unvbox\floatbox % no \vss, keep the depth
+%           \dofloatreference
+%           \redofloatorder{#1}%
+%           \rawreference\s!flt{#2}{{\hetnummer}{\asciititle}}%
+%           \doschrijfnaarlijst{#3}{\hetnummer}{#6}{#3}}%
+%        \egroup
+%        \preparethenumber{\??kj#1}\hetnummer\preparednumber
+%        \dofloat{#4}{\labeltexts{#5}{\preparednumber}}{#6}{#1}%
+%      \fi
+%    \fi
+%    \global\insidefloatfalse}
+
+\def\setnaturalfloatdimensions#1%
+  {\xdef\naturalfloatheight{\the\ht#1}%
+   \xdef\naturalfloatwidth {\the\wd#1}%
+   \xdef\naturalfloatdepth {\the\dp#1}}
+
 \long\def\docompletefloat#1#2#3#4#5#6#7% #7 = box number
   {\flushsidefloats
    \presetfloatvariables{#1}{#4}{#2}{#6}%
    \bgroup
-  %\setlocalfloatdimensions{#1}{#4}{#7}\relax
-   \global\setbox\floatbox\vbox{\box#7}%
-   \xdef\naturalfloatheight{\the\ht\floatbox}%
-   \xdef\naturalfloatwidth {\the\wd\floatbox}%
-   \xdef\naturalfloatdepth {\the\dp\floatbox}%
+   \setnaturalfloatdimensions#7% 
+   \global\setbox\floatbox\vbox
+     {\executeifdefined{\??fl#1\c!commando}\firstofoneargument{\box#7}}%
+   \setnaturalfloatdimensions\floatbox
    \dimen0 \ht\floatbox
    \advance\dimen0 \dp\floatbox
    \ifdim\dimen0=\zeropoint
@@ -1568,7 +1658,6 @@
       \dofloat{#4}{}{#6}{#1}%
    \else
      \doglobal\convertargument#6\to\asciititle % \asciititle is global
-%     \doifelsevalue{\??kj#1\c!nummer}\v!ja
      \ifnofloatnumber
        \global\setbox\floatbox\vbox
          {\unvbox\floatbox % no \vss, keep the depth
@@ -1731,33 +1820,109 @@
 \appendtoks\the\everytopofpage     \to\everystarttext
 \appendtoks\global\everytopofpage{}\to\everystoptext
 
+% \def\douitstellen
+%   {\the\everytopofpage
+%    \ifvoid\collectedpagefloats\else
+%      % message
+%      \unvbox\collectedpagefloats
+%    \fi
+%    \ifinuitstellen\else\ifcase\nofpostponedblocks\else % The \nof-test is
+%      \bgroup % we need the color/font switch, else problems inside split verbatim
+%      \setnormalcatcodes % uitstellen in verbatim
+%      \edef\savedtopofpagecolor{\topofpagecolor}%
+%      \doifsomething\savedtopofpagecolor\restorecolormode % \stopcolormode
+%      \restoreglobalbodyfont
+%      \global\pagetotal\zeropoint                   % recently added and
+%      \global\inuitstellentrue                      % definitely needed else
+%      \dorecurse\nofpostponedblocks                 % we can loose or disorder
+%        {\haalbuffer[buf-\recurselevel]}            % floats; anyhow, this
+%      \doflushfloats % new but potential dangerous  % mechanism is still
+%      \doglobal\newcounter\nofpostponedblocks       % suboptimal and needs a
+%      \global\inuitstellenfalse                     % proper analysis
+%      \doifsomething\savedtopofpagecolor\startcolormode\savedtopofpagecolor
+%      \egroup
+%    \fi\fi}
+% 
+% \setvalue{\e!start\e!uitstellen}%
+%   {\doglobal\increment\nofpostponedblocks
+%    \showmessage\m!layouts3\nofpostponedblocks
+%    \dostartbuffer[buf-\nofpostponedblocks]
+%      [\e!start\e!uitstellen][\e!stop\e!uitstellen]}
+
+% \startpostponing [pagenumber] [+pageoffset]
+% 
+% \startpostponing[2]
+%   PAGE 2 \blank
+% \stoppostponing
+% 
+% \startpostponing[+1]
+%   PAGE +1 \blank
+% \stoppostponing
+% 
+% \startpostponing[+2]
+%   PAGE +2 \blank
+% \stoppostponing
+% 
+% \starttext \dorecurse{4}{\input tufte \page} \stoptext
+
+\newtoks   \postponedpageblocks
+\newcounter\nofpostponedpageblocks
+
 \def\douitstellen
   {\the\everytopofpage
    \ifvoid\collectedpagefloats\else
      % message
      \unvbox\collectedpagefloats
    \fi
-   \ifinuitstellen\else\ifcase\nofpostponedblocks\else % The \nof-test is
+   \donefalse
+   \ifinuitstellen \else
+     \ifcase\nofpostponedblocks     \else \donetrue \fi
+     \ifcase\nofpostponedpageblocks \else \donetrue \fi
+   \fi
+   \ifdone
      \bgroup % we need the color/font switch, else problems inside split verbatim
      \setnormalcatcodes % uitstellen in verbatim
      \edef\savedtopofpagecolor{\topofpagecolor}%
      \doifsomething\savedtopofpagecolor\restorecolormode % \stopcolormode
-     \restoreglobalbodyfont
+     \restoreglobalbodyfont                        % The \nof-test is
      \global\pagetotal\zeropoint                   % recently added and
      \global\inuitstellentrue                      % definitely needed else
-     \dorecurse\nofpostponedblocks                 % we can loose or disorder
-       {\haalbuffer[buf-\recurselevel]}            % floats; anyhow, this
-     \doflushfloats % new but potential dangerous  % mechanism is still
-     \doglobal\newcounter\nofpostponedblocks       % suboptimal and needs a
-     \global\inuitstellenfalse                     % proper analysis
+     \the\postponedpageblocks                      % we can loose or disorder
+     \dorecurse\nofpostponedblocks                 % floats; anyhow, this
+       {\haalbuffer[pbuf-\recurselevel]}           % mechanism is still
+     \doflushfloats % new but potential dangerous  % suboptimal and needs a
+     \doglobal\newcounter\nofpostponedblocks       % proper analysis
+     \global\inuitstellenfalse                     
      \doifsomething\savedtopofpagecolor\startcolormode\savedtopofpagecolor
      \egroup
-   \fi\fi}
+   \fi}
+
+\def\getpostponedblock#1#2%
+  {\doif{#1}\realfolio{\haalbuffer[rbuf-#2]}} % no \ifnum, avoid \fi
+
+% beware, \dosingleempty conflicts with buffers (feeds back the \par)
 
 \setvalue{\e!start\e!uitstellen}%
+  {\bgroup
+   \obeylines
+   \doifnextcharelse[%
+     {\egroup\nodostartpostponing}{\egroup\dodostartpostponing}}
+
+\def\nodostartpostponing[#1]%
+  {\doglobal\increment\nofpostponedpageblocks
+   \bgroup % a little bit of misusing grouping
+   \doifinstring{+}{#1}\advance \realpageno#1\relax % ugly but efficient 
+   \doglobal\appendetoks\noexpand\getpostponedblock
+     {\realfolio}{\nofpostponedpageblocks}\to\postponedpageblocks
+   \egroup
+   \showmessage\m!layouts3\nofpostponedpageblocks
+   \dostartbuffer[rbuf-\nofpostponedpageblocks]%
+     [\e!start\e!uitstellen][\e!stop\e!uitstellen]}
+
+\def\dodostartpostponing
   {\doglobal\increment\nofpostponedblocks
    \showmessage\m!layouts3\nofpostponedblocks
-   \dostartbuffer[buf-\nofpostponedblocks]
+   \dostartbuffer[pbuf-\nofpostponedblocks]%
      [\e!start\e!uitstellen][\e!stop\e!uitstellen]}
 
 \definieernummer
@@ -1789,18 +1954,18 @@
            \setbox2\vbox{\unvbox2}
            \ifdim\ht2>\lineheight
              \verhoognummer[\??si]%
-             \ifnum\ruwenummer[\??si]=1 \ifdim\ht\nextbox=\zeropoint
+             \ifnum\ruwenummer[\??si]=1 \ifdim\nextboxht=\zeropoint
                \let\floatcaptionsuffix\empty
              \fi \fi
              \bgroup
              #2{\unvbox2}
              \egroup
-             \ifdim\ht\nextbox>\zeropoint
+             \ifdim\nextboxht>\zeropoint
                \pagina
                \verlaagnummer[\floatcaptionnumber]%
              \fi
            \fi
-           \ifdim\ht\nextbox>\zeropoint\else
+           \ifdim\nextboxht>\zeropoint\else
              \expandafter\exitloop
            \fi}%
         \egroup}
@@ -1891,6 +2056,8 @@
    \c!zijvoorwit=\@@bkvoorwit,
    \c!zijnawit=\@@bknawit,
    \c!zijuitlijnen=\v!normaal,
+   \c!tekstmethode=\ifgridsnapping2\else0\fi, % 0=raw 1=safe (.99pg) 2=tight (-1pt) 
+   \c!zijmethode=\ifgridsnapping2\else1\fi,   % 0=raw 1=safe (.99pg) 2=tight (-1pt) 
    \c!springvolgendein=\v!nee,
    \c!marge=1em,
    \c!linkermargeafstand=\zeropoint,

@@ -230,7 +230,7 @@
 \ifx \overlayheight    \undefined \def \overlayheight    {3cm} \fi
 \ifx \overlaylinewidth \undefined \def \overlaylinewidth {0pt} \fi
 
-\def\presetMPdefinitions%
+\def\presetMPdefinitions
   {\edef\overlaywidth     {\overlaywidth    \space}%
    \edef\overlayheight    {\overlayheight   \space}%
    \edef\overlaylinewidth {\overlaylinewidth\space}%
@@ -470,11 +470,11 @@
    \xdef\MPgraphic{\the\currentMPgraphic}%
    \the\everyMPgraphic
    \ifrunMPgraphics
-     \openMPgraphicfile{1}{runtime}%
+     \openMPgraphicfile1{runtime}%
      % no reset here !
      \theMPinclusions 
    \else
-     \openMPgraphicfile{0}{collected}%  
+     \openMPgraphicfile0{collected}%  
       % reset here ! global added (due to adding \blabelgroup)
      \theMPinclusions 
      \global\let\theMPinclusions\relax 
@@ -595,7 +595,7 @@
 
 \newif\ifsetMPrandomseed \setMPrandomseedtrue % false by default
 
-\def\setMPrandomseed%
+\def\setMPrandomseed
   {\ifsetMPrandomseed \ifx\getrandomnumber\undefined \else
      \getrandomnumber\localMPseed{0}{4095}%
      \writeMPgraphic{randomseed := \localMPseed ;}%

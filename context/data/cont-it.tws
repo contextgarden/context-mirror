@@ -1334,6 +1334,7 @@ var:prima:*comando::
 var:tra:*comando::
 var:dopo:*comando::
 var:rientrasuccessivo:si,no::
+var:rientro:mai,non,no,si,sempre,primo,successivo::
 stopsetup
 
 startsetup
@@ -1355,6 +1356,7 @@ var:modoaccoppiamento:globale,locale::
 var:numero:no,*nome::
 var:allineatitolo:no,si::
 var:inizia:*numero::
+ivr:impostaenumerazioni::
 stopsetup
 
 startsetup
@@ -1838,6 +1840,7 @@ var:ncima:*numero::
 var:nfondo:*numero::
 var:nrighe:*numero::
 var:implicito:*nome::
+var:tolleranza:0,1,2::
 var:distanzamarginesinistro:*dimensione::
 var:distanzamarginedestro:*dimensione::
 var:sidealign:normale,riga::
@@ -2969,7 +2972,7 @@ stopsetup
 startsetup
 com:metti<<oggettomobile>>:
 typ:val/refs/arg/arg/:
-val:sinistra,destra,qui,cima,fondo, insinistra,indestra,inmargine,margine, marginesinistro,marginedestro,bordosinistro,bordodestro, margineinterno,margineesterno,bordointerno,bordoesterno, interno,esterno,regel,alto,basso,adatta, pagina,opposto,sempre,forza,alto:qui:
+val:sinistra,destra,qui,cima,fondo, insinistra,indestra,inmargine,margine, marginesinistro,marginedestro,bordosinistro,bordodestro, margineinterno,margineesterno,bordointerno,bordoesterno, interno,esterno,regel,alto,basso,adatta, pagina,opposto,sempre,forza,alto,reimposta, riga,altezza,profondita:qui:
 val:*testo::
 val:*testo::
 stopsetup

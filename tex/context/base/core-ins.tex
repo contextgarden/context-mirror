@@ -29,7 +29,7 @@
 %\def\installinsertion#1%
 %  {\ifx#1\undefined
 %     \newinsert#1%
-%     \count#1\!!thousand
+%     \count#1\plusthousand 
 %     \skip #1\zeropoint
 %     \dimen#1\maxdimen
 %     \appendtoks\doprocessinsert#1\to\@@insertionlist
@@ -41,7 +41,7 @@
    \fi
    \ifx#1\relax % permits \csname...\endcsname
      \newinsert#1%
-     \count#1\!!thousand
+     \count#1\plusthousand 
      \skip #1\zeropoint
      \dimen#1\maxdimen
      \appendtoks\doprocessinsert#1\to\@@insertionlist

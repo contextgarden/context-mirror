@@ -1585,10 +1585,15 @@
      {#2\long\@EA\gdef\csname\@@XMLdata:#1\endcsname{##1}#3}%
    \next}
 
+% \long\gdef\dododefineXMLprocess#1%
+%   {\long\setvalue{\@@XMLelement:#1/}{}%
+%    \long\setvalue{\@@XMLelement:#1}{}%
+%    \long\setvalue{\@@XMLelement:/#1}{}}
+
 \long\gdef\dododefineXMLprocess#1%
-  {\long\setvalue{\@@XMLelement:#1/}{}%
-   \long\setvalue{\@@XMLelement:#1}{}%
-   \long\setvalue{\@@XMLelement:/#1}{}}
+  {\letvalue{\@@XMLelement:#1/}\donothing
+   \letvalue{\@@XMLelement:#1}\donothing
+   \letvalue{\@@XMLelement:/#1}\donothing}
 
 \long\gdef\dododefineXMLnestedenvironment#1#2#3%
   {\long\setvalue{\@@XMLelement:#1}{\getXMLgroupedenvironment{#1}{#2}{#3}}}
