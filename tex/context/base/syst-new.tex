@@ -13,6 +13,68 @@
 
 \unprotect
 
+% \def\doifnonzeropositiveelse#1#2#3%
+%   {\bgroup
+%    \setbox\scratchbox=\hbox{\scratchcounter=0#1}%
+%    \ifdim\wd\scratchbox=\!!zeropoint\egroup#2\else\egroup#3\fi}
+%
+% \def\dodoifnonzeropositiveelse#1#2\end#3#4%
+%   {\egroup
+%    \ifx#1\relax#3\else#4\fi}
+%
+% \def\doifnonzeropositiveelse#1%
+%   {\bgroup
+%    \afterassignment\dodoifnonzeropositiveelse\scratchcounter=0#1\relax\empty\end}
+
+\def\dodoifnonzeropositiveelse#1#2\end#3#4%
+  {\ifx#1\relax\ifcase\scratchcounter\egroup#4\else\egroup#3\fi\else\egroup#4\fi}
+
+\def\doifnonzeropositiveelse#1%
+  {\bgroup\afterassignment\dodoifnonzeropositiveelse\scratchcounter=0#1\relax\empty\end}
+
+\def\splitskip#1%
+  {\scratchskip=0pt plus 1pt minus 1pt
+   \advance\scratchskip by #1
+   \expandafter\SPLITSKIP\the\scratchskip}
+
+{\catcode`\.=\@@other
+ \catcode`\p=\@@other
+ \catcode`\l=\@@other
+ \catcode`\u=\@@other
+ \catcode`\s=\@@other
+ \catcode`\m=\@@other
+ \catcode`\i=\@@other
+ \catcode`\n=\@@other
+ \catcode`\t=\@@other
+ \gdef\SPLITSKIP#1pt plus #2pt minus #3pt%
+   {\DOSPLITSKIP#1 #2 #3 }}
+
+\def\DOSPLITSKIP#1 #2 #3
+  {\dimen0=#1pt\dimen2=#2pt\dimen4=#3pt
+   \advance\dimen2 by -1pt%
+   \advance\dimen4 by -1pt}
+
+% \def\minimaxskip#1#2%
+%   {\splitskip#2\relax
+%    \scratchdimen=#2\relax
+%    #2=\scratchdimen   
+%    \advance#2 by #1\relax}
+% 
+% \def\maximizeskip%
+%   {\minimaxskip{-\dimen4}}
+% 
+% \def\maximizeskip%
+%   {\minimaxskip{\dimen2}}
+% 
+% \def\maximizespacing%
+%   {\maximizeskip\blankoskipamount
+%    \maximizeskip\parskip
+%    \maximizeskip\tussenwit
+%    \maximizeskip\baselineskip
+%    \maximizeskip\bigskipamount
+%    \maximizeskip\medskipamount
+%    \maximizeskip\smallskipamount}
+
 \def\DoMod #1by#2to#3%
   {\scratchcounter=#1\relax
    \divide\scratchcounter by #2\relax
@@ -92,4 +154,3 @@
 \protect
 
 \endinput
-

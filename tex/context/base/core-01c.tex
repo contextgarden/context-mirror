@@ -174,21 +174,25 @@
 %D high resolution bounding box. 
 %D
 %D This method also works inside verbatim mode (like when we 
-%D are typesettinmg sources and putting eps coded logos into 
+%D are typesetting sources and putting eps coded logos into 
 %D a heading. Temporary restoring the \CATCODES\ is done in 
 %D the calling routine.  
 
-\def\dogetfiguresizeeps#1#2#3#4#5%
-  {\bgroup
-   \openjobin{\scratchread}{#1}%
+\def\iffigurefileopened#1%
+  {\openjobin{\scratchread}{#1}%
    \ifeof\scratchread
      \doifsomething{\@@exgebied}
        {\closein\scratchread
         \openfixin{\scratchread}{\@@exgebied}{#1}}%
    \fi
+   \ifeof\scratchread 
+     \closein\scratchread
+   \else}
+
+\def\dogetfiguresizeeps#1#2#3#4#5%
+  {\bgroup
    \global\chardef\epsffound=0
-   \ifeof\scratchread
-   \else
+   \iffigurefileopened{#1}%
      \uncatcodespecials
      \def\next%
        {\read\scratchread to \epsffileline
@@ -199,8 +203,8 @@
         \fi
         \next}%
      \next
+     \closein\scratchread
    \fi
-   \closein\scratchread
    \egroup
    \ifnum\epsffound>0
      \dimen0=1bp\relax
@@ -371,6 +375,13 @@
      {\edef\@@efhsize{\the\hsize}}
      {\let\@@efhsize=\@@efbreedte}}
 
+\def\set@@effullname%
+  {\ifx\@@efextension\empty
+     \edef\@@effullname{\@@effilename.\@@eftype}%
+   \else
+     \edef\@@effullname{\@@effilename.\@@efextension}%
+   \fi}
+
 \def\berekenexternfiguur[#1][#2]%
   {\mindermeldingen
    \restorecatcodes  % recently added; we presume local use
@@ -406,12 +417,14 @@
       \c!straal=.5\korpsgrootte,
       \c!kader=\v!uit]%
    \getvalue{\??ef#1}%
-   \def\@@effullname{#2.\@@eftype}% waarom per se nodig?
+   \set@@effullname
    \doifelse{\@@efpreset}{\v!nee}  % iets anders 
-     {\figurefoundtrue}
+     {\figurefoundtrue
+      \set@@effullname}
      {\doifelse{#1}{\s!figurepreset}
         {\figurefoundtrue
-         \let\@@eftype=\@@epe}
+         \let\@@eftype=\@@epe 
+         \set@@effullname}
         {\figurefoundfalse
          \def\presetfigure[##1][##2]%
            {\iffigurefound
@@ -427,34 +440,26 @@
             \fi}%
          \doreadlocalfigurefile
          \iffigurefound
-           \showmessage{\m!figures}{1}{#2.\@@eftype}%
+           \set@@effullname
+           \showmessage{\m!figures}{1}{\@@effullname}%
          \else
            \doreadglobalfigurefile
            \iffigurefound
-             \showmessage{\m!figures}{2}{#2.\@@eftype}%
+             \set@@effullname
+             \showmessage{\m!figures}{2}{\@@effullname}%
            \else
              \doif{\@@eftype}{\s!unknown}
                {\let\@@eftype=\c!eps}%
-             \doifelse{\@@efextension}{}
-               {\edef\@@effullname{\@@effilename.\@@eftype}}
-               {\edef\@@effullname{\@@effilename.\@@efextension}}%
-             \doiffileelse{\@@effullname}
-               {\executeifdefined{dogetfiguresize\@@eftype}\gobblefivearguments
-                  {\@@effullname}
-                  {\!!widtha}
-                  {\!!heighta}
-                  {\!!widthb}
-                  {\!!heightb}%
-                \ifdim\!!widthb>\!!zeropoint\relax
-                  \figurefoundtrue
-                  \geteparameters % e !
-                    [\??ep]
-                    [\c!x=\the\!!widtha,
-                     \c!y=\the\!!heighta,
-                     \c!w=\the\!!widthb,
-                     \c!h=\the\!!heightb]%
-                \fi}
-               {\figurefoundfalse}%
+             \set@@effullname
+             \executeifdefined{dogetfiguresize\@@eftype}\gobblefivearguments
+               {\@@effullname}{\!!widtha}{\!!heighta}{\!!widthb}{\!!heightb}%
+             \ifdim\!!widthb>\!!zeropoint\relax
+               \figurefoundtrue
+               \geteparameters % e !
+                 [\??ep]
+                 [\c!x=\the\!!widtha,\c!y=\the\!!heighta,
+                  \c!w=\the\!!widthb,\c!h=\the\!!heightb]%
+             \fi
              \iffigurefound
                \showmessage{\m!figures}{3}{\@@effullname}%
              \else
@@ -547,8 +552,10 @@
         \doifelse{\@@efpreview}{\v!ja}
           {\def\@@efpreview{1}}
           {\def\@@efpreview{0}}%
+        \doif{\@@efmethode}{mps}
+          {\convertMPcolors{\@@effullname}}%
         \doinsertfile
-          {\@@eftype,\@@efmethode}{\@@effullname} %{\@@epf.\@@epe}
+          {\@@eftype,\@@efmethode}{\@@effullname} 
           {\scax}{\scay}
           {\figx}{\figy}
           {\number\figwid}{\number\fighei}
@@ -559,7 +566,7 @@
        [\c!breedte=\figwid,
         \c!hoogte=\fighei,
         \c!kader=\v!aan]
-       {#1 / #2}%
+       {\tttf #1 / #2}%
    \fi}
 
 \def\dopresetfigure[#1][#2]%
@@ -655,6 +662,9 @@
 
 \newif\ifdoublelegends
 
+\def\legendaspacing%
+  {\hskip.5em}
+
 \def\dostartlegenda[#1]%
   {\witruimte
    \blanko
@@ -668,10 +678,12 @@
    \halign 
    \bgroup
    \hskip\leftskip
-   $##$\hfil&\hfil~##~\hfil&
-   \ifdoublelegends$##$\hfil\fi&\ifdoublelegends\hfil~##~\hfil\fi& 
-   ##\unskip\hfil~~&
-   $\rm##$\hfill\cr}
+   $##$\hfil
+   &\hfil\legendaspacing##\legendaspacing\hfil
+   &\ifdoublelegends$##$\hfil\fi
+   &\ifdoublelegends\hfil\legendaspacing##\legendaspacing\hfil\fi
+   &##\unskip\hfil\legendaspacing\legendaspacing
+   &$\rm##$\hfill\cr}
 
 \def\singleleg#1\\#2\\#3\\%
   {#1&\doifsomething{#1}{=}&
@@ -702,8 +714,8 @@
    \tabskip=\!!zeropoint
    \halign
    \bgroup
-   \hskip\leftskip##\unskip\hfil&
-   ~\hfil$##$&\hfil~##~\hfil&
+   \hskip\leftskip##\unskip\hfil
+   &\legendaspacing\legendaspacing\hfil$##$&\hfil\legendaspacing##\legendaspacing\hfil&
    $\rm##$\hfil\cr}
 
 \def\stopgegeven%
@@ -780,66 +792,127 @@
 \def\stelcombinatiesin%
   {\dodoubleargument\getparameters[\??co]}
 
+% \long\def\dodostartcombinatie[#1*#2*#3]%
+%   {\stelfractiesin
+%      [\c!n=\v!passend,
+%       \c!afstand=\@@coafstand]%
+%    \global\horcombinatie=#1\relax
+%    \global\totcombinatie=#2\relax
+%    \multiply\totcombinatie by \horcombinatie
+%    \long\def\docombinatie##1##2##3%               % ##3 gobbles spaces.
+%      {\vbox
+%         {\setbox0=\vbox
+%            {\hbox{##1}}%
+%          \doifemptyelse{##2}                      % Dit moet per se 
+%            {\setbox2=\box\voidb@x}                % \doifempty zijn!
+%            {\setbox2=\vtop
+%               {\hsize\wd0
+%                \forgetall
+%                \steluitlijnenin[\@@couitlijnen]%  % \raggedcenter
+%                \begstrut##2\endstrut}}%
+%          \vbox
+%            {\forgetall % \stelwitruimtein[\v!geen]%
+%             \box0\relax
+%             \ifvoid2\relax  
+%             \else
+%               \@@cotussen
+%               \nointerlineskip  % recently added 
+%               \box2\relax
+%             \fi}}%
+%       \ifnum\totcombinatie>1\relax
+%         \global\advance\totcombinatie by -1\relax
+%         \global\advance\horcombinatie by -1\relax
+%         \ifnum\horcombinatie=0\relax
+%           \def\next%
+%             {\cr
+%              \noalign
+%                {\forgetall %\stelwitruimtein[\v!geen]%
+%                 \nointerlineskip
+%                 \@@cona
+%                 \@@covoor
+%                 \vss
+%                 \nointerlineskip}%
+%              \global\horcombinatie=#1\relax
+%              \docombinatie{##3}}%
+%         \else
+%           \def\next%
+%             {&&&\hskip\@@coafstand
+%              &\docombinatie{##3}}% 
+%         \fi
+%       \else
+%         \def\next%
+%           {\cr
+%            \egroup
+%            ##3}%
+%       \fi 
+%       \next}%
+%    \tabskip=\!!zeropoint
+%    \doifelse{\@@cobreedte}{\v!passend}
+%      {\halign}
+%      {\halign to \@@cobreedte}% 
+%    \bgroup&\hfil##\hfil&\tabskip\!!zeropoint \!!plus 1fill##\cr
+%    \docombinatie}
+
 \long\def\dodostartcombinatie[#1*#2*#3]%
   {\stelfractiesin
      [\c!n=\v!passend,
       \c!afstand=\@@coafstand]%
    \global\horcombinatie=#1\relax
    \global\totcombinatie=#2\relax
+   \xdef\maxhorcombinatie{\the\horcombinatie}%
    \multiply\totcombinatie by \horcombinatie
-   \long\def\docombinatie##1##2##3%               % ##3 gobbles spaces.
-     {\vbox
-        {\setbox0=\vbox
-           {\hbox{##1}}%
-         \doifemptyelse{##2}                      % Dit moet per se 
-           {\setbox2=\box\voidb@x}                % \doifempty zijn!
-           {\setbox2=\vtop
-              {\hsize\wd0
-               \forgetall
-               \steluitlijnenin[\@@couitlijnen]%  % \raggedcenter
-               \begstrut##2\endstrut}}%
-         \vbox
-           {\forgetall % \stelwitruimtein[\v!geen]%
-            \box0\relax
-            \ifvoid2\relax  
-            \else
-              \@@cotussen
-              \nointerlineskip  % recently added 
-              \box2\relax
-            \fi}}%
-      \ifnum\totcombinatie>1\relax
-        \global\advance\totcombinatie by -1\relax
-        \global\advance\horcombinatie by -1\relax
-        \ifnum\horcombinatie=0\relax
-          \def\next%
-            {\cr
-             \noalign
-               {\forgetall %\stelwitruimtein[\v!geen]%
-                \nointerlineskip
-                \@@cona
-                \@@covoor
-                \vss
-                \nointerlineskip}%
-             \global\horcombinatie=#1\relax
-             \docombinatie{##3}}%
-        \else
-          \def\next%
-            {&&&\hskip\@@coafstand
-             &\docombinatie{##3}}% 
-        \fi
-      \else
-        \def\next%
-          {\cr
-           \egroup
-           ##3}%
-      \fi 
-      \next}%
    \tabskip=\!!zeropoint
    \doifelse{\@@cobreedte}{\v!passend}
      {\halign}
      {\halign to \@@cobreedte}% 
    \bgroup&\hfil##\hfil&\tabskip\!!zeropoint \!!plus 1fill##\cr
    \docombinatie}
+
+\def\docombinatie%
+  {\dowithnextbox
+     {\setbox0=\box\nextbox
+      \dowithnextbox
+        {\setbox2=\box\nextbox
+         \dodocombinatie}
+     \hbox}
+  \hbox}
+
+\def\dodocombinatie%
+  {\vbox
+     {\forgetall % \stelwitruimtein[\v!geen]%
+      \vbox
+        {\copy0}%
+      \ifdim\ht2>\!!zeropoint\relax % beter dan \wd2, nu \strut mogelijk
+        \@@cotussen
+        \vtop
+          {\nointerlineskip  % recently added 
+           \hsize\wd0
+           \steluitlijnenin[\@@couitlijnen]%  % \raggedcenter
+           \begstrut\unhbox2\endstrut}%
+      \fi}%
+   \ifnum\totcombinatie>1
+     \global\advance\totcombinatie by -1
+     \global\advance\horcombinatie by -1
+     \ifnum\horcombinatie=0
+       \def\next%
+         {\cr\noalign
+            {\forgetall %\stelwitruimtein[\v!geen]%
+             \nointerlineskip
+             \@@cona
+             \@@covoor
+             \vss
+             \nointerlineskip}%
+          \global\horcombinatie=\maxhorcombinatie\relax
+          \docombinatie}%
+     \else
+       \def\next%
+         {&&&\hskip\@@coafstand&\docombinatie}%
+     \fi
+   \else
+     \def\next%
+       {\cr\egroup}%
+   \fi 
+   \next}
 
 \def\complexdostartcombinatie[#1]%
   {\dodostartcombinatie[#1*1*]}
@@ -898,11 +971,8 @@
 
 \def\dogetoverlay%
   {\ifx\next\bgroup
-     \let\next=\dodogetoverlay
-   \else
-     \let\next=\relax
-   \fi
-   \next}
+     \expandafter\dodogetoverlay
+   \fi}
 
 \def\dodogetoverlay%
   {\dowithnextbox{\unskip\copy\nextbox\hskip-\wd\nextbox}\hbox}
@@ -948,7 +1018,7 @@
   {\bgroup
    \getparameters[\??fi#1][\c!file=,#3]%
    \doinputonce{\getvalue{\??fi#1\c!file}}%
-   \ExpandFirstAfter\switchtocorps[\getvalue{\??fi#1\c!korps}]%
+   \ExpandFirstAfter\switchtobodyfont[\getvalue{\??fi#1\c!korps}]%
    \readsysfile{#2}  % beter: loc of fix gebied 
      {}
      {\showmessage{\m!systems}{41}{#2,#1}}%
@@ -991,24 +1061,24 @@
 % \ht, \vfillvoor, \vfillna, \wd, \hfillvoor, \hfillna 
 
 \def\dodostoproteer#1#2#3#4#5#6%  
-  {\vbox to #1\framebox
+  {\vbox to #1\nextbox
      {#2\relax
-      \hbox to #4\framebox
+      \hbox to #4\nextbox
         {#5\relax
-         \doif{\@@rorotatie}{}%
-           {\def\@@rorotatie{90}}%
-         \dostartrotation{\@@rorotatie}%
-         \wd\framebox=\!!zeropoint
-         \ht\framebox=\!!zeropoint
-         \box\framebox\relax
+         \doifelsenothing{\@@rorotatie}
+           {\dostartrotation{90}}
+           {\dostartrotation{\@@rorotatie}}%
+         \wd\nextbox=\!!zeropoint
+         \ht\nextbox=\!!zeropoint
+         \box\nextbox
          \dostoprotation
-         #6}%
-      #3}}
+         #6}
+      #3}%
+   \egroup}
 
 \def\dostoproteer%
-  {\egroup
-   \!!counta=\@@rorotatie\relax
-   \divide\!!counta by 90\relax
+  {\!!counta=\@@rorotatie
+   \divide\!!counta by 90
    \ifcase\!!counta
      \dodostoproteer\ht\relax\vfill\wd\relax\hfill
    \or
@@ -1019,23 +1089,65 @@
      \dodostoproteer\wd\relax\vfill\ht\hfill\relax
    \else
      \dodostoproteer\ht\relax\vfill\wd\relax\hfill
-   \fi
-   \egroup
-   \egroup}
+   \fi}
+
+\def\dorotatebox#1% {angle} \hbox/\vbox/\vtop
+  {\bgroup
+   \hbox\bgroup % compatibility hack 
+   \dowithnextbox
+     {\edef\@@rorotatie{#1}%
+      \setbox\nextbox=\vbox{\box\nextbox}%
+      \dostoproteer
+      \egroup}}
 
 \def\complexroteer[#1]%
-  {\bgroup 
-   \getparameters[\??ro][#1]%
-   \setbox\framebox=\vbox  
-     \bgroup
-     \localframed[\??ro][#1]%
-     \bgroup
-     \aftergroup\dostoproteer
-     \let\next=}
+  {\dowithnextbox
+     {\getparameters[\??ro][#1]%
+      \dostoproteer}%
+   \vbox\localframed[\??ro][#1]}
 
 \def\roteer%
   {\bgroup     % \roteer kan argument zijn 
    \complexorsimpleempty{roteer}}
+
+% schaal 
+
+\def\doschaal[#1]%
+  {\bgroup
+   \getparameters[\??xy][\c!sx=1,\c!sy=1,#1]%
+   \dowithnextbox
+     {\setbox\nextbox=\vbox
+        {\dostartscaling\@@xysx\@@xysy\box\nextbox\dostopscaling}%
+      \wd\nextbox=\@@xysx\wd\nextbox
+      \ht\nextbox=\@@xysy\ht\nextbox
+      \dp\nextbox=\@@xysy\dp\nextbox
+      \box\nextbox
+      \egroup}
+   \vbox}
+ 
+\def\schaal%
+  {\dosingleempty\doschaal}
+
+% mirror 
+
+\def\domirrorbox% \hbox/\vbox/\vtop
+  {\bgroup
+   \dowithnextbox
+     {\dimen0=\wd\nextbox
+      \setbox\nextbox=\vbox
+        {\dostartmirroring\hskip-\wd\nextbox\box\nextbox\dostopmirroring}%
+      \wd\nextbox=\dimen0
+      \box\nextbox
+      \egroup}}
+
+\def\spiegel%
+  {\domirrorbox\vbox} 
+
+%\setbox0=\hbox{gans}
+%
+%\ruledhbox{\copy0 \schaal[sx=2,sy=2]{\copy0}}
+%
+%\spiegel{\ruledhbox{\copy0 \schaal{\box0}}}
 
 % verdelen \hsize in fracties
 %
@@ -1094,7 +1206,7 @@
   [\c!rotatie=90,
    \c!breedte=\v!passend,
    \c!hoogte=\v!passend,
-   \c!offset=\v!geen,
+   \c!offset=\v!overlay,
    \c!kader=\v!uit]
 
 \stelcombinatiesin
@@ -1118,4 +1230,3 @@
 \protect
 
 \endinput
-

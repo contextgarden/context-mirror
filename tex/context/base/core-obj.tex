@@ -1,0 +1,106 @@
+%D \module
+%D   [       file=core-obj,
+%D        version=1998.01.15,
+%D          title=\CONTEXT\ Core Macros,
+%D       subtitle=Object Handling, 
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. Non||commercial use is
+%C granted.
+
+\writestatus{loading}{Context Core Macros / Object Handling}
+
+\unprotect
+
+\startmessages  dutch  library: references
+     30: onbekend object --
+\stopmessages
+
+\startmessages  english  library: references
+     30: unknown object --
+\stopmessages
+
+\startmessages  german  library: references
+     30: unbekanntes Object --
+\stopmessages
+
+%D Boxes can be considered reuable objects. Unfortunaltely once
+%D passed to the \DVI\ file, such objects cannot be reused. In
+%D \PDF\ however, reusing is possible and sometimes even a
+%D necessity. Therefore, \CONTEXT\ supports reusable objects. 
+%D 
+%D During the \TEX\ processing run, boxes can serve the purpose
+%D of objects, and the \DVI\ driver module implements objects
+%D using boxes. Only when \ETEX\ is widespread, and therefore
+%D the limit on 256 boxes is removed, this becomes useful. 
+%D 
+%D The \PDF\ and \PDFTEX\ driver modules implement objects
+%D using \PDF\ forms. There is no (real) restriction on the
+%D number of objects there. 
+%D 
+%D The first application of objects in \CONTEXT\ concerned
+%D \METAPOST\ graphics and fill||in form fields. The first
+%D application can save lots of bytes, while the latter use is
+%D more a necessity than byte saving. 
+%D 
+%D \starttypen
+%D \setobject{name}=\somebox{}
+%D \getobject{name}
+%D \stoptypen
+%D
+%D Here \type{\somebox} can be whatever box specification 
+%D suits \TEX. 
+
+\def\setobject#1%
+  {\dosetuppaper{\papierformaat}{\the\papierbreedte}{\the\papierhoogte}%
+   \dowithnextbox
+     {\setxvalue{\r!object#1}%
+        {\noexpand\dogetobject{#1}
+           {\ifhbox\nextbox\hbox\else\vbox\fi}
+           {\the\wd\nextbox}{\the\ht\nextbox}{\the\dp\nextbox}}%
+      \dostartobject{#1}% 
+        {\number\wd\nextbox}{\number\ht\nextbox}{\number\dp\nextbox}%
+      \box\nextbox
+      \dostopobject}}
+
+\def\dogetobject#1#2#3#4#5%
+  {\dosetuppaper{\papierformaat}{\the\papierbreedte}{\the\papierhoogte}%
+   \bgroup
+   \setbox0=\vbox to #4{\vfill\doinsertobject{#1}}% 
+   \setbox0=#2{\box0}%
+   \wd0=#3\ht0=#4\dp0=#5\relax
+   \box0
+   \egroup}
+
+\def\getobject#1%
+  {\getvalue{\r!object#1}}
+
+%D We keep track of object references by means of the cross 
+%D reference mechanism. Normally, objects are defined before 
+%D they are used, but forward referencing sometimes occurs. 
+%D 
+%D \starttypen
+%D \dosetobjectreference {identifier} {reference value}
+%D \dogetobjectreference {identifier} \csname
+%D \stoptypen
+
+\def\dosetobjectreference#1#2%
+  {\checkreferences
+   \bgroup
+   \locationfalse % we don't want this to be a location 
+   \textreference[\r!driver#1]{#2}%
+   \egroup
+   \setxvalue{\r!cross\r!driver#1}{\rt!cross{}{0}{#2}{0}}}
+
+\def\dogetobjectreference#1#2%
+  {\doifrawreferencefoundelse{\r!driver#1}
+     {\global\let#2=\currenttextreference}
+     {\showmessage{\m!references}{30}{[#1]}%
+      \global\def#2{0}}}
+
+\protect
+
+\endinput 

@@ -17,7 +17,7 @@
 %D some handy commands.
 
 \unprotect
-
+
 %D \macros
 %D   {doglobal,
 %D    redoglobal,dodoglobal,resetglobal}
@@ -40,7 +40,56 @@
    \let\dodoglobal=\relax}
 
 \resetglobal
-
+
+%D New: 
+
+\def\doglobal%
+  {\ifx\redoglobal\relax
+     \let\redoglobal=\global
+     \def\dodoglobal{\resetglobal\global}%
+   \else
+     \writestatus{system}{global not reset, warn me!}%
+   \fi}
+
+\def\saveglobal   
+  {\let\@@dodoglobal\dodoglobal  
+   \let\@@redoglobal\redoglobal}
+
+\def\restoreglobal
+  {\let\dodoglobal\@@dodoglobal
+   \let\redoglobal\@@redoglobal}
+
+%D A very useful application of this macro is \type{\newif}, 
+%D \TEX's fake boolean type. Not being a primitive, 
+%D \type{\global} hopelessly fails here. But a slight 
+%D adaption of Knuth's original macro permits: 
+%D 
+%D \starttypen
+%D \doglobal\newif\iftest
+%D \stoptypen
+%D 
+%D Of course one can still say:
+%D
+%D \starttypen
+%D \global\testtrue 
+%D \global\testfalse
+%D \stoptypen
+%D
+%D Apart from the prefixes, a few more \type{\expandafters} 
+%D are needed:
+
+\def\newif#1%
+  {\count@\escapechar 
+   \escapechar\m@ne
+   \expandafter\expandafter\expandafter
+     \redoglobal\expandafter\expandafter\expandafter
+       \edef\@if#1{true}{\let\noexpand#1=\noexpand\iftrue}%
+   \expandafter\expandafter\expandafter
+     \redoglobal\expandafter\expandafter\expandafter  
+       \edef\@if#1{false}{\let\noexpand#1=\noexpand\iffalse}%
+   \dodoglobal\@if#1{false}%
+   \escapechar\count@} 
+
 %D \macros
 %D   {newcounter,
 %D    increment,decrement}
@@ -103,7 +152,7 @@
 
 \def\dodododoincrement(#1,#2)%
   {\ifx#1\undefined
-     \def#1{0}%
+     \redoglobal\def#1{0}%
    \fi
    \scratchcounter=#2\relax
    \scratchcounter=\incrementsign\scratchcounter
@@ -129,7 +178,7 @@
 
 \def\decrement%
   {\doincrement-}
-
+
 %D \macros
 %D  {newsignal}
 %D
@@ -152,7 +201,7 @@
 \def\newsignal#1%
   {\advance\currentsignal by 0.00025pt 
    \edef#1{\the\currentsignal}}
-
+
 %D \macros
 %D   {newskimen}
 %D 
@@ -179,7 +228,7 @@
        \newdimen#1\relax
      \fi
    \fi} 
-
+
 %D \macros
 %D   {strippedcsname}
 %D   {}
@@ -195,7 +244,7 @@
 
 \def\strippedcsname%
   {\expandafter\gobbleoneargument\string}
-
+
 %D \macros
 %D   {newconditional, 
 %D    settrue, setfalse, 
@@ -249,7 +298,6 @@
 %D   {dorecurse,recurselevel,recursedepth
 %D    dostepwiserecurse,
 %D    for}
-%D   {}
 %D
 %D \TEX\ does not offer us powerfull for||loop mechanisms. On 
 %D the other hand its recursion engine is quite unique. We
@@ -404,7 +452,7 @@
      {\edef#1{\recurselevel}%
       #5%
       \edef#1{\recurselevel}}}
-
+
 %D \macros
 %D   {doloop,exitloop}
 %D   {}
@@ -502,7 +550,7 @@
 %D \starttypen
 %D \doloop {\ifwhatever \exitloop \else some commands\fi} 
 %D \stoptypen
-
+
 %D \macros
 %D   {newevery,everyline,EveryLine,EveryPar}
 %D   {}
@@ -614,7 +662,7 @@
 %D confusing situations, especially when other packages are 
 %D used, but it's this kind of tricks that make \TEX\ so 
 %D powerful. 
-
+
 %D \macros
 %D   {convertargument,convertcommand}
 %D   {}
@@ -671,7 +719,7 @@
 %D
 %D The \type{-}, the delimiter \type{\\\\} and the the second 
 %D argument are completely redundant.
-
+
 %D \macros
 %D   {ExpandFirstAfter,ExpandSecondAfter,ExpandBothAfter}
 %D   {}
@@ -736,7 +784,7 @@
 
 \def\ifinstringelse%
   {\ExpandBothAfter\v!ifinstringelse}
-
+
 %D \macros
 %D   {ConvertToConstant,ConvertConstantAfter}
 %D   {}
@@ -815,7 +863,7 @@
 \def\ConvertConstantAfter#1%
   {\def\ConvertCommand{#1}%
    \complexorsimple{ConvertConstantAfter}}
-
+
 %D \macros
 %D   {assignifempty}
 %D   {}
@@ -823,7 +871,7 @@
 %D We can assign a default value to an empty macro using:
 %D
 %D \starttypen
-%D \assignifempty \macro {default value}
+%D \assignifempty \macros {default value}
 %D \stoptypen
 %D
 %D We don't explicitly test if the macro is defined.
@@ -831,7 +879,7 @@
 \def\assignifempty#1#2%
   {\doifnot{#1}{}
      {\def#1{#2}}}
-
+
 %D \macros
 %D   {gobbleuntil,grabuntil,processbetween}
 %D   {}
@@ -907,7 +955,7 @@
 
 \def\gobbleuntil#1%
   {\long\def\next##1#1{}\next}
-
+
 %D \macros
 %D   {groupedcommand}
 %D   {}
@@ -1070,7 +1118,7 @@
 %D \def\BoldRaggedCenter%
 %D   {\groupedcommand{\raggedcenter\bf}{\par}}
 %D \stoptypen
-
+
 %D \macros
 %D   {checkdefined}
 %D   {}
@@ -1092,7 +1140,7 @@
 \def\checkdefined#1#2#3% redefined in mult-ini
   {\doifdefined{#3}
      {\writestatus{#1}{#2 #3 replaces a macro, use CAPITALS!}}}
-
+
 %D \macros
 %D   {GotoPar,GetPar}
 %D   {}
@@ -1185,7 +1233,7 @@
             \AfterPar{}}}}%
    \next
    \GotoPar}
-
+
 %D \macros
 %D   {dowithpargument,dowithwargument}
 %D   {}
@@ -1303,7 +1351,7 @@
    \doifnextcharelse{\bgroup}
      {\nextarg}
      {\nextwar}}
-
+
 %D \macros
 %D   {dorepeat,dorepeatwithcommand}
 %D   {}
@@ -1354,7 +1402,7 @@
    \doifinstringelse{*}{#1}
      {\doifnumberelse{#1}{\p!dorepeatyes[#1]}{\p!dorepeatnot}}%
      {\p!dorepeatnot}}
-
+
 %D \macros
 %D   {appendtoks,prependtoks,flushtoks,dotoks}
 %D   {}
@@ -1378,21 +1426,21 @@
   {\scratchtoks={#1}%
    \edef\next{\noexpand#2={\the#2\the\scratchtoks}}%
    \next
-   \doglobal#2=#2} 
+   \dodoglobal#2=#2} 
 
 \def\prependtoks#1\to#2%
   {\scratchtoks={#1}%
    \edef\next{\noexpand#2={\the\scratchtoks\the#2}}%
    \next
-   \doglobal#2=#2} 
+   \dodoglobal#2=#2} 
 
 \def\flushtoks#1%
   {\scratchtoks=#1\relax
-   \doglobal#1={}% 
+   \dodoglobal#1={}% 
    \the\scratchtoks\relax}
 
 \let\dotoks=\the
-
+
 %D \macros
 %D   {makecounter,pluscounter,minuscounter,
 %D    resetcounter,setcounter,countervalue}
@@ -1484,7 +1532,7 @@
 
 \def\restorecounter#1%
   {\expanded{\setgvalue{#1}{\getvalue{!#1}}}}
-
+
 %D \macros
 %D   {beforesplitstring,aftersplitstring}
 %D   {}
@@ -1512,7 +1560,7 @@
   {\def\dosplitstring##1#2##2@@@##3\\%
      {\def#3{##2}}%
    \@EA\dosplitstring#1@@@#2@@@\\}
-
+
 %D \macros
 %D   {removesubstring}
 %D   {}
@@ -1533,7 +1581,7 @@
       \def\next{\removesubstring#1\from#3\to#3}}
      {\let\next=\relax}%
    \next}
-
+
 %D \macros
 %D   {addtocommalist,removefromcommalist}
 %D   {}
@@ -1569,10 +1617,11 @@
      {\dodoglobal\edef#2{#1}}
      {\edef\!!stringa{#2,,}%
       \beforesplitstring#2\at,,\to#2\relax
-      \ExpandBothAfter\doifnotinset{#1}{#2}
+      \ExpandBothAfter\doifinsetelse{#1}{#2}
+        {\resetglobal}
         {\dodoglobal\edef#2{#2,#1}}}}
 
-\def\doremovefromcommalist#1#2#3%
+\def\doremovefromcommalist#1#2#3% nog \doglobal 
   {\edef\!!stringa{,,#3,,}%
    \beforesplitstring\!!stringa\at,#1#2,\to\!!stringb
    \aftersplitstring\!!stringa\at,#1#2,\to\!!stringc
@@ -1599,7 +1648,26 @@
    \doremovefromcommalist{}{#1}{#2}%
    \dofrontstrip#2%
    \dodoglobal\edef#2{#2}}
-
+
+%D \macros 
+%D   {globalprocesscommalist}
+%D 
+%D The commalist processing commands are characterized by the
+%D fact that the way they handle expansion as well as the fact
+%D that they can be nested. This makes them kind of useless for
+%D handling comma lists in alignments. In these situations the
+%D next macro can be of use.
+
+\def\globalprocesscommaitem#1,%
+  {\if]#1\else
+     \globalcommacommand{#1}%
+     \expandafter\globalprocesscommaitem
+   \fi}
+
+\def\globalprocesscommalist[#1]#2%
+  {\global\let\globalcommacommand=#2%
+   \expandafter\globalprocesscommaitem#1,],}
+
 %D \macros
 %D   {withoutunit,withoutpt,
 %D    PtToCm,
@@ -1629,8 +1697,8 @@
 \def\withoutcm#1%
   {\withoutunit{#1}{cm}}
 
-%D A bit faster alternative is one that manipulates the
-%D \CATCODES.
+%D A bit faster and more robust alternative is one that 
+%D manipulates the \CATCODES.
 
 {\catcode`\.=\@@other
  \catcode`\p=\@@other
@@ -1674,7 +1742,7 @@
    \advance\scratchdimen by .5pt\relax
    #2=\scratchdimen
    \divide#2 by \!!maxcard\relax}
-
+
 %D \macros
 %D   {swapdimens,swapmacros}
 %D   {}
@@ -1686,14 +1754,14 @@
 
 \def\swapdimens#1#2%
   {\scratchdimen=#1\relax
-   #1=#2\relax
-   #2=\scratchdimen}
+   \redoglobal#1=#2\relax
+   \dodoglobal#2=\scratchdimen}
 
 \def\swapmacros#1#2%
   {\let\!!stringa=#1\relax
    \let#1=#2\relax
    \let#2=\!!stringa\relax}
-
+
 %D \macros
 %D   {setlocalhsize}
 %D   {}
@@ -1725,7 +1793,7 @@
   {\complexsetlocalhsize[\!!zeropoint]}
 
 \definecomplexorsimple\setlocalhsize
-
+
 %D \macros
 %D   {processtokens}
 %D   {}
@@ -1765,7 +1833,7 @@
           {\before\box\nextbox
            \let\before=\between
            \doprocesstokens}
-          \hbox\bgroup}%          
+           \hbox\bgroup}%          
    \else
      \expandafter\if\space\next 
        \before\white
@@ -1791,7 +1859,7 @@
    \def\white{#4}%
    \doprocesstokens#5\lastcharacter
    \egroup}
-
+
 %D \macros
 %D   {doifvalue,doifnotvalue,doifelsevalue,
 %D    doifnothing,doifsomething,doifelsenothing,
@@ -1815,7 +1883,7 @@
     \def\doifvaluenothing#1{\doif{\getvalue{#1}}{}}
   \def\doifvaluesomething#1{\doifnot{\getvalue{#1}}{}}
 \def\doifelsevaluenothing#1{\doifelse{\getvalue{#1}}{}}
-
+
 %D \macros
 %D   {DOIF,DOIFELSE,DOIFNOT}
 %D   {}
@@ -1855,7 +1923,7 @@
 \def\DOIF     {\ExpandBothAfter\p!DOIF}
 \def\DOIFNOT  {\ExpandBothAfter\p!DOIFNOT}
 \def\DOIFELSE {\ExpandBothAfter\p!DOIFELSE}
-
+
 %D \macros
 %D   {stripcharacters,stripspaces}
 %D   {}
@@ -1896,7 +1964,7 @@
 
 \def\stripspaces\from#1\to#2%
   {\stripcharacter{ }\from#1\to#2}
-
+
 %D \macros
 %D   {executeifdefined}
 %D   {}
@@ -1946,7 +2014,7 @@
 %D    \fi
 %D    \next}
 %D \stoptypen
-
+
 %D \macros
 %D   {doifsomespaceelse}
 %D   {}
@@ -1970,7 +2038,7 @@
         #2%
       \fi}%
    \c!doifsomespaceelse#1 @ @\war}
-
+
 %D \macros
 %D   {adaptdimension,balancedimensions}
 %D   {}
@@ -2020,7 +2088,7 @@
 %D Both commands can be preceded by \type{\doglobal}. Here we
 %D use \type{\redo} first, because \type{\dodo} resets the 
 %D global character.
-
+
 %D \macros
 %D   {processconcanatedlist}
 %D   {}
@@ -2054,7 +2122,7 @@
       \fi\fi\fi
       \next}%
    \doprocessconcanatedlist#1#2]#2}
-
+
 %D \macros
 %D   {processassignlist}
 %D   {}
@@ -2076,7 +2144,7 @@
    \def\p!dogetparameter##1%
      {\p!dodogetparameter[##1==\relax]}%
    \processcommalist[#2]\p!dogetparameter}
-
+
 %D \macros
 %D   {DoAfterFi,DoAfterFiFi}
 %D   {}
@@ -2095,7 +2163,7 @@
 
 \def\DoAfterFi#1\fi{\fi#1}
 \def\DoAfterFiFi#1\fi#2\fi{\fi\fi#1}
-
+
 %D \macros
 %D   {untextargument
 %D    untexcommand}
@@ -2128,7 +2196,7 @@
 
 \def\untexcommand%
   {\untexsomething\convertcommand}
-
+
 %D \macros
 %D   {ScaledPointsToBigPoints,ScaledPointsToWholeBigPoints}
 %D 
@@ -2170,7 +2238,7 @@
 \def\PointsToReal#1#2%
   {\scratchdimen=#1%  
    \edef#2{\withoutpt{\the\scratchdimen}}}
-
+
 %D \macros 
 %D  {dontleavehmode}
 %D 
@@ -2186,14 +2254,16 @@
 %D \type{lang-ini}.
 
 \def\dontleavehmode{\ifmmode\else$ $\fi}
-
-%D \macro
+
+%D \macros
 %D   {handletokens}
 %D
 %D With the next macro we enter a critical area of macro 
 %D expansion. What we want is a macro that looks like:
 %D 
+%D \starttypen
 %D \handletokens some tokens\with \somemacro
+%D \stoptypen
 %D 
 %D At first sight the next implementation will suffice, but 
 %D running this one shows that we loose the spaces. This is no 
@@ -2237,7 +2307,7 @@
 %D    \dohandletokens#1\end}
 %D \stoptypen
 
-%D \macro
+%D \macros
 %D   {counttoken}
 %D
 %D For the few occasion sthat we want to know the number of 
@@ -2312,7 +2382,7 @@
 %D Careful reading shows that inside an \type{\edef} macro's 
 %D that are \type{\let} are not expanded!
 %D 
-%D \haalbuffer[next]
+%D \unprotect\haalbuffer[next]\protect
 %D 
 %D That's why we finally end up with a macro that looks ahead
 %D by using an assignment, this time by using
@@ -2321,10 +2391,10 @@
 
 \def\dodohandletokens#1%
   {\ifx\next\blankspace
-     \docommando{ }%
+     \dododohandletokens{ }%
    \fi
    \ifx#1\end \else
-     \docommando{#1}%
+     \dododohandletokens{#1}%
      \expandafter\dohandletokens
    \fi}
 
@@ -2332,14 +2402,65 @@
   {\futurelet\next\dodohandletokens}
 
 \long\def\handletokens#1\with#2%
-  {\let\docommando=#2% #2 can be \docommando itself 
+  {\global\let\dododohandletokens=#2% 
    \dohandletokens#1\end}
+
+%D A previous version said \type{\docommando=#2}, but to enable
+%D use in alignments, I decided to use another placeholder, one
+%D that is not sensitive to the global assignment. 
 
 %D So our example finaly shows up as:
 %D 
 %D \haalbuffer[example]
 
+% %D \macros 
+% %D   {iftrialtypesetting}
+% %D 
+% %D The next boolean is at first sight a strange one. Sometimes
+% %D one does a trial typesetting run, for instance to determine
+% %D dimensions. Some mechanisms, like object inclusion, can fail
+% %D on such trials. Temporary setting the next boolean to true,
+% %D helps a lot. 
+% 
+% \newif\iftrialtypesetting
+
+%D \macros
+%D   {startlocal, startglobal}
+%D
+%D The next four macros are rather self explaining: 
+%D
+%D \starttypen
+%D \startlocal
+%D   whatever assignments 
+%D \stoplocal
+%D
+%D \startglobal
+%D   whatever assignments 
+%D \stopglobal
+%D \stoptypen
+%D
+%D These macros are meant for those who know the difference 
+%D between local and global assignments and are aware of the 
+%D possible unwanted side effect
+
+\def\dostartglobaldefs#1#2%
+  {\edef\!!stringa{\the\globaldefs}%
+   \ifnum\globaldefs#10
+     \globaldefs=-\globaldefs
+   \fi
+   \advance\globaldefs by #21
+   \setevalue{@gd@\the\globaldefs}{\!!stringa}}
+
+\def\dostopglobaldefs%
+  {\doifdefinedelse{@gd@\the\globaldefs}
+     {\globaldefs=\getvalue{@gd@\the\globaldefs}\relax}
+     {\globaldefs=0\relax}}
+
+\def\startlocal  {\dostartglobaldefs>-}
+\def\stoplocal   {\dostopglobaldefs}
+\def\startglobal {\dostartglobaldefs<+}
+\def\stopglobal  {\dostopglobaldefs}
+
 \protect
 
 \endinput
-

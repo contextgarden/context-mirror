@@ -36,7 +36,7 @@
    \@EA\lowercase\@EA{\@EA\xdef\@EA\PDFdestination\@EA{\PDFdestination}}%
    \egroup}
 
-%D \macro
+%D \macros
 %D   {URLhash}
 %D
 %D A rather trivial macro: 
@@ -59,7 +59,7 @@
 
 \newif\ifusepagedestinations
 
-%D \macro
+%D \macros
 %D   {sanitizePDFstring}
 %D
 %D This macro at least tries to convert a arbitrary string 
@@ -112,11 +112,11 @@
 \def\dododoinsertfile[#1][#2,#3][#4]%
   {\def\fileinsertionclass{do#1insert}%
    \doifdefinedelse{\fileinsertionclass#3}
-     {\def\next{\getvalue{\fileinsertionclass#3}{#4}}}
+     {\def\next{\getvalue{\fileinsertionclass#3}}}
      {\doifdefinedelse{\fileinsertionclass#2}
-        {\def\next{\getvalue{\fileinsertionclass#2}{#4}}}
-        {\def\next{\gobblesevenarguments}}}%
-   \next}
+        {\def\next{\getvalue{\fileinsertionclass#2}}}
+        {\def\next{\gobbleeightarguments}}}%
+   \next{#4}}
 
 \def\dodoinsertfile#1#2#3%
   {\dododoinsertfile[#1][#2][#3]}
@@ -129,4 +129,3 @@
 \protect
 
 \endinput
-

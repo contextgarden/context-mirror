@@ -11,9 +11,13 @@
 %C therefore copyrighted by \PRAGMA. Non||commercial use is 
 %C granted. 
 
+%D Especially the rotation proved to be incompatible with 
+%D the default \POSTSCRIPT\ special driver. Many thanks to 
+%D Gilbert van den Dobbelsteen for testing and hacking the 
+%D \DVIPS\ source and pinpointing the problem.   
+
 %D \macros
 %D   {doinsertfile}
-%D   {}
 %D
 %D We overrule the figure||insertion special. Things should 
 %D be more accurate, but maybe someday \onbekend
@@ -38,7 +42,40 @@
    \dodoinsertfile{tr}{#1}{#2}{#3}{#4}{#5}{#6}{#7}{#8}{#9}%
    \egroup}
 
+%D \macros
+%D   {dostartrotation}
+%D
+%D Because \DVIPS\ uses a reverse rotation scheme, we have 
+%D to add an extra \type{neg} to the default \POSTSCRIPT\ 
+%D rotation definition:
+
+\definespecial\dostartrotation#1% straight from the YandY manual / 1st neg added
+  {\special
+     {\@@insertpostscriptliteral  
+        gsave currentpoint currentpoint translate
+        #1 neg rotate neg exch neg exch translate}} 
+
+\definespecial\dostoprotation%
+  {\special
+     {\@@insertpostscriptliteral  
+        currentfont currentpoint grestore moveto setfont}}
+
+%D Drawing ovals in \DVIPS\ is complicated by the fact that
+%D the colors get reset. Therefore we need a more literal
+%D approach and therefore scale to local units. By redefining
+%D the retain constant into a macro, we can use the already
+%D present \POSTSCRIPT\ definition (see \type{spec-ps}). 
+
+\definespecial\doovalbox#1#2#3#4#5#6#7%
+  {\bgroup
+   \edef\@@insertpostscriptretain gsave%
+     {\@@insertpostscriptliteral
+        gsave
+          Resolution 72 div
+          VResolution 72 div neg scale currentpoint translate}%
+   \dosomeovalbox{#1}{#2}{#3}{#4}{#5}{#6}{#7}%
+   \egroup}
+
 \stopspecials
 
 \endinput
-

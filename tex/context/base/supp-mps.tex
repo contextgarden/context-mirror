@@ -14,7 +14,9 @@
 % E-tex   : a primitive that tells us that \write18 works
 % E-tex   : \executeMetaPost filename
 % ConTeXt : automatic flush at end of job
- 
+
+% The MP generation support is still experimental.
+
 %D \METAPOST\ is John Hobbys alternative for \METAFONT\ and
 %D produces superior \POSTSCRIPT\ code. In this module we
 %D integrate \METAPOST\ support int \CONTEXT.  We offer two
@@ -40,6 +42,8 @@
 %D
 %D Ok then, let's start:
 
+\ifx \undefined \writestatus \input supp-mis.tex \relax \fi
+
 \writestatus{loading}{Context Support Macros / MetaPost Inclusion}
 
 \unprotect
@@ -57,11 +61,39 @@
 %D
 %D This is implemented as:
 
-\def\startMPgraphic#1\stopMPgraphic%
+\long\def\startMPgraphic#1\stopMPgraphic%
   {\startwritingMPgraphic
    \writeMPgraphic{#1}%
    \stopwritingMPgraphic}
 
+%D \macros
+%D   {startMPrun}
+%D
+%D If we just wat to run \METAPOST\ code, that is, not to
+%D explictly generate a figure in terms of \type{beginfig} and
+%D \type{endfig}, we can use: 
+%D
+%D \starttypen
+%D \startMPgraphic
+%D \stopMPgraphic
+%D \stoptypen
+%D
+%D \starttypen
+%D \startMPrun
+%D \stopMPrun
+%D \stoptypen
+%D
+%D The next boolean is for internal purposes only.
+
+\newif\ifMPrun \MPrunfalse
+
+\long\def\startMPrun#1\stopMPrun% geeft nog conflicten met nummer!
+  {\MPruntrue
+   \startwritingMPgraphic
+   \writeMPgraphic{#1}%
+   \stopwritingMPgraphic
+   \MPrunfalse}
+  
 %D \macros
 %D   {startwritingMPgraphic,
 %D    writeMPgraphic,
@@ -97,57 +129,137 @@
 
 \def\MPgraphicfile{mpgraph}
 
-%D When we run \METAPOST\ from within \TEX, each graphic is 
-%D processed at once, which means that we reuse this file many 
-%D times. When however the execution is delayed, all graphics 
-%D are saved in a separate figure. The current graphic is 
-%D characterized bij a number:
+%D \macros
+%D   {MPgraphic}
+%D
+%D When we run \METAPOST\ from within \TEX, each graphic is
+%D processed at once, which means that we reuse this file many
+%D times. When however the execution is delayed, all graphics
+%D are saved in a separate figure. The current graphic is
+%D characterized bij a \COUNTER. This counter is available 
+%D in \type{\MPgraphic}.
 
-\newcounter\currentMPgraphic
+\newcount\currentMPgraphic
+
+\def\MPgraphic{0}
 
 %D \macros
 %D   {ifreuseMPgraphics}
 %D
 %D If one want to reuse grapics, one can save much redundant
-%D run time by setting the next switch to true. 
+%D run time by setting the next switch to true.
 
 \newif\ifreuseMPgraphics
 
-%D The three macros responsible for writing the graphic 
-%D implement both schemes. 
+%D The three macros responsible for writing the graphic
+%D implement both schemes.
 
-%D \macro
-%D   {MPinclusions}
+%D \macros
+%D   {MPinclusions, startMPinclusions}
 %D
-%D One can include for instance common input commands by 
-%D assigning those to the token register:
+%D One can include for instance common input commands by
+%D passing them to \type{\MPinclusions}: 
+%D
+%D \starttypen
+%D \MPinclusions{input tools}
+%D \stoptypen
 
-\newtoks\MPinclusions
+\let\theMPinclusions=\empty
 
-\def\writeMPgraphic%
-  {\immediate\write\scratchwrite}
+\long\def\startMPinclusions#1\stopMPinclusions%
+  {\long\def\theMPinclusions{\writeMPgraphic{#1}}}
+
+\long\def\MPinclusions#1%
+  {\startMPinclusions#1\stopMPinclusions}
+
+%D \macros
+%D   {iflongMPlines}
+%D
+%D When grabbing a graphic deifnition, newlines are turned
+%D into spaces. By default we split the graphic definition
+%D at the colon, but long lines are still possible by
+%D setting the next boolean to true.
+
+\newif\iflongMPlines
+
+\long\def\writeMPgraphic#1%
+  {\bgroup
+   \iflongMPlines
+     \let\par=\empty
+     \long\def\flush##1##2\par%
+       {\ifx##1\relax \else
+          \immediate\write\scratchwrite{##1##2}%
+          \expandafter\flush
+        \fi}%
+     \flush#1\empty\par\relax\par
+   \else
+     \long\def\flush##1##2;%
+       {\ifx##1\relax \else
+          \dowriteMPgraphicline##1##2btex\relax etex\end
+          \expandafter\flush
+        \fi}%
+     \flush#1\empty;\relax;%
+   \fi
+   \egroup}
+
+%D The \type{;} aware method (the \type{\else} branch) also 
+%D takes care of \type{btex}||\type{etex} bound data. 
+
+\def\dowriteMPgraphicline%
+  {\futurelet\next\dodowriteMPgraphicline}
+
+\long\def\dodowriteMPgraphicline#1btex#2#3etex#4\end%
+  {\ifx\next\empty\else\ifx\next\relax\else
+     \bgroup
+     \let\par=\empty
+     \ifx#2\relax
+       \immediate\write\scratchwrite{#1;}%
+       \egroup
+     \else
+       \convertargument#2#3\to\ascii
+       \immediate\write\scratchwrite{#1btex \ascii etex;}%
+       \egroup
+       \dowriteMPgraphicline#4btex\relax etex\end
+     \fi
+   \fi\fi}
+
+%D This stripper is suboptimal in the sense that more
+%D \type{;}'s are output than feasible. Anyhow, \METAPOST\ 
+%D can handle this and users may consider it being a sort 
+%D of error prevention bonus. 
+
+\def\writeMPgraph%
+  {\immediate\write\scratchwrite{mpgraph:=\the\currentMPgraphic;}}
 
 \def\startwritingMPgraphic%
   {\ifrunMPgraphics
-     \ifreuseMPgraphics \else
-       \doglobal\newcounter\currentMPgraphic 
-     \fi
-     \doglobal\increment\currentMPgraphic 
+     \ifMPrun \else \ifreuseMPgraphics \else
+       \global\currentMPgraphic=0
+     \fi \fi 
+     \global\advance\currentMPgraphic by 1
+     \xdef\MPgraphic{\the\currentMPgraphic}%
      \immediate\openout\scratchwrite=\MPgraphicfile.mp
-     \immediate\write\scratchwrite{\the\MPinclusions}%
+     \writeMPgraph
+     \theMPinclusions
    \else
-     \doglobal\increment\currentMPgraphic 
+     \global\advance\currentMPgraphic by 1
+     \xdef\MPgraphic{\the\currentMPgraphic}%
      \ifnum\currentMPgraphic=1
        \immediate\openout\scratchwrite=\MPgraphicfile.mp
-       \immediate\write\scratchwrite{\the\MPinclusions}%
+       \writeMPgraph
+       \theMPinclusions
      \fi
    \fi
-   \immediate\write\scratchwrite{beginfig(\currentMPgraphic);}%
+   \ifMPrun \else
+     \immediate\write\scratchwrite{beginfig(\the\currentMPgraphic);}%
+   \fi
    \global\let\flushMPgraphics\dodostopwritingMPgraphic
    \global\let\stopwritingMPgraphic=\dostopwritingMPgraphic}
 
 \def\dostopwritingMPgraphic%
-  {\immediate\write\scratchwrite{endfig;}%
+  {\ifMPrun \else 
+     \immediate\write\scratchwrite{endfig;}%
+   \fi
    \ifrunMPgraphics
      \dodostopwritingMPgraphic
    \fi}
@@ -167,17 +279,17 @@
 %D   {flushMPgraphics}
 %D
 %D When we use the indirect method, all graphics are saved in
-%D one file. This means that we cannot close this file after 
+%D one file. This means that we cannot close this file after
 %D every \type{\stopMPgraphic}. Therefore we need to say:
 %D
 %D \starttypen
 %D \flushMPgraphic
 %D \stoptypen
-%D 
+%D
 %D else the file is closed without writing the \METAPOST\ end
-%D command. One will notice this fast enough when in indirect 
-%D mode. When using the direct mode this command is not 
-%D implicitly needed, but ommiting it makes files less 
+%D command. One will notice this fast enough when in indirect
+%D mode. When using the direct mode this command is not
+%D implicitly needed, but ommiting it makes files less
 %D portable.
 
 %D \macros
@@ -194,77 +306,76 @@
 %D This two stage insert permits some intermediate manipulations
 %D of the graphic, which temporary saved in:
 
-\newbox\MPgraphic
+\newbox\MPgraphicbox
 
 \def\loadcurrentMPgraphic#1%
-  {\loadMPgraphic{\MPgraphicfile.\currentMPgraphic}{#1}}
+  {\loadMPgraphic{\MPgraphicfile.\the\currentMPgraphic}{#1}}
 
 \def\loadMPgraphic#1#2%
-  {\setbox\MPgraphic=\hbox{\insertMPfile{#1}{#2}}}
+  {\setbox\MPgraphicbox=\hbox{\insertMPfile{#1}{#2}}}
 
 \def\placeMPgraphic%
-  {\box\MPgraphic}
+  {\box\MPgraphicbox}
 
 %D \macros
 %D   {startreusableMPgraphic, reuseMPgraphic, useMPbox}
-%D 
+%D
 %D One can use the next macro for defining graphics that are
-%D to be reused. When the next switch is set, graphics are 
-%D cached. 
- 
+%D to be reused. When the next switch is set, graphics are
+%D cached.
+
 \newif\ifuseMPbox % nog eens cyclische buffer
 
+\def\douseMPbox#1%
+  {\setobject{#1}
+     \vbox
+       {\loadMPgraphic{\MPgraphicfile.\the\currentMPgraphic}{}%
+        \placeMPgraphic}%
+     \setgvalue{#1}%
+       {\getobject{#1}}}
+
+\def\nouseMPbox#1%
+  {\setxvalue{#1}%
+     {\noexpand\loadMPgraphic{\MPgraphicfile.\the\currentMPgraphic}{}%
+      \noexpand\placeMPgraphic}}
+
+\ifCONTEXT \else \let\douseMPbox=\nouseMPbox \fi
+ 
 \long\def\startreusableMPgraphic#1#2\stopreusableMPgraphic%
   {\reuseMPgraphicstrue
    \doifundefined{MP:#1}
      {\startMPgraphic#2\stopMPgraphic
       \ifuseMPbox
-        \ifx\setobject\undefined
-          \newbox\somebox
-          \global\setbox\somebox=\vbox
-            {\loadMPgraphic{\MPgraphicfile.\currentMPgraphic}{}%
-             \placeMPgraphic}%
-          \global\setevalue{MP:#1}%
-            {\copy\the\somebox\relax}%
-        \else
-          \setobject{MP:#1}
-            \vbox
-              {\loadMPgraphic{\MPgraphicfile.\currentMPgraphic}{}%
-               \placeMPgraphic}%
-          \global\setvalue{MP:#1}%
-            {\getobject{MP:#1}}%
-        \fi
+        \douseMPbox{MP:#1}%
       \else
-        \global\setevalue{MP:#1}%
-          {\noexpand\loadMPgraphic{\MPgraphicfile.\currentMPgraphic}{}%
-           \noexpand\placeMPgraphic}%
+        \nouseMPbox{MP:#1}%
       \fi}}
 
 \def\reuseMPgraphic#1%
   {\getvalue{MP:#1}}
 
-%D \macro
+%D \macros
 %D   {startuseMPgraphic,useMPgraphic}
 %D
 %D The every||time||it's||used original one is defined below.
 %D This one makes sense when the graphic uses random numbers.
 
-\def\startuseMPgraphic#1#2\stopuseMPgraphic%
-  {\reuseMPgraphicstrue 
-   \long\setvalue{MP:#1}%
-     {\startMPgraphic#2\stopMPgraphic 
+\long\def\startuseMPgraphic#1#2\stopuseMPgraphic%
+  {\reuseMPgraphicstrue
+   \long\setgvalue{MP:#1}%
+     {\startMPgraphic#2\stopMPgraphic
       \loadcurrentMPgraphic{}%
       \placeMPgraphic}}
 
 \let\useMPgraphic=\reuseMPgraphic
 
-%D We didn't yet define the macro responsible for processing 
-%D the graphic from within \TEX. 
+%D We didn't yet define the macro responsible for processing
+%D the graphic from within \TEX.
 
 \def\runMPgraphic#1%
   {\ifrunMPgraphics
      \executeMETAPOST{#1}%
-   \else 
+   \else
      \message{[flush and process \MPgraphicfile.mp afterwards]}%
    \fi}
 
@@ -272,14 +383,14 @@
 %D   {executeMetaPost, executeMETAPOST, executesystemcommand}
 %D
 %D With \type{\executeMETAPOST} being defined as:
- 
+
 \ifx\undefined\executeMetaPost
   \def\executeMETAPOST#1{\executesystemcommand{\executeMetaPost{#1}}}
 \fi
 
-%D There are two system dependant definitions: 
+%D There are two system dependant definitions:
 
-\ifx\undefined\executesystemcommand 
+\ifx\undefined\executesystemcommand
   \def\executesystemcommand#1{\immediate\write18{#1}}
 \fi
 
@@ -291,24 +402,54 @@
 %D   {insertMPfile}
 %D
 %D One can define this command in advance or redefine it after
-%D loading this module. The same goes for the forward 
+%D loading this module. The same goes for the forward
 %D reference to the figure loading macro:
 
-\ifx\undefined\insertMPfile 
+\ifx\undefined\insertMPfile
 
   \def\insertMPfile#1#2%
-      {\ifx\undefined\externalfigure 
-         \message{[insert file #1 here]}%
-       \else
-         \externalfigure[#1][\c!type=eps,\c!methode=mps,#2]%
-       \fi}
+    {\ifx\undefined\externalfigure
+       \message{[insert file #1 here]}%
+     \else
+       \externalfigure[#1][\c!type=eps,\c!methode=mps,#2]%
+     \fi}
 
 \fi
 
 %D This macro takes {\em two} arguments, the second one can be
-%D used to pass info to the inclusion macro. Some examples 
-%D of its use can be found in the modules \type{supp-tpi} and 
-%D \type{prag-log}. 
+%D used to pass info to the inclusion macro. Some examples
+%D of its use can be found in the modules \type{supp-tpi} and
+%D \type{prag-log}.
+
+%D This module can be used in \PLAIN\ \TEX too. When using 
+%D \DVIPS, just try to process:
+%D 
+%D \starttypen
+%D \input supp-mps
+%D
+%D \runMPgraphicstrue
+%D 
+%D \def\insertMPfile#1#2%
+%D   {\special{psfile=#1}}
+%D 
+%D \startuseMPgraphic{1}
+%D   prologues := 1;
+%D   draw (0,0) withpen pencircle scaled 100;
+%D \stopuseMPgraphic
+%D 
+%D \useMPgraphic{1}
+%D \stoptypen
+%D 
+%D Don't forget to enable \type{\write18}. When does not say
+%D \type{\runMPgraphicstrue}, the \METAPOST\ scratch file 
+%D must be closed by saying
+%D 
+%D \starttypen
+%D \flushMPgraphics
+%D \stoptypen
+%D
+%D When using the indirect method, one has to process the file
+%D \type{mpgraph.mp} between two successive \TEX\ runs. 
 
 %D For some reason, \METAPOST\ needs the public domain \DVI\ to
 %D \POSTSCRIPT\ converter \DVIPS. This symbiosis originates in
@@ -317,78 +458,82 @@
 %D prerequisites for using \METAPOST, so I decided to build
 %D this kind of support myself. Personally I consider driver
 %D dependancy a drawback for the dissemination of such a
-%D package. The second part of this module more or less 
-%D decouples \METAPOST\ and \DVIPS. 
-%D 
+%D package. The second part of this module more or less
+%D decouples \METAPOST\ and \DVIPS.
+%D
 %D The macros hereafter are copied from the module
 %D \type{m-metapost}. After writing module \type{supp-pdf} I
 %D added this method to the module named and after a while
-%D decided to hook it into module \type{spec-yy}. Therefore 
-%D they made it into a support module, but in a slightly 
-%D different way. 
+%D decided to hook it into module \type{spec-yy}. Therefore
+%D they made it into a support module, but in a slightly
+%D different way.
 
 %D \macros
-%D   {UseMetaPostGraphic, DontUseMetaPostGraphics}
+%D   {includeMPfonts, ifincludeMPfonts}
 %D   {}
-%D 
-%D The method we use is both robust and simple: one can do 
+%D
+%D The method we use is both robust and simple: one can do
 %D with calling the next macro with the filename as argument:
 %D
 %D \starttypen
-%D \UseMetaPostGraphic{filename}
+%D \includeMPfonts{filename}
 %D \stoptypen
 %D
-%D We can turn of this mechanism with: 
+%D We can turn of this mechanism with:
 %D
 %D \starttypen
-%D \DontUseMetaPostGraphics
+%D \includeMPfontsfalse
 %D \stoptypen
 
-\def\UseMetaPostGraphic#1%
-  {\bgroup
-   \message{[MP fonts #1]}%
-   %\uncatcodespecials
-   \endlinechar=-1
-   \setMPspecials
-   \obeyMPspecials
-   \setbox0=\hbox
-     {\hskip-\maxdimen
-      \doprocessfile\scratchread{#1}\handleMPSline}%
-   \smashbox0 
-   \box0
-   \egroup}
+\newif\ifincludeMPfonts \includeMPfontstrue
 
-\def\DontUseMetaPostGraphics%
-  {\let\UseMetaPostGraphic=\gobbleoneargument}
+\def\includeMPfonts#1%
+  {\ifincludeMPfonts
+     \bgroup
+     \message{[MP fonts #1]}%
+     %\uncatcodespecials
+     \endlinechar=-1
+     \setMPspecials
+     \obeyMPspecials
+     \setbox0=\hbox
+       {\hskip-\maxdimen
+        \doprocessfile\scratchread{#1}\handleMPfont}%
+     \smashbox0
+     \box0
+     \egroup
+   \fi}
+
+\def\UseMetaPostGraphic      {\includeMPfonts}      % upward compatible
+\def\DontUseMetaPostGraphics {\includeMPfontsfalse} % upward compatible
 
 %D The characters are collected in a box and moved as far as
 %D possible into the left margin. The resulting box has no
 %D dimensions and can be prepended (appended) to the special
 %D that handles the inclusion. The characters are in the file
-%D but made invisible. 
+%D but made invisible.
 
 %D We scan the graphics file for the \type{fshow} operator,
 %D that is, lines that start with \type{(}. If found it
-%D interprets the line, which looks like: 
+%D interprets the line, which looks like:
 %D
 %D \starttypen
 %D (string ... string) font size fshow
 %D \stoptypen
-%D 
-%D Font definitions specified in the preamble are simply 
-%D ignored. Only lines starting with \type{(} are interpreted.  
+%D
+%D Font definitions specified in the preamble are simply
+%D ignored. Only lines starting with \type{(} are interpreted.
 
-\def\dohandleMPSline#1#2\relax%
+\def\dohandleMPfont#1#2\relax%
   {\if#1(%
      \expandafter\includeMPcharacters\fileline\relax
    \fi}
 
-\def\handleMPSline%
-  {\expandafter\dohandleMPSline\fileline\relax}
+\def\handleMPfont%
+  {\expandafter\dohandleMPfont\fileline\relax}
 
-%D Before we start scanning for data, we first change some 
-%D \CATCODES. The first set of macro's is copied from module 
-%D \type{supp-pdf}. This scheme is a bit overdone for this 
+%D Before we start scanning for data, we first change some
+%D \CATCODES. The first set of macro's is copied from module
+%D \type{supp-pdf}. This scheme is a bit overdone for this
 %D module, but using the same macros saves us some memory.
 
 \def\octalMPcharacter#1#2#3%
@@ -408,13 +553,13 @@
    \def[BE|
    \def]BE|
    \def{BE|
-   \def}BEE     
+   \def}BEE
 \gdef\obeyMPspecials|
   B\def%B\char 37\relax E|
    \def[B\char 91\relax E|
    \def]B\char 93\relax E|
    \def{B\char123\relax E|
-   \def}B\char125\relax EE   
+   \def}B\char125\relax EE
 \gdef\setMPspecials|
   B\catcode`\%=\@@active
    \catcode`\[=\@@active
@@ -443,18 +588,18 @@
    \def\9B\octalMPcharacter9EE
 \egroup
 
-%D The lines starting with \type{(} are interpreted and 
-%D handled by 
+%D The lines starting with \type{(} are interpreted and
+%D handled by
 
 \def\includeMPcharacters(#1) #2 #3 #4\relax%
   {\font\temp=#2 at #3bp\temp#1}
 
-%D This method is both robust and reasonable fast. The only 
-%D disadvantage is that when not embedded properly in the 
+%D This method is both robust and reasonable fast. The only
+%D disadvantage is that when not embedded properly in the
 %D graphics inclusion macros, one has to load all graphics by
-%D hand.  
+%D hand.
 
-%D Now let's see if things work all right and show the example 
+%D Now let's see if things work all right and show the example
 %D files that are part of the \METAPOST\ distribution:
 %D
 %D \startregelcorrectie
@@ -473,12 +618,247 @@
 %D \stopcombinatie
 %D \stopregelcorrectie
 %D
-%D Here we used calls like: 
+%D Here we used calls like:
 %D
 %D \starttypen
 %D \externfiguur[mp-exa-1][methode-mps,kader=aan,breedte=.2\hsize]
 %D \stoptypen
-
-\protect 
+
+%D \macros
+%D   {convertMPcolors,
+%D    ifconvertMPcolors,ifreduceMPcolors,ifforceMPcolors}
+%D
+%D When I told the editors that I wanted to use colored
+%D \METAPOST\ graphics in the color issue of the \MAPS, I was
+%D asked to use the \kap{CMYK} colorspace instead of \kap{RGB}
+%D one. However, \METAPOST\ only supports \kap{RGB} colors. I
+%D decided to write a utility to convert the \type
+%D {setrgbcolor} operators into \type {setcmykcolor} ones, and
+%D some experiments showed me that I could best let \TEX\ do it
+%D itself. Here it is:
+%D
+%D There are two booleans that control the conversion process.
+%D These are false by default.
+
+\newif\ifconvertMPcolors
+\newif\ifreduceMPcolors
+\newif\ifforcegrayMPcolors
+
+%D The main macro is calles as:
+%D
+%D \starttypen
+%D \convertMPcolors{filename}
+%D \stoptypen
+%D
+%D When active, this macro returns a message saying if indeed
+%D conversion took place. The old file is overwritten! This
+%D saves time in a succesive passes and can't harm, simply
+%D because MP can generate them anew.
+
+\def\convertMPcolorpath{} % {./}
+\def\convertMPcolorfile{metacmyk.eps}
+
+\def\convertMPcolors#1%
+  {\bgroup
+   \ifforcegrayMPcolors
+     \donetrue
+   \else\ifconvertMPcolors
+     \donetrue
+   \else
+     \donefalse
+   \fi\fi
+   \ifdone
+     \message{[MP color conversion #1}%
+     \endlinechar=-1
+     \uncatcodespecials
+     \donefalse
+     \immediate\openout\scratchwrite=\convertMPcolorpath\convertMPcolorfile
+     \doprocessfile\scratchread{#1}\handleMPcolor
+     \immediate\closeout\scratchwrite
+     \ifdone
+       \immediate\openout\scratchwrite=\convertMPcolorpath#1
+       \doprocessfile\scratchread{\convertMPcolorpath \convertMPcolorfile}\handleMPcopy
+       \immediate\closeout\scratchwrite
+       \message{done]}%
+     \else
+       \message{not needed]}%
+     \fi
+     \immediate\openout\scratchwrite=\convertMPcolorpath\convertMPcolorfile
+     \immediate\closeout\scratchwrite
+   \fi
+   \egroup}
+
+%D The process is rather simple: read a line, look for the
+%D \type {setrgbcolor} operator, recalculate the components and
+%D check for gray reduction or black removal, write the result
+%D to a temporary file, and go on. Afterwards, the file is
+%D copied back. We don't have to reduce to gray scales;
+%D \METAPOST\ already takes care of that.
+
+\def\handleMPcolor
+  {\expandafter\dohandleMPcolor\fileline setrgbcolor*\\}
+
+\def\dohandleMPcolor#1setrgbcolor#2#3\\%
+  {\if#2*%
+     \immediate\write\scratchwrite{#1}%
+   \else
+     \dodohandleMPcolor#1setrgbcolor#2#3\\%
+   \fi}
+
+\def\dodohandleMPcolor#1 #2 #3setrgbcolor#4setrgbcolor*\\%
+  {\bgroup
+   \ifforcegrayMPcolors
+     \convertRGBtoGRAY{#1}{#2}{#3}%
+     \immediate\write\scratchwrite
+       {\@@cl@@s \space setgray #4}%
+   \else
+     \dimen0=1pt \advance\dimen0 by -#1pt
+     \dimen2=1pt \advance\dimen2 by -#2pt
+     \dimen4=1pt \advance\dimen4 by -#3pt
+     \ifreduceMPcolors
+       \dimen6=\dimen0
+       \ifdim\dimen2<\dimen6 \dimen6=\dimen2 \fi
+       \ifdim\dimen4<\dimen6 \dimen6=\dimen4 \fi
+       \advance\dimen0 by -\dimen6
+       \advance\dimen2 by -\dimen6
+       \advance\dimen4 by -\dimen6
+     \else
+       \dimen6=\!!zeropoint
+     \fi
+     \immediate\write\scratchwrite
+       {\withoutpt{\the\dimen0} \space
+        \withoutpt{\the\dimen2} \space
+        \withoutpt{\the\dimen4} \space
+        \withoutpt{\the\dimen6} \space setcmykcolor #4}%
+    \fi
+    \egroup
+    \donetrue} % needed for message
+
+\def\handleMPcopy%
+  {\immediate\write\scratchwrite{\fileline}}
+
+%D The next macro is needed for forced conversion. This macro
+%D is copied from \type{colo-ini}, just in case one uses this
+%D module outside \CONTEXT.
+
+\ifx\convertRGBtoGRAY\undefined
+
+  \def\convertRGBtoGRAY#1#2#3%
+    {\scratchdimen=#1\s!pt
+     \scratchdimen=300\scratchdimen
+     \scratchcounter=\scratchdimen
+     \scratchdimen=#2\s!pt
+     \scratchdimen=590\scratchdimen
+     \advance\scratchcounter by \scratchdimen
+     \scratchdimen=#3\s!pt
+     \scratchdimen=110\scratchdimen
+     \advance\scratchcounter by \scratchdimen
+     \advance\scratchcounter by \!!medcard
+     \divide\scratchcounter by \!!maxcard
+     \edef\@@cl@@s{\realcolorvalue\scratchcounter}}
+
+\fi
+
+%D The next examples show the color conversion macros in
+%D action. These examples also demonstrate in||text \METAPOST\
+%D handling. As we will see, the conversion is hooked into the
+%D \CONTEXT\ color mechanism.
+%D
+%D By setting both \type{rgb} and \type{cmyk} to off, we force
+%D conversion to gray scales using:
+%D
+%D \plaatsformule[-]
+%D   \startformule
+%D   G = .30r + .59g + .11b
+%D   \stopformule
+%D
+%D By using buffers, we keep the \ASCII\ layout clean:
+%D
+%D \startbuffer
+%D \startbuffer[rgb]
+%D   \stelkleurenin[rgb=ja,cmyk=nee,reductie=nee,conversie=nee]
+%D   \useMPgraphic{hans}
+%D \stopbuffer
+%D
+%D \startbuffer[cmyk]
+%D   \stelkleurenin[rgb=nee,cmyk=ja,reductie=nee,conversie=nee]
+%D   \useMPgraphic{hans}
+%D \stopbuffer
+%D
+%D \startbuffer[cmy]
+%D   \stelkleurenin[rgb=nee,cmyk=ja,reductie=ja,conversie=nee]
+%D   \useMPgraphic{hans}
+%D \stopbuffer
+%D
+%D \startbuffer[gray]
+%D   \stelkleurenin[rgb=nee,cmyk=nee,reductie=nee,conversie=nee]
+%D   \useMPgraphic{hans}
+%D \stopbuffer
+%D \stopbuffer
+%D
+%D \typebuffer
+%D \haalbuffer
+%D
+%D The graphic is rather simple and is generated each time
+%D it's called:
+%D
+%D \global\runMPgraphicstrue
+%D
+%D \startbuffer
+%D \startbuffer[graphic]
+%D   \startuseMPgraphic{hans}
+%D     width  :=\the\tekstbreedte/5;
+%D     height := width/4;
+%D     fill fullcircle
+%D       xscaled width
+%D       yscaled height
+%D       withcolor (\RedGreenBlue);
+%D   \stopuseMPgraphic
+%D \stopbuffer
+%D \stopbuffer
+%D
+%D \typebuffer
+%D \haalbuffer
+%D
+%D Next we combine the four alternative interpretations in a
+%D combination:
+%D
+%D \startbuffer
+%D \startbuffer[result]
+%D   \startcombinatie[4]
+%D     {\haalbuffer[rgb]}  {\tfxx original}
+%D     {\haalbuffer[cmyk]} {\ttxx\string\convertMPcolorstrue}
+%D     {\haalbuffer[cmy]}  {\ttxx\string\reduceMPcolorstrue}
+%D     {\haalbuffer[gray]} {\ttxx\string\forcegrayMPcolorstrue}
+%D   \stopcombinatie
+%D \stopbuffer
+%D \stopbuffer
+%D
+%D \typebuffer
+%D \haalbuffer
+%D
+%D Finally we call the buffers, using different setting:
+%D
+%D \startbuffer
+%D \plaatsfiguur
+%D   {\METAPOST\ color conversions}
+%D   {\def\RedGreenBlue{.1,.4,.6}\haalbuffer[graphic]\haalbuffer[result]\vskip6pt
+%D    \def\RedGreenBlue{.1,.6,.4}\haalbuffer[graphic]\haalbuffer[result]\vskip6pt
+%D    \def\RedGreenBlue{.4,.1,.6}\haalbuffer[graphic]\haalbuffer[result]\vskip6pt
+%D    \def\RedGreenBlue{.4,.6,.1}\haalbuffer[graphic]\haalbuffer[result]\vskip6pt
+%D    \def\RedGreenBlue{.6,.1,.4}\haalbuffer[graphic]\haalbuffer[result]\vskip6pt
+%D    \def\RedGreenBlue{.6,.4,.1}\haalbuffer[graphic]\haalbuffer[result]}
+%D \stopbuffer
+%D
+%D \typebuffer
+%D \haalbuffer
+%D
+%D By the way, when the \POSTSCRIPT\ file resulting from
+%D this input is converted into \PDF\ and viewed in Acrobat
+%D Reader, one can quite different colors from those
+%D displayed in \GHOSTSCRIPT, which view equals the
+%D \POSTSCRIPT\ originals.
+
+\protect
 
 \endinput

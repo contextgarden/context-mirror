@@ -69,9 +69,9 @@
                                 startkodierung
                    stopcoding:  stopcodering                 stopcoding
                                 stopkodierung
-       definecorpsenvironment:  definieerkorpsomgeving       definecorpsenvironment
+    definebodyfontenvironment:  definieerkorpsomgeving       definebodyfontenvironment
                                 definierefliesstextumgebung
-                  definecorps:  definieerkorps               definecorps
+               definebodyfont:  definieerkorps               definebodyfont
                                 definierefliesstext
 
                     setuptype:  steltypein                   setuptype
@@ -97,6 +97,8 @@
 
                setupfootnotes:  stelvoetnotenin              setupfootnotes
                                 stellefussnotenein
+      setupfootnotedefinition:  stelvoetnootdefinitiein      setupfootnotedefinition
+                                stellefussnotendefinitioneein % TOBIAS
                          note:  noot                         note
                                 notiz
                      footnote:  voetnoot                     footnote
@@ -178,13 +180,13 @@
                 setupunderbar:  stelonderstrepenin           setupunderbar
                                 stelleunterstreichenein
 
-                   setupcorps:  stelkorpsin                  setupcorps
+                setupbodyfont:  stelkorpsin                  setupbodyfont
                                 stellefliesstextein
-                switchtocorps:  switchnaarkorps              switchtocorps
+             switchtobodyfont:  switchnaarkorps              switchtobodyfont
                                 wechselezumfliesstext
-                    showcorps:  toonkorps                    showcorps
+                 showbodyfont:  toonkorps                    showbodyfont
                                 zeigefliesstext
-         showcorpsenvironment:  toonkorpsomgeving            showcorpsenvironment
+      showbodyfontenvironment:  toonkorpsomgeving            showbodyfontenvironment
                                 zeigefliesstextumgebung
 
                      headtext:  koptekst                     headtext
@@ -474,16 +476,19 @@
            stelteksttekstenin:  stelteksttekstenin           setuptexttexts
                                 stelletexttexteein
 
+                   pagenumber:  paginanummer                 pagenumber 
+                                seitenummer
+
                         items:  items                        items
                                 posten
                   stelitemsin:  stelitemsin                  setupitems
                                 stellepostenein
 
-                   regellinks:  regellinks                   leftlined
+                   regellinks:  regellinks                   leftaligned
                                 zeilelinks  % better: linksbuendig
-                  regelmidden:  regelmidden                  middlelined
+                  regelmidden:  regelmidden                  midaligned
                                 zeilemitte  % better: zentriert
-                  regelrechts:  regelrechts                  rightlined
+                  regelrechts:  regelrechts                  rightaligned
                                 zeilerechts % better: rechtsbuendig
 
                 startkolommen:  startkolommen                startcolumns
@@ -550,6 +555,11 @@
                                 passelayoutan
                  steloffsetin:  steloffsetin                 setupoffset
                                 stelleoffsetein
+                 plaatsopgrid:  plaatsopgrid                 snaptogrid
+                                snaptogrid % TOBIAS
+              verplaatsopgrid:  verplaatsopgrid              resnaptogrid
+                                resnaptogrid  % TOBIAS
+
              tooninstellingen:  tooninstellingen             showsetups
                                 zeigeeinstellungen
                     toonkader:  toonkader                    showframe
@@ -560,12 +570,17 @@
                                 zeigeaufbau
                    toonlayout:  toonlayout                   showlayout
                                 zeigelayout
+                    toonprint:  toonprint                    showprint 
+                                zeigeabdruck % - TOBIAS 
                    toonstruts:  toonstruts                   showstruts
                                 zeigestruts
+
        definieerpapierformaat:  definieerpapierformaat       definepapersize
                                 definierepapierformat
           stelpapierformaatin:  stelpapierformaatin          setuppapersize
                                 stellepapierformatin
+             stelarrangerenin:  stelarrangerenin             setuparranging
+                                stelarrangierenein % - TOBIAS           
 
                        versie:  versie                       version
                                 version
@@ -600,7 +615,7 @@
                placebookmarks:  plaatsbookmarks              placebookmarks
                                 platzierebookmarks 
                      bookmark:  bookmark                     bookmark
-                                bookmark % - 
+                                bookmark 
 
            definieerbeeldmerk:  definieerbeeldmerk           definelogo
                                 definierelogo
@@ -677,6 +692,9 @@
      stelsamengesteldelijstin:  stelsamengesteldelijstin     setupcombinedlist
                                 stellezusammengestelltelisteein
 
+         bepaallijstkenmerken:  bepaallijstkenmerken         determinelistcharacteristics
+                                determinelistcharacteristics % TOBIAS 
+
      definieerreferentielijst:  definieerreferentielijst     definereferencelist
                                 definierereferenzliste
         plaatsreferentielijst:  plaatsreferentielijst        placereferencelist
@@ -728,6 +746,9 @@
                plaatsregister:  plaatsregister               placeregister
                                 platziereregister
 
+      bepaalregisterkenmerken:  bepaalregisterkenmerken      determineregistercharacteristics
+                                determineregistercharacteristics % TOBIAS 
+
             definieersorteren:  definieersorteren            definesorting
                                 definieresortieren
           definieersynoniemen:  definieersynoniemen          definesynonyms
@@ -753,7 +774,7 @@
         gebruikexterndocument:  gebruikexterndocument        useexternaldocument
                                 verwendeexteresdokument
                    gebruikURL:  gebruikURL                   useURL
-                                verwendeURL % -
+                                verwendeURL
 
              stelprogrammasin:  stelprogrammasin             setupprograms
                                 stelleprogrammein
@@ -761,6 +782,9 @@
                                 definiereprogramme
                     programma:  programma                    program
                                 programm
+
+       stelpaginaovergangenin:  stelpaginaovergangenin       setuppagetransitions
+                                stelleseitenuebergangein
 
              definieerprofiel:  definieerprofiel             defineprofile
                                 definiereprofil
@@ -839,20 +863,22 @@
                 stelbuttonsin:  stelbuttonsin                setupbuttons
                                 stelleknopfein
 
-           gebruikreferenties:  gebruikreferenties           usereferences
+                usereferences:  gebruikreferenties           usereferences
                                 verwendereferenzen
                      reflijst:  reflijst                     reflist
                                 refliste
-             paginareferentie:  paginareferentie             pagereference
-                                seitenreferenz
-                   referentie:  referentie                   reference
-                                referenz
         stelreferentielijstin:  stelreferentielijstin        setupreferencelist
                                 stellereferenzlisteein
-              stelrefererenin:  stelrefererenin              setupreferencing
+             setupreferencing:  stelrefererenin              setupreferencing
                                 stellereferenzierenein
-              tekstreferentie:  tekstreferentie              textreference
+
+                textreference:  tekstreferentie              textreference
                                 textreferenz
+                pagereference:  paginareferentie             pagereference
+                                seitenreferenz
+                    reference:  referentie                   reference
+                                referenz
+
                           uit:  uit                          from
                                 von
                            in:  in                           in
@@ -863,6 +889,8 @@
                                 zu
                       naarbox:  naarbox                      gotobox
                                 zurbox
+                   naarpagina:  naarpagina                   gotopage
+                                zurseite % - old but forgotten 
 
                  startformule:  startformule                 startformula
                                 startformel
@@ -872,7 +900,7 @@
                                 platziereformel
              plaatssubformule:  plaatssubformule             placesubformula
                                 platziereunterformel
-               stelformulesin:  stelformulesin               setupformulas
+               stelformulesin:  stelformulesin               setupformulae
                                 stelleformelnein
                  startgegeven:  startgegeven                 startfact
                                 startgegeben
@@ -909,6 +937,9 @@ geg: geg fact geg
                                 startprojekt
                   stopproject:  stopproject                  stopproject
                                 stopprojekt
+
+                       setups:  instellingen                 setups    
+                                setups % -- 
 
                       project:  project                      project
                                 projekt
@@ -956,10 +987,14 @@ geg: geg fact geg
                                 verwendebefehl
            definieerstartstop:  definieerstartstop           definestartstop
                                 definierestartstop
-                  startlokaal:  startlokaal                  startlocal
+                   startlocal:  startlokaal                  startlocal
                                 startlokal
-                   stoplokaal:  stoplokaal                   stoplocal
+                    stoplocal:  stoplokaal                   stoplocal
                                 stoplokal
+                  startglobal:  startglobaal                 startglobal
+                                startglobal
+                   stopglobal:  stopglobaal                  stopglobal
+                                stopglobal
                          naam:  naam                         name
                                 name
 
@@ -989,14 +1024,14 @@ geg: geg fact geg
                          laag:  laag                         low
                                 tief
 
-              startuitstellen:  startuitstellen              startpostponing
-                                startverschieben
-               stopuitstellen:  stopuitstellen               stoppostponing
-                                stopverschieben
-               startverbergen:  startverbergen               starthiding
-                                startverbergen
-                stopverbergen:  stopverbergen                stophiding
-                                stopverbergen
+%              startuitstellen:  startuitstellen              startpostponing
+%                                startverschieben
+%               stopuitstellen:  stopuitstellen               stoppostponing
+%                                stopverschieben
+%               startverbergen:  startverbergen               starthiding
+%                                startverbergen
+%                stopverbergen:  stopverbergen                stophiding
+%                                stopverbergen
 
                         breuk:  breuk                        fraction
                                 bruch
@@ -1024,6 +1059,11 @@ geg: geg fact geg
                                 drehen
                 stelroterenin:  stelroterenin                setuprotate
                                 stelledrehenein
+
+                      spiegel:  spiegel                      mirror
+                                mirror % TOBIAS CHECK!
+                       schaal:  schaal                       scale
+                                scale  % TOBIAS CHECK!
 
                stelnummerenin:  stelnummerenin               setupnumbering
                                 stellenummerierungein
@@ -1059,9 +1099,9 @@ geg: geg fact geg
                                 stellesystemein
 
              definieeralineas:  definieeralineas             defineparagraphs
-                                definiereabsaetz
+                                definiereabsaetze
                 stelalineasin:  stelalineasin                setupparagraphs
-                                stelleabsaetzein
+                                stelleabsaetzeein
 
                      geentest:  geentest                     donttest
                                 keintest
@@ -1181,4 +1221,3 @@ geg: geg fact geg
 %D \stopcompressdefinitions
 
 \endinput
-

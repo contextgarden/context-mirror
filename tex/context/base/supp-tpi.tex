@@ -21,7 +21,7 @@
 
 \ifx\undefined\writestatus     \input supp-mis \relax \fi
 \ifx\undefined\mimmickspecials \input supp-spe \relax \fi
-\ifx\undefined\MPgraphic       \input supp-mps \relax \fi
+\ifx\undefined\MPgraphicbox    \input supp-mps \relax \fi
 
 \writestatus{loading}{Context Support Macros / TPIC Conversion}
 
@@ -127,13 +127,13 @@
    \stopwritingMPgraphic
    \flushMPgraphics
    \loadcurrentMPgraphic{}%
-   \setbox\MPgraphic=\hbox to \!!zeropoint
-     {\kern-\wd\MPgraphic
-      \vbox to \!!zeropoint{\box\MPgraphic\vss}\hss}%
-   \ht\MPgraphic=\!!zeropoint
-   \wd\MPgraphic=\!!zeropoint
-   \dp\MPgraphic=\!!zeropoint
-   \box\MPgraphic
+   \setbox\MPgraphicbox=\hbox to \!!zeropoint
+     {\kern-\wd\MPgraphicbox
+      \vbox to \!!zeropoint{\box\MPgraphicbox\vss}\hss}%
+   \ht\MPgraphicbox=\!!zeropoint
+   \wd\MPgraphicbox=\!!zeropoint
+   \dp\MPgraphicbox=\!!zeropoint
+   \box\MPgraphicbox
    \egroup}
 
 %D Here the macro \type{\stopwritingMPgraphic} has to take care
@@ -336,4 +336,3 @@
 \protect 
 
 \endinput
-

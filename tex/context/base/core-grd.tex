@@ -1,0 +1,445 @@
+%D \module
+%D   [       file=core-grd,
+%D        version=1998.03.10,
+%D          title=\CONTEXT\ Core Macros,
+%D       subtitle=Grid Snapping (Experimental),
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. Non||commercial use is
+%C granted.
+
+\writestatus{loading}{Context Core Macros / Grid Snapping}
+
+\unprotect
+
+%D Moved from supp-box:
+
+%D \macros
+%D  {startbaselinecorrection,baselinecorrection,
+%D   showbaselinecorrection,offbaselinecorrection}
+%D
+%D Spacing around ruled boxes can get pretty messed up. The
+%D next macro tries as good as possible to fix this.
+%D
+%D \startbuffer[1]
+%D \startbaselinecorrection
+%D \ruledhbox{Rule Brittanica}
+%D \stopbaselinecorrection
+%D \stopbuffer
+%D
+%D \typebuffer[1]
+%D
+%D The macros put some white space around the box:
+%D
+%D \haalbuffer[1]
+%D
+%D A simple alternative is \type {\baselinecorrection}, which
+%D only looks at the previous line. 
+%D
+%D \startbuffer[2]
+%D \baselinecorrection
+%D \ruledhbox{Rule Brittanica}
+%D \baselinecorrection
+%D \stopbuffer
+%D
+%D \typebuffer[2]
+%D
+%D This time the last preceding line gets a correction,%
+%D dependant on the depth. 
+%D
+%D \haalbuffer[2]
+%D
+%D One can make the correction visible by saying \type
+%D {\showbaselinecorrection}. Part of the correction is
+%D calculated from the dimensions of a~(. One can disble the
+%D correction by calling \type {\offbaselinecorrection}. 
+%D 
+%D When visulaize the first example looks like:
+%D
+%D {\showbaselinecorrection\haalbuffer[1]}
+%D
+%D and the second one comes out as:
+%D
+%D {\showbaselinecorrection\haalbuffer[2]}
+
+\def\setbaselinecorrections%
+  {\setbox0=\hbox{\setstrut\strut}%
+   \setbox2=\hbox{(}%
+   \dimen0=\ht0\advance\dimen0 by -\ht2
+   \ifdim\dimen0<\!!zeropoint\dimen0=\!!zeropoint\fi
+   \dimen2=\dp0\advance\dimen2 by -\dp2
+   \ifdim\dimen2<\!!zeropoint\dimen2=\!!zeropoint\fi
+   \edef\thetopbaselinecorrection{\the\dimen0}%
+   \edef\thebotbaselinecorrection{\the\dimen2}}
+
+\def\dotopbaselinecorrection%
+  {\kern\thetopbaselinecorrection}  
+
+\def\dobotbaselinecorrection%
+  {\kern\thebotbaselinecorrection}  
+
+\def\showbaselinecorrection%
+  {\def\dobaselinecorrection% visualization is not watertight!
+     {\bgroup
+      \kern-\prevdepth
+      \setbox0=\null
+      \wd0=\hsize\dp0=\dp\strutbox
+      \nointerlineskip 
+      \ruledvbox{\box0}%
+      \egroup
+      \prevdepth=\dp\strutbox}%
+   \def\dotopbaselinecorrection%
+     {\hrule\!!height\thetopbaselinecorrection}%
+   \def\dobotbaselinecorrection%
+     {\hrule\!!height\thebotbaselinecorrection}}
+
+\def\dobaselinecorrection%
+  {\kern-\prevdepth
+   \kern\dp\strutbox
+   \prevdepth=\dp\strutbox}
+
+\def\baselinecorrection%
+  {\endgraf
+   \ifvmode
+     \ifdim\prevdepth<\maxdimen
+       \ifdim\prevdepth<\!!zeropoint \else
+         \ifdim\prevdepth<\dp\strutbox
+           \dobaselinecorrection
+         \fi
+       \fi
+     \fi
+   \fi}
+
+\def\startbaselinecorrection%
+  {\baselinecorrection
+   \ifvmode
+     \bgroup
+     \setbox\scratchbox=\vbox\bgroup
+     \ignorespaces
+     \let\stopbaselinecorrection=\dostopbaselinecorrection
+   \else
+     \let\stopbaselinecorrection=\relax
+   \fi}
+
+%D We do a bit more checking than needed. The pageborder check
+%D is not needed, but I want to look the visualization as good 
+%D as possible too.
+
+\def\dostopbaselinecorrection% I have to check columns yet.
+  {\endgraf
+   \egroup
+   \topbaselinecorrection
+   \box\scratchbox
+   \botbaselinecorrection
+   \egroup}
+
+\let\stopbaselinecorrection=\relax
+
+\def\offbaselinecorrection% Can be used inside correction.
+  {\def\startbaselinecorrection%
+     {\bgroup
+      \let\stopbaselinecorrection=\egroup}}
+
+%D \macros
+%D  {topbaselinecorrection,botbaselinecorrection}
+%D
+%D The actual top and bottom corrections are implemented as:
+
+\def\topbaselinecorrection%
+  {\ifvmode 
+     \bgroup
+     \setbaselinecorrections
+     \ifdim\pagegoal<\maxdimen
+       \ifdim\pagetotal<\pagegoal
+         \dimen2=\ht\scratchbox
+         \advance\dimen2 by \dp\scratchbox
+         \advance\dimen2 by \parskip
+         \advance\dimen2 by \thetopbaselinecorrection
+         \advance\dimen2 by \thebotbaselinecorrection
+         \dimen0=\pagetotal
+         \advance\dimen0 by \dimen2
+         \ifdim\dimen0<\pagegoal
+           \witruimte
+           \nointerlineskip
+           \dotopbaselinecorrection
+         \else
+           \ifbinnenkolommen           % should be supp-status
+             \vskip\dimen2             % this could definitely
+             \penalty\outputpenalty    % be improved
+           \else  
+             %                         % should be supp-control
+             % \vfill\eject            % old 
+             %
+             \nobreak                  % needed for headings 
+             \vskip\parskip            % cross your fingers
+             \vskip\dimen2             % anyhow
+             \penalty\outputpenalty  
+             \vskip-\dimen2
+           \fi   
+         \fi
+       \else                           % probably a preceding 
+         \witruimte                    % one-liner 
+         \nointerlineskip
+         \dotopbaselinecorrection
+       \fi
+     \fi
+     \egroup
+   \fi}
+
+\def\botbaselinecorrection%
+  {\ifvmode
+     \bgroup
+     \setbaselinecorrections
+     \dobotbaselinecorrection
+     \prevdepth\dp\strutbox
+     \egroup
+   \fi}
+
+%D An old one, still to be translated:
+%D
+%D \macros
+%D   {getnoflines}
+%D   {}
+%D
+%D Het commando \type{\getnoflines} converteert een hoogte
+%D (dimensie) in een aantal regels en kent dit toe aan
+%D \type{\noflines}.
+%D
+%D \starttypen
+%D \getnoflines{dimensie}
+%D \stoptypen
+%D
+%D Er wordt gedeeld door \type{\openlineheight} en een hoogte
+%D van~0pt komt overeen met 0~regels.
+
+\newcount\noflines
+\newdimen\noflinesheight
+
+\def\getnoflines#1%
+  {\noflinesheight=#1\relax
+   \ifdim\noflinesheight=\!!zeropoint\relax
+     \noflines=0
+   \else
+     \divide\noflinesheight by \openlineheight
+     \noflines=\noflinesheight
+     \ifdim\noflines\openlineheight=#1\relax \else
+       \advance\noflines by 1
+     \fi
+   \fi}
+
+%D Still very experimental and therefore undocumented.
+
+\newif\ifgridsnapping  % UNDER DEVELOPMENT, USE WITH CARE
+
+\def\positiveextrasnap {\gdef\extrasnapsign{+}}
+\def\negativeextrasnap {\gdef\extrasnapsign{-}}
+
+\def\extrasnapreset  {\global\chardef\@@extrasnap=0 
+                      \positiveextrasnap} 
+\def\extrasnapbefore {\global\chardef\@@extrasnap=1 }
+\def\extrasnaparound {\global\chardef\@@extrasnap=2 }
+\def\extrasnapafter  {\global\chardef\@@extrasnap=3 }
+
+\def\enablepresnapcorrection  {\global\chardef\@@presnap=0 }
+\def\disablepresnapcorrection {\global\chardef\@@presnap=1 }
+
+\extrasnapreset \enablepresnapcorrection  
+
+\newif\iftracegridsnapping 
+
+\def\snaptogrid#1% #1 == \hbox or \vbox
+  {\ifgridsnapping\expandafter\dosnaptogrid\expandafter#1\fi}
+
+\def\tracesnapping%
+  {\iftracegridsnapping
+     \llap
+       {\infofont
+        \doglobal\increment\currentsnap
+        \color[red]{\vl\presnapskip
+                    \vl\presnap
+                    \vl\postsnap
+                    \vl\ifcase\@@extrasnap
+                            00\or
+               \extrasnapsign0\or
+  \extrasnapsign\extrasnapsign\or
+               0\extrasnapsign\fi
+                    \vl\currentsnap\vl}}%
+   \fi}
+
+\def\dosnaptogrid%
+  {\dowithnextbox
+     {\bgroup
+      \forgetall
+      \par
+      \ifvbox\nextbox
+        \setbox\nextbox=\hbox{\box\nextbox}% don't ask
+      \fi
+      \scratchskip=\lastskip
+      \edef\presnapskip{\the\lastskip}%
+      \vbox{\strut}\nobreak\vskip-\openlineheight
+      \ifdim\ht\nextbox>\ht\strutbox
+        \scratchdimen=\ht\nextbox
+        \ifcase\@@presnap 
+          \ifdim\scratchskip>\!!zeropoint\relax
+            \scratchcounter=\scratchskip
+            \advance\scratchcounter by -\openlineheight
+            \ifnum\scratchcounter<0
+              \scratchcounter=-\scratchcounter
+            \fi
+            \ifnum\scratchcounter<10 % \lastkip is about \openlineheight
+              \advance\scratchdimen by -\openstrutdepth
+               \edef\presnapskip{*\presnapskip}%
+            \else\ifdim\scratchskip>\openlineheight 
+                                  %<\openlineheight \else
+              \advance\scratchdimen by -\openstrutdepth
+              \edef\presnapskip{*\presnapskip}%
+            \fi\fi
+          \fi
+        \fi
+        \getnoflines\scratchdimen
+        \advance\noflines by -1
+        \ifnum\noflines>0
+          \scratchdimen=\noflines\lineheight
+        \else
+          \scratchdimen=\!!zeropoint
+        \fi
+      \else
+        \scratchdimen=\!!zeropoint
+      \fi
+      \ifnum\@@extrasnap=1 \advance\scratchdimen by \extrasnapsign\lineheight \fi
+      \ifnum\@@extrasnap=2 \advance\scratchdimen by \extrasnapsign.5\lineheight \fi
+      \edef\presnap{\the\scratchdimen}%
+      \ifdim\scratchdimen=\!!zeropoint\else\vskip\scratchdimen\fi
+      \ifdim\dp\nextbox>\dp\strutbox
+        \getnoflines{\dp\nextbox}%
+        \advance\noflines by -1
+        \ifnum\noflines>0
+          \scratchdimen=\noflines\lineheight
+        \else
+          \scratchdimen=\!!zeropoint
+        \fi
+      \else
+        \scratchdimen=\!!zeropoint
+      \fi
+      \ifnum\@@extrasnap=2 \advance\scratchdimen by \extrasnapsign.5\lineheight \fi
+      \ifnum\@@extrasnap=3 \advance\scratchdimen by \extrasnapsign\lineheight \fi
+      \edef\postsnap{\the\scratchdimen}%
+      \ht\nextbox=\ht\strutbox
+      \dp\nextbox=\dp\strutbox
+      \hbox{\tracesnapping\box\nextbox}%
+      \ifdim\scratchdimen=\!!zeropoint\else\vskip\scratchdimen\fi
+      \extrasnapreset 
+      \enablepresnapcorrection  
+      \egroup}}
+
+\def\snaptomathgrid%
+  {\ifgridsnapping
+     \dowithnextbox
+       {\blanko[\v!regel] 
+        \snaptogrid\vbox{\box\nextbox}
+        \blanko[\v!regel]}
+     \vbox\bgroup
+       \let\setdisplayskips=\relax
+       \abovedisplayskip=\!!zeropoint
+       \abovedisplayshortskip=\!!zeropoint
+       \belowdisplayskip=\!!zeropoint
+       \belowdisplayshortskip=\!!zeropoint
+       \@EA\let\@EA\next
+   \fi}
+
+\def\topsnaptogrid% 
+  {\ifgridsnapping
+     \dowithnextbox
+       {\scratchdimen=\ht\nextbox
+        \advance\scratchdimen by -\ht\strutbox
+        \advance\scratchdimen by \topskip
+        \ht\nextbox=\scratchdimen
+        \dp\nextbox=\!!zeropoint
+        \box\nextbox
+        \kern\lineheight
+        \kern-\topskip
+        \nointerlineskip} 
+       \hbox
+   \fi}
+
+\def\centertogrid%
+  {\ifgridsnapping
+     \dowithnextbox
+       {\bgroup
+        \par
+        \scratchdimen=\ht\nextbox
+        \advance\scratchdimen by \dp\nextbox
+        \getnoflines\scratchdimen
+        \setbox\nextbox=\vbox to \noflines\lineheight
+          {\forgetall  
+           \vskip\!!zeropoint plus \ht\nextbox
+           \copy\nextbox
+           \kern.5\dp\strutbox % VOORLOPIGE WAARDE 
+           \vskip\!!zeropoint plus \dp\nextbox}
+        \noindent\snaptogrid\vbox{\box\nextbox}%
+        \egroup}
+       \hbox
+   \fi}
+
+\ifx\startbaselinecorrection\undefined \wait \fi % change order
+
+\let\normalstartbaselinecorrection=\startbaselinecorrection
+
+\def\startbaselinecorrection%
+  {\ifgridsnapping
+     \centertogrid\bgroup
+     \let\stopbaselinecorrection=\egroup
+   \else
+     \normalstartbaselinecorrection
+   \fi}
+
+\def\setgridbox#1#2#3%
+  {\setbox#1=\ruledvbox to #3
+     {\forgetall
+      \offinterlineskip
+      \hsize=#2
+      \getnoflines{#3}%
+      \vskip\topskip
+      \vskip-\ht\strutbox
+      \scratchdimen=#2\advance\scratchdimen by \lineheight
+      \dorecurse
+        {\noflines}
+        {\strut
+         \hskip-.5\lineheight
+         \rlap
+           {\hskip\scratchdimen\hskip2pt\infofont
+            \hbox to 1em{\hss\recurselevel}}%
+         \vrule
+           \!!height .5\testrulewidth
+           \!!depth .5\testrulewidth
+           \!!width \scratchdimen
+         \par}
+      \vfill}}
+
+\def\doverplaatsopgrid[#1]%
+  {\processaction
+     [#1]
+     [  \v!boven=>\positiveextrasnap\extrasnapbefore,
+        \v!onder=>\positiveextrasnap\extrasnapafter,
+        \v!beide=>\positiveextrasnap\extrasnaparound,
+       -\v!boven=>\negativeextrasnap\extrasnapbefore,
+       -\v!onder=>\negativeextrasnap\extrasnapafter,
+       -\v!beide=>\negativeextrasnap\extrasnaparound,
+      \s!default=>\positiveextrasnap\extrasnaparound,
+      \s!unknown=>\positiveextrasnap\extrasnapreset]}
+
+\def\verplaatsopgrid%
+  {\dosingleempty\doverplaatsopgrid}
+
+\def\doplaatsopgrid[#1]%
+  {\doverplaatsopgrid[#1]\snaptogrid\vbox}
+
+\def\plaatsopgrid%
+  {\dosingleempty\doplaatsopgrid}
+
+\protect
+
+\endinput 

@@ -5,7 +5,11 @@
 %D       subtitle=\TEX\ Logos,
 %D         author=J. Hagen,
 %D           date=\currentdate,
-%D      copyright=J. Hagen]
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. Non||commercial use is 
+%C granted. 
 
 \writestatus{loading}{Context TeX Logos}
 
@@ -13,31 +17,47 @@
 %D typeset with an lowered~E. From te beginning of \TEX,
 %D authors of macro packages adapted this raising and lowering
 %D style. In this module we define some of those logos. 
+%D Watch the \type{cmr} detection hack. 
 
 \unprotect
 
+\convertargument cmr\to\someCMRfont
+
+\def\doifCMRfontelse#1#2%
+  {\doifinstringelse{\someCMRfont}{\fontname\font}
+     {\def\next{#1}}
+     {\def\next{#2}}%
+   \next}
+
+\unexpanded\def\CMRkern%
+  {\doifCMRfontelse{\kern}{\scratchdimen=}}
+
 \def\TeX%
-  {T%
+  {T% 
    \kern-.1667em\lower.5ex\hbox{E}%
    \kern-.125emX}
 
 \def\ConTeXt%
-  {C\kern-.0333emO\kern-.0333emN\kern-.0333em\TeX\kern-.0333emT}
+  {C%
+   \CMRkern-.0333emO%
+   \CMRkern-.0333emN%
+   \CMRkern-.0333em\TeX%
+   \CMRkern-.0333emT}
 
 \def\PPCHTeX%
   {PPCH\TeX}
 
 \def\LaTeX%
-  {{L%
-    \kern-.30em\raise.3ex\hbox{\tfxx A}%
-    \kern-.18em\TeX}}
+  {L%
+   \kern-.30em\raise.3ex\hbox{\txx A}%
+   \kern-.18em\TeX}
 
 \def\TaBlE%
   {T%
    \kern-.27em\lower.5ex\hbox{A}%
-   \kern-.18em B%
+   \kern-.18emB%
    \kern-.1em\lower.5ex\hbox{L}%
-   \kern-.075em E}
+   \kern-.075emE}
 
 \def\PiCTeX%
   {P%

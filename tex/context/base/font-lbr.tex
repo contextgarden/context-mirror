@@ -11,12 +11,12 @@
 %D complete. These fonts have prebuilt accented characters,
 %D which means that we use another encoding vector: \YandY\
 %D texnansi. These fonts are a good illustration that a 12 
-%D point corps is indeed never that size. The Lucida Bright 
+%D point bodyfont is indeed never that size. The Lucida Bright 
 %D fonts come in one design size. 
 
 \startcoding[texnansi]
 
-\definecorps [14.4pt,12pt,11pt,10pt,9pt,8pt] [rm]
+\definebodyfont [14.4pt,12pt,11pt,10pt,9pt,8pt] [rm]
   [tf=lbr sa 1, 
    bf=lbd sa 1, 
    it=lbi sa 1, 
@@ -29,7 +29,7 @@
   tfd=lbr sa 2.074,
    sc=lbr sa 0.833]
 
-\definecorps [14.4pt,12pt,11pt,10pt,9pt,8pt] [ss]
+\definebodyfont [14.4pt,12pt,11pt,10pt,9pt,8pt] [ss]
   [tf=lsr sa 1, 
    bf=lsd sa 1, 
    it=lsi sa 1, 
@@ -42,43 +42,46 @@
   tfd=lsr sa 2.074,
    sc=lsr sa 0.833]
 
-\definecorps [14.4pt,12pt,11pt,10pt,9pt,8pt] [tt]
+\definebodyfont [14.4pt,12pt,11pt,10pt,9pt,8pt] [tt]
   [tf=lstr sa 1, 
    sl=lsto sa 1, 
+   it=lsto sa 1, 
+   bf=lstb sa 1, 
+   bs=lstbo sa 1, 
   tfa=lstr sa 1.200,
   tfb=lstr sa 1.440,
   tfc=lstr sa 1.728,
   tfd=lstr sa 2.074]
 
-\definecorps [14.4pt,12pt,11pt,10pt,9pt,8pt] [hw]
+\definebodyfont [14.4pt,12pt,11pt,10pt,9pt,8pt] [hw]
   [tf=lbh sa 1]
 
-\definecorps [14.4pt,12pt,11pt,10pt,9pt,8pt] [cg]
+\definebodyfont [14.4pt,12pt,11pt,10pt,9pt,8pt] [cg]
   [tf=lbc sa 1]
 
-\definecorps [14.4pt,12pt,11pt,10pt,9pt,8pt] [mm]
+\definebodyfont [14.4pt,12pt,11pt,10pt,9pt,8pt] [mm]
   [ex=lbme sa 1,
    mi=lbmo sa 1,
    sy=lbms sa 1,
    ma=lbma sa 1]
 
-\definecorps [7pt,6pt,5pt] [rm]
+\definebodyfont [7pt,6pt,5pt,4pt] [rm]
   [tf=lbr sa 1,
    bf=lbd sa 1,
    sl=lbi sa 1,
    it=lbi sa 1]
 
-\definecorps [7pt,6pt,5pt] [ss]
+\definebodyfont [7pt,6pt,5pt,4pt] [ss]
   [tf=lsr sa 1,
    sl=lsd sa 1,
    it=lsi sa 1,
    bf=lsi sa 1]
 
-\definecorps [7pt,6pt,5pt] [tt]
+\definebodyfont [7pt,6pt,5pt,4pt] [tt]
   [tf=lstr sa 1,
    sl=lsto sa 1]
 
-\definecorps [7pt,6pt,5pt] [mm]
+\definebodyfont [7pt,6pt,5pt,4pt] [mm]
   [ex=lbme sa 1,
    mi=lbmo sa 1,
    sy=lbms sa 1,
@@ -87,7 +90,7 @@
 %D Defining the larger alternatives takes only a few 
 %D commands, thanks to \type{sa}. 
 
-\definecorps [14.4pt,12pt,11pt,10pt,9pt,8pt] [rm]
+\definebodyfont [14.4pt,12pt,11pt,10pt,9pt,8pt] [rm]
   [bfa=lbd sa 1.200,
    bfb=lbd sa 1.440,
    bfc=lbd sa 1.728,
@@ -101,7 +104,7 @@
    bsc=lbdi sa 1.728,
    bsd=lbdi sa 2.074]
 
-\definecorps [14.4pt,12pt,11pt,10pt,9pt,8pt] [ss]
+\definebodyfont [14.4pt,12pt,11pt,10pt,9pt,8pt] [ss]
   [bfa=lsr sa 1.200,
    bfb=lsr sa 1.440,
    bfc=lsr sa 1.728,
@@ -115,7 +118,7 @@
    bsc=lsi sa 1.728,
    bsd=lsi sa 2.074]
 
-\definecorps [14.4pt,12pt,10pt] [tt]
+\definebodyfont [14.4pt,12pt,10pt] [tt]
   [sla=lsto sa 1.220,
    slb=lsto sa 1.440,
    slc=lsto sa 1.728,
@@ -123,9 +126,17 @@
 
 \stopcoding
 
-%D Firt we implement some alternatives for \AMS\ symbols. 
+%D The Lucida Bright TeleType font does not contain \TEX's 
+%D visual space. The next definition offers an alternative.
+
+\def\controlspace%
+  {\hbox{\font\next=cmtt10 at \bodyfontsize\next\char32}}
+
+%D Next we implement some alternatives for \AMS\ symbols. 
 %D These can be overrules by loading the \AMS\ font module 
 %D afterwards. 
+
+\unprotect 
 
 \mathchardef\blacktriangleleft ="01F0 
 \mathchardef\blacktriangleright="01F1 
@@ -140,8 +151,6 @@
 %D This part of the definition is adapted bij J. Hagen. There
 %D is already an extra family: \type{\mafam} (Math A ). Also, 
 %D the loading of fonts is done somewhere else. 
-
-\unprotect
 
 \let\arfam    = \mafam
 \let\thearfam = \hexmafam

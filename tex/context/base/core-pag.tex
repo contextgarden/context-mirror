@@ -1,0 +1,284 @@
+%D \module
+%D   [       file=core-pag,
+%D        version=1998.01.15,
+%D          title=\CONTEXT\ Core Macros,
+%D       subtitle=Pagebody Building,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. Non||commercial use is
+%C granted.
+
+\writestatus{loading}{Context Core Macros / Pagebody Building}
+
+\unprotect
+
+\newbox\arrangedpageA
+\newbox\arrangedpageB
+
+\newif\ifswaparranged
+\newif\ifnegatearranged
+\newif\ifmirrorarranged
+\newif\ifdoublearranged
+
+\def\arrangedrotationO{0}
+\def\arrangedrotationE{0}
+
+\newcounter\arrangedpageN
+\chardef\arrangedpageT=1
+
+\def\stelarrangerenin[#1]%
+  {\global\negatearrangedfalse
+   \global\mirrorarrangedfalse
+   \global\doublearrangedfalse
+   \gdef\arrangedrotationO{0}%
+   \gdef\arrangedrotationE{180}%
+   \global\arrangingpagestrue
+   \processallactionsinset
+     [#1]
+     [  \v!gespiegeld=>\global\mirrorarrangedtrue,
+      \v!dubbelzijdig=>\global\doublearrangedtrue,
+          \v!negatief=>\global\negatearrangedtrue,
+         \v!geroteerd=>\gdef\arrangedrotationO{90}\gdef\arrangedrotationE{270},
+                   90=>\gdef\arrangedrotationO{90}\gdef\arrangedrotationE{270},
+                  180=>\gdef\arrangedrotationO{180}\gdef\arrangedrotationE{0},
+                  270=>\gdef\arrangedrotationO{270}\gdef\arrangedrotationE{90},
+                  2*8=>\global\chardef\arrangedpageX=4
+                       \global\chardef\arrangedpageY=2
+                       \global\chardef\arrangedpageT=8
+                       \global\chardef\horizontalcutmarks=5
+                       \global\chardef\verticalcutmarks=3
+                       \global\let\pusharrangedpage=\pusharrangedpageSIXTEEN
+                       \global\let\poparrangedpages=\poparrangedpagesAB,
+                  2*4=>\global\chardef\arrangedpageX=2
+                       \global\chardef\arrangedpageY=2
+                       \global\chardef\arrangedpageT=4
+                       \global\chardef\horizontalcutmarks=3
+                       \global\chardef\verticalcutmarks=3
+                       \global\let\pusharrangedpage=\pusharrangedpageEIGHT
+                       \global\let\poparrangedpages=\poparrangedpagesAB,
+                  2*2=>\global\chardef\arrangedpageX=2
+                       \global\chardef\arrangedpageY=1
+                       \global\chardef\arrangedpageT=2
+                       \global\chardef\horizontalcutmarks=3
+                       \global\chardef\verticalcutmarks=2
+                       \global\let\pusharrangedpage=\pusharrangedpageFOUR
+                       \global\let\poparrangedpages=\poparrangedpagesAB,
+                  2UP=>\global\chardef\arrangedpageX=2
+                       \global\chardef\arrangedpageY=1
+                       \global\chardef\arrangedpageT=4
+                       \global\chardef\horizontalcutmarks=3
+                       \global\chardef\verticalcutmarks=2
+                       \global\let\handlearrangedpage=\handlearrangedpageTWOUP
+                       \global\let\pusharrangedpage=\pusharrangedpageTWO
+                       \global\let\poparrangedpages=\poparrangedpagesTWO,
+                2DOWN=>\global\chardef\arrangedpageX=1
+                       \global\chardef\arrangedpageY=2
+                       \global\chardef\arrangedpageT=4
+                       \global\chardef\horizontalcutmarks=2
+                       \global\chardef\verticalcutmarks=3
+                       \global\let\handlearrangedpage=\handlearrangedpageTWODOWN
+                       \global\let\pusharrangedpage=\pusharrangedpageTWO
+                       \global\let\poparrangedpages=\poparrangedpagesTWO,
+             \s!reset=>\global\arrangingpagesfalse,
+           \s!unknown=>\global\arrangingpagesfalse,
+           \s!default=>\global\arrangingpagesfalse]%
+   \doifcommonelse{#1}{90,270}
+     {\swapmacros\horizontalcutmarks\verticalcutmarks}{}% ugly solution
+   \ifarrangingpages
+     \abortutilitygeneration
+   \fi}
+
+\def\filluparrangedpages% beware: \realpageno is 1 ahead
+  {\ifarrangingpages
+     \scratchcounter=-\realpageno
+     \divide\scratchcounter by \arrangedpageT
+     \multiply\scratchcounter by \arrangedpageT
+     \advance\scratchcounter by \realpageno
+     \advance\scratchcounter by -1
+     \dorecurse{\scratchcounter}
+       {\geenhoofdenvoetregels
+        \insertdummypage}
+   \fi}
+
+\def\handlearrangedpageXY#1#2#3#4#5%
+  {\global\setbox#5=\hbox to \arrangedpageX\papierbreedte
+     {\setbox\scratchbox=\vbox to \arrangedpageY\papierhoogte
+        {\forgetall
+         \offinterlineskip
+         \mindermeldingen
+         \vskip#4\papierhoogte
+         \hskip#3\papierbreedte
+         \dorotatebox{#2}\hbox{\box#1}%
+         \vfill}%
+      \wd\scratchbox=\!!zeropoint
+      \box\scratchbox\box#5\hss}}
+
+\def\gotonextarrangepage%
+  {\global\advance\arrangeno by 1
+   \def\pagecutmarksymbol%
+     {\the\arrangeno}}
+
+\def\outputarrangedbox#1%
+  {\bgroup
+   \gotonextarrangepage
+   \ifnum\arrangedrotationO\arrangedrotationE>0
+     \ifdoublearranged
+       \ifodd\arrangeno 
+         \setbox#1=\vbox{\dorotatebox\arrangedrotationO\hbox{\box#1}}%
+       \else
+         \setbox#1=\vbox{\dorotatebox\arrangedrotationE\hbox{\box#1}}%
+       \fi
+     \else
+       \setbox#1=\vbox{\dorotatebox\arrangedrotationO\hbox{\box#1}}%
+     \fi 
+   \fi
+   \ifmirrorarranged
+     \setbox#1=\vbox{\domirrorbox\vbox{\box#1}}%
+   \fi
+   \ifnegatearranged
+     \negatecolorbox{#1}%
+   \fi  
+   \finishpagebox#1
+   \actualshipout{\box#1}%
+   \egroup}
+
+% 16/8/4
+
+\def\poparrangedpagesAB%
+  {\ifnum\arrangedpageN>0
+     \mindermeldingen
+     \papierbreedte=\arrangedpageX\papierbreedte
+     \papierhoogte=\arrangedpageY\papierhoogte
+     \outputarrangedbox\arrangedpageA
+     \outputarrangedbox\arrangedpageB
+     \doglobal\newcounter\arrangedpageN
+   \fi}
+
+\def\pusharrangedpageSIXTEEN#1%
+  {\doglobal\increment\arrangedpageN
+   \reportarrangedpage\arrangedpageN
+   \ifcase\arrangedpageN
+   \or \handlearrangedpageXY{#1}{180}{0}{1}\arrangedpageA %  1
+   \or \handlearrangedpageXY{#1}{180}{3}{1}\arrangedpageB %  2
+   \or \handlearrangedpageXY{#1}{180}{0}{1}\arrangedpageB %  3
+   \or \handlearrangedpageXY{#1}{180}{3}{1}\arrangedpageA %  4
+   \or \handlearrangedpageXY{#1}  {0}{3}{0}\arrangedpageA %  5
+   \or \handlearrangedpageXY{#1}  {0}{0}{0}\arrangedpageB %  6
+   \or \handlearrangedpageXY{#1}  {0}{3}{0}\arrangedpageB %  7
+   \or \handlearrangedpageXY{#1}  {0}{0}{0}\arrangedpageA %  8
+   \or \handlearrangedpageXY{#1}  {0}{1}{0}\arrangedpageA %  9
+   \or \handlearrangedpageXY{#1}  {0}{2}{0}\arrangedpageB % 10
+   \or \handlearrangedpageXY{#1}  {0}{1}{0}\arrangedpageB % 11
+   \or \handlearrangedpageXY{#1}  {0}{2}{0}\arrangedpageA % 12
+   \or \handlearrangedpageXY{#1}{180}{2}{1}\arrangedpageA % 13
+   \or \handlearrangedpageXY{#1}{180}{1}{1}\arrangedpageB % 14
+   \or \handlearrangedpageXY{#1}{180}{2}{1}\arrangedpageB % 15
+   \or \handlearrangedpageXY{#1}{180}{1}{1}\arrangedpageA % 16
+     \poparrangedpages
+   \fi}
+
+\def\pusharrangedpageEIGHT#1%
+  {\doglobal\increment\arrangedpageN
+   \reportarrangedpage\arrangedpageN
+   \ifcase\arrangedpageN
+   \or \handlearrangedpageXY{#1}{180}{0}{1}\arrangedpageA %  1
+   \or \handlearrangedpageXY{#1}{180}{1}{1}\arrangedpageB %  2
+   \or \handlearrangedpageXY{#1}  {0}{0}{0}\arrangedpageB %  3
+   \or \handlearrangedpageXY{#1}  {0}{0}{0}\arrangedpageA %  4
+   \or \handlearrangedpageXY{#1}  {0}{1}{0}\arrangedpageA %  5
+   \or \handlearrangedpageXY{#1}  {0}{1}{0}\arrangedpageB %  6
+   \or \handlearrangedpageXY{#1}{180}{0}{1}\arrangedpageB %  7
+   \or \handlearrangedpageXY{#1}{180}{1}{1}\arrangedpageA %  8
+     \poparrangedpages
+   \fi}
+
+\def\pusharrangedpageFOUR#1%
+  {\doglobal\increment\arrangedpageN
+   \reportarrangedpage\arrangedpageN
+   \ifcase\arrangedpageN
+   \or \handlearrangedpageXY{#1}  {0}{1}{0}\arrangedpageA %  1
+   \or \handlearrangedpageXY{#1}{180}{0}{0}\arrangedpageB %  2
+   \or \handlearrangedpageXY{#1}{180}{1}{0}\arrangedpageB %  3
+   \or \handlearrangedpageXY{#1}  {0}{0}{0}\arrangedpageA %  4
+     \poparrangedpages
+   \fi}
+
+% 2UP/2DOWN / 1pt prevents overflow
+
+\def\splitoffarrangedpagesTWO%
+  {\splittopskip\!!zeropoint
+   \global\setbox\arrangedpageA=\vsplit\arrangedpageB to \!!onepoint
+   \scratchdimen=\ht\arrangedpageB
+   \advance\scratchdimen by -\!!onepoint
+   \ifdim\scratchdimen>\!!onepoint
+     \setbox\scratchbox=\vsplit\arrangedpageB to \scratchdimen
+   \fi}
+
+\def\handlearrangedpageTWOUP%
+  {\splitoffarrangedpagesTWO
+   \ifswaparranged
+     \global\setbox\arrangedpageA=\hbox
+       {\box\arrangedpageA\box\arrangedpageB}%
+     \swaparrangedfalse
+   \else
+     \global\setbox\arrangedpageA=\hbox
+       {\box\arrangedpageB\box\arrangedpageA}%
+     \swaparrangedtrue
+   \fi
+   \global\ht\arrangedpageA=\papierhoogte
+   \global\setbox\arrangedpageB=\box\scratchbox}
+
+\def\handlearrangedpageTWODOWN%
+  {\splitoffarrangedpagesTWO
+   \global\ht\arrangedpageA=\papierhoogte
+   \global\ht\arrangedpageB=\papierhoogte
+   \ifswaparranged
+     \global\setbox\arrangedpageA=\vbox
+       {\forgetall\offinterlineskip\vskip\papierhoogte
+        \box\arrangedpageA\box\arrangedpageB}%
+     \swaparrangedfalse
+   \else
+     \global\setbox\arrangedpageA=\vbox
+       {\forgetall\offinterlineskip\vskip\papierhoogte
+        \box\arrangedpageB\box\arrangedpageA}%
+     \swaparrangedtrue
+   \fi
+   \global\setbox\arrangedpageB=\box\scratchbox}
+
+\def\poparrangedpagesTWO%
+  {\ifnum\arrangedpageN>0
+     \mindermeldingen
+     \swaparrangedfalse
+     \doloop
+       {\handlearrangedpage
+        \bgroup
+        \papierbreedte=\arrangedpageX\papierbreedte
+        \papierhoogte=\arrangedpageY\papierhoogte
+        \ht\arrangedpageA=\papierhoogte
+        \wd\arrangedpageA=\papierbreedte
+        \outputarrangedbox\arrangedpageA
+        \egroup
+        \ifdim\ht\arrangedpageB=\!!zeropoint
+          \exitloop
+        \fi}%
+     \doglobal\newcounter\arrangedpageN
+   \fi}
+
+\def\pusharrangedpageTWO#1%
+  {\doglobal\increment\arrangedpageN
+   \reportarrangedpage\arrangedpageN
+   \global\setbox\arrangedpageB=\vbox
+     {\forgetall
+      \offinterlineskip
+      \unvbox\arrangedpageB
+      \allowbreak
+      \ht#1=\!!onepoint
+      \dp#1=\!!zeropoint
+      \vbox{\box#1}}}
+
+\protect
+
+\endinput

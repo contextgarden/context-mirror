@@ -213,6 +213,7 @@
 \def \PSsetmiterlimit    {setmiterlimit}
 \def \PSsetgray          {setgray}
 \def \PSsetrgbcolor      {setrgbcolor}
+\def \PSsetcmykcolor     {setcmykcolor}
 \def \PSsetdash          {setdash}
 \def \PSgsave            {gsave}
 \def \PSgrestore         {grestore}
@@ -225,6 +226,11 @@
 \def \PSHiResBoundingBox {HiResBoundingBox:}
 \def \PSExactBoundingBox {ExactBoundingBox:}
 \def \PSPage             {Page:}
+
+%D By the way, the \type {setcmykcolor} operator is not 
+%D output by \METAPOST\ but can result from converting the 
+%D \kap{RGB} color specifications, as implemented in 
+%D \type{supp-mps}.  
 
 %D In \POSTSCRIPT\ arguments precede the operators. Due to the
 %D fact that in some translations we need access to those
@@ -443,6 +449,9 @@
      \else\ifx\somestring\PSsetrgbcolor
        \pdfliteral{\gMPa1 \gMPa2 \gMPa3 rg \gMPa1 \gMPa2 \gMPa3 RG}%
        \resetMPstack
+     \else\ifx\somestring\PSsetcmykcolor
+       \pdfliteral{\gMPa1 \gMPa2 \gMPa3 \gMPa4 k \gMPa1 \gMPa2 \gMPa3 \gMPa4 K}%
+       \resetMPstack
      \else\ifx\somestring\PSsetgray
        \pdfliteral{\gMPa1 g \gMPa1 G}%
        \resetMPstack
@@ -472,8 +481,7 @@
        \resetMPstack
      \else
        \handleMPgraphic{#1#2}%
-     \fi\fi\fi\fi\fi\fi\fi\fi
-     \fi\fi\fi\fi\fi\fi\fi\fi
+     \fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi
    \fi
    \handleMPsequence}
 
@@ -1161,4 +1169,3 @@
 \protect 
 
 \endinput
-

@@ -1,0 +1,357 @@
+%D \module
+%D   [       file=core-nav,
+%D        version=1998.01.15,
+%D          title=\CONTEXT\ Core Macros,
+%D       subtitle=Navigation,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. Non||commercial use is
+%C granted.
+
+\writestatus{loading}{Context Core Macros / Navigation}
+
+\unprotect
+
+%D Support for interactive document is very present in
+%D \CONTEXT\ and interwoven in many modules. This means that in
+%D this module, where we deal with some common navigational 
+%D features, there will be quite some forward references. 
+%D 
+%D When I started implementing hypertext support, the macros
+%D were mostly dealing with things related to locations, that
+%D is click in this location and goto that one. The
+%D functionality of many macro depends on the output medium:
+%D paper or screen. The next boolean holds the state: 
+
+\newif\iflocation                
+
+%D We also allocate a scratchbox:
+
+\newbox\locationbox
+
+%D There is no interaction at all unless enabled by saying:
+%D 
+%D \starttypen
+%D \setupinteraction[state=start]
+%D \stoptypen
+%D 
+%D The other settings are:
+%D 
+%D \showsetup{\y!stelinteractiein}
+%D 
+%D In the special driver modules we introduced a switch that
+%D forces page destinations (instead of named ones). We set
+%D this switch here. 
+
+\def\stelinteractiein%
+  {\dosingleargument\dostelinteractiein}
+
+\def\dostelinteractiein[#1]%
+  {\getparameters[\??ia][#1]%
+   \doifelse{\@@iastatus}{\v!start}
+     {\iflocation\else
+        \showmessage{\m!interactions}{2}{\ifusepagedestinations\space(PAGE)\fi}%
+        \global\locationtrue
+      \fi}
+     {\iflocation
+        \showmessage{\m!interactions}{3}{\ifusepagedestinations\space(PAGE)\fi}%
+        \global\locationfalse
+      \fi}%
+   \doifelse{\@@iastrut}{\v!ja}
+     {\locationstruttrue}
+     {\locationstrutfalse}%
+   \doifelse{\@@iapagina}{\v!ja}
+     {\global\usepagedestinationstrue}
+     {\global\usepagedestinationsfalse}}
+
+%D We have to make sure of some settings:
+
+\def\dolocationstartup%
+  {\iflocation
+     \dosetupinteraction
+     \setupinteractionscreens
+     \global\let\dolocationstartup=\relax
+   \fi}
+
+\appendtoks \dolocationstartup \to \everyshipout
+
+%D The next few macros are really horrible. For proper
+%D navigation a in||line hypertext fragment must have
+%D comfortable properties, so we must force some minimal
+%D dimensions. On the other hand button, and here I mean those
+%D pieces of text with fancy outlines and/or backgrounds, often
+%D have fixed, preset dimensions. 
+%D 
+%D To make things even worse, if we choose to let the optimal
+%D dimensions depend on the height and depth of a strut, a not
+%D too uncommon practice in \TEX, we have to deal with the fact
+%D that such a strut, set inside a box, is unknown too the
+%D outside world. 
+%D 
+%D The solution lays in passing the strut characteristics in 
+%D a proper way, in our case by applying \type{\presetgoto}: 
+%D 
+%D \starttypen 
+%D {some piece of text \presetgoto}
+%D \stoptypen
+%D 
+%D This macro stores the current strut values. 
+
+\newif\iflocationstrut
+
+\let\@@ia@@hoogte=\!!zeropoint
+\let\@@ia@@diepte=\!!zeropoint
+ 
+\def\presetgoto% 
+  {\iflocationstrut
+     \setstrut
+     \xdef\@@ia@@hoogte{\the\ht\strutbox}%
+     \xdef\@@ia@@diepte{\the\dp\strutbox}%
+   \else
+     \global\let\@@ia@@hoogte=\@@iahoogte
+     \global\let\@@ia@@diepte=\@@iadiepte
+   \fi}
+
+%D In the macros that deal with making areas into hyperlinks, 
+%D we use: 
+
+\def\dostartgoto\data#1\start#2\stop#3\dostopgoto% 
+  {\hbox
+     {\setbox0=\hbox{#1}%
+      \ifdim\wd0<\@@iabreedte\relax
+        \buttonwidth=\@@iabreedte\relax
+      \else
+        \buttonwidth=\wd0\relax
+      \fi
+      \ifdim\ht0<\@@ia@@hoogte\relax
+        \buttonheight=\@@ia@@hoogte\relax
+      \else
+        \buttonheight=\ht0
+      \fi
+      \ifdim\dp0<\@@ia@@diepte\relax
+        \dimen0=\@@ia@@diepte\relax
+      \else
+        \dimen0=\dp0\relax
+      \fi
+      \advance\buttonheight by \dimen0
+      \setbox2=\hbox
+        {\lower\dimen0\hbox
+           {\mindermeldingen
+            \dimen0=.5\wd0
+            \advance\dimen0 by -.5\buttonwidth
+            \hskip\dimen0#2#3}}%
+      \ifreversegoto
+        \dimen0=\wd0\box0\kern-\dimen0\smashbox2\box2\kern\dimen0
+      \else 
+        \smashbox2\box2\box0
+      \fi
+      \global\let\@@ia@@hoogte=\!!zeropoint
+      \global\let\@@ia@@diepte=\!!zeropoint}}
+
+%D The width of the active area depends on the dimensions
+%D preset, the actual dimens and/or the height and depth of the
+%D strut. 
+%D 
+%D Normally the hyper active area is laid on top of the text.
+%D This enables stacking hyperlinks on top of each other. When,
+%D for some reason the opposite is prefered, one can use the
+%D next boolean to signal this wish. 
+
+\newif\ifreversegoto \reversegotofalse
+
+%D As long as there a natural feeling of what can be considered
+%D hyper active or not, we have to tell users where they can
+%D possibly click. We've already seen a few macros that deal
+%D with this visualization, something we definitely do not let
+%D up to the viewer. One way of telling is using a distinctive
+%D typeface, another way is using color. 
+%D 
+%D There are two colors involved: one for normal hyperlinks,
+%D and one for those that point to the currentpage, the
+%D contrast color. 
+
+\definecolor [interactioncolor]         [r=0,  g=.6, b=0]
+\definecolor [interactioncontrastcolor] [r=.8, g=0,  b=0]
+
+\definecolor [interactiekleur]          [interactioncolor]
+\definecolor [interactiecontrastkleur]  [interactioncontrastcolor]
+
+%D The next few macros are responsible for highlighting hyper
+%D links. The first one, \type{\showlocation}, is used in those
+%D situations where the typeface is handled by the calling
+%D macro. 
+
+%D CHECK WHERE USED / CONSISTENCY
+
+\def\showlocation#1%
+  {\iflocation\color[\@@iakleur]{#1\presetgoto}\else#1\fi}
+
+%D When local color settings are to be used, we can use the 
+%D next macro, where \type{#1} is a tag like \type{\??tg} and
+%D \type{#2} some text.
+
+\def\showcoloredlocation#1#2%
+  {\iflocation
+     \color[\getvalue{#1\c!kleur}]{#2\presetgoto}%
+   \else
+     #2%
+   \fi}
+
+%D When we're dealing with pure page references, contrast 
+%D colors are used when we are already at the page mentioned. 
+
+\def\showcontrastlocation#1#2#3% the \@EA is needed
+  {\iflocation
+     \ifnum#2=\realpageno\relax
+       \doifelsevaluenothing{#1\c!kleur}
+         {#3\presetgoto}
+         {\color[\getvalue{#1\c!contrastkleur}]{#3\presetgoto}}%
+     \else
+       \color[\getvalue{#1\c!kleur}]{#3\presetgoto}%
+     \fi
+   \else
+     #3%
+   \fi}
+
+%D The next simple macro can be used in color specifications,
+%D like \type{\color[\locationcolor{green}]}. 
+
+\def\locationcolor#1%
+  {\iflocation#1\fi}
+
+%D More tokens are spend when we want both typeface and color 
+%D highlighting. 
+
+\def\dolocationattributes#1#2% 
+  {\bgroup
+   \iflocation
+     \doifdefinedelse{#1\c!kleur}
+       {\edef\colorattribute{\getvalue{#1\c!kleur}}}
+       {\let\colorattribute\empty}%
+   \else
+     \let\colorattribute\empty
+   \fi
+   \doifdefinedelse{#1\c!letter}
+     {\edef\fontattribute{\getvalue{#1\c!letter}}}
+     {\let\fontattribute\empty}%
+   \startcolor[\colorattribute]%
+   \doconvertfont{\fontattribute}{#2}%
+   \stopcolor
+   \egroup}
+
+%D Special hyperlinks, namely those to pages or navigational 
+%D properties, are associated with symbols. 
+
+\definesymbol [\v!eerste\v!pagina]         [\gotobegincharacter]
+\definesymbol [\v!vorige\v!pagina]         [\gobackwardcharacter]
+\definesymbol [\v!volgende\v!pagina]       [\goforwardcharacter]
+\definesymbol [\v!laatste\v!pagina]        [\gotoendcharacter]
+\definesymbol [\v!eerste\v!sub\v!pagina]   [\gotobegincharacter]
+\definesymbol [\v!vorige\v!sub\v!pagina]   [\gobackwardcharacter]
+\definesymbol [\v!volgende\v!sub\v!pagina] [\goforwardcharacter]
+\definesymbol [\v!laatste\v!sub\v!pagina]  [\gotoendcharacter]
+\definesymbol [\v!PreviousJump]            [\gobackjumpcharacter]
+\definesymbol [\v!NextJump]                [\goforjumpcharacter]
+\definesymbol [\v!CloseDocument]           [\closecharacter]
+
+%D These symbols are taken from the Computer Moders Roman
+%D symbol set or, when present, from the additional symbols of
+%D the American Mathematical Society. Of course one can use 
+%D his or her own symbols by redefining them. 
+
+\def\dogotocharacter#1#2#3%
+  {\ifx#1\undefined#2\else#3\fi}
+
+\def\gotobegincharacter%
+  {\hbox
+     {\dogotocharacter\blacktriangleleft
+        {\setbox0=\hbox{$\triangleleft$}%
+         \vrule\!!width.085ex\!!height1.075\ht0\!!depth\dp0
+         \kern-.11ex\box0} 
+        {\setbox0=\hbox{$\blacktriangleleft$}%
+         \setbox2=\hbox{\vrule\!!height\ht0\!!depth\dp0\!!width.25ex}%
+         \hbox{\lower.03ex\box2\kern-.35ex\box0}}}}
+
+\def\gotoendcharacter%
+  {\hbox
+     {\dogotocharacter\blacktriangleright
+        {\setbox0=\hbox{\mathematics{\triangleright}}%
+         \copy0\kern-.11ex 
+         \vrule\!!width.085ex\!!height1.075\ht0\!!depth\dp0}  
+        {\setbox0=\hbox{$\blacktriangleright$}%
+         \setbox2=\hbox{\vrule\!!height\ht0\!!depth\dp0\!!width.25ex}%
+         \hbox{\box0\kern-.35ex\lower.03ex\box2}}}}
+
+\def\gobackwardcharacter%
+  {\mathematics{\dogotocharacter\blacktriangleright\triangleleft\blacktriangleleft}}
+
+\def\goforwardcharacter%
+  {\mathematics{\dogotocharacter\blacktriangleleft\triangleright\blacktriangleright}}
+
+\def\gonowherecharacter%
+  {\mathematics{\bullet}}
+
+\def\gotosomewherecharacter% {} permits ^\...
+  {{\hbox{\hsmash{\gobackwardcharacter}\goforwardcharacter}}}
+
+\unexpanded\def\closecharacter%
+  {\dogotocharacter\boxtimes
+     {\ruledhbox{\mathematics{\times}}}
+     {\mathematics{\boxtimes}}}
+
+\def\goforjumpcharacter%
+  {\hbox{\goforwardcharacter \kern-.5em\goforwardcharacter}}
+
+\def\gobackjumpcharacter%
+  {\hbox{\gobackwardcharacter\kern-.5em\gobackwardcharacter}}
+
+%D We have already seen some of the next values in action, 
+%D others will be applied in other modules. 
+
+%D Although not decently supported in current viewers, a 
+%D provisory hiding mechanims is implemented. Areas marked as
+%D such, are visible on screen, but invisible on paper. Don't
+%D trust this mechanism yet!
+
+\def\dostartinteractie%
+  {\bgroup
+   \let\stopinteractie=\egroup
+   \dowithnextbox{\dostarthide\box\nextbox\dostophide\egroup}\hbox}
+
+\let\startinteractie = \relax
+\let\stopinteractie  = \relax
+
+% in the future: 
+%
+% eerst boolean invoeren bij menu, achtergrond, balk, button
+% enz; verder startinteractie een argument meegeven {#1} ->
+% \getvalue{#1\c!print}=={\v!ja} enz. Consequent menubutton
+% gebruiken!
+
+\def\@@iatimestamp%
+  {\the\normalyear
+   \ifnum\normalmonth<10 0\fi\the\normalmonth
+   \ifnum\normalday  <10 0\fi\the\normalday}
+
+\stelinteractiein
+  [\c!status=\v!stop,
+   \c!pagina=\v!nee,
+   \c!menu=\v!uit,
+   \c!letter=\v!vet,
+   \c!strut=\v!ja,
+   \c!kleur=interactioncolor,
+   \c!contrastkleur=interactioncontrastcolor,  
+   \c!breedte=1em,
+   \c!hoogte=\!!zeropoint,
+   \c!diepte=\!!zeropoint,
+   \c!titel=,
+   \c!subtitel=,
+   \c!auteur=,
+   \c!datum=\@@iatimestamp]
+
+\protect 
+
+\endinput 

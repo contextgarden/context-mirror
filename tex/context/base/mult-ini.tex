@@ -163,7 +163,7 @@
 %D \definesystemvariable    {name}
 %D \stoptypen
 
-\def\definesystemvariable    #1{\setvalue{\??prefix#1}{\@@prefix#1}}
+\def\definesystemvariable    #1{\setevalue{\??prefix#1}{\@@prefix#1}}
 
 %D \macros
 %D   {selectinterface, 
@@ -368,8 +368,7 @@
         {message}
         {duplicate tag #1
          in library \currentmessagelibrary\space
-         of interface \currentresponses}
-      \wait}%
+         of interface \currentresponses}}%
    \futurelet\next\getinterfacemessage}
 
 \bgroup
@@ -996,8 +995,8 @@
 %D \starttypen
 %D \startelements  english     dutch
 %D
-%D       beginof:  beginof     beginvan
-%D        eindof:  endof       eindvan
+%D      beginvan:  begin       beginvan
+%D       eindvan:  end         eindvan
 %D         start:  start       start
 %D          stop:  stop        stop
 %D
@@ -1147,4 +1146,3 @@
 \protect
 
 \endinput
-

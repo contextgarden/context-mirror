@@ -14,7 +14,7 @@
 \writestatus{loading}{Context Core Macros / Ruled Stuff Handling}
 
 \unprotect
-
+
 %D \macros
 %D   {linewidth, setuplinewidth}
 %D
@@ -42,14 +42,15 @@
 %
 % \def\setuprules%
 %   {\dosingleargument\dosetuprules}
-
+
 %D \TEX\ lacks support for color and even gray scales. The next
 %D macros can provide a sort of poor mans gray scales as well
 %D as give access to more suitable methods of rendering. Such a
 %D method looks like:
 %D
 %D \starttypen
-%D \def\methodegraybox\width#1\depth#2\height#3\raster#4\radius#5\\
+%D \def\methodegraybox
+%D     \width#1\height#2\depth#3\raster#4\corner#5\radius#6\\%
 %D   { ... }
 %D \stoptypen
 %D
@@ -59,9 +60,10 @@
 %D dimension, the fourth one takes a number between~0 and~1,
 %D and the last argument specifies a radius of the box when
 %D rounded corners are used, so:
-
+%D
 %D \startbuffer
-%D \periodgraybox\width.5\hsize\height1cm\depth0cm\raster.85\radius0pt\\
+%D \periodgraybox
+%D   \width.5\hsize\height1cm\depth0cm\raster.85\corner\v!nee\radius0pt\\
 %D \stopbuffer
 %D
 %D \typebuffer
@@ -75,7 +77,8 @@
 %D \startregelcorrectie
 %D   \unprotect
 %D   \vbox to 1cm
-%D     {\getvalue{\v!punt graybox}\width.5\hsize\height1cm\depth0cm\raster.85\radius0pt\\}
+%D     {\getvalue{\v!punt graybox}%
+%D        \width.5\hsize\height1cm\depth0cm\raster.85\corner\v!nee\radius0pt\\}
 %D   \protect
 %D \stopregelcorrectie
 %D
@@ -106,7 +109,8 @@
 %D registers above~8. These macros are memory hungry and byte
 %D spoiling.
 
-\def\processraster\symbol#1\width#2\height#3\depth#4\raster#5\corner#6\radius#7\\%
+\def\processraster
+    \symbol#1\width#2\height#3\depth#4\raster#5\corner#6\radius#7\\%
   {\bgroup
    \forgetall
    \mindermeldingen
@@ -115,8 +119,8 @@
    \dimen10=#5\dimen10
    \setbox2=\hbox to #2
      {\cleaders\hbox to 2\dimen10{#1\hss}\hss}%
-   \dimen12=#3
-   \advance\dimen12 by #4
+   \dimen12=#3%
+   \advance\dimen12 by #4%
    \setbox0=\vbox to \dimen12
      {\cleaders\vbox to 2\dimen10{\box2\vss}\vss}%
    \setbox0=\hbox
@@ -172,7 +176,7 @@
 \def\dofilledbox\width#1\height#2\depth#3\corner#4\radius#5\\%
   {\bgroup
    \doifelse{#4}{\v!rond}
-     {\dimen0=#5\relax   % just in case of .x\corpssize
+     {\dimen0=#5\relax   % just in case of .x\bodyfontsize
       \ifdim\dimen0=\!!zeropoint
         \dofilledlinedbox\width#1\height#2\depth#3\\%
       \else
@@ -225,8 +229,10 @@
 \def\colorbox%
   {\setcolorbox}
 
-%D \macro
-%D   {defineoverlay, overlaywidth, overlayheight}
+%D \macros
+%D   {defineoverlay, 
+%D    overlaywidth, overlayheight, overlaydepth,
+%D    overlaycolor}
 %D 
 %D Before we define the macro that actually takes card of the
 %D backgrounds, we introduce overlays. An overlay is something
@@ -265,7 +271,23 @@
 %D This macro's definition is a bit obscure, due the many 
 %D non||used arguments and the two step call that enable the 
 %D setting of the width, height and depth variables. 
-
+%D Multiple backgrounds are possible and are specified as:
+%D
+%D \starttypen
+%D \omlijnd[achtergrond={one,two,three}]{Three backgrounds!}
+%D \stoptypen
+%D
+%D Most drawing packages only know width and height. Therefore 
+%D the dimensions have a slightly different meaning here:
+%D 
+%D \startopsomming[opelkaar]
+%D \som \type{\overlaywidth }: width of the overlay
+%D \som \type{\overlayheight}: height plus depth of the overlay
+%D \som \type{\overlaydepth }: depth of the overlay
+%D \stopopsomming
+%D 
+%D The resulting box is lowered to the right depth. 
+  
 \def\defineoverlay%
   {\dodoubleargument\dodefineoverlay}
 
@@ -274,15 +296,29 @@
      {\setvalue{executeoverlay##1}{\executedefinedoverlay##1\\#2\\}}%
    \processcommalist[#1]\docommando}
 
-\long\def\executedefinedoverlay#1\\#2\\#3#4#5#6#7#8#9%
-  {\bgroup
-   \scratchdimen=#3\edef\overlaywidth {\the\scratchdimen}%
-   \scratchdimen=#4\edef\overlayheight{\the\scratchdimen}%
-   %\message{[overlay: #1\space w: \overlaywidth\space h: \overlayheight]}%
-   \setbox0=\hbox{#2}% 
+\long\def\executedefinedoverlay#1\\#2\\#3#4#5#6#7#8#9% 
+  {\bgroup 
+   \scratchdimen=#3%
+   \edef\overlaywidth {\the\scratchdimen}%
+   \scratchdimen=#4%
+   \advance\scratchdimen by #5%
+   \edef\overlayheight{\the\scratchdimen}%
+   \scratchdimen=#5%
+   \edef\overlaydepth {\the\scratchdimen}%
+   \edef\overlaycolor{#6}%
+   %\writestatus
+   %  {overlay}
+   %  {#1\space w=\overlaywidth/h+d=\overlayheight/d=\overlaydepth]}%
+   \setbox0=\hbox{\lower\overlaydepth\hbox{#2}}% 
+   \dimen0=\wd0 \advance\dimen0 by -\overlaywidth
+   \dimen2=\ht0 \advance\dimen2 by -\overlayheight
    \wd0=\overlaywidth
    \ht0=\overlayheight
-   \dp0=\!!zeropoint
+   \dp0=\overlaydepth
+   \setbox0=\hbox{\hskip-.5\dimen0\raise-.5\dimen2\box0}% 
+   \wd0=\overlaywidth
+   \ht0=\overlayheight
+   \dp0=\overlaydepth
    \box0
    \egroup}
 
@@ -314,30 +350,34 @@
 
 \newbox\extraframebox
 
+\def\dodobackgroundbox#1#2#3#4#5#6%
+  {\bgroup
+   \setbox\extraframebox=\hbox
+     {\executeifdefined{executeoverlay#1}\gobblesevenarguments
+        {\dimen2}{\dimen4}{\dimen6}{#3}{#4}{#5}{#6}}%
+   \setbox\extraframebox=\hbox
+     {\vbox{\moveleft\dimen0\box\extraframebox}}%
+   \wd\extraframebox=\wd#2%
+   \ht\extraframebox=\ht#2%
+   \dp\extraframebox=\dp#2%
+   \box\extraframebox\hskip-\wd#2%
+   \egroup}
+
 \def\dobackgroundbox#1\background#2\color#3\raster#4\offset#5\corner
     #6\radius#7\depth#8\\%
   {\vbox
-     {\offinterlineskip
-      \dimen0=#5\relax
-      \dimen2=\dimen0
-      \advance\dimen2 by #8
-      \dimen4=2\dimen0
-      \advance\dimen4 by \wd#1
-      \dimen6=\dimen0
-      \advance\dimen6 by \ht#1
-      \advance\dimen6 by \dp#1
-      \advance\dimen6 by \dimen2
-      \setbox\extraframebox=\hbox
-        {\executeifdefined{executeoverlay#2}\gobblesevenarguments
-           {\dimen4}{\dimen6}{\!!zeropoint}{#3}{#4}{#6}{#7}}
-      \setbox\extraframebox=\hbox
-        {\lower\dimen2\vbox{\moveleft\dimen0\box\extraframebox}}
-      \wd\extraframebox=\wd#1
-      \ht\extraframebox=\ht#1
-      \dp\extraframebox=\dp#1
-      \vbox{\copy\extraframebox}
-      \vskip-\ht\extraframebox
-      \vbox{\box#1}}}
+     {\dimen0=#5\relax
+      \dimen2=\wd#1\advance\dimen2 by 2\dimen0
+      \dimen4=\ht#1\advance\dimen4 by  \dimen0
+      \dimen6=\dp#1\advance\dimen6 by  \dimen0\advance\dimen6 by #8\relax
+      \def\docommando##1%
+        {\dodobackgroundbox{##1}{#1}{#3}{#4}{#6}{#7}}%
+      \hbox
+        {\expanded{\rawprocesscommalist[#2]\noexpand\docommando}%
+         \box#1}}}
+
+%D We can specify overlays as a comma separated list of 
+%D overlays, a sometimes handy feature.
 
 %D Besides backgrounds (overlays) we also need some macros to
 %D draw outlines (ruled borders). Again we have to deal with
@@ -346,34 +386,28 @@
 
 \def\dooutlinebox#1\color#2\offset#3\corner#4\radius#5\depth#6\toggle#7\\%
   {\vbox % rules on top of box
-     {\offinterlineskip
-      \dimen0=#3\relax
-      \dimen2=\dimen0
-      \advance\dimen2 by #6
-      \dimen4=2\dimen0
-      \advance\dimen4 by \wd#1
-      \dimen6=\dimen0
-      \advance\dimen6 by \ht#1
-      \advance\dimen6 by \dp#1
-      \advance\dimen6 by \dimen2
+     {\dimen0=#3\relax
+      \dimen2=\wd#1\advance\dimen2 by 2\dimen0
+      \dimen4=\ht#1\advance\dimen4 by  \dimen0
+      \dimen6=\dp#1\advance\dimen6 by  \dimen0\advance\dimen6 by #6\relax
       \setbox\extraframebox=\hbox
-        {\dostrokedbox\width\dimen4\height\dimen6\depth\!!zeropoint
-           \corner#4\radius#5\toggle#7\\}
+        {\dostrokedbox\width\dimen2\height\dimen4\depth\dimen6%
+           \corner#4\radius#5\toggle#7\\}%
       \setbox\extraframebox=\hbox
-        {\lower\dimen2\vbox{\moveleft\dimen0\box\extraframebox}}
-      \wd\extraframebox=\wd#1
-      \ht\extraframebox=\ht#1
-      \dp\extraframebox=\dp#1
-      \vbox{\box#1}
-      \vskip-\ht\extraframebox
-      \doifsomething{#2}
-        {\color[#2]{\vbox{\box\extraframebox}}}
-        {\vbox{\box\extraframebox}}}}
+        {\vbox{\moveleft#3\box\extraframebox}}%
+      \wd\extraframebox=\wd#1%
+      \ht\extraframebox=\ht#1%
+      \dp\extraframebox=\dp#1%
+      \hbox
+        {\copy#1\hskip-\wd#1%
+         \doifelsenothing{#2} % speeds up a little
+           {\box\extraframebox}
+           {\color[#2]{\box\extraframebox}}}}}
 
 \def\dostrokedbox\width#1\height#2\depth#3\corner#4\radius#5\toggle#6\\%
   {\bgroup
    \doifelse{#4}{\v!rond}
-     {\dimen0=#5\relax   % just in case of .x\corpssize
+     {\dimen0=#5\relax   % just in case of .x\bodyfontsize
       \ifdim\dimen0=\!!zeropoint
         \dostrokedlinedbox\width#1\height#2\depth#3\toggle#6\\%
       \else
@@ -389,15 +423,18 @@
 
 \def\dostrokedlinedbox\width#1\height#2\depth#3\toggle
     #4\left#5\right#6\top#7\bottom#8\\%
-  {\vbox
-     {\setbox0=\null\wd0=#1\ht0=#2\dp0=#3%
-      \vbox 
-        {\getvalue{t\@@frame@@#4#7}%
-         \hbox
-           {\getvalue{l\@@frame@@#4#5}%
-            \box0
-            \getvalue{r\@@frame@@#4#6}}
-         \getvalue{b\@@frame@@#4#8}}}}
+  {\bgroup
+   \setbox0=\null\wd0=#1\ht0=#2\dp0=#3%
+   \setbox2=\vbox
+     {\getvalue{t\@@frame@@#4#7}%
+      \hbox
+        {\getvalue{l\@@frame@@#4#5}%
+         \box0%
+         \getvalue{r\@@frame@@#4#6}}
+      \getvalue{b\@@frame@@#4#8}}%
+   \wd2=#1\ht2=#2\dp2=#3%
+   \box2
+   \egroup}
 
 \def\@@frame@@{@@frame@@}
 
@@ -425,7 +462,7 @@
 
 \def\dostrokedroundbox\width#1\height#2\depth#3\radius#4\\%
   {\ovalbox{#1}{#2}{#3}{\linewidth}{#4}{\v!ja}{\v!nee}}
-
+
 %D The next few macros are probably the most misused ones in
 %D \CONTEXT. They deal with putting rules around boxes, provide
 %D backgrounds, offer alignment features, and some more. We
@@ -480,7 +517,7 @@
 
 \def\copylocalframed[#1]#2[#3]%
   {\copyparameters[#1][#3]
-     [\c!breedte,\c!hoogte,\c!offset,\c!dummy,
+     [\c!breedte,\c!hoogte,\c!offset,\c!leeg,
       \c!straal,\c!hoek,\c!diepte,\c!kader,\c!kaderkleur,
       \c!bovenkader,\c!onderkader,\c!linkerkader,\c!rechterkader,
       \c!lijndikte,\c!kaderoffset,\c!achtergrondoffset,
@@ -645,7 +682,7 @@
    \ifboxhasheight
      \ht\framebox=\!!heighta
    \fi
-   \doifvalue{\@@framed\c!dummy}{\v!ja}
+   \doifvalue{\@@framed\c!leeg}{\v!ja}
      {\setbox0=\null
       \wd0=\wd\framebox \ht0=\ht\framebox \dp0=\dp\framebox
       \setbox\framebox=\box0\relax}%
@@ -674,7 +711,7 @@
 \unexpanded\def\inframed%
   {\dosingleempty\doinframed}
 
-%D When we set \type{\c!dummy} to \type{\v!ja}, we get 
+%D When we set \type{\c!leeg} to \type{\v!ja}, we get 
 %D ourselves a frame and/or background, but no content, so 
 %D actually we have a sort of phantom framed box. 
 
@@ -781,13 +818,13 @@
 \def\dobackedbox%
   {\setbox\framebox=\vbox
      {\dobackgroundbox\framebox
-        \background  \getvalue{\@@framed\c!achtergrond}%
-        \color       \getvalue{\@@framed\c!achtergrondkleur}%
-        \raster      \getvalue{\@@framed\c!achtergrondraster}%
-        \offset      \getvalue{\@@framed\c!achtergrondoffset}%
-        \corner      \getvalue{\@@framed\c!achtergrondhoek}%
-        \radius      \getvalue{\@@framed\c!achtergrondstraal}%
-        \depth       \getvalue{\@@framed\c!achtergronddiepte}\\}}
+        \background \getvalue{\@@framed\c!achtergrond}%
+        \color      \getvalue{\@@framed\c!achtergrondkleur}%
+        \raster     \getvalue{\@@framed\c!achtergrondraster}%
+        \offset     \getvalue{\@@framed\c!achtergrondoffset}%
+        \corner     \getvalue{\@@framed\c!achtergrondhoek}%
+        \radius     \getvalue{\@@framed\c!achtergrondstraal}%
+        \depth      \getvalue{\@@framed\c!achtergronddiepte}\\}}
 
 %D We handle left, right or middle alignment as well as fixed
 %D or free widths and heights. Each combination gets its own
@@ -1023,7 +1060,7 @@
    \advance\dimen2 by -\ht\strutbox
    \dimen0=.5\dimen2
    \ifboxhasoffset
-     \advance\dimen0 by \getvalue{\@@framed\c!offset}
+     \advance\dimen0 by \getvalue{\@@framed\c!offset}%
    \fi
    \advance\dimen0 by 2\linewidth
    \setbox\framebox=\hbox{\lower\dimen0\box\framebox}%
@@ -1149,7 +1186,7 @@
 %D \hbox{\haalbuffer\vbox{\typebuffer}}
 %D \stopregelcorrectie
 %D \egroup
-
+
 %D \macros
 %D   {setupblackrules}
 %D
@@ -1245,7 +1282,7 @@
 
 \unexpanded\def\blackrules%
   {\dosingleempty\doblackrules}
-
+
 %D The next commands can be used to draw margin rules. We
 %D support two methods: \marginrule{one for in||line use} and
 %D one that acts on a paragraph. Drawing a margin rule is 
@@ -1364,7 +1401,7 @@
 %D We just said:
 %D
 %D \typebuffer
-
+
 %D \macros
 %D   {vl, hl}
 %D
@@ -1408,15 +1445,7 @@
 
 \definecomplexorsimple\vl
 \definecomplexorsimple\hl
-
-% gejat van Knuth (zie \copyright, p356)
 
-\def\omcirkeld#1%
-  {{\ooalign{\hfil\raise0.07ex\hbox{{\tfx#1}}\hfil\crcr\mathhexbox20D}}}
-
-\def\copyright
-  {\omcirkeld{c}}
-
 %D \macros
 %D   {hairline, thinrule, thinrules, setupthinrules}
 %D
@@ -1495,7 +1524,7 @@
 
 \def\thinrules%
   {\dosingleempty\dothinrules}
-
+
 %D \macros
 %D   {startframedtext, setupframedtexts,
 %D    defineframedtext, start<<framedtext>>, <<framedtext>>}
@@ -1593,7 +1622,7 @@
       \c!korps=,
       \c!letter=,
       \c!kleur=,
-      \c!links=\hfill,
+      \c!links=,
       \c!rechts=\hfill,
       \c!voor=\blanko,
       \c!na=\blanko,
@@ -1603,7 +1632,7 @@
       \c!onderkader=,
       \c!linkerkader=,
       \c!rechterkader=,
-      \c!straal=.5\corpssize,
+      \c!straal=.5\bodyfontsize,
       \c!hoek=\v!recht,
       \c!achtergrond=,
       \c!achtergrondkleur=,
@@ -1644,15 +1673,17 @@
 
 \def\dododostartframedtext[#1][#2][#3]%
   {\processaction
-     [#2]
-     [  \c!links=>\letvalue{\??kd#1\c!links}=\relax,
-       \c!rechts=>\letvalue{\??kd#1\c!rechts}=\relax,
-      \s!default=>\letvalue{\??kd#1\c!links}=\relax,
-      \s!unknown=>]%
+     [#2]       
+     [  \v!links=>\letvalue{\??kd#1\c!links}=\relax
+                  \letvalue{\??kd#1\c!rechts}=\hfill,
+       \v!rechts=>\letvalue{\??kd#1\c!links}=\hfill
+                  \letvalue{\??kd#1\c!rechts}=\relax,
+       \v!midden=>\letvalue{\??kd#1\c!links}=\hfill
+                  \letvalue{\??kd#1\c!rechts}=\hfill]%
    \forgetparindent
    \setbox\framebox=\vbox
      \bgroup
-       \expanded{\switchtocorps[\getvalue{\??kd#1\c!korps}]}%
+       \expanded{\switchtobodyfont[\getvalue{\??kd#1\c!korps}]}%
        \localframed[\??kd#1][\c!strut=\v!nee,#3]%
        \bgroup
          \blanko[\v!blokkeer]%
@@ -1681,7 +1712,7 @@
   {\bgroup\dodoubleempty\dodoframedtext}
 
 \def\dodoframedtext[#1][#2]%
-  {\expanded{\switchtocorps[\getvalue{\??kd#1\c!korps}]}%
+  {\expanded{\switchtobodyfont[\getvalue{\??kd#1\c!korps}]}%
    \localframed[\??kd#1][\c!strut=\v!nee,#2]%
      \bgroup
        \blanko[\v!blokkeer]%
@@ -1697,7 +1728,7 @@
    \dostopattributes
    \egroup
    \egroup}
-
+
 %D \macros
 %D   {textrule, starttextrule, setuptextrules}
 %D
@@ -1859,17 +1890,17 @@
    \fi
    \next}
 
-%D The grouped commands also supports corps switching:
+%D The grouped commands also supports bodyfont switching:
   
 \def\starttextrule#1%
   {\bgroup
    \dotoptextrule{#1}
-   \switchtocorps[\@@tlkorps]}
+   \switchtobodyfont[\@@tlkorps]}
 
 \def\stoptextrule%
   {\dobottomtextrule{}%
    \egroup}
-
+
 %D \macros
 %D   {fillinrules, setupfillinrules}
 %D
@@ -1950,7 +1981,7 @@
         {\dodocomplexfillinrules[#1]{##1}{\hfill##2}{\unhbox\nextbox\unskip}}%
       \hbox\bgroup\let\par\egroup\ignorespaces}%
    \dodoublegroupempty\docomplexfillintext}
-
+
 %D \macros
 %D   {fillinline, setupfillinlines}
 %D  
@@ -2001,7 +2032,7 @@
       \endgroup
       \endgraf % ! 
       \@@ilna}}
-
+
 %D \stopdocumentation
 %D \bgroup
 %D
@@ -2173,7 +2204,22 @@
 %D \stopdocumentation
 %D \stopachtergrond
 %D \egroup
-
+
+%D \macros
+%D   {copyright, registered}
+%D 
+%D Some not so robust left||overs (borrowed from Knuth, 
+%D \TEX Book\ page 356):
+
+\def\omcirkeld#1%
+  {{\ooalign{\hfil\raise0.07ex\hbox{{\tfx#1}}\hfil\crcr\mathhexbox20D}}}
+
+\def\copyright%
+  {\omcirkeld{C}}
+
+\def\registered%
+  {\omcirkeld{R}}
+
 % \setuprules
 %   [\c!dikte=\v!middel]
 
@@ -2184,13 +2230,13 @@
   [\c!breedte=\v!passend,
    \c!hoogte=\v!ruim,
    \c!offset=0.25ex,
-   \c!dummy=\v!nee,
+   \c!leeg=\v!nee,
    \c!kader=\v!aan,
    \c!bovenkader=,
    \c!onderkader=,
    \c!linkerkader=,
    \c!rechterkader=,
-   \c!straal=.5\corpssize,
+   \c!straal=.5\bodyfontsize,
    \c!lijndikte=\linewidth,
    \c!hoek=\v!recht,
    \c!diepte=\!!zeropoint,
@@ -2261,12 +2307,12 @@
    \c!na=\blanko]
 
 \setupbackground
-  [\c!linkeroffset=.5\corpssize,
+  [\c!linkeroffset=.5\bodyfontsize,
    \c!rechteroffset=\@@aglinkeroffset,
    \c!bovenoffset=\!!zeropoint,
    \c!onderoffset=\@@agbovenoffset,
    \c!status=\v!start,
-   \c!straal=.5\corpssize,
+   \c!straal=.5\bodyfontsize,
    \c!hoek=\v!recht,
    \c!kader=\v!uit,
    \c!diepte=\!!zeropoint,

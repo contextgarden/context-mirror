@@ -24,9 +24,13 @@
 %D minimal as possible. 
 
 \input syst-tex.tex  
-\input syst-gen.tex
+\input syst-gen.tex 
 \input syst-ext.tex
 \input syst-new.tex
+
+%D To enable selective loading, we say:
+
+\CONTEXTtrue
 
 %D After this we're ready for the multi||lingual interface 
 %D modules. 
@@ -41,16 +45,30 @@
 
 \input supp-ini.tex
 \input supp-fil.tex
-\input supp-ver.tex
 \input supp-box.tex
 \input supp-mrk.tex
 \input supp-vis.tex
-\input supp-mul.tex
 \input supp-fun.tex
 \input supp-pdf.tex
 \input supp-spe.tex
 \input supp-mps.tex
 \input supp-tpi.tex
+
+%D Verbatim typestting is implemented in a separate class of 
+%D modules. The pretty typesetting modules are loaded at run 
+%D time. 
+
+\input verb-ini.tex  % replaces supp-ver
+
+%D We also use some third party macros. These are loaded by 
+%D saying:
+
+\input thrd-ran
+
+%D When loading the font, color and special modules, we need a
+%D bit more advanced file handling, so next we load:
+
+\input core-fil.tex
 
 %D \CONTEXT\ does not implement its own table handling. We 
 %D just go for the best there is and load \TABLE. Just to be 
@@ -66,8 +84,12 @@
 %D load additional definition modules when needed. 
 
 \input lang-ini.tex
-\input spec-ini.tex
 \input colo-ini.tex
+\input spec-ini.tex
+
+%D The special modules need some additional macro's: 
+
+\input spec-mis.tex
 
 %D For the moment we load a lot of languages. In the future 
 %D we'll have to be more space conservative. 
@@ -87,23 +109,26 @@
 \input lang-sla.tex
 \input lang-ura.tex
 
-%D The special modules need some additional macro's: 
-
-\input spec-mis.tex
-
 %D Next we load some core macro's. These implement the 
 %D macros' that are seen by the users. 
 
+\input core-var.tex
 \input core-gen.tex
 \input core-mak.tex
-\input core-fil.tex
+\input core-grd.tex
 \input core-ver.tex
 \input core-vis.tex
 \input core-con.tex
 \input core-rul.tex
 \input core-tab.tex
 \input core-fil.tex
-\input core-01a.tex
+\input core-new.tex
+\input core-nav.tex 
+\input core-ref.tex 
+\input core-obj.tex
+\input core-01a.tex 
+\input core-mul.tex 
+\input core-pag.tex 
 
 %D Of course we do need fonts. There are no \TFM\ files 
 %D loaded yet, so the format file is independant of their 
@@ -116,6 +141,7 @@
 
 \input core-fnt.tex
 \input core-not.tex
+% \input core-jav.tex % still experimental and loaded at runtime
 
 \input core-01b.tex
 \input core-01c.tex
@@ -144,7 +170,15 @@
 
 \input cont-log.tex
 
+%D At run time, a few more files are loaded, like:
+%D 
+%D \startopsomming[opelkaar]
+%D \som \type{cont-sys}: local (system dependant) defaults
+%D \som \type{cont-old}: substitutes for old (obsolete) macros
+%D \som \type{cont-new}: new macro implementations (for testing)
+%D \som \type{cont-fil}: filename and module synonyms
+%D \stopopsomming
+ 
 %D Dumping the format is all that's left to be done. 
 
 \dump
-

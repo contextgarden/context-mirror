@@ -565,13 +565,13 @@
 \def\@cc@{@cc@} % compound character 
 \def\@cs@{@cs@} % compound characters 
 
-\def\installcompoundcharacter #1#2#3 #4% 
+\def\installcompoundcharacter #1#2#3 #4% {{#4}} keeps move local
   {\setvalue{\@nc@\string#1}{\char`#1}%
    \def\!!stringa{#3}%
    \ifx\!!stringa\empty
-     \setvalue{\@cc@\string#1\string#2}{#4}%
+     \setvalue{\@cc@\string#1\string#2}{{#4}}% 
    \else
-     \setvalue{\@cs@\string#1\string#2\string#3}{#4}%
+     \setvalue{\@cs@\string#1\string#2\string#3}{{#4}}%
    \fi
    \catcode`#1=\@@active
    \scratchcounter=\the\uccode`~
@@ -684,4 +684,3 @@
 \protect
 
 \endinput
-

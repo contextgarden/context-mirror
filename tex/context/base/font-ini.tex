@@ -1,6 +1,6 @@
 %D \module
 %D   [       file=font-ini,
-%D        version=1995.1.1,
+%D        version=1997.11.15,
 %D          title=\CONTEXT\ Font Macros,
 %D       subtitle=Initialization,
 %D         author=Hans Hagen,
@@ -28,11 +28,11 @@
 \stopmessages
 
 \startmessages  english  library: fonts
-  title: corps
+  title: bodyfont
       1: coding --, one could use grouping
       2: variant -- is loaded
       3: unknown variant --
-      4: corps -- is not defined
+      4: bodyfont -- is not defined
       5: style -- is not defined
       6: -- is loaded
       7: unknown format --
@@ -92,8 +92,8 @@
 %D \startregelcorrectie
 %D \starttabel[|l||]
 %D \HL
-%D \NC handwritten \NC \type{\hw} \NC\FR
-%D \NC calligraphy \NC \type{\cg} \NC\LR
+%D \NC handwritten  \NC \type{\hw} \NC\FR
+%D \NC calligraphic \NC \type{\cg} \NC\LR
 %D \HL
 %D \stoptabel
 %D \stopregelcorrectie
@@ -146,7 +146,7 @@
 %D
 %D All these definitions are ordered in files with names like
 %D \type{font-cmr} and \type{font-pos}, where the last three
-%D characters specifiy the name as known to \CONTEXT.
+%D characters specify the name as known to \CONTEXT.
 %D
 %D Within such a font set (\type{cmr}) and style (\type{\rm}) 
 %D we can define a number of text font alternatives:
@@ -207,7 +207,7 @@
 %D Users are not confronted with sizes, but use the style or
 %D style+alternative to activate them.
 %D
-%D During the definition of a corps one can also declare the
+%D During the definition of a bodyfont one can also declare the
 %D available larger alternatives:
 %D
 %D \starttypen
@@ -217,7 +217,7 @@
 %D \stoptypen
 %D
 %D The smaller ones are automatically supplied and derived from
-%D the the corps environment.
+%D the the bodyfont environment.
 %D
 %D \starttypen
 %D \tfx \tfxx
@@ -253,7 +253,7 @@
 %D So a specific kind of glyph can be characterized by:
 %D
 %D \startsmaller
-%D family (cmr) + corps (12pt) + style (rm) + alternative (bf) + size (a)
+%D family (cmr) + bodyfont (12pt) + style (rm) + alternative (bf) + size (a)
 %D \stopsmaller
 %D
 %D The last component (the size) is optional.
@@ -281,7 +281,7 @@
 %D \type{\tx} gives a smaller boldface, which in turn can be
 %D called directly by \type{\bfx}.
 %D
-%D These two smaller alternatives are specified by the corps
+%D These two smaller alternatives are specified by the bodyfont
 %D environment and therefore not necessarily have similar sizes
 %D as \type{\scriptsize} and \type{\scriptscriptsize}. The main
 %D reason for this incompatibility (which can easily be undone)
@@ -480,10 +480,10 @@
 %D \TEX\ does. \PLAIN\ \TEX\ needs at least four families for
 %D typesetting math. We use those but give them symbolic names.
 
-\def\mrfam{0}  %  0  (Plain TeX)  Math Roman
-\def\mifam{1}  %  1  (Plain TeX)  Math Italic
-\def\syfam{2}  %  2  (Plain TeX)  Math Symbol
-\def\exfam{3}  %  3  (Plain TeX)  Math Extra
+\chardef\mrfam=0   %  0  (Plain TeX)  Math Roman
+\chardef\mifam=1   %  1  (Plain TeX)  Math Italic
+\chardef\syfam=2   %  2  (Plain TeX)  Math Symbol
+\chardef\exfam=3   %  3  (Plain TeX)  Math Extra
 
 %D \PLAIN\ \TEX\ also defines families for {\it italic}, {\sl
 %D slanted} and {\bf bold} typefaces, so we don't have to
@@ -514,6 +514,12 @@
 \newfam\scfam  %  A  (ConTeXt)  SmallCaps
 \newfam\tffam  %  B  (ConTeXt)  TypeFace
 
+%D Because Taco needs a few more math families, we reuse 
+%D family~7 for all those typefaces that have no related 
+%D family, and therefore are grouped into one.
+
+\let\nnfam\ttfam  %  7  (ReUsed)   NoName
+
 %D Normally \type{\mrfam} equals \type{\tffam}, but a more
 %D distinctive alternatives are possible, for instance the
 %D Euler and Concrete Typefaces.
@@ -528,8 +534,7 @@
 \newfam\mcfam  %  E  (ConTeXt)  Math C Fam
 
 %D Because there are 16~families and because \type{\ttfam}
-%D isn't used, at the moment we have two families left:~7
-%D and~F.
+%D is reused, at the moment we have one families left:~F.
 %D
 %D To ease the support of font packages, we als define
 %D shortcuts to these familynames. This is necessary because
@@ -552,11 +557,13 @@
 \edef\hexslfam {\hexnumber\slfam}  \edef\hexmbfam {\hexnumber\mbfam}
 \edef\hexbffam {\hexnumber\bffam}  \edef\hexmcfam {\hexnumber\mcfam}
 
+\edef\hexnnfam {\hexnumber\nnfam}  
+
 %D We define some (very private) constants to improve speed,
 %D memory usage and consistency.
 
 \def\@plain@      {@f@pl@} % plain TeX encoding vector
-\def\@size@       {@f@si@} % corps size prefix (12pt etc)
+\def\@size@       {@f@si@} % bodyfont size prefix (12pt etc)
 \def\@style@      {@f@st@} % full style prefix (roman etc)
 \def\@shortstyle@ {@f@sh@} % short style prefix (rm etc)
 \def\@letter@     {@f@le@} % first alternative typeface
@@ -577,6 +584,10 @@
 
 \def\familylist%
   {\c!tf,\c!sl,\c!it,\c!bf,\c!bs,\c!bi,\c!sc}
+
+%D This list will be extended when needed with (pseudo)
+%D families. The speude ones will in fact use the NoName
+%D family. 
 
 %D All used styles, like rm, ss and tt, are saved in a comma
 %D separated list. Appart from practical limitations one can
@@ -753,11 +764,16 @@
    \setvalue{\string#1}{\dohandleaccent#1}%
    \unprotectfontcharacters}
 
+%D \macros
+%D   {normalaccent}
+%D
 %D The next (in fact three) macros to take care of \type{\"e}
 %D as well as \type{\"{e}} situations. The latter one is always
 %D handled by \TEX's \type{\accent} primitive, but the former
 %D one can put the accents on top of characters as well as use
 %D \type{\char} to call for a character directly.
+
+\let\normalaccent=\accent
 
 \unexpanded\def\dohandleaccent#1%
   {\def\dodohandleaccent%
@@ -842,7 +858,7 @@
 %D \stoptypen
 %D
 %D The non||\TEX\ alternative \type{sa} stands for {\em scaled
-%D at}. This means as much as: scale the corpssize with this
+%D at}. This means as much as: scale the bodyfontsize with this
 %D factor. The value 1.440 in this example is derived
 %D from the \type{\magstep}'s as mentioned in
 %D \in{table}[tab:magstep]. We therefore introduce
@@ -893,12 +909,21 @@
 %D I considered checking for mistakenly use of \PLAIN's
 %D \type{\magstep}'s but although it would take only a few
 %D lines of code, this would not add to consistent use. I
-%D therefore removed this check. 
+%D therefore removed this check. Here we also handle the 
+%D optional hyphenchar definitions, like: 
+%D 
+%D \starttypen
+%D \definebodyfont [12pt] [rm] [hyphenchar=45]
+%D \stoptypen
 
-\def\dodoloadfont#1#2#3%
-  {\expanded{\docalculatefont\getvalue{\??ft#1#2} sa sa*#1*#2*}%
-   #3\relax
-   \getvalue{#1#2}}
+\def\dodoloadfont#1#2#3#4%
+  {\expanded{\docalculatefont\getvalue{\??ft#1#2#3} sa sa*#1*#2#3*}%
+   \doifdefinedelse{#1#2\s!hyphenchar}
+     {\expandafter\hyphenchar\csname#1#2#3\endcsname=
+        \getvalue{#1#2\s!hyphenchar}\relax}
+     {\expandafter\hyphenchar\csname#1#2#3\endcsname=
+        #4\relax}%
+   \getvalue{#1#2#3}}
 
 %D A more ugly but correct alternative for this is:
 %D
@@ -916,13 +941,13 @@
 %D The loading macro is used in two macros. One of them takes
 %D care of fixed width teletype fonts.
 
-\def\doloadfont#1#2%
-  {\debuggerinfo{\m!fonts}{loaded #1#2}%
-   \dodoloadfont{#1}{#2}{}}
+\def\doloadfont#1#2#3%
+  {\debuggerinfo{\m!fonts}{loaded #1#2#3}%
+   \dodoloadfont{#1}{#2}{#3}{45}}
 
-\def\doloadttfont#1#2%
-  {\debuggerinfo{\m!fonts}{loaded fixed #1#2}%
-   \dodoloadfont{#1}{#2}{\expandafter\hyphenchar\csname#1#2\endcsname=-1}}
+\def\doloadttfont#1#2#3%
+  {\debuggerinfo{\m!fonts}{loaded fixed #1#2#3}%
+   \dodoloadfont{#1}{#2}{#3}{-1}}
 
 %D \macros
 %D   {getfontname}
@@ -951,18 +976,18 @@
 %D to take care of it otherwise.
 
 %D \macros
-%D   {definecorpsenvironment}
+%D   {definebodyfontenvironment}
 %D   
 %D The relationship between the several sizes of a font, is
 %D defined by:
 %D
-%D \showsetup{\y!definecorpsenvironment}
+%D \showsetup{\y!definebodyfontenvironment}
 %D
 %D Later on we will see how these parameters are used, so for
 %D the moment we stick with an example:
 %D
 %D \starttypen
-%D \definecorpsenvironment
+%D \definebodyfontenvironment
 %D   [12pt]
 %D   [        text=12pt,
 %D          script=9pt,
@@ -973,7 +998,7 @@
 %D           small=10pt]
 %D \stoptypen
 %D 
-%D The first argument specifies the corps size to which the
+%D The first argument specifies the bodyfont size to which the
 %D settings apply. All second parameters are specified in
 %D dimensions and tell us more about related sizes. 
 %D 
@@ -983,10 +1008,10 @@
 %D the moment this in only place that some trickery is needed
 %D to fool the multilingual interface.
 
-\def\definecorpsenvironment%
-  {\dodoubleempty\dodefinecorpsenvironment}
+\def\definebodyfontenvironment%
+  {\dodoubleempty\dodefinebodyfontenvironment}
 
-\def\dodefinecorpsenvironment[#1][#2]%
+\def\dodefinebodyfontenvironment[#1][#2]%
   {\let\c!savedtext=\c!text
    \let\c!text=\s!text
    \doifundefined{\??ft#1\s!text}
@@ -998,32 +1023,32 @@
    \let\c!text=\c!savedtext
    \setvalue{\@size@#1}{\docompletefontswitch[#1]}}
 
-%D We default all parameters to the main corps size (begin
+%D We default all parameters to the main bodyfont size (begin
 %D \type{#1}), so the next setup is valid too:
 %D
 %D \starttypen
-%D \definecorpsenvironment[24pt]
+%D \definebodyfontenvironment[24pt]
 %D \stoptypen
 %D
 %D All parameters can be redefined when needed, so one does
 %D not have to stick to the default ones.
 
 %D \macros
-%D   {definecorps}
+%D   {definebodyfont}
 %D   
-%D The next step in defining a corps involves the actual font
+%D The next step in defining a bodyfont involves the actual font
 %D files, which can be recognized by their extension
 %D \type{tfm}. Installing those file is often beyond the
 %D scope of the user and up to the system administrator.
 %D
-%D \showsetup{\y!definecorps}
+%D \showsetup{\y!definebodyfont}
 %D
-%D This commands takes three arguments, where \showparameter\ 
-%D takes a (series of) corps size(s) and \showparameter\
+%D This commands takes three arguments, where \ShowArgument\
+%D  takes a (series of) bodyfont size(s) and \ShowArgument\
 %D the style group to which the definitions belong. 
 %D 
-%D Argument \showparameter\ accepts any suitable alternative, 
-%D as specified by the \TEX\ families, extended with a, b and
+%D Argument \ShowArgument\ accepts any suitable alternative, 
+%D as specified by the \TEX\ families, extended with~a, b~and
 %D higher sizes or the normal \TEX\ mathematical families and 
 %D some more.
 %D 
@@ -1033,7 +1058,7 @@
 %D \type{e} and higher alternatives.
 %D
 %D \starttypen
-%D \definecorps [12pt] [rm]
+%D \definebodyfont [12pt] [rm]
 %D   [tf=cmr12,
 %D    bf=cmbx12,
 %D    it=cmti12,
@@ -1046,7 +1071,7 @@
 %D   tfd=cmr12    scaled \magstep4,
 %D    sc=cmcsc10  at 12pt]
 %D
-%D \definecorps [12pt,11pt,10pt,9pt,8pt] [rm]
+%D \definebodyfont [12pt,11pt,10pt,9pt,8pt] [rm]
 %D   [tf=lbr  sa 1,
 %D    bf=lbd  sa 1,
 %D    it=lbi  sa 1,
@@ -1068,57 +1093,71 @@
 %D serif), \type{tt} (teletype), \type{hw} (hand written),
 %D \type{cg} (calygraphic) and whatever styles.
 
-\def\definecorps%
-  {\dotripleargument\dodefinecorps}
+\def\definebodyfont%
+  {\dotripleargument\dodefinebodyfont}
 
 %D The first argument may be a comma separated list. This,
 %D combined with specifications using \type{sa} can save a lot
 %D of typing. Although all arguments should be specified, we 
 %D treat the second argument as optional. 
 
-\def\dodefinecorps[#1][#2][#3]%
+\def\dodefinebodyfont[#1][#2][#3]%
   {\ifthirdargument
-     \def\dododefinecorps##1%
-       {\dodododefinecorps[##1][#2][#3]}%
-     \processcommalist[#1]\dododefinecorps
+     \def\dododefinebodyfont##1%
+       {\dodododefinebodyfont[##1][#2][#3]}%
+     \processcommalist[#1]\dododefinebodyfont
    \else
-     \definecorps[#1][\c!rm][#2]%
+     \definebodyfont[#1][\c!rm][#2]%
    \fi}
 
-%D Defining a corps involves two actions: defining the specific
+%D Defining a bodyfont involves two actions: defining the specific
 %D style related alternatives, like \type{\rma}, \type{\bfa}
 %D and \type{\rmsla}, and storing the definitions of their
-%D corps size related fonts. The first step is corps
+%D bodyfont size related fonts. The first step is bodyfont
 %D independant but executed every time. This permits user
 %D definitions like \type{\tfw} or \type{\bfq} for real large
-%D alterbatives.
+%D alternatives.
 
-\def\dodododefinecorps[#1][#2][#3]%
+\def\dodododefinebodyfont[#1][#2][#3]%
   {\geteparameters[\??ft#1#2][#3]% We expand them!
-   \dodefinecorpsenvironment[#1][]% Just to be sure.
-   \def\doiffamily##1##2##3\\%
-     {\rawdoifinsetelse{##1##2}{\familylist}
-        {\doifsomething{##3}
-           {\setvalue{#2##3}% eg: \rma, \ssa
-              {\donottest\switchtofontstyle{#2}{##3}}%
-            \setvalue{##1##2##3}% eg: \tfa, \bfa
-              {\donottest\switchtofontalternative{##1##2}{##3}}%
-            \setvalue{#2##1##2##3}% eg: \rmtfa, \ssbfa
-              {\donottest\switchtofontstylealternative{#2}{##1##2}{##3}}}}
-        {}}%
+   \dodefinebodyfontenvironment[#1][]% Just to be sure.
+   \def\doiffamily##1##2##3\\% adapted
+     {\doifinstringelse{##1##2}\familylist
+        {}
+        {\addtocommalist{##1##2}\familylist
+         %\settextfonts
+         \unexpanded\setvalue{##1##2}%
+           {\getvalue{#2}\getvalue{##1##2}}% 
+         \unexpanded\setvalue{##1##2\c!x}%
+           {\getvalue{##1##2}\getvalue{##1##2\c!x}}%
+         \unexpanded\setvalue{##1##2\c!xx}%
+           {\getvalue{##1##2}\getvalue{##1##2\c!xx}}}%
+      \doifsomething{##3}
+        {\setvalue{#2##3}% eg: \rma, \ssa
+           {\donottest\switchtofontstyle{#2}{##3}}%
+         \setvalue{##1##2##3}% eg: \tfa, \bfa
+           {\donottest\switchtofontalternative{##1##2}{##3}}%
+         \setvalue{#2##1##2##3}% eg: \rmtfa, \ssbfa
+           {\donottest\switchtofontstylealternative{#2}{##1##2}{##3}}}}%
    \def\dodefinefont##1%
-     {\doifdefined{\??ft#1#2##1}
-        {\letvalue{@#1#2##1@}=\charactercoding
-         \doifelse{#2}{\c!tt}
-           {\setvalue{#1#2##1}{\donottest\doloadttfont{#1}{#2##1}}}
-           {\setvalue{#1#2##1}{\donottest\doloadfont{#1}{#2##1}}}%
-         \bgroup
-         \let\relax=\empty
-         \debuggerinfo
-           {\m!fonts}{\getvalue{\??ft#1#2##1} defined as #1 #2 ##1}%
-         \egroup}%
-      \expandafter\doiffamily##1\\}%
-   \processassignlist[#3]\dodefinefont}
+     {\doifnot{##1}{\s!hyphenchar}
+        {\doifdefined{\??ft#1#2##1}
+           {\letvalue{@#1#2##1@}=\charactercoding
+            \doifelse{#2}{\c!tt}
+              {\setvalue{#1#2##1}{\donottest\doloadttfont{#1}{#2}{##1}}}
+              {\setvalue{#1#2##1}{\donottest\doloadfont{#1}{#2}{##1}}}%
+            \bgroup
+            \let\relax=\empty
+            \debuggerinfo
+              {\m!fonts}{\getvalue{\??ft#1#2##1} defined as #1 #2 ##1}%
+            \egroup}%
+         \doifnot{#2}{\c!mm}  % new!
+           {\expandafter\doiffamily##1\\}}}%
+   \processassignlist[#3]\dodefinefont}  
+
+%D Unknown families are added to the family list! For the 
+%D moment we also set the direct calls here. Some day a better 
+%D solution will be implemented.
 
 %D These macros show that quite some definitions take place. 
 %D Fonts are not loeaded yet! This means that at format 
@@ -1132,48 +1171,48 @@
 %D and the encoding. But ..... not done yet .....
 
 %D \macros
-%D   {everycorps,EveryCorps}
+%D   {everybodyfont,Everybodyfont}
 %D   
-%D Every change in corps size has conseqences for the baseline
+%D Every change in bodyfont size has conseqences for the baseline
 %D distance and skips between paragraphs. These are initialized
 %D in other modules. Here we only provide the hooks that
 %D garantees their handling.
 
-\newevery \everycorps \EveryCorps
+\newevery \everybodyfont     \Everybodyfont
 
 %D At the system level one can initialize thing like:
 %D
 %D \starttypen
-%D \appendtoks \setupspacing \to \everycorps
+%D \appendtoks \setupspacing \to \everybodyfont
 %D \stoptypen
 %D
 %D While users can add their own non standard commands like:
 %D
 %D \starttypen
-%D \EveryCorps{\message{changing to corps \the\corpssize}}
+%D \Everybodyfont{\message{changing to bodyfont \the\bodyfontsize}}
 %D \stoptypen
 %D
 %D Personnaly I never felt the need for such extensions, but
 %D at least its possible.
 
 %D \macros
-%D   {globalcorpssize,localcorpssize}
+%D   {globalbodyfontsize,localbodyfontsize}
 %D   
 %D Next we'll do the tough job of font switching. Here we
-%D have to distinguish between the global (overal) corps size
+%D have to distinguish between the global (overal) bodyfont size
 %D and the local (sometimes in the textflow) size. We store
 %D these dimensions in two \DIMENSION\ registers.
 
-\newdimen\globalcorpssize  \globalcorpssize=12pt
-\newdimen\localcorpssize   \localcorpssize =\globalcorpssize
+\newdimen\globalbodyfontsize  \globalbodyfontsize=12pt
+\newdimen\localbodyfontsize   \localbodyfontsize =\globalbodyfontsize
 
 %D \macros
-%D   {corpssize}
+%D   {bodyfontsize}
 %D   
 %D These two registers are not to be misused in calculations.
 %D For this purpose we keep a copy:
 
-\newdimen\corpssize  \corpssize=\globalcorpssize
+\newdimen\bodyfontsize  \bodyfontsize=\globalbodyfontsize
 
 %D \macros
 %D   {outputresolution}
@@ -1185,42 +1224,42 @@
 \def\outputresolution {300}
 
 %D \macros
-%D   {corpsfactor,corpspoints}
+%D   {bodyfontfactor,bodyfontpoints}
 %D   
 %D For multiplication purposes we keep an auxiliary counter
 %D and macro (here the expansion is not explicitly needed):
 
-\newcount\corpspoints \dimensiontocount\corpssize\corpspoints
+\newcount\bodyfontpoints \dimensiontocount\bodyfontsize\bodyfontpoints
 
-\edef\corpsfactor{\withoutpt\the\corpssize} 
+\edef\bodyfontfactor{\withoutpt\the\bodyfontsize} 
 
 %D When we assign for instance 12pt to a \DIMENSION\ register
 %D the \type{\the}'d value comes out as 12.0pt, which is
-%D often not the way users specifies the corps size. Therefore
-%D we also store normalized value.
+%D often not the way users specifie the bodyfont size. Therefore
+%D we also store the normalized value.
 
-\def\normalizecorpssize#1\to#2%
+\def\normalizebodyfontsize#1\to#2%
   {\scratchdimen=#1\relax
    \doifinstringelse{.0}{\withoutpt\the\scratchdimen}
      {\dimensiontocount\scratchdimen\scratchcounter
       \edef#2{\the\scratchcounter pt}}
      {\edef#2{\the\scratchdimen}}}
 
-\normalizecorpssize\corpssize\to\normalizedglobalcorpssize
-\normalizecorpssize\corpssize\to\normalizedlocalcorpssize
-\normalizecorpssize\corpssize\to\normalizedcorpssize
+\normalizebodyfontsize\bodyfontsize\to\normalizedglobalbodyfontsize
+\normalizebodyfontsize\bodyfontsize\to\normalizedlocalbodyfontsize
+\normalizebodyfontsize\bodyfontsize\to\normalizedbodyfontsize
 
 %D To be internationalized:
 
-\def\korpsgrootte {\corpssize}
-\def\korpspunten  {\corpspoints}
+\def\korpsgrootte {\bodyfontsize}
+\def\korpspunten  {\bodyfontpoints}
 
 %D some day.
 
 %D \macros
 %D   {fontsize,fontstyle}
 %D   
-%D Within a corps, fonts can come in different sizes. For
+%D Within a bodyfont, fonts can come in different sizes. For
 %D instance \type{\tf} is accompanied by \type{\tfa},
 %D \type{\tfb} etc. The third character in these sequences
 %D represents the size. The actual size is saved in a macro
@@ -1234,23 +1273,22 @@
 \let\fontstyle = \empty
 
 %D All things related to fonts are grouped into files with
-%D names like \expandafter\type\expandafter{\f!fontprefix cmr}.
-%D These files are loaded by:
+%D names like \type{font-cmr}. These files are loaded by:
 
 \def\doreadfontdefinitionfile#1%
   {\doifundefined{\c!file\f!fontprefix#1}%
      {\setvalue{\c!file\f!fontprefix#1}{}%
-      \edef\saveddqcatcode{\the\catcode`"}%
-      \catcode`\"=\@@other
-      \readsysfile{\f!fontprefix#1}
+      \makeshortfilename[\f!fontprefix\truefilename{#1}]%
+      \startreadingfile
+      \readsysfile{\shortfilename}
         {\showmessage{\m!fonts}{2}{#1}}
         {\showmessage{\m!fonts}{3}{#1}}%
-      \catcode`\"=\saveddqcatcode}}
+      \stopreadingfile}}
 
 %D Such files are only loaded once! This permits redundant
 %D loading, but at the same time forced grouping when we want
 %D continuously mix all kind of font, which of course is a kind
-%D of typographically sin. The \type{"} is made inactibe if 
+%D of typographically sin. The \type{"} is made inactive if 
 %D needed to prevent problems with loading files that use this 
 %D character in numbers. 
 
@@ -1260,9 +1298,9 @@
 \def\dodoswitchpoints#1%
   {\doifdefinedelse{\@size@#1}
      {\getvalue{\@size@#1}%
-      \localcorpssize=#1\relax
-      \normalizecorpssize\localcorpssize\to\normalizedcorpssize
-      \the\everycorps}
+      \localbodyfontsize=#1\relax
+      \normalizebodyfontsize\localbodyfontsize\to\normalizedbodyfontsize
+      \the\everybodyfont}
      {\showmessage{\m!fonts}{4}{#1}}}
 
 \def\doswitchstyle[#1]%
@@ -1287,7 +1325,7 @@
 %D the \PLAIN\ \TEX\ ones, although users can access them. Now
 %D why is this done? 
 
-%D Defining fonts using \type{\definecorps} takes time, so we
+%D Defining fonts using \type{\definebodyfont} takes time, so we
 %D prefer to predefine at least the Computer Modern Roman
 %D fonts. However, loading all those fonts at definition time
 %D would take both time and space. But even worse, once fonts
@@ -1295,7 +1333,7 @@
 %D which is a handicap when we want to distribute the compact
 %D \type{fmt} files. So what we want to do is defining fonts in
 %D a way that postpones the loading. We accomplish this by only
-%D loading the fonts when we switch to another corps size.
+%D loading the fonts when we switch to another bodyfont size.
 %D Among the other alternatives, such as loading the font at
 %D the moment of activation and redefining the activation 
 %D macro afterwards, this proved to be the most efficient
@@ -1306,7 +1344,7 @@
 %D font file, the one that defines the Computer Modern Fonts,
 %D we don't want the fonts metrics to end up in the format
 %D file, so we temporary prohibit loading. This means that at
-%D runtime we have to load the default corps size just before
+%D runtime we have to load the default bodyfont size just before
 %D we start typesetting. 
 %D 
 %D Therefore we have to signal the font switching macros that 
@@ -1323,24 +1361,25 @@
 %D macro relaxes itself and reset the signal.
 
 \def\preloadfonts%
-  {\showmessage{\m!fonts}{6}{\normalizedcorpssize\normalspace\fontstyle}%
-   \doswitchpoints[\normalizedcorpssize]%
+  {\showmessage{\m!fonts}{6}{\normalizedbodyfontsize\normalspace\fontstyle}%
+   \doswitchpoints[\normalizedbodyfontsize]%
    \doswitchstyle[\fontstyle]%
    \global\let\preloadfonts=\relax
    \global\loadingfontsfalse}
 
 %D Here comes the main font switching macros. These macros
 %D handle changes in size as well as returning to the global
-%D corps size.
+%D bodyfont size.
 
 \def\dosetfont[#1]%
   {\doifelse{#1}{\v!globaal}
-     {\restoreglobalcorps}
+     {\restoreglobalbodyfont}
      {\processcommalist[#1]\dodosetfont
       \ifloadingfonts\else
-        \doswitchpoints[\normalizedcorpssize]%
+        \doswitchpoints[\normalizedbodyfontsize]%
         \doswitchstyle[\fontstyle]%
-      \fi}}
+      \fi}%
+   \chardef\currentxfontsize=0\relax}
 
 \def\dodosetfont#1%
   {\dododosetfont{#1}{\showmessage{\m!fonts}{4}{#1}}}
@@ -1348,19 +1387,25 @@
 \def\dododosetfont#1#2%
   {\doifnumberelse{#1}
      {\scratchdimen=#1\relax
-      \normalizecorpssize\scratchdimen\to\normalizedsetfont
+      \normalizebodyfontsize\scratchdimen\to\normalizedsetfont
       \doifdefinedelse{\@size@\normalizedsetfont}
-        {\localcorpssize=\normalizedsetfont
-         \let\normalizedcorpssize=\normalizedsetfont}
+        {\localbodyfontsize=\normalizedsetfont
+         \let\normalizedbodyfontsize=\normalizedsetfont}
         {#2\dosetsubstitutefont{#1}}}
      {\doifdefinedelse{\@style@#1}
         {\edef\fontstyle{#1}}
         {\doreadfontdefinitionfile{#1}}}}
 
-%D When users specify for instance a 13 point corps while no
-%D such corps is defined, the system automatically tries to
+%D In the previous macros we use \type{\currentxfontsize} to
+%D hold the current x||size of the font. This enables us to 
+%D support for instance \type{\sl} inside a \type{\tx} switch. 
+
+\chardef\currentxfontsize=0
+
+%D When users specify for instance a 13 point bodyfont while no
+%D such bodyfont is defined, the system automatically tries to
 %D find a best fit, that is the nearest smaller defined
-%D corpszize. A smaller one is definitely better than a larger
+%D bodyfontzize. A smaller one is definitely better than a larger
 %D one, simply because otherwise a lot of overfull box messages
 %D are more probable to occur. By taking a value slightly 
 %D smaller than half a point, we can use the next method.
@@ -1392,14 +1437,14 @@
    \donottest\getvalue{#1}}
 
 \def\switchtofontstylealternative#1#2#3%
-  {\getvalue{\normalizedcorpssize#1#2#3}}
+  {\getvalue{\normalizedbodyfontsize#1#2#3}}
 
 %D Setting the normal sized as well as the x and xx smaller
 %D sizes is accomplished by the next set of macros. When in
 %D math mode, the commands \type{\tx} and \type{\txx} are 
 %D just a switch to the script and double script styles, but 
-%D in text mode the values defined by the corpsenvironment are 
-%D used.
+%D in text mode the values defined by the bodyfontenvironment are 
+%D used. Here we also set \type{\currentxfontsize}. 
 
 \def\dosetsomextypeface#1%
   {\doifdefinedelse{#1}
@@ -1407,22 +1452,24 @@
      {\showmessage{\m!fonts}{7}{#1}}}%
 
 \def\dosetxtypeface#1%
-  {\ifmmode
+  {\chardef\currentxfontsize=1
+   \ifmmode
      \scriptstyle
    \else
      \dosetsomextypeface
-       {\getvalue{\??ft\normalizedcorpssize\c!x}%  % pt
+       {\getvalue{\??ft\normalizedbodyfontsize\c!x}%  % pt
         \getvalue{\@shortstyle@\fontstyle}%        % rm
         #1}%                                       % tf
      \unexpanded\def\tx{\dosetxxtypeface{#1}}%
    \fi}
 
 \def\dosetxxtypeface#1%
-  {\ifmmode
+  {\chardef\currentxfontsize=2
+   \ifmmode
      \scriptscriptstyle
    \else
      \dosetsomextypeface
-       {\getvalue{\??ft\normalizedcorpssize\c!xx}%  % pt
+       {\getvalue{\??ft\normalizedbodyfontsize\c!xx}%  % pt
         \getvalue{\@shortstyle@\fontstyle}%         % rm
         #1}%                                        % tf
      \let\tx=\relax
@@ -1486,23 +1533,39 @@
 %D set the text family after we've set the script ones, else
 %D the latter one would be in force after executing this macro.
 
-\def\settextfamily#1#2%
+\def\settextfamily#1#2#3% 
   {\def\setfamily##1##2%
-     {\doifdefinedelse{##2#1#2}
-        {\debuggerinfo{\m!fonts}{defined ##2#1#2}%
-         \getvalue{##2#1#2}\relax % activate font
-         \expandafter##1\getvalue{#2\s!fam}=\getvalue{##2#1#2}}
-        {\doifdefinedelse{##2#1\c!tf}
-           {\debuggerinfo{\m!fonts}{##2#1#2 replaced by ##2#1\c!tf}%
-            \getvalue{##2#1\c!tf}\relax % activate font
-            \expandafter##1\getvalue{#2\s!fam}=\getvalue{##2#1\c!tf}}
-           {\debuggerinfo{\m!fonts}{not defined ##2#1#2}}}}%
-   \scriptscriptfont\getvalue{#2\s!fam}=\scriptfont\getvalue{#2\s!fam}%
+     {\doifdefinedelse{##2\c!mm#2}
+        {\debuggerinfo{\m!fonts}{##2#1#2 overruled by ##2\c!mm#2}%
+         \getvalue{##2\c!mm#2}\relax % activate font
+         \expandafter##1\getvalue{#3\s!fam}=\getvalue{##2\c!mm#2}}
+        {\doifdefinedelse{##2#1#2}
+          {\debuggerinfo{\m!fonts}{defined ##2#1#2}%
+           \getvalue{##2#1#2}\relax % activate font
+           \expandafter##1\getvalue{#3\s!fam}=\getvalue{##2#1#2}}
+          {\doifdefinedelse{##2#1\c!tf}
+             {\debuggerinfo{\m!fonts}{##2#1#2 replaced by ##2#1\c!tf}%
+              \getvalue{##2#1\c!tf}\relax % activate font
+              \expandafter##1\getvalue{#3\s!fam}=\getvalue{##2#1\c!tf}}
+             {\debuggerinfo{\m!fonts}{not defined ##2#1#2}}}}}%
+   \scriptscriptfont\getvalue{#3\s!fam}=\scriptfont\getvalue{#3\s!fam}%
    \setfamily\scriptscriptfont\scriptscriptface
-   \scriptfont\getvalue{#2\s!fam}=\textfont\getvalue{#2\s!fam}%
+   \scriptfont      \getvalue{#3\s!fam}=\textfont  \getvalue{#3\s!fam}%
    \setfamily\scriptfont\scriptface
-   \textfont\getvalue{#2\s!fam}=\textfont\tffam
+   \textfont        \getvalue{#3\s!fam}=\textfont  \tffam
    \setfamily\textfont\textface}
+
+%D The previous macro lets definitions like 
+%D 
+%D \starttypen
+%D \definebodyfont[mm][10pt][bf=cmbx10 at 10.25pt]
+%D \stoptypen
+%D 
+%D take preference over 
+%D 
+%D \starttypen
+%D \definebodyfont[rm][10pt][bf=cmbx10 at 10pt]
+%D \stoptypen
 
 %D \macros
 %D   {defineoverallstyle}
@@ -1540,14 +1603,16 @@
 \def\setfontstyle#1#2%  #1:name (roman, romaan)  #2:style (rm)
   {\edef\fontstyle{#1}%
    \def\dosettextfamily##1%
-     {\settextfamily{#2}{##1}%
+     {\doifdefinedelse{##1\s!fam} % added
+        {\settextfamily{#2}{##1}{##1}}
+        {\settextfamily{#2}{##1}{\c!nn}}%
       \settypefaces{#2}{##1}}%
    \rawprocesscommalist[\familylist]\dosettextfamily
    \fam\tffam\relax
    \unexpanded\def\tx{\tfx}%
    \donottest\tf}
 
-%D Setting the math families looks much like setting the texts\
+%D Setting the math families looks much like setting the texts
 %D ones. This time however we use the 12 point font as a
 %D default when nothing is defined. This enables us to
 %D implement partial schemes. Here we also set the
@@ -1574,12 +1639,26 @@
    \setmathfamily\mcfam\textface\scriptface\scriptscriptface
      {\c!mm\c!mc}{}}
 
+%D Optionally skew characters can be set on a per font basis, 
+%D like:
+%D 
+%D \starttypen
+%D \definebodyfont
+%D   [12pt] [mm]
+%D   [mi=cmmi10,sy=cmsy10,syskewchar='50]
+%D \stoptypen
+%D 
 %D When setting the \type{\skewchar} we need to test on the
 %D availability first.
 
 \def\setskewchar#1#2%
   {\doifdefined{#1}
-     {\getvalue{#1}\expandafter\skewchar\getvalue{#1}=#2\relax}}
+     {\doifdefinedelse{\??ft#1\s!skewchar}
+        {\dosetskewchar{#1}{\getvalue{\??ft#1\s!skewchar}}}
+        {\dosetskewchar{#1}{#2}}}}
+
+\def\dosetskewchar#1#2%
+  {\getvalue{#1}\skewchar\getvalue{#1}=#2\relax}
 
 %D First we try to set the font at the math specific one (the
 %D fifth argment), next we take the alternative the last
@@ -1607,20 +1686,20 @@
 %D instance the sequence:
 %D
 %D \starttypen
-%D \setupcorps
+%D \setupbodyfont
 %D   [ams]
 %D
-%D \definecorps [24pt] [mm]
+%D \definebodyfont [24pt] [mm]
 %D   [ma=msam10 at 24pt,
 %D    mb=msbm10 at 24pt]
 %D
-%D \switchtocorps
+%D \switchtobodyfont
 %D   [24pt]
 %D
 %D This is a 24pt $\blacktriangleleft$
 %D \stoptypen
 %D 
-%D Here we didn't define the 24 point corps environment, so
+%D Here we didn't define the 24 point bodyfont environment, so
 %D it's defined automatically. Of course one can always use the
 %D \TEX\ primitive \type{\font} to switch to whatever font
 %D needed. 
@@ -1631,84 +1710,89 @@
 %D text, script and scriptscript sizes, then we set the text
 %D fonts and the math families and finally we activate the
 %D default typeface and also set the font specific parameters
-%D assigned to \type{\everycorps} 
+%D assigned to \type{\everybodyfont} 
 
 \def\docompletefontswitch[#1]%
-  {\corpssize=#1\relax
-   \dimensiontocount\corpssize\corpspoints
-   \edef\corpsfactor{\withoutpt\the\corpssize}%
-   \normalizecorpssize\corpssize\to\normalizedcorpssize
-   \edef\textface{\getvalue{\??ft\normalizedcorpssize\s!text}}%
-   \edef\scriptface{\getvalue{\??ft\normalizedcorpssize\s!script}}%
-   \edef\scriptscriptface{\getvalue{\??ft\normalizedcorpssize\s!scriptscript}}%
+  {\bodyfontsize=#1\relax
+   \dimensiontocount\bodyfontsize\bodyfontpoints
+   \edef\bodyfontfactor{\withoutpt\the\bodyfontsize}%
+   \normalizebodyfontsize\bodyfontsize\to\normalizedbodyfontsize
+   \edef\textface{\getvalue{\??ft\normalizedbodyfontsize\s!text}}%
+   \edef\scriptface{\getvalue{\??ft\normalizedbodyfontsize\s!script}}%
+   \edef\scriptscriptface{\getvalue{\??ft\normalizedbodyfontsize\s!scriptscript}}%
    \settextfonts
    \setmathfamilies
    \rmtf
-   \the\everycorps}
+   \the\everybodyfont}
 
 %D \macros
-%D   {setupcorps,switchtocorps}
+%D   {setupbodyfont,switchtobodyfont}
 %D   
-%D The next two macros are user ones. With \type{\setupcorps}
-%D one can set the document corps size, font family, style
+%D The next two macros are user ones. With \type{\setupbodyfont}
+%D one can set the document bodyfont size, font family, style
 %D and/or options defined in files, for example:
 %D
 %D \starttypen
-%D \setupcorps[cmr,ams,12pt,roman]
+%D \setupbodyfont[cmr,ams,12pt,roman]
 %D \stoptypen
 %D
 %D This command affects the document as a whole: text, headers
 %D and footers. The second macro however affects only the text:
 %D
 %D \starttypen
-%D \switchtocorps[10pt]
+%D \switchtobodyfont[10pt]
 %D \stoptypen
 %D
 %D So we've got:
 %D
-%D \showsetup{\y!setupcorps}
-%D \showsetup{\y!switchtocorps}
+%D \showsetup{\y!setupbodyfont}
+%D \showsetup{\y!switchtobodyfont}
 %D
 %D Both macros look alike. The second one also has to take
 %D all kind of keywords into account.
 
-\def\setupcorps[#1]%
+\def\setupbodyfont[#1]%
   {\doifsomething{#1}
      {\dosetfont[#1]%
-      \globalcorpssize=\localcorpssize
-      \normalizecorpssize\globalcorpssize\to\normalizedglobalcorpsize
+      \globalbodyfontsize=\localbodyfontsize
+      \normalizebodyfontsize\globalbodyfontsize\to\normalizedglobalbodyfontize
       \let\globalfontstyle=\fontstyle
-      \the\everycorps}}
+      \the\everybodyfont}}
 
-\unexpanded\def\switchtocorps[#1]%
+\unexpanded\def\switchtobodyfont[#1]%
   {\doifsomething{#1}
-     {\doifdefinedelse{\??ft\normalizedcorpssize\interfaced{#1}}
-        {\doswitchpoints[\getvalue{\??ft\normalizedcorpssize\interfaced{#1}}]%
+     {\doifdefinedelse{\??ft\normalizedbodyfontsize\interfaced{#1}}
+        {\doswitchpoints[\getvalue{\??ft\normalizedbodyfontsize\interfaced{#1}}]%
          \doswitchstyle[\fontstyle]}
         {\dosetfont[#1]}%
-      \the\everycorps}}
+      \the\everybodyfont}}
 
 %D Because the last macro can appear in arguments or be assigned
 %D to parameters, we protect this one for unwanted expansion.
 
 \def\dosetmathfont#1%
   {\def\rm{\fam0}%
-   \edef\mffam{\getvalue{#1\s!fam}}%
-   \textfont\mrfam=\textfont\mffam
-   \scriptfont\mrfam=\scriptfont\mffam
+   \doifdefinedelse{#1\s!fam} % adapted
+     {\edef\mffam{\getvalue{#1\s!fam}}}
+     {\edef\mffam{\getvalue{\c!nn\s!fam}}}%
+   \textfont        \mrfam=\textfont        \mffam
+   \scriptfont      \mrfam=\scriptfont      \mffam
    \scriptscriptfont\mrfam=\scriptscriptfont\mffam}
 
 \def\dosettypeface#1#2%
-  {\doifdefinedelse{@\normalizedcorpssize#1#2@}
-     {\edef\charactercoding{\getvalue{@\normalizedcorpssize#1#2@}}}
+  {\doifdefinedelse{@\normalizedbodyfontsize#1#2@}
+     {\edef\charactercoding{\getvalue{@\normalizedbodyfontsize#1#2@}}}
      {\let\charactercoding=\@plain@}%
    \unexpanded\def\tx%
      {\dosetxtypeface{#2\fontsize}}%
    \unexpanded\def\txx%
      {\dosetxxtypeface{#2\fontsize}}%
-   \expandafter\fam\getvalue{#2\s!fam}%
+   \doifdefinedelse{#2\s!fam} % adapted
+     {\expandafter\fam\getvalue{#2\s!fam}}
+     {\expandafter\fam\getvalue{\c!nn\s!fam}}%
    \def\mf{\donottest{\dosetmathfont{#2}}}%
-   \donottest\getvalue{#1#2}}
+   \donottest\getvalue{#1#2}%
+   \ifcase\currentxfontsize\or\tx\or\txx\fi}
 
 %D \macros
 %D   {os}
@@ -1721,63 +1805,63 @@
 %D moment it's behavior is tigthly coupled to the Computer
 %D Modern Roman.}
 
-\def\os%
-  {\getvalue{\normalizedcorpssize\c!mm\c!mi}}
+\unexpanded\def\os%
+  {\getvalue{\normalizedbodyfontsize\c!mm\c!mi}}
 
 %D \macros
-%D   {definecorpsswitch}
+%D   {definebodyfontswitch}
 %D   
 %D \PLAIN\ \TEX\ defines some macro's like \type{\tenpoint}
-%D to switch to a specific corpssize. Just for the sake of
+%D to switch to a specific bodyfontsize. Just for the sake of
 %D compatibility we can define them like:
 %D
 %D \starttypen
-%D \definecorpsswitch [twelvepoint] [12pt]
+%D \definebodyfontswitch [twelvepoint] [12pt]
 %D \stoptypen
 %D
 %D We don't support language specific synonyms here, mainly
 %D because \PLAIN\ \TEX\ is english anyway.
 
-\def\dodefinecorpsswitch[#1][#2]%
+\def\dodefinebodyfontswitch[#1][#2]%
   {\def\docommando##1%
-     {\setvalue{##1}{\switchtocorps[#2]}}%
+     {\setvalue{##1}{\switchtobodyfont[#2]}}%
    \processcommalist[#1]\docommando}
 
-\def\definecorpsswitch%
-  {\dodoubleargument\dodefinecorpsswitch}
+\def\definebodyfontswitch%
+  {\dodoubleargument\dodefinebodyfontswitch}
 
 %D \macros
-%D   {setsmallcorps,setmaincorps,setbigcorps}
+%D   {setsmallbodyfont,setmainbodyfont,setbigbodyfont}
 %D   
 %D When we're typesetting at for instance 10pt, we can call for
 %D the \type{small} as well as the \type{big} alternative,
-%D related to this main size, using \type{\switchtocorps[small]}.
+%D related to this main size, using \type{\switchtobodyfont[small]}.
 %D The three alternatives can be activated by the next three
-%D system calls and are defined by the corpsenvironment.
+%D system calls and are defined by the bodyfontenvironment.
 
-\def\setsmallcorps%
-  {\doswitchpoints[\getvalue{\??ft\normalizedcorpssize\v!klein}]%
+\def\setsmallbodyfont%
+  {\doswitchpoints[\getvalue{\??ft\normalizedbodyfontsize\v!klein}]%
    \doswitchstyle[\fontstyle]}
 
-\def\setmaincorps%
-  {\doswitchpoints[\normalizedcorpssize]%
+\def\setmainbodyfont%
+  {\doswitchpoints[\normalizedbodyfontsize]%
    \doswitchstyle[\fontstyle]}
 
-\def\setbigcorps%
-  {\doswitchpoints[\getvalue{\??ft\normalizedcorpssize\v!groot}]%
+\def\setbigbodyfont%
+  {\doswitchpoints[\getvalue{\??ft\normalizedbodyfontsize\v!groot}]%
    \doswitchstyle[\fontstyle]}
 
 %D \macros
-%D   {restoreglobalcorps}
+%D   {restoreglobalbodyfont}
 %D   
 %D Users can set whatever font available while typesetting text.
 %D Pagenumnbers, footers, headers etc. however must be typeset
-%D in the main corps and style of the document. Returning to
+%D in the main bodyfont and style of the document. Returning to
 %D the global state can be done with the next macro:
 
-\def\restoreglobalcorps%
+\def\restoreglobalbodyfont%
   {\let\fontsize=\empty
-   \doswitchpoints[\normalizedglobalcorpsize]%
+   \doswitchpoints[\normalizedglobalbodyfontize]%
    \doswitchstyle[\globalfontstyle]%
    \redoconvertfont % just in case a pagebreak occurs
    \tf}
@@ -1785,9 +1869,9 @@
 %D This macro has to be called when entering the pagebody
 %D handling routine as well as the footnote insert routine.
 %D Users can access this feature |<|for instance when one wants
-%D to typeset tables and alike in the main corps and style
+%D to typeset tables and alike in the main bodyfont and style
 %D while the running text is temporary set to a smaller one|>|
-%D by saying \type{\switchtocorps[global]}.
+%D by saying \type{\switchtobodyfont[global]}.
 
 %D \macros
 %D   {rasterfont}
@@ -1806,12 +1890,12 @@
 %D   
 %D The second situation occurs when we enable the info mode,
 %D and put all kind of status information in the margin. We
-%D don't want huge switches to the main corps and style, so
+%D don't want huge switches to the main bodyfont and style, so
 %D here too we use a direct method.
 
 \def\infofont%
   {\getvalue{\!!sixpoint\c!tt\c!tf}%
-   \the\everycorps}
+   \the\everybodyfont}
 
 %D \macros
 %D   {definealternativestyle}
@@ -2055,21 +2139,21 @@
 %D struts are set. 
 
 %D \macros
-%D   {showcorps}
+%D   {showbodyfont}
 %D   
-%D One can call for a rather simple overview of a corps and the
+%D One can call for a rather simple overview of a bodyfont and the
 %D relations between its alternative fonts.
 %D
-%D \showsetup{\y!showcorps}
+%D \showsetup{\y!showbodyfont}
 %D
-%D The current corps (here we omitted the argument) looks like:
+%D The current bodyfont (here we omitted the argument) looks like:
 %D
-%D \showcorps
+%D \showbodyfont
 %D
 %D The implementation is rather straightforward in using 
 %D \type{\halign}. 
 
-\def\doshowcorps[#1]%
+\def\doshowbodyfont[#1]%
   {\startbaselinecorrection
    \vbox
      {\def\bigstrut##1##2%
@@ -2079,7 +2163,7 @@
            \!!width  \!!zeropoint}}
       \doifelsenothing{#1}
         {\def\title{\the\korpsgrootte}}
-        {\switchtocorps[#1]\def\title{#1}}
+        {\switchtobodyfont[#1]\def\title{#1}}
       \tabskip\!!zeropoint
       \parindent\!!zeropoint
       \def\next##1##2##3%
@@ -2108,28 +2192,28 @@
          \noalign{\hrule}}}
    \stopbaselinecorrection}
 
-\def\showcorps%
-  {\dosingleempty\doshowcorps}
+\def\showbodyfont%
+  {\dosingleempty\doshowbodyfont}
 
 %D \macros
-%D   {showcorpsenvironment}
+%D   {showbodyfontenvironment}
 %D
-%D The current corpsenvironment is:
+%D The current bodyfontenvironment is:
 %D
-%D \showcorpsenvironment
+%D \showbodyfontenvironment
 %D
 %D This overview is generated using:
 %D
-%D \showsetup{\y!showcorpsenvironment}
+%D \showsetup{\y!showbodyfontenvironment}
 
-\def\doshowcorpsenvironment[#1]%
+\def\doshowbodyfontenvironment[#1]%
   {\startbaselinecorrection
    \vbox
      {\tabskip\!!zeropoint
       \parindent\!!zeropoint
       \doifelsenothing{#1}
         {\def\title{\the\korpsgrootte}}
-        {\switchtocorps[#1]\def\title{#1}}
+        {\switchtobodyfont[#1]\def\title{#1}}
       \def\do##1##2%
         {\getvalue{\??ft##1##2}}
       \def\next##1##2%
@@ -2156,8 +2240,8 @@
          \donext\!!sixpoint   \donext\!!fivepoint  \donext\!!fourpoint}}
    \stopbaselinecorrection}
 
-\def\showcorpsenvironment%
-  {\dosingleempty\doshowcorpsenvironment}
+\def\showbodyfontenvironment%
+  {\dosingleempty\doshowbodyfontenvironment}
 
 %D Fonts can only be used when loaded. In \CONTEXT\ we
 %D postpone the loading of fonts, even when we load \PLAIN.
@@ -2246,10 +2330,9 @@
 %D hexadecimal format. Next we set the height of the accented
 %D character to the natural height of the character.
 
-\let\normalaccent=\accent
-
 \def\dodosmashaccent#1%
-  {\setbox0=\hbox{#1}%
+  {\bgroup
+   \setbox0=\hbox{#1}%
    \setbox2=\hbox{\normalaccent\scratchcounter#1}%
    \ht2=\ht0\box2
    \egroup
@@ -2260,7 +2343,6 @@
 
 \def\smashaccent%
   {\dontleavehmode
-   \bgroup
    \let\accent=\dosmashaccent}
 
 %D For instance we can say:
@@ -2283,12 +2365,13 @@
 %D Again, this one will mostly used as a prefix in definitions.
 
 \def\dodomoveaccent#1%
-  {\dimen2=\fontdimen5\font
-   \dimen4=\dimen2
-   \advance\dimen4 by -\dimen0
-   \fontdimen5\font=\dimen4
-   \normalaccent\scratchcounter#1\relax
+  {\bgroup
+   \dimen0=\fontdimen5\font
+   \dimen2=\dimen0
+   \advance\dimen2 by -\accentdisplacement
    \fontdimen5\font=\dimen2
+   \normalaccent\scratchcounter#1\relax
+   \fontdimen5\font=\dimen0
    \egroup}
 
 \def\domoveaccent%
@@ -2296,8 +2379,7 @@
 
 \def\moveaccent#1%
   {\dontleavehmode
-   \bgroup
-   \dimen0=#1\relax
+   \def\accentdisplacement{#1}%
    \let\accent=\domoveaccent}
 
 %D \macros
@@ -2383,7 +2465,7 @@
 \redefinecommand   b
 \redefinecommand   c
 
-\definecorpsenvironment
+\definebodyfontenvironment
   [\!!fourteenpointfour]
   [        \s!text=\!!fourteenpointfour,
          \s!script=\!!elevenpoint,
@@ -2393,7 +2475,7 @@
           \c!groot=\!!fourteenpointfour,
           \c!klein=\!!twelvepoint]
 
-\definecorpsenvironment
+\definebodyfontenvironment
   [\!!twelvepoint]
   [        \s!text=\!!twelvepoint,
          \s!script=\!!ninepoint,
@@ -2403,7 +2485,7 @@
           \c!groot=\!!fourteenpointfour,
           \c!klein=\!!tenpoint]
 
-\definecorpsenvironment
+\definebodyfontenvironment
   [\!!elevenpoint]
   [        \s!text=\!!elevenpoint,
          \s!script=\!!eightpoint,
@@ -2413,7 +2495,7 @@
           \c!groot=\!!twelvepoint,
           \c!klein=\!!ninepoint]
 
-\definecorpsenvironment
+\definebodyfontenvironment
   [\!!tenpoint]
   [        \s!text=\!!tenpoint,
          \s!script=\!!sevenpoint,
@@ -2423,7 +2505,7 @@
           \c!groot=\!!twelvepoint,
           \c!klein=\!!eightpoint]
 
-\definecorpsenvironment
+\definebodyfontenvironment
   [\!!ninepoint]
   [        \s!text=\!!ninepoint,
          \s!script=\!!sevenpoint,
@@ -2433,7 +2515,7 @@
           \c!groot=\!!elevenpoint,
           \c!klein=\!!sevenpoint]
 
-\definecorpsenvironment
+\definebodyfontenvironment
   [\!!eightpoint]
   [        \s!text=\!!eightpoint,
          \s!script=\!!sixpoint,
@@ -2443,7 +2525,7 @@
           \c!groot=\!!tenpoint,
           \c!klein=\!!sixpoint]
 
-\definecorpsenvironment
+\definebodyfontenvironment
   [\!!sevenpoint]
   [        \s!text=\!!sevenpoint,
          \s!script=\!!sixpoint,
@@ -2453,7 +2535,7 @@
           \c!groot=\!!ninepoint,
           \c!klein=\!!fivepoint]
 
-\definecorpsenvironment
+\definebodyfontenvironment
   [\!!sixpoint]
   [        \s!text=\!!sixpoint,
          \s!script=\!!fivepoint,
@@ -2463,7 +2545,7 @@
           \c!groot=\!!eightpoint,
           \c!klein=\!!fivepoint]
 
-\definecorpsenvironment
+\definebodyfontenvironment
   [\!!fivepoint]
   [        \s!text=\!!fivepoint,
          \s!script=\!!fivepoint,
@@ -2473,7 +2555,7 @@
           \c!groot=\!!sevenpoint,
           \c!klein=\!!fivepoint]
 
-\definecorpsenvironment
+\definebodyfontenvironment
   [\!!fourpoint]
   [        \s!text=\!!fourpoint,
          \s!script=\!!fourpoint,
@@ -2483,24 +2565,24 @@
           \c!groot=\!!sixpoint,
           \c!klein=\!!fourpoint]
 
-\definecorpsswitch [fourteenpointfour] [\!!fourteenpointfour]
-\definecorpsswitch [twelvepoint]       [\!!twelvepoint]
-\definecorpsswitch [elevenpoint]       [\!!elevenpoint]
-\definecorpsswitch [tenpoint]          [\!!tenpoint]
-\definecorpsswitch [ninepoint]         [\!!ninepoint]
-\definecorpsswitch [eightpoint]        [\!!eightpoint]
-\definecorpsswitch [sevenpoint]        [\!!sevenpoint]
-\definecorpsswitch [sixpoint]          [\!!sixpoint]
-\definecorpsswitch [fivepoint]         [\!!fivepoint]
-\definecorpsswitch [fourpoint]         [\!!fourpoint]
+\definebodyfontswitch [fourteenpointfour] [\!!fourteenpointfour]
+\definebodyfontswitch [twelvepoint]       [\!!twelvepoint]
+\definebodyfontswitch [elevenpoint]       [\!!elevenpoint]
+\definebodyfontswitch [tenpoint]          [\!!tenpoint]
+\definebodyfontswitch [ninepoint]         [\!!ninepoint]
+\definebodyfontswitch [eightpoint]        [\!!eightpoint]
+\definebodyfontswitch [sevenpoint]        [\!!sevenpoint]
+\definebodyfontswitch [sixpoint]          [\!!sixpoint]
+\definebodyfontswitch [fivepoint]         [\!!fivepoint]
+\definebodyfontswitch [fourpoint]         [\!!fourpoint]
 
-\definecorpsswitch [xii]         [\!!twelvepoint]
-\definecorpsswitch [xi]          [\!!elevenpoint]
-\definecorpsswitch [x]           [\!!tenpoint]
-\definecorpsswitch [ix]          [\!!ninepoint]
-\definecorpsswitch [viii]        [\!!eightpoint]
-\definecorpsswitch [vii]         [\!!sevenpoint]
-\definecorpsswitch [vi]          [\!!sixpoint]
+\definebodyfontswitch [xii]  [\!!twelvepoint]
+\definebodyfontswitch [xi]   [\!!elevenpoint]
+\definebodyfontswitch [x]    [\!!tenpoint]
+\definebodyfontswitch [ix]   [\!!ninepoint]
+\definebodyfontswitch [viii] [\!!eightpoint]
+\definebodyfontswitch [vii]  [\!!sevenpoint]
+\definebodyfontswitch [vi]   [\!!sixpoint]
 
 \defineoverallstyle [\v!romaan,      \c!rm] [\c!rm]
 \defineoverallstyle [\v!schreefloos, \c!ss] [\c!ss]
@@ -2527,7 +2609,7 @@
   {\ifmmode\normalxi\else\elevenpoint\fi}
 
 %D By default we load the Computer Modern Roman fonts and
-%D activate the 12pt roman corps. Sans serif and teletype are
+%D activate the 12pt roman bodyfont. Sans serif and teletype are
 %D also available and can be called for by \type{\ss} and
 %D \type{\tt}.
 
@@ -2538,11 +2620,10 @@
 %D These are for instance used when we load Lucida Bright
 %D (\type{lbr}) or \POSTSCRIPT\ Times Roman (\type{ptr}),
 %D Helvetica (\type{phv}) and Courier (\type{pcr}) which are
-%D also available as whole (\type{\setupcorps[pos]}).
+%D also available as whole (\type{\setupbodyfont[pos]}).
 
-\setupcorps [cmr, 12pt, \v!romaan, ibm, ans]
+\setupbodyfont [cmr, 12pt, \v!romaan, ibm, ans]
 
 \protect
 
 \endinput
-

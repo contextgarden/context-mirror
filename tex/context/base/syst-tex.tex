@@ -114,6 +114,28 @@
 
 \normalinput plain.tex
 
+%D We have to take care of unwanted \PDFTEX\ 
+%D initializations. We just want to default to \DVI\ output. 
+
+\ifx\pdftexversion\undefined 
+  \chardef\pdfoutput=0 
+\else
+  \pdfoutput=0
+\fi 
+
+%D When applicable, we also load the \ETEX\ source and 
+%D defintion files. 
+
+\def\gobbleETEX#1\par{}
+\def\doifETEX{\ifx\eTeXversion\undefined     \expandafter\gobbleETEX\fi}
+\def\ifnoETEX{\ifx\eTeXversion\undefined\else\expandafter\gobbleETEX\fi}
+
+\doifETEX \normalinput     etex.src \relax 
+\doifETEX \normalinput etexdefs.lib \relax 
+
+\let\normalprotected  = \protected
+\let\normalunexpanded = \unexpanded
+
 %D We restore some redefined primitives to their old meaning. 
 
 \let\font             = \normalfont
@@ -146,4 +168,3 @@
 \tracingstats=1
 
 \endinput
-

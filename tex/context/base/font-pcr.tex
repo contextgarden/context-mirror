@@ -12,7 +12,7 @@
 
 \startcoding[texnansi]
 
-\definecorps [14.4pt,12pt,11pt,10pt,9pt,8pt] [tt]
+\definebodyfont [14.4pt,12pt,11pt,10pt,9pt,8pt] [tt]
   [tf=com sa 1,
    sl=coo sa 1,
    tfa=com sa 1.200,
@@ -20,15 +20,15 @@
    tfc=com sa 1.728,
    tfd=com sa 2.074]
 
-\definecorps [7pt,6pt,5pt] [tt]
+\definebodyfont [7pt,6pt,5pt] [tt]
   [tf=com sa 1,
    sl=coo sa 1]
 
-\definecorps [14.4pt,12pt,11pt,10pt,9pt,8pt,7pt,6pt,5pt] [tt]
+\definebodyfont [14.4pt,12pt,11pt,10pt,9pt,8pt,7pt,6pt,5pt] [tt]
   [tf=com sa 1,
    sl=coo sa 1]
 
-\definecorps [14.4pt,12pt,10pt] [tt]
+\definebodyfont [14.4pt,12pt,10pt] [tt]
   [sla=coo sa 1.200,
    slb=coo sa 1.440,
    slc=coo sa 1.728,
@@ -36,5 +36,10 @@
 
 \stopcoding
 
+%D The Courier font does not contain \TEX's visual space. The
+%D next definition offers an alternative.
+
+\def\controlspace%
+  {\hbox{\font\next=cmtt10 at \bodyfontsize\next\char32}}
+
 \endinput
-

@@ -35,7 +35,7 @@
 %D \PDFTEX\ primitives are permitted. If no primitives are
 %D available, we just stop reading any further. 
 
-\ifx\pdfoutput\undefined \endinput \else \unprotect \fi 
+\ifx\pdftexversion\undefined \endinput \else \unprotect \fi 
 
 %D Once we are sure that we're indeed supporting \PDFTEX, we
 %D force \PDF\ output at the highest compression. For debugging
@@ -43,6 +43,8 @@
 
 \pdfoutput       =1
 \pdfcompresslevel=9
+%\pdfthreadhoffset=\maxdimen
+%\pdfthreadvoffset=\maxdimen
 
 %D Now we have to make sure no other specials are supported, 
 %D else \PDFTEX\ will keep on telling us that we're wrong. 
@@ -139,18 +141,21 @@
 %D \PDF\ supports the inclusion of video movies. In \CONTEXT\
 %D we support these in a way similar to figure inclusion. 
 
+\newcounter\currentmovie
+
 \def\dotpdinsertmov#1#2#3#4#5#6#7#8%
   {\ScaledPointsToBigPoints{#6}\width
    \ScaledPointsToBigPoints{#7}\height
    \edef\pdf@@posterize{\ifcase#8 \or/Poster true\fi}%
-   \pdfannotlink
+   \doglobal\increment\currentmovie
+   \pdfannot
      width #6sp
-     height #7sp
-     attr {/Border [0 0 0]}
-     user {/Subtype /Movie
-           /Movie <</F (#1) /Aspect [\width\space \height\space] \pdf@@posterize>>
-           /A <</ShowControls false>>}%
-   \pdfendlink}
+     height -#7sp
+     depth 0pt
+     {/Border [0 0 0]
+      /Subtype /Movie
+      /Movie <</T (movie \currentmovie) /F (#1) /Aspect [\width\space \height\space] \pdf@@posterize>>
+      /A <</ShowControls false>>}}
 
 %D \macros
 %D  {doovalbox}
@@ -170,38 +175,33 @@
    \dosomeovalcalc{0} {+\dimen0}\xmin
    \dosomeovalcalc{#1}{-\dimen0}\xmax
    \dosomeovalcalc{#2}{-\dimen0}\ymax
-   \dosomeovalcalc{#3}{+\dimen0}\ymin
+   \dosomeovalcalc{-#3}{+\dimen0}\ymin
    \advance\dimen0 by #5sp
    \dosomeovalcalc{0} {+\dimen0}\xxmin
    \dosomeovalcalc{#1}{-\dimen0}\xxmax
    \dosomeovalcalc{#2}{-\dimen0}\yymax
-   \dosomeovalcalc{#3}{+\dimen0}\yymin
+   \dosomeovalcalc{-#3}{+\dimen0}\yymin
    \dosomeovalcalc{#4}{0pt}\stroke
    \dosomeovalcalc{#5}{0pt}\radius
    \edef\dostroke{#6}%
    \edef\dofill{#7}%
-   \vbox
-     \bgroup
-     \offinterlineskip
-     \forgetall
-     \hsize\!!zeropoint
-     \vrule\!!width\!!zeropoint\!!height#2sp\!!depth#3sp\relax
-     \pdfliteral
-       {q
-        \stroke\space w
-        \xxmin\space \ymin\space  m
-        \xxmax\space \ymin\space  l
-        \xmax\space  \ymin\space  \xmax\space  \yymin\space y
-        \xmax\space  \yymax\space l
-        \xmax\space  \ymax\space  \xxmax\space \ymax\space  y
-        \xxmin\space \ymax\space  l
-        \xmin\space  \ymax\space  \xmin\space  \yymax\space y
-        \xmin\space  \yymin\space l
-        \xmin\space  \ymin\space  \xxmin\space \ymin\space  y
-        \ifnum\dostroke=1 S \fi
-        \ifnum\dofill  =1 f \fi
-        Q}%
-     \egroup
+   \setbox0=\hbox
+     {\pdfliteral
+        {q
+         \stroke\space w
+         \xxmin\space \ymin\space  m
+         \xxmax\space \ymin\space  l
+         \xmax\space  \ymin\space  \xmax\space  \yymin\space y
+         \xmax\space  \yymax\space l
+         \xmax\space  \ymax\space  \xxmax\space \ymax\space  y
+         \xxmin\space \ymax\space  l
+         \xmin\space  \ymax\space  \xmin\space  \yymax\space y
+         \xmin\space  \yymin\space l
+         \xmin\space  \ymin\space  \xxmin\space \ymin\space  y
+         \ifnum\dostroke=1 S \fi
+         \ifnum\dofill  =1 f \fi
+         Q}}%
+   \wd0=#1sp\ht0=#2sp\dp0=#3sp\box0
    \egroup}
 
 %D \macros
@@ -250,6 +250,40 @@
 \definespecial\dostoprotation%
   {\pdfliteral{Q}}
 
+%D \macros
+%D  {dostartscaling,dostopscaling}
+%D
+%D Scaling is rather straightforward: 
+
+\definespecial\dostartscaling#1#2%
+  {\pdfliteral{q #1\space 0 0 #2\space 0 0 cm}}
+
+\definespecial\dostopscaling%
+  {\pdfliteral{Q}}
+
+%D \macros
+%D  {dostartmirroring,dostopmirroring}
+%D
+%D Mirroring is implemented in a similar way:
+
+\definespecial\dostartmirroring%
+  {\pdfliteral{-1 0 0 1 0 0 cm}}
+
+\definespecial\dostopmirroring%
+  {\pdfliteral{-1 0 0 1 0 0 cm}}
+
+%D \macros
+%D  {dostartnegative,dostopnegative}
+%D
+%D When producng output for an image setter, sometimes 
+%D negative output is needed. 
+
+\definespecial\dostartnegative% 
+  {\writestatus{system}{negative not yet supported}}
+
+\definespecial\dostopnegative%
+  {}
+
 %D \macros 
 %D   {dosetupinteraction}
 %D
@@ -261,7 +295,7 @@
 
 %D \macros 
 %D   {dostartthisisrealpage,dostartthisislocation
-%D    dostartgotorealpage,dostartgotolocation}
+%D    dostartgotorealpage,dostartgotolocation,dostartgotoJS}
 %D 
 %D The interactions macros are the core of this module. We
 %D support both page destinations and named ones. 
@@ -271,7 +305,7 @@
 %D instead of page ones. The latter works, but not 100\%.} 
 
 \definespecial\dostartthisisrealpage#1%
-  {\pdfdest num #1 fit}  % will be {} when page is ok
+  {} 
 
 \definespecial\dostartthisislocation#1%
   {\ifusepagedestinations \else
@@ -300,8 +334,7 @@
           height #2sp
           depth 0pt
           attr {/Border [0 0 0]}
-        % goto \if!!donea file {#4.pdf} \fi page \PDFdestination\space {/Fit} 
-          goto \if!!donea file {#4.pdf} page 1 {/Fit}\else num \PDFdestination\space \fi 
+          goto \if!!donea file {#4.pdf} \fi page \PDFdestination\space{/Fit}%
         \pdfendlink
       \else
         \setPDFdestination{#5}%
@@ -324,10 +357,12 @@
       \pdfannotlink 
         width #1sp  
         height #2sp
-        depth 0pt
-        attr {/Border [0 0 0]}
-        user {/S /URI 
-              /URI (#3\PDFfile\PDFdestination)}%
+        depth 0pt 
+        user {/Subtype /Link
+              /Border [0 0 0]
+              /A << /Type /Action 
+                    /S /URI 
+                    /URI (#3\PDFfile\PDFdestination)>>}%
       \pdfendlink}%
     \egroup}
 
@@ -346,8 +381,7 @@
         height #2sp
         depth 0pt
         attr {/Border [0 0 0]}
-      % goto \if!!donea file {#4.pdf} \fi page \PDFdestination\space {/Fit} 
-        goto \if!!donea file {#4.pdf} page 1 {/Fit} \else num \PDFdestination\space \fi 
+        goto \if!!donea file {#4.pdf} \fi page \PDFdestination\space{/Fit}%
       \pdfendlink}
      {\doifelsenothing{#4}
         {\let\PDFfile=\empty}
@@ -355,10 +389,12 @@
       \pdfannotlink 
         width #1sp  
         height #2sp
-        depth 0pt
-        attr {/Border [0 0 0]}
-        user {/S /URI 
-              /URI (#3\PDFfile)}%
+        depth 0pt 
+        user {/Subtype /Link
+              /Border [0 0 0]
+              /A << /Type /Action 
+                    /S /URI 
+                    /URI (#3\PDFfile)>>}%
       \pdfendlink}%
    \egroup}
 
@@ -395,8 +431,10 @@
    \ScaledPointsToWholeBigPoints{\number\!!heightb}\height
    \expanded{\global\noexpand\pdfpagesattr=
      {/CropBox [\left\space\bottom\space\width\space\height]}}%
-   \ifcase#5\else
-     \pdfcatalog pagemode {/FullScreen}\relax
+   \ifcase#5%
+     \pdfcatalog{} openaction goto page 1 {/Fit}%
+   \else
+     \pdfcatalog{/PageMode /FullScreen} openaction goto page 1 {/Fit}%
    \fi
    \egroup}
 
@@ -407,30 +445,40 @@
 %D keys. These navigational tools can also be accessed by using
 %D annotations. The next special takes care of inserting them. 
 
+\def\PDFexecutestart       {/Movie /T (movie \currentmovie) /Operation /Play}
+\def\PDFexecutestop        {/Movie /T (movie \currentmovie) /Operation /Stop}
+\def\PDFexecutepause       {/Movie /T (movie \currentmovie) /Operation /Pause}
+\def\PDFexecuteresume      {/Movie /T (movie \currentmovie) /Operation /Resume}
+
+\def\PDFexecutefirst       {/Named /N /First}
+\def\PDFexecuteprevious    {/Named /N /Prev}
+\def\PDFexecutenext        {/Named /N /Next}
+\def\PDFexecutelast        {/Named /N /Last}
+\def\PDFexecutebackward    {/Named /N /GoBack}
+\def\PDFexecuteforward     {/Named /N /GoForward}
+\def\PDFexecuteprint       {/Named /N /Print}
+\def\PDFexecuteexit        {/Named /N /Quit}
+\def\PDFexecuteclose       {/Named /N /Close}
+\def\PDFexecutesave        {/Named /N /Save}
+\def\PDFexecutehelp        {/Named /N /HelpUserGuide}
+\def\PDFexecuteswap        {/Named /N /FullScreen}
+\def\PDFexecutesearch      {/Named /N /Find}
+\def\PDFexecutesearchagain {/Named /N /FindAgain}
+
 \definespecial\dostartexecutecommand#1#2#3#4%
-  {\bgroup
-   \processaction
-     [#3]
-     [     first=>\def\command{First},
-        previous=>\def\command{Prev},
-            next=>\def\command{Next},
-            last=>\def\command{Last},
-        backward=>\def\command{GoBack},
-         forward=>\def\command{GoForward},
-           print=>\def\command{Print},
-            exit=>\def\command{Quit},
-           close=>\def\command{Close},
-            help=>\def\command{HelpUserGuide},
-            swap=>\def\command{FullScreen},
-      \s!unknown=>\let\command=\s!unknown]%
-   \pdfannotlink
-     width #1sp
-     height #2sp
-     depth 0pt
-     attr {/Border [0 0 0]}
-     user {/S /Named /N /\command}%
-   \pdfendlink
-   \egroup}
+  {\doifdefined{PDFexecute#3}
+     {\bgroup
+      \ScaledPointsToBigPoints{#1}\width
+      \ScaledPointsToBigPoints{#2}\height
+      \pdfannotlink
+        width #1sp
+        height #2sp
+        depth 0pt 
+        user {/Subtype /Link
+              /A <</S \getvalue{PDFexecute#3}>>
+              /Border [0 0 0]}%
+      \pdfendlink
+      \egroup}}
 
 %D \macros
 %D   {dosetupidentity}
@@ -441,7 +489,12 @@
 %D of these. 
 
 \definespecial\dosetupidentity#1#2#3#4#5%
-  {\pdfinfo title {#1} subject {#2} author {#3}\relax} % creator {#4}
+  {\pdfinfo 
+     {/Title    (#1) 
+      /Subject  (#2) 
+      /Author   (#3)
+      /Creator  (#4)
+      /Producer (pdfTeX)}}
 
 %D \macros
 %D   {dostartrunprogam}
@@ -450,7 +503,19 @@
 %D implemented here. 
      
 \definespecial\dostartrunprogram#1#2#3%
-  {}
+  {\bgroup
+   \edef\string{#3}%
+   \@EA\beforesplitstring\string\at{ }\to\program
+   \@EA\aftersplitstring \string\at{ }\to\parameters
+   \pdfannotlink
+      width #1sp
+      height #2sp
+      depth 0pt 
+      user {/Subtype /Link
+            /A <</S /Launch /F (\program) /P (\parameters)>>
+            /Border [0 0 0]}%
+   \pdfendlink
+   \egroup}
 
 %D \macros
 %D   {dostartgotoprofile, dostopgotoprofile,
@@ -469,11 +534,11 @@
      thread name {#3}%
    \pdfendlink}
 
-\definespecial\dobeginofprofile#1#2#3%
+\definespecial\dobeginofprofile#1#2#3#4%
   {\doifsomething{#1}
      {\pdfthread name {#1}}}
 
-\definespecial\doendofprofile#1#2#3%
+\definespecial\doendofprofile%
   {\pdfendthread}
 
 %D \macros
@@ -489,7 +554,7 @@
 \definespecial\doinsertbookmark#1#2#3#4#5% level sublevels text page open (1)
   {\sanitizePDFstring#3\to\bookmarktext
    \pdfoutline
-     goto num #4 % why's page not accepted 
+     goto page #4\space 
      \ifnum#2>0 count \ifcase#5-\fi#2\fi\space 
      {\bookmarktext}}
 
@@ -504,19 +569,81 @@
 % Forms can interfere with page dimension settings. Therefore
 % calling macros can best postpone flushing. 
 
+%\definespecial\dostartobject#1#2#3#4%
+%  {\setbox\nextbox=\vbox\bgroup
+%     \def\dodostopobject%
+%       {\egroup
+%        \pdfform\nextbox
+%        \scratchcounter=\pdflastform
+%        \setxvalue{\r!driver#1}{\the\pdflastform}}}
+
 \definespecial\dostartobject#1#2#3#4%
   {\setbox\nextbox=\vbox\bgroup
      \def\dodostopobject%
        {\egroup
         \pdfform\nextbox
         \scratchcounter=\pdflastform
-        \setxvalue{pdfform:#1}{\the\scratchcounter}}}
+        \dosetobjectreference{#1}{\the\pdflastform}}}%
 
 \definespecial\dostopobject%
   {\dodostopobject}
 
+%\definespecial\doinsertobject#1%
+%  {\expandafter\pdfrefform\csname\r!driver#1\endcsname\relax}
+
 \definespecial\doinsertobject#1%
-  {\expandafter\pdfrefform\csname pdfform:#1\endcsname\relax}
+  {\dogetobjectreference{#1}\objectreference
+   \pdfrefform\objectreference}
+
+%\definespecial\dogetobjectreference#1#2%
+%  {\edef#2{\csname\r!driver#1\endcsname}}
+
+%D \macros
+%D   {dosetpagetransitions}
+%D
+%D Page transitions only make sence in presentations. They are
+%D passed as raw \PDF\ code to the page object. This 
+%D implementation looks much like the one in \type{spec-pdf}.
+
+\def\PDFpagesplit       {/S /Split    }      
+\def\PDFpageblinds      {/S /Blinds   }
+\def\PDFpagebox         {/S /Box      }
+\def\PDFpagewipe        {/S /Wipe     }      
+\def\PDFpagedissolve    {/S /Dissolve }   
+\def\PDFpageglitter     {/S /Glitter  }
+\def\PDFpagereplace     {/S /R        }
+
+\def\PDFpagehorizontal  {/Dm /H  }
+\def\PDFpagevertical    {/Dm /V  }
+\def\PDFpagein          {/M  /I  }
+\def\PDFpageout         {/M  /O  }
+\def\PDFpageeast        {/Di   0 }
+\def\PDFpagenorth       {/Di  90 }
+\def\PDFpagewest        {/Di 180 }
+\def\PDFpagesouth       {/Di 270 }
+
+\def\dosetPDFpagetransition#1%
+  {\doifdefined{PDFpage#1}
+     {\edef\PDFpagetransitions{\PDFpagetransitions\getvalue{PDFpage#1}}}}
+
+\def\dosetpagetransition#1%
+  {\let\PDFpagetransitions=\empty
+   \processcommalist[#1]\dosetPDFpagetransition
+   \expanded{\global\noexpand\pdfpageattr{/Trans <<\PDFpagetransitions>>}}}
+
+\def\pagetransitions  % replace not in this list
+  {{split,in,vertical},{split,in,horizontal},{split,out,vertical},{split,out,horizontal},
+   {blinds,horizontal},{blinds,vertical},
+   {box,in},{box,out},
+   {wipe,east},{wipe,west},{wipe,north},{wipe,south},
+   dissolve,
+   {glitter,east},{glitter,south}}
+
+%D The expansion is needed because else the \type{\pdfpageattr}
+%D token list flushes an unexpanded \type{\csname}. The 
+%D \type{\global} is needed because the assignment can take 
+%D place deeply buried (for instance in the \type{\shipout} 
+%D box. 
 
 \stopspecials
 

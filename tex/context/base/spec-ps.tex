@@ -14,8 +14,10 @@
 %D \macros
 %D   {dostartgraymode,dostopgraymode,
 %D    dostartrgbcolormode,dostartcmykcolormode,dostartgraycolormode,dostopcolormode,
-%D    dostartrotation,
-%D    dostoprotation,
+%D    dostartrotation,dostoprotation,
+%D    dostartscaling,dostopscaling,
+%D    dostartmirroring,dostopmirroring,
+%D    dostartnegative,dostopnegative,
 %D    doselectfirstpaperbin,
 %D    doselectsecondpaperbin}
 %D   {}
@@ -69,15 +71,48 @@
      {\@@insertpostscriptliteral 
         statusdict begin 0 setpapertray end}}  % checken 
 
-\definespecial\dostartrotation#1%
+\definespecial\dostartrotation#1% straight from the YandY manual
   {\special
-     {\@@insertpostscriptliteral 
-        gsave #1\space rotate}}
+     {\@@insertpostscriptliteral  
+        gsave currentpoint currentpoint translate
+        #1 rotate neg exch neg exch translate}}
 
 \definespecial\dostoprotation%
   {\special
+     {\@@insertpostscriptliteral  
+        currentfont currentpoint grestore moveto setfont}}
+
+\definespecial\dostartscaling#1#2% conforming the YandY manual
+  {\special
      {\@@insertpostscriptliteral 
-        currentfont grestore setfont}}
+        gsave currentpoint currentpoint translate 
+        #1\space #2\space scale neg exch neg exch translate}}
+ 
+\definespecial\dostopscaling%
+  {\special
+     {\@@insertpostscriptliteral 
+        currentfont currentpoint grestore moveto setfont}}
+
+\definespecial\dostartmirroring% some translate and exch stuff from YandY
+  {\special
+     {\@@insertpostscriptliteral  
+        gsave currentpoint currentpoint translate
+        [-1 0 0 1 0 0] concat neg exch neg exch translate}}
+
+\definespecial\dostopmirroring%
+  {\special
+     {\@@insertpostscriptliteral  
+        currentfont currentpoint grestore moveto setfont}}
+
+\definespecial\dostartnegative% 
+  {\special
+     {\@@insertpostscriptliteral  
+        gsave {1 exch sub} settransfer}}
+
+\definespecial\dostopnegative%
+  {\special
+     {\@@insertpostscriptliteral  
+        grestore}}
 
 %D \macros
 %D   {doovalbox}
@@ -113,48 +148,48 @@
    \advance\dimen2 by #2%   
    \ScaledPointsToBigPoints{\number\dimen2}#3}
 
-\definespecial\doovalbox#1#2#3#4#5#6#7% 
+\def\dosomeovalbox#1#2#3#4#5#6#7% 
   {\bgroup
    \dimen0=#4sp\divide\dimen0 by 2
    \dosomeovalcalc {0}{+\dimen0}\xmin
    \dosomeovalcalc{#1}{-\dimen0}\xmax
    \dosomeovalcalc{#2}{-\dimen0}\ymax
-   \dosomeovalcalc{#3}{+\dimen0}\ymin
+   \dosomeovalcalc{-#3}{+\dimen0}\ymin
    \dosomeovalcalc{#4}{0pt}\stroke
    \dosomeovalcalc{#5}{0pt}\radius
    \edef\dostroke{#6}%
    \edef\dofill{#7}% 
-   \vbox
-     \bgroup
-     \offinterlineskip
-     \forgetall
-     \hsize\!!zeropoint
-     \vrule\!!width\!!zeropoint\!!height#2sp\!!depth#3sp\relax
-     \special 
-       {\@@insertpostscriptretain
-          gsave
-            newpath
-            \xmin\space \radius\space add \ymin\space moveto
-            \xmax\space \ymin\space \xmax\space \ymax\space \radius\space arcto
-            \xmax\space \ymax\space \xmin\space \ymax\space \radius\space arcto
-            \xmin\space \ymax\space \xmin\space \ymin\space \radius\space arcto
-            \xmin\space \ymin\space \xmax\space \ymin\space \radius\space arcto 
-            \xmin\space \radius\space add \ymin\space moveto
-            16 {pop} repeat
-            closepath
-            (\dostroke) (1) eq 
-              {\stroke\space 0 ne 
-                {gsave 
-                  \stroke\space setlinewidth 
-                   stroke 
-                 grestore} if} if
-            (\dofill) (1) eq 
-              {fill} if
-          grestore}% 
-     \egroup
+   \setbox0=\hbox
+     {\special 
+        {\@@insertpostscriptretain
+           gsave
+             newpath
+             \xmin\space \radius\space add \ymin\space moveto
+             \xmax\space \ymin\space \xmax\space \ymax\space \radius\space arcto
+             \xmax\space \ymax\space \xmin\space \ymax\space \radius\space arcto
+             \xmin\space \ymax\space \xmin\space \ymin\space \radius\space arcto
+             \xmin\space \ymin\space \xmax\space \ymin\space \radius\space arcto 
+             \xmin\space \radius\space add \ymin\space moveto
+             16 {pop} repeat
+             closepath
+             (\dostroke) (1) eq 
+               {\stroke\space 0 ne 
+                 {gsave 
+                   \stroke\space setlinewidth 
+                    stroke 
+                  grestore} if} if
+             (\dofill) (1) eq 
+               {fill} if
+           grestore}}% 
+   \wd0=#1sp\ht0=#2sp\dp0=#3sp\box0
    \egroup}
+
+%D The indirect call permits a (rather) dirty hack, needed 
+%D for \DVIPS\ support. 
+
+\definespecial\doovalbox% 
+  {\dosomeovalbox}
 
 \stopspecials
 
 \endinput
-

@@ -23,8 +23,38 @@
 %D are hooked into the support macros via the \type{\obey}
 %D macros.
 
+\def\prettyidentifier {TEX}
+\def\prettypalet      {}
+
+\def\setupprettiesintype#1%
+  {\edef\prettyidentifier{#1}%
+   \doifinstringelse{\prettyidentifier}{tex,TEX}
+     {\def\prettyidentifier{TEX}}
+  {\doifinstringelse{\prettyidentifier}{perl,pl,PERL,PL}
+     {\def\prettyidentifier{PL}}
+  {\doifinstringelse{\prettyidentifier}{metapost,mp,metafont,mf,METAPOST,MP,METAFONT,MF}
+     {\def\prettyidentifier{MP}}
+  {\doifinstringelse{\prettyidentifier}{javascript,js,java,jv,JAVASCRIPT,JS,JAVA,JV}
+     {\def\prettyidentifier{JV}}
+     {\def\prettyidentifier{TEX}}}}}%
+   \doifundefined{setuppretty\prettyidentifier type}%
+     {\setbox0=\hbox % get rid of spaces when in-line \newpretty loading
+        {\restorecatcodes % also needed when loading during \newpretty 
+         \readsysfile{verb-\prettyidentifier.tex}{}{}}}%
+   \doifdefinedelse{setuppretty\prettyidentifier type}%
+     {\def\setupprettytype{\getvalue{setuppretty\prettyidentifier type}}}
+     {\let\setupprettytype=\relax}}
+
+\installnewpretty M {\setupprettiesintype{MP}\setupprettytype}
+\installnewpretty P {\setupprettiesintype{PL}\setupprettytype}
+\installnewpretty T {\setupprettiesintype{TEX}\setupprettytype}
+\installnewpretty J {\setupprettiesintype{JV}\setupprettytype}
+
 \def\setupcommonverbatim#1%
-  {\def\verbatimfont{\tttf}%
+  {\def\verbatimfont         {\tttf}%
+   \def\prettyidentifierfont {\ttsl}%
+   \def\prettyvariablefont   {}%
+   \def\prettyidentifier     {TEX}%
    \doifvalue{#1\c!spatie}{\v!aan}
      {\def\obeyspaces{\setcontrolspaces}}%
    \doifvalue{#1\c!tab}{\v!aan}
@@ -33,14 +63,20 @@
      {\def\obeypages{\ignorepages}}%
    \ExpandFirstAfter\processaction
      [\getvalue{#1\c!optie}]
-     [\v!commandos=>\def\obeycharacters{\setupcommandsintype{#1}}%
+     [     \v!geen=>\let\obeycharacters=\relax,
+          \v!kleur=>\setupprettiesintype{TEX}%
+                    \let\obeycharacters=\setupprettytype
+                    \let\obeytabs=\ignoretabs,
+        \v!normaal=>\let\obeycharacters=\setupgroupedtype,
+      \v!commandos=>\def\obeycharacters{\setupcommandsintype{#1}}%
                     \let\obeytabs=\ignoretabs,
          \v!schuin=>\let\obeycharacters=\setupslantedtype
                     \let\obeytabs=\ignoretabs,
-        \v!normaal=>\let\obeycharacters=\setupgroupedtype,
-           \v!geen=>\let\obeycharacters=\relax,
-          \v!kleur=>\let\obeycharacters=\setupprettytextype 
-                    \let\obeytabs=\ignoretabs]}
+        \s!unknown=>\setupprettiesintype{\getvalue{#1\c!optie}}%
+                    \let\obeycharacters=\setupprettytype
+                    \let\obeytabs=\ignoretabs]%
+   \edef\prettypalet%
+     {\prettyidentifier\getvalue{#1\c!palet}}}
 
 %D The verbatim commands have a rather long and turbulent
 %D history. Most users of \CONTEXT\ probably will never use
@@ -410,11 +446,11 @@
 
 \def\initializetyping#1%
   {\doifelsevalue{\??tp#1\c!marge}{\v!standaard}
-    {\ifdim\voorwit=\!!zeropoint
-       \advance\leftskip by \@@sllinks
-     \else
-       \advance\leftskip by \voorwit
-     \fi}
+     {\ifdim\voorwit=\!!zeropoint
+        \advance\leftskip by \@@sllinks
+      \else
+        \advance\leftskip by \voorwit
+      \fi}
      {\advance\leftskip by \getvalue{\??tp#1\c!marge}}%
    \processaction
      [\getvalue{\??tp#1\c!blanko}]
@@ -469,6 +505,7 @@
       \c!pagina=\@@tppagina,
       \c!tab=\@@tptab,
       \c!optie=\@@tpoptie,
+      \c!palet=\@@tppalet,
       \c!marge=\@@tpmarge,
       \c!blanko=\@@tpblanko,
       \c!escape=\@@tpescape,
@@ -483,6 +520,11 @@
   {\dodoubleempty\dodefinetyping}
 
 \definetyping[\v!typen]
+
+\definetyping[MP] [\c!optie=MP]
+\definetyping[PL] [\c!optie=PL]
+\definetyping[JV] [\c!optie=JV]
+\definetyping[TEX][\c!optie=TEX]
 
 %D \macros
 %D   {setuptyping}
@@ -520,17 +562,49 @@
 %D We use the \CONTEXT\ color system for switching to and from
 %D color mode. We can always redefine these colors afterwards.
 
-\definecolor [texprettyone]   [r=.9, g=.0, b=.0] % red
-\definecolor [texprettytwo]   [r=.0, g=.8, b=.0] % green
-\definecolor [texprettythree] [r=.0, g=.0, b=.9] % blue
-\definecolor [texprettyfour]  [r=.8, g=.8, b=.6] % yellow
+\definecolor [colorprettyone]   [r=.9, g=.0, b=.0] % red
+\definecolor [colorprettytwo]   [r=.0, g=.8, b=.0] % green
+\definecolor [colorprettythree] [r=.0, g=.0, b=.9] % blue
+\definecolor [colorprettyfour]  [r=.8, g=.8, b=.6] % yellow
+
+\definecolor [grayprettyone]    [s=.30]
+\definecolor [grayprettytwo]    [s=.45]
+\definecolor [grayprettythree]  [s=.60]
+\definecolor [grayprettyfour]   [s=.75]
+
+\definepalet
+  [colorpretty]
+  [  prettyone=colorprettyone,
+     prettytwo=colorprettytwo,
+   prettythree=colorprettythree,
+    prettyfour=colorprettyfour]
+
+\definepalet
+  [graypretty]
+  [  prettyone=grayprettyone,
+     prettytwo=grayprettytwo,
+   prettythree=grayprettythree,
+    prettyfour=grayprettyfour]
+
+% ---> naar verb-* ? of predefine als undefined? 
+
+\definepalet [TEXcolorpretty] [colorpretty]
+\definepalet [TEXgraypretty]  [graypretty]
+\definepalet [PLcolorpretty]  [colorpretty]
+\definepalet [PLgraypretty]   [graypretty]
+\definepalet [MPcolorpretty]  [colorpretty]
+\definepalet [MPgraypretty]   [graypretty]
+\definepalet [JVcolorpretty]  [colorpretty]
+\definepalet [JVgraypretty]   [graypretty]
 
 %D We can use some core color commands. These are faster than
-%D the standard color swithing ones and work ok on a line by 
+%D the standard color switching ones and work ok on a line by 
 %D line basis.
 
-\def\texbeginofpretty[#1]{\startcolormode{#1}}
-\def\texendofpretty      {\stopcolormode}
+% Some real in-depth knowlegde of palets: `palet:color' it is!
+
+\def\beginofpretty[#1]{\startcolormode{\prettypalet:#1}}
+\def\endofpretty      {\stopcolormode}
 
 %D \macros
 %D   {EveryPar, EveryLine, iflinepar}
@@ -556,8 +630,11 @@
 \def\typefile#1%
   {\getvalue{\??tp\v!file\c!voor}%
    \startopelkaar % includes \bgroup
-   \doifnotvalue{\??tp\v!file\c!optie}{\v!kleur}
+   \doifinset{\getvalue{\??tp\v!file\c!optie}}{\v!commandos,\v!schuin,\v!normaal}
      {\setuptyping[\v!file][\c!optie=\v!geen]}%
+   \doifvalue{\??tp\v!file\c!optie}{\v!kleur}
+     {\expandafter\aftersplitstring#1\at.\to\prettyidentifier
+      \letvalue{\??tp\v!file\c!optie}=\prettyidentifier}%
    \initializetyping\v!file
    \processfileverbatim{#1}%
    \stopopelkaar  % includes \egroup
@@ -583,11 +660,14 @@
    \c!pagina=\v!nee,
       \c!tab=\v!aan,
     \c!optie=\v!geen,
+    \c!palet=colorpretty,
     \c!marge=\!!zeropoint,
    \c!blanko=\v!regel,
    \c!escape=/]
 
 \permitshiftedendofverbatim
+
+\optimizeverbatimtrue
 
 \protect
 

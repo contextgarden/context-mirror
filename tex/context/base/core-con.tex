@@ -339,6 +339,7 @@
 
 \def\complexcurrentdate[#1]%
   {\bgroup
+   \let\labellanguage=\currentlanguage
    \def\betweendates{\let\betweendates\space}%
    \processallactionsinset
      [#1]
@@ -448,7 +449,7 @@
 \definesymbol [3] [$\star$]
 \definesymbol [4] [$\triangleright$]
 \definesymbol [5] [$\circ$]
-\definesymbol [6] [\hbox{\setsmallcorps\raise\!!onepoint\hbox{$\bigcirc$}}]
+\definesymbol [6] [\hbox{\setsmallbodyfont\raise\!!onepoint\hbox{$\bigcirc$}}]
 \definesymbol [7] [$\bigcirc$]
 \definesymbol [8] [\hbox{\hsmash{$\sqcup$}$\sqcap$}]
 
@@ -502,4 +503,3 @@
    $\ast$,$\ast\ast$]
 
 \protect
-

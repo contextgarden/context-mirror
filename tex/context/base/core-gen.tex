@@ -162,7 +162,7 @@
 %D plaatsvinden. Bij \type{ruim} wordt de gemeten breedte
 %D met 1~em vermeerderd.
 
-\def\assignwidth#1#2#3%
+\def\assignwidth#1#2#3#4%
   {\doifelse{#2}{}
      {\setbox0=\hbox{#3}%
       #1=\wd0}
@@ -170,10 +170,9 @@
         {\setbox0=\hbox{#3}%
          #1=\wd0
          \doif{#2}{\v!ruim}
-           {\advance#1 by 1em}}%
+           {\advance#1 by #4}}%
         {#1=#2}}}%
 
 \protect
 
 \endinput
-

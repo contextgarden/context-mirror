@@ -18,7 +18,7 @@
       \unhbox\nextbox}
      \hbox}
 
-\def\fittoptobaselinegrid%
+\def\fittoptobaselinegrid% weg hier 
   {\dowithnextbox
      {\bgroup
       \par
@@ -226,6 +226,28 @@
 %D \starttypen
 %D \setbox\nextbox { ... } \dodowithnextbox
 %D \stoptypen
+%D
+%D A slower but more versatile implementation is:
+%D
+%D \starttypen
+%D \long\def\dowithnextbox#1#2%
+%D   {\long\def\dodowithnextbox{#1}%
+%D    \ifx#2\hbox
+%D      \afterassignment\dododowithnextbox
+%D    \else\ifx#2\vbox
+%D      \afterassignment\dododowithnextbox
+%D    \else\ifx#2\vtop
+%D      \afterassignment\dododowithnextbox
+%D    \else\ifx#2\vcenter
+%D      \afterassignment\dododowithnextbox
+%D    \else
+%D      \afterassignment\dodowithnextbox
+%D    \fi\fi\fi\fi
+%D    \setbox\nextbox#2}
+%D \stoptypen
+%D
+%D This alternative also accepts \type{\box0} and alike, but 
+%D we don't really need this functionality now.  
 
 %D \macros
 %D   {beginofshapebox,
@@ -431,6 +453,9 @@
   {\endgraf
    \egroup}
 
+\let\beginshapebox=\beginofshapebox
+\let\endshapebox  =\endofshapebox
+
 \def\flushshapebox%
   {\ifdim\ht\newshapebox=\!!zeropoint\relax
    \else
@@ -629,7 +654,7 @@
       \egroup}}
 
 %D \macros
-%D   {processisolatedwords}
+%D   {processisolatedwords,betweenisolatedwords}
 %D   {}
 %D
 %D References are often made up of one word or a combination
@@ -708,6 +733,12 @@
 %D start processing the individual lines (words). We need some
 %D splitting, packing and unpacking to get the spacing and
 %D dimensions right.
+%D
+%D Normally the isolated words are separated by space, but 
+%D one can overrule this separator by changing the next macros.
+
+\def\betweenisolatedwords%
+  {\hskip\fontdimen2\font\!!plus\fontdimen3\font\!!minus\fontdimen4\font}
 
 \def\processisolatedwords#1#2%
   {\bgroup
@@ -731,14 +762,11 @@
           \hbox
             {\unhbox4
              \setbox4=\lastbox
-             \vbox
-               {\unvbox4
+             \vbox                  % outer \hbox needed 
+               {\unvbox4            % for nested use   
                 \setbox4=\lastbox
-                #2{\hbox{\unhbox4}}}}%
-          \hskip\fontdimen2\font
-            \!!plus \fontdimen3\font
-            \!!minus \fontdimen4\font
-        \ifdim\ht2>\!!zeropoint \repeat
+                \hbox{#2{\hbox{\unhbox4}}}}}% 
+        \ifdim\ht2>\!!zeropoint \betweenisolatedwords \repeat
         \unskip}%
       \unhbox0\unskip\hskip\isolatedlastskip
     \fi
@@ -864,171 +892,6 @@
    \hbox}
 
 %D \macros
-%D  {startbaselinecorrection,baselinecorrection,
-%D   showbaselinecorrection,offbaselinecorrection}
-%D
-%D Spacing around ruled boxes can get pretty messed up. The
-%D next macro tries as good as possible to fix this.
-%D
-%D \startbuffer[1]
-%D \startbaselinecorrection
-%D \ruledhbox{Rule Brittanica}
-%D \stopbaselinecorrection
-%D \stopbuffer
-%D
-%D \typebuffer[1]
-%D
-%D The macros put some white space around the box:
-%D
-%D \haalbuffer[1]
-%D
-%D A simple alternative is \type {\baselinecorrection}, which
-%D only looks at the previous line. 
-%D
-%D \startbuffer[2]
-%D \baselinecorrection
-%D \ruledhbox{Rule Brittanica}
-%D \baselinecorrection
-%D \stopbuffer
-%D
-%D \typebuffer[2]
-%D
-%D This time the last preceding line gets a correction,%
-%D dependant on the depth. 
-%D
-%D \haalbuffer[2]
-%D
-%D One can make the correction visible by saying \type
-%D {\showbaselinecorrection}. Part of the correction is
-%D calculated from the dimensions of a~(. One can disble the
-%D correction by calling \type {\offbaselinecorrection}. 
-%D 
-%D When visulaize the first example looks like:
-%D
-%D {\showbaselinecorrection\haalbuffer[1]}
-%D
-%D and the second one comes out as:
-%D
-%D {\showbaselinecorrection\haalbuffer[2]}
-
-\def\setbaselinecorrections%
-  {\setbox0=\hbox{\setstrut\strut}%
-   \setbox2=\hbox{(}%
-   \dimen0=\ht0\advance\dimen0 by -\ht2
-   \ifdim\dimen0<\!!zeropoint\dimen0=\!!zeropoint\fi
-   \dimen2=\dp0\advance\dimen2 by -\dp2
-   \ifdim\dimen2<\!!zeropoint\dimen2=\!!zeropoint\fi
-   \edef\thetopbaselinecorrection{\the\dimen0}%
-   \edef\thebotbaselinecorrection{\the\dimen2}}
-
-\def\dotopbaselinecorrection%
-  {\kern\thetopbaselinecorrection}  
-
-\def\dobotbaselinecorrection%
-  {\kern\thebotbaselinecorrection}  
-
-\def\showbaselinecorrection%
-  {\def\dobaselinecorrection% visualization is not watertight!
-     {\bgroup
-      \kern-\prevdepth
-      \setbox0=\null
-      \wd0=\hsize\dp0=\dp\strutbox
-      \nointerlineskip 
-      \ruledvbox{\box0}%
-      \egroup
-      \prevdepth=\dp\strutbox}%
-   \def\dotopbaselinecorrection%
-     {\hrule\!!height\thetopbaselinecorrection}%
-   \def\dobotbaselinecorrection%
-     {\hrule\!!height\thebotbaselinecorrection}}
-
-\def\dobaselinecorrection%
-  {\kern-\prevdepth
-   \kern\dp\strutbox
-   \prevdepth=\dp\strutbox}
-
-\def\baselinecorrection%
-  {\endgraf
-   \ifvmode
-     \ifdim\prevdepth<\maxdimen
-       \ifdim\prevdepth<\!!zeropoint \else
-         \ifdim\prevdepth<\dp\strutbox
-           \dobaselinecorrection
-         \fi
-       \fi
-     \fi
-   \fi}
-
-\def\startbaselinecorrection%
-  {\baselinecorrection
-   \ifvmode
-     \bgroup
-     \setbox\scratchbox=\vbox\bgroup
-     \ignorespaces
-     \let\stopbaselinecorrection=\dostopbaselinecorrection
-   \else
-     \let\stopbaselinecorrection=\relax
-   \fi}
-
-%D We do a bit more checking than needed. The pageborder check
-%D is not needed, but I want to look the visualization as good 
-%D as possible too.
-
-\def\dostopbaselinecorrection% I have to check columns yet.
-  {\endgraf
-   \egroup
-   \topbaselinecorrection
-   \box\scratchbox
-   \botbaselinecorrection
-   \egroup}
-
-\def\offbaselinecorrection%
-  {\let\startbaselinecorrection=\relax
-   \let\dostopbaselinecorrection =\relax}
-
-%D \macros
-%D  {topbaselinecorrection,botbaselinecorrection}
-%D
-%D The actual top and bottom corrections are implemented as:
-
-\def\topbaselinecorrection%
-  {\ifvmode 
-     \bgroup
-     \setbaselinecorrections
-     \ifdim\pagegoal<\maxdimen
-       \dimen2=\ht\scratchbox
-       \advance\dimen2 by \dp\scratchbox
-       \advance\dimen2 by \parskip
-       \advance\dimen2 by \thetopbaselinecorrection
-       \advance\dimen2 by \thebotbaselinecorrection
-       \dimen0=\pagetotal
-       \advance\dimen0 by \dimen2
-       \ifdim\dimen0<\pagegoal
-         \witruimte
-         \nointerlineskip
-         \dotopbaselinecorrection
-       \else
-         \ifbinnenkolommen           % should be supp-status
-           \vskip\dimen2             % this could
-           \penalty\outputpenalty    % be improved
-         \else  
-           \vfill\eject              % should be supp-control
-         \fi   
-       \fi
-     \fi
-     \egroup
-   \fi}
-
-\def\botbaselinecorrection%
-  {\ifvmode
-     \bgroup
-     \setbaselinecorrections
-     \dobotbaselinecorrection
-     \prevdepth\dp\strutbox
-     \egroup
-   \fi}
-
-%D \macros
 %D   {setrigidcolumnhsize,rigidcolumnbalance}
 %D
 %D These macros are copied from the \TEX book, page~397, and
@@ -1041,13 +904,22 @@
 %D
 %D Both these macros are for instance used in typesetting
 %D footnotes.
+%D
+%D Men kan het proces van breken enigzins beinvloeden met de 
+%D volgende twee swithes:
+
+\newif\ifalignrigidcolumns      
+\newif\ifstretchrigidcolumns    
+
+%D De eerste switch bepaald het uitlijnen, de tweede rekt de 
+%D individuele kolommen op naar \type{\vsize}.
 
 \def\setrigidcolumnhsize#1#2#3%
   {\hsize=#1\relax
-   \dimen0=-#2\relax
-   \multiply\dimen0 by #3\relax
-   \advance\dimen0 by #2\relax
-   \advance\hsize by \dimen0
+   \scratchdimen=-#2\relax
+   \multiply\scratchdimen by #3\relax
+   \advance\scratchdimen by #2\relax
+   \advance\hsize by \scratchdimen
    \divide\hsize by #3\relax}
 
 \def\rigidcolumnbalance#1#2%
@@ -1058,24 +930,31 @@
    \else
      \line
        {\vbadness=10000
-        \hfilneg
+        \tabskip\!!zeropoint
+        \splittopskip=\ht\strutbox
+        %\scratchdimen=\ht\rigidcolumnbox      % sensitive for overflow
+        %\divide\scratchdimen by \rigidcolumns % therefore we need the hack:
+        \scratchdimen=1pt 
+        \divide\scratchdimen by \rigidcolumns
+        \expanded{\scratchdimen=\withoutpt{\the\scratchdimen}\ht\rigidcolumnbox}%
+        \advance\scratchdimen by \ht\strutbox 
         \valign{##\vfill\cr\dorigidcolumnsplits}}%
    \fi}
 
 \def\dorigidcolumnsplits%
   {\ifnum\rigidcolumns>0
-     \noalign{\hfil}\dorigidcolumnsplitoff
+     \setbox\scratchbox=\vsplit\rigidcolumnbox to \scratchdimen
+     \ifalignrigidcolumns
+       \vbox to \ifstretchrigidcolumns\vsize\else\scratchdimen\fi
+         {\unvbox\scratchbox}%
+     \else
+       \vbox{\unvbox\scratchbox}%
+     \fi
      \doglobal\decrement\rigidcolumns
      \cr
-     \dorigidcolumnsplits
+     \ifnum\rigidcolumns>0\noalign{\hfil}\fi
+     \expandafter\dorigidcolumnsplits
    \fi}
-
-\def\dorigidcolumnsplitoff%
-  {\splittopskip=\ht\strutbox
-   \dimen0=\ht\rigidcolumnbox
-   \divide\dimen0 by \rigidcolumns
-   \advance\dimen0 by \ht\strutbox
-   \vsplit\rigidcolumnbox to \dimen0 }
 
 %D \macros
 %D   {startvboxtohbox,stopvboxtohbox,convertvboxtohbox}

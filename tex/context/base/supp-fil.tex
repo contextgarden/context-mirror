@@ -306,25 +306,27 @@
   {\doiffileelse{\f!currentpath/#1}}
 
 %D \macros
-%D   {doinputonce}
+%D   {doonlyonce, doinputonce}
 %D   {}
 %D   
 %D Especially macropackages need only be loaded once.
 %D Repetitive loading not only costs time, relocating registers
 %D often leads to abortion of the processing because \TEX's
-%D capacity is limited. One can prevent multiple loading by
-%D using:
+%D capacity is limited. One can prevent multiple execution and 
+%D loading by using one of both:
 %D
 %D \starttypen
+%D \doonlyonce{actions}
 %D \doloadonce{filename}
 %D \stoptypen
 %D
 %D This command obeys the standard method for locating files. 
 
+\long\def\doonlyonce#1#2%
+  {\doifundefined{@@@#1@@@}{\setgvalue{@@@#1@@@}{}#2}}
+
 \def\doinputonce#1%
-  {\doifundefined{@@@#1@@@}%
-     {\setgvalue{@@@#1@@@}{}%
-      \doiffileelse{#1}{\normalinput #1}{}}}
+  {\doonlyonce{#1}{\doiffileelse{#1}{\normalinput #1\relax}{}}}
 
 %D \macros
 %D   {doifparentfileelse}
@@ -344,8 +346,60 @@
    \@EA\convertargument\!!stringa\to\!!stringa
    \@EA\def\@EA\!!stringb\@EA{\jobname}%
    \ifx\!!stringa\!!stringb#2\else#3\fi}
+
+% \newcounter\readingfilelevel
+%
+% \def\startreadingfile%
+%   {\ifnum\readingfilelevel=0
+%      \edef\doreadingfilecharacters%
+%        {\catcode`"=\the\catcode`"\relax
+%         \catcode`<=\the\catcode`<\relax
+%         \catcode`>=\the\catcode`>\relax}%
+%      \catcode`"=\@@other
+%      \catcode`<=\@@other
+%      \catcode`>=\@@other
+%      \let\stopreadingfile=\dostopreadingfile
+%    \fi
+%    \increment\readingfilelevel}
+% 
+% \def\dostopreadingfile%
+%   {\ifnum\readingfilelevel=1
+%      \doreadingfilecharacters
+%    \fi
+%    \decrement\readingfilelevel}
 
+\def\normalless {<} % geen \let ! 
+\def\normalmore {>} % geen \let ! 
+\def\normalequal{=} % geen \let ! 
+
+\newcounter\readingfilelevel
+
+\def\popfilecharacter#1#2%
+  {\ifnum\catcode`#1=\@@other \ifnum#2=\@@other \else
+     \message{[popping catcode #1 to #2]}%
+     \catcode`#1=#2\relax
+   \fi \fi}
+
+\def\pushfilecharacter#1%
+  {\ifnum\catcode`#1=\@@other \else
+     \message{[pushing catcode #1 from \the\catcode`#1]}%
+     \catcode`#1=\@@other
+   \fi}
+
+\def\startreadingfile%
+  {\doglobal\increment\readingfilelevel
+   \setxvalue{popfilecharacters::\readingfilelevel}%
+     {\noexpand\popfilecharacter{"}{\the\catcode`"}%
+      \noexpand\popfilecharacter{<}{\the\catcode`<}%
+      \noexpand\popfilecharacter{>}{\the\catcode`>}}%
+   \pushfilecharacter{"}%
+   \pushfilecharacter{<}%
+   \pushfilecharacter{>}}
+
+\def\stopreadingfile%
+  {\getvalue{popfilecharacters::\readingfilelevel}%
+   \doglobal\decrement\readingfilelevel}
+
 \protect
 
 \endinput
-

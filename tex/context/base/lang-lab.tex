@@ -86,25 +86,28 @@
 %D
 %D The latter one has an upcased alternative \type{\LABELTEXT}.
 
+\def\labellanguage{\currentmainlanguage}
+\def\headlanguage {\currentmainlanguage}
+
 \def\headtext%
-  {\dogetupsometextprefix\v!kop}
+  {\dogetupsometextprefix\headlanguage\v!kop}
 
 \def\labeltext%
-  {\dogetupsometextprefix\c!label}
+  {\dogetupsometextprefix\labellanguage\c!label}
 
 \def\LABELTEXT#1%
   {\bgroup
    \let\handletextprefix=\uppercase
    \the\everyuppercase
-   \dogetupsometextprefix\c!label{#1}% not \labeltext (see \MONTH)
+   \dogetupsometextprefix\labellanguage\c!label{#1}% not \labeltext (see \MONTH)
    \egroup}
 
-\unexpanded\def\dogetupsometextprefix#1#2%
-  {\doifdefinedelse{#1\currentmainlanguage#2}
-     {\getvalue{#1\currentmainlanguage#2}}
-     {\doifdefinedelse{#1#2}
-        {\getvalue{#1#2}}
-        {{\tttf[#1: #2/\currentmainlanguage]~}}}}
+\unexpanded\def\dogetupsometextprefix#1#2#3%
+  {\doifdefinedelse{#2#1#3}
+     {\getvalue{#2#1#3}}
+     {\doifdefinedelse{#1#3}
+        {\getvalue{#2#3}}
+        {{\tttf[#2: #3/#1]~}}}}
 
 %D \macros
 %D   {presetheadtext,presetlabeltext}
@@ -144,7 +147,7 @@
 %D which expands to {\em something} or {\em iets}, depending on
 %D de current language.
 
-\def\dotranslate[#1]%
+\def\dotranslate[#1]% 
   {\getparameters[\??lg][#1]%
    \getvalue{\??lg\currentlanguage}}
 
@@ -176,4 +179,3 @@
 \protect
 
 \endinput
-

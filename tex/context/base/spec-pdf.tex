@@ -20,6 +20,8 @@
 %D    dostartthisislocation,
 %D    dostartgotolocation,
 %D    dostartgotorealpage,
+%D    doflushJSpreamble,
+%D    dostartgotoJS,      
 %D    dostartcommand,
 %D    dostartgotoprofile,
 %D    dobeginofprofile,
@@ -29,6 +31,7 @@
 %D    dostopobject,
 %D    doinsertobject,
 %D    doinsertbookmark,
+%D    dosetpagetransition,
 %D    usepagedestinations}
 %D   {}
 %D
@@ -91,8 +94,7 @@
      \doifsomething{\PDFdestination}
        {\special
           {\@@insertpostscriptretain
-             [/Dest /\PDFdestination\space
-%             [/Dest (\PDFdestination)
+             [/Dest /\PDFdestination\space % (\PDFdestination)
               /View [/Fit]
               /DEST
              pdfmark}}%
@@ -138,8 +140,7 @@
                  \fi
                  /Rect [0 0 \width\space \height]
                  /Border [0 0 0]
-                 /Dest /\PDFdestination\space
-%                /Dest (\PDFdestination)
+                 /Dest /\PDFdestination\space % (\PDFdestination)
                  /Subtype /Link
                  /ANN
                 pdfmark}}%
@@ -200,35 +201,40 @@
             pdfmark}}%
    \egroup}
 
+\def\PDFexecutestart       {/Movie /T (movie \currentmovie) /Operation /Play}
+\def\PDFexecutestop        {/Movie /T (movie \currentmovie) /Operation /Stop}
+\def\PDFexecutepause       {/Movie /T (movie \currentmovie) /Operation /Pause}
+\def\PDFexecuteresume      {/Movie /T (movie \currentmovie) /Operation /Resume}
+
+\def\PDFexecutefirst       {/Named /N /First}
+\def\PDFexecuteprevious    {/Named /N /Prev}
+\def\PDFexecutenext        {/Named /N /Next}
+\def\PDFexecutelast        {/Named /N /Last}
+\def\PDFexecutebackward    {/Named /N /GoBack}
+\def\PDFexecuteforward     {/Named /N /GoForward}
+\def\PDFexecuteprint       {/Named /N /Print}
+\def\PDFexecuteexit        {/Named /N /Quit}
+\def\PDFexecuteclose       {/Named /N /Close}
+\def\PDFexecutesave        {/Named /N /Save}
+\def\PDFexecutehelp        {/Named /N /HelpUserGuide}
+\def\PDFexecuteswap        {/Named /N /FullScreen}
+\def\PDFexecutesearch      {/Named /N /Find}
+\def\PDFexecutesearchagain {/Named /N /FindAgain}
+
 \definespecial\dostartexecutecommand#1#2#3#4%
-  {\bgroup
-   \ScaledPointsToBigPoints{#1}\width
-   \ScaledPointsToBigPoints{#2}\height
-   \processaction
-     [#3]
-     [     first=>\def\command{First},
-        previous=>\def\command{Prev},
-            next=>\def\command{Next},
-            last=>\def\command{Last},
-        backward=>\def\command{GoBack},
-         forward=>\def\command{GoForward},
-           print=>\def\command{Print},
-            exit=>\def\command{Quit},
-           close=>\def\command{Close},
-            help=>\def\command{HelpUserGuide},
-            swap=>\def\command{FullScreen},
-          search=>\def\command{Find},
-     searchagain=>\def\command{FindAgain},
-      \s!unknown=>\let\command=\s!unknown]%
-    \special
-      {\@@insertpostscriptretain
-         [/Action <</Subtype /Named /N /\command>>
-          /Rect [0 0 \width\space \height]
-          /Border [0 0 0]
-          /Subtype /Link
-          /ANN
-         pdfmark}%
-   \egroup}
+  {\doifdefined{PDFexecute#3}
+     {\bgroup
+      \ScaledPointsToBigPoints{#1}\width
+      \ScaledPointsToBigPoints{#2}\height
+      \special
+        {\@@insertpostscriptretain
+           [/Subtype /Link
+            /Action <</Subtype \getvalue{PDFexecute#3}>>
+            /Rect [0 0 \width\space \height]
+            /Border [0 0 0]
+            /ANN
+           pdfmark}%
+      \egroup}}
 
 \definespecial\dostopexecutecommand%
   {}
@@ -328,21 +334,25 @@
   {\special
      {\@@insertpostscriptretain
         [/Title (#1)
-        /Subject (#2)
-        /Author (#3)
-        /Creator (#4)
-        /ModificationDate (#5)
-        /DOCINFO
+         /Subject (#2)
+         /Author (#3)
+         /Creator (#4)
+         /ModificationDate (#5)
+         /DOCINFO
        pdfmark}}
 
 \definespecial\dostartrunprogram#1#2#3%
   {\bgroup
    \ScaledPointsToBigPoints{#1}\width
    \ScaledPointsToBigPoints{#2}\height
+   \edef\string{#3}%
+   \@EA\beforesplitstring\string\at{ }\to\program
+   \@EA\aftersplitstring \string\at{ }\to\parameters
    \special
      {\@@insertpostscriptretain
         [/Action /Launch
-         /File (#3)
+         /File (\program)
+         /Params (\parameters)
          /Rect [0 0 \width\space \height]
          /Border [0 0 0]
          /Subtype /Link
@@ -367,75 +377,111 @@
            pdfmark}}%
    \egroup}
 
-\definespecial\dobeginofprofile#1#2#3% label width page
+\def\dobeginofprofile#1#2#3#4% label width height page
   {\bgroup
+   \ScaledPointsToBigPoints{#2}\width
+   \ScaledPointsToBigPoints{#3}\height
    \doifelsenothing{#1}
      {\!!doneatrue}
      {\!!doneafalse}%
-   \doifnot{0#3}{0}
+   \doifnot{0#4}{0}
      {\special
         {\@@insertpostscriptretain
            [/Title (#1)
-            /Rect [0 0 0 0]
-            \if!!donea /Page #3 \fi
+            /Rect [0 0 \width\space\height]
+            \if!!donea /Page #4 \fi
             /ARTICLE
            pdfmark}}%
    \egroup}
 
-\definespecial\doendofprofile#1#2#3%
+\def\doendofprofile%
   {}
+
+\newcounter\currentmovie
 
 \def\docommoninsertmov#1#2#3#4#5#6#7#8%
   {\bgroup
    \ScaledPointsToBigPoints{#6}\width
    \ScaledPointsToBigPoints{#7}\height
    \edef\pdf@@posterize{\ifcase#8 \or/Poster true\fi}%
+   \doglobal\increment\currentmovie
    \special
      {\@@insertpostscriptretain
         [/Type /Annot
          /Subtype /Movie
          /Rect [0 0 \width\space \height]
-         /Movie <</F (#1) /Aspect [\width\space \height] \pdf@@posterize>>
+         /Movie <</T (movie \currentmovie) /F (#1) /Aspect [\width\space \height] \pdf@@posterize>>
          /A <</ShowControls false>>
          /ANN
         pdfmark}%
    \egroup}
 
-\let\doyandyinsertmov = \docommoninsertmov
-\let\dotrinsertmov    = \docommoninsertmov
+\let\doyyinsertmov=\docommoninsertmov
+\let\dotrinsertmov=\docommoninsertmov
 
-\newbox\pdfobjects
+%\definespecial\dostartobject#1#2#3#4%
+%  {\bgroup
+%   \setbox\nextbox=\hbox\bgroup
+%     \bgroup
+%     \ScaledPointsToBigPoints{#2}\width
+%     \ScaledPointsToBigPoints{#3}\height
+%     \ScaledPointsToBigPoints{#4}\depth
+%     \escapechar=-1
+%     \setPDFdestination{#1}%
+%     \special
+%       {\@@insertpostscriptretain
+%          [/BBox [0 -\depth\space \width\space \height]
+%           /_objdef {\PDFdestination} 
+%           /BP pdfmark}%
+%     \egroup}
 
 \definespecial\dostartobject#1#2#3#4%
-  {\setbox\nextbox=\hbox\bgroup
+  {\bgroup
+   \setbox\nextbox=\hbox\bgroup
      \bgroup
      \ScaledPointsToBigPoints{#2}\width
      \ScaledPointsToBigPoints{#3}\height
      \ScaledPointsToBigPoints{#4}\depth
      \escapechar=-1
+     \setPDFdestination{#1}%
+     \dosetobjectreference{#1}{\PDFdestination}%
      \special
        {\@@insertpostscriptretain
           [/BBox [0 -\depth\space \width\space \height]
-           /_objdef {object:#1}
+           /_objdef {\PDFdestination} 
            /BP pdfmark}%
      \egroup}
 
 \definespecial\dostopobject%
   {\special
-     {\@@insertpostscriptretain
+      {\@@insertpostscriptretain
         [/EP pdfmark}%
    \egroup
    \smashbox\nextbox
-   \global\setbox\pdfobjects=\hbox{\box\pdfobjects\box\nextbox}}
+   \flushatshipout{\box\nextbox}%
+   \egroup}
+
+%\definespecial\doinsertobject#1%
+%  {\hbox\bgroup
+%     \escapechar=-1
+%     \setPDFdestination{#1}%
+%     \special
+%       {\@@insertpostscriptretain
+%          [{\PDFdestination} /SP pdfmark}%
+%   \egroup}
 
 \definespecial\doinsertobject#1%
   {\hbox\bgroup
-     \box\pdfobjects
-     \escapechar=-1
-     \special
-       {\@@insertpostscriptretain
-          [{object:#1} /SP pdfmark}%
+     \dogetobjectreference{#1}\objectreference
+     \ifx\objectreference\empty \else
+       \special
+         {\@@insertpostscriptretain
+            [{\objectreference} /SP pdfmark}%
+     \fi
    \egroup}
+
+%\definespecial\dogetobjectreference#1#2%
+%  {\edef#2{#1}}
 
 \definespecial\doinsertbookmark#1#2#3#4#5% level sublevels text page open (1)
   {\sanitizePDFstring#3\to\bookmarktext
@@ -448,9 +494,42 @@
          /OUT
         pdfmark}}
 
+\def\PDFpagesplit       {/S /Split    }      
+\def\PDFpageblinds      {/S /Blinds   }
+\def\PDFpagebox         {/S /Box      }
+\def\PDFpagewipe        {/S /Wipe     }      
+\def\PDFpagedissolve    {/S /Dissolve }   
+\def\PDFpageglitter     {/S /Glitter  }
+\def\PDFpagereplace     {/S /R        }
+
+\def\PDFpagehorizontal  {/Dm /H  }
+\def\PDFpagevertical    {/Dm /V  }
+\def\PDFpagein          {/M  /I  }
+\def\PDFpageout         {/M  /O  }
+\def\PDFpageeast        {/Di   0 }
+\def\PDFpagenorth       {/Di  90 }
+\def\PDFpagewest        {/Di 180 }
+\def\PDFpagesouth       {/Di 270 }
+
+\def\dosetPDFpagetransition#1%
+  {\doifdefined{PDFpage#1}
+     {\edef\PDFpagetransitions{\PDFpagetransitions\getvalue{PDFpage#1}}}}
+
+\def\dosetpagetransition#1%
+  {\let\PDFpagetransitions=\empty
+   \processcommalist[#1]\dosetPDFpagetransition
+   \expanded{\global\noexpand\pdfpageattr{/Trans <<\PDFpagetransitions>>}}}
+
+\def\pagetransitions  % replace not in this list
+  {{split,in,vertical},{split,in,horizontal},{split,out,vertical},{split,out,horizontal},
+   {blinds,horizontal},{blinds,vertical},
+   {box,in},{box,out},
+   {wipe,east},{wipe,west},{wipe,north},{wipe,south},
+   dissolve,
+   {glitter,east},{glitter,south}}
+
 \stopspecials
 
 \protect
 
 \endinput
-

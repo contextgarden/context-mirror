@@ -28,7 +28,7 @@
 \writestatus{loading}{Context Support Macros / Visualization}
 
 \unprotect
-
+
 %D \macros
 %D   {indent, noindent,
 %D    leavevmode,
@@ -190,7 +190,7 @@
 %D
 %D These examples also demonstrate the visualization of 
 %D \type{\leftskip} and \type{\rightskip}. 
-
+
 \newcounter\ruledbaselines
 
 \def\debuggertext#1%
@@ -229,56 +229,140 @@
 \def\showbaselines%
   {\testrulewidth=\defaulttestrulewidth
    \EveryPar{\ruledbaseline}}
-
-%D {\em Not yet documented!}
+
+%D \macros 
+%D   {makecutbox, cuthbox, cutvbox, cutvtop}
+%D 
+%D Although mainly used for marking the page, these macros can 
+%D also serve local use. 
+%D 
+%D \startbuffer
+%D \setbox0=\vbox{a real \crlf vertical box} \makecutbox0
+%D \stopbuffer
+%D 
+%D \typebuffer
+%D 
+%D This marked \type{\vbox} shows up as:
+%D 
+%D \startregelcorrectie
+%D \haalbuffer
+%D \stopregelcorrectie
+%D 
+%D The alternative macros are used as:
+%D 
+%D \startbuffer
+%D \cuthbox{a made cut box}
+%D \stopbuffer
+%D 
+%D \typebuffer
+%D 
+%D This is typeset as:
+%D 
+%D \startregelcorrectie
+%D \haalbuffer
+%D \stopregelcorrectie
+%D 
+%D By setting the next macros one can influence the length of
+%D the marks as well as the horizontal and vertical divisions. 
+
+\def\cutmarklength           {2\bodyfontsize}
+\chardef\horizontalcutmarks = 2
+\chardef\verticalcutmarks   = 2
+\chardef\cutmarkoffset      = 1
+\let\cutmarksymbol          = \relax
+
+\def\horizontalcuts%
+  {\normalhbox to \ruledwidth
+     {\dorecurse{\horizontalcutmarks}
+        {\vrule\!!width\boxrulewidth\!!height\cutmarklength\normalhfill}%
+      \unskip}}
+
+\def\verticalcuts%
+  {\scratchdimen=\ruledheight
+   \advance\scratchdimen by \ruleddepth 
+   \normalvbox to \scratchdimen
+     {\hsize\cutmarklength
+      \dorecurse{\verticalcutmarks}
+        {\vrule\!!height\boxrulewidth\!!width\hsize\normalvfill}%
+      \unskip}}
+
+\def\baselinecuts%
+  {\ifdim\ruleddepth>\!!zeropoint
+     \scratchdimen=\ruledheight
+     \advance\scratchdimen by \ruleddepth 
+     \normalvbox to \scratchdimen
+       {\scratchdimen=\cutmarklength
+        \divide\scratchdimen by 2
+        \hsize\scratchdimen
+        \normalvskip\!!zeropoint\!!plus\ruledheight
+        \vrule\!!height\boxrulewidth\!!width\hsize
+        \normalvskip\!!zeropoint\!!plus\ruleddepth}%
+   \fi}
+
+\def\cutmarksymbols%
+  {\setbox\scratchbox=\normalvbox to \cutmarklength
+     {\normalvfill
+      \normalhbox to \cutmarklength
+        {\normalhfill\ssxx\cutmarksymbol\normalhfill}%
+      \normalvfill}%
+   \normalhbox to \ruledwidth
+     {\scratchdimen=\cutmarklength
+      \divide\scratchdimen by 2
+      \llap{\copy\scratchbox\normalhskip\cutmarkoffset\scratchdimen}%
+      \normalhfill
+      \rlap{\normalhskip\cutmarkoffset\scratchdimen\copy\scratchbox}}}
 
 \def\makecutbox#1%
   {\edef\ruledheight{\the\ht#1}%
    \edef\ruleddepth {\the\dp#1}%
    \edef\ruledwidth {\the\wd#1}%
-   \setbox\scratchbox=\normalvbox
+   \setbox#1=\normalhbox
      {\dontcomplain
+      \forgetall
+      \boxmaxdepth\maxdimen
       \offinterlineskip
-      \scratchdimen=12pt\relax
-      \def\verrule##1##2%
-        {\vrule
-           \!!width\boxrulewidth
-           \!!height##1\scratchdimen
-           \!!depth##2\scratchdimen}%
-      \def\horrule##1##2##3%
-        {\normalhskip##1\scratchdimen
-         \vrule
-           \!!height\boxrulewidth
-           \!!width##2\scratchdimen
-         \normalhskip##3\scratchdimen}%
-      \normalvskip-3\scratchdimen
-      \normalhbox to \ruledwidth
-        {\verrule{3}{-1}\normalhss\verrule{3}{-1}}%
-      \normalhbox to \ruledwidth
-        {\horrule{-3}{2}{1}\normalhss\horrule{1}{2}{-3}}%
-      \normalvskip-\boxrulewidth
-      \vskip\ruledheight
-      \ifdim\ruleddepth>\!!zeropoint\relax
-        \normalvskip-.5\boxrulewidth
-        \normalhbox to \ruledwidth
-          {\horrule{-2}{1}{1}\normalhss\horrule{1}{1}{-2}}%
-        \normalvskip-.5\boxrulewidth
-        \vskip\ruleddepth
+      \scratchdimen=\cutmarklength
+      \divide\scratchdimen by 2
+      \hsize\ruledwidth
+      \setbox\scratchbox=\normalvbox 
+        {\setbox\scratchbox=\normalhbox{\horizontalcuts}%
+         \normalvskip-\cutmarkoffset\scratchdimen
+         \normalvskip-2\scratchdimen
+         \copy\scratchbox
+         \normalvskip\cutmarkoffset\scratchdimen
+         \hbox to \ruledwidth
+           {\setbox\scratchbox=\normalhbox{\verticalcuts}%
+            \llap{\copy\scratchbox\normalhskip\cutmarkoffset\scratchdimen}%
+            \bgroup
+            \setbox\scratchbox=\normalhbox{\baselinecuts}%
+            \llap{\copy\scratchbox\normalhskip\cutmarkoffset\scratchdimen}%
+            \normalhfill
+            \rlap{\normalhskip\cutmarkoffset\scratchdimen\copy\scratchbox}%
+            \egroup
+            \rlap{\normalhskip\cutmarkoffset\scratchdimen\copy\scratchbox}}%
+         \normalvskip\cutmarkoffset\scratchdimen
+         \copy\scratchbox}%
+      \ht\scratchbox=\ruledheight
+      \dp\scratchbox=\ruleddepth
+      \wd\scratchbox=\!!zeropoint
+      \box\scratchbox
+      \ifx\cutmarksymbol\relax \else
+        \setbox\scratchbox=\normalvbox 
+          {\setbox\scratchbox=\normalhbox{\cutmarksymbols}%
+           \vskip-\cutmarkoffset\scratchdimen
+           \vskip-\cutmarklength
+           \copy\scratchbox
+           \vskip\cutmarkoffset\scratchdimen
+           \vskip\ruledheight
+           \vskip\ruleddepth
+           \vskip\cutmarkoffset\scratchdimen
+           \copy\scratchbox}%
+        \ht\scratchbox=\ruledheight
+        \dp\scratchbox=\ruleddepth
+        \wd\scratchbox=\!!zeropoint
+        \box\scratchbox
       \fi
-      \normalvskip-\boxrulewidth
-      \normalhbox to \ruledwidth
-        {\horrule{-3}{2}{1}\normalhss\horrule{1}{2}{-3}}%
-      \normalhbox to \ruledwidth
-        {\verrule{-1}{3}\normalhss\verrule{-1}{3}}}%
-   \dp\scratchbox=\ruleddepth      % This re-bounding is needed and 
-   \ht\scratchbox=\ruledheight     % surfaced while typesetting continuous 
-   \setbox\scratchbox=\normalhbox  % double culumns with pagecutmark 
-     {\lower\ruleddepth\box\scratchbox}%
-   \setbox#1=\ifhbox#1\normalhbox\else\normalvbox\fi
-     {\normalhbox
-        {\wd#1=\!!zeropoint 
-         \box#1\relax
-         \box\scratchbox}}%
+      \box#1}%
    \wd#1=\ruledwidth
    \ht#1=\ruledheight
    \dp#1=\ruleddepth}
@@ -298,14 +382,164 @@
    \dowithnextbox{\makecutbox\nextbox\box\nextbox\egroup}%
    \normalvtop}
 
-%
-% \cutvbox
-% \cutvtop
-% \cuthbox
-%
-% \cutvbox{\ruledvbox{hello\par world \par \strut ziezo}}
-
+%D \macros
+%D   {colormarkbox}
+%D
+%D This macro is used in the pagebody routine. No other use 
+%D is advocated here.
+%D
+%D \starttypen
+%D \colormarkbox0
+%D \stoptypen
+
+\def\colormarkoffset{\cutmarkoffset}
+\def\colormarklength{\cutmarklength}
+
+\def\colorrangeA#1#2#3#4%
+  {\vbox
+     {\scratchdimen=-\colormarklength
+      \multiply\scratchdimen by 4
+      \advance\scratchdimen by \ruledheight 
+      \advance\scratchdimen by \ruleddepth
+      \divide\scratchdimen by 21
+      \def\docommando##1%
+        {\vbox
+           {\hsize\scratchdimen
+            \definecolor 
+              [\s!dummy]
+              [\c!c=#2##1\else0\fi, 
+               \c!m=#3##1\else0\fi,
+               \c!y=#4##1\else0\fi,
+               \c!k=0]%
+            \localstartcolor[\s!dummy]%
+            \hrule 
+              \!!width  3em 
+              \!!height \scratchdimen 
+              \!!depth  \!!zeropoint
+            \localstopcolor
+            \ifdim\scratchdimen>1ex
+              \vskip-\scratchdimen 
+              \vbox to \scratchdimen 
+                {\vss 
+                 \hbox to \hsize
+                   {\hss\ifdim##1pt=0pt#1\else##1\fi\hss}%
+                 \vss}%
+            \fi}}%
+      \offinterlineskip
+      \processcommalist[1.00,0.95,0.75,0.50,0.25,0.05,0.00]\docommando}}
+
+\def\colorrangeB%
+  {\hbox
+     {\scratchdimen=-\colormarklength
+      \multiply\scratchdimen by 2
+      \advance\scratchdimen by \ruledwidth
+      \divide\scratchdimen by 11
+      \def\docommando ##1 ##2 ##3##4##5##6%
+        {\definecolor 
+           [\s!dummy]
+           [\c!c=##3##2\else0\fi,
+            \c!m=##4##2\else0\fi,
+            \c!y=##5##2\else0\fi,
+            \c!k=##6##2\else0\fi]%
+         \localstartcolor[\s!dummy]%
+         \vrule 
+           \!!width  \scratchdimen 
+           \!!height \colormarklength
+           \!!depth  \!!zeropoint
+         \localstopcolor
+         \ifdim\scratchdimen>2em 
+           \hskip-\scratchdimen 
+           \vbox to \colormarklength
+             {\vss 
+              \hbox to \scratchdimen
+                {\hss\ifdim##2pt=.5pt##2~\fi##1\hss}
+              \vss}%
+         \fi}%
+      \docommando C .5 \iftrue \iffalse\iffalse\iffalse
+      \docommando M .5 \iffalse\iftrue \iffalse\iffalse
+      \docommando Y .5 \iffalse\iffalse\iftrue \iffalse
+      \docommando K .5 \iffalse\iffalse\iffalse\iftrue
+      \docommando C 1  \iftrue \iffalse\iffalse\iffalse
+      \docommando G 1  \iftrue \iffalse\iftrue \iffalse
+      \docommando Y 1  \iffalse\iffalse\iftrue \iffalse
+      \docommando R 1  \iffalse\iftrue \iftrue \iffalse
+      \docommando M 1  \iffalse\iftrue \iffalse\iffalse
+      \docommando B 1  \iftrue \iftrue \iffalse\iffalse
+      \docommando K 1  \iffalse\iffalse\iffalse\iftrue}}
+
+\def\colorrangeC%
+  {\hbox
+     {\scratchdimen=-\colormarklength
+      \multiply\scratchdimen by 2
+      \advance\scratchdimen by \ruledwidth
+      \divide\scratchdimen by 14
+      \def\docommando##1%
+        {\definecolor[\s!dummy][\c!s=##1]%
+         \localstartcolor[\s!dummy]%
+         \vrule 
+           \!!width  \scratchdimen 
+           \!!height \colormarklength
+           \!!depth  \!!zeropoint
+         \localstopcolor
+         \ifdim\scratchdimen>2em
+           \hskip-\scratchdimen 
+           \vbox to \colormarklength
+             {\vss\hbox to \scratchdimen{\hss##1\hss}\vss}%
+         \fi}%
+      \processcommalist
+        [1.00,0.95,0.90,0.85,0.80,0.75,
+         0.70,0.60,0.50,0.40,0.30,0.20,0.10,0.00]\docommando}}
+
+\def\docolormarkbox#1%
+  {\edef\ruledheight{\the\ht#1}%
+   \edef\ruleddepth {\the\dp#1}%
+   \edef\ruledwidth {\the\wd#1}%
+   \setbox#1=\hbox
+     {\scratchdimen=\colormarklength
+      \divide\scratchdimen by 2
+      \forgetall
+      \ssxx
+      \setbox\scratchbox=\vbox 
+        {\offinterlineskip
+         \vskip-\colormarkoffset\scratchdimen
+         \vskip-2\scratchdimen
+         \hbox to \ruledwidth
+           {\hss\hbox{\colorrangeB}\hss}%
+         \vskip\colormarkoffset\scratchdimen
+         \vbox to \ruledheight 
+           {\vss
+            \hbox to \ruledwidth
+              {\llap{\colorrangeA C\iftrue\iffalse\iffalse\hskip\colormarkoffset\scratchdimen}%
+               \hfill
+               \rlap{\hskip\colormarkoffset\scratchdimen\colorrangeA R\iffalse\iftrue\iftrue}}%
+            \vss
+            \hbox to \ruledwidth
+              {\llap{\colorrangeA M\iffalse\iftrue\iffalse\hskip\colormarkoffset\scratchdimen}% 
+               \hfill
+               \rlap{\hskip\colormarkoffset\scratchdimen\colorrangeA G\iftrue\iffalse\iftrue}}%
+            \vss
+            \hbox to \ruledwidth
+              {\llap{\colorrangeA Y\iffalse\iffalse\iftrue\hskip\colormarkoffset\scratchdimen}%
+               \hfill
+               \rlap{\hskip\colormarkoffset\scratchdimen\colorrangeA B\iftrue\iftrue\iffalse}}%
+            \vss} 
+         \vskip\colormarkoffset\scratchdimen
+         \hbox to \ruledwidth
+           {\hss\lower\ruleddepth\hbox{\colorrangeC}\hss}}%
+      \ht\scratchbox=\ruledheight
+      \dp\scratchbox=\ruleddepth
+      \wd\scratchbox=\!!zeropoint
+      \box\scratchbox
+      \box#1}%
+   \wd#1=\ruledwidth
+   \ht#1=\ruledheight
+   \dp#1=\ruleddepth}
+
+\def\colormarkbox#1%
+  {\ifincolor
+     \docolormarkbox{#1}%
+   \fi}
+
 \protect
 
 \endinput
-

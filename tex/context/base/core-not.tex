@@ -37,7 +37,7 @@
 \ifx\footins\undefined \newinsert\footins \fi
 
 %D \macros
-%D   {setupfootnotes}
+%D   {setupfootnotes,setupfootnotedefinition}
 %D
 %D We can influence footnote typesetting with the setup
 %D command:
@@ -63,6 +63,31 @@
 
 \newif\ifendnotes \endnotesfalse
 
+%D The footnoterule can be a graphic and therefore calling this
+%D setup macro at every skipswitch is tricky (many many MP
+%D runs). Let's just reserve a few points, that probably match
+%D those of the stretch component. 
+
+\newif\ifcleverfootnotes % being [plaats=kolommen]
+
+\def\setupfootnotedefinition%
+  {\steldoordefinierenin[\??vn]}
+
+\doordefinieren
+  [\??vn]
+  [\c!plaats=\v!inlinker,
+   \c!breedte=\v!passend,
+   \c!letter=\@@vnletter,
+   \c!kleur=\@@vnkleur,
+   \c!voor=,
+   \c!na=]
+
+\presetlocalframed
+  [\??vn]
+
+\def\setupfootnotes%
+  {\dosingleempty\dosetupfootnotes}
+
 \def\dosetupfootnotes[#1]%
   {\getparameters[\??vn][#1]%
    \processaction
@@ -70,43 +95,61 @@
      [    \v!aan=>\def\footnoterule{\hrule \!!width .2\hsize},
           \v!uit=>\let\footnoterule=\relax,
       \s!unknown=>\let\footnoterule=\@@vnlijn]%
-   \bgroup
    \setbox0=\vbox
-     {\vskip\parskip % still to be tested in multi-column mode
+     {\forgetall
       \@@vnvoor
-      \footnoterule
+      \footnoterule 
       \@@vnna}%
-   \global\skip\footins =\ht0
-   \global\count\footins=1000
-   \ifnum\@@vnn=0 \chardef\@@vnn=1 \fi % temporary (grouped)
-   \global\divide\count\footins by \@@vnn
-   \global\dimen\footins=\@@vnhoogte
-   \global\multiply\dimen\footins by \@@vnn
-   \egroup
-   \ifnum\@@vnn=0
-     \settextfootnotes
-   \else
-     \setcolumnfootnotes
-   \fi
-   \doifelse{\@@vnplaats}{\v!pagina}
-     {\global\endnotesfalse}
-     {\global\endnotestrue
-      \postponefootnotes}}
+   \skip\footins=\ht0
+   \count\footins=1000
+   \setbox0=\box\voidb@x % \somehow \box0 is used
+   \doifelse{\@@vnplaats}{\v!kolommen}
+     {\cleverfootnotestrue % global ? 
+      \ifnum\@@kln=0 
+        \scratchcounter=1
+      \else
+        \scratchcounter=\@@vnn\relax
+        \divide\count\footins by \scratchcounter
+      \fi
+      \global\endnotesfalse
+      \setcleverfootnotes}
+     {\cleverfootnotesfalse
+      \ifnum\@@vnn=0 
+        \settextfootnotes 
+        \scratchcounter=1
+      \else
+        \setcolumnfootnotes 
+        \scratchcounter=\@@vnn\relax
+        \divide\count\footins by \scratchcounter
+      \fi 
+      \doifelse{\@@vnplaats}{\v!pagina}
+        {\global\endnotesfalse}
+        {\global\endnotestrue
+         \postponefootnotes}}%
+   \dimen\footins=\@@vnhoogte
+   \multiply\dimen\footins by \scratchcounter}
 
-\def\setupfootnotes%
-  {\dosingleargument\dosetupfootnotes}
+\def\setcleverfootnotes%
+  {\def\formatfootnumber   {}%
+   \def\startpushfootnote  {\getvalue{\e!start\??vn}}%
+   \def\stoppushfootnote   {\getvalue{\e!stop\??vn}}%
+   \def\startpopfootnotes  {}%
+   \def\stoppopfootnotes   {}}
 
-\def\setcolumnfootnotes%
-  {\def\formatfootnumber##1{\indent\llap{##1\hskip\@@vnmargeafstand}}%
-   \def\startpushfootnote  {\setrigidcolumnhsize\@@vnbreedte\@@vnkolomafstand\@@vnn}%
-   \def\stoppushfootnote   {}%
+\def\setcolumnfootnotes% 
+  {\def\formatfootnumber   {}%
+   \def\startpushfootnote  {\setrigidcolumnhsize\@@vnbreedte\@@vnkolomafstand\@@vnn
+                            \getvalue{\e!start\??vn}}%
+   \def\stoppushfootnote   {\getvalue{\e!stop\??vn}}%
    \def\startpopfootnotes  {\setbox0=\vbox\bgroup}%
    \def\stoppopfootnotes   {\egroup\rigidcolumnbalance0\@@vnn}}
 
 \def\settextfootnotes%
   {\def\formatfootnumber##1{\noindent##1}%
-   \def\startpushfootnote  {\startvboxtohbox}%
+   \def\startpushfootnote  {\startvboxtohbox 
+                            \dostartattributes\??vn\relax}%
    \def\stoppushfootnote   {\hskip\@@vnkolomafstand % plus.5em minus.5em
+                            \dostopattributes
                             \stopvboxtohbox}%
    \def\startpopfootnotes  {\vbox\bgroup\hsize=\@@vnbreedte}% \setvboxtohbox}%
    \def\stoppopfootnotes   {\convertvboxtohbox\egroup}}
@@ -205,11 +248,10 @@
         \maakhetnummer[\v!voetnoot]%
         \rawtextreference{\s!fnt}{#1}{\hetnummer}%
         \def\footnotenumber{\hoog{\hetnummer}}}%
-     \let\next=\dostartfootnote
+     \expandafter\dostartfootnote
    \else
-     \let\next=\gobbleoneargument
-   \fi
-   \next}
+     \expandafter\gobbleoneargument
+   \fi}
 
 %D The main typesetting routine is more or less the same as the
 %D \PLAIN\ \TEX\ one, except that we only handle one type while
@@ -252,24 +294,25 @@
    \fi
    \localfootinsert\footins\bgroup
      \forgetall
-     \setfootnotecorps
+     \setfootnotebodyfont
      \redoconvertfont % to undo \undo calls in in headings etc
-     \startpushfootnote
-     \dostartattributes\??vn\relax
      \interlinepenalty=\interfootnotelinepenalty
      \splittopskip\ht\strutbox  % not actually needed here
      \splitmaxdepth\dp\strutbox % not actually needed here
-     \ifx\footnotenumber\empty \else
-       \@@vnnummercommando
-         {\iflocation
-            \naarbox{\footnotenumber}[\s!fnt:f:\internalfootreference]%
-          \else
-            \footnotenumber
-          \fi}%
-     \fi
-     \iflocation
-       \rawreference{\s!fnt}{\s!fnt:t:\internalfootreference}{}%
-     \fi
+     \def\linkermargeafstand{\@@vnmargeafstand}%
+     \def\rechtermargeafstand{\@@vnmargeafstand}%
+     \startpushfootnote
+       {\ifx\footnotenumber\empty \else
+          \@@vnnummercommando
+            {\iflocation
+               \naarbox{\footnotenumber}[\s!fnt:f:\internalfootreference]%
+             \else
+               \footnotenumber
+             \fi}%
+        \fi
+        \iflocation
+          \rawreference{\s!fnt}{\s!fnt:t:\internalfootreference}{}%
+        \fi}%
      \bgroup
      \aftergroup\dostopfootnote
      \begstrut
@@ -277,7 +320,6 @@
 
 \def\dostopfootnote%
   {\endstrut
-   \dostopattributes
    \stoppushfootnote
    \egroup
    \egroup
@@ -297,7 +339,6 @@
   {\iffootnotesenabled
      \bgroup
      \unskip
-     \gettextreference{#1}%
      \naarbox{\hoog{\currenttextreference}}[#1]%
      \egroup
    \fi}
@@ -311,19 +352,28 @@
 \let\stoppopfootnotes  = \relax
 
 \def\placefootnoteinserts%
-  {\ifvoid\footins \else
+  {%\ifvoid\footins \else % unsafe, strange 
+   \ifdim\ht\footins>\!!zeropoint\relax
      \ifendnotes \else
-       \vfill
-       \witruimte % kan dit \vskip\parskip zijn? testen
        \@@vnvoor
-       \footnoterule
+       \footnoterule  % alleen in ..mode
        \bgroup
-       \setfootnotecorps
-       \startpopfootnotes
-       \unvbox\footins
-       \stoppopfootnotes
+       \setfootnotebodyfont
+       \localframed 
+         [\??vn]
+         [\c!breedte=\v!passend,
+          \c!hoogte=\v!passend,
+          \c!strut=\v!nee,
+          \c!offset=\v!overlay]
+         {\startpopfootnotes % == \vbox 
+          \ifdim\dp\footins=\!!zeropoint % this hack is needed because \vadjust
+            \hbox{\lower\dp\strutbox\box\footins}% % in margin number placement 
+          \else                          % hides the (always) present depth
+            \box\footins
+          \fi
+          \stoppopfootnotes}%
        \egroup
-       \@@vnna
+       \@@vnna   
      \fi
    \fi}
 
@@ -378,32 +428,48 @@
         \unvbox\postponedfootnotes
         \gobbletwoarguments}}
 
+\def\doflushfootnotes%
+  {\bgroup
+     \scratchdimen=\pagegoal
+     \advance\scratchdimen by -\pagetotal
+     \ifdim\scratchdimen<\ht\postponedfootnotes
+       \message{[moved footnote]}%
+     \fi
+   \egroup
+   \global\let\localfootinsert=\insert
+   \insert\footins\bgroup\unvbox\postponedfootnotes\egroup}
+
 \def\flushfootnotes%
   {\ifinpagebody \else \ifinner \else
      \ifendnotes \else \ifvoid\postponedfootnotes \else
-      %\ifvmode % less interference, but also less secure
-         \bgroup
-           \scratchdimen=\pagegoal
-           \advance\scratchdimen by -\pagetotal
-           \ifdim\scratchdimen<\ht\postponedfootnotes
-             \message{[moved footnote]}%
-           \fi
-         \egroup
-         \global\let\localfootinsert=\insert
-         \insert\footins\bgroup\unvbox\postponedfootnotes\egroup
+       %\ifvmode % less interference, but also less secure
+          \doflushfootnotes
        %\fi
      \fi\fi
    \fi\fi}
 
 \def\placefootnotesintext#1%
-  {\bgroup
+  {\par
+   \witruimte
    \@@vnvoor
-   \setfootnotecorps
-   \startpopfootnotes
-   \unvbox#1\relax
-   \stoppopfootnotes
-   \@@vnna
-   \egroup}
+   \snaptogrid\hbox  
+     {\setfootnotebodyfont
+      \setbox0=\hbox
+        {\startpopfootnotes
+         \unvbox#1\par\relax
+         \stoppopfootnotes}%
+       \localframed 
+        [\??vn]
+        [\c!breedte=\v!passend,
+          \c!hoogte=\v!passend,
+           \c!strut=\v!nee,
+          \c!offset=\v!overlay]
+        {\ifdim\dp0=\!!zeropoint % this hack is needed because \vadjust
+           \hbox{\lower\dp\strutbox\box0}% % in margin number placement 
+         \else                   % hides the (always) present depth
+           \box0
+         \fi}}%
+   \@@vnna}
 
 %D \macros
 %D   {startlocalfootnotes,placelocalfootnotes}
@@ -485,6 +551,7 @@
 
 \def\doplacefootnotes[#1]%
   {\bgroup
+   \let\@@vnhoogte=\teksthoogte     
    \setupfootnotes[#1]%
    \ifendnotes
      \ifinpagebody \else
@@ -522,13 +589,13 @@
 %D implementation is the first to use this scheme.
 
 %D When typesetting footnotes, we have to return to the
-%D footnote specific corps size, which is in most cases derived
-%D from the global document corps size. In the previous macros
+%D footnote specific bodyfont size, which is in most cases derived
+%D from the global document bodyfont size. In the previous macros
 %D we already used a footnote specific font setting macro.
 
-\def\setfootnotecorps%
-  {\restoreglobalcorps
-   \switchtocorps[\@@vnkorps]}
+\def\setfootnotebodyfont%
+  {\restoreglobalbodyfont
+   \switchtobodyfont[\@@vnkorps]}
 
 %D The footnote mechanism defaults to a traditional one
 %D column way of showing them. By default we precede them by
@@ -543,7 +610,9 @@
    \c!voor=\blanko,
    \c!korps=\v!klein,
    \c!letter=,
+   \c!kleur=,
    \c!na=,
+   \c!kader=\v!uit,
    \c!margeafstand=.5em,
    \c!kolomafstand=1em,
    \c!afstand=.125em,

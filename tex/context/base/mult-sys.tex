@@ -135,6 +135,9 @@
 \definesystemconstant  {lefthyphenmin}
 \definesystemconstant  {righthyphenmin}
 
+\definesystemconstant  {skewchar} 
+\definesystemconstant  {hyphenchar} 
+
 %D Just to be complete we define the standard \TEX\ units.
 
 \definesystemconstant  {cm}
@@ -220,6 +223,8 @@
 \definesystemconstant  {ref}  % reference (verwijzing)
 \definesystemconstant  {lab}  % label (label)
 \definesystemconstant  {aut}  % automatic (inhoud, index)
+\definesystemconstant  {vwa}  % automatic (illustrations)
+\definesystemconstant  {vwb}  % automatic (illustrations)
 
 \definesystemconstant  {kop}  % kop  % still dutch
 
@@ -228,16 +233,23 @@
 %D some tags too. These are definitely not to be used by users.
 %D Here they are:
 
-\definereferenceconstant {cross}   {:c:} % cross reference
-\definereferenceconstant {view}    {:v:} % view reference
-\definereferenceconstant {viewa}   {:a:} % view reference test a
-\definereferenceconstant {viewb}   {:b:} % view reference test b
-\definereferenceconstant {page}    {:p:} % page referece
-\definereferenceconstant {list}    {:l:} % list reference
-\definereferenceconstant {exec}    {:e:} % execution reference
+\definereferenceconstant {cross}      {:c:}  % cross reference
+\definereferenceconstant {view}       {:v:}  % view reference
+\definereferenceconstant {viewa}      {:a:}  % view reference test a
+\definereferenceconstant {viewb}      {:b:}  % view reference test b
+\definereferenceconstant {page}       {:p:}  % page referece
+\definereferenceconstant {list}       {:l:}  % list reference
+\definereferenceconstant {exec}       {:e:}  % execution reference
+\definereferenceconstant {form}       {:m:}  % form reference
+\definereferenceconstant {syst}       {:s:}  % system reference
 
-\definereferenceconstant {from}    {:f:} % from list reference
-\definereferenceconstant {to}      {:t:} % to list reference
+\definereferenceconstant {from}       {:f:}  % from list reference
+\definereferenceconstant {to}         {:t:}  % to list reference
+
+\definereferenceconstant {object}     {:o:}  % tex objects
+\definereferenceconstant {driver}     {:d:}  % driver objects
+
+\definereferenceconstant {java}       {:j:}  % java scripts 
 
 %D When we use numbers and dimensions the same applies as
 %D with the keywords like \type{width} and \type{plus}
@@ -306,6 +318,7 @@
 \definesystemvariable {fm}   % ForMules
 \definesystemvariable {ft}   % FonTs
 \definesystemvariable {fp}   % FilegroeP
+\definesystemvariable {fs}   % FileSynonym
 \definesystemvariable {ia}   % Interactie
 \definesystemvariable {ib}   % InteractieBalk
 \definesystemvariable {id}   % Index
@@ -315,6 +328,7 @@
 \definesystemvariable {im}   % InMarge
 \definesystemvariable {in}   % INspringen
 \definesystemvariable {is}   % Items
+\definesystemvariable {it}   % stelInTerliniein
 \definesystemvariable {iv}   % stelInvulLijnenin
 \definesystemvariable {ka}   % KAntlijn
 \definesystemvariable {kd}   % KaDerteksten
@@ -363,6 +377,7 @@
 \definesystemvariable {rs}   % RaSters
 \definesystemvariable {rt}   % RoosTers
 \definesystemvariable {rv}   % ReserVeerfiguur
+\definesystemvariable {sa}   % ScAle
 \definesystemvariable {sb}   % SectieBlok
 \definesystemvariable {sc}   % SCherm
 \definesystemvariable {se}   % SEctie
@@ -375,6 +390,7 @@
 \definesystemvariable {sp}   % SelecteerPapier
 \definesystemvariable {ss}   % Symbool
 \definesystemvariable {st}   % STickers
+\definesystemvariable {su}   % SetUp
 \definesystemvariable {sv}   % SysteemVariabelen
 \definesystemvariable {sy}   % SYnchronisatie
 \definesystemvariable {ta}   % TAb
@@ -388,6 +404,7 @@
 \definesystemvariable {ve}   % VErsie
 \definesystemvariable {vn}   % VoetNoten
 \definesystemvariable {wr}   % WitRuimte
+\definesystemvariable {xy}   % schaal 
 \definesystemvariable {za}   % ZetspiegelAanpassing
 
 %D Next we define some language independant one letter 
@@ -416,6 +433,7 @@
 \defineinterfaceconstant {m} {m}
 \defineinterfaceconstant {y} {y}
 \defineinterfaceconstant {k} {k}
+\defineinterfaceconstant {s} {s}
 
 \defineinterfaceconstant {t} {t}
 \defineinterfaceconstant {h} {h}
@@ -448,9 +466,11 @@
 %D garantee compatibility and new macro's noy yet present in 
 %D the format.
 
-\definefileconstant {systemfilename}     {cont-sys}
-\definefileconstant {oldfilename}        {cont-old}
-\definefileconstant {newfilename}        {cont-new}
+\definefileconstant {sysfilename} {cont-sys}
+\definefileconstant {oldfilename} {cont-old}
+\definefileconstant {newfilename} {cont-new}
+\definefileconstant {filfilename} {cont-fil}
+\definefileconstant {optfilename} {cont-opt}
 
 %D The setup files for the language, font, color and special
 %D subsystems have a common prefix. This means that we have at
@@ -460,6 +480,7 @@
 \definefileconstant {fontprefix}         {font-}
 \definefileconstant {colorprefix}        {colo-}
 \definefileconstant {specialprefix}      {spec-}
+\definefileconstant {moduleprefix}       {m-}
 
 %D \CONTEXT\ follows different strategies for finding files. 
 %D The macros that are responsible for this 'clever' searching 
@@ -487,6 +508,7 @@
 \defineinterfaceconstant {os} {os}
 \defineinterfaceconstant {mm} {mm}
 \defineinterfaceconstant {i}  {i}
+\defineinterfaceconstant {nn} {nn}
 
 \defineinterfaceconstant {x}  {x}
 \defineinterfaceconstant {xx} {xx}
@@ -550,4 +572,3 @@
 \protect
 
 \endinput
-

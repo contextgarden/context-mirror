@@ -59,13 +59,20 @@
 \unexpanded\def\kap%
   {\futurelet\next\dokap}
 
+% \def\dokap%
+%   {\ifx\next\bgroup
+%      \def\next{\dodokap\relax}%
+%    \else
+%      \def\next{\dodokap}%
+%    \fi
+%    \next}
+
 \def\dokap%
   {\ifx\next\bgroup
-     \def\next{\dodokap\relax}%
+     \expandafter\dodokap\expandafter\relax
    \else
-     \def\next{\dodokap}%
-   \fi
-   \next}
+     \expandafter\dodokap
+   \fi}
 
 \def\dodokap#1#2%
   {\ifmmode\hbox\fi
@@ -234,6 +241,7 @@
 %D method, the settings also apply to that macro. 
 
 \newcounter\underbarlevel
+\newbox\underbarbox
 
 \def\underbarmethoda#1#2#3% RULE 
   {\hbox to #1{\vrule\!!width#1\!!height#2\!!depth#3}}
@@ -254,7 +262,7 @@
         \hbox{\hskip.25em\lower\dimen0\hbox{.}}
         \hfil}}
 
-\def\dounderbar#1#2#3% 
+\def\dodounderbar#1#2#3% 
   {\bmath
    \setbox0=\hbox{#3}%
    \setbox2=\getvalue{underbarmethod\@@onvariant}{\wd0}{#1}{#2}%
@@ -262,29 +270,51 @@
    \box0\box2
    \emath}
 
-\def\underbar#1%
+\unexpanded\def\dounderbar#1%
   {\bgroup
    \increment\underbarlevel
    \dimen0=1.5\normallineskip   % was \dimen0=1.5\lineskip
    \dimen0=\underbarlevel\dimen0
    \dimen2=\dimen0
    \advance\dimen2 by \@@onlijndikte
-   \dounderbar{-\dimen0}{\dimen2}{#1}%
+   \dodounderbar{-\dimen0}{\dimen2}{#1}%
    \egroup}
 
-\def\underbars%
-  {\let\processword=\underbar\processwords}
+\unexpanded\def\underbar#1%
+  {\bgroup
+   \setbox\underbarbox=\hbox
+     {\dounderbar{\hskip\fontdimen2\font}}%
+   \def\betweenisolatedwords%
+     {\nobreak
+      \hskip\!!zeropoint\!!minus\fontdimen4\font
+      \discretionary{}{}{\copy\underbarbox}}%
+   \processisolatedwords{#1}\dounderbar
+   \egroup}
 
-\def\overstrike#1%
+\unexpanded\def\underbars#1%
+  {\processisolatedwords{#1}\dounderbar}
+
+\unexpanded\def\dooverstrike#1%
   {\bgroup
    \dimen0=2.5\lineskip
    \dimen2=\dimen0
    \advance\dimen2 by \@@onlijndikte
-   \dounderbar{\dimen2}{-\dimen0}{#1}%
+   \dodounderbar{\dimen2}{-\dimen0}{#1}%
    \egroup}
 
-\def\overstrikes%
-  {\let\processword=\overstrike\processwords}
+\unexpanded\def\overstrike#1%
+  {\bgroup
+   \setbox\underbarbox=\hbox
+     {\dooverstrike{\hskip\fontdimen2\font}}%
+   \def\betweenisolatedwords%
+     {\nobreak
+      \hskip\!!zeropoint\!!minus\fontdimen4\font
+      \discretionary{}{}{\copy\underbarbox}}%
+   \processisolatedwords{#1}\dooverstrike
+   \egroup}
+
+\unexpanded\def\overstrikes#1%
+  {\processisolatedwords{#1}\dooverstrike}
 
 \def\setupunderbar%
   {\dodoubleargument\getparameters[\??on]}
@@ -298,4 +328,3 @@
 \protect 
 
 \endinput
-

@@ -1,0 +1,1557 @@
+%D \module
+%D   [       file=verb-ini,
+%D        version=1997.12.22,
+%D          title=\CONTEXT\ Verbatim Macros,
+%D       subtitle=Initialization,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. Non||commercial use is
+%C granted.
+
+%D Because this module is quite independant of system macros,
+%D it can be used as a stand||alone verbatim environment.
+%D
+%D This is a sort of second release of \type{supp-ver} and
+%D therefore differs in some aspects from the implementation
+%D published in the \MAPS. The first change concern
+%D optimization of breaks, that is, the first and last two
+%D lines of verbatim blocks are kept together. The second
+%D adaption is due to the fact that I wanted to support pretty
+%D printing not only for \TEX\ sources, but also for \PERL,
+%D \METAPOST\ and probably more. The \JAVASCRIPT\ module is 
+%D closely related to \PERL, so we will not mention that one 
+%D again.
+
+\ifx \undefined \writestatus \input supp-mis.tex \fi
+
+%D Verbatim typesetting, especially of \TEX\ sources, is a
+%D non||trivial task. This is a direct results of the fact that
+%D characters can have \CATCODES\ other than~11 and such
+%D characters needs a special treatment. What for instance is
+%D \TEX\ supposed to do when it encounters a \type{$} or an
+%D \type{#}? This module deals with these matters.
+
+\writestatus{loading}{Context Verbatim Macros / Initialization}
+
+%D The verbatim environment has some features, like coloring
+%D \TEX\ text, seldom found in other environments. Especially
+%D when the output of \TEX\ is viewed on an electronic medium,
+%D coloring has a positive influence on the readability of
+%D \TEX\ sources, so we found it very acceptable to dedicate
+%D half of this module to typesetting \TEX\ specific character
+%D sequences in color. In this module we'll also present some
+%D macro's for typesetting inline, display and file verbatim.
+%D The macro's are capable of handling \TAB\ too.
+%D
+%D This module shows a few tricks that are often overseen by
+%D novice, like the use of the \TEX\ primitive \type{\meaning}.
+%D First I'll show in what way the users are confronted with
+%D verbatim typesetting. Because we want to be able to test for
+%D symmetry and because we hate the method of closing down the
+%D verbatim mode with some strange active character, we will
+%D use the following construction for display verbatim:
+%D
+%D \starttypen
+%D \starttyping
+%D The Dutch word 'typen' stands for 'typing', therefore in the Dutch version
+%D one will not find the word 'verbatim'.
+%D \stoptyping
+%D \stoptypen
+%D
+%D In \CONTEXT\ files can be typed with \type{\typefile} and
+%D inline verbatim can be accomplished with \type{\type}. This
+%D last command comes in many flavors:
+%D
+%D \starttypen
+%D We can say \type<<something>> or \type{something}. The first one is a bit
+%D longer but also supports slanted typing, which accomplished by typing
+%D \type<<a <<slanted>> word>>. We can also use commands to enhance the text
+%D \type<<with <</bf boldfaced>> text>>. Just to be complete, we decided
+%D to accept also \LaTeX\ alike verbatim, which means that \type+something+
+%D and \type|something| are valid commands too. Of course we want the grouped
+%D alternatives to process \type{hello {\bf big} world} with braces.
+%D \stoptypen
+%D
+%D In the core modules, we will build this support on top of
+%D this module. There these commands can be tuned with
+%D accompanying setup commands. There we can enable commands,
+%D slanted typing, control spaces, \TAB||handling and (here we
+%D are:) coloring. We can also setup surrounding white space
+%D and indenting. Here we'll only show some examples.
+
+\unprotect
+
+%D \macros
+%D   {verbatimfont}
+%D   {}
+%D
+%D When we are typesetting verbatim we use a non||proportional
+%D (mono spaced) font. Normally this font is available by
+%D calling \type{\tt}. In \CONTEXT\ this command does a
+%D complete font||style switch. There we could have stuck with
+%D \type{\tttf}.
+
+\ifx \undefined \verbatimfont \def\verbatimfont {\tt} \fi
+
+%D \macros
+%D   {obeyedspace, obeyedtab, obeyedline, obeyedpage}
+%D   {}
+%D
+%D We have followed Knuth in naming macros that make \SPACE,
+%D \NEWLINE\ and \NEWPAGE\ active and assigning them
+%D \type{\obeysomething}, but first we set some default values.
+
+\def\obeyedspace {\hbox{ }}
+\def\obeyedtab   {\obeyedspace}
+\def\obeyedline  {\par}
+\def\obeyedpage  {\vfill\eject}
+
+%D \macros
+%D   {controlspace,setcontrolspaces}
+%D   {}
+%D
+%D First we define \type{\obeyspaces}. When we want visible
+%D spaces (control spaces) we only have to adapt the definition
+%D of \type{\obeyedspace} to:
+
+\def\controlspace {\hbox{\char32}}
+
+\bgroup
+\catcode`\ =\@@active
+\gdef\obeyspaces{\catcode`\ =\@@active\def {\obeyedspace}}
+\gdef\setcontrolspaces{\catcode`\ =\@@active\def {\controlspace}}
+\egroup
+
+%D \macros
+%D   {obeytabs, obeylines, obeypages,
+%D    ignoretabs, ignorelines, ignorepages}
+%D   {}
+%D
+%D Next we take care of \NEWLINE\ and \NEWPAGE\ and because we
+%D want to be able to typeset listings that contain \TAB, we
+%D have to handle those too. Because we have to redefine the
+%D \NEWPAGE\ character locally, we redefine the meaning of
+%D this (often already) active character.
+
+\catcode`\^^L=\@@active \def^^L{\par}
+
+%D The following indirect definitions enable us to implement 
+%D all kind of \type{\obeyed} handlers.
+
+\bgroup
+
+\catcode`\^^I=\@@active
+\catcode`\^^M=\@@active
+\catcode`\^^L=\@@active
+
+\gdef\obeytabs    {\catcode`\^^I=\@@active\def^^I{\obeyedtab}}
+\gdef\obeylines   {\catcode`\^^M=\@@active\def^^M{\obeyedline}}
+\gdef\obeypages   {\catcode`\^^L=\@@active\def^^L{\obeyedpage}}
+
+\gdef\ignoretabs  {\catcode`\^^I=\@@active\def^^I{\obeyedspace}}
+\gdef\ignorelines {\catcode`\^^M=\@@active\def^^M{\obeyedspace}}
+\gdef\ignorepages {\catcode`\^^L=\@@active\def^^L{\obeyedline}}
+
+\egroup
+
+%D \macros
+%D   {obeycharacters}
+%D   {}
+%D
+%D We also predefine \type{\obeycharacters}, which will
+%D enable us to implement character||specific behavior, like
+%D colored verbatim.
+
+\let\obeycharacters=\relax
+
+%D \macros
+%D   {settabskips}
+%D   {}
+%D
+%D The macro \type{\settabskip} can be used to enable tab
+%D handling. Processing tabs is sometimes needed when one
+%D processes a plain \ASCII\ listing. Tab handling slows down
+%D verbatim typesetting considerably.
+
+\bgroup
+
+\catcode`\^^I=\@@active
+
+\gdef\settabskips%
+  {\let\processverbatimline=\doprocesstabskipline
+   \catcode`\^^I=\@@active
+   \let^^I=\doprocesstabskip}
+
+\egroup
+
+%D \macros
+%D   {processinlineverbatim}
+%D   {}
+%D
+%D Although the inline verbatim commands presented here will be
+%D extended and embedded in the core modules of \CONTEXT,
+%D they can be used separately. Both grouped and character
+%D alternatives are provided but \type{<<} and nested
+%D braces are implemented in the core module. This commands
+%D takes one argument: the closing command.
+%D
+%D \starttypen
+%D \processinlineverbatim{\closingcommand}
+%D \stoptypen
+%D
+%D One can define his own verbatim commands, which can be very
+%D simple:
+%D
+%D \starttypen
+%D \def\Verbatim {\processinlineverbatim\relax}
+%D \stoptypen
+%D
+%D or a bit more more complex:
+%D
+%D \starttypen
+%D \def\GroupedVerbatim%
+%D   {\bgroup
+%D    \dosomeusefullthings
+%D    \processinlineverbatim\egroup}
+%D \stoptypen
+%D
+%D Before entering inline verbatim mode, we take care of the
+%D unwanted \TAB, \NEWLINE\ and \NEWPAGE\ characters and
+%D turn them into \SPACE. We need the double \type{\bgroup}
+%D construction to keep the closing command local.
+
+\def\setupinlineverbatim%
+  {\verbatimfont
+   \let\obeytabs=\ignoretabs
+   \let\obeylines=\ignorelines
+   \let\obeypages=\ignorepages
+   \setupcopyverbatim}
+
+\def\doprocessinlineverbatim%
+  {\ifx\next\bgroup
+     \setupinlineverbatim
+     \catcode`\{=\@@begingroup
+     \catcode`\}=\@@endgroup
+     \def\next{\let\next=}%
+   \else
+     \setupinlineverbatim
+     \def\next##1{\catcode`##1=\@@endgroup}%
+   \fi
+   \next}
+
+\def\processinlineverbatim#1%
+  {\bgroup
+   \localcatcodestrue % TeX processes paragraph's
+   \def\endofverbatimcommand{#1\egroup}%
+   \bgroup
+   \aftergroup\endofverbatimcommand
+   \futurelet\next\doprocessinlineverbatim}
+
+%D The closing command is executed afterwards as an internal
+%D command and therefore should not be given explicitly when
+%D typesetting inline verbatim.
+
+%D \macros
+%D   {processingverbatim}
+%D   {}
+%D
+%D Typesetting a file in most cases results in more than one
+%D page. Because we don't want problems with files that are
+%D read in during the construction of the page, we set
+%D \type{\ifprocessingverbatim}, so the output routine can
+%D adapt its behavior. Originally we used
+%D \type{\scratchread}, but because we want to support nesting,
+%D we decided to use a separate input file.
+
+\newif\ifprocessingverbatim
+
+%D \macros
+%D   {optimizeverbatim}
+%D
+%D One day, a collegue asked me why I didn't prevent breaking
+%D after a first or before a last verbatim line. At first sight
+%D I thought of using the two pass mechanism, but because we're
+%D already keeping track of individual lines, a more direct
+%D solution is possible: we just keep track of in what line
+%D we are. One can turn this feature off.
+
+\newif\ifoptimizeverbatim \optimizeverbatimtrue
+
+%D Before we implement display and file verbatim, we define
+%D some macros that deal with typesetting the individual lines.
+%D We keep track of the status by means of a character
+%D specification. This status variable tells us if we're
+%D skipping a first line or placing a first or last line.
+%D The next few examples show us where breaks are inserted.
+%D
+%D \bgroup
+%D
+%D \def\doverbatimnobreak%
+%D   {\nobreak\hrule width 10cm\par\penalty500} % == \nobreak
+%D
+%D \def\doverbatimgoodbreak%
+%D   {\nobreak\hrule width 3cm \par\penalty100} % >> \goodbreak
+%D
+%D \starttypen
+%D test
+%D test
+%D \stoptypen
+%D
+%D or
+%D
+%D \starttypen
+%D test
+%D test
+%D test
+%D test
+%D \stoptypen
+%D
+%D or
+%D
+%D \starttypen
+%D test
+%D
+%D test
+%D test
+%D test
+%D \stoptypen
+%D
+%D \egroup
+%D
+%D The long ones are \type{\nobreaks} and the short ones 
+%D \type{\goodbreaks}. And this is how it's done:
+
+\def\doverbatimnobreak%
+  {\ifoptimizeverbatim\par\penalty500\fi} 
+
+\def\doverbatimgoodbreak%
+  {\ifoptimizeverbatim\par\penalty100\fi} 
+
+\def\doflushverbatimline%
+  {\expandafter\dodoverbatimline\expandafter{\savedverbatimline}}
+
+\let\handleverbatimline=\relax
+
+\def\initializeverbatimline%
+  {\global\let\savedverbatimline=\empty
+   \ifskipfirstverbatimline
+     \global\chardef\verbatimstatus=0
+   \else
+     \global\chardef\verbatimstatus=1
+   \fi}
+
+\def\presetemptyverbatimline%
+  {\ifcase\verbatimstatus
+     \global\chardef\verbatimstatus=1
+   \or
+   \or
+     % \ifoptimizeverbatim\else\doemptyverbatimline\fi
+   \or
+     \doflushverbatimline
+     \global\let\savedverbatimline=\empty
+     \doemptyverbatimline
+     \global\chardef\verbatimstatus=2
+   \else
+     \doverbatimnobreak
+     \doflushverbatimline
+     \global\let\savedverbatimline=\empty
+     \doemptyverbatimline
+     \global\chardef\verbatimstatus=2
+   \fi}
+
+\def\presetnormalverbatimline%
+  {\ifcase\verbatimstatus
+     \global\chardef\verbatimstatus=2
+   \or
+     \global\chardef\verbatimstatus=3
+   \or
+     \global\chardef\verbatimstatus=3
+   \or
+     \doflushverbatimline
+     \global\chardef\verbatimstatus=4
+   \or
+     \doverbatimnobreak
+     \doflushverbatimline
+     \global\chardef\verbatimstatus=5
+   \or
+     \doverbatimgoodbreak
+     \doflushverbatimline
+   \fi
+   \global\let\savedverbatimline=\verbatimline}
+
+\def\presetlastverbatimline%
+  {\ifcase\verbatimstatus \or \or \or
+     \doflushverbatimline
+   \else
+     \doverbatimnobreak
+     \doflushverbatimline
+   \fi}
+
+%D \macros
+%D   {skipfirstverbatimline}
+%D
+%D By default the rest of the first line is ignored. We can
+%D turn this feature off by saying:
+%D
+%D \starttypen
+%D \skipfirstverbatimlinefalse
+%D \stoptypen
+
+\newif\ifskipfirstverbatimline \skipfirstverbatimlinetrue
+
+%D \macros
+%D   {processdisplayverbatim}
+%D   {}
+%D
+%D We can define a display verbatim environment with the
+%D command \type{\processdisplayverbatim} in the following way:
+%D
+%D \starttypen
+%D \processdisplayverbatim{\closingcommand}
+%D \stoptypen
+%D
+%D \noindent For instance, we can define a simple command like:
+%D
+%D \starttypen
+%D \def\BeginVerbatim {\processdisplayverbatim{EndVerbatim}}
+%D \stoptypen
+%D
+%D \noindent But we can also do more advance things like:
+%D
+%D \starttypen
+%D \def\BeginVerbatim {\bigskip \processdisplayverbatim{\EndVerbatim}}
+%D \def\EndVerbatim   {\bigskip}
+%D \stoptypen
+%D
+%D When we compare these examples, we see that the backslash in
+%D the closing command is optional. One is free in actually
+%D defining a closing command. If one is defined, the command
+%D is executed after ending verbatim mode.
+
+\def\processdisplayverbatim#1%
+  {\par
+   \bgroup
+   \escapechar=-1
+   \xdef\verbatimname{\string#1}%
+   \egroup
+   \def\endofdisplayverbatim{\csname\verbatimname\endcsname}%
+   \bgroup
+   \parindent\!!zeropoint
+   \ifdim\lastskip<\parskip
+     \removelastskip
+     \vskip\parskip
+   \fi
+   \parskip\!!zeropoint
+   \processingverbatimtrue
+   \linepartrue
+   \expandafter\let\csname\verbatimname\endcsname=\relax
+   \edef\endofverbatimcommand{\csname\verbatimname\endcsname}%
+   \edef\endofverbatimcommand{\meaning\endofverbatimcommand}%
+   \verbatimfont
+   \setupcopyverbatim
+   \initializeverbatimline
+   \copyverbatimline}
+
+%D We save the closing sequence in \type{\endofverbatimcommand}
+%D in such a way that it can be compared on a line by line
+%D basis. For the conversion we use \type{\meaning}, which
+%D converts the line to non||expandable tokens. We reset
+%D \type{\parskip}, because we don't want inter||paragraph
+%D skips to creep into the verbatim source. Furthermore we
+%D \type{\relax} the line||processing macro while getting the
+%D rest of the first line. The initialization command
+%D \type{\setupcopyverbatim} does just what we expect it to do:
+%D it assigns all characters \CATCODE~11. Next we switch to
+%D french spacing and call for obeyance.
+
+\def\setupcopyverbatim%
+  {\uncatcodecharacters
+   \frenchspacing
+   \obeyspaces
+   \obeytabs
+   \obeylines
+   \obeypages
+   \obeycharacters}
+
+%D \macros
+%D   {eightbitcharacters,
+%D    setcatcodes,uncatcodespecials,
+%D    uncatcodecharacters}
+%D   {}
+%D
+%D As its name says, \type{\uncatcodecharacters} resets the
+%D \CATCODE\ of characters. When we use an upper bound of
+%D 127 or 255, depending in \type{\ifeightbitcharacters}. By
+%D counting down, we only have to use one counter. The
+%D macro \type{\setcatcodes} can be uses to set alternative
+%D values. The macro \type{\resetspecialcharacters} resets
+%D characters with special meanings. This macro is not used
+%D in the verbatim macros, but is best defined in this module.
+
+\def\doprocesscatcodes#1%
+  {\ifeightbitcharacters
+     \scratchcounter=255
+   \else
+     \scratchcounter=127
+   \fi
+   \loop
+     \savecatcode
+     #1\relax
+     \advance\scratchcounter by -1
+     \ifnum\scratchcounter>-1
+   \repeat
+   \let\savecatcode=\relax
+   \let\restorecatcodes=\dorestorecatcodes}
+
+\def\uncatcodespecials%
+  {\doprocesscatcodes
+     {\ifnum\catcode\scratchcounter=\@@letter\relax\else
+        \catcode\scratchcounter=\@@other
+      \fi}%
+   \catcode`\   =\@@space
+   \catcode`\^^L=\@@ignore
+   \catcode`\^^M=\@@endofline
+   \catcode`\^^?=\@@ignore}
+
+\def\setcatcodes#1%
+  {\doprocesscatcodes
+     {\catcode\scratchcounter=#1}}
+
+\def\uncatcodecharacters%
+  {\setcatcodes\@@letter}
+
+%D \macros
+%D   {localcatcodes,
+%D    restorecatcodes,
+%D    beginrestorecatcodes,endrestorecatcodes}
+%D   {}
+%D
+%D We're not finished dealing \CATCODES\ yet. In \CONTEXT\ we
+%D use only one auxiliary file, which deals with tables of
+%D contents, registers, two pass tracking, references etc. This
+%D file, as well as files concerning graphics, is processed when
+%D needed, which can be in the mid of typesetting verbatim.
+%D However, when reading in data in verbatim mode, we should
+%D temporary restore the normal \CATCODES, and that's exactly
+%D what the next macros do. Saving the catcodes can be
+%D disabled by saying \type{\localcatcodestrue}.
+
+%D The previous macros call for \type{\savecatcode}, which is
+%D implemented as:
+
+\newif\iflocalcatcodes
+
+\def\savecatcode%
+  {\iflocalcatcodes \else
+     \expandafter\chardef\csname @@cc@@\the\scratchcounter\endcsname
+       =\catcode\scratchcounter
+   \fi}
+
+%D It's counterpart is:
+
+\def\restorecatcode%
+  {\expandafter\catcode\expandafter\scratchcounter\expandafter=
+     \csname @@cc@@\the\scratchcounter\endcsname}
+
+%D When we want to restore \CATCODES\ we call for
+%D \type{\restorecatcodes}, which default to \type{\relax}
+
+\let\restorecatcodes=\relax
+
+%D or when we've saves things calls for:
+
+\def\dorestorecatcodes%
+  {\iflocalcatcodes \else
+     \doprocesscatcodes\restorecatcode
+   \fi}
+
+%D We also provide an alternative, that forces grouping
+%D when needed. An application of this macros can be found in
+%D buffering data.
+
+\def\beginrestorecatcodes%
+  {\ifx\restorecatcodes\relax
+     \let\endrestorecatcodes=\relax
+   \else
+     \bgroup
+     \restorecatcodes
+     \let\beginrestorecatcodes=\bgroup
+     \let\endrestorecatcodes  =\egroup
+   \fi}
+
+%D The main copying routine of display verbatim does an
+%D ordinary string||compare on the saved closing command and
+%D the current line. The space after \type{#1} in the
+%D definition of \type{\next} is essential! As a result of
+%D using \type{\obeylines}, we have to use \type{%}'s after
+%D each line but none after the first \type{#1}.
+
+{\obeylines%
+ \long\gdef\copyverbatimline#1
+   {\def\next{#1 }%
+    \gdef\verbatimline{#1}%
+    \ifx\next\emptyspace%
+      \presetemptyverbatimline%
+    \else%
+      \edef\next{\meaning\next}%
+      \ifx\next\endofverbatimcommand%
+        \presetlastverbatimline%
+        \def\copyverbatimline{\egroup\endofdisplayverbatim}%
+      \else%
+        \presetnormalverbatimline%
+      \fi%
+    \fi%
+    \handleverbatimline%
+    \copyverbatimline}}
+
+%D The actual typesetting of a line is done by a separate
+%D macro, which enables us to implement \TAB\ handling. The
+%D \type{\do} and \type{\dodo} macros take care of the
+%D preceding \type{\parskip}, while skipping the rest of the
+%D first line. The \type{\relax} is used as an signal.
+
+%D \macros
+%D   {iflinepar}
+%D   {}
+%D
+%D A careful reader will see that \type{\linepar} is reset.
+%D This boolean can be used to determine if the current line is
+%D the first line in a pseudo paragraph and this boolean is set
+%D after each empty line. The \type{\relax} can be used to
+%D determine the end of the line when one implements a scanner
+%D routine.
+
+\newif\iflinepar
+
+\long\def\dodoverbatimline#1%
+  {\leavevmode\the\everyline\strut\processverbatimline{#1\relax}%
+   \EveryPar{}%
+   \lineparfalse
+   \obeyedline\par}
+
+%D \macros
+%D   {obeyemptylines,verbatimbaselineskip}
+%D   {}
+%D
+%D Empty lines in verbatim can lead to white space on top of
+%D a new page. Because this is not what we want, we turn
+%D them into vertical skips. This default behavior can be
+%D overruled by:
+%D
+%D \starttypen
+%D \obeyemptylines
+%D \stoptypen
+%D
+%D Although it would cost us only a few lines of code, we
+%D decided not to take care of multiple empty lines. When a
+%D (display) verbatim text contains more successive empty
+%D lines, this probably suits some purpose. When applicable,
+%D one can set the verbatim baselineskip.
+
+\bgroup
+\catcode`\^^L=\@@active  \gdef\emptypage  {^^L}
+\catcode`\^^M=\@@active  \gdef\emptyline  {^^M}
+                         \gdef\emptyspace { }
+\egroup
+
+\def\verbatimbaselineskip% We don't use \let here!
+  {\baselineskip}
+
+\def\doemptyverbatimline%
+  {\vskip\verbatimbaselineskip
+   {\setbox0=\hbox{\the\everyline}}%
+   \linepartrue}
+
+\def\obeyemptylines%
+  {\def\doemptyverbatimline{\doverbatimline}}
+
+%D \TEX\ does not offer \type{\everyline}, which is a direct
+%D result of its advanced multi||pass paragraph typesetting
+%D mechanism. Because in verbatim mode paragraphs and lines are
+%D more or less equal, we can easily implement our own simple
+%D \type{\everyline} support.
+
+%D \macros
+%D   {EveryPar, EveryLine}
+%D   {}
+%D
+%D In this module we've reserved \type{\everypar} for the
+%D things to be done with paragraphs and \type{\everyline} for
+%D line specific actions. In \CONTEXT\ however, we use
+%D \type{\everypar} for placing side- and columnfloats,
+%D inhibiting indentation and some other purposes. In verbatim
+%D mode, every line becomes a paragraph, which means that
+%D \type{\everypar} is executed frequently. To be sure, the
+%D user specific use of both \type{\everyline} and
+%D \type{\everypar} is implemented by means of
+%D \type{\EveryLine} and \type{\EveryPar}.
+%D
+%D We still have to take care of the \TAB. A \TAB\ takes eight
+%D spaces and a \SPACE\ normally has a width of 0.5~em. Because
+%D we can be halfway a tabulation, we must keep track of the
+%D position. This takes time, especially when we print complete
+%D files, therefore we \type{\relax} this mechanism by default.
+
+\def\doprocesstabskip%
+  {\obeyedspace % \hskip.5em  or  \hbox to .5em{}
+   \ifdone
+     \advance\scratchcounter by 1
+     \let\next=\doprocesstabskip
+     \donefalse
+   \else\ifnum\scratchcounter>7
+     \let\next=\relax
+   \else
+     \advance\scratchcounter 1
+     \let\next=\doprocesstabskip
+   \fi\fi
+   \next}
+
+\def\dodoprocesstabskipline#1#2\endoftabskipping%
+  {\ifnum\scratchcounter>7
+     \scratchcounter=1
+     \donetrue
+   \else
+     \advance\scratchcounter 1
+     \donefalse
+   \fi
+   \ifx#1\relax
+     \let\next=\relax
+   \else
+     \def\next{#1\dodoprocesstabskipline#2\endoftabskipping}%
+   \fi
+   \next}
+
+\let\endoftabskipping=\relax
+
+\def\processverbatimline#1{#1} % remove the fake grouping
+
+\def\doprocesstabskipline#1%
+  {\bgroup
+   \scratchcounter=1
+   \dodoprocesstabskipline#1\relax\endoftabskipping
+   \egroup}
+
+%D \macros
+%D   {processfileverbatim}
+%D   {}
+%D
+%D The verbatim typesetting of files is done on a bit different
+%D basis. This time we don't check for a closing command, but
+%D look for \EOF\ and when we've met, we make sure it does not
+%D turn into an empty line.
+%D
+%D \starttypen
+%D \processfileverbatim{filename}
+%D \stoptypen
+%D
+%D We reserve a dedicated file handle.
+
+\newread\verbatiminput
+
+\def\processfileverbatim#1%
+  {\par
+   \bgroup
+   \parindent\!!zeropoint
+   \ifdim\lastskip<\parskip
+     \removelastskip
+     \vskip\parskip
+   \fi
+   \parskip\!!zeropoint
+   \processingverbatimtrue
+   \linepartrue
+   \uncatcodecharacters
+   \verbatimfont
+   \frenchspacing
+   \obeyspaces
+   \obeytabs
+   \obeylines
+   \obeypages
+   \obeycharacters
+   \openin\verbatiminput=#1
+   \skipfirstverbatimlinefalse
+   \initializeverbatimline
+   \def\readline%
+     {\read\verbatiminput to \verbatimline
+      \ifeof\verbatiminput
+        \presetlastverbatimline
+        \let\readline=\relax
+      \else\ifx\verbatimline\emptyline
+        \presetemptyverbatimline
+      \else\ifx\verbatimline\emptypage
+        \presetemptyverbatimline
+      \else
+        \presetnormalverbatimline
+      \fi\fi\fi
+      \handleverbatimline
+      \readline}%
+   \ifeof\verbatiminput \else
+     \expandafter\readline
+   \fi
+   \closein\verbatiminput
+   \egroup
+   \ignorespaces}
+
+%D One can use the different \type{\obeysomething} commands to
+%D influence the behavior of these macro's. We use for instance
+%D \type{\obeycharacters} for making \type{/} an active
+%D character when we want to include typesetting commands.
+
+%D The next part of this module deals with pretty printing. The
+%D best way to understand how pretty verbatim typeseting works
+%D is to take a look at the output produced by the \TEX, \PERL\
+%D and \METAPOST\ modules first. Each of these modules has a
+%D few setup macros that tag the individual characters with a
+%D number that itself is associated to a interpretation macro.
+%D A previous implementation linked characters (after making
+%D them active) directly to such interpreters, but the more
+%D indirect way makes it possible to inspect the next
+%D character(s) without much expansion problems and/or
+%D increasing run time.
+
+%D By the way, \TEX\ defines \type{\+} as an outer macro, so we 
+%D have to redefine this one to keep ourselves out of complaints.
+
+\def\+{\tabalign}
+
+%D Just to keep things consistant and to speed up some macros a
+%D but, we define a few private constants.
+
+\def\!!PRETTY      {PRETTY}
+
+\def\!!prettyone   {prettyone}
+\def\!!prettytwo   {prettytwo}
+\def\!!prettythree {prettythree}
+\def\!!prettyfour  {prettyfour}
+
+%D The first step in defining a pretty interpreter is to assign
+%D each character that needs special attention a number, like:
+%D
+%D \starttypen
+%D \setpretty \`A 21
+%D \stoptypen
+%D
+%D Here the macro \type{\setpretty} makes the character
+%D \type{A} active, and sets it meaning to the auxiliary macro
+%D \type{\handleprettytoken}. This auxiliary macro takes the
+%D character code (a number) and the interpretation number. The
+%D three step implementation uses the \TEX book \type{~} trick.
+
+\def\dodosetpretty%
+  {\!!countb=\uccode`~\relax
+   \catcode\!!countb=\@@active
+   \uppercase{\edef~{\noexpand\handleprettytoken{\the\!!counta}{\the\!!countb}}}}
+
+\def\dosetpretty%
+  {\afterassignment\dodosetpretty\!!counta}
+
+\def\setpretty%
+  {\afterassignment\dosetpretty\uccode`~=}
+
+%D The macro \type{\handleprettytoken} is rather trivial and
+%D calls for an interpreter macro.
+
+\def\handleprettytoken#1%
+  {\getvalue{\!!PRETTY#1}}
+
+%D This interpreter is installed by saying
+%D
+%D \starttypen
+%D \installprettyhandler 21 \SOMEprettyone
+%D \stoptypen
+
+\def\installprettyhandler#1 #2%
+  {\letvalue{\!!PRETTY#1}#2}
+
+%D Such an interpreter gets the character number:
+%D
+%D \starttypen
+%D \def\SOMEprettyone#1{...\getpretty{#1}...}
+%D \stoptypen
+%D
+%D where \type{\getpretty} equals \type{\char}. We can't
+%D use \type{\let} here because we have to get rid of the
+%D braces.
+
+\def\getpretty#1%
+  {\char#1}
+
+%D Sometimes the action depends on the next token. This token
+%D can be passed to the macro \type{\getprettydata}, that sets
+%D \type{\prettytype} to the interpreter code. The character
+%D code is saved in \type{\prettychar}.
+
+\def\getprettydata#1%
+  {\bgroup
+   \global\chardef\prettytype=0
+   \global\chardef\prettychar=0
+   \def\handleprettytoken##1##2%
+     {\global\chardef\prettytype=##1\relax
+      \global\chardef\prettychar=##2\relax}%
+   \setbox0=\hbox{\global\chardef\prettychar=0#1}% expands #1 and ignores space
+   \egroup}
+
+%D If needed the current and next token can be handled alongside:
+
+\def\getpretties#1#2%
+  {\char#1\bgroup\let\handleprettytoken=\getsecondpretty#2\egroup}
+
+\def\getsecondpretty#1#2%
+  {\char#2}
+
+%D When needed, one can reassign an interpreter by using
+%D \type{\newpretty} and its associates.
+%D
+%D \bgroup
+%D \steltypenin[file][optie=tex,palet=colorpretty]
+%D
+%D \startbuffer
+%D \bgroup
+%D \catcode`\|=\@@escape %%\|\
+%D \catcode`\\=\@@active %%\\+
+%D |gdef|dohandlenewpretty#1%
+%D   {|def|dodohandlenewpretty##1%
+%D      {|getprettydata{#1}%
+%D       |let|oldprettychar=|prettychar
+%D       |getprettydata{##1}%
+%D       |ifnum|oldprettychar=|prettychar
+%D         |def|dododohandlenewpretty####1%
+%D           {|getprettydata{\}%
+%D            |let|oldprettytype=|prettytype
+%D            |getprettydata{####1}%
+%D            |ifnum|prettytype=|oldprettytype
+%D              |let|next=|newpretty
+%D            |else
+%D              |def|next{|newprettycommand{#1}##1####1}%
+%D            |fi
+%D            |next}%
+%D         |let|next=|dododohandlenewpretty
+%D       |else
+%D         |def|next{|newprettycommand{#1}##1}%
+%D       |fi
+%D       |next}%
+%D    |def|donohandlenewpretty##1%
+%D      {|newprettycommand{#1}##1}%
+%D    |handlenextnextpretty|dodohandlenewpretty|donohandlenewpretty}
+%D |egroup
+%D \stopbuffer
+%D
+%D {\newprettytrue\typebuffer}
+%D
+%D In this example we see that the colors differ from what we
+%D expect, but conform the definitions in the macro. This kind
+%D of recoloring can be achieved by saying:
+%D
+%D \typebuffer
+%D
+%D We'll show some more examples:
+%D
+%D \startbuffer
+%D %%\R{Red
+%D %%\G\Green
+%D %%\B[Blue
+%D \stopbuffer
+%D
+%D {\newprettytrue\typebuffer}
+%D
+%D Watch the green \type{\Green}! This lines are specified as:
+%D
+%D \typebuffer
+%D
+%D When needed, one can use grouping.
+%D
+%D \startbuffer
+%D {yes} %%\ B %%\{[ %%\}]
+%D {no}
+%D {no}  %%\ E
+%D {yes}
+%D \stopbuffer
+%D
+%D \typebuffer
+%D
+%D This leads to:
+%D
+%D {\newprettytrue\typebuffer}
+%D
+%D I won't explain the details of this mechanism. Those who
+%D want to build their own pretty interpreters have to close
+%D read the source anyway.
+%D
+%D Last we show an example of mixed pretty typesetting:
+%D
+%D \startbuffer
+%D \ziezo{test}          %%\ P   ##\ B##\ T % enter PERL mode       %%\ E
+%D if $test eq "test"    ##\ B   ##\ B##\ T % begin group (\bgroup) %%\ E
+%D if $test eq "test";   ##\ T   %%\ B%%\ T % enter TEX mode        %%\ E
+%D \ziezo{test}          %%\ M   %%\ B%%\ T % enter METAPOST mode   %%\ E
+%D draw (0,0)--(10,10);  %%\ E   ##\ B##\ T % end group (\egroup)   %%\ E
+%D if $test eq "test";
+%D \stopbuffer
+%D
+%D \typebuffer
+%D
+%D Here we use \type{%%\ T}, \type{%%\ P} and \type{%%\ M} for
+%D switching between \TEX, \PERL\ and \METAPOST\ mode.
+%D
+%D {\newprettytrue\typebuffer}
+%D
+%D \egroup
+%D 
+%D Don't forget to set:
+
+\newif\ifnewpretty
+
+\def\installnewpretty%
+  {\def\doinstallnewpretty##1%
+     {\setvalue{NP::\the\scratchcounter}{##1}}%
+   \afterassignment\doinstallnewpretty\scratchcounter=`}
+
+%D Let's define the options we used here:
+
+\let\prettyend  =\relax
+\def\prettybegin{\bgroup\let\prettyend=\egroup}
+
+\installnewpretty B \prettybegin
+\installnewpretty E \prettyend
+
+\installnewpretty J \setupprettyJVtype
+\installnewpretty M \setupprettyMPtype
+\installnewpretty P \setupprettyPLtype
+\installnewpretty T \setupprettyTEXtype
+
+%D This means that when the interpreter modules support this
+%D mechanism, by default we have four options at available.
+
+\def\newpretty#1%
+  {\getprettydata{#1}%
+   \ifnum\prettytype=0
+     \expandafter\nonewpretty
+   \else
+     \expandafter\donewpretty
+   \fi
+   #1}
+
+\def\nonewpretty#1#2%
+  {\getprettydata{#2}%
+   \getvalue{NP::\the\prettychar}}
+
+\def\donewpretty#1%
+  {\bgroup
+   \def\handleprettytoken##1##2##3%
+     {\getprettydata{##3}%
+      \egroup
+      \ifnum\prettytype>0
+        \setpretty##2=\prettytype\relax
+      \fi}%
+   #1}
+
+%D When implementing new pretty macros, one only needs to
+%D define something like:
+%D
+%D \starttypen
+%D \def\TEXtypezero%
+%D   {\handlenewpretty\TEXtypethree}
+%D \stoptypen
+%D
+%D Here the number states the category (in our examples the
+%D backslash). The second argument takes care of normal
+%D situations.
+
+\def\handlenewpretty#1%
+  {\let\newprettycommand=#1%
+   \handlenextnextpretty\dohandlenewpretty\newprettycommand}
+
+%D The previous shown implementation only interprets single
+%D comments, but the final one also accepts double ones. The
+%D main reason for this is that in \JAVA\ we have to deal with
+%D \type{//}. Personally I prefer the double \type{%%} because
+%D is stands out and is more symmetrical with the double
+%D slash. 
+
+\bgroup
+\catcode`\|=\@@escape
+\catcode`\\=\@@active
+|gdef|dohandlenewpretty#1%
+  {|def|dodohandlenewpretty##1%
+     {|getprettydata{#1}%
+      |let|oldprettychar=|prettychar
+      |getprettydata{##1}%
+      |ifnum|oldprettychar=|prettychar
+        |def|dododohandlenewpretty####1%
+          {|getprettydata{\}%
+           |let|oldprettytype=|prettytype
+           |getprettydata{####1}%
+           |ifnum|prettytype=|oldprettytype
+             |let|next=|newpretty
+           |else
+             |def|next{|newprettycommand{#1}##1####1}%
+           |fi
+           |next}%
+        |let|next=|dododohandlenewpretty
+      |else
+        |def|next{|newprettycommand{#1}##1}%
+      |fi
+      |next}%
+   |def|donohandlenewpretty##1%
+     {|newprettycommand{#1}##1}%
+   |handlenextnextpretty|dodohandlenewpretty|donohandlenewpretty}
+|egroup
+
+%D The `nextnext' macro we used in the previous definition
+%D looks ahead. This is needed because individual lines are
+%D handles by macro's and the next character can be something
+%D that ends the line and/or does not belong to the verbatim
+%D data.
+
+\def\handlenextnextpretty#1#2#3%
+  {\def\dohandlenextnextpretty%
+     {\ifx\next\bgroup       % something {}
+        \let\next=#2%
+      \else\ifx\next\relax   % end of line / signal
+        \let\next=#2%
+      %\else\ifx\next\egroup % end of line / no signal
+      %  \let\next=#2%
+      %\else\ifx\next\par    % end of line / \par
+        \let\next=#2%
+      \else
+        \let\next=#1%
+      \fi\fi%\fi\fi
+      \next{#3}}%
+   \futurelet\next\dohandlenextnextpretty}
+
+%D The pretty interpreters can (and will) change the meaning of
+%D some controls. To enable them calling the originals we save
+%D their meanings and to enable nesting we permit this only
+%D once.
+
+\def\saveprettycontrols%
+  {\global\let\oldobeyedspace = \obeyedspace
+   \global\let\oldobeyedline  = \obeyedline
+   \global\let\oldobeyedpage  = \obeyedpage
+   \let\saveprettycontrols    = \relax}
+
+%D The \PERL\ and \METAPOST\ interpreters will also handle
+%D reserved words. Sets of identifiers are defined like:
+%D
+%D \starttypen
+%D \useprettyidentifiers \MODULAidentifiers \MODULAsetspecials
+%D   if then else elsif case while do repeat until ...
+%D \stoptypen
+%D
+%D New entries can be added to existing sets by repeatedly
+%D using this command.
+
+\def\useprettyidentifiers#1#2% \variable \presetcatcodes
+  {\bgroup
+   \ifx#1\undefined
+     \global\let#1=\empty
+   \fi
+   \def\handleprettytoken##1##2{\char##2}%
+   #2\relax
+   \def\douseprettyidentifiers##1\par%
+     {\xdef#1{\space#1\space ##1}%
+      \egroup}%
+   \douseprettyidentifiers}
+
+%D We can test om identifiers with:
+
+\def\doifprettyidentifierelse#1%
+  {\doifincsnameelse{\space#1\space}}
+
+%D \macros 
+%D   {prettyidentifierfont,prettyvariablefont}
+%D
+%D When one want to typeset identifiers and system variables 
+%D in a different typeface, one has to set the next two 
+%D variables.  
+
+\let\prettyidentifierfont=\relax
+\let\prettyvariablefont  =\relax
+
+%D The interpreter macros are loaded at run time. The main
+%D reason lays in the fact that we don't want to have the
+%D identifier lists hard coded in the format file. To prevent
+%D repetitive loading, one should load the modules before the
+%D first call to the macros.
+%D
+%D \starttypen
+%D \input verb-tex.tex
+%D \input verb-pl.tex
+%D \input verb-mp.tex
+%D \input verb-jv.tex
+%D \stoptypen
+%D
+%D In \CONTEXT\ we follow a different thread, and therefore all
+%D macros in the additional modules use \type{\gdef}'s and
+%D \type{\doglobal}'s. Manipulating \type{\globaldef} is
+%D possible but leads to fuzzy situations.
+
+%D The rest of this module is dedicated to non \CONTEXT\ users
+%D and shows an example of an verbatim environment based on the
+%D previous macros.
+%D
+%D The macro's can be used to construct the commands we
+%D mentioned in the beginning of this documentation. We leave
+%D this to the fantasy of the reader and only show some \PLAIN\
+%D \TEX\ alternatives for display verbatim and listings. We
+%D define three commands for typesetting inline text, display
+%D text and files verbatim. The inline alternative also accepts
+%D user supplied delimiters.
+%D
+%D \starttypen
+%D \type{text}
+%D
+%D \starttyping
+%D ... verbatim text ...
+%D \stoptyping
+%D
+%D \typefile{filename}
+%D \stoptypen
+%D
+%D We can turn on the options by:
+%D
+%D \starttypen
+%D \controlspacetrue
+%D \verbatimtabstrue
+%D \prettyverbatimtrue
+%D \stoptypen
+%D
+%D Here is the implementation:
+
+\newif\ifcontrolspace   
+\newif\ifverbatimtabs   
+\newif\ifprettyverbatim 
+
+\ifCONTEXT \else 
+
+  \def\presettyping%
+    {\ifcontrolspace
+       \let\obeyspace=\setcontrolspace
+     \fi
+     \ifverbatimtabs
+       \let\obeytabs=\settabskips
+     \fi
+     \ifprettyverbatim
+       \let\obeycharacters=\setupprettytype
+     \fi}
+
+  \def\type%
+    {\bgroup
+     \presettyping
+     \processinlineverbatim{\egroup}}
+
+  \def\starttyping%
+    {\bgroup
+     \presettyping
+     \processdisplayverbatim{\stoptyping}}
+
+  \def\stoptyping%
+    {\egroup}
+
+  \def\typefile#1%
+    {\bgroup
+     \presettyping
+     \processfileverbatim{#1}%
+     \egroup}
+
+\fi
+
+%D In \CONTEXT\ users say things like:
+%D
+%D \starttypen
+%D \definetyping [TEX]  [option=TEX]
+%D \definetyping [MP]   [option=MP]
+%D \definetyping [PL]   [option=PL]
+%D \definetyping [JV]   [option=JV]
+%D \stoptypen
+%D
+%D or
+%D
+%D \starttypen
+%D \setuptyping[file][option=color]
+%D \stoptypen
+%D
+%D That way \CONTEXT\ selects the appropriate interpreter
+%D itself, but more on that in another module. In other
+%D packages one can define:
+
+\ifCONTEXT \else
+
+  \input verb-tex
+  \input verb-mp
+  \input verb-pl
+  \input verb-jv
+
+  \def\startTEX%
+    {\bgroup \everypar{}%
+     \let\obeycharacters=\setupprettyTEXtype
+     \processdisplayverbatim{\stopTEX}}
+
+  \def\startMP%
+    {\bgroup \everypar{}%
+     \let\obeycharacters=\setupprettyMPtype
+     \processdisplayverbatim{\stopMP}}
+
+  \def\startPL%
+    {\bgroup \everypar{}%
+     \let\obeycharacters=\setupprettyPLtype
+     \processdisplayverbatim{\stopPL}}
+
+  \def\startJV%
+    {\bgroup \everypar{}%
+     \let\obeycharacters=\setupprettyJVtype
+     \processdisplayverbatim{\stopJV}}
+
+  \let\stopTEX=\egroup
+  \let\stopMP =\egroup
+  \let\stopPL =\egroup
+  \let\stopJV =\egroup
+
+\fi
+
+%D This following poor mans implementation of color is based on
+%D PostScript. One can of course use grayscales too. In the
+%D core modules these macros are redefined to using the color
+%D mechanism present in \CONTEXT.
+
+\ifCONTEXT \else
+
+  \def\setcolorverbatim%
+    {\def\prettyone   {.9 .0 .0 }       % red
+     \def\prettytwo   {.0 .8 .0 }       % green
+     \def\prettythree {.0 .0 .9 }       % blue
+     \def\prettyfour  {.8 .8 .6 }       % yellow
+     \def\beginofpretty[##1]%
+       {\special{ps:: \csname##1\endcsname setrgbcolor}}
+     \def\endofpretty%
+       {\special{ps:: 0 0 0 setrgbcolor}}} % black
+
+  \def\setgrayverbatim%
+    {\def\prettyone   {.30 }            % gray
+     \def\prettytwo   {.45 }            % gray
+     \def\prettythree {.60 }            % gray
+     \def\prettyfour  {.75 }            % gray
+     \def\beginofpretty[##1]%
+       {\special{ps:: \csname##1\endcsname setgray}}
+     \def\endofpretty%
+       {\special{ps:: 0 setgray}}}         % black
+
+\fi
+
+%D One can redefine these two commands after loading this
+%D module. When available, one can also use appropriate
+%D font||switch macro's. We default to color.
+
+\ifCONTEXT \else \setcolorverbatim \fi
+
+%D Here come the commands that are responsible for entering and
+%D leaving the two states. As we can see, they've got much in
+%D common.
+
+%D The previous version of this module was published in the
+%D \MAPS\ of the dutch \TEX\ users group \NTG. In that article,
+%D the verbatim part of the text was typeset with the following
+%D commands for the examples:
+%D
+%D \starttypen
+%D \def\starttypen% We simplify the \ConTeXt\ macro.
+%D   {\bgroup
+%D    \everypar{} % We disable some troublesome mechanisms.
+%D    \advance\leftskip by 1em
+%D    \processdisplayverbatim{\stoptypen}}
+%D
+%D \let\stoptypen=\egroup
+%D \stoptypen
+%D
+%D We also used:
+%D
+%D \starttypen
+%D \def\startdefinition%
+%D   {\bgroup
+%D    \everypar{} % Again we disable some troublesome mechanisms.
+%D    \let\obeycharacters=\setupprettyTEXtype % See verb-tex.tex!
+%D    \EveryPar{\showparagraphcounter}%
+%D    \EveryLine{\showlinecounter}%
+%D    \verbatimbodyfont
+%D    \processdisplayverbatim{\stopdefinition}}
+%D
+%D \def\stopdefinition%
+%D   {\egroup}
+%D \stoptypen
+%D
+%D And because we have both \type{\EveryPar} and
+%D \type{\EveryLine} available, we can implement a dual
+%D numbering mechanism:
+%D
+%D \starttypen
+%D \newcount\paragraphcounter
+%D \newcount\linecounter
+%D
+%D \def\showparagraphcounter%
+%D   {\llap
+%D      {\bgroup
+%D       \counterfont
+%D       \hbox to 4em
+%D         {\global\advance\paragraphcounter by 1
+%D          \hss \the\paragraphcounter \hskip2em}%
+%D       \egroup
+%D       \hskip1em}}
+%D
+%D \def\showlinecounter%
+%D   {\llap
+%D      {\bgroup
+%D       \counterfont
+%D       \hbox to 2em
+%D         {\global\advance\linecounter by 1
+%D          \hss \the\linecounter}%
+%D       \egroup
+%D       \hskip1em}}
+%D \stoptypen
+%D
+%D One may have noticed that the \type{\EveryPar} is only
+%D executed once, because we consider each piece of verbatim
+%D as one paragraph. When one wants to take the empty lines
+%D into account, the following assignments are appropriate:
+%D
+%D \starttypen
+%D \EveryLine
+%D   {\iflinepar
+%D      \showparagraphcounter
+%D    \fi
+%D    \showlinecounter}
+%D \stoptypen
+%D
+%D In this case, nothing has to be assigned to \type{\EveryPar},
+%D maybe except of just another extra numbering scheme. The
+%D macros used to typeset this documentation are a bit more
+%D complicated, because we have to take take 'long' margin
+%D lists into account. When such a list exceeds the previous
+%D pargraph we postpone placement of the paragraph number till
+%D there's room. This way so it does not clash with the margin
+%D words.
+
+%D Normally such commands have to be embedded in a decent setup
+%D structure, where options can be set at will.
+%D
+%D Now let's summarize the most important commands.
+%D
+%D \starttypen
+%D \processinlineverbatim{\closingcommand}
+%D \processdisplayverbatim{\closingcommand}
+%D \processfileverbatim{filename}
+%D \stoptypen
+%D
+%D We can satisfy our own specific needs with the following
+%D interfacing macro's:
+%D
+%D \starttypen
+%D \obeyspaces  \obeytabs  \obeylines  \obeypages  \obeycharacters
+%D \stoptypen
+%D
+%D We can influence the verbatim environment with the following
+%D macro:
+%D
+%D \starttypen
+%D \obeyemptylines
+%D \stoptypen
+%D
+%D Some needs are fulfilled already with:
+%D
+%D \starttypen
+%D \setcontrolspace  \settabskips
+%D \stoptypen
+%D
+%D lines can be enhanced with ornaments using:
+%D
+%D \starttypen
+%D \everypar  \everyline  \iflinepar
+%D \stoptypen
+%D
+%D and pretty verbatim support is implemented by:
+%D
+%D \starttypen
+%D \beginofpretty[#1] ... \endofpretty
+%D \stoptypen
+%D
+%D and some setup macro, like:
+%D
+%D \starttypen
+%D \setupprettyIDENTIFIERtype
+%D \stoptypen
+%D
+%D The color support macro can be redefined by the user. The
+%D parameter \type{#1} can be one of the four 'fixed'
+%D identifiers {\em prettyone}, {\em prettytwo}, {\em
+%D prettythree} and {\em prettyfour}. We have implemented a
+%D more or less general PostScript color support mechanism,
+%D using \type{specials}. One can toggle between color and
+%D grayscale with:
+%D
+%D \starttypen
+%D \setgrayverbatim  \setcolorverbatim
+%D \stoptypen
+
+%D \macros
+%D   {permitshiftedendofverbatim}
+%D   {}
+%D
+%D We did not mention one drawback of the mechanism described
+%D here. The closing command must start at the first position
+%D of the line. In \CONTEXT\ we will not have this drawback,
+%D because we can test if the end command is a substring of the
+%D current line. The testing is done by two of the support
+%D macros, which of course are not available in a stand alone
+%D application of this module.
+
+\ifCONTEXT 
+
+  \let\doifendofverbatim=\doifelse
+
+  \def\permitshiftedendofverbatim%
+    {\let\doifendofverbatim=\doifinstringelse}
+
+  \def\processdisplayverbatim#1%
+    {\par
+     \bgroup
+     \escapechar=-1
+     \xdef\verbatimname{\string#1}%
+     \egroup
+     \def\endofdisplayverbatim{\csname\verbatimname\endcsname}%
+     \bgroup
+     \parindent\!!zeropoint
+     \ifdim\lastskip<\parskip
+       \removelastskip
+       \vskip\parskip
+     \fi
+     \parskip\!!zeropoint
+     \processingverbatimtrue
+     \expandafter\let\csname\verbatimname\endcsname=\relax
+     \expandafter\convertargument\csname\verbatimname\endcsname
+       \to\endofverbatimcommand
+     \verbatimfont
+     \setupcopyverbatim
+     \initializeverbatimline
+     \copyverbatimline}
+
+  {\obeylines%
+   \long\gdef\copyverbatimline#1
+     {\convertargument#1 \to\next%
+      \gdef\verbatimline{#1}%
+      \ifx\next\emptyspace%
+        \presetemptyverbatimline%
+      \else%
+        \doifendofverbatim{\endofverbatimcommand}{\next}%
+          {\presetlastverbatimline%
+           \def\copyverbatimline{\egroup\endofdisplayverbatim}}%
+          {\presetnormalverbatimline}%
+      \fi%
+      \handleverbatimline%
+      \copyverbatimline}}
+
+\fi
+
+\protect
+
+\endinput

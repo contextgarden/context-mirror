@@ -1,0 +1,213 @@
+%D \module
+%D   [       file=core-int,
+%D        version=1995.1.1,
+%D          title=\CONTEXT\ Core Macros,
+%D       subtitle=Interaction,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. Non||commercial use is 
+%C granted. 
+
+%D Still to be done properly.
+
+\writestatus{loading}{Context Core Macros / Interaction}
+
+\unprotect
+
+\definesystemconstant {link}
+
+\definesystemvariable {lk}
+
+% \expand vs \expanded
+
+% linked registers implementeren als een koppeling == mooier
+
+\presetlocalframed[\??lk]
+
+\newcounter\numberoflinks
+
+\def\stelkoppelingenin%
+  {\dodoubleargument\getparameters[\??lk]}
+
+\def\definieerkoppeling[#1]%  % local loading ! 
+  {\doifundefined{\s!link:#1:\s!list}
+     {\expanded{\definetwopasslist{\s!link:#1}}%
+      \expanded{\doloadtwopassdata{\s!link:#1}}%
+      \getfirsttwopassdata{\s!link:#1}%
+      \setxvalue{\s!link:#1:f}{\twopassdata}%  
+      \getlasttwopassdata{\s!link:#1}%
+      \setxvalue{\s!link:#1:l}{\twopassdata}%
+      \setxvalue{\s!link:#1:s}{\noftwopassitems}%
+      \gettwopassdata{\s!link:#1}%
+      \setxvalue{\s!link:#1:c}{\twopassdata}%
+      \setxvalue{\s!link:#1:n}{\twopassdata}}}
+
+\def\koppeling[#1]#2%
+  {\bgroup
+   \definieerkoppeling[#1]%
+   \doglobal\increment\numberoflinks
+   \gettwopassdata{\s!link:#1}%
+   \edef\numberoflinks    {0\getvalue{\s!link:#1:s}}%
+   \edef\firstlink   {0\getvalue{\s!link:#1:f}}%
+   \edef\lastlink    {0\getvalue{\s!link:#1:l}}%
+   \edef\currentlink {0\getvalue{\s!link:#1:n}}%
+   \edef\prevlink    {0\getvalue{\s!link:#1:c}}% 
+   \iftwopassdatafound
+     \edef\nextlink  {0\twopassdata}%
+     \setxvalue{\s!link:#1:n}{\nextlink}%
+     \setxvalue{\s!link:#1:c}{\currentlink}%
+   \else
+     \edef\nextlink  {0\getvalue{\s!link:#1:l}}%
+   \fi
+   \edef\writelink%
+     {\writeutilitycommand%
+        {\twopassentry%
+           {\s!link:#1}%
+           {\numberoflinks}%
+           {\noexpand\realfolio}}}%
+   \writelink
+   \ifnum\noflinks<2
+     \locationfalse
+   \fi
+   \iflocation
+     \hbox
+       {\stelinteractiein[\c!breedte=\!!zeropoint]%
+        \def\goto##1##2%
+          {\doganaarpagina
+             {}%
+             {\localframed
+                [\??lk]
+                {$\ifgoingtopage
+                    \ifnum##2=\realpageno\relax
+                      ##1%
+                    \else
+                      \color[\locationcolor\@@lkkleur]{##1}%
+                    \fi
+                  \else
+                    ##1%
+                  \fi$}}%
+             [##2]}%
+        \goto {\gotobegincharacter} \firstlink\hss
+        \ifnum\noflinks>2
+          \hskip\@@lkafstand
+          \goto {\gobackwardcharacter}\prevlink\hss
+        \fi
+        \hskip\@@lkafstand
+        #2\relax
+        \hskip\@@lkafstand
+        \ifnum\noflinks>2
+          \goto {\goforwardcharacter} \nextlink\hss
+          \hskip\@@lkafstand
+        \fi
+        \goto {\gotoendcharacter}   \lastlink}%
+   \else
+     \hbox{#2}%
+   \fi
+   \egroup}
+
+\def\definieerkoppeling[#1]%  % local loading ! 
+  {\doifundefined{\s!link:#1:\s!list}
+     {\expanded{\definetwopasslist{\s!link:#1}}%
+      \expanded{\doloadtwopassdata{\s!link:#1}}%
+      \getfirsttwopassdata{\s!link:#1}%
+      \let\firstlink=\twopassdata  
+      \getlasttwopassdata{\s!link:#1}%
+      \let\lastlink=\twopassdata
+      \let\noflinks=\noftwopassitems
+      \gettwopassdata{\s!link:#1}%
+      \let\currentlink=\twopassdata
+      \let\nextlink=\twopassdata
+      \setxvalue{\s!link:#1:}%
+        {\firstlink:\lastlink:\noflinks:\currentlink:\nextlink}}}
+
+\def\koppeling[#1]#2%
+  {\bgroup
+   \definieerkoppeling[#1]%
+   \doglobal\increment\numberoflinks
+   \gettwopassdata{\s!link:#1}%
+   \def\next[##1:##2:##3:##4:##5]%
+     {\edef\firstlink  {0##1}%
+      \edef\lastlink   {0##2}%
+      \edef\noflinks   {0##3}%
+      \edef\prevlink   {0##4}%
+      \edef\currentlink{0##5}}%
+   \expanded{\next[\getvalue{\s!link:#1:}]}%
+   \edef\nextlink%
+     {0\iftwopassdatafound\twopassdata\else\lastlink\fi}%
+   \setxvalue{\s!link:#1:}%
+     {\firstlink:\lastlink:\noflinks:\currentlink:\nextlink}%
+   \edef\writelink%
+     {\writeutilitycommand%
+        {\twopassentry%
+           {\s!link:#1}%
+           {\numberoflinks}%
+           {\noexpand\realfolio}}}%
+   \writelink
+   \ifnum\noflinks<2
+     \locationfalse
+   \fi
+   \iflocation
+     \hbox
+       {\stelinteractiein[\c!breedte=\!!zeropoint]%
+        \def\goto##1##2%
+          {\doganaarpagina
+             {}%
+             {\localframed
+                [\??lk]
+                {$\ifgoingtopage
+                    \ifnum##2=\realpageno\relax
+                      ##1%
+                    \else
+                      \color[\locationcolor\@@lkkleur]{##1}%
+                    \fi
+                  \else
+                    ##1%
+                  \fi$}}%
+             [##2]}%
+%        \goto {\gotobegincharacter} \firstlink\hss
+%        \ifnum\noflinks>2
+%          \hskip\@@lkafstand
+%          \goto {\gobackwardcharacter}\prevlink\hss
+%        \fi
+%        \hskip\@@lkafstand
+%        #2\relax
+%        \hskip\@@lkafstand
+%        \ifnum\noflinks>2
+%          \goto {\goforwardcharacter} \nextlink\hss
+%          \hskip\@@lkafstand
+%        \fi
+%        \goto {\gotoendcharacter} \lastlink}%
+%
+        #2\relax
+        \hskip\@@lkafstand
+        \goto {\gotobegincharacter} \firstlink\hss
+        \ifnum\noflinks>2
+          \goto {\gobackwardcharacter}\prevlink\hss
+        \fi
+        \ifnum\noflinks>2
+          \goto {\goforwardcharacter} \nextlink\hss
+          \hskip\@@lkafstand
+        \fi
+        \goto {\gotoendcharacter} \lastlink}%
+%
+   \else
+     \hbox{#2}%
+   \fi
+   \egroup}
+
+\stelkoppelingenin
+  [\c!afstand=.25em,
+   \c!breedte=\v!passend,
+   \c!plaats=\v!laag,
+   \c!kleur=\@@iakleur,
+   \c!kader=\v!uit,
+   \c!achtergrond=,
+   \c!achtergrondraster=\@@rsraster,
+   \c!achtergrondkleur=]
+
+\protect
+
+\endinput

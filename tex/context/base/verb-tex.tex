@@ -1,0 +1,284 @@
+%D \module
+%D   [       file=verb-tex,
+%D        version=1997.12.22,
+%D          title=\CONTEXT\ Verbatim Macros,
+%D       subtitle=Pretty \TEX\ verbatim,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. Non||commercial use is
+%C granted.
+
+\writestatus{loading}{Context Support Macros / Pretty TEX Verbatim}
+
+%D The original module \type{supp-ver} had the \TEX\ 
+%D interpreter built in. The current implementation is more 
+%D natural and less complicated. 
+
+%D \startTEX
+%D \definetyping[niceTEX][option=TEX,palet=graypretty]
+%D
+%D \startniceTEX
+%D \message{A vivid look at TeX}
+%D \stopniceTEX
+%D \stopTEX
+
+\unprotect
+
+%D \macros
+%D   {ifsplitTEXparameters}
+%D   {}
+%D
+%D The mechanism described here, is meant to be used with
+%D color. It is nevertheless possible to use different fonts
+%D instead of distinctive colors. When using color, it's better
+%D to end parameter mode after the \type{#}. When on the
+%D other hand we use a slanted typeface for the hashmark, then
+%D a slanted number looks better.
+
+\doglobal\newif\ifsplitTEXparameters \global\splitTEXparameterstrue
+
+%D \macros
+%D   {ifsplitTEXcontrols}
+%D   {}
+%D
+%D With \type{\splittexcontrols} we can influence the way
+%D control characters are processed in macro names. By default,
+%D the \type{^^} part is uncolored. When this boolean is set to
+%D false, they get the same color as the other characters.
+
+\doglobal\newif\ifsplitTEXcontrols \global\splitTEXcontrolstrue
+
+%D The next boolean is used for internal purposes only and
+%D keeps track of the length of the name. Because two||character
+%D sequences starting with a backslash are always seen as a
+%D command.
+
+\doglobal\newif\iffirstinTEXcommand
+
+%D We use a maximum of four colors because more colors will
+%D distract too much. In the following table we show the
+%D logical names of the colors, their color and \kap{RGB} values.
+%D
+%D \plaatstabel{geen}
+%D \starttabel[|l|l|c|c|c|c|]
+%D \HL
+%D \FC\bf identifier \MC\bf color \MC\bf r \MC\bf g \MC\bf b \MC\bf bw \LC\SR
+%D \HL
+%D \FC prettyone     \MC red      \MC 0.9  \MC 0.0  \MC 0.0  \MC 0.30  \LC\FR
+%D \FC prettytwo     \MC green    \MC 0.0  \MC 0.8  \MC 0.0  \MC 0.45  \LC\MR
+%D \FC prettythree   \MC yellow   \MC 0.0  \MC 0.0  \MC 0.9  \MC 0.60  \LC\MR
+%D \FC prettyfour    \MC blue     \MC 0.8  \MC 0.8  \MC 0.6  \MC 0.75  \LC\LR
+%D \HL
+%D \stoptabel
+%D 
+%D Outside \CONTEXT\ these colors are defined in
+%D \type{verb-ini}, in \CONTEXT\ their definitions can be found
+%D in \type{core-ver}, where in fact we use the color palet
+%D mechanism. That way we can use different schemes i a quite
+%D natural way. 
+
+\gdef\setupprettyTEXtype%
+  {\def\prettyidentifier{TEX}%
+   \TEXsetcontrols
+   \TEXsethandlers
+   \TEXsetspecials}
+
+\gdef\TEXsetcontrols%
+  {\saveprettycontrols
+   \def\obeyedspace%
+     {\TEXendofcommand
+      \TEXendofparameter
+      \oldobeyedspace}%
+   \def\obeyedline%
+     {\TEXendofcommand
+      \TEXendofparameter
+      \oldobeyedline}%
+   \def\obeyedpage%
+     {\TEXendofcommand
+      \TEXendofparameter
+      \oldobeyedpage}%
+   \let\obeytabs=\ignoretabs}
+
+\gdef\TEXsetspecials%
+  {\setpretty`\$=1 \setpretty`\{=1 \setpretty`\}=1
+   \setpretty`\[=2 \setpretty`\]=2 \setpretty`\(=2 \setpretty`\)=2
+   \setpretty`\==2 \setpretty`\<=2 \setpretty`\>=2 \setpretty`\"=2
+   \setpretty`\-=3 \setpretty`\+=3 \setpretty`\/=3
+   \setpretty`\|=3 \setpretty`\%=3 \setpretty`\'=3 \setpretty`\`=3
+   \setpretty`\_=3 \setpretty`\&=3 \setpretty`\~=3
+   \setpretty`\.=4 \setpretty`\,=4 \setpretty`\:=4 \setpretty`\;=4 \setpretty`\*=4
+   \setpretty`\#=5
+   \setpretty`\1=6 \setpretty`\2=6 \setpretty`\3=6 \setpretty`\4=6 \setpretty`\5=6
+   \setpretty`\6=6 \setpretty`\7=6 \setpretty`\8=6 \setpretty`\9=6 \setpretty`\0=6
+   \setpretty`\\=7
+   \setpretty`\^=8
+   \setpretty`\A=9 \setpretty`\B=9 \setpretty`\C=9 \setpretty`\D=9 \setpretty`\E=9
+   \setpretty`\F=9 \setpretty`\G=9 \setpretty`\H=9 \setpretty`\I=9 \setpretty`\J=9
+   \setpretty`\K=9 \setpretty`\L=9 \setpretty`\M=9 \setpretty`\N=9 \setpretty`\O=9
+   \setpretty`\P=9 \setpretty`\Q=9 \setpretty`\R=9 \setpretty`\S=9 \setpretty`\T=9
+   \setpretty`\U=9 \setpretty`\V=9 \setpretty`\W=9 \setpretty`\X=9 \setpretty`\Y=9
+   \setpretty`\Z=9
+   \setpretty`\a=9 \setpretty`\b=9 \setpretty`\c=9 \setpretty`\d=9 \setpretty`\e=9
+   \setpretty`\f=9 \setpretty`\g=9 \setpretty`\h=9 \setpretty`\i=9 \setpretty`\j=9
+   \setpretty`\k=9 \setpretty`\l=9 \setpretty`\m=9 \setpretty`\n=9 \setpretty`\o=9
+   \setpretty`\p=9 \setpretty`\q=9 \setpretty`\r=9 \setpretty`\s=9 \setpretty`\t=9
+   \setpretty`\u=9 \setpretty`\v=9 \setpretty`\w=9 \setpretty`\x=9 \setpretty`\y=9
+   \setpretty`\z=9
+   \setpretty`\?=9 \setpretty`\!=9 \setpretty`\@=9
+   %\setpretty`\%=\ifnewpretty 0 \else 3 \fi}
+   \setpretty`\%=0 }
+
+\gdef\TEXsethandlers%
+  {\installprettyhandler 1 \TEXtypeone
+   \installprettyhandler 2 \TEXtypetwo
+   \installprettyhandler 3 \TEXtypethree
+   \installprettyhandler 4 \TEXtypefour
+   \installprettyhandler 5 \TEXtypefive
+   \installprettyhandler 6 \TEXtypesix
+   \installprettyhandler 7 \TEXtypeseven
+   \installprettyhandler 8 \TEXtypeeight
+   \installprettyhandler 9 \TEXtypenine
+   \installprettyhandler 0 \TEXtypezero}
+
+\doglobal\newif\ifinTEXcommand
+\doglobal\newif\ifinTEXparameter
+
+\gdef\TEXbeginofcommand%
+  {\TEXendofparameter
+   \ifinTEXcommand
+   \else
+     \global\inTEXcommandtrue
+     \global\firstinTEXcommandtrue
+     \beginofpretty[\!!prettytwo]%
+   \fi}
+
+\gdef\TEXendofcommand%
+  {\ifinTEXcommand
+     \endofpretty
+     \global\inTEXcommandfalse
+     \global\firstinTEXcommandfalse
+   \fi}
+
+\gdef\TEXbeginofparameter%
+  {\TEXendofcommand
+   \ifinTEXparameter
+   \else
+     \global\inTEXparametertrue
+     \beginofpretty[\!!prettythree]%
+   \fi}
+
+\gdef\TEXendofparameter%
+  {\ifinTEXparameter
+     \endofpretty
+     \global\inTEXparameterfalse
+   \fi}
+
+\gdef\ifnotfirstinTEXcommand#1
+  {\iffirstinTEXcommand
+     \getpretty{#1}%
+     \TEXendofcommand
+   \else}
+
+\gdef\TEXtypeone#1%
+  {\ifnotfirstinTEXcommand#1
+     \TEXendofcommand
+     \TEXendofparameter
+     \beginofpretty[\!!prettyone]\getpretty{#1}\endofpretty
+   \fi}
+
+\gdef\TEXtypetwo#1%
+  {\ifnotfirstinTEXcommand#1
+     \TEXendofcommand
+     \TEXendofparameter
+     \beginofpretty[\!!prettythree]\getpretty{#1}\endofpretty
+   \fi}
+
+\gdef\TEXtypethree#1%
+  {\ifnotfirstinTEXcommand#1
+     \TEXendofcommand
+     \TEXendofparameter
+     \beginofpretty[\!!prettyfour]\getpretty{#1}\endofpretty
+   \fi}
+
+\gdef\TEXtypefour#1%
+  {\ifnotfirstinTEXcommand#1
+     \TEXendofcommand
+     \TEXendofparameter
+     \getpretty{#1}%
+   \fi}
+
+\gdef\TEXtypefive#1%
+  {\ifnotfirstinTEXcommand#1
+     \TEXbeginofparameter
+     \getpretty{#1}%
+   \fi}
+
+\gdef\TEXtypesix#1%
+  {\ifnotfirstinTEXcommand#1
+     \ifinTEXparameter
+       \ifsplitTEXparameters
+         \TEXendofparameter
+         \getpretty{#1}%
+       \else
+         \getpretty{#1}%
+         \TEXendofparameter
+       \fi
+     \else
+       \TEXendofcommand
+       \getpretty{#1}%
+     \fi
+   \fi}
+
+\gdef\TEXtypeseven#1%
+  {\ifnotfirstinTEXcommand#1
+     \TEXbeginofcommand
+     \getpretty{#1}%
+   \fi}
+
+\gdef\TEXtypeeightA#1#2%
+  {\getprettydata{#2}%
+   \ifnum\prettytype=80
+     \TEXendofparameter
+     \ifsplitTEXcontrols
+       \ifinTEXcommand
+         \def\next{\TEXendofcommand\getpretty{#1}\getpretty{#1}\TEXbeginofcommand}%
+       \else
+         \def\next{\getpretty{#1}\getpretty{#1}}%
+       \fi
+     \else
+       \def\next{\getpretty{#1}\getpretty{#1}}%
+     \fi
+   \else
+     \def\next{\TEXtypeeightB{#1}#2}%
+   \fi
+   \next}
+
+\gdef\TEXtypeeightB%
+  {\TEXendofparameter
+   \ifinTEXcommand
+     \firstinTEXcommandfalse
+     \expandafter\getpretty
+   \else
+     \expandafter\TEXtypethree
+   \fi}
+
+\gdef\TEXtypeeight%
+  {\handlenextnextpretty\TEXtypeeightA\TEXtypeeightB}
+
+\gdef\TEXtypenine%
+  {\TEXendofparameter
+   \global\firstinTEXcommandfalse
+   \getpretty}
+
+% \gdef\TEXtypezero%
+%   {\handlenewpretty\TEXtypethree}
+
+\gdef\TEXtypezero%
+  {\ifnewpretty\expandafter\handlenewpretty\fi\TEXtypethree}
+
+\protect 
+
+\endinput 

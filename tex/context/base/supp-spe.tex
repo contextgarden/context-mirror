@@ -104,7 +104,7 @@
 
 \def\dodomimmickspecial#1\using#2\endspecial%
   {\expandafter\ifx\csname\@rds@#1\endcsname\relax % \doifdefinedelse
-     \defaultspecial{#2}%
+     \defaultspecial{#1 #2}%
    \else  
      %\message{[mimmick special #1 with #2#3]}% 
      \getvalue{\@rds@#1}\using#2\endspecial
@@ -152,7 +152,7 @@
 %D \type{\normalspecial}:
 %D 
 %D \starttypen
-%D \def\defaultspecial#1{\normalspecial}
+%D \def\defaultspecial#1{}
 %D \stoptypen
 %D 
 %D But here we default to idle. 
@@ -163,4 +163,3 @@
 \protect 
 
 \endinput 
-

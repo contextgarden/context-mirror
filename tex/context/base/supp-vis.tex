@@ -87,6 +87,49 @@
 \unprotect
 
 %D \macros
+%D   {dontinterfere}
+%D   {}
+%D
+%D Indentation, left and/or right skips, redefinition of
+%D \type{\par} and assignments to \type{\everypar} can lead to
+%D  unwanted results. We can therefore turn all those things
+%D off with \type{\dontinterfere}.
+
+\def\dontinterfere%
+  {\everypar  = {}%
+   \let\par   = \endgraf
+   \parindent = \!!zeropoint
+   \parskip   = \!!zeropoint
+   \leftskip  = \!!zeropoint
+   \rightskip = \!!zeropoint
+   \relax}
+
+%D \macros
+%D   {dontcomplain}
+%D   {}
+%D
+%D In this module we do a lot of box manipulations. Because we
+%D don't want to be confronted with to many over- and underfull
+%D messages we introduce \type{\dontcomplain}.
+
+\def\dontcomplain%
+  {\hbadness  = \!!tenthousand
+   \hfuzz     = \maxdimen
+   \vbadness  = \!!tenthousand
+   \vfuzz     = \maxdimen}
+
+%D \macros
+%D   {normaloffinterlineskip}
+%D   {}
+%D
+%D The next hack is needed because in \CONTEXT\ we redefine 
+%D \type{\offinterlineskip}.  
+
+\ifx\undefined\normaloffinterlineskip 
+  \let\normaloffinterlineskip=\offinterlineskip
+\fi
+
+%D \macros
 %D   {normalhbox,
 %D    normalvbox,normalvtop}
 %D   {}
@@ -295,12 +338,12 @@
 %D of box \type{#1}, we preserve the mode.
 
 \def\makeruledbox#1%
-  {\edef\ruledheight {\the\ht#1}%
-   \edef\ruleddepth  {\the\dp#1}%
-   \edef\ruledwidth  {\the\wd#1}%
+  {\edef\ruledheight{\the\ht#1}%
+   \edef\ruleddepth {\the\dp#1}%
+   \edef\ruledwidth {\the\wd#1}%
    \setbox\scratchbox=\normalvbox
      {\dontcomplain
-      \offinterlineskip
+      \normaloffinterlineskip
       \hrule
         \!!height\boxrulewidth
         \iftoprule\else\!!width\!!zeropoint\fi
@@ -374,7 +417,7 @@
 %D
 %D \ShowBufferedExampleBox
 
-\def\ruledhbox%
+\unexpanded\def\ruledhbox%
   {\normalhbox\bgroup
    \dowithnextbox{\makeruledbox\nextbox\box\nextbox\egroup}%
    \normalhbox}
@@ -392,7 +435,7 @@
 %D
 %D \ShowBufferedExampleBox
 
-\def\ruledvbox%
+\unexpanded\def\ruledvbox%
   {\normalvbox\bgroup
    \dowithnextbox{\makeruledbox\nextbox\box\nextbox\egroup}%
    \normalvbox}
@@ -410,7 +453,7 @@
 %D
 %D \ShowBufferedExampleBox
 
-\def\ruledvtop%
+\unexpanded\def\ruledvtop%
   {\normalvtop\bgroup
    \dowithnextbox{\makeruledbox\nextbox\box\nextbox\egroup}%
    \normalvtop}
@@ -427,7 +470,7 @@
 %D
 %D \ShowBufferedExampleBox
 
-\def\ruledvcenter%
+\unexpanded\def\ruledvcenter%
   {\normalvbox\bgroup
    \dontinterfere
    \dowithnextbox
@@ -463,7 +506,7 @@
 %D At the cost of some extra macros we can implement a
 %D variant that does not need the~\type{=}, but we stick to:
 
-\def\ruledbox%
+\unexpanded\def\ruledbox%
   {\dowithnextbox{\makeruledbox\nextbox\box\nextbox}}
 
 \def\setruledbox#1=%
@@ -558,38 +601,6 @@
        \negativefalse
      \fi
    \fi}
-
-%D \macros
-%D   {dontinterfere}
-%D   {}
-%D
-%D Indentation, left and/or right skips, redefinition of
-%D \type{\par} and assignments to \type{\everypar} can lead to
-%D  unwanted results. We can therefore turn all those things
-%D off with \type{\dontinterfere}.
-
-\def\dontinterfere%
-  {\everypar  = {}%
-   \let\par   = \endgraf
-   \parindent = \!!zeropoint
-   \parskip   = \!!zeropoint
-   \leftskip  = \!!zeropoint
-   \rightskip = \!!zeropoint
-   \relax}
-
-%D \macros
-%D   {dontcomplain}
-%D   {}
-%D
-%D In this module we do a lot of box manipulations. Because we
-%D don't want to be confronted with to many over- and underfull
-%D messages we introduce \type{\dontcomplain}.
-
-\def\dontcomplain%
-  {\hbadness  = \!!tenthousand
-   \hfuzz     = \maxdimen
-   \vbadness  = \!!tenthousand
-   \vfuzz     = \maxdimen}
 
 %D Now the neccessary utility macros are defined, we can make a
 %D start with the visualizing ones. The implementation of these
@@ -789,19 +800,19 @@
 %D All five substitutions use the same auxiliary macro. Watch
 %D the positive first -- negative next approach.
 
-\def\ruledhss%
+\unexpanded\def\ruledhss%
   {\doruledhfiller\normalhss\normalhfilneg{0}{0}}
 
-\def\ruledhfil%
+\unexpanded\def\ruledhfil%
   {\doruledhfiller\normalhfil\normalhfilneg{10}{-6}}
 
-\def\ruledhfill%
+\unexpanded\def\ruledhfill%
   {\doruledhfiller\normalhfill\normalhfillneg{18}{-14}}
 
-\def\ruledhfilneg%
+\unexpanded\def\ruledhfilneg%
   {\doruledhfiller\normalhfilneg\normalhfil{-6}{10}}
 
-\def\ruledhfillneg%
+\unexpanded\def\ruledhfillneg%
   {\doruledhfiller\normalhfillneg\normalhfill{-14}{18}}
 
 %D \macros
@@ -826,7 +837,7 @@
    \bgroup
      \dontinterfere
      \dontcomplain
-     \offinterlineskip
+     \normaloffinterlineskip
      \setvisiblevfilbox0\to422%
      \setbox2=\normalvcue 
        {\normalhskip -#3\testrulewidth\copy0}%
@@ -877,19 +888,19 @@
 %D Keep in mind that \type{\vfillneg} is not part of \PLAIN\
 %D \TEX, but are mimmicked by a macro. 
 
-\def\ruledvss%
+\unexpanded\def\ruledvss%
   {\doruledvfiller\normalvss\normalvfilneg{2}}
 
-\def\ruledvfil%
+\unexpanded\def\ruledvfil%
   {\doruledvfiller\normalvfil\normalvfilneg{-4}}
 
-\def\ruledvfill%
+\unexpanded\def\ruledvfill%
   {\doruledvfiller\normalvfill\normalvfillneg{-12}}
 
-\def\ruledvfilneg%
+\unexpanded\def\ruledvfilneg%
   {\doruledvfiller\normalvfilneg\normalvfil{8}}
 
-\def\ruledvfillneg%
+\unexpanded\def\ruledvfillneg%
   {\doruledvfiller\normalvfillneg\normalvfill{16}}
 
 %D \macros
@@ -997,7 +1008,7 @@
    \fi
    \egroup}
 
-\def\ruledhskip%
+\unexpanded\def\ruledhskip%
   {\bgroup
    \afterassignment\doruledhskip
    \scratchskip=}
@@ -1071,7 +1082,7 @@
   {\nextdepth=\prevdepth
    \dontinterfere
    \dontcomplain
-   \offinterlineskip
+   \normaloffinterlineskip
    \investigateskip\scratchskip
    \ifzero
      \setbox0=\normalvcue
@@ -1148,7 +1159,7 @@
    \fi
    \egroup}
 
-\def\ruledvskip%
+\unexpanded\def\ruledvskip%
   {\bgroup
    \afterassignment\doruledvskip
    \scratchskip=}
@@ -1228,7 +1239,7 @@
    \afterwards\scratchskip
    \egroup}
 
-\def\ruledhkern#1%
+\unexpanded\def\ruledhkern#1%
   {\bgroup
    \let\afterwards=#1\relax
    \afterassignment\doruledhkern
@@ -1263,7 +1274,7 @@
    \dontinterfere
    \dontcomplain
    \baselinerulefalse
-   \offinterlineskip
+   \normaloffinterlineskip
    \investigateskip\scratchskip
    \boxrulewidth=2\testrulewidth
    \ifzero
@@ -1317,24 +1328,24 @@
    \afterwards\scratchskip
    \egroup}
 
-\def\ruledvkern#1%
+\unexpanded\def\ruledvkern#1%
   {\bgroup
    \let\afterwards=#1\relax
    \afterassignment\doruledvkern
    \scratchskip=}
 
-\def\ruledkern%
+\unexpanded\def\ruledkern%
   {\ifvmode
-     \let\next=\ruledvkern
+     \expandafter\ruledvkern
    \else
-     \let\next=\ruledhkern
+     \expandafter\ruledhkern
    \fi
-   \next\normalkern}
+   \normalkern}
 
 %D A a bit more \TEX nice solution is:
 %D 
 %D \starttypen
-%D \def\ruledkern%
+%D \unexpanded\def\ruledkern%
 %D   {\csname ruled\ifvmode v\else h\fi kern\endcsname\normalkern}
 %D \stoptypen
 
@@ -1371,7 +1382,7 @@
    \spacefactor=\scratchcounter
    \egroup}
 
-\def\ruledhglue%
+\unexpanded\def\ruledhglue%
   {\bgroup
    \afterassignment\doruledhglue\scratchskip=}
 
@@ -1401,7 +1412,7 @@
    \prevdepth=\nextdepth
    \egroup}
 
-\def\ruledvglue%
+\unexpanded\def\ruledvglue%
   {\bgroup
    \afterassignment\doruledvglue\scratchskip=}
 
@@ -1466,7 +1477,7 @@
    \flexiblefalse
    \dodoruledmkern\normalmkern}
 
-\def\ruledmkern%
+\unexpanded\def\ruledmkern%
   {\bgroup
    \afterassignment\doruledmkern\scratchmuskip=}
 
@@ -1484,7 +1495,7 @@
    \flexibletrue
    \dodoruledmkern\normalmskip}
 
-\def\ruledmskip%
+\unexpanded\def\ruledmskip%
   {\bgroup
    \afterassignment\doruledmskip\scratchmuskip=}
 
@@ -1622,7 +1633,7 @@
    \normalpenalty\scratchcounter
    \egroup}
 
-\def\ruledhpenalty%
+\unexpanded\def\ruledhpenalty%
   {\bgroup
    \afterassignment\doruledhpenalty
    \scratchcounter=}
@@ -1683,24 +1694,23 @@
    \normalpenalty\scratchcounter
    \egroup}
 
-\def\ruledvpenalty%
+\unexpanded\def\ruledvpenalty%
   {\bgroup
    \afterassignment\doruledvpenalty
    \scratchcounter=}
 
-\def\ruledpenalty%
+\unexpanded\def\ruledpenalty%
   {\ifvmode
-     \let\next=\ruledvpenalty
+     \expandafter\ruledvpenalty
    \else
-     \let\next=\ruledhpenalty
-   \fi
-   \next}
+     \expandafter\ruledhpenalty
+   \fi}
 
 %D At the cost of some more tokens, a bit more clever 
 %D implementation would be:
 %D
 %D \starttypen
-%D \def\ruledpenalty%
+%D \unexpanded\def\ruledpenalty%
 %D   {\csname ruled\ifvmode v\else h\fi penalty\endcsname}
 %D \stoptypen
 
@@ -1828,7 +1838,7 @@
 %D
 %D For the sake of those who don't (yet) use \CONTEXT\ we 
 %D preset \type{\defaulttestrulewidth} to the already set 
-%D value. Otherwise we default to a corps related value.
+%D value. Otherwise we default to a bodyfontsize related value.
 %D
 %D \starttypen
 %D \def\defaulttestrulewidth{.2pt}
@@ -1896,5 +1906,3 @@
 %D due to some still unknown interference.
 
 \endinput
-
-

@@ -44,7 +44,8 @@
    \c!rightquote=\upperrightsingleninequote,
    \c!leftquotation=\upperleftdoublesixquote,
    \c!rightquotation=\upperrightdoubleninequote,
-   \c!datum={\v!jaar,\ ,\v!maand,\ ,\v!dag},
+%   \c!datum={\v!jaar,\ ,\v!maand,\ ,\v!dag},
+   \c!datum={\v!maand,\ ,\v!dag,{,\ },\v!jaar},
    \c!default=\s!en,
    \c!status=\v!start] % always preloaded!
 
@@ -513,6 +514,14 @@
 \setuplabeltext [\s!no]    [\v!friday=fredag]
 \setuplabeltext [\s!no]  [\v!saturday=l\o rdag]
 
+%D Rather new ...
+
+\setuplabeltext [\s!nl]  [\v!oppagina=op pagina]
+\setuplabeltext [\s!nl] [\v!hierboven=hierboven]
+\setuplabeltext [\s!nl] [\v!hieronder=hieronder]
+
+%D ... and to be completed! 
+
 %D \ShowAllLanguageValues [\s!en] [english]   engelse humor
 %D \ShowAllLanguageValues [\s!nl] [dutch]     nederlandse zuinigheid
 %D \ShowAllLanguageValues [\s!de] [german]    duitse degelijkheid
@@ -524,4 +533,3 @@
 \protect
 
 \endinput
-

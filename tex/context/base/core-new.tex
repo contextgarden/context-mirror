@@ -1,0 +1,47 @@
+%D \module
+%D   [       file=core-nav,
+%D        version=1995.1.1,
+%D          title=\CONTEXT\ Core Macros,
+%D       subtitle=New ones,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. Non||commercial use is 
+%C granted. 
+
+%D To be placed elsewhere.
+
+\writestatus{loading}{Context Core Macros / New Ones}
+
+\unprotect
+
+% Some kind of new feature, for the moment a private one.
+%
+% \enablemode[screen,paper,bound]
+%
+% \doifmodeelse {paper}        {this} {that}
+% \doifmode     {paper,screen} {this}
+% \doifnotmode  {paper,bound}  {that} 
+
+\let\currentmode=\empty
+
+\def\enablemode[#1]%
+  {\addtocommalist{#1}\currentmode}
+
+\def\disablemode[#1]%
+  {\removefromcommalist{#1}\currentmode}
+
+\long\def\doifmodeelse#1#2#3%
+  {\expandafter\doifcommonelse\expandafter{\currentmode}{#1}{#2}{#3}}
+
+\long\def\doifmode#1#2%
+  {\expandafter\doifcommonelse\expandafter{\currentmode}{#1}{#2}{}}
+
+\long\def\doifnotmode#1#2%
+  {\expandafter\doifcommonelse\expandafter{\currentmode}{#1}{}{#2}}
+
+\protect 
+
+\endinput

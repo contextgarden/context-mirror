@@ -463,7 +463,7 @@
 %D When expansion of a macro gives problems, we can precede it
 %D by \type{\donottest}. It seems that protection is one of the
 %D burdens of developers of packages, so maybe that's why in
-%D e-\TeX\ protection will be solved in a more robust way.
+%D \ETEX\ protection is solved in a more robust way.
 %D
 %D Sometimes prefixing the macro with \type{\donottest} leads
 %D to defining an auxiliary macro, like
@@ -509,16 +509,16 @@
 %D 
 %D Well, in fact we use the bit more versaatile alternative: 
 
-\def\dosetunexpanded#1#2%
+\ifnoETEX \def\dosetunexpanded#1#2%
   {\@EA#1\@EA{\@EA#2\@EA}%
      \@EA{\@EA\donottest\csname\s!do\@EA\string\csname#2\endcsname\endcsname}%
    \@EA#1{\s!do\@EA\string\csname#2\endcsname}}
 
-\def\docomunexpanded#1#2%
+\ifnoETEX \def\docomunexpanded#1#2%
   {\@EA#1\@EA#2\@EA{\@EA\donottest\csname\s!do\string#2\endcsname}%
    \@EA#1\csname\s!do\string#2\endcsname}
 
-\def\unexpanded#1%
+\ifnoETEX \def\unexpanded#1%
   {\def\dounexpanded%
      {\ifx\next\bgroup
         \@EA\dosetunexpanded
@@ -526,6 +526,8 @@
         \@EA\docomunexpanded
       \fi#1}%
    \futurelet\next\dounexpanded}
+
+\doifETEX \let\unexpanded=\normalprotected
 
 %D This one accepts the more direct \type{\def} and cousins 
 %D as well as the \CONTEXT\ specific \type{\setvalue} ones. 
@@ -679,7 +681,14 @@
    \else
      \let\donottest=\doprocesstest#2%
    \fi}
+
+\doifETEX \def\ifundefined#1%
+  {\unless\ifcsname#1\endcsname}
 
+\doifETEX \def\p!doifundefined#1%
+  {\let\donottest=\dontprocesstest
+   \unless\ifcsname#1\endcsname}
+
 %D Before we start using this variant, we used another one, 
 %D which is even a bit faster. This one looked like: 
 %D 
@@ -1305,22 +1314,23 @@
 
 \newcount\processlevel
 
-\def\v!compareprocessactionA[#1=>#2]%
+\def\v!compareprocessactionA[#1=>#2][#3]%
   {\edef\!!stringb{#1}%
    \ifx\!!stringb\s!default
+     \let\commalistelement=\empty
      #2%
    \fi}
 
-\def\v!compareprocessactionB[#1=>#2]%
+\def\v!compareprocessactionB[#1=>#2][#3]%
   {\expandedaction\!!stringb{#1}%
    \ifx\!!stringa\!!stringb
-     \def\commalistelement{#1}%
+     \def\commalistelement{#3}%
      #2%
      \let\p!doprocessaction=\gobbleoneargument
    \else
      \edef\!!stringb{#1}%
      \ifx\!!stringb\s!unknown
-       \def\commalistelement{#1}%
+       \def\commalistelement{#3}% beware of loops 
        #2%
      \fi
    \fi}
@@ -1335,7 +1345,7 @@
      \let\v!compareprocessaction=\v!compareprocessactionB
    \fi
    \def\p!doprocessaction##1%
-     {\v!compareprocessaction[##1]}%
+     {\v!compareprocessaction[##1][#1]}%
    \processcommalist[#3]\p!doprocessaction
    \expandactions}
 
@@ -1456,7 +1466,7 @@
    \expandafter\dogetfirstcharacter\!!stringa\\}
 
 %D \macros
-%D   {doifinstringelse}
+%D   {doifinstringelse, doifincsnameelse}
 %D   {}
 %D
 %D We can check for the presence of a substring in a given
@@ -1499,19 +1509,46 @@
 %D      #3%
 %D    \fi}
 %D \stoptypen
-%D
-%D And finaly it became:
+%D 
+%D Sometimes the second argument is passed as a macro. By
+%D postponing the expansion of this macro, we gain quite some
+%D run time, simply because the less tokens we pass, the faster
+%D \TEX\ runs. So finally the definition became: 
 
 \def\v!ifinstringelse#1#2%
   {\def\c!ifinstringelse##1#1##2##3\war%
      {\csname\if##2@iffalse\else iftrue\fi\endcsname}%
-   \c!ifinstringelse#2#1@@\war}
-
-\def\ifinstringelse#1#2%
-  {\expanded{\v!ifinstringelse{#1}{#2}}}
+   \expanded{\c!ifinstringelse#2#1@@\noexpand\war}} % expand #2 here
 
 \long\def\doifinstringelse#1#2#3#4%
-  {\ifinstringelse{#1}{#2}%
+  {\edef\@@instring{#1}% expand #1 here 
+   \@EA\v!ifinstringelse\@EA{\@@instring}{#2}% 
+     #3%
+   \else
+     #4%
+   \fi}
+
+%D The next alternative proved to be upto twice as fast on
+%D tasks like checking reserved words in pretty verbatim
+%D typesetting! This is mainly due to the fact that passing
+%D (expanded) strings is much slower that passing a macro. 
+%D
+%D \starttypen
+%D \doifincsnameelse {substring} {\string} {then ...} {else ...}
+%D \stoptypen
+%D 
+%D Where \type{\doifinstringelse} does as much expansion as 
+%D possible, the latter alternative does minimal (one level) 
+%D expansion. 
+
+\def\v!ifincsnameelse#1#2%
+  {\def\c!ifincsnameelse##1#1##2##3\war%
+     {\csname\if##2@iffalse\else iftrue\fi\endcsname}%
+   \@EA\c!ifincsnameelse#2#1@@\war}
+
+\long\def\doifincsnameelse#1#2#3#4%
+  {\edef\@@instring{#1}%
+   \@EA\v!ifincsnameelse\@EA{\@@instring}{#2}%
      #3%
    \else
      #4%
@@ -1615,7 +1652,7 @@
 \def\rawprocesscommalist[#1]#2%
   {\advance\commalevel by 1\relax
    \expandafter\let\csname\s!next\the\commalevel\endcsname=#2%
-   \expandafter\rawprocesscommaitem#1,],\relax
+   \expandafter\rawprocesscommaitem#1,],% \relax
    \advance\commalevel by -1\relax}
 
 \def\rawdoifinsetelse#1#2%
@@ -1679,7 +1716,7 @@
 
 \def\processunexpandedcommalist[#1]#2%
   {\def\handleunexpandedcommaitem{#2}%
-   \processunexpandedcommaitem#1,],\relax}
+   \processunexpandedcommaitem#1,],}% \relax}
 
 %D Or faster: 
 

@@ -358,7 +358,8 @@
 %D register \type{\localcolumnwidth}, which is calculated as:
 
 \def\setcolumnhsize%
-  {\setbox0=\hbox{\parindent\!!zeropoint\betweencolumns}%
+  {\setbox0=\hbox
+     {\parindent\!!zeropoint\betweencolumns}%
    \intercolumnwidth=\wd0
    \localcolumnwidth=\columntextwidth
    \edef\globalcolumnwidth{\the\localcolumnwidth}%

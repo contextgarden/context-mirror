@@ -272,8 +272,11 @@
      {\doifdefinedelse{\@@specfil@@#1}
         {\edef\currentspecialfile{\getvalue{\@@specfil@@#1}}}
         {\edef\currentspecialfile{#1}}%
-      \showmessage{\m!specials}{5}{\f!specialprefix\currentspecialfile}%
-      \readsysfile{\f!specialprefix\currentspecialfile}{}{}%
+      \makeshortfilename[\f!specialprefix\currentspecialfile]%
+      \showmessage{\m!specials}{5}{\currentspecialfile}%
+      \startreadingfile
+      \readsysfile{\shortfilename}{}{}%
+      \stopreadingfile
       \showmessage{\m!specials}{1}{\preloadedspecials}}}
 
 \def\usespecials[#1]%
@@ -426,11 +429,6 @@
 
 \protect
 
-% \startspecials
-% \stopspecials
-% \installspecial
-% \definespecial
-
 %D The following libraries are defined. Two postscript
 %D drivers are supported, as well as two mechanisms for
 %D interactive texts.
@@ -529,7 +527,9 @@
 %D schemes, we pass a lot of data to it.
 %D
 %D \starttypen
-%D \doinsertfile {type,method} {file} {xscale} {yscale} {x} {y} {w} {h} {options}
+%D \doinsertfile {type,method} {file} 
+%D               {xscale} {yscale} {x} {y} {w} {h} 
+%D               {options}
 %D \stoptypen
 %D
 %D The scale is given percents, the other values are base 
@@ -561,6 +561,50 @@
 
 \installspecial [\dostartrotation] [or] [1]
 \installspecial [\dostoprotation]  [or] [0]
+
+%D \macros
+%D   {dostartscaling,
+%D    dostopscaling}
+%D   {}
+%D
+%D Scaling is also supported:
+%D
+%D \starttypen
+%D \dostartscaling {x} {y} ... \dostopscaling
+%D \stoptypen
+%D
+%D Like the previous one, these specials are of category 
+%D \type{or}.
+
+\installspecial [\dostartscaling] [or] [2]
+\installspecial [\dostopscaling]  [or] [0]
+
+%D \macros
+%D   {dostartmirroring,
+%D    dostopmirroring}
+%D   {}
+%D
+%D And indeed, mirroring is there too:
+%D
+%D \starttypen
+%D \dostartmirroring {x} {y} ... \dostopmirroring
+%D \stoptypen
+%D
+%D Again these specials are installed as category \type{or}.
+
+\installspecial [\dostartmirroring] [or] [0]
+\installspecial [\dostopmirroring]  [or] [0]
+
+%D \macros
+%D   {dostartnegative,
+%D    dostopnegative}
+%D   {}
+%D
+%D When producing output for an image setter, negating the 
+%D page comes into view. Here are the tools:
+
+\installspecial [\dostartnegative] [or] [0]
+\installspecial [\dostopnegative]  [or] [0]
 
 %D \macros
 %D   {doselectfirstpaperbin,
@@ -724,6 +768,26 @@
 \installspecial [\dostopgotorealpage]  [and] [0]
 
 %D \macros
+%D  {dostartgotoJS, doflushJSpreamble}
+%D   
+%D
+%D Rather special is the option to include and execute 
+%D JavaScript code. This is a typical \PDF\ option.
+%D
+%D \starttypen
+%D \dostartgotoJS {w} {h} {script}
+%D \stoptypen
+%D
+%D This not so standard \TEX\ feature should be used with 
+%D care. Preamble scripts are flushed by
+%D
+%D \doflushJSpreamble {script}
+
+\installspecial [\dostartgotoJS]    [and] [3]
+\installspecial [\dostopgotoJS]     [and] [0]
+\installspecial [\doflushJSpreamble][and] [1]
+
+%D \macros
 %D   {dostartthisislocation, dostopthisislocation,
 %D    dostartthisisrealpage, dostopthisisrealpage}
 %D   {}
@@ -796,7 +860,6 @@
 %D   {dostartobject, 
 %D    dostopobject,
 %D    doinsertobject}
-%D   {}
 %D
 %D Reuse of object can reduce the output filesize 
 %D considerably. Reusable objects are implemented with: 
@@ -817,6 +880,17 @@
 \installspecial [\dostopobject]   [or] [0]
 \installspecial [\doinsertobject] [or] [1]
 
+% %D \macros
+% %D   {dogetobjectreference} 
+% %D
+% %D For very special purposes, one can ask for the internal 
+% %D reference to the object. Beware!
+% 
+% \installspecial [\dogetobjectreference] [or] [2]
+% 
+% %D The first argument is the name, the second a macro that 
+% %D gets the assiciated value.
+
 %D \macros
 %D   {dostartrunprogram, dostoprunprogram,
 %D    dostartgotoprofile, dostopgotoprofile,
@@ -833,8 +907,8 @@
 \installspecial [\dostoprunprogram]   [and] [0]
 \installspecial [\dostartgotoprofile] [and] [3]
 \installspecial [\dostopgotoprofile]  [and] [0]
-\installspecial [\dobeginofprofile]   [and] [3]
-\installspecial [\doendofprofile]     [and] [3]
+\installspecial [\dobeginofprofile]   [and] [4]
+\installspecial [\doendofprofile]     [and] [0]
 
 %D \macros
 %D   {doinsertbookmark}
@@ -854,6 +928,22 @@
 %D This definition is very \PDF\ oriented, so for more 
 %D information we kindly refer to the \PDF\ manuals. 
 
+%D \macros
+%D   {dosetpagetransition}
+%D
+%D In presentations, fancy page transitions can, at least for a
+%D short moment, let the audience focus at the screen. Like the
+%D previous one, this special is very \PDF. 
+%D
+%D \starttypen
+%D \dosetpagetransition{dissolve}
+%D \stoptypen
+%D
+%D Transitions have symbolic names, like dissolve, box, split,
+%D blinds, wipe and glitter.
+
+\installspecial [\dosetpagetransition] [or] [1]
+
 %D So far for the installation. Finally we preload our
 %D favorite set of specials.
 
@@ -866,4 +956,3 @@
 %D \stoptypen
 
 \endinput
-

@@ -8,15 +8,15 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. Non||commercial use is 
-%C granted. 
+%C therefore copyrighted by \PRAGMA. Non||commercial use is
+%C granted.
 
-%D In this rather large definition file we are going to tell 
+%D In this rather large definition file we are going to tell
 %D \CONTEXT\ which constants, variables and elements we use.
 
 \writestatus{loading}{Context Multilingual Macros / Constants}
 
-%D First come some variables. These are used as keywords and 
+%D First come some variables. These are used as keywords and
 %D therefore need a different treatment.
 
 %D \startcompressdefinitions
@@ -33,11 +33,11 @@
 
 %D \stopcompressdefinitions
 
-%D Of course we need the names of the months. 
+%D Of course we need the names of the months.
 
 %D \startcompressdefinitions
 
-\startvariables  dutch       english     german 
+\startvariables  dutch       english     german
 
         sunday:  zondag      sunday      sonntag
         monday:  maandag     monday      montag
@@ -49,13 +49,13 @@
 
 \stopvariables
 
-\startvariables  dutch       english     german 
+\startvariables  dutch       english     german
 
-       january:  januari     January     Januar 
+       january:  januari     January     Januar
       february:  februari    February    Februar
-         march:  maart       March       Maerz 
-         april:  april       April       April 
-           may:  mei         May         Mai 
+         march:  maart       March       Maerz
+         april:  april       April       April
+           may:  mei         May         Mai
           june:  juni        June        Juni
           july:  juli        July        Juli
         august:  augustus    August      August
@@ -63,6 +63,16 @@
        october:  oktober     October     Oktober
       november:  november    November    November
       december:  december    December    Dezember
+
+\stopvariables
+
+%D Next we introduce some general label bound variables:
+
+\startvariables  dutch       english     german
+
+      oppagina:  oppagina    atpage      oppagina   % TOBIAS/SEBASTIAN
+     hierboven:  hierboven   hencefore   hierboven  % TOBIAS/SEBASTIAN
+     hieronder:  hieronder   hereafter   hieronder  % TOBIAS/SEBASTIAN
 
 \stopvariables
 
@@ -89,12 +99,12 @@
 
             bijlage:  bijlage              appendix            anhang
            bijlagen:  bijlagen             appendices          anhaenge
-         hoofdtekst:  hoofdtekst           maintext            haupttext
-       hoofdteksten:  hoofdteksten         maintexts           haupttexte
-          inleiding:  inleiding            introduction        einleitung
-        inleidingen:  inleidingen          introductions       einleitungen
-         uitleiding:  uitleiding           extroduction        epilog
-       uitleidingen:  uitleidingen         extroductions       epiloge
+         hoofdtekst:  hoofdtekst           bodypart            haupttext
+       hoofdteksten:  hoofdteksten         bodymatter          haupttexte
+          inleiding:  inleiding            frontpart           einleitung
+        inleidingen:  inleidingen          frontmatter         einleitungen
+         uitleiding:  uitleiding           backpart            epilog
+       uitleidingen:  uitleidingen         backmatter          epiloge
 
            voetnoot:  voetnoot             footnote            fussnote
 
@@ -120,7 +130,7 @@
 \startvariables       dutch                english             german
 
             formule:  formule              formula             formel
-           formules:  formules             formulas            formeln
+           formules:  formules             formulae            formeln
 
              figuur:  figuur               figure              abbildung
             figuren:  figuren              figures             abbildungen
@@ -129,7 +139,7 @@
             grafiek:  grafiek              graphic             grafik
           grafieken:  grafieken            graphics            grafiken
          intermezzo:  intermezzo           intermezzo          intermezzo
-        intermezzos:  intermezzos          intermezzos         intermezzi
+        intermezzos:  intermezzos          intermezzi          intermezzi
 
               index:  index                index               index
             indices:  indices              indices             indizies
@@ -201,6 +211,7 @@
                bron:  bron                 source              quelle
            commando:  commando             command             befehl
           commandos:  commandos            commands            befehle
+      contrastkleur:  contrastkleur        contrastcolor       kontrastfarbe
           conversie:  conversie            conversion          konversion
           criterium:  criterium            criterium           kriterium
               datum:  datum                date                datum
@@ -213,12 +224,12 @@
               dummy:  dummy                dummy               dummy
             eenheid:  eenheid              unit                einheit
         eigennummer:  eigennummer          ownnumber           eigenenummer
-      contrastkleur:  contrastkleur        contrastcolor       kontrastfarbe
            expansie:  expansie             expansion           expansion
              factor:  factor               factor              faktor
                file:  file                 file                datei
             formaat:  formaat              size                groesse
              gebied:  gebied               directory           verzeichnis
+               grid:  grid                 grid                grid % TOBIAS
               groot:  groot                big                 gross
                haal:  haal                 get                 hole
                hang:  hang                 hang                haengend
@@ -250,12 +261,13 @@
            kopkleur:  kopkleur             headcolor           kopffarbe
           kopletter:  kopletter            headstyle           kopfschrift
               kopna:  kopna                afterhead           nachkopf
-          kopoffset:  kopoffset            topoffset           kopfoffset 
+          kopoffset:  kopoffset            topoffset           kopfoffset
           koppeling:  koppeling            coupling            verknuepfung
             kopvoor:  kopvoor              beforehead          vorkopf
              kopwit:  kopwit               topspace            kopfspatium
-              korps:  korps                corps               fliesstext
+              korps:  korps                bodyfont            fliesstext
               label:  label                label               label
+               leeg:  leeg                 empty               leer
              letter:  letter               style               schrift
                lijn:  lijn                 line                linie
           lijndikte:  lijndikte            linethickness       liniendicke
@@ -281,7 +293,7 @@
               marge:  marge                margin              marginalie
        margeafstand:  margeafstand         margindistance      marginalabstand
          margetekst:  margetekst           margintext          marginaltext
-          markering:  markering            mark                beschriftung
+          markering:  markering            marking             beschriftung
            markleur:  markleur             marcolor            beschrfarbe
           marletter:  marletter            marstyle            beschrschrift
                menu:  menu                 menu                menue
@@ -321,6 +333,7 @@ onbekendeverwijzing:  verwijzing           unknownreference    unbekantereferenz
        paginaletter:  paginaletter         pagestyle           seitenschrift
        paginanummer:  paginanummer         pagenumber          seitennummer
    paginaovergangen:  paginaovergangen     pageboundaries      seitenbegrenzung
+              palet:  palet                palet               palette
              papier:  papier               paper               papier
              plaats:  plaats               location            platz
     plaatsafsluiter:  plaatsafsluiter      placestopper        setzetrenner
@@ -345,6 +358,7 @@ rechtermargeafstand:  rechtermargeafstand  rightmargindistance rechterrandabstan
  rechterrandafstand:  rechterrandafstand   rightedgedistance   rechterkantenabstand
        rechtertekst:  rechtertekst         righttext           rechtertext
              rechts:  rechts               right               rechts
+           reductie:  reductie             reduction           reduktion % --
           refereren:  refereren            referencing         referieren
               regel:  regel                line                zeile
      regelcorrectie:  regelcorrectie       linecorrection      zeilekorrektur
@@ -406,7 +420,7 @@ rechtermargeafstand:  rechtermargeafstand  rightmargindistance rechterrandabstan
               wijze:  wijze                way                 art
                 wit:  wit                  white               weiss
                xmax:  xmax                 xmax                xmax
-            xschaal:  xschaal              xscale              xformat 
+            xschaal:  xschaal              xscale              xformat
             xoffset:  xoffset              xoffset             xoffset
               xstap:  xstap                xstep               xschritt
             xfactor:  xfactor              xfactor             xfaktor
@@ -414,7 +428,7 @@ rechtermargeafstand:  rechtermargeafstand  rightmargindistance rechterrandabstan
             yschaal:  yschaal              yscale              yformat
             yoffset:  yoffset              yoffset             yoffset
               ystap:  ystap                ystep               yschritt
-            yfactor:  yfactor              yfactor             yfaktor 
+            yfactor:  yfactor              yfactor             yfaktor
                 zij:  zij                  side                objektabstand
        zelfdepagina:  zelfdepagina         samepage            selbeseite
 
@@ -434,6 +448,8 @@ rechtermargeafstand:  rechtermargeafstand  rightmargindistance rechterrandabstan
           aanelkaar:  aanelkaar            serried             kleinerabstand
         aansluitend:  aansluitend          joinedup            keinabstand
            absoluut:  absoluut             absolute            absolut
+          achteruit:  achteruit            backward            backward % TOBIAS
+              actie:  actie                action              aktion % TOBIAS
           afsluiter:  afsluiter            stopper             trenner
         achtergrond:  achtergrond          background          hintergrund
               alles:  alles                all                 alles
@@ -461,12 +477,15 @@ rechtermargeafstand:  rechtermargeafstand  rightmargindistance rechterrandabstan
         enkelzijdig:  enkelzijdig          singlesided         einzelseitig
                even:  even                 even                gerade
              extern:  extern               external            extern
+               file:  file                 file                datei
            flexibel:  flexibel             flexible            flexibel
             forceer:  forceer              force               zwinge
            gebruikt:  gebruikt             used                verwende
                geen:  geen                 none                kein
+      geenmarkering:  geenmarkering        nomarking           keinebeschriftung
             geenwit:  geenwit              nowhite             keinweiss
             globaal:  globaal              global              global
+               grid:  grid                 grid                grid % TOBIAS
               groot:  groot                big                 gross
       grotevoorkeur:  grotevoorkeur        bigpreference       grosszuegig
            handhaaf:  handhaaf             keep                behalte
@@ -509,10 +528,12 @@ rechtermargeafstand:  rechtermargeafstand  rightmargindistance rechterrandabstan
              letter:  letter               character           buchstabe
             Letters:  Letters              Characters          Buchstaben
             letters:  letters              characters          buchstaben
+            liggend:  liggend              landscape           landscape % - TOBIAS
                lijn:  lijn                 line                linie
              linker:  linker               left                linker
         linkermarge:  linkermarge          leftmargin          linkerrand
          linkerrand:  linkerrand           leftedge            linkekante
+       linkerpagina:  linkerpagina         leftpage            linkerseite
               links:  links                left                links
              lokaal:  lokaal               local               lokal
               maand:  maand                month               monat
@@ -526,10 +547,12 @@ rechtermargeafstand:  rechtermargeafstand  rightmargindistance rechterrandabstan
                naam:  naam                 name                name
               naast:  naast                opposite            gegenueber
                 nee:  nee                  no                  nein
+           negatief:  negatief             negative            negativ % - TOBIAS
                niet:  niet                 not                 nicht
               nooit:  nooit                never               nie
             normaal:  normaal              normal              normal
              nummer:  nummer               number              nummer
+             offset:  offset               offset              offset
            onbekend:  onbekend             unknown             unbekannt
               onder:  onder                bottom              unten
              oneven:  oneven               odd                 ungerade
@@ -539,9 +562,11 @@ rechtermargeafstand:  rechtermargeafstand  rightmargindistance rechterrandabstan
             overlay:  overlay              overlay             overlay
              pagina:  pagina               page                seite
        paginanummer:  paginanummer         pagenumber          seitennummer
+             papier:  papier               paper               papier     % - TOBIAS
             passend:  passend              fit                 passend
                 per:  per                  by                  pro
          postscript:  postscript           postscript          postscript
+          programma:  programma            program             programm
                punt:  punt                 dot                 punkt
                rand:  rand                 edge                kante
              raster:  raster               screen              raster
@@ -549,23 +574,29 @@ rechtermargeafstand:  rechtermargeafstand  rightmargindistance rechterrandabstan
             rechter:  rechter              right               rechter
        rechtermarge:  rechtermarge         rightmargin         rechterrand
         rechterrand:  rechterrand          rechterrand         rechterkante
+      rechterpagina:  rechterpagina        rightpage           rechterseite
              rechts:  rechts               right               rechts
               regel:  regel                line                zeile
            relatief:  relatief             relative            relativ
               reset:  reset                reset               zuruecksetzten
+        willekeurig:  willekeurig          random              random % - TOBIAS
             Romeins:  Romeins              Romannumerals       Roemischezahlen
             romeins:  romeins              romannumerals       roemischezahlen
                rond:  rond                 round               rund
+             roteer:  roteer               rotate              drehe
                ruim:  ruim                 broad               breit
+             scherm:  papier               screen              bildschirm % - TOBIAS
              schuin:  schuin               slanted             geneigt
           schuinvet:  schuinvet            slantedbold         geneigtfett
        sectienummer:  sectienummer         sectionnumber       abschnittsnummer
                smal:  smal                 tall                schmall
              soepel:  soepel               tolerant            tolerant
+         gespiegeld:  gespiegeld           mirrored            mirrored % - TOBIAS
+          geroteerd:  geroteerd            rotated             rotated  % - TOBIAS
           standaard:  standaard            standard            standard
               start:  start                start               start
                stop:  stop                 stop                stop
-             streng:  streng               rigged              streng
+             streng:  streng               strict              streng
                 sub:  sub                  sub                 sub
                 sym:  sym                  sym                 sym
                 its:  its                  its                 its
@@ -575,6 +606,7 @@ rechtermargeafstand:  rechtermargeafstand  rightmargindistance rechterrandabstan
                test:  test                 test                test
                type:  type                 type                tippen
                 uit:  uit                  off                 aus
+                URL:  URL                  URL                 URL 
                vast:  vast                 fixed               fest
              verder:  verder               continue            fortsetzten
           vertikaal:  vertikaal            vertical            vertikal
@@ -583,6 +615,7 @@ rechtermargeafstand:  rechtermargeafstand  rightmargindistance rechterrandabstan
             viertal:  viertal              quadruple           viertel
                voet:  voet                 footer              fusszeile
            volgende:  volgende             next                folgende
+            vooruit:  vooruit              forward             forward % TOBIAS
            voorkeur:  voorkeur             preference          einstellung
           voorlopig:  voorlopig            temporary           temporaer
              vorige:  vorige               previous            vorig
@@ -593,7 +626,7 @@ rechtermargeafstand:  rechtermargeafstand  rightmargindistance rechterrandabstan
                 wit:  wit                  white               weiss
                zeer:  zeer                 very                sehr
          zeersoepel:  zeersoepel           verytolerant        sehrtolerant
-         zeerstreng:  zeerstreng           veryrigged          sehrstreng
+         zeerstreng:  zeerstreng           verystrict          sehrstreng
 
 \stopvariables
 
@@ -610,16 +643,18 @@ rechtermargeafstand:  rechtermargeafstand  rightmargindistance rechterrandabstan
                  dy:  dy
                  nx:  nx
                  ny:  ny
+                 sx:  sx
+                 sy:  sy
                   n:  n
                vfil:  vfil
                hfil:  hfil
               strut:  strut
               reset:  reset
                 set:  set
-                
+
              escape:  escape
-                
-                apa:  apa 
+
+                apa:  apa
 
 \stopconstants
 
@@ -632,7 +667,7 @@ rechtermargeafstand:  rechtermargeafstand  rightmargindistance rechterrandabstan
 
 \startconstants       dutch                english             german
 
-        calligrafie:  calligrafie          calligraphy         kalligraphie
+        calligrafie:  calligrafie          calligraphic        kalligraphie
         handschrift:  handschrift          handwritten         handschrift
         schreefloos:  schreefloos          sansserif           grotesk
              romaan:  romaan               roman               antiqua
@@ -643,7 +678,7 @@ rechtermargeafstand:  rechtermargeafstand  rightmargindistance rechterrandabstan
 
 \startvariables       dutch                english             german
 
-        calligrafie:  calligrafie          calligraphy         kalligraphie
+        calligrafie:  calligrafie          calligraphic        kalligraphie
         handschrift:  handschrift          handwritten         handschrift
         schreefloos:  schreefloos          sansserif           grotesk
              romaan:  romaan               roman               antiqua
@@ -674,7 +709,7 @@ rechtermargeafstand:  rechtermargeafstand  rightmargindistance rechterrandabstan
            synoniem:  synoniem             synonym             synonym
          synoniemen:  synoniemen           synonyms            synonyme
             sorteer:  sorteer              sort                sortiere
-           sorteren:  sorteren             sorts               sortieren   
+           sorteren:  sorteren             sorts               sortieren
                naam:  naam                 name                name
                blok:  blok                 block               block
             blokken:  blokken              blocks              bloecke
@@ -693,11 +728,12 @@ rechtermargeafstand:  rechtermargeafstand  rightmargindistance rechterrandabstan
 
 \startelements        dutch                english             german
 
-           beginvan:  beginvan             beginof             anfang
-            eindvan:  eindvan              endof               ende
+           beginvan:  beginvan             begin               anfang
+            eindvan:  eindvan              end                 ende
 
          gekoppelde:  gekoppelde           coupled             verknuepft
-                 in:  in                   -                   ein  
+                 in:  in                   -                   ein
+       instellingen:  instellingen         setups              setups % -
                leeg:  leeg                 empty               leer
                lege:  lege                 empty               leer
                laad:  laad                 load                laden
@@ -719,18 +755,21 @@ rechtermargeafstand:  rechtermargeafstand  rightmargindistance rechterrandabstan
         tabelstaart:  tabelstaart          tabletail           tabellenende
             formule:  formule              formula             formel
 
+         uitstellen:  uitstellen           postponing          verschieben
+          verbergen:  verbergen            hiding              verbergen
+
 \stopelements
 
 %D \stopcompressdefinitions
 
 %D The next set of definitions is used when accessing viewer
-%D capabilities. Their foreign nature is reflected by using 
-%D Capitals. 
+%D capabilities. Their foreign nature is reflected by using
+%D Capitals.
 
 %D \startcompressdefinitions
 
 \startvariables      dutch             english              german
- 
+
          FirstPage:  EerstePagina      FirstPage            ErsteSeite
       PreviousPage:  VorigePagina      PreviousPage         VorigeSeite
           NextPage:  VolgendePagina    NextPage             FolgendeSeite
@@ -740,10 +779,19 @@ rechtermargeafstand:  rechtermargeafstand  rightmargindistance rechterrandabstan
         SwapViewer:  WisselViewer      SwapViewer           WechseleViewer
         ExitViewer:  VerlaatViewer     ExitViewer           BeendeViewer
      CloseDocument:  SluitDocument     CloseDocument        SchliesseDokument
+      SaveDocument:  BewaarDocument    SaveDocument         SaveDocument % TOBIAS         
         ViewerHelp:  ViewerHelp        ViewerHelp           ViewerHilfe
      PrintDocument:  PrintDocument     PrintDocument        DruckeDokument
     SearchDocument:  DoorzoekDocument  SearchDocument       DokumentDurchsuchen
        SearchAgain:  HerhaalZoeken     SearchAgain          WeiterSuchen
+
+        StartMovie:  StartFilm         StartMovie           StartMovie
+         StopMovie:  StopFilm          StopMovie            StopMovie
+        PauseMovie:  PauzeerFilm       PauseMovie           PauseMovie
+       ResumeMovie:  HervatFilm        ResumeMovie          ResumeMovie
+
+         ResetForm:  ResetFormulier    ResetForm            ResetForm   % TOBIAS
+        SubmitForm:  VerzendFormulier  SubmitForm           SubmitForm  % TOBIAS
 
 \stopvariables
 
@@ -767,7 +815,7 @@ rechtermargeafstand:  rechtermargeafstand  rightmargindistance rechterrandabstan
            rekening:  rekening
             sticker:  sticker
               sheet:  sheet
-              brief:  brief       
+              brief:  brief
                  ls:  ls
               avery:  avery
 \stopvariables
@@ -775,4 +823,3 @@ rechtermargeafstand:  rechtermargeafstand  rightmargindistance rechterrandabstan
 %D \stopcompressdefinitions
 
 \endinput
-

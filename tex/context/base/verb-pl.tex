@@ -1,0 +1,452 @@
+%D \module
+%D   [       file=verb-pl,
+%D        version=1997.12.22,
+%D          title=\CONTEXT\ Verbatim Macros,
+%D       subtitle=Pretty \PERL\ Verbatim,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. Non||commercial use is
+%C granted.
+
+\writestatus{loading}{Context Support Macros / Pretty PERL Verbatim}
+
+%D When I rewrote \TEXUTIL\ in \PERL\ I decided to write a 
+%D pretty \PERL\ interpreter too. In fact, this was the main 
+%D reason for rewriting the pretty verbatim mechanisms to 
+%D handle more that \TEX. 
+%D
+%D \startPL 
+%D $alfa = $beta{gamma};
+%D if ($alfa="delta") 
+%D  { print "epsilon" }
+%D \stopPL
+%D 
+%D When looking at the macros, watch the \type{\doglobal}'s! 
+%D They're something \CONTEXT\ specific. 
+
+\unprotect
+
+%D \macros
+%D   {prettyPLvariables}
+%D
+%D Identifiers and system variables get a special treatment. 
+%D One can disable this option for the variables by resetting 
+%D the next switch.
+
+\doglobal\newif\ifprettyPLvariables 
+
+\global\prettyPLvariablestrue
+
+%D As said before, the global assignment is needed in 
+%D \CONTEXT\ (for once||only loading on demand). 
+
+\doglobal\newif\ifinPLsingle
+\doglobal\newif\ifinPLdouble
+\doglobal\newif\ifinPLcomment
+\doglobal\newif\ifPLverbose
+
+\newcount\PLverboseskipped
+
+\gdef\PLverbosecorrection%
+  {\ifnum\PLverboseskipped>0
+     \loop
+       \obeyedspace
+       \advance\PLverboseskipped by -1
+       \ifnum\PLverboseskipped>0
+     \repeat
+   \fi}
+
+\gdef\PLsetcontrols%
+  {\saveprettycontrols
+   \def\obeyedspace%
+     {\endPLtypesix
+      \ifPLverbose
+        \advance\PLverboseskipped by 1
+      \else
+        \oldobeyedspace
+      \fi}%
+   \def\obeyedline%
+     {\endPLtypesix
+      \global\inPLcommentfalse
+      \PLverbosefalse
+      \PLverboseskipped=0 
+      \oldobeyedline}%
+   \def\obeyedpage%
+     {\endPLtypesix
+      \global\inPLcommentfalse
+      \oldobeyedpage}%
+   \let\obeytabs=\ignoretabs}
+
+\gdef\setupprettyPLtype%
+  {\def\prettyidentifier{PL}%
+   \PLsetvariables
+   \PLsetcontrols
+   \PLsethandlers
+   \PLsetspecials
+   \PLsetdiagnostics}
+
+\gdef\PLsetvariables%
+  {\global\inPLsinglefalse
+   \global\inPLdoublefalse
+   \global\inPLcommentfalse
+   \global\let\PLsequence=\empty
+   \global\let\PLprefix=\empty}
+
+\gdef\PLsetspecials%
+  {\setpretty`\{=10 \setpretty`\}=10
+   \setpretty`\$=21 \setpretty`\@=21 \setpretty`\%=22
+   \setpretty`\[=31 \setpretty`\]=31 \setpretty`\(=32 \setpretty`\)=32
+   \setpretty`\==32 \setpretty`\~=32 \setpretty`\<=32 \setpretty`\>=32
+   \setpretty`\-=41 \setpretty`\+=41 \setpretty`\/=41 \setpretty`\*=41
+   \setpretty`\|=41 \setpretty`\`=41 \setpretty`\!=41 \setpretty`\?=41
+   \setpretty`\^=41 \setpretty`\&=42
+   \setpretty`\\=50
+   \setpretty`\1=61 \setpretty`\2=61 \setpretty`\3=61 \setpretty`\4=61
+   \setpretty`\5=61 \setpretty`\6=61 \setpretty`\7=61 \setpretty`\8=61
+   \setpretty`\9=61 \setpretty`\0=61 \setpretty`\_=61
+   \setpretty`\A=62 \setpretty`\B=62 \setpretty`\C=62 \setpretty`\D=62 \setpretty`\E=62
+   \setpretty`\F=62 \setpretty`\G=62 \setpretty`\H=62 \setpretty`\I=62 \setpretty`\J=62
+   \setpretty`\K=62 \setpretty`\L=62 \setpretty`\M=62 \setpretty`\N=62 \setpretty`\O=62
+   \setpretty`\P=62 \setpretty`\Q=62 \setpretty`\R=62 \setpretty`\S=62 \setpretty`\T=62
+   \setpretty`\U=62 \setpretty`\V=62 \setpretty`\W=62 \setpretty`\X=62 \setpretty`\Y=62
+   \setpretty`\Z=62
+   \setpretty`\a=62 \setpretty`\b=62 \setpretty`\c=62 \setpretty`\d=62 \setpretty`\e=62
+   \setpretty`\f=62 \setpretty`\g=62 \setpretty`\h=62 \setpretty`\i=62 \setpretty`\j=62
+   \setpretty`\k=62 \setpretty`\l=62 \setpretty`\m=62 \setpretty`\n=62 \setpretty`\o=62
+   \setpretty`\p=62 \setpretty`\q=62 \setpretty`\r=62 \setpretty`\s=62 \setpretty`\t=62
+   \setpretty`\u=62 \setpretty`\v=62 \setpretty`\w=62 \setpretty`\x=62 \setpretty`\y=62
+   \setpretty`\z=62
+   \setpretty`\;=71 \setpretty`\:=72 \setpretty`\,=71 \setpretty`\.=71
+   \setpretty`\'=80
+   \setpretty`\"=90
+   \setpretty`\#= 0 }
+
+\gdef\PLsethandlers%
+  {\installprettyhandler 10 \PLtypeone
+   \installprettyhandler 21 \PLtypetwo
+   \installprettyhandler 22 \PLtypetwo
+   \installprettyhandler 31 \PLtypethree
+   \installprettyhandler 32 \PLtypethree
+   \installprettyhandler 41 \PLtypefourone
+   \installprettyhandler 42 \PLtypefourtwo
+   \installprettyhandler 50 \PLtypefive
+   \installprettyhandler 61 \PLtypesixone
+   \installprettyhandler 62 \PLtypesixtwo
+   \installprettyhandler 71 \PLtypesevenone
+   \installprettyhandler 72 \PLtypeseventwo
+   \installprettyhandler 80 \PLtypeeight
+   \installprettyhandler 90 \PLtypenine
+   \installprettyhandler  0 \PLtypezero}
+
+\gdef\PLtypeone#1%
+  {\ifinPLdouble
+     \PLverbosefalse
+     \ifx\PLprefix\empty
+       \endPLtypesix
+       \getpretty{#1}%
+     \else
+       \endPLtypesix
+       \xdef\PLprefix{\getpretty{#1}}%
+       \beginofpretty[\!!prettyone]\getpretty{#1}\endofpretty
+     \fi
+   \else
+     \endPLtypesix
+     \ifinPLcomment
+       \getpretty{#1}%
+     \else\ifinPLsingle
+       \getpretty{#1}%
+     \else
+       \beginofpretty[\!!prettyone]\getpretty{#1}\endofpretty
+     \fi\fi
+   \fi}
+
+\gdef\PLtypetwo#1%
+  {\endPLtypesix
+   \xdef\PLprefix{\getpretty{#1}}%
+   \ifinPLcomment
+     \getpretty{#1}%
+   \else\ifinPLsingle
+     \getpretty{#1}%
+   \else\ifinPLdouble
+     \getprettydata{#1}%
+     \ifnum\prettytype=21
+       \beginofpretty[\!!prettytwo]\getpretty{#1}\endofpretty
+     \else
+       \getpretty{#1}%
+     \fi
+   \else
+     \beginofpretty[\!!prettytwo]\getpretty{#1}\endofpretty
+   \fi\fi\fi}
+
+\gdef\PLtypethree#1%
+  {\endPLtypesix
+   \ifinPLcomment
+     \getpretty{#1}%
+   \else\ifinPLsingle
+     \getpretty{#1}%
+   \else\ifinPLdouble
+     \getprettydata{#1}%
+     \ifnum\prettytype=31
+       \ifx\PLprefix\empty
+         \getpretty{#1}%
+       \else
+         \beginofpretty[\!!prettythree]\getpretty{#1}\endofpretty
+       \fi
+     \else
+       \getpretty{#1}%
+     \fi
+   \else
+     \beginofpretty[\!!prettythree]\getpretty{#1}\endofpretty
+   \fi\fi\fi}
+
+\gdef\PLtypefourone#1%
+  {\endPLtypesix
+   \ifinPLcomment
+     \getpretty{#1}%
+   \else\ifinPLsingle
+     \getpretty{#1}%
+   \else\ifinPLdouble
+     \getpretty{#1}%
+   \else
+     \beginofpretty[\!!prettyfour]\getpretty{#1}\endofpretty
+   \fi\fi\fi}
+
+\gdef\doPLtypefourtwo#1#2%
+  {\PLverbosefalse
+   \getprettydata{#2}%
+   \ifnum\prettytype=62
+     \expandafter\PLtypetwo
+   \else
+     \expandafter\PLtypefourone
+   \fi
+   {#1}#2}
+
+\gdef\PLtypefourtwo%
+  {\handlenextnextpretty\doPLtypefourtwo\PLtypefourone}
+
+\gdef\doPLtypefiveA#1#2%
+  {\endPLtypesix
+   \ifinPLcomment
+     \getpretties{#1}{#2}%
+   \else\ifinPLsingle
+     \getprettydata{#2}%
+     \ifnum\prettytype=50
+       \beginofpretty[\!!prettytwo]\getpretties{#1}{#2}\endofpretty
+     \else\ifnum\prettytype=80
+       \beginofpretty[\!!prettytwo]\getpretties{#1}{#2}\endofpretty
+     \else
+       \getpretties{#1}{#2}%
+     \fi\fi
+   \else
+     \beginofpretty[\!!prettytwo]\getpretties{#1}{#2}\endofpretty
+   \fi\fi}
+
+\gdef\doPLtypefiveB#1%
+  {\endPLtypesix
+   \ifinPLcomment
+     \getpretty{#1}%
+   \else\ifinPLsingle
+     \getpretty{#1}%
+   \else
+     \beginofpretty[\!!prettytwo]\getpretty{#1}\endofpretty
+   \fi\fi}
+
+\gdef\PLtypefive%
+  {\ifPLverbose
+     \expandafter\PLtypesixtwo
+   \else
+     \expandafter\handlenextnextpretty\expandafter\doPLtypefiveA\expandafter\doPLtypefiveB
+   \fi}
+
+\gdef\endPLtypesix%
+  {\ifx\PLsequence\empty\else
+     \ifinPLsingle
+       \PLsequence
+     \else\ifinPLdouble
+       \PLsequence
+     \else\ifPLverbose
+       \beginofpretty[\!!prettytwo]\PLsequence\endofpretty
+       \PLverbosefalse
+     \else\ifx\PLprefix\empty
+       \doifprettyidentifierelse{\PLsequence}{\PLverboses}
+         {\PLverbosetrue\PLverboseskipped=3 }
+         {\doifprettyidentifierelse{\PLsequence}{\PLidentifiers}
+            {\beginofpretty[\!!prettytwo]%
+               {\prettyidentifierfont\PLsequence}%
+             \endofpretty}
+            {\ifprettyPLvariables
+               \doifprettyidentifierelse{\PLsequence}{\PLvariables}
+                 {\beginofpretty[\!!prettytwo]%
+                    {\prettyvariablefont\PLsequence}%
+                  \endofpretty}
+                 {\PLsequence}%
+             \else
+               \PLsequence
+             \fi}}%
+     \else\ifprettyPLvariables
+       \doifprettyidentifierelse{\PLprefix\PLsequence}{\PLvariables}
+         {\beginofpretty[\!!prettytwo]%
+            {\prettyvariablefont\PLsequence}%
+          \endofpretty}
+         {\PLsequence}%
+     \else
+       \PLsequence
+     \fi\fi\fi\fi\fi
+     \global\let\PLsequence=\empty
+     \global\let\PLprefix=\empty
+   \fi}
+
+\gdef\PLtypesixone%
+  {\ifx\PLsequence\empty
+     \expandafter\getpretty
+   \else
+     \expandafter\PLtypesixtwo
+   \fi}
+
+\gdef\PLtypesixtwo#1%
+  {\ifinPLcomment
+     \getpretty{#1}%
+   \else\ifinPLsingle
+     \getpretty{#1}%
+   \else\ifinPLdouble
+     \ifx\PLprefix\empty
+       \getpretty{#1}%
+     \else
+       \xdef\PLsequence{\PLsequence\getpretty{#1}}%
+     \fi
+   \else
+     \xdef\PLsequence{\PLsequence\getpretty{#1}}%
+   \fi\fi\fi}
+
+\gdef\PLtypesevenone#1%
+  {\endPLtypesix
+   \getpretty{#1}}
+
+\gdef\PLtypeseventwo%
+  {\handlenextnextpretty\doPLtypeseventwo\PLtypesevenone}
+
+\gdef\doPLtypeseventwo#1#2%
+  {\getprettydata{#2}%
+   \ifnum\prettytype=72
+     \PLtypesixtwo{#1}\PLtypesixtwo{#1}%
+   \else
+     \PLtypesevenone{#1}\expandafter#2%
+   \fi}
+
+\gdef\PLtypeeight#1% single quote
+  {\endPLtypesix
+   \ifinPLcomment
+     \getpretty{#1}%
+   \else\ifinPLdouble
+     \getpretty{#1}%
+   \else\ifinPLsingle
+     \global\inPLsinglefalse
+     \beginofpretty[\!!prettyfour]\getpretty{#1}\endofpretty
+   \else
+     \global\inPLsingletrue
+     \beginofpretty[\!!prettyfour]\getpretty{#1}\endofpretty
+   \fi\fi\fi}
+
+\gdef\PLtypenine#1% double quote
+  {\endPLtypesix
+   \ifinPLcomment
+     \getpretty{#1}%
+   \else\ifinPLsingle
+     \getpretty{#1}%
+   \else\ifinPLdouble
+     \global\inPLdoublefalse
+     \beginofpretty[\!!prettyone]\getpretty{#1}\endofpretty
+   \else
+     \global\inPLdoubletrue
+     \beginofpretty[\!!prettyone]\getpretty{#1}\endofpretty
+   \fi\fi\fi}
+
+% \gdef\PLtypezero%
+%   {\endPLtypesix
+%    \handlenewpretty\doPLtypezero}
+
+\gdef\PLtypezero%
+  {\endPLtypesix
+   \ifnewpretty\expandafter\handlenewpretty\fi\doPLtypezero}
+
+\gdef\doPLtypezero#1%
+  {\ifinPLcomment
+     \getpretty{#1}%
+   \else
+     \global\inPLcommenttrue
+     \PLverbosecorrection
+     \beginofpretty[\!!prettythree]\getpretty{#1}\endofpretty
+   \fi}
+
+\gdef\doreportprettyPLtype#1#2#3#4%
+  {#1%
+     [PERL \string#2 typing conflict, use \string#3 instead]
+     \writestatus
+       {PERL typing}
+       {use \string#3 instead of \string#2 to enable propper visualization}%
+     \global#4%
+     \expandafter\doemptyverbatimline
+   \fi}
+
+\gdef\reportprettyPLtype%
+  {\doreportprettyPLtype\ifinPLsingle'\'\inPLsinglefalse
+   \doreportprettyPLtype\ifinPLdouble"\"\inPLdoublefalse}
+
+\gdef\PLsetdiagnostics%
+  {\let\normaldoemptyverbatimline=\doemptyverbatimline
+   \def\doemptyverbatimline%
+     {\normaldoemptyverbatimline
+      \reportprettyPLtype}}
+
+%D The official \PERL\ version 5 keywords:
+
+\useprettyidentifiers \PLidentifiers \PLsetspecials
+  abs accept alarm and atan atan2 bind binmode bless caller
+  chdir chmod chomp chop chown chr chroot close closedir cmp
+  connect continue cos crypt dbmclose dbmopen defined delete
+  die do dump each echo else elsif endgrent endhostent
+  endnetent endprotoend endpwent endservent eof eq eval exec
+  exists exit exp fcntl fileno flock for foreach fork format
+  formline getc getgrent getgrgid getgrnam gethostbyaddr
+  gethostbyname gethostent getlogin getnetbyaddr getnetbyname
+  getnetent getpeername getpgrp getppid getpriority
+  getprotobyname getprotobynumber getprotoent getpwent
+  getpwnam getpwuid getservbyname getservbyport getservent
+  getsockname getsockopt glob gmtime goto grep gt hex if
+  import index int integer ioctl join keys kill last lc
+  lcfirst le length lib link listen local localtime log lstat
+  lt map method mkdir msgctl msgget msgrcv msgsnd my ne next
+  no not oct open opendir or ord pack package pipe pop pos
+  print printf process prompt push quotemeta rand read readdir
+  readlink recv redo ref rename require reset return reverse
+  rewinddir rindex rmdir scalar seek seekdir select semctl
+  semget semop send setgrent sethostent setnetent setpgrp
+  setpriority setprotoent setpwent setservent setsockopt shift
+  shmctl shmget shmread shmwrite shutdown sin sleep socket
+  socketpair sort splice split sprintf sqrt srand stat strict
+  study sub subs substr symlink syscall sysopen sysread system
+  syswrite tell telldir tie tied time times times truncate uc
+  ucfirst ucmask umask unary undef unless unlink unpack
+  unshift untie until use utime values vars vec wait waitpid
+  wantarray warn warn while write xor
+
+%D Additional module keywords (still incomplete):
+
+\useprettyidentifiers \PLvariables \PLsetspecials
+  Getopt::Long
+  $Getopt::Long::passthrough
+  $Getopt::Long::autoabbrev
+  &GetOptions
+
+%D A funny hack. When prefixes by \type{TEX}, a \type{\csname}
+%D is typeset as \TEX\ sequence. 
+
+\useprettyidentifiers \PLverboses \PLsetspecials
+  TEX
+
+\protect 
+
+\endinput 

@@ -1,8 +1,11 @@
 % NOT YET DOCUMENTED !!
+%
+% overal \normalinput 
+
  
 %D \module
 %D   [       file=core-fil,
-%D        version=1997.09.10,
+%D        version=1997.11.15,
 %D          title=\CONTEXT\ Core Macros,
 %D       subtitle=File Support,
 %D         author=Hans Hagen,
@@ -16,20 +19,88 @@
 \writestatus{loading}{Context Core Macros / File Support}
 
 \unprotect
+
+%D \macros 
+%D   {definefilename}
+%D
+%D One of the problems with loading files is that their names 
+%D can depend on the interface language. We therefore need a 
+%D method to define filesynonyms. The actual synonyms are 
+%D defined elsewhere, but look like:
+%D 
+%D \starttypen
+%D \definefilesynonym  [chemic]   [chemie]
+%D \definefilesynonym  [einheit]  [eenheid]
+%D \definefilesynonym  [unit]     [eenheid]
+%D \stoptypen
+%D 
+%D So we can say in english:
+%D 
+%D \starttypen
+%D \usemodules[pictex,chemic,unit]
+%D \stoptypen
+%D 
+%D and in dutch:
+%D 
+%D \starttypen
+%D \usemodules[pictex,chemie,eenheid]
+%D \stoptypen
 
-% Why does all tex's handle 8+3 different.
+\def\definefilesynonym%
+  {\dodoubleempty\dodefinefilesynonym}
 
-\def\makeshortmodulename[#1#2#3#4#5#6#7#8#9]%
-  {\def\modulename{#1#2#3#4#5#6#7#8.}%
-   \expandafter\beforesplitstring\modulename\at.\to\modulename}
+\def\dodefinefilesynonym[#1][#2]%
+  {\lowercase{\setevalue{\??fs#1}{#2}}}
+
+%D \macros 
+%D   {truefilename}
+%D
+%D At the system level such a filename can be called upon by 
+%D saying:
+%D 
+%D \starttypen
+%D \truefilename{filename/filesynonym}
+%D \stoptypen
+
+\def\truefilename#1%
+  {\ifundefined{\??fs#1}#1\else\getvalue{\??fs#1}\fi}
+
+%D \macros
+%D   {makeshortfilename}
+%D
+%D To prevent cross platform problems with filenames, we
+%D lowercase them as well as only use the first 8~characters. 
+
+\def\domakeshortfilename[#1#2#3#4#5#6#7#8#9]%
+  {\lowercase{\edef\shortfilename{#1#2#3#4#5#6#7#8.}}%
+   \expandafter\beforesplitstring\shortfilename\at.\to\shortfilename}
+
+\def\makeshortfilename[#1]%
+  {\edef\fullfilename{#1.........}%
+   \expanded{\domakeshortfilename[\fullfilename]}}
+
+%D \macros
+%D   {usemodule}
+%D 
+%D Most of \CONTEXT is preloaded in the format file. Some very
+%D domain specific typesetting topics are however dealt with in
+%D separate modules, e.g. typesettingof chemical structure
+%D formulas. These modules are loaded by: 
+%D 
+%D \showsetup{\y!usemodule}
+%D 
+%D More information on the specific modules can be found in
+%D their dedicated manuals. 
 
 \def\dodousemodules#1%
-  {\makeshortmodulename[m-#1........]%
-   \doifundefinedelse{\modulename\v!aan}
-     {\setgvalue{\modulename\v!aan}{}%
-      \readsysfile{\modulename}%
+  {\makeshortfilename[\f!moduleprefix\truefilename{#1}]%
+   \doifundefinedelse{\shortfilename\v!aan}
+     {\setgvalue{\shortfilename\v!aan}{}%
+      \startreadingfile
+      \readsysfile{\shortfilename}%
         {\showmessage{\m!systems}{5}{#1}}%
-        {\showmessage{\m!systems}{6}{#1}}}
+        {\showmessage{\m!systems}{6}{#1}}%
+      \stopreadingfile}
      {\showmessage{\m!systems}{7}{#1}}}
 
 \def\dousemodules[#1]%
@@ -39,10 +110,12 @@
 \def\usemodules%
   {\dosingleargument\dousemodules}
 
+%D We also support a singular call, which saves us for 
+%D frustrations when we do a typo.
+
 \def\usemodule%
   {\usemodules}
 
 \protect
 
 \endinput
-

@@ -701,12 +701,12 @@
 %D
 %D The official specification of the start command is:
 %D
-%D \showsetup{\y!starttabel}
+%D \showsetup{starttable}
 
 \def\starttabel%
   {\bgroup
    \ifinsidefloat\else
-     \startbaselinecorrection
+     \startbaselinecorrection % \outer.. 
    \fi
    \postponefootnotes
    \firststagestartTABLE}
@@ -714,7 +714,7 @@
 \def\stoptabel%
   {\finishTABLE
    \ifinsidefloat\else
-     \stopbaselinecorrection
+     \stopbaselinecorrection % \outer.. 
      \goodbreak % compensates all the nobreaks
    \fi
    \egroup}
@@ -763,7 +763,7 @@
 %D Templates defined this way get protected names, that cannot
 %D conflict with existing commands.
 %D
-%D \showsetup{\y!definetabletemplate}
+%D \showsetup{definetabletemplate}
 %D
 %D The second half of the next macro prepares table
 %D splitting.
@@ -965,8 +965,9 @@
    \fi
    \advance\dimen2 by -\dimen0
    \global\TABLEmaxheight=\dimen2
+   \global\advance\TABLEmaxheight by -\dp\strutbox
    \ifdim\prevdepth<\maxdimen\ifdim\prevdepth>\!!zeropoint
-     \global\advance\TABLEmaxheight by -2\dp\strutbox
+     \global\advance\TABLEmaxheight by -\dp\strutbox
      \global\advance\TABLEmaxheight by -\parskip
    \fi\fi}
 
@@ -1064,15 +1065,18 @@
      \fi
    \fi
    \ifnum\TABLEerror=\TABLEunknown \else
-     \crcr
-     \TABLEnoalign
-       {\nobreak
-        \setTABLEaction\TABLEunknown
-        \setTABLEerror\TABLEunknown
-        \global\let\checkTABLEautorow=\empty
-        \global\let\chuckTABLEautorow=\empty
-        \global\currentTABLEcolumn=0 }%
+     \finishTABLErow
    \fi}
+
+\def\finishTABLErow%
+  {\crcr
+   \TABLEnoalign
+     {\nobreak
+      \setTABLEaction\TABLEunknown
+      \setTABLEerror\TABLEunknown
+      \global\let\checkTABLEautorow=\empty
+      \global\let\chuckTABLEautorow=\empty
+      \global\currentTABLEcolumn=0 }}
 
 \def\fillTABLEcolumns%
   {\ifnum\currentTABLEcolumn>\maxTABLEcolumn \else
@@ -1190,44 +1194,60 @@
    \checkTABLErow\LR
    \endTABLErow\TABLElastrow\TABLErowzero\TABLErowfactor}
 
+%D \macros
+%D   {ifcheckTABLEcolums}
+%D
+%D
 %D The next macros handle the actual row ending. This macro
 %D also take care of space corrections due to table splitting
 %D when \type{\MR} and collegues are used. When tracing is
 %D enabled, the corrections as well as the values used to
-%D determine the available space are shown (in color).
+%D determine the available space are shown (in color). By default 
+%D checking is off.
+
+\newif\ifcheckTABLEcolumns
 
 \let\beforeTABLEline=\empty
 \let\afterTABLEline =\empty
 
+\def\doendTABLErow#1#2#3%
+  {\handleTABLEbreak#2#3%
+   \beforeTABLEline
+   \ifcase#1\relax
+     % unknown
+   \or
+     \endofTABLEline[blue][\SR->\SR]\TABLErowfactor\TABLErowfactor
+   \or
+     \endofTABLEline[red][\FR->\FR]\TABLErowfactor\TABLErowzero
+   \or
+     \ifnum\TABLEforce=\TABLEforcelastrow
+       \endofTABLEline[red][\MR->\LR]\TABLErowzero\TABLErowfactor
+     \else\ifnum\TABLEforce=\TABLEforcefirstrow
+       \endofTABLEline[red][\MR->\FR]\TABLErowfactor\TABLErowzero
+     \else
+       \endofTABLEline[green][\MR->\MR]\TABLErowzero\TABLErowzero
+     \fi\fi
+   \or
+     \endofTABLEline[red][\LR->\LR]\TABLErowzero\TABLErowfactor
+   \fi
+   \TABLEnoalign
+     {\setTABLEforce\TABLEunknown
+      \global\currentTABLEcolumn=0 }%
+   \afterTABLEline}
+
 \def\endTABLErow#1#2#3%
   {\setTABLEaction#1%
-   \ifnum\currentTABLEcolumn>\maxTABLEcolumn
-     \handleTABLEbreak#2#3%
-     \beforeTABLEline
-     \ifcase#1\relax
-       % unknown
-     \or
-       \endofTABLEline[blue][\SR->\SR]\TABLErowfactor\TABLErowfactor
-     \or
-       \endofTABLEline[red][\FR->\FR]\TABLErowfactor\TABLErowzero
-     \or
-       \ifnum\TABLEforce=\TABLEforcelastrow
-         \endofTABLEline[red][\MR->\LR]\TABLErowzero\TABLErowfactor
-       \else\ifnum\TABLEforce=\TABLEforcefirstrow
-         \endofTABLEline[red][\MR->\FR]\TABLErowfactor\TABLErowzero
-       \else
-         \endofTABLEline[green][\MR->\MR]\TABLErowzero\TABLErowzero
-       \fi\fi
-     \or
-       \endofTABLEline[red][\LR->\LR]\TABLErowzero\TABLErowfactor
-     \fi
-     \TABLEnoalign
-       {\setTABLEforce\TABLEunknown
-        \global\currentTABLEcolumn=0 }%
-     \afterTABLEline
+   \ifTABLEgrayline 
+     \finishTABLErow
    \else
-     \setTABLEerror\TABLEmissingcolumn
-     \handleTABLEerror
+     \ifnum\currentTABLEcolumn>\maxTABLEcolumn
+       \doendTABLErow{#1}{#2}{#3}%
+     \else\ifcheckTABLEcolumns
+       \setTABLEerror\TABLEmissingcolumn
+       \handleTABLEerror
+     \else 
+       \doendTABLErow{#1}{#2}{#3}%
+     \fi\fi
    \fi}
 
 %D Handling \type{\AR} is postponed till the next row. The
@@ -1358,7 +1378,7 @@
 %D \type{|}. When counting the bars, we use a non active
 %D representation of the bar, simply because we cannot be sure
 %D if the bar is active or not.\voetnoot{Normally it is, but
-%D \TABLE\ changes the catcode when needed. 
+%D \TABLE\ changes the catcode when needed.} 
  
 \bgroup
 \catcode`\|=\@@other
@@ -1622,7 +1642,7 @@
        \let\next=\normalTABLEsinglerule
      \else
        \ifnum#1<\maxTABLEcolumn
-         \global\advance\currentTABLEcolumn by 2
+         \global\advance\currentTABLEcolumn by 1 % was 2
          \def\next{\normalTABLEmultirule{#1}}%
        \else
          \setTABLEerror\TABLEdivisionoverflow
@@ -1647,12 +1667,12 @@
    \fi}
 
 \def\TableDR%
-  {\ifnum\currentTABLEcolumn>\maxTABLEcolumn
-     \global\currentTABLEcolumn=0
-     \normalTABLElineending
-   \else
-     \setTABLEerror\TABLEmissingcolumn
+  {\ifnum\currentTABLEcolumn<\maxTABLEcolumn % silent recovery 
+     \setTABLEerror\TABLEmissingcolumn       % some day warning
      \handleTABLEerror
+   \else
+     \global\currentTABLEcolumn=0            % nog check 
+     \normalTABLElineending
    \fi
    \TABLEnoalign
      {\nobreak
@@ -1675,56 +1695,145 @@
 %D \sym{\type{\COLOR}}
 %D \stopopsomming
 
+% definieer: \BC \BL 
+% herhaal: \BR
+% definieer: \CL \RL (eerste \CL[green] = hele row! / \CL[1,green])
+% dus: \CL en \RL mix tussen \HL en \BL
+
 \def\defineTABLEbackgrounds%
-  {\let\CL        =\TableCL
-   \let\RL        =\TableRL
-   \let\BC        =\TableBC
+  {\let\BC        =\TableBC
    \let\BL        =\TableBL
-   \let\BR        =\TableBR
+   \let\BR        =\TableBR  
    \let\BACKGROUND=\TableBR
+   \let\CL        =\TableCL
+   \let\RL        =\TableRL
+   \let\COLOR     =\TableCOLOR
    \let\RASTER    =\TableRASTER
-   \let\COLOR     =\TableCOLOR}
+   \global\let\lastTABLEc=\@@tiachtergrondkleur
+   \global\let\lastTABLEr=\@@tiachtergrondraster
+   \doifinsetelse{\@@tiachtergrond}{c,color}
+     {\global\chardef\TABLEcr=1}
+     {\global\chardef\TABLEcr=2}}
 
-\def\TableCL% % much in common with \HL
-  {\ifnum\currentTABLEcolumn>\maxTABLEcolumn
-     \chuckTABLEautorow
-   \else\ifnum\currentTABLEcolumn=0
-     \chuckTABLEautorow
+\def\TableBC%
+  {\ifTABLEgrayline
+     \normalTABLEquote
    \else
-     \setTABLEerror\TABLEmissingcolumn
-     \handleTABLEerror
-   \fi\fi
-   \TABLEnoalign\bgroup\complexorsimpleTable{CL}}
+     \TABLEnoalign\bgroup
+       \global\let\nextTABLEgrayline=\executeTABLEgrayline
+       \let\BL=\doTableBL
+       \let\BC=\doTableBC
+       \expandafter\doTableBC
+   \fi}
 
-\def\simpleTableCL%
-  {\complexTableCL[\@@tiachtergrondkleur]}%
+\def\doTableBC%
+  {\addtoTABLEgrayline{\BC}%
+   \gobbleTableBCL}
 
-\def\complexTableCL[#1]#2%
-  {\docomplexTableCL[#1]#2\egroup}
+\def\TableBL%
+  {\TABLEnoalign\bgroup
+     \global\let\nextTABLEgrayline=\executeTABLEgrayline
+     \let\BL=\doTableBL
+     \let\CL=\doTableCL
+     \let\RL=\doTableRL
+     \let\BC=\doTableBC
+     \doTableBL}
 
-\def\docomplexTableCL%
-  {\dodocomplexTableFullGL\CL\localstartcolor\localstopcolor}
+\def\doTableBL%
+  {\complexorsimpleTable{BL}}
 
-\def\TableRL% % much in common with \CL
-  {\ifnum\currentTABLEcolumn>\maxTABLEcolumn
-     \chuckTABLEautorow
-   \else\ifnum\currentTABLEcolumn=0
-     \chuckTABLEautorow
+\def\simpleTableBL%
+  {\complexTableBL[,]}
+
+\def\complexTableBL[#1]%
+  {\analyzeTABLEcr[#1]%
+   \handleTABLEcr}
+
+\def\TableBR#1%
+  {\TABLEnoalign
+     {\global\let\nextTABLEgrayline=\executeTABLEgrayline
+      \checkTABLEgrayline#1\BR
+      \global\TABLEgraylinetrue}}
+
+\def\analyzeTABLEcr[#1]%
+  {\doanalyzeTABLEcr[#1,,]}
+
+\def\doanalyzeTABLEcr[#1,#2,#3]%
+  {\doifnumberelse{#1x}
+     {\dodoanalyzeTABLEcr[#1,#2,#3]}
+     {\dodoanalyzeTABLEcr[1,#1,#2]}}
+
+\def\dodoanalyzeTABLEcr[#1,#2,#3]%
+  {\global\chardef\TABLEn=#1\relax  
+   \processaction
+     [#2]
+     [         c=>\global\chardef\TABLEcr=1,
+           color=>\global\chardef\TABLEcr=1,
+               r=>\global\chardef\TABLEcr=2,
+          raster=>\global\chardef\TABLEcr=2]%
+   \ifcase\TABLEcr \or
+     \doifnot{#3}{}{\xdef\lastTABLEc{#3}}%
+   \or
+     \doifnot{#3}{}{\xdef\lastTABLEr{#3}}%
+   \fi}
+
+\def\handleTABLEcr%
+  {\relax % else funny side effect 
+   \ifcase\TABLEcr 
+     % Can't happen!
+   \or
+     \addtoTABLEgrayline{\complexTableCOLOR[\the\TABLEn,\lastTABLEc]}%
    \else
-     \setTABLEerror\TABLEmissingcolumn
-     \handleTABLEerror
-   \fi\fi
-   \TABLEnoalign\bgroup\complexorsimpleTable{RL}}
+     \addtoTABLEgrayline{\complexTableRASTER[\the\TABLEn,\lastTABLEr]}%  
+   \fi
+   \gobbleTableBCL}
+
+\def\analyzeTABLEcrl#1[#2]%
+  {\doanalyzeTABLEcrl#1[#2,,]}
+
+\def\doanalyzeTABLEcrl#1[#2,#3,#4]%
+  {\doifnumberelse{#2x}
+     {\dodoanalyzeTABLEcr[#2,#1,#3]}
+     {\dodoanalyzeTABLEcr[\ifTABLEgrayline1\else\maxTABLEcolumn\fi,#1,#2]}}
+
+\def\TableCL%
+  {\TABLEnoalign\bgroup
+     \global\let\nextTABLEgrayline=\executeTABLEgrayline
+     \let\BL=\doTableBL
+     \let\CL=\doTableCL
+     \let\RL=\doTableRL
+     \let\BC=\doTableBC
+     \doTableCL}
+
+\def\doTableCL% 
+  {\complexorsimpleTable{CL}}
+
+\def\simpleTableCL%  nog eens \"e\"en lijn van maken 
+  {\BL[\the\maxTABLEcolumn,c,\lastTABLEc]}
+
+\def\complexTableCL[#1]%
+  {\analyzeTABLEcrl{c}[#1]%
+   \handleTABLEcr}
+
+\def\TableRL%
+  {\TABLEnoalign\bgroup
+     \global\let\nextTABLEgrayline=\executeTABLEgrayline
+     \let\BL=\doTableBL
+     \let\CL=\doTableCL
+     \let\RL=\doTableRL
+     \let\BC=\doTableBC
+     \doTableRL}
+
+\def\doTableRL% 
+  {\complexorsimpleTable{RL}}
 
 \def\simpleTableRL%
-  {\complexTableRL[\@@tiachtergrondraster]}%
+  {\BL[\the\maxTABLEcolumn,r,\lastTABLEr]}
 
-\def\complexTableRL[#1]#2%
-  {\docomplexTableRL[#1]#2\egroup}
-
-\def\docomplexTableRL%
-  {\dodocomplexTableFullGL\RL\localstartraster\localstopraster}
-
+\def\complexTableRL[#1]%
+  {\analyzeTABLEcrl{r}[#1]%
+   \handleTABLEcr}
+
 \def\checkTABLEgrayline#1#2%
   {\!!doneatrue
    \ifx#1\AR
@@ -1743,21 +1852,6 @@
      \gdef\TABLEendBCL%
        {\SR}%
    \fi}
-
-\def\dodocomplexTableFullGL#1#2#3[#4]#5%
-  {\global\let\TABLEgraylineerror =\empty
-   \global\let\TABLEgraylinestatus=\empty
-   \gdef\nextTABLEgrayline%
-     {\TABLEnoalign
-        {\let\endTABLErow=\endTABLErowGL
-         \checkTABLEgrayline#5#1\TABLEendBCL
-         #2[#4]%
-         \hrule\!!height\TABLEgraylineHeight
-         \nobreak
-         \vskip-\TABLEgraylineHeight
-         \nobreak
-         #3%
-         \doPostTableGL}}}
 
 \def\endTABLErowGL#1#2#3%
   {\ifcase#1\relax
@@ -1790,6 +1884,28 @@
 \def\doPostTableGL%
   {\global\LineThicknessFactor=\OldLineThicknessFactor
    \global\LineThicknessUnit  =\OldLineThicknessUnit}
+
+% kan simpeler 
+
+\def\docomplexTableCOLOR[#1]%
+  {\dodocomplexTableGL\localstartcolor\localstopcolor
+     [#1,\lastTABLEc,,]}
+
+\gdef\docomplexTableRASTER[#1]%
+  {\dodocomplexTableGL\localstartraster\localstopraster
+     [#1,\lastTABLEr,,]}
+
+\def\dodocomplexTableGL#1#2[#3,#4,#5,#6]%
+  {\doifelsenothing{#4}{#1[#5]}{#1[#4]}%
+   \doPreTableGL\TABLEendofrowheight\TABLEendofrowdepth
+   \ifnum#3=1 % else conflict with \omit in \=
+     \let\next=\normalTABLEsinglerule
+   \else
+     \def\next{\normalTABLEmultirule{#3}}%
+   \fi
+   \next
+   \doPostTableGL
+   #2}
 
 \def\TableBACKGROUND%
   {\TableBR}
@@ -1867,84 +1983,6 @@
       \global\TABLEgraydonetrue
       \global\TABLEgraylinefalse}}
 
-\def\docomplexTableCOLOR[#1]%
-  {\dodocomplexTableGL\localstartcolor\localstopcolor
-     [#1,\@@tiachtergrondkleur,,]}
-
-\gdef\docomplexTableRASTER[#1]%
-  {\dodocomplexTableGL\localstartraster\localstopraster%
-     [#1,\@@tiachtergrondraster,,]}
-
-% nog \= == \- als alternatief
-% nog eens
-
-\def\dodocomplexTableGL#1#2[#3,#4,#5,#6]%
-  {\doifelsenothing{#4}{#1[#5]}{#1[#4]}%
-   \doPreTableGL\TABLEendofrowheight\TABLEendofrowdepth
-   \ifnum#3=1 % else conflict with \omit in \=
-     \let\next=\normalTABLEsinglerule
-   \else
-     \def\next{\normalTABLEmultirule{#3}}%
-   \fi
-   \next
-   \doPostTableGL
-   #2}
-
-% \BC \BL
-% \BL \BC
-
-\def\TableBC%
-  {\ifTABLEgrayline
-     \normalTABLEquote
-   \else
-     \TABLEnoalign\bgroup
-       \global\let\nextTABLEgrayline=\executeTABLEgrayline
-       \let\BL=\doTableBL
-       \let\BC=\doTableBC
-       \expandafter\doTableBC
-   \fi}
-
-\def\doTableBC%
-  {\addtoTABLEgrayline{\BC}%
-   \gobbleTableBCL}
-
-\def\TableBL%
-  {\TABLEnoalign\bgroup
-     \global\let\nextTABLEgrayline=\executeTABLEgrayline
-     \let\BL=\doTableBL
-     \let\BC=\doTableBC
-     \doTableBL}
-
-\def\doTableBL%
-  {\complexorsimpleTable{BL}}
-
-\def\complexTableBL[#1]#2% nodig?
-  {\doprocessTableBL[#1,\@@tiachtergrond,]#2}
-
-\def\simpleTableBL#1% nodig?
-  {\doprocessTableBL[1,\@@tiachtergrond,]#1}
-
-\def\dodoprocessTableBL[#1,#2,#3]%
-  {\processaction
-     [#2]
-     [ color=>{\addtoTABLEgrayline{\complexTableCOLOR[#1,#3]}},
-           c=>{\addtoTABLEgrayline{\complexTableCOLOR[#1,#3]}},
-      raster=>{\addtoTABLEgrayline{\complexTableRASTER[#1,#3]}},
-           r=>{\addtoTABLEgrayline{\complexTableRASTER[#1,#3]}}]}
-
-\def\doprocessTableBL[#1]%
-  {\getfromcommalist[#1][1]%
-   \expandafter\doifnumberelse\expandafter{\commalistelement}
-     {\dodoprocessTableBL[#1]}
-     {\dodoprocessTableBL[1,#1]}%
-   \gobbleTableBCL}
-
-\def\TableBR#1%
-  {\TABLEnoalign
-     {\global\let\nextTABLEgrayline=\executeTABLEgrayline
-      \checkTABLEgrayline#1\BR
-      \global\TABLEgraylinetrue}}
-
 \def\endTABLEgrayrow#1#2#3%
   {\ifcase#1\relax
      \global\chardef\TABLEendofrowheight=\TABLErowfactor
@@ -1970,6 +2008,7 @@
      \global\chardef\TABLEendofrowheight=\TABLErowzero
      \global\chardef\TABLEendofrowdepth =\TABLErowfactor
    \fi}
+
 
 \def\defineTABLEshorthands%
   {\def\TWO  {\use{2}}%
@@ -2012,7 +2051,7 @@
 
 \def\localTABLEsetup%
   {\@@ticommandos\relax
-   \expanded{\switchtocorps[\@@tikorps]}%
+   \expanded{\switchtobodyfont[\@@tikorps]}%
    \StrutHeightFactor  =8
    \StrutDepthFactor   =4
    \LineThicknessFactor=4
@@ -2025,7 +2064,7 @@
    VL=\v!middel,
    NL=\v!klein,
    \c!afstand=\v!middel,
-   \c!korps=\the\corpssize,
+   \c!korps=\the\bodyfontsize,
    \c!commandos=,
    \c!achtergrond=\v!raster,
    \c!achtergrondraster=\@@rsraster,
@@ -2034,4 +2073,3 @@
 \def\ifintabel{\ifintable} % upward compatible
 
 \protect \endinput
-
