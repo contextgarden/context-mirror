@@ -353,6 +353,7 @@ var:columndistance:*dimension::
 var:margindistance:*dimension::
 var:n:*number::
 var:numbercommand:*\command#1::
+var:split:tolerant,strict,verystrict,*number::
 ivr:framed::
 stopsetup
 
@@ -758,9 +759,11 @@ var:before:*command::
 var:inbetween:*command::
 var:after:*command::
 var:color:*name::
+var:backgroundcolor:*name::
 var:height:*dimension,max::
 var:depth:*dimension,max::
-var:alternative:a,b,c::
+var:alternative:a,b,c,d::
+var:rulethickness:*dimension::
 stopsetup
 
 startsetup
@@ -2622,6 +2625,7 @@ var:footerstate:normal,stop,start,empty,none,nomarking::
 var:textstate:normal,stop,start,empty,none,nomarking::
 var:topstate:stop,start::
 var:bottomstate:stop,start::
+var:color:*name::
 stopsetup
 
 startsetup
@@ -2735,7 +2739,7 @@ stopsetup
 startsetup
 com:setuptolerance:
 typ:vals/:
-val:horizontal,vertical, stretch,verystrict,strict,tolerant,verytolerant:verystrict:
+val:horizontal,vertical, stretch,space,verystrict,strict,tolerant,verytolerant:verystrict:
 stopsetup
 
 startsetup
@@ -3290,7 +3294,7 @@ var:frames:on,off::
 var:ymax:*number::
 var:xmax:*number::
 var:directory:*text::
-var:location:local,global,default::
+var:location:local,global,default,none::
 var:maxwidth:*dimension::
 var:maxheight:*dimension::
 stopsetup

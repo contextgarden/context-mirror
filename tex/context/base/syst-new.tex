@@ -13,6 +13,24 @@
 
 \unprotect
 
+\def\unspaced#1%
+  {\dounspaced#1\end}
+
+\def\dounspaced#1%
+  {\ifx#1\end
+   \else\ifx#1\blankspace
+     \@EA\@EA\@EA\dounspaced
+   \else
+     #1\@EA\@EA\@EA\dounspaced
+   \fi\fi}
+
+\def\unspaceargument#1\to#2%
+  {\convertargument#1\to#2%
+   \@EA\edef\@EA#2\@EA{\@EA\unspaced\@EA{#2}}}
+
+\def\unspaceafter#1#2%
+  {\edef\ascii{\dounspaced#2\end}\@EA#1\@EA{\ascii}}
+
 \def\inheritparameter[#1]#2[#3]#4[#5]% tag tokey fromkey % [bypasses k!prefix]
   {\@EA\@EA\@EA\def\@EA\csname\@EA#1\@EA#3\@EA
      \endcsname\@EA{\csname#1#5\endcsname}}

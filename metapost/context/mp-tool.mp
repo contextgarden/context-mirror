@@ -707,9 +707,15 @@ primarydef p randomized s =
       ((point length(p) of p) randomshifted s) 
     fi
   elseif pair p :
-   p randomshifted s  
+    p randomshifted s  
+  elseif color p :
+    if pair s : 
+      ((xpart s + uniformdeviate (ypart s - xpart s)) * p)  
+    else :  
+      (uniformdeviate s * p)  
+    fi 
   else :
-   p + uniformdeviate s  
+    p + uniformdeviate s  
   fi)  
 enddef ; 
 
@@ -780,7 +786,7 @@ drawpathoptions   (withpen pencircle scaled 5   withcolor .8white) ;
 
 def drawpath expr p =
   normaldraw p _pth_opt_
-enddef;
+enddef ;
 
 %D Arrow.
 
@@ -788,6 +794,18 @@ vardef drawarrowpath expr p =
   save autoarrows ; boolean autoarrows ; autoarrows := true ; 
   drawarrow p _pth_opt_ 
 enddef ; 
+
+%def drawarrowpath expr p = 
+%  begingroup ; 
+%  save autoarrows ; boolean autoarrows ; autoarrows := true ; 
+%  save arrowpath ; path arrowpath ; arrowpath := p ; 
+%  _drawarrowpath_ 
+%enddef ; 
+%
+%def _drawarrowpath_ text t = 
+%  drawarrow arrowpath _pth_opt_ t ; 
+%  endgroup ; 
+%enddef ;  
 
 def midarrowhead expr p =
   arrowhead p cutafter 
@@ -976,7 +994,7 @@ boolean autoarrows ; autoarrows := false ;
 numeric ahfactor   ; ahfactor   := 2.5 ; 
 
 def set_ahlength (text t) = 
-  ahlength := (ahfactor*pen_size(t)) ; 
+  ahlength := (ahfactor*pen_size(_op_ t)) ; % _op_ added
 enddef ; 
 
 vardef pen_size (text t) = 

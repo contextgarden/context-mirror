@@ -1,0 +1,60 @@
+# You can process this file as follows, using texfont.pl: 
+#
+#   texfont --encoding=ec --batch texfont.dat 
+#
+# where 'ec' can be replaced by 'texnansi', '8r' or otherwise.
+
+# public antp
+
+--en=? --ve=public --co=antp --so=auto 
+
+# public antt
+
+--en=? --ve=public --co=antt --so=auto 
+
+# urw helvetica
+
+--en=? --ve=urw --co=helvetica --so=auto 
+
+# urw courier 
+
+--en=? --ve=urw --co=courier --so=auto 
+
+# urw times 
+
+--en=? --ve=urw --co=times --so=auto 
+--en=? --ve=urw --co=times --so=auto --ca=* utmr8a 
+--en=? --ve=urw --co=times --so=auto --sl=* utmr8a
+--en=? --ve=urw --co=times --so=auto --sl=* utmb8a
+
+# urw palatino 
+
+--en=? --ve=urw --co=palatino --so=auto                    
+--en=? --ve=urw --co=palatino --so=auto --ca=* uplr8a
+--en=? --ve=urw --co=palatino --so=auto --sl=* uplr8a
+--en=? --ve=urw --co=palatino --so=auto --sl=* uplb8a
+
+# adbobe utopia 
+
+--en=? --ve=adobe --co=utopia --so=auto                    
+--en=? --ve=adobe --co=utopia --so=auto --ca=* putr8a
+--en=? --ve=adobe --co=utopia --so=auto --sl=* putr8a
+--en=? --ve=adobe --co=utopia --so=auto --sl=* putb8a
+
+# bit charter 
+
+--en=? --ve=bit --co=charter --so=auto                    
+--en=? --ve=bit --co=charter --so=auto --ca=* bchr8a
+--en=? --ve=bit --co=charter --so=auto --sl=* bchr8a
+--en=? --ve=bit --co=charter --so=auto --sl=* bchb8a
+
+# uwr bookman 
+
+--en=? --ve=urw --co=bookman --so=auto                    
+--en=? --ve=urw --co=bookman --so=auto --ca=* ubkl8a
+--en=? --ve=urw --co=bookman --so=auto --sl=* ubkl8a
+--en=? --ve=urw --co=bookman --so=auto --sl=* ubkd8a
+
+# urw zapfchan 
+
+--en=? --ve=urw --co=zapfchan --so=auto 

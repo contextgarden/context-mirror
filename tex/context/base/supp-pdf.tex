@@ -1,6 +1,6 @@
 %D \module
 %D   [       file=supp-pdf,
-%D        version=2000.10.14,
+%D        version=2001.07.27,
 %D          title=\CONTEXT\ Support Macros,
 %D       subtitle=\METAPOST\ to \PDF\ conversion,
 %D         author=Hans Hagen,
@@ -1146,7 +1146,8 @@
    \multiply \dimen20  \dimen10
    \advance  \dimen12 -\dimen20
    %
-   \ifdim\dimen16>1pt
+%   \ifdim\dimen16>1pt % oeps, can be < 1pt too
+   \ifdim\dimen16=1pt \else
      \ifdim\dimen16>256pt
        \doMPreducedimen16
        \divide \dimen18 \dimen16 \doMPexpanddimen18
@@ -1397,13 +1398,36 @@
   {\PDFcode{\ifcase\finiMPpath W n\or S\or f\or B\fi}}
 
 \def\processMPpath%
-  {\flushMPpath
-   \closeMPpath
-   \finishMPpath
+  {\checkMPpath
+   \ifcase\nofMPsegments\else
+     \flushMPpath
+     \closeMPpath
+     \finishMPpath
+   \fi 
    \let\handleMPsequence=\dohandleMPsequence
    \resetMPstack
    \nofMPsegments=0
    \handleMPsequence}
+
+%D The following \METAPOST\ code is quite valid but, when
+%D processed and converted to \PDF, will make a file
+%D unprintable on a Hewlett Packard printer (from Acrobat
+%D $v<=5$). Who is to blame, the driver of the OS layer in
+%D between, is hard to determine, so we add an additional
+%D check. 
+%D 
+%D \starttypen
+%D clip currentpicture to origin -- cycle ; 
+%D setbounds currentpicture to fullsquare scaled 5cm ; 
+%D \stoptypen
+
+\def\checkMPpath
+  {\ifcase\finiMPpath       
+     \ifnum\nofMPsegments<3 % n is one ahead
+       \message{omitting zero clip path}%
+       \nofMPsegments=0 
+     \fi 
+   \fi}
 
 %D In \PDF\ the \type{cm} operator must precede the path
 %D specification. We therefore can output the \type{cm} at
@@ -1436,6 +1460,7 @@
      \else\ifx\somestring\PSmoveto
        \setMPkeyword3
      \else\ifx\somestring\PSclip
+     % \chardef\finiMPpath=0 % already 
        \let\handleMPsequence=\processMPpath
      \else\ifx\somestring\PSgsave
        \chardef\finiMPpath=3
@@ -1580,7 +1605,10 @@
 %       \lower\MPshift\box\scratchbox
 %       \PDFcode{Q}}}%
 
-\let\PDFMPformoffset\!!zeropoint
+% \let\PDFMPformoffset\!!zeropoint
+
+\def\PDFMPformoffset
+  {\ifx\objectoffset\undefined\!!zeropoint\else\objectoffset\fi}
 
 \def\finishMPgraphic% 
   {\stopMPresources

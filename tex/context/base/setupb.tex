@@ -797,6 +797,10 @@
     [\c!nummercommando]
     [\c!oneargument!]
     []
+  \variable
+    [\c!splitsen]
+    [\v!soepel,\v!streng,\v!zeerstreng,\c!number!]
+    [\v!soepel]
   \inheritvariables
     [\y!framed]
     []
@@ -1483,6 +1487,10 @@
     [\c!identifier!]
     []
   \variable
+    [\c!achtergrondkleur]
+    [\c!identifier!]
+    []
+  \variable
     [\c!hoogte]
     [\c!dimension!,\v!max]
     [.5\linewidth]
@@ -1492,8 +1500,12 @@
     [.5\linewidth]
   \variable
     [\c!variant]
-    [\v!a,\v!b,\v!c]
+    [\v!a,\v!b,\v!c,\v!d]
     [\v!a]
+  \variable
+    [\c!lijndikte]
+    [\c!dimension!]
+    []
 \stopsetup
 
 \startsetup
@@ -5520,6 +5532,10 @@
     [\c!onderstatus]
     [\v!stop,\v!start]
     [\v!stop]
+  \variable
+    [\c!kleur]
+    [\c!identifier!]
+    []
 \stopsetup
 
 \startsetup
@@ -5721,7 +5737,7 @@
     [\c!vals!]
   \value
     [\v!horizontaal,\v!vertikaal,
-     \v!rek,\v!zeerstreng,\v!streng,\v!soepel,\v!zeersoepel]
+     \v!rek,\v!spatie,\v!zeerstreng,\v!streng,\v!soepel,\v!zeersoepel]
     [\v!zeerstreng]
 \stopsetup
 
@@ -7009,7 +7025,7 @@
     []
   \variable
     [\c!plaats]
-    [\v!lokaal,\v!globaal,\v!default]
+    [\v!lokaal,\v!globaal,\v!default,\v!geen]
     []
   \variable
     [\c!maxbreedte]

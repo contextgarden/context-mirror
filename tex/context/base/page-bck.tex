@@ -180,10 +180,15 @@
 
 %D Finaly there is an aditional {\em text} background, again
 %D useful for special purposes only. This one is calculated
-%D each time.
+%D each time. The hidden backgrounds are not meant for users!
+
+\newconditional\hiddenbackgroundenabled
 
 \def\addtextbackground#1%
-  {\addsomebackground\v!tekst{#1}\zetbreedte\teksthoogte}
+  {\ifconditional\hiddenbackgroundenabled
+     \addsomebackground\v!verborgen{#1}\zetbreedte\teksthoogte% mine ! 
+   \fi 
+   \addsomebackground\v!tekst{#1}\zetbreedte\teksthoogte}
 
 %D The next couple of macros implement the area backgrounds.
 %D As said, these are cached in dedicated boxes. The offsets
@@ -199,22 +204,31 @@
    \ifdubbelzijdig
      \setbackgroundbox\rightbackground\doswapmargins
    \fi
-   \doifnot{\@@mastatus}{\v!herhaal}{\global\newbackgroundfalse}%
-   \global\let\pagebackgroundhoffset=\!!zeropoint
-   \global\let\pagebackgroundvoffset=\!!zeropoint
-   \global\let\pagebackgrounddepth  =\!!zeropoint
-   \doifsomebackgroundelse{\v!tekst\v!tekst}
-     {\bgroup
-      \scratchdimen=\getvalue{\??ma\v!pagina\c!offset}%
-      \doifsomebackgroundelse{\v!boven\v!tekst}\donothing
-        {\doifsomebackgroundelse{\v!onder\v!tekst}\donothing
-           {\xdef\pagebackgroundhoffset{\the\scratchdimen}}}%
-      \doifsomebackgroundelse{\v!tekst\v!rechterrand}\donothing
-        {\doifsomebackgroundelse{\v!tekst\v!linkerrand}\donothing
-           {\xdef\pagebackgroundvoffset{\the\scratchdimen}%
-            \scratchdimen=\getvalue{\??ma\v!pagina\c!diepte}%
-            \xdef\pagebackgrounddepth{\the\scratchdimen}}}%
-      \egroup}\donothing}
+   \doifnot{\@@mastatus}{\v!herhaal}{\global\newbackgroundfalse}}
+
+\def\setbackgroundoffsets
+  {\ifsomebackground \ifnewbackground 
+     \global\let\pagebackgroundhoffset=\!!zeropoint
+     \global\let\pagebackgroundvoffset=\!!zeropoint
+     \global\let\pagebackgrounddepth  =\!!zeropoint
+     \doifsomebackgroundelse{\v!tekst\v!tekst}\donetrue\donefalse
+     \ifdone\else\doifsomebackgroundelse{\v!tekst}\donetrue\donothing\fi
+     \ifdone
+       \bgroup
+       \scratchdimen=\getvalue{\??ma\v!pagina\c!offset}%
+       \doifsomebackgroundelse{\v!boven\v!tekst}\donothing
+         {\doifsomebackgroundelse{\v!onder\v!tekst}\donothing
+            {\xdef\pagebackgroundhoffset{\the\scratchdimen}}}%
+       \doifsomebackgroundelse{\v!tekst\v!rechterrand}\donothing
+         {\doifsomebackgroundelse{\v!tekst\v!linkerrand}\donothing
+            {\xdef\pagebackgroundvoffset{\the\scratchdimen}%
+             \scratchdimen=\getvalue{\??ma\v!pagina\c!diepte}%
+             \xdef\pagebackgrounddepth{\the\scratchdimen}}}%
+       \egroup
+     \fi
+   \fi \fi}
+
+\appendtoks \setbackgroundoffsets \to \everypagebody
 
 \def\setbackgroundbox#1#2%
   {\global\setbox#1=\vbox
@@ -305,7 +319,7 @@
      \processcommalist[#1]\docommando
    \else\ifsecondargument
      \global\somebackgroundtrue
-     \doifcommonelse{#1}{\v!tekst,\v!papier,\v!pagina,\v!linkerpagina,\v!rechterpagina}
+     \doifcommonelse{#1}{\v!tekst,\v!verborgen,\v!papier,\v!pagina,\v!linkerpagina,\v!rechterpagina}
        {\def\docommando##1%
           {\getparameters[\??ma##1][#2]\checkbackground{##1}}%
         \processcommalist[#1]\docommando}%
@@ -379,9 +393,10 @@
 
 %D The stand alone text area inherits from the page too.
 
-\dodocommando\v!tekst\empty
+\dodocommando\v!tekst    \empty
+\dodocommando\v!verborgen\empty
 
-%D We now define all 25 areas in a row.
+%D We now define all 25 main areas in a row.
 
 \def\docommando#1%
   {\dodocommando#1\v!linkerrand
@@ -431,6 +446,25 @@
 %D Again we clean up temporary macros.
 
 \let\docommando\relax
+
+%D The hidden layer can be populated by extending the 
+%D following comma separated list. This only happens in core
+%D modules. 
+
+\def\enablehiddenbackground
+  {\global\settrue\hiddenbackgroundenabled
+   \global\somebackgroundtrue % also make these
+   \global\newbackgroundtrue} % two conditionals
+
+\def\disablehiddenbackground
+  {\global\setfalse\hiddenbackgroundenabled}
+
+\def\hiddenbackground
+  {\v!tekst-2,\v!tekst-1,\v!voorgrond,\v!tekst+1,\v!tekst+2}
+
+\setupbackgrounds
+  [\v!verborgen]
+  [\c!achtergrond=\hiddenbackground]
 
 %D Because we haven't really set up backgrounds yet, we set
 %D the main efficiency switch to false.

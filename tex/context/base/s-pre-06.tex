@@ -25,7 +25,7 @@
 %D this style is only suited for simple presentations, using
 %D itemizations.
 
-\usemodule[pre-general] % mode=step 
+\usemodule[pre-general]
 
 %D \macros 
 %D   {setupbodyfont}
@@ -45,9 +45,9 @@
 \setupcolors
   [state=start]
 
+\definecolor [BackgroundColor]  [s=.8]
+\definecolor [ContrastColor]    [s=.9]
 \definecolor [InteractionColor] [s=.6]
-\definecolor [PrimaryColor]     [s=.8]
-\definecolor [SecondaryColor]   [s=.9]
 
 %D \macros 
 %D   {setuppapersize}
@@ -103,7 +103,7 @@
 \setupbackgrounds
   [page]
   [background={color,Joke,GoAround},
-   backgroundcolor=PrimaryColor]
+   backgroundcolor=BackgroundColor]
 
 %D \macros
 %D  {defineoverlay}
@@ -129,7 +129,7 @@
   def do (expr r) =
     addto currentpicture also p shifted - center p scaled r
       xscaled (width/pwidth) yscaled (height/pheight)
-      withcolor \MPcolor{SecondaryColor} ;
+      withcolor \MPcolor{ContrastColor} ;
   enddef ;
   do (0.9+uniformdeviate0.1) ;
   do (1.4+uniformdeviate0.1) ;
@@ -145,6 +145,7 @@
 \setupinteraction
   [state=start,
    color=InteractionColor,
+   contrastcolor=InteractionColor,
    menu=on]
 
 \setupinteractionscreen

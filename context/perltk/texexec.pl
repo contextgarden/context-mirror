@@ -3,6 +3,8 @@ eval '(exit $?0)' && eval 'exec perl -S $0 ${1+"$@"}' && eval 'exec perl -S $0 $
 
 # todo: second run of checksum of mp file with --nomprun changes
 
+# todo: merge wybo's enhanced help function 
+
 #D \module
 #D   [       file=texexec.pl,
 #D        version=2000.03.25,
@@ -24,8 +26,10 @@ eval '(exit $?0)' && eval 'exec perl -S $0 ${1+"$@"}' && eval 'exec perl -S $0 $
 #D expression replaces the unix specific line \type
 #D {#!/usr/bin/perl}.
 
+# require "5.005" ;
+
 use Cwd ;
-use Time::Local ; # needed ? 
+use Time::Local ; # needed ?
 use Config ;
 use Getopt::Long ;
 
@@ -121,9 +125,10 @@ my $Verbose          = 0 ;
 my $PdfCopy          = 0 ;
 my $LogFile          = "" ;
 my $MpyForce         = 0 ;
-my $RunPath          = "" ; 
+my $RunPath          = "" ;
 my $Arguments        = "" ;
-my $Pretty           = 0 ; 
+my $Pretty           = 0 ;
+my $SetFile          = "" ; 
 
 &GetOptions
   ( "arrange"       => \$Arrange          ,
@@ -188,9 +193,10 @@ my $Pretty           = 0 ;
     "optimize"      => \$Optimize         ,
     "texutil"       => \$ForceTeXutil     ,
     "mpyforce"      => \$MpyForce         ,
-    "input=s"       => \$Input            , 
+    "input=s"       => \$Input            ,
     "arguments=s"   => \$Arguments        ,
-    "pretty"        => \$Pretty           ) ;
+    "pretty"        => \$Pretty           ,
+    "setfile=s"     => \$SetFile          ) ;
 
 $SIG{INT} = "IGNORE" ;
 
@@ -267,11 +273,11 @@ else
 
 my $kpsewhich = '' ;
 
-sub found_ini_file 
+sub found_ini_file
   { my $suffix = shift ;
     my $IniPath = `$kpsewhich --format="other text files" -progname=context texexec.$suffix` ;
     chomp($IniPath) ;
-    return $IniPath } 
+    return $IniPath }
 
 if ($IniPath eq '')
   { foreach (@paths)
@@ -287,10 +293,10 @@ if ($IniPath eq '')
         elsif ($IniPath eq '')
           { print "     locating ini file : not found by kpsewhich\n" }
         else
-          { if ($IniFile =~ /rme/oi) 
-              { print "     locating ini file : not found by kpsewhich, using '.rme' file\n" } 
+          { if ($IniPath =~ /rme/oi)
+              { print "     locating ini file : not found by kpsewhich, using '.rme' file\n" }
             else
-              { print "     locating ini file : found by kpsewhich\n" } } } } 
+              { print "     locating ini file : found by kpsewhich\n" } } } }
 
 #D Now, when we didn't find the \type {kpsewhich}, we have
 #D to revert to some other method. We could have said:
@@ -305,7 +311,7 @@ if ($IniPath eq '')
 #D decided to copy the code of \type {texpath} into this file.
 
 use File::Find ;
-# use File::Copy ; no standard in perl 
+# use File::Copy ; no standard in perl
 
 my ($ReportPath, $ReportName, $ReportFile)    = (0,0,1) ;
 my ($FileToLocate, $PathToStartOn)            = ('','') ;
@@ -457,11 +463,15 @@ my $MpFormatFlag      = IniValue('MpFormatFlag'      , '' ) ;
 my $MpVirginFlag      = IniValue('MpVirginFlag'      , '-ini' ) ;
 my $MpPassString      = IniValue('MpPassString'      , '' ) ;
 my $MpFormat          = IniValue('MpFormat'          , $MetaFun ) ;
+my $MpFormatPath      = IniValue('MpFormatPath'      , $TeXFormatPath ) ;
 
 my $FmtLanguage       = IniValue('FmtLanguage'       , '' ) ;
 my $FmtBodyFont       = IniValue('FmtBodyFont'       , '' ) ;
 my $FmtResponse       = IniValue('FmtResponse'       , '' ) ;
 my $TcXPath           = IniValue('TcXPath'           , '' ) ;
+
+   $SetFile           = IniValue('SetFile'           , $SetFile ) ;
+
 
 if (($FmtLanguage)&&($MainLanguage eq 'standard'))
   { $MainLanguage = $FmtLanguage }
@@ -514,6 +524,7 @@ if ($ENV{"HOME"})
     $SetupPath .= $ENV{"HOME"} }
 
 if ($TeXFormatPath)  { $TeXFormatPath  =~ s/[\/\\]$// ; $TeXFormatPath  .= '/' }
+if ($MpFormatPath)   { $MpFormatPath   =~ s/[\/\\]$// ; $MpFormatPath   .= '/' }
 if ($ConTeXtPath)    { $ConTeXtPath    =~ s/[\/\\]$// ; $ConTeXtPath    .= '/' }
 if ($SetupPath)      { $SetupPath      =~ s/[\/\\]$// ; $SetupPath      .= '/' }
 if ($TeXScriptsPath) { $TeXScriptsPath =~ s/[\/\\]$// ; $TeXScriptsPath .= '/' }
@@ -632,7 +643,7 @@ $Help{paper}       =
 $Help{PAPER}       . "                           =a4a3 : A4 printed on A3\n" .
                      "                           =a5a4 : A5 printed on A4\n" ;
 $Help{PATH}        = "                --path   document source path\n" ;
-$Help{path}        = 
+$Help{path}        =
 $Help{PATH}        . "                           =string : path\n" ;
 $Help{PDF}         = "                 --pdf   produce PDF directly using pdf(e)tex\n" ;
 $Help{PDFARRANGE}  = "          --pdfarrange   arrange pdf pages\n" ;
@@ -696,6 +707,7 @@ $Help{HELP}        = "                --help   show this or more, e.g. '--help i
 
 $Help{ALONE}       = "               --alone   bypass utilities (e.g. fmtutil for non-standard fmt's)\n" ;
 $Help{TEXUTIL}     = "             --texutil   force TeXUtil run\n" ;
+$Help{SETFILE}     = "             --setfile   load environment (batch) file\n" ;
 
 if ($HelpAsked)
   { if (@ARGV)
@@ -746,6 +758,7 @@ if ($HelpAsked)
         print $Help{VERBOSE}     ;
         print $Help{ALONE}       ;
         print $Help{TEXUTIL}     ;
+        print $Help{SETFILE}     ;
         print "\n"               ;
         print $Help{HELP}        ;
         print "\n"               }
@@ -757,9 +770,9 @@ sub MPJobName
   { my $JobName = shift ;
     my $MPfile = shift ;
     my $MPJobName = '' ;
-    if (-e "$JobName-$MPfile.mp")
+    if (-s "$JobName-$MPfile.mp">100)
       { $MPJobName = "$JobName-$MPfile.mp" }
-    elsif (-e "$MPfile.mp")
+    elsif (-s "$MPfile.mp">100)
       { $MPJobName = "$MPfile.mp" }
     else
       { $MPJobName = "" }
@@ -809,12 +822,12 @@ sub MakeOptionFile
     elsif ($Suffix)
       { print OPT "\\setupsystem[file=$JobName$Suffix]\n" }
     if ($RunPath ne "")
-      { $RunPath =~ s/\\/\//go ; print OPT "\\usepath[$RunPath]\n" } 
+      { $RunPath =~ s/\\/\//go ; print OPT "\\usepath[$RunPath]\n" }
     $MainLanguage = lc $MainLanguage ;
     unless ($MainLanguage eq "standard")
       { print OPT "\\setuplanguage[$MainLanguage]\n" }
     # can best become : \use...[mik] / [web]
-    if ($TeXShell eq (MikTeX))
+    if ($TeXShell =~ /MikTeX/io)
       { print OPT "\\def\\MPOSTbatchswitch \{$MpBatchFlag\}" ;
         print OPT "\\def\\MPOSTformatswitch\{$MpPassString $MpFormatFlag\}" }
     #
@@ -840,8 +853,8 @@ sub MakeOptionFile
         elsif (/.5.4/goi)
           { print OPT "\\setuppapersize[A5][A4]\n" }
         elsif (!/standard/)
-          { $_ = uc $_ ; my ($from,$to) = split (/\*/) ; 
-            if ($to eq "") { $to = $from } 
+          { $_ = uc $_ ; my ($from,$to) = split (/\*/) ;
+            if ($to eq "") { $to = $from }
             print OPT "\\setuppapersize[$from][$to]\n" } }
     if (($PdfSelect||$PdfCombine||$PdfCopy||$PdfArrange)&&($Background ne ''))
       { print "    background graphic : $Background\n" ;
@@ -864,9 +877,9 @@ sub MakeOptionFile
               { print OPT "\\setuparranging[$PrintFormat]\n" } }
         else
           { print OPT "\\setuparranging[\\v!blokkeer]\n" } }
-    if ($Arguments) 
+    if ($Arguments)
       { print OPT "\\setupenv[$Arguments]\n" }
-    if ($Input) 
+    if ($Input)
       { print OPT "\\setupsystem[inputfile=$Input]\n" }
     if ($Mode)
       { print OPT "\\enablemode[$Mode]\n" }
@@ -1101,9 +1114,9 @@ sub PopResult
         unlink "$Result.tuo" ; rename "$File.tuo", "$Result.tuo" ;
         unlink "$Result.log" ; rename "$File.log", "$Result.log" ;
         unlink "$Result.dvi" ; rename "$File.dvi", "$Result.dvi" ;
-        if (-e "$File.dvi") { CopyFile("$File.dvi", "$Result.dvi") }  
+        if (-e "$File.dvi") { CopyFile("$File.dvi", "$Result.dvi") }
         unlink "$Result.pdf" ; rename "$File.pdf", "$Result.pdf" ;
-        if (-e "$File.pdf") { CopyFile("$File.pdf", "$Result.pdf") }  
+        if (-e "$File.pdf") { CopyFile("$File.pdf", "$Result.pdf") }
         return if ($File ne "texexec") ;
         rename "texexec.tuo", "$File.tuo" ;
         rename "texexec.log", "$File.log" ;
@@ -1145,7 +1158,7 @@ sub RunTeXMP
               { if ($JobName =~ /$MPFoundJobName$/i)
                   { if ($MpExecutable ne '')
                       { print "   generating graphics : metaposting $MPJobName\n" ;
-                        my $ForceMpy = "" ; 
+                        my $ForceMpy = "" ;
                         if ($MpyForce) { $ForceMpy = "--mpyforce" }
                         if ($EnterBatchMode)
                           { RunPerlScript ($TeXExec,"$ForceMpy --mptex --nomp --batch $MPJobName") }
@@ -1156,46 +1169,48 @@ sub RunTeXMP
                     $MPrundone = 1 } } } }
    return $MPrundone }
 
-sub CopyFile # agressive copy, works for open files like in gs 
-  { my ($From,$To) = @_ ; 
-    return unless open(INP,"<$From") ; binmode INP ; 
-    return unless open(OUT,">$To") ; binmode OUT ; 
-    while (<INP>) { print OUT $_ } 
-    close (INP) ; 
+sub CopyFile # agressive copy, works for open files like in gs
+  { my ($From,$To) = @_ ;
+    return unless open(INP,"<$From") ; binmode INP ;
+    return unless open(OUT,">$To") ; binmode OUT ;
+    while (<INP>) { print OUT $_ }
+    close (INP) ;
     close (OUT) }
 
 sub CheckChanges # also tub
-  { my $JobName = shift ; 
-    my $checksum = 0 ; 
+  { my $JobName = shift ;
+    my $checksum = 0 ;
     my $MPJobName = MPJobName($JobName,"mpgraph") ;
-    if (open(MP, $MPJobName)) 
-      { while (<MP>) 
-          { unless (/random/oi) 
-              { $checksum += do { unpack("%32C*",<MP>) % 65535 } } } }
-    my $MPJobName = MPJobName($JobName,"mprun") ;
-    if (open(MP, $MPJobName)) 
-      { while (<MP>) 
-          { unless (/random/oi) 
-              { $checksum += do { unpack("%32C*",<MP>) % 65535 } } } }
+    if (open(MP, $MPJobName))
+      { while (<MP>)
+          { unless (/random/oi)
+              { $checksum += do { unpack("%32C*",<MP>) % 65535 } } } 
+        close (MP) }
+    $MPJobName = MPJobName($JobName,"mprun") ;
+    if (open(MP, $MPJobName))
+      { while (<MP>)
+          { unless (/random/oi)
+              { $checksum += do { unpack("%32C*",<MP>) % 65535 } } } 
+        close(MP) }
     return $checksum }
 
 sub RunConTeXtFile
   { my ($JobName, $JobSuffix) = @_ ;
     $JobName =~ s/\\/\//goi ;
     $RunPath =~ s/\\/\//goi ;
-    my $DummyFile = 0 ; 
-    if (-e "$JobName.$JobSuffix") 
+    my $DummyFile = 0 ;
+    if (-e "$JobName.$JobSuffix")
       { $DummyFile = ($JobSuffix =~ /xml/io) }
-    elsif (($RunPath)&&(-e "$RunPath/$JobName.$JobSuffix")) 
-      { $DummyFile = 1 }                                 
-    if ($DummyFile) 
+    elsif (($RunPath)&&(-e "$RunPath/$JobName.$JobSuffix"))
+      { $DummyFile = 1 }
+    if ($DummyFile)
       { open (TMP,">$JobName.tex") ;
-        if ($JobSuffix =~ /xml/io) 
-          { if ($Filters ne "") 
+        if ($JobSuffix =~ /xml/io)
+          { if ($Filters ne "")
               { print "     using xml filters : $Filters\n" }
             print TMP "\\ifx\\processXMLfile\\undefined\n" ;
-            print TMP "  \\let\\processXMLfile\\processfile\n" ; 
-            print TMP "\\fi\n" ; 
+            print TMP "  \\let\\processXMLfile\\processfile\n" ;
+            print TMP "\\fi\n" ;
             print TMP "\\starttext\n" ;
             print TMP "\\processXMLfilegrouped{$JobName.xml}\n" ;
             print TMP "\\stoptext\n" }
@@ -1213,8 +1228,8 @@ sub RunConTeXtFile
           { $ConTeXtInterface = "en" }
         if ($ConTeXtInterface eq "")
           { $ConTeXtInterface = "en" }
-       # unless ($JobSuffix eq "tex") # hack, preprocessing will change 
-       #  { if (lc $Convert eq "xml") 
+       # unless ($JobSuffix eq "tex") # hack, preprocessing will change
+       #  { if (lc $Convert eq "xml")
        #      { print "             xml input : $JobName.xml\n" ;
        #        ConvertXMLFile ($JobName) }
        #    elsif (lc $Convert eq "sgml")
@@ -1227,9 +1242,9 @@ sub RunConTeXtFile
           { $Format = "cont-$ConTeXtInterface" }
         print "            executable : $TeXProgramPath$TeXExecutable\n" ;
         print "                format : $TeXFormatPath$Format\n" ;
-        if ($RunPath) 
+        if ($RunPath)
           { print "           source path : $RunPath\n" }
-        if ($DummyFile) 
+        if ($DummyFile)
           { print "            dummy file : $JobName.$JobSuffix\n" }
         print "             inputfile : $JobName\n" ;
         print "                output : $FullFormat\n" ;
@@ -1264,7 +1279,7 @@ sub RunConTeXtFile
         if ($Modules)
           { print "               modules : $Modules\n" }
         if ($Environments)
-          { print "          environments : $Environment\n" }
+          { print "          environments : $Environments\n" }
         if ($Suffix)
           { $Result = "$JobName$Suffix" }
         PushResult($JobName) ;
@@ -1276,7 +1291,7 @@ sub RunConTeXtFile
             $Problems = RunTeX($JobName, $JobSuffix) ;
             if ($ForceTeXutil)
               { $Ok = RunTeXutil ($JobName) }
-            CopyFile("$JobName.top","$JobName.tmp") ; 
+            CopyFile("$JobName.top","$JobName.tmp") ;
             unlink "$JobName.top" ; # runtime option file
             PopResult($JobName) }
         else
@@ -1284,7 +1299,7 @@ sub RunConTeXtFile
              { MakeOptionFile (0, 0, $JobName) ;
                ++$TeXRuns ;
                print "               TeX run : $TeXRuns\n\n" ;
-               my $mpchecksumbefore = $mpchecksumafter = 0 ; 
+               my $mpchecksumbefore = $mpchecksumafter = 0 ;
                if ($AutoMPRun) { $mpchecksumbefore = CheckChanges($JobName) }
                $Problems = RunTeX($JobName,$JobSuffix) ;
                if ($AutoMPRun) { $mpchecksumafter = CheckChanges($JobName) }
@@ -1292,9 +1307,9 @@ sub RunConTeXtFile
                  { if (!$NoMPMode)
                      { $MPrundone = RunTeXMP ($JobName, "mpgraph") ;
                        $MPrundone = RunTeXMP ($JobName, "mprun") }
-                   $StopRunning = RunTeXutil ($JobName) ; 
+                   $StopRunning = RunTeXutil ($JobName) ;
                    if ($AutoMPRun)
-                     { $StopRunning = ($StopRunning && 
+                     { $StopRunning = ($StopRunning &&
                          ($mpchecksumafter==$mpchecksumbefore)) }
                    } }
             if (($NOfRuns==1)&&$ForceTeXutil)
@@ -1303,12 +1318,12 @@ sub RunConTeXtFile
               { MakeOptionFile (1, $FinalMode, $JobName) ;
                 print "         final TeX run : $TeXRuns\n\n" ;
                 $Problems = RunTeX($JobName, $JobSuffix) }
-            CopyFile("$JobName.top","$JobName.tmp") ; 
+            CopyFile("$JobName.top","$JobName.tmp") ;
             unlink "$JobName.tup" ; # previous tuo file
             unlink "$JobName.top" ; # runtime option file
-            PopResult($JobName) } 
-        if ($DummyFile) 
-          { unlink "$JobName.$JobSuffix" } } } 
+            PopResult($JobName) }
+        if ($DummyFile)
+          { unlink "$JobName.$JobSuffix" } } }
 
 sub RunSomeTeXFile
   { my ($JobName, $JobSuffix) = @_ ;
@@ -1330,13 +1345,13 @@ my $CombineFile = "texexec" ;
 
 sub RunModule
   { my @FileNames = sort @_ ;
-    unless (-e $FileNames[0]) 
-      { my $Name = $FileNames[0] ; 
-        @FileNames = ("$Name.tex", "$Name.mp", "$Name.pl", "$Name.pm") } 
-    foreach $FileName (@FileNames) 
-      { next unless -e $FileName ; 
-        my ($Name, $Suffix) = split (/\./,$FileName) ; 
-        next unless $Suffix =~ /(tex|mp|pl|pm)/io ; 
+    unless (-e $FileNames[0])
+      { my $Name = $FileNames[0] ;
+        @FileNames = ("$Name.tex", "$Name.mp", "$Name.pl", "$Name.pm") }
+    foreach $FileName (@FileNames)
+      { next unless -e $FileName ;
+        my ($Name, $Suffix) = split (/\./,$FileName) ;
+        next unless $Suffix =~ /(tex|mp|pl|pm)/io ;
         DoRunModule($Name, $Suffix) } }
 
 sub DoRunModule
@@ -1399,7 +1414,7 @@ sub CleanTeXFileName
 
 sub RunListing
   { my $FileName = my $CleanFileName = shift ;
-    my @FileNames = glob $FileName ; 
+    my @FileNames = glob $FileName ;
     return unless -f $FileNames[0] ;
     print "            input file : $FileName\n" ;
     if ($BackSpace eq "0pt")
@@ -1419,11 +1434,11 @@ sub RunListing
     print LIS "   header=0cm,footer=1.5cm,\n" ;
     print LIS "   width=middle,height=middle]\n" ;
     print LIS "\\setuptyping[lines=yes]\n" ;
-    if ($Pretty) 
+    if ($Pretty)
       { print LIS "\\setuptyping[option=color]\n" }
-    foreach $FileName (@FileNames) 
+    foreach $FileName (@FileNames)
       { $CleanFileName = lc CleanTeXFileName($FileName) ;
-        print LIS "\\page\n" ; 
+        print LIS "\\page\n" ;
         print LIS "\\setupfootertexts[$CleanFileName][pagenumber]\n" ;
         print LIS "\\typefile\{$FileName\}\n" }
     print LIS "\\stoptext\n" ;
@@ -1508,8 +1523,15 @@ sub RunSelect
     open (SEL, ">$SelectFile.tex") ;
     print SEL "% format=english\n" ;
     if ($PaperFormat ne 'standard')
-      { print "             papersize : $PaperFormat\n" ;
-        print SEL "\\setuppapersize[$PaperFormat][$PaperFormat]\n" }
+#      { print "             papersize : $PaperFormat\n" ;
+#        print SEL "\\setuppapersize[$PaperFormat][$PaperFormat]\n" }
+#
+          { $_ = $PaperFormat ; # NO UPPERCASE ! 
+            my ($from,$to) = split (/\*/) ;
+            if ($to eq "") { $to = $from }
+            print "             papersize : $PaperFormat\n" ;
+            print SEL "\\setuppapersize[$from][$to]\n" }
+#
     print SEL "\\definepapersize\n" ;
     print SEL "  [offset=$PaperOffset]\n";
     print SEL "\\setuplayout\n" ;
@@ -1563,12 +1585,12 @@ sub RunCopy
     print COP "  [directory=]\n" ;
     print COP "\\starttext\n" ;
     print COP "\\copypages\n" ;
-    print COP "  [$FileName]\n" ; 
-    print COP "  [scale=$PageScale,\n" ; 
+    print COP "  [$FileName]\n" ;
+    print COP "  [scale=$PageScale,\n" ;
     if ($Markings)
       { print COP "   marking=on,\n" ;
         print "           cutmarkings : on\n" }
-    print COP "   offset=$PaperOffset]\n" ; 
+    print COP "   offset=$PaperOffset]\n" ;
     print COP "\\stoptext\n" ;
     close (COP) ;
     $ConTeXtInterface = "en" ;
@@ -1583,9 +1605,16 @@ sub RunCombine
     open (COM, ">$CombineFile.tex") ;
     print COM "% format=english\n" ;
     if ($PaperFormat ne 'standard')
-      { print "         papersize : $PaperFormat\n" ;
-        print COM "\\setuppapersize\n" ;
-        print COM "  [$PaperFormat][$PaperFormat]\n" }
+#      { print "         papersize : $PaperFormat\n" ;
+#        print COM "\\setuppapersize\n" ;
+#        print COM "  [$PaperFormat][$PaperFormat]\n" }
+# see RunSelect 
+          { $_ = $PaperFormat ; # NO UPPERCASE ! 
+            my ($from,$to) = split (/\*/) ;
+            if ($to eq "") { $to = $from }
+            print "             papersize : $PaperFormat\n" ;
+            print COM "\\setuppapersize[$from][$to]\n" }
+#
     if ($PaperOffset eq '0pt')
       { $PaperOffset = '1cm' }
     my $CleanFileName = CleanTeXFileName($FileName) ;
@@ -1628,7 +1657,7 @@ sub RunOneFormat
   { my ($FormatName) = @_ ;
     my @TeXFormatPath ;
     my $TeXPrefix = "" ;
-    if (($fmtutil ne "")&&($FormatName ne "metafun"))
+    if (($fmtutil ne "")&&($FormatName !~ /metafun|mptopdf/io))
       { my $cmd = "$fmtutil --byfmt $FormatName" ;
         if ($Verbose) { print "\n$cmd\n\n" }
         MakeUserFile ; # this works only when the path is kept
@@ -1687,7 +1716,6 @@ sub RunFormats
 sub RunMpFormat
   { my $MpFormat = shift ;
     return if ($MpFormat eq '') ;
-    my $MpFormatPath = '' ;
     my $CurrentPath = cwd() ;
     $MpFormatPath = LocatedFormatPath($MpFormatPath) ;
     if ($MpFormatPath ne '') { chdir "$MpFormatPath" }
@@ -1725,11 +1753,11 @@ sub RunFiles
               { RunCombine ($JobName) } } }
     elsif ($TypesetModule)
       { RunModule (@ARGV) }
-    else 
-      { my $JobSuffix = "tex" ; 
+    else
+      { my $JobSuffix = "tex" ;
         foreach my $JobName (@ARGV)
-          { if ($JobName =~ s/\.(\w+)$//io) 
-              { $JobSuffix =  $1 } 
+          { if ($JobName =~ s/\.(\w+)$//io)
+              { $JobSuffix =  $1 }
             if (($Format eq '')||($Format =~ /^cont.*/io))
               { RunConTeXtFile ($JobName, $JobSuffix) }
             else
@@ -1764,9 +1792,9 @@ my $mpochecksum = 0 ;
 
 sub checkMPgraphics # also see makempy
   { my $MpName = shift ;
-    if ($MpyForce) 
-      { $MpName .= " --force " } # dirty  
-    else 
+    if ($MpyForce)
+      { $MpName .= " --force " } # dirty
+    else
       { return 0 unless -s "$MpName.mpo" > 32 ;
         return 0 unless (open (MPO,"$MpName.mpo")) ;
         $mpochecksum = do { local $/ ; unpack("%32C*",<MPO>) % 65535 } ;
@@ -1796,14 +1824,14 @@ sub doRunMP ###########
     my $TexFound = 0 ;
     my $MpFile = "$MpName.mp" ;
     if (open(MP, $MpFile))
-      { # fails with % 
+      { # fails with %
         # local $/ = "\0777" ; $_ = <MP> ; close(MP) ;
 
-my $MPdata = "" ; 
-while (<MP>) { unless (/^\%/) { $MPdata .= $_ } }   
+my $MPdata = "" ;
+while (<MP>) { unless (/^\%/) { $MPdata .= $_ } }
 $_ = $MPdata ;
 close (MP) ;
- 
+
         # save old file
         unlink ($MpKep) ;
         return if (-e $MpKep) ;
@@ -1854,9 +1882,9 @@ $TexFound = $MergeBE || /btex .*? etex/o ;
             if (($MpFormat ne '')&&($MpFormat !~ /(plain|mpost)/oi))
               { print "                format : $MpFormat\n" ;
                 $cmd .= " $MpPassString $MpFormatFlag$MpFormat " }
-# prevent nameclash, experimental 
+# prevent nameclash, experimental
 my $MpMpName = "$MpName" ;
-#my $MpMpName = "./$MpName" ; $MpMpName =~ s/\.\/\.\//\.\//o ; 
+#my $MpMpName = "./$MpName" ; $MpMpName =~ s/\.\/\.\//\.\//o ;
 $Problems = system ("$cmd $MpMpName" ) ;
 #            $Problems = system ("$cmd $MpName" ) ;
             open (MPL,"$MpName.log") ;
@@ -1890,6 +1918,35 @@ sub RunMPX
            unlink $MpTex ;
            unlink $MpDvi } } } }
 
+sub load_set_file
+  { my %new ; my %old ;
+    my ($file, $trace) = @_ ;
+    if (open(BAT,$file))
+      { while (<BAT>)
+          { chomp ; 
+            if (/\s*SET\s+(.+?)\=(.+)\s*/io)
+              { my ($var,$val) = ($1, $2) ;
+                $val =~ s/\%(.+?)\%/$ENV{$1}/goi ;
+                unless (defined($old{$var}))
+                  { if (defined($ENV{$var}))
+                      { $old{$var} = $ENV{$var} }
+                    else
+                      { $old{$var} = "" } }
+                $ENV{$var} = $new{$var} = $val } }
+        close (BAT) }
+    if ($trace)
+      { foreach my $key (sort keys %new)
+          { if ($old{$key} ne $new{$key})
+              { print " changing env variable : '$key' from '$old{$key}' to '$new{$key}'\n" }
+            elsif ($old{$key} eq "")
+              { print "  setting env variable : '$key' to '$new{$key}'\n" }
+            else
+              { print "  keeping env variable : '$key' at '$new{$key}'\n" } }
+        print "\n" } }
+
+if ($SetFile ne "")
+  { load_set_file ($SetFile,$Verbose) }
+
 if ($TypesetListing)
   { RunListing (@ARGV) }
 elsif ($TypesetFigures)
@@ -1904,7 +1961,7 @@ elsif ($MakeFormats)
     else
       { RunFormats } }
 elsif (@ARGV)
-  { #foreach (@ARGV) { $_ =~ s/\.tex//io } 
+  { #foreach (@ARGV) { $_ =~ s/\.tex//io }
     @ARGV = <@ARGV> ; RunFiles }
 else
   { print $Help{HELP} ;

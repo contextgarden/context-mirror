@@ -16,7 +16,7 @@
 %D \macros
 %D   {getrandomcount, getrandomdimen, 
 %D    getrandomfloat, getrandomnumber,
-%D    setrandomseed}
+%D    setrandomseed, getrandomseed}
 %D 
 %D This module load Donald Arseneau's generic file
 %D \type{random.tex}. A small shell is needed because we
@@ -38,6 +38,12 @@
 %D
 %D \starttypen
 %d \setrandomseed{number>0}
+%D \stoptypen
+%D
+%D and get by: 
+%D
+%D \starttypen
+%D \getrandomseed\randomseed
 %D \stoptypen
 
 \ifx\nextrandom\undefined
@@ -105,7 +111,10 @@
   {\getrandomdimen{\scratchdimen}{#2pt}{#3pt}%
    \edef#1{\withoutpt\the\scratchdimen}}
 
-\def\setrandomseed#1%
+\unexpanded \def\setrandomseed#1%
   {\randomi=#1\relax}
+
+\unexpanded \def\getrandomseed#1%
+  {\edef#1{\number\randomi}}
 
 \endinput

@@ -1,6 +1,6 @@
 %D \module
 %D   [     file=enco-run,
-%D      version=2000.27.12, % moved to runtime module 
+%D      version=2000.27.12, % moved to runtime module
 %D        title=\CONTEXT\ Encoding Macros,
 %D     subtitle=Runtime Macros,
 %D       author=Hans Hagen,
@@ -8,14 +8,14 @@
 %D    copyright=Hans Hagen \& Ton Otten]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
-%C details. 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
 
-\unprotect 
+\unprotect
 
-\gdef\visualizecharacters% {}'s needed 
+\gdef\visualizecharacters% {}'s needed
   {\def\uchar##1##2{\hbox to 2.5em
-     {\ifcase##1\relax\red\or\blue\else\green\fi##1\hss##2}}% 
+     {\ifcase##1\relax\red\or\blue\else\green\fi##1\hss##2}}%
    \let\normalbuildtextaccent\buildtextaccent
    \let\normalbottomaccent   \bottomaccent
   %\def\char{\green\normalchar}%
@@ -25,29 +25,31 @@
    \def\buildtextaccent{\let\green\empty\blue\normalbuildtextaccent}%
    \def\bottomaccent{\let\green\empty\red\normalbottomaccent}}
 
-\gdef\visualizecharacterslegend%
-  {\hbox{\currentencoding\space\fontname\font:\space 
-     {\blue composed}\space{\red bottom}\space{\green char}\space raw}}
+\unexpanded\gdef\visualizecharacterslegend%
+  {\hbox
+     {\edef\banner{\currentencoding\space\fontname\font}%
+      \tttf\banner:\space
+      {\blue composed}\space{\red bottom}\space{\green char}\space raw}}
 
 \gdef\showaccents%
   {\bgroup
-  %\savefont
+   \savefont
    \setuptextrules[\c!korps=,\c!letter=]
    \starttextrule{\visualizecharacterslegend}
    \witruimte
-  %\restorefont\stelinterliniein
+   \restorefont\stelinterliniein
    \visualizecharacters
    \def\do##1%
      {{\def\dodo####1%
          {\hss\hbox to 1em{\hss\expanded{##1####1\recurselevel}\hss}}%
        \hbox to \hsize
          {\strut
-          \localcolortrue 
+          \localcolortrue
           \hbox to 2em{\tttf\string##1\hss}%
           \dorecurse{26}{\dodo\character}}%
        \hbox to \hsize
          {\strut
-          \localcolortrue 
+          \localcolortrue
           \hskip2em
           \dorecurse{26}{\dodo\Character}}}%
        \par}
@@ -59,7 +61,7 @@
 
 \gdef\showcharacters%
   {\bgroup
-  %\savefont
+   \savefont
    \setuptextrules[\c!korps=,\c!letter=]
    \starttextrule{\visualizecharacterslegend}
    \witruimte
@@ -72,20 +74,21 @@
    \def\definecharacter ##1 ##2 %
      {\setbox0=\hbox spread 1em{\getvalue{##1}}%
       \ifdim\wd0>\dimen0 \dimen0=\wd0 \fi
-      \setbox2=\hbox spread 1em{\box0 ##1}
+      \setbox2=\hbox spread 1em{\box0 \tttf##1}
       \ifdim\wd2>\dimen2 \dimen2=\wd2 \fi}%
    \readsysfile{\f!encodingprefix def}{}{}
    \edef\encwidth{\the\dimen0}
    \dimen0=\hsize
    \advance\dimen0 2em
    \advance\dimen2 2em
-   \divide \dimen0 by \dimen2 \advance\dimen0 1sp 
+   \divide \dimen0 by \dimen2 \advance\dimen0 1sp
    \edef\enccols{\number\dimen0}
    \visualizecharacters
    \startcolumns[\c!n=\enccols,\c!afstand=2em]
-  %\restorefont\stelinterliniein
+   \restorefont\stelinterliniein
    \def\definecharacter ##1 ##2 %
-     {\hbox{\strut\localcolortrue\hbox to \encwidth{\getvalue{##1}\hss}##1}\par}
+     {\setbox0=\hbox to \hsize{\localcolortrue\hbox to \encwidth{\getvalue{##1}\hss}\tttf##1}%
+      \ht0\strutheight \dp0\strutdepth \box0 \allowbreak}
    \readsysfile{\f!encodingprefix def}{}{}
    \stopcolumns
    \stoptextrule
@@ -100,4 +103,4 @@
    \NC sample   \NC \hyphenatedword{#1} \NC \NR
    \stoptabulate}
 
-\protect \endinput 
+\protect \endinput

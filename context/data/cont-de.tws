@@ -353,6 +353,7 @@ var:spaltenabstand:*Dimension::
 var:marginalabstand:*Dimension::
 var:n:*Nummer::
 var:nummerbefehl:*\Befehl#1::
+var:split:tolerant,streng,sehrstreng,*Nummer::
 ivr:umrahmt::
 stopsetup
 
@@ -758,9 +759,11 @@ var:vor:*Befehl::
 var:zwischen:*Befehl::
 var:nach:*Befehl::
 var:farbe:*Name::
+var:hintergrundfarbe:*Name::
 var:hoehe:*Dimension,max::
 var:tiefe:*Dimension,max::
-var:alternative:a,b,c::
+var:alternative:a,b,c,d::
+var:liniendicke:*Dimension::
 stopsetup
 
 startsetup
@@ -2622,6 +2625,7 @@ var:fusszeilenstatus:normal,stop,start,leer,kein,keinebeschriftung::
 var:textstatus:normal,stop,start,leer,kein,keinebeschriftung::
 var:statusoben:stop,start::
 var:untenstatus:stop,start::
+var:farbe:*Name::
 stopsetup
 
 startsetup
@@ -2735,7 +2739,7 @@ stopsetup
 startsetup
 com:stelletoleranzein:
 typ:vals/:
-val:horizontal,vertikal, strecken,sehrstreng,streng,tolerant,sehrtolerant:sehrstreng:
+val:horizontal,vertikal, strecken,spatium,sehrstreng,streng,tolerant,sehrtolerant:sehrstreng:
 stopsetup
 
 startsetup
@@ -3290,7 +3294,7 @@ var:umrahmen:an,aus::
 var:ymax:*Nummer::
 var:xmax:*Nummer::
 var:verzeichnis:*Text::
-var:platz:lokal,global,default::
+var:platz:lokal,global,default,kein::
 var:maxbreite:*Dimension::
 var:maxhoehe:*Dimension::
 stopsetup

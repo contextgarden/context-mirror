@@ -14,9 +14,9 @@
 %D This environment can be used to typeset interactive
 %D presentations. This module was first used at the 1998 
 %D publishers conference of the European Portable Document 
-%D Association.
+%D Association (now merged into a graphics association).
 
-\usemodule[pre-general] % mode=step 
+\usemodule[pre-general]
 
 %D \macros
 %D   {setupbodyfont, switchtobodyfont, setuplayout}
@@ -24,11 +24,12 @@
 %D At \PRAGMA\ we prefer using the Lucida Bright fonts, but 
 %D one can of course load another typeface. 
 
-\setupbodyfont
-  [lbr,14.4pt]
+\startmode[asintended] \setupbodyfont[lbr] \stopmode
+
+\setupbodyfont[14.4pt]
 
 \setuplayout
-  [style={\switchtobodyfont[12pt]}]
+  [style=smallbodyfont]
 
 %D \macros
 %D   {setuppapersize, setuplayout}
@@ -70,14 +71,8 @@
 %D Of course we enable color. We define some logical colors,
 %D of which most default to the same green shade. 
 
-\definecolor [Backgrounds] [r= 0, g=.7, b=.4]
-\definecolor [Actions]     [Backgrounds]
-\definecolor [Lines]       [Actions]
-\definecolor [Page]        [r=.8, g=.8, b=.8]
-
-%\definecolor [Actions] [r=  1, g=.9, b=.5]
-%\definecolor [Actions] [r= .1, g=.5, b=.9]
-%\definecolor [Actions] [r=  1, g=.3, b=.1]
+\definecolor [BackgroundColor]  [r=.8, g=.8, b=.8]
+\definecolor [OrnamentColor]    [r= 0, g=.7, b=.4]
 
 \setupcolors
   [state=start]
@@ -90,7 +85,8 @@
 
 \setupinteraction
   [state=start,
-   color=Actions]
+   color=OrnamentColor,
+   contrastcolor=Ornamentcolor]
 
 \setupinteractionscreen
   [option=max,
@@ -103,195 +99,137 @@
 %D And why not bring some color in itemizations too?
 
 \setupitemize
-  [color=Backgrounds] 
+  [color=OrnamentColor]
 
 %D \macros
 %D   {defineoverlay, setupbackgrounds}
 %D 
 %D The navigational elements and the backgrounds are 
-%D provided by \METAPOST. The next few macros are meant for the
-%D more experienced \CONTEXT\ user. When, as demonstrated 
-%D here, we make the dimensions part of the name, we can be 
-%D sure that new ones are generated when we change the page 
-%D size in between. 
+%D provided by \METAPOST.
 %D 
 %D When \METAPOST\ is used, it makes sense to generate the
 %D graphics at runtime. This is supported when one enables
 %D system calls in the local \type {texmf.cnf} file and add the
 %D switch \type {\runMPgraphicstrue} to the local file \type
 %D {cont-sys.tex}. When direct processing is disabled or not 
-%D supported, \TEXEXEC\ will tke care of graphic generation. 
+%D supported, \TEXEXEC\ will take care of graphic generation. 
 
-\def\MPpagebackground#1#2#3%
-  {\startreusableMPgraphic{pb:#1#2#3}
-     delta := #3 ;
-     fill unitsquare
-       xscaled #1 yscaled #2
-       withcolor \MPcolor{Page};
-     draw unitsquare
-       xscaled (#1-2delta) yscaled (#2-2delta)
-       shifted (delta,delta)
-       withpen pencircle scaled .5delta
-       withcolor \MPcolor{Backgrounds} ; 
-   \stopreusableMPgraphic
-   \reuseMPgraphic{pb:#1#2#3}}
+\startuniqueMPgraphic{PageBackground}
+  fill unitsquare
+    xyscaled(OverlayWidth,OverlayHeight) 
+    withcolor OverlayColor ; 
+  draw unitsquare
+    xyscaled(OverlayWidth,OverlayHeight) 
+    enlarged (-2*OverlayLineWidth)
+    withpen pencircle scaled OverlayLineWidth
+    withcolor OverlayLineColor ; 
+\stopuniqueMPgraphic
 
 \defineoverlay
   [PageBackground]
-  [\MPpagebackground{\overlaywidth}{\overlayheight}{.25cm}]
+  [\uniqueMPgraphic{PageBackground}] 
 
 \setupbackgrounds
   [page]
-  [background=PageBackground]
+  [background=PageBackground,
+   backgroundcolor=BackgroundColor,
+   rulethickness=.125cm,
+   framecolor=OrnamentColor]
 
 %D \macros
 %D   {setuptexttexts}
 %D
 %D By clicking on the text area, one goes to the next page. 
-%D We could also have use the overlay mechanism, but this 
-%D takes more settings and requires to generate the backgounds 
-%D each page. 
-%D 
-%D \starttypen 
-%D \defineoverlay[BackgroundButton][\BackgroundButton]
-%D \setupbackgrounds[text][text][background=BackgroundButton]
-%D \setupbackgrounds[state=repeat]
-%D \stoptypen
-%D
-%D We go for the fast one. 
+%D We hook this feature into the text backgrounds. 
 
-\def\MPtextbackground#1#2#3%
-  {\startreusableMPgraphic{tx:#1#2#3}
-     delta := #3 ;
-     draw unitsquare
-       xscaled #1 yscaled #2
-       withpen pencircle scaled .5delta
-       withcolor \MPcolor{Backgrounds} ; 
-   \stopreusableMPgraphic
-   \reuseMPgraphic{tx:#1#2#3}}
+\startuniqueMPgraphic{TextBackground}
+  draw unitsquare
+    xyscaled(OverlayWidth,OverlayHeight) 
+    enlarged (4*OverlayLineWidth)
+    withpen pencircle scaled OverlayLineWidth
+    withcolor OverlayLineColor ;  
+\stopuniqueMPgraphic
 
 \defineoverlay
   [TextBackground]
-  [\MPtextbackground{\overlaywidth}{\overlayheight}{.125cm}]
+  [\uniqueMPgraphic{TextBackground}]
 
-\def\BackgroundButton%
-  {\button
-     [background=TextBackground,
-      backgroundoffset=.25cm,
-      frame=off,
-      height=\vsize,
-      width=\hsize]{}[nextpage]}
+\defineoverlay
+  [NextPage]
+  [\overlaybutton{nextpage}]
 
-\setuptexttexts
-  [\BackgroundButton]
-  []
+\setupbackgrounds
+  [text]
+  [background={TextBackground,NextPage},
+   backgroundcolor=BackgroundColor,
+   rulethickness=.0625cm,
+   framecolor=OrnamentColor]
 
 %D \macros
-%D   {setupbottomtexts}
+%D   {setupinteractionmenu,startinteractionmenu}
 %D
 %D At the bottom of the screen, we show three buttons. These
 %D direct us to the previous or next jump or exit the document.
 
-% much too complicated, can be done in a few lines nowadays
+\setupMPvariables[RightArrow][height=\bottomheight]
+\setupMPvariables[LeftArrow] [height=\bottomheight]
+\setupMPvariables[Circle]    [height=\bottomheight]
+\setupMPvariables[UpArrow]   [height=\bottomheight]
 
-\def\MPright#1#2%
-  {\startreusableMPgraphic{rt:#1#2}
-     z1 = ( 0,    0) ;
-     z2 = (#1, .5y3) ;
-     z3 = ( 0,   #2) ;
-     path p ; p := z1--z2--z3--cycle;
-     lw := #2/5 ; pickup pencircle scaled lw;
-     filldraw p withcolor \MPcolor{Backgrounds} ;
-     set_outer_boundingbox currentpicture;
-   \stopreusableMPgraphic
-   \reuseMPgraphic{rt:#1#2}}
+\startuniqueMPgraphic{RightArrow}{height}
+  z1=(0,0) ; z2=(\MPvar{height},.5y3) ; z3=(0,\MPvar{height}) ;
+  drawfill z1--z2--z3--cycle
+    withpen pencircle scaled (\MPvar{height}/5)
+    withcolor \MPcolor{OrnamentColor} ;
+\stopuniqueMPgraphic
 
-\def\MPleft#1#2%
-  {\startreusableMPgraphic{lt:#1#2}
-     z1 = (#1,    0) ;
-     z2 = ( 0, .5y3) ;
-     z3 = (#1,   #2) ;
-     path p ; p := z1--z2--z3--cycle;
-     lw := #2/5 ; pickup pencircle scaled lw;
-     filldraw p withcolor \MPcolor{Backgrounds} ;
-     set_outer_boundingbox currentpicture;
-   \stopreusableMPgraphic
-   \reuseMPgraphic{lt:#1#2}}
+\startuniqueMPgraphic{LeftArrow}{height}
+  z1=(\MPvar{height},0) ; z2=(0,.5y3) ; z3=(\MPvar{height},\MPvar{height}) ;
+  drawfill z1--z2--z3--cycle
+    withpen pencircle scaled (\MPvar{height}/5)
+    withcolor \MPcolor{OrnamentColor} ;
+\stopuniqueMPgraphic
 
-\def\MPcircle#1#2%
-  {\startreusableMPgraphic{ci:#1#2}
-     rx := #1; ry := #2; 
-     path p ; p := fullcircle xscaled rx yscaled ry;
-     lw := #2/5 ; pickup pencircle scaled lw;
-     filldraw p withcolor \MPcolor{Backgrounds} ;
-     set_outer_boundingbox currentpicture;
-   \stopreusableMPgraphic
-   \reuseMPgraphic{ci:#1#2}}
+\startuniqueMPgraphic{Circle}{height}
+  drawfill fullcircle scaled \MPvar{height}
+    withpen pencircle scaled (\MPvar{height}/5)
+    withcolor \MPcolor{OrnamentColor} ;
+\stopuniqueMPgraphic
 
-\def\MPwhat#1#2%
-  {\startreusableMPgraphic{wh:#1#2} % could be rotated unitsquare
-     z1 = (   0,  0) ;
-     z2 = (  #1,  0) ;
-     z3 = (.5x2, #2) ;
-     path p ; p := z1--z2--z3--cycle;
-     lw := #2/5 ; pickup pencircle scaled lw;
-     filldraw p withcolor \MPcolor{Backgrounds} ;
-     set_outer_boundingbox currentpicture;
-   \stopreusableMPgraphic
-   \reuseMPgraphic{wh:#1#2}}
+\startuniqueMPgraphic{UpArrow}{height}
+  z1=(0,0) ; z2=(\MPvar{height},0) ; z3=(.5x2,\MPvar{height}) ;
+  drawfill z1--z2--z3--cycle
+    withpen pencircle scaled (\MPvar{height}/5)
+    withcolor \MPcolor{OrnamentColor} ;
+\stopuniqueMPgraphic
 
-\unexpanded\def\BackwardButton%
-  {\gotobox{\MPleft{\the\bottomheight}{\the\bottomheight}}[previouspage]}
+\setupinteractionmenu
+  [bottom]
+  [state=start,
+   frame=off,
+   width=.3\textwidth,
+   height=\bottomheight]
 
-\unexpanded\def\ForwardButton%
-  {\gotobox{\MPright{\the\bottomheight}{\the\bottomheight}}[nextpage]}
+\setupinteraction
+  [menu=on]
 
-\unexpanded\def\ExitButton%
-  {\gotobox{\MPcircle{\the\bottomheight}{\the\bottomheight}}[CloseDocument]}
-
-\unexpanded\def\WhateverButton%
-  {\doifreferencefoundelse{Whatever}
-     {\gotobox{\MPwhat{\the\bottomheight}{\the\bottomheight}}[Whatever]}
+\def\WhateverButton
+  {\doifreferencefoundelse{Whatever} 
+     {\raw [Whatever] \uniqueMPgraphic{UpArrow} \\}   
      {}}
 
-\def\BottomButton%
-  {\button
-     [frame=off,
-      height=\bottomheight,
-      width=.3\textwidth]{}[Topics]}
-
-\setupbottomtexts
-  [\BottomButton
-   \hfill
-   \WhateverButton
-   \kern2\bottomheight
-   \BackwardButton
-   \kern.5\bottomheight
-   \ExitButton 
-   \kern.5\bottomheight
-   \ForwardButton
-   \kern.5\bottomheight]
-  [] % redundant
-
-% an alternative way: 
-%
-% \setupinteractionmenu[bottom][state=start]
-%
-% \setupinteraction[menu=on]
-%
-% \startinteractionmenu[bottom]
-%   \button[frame=off,height=\bottomheight,width=.3\textwidth]{}[Topics]
-%   \hfill
-%   \doifreferencefoundelse{Whatever}
-%     {\gotobox{\MPwhat{\the\bottomheight}{\the\bottomheight}}[Whatever]}{}%
-%   \kern2\bottomheight
-%   \gotobox{\MPleft{\the\bottomheight}{\the\bottomheight}}[previouspage]%
-%   \kern.5\bottomheight
-%   \gotobox{\MPcircle{\the\bottomheight}{\the\bottomheight}}[CloseDocument]%
-%   \kern.5\bottomheight
-%   \gotobox{\MPright{\the\bottomheight}{\the\bottomheight}}[nextpage]%
-%   \kern.5\bottomheight
-% \stopinteractionmenu
+\startinteractionmenu[bottom]
+  \but [Topics]                                     \\ % secret button 
+  \hfill
+  \WhateverButton                                      % user specific 
+  \kern2\bottomheight
+  \raw [previouspage]  \uniqueMPgraphic{LeftArrow}  \\
+  \kern.5\bottomheight
+  \raw [CloseDocument] \uniqueMPgraphic{Circle}     \\
+  \kern.5\bottomheight
+  \raw [nextpage]      \uniqueMPgraphic{RightArrow} \\
+  \kern.5\bottomheight
+\stopinteractionmenu
 
 %D \macros
 %D   {TitlePage, Topics, Topic, Subject}
@@ -382,8 +320,6 @@
    continue=no,
    style=\tfa]
 
-%D The next piece of code is new. 
-
 %D \macros
 %D   {setuplist}
 %D
@@ -397,20 +333,26 @@
    before=,
    after=]
 
+\setuplist
+  [Topic]
+  [criterium=all]
+
 \def\Topics#1% 
   {\determinelistcharacteristics[Topic]
-   \ifcase\utilitylistlength\else
-     \Nopic[Topics]{#1}
-     \startcolumns
-     \placelist[Topic][criterium=all]
-     \stopcolumns
-   \fi}
+   \doifmode{*list}
+     {\Nopic[Topics]{#1}
+      \startcolumns
+      \placelist[Topic]
+      \stopcolumns}}
+
+\setuplist
+  [Subject]
+  [criterium=Topic]
 
 \def\Subjects% 
-  {\determinelistcharacteristics[Subject][criterium=Topic]
-   \ifcase\utilitylistlength\else
-     \placelist[Subject][criterium=Topic]
-   \fi}
+  {\determinelistcharacteristics[Subject]
+   \doifmode{*list}
+     {\placelist[Subject]}}
 
 \setuphead
   [Topic]

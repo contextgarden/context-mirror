@@ -44,17 +44,6 @@
 
 \definesystemvariable{ARABTEX}
 
-%D This will go to into font-ini.tex (moved from font-uni.tex): 
-
-\def\fontstylesuffix%
-  {\ifnum\fam=\tffam     \s!Regular \else 
-   \ifnum\fam=\bffam        \s!Bold \else
-   \ifnum\fam=\slfam     \s!Slanted \else
-   \ifnum\fam=\itfam      \s!Italic \else
-   \ifnum\fam=\bsfam \s!BoldSlanted \else
-   \ifnum\fam=\bifam  \s!BoldItalic \else
-                         \s!Regular \fi\fi\fi\fi\fi\fi}
-
 %D A few (maybe too) simple hooks into the font mechanism. The
 %D hook into the language module is not yet done.  
 

@@ -1,0 +1,60 @@
+%D \module
+%D   [      file=s-tnf-01,
+%D        version=2001.08.22,
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=Font Environment 1,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
+%C details. 
+
+%D This file is used by the \type {texfont.pl} installation 
+%D script. 
+
+%D Modes: compact 
+
+\dontcomplain
+
+\setupbodyfont
+  [10pt]
+
+\setuplayout
+  [backspace=30pt,
+   topspace=30pt,
+   footer=0pt,
+   header=36pt,
+   width=middle,
+   height=middle]
+
+\setupcolors
+  [state=start]
+
+\def\ShowFont
+  {\dotripleempty\doShowFont}
+
+\def\doShowFont[#1][#2][#3]%
+  {\bgroup
+   \ifthirdargument
+     \definefontsynonym[WhateverName][#2][encoding=#3]
+     \definefont[WhateverFont][WhateverName]
+     \setupheadertexts[\tttf#2\quad#1\quad#3]
+     \WhateverFont
+     \setupinterlinespace
+     \showfont[WhateverName]
+     \showligatures[WhateverName]
+     \doifnotmode{compact}{\showaccents\showcharacters}
+   \else
+     \definefontsynonym[WhateverName][#2]
+     \definefont[WhateverFont][WhateverName]
+     \setupheadertexts[\tttf#2\quad#1\quad(special font)]
+     \WhateverFont
+     \setupinterlinespace
+     \showfont[WhateverName]
+   \fi
+   \page            
+   \egroup}
+
+\endinput 

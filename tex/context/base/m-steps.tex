@@ -395,7 +395,13 @@
   {\dosingleempty\dostartSTEPchart}
 
 \long\def\dostartSTEPchart[#1]#2\stopSTEPchart
-  {\ifinsidefloat \else \witruimte \@@STPCvoor \startbaselinecorrection \fi
+  {\ifinsidefloat \else 
+     \witruimte 
+     \@@STPCvoor 
+     \startbaselinecorrection 
+     \setlocalhsize
+     \noindent
+   \fi
    \vbox\bgroup
    \setupSTEPcharts[#1]%
    \forgetall
@@ -883,3 +889,26 @@
    \egroup}
 
 \protect \endinput
+
+% A simple paragraph-flow test: 
+
+\starttext 
+
+\startbuffer
+\startSTEPchart
+\cells {A}     {B}
+\cells {one}   {five}  \texts{$+2$}{$-2$}
+\cells {two}   {four}  \texts{$+3$}{$-3$}
+\cells {three} {three} \texts{$+4$}{$-4$}
+\cells {four}  {two}   \texts{$+5$}{$-5$}
+\cells {five}  {one}
+\stopSTEPchart
+\stopbuffer
+
+\getbuffer 
+
+\startnarrower \getbuffer \stopnarrower
+
+\placefigure[left]{}{} \getbuffer
+
+\stoptext 

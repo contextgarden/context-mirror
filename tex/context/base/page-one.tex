@@ -131,7 +131,7 @@
 \def\OTRONEdodosettopinserts%
   {\ifnum\noffloatinserts<\noftopfloats
      \dogetfloat
-     \ifdim\topinserted=\!!zeropoint\relax
+     \ifdim\topinserted=\zeropoint
        \topofinserttrue
      \else
        \topofinsertfalse
@@ -209,11 +209,11 @@
 
 \def\OTRONEdosetbothinserts%
   {\ifflushingfloats
-     \global\topinserted=\!!zeropoint
-     \global\botinserted=\!!zeropoint 
+     \global\topinserted=\zeropoint
+     \global\botinserted=\zeropoint 
    \else
-     \global\topinserted=\!!zeropoint \OTRONEdosettopinserts
-     \global\botinserted=\!!zeropoint \OTRONEdosetbotinserts
+     \global\topinserted=\zeropoint \OTRONEdosettopinserts
+     \global\botinserted=\zeropoint \OTRONEdosetbotinserts
    \fi}
 
 \def\OTRONEdotopinsertions%

@@ -11,34 +11,27 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-% etex optimized 
-
-\unprotect 
-
-\def\unspaced#1%
-  {\dounspaced#1\end}
-
-\def\dounspaced#1%
-  {\ifx#1\end
-   \else\ifx#1\blankspace
-     \@EA\@EA\@EA\dounspaced
-   \else
-     #1\@EA\@EA\@EA\dounspaced
-   \fi\fi}
-
-\def\unspaceargument#1\to#2%
-  {\convertargument#1\to#2%
-   \@EA\edef\@EA#2\@EA{\@EA\unspaced\@EA{#2}}}
-
-\def\unspaceafter#1#2%
-  {\edef\ascii{\dounspaced#2\end}\@EA#1\@EA{\ascii}}
-
-\protect 
-
 \beginTEX 
-  \writestatus{xml}{sorry, xml is only supported in (pdf)etex}
+  \writestatus{XML}{sorry, XML is only supported in (pdf)etex}
+  \def\startXMLdefinitions{\gobbleuntil\stopXMLdefinitions}
   \endinput 
 \endTEX 
+
+\beginETEX XML
+
+  \bgroup \obeylines
+
+    \gdef\startXMLdefinitions% 
+      {\bgroup\obeylines\dostartXMLdefinitions} 
+
+    \gdef\dostartXMLdefinitions #1 
+      {\egroup\doifsomething{#1}{\writestatus{XML}{loading #1 support}}}
+
+    \global\let\stopXMLdefinitions\relax
+
+  \egroup
+
+\endETEX
 
 \writestatus{loading}{Context XML Macros (ini)}
 
@@ -186,7 +179,6 @@
 
 .gdef.enableXML*
   B.catcode`.!=.@@other*
-   .catcode`."=.@@other*
    .catcode`.?=.@@other*
    .catcode`.&=.@@active .let&=.doXMLentity*
    .catcode`.<=.@@active .unexpanded.def<B.doXMLelementE*
@@ -351,9 +343,11 @@
 \defineXMLprocessor[context-command]{\contextXMLcommand}
 
 \def\contextXMLcommand#1%
-  {\def\disableXML{\global\let\afterXMLprocessor\empty}%
+  {\pushmacro\disableXML
+   \def\disableXML{\global\let\afterXMLprocessor\empty}%
    \global\let\afterXMLprocessor\enableXML
-   \setnormalcatcodes\scantokens{#1}\afterXMLprocessor}
+   \setnormalcatcodes\scantokens{#1}\afterXMLprocessor
+   \popmacro\disableXML}
 
 \defineXMLprocessor[context-directive]{\contextXMLdirective}
 
@@ -376,6 +370,8 @@
    \catcode`\^=\@@superscript \catcode`\_=\@@subscript
   %\catcode`\|=\@@active      \catcode`\~=\@@active
    \catcode`\{=\@@begingroup  \catcode`\}=\@@endgroup}
+
+\let\disableXML\setnormalcatcodes
 
 %D Given the previous definition, and given that \ETEX\ is
 %D used, we can now say:

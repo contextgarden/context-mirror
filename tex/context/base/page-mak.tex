@@ -56,6 +56,7 @@
       \c!tekststatus=\v!normaal,
       \c!hoofdstatus=\v!stop,
       \c!voetstatus=\v!stop,
+      \c!kleur=,
       #2]%
    \setvalue{\e!start#1\e!opmaak}{\startmakeup[#1]}%
    \setvalue{\e!stop #1\e!opmaak}{\stopmakeup}}
@@ -114,6 +115,7 @@
    \soortpagina[\currentmakeup]
    \setupmakeuplayout
    \makeupparameter\c!commandos
+\startregistercolor[\makeupparameter\c!kleur]%
    \global\setbox\makeupbox=\vbox to \makeupparameter\c!hoogte
      \bgroup
        \forgetall 
@@ -124,6 +126,7 @@
   {\endgraf
    \makeupparameter\c!onder
    \egroup
+\stopregistercolor
    \doflushmakeup
    \egroup
    \calculatehsizes
@@ -147,7 +150,7 @@
 
 \def\doshipoutmakeup%
   {\makeupparameter\c!voor
-   \box\makeupbox
+   \vbox{\hbox{\color[\makeupparameter\c!kleur]{\box\makeupbox}}}%
    \setupmakeuplayout
    \pagina
    \makeupparameter\c!na

@@ -36,9 +36,20 @@
   [\s!subpage]
   [\c!wijze=\@@snwijze]
 
-\def\resetsubpaginanummer%
-  {\resetnummer[\s!subpage]%
-   \global\subpageno=\ruwenummer[\s!subpage]}
+% hard to sync 
+%
+% \def\resetsubpaginanummer%
+%   {\resetnummer[\s!subpage]%
+%    \global\subpageno=\ruwenummer[\s!subpage]}
+%
+% better sync 
+
+\newif\ifresettingsubpagenumber 
+
+\def\resetsubpaginanummer
+  {\global\resettingsubpagenumbertrue}
+
+% so far for sync, see \gotonext...
 
 \def\dostelsubpaginanummerin[#1]%
   {\doifelse{#1}{\v!reset}
@@ -47,6 +58,7 @@
       \processaction
         [\@@snstatus]
         [  \v!stop=>\ifsubpaging
+\resetsubpaginanummer % new, see sync 
                     \else
                       \subpagingfalse
                     \fi
@@ -102,6 +114,10 @@
 
 \def\gotonextsubpage% overlapt behoorlijk met realpage macro
   {\global\let\checksubpages=\relax
+   \ifresettingsubpagenumber 
+     \resetnummer[\s!subpage]%  
+     \global\resettingsubpagenumberfalse
+   \fi
    \ifsubpaging
      \edef\oldsubpage{\the\subpageno}%
      \verhoognummer[\s!subpage]%

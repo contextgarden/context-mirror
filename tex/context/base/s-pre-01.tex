@@ -15,7 +15,7 @@
 %D presentations. This module was first used at the 1997 \TUG\
 %D meeting.
 
-\usemodule[pre-general] % mode=step 
+\usemodule[pre-general] 
 
 %D \macros
 %D   {language}
@@ -33,11 +33,12 @@
 %D a 14.4 point bodyfont for the main text, but switch back to 
 %D 12 points for ornaments.
 
-\setupbodyfont
-  [lbr,14.4pt]
+\startmode[asintended] \setupbodyfont[lbr] \stopmode
+
+\setupbodyfont[14.4pt]
 
 \setuplayout
-  [style={\switchtobodyfont[12pt]}]
+  [style=smallbodyfont]
 
 %D \macros
 %D   {setupcolors,definecolor}
@@ -49,8 +50,9 @@
 \setupcolors
   [state=start]
 
-\definecolor [backgroundcolor]  [r=1,  g=1,  b=.7]
-\definecolor [interactioncolor] [r=.1, g=.5, b=.8]
+\definecolor [BackgroundColor]  [r=1,  g=1,  b=.7]
+\definecolor [InteractionColor] [r=.1, g=.5, b=.8]
+\definecolor [ContrastColor]    [r=.9, g=.5, b=.2]
 
 %D \macros
 %D   {setuppapersize,setuplayout,setupinteractionscreen}
@@ -77,9 +79,7 @@
    rightedge=96pt]
 
 \setupinteractionscreen
-  [option=max,
-   width=600pt,
-   height=450pt]
+  [option=max]
 
 %D \macros
 %D   {setupbackgrounds}
@@ -92,7 +92,7 @@
 \setupbackgrounds
   [page]
   [background=color,
-   backgroundcolor=backgroundcolor,
+   backgroundcolor=BackgroundColor,
    offset=3pt]
 
 \setupbackgrounds
@@ -119,20 +119,17 @@
 
 \setupinteraction
   [page=yes,
+   color=InteractionColor,
+   contrastcolor=ContrastColor,
    menu=on,
    state=start]
 
 %D \macros
-% %D   {setupbottomtexts}
 %D   {setupinteractionmenu,startinteractionmenu}
 %D
 %D At the bottom of the screen we show two navigational bars.
 %D At the left we show the subpage bar, at the right we use a
 %D non default backward|/|forward bar.
-%
-% \setupbottomtexts
-%   [\InteractionBar]
-%   [\InteractionButtons]
 
 \setupinteractionmenu
   [bottom]
@@ -283,7 +280,7 @@
 \def\HeadLine#1#2%
   {\midaligned
      {\framed
-        [framecolor=backgroundcolor,rulethickness=1pt,
+        [framecolor=BackgroundColor,rulethickness=1pt,
          width=.8\hsize,align=middle,strut=no]
         {#2}}}
 
@@ -347,24 +344,16 @@
      width=\hsize,
      offset=0pt,
      criterium=all,
-     align=left]
+     align=left,
+     style=\setsmallbodyfont\bfx]
 \stopinteractionmenu
 
 \def\Topics#1% temporary hack 
   {\Nopic{#1}
    \placelist[Topic][criterium=all]}
 
-% %D \macros
-% %D   {limitatetext}
-% %D
-% %D Because topic lines can be rather long, so we use \type 
-% %D {\limitatetext} to limit their length to the width of the 
-% %D right edge. When needed, some dots are added (\unknown). 
-% %D This macro is part of the collection of low level support 
-% %D macros.
-% 
-% \def\TopicLine#1#2#3%
-%   {\limitatetext{#2}{\rightedgewidth}{\unknown}\par} 
+\def\Subjects%
+  {}
 
 %D \macros
 %D   {setuptexttexts, button}

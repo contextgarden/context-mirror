@@ -246,7 +246,7 @@
      \setuppapersize
    \fi}
 
-%D For the momenn we need to fake this macro.  
+%D For the moment we need to fake this macro.  
 
 \ifx\setuppapersize\undefined 
   \let\setuppapersize\relax   
@@ -310,6 +310,10 @@
            \global\printpapierhoogte=\getvalue{\??pp##1\c!hoogte}%
            \xdef\printpapersize{##1}}}}%
      \processcommacommand[#2]\docommando
+     \global\setdimentoatleast\papierbreedte     \!!onepoint
+     \global\setdimentoatleast\papierhoogte      \!!onepoint
+     \global\setdimentoatleast\printpapierbreedte\!!onepoint
+     \global\setdimentoatleast\printpapierhoogte \!!onepoint
      \ifcase\paperlandscape\else
        \doglobal\swapdimens\papierbreedte\papierhoogte
      \fi
@@ -445,6 +449,8 @@
       \global\advance\zethoogte by \voethoogte}%
    \rugoffset=\layoutparameter\c!rugoffset
    \kopoffset=\layoutparameter\c!kopoffset
+\global\setdimentoatleast\zetbreedte\!!onepoint
+\global\setdimentoatleast\zethoogte\!!onepoint
    \calculatehsizes
    \calculatevsizes
    \recalculatelogos

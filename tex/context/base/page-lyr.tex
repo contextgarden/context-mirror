@@ -66,7 +66,7 @@
   {\ifundefined{\@@layerbox#1}%
      \expandafter\newbox\csname\@@layerbox#1\endcsname
    \else
-     \setbox\csname\@@layerbox#1\endcsname=\voidb@x
+     \resetlayer[#1]%
    \fi
    \defineoverlay
      [#1][\composedlayer{#1}]%
@@ -87,13 +87,14 @@
 \def\setuplayer%
   {\dodoubleargument\dosetuplayer}
 
-\def\dosetuplayer[#1]%
-  {\getparameters[\??ll#1]}
+\def\dosetuplayer[#1][#2]%
+  {\def\docommando##1{\getparameters[\??ll##1][#2]}%
+   \processcommalist[#1]\docommando}
 
 %D \macros 
 %D   {setlayer}
 %D 
-%D Data is moved intoa layer with the following macro. When
+%D Data is moved into a layer with the following macro. When
 %D \type {position} is set, relative positioning is used, with
 %D the current point as reference point. Otherwise the topleft
 %D corner is used as reference point. 
@@ -148,7 +149,7 @@
         {\hbox to \getvalue{\??ll#1\c!breedte} % \wd\nextbox
            {\xypos{lyr:\currentlayerdata}\hss}%
          \vss}}
-     {\setbox\layerbox=\box\voidb@x
+     {\setbox\layerbox=\emptybox
       \edef\layerpage{\getvalue{\??ll#1\c!pagina}}}%
    \doifsomething{\layerpage}
      {\edef\layerpage{:\layerpage}%
@@ -157,9 +158,9 @@
    \global\setbox\csname\@@layerbox#1\layerpage\endcsname=\vbox
      {\offinterlineskip
       \ifvoid\csname\@@layerbox#1\layerpage\endcsname\else
-        \ht \csname\@@layerbox#1\layerpage\endcsname\!!zeropoint
-        \dp \csname\@@layerbox#1\layerpage\endcsname\!!zeropoint
-        \wd \csname\@@layerbox#1\layerpage\endcsname\!!zeropoint
+        \ht\csname\@@layerbox#1\layerpage\endcsname\zeropoint
+        \dp\csname\@@layerbox#1\layerpage\endcsname\zeropoint
+        \wd\csname\@@layerbox#1\layerpage\endcsname\zeropoint
         \doifnotvalue{\??ll#1\c!richting}{\v!omgekeerd}
           {\box\csname\@@layerbox#1\layerpage\endcsname}%
       \fi
@@ -196,23 +197,30 @@
 %D macro does not takes hash space. 
 
 \def\flushlayer[#1]%
-  {\doifvalue{\??ll#1\c!status}{\v!start}
+  {\doifnotvalue{\??ll#1\c!status}{\v!stop}
      {\startoverlay
-        {\doflushlayer1{#1}}
-        {\doflushlayer0{#1:\realfolio}}
+        {\doflushlayer1{#1}{#1}}
+        {\doflushlayer0{#1}{#1:\realfolio}}
       \stopoverlay}}
 
-\def\doflushlayer#1#2%
-  {\ifundefined{\@@layerbox#2}%
-     \ifcase#1\else\writestatus{layer}{unknown layer #2}\fi
+\def\doflushlayer#1#2#3%
+  {\ifundefined{\@@layerbox#3}%
+     \ifcase#1\else\writestatus{layer}{unknown layer #3}\fi
    \else
-     \doifvalue{\??ll#1\c!optie}{\v!test}\tracelayerstrue
+     \doifvalue{\??ll#2\c!optie}{\v!test}\tracelayerstrue
      \iftracelayers \ruledvbox \else \vbox \fi to \overlayheight
        {\forgetall
         \hbox to \overlaywidth
-          {\doifvalue{\??ll#2\realfolio\c!positie}{\v!ja}
-             {\xypos{lyr:#2:\realfolio}}%
-           \box\csname\@@layerbox#2\endcsname\hss}%
+          {\doifvalue{\??ll#3\realfolio\c!positie}{\v!ja}
+             {\xypos{lyr:#3:\realfolio}}%
+           \let\next\box
+           \ifcase#1\else
+             \doifnotvalue{\??ll#2\c!positie}{\v!ja}
+               {\doifvalue{\??ll#2\c!status}{\v!herhaal}
+                  {\let\next\copy}}%
+           \fi                   
+           \next\csname\@@layerbox#3\endcsname
+           \hss}%
         \vss}%
    \fi}
 
@@ -232,8 +240,8 @@
 %D needed as well). 
 
 \def\doresetlayer#1%
-  {\ifundefined{\@@layerbox#1}\else
-     \global\setbox\csname\@@layerbox#1\endcsname\voidb@x
+  {\ifundefined{\@@layerbox#1}\else 
+     \global\@EA\setbox\csname\@@layerbox#1\endcsname\emptybox
    \fi}
 
 \def\resetlayer[#1]%

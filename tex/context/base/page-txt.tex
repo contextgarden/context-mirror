@@ -307,22 +307,30 @@
       \offinterlineskip
       \vskip-\bovenhoogte
       \vskip-\bovenafstand
-      \the\toptextcontent
-      \vskip\bovenhoogte
+      \ifdim\bovenhoogte>\zeropoint
+        \the\toptextcontent
+        \vskip\bovenhoogte
+      \fi
       \vskip\bovenafstand
-      \the\headertextcontent
-      \vskip\hoofdhoogte
+      \ifdim\hoofdhoogte>\zeropoint
+        \the\headertextcontent
+        \vskip\hoofdhoogte
+      \fi
       \vskip\hoofdafstand
       \placepositionanchors
       \vskip-\teksthoogte
       \the\texttextcontent
       \vskip\teksthoogte
       \vskip\voetafstand
-      \the\footertextcontent
-      \vskip\voethoogte
+      \ifdim\voethoogte>\zeropoint
+        \the\footertextcontent
+        \vskip\voethoogte
+      \fi
       \vskip\onderafstand
-      \the\bottomtextcontent
-      \vskip\onderhoogte
+      \ifdim\onderhoogte>\zeropoint
+        \the\bottomtextcontent
+        \vskip\onderhoogte
+      \fi
       \vfilll}%
   \smashbox\scratchpagebox
   \box\scratchpagebox}
@@ -339,11 +347,15 @@
         {\bgroup
            \swapmargins
            \goleftonpage
-           \the\leftedgetextcontent
-           \hskip\linkerrandbreedte
+           \ifdim\linkerrandbreedte>\zeropoint
+             \the\leftedgetextcontent
+             \hskip\linkerrandbreedte
+           \fi
            \hskip\linkerrandafstand
-           \the\leftmargintextcontent
-           \hskip\linkermargebreedte
+           \ifdim\linkermargebreedte>\zeropoint
+             \the\leftmargintextcontent
+             \hskip\linkermargebreedte
+           \fi
            \hskip\linkermargeafstand
          \egroup
          \settextpagecontent\scratchpagebox{#1}{#2}%
@@ -352,11 +364,15 @@
          \box\scratchpagebox
          \bgroup
            \hskip\rechtermargeafstand
-           \the\rightmargintextcontent
-           \hskip\rechtermargebreedte
+           \ifdim\rechtermargebreedte>\zeropoint
+             \the\rightmargintextcontent
+             \hskip\rechtermargebreedte
+           \fi
            \hskip\rechterrandafstand
-           \the\rightedgetextcontent
-           \hskip\rechterrandbreedte
+           \ifdim\rechterrandbreedte>\zeropoint
+             \the\rightedgetextcontent
+             \hskip\rechterrandbreedte
+           \fi
          \egroup
          \hss}}%
    \smashbox\scratchpagebox

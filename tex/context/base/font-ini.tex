@@ -27,12 +27,13 @@
 
 \newcounter\pushedfont
 
-\def\savefont%
- {\increment\pushedfont
-  \expanded{\definefont[\string\pushedfont:\pushedfont][\lastfontname]}}
+\def\savefont % do we also need to store the encoding ? 
+  {\edef\savedfont{\the\font}%
+   \pushmacro\savedfont}
 
 \def\restorefont%
-  {\getvalue{\string\pushedfont:\pushedfont}}
+  {\popmacro\savedfont
+   \savedfont}
 
 % new
 
@@ -1030,7 +1031,7 @@
 
 \def\doparsefontspec#1 #2%
   {\def\somefontname{#1}%
-   \ifx#1\relax\relax % space before filename 
+   \ifx\somefontname\empty % space before fontname 
      \@EA\doparsefontspec
    \else
      \ifx#2\relax
@@ -1367,7 +1368,54 @@
    \fi\fi}
 
 \endETEX
+
+%D \macros
+%D   {tracedfontname}
+%D
+%D A goody:
 
+\beginTEX
+
+\def\tracedfontencoding#1%
+  {\expandafter\ifx\csname\??ff#1\s!encoding\endcsname\relax\else
+     \space[\csname\??ff#1\s!encoding\endcsname]%
+   \fi}
+
+\def\tracedfontname#1%
+  {\expandafter\ifx\csname\??ff\fontclass#1\endcsname\relax
+     \expandafter\ifx\csname\??ff#1\endcsname\relax
+       #1%
+     \else
+       #1\tracedfontencoding{#1}\space->\space
+         \@EA\tracedfontname\csname\??ff#1\endcsname
+     \fi
+   \else
+     #1\tracedfontencoding{\fontclass#1}\space->\space
+       \@EA\tracedfontname\csname\??ff\fontclass#1\endcsname
+   \fi}
+
+\endTEX
+
+\beginETEX
+
+\def\tracedfontencoding#1%
+  {\ifcsname\??ff#1\s!encoding\endcsname
+     \space[\csname\??ff#1\s!encoding\endcsname]%
+   \fi}
+
+\def\tracedfontname#1%
+  {\ifcsname\??ff\fontclass#1\endcsname
+     #1\tracedfontencoding{\fontclass#1}\space->\space
+       \@EA\tracedfontname\csname\??ff\fontclass#1\endcsname
+   \else\ifcsname\??ff#1\endcsname
+     #1\tracedfontencoding{#1}\space->\space
+       \@EA\tracedfontname\csname\??ff#1\endcsname
+   \else
+     #1%
+   \fi\fi}
+
+\endETEX
+
 %D \macros
 %D   {getfontfileparameters}
 %D
@@ -2013,18 +2061,22 @@
    \fi}
 
 \def\checkbodyfont#1#2#3#4% body style alt size / gdef % #4 can be empty
-  {%\def\c!mm!{#2}\ifx\c!mm!\c!mm \else % test first 
-   \unexpanded\setgvalue   {#2#4}{\setcurrentfontstylesize           {#2}{#4}}% \rma
-   \unexpanded\setgvalue   {#3#4}{\setcurrentfontalternativesize     {#3}{#4}}% \sla
-   \unexpanded\setgvalue {#2#3#4}{\setcurrentfontstylealternativesize{#2}{#3}{#4}}% \rmsla
-   \unexpanded\setgvalue     {#2}{\setcurrentfontstyle               {#2}}% \rm
-   \unexpanded\setgvalue     {#3}{\setcurrentfontalternative         {#3}}% \sl
-   \unexpanded\setgvalue {#2\c!x}{\setcurrentfontxstylealternative   {#3}}% \rmx
-   \unexpanded\setgvalue{#2\c!xx}{\setcurrentfontxxstylealternative  {#3}}% \rmxx
-   \unexpanded\setgvalue {#3\c!x}{\setcurrentfontxalternative        {#3}}% \slx
-   \unexpanded\setgvalue{#3\c!xx}{\setcurrentfontxxalternative       {#3}}% \slxx
-   \unexpanded\setgvalue   {#2#3}{\setcurrentfontstylealternative    {#2}{#3}}}% \rmsl
-   %\fi}
+  {\def\c!mm!{#2}%
+   \ifx\c!mm!\c!mm % prevents \max and alike (re)defs 
+     \unexpanded\setgvalue     {#2}{\setcurrentfontstyle               {#2}}% \rm
+     \unexpanded\setgvalue     {#3}{\setcurrentfontalternative         {#3}}% \sl
+   \else 
+     \unexpanded\setgvalue   {#2#4}{\setcurrentfontstylesize           {#2}{#4}}% \rma
+     \unexpanded\setgvalue   {#3#4}{\setcurrentfontalternativesize     {#3}{#4}}% \sla
+     \unexpanded\setgvalue {#2#3#4}{\setcurrentfontstylealternativesize{#2}{#3}{#4}}% \rmsla
+     \unexpanded\setgvalue     {#2}{\setcurrentfontstyle               {#2}}% \rm
+     \unexpanded\setgvalue     {#3}{\setcurrentfontalternative         {#3}}% \sl
+     \unexpanded\setgvalue {#2\c!x}{\setcurrentfontxstylealternative   {#3}}% \rmx
+     \unexpanded\setgvalue{#2\c!xx}{\setcurrentfontxxstylealternative  {#3}}% \rmxx
+     \unexpanded\setgvalue {#3\c!x}{\setcurrentfontxalternative        {#3}}% \slx
+     \unexpanded\setgvalue{#3\c!xx}{\setcurrentfontxxalternative       {#3}}% \slxx
+     \unexpanded\setgvalue   {#2#3}{\setcurrentfontstylealternative    {#2}{#3}}% \rmsl
+   \fi}
  
 \def\dodefinedefaultbodyfont[#1][#2][#3]% sizes styles identifier
   {\def\dododefinedefaultbodyfont##1%
@@ -2990,10 +3042,10 @@
    \doswitchstyle[\fontstyle]%
    \the\everybodyfont}
 
-\def\setsmallbodyfont{\setbodyfontstep\v!klein}
-\def\setbigbodyfont  {\setbodyfontstep\v!groot}
+\unexpanded\def\setsmallbodyfont{\setbodyfontstep\v!klein}
+\unexpanded\def\setbigbodyfont  {\setbodyfontstep\v!groot}
 
-\def\setmainbodyfont%
+\unexpanded\def\setmainbodyfont%
   {\doswitchpoints[\normalizedbodyfontsize]%
    \doswitchstyle[\fontstyle]%
    \the\everybodyfont}
@@ -3233,13 +3285,14 @@
    \emphasiscorrection}
 
 %D The next feature was not present in previous versions. It
-%D takes are of \type {\em \bf ...} sitiations.
+%D takes care of \type {\em \bf ...} sitiations.
 
 \def\setemphasisboldface%
   {\let\normalbf\bf
    \let\setemphasisboldface\relax
-   \def\bf%
-     {\relax
+   \unexpanded\def\bf%
+     {%\relax
+      \let\bf\relax % new 
       \ifx\fontalternative\c!it      % \ifnum\fam=\itfam
         \bi
       \else\ifx\fontalternative\c!sl % \ifnum\fam=\slfam
@@ -3399,7 +3452,7 @@
 \fetchruntimecommand \showbodyfontenvironment {\f!fontprefix\s!run}
 
 %D \macros
-%D   {showfont,showfontstyle}
+%D   {showfont,showfontstyle,showligatures}
 %D
 %D The following command generates a fontmap:
 %D
@@ -3419,6 +3472,8 @@
 
 \fetchruntimecommand \showfont      {\f!fontprefix\s!run}
 \fetchruntimecommand \showfontstyle {\f!fontprefix\s!run}
+\fetchruntimecommand \showligature  {\f!fontprefix\s!run}
+\fetchruntimecommand \showligatures {\f!fontprefix\s!run}
 
 %D \macros
 %D   {getglyph, symbolicfont}

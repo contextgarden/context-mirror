@@ -259,6 +259,20 @@
    \fi}
 
 %D \macros 
+%D   {setupencoding}
+%D
+%D The following setup command is used to tune encoding 
+%D handling. 
+
+\def\setupencoding%
+  {\dosingleargument\dosetupencoding}
+
+\def\dosetupencoding[#1]%
+  {\getparameters[\??ec][#1]%
+   \edef\defaultencoding
+     {\ifx\@@ecdefault\empty\s!default\else\@@ecdefault\fi}}
+
+%D \macros 
 %D   {useencoding}
 %D
 %D Encodings things are defined in separate files and are 
@@ -1351,6 +1365,8 @@
 
 \useencoding[def,acc,raw,com,cas,mis]
 
-\useencoding[ans,il2,ec,pdf,uc,pol,x5]
+\useencoding[ans,il2,ec,tbo,pdf,uc,pol,x5]
+
+\setupencoding[\s!default=\s!default]
 
 \protect \endinput 

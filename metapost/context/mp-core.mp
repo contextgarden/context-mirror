@@ -27,19 +27,35 @@ enddef ;
 def initialize_box_pos (expr pos,n,x,y,w,h,d) =
   pair lxy, rxy, cxy, llxy, lrxy, ulxy, urxy ;
   path pxy ; numeric hxy, wxy, dxy, nxy;
-  lxy  := (x,y)                         ; lxy[pos]  := lxy  ;
-  llxy := (x,y-d)                       ; llxy[pos] := llxy ;
-  lrxy := (x+w,y-d)                     ; lrxy[pos] := lrxy ;
-  urxy := (x+w,y+h)                     ; urxy[pos] := urxy ;
-  ulxy := (x,y+h)                       ; ulxy[pos] := ulxy ;
-  wxy  := w                             ; wxy[pos]  := wxy  ;
-  hxy  := h                             ; hxy[pos]  := hxy  ;
-  dxy  := d                             ; dxy[pos]  := dxy  ;
-  rxy  := lxy shifted (wxy,0)           ; rxy[pos]  := rxy  ;
-  pxy  := llxy--lrxy--urxy--ulxy--cycle ; pxy[pos]  := pxy  ;
-  cxy  := center pxy                    ; cxy[pos]  := cxy  ;
-  nxy  := n                             ; nxy[pos]  := nxy  ;
+  lxy  := (x,y) ;
+  llxy := (x,y-d) ;
+  lrxy := (x+w,y-d) ;
+  urxy := (x+w,y+h) ;
+  ulxy := (x,y+h) ;
+  wxy  := w ;
+  hxy  := h ;
+  dxy  := d ;
+  rxy  := lxy shifted (wxy,0) ;
+  pxy  := llxy--lrxy--urxy--ulxy--cycle ;
+  cxy  := center pxy ;
+  nxy  := n ;
+  freeze_box(pos) ; 
 enddef ;
+
+def freeze_box (expr pos) = 
+  lxy[pos]  := lxy  ;
+  llxy[pos] := llxy ;
+  lrxy[pos] := lrxy ;
+  urxy[pos] := urxy ;
+  ulxy[pos] := ulxy ;
+  wxy[pos]  := wxy  ;
+  hxy[pos]  := hxy  ;
+  dxy[pos]  := dxy  ;
+  rxy[pos]  := rxy  ;
+  pxy[pos]  := pxy  ;
+  cxy[pos]  := cxy  ;
+  nxy[pos]  := nxy  ;
+enddef ; 
 
 def initialize_box (expr n,x,y,w,h,d) =
 
@@ -90,6 +106,32 @@ def initialize_par (expr fn,fx,fy,fw,fh,fd,
 
   do_initialize_area (fpos, tpos) ;
   do_initialize_par  (fpos, tpos, mpos, ppos, rw,rl,rr,rh,ra,ri) ;
+
+enddef ;
+
+def initialize_area_par (expr fn,fx,fy,fw,fh,fd,
+                              tn,tx,ty,tw,th,td,
+                              wn,wx,wy,ww,wh,wd) =
+
+  numeric fpos ; fpos := 1 ; initialize_box_pos(fpos,fn,fx,fy,fw,fh,fd) ;
+  numeric tpos ; tpos := 2 ; initialize_box_pos(tpos,tn,tx,ty,tw,th,td) ;
+  numeric wpos ; wpos := 3 ; initialize_box_pos(wpos,wn,wx,wy,ww,wh,wd) ;
+
+  numeric par_strut_height, par_strut_depth, par_line_height ;
+
+  par_strut_height := wh ; 
+  par_strut_depth  := wd ;
+  par_line_height  := wh + wd ;
+
+  numeric ffpos ; ffpos := 4 ; initialize_box_pos(ffpos,wn,wx,fy,0,wh,wd) ;
+  numeric ttpos ; ttpos := 5 ; initialize_box_pos(ttpos,wn,wx+ww,ty,0,wh,wd) ;
+
+  do_initialize_area (ffpos, ttpos) ; 
+
+  numeric mpos ; mpos := 6 ; freeze_box(mpos) ; 
+
+% do_initialize_area (fpos, tpos) ;
+  do_initialize_par  (fpos, tpos, mpos, ffpos, 0,0,0,0,0,0) ;
 
 enddef ;
 
@@ -322,7 +364,7 @@ def show_par  =
 enddef ;
 
 vardef do_draw_par (expr p) =
-  if length p > 2 :
+  if (length p>2) and (bbwidth(p)>1) and (bbheight(p)>1) :
     save pp ; path pp ; 
     if (boxlineradius>0) and (boxlinetype=2) : 
       pp := p cornered boxlineradius ; 
@@ -339,7 +381,7 @@ vardef do_draw_par (expr p) =
 enddef ;
 
 vardef baseline_grid (expr pxy, pdir, at_baseline) =
-  if (par_line_height>0) : % and (round(bbheight(pxy))>=round(par_line_height)) :
+  if (par_line_height>0) and (bbheight(pxy)>1) and (bbwidth(pxy)>1) and (boxgridwidth>0) :
     save grid, start ; picture grid ; pair start ;
     grid := image
       ( %fails with inlinespace
@@ -370,7 +412,7 @@ vardef baseline_grid (expr pxy, pdir, at_baseline) =
 enddef ;
 
 vardef graphic_grid (expr pxy, dx, dy, x, y) =
-  if (bbheight(pxy)>dy) and (bbwidth(pxy)>dx) :
+  if (bbheight(pxy)>dy) and (bbwidth(pxy)>dx) and (boxgridwidth>0) :
     save grid ; picture grid ;
     grid := image
       ( for i = xpart llcorner pxy step dx until xpart lrcorner pxy :

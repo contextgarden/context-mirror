@@ -630,6 +630,10 @@
      {\setbox8=\hbox{\naar{\box8}[\somdestination]}}% 
    \global\let\somdestination=\empty
    \dimen2=\getvalue{\??op\itemlevel\c!breedte}\relax
+% new, prevents loops when symbol is (not yet found) graphic
+\ht8=\strutheight
+\dp8=\strutdepth
+% so that content differs per run (esp mp graphics afterwards)
    \ifdim\dimen2<\!!zeropoint\relax
      \llap{\ifsubsom\llap{+}\fi\box8\hskip\linkermargeafstand}%
    \else

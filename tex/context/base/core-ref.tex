@@ -2632,6 +2632,8 @@
      {\tttf[#2]}%
    \egroup}
 
+% needs an update: program(abc{arg}) 
+
 \definespeciallocation\v!programma#1#2%
   {\bgroup
    \iflocation
@@ -2646,7 +2648,8 @@
        \start
          \dostartrunprogram
            {\number\buttonwidth}{\number\buttonheight}
-           {\@@prgebied\ascii\space\currentreferencearguments}%
+           {\@@prgebied\ascii}
+           {\currentreferencearguments}%
        \stop
          \dostoprunprogram
      \dostopgoto
@@ -2919,7 +2922,7 @@
 
 \presetlocalframed[\??bt]
 
-\def\docomplexbutton#1[#2]#3#4% get rid of possible space before [#4]
+\long\def\docomplexbutton#1[#2]#3#4% get rid of possible space before [#4]
   {\dodocomplexbutton#1[#2]{#3}#4} % #4 == [  
 
 % \def\dodocomplexbutton#1[#2]#3[#4]%
@@ -2949,7 +2952,7 @@
 %    \fi
 %    \egroup}
 
-\def\dodocomplexbutton#1[#2]#3[#4]% #3 can contain [] -> {#3} later  
+\long\def\dodocomplexbutton#1[#2]#3[#4]% #3 can contain [] -> {#3} later  
   {\bgroup
    \doifvalue{#1\c!status}{\v!stop}{\locationfalse}%
    \iflocation

@@ -14,7 +14,8 @@
 \unprotect 
 
 \gdef\showmathcharacters% nearly \showcharacters
-  {\bgroup
+  {\par
+   \bgroup
    \setuptextrules[\c!korps=,\c!letter=]
    \starttextrule{math characters}
    \witruimte
@@ -26,7 +27,7 @@
    \dimen2=\!!zeropoint
    \def\definemathsymbol   {\dosixtupleempty\dodefinemathsymbol}
    \def\definemathcharacter{\dosixtupleempty\dodefinemathcharacter}
-   \def\definemathcommand  {\dodoubleempty  \dodefinemathcommand}
+   \def\definemathcommand  {\dotripleempty  \dodefinemathcommand}
    %\newcounter\mathcolor
    \def\dodefinemathsymbol[##1][##2][##3][##4][##5][##6]%
      {%\doifcolorelse{math \purefamilyhex{##3}}{}
@@ -39,7 +40,7 @@
         {\hbox to 1em{\tttf\purefamilyhex{##3}\hss}\box0 ##1}
       \ifdim\wd2>\dimen2 \dimen2=\wd2 \fi}
    \def\dodefinemathcharacter[##1][##2][##3][##4][##5][##6]{}
-   \def\dodefinemathcommand[##1][##2]##3{}
+   \def\dodefinemathcommand[##1][##2][##3]##4{}
    \readsysfile{\f!mathprefix tex}{}{}
    \edef\encwidth{\the\dimen0}
    \dimen0=\hsize

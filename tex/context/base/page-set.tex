@@ -61,8 +61,9 @@
 
 \def\columnerasegridboxes%
   {\bgroup
-   \increment\columnmaxcells
-   \ifodd\realpageno \else % we are on the other page
+   \increment\columnmaxcells\relax
+   \ifodd\realpageno 
+   \else % we are on the other page
      \columnspreadfalse
    \fi
    \ifcolumnspread
@@ -112,7 +113,7 @@
 
 \def\columnerasegridboxes%
   {\bgroup
-   \increment\columnmaxcells
+   \increment\columnmaxcells\relax
    \ifodd\realpageno \else % we are on the other page
      \columnspreadfalse
    \fi
@@ -307,7 +308,7 @@
   {\ifcollectingcontent
      \global\mofcolumns=1
    \else
-     \OTRSETdofinalflush 
+     \OTRSETdofinalflush
      \OTRSETinitializecolumns
      \OTRSETmanualbalance % or after \gotonextpage
     %\OTRSETdoflushfloats
@@ -915,7 +916,7 @@
            \fi}}%
    \fi}
 
-\def\OTRSETinitializecolumns%
+\def\OTRSETinitializecolumns% once per page 
   {\columnspreadtrue % todo
    \ifcolumnspread
      \global\rofcolumns=\getvalue{\??mc\OTRSETidentifier\c!nrechts}
@@ -935,8 +936,7 @@
    \fi
 \OTRSETassignwidths
    \global\mofcolumns=1
-   \columnerasegridboxes
-   \initializecolumntextareas}
+   \columnerasegridboxes}
 
 % vanaf hier:
 
@@ -1112,7 +1112,7 @@
       \doglobal\replaceincommalist\OTRSETlist1%
       \OTRSETrestart}}
 
-\def\OTRSETrestart% % weed
+\def\OTRSETrestart% weed
   {\OTRSETinitializefeatures
    \OTRSETflushpreposttext
    \OTRSETinitializecolumns
@@ -1120,9 +1120,11 @@
    \OTRSETcheckgrid
    \OTRSETsetvsize
    \OTRSETsethsize
-   \OTRSETsetplaceholders 
+   \OTRSETsetplaceholders
    \OTRSEThandlepreposttext
+\initializecolumntextareas % name ! 
    \OTRSETsetvsize}
+
 
 \OTRSEToutput
   {\OTRSETnaturalflush

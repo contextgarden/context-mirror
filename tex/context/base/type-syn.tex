@@ -1,8 +1,8 @@
 %D \module
 %D   [       file=type-syn,
-%D        version=2001.04.12, 
+%D        version=2001.04.12,
 %D          title=\CONTEXT\ Typescript Macros,
-%D       subtitle=Filename scripts, 
+%D       subtitle=Filename scripts,
 %D         author=Hans Hagen,
 %D           date=\currentdate,
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
@@ -11,7 +11,19 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-% Computer Modern Roman : Donald Knuth 
+% Simple Minded Fonts
+
+\starttypescript [serif] [simple] [name]
+  \definefontsynonym [Serif]            [Simple]
+  \definefontsynonym [SerifBold]        [Serif]
+  \definefontsynonym [SerifItalic]      [Serif]
+  \definefontsynonym [SerifSlanted]     [Serif]
+  \definefontsynonym [SerifBoldItalic]  [Serif]
+  \definefontsynonym [SerifBoldSlanted] [Serif]
+  \definefontsynonym [SerifCaps]        [Serif]
+\stoptypescript
+
+% Computer Modern Roman : Donald Knuth
 
 \starttypescript [serif] [computer-modern] [name]
   \definefontsynonym [Serif]            [ComputerModern]
@@ -50,16 +62,16 @@
   \definefontsynonym [MathSymbol]       [ComputerModernMath-Symbol]
 \stoptypescript
 
-% This will change some day.  
+% This will change some day.
 
 \starttypescript [math] [computer-modern] [name]
-  \definefontsynonym [OldStyle]     [MathItalic]         
+  \definefontsynonym [OldStyle]     [MathItalic]
   \definefontsynonym [Fraktur]      [eufm10]
   \definefontsynonym [Gothic]       [eufm10]
   \definefontsynonym [Calligraphic] [cmsy10]
 \stoptypescript
 
-% Concrete Modern Roman : Donald Knuth 
+% Concrete Modern Roman : Donald Knuth
 
 \starttypescript [serif] [concrete] [name]
   \definefontsynonym [Serif]            [ComputerConcrete]
@@ -81,7 +93,7 @@
   \definefontsynonym [MathGamma]     [Euler-SymbolC]
 \stoptypescript
 
-% American Math Society : Michael Spivak 
+% American Math Society : Michael Spivak
 
 \starttypescript [math] [ams] [name]
   \definefontsynonym [MathAlpha] [AMS-SymbolA]
@@ -121,7 +133,7 @@
   \definefontsynonym [MonoCaps]        [LucidaSans-Typewriter]
 \stoptypescript
 
-\starttypescript [math] [lucida] [name]  
+\starttypescript [math] [lucida] [name]
   \definefontsynonym [MathRoman]     [LucidaBright]
   \definefontsynonym [MathExtension] [LucidaNewMath-Extension]
   \definefontsynonym [MathItalic]    [LucidaNewMath-AltItalic]
@@ -129,7 +141,7 @@
   \definefontsynonym [MathAlpha]     [LucidaNewMath-Arrows]
 \stoptypescript
 
-\starttypescript [boldmath] [lucida] [name]  
+\starttypescript [boldmath] [lucida] [name]
   \definefontsynonym [MathRomanBold]     [LucidaBright-Demi]
   \definefontsynonym [MathExtensionBold] [LucidaNewMath-Extension]
   \definefontsynonym [MathItalicBold]    [LucidaNewMath-AltDemiItalic]
@@ -145,7 +157,7 @@
   \definefontsynonym [Calligraphy] [LucidaCalligraphy-Italic]
 \stoptypescript
 
-% Informal
+% Informal : Vulis
 
 \starttypescript [casual] [informal] [name]
   \definefontsynonym [Serif]            [Informal-Regular]
@@ -187,27 +199,69 @@
 \stoptypescript
 
 % Baskerville :
+%
+% \starttypescript [serif] [baskerville] [name]
+%   \definefontsynonym [Serif]            [Baskerville]
+%   \definefontsynonym [SerifBold]        [Baskerville-Bold]
+%   \definefontsynonym [SerifItalic]      [Baskerville-Italic]
+%   \definefontsynonym [SerifSlanted]     [Baskerville-Italic]
+%   \definefontsynonym [SerifBoldItalic]  [Baskerville-BoldItalic]
+%   \definefontsynonym [SerifBoldSlanted] [Baskerville-BoldItalic]
+%   \definefontsynonym [SerifCaps]        [Baskerville]
+% \stoptypescript
+%
+% % Garamond :
+%
+% \starttypescript [serif] [garamond] [name]
+%   \definefontsynonym [Serif]            [Garamond-Normal]
+%   \definefontsynonym [SerifBold]        [Garamond]
+%   \definefontsynonym [SerifItalic]      [Garamond-Medium-Italic]
+%   \definefontsynonym [SerifSlanted]     [Garamond-Medium-Italic]
+%   \definefontsynonym [SerifBoldItalic]  [Garamond-Medium-Italic]
+%   \definefontsynonym [SerifBoldSlanted] [Garamond-Medium-Italic]
+%   \definefontsynonym [SerifCaps]        [Garamond]
+% \stoptypescript
 
-\starttypescript [serif] [baskerville] [name]
-  \definefontsynonym [Serif]            [Baskerville]
-  \definefontsynonym [SerifBold]        [Baskerville-Bold]
-  \definefontsynonym [SerifItalic]      [Baskerville-Italic]
-  \definefontsynonym [SerifSlanted]     [Baskerville-Italic]
-  \definefontsynonym [SerifBoldItalic]  [Baskerville-BoldItalic]
-  \definefontsynonym [SerifBoldSlanted] [Baskerville-BoldItalic]
-  \definefontsynonym [SerifCaps]        [Baskerville]
+% Bookman :
+
+\starttypescript [serif] [bookman] [name]
+  \definefontsynonym [Serif]            [Bookman-Light]
+  \definefontsynonym [SerifItalic]      [Bookman-LightItalic]
+  \definefontsynonym [SerifBold]        [Bookman-DemiBold]
+  \definefontsynonym [SerifBoldItalic]  [Bookman-DemiBoldItalic]
+  \definefontsynonym [SerifSlanted]     [Bookman-LightSlanted]
+  \definefontsynonym [SerifBoldSlanted] [Bookman-DemiBoldSlanted]
+  \definefontsynonym [SerifCaps]        [Bookman-Light-Caps]
 \stoptypescript
 
-% Garamond :
+% Chancery : Zapf
 
-\starttypescript [serif] [garamond] [name]
-  \definefontsynonym [Serif]            [Garamond-Normal]
-  \definefontsynonym [SerifBold]        [Garamond]
-  \definefontsynonym [SerifItalic]      [Garamond-Medium-Italic]
-  \definefontsynonym [SerifSlanted]     [Garamond-Medium-Italic]
-  \definefontsynonym [SerifBoldItalic]  [Garamond-Medium-Italic]
-  \definefontsynonym [SerifBoldSlanted] [Garamond-Medium-Italic]
-  \definefontsynonym [SerifCaps]        [Garamond]
+\starttypescript [calligraphy] [chancery] [name]
+  \definefontsynonym [Calligraphy] [Chancery]
+\stoptypescript
+
+% Utopia : Adobe
+
+\starttypescript [serif] [utopia] [name]
+  \definefontsynonym [Serif]            [Utopia-Regular]
+  \definefontsynonym [SerifItalic]      [Utopia-Italic]
+  \definefontsynonym [SerifBold]        [Utopia-Bold]
+  \definefontsynonym [SerifBoldItalic]  [Utopia-BoldItalic]
+  \definefontsynonym [SerifSlanted]     [Utopia-Slanted]
+  \definefontsynonym [SerifBoldSlanted] [Utopia-BoldSlanted]
+  \definefontsynonym [SerifCaps]        [Utopia-Regular-Caps]
+\stoptypescript
+
+% Charter :
+
+\starttypescript [serif] [charter] [name]
+  \definefontsynonym [Serif]            [Charter-Roman]
+  \definefontsynonym [SerifItalic]      [Charter-Italic]
+  \definefontsynonym [SerifBold]        [Charter-Bold]
+  \definefontsynonym [SerifBoldItalic]  [Charter-BoldItalic]
+  \definefontsynonym [SerifSlanted]     [Charter-Slanted]
+  \definefontsynonym [SerifBoldSlanted] [Charter-BoldSlanted]
+  \definefontsynonym [SerifCaps]        [Charter-Roman-Caps]
 \stoptypescript
 
 % Times :
@@ -222,20 +276,20 @@
   \definefontsynonym [SerifCaps]        [Times-Roman]
 \stoptypescript
 
-\starttypescript [math] [times] [name]
-  \definefontsynonym [MathRoman]     [Times-MathRoman]
-  \definefontsynonym [MathExtension] [Times-MathExtension]
-  \definefontsynonym [MathItalic]    [Times-MathItalic]
-  \definefontsynonym [MathSymbol]    [Times-MathSymbol]
-\stoptypescript
+% \starttypescript [math] [times] [name]
+%   \definefontsynonym [MathRoman]     [Times-MathRoman]
+%   \definefontsynonym [MathExtension] [Times-MathExtension]
+%   \definefontsynonym [MathItalic]    [Times-MathItalic]
+%   \definefontsynonym [MathSymbol]    [Times-MathSymbol]
+% \stoptypescript
 
-\starttypescript [math] [tx] [name]
-  \definefontsynonym [MathRoman]     [Times-Roman-Upright]     
-  \definefontsynonym [MathExtension] [Times-Math-Extension]     
-  \definefontsynonym [MathItalic]    [Times-Math-Italic]        
-  \definefontsynonym [MathSymbol]    [Times-Math-Symbols]          
-  \definefontsynonym [MathAlpha]     [Times-Math-SymbolsA]     
-  \definefontsynonym [MathBeta]      [Times-Math-SymbolsB]     
+\starttypescript [math] [times] [name]
+  \definefontsynonym [MathRoman]     [Times-Roman-Upright]
+  \definefontsynonym [MathExtension] [Times-Math-Extension]
+  \definefontsynonym [MathItalic]    [Times-Math-Italic]
+  \definefontsynonym [MathSymbol]    [Times-Math-Symbols]
+  \definefontsynonym [MathAlpha]     [Times-Math-SymbolsA]
+  \definefontsynonym [MathBeta]      [Times-Math-SymbolsB]
 \stoptypescript
 
 % Helvetica :
@@ -269,25 +323,25 @@
   \definefontsynonym [MonoCaps]        [Courier]
 \stoptypescript
 
-% Palatino : Hermann Zapf / UWR 
+% Palatino : Hermann Zapf / UWR
 
 \starttypescript [serif] [palatino] [name]
-  \definefontsynonym [Serif]            [Palatino] 
+  \definefontsynonym [Serif]            [Palatino]
   \definefontsynonym [SerifBold]        [Palatino-Bold]
   \definefontsynonym [SerifItalic]      [Palatino-Italic]
   \definefontsynonym [SerifSlanted]     [Palatino-Slanted]
   \definefontsynonym [SerifBoldItalic]  [Palatino-BoldItalic]
   \definefontsynonym [SerifBoldSlanted] [Palatino-BoldSlanted]
-  \definefontsynonym [SerifCaps]        [Palatino] % -Caps 
+  \definefontsynonym [SerifCaps]        [Palatino-Caps]
 \stoptypescript
 
 \starttypescript [math] [palatino] [name]
-  \definefontsynonym [MathRoman]     [Palatino-Roman-Upright]     
-  \definefontsynonym [MathExtension] [Palatino-Math-Extension]     
-  \definefontsynonym [MathItalic]    [Palatino-Math-Italic]        
-  \definefontsynonym [MathSymbol]    [Palatino-Math-Symbols]          
-  \definefontsynonym [MathAlpha]     [Palatino-Math-SymbolsA]     
-  \definefontsynonym [MathBeta]      [Palatino-Math-SymbolsB]     
+  \definefontsynonym [MathRoman]     [Palatino-Roman-Upright]
+  \definefontsynonym [MathExtension] [Palatino-Math-Extension]
+  \definefontsynonym [MathItalic]    [Palatino-Math-Italic]
+  \definefontsynonym [MathSymbol]    [Palatino-Math-Symbols]
+  \definefontsynonym [MathAlpha]     [Palatino-Math-SymbolsA]
+  \definefontsynonym [MathBeta]      [Palatino-Math-SymbolsB]
 \stoptypescript
 
 \endinput

@@ -812,20 +812,20 @@
 \def\startspeech 
   {\doglobal\increment\speechlevel\relax
    \dohandlequotation\c!leftspeech\relax 
-   \doglobal\settrue\insidespeech
+   \global\settrue\insidespeech
    \ignorespaces}
 
 \def\stopspeech
   {\dohandlequotation\c!rightspeech\unskip
    \doglobal\decrement\speechlevel\relax
-   \ifcase\speechlevel\relax \doglobal\setfalse\insidespeech \fi}
+   \ifcase\speechlevel\relax \global\setfalse\insidespeech \fi}
 
 \def\dohandlespeech%
   {\relax \ifcase\speechlevel 
    \or\ifconditional\insidespeech
      \dohandlequotation\c!middlespeech\relax 
    \else
-     \doglobal\settrue\insidespeech
+     \global\settrue\insidespeech
    \fi\fi}
 
 \unexpanded\def\speech% 

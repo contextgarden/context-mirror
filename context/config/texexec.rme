@@ -35,6 +35,8 @@
 % TeXScriptsPath  texmf/context/perltk    scripts
 % TeXFontsPath    texmf                   font files
 %
+% MpFormatPath    TeXFormatPath           mem files  
+%
 % == the main shell setting ==
 %
 % As shown below, one can define his/her own sections. We default to 
@@ -64,6 +66,8 @@ set  MpFormat           to  metafun
 set  TeXFormatFlag      to  &
 set  MpFormatFlag       to  &
 
+% This one is only for testing, you can leave it untouched.
+
 set  TeXFontsPath       to  l:/tex/texmf;l:/tex/texmf-local;
 
 % For teTeX the next settings will do.
@@ -92,10 +96,11 @@ for  fptex  set  MpBatchFlag       to  -int=batchmode
 
 for  miktex  set  TeXExecutable     to  pdfetex
 for  miktex  set  TeXVirginFlag     to  --initialize
+for  miktex  set  TeXPassString     to  --alias=context 
 for  miktex  set  TeXBatchFlag      to  --interaction=batchmode 
 for  miktex  set  MpToTeXExecutable to  mptotex
 for  miktex  set  MpVirginFlag      to  --initialize
-for  miktex  set  MpPassString      to 
+for  miktex  set  MpPassString      to  --alias=mpost 
 for  miktex  set  MpBatchFlag       to  --interaction=batchmode 
 
 for  miktex  set  TeXFormatFlag     to  --undump=

@@ -1862,7 +1862,8 @@
    \next}
 
 %D \macros
-%D   {appendtocommalist,addtocommalist,removefromcommalist}
+%D   {appendtocommalist,prependtocommalist,
+%D    addtocommalist,removefromcommalist}
 %D
 %D When working with comma separated lists, one sooner or
 %D later want the tools to append or remove items from such a
@@ -1894,7 +1895,8 @@
 %D also provided: 
 %D
 %D \starttypen
-%D \appendtocommalist {something} \name
+%D \appendtocommalist  {something} \name
+%D \prependtocommalist {something} \name
 %D \stoptypen
 
 \def\appendtocommalist#1#2%
@@ -1904,14 +1906,34 @@
      \dodoglobal\edef#2{#2,#1}%
    \fi}
 
+\def\prependtocommalist#1#2%
+  {\ifx#2\empty
+     \dodoglobal\edef#2{#1}%
+   \else % no test on empty 
+     \dodoglobal\edef#2{#1,#2}%
+   \fi}
+
 \def\addtocommalist#1#2%
-  {\doifelse{#2}{}
-     {\dodoglobal\edef#2{#1}}
-     {\edef\!!stringa{#2,,}%
-      \beforesplitstring#2\at,,\to#2\relax
-      \ExpandBothAfter\doifinsetelse{#1}{#2}
-        {\resetglobal}
-        {\dodoglobal\edef#2{#2,#1}}}}
+  {\ifx#2\empty
+     \dodoglobal\edef#2{#1}%
+   \else
+     \edef\!!stringa{#2,,}%
+     \beforesplitstring#2\at,,\to#2\relax
+     \ExpandBothAfter\doifinsetelse{#1}{#2}
+       {\resetglobal}
+       {\dodoglobal\edef#2{#2,#1}}%
+   \fi}
+
+\def\pretocommalist#1#2%
+  {\ifx#2\empty
+     \dodoglobal\edef#2{#1}%
+   \else
+     \edef\!!stringa{#2,,}%
+     \beforesplitstring#2\at,,\to#2\relax
+     \ExpandBothAfter\doifinsetelse{#1}{#2}
+       {\resetglobal}
+       {\dodoglobal\edef#2{#1,#2}}%
+   \fi}
 
 \def\doremovefromcommalist#1#2#3% nog \doglobal 
   {\edef\!!stringa{,,#3,,}%

@@ -31,7 +31,9 @@
   boolean OnRightPage        ; OnRightPage        := true ;  
   def LoadPageState = 
     OnRightPage         :=      \MPonrightpage ; 
-    PageNumber          :=      \realfolio ; 
+    RealPageNumber      :=  \the\realpageno ; 
+    PageNumber          :=  \the\pageno ; 
+    NOfPages            :=      \lastpage ;
     PaperHeight         :=  \the\papierhoogte ;
     PaperWidth          :=  \the\papierbreedte ;
     PrintPaperHeight    :=  \the\printpapierhoogte ;

@@ -12,10 +12,10 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-%D [This code is hooked into the core macros and saves some 
-%D format space.] 
+%D [This code is hooked into the core macros and saves some
+%D format space.]
 
-\unprotect 
+\unprotect
 
 \gdef\dosetshowfonttitle#1%
   {\tabskip\!!zeropoint
@@ -32,7 +32,7 @@
   {\dosingleempty\doshowbodyfont}
 
 \gdef\doshowbodyfont[#1]%
-  {\startbaselinecorrection
+  {\ifinsidefloat\else\startbaselinecorrection\fi
    \vbox
      {\dosetshowfonttitle{#1}%
       \def\bigstrut##1##2%
@@ -64,24 +64,24 @@
          \noalign{\hrule}\next{\tt\string\ss}{\ss}{Ag}
          \noalign{\hrule}\next{\tt\string\tt}{\tt}{Ag}
          \noalign{\hrule}}}
-   \stopbaselinecorrection}
+   \ifinsidefloat\else\stopbaselinecorrection\fi}
 
 \gdef\showbodyfontenvironment%
   {\dosingleempty\doshowbodyfontenvironment}
 
 \gdef\doshowbodyfontenvironment[#1]%
-  {\startbaselinecorrection
+  {\ifinsidefloat\else\startbaselinecorrection\fi
    \vbox
      {\dosetshowfonttitle{#1}%
       \def\next##1%
-        {&&\getvalue{\bodyfontvariable{##1\s!text}}%          
-         &&\getvalue{\bodyfontvariable{##1\s!script}}%        
-         &&\getvalue{\bodyfontvariable{##1\s!scriptscript}}%  
-         &&\getvalue{\bodyfontvariable{##1\c!x}}%             
-         &&\getvalue{\bodyfontvariable{##1\c!xx}}%            
-         &&\getvalue{\bodyfontvariable{##1\interfaced\v!klein}}%       
+        {&&\getvalue{\bodyfontvariable{##1\s!text}}%
+         &&\getvalue{\bodyfontvariable{##1\s!script}}%
+         &&\getvalue{\bodyfontvariable{##1\s!scriptscript}}%
+         &&\getvalue{\bodyfontvariable{##1\c!x}}%
+         &&\getvalue{\bodyfontvariable{##1\c!xx}}%
+         &&\getvalue{\bodyfontvariable{##1\interfaced\v!klein}}%
          &&\getvalue{\bodyfontvariable{##1\interfaced\v!groot}}%
-         &&\getvalue{\bodyfontvariable{##1\c!interlinie}}&\cr    
+         &&\getvalue{\bodyfontvariable{##1\c!interlinie}}&\cr
          \noalign{\hrule}}
       \halign to \localhsize
         {##&\vrule##\strut
@@ -94,11 +94,11 @@
          &\multispan{17}{\vrule\hfil\tttf\strut\title\hfil}\vrule\cr
          \noalign{\hrule}
          &&\tttf\tx\s!text&&\tttf\tx\s!script&&\tttf\tx\s!scriptscript
-         &&\tttf\tx\c!x&&\tttf\tx\c!xx&&\tttf\tx\v!klein&&\tttf\tx\v!groot 
+         &&\tttf\tx\c!x&&\tttf\tx\c!xx&&\tttf\tx\v!klein&&\tttf\tx\v!groot
          &&\tttf\tx\c!interlinie&\cr
          \noalign{\hrule}
          \@EA\globalprocesscommalist\@EA[\bodyfontenvironmentlist]\next}}
-   \stopbaselinecorrection}
+   \ifinsidefloat\else\stopbaselinecorrection\fi}
 
 \gdef\showfont%
   {\dosingleempty\doshowfont}
@@ -112,17 +112,17 @@
 \gdef\doshowfont[#1]%
   {\bgroup
    \setupcolors[\c!status=\v!lokaal]%
-   \iffirstargument 
+   \iffirstargument
      \definefont[\s!dummy][#1]\dummy
    \else\ifdim2.5em>.05\hsize \tx
-        \ifdim2.5em>.05\hsize \txx 
+        \ifdim2.5em>.05\hsize \txx
    \fi\fi\fi
-   \startbaselinecorrection
+   \ifinsidefloat\else\startbaselinecorrection\fi
    \vbox\bgroup
-   \forgetall 
+   \forgetall
    \startoverlay
      {\vbox
-        {\tf \setstrut \dummy 
+        {\tf \setstrut \dummy
          \localcolortrue \offinterlineskip
          \dostepwiserecurse{0}{15}{1}
            {\let\row\recurselevel
@@ -140,9 +140,9 @@
                     \setbox\scratchbox\hbox{\gray\vrule\!!width1ex\!!height.5ex\!!depth.5ex}%
                   \fi
                   \startoverlay
-                    {\tf\vbox to 2.5em 
+                    {\tf\vbox to 2.5em
                        {\vss
-                        \hbox to 2.5em 
+                        \hbox to 2.5em
                           {\dummy\ifdim\fontdimen2\font=\!!zeropoint
                            \setbox\scratchbox=\hbox
                              {\raise.5\dp\scratchbox\hbox
@@ -156,16 +156,16 @@
                            \fi
                            \hss\copy\scratchbox\hss}
                         \vss}}
-                    {\tf\vbox to 2.3em 
+                    {\tf\vbox to 2.3em
                        {\ifdone
-                          \blue \hsize2.4em 
+                          \blue \hsize2.4em
                           \edef\ascii
-                            {\ifnum\hyphenchar\font=\scratchcounter 
+                            {\ifnum\hyphenchar\font=\scratchcounter
                                hyph%
-                             \else\ifnum\skewchar\font=\scratchcounter 
+                             \else\ifnum\skewchar\font=\scratchcounter
                                skew%
                              \fi\fi}%
-                          \tinyfont 
+                          \tinyfont
                           {\red\ascii}\hfill
                           \number\scratchcounter
                           \vfill
@@ -181,12 +181,12 @@
    \edef\ascii
      {name:~{\black\fontname\font}\quad
       encoding:~{\black\currentencoding}\quad
-      mapping:~{\black\currentmapping}\quad 
+      mapping:~{\black\currentmapping}\quad
       handling:~{\black\fonthandling}}%
    \tf\hbox to 40em
      {\blue\hfill\tinyfont\setstrut\strut\ascii}
    \egroup
-   \stopbaselinecorrection
+   \ifinsidefloat\else\stopbaselinecorrection\fi
    \egroup}
 
 \gdef\showfontstyle%
@@ -198,7 +198,7 @@
      \raggedright
      \switchtobodyfont[#1]
      \def\dodocommando##1##2%
-       {\starttextrule{\tttf #1 ##1 ##2} 
+       {\starttextrule{\tttf #1 ##1 ##2}
         \nobreak \getvalue{##2}%
         \dorecurse{255}
           {\iffontchar\font\recurselevel\relax
@@ -208,7 +208,7 @@
         \stoptextrule}
      \def\docommando##1%
        {\getvalue{##1}\processcommacommand[#3]{\dodocommando{##1}}}
-     \processcommalist[#2]\docommando  
+     \processcommalist[#2]\docommando
      \egroup
    \else\ifsecondargument
                       \showfontstyle[#1][#2][\alternativetextlist]%
@@ -218,4 +218,20 @@
      \showfontstyle[#1][\c!tt]\showfontstyle[#1][\c!mm]
    \fi\fi}
 
-\protect \endinput 
+\gdef\showligature#1%
+  {\hbox{\type{#1}\enspace\red\ruledhbox{\black#1}}}
+
+\gdef\showligatures[#1]%
+  {\bgroup
+   \setupcolors[\c!status=\v!lokaal]%
+   \def\show##1{\hbox{\red\ruledhbox{\black##1}}}%
+   \definefont[\s!dummy][#1]\dummy
+   \starttabulate[|*{9}{c|}]
+   \NC\type{ff}\NC\type{fi}\NC\type{fl}\NC\type{ffi}\NC\type{ffl}\NC 
+      \type{``}\NC\type{''}\NC\type{--}\NC\type{---}\NC\NR 
+   \NC\show{ff}\NC\show{fi}\NC\show{fl}\NC\show{ffi}\NC\show{ffl}\NC 
+      \show{``}\NC\show{''}\NC\show{--}\NC\show{---}\NC\NR 
+   \stoptabulate
+   \egroup}
+
+\protect \endinput

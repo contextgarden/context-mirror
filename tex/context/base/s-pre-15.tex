@@ -55,8 +55,9 @@
 \setupinteractionscreen
   [option=max]
 
-\setupbodyfont
-  [lbr,14.4pt]
+\startmode[asintended] \setupbodyfont[lbr] \stopmode
+
+\setupbodyfont[14.4pt]
 
 %D We use a lot of color. You can remap them if you want 
 %D differend ones. The ideas circulate over the colors. 
@@ -146,13 +147,19 @@
 \def\StopIdea%
   {}
 
-\def\TitlePage#1%
+\def\StartTitlePage%
   {\startstandardmakeup
-     \setupalign[middle]
-     \def\\{\vfil\bfb\setupinterlinespace}
-     \bfd\setupinterlinespace
-     \vfil#1\vfil\vfil
+   \setupalign[middle]
+   \def\\{\vfil\bfb\setupinterlinespace}
+   \bfd\setupinterlinespace
+   \vfil}
+
+\def\StopTitlePage%
+  {\vfil\vfil
    \stopstandardmakeup}
+
+\def\TitlePage#1%
+  {\StartTitlePage#1\StopTitlePage}
 
 \doifnotmode{demo}{\endinput}
 

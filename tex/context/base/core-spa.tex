@@ -79,7 +79,7 @@
 %D what we want. Therefore one can also say:
 %D
 %D \starttypen
-%D \definecorpsenvironment[9pt][interlinespace=11pt]
+%D \definebodyfontenvironment[9pt][interlinespace=11pt]
 %D \stoptypen
 %D
 %D One can still use \type{\setupinterlinespace} (without
@@ -253,11 +253,11 @@
    \global\blankogeenwitfalse
    \global\lokaalblankoflexibelfalse
    \global\lokaalblankovastfalse
-   \global\blankoskip=\!!zeropoint
+   \global\blankoskip=\zeropoint
    \global\blankoforceerfalse
    \blankobuitenfalse
    \processcommalist[#1]\doblanko
-\ifdim\blankoskip=\!!zeropoint\relax
+\ifdim\blankoskip=\zeropoint\relax
   \iflokaalblankoflexibel \dosingleblanko\currentblanko \fi
   \iflokaalblankovast     \dosingleblanko\currentblanko \fi
 \fi
@@ -295,9 +295,9 @@
            \else
              \ifdim\lastskip=\parskip
              \else  % force this due to previous comment
-               \ifdim\parskip>\!!zeropoint\relax
+               \ifdim\parskip>\zeropoint\relax
                  \ifdim\blankoskip<\parskip\relax
-                   \global\blankoskip=\!!zeropoint
+                   \global\blankoskip=\zeropoint
                  \else
                    \global\advance\blankoskip by -\parskip
                  \fi
@@ -519,9 +519,9 @@
 
 %D Now. 
 
-\definieerblanko
-  [\s!default]
-  [\v!wit]
+\definieerblanko [\s!default] [\v!wit]
+\definieerblanko [\v!hoogte]  [\strutheight]
+\definieerblanko [\v!diepte]  [\strutdepth]
 
 \let\currentvoorwit=\empty
 
@@ -573,7 +573,7 @@
        \v!eerste=>\indentfirstparagraphtrue,
      \v!volgende=>\indentfirstparagraphfalse,
        \v!altijd=>\parindent=\voorwit\relax,            % geen \indent !
-        \v!nooit=>\parindent=\!!zeropoint\relax]}
+        \v!nooit=>\parindent=\zeropoint\relax]}
 
 \def\inspringen%
   {\dosingleargument\doinspringen}
@@ -629,20 +629,12 @@
   {\nointerlineskip
    \vskip#1 }
 
-\newskip\tussenwit
-\tussenwit=\!!zeropoint
+\newskip\tussenwit \tussenwit=\zeropoint
 
-\def\blankokleinmaat%
-  {\smallskipamount}
-
-\def\blankomiddelmaat%
-  {\medskipamount}
-
-\def\blankogrootmaat%
-  {\bigskipamount}
-
-\def\currentwitruimte%
-  {\!!zeropoint}
+\def\blankokleinmaat  {\smallskipamount}
+\def\blankomiddelmaat {\medskipamount}
+\def\blankogrootmaat  {\bigskipamount}
+\def\currentwitruimte {\!!zeropoint}
 
 \def\stelwitruimteopnieuwin%
   {\expanded{\stelwitruimtein[\currentwitruimte]}}
@@ -862,6 +854,9 @@
       \box\nextbox
       \stopbaselinecorrection}%
    \vbox}
+
+\def\removeunwantedspaces % too dumb macro 
+  {\ifhmode\unskip\unskip\unskip\unskip\fi}
 
 \def\toonstruts%
   {\setteststrut}
@@ -1094,7 +1089,7 @@
 
 \def\endstrut%
   {\relax\ifhmode\ifdim\ht\strutbox=\!!zeropoint\else
-     \unskip\unskip\unskip
+     \removeunwantedspaces
      \normalpenalty\!!tenthousand
      \normalhskip\!!zeropoint
      \strut
@@ -1127,11 +1122,10 @@
 
 \let\pseudobegstrut\pseudostrut
 
-\def\pseudoendstrut% removes all kind of signals 
-  {\ifhmode\unskip\unskip\unskip\unskip\fi}
+\let\pseudoendstrut\removeunwantedspaces
 
 \def\resetteststrut%
-  {\let\strutwidth=\!!zeropoint
+  {\let\strutwidth=\zeropoint
    \setstrut}
 
 \ifx\setfontparameters\undefined
@@ -1462,11 +1456,11 @@
 
 \def\forgetbothskips%
   {\tolerance=1500
-   \leftskip\!!zeropoint
-   \rightskip\!!zeropoint\relax}
+   \leftskip\zeropoint
+   \rightskip\zeropoint\relax}
 
 \def\forgetspacing%
-  {\emergencystretch\!!zeropoint\relax}
+  {\emergencystretch\zeropoint}
 
 \def\forgetall%
   {\the\everyforgetall}
@@ -1617,14 +1611,28 @@
 \setvalue{@lsa@\empty}%
   {\zeropoint}
 
+% not safe for 2\parindent
+%
+% \def\dosetleftskipadaption#1%
+%   {\leftskipadaption
+%      \ifcsname @lsa@#1\endcsname
+%        \csname @lsa@#1\endcsname
+%      \else 
+%        #1%
+%      \fi
+%    \relax}
+
 \def\dosetleftskipadaption#1%
-  {\leftskipadaption
-     \ifcsname @lsa@#1\endcsname
-       \csname @lsa@#1\endcsname
+  {\edef\ascii{@lsa@#1}%
+   \convertcommand\ascii\to\ascii
+   \leftskipadaption
+     \ifcsname\ascii\endcsname
+       \csname\ascii\endcsname
      \else 
        #1%
      \fi
    \relax}
+
 
 \endETEX
 
@@ -1781,7 +1789,7 @@
    \rightskip=1\rightskip\!!plus#3\relax % zie: Tex By Topic 8.1.3
    \spaceskip#4\relax
    \xspaceskip#5\relax
-   \parfillskip\!!zeropoint\!!plus#6\relax
+   \parfillskip\zeropoint\!!plus#6\relax
    \parindent#7\relax}
 
 % \def\notragged%
@@ -1791,9 +1799,9 @@
   {\chardef\raggedstatus=0
    \leftskip1\leftskip
    \rightskip1\rightskip
-   \spaceskip\!!zeropoint
-   \xspaceskip\!!zeropoint
-   \parfillskip\!!zeropoint\!!plus1fil\relax
+   \spaceskip\zeropoint
+   \xspaceskip\zeropoint
+   \parfillskip\zeropoint\!!plus1fil\relax
    \let\updateraggedskips\relax} % new 
 
 \let\forgetragged\notragged
@@ -1953,6 +1961,7 @@
      {\ExpandFirstAfter\processallactionsinset
         [#1]
         [       \v!rek=>\emergencystretch=\bodyfontsize,
+             \v!spatie=>\spaceskip.5em\!!plus.25em\!!minus.25em\relax,
          \v!zeerstreng=>\tolerance=200,
              \v!streng=>\tolerance=1500,
              \v!soepel=>\tolerance=3000,
@@ -1962,7 +1971,7 @@
   {\dosingleargument\dosteltolerantiein}
 
 \def\woordrechts%
-  {\groupedcommand{\hfill\hbox}{\parfillskip\!!zeropoint}}
+  {\groupedcommand{\hfill\hbox}{\parfillskip\zeropoint}}
 
 %D \macros
 %D   {pushindentation,popindentation}
@@ -1981,7 +1990,7 @@
      \setbox\indentationboxB=\lastbox       % get \indent generated box
      \unskip
    \else
-     \hskip\!!zeropoint                     % switch to horizontal mode
+     \hskip\zeropoint                       % switch to horizontal mode
      \unskip
      \setbox\indentationboxA=\lastbox       % get \indent generated box
      \setbox\indentationboxB=\box\voidb@x

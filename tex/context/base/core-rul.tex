@@ -2341,8 +2341,8 @@
    \egroup}
 
 \def\dotoptextrule#1%
-  {\pagina[\v!voorkeur]
-   \witruimte
+  {\pagina[\v!voorkeur] % interferes 
+   %\witruimte % no 
    \@@tlvoor
    \docomplextextrule{#1}%
    \geenwitruimte
@@ -2489,7 +2489,7 @@
 %D \macros
 %D   {fillinline, setupfillinlines}
 %D
-%D  Another member of the family takes care of putting a (often
+%D Another member of the family takes care of putting a (often
 %D small) rule after a piece of text, like
 %D
 %D \startbuffer

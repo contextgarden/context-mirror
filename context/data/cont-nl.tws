@@ -353,6 +353,7 @@ var:kolomafstand:*maat::
 var:margeafstand:*maat::
 var:n:*getal::
 var:nummercommando:*\commando#1::
+var:splitsen:soepel,streng,zeerstreng,*getal::
 ivr:omlijnd::
 stopsetup
 
@@ -758,9 +759,11 @@ var:voor:*commando::
 var:tussen:*commando::
 var:na:*commando::
 var:kleur:*naam::
+var:achtergrondkleur:*naam::
 var:hoogte:*maat,max::
 var:diepte:*maat,max::
-var:variant:a,b,c::
+var:variant:a,b,c,d::
+var:lijndikte:*maat::
 stopsetup
 
 startsetup
@@ -2622,6 +2625,7 @@ var:voetstatus:normaal,stop,start,leeg,geen,geenmarkering::
 var:tekststatus:normaal,stop,start,leeg,geen,geenmarkering::
 var:bovenstatus:stop,start::
 var:onderstatus:stop,start::
+var:kleur:*naam::
 stopsetup
 
 startsetup
@@ -2735,7 +2739,7 @@ stopsetup
 startsetup
 com:steltolerantiein:
 typ:vals/:
-val:horizontaal,vertikaal, rek,zeerstreng,streng,soepel,zeersoepel:zeerstreng:
+val:horizontaal,vertikaal, rek,spatie,zeerstreng,streng,soepel,zeersoepel:zeerstreng:
 stopsetup
 
 startsetup
@@ -3290,7 +3294,7 @@ var:hokjes:aan,uit::
 var:ymax:*getal::
 var:xmax:*getal::
 var:gebied:*tekst::
-var:plaats:lokaal,globaal,default::
+var:plaats:lokaal,globaal,default,geen::
 var:maxbreedte:*maat::
 var:maxhoogte:*maat::
 stopsetup

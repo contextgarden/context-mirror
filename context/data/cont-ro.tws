@@ -353,6 +353,7 @@ var:distantacoloane:*dimensiune::
 var:distantamargine:*dimensiune::
 var:n:*numar::
 var:comandanumar:*\comanda#1::
+var:split:tolerant,strict,foartestrict,*numar::
 ivr:framed::
 stopsetup
 
@@ -758,9 +759,11 @@ var:inainte:*comanda::
 var:intre:*comanda::
 var:dupa:*comanda::
 var:culoare:*nume::
+var:culoarefundal:*nume::
 var:inaltime:*dimensiune,max::
 var:inaltime:*dimensiune,max::
-var:alternativ:a,b,c::
+var:alternativ:a,b,c,d::
+var:grosimerigla:*dimensiune::
 stopsetup
 
 startsetup
@@ -2622,6 +2625,7 @@ var:staresubsol:normal,stop,start,gol,niciunul,faramarcare::
 var:staretext:normal,stop,start,gol,niciunul,faramarcare::
 var:staresus:stop,start::
 var:starejos:stop,start::
+var:culoare:*nume::
 stopsetup
 
 startsetup
@@ -2735,7 +2739,7 @@ stopsetup
 startsetup
 com:seteazatoleranta:
 typ:vals/:
-val:orizontal,vertical, dilatat,foartestrict,strict,tolerant,foartetolerant:foartestrict:
+val:orizontal,vertical, dilatat,spatiu,foartestrict,strict,tolerant,foartetolerant:foartestrict:
 stopsetup
 
 startsetup
@@ -3290,7 +3294,7 @@ var:frames:on,dezactivat::
 var:ymax:*numar::
 var:xmax:*numar::
 var:director:*text::
-var:locatie:local,global,implicit::
+var:locatie:local,global,implicit,niciunul::
 var:latimemaxima:*dimensiune::
 var:inaltimemaxima:*dimensiune::
 stopsetup

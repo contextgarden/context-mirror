@@ -1206,12 +1206,70 @@
 
 \newif\ifflushingcolumnfloats \flushingcolumnfloatstrue
 
+% \def\doflushcolumnfloat%
+%   {\ifpostponecolumnfloats\else\ifflushingcolumnfloats\ifprocessingverbatim\else\ifsomefloatwaiting
+%      \bgroup
+%      \forgetall
+%      \let\doflushcolumnfloat=\relax
+%      \getcolumnstatus\column\count255\total\dimen0\goal\dimen2\\%
+%      \ifdim\dimen0>\zeropoint
+%        \dogetfloat
+%        \ifdim\wd\floatbox>\hsize
+%          \doresavefloat
+%        \else
+%         %\setbox2=\vbox
+%         %  {\blanko[\@@bkvoorwit]
+%         %   \snaptogrid\vbox{\copy\floatbox}%
+%         %   \blanko[\@@bknawit]
+%          \setbox2=\vbox
+%            {\blanko[\@@bkvoorwit]
+%             \snaptogrid\vbox{\copy\floatbox}}%
+%          \advance\dimen0 by \ht2 
+%          \ifdim\dimen0>\dimen2
+%            \ifnum\count255<\nofcolumns
+%              \advance\count255 by 1
+%              \edef\currenttopcolumnbox{\getvalue{\@@topcol\the\count255}}%
+%              \ifdim\ht\currenttopcolumnbox=\zeropoint
+%                \global\setbox\currenttopcolumnbox=\vbox
+%                  {\snaptogrid\vbox{\copy\floatbox}
+%                   \witruimte % nodig ?
+%                   \blanko[\@@bknawit]}%
+%                \dimen4=\ht\currenttopcolumnbox
+%                \advance\dimen4 by \dp\currenttopcolumnbox
+%                \global\advance\vsize by -\dimen4
+%                \advance\dimen4 by -\pagegoal
+%                \global\pagegoal=-\dimen4
+%                \showmessage{\m!columns}{12}{a}%
+%              \else
+%                \showmessage{\m!columns}{12}{b}%
+%                \doresavefloat
+%              \fi
+%            \else
+%              \showmessage{\m!columns}{12}{c}%
+%              \doresavefloat
+%            \fi
+%          \else
+%            \ifhmode{\setbox0=\lastbox}\fi% waar is die er in geslopen
+%            \par
+%            \ifdim\prevdepth<\zeropoint \else % anders bovenaan kolom witruimte
+%              \nobreak
+%              \blanko[\@@bkvoorwit]
+%              \nobreak
+%            \fi
+%            \flushfloatbox
+%            \blanko[\@@bknawit]
+%          \fi
+%        \fi
+%      \fi
+%      \egroup
+%    \fi\fi\fi\fi}
+
 \def\doflushcolumnfloat%
   {\ifpostponecolumnfloats\else\ifflushingcolumnfloats\ifprocessingverbatim\else\ifsomefloatwaiting
      \bgroup
      \forgetall
      \let\doflushcolumnfloat=\relax
-     \getcolumnstatus\column\count255\total\dimen0\goal\dimen2\\%
+     \getcolumnstatus\column\mofcolumns\total\dimen0\goal\dimen2\\%
      \ifdim\dimen0>\zeropoint
        \dogetfloat
        \ifdim\wd\floatbox>\hsize
@@ -1226,9 +1284,9 @@
             \snaptogrid\vbox{\copy\floatbox}}%
          \advance\dimen0 by \ht2 
          \ifdim\dimen0>\dimen2
-           \ifnum\count255<\nofcolumns
-             \advance\count255 by 1
-             \edef\currenttopcolumnbox{\getvalue{\@@topcol\the\count255}}%
+           \ifnum\mofcolumns<\nofcolumns
+             \advance\mofcolumns by 1
+%% bug %%    \edef\currenttopcolumnbox{\getvalue{\@@topcol\the\count255}}%
              \ifdim\ht\currenttopcolumnbox=\zeropoint
                \global\setbox\currenttopcolumnbox=\vbox
                  {\snaptogrid\vbox{\copy\floatbox}

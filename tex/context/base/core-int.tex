@@ -787,6 +787,8 @@
 
 \newcounter\currentamposition
 
+\newtoks\everysetmenucommands
+
 \def\setamboxcommands#1#2%
   {\def\@@amboxcommand##1\\%
      {\bgroup
@@ -797,6 +799,8 @@
       \egroup
       \ignorespaces}%
    \doglobal\newcounter\currentamposition %%% experiment 
+   \def\currentmenu{#1}% to be sure 
+   % here, but could go into \everysetmenucommands
    \def\raw[##1]##2\\%
      {\@@amboxcommand\naarbox{\ignorespaces##2\unskip}[##1]\\}%
    \def\but[##1]##2\\%
@@ -810,14 +814,18 @@
    \def\rul##1\\% ook \do@@amposition ! 
      {\@@amboxcommand\localframed[\??am#1][]{\ignorespaces##1\unskip}\\}%
    \def\com##1\\%
-     {\ignorespaces##1\unskip\ignorespaces}}
+     {\ignorespaces##1\unskip\ignorespaces}%
+   \the\everysetmenucommands}
 
 \ifx\do@@amposition\undefined
   \let\do@@amposition\gobbletwoarguments % hook for positional thingies
 \fi
 
+\let\currentmenu\empty
+
 \def\@@amhbox#1#2#3#4%
-  {\testinteractiemenu{#3}%
+  {\def\currentmenu{#3}%
+   \testinteractiemenu{#3}%
    \iflocationmenupermitted
      \bgroup
      \showcomposition
@@ -843,7 +851,8 @@
    \fi}
 
 \def\@@amvbox#1#2#3#4% don't change skipping, this one works!
-  {\testinteractiemenu{#3}%
+  {\def\currentmenu{#3}%
+   \testinteractiemenu{#3}%
    \iflocationmenupermitted
      \bgroup
      \showcomposition

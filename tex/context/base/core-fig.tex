@@ -161,6 +161,7 @@
 %D possible.
 
 \newif\ifrunutilityfile       % \runutilityfiletrue
+\newif\ifconsultutilityfile   \consultutilityfiletrue
 
 %D When I ever decide to change the format of the figure
 %D directory file that \TEXUTIL\ produces, the next number
@@ -390,25 +391,27 @@
    \fi}
 
 \def\getfiguredimensionsC%
-  {\ifcase\figurestatus\ifrunutilityfile\ifcase\figurefilemode\else
-    %\doif{\@@efcurrenttype}{\c!tex} % oeps, was wrong 
-     \doifnotinset{\@@efextension}{\c!tex,\c!tmp}
-       {\doiffileelse{\@@efcurrentfile}
-          {\edef\@@effilenametype{\@@effilename.\@@efcurrenttype}%
-           \@@eftrace{running texutil on \@@effilenametype}%
-           \def\@@efloadname{\f!utilityfilename.\f!temporaryextension}%
-           \executesystemcommand
-             {texutil --fig --out=\@@efloadname\space\@@effilenametype}%
-           \@@eftrace{analyzing \@@efloadname\space on \@@effilenametype}%
-           \pushendofline
+  {\ifconsultutilityfile \ifrunutilityfile 
+     \ifcase\figurestatus\ifcase\figurefilemode\else
+      %\doif{\@@efcurrenttype}{\c!tex} % oeps, was wrong 
+       \doifnotinset{\@@efextension}{\c!tex,\c!tmp}
+         {\doiffileelse{\@@efcurrentfile}
+            {\edef\@@effilenametype{\@@effilename.\@@efcurrenttype}%
+             \@@eftrace{running texutil on \@@effilenametype}%
+             \def\@@efloadname{\f!utilityfilename.\f!temporaryextension}%
+             \executesystemcommand
+               {texutil --fig --out=\@@efloadname\space\@@effilenametype}%
+             \@@eftrace{analyzing \@@efloadname\space on \@@effilenametype}%
+             \pushendofline
 \startreadingfile
-           \let\presetfigure=\presetfigureB
-           \readsetfile{.}{\@@efloadname}\relax\relax
+             \let\presetfigure=\presetfigureB
+             \readsetfile{.}{\@@efloadname}\relax\relax
 \stopreadingfile
-           \popendofline
-           \@@eftrace{\ifcase\figurestatus not \fi found}}
-          {}}%
-   \fi\fi\fi}
+             \popendofline
+             \@@eftrace{\ifcase\figurestatus not \fi found}}
+            {}}%
+     \fi\fi
+   \fi\fi}
 
 \def\presetfigureB[#1][#2]%
   {\getparameters[\??ep][#2]%
@@ -420,7 +423,7 @@
 %D utilility files.
 
 \def\doanalyzefigurefilesB%
-  {\ifcase\figurestatus\ifcase\figurefilemode\else
+  {\ifconsultutilityfile\ifcase\figurestatus\ifcase\figurefilemode\else
     %\def\@@efloadname{\@@efcurrentpath\f!pathseparator\@@exfile}%
      \assignfullfilename\@@efcurrentpath\@@exfile\to\@@efloadname
      \edef\@@effilenametype{\@@effilename.\figureextension{\@@efcurrenttype}}%
@@ -434,7 +437,7 @@
 \stopreadingfile
      \popendofline
      \@@eftrace{\ifcase\figurestatus not \fi found}%
-   \fi\fi}
+   \fi\fi\fi}
 
 \def\presetfigureC[#1][#2]%
   {\ifcase\figurestatus
@@ -452,7 +455,7 @@
 %D being more tolerant.
 
 \def\doanalyzefigurefilesC%
-  {\ifcase\figurestatus\ifcase\figurefilemode\else
+  {\ifconsultutilityfile\ifcase\figurestatus\ifcase\figurefilemode\else
     %\def\@@efloadname{\@@efcurrentpath\f!pathseparator\@@exfile}%
      \assignfullfilename\@@efcurrentpath\@@exfile\to\@@efloadname
      \@@eftrace{analyzing \@@efloadname\space 
@@ -465,7 +468,7 @@
 \stopreadingfile
      \popendofline
      \@@eftrace{\ifcase\figurestatus not \fi found}%
-   \fi\fi}
+   \fi\fi\fi}
 
 \def\presetfigureD[#1][#2]%
   {\ifcase\figurestatus
@@ -989,10 +992,10 @@
    \iftraceexternalfigures
      \message
        {\externalfigurelog
-        [\@@effullname:
-         t={\@@eftype}\space m={\@@efmethode}\space l=\@@eflabel\space
-         w=\number\figwid\space h=\number\fighei\space
-         sx=\scax\space sy=\scay\space ox=\figx\space oy=\figy]}%
+          [\@@effullname:
+           t={\@@eftype}\space m={\@@efmethode}\space l=\@@eflabel\space
+           w=\number\figwid\space h=\number\fighei\space
+           sx=\scax\space sy=\scay\space ox=\figx\space oy=\figy]}%
    \fi
    \doif{\v!leeg}{\@@exoptie}
      {\skipexternalfigurestrue
@@ -1045,6 +1048,7 @@
            \fi\fi}%
         \wd0=\figwid
         \setobject{FIG}{\@@efobjectname}\vbox{\box0}%
+        \setxvalue{\@@efobjectname\c!n}{\number\nofinsertpages}%
         \egroup}%
    \fi
    \xdef\figurewidth {\the\figwid}%
@@ -1056,7 +1060,8 @@
         \dimen0=\scax pt\divide\dimen0 by 100\edef\scax{\@EA\withoutpt\the\dimen0}%
         \dimen0=\scay pt\divide\dimen0 by 100\edef\scay{\@EA\withoutpt\the\dimen0}%
         \schaal[sx=\scax,sy=\scay]{\dowithfigure{\getobject{FIG}{\@@efobjectname}}}%
-      \else\ifdim\wd\foundexternalfigure=\!!zeropoint
+        \xdef\noffigurepages{\number\getvalue{\@@efobjectname\c!n}}%
+      \else\ifdim\wd\foundexternalfigure=\zeropoint
         \dowithfigure
           {\doinsertfile
              {\@@eftype,\@@efmethode}{\@@effullname,\@@eflabel}
@@ -1064,12 +1069,15 @@
              {\figx}{\figy}
              {\number\figwid}{\number\fighei}
              {\@@efoptions}}%
+        \xdef\noffigurepages{\number\nofinsertpages}%
       \else
         \dimen0=\scax pt\divide\dimen0 by 100\edef\scax{\@EA\withoutpt\the\dimen0}%
         \dimen0=\scay pt\divide\dimen0 by 100\edef\scay{\@EA\withoutpt\the\dimen0}%
         \schaal[sx=\scax,sy=\scay]{\dowithfigure{\box\foundexternalfigure}}%
+        \xdef\noffigurepages{\number\nofinsertpages}%
       \fi\fi}%
    \global\wd\foundexternalfigure=\figwid}
+
 
 %D In \PDF\ one can specify an alternative graphic. This means
 %D that for instance a low resolution graphic can be used for

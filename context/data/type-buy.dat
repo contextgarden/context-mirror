@@ -1,0 +1,64 @@
+# itc officina
+
+--en=? --ve=itc --co=officina --re 
+--en=? --ve=itc --co=officina --so=itc/officina --ma --in
+
+--en=? --ve=itc --co=officina --so=itc/officina --ca=* ovbk_*
+--en=? --ve=itc --co=officina --so=itc/officina --sl=* ovbk_*
+--en=? --ve=itc --co=officina --so=itc/officina --sl=* ovb_*
+
+--en=? --ve=itc --co=officina --so=itc/officina --ca=* owbk_*
+--en=? --ve=itc --co=officina --so=itc/officina --sl=* owbk_*
+--en=? --ve=itc --co=officina --so=itc/officina --sl=* owb_*
+
+# bh lucida
+
+--en=? --ve=bh --co=lucida --re
+--en=? --ve=bh --co=lucida --so=bh/lucida --ma --in
+
+# fontfont meta
+
+--en=? --ve=fontfont --co=meta --re
+--en=? --ve=fontfont --co=meta --so=fontfont/meta-1 --ma --in
+--en=? --ve=fontfont --co=meta --so=fontfont/meta-2 --ma --in
+
+--en=? --ve=fontfont --co=meta --so=fontfont/meta-1 --sl=* mtbk_*
+--en=? --ve=fontfont --co=meta --so=fontfont/meta-1 --sl=* mtbd_*
+
+# lucas sun
+
+--en=? --ve=lucas --co=sun --re
+--en=? --ve=lucas --co=sun --so=lucas/sun --ma --in
+
+# creative aliance arcadia
+
+--en=? --ve=creative --co=arcadia   --re
+--en=? --ve=creative --co=arcadia   --so=creative/arcadia   --ma --in
+
+# creative aliance industria
+
+--en=? --ve=creative --co=industria --re
+--en=? --ve=creative --co=industria --so=creative/industria --ma --in
+
+# creative aliance insigna 
+
+--en=? --ve=creative --co=insignia  --re
+--en=? --ve=creative --co=insignia  --so=creative/insignia  --ma --in
+
+# fontfont din
+
+--en=? --ve=fontfont --co=din --re
+--en=? --ve=fontfont --co=din --so=fontfont/din --ma --in
+
+# adobe myriad 
+
+--en=? --so=adobe/myriad --weight=400 --width=600 MyriadMM
+--en=? --so=adobe/myriad --weight=700 --width=600 MyriadMM
+--en=? --so=adobe/myriad --weight=400 --width=600 MyriadMM-It 
+--en=? --so=adobe/myriad --weight=700 --width=600 MyriadMM-It 
+
+--en=? --ve=adobe --co=myriad --so=adobe/myriad --ma --in MyriadMM-we*
+--en=? --ve=adobe --co=myriad --so=adobe/myriad --ma --in MyriadMM-It-we*
+
+--en=? --ve=adobe --co=myriad --so=adobe/myriad --sl=* MyriadMM-we*
+--en=? --ve=adobe --co=myriad --so=adobe/myriad --ca=* MyriadMM-we*

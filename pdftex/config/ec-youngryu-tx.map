@@ -1,0 +1,86 @@
+% This file is a (slightly adapted) copy of the map file 
+% that comes with the TX fonts by Young Ryu.  
+
+% URW times
+
+rtxptmb                 "TeXBase1Encoding ReEncodeFont" <tx8r.enc <utmb8a.pfb
+rtxptmbo ".167 SlantFont TeXBase1Encoding ReEncodeFont" <tx8r.enc <utmb8a.pfb
+rtxptmbi                "TeXBase1Encoding ReEncodeFont" <tx8r.enc <utmbi8a.pfb
+rtxptmr                 "TeXBase1Encoding ReEncodeFont" <tx8r.enc <utmr8a.pfb
+rtxptmro ".167 SlantFont TeXBase1Encoding ReEncodeFont" <tx8r.enc <utmr8a.pfb
+rtxptmri                "TeXBase1Encoding ReEncodeFont" <tx8r.enc <utmri8a.pfb
+
+% TX Text
+
+rtxr                     <rtxr.pfb
+rtxsl   ".167 SlantFont" <rtxr.pfb
+rtxi                     <rtxi.pfb
+rtxsc                    <rtxsc.pfb
+rtxb                     <rtxb.pfb
+rtxbsl  ".167 SlantFont" <rtxb.pfb
+rtxbi                    <rtxbi.pfb
+rtxbsc                   <rtxbsc.pfb
+rtcxb                    <rtcxb.pfb
+rtcxbsl ".167 SlantFont" <rtcxb.pfb
+rtcxbi                   <rtcxbi.pfb
+rtcxi                    <rtcxi.pfb
+rtcxr                    <rtcxr.pfb
+rtcxsl  ".167 SlantFont" <rtcxr.pfb
+
+% TX Math
+
+rtxbmi <rtxbmi.pfb
+rtxmi  <rtxmi.pfb
+txbex  <txbex.pfb
+txbexa <txbexa.pfb
+txbmia <txbmia.pfb
+txbsy  <txbsy.pfb
+txbsya <txbsya.pfb
+txbsyb <txbsyb.pfb
+txbsyc <txbsyc.pfb
+txex   <txex.pfb
+txexa  <txexa.pfb
+txmia  <txmia.pfb
+txsy   <txsy.pfb
+txsya  <txsya.pfb
+txsyb  <txsyb.pfb
+txsyc  <txsyc.pfb
+
+% TX TT Text
+
+txtt                      <txtt.pfb
+txttsl   ".167 SlantFont" <txtt.pfb
+txttsc                    <txttsc.pfb
+txbtt                     <txbtt.pfb
+txbttsl  ".167 SlantFont" <txbtt.pfb
+txbttsc                   <txbttsc.pfb
+t1xtt                     <t1xtt.pfb
+t1xttsl  ".167 SlantFont" <t1xtt.pfb
+t1xttsc                   <t1xttsc.pfb
+t1xbtt                    <t1xbtt.pfb
+t1xbttsl ".167 SlantFont" <t1xbtt.pfb
+t1xbttsc                  <t1xbttsc.pfb
+tcxtt                     <tcxtt.pfb
+tcxttsl  ".167 SlantFont" <tcxtt.pfb
+tcxbtt                    <tcxbtt.pfb
+tcxbttsl ".167 SlantFont" <tcxbtt.pfb
+
+% URW Helvetica
+
+rtxphvr                 "TeXBase1Encoding ReEncodeFont" <tx8r.enc <uhv8a.pfb
+rtxphvro ".167 SlantFont TeXBase1Encoding ReEncodeFont" <tx8r.enc <uhvo8a.pfb
+rtxphvb                 "TeXBase1Encoding ReEncodeFont" <tx8r.enc <uhvb8a.pfb
+rtxphvbo ".167 SlantFont TeXBase1Encoding ReEncodeFont" <tx8r.enc <uhvbo8a.pfb
+
+% TX SS Text
+
+rtxss                     <rtxss.pfb
+rtxsssl  ".167 SlantFont" <rtxss.pfb
+rtxsssc                   <rtxsssc.pfb
+rtxbss                    <rtxbss.pfb
+rtxbsssl ".167 SlantFont" <rtxbss.pfb
+rtxbsssc                  <rtxbsssc.pfb
+rtcxss                    <rtcxss.pfb
+rtcxbss                   <rtcxbss.pfb
+rtcxsssl ".167 SlantFont" <rtcxss.pfb
+rtcxbsso ".167 SlantFont" <rtcxbss.pfb

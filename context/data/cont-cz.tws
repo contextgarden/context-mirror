@@ -353,6 +353,7 @@ var:vzdalenostsloupcu:*dimenze::
 var:vzdalenostokraje:*dimenze::
 var:n:*cislo::
 var:ciselnyprikaz:*\prikaz#1::
+var:split:tolerantni,striktni,velmistriktni,*cislo::
 ivr:oramovani::
 stopsetup
 
@@ -758,9 +759,11 @@ var:pred:*prikaz::
 var:mezi:*prikaz::
 var:po:*prikaz::
 var:barva:*jmeno::
+var:barvapozadi:*jmeno::
 var:vyska:*dimenze,max::
 var:hloubka:*dimenze,max::
-var:alternativa:a,b,c::
+var:alternativa:a,b,c,d::
+var:tloustkalinky:*dimenze::
 stopsetup
 
 startsetup
@@ -2622,6 +2625,7 @@ var:statusupati:normalni,stop,start,prazdne,zadny,zadneznaceni::
 var:statustextu:normalni,stop,start,prazdne,zadny,zadneznaceni::
 var:statusvrsku:stop,start::
 var:statusspodku:stop,start::
+var:barva:*jmeno::
 stopsetup
 
 startsetup
@@ -2735,7 +2739,7 @@ stopsetup
 startsetup
 com:nastavtoleranci:
 typ:vals/:
-val:horizontalne,vertikalne, natahnout,velmistriktni,striktni,tolerantni,velmitolerantni:velmistriktni:
+val:horizontalne,vertikalne, natahnout,mezera,velmistriktni,striktni,tolerantni,velmitolerantni:velmistriktni:
 stopsetup
 
 startsetup
@@ -3290,7 +3294,7 @@ var:ramecky:zap,vyp::
 var:ymax:*cislo::
 var:xmax:*cislo::
 var:adresar:*text::
-var:misto:lokalne,globalne,implicitni::
+var:misto:lokalne,globalne,implicitni,zadny::
 var:maxsirka:*dimenze::
 var:maxvyska:*dimenze::
 stopsetup

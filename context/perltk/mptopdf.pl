@@ -57,7 +57,7 @@ else
 
 foreach $file (@files)
   { $_ = $file ;
-    if (s/\.(\d+)$// && -e $file)
+    if (s/\.(\d+|mps)$// && -e $file)
       { if ($miktex) 
           { if ($dosish) 
               { $command = "pdfetex   &mptopdf" } 

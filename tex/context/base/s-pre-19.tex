@@ -41,12 +41,9 @@
 %D bodyfont. This font is quite readable on even low 
 %D resolution screens, although I admit that this style is 
 %D developed using an $1400\times1050$ pixel LCD screen, so I
-%D may be biased.
+%D may be biased. 
 
-\usetypescript [serif] [palatino] [ec]
-
-\setupbodyfont 
-  [ppl]        
+\startmode[asintended] \setupbodyfont[ppl] \stopmode
 
 %D The layout specification sets up a text area and a right
 %D edge area where the menus will go. Watch the rather large
@@ -83,6 +80,12 @@
 \definecolor [gray]   [s=.50]
 \definecolor [white]  [s=.85]
 
+\definecolor [PageColor]        [yellow]
+\definecolor [TextColor]        [white]
+\definecolor [OrnamentColor]    [red]
+\definecolor [InteractionColor] [red]
+\definecolor [ContrastColor]    [gray]
+
 %D This is an interactive document, so we enable interaction.
 %D In this style, we disable the viewer's \citeer {highlight a 
 %D hyperlink when it's clicked on} feature. We will use a 
@@ -93,8 +96,8 @@
 \setupinteraction
   [state=start,
    click=off,
-   color=red,
-   contrastcolor=gray,
+   color=InteractionColor,
+   contrastcolor=ContrastColor,
    menu=on]
 
 %D The menu itself is set up as follows. Because we will
@@ -155,17 +158,18 @@
  
     p := Field[Text][Text] enlarged 36pt superellipsed .90 ;
 
-    fill Page withcolor \MPcolor{yellow} ; 
-    fill p    withcolor \MPcolor{white} ;  
-    draw p    withcolor \MPcolor{red} ;  
+    fill Page withcolor \MPcolor{PageColor} ; 
+    fill p    withcolor \MPcolor{TextColor} ;  
+    draw p    withcolor \MPcolor{OrnamentColor} ;  
 
     p := Field[Text][Text] enlarged 48pt superellipsed .90 ; 
 
     def right_menu_button (expr nn, rr, pp, xx, yy, ww, hh, dd) =  
       if (pp>0) and (rr>0) : 
         q := rightsuperbutton(p,xx,yy,RightEdgeWidth,hh) ; 
-        fill q withcolor \MPcolor{white} ; 
-        draw q withcolor if rr=2 : \MPcolor{gray} else : \MPcolor{red} fi ;   
+        fill q withcolor \MPcolor{TextColor} ; 
+        draw q withcolor if rr=2 : \MPcolor{ContrastColor} 
+                            else : \MPcolor{InteractionColor} fi ;   
       fi ; 
     enddef ; 
 
@@ -212,9 +216,9 @@
 
     pickup pencircle scaled 3pt ;
 
-    fill Page withcolor \MPcolor{yellow} ; 
-    fill p    withcolor \MPcolor{white} ;  
-    draw p    withcolor \MPcolor{red} ;  
+    fill Page withcolor \MPcolor{PageColor} ; 
+    fill p    withcolor \MPcolor{TextColor} ;  
+    draw p    withcolor \MPcolor{OrnamentColor} ;  
 
     % we set p to the wider shape from which we will chip off pieces 
 
@@ -231,8 +235,9 @@
     def right_menu_button (expr nn, rr, pp, xx, yy, ww, hh, dd) =  
       if (pp>0) and (rr>0) : 
         q := rightsuperbutton(p,xx,yy,RightEdgeWidth,hh) ; % \MPw{menu:right:\realfolio}  
-        fill q withcolor \MPcolor{white} ; 
-        draw q withcolor if rr=2 : \MPcolor{gray} else : \MPcolor{red} fi ;   
+        fill q withcolor \MPcolor{TextColor} ; 
+        draw q withcolor if rr=2 : \MPcolor{ContrastColor} 
+                            else : \MPcolor{InteractionColor} fi ;   
       fi ; 
     enddef ; 
 
@@ -299,13 +304,27 @@ enddef ;
 %D want to keep the interface simple: a list of small 
 %D sentences, separated by \type {\\}. 
 
-\def\TitlePage#1%
+\def\StartTitlePage%
   {\startstandardmakeup
      \switchtobodyfont[big]
      \def\\{\vfill\bfb\let\\=\par}
      \bfd\setupinterlinespace\gray
-     \vskip.5cm#1\\\vskip.5cm  % \\ is really needed -) 
+     \vskip.5cm}
+
+\def\StopTitlePage
+  {\\\vskip.5cm  % the \\ is really needed
    \stopstandardmakeup}
+
+\def\TitlePage#1%
+  {\StartTitlePage#1\StopTitlePage}
+
+%D A couple of goodies:  
+
+\def\Subject   {\Topic}
+\def\Topics  #1{}
+\def\Subjects  {}
+
+%D For those who want to test: 
 
 \doifnotmode{demo}{\endinput}
 
@@ -325,5 +344,6 @@ enddef ;
 \Topic {Donald  E. Knuth}      \input knuth   \page 
 \Topic {Edward  R. Tufte}      \input tufte   \page 
 \Topic {Hermann    Zapf}       \input zapf    \page 
+%Topic {David   F. Stork}      \input stork   \page 
 
 \stoptext 

@@ -13,6 +13,9 @@
 
 \writestatus{loading}{Context Core Macros / Footnote Handling}
 
+%D Unfortunately we cannot force an even number of lines in 
+%D a two column footnote placement. 
+
 %D There are some (still) dutch core commands used in this
 %D file.
 
@@ -116,10 +119,17 @@
      \getparameters[\??vn][#1]%
      \processaction
        [\@@vnlijn]
-       [    \v!aan=>\let\dofootnoterule=\dodofootnoterule,
-            \v!uit=>\let\dofootnoterule=\relax,
-        \s!default=>\let\dofootnoterule=\relax,
-        \s!unknown=>\let\dofootnoterule=\@@vnlijn]%
+       [    \v!aan=>\let\dofootnoterule\dodofootnoterule,
+            \v!uit=>\let\dofootnoterule\relax,
+        \s!default=>\let\dofootnoterule\relax,
+        \s!unknown=>\let\dofootnoterule\@@vnlijn]%
+     \processaction
+       [\@@vnsplitsen]
+       [    \v!soepel=>\footnotepenalty\zeropoint,
+            \v!streng=>\footnotepenalty9999,
+        \v!zeerstreng=>\footnotepenalty\maxdimen,
+           \s!default=>\footnotepenalty\zeropoint,
+           \v!unknown=>\footnotepenalty\commalistelement]%
    \fi 
    \setfootnotedistance
    \count\footins=1000
@@ -370,6 +380,9 @@
 \let\stoppushfootnote  = \relax
 
 \newsignal\footnotesignal
+\newcount \footnotepenalty 
+
+\footnotepenalty=0 % needed in order to split in otrset
 
 \def\dostartfootnote% nog gobble als in pagebody
   {\bgroup
@@ -385,14 +398,19 @@
    \fi
    \ignorespaces
    \localfootinsert\footins\bgroup
-     \allowbreak % needed in order to split in otrset
+     \penalty\footnotepenalty
      \forgetall
      \setfootnotebodyfont
      \redoconvertfont % to undo \undo calls in in headings etc
      \splittopskip\ht\strutbox  % not actually needed here
      \splitmaxdepth\dp\strutbox % not actually needed here
-     \def\linkermargeafstand{\@@vnmargeafstand}%
-     \def\rechtermargeafstand{\@@vnmargeafstand}%
+     \iffixedlayoutdimensions % ugly hack, will change 
+       \linkermargeafstand\@@vnmargeafstand
+       \rechtermargeafstand\linkermargeafstand
+     \else
+       \def\linkermargeafstand{\@@vnmargeafstand}%
+       \let\rechtermargeafstand\linkermargeafstand
+     \fi
      \ifcase\@@vnn\relax % new 31-07-99 ; always ? 
        \doifnotinset{\@@vnbreedte}{\v!passend,\v!ruim}
          {\setfootnotehsize}%
@@ -822,6 +840,7 @@
    \c!afstand=.125em,
    \c!uitlijnen=\v!normaal,
    \c!tolerantie=\v!soepel,
+   \c!splitsen=\v!soepel,
   %\c!breedte=\zetbreedte,
   %\c!breedte=\ifdim\hsize<\zetbreedte\hsize\else\zetbreedte\fi,
    \c!breedte=\defaultfootnotewidth,

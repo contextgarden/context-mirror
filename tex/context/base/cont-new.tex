@@ -15,10 +15,167 @@
 
 \unprotect
 
+\def\savefont % do we also need to store the encoding ? 
+  {\edef\savedfont{\the\font}%
+   \pushmacro\savedfont
+   \pushmacro\characterregime
+   \pushmacro\charactermapping
+   \pushmacro\characterencoding}
+
+\def\restorefont%
+  {\popmacro\characterencoding
+   \popmacro\charactermapping
+   \popmacro\characterregime
+   \popmacro\savedfont
+   \savedfont}
+
 %D This file is loaded at runtime, thereby providing an
 %D excellent place for hacks and new features.
 
 \writestatus{\m!systems}{beware: some patches loaded from cont-new.tex!}
+
+\def\setraggedparagraphmode#1#2%
+  {\ifinpagebody
+     \ifdubbelzijdig
+       \ifodd\realfolio#1\else#2\fi
+     \else
+       #2\relax
+     \fi
+   \else\ifinner
+     \ifdubbelzijdig
+       \gettwopassdata{\s!paragraph}%
+       \iftwopassdatafound
+         \ifodd\twopassdata#1\else#2\fi
+       \else
+         \ifodd\realfolio#1\else#2\fi
+       \fi
+       \doparagraphreference
+     \else
+       #2\relax
+     \fi
+   \else
+     #2\relax
+   \fi\fi}
+
+% no, too buggy, leads to top of page crap  
+%
+%\def\flushsidefloats%
+%  {\par
+%   \dochecksidefloat
+%   \scratchcounter=-\hangafter 
+%   \dorecurse{\scratchcounter}{\strut\hfill\strut\par}}
+
+\def\flushsidefloats%
+  {\par
+   \!!heighta=\sidefloatvsize
+   \advance\!!heighta by -\pagetotal
+   \ifdim\!!heighta>\zeropoint
+     % to be checked for interference 
+     \witruimte 
+     % will be option 
+     \getnoflines\!!heighta 
+     \!!heighta=\noflines\lineheight
+     % so far for option
+     \kern\!!heighta
+   \fi
+   \global\sidefloatvsize=\nofloatvsize
+   \global\floatflagfalse}
+
+\def\thinrule%
+  {\strut
+   \bgroup
+   \chardef\ruletype=1
+   \processaction
+     [\@@dlvariant]
+     [ \v!a=>\chardef\ruletype=0,% no line 
+      %\v!b=>\chardef\ruletype=1,% height/depth
+       \v!c=>\chardef\ruletype=2,% topheight/botdepth 
+      %  11=>\chardef\ruletype=1,% fallback for  backgrounds
+          0=>\chardef\ruletype=0,% compatible with backgrounds
+      %   1=>\chardef\ruletype=1,% compatible with backgrounds
+          2=>\chardef\ruletype=2]% compatible with backgrounds
+   \doifsomething{\@@dllijndikte}
+     {\linewidth=\@@dllijndikte}%
+   \ifdim\linewidth=\zeropoint  
+     \chardef\ruletype=0 
+   \else
+     \doifnot{\@@dlkader}{\v!aan}{\chardef\ruletype=0\relax}%
+   \fi
+   \ifnum\ruletype=1
+     \doif{\@@dlhoogte}{\v!max}{\def\@@dlhoogte{1}}%
+     \doif{\@@dldiepte}{\v!max}{\def\@@dldiepte{1}}%
+   \else
+     \def\@@dlhoogte{1}%
+     \def\@@dldiepte{1}%
+   \fi
+   \freezedimensionwithunit\@@dlhoogte{\ht\strutbox}%
+   \freezedimensionwithunit\@@dldiepte{\dp\strutbox}%
+   \divide\linewidth 2 
+   \doifelse{\@@dlachtergrond}{\v!kleur}
+     {\startcolor[\@@dlachtergrondkleur]%
+      \dimen0=\@@dlhoogte
+      \dimen2=\@@dldiepte
+      \ifnum\ruletype=2 % prevent overshoot due to rounding 
+        \advance\dimen0 by -.5\linewidth
+        \advance\dimen2 by -.5\linewidth
+      \fi
+      \leaders\hrule\!!height\dimen0\!!depth\dimen2\hfill
+      \stopcolor
+      \ifcase\ruletype 
+        % no rule 
+      \or
+        \startcolor[\@@dlkleur]%
+        \hfillneg
+        \leaders\hrule\!!height\linewidth\!!depth\linewidth\hfill
+        \stopcolor
+      \or
+        \startcolor[\@@dlkleur]%
+        \dimen2=\@@dldiepte\dimen0=-\dimen2 \advance\dimen0 \linewidth
+        \hfillneg\leaders\hrule\!!height\dimen0\!!depth\dimen2\hfill
+        \dimen2=\@@dlhoogte\dimen0=-\dimen2 \advance\dimen0 \linewidth
+        \hfillneg\leaders\hrule\!!height\dimen2\!!depth\dimen0\hfill
+        \stopcolor
+      \fi}
+     {\ifcase\ruletype \else
+        \startcolor[\@@dlkleur]%
+        \leaders\hrule\!!height\@@dlhoogte\!!depth\@@dldiepte\hfill
+        \stopcolor
+      \fi}%
+   \strut
+   \carryoverpar\egroup}
+
+\setupthinrules
+  [\c!kader=\v!aan, % compatible with textbackgrounds  
+   \c!variant=\v!b,
+   \c!achtergrondkleur=,
+   \c!achtergrond=,
+   \c!lijndikte=]
+
+% \thinruled[n=3,alternative=a]
+% \thinruled[n=3,alternative=b]
+% \thinruled[n=3,alternative=c]
+% \thinruled[n=3,alternative=a,background=color]
+% \thinruled[n=3,alternative=b,background=color]
+% \thinruled[n=3,alternative=c,background=color]
+
+\def\dothinrules[#1]%
+  {\bgroup
+   \dosetupthinrules[#1]%
+   \@@dlvoor
+   \assignvalue{\@@dlinterlinie}{\@@dlinterlinie}{1.0}{1.5}{2.0}%
+   \spacing\@@dlinterlinie
+   \dorecurse
+     {\@@dln}
+     {\ifnum\recurselevel=\@@dln \dothinrulesnobreak \else
+      \ifnum\recurselevel=2      \dothinrulesnobreak \fi\fi
+                                 \thinrule
+     %\ifnum\recurselevel<\@@dln \endgraf \fi}%
+      \ifnum\recurselevel<\@@dln \endgraf \geenwitruimte \@@dltussen \fi}%
+%  \@@dlna
+%  \egroup}
+   \doifelsenothing{\@@dlna}
+     {\carryoverpar\egroup}
+     {\@@dlna\egroup}}
 
 \def\dodousemodules#1#2%
   {\setfalse\moduleisloaded 
@@ -94,22 +251,52 @@
 % \VL text \VL text \VL \AR 
 % \stoptable
 
-\def\placefloatlabel
-  {\dodoublempty\doplacefloatlabel}
+% Quite experimental !
 
-\def\placefloatlabel[#1][#2]#3%
-  {\doifvalue{\??kj#1\c!nummer}{\v!ja}
-     {\doglobal\convertargument#3\to\asciititle % \asciititle is global 
-      \verhoognummer[#1]%
+% the split is needed when for instance the float goes into 
+% a multi page field and the list of figs becomes larger than 
+% one page: cycle between 'only flush when object ref ok' 
+% and 'one/many page fig list'; see "uguide finometer"  
+
+\def\placefloatcaption
+  {\dodoubleempty\doplacefloatcaption}
+
+\def\doplacefloatcaption[#1][#2]#3%
+  {\setfloatcaption[#1][#2]{#3}% 
+   \placefloatcaptiontext[#1]% 
+   \placefloatcaptionreference[#1]}
+
+\def\setfloatcaption 
+  {\dodoubleempty\dodosetfloatcaption} % beware, name clash 
+
+\def\dodosetfloatcaption[#1][#2]#3% to do namespace for number/ascii
+  {\doifelsevalue{\??kj#1\c!nummer}{\v!ja} % also handle trialtypesetting
+     {\verhoognummer[#1]%
       \maakhetnummer[#1]%
-      \dofloatreference
-      \redofloatorder{#1}%
-      \doifsomething{#2}{\rawreference{\s!flt}{#2}{{\hetnummer}{\asciititle}}}%
-      \doschrijfnaarlijst{#1}{\hetnummer}{#3}{#1}%
-      \doattributes{\??kj#1}\c!kopletter\c!kopkleur
-        {\labeltexts{#1}{\hetnummer}}%
-      \doattributes{\??kj#1}\c!letter\c!kleur
-        {\tfskip#3}}}
+      \global\let\flhetnummer\hetnummer
+      \setgvalue{@fl@r@#1}%
+        {\dofloatreference
+         \redofloatorder{#1}%
+         \doschrijfnaarlijst{#1}{\flhetnummer}{#3}{#1}%
+         \doglobal\convertargument#3\to\flasciititle % \asciititle is global 
+         \doifsomething{#2}{\rawreference{\s!flt}{#2}{{\flhetnummer}{\flasciititle}}}%
+         \global\letvalue{@fl@r@#1}\relax}% nills 
+      \setgvalue{@fl@t@#1}%
+        {\doattributes{\??kj#1}\c!kopletter\c!kopkleur
+           {\labeltexts{#1}{\flhetnummer}}%
+         \doattributes{\??kj#1}\c!letter\c!kleur
+           {\tfskip#3}}}
+     {\global\letvalue{@fl@r@#1}\relax
+      \global\letvalue{@fl@t@#1}\relax}}
+
+\def\placefloatcaptiontext     [#1]{\getvalue{@fl@t@#1}}
+\def\placefloatcaptionreference[#1]{\getvalue{@fl@r@#1}}
+
+% still needed for uguide 
+
+\let\placefloatlabel          \placefloatcaption
+\let\placefloatlabeltext      \placefloatcaptiontext
+\let\placefloatlabelreference \placefloatcaptionreference
 
 \def\checkframedtext%
   {\ifinsidefloat

@@ -353,6 +353,7 @@ var:distanzacolonne:*dimension::
 var:distanzamargine:*dimension::
 var:n:*number::
 var:comandonumero:*\command#1::
+var:separa:tollerante,strict,moltostrict,*number::
 ivr:incorniciato::
 stopsetup
 
@@ -758,9 +759,11 @@ var:prima:*command::
 var:tra:*command::
 var:dopo:*command::
 var:colore:*name::
+var:coloresfondo:*name::
 var:altezza:*dimension,max::
 var:profondita:*dimension,max::
-var:alternativa:a,b,c::
+var:alternativa:a,b,c,d::
+var:spessorelinea:*dimension::
 stopsetup
 
 startsetup
@@ -2622,6 +2625,7 @@ var:statopdp:normale,termina,inizia,vuoto,nessuno,nomarcature::
 var:statotesto:normale,termina,inizia,vuoto,nessuno,nomarcature::
 var:statocima:termina,inizia::
 var:statofondo:termina,inizia::
+var:colore:*name::
 stopsetup
 
 startsetup
@@ -2735,7 +2739,7 @@ stopsetup
 startsetup
 com:impostatolleranza:
 typ:vals/:
-val:orizzontale,verticale, dilata,moltostrict,strict,tollerante,moltotollerante:moltostrict:
+val:orizzontale,verticale, dilata,spazio,moltostrict,strict,tollerante,moltotollerante:moltostrict:
 stopsetup
 
 startsetup
@@ -3290,7 +3294,7 @@ var:cornici:attivo,disattivo::
 var:ymax:*number::
 var:xmax:*number::
 var:directory:*text::
-var:luogo:locale,globale,implicito::
+var:luogo:locale,globale,implicito,nessuno::
 var:ampiezzamax:*dimension::
 var:altezzamax:*dimension::
 stopsetup

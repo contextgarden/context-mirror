@@ -330,20 +330,47 @@
 
 \newtoks \invokeMPspecials
 
+% \def\processMPpath%
+%   {\let\extraMPpathcode\empty
+%    \ifcase\MPspecialversion\else
+%      \ifnum\MPrgbnumber\lastMPrvalue=\MPspecialsignal 
+%        \scratchcounter=\MPrgbnumber\lastMPbvalue
+%        \edef\currentMPspecial{\the\scratchcounter}%
+%        \ifnum\finiMPpath=2 % to outer level 
+%          \the\invokeMPspecials
+%        \fi
+%      \fi
+%    \fi
+%    \flushMPpath
+%    \closeMPpath
+%    \PDFcode{\ifcase\finiMPpath W n\or S\or f\or B\else W n\fi \extraMPpathcode}%
+%    \let\handleMPsequence=\dohandleMPsequence
+%    \resetMPstack
+%    \nofMPsegments=0
+%    \handleMPsequence}
+
+\def\finishMPpath%
+  {\PDFcode
+     {\ifcase\finiMPpath W n\or S\or f\or B\else W n\fi 
+      \extraMPpathcode}}
+
 \def\processMPpath%
-  {\let\extraMPpathcode\empty
-   \ifcase\MPspecialversion\else
-     \ifnum\MPrgbnumber\lastMPrvalue=\MPspecialsignal 
-       \scratchcounter=\MPrgbnumber\lastMPbvalue
-       \edef\currentMPspecial{\the\scratchcounter}%
-       \ifnum\finiMPpath=2 % to outer level 
-         \the\invokeMPspecials
+  {\checkMPpath % ! 
+   \ifcase\nofMPsegments\else
+     \let\extraMPpathcode\empty
+     \ifcase\MPspecialversion\else
+       \ifnum\MPrgbnumber\lastMPrvalue=\MPspecialsignal 
+         \scratchcounter=\MPrgbnumber\lastMPbvalue
+         \edef\currentMPspecial{\the\scratchcounter}%
+         \ifnum\finiMPpath=2 % to outer level 
+           \the\invokeMPspecials
+         \fi
        \fi
      \fi
-   \fi
-   \flushMPpath
-   \closeMPpath
-   \PDFcode{\ifcase\finiMPpath W n\or S\or f\or B\else W n\fi \extraMPpathcode}%
+     \flushMPpath
+     \closeMPpath
+     \finishMPpath
+   \fi 
    \let\handleMPsequence=\dohandleMPsequence
    \resetMPstack
    \nofMPsegments=0

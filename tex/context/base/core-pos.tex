@@ -434,6 +434,12 @@
 
 % \def\lpos#1{\lrpos{l:#1}{\kern\leftskip}}
 % \def\rpos#1{\lrpos{r:#1}{\hskip\hsize\hskip-\rightskip}}
+% 
+% \def\lrpos#1#2%
+%   {\dontleavehmode\vadjust % may disappear if buried
+%      {\setbox0=\hbox{\raise\dp\strutbox\hbox{\hpos{#1}{\strut}}}%
+%       \smashbox0
+%       \rlap{#2\box0}}}
 
 \def\bpos#1{\hpos{b:#1}{\strut}\ignorespaces}
 \def\epos#1{\ifhmode\unskip\fi\hpos{e:#1}{\strut}}
@@ -445,6 +451,24 @@
 \def\tpos#1%
   {\ifhmode\unskip\fi
    \setpositionplus{e:#1}{\parposcounter}\hbox{\strut}}
+
+\def\ffpos#1%
+  {\setpositionbox{b:#1}\hbox{\strut}\wpos{#1}%
+   \ignorespaces}
+
+\def\ttpos#1%
+  {\ifhmode\unskip\fi
+   \setpositionbox{e:#1}\hbox{\strut}}
+
+\def\wpos#1%
+  {\dontleavehmode\vadjust % may disappear if buried
+     {\setbox0=\hbox{\raise\dp\strutbox\hbox{\hpos{w:#1}
+        {\strut
+         \hskip-\leftskip
+         \hskip\hsize
+         \hskip-\rightskip}}}%
+      \smashbox0
+      \rlap{\box0}}}
 
 %D When we want to calculate more complex backgrounds, we
 %D need to know what the current indentation scheme is. At
@@ -464,22 +488,25 @@
 \def\registerparoptions%
   {\ifinpagebody \else \ifpositioning \ifpositioningpar
      \ifmmode \else \ifinformula \else
-       \doglobal\increment\parposcounter
-       \bgroup
-         \leftskip =1\leftskip
-         \rightskip=1\rightskip
-         \setpositionplus
-           {p:\parposcounter}%         % identifier
-           {\efficientdimen\hsize     ,% 1
-            \efficientdimen\leftskip  ,% 2
-            \efficientdimen\rightskip ,% 3
-            \efficientdimen\hangindent,% 4
-                       \the\hangafter ,% 5
-            \efficientdimen\parindent }% 6
-           \hbox{\strut\registerparsymbol}%
-       \egroup
+       \doregisterparoptions
      \fi \fi
    \fi \fi \fi}
+
+\def\doregisterparoptions%
+  {\doglobal\increment\parposcounter
+   \bgroup
+     \leftskip =1\leftskip
+     \rightskip=1\rightskip
+     \setpositionplus
+       {p:\parposcounter}%         % identifier
+       {\efficientdimen\hsize     ,% 1
+        \efficientdimen\leftskip  ,% 2
+        \efficientdimen\rightskip ,% 3
+        \efficientdimen\hangindent,% 4
+                   \the\hangafter ,% 5
+        \efficientdimen\parindent }% 6
+       \hbox{\strut\registerparsymbol}%
+   \egroup}
 
 \newif\iftracepositions
 
@@ -675,7 +702,7 @@
 \def\MPanchoridentifier{mp-anchor}
 \def\MPoverlayposprefix{MO::}
 
-\long\def\defineMPpositiongraphic#1%
+\long\def\defineMPpositiongraphic#1% 
   {\long\setvalue{\MPoverlayposprefix#1}}
 
 %D The rest of the definitions concerning such overlays may
@@ -753,7 +780,7 @@
    \fi}
 
 \appendtoks
-  \let\dohandlepositionboxes\dohandlepositionboxes
+  \let\dohandlepositionboxes\doinsertpositionboxes % was handle ? 
 \to \everyinsertpositionaction
 
 \def\docleanpositionboxes#1#2#3% pos tag setups
@@ -928,6 +955,9 @@
 
 %D This is already cleaned up.
 
+% gridtype = 1 => baseline 
+% gridtype = 2 => betweenline
+
 \setupMPvariables
   [mpos:par]
   [mp=mpos:par:shape,
@@ -958,17 +988,27 @@
 \stopuseMPgraphic
 
 \startMPpositionmethod{mpos:par}
-  \startMPpositiongraphic{mpos:par}%
-      {fillcolor,linecolor,gridcolor,linewidth,gridwidth,lineradius}
-    initialize_par(\MPpos{b:\MPvar{self}},
-                   \MPpos{e:\MPvar{self}},
-                   \MPpos{text:\realfolio},
-                   \MPpos{p:\parcounter},
-                   \MPvv {p:\parcounter}{0,0,0,0,0,0}) ;
-    \includeMPgraphic{mpos:par:setup} ;
-    \includeMPgraphic{\MPvar{mp}} ; % \includeMPgraphic{mpos:par:shape} ;
-    anchor_par(\MPanchor{b:\MPvar{self}}) ;
-  \stopMPpositiongraphic
+  \doifpositionelse{w:\MPvar{self}}
+    {\startMPpositiongraphic{mpos:par}%
+         {fillcolor,linecolor,gridcolor,linewidth,gridwidth,lineradius}
+       initialize_area_par(\MPpos{b:\MPvar{self}},
+                           \MPpos{e:\MPvar{self}},
+                           \MPpos{w:\MPvar{self}}) ;
+       \includeMPgraphic{mpos:par:setup} ;
+       \includeMPgraphic{\MPvar{mp}} ; % \includeMPgraphic{mpos:par:shape} ;
+       anchor_par(\MPanchor{b:\MPvar{self}}) ;
+     \stopMPpositiongraphic}
+    {\startMPpositiongraphic{mpos:par}%
+         {fillcolor,linecolor,gridcolor,linewidth,gridwidth,lineradius}
+       initialize_par(\MPpos{b:\MPvar{self}},
+                      \MPpos{e:\MPvar{self}},
+                      \MPpos{text:\realfolio},
+                      \MPpos{p:\parcounter},
+                      \MPvv {p:\parcounter}{0,0,0,0,0,0}) ;
+       \includeMPgraphic{mpos:par:setup} ;
+       \includeMPgraphic{\MPvar{mp}} ; % \includeMPgraphic{mpos:par:shape} ;
+       anchor_par(\MPanchor{b:\MPvar{self}}) ;  
+     \stopMPpositiongraphic}%
   \MPpositiongraphic{mpos:par}{}%
 \stopMPpositionmethod
 
@@ -979,21 +1019,50 @@
 \def\MPself   {\MPvar{self}}
 \def\MPbself  {b:\MPself}
 \def\MPeself  {e:\MPself}
+\def\MPwself  {w:\MPself}
 \def\paranchor{p:\parcounter}
+
+% \startMPpositionmethod{mpos:par}
+%   \edef\parcounter{\MPv\MPbself{1}{0}}%
+%   \startMPpositiongraphic{mpos:par}%
+%       {fillcolor,linecolor,gridcolor,linewidth,gridwidth,lineradius}
+%     initialize_par(\MPpos\MPbself, \MPpos\MPeself,
+%                    \MPpos\textanchor, \MPpos\paranchor,
+%                    \MPvv\paranchor{0,0,0,0,0,0}) ;
+%     \includeMPgraphic{mpos:par:setup} ;
+%     \includeMPgraphic{\MPvar{mp}} ; % \includeMPgraphic{mpos:par:shape} ;
+%     anchor_par(\MPanchor\MPbself) ;
+%   \stopMPpositiongraphic
+%   \MPpositiongraphic{mpos:par}{}%
+% \stopMPpositionmethod
 
 \startMPpositionmethod{mpos:par}
   \edef\parcounter{\MPv\MPbself{1}{0}}%
-  \startMPpositiongraphic{mpos:par}%
-      {fillcolor,linecolor,gridcolor,linewidth,gridwidth,lineradius}
-    initialize_par(\MPpos\MPbself, \MPpos\MPeself,
-                   \MPpos\textanchor, \MPpos\paranchor,
-                   \MPvv\paranchor{0,0,0,0,0,0}) ;
-    \includeMPgraphic{mpos:par:setup} ;
-    \includeMPgraphic{\MPvar{mp}} ; % \includeMPgraphic{mpos:par:shape} ;
-    anchor_par(\MPanchor\MPbself) ;
-  \stopMPpositiongraphic
+  \doifpositionelse\MPwself
+    {\startMPpositiongraphic{mpos:par}%
+         {fillcolor,linecolor,gridcolor,linewidth,gridwidth,lineradius}
+       initialize_area_par(\MPpos\MPbself,
+                           \MPpos\MPeself,
+                           \MPpos\MPwself) ;
+       \includeMPgraphic{mpos:par:setup} ;
+       \includeMPgraphic{\MPvar{mp}} ; 
+       anchor_par(\MPanchor\MPbself) ;
+     \stopMPpositiongraphic}
+    {\startMPpositiongraphic{mpos:par}%
+         {fillcolor,linecolor,gridcolor,linewidth,gridwidth,lineradius}
+       initialize_par(\MPpos\MPbself,
+                      \MPpos\MPeself,
+                      \MPpos\textanchor,
+                      \MPpos\paranchor,
+                      \MPvv \paranchor{0,0,0,0,0,0}) ;
+       \includeMPgraphic{mpos:par:setup} ;
+       \includeMPgraphic{\MPvar{mp}} ; 
+       anchor_par(\MPanchor\MPbself) ;
+     \stopMPpositiongraphic}%
   \MPpositiongraphic{mpos:par}{}%
 \stopMPpositionmethod
+
+%D So far for the unreadable alternative. 
 
 \appendtoks
   \savecurrentvalue\totalnofparbackgrounds\nofparbackgrounds
@@ -1171,6 +1240,18 @@
    \fi
    \edef\textparwidth{\the\scratchdimen}}
 
+\def\dontsplitnexttextbackground % dangerous but useful
+  {\ifdim\pagetotal>\teksthoogte \else
+     \ifdim\pagegoal=\maxdimen \else
+       \calculatenexttextpardimensions
+       \scratchdimen=\textparheight
+       \advance\scratchdimen\pagetotal\relax
+       \ifdim\scratchdimen>\pagegoal
+         \pagina
+       \fi
+     \fi
+   \fi}
+
 \def\definetextbackground%
   {\dodoubleempty\dodefinetextbackground}
 
@@ -1203,14 +1284,8 @@
 
 \let\currenttextbackground\empty
 
-\def\checktextbackgrounds % maybe we need a dedicated layer
-  {\ifproductionrun       % for this kind of trickery, but
-     \setupbackgrounds    % for the moment this one will do
-       [\v!tekst]         % or maybe an \extendbackgrounds
-     % [\c!achtergrond={\v!tekst-2,\v!tekst-1,\v!voorgrond,\v!tekst+1,\v!tekst+2}]%
-       [\c!achtergrond={\v!tekst-1,\v!voorgrond,\v!tekst+1}]%
-     \let\checktextbackgrounds\relax
-   \fi}
+\def\checktextbackgrounds 
+  {\ifproductionrun \enablehiddenbackground \fi}
 
 \defineoverlay[\v!tekst-2][\positionoverlay{\v!tekst-2}]
 \defineoverlay[\v!tekst-1][\positionoverlay{\v!tekst-1}]
@@ -1235,25 +1310,54 @@
    \c!kaderkleur=blue,
    \c!lijndikte=\linewidth]
 
-% lelijk, aanpassen
+% lelijk, aanpassen, opties 
 
 \setupMPvariables
   [mpos:connect]
-  [linecolor=blue,
-   linewidth=1pt,
-   arrowcolor=red]
+  [linecolor=red,
+   linewidth=1pt]
 
-\startMPpositiongraphic{mpos:connect}{linecolor,linewidth,arrowcolor}
-  path pa, pb ; pair ca, cb ;
-  initialize_box(\MPpos{\MPvar{from}}) ; pa := pxy ; ca := cxy ;
-  initialize_box(\MPpos{\MPvar{to}}) ; pb := pxy ; cb := cxy ;
-  drawoptions(withpen pencircle scaled \MPvar{linewidth}) ;
-  draw pa withcolor \MPvar{linecolor} ;
-  draw pb withcolor \MPvar{linecolor} ;
-  drawoptions(withpen pencircle scaled (3*\MPvar{linewidth})) ;
-  drawarrow ca -- cb withcolor \MPvar{arrowcolor} ;
-  anchor_box(\MPanchor{\MPvar{from}}) ;
+\setupMPvariables
+  [mpos:encircle]
+  [fillcolor=lightgray,
+   linecolor=blue,
+   linewidth=1pt]
+
+\startuseMPgraphic{mpos:common:ec}
+  path pa ; pair ca ; color lc ; numeric lw ; 
+  lw := \MPvar{linewidth} ;
+  lc := \MPvar{linecolor} ; 
+  initialize_box(\MPpos{\MPvar{self}}) ;
+  pa := pxy ; ca := cxy ; pa := boundingbox pa enlarged 2lw ; 
+  pa := llcorner pa...lrcorner pa...urcorner pa...ulcorner pa...cycle ;
+  drawoptions (withpen pencircle scaled lw withcolor lc) ;
+\stopuseMPgraphic
+
+\startMPpositiongraphic{mpos:encircle}{linecolor,fillcolor,linewidth}
+  \includeMPgraphic{mpos:common:ec}
+  fill pa withcolor \MPvar{fillcolor} ; draw pa ; 
+  anchor_box(\MPanchor{\MPvar{self}}) ;
 \stopMPpositiongraphic
+
+\startMPpositiongraphic{mpos:connect}{linecolor,linewidth}
+  path pb, pc ; pair cb, cc ;
+  \includeMPgraphic{mpos:common:ec}
+  initialize_box(\MPpos{\MPvar{to}}) ; 
+  pb := pxy ; cb := cxy ; pb := boundingbox pb enlarged 2lw ; 
+  pb := llcorner pb...lrcorner pb...urcorner pb...ulcorner pb...cycle ;
+  pc := ca {up} .. {down} cb ;
+  cc := (pc intersection_point pa) ;
+  if intersection_found : 
+    pc := pc cutbefore cc ;
+    cc := (pc intersection_point pb) ;
+    if intersection_found : 
+      pc := pc cutafter cc ;
+      drawarrow pc ; drawarrow reverse pc ;
+    fi ; 
+  fi ; 
+  anchor_box(\MPanchor{\MPvar{self}}) ;
+\stopMPpositiongraphic
+
 
 %D \macros
 %D   {stackposdown, stackposup, stackposleft,stackposright}

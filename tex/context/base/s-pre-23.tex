@@ -1,0 +1,109 @@
+%D \module
+%D   [      file=s-pre-20,
+%D        version=2000.08.07,
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=Presentation Environment 20,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D This style looks a lot like number 22. This time we don't
+%D cycle but build up the page. One can click on the text go
+%D to the page wanted. Clicking on the titl ebrings you to the
+%D previous page. 
+
+\startmode [demo]
+  \disablemode[demo] \usemodule[pre-22] \enablemode[demo]
+\stopmode
+
+\startnotmode [demo]
+  \usemodule[pre-22]
+\stopnotmode
+
+%D We use a simple two||color scheme. 
+
+\definecolor[DotColor][r=.5,g=.6,b=.7]
+\definecolor[TopColor][r=.7,g=.6,b=.5]
+\definecolor[BotColor][TopColor]
+
+%D We will not delay page building. 
+
+\let\BuildPage\relax
+
+%D Instead, we will flush a page for each summary. The main
+%D layer is build up anyway, but we need to overlay the
+%D current summary.
+
+\let\normalStartSummary\StartSummary
+\let\normalStopSummary \StopSummary
+
+\def\StartSummary
+  {\startstandardmakeup
+   \normalStartSummary}
+
+\def\StopSummary
+  {\normalStopSummary
+   \setlayer[temp]{\foundbox{Summary}\CurrentSummary}
+   \setlayer[temp]{\foundbox{Subtext}\CurrentSummary}
+   \stopstandardmakeup}
+
+%D The title page is not added to the main layer (or 
+%D actually, it is, but we erase the layer before it's 
+%D used). 
+
+\long\def\MakeTitlePage#1#2%
+  {\startstandardmakeup
+   \definereference[thispage][]
+   \switchtobodyfont[32pt] 
+   \StartSummary{#1}{}#2\StopSummary
+   \resetlayer[main]
+   \setlayer[temp]{\foundbox{Summary}\CurrentSummary}
+   \setlayer[temp]{\foundbox{Subtext}\CurrentSummary}
+   \definereference[thispage][page(\CurrentSummary)]
+   \stopstandardmakeup}
+
+\doifnotmode{demo}{\endinput}
+
+\starttext
+
+\TitlePage{August 2000}{Something Very Important}
+
+\StartSummary{Alpha}
+  A simple and not too long text just to show the idea.
+  A simple and not too long text just to show the idea.
+  A simple and not too long text just to show the idea.
+\StopSummary
+
+\StartSummary{Beta and Gamma}
+  A simple and not too long text just to show the idea.
+  A simple and not too long text just to show the idea.
+\StopSummary
+
+\StartSummary{Delta}
+  A simple and not too long text just to show the idea.
+\StopSummary
+
+\StartSummary{Epsilon}
+  A simple and not too long text just to show the idea.
+  A simple and not too long text just to show the idea.
+  A simple and not too long text just to show the idea.
+\StopSummary
+
+\StartSummary{Zeta, Eta and Theta}
+  A simple and not too long text just to show the idea.
+  A simple and not too long text just to show the idea.
+  A simple and not too long text just to show the idea.
+\StopSummary
+
+\StartSummary{Omega}
+  A simple and not too long text just to show the idea.
+  A simple and not too long text just to show the idea.
+  A simple and not too long text just to show the idea.
+  A simple and not too long text just to show the idea.
+\StopSummary
+
+\stoptext
