@@ -2766,7 +2766,61 @@ RT##3##4##5=>\processchemicaltextelement{RN}{##3##4##5}{#1}{0}{},
          Z##2##3##4##5=>\processchemicaltextelement{Z}{##2##3##4##5}{#1}{0}{},
             \s!unknown=>\unknownchemical{##1##2##3##4##5}]}}
 
-\def\executechemicalEIGHT[#1]%
+\def\executechemicalSEVEN[#1]% incomplete ! 
+  {\setchemicalname SEVEN
+   %
+   \setchemicalmaximum        7
+   \setchemicalsubstitute     -
+   \setchemicaldistance    1038
+   %
+   \setchemicalrotation 1  .623  .782 - - - - - -
+   \setchemicalrotation 2 -.223  .975 - - - - - -
+   \setchemicalrotation 3 -.901  .434 - - - - - -
+   \setchemicalrotation 4 -.901 -.434 - - - - - -
+   \setchemicalrotation 5 -.223 -.975 - - - - - -
+   \setchemicalrotation 6  .623 -.782 - - - - - -
+   \setchemicalrotation 7     1     0 - - - - - -
+   %
+   \setchemicalangle 1       0 - - -
+   \setchemicalangle 2  51.429 - - -
+   \setchemicalangle 3 102.857 - - -
+   \setchemicalangle 4 154.286 - - -
+   \setchemicalangle 5 205.714 - - -
+   \setchemicalangle 6 257.143 - - -
+   \setchemicalangle 7 308.571 - - -
+   %
+   \setchemicaltranslate 1 - - 
+   \setchemicaltranslate 2 - -
+   \setchemicaltranslate 3 - -
+   \setchemicaltranslate 4 - -
+   \setchemicaltranslate 5 - -
+   \setchemicaltranslate 6 - -
+   \setchemicaltranslate 7 - -
+   %
+   \setchemicallinesegment   B 1038 500 1038 -500
+   \setchemicallinesegment  SB 1038 240 1038 -240
+   \setchemicallinesegment -SB 1038 240 1038 -500
+   \setchemicallinesegment +SB 1038 500 1038 -240
+   %
+   \setchemicaltextelement Z 1038 500
+   %
+   \def\processchemical[##1##2##3##4##5]%
+     {\processaction
+        [##1##2##3##4##5]
+        [    PB:##4##5=>\beginchemicalpicture{##4##5},
+                PE????=>\endchemicalpicture,
+            %ROT##4##5=>\processchemicalrotation{##4},
+            %SUB##4##5=>\processchemicalsubstitute{##4##5},
+            %ADJ##4##5=>\processchemicaldistance{##4##5},
+            %MOV##4##5=>\processchemicaltranslate{##4##5},
+             -SB##4##5=>\processchemicallinesegment{-SB}{##4##5},
+             +SB##4##5=>\processchemicallinesegment{+SB}{##4##5},
+           SB##3##4##5=>\processchemicallinesegment{SB}{##3##4##5},
+         B##2##3##4##5=>\processchemicallinesegment{B}{##2##3##4##5},
+         Z##2##3##4##5=>\processchemicaltextelement{Z}{##2##3##4##5}{#1}{0}{},
+            \s!unknown=>\unknownchemical{##1##2##3##4##5}]}}
+
+\def\executechemicalEIGHT[#1]% incomplete !
   {\setchemicalname EIGHT
    %
    \setchemicalmaximum       8

@@ -37,6 +37,10 @@
       9: for øyeblikket maksimalt -- nivåer i opplisting
 \stopmessages
 
+\startmessages  romanian  library: layouts
+      9: acum nu se supota mai mult de -- nivele de adancime la iteratii
+\stopmessages
+
 \unprotect 
 
 % - meerdere niveaus (moet niet moeilijk zijn)
@@ -89,7 +93,6 @@
   {\getparameters[\??oo][\c!niveaus=4,#1]%
    \ifnum\@@ooniveaus>\maxitemlevel
      \edef\maxitemlevel{\@@ooniveaus}%
-    %\herhaal[\maxitemlevel*\setnextitemlevel{\herhaler}]%
      \dorecurse{\maxitemlevel}{\setnextitemlevel\recurselevel}%
    \fi}
 
@@ -161,7 +164,8 @@
 \def\dostelopsomminginconstant[#1][#2]%
   {\def\dodostelopsomminginconstant##1%
      {\dododostelopsomminginconstant[#1][##1*]}%
-   \processcommalist[#2]\dodostelopsomminginconstant}
+%   \processcommalist[#2]\dodostelopsomminginconstant}
+   \processcommacommand[#2]\dodostelopsomminginconstant} % expansion of #2 is handy for xml
 
 \def\dodododostelopsommingin[#1][#2]%
   {\ConvertToConstant\doifinstringelse{=}{#2}
@@ -171,8 +175,7 @@
 \def\dododostelopsommingin[#1][#2]%
   {\ConvertToConstant\doifnot{#2}{}
      {\doifelse{#1}{\v!elk}
-        {\herhaal[\maxitemlevel*{\ExpandFirstAfter\dodododostelopsommingin[\herhaler][#2]}]}
-%        {\dorecurse{\maxitemlevel}{\ExpandFirstAfter\dodododostelopsommingin[\recurselevel][#2]}}
+        {\dorecurse{\maxitemlevel}{\ExpandFirstAfter\dodododostelopsommingin[\recurselevel][#2]}}
         {\ExpandFirstAfter\dodododostelopsommingin[#1][#2]}}}
 
 \def\dodostelopsommingin[#1][#2]%
@@ -252,6 +255,139 @@
 \newconditional\autoconcatnextitem \settrue \autoconcatnextitem
 \newsignal     \itemsignal         
 
+% \def\dodostartopsomming[#1][#2]%
+%   {\setfalse\inlinelistitem % new, no indent (leftskip)
+%    \setfalse\concatnextitem % new, concat
+%    \ifhmode 
+%       \ifconditional\autoconcatnextitem % new, concat 
+%         \ifdim\lastskip=\itemsignal     % new, concat
+%           \settrue\concatnextitem       % new, concat 
+%         \fi                             % new, concat 
+%       \fi                               % new, concat 
+%       \par
+%    \fi
+%    \ifnum\itemlevel=\maxitemlevel\relax
+%      \showmessage{\m!layouts}{9}{\maxitemlevel}%
+%      \def\itemincrement{0}%
+%    \else
+%      \def\itemincrement{1}%
+%    \fi
+%    \doglobal\increment(\itemlevel,\itemincrement)%
+%    \begingroup
+%    \ifnum\itemlevel=1 % NIEUW
+%      \doadaptleftskip{\getvalue{\??op1\c!marge}}%
+%     \dosetraggedcommand{\@@oouitlijnen}\raggedcommand
+%    \fi
+%    \dosetraggedcommand{\getvalue{\??op\itemlevel\c!uitlijnen}}\raggedcommand
+%    \doifvaluesomething{\??op\itemlevel\c!inspringen}
+%      {\expanded{\stelinspringenin[\getvalue{\??op\itemlevel\c!inspringen}]}}%
+%    \doifinset{\v!kolommen}{#1}%
+%      {\ifbinnenkolommen\else\ifnum\itemcolumndepth=0
+%         \global\let\itemcolumndepth\itemlevel
+%         \getvalue{\??op\itemlevel\c!voor}%
+%         \processfirstactioninset
+%           [#1]
+%           [  \v!een=>\!!counta=1\relax,
+%             \v!twee=>\!!counta=2\relax,
+%             \v!drie=>\!!counta=3\relax,
+%             \v!vier=>\!!counta=4\relax,
+%             \v!vijf=>\!!counta=5\relax,
+%          \s!unknown=>\@EA\!!counta\getvalue{\??op\itemlevel\c!n}]%
+%         \startkolommen
+%           [\c!n=\!!counta, % netter \??op\itemlevel\c!n 
+%            \c!hoogte=,
+%            \c!lijn=\v!uit,
+%            \c!balanceren=\v!ja,
+%            \c!uitlijnen=\v!nee]%
+%       \fi\fi}%
+%    \doifinsetelse{\v!intro}{#1}
+%      {\somintrotrue}
+%      {\somintrofalse}%
+%    \doglobal\increment\noflists
+%    \let\currentlist=\noflists
+%    \newcounter\noflistelements
+%    \kopsomfalse
+%    \subsomfalse
+%    \symsomfalse
+%    \let\marsymbol=\relax
+%    \global\let\somdestination=\empty
+%    \def\symsymbol{}%
+%    \def\som%
+%      {\dosom}%
+%    \def\but[##1]%
+%      {\gdef\somdestination{##1}%
+%       \dosom}%
+%    \def\nop%
+%      {\sym{\strut}\strut}%
+%    \definecomplexorsimple\its
+%    \setvalue{\v!mar}##1%
+%      {\def\marsymbol%
+%         {\llap
+%            {\doattributes{\??op\itemlevel}\c!marletter\c!markleur{##1}%
+%             \hskip\leftskip\hskip\linkermargeafstand}}%
+%       \dosom}%
+%    \setvalue{\v!kop}%
+%      {\kopsomtrue\dokop}%
+%    \setvalue{\v!sub}%
+%      {\subsomtrue\dosom}%
+%    \setvalue{\v!sym}##1%
+%      {\def\symsymbol%
+%         {\doattributes{\??op\itemlevel}\c!symletter\c!symkleur{##1}}%
+%       \symsomtrue
+%       \dosom}%
+% %   \setvalue{\v!its}%
+% %     {\getvalue{\v!sym}%
+% %        {\calculatelistwidth{\itemlevel}{\dimen0}%
+% %         \hbox to \dimen0
+% %           {\dorecurse{\getvalue{\??op\itemlevel\c!items}}
+% %              {\listitem\hss}%
+% %            \unskip
+% %            \hskip\getvalue{\??op\itemlevel\c!afstand}}}}%
+%    \setvalue{\v!its}%
+%      {\getvalue{\v!ran}%
+%         {\dorecurse{\getvalue{\??op\itemlevel\c!items}}{\listitem\hss}%
+%          \unskip}}%
+%    \setvalue{\v!ran}##1%
+%      {\getvalue{\v!sym}%
+%         {\calculatelistwidth{\itemlevel}{\dimen0}%
+%          \hbox to \dimen0
+%            {##1\hskip\getvalue{\??op\itemlevel\c!afstand}}}}%
+%    \setitemlevel{#1}%
+%    \getvalue{\??op\itemlevel}%
+%    \doifelsenothing{#1} % iffirstargument
+%      {\edef\@@opsymbool{\getvalue{\??op\itemlevel\c!symbool}}%
+%       \setgvalue{\??op\c!symbool\s!global\itemlevel}{}%
+%       \setgvalue{\??op\v!verder\itemlevel}{}%
+%       \setitemmark{\@@opsymbool}%
+%       \dostelopsomminginvariable[\itemlevel][#2]}
+%      {\dostelopsomminginconstant[\itemlevel][#1]%
+%       \dostelopsomminginvariable[\itemlevel][#2]%
+%       \doifinsetelse{\v!verder}{#1}% \noexpand, else problems in non-etex with chinese
+%        %{\edef\@@opsymbool{\getvalue{\??op\c!symbool\s!global\itemlevel}}%
+%         {\edef\@@opsymbool{\noexpand\getvalue{\??op\c!symbool\s!global\itemlevel}}%
+%          \getvalue{\??op\v!verder\itemlevel}}
+%        %{\edef\@@opsymbool{\getvalue{\??op\itemlevel\c!symbool}}%
+%         {\edef\@@opsymbool{\noexpand\getvalue{\??op\itemlevel\c!symbool}}%
+%          \setgvalue{\??op\v!verder\itemlevel}%
+%            {\dostelopsomminginconstant[\itemlevel][#1]%
+%             \dostelopsomminginvariable[\itemlevel][#2]}}%
+%       \def\docommando{\setitemmark}% \setitemmark resets \docommando
+%       \processcommalist[#1,\@@opsymbool]\docommando}%
+%    \ifsomautointro\ifnum\prevgraf<3
+%      \somintrotrue
+%    \fi\fi
+%    \ifparagraphitems 
+%      \ifnum\itemlevel>1 \doassign[\??op\itemlevel][\c!tussen=]\fi
+%    \else\ifpackeditems 
+%      \doassign[\??op\itemlevel][\c!tussen=]%
+%    \fi\fi
+%    \calculatelistwidth{\itemlevel}{\dimen0}%
+%    \ifdim\dimen0>\!!zeropoint\relax
+% \ifconditional\inlinelistitem\else
+%      \advance\leftskip by \dimen0\relax
+% \fi
+%    \fi}
+
 \def\dodostartopsomming[#1][#2]%
   {\setfalse\inlinelistitem % new, no indent (leftskip)
    \setfalse\concatnextitem % new, concat
@@ -290,6 +426,19 @@
             \v!vier=>\!!counta=4\relax,
             \v!vijf=>\!!counta=5\relax,
          \s!unknown=>\@EA\!!counta\getvalue{\??op\itemlevel\c!n}]%
+% new 
+\edef\columneditemleftskip{\the\leftskip}%
+\def\postprocesscolumnbox##1%
+  {\scratchdimen=\columneditemleftskip 
+   \divide\scratchdimen by \nofcolumns
+   \hbox{\hskip\columneditemleftskip\hbox{\box##1}}}%
+\scratchdimen=-\columneditemleftskip 
+\multiply\scratchdimen by \nofcolumns 
+\advance\scratchdimen by \columneditemleftskip 
+\advance\scratchdimen by \hsize
+\edef\columntextwidth{\the\scratchdimen}%
+\leftskip\!!zeropoint
+% so far
         \startkolommen
           [\c!n=\!!counta, % netter \??op\itemlevel\c!n 
            \c!hoogte=,

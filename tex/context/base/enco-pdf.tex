@@ -1,5 +1,5 @@
 %D \module
-%D   [     file=enco-ans,
+%D   [     file=enco-pdf,
 %D      version=1995.1.1,
 %D        title=\CONTEXT\ Encoding Macros,
 %D     subtitle=\YandY\ texnansi Encoding,
@@ -8,99 +8,88 @@
 %D    copyright=Hans Hagen]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
-%C details. 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
 
 %D This is the \PDF\ document encoding.
 
-\startencoding[pdfdoc]
-
-\defineaccent  " A ^^c4 
-\defineaccent  " a ^^e4
-\defineaccent  " E ^^cb
-\defineaccent  " e ^^eb
-\defineaccent  " I ^^cf
-\defineaccent  " i ^^ef
-\defineaccent  " O ^^d6
-\defineaccent  " o ^^f6
-\defineaccent  " U ^^dc
-\defineaccent  " u ^^fc
-\defineaccent  " y ^^ff
-             
-\defineaccent  ' A ^^c1
-\defineaccent  ' a ^^e1
-\defineaccent  ' E ^^c9
-\defineaccent  ' e ^^e9
-\defineaccent  ' I ^^cd
-\defineaccent  ' i ^^ed
-\defineaccent  ' O ^^d3
-\defineaccent  ' o ^^f3
-\defineaccent  ' U ^^da
-\defineaccent  ' u ^^fa
-\defineaccent  ' Y ^^dd
-\defineaccent  ' y ^^fd
-
-\defineaccent  ^ A ^^c2
-\defineaccent  ^ a ^^e2
-\defineaccent  ^ E ^^ca
-\defineaccent  ^ e ^^ea
-\defineaccent  ^ I ^^ce
-\defineaccent  ^ i ^^ee
-\defineaccent  ^ O ^^d4
-\defineaccent  ^ o ^^f4
-\defineaccent  ^ U ^^db
-\defineaccent  ^ u ^^fb
-             
-\defineaccent  ` A ^^c0
-\defineaccent  ` a ^^e0
-\defineaccent  ` E ^^c8
-\defineaccent  ` e ^^e8
-\defineaccent  ` I ^^cc
-\defineaccent  ` i ^^ec
-\defineaccent  ` O ^^d2
-\defineaccent  ` o ^^f2
-\defineaccent  ` U ^^d9
-\defineaccent  ` u ^^f9
-             
-\defineaccent  ~ A ^^c3
-\defineaccent  ~ a ^^e3
-\defineaccent  ~ N ^^d1
-\defineaccent  ~ n ^^f1
-\defineaccent  ~ O ^^d5
-\defineaccent  ~ o ^^f5
-
-\defineaccent  c c ^^e7 
-\defineaccent  C C ^^c7
-
-\defineaccent  ' c  c % c acute
-\defineaccent  ' C  C % C acute
-\defineaccent  ' n  n % n acute
-\defineaccent  ' N  N % N acute
-\defineaccent  ' S  S % S acute
-\defineaccent  ' s  s % s acute
-\defineaccent  ' Z  Z % Z acute
-\defineaccent  ' z  z % z acute
-
-\defineaccent  . Z  Z % Z dot
-\defineaccent  . z  z % z dot
-
-\defineaccent  k a  a % a ogonek
-\defineaccent  k A  A % A ogonek
-\defineaccent  k e  e % e ogonek
-\defineaccent  k E  E % E ogonek
-
-\definecharacter AE ^^c6
-\definecharacter ae ^^e6
-\definecharacter OA ^^c5
-\definecharacter oa ^^e5
-\definecharacter oe ^^9c
-\definecharacter sz ^^df
-\definecharacter SS ^^df
+\startencoding[pdfdoc] % \rawcharacter{number}
+      
+\definecharacter oeligature        ^^9c
 
 \definecharacter leftguillemot     ^^ab
 \definecharacter rightguillemot    ^^bb
-\definecharacter leftsubguillemot  ^^ab
-\definecharacter rightsubguillemot ^^bb
+
+\definecharacter Agrave            ^^c0 
+\definecharacter Aacute            ^^c1 
+\definecharacter Acircumflex       ^^c2 
+\definecharacter Atilde            ^^c3 
+\definecharacter Adiaeresis        ^^c4 
+\definecharacter OAligature        ^^c5
+\definecharacter AEligature        ^^c6
+\definecharacter Ccedilla          ^^c7
+\definecharacter Egrave            ^^c8 
+\definecharacter Eacute            ^^c9 
+\definecharacter Ecircumflex       ^^ca 
+\definecharacter Ediaeresis        ^^cb 
+\definecharacter Igrave            ^^cc 
+\definecharacter Iacute            ^^cd 
+\definecharacter Icircumflex       ^^ce 
+\definecharacter Idiaeresis        ^^cf 
+
+\definecharacter Ntilde            ^^d1 
+\definecharacter Ograve            ^^d2 
+\definecharacter Oacute            ^^d3 
+\definecharacter Ocircumflex       ^^d4 
+\definecharacter Otilde            ^^d5 
+\definecharacter Odiaeresis        ^^d6 
+
+\definecharacter Ugrave            ^^d9 
+\definecharacter Uacute            ^^da 
+\definecharacter Ucircumflex       ^^db 
+\definecharacter Udiaeresis        ^^dc 
+\definecharacter Yacute            ^^dd 
+
+\definecharacter ssharp            ^^df
+\definecharacter agrave            ^^e0
+\definecharacter aacute            ^^e1
+\definecharacter acircumflex       ^^e2
+\definecharacter atilde            ^^e3
+\definecharacter adiaeresis        ^^e4
+\definecharacter oaligature        ^^e5
+\definecharacter aeligature        ^^e6
+\definecharacter ccedilla          ^^e7
+\definecharacter egrave            ^^e8
+\definecharacter eacute            ^^e9
+\definecharacter ecircumflex       ^^ea
+\definecharacter ediaeresis        ^^eb
+\definecharacter igrave            ^^ec
+\definecharacter iacute            ^^ed
+\definecharacter icircumflex       ^^ee
+\definecharacter idiaeresis        ^^ef
+
+\definecharacter ntilde            ^^f1
+\definecharacter ograve            ^^f2
+\definecharacter oacute            ^^f3
+\definecharacter ocircumflex       ^^f4
+\definecharacter otilde            ^^f5
+\definecharacter odiaeresis        ^^f6
+
+\definecharacter ugrave            ^^f9
+\definecharacter uacute            ^^fa
+\definecharacter ucircumflex       ^^fb
+\definecharacter udiaeresis        ^^fc
+\definecharacter yacute            ^^fd
+
+\definecharacter ydiaeresis        ^^ff 
+
+\definecharacter leftsubguillemot  {\leftguillemot}
+\definecharacter rightsubguillemot {\rightguillemot}
+
+\definecharacter Uhungarumlaut     {\Ucircumflex}
+\definecharacter uhungarumlaut     {\ucircumflex}
+\definecharacter Ohungarumlaut     {\Ocircumflex}
+\definecharacter ohungarumlaut     {\ocircumflex}
 
 \stopencoding
 

@@ -66,10 +66,10 @@
 \setuplayout
   [topspace=12pt,
    header=0pt,
-   height=fit,
    footer=0pt,
-   bottomdistance=8pt,
-   bottom=10pt,
+   height=402pt, % 450 - 12 - 15 - 12 - 12 + 3 
+   bottomdistance=15pt,
+   bottom=12pt,
    backspace=12pt,
    margin=0pt,
    width=fit,
@@ -111,7 +111,7 @@
 %D \stoptypen
 
 %D \macros
-%D   {setupinteractions}
+%D   {setupinteraction}
 %D
 %D We did not enable interactive text support yet, so let's do
 %D that now. We force page reference to circumvent problems
@@ -119,18 +119,30 @@
 
 \setupinteraction
   [page=yes,
+   menu=on,
    state=start]
 
 %D \macros
-%D   {setupbottomtexts}
+% %D   {setupbottomtexts}
+%D   {setupinteractionmenu,startinteractionmenu}
 %D
 %D At the bottom of the screen we show two navigational bars.
 %D At the left we show the subpage bar, at the right we use a
 %D non default backward|/|forward bar.
+%
+% \setupbottomtexts
+%   [\InteractionBar]
+%   [\InteractionButtons]
 
-\setupbottomtexts
-  [\InteractionBar]
-  [\InteractionButtons]
+\setupinteractionmenu
+  [bottom]
+  [leftoffset=-3pt,
+   rightoffset=-3pt]
+
+\startinteractionmenu[bottom]
+  \txt \InteractionBar \\ 
+  \txt \InteractionButtons \\ 
+\stopinteractionmenu
 
 %D \macros
 %D   {interactionbar}
@@ -142,7 +154,7 @@
 \def\InteractionBar%
   {\ifnum\nofsubpages>1
      \framed
-       [framecolor=white,linethickness=1pt,
+       [framecolor=white,rulethickness=1pt,
         height=\bottomheight,strut=no]
        {\interactionbar[alternative=f,width=.5\makeupwidth,height=1ex]}
    \fi}
@@ -155,7 +167,7 @@
 %D close the presentation.
 
 \setupinteractionbar
-  [framecolor=white,linethickness=1pt,
+  [framecolor=white,rulethickness=1pt,
    height=\bottomheight,strut=no]
    
 \def\InteractionButtons%
@@ -271,7 +283,7 @@
 \def\HeadLine#1#2%
   {\midaligned
      {\framed
-        [framecolor=backgroundcolor,linethickness=1pt,
+        [framecolor=backgroundcolor,rulethickness=1pt,
          width=.8\hsize,align=middle,strut=no]
         {#2}}}
 
@@ -300,9 +312,8 @@
 \def\PlaceSubjectList%
   {\blank
    \determinelistcharacteristics[Subject] 
-   \ifnum\utilitylistlength>0
-     \placelist[Subject]
-   \fi}
+ % \ifnum\utilitylistlength>0 \placelist[Subject] \fi}
+   \doifmode{*list}{\placelist[Subject]}} 
 
 \setuplist
   [Subject, Topic]
@@ -311,47 +322,49 @@
    before=,
    after=]
 
-%D \macros
-%D   {setuptexttexts}
-%D
-%D The topics will be listed in the right edge, using:
+% %D \macros
+% %D   {setuptexttexts}
+% %D
+% %D The topics will be listed in the right edge, using:
+% 
+% \setuptexttexts
+%   [edge]
+%   [][\TopicList]
 
-\setuptexttexts
-  [edge]
-  [][\TopicList]
-
 %D \macros
-%D   {setuplist, placelist}
+%D   {setuplist, placelist,startinteractionmenu}
 %D
 %D The actual topic list is typeset using a \type{\vbox}. We
 %D have to specify \type{criterium=all} because otherwise no 
 %D list will be typeset. (By default lists are typeset 
 %D locally.)
 
-\def\TopicList%
-  {\vbox to \vsize
-     {\placelist
-        [Topic]
-        [alternative=none,
-         criterium=all,
-         command=\TopicLine]
-      \vss}}
+\startinteractionmenu[right]
+  \placelist
+    [Topic]
+    [alternative=f, % command, % none,
+     maxwidth=\hsize,
+     width=\hsize,
+     offset=0pt,
+     criterium=all,
+     align=left]
+\stopinteractionmenu
 
 \def\Topics#1% temporary hack 
   {\Nopic{#1}
    \placelist[Topic][criterium=all]}
 
-%D \macros
-%D   {limitatetext}
-%D
-%D Because topic lines can be rather long, so we use \type 
-%D {\limitatetext} to limit their length to the width of the 
-%D right edge. When needed, some dots are added (\unknown). 
-%D This macro is part of the collection of low level support 
-%D macros.
-
-\def\TopicLine#1#2#3%
-  {\limitatetext{#2}{\rightedgewidth}{\unknown}\par} 
+% %D \macros
+% %D   {limitatetext}
+% %D
+% %D Because topic lines can be rather long, so we use \type 
+% %D {\limitatetext} to limit their length to the width of the 
+% %D right edge. When needed, some dots are added (\unknown). 
+% %D This macro is part of the collection of low level support 
+% %D macros.
+% 
+% \def\TopicLine#1#2#3%
+%   {\limitatetext{#2}{\rightedgewidth}{\unknown}\par} 
 
 %D \macros
 %D   {setuptexttexts, button}

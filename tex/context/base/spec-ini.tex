@@ -88,6 +88,17 @@
       7: ukjent driver --
 \stopmessages
 
+\startmessages  romanian  library: specials
+  title: specials
+      1: -- incarcat
+      2: nu este permis un nivel de imbricare mai mare --
+      3: -- s-a resetat
+      4: comanda -- nu exista
+      5: se incarca fisierul de definitii --
+      6: imbricarea nu este permisa
+      7: driver necunoscut --
+\stopmessages
+
 \startmessages  dutch  library: interactions
      21: -- code tussengevoegd
 \stopmessages
@@ -110,6 +121,10 @@
 
 \startmessages  norwegian  library: interactions
      21: -- kode satt inn / tilføyd
+\stopmessages
+
+\startmessages  romanian  library: interactions
+     21: -- cod inserat
 \stopmessages
 
 %D \TEX\ produces files in the \DVI\ format. This format is
@@ -155,7 +170,9 @@
 
 \def\jobsuffix{dvi}
 
-\appendtoks \def\jobsuffix{dvi} \to \everyresetspecials
+\appendtoksonce
+  \def\jobsuffix{dvi}%
+\to \everyresetspecials
 
 %D A rather fundamental difference between special and direct
 %D settings is that the latter don't interfere with typesetting
@@ -165,7 +182,9 @@
 
 \newif\ifspecialbasedsettings \specialbasedsettingstrue
 
-\appendtoks \specialbasedsettingstrue \to \everyresetspecials
+\appendtoksonce 
+  \specialbasedsettingstrue 
+\to \everyresetspecials
 
 %D Because there is no standardization in the use of specials,
 %D more than one driver or program can be supported. The
@@ -415,51 +434,118 @@
 %D additions however |<|like the specials that implement object 
 %D handling|>| asked for non||grouped execution. 
 
-\def\executespecials#1#2%
-  {\def\doonespecial##1%
-     {\getvalue{##1\string#1}#2\relax}%
-   \processcommacommand
-     [\getvalue{\@@speclst@@\string#1}]\doonespecial}
+%D \starttypen
+%D \def\executespecials#1#2%
+%D   {\def\doonespecial##1%
+%D      {\getvalue{##1\string#1}#2\relax}%
+%D    \processcommacommand
+%D      [\getvalue{\@@speclst@@\string#1}]\doonespecial}
+%D 
+%D \def\executespecial#1%
+%D   {\expandafter\ifcase\getvalue{\@@specarg@@\string#1}\relax
+%D      \def\next%
+%D        {\executespecials#1{}}%
+%D    \or
+%D      \def\next##1%
+%D        {\executespecials#1{{##1}}}%
+%D    \or
+%D      \def\next##1##2%
+%D        {\executespecials#1{{##1}{##2}}}%
+%D    \or
+%D      \def\next##1##2##3%
+%D        {\executespecials#1{{##1}{##2}{##3}}}%
+%D    \or
+%D      \def\next##1##2##3##4%
+%D        {\executespecials#1{{##1}{##2}{##3}{##4}}}%
+%D    \or
+%D      \def\next##1##2##3##4##5%
+%D        {\executespecials#1{{##1}{##2}{##3}{##4}{##5}}}%
+%D    \or
+%D      \def\next##1##2##3##4##5##6%
+%D        {\executespecials#1{{##1}{##2}{##3}{##4}{##5}{##6}}}%
+%D    \or
+%D      \def\next##1##2##3##4##5##6##7%
+%D        {\executespecials#1{{##1}{##2}{##3}{##4}{##5}{##6}{##7}}}%
+%D    \or
+%D      \def\next##1##2##3##4##5##6##7##8%
+%D        {\executespecials#1{{##1}{##2}{##3}{##4}{##5}{##6}{##7}{##8}}}%
+%D    \or
+%D      \def\next##1##2##3##4##5##6##7##8##9%
+%D        {\executespecials#1{{##1}{##2}{##3}{##4}{##5}{##6}{##7}{##8}{##9}}}% 
+%D    \else
+%D      \def\next%
+%D        {\message{illegal special: \string#1}}%
+%D    \fi
+%D    \next}
+%D \stoptypen 
+%D 
+%D Because specials happen quite often, we will use a bit more
+%D brute force. Keep in mind that we have to collect the
+%D arguments because we want to support more drivers at once. 
+%D 
+%D I tested this on the next test. Where the previous alternative 
+%D took about 32 seconds, the new alternative takes 25 seconds.  
+%D
+%D \starttypen 
+%D \testfeature{10000}{\setbox0=\hbox{test \color[red]{oeps} test}}
+%D \stoptypen 
+
+\def\@@exsp{exsp}
+
+\setvalue{\@@exsp0}{{}}
+\setvalue{\@@exsp1}#1{{{#1}}}
+\setvalue{\@@exsp2}#1#2{{{#1}{#2}}}
+\setvalue{\@@exsp3}#1#2#3{{{#1}{#2}{#3}}}
+\setvalue{\@@exsp4}#1#2#3#4{{{#1}{#2}{#3}{#4}}}
+\setvalue{\@@exsp5}#1#2#3#4#5{{{#1}{#2}{#3}{#4}{#5}}}
+\setvalue{\@@exsp6}#1#2#3#4#5#6{{{#1}{#2}{#3}{#4}{#5}{#6}}}
+\setvalue{\@@exsp7}#1#2#3#4#5#6#7{{{#1}{#2}{#3}{#4}{#5}{#6}{#7}}}
+\setvalue{\@@exsp8}#1#2#3#4#5#6#7#8{{{#1}{#2}{#3}{#4}{#5}{#6}{#7}{#8}}}
+\setvalue{\@@exsp9}#1#2#3#4#5#6#7#8#9{{{#1}{#2}{#3}{#4}{#5}{#6}{#7}{#8}{#9}}}
+
+%D \starttypen
+%D \def\executespecials#1%
+%D   {\def\doonespecial##1%
+%D      {\csname##1\xspecialcommand\endcsname#1\relax}%
+%D    \@EA\rawprocesscommalist\@EA
+%D      [\csname\@@speclst@@\xspecialcommand\endcsname]\doonespecial}
+%D 
+%D \def\executespecial#1%
+%D   {\def\xspecialcommand{\string#1}%
+%D    \@EA\@EA\@EA\executespecials\csname\@@exsp\csname\@@specarg@@\xspecialcommand\endcsname\endcsname}
+%D \stoptypen 
+
+%D Some more speed can be gained by using a dedicated string 
+%D processing routine. Now we can bring down the execution 
+%D time to 21 seconds, one third less than the original run time. 
+
+\def\executespecials#1%
+  {\@EA\let\@EA\speciallist\csname\@@speclst@@\xspecialcommand\endcsname
+   \ifx\speciallist\empty\else
+     \def\doonespecial##1%
+       {\csname##1\xspecialcommand\endcsname#1\relax}%
+     \@EA\dodoonespecial\speciallist,\end,%
+   \fi}
 
 \def\executespecial#1%
-  {\expandafter\ifcase\getvalue{\@@specarg@@\string#1}\relax
-     \def\next%
-       {\executespecials#1{}}%
-   \or
-     \def\next##1%
-       {\executespecials#1{{##1}}}%
-   \or
-     \def\next##1##2%
-       {\executespecials#1{{##1}{##2}}}%
-   \or
-     \def\next##1##2##3%
-       {\executespecials#1{{##1}{##2}{##3}}}%
-   \or
-     \def\next##1##2##3##4%
-       {\executespecials#1{{##1}{##2}{##3}{##4}}}%
-   \or
-     \def\next##1##2##3##4##5%
-       {\executespecials#1{{##1}{##2}{##3}{##4}{##5}}}%
-   \or
-     \def\next##1##2##3##4##5##6%
-       {\executespecials#1{{##1}{##2}{##3}{##4}{##5}{##6}}}%
-   \or
-     \def\next##1##2##3##4##5##6##7%
-       {\executespecials#1{{##1}{##2}{##3}{##4}{##5}{##6}{##7}}}%
-   \or
-     \def\next##1##2##3##4##5##6##7##8%
-       {\executespecials#1{{##1}{##2}{##3}{##4}{##5}{##6}{##7}{##8}}}%
-   \or
-     \def\next##1##2##3##4##5##6##7##8##9%
-       {\executespecials#1{{##1}{##2}{##3}{##4}{##5}{##6}{##7}{##8}{##9}}}% 
-   \else
-     \def\next%
-       {\message{illegal special: \string#1}}%
-   \fi
-   \next}
+  {\def\xspecialcommand{\string#1}%
+   \@EA\@EA\@EA\executespecials\csname\@@exsp\csname\@@specarg@@\xspecialcommand\endcsname\endcsname}
 
-%D The \type{{{...}}} are needed because we pass all those 
-%D arguments to the specials support macro. 
+\def\dodoonespecial#1,%
+  {\ifx\end#1\else
+     \doonespecial{#1}\expandafter\dodoonespecial
+   \fi}
+
+%D This kind of saving only shows up when making interative 
+%D documents with lots of color switches. In such documents 
+%D tens of thousands of special calls are rather normal. 
+%D On a 650 Mhz Pentium, the previous test takes 15 seconds 
+%D less (on about 65 seconds). When processing 2000 page 
+%D interactive documents this saving can be neglected.  
+
+%D In the previous macros, the \type{{{...}}} are needed 
+%D because we pass all those arguments to the specials support
+%D macro. 
 
 \let\openspecialfile  = \relax
 \let\closespecialfile = \relax
@@ -605,22 +691,12 @@
 %D \NC \tttf spec-pdf       \NC
 %D     \tttf pdf            \NC
 %D                          \NC
-%D     Adobe PDF V2.1       \NC
+%D     Adobe PDF            \NC
 %D     (Acrobat)            \NC\MR
 %D \NC \tttf spec-win       \NC
 %D     \tttf dviwindo       \NC
 %D     YandY                \NC
 %D     (dviwindo)           \NC\MR
-%D \NC \tttf spec-1p0       \NC
-%D     \tttf pdf            \NC
-%D                          \NC
-%D     Adobe PDF V 1.0      \NC
-%D     (Acrobat)            \NC\MR
-%D \NC \tttf spec-2p0       \NC
-%D     \tttf pdf            \NC
-%D                          \NC
-%D     Adobe PDF V 2.0      \NC
-%D     (Acrobat)            \NC\MR
 %D \NC \tttf spec-htm       \NC
 %D     \tttf html           \NC
 %D                          \NC
@@ -771,9 +847,9 @@
 %D and for special applications, one may want to have access 
 %D to the total number of pages. 
 %D
-%D \starttyping
+%D \starttypen
 %D \dogetnofinsertpages{filename}
-%D \stoptyping
+%D \stoptypen
 %D
 %D The number is also available after the insert is placed, 
 %D since inclusion may take place immediate when an insert is 

@@ -36,15 +36,15 @@
 % \setupoutput 
 %   [dviwindo]
 %
-% Enabling \CONTEXT\ navigation symbols: 
+% Enabling \CONTEXT\ navigation symbols as well as \euro's. 
 %
 % \usesymbols
-%   [nav] 
+%   [nav,eur] 
 %
 % \setupsymbolset
 %   [navigation 1]
 %
-% \stelinteractiein
+% \setupinteraction
 %   [\c!symboolset=navigation 1]
 %
 % Changing language defaults: 
@@ -54,8 +54,10 @@
 %   [\c!leftquote=\upperleftsinglesixquote,
 %    \c!leftquotation=\upperleftdoublesixquote]
 %
-% \protect 
-%
+% So far for the settings. 
+
+\protect 
+
 % Loading local preferences: 
 %
 % \input prag-gen % company styles 

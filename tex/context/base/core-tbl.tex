@@ -139,13 +139,13 @@
    \fi % force hsize 
    \setsecondpasscharacteralign\checkalignment{#1}}
 
-\def\noftabcolumns{16} % quick and dirty stack
+\def\noftabcolumns{16} 
 
 \def\@@tabbox@@  {@@tabbox@}
 \def\@@tabhook@@ {@@tabhook@}
 \def\@@tabalign@@{@@tabalign@}
 
-\dorecurse\noftabcolumns
+\dorecurse\noftabcolumns % quick and dirty stack
   {\@EA\newbox\csname\@@tabbox@@\recurselevel\endcsname}
 
 \def\dotabulatenobreak%
@@ -164,6 +164,8 @@
   {\ifnum\tabulatetype<2        
     %\global\let\tabulatehook\relax
      \global\let\tabulatehook\notabulatehook
+\else
+     \global\let\tabulatehook\dotabulatehook
    \fi}
 
 \def\dodosettabulatepreamble#1#2%
@@ -195,9 +197,10 @@
   % 2 = HC column hook   HQ equal column hook
    \@EA\appendtoks                     \@EA&\@EA\hskip\pretabskip##&\to\!!toksa
    \@EA\appendtoks\@EA\xdef\@EA\tabulatecolumn\@EA{\tabulatecolumns}\to\!!toksa
+\appendtoks                                \checktabulatehook\to\!!toksa
    \@EA\appendtoks                                      \preamblebox\to\!!toksa
        \appendtoks                           \bgroup\bbskip\bgroup#1\to\!!toksa
-       \appendtoks                                \checktabulatehook\to\!!toksa
+%       \appendtoks                                \checktabulatehook\to\!!toksa
        \appendtoks\ifnum\tabulatetype=1 \else                       \to\!!toksa
    \@EA\appendtoks                                \the\tabulatebmath\to\!!toksa
    \@EA\appendtoks                                 \the\tabulatefont\to\!!toksa
@@ -519,7 +522,10 @@
      \getvalue{\??tt\currenttabulate\c!voor}%
    \fi
    \bgroup 
+\postponefootnotes % new, to be tested  
    \chardef\tabulatepass=1
+   \widowpenalty=0 % otherwise lines are not broken
+   \clubpenalty =0 % but overlap in funny ways
    \the\everytabulate 
    \getvalue{\??tt\currenttabulate\c!binnen}%
    \scratchdimen=\leftskip
@@ -623,8 +629,6 @@
        \v!midden=>\def\@@tabulatealign{3},
       \s!default=>\def\@@tabulatealign{0},
       \s!unknown=>\def\@@tabulatealign{0}]%
-   \dorecurse\noftabcolumns % NEW
-     {\global\setbox\csname\@@tabbox@@\recurselevel\endcsname=\box\voidb@x}%
    \let\pretabskip\!!zeropoint
    \def\postabskip{.5\tabulateunit}%
    \doglobal\newcounter\tabulatecolumns
@@ -668,6 +672,11 @@
    \!!toksa{&\hbox to \tabulateindent{}##\strut&##}%
    \tabulatewidth\!!zeropoint
    |#1X|\relax
+   \tabulatewidth\!!zeropoint
+   \dorecurse\tabulatecolumns
+     {\doifundefinedelse{\@@tabbox@@\recurselevel}
+        {\expandafter\newbox\csname\@@tabbox@@\recurselevel\endcsname}%
+        {\global\setbox\csname\@@tabbox@@\recurselevel\endcsname\box\voidb@x}}%
    \appendtoks&##\to\!!toksa
    \appendtoks\doglobal\increment\tabulatecolumn\to\!!toksa
    \appendtoks\NC\unskip\unskip\crcr\flushtabulated\to\tabulatedummy % no count

@@ -1,0 +1,345 @@
+%D \module
+%D   [      file=x-fig-00,
+%D        version=2001.03.21,
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=Figure Base Generation,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
+%C details. 
+
+%D See \type {x-fig-01.tex} for more information on how to use 
+%D and generate figure databses. This file loads the file 
+%D named \type {\inputfilename} (\TEXEXEC\ will set this 
+%D variable). You can apply this style to a database by 
+%D saying:
+%D 
+%D \starttypen 
+%D texexec --pdf --use=fig-01 yourfile.xml
+%D \stoptypen 
+%D 
+%D The following modes are supported: 
+%D 
+%D \starttabulatie[|lT|l|]
+%D \NC letter  \NC map the preview on letter size  \NC \NR   
+%D \NC compact \NC use an alternative presentation \NC \NR   
+%D \stoptabulatie
+%D
+%D The resulting file has the following characteristics: 
+%D
+%D \startopsomming[opelkaar]
+%D \som  the document is split into three sections: first each
+%D       figure is shown at its own page, then an overview of 
+%D       figures is shown with some data alongside, and 
+%D       finaly an index and table of contents shows up 
+%D \som  there is no title page, which means that one can 
+%D       access a figure by page number without offset
+%D \som  the document is opened at the first overview page, 
+%D       that is, when the viewer supports it 
+%D \som  the graphic is shown 3~times: on a page of its own,
+%D       scaled to a fixed dimension, and relative to a4 or 
+%D       letter paper size 
+%D \som  the labels can be accessed in an index and list at 
+%D       the end of the document
+%D \stopopsomming
+
+\usemodule[fig-00]
+
+\doifnothing  {\inputfilename}        {\end} 
+\doiffileelse {\inputfilename.xml} {} {\end} 
+
+\def\StartDescription%
+  {\bgroup
+   \defineXMLpush[organization]
+   \defineXMLpush[project]
+   \defineXMLpush[product]
+   \defineXMLpush[comment]}
+
+\def\StopDescription%
+  {\subject [begin] {Figure collection}
+   \starttabulate[|lBe|p|]
+   \doifXMLdataelse{organization}
+     {\NC organization \NC \XMLpop{organization} \NC \NR}{}
+   \doifXMLdataelse{project}
+     {\NC project      \NC \XMLpop{project}      \NC \NR}{}
+   \doifXMLdataelse{product}
+     {\NC product      \NC \XMLpop{product}      \NC \NR}{}
+   \doifXMLdataelse{comment}
+     {\NC comment      \NC \XMLpop{comment}      \NC \NR}{}
+   \stoptabulate
+   \blank[2*big]
+   \egroup}
+
+\def\StartFigureA%
+  {\bgroup
+   \XMLassign{file}{unknown}
+   \defineXMLpush[file]
+   \defineXMLpush[label]
+   \defineXMLpush[copyright]
+   \defineXMLpush[comment]
+   \defineXMLpush[status]}
+
+\defineoverlay[page][\overlaybutton{to:\CurrentPage}]
+
+\def\StopFigureA%
+  {\doglobal\increment\CurrentPage
+   \setupbackgrounds[page][background=page]
+   \pagereference[from:\CurrentPage]
+   \pagefigure[\XMLpop{file}]
+   \setupbackgrounds[page][background=]
+   \egroup}
+
+\def\StartFigureB%
+  {\StartFigureA}
+
+\defineregister
+  [figureindex]
+  [figureindices]
+
+\setupregister
+  [figureindex]
+  [ownnumber=yes,
+   criterium=text,
+   interaction=text,
+   indicator=no]
+
+\definelist
+  [figurelist]
+
+\setuplist
+  [figurelist]
+  [criterium=text,
+   pagenumber=no,
+   width=2em,
+   interaction=all]
+
+\setupcolors
+  [state=start]
+
+\setuptolerance
+  [verytolerant]
+
+% the next hack will be replaced by a layout definition
+
+\startbuffer[paper]
+\startnotmode[letter]
+  \framed
+    [width=210mm,height=297mm,offset=10pt,frame=off,
+     background=color,backgroundcolor=white]
+    {\externalfigure[\XMLpop{file}][reset=yes]}
+\stopnotmode
+\startmode[letter]
+  \framed
+    [width=8.5in,height=11in,offset=10pt,frame=off,
+     background=color,backgroundcolor=white]
+    {\externalfigure[\XMLpop{file}][reset=yes]}
+\stopmode
+\stopbuffer
+
+\setupbuttons
+  [offset=10pt,
+   width=broad,
+   strut=no,
+   rulethickness=1pt,
+   framecolor=darkred]
+
+\def\StopFigureB%
+  {\par
+   \doglobal\increment\CurrentPage
+   \button
+     {\hbox to \hsize
+        {\forgetall \dontcomplain
+         \pagereference[to:\CurrentPage]%
+         \expanded{\writetolist[figurelist]{\CurrentPage}{\XMLpop{label}}}%
+         \expanded{\figureindex{\CurrentPage}{\XMLpop{label}}}%
+         \startnotmode[compact]%
+           \vbox to 100pt
+             {\hsize30pt
+              \vskip5pt 
+              \hbox to \hsize{\hss\strut\bf\CurrentPage\hss}%
+              \vfill}%
+           \advance\hsize by -30pt
+         \stopnotmode
+         \startmode[compact]%
+           \advance\hsize by -10pt
+           \hskip10pt
+         \stopmode
+         \framed
+           [width=150pt,height=100pt,offset=10pt,frame=off,
+            background=color,backgroundcolor=white]
+           {\externalfigure
+              [\XMLpop{file}]
+              [maxheight=80pt,frame=off,maxwidth=130pt,factor=max]}%
+         \freezedimenmacro\naturalfigurewidth \let\FigWid\naturalfigurewidth
+         \freezedimenmacro\naturalfigureheight\let\FigHei\naturalfigureheight
+         \advance\hsize by -150pt
+         \hskip10pt
+         \advance\hsize by -10pt
+         \vbox to 100pt
+           {\hsize40pt
+            \externalfigure
+              [paper]
+              [type=buffer,frame=on,
+               framecolor=darkred,rulethickness=.5pt,
+               width=40pt,object=no]
+            \startmode[compact]%
+              \vfill
+              \hbox to \hsize{\hss\strut\bf\CurrentPage\hss}%
+            \stopmode
+            \vfill}%
+         \advance\hsize by -40pt
+%         \startnotmode[compact]%
+%           \hskip20pt
+%           \advance\hsize by -20pt
+%         \stopnotmode
+%         \startmode[compact]%    
+           \hskip10pt
+           \advance\hsize by -10pt
+%         \stopmode
+         \vbox to 100pt
+           {\blank[disable]
+            \starttabulate[|Bel|p|]
+            \NC file \NC \XMLpop{file} \NC \NR
+            \doifXMLdataelse{label}
+              {\NC label \NC \XMLpop{label} \NC \NR}     
+              {}
+            \NC w$\times$h \NC \FigWid$\times$\FigHei \NC \NR
+            \doifXMLdataelse{copyright}
+              {\NC copyright \NC \XMLpop{copyright} \NC \NR}
+              {}
+            \doifXMLdataelse{status}
+              {\doifelse{\XMLpop{status}}{obsolete}
+                 {\NC status \NC \bf\darkred\XMLpop{status} \NC \NR}
+                 {\NC status \NC \XMLpop{status} \NC \NR}}
+              {}
+            \doifXMLdataelse{comment}
+              {\NC comment \NC \XMLpop{comment} \NC \NR}    
+              {}
+            \stoptabulate
+            \vfill}}}%
+      [from:\CurrentPage]
+   \vskip10pt
+   \egroup}
+
+\def\StartFigureC%
+  {\StartFigureA}
+
+\def\StopFigureC%
+  {\doglobal\increment\NumberOfFigures
+   \egroup}
+
+\setuplayout
+  [topspace=15pt,backspace=15pt,
+   header=0pt,footer=0pt,bottom=20pt,bottomdistance=10pt,
+   width=middle,height=fit]
+
+\setupbackgrounds
+  [page]
+  [background=,
+   backgroundcolor=gray]
+
+\setupinteractionscreen
+  [width=max,
+   height=max]
+
+\setupcolors     
+  [state=start]
+
+\setupinteraction
+  [style=,
+   color=,
+   contrastcolor=,
+   state=start]
+
+\setuphead
+  [section]
+  [style=bfb]
+
+\setupbodyfont   
+  [pos]
+
+\setupinteractionmenu
+  [bottom]
+  [left=\hfill,
+   middle=\hskip10pt,
+   frame=off,
+   style=bold,
+   background=color,
+   backgroundcolor=darkred,
+   foregroundcolor=white]
+
+\startinteractionmenu[bottom]
+  \but [begin]         begin   \\
+  \but [index]         index   \\
+  \but [list]          list    \\
+  \but [CloseDocument] close   \\
+  \but [PreviousJump]  go back \\
+\stopinteractionmenu
+
+\setupinteraction
+  [openaction=page(\NumberOfFigures)]
+
+\defineXMLenvironment [figurelibrary] \StartLibrary \StopLibrary
+
+\starttext 
+
+\def\StartLibrary{\mainlanguage[\XMLpar{figurelibrary}{language}{en}]}
+\def\StopLibrary {}
+
+\defineXMLignore      
+  [description]
+
+\defineXMLenvironment 
+  [figure]       
+  \StartFigureC      
+  \StopFigureC
+
+\doglobal\newcounter\CurrentPage
+
+\processXMLfilegrouped{\inputfilename.xml} 
+
+\increment\NumberOfFigures
+
+\defineXMLignore      
+  [description]
+
+\defineXMLenvironment 
+  [figure]      
+  \StartFigureA 
+  \StopFigureA
+
+\doglobal\newcounter\CurrentPage
+
+\processXMLfilegrouped{\inputfilename.xml} 
+
+\setuppapersize
+  [S6][S6]
+
+\setupbackgrounds
+  [page]
+  [background=color]
+
+\setupinteraction
+  [menu=on]
+
+\defineXMLenvironment [description] \StartDescription \StopDescription
+\defineXMLenvironment [figure]      \StartFigureB     \StopFigureB
+
+\doglobal\newcounter\CurrentPage
+
+\processXMLfilegrouped{\inputfilename.xml} \page
+
+\subject [list] {List of figures}
+
+\placelist[figurelist] \page
+
+\subject [index] {Index of figures}
+
+\startcolumns
+\placeregister[figureindex]
+\stopcolumns
+
+\stoptext 

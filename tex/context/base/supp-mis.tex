@@ -17,6 +17,16 @@
 
 \ifx \undefined \writestatus \else \expandafter \endinput \fi
 
+\def\StartLatexHack% Sigh. Why doesn't latex handle this itself 
+  {\edef\StopLatexHack
+     {\catcode`\noexpand/=\the\catcode`/ 
+      \catcode`\noexpand"=\the\catcode`"
+      \catcode`\noexpand<=\the\catcode`< 
+      \catcode`\noexpand>=\the\catcode`>}%
+  \catcode`/=12 \catcode`"=12 \catcode`<=12 \catcode`>=12 }
+
+\StartLatexHack
+
 %D \macros
 %D   {ifnocontextobject}
 %D
@@ -124,17 +134,17 @@
 %D undefined. This way we can't mess up other macro packages,
 %D but of course previous definitions can mess up our modules.
 
-\ifnocontextobject \scratchcounter         \do \newcount  \scratchcounter  \fi
-\ifnocontextobject \scratchdimen           \do \newdimen  \scratchdimen    \fi
-\ifnocontextobject \scratchskip            \do \newskip   \scratchskip     \fi
-\ifnocontextobject \scratchmuskip          \do \newmuskip \scratchmuskip   \fi
-\ifnocontextobject \scratchbox             \do \newbox    \scratchbox      \fi
-\ifnocontextobject \scratchread            \do \newread   \scratchread     \fi
-\ifnocontextobject \scratchwrite           \do \newwrite  \scratchwrite    \fi
+\ifnocontextobject \scratchcounter \do \newcount  \scratchcounter \fi
+\ifnocontextobject \scratchtoks    \do \newtoks   \scratchtoks    \fi
+\ifnocontextobject \scratchdimen   \do \newdimen  \scratchdimen   \fi
+\ifnocontextobject \scratchskip    \do \newskip   \scratchskip    \fi
+\ifnocontextobject \scratchmuskip  \do \newmuskip \scratchmuskip  \fi
+\ifnocontextobject \scratchbox     \do \newbox    \scratchbox     \fi
+\ifnocontextobject \scratchread    \do \newread   \scratchread    \fi
+\ifnocontextobject \scratchwrite   \do \newwrite  \scratchwrite   \fi
  
-\ifnocontextobject \nextbox                \do \newbox    \nextbox         \fi
-
-\ifnocontextobject \nextdepth              \do \newdimen  \nextdepth       \fi
+\ifnocontextobject \nextbox   \do \newbox   \nextbox   \fi
+\ifnocontextobject \nextdepth \do \newdimen \nextdepth \fi
 
 \ifnocontextobject \CONTEXTtrue            \do \newif\ifCONTEXT            \fi
 \ifnocontextobject \donetrue               \do \newif\ifdone               \fi
@@ -566,9 +576,24 @@
 
 \fi
 
+%D Very reduced: 
+
+\long\def\appendtoks#1\to#2%
+  {\scratchtoks{#1}\expanded{#2{\the#2\the\scratchtoks}}}
+
+%D Well, also handy.
+
+\def\doiffileelse#1#2#3%
+  {\immediate\openin\scratchread=#1\relax
+   \ifeof\scratchread
+     \def\next{#3}%
+   \else
+     \def\next{#2}%
+   \fi
+   \immediate\closein\scratchread
+   \next}
+
 %D That's it. Please forget this junk and take a look at how
 %D it should be done.
 
-\protect
-
-\endinput
+\StopLatexHack \protect \endinput

@@ -51,130 +51,114 @@
 
 \startencoding[texnansi]
 
-\defineaccent " a 228      
-\defineaccent " e 235      
-\defineaccent " i 239
-\defineaccent " o 246
-\defineaccent " u 252
-\defineaccent " y 255
+\definecharacter textdotaccent       5
+\definecharacter texthungarumlaut    6
+\definecharacter textmacron        175 
+\definecharacter textcedilla       184  
 
-\defineaccent " A 196      
-\defineaccent " E 203
-\defineaccent " I 207
-\defineaccent " O 214
-\defineaccent " U 220
-\defineaccent " Y 159
+\definecharacter dotlessi          105 
 
-\defineaccent ' a 225
-\defineaccent ' e 233
-\defineaccent ' i 237
-\defineaccent ' o 243
-\defineaccent ' u 250
-\defineaccent ' y 253
+\definecharacter OEligature        140
 
-\defineaccent ' A 193
-\defineaccent ' E 201
-\defineaccent ' I 205
-\defineaccent ' O 211
-\defineaccent ' U 218
-\defineaccent ' Y 221
+\definecharacter oeligature        156
 
-\defineaccent ` a 224
-\defineaccent ` e 232
-\defineaccent ` i 236
-\defineaccent ` o 242
-\defineaccent ` u 249
+\definecharacter Ydiaeresis        159
 
-\defineaccent ` A 192
-\defineaccent ` E 200
-\defineaccent ` I 204
-\defineaccent ` O 210
-\defineaccent ` U 217
+\definecharacter Agrave            192
+\definecharacter Aacute            193
+\definecharacter Acircumflex       194
+\definecharacter Atilde            195
+\definecharacter Adiaeresis        196      
+\definecharacter Aring             197
+\definecharacter AEligature        198
+\definecharacter cCedile           199
+\definecharacter Egrave            200
+\definecharacter Eacute            201
+\definecharacter Ecircumflex       202
+\definecharacter Ediaeresis        203
+\definecharacter Igrave            204
+\definecharacter Iacute            205
+\definecharacter Icircumflex       206
+\definecharacter Idiaeresis        207
 
-\defineaccent ^ a 226
-\defineaccent ^ e 234
-\defineaccent ^ i 238
-\defineaccent ^ o 244
-\defineaccent ^ u 251
+\definecharacter Ntilde            209
+\definecharacter Ograve            210
+\definecharacter Oacute            211
+\definecharacter Ocircumflex       212
+\definecharacter Otilde            213
+\definecharacter Odiaeresis        214
 
-\defineaccent ^ A 194
-\defineaccent ^ E 202
-\defineaccent ^ I 206
-\defineaccent ^ O 212
-\defineaccent ^ U 219
+\definecharacter Ostoke            216
+\definecharacter Ugrave            217
+\definecharacter Uacute            218
+\definecharacter Ucircumflex       219
+\definecharacter Udiaeresis        220
+\definecharacter Yacute            221
 
-\defineaccent ~ a 227
-\defineaccent ~ n 241
-\defineaccent ~ o 245
+\definecharacter ssharp            223
+\definecharacter agrave            224
+\definecharacter aacute            225
+\definecharacter acircumflex       226
+\definecharacter atilde            227
+\definecharacter adiaeresis        228      
+\definecharacter aring             229
+\definecharacter aeligature        230
+\definecharacter ccedile           231
+\definecharacter egrave            232
+\definecharacter eacute            233
+\definecharacter ecircumflex       234
+\definecharacter ediaeresis        235      
+\definecharacter igrave            236
+\definecharacter iacute            237
+\definecharacter icircumflex       238
+\definecharacter idiaeresis        239
 
-\defineaccent ~ A 195
-\defineaccent ~ N 209
-\defineaccent ~ O 213
+\definecharacter ntilde            241
+\definecharacter ograve            242
+\definecharacter oacute            243
+\definecharacter ocircumflex       244
+\definecharacter otilde            245
+\definecharacter odiaeresis        246
 
-\defineaccent ` {\dotlessi} 236
-\defineaccent ' {\dotlessi} 237
-\defineaccent " {\dotlessi} 239
-\defineaccent ^ {\dotlessi} 238
+\definecharacter ostroke           248
+\definecharacter ugrave            249
+\definecharacter uacute            250
+\definecharacter ucircumflex       251
+\definecharacter udiaeresis        252
+\definecharacter yacute            253
 
-\defineaccent ` {\i} 236
-\defineaccent ' {\i} 237
-\defineaccent " {\i} 239
-\defineaccent ^ {\i} 238
+\definecharacter ydiaeresis        255
+      
+\stopencoding
 
-\defineaccent c C 199
-\defineaccent c c 231
+\startencoding[texnansi]
 
-\definecharacter AE 198
-\definecharacter ae 230
-\definecharacter OE 140
-\definecharacter oe 156
-\definecharacter O  216
-\definecharacter o  248
-\definecharacter sz 223
-\definecharacter SS 223
-
-\definecharacter aa 229
-\definecharacter AA 197
-
-%D Some accents are positioned somewhere else. 
-
-\defineaccentcommand . 5
-\defineaccentcommand H 6
-
-%D The next piece of code is rather ugly: 
-
-\defineaccentcommand b {\texnansiencodedb}
-\defineaccentcommand c {\texnansiencodedc}
-
-\def\texnansiencodedb#1%
-  {\oalign{#1\crcr\hidewidth\vbox to.2ex{\hbox{\char175}\vss}\hidewidth}}
-
-\def\texnansiencodedc#1%
-  {\setbox0\hbox{#1}\ifdim\ht0=1ex\accent184 #1\else
-     {\ooalign{\hidewidth\char184\hidewidth\crcr\unhbox0}}\fi}
-
-%D We still have to take care of: 
-%D
-%D \starttypen
-%D \bgroup
-%D   \catcode146=\active 
-%D   \gdef^^92{{^\bgroup\prim@s}}
-%D \egroup
-%D
-%D \mathcode146="8000 
-%D
-%D \chardef\i=105
-%D \stoptypen
-
-%D We have to redefine some commands too: 
-
-\redefinecommand grave  \definecommand grave {\mathaccent"7060 }
-\redefinecommand acute  \definecommand acute {\mathaccent"70B4 }
-\redefinecommand hat    \definecommand hat   {\mathaccent"7088 }
-\redefinecommand tilde  \definecommand tilde {\mathaccent"7098 }
-\redefinecommand ddot   \definecommand ddot  {\mathaccent"70A8 }
-\redefinecommand bar    \definecommand bar   {\mathaccent"70AF }
+\definecharacter mathgrave       "7060 
+\definecharacter mathacute       "70B4 
+\definecharacter mathhat         "7088 
+\definecharacter mathtilde       "7098 
+\definecharacter mathddot        "70A8 
+\definecharacter mathbar         "70AF 
 
 \stopencoding
 
 \endinput
+
+% \startencoding[texnansi]
+% 
+% \definecommand b {\texnansiencodedb}
+% \definecommand c {\texnansiencodedc}
+% 
+% \stopencoding 
+% 
+% \def\texnansiencodedb#1%
+%   {\oalign{#1\crcr\hidewidth\vbox to.2ex{\hbox{\textmacron}\vss}\hidewidth}}
+% 
+% \def\texnansiencodedc#1%
+%   {\setbox\scratchbox\hbox{#1}%
+%    \ifdim\ht\scratchbox=1ex
+%      \buildtextaccent\textcedilla{#1}%
+%    \else
+%      {\ooalign{\hidewidth\textcedilla\hidewidth\crcr
+%                \unhbox\scratchbox}}%
+%    \fi}

@@ -574,7 +574,7 @@
      [\c!breedte,\c!hoogte,\c!offset,\c!leeg,
       \c!straal,\c!hoek,\c!diepte,\c!kader,\c!kaderkleur,
       \c!bovenkader,\c!onderkader,\c!linkerkader,\c!rechterkader,
-      \c!lijndikte,\c!kaderoffset,\c!achtergrond,
+      \c!lijndikte,\c!kaderoffset,\c!voorgrondkleur,\c!achtergrond,
       \c!achtergrondoffset,\c!achtergrondraster,\c!achtergrondkleur,
       \c!uitlijnen,\c!onder,\c!boven,\c!strut,\c!plaats]%
    \copyparameters[#1\c!achtergrond][#1]
@@ -616,139 +616,6 @@
 %D backgrounds, when \type {#2} sets the offset to \type
 %D {overlay}, both offsets become invalid. 
 
-% \def\startlocalframed[#1][#2]% beware, also on cont-loc! 
-%   {\bgroup
-%    \inframedtrue 
-%    \edef\@@framed{#1}% 
-%    % this piece of pre expansion is needed 
-%    \scratchdimen\getvalue{\@@framed\c!kaderoffset}%  
-%    \setevalue{\@@framed\c!kaderoffset}{\the\scratchdimen}% 
-%    \doifnotvalue{\@@framed\c!achtergrondoffset}{\v!kader}  
-%      {\scratchdimen\getvalue{\@@framed\c!achtergrondoffset}%  
-%       \setevalue{\@@framed\c!achtergrondoffset}{\the\scratchdimen}}% 
-%    % to prevent deadlock in case of self refering 
-%    \ifsecondargument % faster 
-%      \getparameters[\@@framed][#2]% here ! 
-%    \fi
-%    % beware, both the frame and background offset can be overruled 
-%    \edef\localoffset{\getvalue{\@@framed\c!offset}}%
-%    \edef\localwidth {\getvalue{\@@framed\c!breedte}}%
-%    \edef\localheight{\getvalue{\@@framed\c!hoogte}}%
-%    \edef\localformat{\getvalue{\@@framed\c!uitlijnen}}%
-%    \edef\localstrut {\getvalue{\@@framed\c!strut}}%
-%    \doifvaluesomething{\@@framed\c!lijndikte} % nested \framed inherits 
-%      {\linewidth=\getvalue{\@@framed\c!lijndikte}}%
-%    \doifelsenothing{\localformat}
-%      {\boxhasformatfalse}
-%      {\boxhasformattrue
-%       \dosetraggedcommand{\localformat}%
-%       \edef\beforeframedbox{\raggedtopcommand\getvalue{\@@framed\c!boven}}%
-%       \edef\afterframedbox {\getvalue{\@@framed\c!onder}\raggedbottomcommand}}%
-%    \doifelse{\localoffset}{\v!geen}
-%      {\boxhasoffsetfalse
-%       \boxhasstrutfalse
-%       \boxisoverlaidfalse
-%       \@@localoffset=\linewidth}
-%      {\doifelse{\localoffset}{\v!overlay}
-%         {\boxhasoffsetfalse
-%          \boxhasstrutfalse
-%          \boxisoverlaidtrue
-%          \@@localoffset=\!!zeropoint}
-%         {\boxhasoffsettrue
-%          \boxhasstruttrue
-%          \boxisoverlaidfalse
-%          \ifx\localoffset\v!default % new per 2-6-2000
-%            \let\localoffset\defaultframeoffset
-%            \letvalue{\@@framed\c!offset}\defaultframeoffset
-%          \else
-%            \let\defaultframeoffset\localoffset
-%          \fi
-%          \@@localoffset=\localoffset
-%          \advance\@@localoffset by \linewidth}}%
-%    \doifelse{\localwidth}{\v!passend}
-%      {\ifboxhasformat
-%         \boxhaswidthtrue
-%         \!!widtha=\hsize
-%       \else
-%         \boxhaswidthfalse
-%       \fi}
-%      {\boxhaswidthtrue
-%       \doifelse{\localwidth}{\v!ruim}
-%         {\!!widtha=\hsize}
-%         {\!!widtha=\localwidth}}%
-%    \doifelse{\localheight}{\v!passend}
-%      {\boxhasheightfalse} % no longer: \boxhasstrutfalse
-%      {\doifelse{\localheight}{\v!ruim}
-%         {\boxhasheightfalse}
-%         {\boxhasheighttrue
-%          \!!heighta=\localheight}}%
-%    \ifdim\!!widtha=\hsize
-%      \parindent=\!!zeropoint
-%      \setlocalhsize
-%      \!!widtha=\localhsize
-%    \fi
-%    \advance\!!widtha  by -2\@@localoffset
-%    \advance\!!heighta by -2\@@localoffset
-%    \doif{\localstrut}{\v!nee} 
-%      {\boxhasstrutfalse}%
-%    \ifboxhasstrut
-%      \setstrut
-%      \let\localbegstrut=\begstrut
-%      \let\localendstrut=\endstrut
-%      \let\localstrut   =\strut
-%    \else
-%      \let\localbegstrut=\pseudobegstrut % was: \relax
-%      \let\localendstrut=\pseudoendstrut % was: \relax
-%      \let\localstrut   =\pseudostrut    % was: \relax
-%     %\ifboxhasheight\ifdim\!!heighta<\ht\strutbox % saveguard 
-%     %  \let\localbegstrut=\relax                  % but not that 
-%     %  \let\localstrut   =\relax                  % save afterall
-%     %\fi\fi
-%    \fi
-%    \ifboxhasheight
-%      \let\\=\vboxednewline
-%      \ifboxhaswidth
-%        \let\hairline=\vboxedhairline
-%        \ifboxhasformat
-%          \let\next=\doformatboxSomeFormat
-%        \else
-%          \let\next=\doformatboxNoFormat
-%        \fi
-%      \else
-%        \let\hairline=\hboxedhairline
-%        \ifboxhasformat
-%          \let\next=\doformatboxHeight
-%        \else
-%          \let\next=\doformatboxVSize
-%        \fi
-%      \fi
-%    \else
-%      \ifboxhaswidth
-%        \ifboxhasformat
-%          \let\hairline=\vboxedhairline
-%          \let\\=\vboxednewline
-%          \let\next=\doformatboxWidth
-%        \else
-%          \let\hairline=\hboxedhairline
-%          \let\\=\hboxednewline
-%          \let\next=\doformatboxHSize
-%        \fi
-%      \else
-%        \let\hairline=\hboxedhairline
-%        \let\\=\hboxednewline
-%        \let\next=\doformatboxNoSize
-%      \fi
-%    \fi
-%    \def\dowithframedbox%
-%      {\let\postprocessframebox\undefined %new
-%       \aftergroup\stoplocalframed}%
-%    \edef\framedwidth % a new feature  
-%      {\ifdim\!!widtha >\!!zeropoint\the\!!widtha \else\!!zeropoint\fi}%  
-%    \edef\framedheight% a new feature  
-%      {\ifdim\!!heighta>\!!zeropoint\the\!!heighta\else\!!zeropoint\fi}% 
-%    \afterassignment\dowithframedbox
-%    \setbox\framebox=\next}
-
 \def\startlocalframed[#1][#2]%
   {\bgroup
    \inframedtrue 
@@ -759,6 +626,8 @@
    \doifnotvalue{\@@framed\c!achtergrondoffset}{\v!kader}  
      {\scratchdimen\getvalue{\@@framed\c!achtergrondoffset}%  
       \setevalue{\@@framed\c!achtergrondoffset}{\the\scratchdimen}}% 
+   % we need to register the (outer) color
+   \startregistercolor[\getvalue{\@@framed\c!voorgrondkleur}]%
    % to prevent deadlock in case of self refering 
    \ifsecondargument % faster 
      \getparameters[\@@framed][#2]% here ! 
@@ -915,10 +784,11 @@
 \def\stoplocalframed%
   {\dontshowcomposition
    \ifboxhasformat
-     \doif{\localwidth}{\v!passend}
+     \doifelse{\localwidth}{\v!passend}
        {\ifreshapeframebox\doreshapeframedbox\fi
         \boxhaswidthfalse}%
-   \else
+       {\resetshapeframebox}%
+   \else  
      \resetshapeframebox
    \fi
    \ifboxhaswidth
@@ -931,6 +801,8 @@
      {\setbox0=\null
       \wd0=\wd\framebox \ht0=\ht\framebox \dp0=\dp\framebox
       \setbox\framebox=\box0\relax}%
+   \stopregistercolor
+   \docolorframebox
    \ifboxhasoffset
      \dooffsetframebox
    \fi
@@ -967,6 +839,17 @@
 %D When we set \type{\c!leeg} to \type{\v!ja}, we get 
 %D ourselves a frame and/or background, but no content, so 
 %D actually we have a sort of phantom framed box. 
+
+%D Because color marks and specials can interfere with 
+%D spacing, we provide a way to specify a foregroundcolor.
+
+\def\docolorframebox%
+  {\doifvaluesomething{\@@framed\c!voorgrondkleur}
+     {\doifcolorelse{\getvalue{\@@framed\c!voorgrondkleur}}
+        {\setbox\framebox=\hbox
+           {\localcolortrue
+            \color[\getvalue{\@@framed\c!voorgrondkleur}]{\box\framebox}}}
+        {}}}
 
 %D \macros
 %D   {mframed, minframed}
@@ -1090,13 +973,13 @@
 %D 
 %D \haalbuffer
 %D 
-%D Therefore, we can best use \type {\super} and \type {\sub}
+%D Therefore, we can best use \type {\super} and \type {\suber}
 %D instead of \type {^} and \type {_}. Both commands take care
 %D of proper font switching.
 %D 
 %D \startbuffer
 %D \startformule
-%D   x \times \mframed{y} \times y\super{\mframed{z}\sub{\mframed{z}}}
+%D   x \times \mframed{y} \times y\super{\mframed{z}\suber{\mframed{z}}}
 %D \stopformule
 %D \stopbuffer
 %D 
@@ -1112,7 +995,7 @@
 %D 
 %D \startbuffer
 %D \startformule
-%D   x \times y\super{\mframed[kaderkleur=rood]{z}\sub{z}}
+%D   x \times y\super{\mframed[kaderkleur=rood]{z}\suber{z}}
 %D \stopformule
 %D \stopbuffer
 %D 
@@ -1395,6 +1278,44 @@
   {\framednoflines=0
    \framedlastlength=\!!zeropoint}
 
+% \def\doreshapeframedbox%
+%   {\beginofshapebox
+%    \unvcopy\framebox
+%    \endofshapebox
+%    \global\@@globalwidth=\!!zeropoint
+%    \resetshapeframebox
+%    \reshapebox
+%      {\setbox0=\hbox
+%         {\strut\ifhbox\shapebox\unhbox\else\box\fi\shapebox}%
+%       \global\advance\framednoflines by 1
+%       \ifdim\framedlastlength>\!!zeropoint\else
+%         \global\framedlastlength=\wd0
+%       \fi
+%       \ifdim\wd0>\@@globalwidth
+%         \global\@@globalwidth=\wd0
+%       \fi}%
+%    \dosetraggedcommand{\localformat}%
+%    \raggedcommand
+%    \ifboxhasheight
+%      \setbox\framebox=\vbox to \localheight
+%        {\hsize\@@globalwidth
+%         \reshapebox{\hbox to \hsize{\ifhbox\shapebox\unhbox\else\box\fi\shapebox}}%
+%         \beforeframedbox
+%         \innerflushshapebox
+%         \afterframedbox}%
+%    \else
+%      \setbox\framebox=\vbox
+%        {\hsize\@@globalwidth
+%         \reshapebox{\hbox to \hsize{\ifhbox\shapebox\unhbox\else\box\fi\shapebox}}%
+%         \innerflushshapebox}%
+%      \dp\framebox=\dp\strutbox
+%    \fi
+%    \ifdim\framedlastlength=\!!zeropoint\global\framednoflines=\wd\framebox\fi
+%    \ifcase\framednoflines\global\framednoflines=1\fi}
+
+% better depth preserving, else problems with framed display
+% math and auto width 
+
 \def\doreshapeframedbox%
   {\beginofshapebox
    \unvcopy\framebox
@@ -1421,11 +1342,12 @@
         \innerflushshapebox
         \afterframedbox}%
    \else
-     \setbox\framebox=\vbox
+     \scratchdimen=\dp\framebox
+     \setbox\framebox=\vbox to \ht\framebox
        {\hsize\@@globalwidth
         \reshapebox{\hbox to \hsize{\ifhbox\shapebox\unhbox\else\box\fi\shapebox}}%
         \innerflushshapebox}%
-     \dp\framebox=\dp\strutbox
+     \dp\framebox=\scratchdimen % \dp\strutbox otherwise problem with math 
    \fi
    \ifdim\framedlastlength=\!!zeropoint\global\framednoflines=\wd\framebox\fi
    \ifcase\framednoflines\global\framednoflines=1\fi}
@@ -2092,10 +2014,12 @@
       \c!rechterkader=,
       \c!straal=.5\bodyfontsize,
       \c!hoek=\v!recht,
+      \c!voorgrondkleur=,
       \c!achtergrond=,
       \c!achtergrondkleur=,
       \c!achtergrondraster=\@@rsraster,
       \c!regelcorrectie=\v!aan,        
+      \c!dieptecorrectie=\v!aan,        
       \c!marge=\v!standaard,
       #2]%
    \setvalue{\e!start#1}{\dostartframedtext[#1]}%
@@ -2155,7 +2079,7 @@
   {\endgraf
    \removelastskip
    \dostopattributes
-   \baselinecorrection % new, inside box
+   \doifvalue{\??kd#1\c!dieptecorrectie}{\v!aan}{\baselinecorrection} % new, inside box
    \egroup
    \egroup
    \ifinsidefloat
@@ -2580,72 +2504,58 @@
 %D \lineheight}. That way \type{\topskip} takes care of the
 %D lineheight. I'll probably forget to apply this trick
 %D elsewhere.
-%D
-%D {\em Beware: especially the bottom depth handling needs 
-%D a more advanced implementation, consistent with main 
-%D document features. Future versions therefore can break a 
-%D bit different.}
 
-\def\dostopbackground%
+\def\dostopbackground% improved version (i hope)
   {\endgraf
    \removelastskip
    \egroup
-   \everypar{}
+   \forgetall 
    \splitmaxdepth=\boxmaxdepth
    \splittopskip=\topskip
-   \setbox2=\vsplit0 to \lineheight
+   \setbox2=\vsplit0 to \lineheight % get rid of fake line 
    \loop
-     \ifdim\prevdepth<\dp\strutbox
-       \dimen8=\dp\strutbox
+     \ifdim\pagetotal=\!!zeropoint % empty page 
+       \scratchdimen=\teksthoogte
+       \chardef\backgroundsplit=1 % split to max height 
      \else
-       \dimen8=\prevdepth
+       \scratchdimen=\pagegoal
+       \setbox\scratchbox=\vbox{\@@agvoor}%
+       \advance\scratchdimen -\ht\scratchbox 
+       \advance\scratchdimen -\pagetotal
+       \chardef\backgroundsplit=2 % split to partial height 
      \fi
-     %\advance\dimen0 by  \topskip
-     %\advance\dimen0 by -\baselineskip
-     \ifdim\pagegoal=\maxdimen
-       \dimen0=\teksthoogte
-       \advance\dimen0 by  \topskip
-       \advance\dimen0 by -\baselineskip
-       \advance\dimen0 by -\dp\strutbox
-     \else
-       \dimen0=\pagegoal
-       \advance\dimen0 by -\dimen8
-       \advance\dimen0 by -\parskip
-     \fi
-     \advance\dimen0 by -\pagetotal
-     \advance\dimen0 by -\@@agbovenoffset
-     \advance\dimen0 by -\@@agonderoffset
-     \ifdim\dimen0>2\lineheight
-       \ifdim\ht0>\dimen0
-         \setbox2=\vsplit0 to \dimen0
-         \backgroundsplittrue
+     \advance\scratchdimen -\@@agbovenoffset
+     \advance\scratchdimen -\@@agonderoffset \relax
+     \ifdim\scratchdimen>2\lineheight\relax % reasonable, will be configurable
+       \ifdim\ht0>\scratchdimen % larger than page 
+         \setbox2=\vsplit0 to \scratchdimen
        \else
          \setbox2=\box0
-         \backgroundsplitfalse
+         \chardef\backgroundsplit=0 % no split   
        \fi
-     \else
-       \setbox2=\box0
-       \backgroundsplitfalse
-     \fi
-     \setbox2=\vbox \ifbackgroundsplit to \dimen0 \fi
-       {\vskip\@@agbovenoffset
-        \dimen0=\dp\strutbox
-        \advance\dimen0 by -\dp0
-        \popsplitcolor
-        \ifbackgroundsplit\unvbox\else\box\fi2
-        \ifdim\dimen0>\!!zeropoint
-          \vskip\dimen0
-        \fi
-        \vskip\@@agonderoffset
-        \vss}
-     \vskip\dimen8  % looks better
-     \witruimte
-     \ifbackgroundsplit\ifdim\pagegoal<\maxdimen
-       \pagegoal=1.1\pagegoal % be a bit more tolerant
-     \fi\fi
-     \localframed[\??ag][\c!offset=\v!overlay]
-       {\hskip\@@aglinkeroffset\box2\hskip\@@agrechteroffset}%
-     \ifbackgroundsplit
+       \setbox2=\vbox \ifcase\backgroundsplit\or to \teksthoogte \fi % max split 
+         {\vskip\@@agbovenoffset
+          \popsplitcolor
+          \unvcopy2
+          \prevdepth\dp2
+          \obeydepth 
+          \vskip\@@agonderoffset
+          \vfill} 
+       \@@agvoor 
+       \ifcase\backgroundsplit\or\or % partial split 
+         \pagegoal=1.2\pagegoal % be a bit more tolerant
+       \fi 
+       \startregelcorrectie
+         \localframed
+           [\??ag][\c!offset=\v!overlay]
+           {\hskip\@@aglinkeroffset\box2\hskip\@@agrechteroffset}%
+       \stopregelcorrectie
+       \ifcase\backgroundsplit % no split  
+         \@@agna
+       \else % some split 
+         \vfill\eject % geen \pagina ! 
+       \fi
+     \else 
        \pagina
      \fi
    \ifdim\ht0>\!!zeropoint \repeat
@@ -2705,6 +2615,7 @@
    \c!lijndikte=\linewidth,
    \c!hoek=\v!recht,
    \c!diepte=\!!zeropoint,
+   \c!voorgrondkleur=,
    \c!achtergrond=,
    \c!achtergrondraster=\@@rsraster,
    \c!achtergrondkleur=,
@@ -2783,7 +2694,9 @@
    \c!diepte=\!!zeropoint,
    \c!achtergrond=\v!raster,
    \c!achtergrondkleur=\@@agkleur,
-   \c!raster=\@@rsraster]
+   \c!raster=\@@rsraster,
+   \c!voor=,
+   \c!na=]
 
 \protect
 

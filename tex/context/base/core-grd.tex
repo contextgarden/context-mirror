@@ -208,7 +208,7 @@
 %D An old one, still to be translated:
 %D
 %D \macros
-%D   {getnoflines}
+%D   {getnoflines, getrawnoflines}
 %D
 %D Het commando \type{\getnoflines} converteert een hoogte
 %D (dimensie) in een aantal regels en kent dit toe aan
@@ -219,22 +219,26 @@
 %D \stoptypen
 %D
 %D Er wordt gedeeld door \type{\openlineheight} en een hoogte
-%D van~0pt komt overeen met 0~regels.
+%D van~0pt komt overeen met 0~regels. The raw alternative 
+%D does not round. 
 
 \newcount\noflines
 \newdimen\noflinesheight
 
-\def\getnoflines#1%
-  {\noflinesheight=#1\relax
+\def\dogetnoflines#1#2%
+  {\noflinesheight=#2\relax
    \ifdim\noflinesheight=\!!zeropoint\relax
      \noflines=0
    \else
      \divide\noflinesheight by \openlineheight
      \noflines=\noflinesheight
-     \ifdim\noflines\openlineheight=#1\relax \else
+     #1\ifdim\noflines\openlineheight=#2\relax \else
        \advance\noflines by 1
-     \fi
+     \fi\fi
    \fi}
+
+\def\getnoflines   {\dogetnoflines\iftrue } % compensated 
+\def\getrawnoflines{\dogetnoflines\iffalse} % no compensation 
 
 %D Still very experimental and therefore undocumented.
 
@@ -447,6 +451,7 @@
      {\forgetall
       \offinterlineskip
       \hsize=#2
+      \baselinerulefalse
       \ruledvbox % calculated size 
         {\getnoflines{#3}%
          \vskip\topskip

@@ -32,6 +32,7 @@
 \definefilesynonym [lang-en.pat]  [ushyph1.tex]
 \definefilesynonym [lang-fi.pat]  [fihyph.tex]
 \definefilesynonym [lang-fr.pat]  [frhyph.tex]
+\definefilesynonym [lang-hu.pat]  [huhyph.tex]
 \definefilesynonym [lang-hr.pat]  [hrhyph.tex]
 \definefilesynonym [lang-it.pat]  [ithyph.tex]
 \definefilesynonym [lang-la.pat]  [lahyph7.tex]
@@ -41,7 +42,7 @@
 \definefilesynonym [lang-pt.pat]  [pthyph.tex]
 \definefilesynonym [lang-ro.pat]  [rohyph.tex]
 \definefilesynonym [lang-sk.pat]  [skhyph.tex]
-\definefilesynonym [lang-sp.pat]  [sphyph.tex]
+\definefilesynonym [lang-es.pat]  [eshyph.tex]
 \definefilesynonym [lang-sv.pat]  [sehyph.tex]
 \definefilesynonym [lang-tr.pat]  [trhyph.tex]
 \definefilesynonym [lang-uk.pat]  [ukhyphen.tex]
@@ -95,8 +96,9 @@
 % \installlanguage [\s!pl] [\c!status=\v!start] % polish
 % \installlanguage [\s!pt] [\c!status=\v!start] % portuguese 
 % \installlanguage [\s!ro] [\c!status=\v!start] % romanian 
+% \installlanguage [\s!hu] [\c!status=\v!start] % hungarian 
 % \installlanguage [\s!sk] [\c!status=\v!start] % slovak
-% \installlanguage [\s!es] [\c!status=\v!start] % spanish    
+  \installlanguage [\s!es] [\c!status=\v!start] % spanish    
 % \installlanguage [\s!sv] [\c!status=\v!start] % swedish   
 % \installlanguage [\s!tr] [\c!status=\v!start] % turkish    
 % \installlanguage [\s!uk] [\c!status=\v!start] % english uk   
@@ -122,6 +124,7 @@
 % \setupcurrentlanguage[\s!pl]
 % \setupcurrentlanguage[\s!pt]
 % \setupcurrentlanguage[\s!ro]
+% \setupcurrentlanguage[\s!hu]
 % \setupcurrentlanguage[\s!sk]
 % \setupcurrentlanguage[\s!es]
 % \setupcurrentlanguage[\s!sv]

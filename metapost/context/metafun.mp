@@ -20,7 +20,7 @@
 %D \type {context} (the \TEX\ one) could lead to lost strings
 %D (and as a result in buggy boundingbox and special
 %D handling). By using the name \type {metatex} we make sure
-%D %D that we use (unless overloaded) the settings of \type
+%D that we use (unless overloaded) the settings of \type
 %D {mpost}. 
 
 if unknown ahangle : 
@@ -37,5 +37,6 @@ input mp-text.mp ;
 input mp-shap.mp ; 
 input mp-butt.mp ; 
 input mp-char.mp ; 
+input mp-grph.mp ; 
 
 dump ; endinput .

@@ -93,7 +93,9 @@
 %D \stoptypen
 %D
 %D We insert a bit of stretch and introduce a signal to
-%D keep track of previous characters.
+%D keep track of previous characters. We use a similar 
+%D method in the units module, which may be a nice 
+%D introduction to using signals.
 
 %D \macros
 %D   {chineseunicodescale, chineseinterglyphskip,
@@ -108,8 +110,8 @@
 \def\chineseinterglyphskip{0pt   plus .05em minus .01em}
 \def\chinesesurroundskip  {.25em plus .15em minus .05em}
 
-%D We define a few signals. (Another examples of using
-%D such signals can be found in the module \type {m-units}.)
+%D We define a few signals. As said, another example of 
+%D using signals can be found in the module \type {m-units}.
 
 \newsignal\chineseLsignal % left boundary character
 \newsignal\chineseRsignal % right boundary character
@@ -943,73 +945,73 @@
 %D In addition to these fonts, we (pre|)|define some commonly 
 %D used fonts: 
 
-\definefontsynonym [SimSongTiRegular]     [gbsong]   [encoding=gbk]
-\definefontsynonym [SimSongTiSlanted]     [gbsongsl] [encoding=gbk]
-\definefontsynonym [SimSongTiBold]        [gbsong]   [encoding=gbk]
-\definefontsynonym [SimSongTiBoldSlanted] [gbsongsl] [encoding=gbk]
+\definefontsynonym [SimplifiedChineseSongTiRegular]    [gbsong]   [encoding=gbk]
+\definefontsynonym [SimplifiedChineseSongTiSlanted]    [gbsongsl] [encoding=gbk]
+\definefontsynonym [SimplifiedChineseSongTiBold]       [gbsong]   [encoding=gbk]
+\definefontsynonym [SimplifiedChineseSongTiBoldSlanted][gbsongsl] [encoding=gbk]
 
-\definefontsynonym [TraSongTiRegular]     [b5song]   [encoding=big5]
-\definefontsynonym [TraSongTiSlanted]     [b5songsl] [encoding=big5]
-\definefontsynonym [TraSongTiBold]        [b5song]   [encoding=big5]
-\definefontsynonym [TraSongTiBoldSlanted] [b5songsl] [encoding=big5]
+\definefontsynonym [TraditionalChineseSongTiRegular]  [b5song]   [encoding=big5]
+\definefontsynonym [TraditionalChineseSongTiSlanted]  [b5songsl] [encoding=big5]
+\definefontsynonym [TraditionalChineseSongTiBold]     [b5song]   [encoding=big5]
+\definefontsynonym [TraditionalChineseSongTiBoldSlanted][b5songsl] [encoding=big5]
 
-\definefontsynonym [SimHeiTiRegular]     [gbhei]   [encoding=gbk]
-\definefontsynonym [SimHeiTiSlanted]     [gbheisl] [encoding=gbk]
-\definefontsynonym [SimHeiTiBold]        [gbhei]   [encoding=gbk]
-\definefontsynonym [SimHeiTiBoldSlanted] [gbheisl] [encoding=gbk]
+\definefontsynonym [SimplifiedChineseHeiTiRegular]     [gbhei]   [encoding=gbk]
+\definefontsynonym [SimplifiedChineseHeiTiSlanted]     [gbheisl] [encoding=gbk]
+\definefontsynonym [SimplifiedChineseHeiTiBold]        [gbhei]   [encoding=gbk]
+\definefontsynonym [SimplifiedChineseHeiTiBoldSlanted] [gbheisl] [encoding=gbk]
 
-\definefontsynonym [TraHeiTiRegular]     [b5hei]   [encoding=big5]
-\definefontsynonym [TraHeiTiSlanted]     [b5heisl] [encoding=big5]
-\definefontsynonym [TraHeiTiBold]        [b5hei]   [encoding=big5]
-\definefontsynonym [TraHeiTiBoldSlanted] [b5heisl] [encoding=big5]
+\definefontsynonym [TraditionalChineseHeiTiRegular]    [b5hei]   [encoding=big5]
+\definefontsynonym [TraditionalChineseHeiTiSlanted]    [b5heisl] [encoding=big5]
+\definefontsynonym [TraditionalChineseHeiTiBold]       [b5hei]   [encoding=big5]
+\definefontsynonym [TraditionalChineseHeiTiBoldSlanted][b5heisl] [encoding=big5]
 
-\definefontsynonym [SimKaiTiRegular]     [gbkai]   [encoding=gbk]
-\definefontsynonym [SimKaiTiSlanted]     [gbkaisl] [encoding=gbk]
-\definefontsynonym [SimKaiTiBold]        [gbkai]   [encoding=gbk]
-\definefontsynonym [SimKaiTiBoldSlanted] [gbkaisl] [encoding=gbk]
+\definefontsynonym [SimplifiedChineseKaiTiRegular]     [gbkai]   [encoding=gbk]
+\definefontsynonym [SimplifiedChineseKaiTiSlanted]     [gbkaisl] [encoding=gbk]
+\definefontsynonym [SimplifiedChineseKaiTiBold]        [gbkai]   [encoding=gbk]
+\definefontsynonym [SimplifiedChineseKaiTiBoldSlanted] [gbkaisl] [encoding=gbk]
 
-\definefontsynonym [TraKaiTiRegular]     [b5kai]   [encoding=big5]
-\definefontsynonym [TraKaiTiSlanted]     [b5kaisl] [encoding=big5]
-\definefontsynonym [TraKaiTiBold]        [b5kai]   [encoding=big5]
-\definefontsynonym [TraKaiTiBoldSlanted] [b5kaisl] [encoding=big5]
+\definefontsynonym [TraditionalChineseKaiTiRegular]    [b5kai]   [encoding=big5]
+\definefontsynonym [TraditionalChineseKaiTiSlanted]    [b5kaisl] [encoding=big5]
+\definefontsynonym [TraditionalChineseKaiTiBold]       [b5kai]   [encoding=big5]
+\definefontsynonym [TraditionalChineseKaiTiBoldSlanted][b5kaisl] [encoding=big5]
 
-\definefontsynonym [SimFangSongRegular]     [gbfs]   [encoding=gbk]
-\definefontsynonym [SimFangSongSlanted]     [gbfssl] [encoding=gbk]
-\definefontsynonym [SimFangSongBold]        [gbfs]   [encoding=gbk]
-\definefontsynonym [SimFangSongBoldSlanted] [gbfssl] [encoding=gbk]
+\definefontsynonym [SimplifiedChineseFangSongRegular]    [gbfs]   [encoding=gbk]
+\definefontsynonym [SimplifiedChineseFangSongSlanted]    [gbfssl] [encoding=gbk]
+\definefontsynonym [SimplifiedChineseFangSongBold]       [gbfs]   [encoding=gbk]
+\definefontsynonym [SimplifiedChineseFangSongBoldSlanted][gbfssl] [encoding=gbk]
 
-\definefontsynonym [TraFangSongRegular]     [b5fs]   [encoding=big5]
-\definefontsynonym [TraFangSongSlanted]     [b5fssl] [encoding=big5]
-\definefontsynonym [TraFangSongBold]        [b5fs]   [encoding=big5]
-\definefontsynonym [TraFangSongBoldSlanted] [b5fssl] [encoding=big5]
+\definefontsynonym [TraditionalChineseFangSongRegular]  [b5fs]   [encoding=big5]
+\definefontsynonym [TraditionalChineseFangSongSlanted]  [b5fssl] [encoding=big5]
+\definefontsynonym [TraditionalChineseFangSongBold]     [b5fs]   [encoding=big5]
+\definefontsynonym [TraditionalChineseFangSongBoldSlanted][b5fssl] [encoding=big5]
 
-\definefontsynonym [SimLiShuRegular]     [gbfs]   [encoding=gbk]
-\definefontsynonym [SimLiShuSlanted]     [gbfssl] [encoding=gbk]
-\definefontsynonym [SimLiShuBold]        [gbfs]   [encoding=gbk]
-\definefontsynonym [SimLiShuBoldSlanted] [gbfssl] [encoding=gbk]
+\definefontsynonym [SimplifiedChineseLiShuRegular]     [gbli]   [encoding=gbk]
+\definefontsynonym [SimplifiedChineseLiShuSlanted]     [gblisl] [encoding=gbk]
+\definefontsynonym [SimplifiedChineseLiShuBold]        [gbli]   [encoding=gbk]
+\definefontsynonym [SimplifiedChineseLiShuBoldSlanted] [gblisl] [encoding=gbk]
 
-\definefontsynonym [TraLiShuRegular]     [b5fs]   [encoding=big5]
-\definefontsynonym [TraLiShuSlanted]     [b5fssl] [encoding=big5]
-\definefontsynonym [TraLiShuBold]        [b5fs]   [encoding=big5]
-\definefontsynonym [TraLiShuBoldSlanted] [b5fssl] [encoding=big5]
+\definefontsynonym [TraditionalChineseLiShuRegular]     [b5li]   [encoding=big5]
+\definefontsynonym [TraditionalChineseLiShuSlanted]     [b5lisl] [encoding=big5]
+\definefontsynonym [TraditionalChineseLiShuBold]        [b5li]   [encoding=big5]
+\definefontsynonym [TraditionalChineseLiShuBoldSlanted] [b5lisl] [encoding=big5]
 
 %D The following definitions provide us the commands to switch 
 %D to these fonts. 
 
-\defineunicodefont [SimSongTi]   [SimplifiedChinese]  [chinese]
-\defineunicodefont [TraSongTi]   [TraditionalChinese] [chinese]
+\defineunicodefont [SimSongTi]   [SimplifiedChineseSongTi]  [chinese]
+\defineunicodefont [TraSongTi]   [TraditionalChineseSongTi] [chinese]
 
-\defineunicodefont [SimHeiTi]    [SimplifiedChinese]  [chinese]
-\defineunicodefont [TraHeiTi]    [TraditionalChinese] [chinese]
+\defineunicodefont [SimHeiTi]    [SimplifiedChineseHeiTi]  [chinese]
+\defineunicodefont [TraHeiTi]    [TraditionalChineseHeiTi] [chinese]
 
-\defineunicodefont [SimKaiTi]    [SimplifiedChinese]  [chinese]
-\defineunicodefont [TraKaiTi]    [TraditionalChinese] [chinese]
+\defineunicodefont [SimKaiTi]    [SimplifiedChineseKaiTi]  [chinese]
+\defineunicodefont [TraKaiTi]    [TraditionalChineseKaiTi] [chinese]
 
-\defineunicodefont [SimFangSong] [SimplifiedChinese]  [chinese]
-\defineunicodefont [TraFangSong] [TraditionalChinese] [chinese]
+\defineunicodefont [SimFangSong] [SimplifiedChineseFangSong]  [chinese]
+\defineunicodefont [TraFangSong] [TraditionalChineseFangSong] [chinese]
 
-\defineunicodefont [SimLiShu]    [SimplifiedChinese]  [chinese]
-\defineunicodefont [TraLiShu]    [TraditionalChinese] [chinese]
+\defineunicodefont [SimLiShu]    [SimplifiedChineseLiShu]  [chinese]
+\defineunicodefont [TraLiShu]    [TraditionalChineseLiShu] [chinese]
 
 % \definealternativestyle [ChineseTitleFont] [\bfd\SimKaiTi] []
 

@@ -447,8 +447,9 @@
   {\bgroup
    \let\labellanguage=\currentlanguage
    \def\betweendates{\let\betweendates\space}%
-   \processallactionsinset
-     [#1]
+   \lowercase{\edef\!!stringa{#1}}% permits usage in \kap 
+   \@EA\processallactionsinset\@EA
+     [\!!stringa]
      [        dd=>\ifnum\normalday>9 \else0\fi\the\normalday,
               mm=>\ifnum\normalmonth>9 \else0\fi\the\normalmonth,
               jj=>\expandafter\gobbletwoarguments\the\normalyear,
@@ -461,14 +462,14 @@
       \v!kenmerk=>\expanded{\complexcurrentdate[\kenmerkdatumpatroon]},
           \v!dag=>\betweendates\the\normalday,
         \v!maand=>\betweendates\month\normalmonth,
-        \v!MAAND=>\betweendates\MONTH\normalmonth,
+%        \v!MAAND=>\betweendates\MONTH\normalmonth,
          \v!jaar=>\betweendates\the\normalyear,
       \v!weekdag=>\betweendates\dayoftheweek\normalday\normalmonth\normalyear,
-      \v!WEEKDAG=>\betweendates
-                  \bgroup
-                  \let\labeltext=\LABELTEXT
-                  \dayoftheweek\normalday\normalmonth\normalyear
-                  \egroup,
+%      \v!WEEKDAG=>\betweendates
+%                  \bgroup
+%                  \let\labeltext=\LABELTEXT
+%                  \dayoftheweek\normalday\normalmonth\normalyear
+%                  \egroup,
       \s!unknown=>\commalistelement
                   \def\betweendates{\let\betweendates\space}]%
    \egroup}

@@ -26,13 +26,13 @@ stopsetup
 startsetup
 com:jazyk:
 typ:val/:
-val:nl,fr,en,uk,de,sp,cz,..:nl:
+val:nl,fr,en,uk,de,es,cz,..:nl:
 stopsetup
 
 startsetup
 com:hlavnijazyk:
 typ:val/:
-val:nl,fr,en,uk,de,sp,cz,..:nl:
+val:nl,fr,en,uk,de,es,cz,..:nl:
 stopsetup
 
 startsetup
@@ -629,14 +629,14 @@ stopsetup
 startsetup
 com:nastavtexthlavicky:
 typ:val/var/:
-val:nl,fr,en,uk,de,sp,cz,..:nl:
+val:nl,fr,en,uk,de,es,cz,..:nl:
 var:*jmeno:*text::
 stopsetup
 
 startsetup
 com:nastavtextpopisku:
 typ:val/var/:
-val:nl,fr,en,uk,de,sp,cz,..:nl:
+val:nl,fr,en,uk,de,es,cz,..:nl:
 var:*jmeno:*text::
 stopsetup
 
@@ -810,6 +810,8 @@ var:levyoffset:*dimenze::
 var:pravyoffset:*dimenze::
 var:offsetvrsku:*dimenze::
 var:offsetspodku:*dimenze::
+var:pred:*prikaz::
+var:po:*prikaz::
 var:status:start,stop::
 ivr:nastavoramovani::
 stopsetup
@@ -952,19 +954,19 @@ val:*jmeno,reset:.:
 stopsetup
 
 startsetup
-com:ped:
+com:nizky:
 typ:arg/:
 val:*text::
 stopsetup
 
 startsetup
-com:ap:
+com:vysoky:
 typ:arg/:
 val:*text::
 stopsetup
 
 startsetup
-com:pedap:
+com:nivy:
 typ:arg/arg/:
 val:*text::
 val:*text::
@@ -1819,7 +1821,7 @@ startsetup
 com:nastavumistovani:
 typ:vars/:
 var:status:start,prekryv::
-var:jednotka:cm,pt,em,mm,ex,sp,in::
+var:jednotka:cm,pt,em,mm,ex,es,in::
 var:faktor:*cislo::
 var:meritko:*cislo::
 var:offset:ano,ne::
@@ -1846,7 +1848,7 @@ var:ykrok:*cislo::
 var:offset:ano,ne::
 var:faktor:*cislo::
 var:meritko:*cislo::
-var:jednotka:cm,pt,em,mm,ex,sp,in::
+var:jednotka:cm,pt,em,mm,ex,es,in::
 var:misto:vlevo,nastred::
 stopsetup
 
@@ -1869,6 +1871,7 @@ var:vpravo:*prikaz::
 var:konverzesouboru:ano,ne,male,velke::
 var:oddelovac:*text::
 var:autofile:ano,ne,stranka::
+var:globalne:ano,ne::
 stopsetup
 
 startsetup
@@ -2177,7 +2180,7 @@ ivr:nastavvzhled::
 stopsetup
 
 startsetup
-com:mettiloghi:
+com:definujlogo:
 typ:val/val/val/vars/:
 val:*jmeno::
 val:vrsek,zahlavi,upati,spodek::
@@ -2187,7 +2190,7 @@ var:status:start,stop::
 stopsetup
 
 startsetup
-com:definiscicolori:
+com:umistiloga:
 typ:vals/:
 val:*jmeno::
 stopsetup
@@ -2683,7 +2686,7 @@ stopsetup
 startsetup
 com:nastavzarovnani:
 typ:val/:
-val:sirka,vlevo,vpravo,nastred,uvnitr,vnejsi, siroce,siroky,vyska,spodek,radek,reset::
+val:sirka,vlevo,vpravo,nastred,uvnitr,vnejsi, siroce,siroky,vyska,spodek,radek,reset, visici,nothanging,hyphenated,nothyphenated::
 stopsetup
 
 startsetup
@@ -3256,7 +3259,9 @@ var:ramecky:zap,vyp::
 var:ymax:*cislo::
 var:xmax:*cislo::
 var:adresar:*text::
-var:misto:lokalne,globalne::
+var:misto:lokalne,globalne,implicitni::
+var:maxsirka:*dimenze::
+var:maxvyska:*dimenze::
 stopsetup
 
 startsetup
@@ -3427,7 +3432,7 @@ var:mezi:*prikaz::
 var:vlevo:*prikaz::
 var:vpravo:*prikaz::
 var:stredni:*prikaz::
-var:status:start,stop,zadny::
+var:status:start,stop,zadny,lokalne::
 var:pismeno:normalni,tucne,sklonene,tucnesklonene,opis,kap,male...*prikaz::
 var:barva:*jmeno::
 var:vzdalenost:prekryv,*dimenze::
@@ -3582,13 +3587,13 @@ val:*jmeno::
 stopsetup
 
 startsetup
-com:segnalibro:
+com:umistizalozky:
 typ:vals/vals/:
 val:*jmeno::
 stopsetup
 
 startsetup
-com:definiscilogo:
+com:zalozka:
 typ:val/arg/:
 val:*jmeno::
 stopsetup

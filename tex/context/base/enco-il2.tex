@@ -46,52 +46,84 @@
 
 \startcoding[il2]
 
-%D Most accents are located at their normal position as set 
-%D in \PLAIN\ \TEX; only \type {\r} is new. 
+\definecharacter textgrave          18
+\definecharacter textacute          19
+\definecharacter textcaron          20
+\definecharacter textbreve          21
+\definecharacter textmacron         22
+\definecharacter textring           23 
+\definecharacter textcedilla        24 
+\definecharacter textcircumflex     94
+\definecharacter textdotaccent      95
+\definecharacter texthunagrumlaut  125
+\definecharacter texttilde         126
+\definecharacter textdiaeresis     127
 
-\defineaccentcommand " 127
-\defineaccentcommand '  19
-\defineaccentcommand .  95
-\defineaccentcommand =  22
-\defineaccentcommand ^  94
-\defineaccentcommand `  18
-\defineaccentcommand ~ 126
-\defineaccentcommand H 125
-\defineaccentcommand u  21
-\defineaccentcommand v  20
-\defineaccentcommand r  23 
+\definecharacter aeligature     26  
+\definecharacter AEligature     29
+\definecharacter oeligature     27  
+\definecharacter OEligature     30
+\definecharacter ostroke        28  
+\definecharacter Ostroke        31
+\definecharacter dotlessi       16  
+\definecharacter dotlessj       17  
+\definecharacter ssharp         25
 
-\defineaccent ' a    ^^e1   \defineaccent ' A    ^^c1
-\defineaccent ' e    ^^e9   \defineaccent ' E    ^^c9
-\defineaccent ' i    ^^ed   \defineaccent ' I    ^^cd
-\defineaccent ' {\i} ^^ed
-\defineaccent ' l    ^^e5   \defineaccent ' L    ^^c5
-\defineaccent ' o    ^^f3   \defineaccent ' O    ^^d3
-\defineaccent ' r    ^^e0   \defineaccent ' R    ^^c0
-\defineaccent ' u    ^^fa   \defineaccent ' U    ^^da
-\defineaccent ' y    ^^fd   \defineaccent ' Y    ^^dd
+\definecharacter Agrave        152
+\definecharacter Lcaron        165
+\definecharacter Scaron        169
+\definecharacter Tcaron        171
+\definecharacter Zcaron        174
+\definecharacter lcaron        181
+\definecharacter agrave        184
+\definecharacter scaron        185
+\definecharacter tcaron        187
+\definecharacter zcaron        190
+\definecharacter Racute        192
+\definecharacter Aacute        193
+\definecharacter Adiaeresis    196
+\definecharacter Lacute        197
+\definecharacter Ccaron        200
+\definecharacter Eacute        201
+\definecharacter Ecaron        204
+\definecharacter Iacute        205
+\definecharacter Dcaron        207
+\definecharacter Ncaron        210
+\definecharacter Oacute        211
+\definecharacter Ocircumflex   212
+\definecharacter Ohungarumlaut 213
+\definecharacter Odiaeresis    214
+\definecharacter Rcaron        216
+\definecharacter Uring         217
+\definecharacter Uacute        218
+\definecharacter Uhungarumlaut 219
+\definecharacter Udiaeresis    220
+\definecharacter Yacute        221
+\definecharacter racute        224
+\definecharacter aacute        225
+\definecharacter adiaeresis    228
+\definecharacter lacute        229
+\definecharacter ccaron        232
+\definecharacter eacute        233
+\definecharacter ecaron        236
+\definecharacter iacute        237
+\definecharacter iacute        237
+\definecharacter dcaron        239
+\definecharacter ncaron        242
+\definecharacter oacute        243
+\definecharacter ocircumflex   244
+\definecharacter ohungarumlaut 245
+\definecharacter odiaeresis    246
+\definecharacter rcaron        248
+\definecharacter uring         249
+\definecharacter uacute        250
+\definecharacter uhungarumlaut 251
+\definecharacter udiaeresis    252   
+\definecharacter yacute        253   
 
-\defineaccent ` a    ^^b8   \defineaccent ` A    ^^98
-
-\defineaccent ^ o    ^^f4   \defineaccent ^ O    ^^d4
-
-\defineaccent " a    ^^e4   \defineaccent " A    ^^c4
-\defineaccent " o    ^^f6   \defineaccent " O    ^^d6
-\defineaccent " u    ^^fc   \defineaccent " U    ^^dc
-
-\defineaccent v c    ^^e8    \defineaccent v C   ^^c8
-\defineaccent v d    ^^ef    \defineaccent v D   ^^cf
-\defineaccent v e    ^^ec    \defineaccent v E   ^^cc
-\defineaccent v l    ^^b5    \defineaccent v L   ^^a5
-\defineaccent v n    ^^f2    \defineaccent v N   ^^d2
-\defineaccent v r    ^^f8    \defineaccent v R   ^^d8
-\defineaccent v s    ^^b9    \defineaccent v S   ^^a9
-\defineaccent v t    ^^bb    \defineaccent v T   ^^ab
-\defineaccent v z    ^^be    \defineaccent v Z   ^^ae
-
-\defineaccent r u    ^^f9    \defineaccent r U   ^^d9
-
-\defineaccent r A {\ilencodedrA}
+\definecharacter Aring         {\ilencodedrA}
+\definecharacter lstroke       {\ilencodedl}
+\definecharacter Lstroke       {\ilencodedL}
 
 \def\ilencodedrA%
    {\leavevmode\hbox\bgroup
@@ -100,36 +132,6 @@
     \advance\dimen0 by -1ex
     \rlap{\raise.67\dimen0\hbox{\char'27}}A%
     \egroup}
-
-\definecharacter ae 26  \definecharacter AE 29
-\definecharacter oe 27  \definecharacter OE 30
-\definecharacter o  28  \definecharacter O  31
-\definecharacter i  16  \definecharacter sz 25
-\definecharacter j  17  \definecharacter SS 25
-
-
-%D Some rather \PLAIN\ \TEX\ redefinitions. 
-
-\defineaccentcommand b {\ilencodedb}
-\defineaccentcommand c {\ilencodedc}
-\defineaccentcommand d {\ilencodedd}
-
-\def\ilencodedb#1
-  {\oalign%
-     {\null#1\crcr\hidewidth\sh@ft{29}%
-      \vbox to.2ex{\hbox{\char22}\vss}\hidewidth}}
-
-\def\ilencodedc#1
-  {\setbox\z@\hbox{#1}\ifdim\ht\z@=1ex\accent24 #1\else
-     {\ooalign{\unhbox\z@\crcr\hidewidth\char24\hidewidth}}\fi}
-
-\def\ilencodedd#1%
-  {\oalign{\null#1\crcr\hidewidth\sh@ft{08}.\hidewidth}}
-
-%D Some less \PLAIN\ ones: 
-
-\definecharacter l {\ilencodedl}
-\definecharacter L {\ilencodedL}
 
 \def\ilencodedl%
   {{\char32l}}
@@ -141,47 +143,3 @@
    \egroup}
 
 \stopcoding
-
-% \everyuppercase, font/language specifics ?
-
-% \uccode152=152 \lccode152=184
-% \uccode184=152 \lccode184=184
-% \uccode165=165 \lccode165=181
-% \uccode181=165 \lccode181=181
-% \uccode169=169 \lccode169=185
-% \uccode185=169 \lccode185=185
-% \uccode171=171 \lccode171=187
-% \uccode187=171 \lccode187=187
-% \uccode174=174 \lccode174=190
-% \uccode190=174 \lccode190=190
-% \sfcode254=0   \lccode254=0
-% \sfcode255=0   \lccode255=0
-% \sfcode158=0   \lccode158=0
-% \sfcode159=0   \lccode159=0 
-
-% \defineaccent v c    '350   \defineaccent v C    '310
-% \defineaccent v d    '357   \defineaccent v D    '317
-% \defineaccent v e    '354   \defineaccent v E    '314
-% \defineaccent v l    '265   \defineaccent v L    '245
-% \defineaccent v n    '362   \defineaccent v N    '322
-% \defineaccent v r    '370   \defineaccent v R    '330
-% \defineaccent v s    '271   \defineaccent v S    '251
-% \defineaccent v t    '273   \defineaccent v T    '253
-% \defineaccent v z    '276   \defineaccent v Z    '256
-% \defineaccent ' a    '341   \defineaccent ' A    '301
-% \defineaccent ' e    '351   \defineaccent ' E    '311
-% \defineaccent ' i    '355   \defineaccent ' I    '315
-% \defineaccent ' {\i} '355
-% \defineaccent ' l    '345   \defineaccent ' L    '305
-% \defineaccent ' o    '363   \defineaccent ' O    '323
-% \defineaccent ' r    '340   \defineaccent ' R    '300
-% \defineaccent ' u    '372   \defineaccent ' U    '332
-% \defineaccent ' y    '375   \defineaccent ' Y    '335
-% \defineaccent ` a    '270   \defineaccent ` A    '230
-% \defineaccent ^ o    '364   \defineaccent ^ O    '324
-% \defineaccent " a    '344   \defineaccent " A    '304
-% \defineaccent " o    '366   \defineaccent " O    '326
-% \defineaccent " u    '374   \defineaccent " U    '334
-% \defineaccent r u    '371   \defineaccent r U    '331
-
-\endinput

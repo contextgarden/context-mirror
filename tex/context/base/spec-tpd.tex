@@ -8,8 +8,8 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
-%C details. 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
 
 %D \macros
 %D   {jobsuffix}
@@ -37,37 +37,37 @@
 %D \PDFTEX\ primitives are permitted. If no primitives are
 %D available, we just stop reading any further.
 
-\unprotect 
+\unprotect
 
-\ifx\pdftexversion\undefined 
+\ifx\pdftexversion\undefined
   \writestatus{\m!systems}{you should use pdfTeX binaries}\wait
-  \protect\expandafter\endinput 
+  \protect\expandafter\endinput
 \fi
 
 \ifnum\pdftexversion<13
   \writestatus{\m!systems}{your pdfTeX version is much too old}\wait
-  \protect\expandafter\endinput 
+  \protect\expandafter\endinput
 \fi
 
 \ifnum\pdftexversion<14
   \writestatus{\m!systems}{please update your pdfTeX binaries}
 \fi
 
-%D We default to 300 dots per inch image resolution. 
+%D We default to 300 dots per inch image resolution.
 
-\ifx\pdfimageresolution\undefined 
+\ifx\pdfimageresolution\undefined
   \newcount\pdfimageresolution
 \fi
 
 \pdfimageresolution=300
 
-%D Another downward compatible hack: 
+%D Another downward compatible hack:
 
-\ifx\pdflastximagepages\undefined 
+\ifx\pdflastximagepages\undefined
   \newcount\pdflastximagepages \pdflastximagepages=1
 \fi
 
-% %D Why are the Acrobat viewers so buggy? To prevent font cache 
+% %D Why are the Acrobat viewers so buggy? To prevent font cache
 % %D mismatches, we say:
 %
 % \ifx\pdfuniqueresname\undefined \else
@@ -80,9 +80,9 @@
 %D make sure no other specials are supported, else \PDFTEX\
 %D will keep on telling us that we're wrong. We also load the
 %D general \PDF\ macros that are shared between this driver and
-%D the \ACROBAT\ one. 
+%D the \ACROBAT\ one.
 
-\startspecials[tpd][reset,fdf] 
+\startspecials[tpd][reset,fdf]
 
 %D This means that by saying
 %D
@@ -92,29 +92,34 @@
 %D
 %D we get ourselves full \PDF\ output.
 
-%D For some internal testing we need to know the output 
-%D suffix. 
+%D For some internal testing we need to know the output
+%D suffix.
 
-\def\jobsuffix{pdf} 
+\def\jobsuffix{pdf}
 
 %D We don't use specials here, which means that we must flush
-%D settings before the page is shipped out. 
+%D settings before the page is shipped out.
 
 \specialbasedsettingsfalse
 
-%D Some more internal settings. 
+%D Some more internal settings.
 
-\appendtoks \pdfoutput=0 \to \everyresetspecials
+\appendtoksonce
+  \pdfoutput=0
+\to \everyresetspecials
 
 \pdfoutput       =1 % we reset that one with \everyresetspecials
 \pdfcompresslevel=9 % apart from debugging, no reason for value 0
+\pdfdecimaldigits=5 % otherwise wrong rounding for mp stuff 
 
 %D Just in case we mimmick specials, we have to make sure no
 %D default specials end up in the process.
 
 \let\defaultspecial=\gobbleoneargument
 
-\appendtoks \let\defaultspecial\normalspecial \to \everyresetspecials
+\appendtoksonce
+  \let\defaultspecial\normalspecial
+\to \everyresetspecials
 
 \let\PDFcode\pdfliteral
 
@@ -126,7 +131,7 @@
 
 \definespecial\dosetuppaper#1#2#3%
   {\global\pdfpagewidth =#2\relax
-   \global\pdfpageheight=#3\relax} 
+   \global\pdfpageheight=#3\relax}
 
 %D \macros
 %D   {doinsertfile,dogetnofinsertpages}
@@ -154,17 +159,17 @@
    \dodoinsertfile{tpd}{#1}{#2}{#3}{#4}{#5}{#6}{#7}{#8}{#9}%
    \egroup}
 
-%D The number of pages in (for instance an \PDF) insert 
-%D file, can be asked for using: 
+%D The number of pages in (for instance an \PDF) insert
+%D file, can be asked for using:
 
-\definespecial\dogetnofinsertpages#1% 
-  {\xdef\nofinsertpages{1}% global 
+\definespecial\dogetnofinsertpages#1%
+  {\xdef\nofinsertpages{1}% global
    \doifvalidpdfimagefileelse{#1}%
      {\pdfximage{#1}\xdef\nofinsertpages{\the\pdflastximagepages}}
      {}}
 
 %D Currently we support \type{pdf} for \PDF\ files, \type{mps}
-%D for \METAPOST\ graphics, \type{png} and \type{jpg} for 
+%D for \METAPOST\ graphics, \type{png} and \type{jpg} for
 %D bitmap graphics.
 
 \definefileinsertion{tpd}{mps}#1#2#3#4#5#6#7#8#9%
@@ -176,7 +181,7 @@
       \global\let\PDFimagereference\empty}}
 
 %D The old, \TEX\ base \PDF\ insertion macro:
-%D 
+%D
 %D \starttypen
 %D \def\dotpdinsertpdf#1#2#3#4#5#6#7#8#9%
 %D   {\beforesplitstring#1\at.\to\filename
@@ -184,17 +189,17 @@
 %D    \scratchdimen=#4pt \PointsToReal{.01\scratchdimen}\yscale
 %D    \convertPDFtoPDF{\filename.pdf}\xscale\yscale{#5sp}{#6sp}{#7sp}{#8sp}}
 %D \stoptypen
-%D 
-%D superseded by the next macros. 
+%D
+%D superseded by the next macros.
 
 \definefileinsertion{tpd}{pdf}{\handlepdfimage}
 \definefileinsertion{tpd}{png}{\handlepdfimage}
 \definefileinsertion{tpd}{jpg}{\handlepdfimage}
-%definefileinsertion{tpd}{tif}{\handlepdfimage} % unstable 
+%definefileinsertion{tpd}{tif}{\handlepdfimage} % unstable
 
-%D The main file insertion macro is as follows. Because 
-%D \PDFTEX\ does not support arbitrary suffixes, we double 
-%D check on a user supplied filename, because \PDFTEX\ chokes 
+%D The main file insertion macro is as follows. Because
+%D \PDFTEX\ does not support arbitrary suffixes, we double
+%D check on a user supplied filename, because \PDFTEX\ chokes
 %D on unknown suffixes.
 
 \def\doifvalidpdfimagefileelse#1%
@@ -209,7 +214,7 @@
            % a temporary hack
            \doif{\filesuffix}{PDF}{\pdfimageresolution=72}%
            \doif{\filesuffix}{pdf}{\pdfimageresolution=72}%
-           % because pdfTeX scales back 
+           % because pdfTeX scales back
          \fi}}
       {\let\filesuffix\s!unknown}%
    \doiffileinsertionsupportedelse{\filesuffix}}
@@ -224,7 +229,7 @@
    \doifnumberelse{\commalistelement}
      {\ifcase\commalistelement\else
         \edef\pdfimagepagenumber{page \commalistelement}%
-        \message{(pdf image \pdfimagepagenumber)}% 
+        \message{(pdf image \pdfimagepagenumber)}%
       \fi}
      {}}
 
@@ -257,34 +262,34 @@
 
 \fi
 
-%D As we will see now, \PDFTEX\ not only directly supports 
-%D \type{mps}, \type{png}, \type{pdf}, \type{jpg} but also 
+%D As we will see now, \PDFTEX\ not only directly supports
+%D \type{mps}, \type{png}, \type{pdf}, \type{jpg} but also
 %D \type{mov}. In \CONTEXT\ we support movie inserts in a way
-%D similar to figure inclusion. The next macro calls the 
+%D similar to figure inclusion. The next macro calls the
 %D general \PDF\ one.
 
 \definefileinsertion{tpd}{mov}{\doPDFinsertmov}
 \definefileinsertion{tpd}{avi}{\doPDFinsertmov}
 
-%D \macros 
+%D \macros
 %D   {doinsertsoundtrack}
 %D
-%D We use numbers instead of labels to keep track of sounds. 
+%D We use numbers instead of labels to keep track of sounds.
 
 \definespecial\doinsertsoundtrack{\doPDFinsertsoundtrack}
 
-%D \macros 
+%D \macros
 %D   {measureTPDfiguresizetrue}
 %D
-%D Because \PDFTEX\ measures the figure itself, we can use 
-%D this feature to bypass the normal prescan. Watch the 
-%D double check on the suffix. Else \PDFTEX\ would choke. 
+%D Because \PDFTEX\ measures the figure itself, we can use
+%D this feature to bypass the normal prescan. Watch the
+%D double check on the suffix. Else \PDFTEX\ would choke.
 
-\newif\ifmeasureTPDfiguresize \measureTPDfiguresizetrue 
+\newif\ifmeasureTPDfiguresize \measureTPDfiguresizetrue
 
 %D For the moment we don't test for alternatives that
 %D themselves have alternatives, especially cylcic
-%D dependencies. 
+%D dependencies.
 
 \ifnum\pdftexversion>13
 
@@ -360,21 +365,23 @@
 \def\dogetfiguresizetif{\dogetTPDfiguresize\normaldogetfiguresizetif}
 \def\dogetfiguresizejpg{\dogetTPDfiguresize\normaldogetfiguresizejpg}
 
-\appendtoks \let\dogetfiguresizepdf\normaldogetfiguresizepdf \to \everyresetspecials
-\appendtoks \let\dogetfiguresizepng\normaldogetfiguresizepng \to \everyresetspecials
-\appendtoks \let\dogetfiguresizetif\normaldogetfiguresizetif \to \everyresetspecials
-\appendtoks \let\dogetfiguresizejpg\normaldogetfiguresizejpg \to \everyresetspecials
+\appendtoksonce
+  \let\dogetfiguresizepdf\normaldogetfiguresizepdf
+  \let\dogetfiguresizepng\normaldogetfiguresizepng
+  \let\dogetfiguresizetif\normaldogetfiguresizetif
+  \let\dogetfiguresizejpg\normaldogetfiguresizejpg
+\to \everyresetspecials
 
 %D \macros
 %D   {doregisterfigure}
 %D
-%D Here is the fuzzy, very special dependant figure 
-%D registration special. We need to refer to the innermost 
-%D object (ximage). 
+%D Here is the fuzzy, very special dependant figure
+%D registration special. We need to refer to the innermost
+%D object (ximage).
 
-\ifnum\pdftexversion>13 
+\ifnum\pdftexversion>13
 
-  \definespecial\doregisterfigure#1#2% 
+  \definespecial\doregisterfigure#1#2%
     {\doifundefined{IM::#1::#2}
        {\setxvalue{IM::#1::#2}{\the\pdflastximage}}%
      \xdef\PDFfigurereference{\getvalue{IM::#1::#2}}}
@@ -384,8 +391,8 @@
 %D \macros
 %D  {doovalbox}
 %D
-%D Drawing frames with round corners is inherited from the 
-%D main module. 
+%D Drawing frames with round corners is inherited from the
+%D main module.
 
 \definespecial\doovalbox%
   {\doPDFovalbox}
@@ -395,11 +402,11 @@
 %D    dostartrgbcolormode,dostartcmykcolormode,dostartgraycolormode,
 %D    dostopcolormode,
 %D    dostartrotation,dostoprotation,
-%D    dostartscaling,dostopscaling,        
-%D    dostartmirroring,dostopmirroring,      
-%D    dostartnegative,dostopnegative}       
+%D    dostartscaling,dostopscaling,
+%D    dostartmirroring,dostopmirroring,
+%D    dostartnegative,dostopnegative}
 %D
-%D These are implemented in the main \PDF\ module. 
+%D These are implemented in the main \PDF\ module.
 
 \definespecial\dostartgraymode      {\doPDFstartgraymode}
 \definespecial\dostopgraymode       {\doPDFstopgraymode}
@@ -407,26 +414,26 @@
 \definespecial\dostartcmykcolormode {\doPDFstartcmykcolormode}
 \definespecial\dostartgraycolormode {\doPDFstartgraycolormode}
 \definespecial\dostopcolormode      {\doPDFstopcolormode}
-\definespecial\dostartrotation      {\doPDFstartrotation}      
-\definespecial\dostoprotation       {\doPDFstoprotation}       
-\definespecial\dostartscaling       {\doPDFstartscaling}       
-\definespecial\dostopscaling        {\doPDFstopscaling}        
-\definespecial\dostartmirroring     {\doPDFstartmirroring}     
-\definespecial\dostopmirroring      {\doPDFstopmirroring}      
-\definespecial\dostartnegative      {\doPDFstartnegative}      
-\definespecial\dostopnegative       {\doPDFstopnegative}       
+\definespecial\dostartrotation      {\doPDFstartrotation}
+\definespecial\dostoprotation       {\doPDFstoprotation}
+\definespecial\dostartscaling       {\doPDFstartscaling}
+\definespecial\dostopscaling        {\doPDFstopscaling}
+\definespecial\dostartmirroring     {\doPDFstartmirroring}
+\definespecial\dostopmirroring      {\doPDFstopmirroring}
+\definespecial\dostartnegative      {\doPDFstartnegative}
+\definespecial\dostopnegative       {\doPDFstopnegative}
 
-%D \macros 
+%D \macros
 %D   {dostartclipping,dostopclipping}
 %D
-%D Clipping in \PDFTEX\ is rather trivial. We can even hook 
-%D in \METAPOST\ without problems. 
+%D Clipping in \PDFTEX\ is rather trivial. We can even hook
+%D in \METAPOST\ without problems.
 
 \definespecial\dostartclipping#1#2#3%
   {\ScaledPointsToBigPoints{#2}\width
    \ScaledPointsToBigPoints{#3}\height
    \grabMPclippath{#1}{1}{\width}{\height}
-     {0 0 m \width\space 0 l \width \height l 0 \height l}% 
+     {0 0 m \width\space 0 l \width \height l 0 \height l}%
    \pdfliteral
      {q 0 w \MPclippath\space W n}}
 
@@ -477,9 +484,9 @@
 %D with the \ACROBAT\ one, simply because \DISTILLER\ does not
 %D yet support something \type{\pdfnames}.
 
-% \oneJSpreamblefalse  % buggy in acrobat 
+% \oneJSpreamblefalse  % buggy in acrobat
 
-\definespecial\doflushJSpreamble#1% 
+\definespecial\doflushJSpreamble#1%
   {\bgroup
    \let\compositeJScode=\empty
    \def\docommando##1%
@@ -534,7 +541,7 @@
   {\bgroup
    \enablePDFdocencoding
    \pdfinfo
-     {%Producer (pdfTeX) % already there 
+     {%Producer (pdfTeX) % already there
       /Title (#1)
       /Subject (#2)
       /Author (#3)
@@ -568,10 +575,10 @@
 \definespecial\dobeginofprofile#1#2#3#4%
   {\setPDFdestination{#1}%
    \doifsomething{\PDFdestination}
-     {\pdfthread 
-        width #2sp height #3sp 
-        attr {/Title (\PDFdestination)} % can be omitted 
-        name {\PDFdestination}}} 
+     {\pdfthread
+        width #2sp height #3sp
+        attr {/Title (\PDFdestination)} % can be omitted
+        name {\PDFdestination}}}
 
 \definespecial\doendofprofile%
   {}
@@ -613,8 +620,8 @@
 %D \type{FIG} trigger, that signals that we just embedded an
 %D image. Alternatively I could have introduced a dual object
 %D system, but the overhead in duplicate specials is currently
-%D not what we want. I'd rather implement a more mature 
-%D object support system from scratch. 
+%D not what we want. I'd rather implement a more mature
+%D object support system from scratch.
 
 \let\currentPDFresources\empty
 \let\PDFimageattributes \empty
@@ -623,7 +630,7 @@
 
 \ifnum\pdftexversion>13
 
-  \definespecial\dostartobject#1#2#3#4#5%  
+  \definespecial\dostartobject#1#2#3#4#5%
     {\bgroup
      \setbox\nextbox=\vbox\bgroup
      \def\dodostopobject%
@@ -641,7 +648,7 @@
     {\dodostopobject
      \egroup}
 
-  \definespecial\doinsertobject#1#2% 
+  \definespecial\doinsertobject#1#2%
     {\bgroup
      \doifobjectreferencefoundelse{#1}{#2}
        {\dogetobjectreference{#1}{#2}\PDFobjectreference
@@ -655,19 +662,19 @@
 
 \else
 
-  \definespecial\dostartobject#1#2#3#4#5%  
+  \definespecial\dostartobject#1#2#3#4#5%
     {\bgroup
      \setbox\nextbox=\vbox\bgroup
      \def\dodostopobject%
        {\egroup
         \pdfform\nextbox
         \dosetobjectreference{#1}{#2}{\the\pdflastform}}}
- 
+
   \definespecial\dostopobject%
     {\dodostopobject
      \egroup}
 
-  \definespecial\doinsertobject#1#2% 
+  \definespecial\doinsertobject#1#2%
     {\bgroup
      \dogetobjectreference{#1}{#2}\PDFobjectreference
      \pdfrefform\PDFobjectreference
@@ -691,7 +698,7 @@
 %D place deeply buried (for instance in the \type{\shipout}
 %D box.
 
-%D \macros 
+%D \macros
 %D   {doinsertcomment}
 %D
 %D Text annotation, or comments, are provided too:
@@ -719,8 +726,8 @@
 
 %D \macros
 %D   {dodefinefieldset,dogetfieldset,doiffieldset}
-%D 
-%D Field sets, needed for reset and submit handling, are 
+%D
+%D Field sets, needed for reset and submit handling, are
 %D taken care of by:
 
 \definespecial\dodefinefieldset{\doFDFdefinefieldset}
@@ -729,18 +736,18 @@
 
 %D \macros
 %D   {doregistercalculationset}
-%D 
-%D The calculation order is defined using: 
+%D
+%D The calculation order is defined using:
 
 \definespecial\doregistercalculationset{\doFDFregistercalculationset}
 
-%D \macros 
+%D \macros
 %D   {dosetposition, dosetpositionwdh}
 %D
-%D Opposite to its \DVI\ counterpart, the \PDFTEX\ backend 
-%D can provide positional information directly. Since 
-%D \CONTEXT\ only uses relative positions, the origin is of 
-%D less importance. 
+%D Opposite to its \DVI\ counterpart, the \PDFTEX\ backend
+%D can provide positional information directly. Since
+%D \CONTEXT\ only uses relative positions, the origin is of
+%D less importance.
 
 \def\doTPDsetposition#1#2#3%
   {\bgroup
@@ -762,7 +769,7 @@
 \definespecial\dosetpositionwhd#1#2#3#4%
   {\doTPDsetposition{\pospxywhd}{#1}{{#2}{#3}{#4}}}
 
-%D \macros 
+%D \macros
 %D   {doPDFdestination}
 %D
 %D Finally we implement some low level macros to deal with
@@ -771,17 +778,17 @@
 \def\doPDFdestination name #1%
   {\pdfdest name {#1}\PDFpageviewkey}
 
-%D \macros 
-%D   {doPDFaction,doPDFannotation,ifsharePDFactions} 
-%D 
+%D \macros
+%D   {doPDFaction,doPDFannotation,ifsharePDFactions}
+%D
 %D Next we handle annotations. All link annotations are
 %D implemented using the action dictionary. This enables us to
-%D use multiple actions. The second macro is for instance 
-%D used for movie inclusion. 
+%D use multiple actions. The second macro is for instance
+%D used for movie inclusion.
 
 \newif\ifsharePDFactions \sharePDFactionstrue
 
-\ifnum\pdftexversion>13 
+\ifnum\pdftexversion>13
 
   \def\doPDFaction width #1 height #2 action #3%
     {\ifcase\similarreference\relax
@@ -797,8 +804,8 @@
      \ifcollectreferenceactions \else
        \pdfannot
          width #1sp height #2sp depth 0sp
-           {/Subtype /Link 
-            /Border [0 0 0] 
+           {/Subtype /Link
+            /Border [0 0 0]
             \ifhighlighthyperlinks \else /H /N \fi
             /A \lastPDFaction}%
      \fi}
@@ -819,8 +826,8 @@
      \ifcollectreferenceactions \else
        \pdfannotlink % could be \pdfannot if not the - problem was there
          width #1sp height #2sp depth 0sp
-         user {/Subtype /Link 
-               /Border [0 0 0] 
+         user {/Subtype /Link
+               /Border [0 0 0]
                \ifhighlighthyperlinks \else /H /N \fi
                /A \lastPDFaction}%
        \pdfendlink
@@ -848,13 +855,13 @@
 
 \fi
 
-%D \macros 
-%D   {doPDFannotationobject} 
+%D \macros
+%D   {doPDFannotationobject}
 %D
 %D For field support we need annotation objects. Although in
 %D many cases we can do without indirect references (and use
-%D the last annotation object number directly), we take the 
-%D save route. 
+%D the last annotation object number directly), we take the
+%D save route.
 
 %\def\doPDFannotationobject class #1 name #2 width #3 height #4 data #5%
 %  {\pdfannot width #3sp height -#4sp depth 0sp {#5}%
@@ -864,11 +871,11 @@
   {\doPDFannotation width #3 height #4 data {#5}%
    \dosetobjectreference{#1}{#2}{\the\pdflastannot}}
 
-%D \macros 
+%D \macros
 %D   {doPDFaddtocatalog,doPDFpageattribute,doPDFpagesattribute}
 %D
-%D Next some simple ones. Watch the global directive and the 
-%D expansion in the page attribute macro. 
+%D Next some simple ones. Watch the global directive and the
+%D expansion in the page attribute macro.
 
 \def\doPDFaddtocatalog%
   {\pdfcatalog}
@@ -882,13 +889,15 @@
 \def\doPDFresetattributes%
   {\global\pdfpageattr{}}
 
-\appendtoks\doPDFresetattributes\to\everyaftershipout
+\appendtoksonce
+  \doPDFresetattributes
+\to \everyaftershipout
 
-%D \macros 
-%D   {doPDFbookmark} 
+%D \macros
+%D   {doPDFbookmark}
 %D
-%D Well, isn't the next one ugly? Thanks to the \PDF\ 
-%D standard. 
+%D Well, isn't the next one ugly? Thanks to the \PDF\
+%D standard.
 
 % obsolete cq. buggy in pdfTeX
 %
@@ -904,11 +913,11 @@
      \ifcase#2 \else count \ifcase#5-\fi#2 \fi
      {#3}}
 
-%D \macros 
+%D \macros
 %D   {doPDFdictionaryobject,doPDFarrayobject}
 %D
 %D Where \PDFTEX\ has only one object primitive, optionally a
-%D stream one, \ACROBAT\ has several operators. 
+%D stream one, \ACROBAT\ has several operators.
 
 \def\doPDFdictionaryobject class #1 name #2 data #3%
   {\flushatshipout
@@ -918,12 +927,12 @@
   {\flushatshipout
      {\immediate\pdfobj{[ #3 ]}\dosetobjectreference{#1}{#2}{\the\pdflastobj}}}
 
-%D \macros 
+%D \macros
 %D   {defaultobjectreference,doPDFgetobjectreference}
 %D
 %D Because in \PDFTEX\ we have to construct the object
-%D references \type{N 0 R}, we can default to the non existing 
-%D zero object number. 
+%D references \type{N 0 R}, we can default to the non existing
+%D zero object number.
 
 \def\defaultobjectreference#1#2%
   {0}
@@ -934,25 +943,29 @@
 
 %D \macros
 %D   {initializePDFnegative}
-%D 
-%D Here follow some rather obscure macros. They will only 
-%D come into action when one wants negated output. 
+%D
+%D Here follow some rather obscure macros. They will only
+%D come into action when one wants negated output.
 
 \let\PDFextgstates\empty
 
 \def\initializePDFnegative%
-  {\bgroup
-   \pdfcompresslevel=0
-   \immediate\pdfobj attr {/FunctionType 4 /Range [0 1] /Domain [0 1]} stream {{1 exch sub}} 
-   \immediate\pdfobj{<</Type /ExtGState /TR \the\pdflastobj\space0 R>>}
-   \xdef\PDFextgstates{\PDFextgstates/GSnegative \the\pdflastobj\space0 R}
-   \immediate\pdfobj{<</Type /ExtGState /TR /Identity>>}
-   \xdef\PDFextgstates{\PDFextgstates/GSpositive \the\pdflastobj\space0 R}
+  {%\bgroup
+   %\pdfcompresslevel=0
+   \immediate\pdfobj stream attr {/FunctionType 4 /Range [0 1] /Domain [0 1]} {{1 exch sub}}%
+   \immediate\pdfobj{<</Type /ExtGState /TR \the\pdflastobj\space0 R>>}%
+   \xdef\PDFextgstates{\PDFextgstates/GSnegative \the\pdflastobj\space0 R}%
+   \immediate\pdfobj{<</Type /ExtGState /TR /Identity>>}%
+   \xdef\PDFextgstates{\PDFextgstates/GSpositive \the\pdflastobj\space0 R}%
    \global\let\initializePDFnegative\relax
-   \egroup
-   \expanded{\pdfpageresources{/ExtGState <<\PDFextgstates>>}}}
- 
-%D Now we can finish this module. 
+   %\egroup
+   \expanded{\global\pdfpageresources{/ExtGState <<\PDFextgstates>>}}}
+
+% %D We can set \METAPOST\ prologues to~2:
+
+\def\MPprologues{2}
+
+%D Now we can finish this module.
 
 \stopspecials
 

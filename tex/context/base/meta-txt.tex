@@ -128,7 +128,7 @@
 \setupshapetexts%
   [\c!korps=]
 
-%%%%%%% 
+%%%%%%% rotfont nog definieren 
 
 \doifundefined{RotFont}{\definefont[RotFont][RegularBold]} 
 
@@ -150,6 +150,9 @@
   {\vbox\bgroup
    \forgetall
    \dontcomplain
+   \startMPenvironment
+     \doifundefined{RotFont}{\definefont[RotFont][RegularBold]} 
+   \stopMPenvironment
    \MPtoks\emptytoks
    \resetMPdrawing
    \startMPdrawing
@@ -242,7 +245,7 @@
    width=\the\localhsize, % without \the, problems in non e-tex
    color=darkgray]
 
-\defineblank
+\definieerblanko
   [EnglishRule]
   [medium]
 

@@ -26,13 +26,13 @@ stopsetup
 startsetup
 com:taal:
 typ:val/:
-val:nl,fr,en,uk,de,sp,cz,..:nl:
+val:nl,fr,en,uk,de,es,cz,..:nl:
 stopsetup
 
 startsetup
 com:hoofdtaal:
 typ:val/:
-val:nl,fr,en,uk,de,sp,cz,..:nl:
+val:nl,fr,en,uk,de,es,cz,..:nl:
 stopsetup
 
 startsetup
@@ -629,14 +629,14 @@ stopsetup
 startsetup
 com:stelkoptekstin:
 typ:val/var/:
-val:nl,fr,en,uk,de,sp,cz,..:nl:
+val:nl,fr,en,uk,de,es,cz,..:nl:
 var:*naam:*tekst::
 stopsetup
 
 startsetup
 com:stellabeltekstin:
 typ:val/var/:
-val:nl,fr,en,uk,de,sp,cz,..:nl:
+val:nl,fr,en,uk,de,es,cz,..:nl:
 var:*naam:*tekst::
 stopsetup
 
@@ -810,6 +810,8 @@ var:linkeroffset:*maat::
 var:rechteroffset:*maat::
 var:bovenoffset:*maat::
 var:onderoffset:*maat::
+var:voor:*commando::
+var:na:*commando::
 var:status:start,stop::
 ivr:stelomlijndin::
 stopsetup
@@ -1819,7 +1821,7 @@ startsetup
 com:stelpositionerenin:
 typ:vars/:
 var:status:start,overlay::
-var:eenheid:cm,pt,em,mm,ex,sp,in::
+var:eenheid:cm,pt,em,mm,ex,es,in::
 var:factor:*getal::
 var:schaal:*getal::
 var:offset:ja,nee::
@@ -1846,7 +1848,7 @@ var:ystap:*getal::
 var:offset:ja,nee::
 var:factor:*getal::
 var:schaal:*getal::
-var:eenheid:cm,pt,em,mm,ex,sp,in::
+var:eenheid:cm,pt,em,mm,ex,es,in::
 var:plaats:links,midden::
 stopsetup
 
@@ -1869,6 +1871,7 @@ var:rechts:*commando::
 var:converteerfile:ja,nee,klein,groot::
 var:scheider:*tekst::
 var:autofile:ja,nee,pagina::
+var:globaal:ja,nee::
 stopsetup
 
 startsetup
@@ -2683,7 +2686,7 @@ stopsetup
 startsetup
 com:steluitlijnenin:
 typ:val/:
-val:breedte,links,rechts,midden,binnen,buiten, breed,ruim,hoogte,onder,regel,reset::
+val:breedte,links,rechts,midden,binnen,buiten, breed,ruim,hoogte,onder,regel,reset, hangend,niethangend,afgebroken,afgebroken::
 stopsetup
 
 startsetup
@@ -3256,7 +3259,9 @@ var:hokjes:aan,uit::
 var:ymax:*getal::
 var:xmax:*getal::
 var:gebied:*tekst::
-var:plaats:lokaal,globaal::
+var:plaats:lokaal,globaal,default::
+var:maxbreedte:*maat::
+var:maxhoogte:*maat::
 stopsetup
 
 startsetup
@@ -3427,7 +3432,7 @@ var:tussen:*commando::
 var:links:*commando::
 var:rechts:*commando::
 var:midden:*commando::
-var:status:start,stop,geen::
+var:status:start,stop,geen,lokaal::
 var:letter:normaal,vet,schuin,vetschuin,type,kap,klein...*commando::
 var:kleur:*naam::
 var:afstand:overlay,*maat::

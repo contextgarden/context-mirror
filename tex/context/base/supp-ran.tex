@@ -55,8 +55,9 @@
 
 \else
 
-  \let\normalnextrandom  = \nextrandom
-  \let\restorerandomseed = \relax
+  \let\normalnextrandom = \nextrandom
+
+  \global\chardef\randomseedfrozen=0
 
   \def\nextrandom%
     {\bgroup
@@ -65,7 +66,8 @@
      \let\month=\normalmonth  
      \let\year =\normalyear
      \normalnextrandom
-     \gdef\nextrandom{\restorerandomseed\normalnextrandom}%
+     \gdef\nextrandom%
+       {\ifcase\randomseedfrozen\normalnextrandom\fi}%
      \egroup}
 
   % avoid scratch dimens 0 and 2 
@@ -83,9 +85,14 @@
 \fi
 
 \def\freezerandomseed%
-  {\xdef\restorerandomseed%
-     {\global\randomi\number\randomi
-      \global\let\noexpand\restorerandomseed\relax}}
+  {\ifcase\randomseedfrozen
+     \nextrandom \global\chardef\randomseedfrozen=1          
+   \fi}
+
+\def\defrostrandomseed%
+  {\ifcase\randomseedfrozen\else
+     \global\chardef\randomseedfrozen=0 \nextrandom
+   \fi}
 
 \let\getrandomcount = \setrannum
 \let\getrandomdimen = \setrandim

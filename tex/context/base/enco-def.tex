@@ -1,0 +1,279 @@
+%D \module
+%D   [     file=enco-def,
+%D      version=2000.20.12, % split from less verbose base file 
+%D        title=\CONTEXT\ Encoding Macros,
+%D     subtitle=Default Character Definitions, 
+%D       author=Hans Hagen,
+%D         date=\currentdate,
+%D    copyright=Hans Hagen \& Ton Otten]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
+%C details. 
+
+%D Instead of overloading plain \TEX\ macros (and keeping them
+%D available as an escape), we now use the more verbose
+%D definitions in this file. Since memory is less a problem
+%D these days, this verbosity has only a small price, but we
+%D gain readability. The following definitions are based on 
+%D usage of the the original \TEX\ fonts, where composed 
+%D characters were not part of the design. So, occasionally 
+%D we have to revert to hacks. 
+
+\startencoding[default]
+
+\definecharacter textgrave         18 
+\definecharacter textacute         19
+\definecharacter textcaron         20 
+\definecharacter textbreve         21
+\definecharacter textmacron        22
+\definecharacter textcedilla       24 
+\definecharacter textogonek        24 % no ! 
+\definecharacter textbottomdot     46  
+\definecharacter textcircumflex    94 
+\definecharacter textdotaccent     95
+\definecharacter texthungarumlaut 125
+\definecharacter texttilde        126 
+\definecharacter textdiaeresis    127
+
+\definecharacter Acircumflex {\buildtextaccent\textcircumflex A}
+\definecharacter acircumflex {\buildtextaccent\textcircumflex a}
+\definecharacter Ccircumflex {\buildtextaccent\textcircumflex C}
+\definecharacter ccircumflex {\buildtextaccent\textcircumflex c}
+\definecharacter Ecircumflex {\buildtextaccent\textcircumflex E}
+\definecharacter ecircumflex {\buildtextaccent\textcircumflex e}
+\definecharacter Gcircumflex {\buildtextaccent\textcircumflex G}
+\definecharacter gcircumflex {\buildtextaccent\textcircumflex g}
+\definecharacter Hcircumflex {\buildtextaccent\textcircumflex H}
+\definecharacter hcircumflex {\buildtextaccent\textcircumflex h}
+\definecharacter Icircumflex {\buildtextaccent\textcircumflex \dotlessI}
+\definecharacter icircumflex {\buildtextaccent\textcircumflex \dotlessi}
+\definecharacter Jcircumflex {\buildtextaccent\textcircumflex \dotlessJ}
+\definecharacter jcircumflex {\buildtextaccent\textcircumflex \dotlessj}
+\definecharacter Ocircumflex {\buildtextaccent\textcircumflex O}
+\definecharacter ocircumflex {\buildtextaccent\textcircumflex o}
+\definecharacter Scircumflex {\buildtextaccent\textcircumflex S}
+\definecharacter scircumflex {\buildtextaccent\textcircumflex s}
+\definecharacter Ucircumflex {\buildtextaccent\textcircumflex U}
+\definecharacter ucircumflex {\buildtextaccent\textcircumflex u}
+\definecharacter Wcircumflex {\buildtextaccent\textcircumflex W}
+\definecharacter wcircumflex {\buildtextaccent\textcircumflex w}
+\definecharacter Ycircumflex {\buildtextaccent\textcircumflex Y}
+\definecharacter ycircumflex {\buildtextaccent\textcircumflex y}
+
+\definecharacter Agrave {\buildtextaccent\textgrave A} 
+\definecharacter agrave {\buildtextaccent\textgrave a}
+\definecharacter Egrave {\buildtextaccent\textgrave E}
+\definecharacter egrave {\buildtextaccent\textgrave e}
+\definecharacter Igrave {\buildtextaccent\textgrave \dotlessI}
+\definecharacter igrave {\buildtextaccent\textgrave \dotlessi}
+\definecharacter Ograve {\buildtextaccent\textgrave O}
+\definecharacter ograve {\buildtextaccent\textgrave o}
+\definecharacter Ugrave {\buildtextaccent\textgrave U}
+\definecharacter ugrave {\buildtextaccent\textgrave u}
+     
+\definecharacter Atilde {\buildtextaccent\texttilde A}
+\definecharacter atilde {\buildtextaccent\texttilde a}
+\definecharacter Itilde {\buildtextaccent\texttilde \dotlessI}
+\definecharacter itilde {\buildtextaccent\texttilde \dotlessi}
+\definecharacter Otilde {\buildtextaccent\texttilde O}
+\definecharacter otilde {\buildtextaccent\texttilde o}
+\definecharacter Utilde {\buildtextaccent\texttilde U}
+\definecharacter utilde {\buildtextaccent\texttilde u}
+
+\definecharacter Adiaeresis {\buildtextaccent\textdiaeresis A}
+\definecharacter adiaeresis {\buildtextaccent\textdiaeresis a}
+\definecharacter Ediaeresis {\buildtextaccent\textdiaeresis E}
+\definecharacter ediaeresis {\buildtextaccent\textdiaeresis e}
+\definecharacter Idiaeresis {\buildtextaccent\textdiaeresis \dotlessI}
+\definecharacter idiaeresis {\buildtextaccent\textdiaeresis \dotlessi}
+\definecharacter Odiaeresis {\buildtextaccent\textdiaeresis O}
+\definecharacter odiaeresis {\buildtextaccent\textdiaeresis o}
+\definecharacter Udiaeresis {\buildtextaccent\textdiaeresis U}
+\definecharacter udiaeresis {\buildtextaccent\textdiaeresis u}
+\definecharacter Ydiaeresis {\buildtextaccent\textdiaeresis Y}
+\definecharacter ydiaeresis {\buildtextaccent\textdiaeresis y}
+
+\definecharacter Aacute {\buildtextaccent\textacute A}
+\definecharacter aacute {\buildtextaccent\textacute a}
+\definecharacter Cacute {\buildtextaccent\textacute C}
+\definecharacter cacute {\buildtextaccent\textacute c}
+\definecharacter Eacute {\buildtextaccent\textacute E}
+\definecharacter eacute {\buildtextaccent\textacute e}
+\definecharacter Iacute {\buildtextaccent\textacute \dotlessI}
+\definecharacter iacute {\buildtextaccent\textacute \dotlessi}
+\definecharacter Lacute {\buildtextaccent\textacute L}
+\definecharacter lacute {\buildtextaccent\textacute l}
+\definecharacter Nacute {\buildtextaccent\textacute N}
+\definecharacter nacute {\buildtextaccent\textacute n}
+\definecharacter Oacute {\buildtextaccent\textacute O}
+\definecharacter oacute {\buildtextaccent\textacute o}
+\definecharacter Racute {\buildtextaccent\textacute R}
+\definecharacter racute {\buildtextaccent\textacute r}
+\definecharacter Sacute {\buildtextaccent\textacute S}
+\definecharacter sacute {\buildtextaccent\textacute s}
+\definecharacter Uacute {\buildtextaccent\textacute U}
+\definecharacter uacute {\buildtextaccent\textacute u}
+\definecharacter Zacute {\buildtextaccent\textacute Z}
+\definecharacter zacute {\buildtextaccent\textacute z}
+
+\definecharacter Dstroke {D}
+\definecharacter dstroke {d}
+\definecharacter Hstroke {H}
+\definecharacter hstroke {h}
+\definecharacter Tstroke {T}
+\definecharacter tstroke {t}
+
+\definecharacter Cdotaccent {\buildtextaccent\textdotaccent C}
+\definecharacter cdotaccent {\buildtextaccent\textdotaccent c}
+\definecharacter Edotaccent {\buildtextaccent\textdotaccent E}
+\definecharacter edotaccent {\buildtextaccent\textdotaccent e}
+\definecharacter Gdotaccent {\buildtextaccent\textdotaccent G}
+\definecharacter gdotaccent {\buildtextaccent\textdotaccent g}
+\definecharacter Idotaccent {\buildtextaccent\textdotaccent \dotlessI}
+\definecharacter idotaccent {\buildtextaccent\textdotaccent \dotlessi}
+\definecharacter Zdotaccent {\buildtextaccent\textdotaccent Z}
+\definecharacter zdotaccent {\buildtextaccent\textdotaccent z}
+
+\definecharacter Amacron {\buildtextaccent\textmacron A}
+\definecharacter amacron {\buildtextaccent\textmacron a}
+\definecharacter Emacron {\buildtextaccent\textmacron E}
+\definecharacter emacron {\buildtextaccent\textmacron e}
+\definecharacter Imacron {\buildtextaccent\textmacron \dotlessI}
+\definecharacter imacron {\buildtextaccent\textmacron \dotlessi}
+\definecharacter Omacron {\buildtextaccent\textmacron O}
+\definecharacter omacron {\buildtextaccent\textmacron o}
+\definecharacter Umacron {\buildtextaccent\textmacron U}
+\definecharacter umacron {\buildtextaccent\textmacron u}
+
+\definecharacter Ccedilla {\buildtextcedilla C}
+\definecharacter ccedilla {\buildtextcedilla c}
+\definecharacter Kcedilla {\buildtextcedilla K}
+\definecharacter kcedilla {\buildtextcedilla k}
+\definecharacter Lcedilla {\buildtextcedilla L}
+\definecharacter lcedilla {\buildtextcedilla l}
+\definecharacter Ncedilla {\buildtextcedilla N}
+\definecharacter ncedilla {\buildtextcedilla n}
+\definecharacter Rcedilla {\buildtextcedilla R}
+\definecharacter rcedilla {\buildtextcedilla r}
+\definecharacter Scedilla {\buildtextcedilla S}
+\definecharacter scedilla {\buildtextcedilla s}
+\definecharacter Tcedilla {\buildtextcedilla T}
+\definecharacter tcedilla {\buildtextcedilla t}
+
+\definecharacter Ohungarumlaut {\buildtextaccent\texthungarumlaut O} 
+\definecharacter ohungarumlaut {\buildtextaccent\texthungarumlaut o}
+\definecharacter Uhungarumlaut {\buildtextaccent\texthungarumlaut U}
+\definecharacter uhungarumlaut {\buildtextaccent\texthungarumlaut u}
+
+\definecharacter Aogonek {\buildtextogonek A}
+\definecharacter aogonek {\buildtextogonek a}
+\definecharacter Eogonek {\buildtextogonek E}
+\definecharacter eogonek {\buildtextogonek e}
+\definecharacter Iogonek {\buildtextogonek I}
+\definecharacter iogonek {\buildtextogonek i}
+\definecharacter Uogonek {\buildtextogonek U}
+\definecharacter uogonek {\buildtextogonek u}
+
+\definecharacter Aring {A}
+\definecharacter aring {a}
+\definecharacter Uring {U}
+\definecharacter uring {u}
+
+\definecharacter Abreve {\buildtextaccent\textbreve A}
+\definecharacter abreve {\buildtextaccent\textbreve a}
+\definecharacter Ebreve {\buildtextaccent\textbreve E}
+\definecharacter ebreve {\buildtextaccent\textbreve e}
+\definecharacter Gbreve {\buildtextaccent\textbreve G}
+\definecharacter gbreve {\buildtextaccent\textbreve g}
+\definecharacter Ibreve {\buildtextaccent\textbreve \dotlessI}
+\definecharacter ibreve {\buildtextaccent\textbreve \dotlessi}
+\definecharacter Obreve {\buildtextaccent\textbreve O}
+\definecharacter obreve {\buildtextaccent\textbreve o}
+\definecharacter Ubreve {\buildtextaccent\textbreve U}
+\definecharacter ubreve {\buildtextaccent\textbreve u}
+
+\definecharacter Ccaron {\buildtextaccent\textcaron C}
+\definecharacter ccaron {\buildtextaccent\textcaron c}
+\definecharacter Dcaron {\buildtextaccent\textcaron D}
+\definecharacter dcaron {\buildtextaccent\textcaron d}
+\definecharacter Ecaron {\buildtextaccent\textcaron E}
+\definecharacter ecaron {\buildtextaccent\textcaron e}
+\definecharacter Lcaron {\buildtextaccent\textcaron L}
+\definecharacter lcaron {\buildtextaccent\textcaron l}
+\definecharacter Ncaron {\buildtextaccent\textcaron N}
+\definecharacter ncaron {\buildtextaccent\textcaron n}
+\definecharacter Rcaron {\buildtextaccent\textcaron R}
+\definecharacter rcaron {\buildtextaccent\textcaron r}
+\definecharacter Scaron {\buildtextaccent\textcaron S}
+\definecharacter scaron {\buildtextaccent\textcaron s}
+\definecharacter Tcaron {\buildtextaccent\textcaron T}
+\definecharacter tcaron {\buildtextaccent\textcaron t}
+\definecharacter Zcaron {\buildtextaccent\textcaron Z}
+\definecharacter zcaron {\buildtextaccent\textcaron z}
+
+\definecharacter dotlessi    {\char"10 }
+\definecharacter dotlessj    {\char"11 }
+\definecharacter dotlessI    {I}
+\definecharacter dotlessJ    {J}
+
+\definecharacter AEligature  {\char"1D }
+\definecharacter aeligature  {\char"1A }
+\definecharacter Lstroke     {\char32L}
+\definecharacter lstroke     {\char32l}
+\definecharacter Ostroke     {\char"1F }
+\definecharacter ostroke     {\char"1C }
+\definecharacter OEligature  {\char"1E }
+\definecharacter oeligature  {\char"1B }
+\definecharacter Ssharp      {SS}
+\definecharacter ssharp      {\char"19 }
+\definecharacter IJligature  {IJ}
+\definecharacter ijligature  {ij}
+
+\definecharacter aumlaut {\moveaccent{-.1ex}\adiaeresis}
+\definecharacter eumlaut {\moveaccent{-.1ex}\ediaeresis}
+\definecharacter iumlaut {\moveaccent{-.1ex}\idiaeresis}
+\definecharacter oumlaut {\moveaccent{-.1ex}\odiaeresis}
+\definecharacter uumlaut {\moveaccent{-.1ex}\udiaeresis}
+
+\definecharacter Aumlaut {\smashaccent\Adiaeresis}
+\definecharacter Eumlaut {\smashaccent\Ediaeresis}
+\definecharacter Iumlaut {\smashaccent\Idiaeresis}
+\definecharacter Oumlaut {\smashaccent\Odiaeresis}
+\definecharacter Uumlaut {\smashaccent\Udiaeresis}
+
+\definecharacter Lslash  {\Lstroke}
+\definecharacter lslash  {\lstroke}
+\definecharacter Dslash  {\Lstroke}
+\definecharacter dslash  {\lstroke}
+\definecharacter Oslash  {\Lstroke}
+\definecharacter oslash  {\lstroke}
+
+\definecharacter Eszett  {\Ssharp}
+\definecharacter eszett  {\ssharp}
+
+\definecharacter Thorn {[]}
+\definecharacter thorn {[]}
+
+\stopencoding
+
+%D We also use symbolic names for math accents. 
+
+\startencoding[default]
+
+\definecharacter mathacute      "7013 
+\definecharacter mathgrave      "7012 
+\definecharacter mathddot       "707F 
+\definecharacter mathtilde      "707E 
+\definecharacter mathbar        "7016 
+\definecharacter mathbreve      "7015 
+\definecharacter mathcheck      "7014 
+\definecharacter mathhat        "705E 
+\definecharacter mathvec        "017E 
+\definecharacter mathdot        "705F 
+\definecharacter mathwidetilde  "0365 
+\definecharacter mathwidehat    "0362 
+
+\stopencoding
+
+\endinput

@@ -13,6 +13,8 @@
 
 \writestatus{loading}{Context Color Macros}
 
+%D To do: stroke versus fill color 
+
 \unprotect
 
 %D Color support is not present in \TEX. Colorful output can 
@@ -151,6 +153,21 @@
       9: -- fargerom er ikke støttet
      10: -- fargerom er støttet 
      11: fargen vil bli vist som grå
+\stopmessages
+
+\startmessages  romanian  library: colors
+  title: culori
+      1: sistem -- este activata global 
+      2: sistem -- este activata local
+      3: -- nu este definita
+      4: sistem -- este incarcata
+      5: sistem -- necunoscuta
+      6: paleta -- este disponibila
+      7: palette -- nu este disponibila 
+      8: specificatia -- la culoarea -- devine neagra
+      9: spatiul de culoare -- nu este suportat
+     10: spatiul de culoare -- este suportat 
+     11: culoarea este convertita la gri
 \stopmessages
 
 %D \macros
@@ -362,26 +379,41 @@
 %D reduction and thus a space||saving option.
 
 %D \macros
-%D   {startcolormode,stopcolormode}
+%D   {startcolormode,stopcolormode,permitcolormode}
 %D 
 %D We use \type{\stopcolormode} to reset the color in 
 %D whatever color space and do so by calling the corresponding
 %D special. Both commands can be used for fast color 
 %D switching, like in colored verbatim,
 
+\newif\ifpermitcolormode \permitcolormodetrue
+
 \def\dostartcolormode#1:%
   {\getvalue{dostartcolormode#1}}  
 
 \def\startcolormode#1% 
-  {\ifincolor
+  {\ifincolor\ifpermitcolormode 
      \doifcolorelse{#1}
        {\getcurrentcolorspecs{#1}%
         \expandafter\dostartcolormode\currentcolorspecs\od}
        {\dostopcolormode}%
-   \fi}
+   \fi\fi}
 
 \def\stopcolormode%
-  {\ifincolor\dostopcolormode\fi}
+  {\ifincolor\ifpermitcolormode\dostopcolormode\fi\fi}
+
+%D \macros
+%D   {startregistercolor,stopregistercolor,permitcolormode}
+%D
+%D If you only want to register a color, the switch \type 
+%D {\ifpermitcolormode} can be used. That way the nested 
+%D colors know where to go back to. 
+
+\def\startregistercolor[#1]%
+  {\permitcolormodefalse\startcolor[#1]\permitcolormodetrue}
+
+\def\stopregistercolor%
+  {\permitcolormodefalse\stopcolor\permitcolormodetrue}
 
 %D We use some reserved names for local color components. 
 %D Consistent use of these scratch variables saves us 

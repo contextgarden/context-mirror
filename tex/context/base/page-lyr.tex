@@ -1,0 +1,243 @@
+%D \module
+%D   [       file=page-lyr,
+%D        version=2000.10.20,
+%D          title=\CONTEXT\ OTR Macros,
+%D       subtitle=Layers, 
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+% logo space wil be reimplemented as layers 
+
+\writestatus{loading}{Context OTR Macros / Layers} 
+
+\unprotect
+
+%D The layering mechanism implemented here is independent of
+%D the output routine, but future extensions may depend on a
+%D more close cooperation. 
+
+%D First we overload a macro from \type {core-rul}. From now on
+%D we accept a third (optional) argument: the specific layer it
+%D will go in. This means that we can move an overlay from one
+%D background to the other using the dimensions of the parent.
+
+\ifx\undefined\defineoverlay \message{loaded to early} \wait \fi 
+
+\def\defineoverlay%
+  {\dotripleempty\dodefineoverlay}
+
+\def\dodefineoverlay[#1][#2][#3]%
+  {\ifthirdargument
+     \def\docommando##1%
+       {\setvalue{\??ov##1}####1####2####3####4####5####6####7%
+          {\setlayer[#3]{\executedefinedoverlay
+             ##1\\#2\\{####1}{####2}{####3}{####4}{####5}{####6}{####7}}}}%
+   \else
+     \def\docommando##1%
+       {\setvalue{\??ov##1}{\executedefinedoverlay
+          ##1\\#2\\}}%
+   \fi
+   \processcommalist[#1]\docommando}
+
+%D When tracing is turned on, a couple of boxes will 
+%D show up as well as the reference point. 
+
+\newif\iftracelayers % \tracelayerstrue
+
+%D This handy constant saved some string memory. 
+
+\def\@@layerbox{@@layerbox}
+
+%D \macros 
+%D   {definelayer}
+%D
+%D Each layer gets its own (global) box. This also means that 
+%D the data that goes into a layer, is typeset immediately. 
+%D Each layer automatically gets an associated overlay, 
+%D which can be used in any background assignment.
+
+\def\definelayer%
+  {\dodoubleargument\dodefinelayer}
+
+\def\dodefinelayer[#1][#2]%
+  {\ifundefined{\@@layerbox#1}%
+     \expandafter\newbox\csname\@@layerbox#1\endcsname
+   \else
+     \setbox\csname\@@layerbox#1\endcsname=\voidb@x
+   \fi
+   \defineoverlay
+     [#1][\composedlayer{#1}]%
+   \setuplayer
+     [#1]
+     [\c!status=\v!start,\c!richting=\v!normaal,\c!optie=,
+      \c!x=\!!zeropoint,\c!y=\!!zeropoint,\c!positie=\v!nee,
+      \c!breedte=\wd\nextbox,\c!hoogte=\ht\nextbox,
+      \c!hoffset=\!!zeropoint,\c!voffset=\!!zeropoint,
+      \c!plaats=rb,\c!positie=\v!nee,\c!pagina=,#2]}
+
+%D \macros 
+%D   {setuplayer}
+%D
+%D After a layer is defined, you can change its 
+%D characteristics. 
+
+\def\setuplayer%
+  {\dodoubleargument\dosetuplayer}
+
+\def\dosetuplayer[#1]%
+  {\getparameters[\??ll#1]}
+
+%D \macros 
+%D   {setlayer}
+%D 
+%D Data is moved intoa layer with the following macro. When
+%D \type {position} is set, relative positioning is used, with
+%D the current point as reference point. Otherwise the topleft
+%D corner is used as reference point. 
+%D 
+%D \starttypen 
+%D \setlayer [identifier] [optional parameters] {data} 
+%D \stoptypen 
+
+\def\setlayer%
+  {\dodoubleargument\dosetlayer}
+
+\def\dosetlayer[#1][#2]%
+  {\doifnotvalue{\??ll#1\c!status}{\v!stop}{\dodosetlayer[#1][#2]}}
+
+\def\dodosetlayer[#1][#2]%
+  {\bgroup
+   \global\newbackgroundtrue
+   \doglobal\increment\currentlayerdata
+   \forgetall
+   \dontcomplain
+   \doifvalue{\??ll#1\c!optie}{\v!test}{\tracelayerstrue}%
+   \dowithnextbox % sneller als aparte macro
+     {\ifundefined{\@@layerbox#1}%
+        \writestatus{layer}{unknown layer #1}%
+      \else
+        \dododosetlayer[#1][#2]%
+      \fi
+      \egroup}
+     \hbox}
+
+\newbox\layerbox
+
+\def\dododosetlayer[#1][#2]% 
+  {\getparameters[\??ll#1][#2]%
+   \doifvalue{\??ll#1\c!positie}{\v!overlay}
+     {\getparameters[\??ll#1]
+        [\c!positie=\v!ja,
+         \c!breedte=\!!zeropoint,
+         \c!hoogte=\!!zeropoint]}%
+   \doifelsevalue{\??ll#1\c!positie}{\v!ja}
+     {\edef\layerpage{\MPp{lyr:\currentlayerdata}}%
+      \scratchdimen\MPx{lyr:#1:\layerpage}\scratchdimen-\scratchdimen
+      \advance\scratchdimen\MPx{lyr:\currentlayerdata}%
+      \setevalue{\??ll#1\c!x}{\the\scratchdimen}%
+      \scratchdimen\MPy{lyr:#1:\layerpage}%
+      \advance\scratchdimen-\MPy{lyr:\currentlayerdata}%
+      \setevalue{\??ll#1\c!y}{\the\scratchdimen}%
+      \setxvalue{\??ll#1\layerpage\c!positie}{\v!ja}%
+      \setxvalue{\??ll#1\c!status}{\v!start}% needed ?
+      \setbox\layerbox\vbox to \getvalue{\??ll#1\c!hoogte} % \ht\nextbox
+        {\hbox to \getvalue{\??ll#1\c!breedte} % \wd\nextbox
+           {\xypos{lyr:\currentlayerdata}\hss}%
+         \vss}}
+     {\setbox\layerbox=\box\voidb@x
+      \edef\layerpage{\getvalue{\??ll#1\c!pagina}}}%
+   \doifsomething{\layerpage}
+     {\edef\layerpage{:\layerpage}%
+      \doifundefined{\@@layerbox#1\layerpage}
+        {\global\expandafter\newbox\csname\@@layerbox#1\layerpage\endcsname}}%
+   \global\setbox\csname\@@layerbox#1\layerpage\endcsname=\vbox
+     {\offinterlineskip
+      \ifvoid\csname\@@layerbox#1\layerpage\endcsname\else
+        \ht \csname\@@layerbox#1\layerpage\endcsname\!!zeropoint
+        \dp \csname\@@layerbox#1\layerpage\endcsname\!!zeropoint
+        \wd \csname\@@layerbox#1\layerpage\endcsname\!!zeropoint
+        \doifnotvalue{\??ll#1\c!richting}{\v!omgekeerd}
+          {\box\csname\@@layerbox#1\layerpage\endcsname}%
+      \fi
+      \setbox\nextbox=\hbox
+        {\alignedbox[\getvalue{\??ll#1\c!plaats}]\vbox{\box\nextbox}}%
+      \smashbox\nextbox
+      \scratchdimen=\getvalue{\??ll#1\c!y}%
+      \advance\scratchdimen\getvalue{\??ll#1\c!voffset}%
+      \vskip\scratchdimen 
+      \hskip\getvalue{\??ll#1\c!x}%
+      \hskip\getvalue{\??ll#1\c!hoffset}%
+      \box\nextbox % \hfill
+      \ifvoid\csname\@@layerbox#1\layerpage\endcsname
+        % already flushed 
+       \else
+        % the reverse case
+        \vskip-\scratchdimen
+        \box\csname\@@layerbox#1\layerpage\endcsname
+      \fi}%
+   \ifvoid\layerbox\else\box\layerbox\fi}
+
+%D Given the task to be accomplished, the previous macro is
+%D not even that complicated. It mainly comes down to skipping
+%D to the right place and placing a box on top of or below the
+%D existing content. In the case of position tracking, another
+%D reference point is chosen. 
+
+%D \macros
+%D  {flushlayer} 
+%D
+%D When we flush a layer, we flush both the main one and the
+%D page dependent one (when defined). This feature is more 
+%D efficient in \ETEX\ since there testing for an undefined 
+%D macro does not takes hash space. 
+
+\def\flushlayer[#1]%
+  {\doifvalue{\??ll#1\c!status}{\v!start}
+     {\startoverlay
+        {\doflushlayer1{#1}}
+        {\doflushlayer0{#1:\realfolio}}
+      \stopoverlay}}
+
+\def\doflushlayer#1#2%
+  {\ifundefined{\@@layerbox#2}%
+     \ifcase#1\else\writestatus{layer}{unknown layer #2}\fi
+   \else
+     \doifvalue{\??ll#1\c!optie}{\v!test}\tracelayerstrue
+     \iftracelayers \ruledvbox \else \vbox \fi to \overlayheight
+       {\forgetall
+        \hbox to \overlaywidth
+          {\doifvalue{\??ll#2\realfolio\c!positie}{\v!ja}
+             {\xypos{lyr:#2:\realfolio}}%
+           \box\csname\@@layerbox#2\endcsname\hss}%
+        \vss}%
+   \fi}
+
+%D \macros
+%D  {composedlayer} 
+%D
+%D This is a handy shortcut, which saves a couple of braces 
+%D when we use it as parametsr. This name also suits better 
+%D to other layering commands. 
+
+\def\composedlayer#1{\flushlayer[#1]}
+
+%D \macros
+%D  {resetlayer} 
+%D
+%D This macro hardly needs an explanation (and is seldom 
+%D needed as well). 
+
+\def\doresetlayer#1%
+  {\ifundefined{\@@layerbox#1}\else
+     \global\setbox\csname\@@layerbox#1\endcsname\voidb@x
+   \fi}
+
+\def\resetlayer[#1]%
+  {\doresetlayer{#1}\doresetlayer{#1:\realfolio}}
+
+\protect \endinput 

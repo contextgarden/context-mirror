@@ -26,13 +26,13 @@ stopsetup
 startsetup
 com:language:
 typ:val/:
-val:nl,fr,en,uk,de,sp,cz,..:nl:
+val:nl,fr,en,uk,de,es,cz,..:nl:
 stopsetup
 
 startsetup
 com:mainlanguage:
 typ:val/:
-val:nl,fr,en,uk,de,sp,cz,..:nl:
+val:nl,fr,en,uk,de,es,cz,..:nl:
 stopsetup
 
 startsetup
@@ -629,14 +629,14 @@ stopsetup
 startsetup
 com:setupheadtext:
 typ:val/var/:
-val:nl,fr,en,uk,de,sp,cz,..:nl:
+val:nl,fr,en,uk,de,es,cz,..:nl:
 var:*name:*text::
 stopsetup
 
 startsetup
 com:setuplabeltext:
 typ:val/var/:
-val:nl,fr,en,uk,de,sp,cz,..:nl:
+val:nl,fr,en,uk,de,es,cz,..:nl:
 var:*name:*text::
 stopsetup
 
@@ -810,6 +810,8 @@ var:leftoffset:*dimension::
 var:rightoffset:*dimension::
 var:topoffset:*dimension::
 var:bottomoffset:*dimension::
+var:before:*command::
+var:after:*command::
 var:state:start,stop::
 ivr:setupframed::
 stopsetup
@@ -1819,7 +1821,7 @@ startsetup
 com:setuppositioning:
 typ:vars/:
 var:state:start,overlay::
-var:unit:cm,pt,em,mm,ex,sp,in::
+var:unit:cm,pt,em,mm,ex,es,in::
 var:factor:*number::
 var:scale:*number::
 var:offset:yes,no::
@@ -1846,7 +1848,7 @@ var:ystep:*number::
 var:offset:yes,no::
 var:factor:*number::
 var:scale:*number::
-var:unit:cm,pt,em,mm,ex,sp,in::
+var:unit:cm,pt,em,mm,ex,es,in::
 var:location:left,middle::
 stopsetup
 
@@ -1869,6 +1871,7 @@ var:right:*command::
 var:convertfile:yes,no,small,big::
 var:separator:*text::
 var:autofile:yes,no,page::
+var:global:yes,no::
 stopsetup
 
 startsetup
@@ -2683,7 +2686,7 @@ stopsetup
 startsetup
 com:setupalign:
 typ:val/:
-val:width,left,right,middle,inner,outer, wide,broad,height,bottom,line,reset::
+val:width,left,right,middle,inner,outer, wide,broad,height,bottom,line,reset, hanging,nothanging,hyphenated,nothyphenated::
 stopsetup
 
 startsetup
@@ -3256,7 +3259,9 @@ var:frames:on,off::
 var:ymax:*number::
 var:xmax:*number::
 var:directory:*text::
-var:location:local,global::
+var:location:local,global,default::
+var:maxwidth:*dimension::
+var:maxheight:*dimension::
 stopsetup
 
 startsetup
@@ -3427,7 +3432,7 @@ var:inbetween:*command::
 var:left:*command::
 var:right:*command::
 var:middle:*command::
-var:state:start,stop,none::
+var:state:start,stop,none,local::
 var:style:normal,bold,slanted,boldslanted,type,cap,small...*command::
 var:color:*name::
 var:distance:overlay,*dimension::

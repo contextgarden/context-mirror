@@ -107,7 +107,7 @@ def stopsavingdata =
 enddef ;
 
 %D Instead of a keystroke eating save and allocation 
-%D sequence, you can use the \quote {new} alternatives to 
+%D sequence, you can use the \citeer {new} alternatives to 
 %D save and allocate in one command. 
 
 def newcolor     text v = forsuffixes i=v : save i ; color     i ; endfor ; enddef ;
@@ -527,6 +527,13 @@ enddef ;
 %   (-width/2,+height/2)..(-width/2-offset,0)..(-width/2,-height/2)..cycle)
 %enddef ;
 
+vardef roundedsquare (expr width, height, offset) =
+  ((offset,0)--(width-offset,0){right}          ..
+   (width,offset)--(width,height-offset){up}    ..
+   (width-offset,height)--(offset,height){left} ..
+   (0,height-offset)--(0,offset){down}          .. cycle)  
+enddef ;
+
 %D Some colors.
 
 color cyan    ; cyan    = (0,1,1) ;
@@ -635,13 +642,32 @@ primarydef p randomshifted s =
   endgroup 
 enddef ; 
 
+%primarydef p randomized s =
+%  for i=0 upto length(p)-1 : 
+%   ((point       i    of p) randomshifted s) .. controls 
+%   ((postcontrol i    of p) randomshifted s) and 
+%   ((precontrol (i+1) of p) randomshifted s) .. 
+%  endfor cycle 
+%enddef ;
+
 primarydef p randomized s =
-  for i=0 upto length(p)-1 : 
-   ((point       i    of p) randomshifted s) .. controls 
-   ((postcontrol i    of p) randomshifted s) and 
-   ((precontrol (i+1) of p) randomshifted s) .. 
-  endfor cycle 
-enddef ;
+  (if path p : 
+    for i=0 upto length(p)-1 :
+      ((point       i    of p) randomshifted s) .. controls 
+      ((postcontrol i    of p) randomshifted s) and 
+      ((precontrol (i+1) of p) randomshifted s) .. 
+    endfor 
+    if cycle p : 
+      cycle 
+    else :
+      ((point length(p) of p) randomshifted s) 
+    fi
+  elseif pair p :
+   p randomshifted s  
+  else :
+   p + uniformdeviate s  
+  fi)  
+enddef ; 
 
 %D Rather fundamental. 
 
@@ -982,11 +1008,30 @@ vardef thefreelabel (expr str, loc, ori) =
   setbounds s to boundingbox s enlarged freelabeloffset ; 
   p := fullcircle scaled (2*length(loc-ori)) shifted ori ;
   q := freesquare xyscaled (urcorner s - llcorner s) ;
-  l := point (xpart (p intersectiontimes (ori--loc))) of q ;
-setbounds s to boundingbox s enlarged -freelabeloffset ; % new  
+%  l := point (xpart (p intersectiontimes (ori--loc))) of q ;
+  l := point xpart (p intersectiontimes 
+   (ori--((1+eps)*arclength(ori--loc)*unitvector(loc-ori)))) of q ;
+  setbounds s to boundingbox s enlarged -freelabeloffset ; % new  
  %draw boundingbox s shifted -l withpen pencircle scaled .5pt withcolor red ; 
   (s shifted -l) 
 enddef ; 
+
+% better? 
+
+vardef thefreelabel (expr str, loc, ori) =
+  save s, p, q, l ; picture s ; path p, q ; pair l ;
+  interim labeloffset := freelabeloffset ;
+  s := if string str : thelabel(str,loc) else : str shifted -center str shifted loc fi ;
+  setbounds s to boundingbox s enlarged freelabeloffset ;
+  p := fullcircle scaled (2*length(loc-ori)) shifted ori ;
+  q := freesquare xyscaled (urcorner s - llcorner s) ;
+  l := point xpart (p intersectiontimes (ori--loc shifted (loc-ori))) of q ;
+  setbounds s to boundingbox s enlarged -freelabeloffset ; % new
+  draw boundingbox s shifted -l withpen pencircle scaled .5pt withcolor red ;
+  (s shifted -l)
+enddef ;
+
+
 
 vardef freelabel (expr str, loc, ori) = 
   draw thefreelabel(str,loc,ori) ;
@@ -1006,34 +1051,84 @@ enddef ;
 numeric anglelength ; anglelength := 20pt ;
 numeric anglemethod ; anglemethod :=    1 ;
 
-vardef anglebetween (expr a, b, str) = % path path string 
+% vardef anglebetween (expr a, b, str) = % path path string 
+%   save pointa, pointb, common, middle, offset ;
+%   pair pointa, pointb, common, middle, offset ;
+%   save curve ; path curve ; 
+%   save where ; numeric where ; 
+%   if round point 0 of a = round point 0 of b : 
+%     common := point 0 of a ;
+%   else :
+%     common := a intersectionpoint b ;
+%   fi ; 
+%   pointa := point anglelength on a ; 
+%   pointb := point anglelength on b ; 
+%   where  := turningnumber (common--pointa--pointb--cycle) ; 
+%   middle := ((common--pointa) rotatedaround (pointa,-where*90))
+%                             intersectionpoint 
+%             ((common--pointb) rotatedaround (pointb, where*90)) ;  
+%   if     anglemethod = 0 :
+%     curve  := pointa{unitvector(middle-pointa)}.. pointb; 
+%     middle := point .5 along curve ; 
+%     curve  := common ;  
+%   elseif anglemethod = 1 :  
+%     curve  := pointa{unitvector(middle-pointa)}.. pointb; 
+%     middle := point .5 along curve ; 
+%   elseif anglemethod = 2 :  
+%     middle := common rotatedaround(.5[pointa,pointb],180) ; 
+%     curve  := pointa--middle--pointb ; 
+%   elseif anglemethod = 3 :    
+%     curve  := pointa--middle--pointb ; 
+%   elseif anglemethod = 4 :    
+%     curve  := pointa..controls middle..pointb ; 
+%     middle := point .5 along curve ; 
+%   fi ; 
+%   draw thefreelabel(str, middle, common) withcolor black ;
+%   curve
+% enddef ;
+
+vardef anglebetween (expr a, b, str) = % path path string
   save pointa, pointb, common, middle, offset ;
   pair pointa, pointb, common, middle, offset ;
-  save curve ; path curve ; 
-  save where ; numeric where ; 
-  if round point 0 of a = round point 0 of b : 
+  save curve ; path curve ;
+  save where ; numeric where ;
+  if round point 0 of a = round point 0 of b :
     common := point 0 of a ;
   else :
     common := a intersectionpoint b ;
-  fi ; 
-  pointa := point anglelength on a ; 
-  pointb := point anglelength on b ; 
-  where := turningnumber (common--pointa--pointb--cycle) ; 
-  if     anglemethod = 1 :  
-    curve := pointa{pointa rotated (where*90)} .. pointb ; 
-    middle := point .5 along curve ; 
-  elseif anglemethod = 2 :  
-    middle := common rotatedaround(.5[pointa,pointb],180) ; 
-    curve := pointa--middle--pointb ; 
-  elseif anglemethod = 3 :    
-    middle := ((common--pointa) rotatedaround (pointa,-where*90))
-                              intersectionpoint 
-              ((common--pointb) rotatedaround (pointb, where*90)) ;  
-    curve := pointa--middle--pointb ; 
-  fi ; 
+  fi ;
+  pointa := point anglelength on a ;
+  pointb := point anglelength on b ;
+  where  := turningnumber (common--pointa--pointb--cycle) ;
+  middle := (reverse(common--pointa) rotatedaround (pointa,-where*90))
+                            intersection_point
+            (reverse(common--pointb) rotatedaround (pointb, where*90)) ;
+  if not intersection_found :
+    middle := point .5 along
+      ((reverse(common--pointa) rotatedaround (pointa,-where*90)) --
+       (       (common--pointb) rotatedaround (pointb, where*90))) ;
+  fi ;
+  if     anglemethod = 0 :
+    curve  := pointa{unitvector(middle-pointa)}.. pointb;
+    middle := point .5 along curve ;
+    curve  := common ;
+  elseif anglemethod = 1 :
+    curve  := pointa{unitvector(middle-pointa)}.. pointb;
+    middle := point .5 along curve ;
+  elseif anglemethod = 2 :
+    middle := common rotatedaround(.5[pointa,pointb],180) ;
+    curve  := pointa--middle--pointb ;
+  elseif anglemethod = 3 :
+    curve  := pointa--middle--pointb ;
+  elseif anglemethod = 4 :
+    curve  := pointa..controls middle..pointb ;
+    middle := point .5 along curve ;
+  fi ;
   draw thefreelabel(str, middle, common) withcolor black ;
   curve
 enddef ;
+
+
 
 % Stack
 
@@ -1212,5 +1307,158 @@ enddef ;
 % like decimal
 
 def condition primary b = if b : "true" else : "false" fi enddef ; 
+
+% undocumented
+
+primarydef p stretched s = 
+  begingroup
+  save pp ; path pp ; pp := p scaled s ;
+  (pp shifted ((point 0 of p) - (point 0 of pp)))  
+  endgroup
+enddef ; 
+
+% yes or no, untested -) 
+
+def xshifted expr dx = shifted(dx,0) enddef ;  
+def yshifted expr dy = shifted(0,dy) enddef ;  
+
+% also handy 
+
+% right: str = readfrom ("abc" & ".def" ) ; 
+% wrong: str = readfrom  "abc" & ".def"   ;
+
+def readfile (expr name) = 
+  if (readfrom (name) <> EOF) : 
+    scantokens("input " & name & " ") 
+  fi  
+enddef ; 
+
+% permits redefinition of end in macro 
+
+inner end ; 
+
+% real fun
+
+color color_map[][][] ;
+
+%color_map_resolution := 1000 ;
+%
+%def r_color primary c = round(color_map_resolution*redpart   c) enddef ;
+%def g_color primary c = round(color_map_resolution*greenpart c) enddef ;
+%def b_color primary c = round(color_map_resolution*bluepart  c) enddef ;
+
+def r_color primary c = redpart   c enddef ;
+def g_color primary c = greenpart c enddef ;
+def b_color primary c = bluepart  c enddef ;
+
+def remapcolor(expr old, new) =
+  color_map[r_color old][g_color old][b_color old] := new ;
+enddef ;
+
+def remappedcolor(expr c) =
+  if known color_map[r_color c][g_color c][b_color c] :
+    color_map[r_color c][g_color c][b_color c]
+  else :
+    c
+  fi
+enddef ;
+
+let normalwithcolor = withcolor ;
+
+def remapcolors =
+  def withcolor primary c = normalwithcolor remappedcolor(c) enddef ;
+enddef ;
+
+def normalcolors =
+  let withcolor = normalwithcolor ;
+enddef ;
+
+def refill  suffix c = do_repath (1) (c) enddef ;
+def redraw  suffix c = do_repath (2) (c) enddef ;
+def recolor suffix c = do_repath (0) (c) enddef ;
+
+def do_repath (expr mode) (suffix c) text t =
+  begingroup ;
+  if mode=0 : save withcolor ; remapcolors ; fi ; 
+  save _c_, _f_, _b_ ; picture _c_ ; color _f_ ; path _b_ ; 
+  _c_ := c ; _b_ := boundingbox c ; c := nullpicture ; 
+  for i within _c_ : 
+    _f_ := (redpart i, greenpart i, bluepart i) ;
+    if     bounded i : 
+      setbounds c to pathpart i ; 
+    elseif clipped i : 
+      clip c to pathpart i ; 
+    elseif stroked i : 
+      addto c doublepath pathpart i 
+        dashed dashpart i withpen penpart i 
+        withcolor (redpart i, greenpart i, bluepart i) 
+        if mode=2 : t fi ;
+    elseif filled  i : 
+      addto c contour pathpart i 
+      withcolor (redpart i, greenpart i, bluepart i) 
+      if mode=1 : t if _f_ = background : withcolor background fi fi ;
+    fi ;
+  endfor ;   
+  setbounds c to _b_ ; 
+  endgroup ; 
+enddef ; 
+
+% After a question of Denis on how to erase a z variable, Jacko 
+% suggested to assign whatever to x and y. So a clearz 
+% variable can be defined as: 
+%
+% vardef clearz@# = 
+%   x@# := whatever ; 
+%   y@# := whatever ; 
+% enddef ; 
+%
+% but Jacko suggested a redefinition of clearxy: 
+%
+% def clearxy text s =
+%  clearxy_index_:=0; 
+%  for $:=s: 
+%    clearxy_index_:=clearxy_index_+1; endfor;
+%  if clearxy_index_=0: 
+%    save x,y;
+%  else: 
+%    forsuffixes $:=s: x$:=whatever; y$:=whatever; endfor;
+%  fi
+% enddef;
+%
+% which i decided to simplify to: 
+
+def clearxy text s =
+  if false for $ := s : or true endfor : 
+    forsuffixes $ := s : x$ := whatever ; y$ := whatever ; endfor ;
+  else : 
+    save x, y ;
+  fi
+enddef ;
+
+% so now we can say: clearxy ; as well as clearxy 1, 2, 3 ; 
+
+% show x0 ; z0 = (10,10) ; 
+% show x0 ; x0 := whatever ; y0 := whatever ; 
+% show x0 ; z0 = (20,20) ;
+% show x0 ; clearxy 0 ; 
+% show x0 ; z0 = (30,30) ;
+
+primarydef p smoothed d =
+  (p llmoved (-xpart paired(d),0) -- p lrmoved (-xpart paired(d),0) {right} .. 
+   p lrmoved (0,-ypart paired(d)) -- p urmoved (0,-ypart paired(d)) {up}    .. 
+   p urmoved (-xpart paired(d),0) -- p ulmoved (-xpart paired(d),0) {left}  ..
+   p ulmoved (0,-ypart paired(d)) -- p llmoved (0,-ypart paired(d)) {down}  .. cycle) 
+enddef ;
+
+primarydef p cornered c = 
+  ((point 0 of p) shifted (c*(unitvector(point 1 of p - point 0 of p))) -- 
+   for i=1 upto length(p) :
+     (point i-1 of p) shifted (c*(unitvector(point i   of p - point i-1 of p))) -- 
+     (point i   of p) shifted (c*(unitvector(point i-1 of p - point i   of p))) ..
+     controls point i of p .. 
+   endfor cycle) 
+enddef ;
+
+% done 
 
 endinput ;

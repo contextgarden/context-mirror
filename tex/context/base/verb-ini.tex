@@ -11,6 +11,9 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
 %C details. 
 
+%D Today I would implement the pretty handler slightly 
+%D different, using stack and intermediate flushing. 
+
 %D Because this module is quite independant of system macros,
 %D it can be used as a stand||alone verbatim environment.
 %D
@@ -156,6 +159,12 @@
 \gdef\ignorelines {\catcode`\^^M=\@@active\def^^M{\obeyedspace}}
 \gdef\ignorepages {\catcode`\^^L=\@@ignore}  % \@@active\def^^L{\obeyedline}}
 \gdef\ignoreeofs  {\catcode`\^^Z=\@@ignore}
+
+%D For testing (see digit parser) we need an indirect macro 
+%D in order to compare the next (\type {\next}) token
+%D (possibly \type {^^M}) being \type {\obeyedline}. 
+
+\gdef\nextobeyedline{\obeyedline} 
 
 \egroup
 
@@ -438,7 +447,7 @@
    \escapechar=-1
    \xdef\verbatimname{\string#1}%
    \egroup
-   \def\endofdisplayverbatim{\csname\verbatimname\endcsname}%
+   \def\endofdisplayverbatim{\csname\verbatimname\endcsname}% 
    \bgroup
    \parindent\!!zeropoint
    \ifdim\lastskip<\parskip
@@ -532,7 +541,7 @@
   {\catcode`\!=\@@other \catcode`\?=\@@other \catcode`\@=\@@other
    \catcode`\#=\@@other \catcode`\&=\@@other \catcode`\|=\@@other
    \catcode`\$=\@@other \catcode`\^=\@@other \catcode`\_=\@@other
-   \catcode`\*=\@@other \catcode`\/=\@@other
+   \catcode`\*=\@@other \catcode`\/=\@@other 
    \catcode`\-=\@@other \catcode`\+=\@@other
    \catcode`\==\@@other \catcode`\<=\@@other \catcode`\>=\@@other
    \catcode`\"=\@@other \catcode`\'=\@@other \catcode`\`=\@@other
@@ -621,16 +630,22 @@
 %D
 %D With \type {\makeallletter} each character ($>0$) gets the 
 %D category code 12. 
+%D
+%D The next alternative was okay when memory was still low. 
+%D
+%D \startypen
+%D \def\makeallother%
+%D   {\dorecurse{255}{\catcode\recurselevel=\@@other}}
+%D \stoptypen 
+%D
+%D Today we prebuild a token list:
 
-% \newtoks\makeallothertoks
-%
-% \dorecurse{255}
-%  {\@EA\appendtoks\@EA\catcode\recurselevel=\@@other\to\makeallothertoks}
-%
-% \def\makeallother{\the\makeallothertoks}
+\newtoks\makeallothertoks
 
-\def\makeallother%
-  {\dorecurse{255}{\catcode\recurselevel=\@@other}}
+\dorecurse{255}
+  {\@EA\appendtoks\@EA\catcode\recurselevel=\@@other\to\makeallothertoks}
+
+\def\makeallother{\the\makeallothertoks}
 
 %D The main copying routine of display verbatim does an
 %D ordinary string||compare on the saved closing command and
@@ -1752,29 +1767,29 @@
   \def\permitshiftedendofverbatim%
     {\let\doifendofverbatim=\doifinstringelse}
 
-  \def\processdisplayverbatim#1%
-    {\par
-     \bgroup
-     \escapechar=-1
-     \xdef\verbatimname{\string#1}%
-     \egroup
-     \def\endofdisplayverbatim{\csname\verbatimname\endcsname}%
-     \bgroup
-     \parindent\!!zeropoint
-     \ifdim\lastskip<\parskip
-       \removelastskip
-       \vskip\parskip
-     \fi
-     \parskip\!!zeropoint
-     \processingverbatimtrue
-     \expandafter\let\csname\verbatimname\endcsname=\relax
-     \expandafter\convertargument\csname\verbatimname\endcsname
-       \to\endofverbatimcommand
-     \verbatimfont \spaceskip=.5em \xspaceskip=\spaceskip
-     \global\linepartrue % needed for paragraph numbering 
-     \setupcopyverbatim
-     \initializeverbatimline
-     \copyverbatimline}
+%  \def\processdisplayverbatim#1%
+%    {\par
+%     \bgroup
+%     \escapechar=-1
+%     \xdef\verbatimname{\string#1}%
+%     \egroup
+%     \def\endofdisplayverbatim{\csname\verbatimname\endcsname}%
+%     \bgroup
+%     \parindent\!!zeropoint
+%     \ifdim\lastskip<\parskip
+%       \removelastskip
+%       \vskip\parskip
+%     \fi
+%     \parskip\!!zeropoint
+%     \processingverbatimtrue
+%     \expandafter\let\csname\verbatimname\endcsname=\relax
+%     \expandafter\convertargument\csname\verbatimname\endcsname
+%       \to\endofverbatimcommand
+%     \verbatimfont \spaceskip=.5em \xspaceskip=\spaceskip
+%     \global\linepartrue % needed for paragraph numbering 
+%     \setupcopyverbatim
+%     \initializeverbatimline
+%     \copyverbatimline}
 
   {\obeylines%
    \long\gdef\copyverbatimline#1
@@ -1794,10 +1809,35 @@
 %D As a bonus, we provide the next alternative, which takes
 %D end tags like \type {Hello World!}. 
 
-  \def\processtaggeddisplayverbatim#1%
+%  \def\processtaggeddisplayverbatim#1%
+%    {\par
+%     \let\endofdisplayverbatim\relax
+%     \convertargument#1\to\endofverbatimcommand
+%     \bgroup
+%     \parindent\!!zeropoint
+%     \ifdim\lastskip<\parskip
+%       \removelastskip
+%       \vskip\parskip
+%     \fi
+%     \parskip\!!zeropoint
+%     \processingverbatimtrue
+%     \verbatimfont \spaceskip=.5em \xspaceskip=\spaceskip
+%     \global\linepartrue % needed for paragraph numbering 
+%     \setupcopyverbatim
+%     \initializeverbatimline
+%     \copyverbatimline}
+
+  \def\doprocessdisplayverbatim#1#2%
     {\par
-     \let\endofdisplayverbatim\relax
-     \convertargument#1\to\endofverbatimcommand
+     \bgroup
+     \escapechar=-1
+     \xdef\verbatimname{\string#2}%
+     \egroup
+     \ifcase#1%
+       \let\endofdisplayverbatim\relax
+     \else
+       \def\endofdisplayverbatim{\csname\verbatimname\endcsname}%
+     \fi
      \bgroup
      \parindent\!!zeropoint
      \ifdim\lastskip<\parskip
@@ -1806,11 +1846,21 @@
      \fi
      \parskip\!!zeropoint
      \processingverbatimtrue
+     \ifcase#1%
+       \convertargument#2\to\endofverbatimcommand
+     \else
+       \expandafter\let\csname\verbatimname\endcsname=\relax
+       \expandafter\convertargument\csname\verbatimname\endcsname
+         \to\endofverbatimcommand
+     \fi
      \verbatimfont \spaceskip=.5em \xspaceskip=\spaceskip
      \global\linepartrue % needed for paragraph numbering 
      \setupcopyverbatim
      \initializeverbatimline
      \copyverbatimline}
+
+  \def\processdisplayverbatim      {\doprocessdisplayverbatim1}
+  \def\processtaggeddisplayverbatim{\doprocessdisplayverbatim0}
 
 \fi
 

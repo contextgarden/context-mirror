@@ -1,0 +1,122 @@
+%D \module
+%D   [       file=xtag-vis,
+%D        version=2001.01.10,
+%D          title=\CONTEXT\ XML Support,
+%D       subtitle=Visualization,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{Context XML Macros (visualization)}
+
+\unprotect 
+
+\bgroup
+
+\catcode`\.=\@@escape
+.catcode`.B=.@@begingroup
+.catcode`.E=.@@endgroup
+.catcode`.#=.@@active
+.catcode`.$=.@@active
+.catcode`.%=.@@active
+.catcode`.\=.@@active
+.catcode`.^=.@@active
+.catcode`._=.@@active
+.catcode`.{=.@@active
+.catcode`.}=.@@active
+.catcode`.|=.@@active
+.catcode`.~=.@@active
+
+.gdef.verbatimXML
+  B.catcode`.#=.@@active .let#.letterhash
+   .catcode`.$=.@@active .let$.dollar
+   .catcode`.%=.@@active .let%.percent
+   .catcode`.\=.@@active .let\.letterbackslash
+   .catcode`.^=.@@active .let^.letterhat
+   .catcode`._=.@@active .let_.letterunderscore
+   .catcode`.{=.@@active .let{.leftargument
+   .catcode`.}=.@@active .let}.rightargument
+   .catcode`.|=.@@active .let|.letterbar
+   .catcode`.~=.@@active .let~.lettertilde
+  E
+
+.egroup
+
+\definepalet
+  [xtag]
+  [0=darkgreen,
+   1=darkred,
+   2=darkblue,
+   3=darkgray]
+
+\newcount\XMLlevel 
+
+\def\@XMLindent#1%
+%  {\ifnum\XMLlevel>0\advance\leftskip#11em\relax\fi}
+  {\advance\leftskip#11em\relax}
+
+\def\@XMLlevel#1%
+  {\advance\XMLlevel#11\relax}
+
+\def\@XMLentity#1%
+  {\noindent
+   \hbox
+     {\localcolortrue
+      \startcolormode{xtag:3}\string&#1;\stopcolormode}}
+
+\def\@XMLelement#1%
+  {\ifhmode\unskip\fi
+   \noindent
+   \hbox
+     {\localcolortrue
+      \DoMod\XMLlevel by3to\scratchcounter
+      \startcolormode{xtag:\number\scratchcounter}\string<\currentXMLelement\stopcolormode
+      \ifcase#1\or\ifx\currentXMLarguments\empty\else
+        \startcolormode{xtag:3}\hskip.5em\currentXMLarguments\unskip\stopcolormode
+      \fi\fi
+      \startcolormode{xtag:\number\scratchcounter}\string>\stopcolormode}%
+   \ignorespaces}
+
+\def\nextXMLtext{\blank\@XMLlevel+\@XMLelement1\par}
+\def\prevXMLtext{\par\@XMLelement0\par\@XMLlevel-\blank}
+\def\nextXMLpara{\nextXMLline\par}
+\def\prevXMLpara{\par\prevXMLline}
+\def\nextXMLline{\par\@XMLlevel+\@XMLindent+\@XMLelement1}
+\def\prevXMLline{\@XMLelement0\par\@XMLlevel-\@XMLindent-}
+\def\nextXMLword{\@XMLlevel+\@XMLelement1}
+\def\prevXMLword{\@XMLelement0\@XMLlevel-}
+
+\def\someXMLword{\@XMLlevel+\@XMLelement1\@XMLlevel-}
+
+\def\setXMLshow#1#2#3[#4]%
+  {\def\docommando##1{#1[##1]#2#3}\processcommalist[#4]\docommando}
+
+\def\showXMLtxt{\setXMLshow\defineXMLenvironment\nextXMLtext\prevXMLtext}
+\def\showXMLpar{\setXMLshow\defineXMLenvironment\nextXMLpara\prevXMLpara}
+\def\showXMLlin{\setXMLshow\defineXMLenvironment\nextXMLline\prevXMLline}
+\def\showXMLwrd{\setXMLshow\defineXMLenvironment\nextXMLword\prevXMLword}
+\def\showXMLemp{\setXMLshow\defineXMLsingular\someXMLword\relax}
+
+\def\showXMLfile#1%
+  {{\tttf\dontcomplain
+    \let\executeXMLentity\@XMLentity
+    \enableXML\verbatimXML
+    \processfile{#1}}}
+
+\def\showXMLbuffer%
+  {\dosingleempty\doshowXMLbuffer}
+
+\def\doshowXMLbuffer[#1]%
+  {\doifelsenothing{#1}
+     {\doshowXMLbuffer[\jobname]}
+     {\bgroup
+      \def\dodoprocessXMLbuffer##1%
+        {\showXMLfile{\TEXbufferfile{##1}}}%
+      \processcommalist[#1]\dodoprocessXMLbuffer
+      \egroup}}
+
+\protect \endinput 

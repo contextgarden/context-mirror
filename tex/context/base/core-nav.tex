@@ -51,7 +51,6 @@
 
 \def\dodosetupinteraction[#1]% % \dosetupinteraction == special 
   {\getparameters[\??ia][#1]%
-   \dosetuppageview{\@@iascherm}%     
    \doifelse{\@@iastatus}{\v!start}
      {\iflocation\else
         \showmessage{\m!interactions}{2}{\ifusepagedestinations\space(PAGE)\fi}%
@@ -66,6 +65,7 @@
    \else
      \disablemode[\systemmodeprefix\v!interactie]%
    \fi
+   \dosetuppageview{\@@iafocus}%     
    \doifsomething{\@@iabereken}
      {\doregistercalculationset\@@iabereken}%
    \doifelse{\@@iastrut}{\v!ja}
@@ -324,11 +324,13 @@
    \c!scherm=,
   %\c!openactie={\v!eerstepagina,AtOpenInitializeForm},
   %\c!openactie={\v!eerstepagina,\v!ResetForm},
-   \c!openactie=\v!ResetForm,
+  %\c!openactie=\v!ResetForm, % too buggy in reader 4.05
+   \c!openactie=,
    \c!sluitactie=,
    \c!openpaginaactie=,
    \c!sluitpaginaactie=,
-   \c!scherm=\v!passend,
+   \c!scherm=\v!normaal,
+   \c!focus=\v!passend,
    \c!menu=\v!uit,
    \c!letter=\v!vet,
    \c!bereken=,

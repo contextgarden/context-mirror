@@ -125,7 +125,9 @@
 
 \let\doPDFresetpageattributes=\relax
 
-\appendtoks\doPDFresetpageattributes\to\everyshipout
+\appendtoksonce 
+  \doPDFresetpageattributes 
+\to \everyshipout
 
 \ifx\PDFcode\undefined
   \ifx\pdfliteral\undefined
@@ -163,13 +165,13 @@
 \global\let\currentPDFcropbox \empty
 \global\let\currentPDFpagemode\empty
 
-\appendtoks % hack to prevent duplicates
+\appendtoksonce % hack to prevent duplicates
   \ifcase\realfolio\or\doPDFaddtocatalog{\currentPDFpagemode}\fi
-\to\everyshipout
+\to \everyshipout
 
-\appendtoks
+\appendtoksonce
   \doPDFpageattribute{\currentPDFcropbox}%
-\to\everyshipout
+\to \everyshipout
 
 %D \macros
 %D   {doPDFsetupopenaction,doPDFsetupcloseaction,
@@ -208,7 +210,9 @@
    \global\let\PDFopenpageaction \empty
    \global\let\PDFclosepageaction\empty}
 
-\appendtoks \checkPDFpageactions \to \everyshipout
+\appendtoksonce 
+  \checkPDFpageactions 
+\to \everyshipout
 
 %D \macros
 %D   {doPDFstartthisislocation}
@@ -376,7 +380,8 @@
 \def\PDFexecutegotopage    {/Named /N /GoToPage}
 \def\PDFexecutequery       {/Named /N /AcroSrch:Query}
 \def\PDFexecutequeryagain  {/Named /N /AcroSrch:NextHit}
-
+\def\PDFexecutefitwidth    {/Named /N /FitWidth}
+\def\PDFexecutefitheight   {/Named /N /FitHeight}
 
 \def\doPDFstartexecutecommand#1#2#3#4%
   {\doifdefined{PDFexecute#3}
@@ -506,16 +511,19 @@
    \ScaledPointsToBigPoints{#7}\width
    \ScaledPointsToBigPoints{#8}\height
    \let\pdf@@options\empty
-   \def\pdf@@actions{/ShowControls false }%
+   \let\pdf@@actions\empty 
+   \donefalse
    \@EA\processallactionsinset\@EA
      [#9]
-     [\v!herhaal=>\edef\pdf@@actions{\pdf@@actions /Mode /Repeat },
+     [\v!sturing=>\donetrue,
+      \v!herhaal=>\edef\pdf@@actions{\pdf@@actions /Mode /Repeat },
       \v!preview=>\edef\pdf@@options{\pdf@@options /Poster true  }]%
+   \edef\pdf@@actions{\pdf@@actions /ShowControls \ifdone true\else false\fi}%
    \doPDFannotation width #7 height #8 data
      {/Subtype /Movie
       /T (movie \currentmovie)
       /Movie << /F (#1) /Aspect [\width\space\height] \pdf@@options >>
-      /A << \pdf@@actions>>}%
+      /A << \pdf@@actions >>}%
    \egroup}
 
 %D \macros
@@ -838,7 +846,7 @@
        {\FDFcollection\space\PDFobjectreference}%
    \fi}
 
-\prependtoks \flushFDFnames \to \everylastshipout % test \everybye
+\prependtoksonce \flushFDFnames \to \everylastshipout % test \everybye
 
 %D \macros
 %D   {defineFDFfonts,
@@ -952,20 +960,20 @@
 \def\PDFpageviewwrd{ /Fit}
 \def\PDFpageview   {/View [\PDFpageviewwrd] }
 
-\definespecial\dosetuppageview#1%
-  {%\processaction
-   %  [#1]
-   %  [\v!passend=>\def\PDFpageviewkey{   fit}%
-   %               \def\PDFpageviewwrd{  /Fit},
-   %   \v!breedte=>\def\PDFpageviewkey{  fith}%   % watch the v-h
-   %               \def\PDFpageviewwrd{ /FitH},   % swapping here
-   %    \v!hoogte=>\def\PDFpageviewkey{  fitv}%   % and here and
-   %               \def\PDFpageviewwrd{ /FitV},   % here too
-   %      \v!geen=>\def\PDFpageviewkey{   xyz}%
-   %               \def\PDFpageviewwrd{  /XYZ 0 0 0},
-   %   \s!unknown=>\def\PDFpageviewkey{  fitv}%
-   %               \def\PDFpageviewwrd{ /FitV}]%
-  }%\edef\PDFpageview{/View [\PDFpageviewwrd] }}
+\def\dosetuppageview#1%
+  {\processaction
+     [#1]
+     [\v!passend=>\def\PDFpageviewkey{   fit}%
+                  \def\PDFpageviewwrd{  /Fit},
+      \v!breedte=>\def\PDFpageviewkey{  fith}%   % watch the v-h
+                  \def\PDFpageviewwrd{ /FitH},   % swapping here
+       \v!hoogte=>\def\PDFpageviewkey{  fitv}%   % and here and
+                  \def\PDFpageviewwrd{ /FitV},   % here too
+%   \v!standaard=>\def\PDFpageviewkey{  xyz 0 0 0}%
+%                 \def\PDFpageviewwrd{ /XYZ 0 0 0}, 
+      \s!unknown=>\def\PDFpageviewkey{   fit}%
+                  \def\PDFpageviewwrd{  /Fit}]%
+   \edef\PDFpageview{/View [\PDFpageviewwrd]}}
 
 %D \macros
 %D   {setFDFkids}
@@ -1511,8 +1519,10 @@
 
 \newevery\everysetfield\relax
 
-\appendtoks \enablePDFdocencoding \to \everysetfield
-\appendtoks \enablePDFcrlf        \to \everysetfield
+\appendtoksonce 
+  \enablePDFdocencoding 
+  \enablePDFcrlf        
+\to \everysetfield
 
 %D \macros
 %D   {doPDFinsertcomment}
@@ -1543,7 +1553,7 @@
      {\vfill
       \doPDFannotation width #2 height #3 data 
         {/Subtype /Text 
-         \ifcase#5 \else/Open false\fi
+         \ifcase#5 \else/Open true\fi
          /Contents (\PDFdata)
          \PDFcomment
          \PDFidentifier

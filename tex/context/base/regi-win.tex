@@ -1,0 +1,115 @@
+%D \module
+%D   [       file=enco-win,
+%D        version=1997.08.29,
+%D          title=\CONTEXT\ Encoding Macros,
+%D       subtitle=Windows 1252 ANSI keys,
+%D         author={Tobias Burnus \& Hans Hagen},
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D This module activates the (western) \MSWINDOWS\ high \ANSI\
+%D characters, such as ë and á.
+
+%D NOT OKAY YET.
+
+\startregime [windows]
+
+\defineactivetoken 132 {\char44\kern-.1em\char44 }
+\defineactivetoken 133 {\dots}
+\defineactivetoken 134 {\dag}
+\defineactivetoken 135 {\ddag}
+\defineactivetoken 139 {\leftsubguillemot}
+\defineactivetoken 145 {\upperleftsinglesixquote}
+
+\defineactivetoken 146 {\char39 }
+\defineactivetoken 147 {\char96\kern-.1em\char96 }
+\defineactivetoken 148 {\char34 }
+\defineactivetoken 150 {--}
+\defineactivetoken 151 {---}
+\defineactivetoken 155 {\rightsubguillemot}
+\defineactivetoken 161 {!`}
+\defineactivetoken 163 {\sterling}
+\defineactivetoken 167 {\S}
+\defineactivetoken 169 {\copyright}
+\defineactivetoken 171 {\ifvmode\leavevmode\fi\leftguillemot\prewordbreak}
+\defineactivetoken 191 {?`}
+
+\defineactivetoken 182 {\P}
+\defineactivetoken 187 {\prewordbreak\rightguillemot}
+
+\defineactivetoken 138 {\Scaron}
+\defineactivetoken 154 {\scaron}
+
+\defineactivetoken 192 {\Agrave}
+\defineactivetoken 193 {\Aacute}
+\defineactivetoken 194 {\Acircumflex}
+\defineactivetoken 195 {\Atilde}
+\defineactivetoken 196 {\Adiaeresis}
+\defineactivetoken 197 {\Aring}
+\defineactivetoken 198 {\AEligature}
+\defineactivetoken 199 {\Ccedilla}
+\defineactivetoken 200 {\Egrave}
+\defineactivetoken 201 {\Eacute}
+\defineactivetoken 202 {\Ecircumflex}
+\defineactivetoken 203 {\Ediaeresis}
+\defineactivetoken 204 {\Igrave}
+\defineactivetoken 205 {\Iacute}
+\defineactivetoken 206 {\Icircumflex}
+\defineactivetoken 207 {\Idiaeresis}
+
+\defineactivetoken 209 {\Ntilde}
+\defineactivetoken 210 {\Ograve}
+\defineactivetoken 211 {\Oacute}
+\defineactivetoken 212 {\Ocircumflex}
+\defineactivetoken 213 {\Otilde}
+\defineactivetoken 214 {\Odiaeresis}
+\defineactivetoken 215 {\OEligature}
+\defineactivetoken 216 {\Ostroke}
+\defineactivetoken 217 {\Ugrave}
+\defineactivetoken 218 {\Uacute}
+\defineactivetoken 219 {\Ucircumflex}
+\defineactivetoken 220 {\Udiaeresis}
+\defineactivetoken 221 {\Ygrave}
+
+\defineactivetoken 223 {\ssharp}
+
+\defineactivetoken 224 {\agrave}
+\defineactivetoken 225 {\aacute}
+\defineactivetoken 226 {\acircumflex}
+\defineactivetoken 227 {\atilde}
+\defineactivetoken 228 {\adiaeresis}
+\defineactivetoken 229 {\aring}
+\defineactivetoken 230 {\aeligature}
+\defineactivetoken 231 {\cdedille}
+\defineactivetoken 232 {\egrave}
+\defineactivetoken 233 {\eacute}
+\defineactivetoken 234 {\ecircumflex}
+\defineactivetoken 235 {\ediaeresis}
+\defineactivetoken 236 {\igrave}
+\defineactivetoken 237 {\iacute}
+\defineactivetoken 238 {\icircumflex}
+\defineactivetoken 239 {\idiaeresis}
+
+\defineactivetoken 241 {\ntilde}
+\defineactivetoken 242 {\ograve}
+\defineactivetoken 243 {\oacute}
+\defineactivetoken 244 {\ocircumflex}
+\defineactivetoken 245 {\otilde}
+\defineactivetoken 246 {\odiaeresis}
+\defineactivetoken 247 {\oeligature}
+\defineactivetoken 248 {\ostroke}
+\defineactivetoken 249 {\ugrave}
+\defineactivetoken 250 {\uacute}
+\defineactivetoken 251 {\ucircumflex}
+\defineactivetoken 252 {\udiaeresis}
+\defineactivetoken 253 {\ygrave}
+
+\defineactivetoken 255 {\ydiaeresis}
+
+\stopregime
+
+\endinput

@@ -51,6 +51,11 @@
       1: leser inn symbolsett --
 \stopmessages
 
+\startmessages  romanian  library: symbols
+  title: simboluri
+      1: se incarca setul de simboluri --
+\stopmessages
+
 %D \macros
 %D   {definesymbol, symbol}
 %D 
@@ -108,8 +113,8 @@
        {\doifdefinedelse{\??ss:#1}{\dodosymbol{#1}}{#1}}%
    \fi\fi}
 
-\def\dodosymbol#1%
-  {{\the\everysymbol\getvalue{\??ss:#1}}}
+\def\dodosymbol#1% \relax's prevent lookahead problems 
+  {{\the\everysymbol\getvalue{\??ss:#1}\relax}\relax}
 
 \newtoks\everysymbol
 

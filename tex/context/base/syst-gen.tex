@@ -161,9 +161,9 @@
 \def\unprotect%
   {\ifcase\protectionlevel
      \edef\doprotectcharacters%
-       {\catcode`\noexpand @=\the\catcode`@\relax
-        \catcode`\noexpand !=\the\catcode`!\relax
-        \catcode`\noexpand ?=\the\catcode`?\relax}%
+       {\catcode`\noexpand @=\the\catcode`@ %\relax
+        \catcode`\noexpand !=\the\catcode`! %\relax
+        \catcode`\noexpand ?=\the\catcode`?}%\relax}%
      \catcode`@=11
      \catcode`!=11
      \catcode`?=11
@@ -182,7 +182,7 @@
    \ifnum\protectionlevel>1
      \message{<protect \the\protectionlevel>}%
    \fi
-   \advance\protectionlevel -1\relax}
+   \advance\protectionlevel -1 }
 
 %D Now it is defined, we can make use of this very useful
 %D macro.
@@ -225,7 +225,7 @@
 %D \macros
 %D   {scratchcounter,
 %D    scratchdimen,scratchskip,scratchmuskip,
-%D    scratchbox,
+%D    scratchbox,globalscratchbox,
 %D    scratchtoks,
 %D    ifdone}
 %D
@@ -238,7 +238,7 @@
 \newdimen  \scratchdimen
 \newskip   \scratchskip
 \newmuskip \scratchmuskip
-\newbox    \scratchbox
+\newbox    \scratchbox 
 \newtoks   \scratchtoks
 \newif     \ifdone    
 
@@ -485,6 +485,9 @@
 \def\resetvalue#1%
   {\expandafter\let\csname#1\endcsname\empty}
 
+\def\ignorevalue#1#2%
+  {\expandafter\let\csname#1\endcsname\empty}
+
 %D \macros 
 %D   {globallet}
 %D
@@ -598,9 +601,9 @@
 \beginETEX \protected
 
 \let \unexpanded      \normalprotected
-\let \honorunexpanded \relax
-\let \forceunexpanded \relax
-\let \resetunexpanded \relax
+\let \honorunexpanded \empty % \relax
+\let \forceunexpanded \empty % \relax
+\let \resetunexpanded \empty % \relax
 
 \endETEX
 
@@ -1592,7 +1595,7 @@
 %D \def\processallactionsinset[#1]#2[#3]%
 %D   {\doifelse{#1}{}
 %D      {\processaction[][#3]}
-%D      {\advance\processlevel by 1\relax
+%D      {\advance\processlevel by 1
 %D       \def\p!compareprocessaction[##1=>##2][##3]%
 %D         {\edef\!!stringa{##1}%
 %D          \edef\!!stringb{##3}%
@@ -1609,7 +1612,7 @@
 %D            {\p!compareprocessaction[####1][##1]}%
 %D          \processcommalist[#3]\p!dodoprocessaction}%
 %D       \processcommalist[#1]{\getvalue{\s!do\the\processlevel}}%
-%D       \advance\processlevel by -1\relax}}
+%D       \advance\processlevel by -1 }}
 %D \stoptypen
 %D
 %D The gain of speed in the (again) next implementation is 
@@ -2153,7 +2156,10 @@
   {\@EA\gdef\csname#1#2\endcsname} % {#3}}
 
 \def\doresetvalue#1#2%
-  {\@EA\def\csname#1#2\endcsname{}}
+  {\@EA\let\csname#1#2\endcsname\empty}
+
+\def\doignorevalue#1#2#3%
+  {\@EA\let\csname#1#2\endcsname\empty}
 
 \def\docopyvalue#1#2#3%
   {\@EA\def\csname#1#3\endcsname{\csname#2#3\endcsname}}
@@ -2192,25 +2198,24 @@
 %D complain of it's missed. We will redefine this macro later
 %D on, when a more advanced message mechanism is implemented. 
 
+\def\showassignerror#1#2%
+  {\writestatus{setup}{missing '=' after '#1' in line #2}}
+
 %\def\p!doassign#1[#2][#3=#4=#5]%
 %  {\let\donottest\dontprocesstest
 %   \edef\!!stringa{#5}%
 %   \let\!!stringb\relax
 %   \let\donottest\doprocesstest
 %   \ifx\!!stringa\!!stringb
-%     \writestatus
-%       {setup}
-%       {missing '=' after '#3' in line \the\inputlineno}%
+%     \showassignerror{#3}%
 %   \else
 %     #1{#2}{#3}{#4}%
 %   \fi}
 
-\def\p!doassign#1[#2][#3=#4=#5]% redefined in mult-ini
+\def\p!doassign#1[#2][#3=#4=#5]%
   {\ifx\empty#3\else  % and definitely not \ifx#3\empty
      \ifx\relax#5%
-     \writestatus
-       {setup}
-       {missing '=' after '#3' in line \the\inputlineno}%
+       \showassignerror{#3}{\the\inputlineno\space(#2)}%
      \else
        #1{#2}{#3}{#4}%
      \fi
@@ -2230,7 +2235,8 @@
      {\dosetvalue{#1}{#2}{#3}}}
 
 %D \macros
-%D   {getparameters,geteparameters,getgparameters} % ,forgetparameters}
+%D   {getparameters,geteparameters,getgparameters,
+%D    forgetparameters}
 %D
 %D Using the assignment commands directly is not our
 %D ideal of user friendly interfacing, so we take some further
@@ -2314,8 +2320,8 @@
 \def\getgparameters%
   {\dogetparameters\dosetgvalue}
 
-% \def\forgetparameters%
-%   {\dogetparameters\doresetvalue}
+\def\forgetparameters%
+  {\dogetparameters\doignorevalue}
 
 \let\getexpandedparameters=\geteparameters
 
@@ -2679,18 +2685,42 @@
 \chardef\noexpectedarguments=0
 \chardef\expectedarguments  =0
 
-\long\def\dogetargument#1#2#3#4% redefined in mult-ini
-  {\doifnextcharelse{#1}
-     {\let\expectedarguments\noexpectedarguments
-      #3\dodogetargument}
-     {\ifnum\expectedarguments>\noexpectedarguments
-        \writestatus
-          {setup}
-          {\expectedarguments\space argument(s) expected
-           in line \the\inputlineno\space}%
-      \fi
-      \let\expectedarguments\noexpectedarguments
-      #4\dodogetargument#1#2}}
+\def\showargumenterror#1#2%
+  {\writestatus{system}{#1 argument(s) expected in line #2}}
+
+% \long\def\dogetargument#1#2#3#4% redefined in mult-ini
+%   {\doifnextcharelse{#1}
+%      {\let\expectedarguments\noexpectedarguments
+%       #3\dodogetargument}
+%      {\ifnum\expectedarguments>\noexpectedarguments
+%         \showargumenterror{\expectedarguments}
+%       \fi
+%       \let\expectedarguments\noexpectedarguments
+%       #4\dodogetargument#1#2}}
+%
+% less to pass
+
+\def\doshowargumenterror%
+  {\ifnum\expectedarguments>\noexpectedarguments
+     \showargumenterror{\number\expectedarguments}{\number\inputlineno}%
+   \fi
+   \noshowargumenterror}
+
+\def\noshowargumenterror%
+  {\let\expectedarguments\noexpectedarguments}
+
+% \long\def\dogetargument#1#2#3#4%
+%  {\doifnextcharelse#1%
+%     {\noshowargumenterror#3\dodogetargument}
+%     {\doshowargumenterror#4\dodogetargument#1#2}}
+%
+% faster ? 
+
+\long\def\dogetargument#1#2#3#4%
+  {\let\charactertoken=#1%
+   \def\!!stringa{\noshowargumenterror#3\dodogetargument}%
+   \def\!!stringb{\doshowargumenterror#4\dodogetargument#1#2}%
+   \futurelet\nexttoken\inspectnextcharacter}
 
 %\def\getsingleempty#1#2#3%
 %  {\def\dodogetargument%
@@ -3090,7 +3120,7 @@
 %D   {do something with arg} 
 %D \stoptypen
 %D
-%D The argumentss can be anything reasonable, but double 
+%D The arguments can be anything reasonable, but double 
 %D \type{#}'s are needed in the specification part, like:
 %D
 %D \starttypen
@@ -3108,7 +3138,7 @@
 %D We will see some real applications of this command in the 
 %D core modules. 
 
-\def\definestartstopcommand#1#2#3#4%
+\def\definestartstopcommand#1#2#3#4% 
   {\def\!stringa{#3}%
    \def\!stringb{\e!start#2}%
    \def\!stringc{#4}%
@@ -3172,6 +3202,8 @@
 \let\normalif     \if
 \let\normalifx    \ifx
 \let\normalifnum  \ifnum
+\let\normalifdim  \ifdim
+\let\normalifcat  \ifcat
 \let\normalifcase \ifcase
 \let\normalor     \or
 \let\normalelse   \else
@@ -3180,15 +3212,38 @@
 \def\beginrobusttest
   {\bgroup
    \let\if\relax\let\ifx\relax\let\ifnum\relax\let\ifcase\relax
+   \let\ifcat\relax\let\ifdim\relax
    \let\or\relax\let\else\relax\let\fi\relax}
 
 \let\endrobusttest\egroup
+
+% \def\dogetgroupargument#1#2%
+%   {\def\nextnextargument%  
+%      {\normalifx\nextargument\bgroup 
+%         \endrobusttest
+%         \let\expectedarguments\noexpectedarguments
+%         \def\nextargument{#1\dodogetargument}%
+%      %\normalelse\normalifx\nextargument\lineending % this can be an option
+%      %  \def\nextargument{\bgroup\def\\ {\egroup\dogetgroupargument#1#2}\\}%
+%      %\normalelse\normalifx\nextargument\blankspace % but may never be default
+%      %  \def\nextargument{\bgroup\def\\ {\egroup\dogetgroupargument#1#2}\\}%
+%       \normalelse
+%         \endrobusttest
+%         \ifnum\expectedarguments>\noexpectedarguments
+%           \showargumenterror{\number\expectedarguments}{\number\inputlineno}%
+%         \fi
+%         \let\expectedarguments\noexpectedarguments
+%         \def\nextargument{#2\dodogetargument{}}%
+%       \normalfi%\normalfi\normalfi                  % so let's get rid of it
+%       \nextargument}%
+%    \beginrobusttest
+%    \futurelet\nextargument\nextnextargument}
 
 \def\dogetgroupargument#1#2%
   {\def\nextnextargument%  
      {\normalifx\nextargument\bgroup 
         \endrobusttest
-        \let\expectedarguments\noexpectedarguments
+        \noshowargumenterror
         \def\nextargument{#1\dodogetargument}%
      %\normalelse\normalifx\nextargument\lineending % this can be an option
      %  \def\nextargument{\bgroup\def\\ {\egroup\dogetgroupargument#1#2}\\}%
@@ -3196,13 +3251,7 @@
      %  \def\nextargument{\bgroup\def\\ {\egroup\dogetgroupargument#1#2}\\}%
       \normalelse
         \endrobusttest
-        \ifnum\expectedarguments>\noexpectedarguments
-          \writestatus
-            {setup}
-            {\the\expectedarguments\space argument(s) expected
-             in line \the\inputlineno\space}%
-        \fi
-        \let\expectedarguments\noexpectedarguments
+        \doshowargumenterror
         \def\nextargument{#2\dodogetargument{}}%
       \normalfi%\normalfi\normalfi                  % so let's get rid of it
       \nextargument}%
@@ -3337,13 +3386,15 @@
 %    \egroup}
 
 \chardef\statuswidth=15
-\newcount\statuscounter
+\chardef\statuswrite=16
 
 \def\writestring%
-  {\immediate\write16}
+  {\immediate\write\statuswrite}
 
 \def\writeline%
   {\writestring{}}
+
+\newcount\statuscounter
 
 \def\dosplitstatus#1%
   {\advance\statuscounter -1
@@ -3360,13 +3411,32 @@
 \def\writestatus#1#2%
   {\bgroup
    \scratchtoks\emptytoks
-   \statuscounter=\statuswidth
+   \statuscounter\statuswidth
    \expandafter\dosplitstatus#1%
      \space\space\space\space\space\space\space
      \space\space\space\space\space\space\space
      \space\space\space\space\space\space\end
    \expanded{\writestring{\the\scratchtoks\space:\space#2}}%
    \egroup}
+
+%D The next implementation saves only some 10 words of format 
+%D memory, but we hardly gain any speed.
+%D
+%D \starttypen  
+%D \def\dosplitstatus#1#2#3#4#5#6#7#8#9%
+%D   {#1#2#3#4#5#6#7#8#9\dodosplitstatus}
+%D
+%D \def\dodosplitstatus#1#2#3#4#5#6\end%
+%D   {#1#2#3#4#5}
+%D 
+%D \def\writestatus#1#2%
+%D   {\writestring
+%D      {\expandafter\dosplitstatus#1%
+%D         \space\space\space\space\space
+%D         \space\space\space\space\space
+%D         \space\space\space\space\space\end
+%D         \space:\space#2}}
+%D \stoptypen
 
 %D \macros
 %D   {emptytoks}

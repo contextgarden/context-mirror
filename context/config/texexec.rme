@@ -73,11 +73,11 @@ for  tetex  set  UserInterface     to  en
 for  tetex  set  TeXExecutable     to  pdfetex
 for  tetex  set  TeXVirginFlag     to  -ini
 for  tetex  set  TeXPassString     to  -progname=context 
-for  tetex  set  TeXBatchString    to  -int=batchmode 
-for  tetex  set  MpToTeXExecutable to  mptotex
+for  tetex  set  TeXBatchFlag      to  -int=batchmode 
+for  tetex  set  MpToTeXExecutable to  mpto
 for  tetex  set  MpVirginFlag      to  -ini 
 for  tetex  set  MpPassString      to  -progname=mpost
-for  tetex  set  MpBatchString     to  -int=batchmode 
+for  tetex  set  MpBatchFlag       to  -int=batchmode 
 
 % These also apply to fpTeX. 
 
@@ -86,11 +86,11 @@ for  fptex  set  UserInterface     to  en
 for  fptex  set  TeXExecutable     to  pdfetex
 for  fptex  set  TeXVirginFlag     to  -ini
 for  fptex  set  TeXPassString     to  -progname=context 
-for  fptex  set  TeXBatchString    to  -int=batchmode 
-for  fptex  set  MpToTeXExecutable to  mptotex
+for  fptex  set  TeXBatchFlag      to  -int=batchmode 
+for  fptex  set  MpToTeXExecutable to  mpto
 for  fptex  set  MpVirginFlag      to  -ini 
 for  fptex  set  MpPassString      to  -progname=mpost 
-for  fptex  set  MpBatchString     to  -int=batchmode
+for  fptex  set  MpBatchFlag       to  -int=batchmode
 
 % MikTeX users probably have to set up some paths too.
 
@@ -98,11 +98,14 @@ for  miktex  set  UsedInterfaces    to  en,nl,de,uk
 for  miktex  set  UserInterface     to  en
 for  miktex  set  TeXExecutable     to  pdftex
 for  miktex  set  TeXVirginFlag     to  --initialize
-for  miktex  set  TeXBatchString    to  --interaction=batchmode 
+for  miktex  set  TeXBatchFlag      to  --interaction=batchmode 
 for  miktex  set  MpToTeXExecutable to  mptotex
 for  miktex  set  MpVirginFlag      to  --initialize
 for  miktex  set  MpPassString      to 
-for  miktex  set  MpBatchString     to  --interaction=batchmode 
+for  miktex  set  MpBatchFlag       to  --interaction=batchmode 
+
+for  miktex  set  TeXFormatFlag     to  --undump=
+for  miktex  set  MpFormatFlag      to  --undump=
 
 % These are the settings used on some machines at PRAGMA ADE that 
 % don't use the texmf tree. They can serve as an example for local 

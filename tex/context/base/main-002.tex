@@ -77,7 +77,8 @@
    \setbox2=\hbox
      {\doitems
         {\@@isbulletbreedte}
-        {\herhaal[\nofitems*\docommando{\strut\doitembullet{\herhaler}}]}}}
+        {\dorecurse{\nofitems}
+           {\docommando{\strut\doitembullet{\herhaler}}}}}}
 
 \def\dostartitems#1#2#3%
   {\let\doitems=#2
@@ -442,19 +443,21 @@
 \def\bedrag#1%
   {\strut\hbox\bgroup
    \let\normalfixedspace~%
-   \def~{\futurelet\next\dofixedspace}%
-   \def\dofixedspace%
-     {\hskip.5em\relax
-      \ifx\next,%
-        \hphantom,\let\next\gobbleoneargument
-      \else\ifx\next.%
-        \hphantom.\let\next\gobbleoneargument
-      \else
-        \let\next\relax
-      \fi\fi
-      \next}%
-   \bedragprefix#1\bedragsuffix
+  % \def~{\futurelet\next\dofixedspace}%
+  % \def\dofixedspace%
+  %   {\hskip.5em\relax
+  %    \ifx\next,%
+  %      \hphantom{,}\let\next\gobbleoneargument
+  %    \else\ifx\next.%
+  %      \hphantom{.}\let\next\gobbleoneargument
+  %    \else
+  %      \let\next\relax
+  %    \fi\fi
+  %    \next}%
+  % \bedragprefix#1\bedragsuffix
+   \bedragprefix\digits{#1}\bedragsuffix
    \egroup}
+
 
 % \definieeralineas[test][n=3]
 %
@@ -592,7 +595,9 @@
   {\ifdim\lastskip=\quotationsignal
      \unskip\hskip\quotationskip
    \fi
+\ifhmode % else funny pagebeaks 
    \penalty\!!tenthousand\hskip\!!zeropoint      % == \prewordbreak
+\fi
    \strut % new, needed below 
    \getvalue{\??la\currentlanguage#1}%
    \penalty\!!tenthousand\hskip\quotationsignal} % +- \prewordbreak
@@ -653,7 +658,7 @@
 
 \def\dotoevoegen#1%
   {\def\next{#1}%
-   \herhaal[#1*{\inlinker{\next~+}\def\next{}\crlf}]}
+   \dorecurse{#1}{\inlinker{\next~+}\def\next{}\crlf}}
 
 \def\complextoevoegen[#1]%
   {\blanko
@@ -871,7 +876,7 @@
     \startdummy
       \NC\@@@kmbet\EQ\@@kmbet\NC\NR
       \NC\@@@kmdat\EQ\@@kmdat\NC\NR
-      \NC\@@@kmken\EQ\kap{\@@kmken}\NC\NR
+      \NC\@@@kmken\EQ\expanded{\kap{\@@kmken}}\NC\NR
       \doifsomething{\@@kmvan\@@kmaan}{\NC\NC\NC\NR}%
       \doifsomething{\@@kmvan}{\NC\@@@kmvan\EQ\@@kmvan\NC\NR}%
       \doifsomething{\@@kmaan}{\NC\@@@kmaan\EQ\@@kmaan\NC\NR}%

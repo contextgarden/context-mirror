@@ -144,4 +144,87 @@ primarydef p withshade sc =
   p withcolor (_special_signal_/1000,_color_counter_/1000,sc/1000) 
 enddef ; 
 
+%D Figure inclusion. 
+
+numeric cef ; cef := 0 ; 
+
+def externalfigure primary filename = 
+  doexternalfigure (filename) 
+enddef ; 
+
+def doexternalfigure (expr filename) text transformation = 
+  begingroup ; save p, t ; picture p ; transform t ; 
+  p := nullpicture ; t := identity transformation ; 
+  flush_special(10, 9,
+    dddecimal (xxpart t, yxpart t, xypart t) & " " & 
+    dddecimal (yypart t,  xpart t,  ypart t) & " " & filename) ; 
+  addto p contour unitsquare scaled 0 ;
+  setbounds p to unitsquare transformed t ;   
+  _color_counter_ := _color_counter_ + 1 ; cef := cef + 1 ; 
+  draw p withcolor (_special_signal_/1000,_color_counter_/1000,cef/1000) ;
+  endgroup ; 
+enddef ; 
+
+%D Experimental: 
+
+numeric currenthyperlink ; currenthyperlink := 0 ; 
+
+def hyperlink primary t = dohyperlink(t) enddef ;
+def hyperpath primary t = dohyperpath(t) enddef ;
+
+def dohyperlink (expr destination) text transformation  = 
+  begingroup ; save somepath ; path somepath ; 
+  somepath := fullsquare transformation ; 
+  dohyperpath(destination) somepath ;
+  endgroup ; 
+enddef ; 
+
+def dohyperpath (expr destination) expr somepath = 
+  begingroup ; 
+  flush_special(20, 7,
+    ddecimal (xpart llcorner somepath, ypart llcorner somepath) & " " & 
+    ddecimal (xpart urcorner somepath, ypart urcorner somepath) & " " & destination) ; 
+  _color_counter_ := _color_counter_ + 1 ; 
+  currenthyperlink := currenthyperlink + 1 ; 
+  fill boundingbox unitsquare scaled 0 
+    withcolor 
+    (_special_signal_/1000,_color_counter_/1000,currenthyperlink/1000) ;
+  endgroup ; 
+enddef ; 
+
+% \setupinteraction[state=start]
+% \setupcolors     [state=start]
+% 
+% Hello There! \blank 
+% 
+% \startMPcode 
+% pickup pencircle scaled 5 ; 
+% draw fullcircle scaled 4cm withcolor red ;  
+% hyperpath "nextpage" boundingbox currentpicture ; 
+% draw origin withcolor blue ;
+% \stopMPcode
+% 
+% \blank Does it work or not? 
+% 
+% \startMPcode 
+% pickup pencircle scaled 5 ; 
+% draw fullcircle scaled 4cm withcolor red ;  
+% hyperpath "nextpage" fullcircle scaled 4cm ; 
+% draw origin withcolor blue ;
+% draw fullcircle scaled 4cm shifted (1cm,1cm);  
+% \stopMPcode
+% 
+% \blank Does it work or not? \page Hello There! \blank 
+% 
+% \startMPcode 
+% pickup pencircle scaled 5 ; 
+% draw fullcircle scaled 2cm shifted (-2cm,-1cm) ;  
+% draw fullcircle scaled 3cm shifted (2cm,1cm) withcolor red ;  
+% draw fullcircle scaled 1cm ;  
+% hyperlink "previouspage" scaled 3cm shifted (2cm,1cm) ; 
+% draw origin withcolor blue ; 
+% \stopMPcode
+% 
+% \blank Does it work or not?  
+
 endinput ; 

@@ -15,14 +15,31 @@ eval '(exit $?0)' && eval 'exec perl -S $0 ${1+"$@"}' && eval 'exec perl -S $0 $
 #C therefore copyrighted by \PRAGMA. See licen-en.pdf for
 #C details.
 
+# use File::Copy ; # not in every perl 
+
 $program = "MPtoPDF 1.0" ;
 $pattern = $ARGV[0] ;
 $done    = 0 ;
 $report  = '' ;
 
+sub CopyFile # agressive copy, works for open files like in gs 
+  { my ($From,$To) = @_ ; 
+    return unless open(INP,"<$From") ; binmode INP ; 
+    return unless open(OUT,">$To") ; binmode OUT ; 
+    while (<INP>) { print OUT $_ } 
+    close (INP) ; 
+    close (OUT) }
+
 if (($pattern eq '')||($pattern =~ /^\-+(h|help)$/io))
   { print "\n$program: provide MP output file (or pattern)\n" ;
     exit }
+elsif ($pattern =~ /\.mp$/io) 
+  { $error = system ("texexec --mptex $pattern") ;
+    if ($error) 
+      { print "\n$program: error while processing mp file\n" ; exit } 
+    else 
+      { $pattern =~ s/\.mp$//io ; 
+        @files = glob "$pattern.*" } } 
 elsif (-e $pattern)
   { @files = ($pattern) }
 elsif ($pattern =~ /.\../o)
@@ -36,6 +53,7 @@ foreach $file (@files)
     if (s/\.(\d+)$// && -e $file)
      { system ("pdftex \&mptopdf \\relax $file") ;
        rename ("$_.pdf", "$_-$1.pdf") ;
+       if (-e "$_.pdf") { CopyFile ("$_.pdf", "$_-$1.pdf") }
        if ($done) { $report .= " +" }
        $report .= " $_-$1.pdf" ;
        ++$done } }

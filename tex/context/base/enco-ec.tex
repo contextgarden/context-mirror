@@ -25,7 +25,7 @@
 
 %D The case mappings are fairly simple. 
 
-\definecasemaps 128 to 156 lc 0 uc 0
+%\definecasemaps 128 to 156 lc 0 uc 0
 
 %D 157 Idotaccent
 %D 158 dcroat (with bar)
@@ -43,193 +43,151 @@
 
 \stopmapping
 
-\startencoding[ec]
+\startencoding[ec][ec] % second arg defines auto regime 
 
-\defineaccent u A 128
-\defineaccent v C 131
-\defineaccent v D 132
-\defineaccent v E 133
-\defineaccent u G 135
-\defineaccent v l 137 % Lcaron
-\defineaccent v N 140
-\defineaccent H O 142
-\defineaccent v R 144
-\defineaccent v S 146
-\defineaccent v T 148
-\defineaccent H U 150
-\defineaccent r U 151
-\defineaccent v Z 154
-\defineaccent . Z 155
-\defineaccent . I 157
-\defineaccent = d 158
+\definecharacter textgrave         0
+\definecharacter textacute         1
+\definecharacter textcircumflex    2
+\definecharacter texttilde         3
+\definecharacter textdiaeresis     4
+\definecharacter texthungarumlaut  5
+\definecharacter textring          6
+\definecharacter textcaron         7
+\definecharacter textbreve         8
+\definecharacter textmacron        9
+\definecharacter textdotaccent    10
+\definecharacter textcedilla      11 
+\definecharacter textogonek       12 
 
-\defineaccent u a 160
-\defineaccent v c 163
-\defineaccent v d 164
-\defineaccent v e 165
-\defineaccent u g 167
-\defineaccent v l 169
-\defineaccent v n 172
-\defineaccent H o 174
-\defineaccent v r 176
-\defineaccent v s 178
-\defineaccent v t 180
-\defineaccent H u 182
-\defineaccent r u 183
-\defineaccent v z 186
-\defineaccent . z 187
+\definecharacter dotlessi         25
+\definecharacter dotlessj         26
 
-\defineaccent ' C 130
-\defineaccent ' L 136
-\defineaccent ' N 139
-\defineaccent ' R 143
-\defineaccent ' S 145
-\defineaccent " Y 152
-\defineaccent ' Z 153
-\defineaccent ' c 162
-\defineaccent ' l 168
-\defineaccent ' n 171
-\defineaccent ' r 175
-\defineaccent ' s 177
-\defineaccent " y 184
-\defineaccent ' z 185
-\defineaccent ` A 192
-\defineaccent ' A 193
-\defineaccent ^ A 194
-\defineaccent ~ A 195
-\defineaccent " A 196
-\defineaccent r A 197
-\defineaccent ` E 200
-\defineaccent ' E 201
-\defineaccent ^ E 202
-\defineaccent " E 203
-\defineaccent ` I 204
-\defineaccent ' I 205
-\defineaccent ^ I 206
-\defineaccent " I 207
-\defineaccent ~ N 209
-\defineaccent ` O 210
-\defineaccent ' O 211
-\defineaccent ^ O 212
-\defineaccent ~ O 213
-\defineaccent " O 214
-\defineaccent ` U 217
-\defineaccent ' U 218
-\defineaccent ^ U 219
-\defineaccent " U 220
-\defineaccent ' Y 221
-\defineaccent ` a 224
-\defineaccent ' a 225
-\defineaccent ^ a 226
-\defineaccent ~ a 227
-\defineaccent " a 228
-\defineaccent r a 229
-\defineaccent ` e 232
-\defineaccent ' e 233
-\defineaccent ^ e 234
-\defineaccent " e 235
-\defineaccent ` i 236
-\defineaccent ' i 237
-\defineaccent ^ i 238
-\defineaccent " i 239
-\defineaccent ~ n 241
-\defineaccent ` o 242
-\defineaccent ' o 243
-\defineaccent ^ o 244
-\defineaccent ~ o 245
-\defineaccent " o 246
-\defineaccent ` u 249
-\defineaccent ' u 250
-\defineaccent ^ u 251
-\defineaccent " u 252
-\defineaccent ' y 253
+\definecharacter Abreve          128
+\definecharacter Aogonek         129
+\definecharacter Cacute          130
+\definecharacter Ccaron          131
+\definecharacter Dcaron          132
+\definecharacter Ecaron          133
+\definecharacter Eogonek         134
+\definecharacter Gbreve          135
+\definecharacter Lacute          136
+\definecharacter Lcaron          137
+\definecharacter Lstroke         138
+\definecharacter Nacute          139
+\definecharacter Ncaron          140
+%definecharacter NG              141
+\definecharacter Ohungarumlaut   142
+\definecharacter Racute          143
+\definecharacter Rcaron          144
+\definecharacter Sacute          145
+\definecharacter Scaron          146
+\definecharacter Scedilla        147
+\definecharacter Tcaron          148
+\definecharacter Tcedilla        149
+\definecharacter Uhungarumlaut   150
+\definecharacter Uring           151
+\definecharacter Ydiaeresis      152
+\definecharacter Zacute          153
+\definecharacter Zcaron          154
+\definecharacter Zdotaccent      155
+\definecharacter IJligature      156
+\definecharacter Idotaccent      157
+\definecharacter dmacron         158
+  
+\definecharacter abreve          160
+\definecharacter aogonek         161
+\definecharacter cacute          162
+\definecharacter ccaron          163
+\definecharacter dcaron          164
+\definecharacter ecaron          165
+\definecharacter eogonek         166
+\definecharacter gbreve          167
+\definecharacter lacute          168
+\definecharacter lcaron          169
+\definecharacter lstroke         170
+\definecharacter nacute          171
+\definecharacter ncaron          172
+%definecharacter ng              173
+\definecharacter ohungarumlaut   174
+\definecharacter racute          175
+\definecharacter rcaron          176
+\definecharacter sacute          177
+\definecharacter scaron          178
+\definecharacter scedilla        179
+\definecharacter tcaron          180
+\definecharacter tcedilla        181
+\definecharacter uhungarumlaut   182
+\definecharacter uring           183
+\definecharacter ydiaeresis      184
+\definecharacter zacute          185
+\definecharacter zcaron          186
+\definecharacter zdotaccent      187
+\definecharacter ijligature      188
+  
+\definecharacter Agrave          192
+\definecharacter Aacute          193
+\definecharacter Acircumflex     194
+\definecharacter Atilde          195
+\definecharacter Adiaeresis      196
+\definecharacter Aring           197
+\definecharacter AEligature      198
+\definecharacter Ccedilla        199
+\definecharacter Egrave          200
+\definecharacter Eacute          201
+\definecharacter Ecircumflex     202
+\definecharacter Ediaeresis      203
+\definecharacter Igrave          204
+\definecharacter Iacute          205
+\definecharacter Icircumflex     206
+\definecharacter Idiaeresis      207
 
-\defineaccent ` {\dotlessi} 236
-\defineaccent ' {\dotlessi} 237
-\defineaccent " {\dotlessi} 239
-\defineaccent ^ {\dotlessi} 238
+\definecharacter Ntilde          209
+\definecharacter Ograve          210
+\definecharacter Oacute          211
+\definecharacter Ocircumflex     212
+\definecharacter Otilde          213
+\definecharacter Odiaeresis      214
+\definecharacter OEligature      215
+\definecharacter Ostroke         216
+\definecharacter Ugrave          217
+\definecharacter Uacute          218
+\definecharacter Ucircumflex     219
+\definecharacter Udiaeresis      220
+\definecharacter Yacute          221
+%definecharacter THorn           222
+\definecharacter Ssharp          223  
+\definecharacter agrave          224
+\definecharacter aacute          225
+\definecharacter acircumflex     226
+\definecharacter atilde          227
+\definecharacter adiaeresis      228
+\definecharacter aring           229
+\definecharacter aeligature      230
+\definecharacter ccedilla        231
+\definecharacter egrave          232
+\definecharacter eacute          233
+\definecharacter ecircumflex     234
+\definecharacter ediaeresis      235
+\definecharacter igrave          236
+\definecharacter iacute          237
+\definecharacter icircumflex     238
+\definecharacter idiaeresis      239
 
-\defineaccent ` {\i} 236
-\defineaccent ' {\i} 237
-\defineaccent " {\i} 239
-\defineaccent ^ {\i} 238
-
-%D These are special, see below.
-
-\defineaccent k A 129
-\defineaccent k E 134
-\defineaccent k a 161
-\defineaccent k e 166
-\defineaccent c T 149
-\defineaccent c S 147
-\defineaccent c C 199
-\defineaccent c c 231
-\defineaccent c s 179
-\defineaccent c t 181
-
-\definecharacter ae 230
-\definecharacter AE 198
-\definecharacter oe 247
-\definecharacter OE 215
-\definecharacter o  248
-\definecharacter O  216
-\definecharacter sz 255  
-\definecharacter SS 223  
-
-\definecharacter th 254
-\definecharacter TH 222
-
-\definecharacter ng 173
-\definecharacter NG 141
-
-\definecharacter ij 188
-\definecharacter IJ 156
-
-%D These two are strictly unneeded:
-
-\definecharacter aa 229
-\definecharacter AA 197
-
-\definecharacter l 170
-\definecharacter L 138
-
-\definecharacter i 25
-\definecharacter j 26
-
-%D Next come the accent||commands.
-
-\defineaccentcommand `  0
-\defineaccentcommand '  1
-\defineaccentcommand ^  2
-\defineaccentcommand ~  3
-\defineaccentcommand "  4
-\defineaccentcommand H  5
-\defineaccentcommand r  6
-\defineaccentcommand v  7
-\defineaccentcommand u  8
-\defineaccentcommand =  9
-\defineaccentcommand . 10
-
-%D The ogonek does not normally exist in \CONTEXT.
-
-% The rather weird construction that follows is needed because
-% otherwise (using \type {\definecommand}) the pre||built
-% chars are never used.
-
-\defineaccentcommand b {\ecencodedb}
-\defineaccentcommand c {\ecencodedc}
-\defineaccentcommand k {\ecencodedk}
-
-\def\ecencodedb#1%
-  {\oalign{#1\crcr\hidewidth\vbox to.2ex{\hbox{\char9}\vss}\hidewidth}}
-
-\def\ecencodedc#1%
-  {\setbox0\hbox{#1}\ifdim\ht0=1ex\accent11 #1\else
-     {\ooalign{\hidewidth\char11\hidewidth\crcr\unhbox0}}\fi}
-
-\def\ecencodedk#1%
-  {\setbox0\hbox{#1}\ifdim\ht0=1ex\accent12 #1\else
-     {\ooalign{\hidewidth\char12\hidewidth\crcr\unhbox0}}\fi}
+\definecharacter ntilde          241
+\definecharacter ograve          242
+\definecharacter oacute          243
+\definecharacter ocircumflex     244
+\definecharacter otilde          245
+\definecharacter odiaeresis      246
+\definecharacter oeligature      247
+\definecharacter ostroke         248
+\definecharacter ugrave          249
+\definecharacter uacute          250
+\definecharacter ucircumflex     251
+\definecharacter udiaeresis      252
+\definecharacter yacute          253
+\definecharacter thorn           254 
+\definecharacter ssharp          255  
 
 \stopencoding
 

@@ -11,39 +11,197 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
+% manual : offsetbox alignbox 
+
+
+\def\placefloats{\doflushfloats}  % keep this one 
+
+% already patched, spurious space due to stupid optimization  
+
+\def\unprotect%
+  {\ifcase\protectionlevel
+     \edef\doprotectcharacters%
+       {\catcode`\noexpand @=\the\catcode`@ %
+        \catcode`\noexpand !=\the\catcode`! %
+        \catcode`\noexpand ?=\the\catcode`?}%
+     \catcode`@=11
+     \catcode`!=11
+     \catcode`?=11
+     \let\protect\doprotect
+   \fi
+   \advance\protectionlevel 1
+   \ifnum\protectionlevel>1
+     \message{<unprotect \the\protectionlevel>}%
+   \fi}
+
+\def\dousemodules[#1]%
+  {\doifelsenothing{#1}
+     {\let\next\relax}
+     {\def\next{\processcommalist[#1]\dodousemodules}}
+   \next}
+
+\unprotect
+
+% permits \stoptext inside module 
+
+\def\dododousemodules#1#2%
+  {\ifconditional\moduleisloaded
+     \let\next\relax
+   \else
+     \makeshortfilename[#1\truefilename{#2}]%
+     \doifundefinedelse{\shortfilename\v!aan}
+       {\setgvalue{\shortfilename\v!aan}{}%
+        \def\next
+          {\startreadingfile
+           \readsysfile{\shortfilename}%
+             {\showmessage{\m!systems}{5}{#2}%
+              \settrue\moduleisloaded}%
+             {}%
+           \stopreadingfile}}
+       {\showmessage{\m!systems}{7}{#2}%
+        \settrue\moduleisloaded
+        \let\next\relax}%
+   \fi
+   \next}
+
+
+
 %D This file is loaded at runtime, thereby providing an
 %D excellent place for hacks and new features.
 
-\unprotect
-
 \writestatus{\m!systems}{beware: some patches loaded from cont-new.tex!}
+
+\definesystemvariable{en}
 
-%D Interesting, saves keystrokes, but also dangerous.
+\def\setupenv{\dodoubleargument\rawgetparameters[\??en]}
 
-%\def\checkMPbackground%
-%  {\doifoverlayelse\currentbackground
-%     {}
-%     {\doifMPgraphicelse\currentbackground
-%        {\defineoverlay[\currentbackground][\useMPgraphic{\currentbackground}]}
-%        {}}}
-%
-%\appendtoks \checkMPbackground \to \everybackgroundbox
+\def\doifenvelse#1{\doifdefinedelse{\??en#1}}
 
-%D Better (no zero dimension mp figs) and faster:  
+\def\env#1{\getvalue{\??en#1}} % geen (!) test hier 
 
-\def\dododopagebodybackground#1#2#3#4%
-  {\ifsomebackgroundfound{#3#4}%
-     \ifdim#1>\!!zeropoint\relax
-       \ifdim#2>\!!zeropoint\relax
-         \localframed
-           [\??ma#3#4]
-           [\c!breedte=#1,\c!hoogte=#2,\c!offset=\v!overlay]
-           {\getvalue{\??ma#3#4\c!commando}}% {\hsize=#1\vsize=#2....}
-       \fi
+\def\inputfilename{\@@svinputfile} 
+
+\setupsystem[inputfile=\outputfilename] % yes or no 
+
+% already patched 
+
+\def\setdisplaydimensions%
+  {\displayindent=\leftdisplayskip 
+   \advance\displayindent\leftdisplaymargin 
+   \displaywidth=\hsize
+   \ifdim\hangindent>\!!zeropoint
+     \advance\displayindent\hangindent
+   \else
+     \advance\displaywidth\hangindent
+   \fi
+   \advance\displaywidth-\displayindent
+   \advance\displaywidth-\rightdisplayskip
+   \advance\displaywidth-\rightdisplaymargin}
+
+% already patched 
+
+\def\setsidefloat%
+  {\vbox{\strut}\vskip-\lineheight
+   \kern\sidefloattopskip
+   \edef\presidefloatdepth{\the\prevdepth}%
+   \nointerlineskip
+   \bgroup
+   \everypar={}%
+   \parskip=\!!zeropoint
+   \logsidefloat
+   \ifrightfloat
+     \hfill
+     \ifmarginfloat
+       \rlap{\hskip\rechtermargeafstand\hskip\rightskip\unhbox\floatbox}%
+     \else
+       \unhbox\floatbox
      \fi
    \else
-     \hskip#1%
+     \noindent
+     \ifmarginfloat
+       \llap{\unhbox\floatbox\hskip\leftskip\hskip\linkermargeafstand}%
+     \else
+       \unhbox\floatbox
+     \fi
+     \hfill
+   \fi
+   \egroup
+   \par
+   \kern-\sidefloatheight
+   \penalty10001
+   \normalbaselines
+   \prevdepth=\presidefloatdepth
+   %\noindent
+   \resetsidefloatparagraph
+   \ignorespaces}
+
+% already patched 
+
+\def\doapplyfiguresize%
+  {\doifelsenothing{\@@efmaxhoogte}
+     {\figurevsize=\teksthoogte
+      \ifinner
+        \figurevsize =\vsize % \teksthoogte =\vsize
+        \scratchdimen=\vsize % \scratchdimen=\teksthoogte
+      \else\ifinsidefloat
+        \figurevsize =\vsize % \teksthoogte =\vsize
+        \scratchdimen=\vsize % \scratchdimen=\teksthoogte
+      \else\ifinpagebody
+        \figurevsize =\vsize % \teksthoogte =\vsize
+        \scratchdimen=\vsize % \scratchdimen=\teksthoogte
+      \else
+        \ifdim\pagegoal<\maxdimen
+          \ifdim\pagetotal<\pagegoal
+            \scratchdimen=\pagegoal
+            \advance\scratchdimen by -\pagetotal
+          \else
+            \scratchdimen=\figurevsize % \teksthoogte
+          \fi
+        \else
+          \scratchdimen=\figurevsize % \teksthoogte
+        \fi
+      \fi\fi\fi}
+     {\figurevsize=\@@efmaxhoogte}%
+   \doifelsenothing{\@@efhoogte}
+     {\edef\@@efvsize{\the\scratchdimen}}
+     {\let\@@efvsize=\@@efhoogte}%
+   \doifelsenothing{\@@efbreedte}
+     {\edef\@@efhsize{\the\hsize}}
+     {\let\@@efhsize=\@@efbreedte}}
+
+\def\setvariables%
+  {\dodoubleargument\dosetvariables}
+
+\def\dosetvariables[#1][#2]%
+  {\def\currentvariableclass{#1}%
+   \getparameters[vars:#1:][#2]}
+
+\def\getvariable#1#2%
+  {\ifundefined{vars:#1:#2}\else\getvalue{vars:#1:#2}\fi}
+
+\let\currentvariableclass\empty
+
+% in both (otr) modules ! 
+
+\def\doifrightpageelse#1#2%
+  {\ifdubbelzijdig
+     \gettwopassdata{\s!paragraph}%
+     \iftwopassdatafound
+       \ifodd\twopassdata#1\else#2\fi
+     \else
+       \ifodd\realfolio#1\else#2\fi
+     \fi
+   \else
+     #1% was #2 
    \fi}
+
+\def\signalrightpage%
+  {\ifdubbelzijdig
+     \doparagraphreference
+   \fi}
+
+%D To be documented, \type {\includemenu[menu]}. 
+%D To be documented, \type {\emphbf} cum suis.
 
 %D A prelude to strategies. Note for myself: overloads
 %D previous stuff from local pragma test files.

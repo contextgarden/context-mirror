@@ -21,7 +21,7 @@
 %D I first needed this simplification in bookmarks. Users can
 %D add their own if needed. 
 
-\newtoks\simplifiedcommands
+\ifx\simplifiedcommands\undefined \newtoks\simplifiedcommands \fi
 
 \def\simplifycommands{\the\simplifiedcommands}
 
@@ -31,8 +31,10 @@
 \appendtoks                              \def\ { }\to\simplifiedcommands
 \appendtoks\def\type#1{\string\\\strippedcsname#1}\to\simplifiedcommands
 \appendtoks                          \def\TeX{TeX}\to\simplifiedcommands
+\appendtoks                  \def\ConTeXt{ConTeXt}\to\simplifiedcommands
 \appendtoks                \def\MetaPost{MetaPost}\to\simplifiedcommands
 \appendtoks                \def\MetaPost{MetaFont}\to\simplifiedcommands
+\appendtoks                 \def\MetaPost{MetaFun}\to\simplifiedcommands
 \appendtoks                              \def||{-}\to\simplifiedcommands
 
 \protect

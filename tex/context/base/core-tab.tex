@@ -315,7 +315,7 @@
 
 \def\c!Table {Table}
 
-%D We alraady saw that the table macros report errors and
+%D We already saw that the table macros report errors and
 %D provide automatic spacing. These features can only be
 %D implemented by keeping track of the state, often the last
 %D command on a row.
@@ -1918,10 +1918,25 @@
      #1%
    \fi}
 
+%\def\TableDR%
+%  {\ifnum\currentTABLEcolumn<\maxTABLEcolumn % silent recovery
+%     \setTABLEerror\TABLEmissingcolumn       % some day warning
+%     \handleTABLEerror
+%   \else
+%     \global\currentTABLEcolumn=0            % nog check
+%     \normalTABLElineending
+%   \fi
+%   \TABLEnoalign
+%     {\nobreak
+%      \global\TABLEdivisionfalse
+%      \accountTABLElinewidth % temporary solution
+%      \setTABLEaction\TABLErule}}
+
 \def\TableDR%
   {\ifnum\currentTABLEcolumn<\maxTABLEcolumn % silent recovery
-     \setTABLEerror\TABLEmissingcolumn       % some day warning
-     \handleTABLEerror
+     %\setTABLEerror\TABLEmissingcolumn      % some day warning
+     %\handleTABLEerror
+     \finishTABLErow
    \else
      \global\currentTABLEcolumn=0            % nog check
      \normalTABLElineending
@@ -2013,7 +2028,7 @@
   {\doanalyzeTABLEcr[#1,,]}
 
 \def\doanalyzeTABLEcr[#1,#2,#3]%
-  {\doifnumberelse{#1x}             % x ???????????????
+  {\doifnumberelse{#1x}  % Is the x still needed here? 
      {\dodoanalyzeTABLEcr[#1,#2,#3]}
      {\dodoanalyzeTABLEcr[1,#1,#2]}}
 

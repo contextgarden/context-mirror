@@ -327,7 +327,7 @@
 %D The macros \type {\lpos} and \type {\rpos} share some code.
 
 \def\lrpos#1#2%
-  {\dontleavehmode\vadjust
+  {\dontleavehmode\vadjust % may disappear if buried 
      {\setbox0=\hbox{\raise\dp\strutbox\hbox{\hpos{#1}{\strut}}}%
       \smashbox0
       \rlap{#2\box0}}}
@@ -430,7 +430,7 @@
 %D \defineoverlay [sample] [\positionoverlay{sample}]
 %D
 %D \startpositionoverlay{sample}
-%D   \setMPpositiongraphic{A-1}{connectcenter}{from=A-1m,to=A-2}
+%D   \setMPpositiongraphic{A-1}{connectcenter}{from=A-1,to=A-2}
 %D \stoppositionoverlay
 %D \stopbuffer
 %D
@@ -439,8 +439,8 @@
 %D \startbuffer[graphic]
 %D \startMPpositiongraphic{connectcenter}
 %D   path pa, pb ; pair ca, cb ;
-%D   initialize_box(\MPvar{from}) ; pa := pxy ; ca := cxy ;
-%D   initialize_box(\MPvar{to}) ; pb := pxy ; cb := cxy ;
+%D   initialize_box(\MPpos{\MPvar{from}}) ; pa := pxy ; ca := cxy ;
+%D   initialize_box(\MPpos{\MPvar{to}}) ; pb := pxy ; cb := cxy ;
 %D   draw pa withcolor red ;
 %D   draw pb withcolor red ;
 %D   draw ca -- cb withcolor blue ;
@@ -661,6 +661,10 @@
    linewidth=\linewidth,
    backgroundcolor=lightgray]
 
+\startuseMPgraphic{mpos:par:shape}
+  draw_par ;
+\stopuseMPgraphic
+
 \startMPpositionmethod{mpos:par}
   \ifnum\MPp{b:\MPvar{self}}=\MPp{e:\MPvar{self}}\relax
     \startMPpositiongraphic{mpos:par}{backgroundcolor,linecolor}
@@ -668,25 +672,35 @@
                      \MPpos{r:\MPvar{self}},\MPpos{e:\MPvar{self}}) ;
       boxfillcolor := \MPvar{backgroundcolor} ;
       boxlinecolor := \MPvar{linecolor} ;
-      draw_par ;
+      \includeMPgraphic{mpos:par:shape} ;
+if not (\MPx{head:\realfolio}=\MPx{head:\MPp{l:\MPvar{self}}}) :
+  LoadPageState ; currentpicture := currentpicture shifted 
+  if odd \realfolio : - fi (PaperWidth-MakeupWidth-2BackSpace,0) ; 
+fi ; 
       anchor_par(\MPanchor{b:\MPvar{self}}) ;
     \stopMPpositiongraphic
     \MPpositiongraphic{mpos:par}{}%
-  \else
+  \else\ifnum\MPp{b:\MPvar{self}}<\MPp{e:\MPvar{self}}\relax
     \startMPpositiongraphic{mpos:par}{backgroundcolor,linecolor}
       initialize_par(\MPpos{b:\MPvar{self}},\MPpos{l:\MPvar{self}},
                      \MPpos{r:\MPvar{self}},\MPpos{tail:\realfolio}) ;
       boxfillcolor := \MPvar{backgroundcolor} ;
       boxlinecolor := \MPvar{linecolor} ;
-      draw_par ;
+      \includeMPgraphic{mpos:par:shape} ;
+if not (\MPx{head:\realfolio}=\MPx{head:\MPp{l:\MPvar{self}}}) :
+  LoadPageState ; currentpicture := currentpicture shifted 
+  if odd \realfolio : - fi (PaperWidth-MakeupWidth-2BackSpace,0) ; 
+fi ; 
       anchor_par(\MPanchor{b:\MPvar{self}}) ;
     \stopMPpositiongraphic
     \MPpositiongraphic{mpos:par}{}%
-    \advance\realpageno by 1
-    \dosetpositionaction{head:\realfolio}%
-      {\copyposition{b:\MPvar{self}}{head:\realfolio}%
-       \doshowpositionpar{\MPvar{self}}}%
-  \fi
+    \ifnum\MPp{e:\MPvar{self}}>\realpageno
+      \bgroup
+      \advance\realpageno by 1
+      \copyposition{b:\MPvar{self}}{head:\realfolio}%
+      \egroup
+    \fi
+  \fi\fi
 \stopMPpositionmethod
 
 % lelijk, aanpassen 

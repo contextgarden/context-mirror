@@ -63,6 +63,14 @@
       4: ingen sidesynkronisering (--) i hmode
 \stopmessages
 
+\startmessages  romanian  library: interactions
+  title: interactiuni
+      1: aspectul -- x -- (b x h)
+      2: activ
+      3: inactiv
+      4: nu exista sincronizare pt. pagini (--) in hmode
+\stopmessages
+
 \startmessages  dutch  library: versions
   title: versie
       1: er mankeert een @+
@@ -103,6 +111,13 @@
       1: manglende @+
       2: markerer sider
       3: valgte sider: --
+\stopmessages
+
+\startmessages  romanian  library: versions
+  title: versiuni
+      1: lipseste @+
+      2: pagini marcate
+      3: pagini selectate: --
 \stopmessages
 
 \unprotect
@@ -264,7 +279,7 @@
   {\doifelse{\@@scbreedte}{\v!passend}
      {\!!widtha=\linkerrandbreedte
       \advance\!!widtha by \linkerrandafstand
-      \advance\!!widtha by \paginascheiding
+%      \advance\!!widtha by \paginascheiding
       \advance\!!widtha by \linkermargebreedte
       \advance\!!widtha by \linkermargeafstand
       \ifdim\rugwit>\!!widtha\ifdim\rugwit>\!!zeropoint\relax
@@ -273,7 +288,7 @@
       \advance\!!widtha by \zetbreedte
       \advance\!!widtha by \rechtermargeafstand
       \advance\!!widtha by \rechtermargebreedte
-      \advance\!!widtha by \paginascheiding
+%      \advance\!!widtha by \paginascheiding
       \advance\!!widtha by \rechterrandafstand
       \advance\!!widtha by \rechterrandbreedte
       \scratchdimen=\@@scrugwit
@@ -941,6 +956,32 @@
 \setvalue{\??am\v!rechts}{}
 \setvalue{\??am\v!boven }{}
 \setvalue{\??am\v!onder }{}
+
+%D This can save complicated menu macros when one want to 
+%D keep control over parts of a menu (i.e.\ turn them on and 
+%D off). We could have achieved something similar with modes.
+
+\def\local@@ambox#1#2#3#4% don't change skipping, this one works!
+  {\bgroup
+   \testinteractiemenu{#3}%
+   \iflocationmenupermitted
+     \executeamboxcommands{#3}{#4}\c!voor\c!tussen\c!na
+   \else
+     #1\relax
+   \fi
+   \egroup}
+
+\unprotected\def\includemenu[#1]%
+  {\doifvalue{\??am#1\c!status}{\v!lokaal}
+     {\bgroup
+      \doassign[\??am#1][\c!status=\v!start]%
+      \let\@@amvbox\local@@ambox
+      \let\@@amhbox\local@@ambox
+      \getvalue{\??am\c!menu#1}%
+      \egroup}}
+
+%D We also need an explicit position control some day. I'll 
+%D do that when I need it. [The stacking order.]
 
 \newif\ifextendedmenu
 
@@ -1984,44 +2025,70 @@
 \setvalue{\e!start\e!commentaar}% the dummy triple gobbles trailing spaces
   {\dotripleempty\dostartcommentaar}
 
-\def\dostartcommentaar[#1][#2][#3]%
-  {\bgroup
-   \doifassignmentelse{#1}
-     {\getparameters[\??cc][#1]}
-     {\getparameters[\??cc][\c!titel=#1,#2]}%
-   \bgroup
-   \obeylines
-   \doif{\@@ccspatie}{\v!ja}{\obeyspaces}%
-   \long\def\docommando##1%
-     {\egroup
-      \global\setbox\commentbox=\hbox
-        {\!!widtha=\@@ccbreedte
-         \!!heighta=\@@cchoogte
-         \doinsertcomment
-           {\@@cctitel}{\number\!!widtha}{\number\!!heighta}
-           {\@@cckleur}{0}{\@@ccsymbool}{##1}%
-        \hskip\ifvoid\commentbox\@@ccmarge\else\@@ccafstand\fi
-        \box\commentbox
-        \egroup}}%
-   \grabuntil{\e!stop\e!commentaar}\docommando}
-
 \def\commentaar%
   {\dodoubleempty\docommentaar}
 
-\def\docommentaar[#1][#2]#3%
-  {\bgroup
-   \doifassignmentelse{#1}
+\def\dodocommentaar#1%
+  {\!!widtha=\@@ccbreedte
+   \!!heighta=\@@cchoogte
+   \doifelse{\@@ccoptie}{\v!max}
+     {\def\@@ccoptie{1}}{\def\@@ccoptie{0}}%
+   \doPDFinsertcomment
+     {\@@cctitel}{\number\!!widtha}{\number\!!heighta}
+     {\@@cckleur}{\@@ccoptie}{\@@ccsymbool}{#1}}
+
+%\def\dopreparecommentaar#1#2%
+%  {\doifassignmentelse{#1}
+%     {\getparameters[\??cc][#1]}
+%     {\getparameters[\??cc][\c!titel=#1,#2]}}
+%
+%\def\dostartcommentaar[#1][#2][#3]%
+%  {\bgroup
+%   \dopreparecommentaar{#1}{#2}%
+%   \bgroup
+%   \obeylines
+%   \doif{\@@ccspatie}{\v!ja}{\obeyspaces}%
+%   \long\def\docommando##1%
+%     {\egroup
+%      \global\setbox\commentbox=\hbox
+%        {\dodocommentaar{##1}%
+%         \hskip\ifvoid\commentbox\@@ccmarge\else\@@ccafstand\fi
+%         \box\commentbox}%
+%      \egroup}%
+%   \grabuntil{\e!stop\e!commentaar}\docommando}
+%
+%\def\docommentaar[#1][#2]#3%
+%  {\bgroup
+%   \dopreparecommentaar{#1}{#2}%
+%   \hbox to \!!zeropoint
+%     {\hskip-\@@ccmarge
+%      \raise\ht\strutbox\hbox{\dodocommentaar{#3}}}%
+%   \egroup
+%   \ignorespaces}
+
+\def\dopreparecommentaar#1#2%
+  {\doifassignmentelse{#1}
      {\getparameters[\??cc][#1]}
      {\getparameters[\??cc][\c!titel=#1,#2]}%
-   \!!widtha=\@@ccbreedte
-   \!!heighta=\@@cchoogte
-   \hbox to \!!zeropoint
-     {\hskip-\@@ccmarge
-      \raise\ht\strutbox\hbox
-        {\doPDFinsertcomment
-           {\@@cctitel}{\number\!!widtha}{\number\!!heighta}
-           {\@@cckleur}{0}{\@@ccsymbool}{#3}}}%
-   \egroup
+   \obeylines
+   \doif{\@@ccspatie}{\v!ja}{\obeyspaces}}
+
+\def\dostartcommentaar[#1][#2][#3]%
+  {\bgroup
+   \dopreparecommentaar{#1}{#2}%
+   \long\def\docommando##1%
+     {\global\setbox\commentbox=\hbox
+        {\dodocommentaar{##1}%
+         \hskip\ifvoid\commentbox\@@ccmarge\else\@@ccafstand\fi
+         \box\commentbox}%
+      \egroup}%
+   \grabuntil{\e!stop\e!commentaar}\docommando}
+
+\def\docommentaar[#1][#2]#3%
+  {\hbox to \!!zeropoint
+     {\dopreparecommentaar{#1}{#2}%
+      \hskip-\@@ccmarge
+      \raise\ht\strutbox\hbox{\dodocommentaar{#3}}}%
    \ignorespaces}
 
 % \startcommentaar
@@ -2247,7 +2314,8 @@
    \c!kleur=\@@iakleur,
    \c!titel=,
    \c!spatie=\v!nee,
-   \c!symbool=\v!normaal]
+   \c!symbool=\v!normaal,
+   \c!optie=]
 
 \stelversiesin    % beware, @ is made active here,
   [\c!nummer=1,   % therefore we set this one at the end

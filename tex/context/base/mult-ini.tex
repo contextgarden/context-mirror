@@ -558,6 +558,9 @@
 \def\doresetvalue#1#2%
   {\dosetvalue{#1}{#2}{}}
 
+\def\doignorevalue#1#2#3%
+  {\dosetvalue{#1}{#2}{}}
+
 %\def\dogetvalue#1#2%
 %  {\csname#1\csname\k!prefix!#2\endcsname\endcsname}
 
@@ -583,35 +586,69 @@
 
 \beginTEX
 
-\def\dosetvalue#1#2#3%
+% \def\dosetvalue#1#2#3%
+%   {\let\c!internal!\c!internal!n
+%    \@EA\ifx\csname\k!prefix!#2\endcsname\relax
+%      \let\c!internal!\c!internal!y
+%      \@EA\def\csname#1#2\endcsname{#3}%
+%    \else
+%      \let\c!internal!\c!internal!y
+%      \@EA\def\csname#1\csname\k!prefix!#2\endcsname\endcsname{#3}%
+%    \fi}
+% 
+% \def\dosetevalue#1#2#3%
+%   {\let\c!internal!\c!internal!n
+%    \@EA\ifx\csname\k!prefix!#2\endcsname\relax
+%      \let\c!internal!\c!internal!y
+%      \@EA\edef\csname#1#2\endcsname{#3}%
+%    \else
+%      \let\c!internal!\c!internal!y
+%      \@EA\edef\csname#1\csname\k!prefix!#2\endcsname\endcsname{#3}%
+%    \fi}
+% 
+% \def\dosetgvalue#1#2#3%
+%   {\let\c!internal!\c!internal!n
+%    \@EA\ifx\csname\k!prefix!#2\endcsname\relax
+%      \let\c!internal!\c!internal!y
+%      \@EA\gdef\csname#1#2\endcsname{#3}%
+%    \else
+%      \let\c!internal!\c!internal!y
+%      \@EA\gdef\csname#1\csname\k!prefix!#2\endcsname\endcsname{#3}%
+%    \fi}
+% 
+% cleaner (not that much faster) don't pass #3 yet: 
+
+\def\dosetvalue#1#2%
   {\let\c!internal!\c!internal!n
    \@EA\ifx\csname\k!prefix!#2\endcsname\relax
      \let\c!internal!\c!internal!y
-     \@EA\def\csname#1#2\endcsname{#3}%
+     \@EA\@EA\@EA\def\@EA\@EA\csname#1#2\endcsname
    \else
      \let\c!internal!\c!internal!y
-     \@EA\def\csname#1\csname\k!prefix!#2\endcsname\endcsname{#3}%
+     \@EA\@EA\@EA\def\@EA\@EA\csname#1\csname\k!prefix!#2\endcsname\endcsname
    \fi}
 
-\def\dosetevalue#1#2#3%
+\def\dosetevalue#1#2%
   {\let\c!internal!\c!internal!n
    \@EA\ifx\csname\k!prefix!#2\endcsname\relax
      \let\c!internal!\c!internal!y
-     \@EA\edef\csname#1#2\endcsname{#3}%
+     \@EA\@EA\@EA\edef\@EA\@EA\csname#1#2\endcsname
    \else
      \let\c!internal!\c!internal!y
-     \@EA\edef\csname#1\csname\k!prefix!#2\endcsname\endcsname{#3}%
+     \@EA\@EA\@EA\edef\@EA\@EA\csname#1\csname\k!prefix!#2\endcsname\endcsname
    \fi}
 
-\def\dosetgvalue#1#2#3%
+\def\dosetgvalue#1#2%
   {\let\c!internal!\c!internal!n
    \@EA\ifx\csname\k!prefix!#2\endcsname\relax
      \let\c!internal!\c!internal!y
-     \@EA\gdef\csname#1#2\endcsname{#3}%
+     \@EA\@EA\@EA\gdef\@EA\@EA\csname#1#2\endcsname
    \else
      \let\c!internal!\c!internal!y
-     \@EA\gdef\csname#1\csname\k!prefix!#2\endcsname\endcsname{#3}%
+     \@EA\@EA\@EA\gdef\@EA\@EA\csname#1\csname\k!prefix!#2\endcsname\endcsname
    \fi}
+
+% so far 
 
 \def\docopyvalue#1#2#3%
   {\let\c!internal!\c!internal!n
@@ -631,35 +668,69 @@
 
 \beginETEX \protected
 
-\def\dosetvalue#1#2#3%
+% \def\dosetvalue#1#2#3%
+%   {\let\c!internal!\c!internal!n
+%    \ifcsname\k!prefix!#2\endcsname
+%      \let\c!internal!\c!internal!y
+%      \@EA\def\csname#1\csname\k!prefix!#2\endcsname\endcsname{#3}%
+%    \else
+%      \let\c!internal!\c!internal!y
+%      \@EA\def\csname#1#2\endcsname{#3}%
+%    \fi}
+% 
+% \def\dosetevalue#1#2#3%
+%   {\let\c!internal!\c!internal!n
+%    \ifcsname\k!prefix!#2\endcsname
+%      \let\c!internal!\c!internal!y
+%      \@EA\edef\csname#1\csname\k!prefix!#2\endcsname\endcsname{#3}%
+%    \else
+%      \let\c!internal!\c!internal!y
+%      \@EA\edef\csname#1#2\endcsname{#3}%
+%    \fi}
+% 
+% \def\dosetgvalue#1#2#3%
+%   {\let\c!internal!\c!internal!n
+%    \ifcsname\k!prefix!#2\endcsname
+%      \let\c!internal!\c!internal!y
+%      \@EA\gdef\csname#1\csname\k!prefix!#2\endcsname\endcsname{#3}%
+%    \else
+%      \let\c!internal!\c!internal!y
+%      \@EA\gdef\csname#1#2\endcsname{#3}%
+%    \fi}
+% 
+% cleaner (not that much faster) don't pass #3 yet: 
+
+\def\dosetvalue#1#2%
   {\let\c!internal!\c!internal!n
    \ifcsname\k!prefix!#2\endcsname
      \let\c!internal!\c!internal!y
-     \@EA\def\csname#1\csname\k!prefix!#2\endcsname\endcsname{#3}%
+     \@EA\@EA\@EA\def\@EA\@EA\csname#1\csname\k!prefix!#2\endcsname\endcsname
    \else
      \let\c!internal!\c!internal!y
-     \@EA\def\csname#1#2\endcsname{#3}%
+     \@EA\@EA\@EA\def\@EA\@EA\csname#1#2\endcsname
    \fi}
 
-\def\dosetevalue#1#2#3%
+\def\dosetevalue#1#2%
   {\let\c!internal!\c!internal!n
    \ifcsname\k!prefix!#2\endcsname
      \let\c!internal!\c!internal!y
-     \@EA\edef\csname#1\csname\k!prefix!#2\endcsname\endcsname{#3}%
+     \@EA\@EA\@EA\edef\@EA\@EA\csname#1\csname\k!prefix!#2\endcsname\endcsname
    \else
      \let\c!internal!\c!internal!y
-     \@EA\edef\csname#1#2\endcsname{#3}%
+     \@EA\@EA\@EA\edef\@EA\@EA\csname#1#2\endcsname
    \fi}
 
-\def\dosetgvalue#1#2#3%
+\def\dosetgvalue#1#2%
   {\let\c!internal!\c!internal!n
    \ifcsname\k!prefix!#2\endcsname
      \let\c!internal!\c!internal!y
-     \@EA\gdef\csname#1\csname\k!prefix!#2\endcsname\endcsname{#3}%
+     \@EA\@EA\@EA\gdef\@EA\@EA\csname#1\csname\k!prefix!#2\endcsname\endcsname
    \else
      \let\c!internal!\c!internal!y
-     \@EA\gdef\csname#1#2\endcsname{#3}%
+     \@EA\@EA\@EA\gdef\@EA\@EA\csname#1#2\endcsname
    \fi}
+
+% so far 
 
 \def\docopyvalue#1#2#3%
   {\let\c!internal!\c!internal!n
@@ -677,86 +748,12 @@
 
 \endETEX
 
-%D We take this opportunity of redefining to adapt an
-%D assignment macro. The change has to do with the fact that the
-%D generated error message must be multi||lingual. We can not
-%D define the message yet, because we still have to select the
-%D interface language.
+%D We can now redefine some messages that will be 
+%D introduced in the multi||lingual system module. 
 
-%\def\p!doassign#1[#2][#3=#4=#5]%
-%  {\let\donottest=\dontprocesstest
-%   \edef\!!stringa{#5}%
-%   \edef\!!stringb{\relax}%
-%   \let\donottest=\doprocesstest
-%   \ifx\!!stringa\!!stringb
-%     \showmessage{check}{1}{#3,\the\inputlineno}%
-%   \else
-%     #1{#2}{#3}{#4}%
-%   \fi}
-
-\def\p!doassign#1[#2][#3=#4=#5]%
-  {\ifx\empty#3\else  % and definitely not \ifx#3\empty
-     \ifx\relax#5%
-       \showmessage{check}{1}{#3,\the\inputlineno}%
-     \else
-       #1{#2}{#3}{#4}%
-     \fi
-   \fi}
-
-\long\def\dogetargument#1#2#3#4%
-  {\doifnextcharelse{#1}
-     {\let\expectedarguments\noexpectedarguments
-      #3\dodogetargument}
-     {\ifnum\expectedarguments>\noexpectedarguments
-        \showmessage{check}{2}{\the\expectedarguments,\the\inputlineno}%
-      \fi
-      \let\expectedarguments\noexpectedarguments
-      #4\dodogetargument#1#2}}
-
-\def\dogetgroupargument#1#2%
-  {\def\nextnextargument%
-     {\ifx\nextargument\bgroup
-        \let\expectedarguments\noexpectedarguments
-        \def\nextargument{#1\dodogetargument}%
-      %\else\ifx\nextargument\lineending % this can be an option
-      %  \def\nextargument{\bgroup\def\\ {\egroup\dogetgroupargument#1#2}\\}%
-      %\else\ifx\nextargument\blankspace % but may never be default
-      %  \def\nextargument{\bgroup\def\\ {\egroup\dogetgroupargument#1#2}\\}%
-      \else
-        \ifnum\expectedarguments>\noexpectedarguments
-          \showmessage{check}{2}{\the\expectedarguments,\the\inputlineno}%
-        \fi
-        \let\expectedarguments\noexpectedarguments
-        \def\nextargument{#2\dodogetargument{}}%
-      \fi%\fi\fi                 % so let's get rid of it
-      \nextargument}%
-   \futurelet\nextargument\nextnextargument}
-
-\def\dogetgroupargument#1#2%
-  {\def\nextnextargument%  
-     {\normalifx\nextargument\bgroup 
-        \endrobusttest
-        \let\expectedarguments\noexpectedarguments
-        \def\nextargument{#1\dodogetargument}%
-     %\normalelse\normalifx\nextargument\lineending % this can be an option
-     %  \def\nextargument{\bgroup\def\\ {\egroup\dogetgroupargument#1#2}\\}%
-     %\normalelse\normalifx\nextargument\blankspace % but may never be default
-     %  \def\nextargument{\bgroup\def\\ {\egroup\dogetgroupargument#1#2}\\}%
-      \normalelse
-        \endrobusttest
-        \ifnum\expectedarguments>\noexpectedarguments
-          \showmessage{check}{2}{\the\expectedarguments,\the\inputlineno}%
-        \fi
-        \let\expectedarguments\noexpectedarguments
-        \def\nextargument{#2\dodogetargument{}}%
-      \normalfi%\normalfi\normalfi                  % so let's get rid of it
-      \nextargument}%
-   \beginrobusttest
-   \futurelet\nextargument\nextnextargument}
-
-\def\checkdefined#1#2#3%
-  {\doifdefined{#3}
-     {\showmessage{check}{3}{#2,#3}}}
+\def\showassignerror  #1#2{\showmessage{\m!check}{1}{#1,#2}}
+\def\showargumenterror#1#2{\showmessage{\m!check}{2}{#1,#2}}
+\def\showdefinederror #1#2{\showmessage{\m!check}{3}{#1,#2}}
 
 %D \CONTEXT\ is a parameter driven package. This means that
 %D users instruct the system by means of variables, values and

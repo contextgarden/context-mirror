@@ -455,51 +455,13 @@
    \getvalue{\??dd#1\c!scheider}%
    \nummer[\v!sub\v!sub\v!sub\getvalue{\??dd#1\??dd\c!nummer}]}
 
-\def\domakednnummer#1#2%
-  {\getvalue{\??dd#2\c!links}%
-   \strut#1{#2}%
-   \getvalue{\??dd#2\c!rechts}}
+\def\domakednnummer#1#2#3%
+  {\getvalue{\??dd#2#1\c!links}%
+   \strut#3{#1}%
+   \getvalue{\??dd#2#1\c!afsluiter}%
+   \getvalue{\??dd#2#1\c!rechts}}
 
 % #1=name  #2=level #3=\show  #4[#5]#6#7=#1[#2]#3#4 van definitie
-
-%\def\special@@definitiewoord#1#2#3#4[#5]#6#7%
-%  {\strut
-%   \doifelsevalue{\??dd#1\c!nummer}{\v!nee}
-%     {\!!doneafalse}
-%     {\doifelse{#5}{-}
-%        {\!!doneafalse}
-%        {\!!doneatrue}}%
-%   \if!!donea
-%     \getvalue{\e!volgende#2#1}%
-%     \iflocation
-%       \bgroup
-%       \setvalue{\??dd#1\c!sectienummer}{\v!ja}%
-%       \protectconversion
-%       \maakvoorafgaandenummer[#1]%
-%       \xdef\internaldoornummer{#3{#1}}%
-%       \rawreference{\s!num}{#1:\internaldoornummer}{}%
-%       \egroup
-%     \fi
-%     \maakvoorafgaandenummer[#1]%
-%     \hbox
-%       {\def\kap##1{##1}% \domakednnumer gaat hier fout binnen kap
-%        \doattributes
-%          {\??dd#1}\c!kopletter\c!kopkleur
-%          {\showdntext{#2#1}%
-%           \domakednnummer#3{#1}%
-%           \getvalue{\??dd#1\c!afsluiter}}%
-%        \iflocation
-%          \edef\localconnection{\getvalue{\??dd#1\c!koppeling}:\internaldoornummer}%
-%          \doifreferencefoundelse{\localconnection}
-%            {\in[\localconnection]}{}% genereert > of <
-%        \fi}%
-%     \rawreference{\s!num}{#5}{#3{#1}}%
-%   \else
-%     \edef\!!stringa{\showdnpuretext{#2#1}}% nog eens testen binnen \expanded
-%     \expanded{\doattributes{\??dd#1}\noexpand\c!kopletter\noexpand\c!kopkleur
-%       {\!!stringa}}%
-%     \rawreference{\s!num}{#5}{}%
-%   \fi}
 
 \def\special@@definitiewoord#1#2#3#4[#5]#6#7%
   {\strut
@@ -544,8 +506,7 @@
           {\??dd#1}\c!kopletter\c!kopkleur
 {\getvalue{\??dd#1\c!commando}%
           {\showdntext{#2#1}%
-           \domakednnummer#3{#1}%
-           \getvalue{\??dd#1\c!afsluiter}}%
+           \domakednnummer{#1}{#2}{#3}}%
 }%
         \iflocation\ifcase\definitiekoppeling \else
           \edef\localconnection{\getvalue{\??dd#1\c!koppeling}:\internaldoornummer}%
@@ -648,11 +609,13 @@
      {\doifelsenothing{#4}
         {\getparameters[\??dd#3#1]%
            [\c!tekst=#1,\??dd\c!nummer=#1,\c!conversie=,
+\c!afsluiter=, 
             \c!links=,\c!rechts=,\c!koppeling=,\c!koppelwijze=,#4]}%
         {\copyparameters[\??dd#3#1][\??dd#3#4]
            [\c!plaats,\c!kopletter,\c!letter,\c!kleur,\c!kopkleur,
             \c!breedte,\c!nummer,\c!afstand,\c!commando,\c!marge,
             \c!monster,\c!hang,\c!uitlijnen,\c!voor,\c!tussen,\c!na,
+\c!afsluiter, 
             \c!springvolgendein,\c!links,\c!rechts,\c!koppeling,\c!koppelwijze]%
          \getparameters[\??dd#3#1]
            [\c!tekst=#1,\??dd\c!nummer=#4,\c!conversie=,#5]}}%

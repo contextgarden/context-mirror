@@ -45,6 +45,11 @@
      31: duplikat objekt --
 \stopmessages
 
+\startmessages  romanian  library: references
+     30: obiect necunoscut --
+     31: obiect duplicat --
+\stopmessages
+
 %D \macros 
 %D   {setobject,getobject,ifinobject}
 %D
@@ -85,30 +90,89 @@
   {\doifundefined{\r!object#1::#2}
      {\setxvalue{\r!object#1::#2}{NOT YET FLUSHED}}}
 
-\def\setobject#1#2% evt \initializepaper naar \everyshipout
+\def\dosetobject#1#2#3% evt \initializepaper naar \everyshipout
   {\initializepaper
-   \ifundefined{\r!object#1::#2}%
-     \expandafter\dosetobject
+   \ifundefined{\r!object#2::#3}%
+     \expandafter\dodosetobject
    \else
-     \expandafter\gobblefourarguments
+     \expandafter\gobblefivearguments
    \fi
-   {#1}{#2}}
+   {#1}{#2}{#3}}
 
-\def\dosetobject#1#2%   
+\let\objectoffset\!!zeropoint
+
+% \def\dodosetobject#1#2#3%   
+%  {\bgroup
+%   \inobjecttrue
+%   \dowithnextbox       
+%     {\bgroup
+%      \dontshowcomposition % rather fuzzy in \setxvalue ... \hbox
+%      \setxvalue{\r!object#2::#3}% 
+%        {\noexpand\dohandleobject{#2}{#3} 
+%           {\ifhbox\nextbox\hbox\else\vbox\fi}
+%          %{\the\wd\nextbox}{\the\ht\nextbox}{\the\dp\nextbox}}%
+%           {\number\wd\nextbox}{\number\ht\nextbox}{\number\dp\nextbox}}%
+%      \expanded % fix the dimensions since \dostartobject may use \nextbox
+%        {\dostartobject
+%           {#2}{#3}
+%           {\number\wd\nextbox}{\number\ht\nextbox}{\number\dp\nextbox}}%
+%      \ifcase#1\relax\else\ifdim\objectoffset>\!!zeropoint\relax
+%        \scratchdimen=\objectoffset
+%        \edef\next%
+%          {\wd\nextbox\the\wd\nextbox
+%           \ht\nextbox\the\ht\nextbox
+%           \dp\nextbox\the\dp\nextbox}%
+%        \setbox\nextbox=\vbox spread 2\scratchdimen
+%          {\forgetall
+%           \vss
+%           \hbox spread 2\scratchdimen{\hss\box\nextbox\hss}%
+%           \vss}%
+%        \setbox\nextbox=\hbox
+%          {\hskip-\scratchdimen\lower\scratchdimen\box\nextbox}% 
+%        \next
+%      \fi\fi
+%      \box\nextbox
+%      \dostopobject
+%      \egroup
+%      \egroup}}
+
+\def\dodosetobject#1#2#3%   
   {\bgroup
    \inobjecttrue
    \dowithnextbox       
      {\bgroup
       \dontshowcomposition % rather fuzzy in \setxvalue ... \hbox
-      \setxvalue{\r!object#1::#2}% 
-        {\noexpand\dohandleobject{#1}{#2} 
+      \setxvalue{\r!object#2::#3}% 
+        {\noexpand\dohandleobject{#2}{#3} 
            {\ifhbox\nextbox\hbox\else\vbox\fi}
           %{\the\wd\nextbox}{\the\ht\nextbox}{\the\dp\nextbox}}%
            {\number\wd\nextbox}{\number\ht\nextbox}{\number\dp\nextbox}}%
-      \dostartobject
-        {#1}{#2}
-        {\number\wd\nextbox}{\number\ht\nextbox}{\number\dp\nextbox}%
-      \box\nextbox
+      \expanded % fix the dimensions since \dostartobject may use \nextbox
+        {\dostartobject
+           {#2}{#3}
+           {\number\wd\nextbox}{\number\ht\nextbox}{\number\dp\nextbox}}%
+      \ifcase#1\relax
+        \box\nextbox
+      \else\ifdim\objectoffset>\!!zeropoint
+        \scratchdimen=\objectoffset
+        \edef\width {\the\wd\nextbox}%
+        \edef\height{\the\ht\nextbox}%
+        \edef\depth {\the\dp\nextbox}%
+        \setbox\nextbox=
+          \vbox spread 2\scratchdimen
+            {\forgetall
+             \vss
+             \hbox spread 2\scratchdimen{\hss\box\nextbox\hss}%
+             \vss}%
+        \setbox\nextbox=\hbox
+          {\hskip-\scratchdimen\lower\scratchdimen\box\nextbox}% 
+        \wd\nextbox=\width
+        \ht\nextbox=\height
+        \dp\nextbox=\depth
+        \box\nextbox
+      \else
+        \box\nextbox
+      \fi\fi
       \dostopobject
       \egroup
       \egroup}}
@@ -116,12 +180,20 @@
 \def\dogetobject#1#2#3#4#5#6%
   {\initializepaper
    \bgroup
+   \forgetall 
    \dontshowcomposition
-%   \setbox0=\vbox to #5{\vfill\doinsertobject{#1}{#2}}% 
-   \setbox0=\vbox to #5sp{\vfill\doinsertobject{#1}{#2}}% 
-   \setbox0=#3{\box0}%
-%   \wd0=#4\ht0=#5\dp0=#6\relax
-   \wd0=#4sp\ht0=#5sp\dp0=#6sp%
+   \setbox0=\vbox
+     {\doinsertobject{#1}{#2}}%
+   \setbox0=#3%
+     {\vbox to #5\s!sp  
+        {\ifdim\ht0>#5\s!sp % or \ifdim\wd0>#4\s!sp
+           \vss\hbox to #4\s!sp{\hss\box0\hss}\vss
+         \else
+           \vss\box0
+         \fi}}%
+   \wd0=#4\s!sp
+   \ht0=#5\s!sp
+   \dp0=#6\s!sp
    \box0
    \egroup}
 
@@ -139,12 +211,9 @@
 %D {\objectheight} and \type {\objectdepth}. 
 
 \def\dogetobjectdimensions#1#2#3#4#5#6% 
-%  {\def\objectwidth {#4}%
-%   \def\objectheight{#5}%
-%   \def\objectdepth {#6}}
-  {\def\objectwidth {#4sp}%
-   \def\objectheight{#5sp}%
-   \def\objectdepth {#6sp}}
+  {\def\objectwidth {#4\s!sp}%
+   \def\objectheight{#5\s!sp}%
+   \def\objectdepth {#6\s!sp}}
 
 \def\getobjectdimensions#1#2%
   {\let\dohandleobject\dogetobjectdimensions
@@ -211,13 +280,8 @@
      {\showmessage{\m!references}{30}{[#1 #2=>\defaultobjectreference{#1}{#2}]}%
       \xdef#3{\defaultobjectreference{#1}{#2}}}}
 
-\let\normalsetobject=\setobject
-
-\def\setobject%
-  {\global\objectreferencingfalse\normalsetobject}
-
-\def\setreferenceobject%
-  {\global\objectreferencingtrue\normalsetobject}
+\def\setobject     {\global\objectreferencingfalse\dosetobject1}
+\def\settightobject{\global\objectreferencingfalse\dosetobject0}
 
 %D \macros
 %D   {doifobjectfoundelse,doifobjectreferencefoundelse}

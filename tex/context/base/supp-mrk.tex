@@ -14,11 +14,77 @@
 %D Remark: due to the lack of \type {\clearmark}, the \ETEX\ 
 %D dedicated mechanism is not yet operational. 
 
+% for testing etex, can be much faster than normal  
+%
+% \unprotect 
+% 
+% \newif\ifexpandmarks   \expandmarkstrue
+% 
+% \let\normalmark            = \mark
+% \let\normaltopmark         = \topmark
+% \let\normalbotmark         = \botmark
+% \let\normalfirstmark       = \firstmark
+% \let\normalsplitbotmark    = \splitbotmark
+% \let\normalsplitfirstmark  = \splitfirstmark
+% 
+% \let\normalmarks           = \marks
+% \let\normaltopmarks        = \topmarks
+% \let\normalbotmarks        = \botmarks
+% \let\normalfirstmarks      = \firstmarks
+% \let\normalsplitbotmarks   = \splitbotmarks
+% \let\normalsplitfirstmarks = \splitfirstmarks
+% 
+% \def\newmark         #1{\setgvalue{mrk\strippedcsname#1}{0}\newmarks#1}
+% 
+% \def\gettopmark        {\getmark\topmarks}
+% \def\getbottommark     {\getmark\botmarks}
+% \def\getfirstmark      {\getmark\firstmarks}
+% \def\getsplitbottommark{\getmark\splitbotmarks}
+% \def\getsplitfirstmark {\getmark\splitfirstmarks}
+% 
+% \def\getbotmark        {\getmark\botmarks}
+% \def\getsplitbotmark   {\getmark\splitbotmarks}
+% \def\getsplittopmark   {\getmark\splitfirstmarks}
+% 
+% \def\getmark#1#2%
+%   {\ifcase\csname mrk\strippedcsname#2\endcsname\else
+%      \expandafter#1\expandafter#2%
+%    \fi}
+% 
+% \long\def\setmark#1#2%
+%   {\setgvalue{mrk\strippedcsname#1}{0}%
+%    \ifexpandmarks
+%      \expanded{\normalmarks#1{#2}}%
+%    \else
+%      \normalmarks#1{#2}%
+%    \fi}
+% 
+% \def\resetmark#1% 
+%   {\setgvalue{mrk\strippedcsname#1}{1}\marks#1{}}
+% 
+% \def\noninterferingmarks%
+%   {\let\savedsetmark\setmark
+%    \let\noninterferingmarks\relax
+%    \long\def\setmark##1##2%
+%      {\ifhmode\prewordbreak\hbox\fi{\savedsetmark{##1}{##2}}}}
+% 
+% \let\getmarks        \gobbleoneargument
+% \let\getallmarks     \relax
+% \let\getsplitmarks   \gobbleoneargument
+% \let\getallsplitmarks\relax
+% 
+% \let\newpersistentmark \newmark          % checken
+% \newif\ifnofirstmarker                   % checken
+% 
+% \protect \endinput 
+
 %D There are 256 \COUNTERS, \DIMENSIONS, \SKIPS, \MUSKIPS\ and
 %D \BOXES, 16~in- and output buffers, but there is only one
 %D \MARK. In TugBoat~8 (1987, no~1) Jim Fox presents a set of
 %D macros that can be used to mimmick multiple marks. We
-%D gladly adopt them here.
+%D gladly adopt them here. I may rewrite this module from 
+%D scratch some day, since some low level \CONTEXT\ commands
+%D can be used.  
 %D
 %D This module was changed on behalf of \ETEX. The main
 %D extension is that \type{\get..} and alike is used instead of
@@ -167,6 +233,8 @@
 %D make calls from outside the output routine a bit more
 %D robust.
 
+\let\domark\relax % saves a restore on the stack 
+
 \def\definenewmark#1#2%
   {\bgroup
    \makemarknames{#1}%
@@ -252,6 +320,13 @@
 %D found, this macro is reassigned and from then on serves
 %D in building the new list.
 
+% Although the next couple of macros are already defined 
+% in syst-gen.tex, we repeat them here. 
+
+\let\normalfi   \fi    % replaces \@fi 
+\let\normalelse \else  % replaces \@else
+\let\normalor   \or    % replaces \@or 
+
 \def\getmarks#1%
   {\bgroup
    \makemarknames{#1}%
@@ -259,9 +334,9 @@
    \edef\botmarker{0\normalbotmark}%
    \!!toksb={}%
    \nofirstmarkertrue
-   \let\@fi=\fi     \let\fi=\relax
-   \let\@or=\or     \let\or=\relax
-   \let\@else=\else \let\else=\relax
+   \let\fi=\relax
+   \let\or=\relax
+   \let\else=\relax
    \let\domark=\doscanmarks
    \getvalue{\marklist}\lastmark
    %\message{markstatus : [\the\!!toksa\the\!!toksb\the\!!toksc]}%
@@ -279,9 +354,9 @@
    \edef\botmarker{0\normalsplitbotmark}%
    \!!toksb={}%
    \nofirstmarkertrue
-   \let\@fi=\fi     \let\fi=\relax
-   \let\@or=\or     \let\or=\relax
-   \let\@else=\else \let\else=\relax
+   \let\fi=\relax
+   \let\or=\relax
+   \let\else=\relax
    \let\domark=\doscanmarks
    \getvalue{\marklist}\lastmark
 %   \@EA\global\@EA\let\csname\marklist\endcsname=\savedmarklist
@@ -292,22 +367,22 @@
 
 \long\def\dodoscanmarks#1%
   {\ifnum\scratchcounter>\topmarker\relax
-   \@else
+   \normalelse
      \long\setgvalue{\@@marktop@@\markname}{#1}%
-   \@fi
+   \normalfi
    \ifnum\scratchcounter>\botmarker\relax
      \let\domark=\dorecovermarks
      \!!toksb=\@EA{\@EA\domark\the\scratchcounter{#1}}%
-   \@else
+   \normalelse
      \ifnofirstmarker
        \long\setgvalue{\@@markfirst@@\markname}{#1}%
        \ifnum\scratchcounter>\topmarker\relax
          \nofirstmarkerfalse
-       \@fi
-     \@fi
+       \normalfi
+     \normalfi
      \long\setgvalue{\@@markbot@@\markname}{#1}%
      \!!toksa=\@EA{\@EA\domark\the\scratchcounter{#1}}%
-   \@fi}
+   \normalfi}
 
 \def\doscanmarks%
   {\afterassignment\dodoscanmarks\scratchcounter=}

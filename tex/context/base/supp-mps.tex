@@ -287,15 +287,21 @@
 
 \newtoks \everyMPTEXgraphic
 
+\newif\ifforceMPTEXgraphic
+
 \long\def\checkMPTEXgraphic#1%
-  {\expandafter\convertargument   #1\to\asciiA
-               \convertargument etex\to\asciiB
-               \convertargument text\to\asciiC 
-   \expandtwoargsafter\doifinstringelse{\asciiB}{\asciiA}
-     {\global\MPTEXgraphictrue}
-     {\expandtwoargsafter\doifinstringelse{\asciiC}{\asciiA}
-        {\global\MPTEXgraphictrue}
-        {\global\MPTEXgraphicfalse}}}
+  {\ifforceMPTEXgraphic
+     \global\MPTEXgraphictrue
+   \else
+     \expandafter\convertargument   #1\to\asciiA
+                 \convertargument etex\to\asciiB
+                 \convertargument text\to\asciiC 
+     \expandtwoargsafter\doifinstringelse{\asciiB}{\asciiA}
+       {\global\MPTEXgraphictrue}
+       {\expandtwoargsafter\doifinstringelse{\asciiC}{\asciiA}
+          {\global\MPTEXgraphictrue}
+          {\global\MPTEXgraphicfalse}}%
+   \fi}
 
 \def\flushMPTEXgraphic%
   {\ifMPTEXgraphic \ifx\everyMPTEXgraphic\emptytoks \else
@@ -349,10 +355,13 @@
 
 \def\startwritingMPgraphic%
   {\bgroup
-   \def\_{\string_}%
-   \def\&{\string&}%
-   \def\{{\iftrue \string{\else}\fi}%
-   \def\}{\iffalse{\else\string}\fi}%
+   % will go to \appendtoks ... \to \everyMPgraphic 
+   \let\#\hashletter
+   \let\_\underscoreletter  
+   \let\&\ampercentletter   
+   \def\{{\iftrue \string{\else}\fi}% ook nog ....letter 
+   \def\}{\iffalse{\else\string}\fi}% ook nog ....letter 
+   %
    \ifMPrun \else
      \allocateMPslot\currentMPgraphic
    \fi
@@ -367,8 +376,8 @@
      \theMPinclusions % no reset here !
    \else
      \xdef\MPgraphic{\the\currentMPgraphic}%
-     \the\everyMPgraphic
-     \ifnum\currentMPgraphic=1
+     \the\everyMPgraphic % here ? 
+     \ifnum\currentMPgraphic<2 % mprun (0) or mpgraph (1) 
        \immediate\openout\MPwrite=\MPgraphicfile.mp
        \immediate\write\MPwrite{\percentletter\space collected graphics of job "\jobname"}%
        \writeMPgraph
@@ -683,6 +692,7 @@
 
   \def\MPOSTbatchswitch {-int=batchmode}
   \def\MPOSTformatswitch{-progname=mpost -mem=}
+  \def\MPOSTdriver      {dvips}
 
   \def\executeMPOST#1%
     {mpost 
@@ -692,7 +702,7 @@
   \def\executeMPTEX#1%
     {texexec
        --batch \ifcase\interactionmode --logfile='mptex.log' \fi
-       --output=dvips
+       --output=\MPOSTdriver\space
        \ifuseMETAFUNformat --mpformat=metafun \fi --mptex --nomp --once #1}
 
   \def\executeMetaPost#1%
@@ -851,7 +861,7 @@
 %D \stoptypen
 %D
 %D This macro needs \type {supp-eps.tex} and provided no
-%D scaling. For \LATEX\ users the next one wil do:
+%D scaling. For \LATEX\ users the next one will do:
 %D
 %D \starttypen
 %D \def\includeMPgraphic#1#%
@@ -913,6 +923,7 @@
    \def}B\char125\relax EE
 \gdef\setMPspecials|
   B\setnaturalcatcodes
+   \catcode`\\=\@@escape
    \catcode`\%=\@@active
    \catcode`\[=\@@active
    \catcode`\]=\@@active

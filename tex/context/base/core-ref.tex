@@ -109,6 +109,17 @@
      23: obskur referanse -- (Prefix=--)
 \stopmessages
 
+\startmessages  romanian  library: references
+  title: referinte
+      1: referinta necunoscuta --
+      2: referinta duplicat -- la pagina --
+      3: tip necunoscut de referinta --
+      4: referinta eronata --
+     21: documentul -- este incarcat
+     22: documentul -- nu este interactiv
+     23: referinta obscura -- (prefix=--)
+\stopmessages
+
 %D This module deals with referencing. In \CONTEXT\ referencing
 %D is one of the core features, although at a first glance
 %D probably nobody will notice. This is good, because
@@ -394,6 +405,7 @@
            \doglobal\addtocommalist{#1}\loadedreferences
          \fi}}
    \egroup\egroup}
+
 
 %D As mentioned we will also use the cross reference mechanism
 %D for navigational purposes. The main reason for this is that
@@ -1707,6 +1719,8 @@
 \setglobalsystemreference \rt!exec \v!GotoPage       {gotopage}
 \setglobalsystemreference \rt!exec \v!Query          {query}
 \setglobalsystemreference \rt!exec \v!QueryAgain     {queryagain}
+\setglobalsystemreference \rt!exec \v!FitWidth       {fitwidth}
+\setglobalsystemreference \rt!exec \v!FitHeight      {fitheight}
 
 %D Executing the command looks alike the previous goto macros.
 
@@ -1965,7 +1979,7 @@
 %D in a different color and typeface).
 
 \def\doinatreference#1%
-  {\doifnextcharelse{[}
+  {\doifnextcharelse[% {[}
      {\dodoinatreference{#1}{}}
      {\dodoinatreference{#1}}}
 
@@ -3100,7 +3114,9 @@
    \c!links=\citaat\bgroup,
    \c!rechts=\egroup,
    \c!globaal=\v!nee,
-   \c!scheider=~]
+   \c!scheider=\nonbreakablespace]
+
+\let\nonbreakablespace=~
 
 \setupurl
   [\c!variant=\v!beide,

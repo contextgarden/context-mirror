@@ -17,6 +17,8 @@
 
 % messages 
 
+\definemessageconstant{fields}
+
 \unprotect
 
 %D Internal command, linked to \type{\definesymbol}.
@@ -28,7 +30,7 @@
   {\checkobjectreferences
    \doifobjectfoundelse{SYM}{#1}
      {}
-     {\setobject{SYM}{#1}\hbox{\symbol[#1]}%
+     {\settightobject{SYM}{#1}\hbox{\symbol[#1]}% 
       \flushatshipout
         {\setbox0=\hbox{\hskip-\maxdimen\getobject{SYM}{#1}}%
          \smashbox0\box0}}}
@@ -38,7 +40,7 @@
      {\processcommalist[##1]\dopresetfieldsymbol}%
    \@EA\processcommalist\@EA[#1]\dopresetfieldsymbols}
 
-\def\definedefaultsymbols
+\def\definedefaultsymbols%
   {\definesymbol[defaultyes][$\times$]%
    \definesymbol[defaultno][$\cdot$]}
 
@@ -273,9 +275,13 @@
 
 \newif\ifdefinemainfield \definemainfieldfalse
 
-%D We used to have: 
+%D We need to keep track of cloned (related) fields and so by
+%D maintaining lists of field clones. 
 %D
-%D \starttyping 
+%D The first alternative used a two pass data list and was 
+%D implemented as follows:
+%D
+%D \starttypen
 %D \def\getmainfieldkids#1%
 %D   {\let\@@FieldKids\empty
 %D    \ifdefinemainfield 
@@ -289,35 +295,86 @@
 %D           \exitloop
 %D         \fi}%
 %D    \fi}
-%D \stoptyping 
+%D \stoptypen
 %D 
-%D The next alternative is much faster when we have a field 
-%D with thousands of clones, somthing not that imaginary.
-
-\def\getmainfieldkids#1%
-  {\let\@@FieldKids\empty
-   \ifdefinemainfield 
-     \definerawpasslist{fld:#1}% runtime defined by system 
-     \moverawpasslist{fld:#1}\@@FieldKids
-   \fi}
-
-\newcounter\nofmainfieldkids
+%D However, the next alternative is much faster when we have 
+%D a field with thousands of clones, something not that 
+%D imaginary.
+%D
+%D \starttypen
+%D \def\getmainfieldkids#1%
+%D   {\let\@@FieldKids\empty
+%D    \ifdefinemainfield 
+%D      \definerawpasslist{fld:#1}% runtime defined by system 
+%D      \moverawpasslist{fld:#1}\@@FieldKids
+%D    \fi}
+%D \stoptypen
+%D 
+%D The data is written by file using: 
+%D
+%D \starttypen
+%D \newcounter\nofmainfieldkids
+%D
+%D \def\setmainfieldkid#1#2%
+%D   {\doglobal\increment\nofmainfieldkids
+%D    \immediatewriteutilitycommand
+%D      {\twopassentry%
+%D         {fld:#1}%
+%D         {\nofmainfieldkids}%
+%D         {#2}}}
+%D \stoptypen
+%D
+%D The trade of of this mechanism is that for each cloned or 
+%D copied field, the uitlity file is to be read in order to 
+%D fetch the data.
+%D
+%D The next, much faster alternative uses a dedicated %
+%D reference mechanism. 
 
 \def\setmainfieldkid#1#2%
-  {\doglobal\increment\nofmainfieldkids
-   \immediatewriteutilitycommand
-     {\twopassentry%
-        {fld:#1}%
-        {\nofmainfieldkids}%
-        {#2}}}
+  {\immediatewriteutilitycommand{\fieldreference{#1}{#2}}}
 
-\def\definemainfield%
-  {\definemainfieldtrue
-   \doquintupleempty\dodefinefield}
+\def\checkfieldreferences%
+  {\bgroup
+   \setbox0=\hbox
+     {\doutilities{fieldreferences}{\jobname}{}{}{}}%
+   \global\let\checkfieldreferences=\relax
+   \egroup}
+
+\def\setfieldreferences%
+  {\def\fieldreference##1##2%
+     {\ifundefined{\r!widget##1}
+        \setxvalue{\r!widget##1}{##2}%
+      \else
+        \edef\!!stringa{\getvalue{\r!widget##1}}%
+        \setxvalue{\r!widget##1}{\!!stringa,##2}%
+      \fi}}
+
+\def\resetfieldreferences%
+  {\let\fieldreference=\gobbletwoarguments}
+
+\def\getmainfieldkids#1%
+  {\checkfieldreferences
+   \ifdefinemainfield 
+     \doifundefinedelse{\r!widget#1}%
+       {\let\@@FieldKids\empty}
+       {\@EA\let\@EA\@@FieldKids\csname\r!widget#1\endcsname}%
+   \else
+     \let\@@FieldKids\empty
+   \fi}
+
+\resetfieldreferences
+
+%D Of course it costs a few more tokens to implement, but it's
+%D worth the memory: running for instance the 2000 page 
+%D english examns publishing on demand document went down from 
+%D 1350 seconds to less than 950 on a 650 Mhz pentium. 
 
 \def\definefield%
-  {\definemainfieldfalse
-   \doquintupleempty\dodefinefield}
+  {\definemainfieldfalse\doquintupleempty\dodefinefield}
+
+\def\definemainfield%
+  {\definemainfieldtrue \doquintupleempty\dodefinefield}
 
 \let\collectedfields=\empty
 \newcounter\numberoffields
@@ -343,7 +400,7 @@
   {\ifsecondargument
      \edef\currentfieldname{#1}% just in case we're inside a loop
      \doifundefinedelse{define#2field}
-       {\writestatus{fields}{unknown field type #2}}
+       {\writestatus{\m!fields}{unknown field type #2}}
        {\doifundefined{fielddata\currentfieldname}
           {\getmainfieldkids{\currentfieldname}% 
            \ifdefinemainfield
@@ -360,7 +417,7 @@
            \def\@@FieldFree{0}%
            \getvalue{define#2field}{\currentfieldname}{#2}{#3}{#4}{#5}}}%
    \else
-     \writestatus{fields}{pass fieldname and fieldtype}%
+     \writestatus{\m!fields}{pass fieldname and fieldtype}%
    \fi}
 
 \def\definelinefield#1#2#3#4#5%
@@ -412,7 +469,7 @@
         \setfield{##1}{#2}{#1}{}{}{#3}{\@@FieldMode\@@FieldFree\@@FieldAuto}{}{\@@FieldDefault}}%
      \processcommalist[#4]\docommando
   \else
-     \writestatus{fields}{pass values too}%
+     \writestatus{\m!fields}{pass values too}%
   \fi}
 
 \def\definesubfield%
@@ -423,7 +480,7 @@
      \def\docommando##1%
        {\getfield{##1}%
         \ifx\@@FieldType\empty 
-          \writestatus{fields}{unknown field ##1}%
+          \writestatus{\m!fields}{unknown field ##1}% to do
         \else   
           \doifsomething{#2}
             {\edef\@@FieldGroup{#2}}%
@@ -439,14 +496,14 @@
         \fi}%
       \processcommalist[#1]\docommando
    \else
-     \writestatus{fields}{pass fieldname, setupgroup, values and default}%
+     \writestatus{\m!fields}{pass fieldname, setupgroup, values and default}%
    \fi}
 
 \def\doclonefield[#1][#2][#3][#4]% parent children setupgroup values
   {\ifsecondargument         
      \getfield{#1}%
      \ifx\@@FieldType\empty
-       \writestatus{fields}{unknown field #1}%
+       \writestatus{\m!fields}{unknown field #1}%
      \else
        \let\@@FieldMode=\fieldparentmode
       %\def\docommando##1{\addtocommalist{##1}\@@FieldKids}%
@@ -470,7 +527,7 @@
        \processcommalist[#2]\docommando
      \fi
    \else
-     \writestatus{fields}{pass parent field and clones}%
+     \writestatus{\m!fields}{pass parent field and clones}%
    \fi}  
 
 \def\clonefield%
@@ -480,7 +537,7 @@
   {\ifsecondargument         
      \getfield{#1}%
      \ifx\@@FieldType\empty
-       \writestatus{fields}{unknown field #1}%
+       \writestatus{\m!fields}{unknown field #1}%
      \else
        \let\@@FieldMode=\fieldparentmode
       %\def\docommando##1{\addtocommalist{##1}\@@FieldKids}%
@@ -502,7 +559,7 @@
        \processcommalist[#2]\docommando
      \fi
    \else
-     \writestatus{fields}{pass parent field and copies}%
+     \writestatus{\m!fields}{pass parent field and copies}%
    \fi}  
 
 \def\copyfield%
@@ -524,17 +581,17 @@
        \let\@@FieldLabel=\@@FieldName
      \fi
      \ifx\@@FieldType\empty
-       \writestatus{fields}{unknown field #2}%
+       \writestatus{\m!fields}{unknown field #2}%
      \else\ifcase\@@FieldFree
-       \doifdefinedelse{setupfield\@@FieldGroup}
-         {\let\dosetupfield=#1\getvalue{setupfield\@@FieldGroup}}
+       \doifdefinedelse{\strippedcsname\setupfield\@@FieldGroup}
+         {\let\dosetupfield=#1\getvalue{\strippedcsname\setupfield\@@FieldGroup}}
          {#1[\@@FieldName][\v!label,\v!kader,\v!horizontaal][][][]}%
        \def\@@FieldFree{1}%
        \changefield{#2}%
      \else\ifcase\@@FieldAuto
-       \writestatus{fields}{field #2 already typeset}%
+       \writestatus{\m!fields}{field #2 already typeset}%
      \else
-       \writestatus{fields}{field #2 automatically copied}%
+       \writestatus{\m!fields}{field #2 automatically copied}%
        \nextsystemfield
        \copyfield[\@@FieldName][\currentsystemfield]%
        \dotripleempty\dofield[#1][\currentsystemfield][#3]% get the if's right
@@ -578,18 +635,18 @@
   {\dodoubleargument\dodefinethefieldset}
 
 \def\normaldodosetupfield[#1][#2][#3][#4][#5]%
-  {\doifdefinedelse{setupfield#1}
+  {\doifdefinedelse{\strippedcsname\setupfield#1}
      {\pushmacro\dosetupfield
       \def\dosetupfield[##1][##2][##3][##4][##5]%
-        {\setvalue{setupfield#1}{\dosetupfield[#1][##2,#2][##3,#3][##4,#4][##5,#5]}}%
-      \getvalue{setupfield#1}%
+        {\setvalue{\strippedcsname\setupfield#1}{\dosetupfield[#1][##2,#2][##3,#3][##4,#4][##5,#5]}}%
+      \getvalue{\strippedcsname\setupfield#1}%
       \popmacro\dosetupfield}
-     {\setvalue{setupfield#1}{\dosetupfield[#1][#2][#3][#4][#5]}}}
+     {\setvalue{\strippedcsname\setupfield#1}{\dosetupfield[#1][#2][#3][#4][#5]}}}
 
 \let\dodosetupfield\normaldodosetupfield
 
 \def\donosetupfield[#1][#2][#3][#4][#5]%
-  {\setvalue{setupfield#1}{\dosetupfield[#1][#2][#3][#4][#5]}}
+  {\setvalue{\strippedcsname\setupfield#1}{\dosetupfield[#1][#2][#3][#4][#5]}}
 
 \def\dosetupfield[#1][#2][#3][#4][#5]%
   {\iffifthargument
@@ -607,7 +664,7 @@
      \def\docommando##1{\dodosetupfield[##1][][][][]}%
      \processcommalist[#1]\docommando
    \else
-     \writestatus{fields}{provide either 1, 2, 3 or 5 arguments}%
+     \writestatus{\m!fields}{provide either 1, 2, 3 or 5 arguments}%
    \fi\fi\fi\fi}
 
 \def\setupfield%
@@ -616,17 +673,17 @@
 \def\dosetupfields[#1][#2][#3][#4]%
   {\ifsecondargument
      \def\dodosetupfield[##1][##2][##3][##4][##5]%
-       {\doifdefinedelse{setupfield##1}
+       {\doifdefinedelse{\strippedcsname\setupfield##1}
           {\def\dosetupfield[####1][####2][####3][####4][####5]%
-             {\setvalue{setupfield##1}{\dosetupfield[##1][#1,####2,##2][#2,####3,##3][#3,####4,##4][#4,####5,##5]}}%
-           \getvalue{setupfield##1}}
-          {\setvalue{setupfield##1}{\dosetupfield[##1][#1,##2][#2,##3][#3,##4][#4,##5]}}}%
+             {\setvalue{\strippedcsname\setupfield##1}{\dosetupfield[##1][#1,####2,##2][#2,####3,##3][#3,####4,##4][#4,####5,##5]}}%
+           \getvalue{\strippedcsname\setupfield##1}}
+          {\setvalue{\strippedcsname\setupfield##1}{\dosetupfield[##1][#1,##2][#2,##3][#3,##4][#4,##5]}}}%
    \else\iffirstargument
      \doifelse{#1}{\v!reset}
        {\let\dodosetupfield\normaldodosetupfield}
        {\setupfields[][][][#1]}% checken 
    \else
-     \writestatus{fields}{provide either 1 or 4 arguments}%
+     \writestatus{\m!fields}{provide either 1 or 4 arguments}%
    \fi\fi}
 
 \def\setupfields%

@@ -49,6 +49,12 @@
       2: slutten av blokk -- (seksjon)
 \stopmessages
 
+\startmessages  romanian  library: structures
+  title: structuri
+      1: inceput de bloc sectiune --
+      2: sfarsit de bloc sectiune --
+\stopmessages
+
 \unprotect
 
 \def\dodochecknummer#1#2#3%
@@ -118,10 +124,20 @@
    \fi
    \egroup}
 
+% \def\maakhetnummer[#1]%
+%   {\maakvoorafgaandenummer[#1]%
+%    \xdef\hetnummer%
+%      {\voorafgaandenummer\nummer[#1]}}%
+% 
+% hack needed for chinese and oldstyle in normal tex, will change 
+
 \def\maakhetnummer[#1]%
-  {\maakvoorafgaandenummer[#1]%
-   \xdef\hetnummer%
-     {\voorafgaandenummer\nummer[#1]}}%
+  {\bgroup
+   \forceunexpanded % i don't like this hack
+   \maakvoorafgaandenummer[#1]%
+   \xdef\hetnummer% was \xdef maar dat gaat fout met font switches
+     {\voorafgaandenummer\nummer[#1]}%
+   \egroup}
 
 \def\lossenummer[#1]%
   {\maakhetnummer[#1]%
@@ -914,10 +930,13 @@
 % \onderwerp{test} \strut \input tufte
 % \onderwerp{test} \plaatslijst[...]
 
+\newif\ifheadnumbercontent
+
 \def\doplaatskoptekst#1#2#3#4%
   {\beginheadplacement{#1}%
    \setbox0=\ifvertical\vbox\else\hbox\fi % \vhbox
-     {\getvalue{\??ko#1\c!commando}
+     {\headnumbercontentfalse
+      \getvalue{\??ko#1\c!commando}
         {} % no number
         {\doattributes
            {\??ko#1}\c!letter\c!kleur
@@ -931,13 +950,13 @@
                \fi
                #2%
                \getvalue{\??ko#1\c!voorcommando}%
-               \getvalue{\??ko#1\c!tekstcommando}%
-                 {\ifdisplaysectionhead
-                    \setstrut\begstrut#3\endstrut
-                     \xdef\localheaddepth{\the\dp\strutbox}%
-                  \else
-                    #3%
-                  \fi}%
+               \ifdisplaysectionhead
+                 \getvalue{\??ko#1\c!tekstcommando}%
+                   {\setstrut\begstrut#3\endstrut}
+                 \xdef\localheaddepth{\the\dp\strutbox}%
+               \else
+                 \getvalue{\??ko#1\c!tekstcommando}{#3}%
+               \fi
                \getvalue{\??ko#1\c!nacommando}%
                \ifdisplaysectionhead\endgraf\fi}}}}%
    \endheadplacement{#1}{#4}}
@@ -945,16 +964,18 @@
 \def\doplaatskopnummertekst#1#2#3#4#5%
   {\beginheadplacement{#1}%
    \setbox0=\ifvertical\vbox\else\hbox\fi % \vhbox
-     {\getvalue{\??ko#1\c!commando}%
+     {\doiftextelse{#3}
+        {\headnumbercontenttrue}{\headnumbercontentfalse}%
+      \getvalue{\??ko#1\c!commando}%
         {\doattributes{\??ko#1}\c!letter\c!kleur
            {\doattributes{\??ko#1}\c!nummerletter\c!nummerkleur
               {\getvalue{\??ko#1\c!voorcommando}%
-               \getvalue{\??ko#1\c!nummercommando}%
-                 {\ifdisplaysectionhead
-                    \setstrut\begstrut#3\endstrut
-                  \else
-                    #3%
-                  \fi}}}}
+               \ifdisplaysectionhead
+                 \getvalue{\??ko#1\c!nummercommando}%
+                   {\setstrut\begstrut#3\endstrut}%
+               \else
+                 \getvalue{\??ko#1\c!nummercommando}{#3}%
+               \fi}}}
         {\doattributes{\??ko#1}\c!letter\c!kleur
            {\doattributes{\??ko#1}\c!tekstletter\c!tekstkleur
               {\dontconvertfont
@@ -964,13 +985,13 @@
                  \stelspatieringin
                \fi
                #2%
-               \getvalue{\??ko#1\c!tekstcommando}%
-                 {\ifdisplaysectionhead
-                    \setstrut\begstrut#4\endstrut
-                    \xdef\localheaddepth{\the\dp\strutbox}%
-                  \else
-                    #4%
-                  \fi}%
+               \ifdisplaysectionhead
+                 \getvalue{\??ko#1\c!tekstcommando}%
+                   {\setstrut\begstrut#4\endstrut}%
+                 \xdef\localheaddepth{\the\dp\strutbox}%
+               \else
+                 \getvalue{\??ko#1\c!tekstcommando}{#4}%
+               \fi
                \getvalue{\??ko#1\c!nacommando}%
                \ifdisplaysectionhead\endgraf\fi}}}}%
    \endheadplacement{#1}{#5}}
@@ -1143,29 +1164,30 @@
 \def\plaatskopalinea#1#2%
   {\vbox
      {\localkopsetup
-      \begstrut\doifsomething{#1}{#1\hskip\numberheaddistance}#2}}
+      \begstrut\ifheadnumbercontent#1\hskip\numberheaddistance\fi#2}}
 
 \def\plaatskopnormaal#1#2%
-  {\doifelsenothing{#1}
-     {\vbox
-        {\localkopsetup
-         \noindent
-         #2}}%
-     {\setbox0=\hbox{{#1}\hskip\numberheaddistance}%
-      \vbox
-        {\localkopsetup
-         \hangindent 1\wd0
-         \hangafter 1
-         \noindent
-         \unhbox0    %  don't use \strut's here!
-         #2}}}
+  {\ifheadnumbercontent
+     \setbox0=\hbox{{#1}\hskip\numberheaddistance}%
+     \vbox
+       {\localkopsetup
+        \hangindent 1\wd0
+        \hangafter 1
+        \noindent
+        \unhbox0    %  don't use \strut's here!
+        #2}%
+   \else
+     \vbox
+       {\localkopsetup\noindent#2}%
+   \fi}
 
 \def\plaatskopinmarge#1#2%
   {\vbox
      {\localkopsetup
       \begstrut            % but use one \strut here!
-      \doifsomething{#1}
-        {\llap{\hbox to 5em{\hfill{#1}\hskip\linkermargeafstand}}}%
+      \ifheadnumbercontent      
+        \llap{\hbox to 5em{\hfill{#1}\hskip\linkermargeafstand}}%
+      \fi
       {#2}}}
 
 \def\plaatskopmidden#1#2%
@@ -1174,12 +1196,12 @@
       \veryraggedcenter
       \let\\\endgraf
       \let\crlf\endgraf
-      \doifsomething{#1}{\strut#1\par}\begstrut#2}}
+      \ifheadnumbercontent\strut#1\par\fi\begstrut#2}}
 
 \def\plaatskopintekst#1#2%
   {\bgroup
    \localkopsetup % no stretch in distance
-   \doifsomething{#1}{{#1}\kern\numberheaddistance}{\begstrut#2}%
+   \ifheadnumbercontent{#1}\kern\numberheaddistance\fi{\begstrut#2}%
    \egroup}
 
 % default   == instellingen

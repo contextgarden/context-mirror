@@ -13,7 +13,7 @@
 
 \catcode`\{=1 \catcode`\}=2 
 
-\def\contextversion{2000.10.22}
+\def\contextversion{2001.3.27}
 
 %D Welcome to the main module. When this module is ran through
 %D \type{initex} or \type{tex -i} or \type{whatevertex} using
@@ -32,6 +32,7 @@
 \input syst-gen.tex
 \input syst-ext.tex
 \input syst-new.tex
+\input syst-con.tex
 
 %D To enable selective loading, we say:
 
@@ -112,7 +113,7 @@
 %D load additional definition modules when needed.
 
 \input enco-ini.tex 
-
+\input regi-ini.tex % new 
 \input lang-ini.tex
 
 \input colo-ini.tex
@@ -151,7 +152,6 @@
 \input core-uti.tex
 \input core-mar.tex
 \input core-mak.tex
-\input core-mat.tex
 \input core-dat.tex
 \input core-grd.tex
 \input core-ver.tex
@@ -168,6 +168,7 @@
 \input core-num.tex 
 \input core-itm.tex 
 \input core-des.tex 
+\input core-mat.tex
 \input core-syn.tex 
 \input core-mul.tex % moved 
 \input main-001.tex % still to be split  
@@ -177,6 +178,8 @@
 \input core-mis.tex
 \input core-int.tex
 \input core-ntb.tex
+
+\input page-lyr.tex
 
 %D Like languages, fonts, encodings and symbols, \METAPOST\ 
 %D support is also organized in its own class of modules. 
@@ -222,6 +225,12 @@
 
 \input core-fig.tex % after page body 
 \input core-par.tex
+
+%D Only the basic XML parser is part of the core. 
+
+\input xtag-ini.tex
+\input xtag-ext.tex
+%input xtag-map.tex
 
 %D The next two modules implement some additional
 %D functionality concenring classes of documents and output.
@@ -302,14 +311,28 @@
 
 \writestring{Questo pacchetto è basato sul Plain TeX. Usa una versione adattata del}
 \writestring{meccanismo di marcatura esteso di J. Fox (1987) ad alcune parti del}
-\writestring{meccanismo per i float laterali di D. Comenetz (1993). La maggior parte}
-\writestring{Plain TeX di D.E. Knuth (\fmtversion) è disponibile e può essere usata}
-\writestring{senza problemi. Questo pacchetto usa TaBlE, un pacchetto progettato e}
-\writestring{con diritti di copia di M.J. Wichura (1988). Solo qualche file ausiliario}
-\writestring{viene generato, alcuni dei quali devono essere elaborati da TeXUtil}
-\writestring{(\utilityversion). La versione attuale del blocco è \blockversion.}
+\writestring{meccanismo per gli oggetti mobili laterali di D. Comenetz (1993).}
+\writestring{La maggior parte del Plain TeX (\fmtversion) di D.E. Knuth è disponibile}
+\writestring{e può essere usata senza problemi. Questo pacchetto usa TaBlE,}
+\writestring{un pacchetto progettato da e con diritti di copia di M.J. Wichura (1988).}
+\writestring{Vengono generati pochi file ausiliari, alcuni dei quali devono essere}
+\writestring{elaborati da TeXUtil (\utilityversion). La versione attuale del blocco}
+\writestring{è \blockversion.}
 \writestring{}
 \writestring{L'INTERFACCIA UTENTE ITALIANA E' ANCORA IN VIA DI SVILUPPO!}
+\writestring{THE ITALIAN USER INTERFACE IS STILL UNDER DEVELOPMENT!}
+
+\stopinterface
+
+\startinterface romanian
+
+\writestring{Acest pachet este bazat pe Plain TeX. Foloseste o versiune adaptata a}
+\writestring{mecanismului extins de marcare a lui J. Fox (1987) si cateva parti a mecanismului }
+\writestring{blocurilor marginale a lui D. Comenetz (1993). Cea mai mare parte a Plain Tex}
+\writestring{(\fmtversion) a lui D.E. Knuth este disponibila si poate fi folosita fara probleme.}
+\writestring{Acest pachet foloseste TaBlE, un pachet proiectat si creat de M.J. Wichura (1988).}
+\writestring{Numai un numar de fisiere auxiliare sunt generate, din care unele trebuie procesate}
+\writestring{de catre TeXUtil (\utilityversion). Versiunea curenta de blocuri este \blockversion.}
 
 \stopinterface
 
@@ -388,6 +411,15 @@
 
   \appendtoks \language     [\s!it] \to \everyjob
   \appendtoks \mainlanguage [\s!it] \to \everyjob
+
+\stopinterface 
+
+\startinterface romanian 
+
+  \installlanguage [\s!ro] [\c!status=\v!start]
+
+  \appendtoks \language     [\s!ro] \to \everyjob
+  \appendtoks \mainlanguage [\s!ro] \to \everyjob
 
 \stopinterface 
 

@@ -24,6 +24,7 @@
 
 \ifx \undefined \writestatus          \input supp-mis.tex \relax \fi
 \ifx \undefined \convertMPtoPDF \else \expandafter \endinput     \fi 
+\ifx \undefined \StartLatexHack \else \StartLatexHack            \fi 
 
 %D This module handles some \PDF\ conversion and insertions
 %D topics. By default, the macros use the \PDFTEX\ primitive
@@ -64,12 +65,13 @@
 %D \pdfclippedimage <optional dimensions> {file} {l} {r} {t} {b} 
 %D \stoptypen
 
-\ifx\pdftexversion\undefined
-  \writestatus{\m!systems}{Why not use pdf(e)TeX binaries?}
-  \protect\expandafter\endinput 
-\fi
+\ifx\pdftexversion\undefined % no \m!systems for the sake of latex
+  \writestatus{systems}{Why not use pdf(e)TeX binaries?}
+  \protect 
+  \expandafter\endinput 
+\fi 
 
-\ifnum\pdftexversion>13
+\ifnum\pdftexversion>13 
 
   \def\pdfimage#1#%
     {\dopdfimage{#1}}
@@ -110,7 +112,18 @@
      \pdfrefxform\pdflastxform
      \egroup}
 
-%D For old times sake: 
+%D If you want to save a few hash entries, you may prefer the 
+%D less readable alternatives, like:  
+%D  
+%D \starttypen 
+%D \def\pdfimage#1#% This one is less readable but needs no additional
+%D   {\bgroup      % hash entry for the second stage macro.   
+%D    \def\pdfimage##1%
+%D      {\immediate\pdfximage##1{#2}%
+%D       \pdfrefximage\pdflastximage\egroup}}
+%D \stoptypen
+
+%D For old times sake: (will be removed some day)
 
   \let\pdfform    =\pdfxform
   \let\pdflastform=\pdflastxform
@@ -510,6 +523,7 @@
    \def}B\char125\relax EE
 \gdef\setMPspecials|
   B\setnaturalcatcodes
+   \catcode`\\=\@@escape
    \catcode`\%=\@@active
    \catcode`\[=\@@active
    \catcode`\]=\@@active
@@ -648,7 +662,7 @@
   {\PDFcode{\!MP{\gMPa1} g 
             \!MP{\gMPa1} G}}
 
-%D Beginning and ending the graphics is taken care of by the
+%D Begining and ending the graphics is taken care of by the
 %D macro \type{\handleMPgraphic}, which is redefined when
 %D the first graphics operator is met.
 
@@ -720,7 +734,7 @@
    \let\next=\handleMPsequence
    \ifskipemptyMPgraphic
      \ifdim\MPheight=\!!zeropoint\relax\ifdim\MPwidth=\!!zeropoint\relax
-       \def\next{\endinput\finishMPgraphic}%
+      \def\next{\endinput\finishMPgraphic}%
      \fi\fi
    \fi
    \next}
@@ -765,6 +779,9 @@
 %D finaly I saw the light. It proved that we also had to
 %D take care of \type{(split arguments)}.
 
+\def\setMPfshowfont#1#2%
+  {\font\temp=#1\space at #2\relax\temp}
+
 \def\handleMPfshow%
   {\bgroup
    \setbox\scratchbox=\hbox
@@ -772,7 +789,7 @@
       \edef\size{\gMPa\nofMParguments}%
       \ifx\size\PSnfont % round font size (to pt) 
         \advance\nofMParguments by -1
-        \expandafter\scratchdimen\gMPa\nofMParguments pt
+        \expandafter\scratchdimen\gMPa\nofMParguments pt\relax
         \ifdim\scratchdimen<1pt
           \def\size{1pt}%
         \else
@@ -784,7 +801,8 @@
         \edef\size{\size bp}%
       \fi
       \advance\nofMParguments by -1
-      \font\temp=\gMPa\nofMParguments\space at \size
+     %\font\temp=\gMPa\nofMParguments\space at \size
+      \setMPfshowfont{\gMPa\nofMParguments}\size
       \advance\nofMParguments by -1
       \temp
       \ifnum\nofMParguments=1
@@ -1432,6 +1450,7 @@
 
 \def\convertMPtoPDF#1#2#3%
   {\bgroup
+   \ifx\pdfdecimaldigits\undefined\else \pdfdecimaldigits=5 \fi % new 
    \setbox\scratchbox=\vbox\bgroup
      \forgetall
      \offinterlineskip
@@ -1457,36 +1476,38 @@
    \input#1\relax
    \deleteMPgraphic{#1}}
 
-\def\finishMPgraphic% 
-  {\stopMPresources
-   \egroup
-   \ifx\pdftexversion\undefined\else\ifnum\pdftexversion<14 % for the moment 
-     \chardef\makeMPintoPDFobject=0 
-   \fi\fi
-   \ifcase\makeMPintoPDFobject\or\or\ifx\currentPDFresources\empty\else
-     \chardef\makeMPintoPDFobject=1 
-   \fi\fi
-   \setbox\scratchbox=\vbox
-     {\forgetall
-      \hbox
-        {\PDFcode{q \MPxscale\space 0 0 \MPyscale\space \MPxoffset\space \MPyoffset\space cm}%
-         \lower\MPyshift\box\scratchbox % unscaled shift 
-         \PDFcode{Q}}}%
-   \ht\scratchbox\MPheight
-   \wd\scratchbox\MPwidth
-   \dp\scratchbox\!!zeropoint
-   \ifcase\makeMPintoPDFobject
-     \box\scratchbox
-   \or
-     \immediate\pdfxform resources{\currentPDFresources}\scratchbox
-     \xdef\lastPDFMPobject{\the\pdflastxform}%
-     \pdfrefxform\lastPDFMPobject
-     \global\let\currentPDFresources\empty
-   \else
-     \box\scratchbox
-   \fi
-   \egroup}
-
+% strange rounding/clip in pdftex/viewer
+% 
+% \def\finishMPgraphic% 
+%   {\stopMPresources
+%    \egroup
+%    \ifx\pdftexversion\undefined\else\ifnum\pdftexversion<14 % for the moment 
+%      \chardef\makeMPintoPDFobject=0 
+%    \fi\fi
+%    \ifcase\makeMPintoPDFobject\or\or\ifx\currentPDFresources\empty\else
+%      \chardef\makeMPintoPDFobject=1 
+%    \fi\fi
+%    \setbox\scratchbox=\vbox
+%      {\forgetall
+%       \hbox
+%         {\PDFcode{q \MPxscale\space 0 0 \MPyscale\space \MPxoffset\space \MPyoffset\space cm}%
+%          \lower\MPyshift\box\scratchbox % unscaled shift 
+%          \PDFcode{Q}}}%
+%    \ht\scratchbox\MPheight
+%    \wd\scratchbox\MPwidth
+%    \dp\scratchbox\!!zeropoint
+%    \ifcase\makeMPintoPDFobject
+%      \box\scratchbox
+%    \or
+%      \immediate\pdfxform resources{\currentPDFresources}\scratchbox
+%      \xdef\lastPDFMPobject{\the\pdflastxform}%
+%      \pdfrefxform\lastPDFMPobject
+%      \global\let\currentPDFresources\empty
+%    \else
+%      \box\scratchbox
+%    \fi
+%    \egroup}
+%
 % funny clip in viewer
 %
 % \setbox\scratchbox=\vbox
@@ -1501,6 +1522,56 @@
 %      {\PDFcode{q \MPxscale\space 0 0 \MPyscale\space 0 0 cm}%
 %       \lower\MPshift\box\scratchbox
 %       \PDFcode{Q}}}%
+
+\let\PDFMPformoffset\!!zeropoint
+
+\def\finishMPgraphic% 
+  {\stopMPresources
+   \egroup
+   \ifx\pdftexversion\undefined\else\ifnum\pdftexversion<14 % for the moment 
+     \chardef\makeMPintoPDFobject=0 
+   \fi\fi
+   \ifcase\makeMPintoPDFobject\or\or\ifx\currentPDFresources\empty\else
+     \chardef\makeMPintoPDFobject=1 
+   \fi\fi
+   \setbox\scratchbox=\vbox 
+     {\forgetall
+      \hbox 
+        {\PDFcode{q \MPxscale\space 0 0 \MPyscale\space \MPxoffset\space \MPyoffset\space cm}%
+         \lower\MPyshift\box\scratchbox % unscaled shift 
+         \PDFcode{Q}}}%
+   \ht\scratchbox\MPheight
+   \wd\scratchbox\MPwidth
+   \dp\scratchbox\!!zeropoint\relax
+   \ifcase\makeMPintoPDFobject
+     \box\scratchbox
+   \or
+     \scratchdimen=\PDFMPformoffset\relax
+     \ifdim\scratchdimen>\!!zeropoint % compensate for error 
+       \setbox\scratchbox=\vbox spread 2\scratchdimen
+         {\forgetall
+          \vss
+          \hbox spread 2\scratchdimen
+            {\hss
+             \box\scratchbox
+             \hss}%
+          \vss}%
+     \fi
+     \immediate\pdfxform resources{\currentPDFresources}\scratchbox
+     \xdef\lastPDFMPobject{\the\pdflastxform}%
+     \ifdim\scratchdimen>\!!zeropoint % compensate for error
+       \vbox to \MPheight 
+         {\forgetall
+          \vss\hbox to \MPwidth{\hss\pdfrefxform\lastPDFMPobject\hss}\vss}%
+     \else
+       \pdfrefxform\lastPDFMPobject
+     \fi
+     \global\let\currentPDFresources\empty
+   \else
+     \box\scratchbox
+   \fi
+   \egroup
+   \endinput}
 
 %D \macros 
 %D   {deleteMPgraphic,
@@ -1539,6 +1610,6 @@
 %D does all the calculations. Converting other \POSTSCRIPT\
 %D files would drive both me and \TEX\ crazy.
 
-\protect
+\ifx\undefined\StopLatexHack \else \StopLatexHack \fi 
 
-\endinput
+\protect \endinput

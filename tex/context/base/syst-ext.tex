@@ -38,13 +38,13 @@
 %D   {doglobal,
 %D    redoglobal,dodoglobal,resetglobal}
 %D
-%D The two macros \type{\redoglobal} and \type{\dodoglobal} are
+%D The two macros \type {\redoglobal} and \type{\dodoglobal} are
 %D used in this and some other modules to enforce a user
-%D specified \type{\doglobal} action. The last and often only
+%D specified \type {\doglobal} action. The last and often only
 %D global assignment in a macro is done with
-%D \type{\dodoglobal}, but all preceding ones with
-%D \type{\redoglobal}. When using only alternatives, one can 
-%D reset this mechanism with \type{\resetglobal}. 
+%D \type {\dodoglobal}, but all preceding ones with
+%D \type {\redoglobal}. When using only alternatives, one can 
+%D reset this mechanism with \type {\resetglobal}. 
 
 \def\doglobal%
   {\let\redoglobal\global
@@ -63,8 +63,8 @@
   {\ifx\redoglobal\relax
      \let\redoglobal\global
      \def\dodoglobal{\resetglobal\global}%
-   \else
-     \writestatus{system}{global not reset, warn me!}%
+  %\else
+  %  \writestatus{system}{global not reset, warn me!}%
    \fi}
 
 \def\saveglobal   
@@ -202,21 +202,15 @@
   {\dodododoincrement(#1,1)}
 
 \def\dodoincrement(#1%
-  {\doifnextcharelse{,}
-     {\dodododoincrement(#1}
-     {\dodododoincrement(#1,1}}
+  {\doifnextcharelse,%
+     {\dodododoincrement(#1}{\dodododoincrement(#1,1}}
 
 \def\doincrement#1%
   {\def\incrementsign{#1}%
-   \doifnextcharelse{(}
-     {\dodoincrement}
-     {\dododoincrement}}
+   \doifnextcharelse(\dodoincrement\dododoincrement}
 
-\def\increment%
-  {\doincrement+}
-
-\def\decrement%
-  {\doincrement-}
+\def\increment{\doincrement+}
+\def\decrement{\doincrement-}
 
 %D \macros
 %D  {newsignal}
@@ -414,30 +408,74 @@
 
 \let\nextrecurse\relax
 
-\long\def\dostepwiserecurse#1#2#3#4%
-  {%\let\nextrecurse\relax
-   \ifcase#2\relax
-     \let\recurselevel\zerocountervalue
-     \let\nextrecurse\relax
+% not entirely correct  
+%
+% \long\def\dostepwiserecurse#1#2#3#4%
+%   {%\let\nextrecurse\relax
+%    \ifcase#2\relax
+%      \let\recurselevel\zerocountervalue
+%      \let\nextrecurse\relax
+%    \else
+%      \global\advance\outerrecurse by 1
+%      \setevalue{\@@irecurse\recursedepth}{\number#1}%
+%      \setevalue{\@@nrecurse\recursedepth}{\number#2}%
+%      \setevalue{\@@srecurse\recursedepth}{\number#3}%
+%      \ifnum#3>0\relax\ifnum#2<#1\relax
+%      \else
+%        \setevalue{\@@drecurse\recursedepth}{>}%
+%        \long\setvalue{\@@arecurse\recursedepth}{#4}%
+%        \let\nextrecurse\dodorecurse
+%      \fi\fi
+%      \ifnum#3<0\relax\ifnum#1<#2\relax
+%      \else
+%        \setevalue{\@@drecurse\recursedepth}{<}%
+%        \long\setvalue{\@@arecurse\recursedepth}{#4}%
+%        \let\nextrecurse\dodorecurse
+%      \fi\fi
+%    \fi
+%    \nextrecurse}
+
+\long\def\dosetstepwiserecurse#1#2#3#4#5%
+  {\global\advance\outerrecurse by 1
+   \setevalue{\@@drecurse\recursedepth}{#1}%
+   \setevalue{\@@irecurse\recursedepth}{\number#2}%
+   \setevalue{\@@nrecurse\recursedepth}{\number#3}%
+   \setevalue{\@@srecurse\recursedepth}{\number#4}%
+   \long\setvalue{\@@arecurse\recursedepth}{#5}%
+   \dodorecurse}
+
+%D Acceptable.
+%D 
+%D \starttypen 
+%D \long\def\dostepwiserecurse#1#2#3%
+%D   {\let\nextrecurse\gobblefourarguments
+%D    \ifnum#3>0\relax\ifnum#2<#1\relax\else
+%D      \def\nextrecurse{\dosetstepwiserecurse>}%
+%D    \fi\fi
+%D    \ifnum#3<0\relax\ifnum#1<#2\relax\else
+%D      \def\nextrecurse{\dosetstepwiserecurse<}%
+%D    \fi\fi
+%D    \nextrecurse{#1}{#2}{#3}}
+%D \stoptypen
+%D 
+%D Better. 
+
+\long\def\dostepwiserecurse#1#2#3%
+  {\let\nextrecurse\gobblefourarguments
+   \ifnum#3>0\relax
+     \ifnum#2<#1\relax
+     \else
+       \def\nextrecurse{\dosetstepwiserecurse>}%
+     \fi
    \else
-     \global\advance\outerrecurse by 1
-     \setevalue{\@@irecurse\recursedepth}{\number#1}%
-     \setevalue{\@@nrecurse\recursedepth}{\number#2}%
-     \setevalue{\@@srecurse\recursedepth}{\number#3}%
-     \ifnum#3>0\relax\ifnum#2<#1\relax
-     \else
-       \setevalue{\@@drecurse\recursedepth}{>}%
-       \long\setvalue{\@@arecurse\recursedepth}{#4}%
-       \let\nextrecurse\dodorecurse
-     \fi\fi
-     \ifnum#3<0\relax\ifnum#1<#2\relax
-     \else
-       \setevalue{\@@drecurse\recursedepth}{<}%
-       \long\setvalue{\@@arecurse\recursedepth}{#4}%
-       \let\nextrecurse\dodorecurse
-     \fi\fi
+     \ifnum#3<0\relax
+       \ifnum#1<#2\relax
+       \else
+         \def\nextrecurse{\dosetstepwiserecurse<}%
+       \fi
+     \fi
    \fi
-   \nextrecurse}
+   \nextrecurse{#1}{#2}{#3}}
 
 \def\donorecurse%
   {}
@@ -580,7 +618,7 @@
 \def\doloop%
   {\dostepwiserecurse{1}{\maxdimen}{1}}
 
-\def\exitloop
+\def\exitloop%
   {\setvalue{\@@irecurse\recursedepth}{\maxdimen}}
 
 %D We don't declare new counters for \type{\looplevel} and 
@@ -804,8 +842,11 @@
 \long\def\convertargument#1\to#2%
   {\dodoglobal\edef#2{\detokenize{#1}}}
 
+% \long\def\convertcommand#1\to#2% 
+%   {\@EA\dodoglobal\@EA\edef\@EA#2\@EA{\@EA\detokenize\@EA{#1}}}
+
 \long\def\convertcommand#1\to#2% 
-  {\@EA\dodoglobal\@EA\edef\@EA#2\@EA{\@EA\detokenize\@EA{#1}}}
+  {\dodoglobal\edef#2{\@EA\detokenize\@EA{#1}}}
 
 \endETEX
 
@@ -934,7 +975,7 @@
   {\let\ExpandCommand#1\complexorsimple\ExpandFirstAfter}
 
 \def\ExpandSecondAfter#1#2#3%
-  {\def\!!stringa{#2}%
+  {\edef\!!stringa{#2}% was \def
    \edef\!!stringb{#3}%
    \@EA#1\@EA{\@EA\!!stringa\@EA}\@EA{\!!stringb}}
 
@@ -1311,9 +1352,11 @@
 %D \type{CAPITALS}. This suggestion is feasible, because
 %D \CONTEXT only defines lowcased macros.
 
-\def\checkdefined#1#2#3% redefined in mult-ini
-  {\doifdefined{#3}
-     {\writestatus{#1}{#2 #3 replaces a macro, use CAPITALS!}}}
+\def\showdefinederror#1#2%
+  {\writestatus{system}{#1 #2 replaces a macro, use CAPITALS!}}
+ 
+\def\checkdefined#1#2#3%
+  {\doifdefined{#3}{\showdefinederror{#2}{#3}}}
 
 %D \macros
 %D   {GotoPar,GetPar}
@@ -1585,7 +1628,8 @@
 \let\normalegroup\egroup
 
 %D \macros
-%D   {appendtoks,prependtoks,flushtoks,dotoks}
+%D   {appendtoks,prependtoks,appendtoksonce,prependtoksonce,
+%D    doifintokselse,flushtoks,dotoks}
 %D
 %D We use \TOKENLISTS\ sparsely within \CONTEXT, because the
 %D comma separated lists are more suitable for the user
@@ -1608,86 +1652,63 @@
 %D \starttypen
 %D \def\appendtoks#1\to#2%
 %D   {\scratchtoks={#1}%
-%D    \edef\next{\noexpand#2={\the#2\the\scratchtoks}}%
-%D    \next
-%D    \dodoglobal#2=#2} 
+%D    \expanded{\dodoglobal\noexpand#2{\the#2\the\scratchtoks}}}
 %D 
 %D \def\prependtoks#1\to#2%
 %D   {\scratchtoks={#1}%
-%D    \edef\next{\noexpand#2={\the\scratchtoks\the#2}}%
-%D    \next
-%D    \dodoglobal#2=#2} 
+%D    \expanded{\dodoglobal\noexpand#2{\the\scratchtoks\the#2}}}
 %D \stoptypen
 %D
 %D But here we prefer: 
 
-% haha, far to complex
+% before we had the once only alternatives, we had:
 %
-% \def\appendtoks%
-%   {\bgroup
-%    \let\bgroup\relax
-%    \futurelet\scratchtoken\doappendtoks}
+% \def\appendtoks {\doappendtoks \relax}
+% \def\prependtoks{\doprependtoks\relax}
+%
+% \long\def\doappendtoks#1\to#2%
+%   {\scratchtoks\@EA{\gobbleoneargument#1}%
+%    \expanded{\dodoglobal\noexpand#2{\the#2\the\scratchtoks}}}
 % 
-% \def\doappendtoks%
-%   {\ifx\scratchtoken\normalbgroup
-%      \egroup\expandafter\dodoappendtoks
-%    \else
-%      \egroup\expandafter\dododoappendtoks
-%    \fi}
-% 
-% \def\dodoappendtoks#1%
-%   {\dododoappendtoks{{#1}}}
-% 
-% \def\dododoappendtoks#1\to#2%
-%   {\scratchtoks={#1}%
-%    \edef\scratchtoken{\noexpand#2={\the#2\the\scratchtoks}}%
-%    \scratchtoken
-%    \dodoglobal#2=#2}
-% 
-% \def\prependtoks%
-%   {\bgroup
-%    \let\bgroup\relax
-%    \futurelet\scratchtoken\doprependtoks}
-% 
-% \def\doprependtoks%
-%   {\ifx\scratchtoken\normalbgroup
-%      \egroup\expandafter\dodoprependtoks
-%    \else
-%      \egroup\expandafter\dododoprependtoks
-%    \fi}
-% 
-% \def\dodoprependtoks#1%
-%   {\dododoprependtoks{{#1}}}
-% 
-% \def\dododoprependtoks#1\to#2%
-%   {\scratchtoks={#1}%
-%    \edef\scratchtoken{\noexpand#2={\the\scratchtoks\the#2}}%
-%    \scratchtoken
-%    \dodoglobal#2=#2}
+% \long\def\doprependtoks#1\to#2%
+%   {\scratchtoks\@EA{\gobbleoneargument#1}%
+%    \expanded{\dodoglobal\noexpand#2{\the\scratchtoks\the#2}}}
 
-\def\appendtoks%
-  {\doappendtoks\relax}
+\def\appendtoks     {\doappendtoks     \relax}
+\def\prependtoks    {\doprependtoks    \relax}
+\def\appendtoksonce {\doappendtoksonce \relax}
+\def\prependtoksonce{\doprependtoksonce\relax}
 
-\long\def\doappendtoks#1\to#2%
-  {\@EA\scratchtoks\@EA{\gobbleoneargument#1}%
-   \long\edef\scratchtoken{\noexpand#2={\the#2\the\scratchtoks}}%
-   \scratchtoken
-   \dodoglobal#2=#2}
+\def\dodoappendtoks#1%
+  {\expanded{\dodoglobal\noexpand#1{\the#1\the\scratchtoks}}}
 
-\def\prependtoks%
-  {\doprependtoks\relax}
+\def\dodoprependtoks#1%
+  {\expanded{\dodoglobal\noexpand#1{\the\scratchtoks\the#1}}}
 
-\long\def\doprependtoks#1\to#2%
-  {\scratchtoks={#1}%
-   \long\edef\scratchtoken{\noexpand#2={\the\scratchtoks\the#2}}%
-   \scratchtoken
-   \dodoglobal#2=#2}
+\long\def\doappendtoks#1\to%
+  {\scratchtoks\@EA{\gobbleoneargument#1}\dodoappendtoks}
+
+\long\def\doprependtoks#1\to%
+  {\scratchtoks\@EA{\gobbleoneargument#1}\dodoprependtoks}
+
+\long\def\doappendtoksonce#1\to#2%
+  {\scratchtoks\@EA{\gobbleoneargument#1}%
+   \doifintokselse\scratchtoks{#2}{}{\dodoappendtoks{#2}}}
+
+\long\def\doprependtoksonce#1\to#2%
+  {\scratchtoks\@EA{\gobbleoneargument#1}%
+   \doifintokselse\scratchtoks{#2}{}{\dodoprependtoks{#2}}}
+
+\def\doifintokselse#1#2% #1 en #2 zijn toks 
+  {\edef\!!stringa{\the#1}\convertcommand\!!stringa\to\asciiA
+   \edef\!!stringb{\the#2}\convertcommand\!!stringb\to\asciiB
+   \doifinstringelse\asciiA\asciiB}
 
 %D Hm. 
 
 \def\flushtoks#1%
   {\scratchtoks=#1\relax
-   \dodoglobal#1={}% 
+   \dodoglobal#1=\emptytoks
    \the\scratchtoks\relax}
 
 \let\dotoks=\the
@@ -2305,6 +2326,21 @@
   {\@EA\ifx\csname#1\endcsname\empty\else#2\fi}
 
 %D \macros
+%D   {doifallcommonelse}
+%D
+%D A complete match of two sets can be tested with 
+%D \type {\doifallcommonelse}, where the first two 
+%D arguments are sets. 
+
+\def\doifallcommonelse#1#2#3#4% 
+  {\def\p!docommoncheck##1%
+     {\doifnotinset{##1}{#2}{\donefalse}%
+      \ifdone\else\quitcommalist\fi}%
+   \donetrue
+   \processcommalist[#1]\p!docommoncheck
+   \ifdone#3\else#4\fi}
+
+%D \macros
 %D   {DOIF,DOIFELSE,DOIFNOT}
 %D
 %D \TEX\ is case sensitive. When comparing arguments, this
@@ -2460,14 +2496,15 @@
 %D argument must be broken into words when made interactive.
 %D Watch the use of \type{\noexpand}.
 
+% \long\def\doifsomespaceelse#1#2#3%
+%   {\def\p!doifsomespaceelse##1 ##2##3\war%
+%      {\if\noexpand##2@#3\else#2\fi}%
+%    \p!doifsomespaceelse#1 @ @\war}
+
+\def\p!doifsomespaceelse#1 #2#3\war{\if\noexpand#2@}
+
 \long\def\doifsomespaceelse#1#2#3%
-  {\def\p!doifsomespaceelse##1 ##2##3\war%
-     {\if\noexpand##2@%
-        #3%
-      \else
-        #2%
-      \fi}%
-   \p!doifsomespaceelse#1 @ @\war}
+  {\p!doifsomespaceelse#1 @ @\war#3\else#2\fi}
 
 %D \macros
 %D   {adaptdimension,balancedimensions}
@@ -2763,7 +2800,14 @@
 %D This command is used in for instance the language module 
 %D \type{lang-ini}.
 
-\def\dontleavehmode{\ifmmode\else$ $\fi}
+%\def\dontleavehmode{\ifhmode\else\ifmmode\else$ $\fi\fi}
+%
+% The (thanks to Taco) better alternative: 
+
+\def\dontleavehmode%
+  {\ifhmode\else \ifmmode\else
+     {\mathsurround\z@\everymath\emptytoks$ $}%
+   \fi \fi}
 
 %D \macros
 %D   {uppercasestring,lowercasestring}
@@ -3280,9 +3324,13 @@
 %D \setdimensionwithunit\scratchdimen{10cm}{cm}
 %D \setdimensionwithunit\scratchdimen{10cm}{}
 %D \stoptypen 
+%D
+%D As an alternative for the next macro we can use a global 
+%D assignment inside a box. The \type{\empty}'s permits 
+%D gobbling while preventing spurious \type{\relax}'s.   
 
 \def\setdimensionwithunit#1#2#3% number unit dimension / nice trick 
-  {\afterassignment\gobblefourarguments#1=#2#3pt\relax\relax\relax\relax\relax}
+  {\afterassignment\gobblefourarguments#1=#2#3pt\relax\empty\empty\empty\empty}
 
 \protect
 

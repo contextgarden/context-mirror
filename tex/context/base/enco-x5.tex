@@ -17,19 +17,23 @@
 
 \startencoding[x5]
 
-\defineaccentcommand `  0
-\defineaccentcommand '  1
-\defineaccentcommand ^  2
-\defineaccentcommand ~  3
-\defineaccentcommand "  4
-\defineaccentcommand d  5
-\defineaccentcommand r  6
-\defineaccentcommand v  7
-\defineaccentcommand u  8
-\defineaccentcommand =  9
-\defineaccentcommand . 10
+\definecharacter textgrave         0
+\definecharacter textacute         1
+\definecharacter textcircumflex    2
+\definecharacter texttilde         3
+\definecharacter textdiaeresis     4
+\definecharacter texthungarumlaut  5
+\definecharacter textring          6
+\definecharacter textcaron         7
+\definecharacter textbreve         8
+\definecharacter textmacron        9
+\definecharacter textdotaccent    10
+\definecharacter textcedilla      11 
+\definecharacter textogonek       12 
 
-\defineaccentcommand h 12
+\definecharacter dotlessi         25
+\definecharacter DJ               30
+\definecharacter dj               31
 
 \defineaccent `  A 128
 \defineaccent '  A 129
@@ -164,47 +168,26 @@
 \defineaccent h  y  27
 \defineaccent d  y  29
 
-\definecharacter i  25
-\definecharacter DJ 30
-\definecharacter dj 31
-
-\definecommand b  {\xfiveencodedb}
-\definecommand c  {\xfiveencodedc}
-\definecommand aa {\xfiveencodeda}
-\definecommand AA {\xfiveencodedaa}
-
 \stopencoding 
 
-\def\xfiveencodedb#1%
-  {\o@lign
-     {\relax
-      #1%
-      \crcr
-      \hidewidth
-      \sh@ft{29}%
-      \vbox to.2ex{\hbox{\char9}\vss}%
-      \hidewidth}}
-
-\def\xfiveencodedc#1%
-  {\leavevmode
-   \setbox\z@\hbox{#1}%
-   \ifdim\ht\z@ = 1ex
-     \accent11 #1
-   \else
-     {\ooalign{\hidewidth\char11\hidewidth\crcr\unhbox\z@}}%
-   \fi}
-
-\def\xfiveencodedaa%
-  {\accent23a}
-
-\def\xfiveencodedAA%
-  {\leavevmode
-   \setbox\z@\hbox{h}%
-   \dimen@\ht\z@
-   \advance\dimen@ -1ex
-   \rlap{\raise.67\dimen@\hbox{\char23}}A}
-
 \endinput 
+
+% \startencoding [x5]
+% 
+% \definecharacter aa {\xfiveencodedaa}
+% \definecharacter AA {\xfiveencodedAA}
+% 
+% \stopencoding 
+% 
+% \def\xfiveencodedaa%
+%   {\accent23a}
+%
+% \def\xfiveencodedAA%
+%   {\leavevmode
+%    \setbox\z@\hbox{h}%
+%    \dimen@\ht\z@
+%    \advance\dimen@ -1ex
+%    \rlap{\raise.67\dimen@\hbox{\char23}}A}
 
 % \quotesinglbase     13
 % \guilsinglleft      14

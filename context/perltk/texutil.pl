@@ -713,8 +713,9 @@ sub SanitizedString
         $string =~ s/([\^\"\`\'\~\,])([a-zA-Z])/$2/gio ;
         $string .= "\x00";
         $string .= $copied }
+$string =~ s/\<ent\:(.*?)\>/$1/go ; # reduce entities / will be table too  
     $string =~ s/\\-|\|\|/\-/gio ;
-    $string =~ s/\\[a-zA-Z]*| |\{|\}//gio ;
+    $string =~ s/\\[a-zA-Z]*| |\{|\}//gio ;  # ? 
     return $string }
 
 #D This subroutine looks a bit complicated, which is due to the
@@ -952,7 +953,7 @@ $RegStat{"e"} = 2 ; # end up between from and to
 $RegStat{"t"} = 3 ;
 $RegStat{"s"} = 4 ;
 
-sub HandleRegister
+sub HandleRegister # the } { makes sure that local {} is ok
   { ($SecondTag, $RestOfLine) = split(/ /, $RestOfLine, 2) ;
     ++$NOfEntries ;
     if ($SecondTag eq "s")
@@ -981,7 +982,8 @@ sub HandleRegister
     #
     if ($Key eq "")
       { $Key = SanitizedString($Entry) }
-if ($SortMethod ne '') { $ProcessHigh = 0 }
+    if ($SortMethod ne '') 
+      { $ProcessHigh = 0 }
     if ($ProcessHigh)
       { $Key = HighConverted($Key) }
     $KeyTag = substr $Key, 0, 1 ;
@@ -1010,6 +1012,8 @@ if ($SortMethod ne '') { $ProcessHigh = 0 }
       { $Entry =~ s/([^\\])\&/$1$SPLIT/go ;
         $Entry =~ s/([^\\])\+/$1$SPLIT/go }
     $Key =~ s/^([^a-zA-Z])/ $1/go ;
+$Key =~ s/^\s*\{(.*)\}$SPLIT/$1$SPLIT/go ; ####### new 
+$Entry =~ s/^\{(.*)\}$SPLIT/$1$SPLIT/go ; ###### new 
     if ($ProcessIJ)
       { $Key =~ s/ij/yy/go }
     $LCKey = lc $Key ;
@@ -1059,6 +1063,10 @@ if ($SortMethod ne '') { $ProcessHigh = 0 }
 #D \testentry {zeta \& more}
 #D
 #D \testentry [pagehowto::key]{texthowto::entry}
+#D
+#D % a very special case, when key has , and is constructed
+#D
+#D \testentry [pagehowto::{key}]{texthowto::{entry}}
 #D
 #D \stopbuffer
 #D
@@ -2362,15 +2370,22 @@ sub KeepContextFile
     ++$keptfiles ;
     print "                  kept : $filename\n" }
 
-my   @dontaskprefixes = sort glob "mpx-*" ;
-push @dontaskprefixes , ("tex-form.tex","tex-edit.tex","tex-temp.tex",
-                         "texexec.tex","texexec.tui","texexec.tuo",
-                         "texexec.ps","texexec.pdf","texexec.dvi",
-                         "cont-opt.tex","cont-opt.bak") ;
-my   @dontasksuffixes = ("mprun.mp","mpgraph.mp","mprun.mpd","mpgraph.mpd") ;
-my   @forsuresuffixes = ("tui","tup","ted","tes","top","log","tmp", "mpt", "mpx", "mpd") ;
-my   @texonlysuffixes = ("dvi","ps","pdf") ;
-my   @texnonesuffixes = ("tuo","tub","top") ;
+my   @dontaskprefixes = sort glob "mpx-*" ; push @dontaskprefixes , 
+  ("tex-form.tex","tex-edit.tex","tex-temp.tex",
+   "texexec.tex","texexec.tui","texexec.tuo",
+   "texexec.ps","texexec.pdf","texexec.dvi",
+   "cont-opt.tex","cont-opt.bak") ;
+my @dontasksuffixes = 
+  ("mpgraph.mp","mpgraph.mpd","mpgraph.mpo","mpgraph.mpy",
+     "mprun.mp",  "mprun.mpd",  "mprun.mpo",  "mprun.mpy") ;
+my @forsuresuffixes = 
+  ("tui","tup","ted","tes","top",
+   "log","tmp", 
+   "mpt","mpx","mpd","mpo") ;
+my @texonlysuffixes = 
+  ("dvi","ps","pdf") ;
+my @texnonesuffixes = 
+  ("tuo","tub","top") ;
 
 sub PurgeFiles # no my in foreach
   { my $pattern = $ARGV[0] ; my $strippedname ;

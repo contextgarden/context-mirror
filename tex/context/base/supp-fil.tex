@@ -253,9 +253,9 @@
      \fi
    \else
      \immediate\closein\scratchread
-     #2%
-     \normalinput\readfilename\relax
-   \fi}
+     #2%                                         % we skip over the \fi 
+     \@EA\normalinput\@EA\readfilename\@EA\relax % so that we can end a  
+   \fi}                                          % document here too
 
 \def\readfile#1%
   {\let\readlevel=\maxreadlevel
@@ -362,7 +362,7 @@
    \doopenin{#1}{\pathplusfile{#2}{#3}}}
 
 %D \macros
-%D   {doiffileelse,doiflocfileelse,doifjobfileelse}
+%D   {doiffileelse,doiflocfileelse}
 %D
 %D The next alternative only looks if a file is present. No
 %D loading is done. This one obeys the standard \TEX\
@@ -444,8 +444,9 @@
 %                            #3\fi\fi}
 
 \def\doifparentfileelse#1#2#3%
-  {\doifsamestringelse{#1}{\jobname}       {#2}
-  {\doifsamestringelse{#1}{\outputfilename}{#2}{#3}}}
+  {\doifsamestringelse{#1}{\jobname       }{#2}
+  {\doifsamestringelse{#1}{\jobname.\c!tex}{#2}
+  {\doifsamestringelse{#1}{\outputfilename}{#2}{#3}}}}
 
 % \newcounter\readingfilelevel
 %
@@ -474,34 +475,99 @@
 
 \newcounter\readingfilelevel
 
+%\def\popfilecharacter#1#2%
+%  {\ifnum\catcode`#1=\@@other \ifnum#2=\@@other \else
+%    %\message{[popping catcode #1 to #2]}%
+%     \catcode`#1=#2\relax
+%   \fi \fi}
+%
+%\def\pushfilecharacter#1%
+%  {\ifnum\catcode`#1=\@@other \else
+%    %\message{[pushing catcode #1 from \the\catcode`#1]}%
+%     \catcode`#1=\@@other
+%   \fi}
+
 \def\popfilecharacter#1#2%
   {\ifnum\catcode`#1=\@@other \ifnum#2=\@@other \else
-     \message{[popping catcode #1 to #2]}%
+    %\message{[popping catcode #1 to #2]}%
      \catcode`#1=#2\relax
    \fi \fi}
 
-\def\pushfilecharacter#1%
-  {\ifnum\catcode`#1=\@@other \else
-     \message{[pushing catcode #1 from \the\catcode`#1]}%
-     \catcode`#1=\@@other
-   \fi}
+\ifx\\\undefined \let\\\relax \fi
 
 \def\startreadingfile% beter een every 
   {\doglobal\increment\readingfilelevel
    \setxvalue{popfilecharacters::\readingfilelevel}%
-     {\noexpand\popfilecharacter{/}{\the\catcode`/}%
-      \noexpand\popfilecharacter{"}{\the\catcode`"}%
-      \noexpand\popfilecharacter{<}{\the\catcode`<}%
-      \noexpand\popfilecharacter{>}{\the\catcode`>}}%
-   \pushfilecharacter{/}%
-   \pushfilecharacter{"}%
-   \pushfilecharacter{<}%
-   \pushfilecharacter{>}}
+     {\catcode`/ =\the\catcode`/%
+      \catcode`" =\the\catcode`"%
+      \catcode`< =\the\catcode`<%
+      \catcode`> =\the\catcode`>%
+      \catcode`\noexpand\\=\the\catcode`\\%
+      \catcode`\noexpand\{=\the\catcode`\{%
+      \catcode`\noexpand\}=\the\catcode`\}%
+      \catcode`\noexpand\%=\the\catcode`\%}%
+   \catcode`/ =\@@other
+   \catcode`" =\@@other
+   \catcode`< =\@@other
+   \catcode`> =\@@other
+   \catcode`\\=\@@escape
+   \catcode`\{=\@@begingroup
+   \catcode`\}=\@@endgroup
+   \catcode`\%=\@@comment}
 
 \def\stopreadingfile%
   {\getvalue{popfilecharacters::\readingfilelevel}%
    \doglobal\decrement\readingfilelevel}
 
-\protect
-
-\endinput
+%% % gebruikt voor normale (!) files, will change to proper 
+%% % installer maybe combined with verb module push/popper
+%% 
+%% \def\startreadingfile% beter een every 
+%%   {\doglobal\increment\readingfilelevel
+%%    \setxvalue{popfilecharacters::\readingfilelevel}%
+%%      {%\expnormalcatcodes
+%%       \expspecialcatcodes}%
+%%   %\setnormalcatcodes
+%%    \setspecialcatcodes}
+%% 
+%% \def\stopreadingfile%
+%%   {\getvalue{popfilecharacters::\readingfilelevel}%
+%%    \doglobal\decrement\readingfilelevel}
+%% 
+%% \ifx\\\undefined \let\\\relax \fi
+%% \ifx\!\undefined \let\!\relax \fi
+%% \ifx\?\undefined \let\?\relax \fi
+%% 
+%% \def\expnormalcatcodes%
+%%   {\catcode`\noexpand\!=\the\catcode`\! \catcode`\noexpand\?=\the\catcode`\?%
+%%    \catcode`\noexpand\&=\the\catcode`\& 
+%%    \catcode`\noexpand\#=\the\catcode`\# \catcode`\noexpand\$=\the\catcode`\$%
+%%    \catcode`\noexpand\%=\the\catcode`\% \catcode`\noexpand\\=\the\catcode`\\%
+%%    \catcode`\noexpand\^=\the\catcode`\^ \catcode`\noexpand\_=\the\catcode`\_%
+%%    \catcode`\noexpand\{=\the\catcode`\{ \catcode`\noexpand\}=\the\catcode`\}}
+%% 
+%% \def\setnormalcatcodes%
+%%   {%\ifcase\protectionlevel
+%%      \catcode`\!=\@@other  \catcode`\?=\@@other
+%%    %\else
+%%    %  \catcode`\!=\@@letter \catcode`\?=\@@letter
+%%    %\fi
+%%    \catcode`\&=\@@alignment   
+%%    \catcode`\#=\@@parameter   \catcode`\$=\@@mathshift 
+%%    \catcode`\%=\@@comment     \catcode`\\=\@@escape
+%%    \catcode`\^=\@@superscript \catcode`\_=\@@subscript  
+%%    \catcode`\{=\@@begingroup  \catcode`\}=\@@endgroup}
+%% 
+%% \def\expspecialcatcodes%
+%%   {\catcode`\noexpand/=\the\catcode`/%
+%%    \catcode`\noexpand"=\the\catcode`"%
+%%    \catcode`\noexpand<=\the\catcode`<%
+%%    \catcode`\noexpand>=\the\catcode`>}
+%% 
+%% \def\setspecialcatcodes%
+%%   {\catcode`/=\@@other
+%%    \catcode`"=\@@other
+%%    \catcode`<=\@@other
+%%    \catcode`>=\@@other}
+
+\protect \endinput

@@ -18,9 +18,14 @@
 %D on, corrections were made by users. If you have suggestions,
 %D or feel that your name missing here, don't hesitate to send
 %D us an email. 
+%D
+%D \starttabulate[|lB|l|]
+%D \NC Finnish    \NC             \NC \NR
+%D \NC Hungarian  \NC Balazs Nagy \NC \NR
+%D \stoptabulate
 
 %  Cheremiss, Estonian, Finnish, Karelian, Laap, Mordvinian, 
-%  Permian tongues, Hungarianm Ostyak, Vogul, Samoyed
+%  Permian tongues, Hungarian, Ostyak, Vogul, Samoyed
 
 \unprotect
 
@@ -38,7 +43,22 @@
    \c!datum={\v!jaar,\ ,\v!maand,\ ,\v!dag},
    \c!status=\v!stop]
 
-\installlanguage [finish] [\s!fi]
+\installlanguage
+  [\s!hu]
+  [\c!spatiering=\v!opelkaar,
+   \c!leftsentence=---,
+   \c!rightsentence=---,
+   \c!leftsubsentence=---,
+   \c!rightsubsentence=---,
+   \c!leftquote=\lowerleftsingleninequote,
+   \c!rightquote=\upperrightsingleninequote,
+   \c!leftquotation=\lowerleftdoubleninequote,
+   \c!rightquotation=\upperrightdoubleninequote,
+   \c!datum={\v!jaar,.,\ ,\v!maand,\ ,\v!dag,.},
+   \c!status=\v!stop]
+
+\installlanguage [finish]    [\s!fi]
+\installlanguage [hungarian] [\s!hu]
 
 \setupheadtext  [\s!fi] [\v!inhoud=Sis\"allys]
 \setupheadtext  [\s!fi] [\v!tabellen=Taulukkoj]
@@ -49,6 +69,16 @@
 \setupheadtext  [\s!fi] [\v!afkortingen=Lyhennyksi]
 \setupheadtext  [\s!fi] [\v!logos=Vertauskuva]
 \setupheadtext  [\s!fi] [\v!eenheden=Yksik\"ot]
+
+\setupheadtext  [\s!hu] [\v!inhoud=Tartalom]
+\setupheadtext  [\s!hu] [\v!tabellen=T\'abl\'azatok]
+\setupheadtext  [\s!hu] [\v!figuren=\'Abr\'ak]
+\setupheadtext  [\s!hu] [\v!grafieken=Grafik\'ak]
+\setupheadtext  [\s!hu] [\v!intermezzos=Intermezzok]
+\setupheadtext  [\s!hu] [\v!index=Index]
+\setupheadtext  [\s!hu] [\v!afkortingen=R\"ovid\'\it\'esek]
+\setupheadtext  [\s!hu] [\v!logos=Fejl\'ecek]
+\setupheadtext  [\s!hu] [\v!eenheden=M\'ert\'ekegys\'egek]
 
 \setuplabeltext [\s!fi] [\v!tabel=Taulukko ]
 \setuplabeltext [\s!fi] [\v!figuur=Kuva ]
@@ -64,6 +94,20 @@
 \setuplabeltext [\s!fi] [\v!regel=rivi ]
 \setuplabeltext [\s!fi] [\v!regels=rivie ]
 
+\setuplabeltext [\s!hu] [\v!tabel={,.~t\'abl\'azat:}]
+\setuplabeltext [\s!hu] [\v!figuur={,.~\'abra:}]
+\setuplabeltext [\s!hu] [\v!intermezzo={,.~intermezzo:}]
+\setuplabeltext [\s!hu] [\v!grafiek={,.~k\'ep:}]
+\setuplabeltext [\s!hu] [\v!hoofdstuk={,.~fejezet:}]
+\setuplabeltext [\s!hu] [\v!paragraaf={,.}]
+\setuplabeltext [\s!hu] [\v!sub\v!paragraaf={,.}]
+\setuplabeltext [\s!hu] [\v!sub\v!sub\v!paragraaf={,.}]
+\setuplabeltext [\s!hu] [\v!sub\v!sub\v!sub\v!paragraaf={,.}]
+\setuplabeltext [\s!hu] [\v!bijlage=]
+\setuplabeltext [\s!hu] [\v!deel={,.~r\'esz:}]
+\setuplabeltext [\s!hu] [\v!regel={,.~sor:}]  
+\setuplabeltext [\s!hu] [\v!regels=sorok]
+
 \setuplabeltext [\s!fi]   [\v!january=tammikuu]
 \setuplabeltext [\s!fi]  [\v!february=helmikuu]
 \setuplabeltext [\s!fi]     [\v!march=maaliskuu]
@@ -77,6 +121,19 @@
 \setuplabeltext [\s!fi]  [\v!november=marraskuu]
 \setuplabeltext [\s!fi]  [\v!december=joulukuu]
 
+\setuplabeltext [\s!hu]   [\v!january=janu\'ar]
+\setuplabeltext [\s!hu]  [\v!february=febru\'ar]
+\setuplabeltext [\s!hu]     [\v!march=m\'arcius]
+\setuplabeltext [\s!hu]     [\v!april=\'aprilis]
+\setuplabeltext [\s!hu]       [\v!may=m\'ajus]
+\setuplabeltext [\s!hu]      [\v!june=j\'unius]
+\setuplabeltext [\s!hu]      [\v!july=j\'ulius]
+\setuplabeltext [\s!hu]    [\v!august=augusztus]
+\setuplabeltext [\s!hu] [\v!september=szeptember]
+\setuplabeltext [\s!hu]   [\v!october=okt\'ober]
+\setuplabeltext [\s!hu]  [\v!november=november]
+\setuplabeltext [\s!hu]  [\v!december=december]
+
 \setuplabeltext [\s!fi]    [\v!sunday=sunnuntai]
 \setuplabeltext [\s!fi]    [\v!monday=maanantai]
 \setuplabeltext [\s!fi]   [\v!tuesday=tiistai]
@@ -85,7 +142,16 @@
 \setuplabeltext [\s!fi]    [\v!friday=perjantai]
 \setuplabeltext [\s!fi]  [\v!saturday=lauantai]
 
+\setuplabeltext [\s!hu]    [\v!sunday=vas\'arnap]
+\setuplabeltext [\s!hu]    [\v!monday=h\'etf\H{o}]
+\setuplabeltext [\s!hu]   [\v!tuesday=kedd]
+\setuplabeltext [\s!hu] [\v!wednesday=szerda]
+\setuplabeltext [\s!hu]  [\v!thursday=cs\"ut\"ort\"ok]
+\setuplabeltext [\s!hu]    [\v!friday=p\'entek]
+\setuplabeltext [\s!hu]  [\v!saturday=szombat]
+
 %D \ShowAllLanguageValues [\s!fi] [finnish] finse ...
+%D \ShowAllLanguageValues [\s!hu] [hungarian] magyar.
 
 \protect 
 

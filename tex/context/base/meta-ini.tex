@@ -45,6 +45,11 @@
       1: metapost bibliotek -- blir lest inn
 \stopmessages
 
+\startmessages  romanian  library: metapost
+  title: metapost
+      1: se incarca biblioteca metapost --
+\stopmessages
+
 %D This module extends the functionality of the support module
 %D \type {supp-mps}, the module that is responsible for
 %D \METAPOST\ inclusion in \CONTEXT. Some basic macros will be
@@ -55,6 +60,7 @@
 \appendtoks 
   if unknown context_tool : input mp-tool ; fi ;  
   if unknown context_spec : input mp-spec ; fi ;  
+  if unknown context_grph : input mp-grph ; fi ;  
 \to \MPinitializations 
 
 %D Since we want lables to follow the document settings, we 
@@ -63,6 +69,14 @@
 \appendtoks
   defaultfont  := "\truefontname{Regular}" ;
   defaultscale := \the\bodyfontsize/10pt ; % not good yet
+\to \MPinitializations
+
+%D In order to support fancy text features (like outline 
+%D fonts), we set: 
+
+\appendtoks
+  graphictextformat := "context" ; 
+  graphictextdirective "\the\everyMPTEXgraphic" ; 
 \to \MPinitializations
 
 %D We save the number of graphics for the sake of \TEXEXEC.
@@ -205,6 +219,12 @@
 \long\def\dostartuseMPgraphic#1#2#3\stopuseMPgraphic% 
   {\long\setgvalue{MP:#1}{\handleuseMPgraphic{#1}{#2}{#3}}}
 
+\long\def\startusableMPgraphic% % redundant but handy 
+  {\dodoublegroupempty\dostartusableMPgraphic}
+
+\long\def\dostartusableMPgraphic#1#2#3\stopusableMPgraphic% 
+  {\long\setgvalue{MP:#1}{\handleuseMPgraphic{#1}{#2}{#3}}}
+
 \long\def\handlereusableMPgraphic#1#2#3%
   {\bgroup
    \def\@@meta{#1:}%
@@ -229,7 +249,7 @@
    \fi}
 
 \unexpanded\def\useMPgraphic%
-   {\dodoublegroupempty\douseMPgraphic}
+  {\dodoublegroupempty\douseMPgraphic}
 
 \def\douseMPgraphic#1#2%
   {{\setupMPvariables[#1][#2]\getvalue{MP:#1}{}}}
@@ -366,10 +386,18 @@
 
 \long\def\dostartMPenvironment[#1][#2]#3\stopMPenvironment%
   {\doif{#1}{\s!reset}{\resetMPenvironment}%
-   \appendtoks#3\to\everyMPTEXgraphic}
+   \convertargument#3\to\ascii
+   \expandafter\appendtoks\ascii\to\everyMPTEXgraphic}
 
 \def\resetMPenvironment%
-  {\everyMPTEXgraphic=\emptytoks} % = is really needed ! 
+  {\everyMPTEXgraphic=\emptytoks % = is really needed ! 
+   \startMPenvironment
+     \global\loadfontdefinitionfileoncetrue
+   \stopMPenvironment} 
+
+\startMPenvironment
+  \global\loadfontdefinitionfileoncetrue
+\stopMPenvironment
 
 %D This command takes \type {[reset]} as optional 
 %D argument. 
@@ -500,6 +528,64 @@
 % enddef ; 
 %
 % extra_begin_fig .... 
+
+%D Alas, the prologue settings differ per driver. 
+
+\ifx\undefined\MPprologues \def\MPprologues{0} \fi 
+
+\appendtoks 
+  prologues := \MPprologues ; 
+\to \MPinitializations
+
+\appendtoks
+  \def\MPprologues{0}%
+  \def\MPOSTdriver{dvips}%
+\to \everyresetspecials
+
+%D \macros 
+%D   {PDFMPformoffset}
+%D
+%D In \PDF, forms are clipped and therefore we have to take 
+%D precautions to get this right. Since this is related to 
+%D objects, we use the same offset as used there.  
+
+\def\PDFMPformoffset{\objectoffset}
+
+%D \macros 
+%D   {insertMPfile}
+%D
+%D Bypassing the special driver and figure mechanism is not
+%D that nice but saves upto 5\% time in embedding \METAPOST\
+%D graphics by using the low level \PDF\ converter directly,
+%D given of course that we use \PDFTEX. As a result we need to
+%D fool around with the object trigger. 
+
+\def\insertMPfile#1#2%
+  {\ifx\pdfoutput\undefined 
+     \doinsertMPfile{#1}%   
+   \else\ifcase\pdfoutput   
+     \doinsertMPfile{#1}%  
+   \else                   
+     \doiffileelse{#1}    
+       {{\chardef\makeMPintoPDFobject=2 % in order to handle specials 
+         \convertMPtoPDF{#1}{1}{1}}}
+       {\doinsertMPfile{#1}}%
+   \fi\fi}
+
+%D We also take care of disabling fancy figure features, that
+%D can terribly interfere when dealing with symbols, 
+%D background graphics and running (postponed) graphics. 
+%D You won't believe me if I tell you what funny side effects 
+%D can occur. One took me over a day to uncover when 
+%D processing the screen version of the \METAFUN\ manual. 
+
+\def\doinsertMPfile#1%
+  {\externalfigure
+     [#1]
+     [\c!type=\c!mps,\c!object=\v!nee,
+      \c!reset=\v!ja,\c!symbool=\v!ja,
+      \c!maxbreedte=,\c!maxhoogte=,
+      \c!kader=\v!uit,\c!achtergrond=]}
 
 \protect \endinput
 

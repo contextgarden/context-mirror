@@ -331,7 +331,7 @@ def collapse_points =
   fi ;
 enddef ;
 
-vardef smoothed (expr a,b) =
+vardef smooth_connection (expr a,b) =
   sx := connection_smooth_size/grid_width ;
   sy := connection_smooth_size/grid_height ;
   if ypart a = ypart b :
@@ -377,9 +377,9 @@ vardef connection_path =
   if reverse_connection : reverse fi (xypoints[1]--
   for i=2 upto xypoint-1 :
     if smooth :
-      smoothed(xypoints[i],xypoints[i-1])  ..
+      smooth_connection(xypoints[i],xypoints[i-1])  ..
       controls xypoints[i] and xypoints[i] ..
-      smoothed(xypoints[i],xypoints[i+1])  --
+      smooth_connection(xypoints[i],xypoints[i+1])  --
     else :
       xypoints[i]--
     fi

@@ -82,6 +82,8 @@ if (cont_set::setups_found)
       { cont_mis::warning ('no command specified') ;
         cont_set::set_setup_title('TeXShow : ConTeXt commands') }
     cont_mis::status ('entering main loop') ; 
+#$mw -> bind ('<ctrl-q>', exit ) ;
+#$mw -> bind ('<esc>', exit ) ;
     MainLoop () }
 else 
   { cont_mis::error ('no setup files found') } 

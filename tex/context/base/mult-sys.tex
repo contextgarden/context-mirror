@@ -54,6 +54,7 @@
 \definesystemconstant {ukenglish}   \definesystemconstant {uk}
 \definesystemconstant {usenglish}   \definesystemconstant {us}
 \definesystemconstant {croation}    \definesystemconstant {hr}
+\definesystemconstant {hungarian}   \definesystemconstant {hu}
 
 %D For proper \UNICODE\ support we need a few font related 
 %D constants.
@@ -283,6 +284,7 @@
 
 \definereferenceconstant {object}     {:o:}  % object reference
 \definereferenceconstant {driver}     {:d:}  % driver object reference
+\definereferenceconstant {widget}     {:w:}  % field chain reference
 
 \definereferenceconstant {java}       {:j:}  % java scripts
 
@@ -391,17 +393,19 @@
 \definesystemvariable {ld}   % LegenDa
 \definesystemvariable {lg}   % taal (LanGuage)
 \definesystemvariable {li}   % LIjst
+\definesystemvariable {ll}   % Layers
 \definesystemvariable {ln}   % LijNen
 \definesystemvariable {lo}   % LOgos
 \definesystemvariable {lt}   % LiTeratuur
 \definesystemvariable {ly}   % LaYout
 \definesystemvariable {ma}   % MargeAchtergrond
 \definesystemvariable {mb}   % MargeBlokken
-\definesystemvariable {mp}   % MetaPost
+\definesystemvariable {mg}   % Metapost paGe
 \definesystemvariable {mk}   % MarKering
 \definesystemvariable {nm}   % Nummering
 \definesystemvariable {np}   % NaastPlaatsen
 \definesystemvariable {nr}   % Nummeren
+\definesystemvariable {of}   % OFfset
 \definesystemvariable {oi}   % OmlijndInstellingen
 \definesystemvariable {ol}   % OmLijnd
 \definesystemvariable {on}   % ONderstreep
@@ -449,6 +453,7 @@
 \definesystemvariable {ta}   % TAb
 \definesystemvariable {tb}   % TekstBlokken
 \definesystemvariable {te}   % TEmplate 
+\definesystemvariable {tg}   % Tex paGe
 \definesystemvariable {ti}   % TabelInstellingen
 \definesystemvariable {tk}   % Teksten
 \definesystemvariable {tl}   % TekstLijnen
@@ -547,14 +552,18 @@
 
 \definefileconstant {colorprefix}        {colo-}
 \definefileconstant {encodingprefix}     {enco-}
+\definefileconstant {regimeprefix}       {regi-}
 \definefileconstant {fontprefix}         {font-}
-\definefileconstant {symbolprefix}       {symb-}
 \definefileconstant {javascriptprefix}   {java-}
 \definefileconstant {languageprefix}     {lang-}
-\definefileconstant {specialprefix}      {spec-}
 \definefileconstant {metapostprefix}     {meta-}
+\definefileconstant {specialprefix}      {spec-}
+\definefileconstant {symbolprefix}       {symb-}
+\definefileconstant {xtagprefix}         {xtag-}
+
 \definefileconstant {moduleprefix}       {m-}
 \definefileconstant {styleprefix}        {s-}
+\definefileconstant {xstyleprefix}       {x-}
 \definefileconstant {privateprefix}      {p-}
 
 %D \CONTEXT\ follows different strategies for finding files.
@@ -666,6 +675,13 @@
       1: manglende '=' etter '--' i linje --
       2: -- argument forventet i linje --
       3: -- -- overskygger en makro, bruk STORE BOKSTAVER!
+\stopmessages
+
+\startmessages  romanian library: check
+  title: verificari
+      1: lipseste '=' dupa '--' in linia --
+      2: argumentul(ele) -- sunt asteptate in linia  --
+      3: -- -- inlocuieste un macro, folositi MAJUSCULE!
 \stopmessages
 
 \fi

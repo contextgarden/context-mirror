@@ -93,21 +93,36 @@
 
 \let\utilityresetlist=\empty
 
-%\def\addutilityreset#1%
-%  {\addtocommalist{\s!reset#1}\utilityresetlist}
+% the original
 %
-%\def\resetutilities%
-%  {\processcommacommand[\utilityresetlist]\getvalue}
+% \def\addutilityreset#1%
+%   {\addtocommalist{\s!reset#1}\utilityresetlist}
+%
+% \def\resetutilities%
+%   {\processcommacommand[\utilityresetlist]\getvalue}
+%
+% the more efficient 
+%
+% \def\addutilityreset#1%
+%   {\addtocommalist{#1}\utilityresetlist}
+%
+% \def\doresetutility#1%
+%   {\getvalue{\s!reset#1}}
+%
+% \def\resetutilities%
+%   {\processcommacommand[\utilityresetlist]\doresetutility}
+%
+% the fastest, about two times, but who cares, since this 
+% can be neglected 
+
+\newtoks\utilityresetlist
 
 \def\addutilityreset#1%
-  {\addtocommalist{#1}\utilityresetlist}
-
-\def\doresetutility#1%
-  {\getvalue{\s!reset#1}}
+  {\@EA\appendtoks\csname\s!reset#1\endcsname\to\utilityresetlist}
 
 \def\resetutilities%
-  {\processcommacommand[\utilityresetlist]\doresetutility}
-
+  {\the\utilityresetlist}
+
 % #1=type
 % #2=file
 % #3=melding
@@ -123,20 +138,20 @@
 \newif\ifdoinpututilities
 \newif\ifunprotectutilities   % voor't geval er \v!xxxxxx's zijn
 
-\def\utilitycheckmessage%
-  {\showmessage{\m!systems}{12}{}%
-   \global\let\utilitycheckmessage=\relax}
-
-\def\saveutilityline#1 #2\txen% tricky maar ok, want achter \command
-  {\if     #1c% commands      % in \ascii staat een spatie; #1 kan
-     \write\scratchwrite{#2}% % \par in stringvorm zijn (eof)!
-   \else\if#1s% synoniems
-     \utilitycheckmessage
-   \else\if#1r% registers
-     \utilitycheckmessage
-   \fi\fi\fi}
-
 % no longer needed, since texutil is now multi platform
+%
+% \def\utilitycheckmessage%
+%   {\showmessage{\m!systems}{12}{}%
+%    \global\let\utilitycheckmessage=\relax}
+%
+% \def\saveutilityline#1 #2\txen% tricky maar ok, want achter \command
+%   {\if     #1c% commands      % in \ascii staat een spatie; #1 kan
+%      \write\scratchwrite{#2}% % \par in stringvorm zijn (eof)!
+%    \else\if#1s% synoniems
+%      \utilitycheckmessage
+%    \else\if#1r% registers
+%      \utilitycheckmessage
+%    \fi\fi\fi}
 %
 % \def\checkutilityfile%
 %   {\doiflocfileelse{\jobname.\f!outputextension}
@@ -159,9 +174,6 @@
 %          \closeout\scratchwrite
 %          \egroup}
 %         {}}}
-
-\def\checkutilityfile%
-  {}
 
 \def\currentutilityfilename{\jobname}
 

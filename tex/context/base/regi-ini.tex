@@ -1,0 +1,25 @@
+% For the moment regimes are implemented in the enco-ini.tex
+% module, but some day we will move the code here. 
+
+% also needed: message
+
+\unprotect 
+
+\def\douseregime#1% nearly identical to encoding 
+  {\doifundefined{\c!file\f!regimeprefix#1}%
+     {\setvalue{\c!file\f!regimeprefix#1}{}%
+      \makeshortfilename[\f!regimeprefix#1]%
+      \startreadingfile
+      \readsysfile{\shortfilename}
+        {\showmessage{\m!encodings}{2}{#1}}
+        {\showmessage{\m!encodings}{3}{#1}}%
+      \stopreadingfile}}
+
+\def\useregime[#1]%
+  {\processcommalist[#1]\douseregime}
+
+\protect 
+
+\useregime[def,uni,ibm,win]
+
+\endinput 

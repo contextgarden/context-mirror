@@ -26,13 +26,13 @@ stopsetup
 startsetup
 com:sprache:
 typ:val/:
-val:nl,fr,en,uk,de,sp,cz,..:nl:
+val:nl,fr,en,uk,de,es,cz,..:nl:
 stopsetup
 
 startsetup
 com:hauptsprache:
 typ:val/:
-val:nl,fr,en,uk,de,sp,cz,..:nl:
+val:nl,fr,en,uk,de,es,cz,..:nl:
 stopsetup
 
 startsetup
@@ -629,14 +629,14 @@ stopsetup
 startsetup
 com:stelleueberschrifttextein:
 typ:val/var/:
-val:nl,fr,en,uk,de,sp,cz,..:nl:
+val:nl,fr,en,uk,de,es,cz,..:nl:
 var:*Name:*Text::
 stopsetup
 
 startsetup
 com:stellelabeltextein:
 typ:val/var/:
-val:nl,fr,en,uk,de,sp,cz,..:nl:
+val:nl,fr,en,uk,de,es,cz,..:nl:
 var:*Name:*Text::
 stopsetup
 
@@ -810,6 +810,8 @@ var:linkeroffset:*Dimension::
 var:rechterabstand:*Dimension::
 var:obenoffset:*Dimension::
 var:untenoffset:*Dimension::
+var:vor:*Befehl::
+var:nach:*Befehl::
 var:status:start,stop::
 ivr:stelleumrahmtein::
 stopsetup
@@ -1819,7 +1821,7 @@ startsetup
 com:stellepositionierenein:
 typ:vars/:
 var:status:start,overlay::
-var:einheit:cm,pt,em,mm,ex,sp,in::
+var:einheit:cm,pt,em,mm,ex,es,in::
 var:faktor:*Nummer::
 var:format:*Nummer::
 var:offset:ja,nein::
@@ -1846,7 +1848,7 @@ var:yschritt:*Nummer::
 var:offset:ja,nein::
 var:faktor:*Nummer::
 var:format:*Nummer::
-var:einheit:cm,pt,em,mm,ex,sp,in::
+var:einheit:cm,pt,em,mm,ex,es,in::
 var:platz:links,mittig::
 stopsetup
 
@@ -1869,6 +1871,7 @@ var:rechts:*Befehl::
 var:konvertieredatei:ja,nein,klein,gross::
 var:seperator:*Text::
 var:autofile:ja,nein,seite::
+var:global:ja,nein::
 stopsetup
 
 startsetup
@@ -2177,7 +2180,7 @@ ivr:stellelayoutein::
 stopsetup
 
 startsetup
-com:definujlogo:
+com:definierelogo:
 typ:val/val/val/vars/:
 val:*Name::
 val:oben,kopfzeile,fusszeile,unten::
@@ -2187,7 +2190,7 @@ var:status:start,stop::
 stopsetup
 
 startsetup
-com:umistiloga:
+com:platzierelogo:
 typ:vals/:
 val:*Name::
 stopsetup
@@ -2683,7 +2686,7 @@ stopsetup
 startsetup
 com:stelleausrichtungein:
 typ:val/:
-val:breite,links,rechts,mittig,innen,aussen, breit,breit,hoehe,unten,zeile,zuruecksetzten::
+val:breite,links,rechts,mittig,innen,aussen, breit,breit,hoehe,unten,zeile,zuruecksetzten, haengend,nothanging,hyphenate,nothyphenated::
 stopsetup
 
 startsetup
@@ -3256,7 +3259,9 @@ var:umrahmen:an,aus::
 var:ymax:*Nummer::
 var:xmax:*Nummer::
 var:verzeichnis:*Text::
-var:platz:lokal,global::
+var:platz:lokal,global,default::
+var:maxbreite:*Dimension::
+var:maxhoehe:*Dimension::
 stopsetup
 
 startsetup
@@ -3427,7 +3432,7 @@ var:zwischen:*Befehl::
 var:links:*Befehl::
 var:rechts:*Befehl::
 var:mittig:*Befehl::
-var:status:start,stop,kein::
+var:status:start,stop,kein,lokal::
 var:stil:normal,fett,geneigt,fettgeneigt,tippen,kap,klein...*Befehl::
 var:farbe:*Name::
 var:abstand:overlay,*Dimension::
@@ -3582,13 +3587,13 @@ val:*Name::
 stopsetup
 
 startsetup
-com:umistizalozky:
+com:platzierebookmarks:
 typ:vals/vals/:
 val:*Name::
 stopsetup
 
 startsetup
-com:zalozka:
+com:bookmark:
 typ:val/arg/:
 val:*Name::
 stopsetup

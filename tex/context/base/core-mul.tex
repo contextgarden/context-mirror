@@ -135,6 +135,23 @@
      13: bred flytblokk forksjøvet til toppen av kolonnene
 \stopmessages
 
+\startmessages  romanian  library: columns
+  title: coloane
+      1: este posibil numai -- coloane
+      2: folositi \string\filbreak\space ca alternativa
+      3: probleme, se dezactiveaza alinierea
+      4: cadrele top (top float) nu sunt inca suportate
+      5: cadrele bottom (bottom float) nu sunt inca suportate
+      6: -- blocurile sunt amanate
+      7: alinierea este oprita dupa 100 de incercari
+      8: aliniat in  -- pas(i)
+      9: verificat alinierea
+     10: a mai ramas (mai putin de) 1 linie
+     11: blocul este prea lat pentru coloana
+     12: blocul este mutat pe urmatoarea coloana / --
+     13: blocul lat este mutat in partea de sus a coloanelor
+\stopmessages
+
 %D This completely new implementation can handle enough
 %D situations for everyday documents, but is still far from
 %D perfect. While at the moment the routine doesn't support
@@ -538,6 +555,7 @@
   %\setcolumntextheight\relax
    \widowpenalty=0 % is gewoon beter
    \clubpenalty=0  % zeker bij grids
+   \brokenpenalty=0 % new 
    \ifsomefloatwaiting
      \showmessage{\m!columns}{6}{\the\savednoffloats}%
      \global\setbox\savedfloatlist=\box\floatlist
@@ -571,7 +589,8 @@
    \fi
    \global\savedpagetotal=\pagetotal
    \global\singlecolumnout=\output
-   \global\output={\global\setbox\partialpage=\vbox{\unvbox\normalpagebox}}%
+%   \global\output={\global\setbox\partialpage=\vbox{\unvbox\normalpagebox}}%
+\global\output={\global\setbox\partialpage=\vbox{\dotopinsertions\unvbox\normalpagebox}}%
    \eject % no \holdinginserts=1, can make footnote disappear ! 
    \global\partialpageheight=\ht\partialpage
    \global\output={\continuousmulticolumnsout}%

@@ -376,9 +376,10 @@
 
 \def\dodofreelijstelement#1#2#3#4#5#6#7#8%
   {\def\makelijstelement##1##2%
-     {\hbox
-        {\doifelsevalue{\??li#1\c!interactie}{##1}
-           {\setbox0=\hbox{\showcontrastlocation{\??ia}{#6}{##2}}%
+     {\noindent % new and needed 
+      \hbox
+        {\doifelsevalue{\??li#1\c!interactie}{##1} % \??li ipv \??ia
+           {\setbox0=\hbox{\showcontrastlocation{\??li#1}{#6}{##2}}%
             \linklisttoelement{#1}{#2}{#5}{#6}{\box0}}%{\copy0}}%
            {##2}}}%
    \getvalue{\??li#1\c!voor}% can be \hskip
@@ -513,7 +514,7 @@
 \fi
    \bgroup
    \ifvmode
-     \noindent\leavevmode
+     \noindent\leavevmode % leavevmode ? ? ? 
    \fi
    \doifvalue{\??li#1\c!interactie}{\v!tekst} % not supported
      {\doassign[\??li#1][\c!interactie=\v!sectienummer]}%
@@ -532,7 +533,10 @@
                  {\getvalue{\??li#1\c!paginacommando}
                     {\paginaprefix\??li#1[#5]%
                      \translatednumber[#5]}}}}}}%
-   \hbox
+\donetrue
+\doifnothing{#3}{\doifvaluenothing{\??li#1\c!symbool}{\donefalse}}%
+\ifdone
+    \hbox
      {\getvalue{\??li#1\c!links}%
       \makelijstelement\v!sectienummer
         {\dolistattributes{#1}\c!nummerletter\c!nummerkleur
@@ -540,6 +544,7 @@
       \getvalue{\??li#1\c!rechts}%
       \hskip.5em}%
    \nobreak
+\fi
    \tolerance3500 % niet zomaar veranderen
    \dolistattributes{#1}\c!tekstletter\c!tekstkleur
      {\let\\=\newlineinlist
@@ -593,7 +598,7 @@
            \endstrut % struts new
            \dostopattributes}}}%
       \linklisttoelement{#3}{#4}{#7}{#8}{\box0}}%{\copy0}}%
-   \par
+   \par % should be an option
    \getvalue{\??li#3\c!tussen}}
 
 \def\strippedlistentry[#1::#2::#3]{#1::#2}%

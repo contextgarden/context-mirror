@@ -43,6 +43,11 @@
       1: fil -- eksisterer ikke 
 \stopmessages
 
+\startmessages  romanian  library: verbatims
+  title: verbatim
+      1: fisierul -- nu exista
+\stopmessages
+
 \unprotect
 
 % \type{ <crlf> char} geeft bagger
@@ -224,24 +229,61 @@
 %D set the catcodes of \type{<} and \type{>} and then we start
 %D looking ahead.
 
+%\unexpanded\def\type%
+%  {\bgroup
+%%   \verbatimcolor
+%   \catcode`\<=\@@other
+%   \catcode`\>=\@@other
+%   \futurelet\next\dotype}
+
 \unexpanded\def\type%
+  {\dotype\empty}
+   
+\def\dotype#1%
   {\bgroup
-   \verbatimcolor
+   \edef\@@currenttype{#1}%
    \catcode`\<=\@@other
    \catcode`\>=\@@other
-   \futurelet\next\dotype}
+   \futurelet\next\dodotype}
 
 %D Next we distinguish between the three alternatives and call
 %D for the appropriate macros.
 
-\def\dotype%
+% \def\dotype%
+%   {\ifx\next\bgroup
+%      \initializetype
+%      \initializetypegrouping
+%      \def\next%
+%        {\afterassignment\protectfirsttype\let\next=}%
+%    \else\if\next<%
+%      \doifelse{\@@tyoptie}{\v!geen}
+%        {\initializetype
+%         \setupnotypegrouping
+%         \def\next%
+%           {\let\next=}}
+%        {\def\next<##1%
+%           {\initializetype
+%            \if##1<%
+%            \else
+%              \setupalternativetypegrouping
+%              ##1%
+%            \fi}}%
+%    \else
+%      \def\next##1%
+%        {\initializetype
+%         \catcode`##1=\@@endgroup}%
+%    \fi\fi
+%    \verbatimcolor
+%    \next}
+
+\def\dodotype%
   {\ifx\next\bgroup
      \initializetype
      \initializetypegrouping
      \def\next%
        {\afterassignment\protectfirsttype\let\next=}%
    \else\if\next<%
-     \doifelse{\@@tyoptie}{\v!geen}
+     \doifelsevalue{\??ty\@@currenttype\c!optie}{\v!geen}
        {\initializetype
         \setupnotypegrouping
         \def\next%
@@ -258,6 +300,7 @@
        {\initializetype
         \catcode`##1=\@@endgroup}%
    \fi\fi
+   \verbatimcolor
    \next}
 
 \bgroup
@@ -454,9 +497,16 @@
 %D \type{\initializetype} which in return calls for the support
 %D macro \type{\setupinlineverbatim}.
 
+%\def\initializetype%
+%  {\let\obeylines=\ignorelines
+%   \setupcommonverbatim\??ty
+%   \setupinlineverbatim}
+
+\let\@@currenttype\empty
+
 \def\initializetype%
   {\let\obeylines=\ignorelines
-   \setupcommonverbatim\??ty
+   \setupcommonverbatim{\??ty\@@currenttype}%
    \setupinlineverbatim}
 
 %D \macros
@@ -464,15 +514,25 @@
 %D
 %D Some characteristics of \type{\type} can be set up by:
 
+%\def\setuptype%
+%  {\dodoubleargument\getparameters[\??ty]}
+
 \def\setuptype%
-  {\dodoubleargument\getparameters[\??ty]}
+  {\dodoubleempty\dosetuptype}
+
+\def\dosetuptype[#1][#2]%
+  {\ifsecondargument
+     \getparameters[\??ty#1][#2]%
+   \else
+     \getparameters[\??ty][#1]%
+   \fi}
 
 %D The setups for inline verbatim default to:
 
 \setuptype
   [\c!spatie=\v!uit,
     \c!kleur=,
-   \c!letter=\tttf,
+   \c!letter=\tt\tf, % \tttf gives problems with {\tx \type...}
    \c!pagina=\v!nee,
       \c!tab=\v!nee,
     \c!optie=\v!normaal]
@@ -495,10 +555,15 @@
    \savedfont
    \spaceskip.5em\!!plus.25em\!!minus.25em\relax}
 
+%\unexpanded\def\typ%
+%  {\bgroup
+%   \obeyhyphens
+%   \futurelet\next\dotype}
+
 \unexpanded\def\typ%
   {\bgroup
    \obeyhyphens
-   \futurelet\next\dotype}
+   \futurelet\next\dodotype}
 
 %D \macros
 %D   {tex,arg,mat,dis}
@@ -584,7 +649,9 @@
 %D documented support module. 
 
 \def\initializetyping#1%
-  {\donefalse
+  {%\donefalse
+\switchtobodyfont[\getvalue{\??tp#1\c!korps}]%
+   \donefalse
    \scratchskip=\getvalue{\??tp#1\c!onevenmarge}\relax
    \ifzeropt\scratchskip\else\donetrue\fi
    \scratchskip=\getvalue{\??tp#1\c!evenmarge}\relax
@@ -681,6 +748,7 @@
 \setuptyping
   [          \c!voor=\blanko,
                \c!na=\blanko,
+            \c!korps=,
             \c!kleur=,
            \c!spatie=\v!uit,  
            \c!pagina=\v!nee,
@@ -688,7 +756,7 @@
             \c!optie=\v!geen,
             \c!palet=colorpretty,
             \c!tekst=\v!nee,
-           \c!letter=\tttf,
+           \c!letter=\tttf, 
         \c!icommando=\ttsl,
         \c!vcommando=,
         \c!ccommando=\tttf,
@@ -698,6 +766,22 @@
       \c!onevenmarge=\!!zeropoint,
            \c!blanko=\v!regel,
            \c!escape=/]
+
+%D \macros
+%D   {definetype}
+%D
+%D Specific inline verbatim commands can be defined with the 
+%D following command. 
+
+\def\definetype%
+  {\dodoubleempty\dodefinetype}
+
+\def\dodefinetype[#1][#2]%
+  {\unexpanded\setvalue{#1}{\dotype{#1}}%
+   \copyparameters
+     [\??ty#1][\??ty]
+     [\c!spatie,\c!kleur,\c!letter,\c!pagina,\c!tab,\c!optie]%
+   \getparameters[\??ty#1][#2]}
 
 %D \macros
 %D   {definetyping}
@@ -720,7 +804,7 @@
   {\copyparameters
      [\??tp#1][\??tp]
      [\c!voor,\c!na,\c!spatie,\c!pagina,\c!tab,\c!kleur,\c!letter,
-      \c!tekst,\c!icommando,\c!vcommando,\c!ccommando,
+      \c!tekst,\c!icommando,\c!vcommando,\c!ccommando,\c!korps,
       \c!optie,\c!palet,\c!marge,\c!evenmarge,\c!onevenmarge,
       \c!springvolgendein,\c!blanko,\c!escape]%
    \getparameters

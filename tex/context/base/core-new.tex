@@ -69,35 +69,112 @@
 \def\disablemode[#1]%
   {\expanded{\removefromcommalist{#1}\noexpand\currentmode}}
 
-\def\doifmodeelse%
-  {\unprotect\dodoifmodeelse}
+\def\doifmodeelse{\unprotect\dodoifmodeelse}
+\def\doifmode    {\unprotect\dodoifmode}
+\def\doifnotmode {\unprotect\dodoifnotmode}
+\def\startmode   {\unprotect\dostartmode}
+\def\startnotmode{\unprotect\dostartnotmode}
 
 \long\def\dodoifmodeelse#1#2#3%
-  {\protect\ExpandBothAfter\doifcommonelse{\currentmode}{#1}{#2}{#3}}
-
-\def\doifmode%
-  {\unprotect\dodoifmode}
+  {\protect\ExpandBothAfter\doifcommonelse{#1}{\currentmode}{#2}{#3}}
 
 \long\def\dodoifmode#1#2%
-  {\protect\ExpandBothAfter\doifcommonelse{\currentmode}{#1}{#2}{}}
-
-\def\doifnotmode%
-  {\unprotect\dodoifnotmode}
+  {\protect\ExpandBothAfter\doifcommonelse{#1}{\currentmode}{#2}{}}
 
 \long\def\dodoifnotmode#1#2%
-  {\protect\ExpandBothAfter\doifcommonelse{\currentmode}{#1}{}{#2}}
+  {\protect\ExpandBothAfter\doifcommonelse{#1}{\currentmode}{}{#2}}
 
-\def\startmode%
-  {\unprotect\dostartmode}
-
-\long\def\dostartmode[#1]#2\stopmode%
+\long\def\dostartmode[#1]#2\stopmode%   
   {\dodoifmode{#1}{#2}}
-
-\def\startnotmode%
-  {\unprotect\dostartnotmode}
 
 \long\def\dostartnotmode[#1]#2\stopnotmode%
   {\dodoifnotmode{#1}{#2}}
+
+% new 
+%
+% \startnointerference
+% all kind of code 
+% \stopnointerference
+
+\newbox\nointerferencebox
+
+\def\startnointerference%
+  {\setbox\nointerferencebox\vbox
+   \bgroup}
+
+\def\stopnointerference%
+  {\egroup
+   \setbox\nointerferencebox\box\voidb@x}
+
+% new 
+
+\def\doifallmodeselse{\unprotect\dodoifallmodeselse}
+\def\doifallmodes    {\unprotect\dodoifallmodes}
+\def\doifnotallmodes {\unprotect\dodoifnotallmodes}
+\def\startallmodes   {\unprotect\dostartallmodes}
+\def\startnotallmodes{\unprotect\dostartnotallmodes}
+
+\long\def\dodoifallmodeselse#1#2#3%
+  {\protect\ExpandBothAfter\doifallcommonelse{#1}{\currentmode}{#2}{#3}}
+
+\long\def\dodoifallmodes#1#2%
+  {\protect\ExpandBothAfter\doifallcommonelse{#1}{\currentmode}{#2}{}}
+
+\long\def\dodoifnotallmodes#1#2%
+  {\protect\ExpandBothAfter\doifallcommonelse{#1}{\currentmode}{}{#2}}
+
+\long\def\dostartallmodes[#1]#2\stopallmodes
+  {\dodoifallmodes{#1}{#2}}
+
+\long\def\dostartnotallmodes[#1]#2\stopnotallmodes
+  {\dodoifnotallmodes{#1}{#2}}
+
+% will go to ... 
+
+\def\alignedbox%
+  {\dodoubleempty\doalignedbox[]}
+
+\def\doalignedbox[#1][#2]%
+  {\bgroup
+   \let\iftraceboxplacement\iftracelayers
+   \dowithnextbox
+     {\let\next\middlebox
+      \processaction
+        [#2]
+        [ t=>\let\next\topbox       , b=>\let\next\bottombox     ,
+          l=>\let\next\leftbox      , r=>\let\next\rightbox      ,
+         bl=>\let\next\bottomleftbox,br=>\let\next\bottomrightbox,
+         tl=>\let\next\topleftbox   ,tr=>\let\next\toprightbox   ,
+         lt=>\let\next\lefttopbox   ,lb=>\let\next\leftbottombox ,
+         rt=>\let\next\righttopbox  ,rb=>\let\next\rightbottombox]%
+      \next{\box\nextbox}%
+      \egroup}#1}
+
+\def\offsetbox%
+  {\dodoubleempty\dooffsetbox[]}
+
+\def\dooffsetbox[#1][#2]%
+  {\bgroup
+   \dowithnextbox
+     {\getparameters[\??ox]
+        [\c!x=\!!zeropoint,\c!y=\!!zeropoint,\c!plaats=,#2]%
+      \edef\next%
+        {\wd\nextbox\the\wd\nextbox
+         \ht\nextbox\the\ht\nextbox
+         \dp\nextbox\the\dp\nextbox}%
+      \setbox\nextbox\hbox
+        {\hskip\@@oxx\lower\@@oxy\hbox
+           {\doifelsenothing{\@@oxplaats}
+              {\box\nextbox}
+              {\alignedbox[\@@oxplaats]\hbox{\box\nextbox}}}}%
+      \next\box\nextbox
+      \egroup}#1}
+
+\def\offset {\dodoubleempty\dooffsetbox [\hbox]} % yes or no
+\def\aligned{\dosingleempty\doalignedbox[\hbox]} % yes or no
+
+%\ruledhbox{\offsetbox[x=-1cm,y=-1cm,location=c]
+%  {\framed[width=4cm,height=4cm]{x}}}
 
 % actually this is pretty old, but temporary moved here 
 
@@ -159,41 +236,89 @@
 
 %D new and beta 
 
+% \def\defineshortcut%
+%   {\dodoubleargument\dodefineshortcut}
+% 
+% \bgroup
+% 
+%   \catcode`\<=\@@active 
+% 
+%   \gdef\dodefineshortcut[#1][#2]%
+%     {\ifsecondargument
+%        \catcode`\<=\@@active 
+%        \def<{\ifmmode\expandafter\normalless\else\expandafter\doshortcut\fi}%
+%        \getparameters[\??te#1][\c!commandos=,\c!commando=,\c!letter=,\c!kleur=,#2]%
+%      \else
+%        \defineshortcut[][#1]%   
+%      \fi}
+% 
+% \egroup
+% 
+% \def\doshortcut% 
+%   {\bgroup
+%    \catcode`\>=\@@other
+%    \dodoshortcut}
+% 
+% \def\dodoshortcut#1>% 
+%   {\def\shortcut{#1}%
+%    \dododoshortcut#1:\end}
+% 
+% \def\dododoshortcut#1:#2\end 
+%   {\doifelsenothing{#2}
+%      {\doifundefinedelse{\??te\c!commandos}
+%         {\shortcut} 
+%         {\@EA\dodododoshortcut\@EA\??te\@EA:\shortcut:\end}}
+%      {\doifundefinedelse{\??te#1\c!commandos}
+%         {\shortcut} 
+%         {\dodododoshortcut\??te#1:#2\end}}%
+%    \egroup}
+% 
+% \def\dodododoshortcut#1:#2:\end
+%   {\getvalue{#1\c!commandos}%
+%    \doattributes{#1}\c!letter\c!kleur{\getvalue{#1\c!commando}{#2}}}
+
 \def\defineshortcut%
-  {\dodoubleargument\dodefineshortcut}
+  {\dotripleargument\dodefineshortcut}
 
-\bgroup
+\def\dodefineshortcut[#1][#2][#3]%
+  {\ifthirdargument
+     \ConvertConstantAfter\doifelse{#1}{}
+       {\dododefineshortcut[<>][#2][#3]}
+       {\dododefineshortcut[#1][#2][#3]}%
+   \else\ifsecondargument
+     \dododefineshortcut[<>][#1][#2]%   
+   \else
+     \dododefineshortcut[<>][][#1]%   
+   \fi\fi}
 
-  \catcode`\<=\@@active 
+\def\dododefineshortcut[#1#2][#3][#4]% #1 is the trigger, #2 the delimiter/tag
+  {\doifundefined{\??te\??te\string#2}{\letvalue{\??te\??te\string#2}=#1}%
+   \defineactivecharacter #1 {\@EA\doshortcut\string#2} %
+   \getparameters
+     [\??te\string#2#3]
+     [\c!commandos=,\c!commando=,\c!letter=,\c!kleur=,#4]}
 
-  \gdef\dodefineshortcut[#1][#2]%
-    {\ifsecondargument
-       \catcode`\<=\@@active 
-       \def<{\ifmmode\expandafter\normalless\else\expandafter\doshortcut\fi}%
-       \getparameters[\??te#1][\c!commandos=,\c!commando=,\c!letter=,\c!kleur=,#2]%
-     \else
-       \defineshortcut[][#1]%   
-     \fi}
-
-\egroup
-
-\def\doshortcut% 
-  {\bgroup
-   \catcode`\>=\@@other
-   \dodoshortcut}
-
-\def\dodoshortcut#1>% 
-  {\def\shortcut{#1}%
-   \dododoshortcut#1:\end}
-
+\def\doshortcut#1% 
+  {\ifmmode
+     \getvalue{\??te\??te#1}%
+   \else
+     \bgroup
+     \catcode`#1=\@@other
+     \def\dodoshortcut##1#1% 
+       {\def\shorttag{\??te#1}%
+        \def\shortcut{##1}%
+        \dododoshortcut##1:\end}%
+     \@EA\dodoshortcut
+   \fi}
+ 
 \def\dododoshortcut#1:#2\end 
   {\doifelsenothing{#2}
-     {\doifundefinedelse{\??te\c!commandos}
+     {\doifundefinedelse{\shorttag\c!commandos}
         {\shortcut} 
-        {\@EA\dodododoshortcut\@EA\??te\@EA:\shortcut:\end}}
-     {\doifundefinedelse{\??te#1\c!commandos}
+        {\@EA\dodododoshortcut\@EA\shorttag\@EA:\shortcut:\end}}
+     {\doifundefinedelse{\shorttag#1\c!commandos}
         {\shortcut} 
-        {\dodododoshortcut\??te#1:#2\end}}%
+        {\dodododoshortcut\shorttag#1:#2\end}}%
    \egroup}
 
 \def\dodododoshortcut#1:#2:\end
@@ -208,17 +333,33 @@
 %D \defineshortcut [k] [\c!letter=\v!kap]
 %D \defineshortcut [u] [\c!letter=\v!type,\c!commando=\hyphenatedurl]
 %D 
-%D test <ziezo> test \par
-%D test test <t:ziezo> \par
-%D test test <b:ziezo> \par
-%D test test <w:ziezo> \par
-%D zus<>zo zus<:>zo zus<::>zo \par
-%D test test <t:ziezo> dat (ziezo)             \par
-%D test test <t::ziezo> dat (:ziezo)           \par
-%D test test <t:ziezo:> dat (ziezo:)           \par
-%D test test <t:zi:ezo:> dat (zi:ezo:)         \par
-%D well, <u:http://www.pragma-ade.nl> looks fuzzy \par
+%D \startregels
+%D test <ziezo> test 
+%D test test <t:ziezo> 
+%D test test <b:ziezo> 
+%D test test <w:ziezo> 
+%D zus<>zo zus<:>zo zus<::>zo 
+%D test test <t:ziezo> dat (ziezo)          
+%D test test <t::ziezo> dat (:ziezo)        
+%D test test <t:ziezo:> dat (ziezo:)        
+%D test test <t:zi:ezo:> dat (zi:ezo:)      
+%D well, <u:http://www.pragma-ade.nl> looks fuzzy 
 %D $10<20$
+%D \stopregels
+%D 
+%D \defineshortcut [<>] [i] [\c!letter=\it]
+%D \defineshortcut [()] [b] [\c!letter=\bf]
+%D \defineshortcut [++] [s] [\c!letter=\sl]
+%D \defineshortcut [//] [u] [\c!letter=\underbars]
+%D \defineshortcut [--] [a] [\c!letter=\overstrike]
+%D 
+%D \startregels
+%D it seems <i:to work> well 
+%D it seems (b:to work) well 
+%D it seems +s:to work+ well 
+%D it seems /u:to work/ well 
+%D it seems -a:to work- well 
+%D \stopregels
 
 \protect 
 

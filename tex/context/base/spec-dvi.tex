@@ -97,7 +97,7 @@
      {\special{pos:papersize #1 #2}%
       \global\noexpand\let\noexpand\flushDVIpositionpapersize\relax}}
 
-\prependtoks \flushDVIpositionpapersize \to \everyshipout
+\prependtoksonce \flushDVIpositionpapersize \to \everyshipout
 
 \stopspecials
 

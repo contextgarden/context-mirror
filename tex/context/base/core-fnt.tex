@@ -90,7 +90,7 @@
    \cap@@uppercase{#1{#2}}%
    \egroup}
 
-\def\nokap#1%
+\unexpanded\def\nokap#1%
   {\cap@@lowercase{#1}}
 
 \unexpanded\def\kap%
@@ -246,7 +246,7 @@
 
 \def\stretched%
   {\ifvmode\hbox to \hsize\else\ifinner\else\hbox\fi\fi
-   \processtokens\relax\hss\relax\normalspace}
+   \processtokens\relax\hss\relax{\hss\hss}}% \normalspace}
 
 %D \startbuffer
 %D \stretched{Unknown Box}
@@ -264,7 +264,7 @@
 %D \typebuffer
 
 %D \macros
-%D   {stretcheduppercase}
+%D   {stretchednormalcase, stretcheduppercase, stretchedlowercase}
 %D
 %D A convenient alternative is:
 %D
@@ -306,10 +306,18 @@
 \def\stretchedspaceamount{.25em} 
 \def\stretchedbreaktokens{.@/}
 
-\unexpanded\def\stretcheduppercase#1% 
+\unexpanded\def\stretchednormalcase%
+  {\stretchedsomecase\firstofoneargument}
+
+\unexpanded\def\stretcheduppercase 
+  {\stretchedsomecase{\the\everyuppercase\uppercase}}
+
+\unexpanded\def\stretchedlowercase 
+  {\stretchedsomecase{\the\everylowercase\lowercase}}
+
+\def\stretchedsomecase#1#2% 
   {\bgroup
-   \the\everyuppercase
-   \uppercase{\def\textstring{#1}}%
+   #1{\def\textstring{#2}}%
    \ifdim\stretchedspaceamount>\!!zeropoint
      \def\textkern##1%
        {\determinemidwordbreak{##1}{\stretchedbreaktokens}%
@@ -527,7 +535,7 @@
 %D 
 %D \typebuffer
 %D 
-%D \getbuffer
+%D \haalbuffer
 %D
 %D Note the different placement of \type {\lohi}, where we 
 %D need a bit more space. The implementation looks a bit 

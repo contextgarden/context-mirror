@@ -146,12 +146,25 @@
            {\dodogetupsometextprefix{\s!nl}{#2}{#3}
               {\iftracinglabels{\tttf[#2:~#3/#1]~}\fi}}}}}
 
+\ifx\simplifiedcommands\undefined \newtoks\simplifiedcommands \fi 
+
+\appendtoks 
+  \let \headtext       \firstofoneargument 
+  \let \labeltext      \firstofoneargument 
+  \let \leftlabeltext  \firstofoneargument 
+  \let \rightlabeltext \firstofoneargument 
+  \let \HEADTEXT       \firstofoneargument 
+  \let \LABELTEXT      \firstofoneargument 
+  \let \LEFTLABELTEXT  \firstofoneargument 
+  \let \RIGHTLABELTEXT \firstofoneargument 
+\to \simplifiedcommands
+
 %D \macros
 %D   {presetheadtext,presetlabeltext}
 %D
 %D The next two macros enable us to automatically define
 %D head and label texts without replacing predefined ones.
-%D This are internal macros.
+%D These are internal macros.
 
 \def\dopresetsometextprefix#1%
   {\def\dodocommando[##1][##2=##3]%

@@ -153,7 +153,6 @@
  
     p := Field[Text][Text] enlarged 36pt superellipsed .90 ;
 
-
     fill Page withcolor \MPcolor{yellow} ; 
     fill p    withcolor \MPcolor{white} ;  
     draw p    withcolor \MPcolor{red} ;  
@@ -313,16 +312,16 @@ enddef ;
 % \useenvironment[pre-organic]
 % \setupoutput[pdftex]
 
-\setupMPvariables[page][alternative=1]
+\setupMPvariables[page][alternative=3]
 
 \TitlePage
   {A Few Nice Quotes\\
    A Simple Style Demo\\
    Hans Hagen, August 2000}
 
-\Topic {Rudolf D. Hofstadter} \input douglas \page 
-\Topic {Donald E. Knuth}      \input knuth   \page 
-\Topic {Edward R. Tufte}      \input tufte   \page 
-\Topic {Hermann Zapf}         \input zapf    \page 
+\Topic {Douglas R. Hofstadter} \input douglas \page 
+\Topic {Donald  E. Knuth}      \input knuth   \page 
+\Topic {Edward  R. Tufte}      \input tufte   \page 
+\Topic {Hermann    Zapf}       \input zapf    \page 
 
 \stoptext 

@@ -155,7 +155,7 @@
 \def\startMPresources%
   {\global\let\currentMPshades\empty
    \ifx\currentPDFresources\empty\else
-      \message{unused resources before shade \the\currentPDFshade}%
+     \message{[unused resources before shade \the\currentPDFshade]}%
    \fi
    \global\let\currentPDFresources\empty}
 
@@ -194,18 +194,27 @@
 %D When we are using \CONTEXT, we will fall back to the 
 %D better color conversion routines. This also has the advantage
 %D that we don't have to parse and convert the file. In this 
-%D alternative, \type {\!MP} is not (yet) supported.
+%D alternative, \type {\!MP} is not (yet) supported. Because
+%D we can (for efficiency reasons) turn off strokecolor, 
+%D something we cannot do in \METAPOST\ converted code. 
+
+\newif\ifPDFMPstrokecolor \PDFMPstrokecolortrue 
+
+%D [This code should move to meta-ini.]
 
 \ifCONTEXT
 
+  \def\checkPDFMPstrokecolor%
+    {\ifPDFMPstrokecolor \PDFstrokecolortrue \fi}
+
   \def\normalhandleMPrgbcolor%
-    {\dostartcolormodeR\gMPa1:\gMPa2:\gMPa3\od}
+    {{\checkPDFMPstrokecolor\dostartcolormodeR\gMPa1:\gMPa2:\gMPa3\od}}
 
   \def\normalhandleMPcmykcolor%
-    {\dostartcolormodeC\gMPa1:\gMPa2:\gMPa3:\gMPa4\od}
+    {{\checkPDFMPstrokecolor\dostartcolormodeC\gMPa1:\gMPa2:\gMPa3:\gMPa4\od}}
 
   \def\normalhandleMPgraycolor%
-    {\dostartcolormodeS\gMPa1\od}
+    {{\checkPDFMPstrokecolor\dostartcolormodeS\gMPa1\od}}
 
 \fi
 
@@ -261,33 +270,6 @@
 
 \resetMPcolor 
 
-%D The path processing macro is slightly extended. 
-
-\def\processMPpath%
-  {\ifcase\MPspecialversion\else
-     \ifnum\MPrgbnumber\lastMPrvalue=\MPspecialsignal 
-       \scratchcounter=\MPrgbnumber\lastMPbvalue
-       \edef\currentMPspecial{\the\scratchcounter}%
-       \ifnum\finiMPpath=2 
-         \doifdefined{mps:Sh:\currentMPspecial}
-            {\edef\currentMPshade{\getvalue{obj:Sh:\currentMPspecial}}% 
-             \doifinstringelse{\currentMPshade}{\currentMPshades}
-               {}{\xdef\currentMPshades{\currentMPshades\currentMPshade}}% 
-             \chardef\finiMPpath=4 \PDFcode{q /Pattern cs}}%
-       \fi
-     \fi
-   \fi
-   \flushMPpath
-   \closeMPpath
-   \PDFcode
-     {\ifcase\finiMPpath
-        W n\or S\or f\or B\or W n /Sh\getvalue{mps:Sh:\currentMPspecial} sh Q%
-      \fi}%
-   \let\handleMPsequence=\dohandleMPsequence
-   \resetMPstack
-   \nofMPsegments=0
-   \handleMPsequence}
-
 %D Specials are define and recalled using: 
 
 \def\MPspecial%
@@ -295,6 +277,54 @@
 
 \def\defineMPspecial#1#2%
   {\setvalue{MP special #1}{#2}}
+
+%D The path processing macro is slightly extended. 
+
+% \def\processMPpath%
+%   {\ifcase\MPspecialversion\else
+%      \ifnum\MPrgbnumber\lastMPrvalue=\MPspecialsignal 
+%        \scratchcounter=\MPrgbnumber\lastMPbvalue
+%        \edef\currentMPspecial{\the\scratchcounter}%
+%        \ifnum\finiMPpath=2 
+%          \doifdefined{mps:Sh:\currentMPspecial}
+%             {\edef\currentMPshade{\getvalue{obj:Sh:\currentMPspecial}}% 
+%              \doifinstringelse{\currentMPshade}{\currentMPshades}
+%                {}{\xdef\currentMPshades{\currentMPshades\currentMPshade}}% 
+%              \chardef\finiMPpath=4 \PDFcode{q /Pattern cs}}%
+%        \fi
+%      \fi
+%    \fi
+%    \flushMPpath
+%    \closeMPpath
+%    \PDFcode
+%      {\ifcase\finiMPpath
+%         W n\or S\or f\or B\or W n /Sh\getvalue{mps:Sh:\currentMPspecial} sh Q%
+%       \fi}%
+%    \let\handleMPsequence=\dohandleMPsequence
+%    \resetMPstack
+%    \nofMPsegments=0
+%    \handleMPsequence}
+
+\newtoks \invokeMPspecials
+
+\def\processMPpath%
+  {\let\extraMPpathcode\empty
+   \ifcase\MPspecialversion\else
+     \ifnum\MPrgbnumber\lastMPrvalue=\MPspecialsignal 
+       \scratchcounter=\MPrgbnumber\lastMPbvalue
+       \edef\currentMPspecial{\the\scratchcounter}%
+       \ifnum\finiMPpath=2 % to outer level 
+         \the\invokeMPspecials
+       \fi
+     \fi
+   \fi
+   \flushMPpath
+   \closeMPpath
+   \PDFcode{\ifcase\finiMPpath W n\or S\or f\or B\else W n\fi \extraMPpathcode}%
+   \let\handleMPsequence=\dohandleMPsequence
+   \resetMPstack
+   \nofMPsegments=0
+   \handleMPsequence}
 
 %D Shading is an example of a more advanced graphic feature,
 %D but users will seldom encounter those complications. Here
@@ -430,6 +460,17 @@
 %D \NC /N      \NC smaller values, bigger inner circles \NC \NR
 %D \stoptabulatie
 
+\def\invokeMPshadespecial%
+  {\doifdefined{mps:Sh:\currentMPspecial}
+     {\edef\currentMPshade{\getvalue{obj:Sh:\currentMPspecial}}% 
+      \doifinstringelse{\currentMPshade}{\currentMPshades}
+        {}{\xdef\currentMPshades{\currentMPshades\currentMPshade}}% 
+      \def\extraMPpathcode{/Sh\getvalue{mps:Sh:\currentMPspecial} sh Q}%
+      \chardef\finiMPpath=0 
+      \PDFcode{q /Pattern cs}}}
+
+\appendtoks \invokeMPshadespecial \to \invokeMPspecials
+
 \defineMPspecial{2}
   {\startMPshading{14}% type 2
    \immediate\pdfobj
@@ -461,5 +502,101 @@
         /Coords [\gMPs7 \gMPs8 \gMPs9 \gMPs{13} \gMPs{14} \gMPs{15}]
         /Extend [true true]>>}%
    \stopMPshading}
+
+%D Figure inclusion is kind of strange to \METAPOST, but when 
+%D Santiago Muelas started discussing this with me, I was able
+%D to cook up a solution using specials. 
+
+\def\invokeMPfigurespecial%
+  {\getvalue{mps:gr:\currentMPspecial}} % or \relax 
+
+\appendtoks \invokeMPfigurespecial \to \invokeMPspecials
+
+\defineMPspecial{10}
+  {\setxvalue{mps:gr:\gMPs8}%
+     {\noexpand\handleMPfigurespecial
+        {\gMPs1}{\gMPs2}{\gMPs3}{\gMPs4}{\gMPs5}{\gMPs6}{\gMPs7}%
+      \noexpand\setxvalue{mps:gr:\gMPs8}{}}}
+
+% \def\handleMPfigurespecial#1#2#3#4#5#6#7%
+%   {\vbox to 0pt
+%      {\vss
+%       \hbox to 0pt 
+%         {\pdfliteral{q #1 #2 #3 #4 #5 #6 cm}% 
+%          \pdfimage width 1bp height 1bp {#7}% maybe 10 is better 
+%          \pdfliteral{Q}% 
+%          \hss}}}
+% 
+% better, since xform reuse 
+
+\def\handleMPfigurespecial#1#2#3#4#5#6#7%
+  {\vbox to \!!zeropoint
+     {\vss
+      \hbox to \!!zeropoint
+        {\ifcase\pdfoutput\or % will be hooked into the special driver
+           \doiffileelse{#7}
+             {\doifundefinedelse{mps:x:#7}
+                {\immediate\pdfximage width 1bp height 1bp {#7}% 
+                 \setxvalue{mps:x:#7}{\pdfrefximage\the\pdflastximage}}%
+                {\message{[reusing figure #7]}}% 
+              \pdfliteral{q #1 #2 #3 #4 #5 #6 cm}% 
+              \rlap{\getvalue{mps:x:#7}}%
+              \pdfliteral{Q}}
+             {\message{[unknown figure #7]}}% 
+         \fi
+         \hss}}}
+
+%D An example of using both special features is the 
+%D following. 
+%D
+%D \starttypen 
+%D \startMPpage 
+%D   externalfigure "hakker1b.png" scaled 22cm rotated  10 shifted (-2cm,0cm); 
+%D   externalfigure "hakker1b.png" scaled 10cm rotated -10 ; 
+%D   externalfigure "hakker1b.png" scaled  7cm rotated  45 shifted (8cm,12cm) ; 
+%D   path p ; p := unitcircle xscaled 15cm yscaled 20cm;
+%D   path q ; q := p rotatedaround(center p,90) ;   
+%D   path r ; r := buildcycle(p,q) ; clip currentpicture to r ; 
+%D   path s ; s := boundingbox currentpicture enlarged 5mm ; 
+%D   picture c ; c := currentpicture ; currentpicture := nullpicture ; 
+%D   circular_shade(s,0,.2red,.9red) ;
+%D   addto currentpicture also c ; 
+%D \stopMPpage
+%D \stoptypen 
+
+%D This is some experimental hyperlink driver that I wrote 
+%D for Mark Wicks.
+
+\defineMPspecial{20}
+  {\setxvalue{mps:hl:\gMPs6}%
+     {\noexpand\handleMPhyperlink
+        {\gMPs1}{\gMPs2}{\gMPs3}{\gMPs4}{\gMPs5}%
+      \noexpand\setxvalue{mps:hl:\gMPs6}{}}}
+
+\def\handleMPhyperlink#1#2#3#4#5%
+  {%\ifcase\pdfoutput\or
+     \setbox\scratchbox=\hbox 
+       {\setbox\scratchbox=\null
+        \scratchdimen=#1bp\scratchdimen=-\scratchdimen
+        \advance\scratchdimen#3bp
+        \wd\scratchbox=\scratchdimen
+        \scratchdimen=#2bp\scratchdimen=-\scratchdimen
+        \advance\scratchdimen#4bp
+        \ht\scratchbox=\scratchdimen
+        \incolorfalse 
+        \gotobox{\box\scratchbox}[#5]}%
+     \setbox\scratchbox=\hbox
+       {\scratchdimen\MPxoffset  bp \advance\scratchdimen#1bp 
+        \hskip\scratchdimen
+        \scratchdimen=\MPyoffset bp \advance\scratchdimen#2bp
+        \raise\scratchdimen\box\scratchbox}%
+     \smashbox\scratchbox
+     \box\scratchbox
+   }%\fi}
+
+\def\invokeMPhyperlinkspecial%
+  {\getvalue{mps:hl:\currentMPspecial}} % or \relax 
+
+\appendtoks \invokeMPhyperlinkspecial \to \invokeMPspecials
 
 \protect \endinput

@@ -49,6 +49,11 @@
        1: filesynonym -- er allerede brukt for --
 \stopmessages
 
+\startmessages  romanian  library: files
+   title: fisiere
+       1: sinonimul fisierelor -- este folosit deja pentru --
+\stopmessages
+
 %D \macros 
 %D   {definefilesynonym}
 %D
@@ -153,6 +158,7 @@
   {\setfalse\moduleisloaded
    \dododousemodules\f!moduleprefix {#1}%
    \dododousemodules\f!styleprefix  {#1}%
+   \dododousemodules\f!xstyleprefix {#1}%
    \dododousemodules\f!privateprefix{#1}%
    \ifconditional\moduleisloaded\else
      \showmessage{\m!systems}{6}{#1}%
@@ -199,7 +205,7 @@
 \def\convertMPcolorfile%
   {\bufferprefix metacmyk.tmp}
 
-%D Temporarily here: 
+%D Temporarilly here: 
 
 \def\definieerfilegroep%
   {\dodoubleargument\dodefinieerfilegroep}
@@ -229,6 +235,21 @@
 \def\dostopfilegroep[#1][#2]%
   {\getvalue{\e!stop#1#2}%
    \getvalue{\??fp#1\c!na}}
+
+% usage: 
+%
+% \fetchruntimecommand\showaccents{\f!encodingprefix ...}
+
+\def\fetchruntimecommand#1#2%
+  {\def#1{\dofetchruntimecommand#1{#2}}}
+
+\def\dofetchruntimecommand#1#2%
+  {\doifundefined{@@@#2@@@}{\let#1\undefined\doinputonce{#2}}%
+   \ifx#1\undefined
+     \writestatus{\m!systems}{command \string#1 not found in file #2}%
+     \def#1{{\infofont[unknown command \string#1]}}%
+   \fi 
+   #1}
 
 %D This will be perfected / changed / weeded. 
  

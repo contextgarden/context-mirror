@@ -1,5 +1,5 @@
 %D \module
-%D   [       file=core-tbl,
+%D   [       file=core-ntb,
 %D        version=2000.04.18,
 %D          title=\CONTEXT\ Core Macros,
 %D       subtitle=Natural Tables, 
@@ -399,6 +399,9 @@
          \expanded{\doTBL{\row}{\col}}}%
       \eTBL}%
    \endTBL
+\ifnum\TBLlevel>1
+    \vskip-\dp\strutbox
+\fi
    \egroup
    \popTBL}
 

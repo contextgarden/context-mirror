@@ -270,13 +270,60 @@
 
 \let\unicodecharcommand\firstofoneargument
 
-\unexpanded\def\unicodeglyph#1#2% watch the double mapping 
+% \unexpanded\def\unicodeglyph#1#2% watch the double mapping 
+%   {\bgroup
+%    \bodyfontsize=\unicodescale\bodyfontsize
+%    \font\unicodefont=\truefontname{\truefontname\unicodestyle\lchexnumbers{#1}}
+%      at \currentfontscale\bodyfontsize
+%    \unicodestrut\unicodefont\unicodecharcommand{\char#2\relax}%
+%    \egroup}
+
+\unexpanded\def\unicodeglyph#1#2% watch the double mapping
   {\bgroup
+   \getvalue{@@\currentucharmapping\strippedcsname\uchar}{#1}{#2}%
    \bodyfontsize=\unicodescale\bodyfontsize
-   \font\unicodefont=\truefontname{\truefontname\unicodestyle\lchexnumbers{#1}}
+   \font\unicodefont=\truefontname{\truefontname\unicodestyle\unicodeone}
      at \currentfontscale\bodyfontsize
-   \unicodestrut\unicodefont\unicodecharcommand{\char#2\relax}%
+   \unicodestrut\unicodefont\unicodecharcommand{\char\unicodetwo\relax}%
    \egroup}
+
+%D \macros 
+%D   {currentucharmapping,defineucharmapping}
+%D
+%D A (plane,char) pair can be remapped using a uchar mapping 
+%D function. The default mapping is to convert the plane to a
+%D lowercase hexadecimal number, and leave the number 
+%D untouched. The current remapping is kept in a macro.
+
+\let\currentucharmapping\s!default
+
+\def\defineucharmapping#1%
+  {\setvalue{@@#1\strippedcsname\uchar}}
+
+\defineucharmapping{\s!default}#1#2%
+  {\edef\unicodeone{\lchexnumbers{#1}}\edef\unicodetwo{#2}}
+
+%D An example of a remapping is the following: 
+%D 
+%D \starttypen 
+%D \defineucharmapping{GBK}#1#2%
+%D   {\unicodeposition=#1
+%D    \advance\unicodeposition -129
+%D    \multiply\unicodeposition 190
+%D    \advance\unicodeposition #2
+%D    \advance\unicodeposition-\ifnum#2>127 65\else64\fi
+%D    \dorepositionunicode}
+%D \stoptypen
+%D 
+%D This maps the GBK vector onto a compact GBK one. The 
+%D auxiliary macro is defined here as a goody. 
+
+\def\dorepositionunicode%
+  {\DoDiv\unicodeposition by256to\scratchcounter
+   \advance\scratchcounter 1
+   \edef\unicodeone{\ifnum\scratchcounter<10 0\fi\the\scratchcounter}%
+   \DoMod\unicodeposition by256to\scratchcounter
+   \edef\unicodetwo{\the\scratchcounter}}
 
 %D \macros 
 %D   {setunicodestrut, setunicodescale, nextglyph, 

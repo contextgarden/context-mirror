@@ -105,6 +105,12 @@
      \kern\strutdepth
    \fi}
 
+%D The following switch can be used to disable limiting the 
+%D height of the footnote area, something that is needed in 
+%D multi column balancing. Use this switch with care. 
+
+\newif\iffootnotelimit \footnotelimittrue  
+
 \def\dosetupfootnotes[#1]%
   {\getparameters[\??vn][#1]%
    \processaction
@@ -113,14 +119,14 @@
           \v!uit=>\let\dofootnoterule=\relax,
       \s!default=>\let\dofootnoterule=\relax,
       \s!unknown=>\let\dofootnoterule=\@@vnlijn]%
-   \setbox0=\vbox
+   \setbox\scratchbox=\vbox
      {\forgetall
       \@@vnvoor
       \dofootnoterule 
       \@@vnna}%
-   \skip\footins=\ht0
+   \skip\footins=\ht\scratchbox
    \count\footins=1000
-   \setbox0=\box\voidb@x % \somehow \box0 is used
+   \setbox\scratchbox=\box\voidb@x % scratchbox can be in use
    \ExpandBothAfter\doifinsetelse{\v!kolommen}{\@@vnplaats}
      {\cleverfootnotestrue % global ? 
       \ifnum\@@kln=0 
@@ -149,8 +155,10 @@
         {\global\endnotestrue
          \global\bottomnotestrue
          \postponefootnotes}}%
-   \dimen\footins=\@@vnhoogte
-   \multiply\dimen\footins by \scratchcounter}
+   \iffootnotelimit
+     \dimen\footins=\@@vnhoogte
+     \multiply\dimen\footins by \scratchcounter
+   \fi}
 
 \ifx\setfootnotehsize\undefined
 
@@ -175,8 +183,11 @@
                             \getvalue{\e!start\??vn\??vn}}%
    \def\stoppushfootnote   {\getvalue{\e!stop\??vn\??vn}%
                             \egroup}%
-   \def\startpopfootnotes  {\setbox0=\vbox\bgroup}%
-   \def\stoppopfootnotes   {\egroup\rigidcolumnbalance0}}
+   \def\startpopfootnotes  {\bgroup
+                            \setfootnotehsize 
+                            \setrigidcolumnhsize\hsize\@@vnkolomafstand\@@vnn
+                            \setbox0=\vbox\bgroup}
+   \def\stoppopfootnotes   {\egroup\rigidcolumnbalance0\egroup}}
 
 \def\settextfootnotes%
   {\def\startpushfootnote  {\startvboxtohbox 
@@ -242,21 +253,36 @@
 %D
 %D Typesetting footnotes is, at least for the moment, disabled
 %D when reshaping boxes.
+%D
+%D The additional macro \type {\footnotetext} and the 
+%D associated \type {\note} macro were implemented at 
+%D request of users on the mailing list and a suggestion by 
+%D taco to split of the symbol placement. I decided to 
+%D merge this functionality with the existing \type {\note} 
+%D functionality.  
 
-\definecomplexorsimpleempty\footnote
+\newif\iffootnotesymbol
 
-\def\complexfootnote[#1]%
+\unexpanded\def\footnote    {\dodoubleempty\dofootnote[1]}
+\unexpanded\def\footnotetext{\dodoubleempty\dofootnote[0]}
+
+\def\dofootnote[#1][#2]%
   {\unskip
+   \ifcase#1\relax
+     \global\footnotesymbolfalse
+   \else
+     \global\footnotesymboltrue  
+   \fi
    \ifvisible
      \ifreshapingbox
        \let\next=\gobbletwoarguments
      \else
-       \let\next=\dofootnote
+       \let\next=\dodofootnote
      \fi
    \else
      \let\next=\gobbletwoarguments
    \fi
-   \next{#1}}
+   \next{#2}}
 
 %D \macros
 %D   {footnotesenabled}
@@ -273,21 +299,6 @@
 %D which can be handy while for instance typesetting tables
 %D of contents. The pagewise footnote numbering is dedicated 
 %D to Han The Thanh, who needed it first.  
-
-%\newif\iffootnotesenabled \footnotesenabledtrue
-%
-%\def\dofootnote#1%
-%  {\iffootnotesenabled
-%     \doifelse{#1}{-}
-%       {\let\footnotenumber=\empty}
-%       {\verhoognummer[\v!voetnoot]%
-%        \maakhetnummer[\v!voetnoot]%
-%        \rawtextreference{\s!fnt}{#1}{\hetnummer}%
-%        \let\footnotenumber=\hetnummer}%
-%     \expandafter\dostartfootnote
-%   \else
-%     \expandafter\gobbleoneargument
-%   \fi}
 
 \newif\iffootnotesenabled \footnotesenabledtrue
 
@@ -306,7 +317,7 @@
        {}
    \fi}
 
-\def\dofootnote#1%
+\def\dodofootnote#1%
   {\iffootnotesenabled
      \doglobal\increment\internalfootreference
      \doifelse{\@@vnwijze}{\v!per\v!pagina}
@@ -324,7 +335,7 @@
         \fi
         \verhoognummer[\v!voetnoot]%
         \maakhetnummer[\v!voetnoot]%
-        \rawtextreference{\s!fnt}{#1}{\hetnummer}%
+        \rawreference{\s!fnt}{#1}{\hetnummer}%
         \let\footnotenumber=\hetnummer}%
      \expandafter\dostartfootnote
    \else
@@ -358,25 +369,18 @@
 \def\dostartfootnote% nog gobble als in pagebody
   {\bgroup
   %\restorecatcodes % to be tested first 
-   \ignorelines % makes footnotes work in \startlines ... \stoplines
-   \unskip\unskip
-   \ifdim\lastkern=\footnotesignal
-     \high{\kern\@@vnafstand}% gets the font right, hack !
+   \ifinregels % otherwise problems with \type <crlf> {xxx} 
+     \ignorelines % makes footnotes work in \startlines ... \stoplines
+   \fi
+   \iffootnotesymbol
+     \dolastnotesymbol
+   \else
+     \unskip\unskip
+     \global\let\lastnotesymbol\dolastnotesymbol
    \fi
    \ignorespaces
-   \nobreak
-   \iflocation
-     \naarbox
-       {\high{\tx\footnotenumber\domovednote\v!vorigepagina\v!volgendepagina}}
-       [\s!fnt:t:\internalfootreference]%
-     \rawreference{\s!fnt}{\s!fnt:f:\internalfootreference}{}%
-   \else
-     \high{\tx\footnotenumber\domovednote\v!vorigepagina\v!volgendepagina}%
-     \ifconditional\pagewisefootnotes
-       \rawreference{\s!fnt}{\s!fnt:f:\internalfootreference}{}%
-     \fi
-   \fi
    \localfootinsert\footins\bgroup
+     \allowbreak % needed in order to split in otrset
      \forgetall
      \setfootnotebodyfont
      \redoconvertfont % to undo \undo calls in in headings etc
@@ -405,6 +409,7 @@
           \rawreference{\s!fnt}{\s!fnt:t:\internalfootreference}{}%
         \fi\fi}%
      \bgroup
+     \postponefootnotes
      \aftergroup\dostopfootnote
      \begstrut
      \let\next}
@@ -416,6 +421,29 @@
    \egroup
    \kern\footnotesignal\relax} % \relax is needed to honor spaces
 
+\let\lastnotesymbol\empty
+
+\def\dolastnotesymbol%
+  {\unskip\unskip
+   \ifdim\lastkern=\footnotesignal
+     \high{\kern\@@vnafstand}% gets the font right, hack !
+   \fi
+   \nobreak
+   \iflocation
+     \naarbox
+       {\high{\tx\footnotenumber\domovednote\v!vorigepagina\v!volgendepagina}}%
+       [\s!fnt:t:\internalfootreference]%
+     \rawreference{\s!fnt}{\s!fnt:f:\internalfootreference}{}%
+   \else
+     \high{\tx\footnotenumber\domovednote\v!vorigepagina\v!volgendepagina}%
+     \ifconditional\pagewisefootnotes
+       \rawreference{\s!fnt}{\s!fnt:f:\internalfootreference}{}%
+     \fi
+   \fi
+   \global\let\lastnotesymbol\relax}
+
+\let\lastnotesymbol\relax
+
 %D \macros
 %D   {note}
 %D
@@ -426,13 +454,22 @@
 %D
 %D This command is implemented rather straightforward as:
 
-\def\note[#1]%
+\definecomplexorsimple\note
+
+\def\complexnote[#1]%
   {\iffootnotesenabled
-     \bgroup
-     \unskip
-     \naarbox{\high{\tx\currenttextreference}}[#1]%
-     \egroup
+     \ifx\lastnotesymbol\relax
+       \bgroup
+       \unskip
+       \naarbox{\high{\tx\currenttextreference}}[#1]%
+       \egroup
+     \else
+       \lastnotesymbol
+     \fi
    \fi}
+
+\def\simplenote%
+  {\lastnotesymbol}
 
 %D Normally footnotes are saved as inserts that are called upon
 %D as soon as the pagebody is constructed. The footnote
@@ -453,7 +490,10 @@
        \setbox0=\hbox
          {\startpopfootnotes
           \setfootnotebodyfont   
-          \ifcase\@@vnn\unvbox\else\box\fi\footins
+          % this should be checked, smells like a mix-up 
+          % does not split: \ifcase\@@vnn\unvbox\else\box\fi\footins
+          \ifcase\@@vnn\box\else\unvbox\fi\footins
+          % this is too ugly actually
           \stoppopfootnotes}%
        \localframed 
          [\??vn]
@@ -673,8 +713,7 @@
 
 \def\doplacefootnotes[#1]%
   {\bgroup
-   \let\@@vnhoogte=\teksthoogte     
-   \setupfootnotes[#1]%
+   \setupfootnotes[#1,\c!hoogte=\teksthoogte]%
    \ifendnotes
      \ifinpagebody \else
        \placefootnotesintext\postponedfootnotes
@@ -715,10 +754,17 @@
 %D from the global document bodyfont size. In the previous macros
 %D we already used a footnote specific font setting macro.
 
+%\def\setfootnotebodyfont%
+%  {\let\setfootnotebodyfont\relax
+%   \restoreglobalbodyfont
+%   \switchtobodyfont[\@@vnkorps]}
+
 \def\setfootnotebodyfont%
   {\let\setfootnotebodyfont\relax
    \restoreglobalbodyfont
-   \switchtobodyfont[\@@vnkorps]}
+   \switchtobodyfont[\@@vnkorps]%
+   \steltolerantiein[\@@vntolerantie]%
+   \steluitlijnenin[\@@vnuitlijnen]}
 
 %D The footnote mechanism defaults to a traditional one
 %D column way of showing them. By default we precede them by
@@ -741,6 +787,8 @@
    \c!margeafstand=.5em,
    \c!kolomafstand=1em,
    \c!afstand=.125em,
+   \c!uitlijnen=\v!normaal,
+   \c!tolerantie=\v!soepel,
   %\c!breedte=\zetbreedte,
   %\c!breedte=\ifdim\hsize<\zetbreedte\hsize\else\zetbreedte\fi,
    \c!breedte=\defaultfootnotewidth,
