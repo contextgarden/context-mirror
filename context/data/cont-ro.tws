@@ -2362,6 +2362,7 @@ var:comandatext:*\comanda#1::
 var:prefix:+,-,*text::
 var:punetitlu:da,nu,gol::
 var:numarincrement:da,nu,lista,*fisier::
+var:resetnumber:da,nu::
 var:fisier:*nume::
 var:expansiune:da,comanda,nu::
 var:textmargine:da,nu::

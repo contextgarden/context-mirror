@@ -393,6 +393,30 @@
         {\dodoflushlayer0{#1}{#2#1:\realfolio}}
       \stopoverlay}}
 
+% \def\dodoflushlayer#1#2#3% 
+%   {\ifundefined{\@@layerbox#3}%
+%      \ifcase#1\else\writestatus{layer}{unknown layer #3}\fi
+%    \else
+%      \doifvalue{\??ll#2\c!optie}\v!test\tracelayerstrue
+%      \iftracelayers\traceboxplacementtrue\fi
+%      \doifelsevalue{\??ll#2\c!methode}\v!tekst\donetrue\donefalse
+%      \iftracelayers \ruledvbox \else \vbox \fi \ifdone \else to \overlayheight \fi
+%        {\forgetall
+%         \hbox \ifdone \else to \overlaywidth \fi 
+%           {% klopt dit? #3 en niet #2 ? 
+%            \doifvalue{\??ll#3\realfolio\c!positie}\v!ja
+%              {\xypos{lyr:#3:\realfolio}}%
+%            \let\next\box
+%            \ifcase#1\else
+%              \doifnotvalue{\??ll#2\c!positie}\v!ja
+%                {\doifvalue{\??ll#2\c!status}\v!herhaal
+%                   {\let\next\copy}}%
+%            \fi                   
+%            \next\csname\@@layerbox#3\endcsname
+%            \hss}%
+%         \vss}%
+%    \fi}
+
 \def\dodoflushlayer#1#2#3% 
   {\ifundefined{\@@layerbox#3}%
      \ifcase#1\else\writestatus{layer}{unknown layer #3}\fi
@@ -412,7 +436,11 @@
                {\doifvalue{\??ll#2\c!status}\v!herhaal
                   {\let\next\copy}}%
            \fi                   
-           \next\csname\@@layerbox#3\endcsname
+           \doifoverlayelse{#3}
+             {\next\csname\@@layerbox#3\endcsname}%
+             {\startlayoutcomponent{l:#3}{layer #3}%
+              \next\csname\@@layerbox#3\endcsname
+              \stoplayoutcomponent}%
            \hss}%
         \vss}%
    \fi}

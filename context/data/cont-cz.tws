@@ -2362,6 +2362,7 @@ var:textovyprikaz:*\prikaz#1::
 var:prefix:+,-,*text::
 var:umistihlavicku:ano,ne,prazdne::
 var:zvysujicicislo:ano,ne,seznam,*soubor::
+var:resetnumber:ano,ne::
 var:soubor:*jmeno::
 var:expanzen:ano,prikaz,ne::
 var:textmarginalie:ano,ne::

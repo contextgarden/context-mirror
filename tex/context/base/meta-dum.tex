@@ -41,20 +41,27 @@
 % currently preparempvariables is unable to resolve number
 % fractions like reduction
 
+% June 22, 2003, this definition was patched to adapt itself
+% to transparent colors
+
 \startuseMPgraphic{placeholder}{width,height,color}
-  numeric w, h, d, r ; color c ; path p ;
-  c := \MPvar{color} ;
+  numeric w, h, d, r ; color c, b, cc ; path p ; boolean t ; 
+  t := is_transparent(\MPvar{color}) ;  
+  c := not_transparent(\MPvar{color}) ;
+  b := not_transparent(white) ; 
   w := \MPvar{width} ;
   h := \MPvar{height} ;
   r := \MPvar{reduction} ;
   d := max(w,h) ;
   p := unitsquare xyscaled (w,h) ;
-  fill p withcolor r[.5c,white] ;
+  cc := r[.5c,b] ; 
+  fill p withcolor if t : transparent(1,.5,cc) else : cc fi ;
   for i := 1 upto 60 :
+    cc := r[c randomized(.3,.9),b] ;
     fill fullcircle
       scaled (d/5 randomized (d/5))
       shifted (center p randomized (d))
-      withcolor r[c randomized(.3,.9),white] ;
+      withcolor if t : transparent(1,.5,cc) else : cc fi ;
   endfor ;
   clip currentpicture to p ;
 \stopuseMPgraphic

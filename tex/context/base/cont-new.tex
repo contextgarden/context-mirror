@@ -16,10 +16,34 @@
 %D features. 
 
 \unprotect
+
+\def\tabulaterule
+  {\dotabulaterule
+     {\hrule\!!height.5\scratchdimen\!!depth.5\scratchdimen\relax
+      \doifvalue{\??tt\currenttabulate\c!afstand}\v!grid
+        {\kern-\scratchdimen}}} % experimental tm-prikkels
+
+% todo: \stelinterliniein[regel=vast] => ==\the\baselineskip
 
 %%%%%%%% todo: \chardef\snapstruts=1 => d=l-h 
 
 \writestatus{\m!systems}{beware: some patches loaded from cont-new.tex!}
+
+\def\useMPvariables
+  {\dodoubleargument\douseMPvariables}
+
+\def\douseMPvariables[#1][#2]%
+  {\def\@@meta{#1:}%
+   \prepareMPvariables{#2}}
+
+\def\countXMLchildren[#1]#2%
+  {\startnointerference  
+     \doglobal\newcounter\nofXMLchildren
+     \defineXMLargument[#1]{\doglobal\increment\nofXMLchildren}%
+     \startXMLignore 
+       #2%
+     \stopXMLignore
+   \stopnointerference}
 
 \long\def\preservePSpar#1\to#2%
   {\bgroup
@@ -27,6 +51,91 @@
    \expanded{\egroup\noexpand\def\noexpand#2{#1}}}
 
 \appendtoks\optimizeverbatimfalse\to\everytabulate
+
+\def\filterfromvalue#1#2#3% value max n
+  {\@EA\@EAEAEA\csname
+     \ifcase#2\or
+       \ifcase#3\or
+         \strippedcsname\firstofoneargument
+       \else
+         \strippedcsname\gobbleoneargument
+       \fi
+     \or
+       \ifcase#3\or
+         \strippedcsname\firstoftwoarguments
+       \or
+         \strippedcsname\secondoftwoarguments
+       \else
+         \strippedcsname\gobbletwoarguments
+       \fi
+     \or
+       \ifcase#3\or
+         \strippedcsname\firstofthreearguments
+       \or
+         \strippedcsname\secondofthreearguments
+       \or
+         \strippedcsname\thirdofthreearguments
+       \else
+         \strippedcsname\gobblethreearguments
+       \fi
+     \fi
+   \endcsname\csname#1\endcsname}
+
+% \setvalue{xx}{{A}{B}{C}}
+
+% \filterfromvalue{xx}{3}{3}
+% \filterfromvalue{xx}{3}{2}
+% \filterfromvalue{xx}{3}{1}
+
+% new, needed for icare first col of 'doeltabel', experimental 
+
+\newif\ifsqueezeTBLspan % \squeezeTBLspantrue 
+
+\def\settblspn     #1{\setvalue     {\@@tblprefix#1:s}{1}}
+\def\doifelsetblspn#1{\doifelsevalue{\@@tblprefix#1:s}{1}}
+
+\long\def\dohandleTBLcellA#1#2[#3]#4%
+  {\setbox\scratchbox\hbox
+     {\setupTBLcell{#1}{#2}%
+      \localframed
+        [\@@tbl\@@tbl]
+        [#3,\c!achtergrond=,\c!kader=\v!uit]% 25% faster
+        {\bTBLCELL\TBLcharalign{#2}{#4}\eTBLCELL\inTBLcell{#1}{#2}}}%
+   \scratchdimen\gettblwid\colTBL\relax
+   \ifdim\wd\scratchbox>\scratchdimen
+     \ifsqueezeTBLspan
+       \ifnum0\number\gettblcol{#1}{#2}>1\relax \settblspn\colTBL \fi 
+     \fi
+     \doifelsetblspn\colTBL
+       \donothing{\settblwid\colTBL{\the\wd\scratchbox}}% auto set
+   \fi
+   \let\rowTBLx\rowTBL\increment\rowTBLx
+   \scratchdimen\gettblhei\rowTBLx\relax
+   \ifdim\ht\scratchbox<\scratchdimen
+     \settblhei\rowTBLx{\the\ht\scratchbox}% auto set
+   \fi
+   \settblht{#1}{#2}{\the\ht\scratchbox}%
+   \settblwd{#1}{#2}{\the\wd\scratchbox}%
+   \ifautoTBLcheckwidth
+     \ifdim\wd\scratchbox<.75\hsize
+       \ifdim\ht\scratchbox>2\openlineheight % honor width since this can be a 
+         \scratchdimen\gettblaut\colTBL\relax % figure or so
+         \ifdim\scratchdimen=\zeropoint
+           % side effect: when width is set to 0pt,
+           % we can force a span that fits the sum of spans widths 
+           \settblaut\colTBL{\the\scratchdimen}%
+         \else\ifdim\wd\scratchbox>\scratchdimen
+% unless span 
+           \settblaut\colTBL{\the\wd\scratchbox}%
+           % to be translated 
+           \writestatus\m!TABLE{no auto width in (\number#1,\number#2)\space\the\wd\scratchbox/\the\hsize}%
+         \fi\fi
+       \fi
+     \fi
+   \fi 
+   \setbox2\null
+   \wd2\wd\scratchbox \ht2\ht\scratchbox \dp2\dp\scratchbox
+   \box2}
 
 \def\processlinetableXMLfile#1%
   {\bgroup 
@@ -135,6 +244,39 @@
 % \stopcombination
 % \stoplinecorrection
 
+% experimental: \synchronizegrid bla bla bla 
+
+\newcounter\currentgridsync
+
+\def\gridsynctag{grs:\currentgridsync}
+
+\def\synchronizegrid
+  {\doglobal\increment\currentgridsync
+   \par\prevdepth\zeropoint
+   \nointerlineskip
+   \hpos\gridsynctag{\strut}\par
+   \vskip-\lineheight 
+   \nointerlineskip
+   % top of text 
+   \scratchdimen\MPy{\v!tekst:\MPp\gridsynctag}%
+   \advance\scratchdimen\MPh{\v!tekst:\MPp\gridsynctag}%
+   % move to first baseline 
+   \advance\scratchdimen-\topskip
+   % subtract wrong baseline
+   \advance\scratchdimen-\MPy\gridsynctag
+   % get minimal number of lines 
+   \advance\scratchdimen\lineheight 
+   \getnoflines\scratchdimen
+   % calculate difference
+   \advance\scratchdimen-\noflines\lineheight\relax
+   \scratchdimen-\scratchdimen
+   \ifdim\scratchdimen>\zeropoint
+     \nointerlineskip 
+     \advance\scratchdimen-\lineheight 
+     \vskip\scratchdimen \strut 
+     \par
+   \fi}
+
 % needed for extreme 
 
 \definesystemvariable{ie}
@@ -197,7 +339,7 @@
 
 % \setupinteraction[state=start]
 % 
-% \useattachment[whatever][test.tex]
+% \useattachment[whatever][[new name]][test.tex]
 % 
 % % \setupattachments[\c!symbool={symbol-normal,symbol-down}]
 % 

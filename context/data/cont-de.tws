@@ -2362,6 +2362,7 @@ var:textbefehl:*\Befehl#1::
 var:prefix:+,-,*Text::
 var:setzekopf:ja,nein,leer::
 var:nummererhoehen:ja,nein,liste,*Datei::
+var:resetnumber:ja,nein::
 var:datei:*Name::
 var:expansion:ja,befehl,nein::
 var:marginaltext:ja,nein::

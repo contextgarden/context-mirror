@@ -2362,6 +2362,7 @@ var:textcommand:*\command#1::
 var:prefix:+,-,*text::
 var:placehead:yes,no,empty::
 var:incrementnumber:yes,no,list,*file::
+var:resetnumber:yes,no::
 var:file:*name::
 var:expansion:yes,command,no::
 var:margintext:yes,no::

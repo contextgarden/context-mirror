@@ -278,13 +278,27 @@
   {\ifcase\autodigitmode
      \doscandigit#1%
    \else
-     \setbox\digitsepbox\hbox{\doscandigit#1}
+     \setbox\digitsepbox\hbox{\doscandigit#1}%
    \fi
-   \chardef\skipdigit0}
+   \chardef\skipdigit0\relax}
+
+% strange, does not work 
+%
+% \def\digitnop
+%   {\hphantom{\box\digitsepbox}%
+%    \hphantom{0}\chardef\skipdigit1\relax}
+%
+% while this works 
 
 \def\digitnop
-   {\hphantom{\box\digitsepbox}%
-    \hphantom{0}\chardef\skipdigit1}
+  {\hbox{\hphantom{\box\digitsepbox}}%
+   \hphantom{0}\chardef\skipdigit1\relax}
+
+% but this doesn't 
+%
+% \def\digitnop
+%   {\hphantom{\box\digitsepbox0}%
+%    \chardef\skipdigit1\relax}
 
 \def\digitsgn#1%
   {\ifcase\digitsignmode#1\else

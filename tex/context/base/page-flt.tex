@@ -200,7 +200,7 @@
 
 \def\dodocomplexplaatsblok[#1][#2][#3]#4%
   {\flushnotes
-\flushsidefloats % here ! 
+\flushsidefloats % here !
    \ifsomefloatwaiting
      % this was \checkwaitingfloats spread all over
      \doifinsetelse\v!altijd{#2}
@@ -360,12 +360,12 @@
 %     \@EA\firstoftwoarguments
 %   \fi}
 
-\def\doifrightpagefloatelse 
+\def\doifrightpagefloatelse
   {\ifdubbelzijdig
      \ifenkelzijdig
        \@EAEAEA\firstoftwoarguments
      \else
-       \@EAEAEA\doifoddfloatpageelse 
+       \@EAEAEA\doifoddfloatpageelse
      \fi
    \else
      \@EA\firstoftwoarguments
@@ -423,30 +423,61 @@
       \expanded{\dorepeatwithcommand[#1]}\movedownsidefloat}%
    \egroup}
 
+% \def\xdocompletefloat#1#2#3#4#5#6%
+%   {\ifextrafloatactions
+%      \let\@@extrafloat\empty
+%      % \sidefloatdownshift will be reset afterwards, and can
+%      % already be set at this point
+%      \processallactionsinset
+%        [#4] % ininner/inouter : for old times sake
+%        [     \v!binnen=>\xxdocompletefloat\v!links       \v!rechts,
+%              \v!buiten=>\xxdocompletefloat\v!rechts      \v!links,
+%         \v!binnenmarge=>\xxdocompletefloat\v!linkermarge \v!rechtermarge,
+%         \v!buitenmarge=>\xxdocompletefloat\v!rechtermarge\v!linkermarge,
+%          \v!binnenrand=>\xxdocompletefloat\v!linkerrand  \v!rechterrand,
+%          \v!buitenrand=>\xxdocompletefloat\v!rechterrand \v!linkerrand,
+%              \v!rugwit=>\xxdocompletefloat\v!rugwit      \v!snijwit,
+%             \v!snijwit=>\xxdocompletefloat\v!snijwit     \v!rugwit,
+%               \v!links=>\xxdocompletefloat\v!links       \v!links,
+%              \v!rechts=>\xxdocompletefloat\v!rechts      \v!rechts,
+%               \v!regel=>, % only -n*line is handled (see ***)
+%             \s!unknown=>{\movedownsidefloat[\commalistelement]}]%
+%      \ifx\@@extrafloat\empty
+%        \docompletefloat{#1}{#2}{#3}{#4}{#5}{#6}\nextbox
+%      \else
+%        \docompletefloat{#1}{#2}{#3}{\@@extrafloat,#4}{#5}{#6}\nextbox
+%      \fi
+%    \else % downward compatible
+%      \docompletefloat{#1}{#2}{#3}{#4}{#5}{#6}\nextbox
+%    \fi}
+
 \def\xdocompletefloat#1#2#3#4#5#6%
   {\ifextrafloatactions
-     \let\@@extrafloat\empty
-     % \sidefloatdownshift will be reset afterwards, and can
-     % already be set at this point
-     \processallactionsinset
-       [#4] % ininner/inouter : for old times sake
-       [     \v!binnen=>\xxdocompletefloat\v!links       \v!rechts,
-             \v!buiten=>\xxdocompletefloat\v!rechts      \v!links,
-        \v!binnenmarge=>\xxdocompletefloat\v!linkermarge \v!rechtermarge,
-        \v!buitenmarge=>\xxdocompletefloat\v!rechtermarge\v!linkermarge,
-         \v!binnenrand=>\xxdocompletefloat\v!linkerrand  \v!rechterrand,
-         \v!buitenrand=>\xxdocompletefloat\v!rechterrand \v!linkerrand,
-             \v!rugwit=>\xxdocompletefloat\v!rugwit      \v!snijwit,
-            \v!snijwit=>\xxdocompletefloat\v!snijwit     \v!rugwit,
-              \v!links=>\xxdocompletefloat\v!links       \v!links,
-             \v!rechts=>\xxdocompletefloat\v!rechts      \v!rechts,
-              \v!regel=>, % only -n*line is handled (see ***)
-            \s!unknown=>{\movedownsidefloat[\commalistelement]}]%
-     \ifx\@@extrafloat\empty
-       \docompletefloat{#1}{#2}{#3}{#4}{#5}{#6}\nextbox
-     \else
-       \docompletefloat{#1}{#2}{#3}{\@@extrafloat,#4}{#5}{#6}\nextbox
-     \fi
+     \doifinsetelse\v!tekst{#4}
+       {% fuzzy, text overloads left, since then it's a directive
+        \docompletefloat{#1}{#2}{#3}{#4}{#5}{#6}\nextbox}
+       {\let\@@extrafloat\empty
+        % \sidefloatdownshift will be reset afterwards, and can
+        % already be set at this point
+        \processallactionsinset
+          [#4] % ininner/inouter : for old times sake
+          [     \v!binnen=>\xxdocompletefloat\v!links       \v!rechts,
+                \v!buiten=>\xxdocompletefloat\v!rechts      \v!links,
+           \v!binnenmarge=>\xxdocompletefloat\v!linkermarge \v!rechtermarge,
+           \v!buitenmarge=>\xxdocompletefloat\v!rechtermarge\v!linkermarge,
+            \v!binnenrand=>\xxdocompletefloat\v!linkerrand  \v!rechterrand,
+            \v!buitenrand=>\xxdocompletefloat\v!rechterrand \v!linkerrand,
+                \v!rugwit=>\xxdocompletefloat\v!rugwit      \v!snijwit,
+               \v!snijwit=>\xxdocompletefloat\v!snijwit     \v!rugwit,
+                 \v!links=>\xxdocompletefloat\v!links       \v!links,
+                \v!rechts=>\xxdocompletefloat\v!rechts      \v!rechts,
+                 \v!regel=>, % only -n*line is handled (see ***)
+               \s!unknown=>{\movedownsidefloat[\commalistelement]}]%
+        \ifx\@@extrafloat\empty
+          \docompletefloat{#1}{#2}{#3}{#4}{#5}{#6}\nextbox
+        \else
+          \docompletefloat{#1}{#2}{#3}{\@@extrafloat,#4}{#5}{#6}\nextbox
+        \fi}%
    \else % downward compatible
      \docompletefloat{#1}{#2}{#3}{#4}{#5}{#6}\nextbox
    \fi}
@@ -469,7 +500,7 @@
              \box#3%
              \doifnotvalue{\??fl#1\c!plaats}\v!rechts\hss}%
         \fi}%
-     % todo: rand / rug 
+     % todo: rand / rug
      \doifinset\v!hangend{#2}
        {\doifcommonelse{\v!inlinker,\v!linkermarge}{#2}
           {\letvalue{\??fl#1\c!maxbreedte}\linkermargebreedte}%
@@ -930,7 +961,7 @@
 
 \def\sometextfloat[#1]%  lang, links, rechts, hoog, midden, laag, offset
   {%\checkwaitingfloats{#1}%
-   \def\dostoptextfloat{\dodostoptextfloat[#1]}%
+   \gdef\dostoptextfloat{\dodostoptextfloat[#1]}% brr global
    \global\floattextwidth\hsize
    \global\floatwidth\wd\floatbox
    \global\floatheight\ht\floatbox % forget about the depth
@@ -1732,7 +1763,7 @@
    \xdef\naturalfloatdepth {\the\dp#1}}
 
 \long\def\docompletefloat#1#2#3#4#5#6#7% #7 = box number
-  {%\flushsidefloats % moved 
+  {%\flushsidefloats % moved
    \presetfloatvariables{#1}{#4}{#2}{#6}%
    \bgroup
    \setnaturalfloatdimensions#7%

@@ -414,10 +414,14 @@
            \hskip\linkermargeafstand
          \egroup
          \settextpagecontent\scratchpagebox{#1}{#2}%
+\setbox\scratchpagebox\vbox
+  {\startlayoutcomponent{textbody}{text body}%
+   \box\scratchpagebox
+   \stoplayoutcomponent}%
          \addtextbackground\scratchpagebox
          \addtextgridlayer\scratchpagebox
          \localstarttextcolor
-           \box\scratchpagebox
+         \box\scratchpagebox
          \localstoptextcolor
          \bgroup
            \hskip\rechtermargeafstand
@@ -457,6 +461,7 @@
      \setbox#1\hbox
        {\ifcase\showgridstate\or\or\box#1\hskip-\zetbreedte\fi
         \bgroup % color 
+\startlayoutcomponent{gridcolumns}{grid columns}%
         \incolortrue
         \ifcase\layoutcolumns\else
           \gray
@@ -471,8 +476,11 @@
               \fi}}%
           \hskip-\zetbreedte
         \fi
+\stoplayoutcomponent
+\startlayoutcomponent{gridlines}{grid lines}%
         \red
         \box\scratchbox
+\stoplayoutcomponent
         \egroup
         \ifcase\showgridstate\or\hskip-\zetbreedte\box#1\fi}%
    \fi}
@@ -557,11 +565,20 @@
           {\getvalue{\??tk#1\v!rand#4}\hss}%
       \fi}}
 
+% \def\dododoplacelayouttextline#1#2#3#4%
+%   {\vbox % to \vsize
+%      {\hsize#1\relax
+%       \getvalue{\??tk#2#3\c!voor}
+%       \hbox to #1{#4}%
+%       \getvalue{\??tk#2#3\c!na}}}
+
 \def\dododoplacelayouttextline#1#2#3#4%
   {\vbox % to \vsize
      {\hsize#1\relax
-      \getvalue{\??tk#2#3\c!voor}
-      \hbox to #1{#4}%
+      \getvalue{\??tk#2#3\c!voor}%
+      \startlayoutcomponent{t:#2:#3}{area #2 #3}%
+        \hbox to #1{#4}%
+      \stoplayoutcomponent
       \getvalue{\??tk#2#3\c!na}}}
 
 %D Although it is far better to use backgrounds for this 

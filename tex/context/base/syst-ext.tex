@@ -4091,64 +4091,66 @@
   {\@EA\sortcommalist\@EA[#1]}
 
 \def\sortcommalist[#1]#2%
-   {\getcommalistsize[#1]%
-    \let\sortedcommalist\empty
-    \ifnum\commalistsize>1
-      \let\comparecommand#2%
-      \processcommalist[#1]\dosortcommacommand
-    \fi}
+  {\getcommalistsize[#1]%
+   \ifnum\commalistsize>1
+     \let\sortedcommalist\empty
+     \let\comparecommand#2%
+     \processcommalist[#1]\dosortcommacommand
+   \else
+     \def\sortedcommalist{#1}%
+   \fi}
 
 \def\dosortcommacommand#1%
-   {\ifx\sortedcommalist\empty
-      \def\sortedcommalist{#1}%
-    \else
-      \def\!!tempa{#1}%
-      \ifx\!!tempa\empty\else
-        \scratchcounter\plusone
-        \@EA\getcommalistsize\@EA[\sortedcommalist]%
-        \@EA\processcommalist\@EA[\sortedcommalist]\docompareitems
-      \fi
-    \fi}
+  {\ifx\sortedcommalist\empty
+     \def\sortedcommalist{#1}%
+   \else
+     \def\!!tempa{#1}%
+     \ifx\!!tempa\empty\else
+       \scratchcounter\plusone
+       \@EA\getcommalistsize\@EA[\sortedcommalist]%
+       \@EA\processcommalist\@EA[\sortedcommalist]\docompareitems
+     \fi
+   \fi}
 
 %D All those \type{\expandafter}'s are there because I do not
 %D want to use \type{\edef}.
 
 \def\docompareitems#1%
-   {\doifnotempty{#1}
-      {\@EA\comparecommand\@EA{\!!tempa}{#1}\relax
-      %\ifcase\compareresult % equal 
-       \ifnum\comparedresult<2
-         \ifnum\scratchcounter=\commalistsize
-           \@EA\@EA\@EA\def\@EA\@EA\@EA\sortedcommalist
-           \@EA\@EA\@EA{\@EA\sortedcommalist\@EA,\!!tempa}%
-         \fi
-      %\or % new element larger
-      %  \ifnum\scratchcounter=\commalistsize
-      %    \@EA\@EA\@EA\def\@EA\@EA\@EA\sortedcommalist
-      %    \@EA\@EA\@EA{\@EA\sortedcommalist\@EA,\!!tempa}%
-      %  \fi
-       \else % old element larger
-         \@EA\def\@EA\newcommalistelement\@EA{\!!tempa,#1}%
-         \replaceincommalist\sortedcommalist\scratchcounter
-         \expandafter\quitcommalist
-       \fi}%
-       \advance\scratchcounter \minusone}
+  {\doifnotempty{#1}
+     {\@EA\comparecommand\@EA{\!!tempa}{#1}\relax
+     %\ifcase\compareresult % equal 
+      \ifnum\comparedresult<2
+        \ifnum\scratchcounter=\commalistsize
+          \@EA\@EA\@EA\def\@EA\@EA\@EA\sortedcommalist
+          \@EA\@EA\@EA{\@EA\sortedcommalist\@EA,\!!tempa}%
+        \fi
+     %\or % new element larger
+     %  \ifnum\scratchcounter=\commalistsize
+     %    \@EA\@EA\@EA\def\@EA\@EA\@EA\sortedcommalist
+     %    \@EA\@EA\@EA{\@EA\sortedcommalist\@EA,\!!tempa}%
+     %  \fi
+      \else % old element larger
+        \@EA\def\@EA\newcommalistelement\@EA{\!!tempa,#1}%
+        \replaceincommalist\sortedcommalist\scratchcounter
+        \expandafter\quitcommalist
+      \fi}%
+      \advance\scratchcounter \plusone} % bug, was \minusone
 
 %D The macro \type{\donumericcompare} considers everything 
 %D that is not a number to be larger than any number.
 
 \def\donumericcompare#1#2%
-   {\doifnumberelse{#1}
-      {\doifnumberelse{#2}
-         {\ifnum#1>#2\relax 
-            \comparedresult1       % #1 is larger
-          \else\ifnum#1<#2\relax
-            \comparedresult2       % #2 is larger
-          \else
-            \comparedresult0       % both are equal
-          \fi\fi}
-         {\comparedresult2 }}
-      {\comparedresult1 }}
+  {\doifnumberelse{#1}
+     {\doifnumberelse{#2}
+        {\ifnum#1>#2\relax 
+           \comparedresult\plusone       % #1 is larger
+         \else\ifnum#1<#2\relax
+           \comparedresult\plustwo       % #2 is larger
+         \else
+           \comparedresult\zerocount     % both are equal
+         \fi\fi}
+        {\comparedresult\plustwo}}
+     {\comparedresult\plusone}}
 
 %D \macros
 %D   {@saveprimitive}

@@ -255,6 +255,24 @@
      \global\setbox\csname\@@collectorbox#1\endcsname\emptybox
    \fi}
 
+\def\adaptcollector
+  {\dodoubleargument\doadaptcollector}
+
+\def\doadaptcollector[#1][#2]% 
+  {\bgroup
+   \def\currentcollector{#1}%
+   \chardef\collectorbox\csname\@@collectorbox#1\endcsname
+   \getparameters
+     [\??cb#1][\c!voffset=\zeropoint,\c!hoffset=\zeropoint,#2]% 
+   \scratchdimen\wd\collectorbox
+   \advance\scratchdimen\collectorparameter\c!hoffset
+   \global\wd\collectorbox\scratchdimen
+   \scratchdimen\ht\collectorbox
+   \advance\scratchdimen\collectorparameter\c!voffset
+   \global\ht\collectorbox\scratchdimen
+   \egroup}
+
+
 %\definecollector[test]
 %\setcollector[test]
 %  [location=rb]
@@ -801,7 +819,9 @@
   {\hbox\bgroup
    \getparameters
      [\??ol]
-     [\c!breedte=\zeropoint,\c!hoogte=\zeropoint,\c!diepte=\zeropoint,#1]%
+     [\c!breedte=\zeropoint,%
+      \c!hoogte=\zeropoint,%
+      \c!diepte=\zeropoint,#1]%
    \setbox\scratchbox\null
    \wd\scratchbox\@@olbreedte
    \ht\scratchbox\@@olhoogte

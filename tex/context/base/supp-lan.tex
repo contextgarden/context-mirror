@@ -328,7 +328,7 @@
 \def\dohandlemathmodebar#1%
   {\getvalue{\strippedcsname\mathmodediscretionary\string#1}}
 
-\def\discretionarycommand%
+\def\discretionarycommand
   {\relax\ifmmode
      \expandafter\dohandlemathmodebar
    \else
@@ -443,7 +443,7 @@
      {\getvalue{\strippedcsname\textmodediscretionary\string#1}}%
    \futurelet\next\dodotextmodediscretionary}
 
-\def\dododotextmodediscretionary%
+\def\dododotextmodediscretionary
   {\let\nextnextnext=\egroup
    \ifx\discretionarycommand\next
      \checkafterdiscretionary

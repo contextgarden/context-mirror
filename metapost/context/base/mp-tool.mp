@@ -260,8 +260,8 @@ vardef invcos primary x = ((acos(x))/radian) enddef ;
 vardef acosh  primary x = ln(x+(x+-+1))      enddef ; 
 vardef asinh  primary x = ln(x+(x++1))       enddef ; 
 
-vardef sinh   primary x = save xx ; xx = exp xx ; (xx-1/xx)/2 enddef ;
-vardef cosh   primary x = save xx ; xx = exp xx ; (xx+1/xx)/2 enddef ;
+vardef sinh   primary x = save xx ; xx = exp x ; (xx-1/xx)/2 enddef ;
+vardef cosh   primary x = save xx ; xx = exp x ; (xx+1/xx)/2 enddef ;
 
 %D We provide two macros for drawing stripes across a shape.
 %D The first method (with the n suffix) uses another method,

@@ -29,6 +29,7 @@
 
 \edef\utilityversion{1998.07.07} % was: 1996.03.15  % status variables
 \edef\utilityversion{1998.12.20} % was: 1998.07.07  % index attributes
+\edef\utilityversion{2003.07.19} % was: 1998.12.20  % object pages
 
 % Bepaalde commando's worden als string weggeschreven. Deze
 % zijn aan het eind van deze file gedefinieerd.
@@ -100,7 +101,7 @@
 
 \let\checkedutility\secondoftwoarguments
 
-\def\docheckedutility#1#2{\ifnum#1=\nofshipouts#2\fi}
+\def\docheckedutility#1#2{\ifnum#1=\nofshipouts#2\else\letterpercent\fi}
 
 \prependtoks 
   \let\checkedutility\docheckedutility

@@ -516,6 +516,24 @@ vardef transparent(expr n, t, c) =
   fi
 enddef ;
 
+%D This function returns true of false, dependent on transparency.
+
+vardef is_transparent(text t) = 
+  begingroup ; save transparent ; save _c_, _b_ ; 
+    vardef transparent(expr nn, tt, cc) = _b_ := true ; cc enddef ;
+    boolean _b_ ; _b_ := false ; 
+    color _c_ ; _c_ := t ; _b_ 
+  endgroup  
+enddef ;
+
+%D This function returns the not transparent color. 
+
+vardef not_transparent(text t) = 
+  begingroup ; save transparent ; 
+  vardef transparent(expr nn, tt, cc) = cc enddef ;
+  t endgroup 
+enddef ; 
+
 %D Basic position tracking:
 
 def register (expr label, width, height, offset) =

@@ -320,33 +320,34 @@
 
 \newif\ifsharePDFactions \sharePDFactionstrue
 
-\def\doPDFaction width #1 height #2 action #3%
+\def\dodoPDFaction#1#2#3#4%
   {\ifcollectreferenceactions 
-     \xdef\lastPDFaction{#3}%
+     \xdef\lastPDFaction{#4}%
    \else
      \bgroup
     % does not work well with distiller 4 
     %\ifsharePDFactions
     %  \ifcase\similarreference\relax
-    %    \xdef\lastPDFaction{<<#3>>}%
+    %    \xdef\lastPDFaction{<<#4>>}%
     %  \or
     %    \global\advance\nofPDFsimilar by 1
     %    \special
     %      {\@@insertpostscriptretain
     %         [ /_objdef {PDF::sim:\the\nofPDFsimilar} /type /dict /OBJ pdfmark
-    %         [ {PDF::sim:\the\nofPDFsimilar} <<#3>>\space /PUT pdfmark}%
+    %         [ {PDF::sim:\the\nofPDFsimilar} <<#4>>\space /PUT pdfmark}%
     %    \xdef\lastPDFaction{{PDF::sim:\the\nofPDFsimilar}}%
     %  \else
     %    % leave \lastPDFaction untouched 
     %  \fi
     %\else
-       \xdef\lastPDFaction{<<#3>>}%
+       \xdef\lastPDFaction{<<#4>>}%
     %\fi
-     \PointsToBigPoints{#1}\width
-     \PointsToBigPoints{#2}\height
+     \PointsToBigPoints{#2}\width
+     \PointsToBigPoints{#1}\height
      \special
        {\@@insertpostscriptretain
-          [ /Action \lastPDFaction\space
+          [ #1
+            /Action \lastPDFaction\space
             /Rect [0 0 \width\space \height]
             /Border [0 0 0]
             \ifhighlighthyperlinks \else /H /N \fi
@@ -355,6 +356,9 @@
           pdfmark}%
      \egroup
    \fi}
+
+\def\doPDFaction width #1 height #2 action #3%
+  {\dodoPDFaction\empty{#1}{#2}{#3}}
 
 \def\doPDFannotation width #1 height #2 data #3%
   {\bgroup
@@ -378,6 +382,10 @@
           /ANN
         pdfmark}%
    \egroup
+   \dosetobjectreference{#1}{#2}{#1::#2}}
+
+\def\doPDFactionobject class #1 name #2 width #3 height #4 action #5%
+  {\dodoPDFaction{/_objdef {#1::#2}}{#3}{#4}{#5}%
    \dosetobjectreference{#1}{#2}{#1::#2}}
 
 %D \macros 
@@ -461,6 +469,12 @@
   {\dogetobjectreference{#1}{#2}#3%
    \ifx#3\empty\else\edef#3{{#3}}\fi}
    %\edef#3{\ifx#3\empty null\else{#3}\fi}}
+
+% \def\doPDFgetobjectpage         #1#2#3{..}
+% \def\doPDFgetobjectpagereference#1#2#3{..}
+
+\def\doPDFgetpagereference#1#2%
+  {\edef#2{{page#1}}}
 
 %D Done.
 

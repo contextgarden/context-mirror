@@ -252,7 +252,7 @@
 %D sometimes occurs. 
 %D 
 %D \starttypen
-%D \dosetobjectreference {class} {identifier} {reference value}
+%D \dosetobjectreference {class} {identifier} {reference value} {page}
 %D \dogetobjectreference {class} {identifier} \csname
 %D \stoptypen
 %D 
@@ -268,30 +268,56 @@
    \global\let\checkobjectreferences\relax
    \stopnointerference}
 
+% \def\setobjectreferences
+%   {\def\objectreference##1##2##3%
+%      {\ifundefined{\r!driver##1::##2}%
+%         \setxvalue{\r!driver##1::##2}{##3}%
+%       \else
+%         \showmessage\m!references{31}{[##1 ##2=>##3]}%
+%       \fi}}
+
 \def\setobjectreferences
-  {\def\objectreference##1##2##3%
+  {\def\objectreference##1##2##3##4%
      {\ifundefined{\r!driver##1::##2}%
-        \setxvalue{\r!driver##1::##2}{##3}%
+        \setxvalue{\r!driver##1::##2}{{##3}{##4}}%
       \else
-        \showmessage\m!references{31}{[##1 ##2=>##3]}%
+        \showmessage\m!references{31}{[##1 ##2=>##3/##4]}%
       \fi}}
 
+% \def\resetobjectreferences
+%   {\let\objectreference\gobblethreearguments}
+
 \def\resetobjectreferences
-  {\let\objectreference\gobblethreearguments}
+  {\let\objectreference\gobblefourarguments}
 
 \resetobjectreferences
+
+% \def\dosetobjectreference#1#2#3%
+%   {\checkobjectreferences
+%    \blabelgroup
+%    \ifobjectreferencing 
+%      \edef\dowritereference % why not immediate ? 
+%        {\writeutilitycommand{\objectreference{#1}{#2}{#3}}}%
+%      \dowritereference
+%    \else
+%      \global\objectreferencingtrue
+%    \fi
+%    \setxvalue{\r!driver#1::#2}{#3}%
+%    \elabelgroup}
 
 \def\dosetobjectreference#1#2#3%
   {\checkobjectreferences
    \blabelgroup
-   \ifobjectreferencing 
-     \edef\dowritereference % why not immediate ? 
-       {\writeutilitycommand{\objectreference{#1}{#2}{#3}}}%
+   \ifobjectreferencing
+     \edef\dowritereference
+       {\writeutilitycommand{\objectreference{#1}{#2}{#3}{\noexpand\realfolio}}}%
      \dowritereference
    \else
      \global\objectreferencingtrue
    \fi
-   \setxvalue{\r!driver#1::#2}{#3}%
+   \ifundefined{\r!driver#1::#2}%
+     \setxvalue{\r!driver#1::#2}{{#3}{\noexpand\realfolio}}%
+   \fi
    \elabelgroup}
 
 \def\dosetdriverreference
@@ -301,17 +327,36 @@
   {\global\objectreferencingfalse}
 
 \def\defaultobjectreference#1#2{0}
+\def\defaultobjectpage     #1#2{\realfolio}
 
-\def\dogetobjectreference#1#2#3%
+% \def\dogetobjectreference#1#2#3%
+%   {\checkobjectreferences
+%    \blabelgroup 
+%    \ifundefined{\r!driver#1::#2}%
+%      \showmessage\m!references
+%        {30}{[#1 #2=>\defaultobjectreference{#1}{#2}]}%
+%      \xdef#3{\defaultobjectreference{#1}{#2}}%
+%    \else
+%      \global\@EA\let\@EA#3\csname\r!driver#1::#2\endcsname
+%    \fi
+%    \elabelgroup}
+
+\def\dodogetobjectreference#1#2#3#4#5%
   {\checkobjectreferences
-   \blabelgroup 
-   \ifundefined{\r!driver#1::#2}%
-     \showmessage\m!references{30}{[#1 #2=>\defaultobjectreference{#1}{#2}]}%
-     \xdef#3{\defaultobjectreference{#1}{#2}}%
+   \blabelgroup
+   \ifundefined{\r!driver#3::#4}%
+     \showmessage\m!references{30}{[#3 #4=>#3/#4]}%
+     \xdef#5{#2{#3}{#4}}%
    \else
-     \global\@EA\let\@EA#3\csname\r!driver#1::#2\endcsname
+     \xdef#5{\@EAEAEA#1\csname\r!driver#3::#4\endcsname}%
    \fi
    \elabelgroup}
+
+\def\dogetobjectreference
+  {\dodogetobjectreference\firstoftwoarguments\defaultobjectreference}
+
+\def\dogetobjectreferencepage
+  {\dodogetobjectreference\secondoftwoarguments\defaultobjectpage}
 
 \def\setobject     {\global\objectreferencingfalse\dosetobject1}
 \def\settightobject{\global\objectreferencingfalse\dosetobject0}

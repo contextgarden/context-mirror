@@ -134,6 +134,8 @@ my $TeXTranslation   = '' ;
 my $TextWidth        = '0pt' ;
 my $TopSpace         = '0pt' ;
 my $TypesetFigures   = 0 ;
+my $ForceFullScreen  = 0 ;
+my $ScreenSaver      = 0 ; 
 my $TypesetListing   = 0 ;
 my $TypesetModule    = 0 ;
 my $UseColor         = 0 ;
@@ -153,6 +155,10 @@ my $ModeFile         = "" ;
 my $GlobalFile       = 0 ; 
 my $AllPatterns      = 0 ; 
 my $ForceXML         = 0 ; 
+
+# makempy : 
+
+my $MakeMpy          = '' ; 
 
 &GetOptions
   ( "arrange"       => \$Arrange          ,
@@ -179,6 +185,8 @@ my $ForceXML         = 0 ;
     "mode=s"        => \$Mode             ,
     "module"        => \$TypesetModule    ,
     "figures=s"     => \$TypesetFigures   ,
+    "fullscreen"    => \$ForceFullScreen  , 
+    "screensaver"   => \$ScreenSaver      , 
     "listing"       => \$TypesetListing   ,
     "mptex"         => \$DoMPTeX          ,
     "mpxtex"        => \$DoMPXTeX         ,
@@ -228,6 +236,7 @@ my $ForceXML         = 0 ;
     "setfile=s"     => \$SetFile          ,
     "purge"         => \$Purge            ,
     #### yet undocumented ################# 
+    "makempy=s"     => \$MakeMpy          , 
     "allpatterns"   => \$AllPatterns      ,
     "separation=s"  => \$Separation       , 
     "textree=s"     => \$TeXTree          , 
@@ -247,6 +256,11 @@ $SIG{INT} = "IGNORE" ;
 
 if ($ARGV[0] =~ /\.mpx$/io) # catch -tex=.... bug in mpost
   { $TeXProgram = '' ; $DoMPXTeX = 1 ; $NoMPMode = 1 }
+
+if ($ScreenSaver)
+  { $ForceFullScreen = 1 ; 
+    $TypesetFigures = 'c' ;
+    $Purge = 1 } 
 
 if ($DoMPTeX||$DoMPXTeX)
   { $RunOnce = 1 ;
@@ -277,7 +291,8 @@ print "\n$Program\n\n" ;
 if ($Verbose) 
   { print "          current path : " . cwd . "\n" }
 
-my $pathslash = '/' ; if ($0 =~ /\\/) { $pathslash = "\\" }
+## $pathslash = '/' ; if ($0 =~ /\\/) { $pathslash = "\\" }
+my $pathslash = '/' ; if ($FindBin::Bin =~ /\\/) { $pathslash = "\\" }
 my $cur_path  = ".$pathslash" ;
 
 #  $own_path  = $0 ; $own_path =~ s/texexec(\.pl|\.bat|)//io ;
@@ -288,16 +303,17 @@ my $cur_path  = ".$pathslash" ;
 
 my $own_path  = "$FindBin::Bin/" ;
 my $own_type  = $0 ; 
+my $own_type  = $FindBin::Script ; 
 my $own_quote = ($own_path =~ m/^[^\"].* / ? "\"" : "") ; 
 my $own_stub  = "" ; 
+
+if ($own_type =~ /(\.pl|perl)/oi)            
+  { $own_stub = "perl " } 
 
 if ($own_type =~ /(\.(pl|bin|exe))$/io) 
   { $own_type = $1 } 
 else
   { $own_type = '' } 
-
-if ($own_type =~ /pl/oi)            
-  { $own_stub = "perl " } 
 
 sub checked_path
   { my $path = shift  ;
@@ -1371,6 +1387,7 @@ sub RunTeX
     else
       { $Problems = system ("$cmd") }
     my $StopTime = time - $StartTime ;
+    print "\n           return code : $Problems" ;
     print "\n              run time : $StopTime seconds\n" ;
     return $Problems }
 
@@ -1385,9 +1402,8 @@ sub PushResult
         if (-e "$Result.tuo")
           { unlink "$File.tuo" ;
             rename "$Result.tuo", "$File.tuo" } }
-if ($Optimize)
-  { unlink "$File.tuo" }
-}
+    if ($Optimize)
+      { unlink "$File.tuo" } }
 
 sub PopResult
   { my $File = shift ; $File =~ s/\..*$//o ; $Result =~ s/\..*$//o ;
@@ -1428,7 +1444,8 @@ sub RunTeXutil
 sub PurgeFiles
   { my $JobName = shift ;
     print "\n         purging files : $JobName\n" ;
-    RunPerlScript($TeXUtil, "--purge $JobName" ) } 
+    RunPerlScript($TeXUtil, "--purge $JobName" ) ; 
+    unlink($Result . '.log') if (-f $Result . '.log') } 
 
 sub RunTeXMP
   { my $JobName = shift ;
@@ -1694,12 +1711,18 @@ sub RunFigures
     print FIG "  [topspace=1.5cm,backspace=1.5cm,\n" ;
     print FIG "   header=1.5cm,footer=0pt,\n" ;
     print FIG "   width=middle,height=middle]\n" ;
+    if ($ForceFullScreen) 
+      { print FIG "\\setupinteraction\n" ;
+        print FIG "  [state=start]\n" ;
+        print FIG "\\setupinteractionscreen\n" ;
+        print FIG "  [option=max]\n" }
     print FIG "\\starttext\n" ;
     print FIG "\\showexternalfigures[alternative=$TypesetFigures,offset=$PaperOffset]\n" ;
     print FIG "\\stoptext\n" ;
     close(FIG) ;
     $ConTeXtInterface = "en" ;
-    RunConTeXtFile($FiguresFile, "tex") }
+    RunConTeXtFile($FiguresFile, "tex") ; 
+    unlink ('texutil.tuf') if (-f 'texutil.tuf') }
 
 # sub RunGetXMLFigures
 #   { return if (($Label eq "") or ($Base  eq "") ;
@@ -2112,6 +2135,8 @@ my $mpochecksum = 0 ;
 
 sub checkMPgraphics # also see makempy
   { my $MpName = shift ;
+    if ($MakeMpy != '')  
+      { $MpName .= " --$MakeMpy " } # extra switches
     if ($MpyForce)
       { $MpName .= " --force " } # dirty
     else
@@ -2390,6 +2415,9 @@ figures typeset figure directory
 =b just graphics
 =c one (cropped) per page
 paperoffset room left at paper border
+fullscreen force full screen mode (pdf) 
+-----------
+screensaver turn graphic file into a (pdf) full screen file 
 -----------
 final add a final run without skipping
 -----------

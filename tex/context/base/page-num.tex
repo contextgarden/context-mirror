@@ -292,7 +292,7 @@
 \def\dostelpaginanummerin[#1]%
   {\getparameters[\??pn][\c!nummer=,#1]%
    \global\let\@@pnstatus\@@pnstatus
-   \doifsomething{\@@pnnummer}
+   \doifsomething\@@pnnummer
      {\setnummer[\s!page]{\@@pnnummer}%
       \setuserpageno{\ruwenummer[\s!page]}}%
    % this makes starting at an even page possible
@@ -541,7 +541,7 @@
          {\ifnum\countervalue{\??se##1}>\zerocount
             \getvalue{##1\c!nummer}\@@nmnummerscheider
           \fi}%
-       \doifsomething{\@@nmtekst}
+       \doifsomething\@@nmtekst
          {\@@nmtekst\@@nmnummerscheider}%
        \donexttracklevel{##1}}%
     \donexttrackcommando{\firstsection}}

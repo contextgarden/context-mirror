@@ -17,6 +17,9 @@
 
 \unprotect
 
+% WATCH OUT: don't change this model else trialtypesetting 
+% compatibility problems 
+
 % watch out, cells expand pretty late on a per row basis
 
 % |p2|p3| 2:3
@@ -945,10 +948,10 @@
                \ifnum\tabulatemaxplines<\plustwo
                  \dotabulatenobreak
                \else
-\allowbreak % needed with pbreak prevention
+                 \allowbreak % needed with pbreak prevention
                \fi
              \else
-\allowbreak % needed with pbreak prevention
+               \allowbreak % needed with pbreak prevention
              \fi
            \fi
          \fi
@@ -991,11 +994,11 @@
    \def\eskip
      {\par\egroup
       \global\let\tabulatehook\dotabulatehook}%
-\def\xbskip
-  {\hbox\bgroup\vbox\bgroup
-     \global\let\tabulatehook\notabulatehook}%
-\def\xeskip
-  {\par\egroup\egroup
+   \def\xbskip
+     {\hbox\bgroup\vbox\bgroup
+        \global\let\tabulatehook\notabulatehook}%
+   \def\xeskip
+     {\par\egroup\egroup
    \global\let\tabulatehook\dotabulatehook}%
    \let|\savedbar
    \global\let\tabulatehook\dotabulatehook
@@ -1022,8 +1025,8 @@
        \divide\tabulatewidth \nofautotabulate\relax
      \fi
    \fi
-\def\xbskip{\bskip}%
-\def\xeskip{\eskip}%
+   \def\xbskip{\bskip}%
+   \def\xeskip{\eskip}%
    \ifsplittabulate
      \splittopskip\strutht
      \global\let\flushtabulatedindeed\empty
@@ -1121,9 +1124,10 @@
            \verticalstrut
            \vskip-\struttotal}%
       \fi}}%
+   \chardef\tabulatepass\plustwo
+   %
    \startframedcontent[\getvalue{\??tt\currenttabulate\c!kader}]%
    %
-   \chardef\tabulatepass\plustwo
    \@EA\halign\@EA{\the\!!toksa\crcr\fulltabulatecontent\crcr}%
    \prevdepth\strutdp % nog eens beter, temporary hack
    \doifvalue{\??tt\currenttabulate\c!afstand}\v!grid

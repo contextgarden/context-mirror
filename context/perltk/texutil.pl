@@ -124,6 +124,7 @@ my $dosish = ($Config{'osname'} =~ /^(ms)?dos|^os\/2|^(ms|cyg)win/i) ;
    "purge"          => \$PurgeFiles,
    "purgeall"       => \$PurgeAllFiles,
    "analyze"        => \$AnalyzeFile,
+   "filter"         => \$FilterPages,
    "help"           => \$ProcessHelp,
    "silent"         => \$ProcessSilent,
    "verbose"        => \$ProcessVerbose,
@@ -2708,6 +2709,9 @@ sub PurgeFiles # no my in foreach
     foreach $file (@dontaskprefixes)
       { if (-e $file)
           { RemoveContextFile($file) } }
+    foreach $file (@dontasksuffixes)
+      { if (-e $file)
+          { RemoveContextFile($file) } }
     foreach $suffix (@dontasksuffixes)
       { foreach (@files)
           { if (/$suffix$/i)
@@ -2769,6 +2773,22 @@ sub AnalyzeFile
     print "                 links : $Link ($Named named / $Script scripts / $Cross files)\n" ;
     print "               widgets : $Widget\n" }
 
+sub FilterPages # temp feature / no reporting 
+  { my $filename = $ARGV[0] ;
+    return unless "$filename.pdf" || -f "$filename.pdf" ; 
+    $old = '' ; $num = 0 ; 
+    if (open(PDF,"<$filename.pdf") && open(TUO,">>$filename.tuo")) 
+      { binmode PDF ; 
+        while (<PDF>) 
+          { chomp ; 
+            if (($_ eq '/Type /Page') && ($old =~ /^(\d+)\s+0\s+obj/o)) 
+              { ++$n ; $p = $1 ; 
+                print TUO "\\objectreference{PDFP}{$n}{$p}{$n}\n" }
+            else
+              { $old = $_ } } 
+       close(PDF) ; 
+       close(TUO) } }  
+
 #D We're done! All this actions and options are organized in
 #D one large conditional:
 
@@ -2786,6 +2806,7 @@ elsif  ($ProcessLogFile   ) { HandleLogFile    }
 elsif  ($PurgeFiles       ) { PurgeFiles       }
 elsif  ($PurgeAllFiles    ) { PurgeFiles       }
 elsif  ($AnalyzeFile      ) { AnalyzeFile      }
+elsif  ($FilterPages      ) { FilterPages      }
 elsif  ($ProcessHelp      ) { ShowHelpInfo     } # redundant
 else                        { ShowHelpInfo     }
 

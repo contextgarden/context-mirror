@@ -31,7 +31,7 @@
 
 % todo: mp frames 
 
-\setvariables[magazine][number=123]
+\setvariables[magazine][number=0]
 \setvariables[magazine][author=]
 \setvariables[magazine][title={Zero Issue}]
 \setvariables[magazine][date=\currentdate]
@@ -207,7 +207,9 @@
    \dp\scratchbox\zeropoint
    \MainColor
    \definedfont[Regular sa 2]%
-   \doifmode{atpragma}{\#\getvariable{magazine}{number}}%
+   \doifsomething{\getvariable{magazine}{number}}
+     {\doifnot{\getvariable{magazine}{number}}{0}
+        {\#\getvariable{magazine}{number}}}%
    \quad
    \currentdate
    \quad

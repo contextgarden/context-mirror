@@ -333,8 +333,12 @@ vardef isfmtseparator primary c = %%% added by HH %%%
   ((c <> fmt_separator) and (c <> "%")) 
 enddef ; 
 
+def initialize_form_numbers = 
+  initialize_numbers ; % in context: do_initialize_numbers ;
+enddef ;
+
 vardef dofmt_@#(expr f, x) = %%% adapted by HH %%%
-  initialize_numbers ; 
+  initialize_form_numbers ; 
   if f = "" : 
     if fmt_metapost : nullpicture else : "" fi 
   else :

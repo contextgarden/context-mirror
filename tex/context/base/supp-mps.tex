@@ -203,10 +203,18 @@
 
 \newtoks \MPinitializations
 
+% buggy 
+%
+% \long\def\startMPinclusions#1\stopMPinclusions
+%   {\long\def\theMPinclusions
+%      {% \expanded ! 
+%       \@EA\expanded\@EA{\@EA\writeMPgraphic\@EA{\the\MPinitializations;}}%
+%       \writeMPgraphic{#1}}}
+
 \long\def\startMPinclusions#1\stopMPinclusions
   {\long\def\theMPinclusions
      {% \expanded ! 
-      \@EA\expanded\@EA{\@EA\writeMPgraphic\@EA{\the\MPinitializations;}}%
+%      \@EA\expanded\@EA{\@EA\writeMPgraphic\@EA{\the\MPinitializations;}}%
       \writeMPgraphic{#1}}}
 
 \long\def\MPinclusions#1%
@@ -459,6 +467,34 @@
 \fi 
 
 \endTEX
+% buggy (at least in collected graphics, lazy expansion) 
+%
+% \def\startwritingMPgraphic
+%   {\blabelgroup
+%    \global\advance\nofMPgraphics 1 
+%    \ifMPrun \else
+%      \allocateMPslot\currentMPgraphic
+%    \fi
+%    \enableincludeMPgraphics
+%    \xdef\MPgraphic{\the\currentMPgraphic}%
+%    \the\everyMPgraphic
+%    \ifrunMPgraphics
+%      \openMPgraphicfile1{runtime}%
+%      % no reset here !
+%      \theMPinclusions 
+%    \else
+%      \openMPgraphicfile0{collected}%  
+%       % reset here ! global added (due to adding \blabelgroup)
+%      \theMPinclusions 
+%      \global\let\theMPinclusions\relax 
+%    \fi
+%    \flushMPTEXgraphic
+%    \ifMPrun \else
+%      \immediate\write\MPwrite{let mprunend = end ;}%
+%      \immediate\write\MPwrite{beginfig(\the\currentMPgraphic);}%
+%    \fi
+%    \globallet\flushMPgraphics\closeMPgraphicfiles % \dodostopwritingMPgraphic
+%    \globallet\stopwritingMPgraphic=\dostopwritingMPgraphic}
 
 \def\startwritingMPgraphic
   {\blabelgroup
@@ -473,6 +509,7 @@
      \openMPgraphicfile1{runtime}%
      % no reset here !
      \theMPinclusions 
+\@EA\expanded\@EA{\@EA\writeMPgraphic\@EA{\the\MPinitializations;}}%
    \else
      \openMPgraphicfile0{collected}%  
       % reset here ! global added (due to adding \blabelgroup)
@@ -483,6 +520,7 @@
    \ifMPrun \else
      \immediate\write\MPwrite{let mprunend = end ;}%
      \immediate\write\MPwrite{beginfig(\the\currentMPgraphic);}%
+\@EA\expanded\@EA{\@EA\writeMPgraphic\@EA{\the\MPinitializations;}}%
    \fi
    \globallet\flushMPgraphics\closeMPgraphicfiles % \dodostopwritingMPgraphic
    \globallet\stopwritingMPgraphic=\dostopwritingMPgraphic}
@@ -497,7 +535,9 @@
    %   \@EA\newwrite\csname\@@MPG\@@MPG\MPgraphicfile\endcsname}%
    %  {\ifcase#1\donefalse\else\donetrue\fi}%
    \@EA\ifx\csname\@@MPG\@@MPG\MPgraphicfile\endcsname\relax
-     \donetrue \@EA\newwrite\csname\@@MPG\@@MPG\MPgraphicfile\endcsname 
+    %\donetrue \@EA\newwrite\csname\@@MPG\@@MPG\MPgraphicfile\endcsname 
+    % for the sake of plain usage 
+     \donetrue \@EA\@EA\csname newwrite\endcsname\csname\@@MPG\@@MPG\MPgraphicfile\endcsname 
      \doglobal\addtocommalist\MPgraphicfile\MPgraphicfiles
    \else
      \ifcase#1\relax\donefalse\else\donetrue\fi

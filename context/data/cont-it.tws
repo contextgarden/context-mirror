@@ -2362,6 +2362,7 @@ var:comandotesto:*\comando#1::
 var:prefisso:+,-,*testo::
 var:mettitesta:si,no,vuoto::
 var:incrementanumero:si,no,elenco,*file::
+var:resetnumber:si,no::
 var:file:*nome::
 var:espansione:si,comando,no::
 var:testomargine:si,no::

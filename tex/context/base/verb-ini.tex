@@ -366,12 +366,14 @@
   {\global\let\savedverbatimline\empty
    \global\chardef\verbatimstatus\ifskipfirstverbatimline0 \else1 \fi}
 
+\let\donextemptyverbatimline\relax
+
 \def\presetemptyverbatimline
   {\ifcase\verbatimstatus
      \global\chardef\verbatimstatus1
    \or
    \or
-     % \ifoptimizeverbatim\else\doemptyverbatimline\fi
+     \donextemptyverbatimline
    \or
      \doflushverbatimline
      \global\let\savedverbatimline\empty
@@ -821,7 +823,7 @@
    \global\linepartrue}
 
 \def\obeyemptylines
-  {\def\doemptyverbatimline{\doverbatimline}}
+  {\let\donextemptyverbatimline\doemptyverbatimline}
 
 %D \TEX\ does not offer \type{\everyline}, which is a direct
 %D result of its advanced multi||pass paragraph typesetting

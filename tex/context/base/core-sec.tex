@@ -331,13 +331,13 @@
 \def\@@setsectionnumber#1#2%
   {\letgvalueempty{\??se#1\s!start}% signal i.p.v. boolean
    \setcounter{\??se#1}{#2}%
-   \resetsectioncounters{#1}%
+   \ifconditional\@@resetsubheadnumbers\resetsectioncounters{#1}\fi
    \checkpagecounter}
 
 \def\@@nextsectionnumber#1%
   {\letgvalueempty{\??se#1\s!start}% signal i.p.v. boolean
    \pluscounter{\??se#1}%
-   \resetsectioncounters{#1}%
+   \ifconditional\@@resetsubheadnumbers\resetsectioncounters{#1}\fi
    \checkpagecounter}
 
 \def\@@sectionvalue#1%       % nog niet overal doorgevoerd
@@ -993,11 +993,17 @@
 
 \def\localkopsetup{\localheadsetup} % kan tzt weg 
 
+% todo: make them conditionals: 
+
 \newif\ifplaatskop
 \newif\iflegekop
 \newif\ifnaarlijst
 \newif\ifverhoognummer
 \newif\ifkopnummer
+
+% new 
+
+\newconditional\@@resetsubheadnumbers
 
 \def\setsectieenkoppeling#1%
   {\edef\@@koppeling{\getvalue{\??ko#1\c!koppeling}}%
@@ -1061,9 +1067,10 @@
    \setbox0\vbox
      {\doutilities{#1}{#2}{#1}\relax\relax}%
    \endgroup
-   \doifnumberelse{\foundsectionnumber}
-     {\doif{\foundsectionnumber}{0}{\xdef\foundsectionnumber{1}}}
-     {\xdef\foundsectionnumber{1}}% an appendix or so
+   \doifnumberelse\foundsectionnumber
+     {\doif\foundsectionnumber\!!zerocount
+        {\globallet\foundsectionnumber\!!plusone}}
+     {\globallet\foundsectionnumber\!!plusone}% an appendix or so
    \stelkopnummerin[#1][\foundsectionnumber]%
    \stelkopnummerin[#1][-1]}
 
@@ -1222,6 +1229,9 @@
      [  \v!ja=>\plaatskoptrue \legekopfalse,
       \v!leeg=>\plaatskoptrue \legekoptrue,
        \v!nee=>\plaatskopfalse\legekoptrue]%
+   \doifelsevalue{\??ko#1\c!resetnummer}\v!nee
+     {\setfalse\@@resetsubheadnumbers}%
+     {\settrue \@@resetsubheadnumbers}%
    \naarlijstfalse
    \processaction
      [\getvalue{\??ko#1\c!verhoognummer}]
@@ -1745,7 +1755,7 @@
      #1{#2}%
    \fi}
 
-\def\dostelkopnummerin[#1][#2#3]%
+\def\dostelkopnummerin[#1][#2#3]% todo: = (don't reset) 
   {\bgroup
    \setsectieenkoppeling{#1}%
    \doifinstringelse{#2}{+-}
@@ -1903,6 +1913,7 @@
          \c!kleur=,
          \c!doorgaan=\v!ja,
          \c!plaatskop=\v!ja,
+         \c!resetnummer=\v!ja,
          \c!verhoognummer=\v!ja,
          \c!variant=\@@kovariant,
          \c!commando=\@@plaatskop,
@@ -1921,7 +1932,7 @@
            {\copyparameters
               [\??ko#1][\??ko\getvalue{\??ko#1\c!default}]
               [\c!voor,\c!na,\c!commando,\c!file,\c!pagina,\c!doorgaan,
-               \c!hoofd,\c!tekst,\c!voet,\c!scheider,
+               \c!hoofd,\c!tekst,\c!voet,\c!scheider,\c!resetnummer,
                \c!nummer,\c!eigennummer,\c!plaatskop,\c!verhoognummer,
                \c!letter,\c!kleur,\c!afstand,\c!variant,\c!springvolgendein,
                % new per 20/03/3002 (o-pbu-l) / was too confusing 
@@ -1947,7 +1958,7 @@
            [\c!niveau,\c!sectie,\c!koppeling,\c!prefix,
             \c!voor,\c!na,\c!commando,\c!file,\c!pagina,\c!doorgaan,
             \c!scheider,
-            \c!hoofd,\c!tekst,\c!voet,
+            \c!hoofd,\c!tekst,\c!voet,\c!resetnummer,
             \c!nummer,\c!eigennummer,\c!plaatskop,\c!verhoognummer,
             \c!letter,\c!kleur,\c!afstand,\c!variant,\c!springvolgendein,
             % new per 20/03/3002 (o-pbu-l) / was too confusing 

@@ -133,7 +133,8 @@
   {\ifsomebackgroundfound#1\ifdim#3>\zeropoint\ifdim#4>\zeropoint
      \setbox#2\vbox\localframed
        [\??ma#1]
-       [\c!strut=\v!nee,\c!offset=\v!overlay,
+       [\c!component=#1,
+        \c!strut=\v!nee,\c!offset=\v!overlay,
         \c!breedte=#3,\c!hoogte=#4]
        {\dp#2\zeropoint\box#2}%
    \fi\fi\fi}
@@ -175,8 +176,7 @@
      \setbox#1\vbox
        {\offinterlineskip
         \doifmarginswapelse
-          {\copy\leftbackground}
-          {\copy\rightbackground}
+          {\copy\leftbackground}{\copy\rightbackground}%
         \box#1}%
    \fi}
 
@@ -346,7 +346,8 @@
        \ifdim#1>\zeropoint\relax
          \localframed
            [\??ma#3#4]
-           [\c!breedte=#1,\c!hoogte=#2,\c!offset=\v!overlay]
+           [\c!component=#3-#4,
+            \c!breedte=#1,\c!hoogte=#2,\c!offset=\v!overlay]
            {\getvalue{\??ma#3#4\c!commando}}% {\hsize=#1\vsize=#2....}
        \else
          \hskip#1%
@@ -603,7 +604,8 @@
    \dodoglobal\setbox#1\hbox
      {\localframed
         [\??ma\v!lokaal]
-        [\c!kader=\v!uit,
+        [\c!component=local,
+         \c!kader=\v!uit,
          \c!offset=\v!overlay,
          \c!achtergrond=\localbackground]%
         {\registerMPlocaltextarea{\box#1}}}%

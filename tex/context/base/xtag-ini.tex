@@ -594,7 +594,7 @@
    \fi}
 
 \long\def\traceXMLelement
-  {\edef\originalXMLfullidentifier{\someXMLelement\currentXMLelement}%
+  {\edef\originalXMLfullidentifier{\someXMLelementID\currentXMLelement}%
    \cleanupXMLarguments\writestatus{xml-element}{\@@traceXMLelement}}
 
 %D We split off the namespace part, construct the
@@ -683,7 +683,7 @@
      \ifcsname\@@XMLelement:\currentXMLfullidentifier\endcsname
        \currentXMLfullidentifier
      \else
-       \s!default % \defaultXMLelement
+       \defaultXMLelementID % was \s!default 
      \fi
    \endcsname}
 
@@ -694,7 +694,7 @@
      \else\ifcsname\@@XMLelement:\currentXMLidentifier\endcsname
        \currentXMLidentifier
      \else
-       \s!default % \defaultXMLelement
+       \defaultXMLelementID % was \s!default 
      \fi\fi
    \endcsname}
 
@@ -715,7 +715,7 @@
    \else\ifcsname\normal@@XMLelement:\currentXMLidentifier\endcsname
      \normal@@XMLelement:\currentXMLidentifier
    \else
-     \@@XMLelement:\s!default % \defaultXMLelement
+     \normal@@XMLelement:\defaultXMLelementID % was \@@XMLelement:\s!default
    \fi\fi}
 
 \def\setXMLfallbackmode#1%
@@ -780,13 +780,13 @@
 %D Later we will implement the error handler, here we handle
 %D the default case. 
 
-\def\someXMLelement#1%
+\def\someXMLelementID#1%
   {\ifnum\kindofXMLelement=\endXMLtag  /\fi
    #1%
    \ifnum\kindofXMLelement=\emptyXMLtag/\fi}
 
-\def\defaultXMLelement
-  {\someXMLelement\s!default}
+\def\defaultXMLelementID
+  {\someXMLelementID\s!default}
 
 %D It is possible to keep track of nesting automatically, 
 %D but this would kind of prohibit things like \type 
@@ -1546,6 +1546,11 @@
    \long\setvalue{\@@XMLelement:#1/}{\long\setvalue{\@@XMLdata:#1}{}}%
    \long\setvalue{\@@XMLelement:#1}{\redoXMLsave{#1}}}
 
+\long\gdef\dododefineXMLsavecontent#1#2%
+  {\long\setvalue{\@@XMLdata:#1}{#2}%
+   \long\setvalue{\@@XMLelement:#1/}{}%
+   \long\setvalue{\@@XMLelement:#1}{\redoXMLsave{#1}}}
+
 \gdef\redoXMLsave#1%
   {\long\@EA\def\@EA\next\@EA##\@EA1\@EA<\@EA/\currentXMLelement>%
      {\long\@EA\def\csname\@@XMLdata:#1\endcsname{##1}}%
@@ -1554,6 +1559,11 @@
 \long\gdef\dododefineXMLgsave#1%
   {\letgvalue{\@@XMLdata:#1}\longempty
    \long\setvalue{\@@XMLelement:#1/}{\long\setgvalue{\@@XMLdata:#1}{}}%
+   \long\setvalue{\@@XMLelement:#1}{\redoXMLgsave{#1}}}
+
+\long\gdef\dododefineXMLgsavecontent#1#2%
+  {\long\setvalue{\@@XMLdata:#1}{#2}%
+   \long\setvalue{\@@XMLelement:#1/}{}%
    \long\setvalue{\@@XMLelement:#1}{\redoXMLgsave{#1}}}
 
 \gdef\redoXMLgsave#1%
@@ -1614,7 +1624,9 @@
 \def\defineXMLpickup          {\dotripleempty\dodefineXMLpickup}
 \def\defineXMLenvironment     {\dotripleempty\dodefineXMLenvironment}
 \def\defineXMLsave            {\dotripleempty\dodefineXMLsave}
+\def\defineXMLsavecontent     {\dotripleempty\dodefineXMLsavecontent}
 \def\defineXMLgsave           {\dotripleempty\dodefineXMLgsave}
+\def\defineXMLgsavecontent    {\dotripleempty\dodefineXMLgsavecontent}
 \def\defineXMLenvironmentsave {\dotripleempty\dodefineXMLenvironmentsave}
 \def\defineXMLenvironmentgsave{\dotripleempty\dodefineXMLenvironmentgsave}
 \def\defineXMLprocess         {\dotripleempty\dodefineXMLprocess}
@@ -1654,8 +1666,14 @@
 \long\def\dodefineXMLsave[#1][#2][#3]%
   {\defineXMLmethod\dododefineXMLsave{#1}{#2}{#3}{}{}}
 
+\long\def\dodefineXMLsavecontent[#1][#2][#3]#4%
+  {\defineXMLmethod\dododefineXMLsavecontent{#1}{#2}{#3}{#4}{}}
+
 \long\def\dodefineXMLgsave[#1][#2][#3]%
   {\defineXMLmethod\dododefineXMLgsave{#1}{#2}{#3}{}{}}
+
+\long\def\dodefineXMLgsavecontent[#1][#2][#3]#4%
+  {\defineXMLmethod\dododefineXMLgsavecontent{#1}{#2}{#3}{#4}{}}
 
 \long\def\dodefineXMLenvironmentsave[#1][#2][#3]#4#5%
   {\defineXMLmethod\dododefineXMLenvironmentsave{#1}{#2}{#3}{#4}{#5}}

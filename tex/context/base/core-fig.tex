@@ -871,6 +871,7 @@
    \let\@@efpreset    \v!nee
    \ifx\@@efbreedte\empty
      \def\@@efbreedte{8\lineheight}% 4cm 
+   \fi
    \ifx\@@efhoogte\empty
      \def\@@efhoogte{6\lineheight}%  3cm 
    \fi}
@@ -1326,7 +1327,6 @@
    \popmacro\figurelabel
    \popmacro\figureheight
    \popmacro\figurewidth}
-
 
 \def\externalfigurereplacement#1#2#3%
   {\setupcolors
@@ -2081,7 +2081,9 @@
   {\iflocation
      \doifdefined{\??sd:#1}{\doifvaluesomething{\??sd:#1}
        {\doinsertsoundtrack{\getvalue{\??sd:#1}}{#1}\@@sdoptie
-        \letgvalueempty{\??sd:#1}}}%
+        % brr, \..empty not really needed and maybe even wrong; 
+        % also, not here but in driver 
+        \letgvalueempty{\??sd:#1}}}% 
    \fi}
 
 \setexecutecommandcheck {startsound} \checksoundtrack

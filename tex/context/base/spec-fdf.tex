@@ -11,6 +11,10 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
+%D For the moment we keep this downward compatible hack: 
+
+%% see end of file 
+
 %D We need to check if we can use \type {\driverreferenced} 
 %D object in more places.  
 
@@ -225,8 +229,9 @@
 %D \doPDFpagesattribute     #1
 %D \doPDFbookmark           level #1 n #2 text #3 page #4 open #5
 %D
-%D \defaultobjectreference  #1#2   % class name
-%D \doPDFgetobjectreference #1#2#3 % class name \PDFobjectreference
+%D \defaultobjectreference      #1#2   % class name
+%D \doPDFgetobjectreference     #1#2#3 % class name \PDFobjectreference
+%D \doPDFgetobjectpagereference #1#2#3 % class name \PDFobjectreference
 %D \stoptypen
 %D
 %D The keywords reflect their use. For the moment we stick to
@@ -234,6 +239,26 @@
 %D we're doing.
 
 \startspecials[fdf]
+
+%D Common:
+
+% \def\doPDFgetobjectreference#1#2#3%
+%  {\def#3{..}}
+
+\def\doPDFgetobjectpage#1#2#3%
+  {\dogetobjectreferencepage{#1}{#2}#3%
+   \ifx#3\empty\def#3{1}\fi}
+
+\def\doPDFgetobjectpagereference#1#2#3%
+  {\dogetobjectreferencepage{#1}{#2}#3%
+   \ifx#3\empty
+     \doPDFgetpagereference\realfolio#3%
+   \else
+     \doPDFgetpagereference#3#3% we assume that #3 gets expanded
+   \fi}
+
+% \def\doPDFgetpagereference#1#2%%%%%%%%%%%%%%%
+%   {\def#2{...}}
 
 %D Due to the fact that \PDFTEX\ has a different concept of
 %D page attributes, we need:
@@ -614,7 +639,7 @@
 \def\doPDFstartgotoJS#1#2#3%
   {\bgroup
    \doPSsanitizeJScode#3\to\sanitizedJScode
-   \edef\action%
+   \edef\action
      {/S /JavaScript /JS (\sanitizedJScode)}%
    \ifsecondaryreference
      \savesecondaryPDFreference\action
@@ -701,6 +726,9 @@
 \def\PDFexecutefitwidth    {/Named /N /FitWidth}
 \def\PDFexecutefitheight   {/Named /N /FitHeight}
 
+\let\PDFobjectclass\empty
+\let\PDFobjectname \empty
+
 \def\doPDFstartexecutecommand#1#2#3#4%
   {\doifdefined{PDFexecute#3}
      {\bgroup
@@ -713,7 +741,16 @@
         \savesecondaryPDFreference\action
       \else
         \getsecondaryPDFreferences
-        \doPDFaction
+%        \ifx\PDFobjectclass\empty
+%          \let\next\doPDFaction
+%        \else
+%          \edef\next{\doPDFactionobject
+%            class {\PDFobjectclass} name {\PDFobjectname} }%
+%          \globalletempty\PDFobjectclass
+%          \globalletempty\PDFobjectname 
+%        \fi 
+%        \next 
+\doPDFaction
           width #1 height #2
           action {\action \secondaryPDFreferences}%
       \fi
@@ -877,8 +914,10 @@
 
 \def\doPDFattachfile#1#2#3#4#5#6% 
   {\bgroup % title width height color symbol file
-   \presetPDFsymbolappearance{#4}{#5}% sets width/height 
    \edef\PDFfile{#6}\convertcommand\PDFfile\to\PDFfile
+   % beware: the symbol may (indirectly) use the file 
+   % reference when typesetting the object number;  
+   \presetPDFsymbolappearance{#4}{#5}% sets width/height 
    \setbox\scratchbox\vbox to #3
      {\vfill
       \doifnotflagged{a:\PDFfile}%
@@ -901,7 +940,27 @@
 
 \definespecial \doattachfile {\doPDFattachfile}
 
-% todo 
+% requested by Jens-Uwe Morawski: permits usage of pdftosrc
+% in viewers that don't support attachments:
+% 
+% \definesymbol
+%   [ObjectNumber]
+% % [object number {\PDFattachmentnumber[xx]}] % named
+%   [object number \PDFattachmentnumber]       % current
+% 
+% \useattachment[test][xx][test.tex]
+% \setupattachments[symbol=ObjectNumber]
+% \attachment[test]
+
+\def\PDFattachmentnumber
+  {\dosingleargument\doPDFattachmentnumber}
+
+\def\doPDFattachmentnumber[#1]%
+  {\iffirstargument
+     \doPDFfilestreamidentifier{#1}%
+   \else
+     \doPDFfilestreamidentifier\PDFfile
+   \fi}
 
 %D \macros
 %D   {doPDFinsertbookmark}
@@ -1822,7 +1881,7 @@
 %D In the goto specials we took care of secondary references.
 %D Here we define the macros used.
 
-\def\doPDFresetgotowhereever%
+\def\doPDFresetgotowhereever
   {\global\let\secondaryPDFreferences\empty}
 
 \doPDFresetgotowhereever % just to be sure
@@ -2319,6 +2378,9 @@
 \def\doPDFstartspotcolormode#1#2%
   {\PDFcode{/#1 CS #2 SC /#1 cs #2 sc}}
 
+\def\doPDFstartnonecolormode
+  {\PDFcode{/None CS 1 SC /None cs 1 sc}}
+
 \def\doPDFstopcolormode
   {\PDFcode{0 g\ifPDFstrokecolor\space0 G\fi}}
 
@@ -2331,6 +2393,10 @@
 
 \def\doPDFregistersomespotcolor#1#2#3#4%
   {\writestatus\m!systems{missing spot color definition}\wait}
+
+\def\doPDFregisternonecolor % internal command 
+  {\doPDFregistergrayspotcolor{None}{1}%
+   \globallet\doPDFregisternonecolor\relax}
 
 \def\doPDFregisterrgbspotcolor#1#2#3#4%
   {\doPDFregistersomespotcolor
@@ -2363,7 +2429,7 @@
       270=>\PDFcode{ 0 -1  1  0 0 0 cm},
       360=>\PDFcode{ 1  0  0  1 0 0 cm}]}
 
-\def\doPDFstoprotation%
+\def\doPDFstoprotation
   {\PDFcode{Q}}
 
 %D \macros
@@ -2435,7 +2501,20 @@
      \expandafter\gobbletwoarguments
    \fi}
 
-\let\doPDFstoptransparency\relax
+% \let\doPDFstoptransparency\relax
+% 
+% This is tricky: because a text stream is handled before 
+% the page body is built, we can run into stops that will 
+% match an outer start; however, the stop is needed in case 
+% of a text color: [text color text] [other color text] on a 
+% first page combined with color splitting will go wrong if 
+% we stick to the relaxing method.
+
+\def\doPDFstoptransparency
+  {\ifPDFtransparencysupported
+     \initializetransparency
+     \dodoPDFstoptransparency
+   \fi}
 
 %D These use:
 
@@ -2453,8 +2532,120 @@
 \definespecial\dostartgraphicgroup{\PDFcode{q}}
 \definespecial\dostopgraphicgroup {\PDFcode{Q}}
 
+%D Even newer trickery: 
+
+\definespecial\dostartviewerlayer {\doPDFstartlayer}
+\definespecial\dostopviewerlayer  {\doPDFstoplayer}
+\definespecial\dodefineviewerlayer{\doPDFdefinelayer}
+
+\let\PDFtextlayers\empty 
+\let\PDFpagelayers\empty 
+\let\PDFhidelayers\empty 
+\let\PDFvidelayers\empty 
+
+\def\doPDFstartlayer#1{\PDFcode{/OC /#1 BDC}}
+\def\doPDFstoplayer   {\PDFcode        {EMC}}
+
+% resource -> prop -> mc's -> OCG|OCMD (nested)
+
+% ocg: 
+
+% /Intent/Design
+
+% ocmd 
+
+% /P /AllOn
+
+% kan zelf ocmd bevatten 
+
+\def\doPDFdefinelayer#1#2#3#4#5% tag title visible type printable 
+%  {\driverreferenced \doPDFdictionaryobject class PDLN name #1 data 
+  {\doPDFdictionaryobject class PDLN name #1 data 
+     {/Type /OCG 
+      \ifcase#4 \or
+        /Intent /Design % disable layer hiding by user 
+      \fi 
+      \ifcase#5 \or
+        /Usage << /Print << /PrintState /OFF >> >> % printable or not 
+      \fi 
+      /Name (#2)}%
+   \doPDFgetobjectreference{PDLN}{#1}\PDFobjectreference 
+     \xdef\PDFtextlayers{\PDFtextlayers\space\PDFobjectreference}%
+   \ifcase#3\relax
+     \xdef\PDFhidelayers{\PDFhidelayers\space\PDFobjectreference}%
+   \or            
+     \xdef\PDFvidelayers{\PDFvidelayers\space\PDFobjectreference}%
+   \fi
+  %\driverreferenced \doPDFdictionaryobject class PDLD name #1 data 
+   \doPDFdictionaryobject class PDLD name #1 data 
+     {/Type /OCMD 
+      /OCGs [\PDFobjectreference]}%
+   \doPDFgetobjectreference{PDLD}{#1}\PDFobjectreference 
+   \xdef\PDFpagelayers{\PDFpagelayers\space /#1 \PDFobjectreference}}
+
+\def\flushPDFtextlayers 
+  {\ifx\PDFtextlayers\empty \else
+       \driverreferenced \doPDFarrayobject class PDF name textlayers data {\PDFtextlayers}%
+       \doPDFgetobjectreference{PDF}{textlayers}\!!stringa
+     \ifx\PDFhidelayers\empty 
+       \def\!!stringb{[null]}%
+     \else
+       \driverreferenced \doPDFarrayobject class PDF name hidelayers data {\PDFhidelayers}%
+       \doPDFgetobjectreference{PDF}{hidelayers}\!!stringb
+     \fi
+     \ifx\PDFvidelayers\empty 
+       \def\!!stringc{[null]}%
+     \else
+       \driverreferenced \doPDFarrayobject class PDF name videlayers data {\PDFvidelayers}%
+       \doPDFgetobjectreference{PDF}{videlayers}\!!stringc
+     \fi
+     \doPDFaddtocatalog
+       {/OCProperties
+        << % display in menu   
+           /D  << /Order \!!stringa 
+                  /On    \!!stringb 
+                  /Off   \!!stringc >>
+           % used properties        
+           /OCGs \!!stringa >>}%
+     \globallet\flushPDFtextlayers\relax
+   \fi} 
+
+\def\flushPDFpagelayers 
+  {\ifx\PDFpagelayers\empty \else 
+     \doPDFpageresource{/Properties <<\PDFpagelayers>>}%
+   \fi} 
+
+\prependtoksonce \flushPDFpagelayers \to \everyshipout 
+\prependtoksonce \flushPDFtextlayers \to \everylastshipout 
+
+\def\PDFlayeractionlist{null} % \PDFlayeractionlist{5 0 R} 
+
+\def\PDFexecutehidelayer   {/SetOCGState /State [/OFF    \PDFlayeractionlist]} 
+\def\PDFexecutevidelayer   {/SetOCGState /State [/ON     \PDFlayeractionlist]} 
+\def\PDFexecutetogglelayer {/SetOCGState /State [/Toggle \PDFlayeractionlist]} 
+
+\def\domakeviewerlayerlist#1%
+  {\bgroup
+   \globallet\PDFlayeractionlist\empty
+   \def\docommando##1%
+     {\doPDFgetobjectreference{PDLN}{##1}\PDFobjectreference 
+      \xdef\PDFlayeractionlist{\PDFlayeractionlist\space\PDFobjectreference}}%
+   \processcommalist[#1]\docommando
+   \egroup}
+ 
 %D And that was all.
 
 \stopspecials
+
+\ifx\fullytransparentcolor\undefined \else
+
+  \def\fullytransparentcolor
+    {\doPDFregisternonecolor
+     \doPDFstartnonecolormode}
+
+  \let\doPDFstarttransparency\gobbletwoarguments
+  \let\doPDFstoptransparency\relax
+
+\fi 
 
 \protect \endinput

@@ -1844,6 +1844,10 @@
    \advance\leftskip\leftskipadaption
    \dosetleftskipadaption{\getvalue{\??td\currenttextbackground\c!rechteroffset}}%
    \advance\rightskip\leftskipadaption
+% new 
+\dosetraggedcommand{\getvalue{\??td\currenttextbackground\c!uitlijnen}}%
+\raggedcommand
+%
    \dostartattributes{\??td\currenttextbackground}\c!letter\c!kleur\empty
    \geenwitruimte
    \seteffectivehsize
@@ -1960,7 +1964,7 @@
      \copyparameters[\??td#1][\??td]
        [\c!status,\c!plaats,\c!variant,\c!mp,\c!methode,
         \c!achtergrond,\c!achtergrondkleur,\c!hoek,\c!niveau,
-        \c!achtergrondoffset,\c!voor,\c!na,
+        \c!achtergrondoffset,\c!voor,\c!na,\c!uitlijnen,
         \c!straal,\c!kader,\c!kaderkleur,\c!lijndikte,
         \c!linkeroffset,\c!rechteroffset,\c!bovenoffset,\c!onderoffset]%
      \getparameters[\??td#1][#2]%
@@ -2016,6 +2020,7 @@
    \c!onderoffset=\getvalue{\??td\currenttextbackground\c!bovenoffset},
    \c!niveau=-1,
    \c!variant=0,
+   \c!uitlijnen=,
    \c!achtergrond=\v!kleur,
    \c!achtergrondkleur=lightgray,
    \c!achtergrondoffset=\!!zeropoint,

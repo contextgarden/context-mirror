@@ -220,6 +220,8 @@
 %D \setvalue{\??cr name}{S:s:a:t}
 %D \stoptypen
 
+% beware: comparisons asked/current on name, not value 
+
 \newif\iffreezecolors  \freezecolorsfalse
 
 \let\colorlist       \empty
@@ -566,13 +568,13 @@
 
 \def\stopcolormode
   {\ifincolor\ifpermitcolormode
-     \dostoptransparency 
+     \supportedstoptransparency
      \dostopcolormode
    \fi\fi}
 
 \def\restorecolormode
   {\ifincolor\ifpermitcolormode
-     \dostoptransparency
+     \supportedstoptransparency
      \dostopcolormode
      \ifx\maintextcolor\empty \else
        \startcolormode\maintextcolor
@@ -601,14 +603,14 @@
 
 \def\execcolorR
   {\iffilterspotcolor 
-     \@EA\noexeccolor
+     \@EA\noexeccolorR
    \else
      \@EA\doexeccolorR
    \fi}
 
 \def\execcolorC
   {\iffilterspotcolor 
-     \@EA\noexeccolor
+     \@EA\noexeccolorC
    \else
      \@EA\doexeccolorC
    \fi}
@@ -792,7 +794,8 @@
      \ifx#1#2%
        \dostartgraycolormode\@@cl@@o
      \else
-       \fullytransparentcolor
+       \doregisternonecolor
+       \dostartnonecolormode
      \fi
    \else
      \dostartgraycolormode\@@cl@@o
@@ -801,7 +804,8 @@
 \def\dovidecolor#1#2%
   {\ifhidesplitcolor
      \ifx#1#2%
-       \fullytransparentcolor
+       \doregisternonecolor
+       \dostartnonecolormode
      \else
        \dostartgraycolormode\@@cl@@o
      \fi
@@ -809,11 +813,19 @@
      \dostartgraycolormode\@@cl@@o
    \fi}
 
-\def\fullytransparentcolor
-  {\dostartgraycolormode\@@cl@@o % better than z
-  %\global\@EA\chardef\csname\@@currenttransparent\endcsname\plusone
-  %\global\intransparenttrue 
-   \dostarttransparency10}
+% \def\fullytransparentcolor % fails on floats  
+%   {\dostartgraycolormode\@@cl@@o % better than z
+%   %\global\@EA\chardef\csname\@@currenttransparent\endcsname\plusone
+%   %\global\intransparenttrue 
+%    \dostarttransparency10}
+
+\def\noexeccolorR#1:#2:#3:#4\od
+  {\edef\@@cl@@r{#1}\edef\@@cl@@g{#2}\edef\@@cl@@b{#3}%
+   \dohidecolor\@@cl@@s\@@cl@@o}
+
+\def\noexeccolorC#1:#2:#3:#4:#5\od
+  {\edef\@@cl@@c{#1}\edef\@@cl@@m{#2}\edef\@@cl@@y{#3}\edef\@@cl@@k{#4}%
+   \dohidecolor\@@cl@@s\@@cl@@o}
 
 \def\noexeccolorS#1:#2\od
   {\edef\@@cl@@s{#1}%
@@ -827,7 +839,7 @@
 %D we can normalize colors, which comes down to giving equal 
 %D values an equal accuracy and format. This feature is 
 %D turned off by default due to a speed penalty. This macro 
-%D also handles spot color precentages.
+%D also handles spot color percentages.
 
 \newif\iffactorizecolor
 \newif\ifnormalizecolor
@@ -917,10 +929,10 @@
 %D Transparency is handled similar for all three color modes. We 
 %D can turn transparency off with the following switch:
 
-\newif\iftransparancysupported \transparancysupportedtrue % todo 
+\newif\iftransparencysupported \transparencysupportedtrue % todo 
 
 \def\exectransparency
-  {\iftransparancysupported
+  {\iftransparencysupported
      \expandafter\doexectransparency
    \else
      \expandafter\noexectransparency
@@ -940,7 +952,8 @@
      \global\intransparentfalse
    \else
      \global\intransparentfalse
-     \dostarttransparency{#1}{#2}%
+    %\dostarttransparency{#1}{#2}%
+     \supportedstarttransparency{#1}{#2}%
      \global\intransparenttrue
    \fi}
 
@@ -952,21 +965,51 @@
 \newif\ifintransparent 
 \newif\ifoptimizetransparency \optimizetransparencytrue % under test 
 
+% due to bugs in pdf viewers we used transparancies for 
+% hiding colors, but now we use none colors 
+
+% \def\supportedstoptransparency
+%   {\iffilterspotcolor
+%      \dostoptransparency
+%    \else\iftransparencysupported
+%      \dostoptransparency
+%    \fi\fi}
+% 
+% \def\conditionalstoptransparency
+%   {\iffilterspotcolor
+%      \dostoptransparency
+%    \else\ifcase\currentcolorchannel
+%      \ifoptimizetransparency
+%        \ifintransparent
+%          \supportedstoptransparency
+%          \global\intransparentfalse
+%        \fi
+%      \else
+%        \supportedstoptransparency
+%      \fi
+%    \else
+%      \supportedstoptransparency
+%    \fi\fi}
+
+\let\supportedstoptransparency\relax
+
 \def\conditionalstoptransparency
-  {\iffilterspotcolor
-     \dostoptransparency
-   \else\ifcase\currentcolorchannel
-     \ifoptimizetransparency
-       \ifintransparent
-         \dostoptransparency
-         \global\intransparentfalse
-       \fi
-     \else
-       \dostoptransparency
+  {\ifoptimizetransparency
+     \ifintransparent
+       \global\intransparentfalse
+       \supportedstoptransparency
      \fi
    \else
-     \dostoptransparency
-   \fi\fi}
+     \supportedstoptransparency
+   \fi}
+
+\def\supportedstarttransparency
+  {\iftransparencysupported
+     \globallet\supportedstoptransparency\dostoptransparency
+     \expandafter\dostarttransparency
+   \else
+     \expandafter\gobbletwoarguments
+   \fi}
 
 %D We now use the \type {\@@cl@@A} hook to implement 
 %D symbolic names. These are converted into numbers 
@@ -1497,7 +1540,8 @@
      \global\@EA\let\csname\@@currentcolorstop\endcsname\donoglobalstopcolor
    \else
      \doifcolorelse\@@askedcolor
-       {\docolormark\@@askedcolor
+       {%\docolormark\@@askedcolor
+        \ifpermitcolormode\docolormark\@@askedcolor\fi
         \global\@EA\let\csname\@@currentcolorstop\endcsname\dodoglobalstopcolor
         \startcolormode\@@askedcolor}
        {\global\@EA\let\csname\@@currentcolorstop\endcsname\donoglobalstopcolor
@@ -1697,7 +1741,7 @@
       \startcolormode{\rawgetsplitbotmark\colormark}}}
 
 % Private macro: only needed in test cases (like multiple 
-% seprations in one file); no user command! 
+% seperations in one file); no user command! 
 
 \def\resynccolor 
   {\ifdim\pagetotal=\zeropoint
@@ -2042,7 +2086,7 @@
        [#2]
        [    \v!cmyk=>\edef\currentcolorspace{C},
              \v!rgb=>\edef\currentcolorspace{R},
-            \v!gray=>\edef\currentcolorspace{S},
+           \v!grijs=>\edef\currentcolorspace{S},
             \v!spot=>\edef\currentcolorspace{P},
                \v!s=>\edef\currentcolorspace{S},
          \s!unknown=>\edef\currentcolorspace{R}]%
@@ -2260,7 +2304,7 @@
 
 \def\MPcolor{\scaledMPcolor1}
 
-%D Before we had transparancy available, the following 
+%D Before we had transparency available, the following 
 %D conversion macro was available: 
 %D 
 %D \starttypen

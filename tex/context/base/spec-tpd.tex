@@ -462,6 +462,9 @@
 \definespecial\doregisterrgbspotcolor {\doPDFregisterrgbspotcolor}
 \definespecial\doregistergrayspotcolor{\doPDFregistergrayspotcolor}
 
+\definespecial\dostartnonecolormode{\doPDFstartnonecolormode}
+\definespecial\doregisternonecolor {\doPDFregisternonecolor}
+
 \def\doPDFregistersomespotcolor#1#2#3#4%
   {\immediate \pdfobj stream attr
      {/FunctionType 4 /Domain [0.0 1.0] /Range #3}{#4}%
@@ -1022,7 +1025,7 @@
 \fi
 
 %D \macros
-%D   {doPDFannotationobject}
+%D   {doPDFannotationobject,doPDFactionobject}
 %D
 %D For field support we need annotation objects. Although in
 %D many cases we can do without indirect references (and use
@@ -1031,6 +1034,10 @@
 
 \def\doPDFannotationobject class #1 name #2 width #3 height #4 data #5%
   {\doPDFannotation width #3 height #4 data {#5}%
+   \dosetobjectreference{#1}{#2}{\the\pdflastannot}}
+
+\def\doPDFactionobject class #1 name #2 width #3 height #4 action #5%
+  {\doPDFaction width {#3} height {#4} action {#5}%
    \dosetobjectreference{#1}{#2}{\the\pdflastannot}}
 
 %D \macros
@@ -1109,6 +1116,15 @@
   {\dogetobjectreference{#1}{#2}#3%
    \edef#3{\ifx#3\empty null\else#3\space0 R\fi}}
 
+% \def\doPDFgetobjectpage         #1#2#3{..}
+% \def\doPDFgetobjectpagereference#1#2#3{..}
+
+\def\doPDFgetpagereference % number macro
+  {\installprogram{texutil --filter \jobname}%
+   \gdef\doPDFgetpagereference##1% ##2
+     {\doPDFgetobjectreference{PDFP}{\number##1}}% {##2}
+   \doPDFgetpagereference}
+
 %D \macros
 %D   {initializePDFnegative}
 %D
@@ -1123,12 +1139,25 @@
    \appendtoPDFdocumentextgstates{/GSpositive \the\pdflastobj\space0 R}%
    \global\let\initializePDFnegative\relax}
 
-%D File embedding: 
+%D File embedding. Storing the stream identifier is needed 
+%D to get access to the number. When typeset, the user can 
+%D use feed this number to \type {pdftosrc} and filter the 
+%D file from the \PDF\ file.
+
+\let\PDFlaststreamobject\s!unknown
 
 \def\doPDFfilestreamobject class #1 name #2 file #3%
   {\immediate\pdfobj stream file{#3}%
+   \edef\PDFlaststreamobject{\the\pdflastobj}%
+   \dosetobjectreference{PDFFS}{#2}{\PDFlaststreamobject}%
    \doPDFdictionaryobject class {#1} name {#2} data
-     {/Type /Filespec /F (#3) /EF <</F \the\pdflastobj\space0 R>>}}
+     {/Type /Filespec /F (#3) /EF <</F \PDFlaststreamobject\space0 R>>}}
+
+\def\doPDFfilestreamidentifier#1% 
+  {\doifsomething{#1}
+     {\doPDFgetobjectreference{PDFFS}{#1}\PDFobjectreference
+      \@EA\beforesplitstring\PDFobjectreference\at{ }\to\PDFlaststreamobject
+      \PDFlaststreamobject}}
 
 % %D We can set \METAPOST\ prologues to~2:
 

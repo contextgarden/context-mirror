@@ -1100,10 +1100,32 @@
      \OTRSETstoreincolumnslotFIXD{#1}% 
    \fi}
 
+% this one looses too wide graphics 
+%
+% \def\OTRSETstoreincolumnslotFIXD#1% fixed column
+%   {\OTRSETprepareforcolumnslot2{#1}%
+%    % no flush text sofar here, beware: no width test  
+%    \snaptogrid\vbox{\box#1}}
+%
+% still imperfect 
+
 \def\OTRSETstoreincolumnslotFIXD#1% fixed column
-  {\OTRSETprepareforcolumnslot2{#1}%
-   % no flush text sofar here 
-   \snaptogrid\vbox{\box#1}}
+  {\OTRSETflushtextsofar
+   \ifdim\wd#1>\tekstbreedte
+     \OTRSETstoreincolumnslotSOMEWHERE2{#1}%
+   \else
+     % crappy test / needed for o-pbu-f / will be replaced
+     \getnoflines{\ht#1}%
+     \scratchdimen\dimexpr(\noflines\lineheight+\lineheight)\relax
+     \advance\scratchdimen\pagetotal\relax
+     \ifdim\scratchdimen<\pagegoal
+       \OTRSETprepareforcolumnslot3{#1}%
+       \snaptogrid\vbox{\box#1}%
+       \blanko
+     \else
+       \OTRSETstoreincolumnslotSOMEWHERE2{#1}%
+     \fi
+   \fi}
 
 \def\OTRSETstoreincolumnslotSOMEWHERE#1#2% 
   {\OTRSETprepareforcolumnslot{#1}{#2}%  

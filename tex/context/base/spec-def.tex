@@ -162,6 +162,9 @@
 \installspecial [\doregisterrgbspotcolor]  [or] [4]
 \installspecial [\doregistergrayspotcolor] [or] [2]
 
+\installspecial [\dostartnonecolormode]    [or] [0]
+\installspecial [\doregisternonecolor]     [or] [0]
+
 %D For some drivers, the stop special is of no use and can
 %D simply call the start one with zero arguments.
 
@@ -689,7 +692,7 @@
 % \installspecial [\dogetobjectreference] [or] [3]
 % 
 % %D The first argument is the name, the second a macro that 
-% %D gets the assiciated value.
+% %D gets the associated value.
 
 %D \macros
 %D   {dostartrunprogram, dostoprunprogram,
@@ -896,6 +899,15 @@
 %D \stoptypen
 
 \installspecial [\doattachfile] [or] [6]
+
+%D Experimental (properties): 
+
+\installspecial[\dostartviewerlayer]      [or] [1]
+\installspecial[\dostopviewerlayer]       [or] [0]
+\installspecial[\dodefineviewerlayer]     [or] [5]
+%installspecial[\doflushviewertextlayers] [or] [0]
+%installspecial[\doflushviewerpagelayers] [or] [0]
+\installspecial[\domakeviewerlayerlist]   [or] [1]
 
 %D We define a couple of backends: 
 

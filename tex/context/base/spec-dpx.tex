@@ -1,4 +1,3 @@
-%\unprotect
 %D \module
 %D   [       file=spec-dpx,
 %D        version=2002.11.28,
@@ -214,7 +213,7 @@
 %D   {dosetupinteraction,
 %D    dosetupopenaction,dosetupcloseaction}
 
-\definespecial\dosetupinteraction%
+\definespecial\dosetupinteraction
   {\showmessage{\m!interactions}{21}{DVIPDFMx}}
 
 \definespecial\dosetupopenaction {\doPDFsetupopenaction}
@@ -310,7 +309,7 @@
 
 \definespecial\dostartobject#1#2#3#4#5%
   {\bgroup
-   \setbox\nextbox=\hbox\bgroup
+   \setbox\nextbox\hbox\bgroup
      \dosetobjectreference{#1}{#2}{#1::#2}%
      \scratchdimen#3\edef\width {\the\scratchdimen\space}%
      \scratchdimen#4\edef\height{\the\scratchdimen\space}%
@@ -319,7 +318,7 @@
 %D Modified to support the color shading feature since version
 %D \type{dvipdfmx-20021128}.
 
-\definespecial\dostopobject%
+\definespecial\dostopobject
   {\ifx\currentPDFresources\empty
      \special{pdf: exobj}%
    \else
@@ -392,33 +391,36 @@
 
 \newif\ifsharePDFactions \sharePDFactionsfalse
 
-\def\doPDFaction width #1 height #2 action #3%
+\def\dodoPDFaction#1#2#3#4%
   {\ifcollectreferenceactions 
-     \xdef\lastPDFaction{#3}%
+     \xdef\lastPDFaction{#4}%
    \else
      \bgroup
     % this is yet untested 
     %\ifsharePDFactions
     %  \ifcase\similarreference\relax
-    %    \xdef\lastPDFaction{<<#3>>}%
+    %    \xdef\lastPDFaction{<<#4>>}%
     %  \or
     %    \global\advance\nofPDFsimilar by 1
-    %    \special{pdf: object @PDF::sim:\the\nofPDFsimilar\space<<#3>>}%
+    %    \special{pdf: object @PDF::sim:\the\nofPDFsimilar\space<<#4>>}%
     %    \xdef\lastPDFaction{@PDF::sim:\the\nofPDFsimilar}%
     %  \else
     %    % leave \lastPDFaction untouched 
     %  \fi
     %\else
-       \xdef\lastPDFaction{<<#3>>}%
+       \xdef\lastPDFaction{<<#4>>}%
     %\fi
-     \scratchdimen#1\edef\width {\the\scratchdimen\space}%
-     \scratchdimen#2\edef\height{\the\scratchdimen\space}%
-     \special{pdf: ann width \width height \height
+     \scratchdimen#2\edef\width {\the\scratchdimen\space}%
+     \scratchdimen#3\edef\height{\the\scratchdimen\space}%
+     \special{pdf: ann #1 width \width height \height
        <</Subtype /Link /Border [0 0 0]
          \ifhighlighthyperlinks \else /H /N \fi
          /A \lastPDFaction\space>>}%
      \egroup
    \fi}
+
+\def\doPDFaction width #1 height #2 action #3%
+  {\dodoPDFaction\empty{#1}{#2}{#3}}
 
 %D \type{\doPDFannotation} in \type{spec-dpm} had a bug.
 
@@ -430,7 +432,7 @@
    \egroup}
 
 %D \macros
-%D   {doPDFannotationobject}
+%D   {doPDFannotationobject,doPDFactionobject}
 
 \def\doPDFannotationobject class #1 name #2 width #3 height #4 data #5%
   {\bgroup
@@ -439,6 +441,10 @@
    \special{pdf: ann @#1::#2 width \width height \height <<#5>>}%
    \dosetobjectreference{#1}{#2}{#1::#2}%
    \egroup}
+
+\def\doPDFactionobject class #1 name #2 width #3 height #4 action #5%
+  {\dodoPDFaction{@#1::#2}{#3}{#4}{#5}%
+   \dosetobjectreference{#1}{#2}{#1::#2}}
 
 %D \macros
 %D   {doPDFaddtocatalog,doPDFaddtoinfo,
@@ -488,11 +494,17 @@
 
 \def\defaultobjectreference#1#2{#1::#2}
 
-%D \type{\doPDFgetobjectrefernce} in \type{spec-dpm} had a bug.
+%D \type{\doPDFgetobjectreference} in \type{spec-dpm} had a bug.
 
 \def\doPDFgetobjectreference#1#2#3%
   {\dogetobjectreference{@#1}{#2}#3%
    \ifx#3\empty\else\edef#3{#3}\fi}
+
+% \def\doPDFgetobjectpage         #1#2#3{..}
+% \def\doPDFgetobjectpagereference#1#2#3{..}
+
+\def\doPDFgetpagereference#1#2%
+  {\edef#2{@page#1}}
 
 %D Done.
 

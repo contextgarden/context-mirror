@@ -2362,6 +2362,7 @@ var:tekstcommando:*\commando#1::
 var:prefix:+,-,*tekst::
 var:plaatskop:ja,nee,leeg::
 var:verhoognummer:ja,nee,lijst,*file::
+var:resetnummer:ja,nee::
 var:file:*naam::
 var:expansie:ja,commando,nee::
 var:margetekst:ja,nee::

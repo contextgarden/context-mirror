@@ -110,6 +110,9 @@
 \def\doiftblcol    #1#2{\doifdefined    {\@@tblprefix#1:#2:c}}
 \def\doifnottblcol #1#2{\doifundefined  {\@@tblprefix#1:#2:c}}
 
+\def\settblspn#1#2{\setvalue     {\@@tblprefix#1:s}{#2}}
+\def\doiftblspn #1{\doifelsevalue{\@@tblprefix#1:s}{1}}
+
 \def\settbltxt#1#2{\long\setvalue{\@@tblprefix:#1:#2:t}}
 \def\gettbltxt#1#2{\csname\@@tblprefix:#1:#2:t\endcsname}
 

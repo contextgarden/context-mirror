@@ -28,7 +28,11 @@
 \defineXMLenvironment [\s!default] \defaultXMLelement \defaultXMLelement
 \defineXMLsingular    [\s!default] \defaultXMLelement
 
-\def\defaultXMLelement{\iftraceXMLelements[\currentXMLelement]\fi}
+% \def\defaultXMLelement
+%   {\iftraceXMLelements[\currentXMLfullidentifier]\fi}
+
+\def\defaultXMLelement
+  {\iftraceXMLelements{\infofont<\currentXMLfullidentifier>}\fi}
 
 %D We can use the default handler to implement automatic 
 %D element hiding. Beware: this overloads the tracer.  

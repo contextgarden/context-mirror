@@ -334,6 +334,33 @@
   \vsize\overlayheight
 \to\everyoverlay
 
+% \long\def\executedefinedoverlay#1\\#2\\#3#4#5#6#7#8#9%
+%   {\bgroup
+%    \scratchdimen#3%
+%    \edef\overlaywidth{\the\scratchdimen\space}%
+%    \scratchdimen#4%
+%    \advance\scratchdimen#5%
+%    \edef\overlayheight{\the\scratchdimen\space}%
+%    \scratchdimen#5%
+%    \edef\overlaydepth{\the\scratchdimen\space}%
+%    \edef\overlaycolor{#6}%
+%    \let\overlayoffset\backgroundoffset % we steal this one
+%    %\writestatus
+%    %  {overlay}
+%    %  {#1\space w=\overlaywidth/h+d=\overlayheight/d=\overlaydepth]}%
+%    \setbox\scratchbox\hbox{\lower\overlaydepth\hbox{\the\everyoverlay#2}}%
+%    \dimen0\wd\scratchbox \advance\dimen0 -\overlaywidth
+%    \dimen2\ht\scratchbox \advance\dimen2 -#4% not \overlayheight
+%    %\wd\scratchbox\overlaywidth
+%    %\ht\scratchbox\overlayheight
+%    %\dp\scratchbox\overlaydepth
+%    \setbox\scratchbox\hbox{\hskip-.5\dimen0\raise-.5\dimen2\box\scratchbox}%
+%    \wd\scratchbox\overlaywidth
+%    \ht\scratchbox\overlayheight
+%    \dp\scratchbox\overlaydepth
+%    \box\scratchbox
+%    \egroup}
+
 \long\def\executedefinedoverlay#1\\#2\\#3#4#5#6#7#8#9%
   {\bgroup
    \scratchdimen#3%
@@ -358,7 +385,9 @@
    \wd\scratchbox\overlaywidth
    \ht\scratchbox\overlayheight
    \dp\scratchbox\overlaydepth
-   \box\scratchbox
+   \startlayoutcomponent{o:#1}{overlay #1}%
+     \box\scratchbox
+   \stoplayoutcomponent
    \egroup}
 
 %D The empty case is:
@@ -420,7 +449,7 @@
 \def\backgroundheight{\the\vsize}
 
 \def\dobackgroundbox#1\background#2\color#3\raster#4\offset#5\corner
-    #6\radius#7\depth#8\\%
+    #6\radius#7\depth#8\component#9\\%
   {\vbox
      {\forgetall\boxmaxdepth\maxdimen
       \dimen0   #5\relax % space needed
@@ -437,8 +466,15 @@
         {\vbox to \backgroundheight{\vss\box#1\vss}}% vertical shift
       \def\docommando##1%
         {\dodobackgroundbox{##1}{#1}{#3}{#4}{#6}{#7}}%
-      \hbox to \backgroundwidth % in case 'foreground' is uses as overlay
-        {\expanded{\rawprocesscommalist[#2]\noexpand\docommando}%
+      \edef\component{#9}%
+      \hbox to \backgroundwidth % in case 'foreground' is used as overlay
+        {\ifx\component\empty
+           \expanded{\rawprocesscommalist[#2]}\docommando
+         \else
+           \startlayoutcomponent{b:\component}{background \component}%
+           \expanded{\rawprocesscommalist[#2]}\docommando
+           \stoplayoutcomponent
+         \fi
          \box#1\hss}}}
 
 %D One can explictly insert the foreground box. For that
@@ -590,7 +626,7 @@
 
 \def\defaultframeoffset{.25ex}
 
-\unexpanded\def\framed%
+\unexpanded\def\framed
   {\bgroup
    \presetlocalframed[\??ol]%
    \dodoubleempty\startlocalframed[\??ol]}
@@ -602,9 +638,9 @@
   {\copyparameters[#1][#3]%
      [\c!breedte,\c!hoogte,\c!offset,\c!leeg,\c!lijndikte,%
       \c!straal,\c!hoek,\c!diepte,\c!kader,\c!kaderkleur,%
-      \c!voorgrondletter,\c!voorgrondkleur,\c!regels,%
+      \c!voorgrondletter,\c!voorgrondkleur,\c!regels,\c!component,%
       \c!bovenkader,\c!onderkader,\c!linkerkader,\c!rechterkader,%
-      \c!lijndikte,\c!kaderoffset,\c!achtergrond,%
+      \c!lijndikte,\c!kaderoffset,\c!achtergrond,\c!component,%
       \c!achtergrondoffset,\c!achtergrondraster,\c!achtergrondkleur,%
       \c!uitlijnen,\c!onder,\c!boven,\c!strut,\c!plaats]%
    \copyparameters[#1\c!achtergrond][#1]%
@@ -1225,7 +1261,8 @@
         \offset     \framedparameter{#1}%
         \corner     \framedparameter\c!achtergrondhoek
         \radius     \framedparameter\c!achtergrondstraal
-        \depth      \framedparameter\c!achtergronddiepte\\}}
+        \depth      \framedparameter\c!achtergronddiepte
+        \component  \framedparameter\c!component\\}}
 
 %D We handle left, right or middle alignment as well as fixed
 %D or free widths and heights. Each combination gets its own
@@ -2397,7 +2434,7 @@
            {\bgroup
             \verticalstrut
             \vskip-\struttotal}%
-         \blanko[\v!blokkeer]% plaatst signal
+         \doinhibitblank % \blanko[\v!blokkeer]% plaatst signal
          \doconvertfont{\getvalue{\??kd#1\c!letter}}\empty
          \def\dostopframedtext{\dodostopframedtext{#1}{#2}}}
 
@@ -2415,9 +2452,9 @@
       \egroup
       \forgetall
       \vskip-\lineheight
-      % will be an option
-      \setbaselinecorrections
-      \donegbotbaselinecorrection
+      % will be an option, not default 
+      % \setbaselinecorrections
+      % \donegbotbaselinecorrection
       \verticalstrut}
    \stopboxedcontent
    \stopcolor
@@ -3118,6 +3155,7 @@
    \c!achtergrondoffset=\!!zeropoint,
    \c!kaderkleur=,
    \c!kaderoffset=\!!zeropoint,
+   \c!component=,
    \c!uitlijnen=,
    \c!onder=\vss,
    \c!boven=,

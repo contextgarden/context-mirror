@@ -219,7 +219,7 @@
 \defineoverlay [TitleGraphic] [\useMPgraphic{title}]
 \defineoverlay [NextPage]     [\overlaybutton{nextpage}]
 
-\def\StartTitlePage%
+\def\StartTitlePage
   {\setupbackgrounds[page][background={color,TitleGraphic,NextPage}]
    \setupbackgrounds[text][text][background=]
    \setupinteraction[menu=off]
@@ -231,7 +231,7 @@
    \vfil
    \let\\=\vfil}
 
-\def\StopTitlePage%
+\def\StopTitlePage
   {\vfil\vfil\vfil
    \stopstandardmakeup
    \setupinteraction[menu=on]

@@ -1,0 +1,94 @@
+% run texfont from currentpath with the fonts on subpath fontsite/500
+
+% texfont --en=texnansi --ve=fontsite --co=opus       type-fsf.dat
+% texfont --en=texnansi --ve=fontsite --co=typewriter type-fsf.dat
+
+\starttypescript [sans] [opus] [name]
+
+  \definefontsynonym [Sans]            [Opus]
+  \definefontsynonym [SansCaps]        [OpusSmCaps]
+  \definefontsynonym [SansItalic]      [Opus-Italic]
+  \definefontsynonym [SansBold]        [Opus-Bold]
+  \definefontsynonym [SansBoldCaps]    [OpusSmCaps-Bold]
+  \definefontsynonym [SansBoldItalic]  [Opus-BoldItalic]
+
+  \definefontsynonym [SansSlanted]     [Opus-Slanted]      % faked
+  \definefontsynonym [SansBoldSlanted] [Opus-BoldSlanted]  % faked
+
+\stoptypescript
+
+\starttypescript [sans] [opus] [texnansi,ec,8r]
+
+  \loadmapfile[\typefaceencoding-fontsite-opus.map]
+
+  \definefontsynonym [Opus]              [\typefaceencoding-opusrg]   [encoding=\typefaceencoding]
+  \definefontsynonym [OpusSmCaps]        [\typefaceencoding-opusscrg] [encoding=\typefaceencoding]
+  \definefontsynonym [Opus-Italic]       [\typefaceencoding-opusi]    [encoding=\typefaceencoding]
+  \definefontsynonym [Opus-Bold]         [\typefaceencoding-opusb]    [encoding=\typefaceencoding]
+  \definefontsynonym [Opus-BoldItalic]   [\typefaceencoding-opusbi]   [encoding=\typefaceencoding]
+  \definefontsynonym [OpusSmCaps-Bold]   [\typefaceencoding-opusscb]  [encoding=\typefaceencoding]
+
+  \definefontsynonym [Opus-Slanted]      [\typefaceencoding-opusrg-slanted-167] [encoding=\typefaceencoding]
+  \definefontsynonym [Opus-BoldSlanted]  [\typefaceencoding-opusb-slanted-167] [encoding=\typefaceencoding]
+
+\stoptypescript
+
+\starttypescript [mono] [typewriter] [name]
+
+  \definefontsynonym [Mono]            [Typewriter]
+  \definefontsynonym [MonoItalic]      [Typewriter-Italic]
+  \definefontsynonym [MonoBold]        [Typewriter-Bold]
+  \definefontsynonym [MonoBoldItalic]  [Typewriter-BoldItalic]
+
+  \definefontsynonym [MonoSlanted]     [Typewriter-Slanted]      % faked
+  \definefontsynonym [MonoBoldSlanted] [Typewriter-BoldSlanted]  % faked
+
+\stoptypescript
+
+\starttypescript [mono] [typewriter] [texnansi,ec,8r]
+
+  \loadmapfile[\typefaceencoding-fontsite-typewriter.map]
+
+  \definefontsynonym [Typewriter]              [\typefaceencoding-typerg]   [encoding=\typefaceencoding]
+  \definefontsynonym [Typewriter-Italic]       [\typefaceencoding-typei]    [encoding=\typefaceencoding]
+  \definefontsynonym [Typewriter-Bold]         [\typefaceencoding-typeb]    [encoding=\typefaceencoding]
+  \definefontsynonym [Typewriter-BoldItalic]   [\typefaceencoding-typebi]   [encoding=\typefaceencoding]
+
+  \definefontsynonym [Typewriter-Slanted]      [\typefaceencoding-typerg-slanted-167] [encoding=\typefaceencoding]
+  \definefontsynonym [Typewriter-BoldSlanted]  [\typefaceencoding-typeb-slanted-167] [encoding=\typefaceencoding]
+
+  \definefontsynonym [TypewriterCond]          [\typefaceencoding-typecrg]
+  \definefontsynonym [TypewriterCond-Bold]     [\typefaceencoding-typecb]
+
+\stoptypescript
+
+\starttypescript [serif] [garamond] [name]
+
+  \definefontsynonym [Serif]            [FSGaramond]
+  \definefontsynonym [SerifCaps]        [FSGaramondSmCaps]
+  \definefontsynonym [SerifItalic]      [FSGaramond-Italic]
+  \definefontsynonym [SerifBold]        [FSGaramond-Bold]
+  \definefontsynonym [SerifBoldCaps]    [FSGaramondSmCaps-Bold]
+
+  \definefontsynonym [SerifSlanted]     [FSGaramond-Slanted]
+  \definefontsynonym [SerifBoldSlanted] [FSGaramond-BoldSlanted]
+
+\stoptypescript
+
+\starttypescript [serif] [garamond] [texnansi,ec,8r]
+
+  \loadmapfile[\typefaceencoding-fontsite-opus.map]
+
+  \definefontsynonym [FSGaramond]              [\typefaceencoding-garamond] [encoding=\typefaceencoding]
+  \definefontsynonym [FSGaramondSmCaps]        [\typefaceencoding-garasc]   [encoding=\typefaceencoding]
+  \definefontsynonym [FSGaramond-Italic]       [\typefaceencoding-garai]    [encoding=\typefaceencoding]
+  \definefontsynonym [FSGaramond-Bold]         [\typefaceencoding-garab]    [encoding=\typefaceencoding]
+  \definefontsynonym [FSGaramond-BoldItalic]   [\typefaceencoding-garabi]   [encoding=\typefaceencoding]
+  \definefontsynonym [FSGaramondSmCaps-Bold]   [\typefaceencoding-garascb]  [encoding=\typefaceencoding]
+
+  \definefontsynonym [FSGaramond-Slanted]      [\typefaceencoding-garamond-slanted-167] [encoding=\typefaceencoding]
+  \definefontsynonym [FSGaramond-BoldSlanted]  [\typefaceencoding-garab-slanted-167] [encoding=\typefaceencoding]
+
+\stoptypescript
+
+\endinput
