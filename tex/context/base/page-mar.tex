@@ -331,41 +331,6 @@
      \egroup
    \fi}
 
-% \def\doflushmargincontents% % links + rechts
-%   {\bgroup
-%    \forgetall
-%    \global\marginheight\!!zeropoint
-%    \dorecurse{\margincontent}
-%      {\bgroup
-%       \edef\margetekstafstand {\getvalue{\??im\recurselevel\c!afstand}}%
-%       \edef\margetekstregels  {\getvalue{\??im\recurselevel\c!regel}}%
-%       \edef\margetekstscheider{\getvalue{\??im\recurselevel\c!scheider}}%
-%       \let\margetekstnummer=\recurselevel
-%       \getvalue{\??im\recurselevel}%
-%       \global\setvalue{\??im\recurselevel}{}%
-%       \egroup}%
-%    \ifdim\marginheight>\lineheight % This is something real dirty!
-%      \advance\marginheight by \pagetotal
-%      \advance\marginheight by \lineheight  % a sort of bonus
-%      \ifdim\marginheight>\pagegoal
-%        \xdef\restoreinterlinepenalty%
-%          {\global\let\restoreinterlinepenalty\relax
-%           \global\interlinepenalty=\the\interlinepenalty}%
-%        \global\interlinepenalty=10000
-%      \fi
-%    \else % We need the above because interlinepenalties overrule vadjusted \nobreaks.
-%      %\vadjust
-%      %  {\forgetall
-%      %   \global\advance\marginheight by \lineheight
-%      %   \global\divide\marginheight by \lineheight
-%      %   \dorecurse{\number\marginheight}
-%      %     {\nobreak\vskip\lineheight}%
-%      %   \kern-\number\marginheight\lineheight}%
-%      \vadjust{\nobreak}%
-%    \fi
-%    \doglobal\newcounter\margincontent
-%    \egroup}
-
 \def\doflushmargincontents % links + rechts
   {\bgroup
    \forgetall
@@ -379,14 +344,14 @@
       \getvalue{\??im\recurselevel}%
       \letgvalue{\??im\recurselevel}\empty
       \egroup}%
-\ifbinnenkolommen
-  \donetrue  % how fuzzy
-\else\ifdim\marginheight>\lineheight\relax
-  \donetrue  % how dirty
-\else
-  \donefalse % how needed
-\fi\fi
-\ifdone
+   \ifbinnenkolommen
+     \donetrue  % how fuzzy
+   \else\ifdim\marginheight>\lineheight\relax
+     \donetrue  % how dirty
+   \else
+     \donefalse % how needed
+   \fi\fi
+   \ifdone
      \advance\marginheight \pagetotal
      \advance\marginheight \lineheight  % a sort of bonus
      \ifdim\marginheight>\pagegoal
@@ -396,19 +361,12 @@
        \global\interlinepenalty10000
      \fi
    \else % We need the above because interlinepenalties overrule vadjusted \nobreaks.
-     %\vadjust
-     %  {\forgetall
-     %   \global\advance\marginheight by \lineheight
-     %   \global\divide\marginheight by \lineheight
-     %   \dorecurse{\number\marginheight}
-     %     {\nobreak\vskip\lineheight}%
-     %   \kern-\number\marginheight\lineheight}%
      \vadjust{\nobreak}%
    \fi
    \doglobal\newcounter\margincontent
    \egroup}
 
-% Some day: \definieermarkering[\v!margetitel]
+% Some day: \definemarking[\v!margetitel]
 
 \def\docomplexmargewoord#1#2#3%
   {\@EA\setgvalue\@EA{\@EA\??im\@EA\margincontent\@EA}\@EA

@@ -2259,6 +2259,7 @@ var:sirka:*dimenze::
 var:vyska:*dimenze::
 var:svrchnimezera:*dimenze::
 var:zpetnamezera:*dimenze::
+var:volba:max,prizpusobive::
 stopsetup
 
 startsetup

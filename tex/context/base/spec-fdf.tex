@@ -2854,8 +2854,11 @@
 %D
 %D Scaling is rather straightforward:
 
-\def\doPDFstartscaling#1#2%
-  {\PDFcode{q #1\space 0 0 #2\space 0 0 cm}}
+\def\@@PDFzeroscale{.0001}
+
+\def\doPDFstartscaling#1#2% the test is needed because acrobat is bugged!
+  {\PDFcode{q \ifdim#1\points=\zeropoint\@@PDFzeroscale\else#1\fi\space 0 0
+              \ifdim#2\points=\zeropoint\@@PDFzeroscale\else#2\fi\space 0 0 cm}}
 
 \def\doPDFstopscaling%
   {\PDFcode{Q}}

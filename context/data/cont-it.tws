@@ -2259,6 +2259,7 @@ var:ampiezza:*dimensione::
 var:altezza:*dimensione::
 var:spaziocima:*dimensione::
 var:backspace:*dimensione::
+var:opzione:max,adatta::
 stopsetup
 
 startsetup

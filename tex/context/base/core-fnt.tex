@@ -560,6 +560,18 @@
   {\dodoubleargument\getparameters[\??on]}
 
 %D \macros
+%D   {shiftedword, shiftedwords}
+%D
+%D Used as \type {\shiftedwords {10pt} {some text}} this macro will
+%D move
+
+% \def\shiftedword#1% #2%
+%   {\raise#1\hbox} % {#2}} % officially: {\ifdim#1>\zeropoint\raise\else\lower\fi#1\hbox{#2}}
+
+% \def\shiftedwords#1#2%
+%   {\processisolatedwords{#2}{\shiftedword{#1}}}
+
+%D \macros
 %D   {low, high, lohi}
 %D
 %D Although \TEX\ is pretty well aware of super- and

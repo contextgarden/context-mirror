@@ -1858,7 +1858,15 @@
    \doprocessMPtoPDFfile}
 
 \def\doprocessMPtoPDFfile#1#2#3% file xscale yscale
-  {\setMPspecials
+  {% the following line is needed for latex where onepoint is not
+   % onepoint but a number (maxdimen); some day i'll make a latex
+   % variant of this file so that i no longer have to deal with such
+   % issues; then i'll also speed up this module using a few context
+   % tricks
+   %
+   \let\onepoint\onerealpoint
+   %
+   \setMPspecials
    \the\everyMPtoPDFconversion
    \catcode`\^^M=\@@endofline
    \startMPscanning

@@ -21,7 +21,196 @@
 
 \writestatus{\m!systems}{beware: some patches loaded from cont-new.tex!}
 
+\def\doifelsefontsynonym#1%
+  {\ifcsname\??ff\fontclass#1\endcsname
+     \expandafter\firstoftwoarguments
+   \else
+     \expandafter\secondoftwoarguments
+   \fi}
+
+\def\expandfontsynonym#1#2% #2 := onelevelexpansion(#1)
+  {\ifcsname\??ff\fontclass#2\endcsname
+     \expandafter\def\expandafter#1\expandafter{\csname\??ff\fontclass#2\endcsname}%
+   \fi}
+
+\long\def\startprocesscommalist[#1]#2\stopprocesscommalist
+  {\long\def\currentcommalistcommand##1{\def\currentcommalistitem{##1}#2}%
+   \processcommalist[#1]\currentcommalistcommand}
+
+\long\def\startexpanded#1\stopexpanded % beware, this time no \noexpand before #1
+  {\long\xdef\@@expanded{#1}\@@expanded}
+
 \tracefonthandlingtrue
+
+% \def\resetXMLelement[#1]% handy in case only singular
+%   {\@EA\let\csname\@@XMLelement:#1\endcsname \donothing
+%    \@EA\let\csname\@@XMLelement:/#1\endcsname\donothing
+%    \@EA\let\csname\@@XMLelement:#1/\endcsname\donothing}
+%
+% is the same as:
+
+\def\resetXMLelement[#1]{\dododefineXMLprocess{#1}}
+
+\let\dorecalculatelayout\recalculatelayout
+
+\def\recalculatelayout
+  {\doifsomething{\layoutparameter\c!pagina\layoutparameter\c!papier}
+     {\dododosetuppapersize[\layoutparameter\c!pagina][\layoutparameter\c!papier]}%
+   \dorecalculatelayout}
+
+\def\dodosetuppapersize[#1][#2]%
+  {\ifsecondargument
+     \dododosetuppapersize[#1][#2]%
+     \calculatehsizes
+     \calculatevsizes
+     \recalculatelogos
+     \recalculatebackgrounds
+     \recalculatelayout
+   \else\iffirstargument
+     \setuppapersize[#1][#2]%
+   \else\ifx\papersize\undefined\else
+     \restorepapersize
+   \fi\fi\fi}
+
+\def\dododosetuppapersize[#1][#2]%
+  {\xdef\restorepapersize
+     {\noexpand\setuppapersize[#1][#2]}%
+   \dostelpapierrichtingin{#1}\paperlandscape\paperrotation\paperreverse\papermirror
+   \dostelpapierrichtingin{#2}\printlandscape\printrotation\printreverse\printmirror
+   \def\docommando##1%
+     {\doifsomething{##1}{\doifdefined{\??pp##1\c!breedte}
+        {\global\papierbreedte\getvalue{\??pp##1\c!breedte}%
+         \global\papierhoogte\getvalue{\??pp##1\c!hoogte}%
+         \calculatepaperoffsets{##1}%
+         \xdef\papersize{##1}}}}%
+   \processcommacommand[#1]\docommando
+   \doifdefinedelse{\??pp#1\c!schaal}
+     {\edef\paperscale{\getvalue{\??pp#1\c!schaal}}}
+     {\edef\paperscale{1}}%
+   \def\docommando##1%
+     {\doifsomething{##1}{\doifdefined{\??pp##1\c!breedte}
+        {\global\printpapierbreedte\getvalue{\??pp##1\c!breedte}%
+         \global\printpapierhoogte\getvalue{\??pp##1\c!hoogte}%
+         \xdef\printpapersize{##1}}}}%
+   \processcommacommand[#2]\docommando
+   \global\setdimentoatleast\papierbreedte     \onepoint
+   \global\setdimentoatleast\papierhoogte      \onepoint
+   \global\setdimentoatleast\printpapierbreedte\onepoint
+   \global\setdimentoatleast\printpapierhoogte \onepoint
+   \ifcase\paperlandscape\else
+     \doglobal\swapdimens\papierbreedte\papierhoogte
+   \fi
+   \ifcase\printlandscape\else
+     \doglobal\swapdimens\printpapierbreedte\printpapierhoogte
+   \fi
+   % this check can be confusing, so we've added the possibility
+   % to bypass this test: \setuppapersize[option=fit]
+   \doif\@@ppoptie\v!max % \v!fit is
+     {\bgroup
+      % we need to pre-swap else we get the wrong paper size
+      \doifinset\paperrotation{90,270}{\swapdimens\papierbreedte\papierhoogte}%
+      \doifinset\printrotation{90,270}{\swapdimens\printpapierbreedte\printpapierhoogte}%
+      \ifdim\papierhoogte>\printpapierhoogte
+        \global\printpapierhoogte\papierhoogte
+        \writestatus\m!systems{print height forced to paper height}%
+      \fi
+      \ifdim\papierbreedte>\printpapierbreedte
+        \global\printpapierbreedte\papierbreedte
+        \writestatus\m!systems{print width forced to paper width}%
+      \fi
+      \egroup}}
+
+\setuplayout
+  [\c!papier=,
+   \c!pagina=]
+
+\def\parseTR[#1][#2]% [#2] is dummy that kills spaces / no #3 argument
+  {\def\currentcol{0}\increment\maximumrow
+   \let\currentcolpos\currentcol
+   \let\eTR\relax
+   \setupTABLE[\v!rij][\maximumrow][#1]}
+
+\long\def\parseTD[#1][#2]#3\eTD % [#2] is dummy that kills spaces
+  {\getparameters[\@@tbl][\c!ny=\tblnr,\c!nx=\tblnc,nc=1,nr=1,\c!n=\currentcol,#1]%
+   % goto first cell % NEW, n=cellnumber
+   \increment\currentcolpos
+   \doifvaluesomething{\@@tbl\c!n}
+     {\ifnum\getvalue{\@@tbl\c!n}=\currentcol\else
+        \scratchcounter\getvalue{\@@tbl\c!n}%
+        \advance\scratchcounter-\currentcol
+        \advance\scratchcounter\plusone
+        \expanded{\parseTD[][\c!nx=\the\scratchcounter]}\eTD
+        \getparameters[\@@tbl][\c!ny=\tblnr,\c!nx=\tblnc,nc=1,nr=1,\c!n=\currentcol,#1]%
+      \fi}%
+   \doloop
+     {\increment\currentcol
+      \doifnottbltag\maximumrow\currentcol\exitloop}%
+   % fill r*c cells and set span
+   \let\row\maximumrow
+   \let\col\currentcol
+   \dorecurse\tblny
+     {\let\col\currentcol
+      \settblcol\row\col\tblnx
+      \ifnum\tblnx>\maximumrowspan\relax
+        \let\maximumrowspan\tblnx
+      \fi
+      \dorecurse\tblnx
+        {\settbltag\row\col\tblnone
+         \increment\col}%
+      \increment\row}%
+   % check max column
+   \decrement\col
+   \ifnum\col>\maximumcol\relax
+     \let\maximumcol\col
+   \fi
+   % set values
+   \settbltag\maximumrow\currentcol\tblcell
+   \settblcol\maximumrow\currentcol\tblnx
+   \settblrow\maximumrow\currentcol\tblny
+   % save text
+   \edef\celltag{{\maximumrow}{\currentcol}}%
+   \@EA\settbltxt\@EA\maximumrow\@EA\currentcol\@EA
+     {\@EA\handleTBLcell\celltag[#1]{#3}}}
+
+\newif\ifpercentdimendone
+
+\bgroup % usage: \setpercentdimen\somedimen{% or dimen} todo: pct
+\catcode124=\@@comment
+\catcode 37=\@@active
+\gdef\setpercentdimen#1#2|
+  {\xdef\@@expanded{#2}|
+   \ifx\@@expanded\empty\else
+     \bgroup
+     \global\percentdimendonefalse
+     \def\%{\dimexpr(#1/100)\global\percentdimendonetrue\ignorespaces}| scantokens add's a space
+     \catcode`%=\@@active
+     \let%\%|
+     \global\globalscratchdimen\scantokens\@EA{\@@expanded}| i'm lazy and use etex
+     \egroup
+     #1\globalscratchdimen
+   \fi}
+\egroup
+
+\bgroup
+
+\obeylines
+
+\gdef\collapsedspace#1%
+  {\ifx#1^^M%
+     \expandafter\collapsedspace
+   \else
+     \space
+     \expandafter#1%
+   \fi}
+
+\gdef\collapsespaces%
+  {\prependtoksonce\relax\to\everyeof%
+   \ignorelines%
+   \ignoretabs%
+   \let\obeyedspace\collapsedspace%
+   \obeyspaces}
+
+\egroup
 
 \def\complexdozieregister[#1]#2#3%
   {\begingroup
@@ -53,6 +242,21 @@
      \dododododoinatreference
        {\leftofreference#1\rightofreference}{#2#3}[#4]%
    \fi}
+
+\dostepwiserecurse{0}{9}{1}{\setevalue{@@uc@@\recurselevel}{\recurselevel}}
+
+\setvalue{@@uc@@a}{A} \setvalue{@@uc@@A}{A}
+\setvalue{@@uc@@b}{B} \setvalue{@@uc@@B}{B}
+\setvalue{@@uc@@c}{C} \setvalue{@@uc@@C}{C}
+\setvalue{@@uc@@d}{D} \setvalue{@@uc@@D}{D}
+\setvalue{@@uc@@e}{E} \setvalue{@@uc@@E}{E}
+\setvalue{@@uc@@f}{F} \setvalue{@@uc@@F}{F}
+
+\def\hexstringtonumber#1% {FF}
+  {\dohexstringtonumber#1}
+
+\def\dohexstringtonumber#1#2% FF
+  {"\csname @@uc@@#1\endcsname\csname @@uc@@#2\endcsname}
 
 % \def\doshowpardata#1#2{\hbox{\string#1: \the#2}\endgraf}
 %
@@ -1541,6 +1745,7 @@
 
 \newtoks\everyfirstparagraphintro
 \newtoks\everynextparagraphintro
+\newtoks\@@everyparagraphtoks
 
 \chardef\everyparagraphintro\zerocount
 
@@ -1561,24 +1766,43 @@
                    \doglobal\appendtoks#2\to\everyfirstparagraphintro
                    \doglobal\appendtoks#2\to\everynextparagraphintro]}
 
+% \def\doinsertparagraphintro
+%   {\ifcase\everyparagraphintro\relax
+%      % no data
+%      \@@everyparagraphtoks\emptytoks
+%    \or
+%      % first data
+%      \global\chardef\everyparagraphintro\plustwo
+%      \@@everyparagraphtoks\everyfirstparagraphintro
+%      \global\everyfirstparagraphintro\emptytoks
+%    \or
+%      % next data
+%      \@@everyparagraphtoks\everynextparagraphintro
+%    \fi
+%    \the\@@everyparagraphtoks}
+
 \def\doinsertparagraphintro
-  {\ifcase\everyparagraphintro\relax
+  {%\begingroup
+   %\everypar\emptytoks
+   \ifcase\everyparagraphintro\relax
      % no data
+     \@@everyparagraphtoks\emptytoks
    \or
      % first data
      \global\chardef\everyparagraphintro\plustwo
-     \scratchtoks\everyfirstparagraphintro
+     \@@everyparagraphtoks\everyfirstparagraphintro
      \global\everyfirstparagraphintro\emptytoks
    \or
      % next data
-     \scratchtoks\everynextparagraphintro
+     \@@everyparagraphtoks\everynextparagraphintro
    \fi
-   \the\scratchtoks}
+   \the\@@everyparagraphtoks
+   }%\endgroup}
 
 \def\insertparagraphintro
   {\ifcase\everyparagraphintro\else\@EA\doinsertparagraphintro\fi}
 
-\appendtoks\insertparagraphintro\to\everypar
+\appendtoksonce\insertparagraphintro\to\everypar
 
 %D \starttypen
 %D \setupparagraphintro[first][\hbox to 3.5em{\tt FIRST \hss}]

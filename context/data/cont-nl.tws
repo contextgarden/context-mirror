@@ -2259,6 +2259,7 @@ var:breedte:*maat::
 var:hoogte:*maat::
 var:kopwit:*maat::
 var:rugwit:*maat::
+var:optie:max,passend::
 stopsetup
 
 startsetup

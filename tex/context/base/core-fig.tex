@@ -2090,6 +2090,24 @@
    \externalfigure[\bufferprefix typeset-\noftypesetbuffers.pdf][#2]%
    \egroup}
 
+% for me only (manuals and sucn)
+
+\definesystemvariable{tz}
+
+\def\definetypesetting{\dotripleempty\dodefinetypesetting}
+\def\typesetfile      {\dotripleempty\dotypesetfile}
+
+\def\dodefinetypesetting[#1][#2][#3]%
+  {\doifsomething{#1}{\setvalue{\??tz#1}{\dodotypesetfile{#2}{#3}}}}
+
+\def\dotypesetfile[#1][#2][#3]%
+  {\executeifdefined{\??tz#1}\gobbletwoarguments{#2}{#3}}
+
+\def\dodotypesetfile#1#2#3#4% args settings file settings
+  {\doifmode{*\v!eerste}{\executesystemcommand{texmfstart texexec.pl --batch --pdf #1 #3}}%
+   \doglobal\beforesplitstring#3\at.\to\typesetfilename
+   \externalfigure[\typesetfilename.pdf][#2,#4]}
+
 \appendtoks \setupexternalfigures[\c!optie=\v!leeg] \to \everyfastmode
 \appendtoks \runMPgraphicsfalse                     \to \everyfastmode
 \appendtoks \insertMPgraphicsfalse                  \to \everyfastmode

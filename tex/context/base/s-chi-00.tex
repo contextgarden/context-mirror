@@ -9,14 +9,14 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
-%C details. 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
 
-\mainlanguage[cn] 
+\mainlanguage[cn]
 
-\setupbodyfont[chi] 
+\setupbodyfont[chi]
 
-\unprotect 
+\unprotect
 
 \stelsectiein [\v!sectionlevel-1] [\c!kopconversie=\s!chinese]
 \stelsectiein [\v!sectionlevel-2] [\c!kopconversie=\s!chinese]
@@ -31,22 +31,22 @@
 \stellijstin [\v!hoofdstuk] [\c!koplabel=\v!ja,\c!kopconversie=\v!ja,\c!breedte=5em]
 \stellijstin [\v!paragraaf] [\c!koplabel=\v!ja,\c!kopconversie=\v!ja,\c!breedte=5em]
 
-\stelmarkeringin [\v!hoofdstuk\v!nummer] [\c!koplabel=\v!ja,\c!kopconversie=\v!ja]
-\stelmarkeringin [\v!paragraaf\v!nummer] [\c!koplabel=\v!ja,\c!kopconversie=\v!ja]
+\setupmarking [\v!hoofdstuk\v!nummer] [\c!koplabel=\v!ja,\c!kopconversie=\v!ja]
+\setupmarking [\v!paragraaf\v!nummer] [\c!koplabel=\v!ja,\c!kopconversie=\v!ja]
 
 \setuplabeltext[cn][\v!sub\v!paragraaf={\symbol[S]\kern.25em}]
 \setuplabeltext[cn][\v!sub\v!sub\v!paragraaf={\symbol[S]\kern.25em}]
 \setuplabeltext[cn][\v!sub\v!sub\v!sub\v!paragraaf={\symbol[S]\kern.25em}]
 \setuplabeltext[cn][\v!sub\v!sub\v!sub\v!sub\v!paragraaf={\symbol[S]\kern.25em}]
 
-% nog taalonafhankelijk maken -> \e!tabel enz 
+% nog taalonafhankelijk maken -> \e!tabel enz
 
 \definereferenceformat [intable]   [\c!label=\v!tabel]
 \definereferenceformat [infigure]  [\c!label=\v!figuur]
 \definereferenceformat [inchapter] [\c!label=\v!hoofdstuk]
 \definereferenceformat [insection] [\c!label=\v!paragraaf]
 
-% important 
+% important
 
 \setuptyping[\c!tab=\v!nee]
 

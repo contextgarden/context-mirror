@@ -3932,7 +3932,7 @@
   {\futurelet\nexthandledtoken\dodohandletokens}
 
 \long\def\handletokens#1\with#2%
-  {\global\let\dododohandletokens#2%
+  {\gdef\dododohandletokens{#2}% permits more complex #2's
    \dohandletokens#1\end}
 
 %D A previous version said \type{\docommando=#2}, but to enable

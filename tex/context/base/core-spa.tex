@@ -153,6 +153,8 @@
      \let\strutheightfactor\@@ithoogte
      \let\strutdepthfactor \@@itdiepte
    \fi
+   \let\minimumstrutheight\@@itminhoogte
+   \let\minimumstrutdepth \@@itmindiepte
    \let\minimallinedistance\@@itafstand
    \let\normallineheight\@@itregel % let ! ! ! ! ! ivm ex
    \let\topskipfactor\@@itboven
@@ -1177,7 +1179,7 @@
 % but, since not all fonts have .5em digits:
 
 \def\fixedspace
-  {\setbox\scratchbox\hbox\ifmmode{$0$}\else{0}\fi
+  {\setbox\scratchbox\normalhbox\ifmmode{$0$}\else{0}\fi
    \hskip\wd\scratchbox\relax}
 
 \def\fixedspaces
@@ -1650,6 +1652,9 @@
 \def\baselinefactor         {2.8}
 \def\baselinegluefactor     {0}
 
+\def\minimumstrutheight     {0pt}
+\def\minimumstrutdepth      {0pt}
+
 \def\normallineheight       {\baselinefactor ex}
 \def\minimallinedistance    {\lineskip}
 
@@ -1701,6 +1706,18 @@
      \vskip-\openstrutheight
    \fi}
 
+% \def\settopskip % the extra test is needed for the lbr family
+%   {\topskip\systemtopskipfactor\globalbodyfontsize
+%    \ifgridsnapping \else
+%      \ifr@ggedbottom\!!plus5\globalbodyfontsize\fi
+%    \fi
+%    \relax % the skip
+%    \topskipgap\topskip
+%    \advance\topskipgap -\openstrutheight\relax
+%    \ifdim\topskip<\strutheightfactor\openlineheight
+%      \topskip\strutheightfactor\openlineheight\relax
+%    \fi}
+
 \def\settopskip % the extra test is needed for the lbr family
   {\topskip\systemtopskipfactor\globalbodyfontsize
    \ifgridsnapping \else
@@ -1709,9 +1726,15 @@
    \relax % the skip
    \topskipgap\topskip
    \advance\topskipgap -\openstrutheight\relax
+\ifdim\minimumstrutheight>\zeropoint
+   \ifdim\topskip<\minimumstrutheight
+     \topskip\minimumstrutheight\relax
+   \fi
+\else
    \ifdim\topskip<\strutheightfactor\openlineheight
      \topskip\strutheightfactor\openlineheight\relax
-   \fi}
+   \fi
+\fi}
 
 \def\setmaxdepth
   {\maxdepth\systemmaxdepthfactor\globalbodyfontsize}
@@ -1721,19 +1744,48 @@
    \lineskip\normallineskip
    \lineskiplimit\normallineskiplimit}
 
+% \def\setnormalbaselines
+%   {\ifdim\normallineheight>\zeropoint
+%      \lineheight\normallineheight
+%    \fi
+%    \openlineheight\spacingfactor\lineheight
+%    \openstrutheight\strutheightfactor\openlineheight
+%    \openstrutdepth \strutdepthfactor \openlineheight
+%    \normalbaselineskip\openlineheight
+%      \!!plus\baselinegluefactor\openlineheight
+%      \!!minus\baselinegluefactor\openlineheight
+%    \normallineskip\minimallinedistance\relax % \onepoint\relax
+%    \normallineskiplimit\zeropoint\relax
+%    \normalbaselines}
+
 \def\setnormalbaselines
   {\ifdim\normallineheight>\zeropoint
      \lineheight\normallineheight
    \fi
    \openlineheight\spacingfactor\lineheight
+\ifdim\minimumstrutheight>\zeropoint
+   \openstrutheight\minimumstrutheight % new
+\else
    \openstrutheight\strutheightfactor\openlineheight
+\fi
+\ifdim\minimumstrutdepth>\zeropoint
+   \openstrutdepth \minimumstrutdepth % new
+\else
    \openstrutdepth \strutdepthfactor \openlineheight
+\fi
+\scratchdimen\minimumstrutdepth
+\advance\scratchdimen\minimumstrutheight
+\ifdim\scratchdimen>\zeropoint
+  \openlineheight\openstrutheight % new
+  \advance\openlineheight\openstrutdepth % new
+\fi
    \normalbaselineskip\openlineheight
      \!!plus\baselinegluefactor\openlineheight
      \!!minus\baselinegluefactor\openlineheight
    \normallineskip\minimallinedistance\relax % \onepoint\relax
    \normallineskiplimit\zeropoint\relax
    \normalbaselines}
+
 
 \def\setspacingfactor#1\to#2\by#3\\%
   {\strutdimen#2\points
@@ -1771,7 +1823,7 @@
 
   \newbox\strutbox
 
-  \setbox\strutbox=\hbox{\vrule height8.5pt depth3.5pt width\z@}
+  \setbox\strutbox=\normalhbox{\vrule height8.5pt depth3.5pt width\z@}
 
  %\def\strut{\relax\ifmmode\copy\strutbox\else\unhcopy\strutbox\fi}
   \def\strut{\relax\ifmmode\copy\else\unhcopy\fi\strutbox}
@@ -1800,23 +1852,53 @@
 %    \setstrutdimen\strutdepth \strutdepthfactor \spacingfactor
 %    \dosetstrut}
 
+% \def\setstrut
+%   {\strutdimen\normallineheight
+%    \strutdimen\strutheightfactor\strutdimen
+%    \strutdimen\spacingfactor\strutdimen
+%    \edef\strutheight{\the\strutdimen}%
+%    \strutdimen\normallineheight
+%    \ifgridsnapping
+%      \advance\strutdimen-\strutheight
+%    \else
+%      \strutdimen\strutdepthfactor\strutdimen
+%      \strutdimen\spacingfactor\strutdimen
+%    \fi
+%    \edef\strutdepth{\the\strutdimen}%
+%    \dosetstrut}
+
 \def\setstrut
-  {\strutdimen\normallineheight
+  {% height
+   \strutdimen\normallineheight
+\ifdim\minimumstrutheight>\zeropoint
+  \strutdimen\minimumstrutheight
+\else
    \strutdimen\strutheightfactor\strutdimen
+\fi
    \strutdimen\spacingfactor\strutdimen
    \edef\strutheight{\the\strutdimen}%
+   % depth
    \strutdimen\normallineheight
    \ifgridsnapping
+\ifdim\minimumstrutdepth>\zeropoint
+  \strutdimen\minimumstrutdepth
+\else
      \advance\strutdimen-\strutheight
+\fi
    \else
+\ifdim\minimumstrutdepth>\zeropoint
+  \strutdimen\minimumstrutdepth
+\else
      \strutdimen\strutdepthfactor\strutdimen
+\fi
      \strutdimen\spacingfactor\strutdimen
    \fi
    \edef\strutdepth{\the\strutdimen}%
+   % finish
    \dosetstrut}
 
 \def\setcharstrut#1%
-  {\setbox\strutbox\hbox{#1}%
+  {\setbox\strutbox\normalhbox{#1}%
    \edef\strutheight{\the\strutht}%
    \edef\strutdepth {\the\strutdp}%
    \dosetstrut}
@@ -3560,10 +3642,10 @@
   {\dowithnextboxcontent
      {\forgetall}
      {\ifcase\graphicvadjustmode \@EA \fakedvadjust \else \@EA\normalvadjust \fi
-        {\dostartgraphicgroup
+        {\dostartgraphicgroup % don't ask
          \localstarttextcolor
          \unvbox\nextbox
-         \localstoptextcolor
+         \localstoptextcolor  % don't ask
          \dostopgraphicgroup
          \ifcase\graphicvadjustmode \or \or
            % corrects for one line paragraphs
@@ -3616,7 +3698,9 @@
 \def\@@blankona    {\blanko[\v!na]}     %
 
 \setupinterlinespace
-  [\c!hoogte=.72,
+  [\c!minhoogte=0pt, % only special purpose
+   \c!mindiepte=0pt, % only special purpose
+   \c!hoogte=.72,
    \c!diepte=.28,
    \c!boven=1.0,
    \c!onder=0.4,

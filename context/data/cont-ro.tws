@@ -2259,6 +2259,7 @@ var:latime:*dimensiune::
 var:inaltime:*dimensiune::
 var:spatiusus:*dimensiune::
 var:spatiuspate:*dimensiune::
+var:optiune:max,ajustat::
 stopsetup
 
 startsetup

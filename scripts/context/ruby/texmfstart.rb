@@ -286,7 +286,7 @@ def find(filename,program)
         if suffix =~ /(#{$scriptlist})/ then
             begin
                 report("using 'kpsewhich' to locate '#{filename}' in suffix space '#{suffix}' (1)")
-                fullname = `kpsewhich -progname=#{program} -format=scripts #{filename}.#{suffix}`.chomp
+                fullname = `kpsewhich -progname=#{program} -format=texmfscripts #{filename}.#{suffix}`.chomp
             rescue
                 report("kpsewhich cannot locate '#{filename}' in suffix space '#{suffix}' (1)")
                 fullname = nil

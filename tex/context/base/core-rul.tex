@@ -638,7 +638,7 @@
   {\copyparameters[#1][#3]%
      [\c!breedte,\c!hoogte,\c!offset,\c!leeg,\c!lijndikte,%
       \c!straal,\c!hoek,\c!diepte,\c!kader,\c!kaderkleur,%
-      \c!voorgrondletter,\c!voorgrondkleur,\c!regels,%
+      \c!voorgrondletter,\c!voorgrondkleur,\c!regels,\c!orientatie,%
       \c!bovenkader,\c!onderkader,\c!linkerkader,\c!rechterkader,%
       \c!lijndikte,\c!kaderoffset,\c!achtergrond,\c!component,%
       \c!achtergrondoffset,\c!achtergrondraster,\c!achtergrondkleur,%
@@ -687,6 +687,8 @@
 %D Because it is used so often the he next macro is (and
 %D looks) rather optimized.
 
+\let\postprocessframebox\relax
+
 \let\@@framed\s!unknown
 
 \def\framedparameter#1%
@@ -727,8 +729,9 @@
    \edef\localformat{\framedparameter\c!uitlijnen}%
    \edef\localstrut {\framedparameter\c!strut}%
    % these are not
-   \edef\@@localframing {\framedparameter\c!kader}%
-   \edef\@@locallocation{\framedparameter\c!plaats}%
+   \edef\@@localframing    {\framedparameter\c!kader}%
+   \edef\@@locallocation   {\framedparameter\c!plaats}%
+   \edef\@@localorientation{\framedparameter\c!orientatie}%
    %
    \ifx\@@localframing\v!overlay   % no frame, no offset, no framewidth
      \boxhasframefalse
@@ -891,22 +894,23 @@
      {\ifdim\!!heighta>\zeropoint\the\!!heighta\else\zeropoint\fi}%
    % first alternative
    %\def\dowithframedbox%
-   %  {\let\postprocessframebox\undefined %new
+   %  {\let\postprocessframebox\relax %new
    %   \aftergroup\stoplocalframed}%
    % \afterassignment\dowithframedbox
    % \setbox\framebox=\next}
    % second alternative
    %\dowithnextbox
    %  {\setbox\framebox\flushnextbox
-   %   \let\postprocessframebox\undefined %new
+   %   \let\postprocessframebox\relax %new
    %   \stoplocalframed}
    %  \next}
    % third alternative
+   \@@startframedorientation
    \afterassignment\dodowithframebox
    \setbox\framebox\next}
 
 \def\dowithframebox
-  {\let\postprocessframebox\undefined
+  {% moved : \let\postprocessframebox\relax
    \stoplocalframed}
 
 \def\dodowithframebox
@@ -949,6 +953,7 @@
 
 \def\stoplocalframed
   {\dontshowcomposition
+   \@@stopframedorientation
    \ifboxhasformat
      \ifx\localwidth\v!passend
        \ifreshapeframebox\doreshapeframedbox\fi
@@ -981,8 +986,10 @@
    \ifboxisoverlaid \else
      \dolocateframebox
    \fi
-   \ifx\postprocessframebox\undefined \else
-     \postprocessframebox\framebox
+   \ifx\postprocessframebox\relax \else
+     \let\next\postprocessframebox
+     \let\postprocessframebox\relax % prevent nesting
+     \next\framebox
    \fi
    \edef\overlaylinecolor{\framedparameter\c!kaderkleur}%
    \edef\overlaylinewidth{\the\ruledlinewidth}% \@@...
@@ -1000,6 +1007,9 @@
    \box\framebox
    \egroup
    \egroup}
+
+\let\@@startframedorientation\relax
+\let\@@stopframedorientation \relax
 
 %D The last conditional takes care of the special situation of
 %D in||line \inframed[hoogte=3cm]{framed} boxes. Such boxes have
@@ -1394,6 +1404,7 @@
 \def\doformatboxSomeFormat
   {\vbox to \!!heighta
      \bgroup
+        \let\postprocessframebox\relax
        \forgetall
        \oninterlineskip
        \hsize\!!widtha
@@ -1412,6 +1423,7 @@
 \def\doformatboxNoFormat
   {\vbox to \!!heighta
      \bgroup
+        \let\postprocessframebox\relax
        \forgetall
        \oninterlineskip
        \hsize\!!widtha
@@ -1430,6 +1442,7 @@
 \def\doformatboxHeight
   {\vbox to \!!heighta
      \bgroup
+       \let\postprocessframebox\relax
        \forgetall
        \oninterlineskip
        \doframedsetups
@@ -1446,6 +1459,7 @@
 \def\doformatboxWidth
   {\vbox
      \bgroup
+       \let\postprocessframebox\relax
        \forgetall
        \oninterlineskip
        \hsize\!!widtha
@@ -1463,6 +1477,7 @@
 \def\doformatboxVSize
   {\vbox to \!!heighta
      \bgroup
+       \let\postprocessframebox\relax
        \forgetall
        \vsize\!!heighta
        \doframedsetups
@@ -1480,6 +1495,7 @@
 \def\doformatboxHSize
   {\hbox to \!!widtha
      \bgroup
+       \let\postprocessframebox\relax
        \forgetall
        \doframedsetups
        \hss
@@ -1493,6 +1509,7 @@
 \def\doformatboxNoSize
   {\hbox
      \bgroup
+       \let\postprocessframebox\relax
        \doframedsetups
        \localstrut
        \@@handleoneliner
@@ -2479,6 +2496,7 @@
       \c!regelcorrectie=\v!aan,
       \c!dieptecorrectie=\v!aan,
       \c!marge=\v!standaard,
+      \c!orientatie=,
       #2]%
    \setvalue{\e!start#1}{\dostartframedtext[#1]}%
    \setvalue{\e!stop #1}{\dostopframedtext     }%
@@ -3295,6 +3313,7 @@
    \c!boven=,
    \c!strut=\v!ja,
    \c!plaats=\v!normaal,
+   \c!orientatie=,
    \c!setups=]
 
 \setupscreens

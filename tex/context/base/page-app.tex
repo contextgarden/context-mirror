@@ -18,16 +18,6 @@
 
 \unprotect
 
-\def\dostartfittingpage[#1][#2]%
-  {\pagina % this is kind of tricky! there can be preceding page refs
-   \bgroup % resulting in a zero height page; test fig-make !
-   \dontcomplain
-   % runs under current page regime, i.e. page variables passed to mp
-   \setbox\scratchbox\hbox
-     \bgroup
-     \getparameters[#1][#2]%
-     \schaal[\c!schaal=\getvalue{#1\c!schaal}]\bgroup\localframed[#1]\bgroup}
-
 \definepapersize
   [\??fp\s!dummy]
   [\c!breedte=\fittingwd,
@@ -45,8 +35,64 @@
    \c!rechtermarge=\!!zeropoint,\c!rechterrand=\!!zeropoint,
    \c!hoofd=\!!zeropoint,\c!voet=\!!zeropoint]
 
+% \def\dostartfittingpage[#1][#2]%
+%   {\pagina % this is kind of tricky! there can be preceding page refs
+%    \bgroup % resulting in a zero height page; test fig-make !
+%    \dontcomplain
+%    % runs under current page regime, i.e. page variables passed to mp
+%    \setbox\scratchbox\hbox
+%      \bgroup
+%      \getparameters[#1][#2]%
+%      \schaal[\c!schaal=\getvalue{#1\c!schaal}]\bgroup\localframed[#1]\bgroup}
+
+% \def\dostopfittingpage
+%   {\egroup\egroup\egroup
+%    \edef\fittingwd{\the\wd\scratchbox}%
+%    \edef\fittinght{\the\ht\scratchbox}%
+%    \startlocallayout
+%    \ifdim\fittinght<\lineheight
+%      % write status : too small
+%      \setbox\scratchbox\vbox to \lineheight{\vss\box\scratchbox\vss}%
+%      \edef\fittinght{\the\lineheight}%
+%    \fi
+%    \let\checkcurrentlayout\relax % else interference with odd/even layout
+%    \setuppapersize
+%      [\??fp\s!dummy][\??fp\s!dummy]%
+%    \definelayout
+%      [\v!pagina]%
+%      [\c!plaats=\v!midden,
+%       \c!breedte=\fittingwd,
+%       \c!hoogte=\fittinght]%
+%    \setuplayout
+%      [\v!pagina]%
+%    \startmakeup[\v!standaard][\c!tekststatus=\v!leeg,\c!dubbelzijdig=\v!nee,\c!pagina=]%
+%      \centerbox{\box\scratchbox}%
+%    \stopmakeup
+%    \stoplocallayout
+%    \egroup}
+
+\def\dostartfittingpage[#1][#2]%
+  {\pagina % this is kind of tricky! there can be preceding page refs
+   \bgroup % resulting in a zero height page; test fig-make !
+   \dontcomplain
+   % runs under current page regime, i.e. page variables passed to mp
+   \setbox\scratchbox\hbox
+     \bgroup
+     \getparameters[#1][#2]%
+     \doifvalue{#1\c!marge}{\v!pagina}
+       {\offsetbox
+          [\c!linkeroffset=\rugwit,
+           \c!rechteroffset=\snijwit,
+           \c!bovenoffset=\kopwit,
+           \c!onderoffset=\bodemwit]\hbox}%
+     \bgroup
+     \schaal[\c!schaal=\getvalue{#1\c!schaal}]\bgroup\localframed[#1]\bgroup}
+
 \def\dostopfittingpage
-  {\egroup\egroup\egroup
+  {\egroup % localframed
+   \egroup % scale
+   \egroup % offsetbox
+   \egroup % scratchbox
    \edef\fittingwd{\the\wd\scratchbox}%
    \edef\fittinght{\the\ht\scratchbox}%
    \startlocallayout

@@ -182,7 +182,8 @@ my $AllPatterns      = 0;
 my $ForceXML         = 0;
 my $Random           = 0;
 my $Filters          = '';
-my $NoMapFiles       = 0;
+my $NoMapFiles       = 0 ;
+my $Foxet            = 0 ;
 
 my $StartLine        = 0 ;
 my $StartColumn      = 0 ;
@@ -283,12 +284,19 @@ my $MakeMpy = '';
     "modefile=s"     => \$ModeFile,         # additional modes file
     "globalfile"     => \$GlobalFile,
     "nomapfiles"     => \$NoMapFiles,
+    "foxet"          => \$Foxet,
     #### exxperiment
     "startline=s"    => \$StartLine,
     "startcolumn=s"  => \$StartColumn,
     "endline=s"      => \$EndLine,
     "endcolumn=s"    => \$EndColumn
 );                                          # don't check name
+
+if ($Foxet) {
+    $ProducePdfT = 1 ;
+    $ForceXML    = 1 ;
+    $Modules     = "foxet" ;
+}
 
 # a set file (like blabla.bat) can set paths now
 
@@ -713,10 +721,10 @@ if ( $MpFormatFlag eq "" ) {
 #~ if ( $TeXFormatFlag eq "" ) { $TeXFormatFlag = "&" }
 #~ if ( $MpFormatFlag  eq "" ) { $MpFormatFlag  = "&" }
 
-#~ unless ( $dosish && !$escapeshell ) {
-    #~ if ( $TeXFormatFlag eq "&" ) { $TeXFormatFlag = "\\&" }
-    #~ if ( $MpFormatFlag  eq "&" ) { $MpFormatFlag  = "\\&" }
-#~ }
+unless ( $dosish && !$escapeshell ) {
+    if ( $TeXFormatFlag eq "&" ) { $TeXFormatFlag = "\\&" }
+    if ( $MpFormatFlag  eq "&" ) { $MpFormatFlag  = "\\&" }
+}
 
 if ($TeXProgram) { $TeXExecutable = $TeXProgram }
 
@@ -1527,7 +1535,7 @@ my $DummyFile = 0;
 
 sub isXMLfile {
     my $Name = shift;
-    if ( ($ForceXML) || ( $Name =~ /\.(xml|fo)$/io ) ) { return 1 }
+    if ( ($ForceXML) || ( $Name =~ /\.(xml|fo|fox)$/io ) ) { return 1 }
     else {
         open( XML, $Name );
         my $str = <XML>;
@@ -1549,7 +1557,7 @@ sub RunConTeXtFile {
         system("pdfclose --all") unless $ok ;
     }
     if ( -e "$JobName.$JobSuffix" ) {
-        $DummyFile = ( ($ForceXML) || ( $JobSuffix =~ /(xml|fo)/io ) );
+        $DummyFile = ( ($ForceXML) || ( $JobSuffix =~ /(xml|fo|fox)/io ) );
     }
     # to be considered :
     # { $DummyFile = isXMLfile("$JobName.$JobSuffix") }
@@ -1561,7 +1569,7 @@ sub RunConTeXtFile {
     }
     if ($DummyFile) {
         open( TMP, ">$JobName.run" );
-        if ( ( $JobSuffix =~ /(xml|fo)/io ) || $ForceXML ) {
+        if ( ( $JobSuffix =~ /(xml|fo|fox)/io ) || $ForceXML ) {
             if ( $Filters ne "" ) {
                 print "     using xml filters : $Filters\n";
             }

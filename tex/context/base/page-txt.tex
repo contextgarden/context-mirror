@@ -195,7 +195,7 @@
 %         {\placetextlinestrut{#1}% here !
 %         %\doifdefinedelse{\??mk\ascii\c!koppeling} % brrr
 %          \doifelsemarking\ascii
-%            {\dolimitatetexts{#1#2#5}{\haalmarkering[\ascii][\v!eerste]}}
+%            {\dolimitatetexts{#1#2#5}{\getmarking[\ascii][\v!eerste]}}
 %            {\ConvertConstantAfter\doifelse{\v!paginanummer}{#6}
 %               {\@@plaatspaginanummer}
 %               {\ConvertConstantAfter\doifelse{\v!datum}{#6}
@@ -213,7 +213,7 @@
         {\placetextlinestrut{#1}% here !
         %\doifdefinedelse{\??mk\ascii\c!koppeling} % brrr
          \doifelsemarking\ascii
-           {\dolimitatetexts{#1#2#5}{\haalmarkering[\ascii][\v!eerste]}}
+           {\dolimitatetexts{#1#2#5}{\getmarking[\ascii][\v!eerste]}}
            {\ConvertConstantAfter\doifelse\v!paginanummer{#6}
                \@@plaatspaginanummer
               {\ConvertConstantAfter\doifelse\v!datum{#6}
@@ -317,7 +317,7 @@
 \setvalue{\string\placelayouttextline\v!geenmarkering}#1#2%
   {\bgroup
    \resettextlinestatus{#1}%
-   \let\dohaalmarkering\nohaalmarkering
+   \let\dogetmarking\nogetmarking
    \doplacelayouttextline{#1}{#2}%
    \egroup}
 

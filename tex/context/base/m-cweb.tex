@@ -300,7 +300,7 @@
 %D \CWEBquote at sign for control text (not needed in versions
 %D $>=$ 2.9).
 
-\defCWEBmacro\AT{@} 
+\defCWEBmacro\AT{@}
 
 %D \macros{ATL,postATL,NOATL}{}
 %D
@@ -641,7 +641,7 @@
 \def\theCWEByskip {\blanko[\v!klein]}
 \def\theCWEBvskip {\blanko[\v!groot]}
 
-\protect 
+\protect
 
 \defCWEBmacro\Y%
   {\par
@@ -1101,10 +1101,10 @@
 \defCWEBmacro\X#1:#2\X%
   {\newCWEBmacroX#1:#2\X}
 
-\definieermarkering[CWEBfilename]
-\definieermarkering[CWEBsectiontitle]
-\definieermarkering[CWEBsectionnumber]
-\definieermarkering[CWEBsectiondepth]
+\definemarking[CWEBfilename]
+\definemarking[CWEBsectiontitle]
+\definemarking[CWEBsectionnumber]
+\definemarking[CWEBsectiondepth]
 
 \defCWEBmacro\M#1%
   {\MN{#1}%
@@ -1167,7 +1167,7 @@
   {\linktoCWEBfiletrue
    \def\otherCWEBfile{#1}}
 
-\unprotect 
+\unprotect
 
 \def\gotoCWEBsection#1[#2]%
   {\iflinktoCWEBfile
@@ -1181,7 +1181,7 @@
      #1%
    \fi}
 
-\protect 
+\protect
 
 \defCWEBmacro\startsection%
   {\rightskip=0pt % get out of C mode (cf. \B)

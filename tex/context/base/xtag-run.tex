@@ -116,10 +116,13 @@
        \ifnum\kindofXMLelement=2\string/\fi
        \currentXMLelement
      \stopcolor
-     \ifcase#1\or\ifx\currentXMLarguments\empty\else
-       \cleanupXMLarguments
-       \startcolor[xtag:0]\hbox{\space}\showXMLarguments\unskip\stopcolor
-     \fi\fi
+     \ifcase#1\or
+       \cleanupXMLarguments % get rid of spurious end space and end /
+       \ifx\currentXMLarguments\empty\else
+         \setbox\scratchbox\hbox{\space}\hskip\wd\scratchbox % hm, slow
+         \startcolor[xtag:0]\showXMLarguments\unskip\stopcolor\unskip
+       \fi
+     \fi
      \startcolor[xtag:\ifnum\scratchcounter<0 0\else\number\scratchcounter\fi]%
      \ifnum\kindofXMLelement=3\string/\fi
      \string>%
@@ -227,6 +230,7 @@
      \enableXML\verbatimXML
      \enableregime[utf]%
      \chardef\utfunicodetracer8
+     \veryraggedright
      \readfile{\truefilename{#1}}\donothing\donothing\endgraf
      \removelastskip % really needed
    \stopopelkaar

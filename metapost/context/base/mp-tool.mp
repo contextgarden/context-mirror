@@ -1499,17 +1499,21 @@ enddef ;
 % nice: currentpicture := inverted currentpicture ;
 
 primarydef p uncolored c =
-  image
-    (for i within p :
-       addto currentpicture
-       if stroked i or filled i :
-         if filled i : contour else : doublepath fi pathpart i
-         dashed dashpart i withpen penpart i
-       else :
-         also i
-       fi
-       withcolor c-(redpart i, greenpart i, bluepart i) ;
-     endfor ; )
+  if color p :
+    c - p
+  else :
+      image
+        (for i within p :
+           addto currentpicture
+           if stroked i or filled i :
+             if filled i : contour else : doublepath fi pathpart i
+             dashed dashpart i withpen penpart i
+           else :
+             also i
+           fi
+           withcolor c-(redpart i, greenpart i, bluepart i) ;
+         endfor ; )
+  fi
 enddef ;
 
 vardef inverted primary p =
@@ -1517,34 +1521,67 @@ vardef inverted primary p =
 enddef ;
 
 primarydef p softened c =
-  image
-    (save cc ; color cc ; cc := tripled(c) ;
-     for i within p :
-       addto currentpicture
-       if stroked i or filled i :
-         if filled i : contour else : doublepath fi pathpart i
-         dashed dashpart i withpen penpart i
-       else :
-        also i
-       fi
-       withcolor (redpart   cc * redpart   i,
-                  greenpart cc * greenpart i,
-                  bluepart  cc * bluepart  i) ;
-     endfor ;)
+  if color p :
+    tripled(c) * p
+  else :
+    image
+      (save cc ; color cc ; cc := tripled(c) ;
+       for i within p :
+         addto currentpicture
+         if stroked i or filled i :
+           if filled i : contour else : doublepath fi pathpart i
+           dashed dashpart i withpen penpart i
+         else :
+          also i
+         fi
+         withcolor (redpart   cc * redpart   i,
+                    greenpart cc * greenpart i,
+                    bluepart  cc * bluepart  i) ;
+       endfor ;)
+  fi
+enddef ;
+
+primarydef p softened c =
+  begingroup
+  save cc ; color cc ; cc := tripled(c) ;
+  if color p :
+    (redpart   cc * redpart   p,
+     greenpart cc * greenpart p,
+     bluepart  cc * bluepart  p)
+  else :
+    image
+      (for i within p :
+         addto currentpicture
+         if stroked i or filled i :
+           if filled i : contour else : doublepath fi pathpart i
+           dashed dashpart i withpen penpart i
+         else :
+          also i
+         fi
+         withcolor (redpart   cc * redpart   i,
+                    greenpart cc * greenpart i,
+                    bluepart  cc * bluepart  i) ;
+       endfor ;)
+  fi
+  endgroup
 enddef ;
 
 vardef grayed primary p =
-  image
-    (for i within p :
-       addto currentpicture
-       if stroked i or filled i :
-         if filled i : contour else : doublepath fi pathpart i
-         dashed dashpart i withpen penpart i
-       else :
-         also i
-       fi
-       withcolor tripled(.30redpart i+.59greenpart i+.11bluepart i) ;
-     endfor ; )
+  if color p :
+    tripled(.30redpart p+.59greenpart p+.11bluepart p)
+  else :
+    image
+      (for i within p :
+         addto currentpicture
+         if stroked i or filled i :
+           if filled i : contour else : doublepath fi pathpart i
+           dashed dashpart i withpen penpart i
+         else :
+           also i
+         fi
+         withcolor tripled(.30redpart i+.59greenpart i+.11bluepart i) ;
+       endfor ; )
+  fi
 enddef ;
 
 % yes or no: "text" infont "cmr12" at 24pt ;

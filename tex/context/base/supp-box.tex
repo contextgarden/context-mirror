@@ -1276,7 +1276,7 @@
 %D When needed, spacing can be suppressed by \type
 %D {\nothingbetweenisolatedwords}.
 
-\newif\ifisolatedwords
+\newif\ifisolatedwords % public, e.g. used in core-ref
 
 \def\betweenisolatedwords
   {\hskip\currentspaceskip}
@@ -1286,13 +1286,17 @@
 
 \newskip\isolatedlastskip
 
+\chardef\isolatedwordsmode=0 % no nesting
+
 \def\processisolatedwords#1#2% todo: vbox ipv hbox ivm afbreken!
   {\bgroup                   % todo: doloop
    \fakecompoundhyphen
    \mindermeldingen
    \forgetall
    \nopenalties
-   \def\processisolatedwords##1##2{##2{##1}}% we split only once
+   \ifcase\isolatedwordsmode
+     \def\processisolatedwords##1##2{##2{##1}}% we split only once
+   \fi
    \global\let\localbetweenisolatedwords\betweenisolatedwords
    \setbox0\normalhbox    % we default to spaces, but from inside out
      {\ignorespaces#1% \localbetweenisolatedwords can be overruled

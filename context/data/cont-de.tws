@@ -2259,6 +2259,7 @@ var:breite:*Dimension::
 var:hoehe:*Dimension::
 var:kopfspatium:*Dimension::
 var:rumpfspatium:*Dimension::
+var:option:max,passend::
 stopsetup
 
 startsetup

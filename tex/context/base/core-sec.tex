@@ -296,23 +296,23 @@
 
 %%%%%%%%%
 
-\def\dokoppelmarkering[#1][#2]%
+\def\docouplemarking[#1][#2]%
   {\doifdefinedelse{\??ko#2\c!sectie}
-     {\dokoppelmarkering[#1][\getvalue{\??ko#2\c!sectie}]}
+     {\docouplemarking[#1][\getvalue{\??ko#2\c!sectie}]}
      {\def\donexttrackcommando##1%
-        {\edef\gekoppeldemarkeringen{\getvalue{\??se##1\c!markering}}%
+        {\edef\coupledmarkings{\getvalue{\??se##1\c!markering}}%
          \doifelse{##1}{#2}
-           {\addtocommalist{#1}\gekoppeldemarkeringen}
-           {\removefromcommalist{#1}\gekoppeldemarkeringen}%
-         \setevalue{\??se##1\c!markering}{\gekoppeldemarkeringen}%
+           {\addtocommalist{#1}\coupledmarkings}
+           {\removefromcommalist{#1}\coupledmarkings}%
+         \setevalue{\??se##1\c!markering}{\coupledmarkings}%
          \donexttracklevel{##1}}%
       \donexttracklevel{\zerosection}}} % \firstsection
 
-\def\koppelmarkering
-  {\dodoubleargument\dokoppelmarkering}
+\def\couplemarking
+  {\dodoubleargument\docouplemarking}
 
-\def\ontkoppelmarkering[#1]%
-  {\koppelmarkering[#1][]}
+\def\decouplemarking[#1]%
+  {\couplemarking[#1][]}
 
 \def\definieersectie[#1]%
   {\doifundefined{\??se#1}
@@ -401,7 +401,7 @@
 %   {\doifdefinedelse{\??se#1}
 %      {\let\donexttrackcommando\doresetsectionmarks
 %       \donexttracklevel{#1}}%
-%      {\fastresetmarker[\hoofdmarkering{#1}]}} % redundant \hoofdmarkering
+%      {\fastresetmarker[\mainmarking{#1}]}} % redundant \mainmarking
 
 % \def\doresetsectionmarks#1%
 %   {\ifundefined{\??se#1\c!markering}\else % skip zero level
@@ -420,7 +420,7 @@
 
 \def\resetsectionmarks#1%
   {\ifundefined{\??se#1}%
-     \fastresetmarker[\hoofdmarkering{#1}]% % redundant \hoofdmarkering
+     \fastresetmarker[\mainmarking{#1}]% % redundant \mainmarking
    \else
      \let\donexttrackcommando\doresetsectionmarks
      \donexttracklevel{#1}%
@@ -1622,7 +1622,7 @@
      \dontconvertfont
      \dostartattributes\@@sectie{#1}{#2}\empty
        \setupinterlinespace
-       \begstrut\haalmarkering[\hoofdmarkering{#4#3}]\endstrut
+       \begstrut\getmarking[\mainmarking{#4#3}]\endstrut
        \endgraf
      \dostopattributes
    \dostopattributes
@@ -2091,12 +2091,12 @@
       \doifsomething{\getvalue{\??ko#1\c!sectie}}
         {\doifelsemarking{#1}% \doifundefined{\??mk#1}
            {}% marking #1 already defined
-           {\definieermarkering[#1]%
-            \koppelmarkering[#1][\getvalue{\??ko#1\c!sectie}]%
-            \definieermarkering[#1\v!nummer]%
+           {\definemarking[#1]%
+            \couplemarking[#1][\getvalue{\??ko#1\c!sectie}]%
+            \definemarking[#1\v!nummer]%
 % klopt dit wel ?
-            \koppelmarkering[#1\v!nummer][\getvalue{\??ko#1\c!sectie}]}}%
-%            \koppelmarkering[#1\v!nummer][\getvalue{\??ko#1\c!sectie}\v!nummer]}}%
+            \couplemarking[#1\v!nummer][\getvalue{\??ko#1\c!sectie}]}}%
+%            \couplemarking[#1\v!nummer][\getvalue{\??ko#1\c!sectie}\v!nummer]}}%
       \doifundefined{\??li#1}{\definieerlijst[#1]}}
      {\ConvertToConstant\doifelse{#1}{#2}
         {\doifundefined{\??li#1}{\definieerlijst[#1]}}
@@ -2114,8 +2114,8 @@
             \c!uitlijnen,\c!titeluitlijnen,\c!tolerantie,\c!grid,
             \c!nummercommando,\c!tekstcommando,\c!margetekst,\c!marge]%
 \getparameters[\??ko#1][\c!expansie=]% iig een value, rather fuzzy
-         \definieermarkering[#1][#2]%
-         \definieermarkering[#1\v!nummer][#2\v!nummer]%
+         \definemarking[#1][#2]%
+         \definemarking[#1\v!nummer][#2\v!nummer]%
          \doifundefined{\??li#1}{\definieerlijst[#1][#2]}}}%
    \addtocommalist{#1}\@@kolijst
    \setevalue{\??sk#1}%

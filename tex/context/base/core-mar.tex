@@ -22,20 +22,20 @@
 %
 %   \fetchmark[naam][plaats]
 
-% nog expansie in hoofdmarkering
+% nog expansie in mainmarking
 
 % ook nog reset koppelen aan sectie
 
-%\def\hoofdmarkering#1%
+%\def\mainmarking#1%
 %  {\csname\??mk#1\c!koppeling\endcsname}
 %
 %\def\fastresetmarker#1%
-%  {\doifdefined{\??mk\hoofdmarkering{#1}}
-%     {\expandafter\resetmark\csname\??mk\hoofdmarkering{#1}\endcsname}}
+%  {\doifdefined{\??mk\maimarking{#1}}
+%     {\expandafter\resetmark\csname\??mk\mainmarking{#1}\endcsname}}
 
 \beginTEX
 
-\def\hoofdmarkering#1%
+\def\mainmarking#1%
   {\@EA\ifx\csname\??mk#1\c!koppeling\endcsname\else
      \csname\??mk#1\c!koppeling\endcsname
    \fi}
@@ -49,7 +49,7 @@
 
 \beginETEX \ifcsname
 
-\def\hoofdmarkering#1%
+\def\mainmarking#1%
   {\ifcsname\??mk#1\c!koppeling\endcsname
      \csname\??mk#1\c!koppeling\endcsname
    \fi}
@@ -64,18 +64,18 @@
 \def\fastresetmarkerlist[#1]%
   {\expanded{\rawprocesscommalist[#1]}\fastresetmarker}
 
-\def\doresetmarkering[#1]%
+\def\doresetmarking[#1]%
   {\processcommalist[#1]\fastresetmarker}
 
-\def\resetmarkering
-  {\dosingleargument\doresetmarkering}
+\def\resetmarking
+  {\dosingleargument\doresetmarking}
 
-\def\dostelmarkeringin[#1][#2]%
+\def\dosetupmarking[#1][#2]%
   {\def\docommando##1{\getparameters[\??mk##1][#2]}%
    \processcommalist[#1]\docommando}
 
-\def\stelmarkeringin
-  {\dodoubleargument\dostelmarkeringin}
+\def\setupmarking
+  {\dodoubleargument\dosetupmarking}
 
 % betere protectie
 
@@ -84,30 +84,45 @@
 \letvalue{\??mk\??mk\v!laatste}\getbotmark
 \letvalue{\??mk\??mk\v!huidige}\getcurrentmark
 
-\def\dododefinieermarkering[#1][#2]%
-  {\stelmarkeringin[#1]
+\ifx\decouplemarking\undefined \def\decouplemarking[#1]{} \fi
+
+\def\dododefinemarking[#1][#2]%
+  {\getparameters[\??mk#1]
      [\c!expansie=\v!nee,  % saves a macro
       \c!scheider={ --- }, % watch the spaces
       \c!limittext=\@@kolimittext,
         \c!status=\v!start]%
-   \ontkoppelmarkering[#1]%  % no coupling with sections
+   \decouplemarking[#1]%  % no coupling with sections
    \setevalue{\??mk#1\c!koppeling}{#2}%
    \expandafter\newmark\csname\??mk#2\endcsname
    \showmessage\m!systems{13}{#1,[#2]}}
 
-\def\dodefinieermarkering[#1][#2]%
+\def\dodefinemarking[#1][#2]%
   {\doifelsenothing{#2}
-     {\dododefinieermarkering[#1][#1]}
-     {\dododefinieermarkering[#1][#2]}}
+     {\dododefinemarking[#1][#1]}
+     {\dododefinemarking[#1][#2]}}
 
-\def\definieermarkering
-  {\dodoubleempty\dodefinieermarkering}
+\def\definemarking
+  {\dodoubleempty\dodefinemarking}
 
-\let\geenmarkering\empty
+\def\definerawmarking[#1]% global ! ! ! !
+  {\getgparameters[\??mk#1]
+     [\c!expansie=\v!nee,  % saves a macro
+      \c!scheider={ --- }, % watch the spaces
+      \c!limittext=,
+        \c!status=\v!start]%
+   \setxvalue{\??mk#1\c!koppeling}{#1}%
+   \expandafter\newmark\csname\??mk#1\endcsname
+   \showmessage\m!systems{13}{#1}}
+
+\let\nomarking\empty
+
+\def\doifmarkingelse#1%
+  {\doifdefinedelse{\??mk#1}}
 
 % \def\fetchmark[#1][#2]% never \unexpanded
 %   {\@EA\@EA\csname\??mk\??mk#2\endcsname
-%      \csname\??mk\hoofdmarkering{#1}\endcsname}
+%      \csname\??mk\mainmarking{#1}\endcsname}
 
 \beginTEX
 
@@ -145,11 +160,11 @@
            {\fetchmark[#1][\v!vorige]\getvalue{\??mk#1\c!scheider}}}}%
       \fetchtwomarks[#1]}
 
-\def\dohaalmarkering[#1][#2]%
+\def\dogetmarking[#1][#2]%
   {\doifvalue{\??mk#1\c!status}\v!start
      {\bgroup
-     %\def\geenmarkering##1{\unknown\ }%
-      \def\geenmarkering{\splitsequence{\getvalue{\??mk#1\c!limittext}}}%
+     %\def\nomarking##1{\unknown\ }%
+      \def\nomarking{\splitsequence{\getvalue{\??mk#1\c!limittext}}}%
       \setfullsectionnumber{\??mk#1}%
       \processaction % slow
         [#2]
@@ -159,11 +174,11 @@
          \s!unknown=>{\fetchmark    [#1][#2]}]%
       \egroup}}
 
-\def\nohaalmarkering[#1][#2]%
+\def\nogetmarking[#1][#2]%
   {}
 
-\unexpanded\def\haalmarkering%
-  {\dodoubleargument\dohaalmarkering}
+\unexpanded\def\getmarking
+  {\dodoubleargument\dogetmarking}
 
 \let\setsomemark\setmark
 

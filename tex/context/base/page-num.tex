@@ -13,6 +13,8 @@
 
 \writestatus{loading}{Context Core Macros / Numbering}
 
+% todo: {}{}{} ipv ...--...-...-...--... in pag ref
+
 \unprotect
 
 % \gotonextsubpage  : voor de pagebody
@@ -51,7 +53,7 @@
 
 % so far for sync, see \gotonext...
 
-\def\dostelsubpaginanummerin[#1]%
+\def\dosetupsubpagenumber[#1]%
   {\doifelse{#1}{\v!reset}
      {\resetsubpaginanummer} % \resetnumber[\s!subpage]
      {\getparameters[\??sn][#1]%
@@ -74,8 +76,8 @@
 \def\subpaginanummer
   {\ifshowingsubpage\the\subpageno\else0\fi}
 
-\def\stelsubpaginanummerin
-  {\dosingleargument\dostelsubpaginanummerin}
+\def\setupsubpagenumber
+  {\dosingleargument\dosetupsubpagenumber}
 
 \def\newnofsubpages{0}
 \def\nofsubpages   {0}
@@ -289,7 +291,7 @@
 
 \global\let\@@pnstatus\@@pnstatus
 
-\def\dostelpaginanummerin[#1]%
+\def\dosetuppagenumber[#1]%
   {\getparameters[\??pn][\c!nummer=,#1]%
    \global\let\@@pnstatus\@@pnstatus
    \doifsomething\@@pnnummer
@@ -300,8 +302,8 @@
      \global\shiftedrealpagenotrue
    \fi \fi}
 
-\def\stelpaginanummerin
-  {\dosingleargument\dostelpaginanummerin}
+\def\setuppagenumber
+  {\dosingleargument\dosetuppagenumber}
 
 % long time used alternative
 %
@@ -570,11 +572,11 @@
   {\doifelsenothing{#1}{?}% \prepare had got lost
      {\preparepaginaprefix\??rf\paginaprefix\??rf[#1]\translatednumber[#1]}}
 
-\stelpaginanummerin
+\setuppagenumber
   [\c!status=\v!start,
    \c!nummer=1]
 
-\stelsubpaginanummerin
+\setupsubpagenumber
   [\c!wijze=\v!per\v!deel,
    \c!status=\v!stop]
 

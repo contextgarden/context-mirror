@@ -138,6 +138,7 @@
 
 \def\actualshipout#1%
   {\global\advance\shippedoutpages\plusone
+   % this is not resource safe!
    \ifx\pagestoshipout\empty
      \ifcase\whichpagetoshipout\relax
        \donetrue

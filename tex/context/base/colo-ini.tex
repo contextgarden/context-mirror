@@ -236,7 +236,8 @@
   {\let\@@cl@@r\@@cl@@z\let\@@cl@@g\@@cl@@z\let\@@cl@@b\@@cl@@z
    \let\@@cl@@c\@@cl@@z\let\@@cl@@m\@@cl@@z\let\@@cl@@y\@@cl@@z
    \let\@@cl@@k\@@cl@@z\let\@@cl@@s\@@cl@@z\let\@@cl@@p\@@cl@@o
-   \let\@@cl@@t\@@cl@@z\let\@@cl@@a\@@cl@@z\let\@@cl@@n\empty}
+   \let\@@cl@@t\@@cl@@z\let\@@cl@@a\@@cl@@z
+   \let\@@cl@@h\empty  \let\@@cl@@n\empty}
 
 \def\@@cl@@A{\@@cl@@a} % a hook for symbolic conversion, see below
 
@@ -306,18 +307,22 @@
 %    \unexpanded\setvalue{#1}{\color[#1]}} % \unexpanded toegevoegd
 
 \def\dododefinecolor#1#2#3#4[#5][#6]% #2==set(g)value #3==set[e|x]value
-  {#1\addtocommalist{#5}\colorlist
+  {#1\addtocommalist{#5}\colorlist % optional
    \doifassignmentelse{#6}
      {\@@resetcolorparameters
       \getparameters[\??cl @@][#6]%
-      \doifelse{\@@cl@@r\@@cl@@g\@@cl@@b}{\@@cl@@z\@@cl@@z\@@cl@@z}
-        {\doifelse{\@@cl@@c\@@cl@@m\@@cl@@y\@@cl@@k}{\@@cl@@z\@@cl@@z\@@cl@@z\@@cl@@z}
-           {\doifelse\@@cl@@s\@@cl@@z
-              {\showmessage\m!colors8{{[#6]},#5}%
-               #3{\??cr#5}{\colorZpattern}}
-              {#3{\??cr#5}{\colorSpattern}}}
-           {#3{\??cr#5}{\colorCpattern}}}
-        {#3{\??cr#5}{\colorRpattern}}}
+      \ifx\@@cl@@h\empty
+        \doifelse{\@@cl@@r\@@cl@@g\@@cl@@b}{\@@cl@@z\@@cl@@z\@@cl@@z}
+          {\doifelse{\@@cl@@c\@@cl@@m\@@cl@@y\@@cl@@k}{\@@cl@@z\@@cl@@z\@@cl@@z\@@cl@@z}
+             {\doifelse\@@cl@@s\@@cl@@z
+                {\showmessage\m!colors8{{[#6]},#5}%
+                 #3{\??cr#5}{\colorZpattern}}
+                {#3{\??cr#5}{\colorSpattern}}}
+             {#3{\??cr#5}{\colorCpattern}}}
+          {#3{\??cr#5}{\colorRpattern}}%
+      \else
+        \setxvalue{\??cr#5}{\colorHpattern}%
+      \fi}
      {\doifdefinedelse{\??cr#6}
         {\doifelse{#5}{#6}
            {% this way we can freeze \definecolor[somecolor][somecolor]
@@ -329,6 +334,11 @@
    \ifcase#4\or
      \unexpanded#2{#5}{\switchtocolor[#5]}% \unexpanded toegevoegd
    \fi}
+
+%D Hex color support is not enabled by default. You need to say \setupcolor
+%D [hex] to get this working.
+
+\ifx\colorHpattern\undefined \let\colorHpattern\colorZpattern \fi
 
 %D New and experimental.
 
@@ -2341,6 +2351,9 @@
   {\scaledMPcolor{#2}{#1}}
 
 \def\doMPblack#1\end#2\end
+  {\unknownMPcolor}
+
+\def\unknownMPcolor
   {(0,0,0)}
 
 %D \macros

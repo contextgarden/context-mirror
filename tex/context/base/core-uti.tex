@@ -58,11 +58,15 @@
 \def\checksectionseparator               % catches backward compatibility conflict
   {\doifnot\sectionseparator:\endinput}  % this dependency may go in a few years
 
+\def\dosplitofffoliopart[#1::#2::#3]{#3}
+
 \def\thisissectionseparator#1%
   {\bgroup
    \globallet\checksectionseparator\relax
    \convertcommand \sectionseparator\to\asciiA
    \convertargument               #1\to\asciiB
+   \expanded{\gdef\noexpand\dosplitofffoliopart[####1\sectionseparator
+     \sectionseparator####2\sectionseparator\sectionseparator####3]{####3}}%
    \ifx\asciiA\asciiB
      \egroup
    \else

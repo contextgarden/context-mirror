@@ -29,13 +29,13 @@
   \global\collectedlinenotes\emptytoks
 \to \beforeeverylinenumbering
 
-% \def\handlelinenote#1#2%
+% \def\dohandlelinenote#1#2#3%
 %   {\bgroup
-%    \expanded{\beforesplitstring#1}\at--\to\linenotelinenumber
+%    \expanded{\beforesplitstring#2}\at--\to\linenotelinenumber
 %    \ifnum\linenotelinenumber=\linenumber\relax
-%      % todo: \onlyfootnote{#1}{#2}% == configurable
-%      \setupfootnotes[\c!nummercommando=\gobbleoneargument]%
-%      \footnotetext{#1: #2}%
+%      % todo: \onlyfootnote{#2}{#3}% == configurable
+%      \setupnote[#1][\c!nummercommando=\gobbleoneargument]%
+%      \setnotetext[#1]{#2: #3}%
 %    \fi
 %    \egroup}
 
@@ -44,24 +44,13 @@
    \expanded{\beforesplitstring#2}\at--\to\linenotelinenumber
    \ifnum\linenotelinenumber=\linenumber\relax
      % todo: \onlyfootnote{#2}{#3}% == configurable
-     \setupnote[#1][\c!nummercommando=\gobbleoneargument]%
-     \setnotetext[#1]{#2: #3}%
+    % \setupnote[#1][\c!nummercommando=\gobbleoneargument]%
+    % \setnotetext[#1]{\rawreference\s!fnt{\s!fnt:f:\internalfootreference}{}#2: #3}%
+      \def\linenotelinenumber##1{#2}%
+      \setupnote[#1][\c!nummercommando=\linenotelinenumber]%
+      \setnote[#1]{#3}%
    \fi
    \egroup}
-
-% \def\tracedlinenote#1%
-%   {\iftracelinenotes
-%      \hbox to \zeropoint
-%        {\forgetall
-%         \localcolortrue
-%         \hsize\zeropoint
-%         \hss
-%         \vbox to \strutheight{\llap{\red\infofont\setstrut\linenotecounter}\vss}%
-%         {\blue\vl}%
-%         \vbox to \strutheight{\rlap{\red\infofont\setstrut#1}\vss}%
-%         \hss}%
-%       \prewordbreak
-%    \fi}
 
 \def\dotracedlinenote#1%
   {\iftracelinenotes
@@ -77,15 +66,6 @@
       \prewordbreak
    \fi}
 
-% \def\linenote#1%
-%   {\doglobal\increment\linenotecounter
-%    \doifreferencefoundelse{\??rr:\linenotecounter}%
-%      {\doglobal\@EA\appendtoks\@EA\handlelinenote\@EA
-%         {\currenttextreference}{#1}\to\collectedlinenotes}
-%      \donothing
-%    \tracedlinenote\empty
-%    \expanded{\eenregel[\??rr:\linenotecounter]}}
-
 \def\dolinenote#1#2%
   {\doglobal\increment\linenotecounter
    \doifreferencefoundelse{\??rr:\linenotecounter}%
@@ -95,14 +75,6 @@
    \dotracedlinenote\empty
    \expanded{\eenregel[\??rr:\linenotecounter]}}
 
-% \def\startlinenote[#1]#2%
-%   {\doifreferencefoundelse{\??rr:#1}%
-%      {\doglobal\@EA\appendtoks\@EA\handlelinenote\@EA
-%         {\currenttextreference}{#2}\to\collectedlinenotes}
-%      \donothing
-%    \tracedlinenote{#1}%
-%    \startregel[\??rr:#1]}
-
 \def\dostartlinenote#1[#2]#3%
   {\doifreferencefoundelse{\??rr:#2}%
      {\expanded{\doglobal\noexpand\appendtoks\noexpand\dohandlelinenote
@@ -110,9 +82,6 @@
      \donothing
    \dotracedlinenote{#2}%
    \startregel[\??rr:#2]}
-
-% \def\stoplinenote[#1]%
-%   {\stopregel[\??rr:#1]}
 
 \def\dostoplinenote#1[#2]%
   {\stopregel[\??rr:#2]}

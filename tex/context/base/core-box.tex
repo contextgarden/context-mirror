@@ -723,7 +723,7 @@
   {\dodoubleempty\dooffsetbox[]}
 
 % left/right/top/bottomoffset -> dimensions change
-% x/y                         -> dimensions don't change
+% x/y | method=fixed          -> dimensions don't change
 
 \def\dooffsetbox[#1][#2]%
   {\bgroup
@@ -739,12 +739,37 @@
          \c!rechteroffset=\zeropoint,
          \c!bovenoffset=\zeropoint,
          \c!onderoffset=\zeropoint,
+         \c!methode=,
          #2]%
       \donefalse
-      \ifdim\@@oxlinkeroffset >\zeropoint\donetrue\fi
-      \ifdim\@@oxrechteroffset>\zeropoint\donetrue\fi
-      \ifdim\@@oxbovenoffset  >\zeropoint\donetrue\fi
-      \ifdim\@@oxonderoffset  >\zeropoint\donetrue\fi
+      \ifdim\@@oxlinkeroffset =\zeropoint\else\donetrue\fi
+      \ifdim\@@oxrechteroffset=\zeropoint\else\donetrue\fi
+      \ifdim\@@oxbovenoffset  =\zeropoint\else\donetrue\fi
+      \ifdim\@@oxonderoffset  =\zeropoint\else\donetrue\fi
+      \ifdone
+        \doif\@@oxmethode\v!vast % new
+          {\ifdim\@@oxlinkeroffset=\zeropoint
+             \ifdim\@@oxrechteroffset=\zeropoint \else
+               \scratchdimen-\@@oxrechteroffset
+               \edef\@@oxx{\the\scratchdimen}%
+               \let\@@oxrechteroffset\zeropoint
+             \fi
+           \else
+             \let\@@oxx\@@oxlinkeroffset
+             \let\@@oxlinkeroffset\zeropoint
+           \fi
+           \ifdim\@@oxbovenoffset=\zeropoint
+             \ifdim\@@oxonderoffset=\zeropoint \else
+               \scratchdimen-\@@oxonderoffset
+               \edef\@@oxy{\the\scratchdimen}%
+               \let\@@oxonderoffset\zeropoint
+             \fi
+           \else
+             \let\@@oxy\@@oxbovenoffset
+             \let\@@oxbovenoffset\zeropoint
+           \fi
+           \donefalse}%
+      \fi
       \ifdone
         \setbox\nextbox\vbox
           {\forgetall\offinterlineskip
