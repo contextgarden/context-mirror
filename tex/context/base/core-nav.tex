@@ -26,7 +26,7 @@
 %D functionality of many macro depends on the output medium:
 %D paper or screen. The next boolean holds the state: 
 
-\newif\iflocation                
+\newif\iflocation  \def\ifinteractief{\iflocation} % upw comp
 
 %D We also allocate a scratchbox:
 
@@ -149,7 +149,7 @@
 %D In the macros that deal with making areas into hyperlinks, 
 %D we use:
 
-\def\dostartgoto\data#1\start#2\stop#3\dostopgoto% 
+\def\dostartgoto\data#1\start#2\stop#3\dostopgoto
   {\ifsecondaryreference
      \bgroup\setbox0=\hbox{#2#3}\egroup
    \else

@@ -108,7 +108,7 @@
    \c!blokwijze=\@@fmblokwijze,
    \c!plaats=\v!intekst]
 
-\def\stelformulesin%
+\def\setupformulas%
   {\dodoubleargument\getparameters[\??fm]}
 
 \newconditional\handleformulanumber
@@ -162,25 +162,26 @@
      {\copyparameters
         [\??fm#1][\??fm]
         [\c!voorwit,\c!nawit,
-         \c!linkermarge,\c!rechtermarge,
-         \c!springvolgendein,\c!variant]%
-      \stelformulesin[#1][#2]%
+         \c!linkermarge,\c!rechtermarge,\c!marge,
+         \c!springvolgendein,\c!variant,
+         \c!strut,\c!uitlijnen,\c!afstand]%
+      \setupformulas[#1][#2]%
       \setvalue{\e!start#1\e!formule}%  
         {\dostartformula{#1}}%
       \setvalue{\e!stop #1\e!formule}%
         {\dostopformula}}}
 
-\def\stelformulesin%
-  {\dodoubleempty\dostelformulesin}
+\def\setupformulas%
+  {\dodoubleempty\dosetupformulas}
 
-\def\dostelformulesin[#1][#2]%
+\def\dosetupformulas[#1][#2]%
   {\ifsecondargument
      \getparameters[\??fm#1][#2]%
    \else
      \getparameters[\??fm][#1]%
    \fi}
 
-\stelformulesin
+\setupformulas
   [\c!wijze=\@@nrwijze,
    \c!blokwijze=,
    \c!sectienummer=\@@nrsectienummer,
@@ -191,8 +192,12 @@
    \c!nawit=\@@fmvoorwit,
    \c!linkermarge=\!!zeropoint,
    \c!rechtermarge=\!!zeropoint,
+   \c!marge=,
    \c!springvolgendein=\v!nee,
-   \c!variant=\s!default]
+   \c!variant=\s!default,
+   \c!uitlijnen=,
+   \c!strut=\v!nee,
+   \c!afstand=1em]
 
 \def\currentformula          {}
 \def\predisplaysizethreshhold{3em}
@@ -235,10 +240,13 @@
 
 \newif\ifoptimizedisplayspacing
 
-\def\dostartformula#1%
+\def\dostartformula#1% setting leftskip adaption is slow ! 
   {\bgroup 
-   \long\def\dostartformula##1{\bgroup\let\dostopformula\egroup}%
    \def\currentformula{#1}%
+   \doifvaluesomething{\??fm\currentformula\c!marge}% so we test first 
+     {\dosetleftskipadaption{\getvalue{\??fm\currentformula\c!marge}}%
+      \edef\leftdisplaymargin{\the\leftskipadaption}}% overloaded
+   \long\def\dostartformula##1{\bgroup\let\dostopformula\egroup}%
    \freezedimenmacro\leftdisplayskip
    \freezedimenmacro\rightdisplayskip
    \freezedimenmacro\leftdisplaymargin
@@ -289,14 +297,43 @@
 %    \par\ifvmode\vskip-\parskip\fi
 %    \afterdisplayspace}
 
+% \def\startdisplaymath%
+%   {\ifgridsnapping
+%      \beforedisplayspace   
+%      \snaptogrid\vbox\bgroup 
+%      % \vskip\parskip 
+%      \forgetall
+%    \else
+%      \bgroup
+%      \ifdim\lastskip<\!!zeropoint\else
+%        \par\ifvmode\ifdim\parskip>\!!zeropoint\relax\vskip-\parskip\fi\fi
+%      \fi
+%      \beforedisplayspace   
+%      \par\ifvmode\vbox{\strut}\vskip-2\baselineskip\fi 
+%    \fi
+%    $$\setdisplaydimensions
+%    \setpredisplaysize\lastlinewidth
+%    \startinnermath}
+% 
+% \def\stopdisplaymath%
+%   {\stopinnermath
+%     $$\egroup
+%    \par\ifvmode\ifdim\parskip>\!!zeropoint\relax\vskip-\parskip\fi\fi
+%    \afterdisplayspace}
+
+\newif\ifinformula
+
 \def\startdisplaymath%
   {\ifgridsnapping
      \beforedisplayspace   
-     \snaptogrid\vbox\bgroup 
-     % \vskip\parskip 
+     \snaptogrid\vbox
+     \bgroup 
+     \informulatrue   
      \forgetall
-   \else
+  \else
      \bgroup
+     \informulatrue   
+    %\forgetall % otherwise backgrounds fail 
      \ifdim\lastskip<\!!zeropoint\else
        \par\ifvmode\ifdim\parskip>\!!zeropoint\relax\vskip-\parskip\fi\fi
      \fi
@@ -304,12 +341,21 @@
      \par\ifvmode\vbox{\strut}\vskip-2\baselineskip\fi 
    \fi
    $$\setdisplaydimensions
-   \setpredisplaysize\lastlinewidth}
+   \setpredisplaysize\lastlinewidth
+   \startinnermath}
 
 \def\stopdisplaymath%
-  {$$\egroup
-   \par\ifvmode\ifdim\parskip>\!!zeropoint\relax\vskip-\parskip\fi\fi
-   \afterdisplayspace}
+  {\stopinnermath
+   $$%
+   \ifgridsnapping 
+   \else
+     \par\ifvmode\ifdim\parskip>\zeropoint\vskip-\parskip\fi\fi
+   \fi 
+   \afterdisplayspace
+   \egroup}
+
+\let\startinnermath\empty
+\let\stopinnermath \empty
 
 \def\defineformulaalternative%
   {\dotripleargument\dodefineformulaalternative}
@@ -355,22 +401,22 @@
 % \defineformulaalternative[multi][\begindmath][\enddmath]
 % 
 % \fakewords{20}{40}\epar 
-% \plaatsformule {a} $$              \fakeformula $$
+% \plaatsformule {a} $$              \fakespacingformula $$
 % \fakewords{20}{40}\epar 
-% \plaatsformule {b} \startformule   \fakeformula \stopformule
-% \plaatsformule {b} \startformule   \fakeformula \stopformule
+% \plaatsformule {b} \startformule   \fakespacingformula \stopformule
+% \plaatsformule {b} \startformule   \fakespacingformula \stopformule
 % \fakewords{20}{40}\epar 
-% \plaatsformule {c} \startmdformule \fakeformula \stopmdformule
-% \plaatsformule {c} \startmdformule \fakeformula \stopmdformule
+% \plaatsformule {c} \startmdformule \fakespacingformula \stopmdformule
+% \plaatsformule {c} \startmdformule \fakespacingformula \stopmdformule
 % \fakewords{20}{40}\epar 
-% \plaatsformule {d} \startmpformule \fakeformula \stopmpformule
-% \plaatsformule {d} \startmpformule \fakeformula \stopmpformule
+% \plaatsformule {d} \startmpformule \fakespacingformula \stopmpformule
+% \plaatsformule {d} \startmpformule \fakespacingformula \stopmpformule
 % \fakewords{20}{40}\epar 
-% \plaatsformule {e} \startsdformule \fakeformula \stopsdformule
-% \plaatsformule {e} \startsdformule \fakeformula \stopsdformule
+% \plaatsformule {e} \startsdformule \fakespacingformula \stopsdformule
+% \plaatsformule {e} \startsdformule \fakespacingformula \stopsdformule
 % \fakewords{20}{40}\epar 
-% \plaatsformule {f} \startspformule \fakeformula \stopspformule
-% \plaatsformule {f} \startspformule \fakeformula \stopspformule
+% \plaatsformule {f} \startspformule \fakespacingformula \stopspformule
+% \plaatsformule {f} \startspformule \fakespacingformula \stopspformule
 % \fakewords{20}{40}
 
 \def\plaatsformule%
@@ -430,6 +476,179 @@
      \global\let\subformulenummer\doformulenummer
      \global\let\doplaceformulanumber\empty
    \fi} 
+
+%D Here we implement a basic math alignment mechanism. Numbers
+%D are also handled. The macros \type {\startinnermath} and
+%D \type {\stopinnermath} can be overloaded in specialized
+%D modules. 
+
+\def\startinnermath%
+  {\getvalue{\e!start\??fm\getvalue{\??fm\currentformula\c!uitlijnen}}}
+
+\def\stopinnermath%
+  {\getvalue{\e!stop \??fm\getvalue{\??fm\currentformula\c!uitlijnen}}}
+
+\def\mathinnerstrut%
+  {\doifvalue{\??fm\currentformula\c!strut}{\v!ja}{\strut}}
+
+\long\def\defineinnermathhandler#1#2#3%
+  {\setvalue{\e!start\??fm#1}{#2}%
+   \setvalue{\e!stop \??fm#1}{#3}}
+
+\newif\iftracemath 
+
+\def\mathhbox%
+  {\iftracemath\ruledhbox\else\hbox\fi}  
+
+\def\startmathbox#1#2%
+  {\hsize\displaywidth
+   \global\let\@eqno \empty \def\eqno {\gdef\@eqno }%
+   \global\let\@leqno\empty \def\leqno{\gdef\@leqno}%
+   \doplaceformulanumber
+   \mathhbox to \displaywidth\bgroup
+     \mathinnerstrut
+     $\displaystyle
+     \ifx\@leqno\empty\else \ifcase#2 
+       \rlap{\@leqno}%
+     \else
+       \@leqno\hskip\getvalue{\??fm\currentformula\c!afstand}%
+     \fi \fi 
+     #1}
+
+\def\stopmathbox#1#2%
+  {$#1%
+   \ifx\@eqno\empty\else \ifcase#2 
+     \llap{\@eqno}%
+   \else
+     \hskip\getvalue{\??fm\currentformula\c!afstand}\@eqno
+   \fi \fi 
+   \egroup}
+
+\defineinnermathhandler\v!rechts{\startmathbox\empty1}{\stopmathbox\hfill0}
+\defineinnermathhandler\v!links {\startmathbox\hfill0}{\stopmathbox\empty1}
+\defineinnermathhandler\v!midden{\startmathbox\hfill0}{\stopmathbox\hfill0}
+
+%D [The examples below are in english and don't process in the 
+%D  documentation style, which will be english some day.]
+%D 
+%D Normally a formula is centered, but in case you want to
+%D align it left or right, you can set up formulas to behave
+%D that way. Normally a formula will adapt is left indentation
+%D to the environment: 
+%D 
+%D \startbuffer
+%D \fakewords{20}{40}\epar 
+%D \startitemize
+%D \item \fakewords{20}{40}\epar 
+%D       \placeformula \startformula \fakeformula \stopformula
+%D \item \fakewords{20}{40}\epar 
+%D \stopitemize
+%D \fakewords{20}{40}\epar 
+%D \stopbuffer
+%D 
+%D % \getbuffer
+%D 
+%D In the next examples we explicitly align formulas to the
+%D left (\type {\raggedleft}), center and right (\type
+%D {\raggedright}): 
+%D 
+%D \startbuffer
+%D \setupformulas[align=left]   
+%D \startformula\fakeformula\stopformula
+%D \setupformulas[align=middle] 
+%D \startformula\fakeformula\stopformula
+%D \setupformulas[align=right]  
+%D \startformula\fakeformula\stopformula
+%D \stopbuffer
+%D 
+%D \typebuffer
+%D 
+%D Or in print: 
+%D 
+%D % {\getbuffer}
+%D 
+%D With formula numbers these formulas look as follows: 
+%D 
+%D \startbuffer
+%D \setupformulas[align=left]   
+%D \placeformula \startformula\fakeformula\stopformula
+%D \setupformulas[align=middle] 
+%D \placeformula \startformula\fakeformula\stopformula
+%D \setupformulas[align=right]  
+%D \placeformula \startformula\fakeformula\stopformula
+%D \stopbuffer
+%D 
+%D % {\getbuffer}
+%D 
+%D This was keyed in as: 
+%D 
+%D \typebuffer
+%D 
+%D When tracing is turned on (\type {\tracemathtrue}) you can 
+%D visualize the bounding box of the formula, 
+%D 
+%D % {\tracemathtrue\getbuffer}
+%D 
+%D As you can see, the dimensions are the natural ones, but if 
+%D needed you can force a normalized line: 
+%D 
+%D \startbuffer
+%D \setupformulas[strut=yes]
+%D \placeformula \startformula \fakeformula \stopformula
+%D \stopbuffer
+%D 
+%D \typebuffer
+%D 
+%D This time we get a more spacy result. 
+%D 
+%D % {\tracemathtrue\getbuffer}
+%D 
+%D We will now show a couple of more settings and combinations
+%D of settings. In centered formulas, the number takes no space
+%D 
+%D \startbuffer
+%D \setupformulas[align=middle]
+%D \startformula \fakeformula \stopformula
+%D \placeformula \startformula \fakeformula \stopformula
+%D \stopbuffer
+%D 
+%D \typebuffer % {\tracemathtrue\getbuffer}
+%D 
+%D You can influence the placement of the whole box with the
+%D parameters \type {leftmargin} and \type {rightmargin}. 
+%D 
+%D \startbuffer
+%D \setupformulas[align=right,leftmargin=3em]
+%D \startformula \fakeformula \stopformula
+%D \placeformula \startformula \fakeformula \stopformula
+%D 
+%D \setupformulas[align=left,rightmargin=1em]
+%D \startformula \fakeformula \stopformula
+%D \placeformula \startformula \fakeformula \stopformula
+%D \stopbuffer
+%D 
+%D \typebuffer % {\tracemathtrue\getbuffer}
+%D 
+%D You can also inherit the margin from the environment. 
+%D 
+%D \startbuffer
+%D \setupformulas[align=right,margin=standard]
+%D \startformula \fakeformula \stopformula
+%D \placeformula \startformula \fakeformula \stopformula
+%D \stopbuffer
+%D 
+%D \typebuffer % {\tracemathtrue\getbuffer}
+%D 
+%D The distance between the formula and the number is only
+%D applied when the formula is left or right aligned. 
+%D 
+%D \startbuffer
+%D \setupformulas[align=left,distance=2em]
+%D \startformula \fakeformula \stopformula
+%D \placeformula \startformula \fakeformula \stopformula
+%D \stopbuffer
+%D 
+%D \typebuffer % {\tracemathtrue\getbuffer}
 
 %D \macros 
 %D   {big..}
@@ -531,23 +750,79 @@
      {\scriptscriptstyle#1}}
 
 %D \macros
-%D   {frac}
+%D   {frac, xfrac, xxfrac}
 %D
 %D This is another one Tobias asked for. It replaces the 
 %D primitive \type {\over}. We also take the opportunity to 
 %D handle math style restoring, which makes sure units and 
 %D chemicals come out ok. 
+%D 
+%D \starttypen 
+%D \def\frac#1#2%
+%D   {\relax
+%D    \ifmmode
+%D       {{\mathstyle{#1}}\over{\mathstyle{#2}}}%
+%D    \else
+%D       $\frac{#1}{#2}$%
+%D    \fi}
+%D \stoptypen 
+%D 
+%D Better is: 
+%D 
+%D \starttypen 
+%D \def\frac#1#2%
+%D   {\relax\mathematics{{{\mathstyle{#1}}\over{\mathstyle{#2}}}}}
+%D \stoptypen 
+%D 
+%D The \type {\frac} macro kind of replaces the awkward \type
+%D {\over} primitive. Say that we habve the following formulas:
+%D 
+%D \startbuffer[sample]
+%D test $\frac  {1}{2}$ test $$1 + \frac  {1}{2} = 1.5$$ 
+%D test $\xfrac {1}{2}$ test $$1 + \xfrac {1}{2} = 1.5$$ 
+%D test $\xxfrac{1}{2}$ test $$1 + \xxfrac{1}{2} = 1.5$$ 
+%D \stopbuffer
+%D 
+%D \typebuffer[sample]
+%D 
+%D With the most straightforward definitions, we get: 
+%D 
+%D \startbuffer[code]
+%D \def\dofrac#1#2#3{\relax\mathematics{{{#1{#2}}\over{#1{#3}}}}}
+%D 
+%D \def\frac  {\dofrac\mathstyle}
+%D \def\xfrac {\dofrac\scriptstyle}
+%D \def\xxfrac{\dofrac\scriptscriptstyle}
+%D \stopbuffer
+%D 
+%D \typebuffer[code] \getbuffer[code,sample]
+%D 
+%D Since this does not work well, we can try: 
+%D 
+%D \startbuffer[code]
+%D \def\xfrac #1#2{\hbox{$\dofrac\scriptstyle      {#1}{#2}$}}
+%D \def\xxfrac#1#2{\hbox{$\dofrac\scriptscriptstyle{#1}{#2}$}}
+%D \stopbuffer
+%D 
+%D \typebuffer[code] \getbuffer[code,sample]
+%D 
+%D This for sure looks better than: 
+%D 
+%D \startbuffer[code]
+%D \def\xfrac #1#2{{\scriptstyle      \dofrac\relax{#1}{#2}}}
+%D \def\xxfrac#1#2{{\scriptscriptstyle\dofrac\relax{#1}{#2}}}
+%D \stopbuffer
+%D 
+%D \typebuffer[code] \getbuffer[code,sample]
+%D 
+%D So we stick to the next definitions (watch the local 
+%D overloading of \type {\xfrac}).  
 
-\def\frac#1#2%
-  {\relax
-   \ifmmode
-      {{\mathstyle{#1}}\over{\mathstyle{#2}}}%
-   \else
-      $\frac{#1}{#2}$%
-   \fi}
+\def\dofrac#1#2#3{\relax\mathematics{{{#1{#2}}\over{#1{#3}}}}}
 
-\def\frac#1#2%
-  {\relax\mathematics{{{\mathstyle{#1}}\over{\mathstyle{#2}}}}}
+\def\frac{\dofrac\mathstyle}
+\def\xfrac#1#2{\hbox{$\let\xfrac\xxfrac\dofrac\scriptstyle{#1}{#2}$}}
+\def\xxfrac#1#2{\hbox{$\dofrac\scriptscriptstyle{#1}{#2}$}}
 
 %D The next macro, \type {\ch}, is \PPCHTEX\ aware. In
 %D formulas one can therefore best use \type {\ch} instead of
@@ -634,7 +909,7 @@
 %D How negative such a symbol looks is demonstrated in: 
 %D $\negative 10^{\negative 10^{\negative 10}}$. 
 
-\stelformulesin
+\setupformulas
   [\c!wijze=\@@nrwijze,
    \c!blokwijze=,
    \c!sectienummer=\@@nrsectienummer,

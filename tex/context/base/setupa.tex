@@ -149,7 +149,6 @@
              4:  -- este procesat din nou
 \stopmessages
 
-
 % we need some more constants 
 
 \interfacetranslationtrue  
@@ -574,11 +573,15 @@
 \@EA\def\@EA\c!dostp!\e!start#1<<#2>>#3\\%
   {\breaksetup~...~\breaksetup\texescape\e!stop#1{\setupvarfont#2}}%
 
+\pushmacro\setuptext
+
 \defineframedtext
   [setuptext]
   [\c!breedte=\hsize,
    \c!hoogte=\v!passend,
    \c!offset=0.75em]
+
+\popmacro\setuptext
 
 \newif\ifshortsetup 
 

@@ -11,6 +11,8 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
+% a cleanup is needed, like using image and alike
+
 %D This module is rather preliminary and subjected to
 %D changes.
 
@@ -23,7 +25,28 @@ boolean context_tool ; context_tool := true ;
 prologues    := 2 ; % 1 = troff, 2 = tex
 warningcheck := 0 ;
 
-%D A semicolor to be used in specials:
+%D Namespace handling:
+
+% let exclamationmark = ! ; 
+% let questionmark    = ? ; 
+% 
+% def unprotect = 
+%   let ! = relax ; 
+%   let ? = relax ; 
+% enddef ;
+% 
+% def protect = 
+%   let ! = exclamationmark ;
+%   let ? = questionmark ; 
+% enddef ; 
+% 
+% unprotect ; 
+% 
+% mp!some!module = 10 ; show mp!some!module ; show somemodule ; 
+% 
+% protect ;
+
+%D A semicolor to be used in specials: ? ? ? 
 
 string semicolor ; semicolor := char 59 ;
 
@@ -31,7 +54,8 @@ string semicolor ; semicolor := char 59 ;
 %D high resolution boundingbox to the \POSTSCRIPT\ file. This
 %D hack is due to John Hobby himself.
 
-% somehow the first one gets no HiRes.
+% When somehow the first one gets no HiRes, then make sure 
+% that the format matches the mem sizes in the config file. 
 
 vardef ddecimal primary p =
   " " & decimal xpart p &
@@ -352,21 +376,21 @@ enddef;
 % TODO TODO TODO TODO, not yet ok 
 
 primarydef p xsized w =
-  (p scaled (w/(xpart urcorner p - xpart llcorner p)))  
+  (p if bbwidth(p)>0 : scaled (w/bbwidth(p)) fi) 
 enddef ;
 
 primarydef p ysized h =
-  (p scaled (h/(ypart urcorner p - ypart llcorner p)))  
-enddef ;
-
-primarydef p sized wh =
-  (p xscaled (xpart wh/(xpart urcorner p - xpart llcorner p))  
-     yscaled (ypart wh/(ypart urcorner p - ypart llcorner p)))  
+  (p if bbheight(p)>0 : scaled (h/bbheight(p)) fi) 
 enddef ;
 
 primarydef p xysized wh =
-  (p xscaled (xpart wh/(xpart urcorner p - xpart llcorner p))  
-     yscaled (ypart wh/(ypart urcorner p - ypart llcorner p)))  
+  (p if (bbwidth(p)>0) and (bbheight(p)>0) : 
+       xscaled (xpart wh/bbwidth(p)) yscaled (ypart wh/bbheight(p))
+     fi) 
+enddef ;
+
+primarydef p sized wh =
+  (p xysized wh) 
 enddef ;
 
 def xscale_currentpicture(expr w) =
@@ -617,6 +641,26 @@ primarydef p ulmoved d =
   ((ulcorner p) shifted (-xpart paired(d),+ypart paired(d)))
 enddef ;
 
+primarydef p leftenlarged d = 
+  (llcorner p shifted (-d,0) -- lrcorner p -- 
+   urcorner p -- ulcorner p shifted (-d,0) -- cycle)
+enddef ; 
+
+primarydef p rightenlarged d = 
+  (llcorner p -- lrcorner p shifted (d,0) -- 
+   urcorner p shifted (d,0) -- ulcorner p -- cycle) 
+enddef ; 
+
+primarydef p topenlarged d = 
+  (llcorner p -- lrcorner p -- 
+   urcorner p shifted (0,-d) -- ulcorner p shifted (0,-d) -- cycle) 
+enddef ; 
+
+primarydef p bottomenlarged d = 
+  (llcorner p shifted (0,d) -- lrcorner p shifted (0,d) -- 
+   urcorner p -- ulcorner p -- cycle) 
+enddef ; 
+
 %D Nice too:
 
 primarydef p superellipsed s =
@@ -705,6 +749,12 @@ enddef ;
 vardef  leftpath expr p = leftrightpath(p,true ) enddef ; 
 vardef rightpath expr p = leftrightpath(p,false) enddef ; 
 
+%D Drawoptions 
+
+def saveoptions =
+  save _op_ ; def _op_ = enddef ; 
+enddef ; 
+ 
 %D Tracing. 
 
 let normaldraw = draw ;
@@ -739,6 +789,16 @@ vardef drawarrowpath expr p =
   drawarrow p _pth_opt_ 
 enddef ; 
 
+def midarrowhead expr p =
+  arrowhead p cutafter 
+    (point length(p cutafter point .5 along p)+ahlength on p) 
+enddef ; 
+
+vardef arrowheadonpath (expr p, s) =
+  save autoarrows ; boolean autoarrows ; autoarrows := true ;
+  arrowhead p if s<1 : cutafter (point (s*arclength(p)+.5ahlength) on p) fi
+enddef ;
+ 
 %D Points.
 
 def drawpoint expr c = 
@@ -1126,8 +1186,6 @@ vardef anglebetween (expr a, b, str) = % path path string
   curve
 enddef ;
 
-
-
 % Stack
 
 picture currentpicturestack[] ; 
@@ -1337,7 +1395,11 @@ inner end ;
 
 % real fun
 
-color color_map[][][] ;
+def resetcolormap = 
+  color color_map[][][] ;
+enddef ; 
+
+resetcolormap ; 
 
 %color_map_resolution := 1000 ;
 %
@@ -1461,6 +1523,108 @@ enddef ;
 
 vardef cmyk(expr c,m,y,k) =
   (1-c-k,1-m-k,1-y-k)
+enddef ;
+
+% handy 
+
+vardef bbwidth  (expr p) = 
+  (if known p : xpart (lrcorner p - llcorner p) else : 0 fi)
+enddef ; 
+
+vardef bbheight (expr p) = 
+  (if known p : ypart (urcorner p - lrcorner p) else : 0 fi)
+enddef ; 
+
+color nocolor ; numeric noline ; % both unknown signals 
+
+def dowithpath (expr p, lw, lc, bc) =
+  if known p : 
+    if known bc : 
+      fill p withcolor bc ;
+    fi ; 
+    if known lw and known lc : 
+      draw p withpen pencircle scaled lw withcolor lc ;
+    elseif known lw : 
+      draw p withpen pencircle scaled lw ;
+    elseif known lc : 
+      draw p withcolor lc ;
+    fi ; 
+  fi ; 
+enddef ;
+
+% result from metafont discussion list (denisr/boguslawj)
+
+def ]]  = ] ] enddef ; def ]]] = ] ] ] enddef ;
+def [[  = [ [ enddef ; def [[[ = [ [ [ enddef ;
+
+% not prefect, but useful since it removes redundant points.
+
+vardef dostraightened(expr sign, p) = 
+  if length(p)>1 : 
+    save pp ; path pp ; 
+    pp := point 0 of p ;
+    for i=1 upto length(p)-1 : 
+      if round(point i of p) <> round(point length(pp) of pp) : 
+        pp := pp -- point i of p ;
+      fi ; 
+    endfor ;
+    save n ; numeric n ; 
+    n := length(pp) ; 
+    for i=0 upto n : % evt hier ook round 
+     if unitvector(point i                        of pp  - 
+                   point if i=0 : n else : i-1 fi of pp) <> 
+ sign * unitvector(point if i=n : 0 else : i+1 fi of pp  - 
+                   point i                        of pp) : 
+        point i of pp --
+     fi 
+%
+% to test: 
+%
+%     if round(unitvector(point i                        of pp)) <> 
+% sign * round(unitvector(point if i=n : 0 else : i+1 fi of pp)) : 
+%        point i of pp --
+%     fi 
+%
+    endfor   
+    cycle 
+  else : 
+    p 
+  fi 
+enddef ; 
+
+% simplified : remove same points as well as redundant points 
+% unspiked   : remove same points as well as areas with zero distance 
+
+vardef simplified expr p = dostraightened(+1,p) enddef ;  
+vardef unspiked   expr p = dostraightened(-1,p) enddef ;  
+
+% path p ; 
+% p := (2cm,1cm) -- (2cm,1cm) -- (2cm,1cm) -- (3cm,1cm) -- 
+%      (4cm,1cm) -- (4cm,2cm) -- (4cm,2.5cm) -- (4cm,3cm) -- 
+%      (3cm,3cm) -- (2cm,3cm) -- (1cm,3cm) -- (-1cm,3cm) -- 
+%      .5[(-1cm,3cm),(1cm,1cm)] -- (1cm,1cm) -- cycle ; 
+% 
+% p := unitcircle scaled 4cm ; 
+% 
+% drawpath p ; drawpoints p ; drawpointlabels p ; 
+% p := p shifted (4cm,0) ; p := straightened p ; 
+% drawpath p ; drawpoints p ; drawpointlabels p ; 
+% p := p shifted (4cm,0) ; p := straightened p ; 
+% drawpath p ; drawpoints p ; drawpointlabels p ; 
+
+% new 
+
+path originpath ; originpath := origin -- cycle ;
+
+vardef unitvector primary z = 
+  if abs z = abs origin : z else : z/abs z fi  
+enddef;
+
+% also new 
+
+vardef anchored@#(expr p, z) =  
+  p shifted (z + (labxf@#*lrcorner p + labyf@#*ulcorner p
+       + (1-labxf@#-labyf@#)*llcorner p))
 enddef ;
 
 % done 

@@ -64,69 +64,75 @@
 
 \def\doschrijfnaarlijst#1#2#3#4%
   {\doifvalue{\??li#1\c!status}{\v!start}
-     {\begingroup
-      \convertexpanded{\??li#1}{#3}\asciilistentry
-      \makesectionformat
-      \doifelse{\@@nmstatus}{\v!start}
-        {\def\dopaginanummer{\noexpand\pagenumber}}
-        {\def\dopaginanummer{0}}%
-      % niet waterdicht, wat te doen met figuren en zo
-      % first hack: scheelt rommel, second hack: alleen koppen
-      \doifelsevalue{\??rf#1\c!status}{\v!start}
-        {\doif{\@@sectionlevel\@@sectie}{0}{\autocrossdocumentfalse}}
-        {\autocrossdocumentfalse}%
-      % blijft nog wat zwakjes en inefficient 
-      \ifautocrossdocument
-        \bgroup
-        \thisisnextinternal{#1}%
-       %\thisisdestination{#1::\sectionformat}% 
-        \@EA\setsectieenkoppeling\@EA{#1}%
-        \edef\currentlevel{\@@sectionlevel\@@sectie}%
-        \def\docommando##1% 
-          {\def\dodocommando####1% 
-             {\doifvalue{\??rf####1\c!status}{\v!start}
-                {\setsectieenkoppeling{####1}%
-                 \def\level{\@@sectionlevel\@@sectie}%
-                 \ifnum\level>\currentlevel
-                   \expanded{\definereference[##1::####1][\v!geen]}%
-                 \else\ifnum\level=\currentlevel
-                   \expanded{\definereference[##1::####1][##1::{####1::\sectionformat}]}%
-                 \fi\fi}}%
-           \processcommacommand[\crossdocumentelements]\dodocommando}%
-        \processcommacommand[\crossdocumentreferences]\docommando
-        \egroup
-      \else
-        \thisisnextinternal{#1}%
-      \fi
-      \edef\schrijfwegnaarlijst%
-        {\writeutilitycommand%
-           {\listentry%
-              {#1}%
-              {\nextinternalreference}%
-              {#2}%
-              {\asciilistentry}%
-              {\sectionformat::\dopaginanummer}%
-              {\noexpand\realfolio}}}%
-      \schrijfwegnaarlijst
-      \endgroup}}
+     {\dodoschrijfnaarlijst{#1}{#2}{#3}{#4}}}
+
+\def\dodoschrijfnaarlijst#1#2#3#4%
+  {\begingroup
+   \convertexpanded{\??li#1}{#3}\asciilistentry
+   \makesectionformat
+   \doifelse{\@@nmstatus}{\v!start}
+     {\def\dopaginanummer{\noexpand\pagenumber}}
+     {\def\dopaginanummer{0}}%
+   % niet waterdicht, wat te doen met figuren en zo
+   % first hack: scheelt rommel, second hack: alleen koppen
+   \doifelsevalue{\??rf#1\c!status}{\v!start}
+     {\doif{\@@sectionlevel\@@sectie}{0}{\autocrossdocumentfalse}}
+     {\autocrossdocumentfalse}%
+   % blijft nog wat zwakjes en inefficient 
+   \ifautocrossdocument
+     \bgroup
+     \thisisnextinternal{#1}%
+    %\thisisdestination{#1::\sectionformat}% 
+     \@EA\setsectieenkoppeling\@EA{#1}%
+     \edef\currentlevel{\@@sectionlevel\@@sectie}%
+     \def\docommando##1% naar buiten brengen 
+       {\def\dodocommando####1% 
+          {\doifvalue{\??rf####1\c!status}{\v!start}
+             {\setsectieenkoppeling{####1}%
+              \def\level{\@@sectionlevel\@@sectie}%
+              \ifnum\level>\currentlevel
+                \expanded{\definereference[##1::####1][\v!geen]}%
+              \else\ifnum\level=\currentlevel
+                \expanded{\definereference[##1::####1][##1::{####1::\sectionformat}]}%
+              \fi\fi}}%
+        \processcommacommand[\crossdocumentelements]\dodocommando}%
+     \processcommacommand[\crossdocumentreferences]\docommando
+     \egroup
+   \else
+     \thisisnextinternal{#1}%
+   \fi
+   \edef\schrijfwegnaarlijst%
+     {\writeutilitycommand%
+        {\listentry%
+           {#1}%
+           {\nextinternalreference}%
+           {#2}%
+           {\asciilistentry}%
+           {\sectionformat::\dopaginanummer}%
+           {\noexpand\realfolio}}}%
+   \schrijfwegnaarlijst
+   \endgroup}
 
 \def\doschrijftussenlijst#1#2%
-  {\doif{\getvalue{\??li#1\c!status}}{\v!start}
-     {\begingroup
-      \convertargument#2\to\ascii
-      \makesectionformat
-      \doifelse{\@@nmstatus}{\v!start}
-        {\def\dopaginanummer{\noexpand\pagenumber}}
-        {\def\dopaginanummer{0}}%
-      \edef\schrijfwegnaarlijst%
-        {\writeutilitycommand%
-           {\listbetween%
-              {#1}%
-              {\ascii}%
-              {\sectionformat::\dopaginanummer}%
-              {\noexpand\realfolio}}}%
-      \schrijfwegnaarlijst
-      \endgroup}}
+  {\doifvalue{\??li#1\c!status}{\v!start}
+     {\dodoschrijftussenlijst{#1}{#2}}}
+
+\def\dodoschrijftussenlijst#1#2%
+  {\begingroup
+   \convertargument#2\to\ascii
+   \makesectionformat
+   \doifelse{\@@nmstatus}{\v!start}
+     {\def\dopaginanummer{\noexpand\pagenumber}}
+     {\def\dopaginanummer{0}}%
+   \edef\schrijfwegnaarlijst%
+     {\writeutilitycommand%
+        {\listbetween%
+           {#1}%
+           {\ascii}%
+           {\sectionformat::\dopaginanummer}%
+           {\noexpand\realfolio}}}%
+   \schrijfwegnaarlijst
+   \endgroup}
 
 \def\listentry#1%
   {\executeifdefined{#1\c!lijst}\gobblefivearguments}
@@ -257,10 +263,10 @@
 
 \def\dosetlistmode%
   {\iflijstgeplaatst
-     \enablemode [\systemmodeprefix\v!lijst]%
+     \expandafter \enablemode 
    \else
-     \disablemode[\systemmodeprefix\v!lijst]%
-   \fi}
+     \expandafter \disablemode
+   \fi [\systemmodeprefix\v!lijst]}
 
 \def\plaatslijst%
   {\dodoubleempty\doplaatslijst}
@@ -285,7 +291,7 @@
      {#1=#3\relax}
      {#1=#2\relax}}
 
-\def\dosetlistsymbol#1#2%
+\def\dosetlistsymbol#1#2% kan sneller, default case afvangen 
   {\processaction
      [\getvalue{\??li#1\c!symbool}]
      [    \v!geen=>\def\listsymbol%
@@ -345,23 +351,24 @@
 \def\newlineinlist{\space}
 
 \def\dolijstelement#1#2#3#4#5#6% pas op: wordt ook elders gedefinieerd
-  {\doiftoclevelelse[#5]
-     {\getvalue{\@@dodolijstelement\getvalue{\??li#1\c!variant}}%
-      %\showcomposition
-      \let\@@iabreedte=\!!zeropoint  % moet boolean worden
-      \bgroup
-      \edef\lijstelementen%
-        {\getvalue{\??li#1\c!paginaovergangen}}%
-      \ExpandSecondAfter\doifinset{#3}{\lijstelementen}%
-        {\showmessage{\m!systems}{14}{#3}%
-         \pagina}%
-      \egroup
-      \mindermeldingen
-      \setfullsectionnumber{\??li#1}%
-      \dosetlistsymbol{#1}{#3}%
-      \dosomelijstelement{#1}{#2}{#3}{#4}{#5}{#6}%
-      \global\utilitydonetrue}
-     {}}
+  {\doiftoclevelelse[#5]{\dodolijstelement{#1}{#2}{#3}{#4}{#5}{#6}}{}} 
+
+\def\dodolijstelement#1#2#3#4#5#6% 
+  {\getvalue{\@@dodolijstelement\getvalue{\??li#1\c!variant}}%
+   %\showcomposition
+   \let\@@iabreedte=\!!zeropoint  % moet boolean worden
+   \bgroup
+   \edef\lijstelementen%
+     {\getvalue{\??li#1\c!paginaovergangen}}%
+   \ExpandSecondAfter\doifinset{#3}{\lijstelementen}%
+     {\showmessage{\m!systems}{14}{#3}%
+      \pagina}%
+   \egroup
+   \mindermeldingen
+   \setfullsectionnumber{\??li#1}%
+   \dosetlistsymbol{#1}{#3}%
+   \dosomelijstelement{#1}{#2}{#3}{#4}{#5}{#6}%
+   \global\utilitydonetrue}
 
 \def\dolistattributes#1#2#3%
   {\doifvaluesomething{\??li#1#3}
@@ -903,5 +910,59 @@
 
 \def\plaatssamengesteldelijst%
   {\dodoubleempty\doplaatssamengesteldelijst}
+
+% new and yet undocumented (used in cocoa qa)
+%
+% \setupremaininglistlength
+%   [left=\hss nog~,right=~ingangen]
+% 
+% \resetremaininglistlength
+%   [section][setttings]
+% 
+% \placelist
+%   [section]
+%   [before=\showremaininglistlength]
+% 
+% \dorecurse{100}{\section{hans}}
+
+\definesystemvariable {ll} % ListLength
+
+\def\setupremaininglistlength[#1]%
+  {\getparameters[\??ll][#1]%
+   \xdef\listlengthcounter{0}}
+
+\setupremaininglistlength
+  [\c!links=\hss,\c!rechts=,\c!nummer=\v!ja,
+   \c!voor=\blanko,\c!na=\pagina,
+   \c!letter=\v!kleinnormaal,\c!kleur=]
+
+\def\resetremaininglistlength%
+  {\dodoubleempty\doresetremaininglistlength}
+
+\def\doresetremaininglistlength[#1][#2]%
+  {\bepaallijstkenmerken[#1][#2]% \determinelistcharacteristics[#1][#2]%
+   \xdef\listlengthcounter{\number\utilitylistlength}}
+
+\def\showremaininglistlength%
+  {\bgroup
+   \ifnum\listlengthcounter>1 
+     \scratchdimen=\pagetotal
+     \setbox\scratchbox=\vbox
+       {\@@llvoor\par\hbox{\strut}\par\hbox{\strut}\par\@@llna}
+     \advance\scratchdimen by \ht\scratchbox
+     \advance\scratchdimen by \dp\scratchbox
+     \ifdim\scratchdimen>\pagegoal
+       \@@llvoor
+       \nobreak\hbox to \hsize
+         {\doifnot{\@@llnummer}{\v!ja}{\let\listlengthcounter\empty}%
+          \doattributes\??ll\c!letter\c!kleur{\@@lllinks\listlengthcounter\@@llrechts}}
+       \@@llna
+     \fi 
+   \fi 
+   \doglobal\decrement\listlengthcounter\relax
+   \egroup}
+
+\stelreferentielijstin
+  [\c!letter=\v!normaal]
 
 \protect \endinput 

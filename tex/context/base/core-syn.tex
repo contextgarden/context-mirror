@@ -87,8 +87,8 @@
 \def\processsynonym#1#2#3%
   {\begingroup  % anders in mathmode lege \hbox, zie eenheden
    \ifsynonymmeaning
-     \doattributes{\??sm#1}\c!synoniemletter\c!synoniemkleur
-       {\synonymmeaningfalse#3}%
+     \synonymmeaningfalse 
+     \doattributes{\??sm#1}\c!synoniemletter\c!synoniemkleur{#3}%
    \else
      \explicithmode
      \doattributes{\??sm#1}\c!tekstletter\c!tekstkleur{#2}%

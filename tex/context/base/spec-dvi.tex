@@ -61,7 +61,8 @@
 
 %D \macros
 %D   {dosetposition,
-%D    dosetpositionwhd}
+%D    dosetpositionwhd,
+%D    dosetpositionplus}
 %D
 %D The next specials only identify a position. It is up to 
 %D a \DVI\ postprocessing utility to merge the right commands
@@ -74,8 +75,9 @@
 %D format: 
 %D 
 %D \starttypen
-%D \pospxy   {identifier}{page}{x}{y} 
-%D \pospxywhd{identifier}{page}{x}{y}{w}{h}{d}
+%D \pospxy    {identifier}{page}{x}{y} 
+%D \pospxywhd {identifier}{page}{x}{y}{w}{h}{d}
+%D \pospxyplus{identifier}{page}{x}{y}{w}{h}{d}{list}
 %D \stoptypen
 %D 
 %D The postprocessor should, of course, provide the \type 
@@ -86,6 +88,9 @@
 
 \definespecial\dosetpositionwhd#1#2#3#4%
   {\special{pos:pxywhd "#1" #2 #3 #4}}
+
+\definespecial\dosetpositionplus#1#2#3#4#5%
+  {\special{pos:pxyplus "#1" #2 #3 #4 #5}}
 
 %D The next special tells the position postprocessor what 
 %D page dimensions were used.  

@@ -37,6 +37,7 @@ input mp-text.mp ;
 input mp-shap.mp ; 
 input mp-butt.mp ; 
 input mp-char.mp ; 
+input mp-step.mp ; 
 input mp-grph.mp ; 
 
 dump ; endinput .

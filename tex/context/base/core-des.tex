@@ -61,29 +61,9 @@
       \s!default=>\let\next=#2]%
    \next{#1}}
 
-% \def\@@definitielinkspure#1[#2]#3%
-%   {\@@dostartdefinitie{#1}[#2]{#3}%
-%    \advance\leftskip by \!!widtha
-%    \@@makedefinitiepurebox{#1}\raggedright%
-%    \advance\leftskip by \!!widthb
-%    \llap
-%      {\hbox to \leftskip{\copy\@@definitiebox\hss}}% copy ? 
-%    \@@dodefinitie{#1}}
-% 
-% \def\@@definitierechtspure#1[#2]#3%
-%   {\@@dostartdefinitie{#1}[#2]{#3}%
-%    \advance\rightskip by \!!widtha
-%    \@@makedefinitiepurebox{#1}\raggedleft%
-%    \rlap
-%      {\hskip\hsize
-%       \hskip-\leftskip
-%       \hskip-\rightskip
-%       \copy\@@definitiebox}%
-%    \advance\rightskip by \!!widthb
-%    \@@dodefinitie{#1}}
-
 \def\@@definitielinkspure#1[#2]#3%
   {\@@dostartdefinitie{#1}[#2]{#3}%
+   \noindent\ignorespaces
    \leftskip\@@leftdefinitieskip
    \rightskip\@@rightdefinitieskip
    \advance\leftskip by \!!widtha
@@ -97,6 +77,7 @@
 
 \def\@@definitierechtspure#1[#2]#3%
   {\@@dostartdefinitie{#1}[#2]{#3}%
+   \noindent\ignorespaces
    \leftskip\@@leftdefinitieskip
    \rightskip\@@rightdefinitieskip
    \advance\rightskip by \!!widtha
@@ -127,6 +108,7 @@
    \advance\!!widtha by \!!widthb
    \hangindent=\!!widtha
    \@@makedefinitiehangbox{#1}{\raggedright}{\advance\rightskip by \!!widthb}%
+   \noindent\ignorespaces
    \llap
      {\dontshowcomposition
       \vtop to \!!zeropoint{\box\@@definitiebox}}%
@@ -138,6 +120,7 @@
    \advance\!!widtha by \!!widthb
    \hangindent=-\!!widtha
    \@@makedefinitiehangbox{#1}{\raggedleft}{\advance\leftskip by \!!widthb}%
+   \noindent\ignorespaces
    \rlap
      {\mindermeldingen
       \dontshowcomposition
@@ -166,20 +149,12 @@
       \hangafter=-\noflines}
      {\hangafter=-\getvalue{\??dd#1\c!hang}}}%
 
-%\setvalue{@@definitie\v!boven}#1[#2]#3%
-%  {%\pagina[\v!voorkeur]%         % Weg ermee!
-%   \dosomebreak{\goodbreak}%      % Dit is beter en nodig!
-%   \@@dostartdefinitie{#1}[#2]{\let\\=\space#3}%
-%   \copy\@@definitiebox
-%   \nobreak
-%   \getvalue{\??dd#1\c!tussen}%
-%   \@@dodefinitie{#1}}
-
 \setvalue{@@definitie\v!boven}#1[#2]#3%
   {%\pagina[\v!voorkeur]%       % Weg ermee!
    %\dosomebreak{\goodbreak}%   % Dit is beter en nodig!
    \dohandelpaginaafX1          % En dit moet het maar worden.
    \@@dostartdefinitie{#1}[#2]{\let\\=\space#3}%
+   \noindent\ignorespaces
    \copy\@@definitiebox\par
    \nobreak
    \getvalue{\??dd#1\c!tussen}%
@@ -188,33 +163,39 @@
 
 \setvalue{@@definitie\v!inmarge}#1[#2]#3%
   {\@@dostartdefinitie{#1}[#2]{#3}%
+   \noindent\ignorespaces
    \inmarge{\unhcopy\@@definitiebox}%
    \@@dodefinitie{#1}}
 
 \setvalue{@@definitie\v!inlinker}#1[#2]#3%
   {\@@dostartdefinitie{#1}[#2]{#3}%
+   \noindent\ignorespaces
    \inlinker{\unhcopy\@@definitiebox}%
    \@@dodefinitie{#1}}
 
 \setvalue{@@definitie\v!inrechter}#1[#2]#3%
   {\@@dostartdefinitie{#1}[#2]{#3}%
+   \noindent\ignorespaces
    \inrechter{\unhcopy\@@definitiebox}%
    \@@dodefinitie{#1}}
 
 \def\@@definitieaanelkaarpassend#1[#2]#3%
   {\@@dostartdefinitie{#1}[#2]{#3}%
+   \noindent\ignorespaces
    \unhcopy\@@definitiebox
    \hskip\!!widthb % toegevoegd
    \@@dodefinitie{#1}}
 
 \def\@@definitieaanelkaarruim#1[#2]#3%
   {\@@dostartdefinitie{#1}[#2]{#3}%
+   \noindent\ignorespaces
    \unhcopy\@@definitiebox
    \hskip\!!widthb \!!plus .5\!!widthb \!!minus .25\!!widthb
    \@@dodefinitie{#1}}
 
 \def\@@definitieaanelkaarbreed#1[#2]#3%
   {\@@dostartdefinitie{#1}[#2]{#3}%
+   \noindent\ignorespaces
    \hbox to \!!widtha
      {\unhcopy\@@definitiebox\hss}%
    \hskip\!!widthb
@@ -233,6 +214,7 @@
 % \setvalue{@@definitie\v!hangend}#1[#2]#3%
 %   {\skip0=-\leftskip                % uggly trick
 %    \@@dostartdefinitie{#1}[#2]{#3}% % adds \c!marge to \leftskip
+%    \noindent\ignorespaces
 %    \advance\skip0 by \leftskip      % but useful
 %    \ifdim\skip0=\!!zeropoint
 %      \skip0=1.5em                   % just some default
@@ -250,6 +232,7 @@
 
 \setvalue{@@definitie\v!hangend}#1[#2]#3%
   {\@@dostartdefinitie{#1}[#2]{#3}% % adds \c!marge to \leftskip
+   \noindent\ignorespaces
    \advance\leftskip by -\leftskipadaption
    \ifdim\leftskipadaption=\!!zeropoint
      \leftskipadaption=1.5em % just some default  
@@ -301,9 +284,7 @@
 %            {\getvalue{\??dd#1\c!tekst}\getvalue{\??dd#1\c!monster}}}}
 %      {\!!widthb}%
 %   %\getvalue{\??dd#1\s!do\c!lokaal}%
-%    \parindent=\!!zeropoint\relax
-%    \noindent
-%    \ignorespaces}
+%    \parindent=\!!zeropoint\relax} % \noindent\ignorespaces
 
 %D A new key 'titeluitlijnen' in definitions. 
 
@@ -350,9 +331,7 @@
      \chardef\insidedefinition=1 
    \or
      \chardef\insidedefinition=2 
-   \fi
-   \noindent
-   \ignorespaces}
+   \fi} % now happens elsewhere : \noindent\ignorespaces
 
 \def\@@stopdefinitie#1%
   {\par

@@ -318,6 +318,8 @@
 \def\!!twelvepoint       {12pt}
 \def\!!fourteenpointfour {14.4pt}
 
+\ifx\z@\undefined \newdimen\zeropoint \else \let\zeropoint\z@ \fi
+
 %D Variables are composed of a command specific tag and a user
 %D supplied variable (system constant). The first tag \type{ag}
 %D for instance is available as \type{\??ag} and expands to
@@ -456,6 +458,7 @@
 \definesystemvariable {sy}   % SYnchronisatie
 \definesystemvariable {ta}   % TAb
 \definesystemvariable {tb}   % TekstBlokken
+\definesystemvariable {td}   % TextbackgrounDs
 \definesystemvariable {te}   % TEmplate 
 \definesystemvariable {tf}   % TypeFace
 \definesystemvariable {tg}   % Tex paGe
@@ -578,6 +581,7 @@
 \definefileconstant {styleprefix}        {s-}
 \definefileconstant {xstyleprefix}       {x-}
 \definefileconstant {privateprefix}      {p-}
+\definefileconstant {thirdprefix}        {t-}
 
 %D \CONTEXT\ follows different strategies for finding files.
 %D The macros that are responsible for this 'clever' searching

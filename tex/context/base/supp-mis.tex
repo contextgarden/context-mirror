@@ -17,13 +17,28 @@
 
 \ifx \undefined \writestatus \else \expandafter \endinput \fi
 
-\def\StartLatexHack% Sigh. Why doesn't latex handle this itself 
+%D Because \LATEX\ has no safe package loading mechanism, we
+%D need to take care of possible interference. 
+
+\def\StartLatexHack% 
   {\edef\StopLatexHack
      {\catcode`\noexpand/=\the\catcode`/ 
+      \catcode`\noexpand:=\the\catcode`:
+      \catcode`\noexpand;=\the\catcode`;
       \catcode`\noexpand"=\the\catcode`"
       \catcode`\noexpand<=\the\catcode`< 
       \catcode`\noexpand>=\the\catcode`>}%
-  \catcode`/=12 \catcode`"=12 \catcode`<=12 \catcode`>=12 }
+  \catcode`/=12 \catcode`:=12 \catcode`;=12 
+  \catcode`"=12 \catcode`<=12 \catcode`>=12 }
+
+%D This hack is needed especially for \LATEX\ users who use
+%D the Babel package. The Germans have active \type {"}'s, the
+%D Poles have \type {/}, while the French have \type {:} and
+%D \type {;} defines as command (thanks to Daniel Flipo for
+%D pointing that out and testing). Potentially active \type
+%D {?}'s and \type {!}'s are less dangerous since they are
+%D handled by the \type {\protect} and \type {\unprotect}
+%D macros. 
 
 \StartLatexHack
 
@@ -142,7 +157,8 @@
 \ifnocontextobject \scratchbox     \do \newbox    \scratchbox     \fi
 \ifnocontextobject \scratchread    \do \newread   \scratchread    \fi
 \ifnocontextobject \scratchwrite   \do \newwrite  \scratchwrite   \fi
- 
+\ifnocontextobject \zeropoint      \do \newdimen  \zeropoint      \fi
+
 \ifnocontextobject \nextbox   \do \newbox   \nextbox   \fi
 \ifnocontextobject \nextdepth \do \newdimen \nextdepth \fi
 

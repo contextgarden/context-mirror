@@ -1,0 +1,320 @@
+%D \module
+%D   [       file=mp-step.mp,
+%D        version=2001.05.22,
+%D          title=\CONTEXT\ \METAPOST\ graphics,
+%D       subtitle=steps,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See licen-en.pdf for
+%C details.
+
+if unknown context_tool :    input mp-tool ; fi ;
+if   known context_step : endinput         ; fi ;
+
+boolean context_step ; context_step := true ;
+
+%D In the associated \TEX\ module \type {m-steps}, we describe
+%D three methods. The first method uses a different kind of
+%D code than the other two. The method we decided to use,
+%D is based on positional information (paths) provided by
+%D \CONTEXT.
+
+def initialize_step_variables =
+  save line_method, line_h_offset, line_v_offset ;
+  numeric line_method   ; line_method   := 1 ;
+  numeric line_h_offset ; line_h_offset := 3pt ;
+  numeric line_v_offset ; line_v_offset := 3pt ;
+enddef ;
+
+def begin_step_chart =
+  initialize_step_variables ;
+  save steps, texts, t, b, tb, nofcells ;
+  picture cells[][], texts[][][], lines[][][] ;
+  numeric t, b ; t := 1 ; b := 2 ;
+  numeric nofcells ; nofcells := 0 ;
+enddef ;
+
+def analyze_step_chart =
+  numeric n[], l[][], r[][] ; pair p[] ;
+  n[t] := n[b] := 0 ; numeric tb ; 
+  for i=1 upto nofcells : for nn = t, b :
+    if bbwidth(cells[nn][i])>0 : n[nn] := n[nn] + 1 ; fi ;
+    l[t][i] := r[t][i] := l[b][i] := r[b][i] := 0 ;
+  endfor ; endfor ;
+  % count left and right points
+  for i=1 upto nofcells-1 : for j=i upto nofcells-1 : for nn = t, b :
+    if bbwidth(texts[nn][i][j])>0 :
+      l[nn][i] := l[nn][i] + 1 ;
+      r[nn][j+1] := r[nn][j+1] + 1 ;
+    fi ;
+  endfor ; endfor ; endfor ;
+  % calculate left and right points
+  vardef do (expr nn, mm, ii, ss) =
+    if (l[nn][ii] + r[nn][ii]) > 1 : ss else : .5 fi
+      [ ulcorner cells[mm][ii], urcorner cells[mm][ii] ]
+  enddef ;
+  % combined rows
+  tb := if n[t]>0 : t else : b fi ;
+enddef ;
+
+vardef get_step_chart_top_line (expr i, j) =
+  if bbwidth(cells[tb][i])>0 :
+    if bbwidth(texts[t][i][j])>0 :
+      if bbwidth(cells[tb][j+1])>0 :
+        p[1] := top do(t, tb,   i, .6) ;
+        p[3] := top do(t, tb, j+1, .4) ;
+        p[2] := .5[p[1],p[3]] ;
+        if line_method = 1 :
+          p[2] := p[2] shifted (0, ypart
+            (llcorner texts[t][i][j] - ulcorner cells[tb][j+1])) ;
+        elseif line_method = 2 :
+          p[2] := center texts[t][i][j] ;
+        else :
+          % nothing
+        fi ;
+        p[1] := p[1] shifted (0,+line_v_offset) ;
+        p[2] := p[2] shifted (0,-line_v_offset) ;
+        p[3] := p[3] shifted (0,+line_v_offset) ;
+        (p[1] {up} ... p[2] ... {down} p[3])
+      else :
+        origin 
+      fi 
+    else :
+      origin 
+    fi 
+  else :
+    origin 
+  fi 
+enddef ; 
+
+vardef get_step_chart_bot_line (expr i, j) =
+  if bbwidth(cells[b][i])>0 :
+    if bbwidth(texts[b][i][j])>0 :
+      if bbwidth(cells[b][j+1])>0 :
+        p[1] := (bot do(b, b,   i, .6)) shifted (0,-bbheight(cells[b][i])) ;
+        p[3] := (bot do(b, b, j+1, .4)) shifted (0,-bbheight(cells[b][j+1])) ;
+        p[2] := .5[p[1],p[3]] ;
+        if line_method = 1 :
+          p[2] := p[2] shifted (0, -ypart
+            (llcorner cells[b][j+1] - ulcorner texts[b][i][j])) ;
+        elseif line_method = 2 :
+          p[2] := center texts[b][i][j] ;
+        fi ;
+        p[1] := p[1] shifted (0,-line_v_offset) ;
+        p[2] := p[2] shifted (0,+line_v_offset) ;
+        p[3] := p[3] shifted (0,-line_v_offset) ;
+        (p[1] {down} ... p[2] ... {up} p[3])
+      else :
+        origin 
+      fi 
+    else :
+      origin 
+    fi 
+  else :
+    origin 
+  fi 
+enddef ;
+
+def end_step_chart =
+  for i=1 upto nofcells :                         for nn = t, b : 
+      if bbwidth(cells[nn][i])   >0 : draw cells[nn][i]    ; fi ; 
+  endfor ;          endfor ;
+  for i=1 upto nofcells : for j=i upto nofcells : for nn = t, b : 
+    if known lines[nn][i][j] :
+      if bbwidth(lines[nn][i][j])>0 : draw lines[nn][i][j] ; fi ;
+    fi ; 
+  endfor ; endfor ; endfor ;
+  for i=1 upto nofcells : for j=i upto nofcells : for nn = t, b :
+      if bbwidth(texts[nn][i][j])>0 : draw texts[nn][i][j] ; fi ;
+  endfor ; endfor ; endfor ;
+enddef ;
+
+%D Step tables. 
+
+def begin_step_table =
+  initialize_step_variables ;
+  picture cells[], texts[], lines[] ;
+  numeric nofcells ; nofcells := 0 ;
+enddef ;
+
+def end_step_table =
+  for i=1 upto nofcells : if known cells[i] : if bbwidth(cells[i])>0 : 
+    draw cells[i] ; 
+  fi ; fi ; endfor ;
+  for i=1 upto nofcells : if known lines[i] : if bbwidth(lines[i])>0 : 
+    draw lines[i] ; 
+  fi ; fi ; endfor ;
+  for i=1 upto nofcells : if known texts[i] : if bbwidth(texts[i])>0 : 
+    draw texts[i] ;
+  fi ; fi ; endfor ;
+enddef ;
+
+vardef get_step_table_line (expr i) =
+  pair prev, self, next ;
+  if known texts[i] :
+    self := lft .5[llcorner texts[i], ulcorner texts[i] ] ;
+    prev := rt if known texts[i-1] : .3 else : .5 fi [lrcorner cells[i]  , urcorner cells[i]  ] ;
+    next := rt if known texts[i+1] : .7 else : .5 fi [lrcorner cells[i+1], urcorner cells[i+1]] ;
+    self := self shifted (-line_h_offset,0) ;
+    prev := prev shifted (+line_h_offset,0) ;
+    next := next shifted (+line_h_offset,0) ;
+    prev {right} ... self ... {left} next
+  else :
+    origin
+  fi
+enddef ;
+
+endinput
+
+%D The older method let \METAPOST\ do the typesetting. The
+%D macros needed for that are included here for educational
+%D purposes.
+%D
+%D \starttypen
+%D def initialize_step_variables =
+%D   save line_color, line_width, arrow_alternative,
+%D     text_fill_color, text_line_color, text_line_width, text_offset,
+%D     cell_fill_color, cell_line_color, cell_line_width, cell_offset,
+%D     line_h_offset, line_v_offset ;
+%D   color   line_color       ; line_color       := .4white ;
+%D   numeric line_width       ; line_width       := 1.5pt ;
+%D   color   text_fill_color  ; text_fill_color  := white ;
+%D   color   text_line_color  ; text_line_color  := red ;
+%D   numeric text_line_width  ; text_line_width  := 1pt ;
+%D   numeric text_offset      ; text_offset      := 2pt ;
+%D   color   cell_fill_color  ; cell_fill_color  := white ;
+%D   color   cell_line_color  ; cell_line_color  := blue ;
+%D   numeric cell_line_width  ; cell_line_width  := 1pt ;
+%D   numeric cell_offset      ; cell_offset      := 2pt ;
+%D   numeric line_alternative ; line_alternative := 1 ;
+%D   numeric line_h_offset    ; line_h_offset    := 3pt ;
+%D   numeric line_v_offset    ; line_v_offset    := 3pt ;
+%D enddef ;
+%D
+%D def begin_step_chart =
+%D   begingroup ;
+%D   initialize_step_variables ;
+%D   save steps, texts, t, b ;
+%D   picture cells[][]   ; numeric nofcells ; nofcells := 0 ;
+%D   picture texts[][][] ; numeric noftexts ; noftexts := 0 ;
+%D   numeric t, b ; t := 1 ; b := 2 ;
+%D enddef ;
+%D \stoptypen
+%D
+%D We use a couple of macros to store the content. In the
+%D second (third) alternative we will directly fill the
+%D cells.
+%D
+%D \starttypen
+%D def set_step_chart_cells (expr one, two) =
+%D   nofcells := nofcells + 1 ; noftexts := 0 ;
+%D   cells[t][nofcells] := textext.rt(one) ;
+%D   cells[b][nofcells] := textext.rt(two) ;
+%D enddef ;
+%D
+%D def set_step_chart_texts (expr one, two) =
+%D   noftexts := noftexts + 1 ;
+%D   texts[t][nofcells][noftexts] := textext.rt(one) ;
+%D   texts[b][nofcells][noftexts] := textext.rt(two) ;
+%D enddef ;
+%D \stoptypen
+%D
+%D If you compare the building macro with the later
+%D alternative, you will notice that here we explicitly
+%D have to calculate the distances and positions.
+%D
+%D \starttypen
+%D def end_step_chart =
+%D   numeric dx ; dx :=  0 ; path p ;
+%D   numeric n[] ; n[t] := n[b] := 0 ;
+%D   numeric stepsvdistance[] ;
+%D   vardef bbwidth  (expr p) = (xpart (lrcorner p - llcorner p)) enddef ;
+%D   vardef bbheight (expr p) = (ypart (urcorner p - lrcorner p)) enddef ;
+%D   stepsvdistance[t] := stepsvdistance[b] := 0 ;
+%D   for i=1 upto nofcells :
+%D     % find largest bbox
+%D     p := boundingbox steps
+%D       [if bbwidth(cells[t][i])>bbwidth(cells[b][i]): t else: b fi][i] ;
+%D     % assign largest bbox
+%D     for nn = t, b :
+%D       if bbwidth(cells[nn][i])>0 :
+%D         setbounds cells[nn][i] to p enlarged cell_offset ;
+%D         n[nn] := n[nn] + 1 ;
+%D       fi ;
+%D     endfor ;
+%D     % determine height
+%D     if n[t]>0 :
+%D       stepsvdistance[t] := bbheight(cells[t][1]) + intertextdistance ;
+%D     fi ;
+%D     % add to row
+%D     for nn = t, b :
+%D       cells[nn][i] := cells[nn][i] shifted (dx,stepsvdistance[nn]) ;
+%D       if bbwidth(cells[nn][i])>0 :
+%D         dowithpath (boundingbox cells[nn][i],
+%D           cell_line_width, cell_line_color, cell_background_color) ;
+%D       fi ;
+%D     endfor ;
+%D     % calculate position
+%D     dx := dx + interstepdistance + bbwidth(cells[b][i]) ;
+%D   endfor ;
+%D   boolean stacked ; stacked := false ;
+%D   numeric l[][], r[][], l[][], r[][] ;
+%D   pair pa, pb, pc ; path p[] ;
+%D   for i=1 upto nofcells :
+%D     l[t][i] := r[t][i] := l[b][i] := r[b][i] := 0 ;
+%D   endfor ;
+%D   % count left and right points
+%D   for i=1 upto nofcells : for j=1 upto nofcells : for nn = t, b :
+%D     if known texts[nn][i][j] : if bbwidth(texts[nn][i][j])>0 :
+%D       l[nn][i]   := l[nn][i]   + 1 ;
+%D         r[nn][j+i] := r[nn][j+i] + 1 ;
+%D         stacked := (stacked or (j>1)) ;
+%D         setbounds texts[nn][i][j] to boundingbox texts[nn][i][j] enlarged cell_offset ;
+%D     fi fi ;
+%D     endfor ; endfor ; endfor ;
+%D     % calculate left and right points
+%D     vardef do (expr nn, mm, ii, ss) =
+%D       if (l[nn][ii] > 0) and (r[nn][ii] > 0) : ss else : .5 fi
+%D         [ ulcorner cells[mm][ii],urcorner cells[mm][ii] ]
+%D     enddef ;
+%D     % draw arrow from left to right point
+%D     def dodo (expr nn, ii, jj, dd) =
+%D       drawarrow p[nn]
+%D         withpen pencircle scaled arrow_line_width
+%D         withcolor arrow_line_color ;
+%D       transform tr ; tr := identity
+%D         shifted point .5 along p[nn]
+%D         shifted -center texts[nn][ii][jj]
+%D         if not stacked : shifted (0,dd) fi ;
+%D         dowithpath ((boundingbox texts[nn][ii][jj]) transformed tr,
+%D           text_line_width, text_line_color, text_fill_color) ;
+%D     enddef ;
+%D     % draw top and bottom text boxes
+%D     for i=1 upto nofcells : for j=1 upto nofcells :
+%D       pickup pencircle scaled arrow_line_width ;
+%D       if known texts[t][i][j] : if bbwidth(texts[t][i][j]) > 0 :
+%D         pa := top do(t, if n[t]>0 : t else : b fi,   i, .6) ;
+%D         pb := top do(t, if n[t]>0 : t else : b fi, j+i, .4) ;
+%D         pc := .5[pa,pb] shifted (0,+step_arrow_depth) ;
+%D         p[t] := pa {up} .. if not stacked : pc .. fi {down} pb ;
+%D         dodo(t, i, j, +intertextdistance) ;
+%D       fi fi ;
+%D       if known texts[b][i][j] : if bbwidth(texts[b][i][j]) > 0 :
+%D         pa := (bot do(b, b,   i, .6)) shifted (0,-bbheight(cells[b][i])) ;
+%D         pb := (bot do(b, b, j+i, .4)) shifted (0,-bbheight(cells[b][j+i])) ;
+%D         pc := .5[pa,pb] shifted (0,-step_arrow_depth) ;
+%D         p[b] := pa {down} .. if not stacked : pc .. fi {up} pb ;
+%D         dodo(b, i, j, -intertextdistance) ;
+%D       fi fi ;
+%D     endfor ; endfor ;
+%D   endgroup ;
+%D enddef ;
+%D \stoptypen
+%D
+%D If you compare both methods, you will notice that the
+%D first method is the cleanest, but not the most efficient
+%D (since it needs \TEX\ runs within \METAPOST\ runs within
+%D \TEX\ runs).

@@ -1,0 +1,375 @@
+%D \module
+%D   [       file=page-lin, % copied from main-001
+%D        version=1997.03.31, 
+%D          title=\CONTEXT\ Core Macros,
+%D       subtitle=Line Numbering,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{Context Core Macros / Line Numbering}
+
+\unprotect 
+
+\newif\ifinregels
+\newif\ifregelnummersinmarge
+
+\def\stelregelsin%
+  {\dodoubleargument\getparameters[\??rg]}
+
+\def\startregels%
+  {\@@rgvoor
+   \witruimte
+  %\pagina[\v!voorkeur]} gaat mis na koppen, nieuw: later \nobreak
+   \begingroup
+   \def\@@rgstepyes{\parindent\!!zeropoint}%
+   \def\@@rgstepno{\parindent\!!zeropoint}%
+   \edef\@@rgparindent{\the\parindent}%
+   \gdef\@@rglinesteptoggle{1}%
+   \processaction
+     [\@@rginspringen]
+     [    \v!ja=>\def\@@rgstepyes{\parindent\@@rgparindent}%
+                 \def\@@rgstepno {\parindent\@@rgparindent},
+      \v!oneven=>\def\@@rgstepyes{\parindent\!!zeropoint  }%
+                 \def\@@rgstepno {\parindent\@@rgparindent},
+        \v!even=>\def\@@rgstepno {\parindent\!!zeropoint  }%
+                 \def\@@rgstepyes{\parindent\@@rgparindent}]%
+   \inregelstrue
+   \stelwitruimtein[\v!geen]%
+   \obeylines
+   \let\checkindentation=\relax
+   \@@rgstepno
+   \ignorespaces
+   \gdef\afterfirstobeyedline% tzt two pass, net als opsomming
+     {\gdef\afterfirstobeyedline%
+        {\nobreak
+         \global\let\afterfirstobeyedline\relax}}%
+   \def\obeyedline%
+     {\par
+      \afterfirstobeyedline
+      \ifdim\lastskip>\zeropoint
+        \gdef\@@rglinesteptoggle{0}%
+      \else
+        \doglobal\increment\@@rglinesteptoggle
+      \fi
+      \ifodd\@@rglinesteptoggle\relax
+        \@@rgstepyes
+      \else
+        \@@rgstepno
+      \fi
+      \futurelet\next\dobetweenthelines}%
+   \GotoPar}
+
+% \def\dobetweenthelines%
+%   {\convertcommand \next      \to\!!stringa % very ugly and fuzzy
+%    \convertargument\obeyedline\to\!!stringb % but needed anyway
+%    \ifx\!!stringa\!!stringb                 % but alas, it fails 
+%      \@@rgtussen                            % hopelessly in non 
+%    \fi}                                     % etex
+
+\def\dobetweenthelines%
+  {\doifmeaningelse{\next}{\obeyedline}{\@@rgtussen}{}}
+
+\def\stopregels%
+  {\endgroup
+   \@@rgna}
+
+\newcount\linenumber
+\newcount\linestepper
+\newif\ifinregelnummeren
+
+% het gebruik van \setlocalreference scheelt een hash entry
+
+\def\dodoshowlinenumber% for use elsewhere, to be extended 
+  {\doschrijfregelnummer
+   \global\advance\linenumber by 1\relax}%
+
+\def\regelweergave%
+  {\convertnumber\@@rnconversie\linenumber}%
+
+\def\dostelregelnummerenin[#1]%
+  {\getparameters
+     [\??rn]
+     [\c!start=1,
+      \c!stap=1,
+      #1]%
+   \global\linenumber=1\relax}
+
+\def\stelregelnummerenin%
+  {\dosingleargument\dostelregelnummerenin}
+
+\def\dostartnummerenLINE%                % !! \everypar !!
+  {\EveryPar{\schrijfregelnummer}}
+
+\def\dostopnummerenLINE%
+  {\egroup}
+
+\def\dodoschrijfregelnummer%
+  {\setbox0=\hbox{\regelweergave}%
+   \vsmashbox0%
+   \ifregelnummersinmarge
+     \llap{\hbox{\box0\hskip\linkermargeafstand}}%
+   \else
+     \llap{\hbox to \@@rnbreedte{\box0\hss}}%
+   \fi}
+
+\def\complexstartregelnummeren[#1]%
+  {\doifnotinset{\v!verder}{#1}
+     {\global\linenumber=1\relax}%
+   \doifinsetelse{\@@rnplaats}{\v!inmarge,\v!marge}
+     {\regelnummersinmargetrue}
+     {\regelnummersinmargefalse}%
+   \ifregelnummersinmarge\else
+     \advance\leftskip by \@@rnbreedte\relax
+   \fi
+   \ifinregels
+     \let\dostartnummeren=\dostartnummerenLINE
+     \let\stopregelnummeren=\dostopnummerenLINE
+     \def\schrijfregelnummer%
+       {\doschrijfregelnummer
+        \global\advance\linenumber by 1\relax}%
+   \else
+     \let\dostartnummeren=\dostartnummerenPAR
+     \let\stopregelnummeren=\dostopnummerenPAR
+     \def\schrijfregelnummer%
+       {\global\advance\linenumber by -1\relax
+        \doschrijfregelnummer}%
+   \fi
+   \dostartnummeren}
+
+\def\startregelnummeren%
+  {\bgroup
+   \inregelnummerentrue
+   \complexorsimpleempty\startregelnummeren}
+
+\def\doschrijfregelnummer%
+  {\ifnum\linenumber<\@@rnstart\relax
+   \else
+     \!!counta=\linenumber
+     \divide\!!counta by \@@rnstap\relax
+     \multiply\!!counta by \@@rnstap\relax
+     \ifnum\!!counta=\linenumber
+       \doattributes\??rn\c!letter\c!kleur{\dodoschrijfregelnummer}%
+     \fi
+   \fi}
+
+\def\eenregel[#1]%
+  {\regelreferentie0[#1]\ignorespaces}
+
+\def\startregel[#1]%
+  {\regelreferentie1[#1]\ignorespaces}
+
+\def\stopregel[#1]%
+  {\unskip\regelreferentie2[#1]}
+
+% \def\inregellabel#1%
+%   {\doifinstringelse{--}{#1}
+%      {\labeltext{\v!regels}}
+%      {\labeltext{\v!regel}}}
+% 
+% \def\inregel#1[#2]%
+%   {\doifelsenothing{#1}
+%      {\in{\inregellabel{\currenttextreference}}[\@@rnprefix#2]}
+%      {\in{#1}[\@@rnprefix#2]}}
+%
+% double labels: 
+
+\def\inregel#1[#2]%
+  {\doifelsenothing{#1}
+     {\doifinstringelse{--}{\currenttextreference}
+        {\in{\leftlabeltext\v!regels}{\rightlabeltext\v!regels}[\@@rnprefix#2]}
+        {\in{\leftlabeltext\v!regel }{\rightlabeltext\v!regel }[\@@rnprefix#2]}}
+     {\in{#1}[\@@rnprefix#2]}}
+
+\def\dostartnummerenPAR%
+  {\beginofshapebox
+   \doglobal\newcounter\linereference}
+
+% localcrossref heroverwegen
+
+\def\setlinereference#1#2#3#4%
+  {\setxvalue{lrf:#1}{\noexpand\dogetlinereference{#2}{#3}{#4}}}
+
+\def\getlinereference#1%
+  {\getvalue{lrf:#1}}
+
+\def\dogetlinereference#1#2#3%
+  {\edef\linereferencename{#1}%
+   \edef\linereferenceline{#2}%
+   \edef\linereferenceplus{#3}}
+
+% 1 xxx xxx xxx xxx xxx xxx xxx
+% 2 xxx yyy yyy yyy yyy yyy yyy <= start y
+% 3 yyy yyy yyy yyy yyy yyy yyy
+% 4 yyy yyy yyy yyy yyy xxx xxx <= stop y
+% 5 xxx xxx xxx xxx xxx xxx xxx
+
+%\def\regelreferentie#1[#2]%
+%  {\bgroup
+%   \dimen0=\dp\strutbox
+%   \doif{\@@rnrefereren}{\v!aan}
+%     {\doglobal\increment\linereference
+%      % start 1=>(n=y,l=0,p=1)
+%      % stop  2=>(n=y,l=0,p=2)
+%      \setxvalue{lrf:n:\linereference}{\@@rnprefix#2}%
+%      \setxvalue{lrf:l:\linereference}{0}%
+%      \setxvalue{lrf:p:\linereference}{#1}%
+%      \advance\dimen0 by \linereference sp}%
+%   \prewordbreak
+%   \vrule \!!width \!!zeropoint \!!depth \dimen0 \!!height \!!zeropoint
+%   \prewordbreak
+%   \egroup}
+
+\def\regelreferentie#1[#2]%
+  {\bgroup
+   \dimen0=\dp\strutbox
+   \doif{\@@rnrefereren}{\v!aan}
+     {\doglobal\increment\linereference
+      % start 1=>(n=y,l=0,p=1)
+      % stop  2=>(n=y,l=0,p=2)
+      \setlinereference{\linereference}{\@@rnprefix#2}{0}{#1}%
+      \advance\dimen0 by \linereference sp}%
+   \prewordbreak
+   \vrule \!!width \!!zeropoint \!!depth \dimen0 \!!height \!!zeropoint
+   \prewordbreak
+   \egroup}
+
+\def\dostopnummerenPAR% dp's -> openstrutdepth
+  {\endofshapebox
+   \checkreferences
+   \linestepper=0
+   \reshapebox{\global\advance\linestepper by 1\relax}%
+   \global\advance\linenumber by \linestepper
+   \doifelse{\@@rnrefereren}{\v!aan}
+     {\reshapebox % We are going back!
+        {\global\advance\linenumber by -1
+         \dimen0=\dp\shapebox
+         \advance\dimen0 by -\dp\strutbox\relax
+         \ifdim\dimen0>\zeropoint
+           % 1=>4 | 2=>4 1=>2
+           % start 1=>(n=y,l=2,p=1)
+           % stop  2=>(n=y,l=4,p=2)
+           \dostepwiserecurse{1}{\number\dimen0}{1}
+             {\getlinereference\recurselevel
+              \setlinereference\recurselevel
+                {\linereferencename}{\the\linenumber}{\linereferenceplus}}%
+         \fi}%
+      \global\advance\linenumber by \linestepper
+      \ifnum\linereference>0 % anders vreemde loop in paragraphs+recurse
+        \dorecurse{\linereference}
+          {\getlinereference\recurselevel
+           \ifnum\linereferenceplus=2 % stop
+             % ref y: text = 4 / Kan dit buiten referentie mechanisme om?
+             \expanded{\setlocalcrossreference
+               {\referenceprefix\linereferencename}{}{}{\linereferenceline}}%
+           \fi}%
+        \dorecurse{\linereference}
+          {\getlinereference\recurselevel
+           \ifnum\linereferenceplus<2 % start / lone
+             \ifnum\linereferenceplus=1 % start
+               \getreferenceelements{\linereferencename}% text = 4
+               \ifnum\linereferenceline<0\currenttextreference\relax % 0 prevents error
+                 \edef\linereferenceline{\linereferenceline--\currenttextreference}%
+               \fi
+             \fi
+             \expanded{\setlocalcrossreference
+               {\referenceprefix\linereferencename}{}{}{\linereferenceline}}%
+           \fi}%
+        \global\let\scratchline=\linenumber  % We are going back!
+        \reshapebox
+          {\doglobal\decrement\scratchline
+           \hbox
+             {\dorecurse{\linereference}
+                {\getlinereference\recurselevel
+                 \getreferenceelements{\linereferencename}%
+                 \beforesplitstring\currenttextreference--\at--\to\firstline
+                 \ifnum\firstline=\scratchline\relax
+                   % beter een rawtextreference
+                   \textreference[\linereferencename]{\currenttextreference}%
+                   \expanded{\setlocalcrossreference
+                     {\referenceprefix\linereferencename}{}{}{0}}% ==done
+                 \fi}%
+              \dimen0=\dp\shapebox
+              \advance\dimen0 by -\dp\strutbox\relax
+              \ifdim\dimen0>\zeropoint
+                \dp\shapebox=\dp\strutbox
+              \fi
+              \schrijfregelnummer\box\shapebox}}% no \strut !
+      \else
+        \reshapebox{\hbox{\schrijfregelnummer\box\shapebox}}% no \strut !
+      \fi}
+     {\reshapebox{\global\advance\linenumber by -1}%
+      \global\advance\linenumber by \linestepper
+      \reshapebox{\hbox{\schrijfregelnummer\box\shapebox}}}% no \strut !
+   \global\advance\linenumber by \linestepper
+   \flushshapebox
+   \egroup}
+
+\def\crlf%
+  {\ifhmode\unskip\else\strut\fi\ifcase\raggedstatus\hfil\fi\break}
+
+\def\opeenregel%
+  {\def\crlf{\ifhmode\unskip\fi\space}\let\\\crlf}
+
+\newcount\internalparagraphnumber
+
+\def\stelparagraafnummerenin%
+  {\dosingleempty\dostelparagraafnummerenin}
+
+\def\dostelparagraafnummerenin[#1]%
+  {\getparameters
+     [\??ph][#1]%
+   \processaction
+     [\@@phstatus]
+     [\v!start=>\let\showparagraphnumber\doshowparagraphnumberA,
+       \v!stop=>\let\showparagraphnumber\relax,
+      \v!regel=>\let\showparagraphnumber\doshowparagraphnumberB,
+      \v!reset=>\global\internalparagraphnumber=0  
+                \let\showparagraphnumber\doshowparagraphnumberA]}
+
+\def\dodoshowparagraphnumber%
+  {\global\advance\internalparagraphnumber 1
+   \inleftmargin % \tf normalizes em 
+     {\tf{\doattributes\??ph\c!letter\c!kleur{\the\internalparagraphnumber}}%
+      \kern\@@phafstand}}
+
+\def\doshowparagraphnumberA%
+  {\ifprocessingverbatim
+     \iflinepar\dodoshowparagraphnumber\fi
+   \else
+     \dodoshowparagraphnumber
+   \fi}
+
+\def\doshowparagraphnumberB%
+  {\ifinregelnummeren
+     \doshowparagraphnumberA
+   \fi}
+
+\stelregelnummerenin
+  [\c!conversie=\v!cijfers,
+   \c!start=1,
+   \c!stap=1,
+   \c!plaats=\v!inmarge,
+   \c!letter=,
+   \c!kleur=,
+   \c!breedte=2em,
+   \c!prefix=,
+   \c!refereren=\v!aan]
+
+\stelparagraafnummerenin
+  [\c!status=\v!stop,
+   \c!letter=,
+   \c!kleur=,
+   \c!afstand=\ifregelnummersinmarge2em\else\!!zeropoint\fi] 
+
+\stelregelsin
+  [\c!voor=\blanko,
+   \c!na=\blanko,
+   \c!tussen=\blanko,
+   \c!inspringen=\v!nee]
+
+\protect \endinput 

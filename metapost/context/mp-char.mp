@@ -1,3 +1,5 @@
+% to be cleaned up, namespace needed ! ! ! ! !
+
 %D \module
 %D   [       file=mp-char.mp,
 %D        version=1998.10.10,
@@ -17,54 +19,9 @@ if   known context_char : endinput         ; fi ;
 
 boolean context_char ; context_char := true ; 
 
-vardef enlarged_path (expr p, w) =              % NAAR mp-tool
-  (llcorner p shifted (-w,-w) --
-   lrcorner p shifted ( w,-w) --
-   urcorner p shifted ( w, w) --
-   ulcorner p shifted (-w, w) -- cycle)
-enddef;
-
-secondarydef p peepholed q = 
-  begingroup ; 
-  save start ; pair start ; start := point 0 of p ; 
- %drawdot start scaled_to_grid withpen pencircle scaled 2shape_line_width withcolor red ;
-  if xpart start >= xpart center p : 
-    if ypart start >= ypart center p : 
-      urcorner q -- ulcorner q -- llcorner q -- lrcorner q -- 
-      reverse  p -- lrcorner q -- cycle 
-    else :
-      lrcorner q -- urcorner q -- ulcorner q -- llcorner q -- 
-      reverse  p -- llcorner q -- cycle 
-    fi  
-  else :
-    if ypart start > ypart center p : 
-      ulcorner q -- llcorner q -- lrcorner q -- urcorner q -- 
-      reverse  p -- urcorner q -- cycle 
-    else :
-      llcorner q -- lrcorner q -- urcorner q -- ulcorner q --
-      reverse  p -- ulcorner q -- cycle 
-    fi  
-  fi 
-  endgroup 
-enddef ;
-
-boolean intersection_found ; 
-
-secondarydef p intersection_point q = 
-  begingroup 
-    save x_, y_ ; 
-    (x_,y_) = p intersectiontimes q ;
-    if x_<0 : 
-      intersection_found := false ;  
-      center p % origin
-    else : 
-      intersection_found := true ;  
-      .5[point x_ of p, point y_ of q] 
-    fi 
-  endgroup
-enddef ;
-
 current_position := 0 ;
+
+% kan naar elders 
 
 def save_text_position (expr p) =  % beware: clip shift needed
   current_position := current_position + 1 ;
@@ -76,11 +33,8 @@ enddef ;
 
 %D settings
 
-grid_width   := 60pt ;
-grid_height  := 40pt ;
-
-shape_width  := 45pt ;
-shape_height := 30pt ;
+grid_width   := 60pt ; grid_height  := 40pt ;
+shape_width  := 45pt ; shape_height := 30pt ;
 
 chart_offset :=  2pt ;
 
@@ -131,7 +85,7 @@ def show_shapes (expr n) =
 
 enddef ; 
 
-%D connections
+%D connections -> namespace needed ! ! ! 
 
 color connection_line_color ;
 
@@ -895,7 +849,7 @@ def end_chart =
          (cmax_x,cmax_y)--(cmin_x,cmax_y)--cycle))
        scaled_to_grid ;
  %draw p withcolor red ; 
-  p := enlarged_path (p,chart_offset) ;
+  p := p enlarged chart_offset ;
   clip currentpicture to p ;
   setbounds currentpicture to p ;
   savedata

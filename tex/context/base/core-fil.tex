@@ -135,38 +135,48 @@
 %D \showsetup{\y!usemodule}
 %D 
 %D More information on the specific modules can be found in
-%D their dedicated manuals. 
+%D their dedicated manuals. We use \type {\next} so that we 
+%D can \type {\end} in modules. 
 
 \newconditional\moduleisloaded
 
-\def\dododousemodules#1#2%
-  {\ifconditional\moduleisloaded\else
+\def\dododousemodules#1#2% no \unprotect/\protect when loading, 
+  {\relax                % since we need to use ? ! unprotected   
+   \ifconditional\moduleisloaded % sometimes (see xtag-map)
+     \let\next\relax
+   \else
      \makeshortfilename[#1\truefilename{#2}]%
      \doifundefinedelse{\shortfilename\v!aan}
        {\setgvalue{\shortfilename\v!aan}{}%
-        \startreadingfile
-        \readsysfile{\shortfilename}%
-          {\showmessage{\m!systems}{5}{#2}%
-           \settrue\moduleisloaded}%
-          {}%
-        \stopreadingfile}
+        \def\next
+          {\startreadingfile
+           \readsysfile{\shortfilename}%
+             {\showmessage{\m!systems}{5}{#2}%
+              \settrue\moduleisloaded}%
+             {}%
+           \stopreadingfile}}
        {\showmessage{\m!systems}{7}{#2}%
-        \settrue\moduleisloaded}%
-   \fi}
+        \settrue\moduleisloaded
+        \let\next\relax}%
+   \fi
+   \next}
 
 \def\dodousemodules#1%
   {\setfalse\moduleisloaded
-   \dododousemodules\f!moduleprefix {#1}%
+   \dododousemodules\f!moduleprefix {#1}% 
+   \dododousemodules\f!privateprefix{#1}%
    \dododousemodules\f!styleprefix  {#1}%
    \dododousemodules\f!xstyleprefix {#1}%
-   \dododousemodules\f!privateprefix{#1}%
+   \dododousemodules\f!thirdprefix  {#1}%
    \ifconditional\moduleisloaded\else
      \showmessage{\m!systems}{6}{#1}%
    \fi}
 
 \def\dousemodules[#1]%
-  {\doifsomething{#1}{\processcommalist[#1]\dodousemodules}%
-   }% \enablelanguagespecifics[\currentmainlanguage]}
+  {\doifelsenothing{#1}
+     {\let\next\relax}
+     {\def\next{\processcommalist[#1]\dodousemodules}}
+   \next}
 
 \def\usemodules%
   {\dosingleargument\dousemodules}

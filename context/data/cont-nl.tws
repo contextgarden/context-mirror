@@ -157,6 +157,7 @@ var:conversie:ja,nee,altijd::
 var:reductie:ja,nee::
 var:rgb:ja,nee::
 var:cmyk:ja,nee::
+var:mpcmyk:ja,nee::
 stopsetup
 
 startsetup
@@ -251,6 +252,13 @@ typ::
 stopsetup
 
 startsetup
+com:definieertype:
+typ:val/vars/:
+val:*naam::
+ivr:steltypein::
+stopsetup
+
+startsetup
 com:steltypein:
 typ:var/:
 var:spatie:aan,uit::
@@ -303,7 +311,7 @@ var:vcommando:*commando::
 var:ccommando:*commando::
 var:voor:*commando::
 var:na:*commando::
-var:marge:*maat,standaard::
+var:marge:*maat,standaard,ja,nee::
 var:evenmarge:*maat::
 var:onevenmarge:*maat::
 var:blanko:*maat,klein,middel,groot,standaard,halveregel,regel::
@@ -312,6 +320,7 @@ var:springvolgendein:ja,nee::
 var:letter:normaal,vet,schuin,vetschuin,type,kap,klein...,*commando::
 var:kleur:*naam::
 var:palet:*naam::
+var:regels:ja,nee,afgebroken::
 stopsetup
 
 startsetup
@@ -331,7 +340,7 @@ com:stelvoetnotenin:
 typ:vars/:
 var:conversie:cijfers,letters,Letters,romeins,Romeins::
 var:wijze:pertekst,per*sectie::
-var:plaats:pagina,tekst,kolommen,hoog::
+var:plaats:pagina,tekst,kolommen,hoog,geen::
 var:lijn:aan,uit::
 var:voor:*commando::
 var:na:*commando::
@@ -355,6 +364,12 @@ stopsetup
 
 startsetup
 com:voetnoot:
+typ:ref/arg/:
+val:*tekst::
+stopsetup
+
+startsetup
+com:voetnoottekst:
 typ:ref/arg/:
 val:*tekst::
 stopsetup
@@ -710,6 +725,7 @@ var:diepte:*maat::
 var:hoek:rond,recht::
 var:straal:*maat::
 var:leeg:ja,nee::
+var:voorgrondkleur:*naam::
 val:*tekst::
 stopsetup
 
@@ -739,7 +755,12 @@ typ:var/:
 var:interlinie:klein,middel,groot::
 var:n:*getal::
 var:voor:*commando::
+var:tussen:*commando::
 var:na:*commando::
+var:kleur:*naam::
+var:hoogte:*maat,max::
+var:diepte:*maat,max::
+var:variant:a,b,c::
 stopsetup
 
 startsetup
@@ -776,6 +797,8 @@ var:rechts:*commando::
 var:voor:*commando::
 var:na:*commando::
 var:binnen:*commando::
+var:regelcorrectie:aan,uit::
+var:dieptecorrectie:aan,uit::
 var:marge:standaard,ja,nee::
 ivr:stelomlijndin::
 stopsetup
@@ -783,7 +806,7 @@ stopsetup
 startsetup
 com:start<<kadertekst>>:
 typ:val/vars/stp/:
-val:links,rechts,midden::
+val:links,rechts,midden,geen::
 ivr:stelkadertekstenin::
 stopsetup
 
@@ -976,11 +999,6 @@ startsetup
 com:toonkader:
 typ:val/:
 val:tekst,marge,rand::
-stopsetup
-
-startsetup
-com:toonopbouw:
-typ::
 stopsetup
 
 startsetup
@@ -1577,7 +1595,7 @@ startsetup
 com:haalmarkering:
 typ:val/val/:
 val:*naam::
-val:eerste,laatste,vorige,beide,alles::
+val:eerste,laatste,vorige,beide,alles,huidige::
 stopsetup
 
 startsetup
@@ -1814,7 +1832,7 @@ stopsetup
 startsetup
 com:stelkoppeltekenin:
 typ:var/:
-var:teken:--,---,-,\normalpenalty 10000\ ,),(,=,/::
+var:teken:--,---,-,~,),(,=,/::
 stopsetup
 
 startsetup
@@ -2036,6 +2054,16 @@ typ:vars/:
 var:plaats:links,rechts::
 var:links:*tekst::
 var:rechts:*tekst::
+var:uitlijnen:links,midden,rechts::
+var:strut:ja,nee::
+var:afstand:*maat::
+var:marge:*maat,standaard,ja,nee::
+var:linkermarge:*maat::
+var:rechtermarge:*maat::
+var:springvolgendein:ja,nee::
+var:variant:*naam::
+var:voorwit:*maat::
+var:na:*maat::
 stopsetup
 
 startsetup
@@ -2251,6 +2279,8 @@ var:eigennummer:ja,nee::
 var:pagina:links,rechts,ja::
 var:doorgaan:ja,nee::
 var:hoofd:geen,leeg,hoog,geenmarkering::
+var:tekst:geen,leeg,hoog,geenmarkering::
+var:voet:geen,leeg,hoog,geenmarkering::
 var:voor:*commando::
 var:tussen:*commando::
 var:na:*commando::
@@ -2314,6 +2344,7 @@ var:breedte:*maat::
 var:afstand:*maat::
 var:factor:*getal::
 var:items:*getal::
+var:start:*getal::
 var:voor:*commando::
 var:tussen:*commando::
 var:na:*commando::
@@ -2334,7 +2365,7 @@ stopsetup
 startsetup
 com:startopsomming:
 typ:vals/vars/stp/:
-val:a,A,KA,n,N,m,r,R,KR,*getal,verder, standaard,repeat/ruim,repeat/aanelkaar,opelkaar, afsluiter,aansluitend,opmarge,inmarge,intro,kolommen:standaard:
+val:a,A,KA,n,N,m,r,R,KR,*getal,verder, standaard,repeat/ruim,repeat/aanelkaar,opelkaar, afsluiter,aansluitend,opmarge,inmarge,intro, kolommen:standaard:
 ivr:stelopsommingin::
 stopsetup
 
@@ -2607,7 +2638,7 @@ stopsetup
 startsetup
 com:huidigedatum:
 typ:vals/:
-val:dag,maand,MAAND,weekdag,WEEKDAG,jaar, dd,mm,jj,yy,d,m,j,y,kenmerk:dag,maand,jaar:
+val:dag,maand,weekdag,jaar, dd,mm,jj,yy,d,m,j,y,kenmerk:dag,maand,jaar:
 stopsetup
 
 startsetup
@@ -2686,7 +2717,7 @@ stopsetup
 startsetup
 com:steluitlijnenin:
 typ:val/:
-val:breedte,links,rechts,midden,binnen,buiten, breed,ruim,hoogte,onder,regel,reset, hangend,niethangend,afgebroken,afgebroken::
+val:breedte,links,rechts,midden,binnen,buiten, breed,ruim,hoogte,onder,regel,reset, hangend,niethangend,afgebroken,nietafgebroken::
 stopsetup
 
 startsetup
@@ -3745,6 +3776,7 @@ var:kleur:*naam::
 var:titel:*tekst::
 var:spatie:ja,nee::
 var:symbool:normaal,Nieuw,Ballon,Toevoeging,Help,Paragraaf,Sleutel::
+var:optie:max::
 stopsetup
 
 startsetup

@@ -750,7 +750,7 @@
 \definespecial\doregistercalculationset{\doFDFregistercalculationset}
 
 %D \macros
-%D   {dosetposition, dosetpositionwdh}
+%D   {dosetposition, dosetpositionwdh, dosetpositionplus}
 %D
 %D Opposite to its \DVI\ counterpart, the \PDFTEX\ backend
 %D can provide positional information directly. Since
@@ -794,6 +794,15 @@
      {\noexpand\number\pdflastypos}%
      {#2}{#3}{#4}}
 
+\definespecial\dosetpositionplus#1#2#3#4#5%
+  {\pdfsavepos
+   \dolazysavepositionplus
+     {#1}%
+     {\noexpand\realfolio}%
+     {\noexpand\number\pdflastxpos}%
+     {\noexpand\number\pdflastypos}%
+     {#2}{#3}{#4}{#5}}
+
 %D \macros
 %D   {doPDFdestination}
 %D
@@ -816,17 +825,14 @@
 \ifnum\pdftexversion>13
 
   \def\doPDFaction width #1 height #2 action #3%
-    {\ifcase\similarreference\relax
+    {\ifcollectreferenceactions 
+       \xdef\lastPDFaction{#3}%
+     \else
        \xdef\lastPDFaction{<<#3>>}%
-     \or
-       \ifsharePDFactions
-         \immediate\pdfobj{<<#3>>}%
+       \ifcase\similarreference\relax\or\ifsharePDFactions
+         \immediate\pdfobj{\lastPDFaction}%
          \xdef\lastPDFaction{\the\pdflastobj\space0 R}%
-       \else
-         \xdef\lastPDFaction{<<#3>>}%
-       \fi
-     \fi
-     \ifcollectreferenceactions \else
+       \fi\fi
        \pdfannot
          width #1sp height #2sp depth 0sp
            {/Subtype /Link
@@ -838,17 +844,14 @@
 \else
 
   \def\doPDFaction width #1 height #2 action #3%
-    {\ifcase\similarreference\relax
+    {\ifcollectreferenceactions 
+       \xdef\lastPDFaction{#3}%
+     \else
        \xdef\lastPDFaction{<<#3>>}%
-     \or
-       \ifsharePDFactions
-         \immediate\pdfobj{<<#3>>}%
+       \ifcase\similarreference\relax\or\ifsharePDFactions
+         \immediate\pdfobj{\lastPDFaction}%
          \xdef\lastPDFaction{\the\pdflastobj\space0 R}%
-       \else
-         \xdef\lastPDFaction{<<#3>>}%
-       \fi
-     \fi
-     \ifcollectreferenceactions \else
+       \fi\fi
        \pdfannotlink % could be \pdfannot if not the - problem was there
          width #1sp height #2sp depth 0sp
          user {/Subtype /Link

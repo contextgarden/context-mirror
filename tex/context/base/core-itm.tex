@@ -1,3 +1,5 @@
+% todo : start=2 
+
 %D \module
 %D   [       file=core-itm,
 %D        version=1997.03.31,
@@ -197,9 +199,20 @@
 \def\stelopsommingin%
   {\dotripleempty\dostelopsommingin}
 
+%\def\doadvanceitem%
+%  {\ifsubsom\else\ifsymsom\else
+%     \pluscounter{\s!itemcount\itemlevel}%
+%   \fi\fi}
+
 \def\doadvanceitem%
   {\ifsubsom\else\ifsymsom\else
-     \pluscounter{\s!itemcount\itemlevel}%
+     \scratchcounter=0\getvalue{\??op\itemlevel\c!start}\relax
+     \ifcase\scratchcounter
+       \pluscounter{\s!itemcount\itemlevel}%
+     \else
+       \setcounter{\s!itemcount1}{\scratchcounter}%
+       \setvalue{\??op\itemlevel\c!start}{0}%
+     \fi
    \fi\fi}
 
 \def\setitemlevel#1%

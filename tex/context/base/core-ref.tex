@@ -154,9 +154,13 @@
 
 %D These are implemented in a low level form as:
 
-\def\dotextreference[#1]#2{\rawtextreference{\s!txt}{#1}{#2}}
-\def\dopagereference  [#1]{\rawpagereference{\s!pag}{#1}}
-\def\doreference    [#1]#2{\rawreference    {\s!ref}{#1}{#2}}
+% \def\dotextreference[#1]#2{\rawtextreference{\s!txt}{#1}{#2}}
+% \def\dopagereference  [#1]{\rawpagereference{\s!pag}{#1}}
+% \def\doreference    [#1]#2{\rawreference    {\s!ref}{#1}{#2}}
+
+\def\dotextreference[#1]{\rawtextreference\s!txt{#1}} % #2 
+\def\dopagereference[#1]{\rawpagereference\s!pag{#1}}
+\def\doreference    [#1]{\rawreference    \s!ref{#1}} % #2 
 
 %D Actually there is not much difference between a text and a
 %D full reference, but it's the concept that counts. The low
@@ -584,6 +588,12 @@
      \fi
    \fi}
 
+\ifx\referencepagenumber\undefined
+
+ \def\referencepagenumber[#1]{?}
+
+\fi 
+
 %D Text references can contain more than one entry and
 %D therefore we check for
 %D
@@ -715,20 +725,20 @@
 
 \def\dosplitofffullreference#1(#2#3)#4#5\end
   {\ifx#2)%
-     \let\currentreferenceoperation=\empty
-     \let\currentreferencearguments=\empty
-     \let\currentinnerreference=\empty
+     \let\currentreferenceoperation\empty
+     \let\currentreferencearguments\empty
+     \let\currentinnerreference    \empty
      \dodosplitofffullreferenceA#1::::\empty\end
        \currentouterreference\currentreferencespecial
    \else\ifx#2\relax
-     \let\currentreferencespecial=\empty
-     \let\currentreferenceoperation=\empty
-     \let\currentreferencearguments=\empty
+     \let\currentreferencespecial  \empty
+     \let\currentreferenceoperation\empty
+     \let\currentreferencearguments\empty
      \dodosplitofffullreferenceA#1::::\empty\end
        \currentouterreference\currentinnerreference
    \else
      \dosplitoffreferenceoperation#2#3{}\end
-     \let\currentinnerreference=\empty
+     \let\currentinnerreference\empty
      \dodosplitofffullreferenceB#1::::\empty\end
        \currentouterreference\currentreferencespecial
    \fi\fi}
@@ -1497,8 +1507,11 @@
 \def\thisissomeinternal#1#2%  tag reference
   {\doifsomething{#2}{\thisisdestination{#1:#2}}}
 
-\def\gotosomeinternal#1#2#3#4%
-  {\gotodestination{}{}{#1:#2}{#3}{#4}}
+% \def\gotosomeinternal#1#2#3#4%
+%   {\gotodestination{}{}{#1:#2}{#3}{#4}}
+
+\def\gotosomeinternal#1#2% #3#4
+  {\gotodestination{}{}{#1:#2}}
 
 %D An automatic mechanism is provided too:
 %D
@@ -1526,8 +1539,11 @@
   {\global\advance\locationcount by 1
    \thisisdestination{\s!aut\iftraceinternalreferences:#1\fi:\nextinternalreference}}
 
-\def\gotonextinternal#1#2#3#4%
-  {\gotodestination{}{}{\s!aut\iftraceinternalreferences:#1\fi:#2}{#3}{#4}}
+% \def\gotonextinternal#1#2#3#4%
+%   {\gotodestination{}{}{\s!aut\iftraceinternalreferences:#1\fi:#2}{#3}{#4}}
+
+\def\gotonextinternal#1#2% #3#4
+  {\gotodestination{}{}{\s!aut\iftraceinternalreferences:#1\fi:#2}}
 
 %D We already went through a lot of problems to sort out what
 %D kind of reference we're dealing with. Sorting out the user
@@ -1629,7 +1645,7 @@
 %D \definespeciallocation{JS}#1#2{... #1 ... #2 ...}
 %D \stoptypen
 %D
-%D In module \type {core-jav} one can see that \type
+%D In module \type {java-ini} one can see that \type
 %D {\gotoJSlocation} looks much like the previous goto
 %D definitions.
 
@@ -1904,25 +1920,23 @@
 
 %D --- VANAF HIER NOG VERENGELSEN ---
 
-\let\donormalin  =\in
-\let\donormalover=\over % about/oppassen beter nederlands dan engels!
+%\let\donormalin  =\in
+%\let\donormalover=\over % about/oppassen beter nederlands dan engels!
+%
+%\def\in%
+%  {\ifmmode
+%     \expandafter\donormalin
+%   \else
+%     \expandafter\doinatreference\expandafter\currenttextreference
+%   \fi}
 
-\def\in%
-  {\ifmmode
-     \expandafter\donormalin
-   \else
-     \expandafter\doinatreference\expandafter\currenttextreference
-   \fi}
+% we need to bypass math tokens 
 
-\def\op%
-  {\doinatreference\currentpagereference}
+\let\normalover \over
 
-\def\over%
-  {\ifmmode
-     \expandafter\donormalover
-   \else
-     \expandafter\dospecialover
-   \fi}
+\definecommand in   {\doinatreference\currenttextreference}
+\definecommand op   {\doinatreference\currentpagereference}
+\definecommand over {\dospecialover}
 
 \unexpanded\def\dospecialover[#1]%
   {\dontleavehmode

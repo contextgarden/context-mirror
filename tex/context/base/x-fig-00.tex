@@ -38,6 +38,14 @@
 %D     <comment>I bet that you've seen this cow before.</comment>
 %D   </figure>
 %D 
+%D   <figure>
+%D     <dummy width="4cm" height="3cm">non existent</dummy>
+%D     <label>a european cow</label>
+%D     <copyright>Nobody</copyright>
+%D     <comment>When will we talk about European cows?</comment>
+%D   </figure>
+%D 
+%D 
 %D </figurelibrary> 
 %D \stoptypen 
 %D 
@@ -54,8 +62,8 @@
 %D \externalfigure[a dutch cow][width=4cm]
 %D \stoptypen 
 %D
-%D This module overloads this command so that it first 
-%D searched in the list of databases. 
+%D This module overloads this command so that a figure is 
+%D it first searched in the list of databases. 
 %D 
 %D \starttypen 
 %D \usefigurebases[yourfile]
@@ -85,6 +93,7 @@
 \defineXMLignore      [status]
 \defineXMLpush        [file]
 \defineXMLpush        [label]
+\defineXMLpush        [dummy]
 \defineXMLenvironment [figure] \figbase@StartFigure \figbase@StopFigure
 
 \stopXMLnamespace
@@ -102,12 +111,13 @@
   {\startnointerference
      \startXMLnamespace[-][figbase]
        \resetfigurefilebase
-       \XMLassign{file} {}
-       \XMLassign{label}{}
+       \XMLerase{file} 
+       \XMLerase{dummy}
+       \XMLerase{label}
        \xdef\figurefilebase{#1}%
        \doglobal\newcounter\figurefilepage
        \def\askedlabel{#2}
-       \processXMLfile{#1.xml}
+       \processXMLfilegrouped{#1.xml} % grouped ? 
      \stopXMLnamespace
    \stopnointerference}
 
@@ -145,7 +155,7 @@
      {\let\figurebaselist\empty}
      {\appendtocommalist{#1}\figurebaselist}}
 
-\endinput 
+\protect \endinput 
 
 \usefigurebase[figtest]
 

@@ -87,8 +87,8 @@
 
 %D Headers and footers.
  
-\stelhoofdin [\c!voor=\vfill,\c!na=]
-\stelvoetin  [\c!voor=\vfill,\c!na=]
+\setupheader [\c!voor=\vfill,\c!na=]
+\setupfooter [\c!voor=\vfill,\c!na=]
 
 %D Numbering. 
 
@@ -176,18 +176,18 @@
    \space---\space
    Proceedings of the \DTKJaar\ Euro\TeX\ Meeting}
 
-\stelhoofdin[\c!linkerletter=\ss\sl,\c!rechterletter=\ss]
-\stelvoetin [\c!letter={\switchtobodyfont[9pt]\ss\sl}]
+\setupheader[\c!linkerletter=\ss\sl,\c!rechterletter=\ss]
+\setupfooter[\c!letter={\switchtobodyfont[9pt]\ss\sl}]
 
-\stelhoofdtekstenin [\DTKTitel]  [\pagenumber]
-\stelvoettekstenin  [\DTKFooter] []
+\setupheadertexts [\DTKTitel]  [\pagenumber]
+\setupfootertexts [\DTKFooter] []
 
 %D It all starts here: 
 
 \def\dostartBijdrage[#1]%
   {\pagina
    \DTKTypering[#1]
-   \stelhoofdin[\c!status=\v!leeg]
+   \setupheader[\c!status=\v!leeg]
    \stelpaginanummerin[\c!nummer=\DTKPagina]
    \bgroup
      \stelwitruimtein[\v!geen]

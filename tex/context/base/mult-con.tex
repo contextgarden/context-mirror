@@ -146,7 +146,7 @@
 %D \stopcompressdefinitions
 
 %D User defined commands are language specific, so we have to
-%D use variable when defining them. First we define some
+%D use variables when defining them. First we define some
 %D general structuring variables:
 
 %D      \startcompressdefinitions
@@ -224,7 +224,7 @@
                            typing                    typing % GB
                      file: file                      file
                            datei                     soubor
-                           file                      fisier % GB
+                           file                      fisier 
 
 \stopvariables
 
@@ -523,6 +523,9 @@
                      file: file                      file
                            datei                     soubor
                            file                      fisier
+                inputfile: inputfile                 inputfile
+                           inputfile                 inputfile
+                           inputfile                 inputfile % !! 
                   formaat: formaat                   size
                            groesse                   velikost
                            dimensione                dimensiune
@@ -1423,6 +1426,9 @@
                     groot: groot                     big
                            gross                     velke
                            grande                    mare
+               grootkorps: grootkorps                bigbodyfont
+                           bigbodyfont               bigbodyfont
+                           grossofontdeltesto        bigbodyfont %% 
             grotevoorkeur: grotevoorkeur             bigpreference
                            grosszuegig               vysokapriorita
                            grandepreferenza          preferintamare
@@ -1537,6 +1543,9 @@
            kleinvetitalic: kleinvetitalic            smallbolditalic
                            kleinfettitalic           maletucnekurzivni
                            piccolograssettocorsivo   micaldininclinat
+               kleinkorps: kleinkorps                smallbodyfont
+                           smallbodyfont             smallbodyfont
+                           piccolofontdelcorpo       smallbodyfont %% 
                     kleur: kleur                     color
                            farbe                     barevne
                            colore                    culoare
@@ -1675,9 +1684,9 @@
                 vanelkaar: vanelkaar                 unpacked
                            ungepackt                 rozbalene
                            unpacked                  despachetat
-                   opmaak: opmaak                    markup
+                   opmaak: opmaak                    makeup
                            umbruch                   zlom
-                           markup                    marcaj
+                           makeup                    marcaj
                   opmarge: opmarge                   atmargin
                            amrand                    naokraji
                            almargine                 lamargine
@@ -1695,10 +1704,10 @@
                            carta                     foaie
                    scherm: scherm                    display
                            bildschirm                obrazovka
-                           display                   display % new 
+                           schermo                   display % new 
                 omgekeerd: omgekeerd                 reverse 
                            reverse                   reverse 
-                           reverse                   reverse % new
+                           invertito                 reverse % new
                   passend: passend                   fit
                            passend                   prizpusobive
                            adatta                    ajustat
@@ -2004,7 +2013,7 @@
                afgebroken: afgebroken                hyphenated 
                            hyphenate                 hyphenated
                            sillabato                 despsilabe
-           nietafgebroken: afgebroken                nothyphenated 
+           nietafgebroken: nietafgebroken            nothyphenated 
                            nothyphenated             nothyphenated 
                            nonsillabato              nedespsilabe
 

@@ -13,6 +13,10 @@
 
 \unprotect
 
+\def\inheritparameter[#1]#2[#3]#4[#5]% tag tokey fromkey % [bypasses k!prefix]
+  {\@EA\@EA\@EA\def\@EA\csname\@EA#1\@EA#3\@EA
+     \endcsname\@EA{\csname#1#5\endcsname}}
+
 % \buildarray[test][aa,bb,cc,dd,ee,ff]
 % \setarrayelement{test}{1}{qq}
 % \arrayelement{test}{1}
@@ -135,8 +139,8 @@
 %D Standaard kan een spatie (zoals ~) uitrekken. Dit is in
 %D overzichten niet altijd de bedoeling, vandaar:
 
-\def\fixedspace%
-  {\hskip\fontdimen2\font\relax}
+%\def\fixedspace%
+%  {\hskip\fontdimen2\font\relax}
 
 %\def\ExpandSecondAfter#1#2#3%
 %  {\!!toksa={#2}%
@@ -259,7 +263,69 @@
 %         \expandafter\dodorawrecurse
 %       \fi}%
 %    \dodorawrecurse}
+
+% This permits things like ^\index{hans}^, where hans is
+% duplicated in the text.
 
+\newif\ifduplicate
+
+\bgroup
+
+\gdef\checkduplication%   in line with Knuth
+  {\ifmmode\expandafter^\else\expandafter\startduplication\fi}
+
+\gdef\insideduplication%
+  {\ifmmode\expandafter^\else\expandafter\egroup\fi}
+
+\catcode`\^=\@@active
+
+\gdef\enableduplication%
+  {\catcode`\^=\@@active \let^\checkduplication}
+
+\gdef\disableduplication%
+  {\catcode`\^=\@@superscript}
+
+\gdef\startduplication%
+  {\bgroup \duplicatetrue \let^\insideduplication}
+
+\egroup
+
+\def\gobbleassigndimen#1\\{}
+
+\def\assigndimen#1#2%
+  {\afterassignment\gobbleassigndimen#1=#2\!!zeropoint\\}
+
+\def\setusage#1%
+  {\@EA\let\csname#1\endcsname\iftrue}
+
+\def\resetusage#1%
+  {\@EA\let\csname#1\endcsname\iffalse}
+
+\beginTEX
+
+\def\ifusage#1%
+  {\@EA\ifx\csname#1\endcsname\relax
+     \resetusage{#1}%
+   \fi
+   \csname#1\endcsname}
+
+\endTEX
+
+\beginETEX \ifcsname
+
+\def\ifusage#1%
+  {\ifcsname#1\endcsname\else
+     \resetusage{#1}%
+   \fi
+   \csname#1\endcsname}
+
+\endETEX
+
+%D Very handy, more efficient than \type{{}}, and more readable 
+%D than \type {\empty}. 
+
+\let\donothing\empty
+
 \protect
 
 \endinput

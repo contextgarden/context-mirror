@@ -13,90 +13,81 @@
 
 % manual : offsetbox alignbox 
 
-\def\placefloats{\doflushfloats}  % keep this one 
-
 \unprotect
-
-\def\definieertekst%
-  {\doseventupleempty\dodefinieertekst}
 
-\def\dodefinieertekst[#1][#2][#3][#4][#5][#6][#7]%
-  {\ifseventhargument
-     \setvalue{\??tk#2#3#1}{\dosixtupleempty\dodododoteksten[#2][#3][#4][#5][#6][#7]}%
-   \else\ifsixthargument
-     \setvalue{\??tk  #2#1}{\dosixtupleempty\dodododoteksten[#2][#3][#4][#5][#6]}%
-   \else\iffifthargument
-     \setvalue{\??tk#2#3#1}{\dosixtupleempty\dodododoteksten[#2][#3][#4][#5]}%
-   \else\iffourthargument
-     \setvalue{\??tk  #2#1}{\dosixtupleempty\dodododoteksten[#2][#3][#4]}%
-   \else
-     \setvalue{\??tk  #2#1}{\dosixtupleempty\dodododoteksten[#2][#3]}%
-   \fi\fi\fi\fi}
-
-\def\plaatslayoutregel#1#2%  % handelt o.b.v. tekst
-  {%\message{#1: \getvalue{\??tk#1\v!tekst\c!status}}\wait
-   \ExpandFirstAfter\processaction
-     [\getvalue{\??tk#1\v!tekst\c!status}]
-     [        \v!geen=>,
-              \v!hoog=>, % is reset later on
-             \v!start=>\setgvalue{\??tk#1\v!tekst\c!status}{\v!normaal}%
-                       \doplaatslayoutregel{#1}{#2},
-              \v!stop=>\vskip#2\relax,
-              \v!leeg=>\setgvalue{\??tk#1\v!tekst\c!status}{\v!normaal}%
-                       \vskip#2\relax,
-     \v!geenmarkering=>\bgroup
-                       \setgvalue{\??tk#1\v!tekst\c!status}{\v!normaal}%
-                       \let\dohaalmarkering=\nohaalmarkering
-                       \doplaatslayoutregel{#1}{#2}%
-                       \egroup,
-           \v!normaal=>\doplaatslayoutregel{#1}{#2},
-           \s!default=>\doplaatslayoutregel{#1}{#2},
-           \s!unknown=>\bgroup % new
-                       \setgvalue{\??tk#1\v!tekst\c!status}{\v!normaal}%
-%                      \getvalue{\??tk#1\commalistelement}%
-\setlocallayoutline{#1\commalistelement}%
-\setlocallayoutline{#1\v!tekst\commalistelement}%
-\setlocallayoutline{#1\v!marge\commalistelement}%
-\setlocallayoutline{#1\v!rand\commalistelement}%
-                       \doplaatslayoutregel{#1}{#2}%
-                       \egroup]}
-
-\def\setlocallayoutline#1%
-  {\ifundefined{\??tk#1}\else\getvalue{\??tk#1}\fi}
-
-% permits \stoptext inside module 
-
-\def\dousemodules[#1]%
-  {\doifelsenothing{#1}
-     {\let\next\relax}
-     {\def\next{\processcommalist[#1]\dodousemodules}}
-   \next}
-
-\def\dododousemodules#1#2% we need to protect \next somehow 
-  {\relax
-   \ifconditional\moduleisloaded
-     \let\next\relax
-   \else
-     \makeshortfilename[#1\truefilename{#2}]%
-     \doifundefinedelse{\shortfilename\v!aan}
-       {\setgvalue{\shortfilename\v!aan}{}%
-        \def\next
-          {\startreadingfile
-           \readsysfile{\shortfilename}%
-             {\showmessage{\m!systems}{5}{#2}%
-              \settrue\moduleisloaded}%
-             {}%
-           \stopreadingfile}}
-       {\showmessage{\m!systems}{7}{#2}%
-        \settrue\moduleisloaded
-        \let\next\relax}%
-   \fi
-   \next}
-
 %D This file is loaded at runtime, thereby providing an
 %D excellent place for hacks and new features.
 
 \writestatus{\m!systems}{beware: some patches loaded from cont-new.tex!}
+
+\def\checkframedtext%
+  {\ifinsidefloat
+     \localhsize\hsize
+   \else\ifdim\sidefloatvsize>\zeropoint % will be proper handle 
+   %  \strut            % rather clean way to invoke the sidefloat OTR
+   %  \setbox0=\lastbox % and get the widths set, so from now on we
+   %  \setlocalhsize    % can have framed texts alongside sidefloats
+   \checksidefloat
+   \setlocalhsize
+     \advance\localhsize-\hangindent
+   \else
+     \localhsize\hsize
+   \fi \fi}
+
+\long\def\parseTR[#1][#2]#3\eTR% [#2] is dummy that kills spaces
+  {\def\currentcol{0}\increment\maximumrow
+   \setupTABLE[\v!rij][\maximumrow][#1]#3}
+
+\def\obeyfollowingtoken{{}}  % end \cs scanning 
+
+\def\gobbleparameters{\doquadrupleempty\dogobbleparameters}
+\def\dogobbleparameters[#1][#2][#3][#4]{}
+
+% faster, and looks okay
+
+\dostepwiserecurse{0}{255}{1}
+  {\@EA\chardef\csname-\recurselevel\endcsname=\recurselevel}
+
+\newtoks\withminorcharacters
+\newtoks\withlowercharacters
+\newtoks\withuppercharacters
+
+% \thewithcharacter#1 % self 
+
+\dostepwiserecurse{0}{31}{1}
+  {\expanded
+     {\appendtoks\noexpand\withcharacter\csname-\recurselevel\endcsname
+        \noexpand\to\withminorcharacters}}
+
+\dostepwiserecurse{32}{127}{1}
+  {\expanded
+     {\appendtoks\noexpand\withcharacter\csname-\recurselevel\endcsname
+        \noexpand\to\withlowercharacters}}
+
+\dostepwiserecurse{128}{255}{1}
+  {\expanded
+     {\appendtoks\noexpand\withcharacter\csname-\recurselevel\endcsname
+        \noexpand\to\withuppercharacters}}
+
+\def\doassigncatcodes#1%
+  {\def\withcharacter##1{\catcode##1#1}%
+   \the\withminorcharacters
+   \the\withlowercharacters
+   \ifeightbitcharacters\the\withuppercharacters\fi}
+
+\def\makeallother%
+  {\doassigncatcodes\@@other}
+
+\makeallothertoks\emptytoks
+ 
+\chardef\obeyedlccode=`. % so <32 and >127 chars become . 
+
+\def\obeylccodes%
+  {\def\withcharacter##1{\lccode##1##1}%
+   \the\withlowercharacters
+   \def\withcharacter##1{\lccode##1\obeyedlccode}%
+   \the\withminorcharacters
+   \ifeightbitcharacters\the\withuppercharacters\fi}
 
 \definesystemvariable{en}
 
@@ -104,121 +95,27 @@
 
 \def\doifenvelse#1{\doifdefinedelse{\??en#1}}
 
-\def\env#1{\getvalue{\??en#1}} % geen (!) test hier 
+% \def\envvar#1#2{\ifundefined{\??en#1}#2\else\getvalue{\??en}\fi}
 
-\def\inputfilename{\@@svinputfile} 
+\def\env#1{\getvalue{\??en#1}}
 
-\setupsystem[inputfile=\outputfilename] % yes or no 
-
-% already patched 
+\beginTEX
 
-\def\setdisplaydimensions%
-  {\displayindent=\leftdisplayskip 
-   \advance\displayindent\leftdisplaymargin 
-   \displaywidth=\hsize
-   \ifdim\hangindent>\!!zeropoint
-     \advance\displayindent\hangindent
-   \else
-     \advance\displaywidth\hangindent
-   \fi
-   \advance\displaywidth-\displayindent
-   \advance\displaywidth-\rightdisplayskip
-   \advance\displaywidth-\rightdisplaymargin}
-
-% already patched 
+\def\envvar#1#2%
+  {\@EA\ifx\csname\??en#1\endcsname\relax
+     #2\else\csname\??en#1\endcsname
+   \fi}
 
-\def\dochecksidefloat%
-  {\progresssidefloat
-   \ifdim\!!heighta>\!!zeropoint
-%     \advance\!!heighta by \sidefloatbottomskip
-%     \!!counta=\!!heighta
-\scratchdimen=\!!heighta
-\advance\scratchdimen \ht\strutbox
-\!!counta=\scratchdimen
-     \divide\!!counta by \baselineskip
-     \ifnum\!!counta>0
-       \ifrightfloat
-         \hangindent=-\sidefloatwidth
-       \else
-         \hangindent=\sidefloatwidth
-       \fi
-       \hangafter=-\!!counta
-     \fi
-     \setsidefloatparagraph
-   \else
-     \resetsidefloatparagraph
-   \fi
-   \parskip=\tussenwit}
+\endTEX
 
+\beginETEX \ifcsname
 
-\def\setsidefloat%
-  {\vbox{\strut}\vskip-\lineheight
-   \kern\sidefloattopskip
-   \edef\presidefloatdepth{\the\prevdepth}%
-   \nointerlineskip
-   \bgroup
-   \everypar={}%
-   \parskip=\!!zeropoint
-   \logsidefloat
-   \ifrightfloat
-     \hfill
-     \ifmarginfloat
-       \rlap{\hskip\rechtermargeafstand\hskip\rightskip\unhbox\floatbox}%
-     \else
-       \unhbox\floatbox
-     \fi
-   \else
-     \noindent
-     \ifmarginfloat
-       \llap{\unhbox\floatbox\hskip\leftskip\hskip\linkermargeafstand}%
-     \else
-       \unhbox\floatbox
-     \fi
-     \hfill
-   \fi
-   \egroup
-   \par
-   \kern-\sidefloatheight
-   \penalty10001
-   \normalbaselines
-   \prevdepth=\presidefloatdepth
-   %\noindent
-   \resetsidefloatparagraph
-   \ignorespaces}
-
-% already patched 
+\def\envvar#1#2%
+  {\ifcsname\??en#1\endcsname
+     \csname\??en#1\endcsname\else#2%
+   \fi}
 
-\def\doapplyfiguresize%
-  {\doifelsenothing{\@@efmaxhoogte}
-     {\figurevsize=\teksthoogte
-      \ifinner
-        \figurevsize =\vsize % \teksthoogte =\vsize
-        \scratchdimen=\vsize % \scratchdimen=\teksthoogte
-      \else\ifinsidefloat
-        \figurevsize =\vsize % \teksthoogte =\vsize
-        \scratchdimen=\vsize % \scratchdimen=\teksthoogte
-      \else\ifinpagebody
-        \figurevsize =\vsize % \teksthoogte =\vsize
-        \scratchdimen=\vsize % \scratchdimen=\teksthoogte
-      \else
-        \ifdim\pagegoal<\maxdimen
-          \ifdim\pagetotal<\pagegoal
-            \scratchdimen=\pagegoal
-            \advance\scratchdimen by -\pagetotal
-          \else
-            \scratchdimen=\figurevsize % \teksthoogte
-          \fi
-        \else
-          \scratchdimen=\figurevsize % \teksthoogte
-        \fi
-      \fi\fi\fi}
-     {\figurevsize=\@@efmaxhoogte}%
-   \doifelsenothing{\@@efhoogte}
-     {\edef\@@efvsize{\the\scratchdimen}}
-     {\let\@@efvsize=\@@efhoogte}%
-   \doifelsenothing{\@@efbreedte}
-     {\edef\@@efhsize{\the\hsize}}
-     {\let\@@efhsize=\@@efbreedte}}
+\endETEX
 
 \def\setvariables%
   {\dodoubleargument\dosetvariables}

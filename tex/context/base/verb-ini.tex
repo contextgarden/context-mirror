@@ -502,20 +502,16 @@
 %D characters with special meanings. This macro is not used
 %D in the verbatim macros, but is best defined in this module.
 
-\def\doprocesscatcodes#1%
-  {\ifeightbitcharacters
-     \scratchcounter=255
-   \else
-     \scratchcounter=127
-   \fi
+\def\doprocesscatcodes#1% using a toks does not speed this up 
+  {\scratchcounter\ifeightbitcharacters 255\else 127\fi\relax
    \loop
      \savecatcode
      #1\relax
-     \advance\scratchcounter by -1
+     \advance\scratchcounter -1
      \ifnum\scratchcounter>-1
    \repeat
-   \let\savecatcode=\relax
-   \let\restorecatcodes=\dorestorecatcodes}
+   \let\savecatcode\relax
+   \let\restorecatcodes\dorestorecatcodes}
 
 \def\uncatcodespecials%
   {\doprocesscatcodes

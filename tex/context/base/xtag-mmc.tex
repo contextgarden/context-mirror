@@ -1,0 +1,1223 @@
+%D \module
+%D   [       file=xtag-mmc,
+%D        version=2000.12.20,
+%D          title=\CONTEXT\ XML Support,
+%D       subtitle=Math ML,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{Context XML Macros (content math ml)}
+
+% this is the first, experimental, shabby implementation, as
+% always, the third will do -) 
+
+% okay, now this is the second one, with a more kid based
+% approach, which we needed for proper nesting, but the 
+% code is still too ugly 
+
+\unprotect
+
+\def\getmmlarguments#1#2#3#4#5#6% {class} {defaults} mmlargs
+  {\getXMLarguments{#1}{#2 #5}}%
+
+\def\doifMMLoperatorelse#1#2#3% temp hack
+  {\pushmacro\xmlrent
+   \let\xmlrent\firstofoneargument
+   \edef\mmloperator{#1}%
+   \@EA\unspaceargument\mmloperator\to\mmloperator
+   \popmacro\xmlrent
+   \doifXMLentityelse\mmloperator
+     {\doifdefinedelse{doMMLcFN\mmloperator}{#2}{#3}}
+     {#3}}
+
+\remapXMLsequence [ci]      [CPA] \MMLcCI
+\remapXMLsequence [cn]      [CPA] \MMLcCN
+\remapXMLsequence [csymbol] [CPA] \MMLcCSYMBOL
+
+\setupMMLappearance[polar][\c!variant=\v!a] % a|b|c
+
+\def\MMLcpolar#1%
+  {\doifdefinedelse{MMLcdopolar\@@MMLpolarvariant}
+     {\getvalue{MMLcdopolar\@@MMLpolarvariant}{#1}}
+     {#1}}
+
+\def\MMLcdopolara#1%
+  {\def\MMLcsep{,}\getXMLentity{polar}\left(#1\right)}
+
+\def\MMLcdopolarb#1%
+  {\def\MMLcsep##1\empty%
+    {\getXMLentity{exponentiale}^{##1\mskip2mu\getXMLentity{imaginaryi}}}#1}
+
+\def\MMLcdopolarc#1%
+  {\def\MMLcsep##1\empty%
+     {\getXMLentity{exp}\left(##1\mskip2mu\getXMLentity{imaginaryi}\right)}#1}
+
+\def\MMLccartesian#1%
+  {\def\MMLcsep{+}#1\getXMLentity{imaginaryi}}
+
+% float will be obsolete, an is replace by e-notation
+
+\setupMMLappearance[float][\c!symbool=\v!nee] % \v!ja|dot
+
+\def\MMLcfloat#1%
+  {\doifelse{\@@MMLfloatsymbool}{\v!nee}
+     {{\rm#1}} % make sure that e shows up ok 
+     {% we should ignore \entities ! 
+      \beforesplitstring#1\at e\to\first
+      \aftersplitstring #1\at e\to\last
+      \ifx\first\empty #1\else
+      \ifx\last \empty #1\else
+        \first
+        \doifelse{\@@MMLfloatsymbool}{dot}{\cdot}{\times}%
+        10^{\last}%
+      \fi\fi}}
+
+% we now have: 
+
+\setupMMLappearance[enotation][\c!symbool=\v!nee] % \v!ja|dot
+
+\def\MMLcenotation#1%
+  {\doifelse{\@@MMLenotationsymbool}{\v!nee}
+     {\def\MMLcsep% 
+        {\unskip{\rm e}\ignorespaces}}
+     {\def\MMLcsep##1\empty
+        {\doifelse{\@@MMLenotationsymbool}{dot}{\cdot}{\times}10^{##1}}}%
+   #1\empty}
+
+\def\MMLcCI#1% #2% can be sped up with \doifundefined ... 
+  {\getXMLarguments{ci}{type="" #1}%
+   \doifXMLparelse{ci}{type}
+     {\processaction
+        [\XMLpar{ci}{type}{}]
+        [     set=>\let\next\MMLcCIset,
+           vector=>\let\next\MMLcCIvector,
+           matrix=>\let\next\MMLcCImatrix,
+         function=>\let\next\MMLcCIfunction,
+complex-cartesian=>\let\next\MMLccartesian,
+          complex=>\let\next\MMLccartesian,
+    complex-polar=>\let\next\MMLcpolar,
+            polar=>\let\next\MMLcpolar,
+               fn=>\let\next\MMLcCIfunction,
+          unknown=>\let\next\firstofoneargument]} % integer constant real float 
+     {\let\next\firstofoneargument}%              
+   \next}
+
+\def\MMLcCIset#1%
+  {{\blackboard#1}}
+
+\def\widevec#1%
+  {\vbox{\m@th\ialign{##\crcr
+     \rightarrowfill\crcr\noalign{\nointerlineskip}%
+      $\hfil\displaystyle{#1}\hfil$\crcr}}}
+
+\def\MMLcCIvector#1%
+  {\widevec{#1}}
+
+\def\MMLcCImatrix#1%
+  {{\bi#1}}
+
+\def\MMLcCIfunction#1%
+  {\doifMMLoperatorelse{#1}  
+     {\let\next\MMLcCIdefault}
+     {\let\next\MMLcFNdefault}%
+   \next{}{#1}}
+
+\def\MMLcCIdefault#1#2% #1=dummy 
+  {#2\!% \getXMLentity{NegThinSpace}%
+   \doifnextcharelse\xmlr
+     {\encapsulatenextXMLRelements{\left(}{,}{\right)}}
+     {}}
+
+\def\MMLcCN#1% #2% can be sped up with \doifundefined ... 
+  {\getXMLarguments{cn}{type="" #1}%
+   \doifXMLparelse{cn}{type}
+     {\processaction
+        [\XMLpar{cn}{type}{}]
+        [ integer=>\let\next\MMLcCNinteger,
+          logical=>\let\next\MMLcCNlogical,
+         rational=>\let\next\MMLcCNrational,
+complex-cartesian=>\let\next\MMLccartesian,
+          complex=>\let\next\MMLccartesian,
+    complex-polar=>\let\next\MMLcpolar,
+            polar=>\let\next\MMLcpolar,
+       e-notation=>\let\next\MMLcenotation, % new 
+            float=>\let\next\MMLcfloat,     % obsolete 
+             real=>\let\next\MMLcfloat,     % ? 
+          unknown=>\let\next\firstofoneargument]}
+     {\let\next\firstofoneargument}
+  \next}
+
+\setupMMLappearance[base][\c!symbool=\v!cijfers] % cijfers|letters|tekst|nee
+
+\def\MMLcCNinteger#1%
+  {\doifXMLparelse{cn}{base}
+     {\def\MMLcCNbase{\XMLpar{cn}{base}{}}% 
+      \doifelse{\@@MMLbasesymbool}{\v!nee}
+        {\MMLcCNbasedata{#1}}
+        {\MMLcCNbasedata{#1}_{\hbox{$\rm\scriptscriptstyle
+         \processaction
+           [\@@MMLbasesymbool]
+           [\v!letters=>\MMLcCNbasestring BODH,
+              \v!tekst=>\MMLcCNbasestring{BIN}{OCT}{DEC}{HEX},
+            \s!unknown=>\MMLcCNbase]$}}}}
+     {#1}}
+
+\def\MMLcCNbasedata#1%
+  {\ifnum\MMLcCNbase>10{\rm#1}\else#1\fi}
+
+\def\MMLcCNbasestring#1#2#3#4%
+  {\ifnum\MMLcCNbase= 2 #1\else
+   \ifnum\MMLcCNbase= 8 #2\else
+   \ifnum\MMLcCNbase=10 #3\else
+   \ifnum\MMLcCNbase=16 #4\else
+         \MMLcCNbase      \fi\fi\fi\fi}
+
+\def\MMLcCNlogical#1%
+  {{\rm#1}}
+
+\def\MMLcCNrational#1%
+  {\ConvertConstantAfter\doifinstringelse{sep}{#1}
+     {\doMMLcCNrational#1\empty}
+     {#1}}
+
+\def\doMMLcCNrational#1\xmlr#2#3#4#5\empty
+  {\hbox{$\frac{#1}{#5}$}}
+
+\def\MMLcCSYMBOL#1#2% TO DO
+  {\getXMLarguments{csymbol}{encoding="text" #1}%
+   \doifelse{\XMLpar{csymbol}{encoding}{}}{text}
+     {{\rm#2}}{#2}}
+
+%%% basic content elements
+
+\remapXMLsequence [apply] [CPA] \MMLcAPPLY
+
+\newcount\@MMLlevel \def\MMLcreset{\@MMLlevel=0 }
+
+\let\MMLctempresetlist\empty \def\setMMLcreset{\edef\MMLctempresetlist}
+
+\def\MMLcmainresetlist%
+  {times/,divide/,power/,% 
+   lt/,gt/,eq/,leq/,geq/,%
+   in/,inverse/,%
+   fn,%
+   floor/,ceiling/,%
+   mean/,
+   abs/,int/,limit/,sum/,product/%
+   outerproduct/,innerproduct/,scalarproduct/}
+
+\def\MMLcfunctionlist
+  {sin/,arcsin/,sinh/,arcsinh/,%
+   cos/,arccos/,cosh/,arccosh/,%
+   tan/,arctan/,tanh/,arctanh/,%
+   cot/,arccot/,coth/,arccoth/,%
+   csc/,arccsc/,csch/,arccsch/,%
+   sec/,arcsec/,sech/,arcsech/,%
+   ln/,exp/,log/,%
+   abs/,int/,limit/,sum/,product/%
+   fn} % ?  
+
+\def\MMLcconstructlist
+  {diff/,partialdiff/,apply}
+
+% better: no () here but explicitly when needed, which is in
+% less cases
+
+\def\MMLcAPPLY#1#2%
+  {\pushmacro\xmlr
+   \@EA\@EA\@EA\doifXMLRchild\@EA\@EA\@EA{\@EA\MMLcmainresetlist\@EA,\MMLctempresetlist}{#2}
+     {\MMLcreset}%
+   \ifcase\@MMLlevel
+     \getXMLarguments{apply}{open="" close=""   #1}%
+   \else
+     \getXMLarguments{apply}{open="(" close=")" #1}%
+   \fi
+   \doifXMLparelse{apply}{open}{\left\XMLpar{apply}{open}{}}{}%
+   \advance\@MMLlevel+1
+   \begingroup
+     \let\MMLctempresetlist\empty
+     \let\xmlr\naturalxmlr % beter een \pushmacro\xmlr
+     #2\empty
+   \endgroup % ook level push
+   \advance\@MMLlevel-1
+   \doifXMLparelse{apply}{close}{\right\XMLpar{apply}{close}{}}{}%
+   \popmacro\xmlr}
+
+\remapXMLsequence [reln] [CPA] \MMLcRELN
+
+\def\MMLcRELN%
+  {\writestatus{XML}{MathML element "reln" is obsolete}\MMLcAPPLY}
+
+\remapXMLsequence [fn] [CPA] \MMLcFN
+
+\def\MMLcFN#1#2% neg space needed because of \left 
+  {\doifXMLRchildelse{ci}{#2}
+     {\collectXMLRchild{ci}{#2}%
+      \@EA\doifMMLoperatorelse\@EA{\the\XMLRtoks}  
+        {\let\next\MMLcFNoperator}
+        {\let\next\MMLcFNdefault}}
+     {\let\next\MMLcFNdefault}%
+   \next{#1}{#2}} 
+
+\def\MMLcFNdefault#1#2% neg space needed because of \left 
+  {#2\!% \getXMLentity{NegThinSpace}%
+   \MMLcreset\encapsulatenextXMLRelements{\left(}{,}{\right)}}
+
+% special function handlers 
+
+\def\MMLcFNoperator
+  {\getvalue{doMMLcFN\mmloperator}}
+
+\def\doMMLcFNplusminus#1#2#3\empty
+  {\countXMLRchildren{#3}% 
+   \ifcase\nofXMLRchildren\or
+     #2#3%
+   \else
+     \encapsulateXMLR{\left(}{#2}{\right)}{\MMLcreset#3}%
+   \fi}
+
+\let\doMMLcFNminusplus\doMMLcFNplusminus
+
+\def\doMMLcFNcontinued#1#2#3\empty
+  {#3\getXMLentity{continued}}
+
+% so far for the special handlers  
+
+\remapXMLsequence [interval] [CPA] \MMLcINTERVAL
+
+\def\MMLcINTERVAL#1#2%
+  {\withnexttwoXMLRelements
+     {\getXMLarguments{interval}{closure="closed" #1}%
+      \processaction
+        [\XMLpar{interval}{closure}{closed}]
+        [     closed=>{[\firstXMLRelement,\secondXMLRelement]},
+         open-closed=>{(\firstXMLRelement,\secondXMLRelement]},
+         closed-open=>{[\firstXMLRelement,\secondXMLRelement)},
+                open=>{(\firstXMLRelement,\secondXMLRelement)},
+          \s!unknown=>{[\firstXMLRelement,\secondXMLRelement]}]}%
+   #2\empty}
+
+\remapXMLsingular [inverse] [CPA] \MMLcINVERSE
+
+\def\MMLcINVERSE#1#2%
+  {\withnextXMLRelement
+     {\nextXMLRelement\empty^{-1}% \empty kills MMLcfunction lookahead
+      \withnextXMLRelement
+        {\ifx\nextXMLRelement\empty \else
+           \left[\nextXMLRelement\right]%
+         \fi}}}
+
+\remapXMLsingular [sep] [CPA] \MMLcSEP
+
+\def\MMLcSEP#1#2{\MMLcsep} \def\MMLcsep{\,}
+
+\remapXMLsequence [condition] [CPA] \MMLcCONDITION
+
+\def\MMLcCONDITION#1#2%
+  {\pushmacro\MMLcBVAR
+   \doifXMLRchild{bvar}{#2}{\processXMLRchild{bvar}{#2}\mid}%
+   \let\MMLcBVAR\ignoreXMLRelement
+   \processXMLRchildren{#2}%
+   \popmacro\MMLcBVAR}
+
+\remapXMLsequence [declare] [CPA] \MMLcDECLARE
+
+\setupMMLappearance[declare][\c!status=\v!start]
+
+\def\MMLcDECLARE#1#2%
+  {\doif{\@@MMLdeclarestatus}{\v!start}
+     {\withnextXMLRelement
+        {\getXMLentity{declare}\nextXMLRelement
+         \countXMLRchildren{#2}%
+         \ifnum\nofXMLRchildren>1 
+            \;% \getXMLentity{ThickSpace}%
+            \getXMLentity{as}%
+            \;% \getXMLentity{ThickSpace}%
+         \fi}%
+      #2\empty}}
+
+\remapXMLsequence [lambda] [CPA] \MMLcLAMBDA
+
+\setupMMLappearance[lambda][\c!variant=b]
+
+\def\MMLcLAMBDA#1#2%
+  {\doifelse{\@@MMLlambdavariant}{a}
+     {\encapsulateXMLR{\getXMLentity{lambda}(}{,}{)}{#2}}
+     {\countXMLRchild{bvar}{#2}%
+      \ifnum\nofXMLRchildren>1
+        \collectXMLRchild{bvar}{#2}%
+        \encapsulateXMLR{\left(}{,}{\right)}{\the\XMLRtoks}%
+      \else
+        \processXMLRchild{bvar}{#2}%
+      \fi
+      \getXMLentity{mapsto}%
+      \processXMLRchild{apply,reln,ci,cn}{#2}}}
+
+\remapXMLsingular [compose] [CPA] \MMLcCOMPOSE
+
+\def\MMLcCOMPOSE#1#2#3\empty
+  {\doifMMLfunctionelse{#3}
+     {\encapsulateXMLR{\left(}{\circ}{\right)}{#3}}
+     {\encapsulateXMLR{}{\circ}{}{#3}}}
+
+\remapXMLsingular [ident] [CPA] \MMLcIDENT
+
+\def\MMLcIDENT#1#2{\getXMLentity{identity}}
+
+\remapXMLsingular [domain]   [CPA] \MMLcDOMAIN
+\remapXMLsingular [codomain] [CPA] \MMLcCODOMAIN
+
+\def\MMLcDOMAIN  #1#2#3\empty
+  {\getXMLentity{domain}(\MMLcreset\processXMLRchildren{#3})}
+
+\def\MMLcCODOMAIN#1#2#3\empty
+  {\getXMLentity{codomain}(\MMLcreset\processXMLRchildren{#3})}
+
+\remapXMLsingular [image] [CPA] \MMLcIMAGE
+
+\def\MMLcIMAGE#1#2%
+  {\withnextXMLRelement{\getXMLentity{image}(\nextXMLRelement)}}
+
+\remapXMLsequence [domainofapplication] [CPA] \MMLcDOMAINOFAPPLICATION
+
+\def\MMLcDOMAINOFAPPLICATION#1#2{#2}
+
+\remapXMLsequence [piecewise] [CPA] \MMLcPIECEWISE
+\remapXMLsequence [piece]     [CPA] \MMLcPIECE
+\remapXMLsequence [otherwise] [CPA] \MMLcOTHERWISE
+
+\def\MMLcPIECEWISE#1#2%
+  {\cases{#2}}
+
+\def\MMLcPIECE#1#2%
+  {\withnexttwoXMLRelements
+     {\@EA\XMLRtoks\@EA{\firstXMLRelement\@col@amp@}%
+      \@EA\appendtoks\@EA\mathematics\@EA{\secondXMLRelement}\to\XMLRtoks
+      \the\XMLRtoks\crcr}%
+   #2}%
+
+\def\MMLcOTHERWISE#1#2%
+  {#2\@col@amp@\mathematics{\getXMLentity{otherwise}}\crcr}
+
+%%% arithmic, algebra and logic
+
+\remapXMLsingular [quotient] [CPA] \MMLcQUOTIENT
+
+\def\MMLcQUOTIENT#1#2%
+  {\withnexttwoXMLRelements{\lfloor\firstXMLRelement/\secondXMLRelement\rfloor}}
+
+\remapXMLsingular [factorial] [CPA] \MMLcFACTORIAL
+
+\def\MMLcFACTORIAL#1#2%
+  {\withnextXMLRelement{\nextXMLRelement !}}
+
+\remapXMLsingular [divide] [CPA] \MMLcDIVIDE
+
+\setupMMLappearance [divide] [\c!niveau=\!!maxcard]
+
+\def\MMLcDIVIDE#1#2%
+  {\withnexttwoXMLRelements
+    {\increment\MMLcDIVIDElevel
+     \ifnum\MMLcDIVIDElevel>\@@MMLdivideniveau\space
+       \firstXMLRelement/\secondXMLRelement
+     \else
+       \frac{\MMLcreset\firstXMLRelement}{\MMLcreset\secondXMLRelement}%
+     \fi
+     \decrement\MMLcDIVIDElevel}}
+
+\remapXMLsingular [min] [CPA] \MMLcMIN
+\remapXMLsingular [max] [CPA] \MMLcMAX
+
+\def\MMLcMIN#1#2#3\empty
+  {\encapsulateXMLR
+     {\min\doifXMLRchild{bvar}{#3}{_{\processXMLRchild{bvar}{#3}}}\left\{}
+     {,}{\right\}}{#3}}
+
+\def\MMLcMAX#1#2#3\empty
+  {\encapsulateXMLR
+     {\max\doifXMLRchild{bvar}{#3}{_{\processXMLRchild{bvar}{#3}}}\left\{}
+     {,}{\right\}}{#3}}
+
+\remapXMLsingular [minus] [CPA] \MMLcMINUS
+\remapXMLsingular [plus]  [CPA] \MMLcPLUS
+
+\setupMMLappearance[sign][\c!reductie=\v!ja]
+
+\def\MMLcMINUS
+  {\doifelse{\@@MMLsignreductie}{\v!ja}
+     {\expandafter\MMLcMINUSyes}{\expandafter\MMLcMINUSno}}
+
+\def\MMLcPLUS
+  {\doifelse{\@@MMLsignreductie}{\v!ja}
+     {\expandafter\MMLcPLUSyes}{\expandafter\MMLcPLUSno}}
+
+\def\MMLcMINUSno#1#2#3\empty
+  {\countXMLRchildren{#3}%
+   \encapsulateXMLR{\ifcase\nofXMLRchildren\or-\fi}{-}{}{#3}}
+
+\def\MMLcPLUSno#1#2#3\empty
+  {\countXMLRchildren{#3}%
+   \encapsulateXMLR{\ifcase\nofXMLRchildren\or+\fi}{+}{}{#3}}
+
+\def\MMLcMINUSyes#1#2#3\empty 
+  {\setMMLcreset{\MMLcfunctionlist}%
+   \countXMLRchildren{#3}%
+   \encapsulateXMLR{\ifcase\nofXMLRchildren\or-\fi}{-}{}{#3}}
+
+\def\MMLcPLUSyes#1#2#3\empty
+  {\setMMLcreset{plus/,minus/,\MMLcfunctionlist,\MMLcconstructlist}%
+   \encapsulatenextXMLRelements
+     {}
+     {\doifXMLRchildelse{apply}{\nextXMLRelement}%
+        {\collectXMLRchild{apply}{\nextXMLRelement}%
+         \doifXMLRchildelse{minus/}{\the\XMLRtoks}
+           {\countXMLRchildren{\the\XMLRtoks}
+            \ifnum\nofXMLRchildren>2 +\else\fi}{+}}
+        {+}}
+     {}
+     {#3\empty}}
+
+\remapXMLsingular [power] [CPA] \MMLcPOWER
+
+\setupMMLappearance[power][\c!reductie=\v!ja]
+
+\let\MMLpowerelement\empty
+
+\def\MMLcPOWER#1#2%
+  {\withnexttwoXMLRelements
+     {\doifXMLRchildelse{apply}{\firstXMLRelement}
+        {\doifelse{\@@MMLpowerreductie}{\v!ja}
+           {\collectXMLRchild{apply}{\firstXMLRelement}%
+            \@EA\doifXMLRchildelse\@EA{\MMLcfunctionlist}{\the\XMLRtoks}
+              {\let\MMLpowerelement\secondXMLRelement
+               \MMLcreset\firstXMLRelement\empty}
+              {\left(\MMLcreset\firstXMLRelement\empty\right)^{\MMLcreset\secondXMLRelement}}}
+           {\left(\MMLcreset\firstXMLRelement\empty\right)^{\MMLcreset\secondXMLRelement}}}
+        {\firstXMLRelement^{\MMLcreset\secondXMLRelement}}}}
+
+\remapXMLsingular [rem] [CPA] \MMLcREM
+
+\def\MMLcREM#1#2%
+  {\withnexttwoXMLRelements
+     {\firstXMLRelement\getXMLentity{mod}\secondXMLRelement}}
+
+\remapXMLsingular [times] [CPA] \MMLcTIMES
+
+\setupMMLappearance[times][\c!symbool=\v!nee]
+
+\def\MMLcTIMES#1#2#3\empty
+  {\setMMLcreset{\MMLcfunctionlist,\MMLcconstructlist}%
+   \doifelse{\@@MMLtimessymbool}{\v!ja}
+     {\encapsulateXMLR{}{\times}{}{#3\empty}}
+     {\doifelse{\@@MMLtimessymbool}{dot}
+        {\encapsulateXMLR{}{\cdot}{}{#3\empty}}
+        {#3\empty}}}
+
+\remapXMLsingular [root] [CPA] \MMLcROOT
+
+\def\MMLcROOT#1#2#3\empty%
+  {\doifXMLRchildelse{degree}{#3}
+     {\root\processXMLRchild{degree}{#3}\of
+        {\let\MMLcDEGREE\ignoreXMLRelement
+         \MMLcreset\processXMLRchildren{#3}}}
+     {\sqrt{\MMLcreset\processXMLRchildren{#3}}}}
+
+\remapXMLsingular [gcd] [CPA] \MMLcGCD
+
+\def\MMLcGCD#1#2#3\empty{\encapsulateXMLR{\gcd(}{,}{)}{#3}}
+
+\remapXMLsingular [and]     [CPA] \MMLcAND
+\remapXMLsingular [or]      [CPA] \MMLcOR
+\remapXMLsingular [xor]     [CPA] \MMLcXOR
+\remapXMLsingular [implies] [CPA] \MMLcIMPLIES
+
+\def\MMLcAND    #1#2#3\empty{\encapsulateXMLR{}{\getXMLentity{and}}{}{#3}}
+\def\MMLcOR     #1#2#3\empty{\encapsulateXMLR{}{\getXMLentity{or}}{}{#3}}
+\def\MMLcXOR    #1#2#3\empty{\encapsulateXMLR{}{\getXMLentity{xor}}{}{#3}}
+\def\MMLcIMPLIES#1#2#3\empty{\encapsulateXMLR{}{\getXMLentity{implies}}{}{#3}}
+
+\remapXMLsingular [not]    [CPA] \MMLcNOT
+
+\def\MMLcNOT#1#2#3\empty{\getXMLentity{not}\processXMLRchildren{#3}}
+
+\remapXMLsingular [forall] [CPA] \MMLcFORALL
+\remapXMLsingular [exists] [CPA] \MMLcEXISTS
+
+\def\MMLcFORALL%
+  {\getXMLentity{forall}%
+   \!% \getXMLentity{NegThinSpace}%
+   \MMLcFORALLandEXISTS}
+
+\def\MMLcEXISTS%
+  {\getXMLentity{exists}%
+   \MMLcFORALLandEXISTS}
+
+\def\MMLcFORALLandEXISTS#1#2#3\empty
+  {\MMLcreset
+   _{\encapsulateXMLRchildren{bvar}{}{,}{}{#3}}%
+   \doifXMLRchildelse{condition}{#3}
+     {\;% \getXMLentity{ThickSpace}%
+      \processXMLRchild{condition}{#3}
+      \doifXMLRchildelse{apply,reln,ci,cn}{#3}
+        {\countXMLRchild{apply,reln,ci,cn}{#3}%
+         \ifcase\nofXMLRchildren\or % == snelle volgende
+           \encapsulateXMLRchildren{apply,reln,ci,cn}
+             {\left\vert}% 
+             {}
+             {\right.}
+             {#3\empty}%
+         \else % special case
+           \pushmacro\MMLcCONDITION
+           \let\MMLcCONDITION\gobbletwoarguments
+           \collectbetweenXMLRchild{apply,reln,ci,cn}{\hfill\crcr}{#3}%
+           \left\vert\matrix{\the\XMLRtoks}\right.%
+           \popmacro\MMLcCONDITION
+         \fi}
+        {}}
+     {:\processXMLRchild{apply,reln,ci,cn}{#3\empty}}}
+
+\remapXMLsingular [abs] [CPA] \MMLcABS
+
+\def\MMLcABS#1#2#3\empty
+  {\left\vert\MMLcreset\processXMLRchildren{#3}\right\vert}
+
+\remapXMLsingular [conjugate] [CPA] \MMLcCONJUGATE
+
+\def\MMLcCONJUGATE#1#2#3\empty%
+  {\overline{\MMLcreset\processXMLRchildren{#3}}}
+
+\remapXMLsingular [arg] [CPA] \MMLcARG
+
+\def\MMLcARG#1#2#3\empty
+  {\getXMLentity{arg}(\MMLcreset\processXMLRchildren{#3})}
+
+\remapXMLsingular [real]      [CPA] \MMLcREAL
+\remapXMLsingular [imaginary] [CPA] \MMLcIMAGINARY
+
+\def\MMLcREAL#1#2#3\empty
+  {\getXMLentity{real}(\MMLcreset\processXMLRchildren{#3})}
+
+\def\MMLcIMAGINARY#1#2#3\empty
+  {\getXMLentity{imaginary}(\MMLcreset\processXMLRchildren{#3})}
+
+\remapXMLsingular [lcm] [CPA] \MMLcLCM
+
+\def\MMLcLCM#1#2#3\empty
+  {\encapsulateXMLR{\getXMLentity{lcm}(}{,}{)}{#3}}
+
+\remapXMLsingular [floor]   [CPA] \MMLcFLOOR
+\remapXMLsingular [ceiling] [CPA] \MMLcCEILING
+
+\def\MMLcFLOOR#1#2#3\empty
+  {\getXMLentity{lfloor}\processXMLRchildren{#3}\getXMLentity{rfloor}}
+
+\def\MMLcCEILING#1#2#3\empty
+  {\getXMLentity{lceiling}\processXMLRchildren{#3}\getXMLentity{rceiling}}
+
+%%% relations
+
+\remapXMLsingular [eq]         [CPA] \MMLcEQ
+\remapXMLsingular [neq]        [CPA] \MMLcNEQ
+\remapXMLsingular [gt]         [CPA] \MMLcGT
+\remapXMLsingular [lt]         [CPA] \MMLcLT
+\remapXMLsingular [geq]        [CPA] \MMLcGEQ
+\remapXMLsingular [leq]        [CPA] \MMLcLEQ
+\remapXMLsingular [equivalent] [CPA] \MMLcEQUIVALENT
+\remapXMLsingular [approx]     [CPA] \MMLcAPPROX
+\remapXMLsingular [factorof]   [CPA] \MMLcFACTOROF
+
+\setupMMLappearance[relation][\c!uitlijnen=\v!nee]
+
+\def\noMMLcrelation#1#2%
+  {\encapsulatenextXMLRelements{}{#1}{}#2\empty}
+
+\def\lastMMLcrelation#1#2%
+  {\countXMLRchildren{#2}%
+   \rawcollectbetweenXMLR
+     {\advance\nofXMLRchildren -1 
+      \ifnum\nofXMLRchildren>1 
+        \appendtoks\@col@amp@#1\crcr\to\XMLRtoks
+      \else
+        \appendtoks\@col@amp@#1\to\XMLRtoks
+      \fi}
+     {#2}%
+   \eqalign{\the\XMLRtoks\crcr}}
+
+\def\firstMMLcrelation#1#2%
+  {\nofXMLRchildren=0
+   \rawcollectbetweenXMLR
+     {\advance\nofXMLRchildren 1 
+      \ifnum\nofXMLRchildren=1 
+        \appendtoks\@col@amp@#1\to\XMLRtoks
+      \else
+        \appendtoks\crcr\@col@amp@#1\to\XMLRtoks
+      \fi}
+     {#2}%
+   \eqalign{\the\XMLRtoks\crcr}}
+
+\def\leftMMLcrelation#1#2%
+  {\collectbetweenXMLR{\@col@amp@#1\crcr}{#2}%
+   \eqalign{\the\XMLRtoks}}
+
+\def\rightMMLcrelation#1#2%
+  {\collectbetweenXMLR{\crcr#1{}\@col@amp@}{#2}% watch the {}
+   \prependtoks\@col@amp@\to\XMLRtoks
+   \eqalign{\the\XMLRtoks\crcr}}
+
+\def\MMLcrelation#1#2\empty
+  {\MMLcreset
+   \processaction
+     [\@@MMLrelationuitlijnen]
+     [\v!laatste=>\let\next\lastMMLcrelation ,
+       \v!eerste=>\let\next\firstMMLcrelation,
+           \v!ja=>\let\next\leftMMLcrelation ,
+        \v!links=>\let\next\leftMMLcrelation ,
+       \v!rechts=>\let\next\rightMMLcrelation,  
+      \s!default=>\let\next\noMMLcrelation   ,
+      \s!unknown=>\let\next\noMMLcrelation   ]
+   \next{#1}{#2}}
+
+\def\MMLcEQ        #1#2{\MMLcrelation=}
+\def\MMLcNEQ       #1#2{\MMLcrelation\neq}
+\def\MMLcGT        #1#2{\MMLcrelation>}
+\def\MMLcLT        #1#2{\MMLcrelation<}
+\def\MMLcGEQ       #1#2{\MMLcrelation\geq}
+\def\MMLcLEQ       #1#2{\MMLcrelation\leq}
+\def\MMLcEQUIVALENT#1#2{\MMLcrelation\equiv}
+\def\MMLcAPPROX    #1#2{\MMLcrelation\approx}
+\def\MMLcFACTOROF  #1#2{\MMLcrelation\mid}
+
+%%% calculus and vector calculus
+
+\setupMMLappearance[int][\c!plaats=\v!boven]
+
+\remapXMLsingular [int] [CPA] \MMLcINT
+
+\def\doMMLlimits#1%
+  {\doifelsevalue{@@MML#1\c!plaats}{\v!boven}{\limits}{\nolimits}}
+
+\def\MMLcINT#1#2#3\empty
+  {\pushmacro\xmlr
+   \MMLcreset
+   \doifXMLRchildelse{domainofapplication}{#3}
+     {\int\doMMLlimits{int}_{\processXMLRchild{domainofapplication}{#3}}}
+     {\doifXMLRchildelse{condition}{#3}
+        {\int\doMMLlimits{int}_{\processXMLRchild{condition}{#3}}}
+        {\doifXMLRchildelse{lowlimit}{#3}
+           {\int\doMMLlimits{int}
+              _{\processXMLRchild{lowlimit}{#3}}
+              ^{\processXMLRchild {uplimit}{#3}}}
+           {\int}}}%
+  \doifXMLRchildelse{apply}{#3}
+    {\doifMMLfunctionelse{#3}%
+       {\MMLcreset % TEST 
+        \processXMLRchild{apply}{#3}}
+       {\left(\MMLcreset % TEST 
+              \processXMLRchild{apply}{#3}\right)}}
+     {\MMLcreset % TEST 
+      \processXMLRchild{ci}{#3}}%
+   \doifXMLRchild{bvar}{#3}
+     {\,% \getXMLentity{ThinSpace}%
+      {\rm\getXMLentity{mathematicald}}\processXMLRchild{bvar}{#3}}%
+   \popmacro\xmlr}
+
+\remapXMLsingular [diff] [CPA] \MMLcDIFF
+
+\setupMMLappearance[diff][\c!plaats=\v!boven]
+
+\def\MMLcDIFF#1#2#3\empty
+  {\pushmacro\xmlr
+   \MMLcreset
+   \doifXMLRchildelse{bvar}{#3}
+     {\frac
+        {{\rm \getXMLentity{mathematicald}}%
+         \collectXMLRchild{bvar}{#3}%
+         \let\MMLcDEGREE\superMMLcelement
+         \expanded{\processXMLRchild{degree}{\the\XMLRtoks}}%
+         \doif{\@@MMLdiffplaats}{\v!boven}
+           {\doifXMLRchildelse{ci}{#3}
+              {\processXMLRchild{ci}{#3}}
+              {\doifMMLfunctionelse{#3}
+                 {\MMLcreset\processXMLRchild{apply}{#3}}
+                 {\left(\MMLcreset\processXMLRchild{apply}{#3}\right)}}}}
+        {\let\MMLcDEGREE\superMMLcelement
+         \begingroup\rm\getXMLentity{mathematicald}\endgroup
+         \processXMLRchild{bvar}{#3}}%
+      \doifnot{\@@MMLdiffplaats}{\v!boven}
+        {\left(\MMLcreset\processXMLRchild{apply,ci}{#3}\right)}}
+     {\processXMLRchildren{#3}^\prime}%
+   \popmacro\xmlr}
+
+\remapXMLsingular [partialdiff] [CPA] \MMLcPARTIALDIFF
+
+\def\MMLcBVARpartialdiff#1#2%
+  {\getXMLentity{differentiald}\processXMLRchild{apply,reln,ci,cn}{#2}
+   \doifXMLRchild{degree}{#2}{^{\processXMLRchild{degree}{#2}}}}
+
+\def\MMLcPARTIALDIFF#1#2#3\empty
+  {\pushmacro\xmlr
+   \doifXMLRchildelse{list}{#3}
+     {\getXMLentity{capitaldifferentiald}_{\encapsulateXMLRchild{list}{}{,}{}{#3}}%
+      \processXMLRchild{apply,reln,ci,cn}{#3}}
+     {\countXMLRchild{bvar}{#3}%
+      \ifnum\nofXMLRchildren>0
+        \pushmacro\MMLcDEGREE
+        \pushmacro\MMLcBVAR
+        \frac
+          {\doifXMLRchildelse{degree}{#3}
+             {\collectXMLRchild{degree}{#3}}
+             {\collectXMLRchild{bvar}{#3}%
+              \expanded{\collectXMLRchild{degree}{\the\XMLRtoks}}}%
+           \getXMLentity{differentiald}^{\encapsulateXMLR{}{+}{}{\the\XMLRtoks}}%
+           \let\MMLcDEGREE\gobbletwoarguments
+           \doifMMLfunctionelse{#3}{\MMLcreset}{}%
+           \processXMLRchild{apply,reln,ci,cn}{#3}}
+          {\let\MMLcBVAR\MMLcBVARpartialdiff
+           \processXMLRchild{bvar}{#3}}%
+        \popmacro\MMLcBVAR
+        \popmacro\MMLcDEGREE
+      \else
+        \processXMLRchild{apply,reln,ci,cn}{#3}%
+      \fi}%
+   \popmacro\xmlr}
+
+\def\doifMMLfunctionelse#1#2#3%
+  {\collectXMLRchild{apply}{#1}%
+   \doifXMLRchildelse{fn}{\the\XMLRtoks#1} 
+     {#2}
+     {\doifXMLRchildelse{ci}{\the\XMLRtoks#1} 
+        {\pushmacro\xmlr
+         \getXMLarguments{dummy}{type=""}%
+         \def\xmlr{\getmmlarguments{dummy}{}}%
+         \the\XMLRtoks % what if more than one ? 
+         \popmacro\xmlr
+         \doif{\XMLpar{dummy}{type}{}}{fn}{#2}{#3}}
+        {#2}}}
+
+\def\subMMLcelement  #1#2{^{#2}}
+\def\superMMLcelement#1#2{^{#2}}
+
+\remapXMLsequence [lowlimit][CPA] \MMLcLOWLIMIT
+\remapXMLsequence [uplimit] [CPA] \MMLcUPLIMIT
+\remapXMLsequence [bvar]    [CPA] \MMLcBVAR
+\remapXMLsequence [degree]  [CPA] \MMLcDEGREE
+
+\def\MMLcLOWLIMIT#1#2{#2}
+\def\MMLcUPLIMIT #1#2{#2}
+\def\MMLcBVAR    #1#2{#2}
+\def\MMLcDEGREE  #1#2{#2}
+
+\remapXMLsingular [divergence] [CPA] \MMLcDIVERGENCE
+\remapXMLsingular [grad]       [CPA] \MMLcGRAD
+\remapXMLsingular [curl]       [CPA] \MMLcCURL
+\remapXMLsingular [laplacian]  [CPA] \MMLcLAPLACIAN
+
+\def\MMLcDIVERGENCE#1#2#3\empty{\getXMLentity{divergence}\processXMLRchildren{#3}}
+\def\MMLcGRAD      #1#2#3\empty{\getXMLentity{grad}\processXMLRchildren{#3}}
+\def\MMLcCURL      #1#2#3\empty{\getXMLentity{curl}\processXMLRchildren{#3}}
+\def\MMLcLAPLACIAN #1#2#3\empty{\getXMLentity{laplacian}\processXMLRchildren{#3}}
+
+%%% theory of sets
+
+\remapXMLsequence [set] [CPA] \MMLcSET
+
+\def\MMLcSET#1#2%
+  {\doifXMLRchildelse{condition}{#2}
+     {\{\processXMLRchild{bvar}{#2}\,\vert\,\processXMLRchild{condition}{#2}\}}
+     {\encapsulateXMLR{\{}{,}{\}}{#2}}}
+
+\remapXMLsequence [list] [CPA] \MMLcLIST
+
+\def\MMLcLIST#1#2{\encapsulateXMLR{[} {,}{]} {#2}}
+
+\remapXMLsingular [union]            [CPA] \MMLcUNION
+\remapXMLsingular [intersect]        [CPA] \MMLcINTERSECT
+\remapXMLsingular [in]               [CPA] \MMLcIN
+\remapXMLsingular [notin]            [CPA] \MMLcNOTIN
+\remapXMLsingular [subset]           [CPA] \MMLcSUBSET
+\remapXMLsingular [prsubset]         [CPA] \MMLcPRSUBSET
+\remapXMLsingular [notsubset]        [CPA] \MMLcNOTSUBSET
+\remapXMLsingular [notprsubset]      [CPA] \MMLcNOTPRSUBSET
+\remapXMLsingular [setdiff]          [CPA] \MMLcSETDIFF
+
+\def\MMLcset#1{\withnexttwoXMLRelements{\firstXMLRelement#1\secondXMLRelement}}
+
+\def\MMLcUNION           #1#2{\MMLcset\cup}
+\def\MMLcINTERSECT       #1#2{\MMLcset\cap}
+\def\MMLcIN              #1#2{\MMLcset\in}
+\def\MMLcNOTIN           #1#2{\MMLcset{\not\in}}
+\def\MMLcSUBSET          #1#2{\MMLcset\subset}
+\def\MMLcPRSUBSET        #1#2{\MMLcset\subseteq}
+\def\MMLcNOTSUBSET       #1#2{\MMLcset{\not\subset}}
+\def\MMLcNOTPRSUBSET     #1#2{\MMLcset{\not\subseteq}}
+\def\MMLcSETDIFF         #1#2{\MMLcset\setminus}
+
+\remapXMLsingular [card] [CPA] \MMLcCARD
+
+\def\MMLcCARD#1#2#3\empty{\encapsulateXMLR{\vert}{}{\vert}{#3}}
+
+\remapXMLsingular [cartesianproduct] [CPA] \MMLcCARTESIANPRODUCT
+
+\def\MMLcCARTESIANPRODUCT#1#2#3\empty{\encapsulateXMLR{}{\times}{}{#3}}
+
+%%% sequences and series
+
+\remapXMLsingular [sum]     [CPA] \MMLcSUM
+\remapXMLsingular [product] [CPA] \MMLcPRODUCT
+
+\def\MMLcSUM    {\MMLcSUMandPRODUCT{sum}\sum}
+\def\MMLcPRODUCT{\MMLcSUMandPRODUCT{product}\prod}
+
+\setupMMLappearance[sum][\c!plaats=\v!boven]
+\setupMMLappearance[product][\c!plaats=\v!boven]
+
+\def\stackMMLsubscripts#1%
+  {\vbox
+     {\baselineskip\!!zeropoint % hack, taco vragen 
+      \halign{$\scriptstyle\hss##\hss$\cr#1\crcr}}}
+
+\def\MMLcSUMandPRODUCT#1#2#3#4\empty
+  {\pushmacro\xmlr
+   \doifXMLRchildelse{condition,bvar,lowlimit}{#4}
+     {\def\MMLcSUMlow 
+        {_{\doifXMLRchildelse{condition}{#4}
+             {\collectXMLRchild{condition}{#4}%
+              \expanded{\collectbetweenXMLR{\crcr}{\the\XMLRtoks}}%
+              \stackMMLsubscripts{\the\XMLRtoks}}
+             {\doifXMLRchild{bvar}{#4}
+                {\processXMLRchild{bvar}{#4}%
+                 \doifXMLRchild{lowlimit}{#4}{=}}%
+              \processXMLRchild{lowlimit}{#4}}}}}
+     {\let\MMLcSUMlow\empty}%
+   \doifXMLRchildelse{uplimit}{#4}
+     {\def\MMLcSUMup{^{\processXMLRchild{uplimit}{#4}}}}
+     {\let\MMLcSUMup\empty}%
+   \MMLcreset#2\doMMLlimits{#1}\MMLcSUMup\MMLcSUMlow
+   \MMLcreset
+   \processXMLRchild{apply,ci}{#4}%
+   \popmacro\xmlr}
+
+\remapXMLsingular [limit] [CPA] \MMLcLIMIT
+
+\setupMMLappearance[limit][\c!plaats=\v!boven]
+
+\def\MMLcLIMIT#1#2#3\empty
+  {\pushmacro\xmlr
+   \MMLcreset
+   \lim\doMMLlimits{limit}_
+     {\MMLcreset
+      \doifXMLRchildelse{condition}{#3}
+        {\processXMLRchild{condition}{#3}}
+        {\doifXMLRchild{bvar}{#3}
+           {\processXMLRchild{bvar}{#3}\rightarrow}%
+         \processXMLRchild{lowlimit}{#3}}}%
+   \processXMLRchild{apply}{#3}%
+   \popmacro\xmlr}
+
+\remapXMLsingular [tendsto] [CPA] \MMLcTENDSTO
+
+\def\MMLcTENDSTO#1#2%
+  {\getXMLarguments{tendsto}{type="default" #1}%
+   \withnexttwoXMLRelements
+     {\MMLcreset\firstXMLRelement
+      \processaction
+        [\XMLpar{tendsto}{type}{default}]
+        [  above=>\downarrow,
+           below=>\uparrow,
+         unknown=>\rightarrow]%
+      \MMLcreset\secondXMLRelement}}
+
+%%% elementary classical functions
+
+\remapXMLsingular [exp] [CPA] \MMLcEXP
+
+\def\MMLcEXP#1#2#3\empty
+  {\getXMLentity{exponentiale}^{\MMLcreset#3}}
+
+\remapXMLsingular [ln]  [CPA] \MMLcLN
+
+%\def\MMLcLN#1#2#3\empty
+%  {\ln\left(\MMLcreset#3\right)}
+
+\def\MMLcLN#1#2%
+  {\doMMLcfunction{ln}}
+
+\remapXMLsingular [log] [CPA] \MMLcLOG
+
+\setupMMLappearance[log][\c!plaats=\v!rechts]
+
+\def\MMLcLOG#1#2#3\empty
+  {\pushmacro\MMLcLOGBASE
+   \let\MMLcLOGBASE\secondoftwoarguments
+   \doifXMLRchildelse{logbase}{#3}
+     {\doifelse{\@@MMLlogplaats}{\v!links}
+        {\mathop{{}^{\processXMLRchild{logbase}{#3}}\!\getXMLentity{log}}}
+        {\getXMLentity{log}_{\processXMLRchild{logbase}{#3}}}}
+     {\getXMLentity{log}}%
+   \let\MMLcLOGBASE\ignoreXMLRelement
+   \nodoMMLcfunction#3\empty 
+   \popmacro\MMLcLOGBASE}
+
+\remapXMLsequence [logbase] [CPA] \MMLcLOGBASE
+
+\def\MMLcLOGBASE#1#2{#2}
+
+\remapXMLsingular [sin]     [CPA] \MMLcSIN
+\remapXMLsingular [arcsin]  [CPA] \MMLcARCSIN
+\remapXMLsingular [sinh]    [CPA] \MMLcSINH
+\remapXMLsingular [arcsinh] [CPA] \MMLcARCSINH
+\remapXMLsingular [cos]     [CPA] \MMLcCOS
+\remapXMLsingular [arccos]  [CPA] \MMLcARCCOS
+\remapXMLsingular [cosh]    [CPA] \MMLcCOSH
+\remapXMLsingular [arccosh] [CPA] \MMLcARCCOSH
+\remapXMLsingular [tan]     [CPA] \MMLcTAN
+\remapXMLsingular [arctan]  [CPA] \MMLcARCTAN
+\remapXMLsingular [tanh]    [CPA] \MMLcTANH
+\remapXMLsingular [arctanh] [CPA] \MMLcARCTANH
+\remapXMLsingular [cot]     [CPA] \MMLcCOT
+\remapXMLsingular [arccot]  [CPA] \MMLcARCCOT
+\remapXMLsingular [coth]    [CPA] \MMLcCOTH
+\remapXMLsingular [arccoth] [CPA] \MMLcARCCOTH
+\remapXMLsingular [csc]     [CPA] \MMLcCSC
+\remapXMLsingular [arccsc]  [CPA] \MMLcARCCSC
+\remapXMLsingular [csch]    [CPA] \MMLcCSCH
+\remapXMLsingular [arccsch] [CPA] \MMLcARCCSCH
+\remapXMLsingular [sec]     [CPA] \MMLcSEC
+\remapXMLsingular [arcsec]  [CPA] \MMLcARCSEC
+\remapXMLsingular [sech]    [CPA] \MMLcSECH
+\remapXMLsingular [arcsech] [CPA] \MMLcARCSECH
+
+\setupMMLappearance[function][\c!reductie=\v!ja]
+
+\def\doMMLcfunction#1%
+  {\doifnextcharelse\xmlr{\dodoMMLcfunction{#1}}{\getXMLentity{#1}}}
+
+\def\dodoMMLcfunction#1%
+  {\getXMLentity{#1}%
+   \nodoMMLcfunction}
+
+\def\nodoMMLcfunction#1\empty
+  {\ifx\MMLpowerelement\empty\else
+     ^{\MMLcreset\MMLpowerelement\empty}\!\let\MMLpowerelement\empty
+   \fi
+   \doifelse{\@@MMLfunctionreductie}{\v!ja}
+     {\doifXMLRchildelse{apply}{#1}
+        {\collectXMLRchild{apply}{#1}%
+         \@EA\doifXMLRchildelse\@EA{\MMLcfunctionlist}{\the\XMLRtoks}
+           {\MMLcreset#1\empty}
+           {\left(\MMLcreset#1\empty\right)}}
+        {\MMLcreset#1\empty}}
+     {\left(\MMLcreset#1\empty\right)}}
+
+\def\MMLcSIN    #1#2{\doMMLcfunction{sin}}
+\def\MMLcARCSIN #1#2{\doMMLcfunction{arcsin}}
+\def\MMLcSINH   #1#2{\doMMLcfunction{sinh}}
+\def\MMLcARCSINH#1#2{\doMMLcfunction{arcsinh}}
+\def\MMLcCOS    #1#2{\doMMLcfunction{cos}}
+\def\MMLcARCCOS #1#2{\doMMLcfunction{arccos}}
+\def\MMLcCOSH   #1#2{\doMMLcfunction{cosh}}
+\def\MMLcARCCOSH#1#2{\doMMLcfunction{arccosh}}
+\def\MMLcTAN    #1#2{\doMMLcfunction{tan}}
+\def\MMLcARCTAN #1#2{\doMMLcfunction{arctan}}
+\def\MMLcTANH   #1#2{\doMMLcfunction{tanh}}
+\def\MMLcARCTANH#1#2{\doMMLcfunction{arctanh}}
+\def\MMLcCOT    #1#2{\doMMLcfunction{cot}}
+\def\MMLcARCCOT #1#2{\doMMLcfunction{arccot}}
+\def\MMLcCOTH   #1#2{\doMMLcfunction{coth}}
+\def\MMLcARCCOTH#1#2{\doMMLcfunction{arccoth}}
+\def\MMLcCSC    #1#2{\doMMLcfunction{csc}}
+\def\MMLcARCCSC #1#2{\doMMLcfunction{arccsc}}
+\def\MMLcCSCH   #1#2{\doMMLcfunction{csch}}
+\def\MMLcARCCSCH#1#2{\doMMLcfunction{arccsch}}
+\def\MMLcSEC    #1#2{\doMMLcfunction{sec}}
+\def\MMLcARCSEC #1#2{\doMMLcfunction{arcsec}}
+\def\MMLcSECH   #1#2{\doMMLcfunction{sech}}
+\def\MMLcARCSECH#1#2{\doMMLcfunction{arcsech}}
+
+%%% statistics
+
+\remapXMLsingular [mean]     [CPA] \MMLcMEAN
+\remapXMLsingular [sdev]     [CPA] \MMLcSDEV
+\remapXMLsingular [variance] [CPA] \MMLcVARIANCE
+\remapXMLsingular [median]   [CPA] \MMLcMEDIAN
+\remapXMLsingular [mode]     [CPA] \MMLcMODE
+
+\def\MMLcMEAN    #1#2{\withnextXMLRelement{\overline{\nextXMLRelement}}}
+\def\MMLcSDEV    #1#2{\withnextXMLRelement{\sigma(\MMLcreset\nextXMLRelement)}}
+\def\MMLcVARIANCE#1#2{\withnextXMLRelement{\sigma(\MMLcreset\nextXMLRelement)^2}}
+\def\MMLcMEDIAN  #1#2{\withnextXMLRelement{\getXMLentity{median}(\MMLcreset\nextXMLRelement)}}
+\def\MMLcMODE    #1#2{\withnextXMLRelement{\getXMLentity{mode}(\MMLcreset\nextXMLRelement)}}
+
+\remapXMLsingular [moment]      [CPA] \MMLcMOMENT
+\remapXMLsequence [momentabout] [CPA] \MMLcMOMENTABOUT
+
+\def\MMLcMOMENT#1#2#3\empty
+ {\left\langle\processXMLRchild{apply,reln,ci,cn}{#3}%
+  ^{\processXMLRchild{degree}{#3}}\right\rangle}
+
+\def\MMLcMOMENTABOUT#1#2{}
+
+%%% linear algebra
+
+\remapXMLsequence [vector] [CPA] \MMLcVECTOR
+
+\setupMMLappearance[vector][\c!richting=\v!horizontaal] % \v!vertikaal
+
+\def\MMLcVECTOR#1#2%
+   {\countXMLRchildren{#2}% 
+    \ifnum\nofXMLRchildren>1
+      \doifelse{\@@MMLvectorrichting}{\v!horizontaal}
+        {\encapsulateXMLR{\left(}{,}{\right)}{#2}}
+        {\collectbetweenXMLR{\crcr}{#2}%
+         \MMLcreset\left(\matrix{\the\XMLRtoks}\right)}%
+    \else
+      \overrightarrow{#2}%
+    \fi}
+
+\remapXMLsequence [matrix]    [CPA] \MMLcMATRIX
+\remapXMLsequence [matrixrow] [CPA] \MMLcMATRIXROW
+
+\unexpanded\def\@col@amp@{&}
+
+\def\doMMLcMATRIX#1#2#3%
+  {\pushmacro\MMLcMATRIXROW
+   \let\MMLcMATRIXROW\normalMMLcMATRIXROW
+   \MMLcreset
+   \ifcase#1\matrix{#3}\else\left(\matrix{#3}\right)\fi
+   \popmacro\MMLcMATRIXROW}
+
+\def\MMLcMATRIX#1#2%
+  {\doMMLcMATRIX1{#1}{#2}}
+
+\def\MMLcMATRIXROW#1#2%
+  {\collectbetweenXMLR{\@col@amp@}{#2}\the\XMLRtoks\crcr}
+
+\let\normalMMLcMATRIXROW\MMLcMATRIXROW
+
+\def\MMLcMATRIXROW#1#2%
+  {\collectbetweenXMLR{\@col@amp@}{#2}%
+   \left(\matrix{\the\XMLRtoks\crcr}\right)}
+
+\remapXMLsingular [determinant] [CPA] \MMLcDETERMINANT
+
+% \def\MMLcDETERMINANT#1#2{\getXMLentity{determinant}} % optie
+
+\def\MMLcDETERMINANT#1#2\empty
+  {\pushmacro\MMLcMATRIX
+   \def\MMLcMATRIX##1##2{\doMMLcMATRIX0{##1}{##2}}%
+   \left|#2\empty\right|%
+   \popmacro\MMLcMATRIX}
+
+\remapXMLsingular [transpose] [CPA] \MMLcTRANSPOSE
+
+\def\MMLcTRANSPOSE#1#2{\withnextXMLRelement{\nextXMLRelement^{\rm T}}}
+
+\remapXMLsingular [selector] [CPA] \MMLcSELECTOR
+
+\def\MMLcSELECTOR#1#2#3\empty
+  {\pushmacro\xmlr
+   \withnextXMLRelement
+     {\mathinner{\nextXMLRelement}% hm, assumes a matrix or so 
+      \doMMLcSELECTOR}%
+   #3\empty
+   \popmacro\xmlr}
+
+\def\doMMLcSELECTOR#1\empty
+  {_{\encapsulateXMLR{}{,}{}{#1\empty}}}
+
+\remapXMLsingular [vectorproduct] [CPA] \MMLcVECTORPRODUCT
+\remapXMLsingular [scalarproduct] [CPA] \MMLcSCALARPRODUCT
+\remapXMLsingular [outerproduct]  [CPA] \MMLcOUTERPRODUCT
+
+\def\MMLcvector#1%
+  {\withnexttwoXMLRelements{\firstXMLRelement#1\secondXMLRelement}}
+
+\def\MMLcVECTORPRODUCT#1#2{\MMLcvector{\getXMLentity{vectorproduct}}#2}% #2?%
+\def\MMLcSCALARPRODUCT#1#2{\MMLcvector{\getXMLentity{scalarproduct}}#2}
+\def\MMLcOUTERPRODUCT #1#2{\MMLcvector{\getXMLentity{outerproduct}}#2}
+
+%%% semantic mapping elements
+
+\remapXMLsequence [semantics] [CPA] \MMLcSEMANTICS
+
+\def\MMLcSEMANTICS#1#2%
+  {\doifXMLRchildelse{annotation}{#2}
+     {\processXMLRchild{annotation}{#2}}
+     {#2}}
+
+\remapXMLsequence [annotation] [CPA] \MMLcANNOTATION
+
+\def\MMLcANNOTATION#1#2%
+  {\getXMLarguments{annotation}{encoding="" #1}%
+   \doif{\XMLpar{annotation}{encoding}{}}{TeX}%
+     {\begingroup
+      \setnormalXMLentities
+      \let\xmlrent\expandedXMLentity 
+      \edef\mmlascii{#2}%           
+      \setnormalcatcodes
+      \ifx\mmlascii\empty
+        \donefalse
+      \else
+        \def\do##1##2\end            % hack
+          {\edef\!!stringa{\string##1}%
+           \edef\!!stringb{\letterdollar}%
+           \ifx\!!stringa\!!stringb
+             \donetrue
+           \else
+             \donefalse
+           \fi}%
+        \expandafter\do\mmlascii\end
+      \fi
+      \ifdone
+        \hbox{\scantokens\@EA{\mmlascii}}%
+      \else
+        \scantokens\@EA{\mmlascii}%
+      \fi
+      \endgroup}}
+
+\remapXMLsequence [annotation-xml] [CPA] \MMLcANNOTATIONXML
+
+\def\MMLcANNOTATIONXML#1#2{}
+
+%%% constant and symbol elements
+
+\remapXMLsingular [integers]       [CPA] \MMLcINTEGERS
+\remapXMLsingular [reals]          [CPA] \MMLcREALS
+\remapXMLsingular [rationals]      [CPA] \MMLcRATIONALS
+\remapXMLsingular [naturalnumbers] [CPA] \MMLcNATURALNUMBERS
+\remapXMLsingular [complexes]      [CPA] \MMLcCOMPLEXES
+\remapXMLsingular [primes]         [CPA] \MMLcPRIMES
+\remapXMLsingular [exponentiale]   [CPA] \MMLcEXPONENTIALE
+\remapXMLsingular [imaginaryi]     [CPA] \MMLcIMAGINARYI
+\remapXMLsingular [notanumber]     [CPA] \MMLcNOTANUMBER
+\remapXMLsingular [true]           [CPA] \MMLcTRUE
+\remapXMLsingular [false]          [CPA] \MMLcFALSE
+\remapXMLsingular [emptyset]       [CPA] \MMLcEMPTYSET
+\remapXMLsingular [pi]             [CPA] \MMLcPI
+\remapXMLsingular [eulergamma]     [CPA] \MMLcEULERGAMMA
+\remapXMLsingular [infinity]       [CPA] \MMLcINFINITY
+
+\ifx\blackboard\undefined \let\blackboard\empty \fi
+
+\def\MMLcINTEGERS      #1#2{{\blackboard Z}}
+\def\MMLcREALS         #1#2{{\blackboard R}}
+\def\MMLcRATIONALS     #1#2{{\blackboard Q}}
+\def\MMLcNATURALNUMBERS#1#2{{\blackboard N}}
+\def\MMLcCOMPLEXES     #1#2{{\blackboard C}}
+\def\MMLcPRIMES        #1#2{{\blackboard P}}
+\def\MMLcEXPONENTIALE  #1#2{\getXMLentity{ExponentialE}}
+\def\MMLcIMAGINARYI    #1#2{\getXMLentity{ImaginaryI}}
+\def\MMLcNOTANUMBER    #1#2{\mathop{\rm NaN}}
+\def\MMLcTRUE          #1#2{\mathop{\rm true}}
+\def\MMLcFALSE         #1#2{\mathop{\rm false}}
+\def\MMLcEMPTYSET      #1#2{\mathop{\hbox{\O}}}
+\def\MMLcPI            #1#2{\pi}
+\def\MMLcEULERGAMMA    #1#2{\gamma}
+\def\MMLcINFINITY      #1#2{\infty}
+
+\protect \endinput

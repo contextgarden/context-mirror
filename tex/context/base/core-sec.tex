@@ -304,6 +304,8 @@
 % Omdat een markering kan worden herdefinieerd moeten we
 % eerst testen of er wel een keten||afhankelijkheid is.
 
+% we het huidge (eigen) nummer kunnen ophalen
+
 \def\resetsectionmarks[#1]%
   {\doifdefinedelse{\??se#1}
      {\def\donexttrackcommando##1%
@@ -340,8 +342,53 @@
 
 \newif\ifalllevels
 
+% \def\dosetlevel#1% opvoeren met \ifcsname
+%   {\bgroup
+%    \doifelse{#1}{\v!vorige}
+%      {\global\alllevelstrue
+%       \global\let\currentlevel\empty
+%       \def\dobacktrackcommando##1%
+%         {\ifnum\countervalue{\??se##1}>0
+%            \global\alllevelsfalse
+%            \xdef\currentlevel{\getvalue{\previoussection{##1}\s!format}}%
+%          \else
+%            \dobacktracklevel{##1}%
+%          \fi}%
+%       \dobacktrackcommando\lastsection}
+%      {\doifelse{\getvalue{\??by#1}}{\v!tekst}
+%         {\global\alllevelstrue
+%          \global\let\currentlevel\empty}
+%         {\doifdefinedelse{\??ko#1\c!sectie}            % beter alteratief: ook
+%            {\edef\@@sectie{\getvalue{\??ko#1\c!sectie}}} % hoofdstuk\c!format
+%            {\edef\@@sectie{#1}}%
+%          \doifdefinedelse{\??se\@@sectie}
+%            {\global\alllevelsfalse
+%             \xdef\currentlevel{\getvalue{\@@sectie\s!format}}}
+%            {\global\alllevelstrue
+%             \global\let\currentlevel\empty
+%             \def\dobacktrackcommando##1%
+%               {\@EA\ifx\csname\??se##1\c!start\endcsname\relax
+%                  \dobacktracklevel{##1}%
+%                \else
+%                  \ifnum\countervalue{\??se##1}>0
+%                    \global\alllevelsfalse
+%                    \xdef\currentlevel{\getvalue{##1\s!format}}%
+%                  \else
+%                    \dobacktracklevel{##1}%
+%                  \fi
+%                \fi}%
+%             \dobacktrackcommando\lastsection}}}%
+%    \egroup}
+
+\let\currentlevel\empty
+
+\def\dontsetlevel#1%
+  {\let\currentlevel\somesavedlevel
+   \alllevelsfalse}
+  
 \def\dosetlevel#1% opvoeren met \ifcsname
-  {\bgroup
+  {\let\dosetlevel\dontsetlevel % local lists will be real local 
+   \bgroup
    \doifelse{#1}{\v!vorige}
      {\global\alllevelstrue
       \global\let\currentlevel\empty
@@ -356,7 +403,7 @@
      {\doifelse{\getvalue{\??by#1}}{\v!tekst}
         {\global\alllevelstrue
          \global\let\currentlevel\empty}
-        {\doifdefinedelse{\??ko#1\c!sectie}            % beter alteratief: ook
+        {\doifdefinedelse{\??ko#1\c!sectie}              % beter alteratief: ook
            {\edef\@@sectie{\getvalue{\??ko#1\c!sectie}}} % hoofdstuk\c!format
            {\edef\@@sectie{#1}}%
          \doifdefinedelse{\??se\@@sectie}
@@ -378,33 +425,106 @@
             \dobacktrackcommando\lastsection}}}%
    \egroup}
 
-\let\currentlevel\empty
-
-\def\doifnextlevelelse[#1::#2]#3#4%
-  {\ifalllevels
-     #3%
-   \else
-     \doifelse{\@@sectiontype}{#1} % \@EA kunnen denk ik weg
-       {\@EA\doifinstringelse\@EA{\@EA=\currentlevel:}{=:#2:}
-          {\@EA\doifinstringelse\@EA{\@EA=\currentlevel:0}{=:#2:}{#4}{#3}}
-          {#4}}
-       {#4}%
-   \fi}
-
-\def\doifprevlevelelse[#1::#2]#3#4%
-  {\ifalllevels
-     #3%
-   \else
-     \doifelse{\@@sectiontype}{#1}
-      {\@EA\doifinstringelse\@EA{\@EA=\currentlevel:}{=:#2:}
-         {#3}
-         {#4}}
-       {#4}%
-   \fi}
-
 \def\dosettoclevel{\dosetlevel}
 \def\dosetreglevel{\dosetlevel}
 \def\dosetblklevel{\dosetlevel}
+
+% cleaner 
+%
+% \def\doifnextlevelelse[#1::#2]#3#4%
+%   {\ifalllevels
+%      #3%
+%    \else
+%      \doifelse{\@@sectiontype}{#1} 
+%        {\doifinstringelse{=\currentlevel:}{=:#2:}
+%           {\doifinstringelse{=\currentlevel:0}{=:#2:}{#4}{#3}}
+%           {#4}}
+%        {#4}%
+%    \fi}
+% 
+% \def\doifprevlevelelse[#1::#2]#3#4%
+%   {\ifalllevels
+%      #3%
+%    \else
+%      \doifelse{\@@sectiontype}{#1}
+%        {\doifinstringelse{=\currentlevel:}{=:#2:}{#3}{#4}}
+%        {#4}%
+%    \fi}
+%
+% faster 
+% 
+% \def\doifnextlevelelse[#1::#2]%
+%   {\ifalllevels 
+%      \donetrue 
+%    \else
+%      \doifelse{\@@sectiontype}{#1} 
+%        {\doifinstringelse{=\currentlevel:}{=:#2:}
+%           {\doifinstringelse{=\currentlevel:0}{=:#2:}\donefalse\donetrue}
+%           \donefalse}
+%        \donefalse
+%    \fi
+%    \ifdone
+%      \expandafter\firstoftwoarguments
+%    \else
+%      \expandafter\secondoftwoarguments
+%    \fi}
+% 
+% \def\doifprevlevelelse[#1::#2]%
+%   {\ifalllevels
+%      \donetrue
+%    \else
+%      \doifelse{\@@sectiontype}{#1}
+%        {\doifinstringelse{=\currentlevel:}{=:#2:}\donetrue\donefalse}
+%        \donefalse
+%    \fi
+%    \ifdone
+%      \expandafter\firstoftwoarguments
+%    \else
+%      \expandafter\secondoftwoarguments
+%    \fi}
+% 
+% meaner
+%
+% \stellijstin
+%   [hoofdstuk]
+%   [na={\startkolommen\plaatslijst[paragraaf]\stopkolommen}]
+
+\def\somesavedlevel{0}
+
+\def\dosavesomelevel[#1:0:0:0:#2]%
+  {\def\somesavedlevel{:#1}}
+
+\def\doifnextlevelelse[#1::#2]%
+  {\dosavesomelevel[#2:0:0:0:0]%
+   \ifalllevels 
+     \donetrue 
+   \else
+     \doifelse{\@@sectiontype}{#1} 
+       {\doifinstringelse{=\currentlevel:}{=:#2:}
+          {\doifinstringelse{=\currentlevel:0}{=:#2:}\donefalse\donetrue}
+          \donefalse}
+       \donefalse
+   \fi
+   \ifdone
+     \expandafter\firstoftwoarguments
+   \else
+     \expandafter\secondoftwoarguments
+   \fi}
+
+\def\doifprevlevelelse[#1::#2]%
+  {\dosavesomelevel[#2:0:0:0:0]%
+   \ifalllevels
+     \donetrue
+   \else
+     \doifelse{\@@sectiontype}{#1}
+       {\doifinstringelse{=\currentlevel:}{=:#2:}\donetrue\donefalse}
+       \donefalse
+   \fi
+   \ifdone
+     \expandafter\firstoftwoarguments
+   \else
+     \expandafter\secondoftwoarguments
+   \fi}
 
 \def\doiftoclevelelse{\doifnextlevelelse}
 \def\doifreglevelelse{\doifprevlevelelse}
@@ -578,17 +698,19 @@
    \fi
    \xdef\@@koniveau{\getvalue{\??se\@@sectie\c!niveau}}}
 
+\def\dohandelpaginaafBB#1#2#3%
+  {\doifinset{\getvalue{\??tk#2\v!tekst\c!status}}{\v!normaal,\v!start}
+     {\doifvaluesomething{\??ko#1#3}
+        {\setuplayouttext[#2][\c!status=\getvalue{\??ko#1#3}]}}}
+
 \def\dohandelpaginaafB#1%
   {\doifinset{\getvalue{\??ko#1\c!pagina}}{\v!ja,\v!rechts,\v!links}
      {\def\resetcurrentsectionmarks% toegevoegd, zie \pagina
         {\resetsectionmarks[\previoussection{\@@sectie}]}%
       \pagina[\getvalue{\??ko#1\c!pagina}]%
-      \doifinset{\getvalue{\??tk\v!hoofd\v!tekst\c!status}}{\v!normaal,\v!start}
-        {\doifvaluesomething{\??ko#1\c!hoofd}
-           {\stelhoofdin[\c!status=\getvalue{\??ko#1\c!hoofd}]}}%
-      \doifinset{\getvalue{\??tk\v!voet\v!tekst\c!status}}{\v!normaal,\v!start}
-        {\doifvaluesomething{\??ko#1\c!voet} % new
-           {\stelvoetin[\c!status=\getvalue{\??ko#1\c!voet}]}}}}
+      \dohandelpaginaafBB{#1}\v!hoofd\c!hoofd
+      \dohandelpaginaafBB{#1}\v!tekst\c!tekst
+      \dohandelpaginaafBB{#1}\v!voet \c!voet}}
 
 \def\dohandelpaginaafX#1% zie doordefinieren / boven
   {\bgroup
@@ -661,7 +783,7 @@
 \def\dodosomekop#1[#2]#3%
   {\doifelsevalue{\??ko#1\c!eigennummer}{\v!ja}
      {\def\next{\doquadruplegroupempty\dododosomekop{#1}{#2}{#3}}}
-     {\def\next{\fourthargumentfalse\dododosomekop{#1}{#2}{#3}{}}}%
+     {\def\next{\fourthargumentfalse  \dododosomekop{#1}{#2}{#3}{}}}%
    \next}
 
 \def\finalsectionnumber%
@@ -923,6 +1045,57 @@
 %   \let\fullsectionnumber\naturalfullsectionnumber
 \let\fullsectionnumber\limitedfullsectionnumber
    \ifdisplaysectionhead\else\expandafter\GotoPar\fi}
+
+\def\previoussectionformat{}
+\def\currentsectionformat{}
+
+\let\updatelistreferences=\relax
+\def\updatedlistreferences{}
+
+\def\setsectionlistreference#1#2%
+  {\ifnum\countervalue{\??se\previoussection{#1}}>0\relax
+     \xdef\previoussectionformat{\@@longformatnumber{\previoussection{#1}}}%
+   \else
+     \xdef\previoussectionformat{}%
+   \fi
+   \xdef\currentsectionformat{\@@longformatnumber{#1}}}
+
+\def\startlistreferences#1%
+  {\thisissomeinternal{\s!lst}{#1\currentsectionformat}%
+   \setxvalue{\s!lst:#1}{\realfolio}% to be sure
+   \setxvalue{\s!lst:#1\currentsectionformat}{\realfolio}%
+   \setxvalue{\e!vorigelokale#1}{\s!lst:#1\previoussectionformat}%
+   \setxvalue{\e!huidigelokale#1}{\s!lst:#1\currentsectionformat}%
+   \doifelse{\currentsectionformat}{}
+     {\setglobalcrossreference
+        {\e!vorige#1}{}{\realfolio}{}}
+%
+     {\setglobalsystemreference\rt!list
+        {\e!vorige#1}{\getvalue{\e!vorigelokale#1}}}%
+%
+%         {\definereference[\e!vorige#1][\getvalue{\e!vorigelokale#1}]%
+%
+   \def\stoplistreferences{\dostoplistreferences}}
+
+\def\dostoplistreferences#1%
+  {\iflijstgeplaatst
+     \addtocommalist{#1}\updatedlistreferences                % nog global (\doglobal)
+     \global\let\updatedlistreferences=\updatedlistreferences % een noodverbandje
+     \gdef\updatelistreferences%
+       {\def\docommando####1%
+%
+          {\setglobalsystemreference\rt!list
+             {\e!vorige####1}{\getvalue{\e!huidigelokale####1}}}%
+%
+%         {\definereference[\e!vorige####1][\getvalue{\e!huidigelokale####1}]%
+%
+        \processcommacommand[\updatedlistreferences]\docommando
+        \global\let\updatelistreferences=\relax
+        \global\let\updatedlistreferences=\empty}%
+   \fi}
+
+\def\stoplistreferences%
+  {\gobbleoneargument}
 
 % \prevdepth\dp\strutbox is belangrijk, vergelijk naast elkaar:
 %
@@ -1230,6 +1403,7 @@
          \c!afstand=,
          \c!pagina=,
          \c!hoofd=,
+         \c!tekst=,
          \c!voet=,
          \c!letter=,
          \c!nummercommando=,
@@ -1252,7 +1426,8 @@
         {\doifsomething{\getvalue{\??ko#1\c!default}}
            {\copyparameters
               [\??ko#1][\??ko\getvalue{\??ko#1\c!default}]
-              [\c!voor,\c!na,\c!commando,\c!file,\c!pagina,\c!doorgaan,\c!hoofd,\c!voet,
+              [\c!voor,\c!na,\c!commando,\c!file,\c!pagina,\c!doorgaan,
+               \c!hoofd,\c!tekst,\c!voet,
                \c!nummer,\c!eigennummer,\c!plaatskop,\c!verhoognummer,
                \c!letter,\c!kleur,\c!afstand,\c!variant,\c!springvolgendein,
               %\c!nummerletter,\c!tekstletter,
@@ -1272,7 +1447,8 @@
         {\copyparameters
            [\??ko#1][\??ko#2]
            [\c!niveau,\c!sectie,\c!koppeling,\c!prefix,
-            \c!voor,\c!na,\c!commando,\c!file,\c!pagina,\c!doorgaan,\c!hoofd,\c!voet,
+            \c!voor,\c!na,\c!commando,\c!file,\c!pagina,\c!doorgaan,
+            \c!hoofd,\c!tekst,\c!voet,
             \c!nummer,\c!eigennummer,\c!plaatskop,\c!verhoognummer,
             \c!letter,\c!kleur,\c!afstand,\c!variant,\c!springvolgendein,
            %\c!nummerletter,\c!tekstletter,

@@ -99,7 +99,12 @@
    \fi
    {#1}{#2}{#3}}
 
-\let\objectoffset\!!zeropoint
+%D Somehow there is a rounding error problem in either \PDFTEX\
+%D or in viewers, or maybe it is conforming the specs. The next
+%D variable compensate for it by removing the rather tight
+%D clip. 
+
+\def\objectoffset{1cm}
 
 % \def\dodosetobject#1#2#3%   
 %  {\bgroup

@@ -126,7 +126,7 @@
 %D
 %D To simplify defining figure symbols, we offer:
 %D
-%D \showsetup{\y!definesymbol} 
+%D \showsetup{\y!definefiguresymbol} 
 %D
 %D By default, such symbols scale along the current bodyfont
 %D size.
@@ -378,6 +378,14 @@
 \def\gobackjumpcharacter%
   {\hbox{\gobackwardcharacter\kern-.5em\gobackwardcharacter}}
 
-\protect 
+% temporarily here
 
-\endinput
+% gejat van Knuth (zie \copyright, p356)
+
+\def\omcirkeld#1%
+  {{\ooalign{\hfil\raise0.07ex\hbox{{\tfx#1}}\hfil\crcr\mathhexbox20D}}}
+
+\def\copyright
+  {\omcirkeld{c}}
+
+\protect \endinput

@@ -49,7 +49,7 @@ set  TeXShell  to  tetex
 %
 % Here are some general defaults. They can be overruled later.  
 
-set  UsedInterfaces     to  en,nl,de,uk
+set  UsedInterfaces     to  en nl de uk
 set  UserInterface      to  en
 
 set  TeXExecutable      to  tex 
@@ -68,8 +68,6 @@ set  TeXFontsPath       to  l:/tex/texmf;l:/tex/texmf-local;
 
 % For teTeX the next settings will do.
 
-for  tetex  set  UsedInterfaces    to  en,nl,de,uk 
-for  tetex  set  UserInterface     to  en 
 for  tetex  set  TeXExecutable     to  pdfetex
 for  tetex  set  TeXVirginFlag     to  -ini
 for  tetex  set  TeXPassString     to  -progname=context 
@@ -81,8 +79,6 @@ for  tetex  set  MpBatchFlag       to  -int=batchmode
 
 % These also apply to fpTeX. 
 
-for  fptex  set  UsedInterfaces    to  en,nl,de,uk 
-for  fptex  set  UserInterface     to  en 
 for  fptex  set  TeXExecutable     to  pdfetex
 for  fptex  set  TeXVirginFlag     to  -ini
 for  fptex  set  TeXPassString     to  -progname=context 
@@ -94,9 +90,7 @@ for  fptex  set  MpBatchFlag       to  -int=batchmode
 
 % MikTeX users probably have to set up some paths too.
 
-for  miktex  set  UsedInterfaces    to  en,nl,de,uk
-for  miktex  set  UserInterface     to  en
-for  miktex  set  TeXExecutable     to  pdftex
+for  miktex  set  TeXExecutable     to  pdfetex
 for  miktex  set  TeXVirginFlag     to  --initialize
 for  miktex  set  TeXBatchFlag      to  --interaction=batchmode 
 for  miktex  set  MpToTeXExecutable to  mptotex
@@ -113,7 +107,7 @@ for  miktex  set  MpFormatFlag      to  --undump=
 % one, or go without the 'for' directives. Consider these 
 % settings as an example. 
 
-for  private  set  UsedInterfaces  to  en,nl
+for  private  set  UsedInterfaces  to  en nl
 for  private  set  UserInterface   to  nl
 for  private  set  ConTeXtPath     to  t:/sources/
 for  private  set  SetupPath       to  t:/perl/ 

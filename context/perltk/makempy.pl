@@ -71,7 +71,7 @@ my $pstoedit     = "" ;
 my $pdftops      = "" ; 
 my $acroread     = "" ; 
 
-my $wereondos    = ($Config{'osname'} =~ /dos|win/io) ;
+my $wereondos    = ($Config{'osname'} =~ /dos|mswin/io) ;
 
 # Unix only: assume that "gs" in the path. We could also
 # use $ghostscipt = system "which gs" but this would require 

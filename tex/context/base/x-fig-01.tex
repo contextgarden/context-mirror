@@ -1,5 +1,5 @@
 %D \module
-%D   [      file=x-fig-00,
+%D   [      file=x-fig-01,
 %D        version=2001.03.21,
 %D          title=\CONTEXT\ Style File,
 %D       subtitle=Figure Base Generation,
@@ -11,8 +11,8 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
 %C details. 
 
-%D See \type {x-fig-01.tex} for more information on how to use 
-%D and generate figure databses. This file loads the file 
+%D See \type {x-fig-00.tex} for more information on how to use 
+%D and generate figure databases. This file loads the file 
 %D named \type {\inputfilename} (\TEXEXEC\ will set this 
 %D variable). You can apply this style to a database by 
 %D saying:
@@ -34,7 +34,7 @@
 %D \som  the document is split into three sections: first each
 %D       figure is shown at its own page, then an overview of 
 %D       figures is shown with some data alongside, and 
-%D       finaly an index and table of contents shows up 
+%D       finally an index and table of contents shows up 
 %D \som  there is no title page, which means that one can 
 %D       access a figure by page number without offset
 %D \som  the document is opened at the first overview page, 
@@ -75,14 +75,26 @@
 
 \def\StartFigureA%
   {\bgroup
-   \XMLassign{file}{unknown}
+   \XMLassign{file}{buffer}
    \defineXMLpush[file]
+   \defineXMLpush[dummy]
    \defineXMLpush[label]
    \defineXMLpush[copyright]
    \defineXMLpush[comment]
    \defineXMLpush[status]}
 
 \defineoverlay[page][\overlaybutton{to:\CurrentPage}]
+
+\startbuffer
+  \framed
+    [width=\XMLpar{dummy}{width}{12cm},
+     height=\XMLpar{dummy}{height}{8cm},
+     background=color,
+     backgroundcolor=gray,
+     foregroundcolor=darkred,
+     frame=off]
+    {\bf \XMLpop{dummy}}    
+\stopbuffer
 
 \def\StopFigureA%
   {\doglobal\increment\CurrentPage

@@ -14,6 +14,9 @@
 %D Remark: due to the lack of \type {\clearmark}, the \ETEX\ 
 %D dedicated mechanism is not yet operational. 
 
+%D This module has deverted so much from the original that i
+%D can probably rewrite it to a more efficient one now. 
+
 % for testing etex, can be much faster than normal  
 %
 % \unprotect 
@@ -45,7 +48,7 @@
 % \def\getbotmark        {\getmark\botmarks}
 % \def\getsplitbotmark   {\getmark\splitbotmarks}
 % \def\getsplittopmark   {\getmark\splitfirstmarks}
-% 
+%
 % \def\getmark#1#2%
 %   {\ifcase\csname mrk\strippedcsname#2\endcsname\else
 %      \expandafter#1\expandafter#2%
@@ -183,10 +186,11 @@
 %D We've also introduced some constants, one for the lists and
 %D three for composing the mark commands.
 
-\def\@@marklist@@  {marklist}
-\def\@@marktop@@   {top}
-\def\@@markbot@@   {bot}
-\def\@@markfirst@@ {first}
+\def\@@marklist@@    {marklist}
+\def\@@marktop@@     {top}
+\def\@@markbot@@     {bot}
+\def\@@markfirst@@   {first}
+\def\@@markcurrent@@ {current}
 
 %D The next one is new too. All defined marks are packed in a
 %D comma seperated list. This could of course have been a token
@@ -217,11 +221,11 @@
 %D command name constructors of Jim. This alternative leads to
 %D a more readable source (we hope).
 
-\def\makemarknames#1%
+\def\makemarknames#1% kan genest werken 
   {\bgroup
    \escapechar=-1
    \xdef\markname{\string#1}%
-   \xdef\marklist{\@@marklist@@\string#1}%
+   \xdef\marklist{\@@marklist@@\markname}%
    \egroup}
 
 %D \macros
@@ -239,9 +243,10 @@
   {\bgroup
    \makemarknames{#1}%
    #2%
-   \global\letvalue{\@@marktop@@  \markname}\empty
-   \global\letvalue{\@@markfirst@@\markname}\empty
-   \global\letvalue{\@@markbot@@  \markname}\empty
+   \global\letvalue{\@@markcurrent@@\markname}\empty
+   \global\letvalue{\@@marktop@@    \markname}\empty
+   \global\letvalue{\@@markfirst@@  \markname}\empty
+   \global\letvalue{\@@markbot@@    \markname}\empty
    \setgvalue{\marklist}{\domark0{}}% beware of halfway definitions
    \long\gdef#1{\addmarker#1}%
    \egroup}
@@ -254,11 +259,12 @@
 
 %D Some more natural interfacing macros:
 
-\def\gettopmark        #1{\getvalue{\@@marktop@@  \strippedcsname#1}}
-\def\getbottommark     #1{\getvalue{\@@markbot@@  \strippedcsname#1}}
-\def\getfirstmark      #1{\getvalue{\@@markfirst@@\strippedcsname#1}}
-\def\getsplitbottommark#1{\getvalue{\@@markbot@@  \strippedcsname#1}}
-\def\getsplitfirstmark #1{\getvalue{\@@markfirst@@\strippedcsname#1}}
+\def\getcurrentmark    #1{\getvalue{\@@markcurrent@@\strippedcsname#1}}
+\def\gettopmark        #1{\getvalue{\@@marktop@@    \strippedcsname#1}}
+\def\getbottommark     #1{\getvalue{\@@markbot@@    \strippedcsname#1}}
+\def\getfirstmark      #1{\getvalue{\@@markfirst@@  \strippedcsname#1}}
+\def\getsplitbottommark#1{\getvalue{\@@markbot@@    \strippedcsname#1}}
+\def\getsplitfirstmark #1{\getvalue{\@@markfirst@@  \strippedcsname#1}}
 
 \let\getbotmark     \getbottommark
 \let\getsplitbotmark\getsplitbottommark
@@ -287,6 +293,7 @@
 \long\def\addmarker#1#2%
   {\bgroup
    \makemarknames{#1}%
+   \setgvalue{\@@markcurrent@@\markname}{#2}%
    \global\advance\currentmarker by 1
    \normalmark{\the\currentmarker}%
    \@EA\!!toksa\@EA=\@EA\@EA\@EA{\csname\marklist\endcsname}%
@@ -296,7 +303,7 @@
         \noexpand\domark
         \the\currentmarker{#2}}%
    \else
-     \!!toksb=\@EA{#2}% one level
+     \!!toksb=\@EA{#2}% one level, why ? handy for cs 
      \setxvalue{\marklist}%
        {\the\!!toksa
         \noexpand\domark
@@ -334,9 +341,11 @@
    \edef\botmarker{0\normalbotmark}%
    \!!toksb={}%
    \nofirstmarkertrue
+% does more worse than good 
    \let\fi=\relax
    \let\or=\relax
    \let\else=\relax
+%
    \let\domark=\doscanmarks
    \getvalue{\marklist}\lastmark
    %\message{markstatus : [\the\!!toksa\the\!!toksb\the\!!toksc]}%
@@ -354,9 +363,11 @@
    \edef\botmarker{0\normalsplitbotmark}%
    \!!toksb={}%
    \nofirstmarkertrue
+% does more worse than good 
    \let\fi=\relax
    \let\or=\relax
    \let\else=\relax
+%
    \let\domark=\doscanmarks
    \getvalue{\marklist}\lastmark
 %   \@EA\global\@EA\let\csname\marklist\endcsname=\savedmarklist
@@ -529,15 +540,19 @@
 
 \def\newmark#1%
   {\newmarks#1%
+   \global\letvalue{\@@markcurrent@@\string#1}\empty
    \expandafter\gdef\csname\@m@\number#1\endcsname{0}}
 
 \long\def\setmark#1#2%
-  {\expandafter\gdef\csname\@m@\number#1\endcsname{1}%
+  {\setgvalue{\@m@\number#1}{1}%
+   \setgvalue{\@@markcurrent@@\string#1}{#2}%
    \ifexpandmarks
      \expanded{\normalmarks#1{#2}}%
    \else
      \normalmarks#1{#2}%
    \fi}
+
+\def\getcurrentmark  #1{\getvalue{\@@markcurrent@@\strippedcsname#1}}
 
 \def\gettopmark        {\getsomemark\topmarks}
 \def\getbottommark     {\getsomemark\botmarks}

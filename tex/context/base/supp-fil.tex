@@ -247,17 +247,16 @@
    \immediate\openin\scratchread=\readfilename\relax
    \ifeof\scratchread
      \immediate\closein\scratchread
-     \decrement\readlevel
-     \ifnum\readlevel>0\relax
-       \doreadfile{\pathplusfile{\f!parentpath}{#1}}{#2}{#3}%
+     \decrement\readlevel\relax
+     \ifnum\readlevel>0
+       \def\next{\doreadfile{\pathplusfile{\f!parentpath}{#1}}{#2}{#3}}%
      \else
-       #3%
+       \def\next{#3}%
      \fi
    \else
-     \immediate\closein\scratchread
-     #2%               % we skip over the \fi 
-     \@EA\dodoreadfile % so that we can end a  
-   \fi}                % document here too
+     \def\next{\immediate\closein\scratchread#2\dodoreadfile}%
+   \fi
+   \next}               
 
 \def\dodoreadfile%
   {\the\everyreadfile % hook, for instance for \enableXML 

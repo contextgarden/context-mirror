@@ -174,22 +174,40 @@
 %D For Willy's nested commented buffers, we need the \type 
 %D {\delcharacter} trick. 
 
-\def\processnextbufferline#1#2#3%
+% \def\processnextbufferline#1#2#3%
+%   {\relax % checken waarom eerdere macro dit nodig heeft / supp-mps run
+%    \convertargument#1 \to\next
+%    \doifinstringelse{\delcharacter\texcommentsymbol}{\delcharacter\next}
+%      {\def\next{#3}}
+%      {\doifinstringelse{\endofblock}{\next}
+%         {\ifnum\nestedbufferlevel=0\relax % \relax ?
+%            \def\next{#2}%
+%          \else
+%            \decrement\nestedbufferlevel\relax
+%            \def\next{#3}%
+%          \fi}
+%         {\doifinstringelse{\beginofblock}{\next}
+%            {\increment\nestedbufferlevel\relax
+%             \def\next{#3}}
+%            {\def\next{#3}}}}%
+%    \next}
+
+\def\processnextbufferline#1% needs testing ! ! ! !
   {\relax % checken waarom eerdere macro dit nodig heeft / supp-mps run
    \convertargument#1 \to\next
    \doifinstringelse{\delcharacter\texcommentsymbol}{\delcharacter\next}
-     {\def\next{#3}}
-     {\doifinstringelse{\endofblock}{\next}
-        {\ifnum\nestedbufferlevel=0\relax % \relax ?
-           \def\next{#2}%
+     {\let\next\secondoftwoarguments}
+     {\doifincsnameelse{\endofblock}{\next}
+        {\ifnum\nestedbufferlevel=0 
+           \let\next\firstoftwoarguments
          \else
            \decrement\nestedbufferlevel\relax
-           \def\next{#3}%
+           \let\next\secondoftwoarguments
          \fi}
-        {\doifinstringelse{\beginofblock}{\next}
+        {\doifincsnameelse{\beginofblock}{\next}
            {\increment\nestedbufferlevel\relax
-            \def\next{#3}}
-           {\def\next{#3}}}}%
+            \let\next\secondoftwoarguments}
+           {\let\next\secondoftwoarguments}}}%
    \next}
 
 \def\dostartbuffer%

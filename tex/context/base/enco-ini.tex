@@ -701,11 +701,12 @@
 \def\stoppatternaccents%
   {\let\char\savedpatternchar}
 
-%\def\presetcharacter#1%
-%  {\setvalue{#1}{\dohandlecharacter{#1}}}
+% \def\presetcharacter#1%
+%   {\setvalue{#1}{\dohandlecharacter{#1}}}
 
 \def\definecharacter#1 #2 %
-  {\setvalue{#1}{\dohandlecharacter{#1}}%
+  {\ifundefined{#1}\setvalue{#1}{\dohandlecharacter{#1}}\fi
+%  {\setvalue{#1}{\dohandlecharacter{#1}}%
 %  {\@EA\presetcharacter\@EA{\@EA\strippedcsname\csname#1\endcsname}%
    \doifnumberelse{\string#2}
      {\setvalue{\characterencoding\string#1}{\char#2 }% watch the space
@@ -1032,6 +1033,17 @@
    \@EA\appendtoks\csname#1\endcsname\to\everyULmap
    \@EA\appendtoks\csname#2\endcsname\to\everyULmap}
 
+% slightly faster with \kap's but far more hash and stringspace
+%
+% \newif\ifuppercase \appendtoks\uppercasetrue\to\everyuppercase
+% \newif\iflowercase \appendtoks\lowercasetrue\to\everylowercase
+% 
+% \def\defineULcharacter #1 #2 %
+%   {\def\!!stringa{@#1}\@EA\letvalue\@EA\!!stringa\csname#1\endcsname
+%    \def\!!stringa{@#2}\@EA\letvalue\@EA\!!stringa\csname#2\endcsname
+%    \setvalue{#1}{\getvalue{@\ifuppercase#2\else#1\fi}}%
+%    \setvalue{#2}{\getvalue{@\iflowercase#1\else#2\fi}}}
+
 %D \macros
 %D   {everysanitize, EverySanitize}
 %D
@@ -1049,18 +1061,18 @@
 %D this can be found in \type{spec-mis}.
 
 \def\obeylccodes%
-  {\scratchcounter=32
+  {\scratchcounter32
    \loop
      \ifnum\scratchcounter<127
-       \lccode\scratchcounter=\scratchcounter
-       \advance\scratchcounter by 1
+       \lccode\scratchcounter\scratchcounter
+       \advance\scratchcounter 1
    \repeat
    \ifeightbitcharacters
-     \scratchcounter=128
+     \scratchcounter128
      \loop
        \ifnum\scratchcounter<255
-         \lccode\scratchcounter=`.
-         \advance\scratchcounter by 1
+         \lccode\scratchcounter`.
+         \advance\scratchcounter 1
      \repeat
    \fi}
 

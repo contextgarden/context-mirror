@@ -11,7 +11,7 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-% to do: \localpushmacro/\localpopmacro (dosetflowchart etc) 
+% to do: \localpushmacro/\localpopmacro (dohandleflowchart etc) 
 
 %D This is an experimental module. Pieces of code will be moved
 %D to other modules. More features are possible but will be
@@ -190,12 +190,22 @@
    \dodoubleempty\dostartFLOWchart}
 
 \def\dostartFLOWchart[#1][#2]%
+  {\preparenextFLOWchart{#1}{#2}%
+   \dostartbuffer[\FLOWbufferprefix\nofFLOWcharts][startFLOWchart][stopFLOWchart]}
+
+\def\defineFLOWchart%
+  {\dodoubleempty\dodefineFLOWchart}
+
+\long\def\dodefineFLOWchart[#1][#2]#3%
+  {\preparenextFLOWchart{#1}{#2}%
+   \setbuffer[\FLOWbufferprefix\nofFLOWcharts]#3\endbuffer}
+
+\def\preparenextFLOWchart#1#2%
   {\doglobal\increment\nofFLOWcharts
    \flowchart{#1}%
    \setxvalue{\@FLOW@-#1}%
-     {\noexpand\dosetFLOWchart[\nofFLOWcharts][#2]}%
-   \dostartbuffer[\FLOWbufferprefix\nofFLOWcharts][startFLOWchart][stopFLOWchart]}
-
+     {\noexpand\dohandleflowchart[\nofFLOWcharts][#2]}}
+  
 \def\setupFLOWcharts{\dodoubleargument\getparameters[\@@FLOW]}
 \def\setupFLOWlines {\dodoubleargument\getparameters[\@@FLOL]}
 \def\setupFLOWshapes{\dodoubleargument\getparameters[\@@FLOS]}
@@ -270,20 +280,42 @@
    \increment(\includeFLOWy,0\FLOWiy)\decrement\includeFLOWy
    \def\dodoincludeFLOWchart##1%
      {\doifdefined{\@FLOW@-##1}
-        {\pushmacro\dosetFLOWchart
-         \gdef\dosetFLOWchart[####1][####2]%
-           {\popmacro\dosetFLOWchart
+        {\pushmacro\dohandleflowchart
+         \gdef\dohandleflowchart[####1][####2]%
+           {\popmacro\dohandleflowchart
+            \resetFLOWlocation
             \haalbuffer[\FLOWbufferprefix####1]}%
          \getvalue{\@FLOW@-##1}}}%
    \processcommalist[#1]\dodoincludeFLOWchart
    \popmacro\includeFLOWx
    \popmacro\includeFLOWy}
 
-\def\setFLOWlocation#1,#2\end%
- {\scratchcounter=0#1\advance\scratchcounter\includeFLOWx
-  \xdef\FLOWlocation{\the\scratchcounter}%
-  \scratchcounter=0#2\advance\scratchcounter\includeFLOWy
-  \xdef\FLOWlocation{\FLOWlocation,\the\scratchcounter}}
+%\def\setFLOWlocation#1,#2\end%
+% {\scratchcounter=0#1\advance\scratchcounter\includeFLOWx
+%  \xdef\FLOWlocation{\the\scratchcounter}%
+%  \scratchcounter=0#2\advance\scratchcounter\includeFLOWy
+%  \xdef\FLOWlocation{\FLOWlocation,\the\scratchcounter}}
+
+\def\resetFLOWlocation%
+  {\gdef\lastFLOWx{0}%
+   \gdef\lastFLOWy{0}}
+
+\def\dosetFLOWlocation[#1#2]#3#4%
+  {\processaction
+     [#1#2]
+     [         +=>\scratchcounter=#4\advance\scratchcounter+1,
+               -=>\scratchcounter=#4\advance\scratchcounter-1,
+             +#2=>\scratchcounter=#4\advance\scratchcounter+#2,
+             -#2=>\scratchcounter=#4\advance\scratchcounter-#2,
+      \s!default=>\scratchcounter=#4,
+      \s!unknown=>\scratchcounter=0#1#2]%
+   \advance\scratchcounter#3%
+   \xdef#4{\the\scratchcounter}}
+
+\def\setFLOWlocation#1,#2\end
+  {\dosetFLOWlocation[#1\empty]\includeFLOWx\lastFLOWx
+   \dosetFLOWlocation[#2\empty]\includeFLOWy\lastFLOWy
+   \xdef\FLOWlocation{\lastFLOWx,\lastFLOWy}}
 
 \def\FLOWshapes%
   {node, action, procedure, product, decision, archive,
@@ -339,10 +371,11 @@
 
 \def\dodogetFLOWchart[#1][#2]% to be split a bit more
   {\vbox\bgroup
+   \insidefloattrue
    \forgetall
    \dontcomplain
    \offinterlineskip
-   \def\dosetFLOWchart[##1][##2]%
+   \def\dohandleflowchart[##1][##2]%
      {\def\currentFLOWnumber{##1}%
       \getparameters[\@@FLOW][##2]}%
    \getvalue{\@FLOW@-#1}%
@@ -353,6 +386,7 @@
    \let\FLOWwidth \@@FLOWnx
    \let\FLOWheight\@@FLOWny
    \let\startFLOWcell\startFLOWcellA
+   \resetFLOWlocation 
    \haalbuffer[\FLOWbufferprefix\currentFLOWnumber]%
    \ifcase\@@FLOWnx\relax \let\@@FLOWnx\FLOWwidth  \fi
    \ifcase\@@FLOWny\relax \let\@@FLOWny\FLOWheight \fi
@@ -458,6 +492,7 @@
 %     \expandafter\getFLOWlocationX\FLOWlocation\end
 %     \ignorespaces}%
 %  \let\startFLOWcell\startFLOWcellX
+%  \resetFLOWlocation 
 %  \haalbuffer[\FLOWbufferprefix\currentFLOWnumber]%
 %  \ifnum\@@FLOWnx\@@FLOWny=11 % listig
 %    \let\@@FLOWnx\FLOWwidth
@@ -492,8 +527,10 @@
                     show_\@@FLOWpunt_points := true ;
                   \stopMPdrawing]%
    \let\startFLOWcell\startFLOWcellB
+   \resetFLOWlocation 
    \haalbuffer[\FLOWbufferprefix\currentFLOWnumber]%
    \let\startFLOWcell\startFLOWcellC
+   \resetFLOWlocation 
    \haalbuffer[\FLOWbufferprefix\currentFLOWnumber]%
    \startMPdrawing
      clip_chart(\@@FLOWx,\@@FLOWy,\@@FLOWnx,\@@FLOWny) ;
@@ -515,14 +552,16 @@
    \doglobal\newcounter\FLOWcomment
    \let\startFLOWcell\startFLOWcellD
    \setbox2=\vbox to \ht0
-     {\forgetall%%%\offinterlineskip
+     {\forgetall % \offinterlineskip
+      \resetFLOWlocation
       \haalbuffer[\FLOWbufferprefix\currentFLOWnumber]\vss}%
    \setbox2=\hbox
      {\hskip\@@FLOW@@offset\lower\@@FLOW@@offset\box2}%
    \wd2=\wd0\ht2=\ht0\dp2=\dp0
    \let\startFLOWcell\startFLOWcellE
    \setbox4=\vbox to \ht0
-     {\forgetall%%%\offinterlineskip
+     {\forgetall % \offinterlineskip
+      \resetFLOWlocation
       \haalbuffer[\FLOWbufferprefix\currentFLOWnumber]\vss}%
    \setbox4=\hbox
      {\hskip\@@FLOW@@offset\lower\@@FLOW@@offset\box4}%
@@ -589,8 +628,8 @@
 % empty and we don't want to redefine \@FLOC@ itself by 
 % mistake 
 
-\long\def\startFLOWcellB#1\stopFLOWcell% 
-  {\resetFLOWcell\ignorespaces#1\unskip% 
+\long\def\startFLOWcellB#1\stopFLOWcell
+  {\resetFLOWcell\ignorespaces#1\unskip
    \setxvalue{\@FLOC@-\FLOWname}{\FLOWlocation}% kost veel cs's
    \ifx\FLOWshape\empty
      \global\let\FLOWshape\@@FLOSdefault
@@ -639,7 +678,11 @@
 
 \long\def\startFLOWcellC#1\stopFLOWcell%
   {\resetFLOWcell
+\pushmacro\lastFLOWx 
+\pushmacro\lastFLOWy
    \ignorespaces#1\unskip % makes sure that vars are set 
+\popmacro\lastFLOWy 
+\popmacro\lastFLOWx
    \let\connection\doFLOWconnectionC
    \ignorespaces#1\unskip}
 
@@ -684,7 +727,11 @@
 
 \long\def\startFLOWcellD#1\stopFLOWcell%
   {\resetFLOWcell
+\pushmacro\lastFLOWx
+\pushmacro\lastFLOWy
    \ignorespaces#1\unskip % presets vars
+\popmacro\lastFLOWy
+\popmacro\lastFLOWx
    \let\doprocessFLOWcell\doprocessFLOWcellD
    \expandafter\doprocessFLOWcellD\FLOWlocation\end
    \let\connection\doFLOWconnectionD
@@ -833,7 +880,7 @@
 
 % Pass E 
 
-\long\def\startFLOWcellE#1\stopFLOWcell%
+\long\def\startFLOWcellE#1\stopFLOWcell
   {\resetFLOWcell
    \ignorespaces#1\unskip
    \let\doprocessFLOWcell\doprocessFLOWcellE
@@ -892,6 +939,7 @@
    \def\@@FLOWmaxx  {0}\let\@@FLOWmaxy\@@FLOWmaxx
    \def\@@FLOWabsx  {0}\let\@@FLOWabsy\@@FLOWabsx
    \let\startFLOWcell\startFLOWcellF
+   \resetFLOWlocation
    \haalbuffer[\FLOWbufferprefix\currentFLOWnumber]%
   %\message{AUTOSHAPE 1: (\@@FLOWminx,\@@FLOWminy)->(\@@FLOWmaxx,\@@FLOWmaxy)}%
    \ifnum\@@FLOWabsx<\@@FLOWmaxx\let\@@FLOWmaxx\@@FLOWabsx\fi
@@ -979,7 +1027,7 @@
      {\setbox#1=\hbox
         {\setbox\scratchbox=\hbox{\lower\@@FLOWdy\hbox
            {\helpbutton
-              [\c!breedte=\wd0,\c!kleur=,\c!hoogte=\@@FLOWdy,\c!kader=\v!nee]
+              [\c!breedte=\wd0,\c!kleur=,\c!hoogte=\@@FLOWdy,\c!kader=\v!nee]%
               [\FLOWhelp]}}%
          \smashbox\scratchbox
          \setbox#1=\vbox
@@ -995,14 +1043,15 @@
   {\setbox\scratchbox=\vbox
      {\xdef\FLOWmaxwidth {0}%
       \xdef\FLOWmaxheight{0}%
-      \def\getFLOWlocation##1,##2\end%
+      \def\getFLOWlocation##1,##2\end
         {\ifnum0##1>\FLOWmaxwidth \xdef\FLOWmaxwidth {##1}\fi
          \ifnum0##2>\FLOWmaxheight\xdef\FLOWmaxheight{##2}\fi}%
       \resetFLOWcell
-      \long\def\startFLOWcell##1\stopFLOWcell%
+      \long\def\startFLOWcell##1\stopFLOWcell
         {{##1\expandafter\getFLOWlocation\FLOWlocation\end}}%
-      \def\dosetFLOWchart[##1][##2]%
-        {\haalbuffer[\FLOWbufferprefix##1]}%
+      \def\dohandleflowchart[##1][##2]%
+        {\resetFLOWlocation
+         \haalbuffer[\FLOWbufferprefix##1]}%
       \getvalue{\@FLOW@-#1}}}
 
 \def\setupFLOWsplit%
@@ -1113,7 +1162,7 @@
 
 \def\typeFLOWchart[#1]%
   {\bgroup
-   \def\dosetFLOWchart[##1][##2]{\typebuffer[\FLOWbufferprefix##1]}%
+   \def\dohandleflowchart[##1][##2]{\typebuffer[\FLOWbufferprefix##1]}%
    \convertargument\startFLOWchart[#1]\to\firstverbatimfileline
    \convertargument     \stopFLOWchart\to\lastverbatimfileline
    \getvalue{\@FLOW@-#1}
@@ -1136,7 +1185,7 @@
 %D \handleFLOWset[convert-en] % [tag] 
 %D 
 %D \def\Whow#1%
-%D   {\stelhoofdin[status=hoog]
+%D   {\setuphead[status=hoog]
 %D    \startstandardmakeup
 %D    \centerbox{#1}
 %D    \stopstandardmakeup}
@@ -1189,6 +1238,34 @@
 
 \setupFLOWsets
   [\c!commando=]
+
+%D The XML interface [will be mode protected or separate x-chart file]
+
+\defineXMLargument [flowchartdefinition]
+  {\defineFLOWchart[\XMLpar{flowchartdefinition}{identifier}{unknown}]}
+
+\defineXMLpickup [flowcell]
+  {\startFLOWcell
+   \defineXMLargument[name]{\unspaceafter\name}%
+   \defineXMLargument[shape]{\unspaceafter\shape}%
+   \defineXMLnestedargument[text]{\text}}
+  {\stopFLOWcell}
+
+\defineXMLenvironment [location] % global unspace/store
+  {\bgroup\defineXMLpush[x]\defineXMLpush[y]}
+  {\XMLunspace{x}\XMLunspace{y}%
+   \expanded{\egroup\noexpand\location{\XMLpop{x},\XMLpop{y}}}}
+
+\defineXMLenvironment [connection]
+  {\bgroup\defineXMLpush[type]\defineXMLpush[name]}%
+  {\XMLunspace{type}\XMLunspace{name}%
+   \expanded{\egroup\noexpand\connection[\XMLpop{type}]{\XMLpop{name}}}}
+
+\defineXMLsingular [flowchart]
+  {\expanded{\FLOWchart[\XMLpar{flowchart}{identifier}{unknown}]}}
+
+\defineXMLdirective [flowchart] [shapes] \setupFLOWshapes  
+\defineXMLdirective [flowchart] [lines]  \setupFLOWlines   
 
 \protect
 

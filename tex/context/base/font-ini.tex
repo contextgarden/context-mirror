@@ -43,6 +43,8 @@
 \def\definedfont%
   {\dosingleempty\dodefinedfont}
 
+%%% message 14 added 
+
 \startmessages  dutch  library: fonts
   title: korps
       1: codering --
@@ -55,6 +57,7 @@
       8: stijl -- gedefinieerd
 %     9: mapping -- is geladen
      10: onbekende font file --
+     14: korps -- is gedefinieerd (kan beter globaal plaatsvinden)
 \stopmessages
 
 \startmessages  english  library: fonts
@@ -69,6 +72,7 @@
       8: style -- defined
 %     9: mapping -- is loaded
      10: unknown font file --
+     14: bodyfont -- is defined (can beter be done global)
 \stopmessages
 
 \startmessages  german  library: fonts
@@ -83,6 +87,7 @@
       8: Stil -- definiert
 %     9: Map -- ist geladen
      10: unbekanntes Font --
+     14: bodyfont -- is defined (can beter be done global) 
 \stopmessages
 
 \startmessages  czech  library: fonts
@@ -97,6 +102,7 @@
       8: styl -- definovan
 %     9: mapovani -- je nacteno
      10: neznamy font --
+     14: bodyfont -- is defined (can beter be done global) 
 \stopmessages
 
 \startmessages  italian  library: fonts
@@ -111,6 +117,7 @@
       8: stile -- definito
 %     9: mappatura -- caricata
      10: file di font sconosciuto --
+     14: bodyfont -- is defined (can beter be done global) 
 \stopmessages
 
 \startmessages  norwegian  library: fonts
@@ -125,6 +132,7 @@
       8: stil -- definert
 %     9: avbildning -- er lest inn
      10: ukjent fontfil --
+     14: bodyfont -- is defined (can beter be done global) 
 \stopmessages
 
 \startmessages  romanian  library: fonts
@@ -139,6 +147,7 @@
       8: stilul -- definit
 %     9: maparea -- este incarcat
      10: fisier font necunoscut --
+     14: bodyfont -- is defined (can beter be done global) 
 \stopmessages
 
 %D This module is one of the oldest modules of \CONTEXT. The
@@ -702,9 +711,23 @@
 \newtoks \mathstrategies
 \newtoks \symbstrategies
 
-\def\synchronizetext{\the\textstrategies\fam\mrfam} % stylish text in mmode
-\def\synchronizemath{\the\mathstrategies\fam\mrfam} % math stuff in mmode
-\def\synchronizesymb{\the\symbstrategies\fam\mrfam} % stylish math stuff in mmode
+\newif\ifsynchronizemathfonts \synchronizemathfontstrue
+
+\def\synchronizetext % stylish text in mmode
+  {\ifsynchronizemathfonts\the\textstrategies\fam\mrfam\fi} 
+
+\def\synchronizemath % math stuff in mmode
+  {\ifsynchronizemathfonts\the\mathstrategies\fam\mrfam\fi}
+ 
+\def\synchronizesymb % stylish math stuff in mmode
+  {\ifsynchronizemathfonts\the\symbstrategies\fam\mrfam\fi} 
+
+%D \macros
+%D   {textonly}
+%D
+%D We can inhibit this slow||downer with:
+
+\def\textonly{\synchronizemathfontsfalse}
 
 \appendtoks
   \dosettextfamily\c!tf
@@ -717,58 +740,61 @@
 \to \textstrategies
 
 \def\dosettextfamily#1%
-  {\dodosettextfamily\scriptscriptfont\scriptscriptface#1%
-   \dodosettextfamily\scriptfont      \scriptface      #1%
-   \dodosettextfamily\textfont        \textface        #1}
+  {\let\savedfontbody\fontbody
+   \let\fontfamily#1%
+   \let\fontbody  \scriptscriptface\dodosettextfamily\scriptscriptfont
+   \let\fontbody  \scriptface      \dodosettextfamily      \scriptfont
+   \let\fontbody  \textface        \dodosettextfamily        \textfont
+   \let\fontbody\savedfontbody}
 
 % \def\s!nullfont{nullfont}
 
 \beginTEX
 
-\def\dodosettextfamily#1#2#3%
-  {\@EA\ifx\csname\fontclass#2\c!mm#3\fontsize\endcsname\relax
-   \@EA\ifx\csname\fontclass#2\c!mm#3\endcsname         \relax
-   \@EA\ifx\csname\fontclass#2\c!rm#3\fontsize\endcsname\relax
-   \@EA\ifx\csname\fontclass#2\c!rm#3\endcsname         \relax
-   \@EA\ifx\csname          #2\c!mm#3\fontsize\endcsname\relax
-   \@EA\ifx\csname          #2\c!mm#3\endcsname         \relax
-   \@EA\ifx\csname          #2\c!rm#3\fontsize\endcsname\relax
-   \@EA\ifx\csname          #2\c!rm#3\endcsname         \relax
+\def\dodosettextfamily#1% 
+  {\@EA\ifx\csname\fontclass\fontbody\c!mm\fontfamily\fontsize\endcsname\relax
+   \@EA\ifx\csname\fontclass\fontbody\c!mm\fontfamily\endcsname         \relax
+   \@EA\ifx\csname\fontclass\fontbody\c!rm\fontfamily\fontsize\endcsname\relax
+   \@EA\ifx\csname\fontclass\fontbody\c!rm\fontfamily\endcsname         \relax
+   \@EA\ifx\csname          \fontbody\c!mm\fontfamily\fontsize\endcsname\relax
+   \@EA\ifx\csname          \fontbody\c!mm\fontfamily\endcsname         \relax
+   \@EA\ifx\csname          \fontbody\c!rm\fontfamily\fontsize\endcsname\relax
+   \@EA\ifx\csname          \fontbody\c!rm\fontfamily\endcsname         \relax
    \autofontsizetrue            \nullfont                             \else
-   \autofontsizetrue            \csname#2\c!rm#3\endcsname         \fi\else
-   \autofontsizefalse           \csname#2\c!rm#3\fontsize\endcsname\fi\else
-   \autofontsizetrue            \csname#2\c!mm#3\endcsname         \fi\else
-   \autofontsizefalse           \csname#2\c!mm#3\fontsize\endcsname\fi\else
-   \autofontsizetrue  \csname\fontclass#2\c!rm#3\endcsname         \fi\else
-   \autofontsizefalse \csname\fontclass#2\c!rm#3\fontsize\endcsname\fi\else
-   \autofontsizetrue  \csname\fontclass#2\c!mm#3\endcsname         \fi\else
-   \autofontsizefalse \csname\fontclass#2\c!mm#3\fontsize\endcsname\fi
-   #1\csname#3\s!fam\endcsname\font}
+   \autofontsizetrue            \csname\fontbody\c!rm\fontfamily\endcsname         \fi\else
+   \autofontsizefalse           \csname\fontbody\c!rm\fontfamily\fontsize\endcsname\fi\else
+   \autofontsizetrue            \csname\fontbody\c!mm\fontfamily\endcsname         \fi\else
+   \autofontsizefalse           \csname\fontbody\c!mm\fontfamily\fontsize\endcsname\fi\else
+   \autofontsizetrue  \csname\fontclass\fontbody\c!rm\fontfamily\endcsname         \fi\else
+   \autofontsizefalse \csname\fontclass\fontbody\c!rm\fontsize\endcsname\fi\else
+   \autofontsizetrue  \csname\fontclass\fontbody\c!mm\fontfamily\endcsname         \fi\else
+   \autofontsizefalse \csname\fontclass\fontbody\c!mm\fontfamily\fontsize\endcsname\fi
+   #1\csname\fontfamily\s!fam\endcsname\font}
 
 \endTEX
 
 \beginETEX \ifcsname
 
-\def\dodosettextfamily#1#2#3%
-  {\ifcsname\fontclass#2\c!mm#3\fontsize\endcsname \autofontsizefalse
-     \csname\fontclass#2\c!mm#3\fontsize\endcsname \else
-   \ifcsname\fontclass#2\c!mm#3\endcsname          \autofontsizetrue
-     \csname\fontclass#2\c!mm#3\endcsname          \else
-   \ifcsname\fontclass#2\c!rm#3\fontsize\endcsname \autofontsizefalse
-     \csname\fontclass#2\c!rm#3\fontsize\endcsname \else
-   \ifcsname\fontclass#2\c!rm#3\endcsname          \autofontsizetrue
-     \csname\fontclass#2\c!rm#3\endcsname          \else
-   \ifcsname          #2\c!mm#3\fontsize\endcsname \autofontsizefalse
-     \csname          #2\c!mm#3\fontsize\endcsname \else
-   \ifcsname          #2\c!mm#3\endcsname          \autofontsizetrue
-     \csname          #2\c!mm#3\endcsname          \else
-   \ifcsname          #2\c!rm#3\fontsize\endcsname \autofontsizefalse
-     \csname          #2\c!rm#3\fontsize\endcsname \else
-   \ifcsname          #2\c!rm#3\endcsname          \autofontsizetrue
-     \csname          #2\c!rm#3\endcsname          \else
-     \nullfont                                     \autofontsizetrue
+\def\dodosettextfamily#1%
+  {\ifcsname\fontclass\fontbody\c!mm\fontfamily\fontsize\endcsname \autofontsizefalse
+     \csname\fontclass\fontbody\c!mm\fontfamily\fontsize\endcsname \else
+   \ifcsname\fontclass\fontbody\c!mm\fontfamily\endcsname          \autofontsizetrue
+     \csname\fontclass\fontbody\c!mm\fontfamily\endcsname          \else
+   \ifcsname\fontclass\fontbody\c!rm\fontfamily\fontsize\endcsname \autofontsizefalse
+     \csname\fontclass\fontbody\c!rm\fontfamily\fontsize\endcsname \else
+   \ifcsname\fontclass\fontbody\c!rm\fontfamily\endcsname          \autofontsizetrue
+     \csname\fontclass\fontbody\c!rm\fontfamily\endcsname          \else
+   \ifcsname          \fontbody\c!mm\fontfamily\fontsize\endcsname \autofontsizefalse
+     \csname          \fontbody\c!mm\fontfamily\fontsize\endcsname \else
+   \ifcsname          \fontbody\c!mm\fontfamily\endcsname          \autofontsizetrue
+     \csname          \fontbody\c!mm\fontfamily\endcsname          \else
+   \ifcsname          \fontbody\c!rm\fontfamily\fontsize\endcsname \autofontsizefalse
+     \csname          \fontbody\c!rm\fontfamily\fontsize\endcsname \else
+   \ifcsname          \fontbody\c!rm\fontfamily\endcsname          \autofontsizetrue
+     \csname          \fontbody\c!rm\fontfamily\endcsname          \else
+                      \nullfont                                    \autofontsizetrue
    \fi\fi\fi\fi\fi\fi\fi\fi
-   #1\csname#3\s!fam\endcsname\font}
+   #1\csname\fontfamily\s!fam\endcsname\font}
 
 \endETEX
 
@@ -788,56 +814,60 @@
 \to \mathstrategies
 
 \def\dosetmathfamily#1#2#3#4#5#6%
-  {\dodosetmathfamily\scriptscriptfont#4#1#5{#6}%
-   \dodosetmathfamily\scriptfont      #3#1#5{#6}%
-   \dodosetmathfamily\textfont        #2#1#5{#6}}
+  {\let\savedfontbody\fontbody % op hoger plan
+   \let\fontfamily#5%
+   \let\backfamily#6%
+   \let\fontbody  #4\dodosetmathfamily\scriptscriptfont#1%
+   \let\fontbody  #3\dodosetmathfamily      \scriptfont#1%
+   \let\fontbody  #2\dodosetmathfamily        \textfont#1%
+   \let\fontbody\savedfontbody}
 
 \beginTEX
 
-\def\dodosetmathfamily#1#2#3#4#5%
-  {\@EA\ifx           \csname\fontclass#2\c!mm#4\fontsize\endcsname\relax 
-   \@EA\ifx           \csname\fontclass#2\c!mm#4\endcsname         \relax
-   \@EA\ifx           \csname\fontclass#2#5\fontsize\endcsname     \relax
-   \@EA\ifx           \csname\fontclass#2#5\endcsname              \relax
-   \@EA\ifx           \csname          #2\c!mm#4\fontsize\endcsname\relax
-   \@EA\ifx           \csname          #2\c!mm#4\endcsname         \relax
-   \@EA\ifx           \csname          #2#5\fontsize\endcsname     \relax
-   \@EA\ifx           \csname          #2#5\endcsname              \relax
+\def\dodosetmathfamily#1#2% 
+  {\@EA\ifx           \csname\fontclass\fontbody\c!mm\fontfamily\fontsize\endcsname\relax 
+   \@EA\ifx           \csname\fontclass\fontbody\c!mm\fontfamily\endcsname         \relax
+   \@EA\ifx           \csname\fontclass\fontbody\backfamily\fontsize\endcsname     \relax
+   \@EA\ifx           \csname\fontclass\fontbody\backfamily\endcsname              \relax
+   \@EA\ifx           \csname          \fontbody\c!mm\fontfamily\fontsize\endcsname\relax
+   \@EA\ifx           \csname          \fontbody\c!mm\fontfamily\endcsname         \relax
+   \@EA\ifx           \csname          \fontbody\backfamily\fontsize\endcsname     \relax
+   \@EA\ifx           \csname          \fontbody\backfamily\endcsname              \relax
    \autofontsizetrue  \nullfont                                        \else
-   \autofontsizetrue  \csname          #2#5\endcsname              \fi \else
-   \autofontsizefalse \csname          #2#5\fontsize\endcsname     \fi \else
-   \autofontsizetrue  \csname          #2\c!mm#4\endcsname         \fi \else
-   \autofontsizefalse \csname          #2\c!mm#4\fontsize\endcsname\fi \else
-   \autofontsizetrue  \csname\fontclass#2#5\endcsname              \fi \else
-   \autofontsizefalse \csname\fontclass#2#5\fontsize\endcsname     \fi \else
-   \autofontsizetrue  \csname\fontclass#2\c!mm#4\endcsname         \fi \else
-   \autofontsizefalse \csname\fontclass#2\c!mm#4\fontsize\endcsname\fi
-   #1#3\font}
+   \autofontsizetrue  \csname          \fontbody\backfamily\endcsname              \fi \else
+   \autofontsizefalse \csname          \fontbody\backfamily\fontsize\endcsname     \fi \else
+   \autofontsizetrue  \csname          \fontbody\c!mm\fontfamily\endcsname         \fi \else
+   \autofontsizefalse \csname          \fontbody\c!mm\fontfamily\fontsize\endcsname\fi \else
+   \autofontsizetrue  \csname\fontclass\fontbody\backfamily\endcsname              \fi \else
+   \autofontsizefalse \csname\fontclass\fontbody\backfamily\fontsize\endcsname     \fi \else
+   \autofontsizetrue  \csname\fontclass\fontbody\c!mm\fontfamily\endcsname         \fi \else
+   \autofontsizefalse \csname\fontclass\fontbody\c!mm\fontfamily\fontsize\endcsname\fi
+   #1#2\font}
 
 \endTEX
 
 \beginETEX \ifcsname
 
-\def\dodosetmathfamily#1#2#3#4#5%
-  {\ifcsname\fontclass#2\c!mm#4\fontsize\endcsname \autofontsizefalse 
-     \csname\fontclass#2\c!mm#4\fontsize\endcsname \else
-   \ifcsname\fontclass#2\c!mm#4\endcsname          \autofontsizetrue  
-     \csname\fontclass#2\c!mm#4\endcsname          \else
-   \ifcsname\fontclass#2#5\fontsize\endcsname      \autofontsizefalse 
-     \csname\fontclass#2#5\fontsize\endcsname      \else
-   \ifcsname\fontclass#2#5\endcsname               \autofontsizetrue  
-     \csname\fontclass#2#5\endcsname               \else
-   \ifcsname          #2\c!mm#4\fontsize\endcsname \autofontsizefalse 
-     \csname          #2\c!mm#4\fontsize\endcsname \else
-   \ifcsname          #2\c!mm#4\endcsname          \autofontsizetrue  
-     \csname          #2\c!mm#4\endcsname          \else
-   \ifcsname          #2#5\fontsize\endcsname      \autofontsizefalse 
-     \csname          #2#5\fontsize\endcsname      \else
-   \ifcsname          #2#5\endcsname               \autofontsizetrue  
-     \csname          #2#5\endcsname               \else
-                      \nullfont                    \autofontsizetrue  
+\def\dodosetmathfamily#1#2%
+  {\ifcsname\fontclass\fontbody\c!mm\fontfamily\fontsize\endcsname \autofontsizefalse
+     \csname\fontclass\fontbody\c!mm\fontfamily\fontsize\endcsname \else
+   \ifcsname\fontclass\fontbody\c!mm\fontfamily\endcsname          \autofontsizetrue
+     \csname\fontclass\fontbody\c!mm\fontfamily\endcsname          \else
+   \ifcsname\fontclass\fontbody\backfamily\fontsize\endcsname      \autofontsizefalse
+     \csname\fontclass\fontbody\backfamily\fontsize\endcsname      \else
+   \ifcsname\fontclass\fontbody\backfamily\endcsname               \autofontsizetrue
+     \csname\fontclass\fontbody\backfamily\endcsname               \else
+   \ifcsname          \fontbody\c!mm\fontfamily\fontsize\endcsname \autofontsizefalse
+     \csname          \fontbody\c!mm\fontfamily\fontsize\endcsname \else
+   \ifcsname          \fontbody\c!mm\fontfamily\endcsname          \autofontsizetrue
+     \csname          \fontbody\c!mm\fontfamily\endcsname          \else
+   \ifcsname          \fontbody\backfamily\fontsize\endcsname      \autofontsizefalse
+     \csname          \fontbody\backfamily\fontsize\endcsname      \else
+   \ifcsname          \fontbody\backfamily\endcsname               \autofontsizetrue
+     \csname          \fontbody\backfamily\endcsname               \else
+                      \nullfont                                    \autofontsizetrue
    \fi\fi\fi\fi\fi\fi\fi\fi
-   #1#3\font}
+   #1#2\font}
 
 \endETEX
 
@@ -852,44 +882,38 @@
 \to \symbstrategies
 
 \def\dosetsymbfamily#1#2#3#4#5%
-  {\dodosetsymbfamily\scriptscriptfont#4#1#5%
-   \dodosetsymbfamily\scriptfont      #3#1#5%
-   \dodosetsymbfamily\textfont        #2#1#5}
+  {\let\savedfontbody\fontbody
+   \let\fontfamily#5%
+   \let\fontbody  #4\dodosetsymbfamily\scriptscriptfont#1%
+   \let\fontbody  #3\dodosetsymbfamily      \scriptfont#1%
+   \let\fontbody  #2\dodosetsymbfamily        \textfont#1%
+   \let\fontbody\savedfontbody}
 
 \beginTEX
 
-\def\dodosetsymbfamily#1#2#3#4%
-  {\@EA\ifx\csname\fontclass#2\c!mm#4\fontalternative\fontsize\endcsname\relax
-     \@EA\ifx\csname#2\c!mm#4\fontalternative\fontsize\endcsname\relax
+\def\dodosetsymbfamily#1#2% 
+  {\@EA\ifx\csname\fontclass\fontbody\c!mm\fontfamily\fontalternative\fontsize\endcsname\relax
+     \@EA\ifx\csname\fontbody\c!mm\fontfamily\fontalternative\fontsize\endcsname\relax
      \else
-       \csname#2\c!mm#4\fontalternative\fontsize\endcsname
-       #1#3\font
+       \csname\fontbody\c!mm\fontfamily\fontalternative\fontsize\endcsname
+       #1#2\font
      \fi
    \else
-     \csname\fontclass#2\c!mm#4\fontalternative\fontsize\endcsname
-     #1#3\font
+     \csname\fontclass\fontbody\c!mm\fontfamily\fontalternative\fontsize\endcsname
+     #1#2\font
    \fi}
 
 \endTEX
 
 \beginETEX \ifcsname
 
-\def\dodosetsymbfamily#1#2#3#4%
-  {\ifcsname\fontclass#2\c!mm#4\fontalternative\fontsize\endcsname
-     \csname\fontclass#2\c!mm#4\fontalternative\fontsize\endcsname
-     #1#3\font
-   \else\ifcsname#2\c!mm#4\fontalternative\fontsize\endcsname
-     \csname#2\c!mm#4\fontalternative\fontsize\endcsname
-     #1#3\font
-   \fi\fi}
-
-\def\dodosetsymbfamily#1#2#3#4%
-  {\ifcsname\fontclass#2\c!mm#4\fontalternative\fontsize\endcsname
-     \csname\fontclass#2\c!mm#4\fontalternative\fontsize\endcsname
-     #1#3\font
-   \else\ifcsname#2\c!mm#4\fontalternative\fontsize\endcsname
-     \csname#2\c!mm#4\fontalternative\fontsize\endcsname
-     #1#3\font
+\def\dodosetsymbfamily#1#2%
+  {\ifcsname\fontclass\fontbody\c!mm\fontfamily\fontalternative\fontsize\endcsname
+     \csname\fontclass\fontbody\c!mm\fontfamily\fontalternative\fontsize\endcsname
+     #1#2\font
+   \else\ifcsname\fontbody\c!mm\fontfamily\fontalternative\fontsize\endcsname
+     \csname\fontbody\c!mm\fontfamily\fontalternative\fontsize\endcsname
+     #1#2\font
    \fi\fi}
 
 \endETEX
@@ -1017,7 +1041,6 @@
    \fi
    #2}
 
-
 \def\setnaturalfontspec#1]%
   {\@fs@scaled\!!thousand}
 
@@ -1125,7 +1148,10 @@
 \let\@@skewchar    \empty 
 \let\@@hyphenchar  \empty % todo, will go to encoding 
 
-\newif\ifskipfontcharacteristics % \skipfontcharacteristicstrue
+%D This brings down maps processing from 466 to 309 seconds 
+%D ($-33$\%) and mfonts from 42 to 34 seconds ($-15$\%). 
+
+\newif\ifskipfontcharacteristics \skipfontcharacteristicstrue
 
 \def\donoparsefontspec#1%
   {\edef\fontfile{\truefontname\somefontname}%
@@ -1409,6 +1435,8 @@
    \setfontcharacteristics
    \the\everyfontswitch}
 
+\beginETEX \ifcsname
+
 \def\xxdododefinefont#1#2% \autofontsizetrue is set by calling routine
   {\ifcsname*\fontclass#1\fontsize*\endcsname\else
      \dosetrelativefontsize{\fontclass#1}% dangerous with fallback 
@@ -1422,6 +1450,26 @@
      \setfontcharacteristics
      \the\everyfontswitch
    \fi}
+
+\endETEX
+
+\beginTEX
+
+\def\xxdododefinefont#1#2% \autofontsizetrue is set by calling routine
+  {\@EA\ifx\csname*\fontclass#1\fontsize*\endcsname\relax
+     \dosetrelativefontsize{\fontclass#1}% dangerous with fallback 
+     \parsefontspec{#2}{*\fontclass#1\fontsize*}%
+     \doresetrelativefontsize
+   \fi
+   \csname*\fontclass#1\fontsize*\endcsname
+   \autofontsizefalse 
+   \edef\lastfontidentifier{#1}%
+   \ifskipfontcharacteristics \else
+     \setfontcharacteristics
+     \the\everyfontswitch
+   \fi}
+
+\endTEX
 
 %D I considered checking for mistakenly use of \PLAIN's
 %D \type{\magstep}'s but although it would take only a few
@@ -1668,7 +1716,7 @@
 \def\definebodyfontenvironment%
   {\dotripleempty\dodefinebodyfontenvironment}
 
-\def\dodefinebodyfontenvironment[#1][#2][#3]% [class] size settings
+\def\dodefinebodyfontenvironment[#1][#2][#3]% class size settings
   {\ifthirdargument
      \@@beginfontdef
      \doifelse{#2}{\s!default}
@@ -1682,24 +1730,50 @@
    \fi}
 
 \def\dododefinebodyfontenvironment[#1][#2][#3]% size class settings
-  {\doifundefined{\??ft#2#1\s!text}
-     {\def\docommando##1%
-        {\scratchdimen=#1\relax
+  {\@@beginfontdef
+   \doifundefined{\??ft#2#1\c!em} % \s!text goes wrong in testing because 
+     {\def\docommando##1%         % the 12pt alternative will called when
+        {\scratchdimen=#1\relax   % typesetting the test (or so) 
          \scratchdimen=\getvalue{\??ft\s!default##1}\scratchdimen
          \normalizebodyfontsize\scratchdimen\to\tempbodyfontsize
-         \setevalue{\??ft#2#1##1}{\tempbodyfontsize}%
-        %\expanded{\checkbodyfontenvironment[\tempbodyfontsize]}%
-          }%
+         \setevalue{\??ft#2#1##1}{\tempbodyfontsize}}%
      \processcommalist
        [\s!text,\s!script,\s!scriptscript,\c!x,\c!xx,\c!groot,\c!klein]
        \docommando
      \copyparameters
-        [\??ft#2#1][\??ft\s!default]
-        [\c!interlinie,\c!em]}%
-   \@@beginfontdef
+       [\??ft#2#1][\??ft\s!default]
+       [\c!interlinie,\c!em]}%
+ % \@@beginfontdef
    \getparameters[\??ft#2#1][#3]%
    \@@endfontdef
-   \setvalue{\@size@#2#1}{\docompletefontswitch[#1]}}
+   % new code, see remark 
+   \ifloadingfonts \else            % only runtime 
+     \doifundefined{\@size@#1}      % only once 
+       {\letvalue{\@size@#1}\empty  % prevent loop 
+        \defineunknownfont{#1}}%    % safeguard 
+   \fi
+   % so far 
+   \setvalue{\@size@#1}{\docompletefontswitch[#1]}}
+
+%D {\bf Remark:} We need to cover the following cases, 
+%D otherwise users can get confused:
+%D 
+%D \starttypen
+%D \setupbodyfont[23pt]
+%D 
+%D \definebodyfontenvironment[23pt]
+%D \setupbodyfont[23pt]
+%D 
+%D \definebodyfontenvironment[23pt]
+%D \definebodyfont[23pt][rm,ss,tt][default]
+%D \setupbodyfont[23pt]
+%D \stoptypen 
+
+%D Beware: while some font defs can be global, the bodyfont 
+%D environment checks local. This means that multiple local 
+%D checks resulting in definitions are not that efficient. 
+%D So, apart from an occasional switch, one should define an
+%D environment at the outer level. 
 
 \def\checkbodyfontenvironment[#1]%
   {\definebodyfontenvironment[\fontclass][#1][]}
@@ -1838,6 +1912,26 @@
    \definebodyfont[#1][#2][#3]%
    \popmacro\fontclass}
 
+% \def\dodefinebodyfont[#1][#2][#3]% body|identifier style defs|identifier
+%   {\ifthirdargument
+%      \doifnumberelse{#1}
+%        {\doifassignmentelse{#3}
+%           {% [12pt] [style] [settings]
+%            \doifundefined{#2}{\expanded{\definefontstyle[#2][#2]}}% new
+%            \processcommalist[#1]{\dododefinebodyfont{#2}{#3}}}
+%           {% [12pt] [style] [identifier]
+%            \dodefinedefaultbodyfont[#1][#2][#3]}} % body style identifier
+%        {% [identifier] [style] [settings]
+%         \setvalue{\s!default#1#2}##1##2{\expanded{\dodefinebodyfont[##1][##2][#3]}}}%
+%    \else\ifsecondargument
+%      \definebodyfont[#1][\c!rm][#2]%
+%    \else
+%      \doifundefined{\@size@#1} % Maybe there are default dependancies
+%        {\defineunknownfont{#1}}% defined which we can use ([unknown])
+%      \doifundefined{\@size@#1} % and if not, then we have at least to
+%        {\definebodyfont[#1][\c!rm][]}% make sure some basics are set up.
+%    \fi\fi}
+
 \def\dodefinebodyfont[#1][#2][#3]% body|identifier style defs|identifier
   {\ifthirdargument
      \doifnumberelse{#1}
@@ -1847,8 +1941,8 @@
            \processcommalist[#1]{\dododefinebodyfont{#2}{#3}}}
           {% [12pt] [style] [identifier]
            \dodefinedefaultbodyfont[#1][#2][#3]}} % body style identifier
-       {% [identifier] [style] [settings]
-        \setvalue{\s!default#1#2}##1##2{\expanded{\dodefinebodyfont[##1][##2][#3]}}}%
+       {% [identifier] [style] [settings] % see *** 
+        \setvalue{\s!default#1#2}##1##2{\expanded{\xdodefinebodyfont[##1][##2][#3]}}}%
    \else\ifsecondargument
      \definebodyfont[#1][\c!rm][#2]%
    \else
@@ -1857,6 +1951,27 @@
      \doifundefined{\@size@#1} % and if not, then we have at least to
        {\definebodyfont[#1][\c!rm][]}% make sure some basics are set up.
    \fi\fi}
+
+% nested 
+%
+% \def\xdodefinebodyfont[#1][#2][#3]% body|identifier style defs|identifier
+%   {%\writestatus{[#1]}{[#2][#3]}%
+%    \doifnumberelse{#1}
+%      {\doifassignmentelse{#3}
+%         {% [12pt] [style] [settings]
+%          \doifundefined{#2}{\expanded{\definefontstyle[#2][#2]}}% new
+%          \processcommalist[#1]{\dododefinebodyfont{#2}{#3}}}
+%         {% [12pt] [style] [identifier]
+%          \dodefinedefaultbodyfont[#1][#2][#3]}} % body style identifier
+%      {% [identifier] [style] [settings]
+%       \setvalue{\s!default#1#2}##1##2{\expanded{\xdodefinebodyfont[##1][##2][#3]}}}}
+%
+% faster 
+
+\def\xdodefinebodyfont[#1][#2][#3]% body|identifier style defs|identifier
+  {%\writestatus{[#1]}{[#2][#3]}%
+   \doifundefined{#2}{\expanded{\definefontstyle[#2][#2]}}% new
+   \processcommalist[#1]{\dododefinebodyfont{#2}{#3}}}
 
 \def\dododefinebodyfont#1#2#3% style defs body
   {\checkbodyfontenvironment[#3]% just to be sure.
@@ -1947,8 +2062,11 @@
    \let\c!text=\c!savedtext
    \ifdone
      \donefalse
-     \def\defineunknownbodyfont##1%
-       {\doifdefined{\s!default##1}{\donetrue\getvalue{\s!default##1}{#1}}}%
+     \def\defineunknownbodyfont##1% see ***
+       %{\doifdefined{\s!default##1}
+       %   {\donetrue\getvalue{\s!default##1}{#1}}}%
+       {\doifdefined{\s!default\s!default##1}
+          {\donetrue\getvalue{\s!default\s!default##1}{#1}{##1}}}%
      \processcommacommand
        [\stylelist]
        \defineunknownbodyfont
@@ -1964,6 +2082,9 @@
            \defineunknownsubfont
          \definingunknownfontfalse
        \fi
+     \fi
+     \ifdone
+       \showmessage{\m!fonts}{14}{#1}% 
      \fi
    \fi}
 
@@ -2144,6 +2265,7 @@
      {\getvalue{\@size@#1}%
       \localbodyfontsize=#1\relax
       \normalizebodyfontsize\localbodyfontsize\to\normalizedbodyfontsize
+\checkbodyfontenvironment[\normalizedbodyfontsize]% added 
       }% \the\everybodyfont}
      {\showmessage{\m!fonts}{4}{#1}}}
 
@@ -2291,17 +2413,58 @@
 \let\defaultfontalternative \c!tf
 \let\defaultfontsize        \empty
 
-\def\dosetcurrentfontsize#1%
-  {\let\!!stringa\fontsize
-   \edef\fontsize{#1}%
-   \ifx\!!stringa\fontsize\else
-     \synchronizemath
-     \synchronizetext
+%D \macros
+%D   {bigmath,nobigmath}
+%D
+%D We can inhibit this slow||downer with:
+
+% these can best be combined
+
+% 0=never 1=everymath 2=always
+
+\chardef\synchronizebigmathflag  =1 
+
+\appendtoks 
+  \ifcase\synchronizebigmathflag
+    % never 
+  \or 
+    \synchronizebigmath
+  \or 
+    % always 
+  \fi
+\to \everymath
+
+\def\nobigmath{\chardef\synchronizebigmathflag  =0 }
+\def\bigmath  {\chardef\synchronizebigmathflag  =2 \synchronizebigmath}
+
+\let\bigmathfontsize\empty 
+
+\def\synchronizebigmath%
+  {\ifx\bigmathfontsize\fontsize 
+     % already in sync 
+   \else
+     \let\bigmathfontsize\fontsize 
+     \synchronizemath \synchronizetext
    \fi}
+
+\def\checkbigmathsynchronization
+  {\ifcase\synchronizebigmathflag
+     % never 
+   \or
+     \ifmmode \synchronizebigmath \fi 
+   \or
+     \synchronizebigmath
+   \fi}
+
+%D So far for synchronisation. 
+
+\def\dosetcurrentfontsize#1%
+  {\edef\fontsize{#1}%
+   \checkbigmathsynchronization}
 
 \def\dosetcurrentfontalternative#1%
   {\edef\fontalternative{#1}%
-   \ifmmode % maybe better no test 
+   \ifmmode % maybe no test, or actually, an option  
      \fam\csname\fontalternative\s!fam\endcsname
    \fi}
 
@@ -2484,7 +2647,7 @@
 \def\dosetcurrentfontxxxalternative#1#2#3#4%
   {\chardef\currentxfontsize=#2
    \ifmmode
-     #4%
+     #4% 
    \else\ifcsname\bodyfontvariable{\normalizedbodyfontsize#3}\endcsname
      \setcurrentfontbodyalternative{\bodyfontcsname\normalizedbodyfontsize#3\endcsname}{#1}%
    \fi\fi}
@@ -2825,8 +2988,7 @@
   {\edef\fontstep{\bodyfontcsname\normalizedbodyfontsize\interfaced#1\endcsname}%
    \doswitchpoints[\fontstep]%
    \doswitchstyle[\fontstyle]%
-\the\everybodyfont
-}
+   \the\everybodyfont}
 
 \def\setsmallbodyfont{\setbodyfontstep\v!klein}
 \def\setbigbodyfont  {\setbodyfontstep\v!groot}
@@ -2834,8 +2996,7 @@
 \def\setmainbodyfont%
   {\doswitchpoints[\normalizedbodyfontsize]%
    \doswitchstyle[\fontstyle]%
-\the\everybodyfont
-}
+   \the\everybodyfont}
 
 %D \macros
 %D   {restoreglobalbodyfont}
@@ -3031,10 +3192,10 @@
 %D or even better:
 
 \def\doemphasistypeface#1#2%
-  {\doifelsevalue      {\??ft\fontclass\normalizedbodyfontsize\c!em}{\v!schuin}{#1}
-     {\doifelsevalue   {\??ft\fontclass\normalizedbodyfontsize\c!em}{\v!italic}{#2}
-        {\doifelsevalue{\??ft          \normalizedbodyfontsize\c!em}{\v!schuin}{#1}
-           {\doifvalue {\??ft          \normalizedbodyfontsize\c!em}{\v!italic}{#2}}}}}
+  {\doifelsevalue{\??ft\fontclass\normalizedbodyfontsize\c!em}\v!schuin#1%
+  {\doifelsevalue{\??ft\fontclass\normalizedbodyfontsize\c!em}\v!italic#2%
+  {\doifelsevalue{\??ft          \normalizedbodyfontsize\c!em}\v!schuin#1%
+  {\doifvalue    {\??ft          \normalizedbodyfontsize\c!em}\v!italic#2}}}}
 
 \def\emphasistypeface{\doemphasistypeface\sl\it}
 \def\emphasisboldface{\doemphasistypeface\bs\bi}
@@ -3046,21 +3207,21 @@
 
 \unexpanded\def\em%
   {\relax
-   \ifdim\fontdimen1\font>\!!zeropoint\relax
+   \ifdim\fontdimen1\font>\zeropoint
      \settrue\emneeded
    \else
      \setfalse\emneeded
    \fi
    \setemphasisboldface % new
-   \ifnum\fam=\itfam
+   \ifx\fontalternative\c!it      % \ifnum\fam=\itfam
      \def\emphasistypeface{\it}\tf
-   \else\ifnum\fam=\slfam
+   \else\ifx\fontalternative\c!sl % \ifnum\fam=\slfam
      \def\emphasistypeface{\sl}\tf
-   \else\ifnum\fam=\bffam
+   \else\ifx\fontalternative\c!bf % \ifnum\fam=\bffam
      \emphasisboldface
-   \else\ifnum\fam=\bsfam
+   \else\ifx\fontalternative\c!bs % \ifnum\fam=\bsfam
      \def\emphasisboldface{\bs}\bf
-   \else\ifnum\fam=\bifam
+   \else\ifx\fontalternative\c!bi % \ifnum\fam=\bifam
      \def\emphasisboldface{\bi}\bf
    \else
      \emphasistypeface
@@ -3079,9 +3240,9 @@
    \let\setemphasisboldface\relax
    \def\bf%
      {\relax
-      \ifnum\fam=\itfam
+      \ifx\fontalternative\c!it      % \ifnum\fam=\itfam
         \bi
-      \else\ifnum\fam=\slfam
+      \else\ifx\fontalternative\c!sl % \ifnum\fam=\slfam
         \bs
       \else
         \normalbf
@@ -3260,17 +3421,20 @@
 \fetchruntimecommand \showfontstyle {\f!fontprefix\s!run}
 
 %D \macros
-%D   {getglyph}
+%D   {getglyph, symbolicfont}
 %D
 %D Individual glyphs can be accessed by using
 %D
 %D \starttypen
 %D \getglyph{fontname}{character}
 %D \stoptypen
-%D
+%D 
 %D This macro is used in for instance the symbol modules and
 %D as one can see, it does obey the small and even smaller
-%D sizes.
+%D sizes. The \type {\symbolicfont} macro can be used to
+%D switch to a font named \type {fontname} (see \type
+%D {cont-log} and \type {symb-eur} for examples of symbolic
+%D definitions. 
 
 \def\fontstringA%
   {\ifx\fontstyle\c!rm     \s!Serif \else
@@ -3285,11 +3449,11 @@
                            \s!Serif \fi\fi\fi}
 
 \def\fontstringC%
-  {\ifnum\fam=\bffam        \s!Bold \else
-   \ifnum\fam=\slfam     \s!Slanted \else
-   \ifnum\fam=\itfam      \s!Italic \else
-   \ifnum\fam=\bsfam \s!BoldSlanted \else
-   \ifnum\fam=\bifam  \s!BoldItalic \s!Regular \fi\fi\fi\fi\fi}
+  {\ifx\fontalternative\c!bf        \s!Bold \else
+   \ifx\fontalternative\c!sl     \s!Slanted \else
+   \ifx\fontalternative\c!it      \s!Italic \else
+   \ifx\fontalternative\c!bs \s!BoldSlanted \else
+   \ifx\fontalternative\c!bi  \s!BoldItalic \fi\fi\fi\fi\fi}
 
 \beginETEX \ifcsname
 
@@ -3326,9 +3490,13 @@
 
 \endTEX
 
+\def\symbolicfont#1% see cont-log.tex for example usage
+  {\definedfont[\glyphfontfile{#1} sa *]}
+
 \def\getglyph#1#2%
  %{{\definefont[\s!dummy][\glyphfontfile{#1} sa \currentfontscale]\dummy#2}}
-  {{\definefont[\s!dummy][\glyphfontfile{#1} sa *]\dummy#2}}
+ %{{\definefont[\s!dummy][\glyphfontfile{#1} sa *]\dummy#2}}
+  {{\symbolicfont{#1}#2}}
 
 %D The last implementation of \type {\getglyph} permits
 %D definitions like:
@@ -3694,6 +3862,9 @@
 \definealternativestyle [\v!kleinvetschuin,\v!kleinschuinvet] [\bsx] []
 \definealternativestyle [\v!kleinvetitalic,\v!kleinitalicvet] [\bix] []
 
+\definealternativestyle [\v!kleinkorps] [\setsmallbodyfont] []
+\definealternativestyle [\v!grootkorps] [\setbigbodyfont]   []
+
 %D We treat {\sc Small Caps} and \kap {Pseudo Caps} a bit
 %D different. We also provide an \WOORD {uppercase} style.
 
@@ -3725,14 +3896,23 @@
 %D The next macro is used to map non latin fontnames on
 %D fonts. See \type {font-uni} for an example of its use.
 
-\def\fontstylesuffix%
-  {\ifnum\fam=\tffam     \s!Regular \else
-   \ifnum\fam=\bffam        \s!Bold \else
-   \ifnum\fam=\slfam     \s!Slanted \else
-   \ifnum\fam=\itfam      \s!Italic \else
-   \ifnum\fam=\bsfam \s!BoldSlanted \else
-   \ifnum\fam=\bifam  \s!BoldItalic \else
-                         \s!Regular \fi\fi\fi\fi\fi\fi}%
+%\def\fontstylesuffix%
+%  {\ifnum\fam=\tffam     \s!Regular \else
+%   \ifnum\fam=\bffam        \s!Bold \else
+%   \ifnum\fam=\slfam     \s!Slanted \else
+%   \ifnum\fam=\itfam      \s!Italic \else
+%   \ifnum\fam=\bsfam \s!BoldSlanted \else
+%   \ifnum\fam=\bifam  \s!BoldItalic \else
+%                         \s!Regular \fi\fi\fi\fi\fi\fi}%
+
+\def\fontstylesuffix% why the \s!Regular ? see \getglyph
+  {\ifx\fontalternative\c!tf     \s!Regular \else
+   \ifx\fontalternative\c!bf        \s!Bold \else
+   \ifx\fontalternative\c!sl     \s!Slanted \else
+   \ifx\fontalternative\c!it      \s!Italic \else
+   \ifx\fontalternative\c!bs \s!BoldSlanted \else
+   \ifx\fontalternative\c!bi  \s!BoldItalic \else
+                                 \s!Regular \fi\fi\fi\fi\fi\fi}%
 
 %D We still have to take care of \type{\xi}, so:
 

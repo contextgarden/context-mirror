@@ -66,7 +66,7 @@
      [   \v!klein=>#2=#3,
         \v!middel=>#2=#4,
          \v!groot=>#2=#5,
-          \v!geen=>#2=\!!zeropoint,
+          \v!geen=>#2=\zeropoint,
         -\v!klein=>#2=-#3,
        -\v!middel=>#2=-#4,
         -\v!groot=>#2=-#5,
@@ -95,6 +95,7 @@
 %D   {\setvalue{\@@dimension\v!klein}{#3}%
 %D    \setvalue{\@@dimension\v!middel}{#4}%
 %D    \setvalue{\@@dimension\v!groot}{#5}%
+%D    \setvalue{\@@dimension\v!geen}{\!!zeropoint}%
 %D    \setvalue{\@@negdimension\v!klein}{-#3}%
 %D    \setvalue{\@@negdimension\v!middel}{-#4}%
 %D    \setvalue{\@@negdimension\v!groot}{-#5}%
@@ -103,6 +104,35 @@
 %D      {#2=\getvalue{\@@dimension#1}}
 %D      {#2=#1}}
 %D \stoptypen
+%D
+%D Let's give this a try: 
+
+\let\nopv!geen     \v!geen
+\let\posv!groot    \v!groot 
+\let\posv!middel   \v!middel
+\let\posv!klein    \v!klein 
+\edef\negv!groot {-\v!groot }
+\edef\negv!middel{-\v!middel}
+\edef\negv!klein {-\v!klein }
+
+\def\assigndimension#1#2#3#4#5%
+  {\edef\!!stringa{#1}%
+   \ifx\!!stringa\nopv!geen  #2=\zeropoint\else
+   \ifx\!!stringa\posv!groot #2=#5\else
+   \ifx\!!stringa\posv!middel#2=#4\else
+   \ifx\!!stringa\posv!klein #2=#3\else
+   \ifx\!!stringa\negv!groot #2=-#5\else
+   \ifx\!!stringa\negv!middel#2=-#4\else
+   \ifx\!!stringa\negv!klein #2=-#3\else
+                             #2=#1\fi\fi\fi\fi\fi\fi\fi}
+
+\def\assignalfadimension#1#2#3#4#5%
+  {\edef\!!stringa{#1}%
+   \ifx\!!stringa\posv!groot \edef#2{#5}\else
+   \ifx\!!stringa\posv!middel\edef#2{#4}\else
+   \ifx\!!stringa\posv!klein \edef#2{#3}\else
+   \ifx\!!stringa\nopv!geen  \edef#2{0}\else
+                             \edef#2{#1}\fi\fi\fi\fi}
 
 %D \macros
 %D   {assignvalue}
@@ -139,6 +169,15 @@
         \v!middel=>\edef#2{#4},
          \v!groot=>\edef#2{#5},
        \s!unknown=>\edef#2{#1}]}
+
+%D Or faster: 
+
+\def\assignvalue#1#2#3#4#5%
+  {\edef\!!stringa{#1}%
+   \ifx\!!stringa\posv!groot \edef#2{#5}\else
+   \ifx\!!stringa\posv!middel\edef#2{#4}\else
+   \ifx\!!stringa\posv!klein \edef#2{#3}\else
+                             \edef#2{#1}\fi\fi\fi}
 
 %D \macros
 %D   {assignwidth}

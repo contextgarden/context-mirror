@@ -76,7 +76,7 @@
       \resetparagraphlines
       \EveryPar
         {\strut\inleftmargin{\tf{\tx\paragraphnumber}\kern2em}%
-         \ignorespaces}}
+         \ignorespaces}}%
    \def\doresetparagraph%
      {\resetparagraphlines
       \egroup}}
@@ -84,18 +84,26 @@
 \def\numberparagraphlines%
   {\processpreviousparagraphstrue
    \def\dosetparagraph%
-     {\resetparagraphlines}
+     {\resetparagraphlines}%
    \def\doresetparagraph%
-     {\resetparagraphlines}
+     {\resetparagraphlines}%
    \def\dobeforeparagraph%
-     {\startregelnummeren[\v!verder]}
+     {\startregelnummeren[\v!verder]}%
    \def\doafterparagraph%
-     {\stopregelnummeren}
+     {\stopregelnummeren}%
    \def\dobeforeskipparagraph%
      {\stopregelnummeren
-      \let\paragraphnumber=\relax}
+      \let\paragraphnumber=\relax}%
    \def\doafterskipparagraph%
      {\startregelnummeren[\v!verder]}}
+
+\long\def\directpushparagraph#1%
+  {\doglobal\increment\totalnofparagraphs
+   \ifnum\totalnofparagraphs>0\nofskippedparagraphs\relax
+     \setgvalue{\paragraphprefix\totalnofparagraphs}{#1}%
+   \else
+     \setgvalue{\paragraphprefix\totalnofparagraphs}{\skipparagraph#1\par}%
+    \fi} 
 
 \def\dopushparagraphs#1%
   {\global\let\mostrecentparagraphtotal=\totalnofparagraphs
@@ -108,17 +116,10 @@
      {\convertargument##1\to\asciiC
       \doifelse{\asciiC}{\asciiA}
         {\let\next=#1}
-        {\doifnot{\asciiC}{}      % lege paragraaf
+        {\doifnot{\asciiC}{} % lege paragraaf
            {\doifnot{\asciiC}{\asciiB}
-              {\doglobal\increment\totalnofparagraphs
-               \ifnum\totalnofparagraphs>0\nofskippedparagraphs\relax
-                 \setgvalue{\paragraphprefix\totalnofparagraphs}%
-                   {##1}%
-               \else
-                 \setgvalue{\paragraphprefix\totalnofparagraphs}%
-                   {\skipparagraph##1\par}%
-               \fi}}%
-         \let\next=\dopushparagraph}
+              {\directpushparagraph{#1}}}%
+         \let\next=\dopushparagraph}%
       \next}%
    \dopushparagraph}
 
@@ -205,7 +206,7 @@
    \global\let\nofparagraphs=\totalnofparagraphs
    \doglobal\decrement(\nofparagraphs,\discardedparagraphs)}
 
-% \toonkader
+% \showframe
 %
 % \numberparagraphlines
 % \numberparagraphs

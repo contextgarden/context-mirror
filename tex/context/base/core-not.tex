@@ -112,21 +112,17 @@
 \newif\iffootnotelimit \footnotelimittrue  
 
 \def\dosetupfootnotes[#1]%
-  {\getparameters[\??vn][#1]%
-   \processaction
-     [\@@vnlijn]
-     [    \v!aan=>\let\dofootnoterule=\dodofootnoterule,
-          \v!uit=>\let\dofootnoterule=\relax,
-      \s!default=>\let\dofootnoterule=\relax,
-      \s!unknown=>\let\dofootnoterule=\@@vnlijn]%
-   \setbox\scratchbox=\vbox
-     {\forgetall
-      \@@vnvoor
-      \dofootnoterule 
-      \@@vnna}%
-   \skip\footins=\ht\scratchbox
+  {\iffirstargument
+     \getparameters[\??vn][#1]%
+     \processaction
+       [\@@vnlijn]
+       [    \v!aan=>\let\dofootnoterule=\dodofootnoterule,
+            \v!uit=>\let\dofootnoterule=\relax,
+        \s!default=>\let\dofootnoterule=\relax,
+        \s!unknown=>\let\dofootnoterule=\@@vnlijn]%
+   \fi 
+   \setfootnotedistance
    \count\footins=1000
-   \setbox\scratchbox=\box\voidb@x % scratchbox can be in use
    \ExpandBothAfter\doifinsetelse{\v!kolommen}{\@@vnplaats}
      {\cleverfootnotestrue % global ? 
       \ifnum\@@kln=0 
@@ -159,6 +155,15 @@
      \dimen\footins=\@@vnhoogte
      \multiply\dimen\footins by \scratchcounter
    \fi}
+
+\def\setfootnotedistance
+  {\setbox\scratchbox=\vbox
+     {\forgetall
+      \@@vnvoor
+      \dofootnoterule 
+      \@@vnna}%
+   \skip\footins=\ht\scratchbox
+   \setbox\scratchbox=\box\voidb@x} % scratchbox can be in use
 
 \ifx\setfootnotehsize\undefined
 
@@ -595,38 +600,63 @@
      \fi\fi
    \fi\fi}
 
+%D This is a nasty and new secondary footnote flusher. It 
+%D can be hooked into \type {\everypar} like: 
+%D 
+%D \starttypen 
+%D \appendtoks \synchronizefootnotes \to \everypar
+%D \stoptypen
+
+\def\synchronizefootnotes%
+  {\ifvoid\footins\else\insert\footins{\unvbox\footins}\fi}
+
 \def\placefootnotesintext#1%
-  {\endgraf
-   \ifvmode
-     \witruimte
+  {\ifdim\ht#1>\zeropoint
+     \endgraf
+     \ifvmode
+       \witruimte
+       \@@vnvoor
+     \fi
+     \snaptogrid\hbox  
+       {\setfootnotebodyfont
+        \setbox0=\hbox
+          {\startpopfootnotes
+           \unvbox#1\endgraf\relax
+           \stoppopfootnotes}%
+        \doif{\@@vnbreedte}{\v!passend} % new, auto width 
+          {\setbox0=\hbox               % uggly but ok. 
+             {\beginofshapebox          
+              \unhbox0\setbox0=\lastbox\unvbox0
+              \endofshapebox
+              \reshapebox{\hbox{\unhbox\shapebox}}%
+              \vbox{\flushshapebox}}}%
+        \localframed 
+          [\??vn]
+          [\c!breedte=\v!passend,
+            \c!hoogte=\v!passend,
+             \c!strut=\v!nee,
+            \c!offset=\v!overlay]
+          {\ifdim\dp0=\!!zeropoint % this hack is needed because \vadjust
+             \hbox{\lower\dp\strutbox\box0}% % in margin number placement 
+           \else                   % hides the (always) present depth
+             \box0
+           \fi}}%
+     \ifvmode
+       \@@vnna
+     \fi
+   \fi}
+
+%D A stupid alternative is also provided:
+%D
+%D \starttypen 
+%D \setupfootnotes[location={text,none}]
+%D \stoptypen 
+
+\def\placefootnotesasnone#1% is grouped already 
+  {\ifdim\ht#1>\zeropoint
      \@@vnvoor
-   \fi
-   \snaptogrid\hbox  
-     {\setfootnotebodyfont
-      \setbox0=\hbox
-        {\startpopfootnotes
-         \unvbox#1\endgraf\relax
-         \stoppopfootnotes}%
-      \doif{\@@vnbreedte}{\v!passend} % new, auto width 
-        {\setbox0=\hbox               % uggly but ok. 
-           {\beginofshapebox          
-            \unhbox0\setbox0=\lastbox\unvbox0
-            \endofshapebox
-            \reshapebox{\hbox{\unhbox\shapebox}}%
-            \vbox{\flushshapebox}}}%
-      \localframed 
-        [\??vn]
-        [\c!breedte=\v!passend,
-          \c!hoogte=\v!passend,
-           \c!strut=\v!nee,
-          \c!offset=\v!overlay]
-        {\ifdim\dp0=\!!zeropoint % this hack is needed because \vadjust
-           \hbox{\lower\dp\strutbox\box0}% % in margin number placement 
-         \else                   % hides the (always) present depth
-           \box0
-         \fi}}%
-   \ifvmode
-     \@@vnna
+     \setfootnotebodyfont \unvbox#1\endgraf
+     \@@vnna 
    \fi}
 
 %D \macros
@@ -711,20 +741,23 @@
 %D
 %D \showsetup{\y!placefootnotes}
 
-\def\doplacefootnotes[#1]%
-  {\bgroup
-   \setupfootnotes[#1,\c!hoogte=\teksthoogte]%
-   \ifendnotes
-     \ifinpagebody \else
-       \placefootnotesintext\postponedfootnotes
-     \fi
-   \else
-     \placefootnoteinserts
-   \fi
-   \egroup}
-
 \def\placefootnotes%
   {\dosingleempty\doplacefootnotes}
+
+\def\doplacefootnotes[#1]%
+  {\bgroup
+   \ifendnotes
+     \ifinpagebody \else \ifdim\ht\postponedfootnotes>\zeropoint
+       \iffirstargument\setupfootnotes[#1,\c!hoogte=\teksthoogte]\fi
+       \ExpandBothAfter\doifinsetelse{\v!geen}{\@@vnplaats}
+         {\placefootnotesasnone\postponedfootnotes}%
+         {\placefootnotesintext\postponedfootnotes}%
+     \fi \fi 
+   \else \ifdim\ht\footins>\zeropoint 
+     \iffirstargument\setupfootnotes[#1,\c!hoogte=\teksthoogte]\fi
+     \placefootnoteinserts
+   \fi \fi
+   \egroup}
 
 %D Now how can this mechanims be hooked into \CONTEXT\ without
 %D explictly postponing footnotes? The solution turned out to

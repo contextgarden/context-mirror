@@ -1,0 +1,472 @@
+%D \module
+%D   [       file=xtag-mmp,
+%D        version=2000.12.20,
+%D          title=\CONTEXT\ XML Support,
+%D       subtitle=Math ML,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{Context XML Macros (presentational math ml)}
+
+\unprotect
+
+\def\convertasciiafter#1#2%
+  {\convertargument#2\to\asciiafter
+   \@EA#1\@EA{\asciiafter}}
+
+% 
+
+\def\checkMMLoperator#1#2% temp hack
+  {\unspaceargument#1\to\ascii
+   \doifXMLentityelse\ascii{\getXMLentity\ascii}{#2}}
+
+\remapXMLsequence [mi] [CPA] \MMLpMI
+\remapXMLsequence [mn] [CPA] \MMLpMN
+\remapXMLsequence [mo] [CPA] \MMLpMO
+
+\def\MMLpmath#1#2%
+  {\begingroup
+   \getXMLarguments{mstyle}{#1}\setMMLpmathstyle{mstyle}#2%
+   \endgroup}  
+
+\def\MMLpMI#1#2%
+  {\MMLpmath{#1}{\checkMMLoperator{#2}{#2}}}
+
+\def\MMLpMN#1#2%
+  {\begingroup\rm\MMLpmath{#1}{#2}\endgroup}
+
+\def\MMLpMO#1#2% yes or no 
+  {\checkMMLoperator
+     {#2}
+     {\ConvertConstantAfter\doifinstringelse{\xmlrent}{#2}
+        {#2}{\hbox{\MMLpmath{#1}{\ignorespaces#2\unskip}}}}} % \hbox ? 
+
+\remapXMLsequence [mfenced] [CPA] \MMLpFENCED
+
+\let\normalright=\right
+\let\normalleft =\left
+
+\def\doMMLleft #1{\pushmacro\left \let\left \empty\normalleft #1\popmacro\left}
+\def\doMMLright#1{\pushmacro\right\let\right\empty\normalright#1\popmacro\right}
+
+\let\MMLpopen \empty
+\let\MMLpclose\empty
+
+\def\MMLpFENCED#1#2%
+  {\getXMLarguments{mfenced}{open="(" close=")" separators="" #1}%
+   \edef\MMLpopen {\XMLpar{mfenced}{open}{}}%
+   \edef\MMLpclose{\XMLpar{mfenced}{close}{}}%
+   \ifx\MMLpopen\empty\else\doMMLleft\MMLpopen\fi
+   \pushmacro\MMLpopen 
+   \pushmacro\MMLpclose
+   \doifXMLparelse{mfenced}{separators}
+     {\resetMMLseparator
+      \encapsulateXMLR
+        {}%
+        {\pushmacro\myspecialvert % hack 
+         \def\myspecialvert{\;\vrule\;}%
+         \grabMMLseparator{\XMLpar{mfenced}{separators}}%
+         \popmacro\myspecialvert}
+        {}%
+        {#2\empty}}
+     {#2}%
+   \popmacro\MMLpclose
+   \popmacro\MMLpopen
+   \ifx\MMLpclose\empty
+   \ifx\MMLpopen\empty\else\right.\fi
+   \else\doMMLright\MMLpclose\fi}
+
+\def\resetMMLseparator%
+  {\newcounter\MMLxxcounter
+   \let\lastMMLseparator\empty}
+
+\def\grabMMLseparator#1%
+  {\increment\MMLxxcounter
+   \newcounter\MMLyycounter  
+   \expanded{\dograbMMLseparator#1\noexpand\relax}}
+
+\def\dograbMMLseparator%
+  {\increment\MMLyycounter
+   \doifnextcharelse\relax
+     {\lastMMLseparator\gobbleoneargument}
+     {\doifnextcharelse\xmlrent\grabMMLseparatora\grabMMLseparatorb}}
+
+\def\grabMMLseparatora#1\xmlrent#2%
+  {\ifnum\MMLxxcounter=\MMLyycounter\space
+     \def\lastMMLseparator{\xmlrent{#2}}%
+   \fi
+   \dograbMMLseparator}
+
+\def\grabMMLseparatorb#1%
+  {\ifnum\MMLxxcounter=\MMLyycounter\space
+     \def\lastMMLseparator{#1}%
+   \fi
+   \dograbMMLseparator}
+
+\remapXMLsequence [menclose] [CPA] \MMLpENCLOSE
+
+\def\MMLpENCLOSE#1#2%
+  {\getXMLarguments{menclose}{notation="" #1}%
+   \doifelse{\XMLpar{menclose}{notation}{}}{longdiv} 
+     {\overline{)#2}}
+     {#2}}
+
+\remapXMLsequence [mfrac] [CPA] \MMLpFRAC
+
+\def\MMLpFRAC#1#2% \above is suboptimal since the spacing changes
+  {\withnexttwoXMLRelements
+     {\getXMLarguments{mfrac}{linethickness="" #1}%
+      \doifXMLparelse{mfrac}{linethickness}
+        {\edef\theXMLpar{\XMLpar{mfrac}{linethickness}{1}}%
+         \processaction
+           [\theXMLpar]
+           [    thin=>\scratchdimen=.2pt, 
+              medium=>\scratchdimen=.4pt, 
+               thick=>\scratchdimen=.8pt,
+             unknown=>\setdimensionwithunit\scratchdimen{\theXMLpar}{}]%
+         {{\firstXMLRelement}\above\scratchdimen{\secondXMLRelement}}}
+        {\frac{\firstXMLRelement}{\secondXMLRelement}}}%
+   #2}
+
+\remapXMLsequence [ms] [CPA] \MMLpSTRING
+
+\def\MMLpSTRING#1#2%
+  {\MMLpTEXT{#1}
+     {\getXMLarguments{mstyle}{#1}%
+      \getXMLarguments{ms}{lquote="\xmlrent{quot}" rquote="\xmlrent{quot}" #1}%
+      \XMLpar{ms}{lquote}{}\ignorespaces#2\unskip\unskip\XMLpar{ms}{rquote}{}}}
+
+\remapXMLsequence [mstyle] [CPA] \MMLpSTYLE
+
+\getXMLarguments
+  {mstyle}
+  {fontweight="" fontstyle="" mathstyle="" background="" color=""}%
+
+\def\MMLpSTYLE#1#2%
+  {\getXMLarguments{mstyle}{#1}#2}
+
+\remapXMLsequence [mtext]    [CPA] \MMLpTEXT
+\remapXMLsequence [merror]   [CPA] \MMLpERROR
+\remapXMLsequence [mphantom] [CPA] \MMLpPHANTOM
+\remapXMLsequence [mpadded]  [CPA] \MMLpPADDED
+
+\def\MMLpTEXT#1#2%
+  {\hbox
+     {\getXMLarguments{mstyle}{#1}%
+      \doMMPpbackground{mstyle}
+        {\doMMPpcolor{mstyle}
+           {\setMMLptextstyle{mstyle}%
+            \ignorespaces#2\unskip\unskip}}}}
+
+\def\setMMLpstyle#1% 
+  {\doifdefined{MMLpstyle:#1}{\getvalue{MMLpstyle:#1}}}
+
+\def\defineMMLstyle[#1]#2%
+  {\setvalue{MMLpstyle:#1}{#2}}
+
+\defineMMLstyle[normal]     {\tf} \defineMMLstyle[double-stuck] {\bf}
+\defineMMLstyle[bolditalic] {\bi} \defineMMLstyle[bold-italic]  {\bi}
+\defineMMLstyle[boldslanted]{\bs} \defineMMLstyle[bold-slanted] {\bs} 
+\defineMMLstyle[boldnormal] {\bf} \defineMMLstyle[bold]         {\bf}
+\defineMMLstyle[slanted]    {\sl} \defineMMLstyle[normalslanted]{\sl}
+\defineMMLstyle[italic]     {\it} \defineMMLstyle[normalitalic] {\it}
+\defineMMLstyle[fraktur]    {\bf} \defineMMLstyle[bold-fraktur] {\bf}
+\defineMMLstyle[script]     {\tf} \defineMMLstyle[bold-script]  {\bf}
+
+% and all kind of other crappy names  
+
+\def\setMMLptextstyle#1% 
+  {\setMMLpstyle{\XMLpar{#1}{fontweight}{}\XMLpar{#1}{fontstyle}{}}}
+
+\def\setMMLpmathstyle#1% 
+  {\setMMLpstyle{\XMLpar{#1}{mathvariant}{}}}
+
+\def\doMMPpcolor#1#2%
+  {\doifXMLparelse{#1}{color}{\color[\XMLpar{#1}{color}{}]{#2}}{#2}}
+
+\def\doMMPpbackground#1#2%
+  {\doifXMLparelse{#1}{background}
+     {\inframed
+        [\c!kader=\v!uit,
+         \c!achtergrond=\v!kleur,
+         \c!achtergrondkleur=\XMLpar{#1}{background}{}]
+        {#2}}
+     {#2}}
+
+\def\MMLpERROR  #1#2{\hbox{$\displaystyle#2$}}
+\def\MMLpPHANTOM#1#2{\phantom{\ignorespaces{}#2\unskip}} % watch spacing {} hack 
+\def\MMLpPADDED #1#2{#2}
+
+\remapXMLsequence [mrow] [CPA] \MMLpROW
+
+\def\MMLpROW#1#2{#2}
+
+\remapXMLsequence [msqrt] [CPA] \MMLpSQRT
+\remapXMLsequence [mroot] [CPA] \MMLpROOT
+
+\def\MMLpSQRT#1#2%
+  {\sqrt{#2}}
+
+\def\MMLpROOT#1#2%
+  {\withnexttwoXMLRelements{\root{\secondXMLRelement}\of{\firstXMLRelement}}#2}
+
+\remapXMLsequence [msup] [CPA] \MMLpSUP
+\remapXMLsequence [msub] [CPA] \MMLpSUB
+
+\setupMMLappearance[scripts][\c!variant=\v!a]
+
+\def\MMLpSUBP#1#2%
+  {\withnexttwoXMLRelements
+     {\doifelse{\@@MMLscriptsvariant}{\v!a}
+        {{\firstXMLRelement}#1{\secondXMLRelement}} % both {} essential 
+        {\firstXMLRelement#1{\secondXMLRelement}}}%
+   #2}
+
+\def\MMLpSUP#1{\MMLpSUBP^}
+\def\MMLpSUB#1{\MMLpSUBP_}
+
+\remapXMLsequence [msubsup] [CPA] \MMLpSUBSUP
+
+\def\MMLpSUBSUP#1#2%
+  {\withnextthreeXMLRelements
+     {\firstXMLRelement_{\secondXMLRelement}^{\thirdXMLRelement}}%
+   #2}
+
+\remapXMLsequence [mover]      [CPA] \MMLpOVER
+\remapXMLsequence [munder]     [CPA] \MMLpUNDER
+\remapXMLsequence [munderover] [CPA] \MMLpUNDEROVER
+
+% hack, cannot be nested
+
+\def\MMLpUNDER#1#2{\withnexttwoXMLRelements\doMMLpUNDER#2}
+\def\MMLpOVER #1#2{\withnexttwoXMLRelements\doMMLpOVER #2}
+
+\def\doMMLfiller#1%
+   {\pushmacro\doMMLfiller
+    \let\doMMLfiller\gobbleoneargument
+    \gdef\dodoMMLfiller{\disablefiller\mathematics{#1}}%
+    \setbox\scratchbox=\hbox 
+      {\def\normalorfiller##1##2%
+         {\gdef\dodoMMLfiller{\enablefiller#1}%
+          \let\normalorfiller\gobbletwoarguments}%
+       $#1$}%
+    \popmacro\doMMLfiller
+    \dodoMMLfiller}
+
+\def\doMMLpUNDER%
+  {\mathop{\vtop{\m@th\ialign{\hss##\hss\crcr
+     \disabledelimiter\doMMLfiller\firstXMLRelement
+     \crcr\noalign{\kern3\p@\nointerlineskip}%
+     \disabledelimiter\doMMLfiller\secondXMLRelement
+     \crcr\noalign{\kern3\p@}}}}\limits}
+
+\def\doMMLpOVER%%
+  {\mathop{\vbox{\m@th\ialign{\hss##\hss\crcr\noalign{\kern3\p@}%
+     \disabledelimiter\doMMLfiller\secondXMLRelement
+     \crcr\noalign{\kern3\p@\nointerlineskip}%
+     \disabledelimiter\doMMLfiller\firstXMLRelement
+     \crcr}}}\limits}
+
+\def\MMLpUNDEROVER#1#2%
+  {\withnextthreeXMLRelements
+     {\firstXMLRelement
+        _{\disablefiller\disabledelimiter\secondXMLRelement}%
+        ^{\disablefiller\disabledelimiter\thirdXMLRelement}}#2}
+
+\remapXMLsequence [mtable]     [CPA] \MMLpTABLE
+\remapXMLsequence [mtr]        [CPA] \MMLpTR
+\remapXMLsequence [mtd]        [CPA] \MMLpTD
+\remapXMLsequence [mlabeledtr] [CPA] \MMLpLABELEDTR
+
+\unexpanded\def\@col@amp@{&}
+
+\def\MMLpTR#1#2{\collectbetweenXMLR{\@col@amp@}{#2}\the\XMLRtoks\crcr}
+\def\MMLpTD#1#2{#2}
+
+\def\MMLpLABELEDTR{\MMLpTR}
+
+\def\MMLpTABLEmapper#1#2#3%
+  {\doifXMLparelse{mtable}{#1}
+     {\newcounter\MMLcounter
+      \def\docommando##1%
+        {\increment\MMLcounter
+         \let\MMLpREMAP\doMMLpREMAP
+         \def\MMLsetting{##1}#3% remap list
+         \expanded{\setupTABLE[column][\MMLcounter][#2=\MMLsetting]}}%
+       \expanded{\processseparatedlist[\XMLpar{mtable}{#1}{}][ ]\noexpand\docommando}}
+     {}}
+
+\def\MMLpTABLEmap#1#2#3%
+  {\doifXMLparelse{mtbl}{#1}
+     {\edef\MMLsetting{\XMLpar{mtbl}{#1}{}}#3% remap list
+      \edef\theMMLpTABLEmap{#2=\MMLsetting,\theMMLpTABLEmap}}
+     {}}
+    
+\def\doMMLpREMAP#1#2%
+  {\doif{\MMLsetting}{#1}
+     {\def\MMLsetting{#2}%
+      \let\MMLpREMAP\gobbletwoarguments}}
+
+\let\MMLpREMAP\doMMLpREMAP
+
+\def\doMMLpTABLE#1#2%
+  {\begingroup
+   \getXMLarguments{mtable}
+     {columnalign="" columnspacing=".25ex" rowspacing=".25ex" 
+      frame="" color="" background="" #1}%
+   \setupTABLE[\c!kader=\v!uit]%
+   \MMLpTABLEmapper{background}{\c!achtergrondkleur}{}%
+   \MMLpTABLEmapper{color}{\c!kleur}{}%
+   \MMLpTABLEmapper{frame}{\c!kader}
+     {\MMLpREMAP{none}{off}\MMLpREMAP{solid}{on}}%
+   \MMLpTABLEmapper{columnalign}{\c!uitlijnen}
+     {\MMLpREMAP{left}{right}%
+      \MMLpREMAP{right}{left}%
+      \MMLpREMAP{center}{middle}}%
+   \setMMLpunit{\XMLpar{mtable}{rowspacing}{}}{.25ex}%
+   \let\MMLpTABLEoffset\MMLpunit
+   \let\MMLpTR\doMMLpTR
+   \let\MMLpTD\doMMLpTD
+   \bTABLE[\c!achtergrond=\v!kleur,\c!offset=\MMLpTABLEoffset]#2\eTABLE
+   \endgroup}
+
+\def\doMMLpTR#1#2%
+  {\doifXMLRchildelse{mtd}{#2}
+     {\bTR\ignorespaces#2\unskip\eTR}
+     {\bTR\doMMLpTD{#1}{#2}\eTR}}
+    
+\def\doMMLpTD#1#2%
+  {\getXMLarguments{mtbl}
+     {columnalign="" columnspacing="" rowspacing="" 
+      frame="" color="" background="" #1}%
+   \let\theMMLpTABLEmap\empty
+   \MMLpTABLEmap{background}{\c!achtergrondkleur}{}%
+   \MMLpTABLEmap{color}{\c!kleur}{}%
+   \MMLpTABLEmap{frame}{\c!kader}
+     {\MMLpREMAP{none}{off}\MMLpREMAP{solid}{on}}%
+   \MMLpTABLEmap{columnalign}{\c!uitlijnen}
+     {\MMLpREMAP{left}{right}\MMLpREMAP{right}{left}}%
+   \@EA\bTD\@EA[\theMMLpTABLEmap]$\ignorespaces#2\unskip$\eTD}
+
+\setupMMLappearance[mtable][\c!variant=\v!a]
+
+\def\MMLpTABLE% 
+  {\doifelse{\@@MMLmtablevariant}{\v!a}
+     {\expandafter\MMLpTABLEa}
+     {\expandafter\MMLpTABLEb}}
+
+\def\MMLpTABLEa#1#2% 
+  {\begingroup
+   \doifelsenothing{#1}
+     {\global\setfalse\mmlTABLEargs}
+     {\global\settrue\mmlTABLEargs}%
+   \ifconditional\mmlTABLEargs \else
+     \setbox\scratchbox=\hbox
+       {$\displaystyle
+        \def\MMLpTABLE##1##2%
+          {\ifconditional\mmlTABLEargs \else
+             \doifelsenothing{##1}{##2}{\global\settrue\mmlTABLEargs}%
+           \fi}%
+        \let\MMLpTR\MMLpTABLE 
+        \let\MMLpTD\MMLpTABLE 
+        #2$}%
+   \fi      
+   \ifconditional\mmlTABLEargs
+     \let\MMLpTABLE\doMMLpTABLE
+     \def\next{\MMLpTABLE{#1}}%
+   \else
+     \let\next\matrix
+   \fi
+   \next{#2}%
+   \endgroup}
+
+\let\MMLpTABLEb\doMMLpTABLE
+
+\remapXMLsingular [mspace] [CPA] \MMLpSPACE
+
+\def\setMMLpunit#1#2%
+  {\setbox\scratchbox=\hbox
+     {\edef\ascii{#1}%
+      \@EA\aftersplitstring\ascii\at.\to\ascii
+      \scratchcounter=\ifx\ascii\empty#1\else\ascii\fi
+      \unskip\unskip}%
+   \ifdim\wd\scratchbox=\!!zeropoint
+     \edef\MMLpunit{#1em}%
+   \else
+     \edef\ascii{#1}\convertcommand\ascii\to\ascii
+     \convertasciiafter\doifinstringelse{em}{\ascii}{\edef\MMLpunit{#1}}{%
+     \convertasciiafter\doifinstringelse{ex}{\ascii}{\edef\MMLpunit{#1}}{%
+     \convertasciiafter\doifinstringelse{pt}{\ascii}{\edef\MMLpunit{#1}}{%
+                                                     \edef\MMLpunit{#2}}}}%
+  \fi}
+
+\def\MMLpSPACE#1#2%
+  {\getXMLarguments{mspace}{width=".5em" #1}%
+   \setMMLpunit{\XMLpar{mspace}{width}{}}{.5em}%
+   \hskip\MMLpunit\relax}
+
+
+\remapXMLsingular [mglyph] [CPA] \MMLpGLYPH
+
+\def\MMLpGLYPH#1#2% we assume \definefont usage 
+  {\getXMLarguments{mglyph}{fontfamily="" index="1" alt="" #1}%
+   \def\MMLpglyph{\XMLpar{mglyph}{fontfamily}{}}%
+   \doifelsenothing{\MMLpglyph}
+     {\hbox{\tttf[fontfamily unspecified]}}
+     {\doifdefinedelse{\MMLpglyph}
+        {\hbox{\getvalue{\MMLpglyph}\char0\XMLpar{mglyph}{index}{1}}}
+        {\doifelsenothing{\XMLpar{mglyph}{alt}{}}
+           {\hbox{\tttf[unknown fontfamily \XMLpar{mglyph}{fontfamily}{}]}}
+           {\hbox{\tttf\XMLpar{mglyph}{alt}{}}}}}}
+
+\remapXMLsingular [malignmark] [CPA] \MMLpALIGNMARK
+
+\def\MMLpALIGNMARK#1#2%
+  {}
+
+\remapXMLsingular [none]          [CPA] \MMLpNONE
+\remapXMLsingular [mprescripts]   [CPA] \MMLpMPRESCRIPTS
+\remapXMLsequence [mmultiscripts] [CPA] \MMLpMULTISCRIPTS
+
+\def\MMLpNONE       #1#2{}
+\def\MMLpMPRESCRIPTS#1#2{}
+
+\def\MMLpMULTISCRIPTS#1#2%
+  {\pushmacro\xmlr
+   \let\xmlr\pMULTISCRIPTmmlPRE
+   \donefalse \scratchcounter=0 #2\empty 
+   \let\xmlr\pMULTISCRIPTmmlPOST
+   \donetrue  \scratchcounter=0 #2\empty
+   \popmacro\xmlr}
+
+\def\pMULTISCRIPTmmlPRE#1#2#3#4%
+  {\ifdone
+     \ifodd\scratchcounter
+       ^{\naturalxmlr{#1}{#2}{#3}{#4}}{}%
+     \else
+       _{\naturalxmlr{#1}{#2}{#3}{#4}}%
+     \fi
+   \else
+     \doif{mprescripts/}{#1}{\donetrue{}}% weak, the / here
+   \fi
+   \ifdone \advance\scratchcounter 1 \fi}
+
+\def\pMULTISCRIPTmmlPOST#1#2#3#4%
+  {\ifdone
+     \ifnum\scratchcounter=0
+       \naturalxmlr{#1}{#2}{#3}{#4}%
+     \else\ifodd\scratchcounter
+       _{\naturalxmlr{#1}{#2}{#3}{#4}}%
+     \else
+       ^{\naturalxmlr{#1}{#2}{#3}{#4}}{}%
+     \fi\fi
+   \fi
+   \doif{mprescripts/}{#1}{\donefalse}% weak, the / here
+   \ifdone \advance\scratchcounter 1 \fi}
+
+\protect \endinput

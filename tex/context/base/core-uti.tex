@@ -15,6 +15,8 @@
 
 \unprotect 
 
+% to do : lan ook safen 
+
 % Utility-file
 %
 % De onderstaande macro's ondersteunen het gebruik van de
@@ -23,6 +25,9 @@
 % er selectief pagina's worden gezet. In dat geval wordt de
 % file \jobname.tmp gebruikt. Informatie wordt ingelezen uit
 % de file \jobname.tuo, welke door TeXUtil wordt aangemaakt.
+
+\edef\utilityversion{1998.07.07} % was: 1996.03.15  % status variables
+\edef\utilityversion{1998.12.20} % was: 1998.07.07  % index attributes
 
 % Bepaalde commando's worden als string weggeschreven. Deze
 % zijn aan het eind van deze file gedefinieerd.
@@ -382,5 +387,10 @@
 % Default-instellingen (verborgen)
 
 \prependtoks \resetutilities \to \everyjob 
+
+% left over 
+
+\def\plaatsvolledig#1#2#3#4%   kop, ref, tit, do
+  {#1[#2]{#3}#4\pagina[\v!ja]}
 
 \protect \endinput 

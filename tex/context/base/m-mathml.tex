@@ -20,9 +20,27 @@
 
 \useXMLfilter[mml,mmp,mmc] 
 
-%D And finaly we load the whole bunch of entities: 
+%D And we also load the whole bunch of entities: 
 
 % \useXMLfilter[mea,meb,mec,meh,men,meo,mer]
 % \useXMLfilter[mxa,mxb,mxc,mxh,mxn,mxo,mxr]
+
+%D For simple inline math, we first provide: 
+
+% todo : nesting ! ! ! ! 
+
+\newcount\xmlmathlevel
+
+\defineXMLenvironment [m] 
+  {\ifmmode
+     \advance\xmlmathlevel1\relax 
+   \else
+     \xmlmathlevel1$%
+   \fi} 
+  {\ifcase\xmlmathlevel\or
+     $\xmlmathlevel0\relax
+   \else
+     \advance\xmlmathlevel-1\relax
+   \fi}
 
 \endinput 

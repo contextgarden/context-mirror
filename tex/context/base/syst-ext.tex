@@ -1831,6 +1831,16 @@
      {\def#3{##2}}%
    \@EA\dosplitstring#1@@@#2@@@\\}
 
+%D \macros 
+%D   {splitstring}
+%D
+%D A bonus macro. 
+
+\def\splitstring#1\at#2\to#3\and#4%
+  {\def\dosplitstring##1#2##2@@@##3\\%
+     {\def#3{##1}\def#4{##2}}%
+   \@EA\dosplitstring#1@@@#2@@@\\}
+
 %D \macros
 %D   {removesubstring}
 %D
@@ -1959,15 +1969,16 @@
   {\def\doreplaceincommalist##1%
      {\ifnum\commalistcounter=#2\relax
         \ifx\newcommalistelement\empty\else
-          \ifnum\commalistcounter=1
+          \ifx\newcommalist\empty
             \let\newcommalist\newcommalistelement
           \else
-            \@EA\@EA\@EA\def\@EA\@EA\@EA\newcommalist\@EA\@EA\@EA{\@EA\newcommalist\@EA,\newcommalistelement}%
+            \@EA\@EA\@EA\def\@EA\@EA\@EA\newcommalist\@EA\@EA\@EA
+              {\@EA\newcommalist\@EA,\newcommalistelement}%
           \fi
         \fi
         \def\commalistelement{##1}%
       \else
-        \ifnum\commalistcounter=1
+        \ifx\newcommalist\empty
           \ifx\nexttoken\bgroup % is known -)
             \def\newcommalist{{##1}}%
           \else
@@ -2458,6 +2469,16 @@
      \def\next{\getvalue{#1}}%
    \fi
    \next}
+
+% cleaner but less clear
+%
+% \def\executeifdefined#1%
+%   {\ifundefined{#1}%
+%      \executedfalse \let\next\gobbleoneargument
+%    \else
+%      \executedtrue  \def\next##1{\getvalue{#1}}%
+%    \fi
+%    \next}
 
 %D We considered an alternative imlementation accepting
 %D commands directly, like:
@@ -3315,7 +3336,7 @@
 \def\@And #1#2{0\ifcase#1#2 \@EA 0\else \@EA 1\fi}
 
 %D \macros
-%D   {setdimensionwithunit}
+%D   {setdimensionwithunit, freezedimensionwithunit}
 %D
 %D The next assignments are all valid: 
 %D
@@ -3323,6 +3344,8 @@
 %D \setdimensionwithunit\scratchdimen{10}  {cm}
 %D \setdimensionwithunit\scratchdimen{10cm}{cm}
 %D \setdimensionwithunit\scratchdimen{10cm}{}
+%D \freezedimensionwithunit\SomeWidth{\textwidth}
+%D \freezedimensionwithunit\SomeDepth{\dp\strutbox}
 %D \stoptypen 
 %D
 %D As an alternative for the next macro we can use a global 
@@ -3331,6 +3354,19 @@
 
 \def\setdimensionwithunit#1#2#3% number unit dimension / nice trick 
   {\afterassignment\gobblefourarguments#1=#2#3pt\relax\empty\empty\empty\empty}
+
+\def\freezedimensionwithunit#1#2%
+  {\setdimensionwithunit\scratchdimen#1{#2}\edef#1{\the\scratchdimen}}
+
+%D \macros 
+%D   {doifsometokselse}
+%D
+%D Not that fast I guess, but here's a way to test for token
+%D registers being empty.  
+
+\def\doifsometokselse#1#2#3%
+  {\edef\!!stringa{\the#1}%
+   \ifx\!!stringa\empty#3\else#2\fi}
 
 \protect
 

@@ -30,36 +30,36 @@
   boolean PageStateAvailable ; PageStateAvailable := true ; 
   boolean OnRightPage        ; OnRightPage        := true ;  
   def LoadPageState = 
-    OnRightPage         :=     \MPonrightpage ; 
-    PageNumber          :=     \realfolio ; 
-    PaperHeight         := \the\papierhoogte ;
-    PaperWidth          := \the\papierbreedte ;
-    PrintPaperHeight    := \the\printpapierhoogte ;
-    PrintPaperWidth     := \the\printpapierbreedte ;
-    TopSpace            := \the\kopwit ;
-    BackSpace           := \the\rugwit ;
-    MakeupHeight        := \the\zethoogte ;
-    MakeupWidth         := \the\zetbreedte ;
-    TopHeight           := \the\bovenhoogte ;
-    TopDistance         :=     \bovenafstand ;
-    HeaderHeight        := \the\hoofdhoogte ;
-    HeaderDistance      :=     \hoofdafstand ;
-    TextHeight          := \the\teksthoogte ;
-    FooterDistance      :=     \voetafstand ;
-    FooterHeight        := \the\voethoogte ;
-    BottomDistance      :=     \onderafstand ;
-    BottomHeight        := \the\onderhoogte ;
-    LeftEdgeWidth       := \the\linkerrandbreedte ;
-    LeftEdgeDistance    :=     \linkerrandafstand ;
-    LeftMarginWidth     := \the\linkermargebreedte ;
-    LeftMarginDistance  :=     \linkermargeafstand ;
-    TextWidth           := \the\tekstbreedte ;
-    RightMarginDistance :=     \rechtermargeafstand ;
-    RightMarginWidth    := \the\rechtermargebreedte ;
-    RightEdgeDistance   :=     \rechterrandafstand ;
-    RightEdgeWidth      := \the\rechterrandbreedte ;
-    PageOffset          :=     \MPpageoffset ;
-    PageDepth           :=     \MPpagedepth ;
+    OnRightPage         :=      \MPonrightpage ; 
+    PageNumber          :=      \realfolio ; 
+    PaperHeight         :=  \the\papierhoogte ;
+    PaperWidth          :=  \the\papierbreedte ;
+    PrintPaperHeight    :=  \the\printpapierhoogte ;
+    PrintPaperWidth     :=  \the\printpapierbreedte ;
+    TopSpace            :=  \the\kopwit ;
+    BackSpace           :=  \the\rugwit ;
+    MakeupHeight        :=  \the\zethoogte ;
+    MakeupWidth         :=  \the\zetbreedte ;
+    TopHeight           :=  \the\bovenhoogte ;
+    TopDistance         := \@the\bovenafstand ;
+    HeaderHeight        :=  \the\hoofdhoogte ;
+    HeaderDistance      := \@the\hoofdafstand ;
+    TextHeight          :=  \the\teksthoogte ;
+    FooterDistance      := \@the\voetafstand ;
+    FooterHeight        :=  \the\voethoogte ;
+    BottomDistance      := \@the\onderafstand ;
+    BottomHeight        :=  \the\onderhoogte ;
+    LeftEdgeWidth       :=  \the\linkerrandbreedte ;
+    LeftEdgeDistance    := \@the\linkerrandafstand ;
+    LeftMarginWidth     :=  \the\linkermargebreedte ;
+    LeftMarginDistance  := \@the\linkermargeafstand ;
+    TextWidth           :=  \the\tekstbreedte ;
+    RightMarginDistance := \@the\rechtermargeafstand ;
+    RightMarginWidth    :=  \the\rechtermargebreedte ;
+    RightEdgeDistance   := \@the\rechterrandafstand ;
+    RightEdgeWidth      :=  \the\rechterrandbreedte ;
+    PageOffset          :=      \MPpageoffset ;
+    PageDepth           :=      \MPpagedepth ;
   enddef ; 
 \stopuseMPgraphic
               
@@ -82,15 +82,23 @@
      \def\MPonrightpage{false}% 
    \od}
  
-\def\freezeMPlayout% must be done more efficient
-  {\freezedimenmacro\bovenafstand         
-   \freezedimenmacro\hoofdafstand         
-   \freezedimenmacro\voetafstand          
-   \freezedimenmacro\onderafstand         
-   \freezedimenmacro\linkerrandafstand    
-   \freezedimenmacro\linkermargeafstand   
-   \freezedimenmacro\rechtermargeafstand  
-   \freezedimenmacro\rechterrandafstand}   
+\iffixedlayoutdimensions 
+
+  \let\freezeMPlayout\relax
+
+\else
+
+  \def\freezeMPlayout% must be done more efficient
+    {\freezedimenmacro\bovenafstand         
+     \freezedimenmacro\hoofdafstand         
+     \freezedimenmacro\voetafstand          
+     \freezedimenmacro\onderafstand         
+     \freezedimenmacro\linkerrandafstand    
+     \freezedimenmacro\linkermargeafstand   
+     \freezedimenmacro\rechtermargeafstand  
+     \freezedimenmacro\rechterrandafstand}   
+
+\fi
 
 %D We need to freeze the pagelayout before the backgrounds 
 %D are build, because the overlay will temporarily become 

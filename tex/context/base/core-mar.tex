@@ -37,7 +37,8 @@
   {\dosingleargument\doresetmarkering}
 
 \def\dostelmarkeringin[#1][#2]%
-  {\getparameters[\??mk#1][#2]}
+  {\def\docommando##1{\getparameters[\??mk##1][#2]}%
+   \processcommalist[#1]\docommando}
 
 \def\stelmarkeringin%
   {\dodoubleargument\dostelmarkeringin}
@@ -45,6 +46,7 @@
 \letvalue{\??mk \v!vorige}\gettopmark
 \letvalue{\??mk \v!eerste}\getfirstmark
 \letvalue{\??mk\v!laatste}\getbotmark
+\letvalue{\??mk\v!huidige}\getcurrentmark
 
 \def\dododefinieermarkering[#1][#2]%
   {\stelmarkeringin[#1]

@@ -15,7 +15,8 @@
 
 \unprotect 
 
-\newevery \everybodyfont \Everybodyfont % just to be sure
+\newevery \everybodyfont   \Everybodyfont   % just to be sure
+\newevery \everyfontswitch \EveryFontSwitch % just to be sure
 
 \appendtoks \presetnormallineheight \to \everybodyfont
 \appendtoks \setnormalbaselines     \to \everybodyfont
@@ -26,15 +27,35 @@
 \appendtoks \stelinspringenin       \to \everybodyfont
 \appendtoks \stelblankoin           \to \everybodyfont
 \appendtoks \stelwitruimtein        \to \everybodyfont
-%\appendtoks\setupfootnotes         \to \everybodyfont
+%appendtoks \setupfootnotes         \to \everybodyfont % not
 \appendtoks \stelspatieringin       \to \everybodyfont % nieuw
 \appendtoks \setdisplayskips        \to \everybodyfont % nieuw
+
+\appendtoks \updateraggedskips      \to \everyfontswitch  % under test 
 
 \def\stelfactorenin%
   {\stelwitruimtein
    \stelblankoin
    \settopskip
    \setmaxdepth}
+
+%D The dreadful sequence \type {\bgroup} \unknown\
+%D \type{\carryoverpar} \unknown\ \type{\egroup} is needed
+%D when for instance sidefloats are used in combination with
+%D something that starts with a group. This is because
+%D otherwise the indentation as set (by the output routine)
+%D inside the group are forgotten afterwards. 
+
+\global\let\carriedoverpar\relax 
+
+\def\carryoverpar#1%
+  {\expanded
+     {\noexpand#1%
+      \hangindent\the\hangindent
+      \hangafter \the\hangafter
+      \parskip   \the\parskip
+      \leftskip  \the\leftskip
+      \rightskip \the\rightskip}}
 
 %D There are two ways to influence the interline spacing. The
 %D most general and often most consistent way is using
@@ -101,13 +122,13 @@
       \let\normallineheight=\@@itregel % let ! ! ! ! ! ivm ex 
       \let\topskipfactor=\@@itboven
       \let\maxdepthfactor=\@@itonder
-      \setfontparameters % redundant \setstrut
+      \setfontparameters % redundant, can be \setstrut, test first 
       \updateraggedskips} % yes indeed
      {\processallactionsinset % \regelwit = dummy !
         [#1]
         [     \v!aan=>\oninterlineskip,
               \v!uit=>\offinterlineskip,
-            \v!reset=>\setfontparameters,
+            \v!reset=>\setfontparameters,% just \setstrut, test first 
           \s!unknown=>\assignvalue{#1}{\regelwit}{1.00}{1.25}{1.50}%
                       \spacing{\regelwit}]}}
 
@@ -159,16 +180,19 @@
 \def\geenblanko%
   {\removelastskip}
 
-\def\dosingleblanko#1% ook nog \v!halveregel+fuzzysnap
+\def\doassignsomeskip#1\to#2% ook nog \v!halveregel+fuzzysnap
   {\doifelse{#1}{\v!regel}
-     {\blankoskipamount=\openlineheight}
+     {#2\openlineheight}
      {\ifgridsnapping
-        \assigndimension{#1}{\blankoskipamount}%
+        \assigndimension{#1}{#2}%
           {.25\openlineheight}{.5\openlineheight}{\openlineheight}%
       \else
-        \assigndimension{#1}{\blankoskipamount}%
+        \assigndimension{#1}{#2}%
           {\smallskipamount}{\medskipamount}{\bigskipamount}%
-      \fi}%
+      \fi}}
+
+\def\dosingleblanko#1% 
+  {\doassignsomeskip#1\to\blankoskipamount 
    \global\advance\blankoskip by \blankoskipamount}
 
 \newif\iffuzzyvskip
@@ -536,7 +560,7 @@
         \s!unknown=>\edef\currentvoorwit{\commalistelement}%
                     \simplestelinspringenin]}
 
-\def\simplestelinspringenin%
+\def\simplestelinspringenin
   {\assigndimension{\currentvoorwit}{\voorwit}{1em}{1.5em}{2em}%
    \parindent=\voorwit\relax}
 
@@ -966,8 +990,8 @@
 
 \def\spacing#1%
   {\ifgridsnapping
+     \doifnot{#1}{1}{\showmessage{\m!layouts}{11}{#1}}%
      \edef\spacingfactor{1}%
-     \showmessage{\m!layouts}{11}{#1}%
    \else
      \edef\spacingfactor{#1}%
    \fi
@@ -1306,8 +1330,8 @@
          \v!laho=>\let\raggedbottomcommand\vfilll   % we do support the 
                   \let\raggedtopcommand   \vfilll,  % ugly laho (lohi)
           \v!nee=>\def\raggedcommand{\raggedright},
-           \v!ja=>\let\raggedcommand\relax,
-      \v!normaal=>\let\raggedcommand\relax]}
+           \v!ja=>\let\raggedcommand\notragged,  % was \relax
+      \v!normaal=>\let\raggedcommand\notragged]} % was \relax
 
 % Nodig i.v.m. inspringen eerste alineas
 
@@ -1410,19 +1434,31 @@
 
 % vergeten
 
-\def\forgeteverypar%
-  {\everypar{}}
+%\def\forgeteverypar%
+%  {\everypar\emptytoks}
 
 \def\forgeteverypar%
   {\everypar{\the\neverypar}}
 
-\def\forgetparindent%
+%\def\forgetparindent%
+%  {\forgeteverypar
+%   \indentfirstparagraphtrue % recently added
+%   \stelinspringenin[\v!geen]}
+
+%\def\forgetparskip%
+%  {\stelwitruimtein[\v!geen]}
+
+\def\forgetparindent
   {\forgeteverypar
    \indentfirstparagraphtrue % recently added
-   \stelinspringenin[\v!geen]}
+   \let\currentvoorwit\v!geen
+   \voorwit\zeropoint
+   \parindent\zeropoint\relax}
 
 \def\forgetparskip%
-  {\stelwitruimtein[\v!geen]}
+  {\let\currentwitruimte\v!geen
+   \tussenwit\zeropoint
+   \parskip\zeropoint\relax}
 
 \def\forgetbothskips%
   {\tolerance=1500
@@ -1435,8 +1471,7 @@
 \def\forgetall%
   {\the\everyforgetall}
 
-\appendtoks \let\par\endgraf    \to \everyforgetall % i.v.m. getpar etc
-\appendtoks \notragged          \to \everyforgetall 
+\appendtoks \forgetragged       \to \everyforgetall 
 \appendtoks \forgetparskip      \to \everyforgetall  
 \appendtoks \forgetparindent    \to \everyforgetall 
 \appendtoks \forgetbothskips    \to \everyforgetall 
@@ -1453,27 +1488,98 @@
      \forgeteverypar
      \let\next=}
 
-% ach ja
+% ach ja, hoort niet hier
+
+% \unexpanded\def\dostartattributes#1#2#3%
+%   {\begingroup  % geen \bgroup, anders in mathmode lege \hbox
+%    \doifdefinedelse{#1#2}
+%      {\def\fontattribute{\getvalue{#1#2}}}
+%      {\let\fontattribute=\empty}%
+%    \doifdefinedelse{#1#3}
+%      {\def\colorattribute{\getvalue{#1#3}}}
+%      {\let\colorattribute=\empty}%
+%    \startcolor[\colorattribute]%
+%    \@EA\doconvertfont\@EA{\fontattribute}}
+% 
+% \unexpanded\def\dostopattributes%
+%   {\stopcolor
+%    \endgroup}
+% 
+% \unexpanded\def\doattributes#1#2#3#4%
+%   {\dostartattributes{#1}{#2}{#3}{#4}\dostopattributes}
+
+%D A hardly faster implementation follows. We cannot use 
+%D \type {csname} testing since the first argument can be 
+%D anything, even a raw fontswitch. No a real improvement 
+%D (some 5 seconds on 260 seconds for the maps bibliography).  
+ 
+\def\@@dodoconvertfont#1{\csname\@letter@  #1\endcsname}
+\def\@@donoconvertfont#1{\csname\@noletter@#1\endcsname}
+
+\unexpanded\def\dodoconvertfont#1%#2%
+  {\doifdefinedelse{\@letter@#1}
+     {\doifelsenothing{#1}
+        {\let\next\gobbleoneargument}
+        {\let\next\@@dodoconvertfont}}
+     {\doifdefinedelse{#1}
+        {\let\next\getvalue}
+        {\let\next\firstofoneargument}}%
+   \next{#1}}%{#2}}
+
+\let\doconvertfont=\dodoconvertfont
+
+\def\noconvertfont#1%#2%
+  {\doifdefinedelse{\@noletter@#1}
+     {\doifelsenothing{#1}
+        {\let\next\gobbleoneargument}
+        {\let\next\@@donoconvertfont}}
+     {\let\next\firstofoneargument}%
+   \next{#1}}%{#2}}
+
+\beginTEX 
 
 \unexpanded\def\dostartattributes#1#2#3%
   {\begingroup  % geen \bgroup, anders in mathmode lege \hbox
-   \doifdefinedelse{#1#2}
-     {\def\fontattribute{\getvalue{#1#2}}}
-     {\let\fontattribute=\empty}%
-   \doifdefinedelse{#1#3}
-     {\def\colorattribute{\getvalue{#1#3}}}
-     {\let\colorattribute=\empty}%
-   \startcolor[\colorattribute]%
-   \@EA\doconvertfont\@EA{\fontattribute}}
+   \@EA\ifx\csname#1#3\endcsname\relax
+     \let\dostopattributes\endgroup
+   \else
+     \let\dostopattributes\@@dostopattributes
+     \startcolor[\csname#1#3\endcsname]%
+   \fi
+   \@EA\ifx\csname#1#2\endcsname\relax
+     \expandafter\gobbleoneargument
+   \else
+     \expandafter\doconvertfont
+   \fi{\csname#1#2\endcsname}}
 
-\unexpanded\def\dostopattributes%
+\endTEX
+
+\beginETEX \ifcsname
+
+\unexpanded\def\dostartattributes#1#2#3%
+  {\begingroup  % geen \bgroup, anders in mathmode lege \hbox
+   \ifcsname#1#3\endcsname
+     \let\dostopattributes\@@dostopattributes
+     \startcolor[\csname#1#3\endcsname]%
+   \else                  
+     \let\dostopattributes\endgroup
+   \fi
+   \ifcsname#1#2\endcsname
+     \expandafter\doconvertfont
+   \else
+     \expandafter\gobbleoneargument
+   \fi{\csname#1#2\endcsname}}
+
+\endETEX
+
+\unexpanded\def\@@dostopattributes%
   {\stopcolor
    \endgroup}
 
 \unexpanded\def\doattributes#1#2#3#4%
   {\dostartattributes{#1}{#2}{#3}{#4}\dostopattributes}
 
-% kan vaker worden toegepast:
+% Kan vaker worden toegepast en moet bovendien sneller!
 
 \newskip\leftskipadaption
 
@@ -1481,15 +1587,46 @@
   {\dosetleftskipadaption{#1}%
    \advance\leftskip by \leftskipadaption}
 
+\beginTEX
+
 \def\dosetleftskipadaption#1%
-  {\leftskipadaption\!!zeropoint
+  {\leftskipadaption\zeropoint
    \processaction[#1] % \ExpandFirstAfter
      [\v!standaard=>\leftskipadaption=
-                    \ifdim\voorwit=\!!zeropoint\@@sllinks\else\voorwit\fi,
+                    \ifdim\voorwit=\zeropoint\@@sllinks\else\voorwit\fi,
              \v!ja=>\leftskipadaption=
-                    \ifdim\voorwit=\!!zeropoint\@@sllinks\else\voorwit\fi,
+                    \ifdim\voorwit=\zeropoint\@@sllinks\else\voorwit\fi,
             \v!nee=>,
         \s!unknown=>\leftskipadaption=#1]}
+
+\endTEX
+
+\beginETEX
+
+% installation 
+
+\setvalue{@lsa@\v!standaard}%
+  {\ifdim\voorwit=\zeropoint\@@sllinks\else\voorwit\fi}
+
+\setvalue{@lsa@\v!ja}%
+  {\ifdim\voorwit=\zeropoint\@@sllinks\else\voorwit\fi}
+
+\setvalue{@lsa@\v!nee}%
+  {\zeropoint}
+
+\setvalue{@lsa@\empty}%
+  {\zeropoint}
+
+\def\dosetleftskipadaption#1%
+  {\leftskipadaption
+     \ifcsname @lsa@#1\endcsname
+       \csname @lsa@#1\endcsname
+     \else 
+       #1%
+     \fi
+   \relax}
+
+\endETEX
 
 % Dit hoort eigenlijk thuis onder het kopje boodschappen cq,
 % meldingen.
@@ -1647,8 +1784,19 @@
    \parfillskip\!!zeropoint\!!plus#6\relax
    \parindent#7\relax}
 
-\def\notragged%
-  {\setraggedskips{0}{0em}{0em}{0em}{0em}{1fil}{\parindent}}
+% \def\notragged%
+%   {\setraggedskips{0}{0em}{0em}{0em}{0em}{1fil}{\parindent}}
+
+\def\notragged
+  {\chardef\raggedstatus=0
+   \leftskip1\leftskip
+   \rightskip1\rightskip
+   \spaceskip\!!zeropoint
+   \xspaceskip\!!zeropoint
+   \parfillskip\!!zeropoint\!!plus1fil\relax
+   \let\updateraggedskips\relax} % new 
+
+\let\forgetragged\notragged
 
 \def\raggedleft%
   {\setraggedness\leftraggedness
@@ -1815,7 +1963,71 @@
 
 \def\woordrechts%
   {\groupedcommand{\hfill\hbox}{\parfillskip\!!zeropoint}}
+
+%D \macros
+%D   {pushindentation,popindentation}
+%D
+%D The pushing and popping is done by:
 
+\newbox\indentationboxA
+\newbox\indentationboxB
+
+\def\pushindentation%
+  {\bgroup
+   \ifhmode
+     \unskip
+     \setbox\indentationboxA=\lastbox       % get \strut if present
+     \unskip
+     \setbox\indentationboxB=\lastbox       % get \indent generated box
+     \unskip
+   \else
+     \hskip\!!zeropoint                     % switch to horizontal mode
+     \unskip
+     \setbox\indentationboxA=\lastbox       % get \indent generated box
+     \setbox\indentationboxB=\box\voidb@x
+   \fi}
+
+\def\popindentation%
+  {\box\indentationboxB\box\indentationboxA % put back the boxes
+   \egroup}
+
+%D The only complication lays in \type{\strut}. In \PLAIN\
+%D \TEX\ a \type{\strut} is defined as:
+%D
+%D \starttypen
+%D \def\strut%
+%D   {\relax\ifmmode\copy\strutbox\else\unhcopy\strutbox\fi}
+%D \stoptypen
+%D
+%D But what is a \type{\strut}? Normally it's a rule of width
+%D zero, but when made visual, it's a rule and a negative skip.
+%D The mechanism for putting things in the margins described
+%D here cannot handle this situation very well. One
+%D characteristic of \type{\strut} is that the \type{\unhcopy}
+%D results in entering horizontal mode, which in return leads
+%D to some indentation.
+%D
+%D To serve our purpose a bit better, the macro \type{\strut}
+%D can be redefined as:
+%D
+%D \starttypen
+%D \def\strut%
+%D   {\relax\ifmmode\else\hskip0pt\fi\copy\strutbox}
+%D \stoptypen
+%D
+%D Or more compatible:
+%D
+%D \starttypen
+%D \def\strut%
+%D   {\relax\ifmmode
+%D      \copy\strutbox
+%D    \else
+%D      \bgroup\setbox\strutbox=\normalhbox{\box\strutbox}\unhcopy\strutbox\egroup
+%D    \fi}
+%D \stoptypen
+%D
+%D In \CONTEXT\ however we save some processing time by putting
+%D an extra \type{\hbox} around the \type{\strutbox}.
 
 \stelwitruimtein
   [\v!geen]

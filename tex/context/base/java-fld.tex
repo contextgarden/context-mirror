@@ -211,51 +211,8 @@ function Forget_Changes ()
 
 \definereference[ForgetChanges][JS(Forget_Changes)]
 
-% \startJSpreamble {Walk_Field} used later 
-% 
-% function Walk_Field ( FieldSet ) 
-%   { var i = 1 ; 
-%     while (true) 
-%       { v = this.getField(FieldSet+":"+i) ; 
-%         if (v) 
-%           { if (v.value=="On") 
-%               { v.value = "Off" ; 
-%                 var ii = i ; ii++ ; 
-%                 v = this.getField(FieldSet+":"+ii) ; 
-%                 if (!v) 
-%                   { v = this.getField(FieldSet+":"+1) }
-%                 if (v) 
-%                   { v.value = "On" }
-%                 break }
-%             i++ } 
-%         else
-%           { break } } }
-% 
-% \stopJSpreamble
-% 
-% \startJScode {Walk_Field} uses {Walk_Field} 
-%   Walk_Field (JS_S_1) ; 
-% \stopJScode
-% 
-% \startJSpreamble {Set_Field} used later 
-% 
-% function Set_Field ( FieldSet, FieldName ) 
-%   { var i = 1 ; 
-%     while (true) 
-%       { v = this.getField(FieldSet+":"+i) ; 
-%         if (!v) 
-%           { break }  
-%         else if (i==FieldName) 
-%           { v.value = "On" }
-%         else 
-%           { v.value = "Off" } 
-%         i++ } } 
-%
-% \stopJSpreamble
-%
-% \startJScode {Set_Field} uses {Set_Field} 
-%   Set_Field (JS_S_1,JS_S_2) ; 
-% \stopJScode
+% This can be done more efficient, by keeping track of the 
+% current top of the stack. 
 
 \startJSpreamble {FieldStack} used later
 

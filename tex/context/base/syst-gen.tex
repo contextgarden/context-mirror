@@ -318,8 +318,10 @@
 %D inside the argument. Later on we will meet some more clever 
 %D alternatives to this command. 
 
-\def\expanded#1%
-  {\edef\@@expanded{\noexpand#1}\@@expanded}
+\let\@@expanded\empty
+
+\long\def\expanded#1%
+  {\long\edef\@@expanded{\noexpand#1}\@@expanded}
 
 %D \macros 
 %D   {expandoneargafter,expandtwoargsafter}
@@ -538,7 +540,7 @@
 
 \beginETEX \detokenize
 
-\def\donottest#1{#1}%       \detokenize{#1}}
+\def\donottest#1{#1} % {\detokenize{#1}}
 
 \endETEX
 
@@ -1898,8 +1900,8 @@
 
 \beginTEX
 
-\def\p!doifinstringelse#1#2%
-  {\def\pp!doifinstringelse##1#1##2##3\war%
+\long\def\p!doifinstringelse#1#2%
+  {\long\def\pp!doifinstringelse##1#1##2##3\war%
      {\csname if\if##2@fals\else tru\fi e\endcsname}%
    \expanded{\pp!doifinstringelse#2#1@@\noexpand\war}} % expand #2 here
 
@@ -1907,8 +1909,8 @@
 
 \beginETEX \unless
 
-\def\p!doifinstringelse#1#2%
-  {\def\pp!doifinstringelse##1#1##2##3\war%
+\long\def\p!doifinstringelse#1#2%
+  {\long\def\pp!doifinstringelse##1#1##2##3\war%
      {\unless\if##2@}%
    \expanded{\pp!doifinstringelse#2#1@@\noexpand\war}} % expand #2 here
 
@@ -1927,8 +1929,8 @@
 %D possible, the latter alternative does minimal (one level) 
 %D expansion. 
 
-\def\p!doifincsnameelse#1#2%
-  {\def\pp!doifincsnameelse##1#1##2##3\war%
+\long\def\p!doifincsnameelse#1#2%
+  {\long\def\pp!doifincsnameelse##1#1##2##3\war%
      {\csname\if##2@iffalse\else iftrue\fi\endcsname}%
    \@EA\pp!doifincsnameelse#2#1@@\war}
 
@@ -2338,6 +2340,19 @@
 
 \let\getexpandedparameters=\geteparameters
 
+%D This one is slightly faster: 
+
+\def\dogetparameters#1[#2]#3[#4%
+  {\if\noexpand#4]%
+     \expandafter\gobbleoneargument
+   \else
+     \def\p!dogetparameter##1{\p!doassign#1[#2][##1==\relax]}%
+     \expandafter\xdogetparameters
+   \fi#4}
+
+\def\xdogetparameters#1]%
+  {\processcommalist[#1]\p!dogetparameter}
+
 %D \macros
 %D   {getemptyparameters}
 %D
@@ -2386,8 +2401,8 @@
 
 \def\copyparameters[#1]#2[#3]#4[#5]%
   {\doifnot{#1}{#3}
-     {\def\docopyparameter##1%
-        {\docopyvalue{#1}{#3}{##1}}%
+     {\def\docopyparameter{\docopyvalue{#1}{#3}}%
+     %\def\docopyparameter##1{\docopyvalue{#1}{#3}{##1}}%
       \processcommalist[#5]\docopyparameter}}
 
 %D \macros
@@ -2410,8 +2425,14 @@
 %D \doifassignmentelse {...} {then ...} {else ...}
 %D \stoptypen
 
-\def\doifassignmentelse%
-  {\doifinstringelse{=}}
+% not robust 
+%
+% \def\doifassignmentelse%
+%   {\doifinstringelse{=}}
+
+\def\doifassignmentelse#1%
+  {\convertargument#1\to\ascii
+   \doifinstringelse{=}{\ascii}}
 
 %D \macros
 %D   {ifparameters,checkparameters}
@@ -2639,13 +2660,13 @@
 %D us to do some checking, we reimplemented the non||empty 
 %D ones.
 
-\def\dosingleargument    {\chardef\expectedarguments=1 \dosingleempty    }
-\def\dodoubleargument    {\chardef\expectedarguments=2 \dodoubleempty    }
-\def\dotripleargument    {\chardef\expectedarguments=3 \dotripleempty    }
-\def\doquadrupleargument {\chardef\expectedarguments=4 \doquadrupleempty }
-\def\doquintupleargument {\chardef\expectedarguments=5 \doquintupleempty }
-\def\dosixtupleargument  {\chardef\expectedarguments=6 \dosixtupleempty  }
-\def\doseventupleargument{\chardef\expectedarguments=7 \doseventupleempty}
+\def\dosingleargument    {\chardef\expectedarguments 1 \dosingleempty    }
+\def\dodoubleargument    {\chardef\expectedarguments 2 \dodoubleempty    }
+\def\dotripleargument    {\chardef\expectedarguments 3 \dotripleempty    }
+\def\doquadrupleargument {\chardef\expectedarguments 4 \doquadrupleempty }
+\def\doquintupleargument {\chardef\expectedarguments 5 \doquintupleempty }
+\def\dosixtupleargument  {\chardef\expectedarguments 6 \dosixtupleempty  }
+\def\doseventupleargument{\chardef\expectedarguments 7 \doseventupleempty}
 
 %D \macros
 %D   {iffirstagument,ifsecondargument,ifthirdargument,
@@ -3048,13 +3069,13 @@
 \def\complexorsimple#1%
   {\setnameofcommand{#1}%
    \doifnextcharelse{[}
-     {\firstargumenttrue\getvalue{\s!complex\nameofcommand}}
-     {\firstargumentfalse\getvalue{\s!simple\nameofcommand}}}
+     {\firstargumenttrue \getvalue{\s!complex\nameofcommand}}
+     {\firstargumentfalse\getvalue{\s!simple \nameofcommand}}}
 
 \def\complexorsimpleempty#1%
   {\setnameofcommand{#1}%
    \doifnextcharelse{[}
-     {\firstargumenttrue\getvalue{\s!complex\nameofcommand}}
+     {\firstargumenttrue \getvalue{\s!complex\nameofcommand}}
      {\firstargumentfalse\getvalue{\s!complex\nameofcommand}[]}}
 
 \def\setnameofcommand#1%
@@ -3212,21 +3233,29 @@
 %D \type {\if} and friends, in practice we will use a 
 %D slightly more complicated macro. 
 
-\let\normalif     \if
-\let\normalifx    \ifx
-\let\normalifnum  \ifnum
-\let\normalifdim  \ifdim
-\let\normalifcat  \ifcat
-\let\normalifcase \ifcase
-\let\normalor     \or
-\let\normalelse   \else
-\let\normalfi     \fi
+\let\normalif       \if
+\let\normalifx      \ifx
+\let\normalifnum    \ifnum
+\let\normalifdim    \ifdim
+\let\normalifcat    \ifcat
+\let\normalifcase   \ifcase
+\let\normalifcsname \ifcsname
+\let\normalor       \or
+\let\normalelse     \else
+\let\normalfi       \fi
 
 \def\beginrobusttest
   {\bgroup
-   \let\if\relax\let\ifx\relax\let\ifnum\relax\let\ifcase\relax
-   \let\ifcat\relax\let\ifdim\relax
-   \let\or\relax\let\else\relax\let\fi\relax}
+   \let\if      \relax
+   \let\ifx     \relax
+   \let\ifnum   \relax
+   \let\ifdim   \relax
+   \let\ifcat   \relax
+   \let\ifcase  \relax
+   \let\ifcsname\relax
+   \let\or      \relax
+   \let\else    \relax
+   \let\fi      \relax}
 
 \let\endrobusttest\egroup
 
@@ -3252,34 +3281,72 @@
 %    \beginrobusttest
 %    \futurelet\nextargument\nextnextargument}
 
+% \def\dogetgroupargument#1#2%
+%   {\def\nextnextargument%  
+%      {\normalifx\nextargument\bgroup 
+%         \endrobusttest
+%         \noshowargumenterror
+%         \def\nextargument{#1\dodogetargument}%
+%      %\normalelse\normalifx\nextargument\lineending % this can be an option
+%      %  \def\nextargument{\bgroup\def\\ {\egroup\dogetgroupargument#1#2}\\}%
+%      %\normalelse\normalifx\nextargument\blankspace % but may never be default
+%      %  \def\nextargument{\bgroup\def\\ {\egroup\dogetgroupargument#1#2}\\}%
+%       \normalelse
+%         \endrobusttest
+%         \doshowargumenterror
+%         \def\nextargument{#2\dodogetargument{}}%
+%       \normalfi%\normalfi\normalfi                  % so let's get rid of it
+%       \nextargument}%
+%    \beginrobusttest
+%    \futurelet\nextargument\nextnextargument}
+
+% we need to use an \ifcase in order to honor the \normal...
+
+\def    \permitspacesbetweengroups{\chardef\@@permitspacesbetweengroups=0 }
+\def\dontpermitspacesbetweengroups{\chardef\@@permitspacesbetweengroups=1 }
+
+\dontpermitspacesbetweengroups
+
 \def\dogetgroupargument#1#2%
-  {\def\nextnextargument%  
-     {\normalifx\nextargument\bgroup 
+  {\def\nextnextargument%
+     {\normalifx\nextargument\bgroup
         \endrobusttest
         \noshowargumenterror
         \def\nextargument{#1\dodogetargument}%
-     %\normalelse\normalifx\nextargument\lineending % this can be an option
-     %  \def\nextargument{\bgroup\def\\ {\egroup\dogetgroupargument#1#2}\\}%
-     %\normalelse\normalifx\nextargument\blankspace % but may never be default
-     %  \def\nextargument{\bgroup\def\\ {\egroup\dogetgroupargument#1#2}\\}%
       \normalelse
-        \endrobusttest
-        \doshowargumenterror
-        \def\nextargument{#2\dodogetargument{}}%
-      \normalfi%\normalfi\normalfi                  % so let's get rid of it
+        \normalifcase\@@permitspacesbetweengroups
+          \normalifx\nextargument\lineending
+            \endrobusttest
+            \def\nextargument{\bgroup\def\\ {\egroup\dogetgroupargument#1#2}\\}%
+          \normalelse\normalifx\nextargument\blankspace
+            \endrobusttest
+            \def\nextargument{\bgroup\def\\ {\egroup\dogetgroupargument#1#2}\\}%
+          \normalelse
+            \endrobusttest 
+            \doshowargumenterror
+            \def\nextargument{#2\dodogetargument{}}%
+          \normalfi\normalfi
+        \normalelse
+          \endrobusttest
+          \doshowargumenterror
+          \def\nextargument{#2\dodogetargument{}}%
+        \normalfi
+      \normalfi
       \nextargument}%
    \beginrobusttest
    \futurelet\nextargument\nextnextargument}
 
 \def\dosinglegroupempty#1%
   {\def\dodogetargument%
-     {#1}%
+     {\dontpermitspacesbetweengroups
+      #1}%
    \dogetgroupargument\firstargumenttrue\firstargumentfalse}
 
 \def\dodoublegroupempty#1%
   {\def\dodogetargument##1%
      {\def\dodogetargument%
-        {#1{##1}}%
+        {\dontpermitspacesbetweengroups
+         #1{##1}}%
       \dogetgroupargument\secondargumenttrue\secondargumentfalse}%
    \dogetgroupargument\firstargumenttrue\firstargumentfalse}
 
@@ -3287,7 +3354,8 @@
   {\def\dodogetargument##1%
      {\def\dodogetargument####1%
         {\def\dodogetargument%
-           {#1{##1}{####1}}%
+           {\dontpermitspacesbetweengroups
+            #1{##1}{####1}}%
          \dogetgroupargument\thirdargumenttrue\thirdargumentfalse}%
       \dogetgroupargument\secondargumenttrue\secondargumentfalse}%
    \dogetgroupargument\firstargumenttrue\firstargumentfalse}
@@ -3297,7 +3365,8 @@
      {\def\dodogetargument####1%
         {\def\dodogetargument########1%
            {\def\dodogetargument%
-              {#1{##1}{####1}{########1}}%
+              {\dontpermitspacesbetweengroups
+               #1{##1}{####1}{########1}}%
             \dogetgroupargument\fourthargumenttrue\fourthargumentfalse}%   
          \dogetgroupargument\thirdargumenttrue\thirdargumentfalse}%
       \dogetgroupargument\secondargumenttrue\secondargumentfalse}%
@@ -3309,7 +3378,8 @@
         {\def\dodogetargument########1%
            {\def\dodogetargument################1%
              {\def\dodogetargument%
-                {#1{##1}{####1}{########1}{################1}}%
+                {\dontpermitspacesbetweengroups
+                 #1{##1}{####1}{########1}{################1}}%
               \dogetgroupargument\fifthargumenttrue\fifthargumentfalse}%   
             \dogetgroupargument\fourthargumenttrue\fourthargumentfalse}%   
          \dogetgroupargument\thirdargumenttrue\thirdargumentfalse}%

@@ -23,7 +23,7 @@
 %D The \ACROBAT\ programs are not bug free. By setting the next
 %D switch, we will at least try to prevent problems.
 
-\newif\ifovercomePDFbugs \overcomePDFbugstrue
+\newif\ifovercomePDFbugs \overcomePDFbugsfalse % true
 
 \def\setPDFdestination#1%
   {\bgroup
@@ -183,11 +183,32 @@
 
 \let\lastPDFaction\empty
 
+%D We can safe a couple of references by moving this code 
+%D to the specific drivers.   
+%D
+%D The following code used to work okay, but as with any 
+%D update of Acrobat Viewers, upward compatibility was 
+%D just a dream.  
+
 \def\doPDFsetupopenaction%
-  {\doPDFaddtocatalog{/OpenAction \lastPDFaction}}
+  {\doPDFaddtocatalog{/OpenAction <<\lastPDFaction>>}}
 
 \def\doPDFsetupcloseaction%
-  {\doPDFaddtocatalog{/CloseAction \lastPDFaction}}
+  {\doPDFaddtocatalog{/CloseAction <<\lastPDFaction>>}}
+
+%D So, starting with version~5 viewers, when the open actions 
+%D started yto give problems, for testing purposes we 
+%D decided use indirect actions. 
+
+%\def\doPDFsetupopenaction%
+%  {\doPDFdictionaryobject class FDF name local:openaction data \lastPDFaction
+%   \doPDFgetobjectreference{FDF}{local:openaction}\PDFobjectreference
+%   \doPDFaddtocatalog{/OpenAction \PDFobjectreference}}
+%
+%\def\doPDFsetupcloseaction%
+%  {\doPDFdictionaryobject class FDF name local:closeaction data \lastPDFaction
+%   \doPDFgetobjectreference{FDF}{local:closeaction}\PDFobjectreference
+%   \doPDFaddtocatalog{/CloseAction \PDFobjectreference}}
 
 \let\PDFopenpageaction \empty
 \let\PDFclosepageaction\empty
@@ -204,8 +225,8 @@
    \ifx\PDFclosepageaction\empty\!!donebfalse\else\donetrue\!!donebtrue\fi
    \ifdone
      \doPDFpageattribute
-       {/AA <<\if!!donea/O \PDFopenpageaction \fi
-              \if!!doneb/C \PDFclosepageaction\fi>>}%
+       {/AA <<\if!!donea/O <<\PDFopenpageaction >> \fi
+              \if!!doneb/C <<\PDFclosepageaction>> \fi>>}%
    \fi
    \global\let\PDFopenpageaction \empty
    \global\let\PDFclosepageaction\empty}
@@ -495,6 +516,7 @@
     %{\ifnum#2>0 /Dur #2 \fi
      {\ifnum0<0#2 /Dur #2 \fi
       \ifx\PDFpagetransitions\empty\else/Trans <<\PDFpagetransitions>>\fi}}
+%      \ifx\PDFpagetransitions\empty\else/Trans <</Type /Trans \PDFpagetransitions>>\fi}}
 
 %D \macros
 %D   {doPDFinsertmov}
@@ -1009,7 +1031,7 @@
      \doPDFannotationobject class FDF name #1 width #2 height #3 data
        {/Subtype /Widget /T (#1) /FT /Tx
         /MaxLen \ifcase0#5 1000 \else#5 \fi
-        /DV (#4) /V ()
+        /DV (#4) /V () % (#4) % value added
         /Ff \FDFflag\space
         /F \FDFplus\space
         /DA (\FDFattributes)
@@ -1023,7 +1045,7 @@
        {/T (#1) /FT /Tx
         /MaxLen \ifcase0#5 1000 \else#5 \fi
         /Kids [\FDFkids]
-        /DV (#4) /V ()
+        /DV (#4) /V () % (#4) % value added
         /Ff \FDFflag\space
         /F \FDFplus\space
         /DA (\FDFattributes)
@@ -1116,8 +1138,8 @@
 
 \newif\ifFDFvalues
 
-\def\doFDFpresetpushcheckfield#1#2#3#4#5#6#7#8%
-  {\bgroup
+\def\doFDFpresetpushcheckfield#1#2#3#4#5#6#7#8% in acro<5 (\FDFdefault)
+  {\bgroup                                    % in acro>5 /\FDFdefault
    \ifcase#8\relax\FDFvaluesfalse\else\FDFvaluestrue\fi
    \setFDFswitches[#5]%
    \setFDFactions[#7]%
@@ -1126,7 +1148,7 @@
      \doFDFdefault{#6}{#4}%
      \doPDFannotationobject class FDF name #1 width #2 height #3 data
        {/Subtype /Widget /T (#1) /FT /Btn
-        \ifFDFvalues /DV (\FDFdefault) /V ()\fi
+        \ifFDFvalues /DV /\FDFdefault\space /V ()\fi
         /Ff \FDFflag\space
         /F \FDFplus\space
         \FDFappearance\space
@@ -1138,7 +1160,7 @@
      \doPDFdictionaryobject class FDF name #1 data
        {/T (#1) /FT /Btn
         /Kids [\FDFkids]
-        \ifFDFvalues /DV (\FDFdefault) /V ()\fi
+        \ifFDFvalues /DV /\FDFdefault\space /V ()\fi
         /Ff \FDFflag\space
         /F \FDFplus\space
         \FDFactions}%

@@ -78,17 +78,17 @@
    \doprocessfile\scratchread{#1}\doprocessEPSline
    \egroup
    \ifnum\EPSfound>0
-     #2=\EPSllx bp  % Using \EPSllx bp instead of 
-     #4=\EPSurx bp  % \dimen0=1bp and \EPSllx\dimen0
-     #3=\EPSlly bp  % is more accurate (.005pt). 
-     #5=\EPSury bp 
-     \scratchdimen=\EPSllx bp \advance#4 -\scratchdimen
-     \scratchdimen=\EPSlly bp \advance#5 -\scratchdimen
+     #2=\EPSllx bp% Using \EPSllx bp instead of 
+     #4=\EPSurx bp% \dimen0=1bp and \EPSllx\dimen0
+     #3=\EPSlly bp% is more accurate (.005pt). 
+     #5=\EPSury bp% 
+     \scratchdimen=\EPSllx bp\advance#4 -\scratchdimen
+     \scratchdimen=\EPSlly bp\advance#5 -\scratchdimen
    \else
-     #2=\!!zeropoint
-     #3=\!!zeropoint
-     #4=\!!zeropoint
-     #5=\!!zeropoint
+     #2=\zeropoint
+     #3=\zeropoint
+     #4=\zeropoint
+     #5=\zeropoint
    \fi
   %\message{[bbox #1: \EPSllx\space\EPSurx\space\EPSlly\space\EPSury]}%
    \global\let\MPllx\EPSllx \global\let\MPlly\EPSlly

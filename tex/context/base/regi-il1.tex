@@ -1,0 +1,223 @@
+%D \module
+%D   [       file=enco-il1,
+%D        version=1997.08.29,
+%D          title=\CONTEXT\ Encoding Macros,
+%D       subtitle=ISO Latin 1 keys,
+%D         author={Denis Roegel},
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D This module is not yet finished since some characters 
+%D need to be mapped onto symbols, which is work in progress. 
+
+\startregime [il1]
+
+\defineactivetoken 144 {\dotlessi}
+\defineactivetoken 145 {\textgrave}
+\defineactivetoken 146 {\textacute}        % also see 180
+\defineactivetoken 147 {\textcircumflex}
+\defineactivetoken 148 {\texttilde}
+\defineactivetoken 149 {\textmacron}
+\defineactivetoken 150 {\textbreve}
+\defineactivetoken 151 {\textdotaccent}
+
+\defineactivetoken 154 {\textring}
+
+\defineactivetoken 157 {\texthungarumlaut}
+\defineactivetoken 158 {\textogonek}
+\defineactivetoken 159 {\textcaron}
+
+\defineactivetoken 160 {\nonbreakablespace} 
+
+% \defineactivetoken 161 {!`}
+
+% this command must be defined (symbol
+% exists in TC fonts; I took the same name)
+% \defineactivetoken 162 {\textcent} 
+
+\defineactivetoken 163 {\sterling}
+
+% this command must be defined (symbol
+% exists in TC fonts; I took the same name)
+% \defineactivetoken 164 {\textcurrency} 
+
+% this command must be defined (symbol
+% exists in TC fonts; I took the same name)
+% \defineactivetoken 165 {\textyen} 
+
+% this command must be defined (symbol
+% exists in TC fonts; I took the same name)
+% \defineactivetoken 166 {\textbrokenbar} 
+
+\defineactivetoken 167 {\S}
+\defineactivetoken 168 {\textdiaeresis}
+\defineactivetoken 169 {\copyright}
+
+% this command must be defined
+% = $^{\underline {\rm a}}$ (symbol
+% exists in TC fonts; I took the same name)
+% \defineactivetoken 170 {\textordfeminine} 
+
+% we want real guillemots 
+\defineactivetoken 171 {\ifvmode\leavevmode\fi\leftguillemot\prewordbreak}
+
+% = $\neg$ (must be defined) (symbol
+% exists in TC fonts; I took the same name)
+% \defineactivetoken 172 {\textlnot}
+
+% = soft hyphen 
+% \defineactivetoken 173 {\-} 
+
+% this command must be defined (symbol
+% exists in TC fonts; I took the same name)
+% \defineactivetoken 174 {\textregistered} 
+
+\defineactivetoken 175 {\textmacron}
+
+% = $^\circle$ (must be defined)
+% \defineactivetoken 176 {\textdegree} 
+
+% = $\pm$ (must be defined) (symbol
+% exists in TC fonts; I took the same name)
+% \defineactivetoken 177 {\textpm} 
+
+% = $^2$  (must be defined) (symbol
+% exists in TC fonts; I took the same name)
+% \defineactivetoken 178 {\texttwosuperior} 
+
+% = $^3$  (must be defined) (symbol
+% exists in TC fonts; I took the same name)
+% \defineactivetoken 179 {\textthreesuperior} 
+
+\defineactivetoken 180 {\textacute}
+
+% =$\mu$ (must be defined) (symbol
+% exists in TC fonts; I took the same name)
+% \defineactivetoken 181 {\textmu} 
+
+\defineactivetoken 182 {\P}
+
+% = $\cdot$ (must be defined)
+% \defineactivetoken 183 {\textperiodcentered} 
+
+\defineactivetoken 184 {\textcedilla}
+
+% = $^1$  (must be defined) (symbol
+% exists in TC fonts; I took the same name)
+% \defineactivetoken 185 {\textonesuperior} 
+
+% this command must be defined
+% = $^{\underline\circle}$ (symbol
+% exists in TC fonts; I took the same name)
+% \defineactivetoken 186 {\textordmasculine} 
+
+\defineactivetoken 187 {\prewordbreak\rightguillemot}
+
+% = $1\over4$ % to define (symbol
+% exists in TC fonts; I took the same name)
+% \defineactivetoken 188 {\textonequarter} 
+
+% = $1\over2$ % to define (symbol
+% exists in TC fonts; I took the same name)
+% \defineactivetoken 189 {\textonehalf} 
+
+% = $3\over4$ % to define (symbol
+% exists in TC fonts; I took the same name)
+% \defineactivetoken 190 {\textthreequarters} 
+
+% \defineactivetoken 191 {?`}
+
+\defineactivetoken 192 {\Agrave}
+\defineactivetoken 193 {\Aacute}
+\defineactivetoken 194 {\Acircumflex}
+\defineactivetoken 195 {\Atilde}
+\defineactivetoken 196 {\Adiaeresis}
+\defineactivetoken 197 {\Aring}
+\defineactivetoken 198 {\AEligature}
+\defineactivetoken 199 {\Ccedilla}
+\defineactivetoken 200 {\Egrave}
+\defineactivetoken 201 {\Eacute}
+\defineactivetoken 202 {\Ecircumflex}
+\defineactivetoken 203 {\Ediaeresis}
+\defineactivetoken 204 {\Igrave}
+\defineactivetoken 205 {\Iacute}
+\defineactivetoken 206 {\Icircumflex}
+\defineactivetoken 207 {\Idiaeresis}
+
+% to define (missing in enco-ec.tex)
+% \defineactivetoken 208 {\Eth} 
+
+\defineactivetoken 209 {\Ntilde}
+\defineactivetoken 210 {\Ograve}
+\defineactivetoken 211 {\Oacute}
+\defineactivetoken 212 {\Ocircumflex}
+\defineactivetoken 213 {\Otilde}
+\defineactivetoken 214 {\Odiaeresis}
+
+% = $\times$  was wrong in regi-win.tex 
+% to define (symbol
+% exists in TC fonts; I took the same name)
+% \defineactivetoken 215 {\texttimes} 
+                                   
+\defineactivetoken 216 {\Ostroke}
+\defineactivetoken 217 {\Ugrave}
+\defineactivetoken 218 {\Uacute}
+\defineactivetoken 219 {\Ucircumflex}
+\defineactivetoken 220 {\Udiaeresis}
+
+% was wrong in regi-win.tex
+\defineactivetoken 221 {\Yacute} 
+
+\defineactivetoken 222 {\THorn}
+\defineactivetoken 223 {\ssharp}
+\defineactivetoken 224 {\agrave}
+\defineactivetoken 225 {\aacute}
+\defineactivetoken 226 {\acircumflex}
+\defineactivetoken 227 {\atilde}
+\defineactivetoken 228 {\adiaeresis}
+\defineactivetoken 229 {\aring}
+\defineactivetoken 230 {\aeligature}
+\defineactivetoken 231 {\cdedille}
+\defineactivetoken 232 {\egrave}
+\defineactivetoken 233 {\eacute}
+\defineactivetoken 234 {\ecircumflex}
+\defineactivetoken 235 {\ediaeresis}
+\defineactivetoken 236 {\igrave}
+\defineactivetoken 237 {\iacute}
+\defineactivetoken 238 {\icircumflex}
+\defineactivetoken 239 {\idiaeresis}
+
+% to define (missing in enco-ec.tex)
+% \defineactivetoken 240 {\eth} 
+
+\defineactivetoken 241 {\ntilde}
+\defineactivetoken 242 {\ograve}
+\defineactivetoken 243 {\oacute}
+\defineactivetoken 244 {\ocircumflex}
+\defineactivetoken 245 {\otilde}
+\defineactivetoken 246 {\odiaeresis}
+
+% = $.\over.$ % was wrong in regi-win.tex
+% to define (symbol
+% exists in TC fonts; I took the same name)
+% \defineactivetoken 247 {\textdiv} 
+
+\defineactivetoken 248 {\ostroke}
+\defineactivetoken 249 {\ugrave}
+\defineactivetoken 250 {\uacute}
+\defineactivetoken 251 {\ucircumflex}
+\defineactivetoken 252 {\udiaeresis}
+
+% was wrong in regi-win.tex
+\defineactivetoken 253 {\yacute} 
+
+\defineactivetoken 254 {\thorn}
+\defineactivetoken 255 {\ydiaeresis}
+
+\stopregime
+
+\endinput

@@ -96,7 +96,7 @@
     {\ifskipprotrudingdef \else
        \doifelsenothing{#2}
          {\doifnumberelse{\string#1}
-            {\dododefineprotrudefactor{#1}{#3}{#4}}
+            {\dododefineprotrudefactor {#1}{#3}{#4}}
             {\dododefineprotrudefactor{`#1}{#3}{#4}}}
          {\pushmacro\char \let\char\empty
           \doifnumberelse{\csname#1#2\endcsname}

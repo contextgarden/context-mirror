@@ -157,6 +157,7 @@ var:conversion:yes,no,always::
 var:reduction:yes,no::
 var:rgb:yes,no::
 var:cmyk:yes,no::
+var:mpcmyk:yes,no::
 stopsetup
 
 startsetup
@@ -251,6 +252,13 @@ typ::
 stopsetup
 
 startsetup
+com:definetype:
+typ:val/vars/:
+val:*name::
+ivr:setuptype::
+stopsetup
+
+startsetup
 com:setuptype:
 typ:var/:
 var:space:on,off::
@@ -303,7 +311,7 @@ var:vcommand:*command::
 var:ccommand:*command::
 var:before:*command::
 var:after:*command::
-var:margin:*dimension,standard::
+var:margin:*dimension,standard,yes,no::
 var:evenmargin:*dimension::
 var:oddmargin:*dimension::
 var:blank:*dimension,small,medium,big,standard,halfline,line::
@@ -312,6 +320,7 @@ var:indentnext:yes,no::
 var:style:normal,bold,slanted,boldslanted,type,cap,small...,*command::
 var:color:*name::
 var:palet:*name::
+var:lines:yes,no,hyphenated::
 stopsetup
 
 startsetup
@@ -331,7 +340,7 @@ com:setupfootnotes:
 typ:vars/:
 var:conversion:numbers,characters,Characters,romannumerals,Romannumerals::
 var:way:bytext,by*section::
-var:location:page,text,columns,high::
+var:location:page,text,columns,high,none::
 var:rule:on,off::
 var:before:*command::
 var:after:*command::
@@ -355,6 +364,12 @@ stopsetup
 
 startsetup
 com:footnote:
+typ:ref/arg/:
+val:*text::
+stopsetup
+
+startsetup
+com:footnotetext:
 typ:ref/arg/:
 val:*text::
 stopsetup
@@ -710,6 +725,7 @@ var:depth:*dimension::
 var:corner:round,rectangular::
 var:radius:*dimension::
 var:empty:yes,no::
+var:foregroundcolor:*name::
 val:*text::
 stopsetup
 
@@ -739,7 +755,12 @@ typ:var/:
 var:interlinespace:small,medium,big::
 var:n:*number::
 var:before:*command::
+var:inbetween:*command::
 var:after:*command::
+var:color:*name::
+var:height:*dimension,max::
+var:depth:*dimension,max::
+var:alternative:a,b,c::
 stopsetup
 
 startsetup
@@ -776,6 +797,8 @@ var:right:*command::
 var:before:*command::
 var:after:*command::
 var:inner:*command::
+var:linecorrection:on,off::
+var:depthcorrection:on,off::
 var:margin:standard,yes,no::
 ivr:setupframed::
 stopsetup
@@ -783,7 +806,7 @@ stopsetup
 startsetup
 com:start<<framedtext>>:
 typ:val/vars/stp/:
-val:left,right,middle::
+val:left,right,middle,none::
 ivr:setupframedtexts::
 stopsetup
 
@@ -976,11 +999,6 @@ startsetup
 com:showframe:
 typ:val/:
 val:text,margin,edge::
-stopsetup
-
-startsetup
-com:showbuildup:
-typ::
 stopsetup
 
 startsetup
@@ -1577,7 +1595,7 @@ startsetup
 com:getmarking:
 typ:val/val/:
 val:*name::
-val:first,last,previous,both,all::
+val:first,last,previous,both,all,current::
 stopsetup
 
 startsetup
@@ -1814,7 +1832,7 @@ stopsetup
 startsetup
 com:setuphyphenmark:
 typ:var/:
-var:sign:--,---,-,\normalpenalty 10000\ ,),(,=,/::
+var:sign:--,---,-,~,),(,=,/::
 stopsetup
 
 startsetup
@@ -1855,7 +1873,7 @@ stopsetup
 startsetup
 com:page:
 typ:vals/:
-val:yes,markup,no,preference,bigpreference, left,right,disable,last,quadruple, even,odd,blank,empty,reset:yes:
+val:yes,makeup,no,preference,bigpreference, left,right,disable,last,quadruple, even,odd,blank,empty,reset:yes:
 stopsetup
 
 startsetup
@@ -2036,6 +2054,16 @@ typ:vars/:
 var:location:left,right::
 var:left:*text::
 var:right:*text::
+var:align:left,middle,right::
+var:strut:yes,no::
+var:distance:*dimension::
+var:margin:*dimension,standard,yes,no::
+var:leftmargin:*dimension::
+var:rightmargin:*dimension::
+var:indentnext:yes,no::
+var:alternative:*name::
+var:spacebefore:*dimension::
+var:after:*dimension::
 stopsetup
 
 startsetup
@@ -2251,6 +2279,8 @@ var:ownnumber:yes,no::
 var:page:left,right,yes::
 var:continue:yes,no::
 var:header:none,empty,high,nomarking::
+var:text:none,empty,high,nomarking::
+var:footer:none,empty,high,nomarking::
 var:before:*command::
 var:inbetween:*command::
 var:after:*command::
@@ -2314,6 +2344,7 @@ var:width:*dimension::
 var:distance:*dimension::
 var:factor:*number::
 var:items:*number::
+var:start:*number::
 var:before:*command::
 var:inbetween:*command::
 var:after:*command::
@@ -2334,7 +2365,7 @@ stopsetup
 startsetup
 com:startitemize:
 typ:vals/vars/stp/:
-val:a,A,KA,n,N,m,r,R,KR,*number,continue, standard,repeat/broad,repeat/serried,packed, stopper,joinedup,atmargin,inmargin,intro,columns:standard:
+val:a,A,KA,n,N,m,r,R,KR,*number,continue, standard,repeat/broad,repeat/serried,packed, stopper,joinedup,atmargin,inmargin,intro, columns:standard:
 ivr:setupitemize::
 stopsetup
 
@@ -2607,7 +2638,7 @@ stopsetup
 startsetup
 com:currentdate:
 typ:vals/:
-val:day,month,MONTH,weekday,WEEKDAY,year, dd,mm,jj,yy,d,m,j,y,referral:day,month,year:
+val:day,month,weekday,year, dd,mm,jj,yy,d,m,j,y,referral:day,month,year:
 stopsetup
 
 startsetup
@@ -3745,6 +3776,7 @@ var:color:*name::
 var:title:*text::
 var:space:yes,no::
 var:symbol:normal,New,Balloon,Addition,Help,Paragraph,Key::
+var:option:max::
 stopsetup
 
 startsetup

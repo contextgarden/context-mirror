@@ -56,12 +56,12 @@
 %      {\localframed[\??mp][#1]{\startMPcode#2\stopMPcode}}
 %    \edef\MPwd{\the\wd\scratchbox}
 %    \edef\MPht{\the\ht\scratchbox}
-%    \definieerpapierformaat
+%    \definepapersize
 %      [\s!dummy]
 %      [\c!breedte=\MPwd,
 %       \c!hoogte=\MPht]
 %    \startlocal % keep settings as local as can be
-%      \stelpapierformaatin
+%      \setuppapersize
 %        [\s!dummy][\s!dummy]
 %      \stellayoutin
 %        [\c!breedte=\MPwd,\c!hoogte=\MPht,
@@ -69,9 +69,9 @@
 %         \c!snijwit=\!!zeropoint,\c!bodemwit=\!!zeropoint,
 %         \c!hoofd=\!!zeropoint,\c!voet=\!!zeropoint]
 %    \stoplocal % which saves us the trouble of push/pop
-%    \getvalue{\e!start\v!standaard\e!opmaak}%
+%    \startmakeup[\v!standaard]%
 %      \centerbox{\box\scratchbox}%
-%    \getvalue{\e!stop\v!standaard\e!opmaak}%
+%    \stopmakeup
 %    \egroup}
 % 
 % \setupMPpage
@@ -96,12 +96,12 @@
   {\egroup\egroup\egroup
    \edef\fittingwd{\the\wd\scratchbox}
    \edef\fittinght{\the\ht\scratchbox}
-   \definieerpapierformaat
+   \definepapersize
      [\s!dummy]
      [\c!breedte=\fittingwd,
       \c!hoogte=\fittinght]
    \startlocal % keep settings as local as can be
-     \stelpapierformaatin
+     \setuppapersize
        [\s!dummy][\s!dummy]
      \stellayoutin
        [\c!breedte=\fittingwd,\c!hoogte=\fittinght,\c!plaats=\v!midden,
@@ -109,9 +109,9 @@
         \c!snijwit=\!!zeropoint,\c!bodemwit=\!!zeropoint,
         \c!hoofd=\!!zeropoint,\c!voet=\!!zeropoint]
    \stoplocal % which saves us the trouble of push/pop
-   \getvalue{\e!start\v!standaard\e!opmaak}%
+   \startmakeup[\v!standaard]%
      \centerbox{\box\scratchbox}%
-   \getvalue{\e!stop\v!standaard\e!opmaak}%
+   \stopmakeup
    \egroup}
 
 % MP pages 

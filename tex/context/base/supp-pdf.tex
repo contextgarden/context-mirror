@@ -214,7 +214,7 @@
    \fi}
 
 %D We use the general macro \type{\doprocessfile} and feed this
-%D with a line handling macro that changed it's behavior when
+%D with a line handling macro that changes it's behavior when
 %D the stream operators are encountered.
 
 \def\handlePDFline%
@@ -386,7 +386,7 @@
 
 %D In \POSTSCRIPT\ arguments precede the operators. Due to the
 %D fact that in some translations we need access to those
-%D arguments, as well as that sometimes we have to skip them,
+%D arguments, and also because sometimes we have to skip them,
 %D we stack them up. The stack is one||dimensional for non path
 %D operators and two||dimensional for operators inside a path.
 %D This is because we have to save the whole path for
@@ -423,7 +423,7 @@
 %D \stoptypen
 %D
 %D When setting an argument, the exact position on the stack
-%D depend on the current value of the \COUNTERS\
+%D depends on the current value of the \COUNTERS\
 %D \type{\nofMPsegments} and \type{\nofMParguments}.
 
 \newcount\nofMPsegments
@@ -437,7 +437,7 @@
 %D \stoptypen
 %D
 %D We use the prefix \type{@@MP} to keep the stack from
-%D conflicting with existing macros. To speed up things bit
+%D conflicting with existing macros. To speed up things a bit
 %D more, we use the constant \type{\@@MP}.
 
 \def\@@MP{@@MP}
@@ -445,8 +445,7 @@
 \def\setMPargument#1%
   {\advance\nofMParguments by 1
    \expandafter\def
-     \csname\@@MP\the\nofMPsegments\the\nofMParguments\endcsname%
-     {\do#1}}
+     \csname\@@MP\the\nofMPsegments\the\nofMParguments\endcsname{\do#1}}
 
 \def\gMPa#1%
   {\csname\@@MP0\number#1\endcsname}
@@ -463,7 +462,7 @@
   {\csname\@@MP#10\endcsname}
 
 %D When we reset the stack, we can assume that all further
-%D comment is to be ignored as well as handled in strings.
+%D comment is to be ignored and handled in strings.
 %D By redefining the reset macro after the first call, we
 %D save some run time. Only use this macro after all 
 %D comments are processed and use the simple alternative 
@@ -492,7 +491,7 @@
 %D special meaning in \TEX, like \type{$} and \type{{}}.
 %D
 %D A previous solution made \type{\} an active character and
-%D let it look ahead for a number or character. W ehad to
+%D let it look ahead for a number or characters. We had to
 %D abandon this scheme because of the need for verbatim
 %D support. The next solution involved some \CATCODE\
 %D trickery but works well.
@@ -662,7 +661,7 @@
   {\PDFcode{\!MP{\gMPa1} g 
             \!MP{\gMPa1} G}}
 
-%D Begining and ending the graphics is taken care of by the
+%D Beginning and ending the graphics is taken care of by the
 %D macro \type{\handleMPgraphic}, which is redefined when
 %D the first graphics operator is met.
 
@@ -695,7 +694,7 @@
 \let\handleMPgraphic=\handleMPbegingraphic
 
 %D We check for three kind of bounding boxes: the normal one
-%D and two high precission ones:
+%D and two high precision ones:
 %D
 %D \starttypen
 %D BoundingBox: llx lly ucx ucy
@@ -764,7 +763,7 @@
    \let\handleMPsequence=\dohandleMPsequence
    \handleMPsequence}
 
-%D \METAPOST\ draws it dots by moving to a location and
+%D \METAPOST\ draws its dots by moving to a location and
 %D invoking \type{0 0 rlineto}. This operator is not
 %D available in \PDF. Our solution is straightforward: we draw
 %D a line from $(current\_x, current\_y)$ to itself. This
@@ -776,11 +775,13 @@
 
 %D These saved coordinates are also used when we handle the
 %D texts. Text handling proved to be a bit of a nuisance, but
-%D finaly I saw the light. It proved that we also had to
+%D finally I saw the light. It proved that we also had to
 %D take care of \type{(split arguments)}.
 
 \def\setMPfshowfont#1#2%
   {\font\temp=#1\space at #2\relax\temp}
+
+\let\MPfshowcommand\empty
 
 \def\handleMPfshow%
   {\bgroup
@@ -805,25 +806,26 @@
       \setMPfshowfont{\gMPa\nofMParguments}\size
       \advance\nofMParguments by -1
       \temp
-      \ifnum\nofMParguments=1
-        \def\do(##1){##1}%
-        \gMPa1%
-      \else
-        \scratchcounter=1
-        \def\dodo##1%
-          {\edef\!!stringa{##1}\ifx\!!stringa\space\MPspacechar\else##1\fi}%
-        \def\do(##1{\dodo{##1}}%
-        \gMPa\scratchcounter\MPspacechar 
-        \let\do\relax
-        \loop
-          \advance\scratchcounter by 1
-          \ifnum\scratchcounter<\nofMParguments\relax
-            \gMPa\scratchcounter\MPspacechar
-        \repeat
-        \def\do##1){\dodo{##1}}%
-        \gMPa\scratchcounter
-      \fi
-      \unskip}%
+      \MPfshowcommand
+        {\ifnum\nofMParguments=1
+           \def\do(##1){##1}%
+           \gMPa1%
+         \else
+           \scratchcounter=1
+           \def\dodo##1%
+             {\edef\!!stringa{##1}\ifx\!!stringa\space\MPspacechar\else##1\fi}%
+           \def\do(##1{\dodo{##1}}%
+           \gMPa\scratchcounter\MPspacechar 
+           \let\do\relax
+           \loop
+             \advance\scratchcounter by 1
+             \ifnum\scratchcounter<\nofMParguments\relax
+               \gMPa\scratchcounter\MPspacechar
+           \repeat
+           \def\do##1){\dodo{##1}}%
+           \gMPa\scratchcounter
+         \fi
+         \unskip}}%
   % 
   % this fails in latest pdftex's
   %
@@ -855,7 +857,7 @@
 %D However, the following implementation is more robust, since
 %D some fonts have funny visible spaces in the space slot. This
 %D gives a mismatch between the space that \METAPOST\ took into
-%D account and the \quote {natural} space. This only happens in
+%D account and the \citeer {natural} space. This only happens in
 %D labels, since \type {btex}||\type {etex} thingies don't have
 %D spaces. This phenomena showed up when preparing the
 %D \METAFUN\ manual, where Palatino fonts are used. We can 
@@ -869,7 +871,7 @@
 %D arguments. Dashes however need a bit different treatment,
 %D otherwise \PDF\ viewers complain loudly. Another
 %D complication is that one argument comes after the \type{]}.
-%D When reading the data, we simple ignore the array boundary
+%D When reading the data, we simply ignore the array boundary
 %D characters. We save ourselves some redundant newlines and
 %D at the same time keep the output readable by packing the
 %D literals.
@@ -887,11 +889,11 @@
    \PDFcode{\somestring}%
    \egroup}
 
-%D The \type{setlinewidth} commands look a bit complicated. There are
-%D two alternatives, that alsways look the same. As John Hobby
-%D says:
+%D The \type{setlinewidth} commands looks a bit complicated. There are
+%D two alternatives, that result in a similar look in both 
+%D $x$- and $y$-dorection. As John Hobby says:
 %D
-%D \startsmaller
+%D \startsmaller \switchtobodyfont[ss]
 %D \starttypen
 %D x 0 dtransform exch truncate exch idtransform pop setlinewidth
 %D 0 y dtransform truncate idtransform setlinewidth pop
@@ -927,13 +929,13 @@
    \next}
 
 %D The most complicated command is \type{concat}. \METAPOST\
-%D applies this operator to \type{stoke}. At that moment the
+%D applies this operator to \type{stroke}. At that moment the
 %D points set by \type{curveto} and \type{moveto}, are already
 %D fixed. In \PDF\ however the \type{cm} operator affects the
 %D points as well as the pen (stroke). Like more \PDF\
-%D operators, \type{cm} is a defined in a bit ambiguous way.
+%D operators, \type{cm} is defined in a bit ambiguous way.
 %D The only save route for non||circular penshapes, is saving
-%D teh path, recalculating the points and applying the
+%D the path, recalculating the points and applying the
 %D transformation matrix in such a way that we can be sure
 %D that its behavior is well defined. This comes down to
 %D inverting the path and applying \type{cm} to that path as
@@ -964,7 +966,7 @@
    \dohandleMPpath}
 
 %D Most paths are drawn with simple round pens. Therefore we've
-%D split up the routinein two.
+%D split up the routine in two.
 
 \def\flushnormalMPpath%
   {\scratchcounter=\nofMPsegments
@@ -1029,16 +1031,20 @@
 %D more constants. There is however not much need for further
 %D optimization because penshapes usually are round and
 %D therefore need no transformation. Nevertheless we move the
-%D factor to the outer level and use bit different \type{pt}
+%D factor to the outer level and use a bit different \type{pt}
 %D removal macro. Although the values represent base points,
 %D we converted them to pure points, simply because those can
 %D be converted back.
 
 \def\MPconcatfactor{256}
 
+% \def\doMPreducedimen#1
+%   {\count0=\MPconcatfactor
+%    \advance\dimen#1 \ifdim\dimen#1>\!!zeropoint .5\else -.5\fi\count0
+%    \divide\dimen#1 \count0\relax}
+
 \def\doMPreducedimen#1
   {\count0=\MPconcatfactor
-   \advance\dimen#1 \ifdim\dimen#1>\!!zeropoint .5\else -.5\fi\count0
    \divide\dimen#1 \count0\relax}
 
 \def\doMPexpanddimen#1
@@ -1064,9 +1070,53 @@
   {\dimen 8=\!!zeropoint                    % t_x
    \dimen10=\!!zeropoint}                   % t_y
 
+%D \starttypen 
+%D \def\doMPconcat#1#2#3#4%
+%D   {\dimen12=#1 pt \doMPreducedimen12 % p_x
+%D    \dimen14=#3 pt \doMPreducedimen14 % p_y
+%D    %
+%D    \dimen16  \dimen 0
+%D    \multiply \dimen16  \dimen 6
+%D    \dimen20  \dimen 2
+%D    \multiply \dimen20  \dimen 4
+%D    \advance  \dimen16 -\dimen20
+%D    %
+%D    \dimen18  \dimen12
+%D    \multiply \dimen18  \dimen 6
+%D    \dimen20  \dimen14
+%D    \multiply \dimen20  \dimen 4
+%D    \advance  \dimen18 -\dimen20
+%D    \dimen20  \dimen 4
+%D    \multiply \dimen20  \dimen10
+%D    \advance  \dimen18  \dimen20
+%D    \dimen20  \dimen 6
+%D    \multiply \dimen20  \dimen 8
+%D    \advance  \dimen18 -\dimen20
+%D    %
+%D    \multiply \dimen12 -\dimen 2
+%D    \multiply \dimen14  \dimen 0
+%D    \advance  \dimen12  \dimen14
+%D    \dimen20  \dimen 2
+%D    \multiply \dimen20  \dimen 8
+%D    \advance  \dimen12  \dimen20
+%D    \dimen20  \dimen 0
+%D    \multiply \dimen20  \dimen10
+%D    \advance  \dimen12 -\dimen20
+%D    %
+%D    \doMPreducedimen16
+%D    \divide   \dimen18  \dimen16 \doMPexpanddimen18
+%D    \divide   \dimen12  \dimen16 \doMPexpanddimen12
+%D    %
+%D    \edef#2{\withoutpt{\the\dimen18}}% % p_x^\prime
+%D    \edef#4{\withoutpt{\the\dimen12}}} % p_y^\prime
+%D \stoptypen 
+
+%D The following optimization resulted from some tests by 
+%D and email exchanges with Sanjoy Mahajan. 
+
 \def\doMPconcat#1#2#3#4%
-  {\dimen12=#1 pt \doMPreducedimen12        % p_x
-   \dimen14=#3 pt \doMPreducedimen14        % p_y
+  {\dimen12=#1 pt \doMPreducedimen12 % p_x
+   \dimen14=#3 pt \doMPreducedimen14 % p_y
    %
    \dimen16  \dimen 0
    \multiply \dimen16  \dimen 6
@@ -1096,22 +1146,29 @@
    \multiply \dimen20  \dimen10
    \advance  \dimen12 -\dimen20
    %
-   \doMPreducedimen16
-   \divide   \dimen18  \dimen16 \doMPexpanddimen18
-   \divide   \dimen12  \dimen16 \doMPexpanddimen12
+   \ifdim\dimen16>1pt
+     \ifdim\dimen16>256pt
+       \doMPreducedimen16
+       \divide \dimen18 \dimen16 \doMPexpanddimen18
+       \divide \dimen12 \dimen16 \doMPexpanddimen12
+     \else
+       \divide \dimen18 \dimen16 \doMPexpanddimen18 \doMPexpanddimen18
+       \divide \dimen12 \dimen16 \doMPexpanddimen12 \doMPexpanddimen12
+     \fi
+   \fi
    %
-   \edef#2{\withoutpt{\the\dimen18}}%       % p_x^\prime
-   \edef#4{\withoutpt{\the\dimen12}}}       % p_y^\prime
+   \edef#2{\withoutpt{\the\dimen18}}% % p_x^\prime
+   \edef#4{\withoutpt{\the\dimen12}}} % p_y^\prime
 
 %D The following explanation of the conversion process was
 %D posted to the \PDFTEX\ mailing list by Tanmoy. The original
 %D macro was part of a set of macro's that included sinus and
-%D cosinus calculation as well as scaling and translating. The
+%D cosinus calculations as well as scaling and translating. The
 %D \METAPOST\ to \PDF\ conversion however only needs
 %D transformation.
 
-%D \start \switchnaarkorps [ss]
-%D
+%M \start \switchnaarkorps [ss]
+
 %D Given a point $(U_x, U_y)$ in user coordinates, the business
 %D of \POSTSCRIPT\ is to convert it to device space. Let us say
 %D that the device space coordinates are $(D_x, D_y)$. Then, in
@@ -1268,7 +1325,7 @@
 %D Again matrix notation comes in handy (i.e. someone has
 %D already solved the problem for us): we need the inverse
 %D transformation matrix. The inverse transformation matrix can
-%D be calculated very easily: it is
+%D be calculated very easily: 
 %D
 %D \plaatsformule
 %D   \startformule
@@ -1301,7 +1358,7 @@
 %D \plaatsformule
 %D   \startformule
 %D     P_x^\prime = { { s_y(p_x-t_x) + r_y(t_y-p_y) } \over
-%D                    { s_x*s_y-r_x*r_y } }
+%D                    { s_x s_y-r_x r_y } }
 %D   \stopformule
 %D
 %D \plaatsformule
@@ -1330,9 +1387,9 @@
 %D cosine, I know that the terms are small (because I never
 %D have an angle greater than 45 degrees), so I chose to
 %D apportion the factor in a different way.
-%D
-%D \stop
-%D
+
+%M \stop
+
 %D The path is output using the values saved on the stack. If
 %D needed, all coordinates are recalculated.
 
@@ -1405,7 +1462,7 @@
    \fi
    \handleMPsequence}
 
-%D The main conversion command is
+%D The main conversion command is:
 %D
 %D \starttypen
 %D \convertMPtoPDF {filename} {x scale} {y scale}
@@ -1423,7 +1480,7 @@
 %D   {makeMPintoPDFobject,lastPDFMPobject}
 %D
 %D For experts there are a few more options. When attributes
-%D are to be added, the code muts be embedded in an object 
+%D are to be added, the code must be embedded in an object 
 %D accompanied with the appropriate directives. One can 
 %D influence this process with \type {\makeMPintoPDFobject}.
 %D
@@ -1592,7 +1649,7 @@
 %D \macros
 %D   {twodigitMPoutput}
 %D
-%D We can limit the precission to two digits after the comma 
+%D We can limit the precision to two digits after the comma 
 %D by saying: 
 %D
 %D \starttypen

@@ -307,23 +307,23 @@
 \newif\ifsharePDFactions \sharePDFactionsfalse
 
 \def\doPDFaction width #1 height #2 action #3%
-  {\ifcase\similarreference\relax
-     \xdef\lastPDFaction{<<#3>>}%
-   \or
-     \ifsharePDFactions
-       \immediate\pdfobj{<<#3>>}\xdef\lastPDFaction{\the\pdflastobj\space0 R}%
-     \else
-       \xdef\lastPDFaction{<<#3>>}%
-     \fi
-   \fi
-   \ifcollectreferenceactions \else
+  {\ifcollectreferenceactions 
+     \xdef\lastPDFaction{#3}%
+   \else
      \bgroup
+     \xdef\lastPDFaction{<<#3>>}%
+   % this is yet untested 
+   % \ifcase\similarreference\relax\or\ifsharePDFactions
+   %   \global\advance\nofPDFsimilar by 1
+   %   \special{pdf: object @PDF::sim:\the\nofPDFsimilar\space\lastPDFaction}%
+   %   \xdef\lastPDFaction{@PDF::sim:\the\nofPDFsimilar}%
+   % \fi\fi
      \scratchdimen=#1sp\edef\width {\the\scratchdimen\space}%
      \scratchdimen=#2sp\edef\height{\the\scratchdimen\space}%
      \special{pdf: ann width \width height \height
        <</Subtype /Link /Border [0 0 0]
          \ifhighlighthyperlinks \else /H /N \fi
-         /A \lastPDFaction>>}%
+         /A \lastPDFaction\space>>}%
      \egroup
    \fi}
 

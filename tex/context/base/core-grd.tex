@@ -72,9 +72,9 @@
   {\setbox0=\hbox{\setstrut\strut}%
    \setbox2=\hbox{(}%
    \dimen0=\ht0\advance\dimen0 by -\ht2
-   \ifdim\dimen0<\!!zeropoint\dimen0=\!!zeropoint\fi
+   \ifdim\dimen0<\zeropoint\dimen0=\zeropoint\fi
    \dimen2=\dp0\advance\dimen2 by -\dp2
-   \ifdim\dimen2<\!!zeropoint\dimen2=\!!zeropoint\fi
+   \ifdim\dimen2<\zeropoint\dimen2=\zeropoint\fi
    \edef\thetopbaselinecorrection{\the\dimen0}%
    \edef\thebotbaselinecorrection{\the\dimen2}}
 
@@ -108,7 +108,7 @@
   {\endgraf
    \ifvmode
      \ifdim\prevdepth<\maxdimen
-       \ifdim\prevdepth<\!!zeropoint \else
+       \ifdim\prevdepth<\zeropoint \else
          \ifdim\prevdepth<\dp\strutbox
            \dobaselinecorrection
          \fi
@@ -227,7 +227,7 @@
 
 \def\dogetnoflines#1#2%
   {\noflinesheight=#2\relax
-   \ifdim\noflinesheight=\!!zeropoint\relax
+   \ifdim\noflinesheight=\zeropoint
      \noflines=0
    \else
      \divide\noflinesheight by \openlineheight
@@ -313,13 +313,13 @@
         \forcepresnaptrue
       \fi
       \ifforcepresnap
-        \vbox{\hsize\!!zeropoint\strut}\nobreak\vskip-\openlineheight
+        \vbox{\hsize\zeropoint\strut}\nobreak\vskip-\openlineheight
       \fi
       %
       \ifdim\ht\nextbox>\ht\strutbox
         \scratchdimen=\ht\nextbox
         \ifcase\@@presnap
-          \ifdim\scratchskip>\!!zeropoint\relax
+          \ifdim\scratchskip>\zeropoint\relax
             \scratchcounter=\scratchskip
             \advance\scratchcounter by -\openlineheight
             \ifnum\scratchcounter<0
@@ -340,16 +340,16 @@
         \ifnum\noflines>0
           \scratchdimen=\noflines\lineheight
         \else
-          \scratchdimen=\!!zeropoint
+          \scratchdimen=\zeropoint
         \fi
       \else
-        \scratchdimen=\!!zeropoint
+        \scratchdimen=\zeropoint
       \fi
       \ifnum\@@extrasnap=1 \advance\scratchdimen by \extrasnapsign\lineheight \fi
       \ifnum\@@extrasnap=2 \advance\scratchdimen by \extrasnapsign.5\lineheight \fi
       \edef\presnap{\the\scratchdimen}%
       \ifstrutsnapping
-        \ifdim\scratchdimen=\!!zeropoint\else\vskip\scratchdimen\fi
+        \ifdim\scratchdimen=\zeropoint\else\vskip\scratchdimen\fi
       \fi
       \ifdim\dp\nextbox>\dp\strutbox
         \getnoflines{\dp\nextbox}%
@@ -357,10 +357,10 @@
         \ifnum\noflines>0
           \scratchdimen=\noflines\lineheight
         \else
-          \scratchdimen=\!!zeropoint
+          \scratchdimen=\zeropoint
         \fi
       \else
-        \scratchdimen=\!!zeropoint
+        \scratchdimen=\zeropoint
       \fi
       \ifnum\@@extrasnap=2 \advance\scratchdimen by \extrasnapsign.5\lineheight \fi
       \ifnum\@@extrasnap=3 \advance\scratchdimen by \extrasnapsign\lineheight \fi
@@ -378,7 +378,7 @@
       \fi
       \hbox{\tracesnapping\box\nextbox}%
       \ifstrutsnapping
-        \ifdim\scratchdimen=\!!zeropoint\else\vskip\scratchdimen\fi
+        \ifdim\scratchdimen=\zeropoint\else\vskip\scratchdimen\fi
       \fi
       \extrasnapreset
       \enablepresnapcorrection
@@ -393,10 +393,10 @@
         \blanko[\v!regel]}
      \vbox\bgroup
        \let\setdisplayskips=\relax
-       \abovedisplayskip=\!!zeropoint
-       \abovedisplayshortskip=\!!zeropoint
-       \belowdisplayskip=\!!zeropoint
-       \belowdisplayshortskip=\!!zeropoint
+       \abovedisplayskip\zeropoint
+       \abovedisplayshortskip\zeropoint
+       \belowdisplayskip\zeropoint
+       \belowdisplayshortskip\zeropoint
        \@EA\let\@EA\next
    \fi}
 
@@ -407,7 +407,7 @@
         \advance\scratchdimen by -\ht\strutbox
         \advance\scratchdimen by \topskip
         \ht\nextbox=\scratchdimen
-        \dp\nextbox=\!!zeropoint
+        \dp\nextbox=\zeropoint
         \box\nextbox
         \kern\lineheight
         \kern-\topskip
@@ -425,10 +425,10 @@
         \getnoflines\scratchdimen
         \setbox\nextbox=\vbox to \noflines\lineheight
           {\forgetall
-           \vskip\!!zeropoint plus \ht\nextbox
+           \vskip\zeropoint plus \ht\nextbox
            \copy\nextbox
            \kern.5\dp\strutbox % VOORLOPIGE WAARDE
-           \vskip\!!zeropoint plus \dp\nextbox}
+           \vskip\zeropoint plus \dp\nextbox}
         \noindent\snaptogrid\vbox{\box\nextbox}%
         \egroup}
        \hbox
@@ -530,7 +530,7 @@
 \newbox\fuzzysnapsplit
 
 \def\dosyncfuzzyvskip%
-  {\ifvmode\ifdim\lastskip<\lineheight\ifdim\lastskip>\!!zeropoint
+  {\ifvmode\ifdim\lastskip<\lineheight\ifdim\lastskip>\zeropoint
      \hbox{\strut}
 %     \nobreak
      \kern-2\lineheight

@@ -361,13 +361,13 @@
 \unexpanded\def\AuteurNamen#1%
   {{\let\\=\AuteurScheider#1}}
 
-\stelhoofdtekstenin
+\setupheadertexts
   [\MapsTitel]
   [\LinkerKolomTekst{\MapsCategorie\ \MapsNummer}]
   [\RechterKolomTekst{\MapsCategorie\ \MapsNummer}]
   [\AuteurNamen{\MapsAuteur}]
 
-\stelvoettekstenin
+\setupfootertexts
   [\MapsPeriode\ \MapsJaar]
   [\LinkerKolomTekst{\pagenumber}]
   [\RechterKolomTekst{\pagenumber}]
@@ -416,7 +416,7 @@
    \ifMapsInKolommen
      \haalbuffer[s-maps-1] % see later on
    \fi
-   \stelhoofdin[\c!status=\v!leeg]
+   \setupheader[\c!status=\v!leeg]
    \stelpaginanummerin[\c!nummer=\MapsPagina]
    \stellayoutin[\c!grid=\MapsGrid]
    \ifgridsnapping                           % nog controleren
@@ -588,13 +588,13 @@
 \stellayoutin
   [\c!breedte=38pc]
 
-\stelhoofdtekstenin
+\setupheadertexts
   [\MapsTitel]
   [\MapsCategorie\ \MapsNummer]
   [\MapsCategorie\ \MapsNummer]
   [\AuteurNamen{\MapsAuteur}]
 
-\stelvoettekstenin
+\setupfootertexts
   [\MapsPeriode\ \MapsJaar]
   [\pagenumber]
   [\pagenumber]

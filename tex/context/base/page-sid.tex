@@ -1,0 +1,341 @@
+%D \module
+%D   [       file=page-sid,
+%D        version=2000.10.20,
+%D          title=\CONTEXT\ OTR Macros,
+%D       subtitle=Side Floats, 
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{Context OTR Macros / Side Floats} 
+
+\unprotect 
+
+% De onderstaande  macro's ondersteunen het zetten van tekst
+% rond figuren. De macro's zijn ontworpen door Daniel Comenetz
+% en gepubliceerd in TUGBoat Volume 14 (1993), No. 1: Anchored
+% Figures at Either Margin. De macro's zijn slechts op enkele
+% punten door mij aangepast.
+
+% afhankelijke variabelen
+%
+% \overgap    vervangen door   \floatsidetopskip
+% \sidegap    vervangen door   \floatsideskip
+% \undergap   vervangen door   \floatsidebottomskip
+%
+% \prskp      vervangen door   \tussenwit
+
+% toegevoegde macro's/aanroepen
+%
+% \logsidefloat       : loginformatie
+% \flushsidefloats    : nodig voor koppen
+
+% recente wijzigingen:
+%
+% namen aangepast: \float... enz. i.p.v. \pic
+
+% Pas op: \EveryPar{\EveryPar{}\margetitel{whatever}}
+% \plaatsfiguur[links]{}{} moet goed gaan. In dat geval
+% begint de tekst terecht wat lager.
+
+\newdimen\sidefloatheight      % includes the topskip
+\newdimen\sidefloatwidth
+\newdimen\sidefloathsize
+\newdimen\sidefloatvsize       \def\nofloatvsize{-1pt }
+
+\newbox\floatbottom
+
+\newif\ifrightfloat
+\newif\ifmarginfloat
+\newif\ifroomforfloat
+\newif\iffloatshort
+\newif\iffloatflag
+\newif\iffloatrighteqo
+\newif\iffloatlefteqo
+
+\let\floatrighteqo=\eqno
+\let\floatleftleqo=\leqno
+
+% Watch it even more! In inner, gaat't mis omdat daar
+% pagetotal enz niet zijn aangepast. Inner kan overigens niet
+% betrouwbaar worden getest!
+
+\def\flushsidefloats%
+  {\par
+   \!!heighta=\sidefloatvsize
+   \advance\!!heighta by -\pagetotal
+   \ifdim\!!heighta>\!!zeropoint
+     \witruimte % nog checken op interferentie
+     \kern\!!heighta
+   \fi
+   \global\sidefloatvsize=\nofloatvsize
+   \global\floatflagfalse}
+
+\def\flushsidefloatsafterpar%
+  {\xdef\oldpagetotal{\the\pagetotal}%
+   \gdef\checksidefloat%
+     {\dochecksidefloat
+      \ifdim\oldpagetotal=\pagetotal \else
+        \xdef\checksidefloat{\dochecksidefloat}%
+        \flushsidefloats
+      \fi}}
+
+\def\forgetsidefloats% 
+  {\global\sidefloatvsize=\nofloatvsize
+   \global\floatflagfalse}
+
+\let\logsidefloat=\relax
+
+\def\pushpenalties%
+  {\widowpenalty=1
+   \clubpenalty=2
+   \brokenpenalty=1
+   \let\pushpenalties=\relax
+   \edef\poppenalties%
+     {\widowpenalty=\the\widowpenalty
+      \clubpenalty=\the\clubpenalty
+      \brokenpenalty=\the\brokenpenalty}}
+
+\let\poppenalties=\relax
+
+\def\restorepenalties%
+  {\ifnum\outputpenalty=\!!tenthousand\relax
+   \else
+     \penalty\outputpenalty
+   \fi}
+
+\def\sidefloatoutput%
+  {\iffloatshort
+     \unvbox\normalpagebox
+     \setbox\floatbottom=\lastbox
+     \ifdim\wd\floatbottom>\sidefloathsize
+       \penalty-201
+       \box\floatbottom
+     \else
+       \ifvoid\floatbottom
+       \else
+         \restoreleftindent
+         \ifdim\wd\floatbottom<\sidefloathsize
+           \parskip=\!!zeropoint
+           %\noindent
+           \vadjust{\penalty-1}%
+           \iffloatlefteqo
+             \global\floatlefteqofalse
+           \else
+             \global\advance\sidefloathsize by -\wd\floatbottom
+             \iffloatrighteqo
+               \global\floatrighteqofalse
+             \else
+               \global\divide\sidefloathsize by 2
+             \fi
+             \hskip\sidefloathsize
+           \fi
+         \fi
+         \box\floatbottom
+         \restorepenalties
+       \fi
+     \fi
+     \global\holdinginserts=0
+     \global\floatshortfalse
+   \else
+     \finalsidefloatoutput % new 
+     \global\sidefloatvsize=\nofloatvsize
+     \poppenalties
+   \fi}
+
+\def\finalsidefloatoutput% new 
+  {\finaloutput\unvbox\normalpagebox}
+
+\def\restoreleftindent%
+  {\ifrightfloat \else
+     \parskip=\!!zeropoint
+     \noindent
+     \vadjust{\penalty-1}%
+     \hskip\sidefloatwidth
+   \fi}
+
+\def\eqno%
+  {\iffloatshort
+     \global\floatrighteqotrue
+   \fi
+   \floatrighteqo}
+
+\def\leftmarginfloat#1%
+  {\global\rightfloatfalse\marginfloattrue\putsidefloat{#1}}
+
+\def\rightmarginfloat#1%
+  {\global\rightfloattrue\marginfloattrue\putsidefloat{#1}}
+
+\def\leftfloat#1%
+  {\global\rightfloatfalse\marginfloatfalse\putsidefloat{#1}}
+
+\def\rightfloat#1%
+  {\global\rightfloattrue\marginfloatfalse\putsidefloat{#1}}
+
+\def\putsidefloat#1%
+  {\par
+   \witruimte
+   \previoussidefloat
+   \stallsidefloat
+   \setbox\floatbox=\hbox{\vbox % pretty ugly, will be rewritten
+     {\vskip\ifmarginfloat-\sidefloattopskip\else\sidefloattopoffset\fi#1}}
+   \measuresidefloat
+   \ifroomforfloat \else
+     \tosssidefloat
+     \measuresidefloat
+     \stallsidefloat
+   \fi
+   \setsidefloat}
+
+\def\progresssidefloat%
+  {\!!heighta=\sidefloatvsize
+   \iffloatflag
+     \advance\!!heighta by -\dimen3
+     \global\floatflagfalse
+   \else
+     \advance\!!heighta by -\pagetotal
+   \fi}
+
+\def\tosssidefloat%
+  {\vfill\eject}
+
+\def\measuresidefloat%
+  {\global\floatflagtrue
+   \dimen3=\pagetotal % global 
+   \ifmarginfloat
+     \global\sidefloatwidth=\!!zeropoint
+   \else
+     \global\sidefloatwidth=\wd\floatbox
+     \global\advance\sidefloatwidth by \floatsideskip
+   \fi
+   \global\sidefloathsize=\hsize
+   \global\advance\sidefloathsize by -\sidefloatwidth
+   \global\sidefloatheight=\ht\floatbox
+   \global\advance\sidefloatheight by \dp\floatbox
+   \global\advance\sidefloatheight by \sidefloattopskip
+   \global\sidefloatvsize=\sidefloatheight
+   \global\advance\sidefloatvsize by \dimen3
+   \dimen0=\sidefloatvsize
+   \ifdim\dimen0>.99\pagegoal \relax
+     \roomforfloatfalse
+   \else
+     \dimen0=\pagegoal
+     \advance\dimen0 by -\sidefloatvsize
+     \ifdim\dimen0<\sidefloatbottomskip
+       \global\advance\sidefloatvsize by \dimen0
+       \global\floatshorttrue
+       \pushpenalties
+       \global\holdinginserts=1
+     \else
+       \global\advance\sidefloatvsize by \sidefloatbottomskip
+       \global\floatshortfalse
+     \fi
+     \roomforfloattrue
+   \fi}
+
+\def\setsidefloat% nilling everypar saves time and redudant pos's 
+  {{\everypar\emptytoks\vbox{\strut}}\vskip-\lineheight
+   \kern\sidefloattopskip
+   \edef\presidefloatdepth{\the\prevdepth}%
+   \nointerlineskip
+   \bgroup
+   \everypar=\emptytoks
+   \parskip=\zeropoint
+   \logsidefloat
+   \ifrightfloat
+     \hfill
+     \ifmarginfloat
+       \rlap{\hskip\rechtermargeafstand\hskip\rightskip\unhbox\floatbox}%
+     \else
+       \unhbox\floatbox
+     \fi
+   \else
+     \noindent
+     \ifmarginfloat
+       \llap{\unhbox\floatbox\hskip\leftskip\hskip\linkermargeafstand}%
+     \else
+       \unhbox\floatbox
+     \fi
+     \hfill
+   \fi
+   \egroup
+   \par
+   \kern-\sidefloatheight
+   \penalty10001
+   \normalbaselines
+   \prevdepth=\presidefloatdepth
+   %\noindent
+   \resetsidefloatparagraph
+   \ignorespaces}
+
+\newcount\sidefloatparagraph
+
+\def\iffirstsidefloatparagraph%
+  {\ifnum\sidefloatparagraph=1 }
+
+\def\setsidefloatparagraph%
+  {\global\advance\sidefloatparagraph by 1 }
+
+\def\resetsidefloatparagraph%
+  {\global\sidefloatparagraph=0 }
+
+\def\dochecksidefloat%
+  {\progresssidefloat
+   \ifdim\!!heighta>\zeropoint
+%     \advance\!!heighta by \sidefloatbottomskip
+%     \!!counta=\!!heighta
+\scratchdimen=\!!heighta
+\advance\scratchdimen \ht\strutbox
+\!!counta=\scratchdimen
+     \divide\!!counta by \baselineskip
+     \ifnum\!!counta>0
+       \ifrightfloat
+         \hangindent=-\sidefloatwidth
+       \else
+         \hangindent=\sidefloatwidth
+       \fi
+       \hangafter=-\!!counta
+     \fi
+     \setsidefloatparagraph
+   \else
+     \resetsidefloatparagraph
+   \fi
+   \parskip=\tussenwit}
+
+\def\checksidefloat%
+  {\dochecksidefloat}
+
+\def\doadjustsidefloatdisplaylines%
+  {\par
+   \vskip-\parskip
+   \noindent
+   \ignorespaces}
+
+\def\adjustsidefloatdisplaylines%
+  {\aftergroup\doadjustsidefloatdisplaylines}
+
+\def\previoussidefloat%
+  {\progresssidefloat
+   \ifdim\!!heighta>\!!zeropoint \relax
+     \iffloatshort
+       \global\floatshortfalse
+       \tosssidefloat
+     \else
+       \kern\!!heighta
+     \fi
+   \fi}
+
+\def\stallsidefloat%
+  {\!!counta=\pageshrink
+   \divide\!!counta by \baselineskip
+   \advance\!!counta by 1
+   \parskip=\!!zeropoint
+   \dorecurse{\!!counta}{\line{}}
+   \kern-\!!counta\baselineskip
+   \penalty0 }
+
+\protect \endinput 

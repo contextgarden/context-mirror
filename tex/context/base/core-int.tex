@@ -333,13 +333,13 @@
 %    \iflocation % without screen settings
 %      \egroup
 %      \dosetuppaper
-%        {\papierformaat}
+%        {\papersize}
 %        {\the\papierbreedte}
 %        {\the\papierhoogte}%
 %    \else
 %      \egroup
 %      \dosetuppaper
-%        {\printpapierformaat}
+%        {\printpapersize}
 %        {\the\printpapierbreedte}
 %        {\the\printpapierhoogte}%
 %    \fi}
@@ -357,13 +357,13 @@
    \iflocation % without screen settings
      \egroup
      \dosetuppaper
-       {\papierformaat}
+       {\papersize}
        {\the\papierbreedte}
        {\the\papierhoogte}%
    \else
      \egroup
      \dosetuppaper
-       {\printpapierformaat}
+       {\printpapersize}
        {\the\printpapierbreedte}
        {\the\printpapierhoogte}%
    \fi}
@@ -380,7 +380,7 @@
      \papierhoogte=\!!heighta 
    \fi\fi
    \dosetuppaper
-     {\printpapierformaat}
+     {\printpapersize}
      {\the\papierbreedte}
      {\the\papierhoogte}%
    \egroup}
@@ -765,11 +765,11 @@
   {\localframed[#1][#2]{#3}}
 
 \def\executeamboxcommands#1#2#3#4#5%
-  {\processaction
-     [\getvalue{\??am#1\c!dummy}]
-     [  \v!ja=>\chardef\handleunknownmenuitem=0\relax,
-      \v!leeg=>\chardef\handleunknownmenuitem=1\relax,
-       \v!nee=>\chardef\handleunknownmenuitem=2\relax]%
+  {%\processaction
+   %  [\getvalue{\??am#1\c!dummy}]
+   %  [  \v!ja=>\chardef\handleunknownmenuitem=0\relax,
+   %   \v!leeg=>\chardef\handleunknownmenuitem=1\relax,
+   %    \v!nee=>\chardef\handleunknownmenuitem=2\relax]%
    \getvalue{\??am#1#3}\relax
    \ifextendedmenu
      \setamboxcommands{#1}{#4}%
@@ -896,8 +896,8 @@
   {\getvalue{\??am\c!menu#1}}
 
 \def\horizontaalinteractiemenu#1#2#3#4%
-  {\ifdim#2>\!!zeropoint % new 
-     \dimen2=\!!zeropoint
+  {\ifdim#2>\zeropoint % new 
+     \dimen2=\zeropoint
      \setbox0=\hbox
        {\def\docommando##1%
           {\doifnotvalue{\??am##1\c!status}{\v!geen}
@@ -905,8 +905,8 @@
               \setbox2=\hbox to #2
                 {\getvalue{\??am##1#3}\interactiemenu[##1]\getvalue{\??am##1#4}}%
               \doifelsevalue{\??am##1\c!afstand}{\v!overlay}
-                {\dimen2=\!!zeropoint
-                 \wd2=\!!zeropoint}%
+                {\dimen2=\zeropoint
+                 \wd2=\zeropoint}%
                 {\dimen2=\getvalue{\??am##1\c!afstand}}%
               \box2}}%
        \startinteractie
@@ -917,8 +917,8 @@
    \fi}
 
 \def\vertikaalinteractiemenu#1#2#3#4%
-  {\ifdim#2>\!!zeropoint % new 
-     \dimen2=\!!zeropoint
+  {\ifdim#2>\zeropoint % new 
+     \dimen2=\zeropoint
      \setbox0=\vbox
        {\def\docommando##1%
           {\doifnotvalue{\??am##1\c!status}{\v!geen}
@@ -928,34 +928,50 @@
               \doifelsevalue{\??am##1\c!afstand}{\v!overlay}
                 {\dimen2=\!!zeropoint
                  \offinterlineskip
-                 \dp2=\!!zeropoint
-                 \ht2=\!!zeropoint}%
+                 \dp2=\zeropoint
+                 \ht2=\zeropoint}%
                 {\dimen2=\getvalue{\??am##1\c!afstand}}%
               \box2}}%
         \startinteractie
         \processcommacommand[\getvalue{\??am#1}]\docommando
         \stopinteractie}%  
      \ht0=#2\relax
-     \dp0=\!!zeropoint
+     \dp0=\zeropoint
      \box0\relax
    \fi}
 
+\letvalue{\??am\v!links }\empty
+\letvalue{\??am\v!rechts}\empty
+\letvalue{\??am\v!boven }\empty
+\letvalue{\??am\v!onder }\empty
+
+% \def\interactiemenus[#1]%
+%   {\iflocation
+%      \processaction
+%        [#1]
+%        [  \v!links=>\horizontaalinteractiemenu\v!links \linkerrandbreedte\c!links\c!rechts,
+%          \v!rechts=>\horizontaalinteractiemenu\v!rechts\rechterrandbreedte\c!links\c!rechts,
+%           \v!boven=>\vertikaalinteractiemenu  \v!boven \bovenhoogte\c!voor\c!na,
+%           \v!onder=>\vertikaalinteractiemenu  \v!onder \onderhoogte\c!voor\c!na]%
+%    \else
+%      \dodummypageskip{#1}%
+%    \fi}
+
 \def\interactiemenus[#1]%
   {\iflocation
-     \processaction
-       [#1]
-       [  \v!links=>\horizontaalinteractiemenu\v!links\linkerrandbreedte\c!links\c!rechts,
-         \v!rechts=>\horizontaalinteractiemenu\v!rechts\rechterrandbreedte\c!links\c!rechts,
-          \v!boven=>\vertikaalinteractiemenu\v!boven\bovenhoogte\c!voor\c!na,
-          \v!onder=>\vertikaalinteractiemenu\v!onder\onderhoogte\c!voor\c!na]%
+     \getvalue{\??am\??am\c!menu#1}%
    \else
      \dodummypageskip{#1}%
    \fi}
 
-\setvalue{\??am\v!links }{}
-\setvalue{\??am\v!rechts}{}
-\setvalue{\??am\v!boven }{}
-\setvalue{\??am\v!onder }{}
+\setvalue{\??am\??am\c!menu\v!links}%
+  {\horizontaalinteractiemenu\v!links\linkerrandbreedte\c!links\c!rechts}
+\setvalue{\??am\??am\c!menu\v!rechts}%
+  {\horizontaalinteractiemenu\v!rechts\rechterrandbreedte\c!links\c!rechts}
+\setvalue{\??am\??am\c!menu\v!boven}%
+  {\vertikaalinteractiemenu\v!boven\bovenhoogte\c!voor\c!na}
+\setvalue{\??am\??am\c!menu\v!onder}%
+  {\vertikaalinteractiemenu\v!onder\onderhoogte\c!voor\c!na}
 
 %D This can save complicated menu macros when one want to 
 %D keep control over parts of a menu (i.e.\ turn them on and 
@@ -2127,7 +2143,7 @@
 % jammer, tussen/midden had erin gemoeten; \c!commando toevoegen
 
 \def\registermenucommand#1%
-  {\noindent#1\space}
+  {{\textonly\noindent#1\space}} % no math switching 
 
 \def\doregistermenubuttons[#1][#2]% [menu id] [register]
   {\bgroup
@@ -2222,28 +2238,48 @@
    \c!linkeroffset=\!!zeropoint,
    \c!rechteroffset=\!!zeropoint]
 
-%\stelbovenin [\v!tekst] [\c!middentekst={\interactiemenus[\v!boven]}]
-%\stelonderin [\v!tekst] [\c!middentekst={\interactiemenus[\v!onder]}]
+%\def\plaatslinkerrandtekstblok {\interactiemenus[\v!links ]}
+%\def\plaatsrechterrandtekstblok{\interactiemenus[\v!rechts]}
+%\def\plaatsboventekstblok      {\interactiemenus[\v!boven ]}
+%\def\plaatsondertekstblok      {\interactiemenus[\v!onder ]}
 
-\def\plaatsrechterrandblok {\interactiemenus[\v!rechts]}
-\def\plaatslinkerrandblok  {\interactiemenus[\v!links]}
-\def\plaatsboventekstblok  {\interactiemenus[\v!boven]}
-\def\plaatsondertekstblok  {\interactiemenus[\v!onder]}
+\def\plaatslinkerrandtekstblok % Is \hss/\hsize really needed here?
+  {\hbox to \linkerrandbreedte % (check outer level and settings)
+     {\hsize\linkerrandbreedte 
+      \hss
+      \interactiemenus[\v!links]}}
 
-\def\plaatsboventekstblok%
+\def\plaatsrechterrandtekstblok % Is \hss/\hsize really needed here?
+  {\hbox to \rechterrandbreedte % (check outer level and settings)
+     {\hsize\rechterrandbreedte 
+      \interactiemenus[\v!rechts]%
+      \hss}}
+
+\def\plaatsboventekstblok
   {\vbox to \bovenhoogte
-     {\getvalue{\??tk\v!boven\v!tekst\c!voor}
+     {\vsize\bovenhoogte 
+      \getvalue{\??tk\v!boven\v!tekst\c!voor}
       \interactiemenus[\v!boven]
       \getvalue{\??tk\v!boven\v!tekst\c!na}
-      \kern\!!zeropoint}}
+      \kern\zeropoint}}
 
-\def\plaatsondertekstblok%
+\def\plaatsondertekstblok
   {\vbox to \onderhoogte
-     {\getvalue{\??tk\v!onder\v!tekst\c!voor}
+     {\vsize\onderhoogte 
+      \getvalue{\??tk\v!onder\v!tekst\c!voor}
       \interactiemenus[\v!onder]
       \getvalue{\??tk\v!onder\v!tekst\c!na}
-      \kern\!!zeropoint}}
+      \kern\zeropoint}}
 
+\ifx\leftedgetextcontent\undefined \else
+
+  \appendtoks \plaatslinkerrandtekstblok  \hskip-\linkerrandbreedte  \to \leftedgetextcontent
+  \appendtoks \plaatsrechterrandtekstblok \hskip-\rechterrandbreedte \to \rightedgetextcontent
+  \appendtoks \plaatsboventekstblok       \vskip-\bovenhoogte        \to \toptextcontent
+  \appendtoks \plaatsondertekstblok       \vskip-\onderhoogte        \to \bottomtextcontent
+
+\fi 
+  
 \stelinteractieschermin
   [\c!breedte=\printpapierbreedte,
    \c!hoogte=\printpapierhoogte,

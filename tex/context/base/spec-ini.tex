@@ -258,6 +258,14 @@
 \def\@@specarg@@{@@specarg@@}
 \def\@@specexc@@{@@specexc@@}
 
+% not faster 
+%
+% \def\@@specfil@@{@sp@f@}
+% \def\@@speclst@@{@sp@l@}
+% \def\@@speccat@@{@sp@c@}
+% \def\@@specarg@@{@sp@a@}
+% \def\@@specexc@@{@sp@e@}
+
 \let\currentspecial    =\empty
 \let\currentspecialfile=\empty
 \let\preloadedspecials =\empty
@@ -568,87 +576,6 @@
 
 \def\doifspecialavailableelse#1#2#3%
   {\doifelsevaluenothing{\@@speclst@@\string#1}{#3}{#2}}
-
-% %D This is some new, experimental code, used for testing some 
-% %D proposals of Laurent Siebenmann on behalf of the 
-% %D \kap{EMJ} discussionlist. 
-% 
-% \newif\ifexternalspecials  \externalspecialsfalse
-% \newif\ifspecialstatus     \specialstatustrue
-% 
-% \newwrite\specialfile
-% 
-% \def\openspecialfile%
-%   {\immediate\openout\specialfile=\jobname.etc\relax}
-% 
-% \def\closespecialfile%
-%   {\immediate\closeout\specialfile}
-% 
-% \let\internalspecial=\special
-% 
-% \def\externalspecial#1%
-%   {\internalspecial{}%
-%    \immediate\write\specialfile{\currentspecialdriver\space: #1}}
-% 
-% \def\doinstallspecial[#1][#2][#3]%
-%   {\setvalue{\@@specexc@@\string#1}{}%
-%    \setvalue{\@@speclst@@\string#1}{}%
-%    \setvalue{\@@speccat@@\string#1}{#2}%
-%    \setvalue{\@@specarg@@\string#1}{#3}%
-%    \addtocommalist{\string#1}\@@allspecials
-%    \def#1{\executespecial#1}}
-% 
-% \def\resetspecials%
-%   {\def\docommando##1%
-%      {\setvalue{\@@specexc@@##1}{}%
-%       \setvalue{\@@speclst@@##1}{}}%
-%    \processcommacommand[\@@allspecials]\docommando
-%    \showmessage{\m!specials}{3}{\preloadedspecials}}
-% 
-% \def\executespecials#1#2%
-%   {\edef\supportedspecials{\getvalue{\@@speclst@@\string#1}}%
-%    \def\doonespecial##1%
-%      {\doifdefined{##1\string#1}
-%         {\def\currentspecialdriver{##1}%
-%          \getvalue{##1\string#1}#2\relax}}%
-%    \ifexternalspecials
-%      \let\special=\externalspecial
-%      \doifelse{\supportedspecials}{}
-%        {\ifspecialstatus
-%           \immediate\write\specialfile{}%
-%           \immediate\write\specialfile{skipping  : \string#1}
-%           \immediate\write\specialfile{}%
-%         \fi}
-%        {\ifspecialstatus
-%           \immediate\write\specialfile{}%
-%           \immediate\write\specialfile{executing : \string#1}%
-%           \immediate\write\specialfile{supported : \supportedspecials}%
-%         \fi
-%         \immediate\write\specialfile{}%
-%         \processcommacommand[\supportedspecials]\doonespecial}%
-%    \else
-%      \let\special=\internalspecial
-%      \doifelse{\getvalue{\@@speccat@@\string#1}}{or}
-%        {\doonespecial{\getvalue{\@@specexc@@\string#1}}}
-%        {\processcommacommand[\supportedspecials]\doonespecial}%
-%    \fi}
-% 
-% \def\definespecial#1%
-%   {\ifx#1\undefined
-%      \showmessage{\m!specials}{4}{\string#1}%
-%      \def\next%
-%        {\def\@@illegalspecial@@}%
-%    \else
-%      \def\next%
-%        {\edef\@@newspeclst@@{\getvalue{\@@speclst@@\string#1}}%
-%         \addtocommalist{\currentspecial}\@@newspeclst@@
-%         \setevalue{\@@speclst@@\string#1}{\@@newspeclst@@}%
-%         \setevalue{\@@specexc@@\string#1}{\currentspecial}%
-%         \setvalue{\currentspecial\string#1}}%
-%    \fi
-%    \next}
-% 
-% %D So far for the experiment. 
 
 %D The following libraries are defined. Two postscript
 %D drivers are supported, as well as two mechanisms for
@@ -1450,7 +1377,8 @@
 \installspecial[\doinsertcomment] [and] [7]
 
 %D \macros
-%D   {dosetposition, dosetpositionwhd, dosetpositionpapersize}
+%D   {dosetposition, dosetpositionwhd, dosetpositionplus, 
+%D    dosetpositionpapersize}
 %D
 %D Not natural to \TEX, but available in \PDFTEX, and by 
 %D means of postprocessed \DVI, we can save and call upon 
@@ -1459,6 +1387,7 @@
 %D \starttypen
 %D \dosetposition          {identifier}
 %D \dosetpositionwhd       {identifier} {width} {height} {depth}
+%D \dosetpositionplus      {identifier} {width} {height} {depth} {list}
 %D \dosetpositionpapersize {width} {height} 
 %D \stoptypen
 %D
@@ -1467,6 +1396,7 @@
 
 \installspecial [\dosetposition]          [or] [1] 
 \installspecial [\dosetpositionwhd]       [or] [4] 
+\installspecial [\dosetpositionplus]      [or] [5] 
 \installspecial [\dosetpositionpapersize] [or] [2] 
 
 %D So far for the installation. For quite some time the 

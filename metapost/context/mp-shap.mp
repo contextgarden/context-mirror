@@ -258,4 +258,50 @@ def some_shape ( expr shape_type      ,
  
 enddef ; 
 
+vardef drawshape (expr t, p, lw, lc, fc) =
+  save pp ; 
+  if t>1 : % normal shape
+    path pp ;
+    pp := some_shape_path(t) xyscaled(bbwidth(p), bbheight(p)) shifted center p ;
+    fill pp withcolor fc ;
+    draw pp withpen pencircle scaled lw withcolor lc ;
+  elseif t=1 : % background only 
+    path pp ; 
+    pp := fullsquare xyscaled(bbwidth(p), bbheight(p)) shifted center p ;
+    fill pp withcolor fc ;
+  else : % dimensions only 
+    picture pp ; pp := nullpicture ; 
+    setbounds pp to fullsquare xyscaled(bbwidth(p), bbheight(p)) shifted center p ;
+    draw pp ; 
+  fi ; 
+enddef ;
+
+vardef drawline (expr t, p, lw, lc) =
+  if (t>0) and (length(p)>1) :
+    saveoptions ;
+    drawoptions(withpen pencircle scaled lw withcolor lc) ;
+    draw p ;
+    if     t =  1 : 
+      draw arrowheadonpath(p,1) ;
+    elseif t =  2 :
+      draw arrowheadonpath(reverse p,1) ;
+    elseif t =  3 :
+      for $ = p,reverse p : draw arrowheadonpath($,1) ; endfor ; 
+    elseif t = 11 :
+      draw arrowheadonpath(p,1/2) ;
+    elseif t = 12 :
+      draw arrowheadonpath(reverse p,1/2) ;
+    elseif t = 13 :
+      for $=p,reverse p : draw arrowheadonpath($,1) ; endfor ;
+      for $=p,reverse p : draw arrowheadonpath($,3/4) ; endfor ;
+    elseif t = 21 :
+      for $=1/5,1/2,4/5 : draw arrowheadonpath(p,$) ; endfor ;
+    elseif t = 22 :
+      for $=1/5,1/2,4/5 : draw arrowheadonpath(reverse p,$) ; endfor ;
+    elseif t = 23 :
+      for $=p,reverse p : draw arrowheadonpath($,1/4) ; endfor ;
+    fi ;
+  fi ; 
+enddef ;
+
 endinput ;  

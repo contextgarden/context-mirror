@@ -14,7 +14,10 @@
 %D This is an experimental and private module, so the interface
 %D and functionality can change. Pieces of code will be moved
 %D to other modules. More features are possible but will be 
-%D interfaces later. See m-chart for an application. 
+%D interfaces later. See m-chart for an application as well 
+%D as the second tno-tpd manual (graphic in margin, click 
+%D on it, pop up big one, use menu with hides, as well as 
+%D background, etc. etc.
 
 \unprotect 
 
@@ -31,8 +34,20 @@
 \newcounter     \nofhelpdataentries
 \newconditional \somehelpdatadefined
 
-\appendtoks \getpagehelpdata   \to \beforeeverypage
-\appendtoks \resetpagehelpdata \to \aftereverypage
+\appendtoks \getpagehelpdata         \to \beforeeverypage
+\appendtoks \synchronizepagehelpdata \to \aftereverypage
+
+% will be proper state variable 
+
+\def\dontresetpagedata%
+  {\let\synchronizepagehelpdata\relax}
+
+\def\resetpagehelpdata% 
+  {\let\synchronizepagehelpdata\resetpagehelpdata
+   \global\let\pagehelpdata\empty
+   \definereference[HideHelp][]} % hm 
+
+\let\synchronizepagehelpdata\resetpagehelpdata
 
 \def\getpagehelpdata%
   {\iflocation
@@ -53,7 +68,7 @@
      \fi
    \fi}
 
-\def\setpagehelpdata#1%
+\def\setpagehelpdata[#1]%
   {\iflocation\expanded{\dosetpagehelpdata{#1}}\fi}
 
 \def\dosetpagehelpdata#1%
@@ -63,10 +78,6 @@
         {hlp:\realfolio}%
         {\nofhelpdataentries}%
         {#1}}}
-
-\def\resetpagehelpdata% 
-  {\global\let\pagehelpdata\empty
-   \definereference[HideHelp][]}
 
 \setvalue{\e!start\e!helptext}[#1]%
   {\iflocation
@@ -78,7 +89,14 @@
      \letvalue{\e!stop\e!helptext}\relax
    \fi
    \dostartbuffer[\e!helptext][\e!start\e!helptext][\e!stop\e!helptext]}
-
+
+\long\def\definehelptext[#1]#2% 
+  {\iflocation
+     \global\settrue\somehelpdatadefined
+     \definesymbol[helpinfo:#1][\helptext{#2}]%
+     \dopresetfieldsymbol{helpinfo:#1}%
+   \fi}
+
 \def\dohelpdata#1%
   {\setbox0=\hbox
      {\startoverlay
@@ -106,17 +124,36 @@
      \egroup  
    \fi}
 
-\def\dohelpbutton[#1][#2]%
+%\def\dohelpbutton[#1][#2]%
+%  {\iflocation 
+%     \ifsecondargument
+%       \setpagehelpdata[#2]\button[#1]{}[JS(Vide_Fields{help:#2})]%
+%     \else
+%       \setpagehelpdata[#1]\button    {}[JS(Vide_Fields{help:#1})]%
+%     \fi
+%   \fi}
+%
+%\def\helpbutton%
+%  {\dodoubleempty\dohelpbutton}
+
+\def\dodohelpbutton[#1][#2]#3[#4]% #2 is space gobbling dummy 
   {\iflocation 
-     \ifsecondargument
-       \setpagehelpdata{#2}\button[#1]{}[JS(Vide_Fields{help:#2})]%
-     \else
-       \setpagehelpdata{#1}\button    {}[JS(Vide_Fields{help:#1})]%
-     \fi
+     \setpagehelpdata[#4]%
+     \button[#1]{#3}[JS(Vide_Fields{help:#4})]%
    \fi}
 
-\def\helpbutton%
-  {\dodoubleempty\dohelpbutton}
+\def\donohelpbutton[#1][#2]% 
+  {\dodohelpbutton[#1][]{}[#2]} 
+
+\def\dohelpbutton[#1][#2]%
+  {\ifsecondargument
+     \expandafter\donohelpbutton
+   \else
+     \expandafter\dodohelpbutton
+   \fi}
+
+\def\helpbutton% also gobble spaces between [][]
+  {\dodoublempty\dohelpbutton}
 
 \def\doifhelpinfo#1#2%
   {\iflocation\doifsymboldefinedelse{helpinfo:#1}{#2}{}\fi}

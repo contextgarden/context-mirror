@@ -79,6 +79,10 @@
   graphictextdirective "\the\everyMPTEXgraphic" ; 
 \to \MPinitializations
 
+%D Some safeguards: 
+
+\appendtoks \let\handlecompoundcharacter\string \to \everyMPgraphic
+
 %D We save the number of graphics for the sake of \TEXEXEC.
 
 \newcounter\totalnumberofMPgraphics 
@@ -282,10 +286,12 @@
 \def\doprepareMPvariable#1%
   {\doifelsenothing{\getvalue{#1}}
      {\setevalue{#1}{\MPcolor{black}}}
-     {\doifcolorelse{\getvalue{#1}}
+     {\edef\!!stringa{\getvalue{#1}}%
+      \convertcommand\!!stringa\to\ascii % otherwise problems 
+      \doifcolorelse{\ascii}             % with 2\bodyfontsize
         {\setevalue{#1}{\MPcolor{\getvalue{#1}}}}
         {\setbox\scratchbox=\hbox{\scratchdimen=\getvalue{#1}sp}%
-         \ifdim\wd\scratchbox=\!!zeropoint
+         \ifdim\wd\scratchbox=\zeropoint
            \scratchcounter=\getvalue{#1}\relax
            \setevalue{#1}{\the\scratchcounter}%
          \else
@@ -329,7 +335,9 @@
 %D The current data is loaded with: 
 
 \def\getMPdata%
-  {\readlocfile{\MPdatafile}{}{}}
+  {\startreadingfile
+   \readlocfile{\MPdatafile}{}{}%
+   \stopreadingfile}
 
 %D When we collect graphics in one file, we run into 
 %D troubles, since \METAPOST\ has a built in limit (of 4) 
@@ -339,7 +347,9 @@
 \def\getMPdata%
   {\long\def\MPdata##1##2%
      {\ifnum##1=\currentMPgraphic\relax##2\fi}%
-   \readlocfile{\MPgraphicfile.mpd}{}{}}
+   \startreadingfile
+   \readlocfile{\MPgraphicfile.mpd}{}{}%
+   \stopreadingfile}
 
 %D We have to enable this mechanism with: 
 
@@ -385,7 +395,9 @@
   {\dodoubleempty\dostartMPenvironment} % that reset gives \emptytoks
 
 \long\def\dostartMPenvironment[#1][#2]#3\stopMPenvironment%
-  {\doif{#1}{\s!reset}{\resetMPenvironment}%
+  {\doif{#1}{\s!reset}{\resetMPenvironment}% % reset mp toks
+   \doif{#1}{\v!globaal}{#3}%                % use in main doc too
+   \doif{#1}{+}{#3}%                         % use in main doc too
    \convertargument#3\to\ascii
    \expandafter\appendtoks\ascii\to\everyMPTEXgraphic}
 

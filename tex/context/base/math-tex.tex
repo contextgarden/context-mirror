@@ -15,9 +15,10 @@
 
 \mathcode`\ ="8000 \mathcode`\_="8000 \mathcode`\'="8000 
 
-\definefamilysynonym [default] [lcgreek]  [mi]
-\definefamilysynonym [default] [ucgreek]  [mr]
-\definefamilysynonym [default] [vargreek] [mi]
+\definefamilysynonym [default] [lcgreek]    [mi]
+\definefamilysynonym [default] [ucgreek]    [mr]
+\definefamilysynonym [default] [vargreek]   [mi]
+\definefamilysynonym [default] [blackboard] [mr]
 
 \startmathcollection [default]
 
@@ -35,6 +36,7 @@
 \definemathsymbol [mu]      [nothing] [lcgreek] ["16]
 \definemathsymbol [nu]      [nothing] [lcgreek] ["17]
 \definemathsymbol [xi]      [nothing] [lcgreek] ["18]
+\definemathsymbol [omicron] [nothing] [lcgreek] ["6F]
 \definemathsymbol [pi]      [nothing] [lcgreek] ["19]
 \definemathsymbol [rho]     [nothing] [lcgreek] ["1A]
 \definemathsymbol [sigma]   [nothing] [lcgreek] ["1B]
@@ -74,6 +76,7 @@
 \definemathsymbol [Mu]      [alpha] [ucgreek] ["4D] % M
 \definemathsymbol [Nu]      [alpha] [ucgreek] ["4E] % N
 \definemathsymbol [Xi]      [alpha] [ucgreek] ["04]
+\definemathsymbol [Omicron] [alpha] [ucgreek] ["4F] % O 
 \definemathsymbol [Pi]      [alpha] [ucgreek] ["05]
 \definemathsymbol [Rho]     [alpha] [ucgreek] ["52] % R
 \definemathsymbol [Sigma]   [alpha] [ucgreek] ["06]
@@ -480,6 +483,8 @@
 \definemathcommand [joinrel]   {\mathrel{\mkern-3mu}}
 \definemathcommand [r@@t]      {\PLAINroot}
 \definemathcommand [matrix]    {\PLAINmatrix}
+
+\definemathcommand [over]      {\normalover} % hack, to do  
 
 \stoprawmathcollection
 

@@ -276,6 +276,8 @@
 %D
 %D Should be a special!
 
+% never change the vsize / hsize here, is taken from env 
+
 \def\dogetfiguresizetex#1#2#3#4#5#6% file pagina ...
   {\doifinsetelse{\@@efextension}{\c!tex,\c!tmp}
      {\ifx\@@efcurrentpath\empty\executedfalse\else\executedtrue\fi}
@@ -845,7 +847,7 @@
 % old \c!achtergrond=,\c!achtergrondkleur=,\c!achtergrondraster=\@@rsraster,
 % old \c!hoek=,\c!straal=.5\korpsgrootte,\c!kader=\v!uit,
       \c!pagina=0,\c!sturing=\v!nee,\c!preview=\v!nee,\c!herhaal=\v!nee,
-\c!maxbreedte=\@@exmaxbreedte,\c!maxhoogte=\@@exmaxhoogte,
+      \c!maxbreedte=\@@exmaxbreedte,\c!maxhoogte=\@@exmaxhoogte,
       \c!schaal=,\c!breedte=,\c!hoogte=,\c!scherm=,
       \c!factor=,\c!hfactor=,\c!bfactor=]%
    \doif{\@@efextension}{\c!mov}{\presetfiguremov}%
@@ -871,6 +873,12 @@
          \c!avi=>\presetfigureavi,
          \c!mov=>\presetfiguremov]%
    \edef\figuretypes{\figuretypes,\c!tex}%
+   \ifx\@@eftype\c!tex
+     % Since tex code can have positional stuff and worse, 
+     % we want to avoid interference with how objects end 
+     % up in files, therefore: 
+     \let\@@efobject\v!nee
+   \fi
    \doifelse{\@@efobject}{\v!nee}
      {\donefalse}
      {\doifspecialavailableelse\dostartscaling
@@ -1321,9 +1329,9 @@
    \scratchdimen=\@@exoffset
    \dimen0=\figurewidth \advance\dimen0 2\scratchdimen\edef\figurewidth {\the\dimen0}
    \dimen0=\figureheight\advance\dimen0 2\scratchdimen\edef\figureheight{\the\dimen0}
-   \definieerpapierformaat
+   \definepapersize
      [\s!dummy][\c!breedte=\figurewidth,\c!hoogte=\figureheight]
-   \stelpapierformaatin
+   \setuppapersize
      [\s!dummy][\s!dummy]
    \setupcolors
      [\c!status=\v!start]
@@ -1376,7 +1384,7 @@
 
 \def\efcomment#1(#2,#3)#4(#5,#6)%    {kader}(x,y)(h,b)[...]{tekst}
   {\def\complexefdocomment[##1]##2%
-     {\positioneer(#2,#3)%
+     {\position(#2,#3)%
         {\setnostrut
          \framed
            [\c!breedte=#5\efxsteps,
@@ -1400,7 +1408,7 @@
      {#4}}
 
 \def\effigure#1%
-  {\positioneer(0,0){\getvalue{#1}}}
+  {\position(0,0){\getvalue{#1}}}
 
 \def\efdoarea(#1,#2)#3#4%    (h,b){kader}{tekst}
   {\bgroup
@@ -1419,9 +1427,9 @@
 
 \def\efmark(#1,#2)#3(#4,#5)#6[#7]%
   {\advance\efreference by 1
-   \positioneer(#1,#2)
+   \position(#1,#2)
      {\hbox{\the\efreference}}%
-   \positioneer(#1,#2)
+   \position(#1,#2)
      {\gotosomeinternal
         {\s!vwb}{#7}{\realfolio}
         {\efdomarker(#4,#5){\v!aan}{\thisissomeinternal{\s!vwa}{#7}}}}}
@@ -1463,20 +1471,20 @@
         {\useexternalfigure[\s!dummy][#2][#3,#5]%
          \externalfigure[\s!dummy]}%
       \calculateefsteps
-      \startpositioneren
+      \startpositioning
         \def\referring(##1,##2)##3(##4,##5)##6[##7]%
-          {\positioneer(##1,##2)
+          {\position(##1,##2)
              {\efgoto(##4,##5){\@@exhokjes}[##7]}}%
         \def\marking(##1,##2)##3(##4,##5)##6[##7]%
-          {\positioneer(##1,##2)
+          {\position(##1,##2)
              {\efthisis(##4,##5){\@@exhokjes}[##7]}}%
         \def\remark%
           {\efnocomment}%
         \def\colorbar##1[##2]%
           {}%
-        \positioneer(0,0){\box0}%
+        \position(0,0){\box0}%
         \linewidth=1pt
-        \stelpositionerenin
+        \setuppositioning
           [\c!eenheid=pt,
            \c!xschaal=\withoutpt{\the\efxsteps},
            \c!yschaal=\withoutpt{\the\efysteps},
@@ -1490,7 +1498,7 @@
         \def\colorbar##1[##2]%
           {\makecolorbar[##2]}%
         \ignorespaces#4%
-      \stoppositioneren
+      \stoppositioning
       \box\colorbarbox}}
 
 \def\dodostartfigure[#1][#2][#3]#4\stopfigure%
@@ -1521,11 +1529,11 @@
      \efreference=0
      \setbox0=\vbox
        {\hsize240pt
-        \startpositioneren
+        \startpositioning
           \calculateefsteps
-          \positioneer(0,0)
+          \position(0,0)
             {\box0}%
-          \positioneer(0,0)
+          \position(0,0)
             {\rooster
                [\c!nx=\@@exxmax,
                 \c!dx=\withoutpt{\the\efxsteps},
@@ -1536,14 +1544,14 @@
                 \c!schaal=1,
                 \c!offset=\v!nee,
                 \c!eenheid=pt]}%
-          \stelpositionerenin%
+          \setuppositioning
             [\c!eenheid=pt,
              \c!xschaal=\withoutpt{\the\efxsteps},
              \c!yschaal=\withoutpt{\the\efysteps},
              \c!factor=1]%
           \linewidth=1pt
           \ignorespaces#4\relax
-        \stoppositioneren
+        \stoppositioning
         \vfill}%
      \efreference=0
      \def\referring%

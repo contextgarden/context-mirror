@@ -629,9 +629,11 @@
 \definespeciallocation{JS}#1#2% 
   {\iflocation
      \bgroup
+\bgroup
      \presetJScode
        \currentreferenceoperation
        \currentreferencearguments
+\egroup
      \dostartgoto
        \data
          {#2}%

@@ -6,6 +6,9 @@ There are currently three interfaces available:
   cont-en   the english version
   cont-de   the german version 
   cont-nl   the dutch version
+  cont-cz   the czech version
+  cont-ro   the romanian version
+  cont-it   the italian version
 
 One should compile one of these (or all) into a fmt file. 
 When one uses the main file, 
@@ -14,7 +17,14 @@ When one uses the main file,
 
 TeX ask for an interface language as well as a message 
 language. Here one has to specify the full name (english, 
-german, dutch) or use the default (enter). 
+german, dutch, etc.) or use the default (enter). The \
+savest way to update the TeX and MetaPost format files 
+is to use TeXExec:
+
+texexec --make --alone en nl metafun  
+
+In the TeXExec manual you can read how to generate a format 
+with specific fonts and patterns. 
 
 By default only the english hyphenation patterns are loaded,
 unless more are enabled in: 
@@ -40,7 +50,7 @@ to the list server:
 
 One can find more info at:
 
-  www.pragma-ade.nl
+  www.pragma-ade.com
 
 or at the mirror sites mentioned there. 
 

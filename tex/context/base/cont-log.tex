@@ -41,7 +41,7 @@
                   {C%
    \CMRkern-.0333emo%
    \CMRkern-.0333emn%
-   \CMRkern-.0333em\TeX%
+   \CMRkern-.1667em\TeX%
    \CMRkern-.0333emt}
 
 \def\PPCHTeX%
@@ -112,6 +112,28 @@
      10 at \currentfontscale\bodyfontsize
    \logofont}
 
+% \definefontsynonym [MetaLogo]            [logo10]
+% \definefontsynonym [MetaLogoBold]        [logobf10]
+% \definefontsynonym [MetaLogoSlanted]     [logosl10]
+% \definefontsynonym [MetaLogoItalic]      [logosl10]
+% \definefontsynonym [MetaLogoBoldSlanted] [logobf10]
+% \definefontsynonym [MetaLogoBoldtalic]   [logobf10]
+%
+% \def\setMFPfont{\symbolicfont{MetaLogo}}
+
+\def\symbolicfont#1{\definedfont[\glyphfontfile{#1} sa *]}
+
+\def\setMFPfont% more sensitive for low level changes 
+  {\font\logofont=logo%
+     \ifx\fontalternative\c!bf\else
+     \ifx\fontalternative\c!sl\else
+     \ifx\fontalternative\c!sl\else
+     \ifx\fontalternative\c!bs\else
+     \ifx\fontalternative\c!bi\else
+     \fi\fi\fi\fi\fi
+     10 at \currentfontscale\bodyfontsize
+   \logofont}
+
 %\unexpanded\def\MetaFont% 
 %  {\hbox{\setMFPfont METAFONT}}
 %
@@ -176,5 +198,8 @@
 \let\ETEX     \eTeX
 \let\PDFTEX   \pdfTeX
 \let\PDFETEX  \pdfeTeX
+
+\def\XML      {XML}
+\def\MATHML   {MathML}
 
 \protect \endinput

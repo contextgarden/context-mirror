@@ -293,14 +293,17 @@
   {\ifforceMPTEXgraphic
      \global\MPTEXgraphictrue
    \else
-     \expandafter\convertargument   #1\to\asciiA
-                 \convertargument etex\to\asciiB
-                 \convertargument text\to\asciiC 
+     \expandafter\convertargument          #1\to\asciiA
+                 \convertargument        etex\to\asciiB
+                 \convertargument     textext\to\asciiC % geen "text"
+                 \convertargument graphictext\to\asciiD % geen "text"
      \expandtwoargsafter\doifinstringelse{\asciiB}{\asciiA}
        {\global\MPTEXgraphictrue}
        {\expandtwoargsafter\doifinstringelse{\asciiC}{\asciiA}
           {\global\MPTEXgraphictrue}
-          {\global\MPTEXgraphicfalse}}%
+          {\expandtwoargsafter\doifinstringelse{\asciiD}{\asciiA}
+             {\global\MPTEXgraphictrue}
+             {\global\MPTEXgraphicfalse}}}%
    \fi}
 
 \def\flushMPTEXgraphic%
@@ -568,10 +571,10 @@
    \startMPgraphic#2\stopMPgraphic
    \doifobjectssupportedelse{}{\useMPboxfalse}%
    \ifuseMPbox
-     \douseMPbox{MP:#1}%
+     \expandafter \douseMPbox
    \else
-     \nouseMPbox{MP:#1}%
-   \fi
+     \expandafter \nouseMPbox
+   \fi {MP:#1}%
    \getvalue{MP:#1}%
    \egroup}
 
@@ -823,7 +826,7 @@
      \setbox0=\hbox
        {\hskip-\maxdimen
         \doprocessfile\scratchread{#1}\handleMPfont}%
-     \smashbox0
+     \smashbox0%
      \box0
      \egroup
    \fi}
@@ -885,9 +888,7 @@
 %D ignored. Only lines starting with \type{(} are interpreted.
 
 \def\dohandleMPfont#1#2\relax%
-  {\if#1(%
-     \expandafter\includeMPcharacters\fileline\relax
-   \fi}
+  {\if#1(\expandafter\includeMPcharacters\fileline\relax\fi}
 
 \def\handleMPfont%
   {\expandafter\dohandleMPfont\fileline\relax}
@@ -1317,7 +1318,7 @@
    \ifnum#1<  -99 \dodoMPdivtenC#1\else
    \ifnum#1<   -9 \dodoMPdivtenD#1\else
    \ifnum#1<    0 \dodoMPdivtenE#1\else
-   0\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi}
+                0 \fi\fi\fi\fi\fi\fi\fi\fi\fi\fi}
 
 \def\dodoMPdivtenA#1#2#3#4#5#6{#1#2#3#4#5.#6}
 \def\dodoMPdivtenB  #1#2#3#4#5{#1#2#3#4.#5}

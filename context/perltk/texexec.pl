@@ -45,7 +45,7 @@ my %Help ;
 
 $ENV{"MPXCOMMAND"} = "0" ; # otherwise loop
 
-my $dosish  = ($Config{'osname'} =~ /dos|win/i) ;
+my $dosish  = ($Config{'osname'} =~ /dos|mswin/i) ;
 
 my $TeXUtil   = 'texutil'  ;
 my $TeXExec   = 'texexec'  ;
@@ -90,6 +90,7 @@ my $NoDuplex         = 0 ;
 my $NOfRuns          = 7 ;
 my $NoMPMode         = 0 ;
 my $NoMPRun          = 0 ;
+my $AutoMPRun        = 0 ;
 my $OutputFormat     = 'standard' ;
 my $Pages            = '' ;
 my $PageScale        = '1000' ; # == 1.0
@@ -122,6 +123,7 @@ my $LogFile          = "" ;
 my $MpyForce         = 0 ;
 my $RunPath          = "" ; 
 my $Arguments        = "" ;
+my $Pretty           = 0 ; 
 
 &GetOptions
   ( "arrange"       => \$Arrange          ,
@@ -152,6 +154,7 @@ my $Arguments        = "" ;
     "noarrange"     => \$NoArrange        ,
     "nomp"          => \$NoMPMode         ,
     "nomprun"       => \$NoMPRun          ,
+    "automprun"     => \$AutoMPRun        ,
     "once"          => \$RunOnce          ,
     "output=s"      => \$OutputFormat     ,
     "pages=s"       => \$Pages            ,
@@ -186,7 +189,8 @@ my $Arguments        = "" ;
     "texutil"       => \$ForceTeXutil     ,
     "mpyforce"      => \$MpyForce         ,
     "input=s"       => \$Input            , 
-    "arguments=s"   => \$Arguments        ) ;
+    "arguments=s"   => \$Arguments        ,
+    "pretty"        => \$Pretty           ) ;
 
 $SIG{INT} = "IGNORE" ;
 
@@ -525,7 +529,7 @@ $OutputFormats{dviwindo} = "dviwindo" ;
 $OutputFormats{dviview}  = "dviview" ;
 $OutputFormats{dvipdfm}  = "dvipdfm" ;
 
-my @ConTeXtFormats = ("nl", "en", "de", "cz", "uk", "it", "ro") ;
+my @ConTeXtFormats = ("nl", "en", "de", "cz", "uk", "it", "ro", "xx") ;
 
 sub SetInterfaces
   { my ($short,$long,$full) = @_ ;
@@ -587,7 +591,9 @@ $Help{LANGUAGE}    . "                           =xx : standard abbreviation \n"
 $Help{LISTING}     = "             --listing   produce a verbatim listing\n" ;
 $Help{listing}     =
 $Help{LISTING}     . "           --backspace   inner margin of the page\n" .
-                     "            --topspace   top/bottom margin of the page\n" ;
+                     "            --topspace   top/bottom margin of the page\n" .
+                     "              --pretty   enable pretty printing\n" .
+                     "               --color   use color for pretty printing\n" ;
 $Help{MAKE}        = "                --make   build format files \n" ;
 $Help{make}        =
 $Help{MAKE}        . "            --language   patterns to include\n" .
@@ -605,6 +611,7 @@ $Help{MPXTEX}      = "              --mpxtex   generatet an MetaPostmpx file\n" 
 $Help{NOARRANGE}   = "           --noarrange   process but ignore arrange\n" ;
 $Help{NOMP}        = "                --nomp   don't run MetaPost at all\n" ;
 $Help{NOMPRUN}     = "             --nomprun   don't run MetaPost at runtime\n" ;
+$Help{AUTOMPRUN}   = "           --automprun   MetaPost at runtime when needed\n" ;
 $Help{ONCE}        = "                --once   run TeX only once (no TeXUtil either)\n" ;
 $Help{OUTPUT}      = "              --output   specials to use\n" ;
 $Help{output}      =
@@ -717,6 +724,7 @@ if ($HelpAsked)
         print $Help{NOARRANGE}   ;
         print $Help{NOMP}        ;
         print $Help{NOMPRUN}     ;
+        print $Help{AUTOMPRUN}   ;
         print $Help{ONCE}        ;
         print $Help{OUTPUT}      ;
         print $Help{PAGES}       ;
@@ -815,7 +823,7 @@ sub MakeOptionFile
       { print OPT "\\batchmode\n" }
     if ($UseColor)
       { print OPT "\\setupcolors[\\c!status=\\v!start]\n" }
-    if ($NoMPMode||$NoMPRun)
+    if ($NoMPMode||$NoMPRun||$AutoMPRun)
       { print OPT "\\runMPgraphicsfalse\n" }
     if (($FastMode)&&(!$FastDisabled))
       { print OPT "\\fastmode\n" }
@@ -827,32 +835,34 @@ sub MakeOptionFile
    #unless (($PdfArrange)||($PdfSelect)||($PdfCombine)||($PdfCopy))
     unless (($PdfSelect)||($PdfCombine)||($PdfCopy))
       { if (/.4.3/goi)
-          { print OPT "\\stelpapierformaatin[A4][A3]\n" }
+          { print OPT "\\setuppapersize[A4][A3]\n" }
         elsif (/.5.4/goi)
-          { print OPT "\\stelpapierformaatin[A5][A4]\n" }
+          { print OPT "\\setuppapersize[A5][A4]\n" }
         elsif (!/standard/)
-          { print OPT "\\stelpapierformaatin[$_][$_]\n" } }
+          { $_ = uc $_ ; my ($from,$to) = split (/\*/) ; 
+            if ($to eq "") { $to = $from } 
+            print OPT "\\setuppapersize[$from][$to]\n" } }
     if (($PdfSelect||$PdfCombine||$PdfCopy||$PdfArrange)&&($Background ne ''))
       { print "    background graphic : $Background\n" ;
         print OPT "\\defineoverlay[whatever][{\\externalfigure[$Background][\\c!factor=\\v!max]}]\n" ;
-        print OPT "\\stelachtergrondenin[\\v!pagina][\\c!achtergrond=whatever]\n" }
+        print OPT "\\setupbackgrounds[\\v!pagina][\\c!achtergrond=whatever]\n" }
     if ($CenterPage)
-      { print OPT "\\stellayoutin[\\c!plaats=\\v!midden,\\c!markering=\\v!aan]\n" }
+      { print OPT "\\setuplayout[\\c!plaats=\\v!midden,\\c!markering=\\v!aan]\n" }
     if ($NoArrange)
-      { print OPT "\\stelarrangerenin[\\v!blokkeer]\n" }
+      { print OPT "\\setuparranging[\\v!blokkeer]\n" }
     elsif ($Arrange||$PdfArrange)
       { $FinalRunNeeded = 1 ;
         if ($FinalRun)
           { if ($PrintFormat =~ /.*up/goi)
-              { print OPT "\\stelarrangerenin[2UP,\\v!geroteerd,\\v!dubbelzijdig]\n" }
+              { print OPT "\\setuparranging[2UP,\\v!geroteerd,\\v!dubbelzijdig]\n" }
             elsif ($PrintFormat =~ /.*down/goi)
-              { print OPT "\\stelarrangerenin[2DOWN,\\v!geroteerd,\\v!dubbelzijdig]\n" }
+              { print OPT "\\setuparranging[2DOWN,\\v!geroteerd,\\v!dubbelzijdig]\n" }
             elsif ($PrintFormat =~ /.*side/goi)
-              { print OPT "\\stelarrangerenin[2SIDE,\\v!geroteerd,\\v!dubbelzijdig]\n" }
+              { print OPT "\\setuparranging[2SIDE,\\v!geroteerd,\\v!dubbelzijdig]\n" }
             else
-              { print OPT "\\stelarrangerenin[$PrintFormat]\n" } }
+              { print OPT "\\setuparranging[$PrintFormat]\n" } }
         else
-          { print OPT "\\stelarrangerenin[\\v!blokkeer]\n" } }
+          { print OPT "\\setuparranging[\\v!blokkeer]\n" } }
     if ($Arguments) 
       { print OPT "\\setupenv[$Arguments]\n" }
     if ($Input) 
@@ -882,7 +892,7 @@ sub MakeOptionFile
     if ($Modules ne "")
       { foreach my $M (split(/,/,$Modules)) { print OPT "\\usemodule[$M]\n" } }
     if ($Environments ne "")
-      { foreach my $E (split(/,/,$Environments)) { print OPT "\\omgeving $E\n" } }
+      { foreach my $E (split(/,/,$Environments)) { print OPT "\\environment $E\n" } }
     close (OPT) }
 
 my $UserFileOk = 0 ;
@@ -1153,6 +1163,21 @@ sub CopyFile # agressive copy, works for open files like in gs
     close (INP) ; 
     close (OUT) }
 
+sub CheckChanges # also tuo 
+  { my $JobName = shift ; 
+    my $checksum = 0 ; 
+    my $MPJobName = MPJobName($JobName,"mpgraph") ;
+    if (open(MP, $MPJobName)) 
+      { while (<MP>) 
+          { unless (/random/oi) 
+              { $checksum += do { unpack("%32C*",<MP>) % 65535 } } } }
+    my $MPJobName = MPJobName($JobName,"mprun") ;
+    if (open(MP, $MPJobName)) 
+      { while (<MP>) 
+          { unless (/random/oi) 
+              { $checksum += do { unpack("%32C*",<MP>) % 65535 } } } }
+    return $checksum }
+
 sub RunConTeXtFile
   { my ($JobName, $JobSuffix) = @_ ;
     $JobName =~ s/\\/\//goi ;
@@ -1258,12 +1283,19 @@ sub RunConTeXtFile
              { MakeOptionFile (0, 0, $JobName) ;
                ++$TeXRuns ;
                print "               TeX run : $TeXRuns\n\n" ;
+               my $mpchecksumbefore = $mpchecksumafter = 0 ; 
+               if ($AutoMPRun) { $mpchecksumbefore = CheckChanges($JobName) }
                $Problems = RunTeX($JobName,$JobSuffix) ;
+               if ($AutoMPRun) { $mpchecksumafter = CheckChanges($JobName) }
                if ((!$Problems)&&($NOfRuns>1))
                  { if (!$NoMPMode)
                      { $MPrundone = RunTeXMP ($JobName, "mpgraph") ;
                        $MPrundone = RunTeXMP ($JobName, "mprun") }
-                   $StopRunning = RunTeXutil ($JobName) } }
+                   $StopRunning = RunTeXutil ($JobName) ; 
+                   if ($AutoMPRun)
+                     { $StopRunning = ($StopRunning && 
+                         ($mpchecksumafter==$mpchecksumbefore)) }
+                   } }
             if (($NOfRuns==1)&&$ForceTeXutil)
               { $Ok = RunTeXutil ($JobName) }
             if ((!$Problems)&&(($FinalMode||$FinalRunNeeded))&&($NOfRuns>1))
@@ -1296,27 +1328,35 @@ my $CopyFile    = "texexec" ;
 my $CombineFile = "texexec" ;
 
 sub RunModule
-  { my ($FileName) = @_ ;
-    if ((-e "$FileName.tex")||(-e "$FileName.pl")||(-e "$FileName.mp")||
-                              (-e "$FileName.pm"))
-      { RunPerlScript ($TeXUtil,
-          "--documents $FileName.pl $FileName.pm $FileName.mp $FileName.tex" ) ;
-        print "                module : $FileName\n\n" ;
-        open (MOD, ">$ModuleFile.tex") ;
-        print MOD "% format=dutch\n" ;
-        print MOD "\\gebruikmodule[abr-01,mod-01]\n" ;
-        print MOD "\\def\\ModuleNumber{1}\n" ;
-        print MOD "\\starttekst\n" ;
-        print MOD "\\input $FileName.ted\n" ;
-        print MOD "\\stoptekst\n" ;
-        close (MOD) ;
-        $ConTeXtInterface = "nl" ;
-        RunConTeXtFile($ModuleFile, "tex") ;
-        if ($FileName ne $ModuleFile)
-          { foreach my $FileSuffix ("dvi", "pdf", "tui", "tuo", "log")
-             { unlink ("$FileName.$FileSuffix") ;
-               rename ("$ModuleFile.$FileSuffix", "$FileName.$FileSuffix") } }
-        unlink ("$ModuleFile.tex") } }
+  { my @FileNames = sort @_ ;
+    unless (-e $FileNames[0]) 
+      { my $Name = $FileNames[0] ; 
+        @FileNames = ("$Name.tex", "$Name.mp", "$Name.pl", "$Name.pm") } 
+    foreach $FileName (@FileNames) 
+      { next unless -e $FileName ; 
+        my ($Name, $Suffix) = split (/\./,$FileName) ; 
+        next unless $Suffix =~ /(tex|mp|pl|pm)/io ; 
+        DoRunModule($Name, $Suffix) } }
+
+sub DoRunModule
+  { my ($FileName,$FileSuffix) = @_ ;
+    RunPerlScript ($TeXUtil, "--documents $FileName.$FileSuffix" ) ;
+    print "                module : $FileName\n\n" ;
+    open (MOD, ">$ModuleFile.tex") ;
+  # print MOD "% format=dutch\n" ;
+    print MOD "\\gebruikmodule[abr-01,mod-01]\n" ;
+    print MOD "\\def\\ModuleNumber{1}\n" ;
+    print MOD "\\starttekst\n" ;
+    print MOD "\\input $FileName.ted\n" ;
+    print MOD "\\stoptekst\n" ;
+    close (MOD) ;
+  # $ConTeXtInterface = "nl" ;
+    RunConTeXtFile($ModuleFile, "tex") ;
+    if ($FileName ne $ModuleFile)
+      { foreach my $FileSuffix ("dvi", "pdf", "tui", "tuo", "log")
+          { unlink ("$FileName.$FileSuffix") ;
+            rename ("$ModuleFile.$FileSuffix", "$FileName.$FileSuffix") } }
+    unlink ("$ModuleFile.tex") }
 
 sub RunFigures
   { my @Files = @_ ;
@@ -1337,6 +1377,19 @@ sub RunFigures
     $ConTeXtInterface = "en" ;
     RunConTeXtFile($FiguresFile, "tex") }
 
+# sub RunGetXMLFigures
+#   { return if (($Label eq "") or ($Base  eq "") ;
+#     unlink "$FiguresFile.pdf" ;
+#     open (FIG, ">$FiguresFile.tex") ;
+#     print FIG "% format=english\n" ;
+#     print FIG "\\starttext\n" ;
+#     print FIG "\\usefigurebase[$Base]\n" ;
+#     print FIG "\\pagefigure[$Label]\n" ;
+#     print FIG "\\stoptext\n" ;
+#     close(FIG) ;
+#     $ConTeXtInterface = "en" ;
+#     RunConTeXtFile($FiguresFile, "tex") }
+
 sub CleanTeXFileName
   { my $str = shift ;
     $str =~ s/([\$\_\#])/\\$1/go ;
@@ -1344,8 +1397,9 @@ sub CleanTeXFileName
     return $str }
 
 sub RunListing
-  { my $FileName = shift ;
-    return unless -f $FileName ;
+  { my $FileName = my $CleanFileName = shift ;
+    my @FileNames = glob $FileName ; 
+    return unless -f $FileNames[0] ;
     print "            input file : $FileName\n" ;
     if ($BackSpace eq "0pt")
       { $BackSpace="1.5cm" }
@@ -1355,7 +1409,6 @@ sub RunListing
       { $TopSpace="1.5cm" }
     else
       { print "              topspace : $TopSpace\n" }
-    my $CleanFileName = CleanTeXFileName($FileName) ;
     open (LIS, ">$ListingFile.tex") ;
     print LIS "% format=english\n" ;
     print LIS "\\starttext\n" ;
@@ -1364,8 +1417,14 @@ sub RunListing
     print LIS "  [topspace=$TopSpace,backspace=$BackSpace,\n" ;
     print LIS "   header=0cm,footer=1.5cm,\n" ;
     print LIS "   width=middle,height=middle]\n" ;
-    print LIS "\\setupfootertexts[$CleanFileName][pagenumber]\n" ;
-    print LIS "\\typefile\{$FileName\}\n" ;
+    print LIS "\\setuptyping[lines=yes]\n" ;
+    if ($Pretty) 
+      { print LIS "\\setuptyping[option=color]\n" }
+    foreach $FileName (@FileNames) 
+      { $CleanFileName = lc CleanTeXFileName($FileName) ;
+        print LIS "\\page\n" ; 
+        print LIS "\\setupfootertexts[$CleanFileName][pagenumber]\n" ;
+        print LIS "\\typefile\{$FileName\}\n" }
     print LIS "\\stoptext\n" ;
     close(LIS) ;
     $ConTeXtInterface = "en" ;
@@ -1480,9 +1539,7 @@ sub RunCopy
       { print "                offset : $PaperOffset\n" }
     else
       { print "                 scale : $PageScale\n" ;
-        if ($PageScale<10)
-          { $PageScale *= 1000 ;
-            $PageScale = printf(".0f",$PageScale) } }
+        if ($PageScale<10) { $PageScale = int($PageScale*1000) } }
     open (COP, ">$CopyFile.tex") ;
     print COP "% format=english\n" ;
     print COP "\\getfiguredimensions\n" ;
@@ -1564,8 +1621,8 @@ sub LocatedFormatPath
 sub RunOneFormat
   { my ($FormatName) = @_ ;
     my @TeXFormatPath ;
-    my $TeXPrefix = '' ;
-    if ($fmtutil ne '')
+    my $TeXPrefix = "" ;
+    if (($fmtutil ne "")&&($FormatName ne "metafun"))
       { my $cmd = "$fmtutil --byfmt $FormatName" ;
         if ($Verbose) { print "\n$cmd\n\n" }
         MakeUserFile ; # this works only when the path is kept
@@ -1598,7 +1655,7 @@ sub RunFormats
     if (@ARGV)
       { @ConTeXtFormats = @ARGV }
     elsif ($UsedInterfaces ne '')
-      { @ConTeXtFormats = split /\,/,$UsedInterfaces }
+      { @ConTeXtFormats = split /[\,\s]/,$UsedInterfaces }
     if ($Format)
       { @ConTeXtFormats = $Format; $ConTeXtFormatsPrefix='' ; }
     else
@@ -1660,14 +1717,14 @@ sub RunFiles
               { RunCopy ($JobName) }
             else
               { RunCombine ($JobName) } } }
-    else
+    elsif ($TypesetModule)
+      { RunModule (@ARGV) }
+    else 
       { my $JobSuffix = "tex" ; 
         foreach my $JobName (@ARGV)
           { if ($JobName =~ s/\.(\w+)$//io) 
               { $JobSuffix =  $1 } 
-            if ($TypesetModule)
-              { unless ($Format) { RunModule ($JobName) } }
-            elsif (($Format eq '')||($Format =~ /^cont.*/io))
+            if (($Format eq '')||($Format =~ /^cont.*/io))
               { RunConTeXtFile ($JobName, $JobSuffix) }
             else
               { RunSomeTeXFile ($JobName, $JobSuffix) }
@@ -1733,7 +1790,14 @@ sub doRunMP ###########
     my $TexFound = 0 ;
     my $MpFile = "$MpName.mp" ;
     if (open(MP, $MpFile))
-      { local $/ = "\0777" ; $_ = <MP> ; close(MP) ;
+      { # fails with % 
+        # local $/ = "\0777" ; $_ = <MP> ; close(MP) ;
+
+my $MPdata = "" ; 
+while (<MP>) { unless (/^\%/) { $MPdata .= $_ } }   
+$_ = $MPdata ;
+close (MP) ;
+ 
         # save old file
         unlink ($MpKep) ;
         return if (-e $MpKep) ;
@@ -1784,13 +1848,16 @@ $TexFound = $MergeBE || /btex .*? etex/o ;
             if (($MpFormat ne '')&&($MpFormat !~ /(plain|mpost)/oi))
               { print "                format : $MpFormat\n" ;
                 $cmd .= " $MpPassString $MpFormatFlag$MpFormat " }
-            $Problems = system ("$cmd $MpName" ) ;
-open (MPL,"$MpName.log") ;
-while (<MPL>) # can be one big line unix under win
-  { while (/^l\.(\d+)\s/gmois)
-      { print " error in metapost run : $MpName.mp:$1\n" } }
-
-          # unlink "mptrace.tmp" ; rename ($MpFile, "mptrace.tmp") ;
+# prevent nameclash, experimental 
+my $MpMpName = "$MpName" ;
+#my $MpMpName = "./$MpName" ; $MpMpName =~ s/\.\/\.\//\.\//o ; 
+$Problems = system ("$cmd $MpMpName" ) ;
+#            $Problems = system ("$cmd $MpName" ) ;
+            open (MPL,"$MpName.log") ;
+            while (<MPL>) # can be one big line unix under win
+             { while (/^l\.(\d+)\s/gmois)
+                { print " error in metapost run : $MpName.mp:$1\n" } }
+            unlink "mptrace.tmp" ; rename ($MpFile, "mptrace.tmp") ;
             if (-e $MpKep)
               { unlink ($MpFile) ;
                 rename ($MpKep, $MpFile) } } }

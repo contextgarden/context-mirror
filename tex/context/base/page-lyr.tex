@@ -1,7 +1,7 @@
 %D \module
 %D   [       file=page-lyr,
 %D        version=2000.10.20,
-%D          title=\CONTEXT\ OTR Macros,
+%D          title=\CONTEXT\ Page Macros,
 %D       subtitle=Layers, 
 %D         author=Hans Hagen,
 %D           date=\currentdate,
@@ -11,9 +11,7 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-% logo space wil be reimplemented as layers 
-
-\writestatus{loading}{Context OTR Macros / Layers} 
+\writestatus{loading}{Context Page Macros / Layers} 
 
 \unprotect
 
@@ -112,7 +110,8 @@
 
 \def\dodosetlayer[#1][#2]%
   {\bgroup
-   \global\newbackgroundtrue
+   \recalculatebackgrounds
+   \recalculatelogos
    \doglobal\increment\currentlayerdata
    \forgetall
    \dontcomplain
@@ -221,7 +220,7 @@
 %D  {composedlayer} 
 %D
 %D This is a handy shortcut, which saves a couple of braces 
-%D when we use it as parametsr. This name also suits better 
+%D when we use it as parameter. This name also suits better 
 %D to other layering commands. 
 
 \def\composedlayer#1{\flushlayer[#1]}
@@ -241,7 +240,6 @@
   {\doresetlayer{#1}\doresetlayer{#1:\realfolio}}
 
 %D \macros
-%D 
 %D  {setMPlayer}
 %D 
 %D The following layer macro uses the positions that are 
@@ -291,5 +289,116 @@
      [\c!achtergrond={\v!voorgrond,#1},
       \c!kader=\v!uit,
       \c!offset=\v!overlay,#2]}
+
+% Some day this (old) mechanism will be combined/integrated 
+% in overlays 
 
+\newskip\xposition  \newskip\yposition
+\newskip\xdimension \newskip\ydimension
+\newskip\xoffset    \newskip\yoffset
+
+\newbox\positionbox
+
+\def\startpositioning%
+  {\bgroup
+   \xposition \!!zeropoint   \yposition\!!zeropoint
+   \xdimension\!!zeropoint   \ydimension\!!zeropoint
+   \xoffset   \!!zeropoint   \yoffset   \!!zeropoint
+   \hfuzz     \papierbreedte \vfuzz     \papierhoogte
+   \setbox\positionbox\hbox\bgroup}
+
+\def\stoppositioning%
+  {\doifnot{\@@psoffset}{\v!ja}
+     {\global\xoffset=\!!zeropoint
+      \global\yoffset=\!!zeropoint}%
+   \global\advance\xdimension by \xoffset
+   \global\advance\ydimension by \yoffset
+   \egroup
+   \vbox to \ydimension
+     {\vskip\yoffset
+      \hbox to \xdimension
+        {\hskip\xoffset
+         \box\positionbox
+         \hfill}
+      \vfill}%
+   \egroup}
+
+\def\resetpositioning%
+  {\getparameters[\??ps]
+     [\c!status=\v!start,
+      \c!eenheid=\s!cm,
+      \c!factor=1,
+      \c!schaal=1,
+      \c!xfactor=\@@psfactor,
+      \c!yfactor=\@@psfactor,
+      \c!xschaal=\@@psschaal,
+      \c!yschaal=\@@psschaal,
+      \c!xstap=\v!absoluut,
+      \c!ystap=\v!absoluut,
+      \c!xoffset=\!!zeropoint,
+      \c!yoffset=\!!zeropoint]}
+
+\def\setuppositioning%
+  {\resetpositioning
+   \dodoubleargument\getparameters[\??ps]}
+
+\def\calculateposition#1#2#3#4#5#6#7#8#9%
+  {\setdimensionwithunit\scratchskip{#1}\@@pseenheid 
+   \scratchskip=#8\scratchskip
+   \scratchskip=#9\scratchskip
+   \advance\scratchskip by #4\relax
+   \doif{#2}{\v!relatief}%
+     {\advance\scratchskip by #3%
+      \let#4\!!zeropoint}%
+   #3=\scratchskip\relax
+   \doifnot{\@@psstatus}{\v!overlay}
+     {\scratchskip=#5\relax
+      \advance\scratchskip by #3\relax
+      \ifdim#3<-#7\relax          \global#7=-#3\relax          \fi
+      \ifdim\scratchskip>#6\relax \global#6=\scratchskip\relax \fi}}
+
+\def\position%
+  {\dosingleempty\doposition}
+
+\def\doposition[#1]#2(#3,#4)%
+  {\dowithnextbox
+     {\bgroup
+      \getparameters[\??ps][#1]%
+      \dontcomplain
+      \calculateposition{#3}\@@psxstap\xposition
+        \@@psxoffset{\wd\nextbox}\xdimension\xoffset
+        \@@psxschaal\@@psxfactor
+      \scratchdimen=\ht\nextbox \advance\scratchdimen by \dp\nextbox
+      \calculateposition{#4}\@@psystap\yposition
+        \@@psyoffset\scratchdimen\ydimension\yoffset
+        \@@psyschaal\@@psyfactor
+      \vbox to \!!zeropoint % kan beter. 
+        {\vskip\yposition
+         \hbox to \!!zeropoint
+           {\hskip\xposition
+            \box\nextbox
+            \hss}
+         \vss}%
+      \xdef\dopoppositioning%
+        {\xposition=\the\xposition
+         \yposition=\the\yposition
+         \noexpand\def\noexpand\@@psxoffset{\@@psxoffset}%
+         \noexpand\def\noexpand\@@psyoffset{\@@psyoffset}}%
+      \egroup
+      \dopoppositioning
+      \ignorespaces}
+   \hbox}
+
+\resetpositioning
+
+\setuppositioning 
+  [\c!eenheid=\s!cm,
+   \c!factor=1,
+   \c!schaal=1,
+   \c!xstap=\v!absoluut,
+   \c!ystap=\v!absoluut,
+   \c!offset=\v!ja,
+   \c!xoffset=\!!zeropoint,
+   \c!yoffset=\!!zeropoint]
+
 \protect \endinput 

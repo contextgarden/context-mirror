@@ -632,13 +632,51 @@
 %D command. Later on we will explain the use of palets.  We 
 %D define ourselves a color conditional first.  
 
-\def\currentpalet{}
+% \let\currentpalet\empty
+% 
+% \def\doifcolorelse#1%
+%   {\doifdefinedelse{\??cr\currentpalet#1}}
+% 
+% \def\getcurrentcolorspecs#1%
+%   {\edef\currentcolorspecs{\getvalue{\??cr\currentpalet#1}}}
+
+\let\currentpalet\empty
+
+\beginETEX \ifcsname
 
 \def\doifcolorelse#1%
-  {\doifdefinedelse{\??cr\currentpalet#1}}
+  {\ifcsname\??cr\ifcsname\??cr\currentpalet#1\endcsname\currentpalet\fi#1\endcsname
+     \expandafter\firstoftwoarguments
+   \else
+     \expandafter\secondoftwoarguments
+   \fi}
 
 \def\getcurrentcolorspecs#1%
-  {\edef\currentcolorspecs{\getvalue{\??cr\currentpalet#1}}}
+  {\edef\currentcolorspecs%
+     {\csname\??cr
+        \ifcsname\??cr\currentpalet#1\endcsname\currentpalet\fi
+      #1\endcsname}}
+
+\endETEX
+
+\beginTEX 
+
+\def\colorcsname#1\endcsname
+  {\csname\??cr
+     \@EA\ifx\csname\??cr\currentpalet#1\endcsname\relax\else\currentpalet\fi
+   #1\endcsname}
+
+\def\doifcolorelse#1%
+  {\@EA\ifx\colorcsname#1\endcsname
+     \expandafter\secondoftwoarguments
+   \else
+     \expandafter\firstoftwoarguments
+   \fi}
+
+\def\getcurrentcolorspecs#1%
+  {\edef\currentcolorspecs{\colorcsname#1\endcsname}}
+
+\endTEX
 
 %D \macros
 %D   {localstartcolor,localstopcolor}
@@ -1145,17 +1183,17 @@
 %D
 %D \showsetup{\y!setuppalet}
 
-\def\currentpalet{}
+\let\currentpalet\empty
 
 \def\setuppalet%
   {\dosingleempty\dosetuppalet}
 
 \def\dosetuppalet[#1]%
   {\doifelsenothing{#1}
-     {\def\currentpalet{}}
+     {\let\currentpalet\empty}
      {\doifelsevaluenothing{\??pa#1}
         {\showmessage{\m!colors}{7}{#1}%
-         \def\currentpalet{}}
+         \let\currentpalet\empty}
         {\def\currentpalet{#1:}}}}
 
 %D \macros 
@@ -1169,7 +1207,7 @@
 %D
 %D \showsetup{\y!showpalet}
 
-\fetchruntimecommand \showpalet {\f!coloprefix\s!run}
+\fetchruntimecommand \showpalet {\f!colorprefix\s!run}
 
 %D \macros
 %D   {definecolorgroup}
@@ -1246,7 +1284,7 @@
 %D
 %D \showsetup{\y!showcolorgroup}
 
-\fetchruntimecommand \showcolorgroup {\f!coloprefix\s!run}
+\fetchruntimecommand \showcolorgroup {\f!colorprefix\s!run}
 
 %D There are ten predefined color groups, like
 %D \color[groen]{\em groen}, \color[rood]{\em rood},
@@ -1305,7 +1343,7 @@
 %D 
 %D \showsetup{\y!comparepalet}
 
-\fetchruntimecommand \comparepalet {\f!coloprefix\s!run}
+\fetchruntimecommand \comparepalet {\f!colorprefix\s!run}
 
 %D \macros
 %D   {comparecolorgroup}
@@ -1328,7 +1366,7 @@
 %D
 %D \showsetup{\y!comparecolorgroup}
 
-\fetchruntimecommand \comparecolorgroup {\f!coloprefix\s!run}
+\fetchruntimecommand \comparecolorgroup {\f!colorprefix\s!run}
 
 %D \macros 
 %D   {showcolor}
@@ -1344,7 +1382,7 @@
 %D
 %D \showsetup{\y!showcolor}
 
-\fetchruntimecommand \showcolor {\f!coloprefix\s!run}
+\fetchruntimecommand \showcolor {\f!colorprefix\s!run}
 
 %D \macros
 %D   {negativecolorbox}
@@ -1386,20 +1424,39 @@
 
 \newif\ifMPcmyk % \MPcmykfalse
 
+% \def\MPcolor#1%
+%   {\ifMPgraphics
+%      \@EA\@EA\@EA\doMPcolor\csname\??cr#1\endcsname:::::\end
+%    \else
+%      #1%
+%    \fi}
+
+\beginTEX 
+
 \def\MPcolor#1%
   {\ifMPgraphics
-     \@EA\@EA\@EA\doMPcolor\csname\??cr#1\endcsname:::::\end
+     \@EA\@EA\@EA\doMPcolor\colorcsname#1\endcsname:::::\end
    \else
      #1%
    \fi}
 
-% \def\doMPcolor#1:#2:#3:#4:#5:#6\end%
-%   {\if     #1R(#2,#3,#4)%
-%    \else\if#1C(1-#2-#5,1-#3-#5,1-#4-#5)%
-% %   \else\if#1C(1-#2+#5,1-#3+#5,1-#4+#5)%
-%    \else\if#1S(#2,#2,#2)% 
-%    \else      (0,0,0)%
-%    \fi\fi\fi}
+\endTEX
+
+\beginETEX \ifcsname
+
+\def\MPcolor#1%
+  {\ifMPgraphics
+     \@EA\@EA\@EA\doMPcolor
+       \csname\??cr
+         \ifcsname\??cr\currentpalet#1\endcsname\currentpalet\fi
+       #1\endcsname
+     :::::\end
+   \else
+     #1%
+   \fi}
+
+\endETEX
+
 
 \def\doMPcolor#1:#2:#3:#4:#5:#6\end
   {\if     #1R(#2,#3,#4)%

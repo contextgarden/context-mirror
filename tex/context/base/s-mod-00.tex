@@ -14,6 +14,8 @@
 %D This module looks like crap, is not documented, will 
 %D change, and used to be called modu-*.tex. 
 
+\unprotect 
+
 % todo: 
 % 
 % file inclusions -> hyperlinks 
@@ -35,8 +37,6 @@
 % herzien ivm fonts 
 
 % nog eens \interface \\ \\ verder doorvoeren 
-
-\unprotect
 
 \def\resetmodule%
   {\getparameters
@@ -69,9 +69,9 @@
 \def\stopmodule%
   {\pagina  
    \plaatsindex
-     [balanceren=ja,
-      aanduiding=nee,
-      criterium=tekst]}
+     [\c!balanceren=\v!ja,
+      \c!aanduiding=\v!nee,
+      \c!criterium=\v!tekst]}
 
 \def\simplemodule#1%
   {\type{#1}}
@@ -85,7 +85,10 @@
         mpgraph := #1 ; 
         input mp-cont ; 
     \stopMPrun
-     \externalfigure[\bufferprefix mprun.#1][hoogte=\vsize,breedte=\hsize]}
+    \externalfigure
+      [\bufferprefix mprun.#1]
+      [\c!hoogte=\vsize,
+       \c!breedte=\hsize]}
 
   \definieeroverlay[titelpagina][\TitelPagina{512}]
 
@@ -99,33 +102,30 @@
        \edef\ModuleNumber{0\ModuleNumber}%
      \fi\fi
      \stelachtergrondenin
-       [pagina] 
-       [achtergrond=titelpagina]
+       [\v!pagina] 
+       [\c!achtergrond=titelpagina]
    \fi
-   \startstandaardopmaak[hoofdstatus=geen,voetstatus=geen]
-   \switchnaarkorps[14.4pt,ss] 
-   \definefont[temp][SansBold at 72pt] % \font\temp=cmssbx10 at 72pt 
-   \bgroup
-   \def\CONTEXT {Con\kern-.15em\TeX t}
-   \def\TEXUTIL {\TeX Util}
-   \def\PPCHTEX {PPCH\TeX}
-   \regellinks{\temp               \CONTEXT}            \vskip24pt
-   \doifelse{\Modulesubtitle}{}
-     {\regellinks{\bfd             \Moduletitle}        \vfill}   
-     {\regellinks{\bfd             \Modulesubtitle}     \vfill
-      \doifnot{\Moduletitle}{}
-        {\regellinks{\bf category: \Moduletitle}        \vskip6pt}}
-  %\regellinks{\bf        version: \Moduleversion}      \vskip6pt
-  %\regellinks{\bf           date: \Moduledate}         \vskip6pt
-   \regellinks{\bf         author: \Moduleauthor}       \vskip6pt
-   \regellinks{\bf           date: \currentdate}        \vskip6pt
-   \doifnot{\Modulesuggestions}{}
-     {\regellinks{\bs suggestions: \Modulesuggestions}  \vskip6pt}
-  %\regellinks{\bf      copyright: \Modulecopyright}    \par
-   \egroup
+   \startstandaardopmaak[\c!hoofdstatus=\v!geen,\c!voetstatus=\v!geen]
+     \switchnaarkorps[14.4pt,ss] 
+     \definefont[temp][SansBold at 72pt] % \font\temp=cmssbx10 at 72pt 
+     \bgroup
+       \def\CONTEXT {Con\kern-.15em\TeX t}
+       \def\TEXUTIL {\TeX Util}
+       \def\PPCHTEX {PPCH\TeX}
+       \regellinks{\temp               \CONTEXT}            \vskip24pt
+       \doifelse{\Modulesubtitle}{}
+         {\regellinks{\bfd             \Moduletitle}        \vfill}   
+         {\regellinks{\bfd             \Modulesubtitle}     \vfill
+          \doifnot{\Moduletitle}{}
+            {\regellinks{\bf category: \Moduletitle}        \vskip6pt}}
+       \regellinks{\bf         author: \Moduleauthor}       \vskip6pt
+       \regellinks{\bf           date: \currentdate}        \vskip6pt
+       \doifnot{\Modulesuggestions}{}
+         {\regellinks{\bs suggestions: \Modulesuggestions}  \vskip6pt}
+     \egroup
    \stopstandaardopmaak
    \ifx\ModuleNumber\undefined \else
-     \stelachtergrondenin[pagina][achtergrond=]
+     \stelachtergrondenin[\v!pagina][\c!achtergrond=]
    \fi}
 
 \let\stopdocumentation=\relax
@@ -150,33 +150,33 @@
 
 \steltypenin
   [definition]  
-  [voor={\pagina[voorkeur]}\blanko\PresetParagraphNumber\CompressDefinitions,
-   na=\ResetParagraphNumber\blanko,
-   optie=\Moduletype]
+  [\c!voor={\pagina[\v!voorkeur]}\blanko\PresetParagraphNumber\CompressDefinitions,
+   \c!na=\ResetParagraphNumber\blanko,
+   \c!optie=\Moduletype]
 
 \definieertypen
   [PL]
-  [optie=PL,
-   marge=standaard]
+  [\c!optie=PL,
+   \c!marge=\v!standaard]
 
 \definieertypen
   [JV]
-  [optie=JV,
-   marge=standaard]
+  [\c!optie=JV,
+   \c!marge=\v!standaard]
 
 \definieertypen
   [MP]
-  [optie=MP,
-   marge=standaard]
+  [\c!optie=MP,
+   \c!marge=\v!standaard]
 
 \definieertypen
   [TEX]
-  [optie=TEX,
-   marge=standaard]
+  [\c!optie=TEX,
+   \c!marge=\v!standaard]
 
-\steltypenin [typen]      [marge=standaard]
-\steltypenin [file]       [marge=standaard]
-\steltypenin [definition] [marge=0pt]
+\steltypenin [\v!typen]   [\c!marge=\v!standaard]
+\steltypenin [\v!file]    [\c!marge=\v!standaard]
+\steltypenin [definition] [\c!marge=0pt]
 
 \newcounter\NOfMarginLines
 \newcounter\ParagraphNumber
@@ -254,8 +254,10 @@
 % \macros{a,b}{b}     
 % \macros[a]{a,b}{b}  
 
-\definieeralineas [interface] [n=2]
-\stelalineasin    [interface] [1] [breedte=4cm]
+% weg ermee 
+
+\definieeralineas [interface] [\c!n=2]
+\stelalineasin    [interface] [1] [\c!breedte=4cm]
 
 \def\startvoorbeeld{\par\startsmaller}
 \def\stopvoorbeeld {\stopsmaller}
@@ -396,13 +398,15 @@
 \input setupa
 \input setupb
 
+\unprotect 
+
 \def\showsetup%
   {\doglobal\newcounter\CurrentArgument
    \setup}
 
 \stelkadertekstenin
   [setuptext]
-  [achtergrond=raster,
-   kader=uit]
+  [\c!achtergrond=\v!raster,
+   \c!kader=\v!uit]
 
-\endinput 
+\protect \endinput 

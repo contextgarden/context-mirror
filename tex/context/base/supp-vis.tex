@@ -240,8 +240,14 @@
 %D option off in those (unpredictable) situations, we just
 %D redefine a few \PLAIN\ macros.
 
-\def\rlap#1{\normalhbox to \!!zeropoint{#1\normalhss}}
-\def\llap#1{\normalhbox to \!!zeropoint{\normalhss#1}}
+\ifx\tlap\undefined 
+
+  \def\rlap#1{\normalhbox to \!!zeropoint{#1\normalhss}}
+  \def\llap#1{\normalhbox to \!!zeropoint{\normalhss#1}}
+  \def\blap#1{\normalvbox to \!!zeropoint{#1\normalvss}}
+  \def\tlap#1{\normalvbox to \!!zeropoint{\normalvss#1}}
+
+\fi 
 
 \def~{\normalpenalty\!!tenthousand\ }
 
@@ -723,7 +729,7 @@
      \egroup
      \setbox0=\normalhbox
        {\normalhskip-4\testrulewidth\copy0\copy2}%
-     \smashbox0
+     \smashbox0%
      \box0
    \egroup}
 
@@ -825,12 +831,12 @@
      \setvisiblevfilbox0\to422%
      \setbox2=\normalvcue 
        {\normalhskip -#3\testrulewidth\copy0}%
-     \smashbox2
+     \smashbox2%
      \copy2
      \bgroup
        \setbox2=\normalvcue 
          {\normalhskip -2\testrulewidth\copy0}%
-       \smashbox2
+       \smashbox2%
        \copy2
        \cleaders
          \normalvbox to 12\testrulewidth
@@ -838,7 +844,7 @@
          #1%
        \setbox2=\normalvbox
          {\normalvskip-2\testrulewidth\copy2}%
-       \smashbox2
+       \smashbox2%
        \box2
      \egroup
      \box2

@@ -670,7 +670,7 @@
     [\blanko]
   \variable
     [\c!marge]
-    [\c!dimension!,\v!standaard]
+    [\c!dimension!,\v!standaard,\v!ja,\v!nee]
     [0pt]
   \variable
     [\c!evenmarge]
@@ -704,6 +704,10 @@
     [\c!palet]
     [\c!identifier!]
     [colorpretty]
+  \variable
+    [\c!regels]
+    [\v!ja,\v!nee,\v!afgebroken]
+    [\v!ja]
 \stopsetup
 
 \startsetup
@@ -743,7 +747,7 @@
     [\v!per\v!tekst]
   \variable
     [\c!plaats]
-    [\v!pagina,\v!tekst,\v!kolommen,\v!hoog]
+    [\v!pagina,\v!tekst,\v!kolommen,\v!hoog,\v!geen]
     [\v!pagina]
   \variable
     [\c!lijn]
@@ -1467,9 +1471,29 @@
     [\c!command!]
     []
   \variable
+    [\c!tussen]
+    [\c!command!]
+    []
+  \variable
     [\c!na]
     [\c!command!]
     []
+  \variable
+    [\c!kleur]
+    [\c!identifier!]
+    []
+  \variable
+    [\c!hoogte]
+    [\c!dimension!,\v!max]
+    [.5\linewidth]
+  \variable
+    [\c!diepte]
+    [\c!dimension!,\v!max]
+    [.5\linewidth]
+  \variable
+    [\c!variant]
+    [\v!a,\v!b,\v!c]
+    [\v!a]
 \stopsetup
 
 \startsetup
@@ -1577,7 +1601,7 @@
   \type
     [\c!opt!\c!val!\c!opt!\c!vars!\c!stp!]
   \value
-    [\v!links,\v!rechts,\v!midden]
+    [\v!links,\v!rechts,\v!midden,\v!geen]
     []
   \inheritvariables
     [\y!setupframedtexts]
@@ -1959,7 +1983,7 @@
 
 \startsetup
   \command
-    [\y!toonkader]
+    [\y!showframe]
   \type
     [\c!opt!\c!val!]
   \value
@@ -1967,12 +1991,12 @@
     []
 \stopsetup
 
-\startsetup
-  \command
-    [\y!toonopbouw]
-  \type
-    []
-\stopsetup
+% \startsetup
+%   \command
+%     [\y!toonopbouw]
+%   \type
+%     []
+% \stopsetup
 
 \startsetup
   \command[\y!regellinks]
@@ -2043,12 +2067,12 @@
 \stopsetup
 
 \startsetup
-  \command[\y!tooninstellingen]
+  \command[\y!showsetups]
   \type[]
 \stopsetup
 
 \startsetup
-  \command[\y!toonlayout]
+  \command[\y!showlayout]
   \type[]
 \stopsetup
 
@@ -2745,7 +2769,7 @@
 
 \startsetup
   \command
-    [\y!definieertekst]
+    [\y!definetext]
   \type
     [\c!val!\c!val!\c!val!\c!opt!\c!val!\c!opt!\c!val!]
   \value
@@ -2767,7 +2791,7 @@
 
 \startsetup
   \command
-    [\y!stelhoofdin]
+    [\y!setupheader]
   \type
     [\c!opt!\c!val!\c!vars!]
   \value
@@ -2814,69 +2838,69 @@
 
 \startsetup
   \command
-    [\y!stelvoetin]
+    [\y!setupfooter]
   \type
     [\c!opt!\c!val!\c!vars!]
   \inheritvalues
-    [\y!stelhoofdin]
+    [\y!setupheader]
     []
   \inheritvariables
-    [\y!stelhoofdin]
+    [\y!setupheader]
     []
 \stopsetup
 
 \startsetup
   \command
-    [\y!steltekstin]
+    [\y!setuptext]
   \type
     [\c!opt!\c!val!\c!vars!]
   \inheritvalues
-    [\y!stelhoofdin]
+    [\y!setupheader]
     []
   \inheritvariables
-    [\y!stelhoofdin]
+    [\y!setupheader]
     []
 \stopsetup
 
 \startsetup
   \command
-    [\y!stelbovenin]
+    [\y!setuptop]
   \type
     [\c!opt!\c!val!\c!vars!]
   \inheritvalues
-    [\y!stelhoofdin]
+    [\y!setupheader]
     []
   \inheritvariables
-    [\y!stelhoofdin]
+    [\y!setupheader]
     []
 \stopsetup
 
 \startsetup
   \command
-    [\y!stelonderin]
+    [\y!setupbottom]
   \type
     [\c!opt!\c!val!\c!vars!]
   \inheritvalues
-    [\y!stelhoofdin]
+    [\y!setupheader]
     []
   \inheritvariables
-    [\y!stelhoofdin]
+    [\y!setupheader]
     []
 \stopsetup
 
 \startsetup
-  \command[\y!geenhoofdenvoetregels]
+  \command[\y!noheaderandfooterlines]
   \type[]
 \stopsetup
 
 \startsetup
-  \command[\y!geenbovenenonderregels]
+  \command[\y!notopandbottomlines]
   \type[]
 \stopsetup
 
 \startsetup
   \command
-    [\y!stelhoofdtekstenin]
+    [\y!setupheadertexts]
   \type
     [\c!opt!\c!val!\c!val!\c!val!]
   \value
@@ -2892,7 +2916,7 @@
 
 \startsetup
   \command
-    [\y!stelvoettekstenin]
+    [\y!setupfootertexts]
   \type
     [\c!opt!\c!val!\c!val!\c!val!]
   \value
@@ -2908,7 +2932,7 @@
 
 \startsetup
   \command
-    [\y!stelteksttekstenin]
+    [\y!setuptexttexts]
   \type
     [\c!opt!\c!val!\c!val!\c!val!]
   \value
@@ -2924,7 +2948,7 @@
 
 \startsetup
   \command
-    [\y!stelboventekstenin]
+    [\y!setuptoptexts]
   \type
     [\c!opt!\c!val!\c!val!\c!val!]
   \value
@@ -2940,7 +2964,7 @@
 
 \startsetup
   \command
-    [\y!stelondertekstenin]
+    [\y!setupbottomtexts]
   \type
     [\c!opt!\c!val!\c!val!\c!val!]
   \value
@@ -3044,7 +3068,7 @@
     [\c!identifier!]
     []
   \value
-    [\v!eerste,\v!laatste,\v!vorige,\v!beide,\v!alles]
+    [\v!eerste,\v!laatste,\v!vorige,\v!beide,\v!alles,\v!huidige]
     []
 \stopsetup
 
@@ -3226,7 +3250,7 @@
 
 \startsetup
   \command
-    [\y!toongrid]
+    [\y!showgrid]
   \type
     []
 \stopsetup
@@ -3657,7 +3681,7 @@
 
 \startsetup
   \command
-    [\y!stelpositionerenin]
+    [\y!setuppositioning]
   \type
     [\c!vars!]
   \variable
@@ -3692,7 +3716,7 @@
 
 \startsetup
   \command
-    [\y!startpositioneren]
+    [\y!startpositioning]
   \type
     [\c!stp!]
 \stopsetup
@@ -4216,9 +4240,11 @@
     [\v!start]
 \stopsetup
 
+% todo: \definieerformule
+
 \startsetup
   \command
-    [\y!stelformulesin]
+    [\y!setupformulas]
   \type
     [\c!vars!]
   \variable
@@ -4233,6 +4259,46 @@
     [\c!rechts]
     [\c!text!]
     [{)}]
+  \variable
+    [\c!uitlijnen]
+    [\v!links,\v!midden,\v!rechts] 
+    []
+  \variable
+    [\c!strut]
+    [\v!ja,\v!nee]
+    [\v!nee]
+  \variable
+    [\c!afstand]
+    [\c!dimension!]
+    [1em]
+  \variable
+    [\c!marge]
+    [\c!dimension!,\v!standaard,\v!ja,\v!nee]
+    [0pt]
+  \variable
+    [\c!linkermarge]
+    [\c!dimension!]
+    [0pt]
+  \variable
+    [\c!rechtermarge]
+    [\c!dimension!]
+    [0pt]
+  \variable
+    [\c!springvolgendein]
+    [\v!ja,\v!nee]
+    [\v!nee]
+  \variable
+    [\c!variant]
+    [\c!identifier!]
+    [\s!default]
+  \variable
+    [\c!voorwit]
+    [\c!dimension!]
+    [0pt]
+  \variable
+    [\c!na]
+    [\c!dimension!]
+    [0pt]
 \stopsetup
 
 \startsetup
@@ -4483,7 +4549,7 @@
 
 \startsetup
   \command
-    [\y!definieerpapierformaat]
+    [\y!definepapersize]
   \type
     [\c!val!\c!vars!]
   \value
@@ -4509,7 +4575,7 @@
 
 \startsetup
   \command
-    [\y!stelpapierformaatin]
+    [\y!setuppapersize]
   \type
     [\c!vals!\c!opt!\c!vals!]
   \value
@@ -4524,7 +4590,7 @@
 
 \startsetup
   \command
-    [\y!stelarrangerenin]
+    [\y!setuparranging]
   \type
     [\c!vals!]
   \value
@@ -4536,14 +4602,14 @@
 
 \startsetup
   \command
-    [\y!toonprint]
+    [\y!showprint]
   \type
     [\c!vals!\c!vals!\c!vars!]
   \inheritvariables
-    [\y!stelpapierformaatin]
+    [\y!setuppapersize]
     []
   \inheritvariables
-    [\y!stelpapierformaatin]
+    [\y!setuppapersize]
     []
   \inheritvariables
     [\y!stellayoutin]
@@ -4552,7 +4618,7 @@
 
 \startsetup
   \command
-    [\y!definieerbeeldmerk]
+    [\y!definelogo]
   \type
     [\c!val!\c!val!\c!val!\c!vars!]
   \value
@@ -4579,7 +4645,7 @@
 
 \startsetup
   \command
-    [\y!plaatsbeeldmerken]
+    [\y!placelogos]
   \type
     [\c!opt!\c!vals!]
   \value
@@ -4715,6 +4781,14 @@
     [\v!ja]
   \variable
     [\c!hoofd]
+    [\v!geen,\v!leeg,\v!hoog,\v!geenmarkering]
+    []
+  \variable
+    [\c!tekst]
+    [\v!geen,\v!leeg,\v!hoog,\v!geenmarkering]
+    []
+  \variable
+    [\c!voet]
     [\v!geen,\v!leeg,\v!hoog,\v!geenmarkering]
     []
   \variable
@@ -4873,6 +4947,10 @@
     [\c!number!]
     [4]
   \variable
+    [\c!start]
+    [\c!number!]
+    [1]
+  \variable
     [\c!voor]
     [\c!command!]
     []
@@ -4952,7 +5030,8 @@
   \value
     [a,A,KA,n,N,m,r,R,KR,\c!number!,\v!verder,
      \v!standaard,\c!repeat!\v!ruim,\c!repeat!\v!aanelkaar,\v!opelkaar,
-     \v!afsluiter,\v!aansluitend,\v!opmarge,\v!inmarge,\v!intro,\v!kolommen]
+     \v!afsluiter,\v!aansluitend,\v!opmarge,\v!inmarge,\v!intro,
+     \v!kolommen]
     [\v!standaard]
   \inheritvariables
     [\y!stelopsommingin]
@@ -5361,33 +5440,33 @@
 
 \startsetup
   \command
-    [\y!definieeropmaak]
+    [\y!definemakeup]
   \type
     [\c!val!\c!vars!]
   \value
     [\c!identifier!]
     []
   \inheritvariables
-    [\y!stelopmaakin]
+    [\y!setupmakeup]
     []
 \stopsetup
 
 \startsetup
   \command
-    [\y!startopmaak]
+    [\y!startmakeup]
   \type
     [\c!val!\c!opt!\c!vars!\c!stp!]
   \value
     [\c!identifier!]
     []
   \inheritvariables
-    [\y!stelopmaakin]
+    [\y!setupmakeup]
     []
 \stopsetup
 
 \startsetup
   \command
-    [\y!stelopmaakin]
+    [\y!setupmakeup]
   \type
     [\c!val!\c!vars!]
   \value
@@ -5693,7 +5772,7 @@
 
 \startsetup
   \command
-    [\y!positioneer]
+    [\y!position]
   \type
     [\c!poss!\c!arg!]
   \value
@@ -5732,7 +5811,7 @@
 
 \startsetup
   \command
-    [\y!stelachtergrondenin]
+    [\y!setupbackgrounds]
   \type
     [\c!opt!\c!val!\c!opt!\c!vals!\c!vars!]
   \value
@@ -8592,7 +8671,7 @@
     [\c!identifier!]
     []
   \inheritvariables
-    [\y!stelpositionerenin]
+    [\y!setuppositioning]
     []
 \stopsetup
 
@@ -8605,7 +8684,7 @@
     [\c!identifier!]
     []
   \inheritvariables
-    [\y!stelpositionerenin]
+    [\y!setuppositioning]
     []
 \stopsetup
 

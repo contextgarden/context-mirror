@@ -663,7 +663,7 @@
 \def\activedododotextmodediscretionary#1#2%
   {\convertargument#2\to\discretionarytoken
    \def\textmodediscretionary{\getvalue{textmodediscretionary\string#1}}%
-   \ifx#1\nextnext % takec care of ||| and +++ and ......
+   \ifx#1\nextnext % takes care of ||| and +++ and ......
      \prewordbreak\discretionary{\hbox{$#1$}}{}{\hbox{$#1$}}%
        \allowbreak\postwordbreak
      \def\nextnextnext{\afterassignment\egroup\let\next=}%
@@ -935,8 +935,21 @@
 
 \endETEX
 
+%D \macros 
+%D   {nonbreakablespace}
+%D
+%D The following macro is taken from plain \TEX. 
+
+\def\nonbreakablespace{\penalty\!!tenthousand\ }
+
+\let~\nonbreakablespace
+
+% under testing:
+%
+% \unexpanded\def~{\nonbreakablespace}
+
 %D \macros
-%D  {midworddiscretionary}
+%D   {midworddiscretionary}
 %D
 %D If needed, one can add a discretionary hyphen using \type
 %D {\midworddiscretionary}. This macro does the same as 

@@ -171,6 +171,11 @@
    \doifvalue{#1\c!pagina}{\v!nee}{\def\obeypages {\ignorepages}}%
    %
    \ExpandFirstAfter\processaction
+     [\getvalue{#1\c!regels}]
+     [        \v!ja=>\obeybreakpoints,
+      \v!afgebroken=>\obeyhyphens]%
+   %
+   \ExpandFirstAfter\processaction
      [\getvalue{#1\c!optie}]
      [     \v!geen=>\let\obeycharacters=\relax,
           \v!kleur=>\setupprettiesintype{TEX}%
@@ -538,7 +543,7 @@
     \c!optie=\v!normaal]
 
 %D \macros
-%D   {typ,obeyhyphens}
+%D   {typ,obeyhyphens,obeybreakpoints}
 %D
 %D Although it's not clear from the macros, one character trait
 %D of this macros, which are build on top of the support
@@ -554,6 +559,10 @@
    \tttf\hyphenchar\font=45
    \savedfont
    \spaceskip.5em\!!plus.25em\!!minus.25em\relax}
+
+\def\obeybreakpoints%
+  {\def\obeyedspace{ }%
+   \veryraggedright}
 
 %\unexpanded\def\typ%
 %  {\bgroup
@@ -765,7 +774,8 @@
         \c!evenmarge=\!!zeropoint, 
       \c!onevenmarge=\!!zeropoint,
            \c!blanko=\v!regel,
-           \c!escape=/]
+           \c!escape=/,
+           \c!regels=\v!ja]
 
 %D \macros
 %D   {definetype}
@@ -806,7 +816,7 @@
      [\c!voor,\c!na,\c!spatie,\c!pagina,\c!tab,\c!kleur,\c!letter,
       \c!tekst,\c!icommando,\c!vcommando,\c!ccommando,\c!korps,
       \c!optie,\c!palet,\c!marge,\c!evenmarge,\c!onevenmarge,
-      \c!springvolgendein,\c!blanko,\c!escape]%
+      \c!springvolgendein,\c!blanko,\c!escape,\c!regels]%
    \getparameters
      [\??tp#1]
      [#2]}
@@ -1074,6 +1084,11 @@
 
 \permitshiftedendofverbatim
 \optimizeverbatimtrue
+
+%D And a bonus macro: 
+
+\def\verbatim#1%
+  {\convertargument#1\to\ascii\ascii}
 
 \protect
 

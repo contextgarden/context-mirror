@@ -2,7 +2,7 @@
 %D   [       file=core-pag,
 %D        version=1998.01.15,
 %D          title=\CONTEXT\ Core Macros,
-%D       subtitle=Pagebody Building,
+%D       subtitle=Pagebody Building (Imposition),
 %D         author=Hans Hagen,
 %D           date=\currentdate,
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
@@ -14,6 +14,92 @@
 \writestatus{loading}{Context Core Macros / Pagebody Building}
 
 \unprotect
+
+% moved code: 
+
+\def\myshipout#1%
+  {\voorpagina % voor de pagebody dus !  
+   \dontshowcomposition
+   \ifarrangingpages
+     \actualarrange
+       {\thisisrealpage{\realfolio}#1}%
+   \else
+     \actualshipout
+       {\thisisrealpage{\realfolio}#1}%
+   \fi
+   \gotonextrealpage
+   \napagina}
+
+\newbox\postponedcontent
+
+\def\flushatshipout%
+  {\dowithnextbox
+      {\global\setbox\postponedcontent=\hbox to \!!zeropoint
+         {%\hskip-\maxdimen % niet hier, gaat mis in acrobat (clipt)
+          \box\postponedcontent\box\nextbox}%
+       \global\ht\postponedcontent=\!!zeropoint
+       \global\dp\postponedcontent=\!!zeropoint
+       \global\wd\postponedcontent=\!!zeropoint}%
+   \hbox}
+
+% \starttypen
+% \def\pagestoshipout{1,3,5}
+% \stoptypen
+
+\newcounter\shippedoutpages
+\let\pagestoshipout\empty      % {1,3,6}
+\chardef\whichpagetoshipout=0 % 0=all 1=odd 2=even
+
+\def\actualshipout#1%
+  {\doglobal\increment\shippedoutpages
+   \ifx\pagestoshipout\empty
+     \ifcase\whichpagetoshipout\relax
+       \donetrue
+     \or % 1
+       \ifodd\shippedoutpages\relax\donetrue\else\donefalse\fi
+     \or % 2
+       \ifodd\shippedoutpages\relax\donefalse\else\donetrue\fi
+     \else
+       \donetrue
+     \fi
+   \else
+     \ExpandBothAfter\doifinsetelse{\shippedoutpages}{\pagestoshipout}
+       \donetrue\donefalse
+   \fi
+   \ifdone
+     \shipout\vbox
+       {\forgetall
+        \offinterlineskip
+        \mindermeldingen
+        \vskip-1in
+        \hskip-1in
+        \hbox
+          {\setbox0=\hbox{#1}% just in case there are objects there
+           \setbox\scratchbox=\hbox
+             {\the\everyshipout
+              \ifnum\realpageno=\lastpage\relax
+                \the\everylastshipout
+                \global\everylastshipout\emptytoks
+              \fi}%
+           \smashbox\scratchbox
+           \box\scratchbox
+           \box\postponedcontent % evt ver naar links !
+           \box0}}%
+   \else
+     \message
+       {[\ifarrangingpages arranged \fi page
+         \ifarrangingpages\the\arrangeno\else\the\realpageno\fi\normalspace
+         not flushed]}%
+     \setbox0=\hbox{#1}%
+     \deadcycles=0
+   \fi}
+
+\def\actualarrange#1%
+  {\setbox0=\hbox{\thisisrealpage{\realfolio}#1}%
+   \pusharrangedpage0
+   \deadcycles=0 }
+
+% so far for the moved code 
 
 \newbox\arrangedpageA
 \newbox\arrangedpageB
@@ -42,7 +128,7 @@
    \divide\scratchdimen by \arrangedpageY
    \global\advance\papierhoogte by -2\scratchdimen}
 
-\def\stelarrangerenin[#1]%
+\def\setuparranging[#1]%
   {\ifarrangingdisabled \else
      \doifelse{#1}{\v!blokkeer}
        {\global\arrangingdisabledtrue}
@@ -118,7 +204,7 @@
              \s!default=>\global\arrangingpagesfalse]%
      \doifcommonelse{#1}{90,270,\v!geroteerd}
        {\swapmacros\horizontalcutmarks\verticalcutmarks}{}% ugly solution
-     \stelpapierformaatin
+     \setuppapersize
      \ifarrangingpages
        \abortutilitygeneration
      \fi
@@ -126,7 +212,7 @@
 
 % cleaner, but unchecked, and incomplete
 %
-% \def\dostelarrangereninXY#1#2#3#4#5#6#7#8%
+% \def\dosetuparrangingXY#1#2#3#4#5#6#7#8%
 %   {\global\chardef\arrangedpageX     =#1%
 %    \global\chardef\arrangedpageY     =#2%
 %    \global\chardef\arrangedpageT     =#3%
@@ -136,11 +222,11 @@
 %    \global\let    \poparrangedpages  =#7%
 %    \global\let    \handlearrangedpage=#8}
 % 
-% \def\dostelarrangereninOE#1#2%
+% \def\dosetuparrangingOE#1#2%
 %   {\gdef\arrangedrotationO{#1}%
 %    \gdef\arrangedrotationE{#2}}
 % 
-% \def\stelarrangerenin[#1]%
+% \def\setuparranging[#1]%
 %   {\ifarrangingdisabled \else
 %      \doifelse{#1}{\v!blokkeer}
 %        {\global\arrangingdisabledtrue}
@@ -156,35 +242,35 @@
 %        [  \v!gespiegeld=>\global\mirrorarrangedtrue,
 %         \v!dubbelzijdig=>\global\doublearrangedtrue,
 %             \v!negatief=>\global\negatearrangedtrue,
-%            \v!geroteerd=>\dostelarrangereninOE{90}{270},
-%                      90=>\dostelarrangereninOE{90}{270},
-%                     180=>\dostelarrangereninOE{180}{0},
-%                     270=>\dostelarrangereninOE{270}{90},
-%                    2*16=>\dostelarrangereninXY{8}{4}{16}{5}{5}
+%            \v!geroteerd=>\dosetuparrangingOE{90}{270},
+%                      90=>\dosetuparrangingOE{90}{270},
+%                     180=>\dosetuparrangingOE{180}{0},
+%                     270=>\dosetuparrangingOE{270}{90},
+%                    2*16=>\dosetuparrangingXY{8}{4}{16}{5}{5}
 %                            \pusharrangedpageTHIRTYTWO
 %                            \poparrangedpagesAB
 %                            \relax,
-%                     2*8=>\dostelarrangereninXY{4}{2}{8}{5}{3}
+%                     2*8=>\dosetuparrangingXY{4}{2}{8}{5}{3}
 %                            \pusharrangedpageSIXTEEN  
 %                            \poparrangedpagesAB
 %                            \relax,
-%                     2*4=>\dostelarrangereninXY{2}{2}{4}{3}{3}
+%                     2*4=>\dosetuparrangingXY{2}{2}{4}{3}{3}
 %                            \pusharrangedpageEIGHT    
 %                            \poparrangedpagesAB
 %                            \relax,
-%                     2*2=>\dostelarrangereninXY{2}{1}{2}{3}{2}
+%                     2*2=>\dosetuparrangingXY{2}{1}{2}{3}{2}
 %                            \pusharrangedpageFOUR     
 %                            \poparrangedpagesAB
 %                            \relax,
-%                   2SIDE=>\dostelarrangereninXY{2}{1}{2}{3}{2}
+%                   2SIDE=>\dosetuparrangingXY{2}{1}{2}{3}{2}
 %                            \pusharrangedpageSIDE
 %                            \poparrangedpagesAB
 %                            \relax,
-%                     2UP=>\dostelarrangereninXY{2}{1}{4}{3}{2}
+%                     2UP=>\dosetuparrangingXY{2}{1}{4}{3}{2}
 %                            \pusharrangedpageTWO
 %                            \poparrangedpagesTWO,
 %                            \handlearrangedpageTWOUP,
-%                   2DOWN=>\dostelarrangereninXY{1}{2}{4}{2}{3}
+%                   2DOWN=>\dosetuparrangingXY{1}{2}{4}{2}{3}
 %                            \pusharrangedpageTWO
 %                            \poparrangedpagesTWO
 %                            \handlearrangedpageTWODOWN,
@@ -193,7 +279,7 @@
 %              \s!default=>\global\arrangingpagesfalse]%
 %      \doifcommonelse{#1}{90,270,\v!geroteerd}
 %        {\swapmacros\horizontalcutmarks\verticalcutmarks}{}% ugly solution
-%      \stelpapierformaatin
+%      \setuppapersize
 %      \ifarrangingpages
 %        \abortutilitygeneration
 %      \fi
@@ -207,8 +293,8 @@
      \advance\scratchcounter by \realpageno
      \advance\scratchcounter by -1
      \dorecurse{\scratchcounter}
-       {\geenhoofdenvoetregels
-        \insertdummypage}
+       {\noheaderandfooterlines
+        \ejectdummypage}
    \fi}
 
 \def\handlearrangedpageXY#1#2#3#4#5%
@@ -611,7 +697,10 @@
                      \hbox to \hsize
                        {\@@iplinks
                         \ifnum\combinedpagescounter>\@@ipn \else
-                          \externalfigure[#1][\c!pagina=\combinedpagescounter,\c!factor=\v!max,\c!kader=\@@ipkader]%
+                          \externalfigure[#1]
+                            [\c!pagina=\combinedpagescounter,
+                             \c!factor=\v!max,
+                             \c!kader=\@@ipkader]%
                         \fi
                         \@@iprechts}
                      \@@iponder}%
@@ -644,33 +733,33 @@
   {\getparameters[\??pc][#1]%
    \doifelse{\@@pcstatus}{\v!start}
      {\doifinsetelse{\@@pcplaats}{\v!onder,\v!boven}
-        {\stelpapierformaatin[\c!links=\hskip\@@pcoffset]%
+        {\setuppapersize[\c!links=\hskip\@@pcoffset]%
          \adddimenmacro\papierhoogte\@@pcoffset\@@pcoffset\@@pcafstand\@@pchoogte\to\@@pcpaperheight
          \adddimenmacro\papierbreedte\@@pcoffset\@@pcoffset\to\@@pcpaperwidth
          \defineoverlay[pagecomment][\placepagecommentTB]}
-        {\stelpapierformaatin[\c!boven=\vskip\@@pcoffset]%
+        {\setuppapersize[\c!boven=\vskip\@@pcoffset]%
          \adddimenmacro\papierhoogte\@@pcoffset\@@pcoffset\to\@@pcpaperheight
          \adddimenmacro\papierbreedte\@@pcoffset\@@pcoffset\@@pcafstand\@@pcbreedte\to\@@pcpaperwidth
          \defineoverlay[pagecomment][\placepagecommentLR]}%
       \processaction
         [\@@pcplaats]
-        [ \v!onder=>{\stelpapierformaatin[\c!onder =\vss,\c!boven =\vskip\@@pcoffset]},
-          \v!boven=>{\stelpapierformaatin[\c!boven =\vss,\c!onder =\vskip\@@pcoffset]},
-          \v!links=>{\stelpapierformaatin[\c!links =\hss,\c!rechts=\hskip\@@pcoffset]},
-         \v!rechts=>{\stelpapierformaatin[\c!rechts=\hss,\c!links =\hskip\@@pcoffset]}]%
-      \definieerpapierformaat
+        [ \v!onder=>{\setuppapersize[\c!onder =\vss,\c!boven =\vskip\@@pcoffset]},
+          \v!boven=>{\setuppapersize[\c!boven =\vss,\c!onder =\vskip\@@pcoffset]},
+          \v!links=>{\setuppapersize[\c!links =\hss,\c!rechts=\hskip\@@pcoffset]},
+         \v!rechts=>{\setuppapersize[\c!rechts=\hss,\c!links =\hskip\@@pcoffset]}]%
+      \definepapersize
         [commentedpage]
         [\c!hoogte=\@@pcpaperheight,
          \c!breedte=\@@pcpaperwidth]%
-      \let\@@pcprintpaperformat\printpapierformaat
-      \stelpapierformaatin[\papierformaat][commentedpage]%
-      \stelachtergrondenin[\v!papier][\c!achtergrond=pagecomment]}
+      \let\@@pcprintpapersize\printpapersize
+      \setuppapersize[\papersize][commentedpage]%
+      \setupbackgrounds[\v!papier][\c!achtergrond=pagecomment]}
     {\doif{\@@pcstatus}{\v!stop} % else initialization  invokes backgrounds 
        {% this should be tested first 
-        % \expanded{\stelpapierformaatin[\papierformaat][\@@pcprintpaperformat]}%
-        \stelachtergrondenin[\v!papier][\c!achtergrond=]}}}
+        % \expanded{\setuppapersize[\papersize][\@@pcprintpapersize]}%
+        \setupbackgrounds[\v!papier][\c!achtergrond=]}}}
 
-\def\@@pcprintpaperformat{\printpapierformaat}
+\def\@@pcprintpapersize{\printpapersize}
 
 \def\placepagecommentTB%
   {\vbox to \printpapierhoogte
@@ -720,6 +809,42 @@
    \c!hoogte=5cm,
    \c!breedte=10cm]
 
-\protect
-
-\endinput
+\protect \endinput
+
+% This macro cuts a page into n parts that can be pasted 
+% together.
+%
+% \def\slicepages%
+%   {\dodoubleempty\doslicepages}
+% 
+% \def\doslicepages[#1][#2]%
+%   {\bgroup
+%    \getfiguredimensions[#1]
+%    \getparameters[\??ip][\c!n=1,#2]
+%    \definepapersize
+%      [\s!dummy][\c!hoogte=\figureheight,\c!breedte=\figurewidth]
+%    \setuppapersize
+%      [\s!dummy][\s!dummy]
+%    \setuplayout
+%      [\c!rugwit=\!!zeropoint,\c!kopwit=\!!zeropoint,
+%       \c!hoogte=\v!midden,\c!breedte=\v!midden,
+%       \c!hoofd=\!!zeropoint,\c!voet=\!!zeropoint]
+%    \dorecurse{\noffigurepages}
+%      {\let\pslice=\recurselevel
+%       \dorecurse{\@@ipn}
+%         {\let\xslice\recurselevel
+%          \dorecurse{\@@ipn}
+%            {\let\yslice\recurselevel
+%             \clip
+%               [\c!nx=\@@ipn,\c!ny=\@@ipn,\c!x=\xslice,\c!y=\yslice]
+%               {\schaal
+%                  [\c!schaal=\@@ipn000]
+%                  {\externalfigure[#1][\c!pagina=\pslice]}}
+%             \pagina}}}
+%    \egroup}
+% 
+% \starttext 
+% 
+% \slicepages[slice1.pdf][n=3] 
+% 
+% \stoptext 

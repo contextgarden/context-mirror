@@ -13,7 +13,7 @@
 
 \catcode`\{=1 \catcode`\}=2 
 
-\def\contextversion{2001.4.30}
+\def\contextversion{2001.7.2}
 
 %D Welcome to the main module. When this module is ran through
 %D \type{initex} or \type{tex -i} or \type{whatevertex} using
@@ -171,17 +171,37 @@
 \input core-des.tex 
 \input core-mat.tex
 \input core-syn.tex 
-\input core-mul.tex % moved 
+%input core-mul.tex % moved 
 \input core-spa.tex 
-\input main-001.tex % still to be split  
+\input core-sys.tex 
+
+% experimental otr 
+
+\input page-ini.tex 
+\input page-one.tex 
+\input page-lay.tex 
+\input page-log.tex
+\input page-txt.tex
+\input page-sid.tex 
+\input page-flt.tex 
+\input page-mul.tex 
+\input page-set.tex 
+\input page-lyr.tex
+\input page-mak.tex
+\input page-num.tex
+\input page-lin.tex
+\input page-mar.tex
+\input page-bck.tex
+
+\input core-job.tex
+
+% so far 
+
 \input core-sec.tex 
-\input core-pag.tex
+\input page-imp.tex
 \input core-tbl.tex
-\input core-mis.tex
 \input core-int.tex
 \input core-ntb.tex
-
-\input page-lyr.tex
 
 %D Like languages, fonts, encodings and symbols, \METAPOST\ 
 %D support is also organized in its own class of modules. 
@@ -226,8 +246,7 @@
 \input core-fnt.tex
 \input core-not.tex
 
-\input main-002.tex % still to be split  
-\input main-003.tex % still to be split  
+\input core-mis.tex
 
 \input core-fig.tex % after page body 
 \input core-par.tex

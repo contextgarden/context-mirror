@@ -24,7 +24,7 @@ $pattern = $ARGV[0] ;
 $done    = 0 ;
 $report  = '' ;
 
-my $dosish  = ($Config{'osname'} =~ /dos|win/i) ;
+my $dosish  = ($Config{'osname'} =~ /dos|mswin/i) ;
 
 sub CopyFile # agressive copy, works for open files like in gs 
   { my ($From,$To) = @_ ; 
@@ -56,9 +56,9 @@ foreach $file (@files)
   { $_ = $file ;
     if (s/\.(\d+)$// && -e $file)
       { if ($dosish)  
-           { system ("pdftex -progname=pdftex -fmt=mptopdf   \\relax $file") }
+           { system ("pdfetex -progname=pdfetex -efmt=mptopdf   \\relax $file") }
         else
-          { system ("pdftex -progname=pdftex -fmt=mptopdf \\\\relax $file") }
+          { system ("pdfetex -progname=pdfetex -efmt=mptopdf \\\\relax $file") }
         rename ("$_.pdf", "$_-$1.pdf") ;
         if (-e "$_.pdf") { CopyFile ("$_.pdf", "$_-$1.pdf") }
         if ($done) { $report .= " +" }

@@ -13,6 +13,41 @@
 
 \writestatus{loading}{Context Core Macros / Misc Commands}
 
+\startmessages  dutch  library: systems
+  title: systeem
+      3: probeer LaTeX eens
+\stopmessages
+
+\startmessages  english  library: systems
+  title: system
+      3: try LaTeX
+\stopmessages
+
+\startmessages  german  library: systems
+  title: system
+      3: Versuche LaTeX
+\stopmessages
+
+\startmessages  czech  library: systems
+  title: system
+      3: zkuste LaTeX
+\stopmessages
+
+\startmessages  italian  library: systems
+  title: sistema
+      3: provare LaTeX
+\stopmessages
+
+\startmessages  norwegian  library: systems
+  title: system
+      3: forsøker LaTeX
+\stopmessages
+
+\startmessages  romanian  library: systems
+  title: sistem
+      3: incercati LaTeX
+\stopmessages
+
 \unprotect
 
 %D \macros 
@@ -37,6 +72,1763 @@
 \appendtoks                 \def\MetaPost{MetaFun}\to\simplifiedcommands
 \appendtoks                              \def||{-}\to\simplifiedcommands
 
-\protect
+%D You would not expect the next macro in \CONTEXT, 
+%D wouldn't you? It's there to warn \LATEX\ users that 
+%D something is wrong. 
 
-\endinput
+\def\documentstyle% 
+  {\showmessage{\m!systems}{3}{}\stoptekst}
+
+\let\documentclass=\documentstyle
+
+% THIS WAS MAIN-002.TEX 
+
+%\def\checkinterlineskip%
+%  {\ifvmode
+%     \ifdim\lastskip>\!!zeropoint\relax
+%       \nointerlineskip
+%     \else\ifdim\lastkern>\!!zeropoint\relax
+%       \nointerlineskip
+%     \fi\fi
+%   \fi}
+
+\def\horitems#1#2% #1=breedte #2=commandos
+  {\dimen0=#1\relax
+   \divide\dimen0 by \nofitems
+   \!!counta=0\relax
+   \def\docommando##1%
+     {\advance\!!counta by 1\relax
+      \processaction
+        [\@@isuitlijnen]
+        [  \v!links=>\hbox to \dimen0{\strut##1\hss},
+          \v!rechts=>\hbox to \dimen0{\hss\strut##1},
+          \v!midden=>\hbox to \dimen0{\hss\strut##1\hss},
+           \v!marge=>\ifnum\!!counta=1\hss\else\hfill\fi
+                     \strut##1%
+                     \ifnum\!!counta=\nofitems\hss\else\hfill\fi,
+         \s!default=>\hbox to \dimen0{\hss\strut##1\hss}, % midden
+         \s!unknown=>\hbox to \dimen0{\strut##1\hss}]}%   % links
+   \hbox to #1{\hss#2\hss}}
+
+\def\veritems#1#2% #1=breedte #2=commandos
+  {\dimen0=#1\relax
+   \def\docommando##1%
+     {\ifdim\dimen0<\!!zeropoint\relax   % the - was a signal
+        \hbox to -\dimen0{\hss\strut##1}%
+      \else\ifdim\dimen0>\!!zeropoint\relax
+        \hbox to \dimen0{\strut##1\hss}%
+      \else
+        \hbox{\strut##1}%
+      \fi\fi}%
+   \vbox{#2}}
+
+\def\dostelitemsin[#1]%
+  {\getparameters[\??is][#1]%
+   \doif{\@@isbreedte}{\v!onbekend}
+     {\def\@@isbreedte{\hsize}}%
+   \doifconversiondefinedelse{\@@issymbool}
+     {\def\doitembullet##1{\convertnumber{\@@issymbool}{##1}}}
+     {\doifsymboldefinedelse{\@@issymbool} 
+        {\def\doitembullet##1{\symbol[\@@issymbool]}}{}}}
+
+\def\makeitemsandbullets#1%
+  {\doifelse{\@@isn}{\v!onbekend}
+     {\getcommalistsize[#1]%
+      \edef\nofitems{\commalistsize}}
+     {\edef\nofitems{\@@isn}}%
+   \setbox0=\hbox
+     {\doitems
+        {\@@isbreedte}
+        {\processcommalist[#1]\docommando}}%
+   \setbox2=\hbox
+     {\doitems
+        {\@@isbulletbreedte}
+        {\dorecurse{\nofitems}
+           {\docommando{\strut\doitembullet{\herhaler}}}}}}
+
+\def\dostartitems#1#2#3%
+  {\let\doitems=#2
+   \def\@@isbulletbreedte{#3}%
+   \makeitemsandbullets{#1}%
+   \@@isvoor}
+
+\def\dostopitems%
+  {\@@isna
+   \egroup}
+
+\setvalue{doitems\v!boven}#1%
+  {\dostartitems{#1}\horitems\@@isbreedte
+   \noindent\vbox
+     {\forgetall
+      \doifsomething{\@@issymbool}
+        {\doifnot{\@@issymbool}{\v!geen}
+           {\box2
+            \@@istussen
+            \nointerlineskip}}%
+      \box0}%
+   \dostopitems}
+
+\setvalue{doitems\v!onder}#1%
+  {\dostartitems{#1}\horitems\@@isbreedte
+   \noindent\vbox
+     {\forgetall
+      \box0
+      \doifsomething{\@@issymbool}
+        {\@@istussen
+         \nointerlineskip
+         \box2}}%
+   \dostopitems}
+
+\setvalue{doitems\v!inmarge}#1%
+  {\dostartitems{#1}{\veritems}{-1.5em}%  - is a signal
+   \noindent\hbox{\llap{\box2\hskip\linkermargeafstand}\box0}%
+   \dostopitems}
+
+\setvalue{doitems\v!links}#1%
+  {\advance\hsize by -1.5em\relax
+   \dostartitems{#1}{\veritems}{1.5em}%
+   \noindent\hbox{\box2\box0}%
+   \dostopitems}
+
+\setvalue{doitems\v!rechts}#1%
+  {\dostartitems{#1}{\veritems}{0em}%
+   \noindent\hbox{\box0\hskip-\wd2\box2}%
+   \dostopitems}
+
+\def\stelitemsin%
+  {\dosingleargument\dostelitemsin}
+
+\def\complexitems[#1]%
+  {\bgroup
+   \stelitemsin[#1]%
+   \parindent=\!!zeropoint
+   \setlocalhsize
+   \hsize=\localhsize
+   \mindermeldingen
+   \doifundefined{doitems\@@isplaats}%
+     {\let\@@isplaats\v!links}%
+   \getvalue{doitems\@@isplaats}}
+
+\definecomplexorsimpleempty\items
+
+\stelitemsin
+  [\c!plaats=\v!links,
+   \c!symbool=5,
+   \c!breedte=\hsize,
+   \c!uitlijnen=\v!midden,
+   \c!n=\v!onbekend,
+   \c!voor=\blanko,
+   \c!tussen={\blanko[\v!middel]},
+   \c!na=\blanko]
+
+% Te zijner tijd [plaats=boven,onder,midden] implementeren,
+% in dat geval moet eerst de maximale hoogte worden bepaald.
+%
+% Overigens kan een en ander mooier met \halign.
+
+\def\dodefinieeralineas[#1][#2]%
+  {\setvalue{\s!do\s!next#1}%
+     {\def\\{\getvalue{#1}}}%
+   \setvalue{#1}%
+     {\getvalue{\s!do\s!next#1}%
+      \dostartalineas{#1}}%
+   \setvalue{\e!volgende#1}%
+     {\getvalue{#1}}%
+   \setvalue{\e!start#1}%
+     {\bgroup
+      \setvalue{\s!do\s!next#1}{}%
+      \setvalue{\e!stop#1}%
+        {\getvalue{#1}%
+         \egroup}%
+      \getvalue{#1}}%
+   \getparameters[\??al#1]%
+     [\c!n=3,
+      \c!voor=\blanko,
+      \c!na=\blanko,
+      \c!afstand=1em,
+      \c!hoogte=\v!passend,
+      \c!lijn=\v!uit,
+      \c!commando=,
+      \c!uitlijnen=,
+      \c!tolerantie=\v!soepel,
+      \c!letter=,
+      \c!kleur=,
+      \c!boven=,
+      \c!boven=\vss,
+      \c!onder=\vfill,
+      #2]%
+   \setvalue{\e!stel#1\e!in}%
+     {\stelalineasin[#1]}%
+   \dorecurse
+      {\getvalue{\??al#1\c!n}}
+      {\stelalineasin[#1][\recurselevel]
+         [\c!breedte=,
+          \c!onder=\getvalue{\??al#1\c!onder},
+          \c!boven=\getvalue{\??al#1\c!boven},
+          \c!hoogte=\getvalue{\??al#1\c!hoogte},
+          \c!letter=\getvalue{\??al#1\c!letter},
+          \c!kleur=\getvalue{\??al#1\c!kleur},
+          \c!lijn=\getvalue{\??al#1\c!lijn},
+          \c!uitlijnen=\getvalue{\??al#1\c!uitlijnen},
+          \c!tolerantie=\getvalue{\??al#1\c!tolerantie},
+          \c!afstand=\getvalue{\??al#1\c!afstand}]}%
+   \stelalineasin[#1][1][\c!afstand=0em]}
+
+% nog monster
+%
+%\assignwidth
+%  {\!!widtha}
+%  {\getvalue{\??dd#1\c!breedte}}
+%  {\doifelsevaluenothing{\??dd#1\c!monster}
+%     {\hskip
+%     {\doattributes
+%        {\??al#1}\c!letter\c!kleur
+%        {\getvalue{\??dd#1\c!monster}}}}
+%  {0pt}
+
+\def\definieeralineas%
+  {\dodoubleargument\dodefinieeralineas}
+
+\def\dostelalineasin[#1][#2][#3]%
+  {\doifelse{#2}{\v!elk}
+     {\dorecurse
+        {\getvalue{\??al#1\c!n}}
+        {\getparameters[\??al#1\herhaler][#3]}}
+     {\ConvertToConstant\doifelse{#3}{}
+        {\getparameters[\??al#1][#2]}
+        {\def\docommando##1%
+           {\getparameters[\??al#1##1][#3]}%
+         \processcommalist[#2]\docommando}}}
+
+\def\stelalineasin%
+  {\dotripleempty\dostelalineasin}
+
+\newcount\alteller
+\newcount\alnsize
+\newdimen\alhsize
+
+\def\doalinealijn#1#2%
+  {\doifelsevalue{\??al#2\the\alteller\c!lijn}{\v!aan}
+     {\expandafter\dimen2=#1\relax
+      \hskip.5\dimen2
+      \hskip-\linewidth
+      \vrule\!!width\linewidth
+      \hskip.5\dimen2}
+     {\hskip#1}}
+
+\def\dostartalinea#1%
+  {\doifelsevaluenothing{\??al#1\the\alteller\c!breedte}
+     {\!!widtha=\alhsize\relax
+      \divide\!!widtha by \alnsize}
+     {\!!widtha=\getvalue{\??al#1\the\alteller\c!breedte}\relax}%
+   \dostartattributes
+     {\??al#1\the\alteller}\c!letter\c!kleur
+     {}%
+   \doifelsevalue{\??al#1\the\alteller\c!hoogte}{\v!passend}
+     {\setbox0=\vtop}
+     {\setbox0=\vtop to \getvalue{\??al#1\the\alteller\c!hoogte}}%
+   \bgroup
+   \blanko[\v!blokkeer]%
+   \forgetall
+   \getvalue{\??al#1\the\alteller\c!boven}%
+   \getvalue{\??al#1\c!binnen}%
+   \hsize=\!!widtha  % setting \wd afterwards removed
+   \getvalue{\??al#1\the\alteller\c!binnen}%
+   \edef\!!stringa{\getvalue{\??al#1\the\alteller\c!uitlijnen}}%  nodig?
+   \expandafter\steluitlijnenin\expandafter[\!!stringa]%
+   \edef\!!stringa{\getvalue{\??al#1\the\alteller\c!tolerantie}}% nodig?
+   \expandafter\steltolerantiein\expandafter[\!!stringa]%
+   \ignorespaces
+   \endgraf
+   \ignorespaces
+   %
+   % Nadeel van de onderstaande constructie is dat \everypar
+   % binnen een groep kan staan en zo steeds \begstruts
+   % worden geplaatst. Mooi is anders dus moet het anders!
+   %
+   % Hier is \Everypar niet nodig.
+   %
+   \everypar{\begstrut\everypar{}}%
+   %
+   \ignorespaces\geenspatie % dubbel: \ignorespaces
+   \getvalue{\??al#1\the\alteller\c!commando}}
+
+\def\dostopalinea#1%
+  {\ifvmode
+     \removelastskip
+   \else
+     \unskip\endstrut\endgraf
+   \fi
+   \getvalue{\??al#1\the\alteller\c!onder}%
+   \egroup
+   \ifdim\wd0=\!!zeropoint % no data
+     \wd0=\!!widtha
+   \fi
+   \box0
+   \dostopattributes
+   \ifnum\alteller<\getvalue{\??al#1\c!n}\relax
+     \def\next{\doalinea{#1}}%
+   \else
+     \def\next{\dostopalineas{#1}}%
+   \fi
+   \next}
+
+\def\doalinea#1%
+  {\global\advance\alteller by 1\relax
+   \doifelsevaluenothing{\??al#1\the\alteller\c!afstand}
+     {\doifnot{\the\alteller}{1}
+        {\hskip\getvalue{\??al#1\c!afstand}}}
+     {\doifelse{\the\alteller}{1}%
+        {\hskip\getvalue{\??al#1\the\alteller\c!afstand}}
+        {\doalinealijn{\getvalue{\??al#1\the\alteller\c!afstand}}{#1}}}%
+   \setvalue{#1}{\dostopalinea{#1}}%
+   \dostartalinea{#1}}
+
+\def\dostartalineas#1%
+  {\global\alteller=0\relax
+   \parindent=\!!zeropoint
+   \setlocalhsize
+   \alhsize=\localhsize
+   \alnsize=\getvalue{\??al#1\c!n}\relax
+   \dorecurse
+     {\getvalue{\??al#1\c!n}}
+     {\doifelsevaluenothing{\??al#1\recurselevel\c!afstand}
+        {\doifnot{\recurselevel}{1}
+           {\global\advance\alhsize by -\getvalue{\??al#1\c!afstand}\relax}}
+        {\global\advance\alhsize by -\getvalue{\??al#1\recurselevel\c!afstand}\relax}%
+      \doifvaluesomething{\??al#1\recurselevel\c!breedte}
+        {\global\advance\alnsize by -1\relax
+         \global\advance\alhsize by -\getvalue{\??al#1\recurselevel\c!breedte}\relax}}%
+   %\witruimte                 % gaat fout bij \framed
+   \getvalue{\??al#1\c!voor}%
+   \leavevmode                 % gaat wel goed bij \framed
+   \vbox\bgroup\hbox\bgroup
+     \doalinea{#1}}
+
+\def\dostopalineas#1%
+  {\egroup
+   \egroup
+   \par
+   \getvalue{\??al#1\c!na}}%
+
+\def\dosteltabin[#1]%
+  {\getparameters[\??ta]
+     [\c!kopletter=\v!normaal,
+      \c!kopkleur=,
+      \c!letter=\v!normaal,
+      \c!kleur=,
+      \c!breedte=\v!ruim,
+      \c!monster={\hskip4em},
+      \c!voor=,
+      \c!na=,
+      #1]%
+   \doordefinieren
+     [tab]
+     [\c!kopletter=\@@takopletter,
+      \c!kopkleur=\@@takleur,
+      \c!monster=\@@tamonster,
+      \c!breedte=\@@tabreedte,
+      \c!voor=\@@tavoor,
+      \c!na=\@@tana]}
+
+\def\steltabin%
+  {\dosingleargument\dosteltabin}
+
+\steltabin
+  [\c!plaats=\v!links]
+
+% The following macro's are derived from PPCHTEX and
+% therefore take some LaTeX font-switching into account.
+
+\newif\ifloweredsubscripts
+
+% Due to some upward incompatibality of LaTeX to LaTeX2.09
+% and/or LaTeX2e we had to force \@@chemieletter. Otherwise
+% some weird \nullfont error comes up.
+
+\doifundefined{@@chemieletter}{\def\@@chemieletter{\rm}}
+
+\def\beginlatexmathmodehack%
+  {\ifmmode
+     \let\endlatexmathmodehack=\relax
+   \else
+     \def\endlatexmathmodehack{$}$\@@chemieletter
+   \fi}
+
+\def\setsubscripts%
+  {\beginlatexmathmodehack
+   \def\dosetsubscript##1##2##3%
+     {\dimen0=##3\fontdimen5##2%
+      \setxvalue{@@\string##1\string##2}{\the##1##2\relax}%
+      ##1##2=\dimen0\relax}%
+   \def\dodosetsubscript##1##2%
+     {\dosetsubscript{##1}{\textfont2}{##2}%
+      \dosetsubscript{##1}{\scriptfont2}{##2}%
+      \dosetsubscript{##1}{\scriptscriptfont2}{##2}}%
+   %\dodosetsubscript{\fontdimen14}{?}%
+   \dodosetsubscript{\fontdimen16}{.7}%
+   \dodosetsubscript{\fontdimen17}{.7}%
+   \global\loweredsubscriptstrue
+   \endlatexmathmodehack}
+
+\def\resetsubscripts%
+  {\ifloweredsubscripts
+     \beginlatexmathmodehack
+     \def\doresetsubscript##1##2%
+       {\dimen0=\getvalue{@@\string##1\string##2}\relax
+        ##1##2=\dimen0}%
+     \def\dodoresetsubscript##1%
+       {\doresetsubscript{##1}{\textfont2}%
+        \doresetsubscript{##1}{\scriptfont2}%
+        \doresetsubscript{##1}{\scriptscriptfont2}}%
+     %\dodoresetsubscript{\fontdimen14}%
+     \dodoresetsubscript{\fontdimen16}%
+     \dodoresetsubscript{\fontdimen17}%
+     \global\loweredsubscriptsfalse
+     \endlatexmathmodehack
+   \fi}
+
+\let\beginlatexmathmodehack = \relax
+\let\endlatexmathmodehack   = \relax
+
+\def\chem#1#2#3%
+  {\bgroup
+   \setsubscripts
+   \mathematics{\hbox{#1}_{#2}^{#3}}%
+   \resetsubscripts
+   \egroup}
+
+\def\celsius#1%
+  {#1\mathematics{^\circ}C}
+
+\def\graden%
+  {\mathematics{^\circ}}
+
+\def\inch%
+  {\hbox{\rm\char125\relax}}
+
+\def\breuk#1#2%
+  {\mathematics{#1\over#2}}
+
+%\def\bedrag#1%
+%  {\mathematics{f~}\hbox{#1}}
+
+\def\bedragprefix{\mathematics{f\normalfixedspace}}
+\def\bedragsuffix{}
+
+\def\bedrag#1%
+  {\strut\hbox\bgroup
+   \let\normalfixedspace~%
+  % \def~{\futurelet\next\dofixedspace}%
+  % \def\dofixedspace%
+  %   {\hskip.5em\relax
+  %    \ifx\next,%
+  %      \hphantom{,}\let\next\gobbleoneargument
+  %    \else\ifx\next.%
+  %      \hphantom{.}\let\next\gobbleoneargument
+  %    \else
+  %      \let\next\relax
+  %    \fi\fi
+  %    \next}%
+  % \bedragprefix#1\bedragsuffix
+   \bedragprefix\digits{#1}\bedragsuffix
+   \egroup}
+
+% \definieeralineas[test][n=3]
+%
+% \stelalineasin[test][3][breedte=4cm,uitlijnen=links]
+%
+% \startopelkaar
+% \test hans \\ ton \\ \bedrag{1.000,--} \\
+% \test hans \\ ton \\ \bedrag{~.~~1,--} \\
+% \test hans \\ ton \\ \bedrag{~.~~1,~~} \\
+% \test hans \\ ton \\ \bedrag{~.100,--} \\
+% \test hans \\ ton \\ \subtot{1.000,--} \\
+% \test hans \\ ton \\ \bedrag{1.000,--} \\
+% \test hans \\ ton \\ \bedrag{1.000,--} \\
+% \test hans \\ ton \\ \totaal{1.000,--} \\
+% \test hans \\ ton \\ \bedrag{nihil,--} \\
+% \test hans \\ ton \\ \totaal{nihil,--} \\
+% \test hans \\ ton \\ \subtot{nihil,--} \\
+% \stopopelkaar
+
+\def\doorsnede%
+  {\hbox{\rlap/$\circ$} }
+
+\def\complexpunten[#1]%
+  {\dimen0=.5em\relax
+   \multiply\dimen0 by #1\relax
+   \hbox to \dimen0
+     {\leaders\hbox to .5em{\hss.\hss}\hss}}
+
+\def\simplepunten%
+  {\complexpunten[5]}
+
+\definecomplexorsimple\punten
+
+\def\ongeveer%
+  {\mathematics{\pm}}
+
+\def\permille%
+  {\mathematics{^{\scriptscriptstyle0}\kern-.25em/\kern-.2em_{\scriptscriptstyle00}}}
+
+\def\percent%
+  {\mathematics{^{\scriptscriptstyle0}\kern-.25em/\kern-.2em_{\scriptscriptstyle0}}}
+
+\let\promille=\permille
+\let\procent =\percent
+
+\def\permine%
+  {\dontleavehmode
+   \bgroup
+   \setbox0=\hbox
+     {\mathematics{+}}%
+   \hbox to \wd0
+     {\hss
+      \mathematics{^{\scriptscriptstyle-}\kern-.4em/\kern-.3em_{\scriptscriptstyle-}}%
+      \hss}%
+   \egroup}
+
+% for compatibility
+
+\def\unknown%
+  {\dontleavehmode\punten[3]}
+
+% currency
+
+\def\dollar%
+  {\bgroup
+   \ifnum\fam=\itfam
+     \sl
+   \else\ifnum\fam=\bifam
+     \bs
+   \fi\fi
+   \$%
+   \egroup}
+
+\def\sterling%
+  {\bgroup
+   \ifnum\fam=\bffam
+     \bi
+   \else\ifnum\fam=\bifam
+     \bi
+   \else\ifnum\fam=\bsfam
+     \bi
+   \else
+     \it
+   \fi\fi\fi
+   \$%
+   \egroup}
+
+\def\florijn%
+  {\bgroup
+   \ifnum\fam=\bffam
+     \bi
+   \else\ifnum\fam=\bifam
+     \bi
+   \else\ifnum\fam=\bsfam
+     \bi
+   \else
+     \it
+   \fi\fi\fi
+   f%
+   \egroup}
+
+\newsignal\quotationsignal
+\def\quotationskip{.125em}
+
+\def\stelciterenin%
+  {\dodoubleargument\getparameters[\??ci]}
+
+\def\stelcitatenin%
+  {\stelciterenin}
+
+\def\dostartcitaat[#1]%
+  {\bgroup
+   \@@civoor
+   \doifelsenothing{#1}
+     {\let\dostopcitaat=\relax}
+     {\startsmaller[#1]
+      \let\dostopcitaat=\stopsmaller}%
+   \dostartattributes\??ci\c!letter\c!kleur{}%
+   \setbox0=\hbox{\getvalue{\??la\currentlanguage\c!leftquotation}}%
+   \hskip-\wd0
+   \box0\relax
+   \ignorespaces}
+
+\def\stopcitaat%
+  {\unskip\hsmash{\getvalue{\??la\currentlanguage\c!rightquotation}}%
+   \dostopattributes
+   \dostopcitaat
+   \@@cina
+   \egroup}
+
+\def\startcitaat%
+  {\dosingleempty\dostartcitaat}
+
+\def\dohandlequotation#1%
+  {\ifdim\lastskip=\quotationsignal
+     \unskip\hskip\quotationskip
+   \fi
+\ifhmode % else funny pagebeaks 
+   \penalty\!!tenthousand\hskip\!!zeropoint      % == \prewordbreak
+\fi
+   \strut % new, needed below 
+   \getvalue{\??la\currentlanguage#1}%
+   \penalty\!!tenthousand\hskip\quotationsignal} % +- \prewordbreak
+
+\unexpanded\def\citaat%
+  {\groupedcommand
+     {\dohandlequotation\c!leftquotation}
+     {\dohandlequotation\c!rightquotation}}
+
+\unexpanded\def\citeer%
+  {\doifelse{\@@ciletter}{\v!normaal}
+     {\let\next=\doquotedcite}
+     {\let\next=\doattributedcite}%
+   \next}
+
+\def\doquotedcite%
+  {\groupedcommand
+     {\dohandlequotation\c!leftquote}
+     {\dohandlequotation\c!rightquote}}
+
+\def\doattributedcite%
+  {\groupedcommand
+     {\dostartattributes\??ci\c!letter\c!kleur}
+     {\dostopattributes}}
+
+% The previous one fails in \placefloat[left]{}{}, so instead
+% we use the next alternative, where the first one is handled 
+% outside group. Watch the strut. 
+
+\unexpanded\def\citaat%
+  {\dohandlequotation\c!leftquotation
+   \groupedcommand{}{\dohandlequotation\c!rightquotation}}
+
+\def\doquotedcite%
+  {\dohandlequotation\c!leftquote
+   \groupedcommand{}{\dohandlequotation\c!rightquote}}
+
+\stelciterenin
+  [\c!letter=\v!normaal,
+   \c!kleur=,
+   \c!voor=\startsmaller,
+   \c!na=\stopsmaller]
+
+% Tijden horen hier niet thuis en zullen in een aparte
+% module worden ondergebracht. voorlopig handhaven we ze nog
+% even. Een implementatie met \doordefinieren zou beter voldoen
+% omdat een en ander dan instelbaar wordt. Het is trouwens
+% zowieso beter het commando \tijd te reserveren voor de
+% systeemtijd.
+
+\def\tijd#1%
+  {\setbox0=\hbox{00.00}%
+   \hbox to \wd0{\hfill#1}}
+
+\def\tijdspan#1#2%
+  {\hbox{\tijd{#1}~---~\tijd{#2}}}
+
+\def\activiteit#1#2%
+  {\activity{\tijdspan{#1}{#2}}}
+
+\def\activiteit#1#2%
+  {\sym{\tijdspan{#1}{#2}}}
+
+
+\def\dotoevoegen#1%
+  {\def\next{#1}%
+   \dorecurse{#1}{\inlinker{\next~+}\def\next{}\crlf}}
+
+\def\complextoevoegen[#1]%
+  {\blanko
+   \processaction
+     [#1]
+     [   \v!klein=>\dotoevoegen{3},
+        \v!middel=>\dotoevoegen{6},
+         \v!groot=>\dotoevoegen{9},
+     \s!default=>\dotoevoegen{6},
+     \s!unknown=>\dotoevoegen{#1}]
+   \blanko}
+
+\definecomplexorsimpleempty\toevoegen
+
+
+\def\dorooster[#1]%
+  {\begingroup
+   \getparameters[\??rt]
+     [\c!x=0,\c!y=0,
+      \c!nx=10,\c!ny=10,
+      \c!dx=.5,\c!dy=.5,
+      \c!xstap=0,\c!ystap=0,
+      \c!eenheid=\s!cm,
+      \c!schaal=1,
+      \c!factor=1,
+      \c!offset=\v!ja,
+      \c!plaats=\v!links,
+      #1]%
+   \startpositioning
+     \dimen0=\@@rtdx\@@rteenheid\relax
+     \dimen0=\@@rtschaal\dimen0\relax
+     \dimen0=\@@rtfactor\dimen0\relax
+     \multiply\dimen0 by \@@rtnx\relax
+     \dimen2=\@@rtdy\@@rteenheid\relax
+     \dimen2=\@@rtschaal\dimen2\relax
+     \dimen2=\@@rtfactor\dimen2\relax
+     \multiply\dimen2 by \@@rtny\relax
+     \def\horline
+       {\vbox
+          {\hrule
+             \!!width \dimen0
+             \!!height \linewidth
+             \!!depth \!!zeropoint}}%
+     \def\verline%
+       {\vrule
+          \!!width \linewidth
+          \!!height \dimen2
+          \!!depth \!!zeropoint}%
+     \doglobal\newcounter\@@roosterc
+     \doglobal\newcounter\@@roosterd
+     \doglobal\newcounter\@@roostere
+     \def\setlegend##1##2##3%
+       {\gdef\@@roosterc{0}%
+        \dimen0=2em\relax
+        \dimen2=##2\@@rteenheid\relax
+        \dimen2=\@@rtschaal\dimen2\relax
+        \dimen2=\@@rtfactor\dimen2\relax
+        \divide\dimen0 by \dimen2\relax
+        \xdef\@@roostere{\number\dimen0}%
+        \ifnum\@@roostere>50
+          \gdef\@@roostere{100}%
+        \else\ifnum\@@roostere>10
+          \gdef\@@roostere{50}%
+        \else\ifnum\@@roostere>5
+          \gdef\@@roostere{10}%
+        \else\ifnum\@@roostere>1
+          \gdef\@@roostere{5}%
+        \else
+          \gdef\@@roostere{1}%
+        \fi\fi\fi\fi
+        \gdef\@@roosterd{0}%
+        \def\legend%
+          {\ifnum\@@roosterd=0\relax
+             \vbox
+               {\increment(\@@roosterc,##1)%
+                \hbox to 2em{\hss\@@roosterc\hss}}%
+             \global\let\@@roosterd=\@@roostere
+           \fi
+             \doglobal\decrement\@@roosterd
+             \doglobal\increment(\@@roosterc,##1)}}%
+     \def\draw##1##2##3##4##5##6##7##8##9%
+       {\setuppositioning
+          [\c!status=##8,
+           \c!xstap=\v!absoluut,
+           \c!ystap=\v!absoluut,
+           \c!eenheid=\@@rteenheid,
+           \c!schaal=\@@rtschaal,
+           \c!factor=\@@rtfactor,
+           \c!offset=\@@rtoffset,
+           \c!xoffset=##6,
+           \c!yoffset=##7]%
+        \doifelse{##9}{\v!midden}
+          {\scratchdimen=##3pt\scratchdimen=.5\scratchdimen
+           \edef\@@psxx{\withoutpt\the\scratchdimen}%
+           \scratchdimen=##4pt\scratchdimen=.5\scratchdimen
+           \edef\@@psyy{\withoutpt\the\scratchdimen}%
+           \scratchcounter=##2\advance\scratchcounter by -1
+           \edef\@@pszz{\the\scratchcounter}}
+          {\edef\@@psxx{0}\edef\@@psyy{0}\edef\@@pszz{##2}}%
+        \position(\@@psxx,\@@psyy){##1}%
+        \setuppositioning
+          [\c!status=##8,
+           \c!xstap=\v!relatief,
+           \c!ystap=\v!relatief,
+           \c!schaal=\@@rtschaal,
+           \c!factor=\@@rtfactor,
+           \c!offset=\@@rtoffset,
+           \c!eenheid=\@@rteenheid]%
+        \dorecurse{\@@pszz}{\position(##3,##4){##5}}}%
+     \draw
+       \verline\@@rtnx\@@rtdx0\verline\!!zeropoint\!!zeropoint\v!start\empty
+     \draw
+       \horline\@@rtny0\@@rtdy\horline\!!zeropoint\!!zeropoint\v!start\empty
+     \tfx
+     \doifnot{\@@rtxstap}{0}
+       {\setlegend\@@rtxstap\@@rtdx\@@rtx
+        \draw\legend\@@rtnx\@@rtdx0\legend{-1em}{-1.5em}\v!overlay\@@rtplaats}%
+     \doifnot{\@@rtystap}{0}
+       {\setlegend\@@rtystap\@@rtdy\@@rty
+        \draw\legend\@@rtny0\@@rtdy\legend{-2em}{-.75ex}\v!overlay\@@rtplaats}%
+  \stoppositioning
+  \endgroup}
+
+\def\rooster%
+  {\dosingleempty\dorooster}
+
+% Dit wordt:
+%
+%   \doorverwijzen[naam][instellingen] enz.
+%
+% waarbij <naam> bijvoorbeeld publicatie is. Dit levert:
+%
+%   \start<naam>
+%   \stop<naam>
+%
+%   \beginvan<naam>
+%   \eindvan<naam>
+%
+%   \publicatie
+%
+%   \volledigelijstmetpublicaties
+%
+% eigenlijk kan ook door... zo worden uitgebreid!
+
+\doornummeren
+  [@publicatie]
+  [\c!plaats=\v!links,
+   \c!breedte=\@@pbbreedte,\c!hang=,\c!monster=,
+   \c!voor=\@@pbvoor,\c!na=\@@pbna,\c!tussen=,
+   \c!kopletter=\@@pbkopletter,\c!letter=,
+   \c!kopkleur=\@@pbkopkleur,\c!kleur=,
+   \c!wijze=\@@pbwijze,\c!blokwijze=\@@pbblokwijze,
+   \c!tekst=,\c!links=\@@pblinks,\c!rechts=\@@pbrechts]
+
+\def\dostelpublicatiesin[#1]%
+  {\getparameters[\??pb][#1]}
+
+\def\stelpublicatiesin%
+  {\dosingleargument\dostelpublicatiesin}
+
+\def\apa@publicatie%
+  {\doifsomething{\@@pb@naam}{\@@pb@naam,\spatie}%
+   \doifsomething{\@@pb@titel}{{\sl\@@pb@titel}.\spatie}%
+   \doifsomething{\@@pb@jaar}{(\@@pb@jaar).\spatie}%
+   \doifsomething{\@@pb@plaats}{\@@pb@plaats\doifelsenothing{\@@pb@uitgever}{.}{:\spatie}}%
+   \doifsomething{\@@pb@uitgever}{\@@pb@uitgever.}}
+
+\def\normaal@publicatie%
+  {\@@pb@naam, \@@pb@titel, \@@pb@jaar, \@@pb@pagina, \@@pb@plaats, \@@pb@uitgever.}
+
+\def\complexstartpublicatie[#1]#2\stoppublicatie%
+  {\bgroup%
+   \def\dosetpublicatie%
+     {\processcommalist
+        [naam,titel,jaar,plaats,pagina,uitgever]
+        \setpublicatie
+      \ignorespaces}%
+   \def\setpublicatie##1%
+      {\setvalue{\??pb @##1}{}%
+       \setvalue{##1}####1{\setvalue{\??pb @##1}{####1}\ignorespaces}}%
+   \def\getpublicatie%
+     {\doifsomething{\@@pbvariant}{\getvalue{\@@pbvariant @publicatie}}}%
+   \doifelse{\@@pbnummeren}{\v!ja}%
+      {\@publicatie[#1]\dosetpublicatie#2\getpublicatie\par}%
+      {\@@pbvoor
+       \dosetpublicatie\ignorespaces#2\getpublicatie
+       \@@pbna}%
+   \egroup}
+
+\definecomplexorsimpleempty\startpublicatie
+
+\def\publicatie#1[#2]%
+  {\@@pblinks\in{#1}[#2]\@@pbrechts}
+
+\stelpublicatiesin
+  [\c!nummeren=\v!ja,
+   \c!variant=\c!apa,
+   \c!breedte=2em,
+   \c!hang=,
+   \c!monster=,
+   \c!voor=,
+   \c!na=,
+   \c!tussen=,
+   \c!kopletter=,
+   \c!kopkleur=,
+   \c!letter=,
+   \c!kleur=,
+   \c!blokwijze=\v!per\v!tekst,
+   \c!wijze=\v!per\v!tekst,
+   \c!tekst=,
+   \c!links={[},
+   \c!rechts={]}]
+
+\def\kenmerkdatum%
+  {\currentdate[\v!kenmerk]}
+
+\def\dokenmerk[#1]%
+   {\noheaderandfooterlines
+    \bgroup  
+    \getparameters
+      [\??km]
+      [\c!bet=\unknown,\c!dat=\unknown,\c!ken=\unknown,
+       \c!van=,        \c!aan=,        \c!ref=,        #1]%
+    % moet anders, hoort niet in 01b
+    \assigntranslation[nl=referentie,en=reference,du=Referenz,   sp=referencia]\to\@@@kmref
+    \assigntranslation[nl=van,       en=from,     du=Von,        sp=de]\to\@@@kmvan
+    \assigntranslation[nl=aan,       en=to,       du=An,         sp=a]\to\@@@kmaan
+    \assigntranslation[nl=betreft,   en=concerns, du=Betreff,    sp=]\to\@@@kmbet
+    \assigntranslation[nl=datum,     en=date,     du=Datum,      sp=fecha]\to\@@@kmdat
+    \assigntranslation[nl=kenmerk,   en=mark,     du=Kennzeichen,sp=]\to\@@@kmken
+    %
+    \definetabulate[\s!dummy][|l|p|]    
+    \startdummy
+      \NC\@@@kmbet\EQ\@@kmbet\NC\NR
+      \NC\@@@kmdat\EQ\@@kmdat\NC\NR
+      \NC\@@@kmken\EQ\expanded{\kap{\@@kmken}}\NC\NR
+      \doifsomething{\@@kmvan\@@kmaan}{\NC\NC\NC\NR}%
+      \doifsomething{\@@kmvan}{\NC\@@@kmvan\EQ\@@kmvan\NC\NR}%
+      \doifsomething{\@@kmaan}{\NC\@@@kmaan\EQ\@@kmaan\NC\NR}%
+      \doifsomething{\@@kmref}{\NC\NC\NC\NR\NC\@@@kmref\EQ\@@kmref\NC\NR}%
+    \stopdummy
+    \egroup}
+
+\def\kenmerk%
+  {\dosingleargument\dokenmerk}
+
+% NIEUW NIEUW NIEUW NIEUW NIEUW NIEUW NIEUW NIEUW NIEUW NIEUW NIEUW
+% NIEUW NIEUW NIEUW NIEUW NIEUW NIEUW NIEUW NIEUW NIEUW NIEUW NIEUW
+
+\def\??ri{@@ri}
+
+\def\stelrijenin%
+  {\dodoubleargument\getparameters[\??ri]}
+
+\def\complexstartrijen[#1]%
+  {\bgroup
+   \stelrijenin[#1]%
+   \let\do@@rionder=\relax
+   \def\rij%
+     {\do@@rionder
+      \egroup
+      \dimen0=\vsize
+      \divide\dimen0 by \@@rin
+      \advance\dimen0 by -\lineskip
+      \vbox to \dimen0
+        \bgroup
+        \@@riboven
+        \let\do@@rionder=\@@rionder
+        \ignorespaces}%
+   \bgroup
+   \rij}
+
+\definecomplexorsimpleempty\startrijen
+
+\def\stoprijen%
+  {\do@@rionder
+   \egroup
+   \egroup}
+
+\stelrijenin
+  [\c!n=2,
+   \c!boven=,
+   \c!onder=\vfill]
+
+% THIS WAS MAIN-003.TEX 
+
+\startmessages  dutch  library: systems
+     41: externe file -- in groep -- bestaat niet
+\stopmessages
+
+\startmessages  english  library: systems
+     41: external file -- in group -- does not exist
+\stopmessages
+
+\startmessages  german  library: systems
+     41: Externe Datei -- in Gruppe -- existiert nicht
+\stopmessages
+
+\startmessages  czech  library: systems
+     41: externi soubor -- ve skupine -- neexistuje
+\stopmessages
+
+\startmessages  italian  library: systems
+     41: il file esterno -- del gruppo -- non esiste
+\stopmessages
+
+\startmessages  norwegian  library: systems
+     41: ekstern fil -- i gruppe -- eksisterer ikke
+\stopmessages
+
+\startmessages  romanian  library: systems
+     41: fisierul extern -- din grupul -- nu exista
+\stopmessages
+
+\definetabulate
+  [\e!legenda]
+  [|emj1|i1|mR|]
+
+\setuptabulate
+  [\e!legenda]
+  [\c!eenheid=.75em,\c!binnen=\setquicktabulate\leg,EQ={=}]
+
+\definetabulate
+  [\e!legenda][\v!twee]
+  [|emj1|emk1|i1|mR|]
+
+\definetabulate
+  [\e!gegeven]
+  [|R|ecmj1|i1mR|]
+
+\setuptabulate
+  [\e!gegeven]
+  [\c!eenheid=.75em,\c!binnen=\setquicktabulate\geg,EQ={=}]
+
+\unexpanded\def\xbox%
+  {\bgroup\aftergroup\egroup\hbox\bgroup\tx\let\next=}
+
+\unexpanded\def\xxbox%
+  {\bgroup\aftergroup\egroup\hbox\bgroup\txx\let\next=}
+
+% \def\mrm#1%
+%   {$\rm#1$}
+
+%D \macros 
+%D   {definepairedbox, setuppairedbox, placepairedbox}
+%D
+%D Paired boxes, formally called legends, but from now on a
+%D legend is just an instance, are primarily meant for
+%D typesetting some text alongside an illustration. Although
+%D there is quite some variation possible, the functionality is
+%D kept simple, if only because in most cases such pairs are
+%D typeset sober. 
+%D 
+%D The location specification accepts a pair, where the first
+%D keyword specifies the arrangement, and the second one the
+%D alignment. The first key of the location pair is one of 
+%D \type {left}, \type {right}, \type {top} or \type {bottom}, 
+%D while the second key can also be \type {middle}. 
+%D
+%D The first box is just collected in an horizontal box, but 
+%D the second one is a vertical box that gets passed the 
+%D bodyfont and alignment settings. 
+
+%  \startbuffer[test]
+%  \test left   \test left,top    \test left,bottom  \test left,middle
+%  \test right  \test right,top   \test right,bottom \test right,middle
+%  \test top    \test top,left    \test top,right    \test top,middle
+%  \test bottom \test bottom,left \test bottom,right \test bottom,middle
+%  \stopbuffer
+%  
+%  \def\showtest#1% 
+%    {\pagina
+%     \typebuffer[demo]
+%     \def\test##1
+%       {\startlinecorrection[blank]
+%        \getbuffer[demo]%
+%        \ruledhbox\placelegend
+%          [bodyfont=6pt,location={##1}]
+%          {\framed[width=.25\textwidth]{\tttf##1}}
+%          {#1}
+%        \stoplinecorrection}
+%     \getbuffer[test]}
+%  
+%  \startbuffer[demo]
+%  \setuplegend
+%    [width=\hsize,maxwidth=\makeupwidth,
+%     height=\vsize,maxheight=\makeupheight]
+%  \stopbuffer
+%  
+%  \showtest{These examples demonstrate the default settings.}
+%  
+%  \startbuffer[demo]
+%  \setuplegend
+%    [width=\textwidth,
+%     maxwidth=\textwidth]
+%  \stopbuffer
+%  
+%  \showtest{\input tufte }
+%  
+%  \startbuffer[demo]
+%  \setuplegend
+%    [width=.65\textwidth]
+%  \stopbuffer
+%  
+%  \showtest{\input knuth }
+%  
+%  \startbuffer[demo]
+%  \setuplegend
+%    [height=2cm]
+%  \stopbuffer
+%  
+%  \showtest{These examples demonstrate some other settings.}
+%  
+%  \startbuffer[demo]
+%  \setuplegend
+%    [width=.65\textwidth,
+%     height=2cm]
+%  \stopbuffer
+%  
+%  \showtest{These examples demonstrate some other settings.}
+%  
+%  \startbuffer[demo]
+%  \setuplegend
+%    [n=2,align=right,width=.5\textwidth]
+%  \stopbuffer
+%  
+%  \showtest{\input zapf }
+
+%D \macros 
+%D   {setuplegend, placelegend}
+%D
+%D It makes sense to typeset a legend to a figure in \TEX\ 
+%D and not in a drawing package. The macro \type {\placelegend}
+%D combines a figure (or something else) and its legend. This
+%D command is just a paired box.
+%D
+%D The legend is placed according to \type {location}, being 
+%D \type {bottom} or \type {right}. The macro macro is used as
+%D follows. 
+%D
+%D \starttypen 
+%D \placefigure
+%D   {whow}
+%D   {\placelegend
+%D      {\externalfigure[cow]}
+%D      {\starttabulation
+%D       \NC 1 \NC head \NC \NR
+%D       \NC 2 \NC legs \NC \NR
+%D       \NC 3 \NC tail \NC \NR
+%D       \stoptabulation}}
+%D 
+%D \placefigure
+%D   {whow}
+%D   {\placelegend
+%D      {\externalfigure[cow]}
+%D      {\starttabulation[|l|l|l|l|]
+%D       \NC 1 \NC head \NC 3 \NC tail \NC \NR
+%D       \NC 2 \NC legs \NC   \NC      \NC \NR
+%D       \stoptabulation}}
+%D 
+%D \placefigure
+%D   {whow}
+%D   {\placelegend[n=2]
+%D      {\externalfigure[cow]}
+%D      {\starttabulation
+%D       \NC 1 \NC head \NC \NR
+%D       \NC 2 \NC legs \NC \NR
+%D       \NC 3 \NC tail \NC \NR
+%D       \stoptabulation}}
+%D 
+%D \placefigure
+%D   {whow}
+%D   {\placelegend[n=2]
+%D      {\externalfigure[cow]}
+%D      {head \par legs \par tail}}
+%D 
+%D \placefigure
+%D   {whow}
+%D   {\placelegend[n=2]
+%D      {\externalfigure[cow]}
+%D      {\startitemize[packed]
+%D       \item head \item legs \item  tail \item belly \item horns 
+%D       \stopitemize}}
+%D 
+%D \placefigure
+%D   {whow}
+%D   {\placelegend[n=2,width=.8\hsize]
+%D      {\externalfigure[cow]}
+%D      {\startitemize[packed]
+%D       \item head \item legs \item  tail \item belly \item horns 
+%D       \stopitemize}}
+%D \stoptypen 
+
+% \def\setuplegend%
+%   {\dodoubleargument\getparameters[\??ld]}
+% 
+% \setuplegend
+%   [\c!n=1,
+%    \c!afstand=1em,
+%    \c!tussen={\blanko[\v!middel]},
+%    \c!breedte=\hsize,
+%    \c!hoogte=\vsize,
+%    \c!korps=,
+%    \c!plaats=\v!onder]
+% 
+% \def\placelegend%
+%   {\bgroup
+%    \dosingleempty\doplacelegend}
+% 
+% \def\doplacelegend[#1]% watch the hsize/vsize tricks
+%   {\setuplegend[#1]%  % and don't change them 
+%    \dowithnextbox
+%      {\switchtobodyfont[\@@ldkorps]% split under same regime  
+%       \scratchdimen=\wd\nextbox
+%       \doifelse{\@@ldplaats}{\v!rechts}
+%         {\vsize=\ht\nextbox
+%          \vsize=\@@ldhoogte
+%          \hsize=\zetbreedte
+%          \advance\hsize by -\scratchdimen
+%          \advance\hsize by -\@@ldafstand
+%          \plaatsnaastelkaar{\box\nextbox}\bgroup}
+%         {\hsize\scratchdimen
+%          \plaatsonderelkaar{\box\nextbox}\bgroup}%
+%        \hsize\@@ldbreedte
+%        \doif{\@@ldplaats}{\v!rechts}{\hskip\@@ldafstand}%
+%        \ifnum\@@ldn>1
+%          \setrigidcolumnhsize\hsize\@@ldafstand\@@ldn
+%        \fi
+%        \dowithnextbox
+%          {\doifelse{\@@ldplaats}{\v!rechts}
+%             {\vbox to \vsize
+%                {\ifnum\@@ldn>1
+%                   \rigidcolumnbalance\nextbox
+%                 \else
+%                   \box\nextbox
+%                 \fi
+%                 \vfill}}
+%             {\vbox
+%                {\@@ldtussen
+%                 \ifnum\@@ldn>1
+%                   \rigidcolumnbalance\nextbox
+%                 \else
+%                   \box\nextbox
+%                 \fi}}%
+%           \egroup\egroup}%
+%          \vbox
+%            \bgroup
+%            \forgetall
+%            \tolerantTABLEbreaktrue % hm.
+%            \blanko[\v!blokkeer]%
+%            \everypar{\begstrut}%
+%            \let\next=}
+%    \hbox}
+
+\newbox\firstpairedbox 
+\newbox\secondpairedbox 
+
+\def\definepairedbox%
+  {\dodoubleempty\dodefinepairedbox}
+
+\def\dodefinepairedbox[#1][#2]%
+  {\getparameters
+     [\??ld#1]
+     [\c!n=1,
+      \c!afstand=\bodyfontsize,
+      \c!tussen={\blanko[\v!middel]},
+      \c!breedte=\hsize,
+      \c!hoogte=\vsize,
+      \c!maxbreedte=\zetbreedte,
+      \c!maxhoogte=\zethoogte,
+      \c!korps=,
+      \c!uitlijnen=,
+      \c!plaats=\v!onder,
+      #2]%
+   \setvalue{\e!stel#1\e!in}{\setuppairedbox[#1]}%
+   \setvalue{\e!plaats#1}{\placepairedbox[#1]}}
+
+\def\setuppairedbox%
+  {\dodoubleempty\dosetuppairedbox}
+
+\def\dosetuppairedbox[#1]%
+  {\getparameters[\??ld#1]}
+
+\def\placepairedbox% 
+  {\bgroup\dodoubleempty\doplacepairedbox}
+
+\def\doplacepairedbox[#1][#2]% watch the hsize/vsize tricks
+  {\setuppairedbox[#1][#2]%     % and don't change them 
+   \copyparameters 
+     [\??ld][\??ld#1]
+     [\c!n,\c!afstand,\c!tussen,
+      \c!breedte,\c!hoogte,\c!maxbreedte,\c!maxhoogte,
+      \c!korps,\c!uitlijnen,\c!plaats]%
+   \beforefirstpairedbox
+   \dowithnextbox
+     {\betweenbothpairedboxes
+      \dowithnextbox
+        {\afterbothpairedboxes
+         \egroup}
+      \vbox\bgroup
+        \insidesecondpairedbox
+        \let\next=}
+   \hbox}
+
+\def\beforefirstpairedbox%
+  {\chardef\pairedlocationa=1 % left 
+   \chardef\pairedlocationb=4 % middle
+   \getfromcommacommand[\@@ldplaats][1]%
+   \processaction 
+     [\commalistelement]
+     [ \v!links=>\chardef\pairedlocationa=0,
+      \v!rechts=>\chardef\pairedlocationa=1,
+       \v!boven=>\chardef\pairedlocationa=2,
+       \v!onder=>\chardef\pairedlocationa=3]%
+   \getfromcommacommand[\@@ldplaats][2]%
+   \processaction 
+     [\commalistelement]
+     [ \v!links=>\chardef\pairedlocationb=0,
+      \v!rechts=>\chardef\pairedlocationb=1,
+        \v!hoog=>\chardef\pairedlocationb=2,
+       \v!boven=>\chardef\pairedlocationb=2,
+        \v!laag=>\chardef\pairedlocationb=3,
+       \v!onder=>\chardef\pairedlocationb=3,
+      \v!midden=>\chardef\pairedlocationb=4]}
+
+\def\betweenbothpairedboxes%
+  {\switchtobodyfont[\@@ldkorps]% split under same regime  
+   \setbox\firstpairedbox=\box\nextbox
+   \ifnum\pairedlocationa<2
+     \hsize\wd\firstpairedbox % trick 
+     \hsize=\@@ldbreedte
+     \scratchdimen=\wd\firstpairedbox
+     \advance\scratchdimen by \@@ldafstand
+     \bgroup\advance\scratchdimen by \hsize
+     \ifdim\scratchdimen>\@@ldmaxbreedte\relax
+       \egroup
+       \hsize=\@@ldmaxbreedte
+       \advance\hsize by -\scratchdimen
+     \else
+       \egroup
+     \fi
+   \else
+     \hsize\wd\firstpairedbox 
+     \hsize\@@ldbreedte % can be \hsize
+     \ifdim\hsize>\@@ldmaxbreedte\relax \hsize=\@@ldmaxbreedte \fi % can be \hsize
+   \fi
+   \ifnum\@@ldn>1
+     \setrigidcolumnhsize\hsize\@@ldafstand\@@ldn
+   \fi}
+
+\def\afterbothpairedboxes%
+  {\setbox\secondpairedbox=\vbox
+     {\ifnum\@@ldn>1 \rigidcolumnbalance\nextbox \else \box\nextbox \fi}%
+   \ifnum\pairedlocationa<2\hbox\else\vbox\fi\bgroup % hide vsize 
+   \forgetall
+   \ifnum\pairedlocationa<2 
+     \scratchdimen=\maxoftwoboxdimens\ht\firstpairedbox\secondpairedbox
+     \vsize=\scratchdimen 
+     \ifdim\scratchdimen<\@@ldhoogte\relax % can be \vsize
+       \scratchdimen=\@@ldhoogte 
+     \fi
+     \ifdim\scratchdimen>\@@ldmaxhoogte\relax
+       \scratchdimen=\@@ldmaxhoogte 
+     \fi
+     \valignpairedbox\firstpairedbox \scratchdimen
+     \valignpairedbox\secondpairedbox\scratchdimen
+   \else
+     \scratchdimen=\maxoftwoboxdimens\wd\firstpairedbox\secondpairedbox
+     \halignpairedbox\firstpairedbox \scratchdimen
+     \halignpairedbox\secondpairedbox\scratchdimen
+     \scratchdimen=\ht\secondpairedbox
+     \vsize=\scratchdimen
+     \ifdim\ht\secondpairedbox<\@@ldhoogte\relax % can be \vsize
+       \scratchdimen=\@@ldhoogte\relax % \relax needed 
+     \fi
+     \ifdim\scratchdimen>\@@ldmaxhoogte\relax % todo: totale hoogte
+       \scratchdimen=\@@ldmaxhoogte\relax % \relax needed 
+     \fi
+     \ifdim\scratchdimen>\ht\secondpairedbox
+       \setbox\secondpairedbox\vbox to \scratchdimen
+         {\ifnum\pairedlocationa=3 \vss\fi
+          \box\secondpairedbox
+          \ifnum\pairedlocationa=2 \vss\fi}%
+     \fi
+   \fi
+   \ifcase\pairedlocationa
+     \box\secondpairedbox\hskip\@@ldafstand\box\firstpairedbox \or
+     \box\firstpairedbox \hskip\@@ldafstand\box\secondpairedbox\or
+     \box\secondpairedbox\par  \@@ldtussen \box\firstpairedbox \or
+     \box\firstpairedbox \par  \@@ldtussen \box\secondpairedbox\else
+   \fi
+   \egroup}
+
+\def\insidesecondpairedbox%
+  {\forgetall
+   \steluitlijnenin[\@@lduitlijnen]%
+   \tolerantTABLEbreaktrue % hm.
+   \blanko[\v!blokkeer]%
+   \everypar{\begstrut}}
+
+\def\maxoftwoboxdimens#1#2#3%
+  {#1\ifdim#1#2>#1#3 #2\else#3\fi}
+
+\def\valignpairedbox#1#2%
+  {\setbox#1=\vbox to #2
+     {\ifcase\pairedlocationb\or\or\or\vss\or\vss\fi
+      \box#1\relax
+      \ifcase\pairedlocationb\or\or\vss\or\or\vss\fi}}
+
+\def\halignpairedbox#1#2%
+  {\setbox#1=\hbox to #2
+     {\ifcase\pairedlocationb\or\hss\or\or\or\hss\fi
+      \box#1\relax
+      \ifcase\pairedlocationb\hss\or\or\or\or\hss\fi}}
+
+\definepairedbox[\e!legenda]
+
+\newcount\horcombinatie  % counter
+\newcount\totcombinatie
+
+\def\stelcombinatiesin%
+  {\dodoubleargument\getparameters[\??co]}
+
+\long\def\dodostartcombinatie[#1*#2*#3]%
+  {\stelfractiesin
+     [\c!n=\v!passend,
+      \c!afstand=\@@coafstand]%
+   \global\horcombinatie=#1\relax
+   \global\totcombinatie=#2\relax
+   \xdef\maxhorcombinatie{\the\horcombinatie}%
+   \multiply\totcombinatie by \horcombinatie
+   \tabskip=\!!zeropoint
+   \doifelse{\@@cobreedte}{\v!passend}
+     {\halign}
+     {\halign to \@@cobreedte}%
+   \bgroup&\hfil##\hfil&\tabskip\!!zeropoint \!!plus 1fill##\cr
+   \docombinatie}
+
+% \def\docombinatie%
+%   {\dowithnextbox
+%      {\setbox0=\box\nextbox
+%       \dowithnextbox
+%         {\setbox2=\box\nextbox
+%          \dodocombinatie}
+%      \hbox}
+%   \hbox}
+
+\def\docombinatie% we want to add struts but still ignore an empty box
+  {\dowithnextbox%
+     {\setbox0=\box\nextbox
+      \dowithnextbox
+        {\setbox2=\box\nextbox
+         \dodocombinatie}
+      \vtop\bgroup
+        \def\next%
+          {\futurelet\nexttoken\nextnext}
+        \def\nextnext%
+          {\ifx\nexttoken\egroup \else % the next box is empty  
+             \hsize\wd0
+             \steluitlijnenin[\@@couitlijnen]
+             \bgroup
+             \aftergroup\endstrut
+             \aftergroup\egroup
+             \begstrut
+           \fi}
+        \afterassignment\next\let\nexttoken=}
+  \hbox}
+
+\def\dodocombinatie%
+  {\vbox
+     {\forgetall % \stelwitruimtein[\v!geen]%
+      \vbox
+        {\copy0}%
+      \ifdim\ht2>\!!zeropoint\relax % beter dan \wd2, nu \strut mogelijk
+        \@@cotussen
+       %\vtop
+       %  {\nointerlineskip  % recently added
+       %   \hsize\wd0
+       %   \steluitlijnenin[\@@couitlijnen]%  % \raggedcenter
+       %   \begstrut\unhbox2\endstrut}%
+        \box2
+      \fi}%
+   \ifnum\totcombinatie>1
+     \global\advance\totcombinatie by -1
+     \global\advance\horcombinatie by -1
+     \ifnum\horcombinatie=0
+       \def\next%
+         {\cr\noalign
+            {\forgetall %\stelwitruimtein[\v!geen]%
+             \nointerlineskip
+             \@@cona
+             \@@covoor
+             \vss
+             \nointerlineskip}%
+          \global\horcombinatie=\maxhorcombinatie\relax
+          \docombinatie}%
+     \else
+       \def\next%
+         {&&&\hskip\@@coafstand&\docombinatie}%
+     \fi
+   \else
+     \def\next%
+       {\cr\egroup}%
+   \fi
+   \next}
+
+\def\complexdostartcombinatie[#1]%
+  {\dodostartcombinatie[#1*1*]}
+
+\def\simpledostartcombinatie%
+  {\complexdostartcombinatie[2]}
+
+\def\startcombinatie%
+  {\bgroup
+   \forgetall
+   \doifelse{\@@cohoogte}{\v!passend}
+     {\vbox}
+     {\vbox to \@@cohoogte}%
+   \bgroup
+   \complexorsimple\dostartcombinatie}
+
+\def\stopcombinatie%
+  {\egroup
+   \egroup}
+
+\stelcombinatiesin
+  [\c!breedte=\v!passend,
+   \c!hoogte=\v!passend,
+   \c!afstand=1em,
+   \c!voor=\blanko,
+   \c!tussen={\blanko[\v!middel]},
+   \c!na=,
+   \c!uitlijnen=\v!midden]
+
+\def\plaatsondernaastelkaar#1#2%
+  {\bgroup
+   \def\doplaatsondernaastelkaar%
+     {#2\cr\omit\bgroup#2%
+      \aftergroup#2%
+      \aftergroup\cr
+      \aftergroup\egroup
+      \aftergroup\egroup
+      \let\next=}%
+   #1\bgroup##\cr
+   \omit\bgroup#2%
+   \aftergroup\doplaatsondernaastelkaar
+   \let\next=}
+
+\def\plaatsonderelkaar%
+  {\plaatsondernaastelkaar\halign\hss}
+
+\def\plaatsnaastelkaar%
+  {\plaatsondernaastelkaar\valign\vss}
+
+\def\dogebruikexternefiles[#1][#2]%
+  {\getparameters
+     [\??fi#1]
+     [\c!file=,
+      \c!korps=,
+      \c!optie=,
+      #2]}
+
+\def\gebruikexternefiles%
+  {\dodoubleargument\dogebruikexternefiles}
+
+\def\dostelexternefilesin[#1][#2]%
+  {\doifundefinedelse{\??fi#1\c!file}
+     {\gebruikexternefiles[#1][#2]}
+     {\getparameters[\??fi#1][#2]}}
+
+\def\stelexternefilesin%
+  {\dodoubleargument\dostelexternefilesin}
+
+\def\verwerkexternefile#1#2#3%
+  {\bgroup
+   \getparameters[\??fi#1][\c!file=,#3]%
+   \doinputonce{\getvalue{\??fi#1\c!file}}%
+   \ExpandFirstAfter\switchtobodyfont[\getvalue{\??fi#1\c!korps}]%
+   \readsysfile{#2}  % beter: loc of fix gebied
+     {}
+     {\showmessage{\m!systems}{41}{#2,#1}}%
+   \egroup}
+
+\def\dogebruikexternefile[#1][#2][#3][#4]%
+  {\stelexternefilesin[#1][]%
+   \doinputonce{\getvalue{\??fi#1\c!file}}%
+   \doifelsenothing{#2}
+     {\setvalue{#3}{\verwerkexternefile{#1}{#3}{#4}}}
+     {\setvalue{#2}{\verwerkexternefile{#1}{#3}{#4}}}}
+
+\def\gebruikexternefile%
+  {\doquadrupleargument\dogebruikexternefile}
+
+\gebruikexternefiles
+  [pictex]
+  [\c!korps=\v!klein,
+   \c!file=pictex]
+
+\gebruikexternefiles
+  [table]
+  [\c!file=table]
+
+\presetlocalframed[\??ro]
+
+\def\stelroterenin%
+  {\dodoubleargument\getparameters[\??ro]}
+
+% \ht, \vfillvoor, \vfillna, \wd, \hfillvoor, \hfillna
+
+\def\dodostoproteer#1#2#3#4#5#6%
+  {\dontshowcomposition
+   \vbox to #1\nextbox
+     {#2\relax
+      \hbox to #4\nextbox
+        {#5\relax % \number removes leading spaces too 
+         \edef\@@rorotatie{\number\@@rorotatie}%
+         \doifelsenothing{\@@rorotatie}
+           {\dostartrotation{90}}
+           {\dostartrotation{\@@rorotatie}}% 
+         \wd\nextbox=\!!zeropoint
+         \ht\nextbox=\!!zeropoint
+         \box\nextbox
+         \dostoprotation
+         #6}
+      #3}%
+   \egroup}
+
+
+\def\dostoproteer%
+  {\!!counta=\@@rorotatie
+   \divide\!!counta by 90
+   \ifcase\!!counta
+     \dodostoproteer\ht\relax\vfill\wd\relax\hfill
+   \or
+     \dodostoproteer\wd\vfill\relax\ht\relax\hfill
+   \or
+     \dodostoproteer\ht\vfill\relax\wd\hfill\relax
+   \or
+     \dodostoproteer\wd\relax\vfill\ht\hfill\relax
+   \or
+     \dodostoproteer\ht\relax\vfill\wd\relax\hfill
+   \else
+     \def\@@rotatie{90}%
+     \dodostoproteer\ht\relax\vfill\wd\relax\hfill
+   \fi}
+
+\def\dorotatebox#1% {angle} \hbox/\vbox/\vtop
+  {\bgroup
+   \hbox\bgroup % compatibility hack
+   \dowithnextbox
+     {\edef\@@rorotatie{#1}%
+      \setbox\nextbox=\vbox{\box\nextbox}%
+      \dostoproteer
+      \egroup}}
+
+\def\complexroteer[#1]%
+  {\dowithnextbox
+     {\getparameters[\??ro][#1]%
+      \dostoproteer}%
+   \vbox\localframed[\??ro][#1]}
+
+\def\roteer%
+  {\bgroup     % \roteer kan argument zijn
+   \complexorsimpleempty\roteer}
+
+\stelroterenin
+  [\c!rotatie=90,
+   \c!breedte=\v!passend,
+   \c!hoogte=\v!passend,
+   \c!offset=\v!overlay,
+   \c!kader=\v!uit]
+
+% schaal
+
+\def\doscalelikeafigure%
+  {\doifsomething{\@@xyfactor\@@xyschaal\@@xyhfactor\@@xybreedte\@@xyhoogte}
+     {\let \@@efschaal \@@xyschaal
+      \let \@@effactor \@@xyfactor
+      \let \@@efbfactor\@@xybfactor 
+      \let \@@efhfactor\@@xyhfactor
+      \let \@@efbreedte\@@xybreedte
+      \let \@@efhoogte \@@xyhoogte
+      \let \@@epx      \!!zeropoint
+      \let \@@epy      \!!zeropoint   
+      \edef\@@epw     {\the\wd\nextbox}%
+      \edef\@@eph     {\the\ht\nextbox}%
+      \setfactorfiguresize
+      \setscalefiguresize
+      \setdimensionfiguresize
+      \convertfigureinsertscale\@@epx\figx\figxsca\scax
+      \convertfigureinsertscale\@@epy\figy\figysca\scay
+      \scratchdimen=\scax pt \divide\scratchdimen by 100 
+      \edef\@@xysx{\withoutpt\the\scratchdimen}%
+      \scratchdimen=\scay pt \divide\scratchdimen by 100 
+      \edef\@@xysy{\withoutpt\the\scratchdimen}}}   
+
+\def\doschaal[#1]%
+  {\bgroup
+   \forgetall
+   \getparameters
+     [\??xy]
+     [\c!schaal=,\c!breedte=,\c!hoogte=,
+      \c!factor=,\c!hfactor=,\c!bfactor=,
+      \c!sx=1,\c!sy=1,#1]%
+   \dowithnextbox
+     {\dontshowcomposition
+      \doscalelikeafigure
+      \dimen0=\@@xysy\ht\nextbox
+      \dimen2=\@@xysy\dp\nextbox
+      \dimen4=\@@xysx\wd\nextbox
+      \dimen6=\dimen0\advance\dimen6 by \dimen2 
+      \setbox\nextbox=\vbox to \dimen6
+        {\ht\nextbox=\!!zeropoint
+         \dp\nextbox=\!!zeropoint
+         \vfill % erbij
+         \dostartscaling\@@xysx\@@xysy\box\nextbox\dostopscaling}%
+      \ht\nextbox=\dimen0
+      \dp\nextbox=\dimen2
+      \wd\nextbox=\dimen4
+      \box\nextbox
+      \egroup}
+   \hbox}
+
+\def\schaal%
+  {\dosingleempty\doschaal}
+
+% mirror
+
+\def\domirrorbox% \hbox/\vbox/\vtop
+  {\bgroup
+   \dowithnextbox
+     {\dontshowcomposition
+      \dimen0=\wd\nextbox
+      \setbox\nextbox=\vbox
+        {\dostartmirroring\hskip-\wd\nextbox\box\nextbox\dostopmirroring}%
+      \wd\nextbox=\dimen0
+      \box\nextbox
+      \egroup}}
+
+\def\spiegel%
+  {\domirrorbox\hbox}
+
+%\setbox0=\hbox{gans}
+%
+%\ruledhbox{\copy0 \schaal[sx=2,sy=2]{\copy0}}
+%
+%\spiegel{\ruledhbox{\copy0 \schaal{\box0}}}
+
+% verdelen \hsize in fracties, wordt nog wat algemener, 
+% beetje vaag nu 
+%
+% \fractie[n/m,elementen,afstand]
+%
+% \fractie[2/5,3,1em]
+% \fractie[2/5,3,1em]
+% \fractie[1/5,3,1em]
+%
+% \stelfractiesin[afstand=,aantal=]  (passend,passend)
+
+\def\??fr{@@fr}
+
+\def\stelfractiesin%
+  {\dodoubleargument\getparameters[\??fr]}
+
+\def\dodofractie[#1/#2,#3,#4,#5]%
+  {\doifelsenothing{#3}
+     {\doifelse{\@@frn}{\v!passend}
+        {\!!counta=#2\relax}
+        {\!!counta=\@@frn\relax}}
+     {\!!counta=#3\relax}%
+   \doifelsenothing{#4}
+     {\doifelse{\@@frafstand}{\v!passend}
+        {\!!widtha=\!!zeropoint}
+        {\!!widtha=\@@frafstand}}
+     {\!!widtha=#4}%
+   \advance\!!counta by -1\relax
+   \multiply\!!widtha by \!!counta
+   \advance\hsize by -\!!widtha
+   \divide\hsize by #2\relax
+   \hsize=#1\hsize}
+
+\def\dofractie[#1]%
+  {\dodofractie[#1,,,,,,]}
+
+\def\fractie%
+  {\dosingleargument\dofractie}
+
+\stelfractiesin
+  [\c!afstand=\tfskipsize,
+   \c!n=\v!passend]
+
+\protect \endinput
