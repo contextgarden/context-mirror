@@ -13,6 +13,11 @@
 
 \writestatus{loading}{Context Typescript Macros (ini)}
 
+%D The default fontclass is empty. We could demand always using fontclasses,
+%D and then make the calling macros simplier (always assume fontclass) but
+%D apart from downward compatibility issues, it would make global, class
+%D spanning definitions a pain. Some day we will introduce a default class.
+
 % torture test : proper typefaces (and namespace)
 %
 % \starttext
@@ -35,23 +40,51 @@
 %   {\setupbodyfont[reset] \setupbodyfont[aer] aer: \eacute \eogonek \zcaron \acircumflexgrave \endgraf}
 % \stoptext
 
+% \usetypescript [modern]  [texnansi]
+%
+% normal   : 1450 ms
+% exa quit : 1300 ms (150 ms)
+% preload  :  825 ms (635 ms) (40-50%)
+%
+% \usetypescript [modern]  [texnansi]
+% \usetypescript [palatino][texnansi]
+% \usetypescript [times]   [texnansi]
+%
+% normal   : 3200 ms
+% exa quit : 2700 ms ( 500 ms)
+% preload  : 1300 ms (1900 ms) (60-70%)
+
 \unprotect
 
+\def\starttypescriptcollection
+  {\dosingleempty\dostarttypescriptcollection}
+
+\def\dostarttypescriptcollection[#1]%
+  {}
+
+\def\stoptypescriptcollection
+  {}
+
 \let\typescriptfiles\empty
+
+% \unexpanded\def\usetypescriptfile[#1]%
+%   {\doifelse{#1}\v!reset
+%      {\let\typescriptfiles\empty}
+%      {\addtocommalist{#1}\typescriptfiles}}
 
 \unexpanded\def\usetypescriptfile[#1]%
   {\doifelse{#1}\v!reset
      {\let\typescriptfiles\empty}
-     {\addtocommalist{#1}\typescriptfiles}}
+     {\splitfiletype{#1}%
+      \addtocommalist\splitoffname\typescriptfiles}}
 
+\usetypescriptfile[\f!typeprefix exa] % some examples
 \usetypescriptfile[\f!typeprefix syn] % font file synonyms
 \usetypescriptfile[\f!typeprefix enc] % files and encodings
 \usetypescriptfile[\f!typeprefix dis] % funny name remappings
 \usetypescriptfile[\f!typeprefix siz] % specific font sizes
 \usetypescriptfile[\f!typeprefix map] % pdftex mapping
 \usetypescriptfile[\f!typeprefix spe] % special macros
-\usetypescriptfile[\f!typeprefix exa] % some examples
-\usetypescriptfile[\f!typeprefix loc] % local scripts
 \usetypescriptfile[\f!typeprefix akb] % adobe karl berry names
 
 \beginXETEX \font
@@ -59,6 +92,8 @@
   \usetypescriptfile[\f!typeprefix xtx] % xetex definitions
 
 \endXETEX
+
+\usetypescriptfile[\f!typeprefix loc] % local scripts
 
 %usetypescriptfile[\f!typeprefix pre] % predefined scripts (compatible)
 %usetypescriptfile[typeface]          % project scripts
@@ -103,13 +138,61 @@
    \popmacro\@@typescripttwo
    \popmacro\@@typescriptone}
 
+% simple version:
+%
+% \def\dododousetypescript#1%
+%   {\startreadingfile
+%    \pushmacro\currenttypefile
+%    \def\currenttypefile{#1}%
+%    \readfile\currenttypefile\donothing\donothing
+%    \popmacro\currenttypefile
+%    \stopreadingfile}
+%
+% tricky version:
+
+\newconditional\preloadingtypescripts
+
+\def\preloadtypescripts{\ifproductionrun\settrue\preloadingtypescripts\fi}
+
 \def\dododousetypescript#1%
-  {\startreadingfile
+  {\setfalse\quittingtypescript
    \pushmacro\currenttypefile
    \def\currenttypefile{#1}%
-   \readfile\currenttypefile\donothing\donothing
+   \ifconditional\preloadingtypescripts
+     % load files once, and use saved data
+     \def\loadedtypescripts{\csname\??ts:\c!file:#1\endcsname}%
+     \@EAEAEA\ifx\loadedtypescripts\relax
+       \@EAEAEA\newtoks\loadedtypescripts
+       \bgroup
+       \long\def\starttypescript##1\stoptypescript
+         {\global\loadedtypescripts\@EA{\the\loadedtypescripts
+            \starttypescript##1\stoptypescript}}%
+       \long\def\starttypescriptcollection##1\stoptypescriptcollection
+         {\global\loadedtypescripts\@EA{\the\loadedtypescripts
+            \starttypescriptcollection##1\stoptypescriptcollection}}%
+       \startreadingfile
+       \pushendofline
+       \readfile\currenttypefile\donothing\donothing
+       \popendofline
+       \stopreadingfile
+       \egroup
+     \fi
+     %\message{[\space\currenttypefile}%
+     \the\loadedtypescripts
+     %\message{\ifconditional\quittingtypescript quit\space\fi]}%
+   \else
+     % process files each time
+     \startreadingfile
+     \pushendofline
+     \readfile\currenttypefile\donothing\donothing
+     \popendofline
+     \stopreadingfile
+   \fi
    \popmacro\currenttypefile
-   \stopreadingfile}
+   \ifconditional\quittingtypescript
+     \quitcommalist
+     \setfalse\quittingtypescript
+   \fi}
 
 \def\usetypescriptonce
   {\dotripleempty\dousetypescriptonce}
@@ -152,86 +235,170 @@
 % script [serif] [computer-modern] [name]
 % script [serif] [computer-modern] [special]
 
+% todo, make firsttypescriptpass conditional
+
 \newif\iffirsttypescriptpass \firsttypescriptpasstrue
 
 \prependtoks\firsttypescriptpasstrue\to\everyjob
 
 \def\typescript@@all{all}
 
-\def\dochecktypescript#1#2#3% script use value
-  {\donefalse
-   \def\@@typescriptcheck{#1}%
-   \ifx\@@typescriptcheck\empty
-     \ifcase\typescriptmethod\or\donetrue\else\donefalse\fi
-   \else\ifx#2\typescript@@all
-     \donetrue
-   \else\ifx\@@typescriptcheck\typescript@@all
-     \donetrue
-%  \else\fullexpandtwoargsafter\doifcommonelse{#1}{#2}\donetrue\donefalse\ifdone % ==
-   \else\expanded{\doifcommonelse{#1}{#2}}\donetrue\donefalse\ifdone
-     \let#3\commalistelement
-   \fi\fi\fi\fi}
-
-\def\starttypescript
-  {\dotripleempty\dostarttypescript}
-
 \newif\iftracetypescripts
 
-\long\def\dostarttypescript[#1][#2][#3]% #4\stoptypescript
-  {\iftracetypescripts\writestatus\m!fonts{enter [#1] [#2] [#3]}\fi%
-   \iffirstargument
-     \iftracetypescripts\writestatus\m!fonts{check [\@@typescriptone] [\@@typescripttwo] [\@@typescriptthree]}\fi
-     \let\typescriptone  \@@typescriptone
-     \let\typescripttwo  \@@typescripttwo
-     \let\typescriptthree\@@typescriptthree
-     \dochecktypescript{#1}\@@typescriptone\typescriptone
-     \ifdone
-       \dochecktypescript{#2}\@@typescripttwo\typescripttwo
-       \ifdone
-         \dochecktypescript{#3}\@@typescriptthree\typescriptthree
-         \ifdone
-           \typescriptfoundtrue
-           \let\next\dostarttypescriptA
-         \else
-           \let\next\dostarttypescriptC
-         \fi
-       \else
-         \let\next\dostarttypescriptC
-       \fi
-     \else
-       \let\next\dostarttypescriptC
-     \fi
-     \iftracetypescripts
-       \writestatus\m!fonts{\ifdone match\else pass\fi ed}%
-     \fi
-   \else\iffirsttypescriptpass
-     \iftracetypescripts\writestatus\m!fonts{honored}\fi
-     \let\next\dostarttypescriptB
-   \else
-     % skip this since it may do unwanted resets, like
-     % setting symbolic font names to unknown, especially
-     % in run time user type scripts
-     \iftracetypescripts\writestatus\m!fonts{ignored}\fi
-     \let\next\dostarttypescriptC
-   \fi\fi
-   \next}
-
-\def\dostarttypescriptA
-  {\pushmacro\fontclass}
-
-\def\dostarttypescriptB
-  {\pushmacro\fontclass}
-
-\long\def\dostarttypescriptC#1\stoptypescript
-  {}
-
+% \def\starttypescript
+%   {\dotripleempty\dostarttypescript}
+%
+% \long\def\dostarttypescript[#1][#2][#3]% #4\stoptypescript
+%   {\iftracetypescripts\writestatus\m!fonts{enter [#1] [#2] [#3]}\fi%
+%    \iffirstargument
+%      \iftracetypescripts\writestatus\m!fonts{check [\@@typescriptone] [\@@typescripttwo] [\@@typescriptthree]}\fi
+%      \let\typescriptone  \@@typescriptone
+%      \let\typescripttwo  \@@typescripttwo
+%      \let\typescriptthree\@@typescriptthree
+%      \dochecktypescript{#1}\@@typescriptone\typescriptone
+%      \ifdone
+%        \dochecktypescript{#2}\@@typescripttwo\typescripttwo
+%        \ifdone
+%          \dochecktypescript{#3}\@@typescriptthree\typescriptthree
+%          \ifdone
+%            \typescriptfoundtrue
+%            \let\next\dostarttypescriptA
+%          \else
+%            \let\next\dostarttypescriptC
+%          \fi
+%        \else
+%          \let\next\dostarttypescriptC
+%        \fi
+%      \else
+%        \let\next\dostarttypescriptC
+%      \fi
+%      \iftracetypescripts
+%        \writestatus\m!fonts{\ifdone match\else pass\fi ed}%
+%      \fi
+%    \else\iffirsttypescriptpass
+%      \iftracetypescripts\writestatus\m!fonts{honored}\fi
+%      \let\next\dostarttypescriptB
+%    \else
+%      % skip this since it may do unwanted resets, like
+%      % setting symbolic font names to unknown, especially
+%      % in run time user type scripts
+%      \iftracetypescripts\writestatus\m!fonts{ignored}\fi
+%      \let\next\dostarttypescriptC
+%    \fi\fi
+%    \next}
+%
+% \def\dochecktypescript#1#2#3% script use value
+%   {\donefalse
+%    \def\@@typescriptcheck{#1}%
+%    \ifx\@@typescriptcheck\empty % no longer needed / met
+%      \ifcase\typescriptmethod\or\donetrue\else\donefalse\fi
+%    \else\ifx#2\typescript@@all
+%      \donetrue
+%    \else\ifx\@@typescriptcheck\typescript@@all
+%      \donetrue
+%    \else\expanded{\doifcommonelse{\@@typescriptcheck}{#2}}\donetrue\donefalse\ifdone
+%      \let#3\commalistelement
+%    \fi\fi\fi\fi}
+%
+% \def\dostarttypescriptA
+%   {\pushmacro\fontclass}
+%
+% \def\dostarttypescriptB
+%   {\pushmacro\fontclass}
+%
+% \long\def\dostarttypescriptC#1\stoptypescript
+%   {}
+%
+% \def\stoptypescript
+%   {\popmacro\fontclass}
+%
 % not faster (and demands leading spaces at each line)
 %
 % \def\dostarttypescriptC
 %   {\bgroup \catcode32=\@@comment \let\stoptypescript\egroup}
+%
+% sligthly faster but less readable
+
+\def\starttypescript
+  {\let\typescriptone  \@@typescriptone
+   \let\typescripttwo  \@@typescripttwo
+   \let\typescriptthree\@@typescriptthree
+   \doifnextcharelse[\dostarttypescriptone\dostarttypescriptall}
+
+\long\def\dostarttypescriptall
+  {\iffirsttypescriptpass
+     \expandafter\doprocesstypescript
+   \else
+     % skip this since it may do unwanted resets, like
+     % setting symbolic font names to unknown, especially
+     % in run time user type scripts
+     \expandafter\noprocesstypescript
+   \fi}
+
+\long\def\dostarttypescriptyes
+  {\ifdone
+     \typescriptfoundtrue
+     \expandafter\doprocesstypescript
+   \else
+     \expandafter\noprocesstypescript
+   \fi}
+
+\long\def\dostarttypescriptone
+  {\dochecktypescript\@@typescriptone\typescriptone\redostarttypescriptone}
+
+\long\def\dostarttypescripttwo
+  {\dochecktypescript\@@typescripttwo\typescripttwo\redostarttypescripttwo}
+
+\long\def\dostarttypescriptthree
+  {\dochecktypescript\@@typescriptthree\typescriptthree\redostarttypescriptthree}
+
+\long\def\redostarttypescriptone
+  {\doifnextcharelse[\dostarttypescripttwo\dostarttypescriptyes}
+
+\long\def\redostarttypescripttwo
+  {\doifnextcharelse[\dostarttypescriptthree\dostarttypescriptyes}
+
+\long\def\redostarttypescriptthree
+  {\dostarttypescriptyes}
+
+\def\doprocesstypescript
+  {\pushmacro\fontclass}
 
 \def\stoptypescript
   {\popmacro\fontclass}
+
+\long\def\noprocesstypescript#1\stoptypescript
+  {}
+
+\def\dochecktypescript#1#2#3[#4]% script use value next
+  {\donefalse
+   \def\@@typescriptcheck{#4}%
+   \ifx\@@typescriptcheck\empty % no longer needed / met
+     \ifcase\typescriptmethod\or\donetrue\else\donefalse\fi
+   \else\ifx#1\typescript@@all
+     \donetrue
+   \else\ifx\@@typescriptcheck\typescript@@all
+     \donetrue
+   \else\expanded{\doifcommonelse{\@@typescriptcheck}{#1}}\donetrue\donefalse\ifdone
+     \let#2\commalistelement
+   \fi\fi\fi\fi
+   \ifdone
+     \expandafter#3%
+   \else
+     \expandafter\noprocesstypescript
+   \fi}
+
+%D Yet another speed up: when issued inside typescript, the call
+%D
+%D \starttyping
+%D \quittypescriptscanning
+%D \stoptyping
+%D
+%D quits further loading. For an example, see type-exa:
+
+\newconditional\quittingtypescript \setfalse\quittingtypescript
+
+\def\quittypescriptscanning{\settrue\quittingtypescript}
 
 % status
 %
@@ -241,31 +408,11 @@
 
 % flags ipv \c!state, more flag values
 
-% \def\preloadmapfile[#1]%
-%   {\def\docommando##1%
-%      {\doifinstringelse{.}{##1}
-%         {\writestatus{pdftex}{compensate map file: ##1}%
-%          \setxvalue{##1 \c!state}{3}%
-%          \doglobal\removefromcommalist{##1}\allfontmapsfiles}
-%         {\expanded{\docommando{##1.\f!fontmapextension}}}}%
-%    \expanded{\processcommalist[#1]}\docommando}
-%
-% \def\loadmapfile[#1]% last add first
-%   {\def\docommando##1%
-%      {\doifinstringelse{.}{##1}
-%         {\doglobal\pretocommalist{##1}\allfontmapsfiles}
-%         {\expanded{\docommando{##1.\f!fontmapextension}}}}%
-%    \expanded{\processcommalist[#1]}\docommando
-%    \ifproductionrun \loadallfontmapfiles \fi}
-
-% this mechanism will be adapted to the new pdftex features
-
 \def\dopreloadmapfile#1%
-  {\doifinstringelse{.}{#1}
-     {\writestatus\m!fonts{assuming map file: #1}%
-      \setxvalue{#1 \c!state}{3}%
-      \doglobal\removefromcommalist{#1}\allfontmapsfiles}
-     {\expanded{\dopreloadmapfile{#1.\f!fontmapextension}}}}
+  {\splitfiletype{#1}%
+   \writestatus\m!fonts{assuming map file: \splitoffname}%
+   \setxvalue{\splitoffname \c!state}{3}%
+   \doglobal\removefromcommalist\splitoffname\allfontmapsfiles}
 
 \def\preloadmapfile[#1]%
   {\expanded{\processcommalist[#1]}\dopreloadmapfile}
@@ -280,39 +427,34 @@
 \ifx\pdftexversion\undefined
 
   \def\loadthemapfile#1%
-    {\doifinstringelse{.}{#1}
-       {\doglobal\addtocommalist{#1}\allfontmapsfiles}
-       {\expanded{\loadthemapfile{#1.\f!fontmapextension}}}}
+    {\splitfiletype{#1}%
+     \doglobal\addtocommalist\splitoffname\allfontmapsfiles}
 
-\else\ifnum\pdftexversion<200
+\else\ifnum\pdftexversion<120 % no overloading
 
   \def\loadthemapfile#1%
-    {\doifinstringelse{.}{#1}
-       {\doglobal\pretocommalist{#1}\allfontmapsfiles}
-       {\expanded{\loadthemapfile{#1.\f!fontmapextension}}}}
+    {\splitfiletype{#1}%
+     \doglobal\pretocommalist\splitoffname\allfontmapsfiles}
 
 \else
 
   \def\loadthemapfile#1%
-    {\doifinstringelse{.}{#1}
-      %{\doglobal\pretocommalist{#1}\allfontmapsfiles}
-       {\doglobal\addtocommalist{#1}\allfontmapsfiles}
-       {\expanded{\loadthemapfile{#1.\f!fontmapextension}}}}
-
+    {\splitfiletype{#1}%
+     \doglobal\addtocommalist\splitoffname\allfontmapsfiles}
 
 \fi \fi
 
 \def\doloadfontmapfile#1%
-  {\ifundefined{#1 \c!state}%
+  {\ifundefined{#1\c!state}%
      \writestatus\m!fonts{using map file: #1}%
-     \doloadmapfile{=}{#1}% +/add =/replace -/remove
-     \setxvalue{#1 \c!state}{1}%
+     \doloadmapfile{=}{#1.\f!fontmapextension}% +/add =/replace -/remove
+     \setxvalue{#1\c!state}{1}%
    \fi}
 
 \def\doreportfontmapfile#1%
-  {\ifundefined{#1 \c!state}%
+  {\ifundefined{#1\c!state}%
      \writestatus\m!fonts{needs map file: #1}%
-     \setxvalue{#1 \c!state}{2}%
+     \setxvalue{#1\c!state}{2}%
     \fi}
 
 \def\loadallfontmapfiles
@@ -409,7 +551,7 @@
      \pushmacro\fontclass
      \let\relativefontsize\@@tsrscale
      \let\typefaceencoding\@@tsencoding
-     \setcurrentfontclass{#1}
+     \setcurrentfontclass{#1}%
      \saverelativefontsize{#2}{\relativefontsize}% fall back
      \iftracetypescripts\writestatus\m!fonts{[#1] [#2] [#3] [#4] / \typefaceencoding}\fi
      %\usetypescript[map][\typefaceencoding]% latest versions of pdftex can load after first page
@@ -425,8 +567,9 @@
    \fi\fi\fi}
 
 \def\dododefinetypeface[#1][#2]% saveguard against redefinition
-  {\doifundefined{\??tf#1\s!default}{\setgvalue{\??tf#1\s!default}{#2}}%
-   \doifundefined{#1}{\unexpanded\setgvalue{#1}{\switchtotypeface[#1][#2]}}}
+  {\doifsomething{#1}
+     {\doifundefined{\??tf#1\s!default}{\setgvalue{\??tf#1\s!default}{#2}}%
+      \doifundefined{#1}{\unexpanded\setgvalue{#1}{\switchtotypeface[#1][#2]}}}}
 
 \def\setuptypeface% [class] [settings]
   {\doquadrupleempty\doswitchtotypeface[\setupbodyfont][\fontclass]}

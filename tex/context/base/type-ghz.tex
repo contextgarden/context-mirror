@@ -4,6 +4,8 @@
 % texfont --en=texnansi --ve=linotype --co=optima-nova  type-ghz.dat
 % texfont --en=texnansi --ve=linotype --co=palatino     type-ghz.dat
 
+\starttypescriptcollection[zapf collection]
+
 % zapfino
 
 \starttypescript [serif,handwriting] [zapfino] [texnansi,ec,8r] % todo: handwriting
@@ -132,5 +134,7 @@
 \starttypescript [map] [palatino] [texnansi,ec,8r]
   \loadmapfile[\typescriptthree-linotype-palatino.map]
 \stoptypescript
+
+\stoptypescriptcollection
 
 \endinput

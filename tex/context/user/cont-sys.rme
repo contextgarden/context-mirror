@@ -13,6 +13,10 @@
 
 \unprotect
 
+% Speed up typescript loading, but at the cost of much memory:
+%
+% \preloadtypescripts
+
 % Occasionally we will support both A4 and letter in
 % styles. If you want letter size paper to be the default,
 % uncomment:
@@ -70,25 +74,37 @@
 
 \resetmapfiles
 
-\loadmapfile[original-base.map]
-\loadmapfile[texnansi-base.map]
-\loadmapfile[ec-base.map]
-\loadmapfile[qx-base.map]
-\loadmapfile[t5-base.map]
-%loadmapfile[il2-base.map]
-%loadmapfile[pl0-base.map]
-\loadmapfile[8r-base.map]
+\donefalse \ifx\pdftexversion\undefined \else \ifnum\number\pdftexversion>119
+  \donetrue
+\fi \fi \ifdone
 
-\loadmapfile[original-ams-base.map]
-\loadmapfile[original-ams-euler.map]
+  \loadmapfile[original-base.map]
+  \loadmapfile[original-ams-base.map]
+  \loadmapfile[original-public-lm.map]
 
-\loadmapfile[original-public-lm.map]
-\loadmapfile[texnansi-public-lm.map]
-\loadmapfile[ec-public-lm.map]
-\loadmapfile[qx-public-lm.map]
-\loadmapfile[t5-public-lm.map]
-\loadmapfile[pl0-public-lm.map]
-\loadmapfile[il2-public-lm.map]
+\else
+
+  \loadmapfile[original-base.map]
+  \loadmapfile[texnansi-base.map]
+  \loadmapfile[ec-base.map]
+  \loadmapfile[qx-base.map]
+  \loadmapfile[t5-base.map]
+  %loadmapfile[il2-base.map]
+  %loadmapfile[pl0-base.map]
+  \loadmapfile[8r-base.map]
+
+  \loadmapfile[original-ams-base.map]
+  \loadmapfile[original-ams-euler.map]
+
+  \loadmapfile[original-public-lm.map]
+  \loadmapfile[texnansi-public-lm.map]
+  \loadmapfile[ec-public-lm.map]
+  \loadmapfile[qx-public-lm.map]
+  \loadmapfile[t5-public-lm.map]
+  \loadmapfile[pl0-public-lm.map]
+  \loadmapfile[il2-public-lm.map]
+
+\fi
 
 % When you have your own fonts installed, you may want to predefine:
 %

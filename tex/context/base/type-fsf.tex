@@ -3,6 +3,8 @@
 % texfont --en=texnansi --ve=fontsite --co=opus       type-fsf.dat
 % texfont --en=texnansi --ve=fontsite --co=typewriter type-fsf.dat
 
+\starttypescriptcollection[font site 500]
+
 \starttypescript [sans] [opus] [name]
 
   \definefontsynonym [Sans]            [Opus]
@@ -97,5 +99,7 @@
 \starttypescript [map] [garamond] [texnansi,ec,8r]
   \loadmapfile[\typescriptthree-fontsite-garamond.map]
 \stoptypescript
+
+\stoptypescriptcollection
 
 \endinput

@@ -870,7 +870,7 @@ $OutputFormats{dvipdfm}  = "dvipdfm";
 $OutputFormats{dvipdfmx} = "dvipdfmx";
 $OutputFormats{xetex}    = "xetex";
 
-my @ConTeXtFormats = ( "nl", "en", "de", "cz", "uk", "it", "ro", "xx" );
+my @ConTeXtFormats = ( "nl", "en", "de", "cz", "uk", "it", "ro");
 
 sub SetInterfaces {
     my ( $short, $long, $full ) = @_;
@@ -890,7 +890,6 @@ SetInterfaces( "uk", "brittish",     "english" );
 SetInterfaces( "it", "italian",      "italian" );
 SetInterfaces( "no", "norwegian",    "norwegian" );
 SetInterfaces( "ro", "romanian",     "romanian" );
-SetInterfaces( "xx", "experimental", "english" );
 
 # Sub-option
 

@@ -27,10 +27,11 @@
 \installlanguage [\s!fr] [\c!state=\v!start]
 \installlanguage [\s!es] [\c!state=\v!start]
 \installlanguage [\s!it] [\c!state=\v!start]
-%installlanguage [\s!nl] [\c!state=\v!start]
 
-\setupbodyfont [cmr,ams,rm,12pt]
+% \setupbodyfont [cmr,ams,rm,12pt]
+%
+% \setupencoding[default=ec] \usetypescript[modern][\defaultencoding] \setupbodyfont[modern,rm,12pt]
 
-% \usetypescript[modern][\defaultencoding] \setupbodyfont[modern,12pt]
+\setupencoding[default=ec] \usetypescript[fallback][\defaultencoding] \setupbodyfont[rm,12pt]
 
 \protect \errorstopmode \dump \endinput

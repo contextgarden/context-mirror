@@ -11,6 +11,8 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
+\starttypescriptcollection[map files]
+
 %D This one plays safe:
 
 \starttypescript [map] [base] [all]
@@ -95,14 +97,20 @@
 
 % cyrillic
 
-\starttypescript [map] [computer-modern] [t2a,t2b,t2c]
+\starttypescript [map] [computer-modern] [t2a,t2b,t2c,x2]
+  \loadmapfile[subset-cmsuper-\typescriptthree.map]
   \loadmapfile[cm-super-\typescriptthree.map]
 \stoptypescript
 
 % latin modern
 
-\starttypescript [map] [latin-modern] [ec,texnansi,qx,t5,pl0,il2]
+\starttypescript [map] [computer-modern,latin-modern] [ec,texnansi,qx,t5,pl0,il2]
   \loadmapfile[\typescriptthree-public-lm.map]
+\stoptypescript
+
+% \usetypescript [map] [latin-modern-var] [\defaultencoding]
+
+\starttypescript [map] [latin-modern-var] [ec,texnansi,qx,t5,pl0,il2]
   \loadmapfile[\typescriptthree-var-exclusive-public-lm.map]
 \stoptypescript
 
@@ -178,5 +186,7 @@
   \loadmapfile[fourier.map]
   \loadmapfile[fourier-utopia-expert.map]
 \stoptypescript
+
+\stoptypescriptcollection
 
 \endinput

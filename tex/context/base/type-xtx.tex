@@ -46,6 +46,8 @@
 %D \setupbodyfont[basic]
 %D \stoptyping
 
+\starttypescriptcollection[xetex]
+
 \starttypescript[Xserif][all][name]
 
 \definefontsynonym[Dummy]          ['\typescripttwo:mapping=tex-text']   [encoding=uc]
@@ -492,5 +494,7 @@
 \definefontsynonym[SerifCaps]       [Gentium]
 
 \stoptypescript
+
+\stoptypescriptcollection
 
 \endinput

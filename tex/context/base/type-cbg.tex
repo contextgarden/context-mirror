@@ -30,6 +30,8 @@
 % File.delete(zipfile) if FileTest.file?(zipfile)
 % system("zip -r -9 cbsmall #{fontfiles.join(' ')}")
 
+\starttypescriptcollection[cbgreek]
+
 \starttypescript [serif] [cbgreek] [name]
 
   \definefontsynonym [CBGreek-Regular-Medium-Normal]              [grmn1000]
@@ -345,5 +347,7 @@
   \definetypeface [cbgreek] [tt] [mono]  [cbgreek] [default]
 
 \stoptypescript
+
+\stoptypescriptcollection
 
 \endinput

@@ -966,8 +966,10 @@
      {\ifdim\pagegoal<\maxdimen
         \scratchdimen\pagegoal
         \advance\scratchdimen-\pagetotal
+        \!!donecfalse
       \else
         \scratchdimen\textheight
+        \!!donectrue
       \fi
       \advance\scratchdimen-\dimen8
       \advance\scratchdimen-\extratblsplitheight
@@ -984,6 +986,7 @@
       \!!doneatrue
       % alternatively we could use a kind of balancing like splitter
       % first to scratchdimen and then smaller etc; more code and copy -)
+      \!!counta\zerocount
       \doloop
         {\setbox\scratchbox\vsplit\TABLEsplitbox to \onepoint
          \setbox\scratchbox\vbox{\unvbox\scratchbox}%
@@ -998,13 +1001,21 @@
               {\unvbox\finaltblbox
                \unvbox\scratchbox}%
            \ifvoid\TABLEsplitbox \exitloop \fi
+         \else\if!!donec
+           % we have text height available, but the (one) cell is too
+           % large to fit, so, in order to avoid loops/deadcycles we do:
+           \egroup
+           \setbox\finaltblbox\vbox
+              {\unvbox\finaltblbox
+               \unvbox\scratchbox}%
+           \exitloop
          \else
            \egroup
            \setbox\TABLEsplitbox\vbox
               {\unvbox\scratchbox
                \ifvoid\TABLEsplitbox\else\unvbox\TABLEsplitbox\allowbreak\fi}%
            \exitloop
-         \fi}%
+         \fi\fi}%
       %
       \postprocessTABLEsplitbox\finaltblbox
       \ifvoid\TABLEsplitbox

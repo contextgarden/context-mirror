@@ -2,7 +2,7 @@
 %D   [       file=type-omg,
 %D        version=2002.05.15,
 %D          title=\CONTEXT\ Typescript Macros,
-%D       subtitle=Basic \OMEGA\ Gamma Definitions, 
+%D       subtitle=Basic \OMEGA\ Gamma Definitions,
 %D         author={Idris Samawi Hamid, Hans Hagen},
 %D           date=\currentdate,
 %D      copyright={PRAGMA-ADE, Idris Samawi Hamid}]
@@ -13,11 +13,13 @@
 %C details.
 
 %D I need to document this module a bit. See \type {m-gamma}
-%D for more information. 
+%D for more information.
 
 \definestyle [normalvariant] [\nv] [] % so we can get ucvtt (Unicode Variable Typewriter)
 
-%D omarab: 
+%D omarab:
+
+\starttypescriptcollection[omega]
 
 \starttypescript [naskh] [omega] [name]
 
@@ -76,7 +78,7 @@
   \definefontsynonym [SerifBoldItalic]       [OmegaSerif-BoldItalic]
   \definefontsynonym [SerifBoldSlanted]      [OmegaSerif-BoldSlanted]
   \definefontsynonym [SerifCaps]             [OmegaSerif-Caps]
-  
+
 \stoptypescript
 
 \starttypescript [mono] [omega] [name]
@@ -118,8 +120,8 @@
 
 \stoptypescript
 
-%D In order to get default Unicode Variable Typewriter, 
-%D uncomment the first \type {\definebodyfont} and then 
+%D In order to get default Unicode Variable Typewriter,
+%D uncomment the first \type {\definebodyfont} and then
 %D comment the rest of this typescript.
 
 \starttypescript [mono] [omega] [size]
@@ -136,7 +138,7 @@
 %    sc=MonoCaps sa 1]
 
   \definebodyfont
-    [20.7pt,17.3pt,14.4pt,12pt,11pt] 
+    [20.7pt,17.3pt,14.4pt,12pt,11pt]
     [tt]
     [tf=uctt12 sa 1,
      bf=uctt12 sa 1,
@@ -148,7 +150,7 @@
      nv=ucvtt10 sa 1]
 
   \definebodyfont
-    [10pt] 
+    [10pt]
     [tt]
     [tf=uctt10 at 10pt,
      bf=uctt10 at 10pt,
@@ -197,4 +199,6 @@
 
 \stoptypescript
 
-\endinput 
+\stoptypescriptcollection
+
+\endinput

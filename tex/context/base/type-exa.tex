@@ -13,12 +13,29 @@
 
 %D A couple of goodies:
 
+\starttypescriptcollection[examples]
+
+\starttypescript [fallback] [texnansi,ec,qx,il2,pl0,t5,default]
+
+  % no fontclass, so this is the fall back
+
+  \definetypeface [] [rm] [serif] [latin-modern] [computer-modern] [encoding=\typescripttwo]
+  \definetypeface [] [ss] [sans]  [latin-modern] [computer-modern] [encoding=\typescripttwo]
+  \definetypeface [] [tt] [mono]  [latin-modern] [computer-modern] [encoding=\typescripttwo]
+  \definetypeface [] [mm] [math]  [latin-modern] [computer-modern] [encoding=\typescripttwo]
+
+  \quittypescriptscanning
+
+\stoptypescript
+
 \starttypescript [modern] [texnansi,ec,qx,il2,pl0,t5,default]
 
   \definetypeface [modern] [rm] [serif] [latin-modern] [computer-modern] [encoding=\typescripttwo]
   \definetypeface [modern] [ss] [sans]  [latin-modern] [computer-modern] [encoding=\typescripttwo]
   \definetypeface [modern] [tt] [mono]  [latin-modern] [computer-modern] [encoding=\typescripttwo]
   \definetypeface [modern] [mm] [math]  [latin-modern] [computer-modern] [encoding=\typescripttwo]
+
+  \quittypescriptscanning
 
 \stoptypescript
 
@@ -29,14 +46,18 @@
   \definetypeface [modern] [tt] [mono]  [latin-modern] [default] [encoding=\typescripttwo]
   \definetypeface [modern] [mm] [math]  [latin-modern] [default] [encoding=\typescripttwo]
 
+  \quittypescriptscanning
+
 \stoptypescript
 
-\starttypescript [modern-base] [t2a,t2b,t2c]
+\starttypescript [modern-base] [t2a,t2b,t2c,x2]
 
   \definetypeface [modern] [rm] [serif] [computer-modern] [default] [encoding=\typescripttwo]
   \definetypeface [modern] [ss] [sans]  [computer-modern] [default] [encoding=\typescripttwo]
   \definetypeface [modern] [tt] [mono]  [computer-modern] [default] [encoding=\typescripttwo]
   \definetypeface [modern] [mm] [math]  [computer-modern] [default] [encoding=\typescripttwo]
+
+  \quittypescriptscanning
 
 \stoptypescript
 
@@ -46,6 +67,8 @@
   \definetypeface [postscript] [ss] [sans]  [helvetica] [default] [rscale=.9,encoding=\typescripttwo]
   \definetypeface [postscript] [tt] [mono]  [courier]   [default] [rscale=1.1,encoding=\typescripttwo]
   \definetypeface [postscript] [mm] [math]  [times]     [default]
+
+  \quittypescriptscanning
 
 \stoptypescript
 
@@ -58,6 +81,8 @@
 
 % \usemathcollection[default]
 
+  \quittypescriptscanning
+
 \stoptypescript
 
 \starttypescript [palatino] [texnansi,ec,qx,8r,t5,uc]
@@ -68,6 +93,8 @@
 
 % \usemathcollection[default]
 
+  \quittypescriptscanning
+
 \stoptypescript
 
 \starttypescript [fourier] [ec]
@@ -77,6 +104,8 @@
   \definetypeface [fourier] [tt] [mono]  [modern]  [default] [encoding=ec,rscale=1.07]
 
   \usemathcollection[fou]
+
+  \quittypescriptscanning
 
 \stoptypescript
 
@@ -125,6 +154,8 @@
 \starttypescript [lucida,lucidabfm,lucidaboldmath] [texnansi,ec,8r]
 
   \usemathcollection[lbr]
+
+  \quittypescriptscanning % last in the row
 
 \stoptypescript
 
@@ -176,5 +207,7 @@
   \definetypeface [modernvariable] [mm] [math]  [modern] [default]
 
 \stoptypescript
+
+\stoptypescriptcollection
 
 \endinput

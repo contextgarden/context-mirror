@@ -18,7 +18,7 @@
 %D psnfss system as used by \LaTeX.
 %D
 %D \starttyping
-%D \setupencoding[defaultdefault=texnansi]
+%D \setupencoding[default=texnansi]
 %D \usetypescript[adobekb][\defaultencoding]
 %D \stoptyping
 %D
@@ -28,6 +28,8 @@
 %D \starttyping
 %D \usetypescriptfile[akb]
 %D \stoptyping
+
+\starttypescriptcollection[adobe kb mappings]
 
 \starttypescript [adobekb] [8r]
 
@@ -198,5 +200,7 @@
 \definefontsynonym [texnansi-bchr8a-capitalized-800] [bchr8y]  [encoding=texnansi]
 
 \stoptypescript
+
+\stoptypescriptcollection
 
 \endinput

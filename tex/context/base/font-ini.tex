@@ -1362,6 +1362,8 @@
 %    \expandafter\font\csname#1\endcsname\lastfontname\relax
 %    \relax}
 
+\let\fontfile\s!unknown
+
 \def\donoparsefontspec % #1 == \cs
   {\edef\fontfile{\truefontname\somefontname}%
    \ifx\fontfile\s!unknown \let\fontfile\defaultfontfile \fi
@@ -1477,22 +1479,39 @@
 %D data: \type {\truefontdata{\truefontname{Lucida-Bright}}}
 %D \stoplines
 
-\def\definefontsynonym
-  {\dotripleempty\dodefinefontsynonym}
+% \def\definefontsynonym
+%   {\dotripleempty\dodefinefontsynonym}
+%
+% \def\dodefinefontsynonym[#1][#2][#3]%
+%   {\@EA\edef\csname\??ff\fontclass#1\endcsname{#2}%
+%    \ifthirdargument
+%      \edef\@@fontdata{#3}%
+%      \ifx\@@fontdata\empty \else
+%        \edef\@@fontfile{#2}%
+%        \ifx\fontclass\empty
+%          \getfontparameters
+%        \else
+%          \getglobalfontparameters
+%        \fi
+%      \fi
+%    \fi}
+%
+% slightly faster, noticable when loading many typefaces,
+%
+% \testfeatureonce{5000}{\definefontsynonym[somefont][somename]} \end
 
-\def\dodefinefontsynonym[#1][#2][#3]%
-  {\@EA\edef\csname\??ff\fontclass#1\endcsname{#2}%
-   \ifthirdargument
-     \edef\@@fontdata{#3}%
-     \ifx\@@fontdata\empty \else
-       \edef\@@fontfile{#2}%
-       \ifx\fontclass\empty
-         \getfontparameters
-       \else
-         \getglobalfontparameters
-       \fi
-     \fi
-   \fi}
+\def\definefontsynonym[#1]#2[#3]%
+  {\edef\@@fontfile{#3}%
+   \@EA\let\csname\??ff\fontclass#1\endcsname\@@fontfile
+   \doifnextcharelse[\dodefinefontsynonym\donothing}
+
+\def\dodefinefontsynonym[#1]%
+  {\edef\@@fontdata{#1}%
+   \ifx\@@fontdata\empty \else \ifx\fontclass\empty
+     \getfontparameters
+   \else
+     \getglobalfontparameters
+   \fi \fi}
 
 \let\definefontfile\definefontsynonym % dedicated to Taco Hoekwater
 
@@ -1598,7 +1617,6 @@
    \fi}
 
 \endETEX
-
 
 %D \macros
 %D   {tracedfontname}
@@ -1881,7 +1899,8 @@
    \def\docommando##1%
      {\def\dodocommando####1%
         {\def\dododocommando########1%
-           {\checkbodyfont{}{########1}{####1}{##1}}%
+          %{\checkbodyfont{}{########1}{####1}{##1}}%
+           {\checkbodyfont{########1}{####1}{##1}}%
          \processcommacommand[\stylelist]\dododocommando}%
       \processcommacommand[\alternativelist]\dodocommando}%
    \processcommacommand[\sizelist]\docommando}
@@ -2301,7 +2320,8 @@
 
 \def\dododododefinebodyfont#1#2[#3#4#5=#6]% style body def
   {\ifundefined{#1#3#4#5}%
-     \checkbodyfont{#2}{#1}{#3#4}{#5}% not \definefontsize[#5]
+    %\checkbodyfont{#2}{#1}{#3#4}{#5}% not \definefontsize[#5]
+     \checkbodyfont{#1}{#3#4}{#5}% not \definefontsize[#5]
    \fi
    \iflocalclassfonts
      \letbeundefined{*\fontclass#2#1#3#4#5*}%
@@ -2324,23 +2344,53 @@
      \fi
    \fi}
 
-\def\checkbodyfont#1#2#3#4% body style alt size / gdef % #4 can be empty
-  {\def\c!!mm{#2}%
+% \def\checkbodyfont#1#2#3#4% body style alt size / gdef % #4 can be empty
+%   {\def\c!!mm{#2}%
+%    \ifx\c!!mm\c!mm % prevents \max and alike (re)defs
+%      \unexpanded\setgvalue     {#2}{\setcurrentfontstyle               {#2}}%         \rm
+%      \unexpanded\setgvalue     {#3}{\setcurrentfontalternative         {#3}}%         \sl
+%    \else
+%      \unexpanded\setgvalue   {#2#4}{\setcurrentfontstylesize           {#2}{#4}}%     \rma
+%      \unexpanded\setgvalue   {#3#4}{\setcurrentfontalternativesize     {#3}{#4}}%     \sla
+%      \unexpanded\setgvalue {#2#3#4}{\setcurrentfontstylealternativesize{#2}{#3}{#4}}% \rmsla
+%      \unexpanded\setgvalue     {#2}{\setcurrentfontstyle               {#2}}%         \rm
+%      \unexpanded\setgvalue     {#3}{\setcurrentfontalternative         {#3}}%         \sl
+%      \unexpanded\setgvalue {#2\c!x}{\setcurrentfontxstylealternative   {#2}}%         \rmx
+%      \unexpanded\setgvalue{#2\c!xx}{\setcurrentfontxxstylealternative  {#2}}%         \rmxx
+%      \unexpanded\setgvalue {#3\c!x}{\setcurrentfontxalternative        {#3}}%         \slx
+%      \unexpanded\setgvalue{#3\c!xx}{\setcurrentfontxxalternative       {#3}}%         \slxx
+%      \unexpanded\setgvalue   {#2#3}{\setcurrentfontstylealternative    {#2}{#3}}%     \rmsl
+%    \fi}
+%
+% leaner
+
+\def\checkbodyfont#1% tests for ttsl mmbf
+  {\def\c!!mm{#1}%
    \ifx\c!!mm\c!mm % prevents \max and alike (re)defs
-     \unexpanded\setgvalue     {#2}{\setcurrentfontstyle               {#2}}%         \rm
-     \unexpanded\setgvalue     {#3}{\setcurrentfontalternative         {#3}}%         \sl
+     \expandafter\checkmathbodyfont
    \else
-     \unexpanded\setgvalue   {#2#4}{\setcurrentfontstylesize           {#2}{#4}}%     \rma
-     \unexpanded\setgvalue   {#3#4}{\setcurrentfontalternativesize     {#3}{#4}}%     \sla
-     \unexpanded\setgvalue {#2#3#4}{\setcurrentfontstylealternativesize{#2}{#3}{#4}}% \rmsla
-     \unexpanded\setgvalue     {#2}{\setcurrentfontstyle               {#2}}%         \rm
-     \unexpanded\setgvalue     {#3}{\setcurrentfontalternative         {#3}}%         \sl
-     \unexpanded\setgvalue {#2\c!x}{\setcurrentfontxstylealternative   {#2}}%         \rmx
-     \unexpanded\setgvalue{#2\c!xx}{\setcurrentfontxxstylealternative  {#2}}%         \rmxx
-     \unexpanded\setgvalue {#3\c!x}{\setcurrentfontxalternative        {#3}}%         \slx
-     \unexpanded\setgvalue{#3\c!xx}{\setcurrentfontxxalternative       {#3}}%         \slxx
-     \unexpanded\setgvalue   {#2#3}{\setcurrentfontstylealternative    {#2}{#3}}%     \rmsl
-   \fi}
+     \expandafter\checktextbodyfont
+   \fi{#1}} % no \c!!mm, not expanded later on
+
+\def\checkmathbodyfont#1#2#3% style alt size / gdef % #3 can be empty
+  {%\message{!m #1 #2 #3!}%
+   % #1 #2 #3 = signal
+   \unexpanded\setgvalue {#1#2#3}{\setcurrentfontstylealternativesize{#1}{#2}{#3}}% \mmsla
+   \unexpanded\setgvalue     {#1}{\setcurrentfontstyle               {#1}}%         \mm
+   \unexpanded\setgvalue     {#2}{\setcurrentfontalternative         {#2}}}%        \sl
+
+\def\checktextbodyfont#1#2#3% style alt size / gdef % #3 can be empty
+  {%\message{!t #1 #2 #3!}%
+   \unexpanded\setgvalue   {#1#3}{\setcurrentfontstylesize           {#1}{#3}}%     \rma
+   \unexpanded\setgvalue   {#2#3}{\setcurrentfontalternativesize     {#2}{#3}}%     \sla
+   \unexpanded\setgvalue {#1#2#3}{\setcurrentfontstylealternativesize{#1}{#2}{#3}}% \rmsla
+   \unexpanded\setgvalue     {#1}{\setcurrentfontstyle               {#1}}%         \rm
+   \unexpanded\setgvalue     {#2}{\setcurrentfontalternative         {#2}}%         \sl
+   \unexpanded\setgvalue {#1\c!x}{\setcurrentfontxstylealternative   {#1}}%         \rmx
+   \unexpanded\setgvalue{#1\c!xx}{\setcurrentfontxxstylealternative  {#1}}%         \rmxx
+   \unexpanded\setgvalue {#2\c!x}{\setcurrentfontxalternative        {#2}}%         \slx
+   \unexpanded\setgvalue{#2\c!xx}{\setcurrentfontxxalternative       {#2}}%         \slxx
+   \unexpanded\setgvalue   {#1#2}{\setcurrentfontstylealternative    {#1}{#2}}}%    \rmsl
 
 \def\dodefinedefaultbodyfont[#1][#2][#3]% sizes styles identifier
   {\def\dododefinedefaultbodyfont##1%

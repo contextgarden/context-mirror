@@ -14,6 +14,8 @@
 %D This file defines some typescripts that simulate the pre-typescript way
 %D of defining fonts. This file will not be extended.
 
+\starttypescriptcollection[previous]
+
 %D The Computer Modern Roman is derived from the Monotype~8a
 %D Times Roman. In this module, that is loaded by default, we
 %D define all relevant alternatives.
@@ -211,5 +213,7 @@
 \starttypescript[ber]
   \usetypescript [berry] [ec,t5] % could be [all]
 \stoptypescript
+
+\stoptypescriptcollection
 
 \endinput

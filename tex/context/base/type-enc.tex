@@ -24,6 +24,8 @@
 % todo: we should consider handling qx in the same maner, remap qx-* in type-dis.tex
 % todo: cyr fonts should be handled in the same way: t2b-lmr10 -> lbrm1000
 
+\starttypescriptcollection[encodings]
+
 \starttypescript [all] [latin-modern,computer-modern] [texnansi,ec,qx,pl0,il2,t5]
 
   % Regular
@@ -786,7 +788,7 @@
   \definefontsynonym [cmvtt10]  [lhvtt10]  [encoding=lcy]
 \stoptypescript
 
-\starttypescript [serif] [computer-modern] [default]
+\starttypescript [serif] [computer-modern,latin-modern] [default]
   \definefontsynonym [ComputerModern]             [cmr10]
   \definefontsynonym [ComputerModern-Italic]      [cmti10]
   \definefontsynonym [ComputerModern-Slanted]     [cmsl10]
@@ -796,7 +798,7 @@
   \definefontsynonym [ComputerModern-Caps]        [cmcsc10]
 \stoptypescript
 
-\starttypescript [sans] [computer-modern] [default]
+\starttypescript [sans] [computer-modern,latin-modern] [default]
   \definefontsynonym [ComputerModernSans]             [cmss10]
   \definefontsynonym [ComputerModernSans-Italic]      [cmssi10]
   \definefontsynonym [ComputerModernSans-Slanted]     [cmssi10]
@@ -806,7 +808,7 @@
   \definefontsynonym [ComputerModernSans-Caps]        [cmss10]
 \stoptypescript
 
-\starttypescript [mono] [computer-modern] [default]
+\starttypescript [mono] [computer-modern,latin-modern] [default]
   \definefontsynonym [ComputerModernMono]             [cmtt10]
   \definefontsynonym [ComputerModernMono-Italic]      [cmitt10]
   \definefontsynonym [ComputerModernMono-Slanted]     [cmsltt10]
@@ -1270,4 +1272,4 @@
   \definefontsynonym [MartinVogel]           [fmvr8x]
 \stoptypescript
 
-\endinput
+\stoptypescriptcollection \endinput

@@ -64,14 +64,29 @@
 %D Just to be sure, we save the current meaning of \type{^^M}
 %D in \type{\poppedendofline}.
 
-\chardef\poppedendofline\catcode`\^^M
+% \chardef\poppedendofline\catcode`\^^M
+%
+% \def\pushendofline
+%   {\chardef\poppedendofline\catcode`\^^M\relax
+%    \catcode`\^^M\@@comment\relax}
+%
+% \def\popendofline
+%   {\catcode`\^^M\poppedendofline}
+%
+% support for nested usage:
+
+\newcounter \endoflinelevel
+
+\ifx\newlinecode\undefined \chardef\newlinecode=`\^^M \fi
 
 \def\pushendofline
-  {\chardef\poppedendofline\catcode`\^^M\relax
-   \catcode`\^^M\@@comment\relax}
+  {\fastincrement\endoflinelevel
+   \expandafter\chardef\csname :eol:\endoflinelevel\endcsname\catcode\newlinecode
+   \catcode\newlinecode\@@comment\relax}
 
 \def\popendofline
-  {\catcode`\^^M\poppedendofline}
+  {\catcode\newlinecode\csname :eol:\endoflinelevel\endcsname
+   \fastdecrement\endoflinelevel}
 
 %D \macros
 %D   {scratchread, scratchwrite}
@@ -644,6 +659,11 @@
    \greedysplitstring\splitoffbase\at.\to\splitoffname\and\splitofftype
    \ifx\splitoffpath\empty\def\splitoffpath{.}\fi
    \ifx\splitoffname\empty\let\splitoffname\splitoffbase\fi}
+
+\def\splitfiletype#1%
+  {\edef\splitofffull{#1}% normally outside this call: \sanitizefilename#1\to\sanitizedfilename
+   \let\splitoffpath\empty
+   \greedysplitstring\splitofffull\at.\to\splitoffname\and\splitofftype}
 
 %% % gebruikt voor normale (!) files, will change to proper
 %% % installer maybe combined with verb module push/popper
