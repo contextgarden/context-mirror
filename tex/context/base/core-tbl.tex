@@ -703,6 +703,7 @@
      \getvalue{\??tt\currenttabulate\c!voor}%
    \fi
    \bgroup
+\resetcharacteralign
    % todo: spacing around tabulate when bodyfont is set
    % expansion en test needed ?
    \doifvaluesomething{\??tt\currenttabulate\c!korps}
@@ -904,7 +905,8 @@
    \unexpanded \def\RQ{\tabulateequalcolumn 1}%
    \unexpanded \def\HQ{\tabulateequalcolumn 2}%
    \unexpanded \def\NG{\NC\handletabulatecharalign}%
-   \unexpanded \def\ND{\NC\handletabulatedigits}% new, undocumented, test first
+   \unexpanded \def\NN{\NC\handletabulatedigits}% new, undocumented, test first
+   \unexpanded \def\ND{\NC\handletabulatedigits}% same, for old times sake 
    \def\HR % horizontal rule line (break untested)
      {\TABLEnoalign
         {\ifnum\noftabulatelines=\totalnoftabulatelines

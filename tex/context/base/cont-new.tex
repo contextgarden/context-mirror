@@ -15,17 +15,147 @@
 % todo achtergronden in kolommen
 
 %D This file is loaded at runtime, thereby providing an
-%D excellent place for hacks and new features.
+%D excellent place for hacks, patches, extensions and new 
+%D features. 
 
 \unprotect
 
 \writestatus{\m!systems}{beware: some patches loaded from cont-new.tex!}
 
+\def\dodocomplexplaatsblok[#1][#2][#3]#4%
+  {\flushnotes
+   \ifsomefloatwaiting
+     % this was \checkwaitingfloats spread all over
+     \doifinsetelse\v!altijd{#2}
+       {\showmessage\m!floatblocks5\empty}
+       {\doifcommonelse
+          {#2}
+          {\v!tekst,\v!naast,% \v!pagina,
+           \v!links,\v!rechts,\v!inlinker,\v!inrechter,%
+           \v!inmarge}
+          {\doflushfloats}
+          {}}%
+     % but which should be done before using box \floatbox
+   \fi
+   \ifmargeblokken % waarschijnlijk gebroken ! ! ! !
+     \doifinset\v!marge{#2}
+       {\bgroup\everypar{\egroup\the\everypar}%
+        \hsize\@@mbbreedte}%
+   \fi
+   \global\insidefloattrue
+   \begingroup % **
+   \the\everyinsidefloat
+   \let\@@extrafloat\empty
+   \presetmorefloatvariables{#2}%
+   \dowithnextboxcontent % better a \the\everyfloattoks
+     {\setlocalfloathsize
+      \fuzzysnappingfalse 
+      \postponefootnotes} % new
+     {\xdocompletefloat{#1}{#3}{#1}{#2}{#1}{#4}% ** not yet done
+      % we need to carry over the par because of side floats
+      \doifnotinset\v!tekst{#2}{\carryoverpar\endgroup}% 
+      \ifparfloat\blanko[\v!blokkeer]\fi}% 
+     \vbox}
+
+
+
+\collectMPpositiongraphicstrue
+
+% adapted 
+
+\def\positionoverlay#1% the test prevents too many redundant positions
+  {\ifpositioning     % in (not used) text* position layers
+     \vbox to \overlayheight
+       {\doifpositionactionelse{#1::\MPanchoridentifier}%
+          {\edef\MPanchorid{#1::\MPanchoridentifier:\MPanchornumber}%
+           \edef\MPanchor##1{\MPpos{\MPanchorid}}%
+           \the\everyinsertpositionaction
+           \copyposition{#1::\MPanchoridentifier}{#1::\MPanchoridentifier:\MPanchornumber}%
+           \hpos
+             {#1::\MPanchoridentifier:\MPanchornumber}%
+            % this is ok
+            %{\hbox to \overlaywidth{\dopositionaction{#1::\MPanchoridentifier}\hss}}}%
+            % but this one prevents cyclic runs due to
+            % rounding errors
+             {\setbox\scratchbox\hbox to \overlaywidth
+                {\dopositionaction{#1::\MPanchoridentifier}\hss}%
+                 \ht\scratchbox\overlayheight
+                 \dp\scratchbox\zeropoint
+                 \box\scratchbox}}%
+          {\hbox to \overlaywidth{\hss}}%
+        \vfill}%
+   \fi}
+
+% reverted back to template parsing 
+
+\def\thirdstagestartTABLE#1%
+  {\global\setTABLEactiontrue
+   \setTABLEaction\TABLEunknown
+   \setTABLEforce\TABLEunknown
+   \setTABLEerror\TABLEunknown
+   \global\TABLEgraylinefalse
+   \global\TABLEgraydonefalse
+   \globalletempty\TABLEgrayline
+   \globalletempty\nextTABLEgrayline
+   \globalletempty\TABLEgraylineerror
+   \globalletempty\TABLEgraylinestatus
+   \resetVLvalues
+   \appendtoks\popouterbarandquote\to\EveryTable
+   \appendtoks\localTABLEsetup\to\EveryTable
+   \BeginTable[\ifsplittables u\else b\fi]%
+   \defineTABLEunits
+   \defineTABLEsteps
+   \defineTABLErules
+   \defineTABLEdivisions
+   \defineTABLEshorthands
+   \defineTABLEbackgrounds
+   \defineTABLEendings
+   \forgetall % added
+   \doifsomething{#1}
+     {\def\TABLEformat{#1}%
+      \getTABLEnofcolumns\TABLEformat 
+      \expandafter\BeginFormat\TABLEformat\EndFormat}}
+
+\def\!ttDoHalign
+  {\baselineskip \zeropoint
+   \lineskiplimit\zeropoint
+   \lineskip     \zeropoint
+   \tabskip      \zeropoint
+   % does not work in normal tex
+   % \expanded{\getTABLEnofcolumns{\the\!taPreamble}}% added
+   \halign \the\!taTableSpread \bgroup
+   \span\the\!taPreamble
+   \ifx \!tfRowOfWidths \empty \else \!tfRowOfWidths \cr \fi}
+
+\bgroup
+\catcode`\|=\@@active 
+%\gdef\protectTABLEbar{\let|\letterbar} % maybe in \cleanupfeatures
+\doglobal \appendtoks \let|\letterbar \to \everycleanupfeatures  
+\catcode`\|=\@@other  
+\gdef\getTABLEnofcolumns#1%
+  {\bgroup
+   \cleanupfeatures % needed ! 
+%   \protectTABLEbar 
+   \expanded{\convertargument#1}\to\ascii
+   \@EA\doglobal\@EA\counttoken\@EA|\@EA\in\ascii\to\maxTABLEcolumn
+   \global\advance\maxTABLEcolumn \minusone
+   % in case of & counting, divide by 2 
+   \egroup}
+\egroup
+
+
+
+\def\fixedspace
+  {\setbox\scratchbox\hbox\ifmmode{$0$}\else{0}\fi
+   \hskip\wd\scratchbox\relax}
+
+\appendtoks \fixedspaces \to \everytable
+
 \def\toplinebox
   {\dowithnextbox
      {\ifdim\dp\nextbox>\strutdepth
         \scratchdimen\dp\nextbox
-        \advance\scratchdimen-\strutdepth 
+        \advance\scratchdimen-\strutdepth
         \getnoflines\scratchdimen
         \struttedbox{\box\nextbox}%
         \dorecurse\noflines{\vbox{\hsize\zeropoint\strut}}%
@@ -34,7 +164,7 @@
       \fi}%
    \tbox}
 
-\def\expandifnonempty#1% 
+\def\expandifnonempty#1%
   {\@EA\ifx\csname#1\endcsname\empty
      \expandafter\secondoftwoarguments
    \else
@@ -51,17 +181,17 @@
 \def\sectioncountervalue#1%
   {\@@sectionvalue{\@@sectiesectie{#1}}}
 
-\def\NormalizeFontSize#1#2#3#4#5% the normal struggle with accuracy 
+\def\NormalizeFontSize#1#2#3#4#5% the normal struggle with accuracy
   {\bgroup
    \dimen0=#4% #4 can be \ht0 or so
-   \setbox0\hbox{\definedfont[#5 at 5pt]#3}% 10pt 
+   \setbox0\hbox{\definedfont[#5 at 5pt]#3}% 10pt
    \ifdim\wd0>\zeropoint
      \dimen2=#10 % #1 is \wd or \ht
      \dimen4=\maxdimen % 10000pt
      \divide\dimen4 \dimen2
      \divide\dimen0 1638 % 1000
      \dimen0=\number\dimen4\dimen0
-     \divide \dimen0 \plustwo % ... 
+     \divide \dimen0 \plustwo % ...
      \xdef\TheNormalizedFontSize{\the\dimen0}%
    \else
      \dimen0\bodyfontsize
@@ -73,19 +203,19 @@
 
 % todo namespace \@@meta:#1:... ! ! ! ! ! !
 
-\def\presetMPvariable  
+\def\presetMPvariable
   {\dodoubleargument\dopresetMPvariable}
 
-\def\dopresetMPvariable[#1][#2=#3]% 
+\def\dopresetMPvariable[#1][#2=#3]%
   {\doifundefined{#1:#2}{\setvalue{#1:#2}{#3}}}
 
-% experiment, not yet to be used 
+% experiment, not yet to be used
 
 \def\displaybreak
   {\ifhmode
      \removeunwantedspaces
      \ifcase\raggedstatus\hfill\fi
-     \strut\penalty-9999 % \break fails on case (3) 
+     \strut\penalty-9999 % \break fails on case (3)
    \fi}
 
 \def\startdisplay{\displaybreak\ignorespaces\startopelkaar}
@@ -116,9 +246,9 @@
 \def\dopagefigure[#1][#2]%
   {\dostartpagefigure[#1][#2]\stoppagefigure}
 
-% pretty important (esp since we now ignore shipouts) 
+% pretty important (esp since we now ignore shipouts)
 %
-% actually we should nil all writes, marks, specials 
+% actually we should nil all writes, marks, specials
 
 \appendtoks \globallet\popcolor\relax \to \everylastshipout
 
@@ -127,14 +257,14 @@
 
 % \translateMPinput{il2-pl}
 %
-% \startMPenvironment[global] 
-%   \setupbodyfont[plr] 
-% \stopMPenvironment 
+% \startMPenvironment[global]
+%   \setupbodyfont[plr]
+% \stopMPenvironment
 %
-% \TeX: ± ¶ 
+% \TeX: ± ¶
 %
 % \startMPcode
-% draw btex MetaPost: ± ¶ etex scaled 5 ;  
+% draw btex MetaPost: ± ¶ etex scaled 5 ;
 % \stopMPcode
 
 \def\begintbl
@@ -460,7 +590,7 @@
 \def\startsetups % for international purposes
   {\bgroup\doifnextcharelse[{\startsetupsA\stopsetups}%
                             {\startsetupsB\stopsetups}}
- 
+
 \def\startlocalsetups % for nested purposes
   {\bgroup\doifnextcharelse[{\startsetupsA\stoplocalsetups}%
                             {\startsetupsB\stoplocalsetups}}
@@ -472,7 +602,7 @@
 \def\startsetupsB#1#2 % space delimited
   {\startsetupsA#1[#2]}%
 
-\long\def\dostartsetups#1#2% watch out: not \grabuntil 
+\long\def\dostartsetups#1#2% watch out: not \grabuntil
   {\dograbuntil#1{\egroup\long\setvalue{\??su#2}}}
 
 \newtoks\everyfirstparagraphintro

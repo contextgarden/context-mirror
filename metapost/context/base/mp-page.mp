@@ -119,6 +119,24 @@ vardef InsideSavedTextArea (expr _i_, _xy_) =
     (round(ypart _xy_) <= round(ypart urcorner SavedTextAreas[_i_])) )
 enddef ; 
 
+vardef InsideSomeTextArea(expr _xy_) = 
+  save ok ; boolean ok ; ok := false ; 
+  for i := 1 upto NOfTextAreas : 
+    if InsideTextArea(i,_xy_) : ok := true ; fi ;  
+    exitif ok ; 
+  endfor ;
+  ok 
+enddef ;
+
+vardef InsideSomeSavedTextArea(expr _xy_) = 
+  save ok ; boolean ok ; ok := false ; 
+  for i := 1 upto NOfSavedTextAreas : 
+    if InsideSavedTextArea(i,_xy_) : ok := true ; fi ;  
+    exitif ok ; 
+  endfor ;
+  ok 
+enddef ;
+
 vardef TextAreaX (expr x) = 
   numeric _TextAreaX_ ; _TextAreaX_ := 0 ; 
   for i := 1 upto NOfTextAreas : 

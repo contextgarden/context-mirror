@@ -334,16 +334,33 @@
 
 % new : \place...[leftmargin,-2*line]
 
+% (keep this) this fails on fxtb:2*3
+%
+% \def\movesidefloat[#1]%
+%   {\bgroup
+%    \donefalse
+%    \def\movesidefloat##1%
+%      {\ifdone \else
+%         \global\sidefloatdownshift\zeropoint
+%         \donetrue
+%       \fi
+%       \global\advance\sidefloatdownshift##1\lineheight}%
+%    \expanded{\dorepeatwithcommand[#1]}\domovesidefloat
+%    \egroup}
+%
+% so we need to catch the : 
+
 \def\movesidefloat[#1]%
   {\bgroup
-   \donefalse
-   \def\movesidefloat##1%
-     {\ifdone \else
-        \global\sidefloatdownshift\zeropoint
-        \donetrue
-      \fi
-      \global\advance\sidefloatdownshift##1\lineheight}%
-   \expanded{\dorepeatwithcommand[#1]}\domovesidefloat
+   \cleanupfeatures
+   \doifinstringelse{:}{#1}
+     \donothing
+     {\donefalse
+      \def\movesidefloat##1%
+        {\doifnumber{##1}
+           {\ifdone\else\global\sidefloatdownshift\zeropoint\donetrue\fi
+            \global\advance\sidefloatdownshift##1\lineheight}}%
+      \expanded{\dorepeatwithcommand[#1]}\domovesidefloat}%
    \egroup}
 
 % or cleaner but longer:
@@ -433,18 +450,18 @@
         \fi}%
      \doifinset\v!hangend{#2}
        {\doifcommonelse{\v!inlinker,\v!linkermarge}{#2}
-          {\letvalue{\??fl#1\c!maxbreedte}\leftmarginwidth}% 
+          {\letvalue{\??fl#1\c!maxbreedte}\linkermargebreedte}% 
           {\doifcommon{\v!inrechter,\v!rechtermarge}{#2}
-             {\letvalue{\??fl#1\c!maxbreedte}\rightmarginwidth}}}% 
+             {\letvalue{\??fl#1\c!maxbreedte}\rechtermargebreedte}}}% 
      \doifvaluesomething{\??fl#1\c!maxbreedte}
        {\scratchdimen\getvalue{\??fl#1\c!maxbreedte}\relax
         \ifdim\wd#3>\scratchdimen
           \doifcommonelse{\v!inrechter,\v!rechtermarge}{#2}  
             {\global\sidefloatshift-\scratchdimen      
-             \global\advance\sidefloatshift-\rightmargindistance}
+             \global\advance\sidefloatshift-\rechtermargeafstand}
             {\doifcommonelse{\v!inlinker,\v!linkermarge}{#2}
                {\global\sidefloatshift-\scratchdimen      
-                \global\advance\sidefloatshift-\leftmargindistance}
+                \global\advance\sidefloatshift-\linkermargeafstand}
                {#4\setbox#3\hbox to \scratchdimen
                  {\doifcommonelse{\v!rechts,\v!links}{#2}
                     {\doifnotinset\v!rechts{#2}\hss
@@ -1517,7 +1534,8 @@
    \doifelsevaluenothing{\??fl#4\c!criterium}
      {\dogetfloatbox{#1}\empty}
      {\ifdim\wd\floatbox>\getvalue{\??fl#4\c!criterium}\relax
-        \dogetfloatbox{#1}\v!hier
+        \postcenterfloatbox{\wd\floatbox}% else we get left aligned  
+        \dogetfloatbox{#1}\v!hier        % see details/pascal
       \else
         \dogetfloatbox{#1}\empty
       \fi}}

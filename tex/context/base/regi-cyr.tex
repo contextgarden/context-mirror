@@ -24,27 +24,6 @@
 %D Other, not so popular regimes, can be found in \type 
 %D {regi-cy2}.
 
-% to do : 
-%
-% Some regimes contain symbols which are not yet defined in ConTeXt.
-% Here are given some (probably not perfect) definitions, have to
-% be substituted by real symbols if available.
-% LaTeX names are used
-
-% \definecharacter textcent
-%   {c\rlap{\hskip-.2em\vrule width.2ptheight1.2exdepth0.2ex\relax}}
-% \definecharacter texteuro
-%   {C\rlap{\hskip-.75em\vrule width.4emheight.85exdepth-0.8ex\relax}}
-% \definecharacter textblacksquare
-%   {\vrule width.3emheight.4emdepth-.1em\relax}
-% \definecharacter textdegree
-%   {\mathematics{{^\circ}}}
-% \definecharacter texttrademark
-%   {\high{\ss\tx TM}}
-% \definecharacter textbrokenbar
-%   {\kern0.05em\vrule width0.4ptheight1.8exdepth-0.85ex\llap{\vrule
-%    width0.4ptheight0.35exdepth0.6ex}\kern0.05em}
-
 \startregime[cp1251]
 
 \defineactivetoken 192 {\cyrillicA}
@@ -116,11 +95,11 @@
 \defineactivetoken 130 {\lowerleftsingleninequote}
 \defineactivetoken 131 {\'\cyrillicg}
 \defineactivetoken 132 {\lowerleftdoubleninequote}
-\defineactivetoken 133 {\dots}
-\defineactivetoken 134 {\dag}
-\defineactivetoken 135 {\ddag}
-\defineactivetoken 136 {\texteuro}      
-\defineactivetoken 137 {\textperthousand}
+\defineactivetoken 133 {\textellipsis} 
+\defineactivetoken 134 {\textdag}      
+\defineactivetoken 135 {\textddag}     
+\defineactivetoken 136 {\texteuro}     
+\defineactivetoken 137 {\perthousand}  
 \defineactivetoken 138 {\cyrillicLJE}
 \defineactivetoken 139 {\leftsubguillemot}
 \defineactivetoken 140 {\cyrillicNJE}
@@ -130,12 +109,13 @@
 \defineactivetoken 144 {\cyrillicdje}
 \defineactivetoken 145 {\upperleftsinglesixquote}
 \defineactivetoken 146 {\upperrightsingleninequote}
-\defineactivetoken 147 {\upperleftsinglesixquote}
+\defineactivetoken 147 {\upperleftdoublesixquote} 
 \defineactivetoken 148 {\upperrightdoubleninequote}
-\defineactivetoken 149 {\bullet}
+\defineactivetoken 149 {\textbullet}   
 \defineactivetoken 150 {\endash}
 \defineactivetoken 151 {\emdash}
-\defineactivetoken 153 {\texttrademark} 
+\defineactivetoken 152 {\missingglyph} 
+\defineactivetoken 153 {\trademark}    
 \defineactivetoken 154 {\cyrilliclje}
 \defineactivetoken 155 {\rightsubguillemot}
 \defineactivetoken 156 {\cyrillicnje}
@@ -149,20 +129,20 @@
 \defineactivetoken 164 {\textcurrency}
 \defineactivetoken 165 {\cyrillicGUP}
 \defineactivetoken 166 {\textbrokenbar}           
-\defineactivetoken 167 {\S}
+\defineactivetoken 167 {\sectionmark}     
 \defineactivetoken 168 {\cyrillicYO}
 \defineactivetoken 169 {\copyright}
 \defineactivetoken 170 {\cyrillicIE}
 \defineactivetoken 171 {\leftguillemot}
-\defineactivetoken 173 {\-}
-\defineactivetoken 174 {\registered}  
+\defineactivetoken 173 {\hyphen}
+\defineactivetoken 174 {\registered} 
 \defineactivetoken 175 {\cyrillicYI}
 \defineactivetoken 176 {\textdegree}              
 \defineactivetoken 178 {\cyrillicII}
 \defineactivetoken 179 {\cyrillicii}
 \defineactivetoken 180 {\cyrillicgup}
-\defineactivetoken 182 {\P}
-\defineactivetoken 183 {\textperiodcentered}      
+\defineactivetoken 182 {\paragraphmark}   
+\defineactivetoken 183 {\periodcentered}  
 \defineactivetoken 184 {\cyrillicyo}
 \defineactivetoken 185 {\textnumero}
 \defineactivetoken 186 {\cyrillicie}
@@ -171,6 +151,9 @@
 \defineactivetoken 189 {\cyrillicDZE}
 \defineactivetoken 190 {\cyrillicdze}
 \defineactivetoken 191 {\cyrillicyi}
+\defineactivetoken 172 {\textlognot}      
+\defineactivetoken 177 {\textpm}          
+\defineactivetoken 181 {\textmu}          
 
 \stopregime
 
@@ -250,11 +233,12 @@
 \defineactivetoken 247 {\cyrillicushrt}
 \defineactivetoken 248 {\textdegree}              
 \defineactivetoken 249 {\bullet}
-\defineactivetoken 250 {\textperiodcentered}      
+\defineactivetoken 250 {\periodcentered}   
 \defineactivetoken 252 {\textnumero}
 \defineactivetoken 253 {\textcurrency}
 \defineactivetoken 254 {\textblacksquare}         
 \defineactivetoken 255 {\nonbreakablespace}
+\defineactivetoken 251 {\textsurd}         
 
 \stopregime
 
@@ -412,11 +396,17 @@
 \defineactivetoken 192 {\cyrillicyu}
 \defineactivetoken 209 {\cyrillicya}
 \defineactivetoken 148 {\textblacksquare}         
-\defineactivetoken 149 {\bullet}
+\defineactivetoken 149 {\textbullet}     
 \defineactivetoken 154 {\nonbreakablespace}
 \defineactivetoken 156 {\textdegree}    
-\defineactivetoken 158 {\textperiodcentered}      
+\defineactivetoken 158 {\periodcentered} 
 \defineactivetoken 191 {\copyright}
+\defineactivetoken 150 {\textsurd}           
+\defineactivetoken 151 {\mathematics\sim}  
+\defineactivetoken 152 {\mathematics\leq}  
+\defineactivetoken 153 {\mathematics\geq}  
+\defineactivetoken 157 {\twosuperior}        
+\defineactivetoken 159 {\textdiv}            
 
 \stopregime
 
@@ -490,16 +480,16 @@
 \defineactivetoken 209 {\cyrillicya}
 \defineactivetoken 147 {\upperleftsinglesixquote}
 \defineactivetoken 148 {\textblacksquare}         
-\defineactivetoken 149 {\bullet}
+\defineactivetoken 149 {\textbullet}      % Changed by V.F. 07/02/2003 (was: \bullet)
 \defineactivetoken 150 {\upperrightdoubleninequote}
 \defineactivetoken 151 {\emdash}
 \defineactivetoken 152 {\textnumero}
-\defineactivetoken 153 {\texttrademark}           
+\defineactivetoken 153 {\trademark}       % Changed by V.F. 07/02/2003 (was: \texttrademark)
 \defineactivetoken 154 {\nonbreakablespace}
 \defineactivetoken 155 {\rightguillemot}
 \defineactivetoken 156 {\registered}          
 \defineactivetoken 157 {\leftguillemot}
-\defineactivetoken 158 {\textperiodcentered}      
+\defineactivetoken 158 {\periodcentered}  % Changed by V.F. 07/02/2003 (was: \textperiodcentered)
 \defineactivetoken 159 {\textcurrency}
 \defineactivetoken 164 {\cyrillicie}
 \defineactivetoken 166 {\cyrillicii}
@@ -628,17 +618,17 @@
 \defineactivetoken 157 {\cyrillicEREV}
 \defineactivetoken 158 {\cyrillicYU}
 \defineactivetoken 159 {\cyrillicYA}
-\defineactivetoken 160 {\dag}
+\defineactivetoken 160 {\textdag}        % Changed by V.F. 07/02/2003 (was: dag)
 \defineactivetoken 161 {\textdegree}    
 \defineactivetoken 162 {\textcent}      
-\defineactivetoken 163 {\sterling}
-\defineactivetoken 164 {\S}
-\defineactivetoken 165 {\bullet}
-\defineactivetoken 166 {\P}
+\defineactivetoken 163 {\textsterling}   % Changed by V.F. 07/02/2003 (was: \sterling)
+\defineactivetoken 164 {\sectionmark}    % Changed by V.F. 07/02/2003 (was: \S)
+\defineactivetoken 165 {\textbullet}     % Changed by V.F. 07/02/2003 (was: \bullet}
+\defineactivetoken 166 {\paragraphmark}  % Changed by V.F. 07/02/2003 (was: \P)
 \defineactivetoken 167 {\cyrillicII}
 \defineactivetoken 168 {\registered}
 \defineactivetoken 169 {\copyright}
-\defineactivetoken 170 {\texttrademark} 
+\defineactivetoken 170 {\trademark}      % Changed by V.F. 07/02/2003 (was: \texttrademark} 
 \defineactivetoken 171 {\cyrillicDJE}
 \defineactivetoken 172 {\cyrillicdje}
 \defineactivetoken 174 {\'\cyrillicG}
@@ -655,10 +645,10 @@
 \defineactivetoken 191 {\cyrillicnje}
 \defineactivetoken 192 {\cyrillicje}
 \defineactivetoken 193 {\cyrillicDZE}
-\defineactivetoken 196 {\florijn}
+\defineactivetoken 196 {\textflorin}     % Changed by V.F. 07/02/2003 (was: \florijn)
 \defineactivetoken 199 {\leftguillemot}
 \defineactivetoken 200 {\rightguillemot}
-\defineactivetoken 201 {\dots}
+\defineactivetoken 201 {\textellipsis}   % Changed by V.F. 07/02/2003 (was: \dots)
 \defineactivetoken 202 {\nonbreakablespace}
 \defineactivetoken 203 {\cyrillicTSHE}
 \defineactivetoken 204 {\cyrillictshe}
@@ -667,7 +657,8 @@
 \defineactivetoken 207 {\cyrillicdze}
 \defineactivetoken 208 {\endash}
 \defineactivetoken 209 {\emdash}
-\defineactivetoken 210 {\upperleftsinglesixquote}
+\defineactivetoken 210 {\upperleftdoublesixquote} % Changed by V.F. 07/02/2003
+                                                  %  (was: \upperleftsinglesixquote)
 \defineactivetoken 211 {\upperrightdoubleninequote}
 \defineactivetoken 212 {\upperleftsinglesixquote}
 \defineactivetoken 213 {\upperrightsingleninequote}
@@ -712,6 +703,18 @@
 \defineactivetoken 253 {\cyrillicerev}
 \defineactivetoken 254 {\cyrillicyu}
 \defineactivetoken 255 {\textcurrency}
+\defineactivetoken 173 {\mathematics{\neq}}     % Added by V.F. 07/02/2003
+\defineactivetoken 176 {\mathematics{\infty}}   % Added by V.F. 07/02/2003
+\defineactivetoken 177 {\textpm}                % Added by V.F. 07/02/2003
+\defineactivetoken 178 {\mathematics{\leq}}     % Added by V.F. 07/02/2003
+\defineactivetoken 179 {\mathematics{\geq}}     % Added by V.F. 07/02/2003
+\defineactivetoken 181 {\textmu}                % Added by V.F. 07/02/2003
+\defineactivetoken 182 {\mathematics{\partial}} % Added by V.F. 07/02/2003
+\defineactivetoken 194 {\textlognot}            % Added by V.F. 07/02/2003
+\defineactivetoken 195 {\textsurd}              % Added by V.F. 07/02/2003
+\defineactivetoken 197 {\mathematics{\approx}}  % Added by V.F. 07/02/2003
+\defineactivetoken 198 {\mathematics{\Delta}}   % Added by V.F. 07/02/2003
+\defineactivetoken 214 {\textdiv}               % Added by V.F. 07/02/2003
 
 \stopregime
 
@@ -749,17 +752,17 @@
 \defineactivetoken 157 {\cyrillicEREV}
 \defineactivetoken 158 {\cyrillicYU}
 \defineactivetoken 159 {\cyrillicYA}
-\defineactivetoken 160 {\dag}
+\defineactivetoken 160 {\textdag}        % Changed by V.F. 07/02/2003 (was: \dag)
 \defineactivetoken 161 {\textdegree}    
 \defineactivetoken 162 {\cyrillicGUP}
-\defineactivetoken 163 {\sterling}
-\defineactivetoken 164 {\S}
-\defineactivetoken 165 {\bullet}
-\defineactivetoken 166 {\P}
+\defineactivetoken 163 {\textsterling}   % Changed by V.F. 07/02/2003 (was: \sterling)
+\defineactivetoken 164 {\sectionmark}    % Changed by V.F. 07/02/2003 (was: \S)
+\defineactivetoken 165 {\textbullet}     % Changed by V.F. 07/02/2003 (was: \bullet}
+\defineactivetoken 166 {\paragraphmark}  % Changed by V.F. 07/02/2003 (was: \P)
 \defineactivetoken 167 {\cyrillicII}
 \defineactivetoken 168 {\registered}
 \defineactivetoken 169 {\copyright}
-\defineactivetoken 170 {\texttrademark} 
+\defineactivetoken 170 {\trademark}      % Changed by V.F. 07/02/2003 (was: \texttrademark} 
 \defineactivetoken 171 {\cyrillicDJE}
 \defineactivetoken 172 {\cyrillicdje}
 \defineactivetoken 174 {\'\cyrillicG}
@@ -777,10 +780,10 @@
 \defineactivetoken 191 {\cyrillicnje}
 \defineactivetoken 192 {\cyrillicje}
 \defineactivetoken 193 {\cyrillicDZE}
-\defineactivetoken 196 {\florijn}
+\defineactivetoken 196 {\textflorin}     % Changed by V.F. 07/02/2003 (was: \florijn)
 \defineactivetoken 199 {\leftguillemot}
 \defineactivetoken 200 {\rightguillemot}
-\defineactivetoken 201 {\dots}
+\defineactivetoken 201 {\textellipsis}   % Changed by V.F. 07/02/2003 (was: \dots)
 \defineactivetoken 202 {\nonbreakablespace}
 \defineactivetoken 203 {\cyrillicTSHE}
 \defineactivetoken 204 {\cyrillictshe}
@@ -789,7 +792,8 @@
 \defineactivetoken 207 {\cyrillicdze}
 \defineactivetoken 208 {\endash}
 \defineactivetoken 209 {\emdash}
-\defineactivetoken 210 {\upperleftsinglesixquote}
+\defineactivetoken 210 {\upperleftdoublesixquote} % Changed by V.F. 07/02/2003
+                                                  %  (was: \upperleftsinglesixquote)
 \defineactivetoken 211 {\upperrightdoubleninequote}
 \defineactivetoken 212 {\upperleftsinglesixquote}
 \defineactivetoken 213 {\upperrightsingleninequote}
@@ -834,6 +838,17 @@
 \defineactivetoken 253 {\cyrillicerev}
 \defineactivetoken 254 {\cyrillicyu}
 \defineactivetoken 255 {\textcurrency}
+\defineactivetoken 173 {\mathematics{\neq}}    % Added by V.F. 07/02/2003
+\defineactivetoken 176 {\mathematics{\infty}}  % Added by V.F. 07/02/2003
+\defineactivetoken 177 {\textpm}               % Added by V.F. 07/02/2003
+\defineactivetoken 178 {\mathematics{\leq}}    % Added by V.F. 07/02/2003
+\defineactivetoken 179 {\mathematics{\geq}}    % Added by V.F. 07/02/2003
+\defineactivetoken 181 {\textmu}               % Added by V.F. 07/02/2003
+\defineactivetoken 194 {\textlognot}           % Added by V.F. 07/02/2003
+\defineactivetoken 195 {\textsurd}             % Added by V.F. 07/02/2003
+\defineactivetoken 197 {\mathematics{\approx}} % Added by V.F. 07/02/2003
+\defineactivetoken 198 {\mathematics{\Delta}}  % Added by V.F. 07/02/2003
+\defineactivetoken 214 {\textdiv}              % Added by V.F. 07/02/2003
 
 \stopregime
 

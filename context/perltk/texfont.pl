@@ -32,6 +32,7 @@ use strict ;
 my $savedoptions = join (" ",@ARGV) ;
 
 use Config ;
+use FindBin ;
 use File::Copy ;
 use Getopt::Long ;
 
@@ -49,7 +50,7 @@ my $installpath = "" ; my @searchpaths = () ;
 if (defined($ENV{TEXMFLOCAL})) { $installpath = "TEXMFLOCAL" }
 if (defined($ENV{TEXMFFONTS})) { $installpath = "TEXMFFONTS" }
 
-if ($installpath eq "") { $installpath = "TEXMFFONTS" } # redundant 
+#  ($installpath eq "") { $installpath = "TEXMFFONTS" } # redundant 
 if ($installpath eq "") { $installpath = "TEXMFLOCAL" } # redundant 
 
 @searchpaths = ('TEXMFFONTS','TEXMFLOCAL','TEXMFMAIN') ;
@@ -117,6 +118,15 @@ my $width = "" ;
     "width=s"      => \$width,
     "expert"       => \$expert) ;
 
+# for/from Fabrice: 
+
+my $own_path = "$FindBin::Bin/" ;
+$FindBin::RealScript =~ m/([^\.]*)(\.pl|\.bat|\.exe|)/io ;
+my $own_name = $1 ;
+my $own_type = $2 ;
+my $own_stub  = "" ; 
+if ($own_type =~ /pl/oi) { $own_stub = "perl " } 
+
 # so we can use both combined 
 
 if (!$novirtual) { $virtual = 1 } 
@@ -139,7 +149,7 @@ sub error
 # The banner. 
 
 print "\n" ;
-report ("TeXFont 1.6 - ConTeXt / PRAGMA ADE 2000-2002") ;
+report ("TeXFont 1.7 - ConTeXt / PRAGMA ADE 2000-2003") ;
 print "\n" ;
 
 # Handy for scripts: one can provide a preferred path, if it 
@@ -245,7 +255,7 @@ if (($batch)||($ARGV[0] =~ /.+\.dat$/io))
       { if ($batchfile !~ /\.dat$/io) { $batchfile .= ".dat" } }
     unless (-f $batchfile)
       { report ("trying to locate : $batchfile") ;
-        $batchfile = `kpsewhich -progname=context --format="other text file" $batchfile` ;
+        $batchfile = `kpsewhich -progname=context --format="other text files" $batchfile` ;
         chomp $batchfile }
     error ("unknown batch file $batchfile") unless -e $batchfile ;
     report ("processing batch file : $batchfile") ;
@@ -268,7 +278,8 @@ if (($batch)||($ARGV[0] =~ /.+\.dat$/io))
                 s/\s+/ /gio ;
                 s/(--en.*\=)\?/$1$encoding/io ;
                 report ("batch line : $_") ;
-                system ("perl $0 --fontroot=$fontroot $_") }
+              # system ("perl $0 --fontroot=$fontroot $_") }
+                system ("$own_stub$own_path$own_name$own_type --fontroot=$fontroot $_") }
             close (BAT) }
     exit }
 
@@ -675,8 +686,11 @@ foreach my $file (@files)
     else 
       { $thename = $usename ; $theencoding = " $encoding.enc" } 
     # quit rest if no type 1 file
+    my $pfb_sourcepath = $sourcepath ;
+    $pfb_sourcepath =~ s@/afm/@/type1/@ ;
     unless ((-e "$pfbpath/$fontname.pfb")||
-           (-e "$sourcepath/$fontname.pfb")) 
+            (-e "$pfb_sourcepath/$fontname.pfb")||
+            (-e "$sourcepath/$fontname.pfb")) 
      { if ($tex) { $report .= "missing file: \\type \{$fontname.pfb\}\n" }
        report ("missing pfb file : $fontname.pfb") }
     # now add entry to map 

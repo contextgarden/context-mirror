@@ -34,7 +34,7 @@
 % (define reference) to keep track of the current ref. 
 
 \def\doschrijfnaarlijst#1%
-  {\doifelsevalue{\??li#1\c!status}{\v!start}
+  {\doifelsevalue{\??li#1\c!status}\v!start
      \dodoschrijfnaarlijst\gobblefourarguments{#1}}
 
 \def\dodoschrijfnaarlijst#1#2#3#4%
@@ -62,7 +62,7 @@
    \else
      \thisisnextinternal\currentlist
    \fi
-   \edef\schrijfwegnaarlijst%
+   \edef\next % \schrijfwegnaarlijst%
      {\writeutilitycommand%
         {\listentry%
            {\currentlist}%
@@ -71,7 +71,7 @@
            {\asciilistentry}%
            {\sectionformat\sectionseparator\sectionseparator\dopaginanummer}%
            {\noexpand\realfolio}}}%
-   \schrijfwegnaarlijst
+   \next % \schrijfwegnaarlijst
    \endgroup}
 
 \def\dododoschrijfnaarlijst#1%
@@ -88,26 +88,46 @@
 
 % so far 
 
-\def\doschrijftussenlijst#1#2%
-  {\doifvalue{\??li#1\c!status}{\v!start}
-     {\dodoschrijftussenlijst{#1}{#2}}}
+% \def\doschrijftussenlijst#1#2%
+%   {\doifvalue{\??li#1\c!status}\v!start
+%      {\dodoschrijftussenlijst{#1}{#2}}}
+% 
+% \def\dodoschrijftussenlijst#1#2%
+%   {\begingroup
+%    \convertargument#2\to\ascii
+%    \makesectionformat
+%    \doifelse{\@@nmstatus}\v!start
+%      {\def\dopaginanummer{\noexpand\pagenumber}}
+%      {\def\dopaginanummer{0}}%
+%    \edef\schrijfwegnaarlijst%
+%      {\writeutilitycommand%
+%         {\listbetween%
+%            {#1}%
+%            {\ascii}%
+%            {\sectionformat\sectionseparator\sectionseparator\dopaginanummer}%
+%            {\noexpand\realfolio}}}%
+%    \schrijfwegnaarlijst
+%    \endgroup}
+%
+% no reason for indirectness 
 
-\def\dodoschrijftussenlijst#1#2%
-  {\begingroup
-   \convertargument#2\to\ascii
-   \makesectionformat
-   \doifelse{\@@nmstatus}\v!start
-     {\def\dopaginanummer{\noexpand\pagenumber}}
-     {\def\dopaginanummer{0}}%
-   \edef\schrijfwegnaarlijst%
-     {\writeutilitycommand%
-        {\listbetween%
-           {#1}%
-           {\ascii}%
-           {\sectionformat\sectionseparator\sectionseparator\dopaginanummer}%
-           {\noexpand\realfolio}}}%
-   \schrijfwegnaarlijst
-   \endgroup}
+\def\doschrijftussenlijst#1#2%
+  {\doifvalue{\??li#1\c!status}\v!start
+     {\begingroup
+      \convertargument#2\to\ascii
+      \makesectionformat
+      \doifelse{\@@nmstatus}\v!start
+        {\def\dopaginanummer{\noexpand\pagenumber}}
+        {\def\dopaginanummer{0}}%
+      \edef\next % \schrijfwegnaarlijst
+        {\writeutilitycommand%
+           {\listbetween%
+              {#1}%
+              {\ascii}%
+              {\sectionformat\sectionseparator\sectionseparator\dopaginanummer}%
+              {\noexpand\realfolio}}}%
+      \next % \schrijfwegnaarlijst
+      \endgroup}}
 
 \def\listentry#1%
   {\executeifdefined{#1\c!lijst}\gobblefivearguments}

@@ -138,10 +138,10 @@
 \unexpanded\def\LABELTEXTS#1#2{\LEFTLABELTEXT{#1}#2\RIGHTLABELTEXT{#1}}
 
 \newif\iflabeltextdone % needs to be reset elsewhere
-\newif\iftracinglabels % shows missing labels 
+\newif\iftracelabels % shows missing labels 
 
 \def\doreporttextprefixerror#1#2#3%
-  {\iftracinglabels{\tttf[#2:~#3/#1]~}\fi}
+  {\iftracelabels{\tttf[#2:~#3/#1]~}\fi}
 
 \def\dosetexpandedheadlabeltext#1#2#3%
   {\bgroup

@@ -459,3 +459,20 @@
   \startstandardmakeup \stopstandardmakeup
 
 \protect \endinput
+
+% TO DO 
+
+\defineXMLenvironment [combination] [columns=2,rows=1]
+  {\scratchtoks\emptytoks
+   \expanded{\appendtoks \noexpand \startcombination
+     [\XMLop{columns}*\XMLop{rows}]}\to \scratchtoks}
+  {\appendtoks \stopcombination \to \scratchtoks
+   \the\scratchtoks}
+
+\defineXMLprocess[combinationentry]
+
+\defineXMLpickup [combinationitem]
+  {\appendtoks\bgroup}{\egroup\to\scratchtoks}
+
+\defineXMLpickup [combinationcaption]
+  {\appendtoks\bgroup}{\egroup\to\scratchtoks}

@@ -530,7 +530,7 @@
   {% evt blokkeerfalse
    \ifmmode\else\par\fi}
 
-% Overloaded in cont-new! 
+% Overloaded in cont-new!
 
 % \def\docomplexdoblanko[#1]% pas op \relax's zijn nodig ivm volgende \if
 %   {\global\blankoresetfalse
@@ -605,7 +605,7 @@
 %                \!!minus\skipgluefactor\blankoskip
 %            \fi
 %            \ifdim\prevdepth=\newprevdepth
-%              % blokkeer 
+%              % blokkeer
 %            \else
 %              \iffuzzyvskip
 %                \removelastfuzzyvskip
@@ -773,10 +773,10 @@
                  \vskip\zeropoint
                \fi
              \else
-               % also new 
+               % also new
                \ifdim\blankoskip=\zeropoint
                  \ifblankogeenwit
-                   \geenwitruimte 
+                   \geenwitruimte
                  \fi
                \fi
              \fi
@@ -1005,8 +1005,30 @@
 \let\spatie     \space
 \let\hardespatie\fixedspace
 \let\geenspatie \nospace
-
-\def\opelkaar%
+
+% \startbuffer
+% \startlines \tt \fixedspaces
+%  0~1~~2~~~3~~~~4~~~~~5
+%  0~~~~~~~~~~~~~~~~~~~5
+% $0~1~~2~~~3~~~~4~~~~~5$
+% $0~~~~~~~~~~~~~~~~~~~5$
+% \stoplines
+%
+% \starttabulate[|~|]
+% \NC  0~1~~2~~~3~~~~4~~~~~5  \NC \NR \NC  0~~~~~~~~~~~~~~~~~~~5  \NC \NR
+% \NC $0~1~~2~~~3~~~~4~~~~~5$ \NC \NR \NC $0~~~~~~~~~~~~~~~~~~~5$ \NC \NR
+% \stoptabulate
+%
+% \starttable[||]
+% \NC  0~1~~2~~~3~~~~4~~~~~5  \NC \AR \NC  0~~~~~~~~~~~~~~~~~~~5  \NC \AR
+% \NC $0~1~~2~~~3~~~~4~~~~~5$ \NC \AR \NC $0~~~~~~~~~~~~~~~~~~~5$ \NC \AR
+% \stoptable
+% \stopbuffer
+%
+% \setupbodyfont[cmr] \getbuffer
+% \setupbodyfont[lbr] \getbuffer
+
+\def\opelkaar
   {\nointerlineskip}
 
 \def\omlaag[#1]% nog eens mooier, relateren aan blanko
@@ -1149,15 +1171,15 @@
 
 % \def\stelwitruimteopnieuwin
 %   {\expanded{\stelwitruimtein[\currentwitruimte]}}
-% 
+%
 % \newif\ifwitruimteflexibel \witruimteflexibeltrue
-% 
+%
 % \definecomplexorsimple\stelwitruimtein
-% 
+%
 % \def\complexstelwitruimtein[#1]%
 %   {\expanded{\dostelwitruimtein[#1]}%
 %    \dodostelwitruimtein}
-% 
+%
 % \def\dostelwitruimtein[#1]%
 %   {\processallactionsinset
 %      [#1]
@@ -1169,7 +1191,7 @@
 %       \s!default=>\doifnot\currentwitruimte\v!geen\stelwitruimteopnieuwin,
 %       \s!unknown=>\@EA\assigndimension\@EA{\commalistelement} % \@EA is nodig
 %                     \tussenwit\blankokleinmaat\blankomiddelmaat\blankogrootmaat]}   % te vangen
-% 
+%
 % \def\dodostelwitruimtein
 %   {\edef\currentwitruimte
 %      {\ifdim\tussenwit=\zeropoint
@@ -1187,7 +1209,7 @@
 %      \ifwitruimteflexibel \else \tussenwit1\tussenwit \fi
 %    \fi
 %    \parskip\tussenwit}
-% 
+%
 % \def\simplestelwitruimtein% == snelle \stelwitruimtein[\s!default]
 %   {\doifnot\currentwitruimte\v!geen\stelwitruimteopnieuwin
 %    \dodostelwitruimtein}
@@ -1219,11 +1241,11 @@
    \fi
    \parskip\tussenwit}
 
-\definesystemvariable {ws} % whitespace 
+\definesystemvariable {ws} % whitespace
 
 \def\definewhitespacemethod[#1]#2{\setvalue{\??ws\??ws#1}{#2}}
 
-\definewhitespacemethod [\v!herstel]    {} 
+\definewhitespacemethod [\v!herstel]    {}
 \definewhitespacemethod [\v!vast]       {\witruimteflexibelfalse}
 \definewhitespacemethod [\v!flexibel]   {\witruimteflexibeltrue}
 \definewhitespacemethod [\v!regel]      {\tussenwit  \baselineskip}
@@ -1236,7 +1258,7 @@
 \definewhitespacemethod [\s!default]    {\stelwitruimteopnieuwin}
 
 \def\dowhitespacemethod#1%
-  {\executeifdefined{\??ws\??ws#1}{\tussenwit#1}\relax}  
+  {\executeifdefined{\??ws\??ws#1}{\tussenwit#1}\relax}
 
 \def\geenwitruimte
   {\ifdim\parskip>\zeropoint\relax
@@ -1310,7 +1332,7 @@
      \doifelse{#1}\v!blanko
        \opelkaarfalse
        \opelkaartrue
-     \blanko[\v!blokkeer]       % dit is nog niet ok, gaat fout 
+     \blanko[\v!blokkeer]       % dit is nog niet ok, gaat fout
      \stelwitruimtein[\v!geen]  % bovenin vtop (dwz, baseline)
   \fi}
 
@@ -1490,7 +1512,7 @@
 \def\setnormalbaselines
   {\ifdim\normallineheight>\zeropoint
      \lineheight\normallineheight
-   \fi 
+   \fi
    \openlineheight\spacingfactor\lineheight
    \openstrutheight\strutheightfactor\openlineheight
    \openstrutdepth \strutdepthfactor \openlineheight
@@ -1604,7 +1626,7 @@
 \def\setupstrut%
   {\dosingleempty\dosetupstrut}
 
-\def\dosetupstrut[#1]% yet undocumented, todo: fontstrut 
+\def\dosetupstrut[#1]% yet undocumented, todo: fontstrut
   {\processaction
      [#1]
      [     \v!ja=>\setstrut,
@@ -1763,7 +1785,7 @@
      [    \v!links=>\global\advance\linkssmaller  \@@sllinks,
          \v!midden=>\global\advance\middensmaller \@@slmidden,
          \v!rechts=>\global\advance\rechtssmaller \@@slrechts,
-           \v!geen=>,% handy for delimitedtexts 
+           \v!geen=>,% handy for delimitedtexts
         \s!unknown=>{\herhaalmetcommando[#1]\dosinglesmaller}]}
 
 \def\complexstartsmaller[#1]%
@@ -2083,7 +2105,7 @@
 \def\forgetall
   {\the\everyforgetall}
 
-\newif\ifforgotten % rather good signal for inner 
+\newif\ifforgotten % rather good signal for inner
 
 \appendtoks \forgottentrue      \to \everyforgetall
 \appendtoks \forgetragged       \to \everyforgetall
@@ -2286,7 +2308,7 @@
 
 \def\dosetleftskipadaption#1%
   {\leftskipadaption\zeropoint
-   \processaction[#1] 
+   \processaction[#1]
      [\v!standaard=>\leftskipadaption
                     \ifdim\voorwit=\zeropoint\@@sllinks\else\voorwit\fi,
              \v!ja=>\leftskipadaption
@@ -2296,7 +2318,7 @@
 
 \def\dosetrightskipadaption#1%
   {\rightskipadaption\zeropoint
-   \processaction[#1] 
+   \processaction[#1]
      [\v!standaard=>\rightskipadaption\@@slrechts,
              \v!ja=>\rightskipadaption\@@slrechts,
             \v!nee=>,
@@ -2615,12 +2637,12 @@
 
 \def\raggedleft
   {\setraggedness\leftraggedness
-   \setraggedskips1\leftraggedness\zeropoint\raggedspaceamount 
+   \setraggedskips1\leftraggedness\zeropoint\raggedspaceamount
      \raggedxspaceamount\zeropoint\zeropoint}
 
 \def\raggedcenter
   {\setraggedness\middleraggedness
-   \setraggedskips2\middleraggedness\middleraggedness\raggedspaceamount 
+   \setraggedskips2\middleraggedness\middleraggedness\raggedspaceamount
      \raggedxspaceamount\zeropoint\zeropoint}
 
 %D We used to have:
@@ -2635,11 +2657,11 @@
 
 \def\raggedright
   {\setraggedness\rightraggedness
-   \setraggedskips3\zeropoint\rightraggedness\raggedspaceamount 
+   \setraggedskips3\zeropoint\rightraggedness\raggedspaceamount
      \raggedxspaceamount\raggedfillamount\parindent}
 
 \def\veryraggedleft
-  {\setraggedskips1\raggedfillamount\zeropoint\raggedspaceamount 
+  {\setraggedskips1\raggedfillamount\zeropoint\raggedspaceamount
      \raggedxspaceamount\zeropoint\zeropoint}
 
 %D When we want the last line to have a natural width:
@@ -2652,11 +2674,11 @@
 %D but this one is not accepted by the macros.
 
 \def\veryraggedcenter
-  {\setraggedskips2\raggedfillamount\raggedfillamount\raggedspaceamount 
+  {\setraggedskips2\raggedfillamount\raggedfillamount\raggedspaceamount
      \raggedxspaceamount\zeropoint\zeropoint}
 
 \def\veryraggedright
-  {\setraggedskips3\zeropoint\raggedfillamount\raggedspaceamount 
+  {\setraggedskips3\zeropoint\raggedfillamount\raggedspaceamount
      \raggedxspaceamount\zeropoint\parindent}
 
 \def\ttraggedright
@@ -2668,7 +2690,7 @@
 
 \def\raggedwidecenter
   {\setraggedness\middleraggedness
-   \setraggedskips2\raggedhalffillamount\raggedhalffillamount 
+   \setraggedskips2\raggedhalffillamount\raggedhalffillamount
      \raggedspaceamount\raggedxspaceamount\zeropoint\zeropoint}
 
 \newif\if@@asragged \@@asraggedtrue % old method

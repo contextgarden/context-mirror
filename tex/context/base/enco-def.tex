@@ -18,7 +18,8 @@
 %D gain readability. The following definitions are based on
 %D usage of the the original \TEX\ fonts, where composed
 %D characters were not part of the design. So, occasionally
-%D we have to revert to hacks.
+%D we have to revert to hacks. Thanks to all those users who
+%D helped me to fill in the details! 
 
 \startencoding[default]
 
@@ -90,35 +91,38 @@
 \definecharacter textsterling     {\fakesterling}
 \definecharacter textyen          {Y}
 
+\definecharacter ordfeminine      {\high{\txx a}}
+\definecharacter ordmasculine     {\high{\txx o}}
+
 \definecharacter percent          {\fakepercent}
 \definecharacter perthousand      {\fakeperthousand}
 
 \definecharacter softhyphen        45 
-\definecharacter periodcentered   {\mathematics{\cdot}}
+\definecharacter periodcentered   {\mathematics\cdot}
 \definecharacter compoundwordmark  23 
 
 \definecharacter textasciicircum    94
 \definecharacter textasciitilde    126
 \definecharacter textslash          47
 \definecharacter textbackslash    {\tex{}} % todo 
-\definecharacter textbraceleft    {\mathematics{\{}}
-\definecharacter textbraceright   {\mathematics{\}}}
+\definecharacter textbraceleft    {\mathematics\{}
+\definecharacter textbraceright   {\mathematics\}}
 \definecharacter textunderscore   {\fakeunderscore}
 \definecharacter textvisiblespace {\fakevisiblespace} 
 
-\definecharacter textbrokenbar    {\mathematics{\vert}} 
-\definecharacter textbullet       {\mathematics{\bullet}} 
-\definecharacter textdag          {\mathematics{\dag}} 
-\definecharacter textddag         {\mathematics{\ddag}} 
+\definecharacter textbrokenbar    {\mathematics\vert} 
+\definecharacter textbullet       {\mathematics\bullet} 
+\definecharacter textdag          {\mathematics\dag} 
+\definecharacter textddag         {\mathematics\ddag} 
 \definecharacter textdegree       {\mathematics{{}^{\circ}}} 
-\definecharacter textdiv          {\mathematics{/}} 
-\definecharacter textellipsis     {\mathematics{\cdots}} 
-\definecharacter textfraction     {\mathematics{/}} 
-\definecharacter textlognot       {\mathematics{\neg}}
-\definecharacter textminus        {\mathematics{-}} 
-\definecharacter textmu           {\mathematics{\mu}}
-\definecharacter textmultiply     {\mathematics{\times}}
-\definecharacter textpm           {\mathematics{\pm}} 
+\definecharacter textdiv          {\mathematics\div}
+\definecharacter textellipsis     {\mathematics\cdots} 
+\definecharacter textfraction     {\mathematics/}
+\definecharacter textlognot       {\mathematics\neg}
+\definecharacter textminus        {\mathematics-} 
+\definecharacter textmu           {\mathematics\mu}
+\definecharacter textmultiply     {\mathematics\times}
+\definecharacter textpm           {\mathematics\pm} 
 
 \definecharacter quotedbl         {"}
 \definecharacter quotedblbase     {,,}
@@ -224,8 +228,11 @@
 \definecharacter Zacute           {\buildtextaccent\textacute Z}
 \definecharacter zacute           {\buildtextaccent\textacute z}
 
-\definecharacter Dstroke          {D}
-\definecharacter dstroke          {d}
+%definecharacter Dstroke          {D}
+%definecharacter dstroke          {d}
+
+\definecharacter dstroke          {\pseudoencodeddj}
+\definecharacter Dstroke          {\pseudoencodedDJ}
 \definecharacter Hstroke          {H}
 \definecharacter hstroke          {h}
 \definecharacter Tstroke          {T}
@@ -400,6 +407,32 @@
 
 \def\leftsubguillemot          {\guilsingleleft}
 \def\rightsubguillemot         {\guilsingleright}
+
+%D A couple of fallbacks suggestion by users, slightly 
+%D adapted and obscured by memory saving hacks.  
+
+\unprotect 
+
+\startencoding[default]
+
+\definecharacter textcent        {c\rlap{\hskip-.2\s!em
+  \vrule\!!width.2\s!pt\!!height1.2\s!ex\!!depth.2\s!ex}}
+
+\definecharacter texteuro        {C\rlap{\hskip-.75\s!em
+  \vrule\!!width.4\s!em\!!height.85\s!ex\!!depth-.8\s!ex}}
+
+\definecharacter textblacksquare {\dontleavehmode\hbox{%
+  \vrule\!!width.3\s!em\!!height.4\s!em\!!depth-.1\s!em}}
+
+\definecharacter textbrokenbar   {\dontleavehmode\hbox{\kern.05\s!em
+  \vrule\!!width.4\s!pt\!!height1.8\s!ex\!!depth-.85\s!ex
+                                  \llap{%
+  \vrule\!!width.4\s!pt\!!height.35\s!ex\!!depth.6\s!ex}%
+                                  \kern.05\s!em}}
+
+\stopencoding 
+
+\protect 
 
 %D We also use symbolic names for math accents.
 

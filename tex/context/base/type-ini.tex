@@ -56,8 +56,7 @@
    \pushmacro\typescriptthree
    \pushmacro\stoptypescript
    \typescriptfoundfalse
-   \writestatus
-     {typescript}
+   \writestatus\m!fonts 
      {[\@@typescriptone] [\@@typescripttwo] [\@@typescriptthree]}%
    \processcommacommand[\typescriptfiles]\dododousetypescript
    \firsttypescriptpassfalse % testen
@@ -77,18 +76,12 @@
    \popmacro\currenttypefile
    \stopreadingfile}
 
-\def\usetypescriptonce%
+\def\usetypescriptonce
   {\dotripleempty\dousetypescriptonce}
-
-%\def\dousetypescriptonce[#1][#2][#3]%
-%  {\doifdefinedelse{@@tso@@#1:#2:#3} 
-%     {\writestatus{typescript}{(#1) (#2) (#3)}}
-%     {\setvalue{@@tso@@#1:#2:#3}{0}% 
-%      \expanded{\dodousetypescript[#1][#2][#3]}}}      
 
 \def\dousetypescriptonce[#1][#2][#3]%
   {\doifelseflagged{ts:#1:#2:#3}%
-     {\writestatus{typescript}{(#1) (#2) (#3)}}
+     {\writestatus\m!fonts{once (#1) (#2) (#3)}}
      {\setflag{ts:#1:#2:#3}% 
       \expanded{\dodousetypescript[#1][#2][#3]}}}      
 
@@ -188,23 +181,59 @@
 \def\starttypescript
   {\dotripleempty\dostarttypescript}
 
+% \long\def\dostarttypescript[#1][#2][#3]% #4\stoptypescript
+%   {\iffirstargument
+%      \let\typescriptone  \@@typescriptone
+%      \let\typescripttwo  \@@typescripttwo
+%      \let\typescriptthree\@@typescriptthree
+%      \dochecktypescript{#1}\@@typescriptone  \typescriptone
+%      \ifdone
+%        \dochecktypescript{#2}\@@typescripttwo  \typescripttwo
+%        \ifdone
+%          \dochecktypescript{#3}\@@typescriptthree\typescriptthree
+%          \ifdone
+%            %\debuggerinfo
+%            %  {typescript}
+%            %  {\currenttypefile: use=scr (val)
+%            %     [\@@typescriptone  =#1 (\typescriptone)]
+%            %     [\@@typescripttwo  =#2 (\typescripttwo)]
+%            %     [\@@typescriptthree=#3 (\typescriptthree)]}%
+%            \typescriptfoundtrue
+%            \let\next\dostarttypescriptA
+%          \else
+%            \let\next\dostarttypescriptC
+%          \fi
+%        \else
+%          \let\next\dostarttypescriptC
+%        \fi
+%      \else
+%        \let\next\dostarttypescriptC
+%      \fi
+%    \else\iffirsttypescriptpass
+%      \let\next\dostarttypescriptB
+%    \else
+%      % skip this since it may do unwanted resets, like
+%      % setting symbolic font names to unknown, especially
+%      % in run time user type scripts
+%      \let\next\dostarttypescriptC
+%    \fi\fi
+%    \next}
+
+\newif\iftracetypescripts
+
 \long\def\dostarttypescript[#1][#2][#3]% #4\stoptypescript
-  {\iffirstargument
+  {\iftracetypescripts\writestatus\m!fonts{enter [#1] [#2] [#3]}\fi%
+   \iffirstargument
+     \iftracetypescripts\writestatus\m!fonts{check [\@@typescriptone] [\@@typescripttwo] [\@@typescriptthree]}\fi
      \let\typescriptone  \@@typescriptone
      \let\typescripttwo  \@@typescripttwo
      \let\typescriptthree\@@typescriptthree
-     \dochecktypescript{#1}\@@typescriptone  \typescriptone
+     \dochecktypescript{#1}\@@typescriptone\typescriptone
      \ifdone
-       \dochecktypescript{#2}\@@typescripttwo  \typescripttwo
+       \dochecktypescript{#2}\@@typescripttwo\typescripttwo
        \ifdone
          \dochecktypescript{#3}\@@typescriptthree\typescriptthree
          \ifdone
-           %\debuggerinfo
-           %  {typescript}
-           %  {\currenttypefile: use=scr (val)
-           %     [\@@typescriptone  =#1 (\typescriptone)]
-           %     [\@@typescripttwo  =#2 (\typescripttwo)]
-           %     [\@@typescriptthree=#3 (\typescriptthree)]}%
            \typescriptfoundtrue
            \let\next\dostarttypescriptA
          \else
@@ -216,12 +245,17 @@
      \else
        \let\next\dostarttypescriptC
      \fi
+     \iftracetypescripts    
+       \writestatus\m!fonts{\ifdone match\else pass\fi ed}%
+     \fi
    \else\iffirsttypescriptpass
+     \iftracetypescripts\writestatus\m!fonts{honored}\fi
      \let\next\dostarttypescriptB
    \else
      % skip this since it may do unwanted resets, like
      % setting symbolic font names to unknown, especially
      % in run time user type scripts
+     \iftracetypescripts\writestatus\m!fonts{ignored}\fi
      \let\next\dostarttypescriptC
    \fi\fi
    \next}
@@ -354,7 +388,8 @@
      \let\typefaceencoding\@@tsencoding
      \setcurrentfontclass{#1}
      \saverelativefontsize{#2}{\relativefontsize}% fall back 
-     \writestatus{typeface}{[#1] [#2] [#3] [#4]}
+    %\writestatus{typeface}{[#1] [#2] [#3] [#4]}
+     \writestatus\m!fonts{[#1] [#2] [#3] [#4]}
      \usetypescript[map][\typefaceencoding]
      \usetypescript[#3][#4][name,default,\typefaceencoding,special]
      \usetypescript[#3][#5][size]

@@ -3,7 +3,7 @@
 %D        version=1997.08.29,
 %D          title=\CONTEXT\ Encoding Macros,
 %D       subtitle=Windows 1252 ANSI keys,
-%D         author={Tobias Burnus \& Hans Hagen},
+%D         author={Tobias Burnus \& Hans Hagen \& Victor Figurnov},
 %D           date=\currentdate,
 %D      copyright=PRAGMA-ADE]
 %C
@@ -14,36 +14,72 @@
 %D This module activates the (western) \MSWINDOWS\ high \ANSI\
 %D characters, such as ë and á.
 
-%D NOT OKAY YET.
-
 \startregime [windows]
 
-\defineactivetoken 132 {\char44\kern-.1em\char44 }
+\defineactivetoken 128 {\texteuro}
+\defineactivetoken 129 {\missingglyph}
+\defineactivetoken 130 {\lowerleftsingleninequote}
+\defineactivetoken 131 {\textflorin}
+\defineactivetoken 132 {\lowerleftdoubleninequote}
 \defineactivetoken 133 {\dots}
-\defineactivetoken 134 {\dag}
-\defineactivetoken 135 {\ddag}
-\defineactivetoken 139 {\leftsubguillemot}
-\defineactivetoken 145 {\upperleftsinglesixquote}
-
-\defineactivetoken 146 {\char39 }
-\defineactivetoken 147 {\char96\kern-.1em\char96 }
-\defineactivetoken 148 {\char34 }
-\defineactivetoken 150 {--}
-\defineactivetoken 151 {---}
-\defineactivetoken 155 {\rightsubguillemot}
-\defineactivetoken 161 {!`}
-\defineactivetoken 163 {\sterling}
-\defineactivetoken 167 {\S}
-\defineactivetoken 169 {\copyright}
-\defineactivetoken 171 {\ifvmode\leavevmode\fi\leftguillemot\prewordbreak}
-\defineactivetoken 191 {?`}
-
-\defineactivetoken 182 {\P}
-\defineactivetoken 187 {\prewordbreak\rightguillemot}
-
+\defineactivetoken 134 {\textdag}
+\defineactivetoken 135 {\textddag}
+\defineactivetoken 136 {\textcircumflex}
+\defineactivetoken 137 {\perthousand}
 \defineactivetoken 138 {\Scaron}
+\defineactivetoken 139 {\leftsubguillemot}
+\defineactivetoken 140 {\OEligature}
+\defineactivetoken 141 {\missingglyph}
+\defineactivetoken 142 {\missingglyph}
+\defineactivetoken 143 {\missingglyph}
+\defineactivetoken 144 {\missingglyph}
+\defineactivetoken 145 {\upperleftsinglesixquote}
+\defineactivetoken 146 {\upperrightsingleninequote}
+\defineactivetoken 147 {\upperleftdoublesixquote}
+\defineactivetoken 148 {\upperrightdoubleninequote}
+\defineactivetoken 149 {\textbullet}
+\defineactivetoken 150 {\endash}
+\defineactivetoken 151 {\emdash}
+\defineactivetoken 152 {\texttilde}
+\defineactivetoken 153 {\trademark}
 \defineactivetoken 154 {\scaron}
-
+\defineactivetoken 155 {\rightsubguillemot}
+\defineactivetoken 156 {\oeligature}
+\defineactivetoken 157 {\missingglyph}
+\defineactivetoken 158 {\missingglyph}
+\defineactivetoken 159 {\Ydiaeresis}
+\defineactivetoken 160 {\nonbreakablespace}
+\defineactivetoken 161 {\exclamdown}
+\defineactivetoken 162 {\textcent}
+\defineactivetoken 163 {\textsterling}
+\defineactivetoken 164 {\textcurrency}
+\defineactivetoken 165 {\textyen}
+\defineactivetoken 166 {\textbrokenbar}
+\defineactivetoken 167 {\sectionmark}
+\defineactivetoken 168 {\textdiaeresis}
+\defineactivetoken 169 {\copyright}
+\defineactivetoken 170 {\ordfeminine}
+\defineactivetoken 171 {\leftguillemot}
+\defineactivetoken 172 {\textlognot}
+\defineactivetoken 173 {\hyphen}  
+\defineactivetoken 174 {\registered}
+\defineactivetoken 175 {\textmacron}       
+\defineactivetoken 176 {\textdegree}
+\defineactivetoken 177 {\textpm}
+\defineactivetoken 178 {\twosuperior}
+\defineactivetoken 179 {\threesuperior}
+\defineactivetoken 180 {\textacute}
+\defineactivetoken 181 {\textmu}
+\defineactivetoken 182 {\paragraphmark}
+\defineactivetoken 183 {\periodcentered}
+\defineactivetoken 184 {\textcedilla}
+\defineactivetoken 185 {\onesuperior}
+\defineactivetoken 186 {\ordmasculine}
+\defineactivetoken 187 {\rightguillemot}
+\defineactivetoken 188 {\onequarter}
+\defineactivetoken 189 {\onehalf}
+\defineactivetoken 190 {\threequarter}
+\defineactivetoken 191 {\questiondown}
 \defineactivetoken 192 {\Agrave}
 \defineactivetoken 193 {\Aacute}
 \defineactivetoken 194 {\Acircumflex}
@@ -60,23 +96,22 @@
 \defineactivetoken 205 {\Iacute}
 \defineactivetoken 206 {\Icircumflex}
 \defineactivetoken 207 {\Idiaeresis}
-
+\defineactivetoken 208 {\Eth}
 \defineactivetoken 209 {\Ntilde}
 \defineactivetoken 210 {\Ograve}
 \defineactivetoken 211 {\Oacute}
 \defineactivetoken 212 {\Ocircumflex}
 \defineactivetoken 213 {\Otilde}
 \defineactivetoken 214 {\Odiaeresis}
-\defineactivetoken 215 {\OEligature}
+\defineactivetoken 215 {\textmultiply}    
 \defineactivetoken 216 {\Ostroke}
 \defineactivetoken 217 {\Ugrave}
 \defineactivetoken 218 {\Uacute}
 \defineactivetoken 219 {\Ucircumflex}
 \defineactivetoken 220 {\Udiaeresis}
 \defineactivetoken 221 {\Ygrave}
-
+\defineactivetoken 222 {\thorn}           
 \defineactivetoken 223 {\ssharp}
-
 \defineactivetoken 224 {\agrave}
 \defineactivetoken 225 {\aacute}
 \defineactivetoken 226 {\acircumflex}
@@ -93,21 +128,21 @@
 \defineactivetoken 237 {\iacute}
 \defineactivetoken 238 {\icircumflex}
 \defineactivetoken 239 {\idiaeresis}
-
+\defineactivetoken 240 {\eth}             
 \defineactivetoken 241 {\ntilde}
 \defineactivetoken 242 {\ograve}
 \defineactivetoken 243 {\oacute}
 \defineactivetoken 244 {\ocircumflex}
 \defineactivetoken 245 {\otilde}
 \defineactivetoken 246 {\odiaeresis}
-\defineactivetoken 247 {\oeligature}
+\defineactivetoken 247 {\textdiv}         
 \defineactivetoken 248 {\ostroke}
 \defineactivetoken 249 {\ugrave}
 \defineactivetoken 250 {\uacute}
 \defineactivetoken 251 {\ucircumflex}
 \defineactivetoken 252 {\udiaeresis}
 \defineactivetoken 253 {\ygrave}
-
+\defineactivetoken 254 {\Thorn}           
 \defineactivetoken 255 {\ydiaeresis}
 
 \stopregime

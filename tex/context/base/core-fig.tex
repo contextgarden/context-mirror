@@ -2149,61 +2149,119 @@
 %       \egroup}%
 %    \hbox}
 
+% \def\doclip[#1]% nb top->bottom left->right
+%   {\bgroup
+%    \getparameters[\??cp][#1]%
+%    \dowithnextbox
+%      {\ifdim\@@cpbreedte>\zeropoint
+%         \dimen0=\@@cpbreedte
+%         \dimen4=\@@cphoffset
+%       \else
+%         \dimen0=\wd\nextbox
+%         \divide\dimen0 \@@cpnx
+%         \dimen4=\@@cpx\dimen0
+%         \advance\dimen4 -\dimen0
+%         \dimen0=\@@cpsx\dimen0
+%       \fi
+%       \relax % sure
+%       \ifdim\@@cphoogte>\zeropoint
+%         \dimen2=\@@cphoogte
+%         \dimen6=\ht\nextbox
+%         \advance\dimen6 -\@@cpvoffset
+%         \advance\dimen6 -\dimen2
+%       \else
+%         \dimen2=\ht\nextbox
+%         \divide\dimen2 \@@cpny
+%         \dimen6=-\@@cpy\dimen2
+%         \advance\dimen6 -\@@cpsy\dimen2
+%         \advance\dimen6 \dimen2
+%         \dimen2=\@@cpsy\dimen2
+%         \advance\dimen6 \ht\nextbox
+%       \fi
+%       \setbox\nextbox\hbox                       % old 
+%         {\advance\dimen4 -\@@cplinkeroffset      % new !
+%          \advance\dimen6  \@@cpbovenoffset       % new !
+%          \hskip-\dimen4\lower\dimen6\box\nextbox}% old 
+%       \wd\nextbox\zeropoint
+%       \ht\nextbox\zeropoint
+%       \dp\nextbox\zeropoint
+%       \setbox\nextbox\hbox
+%         {\advance\dimen0 \@@cplinkeroffset        % new !
+%          \advance\dimen0 \@@cprechteroffset       % new !
+%          \advance\dimen2 \@@cpbovenoffset         % new !
+%          \advance\dimen2 \@@cponderoffset         % new !
+%          \dostartclipping\@@cpmp{\dimen0}{\dimen2}% old
+%            \box\nextbox
+%          \dostopclipping}%
+%       \setbox\nextbox\hbox                      % new !
+%         {\dimen0-\@@cplinkeroffset              % new !
+%          \dimen2-\@@cpbovenoffset               % new !
+%          \hskip\dimen0\lower\dimen2\box\nextbox}% new !
+%       \wd\nextbox\dimen0
+%       \ht\nextbox\dimen2
+%       \dp\nextbox\zeropoint
+%       \box\nextbox
+%       \egroup}%
+%    \hbox}
+
 \def\doclip[#1]% nb top->bottom left->right
   {\bgroup
    \getparameters[\??cp][#1]%
-   \dowithnextbox
+   \doifelse\@@cpstatus\v!start\dodoclip{\egroup\hbox}}
+
+\def\dodoclip
+  {\dowithnextbox
      {\ifdim\@@cpbreedte>\zeropoint
-        \dimen0=\@@cpbreedte
-        \dimen4=\@@cphoffset
+        \!!dimena\@@cpbreedte
+        \!!dimenc\@@cphoffset
       \else
-        \dimen0=\wd\nextbox
-        \divide\dimen0 \@@cpnx
-        \dimen4=\@@cpx\dimen0
-        \advance\dimen4 -\dimen0
-        \dimen0=\@@cpsx\dimen0
+        \!!dimena\wd\nextbox
+        \divide\!!dimena \@@cpnx
+        \!!dimenc\@@cpx\!!dimena
+        \advance\!!dimenc -\!!dimena
+        \!!dimena\@@cpsx\!!dimena
       \fi
       \relax % sure
       \ifdim\@@cphoogte>\zeropoint
-        \dimen2=\@@cphoogte
-        \dimen6=\ht\nextbox
-        \advance\dimen6 -\@@cpvoffset
-        \advance\dimen6 -\dimen2
+        \!!dimenb\@@cphoogte
+        \!!dimend\ht\nextbox
+        \advance\!!dimend -\@@cpvoffset
+        \advance\!!dimend -\!!dimenb
       \else
-        \dimen2=\ht\nextbox
-        \divide\dimen2 \@@cpny
-        \dimen6=-\@@cpy\dimen2
-        \advance\dimen6 -\@@cpsy\dimen2
-        \advance\dimen6 \dimen2
-        \dimen2=\@@cpsy\dimen2
-        \advance\dimen6 \ht\nextbox
+        \!!dimenb\ht\nextbox
+        \divide\!!dimenb \@@cpny
+        \!!dimend-\@@cpy\!!dimenb
+        \advance\!!dimend -\@@cpsy\!!dimenb
+        \advance\!!dimend \!!dimenb
+        \!!dimenb\@@cpsy\!!dimenb
+        \advance\!!dimend \ht\nextbox
       \fi
-      \setbox\nextbox\hbox                       % old 
-        {\advance\dimen4 -\@@cplinkeroffset      % new !
-         \advance\dimen6  \@@cpbovenoffset       % new !
-         \hskip-\dimen4\lower\dimen6\box\nextbox}% old 
+      \setbox\nextbox\hbox                         % old 
+        {\advance\!!dimenc -\@@cplinkeroffset      % new !
+         \advance\!!dimend -\@@cpbovenoffset       % new ! % - added 
+         \hskip-\!!dimenc\lower\!!dimend\box\nextbox}% old 
       \wd\nextbox\zeropoint
       \ht\nextbox\zeropoint
       \dp\nextbox\zeropoint
       \setbox\nextbox\hbox
-        {\advance\dimen0 \@@cplinkeroffset        % new !
-         \advance\dimen0 \@@cprechteroffset       % new !
-         \advance\dimen2 \@@cpbovenoffset         % new !
-         \advance\dimen2 \@@cponderoffset         % new !
-         \dostartclipping\@@cpmp{\dimen0}{\dimen2}% old
+        {\advance\!!dimena \@@cplinkeroffset        % new !
+         \advance\!!dimena \@@cprechteroffset       % new !
+         \advance\!!dimenb \@@cpbovenoffset         % new !
+         \advance\!!dimenb \@@cponderoffset         % new !
+         \dostartclipping\@@cpmp{\!!dimena}{\!!dimenb}% old
            \box\nextbox
          \dostopclipping}%
       \setbox\nextbox\hbox                      % new !
-        {\dimen0-\@@cplinkeroffset              % new !
-         \dimen2-\@@cpbovenoffset               % new !
-         \hskip\dimen0\lower\dimen2\box\nextbox}% new !
-      \wd\nextbox\dimen0
-      \ht\nextbox\dimen2
+        {\!!dimena-\@@cplinkeroffset            % new !
+         \!!dimenb \@@cpbovenoffset             % new ! % - removed 
+         \hskip\!!dimena\lower\!!dimenb\box\nextbox}% new !
+      \wd\nextbox\!!dimena
+      \ht\nextbox\!!dimenb
       \dp\nextbox\zeropoint
       \box\nextbox
       \egroup}%
    \hbox}
-
+
 \def\clip{\dosingleempty\doclip}
 
 \def\setupclipping
@@ -2272,17 +2330,19 @@
   [buffer] [\jobname] [\c!type=\v!buffer,\c!object=\v!nee]
 
 \setupclipping
-  [\c!n=1, % was 2 
+  [\c!status=\v!start,
+   \c!n=1, % was 2 
    \c!nx=\@@cpn,\c!x=1,\c!sx=1, 
    \c!ny=\@@cpn,\c!y=1,\c!sy=1, 
    \c!breedte=\!!zeropoint,
    \c!hoogte=\!!zeropoint,
    \c!hoffset=\!!zeropoint,
    \c!voffset=\!!zeropoint,
-   \c!linkeroffset=\zeropoint,
-   \c!rechteroffset=\zeropoint,
-   \c!bovenoffset=\zeropoint,
-   \c!onderoffset=\zeropoint,
+\c!offset=\zeropoint,
+   \c!linkeroffset=\@@cpoffset,  % \zeropoint,
+   \c!rechteroffset=\@@cpoffset, % \zeropoint,
+   \c!bovenoffset=\@@cpoffset,   % \zeropoint,
+   \c!onderoffset=\@@cpoffset,   % \zeropoint,
    \c!mp=]
 
 \protect \endinput

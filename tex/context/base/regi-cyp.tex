@@ -8,11 +8,11 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
-%C details. 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
 
-%D In this file several rarely user cyrillic input regimes 
-%D are defined. 
+%D In this file several rarely user cyrillic input regimes
+%D are defined.
 
 \startregime[cp855]
 
@@ -113,8 +113,8 @@
 \defineactivetoken 250 {\cyrillicSHCH}
 \defineactivetoken 251 {\cyrillicch}
 \defineactivetoken 252 {\cyrillicCH}
-\defineactivetoken 253 {\S}
-\defineactivetoken 254 {\textblacksquare}         
+\defineactivetoken 253 {\sectionmark}  
+\defineactivetoken 254 {\textblacksquare}
 \defineactivetoken 255 {\nonbreakablespace}
 
 \stopregime
@@ -189,8 +189,14 @@
 \defineactivetoken 241 {\cyrillicyo}
 \defineactivetoken 252 {\textnumero}
 \defineactivetoken 253 {\textcurrency}
-\defineactivetoken 254 {\textblacksquare}         
+\defineactivetoken 254 {\textblacksquare}
 \defineactivetoken 255 {\nonbreakablespace}
+\defineactivetoken 246 {\mathematics\rightarrow} 
+\defineactivetoken 247 {\mathematics\leftarrow}  
+\defineactivetoken 248 {\mathematics\downarrow}  
+\defineactivetoken 249 {\mathematics\uparrow}    
+\defineactivetoken 250 {\textdiv}                  
+\defineactivetoken 251 {\textpm}                   
 
 \stopregime
 
@@ -262,11 +268,18 @@
 \defineactivetoken 239 {\cyrillicya}
 \defineactivetoken 240 {\cyrillicYO}
 \defineactivetoken 241 {\cyrillicyo}
-\defineactivetoken 248 {\textdegree}              
-\defineactivetoken 249 {\bullet}
-\defineactivetoken 250 {\textperiodcentered}      
-\defineactivetoken 254 {\textblacksquare}         
+\defineactivetoken 248 {\textdegree}
+\defineactivetoken 249 {\textbullet}       
+\defineactivetoken 250 {\periodcentered}   
+\defineactivetoken 254 {\textblacksquare}
 \defineactivetoken 255 {\nonbreakablespace}
+\defineactivetoken 242 {\mathematics\geq}  
+\defineactivetoken 243 {\mathematics\leq}  
+\defineactivetoken 246 {\textdiv}          
+\defineactivetoken 247 {\mathematics\sim}  
+\defineactivetoken 251 {\textsurd}         
+\defineactivetoken 252 {\high{\txx n}}     
+\defineactivetoken 253 {\twosuperior}      
 
 \stopregime
 
@@ -350,7 +363,7 @@
 \defineactivetoken 251 {\cyrillicndsc}
 \defineactivetoken 252 {\cyrillicSHHA}
 \defineactivetoken 253 {\cyrillicshha}
-\defineactivetoken 254 {\textblacksquare}         
+\defineactivetoken 254 {\textblacksquare}
 \defineactivetoken 255 {\nonbreakablespace}
 
 \stopregime
@@ -602,7 +615,7 @@
 \defineactivetoken 250 {\cyrillicnje}
 \defineactivetoken 251 {\cyrillictshe}
 \defineactivetoken 252 {\'\cyrillick}
-\defineactivetoken 253 {\S}
+\defineactivetoken 253 {\sectionmark}  
 \defineactivetoken 254 {\cyrillicushrt}
 \defineactivetoken 255 {\cyrillicdzhe}
 
@@ -776,18 +789,43 @@
 \defineactivetoken 190 {\cyrillicyu}
 \defineactivetoken 191 {\cyrillicya}
 \defineactivetoken 213 {\textnumero}
-\defineactivetoken 214 {\S}
-\defineactivetoken 248 {\textdegree}              
-\defineactivetoken 249 {\bullet}
-\defineactivetoken 250 {\textperiodcentered}      
-\defineactivetoken 254 {\textblacksquare}         
+\defineactivetoken 214 {\sectionmark}  
+\defineactivetoken 248 {\textdegree}
+\defineactivetoken 249 {\textbullet}     
+\defineactivetoken 250 {\periodcentered} 
+\defineactivetoken 254 {\textblacksquare}
 \defineactivetoken 255 {\nonbreakablespace}
+\defineactivetoken 224 {\mathematics\alpha}    
+\defineactivetoken 225 {\mathematics\beta}     
+\defineactivetoken 226 {\mathematics\Gamma}    
+\defineactivetoken 227 {\mathematics\pi}       
+\defineactivetoken 228 {\mathematics\Sigma}    
+\defineactivetoken 229 {\mathematics\sigma}    
+\defineactivetoken 230 {\textmu}                 
+\defineactivetoken 231 {\mathematics\tau}      
+\defineactivetoken 232 {\mathematics\Phi}      
+\defineactivetoken 233 {\mathematics\Theta}    
+\defineactivetoken 234 {\mathematics\Omega}    
+\defineactivetoken 235 {\mathematics\delta}    
+\defineactivetoken 236 {\mathematics\infty}    
+\defineactivetoken 237 {\mathematics\emptyset} 
+\defineactivetoken 238 {\mathematics\in}       
+\defineactivetoken 239 {\mathematics\cap}      
+\defineactivetoken 240 {\mathematics\equiv}    
+\defineactivetoken 241 {\textpm}                 
+\defineactivetoken 242 {\mathematics\geq}      
+\defineactivetoken 243 {\mathematics\leq}      
+\defineactivetoken 246 {\textdiv}                
+\defineactivetoken 247 {\mathematics\sim}      
+\defineactivetoken 251 {\textsurd}               
+\defineactivetoken 252 {\high{\txx n}}           
+\defineactivetoken 253 {\twosuperior}            
 
 \stopregime
 
 \startregime[mls]
 
-% The symbols 194 to 253 are defined in Mongolian fonts in 
+% The symbols 194 to 253 are defined in Mongolian fonts in
 % the Mon\TeX\ package (?)
 
 \defineactivetoken 128 {\cyrillicB}

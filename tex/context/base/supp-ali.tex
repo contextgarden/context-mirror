@@ -35,6 +35,8 @@
 \chardef\characteralignmentmode=4
 \chardef\characteralignmentslot=1
 
+\newtoks\@@characteralignlst
+
 \let\afterassignwidth \!!zeropoint
 \let\beforeassignwidth\!!zeropoint
 
@@ -46,26 +48,68 @@
   {\popcharacteralign
    \expanded{\dosetfirstpasscharacteralign{\alignmentcharacter}}}
 
+% \def\dosetfirstpasscharacteralign#1%
+%   {\def\checkalignment##1%
+%      {\popcharacteralign
+%       \let\\\empty
+%       \setbox\scratchbox\hbox{#1}%
+%       \edef\characterassignwidth{\the\wd\scratchbox}%
+%       \setbox\scratchbox\hbox{}%
+%       \docheckalignment#1##1#1\relax\relax
+%       \scratchdimen-\wd\scratchbox
+%       \setbox\scratchbox\hbox{##1}%
+%       \advance\scratchdimen \wd\scratchbox
+%       \ifdim\scratchdimen>\beforeassignwidth\relax
+%         \edef\beforeassignwidth{\the\scratchdimen}%
+%       \fi
+%       \ifdim\scratchdimen=\zeropoint
+%         \setbox\scratchbox\hbox{##1}%
+%         \scratchdimen\wd\scratchbox
+%         \ifcase\characteralignmentmode
+%           % do nothing 
+%         \else\ifnum\characteralignmentmode<3
+%           \advance\scratchdimen \characterassignwidth
+%           \ifdim\scratchdimen>\beforeassignwidth\relax
+%             \edef\beforeassignwidth{\the\scratchdimen}%
+%           \fi
+%         \else
+%           \ifdim\scratchdimen>\afterassignwidth\relax
+%             \edef\afterassignwidth{\the\scratchdimen}%
+%           \fi
+%         \fi\fi
+%       \fi
+%       \pushcharacteralign}%
+%    \def\docheckalignment##1#1##2##3\relax
+%      {\ifx##2\relax
+%         \setbox\scratchbox\hbox{##1}%
+%         \ifdim\wd\scratchbox>\afterassignwidth
+%           \edef\afterassignwidth{\the\wd\scratchbox}%
+%         \fi
+%       \else
+%         \docheckalignment##2##3\relax
+%       \fi}}
+
 \def\dosetfirstpasscharacteralign#1%
   {\def\checkalignment##1%
      {\popcharacteralign
       \let\\\empty
       \setbox\scratchbox\hbox{#1}%
       \edef\characterassignwidth{\the\wd\scratchbox}%
-      \setbox\scratchbox\hbox{}%
-      \docheckalignment#1##1#1\relax\relax
+      \setbox\scratchbox\null
+%      \docheckalignment#1##1#1\relax\relax
+      \docheckalignment##1#1\relax\relax
       \scratchdimen-\wd\scratchbox
-      \setbox\scratchbox\hbox{##1}%
+      \setbox\scratchbox\hbox{\ignorespaces##1\unskip}%
       \advance\scratchdimen \wd\scratchbox
       \ifdim\scratchdimen>\beforeassignwidth\relax
         \edef\beforeassignwidth{\the\scratchdimen}%
       \fi
       \ifdim\scratchdimen=\zeropoint
-        \setbox\scratchbox\hbox{##1}%
+        \setbox\scratchbox\hbox{\ignorespaces##1\unskip}%
         \scratchdimen\wd\scratchbox
         \ifcase\characteralignmentmode
           % do nothing 
-        \else\ifnum\characteralignmentmode<3
+        \else\ifnum\characteralignmentmode<\plusthree
           \advance\scratchdimen \characterassignwidth
           \ifdim\scratchdimen>\beforeassignwidth\relax
             \edef\beforeassignwidth{\the\scratchdimen}%
@@ -79,17 +123,67 @@
       \pushcharacteralign}%
    \def\docheckalignment##1#1##2##3\relax
      {\ifx##2\relax
-        \setbox\scratchbox\hbox{##1}%
+        \setbox\scratchbox\hbox{\ignorespaces##1\unskip}%
         \ifdim\wd\scratchbox>\afterassignwidth
           \edef\afterassignwidth{\the\wd\scratchbox}%
         \fi
       \else
-        \docheckalignment##2##3\relax
+        \docheckalignment##2##3\relax\relax
       \fi}}
 
 \def\setsecondpasscharacteralign
   {\popcharacteralign
    \expanded{\dosetsecondpasscharacteralign{\alignmentcharacter}}}
+
+% \def\dosetsecondpasscharacteralign#1%
+%   {\def\checkalignment##1%
+%      {\popcharacteralign
+%       \let\\\empty % beware, no grouping 
+%       \setbox\scratchbox\hbox{#1}%
+%       \edef\characterassignwidth{\the\wd\scratchbox}%
+%       \setbox\scratchbox\hbox{}%
+%       % new 12,34 vs 10\\ where 10 aligns on 12 if #1 = , 
+%       \ifcase\characteralignmentslot
+%         \docheckalignment#1##1#1\relax\relax
+%         \scratchdimen\wd\scratchbox
+%         \setbox\scratchbox\hbox{##1\unskip}%
+%       \else
+%         \def\\{#1}%
+%         \expanded{\docheckalignment#1##1#1\relax\relax}%
+%         \scratchdimen\wd\scratchbox
+%         \setbox\scratchbox\hbox
+%           {\def\\{\hphantom{#1}}##1}%     
+%       \fi
+%       \ifdim\scratchdimen=\wd\scratchbox
+%         \ifcase\characteralignmentmode
+%           \noindent\box\scratchbox
+%         \else
+%           \noindent\hbox
+%             {\dontcomplain
+%              \hbox to \beforeassignwidth
+%                {\ifcase\characteralignmentmode\or
+%                   \box\scratchbox\hss
+%                 \or
+%                   \hss\box\scratchbox\hskip\characterassignwidth
+%                 \or
+%                   \hss\rlap{\box\scratchbox}%
+%                 \or
+%                   \hss\rlap{\hbox to \afterassignwidth{\hss\box\scratchbox}}%
+%                 \fi}%
+%              \hskip\afterassignwidth}%
+%         \fi
+%       \else
+%         \noindent\hbox
+%           {\hbox to \beforeassignwidth
+%              {\hss\box\scratchbox\hskip-\scratchdimen}%
+%            \hskip\afterassignwidth}%
+%       \fi}%
+%    \def\docheckalignment##1#1##2##3\relax
+%      {\ifx##2\relax
+%         \setbox\scratchbox\hbox{##1}%
+%       \else
+%         \docheckalignment##2##3\relax
+%       \fi}}
 
 \def\dosetsecondpasscharacteralign#1%
   {\def\checkalignment##1%
@@ -97,18 +191,19 @@
       \let\\\empty % beware, no grouping 
       \setbox\scratchbox\hbox{#1}%
       \edef\characterassignwidth{\the\wd\scratchbox}%
-      \setbox\scratchbox\hbox{}%
+      \setbox\scratchbox\null
       % new 12,34 vs 10\\ where 10 aligns on 12 if #1 = , 
       \ifcase\characteralignmentslot
-        \docheckalignment#1##1#1\relax\relax
+%       \docheckalignment#1##1#1\relax\relax
+        \docheckalignment##1#1\relax\relax
         \scratchdimen\wd\scratchbox
-        \setbox\scratchbox\hbox{##1\unskip}%
+        \setbox\scratchbox\hbox{\ignorespaces##1\unskip}%
       \else
         \def\\{#1}%
-        \expanded{\docheckalignment#1##1#1\relax\relax}%
+%        \expanded{\docheckalignment#1##1#1\relax\relax}%
+        \expanded{\docheckalignment##1#1\relax\relax}%
         \scratchdimen\wd\scratchbox
-        \setbox\scratchbox\hbox
-          {\def\\{\hphantom{#1}}##1}%     
+        \setbox\scratchbox\hbox{\def\\{\hphantom{#1}}\ignorespaces##1\unskip}%     
       \fi
       \ifdim\scratchdimen=\wd\scratchbox
         \ifcase\characteralignmentmode
@@ -136,15 +231,19 @@
       \fi}%
    \def\docheckalignment##1#1##2##3\relax
      {\ifx##2\relax
-        \setbox\scratchbox\hbox{##1}%
+        \setbox\scratchbox\hbox{\ignorespaces##1\unskip}%
       \else
-        \docheckalignment##2##3\relax
+        \docheckalignment##2##3\relax\relax
       \fi}}
 
 % provide a means to use multiple alignments mixed
 
 \def\pushcharacteralign
-  {\setxvalue{@cac@\alignmentclass}{\noexpand\do
+  {\ifundefined{@cac@\alignmentclass}%
+     \doglobal
+       \appendetoks\noexpand\do{\alignmentclass}\to\@@characteralignlst
+   \fi
+   \setxvalue{@cac@\alignmentclass}{\noexpand\do
      {\afterassignwidth}{\beforeassignwidth}{\alignmentcharacter}}}
 
 \def\popcharacteralign
@@ -152,7 +251,12 @@
      {\def\afterassignwidth  {##1}%
       \def\beforeassignwidth {##2}%
       \def\alignmentcharacter{##3}}%
-   \getvalue{@cac@\alignmentclass}}
+   \executeifdefined{@cac@\alignmentclass}\donothing}
+    
+\def\resetcharacteralign % does not work well nested 
+  {\def\do##1{\letbeundefined{@cac@##1}}%
+   \the\@@characteralignlst
+   \global\@@characteralignlst\emptytoks} 
 
 \long\def\startcharacteralign#1\stopcharacteralign
   {\bgroup

@@ -146,14 +146,14 @@
   % @# is X_ or Y_; $ is Gxcvlin_ or Gycvlin_; l and h are numeric or string
   % It would not be OK to set (@#low,@#high) to a pair expression because $ might
   % try to rescale @#low when evaluating the right-hand side for @#high.
-  vardef Gsetr_@#(suffix $)(expr l, h) =
-    Gclbnds_@# ;
-    if @#ctyp>0 :
-       @#low  = if abs @#ctyp<>log: $ fi Mlog_Str l ;
-       @#high = if abs @#ctyp<>log: $ fi Mlog_Str h ;
+  vardef Gsetr_@\#(suffix $)(expr l, h) =
+    Gclbnds_@\# ;
+    if @\#ctyp>0 :
+       @\#low  = if abs @\#ctyp<>log: $ fi Mlog_Str l ;
+       @\#high = if abs @\#ctyp<>log: $ fi Mlog_Str h ;
     else :
-      -@#high = if abs @#ctyp<>log: $ fi Mlog_Str l ;
-      -@#low  = if abs @#ctyp<>log: $ fi Mlog_Str h ;
+      -@\#high = if abs @\#ctyp<>log: $ fi Mlog_Str l ;
+      -@\#low  = if abs @\#ctyp<>log: $ fi Mlog_Str h ;
     fi
   enddef ;
 \to \MPinitializations 

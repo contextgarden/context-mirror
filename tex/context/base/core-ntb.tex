@@ -309,7 +309,12 @@
   {\parseTD
      [#1,\c!kleur=\tbltblkopkleur,\c!letter=\tbltblkopletter,%
       \c!karakteruitlijnen=\v!nee]#2\eTD}
+
+%D new
 
+\long\def\parseTN[#1]#2\eTN
+  {\parseTD[#1]\digits#2\relax\eTD}
+
 \newtoks\TBLhead
 \newtoks\TBLbody
 \newtoks\TBLfoot
@@ -351,6 +356,7 @@
   {\pushTBL
    % box not here 
    \bgroup
+\resetcharacteralign % new 
    \getparameters
      [\@@tbl\@@tbl]
      [\c!uitlijnen={\v!rechts,\v!ruim,\v!hoog},#1]%
@@ -380,6 +386,7 @@
    \def\bTR{\dodoubleempty\parseTR}%
    \def\bTD{\dodoubleempty\parseTD}%
    \def\bTH{\dodoubleempty\parseTH}%
+   \def\bTN{\dodoubleempty\parseTN}%
    \endgraf}
 
 % permits \expanded{\bTD ... \eTD}
@@ -387,8 +394,9 @@
 \unexpanded\def\eTR{} 
 \unexpanded\def\eTD{}
 \unexpanded\def\eTH{}
+\unexpanded\def\eTN{} 
 
-\def\eTABLE%
+\def\eTABLE
   {% tricky and dirty order -)
    \the\TBLhead
    \edef\noftblheadlines{\number\maximumrow}% 
@@ -822,9 +830,9 @@
   {\edef\alignmentclass{#1}%
    \edef\alignmentcharacter{\tbltbluitlijnkarakter}%
    \ifcase\TBLpass\or
-     \setfirstpasscharacteralign\checkalignment{\strut#2\unskip}%
+     \setfirstpasscharacteralign\checkalignment{#2}% {\strut#2\unskip}%
    \fi % force hsize, so always a second 
-   \setsecondpasscharacteralign \checkalignment{\strut#2\unskip}% 
+   \setsecondpasscharacteralign \checkalignment{#2}% {\strut#2\unskip}% 
    \ignorespaces}
 
 \long\def\dohandleTBLcellA#1#2[#3]#4%

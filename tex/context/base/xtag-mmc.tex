@@ -553,12 +553,26 @@ complex-cartesian=>\let\next\MMLccartesian,
 
 \remapXMLsingular [root] [CPA] \MMLcROOT
 
-\def\MMLcROOT#1#2#3\empty%
-  {\doifXMLRchildelse{degree}{#3}
-     {\root\processXMLRchild{degree}{#3}\of
-        {\let\MMLcDEGREE\ignoreXMLRelement
-         \MMLcreset\processXMLRchildren{#3}}}
-     {\sqrt{\MMLcreset\processXMLRchildren{#3}}}}
+% \def\MMLcROOT#1#2#3\empty
+%   {\doifXMLRchildelse{degree}{#3}
+%      {\root\processXMLRchild{degree}{#3}\of
+%         {\let\MMLcDEGREE\ignoreXMLRelement
+%          \MMLcreset\processXMLRchildren{#3}}}
+%      {\sqrt{\MMLcreset\processXMLRchildren{#3}}}}
+
+\setupMMLappearance[root][\c!symbool=\v!ja]
+
+\def\MMLcROOT#1#2#3\empty
+  {\doifXMLRchildelse{degree}{#3}\donetrue\donefalse
+   \doif\@@MMLrootsymbool\v!nee\donefalse
+   \ifdone  
+     \root\processXMLRchild{degree}{#3}\of
+       {\let\MMLcDEGREE\ignoreXMLRelement
+        \MMLcreset\processXMLRchildren{#3}}%
+   \else
+     \sqrt
+       {\MMLcreset\processXMLRchildren{#3}}%
+   \fi}
 
 \remapXMLsingular [gcd] [CPA] \MMLcGCD
 

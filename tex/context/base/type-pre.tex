@@ -1,8 +1,8 @@
 %D \module
 %D   [       file=type-pre,
-%D        version=2001.04.12, 
+%D        version=2001.04.12,
 %D          title=\CONTEXT\ Typescript Macros,
-%D       subtitle=Compatibility scripts, 
+%D       subtitle=Compatibility scripts,
 %D         author=Hans Hagen,
 %D           date=\currentdate,
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
@@ -15,11 +15,11 @@
 %D Times Roman. In this module, that is loaded by default, we
 %D define all relevant alternatives.
 
-\starttypescript [cmr] 
+\starttypescript [cmr]
 
-\usetypescript [serif,sans,mono,math] [computer-modern] [default,name,size]
+  \usetypescript [serif,sans,mono,math] [computer-modern] [default,name,size]
 
-\usemathcollection[default]
+  \usemathcollection[default]
 
 \stoptypescript
 
@@ -28,9 +28,9 @@
 
 \starttypescript [aer]
 
-\usetypescript [serif,sans,mono,math] [computer-modern] [default,name,size,ec]
+  \usetypescript [serif,sans,mono,math] [computer-modern] [default,name,size,ec]
 
-\usemathcollection[default]
+  \usemathcollection[default]
 
 \stoptypescript
 
@@ -39,9 +39,9 @@
 
 \starttypescript [csr]
 
-\usetypescript [serif,sans,mono,math] [computer-modern] [default,name,size,il2]
+  \usetypescript [serif,sans,mono,math] [computer-modern] [default,name,size,il2]
 
-\usemathcollection[default]
+  \usemathcollection[default]
 
 \stoptypescript
 
@@ -50,36 +50,42 @@
 
 \starttypescript [plr]
 
-\usetypescript [serif,sans,mono,math] [computer-modern] [default,name,size,pl0]
+  \usetypescript [serif,sans,mono,math] [computer-modern] [default,name,size,pl0]
 
-\usemathcollection[default]
+  \usemathcollection[default]
 
 \stoptypescript
 
-%D Cyrillic alternatives are available under the symbolic 
+%D Cyrillic alternatives are available under the symbolic
 %D name \type {cyr}.
 
 \starttypescript [cyr]
 
-\usetypescript [serif,sans,mono,math] [computer-modern] [default,name,size,cyr]
+  \usetypescript [serif,sans,mono,math] [computer-modern] [default,name,size,cyr]
 
-\usemathcollection[default]
+  \usemathcollection[default]
 
 \stoptypescript
+
+\starttypescript [lh-ec]  
+
+  \usetypescript [serif,sans,mono,math] [computer-modern] [default,name,size,ec]
+
+  \usemathcollection[default]
+
+\stoptypescript           
 
 \starttypescript [lh-t2a]
 
-\usetypescript [serif,sans,mono,math] [computer-modern] [default,name,size,t2a]
+  \usetypescript [serif,sans,mono,math] [computer-modern] [default,name,size,t2a]
 
-\usemathcollection[default]
-
-\stoptypescript
+  \usemathcollection[default]
 
 \starttypescript [lh-t2b]
 
-\usetypescript [serif,sans,mono,math] [computer-modern] [default,name,size,t2b]
+  \usetypescript [serif,sans,mono,math] [computer-modern] [default,name,size,t2b]
 
-\usemathcollection[default]
+  \usemathcollection[default]
 
 \stoptypescript
 
@@ -93,17 +99,17 @@
 
 \starttypescript [lh-x2]
 
-\usetypescript [serif,sans,mono,math] [computer-modern] [default,name,size,x2]
+  \usetypescript [serif,sans,mono,math] [computer-modern] [default,name,size,x2]
 
-\usemathcollection [default]
+  \usemathcollection [default]
 
 \stoptypescript
 
 \starttypescript [lh-lcy]
 
-\usetypescript [serif,sans,mono,math] [computer-modern] [default,name,size,lcy]
+  \usetypescript [serif,sans,mono,math] [computer-modern] [default,name,size,lcy]
 
-\usemathcollection [default]
+  \usemathcollection [default]
 
 \stoptypescript
 
@@ -113,9 +119,9 @@
 
 \starttypescript [ams]
 
-\usetypescript [math] [ams] [all]
+  \usetypescript [math] [ams] [all]
 
-\usemathcollection[ams]
+  \usemathcollection[ams]
 
 \stoptypescript
 
@@ -124,8 +130,8 @@
 
 \starttypescript [con]
 
-\usetypescript [serif] [concrete] [all]
- 
+  \usetypescript [serif] [concrete] [all]
+
 \stoptypescript
 
 %D The Euler Fonts are designed by Herman Zapf and can be
@@ -133,9 +139,9 @@
 
 \starttypescript [eul]
 
-\usetypescript [math] [euler] [all]
+  \usetypescript [math] [euler] [all]
 
-\usemathcollection[eul]
+  \usemathcollection[eul]
 
 \stoptypescript
 
@@ -148,12 +154,12 @@
 
 \starttypescript [lbr]
 
-\usetypescript [serif,sans,mono,math,handwriting] [lucida]  [name,special,\defaultencoding]
-\usetypescript [serif,sans,mono,math,handwriting] [default] [size]
+  \usetypescript [serif,sans,mono,math,handwriting] [lucida]  [name,special,\defaultencoding]
+  \usetypescript [serif,sans,mono,math,handwriting] [default] [size]
 
-\usemathcollection[lbr] 
+  \usemathcollection[lbr]
 
-\usetypescript [map] [\defaultencoding]
+  \usetypescript [map] [\defaultencoding]
 
 \stoptypescript
 
@@ -164,12 +170,12 @@
 
 \starttypescript [tim]
 
-\usetypescript [math] [times]   [all]
-\usetypescript [math] [default] [size]
+  \usetypescript [math] [times]   [all]
+  \usetypescript [math] [default] [size]
 
-\usemathcollection[tim] 
+  \usemathcollection[tim]
 
-\usetypescript [map] [\defaultencoding]
+  \usetypescript [map] [\defaultencoding]
 
 \stoptypescript
 
@@ -179,10 +185,10 @@
 
 \starttypescript [ant]
 
-\usetypescript [serif] [antykwa-torunska] [name,\defaultencoding]
-\usetypescript [serif] [default]          [size]
+  \usetypescript [serif] [antykwa-torunska] [name,\defaultencoding]
+  \usetypescript [serif] [default]          [size]
 
-\usetypescript [map] [\defaultencoding]
+  \usetypescript [map] [\defaultencoding]
 
 \stoptypescript
 
@@ -190,10 +196,10 @@
 
 \starttypescript [pcr]
 
-\usetypescript [mono] [courier] [name,\defaultencoding]
-\usetypescript [mono] [default] [size] 
+  \usetypescript [mono] [courier] [name,\defaultencoding]
+  \usetypescript [mono] [default] [size]
 
-\usetypescript [map] [\defaultencoding]
+  \usetypescript [map] [\defaultencoding]
 
 \stoptypescript
 
@@ -201,10 +207,10 @@
 
 \starttypescript [phv]
 
-\usetypescript [sans] [helvetica] [name,\defaultencoding]
-\usetypescript [sans] [default]   [size] 
+  \usetypescript [sans] [helvetica] [name,\defaultencoding]
+  \usetypescript [sans] [default]   [size]
 
-\usetypescript [map] [\defaultencoding]
+  \usetypescript [map] [\defaultencoding]
 
 \stoptypescript
 
@@ -212,10 +218,10 @@
 
 \starttypescript [ptm]
 
-\usetypescript [serif] [times]   [name,\defaultencoding]
-\usetypescript [serif] [default] [size] 
+  \usetypescript [serif] [times]   [name,\defaultencoding]
+  \usetypescript [serif] [default] [size]
 
-\usetypescript [map] [\defaultencoding]
+  \usetypescript [map] [\defaultencoding]
 
 \stoptypescript
 
@@ -224,16 +230,16 @@
 
 \starttypescript [pos]
 
-\usetypescript [serif] [times]     [name,\defaultencoding]
-\usetypescript [sans]  [helvetica] [name,\defaultencoding] 
-\usetypescript [mono]  [courier]   [name,\defaultencoding] 
+  \usetypescript [serif] [times]     [name,\defaultencoding]
+  \usetypescript [sans]  [helvetica] [name,\defaultencoding]
+  \usetypescript [mono]  [courier]   [name,\defaultencoding]
 
-\usetypescript [serif,sans,mono] [default] [size] 
+  \usetypescript [serif,sans,mono] [default] [size]
 
 % \usetypescript [math] [times]   [all]
-% \usetypescript [math] [default] [size] 
+% \usetypescript [math] [default] [size]
 
-\usetypescript [map] [\defaultencoding]
+  \usetypescript [map] [\defaultencoding]
 
 \stoptypescript
 
@@ -241,21 +247,21 @@
 
 \starttypescript [ppl]
 
-\usetypescript [serif] [palatino] [name,\defaultencoding]
-\usetypescript [serif] [default]  [size]
+  \usetypescript [serif] [palatino] [name,\defaultencoding]
+  \usetypescript [serif] [default]  [size]
 
-\usetypescript [map] [\defaultencoding]
+  \usetypescript [map] [\defaultencoding]
 
 \stoptypescript
 
 %D The following scripts fake the old \type {font-ber} and
-%D alike files. 
+%D alike files.
 
 \starttypescript[fil]
   % fake to prevent loading font-fil.tex and signal 'done'
 \stoptypescript
 
-%D But for old time sake we provide: 
+%D But for old time sake we provide:
 
 \starttypescript[ber]
   \usetypescript [berry] [ec]

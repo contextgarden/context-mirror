@@ -23,6 +23,7 @@ eval '(exit $?0)' && eval 'exec perl -S $0 ${1+"$@"}' && eval 'exec perl -S $0 $
 #  Thanks to Thomas Esser     for hooking it into web2c
 #  Thanks to Taco   Hoekwater for suggesting improvements
 #  Thanks to Wybo Dekker      for the advanced help interface 
+#  Thanks to Fabrice Popineau for windows path trickery 
 
 # (I still have to completely understand the help code -)
 
@@ -35,10 +36,12 @@ use Time::Local   ;
 use Config        ;
 use Getopt::Long  ;
 use Class::Struct ; # needed for help subsystem
-#   Data::Dumper  ; # needed for help subsystem
+#se Data::Dumper  ; # needed for help subsystem
+use FindBin       ;
 
 my %ConTeXtInterfaces ; # otherwise problems with strict
 my %ResponceInterface ; # since i dunno how to allocate else
+
 # my %Help ;
 
 # use strict ;
@@ -85,6 +88,7 @@ my $Convert          = '' ;
 my $DoMPTeX          = 0 ;
 my $DoMPXTeX         = 0 ;
 my $EnterBatchMode   = 0 ;
+my $EnterNonStopMode = 0 ;
 my $Environments     = '' ;
 my $Modules          = '' ;
 my $FastMode         = 0 ;
@@ -153,6 +157,7 @@ my $ForceXML         = 0 ;
 &GetOptions
   ( "arrange"       => \$Arrange          ,
     "batch"         => \$EnterBatchMode   ,
+    "nonstop"       => \$EnterNonStopMode ,
     "color"         => \$UseColor         ,
     "centerpage"    => \$CenterPage       ,
     "convert=s"     => \$Convert          ,
@@ -265,7 +270,7 @@ if (($LogFile ne '')&&($LogFile =~ /\w+\.log$/io))
     *STDOUT = *LOGFILE ;
     *STDERR = *LOGFILE }
 
-my $Program = " TeXExec 3.1 - ConTeXt / PRAGMA ADE 1997-2002" ;
+my $Program = " TeXExec 3.2 - ConTeXt / PRAGMA ADE 1997-2003" ;
 
 print "\n$Program\n\n" ;
 
@@ -274,11 +279,25 @@ if ($Verbose)
 
 my $pathslash = '/' ; if ($0 =~ /\\/) { $pathslash = "\\" }
 my $cur_path  = ".$pathslash" ;
-my $own_path  = $0 ; $own_path =~ s/texexec(\.pl|\.bat|)//io ;
-my $own_type  = $1 ; 
+
+#  $own_path  = $0 ; $own_path =~ s/texexec(\.pl|\.bat|)//io ;
+#  $own_type  = $1 ; 
+#  $own_stub  = "" ; 
+
+# we need to handle window's "Program Files" path (patch by Fabrice P)
+
+my $own_path  = "$FindBin::Bin/" ;
+my $own_type  = $0 ; 
+my $own_quote = ($own_path =~ m/^[^\"].* / ? "\"" : "") ; 
 my $own_stub  = "" ; 
 
-if ($own_type =~ /pl/oi) { $own_stub = "perl " } 
+if ($own_type =~ /(\.(pl|bin|exe))$/io) 
+  { $own_type = $1 } 
+else
+  { $own_type = '' } 
+
+if ($own_type =~ /pl/oi)            
+  { $own_stub = "perl " } 
 
 sub checked_path
   { my $path = shift  ;
@@ -325,7 +344,8 @@ my $kpsewhich = '' ;
 
 sub found_ini_file
   { my $suffix = shift ;
-    my $IniPath = `$kpsewhich --format="other text files" -progname=context texexec.$suffix` ;
+  # my $IniPath = `$kpsewhich --format="other text files" -progname=context texexec.$suffix` ;
+    my $IniPath = `$own_quote$kpsewhich$own_quote --format="other text files" -progname=context texexec.$suffix` ;
     chomp($IniPath) ;
     return $IniPath }
 
@@ -506,7 +526,9 @@ my $TeXScriptsPath    = IniValue('TeXScriptsPath'    , '' ) ;
 my $TeXExecutable     = IniValue('TeXExecutable'     , 'tex' ) ;
 my $TeXVirginFlag     = IniValue('TeXVirginFlag'     , '-ini' ) ;
 my $TeXBatchFlag      = IniValue('TeXBatchFlag'      , '-int=batchmode' ) ;
+my $TeXNonStopFlag    = IniValue('TeXNonStopFlag'    , '-int=nonstopmode' ) ;
 my $MpBatchFlag       = IniValue('MpBatchFlag'       , '-int=batchmode' ) ;
+my $MpNonStopFlag     = IniValue('MpNonStopFlag'     , '-int=nonstopmode' ) ;
 my $TeXPassString     = IniValue('TeXPassString'     , '' ) ;
 my $TeXFormatFlag     = IniValue('TeXFormatFlag'     , '' ) ;
 my $MpFormatFlag      = IniValue('MpFormatFlag'      , '' ) ;
@@ -524,7 +546,7 @@ my $TcXPath           = IniValue('TcXPath'           , '' ) ;
 
 if (($Verbose)&&($kpsewhich ne ''))
   { print "\n" ;
-    my $CnfFile = `$kpsewhich -progname=context texmf.cnf` ;
+    my $CnfFile = `$own_quote$kpsewhich$own_quote -progname=context texmf.cnf` ;
     chomp $CnfFile ;
     print " applications will use : $CnfFile\n" }
 
@@ -624,6 +646,7 @@ SetInterfaces ( "xx" , "experimental" , "english"   ) ;
 
 # $Help{ARRANGE}     = "             --arrange   process and arrange\n" ;
 # $Help{BATCH}       = "               --batch   run in batch mode (don't pause)\n" ;
+# $Help{NONSTOP}     = "             --nonstop   run in non stop mode (don't pause)\n" ;
 # $Help{CENTERPAGE}  = "          --centerpage   center the page on the paper\n" ;
 # $Help{COLOR}       = "               --color   enable color (when not yet enabled)\n" ;
 # $Help{USEMODULE}   = "           --usemodule   load some modules first\n" ;
@@ -777,6 +800,7 @@ SetInterfaces ( "xx" , "experimental" , "english"   ) ;
 #     else
 #       { print $Help{ARRANGE}     ;
 #         print $Help{BATCH}       ;
+#         print $Help{NONSTOP}     ;
 #         print $Help{CENTERPAGE}  ;
 #         print $Help{COLOR}       ;
 # #       print $Help{CONVERT}     ;
@@ -984,13 +1008,17 @@ sub MPJobName
 
 sub RunPerlScript
   { my ($ScriptName, $Options) = @_ ;
+    my $cmd = '' ; 
     if ($dosish)
-      { if (-e "$own_path$ScriptName$own_type")
-          { system ("$own_stub$own_path$ScriptName$own_type $Options") } 
+      { if (-e "own_path$ScriptName$own_type")  
+          { $cmd = "$own_stub$own_quote$own_path$ScriptName$own_type$own_quote $Options" } 
         elsif (-e "$TeXScriptsPath$ScriptName$own_type")
-          { system ("$own_stub$TeXScriptsPath$ScriptName$own_type $Options") } }
+          { $cmd = "$own_stub$own_quote$TeXScriptsPath$ScriptName$own_type$own_quote $Options" } 
+        else 
+          { $cmd = "" } }
     else
-      { system ("$ScriptName $Options") } }
+      { $cmd = "$ScriptName $Options" } 
+    unless ($cmd eq "") { system($cmd) } }
 
 sub ConvertXMLFile
   { my $FileName = shift ; RunPerlScript($SGMLtoTeX, "$FileName.xml") }
@@ -1038,13 +1066,16 @@ sub MakeOptionFile
       { print OPT "\\setuplanguage[$MainLanguage]\n" }
     # can best become : \use...[mik] / [web]
     if ($TeXShell =~ /MikTeX/io)
-      { print OPT "\\def\\MPOSTbatchswitch \{$MpBatchFlag\}" ;
-        print OPT "\\def\\MPOSTformatswitch\{$MpPassString $MpFormatFlag\}" }
+      { print OPT "\\def\\MPOSTbatchswitch   \{$MpBatchFlag\}" ;
+        print OPT "\\def\\MPOSTnonstopswitch \{$MpNonStopFlag\}" ;
+        print OPT "\\def\\MPOSTformatswitch  \{$MpPassString $MpFormatFlag\}" }
     #
     if ($FullFormat ne 'standard')
       { print OPT "\\setupoutput[$FullFormat]\n" }
     if ($EnterBatchMode)
       { print OPT "\\batchmode\n" }
+    if ($EnterNonStopMode)
+      { print OPT "\\nonstopmode\n" }
     if ($UseColor)
       { print OPT "\\setupcolors[\\c!status=\\v!start]\n" }
     if ($NoMPMode||$NoMPRun||$AutoMPRun)
@@ -1318,11 +1349,13 @@ sub RunTeX
             ($Format =~ /^cont/) &&
             ($TeXPassString !~ /progname/io))
           { $TeXProgNameFlag = "-progname=context" } }
-    $cmd  = "$TeXProgramPath$TeXExecutable $TeXProgNameFlag " .
+    $cmd  = "$own_quote$TeXProgramPath$TeXExecutable$own_quote $TeXProgNameFlag " .
             "$TeXPassString $PassOn " ;
    #$cmd .= " -kpathsea-debug=62536 " ;
     if ($EnterBatchMode)
       { $cmd .= "$TeXBatchFlag " }
+    if ($EnterNonStopMode)
+      { $cmd .= "$TeXNonStopFlag " }
     if ($TeXTranslation ne '')
       { $cmd .= "-translate-file=$TeXTranslation " }
     $cmd .= "$TeXFormatFlag$TeXFormatPath$Format $JobName.$JobSuffix" ;
@@ -1401,7 +1434,8 @@ sub RunTeXMP
     if ($MPJobName ne "")
       { if (open(MP, "$MPJobName"))
           { $_ = <MP> ; chomp ;  # we should handle the prefix as well
-if (/^\%\s+translate.*?\=([\w\d\-]+)/io) { $TeXTranslation = $1 } 
+            if (/^\%\s+translate.*?\=([\w\d\-]+)/io) 
+              { $TeXTranslation = $1 } 
             if (/collected graphics of job \"(.+)\"/i)
               { $MPFoundJobName = $1 }
             close(MP) ;
@@ -1411,10 +1445,13 @@ if (/^\%\s+translate.*?\=([\w\d\-]+)/io) { $TeXTranslation = $1 }
                       { print "   generating graphics : metaposting $MPJobName\n" ;
                         my $ForceMpy = "" ;
                         if ($MpyForce) { $ForceMpy = "--mpyforce" }
-my $ForceTCX = '' ; 
-if ($TeXTranslation ne '') { $ForceTCX = "--translate=$TeXTranslation " }
+                        my $ForceTCX = '' ; 
+                        if ($TeXTranslation ne '') 
+                          { $ForceTCX = "--translate=$TeXTranslation " }
                         if ($EnterBatchMode)
                           { RunPerlScript ($TeXExec,"$ForceTCX $ForceMpy --mptex --nomp --batch $MPJobName") }
+                        elsif ($EnterNonStopMode)
+                          { RunPerlScript ($TeXExec,"$ForceTCX $ForceMpy --mptex --nomp --nonstop $MPJobName") }
                         else
                           { RunPerlScript ($TeXExec,"$ForceTCX $ForceMpy --mptex --nomp $MPJobName") } }
                     else
@@ -1505,20 +1542,21 @@ sub RunConTeXtFile
         if ($TeXTranslation ne '')
           { print "           translation : $TeXTranslation\n" }
         my $Options = '' ;
-        if ($FastMode)       { $Options .= " fast" }
-        if ($FinalMode)      { $Options .= " final" }
-        if ($Verbose)        { $Options .= " verbose" }
-        if ($TypesetListing) { $Options .= " listing" }
-        if ($TypesetModule)  { $Options .= " module" }
-        if ($TypesetFigures) { $Options .= " figures" }
-        if ($MakeFormats)    { $Options .= " make" }
-        if ($RunOnce)        { $Options .= " once" }
-        if ($UseColor)       { $Options .= " color" }
-        if ($EnterBatchMode) { $Options .= " batch" }
-        if ($NoMPMode)       { $Options .= " nomp" }
-        if ($CenterPage)     { $Options .= " center" }
-        if ($Arrange)        { $Options .= " arrange" }
-        if ($NoArrange)      { $Options .= " no-arrange" }
+        if ($FastMode)         { $Options .= " fast" }
+        if ($FinalMode)        { $Options .= " final" }
+        if ($Verbose)          { $Options .= " verbose" }
+        if ($TypesetListing)   { $Options .= " listing" }
+        if ($TypesetModule)    { $Options .= " module" }
+        if ($TypesetFigures)   { $Options .= " figures" }
+        if ($MakeFormats)      { $Options .= " make" }
+        if ($RunOnce)          { $Options .= " once" }
+        if ($UseColor)         { $Options .= " color" }
+        if ($EnterBatchMode)   { $Options .= " batch" }
+        if ($EnterNonStopMode) { $Options .= " nonstop" }
+        if ($NoMPMode)         { $Options .= " nomp" }
+        if ($CenterPage)       { $Options .= " center" }
+        if ($Arrange)          { $Options .= " arrange" }
+        if ($NoArrange)        { $Options .= " no-arrange" }
         if ($Options)
           { print "               options :$Options\n" }
         if ($ConTeXtModes)
@@ -1913,7 +1951,7 @@ sub RunCombine
 sub LocatedFormatPath
   { my $FormatPath = shift ;
     if (($FormatPath eq '')&&($kpsewhich ne ''))
-      { $FormatPath = `$kpsewhich --show-path=fmt` ;
+      { $FormatPath = `$own_quote$kpsewhich$own_quote --show-path=fmt` ;
         chomp $FormatPath ;
         $FormatPath =~ s/\.+\;//o ; # should be a sub
         $FormatPath =~ s/\;.*//o ;
@@ -1931,7 +1969,7 @@ sub RunOneFormat
     my @TeXFormatPath ;
     my $TeXPrefix = "" ;
     if (($fmtutil ne "")&&($FormatName !~ /metafun|mptopdf/io))
-      { my $cmd = "$fmtutil --byfmt $FormatName" ;
+      { my $cmd = "$own_quote$fmtutil$own_quote --byfmt $FormatName" ;
         if ($Verbose) { print "\n$cmd\n\n" }
         MakeUserFile ; # this works only when the path is kept
         MakeResponseFile ;
@@ -1993,7 +2031,7 @@ sub RunMpFormat
     my $CurrentPath = cwd() ;
     $MpFormatPath = LocatedFormatPath($MpFormatPath) ;
     if ($MpFormatPath ne '') { chdir "$MpFormatPath" }
-    my $cmd = "$MpExecutable $MpVirginFlag $MpPassString $MpFormat" ;
+    my $cmd = "$own_quote$MpExecutable$own_quote $MpVirginFlag $MpPassString $MpFormat" ;
     if ($Verbose) { print "\n$cmd\n\n" }
     system ( $cmd ) ;
     if (($MpFormatPath ne '')&&($CurrentPath ne ''))
@@ -2139,7 +2177,7 @@ sub doRunMP ###########
             close(MP) }
         if ($TexFound)
           { print "       metapost to tex : $MpName\n" ;
-            $Problems = system ("$MpToTeXExecutable $MpFile > $MpTex" ) ;
+            $Problems = system ("$own_quote$MpToTeXExecutable$own_quote $MpFile > $MpTex" ) ;
             if (-e $MpTex && !$Problems)
               { open (TMP,">>$MpTex") ;
                 print TMP "\\end\{document\}\n" ; # to be sure
@@ -2151,16 +2189,18 @@ sub doRunMP ###########
                   { RunSomeTeXFile ($MpTmp, "tex") }
                     if (-e $MpDvi && !$Problems)
                       { print "       dvi to metapost : $MpName\n" ;
-                        $Problems = system ("$DviToMpExecutable $MpDvi $MpName.mpx") }
+                        $Problems = system ("$own_quote$DviToMpExecutable$own_quote $MpDvi $MpName.mpx") }
                     # $Problems = system ("dvicopy $MpDvi texexec.dvi") ;
-                    # $Problems = system ("$DviToMpExecutable texexec.dvi $MpName.mpx") }
+                    # $Problems = system ("$own_quote$DviToMpExecutable$own_quote texexec.dvi $MpName.mpx") }
                    unlink $MpBck ; 
                    rename $MpTex, $MpBck ;
                    unlink $MpDvi } }
             print "              metapost : $MpName\n" ;
-            my $cmd = $MpExecutable ;
+            my $cmd = "$own_quote$MpExecutable$own_quote" ;
             if ($EnterBatchMode)
               { $cmd .= " $MpBatchFlag " }
+            if ($EnterNonStopMode)
+              { $cmd .= " $MpNonStopFlag " }
             if (($MpFormat ne '')&&($MpFormat !~ /(plain|mpost)/oi))
               { print "                format : $MpFormat\n" ;
                 $cmd .= " $MpPassString $MpFormatFlag$MpFormat " }
@@ -2186,7 +2226,7 @@ sub RunMPX
       { local $/ = "\0777" ; $_ = <MP> ; close(MP) ;
         if (/(btex|etex|verbatimtex)/o)
           { print "   generating mpx file : $MpName\n" ;
-            $Problems = system ("$MpToTeXExecutable $MpFile > $MpTex" ) ;
+            $Problems = system ("$own_quote$MpToTeXExecutable$own_quote $MpFile > $MpTex" ) ;
             if (-e $MpTex && !$Problems)
               { open (TMP,">>$MpTex") ;
                 print TMP "\\end\n" ; # to be sure
@@ -2196,7 +2236,7 @@ sub RunMPX
                 else
                   { RunSomeTeXFile ($MpTmp, "tex") }
                 if (-e $MpDvi && !$Problems)
-                  { $Problems = system ("$DviToMpExecutable $MpDvi $MpName.mpx") }
+                  { $Problems = system ("$own_quote$DviToMpExecutable$own_quote $MpDvi $MpName.mpx") }
            unlink $MpTex ;
            unlink $MpDvi } } } }
 
@@ -2321,6 +2361,8 @@ __DATA__
 arrange process and arrange
 -----------
 batch run in batch mode (don't pause)
+-----------
+nonstop run in non stop mode (don't pause)
 -----------
 centerpage center the page on the paper
 -----------

@@ -360,7 +360,7 @@
 \global
    \setbox\floatbox\hbox
      {\ifmarginfloat\else\ifrightfloat\else\kern\sidefloatleftshift\fi\fi
-      \hskip\sidefloatshift
+      \ifrightfloat\else\hskip\sidefloatshift\fi
       \scratchdimen
         \ifmarginfloat           
           \sidefloattopskip
@@ -389,6 +389,7 @@
 %      \or \advance\scratchdimen\lineheight
 %      \fi 
       \vbox{\vskip\scratchdimen\nointerlineskip#1}% 
+      \ifrightfloat\kern\sidefloatshift\fi
       % no \hskip, but \kern here 
       \ifmarginfloat\else\ifrightfloat\kern\sidefloatrightshift\fi\fi}%
    \ifmarginfloat
@@ -430,6 +431,9 @@
      \global        \sidefloatwidth \wd\floatbox
      \global\advance\sidefloatwidth \floatsideskip
    \fi\fi
+\ifdim\sidefloatwidth<\zeropoint
+  \global\sidefloatwidth\zeropoint 
+\fi 
    \global        \sidefloathsize  \hsize
    \global\advance\sidefloathsize -\sidefloatwidth
    \global        \sidefloatheight \ht\floatbox

@@ -1079,27 +1079,27 @@
 
 \beginETEX \dimexpr 
 
-  \def\leftmargintotal {\dimexpr(\linkermargebreedte +\linkermargeafstand )}
-  \def\rightmargintotal{\dimexpr(\rechtermargebreedte+\rechtermargeafstand)}
-  \def\leftedgetotal   {\dimexpr(\linkerrandbreedte  +\linkerrandafstand  )}
-  \def\rightedgetotal  {\dimexpr(\rechterrandbreedte +\rechterrandafstand )}
+  \def\leftmargintotal {\dimexpr(\linkermargebreedte  +\linkermargeafstand )}
+  \def\rightmargintotal{\dimexpr(\rechtermargebreedte +\rechtermargeafstand)}
+  \def\leftedgetotal   {\dimexpr(\linkerrandbreedte   +\linkerrandafstand  )}
+  \def\rightedgetotal  {\dimexpr(\rechterrandbreedte  +\rechterrandafstand )}
 
-  \def\leftsidetotal   {\dimexpr(\leftmarginwidth    +\leftedgetotal )}
-  \def\rightsidetotal  {\dimexpr(\rightmarginwidth   +\rightedgetotal)}
+  \def\leftsidetotal   {\dimexpr(\linkermargebreedte  +\leftedgetotal )}
+  \def\rightsidetotal  {\dimexpr(\rechtermargebreedte +\rightedgetotal)}
 
-  \def\leftcombitotal  {\dimexpr(\leftmargintotal    +\leftedgetotal )}
-  \def\rightcombitotal {\dimexpr(\rightmargintotal   +\rightedgetotal)}
+  \def\leftcombitotal  {\dimexpr(\leftmargintotal     +\leftedgetotal )}
+  \def\rightcombitotal {\dimexpr(\rightmargintotal    +\rightedgetotal)}
   
-  \def\innermargintotal{\dimexpr(\innermarginwidth   +\innermargindistance)}
-  \def\outermargintotal{\dimexpr(\outermarginwidth   +\outermargindistance)}
-  \def\inneredgetotal  {\dimexpr(\inneredgewidth     +\inneredgedistance  )}
-  \def\outeredgetotal  {\dimexpr(\outeredgewidth     +\outeredgedistance  )}
+  \def\innermargintotal{\dimexpr(\innermarginwidth    +\innermargindistance)}
+  \def\outermargintotal{\dimexpr(\outermarginwidth    +\outermargindistance)}
+  \def\inneredgetotal  {\dimexpr(\inneredgewidth      +\inneredgedistance  )}
+  \def\outeredgetotal  {\dimexpr(\outeredgewidth      +\outeredgedistance  )}
   
-  \def\innercombitotal {\dimexpr(\innermargintotal   +\inneredgetotal)}
-  \def\outercombitotal {\dimexpr(\outermargintotal   +\outeredgetotal)}
+  \def\innercombitotal {\dimexpr(\innermargintotal    +\inneredgetotal)}
+  \def\outercombitotal {\dimexpr(\outermargintotal    +\outeredgetotal)}
 
-  \def\innersidetotal  {\dimexpr(\innermarginwidth   + \inneredgetotal)}
-  \def\outersidetotal  {\dimexpr(\outermarginwidth   + \outeredgetotal)}
+  \def\innersidetotal  {\dimexpr(\innermarginwidth    + \inneredgetotal)}
+  \def\outersidetotal  {\dimexpr(\outermarginwidth    + \outeredgetotal)}
 
 \endETEX
 

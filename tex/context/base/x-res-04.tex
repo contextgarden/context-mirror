@@ -101,6 +101,8 @@
 
 \unprotect
 
+\consultutilityfilefalse
+
 % 0 = no loading
 % 1 = selective loading
 % 2 = full loading
@@ -134,9 +136,9 @@
         \doglobal\setflag{rl:#1} 
       \stopnointerference}}
 
-\def\figbase@savedata#1#2%
+\def\figbase@savedata#1#2% 
   {%\writestatus{figbase}{data of #1 loaded}%
-   \doglobal\saveXMLdatastructure{rl:#1}{record}{page="#2"}{}{rl:figure}{}}
+   \doglobal\saveXMLdatastructure{rl:rl:#1}{record}{page="#2"}{}{rl:figure}{}}
 
 % locating and if needed loading one figure record 
 
@@ -183,8 +185,8 @@
        \xdef\figurefilebase{#1}
        \doglobal\newcounter\figurefilepage
        \def\askedlabel{#2}
-       \doifelseXMLelement{rl:\askedlabel}
-         {\enableXMLelements\flushXMLelement{rl:\askedlabel}}
+       \doifelseXMLelement{rl:rl:\askedlabel}
+         {\enableXMLelements\flushXMLelement{rl:rl:\askedlabel}}
          {\processcommacommand[\figurepathlist]\dogetfigurefilename}%
      \stopXMLmapping
    \stopnointerference}

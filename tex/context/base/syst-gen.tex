@@ -412,6 +412,34 @@
   {\long\xdef\@@expanded{\noexpand#1}\@@expanded}
 
 %D \macros
+%D   {safeexpanded,everysafeexpanded}
+%D
+%D In addition we provide: 
+
+\newtoks\everysafeexpanded
+
+\long\def\safeexpanded#1%
+  {\begingroup
+   \the\everysafeexpanded\long\xdef\@@expanded{\noexpand#1}%
+   \endgroup
+   \@@expanded}
+
+\def\safeedef#1#2%
+  {\begingroup
+   \the\everysafeexpanded\long\xdef\@@expanded{\noexpand#2}%
+   \endgroup
+   \let#1\@@expanded}
+
+\def\safexdef#1#2%
+  {\begingroup
+   \the\everysafeexpanded\long\xdef\@@expanded{\noexpand#2}%
+   \endgroup
+   \global\let#1\@@expanded}
+
+%D You can append protective measures to the token register if 
+%D needed, as we will do later. 
+
+%D \macros
 %D   {expandoneargafter,expandtwoargsafter}
 %D
 %D These two commands make macros more readable by hiding a

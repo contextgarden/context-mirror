@@ -59,7 +59,7 @@
    \else
      \def\dodostelregisterin##1%
        {\getparameters[\??id##1][#2]%
-        \doifvalue{\??id##1\c!koppeling}{\v!ja}
+        \doifvalue{\??id##1\c!koppeling}\v!ja
           {\appendtoks\koppelregister[##1][#2]\to\everystarttext}%
         \preparepaginaprefix{\??id##1}}%
    \fi

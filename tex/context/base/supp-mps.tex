@@ -205,7 +205,8 @@
 
 \long\def\startMPinclusions#1\stopMPinclusions
   {\long\def\theMPinclusions
-     {\@EA\expanded\@EA{\@EA\writeMPgraphic\@EA{\the\MPinitializations;}}%
+     {% \expanded ! 
+      \@EA\expanded\@EA{\@EA\writeMPgraphic\@EA{\the\MPinitializations;}}%
       \writeMPgraphic{#1}}}
 
 \long\def\MPinclusions#1%
@@ -866,14 +867,15 @@
 
   \ifx\undefined\interactionmode \chardef\interactionmode=255 \fi
 
-  \def\MPOSTbatchswitch {-int=batchmode}
-  \def\MPOSTformatswitch{-progname=mpost -mem=}
-  \def\MPOSTdriver      {dvips}
+  \def\MPOSTbatchswitch   {-int=batchmode}
+  \def\MPOSTnonstopswitch {-int=nonstopmode}
+  \def\MPOSTformatswitch  {-progname=mpost -mem=}
+  \def\MPOSTdriver        {dvips}
 
   \def\executeMPOST#1%
     {mpost 
-      \ifcase\interactionmode \MPOSTbatchswitch\space \fi
-      \ifuseMETAFUNformat \MPOSTformatswitch metafun \fi #1}
+      \ifcase\interactionmode\MPOSTbatchswitch\or\MPOSTnonstopswitch\fi
+      \space\ifuseMETAFUNformat \MPOSTformatswitch metafun \fi #1}
 
   \def\executeMPTEX#1%
     {texexec
@@ -893,6 +895,10 @@
      \fi}
 
 \fi
+
+%D The batchmode and nonstopmode (introduced in 2003 for 
+%D Patrick Gundlach) switches may differ per binary and are 
+%D supported by \TEXEXEC.
 
 %D \macros
 %D   {insertMPfile}

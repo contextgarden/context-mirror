@@ -1475,9 +1475,13 @@
   \ignoreencoding
 \to \everycleanupfeatures 
 
+\appendtoks 
+  \keepencodedtokens 
+\to \everysafeexpanded
+
 %D We preload several encodings: 
 
-\useencoding[def,acc,raw,com,cas,mis] 
+\useencoding[def,acc,raw,com,cas,mis] % mis shoudl come first 
 
 \useencoding[ans,il2,ec,tbo,pdf,uc,pol,x5]
 

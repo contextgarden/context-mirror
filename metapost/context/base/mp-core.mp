@@ -336,10 +336,12 @@ enddef ;
 boolean compensate_multi_par_topskip ; 
 boolean span_multi_column_pars ; 
 boolean auto_multi_par_hsize ; 
+boolean enable_multi_par_fallback ;
 
 compensate_multi_par_topskip := true ; 
 span_multi_column_pars       := false ;
 auto_multi_par_hsize         := false ; % true ;
+enable_multi_par_fallback    := true ;
 
 vardef multi_par_at_top (expr i) = 
   (round (ypart ulcorner multipars[i]) = round (ypart ulcorner 
@@ -715,6 +717,27 @@ fi ;
 
   % first loop 
 
+  if enable_multi_par_fallback  and 
+     (nxy[fpos]=RealPageNumber) and 
+     (nxy[tpos]=RealPageNumber) and not 
+     (InsideSomeTextArea(lxy[fpos]) and 
+      InsideSomeTextArea(rxy[tpos])) : 
+
+  % fallback 
+
+     multipar := 
+ 
+      llxy[fpos] -- 
+      lrxy[tpos] -- 
+      urxy[tpos] -- 
+      ulxy[fpos] -- cycle ;
+ 
+      save_multipar (i,1,multipar) ;
+
+  else :
+
+  % normal 
+
   for i=1 upto NOfTextAreas :
 
     TopSkipCorrection := 0 ;
@@ -724,6 +747,7 @@ fi ;
     % watch how we compensate for negative indentation
 
     if (nxy[fpos]=RealPageNumber) and (InsideTextArea(i,par_start_pos)) :
+
 
       % first one in chain
 
@@ -839,19 +863,6 @@ fi ;
  
         fi ;
 
-      elseif (nxy[tpos]=RealPageNumber) :
-
-        % outside text area, fall back / test on: pascal werkboek 
-
-        multipar := 
- 
-          llxy[fpos] -- 
-          lrxy[tpos] -- 
-          urxy[tpos] -- 
-          ulxy[fpos] -- cycle ;
- 
-          save_multipar (i,1,multipar) ;
-
       else :
 
         multipar := if obey_multi_par_hang :
@@ -948,6 +959,10 @@ snapped_multi_pos(ulxy[tpos]) --
 %fi ; 
 
   endfor ;
+
+  % end of normal/fallback 
+
+fi ; 
 
   if span_multi_column_pars :
     endgroup ;

@@ -1623,22 +1623,49 @@
 %     \fi
 %   \fi}
 
+% \def\OTRSETnobalance
+%   {\iflastcolumnfootnotes % testen ! optie
+%      % inhibit flush of floats !
+%      \dostepwiserecurse\mofcolumns\nofcolumns\plusone
+%        {\vskip-\lineheight\vbox{\strut}\vfill\eject}%
+%    \else
+%      \ifdim\pagetotal>\zeropoint 
+%        \ifnum\mofcolumns=\nofcolumns
+%          \OTRSETflushfinalfootnotes
+%          \vfill \eject
+%        \else
+%          \vfill \eject
+%          \OTRSETdofinalflush
+%          \OTRSETdofinaloutput
+%        \fi
+%      \fi
+%    \fi}
+%
+% no, this one looses empty 1page/1column with area (example **)
+%
+% \definecolumntextarea[title][x=1,y=4,nx=2,ny=7,state=start]
+% \setupcolumntextareatext[title][\vtop to 5cm{a\\b\\b\\d}]
+%
+% \starttext 
+% \startcolumnset \dorecurse{1}{\input tufte \par} \stopcolumnset
+% \stoptext 
+
 \def\OTRSETnobalance
   {\iflastcolumnfootnotes % testen ! optie
      % inhibit flush of floats !
      \dostepwiserecurse\mofcolumns\nofcolumns\plusone
        {\vskip-\lineheight\vbox{\strut}\vfill\eject}%
-   \else
-     \ifdim\pagetotal>\zeropoint
+   \else 
+   % \ifdim\pagetotal>\zeropoint no, see example ** 
        \ifnum\mofcolumns=\nofcolumns
          \OTRSETflushfinalfootnotes
-         \vfill \eject
        \else
-         \vfill \eject
-         \OTRSETdofinalflush
-         \OTRSETdofinaloutput
+         % probably todo 
        \fi
-     \fi
+       \vfill \eject
+       \OTRSETdofinalflush
+       \OTRSETdofinaloutput
+   % \fi 
    \fi}
 
 \def\OTRSETstartnextpage
@@ -2226,11 +2253,18 @@
    \docalculatecolumnsetspan
    \!!heighta\columntextareaparameter\c!ny\lineheight
    % to do: met/zonder ht/dp
-   \ifnum\columntextareaparameter\c!y=\zerocount
+% wrong 
+%   \ifnum\columntextareaparameter\c!y=\zerocount
+%     \advance\!!heighta -\lineheight
+%     \advance\!!heighta \topskip
+%   \fi
+%   \advance\!!heighta -\lineheight % option
+%
+   \ifnum\columntextareaparameter\c!y=\plusone
      \advance\!!heighta -\lineheight
      \advance\!!heighta \topskip
    \fi
-   \advance\!!heighta -\lineheight % option
+%
    \setbox\scratchbox\vbox
      {\donetrue\localframed
         [\??mt\currentcolumntestarea] 
@@ -2242,13 +2276,20 @@
    \advance\!!countb \minusone
    \OTRSETsetgridcell
      \!!counta\!!countb
-     \hbox{\clip
-       [\c!bovenoffset=\columntextareaparameter\c!clipoffset,%
-        \c!onderoffset=\columntextareaparameter\c!clipoffset,%
-        \c!linkeroffset=\columntextareaparameter\c!clipoffset,%
-        \c!breedte=\!!widthb,%
-        \c!hoogte=\!!heighta]%
-       {\copy\scratchbox}}%
+     \hbox
+       {\ifcase\!!countc
+          \copy\scratchbox % \box 
+        \else
+          \clip
+            [%\c!bovenoffset=\columntextareaparameter\c!clipoffset,%
+             %\c!onderoffset=\columntextareaparameter\c!clipoffset,%
+             %\c!linkeroffset=\columntextareaparameter\c!clipoffset,%
+\c!offset=\columntextareaparameter\c!clipoffset,%
+\c!rechteroffset=\zeropoint,
+             \c!breedte=\!!widthb,%
+             \c!hoogte=\!!heighta]%
+            {\copy\scratchbox}%
+        \fi}%
    \ifcase\!!countc\else
      \advance\!!counta \columntextareaparameter\c!nx
      \advance\!!counta -\!!countc
@@ -2258,9 +2299,11 @@
        \hbox
          {\hskip-\namedlayoutparameter\v!oneven\c!rugwit
           \clip
-            [\c!bovenoffset=\columntextareaparameter\c!clipoffset,%
-             \c!onderoffset=\columntextareaparameter\c!clipoffset,%
-             \c!rechteroffset=\columntextareaparameter\c!clipoffset,%
+            [%\c!bovenoffset=\columntextareaparameter\c!clipoffset,%
+             %\c!onderoffset=\columntextareaparameter\c!clipoffset,%
+             %\c!rechteroffset=\columntextareaparameter\c!clipoffset,%
+\c!offset=\columntextareaparameter\c!clipoffset,%
+\c!linkeroffset=\zeropoint,
              \c!breedte=\!!widtha,%
              \c!hoogte=\!!heighta,%
              \c!hoffset=\!!widthb]%

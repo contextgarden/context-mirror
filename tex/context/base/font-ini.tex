@@ -15,6 +15,40 @@
 \writestatus{loading}{Context Font Macros (ini)}
 
 \unprotect
+
+% \def\fontrange#1%  
+%   {\dofontrange{#1 =\bodyfontsize}}
+% 
+% \def\dofontrange#1%  
+%   {\dodofontrange#1 \relax}% \fontstringA
+% 
+% \def\dodofontrange#1 #2 %  
+%   {\ifdim\bodyfontsize#2%
+%      #1\expandafter\gobbleuntilrelax
+%    \else
+%      \expandafter\dodofontrange
+%    \fi}
+% 
+% \definefont
+%   [crap]
+%   [\fontrange
+%      {Regular        <10pt 
+%       RegularBold    <12pt 
+%       RegularSlanted <15pt 
+%       Regular} sa 1]
+%
+% may be better:
+% 
+% \definefontrange
+%   [crap]
+%   [Regular        <10pt 
+%    RegularBold    <12pt 
+%    RegularSlanted <15pt] 
+%   [Regular sa 1]
+%
+%
+% \dostepwiserecurse{2}{15}{1}
+%   {{\switchtobodyfont[\recurselevel pt]\crap test}\endgraf}
 
 % adapted, else wrong interlinespace
 
@@ -3863,7 +3897,7 @@
 %D hexadecimal format. Next we set the height of the accented
 %D character to the natural height of the character.
 
-\def\smashaccent#1%
+\unexpanded\def\smashaccent#1%
   {\dontleavehmode
    \bgroup
    \setbox\scratchbox\hbox{#1}%
@@ -3903,7 +3937,7 @@
 %D    oder\quad
 %D    \ruledhbox{\"Uberhaupt}}
 
-\def\moveaccent#1#2%
+\unexpanded\def\moveaccent#1#2%
   {\smashaccent
      {\dimen0\fontdimen5\font
       \dimen2\dimen0

@@ -23,39 +23,67 @@
 \defineuppercasecom \Dj  \dj
 \defineuppercasecom \DJ  \dj
 
+\definecharacter dstroke {\pseudoencodeddj}
+\definecharacter Dstroke {\pseudoencodedDJ}
+
 \stopmapping 
 
 %D We need proper names like in enco-com.tex!
 
-\definecharacter dj {\pseudoencodeddj}
-\definecharacter Dj {\pseudoencodedDJ}
-\definecharacter DJ {\pseudoencodedDJ}
+\definecharacter dj {\dstroke} % {\pseudoencodeddj}
+\definecharacter Dj {\Dstroke} % {\pseudoencodedDJ}
+\definecharacter DJ {\Dstroke} % {\pseudoencodedDJ}
 
 \unprotect 
 
-\def\pseudoencodeddj % like in babel 
+% \def\pseudoencodeddj % like in babel 
+%   {\leavevmode\hbox\bgroup
+%    \setbox0\hbox{d}%
+%    \dimen0=\ht0
+%    \advance\dimen0 1ex
+%    \dimen0=.45\dimen0
+%    \dimen2\expandafter\withoutpt\the\fontdimen1\font\dimen0
+%    \advance\dimen2 .5ex
+%    \rlap{\raise\dimen0\hbox{\kern\dimen2\vbox{\hrule\!!height0.1ex\!!width0.3em}}}%
+%    \box0
+%    \egroup}
+% 
+% \def\pseudoencodedDJ % like in babel 
+%   {\leavevmode
+%    \hbox\bgroup
+%    \setbox0\hbox{D}%
+%    \dimen0=.55\ht0
+%    \dimen2\expandafter\withoutpt\the\fontdimen1\font\dimen0
+%    \advance\dimen2 .15ex 
+%    \advance\dimen2 -.15\fontdimen7\font 
+%    \rlap{\raise\dimen0\hbox{\kern\dimen2\vbox{\hrule\!!height0.1ex\!!width0.33em}}}%
+%    \box0
+%    \egroup}
+
+\def\pseudoencodeddj % like in babel, but safer   
   {\leavevmode\hbox\bgroup
-   \setbox0\hbox{d}%
-   \dimen0=\ht0
-   \advance\dimen0 1ex
-   \dimen0=.45\dimen0
+   \setbox\scratchbox\hbox{d}%
+   \scratchdimen\ht\scratchbox
+   \advance\scratchdimen 1ex
+   \scratchdimen.45\scratchdimen
    \dimen2\expandafter\withoutpt\the\fontdimen1\font\dimen0
    \advance\dimen2 .5ex
-   \rlap{\raise\dimen0\hbox{\kern\dimen2\vbox{\hrule\!!height0.1ex\!!width0.3em}}}%
-   \box0
+   \hbox to \wd\scratchbox
+     {\box\scratchbox\hss
+      \raise\scratchdimen\hbox{\kern\dimen2\vbox{\hrule\!!height0.1ex\!!width0.3em}}}%
    \egroup}
 
-\def\pseudoencodedDJ % like in babel 
+\def\pseudoencodedDJ % like in babel, but safer 
   {\leavevmode
    \hbox\bgroup
-   \setbox0\hbox{D}%
-   \dimen0=.55\ht0
-   \dimen2\expandafter\withoutpt\the\fontdimen1\font\dimen0
+   \setbox\scratchbox\hbox{D}%
+   \scratchdimen.55\ht\scratchbox
+   \dimen2\expandafter\withoutpt\the\fontdimen1\font\scratchdimen
    \advance\dimen2 .15ex 
    \advance\dimen2 -.15\fontdimen7\font 
-   \dimen4\expandafter\withoutpt\the\fontdimen7\font\dimen0
-   \rlap{\raise\dimen0\hbox{\kern\dimen2\vbox{\hrule\!!height0.1ex\!!width0.33em}}}%
-   \box0
+   \hbox to \wd\scratchbox
+     {\box\scratchbox\hss
+      \raise\scratchdimen\hbox{\kern\dimen2\vbox{\hrule\!!height0.1ex\!!width0.3em}}}%
    \egroup}
 
 % currency

@@ -23,11 +23,13 @@ eval '(exit $?0)' && eval 'exec perl -S $0 ${1+"$@"}' && eval 'exec perl -S $0 $
 #  Thanks to Taco      Hoekwater for making the file -w proof
 #  Thanks to Alex      Knowles   and friends for the right JPG specs
 #  Thanks to Sebastian Rahtz     for the eps to PDF method
+#  Thanks to Fabrice   Popineau  for windows bin code
 
 #  undocumented:
 #
-#  --analyze file.pdf       : reports some statistics
-#  --purge   [jobname]      : removes temporary files
+#  --analyze  file.pdf  : reports some statistics
+#  --purge    [jobname] : removes temporary files
+#  --purgeall [jobname] : removes all temporary files
 
 #D This is \TEXUTIL, a utility program (script) to be used
 #D alongside the \CONTEXT\ macro package. This \PERL\ script is
@@ -38,7 +40,7 @@ eval '(exit $?0)' && eval 'exec perl -S $0 ${1+"$@"}' && eval 'exec perl -S $0 $
 #D binary version, like scanning illustrations other than \EPS.
 #D I would suggest to keep an eye on the version number:
 
-$Program = "TeXUtil 7.4 - ConTeXt / PRAGMA ADE 1992-2002" ;
+$Program = "TeXUtil 7.5 - ConTeXt / PRAGMA ADE 1992-2003" ;
 
 #D By the way, this is my first \PERL\ script, which means
 #D that it will be improved as soon as I find new and/or more
@@ -73,6 +75,7 @@ $Program = "TeXUtil 7.4 - ConTeXt / PRAGMA ADE 1992-2002" ;
 #D \PRAGMA\ environment system.
 
 use Getopt::Long ;
+use FindBin ;
 
 #D We don't want error messages and accept partial switches,
 #D which saves users some typing.
@@ -88,7 +91,7 @@ $UserInterface  = "en" ;
 $UnknownOptions = 0 ;
 $TcXPath        = '' ;
 
-#D We need this for calling GS.  
+#D We need this for calling GS.
 
 use Config        ;
 
@@ -119,6 +122,7 @@ my $dosish = ($Config{'osname'} =~ /^(ms)?dos|^os\/2|^(ms|cyg)win/i) ;
       "criterium=f"       =>\$ProcessCriterium,
       "unknown"           =>\$ProcessUnknown,
    "purge"          => \$PurgeFiles,
+   "purgeall"       => \$PurgeAllFiles,
    "analyze"        => \$AnalyzeFile,
    "help"           => \$ProcessHelp,
    "silent"         => \$ProcessSilent,
@@ -160,13 +164,13 @@ sub CloseTerminal
 $InputFile = "@ARGV" ; # niet waterdicht
 
 sub CompFileName
-  { my ($a,$b) = @_ ; 
-    my ($fa,$sa) = split(/\./,$a) ; 
-    my ($fb,$sb) = split(/\./,$b) ;  
-    if (($sa =~ /^\d+$/o)&&($sb =~ /^\d+$/o)) 
-      { $a = $fa . "." . sprintf("%10d",$sa) ; $a =~ s/\s/0/o ; 
-        $b = $fb . "." . sprintf("%10d",$sb) ; $b =~ s/\s/0/o } 
-    return (lc ($a) cmp lc ($b)) } 
+  { my ($a,$b) = @_ ;
+    my ($fa,$sa) = split(/\./,$a) ;
+    my ($fb,$sb) = split(/\./,$b) ;
+    if (($sa =~ /^\d+$/o)&&($sb =~ /^\d+$/o))
+      { $a = $fa . "." . sprintf("%10d",$sa) ; $a =~ s/\s/0/o ;
+        $b = $fb . "." . sprintf("%10d",$sb) ; $b =~ s/\s/0/o }
+    return (lc ($a) cmp lc ($b)) }
 
 sub CheckInputFiles
  { @UserSuppliedFiles = glob $_[0] ;
@@ -602,7 +606,7 @@ if ($UserInterface eq "nl")
 "                       --quotes : quotes converteren                    \n" .
 "                       --tcxpath : tcx filter pad                       \n" .
 "                                                                        \n" .
-"              --purge    tijdelijke (klad) files verwijderen            \n" .
+"           --purge(all)    tijdelijke (klad) files verwijderen            \n" .
 "                                                                        \n" .
 "           --documents   documentatie file genereren / tex->ted         \n" .
 "             --sources   broncode file genereren / tex->tes             \n" .
@@ -633,7 +637,7 @@ elsif ($UserInterface eq "de")
 "                       --quotes : Konvertiere akzentuierte Buchstaben   \n" .
 "                       --tcxpath : tcx Filter Path                      \n" .
 "                                                                        \n" .
-"              --purge    entferne temporaere ConTeXt-Dateien            \n" .
+"          --purge(all)    entferne temporaere ConTeXt-Dateien            \n" .
 "                                                                        \n" .
 "           --documents   Erstelle Dokumentationsdatei / tex->ted        \n" .
 "             --sources   Erstelle reine Quelltextdateien / tex->tes     \n" .
@@ -664,7 +668,7 @@ elsif ($UserInterface eq "it")
 "                       --quotes : converti caratteri accentati          \n" .
 "                       --tcxpath : percorso del filtro tcx              \n" .
 "                                                                        \n" .
-"              --purge    rimuovi i file temporanei ConTeXt              \n" .
+"         --purge(all)    rimuovi i file temporanei ConTeXt              \n" .
 "                                                                        \n" .
 "           --documents   genera file di documentazione / tex->ted       \n" .
 "             --sources   genera solo sorgente / tex->tes                \n" .
@@ -695,7 +699,7 @@ else
 "                       --quotes : convert quotes characters             \n" .
 "                       --tcxpath : tcx filter path                      \n" .
 "                                                                        \n" .
-"              --purge    clean up temporary context files               \n" .
+"         --purge(all)    clean up temporary context files               \n" .
 "                                                                        \n" .
 "           --documents   generate documentation file / tex->ted         \n" .
 "             --sources   generate source only file / tex->tes           \n" .
@@ -828,7 +832,7 @@ sub HandleKey
     $STR[$SortN] = $str ;
     $CHR[$SortN] = $chr ;
     $MAP[$SortN] = $map ;
-#print "$chr$map = $alf\n" ; 
+#print "$chr$map = $alf\n" ;
 #    $ALF{"$chr$map"} = $alf }
     $ALF{"$map"} = $alf }
 
@@ -843,7 +847,7 @@ sub SanitizedString
           { my $s = $STR[$i] ;
             my $c = $CHR[$i] ;
             my $m = $MAP[$i] ;
-          # print "[$i $s $c $m]\n" ; 
+          # print "[$i $s $c $m]\n" ;
             $string =~ s/($s)/$c/ge ;
             $copied =~ s/($s)/$m/ge }
         $string .= "\x00";
@@ -958,7 +962,7 @@ my $NOfPositionsFound  = 0 ;
 my $TotalNOfPositions  = 0 ;
 my $TotalNOfMPgraphics = 0 ;
 
-my $SectionSeparator = ":" ; 
+my $SectionSeparator = ":" ;
 
 sub InitializeCommands
   { print TUO "%\n" . "% $Program / Commands\n" . "%\n" ;
@@ -973,9 +977,9 @@ sub HandleCommand
       { $TotalNOfPositions = $1 }
     elsif ($RestOfLine =~ /^initializevariable\\totalnofMPgraphics\{(.*)\}/i)
       { $TotalNOfMPgraphics = $1 }
-# todo: reg how to 
-#    elsif ($RestOfLine =~ /^thisissectionseparator\{(.*)\}/o) 
-#      { $SectionSeparator = $1 } 
+# todo: reg how to
+#    elsif ($RestOfLine =~ /^thisissectionseparator\{(.*)\}/o)
+#      { $SectionSeparator = $1 }
     print TUO "\\$RestOfLine\n" }
 
 sub FlushCommands
@@ -1022,13 +1026,14 @@ sub RunExtraPrograms
 my $pm_path ;
 
 BEGIN
-  { # $pm_path = `kpsewhich --format="other text files" --progname=context texutil.pl` ;
-    # chomp($pm_path) ;
+  { ## $pm_path = `kpsewhich --format="other text files" --progname=context texutil.pl` ;
+    ## chomp($pm_path) ;
     # $pm_path =~ s/texutil\.pl.*// }
-    $pm_path = $0 ;
-    $pm_path =~ s/\\/\//o ;
+    # $pm_path = $0 ;
+    # $pm_path =~ s/\\/\//o ;
     # $pm_path =~ s/texutil\.pl.*//io ;
-    $pm_path =~ s/(.*)texutil.*?$/$1/i ;
+    ## $pm_path =~ s/(.*)texutil.*?$/$1/i ;
+    $pm_path = "$FindBin::Bin/" ;
     if ($pm_path eq "") { $pm_path = "./" } }
 
 use lib $pm_path ;
@@ -1191,7 +1196,7 @@ $RegStat{"e"} = 2 ; # end up between from and to
 $RegStat{"t"} = 3 ;
 $RegStat{"s"} = 4 ;
 
-my $RegSep = "$SectionSeparator$SectionSeparator" ; 
+my $RegSep = "$SectionSeparator$SectionSeparator" ;
 
 sub HandleRegister # the } { makes sure that local {} is ok
   { ($SecondTag, $RestOfLine) = split(/ /, $RestOfLine, 2) ;
@@ -1314,7 +1319,7 @@ sub HandleRegister # the } { makes sure that local {} is ok
 #D \haalbuffer After being sorted, these entries are
 #D turned into something \TEX\ using:
 
-$CollapseEntries = 0 ; 
+$CollapseEntries = 0 ;
 
 $RegisterEntry[0] = ("") ;
 
@@ -1323,11 +1328,11 @@ sub How
 
 sub FlushSavedLine
   { if (($CollapseEntries)&&($SavedFrom ne ""))
-      { if ($SavedTo ne "") 
+      { if ($SavedTo ne "")
           { print TUO "\\registerfrom$SavedFrom" ;
-            print TUO "\\registerto$SavedTo" } 
+            print TUO "\\registerto$SavedTo" }
         else
-          { print TUO "\\registerpage$SavedFrom" } } 
+          { print TUO "\\registerpage$SavedFrom" } }
     $SavedFrom  = "" ;
     $SavedTo    = "" ;
     $SavedEntry = "" }
@@ -1350,7 +1355,7 @@ sub FlushRegisters
 
     $SavedFrom  = "" ;
     $SavedTo    = "" ;
-    $SavedEntry = "" ; 
+    $SavedEntry = "" ;
 
     for ($n=1 ; $n<=$NOfEntries ; ++$n)
       { ($Class, $LCKey, $Key, $Entry, $TextHow, $RegisterState,
@@ -1415,8 +1420,8 @@ sub FlushRegisters
             $LastRealPage = $RealPage }
         elsif (($Copied) ||
               ! (($LastPage eq $Page) and ($LastRealPage eq $RealPage)))
-          { # print "$LastPage / $Page // $LastRealPage / $RealPage\n" ;  
-            $NextEntry = "{$Class}{$PreviousA}{$PreviousB}{$PreviousC}{$PageHow,$TextHow}" ; 
+          { # print "$LastPage / $Page // $LastRealPage / $RealPage\n" ;
+            $NextEntry = "{$Class}{$PreviousA}{$PreviousB}{$PreviousC}{$PageHow,$TextHow}" ;
             $SavedLine = "{$Class}{$PageHow,$TextHow}{$Location}{$Page}{$RealPage}\n" ;
             if ($RegisterState eq $RegStat{"f"})
               { FlushSavedLine ;
@@ -1425,15 +1430,15 @@ sub FlushRegisters
               { FlushSavedLine ;
                 print TUO "\\registerto$SavedLine" }
             else
-              { if ($CollapseEntries) 
+              { if ($CollapseEntries)
                   { if ($SavedEntry ne $NextEntry)
                       { $SavedFrom = $SavedLine }
                     else
                       { $SavedTo = $SavedLine }
-                    $SavedEntry = $NextEntry } 
-                else 
+                    $SavedEntry = $NextEntry }
+                else
                  { print TUO "\\registerpage$SavedLine" }
-              } 
+              }
             ++$NOfSanePages ;
             $LastPage = $Page ;
             $LastRealPage = $RealPage } }
@@ -2017,7 +2022,7 @@ sub ConvertEpsToEps
   { my ( $SuppliedFileName , $LLX, $LLY, $URX, $URY ) = @_ ;
     ($FileName, $FileSuffix) = SplitFileName ($SuppliedFileName) ;
     if ($ProcessEpsToPdf)
-      { if ($dosish) { $gs = "gswin32c" } else { $gs = "gs" } 
+      { if ($dosish) { $gs = "gswin32c" } else { $gs = "gs" }
         unlink "$FileName.pdf" ;
         $GSCommandLine = "-q " .
                          "-sDEVICE=pdfwrite " .
@@ -2680,6 +2685,9 @@ my @texonlysuffixes =
 my @texnonesuffixes =
   ("tuo","tub","top") ;
 
+if ($PurgeAllFiles) 
+  { push @forsuresuffixes, @texnonesuffixes  ; @texnonesuffixes = [] } 
+
 sub PurgeFiles # no my in foreach
   { my $pattern = $ARGV[0] ; my $strippedname ;
     if ($pattern eq '')
@@ -2766,6 +2774,7 @@ elsif  ($ProcessInfos     ) { HandleEditorCues }
 elsif  ($ProcessFigures   ) { HandleFigures    }
 elsif  ($ProcessLogFile   ) { HandleLogFile    }
 elsif  ($PurgeFiles       ) { PurgeFiles       }
+elsif  ($PurgeAllFiles    ) { PurgeFiles       }
 elsif  ($AnalyzeFile      ) { AnalyzeFile      }
 elsif  ($ProcessHelp      ) { ShowHelpInfo     } # redundant
 else                        { ShowHelpInfo     }
