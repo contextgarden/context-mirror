@@ -72,48 +72,92 @@
    \processseparatedlist[#1][+]\docommando
    \!!stringa}
 
-\def\doprocesspageregister[#1]#2%
+% \def\doprocesspageregister[#1]#2%
+%   {\begingroup
+%    \thisisnextinternal{\s!ind}%
+%    \ifduplicate\getlastregisterentry{#2}\fi
+%    \convertexpanded{\??id\currentregister}{#2}\asciiregisterentry
+%    \makesectionformat
+%    \edef\schrijfwegnaarregister%
+%      {\writeutility%
+%         {r \ifcase\registerpagestatus\space\or e \or f \or t \fi
+%          {\currentregister} %
+%          {\nextinternalreference} %
+%          {#1} %
+%          {\asciiregisterentry} %
+%          {\sectionformat::\noexpand\pagenumber} %
+%          {\noexpand\realfolio}}}%
+%    \schrijfwegnaarregister
+%    \getfirstcharacter\currentregister
+%    \registerinfo{> \firstcharacter}{#2}%
+%    \endgroup}
+
+\def\doprocesspageregister[#1]#2#3% key altnum entry 
   {\begingroup
    \thisisnextinternal{\s!ind}%
-   \ifduplicate\getlastregisterentry{#2}\fi
-   \convertexpanded{\??id\currentregister}{#2}\asciiregisterentry
+   \ifduplicate\getlastregisterentry{#3}\fi
+   \convertexpanded{\??id\currentregister}{#3}\asciiregisterentry
    \makesectionformat
-   \edef\schrijfwegnaarregister%
+   \doifelsevalue{\??id\currentregister\c!eigennummer}{\v!ja}{\donetrue}{\donefalse}%
+   \edef\schrijfwegnaarregister% spaces between } { are essential for texutil's split  
      {\writeutility%
         {r \ifcase\registerpagestatus\space\or e \or f \or t \fi
          {\currentregister} %
          {\nextinternalreference} %
          {#1} %
          {\asciiregisterentry} %
-         {\sectionformat::\noexpand\pagenumber} %
+%         {\sectionformat::\noexpand\pagenumber} %
+         {\sectionformat::\ifdone#2\else\noexpand\pagenumber\fi} %
          {\noexpand\realfolio}}}%
    \schrijfwegnaarregister
    \getfirstcharacter\currentregister
-   \registerinfo{> \firstcharacter}{#2}%
+   \registerinfo{> \firstcharacter}{#3}%
    \endgroup}
 
-\def\complexdoregister[#1]#2%
-  {\doprocesspageregister[#1]{#2}%
-   \ifvmode\nobreak\fi
-   \GotoPar}
+%\def\complexdoregister[#1]#2%
+%  {\doprocesspageregister[#1]{#2}%
+%   \ifvmode\nobreak\fi
+%   \GotoPar}
 
 %\def\doregister#1%
 %  {\def\currentregister{#1}%
 %   \complexorsimpleempty\doregister}
 
+%\def\doregister#1%
+%  {\chardef\registerpagestatus=1
+%   \def\currentregister{#1}%
+%   \complexorsimpleempty\doregister}
+
 \def\doregister#1%
   {\chardef\registerpagestatus=1
    \def\currentregister{#1}%
-   \complexorsimpleempty\doregister}
+   \doifelsevalue{\??id\currentregister\c!eigennummer}{\v!ja}
+     {\def\next{\dosingleempty\dodoregister}}
+     {\def\next{\dosingleempty\donoregister}}%
+   \next}
+
+\def\donoregister[#1]%
+  {\dodoregister[#1]{}}
+
+\def\dodoregister[#1]#2#3%
+  {\doprocesspageregister[#1]{#2}{#3}%
+   \ifvmode\nobreak\fi
+   \GotoPar}
 
 \def\startregister%
   {\dodoubleargument\dostartregister}
+
+%\def\dostartregister[#1][#2]#3%
+%  {\chardef\registerpagestatus=2
+%   \def\currentregister{#1}%
+%   \setgvalue{\??id#1\??id#2}{\dodostopregister[#1][#2]{#3}}%
+%   \complexdoregister[#2]{#3}}
 
 \def\dostartregister[#1][#2]#3%
   {\chardef\registerpagestatus=2
    \def\currentregister{#1}%
    \setgvalue{\??id#1\??id#2}{\dodostopregister[#1][#2]{#3}}%
-   \complexdoregister[#2]{#3}}
+   \donoregister[#2]{#3}}
 
 \def\stopregister%
   {\dodoubleargument\dostopregister}
@@ -121,10 +165,15 @@
 \def\dostopregister[#1][#2]%
   {\getvalue{\??id#1\??id#2}\setgvalue{\??id#1\??id#2}{}}
 
+%\def\dodostopregister[#1][#2]%
+%  {\chardef\registerpagestatus=3
+%   \def\currentregister{#1}%
+%   \complexdoregister[#2]}
+
 \def\dodostopregister[#1][#2]%
   {\chardef\registerpagestatus=3
    \def\currentregister{#1}%
-   \complexdoregister[#2]}
+   \donoregister[#2]}
 
 \def\complexdozieregister[#1]#2#3%
   {\begingroup
@@ -150,9 +199,13 @@
   {\def\currentregister{#1}%
    \complexorsimpleempty\dozieregister}
 
+%\def\doschrijfnaarregister[#1]%  % de twee-traps-aanroep is nodig
+%  {\edef\currentregister{#1}%    % om gebruik van \ExpandBothAfter
+%   \doprocesspageregister}       % mogelijk te maken
+
 \def\doschrijfnaarregister[#1]%  % de twee-traps-aanroep is nodig
   {\edef\currentregister{#1}%    % om gebruik van \ExpandBothAfter
-   \doprocesspageregister}       % mogelijk te maken
+   \doprocesspageregister{}}     % mogelijk te maken
 
 \def\schrijfnaarregister%
   {\dodoubleempty\doschrijfnaarregister}

@@ -1,0 +1,203 @@
+\unprotect 
+
+\gdef\showpalet%
+  {\dodoubleargument\doshowpalet}
+
+\gdef\doshowpalet[#1][#2]%
+  {\doifdefined{\??pa#1}
+     {\doifinsetelse{\v!vertikaal}{#2}
+        {\showverticalpalet[#1][#2]}
+        {\showhorizontalpalet[#1][#2]}}}
+
+\gdef\showverticalpalet[#1][#2]%
+  {\localvbox
+     {\offinterlineskip
+      \setuppalet[#1]
+      \def\rule%
+        {\vrule\!!width3em\!!height\ht\strutbox\!!depth\dp\strutbox}
+      \tabskip\!!zeropoint
+      \def\doshowpalet##1%
+        {\doifinsetelse{\v!nummer}{#2}{##1\hskip.5em}{}&
+         \color[##1]{\rule}\graycolor[##1]{\rule}&
+         \doifinset{\v!waarde}{#2}{\hskip.5em\colorvalue{##1}}\crcr}
+      \halign
+        {\hss##&\hss##\hss&##\cr
+         &\doifinset{\v!naam}{#2}{\strut#1}&\cr%
+         \processpalet[#1]\doshowpalet\crcr}}}
+
+\gdef\showhorizontalpalet[#1][#2]%
+  {\localvbox
+     {\offinterlineskip
+      \setuppalet[#1]
+      \tabskip\!!zeropoint
+      \!!widtha=\!!zeropoint
+      \doifinset{\v!nummer}{#2}
+        {\def\doshowpalet##1%
+           {\setbox0=\hbox{##1}%
+            \ifdim\!!widtha<\wd0\!!widtha=\wd0\fi}%
+         \processpalet[#1]\doshowpalet}%
+      \advance\!!widtha by 1em
+      \ifdim\!!widtha<5em
+        \!!widtha=5em
+      \fi
+      \halign
+        {##&&\hbox to \!!widtha{\hss##\hss}\cr
+         \doifinset{\v!nummer}{#2}
+           {\def\doshowpalet##1{&\strut##1}%
+            \processpalet[#1]\doshowpalet}\cr
+         \doifinset{\v!naam}{#2}{#1\hskip.5em}% 
+         \def\doshowpalet##1%
+           {&\color[##1]{\vrule\!!width\!!widtha\!!height\ht\strutbox\!!depth\!!zeropoint}}%
+         \processpalet[#1]\doshowpalet\crcr
+         \def\doshowpalet##1%
+           {&\graycolor[##1]{\vrule\!!width\!!widtha\!!height\!!zeropoint\!!depth\dp\strutbox}}%
+         \processpalet[#1]\doshowpalet\crcr
+         \doifinset{\v!waarde}{#2}
+           {\def\doshowpalet##1%
+             {&\vbox
+                {\hsize\!!widtha
+                 \vskip.25ex
+                 \everypar{\strut}
+                 \veryraggedcenter
+                 \let\colorformatseparator=\endgraf
+                 \colorvalue{##1}}}%
+            \processpalet[#1]\doshowpalet}%
+         \crcr}}}
+
+\gdef\processpalet[#1]%
+  {\expanded{\globalprocesscommalist[\getvalue{\??pa#1}]}}
+
+\gdef\showcolorgroup%
+  {\dodoubleargument\doshowcolorgroup} 
+
+\gdef\doshowcolorgroup[#1][#2]%
+  {\doifdefined{\??cr#1:1}
+     {\doifinsetelse{\v!vertikaal}{#2}
+        {\showverticalcolorgroup[#1][#2]}
+        {\showhorizontalcolorgroup[#1][#2]}}}
+
+\gdef\showhorizontalcolorgroup[#1][#2]%
+  {\localvbox
+     {\offinterlineskip
+      \setuppalet
+      \tabskip\!!zeropoint
+      \def\rule%
+        {\vrule\!!width4em\!!height\ht\strutbox\!!depth\dp\strutbox}
+      \def\colorformatseparator{\strut\cr}
+      \def\dodoshowgroup##1%
+        {\halign
+           {\hss####\hss\cr
+            \doifinset{\v!nummer}{#2}{\strut##1}\cr
+            \color[#1:##1]{\vrule\!!width4em\!!height\ht\strutbox\!!depth\!!zeropoint}\cr
+            \graycolor[#1:##1]{\vrule\!!width4em\!!height\!!zeropoint\!!depth\dp\strutbox}\cr
+            \doifinset{\v!waarde}{#2}{\colorvalue{#1:##1}\strut}\crcr}}
+      \def\doshowgroup##1%
+        {\doifdefined{\??cr#1:##1}
+           {\vbox{\dodoshowgroup{##1}}}}
+      \hbox 
+        {\doifinset{\v!naam}{#2}
+           {\strut
+            \doifinsetelse{\v!waarde}{#2}
+              {\raise3\lineheight\hbox{#1\hskip.5em}}
+              {#1}%
+            \hskip.5em}%
+         \doshowgroup1\doshowgroup2\doshowgroup3\doshowgroup4%
+         \doshowgroup5\doshowgroup6\doshowgroup7\doshowgroup8}}}
+
+\gdef\showverticalcolorgroup[#1][#2]%
+  {\localvbox
+     {\offinterlineskip
+      \setuppalet
+      \tabskip\!!zeropoint
+      \def\rule%
+        {\vrule\!!width2.5em\!!height\ht\strutbox\!!depth\dp\strutbox}
+      \def\doshowgroup##1%
+        {\doifdefined{\??cr#1:##1}
+           {\doifinset{\v!nummer}{#2}{##1\hskip.5em}&
+            \color[#1:##1]{\rule}\graycolor[#1:##1]{\rule}&
+            \doifinset{\v!waarde}{#2}{\hskip.5em\colorvalue{#1:##1}}\crcr}}
+      \halign
+        {\hss##&\hss##\hss&##\hss\cr
+         &\doifinset{\v!naam}{#2}{\strut#1}&\crcr   
+         \doshowgroup1\doshowgroup2\doshowgroup3\doshowgroup4%
+         \doshowgroup5\doshowgroup6\doshowgroup7\doshowgroup8}}}
+
+\gdef\showcolor[#1]%
+  {\bgroup
+     \setupcolor[#1]
+     \stelwitruimtein[\v!geen]
+     \def\rule%
+       {\vrule\!!width4em\!!height\ht\strutbox\!!depth\dp\strutbox}
+     \def\docommand##1%
+       {\hbox 
+          {\graycolor[##1]{\rule}\quad
+           \color[##1]{\rule}\quad
+           \grayvalue{##1}\quad
+           \hbox to 12em{\colorvalue{##1}\hss}%
+           \strut##1}
+        \endgraf}
+     \processcommacommand[\colorlist]\docommand
+   \egroup}
+
+\gdef\comparepalet%
+  {\dosingleargument\docomparepalet}
+
+\gdef\docomparepalet[#1]%
+  {\doifdefined{\??pa#1}
+     {\hbox
+        {\dodocomparepalet\color[#1]%
+         \quad
+         \dodocomparepalet\graycolor[#1]}}}
+
+\gdef\dodocomparepalet#1[#2]%
+  {\localvbox
+     {\offinterlineskip
+      \setuppalet[#2]
+      \getcommacommandsize[\getvalue{\??pa#2}]
+      \!!widtha=2em\relax
+      \hsize=\commalistsize\!!widtha
+      \def\rule%
+        {\vrule\!!width.5\!!widtha\!!height2.25ex\!!depth-.75ex}
+      \def\dododocomparepalet##1%
+        {\hbox
+           {\setbox0=\hbox
+              {#1[##1]{\vrule\!!width\hsize\!!height3ex}}%
+            \wd0=\!!zeropoint\box0
+            \hbox to \hsize
+              {\def\dododocomparepalet####1%
+                 {\hbox to \!!widtha
+                    {\hss#1[####1]{\rule}\hss}}%
+               \processcommacommand[\getvalue{\??pa#2}]\dododocomparepalet}}
+         \endgraf}
+      \processcommacommand[\getvalue{\??pa#2}]\dododocomparepalet}}
+
+\gdef\comparecolorgroup%
+  {\dosingleargument\docomparecolorgroup}
+
+\gdef\docomparecolorgroup[#1]%
+  {\doifdefined{\??cr#1:1}
+     {\hbox
+        {\dodocomparecolorgroup\color[#1]%
+         \quad
+         \dodocomparecolorgroup\graycolor[#1]}}}
+
+\gdef\dodocomparecolorgroup#1[#2]%
+  {\localvbox
+     {\!!counta=0
+      \dorecurse{15}
+        {\doifdefined{\??cr#2:\recurselevel}{\advance\!!counta by 1}}
+      \!!widtha=2em\relax
+      \hsize=\!!counta\!!widtha
+      \def\rule%
+        {\vrule\!!width.5\!!widtha\!!height2.25ex\!!depth-.75ex}
+      \def\dododocomparecolorgroup##1%
+        {\hbox to \hsize
+           {\setbox0=\hbox
+              {#1[#2:##1]{\vrule\!!width\hsize\!!height3ex}}%
+            \wd0=\!!zeropoint\box0
+            \hbox to \hsize
+              {\hss\dorecurse{\!!counta}{#1[#2:\recurselevel]{\rule}\hss}}}
+         \endgraf}
+      \dorecurse{\!!counta}{\dododocomparecolorgroup\recurselevel}}}
+
+\protect \endinput 

@@ -13,11 +13,18 @@
 
 \unprotect
 
-% Some examples of missing font sets and font files:   
+% Here you can take care of overloading some (style) 
+% defaults. What goes here, depends on your local system. 
 %
-% \setupbodyfont [ber] % berry names
+% Set default file name mapping:
 %
-% \definefilesynonym [font-lbr] [font-cmr] 
+% \usetypescript [ber] 
+%
+% Overload Lucida by Adobe-15:
+%
+% \definetypescriptsynonym [lbr] [pos] 
+%
+% Compensate for missing files:
 %
 % \definefontsynonym [Courier-Bold]        [Courier]
 % \definefontsynonym [Courier-BoldOblique] [Courier]
@@ -37,16 +44,16 @@
 %   [dviwindo]
 %
 % Enabling \CONTEXT\ navigation symbols as well as \euro's. 
-%
-% \usesymbols
-%   [nav,eur] 
-%
-% \setupsymbolset
-%   [navigation 1]
-%
-% \setupinteraction
-%   [\c!symboolset=navigation 1]
-%
+
+\usesymbols
+  [nav,eur] 
+
+\setupsymbolset
+  [navigation 1]
+
+\setupinteraction
+  [\c!symboolset=navigation 1]
+
 % Changing language defaults: 
 % 
 % \setuplanguage
@@ -55,8 +62,6 @@
 %    \c!leftquotation=\upperleftdoublesixquote]
 %
 % So far for the settings. 
-
-\protect 
 
 % Loading local preferences: 
 %
@@ -84,4 +89,4 @@
 
 % So far. 
 
-\endinput
+\protect \endinput

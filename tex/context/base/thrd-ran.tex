@@ -90,10 +90,15 @@
  \ifnum\ranval<\@tempcnta\else \expandafter\getr@nval \fi
 }
 
-\def\pointless{\expandafter\PoinTless\the}
-{\catcode`p=12 \catcode`t=12 
-\gdef\PoinTless#1pt{#1}}
-
+%D The next macro is not needed in \CONTEXT, which provides 
+%D the \type {\withoutpt} macro. 
+%D
+%D \starttypen  
+%D \def\pointless{\expandafter\PoinTless\the}
+%D {\catcode`p=12 \catcode`t=12 
+%D \gdef\PoinTless#1pt{#1}}
+%D \stoptypen 
+ 
 \catcode`\@=\randomi
 \global\randomi=0
 \newcount\ranval

@@ -75,14 +75,14 @@
       \setupfield
         [presentation]
         [\c!breedte=\v!passend,\c!hoogte=\v!passend,\c!offset=\v!overlay,
-         \c!strut=\v!nee,\c!kader=\v!uit,\c!optie={\v!alleenleesbaar}]
+         \c!strut=\v!nee,\c!kader=\v!uit,\c!optie=\v!alleenleesbaar]
       \definesymbol    
         [\presentationtag]
         [\presentationshade]
       \def\presentationshade%
         {\presentationshield
            [\c!breedte=\tekstbreedte,\c!hoogte=\presentationstepheight]{}}
-      \definefield[\presentationtag][check][presentation][\presentationtag][\presentationtag]
+      \definefield[\presentationtag][check][presentation][\presentationtag,\v!geen][\presentationtag]
       \fitfield[\presentationtag]}}
 
 \startJSpreamble {presentation} used later 
@@ -139,6 +139,33 @@
 %D
 %D \starttypen 
 %D \setupfootertexts[{\button{Show Up}[NextStep]}]
+%D \stoptypen 
+%D
+%D In case of presentation style 2, you can say: 
+%D
+%D \starttypen 
+%D \definereference[Whatever][JS(NextPresentation{\realfolio})]
+%D \stoptypen 
+%D
+%D Depending of the viewer, you need to reset the fields at 
+%D startup:
+%D
+%D \starttypen 
+%D \setupinteraction[openaction=ResetForm]
+%D \stoptypen 
+%D
+%D Fixed spacing give you the best results:
+%D
+%D \starttypen 
+%D \setupwhitespace[fixed] 
+%D \setupblank[fixed]
+%D \stoptypen 
+%D
+%D Sometimes you need to set the color of the background, as
+%D with style 2: 
+%D
+%D \starttypen 
+%D \definecolor[StepColor][Page]
 %D \stoptypen 
 %D
 %D Special effects can be reached with: 

@@ -386,8 +386,9 @@
    \ifx\enabledmapping\charactermapping \else
      \doifdefined{\@map@\charactermapping}
        {\the\csname\@map@\charactermapping\endcsname}%
+     \edef\enabledmapping{\charactermapping}%
      \enablelanguagespecifics[\currentlanguage]% new 
-     \edef\enabledmapping{\charactermapping\currentlanguage}%
+%     \edef\enabledmapping{\charactermapping\currentlanguage}%
    \fi
    \synchronizepatterns}
 
@@ -960,9 +961,9 @@
 %D can be used to check the correct loading of hyphenation 
 %D patterns. 
 
-\fetchruntimecommand \showaccents      {\f!encodingprefix run}
-\fetchruntimecommand \showcharacters   {\f!encodingprefix run}
-\fetchruntimecommand \showhyphenations {\f!encodingprefix run}
+\fetchruntimecommand \showaccents      {\f!encodingprefix\s!run}
+\fetchruntimecommand \showcharacters   {\f!encodingprefix\s!run}
+\fetchruntimecommand \showhyphenations {\f!encodingprefix\s!run}
 
 %D {\em The next section is experimental and implements font 
 %D specific features, like hanging punctuation.}

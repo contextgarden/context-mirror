@@ -1,0 +1,210 @@
+%D \module
+%D   [       file=type-pre,
+%D        version=2001.04.12, 
+%D          title=\CONTEXT\ Typescript Macros,
+%D       subtitle=Compatibility scripts, 
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D The Computer Modern Roman is derived from the Monotype~8a
+%D Times Roman. In this module, that is loaded by default, we
+%D define all relevant alternatives.
+
+\starttypescript [cmr] 
+
+\usetypescript [all] [computer-modern] [default,name,size]
+
+\enablemathcollection[default]
+
+\stoptypescript
+
+%D This script remaps the default Computer Modern Font Files
+%D onto the virtual EC ones, so that hyphenations work well.
+
+\starttypescript [aer]
+
+\usetypescript [all] [computer-modern] [default,name,size,ec]
+
+\enablemathcollection[default]
+
+\stoptypescript
+
+%D This script defines the Computer Modern Roman with iso
+%D latin 2 encoding, as needed for Czech and other languages.
+
+\starttypescript [csr]
+
+\usetypescript [all] [computer-modern] [default,name,size,il2]
+
+\enablemathcollection[default]
+
+\stoptypescript
+
+%D This script defines the Computer Modern Roman with a
+%D polish encoding, as needed for Czech and other languages.
+
+\starttypescript [plr]
+
+\usetypescript [all] [computer-modern] [default,name,size,pl0]
+
+\enablemathcollection[default]
+
+\stoptypescript
+
+%D Here we implement the symbol fonts as provided by the
+%D American Mathematical Society. The names of these symbols
+%D can be found in The Joy of \TeX\ by M.~Spivak.
+
+\starttypescript [ams]
+
+\usetypescript [math] [ams] [all]
+
+\enablemathcollection[ams]
+
+\stoptypescript
+
+%D The Concrete Modern Roman is just an alternative Computer
+%D Modern Roman.
+
+\starttypescript [con]
+
+\usetypescript [serif] [concrete] [all]
+ 
+\stoptypescript
+
+%D The Euler Fonts are designed by Herman Zapf and can be
+%D used with the Concrete Fonts defined elsewhere.
+
+\starttypescript [eul]
+
+\usetypescript [math] [euler] [all]
+
+\enablemathcollection[eul]
+
+\stoptypescript
+
+%D The Lucida Bright fonts are both good looking and and
+%D complete. These fonts have prebuilt accented characters,
+%D which means that we use another encoding vector: \YandY\
+%D texnansi. These fonts are a good illustration that a 12
+%D point bodyfont is indeed never that size. The Lucida Bright
+%D fonts come in one design size.
+
+\starttypescript [lbr]
+
+\usetypescript [all] [lucida]  [name,special]
+\usetypescript [all] [default] [size]
+
+\enablemathcollection[lbr]
+
+\stoptypescript
+
+%D With thanks to Berthold Horn from YandY for providing me
+%D evaluation copies of the MathTimePlus fonts.
+
+\starttypescript [mt,tim]
+
+\usetypescript [math] [times]   [all]
+\usetypescript [math] [default] [size]
+
+\enablemathcollection[tim]
+
+\stoptypescript
+
+%D The Antikwa Torunska font family is a rather nice
+%D and subtle one. Although primary meant for the polish
+%D language, it can be used for other languages as well.
+
+\starttypescript [ant]
+
+\usetypescript [serif] [antykwa-torunska] [name]
+\usetypescript [serif] [default]          [size]
+
+\stoptypescript
+
+%D This script defines the Standard Adobe Courier fonts.
+
+\starttypescript [pcr]
+
+\usetypescript [mono] [courier] [name]
+\usetypescript [mono] [default] [size] 
+
+\stoptypescript
+
+%D This script defines the Standard Adobe Helvetica fonts.
+
+\starttypescript [phv]
+
+\usetypescript [sans] [helvetica] [name]
+\usetypescript [mono] [default]   [size] 
+
+\stoptypescript
+
+%D This script defines the Standard Adobe Times fonts.
+
+\starttypescript [ptm]
+
+\usetypescript [serif] [times]   [name]
+\usetypescript [serif] [default] [size] 
+
+\stoptypescript
+
+%D This script loads the Adobe Times Roman, Helvetica and
+%D Courier.
+
+\starttypescript [pos]
+
+\usetypescript [serif] [times]     [name] 
+\usetypescript [sans]  [helvetica] [name] 
+\usetypescript [mono]  [courier]   [name] 
+
+\usetypescript [serif,sans,mono] [default] [size] 
+
+\stoptypescript
+
+%D This script defines the Palatino font.
+
+\starttypescript [ppl]
+
+\usetypescript [serif] [palatino] [name]
+\usetypescript [serif] [default]  [size]
+
+\stoptypescript
+
+%D The following scripts fake the old \type {font-ber} and
+%D alike files.
+
+\starttypescript[ber]
+
+\usetypescript
+  [all]
+  [computer-modern,concrete,euler]
+  [default]
+
+\usetypescript
+  [all]
+  [courier,helvetica,times,lucida,antykwa-torunska,baskerville,palatino]
+  [ec]
+
+\stoptypescript
+
+\starttypescript[fil]
+
+\usetypescript
+  [all]
+  [computer-modern,concrete,euler]
+  [default]
+
+\usetypescript
+  [all]
+  [courier,helvetica,times,lucida,antykwa-torunska,baskerville,palatino]
+  [texnansi]
+
+\stoptypescript
+
+\endinput

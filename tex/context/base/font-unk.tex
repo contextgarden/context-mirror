@@ -45,8 +45,21 @@
 \definefontsynonym [MathItalic]         [unknown]
 \definefontsynonym [MathSymbol]         [unknown]
 
+\definefontsynonym [MathNoName]         [unknown]
+
 \definefontsynonym [MathAlpha]          [unknown]
 \definefontsynonym [MathBeta]           [unknown]
+\definefontsynonym [MathGamma]          [unknown]
+\definefontsynonym [MathDelta]          [unknown]
+
+\definefontsynonym [MathRomanBold]      [MathRoman]
+\definefontsynonym [MathExtensionBold]  [MathExtension]  
+\definefontsynonym [MathItalicBold]     [MathItalic]     
+\definefontsynonym [MathSymbolBold]     [MathSymbol]     
+\definefontsynonym [MathAlphaBold]      [MathAlpha]      
+\definefontsynonym [MathBetaBold]       [MathBeta]       
+\definefontsynonym [MathGammaBold]      [MathGamma]      
+\definefontsynonym [MathDeltaBold]      [MathDelta]      
 
 \definefontsynonym [Handwriting]        [unknown]
 \definefontsynonym [Calligraphic]       [unknown]
@@ -87,142 +100,62 @@
 \definefontsynonym [TypeBoldSlanted]    [MonoBoldSlanted]    
 \definefontsynonym [TypeCaps]           [MonoCaps]           
 
-% To be added: Handwriting, Calligraphic
-
 %D Next we define roman, sans and monospaced font sets. 
 
 \definebodyfont [default] [rm]
-  [ tf=Serif            sa 1,
-   tfa=Serif            sa a,
-   tfb=Serif            sa b,
-   tfc=Serif            sa c,
-   tfd=Serif            sa d,
-    bf=SerifBold        sa 1,
-   bfa=SerifBold        sa a,
-   bfb=SerifBold        sa b,
-   bfc=SerifBold        sa c,
-   bfd=SerifBold        sa d,
-    it=SerifItalic      sa 1,
-   ita=SerifItalic      sa a,
-   itb=SerifItalic      sa b,
-   itc=SerifItalic      sa c,
-   itd=SerifItalic      sa d,
-    sl=SerifSlanted     sa 1,
-   sla=SerifSlanted     sa a,
-   slb=SerifSlanted     sa b,
-   slc=SerifSlanted     sa c,
-   sld=SerifSlanted     sa d,
-    bi=SerifBoldItalic  sa 1,
-   bia=SerifBoldItalic  sa a,
-   bib=SerifBoldItalic  sa b,
-   bic=SerifBoldItalic  sa c,
-   bid=SerifBoldItalic  sa d,
-    bs=SerifBoldSlanted sa 1,
-   bsa=SerifBoldSlanted sa a,
-   bsb=SerifBoldSlanted sa b,
-   bsc=SerifBoldSlanted sa c,
-   bsd=SerifBoldSlanted sa d,
-    sc=SerifCaps        sa 1,
-   sca=SerifCaps        sa a,
-   scb=SerifCaps        sa b,
-   scc=SerifCaps        sa c,
-   scd=SerifCaps        sa d]
+  [tf=Serif sa 1,
+   bf=SerifBold sa 1,
+   it=SerifItalic sa 1,
+   sl=SerifSlanted sa 1,
+   bi=SerifBoldItalic sa 1,
+   bs=SerifBoldSlanted sa 1,
+   sc=SerifCaps sa 1]
 
 \definebodyfont [default] [ss]
-  [ tf=Sans sa 1,
-   tfa=Sans sa a,
-   tfb=Sans sa b,
-   tfc=Sans sa c,
-   tfd=Sans sa d,
-    bf=SansBold sa 1,
-   bfa=SansBold sa a,
-   bfb=SansBold sa b,
-   bfc=SansBold sa c,
-   bfd=SansBold sa d,
-    it=SansItalic sa 1,
-   ita=SansItalic sa a,
-   itb=SansItalic sa b,
-   itc=SansItalic sa c,
-   itd=SansItalic sa d,
-    sl=SansSlanted sa 1,
-   sla=SansSlanted sa a,
-   slb=SansSlanted sa b,
-   slc=SansSlanted sa c,
-   sld=SansSlanted sa d,
-    bi=SansBoldItalic sa 1,
-   bia=SansBoldItalic sa a,
-   bib=SansBoldItalic sa b,
-   bic=SansBoldItalic sa c,
-   bid=SansBoldItalic  sa d,
-    bs=SansBoldSlanted sa 1,
-   bsa=SansBoldSlanted sa a,
-   bsb=SansBoldSlanted sa b,
-   bsc=SansBoldSlanted sa c,
-   bsd=SansBoldSlanted sa d,
-    sc=SansCaps sa 1,
-   sca=SansCaps sa a,
-   scb=SansCaps sa b,
-   scc=SansCaps sa c,
-   scd=SansCaps sa d]
+  [tf=Sans sa 1,
+   bf=SansBold sa 1,
+   it=SansItalic sa 1,
+   sl=SansSlanted sa 1,
+   bi=SansBoldItalic sa 1,
+   bs=SansBoldSlanted sa 1,
+   sc=SansCaps sa 1]
 
 \definebodyfont [default] [tt]
-  [ tf=Mono            sa 1,
-   tfa=Mono            sa a,
-   tfb=Mono            sa b,
-   tfc=Mono            sa c,
-   tfd=Mono            sa d,
-    bf=MonoBold        sa 1,
-   bfa=MonoBold        sa a,
-   bfb=MonoBold        sa b,
-   bfc=MonoBold        sa c,
-   bfd=MonoBold        sa d,
-    it=MonoItalic      sa 1,
-   ita=MonoItalic      sa a,
-   itb=MonoItalic      sa b,
-   itc=MonoItalic      sa c,
-   itd=MonoItalic      sa d,
-    sl=MonoSlanted     sa 1,
-   sla=MonoSlanted     sa a,
-   slb=MonoSlanted     sa b,
-   slc=MonoSlanted     sa c,
-   sld=MonoSlanted     sa d,
-    bi=MonoBoldItalic  sa 1,
-   bia=MonoBoldItalic  sa a,
-   bib=MonoBoldItalic  sa b,
-   bic=MonoBoldItalic  sa c,
-   bid=MonoBoldItalic  sa d,
-    bs=MonoBoldSlanted sa 1,
-   bsa=MonoBoldSlanted sa a,
-   bsb=MonoBoldSlanted sa b,
-   bsc=MonoBoldSlanted sa c,
-   bsd=MonoBoldSlanted sa d,
-    sc=MonoCaps        sa 1,
-   sca=MonoCaps        sa a,
-   scb=MonoCaps        sa b,
-   scc=MonoCaps        sa c,
-   scd=MonoCaps        sa d]
+  [tf=Mono sa 1,
+   bf=MonoBold sa 1,
+   it=MonoItalic sa 1,
+   sl=MonoSlanted sa 1,
+   bi=MonoBoldItalic sa 1,
+   bs=MonoBoldSlanted sa 1,
+   sc=MonoCaps sa 1]
 
 \definebodyfont [default] [mm]
   [mr=MathRoman mo 1,
    ex=MathExtension mo 1,
    mi=MathItalic mo 1,
    sy=MathSymbol mo 1,
+   nn=MathNoName mo 1,
    ma=MathAlpha mo 1,
-   mb=MathBeta mo 1]
+   mb=MathBeta mo 1,
+   mc=MathGamma mo 1,
+   md=MathDelta mo 1]
+
+\definebodyfont 
+  [boldmath] [mm] 
+  [mrbf=MathRomanBold mo 1,
+   exbf=MathExtensionBold mo 1,
+   mibf=MathItalicBold mo 1,
+   sybf=MathSymbolBold mo 1,
+   mabf=MathAlphaBold mo 1,
+   mbbf=MathBetaBold mo 1,
+   mcbf=MathGammaBold mo 1,
+   mdbf=MathDeltaBold mo 1]
 
 \definebodyfont [default] [hw]
-  [ tf=Handwriting sa 1,
-   tfa=Handwriting sa a,
-   tfb=Handwriting sa b,
-   tfc=Handwriting sa c,
-   tfd=Handwriting sa d]
+  [tf=Handwriting sa 1]
 
 \definebodyfont [default] [cg]
-  [ tf=Calligraphy sa 1,
-   tfa=Calligraphy sa a,
-   tfb=Calligraphy sa b,
-   tfc=Calligraphy sa c,
-   tfd=Calligraphy sa d]
+  [tf=Calligraphy sa 1]
 
 %D These definitions come into action as soon as names are 
 %D mapped onto real file names (or names that themselves are 

@@ -1,0 +1,351 @@
+%D \module
+%D   [       file=math-ini,
+%D        version=2001.04.12, 
+%D          title=\CONTEXT\ Math Macros,
+%D       subtitle=Basic Macros, 
+%D         author={Hans Hagen \& Taco Hoekwater},
+%D           date=\currentdate,
+%D      copyright=\PRAGMA]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D This module provides namespaces for math fonts, thereby
+%D permitting mixed usage of math fonts. Although not strictly
+%D needed, we also provide a family name mapping mechanism as
+%D used in the (original) AMS math definition files, but here
+%D these names can recursively be remapped and if needed,
+%D dynamically be changed. We've tried to minimize the number
+%D of definition commands and use plain \TEX\ definitions as
+%D fallback. We've tried to follow a couple of conventions
+%D from plain and AMS math in order to achieve backward
+%D compatinility. We also kept an eye on future usage of these
+%D modules in the perspective of MathML and unicode fonts. 
+
+\unprotect
+
+\def\@mt@{@mt@} % math token
+\def\@mt@{@mc@} % math character 
+\def\@mh@{@mh@} % math handler
+\def\@mf@{@mf@} % math family
+\def\@mc@{@mc@} % math class
+\def\@ml@{@mc@} % math list 
+
+\def\@@mathlimopcomm#1{\mathop{#1}\limits}
+\def\@@mathnolopcomm#1{\mathop{#1}\nolimits}
+\def\@@mathboxcomm  #1{\leavevmode\hbox{$\m@th#1$}}
+
+\chardef\mathordcode    = 0  \let\mathordcomm     \mathord
+\chardef\mathopcode     = 1  \let\mathopcomm      \mathop 
+\chardef\mathbincode    = 2  \let\mathbincomm     \mathbin 
+\chardef\mathrelcode    = 3  \let\mathrelcomm     \mathrel
+\chardef\mathopencode   = 4  \let\mathopencomm    \mathopen 
+\chardef\mathclosecode  = 5  \let\mathclosecomm   \mathclose 
+\chardef\mathpunctcode  = 6  \let\mathpunctcomm   \mathpunct 
+\chardef\mathalphacode  = 7  \let\mathalphacomm   \firstofoneargument
+\chardef\mathinnercode  = 0  \let\mathinnercomm   \mathinner
+\chardef\mathnothingcode= 0  \let\mathnothingcomm \firstofoneargument
+\chardef\mathlimopcode  = 1  \let\mathlimopcomm   \@@mathlimopcomm  
+\chardef\mathnolopcode  = 1  \let\mathnolopcomm   \@@mathnolopcomm  
+\chardef\mathchoicecode = 0  \let\mathchoicecomm  \@@mathchoicecomm  
+\chardef\mathboxcode    = 0  \let\mathboxcomm     \@@mathboxcomm  
+
+\chardef\mathaccentcode = 8
+\chardef\mathradicalcode= 9
+
+\def\@@mathchoicecomm#1{[todo #1]}
+
+\def\puremathcode#1{\the\csname math#1code\endcsname}
+\def\puremathcomm#1{\csname     math#1comm\endcsname}
+
+\newif\iftracemathcollection
+
+\beginETEX \ifcsname
+
+\def\dohandlemathtoken#1%
+  {\csname\@mt@
+     \ifcsname\@mt@\mathcollection#1\endcsname
+       \mathcollection
+     \else\ifcsname\@mt@\nomathcollection#1\endcsname
+       \nomathcollection
+     \fi\fi
+   #1\endcsname}
+
+\endETEX
+
+\beginTEX 
+
+\def\dohandlemathtoken#1%
+  {\csname\@mt@
+     \@EA\ifx\csname\@mt@\mathcollection#1\endcsname\relax
+       \@EA\ifx\csname\@mt@\nomathcollection#1\endcsname\relax 
+       \else
+         \nomathcollection
+       \fi
+     \else
+       \mathcollection
+     \fi
+   #1\endcsname}
+
+\endTEX
+
+\def\definefamilysynonym%
+  {\dotripleempty\dodefinefamilysynonym}
+
+\def\dodefinefamilysynonym[#1][#2][#3]% [mathcollection] [] []
+  {\ifthirdargument
+     \setvalue{\@mf@#1#2}{#3}%
+   \else
+     \setvalue{\@mf@  #1}{#2}%
+   \fi}
+
+\def\purefamily   #1{\csname    \truefamily{#1}\s!fam\endcsname}
+\def\purefamilyhex#1{\csname hex\truefamily{#1}\s!fam\endcsname}
+
+\beginETEX \ifcsname
+
+\def\truefamily#1%
+  {\ifcsname\@mf@\mathcollection#1\endcsname
+     \@EA\truefamily\csname\@mf@\mathcollection#1\endcsname
+   \else\ifcsname\@mf@#1\endcsname
+     \@EA\truefamily\csname\@mf@#1\endcsname
+   \else\ifcsname\@mf@\nomathcollection#1\endcsname
+     \@EA\truefamily\csname\@mf@\nomathcollection#1\endcsname
+   \else
+     #1%
+   \fi\fi\fi}
+
+\endETEX
+
+\beginTEX
+
+\def\truefamily#1%
+  {\@EA\ifx\csname\@mf@\mathcollection#1\endcsname\relax
+     \@EA\ifx\csname\@mf@#1\endcsname\relax
+       \@EA\ifx\csname\@mf@\nomathcollection#1\endcsname\relax
+         #1%
+       \else
+         \@EA\truefamily\csname\@mf@\nomathcollection#1\endcsname
+       \fi
+     \else
+       \@EA\truefamily\csname\@mf@#1\endcsname
+     \fi
+   \else
+     \@EA\truefamily\csname\@mf@\mathcollection#1\endcsname
+   \fi}
+
+\endTEX
+
+\newif\ifdynamicmathfamilies \dynamicmathfamiliesfalse % true ? 
+
+\let\normalpurefamilyhex\purefamilyhex
+
+% todo: reset collection (tok legen) en opnieuw laden met true 
+
+\def\definemathsymbol%
+  {\dosixtupleempty\dodefinemathsymbol}
+
+\def\dodefinemathsymbol[#1][#2][#3][#4][#5][#6]%
+  {\unexpanded\setgvalue{#1}{\dohandlemathtoken{#1}}%
+   \ifdynamicmathfamilies \let\purefamilyhex\relax \fi
+   \setevalue{\@mt@\mathcollection#1}%
+     {\ifsixthargument
+        \ifnum\puremathcode{#2}=\mathradicalcode
+          \radical"%
+        \else
+          \delimiter"%
+          \ifnum\puremathcode{#2}>7 0\else\puremathcode{#2}\fi
+        \fi
+        \purefamilyhex{#3}\uchexnumbers{#4}%
+        \purefamilyhex{#5}\uchexnumbers{#6}\space
+      \else\iffourthargument
+        \ifnum\puremathcode{#2}=\mathaccentcode
+          \mathaccent\else\mathchar
+        \fi 
+       "\ifnum\puremathcode{#2}>7 0\else\puremathcode{#2}\fi
+        \purefamilyhex{#3}\uchexnumbers{#4}\space
+      \fi\fi}%
+   \let\purefamilyhex\normalpurefamilyhex
+   \tracemathsymbol{#1}}
+
+\def\tracemathsymbol#1%
+  {\iftracemathcollection
+     {\endgraf
+      \hbox{\tex{#1}~:~{\mathematics{\getvalue{#1}{}}}}
+      \endgraf}%
+   \fi}
+
+\def\definemathcharacter%
+  {\dosixtupleempty\dodefinemathcharacter}
+
+\def\dodefinemathcharacter[#1][#2][#3][#4][#5][#6]%
+  {\setmathtoks
+   \ifdynamicmathfamilies \let\purefamilyhex\relax \fi
+   \doifnumberelse{#1}
+     {\scratchcounter=#1}
+     {\scratchcounter=\@EA`\string#1}%
+   \expanded
+     {\appendtoks
+        \ifsixthargument
+          \delcode\the\scratchcounter="%
+            \ifnum\puremathcode{#2}>7 0\else\puremathcode{#2}\fi
+            \purefamilyhex{#3}\uchexnumbers{#4}%
+            \purefamilyhex{#5}\uchexnumbers{#6}\space
+        \else\iffourthargument
+          \mathcode\the\scratchcounter="%
+            \ifnum\puremathcode{#2}>7 0\else\puremathcode{#2}\fi
+            \purefamilyhex{#3}\uchexnumbers{#4}\space
+        \fi\fi
+        \noexpand\to \noexpand\mathtoks}%
+   \let\purefamilyhex\normalpurefamilyhex
+   \tracemathcharacter{#1}}
+
+\def\tracemathcharacter#1%
+  {\iftracemathcollection
+     {\endgraf
+      \doifnumberelse{#1}
+        {\hbox{\tttf\rawcharacter{#1}~:~{\mathematics{\rawcharacter{#1}}}}}
+        {\hbox{\type{#1}~:~{\mathematics{#1}}}}
+      \endgraf}%
+   \fi}
+
+\def\definemathcommand%
+  {\dodoubleempty\dodefinemathcommand}
+
+\def\dodefinemathcommand[#1][#2]#3%
+  {\unexpanded\setgvalue{#1}{\dohandlemathtoken{#1}}%
+   \ifsecondargument
+     \setvalue{\@mt@\mathcollection#1}{\puremathcomm{#2}{#3}}%
+   \else
+     \setvalue{\@mt@\mathcollection#1}{\puremathcomm{nothing}{#3}}%
+   \fi
+   \tracemathcommand{#1}}
+
+\def\tracemathcommand#1%
+  {\iftracemathcollection
+     \endgraf
+     \hbox{\tex{#1}~:~{\mathematics{\getvalue{#1}{}}}}
+     \endgraf
+   \fi}
+
+\def\startmathcollection[#1]%
+  {\pushmacro\mathcollection
+   \setmathcollection{#1}}
+
+\def\setmathcollection#1%
+  {\def\mathcollection{#1}%
+   \doifundefined{\@ml@\mathcollection}
+     {\expandafter\newtoks\csname\@ml@\mathcollection\endcsname}}
+
+\def\stopmathcollection%
+  {\popmacro\mathcollection}
+
+\def\startrawmathcollection%
+  {\pushmacro\iftracemathcollection
+   \tracemathcollectionfalse
+   \startmathcollection}
+
+\def\stoprawmathcollection%
+  {\popmacro\iftracemathcollection
+   \stopmathcollection}
+
+\newtoks\mathtoks
+
+\def\setmathtoks%
+  {\@EA\let\@EA\mathtoks\csname\@ml@\mathcollection\endcsname}
+
+\def\currentmathcollection{\mathcollection}
+
+\def\nomathcollection{\s!default}
+
+\def\enablemathcollection[#1]%
+  {\doifnot{#1}{\s!default}
+     {\setmathcollection\s!default
+      \the\csname\@ml@\mathcollection\endcsname}%
+   \setmathcollection{#1}%
+   \the\csname\@ml@\mathcollection\endcsname}
+
+% hook 'm into the font mechanism 
+
+\definefilesynonym[\f!mathprefix\s!default][\f!mathprefix tex]
+
+\def\usemathcollection[#1]%
+  {\doinputonce{\truefilename{\f!mathprefix#1}}%
+   \setvalue{\@mc@\fontclass\@mc@}{#1}}
+
+\def\autoenablemathcollection%
+  {\doifdefinedelse{\@mc@\fontclass\@mc@}
+     {\enablemathcollection[\getvalue{\@mc@\fontclass\@mc@}]}
+     {\enablemathcollection[\s!default]}}
+
+\appendtoks\autoenablemathcollection\to\mathstrategies
+
+\edef\hexmrfam {0} \edef\hexbsfam {8}
+\edef\hexmifam {1} \edef\hexbifam {9}
+\edef\hexsyfam {2} \edef\hexscfam {A}
+\edef\hexexfam {3} \edef\hextffam {B}
+\edef\hexitfam {4} \edef\hexmafam {C}
+\edef\hexslfam {5} \edef\hexmbfam {D}
+\edef\hexbffam {6} \edef\hexmcfam {E}
+\edef\hexnnfam {7} \edef\hexmdfam {F}
+
+\definefamilysynonym [default] [letters]   [mr]
+\definefamilysynonym [default] [operators] [sy]
+\definefamilysynonym [default] [lcgreek]   [mi]
+\definefamilysynonym [default] [ucgreek]   [mr]
+\definefamilysynonym [default] [vargreek]  [mi]
+\definefamilysynonym [default] [mitfamily] [mi]
+\definefamilysynonym [default] [calfamily] [sy]
+
+\definefamilysynonym [default] [0] [mr]
+\definefamilysynonym [default] [1] [mi]
+\definefamilysynonym [default] [2] [sy]
+\definefamilysynonym [default] [3] [ex]
+
+\enablemathcollection[default]
+
+\usemathcollection[default]
+
+\protect \endinput
+
+\tracemathcollectiontrue 
+
+                                               \input math-tex \page
+\setupbodyfont[ams] \enablemathcollection[ams] \input math-ams \page
+\setupbodyfont[lbr] \enablemathcollection[lbr] \input math-lbr \page
+\setupbodyfont[eul] \enablemathcollection[eul] \input math-eul \stoptext
+
+
+% to be checked
+
+\def\defineactivecharacter #1 #2%
+  {\scratchcounter=\the\uccode`~
+   \expandafter\doifnumberelse\expandafter{\string#1}
+     {\catcode #1=\@@active \uccode`~= #1\relax}
+     {\catcode`#1=\@@active \uccode`~=`#1\relax}%
+   \uppercase{\def\next{~}}%
+  % unexpanded goes wrong in pdfdoc
+  %\expandafter\unexpanded\expandafter\def\next{#2}%
+  % better
+  %\expandafter\def\next{#2}%
+  % math aware
+   \expandafter\def\next{\dohandleactivecharacter{#1}{#2}}% new
+   \uccode`~=\scratchcounter}
+
+\def\dohandleactivecharacter%
+  {\ifmmode
+     \expandafter\dohandleactivemathcharacter
+   \else
+     \expandafter\secondoftwoarguments
+   \fi}
+
+\let\dohandleactivemathcharacter\secondoftwoarguments
+
+\def\dohandleactivemathcharacter#1#2%
+  {\ifundefined{@ma@\string#1}
+     \expandafter\firstofoneargument
+   \else
+     \getvalue{@ma@\string#1}%
+     \expandafter\gobbleoneargument
+   \fi{#2}}

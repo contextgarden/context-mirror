@@ -1,0 +1,92 @@
+%D \module
+%D   [       file=cont-sys,
+%D        version=1995.10.10,
+%D          title=\CONTEXT\ Miscellaneous Macros,
+%D       subtitle=System Specific Setups,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
+%C details. 
+
+\unprotect
+
+% Here you can take care of overloading some (style) 
+% defaults. What goes here, depends on your local system. 
+%
+% Set default file name mapping:
+%
+% \usetypescript [ber] 
+%
+% Overload Lucida by Adobe-15:
+%
+% \definetypescriptsynonym [lbr] [pos] 
+%
+% Compensate for missing files:
+%
+% \definefontsynonym [Courier-Bold]        [Courier]
+% \definefontsynonym [Courier-BoldOblique] [Courier]
+%
+% \definefontsynonym [gbhei]   [gbsong]
+% \definefontsynonym [gbheisl] [gbsong]
+% \definefontsynonym [gbheisl] [gbsong]
+%
+% Setting up a global figure path (beware, \c!gebied may change): 
+%
+% \setupexternalfigures
+%   [\c!gebied={e:/fig/eps,t:/pragma/metapost/symbols}]
+%
+% Loading a specific special driver: 
+%
+% \setupoutput 
+%   [dviwindo]
+%
+% Enabling \CONTEXT\ navigation symbols as well as \euro's. 
+
+\usesymbols
+  [nav,eur] 
+
+\setupsymbolset
+  [navigation 1]
+
+\setupinteraction
+  [\c!symboolset=navigation 1]
+
+% Changing language defaults: 
+% 
+% \setuplanguage
+%   [nl]
+%   [\c!leftquote=\upperleftsinglesixquote,
+%    \c!leftquotation=\upperleftdoublesixquote]
+%
+% So far for the settings. 
+
+% Loading local preferences: 
+%
+% \input prag-gen % company styles 
+% \input prag-log % more company styles 
+%
+% Enabling run time \METAPOST\ (also enable \write18 in texmf.cnf):
+
+   \runMPgraphicstrue 
+\runMPTEXgraphicstrue
+  \recycleMPslotstrue 
+\useMETAFUNformattrue
+
+% Enabling nested pretty printing:
+
+       \newprettytrue 
+
+% Protect filenames: 
+
+  \protectbufferstrue
+
+% not really needed
+
+% \runutilityfiletrue 
+
+% So far. 
+
+\protect \endinput

@@ -1,0 +1,253 @@
+% wat te doen met casual, evt `cs', danwel een manier om te 
+% mappen (zie showcase) 
+
+%D \module
+%D   [       file=type-ini,
+%D        version=2001.03.05,
+%D          title=\CONTEXT\ Typescript Macros,
+%D       subtitle=Initialization,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{Context Typescript Macros (ini)}
+
+\unprotect
+
+\let\typescriptfiles\empty
+
+\def\usetypescriptfile[#1]%
+  {\addtocommalist{#1}\typescriptfiles}
+
+\usetypescriptfile[\f!typeprefix syn] % font file synonyms  
+\usetypescriptfile[\f!typeprefix enc] % files and encodings 
+\usetypescriptfile[\f!typeprefix siz] % specific font sizes 
+\usetypescriptfile[\f!typeprefix map] % pdftex mapping 
+\usetypescriptfile[\f!typeprefix spe] % special macros 
+\usetypescriptfile[\f!typeprefix exa] % some examples 
+\usetypescriptfile[\f!typeprefix loc] % local scripts 
+%                 [\f!typeprefix pre] % predefined scripts (compatible)
+
+% \usetypescriptfile[typeface] % project scripts 
+
+\let\currenttypescripts\empty
+
+\newif\iftypescriptfound
+
+\def\usetypescript%
+  {\dotripleempty\dousetypescript}
+
+\let\typescriptone\empty
+\let\typescripttwo\empty
+\let\typescriptthree\empty
+
+\def\dousetypescript[#1][#2][#3]% also loads type-loc, a user file
+  {\pushmacro\typescriptone  \edef\typescriptone  {\truetypescript{#1}}%
+   \pushmacro\typescripttwo  \edef\typescripttwo  {\truetypescript{#2}}%
+   \pushmacro\typescriptthree\edef\typescriptthree{\truetypescript{#3}}%
+   \typescriptfoundfalse
+   \writestatus
+     {typescript}
+     {[\typescriptone] [\typescripttwo] [\typescriptthree]}%
+   \processcommacommand[\typescriptfiles]\dodousetypescript
+   \firsttypescriptpassfalse % testen 
+   \popmacro\typescriptthree
+   \popmacro\typescripttwo
+   \popmacro\typescriptone}
+
+\def\dodousetypescript#1%
+  {\startreadingfile
+   \pushmacro\currenttypefile
+   \def\currenttypefile{#1}%
+   \readfile{\currenttypefile}{}{}% \relax\relax
+   \popmacro\currenttypefile
+   \stopreadingfile}
+
+% \definetypescriptsynonym[lbr][cmr]
+
+\def\definetypescriptsynonym%
+  {\dodoubleempty\dodefinetypescriptsynonym}
+
+\def\dodefinetypescriptsynonym[#1][#2]%
+  {\ifsecondargument\setevalue{\??tm#1}{#2}\fi}
+
+\beginTEX
+
+\def\truetypescript#1%
+  {\expandafter\ifx\csname\??tm#1\endcsname\relax
+     #1%
+   \else
+     \@EA\truetypescript\csname\??tm#1\endcsname
+   \fi}
+
+\endTEX
+
+\beginETEX \ifcsname
+
+\def\truetypescript#1%
+  {\ifcsname\??tm#1\endcsname
+     \@EA\truetypescript\csname\??tm#1\endcsname
+   \else
+     #1%
+   \fi}
+
+\endETEX
+
+% script [serif] [default]         [size]            
+% script [serif] [computer-modern] [size]            
+% script [serif] [computer-modern] [ec]
+% script [serif] [computer-modern] [name]
+% script [serif] [computer-modern] [special]
+
+\def\dochecktypescript#1#2% script use 
+  {\donefalse
+   \doifelsenothing{#1}\donetrue
+     {\doifelse{#2}{all}\donetrue
+        {\doifelse{#1}{all}\donetrue
+           {\ExpandBothAfter\doifcommonelse{#1}{#2}\donetrue\donefalse}}}}
+
+\def\starttypescript%
+  {\dotripleempty\dostarttypescript}
+
+\newif\iffirsttypescriptpass \firsttypescriptpasstrue 
+
+\prependtoks\firsttypescriptpasstrue\to\everyjob 
+
+\long\def\dostarttypescript[#1][#2][#3]#4\stoptypescript
+  {\iffirstargument
+     \dochecktypescript{#1}{\typescriptone}\ifdone
+     \dochecktypescript{#2}{\typescripttwo}\ifdone
+     \dochecktypescript{#3}{\typescriptthree}\ifdone
+       %\writestatus 
+       \debuggerinfo
+         {typescript}
+         {\currenttypefile: [#1] [#2] [#3]}%
+        #4\typescriptfoundtrue
+     \fi\fi\fi
+   \else\iffirsttypescriptpass
+     \pushmacro\fontclass
+     #4%
+     \popmacro\fontclass
+   \else
+     % skip this since it may do unwanted resets, like 
+     % setting symbolic font names to unknown, especially 
+     % in run time user type scripts 
+   \fi\fi}
+
+\def\loadmapfile[#1]%
+  {\processcommalist[#1]\doloadmapfile}
+
+\def\doloadmapfile#1% will be special 
+  {\ifcase\pdfoutput\else\ifx\pdfmapfile\undefined\else
+     \doifundefined{map+#1}
+       {\global\letvalue{map+#1}\empty\pdfmapfile{+#1}}%
+   \fi\fi}
+
+% \definetypeface [#1:joke] [#2:rm] 
+% \definetypeface [#1:joke] [#2:rm] [#3:...]
+% \definetypeface [#1:joke] [#2:rm] [#3:serif] [#4:lucida] [#5:size] [#6:...]
+
+\def\definetypeface%
+  {\dosixtupleargument\dodefinetypeface}
+
+\def\tsvar#1#2%
+  {\@EA\ifx\csname\??ts#1\endcsname\empty
+     #2%
+   \else
+     \csname\??ts#1\endcsname
+   \fi}
+
+\let\@@tslabel    \empty
+\let\@@tsstyle    \empty
+\let\@@tsfont     \empty
+\let\@@tssize     \empty
+\let\@@tsencoding \empty
+
+\def\dodefinetypeface[#1][#2][#3][#4][#5][#6]% 
+  {\dododefinetypeface[#1][#2]
+   \iffifthargument % sixth is optional 
+     \getparameters[\??ts][rscale=1,\s!encoding=\s!default,#6]
+     \let\relativefontsize\@@tsrscale
+     \let\savedfontclass\fontclass
+     \setcurrentfontclass{#1}
+\def\@@tslabel{#1}
+\def\@@tsstyle{#2}
+\def\@@tsfont {#3}
+\def\@@tssize {#4}
+     \writestatus
+       {typeface}
+       {[#1] [#2] [#3] [#4]}%
+     \expanded{\usetypescript[#3][#4][name,default,\@@tsencoding,special]} 
+     \expanded{\usetypescript[#3][#5][size]}          
+\let\@@tslabel\empty
+\let\@@tsstyle\empty
+\let\@@tsfont \empty
+\let\@@tssize \empty
+     \setcurrentfontclass\savedfontclass           
+     \def\relativefontsize{1}
+   \else\ifthirdargument
+     \getparameters[\??tf#1#2][#3]
+   \fi\fi}
+
+\def\dododefinetypeface[#1][#2]% saveguard against redefinition
+  {\doifundefined{\??tf#1\s!default}{\setgvalue{\??tf#1\s!default}{#2}}%
+   \doifundefined{#1}{\setgvalue{#1}{\switchtotypeface[#1][#2]}}}
+
+\def\setuptypeface%
+  {\doquadrupleempty\doswitchtotypeface[\setupbodyfont][\fontclass]}
+
+\def\switchtotypeface%
+  {\doquadrupleempty\doswitchtotypeface[\switchtobodyfont][\globalfontclass]}
+
+\def\doswitchtotypeface[#1][#2][#3][#4]% 
+  {\setcurrentfontclass{#3}%
+   \let\globalfontclass#2%
+   \iffourthargument
+     #1[#4]%
+   \else\ifx\fontclass\empty
+     #1[\c!rm]%
+   \else
+     \doifdefinedelse{\??tf\fontclass\s!default}
+       {#1[\getvalue{\??tf\fontclass\s!default}]}
+       {#1[\c!rm]}%
+   \fi\fi
+   \tf}
+
+\def\usetypefile[#1]%
+  {\readfile{\f!typeprefix#1}{}{}}% \relax\relax}
+
+%D For backward compatibility we reimplement the font file 
+%D loading macro.  
+
+\ifx\normaldoreadfontdefinitionfile\undefined
+  \let\normaldoreadfontdefinitionfile\doreadfontdefinitionfile
+\fi
+
+\def\doreadfontdefinitionfile#1#2% #1 = set/switch state
+  {\ifundefined{\??tf#2\c!default}%
+     \pushmacro\typescriptone\edef\typescriptone{\truetypescript{#2}}
+     \pushmacro\typescripttwo\let \typescripttwo \empty
+     \pushmacro\typescriptthree\let \typescriptthree \empty
+     \typescriptfoundfalse
+     \dodousetypescript{\f!typeprefix pre}
+     \popmacro\typescriptthree
+     \popmacro\typescripttwo
+     \popmacro\typescriptone
+     \iftypescriptfound \else
+       \normaldoreadfontdefinitionfile{#1}{#2}
+     \fi
+   \else\ifcase#1\relax
+     \switchtotypeface[#2]%
+   \else
+     \setuptypeface[#2]%
+   \fi\fi}
+
+\fetchruntimecommand \typetypescript {\f!typeprefix\s!run}
+
+\setupbodyfont[fil] % default filenames 
+
+\protect \endinput

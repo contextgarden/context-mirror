@@ -1,0 +1,38 @@
+%D \module
+%D   [       file=type-spe,
+%D        version=2001.04.12, 
+%D          title=\CONTEXT\ Typescript Macros,
+%D       subtitle=Special scripts, 
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\starttypescript [mono] [courier,lucida] [special] 
+  \def\controlspace{\getglyph{ComputerModernMono}{\char32}}
+\stoptypescript 
+
+\starttypescript [math] [computer-modern] [special] 
+  \usemathcollection[default]
+\stoptypescript
+
+\starttypescript [math] [lucida] [special] 
+  \usemathcollection[lbr]
+\stoptypescript
+
+\starttypescript [math] [ams] [special] 
+  \usemathcollection[ams]
+\stoptypescript
+
+\starttypescript [math] [times] [special] 
+  \usemathcollection[tim]
+\stoptypescript
+
+\starttypescript [math] [euler] [special] 
+  \usemathcollection[eul]
+\stoptypescript
+
+\endinput

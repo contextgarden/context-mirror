@@ -1,0 +1,178 @@
+% output=pdftex tex=pdfetex modes=cmr,nocover
+
+% This file is not part of the regular ConTeXt distribution.
+% Because this file generates the official ConTeXt command 
+% references, you may not alter it. 
+%
+% copyright: 19..-2001, Hans Hagen, PRAGMA-ADE, Hasselt NL 
+
+% modes: cmr      use cmr fonts 
+%        nocover  don't produce a cover page 
+%
+% other modes are supported by the cod driver  
+
+\unprotect 
+
+\startinterface dutch    \def\LocalColor{green}   \stopinterface
+\startinterface english  \def\LocalColor{red}     \stopinterface
+\startinterface german   \def\LocalColor{blue}    \stopinterface
+\startinterface czech    \def\LocalColor{magenta} \stopinterface
+\startinterface italian  \def\LocalColor{cyan}    \stopinterface
+\startinterface romanian \def\LocalColor{yellow}  \stopinterface
+
+\startuseMPgraphic{cover}
+  def something = 
+    path p, q;
+    color localgray, drawcolor, fillcolor, localcolor;
+    localgray := (.9,.9,.9);
+    localcolor := \LocalColor ;  
+    p := (0,0)--(200,0)--(200,50)--(0,50)--cycle;
+    q := (25,25)--(175,25);
+    dx := uniformdeviate 600;
+    dy := uniformdeviate 900;
+    sx := .3+(uniformdeviate .5);
+    sy := .3+(uniformdeviate .5);
+    drawcolor := (uniformdeviate 1)[.75localcolor,localcolor];
+    fillcolor := (uniformdeviate 1)[.75localgray,localgray];
+    rr := uniformdeviate 360; 
+    p := p xscaled sx yscaled sy rotated rr shifted (dx,dy); 
+    q := q xscaled sx yscaled sy rotated rr shifted (dx,dy);
+    fill p withcolor fillcolor;       
+    ahlength := (.2+sy)*15;
+    ahangle  := (.2+sx)*45;
+    draw p withpen pencircle scaled 7.5 withcolor drawcolor; 
+    drawarrow q withpen pencircle scaled 7.5 withcolor drawcolor; 
+  enddef;
+  for i := 1 upto 1000: 
+    something;
+  endfor;
+  setbounds currentpicture to unitsquare 
+    xscaled \overlaywidth yscaled \overlayheight;
+\stopuseMPgraphic
+
+\startnotmode[cmr]
+
+\setupbodyfont[lbr]
+
+\stopnotmode
+
+\setupbodyfont
+  [9pt]
+
+\setupcolors
+  [\c!status=\v!start]
+
+\startnotmode[nocover]
+
+\defineoverlay
+  [cover]
+  [\useMPgraphic{cover}]
+
+\stopnotmode
+
+\stellayoutin
+  [\c!rugwit=2cm,
+   \c!kopwit=2cm,
+   \c!hoofd=0cm,
+   \c!voet=0cm,
+   \c!marge=0cm,
+   \c!breedte=\v!passend,
+   \c!hoogte=\v!passend]
+
+\stelnummeringin
+  [\c!status=\v!stop,
+   \c!variant=\v!dubbelzijdig]
+
+\input setupa.tex
+
+\stelsetupin
+  [\c!criterium=\v!alles,
+   \c!verwijzing=0]
+
+\setupframedtexts
+  [setuptext]
+  [\c!kader=\v!aan]
+
+\usemodule[cod-01]
+
+\input setupb.tex
+
+\starttekst
+
+\stelachtergrondenin
+  [\v!rechterpagina]
+  [\c!achtergrond=cover]
+
+\startopmaak[\v!standaard]
+  \definefont[test][RegularBold at 100pt]\test\setstrut
+  \steluitlijnenin[\v!midden]
+  \strut Con\TeX t \par
+  \definefont[test][RegularBold at 75pt]\test\setstrut
+  \startinterface dutch    \strut commando's   \par \stopinterface
+  \startinterface english  \strut commands     \par \stopinterface
+  \startinterface german   \strut befehle      \par \stopinterface
+  \startinterface czech    \strut prikazy      \par \stopinterface
+  \startinterface italian  \strut commands (?) \par \stopinterface
+  \startinterface romanian \strut comenzile    \par \stopinterface
+  \vfill
+  \definefont[test][RegularBold at 150pt]\test\setstrut
+  \startinterface dutch    \strut NL \stopinterface
+  \startinterface english  \strut EN \stopinterface
+  \startinterface german   \strut DE \stopinterface
+  \startinterface czech    \strut CZ \stopinterface
+  \startinterface italian  \strut IT \stopinterface
+  \startinterface romanian \strut RO \stopinterface
+\stopopmaak
+
+\stelachtergrondenin
+  [\v!rechterpagina]
+  [\c!achtergrond=]
+
+\startopmaak[\v!standaard]
+  \definefont[test][RegularBold at 60pt]\test\setstrut
+  \steluitlijnenin[\v!midden]
+  \strut Con\TeX t \par
+  \vskip24pt
+  \definefont[test][RegularBold at 45pt]\test\setstrut
+  \startinterface dutch    \strut commando's     \par \stopinterface
+  \startinterface english  \strut commands       \par \stopinterface
+  \startinterface german   \strut befehle        \par \stopinterface
+  \startinterface czech    \strut prikaz\'y      \par \stopinterface
+  \startinterface czech    \strut commands (?)   \par \stopinterface
+  \startinterface romanian \strut comenzile      \par \stopinterface
+  \vfill
+  \strut \currentdate \par
+  \startinterface dutch    \strut nederlands     \par \stopinterface
+  \startinterface english  \strut english        \par \stopinterface
+  \startinterface german   \strut deutsch        \par \stopinterface
+  \startinterface czech    \strut \^cesk\'y      \par \stopinterface
+  \startinterface italian  \strut itialiano (?)  \par \stopinterface
+  \startinterface romanian \strut rom\^{a}n\u{a} \par \stopinterface
+
+\stopopmaak
+
+\stellayoutin
+  [\c!kopwit=1.5cm]
+
+\protect \placesetup \unprotect
+
+\pagina[\v!ja,\v!blanko,\v!rechts,\v!links]
+
+\stelachtergrondenin
+  [\v!linkerpagina]
+  [\c!achtergrond=cover]
+
+\stellayoutin
+  [\c!kopwit=2cm]
+
+\startopmaak[\v!standaard][\c!pagina=]
+  \definefont[test][RegularBold at 24pt]\test\stelinterliniein
+  \steluitlijnenin[\v!midden]
+  \vfill
+  PRAGMA ADE \par
+  Ridderstraat 27, 8061GH Hasselt NL 
+\stopopmaak
+
+\protect 
+
+\stoptekst

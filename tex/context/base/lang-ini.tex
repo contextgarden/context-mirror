@@ -294,16 +294,16 @@
 \def\doloadpatterns#1#2%
   {\expanded{\getcommacommandsize[\getvalue{\??la#2\s!encoding}]}%
    \ifnum\commalistsize>0
-\message{[nofpatterns #2: \commalistsize/\getvalue{\??la#2\s!encoding}]}%
+     %\message{[nofpatterns #2: \commalistsize/\getvalue{\??la#2\s!encoding}]}%
      \dorecurse\commalistsize
        {\expanded{\getfromcommacommand[\getvalue{\??la#2\s!encoding}][\recurselevel]}%
         \let\patternencoding\commalistelement
         \expanded{\getfromcommacommand[\getvalue{\??la#2\s!mapping }][\recurselevel]}%
         \let\patternmapping \commalistelement
-\message{[patterns: #1/#2/\patternencoding/\patternmapping]}%
+       %\message{[patterns: #1/#2/\patternencoding/\patternmapping]}%
         \dodoloadpatterns{#1}{#2}\patternencoding\patternmapping}%
    \else
-\message{[patterns: #1/#2]}%
+    %\message{[patterns: #1/#2]}%
      \dodoloadpatterns{#1}{#2}{}{}%
    \fi}
 

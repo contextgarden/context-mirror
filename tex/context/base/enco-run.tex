@@ -18,7 +18,7 @@
      {\ifcase##1\relax\red\or\blue\else\green\fi##1\hss##2}}% 
    \let\normalbuildtextaccent\buildtextaccent
    \let\normalbottomaccent   \bottomaccent
-%   \def\char{\green\normalchar}%
+  %\def\char{\green\normalchar}%
    \def\char% can be used in \oalign
      {\bgroup\def\char{\green\normalchar\scratchcounter\egroup}%
       \afterassignment\char\scratchcounter}%
@@ -26,25 +26,28 @@
    \def\bottomaccent{\let\green\empty\red\normalbottomaccent}}
 
 \gdef\visualizecharacterslegend%
-  {\hbox{\currentencoding:\space 
+  {\hbox{\currentencoding\space\fontname\font:\space 
      {\blue composed}\space{\red bottom}\space{\green char}\space raw}}
 
 \gdef\showaccents%
   {\bgroup
+   \savefont
+   \setuptextrules[\c!letter=]
    \starttextrule{\visualizecharacterslegend}
+   \restorefont\stelinterliniein
    \visualizecharacters
    \def\do##1%
      {{\def\dodo####1%
-        {\hss\hbox to 1em{\hss\expanded{##1####1\recurselevel}\hss}}%
-      \hbox to \hsize
-        {\localcolortrue 
-         \hbox to 2em{\tttf\string##1\hss}%
-         \dorecurse{26}{\dodo\character}}%
-      \hbox to \hsize
-        {\localcolortrue 
-         \hskip2em
-         \dorecurse{26}{\dodo\Character}}}%
-      \par}
+         {\hss\hbox to 1em{\hss\expanded{##1####1\recurselevel}\hss}}%
+       \hbox to \hsize
+         {\localcolortrue 
+          \hbox to 2em{\tttf\string##1\hss}%
+          \dorecurse{26}{\dodo\character}}%
+       \hbox to \hsize
+         {\localcolortrue 
+          \hskip2em
+          \dorecurse{26}{\dodo\Character}}}%
+       \par}
    \do\'\do\`\do\^\do\~\do\"
    \do\H\do\r\do\v\do\u\do\=
    \do\.\do\b\do\d\do\k\do\c
@@ -53,6 +56,9 @@
 
 \gdef\showcharacters%
   {\bgroup
+   \savefont
+   \setuptextrules[\c!letter=]
+   \starttextrule{\visualizecharacterslegend}
    \dontcomplain
    \forgetall
    \def\startencoding[##1]{}
@@ -74,10 +80,12 @@
    \edef\enccols{\number\dimen0}
    \visualizecharacters
    \startcolumns[\c!n=\enccols,\c!afstand=2em]
+   \restorefont\stelinterliniein
    \def\definecharacter ##1 ##2 %
      {\hbox{\localcolortrue\hbox to \encwidth{\getvalue{##1}\hss}##1}\par}
    \readsysfile{\f!encodingprefix def}{}{}
    \stopcolumns
+   \stoptextrule
    \egroup}
 
 \gdef\showhyphenations#1%

@@ -1,0 +1,167 @@
+%D \module
+%D   [       file=math-lbr,
+%D        version=2001.04.12, 
+%D          title=\CONTEXT\ Math Macros,
+%D       subtitle=Lucida Specials,
+%D         author={Hans Hagen \& Taco Hoekwater},
+%D           date=\currentdate,
+%D      copyright=\PRAGMA]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\unprotect 
+
+\startmathcollection[lbr]
+
+\definemathsymbol [blacktriangleright]  [rel] [mi] ["F0]
+\definemathsymbol [blacktriangleleft]   [rel] [mi] ["F1]
+\definemathsymbol [boxtimes]            [bin] [sy] ["EC]
+
+\stopmathcollection
+
+\startmathcollection[lbr]
+
+\definemathcharacter [91] [open]    [mi] ["86] 
+\definemathcharacter [93] [close]   [mi] ["87] 
+\definemathcharacter [(]  [open]    [mi] ["84] 
+\definemathcharacter [)]  [close]   [mi] ["85] 
+\definemathcharacter [/]  [nothing] [mi] ["3D] 
+\definemathcharacter [=]  [rel]     [sy] ["83] 
+\definemathcharacter [+]  [bin]     [sy] ["82]
+
+\definemathcharacter [91] [nothing] [mi] ["86] [ex] ["02]
+\definemathcharacter [93] [nothing] [mi] ["87] [ex] ["03]
+\definemathcharacter [(]  [nothing] [mi] ["84] [ex] ["00]
+\definemathcharacter [)]  [nothing] [mi] ["85] [ex] ["01]
+\definemathcharacter [/]  [nothing] [mi] ["3D] [ex] ["0E]
+
+\stopmathcollection
+
+\startmathcollection[lbr]
+
+\definemathsymbol [ldbrack]      [open]  [mi] ["82] [ex] ["82]
+\definemathsymbol [rdbrack]      [close] [mi] ["83] [ex] ["83]
+\definemathsymbol [surfintop]    [op]    [ex] ["90] 
+\definemathsymbol [midintop]     [op]    [ex] ["92] 
+\definemathsymbol [midointop]    [op]    [ex] ["93] 
+\definemathsymbol [midsurfintop] [op]    [ex] ["94]
+\definemathsymbol [largeint]     [op]    [ex] ["5A] [ex] ["95]
+
+% \definemathcommand [surfint]    [nolop] {\surfintop}
+% \definemathcommand [midint]     [nolop] {\midintop}
+% \definemathcommand [midoint]    [nolop] {\midointop}
+% \definemathcommand [midsurfint] [nolop] {\midsurfintop}
+
+\definemathsymbol [surfint]    [nolop] [ex] ["90] 
+\definemathsymbol [midint]     [nolop] [ex] ["92] 
+\definemathsymbol [midoint]    [nolop] [ex] ["93] 
+\definemathsymbol [midsurfint] [nolop] [ex] ["94]
+
+\definemathsymbol [dblint]            [ord] [mi] ["88]
+\definemathsymbol [trplint]           [ord] [mi] ["89]
+\definemathsymbol [contint]           [ord] [mi] ["8A]
+\definemathsymbol [surfint]           [ord] [mi] ["8B]
+\definemathsymbol [volint]            [ord] [mi] ["8C]
+\definemathsymbol [clwint]            [ord] [mi] ["8D]
+\definemathsymbol [cclwcint]          [ord] [mi] ["8E]
+\definemathsymbol [clwcint]           [ord] [mi] ["8F]
+\definemathsymbol [bowtie]            [rel] [mi] ["F6]
+\definemathsymbol [models]            [rel] [sy] ["EE]
+\definemathsymbol [doteq]             [rel] [sy] ["C9]
+\definemathsymbol [cong]              [rel] [sy] ["9B]
+\definemathsymbol [angle]             [ord] [sy] ["8B]
+\definemathsymbol [hbar]              [ord] [mi] ["9D]
+\definemathsymbol [neq]               [rel] [ma] ["94]
+\definemathsymbol [rightleftharpoons] [rel] [ma] ["7A]
+\definemathsymbol [leftrightharpoons] [rel] [ma] ["79]
+\definemathsymbol [hookleftarrow]     [rel] [ma] ["3C]
+\definemathsymbol [hookrightarrow]    [rel] [ma] ["3E]
+\definemathsymbol [mapsto]            [rel] [ma] ["2C]
+
+\definemathcommand [longmapsto] {\mapstochar\longrightarrow}
+
+\stopmathcollection
+
+\definefamilysynonym [lbr] [ucgreek]  [ex]
+\definefamilysynonym [lbr] [vargreek] [mi]
+
+\startmathcollection[lbr]
+
+\definemathsymbol [Gamma]   [alpha] [ucgreek] ["D0]
+\definemathsymbol [Delta]   [alpha] [ucgreek] ["D1]
+\definemathsymbol [Theta]   [alpha] [ucgreek] ["D2]
+\definemathsymbol [Lambda]  [alpha] [ucgreek] ["D3]
+\definemathsymbol [Xi]      [alpha] [ucgreek] ["D4]
+\definemathsymbol [Pi]      [alpha] [ucgreek] ["D5]
+\definemathsymbol [Sigma]   [alpha] [ucgreek] ["D6]
+\definemathsymbol [Upsilon] [alpha] [ucgreek] ["D7]
+\definemathsymbol [Phi]     [alpha] [ucgreek] ["D8]
+\definemathsymbol [Psi]     [alpha] [ucgreek] ["D9]
+\definemathsymbol [Omega]   [alpha] [ucgreek] ["DA]
+
+\definemathsymbol [varGamma]   [ord] [vargreek] ["00]
+\definemathsymbol [varDelta]   [ord] [vargreek] ["01]
+\definemathsymbol [varTheta]   [ord] [vargreek] ["02]
+\definemathsymbol [varLambda]  [ord] [vargreek] ["03]
+\definemathsymbol [varXi]      [ord] [vargreek] ["04]
+\definemathsymbol [varPi]      [ord] [vargreek] ["05]
+\definemathsymbol [varSigma]   [ord] [vargreek] ["06]
+\definemathsymbol [varUpsilon] [ord] [vargreek] ["07]
+\definemathsymbol [varPhi]     [ord] [vargreek] ["08]
+\definemathsymbol [varPsi]     [ord] [vargreek] ["09]
+\definemathsymbol [varOmega]   [ord] [vargreek] ["0A]
+
+\stopmathcollection
+
+\def\LBRroot#1#2%
+  {\setbox\z@\hbox{$\m@th#1\sqrt{#2}$}
+   \dimen@\ht\z@ \advance\dimen@-\dp\z@
+   \mkern5mu\raise.6\dimen@\copy\rootbox \mkern-7.5mu \box\z@}
+
+\def\LBRmatrix#1%
+  {\null\,\vcenter{\normalbaselines\m@th
+   \ialign{\hfil$##$\hfil&&\quad\hfil$##$\hfil\crcr
+   \mathstrut\crcr\noalign{\kern-0.9\baselineskip}
+   #1\crcr\mathstrut\crcr\noalign{\kern-0.9\baselineskip}}}\,}
+
+\startrawmathcollection[lbr]
+
+\definemathcommand [mathstrut] {\vphantom{f}}
+\definemathcommand [joinrel]   {\mathrel{\mkern-4mu}}
+\definemathcommand [r@@t]      {\LBRroot}
+\definemathcommand [matrix]    {\LBRmatrix}
+
+\stoprawmathcollection
+
+% Should these be related to the bodyfontsize ? 
+
+\def\LBRbig  #1{{\hbox{$\left#1\vbox to  8.20\p@{}\right.\n@space$}}}
+\def\LBRBig  #1{{\hbox{$\left#1\vbox to 10.80\p@{}\right.\n@space$}}}
+\def\LBRbigg #1{{\hbox{$\left#1\vbox to 13.42\p@{}\right.\n@space$}}}
+\def\LBRBigg #1{{\hbox{$\left#1\vbox to 16.03\p@{}\right.\n@space$}}}
+\def\LBRbiggg#1{{\hbox{$\left#1\vbox to 17.72\p@{}\right.\n@space$}}}
+\def\LBRBiggg#1{{\hbox{$\left#1\vbox to 21.25\p@{}\right.\n@space$}}}
+
+\startrawmathcollection[lbr]
+
+\definemathcommand [big]   {\LBRbig}
+\definemathcommand [Big]   {\LBRBig}
+\definemathcommand [bigg]  {\LBRbigg}
+\definemathcommand [Bigg]  {\LBRBigg}
+\definemathcommand [biggg] {\LBRbiggg}
+\definemathcommand [Biggg] {\LBRBiggg}
+
+\stoprawmathcollection
+
+\startrawmathcollection[lbr]
+
+\definemathcommand [bigggl] [open]  {\biggg}
+\definemathcommand [bigggr] [close] {\biggg}
+\definemathcommand [Bigggl] [open]  {\Biggg}
+\definemathcommand [Bigggr] [close] {\Biggg}
+
+\stoprawmathcollection
+
+\protect \endinput 

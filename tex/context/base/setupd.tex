@@ -1,0 +1,182 @@
+%D \module
+%D   [       file=setupa,
+%D        version=1998.07.20,
+%D          title=\CONTEXT\ Setup Definitions,
+%D       subtitle=Help Generation,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
+%C details. 
+
+\let\wait\relax
+
+\input setupa
+
+\unprotect
+
+% keys 
+
+\def\copymessage#1#2#3%
+  {\dogetmessage{setup}{#3}\edef#1{#2\currentmessagetext}}
+     
+\copymessage \c!command!        *      {command}
+\copymessage \c!dimension!      *      {dimension}
+\copymessage \c!filename!       *      {file}
+\copymessage \c!identifier!     *      {name}
+\copymessage \c!character!      *      {character}
+\copymessage \c!marker!         *      {mark}
+\copymessage \c!number!         *      {number}
+\copymessage \c!reference!      *      {reference}
+\copymessage \c!plural!         *      {plural}
+\copymessage \c!singular!       *      {singular}
+\copymessage \c!text!           *      {text}
+\copymessage \c!formula!        *      {formula}
+\copymessage \c!font!           *      {file}
+\copymessage \c!matrix!         *      {matrix}
+\copymessage \c!list!           *      {list}
+\copymessage \c!section!        *      {section}
+\copymessage \c!noargument!     \empty {command}
+\copymessage \c!oneargument!    \empty {command}
+\copymessage \c!twoarguments!   \empty {command}
+\copymessage \c!threearguments! \empty {command}
+
+\edef\c!noargument!    {*\@EA\string\csname\c!noargument!    \endcsname}
+\edef\c!oneargument!   {*\@EA\string\csname\c!oneargument!   \endcsname\string#1}
+\edef\c!twoarguments!  {*\@EA\string\csname\c!twoarguments!  \endcsname\string#1\string#2}
+\edef\c!threearguments!{*\@EA\string\csname\c!threearguments!\endcsname\string#1\string#2\string#3}
+
+\def\subsetup#1{/#1}
+
+\beginTEX 
+
+\def\getinterfaceconstant#1%
+  {\ifinterfacetranslation
+     \ifx\csname\x!prefix!#1\endcsname\relax
+       #1%
+     \else
+       \csname\x!prefix!#1\endcsname
+     \fi
+   \else
+     #1%
+   \fi}
+
+\def\getinterfacevariable#1%
+  {\ifinterfacetranslation
+     \ifx\csname\y!prefix!#1\endcsname\relax
+       #1%
+     \else
+       \csname\y!prefix!#1\endcsname
+     \fi
+   \else
+     #1%
+   \fi}
+
+\endTEX
+
+\beginETEX \ifcsname
+
+\def\getinterfaceconstant#1%
+  {\ifinterfacetranslation
+     \ifcsname\x!prefix!#1\endcsname
+       \csname\x!prefix!#1\endcsname
+     \else
+       #1%
+     \fi
+   \else
+     #1%
+   \fi}
+
+\def\getinterfacevariable#1%
+  {\ifinterfacetranslation
+     \ifcsname\y!prefix!#1\endcsname
+       \csname\y!prefix!#1\endcsname
+     \else
+       #1%
+     \fi
+   \else
+     #1%
+   \fi}
+
+\endETEX
+
+\def\c!repeat! {repeat/} % {n*}
+\def\c!arg!    {arg/}    % {{...}:}
+\def\c!args!   {args/}   % {{..,...,..}:}
+\def\c!dis!    {dis/}    % {$$...$$:}
+\def\c!idx!    {idx/}    % {{...}:}
+\def\c!idxs!   {idxs/}   % {{..+...+..}:}
+\def\c!mat!    {mat/}    % {$...$:}
+\def\c!nop!    {nop/}    % {...:}            
+\def\c!fil!    {fil/}    % {...:}            
+\def\c!pos!    {pos/}    % {(...):}
+\def\c!poss!   {poss/}   % {(...,...):}
+\def\c!sep!    {sep/}    % {\string\\:}
+\def\c!ref!    {ref/}    % {[ref]:}
+\def\c!refs!   {refs/}   % {[ref,..]:}
+\def\c!val!    {val/}    % {[...]:}
+\def\c!vals!   {vals/}   % {[..,...,..]:}
+\def\c!var!    {var/}    % {[..=..]:} 
+\def\c!vars!   {vars/}   % {[..,..=..,..]:}
+\def\c!cmd!    {cmd/}    % {\string\xxx:}
+\def\c!dest!   {dest/}   % {[..ref]:}
+\def\c!dests!  {dests/}  % {[..,..refs,..]:}
+\def\c!trip!   {trip/}   % {[x:y:z=]:}
+\def\c!trips!  {trips/}  % {[x:y:z=,..]:}
+\def\c!wrd!    {wrd/}    % {{...}:}
+\def\c!wrds!   {wrds/}   % {{.. ... ..}:}
+\def\c!par!    {par/}    % {\string\par:}
+\def\c!stp!    {stp/}    % {stop:}
+\def\c!tex!    {tex/}    % {\string\cs:}
+
+\def\c!or!     {}        % tzt or 
+
+\def\c!opt!    {}        %
+\def\c!optint! {}        %
+\def\c!alwint! {}        %
+
+% wrapper 
+
+\def\startsetupfile
+  {\immediate\openout\scratchwrite=cont-\currentlanguage.tws }
+
+\def\stopsetupfile
+  {\immediate\closeout\scratchwrite}
+
+\let\documenteduntilhere\relax
+
+\long\def\startsetup#1\stopsetup % the :'s serve as breakpoints
+  {\bgroup
+   \long\def\command         [##1]%
+     {\immediate\write\scratchwrite{com:##1:}}%
+   \long\def\type            [##1]%
+     {\immediate\write\scratchwrite{typ:##1:}}%
+   \long\def\value           [##1]##2[##3]%
+     {\immediate\write\scratchwrite{val:##1:##3:}}%
+   \long\def\variable        [##1]##2[##3]##4[##5]%
+     {\convertsetupdata{##5}\ascii
+      \edef\temp{\getinterfaceconstant{##1}}%
+      \immediate\write\scratchwrite{var:\temp:##3:\ascii:}}%
+   \long\def\inheritvalues   [##1]##2[##3]%
+     {\immediate\write\scratchwrite{ivl:##1:##3:}}%
+   \long\def\inheritvariables[##1]##2[##3]%
+     {\convertsetupdata{##3}\ascii
+      \immediate\write\scratchwrite{ivr:##1:\ascii:}}%
+   \immediate\write\scratchwrite{startsetup}%
+   #1%
+   \immediate\write\scratchwrite{stopsetup}%
+   \immediate\write\scratchwrite{}%
+   \egroup}
+
+\let\stopsetup\relax
+
+\def\convertsetupdata#1#2% only accept #1=\v!whatever
+  {\doifsystemconstantelse{#1}{\edef#2{#1}}{\let#2\empty}}
+
+\input setupb 
+
+\protect
+
+\end

@@ -1,0 +1,409 @@
+%D \module
+%D   [      file=s-mod-02,
+%D        version=very-old,
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=Documentation Screen Environment,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
+%C details. 
+
+%D This module looks like crap, is not documented, will 
+%D change, and used to be called modu-*.tex. 
+
+% Macro's
+
+\input s-mod-00.tex
+
+\stelkopin[paragraaf][expansie=commando]
+
+\def\complexmodule[#1]% redefined
+  {\startglobaal % i.v.m. \bgroup in \startdocumentation  
+   \getparameters[Module][#1]
+   \stopglobaal  % i.v.m. \bgroup in \startdocumentation  
+   \paragraaf{\Modulesubtitle}
+   \SchrijfLijstenWeg}
+
+\def\stopmodule% redefined
+  {\pagina  
+   \bepaalregisterkenmerken
+     [index]
+     [criterium=paragraaf]
+   \ifutilitydone
+     \paginareferentie
+       [index]
+     \plaatsregister
+       [index]
+       [balanceren=ja,
+        aanduiding=nee,
+        criterium=paragraaf]
+   \fi}
+
+\let\StelLijstenSamen=\relax
+
+\newcounter\ModuleNumber
+
+\newwrite\BatchFile \openout\BatchFile=\jobname.bat
+
+\def\WriteBatchFile%
+  {\doglobal\increment\ModuleNumber
+   \immediate\write\BatchFile{call modu-run \FileName\space \ModuleNumber}}
+
+\newif\ifProcessingPublic
+
+\def\SchrijfLijstenWeg%
+  {\schrijfnaarlijst[FileNames] {}{\FileName}
+   \schrijfnaarlijst[GroupItems]{}{\GroupItem}}
+
+\def\moduletitel{}
+
+\def\TypeZeroModule#1%
+  {\paragraaf{[to be extracted: #1]}
+   {\em This module is not yet split off.}
+   \SchrijfLijstenWeg}
+
+\def\TypeOneModule#1%
+  {\paragraaf{[to be documented: #1]}
+   {\em This module is not yet fully documented.}
+   \SchrijfLijstenWeg}
+
+\def\TypeTwoModule#1%
+  {\ifProcessingPublic
+     \readfile{#1.ted}{}{}%
+     \WriteBatchFile
+   \else
+     \paragraaf{[not yet public: #1]}
+     {\em This module is documented but not yet public.}
+     \SchrijfLijstenWeg
+   \fi}
+
+\def\TypeThreeModule#1%
+  {\readfile{#1.ted}{}{}%
+   \WriteBatchFile}
+
+\def\verwerkmodule#1#2%
+  {\pagina
+   \bgroup
+   \def\FileName{#1}
+   \stelrefererenin[prefix=#1]
+   \gebruikexterndocument[PaperVersion][#1][]
+   \aftersplitstring#1\at-\to\GroupItem
+   \StelLijstenSamen
+   \ifcase#2
+     \TypeZeroModule{#1}
+   \or
+     \TypeOneModule{#1}
+   \or
+     \TypeTwoModule{#1}  % \TypeThreeModule{#1}
+   \or
+     \TypeThreeModule{#1}
+   \fi
+   \pagina
+   \stelrefererenin[prefix=]
+   \egroup}
+
+\def\ModuleGroep#1#2%
+  {\pagina
+   \let\Modulefile=\empty
+   \stelrefererenin[prefix=#1]
+   \def\FileGroup{#1}
+   \schrijfnaarlijst[FileGroups]{}{\FileGroup}
+   \hoofdstuk[inhoud]{#2}
+   \MaakLijstMetItems
+   \MaakLijstMetNames
+   \MaakLijstMetGroups
+   \plaatsinhoud[criterium=hoofdstuk,niveau=paragraaf]}
+
+% Layout 
+
+\stelkorpsin
+  [9pt,ams]
+
+\taal
+  [en]
+
+\stelpapierformaatin
+  [S6][S6]
+
+\stellayoutin
+  [rugwit=72.5pt,
+   linkermarge=50pt,
+   linkermargeafstand=12.5pt,
+   rechtermarge=0pt,
+   rechterrand=80pt,
+   rechterrandafstand=10pt,
+   linkerrand=0pt,
+   breedte=430pt,
+   kopwit=10pt,
+   hoofd=0pt,
+   voet=30pt,
+   onderafstand=10pt,
+   onder=15pt,
+   hoogte=410pt,
+   letter=\ss]
+
+\steltypenin
+  [palet=colorpretty]
+
+\stelsetupin
+  [verwijzing=3]
+
+\definieerkleur [texprettyone]     [r=.8, g=0,  b=0]  % red
+\definieerkleur [texprettytwo]     [r=0,  g=.6, b=0]  % green
+
+\definieerkleur [AchtergrondKleur] [s=.5]  % [r=1,g=1,b=.7]
+\definieerkleur [ButtonKleur]      [s=.85] % [r=.1,g=.5,b=.8]
+
+\stelinteractiein
+  [status=start,
+   pagina=ja,
+   contrastkleur=,
+   menu=aan,
+   kleur=]
+
+\stelachtergrondenin
+  [pagina]
+  [achtergrond=kleur,
+   kleur=AchtergrondKleur,
+   offset=2.5pt]  % this offset influences the menus! 
+
+\stelachtergrondenin
+  [tekst,voet]
+  [tekst,linkermarge]
+  [achtergrond=kleur,
+   kleur=wit]
+
+\stelsubpaginanummerin
+  [wijze=perparagraaf,
+   status=start]
+
+\stelinteractiebalkin
+  [kader=uit,
+   offset=0pt,
+   hoogte=passend]
+
+\stelwitruimtein
+  [groot]
+
+\steltypenin
+  [typen]
+  [optie=kleur]
+
+\steltypenin
+  [definition]
+  [optie=kleur]
+
+\steltypenin
+  [file]
+  [optie=kleur]
+
+\stelnummeringin
+  [variant=enkelzijdig,
+   wijze=perparagraaf,
+   status=geen]
+
+\stelinmargein
+  [plaats=links]
+
+\stelkoppenin
+  [variant=inmarge]
+
+\stelkopin
+  [hoofdstuk]
+  [letter=\ssc,
+   pagina=rechts]
+
+\stelkopin
+  [paragraaf]
+  [letter=\ssb,
+   pagina=rechts]
+
+\stellijstin
+  [hoofdstuk]
+  [letter=vet,
+   na=\blanko]
+
+\stelinhoudin
+  [breedte=2em]
+
+\stelindexin
+  [balanceren=ja,
+   aanduiding=nee]
+
+\stelkleurenin
+  [status=start]
+
+\def\TitelBlad#1%
+  {\startstandaardopmaak
+     \definefont[GrootFont] [SansBold at 72pt] 
+     \definefont[MiddelFont][Sans at 32pt] 
+     \definefont[KleinFont] [Sans at 24pt] 
+     \startkleur[AchtergrondKleur]
+     \vskip12pt 
+     \regelmidden{\GrootFont\setstrut\strut    Con\TeX t}
+     \vskip24pt 
+     \regelmidden{\MiddelFont\setstrut\strut   #1} 
+     \vskip24pt
+     \regelmidden{\KleinFont\setstrut\strut    Hans Hagen}
+     \vfilll
+     \regelmidden{\KleinFont\setstrut\strut    PRAGMA ADE} 
+     \vskip24pt 
+     \regelmidden{\KleinFont\setstrut\strut    www.pragma-ade.nl --- \currentdate}
+     \vskip12pt 
+     \stopkleur
+   \stopstandaardopmaak}
+ 
+\def\ColofonBlad%
+  {\startmode[atpragma]
+   \pagina
+   \bgroup
+     \def\PragmaHoogte {\zethoogte}
+     \def\PragmaBreedte{\tekstbreedte}
+     \def\PragmaKopwit {\kopwit}
+     \def\PragmaRugwit {\rugwit}
+     \def\PragmaMarge  {0pt}
+     \PragmaLijnentrue
+     \PlaatsPragmaLogo[ADE]
+     \vfill
+     \startsmaller[3*midden]
+     This is the official documentation of \CONTEXT\ version 
+     \kenmerkdatum, a \TEX\ macropackage developed by J.~Hagen
+     \& A.F.~Otten, who both hold the copyrights. 
+     \stopsmaller
+     \vfill
+     \pagina
+   \egroup
+   \stopmode}
+
+\newbox\LijstMetItems
+\newbox\LijstMetGroups
+\newbox\LijstMetNames
+
+\definieerlijst[FileNames]   \def\FileName  {}
+\definieerlijst[FileGroups]  \def\FileGroup {}
+\definieerlijst[GroupItems]  \def\GroupItem {}
+
+\stellijstin
+  [FileNames,FileGroups,FileGroups]
+  [expansie=ja,
+   paginanummer=nee,
+   letter=\ss\bf]
+
+\stellijstin
+  [FileNames]
+  [commando=\FileNameEntry,
+   variant=geen]
+
+\stellijstin
+  [FileGroups]
+  [commando=\FileGroupEntry,
+   na=\hss, 
+   variant=geen]
+
+\def\FileNameEntry#1#2#3%
+  {\strut\hbox{#2}}
+
+\def\FileGroupEntry#1#2#3%
+  {\strut#2}
+
+\def\MaakLijstMetItems%
+  {\setbox\LijstMetItems=\vbox
+     {\ss\bf
+      \stelinteractiein[kleur=ButtonKleur]
+      \plaatslijst[GroupItems][criterium=hoofdstuk]}}
+
+\def\MaakLijstMetNames%
+  {\setbox\LijstMetNames=\vbox 
+     {\hsize\rechterrandbreedte
+      \ss\bf\stelinterliniein 
+      \stelinteractiein[kleur=ButtonKleur]
+      \startsimplecolumns[afstand=10pt]
+        \plaatslijst[FileNames][criterium=hoofdstuk]
+      \stopsimplecolumns}}
+
+\def\MaakLijstMetGroups%
+  {\setbox\LijstMetGroups=\hbox to \tekstbreedte
+     {\ss\bf
+      \stelinteractiein[kleur=ButtonKleur]%
+      \plaatslijst[FileGroups][criterium=alles]\unskip\unskip}}
+
+\setbox\LijstMetGroups=\hbox{}
+
+%\stelvoettekstenin
+%  [rand]
+%  []
+%  [{\interactiebalk[variant=g]}]
+
+\stelinteractiemenuin
+  [rechts,onder]
+  [status=start,
+   kader=uit,
+   kleur=AchtergrondKleur,
+   letter=\ss\bf,
+   hoogte=15pt,
+   offset=0pt,
+   tussen=\vskip5pt,
+   achtergrond=kleur,
+   achtergrondkleur=ButtonKleur]
+
+\startinteractiemenu[rechts]
+  \boxofsize \vbox \teksthoogte \voetafstand \voethoogte 5pt
+    \bgroup                                                  
+      \copy\LijstMetNames
+      \vfill
+      \but [\FileGroup:inhoud]   local contents \\
+      \but [\FileName:index]     local register \\
+      \but [PaperVersion::begin] paper version  \\
+      \but [inhoud]              main contents  \\
+      \but [index]               main register  \\
+      \but [VorigeSprong]        previous jump  \\
+      \but [VerlaatViewer]       close document \\
+      \unskip
+    \egroup
+\stopinteractiemenu
+
+\startinteractiemenu[onder]
+  \unhcopy\LijstMetGroups
+\stopinteractiemenu
+
+\def\plaatsmoduleregister%
+  {\startuitleidingen
+   \stelsubpaginanummerin[reset]
+   \titel[-:index]{Register}
+   \plaatsindex
+   \stopuitleidingen}
+
+\def\plaatsmoduleinhoud%
+  {\startinleidingen
+   \titel[-:inhoud]{Contents}
+   \stelinteractiebalkin[status=stop]
+   \plaatsinhoud[criterium=tekst,niveau=hoofdstuk]
+   \stopinleidingen}
+
+\stelinhoudin
+  [paginanummer=nee,
+   niveau=hoofdstuk,
+   interactie=alles,
+   letter=,
+   voor=,
+   na=]
+
+\stelvoettekstenin
+  [marge]
+  [\tt\Modulefile]
+  []  
+
+\stelvoettekstenin
+  [tekst]
+  [hoofdstuk][paragraaf]
+
+\stelindexin
+  [symbool=1]
+
+\steltolerantiein
+  [zeersoepel]
+
+\endinput 

@@ -27,6 +27,7 @@
 \definecharacter textcaron         20 
 \definecharacter textbreve         21
 \definecharacter textmacron        22
+\definecharacter textring          23
 \definecharacter textcedilla       24 
 \definecharacter textogonek        24 % no ! 
 \definecharacter textbottomdot     46  
@@ -78,6 +79,8 @@
 \definecharacter atilde {\buildtextaccent\texttilde a}
 \definecharacter Itilde {\buildtextaccent\texttilde \dotlessI}
 \definecharacter itilde {\buildtextaccent\texttilde \dotlessi}
+\definecharacter Ntilde {\buildtextaccent\texttilde N}
+\definecharacter ntilde {\buildtextaccent\texttilde n}
 \definecharacter Otilde {\buildtextaccent\texttilde O}
 \definecharacter otilde {\buildtextaccent\texttilde o}
 \definecharacter Utilde {\buildtextaccent\texttilde U}
@@ -179,10 +182,10 @@
 \definecharacter Uogonek {\buildtextogonek U}
 \definecharacter uogonek {\buildtextogonek u}
 
-\definecharacter Aring {A}
-\definecharacter aring {a}
-\definecharacter Uring {U}
-\definecharacter uring {u}
+\definecharacter Aring {\buildtextaccent\textring A}
+\definecharacter aring {\buildtextaccent\textring a}
+\definecharacter Uring {\buildtextaccent\textring U}
+\definecharacter uring {\buildtextaccent\textring u}
 
 \definecharacter Abreve {\buildtextaccent\textbreve A}
 \definecharacter abreve {\buildtextaccent\textbreve a}
@@ -223,16 +226,22 @@
 \definecharacter dotlessI    {I}
 \definecharacter dotlessJ    {J}
 
-\definecharacter AEligature  {\char"1D }
-\definecharacter aeligature  {\char"1A }
-\definecharacter Lstroke     {\char32L}
-\definecharacter lstroke     {\char32l}
-\definecharacter Ostroke     {\char"1F }
-\definecharacter ostroke     {\char"1C }
-\definecharacter OEligature  {\char"1E }
-\definecharacter oeligature  {\char"1B }
+% \definecharacter ffligature  {\char11 }
+% \definecharacter filigature  {\char12 }
+% \definecharacter flligature  {\char13 }
+% \definecharacter ffiligature {\char14 }
+% \definecharacter fflligature {\char15 }
+
+\definecharacter AEligature  {\char29 } % "1D
+\definecharacter aeligature  {\char26 } % "1A
+\definecharacter Lstroke     {\hsmash{\char32}L}
+\definecharacter lstroke     {\hsmash{\char32}l}
+\definecharacter Ostroke     {\char31 } % "1F
+\definecharacter ostroke     {\char28 } % "1C
+\definecharacter OEligature  {\char30 } % "1E
+\definecharacter oeligature  {\char27 } % "1B
 \definecharacter Ssharp      {SS}
-\definecharacter ssharp      {\char"19 }
+\definecharacter ssharp      {\char25 } % "19 
 \definecharacter IJligature  {IJ}
 \definecharacter ijligature  {ij}
 

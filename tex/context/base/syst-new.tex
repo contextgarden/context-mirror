@@ -191,9 +191,12 @@
    \retestfeature}
 
 \def\retestfeature%
-  {\message{starting feature test}\wait
+  {\bgroup
+   \ifcase\interactionmode\let\wait\relax\fi
+   \message{starting feature test}\wait
    \featuretest=-1 \dotestfeature
-   \message{feature test done}\wait}
+   \message{feature test done}\wait
+   \egroup}
 
 %D \macros
 %D   {adddimenregister,adddimenmacro}

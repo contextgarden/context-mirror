@@ -1,0 +1,69 @@
+%D \module
+%D   [       file=type-exa,
+%D        version=2001.04.12, 
+%D          title=\CONTEXT\ Typescript Macros,
+%D       subtitle=Example scripts, 
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D A couple of goodies:
+
+% \starttypescript [modern] [ec]
+% 
+% \definetypeface [modern] [rm] [serif] [computer-modern] [computer-modern] [encoding=ec]
+% \definetypeface [modern] [ss] [sans]  [computer-modern] [computer-modern] [encoding=ec]
+% \definetypeface [modern] [tt] [mono]  [computer-modern] [computer-modern] [encoding=ec]
+% \definetypeface [modern] [mm] [math]  [computer-modern] [computer-modern] [encoding=ec]
+% 
+% \stoptypescript
+% 
+% \starttypescript [modern] [il2]
+% 
+% \definetypeface [modern] [rm] [serif] [computer-modern] [computer-modern] [encoding=il2]
+% \definetypeface [modern] [ss] [sans]  [computer-modern] [computer-modern] [encoding=il2]
+% \definetypeface [modern] [tt] [mono]  [computer-modern] [computer-modern] [encoding=il2]
+% \definetypeface [modern] [mm] [math]  [computer-modern] [computer-modern] [encoding=il2]
+% 
+% \stoptypescript
+% 
+% \starttypescript [modern] [pl0]
+% 
+% \definetypeface [modern] [rm] [serif] [computer-modern] [computer-modern] [encoding=pl0]
+% \definetypeface [modern] [ss] [sans]  [computer-modern] [computer-modern] [encoding=pl0]
+% \definetypeface [modern] [tt] [mono]  [computer-modern] [computer-modern] [encoding=pl0]
+% \definetypeface [modern] [mm] [math]  [computer-modern] [computer-modern] [encoding=pl0]
+% 
+% \stoptypescript
+
+\starttypescript [modern] [ec,il2,pl0,default]
+
+\definetypeface [modern] [rm] [serif] [computer-modern] [computer-modern] [encoding=\typescripttwo]
+\definetypeface [modern] [ss] [sans]  [computer-modern] [computer-modern] [encoding=\typescripttwo]
+\definetypeface [modern] [tt] [mono]  [computer-modern] [computer-modern] [encoding=\typescripttwo]
+\definetypeface [modern] [mm] [math]  [computer-modern] [computer-modern] [encoding=\typescripttwo]
+
+\stoptypescript
+
+\starttypescript [postscript] [texnansi,ec]
+
+\definetypeface [postscript] [rm] [serif] [times]     [default] [encoding=\typescripttwo]
+\definetypeface [postscript] [ss] [sans]  [helvetica] [default] [rscale=.9,encoding=\typescripttwo]
+\definetypeface [postscript] [tt] [mono]  [courier]   [default] [rscale=1.1,encoding=\typescripttwo]
+
+\stoptypescript
+
+\starttypescript [mathtimes] [texnansi,ec]
+
+\definetypeface [mathtimes] [rm] [serif] [times]           [default] [encoding=\typescripttwo]
+\definetypeface [mathtimes] [ss] [sans]  [helvetica]       [default] [rscale=.9,encoding=\typescripttwo]
+\definetypeface [mathtimes] [tt] [mono]  [computer-modern] [default] [rscale=1.1,encoding=\typescripttwo]
+\definetypeface [mathtimes] [mm] [math]  [times]           [default] [encoding=\typescripttwo]
+
+\stoptypescript
+
+\endinput

@@ -1,0 +1,528 @@
+%D \module
+%D   [       file=type-enc,
+%D        version=2001.04.12,
+%D          title=\CONTEXT\ Typescript Macros,
+%D       subtitle=Encoding scripts,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+% Computer Modern Roman
+
+\starttypescript [all] [computer-modern] [ec]
+  \definefontsynonym [cmb10]    [aeb10]    [encoding=ec]
+  \definefontsynonym [cmbx10]   [aebx10]   [encoding=ec]
+  \definefontsynonym [cmbx12]   [aebx12]   [encoding=ec]
+  \definefontsynonym [cmbx5]    [aebx5]    [encoding=ec]
+  \definefontsynonym [cmbx6]    [aebx6]    [encoding=ec]
+  \definefontsynonym [cmbx7]    [aebx7]    [encoding=ec]
+  \definefontsynonym [cmbx8]    [aebx8]    [encoding=ec]
+  \definefontsynonym [cmbx9]    [aebx9]    [encoding=ec]
+  \definefontsynonym [cmbxsl10] [aebxsl10] [encoding=ec]
+  \definefontsynonym [cmbxti10] [aebxti10] [encoding=ec]
+  \definefontsynonym [cmcsc10]  [aecsc10]  [encoding=ec]
+  \definefontsynonym [cmitt10]  [aeitt10]  [encoding=ec]
+  \definefontsynonym [cmr10]    [aer10]    [encoding=ec]
+  \definefontsynonym [cmr12]    [aer12]    [encoding=ec]
+  \definefontsynonym [cmr17]    [aer17]    [encoding=ec]
+  \definefontsynonym [cmr5]     [aer5]     [encoding=ec]
+  \definefontsynonym [cmr6]     [aer6]     [encoding=ec]
+  \definefontsynonym [cmr7]     [aer7]     [encoding=ec]
+  \definefontsynonym [cmr8]     [aer8]     [encoding=ec]
+  \definefontsynonym [cmr9]     [aer9]     [encoding=ec]
+  \definefontsynonym [cmsl10]   [aesl10]   [encoding=ec]
+  \definefontsynonym [cmsl12]   [aesl12]   [encoding=ec]
+  \definefontsynonym [cmsl8]    [aesl8]    [encoding=ec]
+  \definefontsynonym [cmsl9]    [aesl9]    [encoding=ec]
+  \definefontsynonym [cmsltt10] [aesltt10] [encoding=ec]
+  \definefontsynonym [cmss10]   [aess10]   [encoding=ec]
+  \definefontsynonym [cmss12]   [aess12]   [encoding=ec]
+  \definefontsynonym [cmss17]   [aess17]   [encoding=ec]
+  \definefontsynonym [cmss8]    [aess8]    [encoding=ec]
+  \definefontsynonym [cmss9]    [aess9]    [encoding=ec]
+  \definefontsynonym [cmssbx10] [aessbx10] [encoding=ec]
+  \definefontsynonym [cmssdc10] [aessdc10] [encoding=ec]
+  \definefontsynonym [cmssi10]  [aessi10]  [encoding=ec]
+  \definefontsynonym [cmssi12]  [aessi12]  [encoding=ec]
+  \definefontsynonym [cmssi17]  [aessi17]  [encoding=ec]
+  \definefontsynonym [cmssi8]   [aessi8]   [encoding=ec]
+  \definefontsynonym [cmssi9]   [aessi9]   [encoding=ec]
+  \definefontsynonym [cmtcsc10] [aetcsc10] [encoding=ec]
+  \definefontsynonym [cmti10]   [aeti10]   [encoding=ec]
+  \definefontsynonym [cmti12]   [aeti12]   [encoding=ec]
+  \definefontsynonym [cmti7]    [aeti7]    [encoding=ec]
+  \definefontsynonym [cmti8]    [aeti8]    [encoding=ec]
+  \definefontsynonym [cmti9]    [aeti9]    [encoding=ec]
+  \definefontsynonym [cmtt10]   [aett10]   [encoding=ec]
+  \definefontsynonym [cmtt12]   [aett12]   [encoding=ec]
+  \definefontsynonym [cmtt8]    [aett8]    [encoding=ec]
+  \definefontsynonym [cmtt9]    [aett9]    [encoding=ec]
+\stoptypescript
+
+\starttypescript [all] [computer-modern] [il2]
+  \definefontsynonym [cmb10]    [csb10]    [encoding=il2]
+  \definefontsynonym [cmbx10]   [csbx10]   [encoding=il2]
+  \definefontsynonym [cmbx12]   [csbx12]   [encoding=il2]
+  \definefontsynonym [cmbx5]    [csbx5]    [encoding=il2]
+  \definefontsynonym [cmbx6]    [csbx6]    [encoding=il2]
+  \definefontsynonym [cmbx7]    [csbx7]    [encoding=il2]
+  \definefontsynonym [cmbx8]    [csbx8]    [encoding=il2]
+  \definefontsynonym [cmbx9]    [csbx9]    [encoding=il2]
+  \definefontsynonym [cmbxsl10] [csbxsl10] [encoding=il2]
+  \definefontsynonym [cmbxti10] [csbxti10] [encoding=il2]
+  \definefontsynonym [cmcsc10]  [cscsc10]  [encoding=il2]
+  \definefontsynonym [cmdunh10] [csdunh10] [encoding=il2]
+  \definefontsynonym [cmff10]   [csff10]   [encoding=il2]
+  \definefontsynonym [cmfi10]   [csfi10]   [encoding=il2]
+  \definefontsynonym [cmfib8]   [csfib8]   [encoding=il2]
+  \definefontsynonym [cminch]   [csinch]   [encoding=il2]
+  \definefontsynonym [cmitt10]  [csitt10]  [encoding=il2]
+  \definefontsynonym [cmr10]    [csr10]    [encoding=il2]
+  \definefontsynonym [cmr12]    [csr12]    [encoding=il2]
+  \definefontsynonym [cmr17]    [csr17]    [encoding=il2]
+  \definefontsynonym [cmr5]     [csr5]     [encoding=il2]
+  \definefontsynonym [cmr6]     [csr6]     [encoding=il2]
+  \definefontsynonym [cmr7]     [csr7]     [encoding=il2]
+  \definefontsynonym [cmr8]     [csr8]     [encoding=il2]
+  \definefontsynonym [cmr9]     [csr9]     [encoding=il2]
+  \definefontsynonym [cmsl10]   [cssl10]   [encoding=il2]
+  \definefontsynonym [cmsl12]   [cssl12]   [encoding=il2]
+  \definefontsynonym [cmsl8]    [cssl8]    [encoding=il2]
+  \definefontsynonym [cmsl9]    [cssl9]    [encoding=il2]
+  \definefontsynonym [cmsltt10] [cssltt10] [encoding=il2]
+  \definefontsynonym [cmss10]   [csss10]   [encoding=il2]
+  \definefontsynonym [cmss12]   [csss12]   [encoding=il2]
+  \definefontsynonym [cmss17]   [csss17]   [encoding=il2]
+  \definefontsynonym [cmss8]    [csss8]    [encoding=il2]
+  \definefontsynonym [cmss9]    [csss9]    [encoding=il2]
+  \definefontsynonym [cmssbx10] [csssbx10] [encoding=il2]
+  \definefontsynonym [cmssdc10] [csssdc10] [encoding=il2]
+  \definefontsynonym [cmssi10]  [csssi10]  [encoding=il2]
+  \definefontsynonym [cmssi12]  [csssi12]  [encoding=il2]
+  \definefontsynonym [cmssi17]  [csssi17]  [encoding=il2]
+  \definefontsynonym [cmssi8]   [csssi8]   [encoding=il2]
+  \definefontsynonym [cmssi9]   [csssi9]   [encoding=il2]
+  \definefontsynonym [cmssq8]   [csssq8]   [encoding=il2]
+  \definefontsynonym [cmssqi8]  [csssqi8]  [encoding=il2]
+  \definefontsynonym [cmtcsc10] [cstcsc10] [encoding=il2]
+  \definefontsynonym [cmti10]   [csti10]   [encoding=il2]
+  \definefontsynonym [cmti12]   [csti12]   [encoding=il2]
+  \definefontsynonym [cmti7]    [csti7]    [encoding=il2]
+  \definefontsynonym [cmti8]    [csti8]    [encoding=il2]
+  \definefontsynonym [cmti9]    [csti9]    [encoding=il2]
+  \definefontsynonym [cmtt10]   [cstt10]   [encoding=il2]
+  \definefontsynonym [cmtt12]   [cstt12]   [encoding=il2]
+  \definefontsynonym [cmtt8]    [cstt8]    [encoding=il2]
+  \definefontsynonym [cmtt9]    [cstt9]    [encoding=il2]
+  \definefontsynonym [cmu10]    [csu10]    [encoding=il2]
+  \definefontsynonym [cmvtt10]  [csvtt10]  [encoding=il2]
+\stoptypescript
+
+\starttypescript [all] [computer-modern] [pl0]
+  \definefontsynonym [cmb10]    [plb10]    [encoding=pl0]
+  \definefontsynonym [cmbsy10]  [plbsy10]  [encoding=pl0]
+  \definefontsynonym [cmbx10]   [plbx10]   [encoding=pl0]
+  \definefontsynonym [cmbx12]   [plbx12]   [encoding=pl0]
+  \definefontsynonym [cmbx5]    [plbx5]    [encoding=pl0]
+  \definefontsynonym [cmbx6]    [plbx6]    [encoding=pl0]
+  \definefontsynonym [cmbx7]    [plbx7]    [encoding=pl0]
+  \definefontsynonym [cmbx8]    [plbx8]    [encoding=pl0]
+  \definefontsynonym [cmbx9]    [plbx9]    [encoding=pl0]
+  \definefontsynonym [cmbxsl10] [plbxsl10] [encoding=pl0]
+  \definefontsynonym [cmbxti10] [plbxti10] [encoding=pl0]
+  \definefontsynonym [cmcsc10]  [plcsc10]  [encoding=pl0]
+  \definefontsynonym [cmdunh10] [pldunh10] [encoding=pl0]
+  \definefontsynonym [cmex10]   [plex10]   [encoding=pl0]
+  \definefontsynonym [cmex9]    [plex9]    [encoding=pl0]
+  \definefontsynonym [cmff10]   [plff10]   [encoding=pl0]
+  \definefontsynonym [cmfi10]   [plfi10]   [encoding=pl0]
+  \definefontsynonym [cmfib8]   [plfib8]   [encoding=pl0]
+  \definefontsynonym [cminch]   [plinch]   [encoding=pl0]
+  \definefontsynonym [cmitt10]  [plitt10]  [encoding=pl0]
+  \definefontsynonym [cmmi10]   [plmi10]   [encoding=pl0]
+  \definefontsynonym [cmmi12]   [plmi12]   [encoding=pl0]
+  \definefontsynonym [cmmi5]    [plmi5]    [encoding=pl0]
+  \definefontsynonym [cmmi6]    [plmi6]    [encoding=pl0]
+  \definefontsynonym [cmmi7]    [plmi7]    [encoding=pl0]
+  \definefontsynonym [cmmi8]    [plmi8]    [encoding=pl0]
+  \definefontsynonym [cmmi9]    [plmi9]    [encoding=pl0]
+  \definefontsynonym [cmmib10]  [plmib10]  [encoding=pl0]
+  \definefontsynonym [cmr10]    [plr10]    [encoding=pl0]
+  \definefontsynonym [cmr12]    [plr12]    [encoding=pl0]
+  \definefontsynonym [cmr17]    [plr17]    [encoding=pl0]
+  \definefontsynonym [cmr5]     [plr5]     [encoding=pl0]
+  \definefontsynonym [cmr6]     [plr6]     [encoding=pl0]
+  \definefontsynonym [cmr7]     [plr7]     [encoding=pl0]
+  \definefontsynonym [cmr8]     [plr8]     [encoding=pl0]
+  \definefontsynonym [cmr9]     [plr9]     [encoding=pl0]
+  \definefontsynonym [cmsl10]   [plsl10]   [encoding=pl0]
+  \definefontsynonym [cmsl12]   [plsl12]   [encoding=pl0]
+  \definefontsynonym [cmsl8]    [plsl8]    [encoding=pl0]
+  \definefontsynonym [cmsl9]    [plsl9]    [encoding=pl0]
+  \definefontsynonym [cmsltt10] [plsltt10] [encoding=pl0]
+  \definefontsynonym [cmss10]   [plss10]   [encoding=pl0]
+  \definefontsynonym [cmss12]   [plss12]   [encoding=pl0]
+  \definefontsynonym [cmss17]   [plss17]   [encoding=pl0]
+  \definefontsynonym [cmss8]    [plss8]    [encoding=pl0]
+  \definefontsynonym [cmss9]    [plss9]    [encoding=pl0]
+  \definefontsynonym [cmssbi10] [plssbi10] [encoding=pl0]
+  \definefontsynonym [cmssbx10] [plssbx10] [encoding=pl0]
+  \definefontsynonym [cmssdc10] [plssdc10] [encoding=pl0]
+  \definefontsynonym [cmssi10]  [plssi10]  [encoding=pl0]
+  \definefontsynonym [cmssi12]  [plssi12]  [encoding=pl0]
+  \definefontsynonym [cmssi17]  [plssi17]  [encoding=pl0]
+  \definefontsynonym [cmssi8]   [plssi8]   [encoding=pl0]
+  \definefontsynonym [cmssi9]   [plssi9]   [encoding=pl0]
+  \definefontsynonym [cmssq8]   [plssq8]   [encoding=pl0]
+  \definefontsynonym [cmssqi8]  [plssqi8]  [encoding=pl0]
+  \definefontsynonym [cmsy10]   [plsy10]   [encoding=pl0]
+  \definefontsynonym [cmsy5]    [plsy5]    [encoding=pl0]
+  \definefontsynonym [cmsy6]    [plsy6]    [encoding=pl0]
+  \definefontsynonym [cmsy7]    [plsy7]    [encoding=pl0]
+  \definefontsynonym [cmsy8]    [plsy8]    [encoding=pl0]
+  \definefontsynonym [cmsy9]    [plsy9]    [encoding=pl0]
+  \definefontsynonym [cmtcsc10] [pltcsc10] [encoding=pl0]
+  \definefontsynonym [cmtex10]  [pltex10]  [encoding=pl0]
+  \definefontsynonym [cmtex8]   [pltex8]   [encoding=pl0]
+  \definefontsynonym [cmtex9]   [pltex9]   [encoding=pl0]
+  \definefontsynonym [cmti10]   [plti10]   [encoding=pl0]
+  \definefontsynonym [cmti12]   [plti12]   [encoding=pl0]
+  \definefontsynonym [cmti7]    [plti7]    [encoding=pl0]
+  \definefontsynonym [cmti8]    [plti8]    [encoding=pl0]
+  \definefontsynonym [cmti9]    [plti9]    [encoding=pl0]
+  \definefontsynonym [cmtt10]   [pltt10]   [encoding=pl0]
+  \definefontsynonym [cmtt12]   [pltt12]   [encoding=pl0]
+  \definefontsynonym [cmtt8]    [pltt8]    [encoding=pl0]
+  \definefontsynonym [cmtt9]    [pltt9]    [encoding=pl0]
+  \definefontsynonym [cmu10]    [plu10]    [encoding=pl0]
+  \definefontsynonym [cmvtt10]  [plvtt10]  [encoding=pl0]
+\stoptypescript
+
+\starttypescript [serif] [computer-modern] [default]
+  \definefontsynonym [ComputerModern]             [cmr10]
+  \definefontsynonym [ComputerModern-Bold]        [cmbx10]
+  \definefontsynonym [ComputerModern-Italic]      [cmti10]
+  \definefontsynonym [ComputerModern-Slanted]     [cmsl10]
+  \definefontsynonym [ComputerModern-BoldItalic]  [cmbxti10]
+  \definefontsynonym [ComputerModern-BoldSlanted] [cmbxsl10]
+  \definefontsynonym [ComputerModern-Caps]        [cmr10]
+\stoptypescript
+
+\starttypescript [sans] [computer-modern] [default]
+  \definefontsynonym [ComputerModernSans]             [cmss10]
+  \definefontsynonym [ComputerModernSans-Bold]        [cmssbx10]
+  \definefontsynonym [ComputerModernSans-Italic]      [cmssi10]
+  \definefontsynonym [ComputerModernSans-Slanted]     [cmssi10]
+  \definefontsynonym [ComputerModernSans-BoldItalic]  [cmssbx10]
+  \definefontsynonym [ComputerModernSans-BoldSlanted] [cmssbx10]
+  \definefontsynonym [ComputerModernSans-Caps]        [cmss10]
+\stoptypescript
+
+\starttypescript [mono] [computer-modern] [default]
+  \definefontsynonym [ComputerModernMono]             [cmtt10]
+  \definefontsynonym [ComputerModernMono-Bold]        [cmtt10]
+  \definefontsynonym [ComputerModernMono-Italic]      [cmitt10]
+  \definefontsynonym [ComputerModernMono-Slanted]     [cmsltt10]
+  \definefontsynonym [ComputerModernMono-BoldItalic]  [cmtt10]
+  \definefontsynonym [ComputerModernMono-BoldSlanted] [cmtt10]
+  \definefontsynonym [ComputerModernMono-Caps]        [cmtt10]
+\stoptypescript
+
+\starttypescript [math] [computer-modern] [default]
+  \definefontsynonym [ComputerModernMath-Roman]     [cmr10]
+  \definefontsynonym [ComputerModernMath-Extension] [cmex10]
+  \definefontsynonym [ComputerModernMath-Italic]    [cmmi10]
+  \definefontsynonym [ComputerModernMath-Symbol]    [cmsy10]
+\stoptypescript
+
+% Computer Concrete
+
+\starttypescript [serif] [concrete] [default]
+  \definefontsynonym [ComputerConcrete]         [ccr10]
+  \definefontsynonym [ComputerConcrete]         [ccr10]
+  \definefontsynonym [ComputerConcrete-Italic]  [ccti10]
+  \definefontsynonym [ComputerConcrete-Slanted] [ccsl10]
+  \definefontsynonym [ComputerConcrete-Italic]  [ccti10]
+  \definefontsynonym [ComputerConcrete-Slanted] [ccsl10]
+  \definefontsynonym [ComputerConcrete-Caps]    [cccsc10]
+\stoptypescript
+
+% Euler
+
+\starttypescript [math] [euler] [default]
+  \definefontsynonym [Euler-Extension] [euex10]
+  \definefontsynonym [Euler-Italic]    [eurm10]
+  \definefontsynonym [Euler-SymbolA]   [euex10]
+  \definefontsynonym [Euler-SymbolB]   [eusm10]
+  \definefontsynonym [Euler-SymbolC]   [eufm10]
+\stoptypescript
+
+% AMS
+
+\starttypescript [math] [ams] [default]
+  \definefontsynonym [AMS-SymbolA] [msam10]
+  \definefontsynonym [AMS-SymbolB] [msbm10]
+\stoptypescript
+
+% Courier
+
+\starttypescript [mono] [courier] [texnansi]
+  \definefontsynonym [Courier]             [com]  [encoding=texnansi]
+  \definefontsynonym [Courier-Oblique]     [coo]  [encoding=texnansi]
+  \definefontsynonym [Courier-Bold]        [cob]  [encoding=texnansi]
+  \definefontsynonym [Courier-BoldOblique] [cobo] [encoding=texnansi]
+\stoptypescript
+
+\starttypescript [mono] [courier] [ec]
+  \definefontsynonym [Courier]             [pcrr8t]  [encoding=ec]
+  \definefontsynonym [Courier-Bold]        [pcrb8t]  [encoding=ec]
+  \definefontsynonym [Courier-Oblique]     [pcrro8t] [encoding=ec]
+  \definefontsynonym [Courier-BoldOblique] [pcrbo8t] [encoding=ec]
+\stoptypescript
+
+% Helvetica
+
+\starttypescript [sans] [helvetica] [texnansi]
+  \definefontsynonym [Helvetica]             [hv]   [encoding=texnansi]
+  \definefontsynonym [Helvetica-Oblique]     [hvo]  [encoding=texnansi]
+  \definefontsynonym [Helvetica-Bold]        [hvb]  [encoding=texnansi]
+  \definefontsynonym [Helvetica-BoldOblique] [hvbo] [encoding=texnansi]
+\stoptypescript
+
+\starttypescript [sans] [helvetica] [ec]
+  \definefontsynonym [Helvetica]             [phvr8t]  [encoding=ec]
+  \definefontsynonym [Helvetica-Oblique]     [phvro8t] [encoding=ec]
+  \definefontsynonym [Helvetica-Bold]        [phvb8t]  [encoding=ec]
+  \definefontsynonym [Helvetica-BoldOblique] [phvbo8t] [encoding=ec]
+\stoptypescript
+
+\starttypescript [math] [helvetica] [default]
+  \definefontsynonym [Helvetica-MathRoman]           [hvrm10t1]
+  \definefontsynonym [Helvetica-MathExtendedSymbols] [hvex10]
+  \definefontsynonym [Helvetica-MathItalics]         [hvmi10]
+  \definefontsynonym [Helvetica-MathSymbols]         [hvsy10]
+\stoptypescript
+
+% Times Roman
+
+\starttypescript [serif] [times] [texnansi]
+  \definefontsynonym [Times-Roman]      [tir]  [encoding=texnansi]
+  \definefontsynonym [Times-Italic]     [tii]  [encoding=texnansi]
+  \definefontsynonym [Times-Bold]       [tib]  [encoding=texnansi]
+  \definefontsynonym [Times-BoldItalic] [tibi] [encoding=texnansi]
+\stoptypescript
+
+\starttypescript [serif] [times] [ec]
+  \definefontsynonym [Times-Roman]      [ptmr8t]  [encoding=ec]
+  \definefontsynonym [Times-Italic]     [ptmri8t] [encoding=ec]
+  \definefontsynonym [Times-Bold]       [ptmb8t]  [encoding=ec]
+  \definefontsynonym [Times-BoldItalic] [ptmbi8t] [encoding=ec]
+\stoptypescript
+
+% Math Times
+
+\starttypescript [math] [times] [texnansi]
+  \definefontsynonym [Times-MathRoman]     [tir]  [encoding=texnansi]
+  \definefontsynonym [Times-MathExtension] [mtex]
+  \definefontsynonym [Times-MathItalic]    [mtmi] [skewcharmi='177]
+  \definefontsynonym [Times-MathSymbol]    [mtsy] [skewcharmi='60]
+\stoptypescript
+
+% Lucida Bright
+
+\starttypescript [serif] [lucida] [texnansi]
+  \definefontsynonym [LucidaBright]               [lbr]   [encoding=texnansi]
+  \definefontsynonym [LucidaBright-Demi]          [lbd]   [encoding=texnansi]
+  \definefontsynonym [LucidaBright-DemiItalic]    [lbdi]  [encoding=texnansi]
+  \definefontsynonym [LucidaBright-Italic]        [lbi]   [encoding=texnansi]
+  \definefontsynonym [LucidaBrightSmallcaps]      [lbrsc] [encoding=texnansi]
+  \definefontsynonym [LucidaBrightSmallcaps-Demi] [lbdsc] [encoding=texnansi]
+  \definefontsynonym [LucidaBright-Oblique]       [lbsl]  [encoding=texnansi]
+\stoptypescript
+
+\starttypescript [serif] [lucida] [ec]
+  \definefontsynonym [LucidaBright]            [hlhr8t]   [encoding=ec]
+  \definefontsynonym [LucidaBright-Demi]       [hlhb8t]   [encoding=ec]
+  \definefontsynonym [LucidaBright-Italic]     [hlhri8t]  [encoding=ec]
+  \definefontsynonym [LucidaBright-Oblique]    [hlhro8t]  [encoding=ec]
+  \definefontsynonym [LucidaBright-DemiItalic] [hlhbi8t]  [encoding=ec]
+  \definefontsynonym [LucidaBrightSmallcaps]   [hlhrc8t]  [encoding=ec]
+\stoptypescript
+
+\starttypescript [sans] [lucida] [texnansi]
+  \definefontsynonym [LucidaSans]            [lsr]  [encoding=texnansi]
+  \definefontsynonym [LucidaSans-Demi]       [lsd]  [encoding=texnansi]
+  \definefontsynonym [LucidaSans-DemiItalic] [lsdi] [encoding=texnansi]
+  \definefontsynonym [LucidaSans-Italic]     [lsi]  [encoding=texnansi]
+  \definefontsynonym [LucidaSans-Bold]       [lsb]  [encoding=texnansi]
+  \definefontsynonym [LucidaSans-BoldItalic] [lsbi] [encoding=texnansi]
+\stoptypescript
+
+\starttypescript [mono] [lucida] [texnansi]
+  \definefontsynonym [LucidaSans-Typewriter]            [lstr]  [encoding=texnansi]
+  \definefontsynonym [LucidaSans-TypewriterBold]        [lstb]  [encoding=texnansi]
+  \definefontsynonym [LucidaSans-TypewriterBoldOblique] [lstbo] [encoding=texnansi]
+  \definefontsynonym [LucidaSans-TypewriterOblique]     [lsto]  [encoding=texnansi]
+\stoptypescript
+
+\starttypescript [mono] [lucida] [ec]
+  \definefontsynonym [LucidaSans]                       [hlsr8t]   [encoding=ec]
+  \definefontsynonym [LucidaSans-Demi]                  [hlsb8t]   [encoding=ec]
+  \definefontsynonym [LucidaSans-Italic]                [hlsri8t]  [encoding=ec]
+  \definefontsynonym [LucidaSans-DemiItalic]            [hlsbi8t]  [encoding=ec]
+  \definefontsynonym [LucidaSans-Typewriter]            [hlsrt8t]  [encoding=ec]
+  \definefontsynonym [LucidaSans-TypewriterBold]        [hlsbt8t]  [encoding=ec]
+  \definefontsynonym [LucidaSans-TypewriterOblique]     [hlsrot8t] [encoding=ec]
+  \definefontsynonym [LucidaSans-TypewriterBoldOblique] [hlsbot8t] [encoding=ec]
+\stoptypescript
+
+\starttypescript [math] [lucida] [texnansi]
+  \definefontsynonym [LucidaNewMath-AltItalic]     [lbmo]
+  \definefontsynonym [LucidaNewMath-Arrows]        [lbma]
+  \definefontsynonym [LucidaNewMath-Extension]     [lbme]
+  \definefontsynonym [LucidaNewMath-Roman]         [lbmr]
+  \definefontsynonym [LucidaNewMath-Italic]        [lbmi]
+  \definefontsynonym [LucidaNewMath-Symbol]        [lbms]
+  \definefontsynonym [LucidaBlackletter]           [lbl]
+\stoptypescript
+
+\starttypescript [boldmath] [lucida] [texnansi]
+  \definefontsynonym [LucidaNewMath-AltDemiItalic] [lbmdo]
+  \definefontsynonym [LucidaNewMath-Arrows-Demi]   [lbmad]
+  \definefontsynonym [LucidaNewMath-Extension]     [lbme]
+  \definefontsynonym [LucidaNewMath-Demibold]      [lbmd]
+  \definefontsynonym [LucidaNewMath-DemiItalic]    [lbmdi]
+  \definefontsynonym [LucidaNewMath-Symbol-Demi]   [lbmsd]
+\stoptypescript
+
+\starttypescript [math] [lucida] [ec]
+  \definefontsynonym [LucidaNewMath-AltItalic]     [hlcrima]
+  \definefontsynonym [LucidaNewMath-Arrows]        [hlcra]
+  \definefontsynonym [LucidaNewMath-Extension]     [hlcrv]
+  \definefontsynonym [LucidaNewMath-Roman]         [hlcrm]
+  \definefontsynonym [LucidaNewMath-Italic]        [hlcrim]
+  \definefontsynonym [LucidaNewMath-Symbol]        [hlcry]
+\stoptypescript
+
+\starttypescript [boldmath] [lucida] [ec]
+  \definefontsynonym [LucidaNewMath-AltDemiItalic] [hlcdima]
+  \definefontsynonym [LucidaNewMath-Arrows-Demi]   [hlcda]
+  \definefontsynonym [LucidaNewMath-Extension]     [hlcrv]
+  \definefontsynonym [LucidaNewMath-Demibold]      [hlcdm]
+  \definefontsynonym [LucidaNewMath-DemiItalic]    [hlcdim]
+  \definefontsynonym [LucidaNewMath-Symbol-Demi]   [hlcdy]
+\stoptypescript
+
+\starttypescript [calligraphy] [lucida] [texnansi]
+  \definefontsynonym [LucidaCalligraphy-Italic] [lbc] [encoding=texnansi]
+\stoptypescript
+
+\starttypescript [calligraphy] [lucida] [ec]
+  \definefontsynonym [LucidaCalligraphy-Italic] [hlcrie8t] [encoding=ec]
+\stoptypescript
+
+\starttypescript [casual] [lucida] [texnansi]
+  \definefontsynonym [LucidaCasual]        [lbkr] [encoding=texnansi]
+  \definefontsynonym [LucidaCasual-Italic] [lbki] [encoding=texnansi]
+\stoptypescript
+
+\starttypescript [handwriting] [lucida] [texnansi]
+  \definefontsynonym [LucidaHandwriting-Italic] [lbh] [encoding=texnansi]
+\stoptypescript
+
+\starttypescript [handwriting] [lucida] [ec]
+  \definefontsynonym [LucidaHandwriting-Italic] [hlcriw8t] [encoding=ec]
+\stoptypescript
+
+\starttypescript [fax] [lucida] [texnansi]
+  \definefontsynonym [LucidaFax]            [lfr]  [encoding=texnansi]
+  \definefontsynonym [LucidaFax-Demi]       [lfd]  [encoding=texnansi]
+  \definefontsynonym [LucidaFax-DemiItalic] [lfdi] [encoding=texnansi]
+  \definefontsynonym [LucidaFax-Italic]     [lfi]  [encoding=texnansi]
+\stoptypescript
+
+% Informal
+
+\starttypescript [casual] [informal] [default]
+  \definefontsynonym [Informal-Regular]     [ifrm10cm]
+  \definefontsynonym [Informal-Bold]        [ifrb10cm]
+  \definefontsynonym [Informal-Oblique]     [ifro10cm]
+  \definefontsynonym [Informal-BoldOblique] [ifbo10cm]
+\stoptypescript
+
+% Informal Math
+
+\starttypescript [math] [informal] [default]
+  \definefontsynonym [Informal-Regular]             [ifrm10cm]
+  \definefontsynonym [Informal-MathExtendedSymbols] [ifex10]
+  \definefontsynonym [Informal-MathItalics]         [ifmi10]
+  \definefontsynonym [Informal-MathSymbols]         [ifsy10]
+\stoptypescript
+
+% Antikwa Torunska
+
+\starttypescript [serif] [antykwa-torunska] [texnansi]
+  \definefontsynonym [AntykwaTorunska-Bold]    [anttb]  [encoding=texnansi]
+  \definefontsynonym [AntykwaTorunska-Regular] [anttr]  [encoding=texnansi]
+  \definefontsynonym [AntykwaTorunska-Italic]  [anttri] [encoding=texnansi]
+\stoptypescript
+
+\starttypescript [serif] [antykwa-torunska] [ec]
+  \definefontsynonym [AntykwaTorunska-Regular] [zatr8t]  [encoding=ec]
+  \definefontsynonym [AntykwaTorunska-Italic]  [zatri8t] [encoding=ec]
+  \definefontsynonym [AntykwaTorunska-Bold]    [zatb8t]  [encoding=ec]
+\stoptypescript
+
+% Baskerville
+
+\starttypescript [serif] [baskerville] [ec]
+  \definefontsynonym [Baskerville]                [mbvr8t]  [encoding=ec]
+  \definefontsynonym [Baskerville-Italic]         [mbvri8t] [encoding=ec]
+  \definefontsynonym [Baskerville-Bold]           [mbvb8t]  [encoding=ec]
+  \definefontsynonym [Baskerville-BoldItalic]     [mbvbi8t] [encoding=ec]
+  \definefontsynonym [Baskerville-SemiBold]       [mbvs8t]  [encoding=ec]
+  \definefontsynonym [Baskerville-SemiBoldItalic] [mbvsi8t] [encoding=ec]
+\stoptypescript
+
+% Palatino
+
+\starttypescript [serif] [palatino] [ec]
+  \definefontsynonym [Palatino]             [uplr8t]  [encoding=ec]
+  \definefontsynonym [Palatino-Italic]      [uplri8t] [encoding=ec]
+  \definefontsynonym [Palatino-Slanted]     [uplro8t] [encoding=ec]
+  \definefontsynonym [Palatino-Bold]        [uplb8t]  [encoding=ec]
+  \definefontsynonym [Palatino-BoldItalic]  [uplbi8t] [encoding=ec]
+  \definefontsynonym [Palatino-BoldSlanted] [uplbo8t] [encoding=ec]
+\stoptypescript
+
+\starttypescript [math] [palatino] [ec]
+  \definefontsynonym [Palatino-Roman-Upright]     [p1xr]  [encoding=ec]
+  \definefontsynonym [Palatino-Roman-Italic]      [p1xi]  [encoding=ec]
+  \definefontsynonym [Palatino-Roman-Slanted]     [p1xsl] [encoding=ec]
+  \definefontsynonym [Palatino-Roman-Caps]        [p1xsc] [encoding=ec]
+  \definefontsynonym [Palatino-Companion-Upright] [pcxr]
+  \definefontsynonym [Palatino-Companion-Italic]  [pcxi]
+  \definefontsynonym [Palatino-Companion-Slanted] [pcxsl]
+  \definefontsynonym [Palatino-Math-Italic]       [pxmi]
+  \definefontsynonym [Palatino-Math-Symbols]      [pxsy]
+  \definefontsynonym [Palatino-Math-Extension]    [pxex]
+  \definefontsynonym [Palatino-Math-SymbolsA]     [pxsya]
+  \definefontsynonym [Palatino-Math-SymbolsB]     [pxsyb]
+  \definefontsynonym [Palatino-Math-SymbolsC]     [pxsyc] 
+  \definefontsynonym [Palatino-Math-Italic-A]     [pxmia]
+  \definefontsynonym [Palatino-Math-Extension-A]  [pxexa]
+\stoptypescript
+
+% Whatever
+
+\starttypescript % once amd for all
+  \definefontsynonym [ContextNavigation]     [contnav]
+  \definefontsynonym [RalfSmithFormalScript] [rsfs10]
+  \definefontsynonym [ZapfDingbats]          [pzd]
+\stoptypescript
+
+\endinput

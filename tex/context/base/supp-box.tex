@@ -2029,14 +2029,16 @@
 \def\@@stacklst{@xob@}
 
 \def\setstackbox#1#2%
-  {\ifcsname\csname\@otr@:\number#1:\number#2\endcsname\else
+  {\ifcsname\@@stackbox:#1:#2\endcsname\else
      \expandafter\newbox\csname\@@stackbox:#1:#2\endcsname
    \fi
    \global\setbox\csname\@@stackbox:#1:#2\endcsname\vbox}
 
 \def\initializeboxstack#1%
   {\def\docommando##1{\setstackbox{#1}{##1}{}}%
-   \processcommacommand[\getvalue{\@@stacklst#1}]\docommando
+   \ifcsname\@@stacklst#1\endcsname 
+     \processcommacommand[\getvalue{\@@stacklst#1}]\docommando
+   \fi
    \setgvalue{\@@stacklst#1}{}}
 
 \def\savebox#1#2% stack name
@@ -2045,13 +2047,13 @@
 
 \def\foundbox#1#2%
   {\vbox
-     {\ifcsname\csname\@@stackbox:#1:#2\endcsname
+     {\ifcsname\@@stackbox:#1:#2\endcsname
         \copy\csname\@@stackbox:#1:#2\endcsname
       \fi}}
 
 \long\def\doifboxelse#1#2#3#4%
-  {\ifcsname\csname\@@stackbox:#1:#2\endcsname
-     \ifvoid\csname\csname\@@stackbox:#1:#2\endcsname#4\else#3\fi
+  {\ifcsname\@@stackbox:#1:#2\endcsname
+     \ifvoid\csname\@@stackbox:#1:#2\endcsname#4\else#3\fi
    \else
      #4%
    \fi}

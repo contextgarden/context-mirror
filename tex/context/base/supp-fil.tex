@@ -393,7 +393,7 @@
   {\doiffileelse{\pathplusfile{\f!currentpath}{#1}}}
 
 %D \macros
-%D   {doonlyonce, doinputonce}
+%D   {doonlyonce, doinputonce, doendinputonce}
 %D   
 %D Especially macropackages need only be loaded once.
 %D Repetitive loading not only costs time, relocating registers
@@ -403,7 +403,8 @@
 %D
 %D \starttypen
 %D \doonlyonce{actions}
-%D \doloadonce{filename}
+%D \doinputonce{filename}
+%D \doendinputonce{filename}
 %D \stoptypen
 %D
 %D This command obeys the standard method for locating files. 
@@ -413,6 +414,9 @@
 
 \def\doinputonce#1%
   {\doonlyonce{#1}{\doiffileelse{#1}{\normalinput #1\relax}{}}}
+
+\def\doendinputonce#1%
+  {\doifdefined{@@@#1@@@}{\endinput}}
 
 %D \macros
 %D   {doifparentfileelse}

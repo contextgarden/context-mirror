@@ -876,11 +876,13 @@
    \skipfirstverbatimlinefalse
    \initializeverbatimline
    \def\readline%
-     {\ifx\firstverbatimfileline\empty 
-        \read\verbatiminput to \verbatimline
-      \else
-        \let\verbatimline\firstverbatimfileline
-        \let\firstverbatimfileline\empty
+     {\ifeof\verbatiminput \else
+        \ifx\firstverbatimfileline\empty 
+          \read\verbatiminput to \verbatimline
+        \else
+          \let\verbatimline\firstverbatimfileline
+          \let\firstverbatimfileline\empty
+        \fi
       \fi
       \ifeof\verbatiminput
         \ifx\lastverbatimfileline\empty 
