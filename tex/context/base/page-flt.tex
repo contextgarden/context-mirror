@@ -191,7 +191,7 @@
 % we're realy dealing with the float. Some day I'll root out
 % the global settings.
 
-\def\docomplexplaatsblok[#1][#2]% [#3]#4%
+\def\docomplexplacefloat[#1][#2]% [#3]#4%
   {\edef\floattype{#1}%
    \doifelsenothing\floattype
      {\let\floattype\v!figure}
@@ -199,9 +199,9 @@
    \doifelsenothing{#2}
      {\edef\floatlocation{\getvalue{\??fl\floattype\c!default}}}
      {\edef\floatlocation{#2}}%
-   \expanded{\dodocomplexplaatsblok[\floattype][\floatlocation]}}
+   \expanded{\dodocomplexplacefloat[\floattype][\floatlocation]}}
 
-\def\dodocomplexplaatsblok[#1][#2][#3]#4%
+\def\dodocomplexplacefloat[#1][#2][#3]#4%
   {\flushnotes
 \flushsidefloats % here !
    \ifsomefloatwaiting
@@ -507,7 +507,7 @@
 \def\docomplexstarttextblock[#1][#2][#3]%
   {\flushnotes
    \flushsidefloats % hoort eigenlijk niet hier
-   \docomplexplaatsblok[#1][\v!text,#2,\v!left][#3]}
+   \docomplexplacefloat[#1][\v!text,#2,\v!left][#3]}
 
 \def\docomplexreserveblock[#1][#2][#3][#4]#5%
   {\getvalue{\e!place#1}[#3][#4]{#5}{\localframed[\??fl#1][#2]{#1}}}
@@ -521,7 +521,7 @@
 
 \def\dodefinefloat[#1][#2][#3]% #1=naam #2=meervoud #3=parent
   {\ifthirdargument
-     \redodefinieerplaatsblok[#1][#2][#3]%
+     \redodefinefloat[#1][#2][#3]%
    \else\ifsecondargument
      \dododefinefloat[#1][#2]%
    \else
@@ -602,18 +602,18 @@
    \presetheadtext[#2=\Word{#2}]%
    \setvalue        {\e!place\e!listof#2}{\dodoubleempty\doplacelist[#1]}%
    \setvalue     {\e!complete\e!listof#2}{\dotripleempty\dodocompletelist[#1][#2]}%
-   \setvalue                   {\e!place#1}{\dotripleempty\docomplexplaatsblok[#1]}%
-   \setvalue                {\e!reserve#1}{\doquadrupleempty\docomplexreserveblock[#1]}%
-   \setvalue            {\e!start#1\e!text}{\dotripleempty\docomplexstarttextblock[#1]}%
-   \setvalue             {\e!stop#1\e!text}{\dostoptextfloat}%
+   \setvalue                 {\e!place#1}{\dotripleempty\docomplexplacefloat[#1]}%
+   \setvalue               {\e!reserve#1}{\doquadrupleempty\docomplexreserveblock[#1]}%
+   \setvalue          {\e!start#1\e!text}{\dotripleempty\docomplexstarttextblock[#1]}%
+   \setvalue           {\e!stop#1\e!text}{\dostoptextfloat}%
    \setvalue{\e!start\e!reserve#1\e!text}{\doquadrupleempty\docomplexstartreservetextblock[#1]}%
    \setvalue {\e!stop\e!reserve#1\e!text}{\dostoptextfloat}%
-   \setvalue                 {\e!emptyone#1}{\doemptyblock{#1}}%
-   \setvalue                 {\e!emptytwo#1}{\doemptyblock{#1}}}
+   \setvalue              {\e!emptyone#1}{\doemptyblock{#1}}%
+   \setvalue              {\e!emptytwo#1}{\doemptyblock{#1}}}
 
 % \setupfloat[...][leftmargindistance=1cm,default={left,none}]
 
-\def\redodefinieerplaatsblok[#1][#2][#3]% same label/number
+\def\redodefinefloat[#1][#2][#3]% same label/number
   {\presetlocalframed[\??fl#1]%
    \copylocalframed[\??fl#1][\??fl#3]%
    \copyparameters[\??fl#1][\??fl#3]
@@ -636,8 +636,8 @@
    \presetlabeltext[#1=\labeltext{#3}]%
    \dodefinefloatcommands[#1][#2]}
 
-\def\placefloat % \plaatsplaatsblok
-  {\dotripleempty\docomplexplaatsblok}
+\def\placefloat
+  {\dotripleempty\docomplexplacefloat}
 
 \installinsertion\topins \newdimen\topinserted
 \installinsertion\botins \newdimen\botinserted
@@ -1406,7 +1406,7 @@
       \raggedright
       \putcompletecaption{#4}{#2}{#3}{1}}}
 
-\def\buildfloatbox
+\def\buildfloatbox % todo: installable, also vertical align caption relative to floatbox
   {\global\setbox\floatbox\vbox
      {\setlocalfloathsize
       \forgetall
@@ -1503,16 +1503,12 @@
 %     {\hss  \box\floatbox\hss  }} % wel \hss, anders mis in colset
 
 \def\postcenterfloatbox#1%
-  {\ifinsidecolumns
-     \ifpostponecolumnfloats
-       \scratchdimen\makeupwidth
-     \else
-       \scratchdimen#1\relax
-     \fi
+  {\scratchdimen \ifinsidecolumns
+     \ifpostponecolumnfloats\makeupwidth\else#1\fi
    \else\ifdim#1>\hsize
-     \scratchdimen\hsize
+     \hsize
    \else
-     \scratchdimen\wd\floatbox
+     \wd\floatbox
    \fi\fi
    \global\setbox\floatbox\hbox to \scratchdimen
    % {\hfill\box\floatbox\hfill}} % geen \hss, gaat mis in kolommen !

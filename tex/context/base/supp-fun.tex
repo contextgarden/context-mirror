@@ -121,106 +121,31 @@
 \def\DroppedString%
   {ABCDEFGHIJKLMNOPQRSTUVWXYZ}
 
-% \def\DroppedCaps#1#2#3#4#5#6#7%
-%   {\ExpandBothAfter\doifinstringelse{#7}{\DroppedString} %
-%      {\ifvmode % this one is \EveryPar save, precede by \par if needed
-%         \vskip#6\baselineskip
-%         \penalty-200
-%         \vskip-#6\baselineskip
-%       \fi
-%       \ifhmode
-%         \hskip-\parindent
-%       \fi
-%       \setbox0=\hbox
-%         {\definedfont[#2 at #3]#1{#7}\hskip#4}%
-%          \ifdim\dp0>\strutdp % one of those Q's , will be option
-%            \setbox2=\hbox{\raise\dp0\hbox{\lower\strutdp\copy0}}%
-%            \ht2=\ht0 \dp0=\strutdp \setbox0=\box2
-%          \fi
-%       \setbox0\hbox
-%         {\lower#5\box0}%
-%       \ht0\strutht
-%       \dp0\strutdp
-%       \edef\DroppedIndent{\the\wd0}%
-%       \edef\DroppedLines {\number#6}%
-%       \hangindent\DroppedIndent
-%       \hangafter-\DroppedLines
-%       \noindent
-%       \hskip-\DroppedIndent
-%       \vbox{\forgetall\box0}%
-%       \nobreak
-%       \ignorespaces} % Could be a one character word !
-%      {\edef\DroppedIndent{0pt}%
-%       \edef\DroppedLines {\number\maxdimen}%
-%       #7}}
-
 \let\globaldropcaps\global % will be an option, but on by default
 
 \def\localdropcaps{\let\globaldropcaps\relax}
 
-\chardef\DroppedStatus=0 % 0=done 1=starting 2=doing 3=error
+\chardef\DroppedStatus = 0 % 0=done 1=starting 2=doing 3=error
+\chardef\DropMode      = 0 % 1 == marginhang
 
-% \def\DroppedCaps#1#2#3#4#5#6#7% does not yet handle accented chars
-%   {\convertargument            #7\to\asciia
-%    \convertcommand \DroppedString\to\asciib
-%    \ExpandBothAfter\doifinstringelse{\asciia}{\asciib}
-%      {\ifvmode % this one is \EveryPar save, precede by \par if needed
-%         \vskip#6\baselineskip
-%         \penalty-200
-%         \vskip-#6\baselineskip
-%       \fi
-%       \ifhmode
-%         \hskip-\parindent
-%       \fi
-%       \setbox0\hbox
-%         {\definedfont[#2 at #3]#1{#7}\hskip#4}%
-%          \ifdim\dp0>\strutdp % one of those Q's , will be option
-%            \setbox2\hbox{\raise\dp0\hbox{\lower\strutdp\copy0}}%
-%            \ht2\ht0 \dp0\strutdp \setbox0\box2
-%          \fi
-%       \setbox0\hbox
-%         {\lower#5\box0}%
-%       \ht0\strutht
-%       \dp0\strutdp
-%       \globaldropcaps\edef\DroppedIndent{\the\wd0}%
-%       \globaldropcaps\edef\DroppedLines {\number#6}%
-%       \globaldropcaps\chardef\DroppedStatus2
-%       \globaldropcaps\hangindent\DroppedIndent
-%       \globaldropcaps\hangafter-\DroppedLines
-%       \noindent
-%       \hskip-\DroppedIndent
-%       \vbox{\forgetall\box0}%
-%       \nobreak
-%       \let\next\ignorespaces} % Could be a one character word !
-%      {\globaldropcaps\let\DroppedIndent\!!zeropoint
-%       \globaldropcaps\edef\DroppedLines{\number\maxdimen}%
-%       \globaldropcaps\chardef\DroppedStatus3
-%       \def\next{#7}}%
-%    \let\globaldropcaps\global
-%    \next}
-
-\chardef\DropMode=0 % 1 == marginhang
+\ifx\keeplinestogether\undefined
+  \let\keeplinestogether\gobbleoneargument
+\fi
 
 \def\DroppedCaps#1#2#3#4#5#6#7% does not yet handle accented chars
   {\convertargument            #7\to\asciia
    \convertcommand \DroppedString\to\asciib
    \ExpandBothAfter\doifinstringelse\asciia\asciib
-     {\ifvmode % this one is \EveryPar save, precede by \par if needed
-        \vskip#6\baselineskip
-        \penalty-200
-        \vskip-#6\baselineskip
+     {\dontleavehmode
+      \ifhmode\hskip-\parindent\fi
+      \keeplinestogether{#6}%
+      \setbox0\hbox{\definedfont[#2 at #3]#1{#7}\hskip#4}%
+      \ifdim\dp0>\strutdp % one of those Q's , will be option
+        \setbox2\hbox{\raise\dp0\hbox{\lower\strutdp\copy0}}%
+        \ht2\ht0
+        \dp0\strutdp
+        \setbox0\box2
       \fi
-      \ifhmode
-        \hskip-\parindent
-      \fi
-      \setbox0\hbox
-        {\definedfont[#2 at #3]#1{#7}\hskip#4}%
-         \ifdim\dp0>\strutdp % one of those Q's , will be option
-           \setbox2\hbox{\raise\dp0\hbox{\lower\strutdp\copy0}}%
-           \ht2\ht0
-           \dp0\strutdp
-           \setbox0\box2
-         \fi
       \setbox0\hbox
         {\ifnum\DropMode=\plusone
            \hskip-\wd0\wd0\zeropoint
@@ -231,11 +156,11 @@
       \ifnum\DropMode=\plusone
         \globaldropcaps\let\DroppedIndent\!!zeropoint
         \globaldropcaps\edef\DroppedLines{\number\maxdimen}%
-        \globaldropcaps\chardef\DroppedStatus3
+        \globaldropcaps\chardef\DroppedStatus\plusthree
       \else
         \globaldropcaps\edef\DroppedIndent{\the\wd0}%
         \globaldropcaps\edef\DroppedLines {\number#6}%
-        \globaldropcaps\chardef\DroppedStatus2
+        \globaldropcaps\chardef\DroppedStatus\plustwo
         \globaldropcaps\hangindent\DroppedIndent
         \globaldropcaps\hangafter-\DroppedLines
         \noindent
@@ -246,7 +171,7 @@
       \let\next\ignorespaces} % Could be a one character word !
      {\globaldropcaps\let\DroppedIndent\!!zeropoint
       \globaldropcaps\edef\DroppedLines{\number\maxdimen}%
-      \globaldropcaps\chardef\DroppedStatus3
+      \globaldropcaps\chardef\DroppedStatus\plusthree
       \def\next{#7}}%
    \let\globaldropcaps\global
    \next}
@@ -308,6 +233,10 @@
 
 \let\AutoDroppedNext\relax
 
+\ifx\AutoDroppedCapsCommand\undefined
+    \def\AutoDroppedCapsCommand{\NiceDroppedCaps{}{SerifBold}{.125em}{3}}
+\fi
+
 \def\doAutoDroppedCaps
   {\ifcase\DroppedStatus % done
      \let\next\relax
@@ -316,7 +245,7 @@
    %   \globaldropcaps\chardef\DroppedStatus=3 % and inhibits dropped
    %   \let\next\relax % caps after titles and more than once
    % \else % so let's nill this rubishly code fragment
-       \def\next{\NiceDroppedCaps{}{\@@dcfont}{.125em}{\@@dcn}}%
+       \let\next\AutoDroppedCapsCommand
    % \fi % and hope for the best
    \or % doing
      \global\advance\droppedlines \lastprevgraf

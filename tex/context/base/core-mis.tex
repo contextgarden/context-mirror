@@ -2210,19 +2210,27 @@
 \def\dodorotatenextbox#1#2% quite some trial and error -)
   {\dontshowcomposition
    \dontcomplain
+   \ifnum#2=\plusfour
+     % new, location=middle
+     \!!widthb \nextboxwd
+     \!!heightb\nextboxht
+     \!!depthb \nextboxdp
+     \setbox\nextbox\vbox{\vskip.5\nextboxht\hskip-.5\nextboxwd\flushnextbox}%
+     \smashbox\nextbox
+   \fi
    \!!widtha \nextboxwd
    \!!heighta\nextboxht
    \!!deptha \nextboxdp
    \!!doneafalse
    \!!donebfalse
    \ifcase#2\or
-     % fit
+     % 1: fit
    \or
-     % depth, not fit
+     % 2: depth, not fit
      \!!doneatrue
      \!!donebtrue
    \or
-     % depth, fit
+     % 3: depth, fit
      \!!donebtrue
    \fi
    \setbox\nextbox\vbox{\hbox{\raise\nextboxdp\flushnextbox}}%
@@ -2311,6 +2319,13 @@
          \wd\nextbox\if!!donea\negated\sin\!!heighta\else\@@layerxsiz\fi
        \fi
      \fi
+   \fi
+   % new, location=middle
+   \ifnum#2=\plusfour
+     \setbox\nextbox\vbox{\vskip-.5\!!heightb\hskip.5\!!heightb\flushnextbox}%
+     \nextboxwd\!!widthb
+     \nextboxht\!!heightb
+     \nextboxdp\!!depthb
    \fi}
 
 \def\dorotatenextbox#1#2%
@@ -2340,12 +2355,13 @@
   {\getparameters[\??ro][#1]%
    \processaction
      [\@@rolocation]
-     [ \v!depth=>\!!counta\plusthree\donefalse,% depth   fit   - raw box
-         \v!fit=>\!!counta\plustwo  \donefalse,% depth   tight - raw box
-       \v!broad=>\!!counta\plusone  \donefalse,% nodepth fit   - raw box
-        \v!high=>\!!counta\plusone  \donetrue,%  nodepth fit   - framed
-     \s!default=>\!!counta\plusthree\donetrue,%  depth   fit   - framed
-     \s!unknown=>\!!counta\plusthree\donetrue]%  depth   fit   - framed
+     [  \v!depth=>\!!counta\plusthree\donefalse,% depth   fit   - raw box
+          \v!fit=>\!!counta\plustwo  \donefalse,% depth   tight - raw box
+        \v!broad=>\!!counta\plusone  \donefalse,% nodepth fit   - raw box
+         \v!high=>\!!counta\plusone  \donetrue ,% nodepth fit   - framed
+       \v!middle=>\!!counta\plusfour \donefalse,% centered, keep dimensions
+      \s!default=>\!!counta\plusthree\donetrue ,% depth   fit   - framed
+      \s!unknown=>\!!counta\plusthree\donetrue ]% depth   fit   - framed
    \ifdone
      \def\docommand{\localframed[\??ro][#1,\c!location=]}%
    \else
@@ -2548,7 +2564,7 @@
 \definehspace[vulgarfraction][.25em] % [.15em]
 \definesymbol[vulgarfraction][/]     % [\raise.2ex\hbox{/}]
 
-\def\vulgarfraction#1#2%
+\unexpanded\def\vulgarfraction#1#2%
   {\dontleavehmode
    \hbox
      {\def\vulgarfraction{vulgarfraction}%

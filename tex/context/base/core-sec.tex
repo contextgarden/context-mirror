@@ -880,11 +880,11 @@
 
 % \def\dostartsectionblock#1#2%
 %   {\begingroup
-%    \doaroundsectionblock{#1}%            % going to a new page or so
-%    \getvalue{\??sb#1}%                 % set name of section block
-%    \getsectionblockenvironment{#1}%         % special settings, grouped
-%   %\expandafter\csname#2true\endcsname % obsolete
-%    \setsystemmode{#1}%                 % can be used in conditionals
+%    \doaroundsectionblock{#1}%              % going to a new page or so
+%    \getvalue{\??sb#1}%                     % set name of section block
+%    \getsectionblockenvironment{#1}%        % special settings, grouped
+%   %\expandafter\csname#2true\endcsname     % obsolete
+%    \setsystemmode{#1}%                     % can be used in conditionals
 %    \getvalue{\??sb\@@sectionblock\c!before}% this one is not to be moved!
 %    \showmessage\m!structures1\@@sectionblocks}
 
@@ -920,7 +920,6 @@
 %    \resetsectioncounters\zerosection % was firstsection
 %    \resetsectionmarks\zerosection
    \endgroup}
-
 
 \def\dosetupsectionblock[#1]% [#2]
   {\getparameters[\??sb#1]}
@@ -2144,10 +2143,10 @@
    \c!margin=\zeropoint,
    \c!command=]
 
-\definesectionblock [\v!bodypart]    [\v!bodymatter] [\c!number=\v!yes]
-\definesectionblock [\v!appendix]    [\v!appendices] [\c!number=\v!yes]
-\definesectionblock [\v!frontpart]  [\v!frontmatter] [\c!number=\v!no]
-\definesectionblock [\v!backpart]    [\v!backmatter] [\c!number=\v!no]
+\definesectionblock [\v!frontpart] [\v!frontmatter] [\c!number=\v!no]
+\definesectionblock [\v!bodypart]  [\v!bodymatter]  [\c!number=\v!yes]
+\definesectionblock [\v!appendix]  [\v!appendices]  [\c!number=\v!yes]
+\definesectionblock [\v!backpart]  [\v!backmatter]  [\c!number=\v!no]
 
 \definesection[\v!sectionlevel-1]   % part
 \definesection[\v!sectionlevel-2]   % chapter

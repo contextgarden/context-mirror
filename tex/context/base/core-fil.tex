@@ -120,14 +120,22 @@
 %D
 %D To prevent cross platform problems with filenames, we
 %D lowercase them as well as only use the first 8~characters.
+%D
+%D \starttyping
+%D \def\domakeshortfilename[#1#2#3#4#5#6#7#8#9]%
+%D   {\lowercase{\edef\shortfilename{#1#2#3#4#5#6#7#8.}}%
+%D    \expandafter\beforesplitstring\shortfilename\at.\to\shortfilename}
+%D
+%D \def\makeshortfilename[#1]%
+%D   {\edef\fullfilename{#1.........}%
+%D    \expanded{\domakeshortfilename[\fullfilename]}}
+%D \stoptyping
+%D
+%D In 2005 there is no need for the 8~character limit any more, so:
 
-\def\domakeshortfilename[#1#2#3#4#5#6#7#8#9]%
-  {\lowercase{\edef\shortfilename{#1#2#3#4#5#6#7#8.}}%
+\def\makeshortfilename[#1]% no need for further cleanup and shortening
+  {\lowercase{\edef\shortfilename{#1.}}%
    \expandafter\beforesplitstring\shortfilename\at.\to\shortfilename}
-
-\def\makeshortfilename[#1]%
-  {\edef\fullfilename{#1.........}%
-   \expanded{\domakeshortfilename[\fullfilename]}}
 
 %D \macros
 %D   {usemodule}

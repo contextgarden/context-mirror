@@ -48,7 +48,7 @@
 %D A few (maybe too) simple hooks into the font mechanism. The
 %D hook into the language module is not yet done.
 
-\unexpanded\def\setarabicfont#1%
+\unexpanded\def\setarabicfont#1% rscale
   {\scratchdimen=1.2\bodyfontsize
    \font\arbfont=\truefontname{Arabic#1} at \currentfontscale\scratchdimen
    \setx@skels
@@ -57,12 +57,12 @@
 
 %D Just to be compatible with Arab\TEX\ we define:
 
-\unexpanded\def\nash    {\setarabicfont\s!Regular}
-\unexpanded\def\nashbf  {\setarabicfont\s!Bold   }
-\unexpanded\def\pnash   {\setarabicfont\s!Regular}
-\unexpanded\def\pnashbf {\setarabicfont\s!Bold   }
-\unexpanded\def\xnash   {\setarabicfont\s!Regular}
-\unexpanded\def\xnashbf {\setarabicfont\s!Bold   }
+\unexpanded\def\nash   {\setarabicfont\s!Regular}
+\unexpanded\def\nashbf {\setarabicfont\s!Bold   }
+\unexpanded\def\pnash  {\setarabicfont\s!Regular}
+\unexpanded\def\pnashbf{\setarabicfont\s!Bold   }
+\unexpanded\def\xnash  {\setarabicfont\s!Regular}
+\unexpanded\def\xnashbf{\setarabicfont\s!Bold   }
 
 %D The display arabic environment (will be an installable
 %D object) uses a few conditionals. Let's do it the
@@ -75,7 +75,7 @@
 \def\setupARABTEXalternative[#1]%
   {\dodoubleempty\getparameters[\??ARABTEX#1]}
 
-\def\defineARABTEXalternative%
+\def\defineARABTEXalternative
   {\dodoubleempty\dodefineARABTEXalternative}
 
 \def\dodefineARABTEXalternative[#1][#2]%
@@ -83,7 +83,7 @@
      \getparameters
        [\??ARABTEX#1]
        [\c!before=,\c!after=,\c!inner=\setarab,
-        \c!style=\setarabfont{Arabic\fontstylesuffix}, % evt ArabicRegular
+        \c!style=\setarabicfont{Arabic\fontstylesuffix}, % evt ArabicRegular
         #2]%
      \expandafter\all@wcmd\csname\e!stop#1\endcsname
      \setvalue{\e!start#1}%
@@ -150,9 +150,9 @@
 
 %D Some \LATEX\ macros.
 
-\def \makeatletter  {\unprotect}
-\def \makeatother   {\protect}
-\def \typeout     #1{\writestatus{arabtex}{#1}}
+\def \makeatletter{\unprotect}
+\def \makeatother {\protect}
+\def \typeout     {\writestatus{arabtex}}
 
 %D We have to save some macros.
 
@@ -161,7 +161,7 @@
 \def\startloadingARABTEX% ugly hacks
   {\catcode`!=12
    \catcode`?=12
-   \pushmacro\output        \let \output        \scratchtokens
+   \pushmacro\output        \let \output        \scratchtoks
    \pushmacro\LaTeX         \let \LaTeX         \undefined
    \pushmacro\CJK           \let \CJK           \undefined
    \pushmacro\year          \let \year          \normalyear
@@ -175,7 +175,7 @@
    \pushmacro\emphasize
    \pushmacro\cap}
 
-\def\stoploadingARABTEX%
+\def\stoploadingARABTEX
   {\catcode`!=11
    \catcode`?=11
    \popmacro\cap
@@ -204,9 +204,8 @@
 %D new meaning. We also redefine some \PLAIN\ macros, which
 %D happen to have a different meaning in \LATEX.
 
-\let\ARABTEXversion=\theversion
-
-\let\ARABTEXcap=\cap
+\let\ARABTEXversion\theversion
+\let\ARABTEXcap    \cap
 
 \def\ARABTEXsh@ft#1%
   {\dimen@.00#1ex
@@ -265,22 +264,22 @@
 \defineARABTEXalternative
   [arabic]
   [\c!inner=\setarab,
-   \c!style=\setarabfont\fontstylesuffix]
+   \c!style=\setarabicfont\fontstylesuffix]
 
 \defineARABTEXalternative
   [farsi]
   [\c!inner=\setfarsi,
-   \c!style=\setarabfont\fontstylesuffix]
+   \c!style=\setarabicfont\fontstylesuffix]
 
 \defineARABTEXalternative
   [urdu]
   [\c!inner=\seturdu,
-   \c!style=\setarabfont\fontstylesuffix]
+   \c!style=\setarabicfont\fontstylesuffix]
 
 \defineARABTEXalternative
   [maghribi]
   [\c!inner=\setmaghribi,
-   \c!style=\setarabfont\fontstylesuffix]
+   \c!style=\setarabicfont\fontstylesuffix]
 
 %D Apart from such definitions, one can adapt the settings
 %D using \type {\setupARABTEXalternative}.

@@ -1602,7 +1602,7 @@
      {\getvalue{\e!start\v!figure\e!text}[\v!left,\v!none][]
         {}
         {\hbox
-           {\externalfigure[##1][\c!frame=\v!on,\c!width=6cm][##2]%
+           {\externalfigure[##1][\c!frame=\v!on,\c!width=6cm,\c!size=\@@exsize][##2]%
             \tfskip
             \framed[\c!width=\figurewidth,\c!height=\figureheight]{}}}%
         {\tt\tfa\expanded{\asciistr{##1}}}%
@@ -1623,7 +1623,7 @@
    \popendofline
    \egroup}
 
-\def\showexternalfigureb% instelbaar maken
+\def\showexternalfigureb % instelbaar maken
   {\bgroup
    \def\total{5}%
    \globalletempty\allfigures
@@ -1643,7 +1643,7 @@
          \advance\hsize -1em
          \externalfigure
            [##1]
-           [\c!frame=\v!on,\c!factor=\v!max,\c!width=\hsize][##2]}%
+           [\c!frame=\v!on,\c!factor=\v!max,\c!width=\hsize,\c!size=\@@exsize][##2]}%
       \doglobal\addtocommalist{##1}\allfigures
      %\getvalue{\s!figurepreset}%
       \doglobal\increment\figurecounter
@@ -1664,7 +1664,7 @@
 
 \def\showexternalfigurec
   {\bgroup
-   \def\presetfigure[##1][##2]{\pagefigure[##1]}
+   \def\presetfigure[##1][##2]{\expanded{\pagefigure[##1][\c!size=\@@exsize]}}% else loop
    \pushendofline
    \readjobfile\@@exfile\donothing\donothing
    \popendofline
@@ -1707,8 +1707,8 @@
 \def\doshowexternalfigures[#1]%
   {\bgroup
    \setupcolors[\c!state=\v!start]% to prevent mps color conversion
-   \getparameters[\??ex][\c!alternative=a,\c!offset=\!!zeropoint,#1]%
-   \getvalue{showexternalfigure\@@exalternative}%
+   \getparameters[\??ex][\c!alternative=a,\c!offset=\!!zeropoint,\c!size=,#1]%
+   \getvalue{\strippedcsname\showexternalfigure\@@exalternative}%
    \egroup}
 
 \def\showexternalfigures

@@ -487,7 +487,7 @@
 \fi
 
 \startunicodevector 254
-  \expandafter\strippedcsname\ifnum#1<255\unknownchar\else\zwnbsp\fi
+  \expandafter\strippedcsname\ifnum#1<255 \unknownchar\else\zwnbsp\fi
 \stopunicodevector
 
 %D Here we provide another auxiliary macro:
@@ -582,5 +582,7 @@
 %D also load the \UTF\ regime.
 
 \useunicodevector[0,1,2,3,4,5,30,32,33] \useregime[utf]
+
+% 31, text mem usage first
 
 \protect  \endinput

@@ -24,6 +24,61 @@
 
 \ifx\normalcompound\undefined \let\normalcompound=| \fi
 
+\def\OTRSETnobalance
+  {\iflastcolumnfootnotes % testen ! optie
+     % inhibit flush of floats !
+     % todo: nothing if no footnotes, else empty page
+     \dostepwiserecurse\mofcolumns\nofcolumns\plusone
+       {\vskip-\struttotal\verticalstrut\vfill\eject}%
+   \else
+\ifnum\mofcolumns>\plusone
+  \donetrue
+\else\ifdim\pagetotal>\zeropoint % too dangerous, we loose data
+  \donetrue
+\else
+  \donefalse
+\fi\fi
+     \ifdone
+       \ifnum\mofcolumns=\nofcolumns
+         \OTRSETflushfinalfootnotes
+       \else
+         % probably todo
+       \fi
+       \vfill
+       \eject
+       % brr, may result in empty page after nicely fit text
+       % or if left, then lost of first column only text
+       \ifnum\mofcolumns>\plusone
+         \OTRSETdofinalflush
+         \OTRSETdofinaloutput
+       \fi
+     \fi
+   \fi}
+
+% move from page-mar -> cors-spa
+
+\beginETEX
+
+  \def\keeplinestogether#1%
+    {\xdef\restoreinterlinepenalty{\global\resetpenalties\interlinepenalties}%
+     \global\setpenalties\interlinepenalties{#1}\!!tenthousand}
+
+\endETEX
+
+\beginTEX
+
+  \def\keeplinestogether#1%
+    {\xdef\restoreinterlinepenalty
+       {\global\let\restoreinterlinepenalty\relax
+        \global\interlinepenalty=\the\interlinepenalty}% keep = here
+     \global\interlinepenalty\!!tenthousand}
+
+\endTEX
+
+\def\setmargincontentpenalties
+  {\getnoflines\margincontentheight
+   \keeplinestogether\noflines}
+
 \def\undepthed
   {\dowithnextbox{\nextboxdp\zeropoint\flushnextbox}\hbox}
 
@@ -262,7 +317,8 @@
 %D
 %D \getbuffer[c]
 
-\def\rescan#1{\scantokens{#1\ignorespaces}}
+\long\def\rescan#1{\scantokens{#1\ignorespaces}}
+\long\def\rescanwithsetup#1#2{\bgroup\directsetup{#1}\scantokens{#2\ignorespaces}\egroup}
 
 % In 2005 we will abandon support for font encodings that don't have
 % the ascii characters { } $ etc in their normal slot, i.e. latin modern

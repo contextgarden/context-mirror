@@ -2201,18 +2201,23 @@ sub HandlePdfFigure
         elsif ($SomeLine =~ /\/Type\s*\/Page/io)
           { ++$PageFound ;
             if ($PageFound>1) { last } }
-        if ((($PageFound)||($PagesFound)) && ($SomeLine =~ /\/MediaBox /io))
-          { $MediaBox = $SomeLine ;
-            $MediaBoxFound = 1 ;
-            if ($PagesFound) { last } } }
+        if (($PageFound)||($PagesFound))
+          { if (($MediaBoxFound < 2) && ($SomeLine =~ /\/ArtBox\s*\[/io))
+              { $MediaBoxFound = 3 ;
+                $MediaBox = $SomeLine }
+            elsif (($MediaBoxFound < 2) && ($SomeLine =~ /\/CropBox\s*\[ /io))
+              { $MediaBoxFound = 2 ;
+                $MediaBox = $SomeLine }
+            elsif (($MediaBoxFound == 0) && ($SomeLine =~ /\/MediaBox\s*\[ /io))
+              { $MediaBoxFound = 1 ;
+                $MediaBox = $SomeLine } } }
     close ( PDF ) ;
     if ($PageFound>1)
       { Report ( "MultiPagePdfFile", "$SuppliedFileName" ) }
-#    elsif (($MediaBoxFound) && ($MediaBox))
     if (($MediaBoxFound) && ($MediaBox))
       { my $D = "[0-9\-\.]" ;
-        $MediaBox =~ /\/MediaBox\s*\[\s*($D+)\s*($D+)\s*($D+)\s*($D+)/o ;
-        $LLX = $1 ; $LLY = $2 ; $URX = $3 ; $URY = $4 ;
+        $MediaBox =~ /\/(Media|Crop|Art)Box\s*\[\s*($D+)\s*($D+)\s*($D+)\s*($D+)/o ;
+        $LLX = $2 ; $LLY = $3 ; $URX = $4 ; $URY = $5 ;
         $PdfHeight = ($URY-$LLY)*$DPtoCM ;
         $PdfWidth = ($URX-$LLX)*$DPtoCM ;
         $PdfXOffset = $LLX*$DPtoCM ;

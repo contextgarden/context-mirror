@@ -701,11 +701,15 @@
   [\c!state=\v!stop,
    \c!location=\v!text,
    \c!n=3,
+   \c!distance=.125em,
+   \c!command=,
    \s!font=initial]
+
+\def\AutoDroppedCapsCommand{\NiceDroppedCaps\@@dccommand\@@dcfont\@@dcdistance\@@dcn}%
 
 \def\placeinitial
   {\doifelse\@@dclocation\v!margin{\chardef\DropMode\plusone}{\chardef\DropMode\zerocount}%
-   \doif    \@@dcstate\v!start{\ifnum\@@dcn>0 \AutoDroppedCaps\fi}}
+   \doif    \@@dcstate\v!start{\ifcase\@@dcn\else\AutoDroppedCaps\fi}}
 
 \let\checkinitial\CheckDroppedCaps
 

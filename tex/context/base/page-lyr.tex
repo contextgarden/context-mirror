@@ -412,18 +412,20 @@
 
 \unexpanded\def\flushlayer[#1]%
   {\doifelsevalue{\??ll#1\c!state}\v!next
-      {\global\letvalue{\??ll#1\c!state}\v!start} % dangerous, stack-built-up
-      {\doifelsevalue{\??ll#1\c!doublesided}\v!yes
-         {\doifundefinedelse{\@@layerbox#1}%
-            {\dodoflushlayerA[#1]}
-            {\doifbothsidesoverruled
-               \dodoflushlayerB\v!left [#1]%  left
-             \orsideone
-               \dodoflushlayerB\v!right[#1]% right
-             \orsidetwo
-               \dodoflushlayerB\v!left [#1]%  left
-             \od}}
-         {\dodoflushlayerA[#1]}}}
+     {\global\letvalue{\??ll#1\c!state}\v!start} % dangerous, stack-built-up
+     {\doifelsevalue{\??ll#1\c!state}\v!continue
+        {\global\letvalue{\??ll#1\c!state}\v!repeat} % dangerous, stack-built-up
+        {\doifelsevalue{\??ll#1\c!doublesided}\v!yes
+           {\doifundefinedelse{\@@layerbox#1}%
+              {\dodoflushlayerA[#1]}
+              {\doifbothsidesoverruled
+                 \dodoflushlayerB\v!left [#1]%  left
+               \orsideone
+                 \dodoflushlayerB\v!right[#1]% right
+               \orsidetwo
+                 \dodoflushlayerB\v!left [#1]%  left
+               \od}}
+           {\dodoflushlayerA[#1]}}}}
 
 \def\dodoflushlayerA[#1]%
   {\doifnotvalue{\??ll#1\c!state}\v!stop

@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 
-<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="de" version="2005.02.15">
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="de" version="2005.02.23">
 
   <cd:variables>
     <cd:variable name="one" value="eins"/>
@@ -8,6 +8,13 @@
     <cd:variable name="three" value="drei"/>
     <cd:variable name="four" value="vier"/>
     <cd:variable name="five" value="fuenf"/>
+  </cd:variables>
+
+  <cd:variables>
+    <cd:variable name="environment" value="umgebung"/>
+    <cd:variable name="component" value="komponente"/>
+    <cd:variable name="product" value="produkt"/>
+    <cd:variable name="project" value="projekt"/>
   </cd:variables>
 
   <cd:variables>

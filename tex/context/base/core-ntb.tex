@@ -796,7 +796,9 @@
      \executeifdefined{splittblbox\tbltblsplitmethod}\splittblboxa{#1}%
    \fi}
 
-\newbox\TABLEsplitbox
+\newbox\TABLEsplitbox % public, don't change
+
+% todo: mode: first|next (of niets)
 
 \def\splittblboxa#1% spacing between rows gets lost in split
   {\setbox\TABLEsplitbox\vbox{#1}%
@@ -949,7 +951,7 @@
    \advance\scratchdimen-\tbltblsplitoffset
    \expanded{\testpage[2][\the\scratchdimen]}% quite save since a row is > 1 lineheight and we don't want one-liners
    \setbox\TABLEsplitbox\vbox{#1}%
-   \setbox8\vbox{\doifsomething\tbltblspaceinbetween{\blanko[\tbltblspaceinbetween]}}%
+   \setbox8\vbox{\doifsomething\tbltblspaceinbetween{\blank[\tbltblspaceinbetween]}}%
    \dimen8\ht8\advance\dimen8\dp8
    \ifmultipleTBLheads
      \setbox2\vbox{}%

@@ -204,49 +204,42 @@
 
 % can be conditionals
 
-\newif\ifblankoreset        \blankoresetfalse
-\newif\ifblankoblokkeer     \blankoblokkeerfalse
-\newif\ifblankogeenwit      \blankogeenwitfalse
-\newif\ifdoeblanko          \doeblankofalse
-\newif\ifblankoflexibel     \blankoflexibeltrue
-\newif\ifblankobuiten
-\newif\ifblankoforceer
-\newif\ifblankogoback
+\newif\ifblanknowhite       \blanknowhitefalse
+\newif\ifblankindeed        \blankindeedfalse
+\newif\ifblankreset         \blankresetfalse
+\newif\ifblankdisable       \blankdisablefalse
+\newif\ifblankflexible      \blankflexibletrue
+\newif\ifblankouter
+\newif\ifblankforce
+\newif\ifblankgoback
 
-\newskip\blankoskip         \blankoskip=\bigskipamount
-\newskip\blankoskipamount
+\newskip\blankskip          \blankskip=\bigskipamount
+\newskip\blankskipamount
 
 \def\skipfactor    {.75}
 \def\skipgluefactor{.25}
 
 \def\normalskipamount
   {\openlineheight
-     \ifgridsnapping \else \ifblankoflexibel
+     \ifgridsnapping \else \ifblankflexible
        \!!plus \skipgluefactor\openlineheight
        \!!minus\skipgluefactor\openlineheight
      \fi \fi
    \relax}
 
-\def\regelafstand{\normalskipamount}
+\def\linedistance    {\normalskipamount}
+\def\appliedblankskip{\skipfactor\linedistance}
+\def\lastblankskip   {\blankskip}
+\def\currentblank    {\v!big}
+\def\oldprevdepth    {\prevdepth}
+\def\newprevdepth    {-1001pt}
+\def\mindimen        {1sp} % was: 0.00002pt
 
-\def\deblankoskip{\skipfactor\regelafstand}
-
-\def\laatsteblankoskip
-  {\blankoskip}
-
-\def\geenblanko
-  {\removelastskip}
-
-\def\currentblanko
-  {\v!big}
-
-\def\oldprevdepth {\prevdepth}
-\def\newprevdepth {-1001pt}
-\def\mindimen     {1sp} % was: 0.00002pt
-
-\newif\iflokaalblankovast
-\newif\iflokaalblankoflexibel
+\newif\iflocalblankfixed
+\newif\iflocalblankflexible
 \newif\iffuzzyvskip
+
+\def\geenblanko{\removelastskip} % will become obsolete
 
 %%%% pas op, wordt ook in core-pos gebruikt
 
@@ -266,111 +259,111 @@
 % replaced
 %
 % \def\dosingleblanko#1%
-%   {\doassignsomeskip#1\to\blankoskipamount
-%    \global\advance\blankoskip \blankoskipamount}
+%   {\doassignsomeskip#1\to\blankskipamount
+%    \global\advance\blankskip \blankskipamount}
 %
 % \def\doblank#1%
 %   {\processallactionsinset % is maar een actie
 %      [#1]
 %      [    \v!groot=>\dosingleblanko\v!groot, % happens often
-%          \v!buiten=>\ifvmode\ifinner\blankobuitentrue\fi\fi,
-%           \v!reset=>\global\blankoresettrue,
-%        \v!flexibel=>\global\lokaalblankoflexibeltrue,
-%            \v!vast=>\global\lokaalblankovasttrue,
+%          \v!buiten=>\ifvmode\ifinner\blankoutertrue\fi\fi,
+%           \v!reset=>\global\blankresettrue,
+%        \v!flexibel=>\global\localblankflexibletrue,
+%            \v!vast=>\global\localblankfixedtrue,
 %            \v!back=>\geenblanko,
-%             \v!wit=>\global\advance\blankoskip \parskip,
-%         \v!formule=>\global\advance\blankoskip \medskipamount,
-%         \v!geenwit=>\global\blankogeenwittrue,
-%            -\v!wit=>\global\advance\blankoskip -\parskip,
-%        \v!blokkeer=>\global\blankoblokkeertrue,
-%         \v!forceer=>\global\blankoforceertrue,
-%           \v!regel=>\global\advance\blankoskip \lineheight,
+%             \v!wit=>\global\advance\blankskip \parskip,
+%         \v!formule=>\global\advance\blankskip \medskipamount,
+%         \v!geenwit=>\global\blanknowhitetrue,
+%            -\v!wit=>\global\advance\blankskip -\parskip,
+%        \v!blokkeer=>\global\blankdisabletrue,
+%         \v!forceer=>\global\blankforcetrue,
+%           \v!regel=>\global\advance\blankskip \lineheight,
 %      \v!halveregel=>\ifgridsnapping\global\fuzzyvskiptrue\fi
-%                     \global\advance\blankoskip .5\lineheight,
+%                     \global\advance\blankskip .5\lineheight,
 %         \s!unknown=>\doindirectblanko{#1}]}
 %
 % \def\docomplexdoblank[#1]% pas op \relax's zijn nodig ivm volgende \if
-%   {\global\blankoresetfalse
-%    \global\blankoblokkeerfalse
-%    \global\blankogeenwitfalse
-%    \global\lokaalblankoflexibelfalse
-%    \global\lokaalblankovastfalse
-%    \global\blankoskip\zeropoint
-%    \global\blankoforceerfalse
-%    \blankobuitenfalse
+%   {\global\blankresetfalse
+%    \global\blankdisablefalse
+%    \global\blanknowhitefalse
+%    \global\localblankflexiblefalse
+%    \global\localblankfixedfalse
+%    \global\blankskip\zeropoint
+%    \global\blankforcefalse
+%    \blankouterfalse
 %    \processcommalist[#1]\doblank
-%    \ifdim\blankoskip=\zeropoint\relax
-%      \iflokaalblankoflexibel \dosingleblanko\currentblanko \fi
-%      \iflokaalblankovast     \dosingleblanko\currentblanko \fi
+%    \ifdim\blankskip=\zeropoint\relax
+%      \iflocalblankflexible \dosingleblanko\currentblank \fi
+%      \iflocalblankfixed     \dosingleblanko\currentblank \fi
 %    \fi
-%    \ifblankobuiten
+%    \ifblankouter
 %    \else
 %      \par
 %      \ifvmode          %in pos fonts gaat dit mis
-%        \ifblankoforceer%\ifdim\prevdepth>\zeropoint\else
+%        \ifblankforce   %\ifdim\prevdepth>\zeropoint\else
 %          % -1000pt signals top of page or column (\ejectcolumn)
 %          \verticalstrut\kern-\struttotal
 %        \fi
-%        \ifblankoblokkeer
-%          \global\doeblankofalse
+%        \ifblankdisable
+%          \global\blankindeedfalse
 %          \edef\oldprevdepth{\the\prevdepth}%
 %          \prevdepth=\newprevdepth
 %        \else
-%          \global\doeblankotrue
+%          \global\blankindeedtrue
 %        \fi
-%        \ifblankoreset
-%          \global\doeblankotrue
+%        \ifblankreset
+%          \global\blankindeedtrue
 %          \ifdim\prevdepth=\newprevdepth
 %            \prevdepth=\oldprevdepth
 %          \fi
 %        \fi
-%        \ifdoeblanko
-%          \ifdim\lastskip<\blankoskip\relax
+%        \ifblankindeed
+%          \ifdim\lastskip<\blankskip\relax
 %            % else when \blanko[2*groot] + \blanko[3*groot] with parskip
 %            % equaling 1*groot, gives a groot=\parskip so adding a small
 %            % value makes it distinguishable; can also be done at parskip
 %            % setting time (better)
-%            \global\advance\blankoskip by \mindimen\relax % = skip
+%            \global\advance\blankskip by \mindimen\relax % = skip
 %            % test this on 2* + 3* and parskip groot
-%            \ifblankogeenwit
-%              \global\advance\blankoskip by -\parskip
+%            \ifblanknowhite
+%              \global\advance\blankskip by -\parskip
 %            \else
 %              \ifdim\lastskip=\parskip
 %              \else  % force this due to previous comment
 %                \ifdim\parskip>\zeropoint\relax
-%                  \ifdim\blankoskip<\parskip\relax
-%                    \global\blankoskip\zeropoint
+%                  \ifdim\blankskip<\parskip\relax
+%                    \global\blankskip\zeropoint
 %                  \else
-%                    \global\advance\blankoskip by -\parskip
+%                    \global\advance\blankskip by -\parskip
 %                  \fi
 %                \fi
 %              \fi
 %            \fi
-%            \ifblankoflexibel \else
-%              \blankoskip=1\blankoskip
+%            \ifblankflexible \else
+%              \blankskip=1\blankskip
 %            \fi
-%            \iflokaalblankovast
-%              \blankoskip=1\blankoskip
+%            \iflocalblankfixed
+%              \blankskip=1\blankskip
 %            \fi
-%            \iflokaalblankoflexibel
-%              \blankoskip=1\blankoskip
-%                \!!plus\skipgluefactor\blankoskip
-%                \!!minus\skipgluefactor\blankoskip
+%            \iflocalblankflexible
+%              \blankskip=1\blankskip
+%                \!!plus\skipgluefactor\blankskip
+%                \!!minus\skipgluefactor\blankskip
 %            \fi
 %            \ifdim\prevdepth=\newprevdepth
 %            \else
 %              \iffuzzyvskip
 %                \removelastfuzzyvskip
-%                \fuzzyvskip\blankoskip\relax
+%                \fuzzyvskip\blankskip\relax
 %              \else
 %                \removelastskip
-%                \vskip\blankoskip\relax
+%                \vskip\blankskip\relax
 %              \fi
 %            \fi
 %          \else
 %            \iffuzzyvskip
 %              \removelastfuzzyvskip
-%              \fuzzyvskip\blankoskip\relax
+%              \fuzzyvskip\blankskip\relax
 %            \fi
 %          \fi
 %        \fi
@@ -442,7 +435,7 @@
 
 % this will be replaced/enhanced
 
-\def\addblankskip#1#2#3{\global\advance\blankoskip#1\ifgridsnapping#3\else#2\fi}
+\def\addblankskip#1#2#3{\global\advance\blankskip#1\ifgridsnapping#3\else#2\fi}
 
 \def\defineblankmethod[#1]#2{\setvalue{\??bo\??bo#1}{#2}}
 
@@ -457,19 +450,19 @@
 \defineblankmethod      [\v!line] {\addblankskip+\openlineheight     \openlineheight}
 \defineblankmethod     [-\v!line] {\addblankskip-\openlineheight     \openlineheight}
 
-\defineblankmethod   [\v!formula] {\global\advance\blankoskip\medskipamount}
-\defineblankmethod   [\v!nowhite] {\global\blankogeenwittrue}
-\defineblankmethod   [\v!disable] {\global\blankoblokkeertrue}
-\defineblankmethod     [\v!force] {\global\blankoforceertrue}
-\defineblankmethod     [\v!outer] {\ifvmode\ifinner\blankobuitentrue\fi\fi}
-\defineblankmethod     [\v!reset] {\global\blankoresettrue}
-\defineblankmethod  [\v!flexible] {\global\lokaalblankoflexibeltrue}
-\defineblankmethod     [\v!fixed] {\global\lokaalblankovasttrue}
-\defineblankmethod      [\v!back] {\global\blankogobacktrue} % {\geenblanko}
+\defineblankmethod   [\v!formula] {\global\advance\blankskip\medskipamount}
+\defineblankmethod   [\v!nowhite] {\global\blanknowhitetrue}
+\defineblankmethod   [\v!disable] {\global\blankdisabletrue}
+\defineblankmethod     [\v!force] {\global\blankforcetrue}
+\defineblankmethod     [\v!outer] {\ifvmode\ifinner\blankoutertrue\fi\fi}
+\defineblankmethod     [\v!reset] {\global\blankresettrue}
+\defineblankmethod  [\v!flexible] {\global\localblankflexibletrue}
+\defineblankmethod     [\v!fixed] {\global\localblankfixedtrue}
+\defineblankmethod      [\v!back] {\global\blankgobacktrue} % {\geenblanko}
 \defineblankmethod  [\v!halfline] {\ifgridsnapping\global\fuzzyvskiptrue\fi
-                                     \global\advance\blankoskip .5\lineheight}
+                                     \global\advance\blankskip .5\lineheight}
 
-\defineblankmethod      [\v!none] {\global\blankoresettrue}
+\defineblankmethod      [\v!none] {\global\blankresettrue}
 \defineblankmethod  [\v!joinedup] {\ifvmode\nointerlineskip\fi}
 
 % happens often, so we speed this up:
@@ -501,7 +494,7 @@
      \else\ifcsname\??bo\ascii\endcsname % user def / slow
        \@EA\rawprocesscommalist\@EA[\csname\??bo\ascii\endcsname]\doblank\relax
      \else
-       \global\advance\blankoskip#1\relax
+       \global\advance\blankskip#1\relax
      \fi\fi
    \fi}
 
@@ -528,7 +521,7 @@
    \ifx\ascii\empty\else
      \@EA\ifx\csname\??bo\??bo\ascii\endcsname\relax
        \@EA\ifx\csname\??bo\ascii\endcsname\relax
-         \global\advance\blankoskip#1\relax
+         \global\advance\blankskip#1\relax
        \else
          \@EA\rawprocesscommalist\@EA[\csname\??bo\ascii\endcsname]\doblank\relax
        \fi
@@ -592,38 +585,38 @@
 %   {\endgraf\ifvmode\prevdepth\newprevdepth\fi}
 
 % \def\docomplexdoblank[#1]% pas op \relax's zijn nodig ivm volgende \if
-%   {\global\blankoresetfalse
-%    \global\blankoblokkeerfalse
-%    \global\blankogeenwitfalse
-%    \global\lokaalblankoflexibelfalse
-%    \global\lokaalblankovastfalse
-%    \global\blankoskip\zeropoint
-%    \global\blankoforceerfalse
-%    \global\blankogobackfalse
-%    \blankobuitenfalse
+%   {\global\blankresetfalse
+%    \global\blankdisablefalse
+%    \global\blanknowhitefalse
+%    \global\localblankflexiblefalse
+%    \global\localblankfixedfalse
+%    \global\blankskip\zeropoint
+%    \global\blankforcefalse
+%    \global\blankgobackfalse
+%    \blankouterfalse
 %    \expanded{\rawprocesscommalist[#1]}\doblank
-%    \ifdim\blankoskip=\zeropoint\relax
-%      \iflokaalblankoflexibel
-%        \doglobal\advance\blankoskip \currentblanko
-%      \else\iflokaalblankovast
-%        \doglobal\advance\blankoskip \currentblanko
+%    \ifdim\blankskip=\zeropoint\relax
+%      \iflocalblankflexible
+%        \doglobal\advance\blankskip \currentblank
+%      \else\iflocalblankfixed
+%        \doglobal\advance\blankskip \currentblank
 %      \fi\fi
 %    \fi
-%    \ifblankobuiten
+%    \ifblankouter
 %    \else
 %      \par
 %      \ifvmode
-%        \ifblankogoback
+%        \ifblankgoback
 %          \removelastskip
 %        \fi
-%        \ifblankoforceer
+%        \ifblankforce
 %          % dit gaat mis in pos fonts
 %          % \ifdim\prevdepth>\zeropoint\else ...
 %          % -1000pt signals top of page or column (\ejectcolumn)
 %          \bgroup\forgeteverypar\verticalstrut\egroup\kern-\struttotal
 %        \fi
-%        \ifblankoblokkeer
-%          \global\doeblankofalse
+%        \ifblankdisable
+%          \global\blankindeedfalse
 %          \ifgridsnapping
 %            \ifdim\prevdepth<\zeropoint
 %              % brrr
@@ -661,10 +654,10 @@
 %            \prevdepth\newprevdepth
 %          \fi
 %        \else
-%          \global\doeblankotrue
+%          \global\blankindeedtrue
 %        \fi
-%        \ifblankoreset
-%          \global\doeblankotrue
+%        \ifblankreset
+%          \global\blankindeedtrue
 %          \ifgridsnapping
 %             % let's play safe and not fool around with the depth, if
 %             % only because it took a lot of effort to sort out the grid
@@ -675,71 +668,71 @@
 %            \fi
 %          \fi
 %        \fi
-%        \ifdoeblanko
-%          \ifdim1\lastskip<1\blankoskip\relax
+%        \ifblankindeed
+%          \ifdim1\lastskip<1\blankskip\relax
 %            % else when \blanko[2*groot] + \blanko[3*groot] with parskip
 %            % equaling 1*groot, gives a groot=\parskip so adding a small
 %            % value makes it distinguishable; can also be done at parskip
 %            % setting time (better)
-%            \global\advance\blankoskip \mindimen\relax % = skip
+%            \global\advance\blankskip \mindimen\relax % = skip
 %            % test this on 2* + 3* and parskip groot
-%            \ifblankogeenwit
-%              \global\advance\blankoskip -\parskip
+%            \ifblanknowhite
+%              \global\advance\blankskip -\parskip
 %            \else
 %              \ifdim\lastskip=\parskip
 %              \else  % force this due to previous comment
 %                \ifdim\parskip>\zeropoint\relax
-%                  \ifdim\blankoskip<\parskip\relax
-%                    \global\blankoskip\zeropoint
+%                  \ifdim\blankskip<\parskip\relax
+%                    \global\blankskip\zeropoint
 %                  \else
-%                    \global\advance\blankoskip -\parskip
+%                    \global\advance\blankskip -\parskip
 %                  \fi
 %                \fi
 %              \fi
 %            \fi
-%            \ifblankoflexibel \else
-%              \blankoskip1\blankoskip
+%            \ifblankflexible \else
+%              \blankskip1\blankskip
 %            \fi
-%            \iflokaalblankovast
-%              \blankoskip1\blankoskip
+%            \iflocalblankfixed
+%              \blankskip1\blankskip
 %            \fi
-%            \iflokaalblankoflexibel
-%              \blankoskip1\blankoskip
-%                \!!plus\skipgluefactor\blankoskip
-%                \!!minus\skipgluefactor\blankoskip
+%            \iflocalblankflexible
+%              \blankskip1\blankskip
+%                \!!plus\skipgluefactor\blankskip
+%                \!!minus\skipgluefactor\blankskip
 %            \fi
 %            \ifdim\lastkern=\noblanksignal % controled and grid
-%              \global\doeblankofalse
+%              \global\blankindeedfalse
 %            \else\ifgridsnapping\else\ifdim\prevdepth=\newprevdepth
-%              \global\doeblankofalse
+%              \global\blankindeedfalse
 %            \fi\fi\fi
-%            \ifdoeblanko
+%            \ifblankindeed
 %              \iffuzzyvskip
 %                \removelastfuzzyvskip
-%                \fuzzyvskip\blankoskip\relax
+%                \fuzzyvskip\blankskip\relax
 %              \else
 %                \removelastskip
-%                \vskip\blankoskip\relax
+%                \vskip\blankskip\relax
 %              \fi
 %            \fi
 %          \else
 %            \iffuzzyvskip
 %              \removelastfuzzyvskip
-%              \fuzzyvskip\blankoskip\relax
+%              \fuzzyvskip\blankskip\relax
 %            \else
 %              % new, test this on pascal
-%              \ifdim\blankoskip<\zeropoint
-%                \advance\blankoskip-\lastskip
+%              \ifdim\blankskip<\zeropoint
+%                \advance\blankskip-\lastskip
 %                \removelastskip
-%                \ifdim\blankoskip>\zeropoint
-%                  \vskip\blankoskip
+%                \ifdim\blankskip>\zeropoint
+%                  \vskip\blankskip
 %                \else
 %                  \vskip\zeropoint
 %                \fi
 %              \else
 %                % also new
-%                \ifdim\blankoskip=\zeropoint
-%                  \ifblankogeenwit
+%                \ifdim\blankskip=\zeropoint
+%                  \ifblanknowhite
 %                    \geenwitruimte
 %                  \fi
 %                \fi
@@ -799,29 +792,32 @@
 \ifx\undefined\savedlastskip    \newskip \savedlastskip    \fi
 \ifx\undefined\savedlastpenalty \newcount\savedlastpenalty \fi
 
+% beware, prevdepth can have funny values (e.g. mvl value when in box)
+
 \def\docomplexdoblank[#1]% pas op \relax's zijn nodig ivm volgende \if
-  {\global\blankoresetfalse
-   \global\blankoblokkeerfalse
-   \global\blankogeenwitfalse
-   \global\lokaalblankoflexibelfalse
-   \global\lokaalblankovastfalse
-   \global\blankoskip\zeropoint
-   \global\blankoforceerfalse
-   \global\blankogobackfalse
-   \blankobuitenfalse
+  {\global\blankresetfalse
+   \global\blankdisablefalse
+   \global\blanknowhitefalse
+   \global\localblankflexiblefalse
+   \global\localblankfixedfalse
+   \global\blankforcefalse
+   \global\blankgobackfalse
+   \blankouterfalse
+   \global\blankskip\zeropoint
    \expanded{\rawprocesscommalist[#1]}\doblank
-   \ifdim\blankoskip=\zeropoint\relax
-     \iflokaalblankoflexibel
-       \doglobal\advance\blankoskip \currentblanko
-     \else\iflokaalblankovast
-       \doglobal\advance\blankoskip \currentblanko
+   \ifdim\blankskip=\zeropoint\relax
+     \iflocalblankflexible
+       \doglobal\advance\blankskip \currentblank
+     \else\iflocalblankfixed
+       \doglobal\advance\blankskip \currentblank
      \fi\fi
    \fi
-   \ifblankobuiten
+   \ifblankouter
+     % do nothing
    \else
      \par
      \ifvmode
-       \ifblankogoback
+       \ifblankgoback
          \ifdim\lastskip>\zeropoint \vskip-\lastskip \fi
            \savedlastskip\zeropoint
          \else\ifdim\lastskip>\zeropoint
@@ -829,16 +825,16 @@
          \else % todo: lastnode, dan namelijk geen skip !
            \savedlastskip\zeropoint
        \fi\fi
-       \ifblankoforceer
+       \ifblankforce
          % dit gaat mis in pos fonts
          % \ifdim\prevdepth>\zeropoint\else ...
          % -1000pt signals top of page or column (\ejectcolumn)
          \bgroup\forgeteverypar\verticalstrut\egroup\kern-\struttotal
          \savedlastskip\zeropoint
        \fi
-\savedlastpenalty\lastpenalty
-       \ifblankoblokkeer
-         \global\doeblankofalse
+       \savedlastpenalty\lastpenalty % hm, now it gets lost
+       \ifblankdisable
+         \global\blankindeedfalse % keep this, i.e. disable current too
          \ifgridsnapping
            \ifdim\prevdepth<\zeropoint
              % brrr
@@ -870,10 +866,10 @@
            \prevdepth\newprevdepth % == \inhibittextblank
          \fi
        \else
-         \global\doeblankotrue
+         \global\blankindeedtrue
        \fi
-       \ifblankoreset
-         \global\doeblankotrue
+       \ifblankreset
+         \global\blankindeedtrue
          \ifgridsnapping
             % let's play safe and not fool around with the depth, if
             % only because it took a lot of effort to sort out the grid
@@ -884,77 +880,77 @@
            \fi
          \fi
        \fi
-       \ifdoeblanko
-         \ifdim1\savedlastskip<1\blankoskip\relax
+       \ifblankindeed
+         \ifdim1\savedlastskip<1\blankskip\relax
            % else when \blank[2*groot] + \blank[3*groot] with parskip
            % equaling 1*groot, gives a groot=\parskip so adding a small
            % value makes it distinguishable; can also be done at parskip
            % setting time (better)
-           \global\advance\blankoskip \mindimen\relax % = skip
+           \global\advance\blankskip \mindimen\relax % = skip
            % test this on 2* + 3* and parskip groot
-           \ifblankogeenwit
-             \global\advance\blankoskip -\parskip
+           \ifblanknowhite
+             \global\advance\blankskip -\parskip
            \else
              \ifdim\savedlastskip=\parskip
              \else  % force this due to previous comment
                \ifdim\parskip>\zeropoint\relax
-                 \ifdim\blankoskip<\parskip\relax
-                   \global\blankoskip\zeropoint
+                 \ifdim\blankskip<\parskip\relax
+                   \global\blankskip\zeropoint
                  \else
-                   \global\advance\blankoskip -\parskip
+                   \global\advance\blankskip -\parskip
                  \fi
                \fi
              \fi
            \fi
-           \ifblankoflexibel \else
-             \blankoskip1\blankoskip
+           \ifblankflexible \else
+             \blankskip1\blankskip
            \fi
-           \iflokaalblankovast
-             \blankoskip1\blankoskip
+           \iflocalblankfixed
+             \blankskip1\blankskip
            \fi
-           \iflokaalblankoflexibel
-             \blankoskip1\blankoskip
-               \!!plus \skipgluefactor\blankoskip
-               \!!minus\skipgluefactor\blankoskip
+           \iflocalblankflexible
+             \blankskip1\blankskip
+               \!!plus \skipgluefactor\blankskip
+               \!!minus\skipgluefactor\blankskip
            \fi
            \ifdim\lastkern=\noblanksignal\relax % controlled and grid
-             \global\doeblankofalse
+             \global\blankindeedfalse
            \else\ifnum\savedlastpenalty=\noblankpsignal\relax % controlled and grid
-             \global\doeblankofalse
+             \global\blankindeedfalse
            \else\ifgridsnapping\else\ifdim\prevdepth=\newprevdepth
-             \global\doeblankofalse
+             \global\blankindeedfalse
            \fi\fi\fi\fi
-           \ifdoeblanko
+           \ifblankindeed
              \iffuzzyvskip
                \removelastfuzzyvskip
-               \fuzzyvskip\blankoskip\relax
+               \fuzzyvskip\blankskip\relax
              \else
                \relax\ifdim\savedlastskip=\zeropoint\else
                  \vskip-\savedlastskip
                \fi
-               \vskip\blankoskip\relax
+               \vskip\blankskip\relax
              \fi
            \fi
          \else
            \iffuzzyvskip
              \removelastfuzzyvskip
-             \fuzzyvskip\blankoskip\relax
+             \fuzzyvskip\blankskip\relax
            \else
              % new, test this on pascal
-             \ifdim\blankoskip<\zeropoint
+             \ifdim\blankskip<\zeropoint
                \relax\ifdim\savedlastskip=\zeropoint\else
-                 \advance\blankoskip-\savedlastskip
+                 \advance\blankskip-\savedlastskip
                  \vskip-\savedlastskip
                \fi
-               \ifdim\blankoskip>\zeropoint
-                 \vskip\blankoskip
+               \ifdim\blankskip>\zeropoint
+                 \vskip\blankskip
                \else
                  \vskip\zeropoint
                \fi
              \else
                % also new
-               \ifdim\blankoskip=\zeropoint
-                 \ifblankogeenwit
+               \ifdim\blankskip=\zeropoint
+                 \ifblanknowhite
                    \nowhitespace
                  \fi
                \fi
@@ -972,7 +968,7 @@
 %D \starttyping
 %D \def\simpledoblank%
 %D   {\doifelse{\currentwhitespace}{\v!geen}
-%D      {\blank[\currentblanko]}
+%D      {\blank[\currentblank]}
 %D      {\blank[\currentwhitespace]}}
 %D \stoptyping
 %D
@@ -980,7 +976,7 @@
 
 \def\simpledoblank % ...
   {\doifelse\currentwhitespace\v!none
-     {\blank[\currentblanko]}
+     {\blank[\currentblank]}
      {\blank[\s!default]}}
 
 %D Another useful definition would be:
@@ -993,7 +989,7 @@
 
 \def\dosetupblank#1% amount are an plain inheritance
   {\bigskipamount#1\relax
-   \ifblankoflexibel \else
+   \ifblankflexible \else
      \bigskipamount1\bigskipamount
    \fi
    \medskipamount  \bigskipamount \divide\medskipamount   2
@@ -1001,44 +997,44 @@
 
 \def\complexsetupblank[#1]% more \let's
   {\ifgridsnapping
-     \blankoflexibelfalse
+     \blankflexiblefalse
    \else
      \ExpandFirstAfter\processallactionsinset
        [#1]
-       [ \v!flexible=>\blankoflexibeltrue,
-             \v!fixed=>\blankoflexibelfalse]%
+       [ \v!flexible=>\blankflexibletrue,
+            \v!fixed=>\blankflexiblefalse]%
    \fi
    \ExpandFirstAfter\processallactionsinset
      [#1]
-     [ \v!flexible=>\dosetupblank\deblankoskip,
-           \v!fixed=>\dosetupblank\deblankoskip,
-          \v!line=>\edef\deblankoskip{\regelafstand}%
-                    \dosetupblank\deblankoskip
-                    \let\deblanko\v!big,
-     \v!halfline=>\scratchskip.5\regelafstand
-                    \edef\deblankoskip{\the\scratchskip}%
-                    \dosetupblank\deblankoskip
-                    \let\deblanko\v!medium,
-          \v!big=>\ifgridsnapping
-                      \edef\deblankoskip{\regelafstand}%
-                      \dosetupblank\deblankoskip
+     [ \v!flexible=>\dosetupblank\appliedblankskip,
+          \v!fixed=>\dosetupblank\appliedblankskip,
+           \v!line=>\edef\appliedblankskip{\linedistance}%
+                    \dosetupblank\appliedblankskip
+                    ,%\let\deblanko\v!big,
+       \v!halfline=>\scratchskip.5\linedistance
+                    \edef\appliedblankskip{\the\scratchskip}%
+                    \dosetupblank\appliedblankskip
+                    ,%\let\deblanko\v!medium,
+            \v!big=>\ifgridsnapping
+                      \edef\appliedblankskip{\linedistance}%
+                      \dosetupblank\appliedblankskip
                     \fi
-                    \let\currentblanko\v!big  % was \def, why ?
-                    \let\deblanko\v!big,
-         \v!medium=>\let\currentblanko\v!medium % was \def, why ?
-                    \let\deblanko\v!medium,
-          \v!small=>\let\currentblanko\v!small  % was \def, why ?
-                    \let\deblanko\v!small,
-        \v!normal=>\dosetupblank\deblankoskip
-                    \let\deblanko\v!big,
-      \v!standard=>\edef\deblankoskip{\skipfactor\regelafstand}%
-                    \dosetupblank\deblankoskip
-                    \let\deblanko\v!big,
-        \s!default=>\dosetupblank\deblankoskip
-                    \let\deblanko\v!big,
-        \s!unknown=>\let\deblankoskip\commalistelement
-                    \dosetupblank\deblankoskip
-                    \let\deblanko\v!big]%
+                    \let\currentblank\v!big  % was \def, why ?
+                    ,%\let\deblanko\v!big,
+         \v!medium=>\let\currentblank\v!medium % was \def, why ?
+                    ,%\let\deblanko\v!medium,
+          \v!small=>\let\currentblank\v!small  % was \def, why ?
+                    ,%\let\deblanko\v!small,
+         \v!normal=>\dosetupblank\appliedblankskip
+                    ,%\let\deblanko\v!big,
+       \v!standard=>\edef\appliedblankskip{\skipfactor\linedistance}%
+                    \dosetupblank\appliedblankskip
+                    ,%\let\deblanko\v!big,
+        \s!default=>\dosetupblank\appliedblankskip
+                    ,%\let\deblanko\v!big,
+        \s!unknown=>\let\appliedblankskip\commalistelement
+                    \dosetupblank\appliedblankskip
+                    ]%\let\deblanko\v!big]%
    \simplesetupwhitespace}
 
 % \definecomplexorsimpleempty\setupblank
@@ -1049,16 +1045,16 @@
 
 \def\simplesetupblank % == snelle \setupblank[\s!default]
   {\ifgridsnapping
-     \blankoflexibelfalse
+     \blankflexiblefalse
    \fi
-   \dosetupblank\deblankoskip
-   \let\deblanko\v!big
+   \dosetupblank\appliedblankskip
+   % \let\deblanko\v!big
    \simplesetupwhitespace}
 
 \def\restorestandardblank% \v!standard
-  {\edef\deblankoskip{\skipfactor\regelafstand}%
-   \dosetupblank\deblankoskip
-   \let\deblanko\v!big}
+  {\edef\appliedblankskip{\skipfactor\linedistance}%
+   \dosetupblank\appliedblankskip
+   }%\let\deblanko\v!big}
 
 \def\dodefineblank[#1][#2]%
   {\def\docommando##1{\setvalue{\??bo##1}{#2}}%
@@ -1067,16 +1063,16 @@
 \def\defineblank
   {\dodoubleargument\dodefineblank}
 
-\def\savecurrentblanko
-  {\edef\restorecurrentblanko
+\def\savecurrentblank
+  {\edef\restorecurrentblank
      {\bigskipamount\the\bigskipamount
       \medskipamount\the\medskipamount
       \smallskipamount\the\smallskipamount
-      \noexpand\def\noexpand\currentblanko{\currentblanko}%
-      \ifblankoflexibel
-        \noexpand\blankoflexibeltrue
+      \noexpand\def\noexpand\currentblank{\currentblank}%
+      \ifblankflexible
+        \noexpand\blankflexibletrue
       \else
-        \noexpand\blankoflexibelfalse
+        \noexpand\blankflexiblefalse
       \fi}}
 
 %D Now.
@@ -4187,7 +4183,7 @@
   [\v!standard,
    \v!big]
 
-\defineblank[\v!default]  [\currentblanko]
+\defineblank[\v!default]  [\currentblank]
 \defineblank[\v!before]   [\v!default]
 \defineblank[\v!inbetween][\v!default]
 \defineblank[\v!after]    [\v!before]

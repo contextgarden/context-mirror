@@ -147,6 +147,7 @@ save_size.context        =   50000
 stack_size.context       =   10000
 string_vacancies.context =   90000
 trie_size.context        =  250000
+hyph_size.context        =    1000
 
 main_memory.mpost        = 3000000
 pool_size.mpost          = 3000000

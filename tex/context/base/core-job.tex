@@ -300,47 +300,101 @@
 
 \newcounter\filelevel
 
-\def\donextlevel#1#2#3#4#5#6\\%
-  {\beforesplitstring#6\at.\to#1
+% \def\donextlevel#1#2#3#4#5#6\\%
+%   {\beforesplitstring#6\at.\to#1
+%    \ifcase\filelevel\relax
+%      \starttext
+%      \def\project     ##1 {#2{##1}}%
+%      \def\environment ##1 {#3{##1}}%
+%      \def\product     ##1 {#4{##1}}%
+%      \def\component   ##1 {#5{##1}}%
+%    \fi
+%    \increment\filelevel\relax
+%    \fullexpandoneargafter\addtocommalist{#1}\loadedfiles}
+%
+% \def\doprevlevel
+%   {\ifnum\filelevel=\plusone
+%      \expandafter\stoptext
+%    \else
+%      \decrement\filelevel\relax
+%      \expandafter\endinput
+%    \fi}
+
+\let\currentcomponent\v!text
+
+\def\donextlevel#1#2#3#4#5#6#7\\%
+  {\pushmacro\currentcomponent
+   \let\currentcomponent#1
+   \setsystemmode\currentcomponent
+   \beforesplitstring#7\at.\to#2\relax
    \ifcase\filelevel\relax
      \starttext
-     \def\project   ##1 {#2{##1}}%
-     \def\environment  ##1 {#3{##1}}%
-     \def\product   ##1 {#4{##1}}%
-     \def\component ##1 {#5{##1}}%
+     \def\project     ##1 {#3{##1}}%
+     \def\environment ##1 {#4{##1}}%
+     \def\product     ##1 {#5{##1}}%
+     \def\component   ##1 {#6{##1}}%
    \fi
    \increment\filelevel\relax
    \fullexpandoneargafter\addtocommalist{#1}\loadedfiles}
 
 \def\doprevlevel
-  {\ifnum\filelevel=\plusone
+  {\popmacro\currentcomponent
+   \setsystemmode\currentcomponent
+   \ifnum\filelevel=\plusone
      \expandafter\stoptext
    \else
      \decrement\filelevel\relax
      \expandafter\endinput
    \fi}
 
+% \def\startproject #1 %
+%   {\donextlevel\currentproject
+%      \donotexecutefile\doexecutefileonce
+%      \doexecutefileonce\doexecutefile#1\\}
+%
+% \def\startproduct #1 %
+%   {\doateverystarttext
+%    \donextlevel\currentproduct
+%      \doexecutefileonce\doexecutefileonce
+%      \donotexecutefile\doexecutefile#1\\}
+%
+% \def\startcomponent #1 %
+%   {\doateverystarttext
+%    \donextlevel\currentcomponent
+%      \doexecutefileonce\doexecutefileonce
+%      \donotexecutefile\doexecutefile#1\\}
+%
+% \def\startenvironment #1 %
+%   {\donextlevel\currentenvironment
+%      \donotexecutefile\doexecutefileonce
+%      \donotexecutefile\donotexecutefile#1\\}
+
 \def\startproject #1 %
-  {\donextlevel\currentproject
+  {\donextlevel\v!project\currentproject
      \donotexecutefile\doexecutefileonce
      \doexecutefileonce\doexecutefile#1\\}
 
 \def\startproduct #1 %
   {\doateverystarttext
-   \donextlevel\currentproduct
+   \donextlevel\v!product\currentproduct
      \doexecutefileonce\doexecutefileonce
      \donotexecutefile\doexecutefile#1\\}
 
 \def\startcomponent #1 %
   {\doateverystarttext
-   \donextlevel\currentcomponent
+   \donextlevel\v!component\currentcomponent
      \doexecutefileonce\doexecutefileonce
      \donotexecutefile\doexecutefile#1\\}
 
 \def\startenvironment #1 %
-  {\donextlevel\currentenvironment
+  {\donextlevel\v!environment\currentenvironment
      \donotexecutefile\doexecutefileonce
      \donotexecutefile\donotexecutefile#1\\}
+
+% \startproject test
+%     1: \startmode[*project] project \stopmode \endgraf
+%     2: \startmode[*product] product \stopmode \endgraf
+% \stopproject
 
 \def\stopproject    {\doprevlevel}
 \def\stopproduct    {\doprevlevel}

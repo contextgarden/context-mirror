@@ -14,7 +14,22 @@
 \unprotect
 
 \startunicodevector 3
-  \ifcase\numexpr(#1-145)
+  \ifcase\numexpr(#1-132) % keep space
+    % special greek
+    \strippedcsname \greektonos              \or
+    \strippedcsname \greekdialytikatonos     \or
+    \strippedcsname \greekAlphatonos         \or
+    \strippedcsname \greekanoteleia          \or
+    \strippedcsname \greekEpsilontonos       \or
+    \strippedcsname \greekEtatonos           \or
+    \strippedcsname \greekIotatonos          \or
+    \strippedcsname \unknownchar             \or
+    \strippedcsname \greekOmicrontonos       \or
+    \strippedcsname \unknownchar             \or
+    \strippedcsname \greekUpsilontonos       \or
+    \strippedcsname \greekOmegatonos         \or
+    \strippedscname \greekiotadialytikatonos \or
+    % normal greek
     \strippedcsname \greekAlpha     \or
     \strippedcsname \greekBeta      \or
     \strippedcsname \greekGamma     \or
@@ -32,42 +47,56 @@
     \strippedcsname \greekOmicron   \or
     \strippedcsname \greekPi        \or
     \strippedcsname \greekRho       \or
-    \strippedcsname \greekFinalSigma\or
+    \strippedcsname \unknownchar    \or
     \strippedcsname \greekSigma     \or
     \strippedcsname \greekTau       \or
     \strippedcsname \greekUpsilon   \or
     \strippedcsname \greekPhi       \or
     \strippedcsname \greekChi       \or
     \strippedcsname \greekPsi       \or
-    \strippedcsname \greekOmega     \else
-  \ifcase\numexpr(#1-177)
-    \strippedcsname \greekalpha     \or
-    \strippedcsname \greekbeta      \or
-    \strippedcsname \greekgamma     \or
-    \strippedcsname \greekdelta     \or
-    \strippedcsname \greekepsilon   \or
-    \strippedcsname \greekzeta      \or
-    \strippedcsname \greeketa       \or
-    \strippedcsname \greektheta     \or
-    \strippedcsname \greekiota      \or
-    \strippedcsname \greekkappa     \or
-    \strippedcsname \greeklambda    \or
-    \strippedcsname \greekmu        \or
-    \strippedcsname \greeknu        \or
-    \strippedcsname \greekxi        \or
-    \strippedcsname \greekomicron   \or
-    \strippedcsname \greekpi        \or
-    \strippedcsname \greekrho       \or
-    \strippedcsname \unknownchar    \or
-    \strippedcsname \greeksigma     \or
-    \strippedcsname \greektau       \or
-    \strippedcsname \greekupsilon   \or
-    \strippedcsname \greekphi       \or
-    \strippedcsname \greekchi       \or
-    \strippedcsname \greekpsi       \or
-    \strippedcsname \greekomega     \else
+    \strippedcsname \greekOmega     \or
+    % special greek
+    \strippedcsname \greekIotadialytika         \or
+    \strippedcsname \greekUpsilondialytika      \or
+    \strippedcsname \greekalphatonos            \or
+    \strippedcsname \greekepsilontonos          \or
+    \strippedcsname \greeketatonos              \or
+    \strippedcsname \greekiotatonos             \or
+    \strippedcsname \greekupsilondialytikatonos \or
+    % normal greek
+    \strippedcsname \greekalpha      \or
+    \strippedcsname \greekbeta       \or
+    \strippedcsname \greekgamma      \or
+    \strippedcsname \greekdelta      \or
+    \strippedcsname \greekepsilon    \or
+    \strippedcsname \greekzeta       \or
+    \strippedcsname \greeketa        \or
+    \strippedcsname \greektheta      \or
+    \strippedcsname \greekiota       \or
+    \strippedcsname \greekkappa      \or
+    \strippedcsname \greeklambda     \or
+    \strippedcsname \greekmu         \or
+    \strippedcsname \greeknu         \or
+    \strippedcsname \greekxi         \or
+    \strippedcsname \greekomicron    \or
+    \strippedcsname \greekpi         \or
+    \strippedcsname \greekrho        \or
+    \strippedcsname \greekfinalsigma \or
+    \strippedcsname \greeksigma      \or
+    \strippedcsname \greektau        \or
+    \strippedcsname \greekupsilon    \or
+    \strippedcsname \greekphi        \or
+    \strippedcsname \greekchi        \or
+    \strippedcsname \greekpsi        \or
+    \strippedcsname \greekomega      \or
+    % special greek
+    \strippedcsname \greekiotadialytika    \or
+    \strippedcsname \greekupsilondialytika \or
+    \strippedcsname \greekomicrontonos     \or
+    \strippedcsname \greekupsilontonos     \or
+    \strippedcsname \greeekomegatonos      \else
     \strippedcsname \unknownchar
-  \fi\fi
+    \fi
 \stopunicodevector
 
 \protect \endinput

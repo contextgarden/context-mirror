@@ -297,10 +297,10 @@
 %D We keep track of these features with the following
 %D variables.
 
-\chardef\papermirror   =0  \chardef\printmirror   =0
-\chardef\paperrotation =0  \chardef\printrotation =0
-\chardef\paperreverse  =0  \chardef\printreverse  =0
-\chardef\paperlandscape=0  \chardef\printlandscape=0
+\chardef\papermirror     =0  \chardef\printmirror     =0
+\chardef\paperorientation=0  \chardef\printorientation=0
+\chardef\paperreverse    =0  \chardef\printreverse    =0
+\chardef\paperlandscape  =0  \chardef\printlandscape  =0
 
 \let\papersize\empty \let\printpapersize\empty
 
@@ -356,8 +356,8 @@
 \def\dododosetuppapersize[#1][#2]%
   {\xdef\restorepapersize
      {\noexpand\setuppapersize[#1][#2]}%
-   \dostelpapierrichtingin{#1}\paperlandscape\paperrotation\paperreverse\papermirror
-   \dostelpapierrichtingin{#2}\printlandscape\printrotation\printreverse\printmirror
+   \dosetuppaperorientation{#1}\paperlandscape\paperorientation\paperreverse\papermirror
+   \dosetuppaperorientation{#2}\printlandscape\printorientation\printreverse\printmirror
    \def\docommando##1%
      {\doifsomething{##1}{\doifdefined{\??pp##1\c!width}
         {\global\paperwidth\getvalue{\??pp##1\c!width}%
@@ -374,10 +374,10 @@
          \global\printpaperheight\getvalue{\??pp##1\c!height}%
          \xdef\printpapersize{##1}}}}%
    \processcommacommand[#2]\docommando
-   \global\setdimentoatleast\paperwidth     \onepoint
-   \global\setdimentoatleast\paperheight      \onepoint
-   \global\setdimentoatleast\printpaperwidth\onepoint
-   \global\setdimentoatleast\printpaperheight \onepoint
+   \global\setdimentoatleast\paperwidth      \onepoint
+   \global\setdimentoatleast\paperheight     \onepoint
+   \global\setdimentoatleast\printpaperwidth \onepoint
+   \global\setdimentoatleast\printpaperheight\onepoint
    \ifcase\paperlandscape\else
      \doglobal\swapdimens\paperwidth\paperheight
    \fi
@@ -389,8 +389,8 @@
    \doif\@@ppoption\v!max % \v!fit is
      {\bgroup
       % we need to pre-swap else we get the wrong paper size
-      \doifinset\paperrotation{90,270}{\swapdimens\paperwidth\paperheight}%
-      \doifinset\printrotation{90,270}{\swapdimens\printpaperwidth\printpaperheight}%
+      \doifinset\paperorientation{90,270}{\swapdimens\paperwidth\paperheight}%
+      \doifinset\printorientation{90,270}{\swapdimens\printpaperwidth\printpaperheight}%
       \ifdim\paperheight>\printpaperheight
         \global\printpaperheight\paperheight
         \writestatus\m!systems{print height forced to paper height}%
@@ -401,7 +401,7 @@
       \fi
       \egroup}}
 
-\def\dostelpapierrichtingin#1#2#3#4#5%
+\def\dosetuppaperorientation#1#2#3#4#5%
   {\global\chardef#2\zerocount
    \global\chardef#5\zerocount
    \globallet#3\!!zerocount
@@ -845,18 +845,18 @@
         \unskip}%
    \fi}
 
-\def\rotatepagebodybox#1#2#3%
+\def\orientpagebodybox#1#2#3%
   {\ifnum#2#3>\zerocount
      \setbox#1\vbox
        {\edef\somerotation{\ifdubbelzijdig\ifodd\realpageno#2\else#3\fi\else#2\fi}%
         \dorotatebox\somerotation\hbox{\box#1}}%
    \fi}
 
-\def\rotatepaperbox#1%
-  {\rotatepagebodybox{#1}\paperrotation\paperreverse}
+\def\orientpaperbox#1%
+  {\orientpagebodybox{#1}\paperorientation\paperreverse}
 
-\def\rotateprintbox#1%
-  {\rotatepagebodybox{#1}\printrotation\printreverse}
+\def\orientprintbox#1%
+  {\orientpagebodybox{#1}\printorientation\printreverse}
 
 \def\mirrorpagebodybox#1#2%
   {\ifcase#2\or

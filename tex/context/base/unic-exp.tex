@@ -59,10 +59,26 @@
      \@@unknownchar
    \fi\fi}
 
+% or:
+%
+% \def\doutfunihash#1#2%
+%   {\csname
+%      \ifcsname\@@univector\@@univector\number#1\endcsname
+%        \@@univector\@@univector\number#1%
+%      \else\ifcsname\@@univector\number#1\endcsname
+%        \@@univector#1%
+%      \else
+%        \strippedcsname\noutfunihash
+%      \fi\fi
+%    \endcsname{\utfmod{#2}}}
+%
+% \def\noutfunihash#1%
+%   {\unknowncharacter}
+
 \let\utfunihash\utfunihashglyph
 
 %D Let's use it:
 
-\expandunivector[0,1,2,3,4,5,30,32,33]
+\expandunivector[0,1,2,3,4,5,30,31,32,33]
 
 \protect \endinput

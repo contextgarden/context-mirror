@@ -688,25 +688,6 @@
    \fi
    \endgroup}
 
-\beginETEX
-
-  \def\setmargincontentpenalties
-    {\xdef\restoreinterlinepenalty{\global\resetpenalties\interlinepenalties}%
-     \getnoflines\margincontentheight
-     \global\setpenalties\interlinepenalties\noflines\!!tenthousand}
-
-\endETEX
-
-\beginTEX
-
-  \def\setmargincontentpenalties
-    {\xdef\restoreinterlinepenalty
-       {\global\let\restoreinterlinepenalty\relax
-        \global\interlinepenalty=\the\interlinepenalty}% keep = here
-     \global\interlinepenalty\!!tenthousand}
-
-\endTEX
-
 % Yet undocumented, for a manual flush in for instance headers.
 
 \def\resetmargincontent

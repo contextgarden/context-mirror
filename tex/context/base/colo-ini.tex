@@ -2251,7 +2251,7 @@
 
 \let\currentpalet\empty
 
-\def\setuppalet%
+\def\setuppalet
   {\dosingleempty\dosetuppalet}
 
 \def\dosetuppalet[#1]%
@@ -2264,7 +2264,7 @@
        \showmessage\m!colors7\currentpalet
        \let\currentpalet\empty
      \else
-       \def\currentpalet{#1:}%
+       \edef\currentpalet{#1:}%
      \fi
    \fi}
 

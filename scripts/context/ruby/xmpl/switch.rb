@@ -103,13 +103,19 @@ module CommandBase
                 suffix   = '.' + suffix
                 pattern += suffix unless pattern =~ /#{suffix}$/
             end
+            # not {} safe
             pattern = '**/' + pattern if @commandline.option('recurse')
             files = Dir[pattern]
             if files && files.length>0 then
                 return files
             else
-                report("no files match pattern #{pattern}")
-                return nil
+                pattern = @commandline.argument('first')
+                if FileTest.file?(pattern) then
+                    return [pattern]
+                else
+                    report("no files match pattern #{pattern}")
+                    return nil
+                end
             end
         end
 

@@ -695,7 +695,7 @@
    \obeylines
    \@EA\@EA\@EA\convertargument\@EA\string\csname\e!end#1\endcsname\to\endofblockA
    %testen:  \expanded{\convertargument\string\csname\e!end#1\endcsname\to\endofblockA}%
-   \@EA\convertargument\string\eindvanblok[#1]\to\endofblockB % MULTI LINGUAL MAKEN
+   \@EA\convertargument\string\endblock[#1]\to\endofblockB % MULTI LINGUAL MAKEN
    \def\openblock
      {\dobeforeblock{#1}{#2}%
       \opentmpblock
@@ -727,7 +727,7 @@
    \setblocklevel-}%
 
 \def\dodefineblock[#1]%
-  {\passeerblok[#1]%
+  {\bypassblock[#1]%
    \keepblocks[#1]%
    \setupblock
      [#1]
@@ -746,29 +746,28 @@
 \def\setupblock
   {\dodoubleargumentwithset\dosetupblock}
 
-\def\passeerblok[#1]%
-  {\setvalue{\s!thisisblock#1}##1[##2]%
-     {\skipblock{#1}}}
+\def\bypassblock[#1]%
+  {\setvalue{\s!thisisblock#1}##1[##2]{\skipblock{#1}}}
 
-\def\doverbergblok[#1][#2][#3]%
+\def\dohideblock[#1][#2][#3]%
   {\doifassignmentelse{#3}
-     {\dodoverbergblok[#1][#2][][#3]}
-     {\dodoverbergblok[#1][#2][#3][]}}
+     {\dodohideblock[#1][#2][][#3]}
+     {\dodohideblock[#1][#2][#3][]}}
 
-\def\dodoverbergblok[#1][#2][#3][#4]%
+\def\dodohideblock[#1][#2][#3][#4]%
   {\doifelsenothing{#2}
      {\global\blockpermittedfalse
-      \edef\bloktitel{#1}}
+      \edef\blocktitle{#1}}
      {\doifelsenothing{#3}
         {\global\blockpermittedtrue
-         \edef\bloktitel{#1}}
+         \edef\blocktitle{#1}}
         {\doifcommonelse{#2}{#3}
            {\global\blockpermittedfalse
-            \edef\bloktitel{#1:#2}}
+            \edef\blocktitle{#1:#2}}
            {\global\blockpermittedtrue
-            \edef\bloktitel{#1:#3}}}}%
+            \edef\blocktitle{#1:#3}}}}%
    \ifblockpermitted
-     \showwarning\m!textblocks5\bloktitel
+     \showwarning\m!textblocks5\blocktitle
      \def\next
        {\def\dobeforeblock####1####2%
           {\begingroup}%
@@ -778,7 +777,7 @@
         \saveblock{#1}{#3#4}}%
    \else
      \doifinsetelse{+}{#3}
-       {\showwarning\m!textblocks6\bloktitel
+       {\showwarning\m!textblocks6\blocktitle
         \def\next
           {\def\dobeforeblock####1####2%
              {\begingroup
@@ -790,7 +789,7 @@
                   \par}}%
               \endgroup}%
            \saveblock{#1}{#3#4}}}%
-       {\showwarning\m!textblocks7\bloktitel
+       {\showwarning\m!textblocks7\blocktitle
         \def\next
           {\def\dobeforeblock####1####2%
              {\begingroup
@@ -804,7 +803,7 @@
 \def\dohideblocks[#1][#2]%
   {\def\docommando##1%
      {\setvalue{\e!begin##1}%
-        {\bgroup\obeylines\dotripleempty\doverbergblok[##1][#2]}}%
+        {\bgroup\obeylines\dotripleempty\dohideblock[##1][#2]}}%
    \processcommalist[#1]\docommando}
 
 \def\hideblocks
@@ -819,50 +818,52 @@
    \visibletrue
    \catcode`\^^M=\@@endofline\relax
    \getvalue{\??tb#1\c!inner}%
+   \ignorespaces
    \loadoneblock
-   \par
+   % \par moved
    \dostopattributes
    \getvalue{\??tb#1\c!after}%
+   \par
    \egroup}
 
-\def\dohandhaafblok[#1][#2][#3]%
+\def\dokeepblock[#1][#2][#3]%
   {\doifassignmentelse{#3}
-     {\dodohandhaafblok[#1][#2][][#3]}
-     {\dodohandhaafblok[#1][#2][#3][]}}
+     {\dodokeepblock[#1][#2][][#3]}
+     {\dodokeepblock[#1][#2][#3][]}}
 
-\def\dodohandhaafblok[#1][#2][#3][#4]%
+\def\dodokeepblock[#1][#2][#3][#4]%
   {\doifelsenothing{#2}
      {\global\blockpermittedtrue
-      \edef\bloktitel{#1}}
+      \edef\blocktitle{#1}}
      {\doifcommonelse{#2}{#3}
         {\global\blockpermittedtrue
-         \edef\bloktitel{#1:#2}}
+         \edef\blocktitle{#1:#2}}
         {\doifinsetelse\v!all{#2}
            {\doifelsenothing{#3}
               {\global\blockpermittedtrue
-               \edef\bloktitel{#1}}
+               \edef\blocktitle{#1}}
               {\global\blockpermittedfalse
-               \edef\bloktitel{#1:#3}}}
+               \edef\blocktitle{#1:#3}}}
            {\global\blockpermittedfalse
             \doifelsenothing{#3}
-              {\edef\bloktitel{#1}}
-              {\edef\bloktitel{#1:#3}}}}}%
+              {\edef\blocktitle{#1}}
+              {\edef\blocktitle{#1:#3}}}}}%
    \ifblockpermitted
-     \showwarning\m!textblocks8\bloktitel
+     \showwarning\m!textblocks8\blocktitle
      \def\dobeforeblock##1##2%
        {\begingroup}%
      \def\doafterblock##1##2%
        {\endgroup
         \doexecuteloadedblock{#1}{#4}}%
    \else
-     \showwarning\m!textblocks9\bloktitel
+     \showwarning\m!textblocks9\blocktitle
    \fi
    \saveblock{#1}{#3#4}}
 
 \def\dokeepblocks[#1][#2]%
   {\def\docommando##1%
      {\setvalue{\e!begin##1}%
-        {\bgroup\obeylines\dotripleempty\dohandhaafblok[##1][#2]}}%
+        {\bgroup\obeylines\dotripleempty\dokeepblock[##1][#2]}}%
    \processcommalist[#1]\docommando}
 
 \def\keepblocks
@@ -872,7 +873,7 @@
 \newconditional\dummyblockstatus
 \newconditional\blockassignmentstatus
 
-\def\dodogebruikblok#1#2#3#4%
+\def\dodouseblock#1#2#3#4%
   {\getblockstatus{#2}%
    \ifblockpermitted
      \setfalse\dummyblockstatus
@@ -880,9 +881,9 @@
        {\settrue \blockassignmentstatus}
        {\setfalse\blockassignmentstatus}%
      \doifelsenothing{#4}
-       {\edef\bloktitel{#1}}
+       {\edef\blocktitle{#1}}
        {\ifconditional\blockassignmentstatus
-          \edef\bloktitel{#1}%
+          \edef\blocktitle{#1}%
         \else
           \doifnotcommon{#3}{#4}
             {\ifconditional\processblockstatus
@@ -890,10 +891,10 @@
              \else
                \global\blockpermittedfalse
              \fi}%
-          \edef\bloktitel{#1:#3}%
+          \edef\blocktitle{#1:#3}%
         \fi}%
    \else
-     \edef\bloktitel{#1}%
+     \edef\blocktitle{#1}%
    \fi
    \ifblockpermitted
      \setblocklevel+%
@@ -901,9 +902,10 @@
        \doifinset{-}{#3}{\settrue\dummyblockstatus}%
      \fi
      \ifconditional\dummyblockstatus
-       \showwarning\m!textblocks{10}\bloktitel
+       \showwarning\m!textblocks{10}\blocktitle
        \setvalue{\s!thiswasblock#1}%
-         {\par
+         {\removeunwantedspaces
+          \par
           \egroup
           \setblocklevel-}%
        \def\next
@@ -912,11 +914,13 @@
             \dosetupblockparameters[#1][#3]%
           \fi}%
      \else
-       \showwarning\m!textblocks{11}\bloktitel
+       \showwarning\m!textblocks{11}\blocktitle
        \setvalue{\s!thiswasblock#1}%
-         {\par
+         {\removeunwantedspaces
+          % \par moved
           \dostopattributes
           \getvalue{\??tb#1\c!after}%
+          \par
           \egroup
           \setblocklevel-}%
        \def\next
@@ -927,22 +931,22 @@
           \getvalue{\??tb#1\c!before}%
           \dostartattributes{\??tb#1}\c!style\c!color\empty
           \visibletrue
-          \getvalue{\??tb#1\c!inner}}%
+          \getvalue{\??tb#1\c!inner}%
+          \ignorespaces}%
      \fi
    \else
      \def\next
-       {\showwarning\m!textblocks{12}\bloktitel
+       {\showwarning\m!textblocks{12}\blocktitle
         \skipblock{#1}}%
    \fi
    \next}
 
-\def\dogebruikblok[#1][#2]%
-  {\setvalue{\s!thisisblock#1}##1[##2]%
-     {\dodogebruikblok{#1}{##1}{##2}{#2}}}
+\def\douseblock[#1][#2]%
+  {\setvalue{\s!thisisblock#1}##1[##2]{\dodouseblock{#1}{##1}{##2}{#2}}}
 
 \def\dodouseblocks[#1][#2]%
   {\def\docommando##1%
-     {\dogebruikblok[##1][#2]}%
+     {\douseblock[##1][#2]}%
    \processcommalist[#1]\docommando
    \dogetcommalistelement1\from#1\to\commalistelement
    \doifdefined{\??tb\commalistelement\c!file}
@@ -972,21 +976,21 @@
    \doassign[\??bs][\c!criterium=\v!all]%
    \dotripleempty\doselectblocks}
 
-\def\beginvanblok[#1]%  % er wordt ook gechecked op \eindvanblok[..]
+\def\beginblock[#1]%  % we also check \endblock[..]
   {\getvalue{\e!begin#1}}
 
-\def\forceerblokken[#1]%
+\def\forceblocks[#1]%
   {\def\docommando##1%
      {\setvalue{\e!begin##1}%
         {\setblocklevel+\bgroup
-         \dodoubleempty\doforceerblok[##1]}%
+         \dodoubleempty\doforceblock[##1]}%
       \setvalue{\e!end##1}%
         {\dostopattributes
          \getvalue{\??tb##1\c!after}%
          \egroup\setblocklevel-}}%
    \processcommalist[#1]\docommando}
 
-\def\doforceerblok[#1][#2]%
+\def\doforceblock[#1][#2]%
   {\doifassignmentelse{#2}
      {\settrue \blockassignmentstatus}
      {\setfalse\blockassignmentstatus}%
@@ -995,25 +999,26 @@
    \fi
    \getvalue{\??tb#1\c!before}%
    \dostartattributes{\??tb#1}\c!style\c!color\empty
-   \getvalue{\??tb#1\c!inner}}
+   \getvalue{\??tb#1\c!inner}%
+   \ignorespaces}
 
 \def\bypassblocks[#1]%
   {\def\docommando##1%
      {\setvalue{\e!begin##1}%
         {\setblocklevel+\bgroup
          \obeylines % here, since we look ahead
-         \dodoubleempty\dopasseerblok[##1]}%}%
+         \dodoubleempty\dobypassblock[##1]}%}%
       \setvalue{\e!end##1}%
         {}}%
    \processcommalist[#1]\docommando}
 
-\def\dopasseerblok[#1][#2]%
+\def\dobypassblock[#1][#2]%
   {\def\closeblock
      {\egroup\setblocklevel-}%
    \checkcopyingblocks
    \obeylines
    \@EA\@EA\@EA\convertargument\@EA\string\csname\e!end#1\endcsname\to\endofblockA
-   \@EA\convertargument\string\eindvanblok[#1]\to\endofblockB % MULTI LINGUAL MAKEN
+   \@EA\convertargument\string\endblock[#1]\to\endofblockB % MULTI LINGUAL MAKEN
    \setupcopyblock
    \skipblocklineAB}
 

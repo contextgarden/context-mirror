@@ -193,6 +193,7 @@ my $Foxet            = 0 ;
 my $TheEnginePath    = 0 ;
 my $Paranoid         = 0 ;
 my $NotParanoid      = 0 ;
+my $BoxType          = '' ;
 
 my $StartLine        = 0 ;
 my $StartColumn      = 0 ;
@@ -301,6 +302,7 @@ my $MakeMpy = '';
     "engine"         => \$TheEnginePath,
     "paranoid"       => \$Paranoid,
     "notparanoid"    => \$NotParanoid,
+    "boxtype=s"      => \$BoxType, # media art crop bleed trim
     #### experiment
     "startline=s"    => \$StartLine,
     "startcolumn=s"  => \$StartColumn,
@@ -407,7 +409,7 @@ if ( ( $LogFile ne '' ) && ( $LogFile =~ /\w+\.log$/io ) ) {
     *STDERR = *LOGFILE;
 }
 
-my $Program = " TeXExec 5.2.4 - ConTeXt / PRAGMA ADE 1997-2005";
+my $Program = " TeXExec 5.2.5 - ConTeXt / PRAGMA ADE 1997-2005";
 
 print "\n$Program\n\n";
 
@@ -1979,7 +1981,7 @@ sub DoRunModule {
 }
 
 sub RunFigures {
-    my @Files = @_;
+    my @Files = @_ ;
     $TypesetFigures = lc $TypesetFigures;
     return unless ( $TypesetFigures =~ /[abcd]/o );
     unlink "$FiguresFile.pdf";
@@ -1990,15 +1992,19 @@ sub RunFigures {
     print FIG "  [topspace=1.5cm,backspace=1.5cm,\n";
     print FIG "   header=1.5cm,footer=0pt,\n";
     print FIG "   width=middle,height=middle]\n";
-
     if ($ForceFullScreen) {
         print FIG "\\setupinteraction\n";
         print FIG "  [state=start]\n";
         print FIG "\\setupinteractionscreen\n";
         print FIG "  [option=max]\n";
     }
+    if ($BoxType ne '') {
+        if ($BoxType !~ /box$/io) {
+            $BoxType .= "box" ;
+        }
+    }
     print FIG "\\starttext\n";
-    print FIG "\\showexternalfigures[alternative=$TypesetFigures,offset=$PaperOffset]\n";
+    print FIG "\\showexternalfigures[alternative=$TypesetFigures,offset=$PaperOffset,size=$BoxType]\n";
     print FIG "\\stoptext\n";
     close(FIG);
     $ConTeXtInterface = "en";
