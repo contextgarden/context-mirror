@@ -381,10 +381,11 @@
 
 \def\dosetups[#1]%
   {\iffirstargument
-     \dodosetups{#1}%
+     \def\next{\dodosetups{#1}}%
    \else
-     \expandafter\dodosetups
-   \fi}
+     \let\next\dodosetups
+   \fi
+   \next}
 
 \def\dodosetups#1%
   {\getvalue{\??su#1}}

@@ -16,8 +16,8 @@ if   known context_core : endinput         ; fi ;
 
 boolean context_core ; context_core := true ;
 
-pair lxy[], rxy[], cxy[], llxy[], lrxy[], ulxy[], urxy[] ;
-path pxy[] ;
+pair    lxy[], rxy[], cxy[], llxy[], lrxy[], ulxy[], urxy[] ;
+path    pxy[] ;
 numeric hxy[], wxy[], dxy[], nxy[] ;
 
 def box_found (expr n,x,y,w,h,d) =
@@ -397,6 +397,10 @@ if local_multi_par_area :
   TextAreas[1] := TextAreas[0] ;
   TextColumns[1] := TextColumns[0] ;
   nxy[fpos] := nxy[tpos] := nxy[wpos] := nxy[ppos] := RealPageNumber ;  
+
+%draw TextColumns[1] withcolor green ;
+%draw TextAreas[1] withcolor green ;
+
 elseif ignore_multi_par_page :
   RealPageNumber := fn ; 
   nxy[fpos] := nxy[tpos] := nxy[wpos] := nxy[ppos] := RealPageNumber ;  
@@ -599,7 +603,6 @@ fi ;
 %if abs(ypart _pa_-ypart llcorner multipar)<par_line_height :
 %  _pa_ := (xpart _pa_,ypart llcorner multipar);
 %fi ;
-
 
       (xpart _ur_ + par_hang_indent, ypart _ur_) --
       (xpart _ur_ + par_hang_indent, ypart _pa_) --
@@ -836,6 +839,19 @@ fi ;
  
         fi ;
 
+      elseif (nxy[tpos]=RealPageNumber) :
+
+        % outside text area, fall back / test on: pascal werkboek 
+
+        multipar := 
+ 
+          llxy[fpos] -- 
+          lrxy[tpos] -- 
+          urxy[tpos] -- 
+          ulxy[fpos] -- cycle ;
+ 
+          save_multipar (i,1,multipar) ;
+
       else :
 
         multipar := if obey_multi_par_hang :
@@ -899,7 +915,7 @@ snapped_multi_pos(ulxy[tpos]) --
       save_multipar (i,3,multipar) ;
 
     else : 
-      
+
       % handled later  
      
     fi ;

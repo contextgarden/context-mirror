@@ -299,7 +299,7 @@ sectionnumber:  numero sezione
 \def\c!threearguments!{\c!setup!command!{\#1\#2\#3}}
 
 \def\c!tex!  #1{\texescape#1}
-\def\c!or!     {\hbox spread .25em{\vl}}
+\def\c!or! #1#2{#1\hbox spread .25em{\vl}#2}
 
 \let\redefinesetupconstants=\relax
 

@@ -261,9 +261,14 @@ enddef ;
 %D Since a \type {fill p withshade s} syntax looks better
 %D than some macro, we implement a new primary.
 
-primarydef p withshade sc =
+primarydef p withshade sc = % == p withcolor shadecolor(sh) 
   hide (_color_counter_ := _color_counter_ + 1)
   p withcolor (_special_signal_/1000,_color_counter_/1000,sc/1000)
+enddef ;
+
+vardef shadecolor(expr sc) =
+  hide (_color_counter_ := _color_counter_ + 1)
+  (_special_signal_/1000,_color_counter_/1000,sc/1000)
 enddef ;
 
 %D Figure inclusion.

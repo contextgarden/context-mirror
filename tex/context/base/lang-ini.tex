@@ -242,6 +242,7 @@
             \c!leftspeech=\getvalue{\??la#1\c!leftquotation},
             \c!middlespeech=,
             \c!rightspeech=\getvalue{\??la#1\c!rightquotation},
+            \c!limittext=\unknown,
             \c!datum={\v!jaar,\ ,\v!maand,\ ,\v!dag},
             \c!status=\v!stop,
             \c!default=,
@@ -688,6 +689,15 @@
 % 
 % \def\rightsubfakeguillemot
 %   {\hbox{\raise.25ex\hbox{$\scriptscriptstyle>$}}}
+
+%D New (see nomarking and nolist):  
+
+\def\splitsequence#1#2%
+  {\doifelse{#1}\v!nee
+     {#2}{\doifelse{#1}\v!ja{\languageparameter\c!limittext}{#1}}}
+
+\def\splitsymbol#1%
+  {\splitsequence{#1}{\languageparameter\c!limittext}}
 
 %D Just like with subsentence boundary symbols, quotes
 %D placement depends on the current language, therefore we show

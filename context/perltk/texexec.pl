@@ -1085,7 +1085,9 @@ sub MakeOptionFile
               {$DupStr = "" }
             else    
               {$DupStr = ",\\v!dubbelzijdig" }
-            if ($PrintFormat =~ /.*up/goi)
+            if ($PrintFormat == '') 
+              { print OPT "\\setuparranging[\\v!normaal]\n" }
+            elsif ($PrintFormat =~ /.*up/goi)
               { print OPT "\\setuparranging[2UP,\\v!geroteerd$DupStr]\n" }
             elsif ($PrintFormat =~ /.*down/goi)
               { print OPT "\\setuparranging[2DOWN,\\v!geroteerd$DupStr]\n" }
@@ -1861,8 +1863,7 @@ sub RunCopy
     RunConTeXtFile($CopyFile, "tex") }
 
 sub RunCombine
-  { my $FileName = shift ;
-    print "               pdffile : $FileName\n" ;
+  { my @Files = @_ ;
     $Combination =~ s/x/\*/io ; my ($nx,$ny) = split (/\*/,$Combination,2) ;
     return unless ($nx&&$ny) ;
     print "           combination : $Combination\n" ;
@@ -1881,7 +1882,6 @@ sub RunCombine
 #
     if ($PaperOffset eq '0pt')
       { $PaperOffset = '1cm' }
-    my $CleanFileName = CleanTeXFileName($FileName) ;
     print "          paper offset : $PaperOffset\n" ;
     print COM "\\setuplayout\n" ;
     print COM "  [topspace=$PaperOffset,\n" ;
@@ -1893,12 +1893,18 @@ sub RunCombine
     if ($NoBanner) 
       { print COM "\\setuplayout\n" ;
         print COM "  [footer=0cm]\n" }
-    print COM "\\setupfootertexts\n" ;
-    print COM "  [$CleanFileName\\space---\\space\\currentdate\\space---\\space\\pagenumber]\n" ;
     print COM "\\setupexternalfigures\n" ;
     print COM "  [directory=]\n" ;
     print COM "\\starttext\n" ;
-    print COM "\\combinepages[$FileName][nx=$nx,ny=$ny]\n" ;
+    for $FileName (@Files) 
+      { next if ($FileName =~ /^texexec/io) ;
+        next if ($FileName =~ /^$Result/i) ; 
+        print "               pdffile : $FileName\n" ;
+        my $CleanFileName = CleanTeXFileName($FileName) ;
+        print COM "\\setupfootertexts\n" ;
+        print COM "  [$CleanFileName\\space---\\space\\currentdate\\space---\\space\\pagenumber]\n" ;
+        print COM "\\combinepages[$FileName][nx=$nx,ny=$ny]\n" ;
+        print COM "\\page" }
     print COM "\\stoptext\n" ;
     close (COM) ;
     $ConTeXtInterface = "en" ;
@@ -2018,7 +2024,8 @@ sub RunFiles
             elsif ($PdfCopy)
               { RunCopy ($JobName) }
             else
-              { RunCombine ($JobName) } } }
+#              { RunCombine ($JobName) } } }
+              { RunCombine (@ARGV) } } }
     elsif ($TypesetModule)
       { RunModule (@ARGV) }
     else

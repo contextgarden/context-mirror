@@ -1999,7 +1999,7 @@ enddef ;
 def addbackground text t =
   begingroup ; save p ; picture p ;
   p := currentpicture ; currentpicture := nullpicture ;
-  fill boundingbox p t ; draw p ;
+  fill boundingbox p t ; addto currentpicture also p ;
   endgroup ;
 enddef ;
 
@@ -2047,6 +2047,13 @@ enddef ;
 vardef unstringed (expr s) = 
   expandafter known scantokens(cleanstring(s)) 
 enddef ;
+
+% new 
+
+vardef colorpart(expr i) = 
+  (redpart i, greenpart i,bluepart i) 
+enddef ; 
+
 
 % done 
 

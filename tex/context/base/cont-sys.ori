@@ -108,6 +108,13 @@
 %
 % \runutilityfiletrue 
 
+% You can also load additional encodings here: 
+
+% \useregime[cyr]
+% \useencoding[cyr]
+% \enableregime[cp1251]
+% \setupbodyfont[cyr]
+
 % So far. 
 
 \protect \endinput

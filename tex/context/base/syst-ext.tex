@@ -2529,6 +2529,33 @@
          \fi}}
      \resetglobal}
 
+%D \macros
+%D   {substituteincommalist}
+%D
+%D Slow but seldom used, so for the moment we stick to this 
+%D implementation.  
+%D
+%D \starttypen 
+%D \substituteincommalist{old}{new}{list}
+%D \stoptypen 
+
+\def\substituteincommalist#1#2#3% old, new, list (slooow) 
+  {\edef\!!stringb{#1}%
+   \edef\!!stringd{#2}%
+   \let\!!stringa#3%
+   \let#3\empty
+   \def\dosubstituteincommalist##1%
+     {\edef\!!stringc{##1}%
+      \ifx\!!stringb\!!stringc
+        \ifx\!!stringd\empty\else
+          \edef#3{#3\ifx#3\empty\else,\fi\!!stringd}%
+        \fi
+        \def\docommando####1{\edef#3{#3,####1}}%
+      \else
+        \edef#3{#3\ifx#3\empty\else,\fi##1}%
+      \fi}%
+   \@EA\rawprocesscommacommand\@EA[\!!stringa]\dosubstituteincommalist}
+
 %D A not so useful macro: 
 
 \def\dodofrontstrip[#1#2]#3%
@@ -4220,5 +4247,20 @@
   {\let\serializedcommalist\empty
    \def\docommando##1{\edef\serializedcommalist{\serializedcommalist##1}}%
    \processcommacommand[#1]\docommando}
+
+%D Sometimes we need control over when \TEX\ stops reading a
+%D number, especially in full expandable macros where using 
+%D \type {\relax} would lead to disasters. 
+%D
+%D \starttypen 
+%D \ifodd\purenumber{...}\space ... \else ... \fi 
+%D \stoptypen 
+%D 
+%D Here we use a space as number delimiter in combination 
+%D with a space- and relax-less \type {\purenumber}. This 
+%D macro works ok with \type {\the}, \type {\number} as well
+%D as \ETEX's \type {\numexpr}. 
+
+\def\purenumber#1{\@EA\firstofoneargument\@EA{\number#1}}
 
 \protect \endinput

@@ -108,17 +108,26 @@
 \def\prim@s
  {\prime\futurelet\next\pr@m@s}
 
+% \def\pr@m@s
+%   {\ifx'\next
+%      \let\nxt\pr@@@s 
+%    \else
+%      \ifx^\next
+%        \let\nxt\pr@@@t
+%      \else
+%        \let\nxt\egroup
+%      \fi
+%    \fi 
+%    \nxt}
+
 \def\pr@m@s
   {\ifx'\next
-     \let\nxt\pr@@@s 
+     \@EA\pr@@@s
+   \else\ifx^\next
+     \@EAEAEA\pr@@@t
    \else
-     \ifx^\next
-       \let\nxt\pr@@@t
-     \else
-       \let\nxt\egroup
-     \fi
-   \fi 
-   \nxt}
+     \@EAEAEA\egroup
+   \fi\fi}
 
 \def\pr@@@s#1%
   {\prim@s} 

@@ -774,7 +774,7 @@
             \c!kleur=,
            \c!spatie=\v!uit,  
            \c!pagina=\v!nee,
-              \c!tab=\v!aan,
+              \c!tab=\s!ascii,
             \c!optie=\v!geen,
             \c!palet=colorpretty,
             \c!tekst=\v!nee,
@@ -1057,54 +1057,149 @@
 %D setup values are inherited from display verbatim.
 %D The implementation of \type{\typefile} is straightforward:
 
-\presettyping[\v!file][]
-
-\definecomplexorsimple\typefile
-
-\def\simpletypefile%
-  {\complextypefile[\v!file]}
-
+% \presettyping[\v!file][]
+% 
+% \definecomplexorsimple\typefile
+% 
+% \def\simpletypefile
+%   {\complextypefile[\v!file]}
+% 
+% % \def\complextypefile[#1]#2%
+% %   {\getvalue{\??tp#1\c!voor}%
+% %    \doiflocfileelse{#2}
+% %      {\startopelkaar % includes \bgroup
+% %       \doifinset{\getvalue{\??tp#1\c!optie}}{\v!commandos,\v!schuin,\v!normaal}
+% %         {\setuptyping[#1][\c!optie=\v!geen]}%
+% %       \doifvalue{\??tp#1\c!optie}{\v!kleur}
+% %         {\expandafter\aftersplitstring#2\at.\to\prettyidentifier
+% %          \letvalue{\??tp#1\c!optie}=\prettyidentifier}%
+% %       \initializetyping{#1}%
+% %       \startverbatimcolor
+% %       \processfileverbatim{\pathplusfile\f!currentpath{#2}}%
+% %       \stopverbatimcolor
+% %       \stopopelkaar}  % includes \egroup
+% %      {{\tttf[\makemessage{\m!verbatims}{1}{#2}]}% 
+% %       \showmessage{\m!verbatims}{1}{#2}}%
+% %    \getvalue{\??tp#1\c!na}}
+% 
 % \def\complextypefile[#1]#2%
 %   {\getvalue{\??tp#1\c!voor}%
 %    \doiflocfileelse{#2}
 %      {\startopelkaar % includes \bgroup
 %       \doifinset{\getvalue{\??tp#1\c!optie}}{\v!commandos,\v!schuin,\v!normaal}
 %         {\setuptyping[#1][\c!optie=\v!geen]}%
-%       \doifvalue{\??tp#1\c!optie}{\v!kleur}
+%       \doifvalue{\??tp#1\c!optie}\v!kleur
 %         {\expandafter\aftersplitstring#2\at.\to\prettyidentifier
-%          \letvalue{\??tp#1\c!optie}=\prettyidentifier}%
+%          \letvalue{\??tp#1\c!optie}\prettyidentifier}%
 %       \initializetyping{#1}%
 %       \startverbatimcolor
-%       \processfileverbatim{\pathplusfile\f!currentpath{#2}}%
+%       \makelocreadfilename{#2}%
+%       \processfileverbatim\readfilename 
+%      %\processfileverbatim{\pathplusfile\f!currentpath{#2}}%
 %       \stopverbatimcolor
 %       \stopopelkaar}  % includes \egroup
-%      {{\tttf[\makemessage{\m!verbatims}{1}{#2}]}% 
-%       \showmessage{\m!verbatims}{1}{#2}}%
+%      {\bgroup
+%       \expanded{\convertargument#2}\to\ascii
+%       \tttf[\makemessage\m!verbatims1\ascii]% 
+%       \showmessage\m!verbatims1\ascii
+%       \egroup}%
 %    \getvalue{\??tp#1\c!na}}
 
-\def\complextypefile[#1]#2%
+% new feature (not yet 100\% ok) 
+%
+% \setuptyping[file][numbering=file]
+%
+% \typefile[start=2,nlines=3]{zapf}
+% \typefile[start=continue,nlines=13]{zapf}
+% \typefile{zapf}
+%
+% \setuptyping[file][numbering=line]
+%
+% \typefile[start=4,step=3]{zapf}
+% \typefile{zapf}
+
+\presettyping[\v!file][]
+
+\def\typefile
+  {\dodoubleempty\dotypefile}
+
+\def\dotypefile[#1][#2]#3%
+  {\ifsecondargument
+     \dodotypefile[#1][#2]{#3}%
+   \else\iffirstargument
+     \doifassignmentelse{#1}
+       {\dodotypefile[\v!file][#1]{#3}}
+       {\dodotypefile[#1][]{#3}}%
+   \else
+     \dodotypefile[\v!file][]{#3}%
+   \fi\fi}
+
+\def\dosetuptypelinenumbering#1#2%
+  {\setuptyping[#1][\c!start=,\c!stop=,\c!stap=,\c!nregels=,#2]%
+   \doifelsevalue{\??tp#1\c!nummeren}\v!file
+     {\stelregelnummerenin[\c!methode=\v!file]%
+      \donetrue}
+     {\doifelsevalue{\??tp#1\c!nummeren}\v!regel
+        {% \stelregelnummerenin defaults start/step to 1/1, so we need
+         \doifvaluenothing{\??tp#1\c!start}{\setvalue{\??tp#1\c!start}{1}}%
+         \doifvaluenothing{\??tp#1\c!stap }{\setvalue{\??tp#1\c!stap }{1}}%
+         \stelregelnummerenin
+           [\c!methode=\v!type,
+            \c!start=\getvalue{\??tp#1\c!start},
+            \c!stap=\getvalue{\??tp#1\c!stap}]%
+         \donetrue}
+        {\donefalse}}%
+   \ifdone
+     \def\beginofverbatimlines{\startregelnummeren}%
+     \def\endofverbatimlines  {\stopregelnummeren }%
+   \fi}
+
+\def\dodotypefile[#1][#2]#3%
   {\getvalue{\??tp#1\c!voor}%
-   \doiflocfileelse{#2}
+   \doiflocfileelse{#3}
      {\startopelkaar % includes \bgroup
+      \dosetuptypelinenumbering{#1}{#2}%
       \doifinset{\getvalue{\??tp#1\c!optie}}{\v!commandos,\v!schuin,\v!normaal}
         {\setuptyping[#1][\c!optie=\v!geen]}%
       \doifvalue{\??tp#1\c!optie}\v!kleur
-        {\expandafter\aftersplitstring#2\at.\to\prettyidentifier
+        {\expandafter\aftersplitstring#3\at.\to\prettyidentifier
          \letvalue{\??tp#1\c!optie}\prettyidentifier}%
       \initializetyping{#1}%
       \startverbatimcolor
-      \makelocreadfilename{#2}%
-      \processfileverbatim\readfilename 
-     %\processfileverbatim{\pathplusfile\f!currentpath{#2}}%
+      \makelocreadfilename{#3}%
+      \doifundefinedelse{\??tp#3\v!globaal\c!start}
+        {\scratchcounter\zerocount}
+        {\scratchcounter\getvalue{\??tp#3\v!globaal\c!start}}%
+      \advance\scratchcounter\plusone
+      \setxvalue{\??tp#3\v!globaal\c!start}{\the\scratchcounter}%
+      \doifelsevaluenothing{\??tp#1\c!start}
+        {\processfileverbatim\readfilename}
+        {\doifvalue{\??tp#1\c!start}\v!verder
+           {\setevalue{\??tp#1\c!start}%
+              {\getvalue{\??tp#3\v!globaal\c!start}}}%
+         \doifelsevaluenothing{\??tp#1\c!stop}
+           {\doifelsevaluenothing{\??tp#1\c!nregels}
+              {\processfileverbatim\readfilename}
+              {\scratchcounter\getvalue{\??tp#1\c!start}%
+               \advance\scratchcounter\getvalue{\??tp#1\c!nregels}%
+               \advance\scratchcounter\minusone
+               \setxvalue{\??tp#3\v!globaal\c!start}%
+                 {\the\scratchcounter}%
+               \processfilelinesverbatim\readfilename
+                 {\getvalue{\??tp#1\c!start}}
+                 {\getvalue{\??tp#3\v!globaal\c!start}}}}%
+           {\processfilelinesverbatim\readfilename
+              {\getvalue{\??tp#1\c!start}}
+              {\getvalue{\??tp#1\c!stop }}}}%
       \stopverbatimcolor
       \stopopelkaar}  % includes \egroup
      {\bgroup
-      \expanded{\convertargument#2}\to\ascii
-      \tttf[\makemessage\m!verbatims1\ascii]% 
+      \expanded{\convertargument#3}\to\ascii
+      \tttf[\makemessage\m!verbatims1\ascii]%
       \showmessage\m!verbatims1\ascii
       \egroup}%
    \getvalue{\??tp#1\c!na}}
-
+
 %D \macros 
 %D   {filename}
 %D

@@ -297,4 +297,11 @@
    \testminimalbaseline{$\frac{1}{2}x^2_3$}
    \stoptabulate}
 
+\gdef\showkerning#1%
+  {\bgroup
+   \let\MPfshowcommand\ruledhbox
+   \setMPtext\s!dummy{#1}%
+   \startMPcode draw textext(\MPstring\s!dummy);\stopMPcode
+   \egroup}
+
 \protect \endinput

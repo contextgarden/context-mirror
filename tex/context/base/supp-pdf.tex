@@ -1,6 +1,6 @@
 %D \module
 %D   [       file=supp-pdf,
-%D        version=2001.07.27,
+%D        version=2003.01.20,
 %D          title=\CONTEXT\ Support Macros,
 %D       subtitle=\METAPOST\ to \PDF\ conversion,
 %D         author=Hans Hagen,
@@ -906,7 +906,9 @@
 %D You could consider the following definition to be the most
 %D natural one. 
 
-\def\MPspacechar{\space} % normal case 
+% \def\MPspacechar{\space} % normal case 
+
+\def\MPspacechar{\char32\relax} % old solution does not work with math
 
 %D However, the following implementation is more robust, since
 %D some fonts have funny visible spaces in the space slot. This

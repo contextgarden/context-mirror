@@ -1,0 +1,134 @@
+%D \module
+%D   [      file=s-pre-50,
+%D        version=2003.01.26,
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=Presentation Environment 50,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
+%C details. 
+
+%D When my mailbox started to overflow with messages about
+%D problems with the presentation step mechanism, I looked up
+%D old presentaton, hacked a bit and cooked up an alternative
+%D that is less dependent on \PDF\ trickery. 
+%D
+%D Consider it a cheap trick and prelude to a couple of new 
+%D presentation styles. (At the time of writing this, I 
+%D still have some 10 of those styles to clean up and 
+%D document.) You can give it a try: 
+%D
+%D \starttypen 
+%D texexec --pdf --mode=demo s-pre-50 
+%D \stoptypen 
+
+%D Hack. This will move to the kernel. 
+
+\ifx\nofshipouts\undefined 
+
+  \newcount\nofshipouts
+
+  \appendtoks
+    \global\advance\nofshipouts\plusone
+  \to \everyaftershipout
+
+  \def\cwriteutility#1%
+    {\write\uti{\noexpand\checkedutility{\number\nofshipouts}{#1}}}
+ 
+  \def\cwriteutilitycommand#1%
+    {\write\uti{\noexpand\checkedutility{\number\nofshipouts}{c \string#1}}}
+
+  \let\checkedutility\secondoftwoarguments
+
+  \def\docheckedutility#1#2{\ifnum#1=\nofshipouts#2\fi}
+
+  \prependtoks 
+    \let\checkedutility\docheckedutility
+  \to \everybeforeshipout
+
+  \def\checkutilities
+    {\let\writeutility       \cwriteutility
+     \let\writeutilitycommand\cwriteutilitycommand
+     \let\checkutilities     \relax}
+
+\fi 
+
+% Basic definitions.
+
+\defineframedtext
+  [horizontal]
+  [width=\textwidth,
+   frame=off, 
+   strut=no,
+   height=fit,
+   align={right,lohi},
+   before=,
+   after=]
+
+\definecollector
+  [contribution]
+  [state=repeat,
+   corner={left,bottom},
+   location={right,bottom}]
+
+%D An example of tuning:
+
+\startmode[demo]
+
+  \setupcollector
+    [contribution]
+    [voffset=-.25\bodyfontsize]
+ 
+  \setupframedtexts
+    [horizontal]
+    [background=color,
+     backgroundcolor=darkgray,
+     foregroundcolor=white]
+
+\stopmode
+
+%D Structure.
+
+\def\StartSteps
+  {\checkutilities}
+
+\def\StopSteps
+  {\resetcollector[contribution]}
+
+\long\def\StartStep#1\StopStep
+  {\setcollector
+     [contribution]
+     {\starthorizontal[none]#1\stophorizontal}
+   \flushcollector[contribution]
+   \page}
+
+%D Trick.
+
+\installoutput\FlushStep
+  {\StartStep\unvbox\normalpagebox\StopStep}
+
+%D Demo.
+
+\doifnotmode{demo}{\endinput}
+
+\setupcolors[state=start]
+\setuppapersize[S6][S6]
+\setuplayout[middle]
+
+\starttext
+
+\StartSteps
+
+  \title[whow]{How Much?} \FlushStep
+  \item More              \FlushStep
+  \item And More          \FlushStep
+  \item And Even More     \FlushStep
+
+  \StartStep And So On    \StopStep
+
+\StopSteps
+
+\stoptext

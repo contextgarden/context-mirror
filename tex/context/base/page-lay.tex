@@ -13,6 +13,8 @@
 
 \writestatus{loading}{Context Page Macros / Layout Specification}
 
+% swapmargins will disappear, and be replaced by inner/outer
+
 % to be translated into english 
 
 % hoofdhoogte wordt bij status=hoog niet aangepast op outer 
@@ -180,12 +182,12 @@
 \iffixedlayoutdimensions
 
   \def\layoutdistance#1#2%
-    {\ifdim\zeropoint<#1\layoutparameter#2\else\zeropoint\fi}
+    {\ifdim\zeropoint<#1\layoutparameter#2\else\zeropoint  \fi}
 
 \else
 
   \def\layoutdistance#1#2%
-    {\ifdim\!!zeropoint<#1\layoutparameter#2\else\!!zeropoint\fi}
+    {\ifdim\zeropoint<#1\layoutparameter#2\else\!!zeropoint\fi}
 
 \fi
 
@@ -493,11 +495,11 @@
            \global\snijwit\papierbreedte
            \global\advance\snijwit-\zetbreedte
            \global\advance\snijwit-\rugwit
-         \else 
-           % inconsistent specification 
-\global\rugwit\papierbreedte
-\global\advance\rugwit-\zetbreedte
-\global\advance\rugwit-\snijwit
+        % \else 
+            % A kind of inconsistent specification, but used 
+            % in for instance s-pre-19.tex; the cutspace is  
+            % used only for determining some kind of right 
+            % margin; don't use this in doublesided mode   
          \fi}}%
    \scratchdimen\layoutparameter\c!bodemwit\relax
   %\ifdim\scratchdimen=\zeropoint
@@ -559,6 +561,8 @@
    \checkgridsnapping
    \recalculatelogos
    \recalculatebackgrounds}
+
+\newtoks \everylayoutcalculation \relax 
 
 \def\calculatepseudocolumns
   {\global\layoutcolumns\layoutparameter\c!kolommen
@@ -1072,6 +1076,32 @@
   {\rightorleftpageaction\rechterrandafstand\linkerrandafstand}
 \def\inneredgedistance
   {\rightorleftpageaction\linkerrandafstand\rechterrandafstand}
+
+\beginETEX \dimexpr 
+
+  \def\leftmargintotal {\dimexpr(\linkermargebreedte +\linkermargeafstand )}
+  \def\rightmargintotal{\dimexpr(\rechtermargebreedte+\rechtermargeafstand)}
+  \def\leftedgetotal   {\dimexpr(\linkerrandbreedte  +\linkerrandafstand  )}
+  \def\rightedgetotal  {\dimexpr(\rechterrandbreedte +\rechterrandafstand )}
+
+  \def\leftsidetotal   {\dimexpr(\leftmarginwidth    +\leftedgetotal )}
+  \def\rightsidetotal  {\dimexpr(\rightmarginwidth   +\rightedgetotal)}
+
+  \def\leftcombitotal  {\dimexpr(\leftmargintotal    +\leftedgetotal )}
+  \def\rightcombitotal {\dimexpr(\rightmargintotal   +\rightedgetotal)}
+  
+  \def\innermargintotal{\dimexpr(\innermarginwidth   +\innermargindistance)}
+  \def\outermargintotal{\dimexpr(\outermarginwidth   +\outermargindistance)}
+  \def\inneredgetotal  {\dimexpr(\inneredgewidth     +\inneredgedistance  )}
+  \def\outeredgetotal  {\dimexpr(\outeredgewidth     +\outeredgedistance  )}
+  
+  \def\innercombitotal {\dimexpr(\innermargintotal   +\inneredgetotal)}
+  \def\outercombitotal {\dimexpr(\outermargintotal   +\outeredgetotal)}
+
+  \def\innersidetotal  {\dimexpr(\innermarginwidth   + \inneredgetotal)}
+  \def\outersidetotal  {\dimexpr(\outermarginwidth   + \outeredgetotal)}
+
+\endETEX
 
 %D \macros
 %D   {startlocallayout}
@@ -1102,11 +1132,13 @@
 %D \showsetup{\y!showframe}
 %D \showsetup{\y!showlayout}
 %D \showsetup{\y!showsetups}
+%D \showsetup{\y!showmargins}
 
-\fetchruntimecommand \showprint  {page-run}
-\fetchruntimecommand \showframe  {page-run}
-\fetchruntimecommand \showlayout {page-run}
-\fetchruntimecommand \showsetups {page-run}
+\fetchruntimecommand \showprint   {page-run}
+\fetchruntimecommand \showframe   {page-run}
+\fetchruntimecommand \showlayout  {page-run}
+\fetchruntimecommand \showsetups  {page-run}
+\fetchruntimecommand \showmargins {page-run}
 
 %D The default dimensions are quite old and will not change.
 %D The funny fractions were introduced when we went from fixed

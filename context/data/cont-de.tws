@@ -1840,6 +1840,7 @@ var:zzeile:*Nummer::
 var:default:*Name::
 var:linkerrandabstand:*Dimension::
 var:rechterrandabstand:*Dimension::
+var:sidealign:normal,zeile::
 ivr:stelleumrahmtein::
 stopsetup
 
@@ -1870,7 +1871,7 @@ stopsetup
 startsetup
 com:stellebindestrichein:
 typ:var/:
-var:zeichen:--,---,-,\penalty 10000\ ,),(,=,/::
+var:zeichen:--,---,-,~,),(,=,/::
 stopsetup
 
 startsetup
@@ -2968,7 +2969,7 @@ stopsetup
 startsetup
 com:platziere<<gleitobjekt>>:
 typ:val/refs/arg/arg/:
-val:links,rechts,hier,oben,unten, imlinken,imrechten,imrand,marginalie, seite,gegenueber,immer,zwinge,lang:hier:
+val:links,rechts,hier,oben,unten, imlinken,imrechten,imrand,marginalie, linkerrand,rechterrand,linkekante,rechterkante, innermargin,outermargin,inneredge,outeredge, innen,aussen,regel,hoch,tief,passend, seite,gegenueber,immer,zwinge,lang:hier:
 val:*Text::
 val:*Text::
 stopsetup
@@ -2998,8 +2999,11 @@ var:hoehe:*Dimension::
 var:breite:*Dimension::
 var:maxhoehe:*Dimension::
 var:maxbreite:*Dimension::
+var:minbreite:*Dimension::
 var:default:*Name::
 var:seitenbegrenzung:*Liste::
+var:linkerrandabstand:*Dimension::
+var:rechterrandabstand:*Dimension::
 var:platz:links,mittig,rechts::
 ivr:stelleumrahmtein::
 stopsetup
@@ -3438,6 +3442,8 @@ var:hoehe:*Dimension,passend::
 var:breite:*Dimension,passend::
 var:platz:boven,midden,onder,links,rechts::
 var:ausrichtung:nein,links,rechts,mittig,normal::
+var:stil:normal,fett,geneigt,fettgeneigt,tippen,kap,klein...*Befehl::
+var:farbe:*Name::
 stopsetup
 
 startsetup
@@ -3482,7 +3488,7 @@ var:rumpfspatium:*Dimension::
 var:kopfspatium:*Dimension::
 var:rumpfabstand:*Dimension::
 var:kopfoffset:*Dimension::
-var:option:max,bookmark::
+var:option:max,passend,doppelseitig,bookmark::
 var:wartezeit:*Nummer,kein::
 stopsetup
 
@@ -3527,7 +3533,7 @@ stopsetup
 
 startsetup
 com:stelleinteraktionsmenueein:
-typ:vals/vars/dests/:
+typ:vals/vars/:
 val:links,rechts,oben,unten,*Name::
 var:vor:*Befehl::
 var:nach:*Befehl::

@@ -369,9 +369,10 @@
 \def\dosetupinteractionscreens % met a, b en \number
   {\doifnot\@@pcstatus\v!start\dodosetupinteractionscreens}
 
-\setvalue{\??sc\c!optie\v!max     }{1} % tzt share with driver
-\setvalue{\??sc\c!optie\v!bookmark}{2} % tzt share with driver
-\setvalue{\??sc\c!optie\v!passend }{3} % tzt share with driver
+\setvalue{\??sc\c!optie\v!max         }{1} % tzt share with driver
+\setvalue{\??sc\c!optie\v!bookmark    }{2} % tzt share with driver
+\setvalue{\??sc\c!optie\v!passend     }{3} % tzt share with driver
+\setvalue{\??sc\c!optie\v!dubbelzijdig}{4} % tzt share with driver
 
 \def\dodosetupinteractionscreens % met a, b en \number
   {\bgroup
@@ -384,7 +385,7 @@
         1{\@EA\withoutpt\the\!!widtha,\@EA\withoutpt\the\!!heighta}}%
    % needs to be split: dimensions for each page
    % and mode per document and only once !
-   \dosetupscreen\rugoffset\kopoffset\!!widtha\!!heighta{\the\!!counte}%
+   \dosetupscreen \rugoffset\kopoffset\!!widtha\!!heighta{\the\!!counte}%
    \dosetupcropbox\rugoffset\kopoffset\!!widtha\!!heighta
    \egroup}
 
@@ -1350,7 +1351,7 @@
      {#2}%
    \fi}
 
-\def\interactiebalka%
+\def\interactiebalka
   {\iflocation
      \bgroup
     %\setupinteraction[\c!breedte=\!!zeropoint]%
@@ -2375,7 +2376,7 @@
    \c!kopoffset=\!!zeropoint,
    \c!rugwit=\rugwit,
    \c!kopwit=\kopwit,
-   \c!optie=\c!min,
+   \c!optie=\v!min,
    \c!wachttijd=\v!geen]
 
 \stelbuttonsin

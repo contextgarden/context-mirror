@@ -768,9 +768,11 @@
      % obey user set height, also downward compatible  
    \else
      \doifvaluesomething{\@@framed\c!regels}
-       {\!!heighta\framedparameter\c!regels\lineheight
-        \edef\localheight{\the\!!heighta}%
-        \boxhasheighttrue}%
+       {\ifcase\framedparameter\c!regels\else
+          \!!heighta\framedparameter\c!regels\lineheight
+          \edef\localheight{\the\!!heighta}%
+          \boxhasheighttrue
+        \fi}%
    \fi
    % this should be an option ! ! ! !
    \ifdim\!!widtha=\hsize

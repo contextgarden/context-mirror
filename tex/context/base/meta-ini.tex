@@ -86,6 +86,12 @@
   graphictextdirective "\the\everyMPTEXgraphic" ; 
 \to \MPinitializations
 
+%D A signal that we're in combines \CONTEXT||\METAFUN mode: 
+
+\appendtoks
+  string contextversion ; contextversion := "\contextversion" ; 
+\to \MPinitializations
+
 %D Some safeguards: 
 
 \appendtoks \cleanupfeatures \to \everyMPgraphic
@@ -157,6 +163,8 @@
 \let\MPvar\MPvariable
 
 \let\setMPvariables\setupMPvariables
+
+\def\MPrawvar#1#2{\csname#1:#2\endcsname}
 
 %D \macros 
 %D   {startuniqueMPgraphic, uniqueMPgraphic}
@@ -318,6 +326,8 @@
 \def\enableincludeMPgraphics
   {\let\handleuseMPgraphic     \thirdofthreearguments
    \let\handlereusableMPgraphic\thirdofthreearguments}
+
+% todo: each code/page/buffer a var class  
 
 %D One way of defining a stamp is: 
 %D 

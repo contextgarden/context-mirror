@@ -315,14 +315,26 @@
   {\dosetuparrangement{2}{1}{8}{3}{2}%
      \pusharrangedpageSIXTEENFOUR\poparrangedpagesAtoH\relax}
 
+% \def\filluparrangedpages % beware: \realpageno is 1 ahead
+%   {\ifarrangingpages
+%      \scratchcounter-\realpageno
+%      \divide\scratchcounter \arrangedpageT
+%      \multiply\scratchcounter \arrangedpageT
+%      \advance\scratchcounter \realpageno
+%      \advance\scratchcounter \minusone
+%      \dorecurse\scratchcounter{\noheaderandfooterlines\ejectdummypage}%
+%    \fi}
+
 \def\filluparrangedpages % beware: \realpageno is 1 ahead
   {\ifarrangingpages
-     \scratchcounter-\realpageno
-     \divide\scratchcounter \arrangedpageT
-     \multiply\scratchcounter \arrangedpageT
-     \advance\scratchcounter \realpageno
+     \scratchcounter\realpageno 
      \advance\scratchcounter \minusone
-     \dorecurse\scratchcounter{\noheaderandfooterlines\ejectdummypage}%
+     \dosetmodulo\scratchcounter\arrangedpageT\scratchcounter 
+     \ifcase\scratchcounter\else
+       \advance\scratchcounter \plusone
+       \dostepwiserecurse\scratchcounter\arrangedpageT\plusone
+         {\noheaderandfooterlines\ejectdummypage}%
+     \fi
    \fi}
 
 \def\handlearrangedpageXandY#1#2#3#4#5%

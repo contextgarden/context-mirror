@@ -1840,6 +1840,7 @@ var:nlinii:*numar::
 var:implicit:*nume::
 var:distantamarginestanga:*dimensiune::
 var:distantamarginedreapta:*dimensiune::
+var:sidealign:normal,linie::
 ivr:seteazainconjurat::
 stopsetup
 
@@ -1870,7 +1871,7 @@ stopsetup
 startsetup
 com:seteazaliniesilabe:
 typ:var/:
-var:semn:--,---,-,\penalty 10000\ ,),(,=,/::
+var:semn:--,---,-,~,),(,=,/::
 stopsetup
 
 startsetup
@@ -2968,7 +2969,7 @@ stopsetup
 startsetup
 com:pune<<obiectmobil>>:
 typ:val/refs/arg/arg/:
-val:stanga,dreapta,aici,sus,subsol, instanga,indreapta,inmargine,margine, pagina,opus,totdeauna,fortat,inalt:aici:
+val:stanga,dreapta,aici,sus,subsol, instanga,indreapta,inmargine,margine, marginestanga,marginedreapta,bordurastanga,borduradreapta, innermargin,outermargin,inneredge,outeredge, intern,extern,regel,inalt,jos,ajustat, pagina,opus,totdeauna,fortat,inalt:aici:
 val:*text::
 val:*text::
 stopsetup
@@ -2998,8 +2999,11 @@ var:inaltime:*dimensiune::
 var:latime:*dimensiune::
 var:inaltimemaxima:*dimensiune::
 var:latimemaxima:*dimensiune::
+var:latimeminima:*dimensiune::
 var:implicit:*nume::
 var:marginipagina:*lista::
+var:distantamarginestanga:*dimensiune::
+var:distantamarginedreapta:*dimensiune::
 var:locatie:stanga,centru,dreapta::
 ivr:seteazainconjurat::
 stopsetup
@@ -3396,7 +3400,7 @@ stopsetup
 
 startsetup
 com:startfapt:
-typ:tex/{geg}nop/sep/nop/sep/nop/sep/tex/{geg}stp/:
+typ:tex/{fact}nop/sep/nop/sep/nop/sep/tex/{fact}stp/:
 val:*text::
 val:*text::
 val:*text::
@@ -3438,6 +3442,8 @@ var:inaltime:*dimensiune,ajustat::
 var:latime:*dimensiune,ajustat::
 var:locatie:boven,midden,onder,links,rechts::
 var:aliniere:nu,stanga,dreapta,centru,normal::
+var:stil:normal,aldin,inclinat,aldininclinat,type,cap,mic...*comanda::
+var:culoare:*nume::
 stopsetup
 
 startsetup
@@ -3482,7 +3488,7 @@ var:spatiuspate:*dimensiune::
 var:spatiusus:*dimensiune::
 var:offsetoriz:*dimensiune::
 var:veroffset:*dimensiune::
-var:optiune:max,semncarte::
+var:optiune:max,ajustat,douafete,semncarte::
 var:intarziere:*numar,niciunul::
 stopsetup
 
@@ -3527,7 +3533,7 @@ stopsetup
 
 startsetup
 com:seteazameniuinteractiune:
-typ:vals/vars/dests/:
+typ:vals/vars/:
 val:stanga,dreapta,sus,subsol,*nume::
 var:inainte:*comanda::
 var:dupa:*comanda::

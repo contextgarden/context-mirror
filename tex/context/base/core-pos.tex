@@ -11,21 +11,25 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-% shorter tags, ..:achtergrond:.. etc in pos actions 
+% needs a cleanup, things may change
+
+% shorter tags, ..:achtergrond:.. etc in pos actions
+
+% dubbele text- * pos's eruit
 
 % class pos -> als gelijk aan vorige, dan niet niet definieren
-% en erven, maw: 
+% en erven, maw:
 %
-% 1 -> opslaan 
-% 2 -> undef, dus == prev 
+% 1 -> opslaan
+% 2 -> undef, dus == prev
 % 3 -> undef, dus == prev
-% 4 -> opslaan 
+% 4 -> opslaan
 
 \writestatus{loading}{Context Positioning Support}
 
-% todo: topskip als optie voor eerste regel achtergrond 
-% todo: build pos layers on top of layers 
-% todo: positionlayer pos van text-1 etc delen 
+% todo: topskip als optie voor eerste regel achtergrond
+% todo: build pos layers on top of layers
+% todo: positionlayer pos van text-1 etc delen
 
 %D Although \TEX\ has a rather powerful channel to the outside
 %D world, called \type {\special}, real communication with
@@ -152,22 +156,27 @@
   \savecurrentvalue\totalnofpositions\currentpositions
 \to \everybye
 
-%D The next switch can be used to communicate a special 
-%D situation. Positioning and associated actions can be 
-%D executed any time. However, in for instance backgrounds 
-%D they can be collected in a layer, for instance the text 
-%D layer (especially the hidden text layer). In the case of 
-%D floats, we run into problems, since the page information is 
-%D not applicable when the content floats indeed. In such 
-%D situations one can treat positions and graphics local. 
+%D The next switch can be used to communicate a special
+%D situation. Positioning and associated actions can be
+%D executed any time. However, in for instance backgrounds
+%D they can be collected in a layer, for instance the text
+%D layer (especially the hidden text layer). In the case of
+%D floats, we run into problems, since the page information is
+%D not applicable when the content floats indeed. In such
+%D situations one can treat positions and graphics local.
 
 \newif\iflocalpositioning
 
-%D Watch out: sometimes a pagebreak occurs inside a float 
+%D Watch out: sometimes a pagebreak occurs inside a float
 %D placement, so there we need to disable local mode.
 
-\appendtoks \localpositioningtrue  \to \everyinsidefloat 
-\appendtoks \localpositioningfalse \to \everypagebody 
+\appendtoks
+  \localpositioningtrue
+\to \everyinsidefloat
+
+\appendtoks
+  \localpositioningfalse
+\to \everypagebody
 
 %D We save positionional information without dimensions, which
 %D saves some bytes. The conversion too saves some bytes, but
@@ -183,7 +192,7 @@
 
 \def\checkpositions
   {\startnointerference
-   \protectlabels 
+   \protectlabels
    \doutilities{positions}\jobname\empty\relax\relax
    \global\let\checkpositions\relax
    \stopnointerference}
@@ -371,7 +380,7 @@
 %   {\initializenextposition
 %    \dosetposition{#1}%
 %    \dopositionaction{#1}}
-% 
+%
 % \def\setpositionbox#1%
 %   {\dowithnextbox
 %      {\hbox to \wd\nextbox
@@ -386,7 +395,7 @@
 %          \dopositionaction\currentposition
 %          \box\positionbox
 %          \hss}}}
-% 
+%
 % \def\setpositionplus#1#2%
 %   {\dowithnextbox
 %      {\hbox to \wd\nextbox
@@ -399,13 +408,13 @@
 %            {#2}%
 %          \traceposstring\rlap\magenta{<\currentposition}%
 %          \setbox\positionbox\box\nextbox
-%          \dopositionaction\currentposition 
+%          \dopositionaction\currentposition
 %          \box\positionbox
 %          \hss}}}
 
 \def\setpositiononly#1%
-  {\iftrialtypesetting 
-      % nothing 
+  {\iftrialtypesetting
+      % nothing
    \else
      \initializenextposition
      \def\currentposition{#1}%
@@ -413,8 +422,8 @@
    \fi}
 
 \def\setposition#1%
-  {\iftrialtypesetting 
-      % nothing 
+  {\iftrialtypesetting
+      % nothing
    \else
      \initializenextposition
      \def\currentposition{#1}%
@@ -424,7 +433,7 @@
 
 \def\setpositionbox#1%
   {\dowithnextbox
-     {\iftrialtypesetting 
+     {\iftrialtypesetting
         \box\nextbox
       \else
         \initializenextposition
@@ -443,12 +452,12 @@
 
 \def\setpositionplus#1#2%
   {\dowithnextbox
-     {\iftrialtypesetting 
+     {\iftrialtypesetting
         \box\nextbox
       \else
         \initializenextposition
         \hbox to \wd\nextbox
-          {\def\currentposition{#1}%         
+          {\def\currentposition{#1}%
            \dosetpositionplus\currentposition
              {\number\wd\nextbox}%
              {\number\ht\nextbox}%
@@ -456,7 +465,7 @@
              {#2}%
            \traceposstring\rlap\magenta{<\currentposition}%
            \setbox\positionbox\box\nextbox
-           \dopositionaction\currentposition 
+           \dopositionaction\currentposition
            \box\positionbox
            \hss}%
       \fi}}
@@ -482,20 +491,50 @@
 
 \let\cleanuppositionaction\gobbleoneargument
 
-%D The next one will be overloaded later. 
+%D The next one will be overloaded later.
+
+% \def\dopositionaction#1% test saves hash entry in etex
+%   {\ifundefined{\POSactionprefix#1::}\else
+%      \ifnum\MPp{#1}>\zerocount % new
+%        \bgroup
+%        \traceposstring\clap\red{<#1>}%
+%        \the\everyinsertpositionaction
+%        \the\everypositionaction
+%        \getvalue{\POSactionprefix#1::}%
+%        \cleanuppositionaction{#1}%
+%        \egroup
+%      \else
+%        % shouldn't happen too often
+%        \traceposstring\clap\cyan{<#1>}%
+%      \fi
+%    \fi}
 
 \def\dopositionaction#1% test saves hash entry in etex
   {\ifundefined{\POSactionprefix#1::}\else
-     \ifnum\MPp{#1}>\zerocount % new 
-       \bgroup
-       \traceposstring\clap\red{<#1>}%
-       \the\everyinsertpositionaction
-       \the\everypositionaction
-       \getvalue{\POSactionprefix#1::}%
-       \cleanuppositionaction{#1}%
+     \ifnum\MPp{#1}>\zerocount % new
+       \setbox\scratchbox\hbox \bgroup
+         \traceposstring\clap\red{<#1>}%
+         \the\everyinsertpositionaction
+         \the\everypositionaction
+         \ifcollectMPpositiongraphics
+           % can save a lot of run time
+           \pushMPdrawing
+           \MPshiftdrawingtrue
+           \resetMPdrawing
+           \getvalue{\POSactionprefix#1::}%
+           \ifMPdrawingdone
+             \getMPdrawing
+           \fi
+           \resetMPdrawing
+           \popMPdrawing
+         \else
+           \getvalue{\POSactionprefix#1::}%
+         \fi
+         \cleanuppositionaction{#1}%
        \egroup
+       \smashedbox\scratchbox
      \else
-       % shouldn't happen too often 
+       % shouldn't happen too often
        \traceposstring\clap\cyan{<#1>}%
      \fi
    \fi}
@@ -505,6 +544,13 @@
      \@EA\gobblefirstargument
    \else
      \@EA\firstofoneargument
+   \fi}
+
+\def\doifpositionactionelse#1%
+  {\ifundefined{\POSactionprefix#1::}%
+     \@EA\secondoftwoarguments
+   \else
+     \@EA\firstoftwoarguments
    \fi}
 
 %D We can copy a position with:
@@ -610,16 +656,16 @@
       \hskip-\rightskip}}
 
 % the next macro disables par positions (in inner boxes) and
-% only registers the width 
+% only registers the width
 
 \def\setinnerparpositions
   {\let\fpos\ffpos
-   \let\tpos\ttpos 
+   \let\tpos\ttpos
    \let\wpos\wwpos}
 
 % example of usage: (see for application "techniek")
 %
-% \appendtoks 
+% \appendtoks
 %   \setinnerparpositions
 % \to \everytabulate
 
@@ -640,8 +686,8 @@
 
 \def\registerparoptions
   {\ifpositioningpar \ifpositioning \iftrialtypesetting \else
-     \ifinpagebody \else \ifmmode \else \ifinformula \else 
-       \ifprocessingverbatim 
+     \ifinpagebody \else \ifmmode \else \ifinformula \else
+       \ifprocessingverbatim
          \iflinepar \doregisterparoptions \fi
        \else
          \doregisterparoptions
@@ -662,10 +708,10 @@
         \efficientdimen\hangindent,% 4
                    \the\hangafter ,% 5
         \efficientdimen\parindent }% 6
-     % no strut here ! (see stepcharts and pascal) 
-     \normalhbox{\registerparsymbol}% 
-   \egroup}                        
-  
+     % no strut here ! (see stepcharts and pascal)
+     \normalhbox{\registerparsymbol}%
+   \egroup}
+
 \newif\iftracepositions
 
 \def\traceposstring#1#2#3%
@@ -873,7 +919,7 @@
 %D
 %D \typebuffer[graphic]
 
-\def\MPanchoridentifier{mp-anchor} % {MPA} % {mp-anchor}
+\def\MPanchoridentifier{mpa} % {mp-anchor}
 \def\MPoverlayposprefix{MO::}
 
 \long\def\defineMPpositiongraphic#1%
@@ -899,24 +945,38 @@
 %         \vfill}%
 %    \fi}
 
-\def\positionoverlay#1%
-  {\ifpositioning
+\let\MPanchornumber\realfolio
+
+% \def\positionoverlay#1%
+%   {\ifpositioning
+%      \vbox to \overlayheight
+%        {\edef\MPanchorid{#1::\MPanchoridentifier:\MPanchornumber}%
+%         \edef\MPanchor##1{\MPpos{\MPanchorid}}%
+%         \the\everyinsertpositionaction
+%         \copyposition{#1::\MPanchoridentifier}{#1::\MPanchoridentifier:\MPanchornumber}%
+%         \hpos
+%           {#1::\MPanchoridentifier:\MPanchornumber}
+%           {\hbox to \overlaywidth{\dopositionaction{#1::\MPanchoridentifier}\hss}}%
+%         \vfill}%
+%    \fi}
+
+\def\positionoverlay#1% the test prevents too many redundant positions 
+  {\ifpositioning     % in (not used) text* position layers 
      \vbox to \overlayheight
-       {\edef\MPanchorid{#1::\MPanchoridentifier:\realfolio}%
-        \edef\MPanchor##1{\MPpos{\MPanchorid}}%
-        \the\everyinsertpositionaction
-        \copyposition{#1::\MPanchoridentifier}{#1::\MPanchoridentifier:\realfolio}%
-        \hpos
-          {#1::\MPanchoridentifier:\realfolio}
-          {\hbox to \overlaywidth{\dopositionaction{#1::\MPanchoridentifier}\hss}}%
+       {\doifpositionactionelse{#1::\MPanchoridentifier}%
+          {\edef\MPanchorid{#1::\MPanchoridentifier:\MPanchornumber}%
+           \edef\MPanchor##1{\MPpos{\MPanchorid}}%
+           \the\everyinsertpositionaction
+           \copyposition{#1::\MPanchoridentifier}{#1::\MPanchoridentifier:\MPanchornumber}%
+           \hpos
+             {#1::\MPanchoridentifier:\MPanchornumber}
+             {\hbox to \overlaywidth{\dopositionaction{#1::\MPanchoridentifier}\hss}}}%
+          {\hbox to \overlaywidth{\hss}}%
         \vfill}%
    \fi}
 
-% \def\startpositionoverlay#1%
-%   {\def\currentpositionoverlay{#1}}
-
 \def\startpositionoverlay#1%
-  {\iftrialtypesetting % we don't want redundant entries in the list 
+  {\iftrialtypesetting % we don't want redundant entries in the list
      \@EA\gobbleuntil\@EA\stoppositionoverlay
    \else
      \def\currentpositionoverlay{#1}%
@@ -949,10 +1009,10 @@
 %     \setxvalue{\POSactionprefix#1++}{\getvalue{\POSactionprefix#1++}}%
 %   \fi}
 
-\def\cleanuppositionaction#1% not in trialtypesetting 
+\def\cleanuppositionaction#1% not in trialtypesetting
   {\ifundefined{\POSactionprefix#1++}\else
      \the\everycleanpositionaction
-     \iflocalpositioning 
+     \iflocalpositioning
        \letgvalue{\POSactionprefix#1++}\empty
      \else
        \setxvalue{\POSactionprefix#1++}{\getvalue{\POSactionprefix#1++}}%
@@ -969,14 +1029,6 @@
    \edef\!!stringc{\POSactionprefix\!!stringa++}%
    \expanded{\dosetpositionaction{\!!stringa}{\noexpand\getvalue{\!!stringc}}}%
    \global\let#1\relax
-%   \doifundefinedelse\!!stringc
-%     {\let\!!stringb\empty}
-%     {\edef\!!stringb{\getvalue\!!stringc}}%
-%   \ifundefined\!!stringc
-%     \let\!!stringb\empty
-%   \else  
-%     \edef\!!stringb{\getvalue\!!stringc}%
-%   \fi 
    \edef\!!stringb{\executeifdefined\!!stringc\empty}%
    \setxvalue\!!stringc{\!!stringb#1#2}%
    \egroup}
@@ -1040,7 +1092,7 @@
 %    \placeMPgraphic
 %    \egroup}
 
-\newif\ifcollectMPpositiongraphics 
+\newif\ifcollectMPpositiongraphics
 
 \long\def\useMPpositiongraphic#1#2#3%
   {\bgroup
@@ -1058,17 +1110,17 @@
    \fi
    \egroup}
 
-% Now we need a adapted action handler: 
+% Now we need a adapted action handler:
 
 \def\dopositionaction#1% test saves hash entry in etex
   {\ifundefined{\POSactionprefix#1::}\else
-     \ifnum\MPp{#1}>\zerocount % new 
+     \ifnum\MPp{#1}>\zerocount % new
        \bgroup
        \traceposstring\clap\red{<#1>}%
        \the\everyinsertpositionaction
        \the\everypositionaction
-       \ifcollectMPpositiongraphics 
-         % can save a lot of run time 
+       \ifcollectMPpositiongraphics
+         % can save a lot of run time
          \pushMPdrawing
          \MPshiftdrawingtrue
          \resetMPdrawing
@@ -1084,23 +1136,44 @@
        \cleanuppositionaction{#1}%
        \egroup
      \else
-       % shouldn't happen too often 
+       % shouldn't happen too often
        \traceposstring\clap\cyan{<#1>}%
      \fi
    \fi}
 
 \def\MPpositiongraphic
   {\dodoublegroupempty\doMPpositiongraphic}
- 
+
+% \def\doMPpositiongraphic#1#2% tag setups
+%   {\bgroup
+%    \def\@@meta{#1:}%
+%    \setupMPvariables[#2]%
+%    \prepareMPpositionvariables
+%    \MPshiftdrawingtrue
+%    \def\doMPpositiongraphic##1##2{\getvalue{MPG:##1}}% temp hack
+%    \setbox\positiongraphicbox\hbox
+%      {\ignorespaces
+%       \executeifdefined{MPM:#1}{\executeifdefined{MPG:#1}\donothing}%
+%       \removelastspace}%
+%    \smashbox\positiongraphicbox
+%    \box\positiongraphicbox
+%    \egroup}
+
 \def\doMPpositiongraphic#1#2% tag setups
   {\bgroup
    \def\@@meta{#1:}%
    \setupMPvariables[#2]%
    \prepareMPpositionvariables
    \MPshiftdrawingtrue
-   \def\doMPpositiongraphic##1##2{\getvalue{MPG:##1}}% temp hack
+   \def\doMPpositiongraphic##1##2%
+     {{% new, see (techniek)
+       \def\@@meta{##1:}%
+       \setupMPvariables[#2,##2]%
+       \prepareMPpositionvariables
+       % and needed
+       \getvalue{MPG:##1}}}% temp hack
    \setbox\positiongraphicbox\hbox
-     {\ignorespaces 
+     {\ignorespaces
       \executeifdefined{MPM:#1}{\executeifdefined{MPG:#1}\donothing}%
       \removelastspace}%
    \smashbox\positiongraphicbox
@@ -1169,7 +1242,7 @@
 
 \def\doinsertMPpositiongraphicrange#1#2#3#4% pos tag setups
   {\ifnum\MPp{#1}\MPp{#2}>\zerocount
-     \iflocalpositioning 
+     \iflocalpositioning
        \donetrue
      \else
        \donefalse
@@ -1199,7 +1272,7 @@
   \let\dohandleMPpositiongraphicrange\docleanMPpositiongraphicrange
 \to \everycleanpositionaction
 
-% will be overloaded, and/or code below moved to core-box 
+% will be overloaded, and/or code below moved to core-box
 
 \defineoverlay[\v!tekst-2][\positionoverlay{\v!tekst-2}]
 \defineoverlay[\v!tekst-1][\positionoverlay{\v!tekst-1}]
@@ -1214,7 +1287,7 @@
 \to \MPinitializations
 
 %D Some of these macros are pretty clever but too complicated
-%D to be nice. When things are kind of stable I'll clean up 
+%D to be nice. When things are kind of stable I'll clean up
 %D this mess.
 
 %D THIS NEEDS A CLEANUP
@@ -1264,7 +1337,7 @@
    gridtype=0,
    linetype=1,
    filltype=1,
-  %snaptops=true, % not that nice: true/false 
+  %snaptops=true, % not that nice: true/false
    gridcolor=red,
    linecolor=blue,
    fillcolor=lightgray,
@@ -1367,40 +1440,46 @@
 %D The next alternative works in columnsets :
 
 \startuseMPgraphic{mpos:par:columnset}
-  \iftracepositions show_multi_pars \else draw_multi_pars \fi ; 
+  \iftracepositions show_multi_pars \else draw_multi_pars \fi ;
 \stopuseMPgraphic
 
 \startMPpositionmethod{mpos:par:columnset}
   \edef\MPparcounter{\MPv\MPbself{1}{0}}%
   \startMPpositiongraphic{mpos:par}%
-    {fillcolor,filloffset,linecolor,gridcolor,linewidth,gridwidth,lineradius}
+    {fillcolor,filloffset,linecolor,gridcolor,%
+     linewidth,gridwidth,lineradius}
     \includeMPgraphic{mpos:par:setup} ;
     \includeMPgraphic{mpos:par:extra} ;
-    prepare_multi_pars(\MPpos\MPbself,\MPpos\MPeself,\MPpos\MPwself, 
-      \MPpos\MPparanchor,\MPvv\MPparanchor{0,0,0,0,0,0}) ; 
-    relocate_multipars(-\MPxy\MPanchorid) ; % inside layerpos 
+    prepare_multi_pars(\MPpos\MPbself,\MPpos\MPeself,\MPpos\MPwself,
+      \MPpos\MPparanchor,\MPvv\MPparanchor{0,0,0,0,0,0}) ;
+    relocate_multipars(-\MPxy\MPanchorid) ; % inside layerpos
     \includeMPgraphic{\MPvar{mp}} ;
   \stopMPpositiongraphic
   \MPpositiongraphic{mpos:par}{}%
 \stopMPpositionmethod
 
-%D \starttypen 
+%D \starttypen
 %D \setupbackground
 %D   [test]
 %D   [mp=mpos:par:columnset,
 %D    methode=mpos:par:columnset]
-%D \stoptypen   
+%D \stoptypen
 
-%D We need to treat floats in a special way. 
+%D We need to treat floats in a special way.
 
-\appendtoks 
+\appendtoks
   local_multi_par_area:=\iflocalpositioning true\else false\fi;
-\to \MPinitializations 
+\to \MPinitializations
 
 \def\textbackgroundoverlay#1%
   {\iflocalpositioning\v!lokaal\else\v!tekst\fi#1}
 
-%D So far for the trickery. 
+\newcounter\localpositionnumber
+
+\def\MPanchornumber
+  {\iflocalpositioning\localpositionnumber\else\realfolio\fi}
+
+%D So far for the trickery.
 
 \newcounter\textbackgrounddepth
 
@@ -1429,8 +1508,11 @@
 \let\dodostarttextbackground\relax
 \let\dodostoptextbackground \relax
 
-\def\currentparbackground{background:0}
-\def\nextparbackground   {background:1}
+% \def\currentparbackground{background:0}
+% \def\nextparbackground   {background:1}
+
+\def\currentparbackground{pbg:0}
+\def\nextparbackground   {pbg:1}
 
 \def\btbanchor{b:\currentparbackground}
 \def\etbanchor{e:\currentparbackground}
@@ -1438,16 +1520,19 @@
 \def\nextbtbanchor{b:\nextparbackground}
 \def\nextetbanchor{e:\nextparbackground}
 
-\def\backgroundvariable#1{\getvalue{\??td\currenttextbackground#1}}
+\def\backgroundvariable#1%
+  {\csname\??td\currenttextbackground#1\endcsname}
 
 \def\dostarttextbackground[#1][#2]%
   {\checktextbackgrounds
    \def\currenttextbackground{#1}%
    \doglobal\increment\nofparbackgrounds
-   \edef\currentparbackground{background:\nofparbackgrounds}%
+  %\edef\currentparbackground{background:\nofparbackgrounds}%
+   \edef\currentparbackground{pbg:\nofparbackgrounds}%
    \bgroup
      \increment\nofparbackgrounds
-     \xdef\nextparbackground{background:\nofparbackgrounds}%
+    %\xdef\nextparbackground{background:\nofparbackgrounds}%
+     \xdef\nextparbackground{pbg:\nofparbackgrounds}%
    \egroup
    \setuptextbackground[#1][#2]%
    \let\dodostarttextbackground\relax
@@ -1456,14 +1541,14 @@
      {\dopresettextbackground{#1}}%
    \dodostarttextbackground}
 
-\def\dopresettextbackground#1%
+\def\dopresettextbackground#1% todo: \backgroundparameter
   {\ExpandFirstAfter\processaction % \EFA niet echt nodig
      [\getvalue{\??td#1\c!plaats}]
      [ \v!tekst=>\let\dodostarttextbackground\dostarttextbackgroundtxt
                  \let\dodostoptextbackground \dostoptextbackgroundtxt,
       \v!alinea=>\let\dodostarttextbackground\dostarttextbackgroundpar
                  \let\dodostoptextbackground \dostoptextbackgroundpar]%
-   \ifnum\textbackgrounddepth>\plusone % new 
+   \ifnum\textbackgrounddepth>\plusone % new
      \let\dodostarttextbackground\dostarttextbackgroundtxt
      \let\dodostoptextbackground \dostoptextbackgroundtxt
    \fi
@@ -1509,10 +1594,10 @@
   {\tpos\currentparbackground
    \dostopattributes}
 
-% keep this simple one, it's used in prikkels and alike  
+% keep this simple one, it's used in prikkels and alike
 %
 % \def\dostarttextbackgroundpar
-%   {\endgraf % new 
+%   {\endgraf % new
 %    \getvalue{\??td\currenttextbackground\c!voor}%
 %    \noindent\fpos\currentparbackground\ignorespaces
 %    \bgroup
@@ -1527,7 +1612,7 @@
 %    \geenwitruimte
 %    \seteffectivehsize
 %    \par}
-% 
+%
 % \def\dostoptextbackgroundpar
 %   {\par
 %    \dostopattributes
@@ -1537,7 +1622,7 @@
 %    \geenwitruimte
 %    \egroup
 %    \nobreak \noindent \strut \hfill \kern\zeropoint \tpos\currentparbackground
-%    \endgraf % new 
+%    \endgraf % new
 %    \getvalue{\??td\currenttextbackground\c!na}}
 
 \def\dostarttextbackgroundpar
@@ -1660,7 +1745,7 @@
   {\ifdim\pagetotal>\teksthoogte \else
      \ifdim\pagegoal=\maxdimen \else
       \calculatenexttextpardimensions
-      % too tricky 
+      % too tricky
       % \scratchdimen=\textparheight
       % \advance\scratchdimen\pagetotal\relax
       % \ifdim\scratchdimen>\pagegoal
@@ -1668,7 +1753,7 @@
       % \fi
       \ifdim\textparheight>\zeropoint
         \ifdim\textparheight>\mintextparheight\else
-          \pagina % option 
+          \pagina % option
         \fi
       \fi
     \fi
@@ -1687,8 +1772,8 @@
         \c!linkeroffset,\c!rechteroffset,\c!bovenoffset,\c!onderoffset]%
      \getparameters[\??td#1][#2]%
      \doifvalue{\??td#1\c!status}\v!start\checktextbackgrounds
-    \unexpanded\setvalue{#1}%
-      {\groupedcommand{\starttextbackground[#1]}{\stoptextbackground}}%
+     \unexpanded\setvalue{#1}%
+       {\groupedcommand{\starttextbackground[#1]}{\stoptextbackground}}%
      \setvalue{\e!start#1}{\starttextbackground[#1]}%
      \setvalue{\e!stop #1}{\stoptextbackground}%
    \fi}
@@ -1722,14 +1807,14 @@
 \let\currenttextbackground\empty
 
 \def\checktextbackgrounds
-  {\ifproductionrun 
+  {\ifproductionrun
      \enabletextarearegistration
-     \enablehiddenbackground 
+     \enablehiddenbackground
    \fi}
 
 \setuptextbackground
-  [\c!mp=mpos:par:shape,
-   \c!methode=mpos:par,
+  [\c!mp=mpos:par:columnset,      % buggy: mpos:par:shape
+   \c!methode=mpos:par:columnset, %
    \c!status=\v!start,
    \c!plaats=\v!tekst,
    \c!linkeroffset=\!!zeropoint, % 1em,
@@ -1747,7 +1832,7 @@
    \c!kaderkleur=blue,
    \c!lijndikte=\linewidth]
 
-%D As an example we define a grid background: 
+%D As an example we define a grid background:
 
 \definetextbackground
   [\v!grid]
@@ -1758,7 +1843,7 @@
    \c!achtergrond=,
    \c!variant=1]
 
-\ifx\basegrid\undefined \else \letvalue\v!grid=\basegrid \fi 
+\ifx\basegrid\undefined \else \letvalue\v!grid=\basegrid \fi
 
 % lelijk, aanpassen, opties
 

@@ -569,7 +569,7 @@
   {\ifconditional\hiddenbackgroundenabled
      \expandafter\doaddlocalbackground
    \else
-     \expandafter\gobbleoneargument
+     \resetglobal \expandafter\gobbleoneargument
    \fi}
 
 \def\doaddlocalbackground#1%
@@ -579,7 +579,7 @@
       \noexpand\redoglobal\ht#1\the\ht#1%
       \noexpand\dodoglobal\dp#1\the\dp#1}%
    \dp#1\zeropoint
-   \setbox#1\hbox
+   \redoglobal\setbox#1\hbox
      {\localframed
         [\??ma\v!lokaal]
         [\c!kader=\v!uit,
@@ -589,6 +589,7 @@
    \ifdim\naturalfloatdepth>\zeropoint % maybe take difference 
      \redoglobal\setbox#1\hbox{\lower\scratchdimen\box#1}%
    \fi 
+\doglobal\increment\localpositionnumber % afterwards ! 
    \next}
 
 % Test how previous macro behaves with depth: 

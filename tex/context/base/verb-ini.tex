@@ -878,29 +878,57 @@
      \@EAEAEA\doprocesstabskip
    \fi\fi}
 
-\def\dodoprocesstabskipline#1#2\endoftabskipping
-  {\ifnum\scratchcounter>\spacespertab
-     \scratchcounter\plusone
-     \donetrue
-   \else
-     \advance\scratchcounter \plusone
-     \donefalse
-   \fi
-   \ifx#1\relax
-     \let\next\relax
-   \else
-     \def\next{#1\dodoprocesstabskipline#2\endoftabskipping}%
-   \fi
-   \next}
-
 \let\endoftabskipping=\relax % will become obsolete 
+
+% \def\doprocesstabskipline#1%
+%   {\bgroup
+%    \scratchcounter1
+%    \dodoprocesstabskipline#1\relax\endoftabskipping
+%    \egroup}
+% 
+% \def\dodoprocesstabskipline#1#2\endoftabskipping
+%   {\ifnum\scratchcounter>\spacespertab
+%      \scratchcounter\plusone
+%      \donetrue
+%    \else
+%      \advance\scratchcounter \plusone
+%      \donefalse
+%    \fi
+%    \ifx#1\relax
+%      \let\next\relax
+%    \else
+%      \def\next{#1\dodoprocesstabskipline#2\endoftabskipping}%
+%    \fi
+%    \next}
 
 \def\doprocesstabskipline#1%
   {\bgroup
-   \scratchcounter1
-   \dodoprocesstabskipline#1\relax\endoftabskipping
+   \scratchcounter\plusone
+   \dodoprocesstabskipline#1\relax 
    \egroup}
 
+\def\dodoprocesstabskipline#1%
+  {\ifnum\scratchcounter>\spacespertab\relax
+     \donetrue \else \donefalse \advance
+   \fi \scratchcounter \plusone
+   \ifx#1\relax \else
+     \ifcase\tabskipmode
+       % can't happen 
+     \or 
+       % go on 
+     \else\ifnum`#1<128
+       % ok, no special character  
+     \else\ifnum\catcode`#1=\active
+       % quits parsing, else utf lookahead problems  
+       \chardef\tabskipmode\zerocount
+     \fi\fi\fi
+     \ifcase\tabskipmode 
+       \@EAEAEA#1%
+     \else
+       \@EAEAEA#1\@EAEAEA\dodoprocesstabskipline
+     \fi
+   \fi}
+ 
 % ^ will be replaced 
 
 \chardef\tabskipmode=1 % 0=quit 1=no test 2=test on active>128
@@ -961,7 +989,7 @@
    \def\readline%
      {\ifeof\verbatiminput \else
         \ifx\firstverbatimfileline\empty 
-\global\advance\verbatimlinenumber\plusone
+          \global\advance\verbatimlinenumber\plusone
           \read\verbatiminput to \verbatimline
         \else
           \let\verbatimline\firstverbatimfileline
@@ -997,6 +1025,24 @@
    \endofverbatimlines   
    \egroup
    \ignorespaces}
+
+%D Something new: 
+
+\def\processfilelinesverbatim#1#2#3%
+  {\bgroup
+   \let\saveddoflushverbatimline\doflushverbatimline
+   \let\saveddoemptyverbatimline\doemptyverbatimline
+   \def\checkverbatimfileline##1%
+     {\ifnum\verbatimlinenumber<#2\else
+      \ifnum\verbatimlinenumber>#3\else
+        ##1%
+      \fi\fi}%
+   \def\doflushverbatimline
+     {\checkverbatimfileline\saveddoflushverbatimline}%
+   \def\doemptyverbatimline
+     {\checkverbatimfileline\saveddoemptyverbatimline}%
+   \processfileverbatim{#1}%
+   \egroup}
 
 %D \macros 
 %D   {firstverbatimfileline, lastverbatimfileline}
@@ -1239,7 +1285,7 @@
 
 \newif\ifnewpretty
 
-\def\installnewpretty%
+\def\installnewpretty
   {\def\doinstallnewpretty##1%
      {\setvalue{NP::\the\scratchcounter}{##1}}%
    \afterassignment\doinstallnewpretty\scratchcounter=`}
@@ -1389,20 +1435,32 @@
 %D that ends the line and/or does not belong to the verbatim
 %D data.
 
+% \def\handlenextnextpretty#1#2#3%
+%   {\def\dohandlenextnextpretty%
+%      {\ifx\next\bgroup       % something {}
+%         \let\next=#2%
+%       \else\ifx\next\relax   % end of line / signal
+%         \let\next=#2%
+%       %\else\ifx\next\egroup % end of line / no signal
+%       %  \let\next=#2%
+%       %\else\ifx\next\par    % end of line / \par
+%       % \let\next=#2%
+%       \else
+%         \let\next=#1%
+%       \fi\fi%\fi\fi
+%       \next{#3}}%
+%    \futurelet\next\dohandlenextnextpretty}
+
 \def\handlenextnextpretty#1#2#3%
   {\def\dohandlenextnextpretty%
      {\ifx\next\bgroup       % something {}
-        \let\next=#2%
+        \@EA#2%
       \else\ifx\next\relax   % end of line / signal
-        \let\next=#2%
-      %\else\ifx\next\egroup % end of line / no signal
-      %  \let\next=#2%
-      %\else\ifx\next\par    % end of line / \par
-      % \let\next=#2%
+        \@EAEAEA#2%
       \else
-        \let\next=#1%
-      \fi\fi%\fi\fi
-      \next{#3}}%
+        \@EAEAEA#1%
+      \fi\fi
+      {#3}}%
    \futurelet\next\dohandlenextnextpretty}
 
 %D The pretty interpreters can (and will) change the meaning of

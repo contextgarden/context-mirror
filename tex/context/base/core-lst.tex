@@ -151,13 +151,13 @@
       \preparepaginaprefix{\??li##1}}%
    \processcommalist[#1]\docommando}
 
-\def\stellijstin%
+\def\stellijstin
   {\dodoubleargument\dostellijstin}
 
 \def\dodosetlijst#1%
-  {\def\geenlijst##1{\unknown}%
+  {\def\geenlijst{\splitsequence{\getvalue{\??li#1\c!limittext}}}% 
    \setvalue{#1\c!tussen}{\dotussenlijst{#1}}%
-   \setvalue{#1\c!lijst}{\dolijstelement{#1}}}
+   \setvalue{#1\c!lijst }{\dolijstelement{#1}}}
 
 \def\dodoresetlijst#1%
   {\let\geenlijst\empty
@@ -203,6 +203,7 @@
       \c!label=\v!nee,
       \c!afstand=\!!zeropoint,
       \c!scheider=\@@koscheider,
+      \c!limittext=\@@kolimittext,
       \c!afsluiter=,
       \c!expansie=]%
    \doifassignmentelse{#2}
@@ -215,6 +216,7 @@
             \c!paginaletter,\c!paginacommando,\c!paginakleur,
             \c!nummerletter,\c!nummerkleur,\c!nummercommando,
             \c!paginanummer,\c!paginaovergangen,\c!marge,\c!symbool,
+            \c!limittext,
             \c!titeluitlijnen,\c!voor,\c!na,\c!tussen,\v!deel\c!nummer,\c!label]%
          \getparameters[\??li#1][#3]}}%
    \addutilityreset{#1}%
@@ -450,6 +452,17 @@
 
 % to be documented: uitlijnen, hang 
 
+% now also in abc 
+
+\def\limitatedlistentry#1#2% 
+  {\doifelsenothing{\??li#1\c!maxbreedte}
+     {\getvalue{\??li#1\c!tekstcommando}{#2}}
+     {\getvalue{\??li#1\c!tekstcommando}%
+        {\limitatetext
+           {#2}%
+           {\getvalue{\??li#1\c!maxbreedte}}%
+           {\splitsymbol{\getvalue{\??li#1\c!limittext}}}}}}
+
 \def\dodofixdlijstelementABC#1#2#3#4#5#6% weeden
   {\endgraf
    \leftskip\getvalue{\??li#1\c!marge}% na de \endgraf !
@@ -519,7 +532,8 @@
             \dolistattributes{#1}\c!tekstletter\c!tekstkleur
               {\let\\=\newlineinlist
                \dontconvertfont
-               \getvalue{\??li#1\c!tekstcommando}{#4}}%
+              %\getvalue{\??li#1\c!tekstcommando}{#4}}%
+               \limitatedlistentry{#1}{#4}}%
               %\carryoverpar % new otherwise wrong linespacing 
             \egroup
             \ifdim\wd4=\zeropoint\relax % \ifvoid4
@@ -541,9 +555,9 @@
 
 \def\dodofixdlijstelementD#1#2#3#4#5#6%
   {%\leftskip=\getvalue{\??li#1\c!marge}%
-\ifvmode
-  \advance\leftskip\getvalue{\??li#1\c!marge}%  AANGEPAST
-\fi
+   \ifvmode
+     \advance\leftskip\getvalue{\??li#1\c!marge}%  AANGEPAST
+   \fi
    \bgroup
    \ifvmode
      \noindent\leavevmode % leavevmode ? ? ? 
@@ -581,7 +595,8 @@
    \dolistattributes{#1}\c!tekstletter\c!tekstkleur
      {\let\\=\newlineinlist
       \dontconvertfont
-      \getvalue{\??li#1\c!tekstcommando}{#4}}%
+     %\getvalue{\??li#1\c!tekstcommando}{#4}}%
+      \limitatedlistentry{#1}{#4}}%
    \ifvoid4\else
      \nobreak
      \hskip.75em\relax
@@ -624,9 +639,10 @@
           {\dostartattributes{\??li#3}\c!letter\c!kleur\empty
            \ignorespaces\dontconvertfont\setstrut
            \begstrut
-           \doifelsenothing{\??li#3\c!maxbreedte}
-             {\getvalue{\??li#3\c!tekstcommando}{#6}}
-             {\getvalue{\??li#3\c!tekstcommando}{\limitatetext{#6}{\getvalue{\??li#3\c!maxbreedte}}{\unknown}}}%
+          %\doifelsenothing{\??li#3\c!maxbreedte}
+          %  {\getvalue{\??li#3\c!tekstcommando}{#6}}
+          %  {\getvalue{\??li#3\c!tekstcommando}{\limitatetext{#6}{\getvalue{\??li#3\c!maxbreedte}}{\unknown}}}%
+           \limitatedlistentry{#3}{#6}%
            \endstrut % struts new
            \dostopattributes}}}%
       \linklisttoelement{#3}{#4}{#7}{#8}{\box0}}%{\copy0}}%

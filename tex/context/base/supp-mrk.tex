@@ -419,8 +419,19 @@
   {%\writestatus{marks}{checking \string#1}\wait
    \ifcase\csname\@@mrk\string#1\endcsname\else\dochecktopmark#1\fi}
 
-\def\dochecktopmark#1% 
-  {\ifcase0\@EA\normalfirstmarks\csname\@@prk\string#1\endcsname\else
+%\def\dochecktopmark#1% 
+%  {\ifcase0\@EA\normalfirstmarks\csname\@@prk\string#1\endcsname\else
+%     \@EA\ifx\csname\@@frk\string#1\endcsname\empty
+%       \@EA\gdef\csname\@@frk\string#1\endcsname{\normalfirstmarks#1}%
+%       \@EA\gdef\csname\@@brk\string#1\endcsname{\normalbotmarks  #1}%
+%     \else
+%       \@EA\gdef\csname\@@trk\string#1\endcsname{\normaltopmarks  #1}%
+%       \global\@EA\chardef\csname\@@mrk\string#1\endcsname\zerocount
+%     \fi
+%   \fi}
+
+\def\dochecktopmark#1%
+  {\ifx*\@EA\normalfirstmarks\csname\@@prk\string#1\endcsname*\else
      \@EA\ifx\csname\@@frk\string#1\endcsname\empty
        \@EA\gdef\csname\@@frk\string#1\endcsname{\normalfirstmarks#1}%
        \@EA\gdef\csname\@@brk\string#1\endcsname{\normalbotmarks  #1}%
@@ -430,9 +441,17 @@
      \fi
    \fi}
 
-\def\resetmark#1% we cannot use \normalmarks#1{} 
+%\def\resetmark#1% we cannot use \normalmarks#1{} 
+%  {\global\@EA\chardef\csname\@@mrk\string#1\endcsname\zerocount
+%   \@EA\normalmarks\csname\@@prk\string#1\endcsname{0}%
+%   \global\@EA\let\csname\@@trk\string#1\endcsname\empty
+%   \global\@EA\let\csname\@@frk\string#1\endcsname\empty
+%   \global\@EA\let\csname\@@brk\string#1\endcsname\empty
+%   \global\@EA\let\csname\@@crk\string#1\endcsname\empty}
+
+\def\resetmark#1% we cannot use \normalmarks#1{}
   {\global\@EA\chardef\csname\@@mrk\string#1\endcsname\zerocount
-   \@EA\normalmarks\csname\@@prk\string#1\endcsname{0}%
+   \@EA\normalmarks\csname\@@prk\string#1\endcsname{}% {0}%
    \global\@EA\let\csname\@@trk\string#1\endcsname\empty
    \global\@EA\let\csname\@@frk\string#1\endcsname\empty
    \global\@EA\let\csname\@@brk\string#1\endcsname\empty
@@ -574,6 +593,7 @@
 \let\rawgetbotmark       \getbotmark
 \let\rawgetsplitbotmark  \normalsplitbotmark   
 \let\rawgetsplitfirstmark\normalsplitfirstmark  
+\let\rawgetsplittopmark  \normalsplitfirstmark
 
 \endTEX
 
@@ -587,6 +607,7 @@
 \let\rawgetbotmark       \normalbotmarks
 \let\rawgetsplitbotmark  \normalsplitbotmarks   
 \let\rawgetsplitfirstmark\normalsplitfirstmarks  
+\let\rawgetsplittopmark  \normalsplitfirstmarks  
 
 \endETEX
 

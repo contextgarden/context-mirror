@@ -116,7 +116,7 @@
 \def\c!vars!   {\addtypespec{list}{yes}\dovalvar{assignments}}
 
 \def\c!arg!    {\doanother{content}}    
-\def\c!cmd!    {\doanother{command}}    
+\def\c!cmd!    {\doanother{csname}}    
 \def\c!dest!   {\doanother{reference}}
 \def\c!dis!    {\doanother{displaymath}}    
 \def\c!fil!    {\doanother{file}}    
@@ -142,7 +142,9 @@
 
 \def\c!repeat! {} 
 \def\c!tex!  #1{\addtypespec{command}{#1}\doanother{tex}}    
-\def\c!or!     {}  
+\def\c!or! #1#2{\doline{\space\space\space\space<choice>}%
+                #1#2%
+                \doline{\space\space\space\space</choice>}}  
 
 % wrapper 
 
@@ -270,6 +272,9 @@
      {} % \edef\envattr{\envattr\space generated="no"}} 
    \splitcurrentname
    \cleanupcurrentname
+\doifinsetelse{\currentname}{remark,menubutton,marking*figure,referring*figure}{%
+  \doline{<!-- \currentname\space skipped -->}%
+}{%
    \dostring{}{}{command name="\currentname"\envattr}
      \def\next##1%
        {\ifx##1\empty
@@ -296,6 +301,7 @@
      \dostring{\space\space}{/}{arguments}
    \fi
    \dostring{}{/}{command}
+}%
    \egroup}
 
 \let\stopsetup\relax

@@ -251,15 +251,15 @@
 %        \v!flexibel=>\global\lokaalblankoflexibeltrue,
 %            \v!vast=>\global\lokaalblankovasttrue,
 %            \v!back=>\geenblanko,
-%             \v!wit=>\global\advance\blankoskip by \parskip,
-%         \v!formule=>\global\advance\blankoskip by \medskipamount,
+%             \v!wit=>\global\advance\blankoskip \parskip,
+%         \v!formule=>\global\advance\blankoskip \medskipamount,
 %         \v!geenwit=>\global\blankogeenwittrue,
-%            -\v!wit=>\global\advance\blankoskip by -\parskip,
+%            -\v!wit=>\global\advance\blankoskip -\parskip,
 %        \v!blokkeer=>\global\blankoblokkeertrue,
 %         \v!forceer=>\global\blankoforceertrue,
-%           \v!regel=>\global\advance\blankoskip by \lineheight,
+%           \v!regel=>\global\advance\blankoskip \lineheight,
 %      \v!halveregel=>\ifgridsnapping\global\fuzzyvskiptrue\fi
-%                     \global\advance\blankoskip by .5\lineheight,
+%                     \global\advance\blankoskip .5\lineheight,
 %         \s!unknown=>\doindirectblanko{#1}]}
 %
 % \def\docomplexdoblanko[#1]% pas op \relax's zijn nodig ivm volgende \if
@@ -532,6 +532,103 @@
 
 % Overloaded in cont-new! 
 
+% \def\docomplexdoblanko[#1]% pas op \relax's zijn nodig ivm volgende \if
+%   {\global\blankoresetfalse
+%    \global\blankoblokkeerfalse
+%    \global\blankogeenwitfalse
+%    \global\lokaalblankoflexibelfalse
+%    \global\lokaalblankovastfalse
+%    \global\blankoskip\zeropoint
+%    \global\blankoforceerfalse
+%    \blankobuitenfalse
+%    \expanded{\rawprocesscommalist[#1]}\doblanko
+%    \ifdim\blankoskip=\zeropoint\relax
+%      \iflokaalblankoflexibel
+%        \doglobal\advance\blankoskip \currentblanko
+%      \else\iflokaalblankovast
+%        \doglobal\advance\blankoskip \currentblanko
+%      \fi\fi
+%    \fi
+%    \ifblankobuiten
+%    \else
+%      \par
+%      \ifvmode          %in pos fonts gaat dit mis
+%        \ifblankoforceer%\ifdim\prevdepth>\zeropoint\else
+%          % -1000pt signals top of page or column (\ejectcolumn)
+%          \verticalstrut
+%          \kern-\lineheight
+%        \fi
+%        \ifblankoblokkeer
+%          \global\doeblankofalse
+%          \edef\oldprevdepth{\the\prevdepth}%
+%          \prevdepth\newprevdepth
+%        \else
+%          \global\doeblankotrue
+%        \fi
+%        \ifblankoreset
+%          \global\doeblankotrue
+%          \ifdim\prevdepth=\newprevdepth
+%            \prevdepth\oldprevdepth
+%          \fi
+%        \fi
+%        \ifdoeblanko
+%          \ifdim\lastskip<\blankoskip\relax
+%            % else when \blanko[2*groot] + \blanko[3*groot] with parskip
+%            % equaling 1*groot, gives a groot=\parskip so adding a small
+%            % value makes it distinguishable; can also be done at parskip
+%            % setting time (better)
+%            \global\advance\blankoskip \mindimen\relax % = skip
+%            % test this on 2* + 3* and parskip groot
+%            \ifblankogeenwit
+%              \global\advance\blankoskip -\parskip
+%            \else
+%              \ifdim\lastskip=\parskip
+%              \else  % force this due to previous comment
+%                \ifdim\parskip>\zeropoint\relax
+%                  \ifdim\blankoskip<\parskip\relax
+%                    \global\blankoskip\zeropoint
+%                  \else
+%                    \global\advance\blankoskip -\parskip
+%                  \fi
+%                \fi
+%              \fi
+%            \fi
+%            \ifblankoflexibel \else
+%              \blankoskip1\blankoskip
+%            \fi
+%            \iflokaalblankovast
+%              \blankoskip1\blankoskip
+%            \fi
+%            \iflokaalblankoflexibel
+%              \blankoskip1\blankoskip
+%                \!!plus\skipgluefactor\blankoskip
+%                \!!minus\skipgluefactor\blankoskip
+%            \fi
+%            \ifdim\prevdepth=\newprevdepth
+%              % blokkeer 
+%            \else
+%              \iffuzzyvskip
+%                \removelastfuzzyvskip
+%                \fuzzyvskip\blankoskip\relax
+%              \else
+%                \removelastskip
+%                \vskip\blankoskip\relax
+%              \fi
+%            \fi
+%          \else
+%            \iffuzzyvskip
+%              \removelastfuzzyvskip
+%              \fuzzyvskip\blankoskip\relax
+%            \fi
+%          \fi
+%        \fi
+%      \fi
+%    \fi
+%    \global\fuzzyvskipfalse
+%    \presetindentation}
+
+\newsignal\noblanksignal
+
 \def\docomplexdoblanko[#1]% pas op \relax's zijn nodig ivm volgende \if
   {\global\blankoresetfalse
    \global\blankoblokkeerfalse
@@ -555,24 +652,63 @@
      \ifvmode          %in pos fonts gaat dit mis
        \ifblankoforceer%\ifdim\prevdepth>\zeropoint\else
          % -1000pt signals top of page or column (\ejectcolumn)
-         \verticalstrut
-         \kern-\lineheight
+         \vbox{\strut}\kern-\lineheight
        \fi
        \ifblankoblokkeer
          \global\doeblankofalse
-         \edef\oldprevdepth{\the\prevdepth}%
-         \prevdepth\newprevdepth
+         \ifgridsnapping
+           \ifdim\prevdepth<\zeropoint
+             % brrr
+           \else
+             % dirty trick: smaller blanks are ignored after
+             % a larger one, so 10 lines is probably safe; first make
+             % sure that we honor penalties
+             \scratchcounter\lastpenalty
+             % now comes the trick (cross our fingers that this works
+             % well in multi columns; maybe an ifinner test is needed
+             % \vskip-10\lineheight
+             %    \ifnum\scratchcounter=\zerocount \else \penalty\lastpenalty \fi
+             %    \vskip 10\lineheight
+             % allas, this leads to overfull pages, so we try this:
+             \kern-\noblanksignal
+             \ifnum\scratchcounter=\zerocount
+             \else
+               \penalty\lastpenalty
+             \fi
+             \kern\noblanksignal
+             % end-of-dirty-trick
+           \fi
+         \else
+           \ifdim\prevdepth<\zeropoint
+             % brrr
+           \else
+             % ensure at least a proper prevdepth, this should be
+             % an option
+             \vskip-\prevdepth
+             \vskip\strutdepth
+             \prevdepth\strutdepth
+           \fi
+           % the old crappy piece of code
+           \edef\oldprevdepth{\the\prevdepth}%
+           \prevdepth\newprevdepth
+         \fi
        \else
          \global\doeblankotrue
        \fi
        \ifblankoreset
          \global\doeblankotrue
-         \ifdim\prevdepth=\newprevdepth
-           \prevdepth\oldprevdepth
+         \ifgridsnapping
+            % let's play safe and not fool around with the depth, if
+            % only because it took a lot of effort to sort out the grid
+            % stuff in the first place
+         \else
+           \ifdim\prevdepth=\newprevdepth
+             \prevdepth\oldprevdepth
+           \fi
          \fi
        \fi
        \ifdoeblanko
-         \ifdim\lastskip<\blankoskip\relax
+         \ifdim1\lastskip<1\blankoskip\relax
            % else when \blanko[2*groot] + \blanko[3*groot] with parskip
            % equaling 1*groot, gives a groot=\parskip so adding a small
            % value makes it distinguishable; can also be done at parskip
@@ -604,9 +740,16 @@
                \!!plus\skipgluefactor\blankoskip
                \!!minus\skipgluefactor\blankoskip
            \fi
-           \ifdim\prevdepth=\newprevdepth
-             % blokkeer 
+           \ifgridsnapping
+             \ifdim\lastkern=\noblanksignal
+               \global\doeblankofalse
+             \fi
            \else
+             \ifdim\prevdepth=\newprevdepth
+               \global\doeblankofalse
+             \fi
+           \fi
+           \ifdoeblanko
              \iffuzzyvskip
                \removelastfuzzyvskip
                \fuzzyvskip\blankoskip\relax
@@ -619,6 +762,24 @@
            \iffuzzyvskip
              \removelastfuzzyvskip
              \fuzzyvskip\blankoskip\relax
+           \else
+             % new, test this on pascal
+             \ifdim\blankoskip<\zeropoint
+               \advance\blankoskip-\lastskip
+               \removelastskip
+               \ifdim\blankoskip>\zeropoint
+                 \vskip\blankoskip
+               \else
+                 \vskip\zeropoint
+               \fi
+             \else
+               % also new 
+               \ifdim\blankoskip=\zeropoint
+                 \ifblankogeenwit
+                   \geenwitruimte 
+                 \fi
+               \fi
+             \fi
            \fi
          \fi
        \fi
@@ -707,7 +868,7 @@
 
 \definecomplexorsimple\stelblankoin
 
-\def\simplestelblankoin% == snelle \stelblankoin[\s!default]
+\def\simplestelblankoin % == snelle \stelblankoin[\s!default]
   {\ifgridsnapping
      \blankoflexibelfalse
    \fi
@@ -979,42 +1140,75 @@
 
 \newskip\tussenwit \tussenwit\zeropoint
 
+\newif\ifwitruimteflexibel \witruimteflexibeltrue
+
 \def\blankokleinmaat  {\smallskipamount}
 \def\blankomiddelmaat {\medskipamount}
 \def\blankogrootmaat  {\bigskipamount}
 \def\currentwitruimte {\zeropoint}
 
-\def\stelwitruimteopnieuwin%
-  {\expanded{\stelwitruimtein[\currentwitruimte]}}
-
-\newif\ifwitruimteflexibel \witruimteflexibeltrue
+% \def\stelwitruimteopnieuwin
+%   {\expanded{\stelwitruimtein[\currentwitruimte]}}
+% 
+% \newif\ifwitruimteflexibel \witruimteflexibeltrue
+% 
+% \definecomplexorsimple\stelwitruimtein
+% 
+% \def\complexstelwitruimtein[#1]%
+%   {\expanded{\dostelwitruimtein[#1]}%
+%    \dodostelwitruimtein}
+% 
+% \def\dostelwitruimtein[#1]%
+%   {\processallactionsinset
+%      [#1]
+%      [\v!herstel=>,
+%          \v!vast=>\witruimteflexibelfalse,
+%      \v!flexibel=>\witruimteflexibeltrue,
+%         \v!regel=>\tussenwit\baselineskip,
+%    \v!halveregel=>\tussenwit.5\baselineskip,
+%       \s!default=>\doifnot\currentwitruimte\v!geen\stelwitruimteopnieuwin,
+%       \s!unknown=>\@EA\assigndimension\@EA{\commalistelement} % \@EA is nodig
+%                     \tussenwit\blankokleinmaat\blankomiddelmaat\blankogrootmaat]}   % te vangen
+% 
+% \def\dodostelwitruimtein
+%   {\edef\currentwitruimte
+%      {\ifdim\tussenwit=\zeropoint
+%         \v!geen
+%       \else
+%         \ifgridsnapping\the\baselineskip\else\the\tussenwit\fi
+%       \fi}%
+%    \ifgridsnapping
+%      \witruimteflexibelfalse
+%      \tussenwit1\tussenwit
+%      \ifdim\tussenwit>\zeropoint
+%        \tussenwit\baselineskip
+%      \fi
+%    \else
+%      \ifwitruimteflexibel \else \tussenwit1\tussenwit \fi
+%    \fi
+%    \parskip\tussenwit}
+% 
+% \def\simplestelwitruimtein% == snelle \stelwitruimtein[\s!default]
+%   {\doifnot\currentwitruimte\v!geen\stelwitruimteopnieuwin
+%    \dodostelwitruimtein}
 
 \definecomplexorsimple\stelwitruimtein
 
+\def\simplestelwitruimtein
+  {\doifnot\currentwitruimte\v!geen\dostelwitruimtein}
+
 \def\complexstelwitruimtein[#1]%
-  {\expanded{\dostelwitruimtein[#1]}%
+  {\doifelsenothing{#1}
+     {\simplestelwitruimtein}
+     {\edef\currentwitruimte{#1}%
+      \dostelwitruimtein}}
+
+\def\dostelwitruimtein
+  {\processcommacommand[\currentwitruimte]\dowhitespacemethod
    \dodostelwitruimtein}
 
-\def\dostelwitruimtein[#1]%
-  {\processallactionsinset
-     [#1]
-     [\v!herstel=>,
-         \v!vast=>\witruimteflexibelfalse,
-     \v!flexibel=>\witruimteflexibeltrue,
-        \v!regel=>\tussenwit\baselineskip,
-   \v!halveregel=>\tussenwit.5\baselineskip,
-      \s!default=>\doifnot\currentwitruimte\v!geen\stelwitruimteopnieuwin,
-      \s!unknown=>\@EA\assigndimension\@EA{\commalistelement} % \@EA is nodig
-                    \tussenwit\blankokleinmaat\blankomiddelmaat\blankogrootmaat]}   % te vangen
-
-\def\dodostelwitruimtein%
-  {\edef\currentwitruimte%
-     {\ifdim\tussenwit=\zeropoint
-        \v!geen
-      \else
-        \ifgridsnapping\the\baselineskip\else\the\tussenwit\fi
-      \fi}%
-   \ifgridsnapping
+\def\dodostelwitruimtein
+  {\ifgridsnapping
      \witruimteflexibelfalse
      \tussenwit1\tussenwit
      \ifdim\tussenwit>\zeropoint
@@ -1024,12 +1218,27 @@
      \ifwitruimteflexibel \else \tussenwit1\tussenwit \fi
    \fi
    \parskip\tussenwit}
+
+\definesystemvariable {ws} % whitespace 
 
-\def\simplestelwitruimtein% == snelle \stelwitruimtein[\s!default]
-  {\doifnot\currentwitruimte\v!geen\stelwitruimteopnieuwin
-   \dodostelwitruimtein}
+\def\definewhitespacemethod[#1]#2{\setvalue{\??ws\??ws#1}{#2}}
 
-\def\geenwitruimte%
+\definewhitespacemethod [\v!herstel]    {} 
+\definewhitespacemethod [\v!vast]       {\witruimteflexibelfalse}
+\definewhitespacemethod [\v!flexibel]   {\witruimteflexibeltrue}
+\definewhitespacemethod [\v!regel]      {\tussenwit  \baselineskip}
+\definewhitespacemethod [\v!halveregel] {\tussenwit.5\baselineskip}
+\definewhitespacemethod [\v!geen]       {\tussenwit  \zeropoint}
+\definewhitespacemethod [\v!groot]      {\tussenwit  \blankogrootmaat}
+\definewhitespacemethod [\v!middel]     {\tussenwit  \blankomiddelmaat}
+\definewhitespacemethod [\v!klein]      {\tussenwit  \blankokleinmaat}
+
+\definewhitespacemethod [\s!default]    {\stelwitruimteopnieuwin}
+
+\def\dowhitespacemethod#1%
+  {\executeifdefined{\??ws\??ws#1}{\tussenwit#1}\relax}  
+
+\def\geenwitruimte
   {\ifdim\parskip>\zeropoint\relax
      \ifdim\lastskip=-\parskip
      \else
@@ -1037,8 +1246,8 @@
      \fi
    \fi}
 
-\def\savecurrentwitruimte%
-  {\edef\restorecurrentwitruimte%
+\def\savecurrentwitruimte
+  {\edef\restorecurrentwitruimte
      {\tussenwit\the\tussenwit
       \parskip\the\parskip
       \noexpand\def\noexpand\currentwitruimte{\currentwitruimte}%
@@ -1406,11 +1615,11 @@
       \s!default=>\setstrut,
       \s!unknown=>\setcharstrut\commalistelement]}
 
-\def\setteststrut%
+\def\setteststrut
   {\def\strutwidth{.8pt}%
    \setstrut}
 
-\def\begstrut%
+\def\begstrut
   {%relax\ifdim\ht\strutbox=\zeropoint\else
    \relax\ifcase\ht\strutbox\else
      \strut
@@ -2153,7 +2362,7 @@
 
 \let\mindermeldingen\dontcomplain
 
-\definetwopasslist{\s!paragraph}
+\definetwopasslist\s!paragraph
 
 \newcounter\nofraggedparagraphs
 
@@ -2193,7 +2402,7 @@
      \fi
    \else\ifinner
      \ifdubbelzijdig
-       \gettwopassdata{\s!paragraph}%
+       \gettwopassdata\s!paragraph
        \iftwopassdatafound
          \ifodd\twopassdata\relax#1\else#2\fi
        \else
@@ -2584,8 +2793,20 @@
 \def\steltolerantiein
   {\dosingleargument\dosteltolerantiein}
 
-\def\woordrechts
-  {\groupedcommand{\hfill\hbox}{\parfillskip\zeropoint}}
+% \def\woordrechts
+%   {\groupedcommand{\hfill\hbox}{\parfillskip\zeropoint}}
+
+\def\woordrechts % zie naw
+  {\groupedcommand
+     {\removeunwantedspaces
+      \hfill
+      \hskip\zeropoint % permit break, \allowbreak fails here
+      \strut
+      \hfill
+      \quad % decent spacing
+      \hbox}
+     {\parfillskip\zeropoint
+      \par}}
 
 %D \macros
 %D   {pushindentation,popindentation}

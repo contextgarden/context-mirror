@@ -2,116 +2,124 @@
 %D   [       file=mp-grph.mp,
 %D        version=2000.12.14,
 %D          title=\CONTEXT\ \METAPOST\ graphics,
-%D       subtitle=graphic text support, 
+%D       subtitle=graphic text support,
 %D         author=Hans Hagen,
 %D           date=\currentdate,
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See licen-en.pdf for 
-%C details. 
+%C therefore copyrighted by \PRAGMA. See licen-en.pdf for
+%C details.
 
 %D Under construction.
 
-if unknown context_tool :    input mp-tool ; fi ; 
-if   known context_grph : endinput         ; fi ; 
+if unknown context_tool :    input mp-tool ; fi ;
+if   known context_grph : endinput         ; fi ;
 
-boolean context_grph ; context_grph := true ; 
+boolean context_grph ; context_grph := true ;
 
-string CRLF ; CRLF := char 10 & char 13 ; 
+string CRLF ; CRLF := char 10 & char 13 ;
 
-picture _currentpicture_ ; 
+picture _currentpicture_ ;
 
 def beginfig (expr c) =
   begingroup
-  charcode := c ; 
-  resetfig ; 
-  scantokens extra_beginfig ; 
-enddef ; 
+  charcode := c ;
+  resetfig ;
+  scantokens extra_beginfig ;
+enddef ;
 
 def resetfig =
-  clearxy ; 
-  clearit ; 
+  clearxy ;
+  clearit ;
   clearpen ;
   pickup defaultpen ;
-  interim linecap := linecap ; 
-  interim linejoin := linejoin ; 
-  interim miterlimit := miterlimit ; 
-  save _background_ ; color _background_ ; _background_ :=  background  ; 
+  interim linecap := linecap ;
+  interim linejoin := linejoin ;
+  interim miterlimit := miterlimit ;
+  save _background_ ; color _background_ ; _background_ :=  background  ;
   save  background  ; color  background  ;  background  := _background_ ;
   drawoptions () ;
 enddef ;
 
-def protectgraphicmacros = 
-  save showtext ; 
+def protectgraphicmacros =
+  save showtext ;
   save beginfig ; let beginfig = begingraphictextfig ;
   save endfig   ; let endfig   = endgraphictextfig ;
-  save end      ; let end      = relax ; 
-  interim prologues := prologues ; 
+  save end      ; let end      = relax ;
+  interim prologues := prologues ;
   resetfig ;
-enddef ; 
+enddef ;
 
-numeric currentgraphictext ; currentgraphictext := 0 ; 
+numeric currentgraphictext ; currentgraphictext := 0 ;
 string  graphictextformat  ; graphictextformat  := "plain" ;
-string  graphictextstring  ; graphictextstring  := "" ; 
+string  graphictextstring  ; graphictextstring  := "" ;
 string  graphictextfile    ; graphictextfile    := "dummy.mpo" ;
 
-def savegraphictext (expr str) = 
+def savegraphictext (expr str) =
   graphictextfile := jobname & ".mpo" ;
   if (graphictextstring<>"") :
     write graphictextstring to graphictextfile ;
-    graphictextstring := "" ; 
-  fi ; 
+    graphictextstring := "" ;
+  fi ;
   write str to graphictextfile ;
-  let erasegraphictextfile = relax ; 
-enddef ; 
+  let erasegraphictextfile = relax ;
+enddef ;
 
-def erasegraphictextfile = 
+def erasegraphictextfile =
   graphictextfile := jobname & ".mpo" ;
   write EOF to graphictextfile  ;
-  let erasegraphictextfile = relax ; 
-enddef ; 
+  let erasegraphictextfile = relax ;
+enddef ;
 
-extra_beginfig := extra_beginfig & " erasegraphictextfile ;" ; 
+extra_beginfig := extra_beginfig & " erasegraphictextfile ;" ;
 
 def begingraphictextfig (expr n) =
   foundpicture := n ; scratchpicture := nullpicture ;
 enddef ;
 
 def endgraphictextfig =
-  if foundpicture = currentgraphictext : 
-    expandafter endinput 
-  else : 
-    scratchpicture := nullpicture ; 
+  if foundpicture = currentgraphictext :
+    expandafter endinput
+  else :
+    scratchpicture := nullpicture ;
   fi ;
 enddef ;
 
-def loadfigure primary filename = 
-  doloadfigure (filename) 
-enddef ; 
+def loadfigure primary filename =
+  doloadfigure (filename)
+enddef ;
 
 def doloadfigure (expr filename) text figureattributes =
   begingroup ;
-  save figurenumber, figurepicture, number ; 
-  numeric figurenumber  ; figurenumber  := 1 ; 
-  picture figurepicture ; figurepicture := currentpicture ; 
-  def number primary n = hide(figurenumber := n) enddef ; 
-  protectgraphicmacros ; 
-  % defaults 
+  save figurenumber, figurepicture, number, fixedplace ;
+  numeric figurenumber  ; figurenumber  := 0 ;
+  boolean figureshift ; figureshift := true ;
+  picture figurepicture ; figurepicture := currentpicture ;
+  def number primary n = hide(figurenumber := n) enddef ;
+  def fixedplace = hide(figureshift := false) enddef ;
+  protectgraphicmacros ;
+  % defaults
   interim linecap    := rounded ;
   interim linejoin   := rounded ;
   interim miterlimit := 10 ;
-  % 
-  currentpicture := nullpicture ; 
-  def beginfig (expr n) = 
-    currentpicture := nullpicture ; 
-    if figurenumber=n : let endfig = endinput ; fi ; 
-  enddef ; 
-  let endfig = relax ; 
-  readfile(filename) ; 
-  currentpicture := currentpicture shifted -llcorner currentpicture ;   
-  addto figurepicture also currentpicture figureattributes ;   
-  currentpicture := figurepicture  ; 
+  %
+  currentpicture := nullpicture ;
+  draw fullcircle figureattributes ; % expand number
+  currentpicture := nullpicture ;
+  def beginfig (expr n) =
+    currentpicture := nullpicture ;
+    if (figurenumber=n) or (figurenumber=0) :
+      let endfig = endinput ;
+    fi ;
+  enddef ;
+  let endfig = relax ;
+  readfile(filename) ;
+  if figureshift : 
+    currentpicture := currentpicture shifted -llcorner currentpicture ;
+  fi ;
+  addto figurepicture also currentpicture figureattributes ;
+  currentpicture := figurepicture  ;
   endgroup ;
 enddef ;
 
@@ -128,7 +136,7 @@ def dographictext (expr t) =
   fi ;
   currentgraphictext := currentgraphictext + 1 ;
   savegraphictext ("\startTEXpage[scale=10000]" & t & "\stopTEXpage") ;
-  dofinishgraphictext 
+  dofinishgraphictext
 enddef ;
 
 def redographictext primary t =
@@ -139,37 +147,37 @@ def regraphictext (expr t) =
   begingroup ;
   save currentgraphictext ; numeric currentgraphictext ;
   currentgraphictext := t ;
-  dofinishgraphictext 
+  dofinishgraphictext
 enddef ;
 
-%D Believe it or not, but it took me half a day to uncover 
+%D Believe it or not, but it took me half a day to uncover
 %D the following neccessity:
-%D 
-%D \starttypen 
-%D save withfillcolor, withdrawcolor ;  
-%D \stoptypen 
-%D 
-%D When we have more than one graphictext, these will be 
-%D defined after the first graphic. For some obscure reason, 
+%D
+%D \starttypen
+%D save withfillcolor, withdrawcolor ;
+%D \stoptypen
+%D
+%D When we have more than one graphictext, these will be
+%D defined after the first graphic. For some obscure reason,
 %D this means that in the next graphic they will be called, but
-%D afterwards the data and boolean are not set. Don't ask me 
-%D why. 
+%D afterwards the data and boolean are not set. Don't ask me
+%D why.
 
 def dofinishgraphictext text x_op_x =
   protectgraphicmacros ;
-  interim linecap    := butt ;     % normally rounded  
-  interim linejoin   := mitered ;  % normally rounded  
-  interim miterlimit := 10 ;       % todo 
+  interim linecap    := butt ;     % normally rounded
+  interim linejoin   := mitered ;  % normally rounded
+  interim miterlimit := 10 ;       % todo
   let normalwithshade = withshade ;
   save foundpicture, scratchpicture, str ;
   save fill, draw, withshade, reversefill, outlinefill ;
   save withfillcolor, withdrawcolor ; % quite important
   numeric foundpicture ; picture scratchpicture ; string str ;
   def draw expr p =
-    % the first, naive implementation was: 
+    % the first, naive implementation was:
     %   addto scratchpicture doublepath p withpen currentpen ;
-    % but it is better to turn lines into fills 
-    addto scratchpicture contour boundingbox 
+    % but it is better to turn lines into fills
+    addto scratchpicture contour boundingbox
       image (addto currentpicture doublepath p withpen currentpen) ;
   enddef ;
   def fill expr p =
@@ -247,22 +255,22 @@ def dofinishgraphictext text x_op_x =
   endgroup ;
 enddef ;
 
-def resetgraphictextdirective = 
-  graphictextstring := "" ; 
-enddef ; 
+def resetgraphictextdirective =
+  graphictextstring := "" ;
+enddef ;
 
-def graphictextdirective text t = 
-  graphictextstring := graphictextstring & t & CRLF ; 
-enddef ; 
+def graphictextdirective text t =
+  graphictextstring := graphictextstring & t & CRLF ;
+enddef ;
 
-endinput  
+endinput
 
 % example
 
-input mp-grph ; 
+input mp-grph ;
 
-  graphictextformat := "context" ; 
-% graphictextformat := "plain" ; 
+  graphictextformat := "context" ;
+% graphictextformat := "plain" ;
 % graphictextformat := "latex" ; graphictextdirective "\documentclass[]{article}" ;
 
 beginfig (1) ;
@@ -272,11 +280,11 @@ beginfig (1) ;
     withdrawcolor blue
     withfillcolor red
     withpen pencircle scaled 2pt ;
-endfig ; 
+endfig ;
 
-beginfig(1) ; 
-  loadfigure "gracht.mp" rotated 20 ; 
-  loadfigure "koe.mp" number 1 scaled 2 ; 
-endfig ; 
+beginfig(1) ;
+  loadfigure "gracht.mp" rotated 20 ;
+  loadfigure "koe.mp" number 1 scaled 2 ;
+endfig ;
 
 end

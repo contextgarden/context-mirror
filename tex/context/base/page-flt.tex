@@ -183,26 +183,39 @@
      {\getmessage\m!floatblocks{12}}}
 
 \def\docomplexplaatsblok[#1][#2]% [#3]#4%
-  {\doifelsenothing{#1}
+  {\edef\floattype{#1}%
+   \doifelsenothing\floattype
      {\let\floattype\v!figuur}
-     {\edef\floattype{#1}}%
+     {\doifundefined{\??fl#1\c!default}{\let\floattype\v!figuur}}%
    \doifelsenothing{#2}
-     {\edef\floatlocation{\getvalue{\??fl#1\c!default}}}
+     {\edef\floatlocation{\getvalue{\??fl\floattype\c!default}}}
      {\edef\floatlocation{#2}}%
    \expanded{\dodocomplexplaatsblok[\floattype][\floatlocation]}}
 
-\def\presetfloatvariables#1#2#3#4%
+\def\presetfloatvariables#1#2#3#4% better a processaction 
   {\doifcommonelse
-      {#2}
-      {\v!links,\v!rechts,\v!inlinker,\v!inrechter,\v!inmarge,%
-       \v!linkermarge,\v!linkerrand,\v!rechtermarge,\v!rechterrand}
-      {\global\parfloattrue}
-      {\global\parfloatfalse}%
+     {#2}
+     {\v!links,\v!rechts,\v!inlinker,\v!inrechter,\v!inmarge,%
+      \v!linkermarge,\v!linkerrand,\v!rechtermarge,\v!rechterrand}
+     {\global\parfloattrue}
+     {\global\parfloatfalse}%
+   \global\sidefloatshift\zeropoint  
    \ifbinnenkolommen
      \global\parfloatfalse
    \fi
    \calculatefloatskips{#1}%
+   \global\chardef\sidefloatalign\zerocount
    \ifparfloat
+     \processaction
+       [\getvalue{\??fl#1\c!zijuitlijnen}]
+       [\v!hoogte=>\global\chardef\sidefloatalign\plusone,%
+         \v!regel=>\global\chardef\sidefloatalign\plustwo,%
+        \v!diepte=>\global\chardef\sidefloatalign\plusthree]%
+     \ifcase\sidefloatalign\relax
+       \doifinset\v!hoogte{#2}{\global\chardef\sidefloatalign\plusone}%
+       \doifinset\v!regel {#2}{\global\chardef\sidefloatalign\plustwo}%
+       \doifinset\v!diepte{#2}{\global\chardef\sidefloatalign\plusthree}%
+     \fi
      \doifinset\v!hoog{#2}{\global\sidefloattopskip   \zeropoint}%
      \doifinset\v!laag{#2}{\global\sidefloatbottomskip\zeropoint}%
      \doifinset\v!passend{#2}
@@ -228,10 +241,10 @@
    \fi \fi}
 
 \def\presetmorefloatvariables#1%
-  {\doifelse\@@bklokaal\v!ja % fout keyword 
+  {\doifelse\@@bklokaal\v!ja % fout keyword
      \globalcenterfloatboxtrue
      \globalcenterfloatboxfalse
-   \ifglobalcenterfloatbox 
+   \ifglobalcenterfloatbox
      \localcenterfloatboxtrue
    \else
      \doifinsetelse\v!lokaal{#1}
@@ -250,6 +263,15 @@
 
 \newevery \everyinsidefloat \relax
 
+\appendtoks
+  \everyinsidefloat\emptytoks % in case it's called earlier
+  \dogetfloatdata
+\to \everyinsidefloat
+
+%\appendtoks
+%  \fuzzysnappingfalse % what is otr is 
+%\to \everyinsidefloat
+
 \def\dodocomplexplaatsblok[#1][#2][#3]#4%
   {\flushnotes
    \ifsomefloatwaiting
@@ -265,32 +287,52 @@
           {}}%
      % but which should be done before using box \floatbox
    \fi
-   \ifmargeblokken
+   \ifmargeblokken % waarschijnlijk gebroken ! ! ! !
      \doifinset\v!marge{#2}
        {\bgroup\everypar{\egroup\the\everypar}%
         \hsize\@@mbbreedte}%
    \fi
    \global\insidefloattrue
-   \begingroup % ** 
+   \begingroup % **
    \the\everyinsidefloat
    \let\@@extrafloat\empty
    \presetmorefloatvariables{#2}%
    \dowithnextboxcontent % better a \the\everyfloattoks
      {\setlocalfloathsize
+      \fuzzysnappingfalse 
       \postponefootnotes} % new
      {\xdocompletefloat{#1}{#3}{#1}{#2}{#1}{#4}%
-      \doifnotinset\v!tekst{#2}\endgroup} % ** not yet done 
+      % we need to carry over the par because of side floats
+      \doifnotinset\v!tekst{#2}{\carryoverpar\endgroup}} % ** not yet done
      \vbox}
 
+%\def\xxdocompletefloat#1#2%
+%  {\setbox\nextbox\hbox{\signalrightpage\box\nextbox}%
+%   \doifrightpageelse{\let\@@extrafloat#1}{\let\@@extrafloat#2}}
+
 \def\xxdocompletefloat#1#2%
-  {\setbox\nextbox\hbox{\signalrightpage\box\nextbox}%
-   \doifrightpageelse{\let\@@extrafloat#1}{\let\@@extrafloat#2}}
+  {\rightorleftpageaction{\let\@@extrafloat#1}{\let\@@extrafloat#2}}
+
+\def\doifrightpagefloatelse % watch out: other default ! ! !
+  {\ifdubbelzijdig
+     \ifodd\purenumber\twopassfloatdata\space
+       \@EAEAEA\firstoftwoarguments
+     \else 
+       \@EAEAEA\secondoftwoarguments
+     \fi
+   \else
+     \@EA\firstoftwoarguments
+   \fi}
+
+\appendtoks
+  \let\rightorleftpageaction\doifrightpagefloatelse 
+\to \everyinsidefloat
 
 \newif\ifextrafloatactions \extrafloatactionstrue
 
 % \let\movesidefloat\gobbleoneargument
 
-% new : \placefloat[leftmargin,-2*line]
+% new : \place...[leftmargin,-2*line]
 
 \def\movesidefloat[#1]%
   {\bgroup
@@ -304,7 +346,7 @@
    \expanded{\dorepeatwithcommand[#1]}\domovesidefloat
    \egroup}
 
-% or cleaner be longer:
+% or cleaner but longer:
 %
 % \def\movesidefloat[#1]%
 %   {\bgroup
@@ -323,49 +365,97 @@
       -\v!regel=>\movesidefloat-]}
 
 \def\xdocompletefloat#1#2#3#4#5#6%
-  {\ifextrafloatactions
+  {\ifextrafloatactions 
      \let\@@extrafloat\empty
      % \sidefloatdownshift will be reset afterwards, and can
      % already be set at this point
      \processallactionsinset
-       [#4]
-       [\v!binnen=>\xxdocompletefloat\v!links       \v!rechts,
-        \v!buiten=>\xxdocompletefloat\v!rechts      \v!links,
-   \v!binnenmarge=>\xxdocompletefloat\v!linkermarge \v!rechtermarge,
-   \v!buitenmarge=>\xxdocompletefloat\v!rechtermarge\v!linkermarge,
-    \v!binnenrand=>\xxdocompletefloat\v!linkerrand  \v!rechterrand,
-    \v!buitenrand=>\xxdocompletefloat\v!rechterrand \v!linkerrand,
-          % for old times sake
-          ininner=>\xxdocompletefloat\v!inlinker    \v!inrechter,
-          inouter=>\xxdocompletefloat\v!inrechter   \v!inlinker,
-       \s!unknown=>{\movesidefloat[\commalistelement]}]%
+       [#4] % ininner/inouter : for old times sake
+       [     \v!binnen=>\xxdocompletefloat\v!links       \v!rechts,
+             \v!buiten=>\xxdocompletefloat\v!rechts      \v!links,
+        \v!binnenmarge=>\xxdocompletefloat\v!linkermarge \v!rechtermarge,
+        \v!buitenmarge=>\xxdocompletefloat\v!rechtermarge\v!linkermarge,
+         \v!binnenrand=>\xxdocompletefloat\v!linkerrand  \v!rechterrand,
+         \v!buitenrand=>\xxdocompletefloat\v!rechterrand \v!linkerrand,
+               ininner=>\xxdocompletefloat\v!inlinker    \v!inrechter,
+               inouter=>\xxdocompletefloat\v!inrechter   \v!inlinker,
+            \s!unknown=>{\movesidefloat[\commalistelement]}]%
      \ifx\@@extrafloat\empty
-       \setlocalfloatdimensions{#1}{#4}%
-       \docompletefloat{#1}{#2}{#3}{#4}{#5}{#6}{\box\nextbox}%
+       \docompletefloat{#1}{#2}{#3}{#4}{#5}{#6}\nextbox
      \else
-       \setlocalfloatdimensions{#1}{\@@extrafloat,#4}%
-       \docompletefloat{#1}{#2}{#3}{\@@extrafloat,#4}{#5}{#6}{\box\nextbox}%
+       \docompletefloat{#1}{#2}{#3}{\@@extrafloat,#4}{#5}{#6}\nextbox
      \fi
    \else % downward compatible
-     \docompletefloat{#1}{#2}{#3}{#4}{#5}{#6}{\box\nextbox}%
+     \docompletefloat{#1}{#2}{#3}{#4}{#5}{#6}\nextbox
    \fi}
 
 % pas op, maxbreedte niet instellen als plaats=links/rechts
 
-\def\setlocalfloatdimensions#1#2% experimental ! ! ! !
-  {\doifvaluesomething{\??fl#1\c!maxbreedte}
-     {\scratchdimen\getvalue{\??fl#1\c!maxbreedte}\relax
-      \ifdim\wd\nextbox>\scratchdimen
-        \setbox\nextbox\hbox to \scratchdimen
-          {\doifcommonelse{\v!rechts,\v!inrechter,\v!links,\v!inlinker}{#2}
-             {\doifnotcommon{\v!rechts,\v!inrechter}{#2}\hss
-              \box\nextbox
-              \doifnotcommon{\v!links ,\v!inlinker }{#2}\hss}%
-             {\doifvalue{\??fl#1\c!plaats}\v!rechts\hss
-              \box\nextbox
-              \doifvalue{\??fl#1\c!plaats}\v!links \hss}}%
-      \fi}}
+% \def\setlocalfloatdimensions#1#2#3#4% experimental / #3 box number #4 prefix
+%   {\ifextrafloatactions
+%      \doifvaluesomething{\??fl#1\c!minbreedte}
+%        {\scratchdimen\getvalue{\??fl#1\c!minbreedte}\relax
+%         \ifdim\wd#3<\scratchdimen
+%           #4\setbox#3\hbox to \scratchdimen
+%             {\doifnotvalue{\??fl#1\c!plaats}\v!links \hss
+%              \box#3%
+%              \doifnotvalue{\??fl#1\c!plaats}\v!rechts\hss}%
+%         \fi}%
+%      \doifvaluesomething{\??fl#1\c!maxbreedte}
+%        {\scratchdimen\getvalue{\??fl#1\c!maxbreedte}\relax
+%         \ifdim\wd#3>\scratchdimen
+%           #4\setbox#3\hbox to \scratchdimen
+%             {\doifcommonelse{\v!rechts,\v!inrechter,\v!links,\v!inlinker}{#2}
+%                {\doifnotcommon{\v!rechts,\v!inrechter}{#2}\hss
+%                 \box#3%
+%                 \doifnotcommon{\v!links ,\v!inlinker }{#2}\hss}%
+%                {\doifnotvalue{\??fl#1\c!plaats}\v!links\hss
+%                 \box#3%
+%                 \doifnotvalue{\??fl#1\c!plaats}\v!rechts\hss}}%
+%         \fi}%
+%    \fi}
 
+\def\setlocalfloatdimensions#1#2#3#4% experimental / #3 box number #4 prefix
+  {\global\sidefloatshift\zeropoint\relax % duplicate  
+   \ifextrafloatactions
+\ifdim\sidefloatdownshift=\zeropoint\else
+  \global\setbox\floatbox\vbox
+    {\vskip\sidefloatdownshift\nointerlineskip\box\floatbox}%
+\fi
+\global\sidefloatdownshift\zeropoint
+     \doifvaluesomething{\??fl#1\c!minbreedte}
+       {\scratchdimen\getvalue{\??fl#1\c!minbreedte}\relax
+        \ifdim\wd#3<\scratchdimen
+          #4\setbox#3\hbox to \scratchdimen
+            {\doifnotvalue{\??fl#1\c!plaats}\v!links \hss
+             \box#3%
+             \doifnotvalue{\??fl#1\c!plaats}\v!rechts\hss}%
+        \fi}%
+     \doifinset\v!hangend{#2}
+       {\doifcommonelse{\v!inlinker,\v!linkermarge}{#2}
+          {\letvalue{\??fl#1\c!maxbreedte}\leftmarginwidth}% 
+          {\doifcommon{\v!inrechter,\v!rechtermarge}{#2}
+             {\letvalue{\??fl#1\c!maxbreedte}\rightmarginwidth}}}% 
+     \doifvaluesomething{\??fl#1\c!maxbreedte}
+       {\scratchdimen\getvalue{\??fl#1\c!maxbreedte}\relax
+        \ifdim\wd#3>\scratchdimen
+          \doifcommonelse{\v!inrechter,\v!rechtermarge}{#2}  
+            {\global\sidefloatshift-\scratchdimen      
+             \global\advance\sidefloatshift-\rightmargindistance}
+            {\doifcommonelse{\v!inlinker,\v!linkermarge}{#2}
+               {\global\sidefloatshift-\scratchdimen      
+                \global\advance\sidefloatshift-\leftmargindistance}
+               {#4\setbox#3\hbox to \scratchdimen
+                 {\doifcommonelse{\v!rechts,\v!links}{#2}
+                    {\doifnotinset\v!rechts{#2}\hss
+                     \box#3%
+                     \doifnotinset\v!links{#2}\hss}%
+                    {\doifnotvalue{\??fl#1\c!plaats}\v!links\hss
+                     \box#3%
+                     \doifnotvalue{\??fl#1\c!plaats}\v!rechts\hss}}}}%
+        \fi}%
+   \fi}
+ 
 \def\docomplexstarttekstblok[#1][#2][#3]%
   {\flushnotes
    \flushsidefloats % hoort eigenlijk niet hier
@@ -396,10 +486,13 @@
      [#1]
      [\c!breedte=15\korpsgrootte,
       \c!hoogte=10\korpsgrootte,
+      \c!minbreedte=,
       \c!maxbreedte=,
       \c!maxhoogte=,
+      \c!criterium=,
       \c!zijvoorwit=\@@bkzijvoorwit,
       \c!zijnawit=\@@bkzijnawit,
+      \c!zijuitlijnen=\@@bkzijuitlijnen, % \v!regel
       \c!marge=\@@bkmarge,
       \c!linkermargeafstand=\@@bklinkermargeafstand,
       \c!rechtermargeafstand=\@@bkrechtermargeafstand,
@@ -481,8 +574,9 @@
    \copylocalframed[\??fl#1][\??fl#3]%
    \copyparameters[\??fl#1][\??fl#3]
      [\c!breedte,\c!hoogte,%\c!lokaal,
-      \c!maxbreedte,\c!maxhoogte,\c!marge,\c!zijvoorwit,\c!zijnawit,
-      \c!linkermargeafstand,\c!rechtermargeafstand,
+      \c!maxbreedte,\c!maxhoogte,\c!minbreedte,
+      \c!marge,\c!zijvoorwit,\c!zijnawit,\c!zijuitlijnen,
+      \c!linkermargeafstand,\c!rechtermargeafstand,\c!criterium,
       \c!kader,\c!straal,\c!hoek,\c!plaats,\c!achtergrond,\c!kaderkleur,
       \c!achtergrondraster,\c!achtergrondkleur,\c!achtergrondoffset,
       \c!bovenkader,\c!onderkader,\c!linkerkader,\c!rechterkader,
@@ -500,10 +594,10 @@
 \def\placefloat % \plaatsplaatsblok
   {\dotripleempty\docomplexplaatsblok}
 
-\installinsertion\topins \newdimen\topinserted 
-\installinsertion\botins \newdimen\botinserted 
+\installinsertion\topins \newdimen\topinserted
+\installinsertion\botins \newdimen\botinserted
 
-%D Extra float registers. 
+%D Extra float registers.
 
 \newif\ifsomefloatwaiting     \somefloatwaitingfalse
 \newif\ifroomforfloat         \roomforfloattrue
@@ -528,6 +622,35 @@
 
 \newdimen\floatwidth
 \newdimen\floatheight
+
+% the tricky part of getting float related two pass data is
+% that we should fetch is early but can only save it with
+% the composed float box; this determines the order: get it
+% before saving it
+
+\definetwopasslist{\s!float\s!data} \newcounter\noffloatdata
+
+\let\twopassfloatdata\realpageno
+
+\def\dogetfloatdata % precedes save !
+  {\doglobal\increment\noffloatpages
+   \gettwopassdata{\s!float\s!data}%
+   \iftwopassdatafound
+     \globallet\twopassfloatdata\twopassdata
+   \else
+     \globallet\twopassfloatdata\realpageno % \realfolio
+   \fi}
+
+\def\dosavefloatdata
+  {\bgroup
+   \edef\dosavefloatdata
+     {\writeutilitycommand
+        {\twopassentry
+           {\s!float\s!data}%
+           {\noffloatdata}%
+           {\noexpand\realfolio}}}% later {}{}{}{} and \getfirst...
+   \dosavefloatdata
+   \egroup}
 
 % Er wordt bij \v!altijd als dat nodig is hernummerd.
 % Daarbij wordt gebruik gemaakt van de opgeslagen nummers en
@@ -790,7 +913,7 @@
      {\dp\floatbox\openstrutdepth}% dp\strutbox}%      % toegevoegd
    \box\floatbox
    \blanko[\@@bknawit]%
-   \endgroup % ** 
+   \endgroup % **
    \doinsertfloatinfo}
 
 \def\somefacefloat[#1]%  links, rechts, midden, hoog, midden, laag
@@ -863,22 +986,22 @@
 %                  andere commando's witruimte te onderdrukken
 
 \newdimen\floatsideskip         \floatsideskip  =12pt
-\newdimen\floattopskip          \floattopskip   =\floattopskip   
-\newdimen\floatbottomskip       \floatbottomskip=\floattopskip   
+\newdimen\floattopskip          \floattopskip   =\floattopskip
+\newdimen\floatbottomskip       \floatbottomskip=\floattopskip
 
 \newdimen\sidefloattopskip      \sidefloattopskip   =\floattopskip
 \newdimen\sidefloatbottomskip   \sidefloatbottomskip=\floatbottomskip
 
-\newskip\sidefloatdownshift     
-\newskip\sidefloatleftshift  
-\newskip\sidefloatrightshift 
+\newskip\sidefloatdownshift
+\newskip\sidefloatleftshift
+\newskip\sidefloatrightshift
 
 \def\sidefloattopoffset         {\openstrutdepth} % {\dp\strutbox}
 
 \newcount\noftopfloats          \noftopfloats=2
 \newcount\nofbotfloats          \nofbotfloats=0
 
-\newif\ifnofloatcaption  
+\newif\ifnofloatcaption
 \newif\ifnofloatnumber
 \newif\ifemptyfloatcaption
 
@@ -896,7 +1019,7 @@
     \docalculatefloatskip\sidefloattopskip   {\getvalue{\??fl#1\c!zijvoorwit}}% \@@bkzijvoorwit
     \docalculatefloatskip\sidefloatbottomskip{\getvalue{\??fl#1\c!zijnawit}}% \@@bkzijnawit
     \gdef\sidefloattopoffset{\openstrutdepth}% was \def
-    \global\floatsideskip\getvalue{\??fl#1\c!marge}% 
+    \global\floatsideskip\getvalue{\??fl#1\c!marge}%
     \global\sidefloatleftshift \getvalue{\??fl#1\c!linkermargeafstand}%
     \global\sidefloatrightshift\getvalue{\??fl#1\c!rechtermargeafstand}%
     \global\noftopfloats \@@bknboven\relax
@@ -989,21 +1112,21 @@
   {\noindent
    \xdef\floatcaptionnumber{#1}%
    \dostartattributes{\??kj#1}\c!letter\c!kleur\empty
-     \ifnofloatnumber 
+     \ifnofloatnumber
      \else
        \hbox{\doattributes{\??kj#1}\c!kopletter\c!kopkleur{\strut#2\floatcaptionsuffix}}%
-       \ifnofloatcaption \else \ifemptyfloatcaption \else 
+       \ifnofloatcaption \else \ifemptyfloatcaption \else
          \ifcase#4\relax
            \tfskip\emergencystretch.5em
          \else
            \ifx\@@kjkjtussen\empty\else\unskip\@@kjkjtussen\fi
          \fi
-       \fi \fi 
+       \fi \fi
      \fi
      \ifnofloatcaption \else
        \doattributes{\??kj#1}\c!tekstletter\c!tekstkleur
          {\begstrut#3\endstrut\endgraf}%
-     \fi 
+     \fi
    \dostopattributes}
 
 % new
@@ -1048,7 +1171,7 @@
    \egroup}
 
 \ifx\addlocalbackgroundtobox\undefined
-  \let\addlocalbackgroundtobox\gobbleoneargument
+  \def\addlocalbackgroundtobox{\resetglobal\gobbleoneargument}%
 \fi
 
 \def\dopreparenocaption#1#2#3#4%
@@ -1275,7 +1398,7 @@
       \fi\fi
       \ifdim\scratchdimen>\effectivehsize
         \donefalse
-      \fi   
+      \fi
       \hss\ifdone\hskip\effectiveleftskip\fi
       \box\floatbox
       \ifdone\hskip\effectiverightskip\fi\hss}}
@@ -1315,6 +1438,7 @@
              \v!geen=>\box4,
           \s!unknown=>\box4\endgraf\@@kjkjtussen\box2]}%
    \fi
+   \doglobal\addlocalbackgroundtobox\floatbox
    \egroup}
 
 \newif\ifparfloat
@@ -1332,7 +1456,9 @@
      \else
        \@EA\dosetpagfloat % {#1}{#2}{#3}{#4}%
      \fi{#1}{#2}{#3}{#4}%
-     \setbox\floatbox\hbox{\restoretextcolor{\box\floatbox}}%
+     \setlocalfloatdimensions{#4}{#1}\floatbox\global % tzt arg 3/4 weg
+     \setbox\floatbox\hbox
+       {\dosavefloatdata\restoretextcolor{\box\floatbox}}%
      \global\floatheight\ht\floatbox
      \global\advance\floatheight \dp\floatbox
      \global\floatwidth\wd\floatbox
@@ -1343,7 +1469,7 @@
            \ifvoorlopig
              \inleftmargin{\framed{\infofont\the\totalnoffloats}}%
            \fi
-           \box\floatbox}}%
+          \box\floatbox}}%
      \wd\floatbox\floatwidth
      \dimen0=\floatheight
      \advance\dimen0 \lineheight
@@ -1359,49 +1485,56 @@
 
 \newcounter\noxfloatlocations
 
-\def\dogetfloatbox#1%
-  {\ifvisible
-     \let\next\relax % ivm eetex
-     \processfirstactioninset
-       [#1]
-       [    \v!hier=>\def\next{\someelsefloat[#1]},
-         \v!forceer=>\def\next{\somefixdfloat[#1]},
-           \v!links=>\def\next{\somesidefloat[#1]\presetindentation},
-          \v!rechts=>\def\next{\somesidefloat[#1]},
-           \v!tekst=>\def\next{\sometextfloat[#1]},
-           \v!boven=>\def\next{\someelsefloat[#1]\nonoindentation}, % !
-           \v!onder=>\def\next{\someelsefloat[#1]},
-           \v!marge=>\def\next{\somenextfloat[#1]\nonoindentation}, % !
-          \v!pagina=>\def\next{\somepagefloat[#1]},
-           \v!naast=>\def\next{\somefacefloat[#1]},
-         \v!inmarge=>\def\next{\somesidefloat[#1]},
-        \v!inlinker=>\def\next{\somesidefloat[#1]},
-       \v!inrechter=>\def\next{\somesidefloat[#1]},
-     \v!linkermarge=>\def\next{\somesidefloat[#1]},
-    \v!rechtermarge=>\def\next{\somesidefloat[#1]},
-      \v!linkerrand=>\def\next{\somesidefloat[#1]},
-     \v!rechterrand=>\def\next{\somesidefloat[#1]},
-         \s!default=>\def\next{\someelsefloat[\v!hier,#1]},
-         \s!unknown=>\def\next{\someelsefloat[\v!hier,#1]}]%
-     \next
-   \fi}
+% \def\dogetfloatbox#1#2%
+%   {\ifvisible
+%      \let\next\relax % ivm eetex
+%      \processfirstactioninset
+%        [#1]
+%        [    \v!hier=>\def\next{\someelsefloat[#1]},
+%          \v!forceer=>\def\next{\somefixdfloat[#1]},
+%            \v!links=>\def\next{\somesidefloat[#1]\presetindentation},
+%           \v!rechts=>\def\next{\somesidefloat[#1]},
+%            \v!tekst=>\def\next{\sometextfloat[#1]},
+%            \v!boven=>\def\next{\someelsefloat[#1]\nonoindentation}, % !
+%            \v!onder=>\def\next{\someelsefloat[#1]},
+%            \v!marge=>\def\next{\somenextfloat[#1]\nonoindentation}, % !
+%           \v!pagina=>\def\next{\somepagefloat[#1]},
+%            \v!naast=>\def\next{\somefacefloat[#1]},
+%          \v!inmarge=>\def\next{\somesidefloat[#1]},
+%         \v!inlinker=>\def\next{\somesidefloat[#1]},
+%        \v!inrechter=>\def\next{\somesidefloat[#1]},
+%      \v!linkermarge=>\def\next{\somesidefloat[#1]},
+%     \v!rechtermarge=>\def\next{\somesidefloat[#1]},
+%       \v!linkerrand=>\def\next{\somesidefloat[#1]},
+%      \v!rechterrand=>\def\next{\somesidefloat[#1]},
+%          \s!default=>\def\next{\someelsefloat[\v!hier,#1]},
+%          \s!unknown=>\def\next{\someelsefloat[\v!hier,#1]}]%
+%      \next
+%    \fi}
 
 \long\def\dofloat#1#2#3#4%
   {\dosetfloatbox{#1}{#2}{#3}{#4}%
-   \dogetfloatbox{#1}}%
+   \doifelsevaluenothing{\??fl#4\c!criterium}
+     {\dogetfloatbox{#1}\empty}
+     {\ifdim\wd\floatbox>\getvalue{\??fl#4\c!criterium}\relax
+        \dogetfloatbox{#1}\v!hier
+      \else
+        \dogetfloatbox{#1}\empty
+      \fi}}
 
 \let\naturalfloatheight\!!zeropoint
 \let\naturalfloatwidth \!!zeropoint
 \let\naturalfloatdepth \!!zeropoint
 
-\long\def\docompletefloat#1#2#3#4#5#6#7%
+\long\def\docompletefloat#1#2#3#4#5#6#7% #7 = box number
   {\flushsidefloats
    \presetfloatvariables{#1}{#4}{#2}{#6}%
    \bgroup
-   \global\setbox\floatbox\vbox{#7}%
-\xdef\naturalfloatheight{\the\ht\floatbox}%
-\xdef\naturalfloatwidth {\the\wd\floatbox}%
-\xdef\naturalfloatdepth {\the\dp\floatbox}%
+  %\setlocalfloatdimensions{#1}{#4}{#7}\relax
+   \global\setbox\floatbox\vbox{\box#7}%
+   \xdef\naturalfloatheight{\the\ht\floatbox}%
+   \xdef\naturalfloatwidth {\the\wd\floatbox}%
+   \xdef\naturalfloatdepth {\the\dp\floatbox}%
    \dimen0 \ht\floatbox
    \advance\dimen0 \dp\floatbox
    \ifdim\dimen0=\zeropoint
@@ -1411,7 +1544,7 @@
    \ifnofloatcaption
      \global\setbox\floatbox\vbox
        {\unvbox\floatbox
-        \vss % gets rid of the depth (unless tabulate) 
+        \vss % gets rid of the depth (unless tabulate)
         \rawpagereference\s!flt{#2}}%
       \egroup
       \dofloat{#4}{}{#6}{#1}%
@@ -1629,7 +1762,7 @@
      \resetnummer[\??si]%
      \def\floatcaptionsuffix{\nummer[\??si]}%
      \TABLEcaptionheight=\@@siregels\lineheight % brrr
-     \simplifypagebreak % \page becomes \goodbreak 
+     \simplifypagebreak % \page becomes \goodbreak
      \dowithnextbox
        {\forgetall
         \mindermeldingen
@@ -1739,6 +1872,7 @@
    \c!nawit=\v!groot,
    \c!zijvoorwit=\@@bkvoorwit,
    \c!zijnawit=\@@bknawit,
+   \c!zijuitlijnen=\v!normaal,
    \c!springvolgendein=\v!nee,
    \c!marge=1em,
    \c!linkermargeafstand=\zeropoint,
@@ -1759,20 +1893,23 @@
 \let\floatcolumn\empty
 \let\floatrow   \empty
 
-\def\dogetfloatbox#1%
+\def\dogetfloatbox#1#2%
   {\ifvisible
-     \getfromcommalist[#1][1]%
-     \@EA\beforesplitstring\commalistelement\at:\to\floatmethod
-     \@EA\aftersplitstring \commalistelement\at:\to\floatcolumn
-     \@EA\aftersplitstring \floatcolumn\at*\to\floatrow
-     \@EA\beforesplitstring\floatcolumn\at*\to\floatcolumn
-     % todo: nog algemeen otr
-     \ifx\OTRSETsetpreferedcolumnslot\undefined\else
-       \OTRSETsetpreferedcolumnslot\floatcolumn\floatrow
-     \fi
-     % commando van maken
+     \doifelsenothing{#2}
+       {\getfromcommalist[#1][1]%
+        \@EA\beforesplitstring\commalistelement\at:\to\floatmethod
+        \@EA\aftersplitstring \commalistelement\at:\to\floatcolumn
+        \@EA\aftersplitstring \floatcolumn\at*\to\floatrow
+        \@EA\beforesplitstring\floatcolumn\at*\to\floatcolumn
+        % todo: nog algemeen otr
+        \ifx\OTRSETsetpreferedcolumnslot\undefined\else
+          \OTRSETsetpreferedcolumnslot\floatcolumn\floatrow
+        \fi}
+       {\let\floatcolumn\empty
+        \let\floatrow\empty
+        \edef\floatmethod{#2}}%
      \doifundefined{\string\floatmethod\floatmethod}
-       {\let\floatmethod\v!hier}%
+        {\let\floatmethod\v!hier}%
      \getvalue{\string\floatmethod\floatmethod}[#1]%
    \fi}
 
@@ -1787,8 +1924,8 @@
 \installfloathandler \v!boven        \sometopfloat
 \installfloathandler \v!onder        \somebottomfloat
 \installfloathandler \v!marge        \somemarginfloat
-\installfloathandler \v!pagina       \somepagefloat
 \installfloathandler \v!naast        \somefacefloat
+\installfloathandler \v!pagina       \somepagefloat
 \installfloathandler \v!inmarge      \someinmarginfloat
 \installfloathandler \v!inlinker     \someinleftmarginfloat
 \installfloathandler \v!inrechter    \someinrightmarginfloat

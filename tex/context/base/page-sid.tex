@@ -15,14 +15,12 @@
 
 \unprotect 
 
-% De onderstaande  macro's ondersteunen het zetten van tekst
-% rond figuren. De macro's zijn ontworpen door Daniel Comenetz
-% en gepubliceerd in TUGBoat Volume 14 (1993), No. 1: Anchored
-% Figures at Either Margin. De macro's zijn slechts op enkele
-% punten door mij aangepast.
-
-% This module badly needs an update because it's now a 
-% mixture of old and new macros. 
+% These macro deal with side floats. We started with Daniel 
+% Comenetz macros as published in TUGBoat Volume 14 (1993), 
+% No.\ 1: Anchored Figures at Either Margin. I extended and 
+% patched the macros to suite our needs which results in a 
+% messy module. Therefore, this module badly needs an update 
+% because it's now a mixture of old and new macros. 
 
 % afhankelijke variabelen
 %
@@ -48,6 +46,7 @@
 \newdimen\sidefloatheight      % includes the topskip
 \newdimen\sidefloatwidth
 \newdimen\sidefloathsize
+\newdimen\sidefloatshift
 \newdimen\sidefloatvsize       \def\nofloatvsize{-1pt }
 \newdimen\sidefloatprogress
 
@@ -117,28 +116,74 @@
 %   \global\floatshortfalse
 %   \global\floatflagfalse}
 
+% \def\flushsidefloats
+%   {\par
+%    \!!heighta\sidefloatvsize
+%    \advance\!!heighta -\pagetotal
+%    \ifdim\!!heighta>\zeropoint
+%      % to be checked for interference
+%      \witruimte
+%      % will be option
+%      \getnoflines\!!heighta
+%      \!!heighta\noflines\lineheight
+%      % so far for option
+%      \ifdim\sidefloatbottomskip>\zeropoint\relax
+%        \ifdim\!!heighta>\sidefloatbottomskip
+%          \advance\!!heighta-\sidefloatbottomskip
+%          \kern\!!heighta
+%          \vskip\sidefloatbottomskip
+%        \else
+%          \kern\!!heighta
+%        \fi
+%      \else
+%        \kern\!!heighta
+%      \fi
+%    \fi
+%    % == \forgetsidefloats 
+%    \global\sidefloatvsize\nofloatvsize
+%    \global\floatshortfalse
+%    \global\floatflagfalse}
+
+\newif\iftracesidefloats
+
 \def\flushsidefloats
   {\par
    \!!heighta\sidefloatvsize
    \advance\!!heighta -\pagetotal
-   \ifdim\!!heighta>\zeropoint
-     % to be checked for interference
-     \witruimte
-     % will be option
-     \getnoflines\!!heighta
-     \!!heighta\noflines\lineheight
-     % so far for option
-     \ifdim\sidefloatbottomskip>\zeropoint\relax
-       \ifdim\!!heighta>\sidefloatbottomskip
-         \advance\!!heighta-\sidefloatbottomskip
-         \kern\!!heighta
-         \vskip\sidefloatbottomskip
-       \else
-         \kern\!!heighta
+   \ifnum\!!heighta>\zeropoint
+     \global\advance\sidefloatvsize -\sidefloatbottomskip
+     \ifdim\!!heighta>\zeropoint
+       \bgroup
+       \let\flushsidefloats\relax 
+       \forgetall 
+       \doloop
+         {\strut
+          \iftracesidefloats 
+            \color[darkgray]%
+              {\baselinerulefalse
+               \boxrulewidth.5\s!pt
+               \ruledhbox{\strut\kern\sidefloatwidth}}%
+          \fi
+          \par
+          \!!heighta\sidefloatvsize
+          \advance\!!heighta -\pagetotal
+          \ifdim\!!heighta>\zeropoint 
+            \ifnum\recurselevel>100
+              \exitloop
+            \fi 
+          \else
+            \exitloop
+          \fi}%
+       \egroup
+       \ifdim\parskip>\zeropoint
+         \ifdim\sidefloatbottomskip>\parskip
+           \geenwitruimte 
+           \vskip\sidefloatbottomskip
+         \fi 
        \fi
-     \else
-       \kern\!!heighta
-     \fi
+     \else\ifdim\sidefloatbottomskip>\parskip
+       \vskip\sidefloatbottomskip
+     \fi\fi
    \fi
    % == \forgetsidefloats 
    \global\sidefloatvsize\nofloatvsize
@@ -163,7 +208,7 @@
 
 \def\pushpenalties
   {\widowpenalty\plusone
-   \clubpenalty2
+   \clubpenalty\plustwo
    \brokenpenalty\plusone
    \let\pushpenalties\relax
    \edef\poppenalties
@@ -200,7 +245,7 @@
              \iffloatrighteqo
                \global\floatrighteqofalse
              \else
-               \global\divide\sidefloathsize 2
+               \global\divide\sidefloathsize \plustwo
              \fi
              \hskip\sidefloathsize
            \fi
@@ -303,35 +348,64 @@
    \witruimte
    % moved here dec 2001 
    {\everypar\emptytoks\forgetall\vbox{\strut}\vskip-\lineheight}% moved
-   %
+   \ifdim\sidefloatshift=\zeropoint\else
+     \global \marginfloatfalse
+     \global \edgefloatfalse 
+   \fi 
+   \ifcase\sidefloatalign \else
+     \global\sidefloattopskip\zeropoint
+   \fi
    \previoussidefloat
    \stallsidefloat
+\global
    \setbox\floatbox\hbox
      {\ifmarginfloat\else\ifrightfloat\else\kern\sidefloatleftshift\fi\fi
-      \vbox % pretty ugly, will be rewritten
-        {\vskip
-           \sidefloatdownshift
-         \vskip
-           \ifmarginfloat
-             -\sidefloattopskip
-           \else\ifedgefloat
-             -\sidefloattopskip
-           \else
-             +\sidefloattopoffset
-           \fi\fi
-           #1}% no \hskip, but \kern here 
+      \hskip\sidefloatshift
+      \scratchdimen
+        \ifmarginfloat           
+          \sidefloattopskip
+        \else\ifedgefloat 
+          \sidefloattopskip
+        \else
+          \zeropoint
+        \fi\fi
+      % the top of the box is at the previous baseline 
+      \ifcase\sidefloatalign 
+         % normal 
+        \advance\scratchdimen\strutdepth % == \sidefloattopoffset
+      \or % height  
+        \advance\scratchdimen\strutdepth % == \sidefloattopoffset
+      \or % line
+%        \advance\scratchdimen\lineheight
+      \or % depth 
+        \advance\scratchdimen\lineheight
+        \advance\scratchdimen\strutdepth
+      \fi
+      % equivalent but more compact:
+%      \advance\scratchdimen\strutdepth\relax 
+%      \ifcase\sidefloatalign                
+%      \or
+%      \or \advance\scratchdimen\strutheight
+%      \or \advance\scratchdimen\lineheight
+%      \fi 
+      \vbox{\vskip\scratchdimen\nointerlineskip#1}% 
+      % no \hskip, but \kern here 
       \ifmarginfloat\else\ifrightfloat\kern\sidefloatrightshift\fi\fi}%
+   \ifmarginfloat
+     \global\sidefloattopskip\zeropoint 
+   \else\ifedgefloat
+     \global\sidefloattopskip\zeropoint 
+   \fi\fi
    \global\sidefloatdownshift\zeropoint
    \measuresidefloat
-   \ifroomforfloat 
-   \else
+   \ifroomforfloat \else
      \tosssidefloat
      \measuresidefloat
      \stallsidefloat
    \fi
    \setsidefloat}
 
-\def\progresssidefloat%
+\def\progresssidefloat
   {\sidefloatprogress\sidefloatvsize
    \iffloatflag
      \advance\sidefloatprogress -\sidefloatpagetotal
@@ -381,11 +455,57 @@
      \roomforfloattrue
    \fi}
 
+% \def\setsidefloat% nilling everypar saves time and redudant pos's 
+%   {% removed here dec 2001   
+%   %{\everypar\emptytoks\forgetall\vbox{\strut}\vskip-\lineheight}%
+%    %
+%    \kern\sidefloattopskip
+%    \edef\presidefloatdepth{\the\prevdepth}%
+%    \nointerlineskip
+%    \bgroup
+%    \everypar\emptytoks
+%    \parskip\zeropoint
+%    \logsidefloat
+%    \ifrightfloat
+%      \hfill
+%      \ifmarginfloat
+% %       \rlap{\hskip\rechtermargeafstand\hskip\rightskip\unhbox\floatbox}%
+% \rlap{\tbox{\hskip\rechtermargeafstand\hskip\rightskip\unhbox\floatbox}}%
+%      \else\ifedgefloat
+% \rlap{\tbox{\hskip\rechtermargeafstand\hskip\rechtermargebreedte
+%             \hskip\rechterrandafstand\hskip\rightskip\unhbox\floatbox}}%
+%      \else
+%        \unhbox\floatbox
+%      \fi\fi
+%    \else
+%      \noindent
+%      \ifmarginfloat
+% %       \llap{\unhbox\floatbox\hskip\leftskip\hskip\linkermargeafstand}%
+% \llap{\tbox{\unhbox\floatbox\hskip\leftskip\hskip\linkermargeafstand}}%
+%      \else\ifedgefloat
+% \llap{\tbox{\unhbox\floatbox\hskip\leftskip\hskip\linkermargeafstand
+%             \hskip\linkermargebreedte\hskip\linkerrandafstand}}%
+%      \else
+%        \unhbox\floatbox
+%      \fi\fi
+%      \hfill
+%    \fi
+%    \egroup
+%    \par
+%    \kern-\sidefloatheight
+%    \penalty10001 % oeps, this will change 
+%    \normalbaselines
+%    \prevdepth\presidefloatdepth
+%    %\noindent
+%    \resetsidefloatparagraph
+%    \ignorespaces}
+
 \def\setsidefloat% nilling everypar saves time and redudant pos's 
   {% removed here dec 2001   
-  %{\everypar\emptytoks\forgetall\vbox{\strut}\vskip-\lineheight}%
-   %
-   \kern\sidefloattopskip
+   % {\everypar\emptytoks\forgetall\vbox{\strut}\vskip-\lineheight}%
+   \ifmarginfloat \else \ifedgefloat \else
+     \kern\sidefloattopskip
+   \fi \fi
    \edef\presidefloatdepth{\the\prevdepth}%
    \nointerlineskip
    \bgroup
@@ -395,24 +515,22 @@
    \ifrightfloat
      \hfill
      \ifmarginfloat
-%       \rlap{\hskip\rechtermargeafstand\hskip\rightskip\unhbox\floatbox}%
-\rlap{\tbox{\hskip\rechtermargeafstand\hskip\rightskip\unhbox\floatbox}}%
+       \rlap{\hskip\rechtermargeafstand\hskip\rightskip\unhbox\floatbox}%
      \else\ifedgefloat
-\rlap{\tbox{\hskip\rechtermargeafstand\hskip\rechtermargebreedte
-            \hskip\rechterrandafstand\hskip\rightskip\unhbox\floatbox}}%
+       \rlap{\hskip\rechtermargeafstand\hskip\rechtermargebreedte
+             \hskip\rechterrandafstand\hskip\rightskip\unhbox\floatbox}%
      \else
-       \unhbox\floatbox
+       \unhbox\floatbox 
      \fi\fi
    \else
      \noindent
      \ifmarginfloat
-%       \llap{\unhbox\floatbox\hskip\leftskip\hskip\linkermargeafstand}%
-\llap{\tbox{\unhbox\floatbox\hskip\leftskip\hskip\linkermargeafstand}}%
+       \llap{\unhbox\floatbox\hskip\leftskip\hskip\linkermargeafstand}%
      \else\ifedgefloat
-\llap{\tbox{\unhbox\floatbox\hskip\leftskip\hskip\linkermargeafstand
-            \hskip\linkermargebreedte\hskip\linkerrandafstand}}%
+       \llap{\unhbox\floatbox\hskip\leftskip\hskip\linkermargeafstand
+             \hskip\linkermargebreedte\hskip\linkerrandafstand}%
      \else
-       \unhbox\floatbox
+       \unhbox\floatbox 
      \fi\fi
      \hfill
    \fi
@@ -422,16 +540,16 @@
    \penalty10001 % oeps, this will change 
    \normalbaselines
    \prevdepth\presidefloatdepth
-   %\noindent
+   % \noindent
    \resetsidefloatparagraph
-   \ignorespaces}
+   \ignorespaces} % not really needed 
 
 \newcount\sidefloatparagraph
 
-\def\iffirstsidefloatparagraph%
+\def\iffirstsidefloatparagraph
   {\ifnum\sidefloatparagraph=1 }
 
-\def\setsidefloatparagraph%
+\def\setsidefloatparagraph
   {%\advance\sidefloatprogress \sidefloatbottomskip
    %\!!counta\sidefloatprogress
 \scratchdimen\sidefloatprogress
@@ -439,19 +557,22 @@
 \!!counta\scratchdimen
    \divide\!!counta \baselineskip
    \ifnum\!!counta>0
-     \ifrightfloat
-       \hangindent=-\sidefloatwidth
-     \else
-       \hangindent=\sidefloatwidth
-     \fi
-     \hangafter=-\!!counta
+     \hangindent \ifrightfloat-\fi\sidefloatwidth
+     \hangafter-\!!counta
    \fi
-   \global\advance\sidefloatparagraph \plusone}
+   \global\advance\sidefloatparagraph \plusone
+   \iftracesidefloats
+     \hskip-\sidefloatwidth
+     \color[darkgray]%
+       {\vrule\!!height.5\s!pt\!!depth.5\s!pt\!!width\sidefloatwidth
+       %\hskip-.25\bodyfontsize\showstruts\strut\hskip.25\bodyfontsize}%
+        \llap{\showstruts\strut\hskip.25\bodyfontsize}}%
+   \fi}
 
-\def\resetsidefloatparagraph%
+\def\resetsidefloatparagraph
   {\global\sidefloatparagraph\zerocount }
 
-\def\dochecksidefloat%
+\def\dochecksidefloat
   {\progresssidefloat
    \ifdim\sidefloatprogress>\zeropoint
      \setsidefloatparagraph
@@ -460,19 +581,19 @@
    \fi
    \parskip\tussenwit}
 
-\def\checksidefloat%
+\def\checksidefloat
   {\dochecksidefloat}
 
-\def\doadjustsidefloatdisplaylines%
+\def\doadjustsidefloatdisplaylines
   {\par
    \vskip-\parskip
    \noindent
    \ignorespaces}
 
-\def\adjustsidefloatdisplaylines%
+\def\adjustsidefloatdisplaylines
   {\aftergroup\doadjustsidefloatdisplaylines}
 
-\def\previoussidefloat%
+\def\previoussidefloat
   {\progresssidefloat
    \ifdim\sidefloatprogress>\zeropoint \relax
      \iffloatshort
@@ -483,7 +604,7 @@
      \fi
    \fi}
 
-\def\stallsidefloat%
+\def\stallsidefloat
   {\!!counta\pageshrink
    \divide\!!counta \baselineskip
    \advance\!!counta \plusone

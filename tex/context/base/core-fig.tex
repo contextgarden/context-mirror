@@ -385,6 +385,8 @@
 
 \def\getfiguredimensionsB
   {\ifcase\figurestatus\ifcase\figurefilemode\else
+\doifsomething\@@efcurrentpath
+{%
     %\def\@@efloadname{\@@efcurrentpath\f!pathseparator\@@exfile}%
      \assignfullfilename\@@efcurrentpath\@@exfile\to\@@efloadname
      \edef\@@effilenametype{\@@effilename.\@@efcurrenttype}%
@@ -398,6 +400,7 @@
      \stopreadingfile
      \popendofline
      \@@eftrace{\ifcase\figurestatus not \fi found}%
+}%
    \fi\fi}
 
 \def\presetfigureA[#1][#2]%
@@ -415,7 +418,9 @@
 \def\getfiguredimensionsC
   {\ifconsultutilityfile \ifrunutilityfile 
      \ifcase\figurestatus\ifcase\figurefilemode\else
-       \doifnotinset\@@efextension{\c!tex,\c!tmp}
+\doifsomething\@@efcurrentpath 
+{%
+      \doifnotinset\@@efextension{\c!tex,\c!tmp}
          {\doiffileelse\@@efcurrentfile
             {\edef\@@effilenametype{\@@effilename.\@@efcurrenttype}%
              \@@eftrace{running texutil on \@@effilenametype}%
@@ -431,6 +436,7 @@
              \popendofline
              \@@eftrace{\ifcase\figurestatus not \fi found}}
             {}}%
+}%
      \fi\fi
    \fi\fi}
 
@@ -445,6 +451,8 @@
 
 \def\doanalyzefigurefilesB
   {\ifconsultutilityfile\ifcase\figurestatus\ifcase\figurefilemode\else
+\doifsomething\@@efcurrentpath
+{%
     %\def\@@efloadname{\@@efcurrentpath\f!pathseparator\@@exfile}%
      \assignfullfilename\@@efcurrentpath\@@exfile\to\@@efloadname
      \edef\@@effilenametype{\@@effilename.\figureextension{\@@efcurrenttype}}%
@@ -458,6 +466,7 @@
      \stopreadingfile
      \popendofline
      \@@eftrace{\ifcase\figurestatus not \fi found}%
+}%
    \fi\fi\fi}
 
 \def\presetfigureC[#1][#2]%
@@ -477,6 +486,8 @@
 
 \def\doanalyzefigurefilesC
   {\ifconsultutilityfile\ifcase\figurestatus\ifcase\figurefilemode\else
+\doifsomething\@@efcurrentpath
+{%
     %\def\@@efloadname{\@@efcurrentpath\f!pathseparator\@@exfile}%
      \assignfullfilename\@@efcurrentpath\@@exfile\to\@@efloadname
      \@@eftrace{analyzing \@@efloadname\space 
@@ -489,6 +500,7 @@
      \stopreadingfile
      \popendofline
      \@@eftrace{\ifcase\figurestatus not \fi found}%
+}%
    \fi\fi\fi}
 
 \def\presetfigureD[#1][#2]%
@@ -655,14 +667,14 @@
    \getparameters[\??ef][#1]% dangerous for figs with backgrounds  
    \checkfiguresettings
    \doifelsenothing\@@explaats % fig file paths 
-     {\scratchcounter3 }
+     {\scratchcounter\plusthree}
      {\doifelsenothing\@@exfile % tuf file paths 
-        {\scratchcounter3 }
-        {\scratchcounter0
+        {\scratchcounter\plusthree}
+        {\scratchcounter\zerocount
          \ExpandBothAfter\doifinset\v!lokaal\@@explaats
-           {\advance\scratchcounter 1 }%
+           {\advance\scratchcounter\plusone}%
          \ExpandBothAfter\doifinset\v!globaal\@@explaats
-           {\advance\scratchcounter 2 }}}%
+           {\advance\scratchcounter\plustwo}}}%
    \chardef\figurefilemode\scratchcounter\relax
    \ifcase\figurefilemode
      \let\figurepathlist\f!currentpath
@@ -1125,7 +1137,11 @@
    \global\figwid\zeropoint \figxsca\plusone % see note * 
    \global\fighei\zeropoint \figysca\plusone % see note * 
    \global\setbox\foundexternalfigure\box\voidb@x
-   \edef\expandedfigurename{#3}% needed e.g. in [\get...] cases
+   % get rid of active / and : as well as expand for [\get...] cases
+   \sanitizefilename#3\to\expandedfigurename 
+   % nil path search in case of path spec  
+   \expanded{\checkfilename{\expandedfigurename}}%
+   \ifcase\kindoffile\else \let\figurepathlist\empty \fi
    \expandafter\beforesplitstring\expandedfigurename\at.\to\@@effilename
    \expandafter\aftersplitstring \expandedfigurename\at.\to\@@efextension
    \doifelse\@@effilename{mprun}
@@ -1226,11 +1242,11 @@
        [\c!x=\!!zeropoint,\c!y=\!!zeropoint,
         \c!w=\objectwidth,\c!h=\objectheight]%
      \chardef\figurestatus=5
-     \edef\@@effullname{\@@effilepref#3}%
+     \edef\@@effullname{\@@effilepref\expandedfigurename}%
    \else
      \doifelse{#2}\s!figurepreset
        {\def\figureextension##1{\@@efextension}%
-        \edef\@@effullname{\@@effilepref#3}}%
+        \edef\@@effullname{\@@effilepref\expandedfigurename}}%
        {\ifx\@@efextension\empty
           \dogetcommacommandelement1\from\@@eftype\to\commalistelement
           \edef\@@effullname{\@@effilename.\commalistelement}%
@@ -1387,7 +1403,7 @@
       \global\let\appliedfigurexscale\scax
       \global\let\appliedfigureyscale\scay}%
    \global\wd\foundexternalfigure\figwid
-   \finalizeexternalfigure{#2}{#3}}
+   \finalizeexternalfigure{#2}{\expandedfigurename}}
 
 \let\figurelabel   \empty
 \let\figurefilename\empty
@@ -1691,13 +1707,21 @@
         {\setvalue{\??ef\??ef#1}{\doplaceexternalfigure[\doprecopfigure][#1][#2][#3][#4]}}}%
    \doifundefined{#1}{\setvalue{#1}{\getexternalfigure{#1}}}} % upward compatible
 
-\def\douseexternalfigure[#1][#2][#3][#4]% 
+%\def\douseexternalfigure[#1][#2][#3][#4]% 
+%  {\doifelsenothing{#1}
+%     {\doifsomething{#2}
+%        {\dosetuseexternalfigure[#2][#2][#3][#4]}}
+%     {\doifelsenothing{#2}
+%        {\dosetuseexternalfigure[#1][#1][#3][#4]}
+%        {\dosetuseexternalfigure[#1][#2][#3][#4]}}}
+
+\def\douseexternalfigure[#1][#2]%[#3][#4]%
   {\doifelsenothing{#1}
      {\doifsomething{#2}
-        {\dosetuseexternalfigure[#2][#2][#3][#4]}}
+        {\dosetuseexternalfigure[#2][#2]}}  %[#3][#4]}}
      {\doifelsenothing{#2}
-        {\dosetuseexternalfigure[#1][#1][#3][#4]}
-        {\dosetuseexternalfigure[#1][#2][#3][#4]}}}
+        {\dosetuseexternalfigure[#1][#1]}   %[#3][#4]}
+        {\dosetuseexternalfigure[#1][#2]}}} %[#3][#4]}}}
 
 \def\useexternalfigure
   {\doquadrupleempty\douseexternalfigure}
@@ -2080,6 +2104,51 @@
 %D
 %D \showsetup{setupclipping}
 
+% \def\doclip[#1]% nb top->bottom left->right
+%   {\bgroup
+%    \getparameters[\??cp][#1]%
+%    \dowithnextbox
+%      {\ifdim\@@cpbreedte>\zeropoint
+%         \dimen0=\@@cpbreedte
+%         \dimen4=\@@cphoffset
+%       \else
+%         \dimen0=\wd\nextbox
+%         \divide\dimen0 \@@cpnx
+%         \dimen4=\@@cpx\dimen0
+%         \advance\dimen4 -\dimen0
+%         \dimen0=\@@cpsx\dimen0
+%       \fi
+%       \relax % sure
+%       \ifdim\@@cphoogte>\zeropoint
+%         \dimen2=\@@cphoogte
+%         \dimen6=\ht\nextbox
+%         \advance\dimen6 -\@@cpvoffset
+%         \advance\dimen6 -\dimen2
+%       \else
+%         \dimen2=\ht\nextbox
+%         \divide\dimen2 \@@cpny
+%         \dimen6=-\@@cpy\dimen2
+%         \advance\dimen6 -\@@cpsy\dimen2
+%         \advance\dimen6 \dimen2
+%         \dimen2=\@@cpsy\dimen2
+%         \advance\dimen6 \ht\nextbox
+%       \fi
+%       \setbox\nextbox\hbox
+%         {\hskip-\dimen4\lower\dimen6\box\nextbox}%
+%       \wd\nextbox\zeropoint
+%       \ht\nextbox\zeropoint
+%       \dp\nextbox\zeropoint
+%       \setbox\nextbox\hbox
+%         {\dostartclipping\@@cpmp{\dimen0}{\dimen2}%
+%          \box\nextbox
+%          \dostopclipping}%
+%       \wd\nextbox\dimen0
+%       \ht\nextbox\dimen2
+%       \dp\nextbox\zeropoint
+%       \box\nextbox
+%       \egroup}%
+%    \hbox}
+
 \def\doclip[#1]% nb top->bottom left->right
   {\bgroup
    \getparameters[\??cp][#1]%
@@ -2109,15 +2178,25 @@
         \dimen2=\@@cpsy\dimen2
         \advance\dimen6 \ht\nextbox
       \fi
-      \setbox\nextbox\hbox
-        {\hskip-\dimen4\lower\dimen6\box\nextbox}%
+      \setbox\nextbox\hbox                       % old 
+        {\advance\dimen4 -\@@cplinkeroffset      % new !
+         \advance\dimen6  \@@cpbovenoffset       % new !
+         \hskip-\dimen4\lower\dimen6\box\nextbox}% old 
       \wd\nextbox\zeropoint
       \ht\nextbox\zeropoint
       \dp\nextbox\zeropoint
       \setbox\nextbox\hbox
-        {\dostartclipping\@@cpmp{\dimen0}{\dimen2}%
-         \box\nextbox
+        {\advance\dimen0 \@@cplinkeroffset        % new !
+         \advance\dimen0 \@@cprechteroffset       % new !
+         \advance\dimen2 \@@cpbovenoffset         % new !
+         \advance\dimen2 \@@cponderoffset         % new !
+         \dostartclipping\@@cpmp{\dimen0}{\dimen2}% old
+           \box\nextbox
          \dostopclipping}%
+      \setbox\nextbox\hbox                      % new !
+        {\dimen0-\@@cplinkeroffset              % new !
+         \dimen2-\@@cpbovenoffset               % new !
+         \hskip\dimen0\lower\dimen2\box\nextbox}% new !
       \wd\nextbox\dimen0
       \ht\nextbox\dimen2
       \dp\nextbox\zeropoint
@@ -2196,8 +2275,14 @@
   [\c!n=1, % was 2 
    \c!nx=\@@cpn,\c!x=1,\c!sx=1, 
    \c!ny=\@@cpn,\c!y=1,\c!sy=1, 
-   \c!breedte=\!!zeropoint,\c!hoogte=\!!zeropoint,
-   \c!hoffset=\!!zeropoint,\c!voffset=\!!zeropoint,
+   \c!breedte=\!!zeropoint,
+   \c!hoogte=\!!zeropoint,
+   \c!hoffset=\!!zeropoint,
+   \c!voffset=\!!zeropoint,
+   \c!linkeroffset=\zeropoint,
+   \c!rechteroffset=\zeropoint,
+   \c!bovenoffset=\zeropoint,
+   \c!onderoffset=\zeropoint,
    \c!mp=]
 
 \protect \endinput

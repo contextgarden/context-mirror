@@ -1,5 +1,5 @@
 %D \module
-%D   [       file=meta-ini,
+%D   [       file=meta-pag,
 %D        version=1999.07.10,
 %D          title=\METAPOST\ Graphics,
 %D       subtitle=Initialization,
@@ -159,7 +159,9 @@
   {\ifpositioning 
      \bgroup
      \doglobal\increment\currentMPtextareadata
-     \hpos{gbd:\currentMPtextareadata}{#1}%
+    %\hpos{gbd:\currentMPtextareadata}{#1}%
+     \hpos{gbd:\currentMPtextareadata}%
+       {\iftracetextareas\boxrulewidth1.5pt\ruledhbox\fi{#1}}%
      \edef\!!stringa{gbd:\currentMPtextareadata}%
      \edef\!!stringa{RegisterTextArea(%
        \MPx\!!stringa,\MPy\!!stringa,%
@@ -174,7 +176,9 @@
   {\ifpositioning   
      \bgroup
      \doglobal\increment\currentMPtextareadata
-     \hpos{gbd:\currentMPtextareadata}{#1}%
+    %\hpos{gbd:\currentMPtextareadata}{#1}%
+     \hpos{gbd:\currentMPtextareadata}%
+       {\iftracetextareas\boxrulewidth3pt\ruledhbox\fi{#1}}%
      \edef\!!stringa{gbd:\currentMPtextareadata}%
      \edef\!!stringa{RegisterLocalTextArea(%
        \MPx\!!stringa,\MPy\!!stringa,%

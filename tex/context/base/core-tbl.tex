@@ -149,7 +149,10 @@
 
 \newif      \ifautotabulate
 \newif      \ifsplittabulate         \splittabulatetrue
+
 \newif      \ifhandletabulatepbreak  \handletabulatepbreaktrue
+\newif      \iftabulatenopbreak      \tabulatenopbreakfalse
+
 \newif      \iftabulateequal
 \newif      \iftracetabulate
 \newif      \ifframedtabulate
@@ -248,7 +251,7 @@
   % 1 = RC column raw    RQ equal column raw
   % 2 = HC column hook   HQ equal column hook
    \@EA\appendtoks                     \@EA&\@EA\hskip\pretabskip##&\to\!!toksa
-\appendtoks\ignorespaces\to\!!toksa
+       \appendtoks                                     \ignorespaces\to\!!toksa
   %\@EA\appendtoks\@EA\xdef\@EA\tabulatecolumn\@EA{\tabulatecolumns}\to\!!toksa
    \@EA\appendtoks\@EA\xdef\@EA\tabulatecolumn\@EA{\the\tabulatecolumns}\to\!!toksa
        \appendtoks                                \checktabulatehook\to\!!toksa
@@ -386,8 +389,39 @@
       \chardef\tabulatedimen\zerocount
       \settabulatepreamble}}
 
+% \def\dogettabulatewidth(#1)%
+%   {\tabulatewidth#1\relax
+%    \ifnum\tabulatedimen=\plusone
+%      \global\advance\tabulatepwidth\tabulatewidth
+%    \fi
+%    \settabulatepreamble}
+
+% \def\dogettabulatewidth(#1)%
+%   {\doifelse{#1}\v!passend
+%      {\chardef\tabulatemodus\plusthree}
+%      {\tabulatewidth#1\relax}%
+%    \ifnum\tabulatedimen=\plusone
+%      \global\advance\tabulatepwidth\tabulatewidth
+%    \fi
+%    \settabulatepreamble}
+
+% \startbuffer
+%   \toplinebox{\framed[width=3cm,height=2cm]{tufte}} 
+% \stopbuffer
+% \starttabulate[|p(fixed)|p|]
+%   \dorecurse{100}{\NC \getbuffer \NC test \par test \par \NC \NR} 
+% \stoptabulate 
+% \starttabulate[|p(fit)|p|]
+%   \dorecurse{100}{\NC \getbuffer \NC test \par test \par \NC \NR} 
+% \stoptabulate 
+
 \def\dogettabulatewidth(#1)%
-  {\tabulatewidth#1\relax
+  {\processallactionsinset
+     [#1]%
+     [\v!passend=>\chardef\tabulatemodus\plusthree,
+         \v!vast=>\chardef\tabulatemodus\plusthree
+                  \tabulatenopbreaktrue,
+      \s!unknown=>\tabulatewidth#1\relax]%
    \ifnum\tabulatedimen=\plusone
      \global\advance\tabulatepwidth\tabulatewidth
    \fi
@@ -435,6 +469,8 @@
        \dodosettabulatepreamble{\bskip\tabulateraggedright }\eskip \or
        \dodosettabulatepreamble{\bskip\tabulateraggedleft  }\eskip \or
        \dodosettabulatepreamble{\bskip\tabulateraggedcenter}\eskip \fi
+   \or % simple 
+     \dodosettabulatepreamble \xbskip \xeskip 
    \fi
    \futurelet\next\donexttabulate}
 
@@ -455,11 +491,8 @@
    \dp\tabulatebox\dp\strutbox
    \box\tabulatebox}
 
-\def\dotabulatehook
-  {\getvalue{\@@tabhook@@\tabulatecolumn}}
-
-\def\dotabulatealign
-  {\getvalue{\@@tabalign@@\tabulatecolumn}}
+\def\dotabulatehook {\getvalue{\@@tabhook@@ \tabulatecolumn}}
+\def\dotabulatealign{\getvalue{\@@tabalign@@\tabulatecolumn}}
 
 \def\resettabulatepheight
   {\globallet\tabulateminplines\!!plusone
@@ -473,17 +506,33 @@
      \global\tabulatemaxpheight\scratchdimen
    \fi}
 
+% \def\handletabulatepbreak
+%   {\TABLEnoalign
+%      {\ifhandletabulatepbreak \ifnum\tabulatemaxplines>\plusone
+%         \ifnum\tabulateminplines=\plusone
+%           \dotabulatenobreak
+%         \fi
+%         \doglobal\increment\tabulateminplines
+%         \ifnum\tabulateminplines=\tabulatemaxplines\relax
+%           \dotabulatenobreak
+%         \fi
+%       \fi \fi}}
+
 \def\handletabulatepbreak
   {\TABLEnoalign
-     {\ifhandletabulatepbreak \ifnum\tabulatemaxplines>\plusone
-        \ifnum\tabulateminplines=\plusone
+     {\ifhandletabulatepbreak
+        \iftabulatenopbreak  
           \dotabulatenobreak
-        \fi
-        \doglobal\increment\tabulateminplines
-        \ifnum\tabulateminplines=\tabulatemaxplines\relax
-          \dotabulatenobreak
-        \fi
-      \fi \fi}}
+        \else\ifnum\tabulatemaxplines>\plusone
+          \ifnum\tabulateminplines=\plusone
+            \dotabulatenobreak
+          \fi
+          \doglobal\increment\tabulateminplines
+          \ifnum\tabulateminplines=\tabulatemaxplines\relax
+            \dotabulatenobreak
+          \fi
+        \fi \fi
+      \fi}}
 
 %D \startbuffer
 %D \starttabulatie[|c|p|p|]
@@ -494,7 +543,7 @@
 %D \NC 4         \NC very true       \NC as false as can be \NC\NR
 %D \NC 5         \NC \thinrules[n=5] \NC \thinrules[n=5]    \NC\NR
 %D \NC 6         \NC \thinrules[n=3] \NC \thinrules[n=4]    \NC\NR
-%D \stoptabulate
+%D \stoptabulatie
 %D \stopbuffer
 %D
 %D \typebuffer {\tracetabulatetrue\haalbuffer}
@@ -787,6 +836,10 @@
 
 \def\handletabulatedigits{\digits}
 
+%D Beware, we cannot use \type {\unexpanded} on \type {\HL}
+%D cum suis, since \TEX's hard coded noalign lookahead fails 
+%D on it! I mistakenly added this for a while. 
+
 \def\processtabulate[|#1|]% in the process of optimizing
   {\tabulateunit\getvalue{\??tt\currenttabulate\c!eenheid}%
    \checkfulltabulatecontent
@@ -818,7 +871,7 @@
    \unexpanded \def\HQ{\tabulateequalcolumn 2}%
    \unexpanded \def\NG{\NC\handletabulatecharalign}%
    \unexpanded \def\ND{\NC\handletabulatedigits}% new, undocumented, test first
-   \unexpanded \def\HR % horizontal rule line (break untested)
+   \def\HR % horizontal rule line (break untested)
      {\TABLEnoalign
         {\ifnum\noftabulatelines=\totalnoftabulatelines
            \@EA\dotabulatenobreak
@@ -843,11 +896,17 @@
         {\iftolerantTABLEbreak\else
            \ifnum\noftabulatelines=\plusone
              \dotabulatenobreak
-           \else\ifnum\noftabulatelines=\minusnoftabulatelines
-             \ifnum\tabulatemaxplines<2
-               \dotabulatenobreak
+           \else
+             \ifnum\noftabulatelines=\minusnoftabulatelines
+               \ifnum\tabulatemaxplines<\plustwo
+                 \dotabulatenobreak
+               \else
+\allowbreak % needed with pbreak prevention
+               \fi
+             \else
+\allowbreak % needed with pbreak prevention
              \fi
-           \fi\fi
+           \fi
          \fi
          \global\tabulatefirstflushedfalse}}%
    \let\HL\empty \let\SR\NR \let\AR\NR
@@ -888,6 +947,12 @@
    \def\eskip
      {\par\egroup
       \global\let\tabulatehook\dotabulatehook}%
+\def\xbskip
+  {\hbox\bgroup\vbox\bgroup
+     \global\let\tabulatehook\notabulatehook}%
+\def\xeskip
+  {\par\egroup\egroup
+   \global\let\tabulatehook\dotabulatehook}%
    \let|\savedbar
    \global\let\tabulatehook\dotabulatehook
    \doifvalue{\??tt\currenttabulate\c!inspringen}\v!nee\forgetparindent
@@ -898,7 +963,7 @@
    \fi
    \dontcomplain
    \forgetall
-   \setbox0\vbox % outside if because of line counting
+   \setbox0\vbox % outside \if because of line counting
      {\footnotesenabledfalse
       \let\tabulateindent\!!zeropoint
       \trialtypesettingtrue % very important
@@ -913,6 +978,8 @@
        \divide\tabulatewidth \nofautotabulate\relax
      \fi
    \fi
+\def\xbskip{\bskip}%
+\def\xeskip{\eskip}%
    \ifsplittabulate
      \splittopskip\ht\strutbox
      \global\let\flushtabulatedindeed\empty
@@ -966,7 +1033,7 @@
    \let\minusnoftabulatelines\noftabulatelines
    \decrement\minusnoftabulatelines
    \doglobal\newcounter\noftabulatelines
-   \unexpanded \def\HL{\TABLEnoalign
+   \def\HL{\TABLEnoalign
      {\ifnum\noftabulatelines=\zerocount                  \@EA    \FL\else
       \ifnum\noftabulatelines<\totalnoftabulatelines\relax\@EAEAEA\ML\else
                                                           \@EAEAEA\LL\fi\fi}}%
@@ -978,7 +1045,7 @@
          \vskip\dp\strutbox
          \vskip\dp\strutbox}%
       \baselinecorrection}%
-   \unexpanded \def\FL{\TABLEnoalign
+   \def\FL{\TABLEnoalign
      {\ifinsidefloat\else
         \doifemptyvalue{\??tt\currenttabulate\c!voor} % no expansion
           {\tablebaselinecorrection}%
@@ -988,7 +1055,7 @@
       \tabulateruleseperator
       \prevdepth\dp\strutbox
       \dotabulatenobreak}}%
-   \unexpanded \def\ML{\TABLEnoalign
+   \def\ML{\TABLEnoalign
      {\tabulateruleseperator
       \tabulaterule
       \ifnum\noftabulatelines>\plusone
@@ -999,7 +1066,7 @@
         \fi
       \fi
       \tabulateruleseperator}}%
-   \unexpanded \def\LL{\TABLEnoalign
+   \def\LL{\TABLEnoalign
      {\dotabulatenobreak
       \tabulateruleseperator
       \dotabulatenobreak

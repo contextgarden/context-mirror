@@ -166,7 +166,7 @@
         \doifvalue{\@@thenumber{#1}\c!sectienummer}\v!nummer
           {\donetrue\let\@@sectionconversion\gobbleoneargument}%
         \ifdone
-          \edef\currentsection%
+          \edef\currentsection
             {\getvalue{\??by\getvalue{\@@thenumber{#1}\c!wijze\c!lokaal}}}%
           \doifnot{\currentsection}\zerosection
             {\doifnot{\@@sectionvalue{\currentsection}}{0}
@@ -421,9 +421,16 @@
 %    \donexttracklevel{#1}}
 %
 % nicer
- 
+% 
+% \def\doresetsectioncounters#1%
+%   {\resetcounter{\??se#1}%
+%    \donexttracklevel{#1}}
+%
+% obey eigennummer
+
 \def\doresetsectioncounters#1%
   {\resetcounter{\??se#1}%
+   \letgvalue{\??se#1\c!eigennummer}\relax
    \donexttracklevel{#1}}
 
 \def\resetsectioncounters % #1
@@ -718,17 +725,50 @@
    \sectionseparator
    \@@shortsectionnumber{#1}}
 
+% \def\@@longsectionnumber#1%
+%   {\ifnum\countervalue{\??se\previoussection{#1}}>\zerocount
+%      \csname\previoussection{#1}\c!nummer\endcsname.%
+%    \fi
+%    \@@shortsectionnumber{#1}}
+
+\newif\ifreversesectionnumbers % todo: key/val
+
 \def\@@longsectionnumber#1%
-  {\ifnum\countervalue{\??se\previoussection{#1}}>\zerocount
-     \csname\previoussection{#1}\c!nummer\endcsname.%
-   \fi
-   \@@shortsectionnumber{#1}}
+  {\ifreversesectionnumbers
+     \@@shortsectionnumber{#1}%
+     \ifnum\countervalue{\??se\previoussection{#1}}>\zerocount
+       .\csname\previoussection{#1}\c!nummer\endcsname
+     \fi
+   \else
+     \ifnum\countervalue{\??se\previoussection{#1}}>\zerocount
+       \csname\previoussection{#1}\c!nummer\endcsname.%
+     \fi
+     \@@shortsectionnumber{#1}%
+   \fi}
+
+
+% \def\@@shortsectionnumber#1%
+%   {\@EA\ifx\csname\??se#1\@@sectieblok\c!conversie\endcsname\relax
+%      \@@sectionvalue{#1}%
+%    \else
+%      \@@sectionconversion{#1}{\@@sectionvalue{#1}}%
+%    \fi}
+%
+% obey eigennummer 
 
 \def\@@shortsectionnumber#1%
-  {\@EA\ifx\csname\??se#1\@@sectieblok\c!conversie\endcsname\relax
-     \@@sectionvalue{#1}%
+  {\@EA\ifx\csname\??se#1\c!eigennummer\endcsname\relax
+     \@EA\ifx\csname\??se#1\@@sectieblok\c!conversie\endcsname\relax
+       \@EA\ifx\csname\??se#1\c!conversie\endcsname\relax
+         \@@sectionvalue{#1}%
+       \else
+         \@@sectionconversion{#1}{\@@sectionvalue{#1}}%
+       \fi
+     \else
+       \@@sectionconversion{#1}{\@@sectionvalue{#1}}%
+     \fi
    \else
-     \@@sectionconversion{#1}{\@@sectionvalue{#1}}%
+     \csname\??se#1\c!eigennummer\endcsname
    \fi}
 
 % suited for chinese too:
@@ -1022,11 +1062,42 @@
 
 \newif\ifsomeheadconversion
 
+% \def\setsomeheadconversion#1#2%
+%    {\someheadconversionfalse
+%     \doifelsevalue{\??ko#1\c!eigennummer}\v!ja
+%       {\def\someheadconversion{#2}}
+%       {\bepaalkopnummer[#1]%
+%        \@EA\ifx\csname\??se\@@sectie\@@sectieblok\c!kopconversie\endcsname\relax
+%          \@EA\ifx\csname\??se\@@sectie\c!kopconversie\endcsname\relax
+%            \def\someheadconversion{#2}%
+%          \else
+%            \@EA\ifx\csname\??se\@@sectie\c!kopconversie\endcsname\empty
+%              \def\someheadconversion{#2}%
+%            \else
+%              \someheadconversiontrue
+%              \def\someheadconversion%
+%                {\fullsectionnumber{#1}{\getvalue{\??se\@@sectie\c!kopconversie}}{#2}}%
+%            \fi
+%          \fi
+%        \else
+%          \@EA\ifx\csname\??se\@@sectie\@@sectieblok\c!kopconversie\endcsname\empty
+%            \def\someheadconversion{#2}%
+%          \else
+%            \someheadconversiontrue
+%            \def\someheadconversion%
+%              {\fullsectionnumber{#1}{\getvalue{\??se\@@sectie\@@sectieblok\c!kopconversie}}{#2}}%
+%          \fi
+%        \fi}}
+% 
+% deal with eigennummer
+
 \def\setsomeheadconversion#1#2%
    {\someheadconversionfalse
     \doifelsevalue{\??ko#1\c!eigennummer}\v!ja
-      {\def\someheadconversion{#2}}
-      {\bepaalkopnummer[#1]%
+      {\setgvalue{\??se\@@sectie\c!eigennummer}{#2}%
+       \def\someheadconversion{#2}}
+      {\letgvalue{\??se\@@sectie\c!eigennummer}\relax
+       \bepaalkopnummer[#1]%
        \@EA\ifx\csname\??se\@@sectie\@@sectieblok\c!kopconversie\endcsname\relax
          \@EA\ifx\csname\??se\@@sectie\c!kopconversie\endcsname\relax
            \def\someheadconversion{#2}%
@@ -1808,7 +1879,7 @@
    \doifnot{\huidigekopnummer}{0}{\finalsectionnumber}%
    \egroup}
 
-\def\simplekopnummer%
+\def\simplekopnummer
   {\huidigekopnummer}
 
 \definecomplexorsimple\kopnummer
@@ -2007,10 +2078,9 @@
    % set \c!commando to nothing and (quite natural) got the
    % wrong references etc. The whole bunch should be boxed!
    \expandafter\convertcommand\csname\??ko#1\c!commando\endcsname\to\ascii
-   \doifnothing{\ascii}
-     {\setvalue{\??ko#1\c!commando}{\@@plaatskop}}}
+   \doifnothing\ascii{\setvalue{\??ko#1\c!commando}{\@@plaatskop}}}
 
-\def\stelkopin%
+\def\stelkopin
   {\dodoubleargumentwithset\dostelkopin}
 
 \newif\ifsectienummer       \sectienummertrue
@@ -2058,6 +2128,7 @@
   [\c!variant=\v!normaal,
    \c!sectienummer=\v!ja,
    \c!scheider=.,
+   \c!limittext=\v!ja,
    \c!uitlijnen=,
    \c!titeluitlijnen=,
    \c!tolerantie=,

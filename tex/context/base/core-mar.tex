@@ -8,14 +8,14 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
-%C details. 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
 
 \writestatus{loading}{Context Core Macros / Markings}
 
-\unprotect 
+\unprotect
 
-\prependtoks \getallmarks \to \everybeforepagebody 
+\prependtoks \getallmarks \to \everybeforepagebody
 \prependtoks \setallmarks \to \everyafterpagebody  % currently \relax
 
 % voor 'interne' doeleinden zijn beschikbaar:
@@ -40,7 +40,7 @@
      \csname\??mk#1\c!koppeling\endcsname
    \fi}
 
-\def\fastresetmarker#1% 
+\def\fastresetmarker#1%
   {\@EA\ifx\csname\??mk#1\c!koppeling\endcsname\else
      \@EA\resetmark\csname\??mk\csname\??mk#1\c!koppeling\endcsname\endcsname
    \fi}
@@ -54,7 +54,7 @@
      \csname\??mk#1\c!koppeling\endcsname
    \fi}
 
-\def\fastresetmarker#1% 
+\def\fastresetmarker#1%
   {\ifcsname\??mk#1\c!koppeling\endcsname
      \@EA\resetmark\csname\??mk\csname\??mk#1\c!koppeling\endcsname\endcsname
    \fi}
@@ -77,7 +77,7 @@
 \def\stelmarkeringin
   {\dodoubleargument\dostelmarkeringin}
 
-% betere protectie 
+% betere protectie
 
 \letvalue{\??mk\??mk \v!vorige}\gettopmark
 \letvalue{\??mk\??mk \v!eerste}\getfirstmark
@@ -88,6 +88,7 @@
   {\stelmarkeringin[#1]
      [\c!expansie=\v!nee,  % saves a macro
       \c!scheider={ --- }, % watch the spaces
+      \c!limittext=\@@kolimittext,
         \c!status=\v!start]%
    \ontkoppelmarkering[#1]%  % no coupling with sections
    \setevalue{\??mk#1\c!koppeling}{#2}%
@@ -102,7 +103,7 @@
 \def\definieermarkering
   {\dodoubleempty\dodefinieermarkering}
 
-\let\geenmarkering=\relax
+\let\geenmarkering\empty
 
 \def\fetchmark[#1][#2]% never \unexpanded
   {\@EA\@EA\csname\??mk\??mk#2\endcsname
@@ -145,9 +146,10 @@
 \def\dohaalmarkering[#1][#2]%
   {\doifvalue{\??mk#1\c!status}\v!start
      {\bgroup
-      \def\geenmarkering##1{\unknown\ }%
+     %\def\geenmarkering##1{\unknown\ }%
+      \def\geenmarkering{\splitsequence{\getvalue{\??mk#1\c!limittext}}}%
       \setfullsectionnumber{\??mk#1}%
-      \processaction % slow 
+      \processaction % slow
         [#2]
         [  \v!beide=>{\fetchtwomarks[#1]},
            \v!alles=>{\fetchallmarks[#1]},
@@ -192,7 +194,7 @@
 \def\marking
   {\dosingleargument\domarking}
 
-%D Used in placing text lines. 
+%D Used in placing text lines.
 
 \def\doifelsemarking#1%
   {\ifundefined{\??mk#1\c!koppeling}%
@@ -201,12 +203,12 @@
      \expandafter\firstoftwoarguments
    \fi}
 
-%D And then \unknown\ we had a chaptertitle packaged in a 
+%D And then \unknown\ we had a chaptertitle packaged in a
 %D makeup environment. And we don't want to loose marks there!
 
 \newbox\collectedmarks
 
-\def\flushmarks % use with care to avoid empty pages 
+\def\flushmarks % use with care to avoid empty pages
   {\ifvoid\collectedmarks\else\unhbox\collectedmarks\fi}
 
 \def\postponemarks
@@ -215,12 +217,12 @@
 \def\postponemark#1#2%
   {%\writestatus{marks}{postponing \string#1 => #2}%
    \global\setbox\collectedmarks\hbox
-     {\unhbox\collectedmarks\setmark{#1}{#2}}} 
+     {\unhbox\collectedmarks\setmark{#1}{#2}}}
 
 \protect \endinput
 
 % Pseudo marks: (for Hraban)
-% 
+%
 % \def\RegisterPageMark#1#2%
 %   {\iftrialtypesetting \else
 %      \doglobal\increment\NameCounter
@@ -233,19 +235,19 @@
 %           {\noexpand\in[#1:t:\NameCounter]}}%
 %        {}%
 %    \fi}
-% 
+%
 % \def\GetFirstOnPage#1{\getvalue{#1:f:\realfolio}}
 % \def\GetLastOnPage #1{\getvalue{#1:l:\realfolio}}
-% 
+%
 % \setupheadertexts[\GetFirstOnPage{Name}][\GetLastOnPage{Name}]
-% 
-% \starttext 
-% 
+%
+% \starttext
+%
 % \def\Name#1{\RegisterPageMark{Name}{#1}#1}
-% \def\TestLine#1{\NC test \NC \Name {test: #1} \NC \NR} 
-% 
+% \def\TestLine#1{\NC test \NC \Name {test: #1} \NC \NR}
+%
 % \starttabulate
 % \dorecurse{100}{\expanded{\TestLine{\recurselevel}}}
 % \stoptabulate
-% 
-% \stoptext 
+%
+% \stoptext

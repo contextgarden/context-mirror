@@ -1727,7 +1727,8 @@
   {\copyparameters
      [\??co#1][\??co]
      [\c!breedte,\c!hoogte,\c!afstand,\c!plaats,%
-      \c!voor,\c!tussen,\c!na,\c!uitlijnen]%
+      \c!voor,\c!tussen,\c!na,\c!uitlijnen,%
+      \c!letter,\c!kleur]%
    \getparameters
      [\??co#1][#2]}
 
@@ -1737,12 +1738,15 @@
 \def\startcombination
   {\dodoubleempty\dostartcombination}
 
+\def\combinationparameter#1%
+  {\csname\??co\currentcombination#1\endcsname}%
+
 \def\dostartcombination[#1][#2]%
   {\bgroup
    \ifsecondargument
-     \def\combinationparameter##1{\csname\??co#1##1\endcsname}%
+     \def\currentcombination{#1}%
    \else
-     \def\combinationparameter##1{\csname\??co  ##1\endcsname}%
+     \let\currentcombination\empty
    \fi
    \forgetall
    \doifelse{\combinationparameter\c!hoogte}\v!passend
@@ -1788,8 +1792,10 @@
           {\ifx\nexttoken\egroup \else % the next box is empty
              \hsize\wd0
              \steluitlijnenin[\combinationparameter\c!uitlijnen]%
+\dostartattributes{\??co\currentcombination}\c!letter\c!kleur\empty
              \bgroup
              \aftergroup\endstrut
+\aftergroup\dostopattributes
              \aftergroup\egroup
              \begstrut
            \fi}%
@@ -1925,6 +1931,8 @@
    \c!plaats=\v!onder, % can be something {top,left} 
    \c!voor=\blanko,
    \c!tussen={\blanko[\v!middel]},
+   \c!letter=,
+   \c!kleur=,
    \c!na=,
    \c!uitlijnen=\v!midden]
 
@@ -2132,7 +2140,61 @@
 
 % schaal
 
-\def\doscalelikeafigure
+% \def\doscalelikeafigure
+%   {\doifsomething{\@@xyfactor\@@xyhfactor\@@xybfactor\@@xyschaal
+%                   \@@xybreedte\@@xyhoogte\@@xyregels}
+%      {\let \@@efschaal \@@xyschaal
+%       \let \@@effactor \@@xyfactor
+%       \let \@@efbfactor\@@xybfactor
+%       \let \@@efhfactor\@@xyhfactor
+%       \let \@@efbreedte\@@xybreedte
+%       \let \@@efhoogte \@@xyhoogte
+%       \let \@@efregels \@@xyregels
+%       \let \@@epx      \!!zeropoint
+%       \let \@@epy      \!!zeropoint
+%       \edef\@@epw     {\the\wd\nextbox}%
+%       \edef\@@eph     {\the\ht\nextbox}%
+%       \checkfiguresettings
+%       \setfactorfiguresize
+%       \setscalefiguresize
+%       \setdimensionfiguresize
+%       \convertfigureinsertscale\@@epx\figx\figxsca\scax
+%       \convertfigureinsertscale\@@epy\figy\figysca\scay
+%       \scratchdimen\scax\s!pt \divide\scratchdimen 100
+%       \edef\@@xysx{\withoutpt\the\scratchdimen}%
+%       \scratchdimen\scay\s!pt \divide\scratchdimen 100
+%       \edef\@@xysy{\withoutpt\the\scratchdimen}}}
+
+% \def\doschaal[#1]%
+%   {\bgroup
+%    \forgetall
+%    \getparameters
+%      [\??xy]
+%      [\c!schaal=,\c!breedte=,\c!hoogte=,\c!regels=,
+%       \c!factor=,\c!hfactor=,\c!bfactor=,
+%       \c!sx=1,\c!sy=1,#1]%
+%    \dowithnextbox
+%      {\dontshowcomposition
+%       \ifdim\ht\nextbox>\zeropoint \ifdim\wd\nextbox>\zeropoint
+%         \doscalelikeafigure
+%         \dimen0=\@@xysy\ht\nextbox
+%         \dimen2=\@@xysy\dp\nextbox
+%         \dimen4=\@@xysx\wd\nextbox
+%         \dimen6=\dimen0\advance\dimen6 \dimen2
+%         \setbox\nextbox\vbox to \dimen6
+%           {\ht\nextbox\zeropoint
+%            \dp\nextbox\zeropoint
+%            \vfill % erbij
+%            \dostartscaling\@@xysx\@@xysy\box\nextbox\dostopscaling}%
+%         \ht\nextbox\dimen0
+%         \dp\nextbox\dimen2
+%         \wd\nextbox\dimen4
+%       \fi \fi
+%       \box\nextbox
+%       \egroup}
+%    \hbox}
+
+\def\doscalelikeafigure % quite dirty and potential interference possible
   {\doifsomething{\@@xyfactor\@@xyhfactor\@@xybfactor\@@xyschaal
                   \@@xybreedte\@@xyhoogte\@@xyregels}
      {\let \@@efschaal \@@xyschaal
@@ -2146,6 +2208,8 @@
       \let \@@epy      \!!zeropoint
       \edef\@@epw     {\the\wd\nextbox}%
       \edef\@@eph     {\the\ht\nextbox}%
+      \figwid\zeropoint \figxsca\plusone % see note * (core-fig)
+      \fighei\zeropoint \figysca\plusone % see note * (core-fig)
       \checkfiguresettings
       \setfactorfiguresize
       \setscalefiguresize
@@ -2173,10 +2237,13 @@
         \dimen2=\@@xysy\dp\nextbox
         \dimen4=\@@xysx\wd\nextbox
         \dimen6=\dimen0\advance\dimen6 \dimen2
-        \setbox\nextbox\vbox to \dimen6
-          {\ht\nextbox\zeropoint
-           \dp\nextbox\zeropoint
-           \vfill % erbij
+%        \setbox\nextbox\vbox to \dimen6
+%          {\ht\nextbox\zeropoint
+%           \dp\nextbox\zeropoint
+%           \vfill % erbij
+%           \dostartscaling\@@xysx\@@xysy\box\nextbox\dostopscaling}%
+        \setbox\nextbox\hbox
+          {\smashbox\nextbox
            \dostartscaling\@@xysx\@@xysy\box\nextbox\dostopscaling}%
         \ht\nextbox\dimen0
         \dp\nextbox\dimen2

@@ -1840,6 +1840,7 @@ var:nradky:*cislo::
 var:implicitni:*jmeno::
 var:vzdalenostlevehookraje:*dimenze::
 var:vzdalenostpravehookraje:*dimenze::
+var:sidealign:normalni,radek::
 ivr:nastavoramovani::
 stopsetup
 
@@ -1870,7 +1871,7 @@ stopsetup
 startsetup
 com:nastavdelitko:
 typ:var/:
-var:znak:--,---,-,\penalty 10000\ ,),(,=,/::
+var:znak:--,---,-,~,),(,=,/::
 stopsetup
 
 startsetup
@@ -2968,7 +2969,7 @@ stopsetup
 startsetup
 com:umisti<<plvouciobjekt>>:
 typ:val/refs/arg/arg/:
-val:vlevo,vpravo,zde,vrsek,spodek, vlevo,vpravo,naokraji,marginalie, stranka,naproti,vzdy,sila,vysoko:zde:
+val:vlevo,vpravo,zde,vrsek,spodek, vlevo,vpravo,naokraji,marginalie, levyokraj,pravyokraj,levahrana,pravahrana, innermargin,outermargin,inneredge,outeredge, uvnitr,vnejsi,regel,vysoko,nizko,prizpusobive, stranka,naproti,vzdy,sila,vysoko:zde:
 val:*text::
 val:*text::
 stopsetup
@@ -2998,8 +2999,11 @@ var:vyska:*dimenze::
 var:sirka:*dimenze::
 var:maxvyska:*dimenze::
 var:maxsirka:*dimenze::
+var:minsirka:*dimenze::
 var:implicitni:*jmeno::
 var:hranicestranky:*seznam::
+var:vzdalenostlevehookraje:*dimenze::
+var:vzdalenostpravehookraje:*dimenze::
 var:misto:vlevo,nastred,vpravo::
 ivr:nastavoramovani::
 stopsetup
@@ -3396,7 +3400,7 @@ stopsetup
 
 startsetup
 com:startfakt:
-typ:tex/{geg}nop/sep/nop/sep/nop/sep/tex/{geg}stp/:
+typ:tex/{fakt}nop/sep/nop/sep/nop/sep/tex/{fakt}stp/:
 val:*text::
 val:*text::
 val:*text::
@@ -3438,6 +3442,8 @@ var:vyska:*dimenze,prizpusobive::
 var:sirka:*dimenze,prizpusobive::
 var:misto:boven,midden,onder,links,rechts::
 var:zarovnani:ne,vlevo,vpravo,nastred,normalni::
+var:pismeno:normalni,tucne,sklonene,tucnesklonene,opis,kap,male...*prikaz::
+var:barva:*jmeno::
 stopsetup
 
 startsetup
@@ -3482,7 +3488,7 @@ var:zpetnamezera:*dimenze::
 var:svrchnimezera:*dimenze::
 var:horoffset:*dimenze::
 var:offsethlavicky:*dimenze::
-var:volba:max,zalozka::
+var:volba:max,prizpusobive,dvoustranny,zalozka::
 var:prodleva:*cislo,zadny::
 stopsetup
 
@@ -3527,7 +3533,7 @@ stopsetup
 
 startsetup
 com:nastavinterakcnimenu:
-typ:vals/vars/dests/:
+typ:vals/vars/:
 val:vlevo,vpravo,vrsek,spodek,*jmeno::
 var:pred:*prikaz::
 var:po:*prikaz::

@@ -199,8 +199,10 @@
            {\ConvertConstantAfter\doifelse{\v!paginanummer}{#6}
               {\@@plaatspaginanummer}
               {\ConvertConstantAfter\doifelse{\v!datum}{#6}
-                 {\currentdate}   % #6{}{}{} -> {} needed for lookahead macros, like \uniqueMPgraphic
-                 {\opeenregel\dolimitatetexts{#1#2#5}{#6{}{}{}}}}}}}%
+                 {\currentdate} 
+                 {% #6{}{}{} -> {} needed for macros that look 
+                  % ahead, like \uniqueMPgraphic
+                  \opeenregel\dolimitatetexts{#1#2#5}{#6{}{}{}}}}}}}%
   \egroup}
 
 %D When specified, the texts are automatically limited in
@@ -582,8 +584,23 @@
 %D The next twosome will be done differently (using an 
 %D existing auxiliary macro).
 
-\def\@@nmpre#1{\setbox0\hbox{#1}\ifdim\wd0=\zeropoint\else\unhbox0\tfskip\fi}
-\def\@@nmpos#1{\setbox0\hbox{#1}\ifdim\wd0=\zeropoint\else\tfskip\unhbox0\fi}
+% \def\@@nmpre#1{\setbox0\hbox{#1}\ifdim\wd0=\zeropoint\else\unhbox0\tfskip\fi}
+% \def\@@nmpos#1{\setbox0\hbox{#1}\ifdim\wd0=\zeropoint\else\tfskip\unhbox0\fi}
+
+% cleaner 
+
+\def\@@nmpre#1{\doiftext{#1}{{#1}\tfskip}}
+\def\@@nmpos#1{\doiftext{#1}{\tfskip{#1}}}
+
+% newer 
+
+\def\@@nmprepos#1#2#3#4#5%
+  {\doifelsenothing\@@nmbreedte
+     {\doiftext{#5}{#1{#5}#2}}
+     {\doiftext{#5}{\hbox to \@@nmbreedte{#3{#5}#4}}}}
+
+\def\@@nmpre{\@@nmprepos\empty\tfskip\relax\hss}
+\def\@@nmpos{\@@nmprepos\tfskip\empty\hss\relax}
 
 %D This code will move to \type {page-flt.tex}. 
 

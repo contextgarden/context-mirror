@@ -163,49 +163,59 @@
 %D
 %D The actual top and bottom corrections are implemented as:
 
+% \def\topbaselinecorrection
+%   {\ifvmode
+%      \bgroup
+%      \setbaselinecorrections
+%      \ifdim\pagegoal<\maxdimen
+%        \ifdim\pagetotal<\pagegoal
+%          \dimen2=\ht\scratchbox
+%          \advance\dimen2 \dp\scratchbox
+%          \advance\dimen2 \parskip
+%          \advance\dimen2 \thetopbaselinecorrection
+%          \advance\dimen2 \thebotbaselinecorrection
+%          \dimen0=\pagetotal
+%          \advance\dimen0 \dimen2
+% %        \ifdim\dimen0<\pagegoal % does more harm than good
+%            \witruimte
+%            \nointerlineskip
+%            \dotopbaselinecorrection
+% %        \else
+% %          \ifbinnenkolommen      
+% %            % \vskip\dimen2           % this could definitely
+% %            % \penalty\outputpenalty  % be improved
+% %          \else
+% %            %                         % 
+% %            % \vfill\eject            % pretty old and wrong
+% %            %
+% %            % \nobreak                % needed for headings
+% %            % \vskip\parskip          % but often splits 
+% %            % \vskip\dimen2           % normal paragraphs
+% %            % \penalty\outputpenalty  % and therefore 
+% %            % \vskip-\dimen2          % obsolete
+% %            %
+% %            % do nothing, sub optimal spacing after headings 
+% %            % still to be sorted out; use manuals as test case
+% %          \fi
+% %        \fi
+%        \else                           % probably a preceding
+%          \witruimte                    % one-liner
+%          \nointerlineskip
+%          \dotopbaselinecorrection
+%        \fi
+%      \fi
+%      \egroup
+%    \fi}
+
 \def\topbaselinecorrection
-  {\ifvmode
+  {\ifvmode \ifdim\pagegoal<\maxdimen
      \bgroup
      \setbaselinecorrections
-     \ifdim\pagegoal<\maxdimen
-       \ifdim\pagetotal<\pagegoal
-         \dimen2=\ht\scratchbox
-         \advance\dimen2 \dp\scratchbox
-         \advance\dimen2 \parskip
-         \advance\dimen2 \thetopbaselinecorrection
-         \advance\dimen2 \thebotbaselinecorrection
-         \dimen0=\pagetotal
-         \advance\dimen0 \dimen2
-%        \ifdim\dimen0<\pagegoal % does more harm than good
-           \witruimte
-           \nointerlineskip
-           \dotopbaselinecorrection
-%        \else
-%          \ifbinnenkolommen      
-%            % \vskip\dimen2           % this could definitely
-%            % \penalty\outputpenalty  % be improved
-%          \else
-%            %                         % 
-%            % \vfill\eject            % pretty old and wrong
-%            %
-%            % \nobreak                % needed for headings
-%            % \vskip\parskip          % but often splits 
-%            % \vskip\dimen2           % normal paragraphs
-%            % \penalty\outputpenalty  % and therefore 
-%            % \vskip-\dimen2          % obsolete
-%            %
-%            % do nothing, sub optimal spacing after headings 
-%            % still to be sorted out; use manuals as test case
-%          \fi
-%        \fi
-       \else                           % probably a preceding
-         \witruimte                    % one-liner
-         \nointerlineskip
-         \dotopbaselinecorrection
-       \fi
-     \fi
+     \witruimte
+     \nointerlineskip
+     \dotopbaselinecorrection
      \egroup
-   \fi}
+   \fi \fi}
 
 \def\botbaselinecorrection
   {\ifvmode
@@ -810,7 +820,7 @@
 \def\getfuzzysnapcorrection#1%
   {\global\let\presnapcorrection \relax
    \global\let\postsnapcorrection\relax
-   \ifgridsnapping\iffuzzysnapping
+   \ifgridsnapping\iffuzzysnapping 
      \docheckfuzzysnap{#1}%
      \iffuzzysnapped
        \iftracegridsnapping

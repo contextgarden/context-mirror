@@ -714,17 +714,29 @@
    \fi
    \exectransparency} 
 
+% \def\doexeccolorPP#1:#2:%
+%   {\edef\@@cl@@n{#1}%
+%    \edef\@@cl@@p{#2}%
+%    \registerusedspotcolor\@@cl@@n
+%    \ifx\@@cl@@n\currentspotcolor
+%      \normalizeSPOT 
+%      \dostartgraycolormode\@@cl@@p % was spotcolormode
+%    \else
+%      \dostartgraycolormode\@@cl@@o
+%    \fi
+%    \exectransparency} 
+
 \def\doexeccolorPP#1:#2:%
   {\edef\@@cl@@n{#1}%
    \edef\@@cl@@p{#2}%
    \registerusedspotcolor\@@cl@@n
    \ifx\@@cl@@n\currentspotcolor
-     \normalizeSPOT 
+     \normalizeSPOT
      \dostartgraycolormode\@@cl@@p % was spotcolormode
    \else
-     \dostartgraycolormode\@@cl@@o
+     \dovidecolor\@@cl@@p\@@cl@@o
    \fi
-   \exectransparency} 
+   \exectransparency}
 
 \def\doexeccolorrgb
   {\ifcase\currentcolorchannel
@@ -756,13 +768,58 @@
 %D When filtering colors, we need to either erase 
 %D the background, or ignore the foreground. 
 
+% \newif\ifhidesplitcolor \hidesplitcolortrue
+%
+% \def\noexeccolor#1\od
+%   {\dostartgraycolormode\@@cl@@o}
+%
+% \let\noexeccolorS\noexeccolor
+% \let\noexeccolorP\noexeccolor
+
+%D Well, here comes some real trickery. When we have the 100\%
+%D spot color or black color, we don't want to erase the
+%D background. So, instead we hide the content by giving it
+%D zero transparency.
+
+% todo : #1#2#3 met #2 > of < and #3 een threshold
+
 \newif\ifhidesplitcolor \hidesplitcolortrue
 
-\def\noexeccolor#1\od
-  {\dostartgraycolormode\@@cl@@o}
+\def\dohidecolor#1#2%
+  {\ifhidesplitcolor
+     \ifx#1#2%
+       \dostartgraycolormode\@@cl@@o
+     \else
+       \fullytransparentcolor
+     \fi
+   \else
+     \dostartgraycolormode\@@cl@@o
+   \fi}
 
-\let\noexeccolorS\noexeccolor
-\let\noexeccolorP\noexeccolor
+\def\dovidecolor#1#2%
+  {\ifhidesplitcolor
+     \ifx#1#2%
+       \fullytransparentcolor
+     \else
+       \dostartgraycolormode\@@cl@@o
+     \fi
+   \else
+     \dostartgraycolormode\@@cl@@o
+   \fi}
+
+\def\fullytransparentcolor
+  {\dostartgraycolormode\@@cl@@o % better than z
+  %\global\@EA\chardef\csname\@@currenttransparent\endcsname\plusone
+  %\global\intransparenttrue 
+   \dostarttransparency10}
+
+\def\noexeccolorS#1:#2\od
+  {\edef\@@cl@@s{#1}%
+   \dohidecolor\@@cl@@s\@@cl@@o}
+
+\def\noexeccolorP#1:#2:#3\od
+  {\edef\@@cl@@p{#2}%
+   \dohidecolor\@@cl@@p\@@cl@@z}
 
 %D For the sake of postprocessing (i.e.\ color separation) 
 %D we can normalize colors, which comes down to giving equal 

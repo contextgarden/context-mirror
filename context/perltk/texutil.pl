@@ -828,7 +828,9 @@ sub HandleKey
     $STR[$SortN] = $str ;
     $CHR[$SortN] = $chr ;
     $MAP[$SortN] = $map ;
-    $ALF{"$chr$map"} = $alf }
+#print "$chr$map = $alf\n" ; 
+#    $ALF{"$chr$map"} = $alf }
+    $ALF{"$map"} = $alf }
 
 sub FlushKeys
   { Report ("RemappedKeys", $SortN) }
@@ -841,7 +843,7 @@ sub SanitizedString
           { my $s = $STR[$i] ;
             my $c = $CHR[$i] ;
             my $m = $MAP[$i] ;
-#print "[$i $s $c $m]\n" ; 
+          # print "[$i $s $c $m]\n" ; 
             $string =~ s/($s)/$c/ge ;
             $copied =~ s/($s)/$m/ge }
         $string .= "\x00";
@@ -849,12 +851,10 @@ sub SanitizedString
     elsif ($ProcessQuotes)
       { $string =~ s/\\([\^\"\`\'\~\,])/$1/gio ;
         $copied = $string ;
-        $copied =~ s/([\^\"\`\'\~\,])([a-zA-Z])/$ASCII{$1}/gio ;
+        $copied =~ s/([\^\"\`\'\~\,])([a-zA-Z])/$ASCII{$1}/gi ;
         $string =~ s/([\^\"\`\'\~\,])([a-zA-Z])/$2/gio ;
         $string .= "\x00";
         $string .= $copied }
-#
-#print "$original $string $copied\n" ;
 # new and very experimental, will change
 $string =~ s/\<\*(.*?)\>/\\$1 /go ; # reduce entities / will be table too
 $string =~ s/\\getXMLentity\s*\{(.*?)\}/$1/gio ; # {tex} => tex
@@ -862,6 +862,7 @@ $string =~ s/\<[a-zA-Z\/].*?\>//go ; # remove elements
 # so far
     $string =~ s/\\-|\|\|/\-/gio ;
     $string =~ s/\\[a-zA-Z]*| |\{|\}//gio ;  # ?
+#print "$original $string $copied\n" ;
     return $string }
 
 #D This subroutine looks a bit complicated, which is due to the
@@ -1251,10 +1252,9 @@ sub HandleRegister # the } { makes sure that local {} is ok
       { $Entry =~ s/([^\\])\&/$1$SPLIT/go ;
         $Entry =~ s/([^\\])\+/$1$SPLIT/go }
     $Key =~ s/^([^a-zA-Z])/ $1/go ;
-$Key =~ s/^\s*\{(.*)\}$SPLIT/$1$SPLIT/go ; ####### new
-$Entry =~ s/^\{(.*)\}$SPLIT/$1$SPLIT/go ; ###### new
-    if ($ProcessIJ)
-      { $Key =~ s/ij/yy/go }
+    $Key =~ s/^\s*\{(.*)\}$SPLIT/$1$SPLIT/go ; ####### new
+    $Entry =~ s/^\{(.*)\}$SPLIT/$1$SPLIT/go ; ###### new
+    if ($ProcessIJ) { $Key =~ s/ij/yy/go }
     $LCKey = lc $Key ;
     $RegStatus = $RegStat{$SecondTag} ;
     $RealPageNumber= sprintf("%6i",$RealPage) ;
@@ -1348,9 +1348,9 @@ sub FlushRegisters
     $ActualB        = "" ;
     $ActualC        = "" ;
 
-$SavedFrom  = "" ;
-$SavedTo    = "" ;
-$SavedEntry = "" ; 
+    $SavedFrom  = "" ;
+    $SavedTo    = "" ;
+    $SavedEntry = "" ; 
 
     for ($n=1 ; $n<=$NOfEntries ; ++$n)
       { ($Class, $LCKey, $Key, $Entry, $TextHow, $RegisterState,
@@ -1361,7 +1361,8 @@ $SavedEntry = "" ;
         #
         if ($SortN)
           { $AlfKey = $Key ;
-            $AlfKey =~ s/(.).*\x00(.).*/$1$2/o ;
+#            $AlfKey =~ s/(.).*\x00(.).*/$1$2/o ;
+            $AlfKey =~ s/(.).*\x00(.).*/$2/o ;
             if (defined($ALF{$AlfKey}))
               { $TestAlfa = $ALF{$AlfKey} } }
         #
@@ -1370,8 +1371,7 @@ $SavedEntry = "" ;
             $Alfa = $TestAlfa ;
             $AlfaClass = $Class ;
             if ($Alfa ne " ")
-              { 
-FlushSavedLine ;
+              { FlushSavedLine ;
                 print TUO "\\registerentry{$Class}{$Alfa}\n" } }
         ($ActualA, $ActualB, $ActualC ) =
            split(/$SPLIT/, $Entry, 3) ;
@@ -1395,55 +1395,42 @@ FlushSavedLine ;
           { $PreviousC = How($ActualC) }
         $Copied = 0 ;
         if ($ActualA ne "")
-          { 
-FlushSavedLine ;
+          { FlushSavedLine ;
             print TUO "\\registerentrya{$Class}{$ActualA}\n" ;
             $Copied = 1 }
         if ($ActualB ne "")
-          { 
-FlushSavedLine ;
+          { FlushSavedLine ;
             print TUO "\\registerentryb{$Class}{$ActualB}\n" ;
             $Copied = 1 }
         if ($ActualC ne "")
-          { 
-FlushSavedLine ;
+          { FlushSavedLine ;
             print TUO "\\registerentryc{$Class}{$ActualC}\n" ;
             $Copied = 1 }
         if ($Copied)
           { $NOfSaneEntries++ }
         if ($RealPage eq 0)
-          { 
-FlushSavedLine ;
+          { FlushSavedLine ;
             print TUO "\\registersee{$Class}{$PageHow,$TextHow}{$SeeToo}{$Page}\n" ;
             $LastPage = $Page ;
             $LastRealPage = $RealPage }
         elsif (($Copied) ||
               ! (($LastPage eq $Page) and ($LastRealPage eq $RealPage)))
           { # print "$LastPage / $Page // $LastRealPage / $RealPage\n" ;  
-
-$NextEntry = "{$Class}{$PreviousA}{$PreviousB}{$PreviousC}{$PageHow,$TextHow}" ; 
-
+            $NextEntry = "{$Class}{$PreviousA}{$PreviousB}{$PreviousC}{$PageHow,$TextHow}" ; 
             $SavedLine = "{$Class}{$PageHow,$TextHow}{$Location}{$Page}{$RealPage}\n" ;
             if ($RegisterState eq $RegStat{"f"})
-              { 
-FlushSavedLine ;
+              { FlushSavedLine ;
                 print TUO "\\registerfrom$SavedLine" }
             elsif ($RegisterState eq $RegStat{"t"})
-              { 
-FlushSavedLine ;
+              { FlushSavedLine ;
                 print TUO "\\registerto$SavedLine" }
             else
-#             { print TUO "\\registerpage$SavedLine" }
               { if ($CollapseEntries) 
-                  { 
-
-if ($SavedEntry ne $NextEntry)
-  { $SavedFrom = $SavedLine }
-else
-  { $SavedTo = $SavedLine }
-$SavedEntry = $NextEntry ;
-
-                  } 
+                  { if ($SavedEntry ne $NextEntry)
+                      { $SavedFrom = $SavedLine }
+                    else
+                      { $SavedTo = $SavedLine }
+                    $SavedEntry = $NextEntry } 
                 else 
                  { print TUO "\\registerpage$SavedLine" }
               } 

@@ -192,9 +192,10 @@
 %D a way around this, but for convenience \TEXEXEC\ will take
 %D care of processing raw \XML\ files in a transparant way.
 
-\newif\ifalwaysreduceXMLtokens
+\chardef\XMLtokensreduction\zerocount
 
-\let\alwaysreduceXMLtokens\alwaysreduceXMLtokenstrue
+% \def\alwaysreduceXMLtokens   {\XMLtokensreduction\plusone}
+% \def\permanentreduceXMLtokens{\XMLtokensreduction\plustwo}
 
 \bgroup
 \catcode`\*=\@@comment
@@ -232,32 +233,6 @@
 * there; this is needed because reading from file goes wrong  
 * (eating up argument) 
 
-* .unexpanded.gdef.enableXML*
-*   B.catcode`.!=.@@other*
-*    .catcode`.?=.@@other* 
-*    .catcode`.:=.@@other* active in french  
-*    .catcode`.;=.@@other* active in french  
-*    .catcode`.&=.@@active .let&=.doXMLentity*
-*    .catcode`.<=.@@active .unexpanded.def<B.doXMLelementE*
-*    .catcode`.>=.@@other  
-*    .catcode`."=.@@other*
-*    .catcode`./=.@@other  
-*    .catcode`.'=.@@other*
-*    *catcode`.#=.@@active .def#PP1B&tex-hash;E* gobbles its own dup 
-*    .catcode`.#=.@@active .def#B&tex-hash;E* 
-*    .catcode`.$=.@@active .def$B&tex-dollar;E*
-*    .catcode`.%=.@@active .def%B&tex-percent;E*
-*    .catcode`.\=.@@active .def\B&tex-backslash;E*
-*    .catcode`.^=.@@active .def^B&tex-hat;E*
-*    .catcode`._=.@@active .def_B&tex-underscore;E*
-*    .catcode`.{=.@@active .def{B&tex-leftbrace;E*
-*    .catcode`.}=.@@active .def}B&tex-rightbrace;E*
-*    .catcode`.|=.@@active .def|B&tex-bar;E*
-*    .catcode`.~=.@@other  *def~B&tex-tilde;E*
-*    .processingXMLtrue
-*    .the.everyenableXML
-*   E
-
 .unexpanded.gdef.enableXML*
   B.catcode`.!=.@@other*
    .catcode`.?=.@@other* 
@@ -269,8 +244,21 @@
    .catcode`."=.@@other
    .catcode`./=.@@other  
    .catcode`.'=.@@other
+   .catcode`.~=.@@other  
    .catcode`.#=.@@active 
-   .catcode`.$=.@@active 
+   .ifcase.XMLtokensreduction
+     .entitleXMLescapetokens
+   .or
+     .reduceXMLescapetokens
+   .else 
+     .ignoreXMLescapetokens
+   .fi 
+   .processingXMLtrue
+   .the.everyenableXML
+  E
+
+.gdef.activateXMLescapetokens*
+  B.catcode`.$=.@@active 
    .catcode`.%=.@@active 
    .catcode`.\=.@@active 
    .catcode`.^=.@@active 
@@ -278,18 +266,11 @@
    .catcode`.{=.@@active 
    .catcode`.}=.@@active 
    .catcode`.|=.@@active 
-   .catcode`.~=.@@other  
-   .ifalwaysreduceXMLtokens
-     .reduceXMLescapetokens
-   .else 
-     .entitleXMLescapetokens
-   .fi 
-   .processingXMLtrue
-   .the.everyenableXML
   E
 
 .gdef.entitleXMLescapetokens*
-  B.def#B&tex-hash;E* 
+  B.activateXMLescapetokens*
+   .def#B&tex-hash;E* 
    .def$B&tex-dollar;E*
    .def%B&tex-percent;E*
    .def\B&tex-backslash;E*
@@ -298,11 +279,11 @@
    .def{B&tex-leftbrace;E*
    .def}B&tex-rightbrace;E*
    .def|B&tex-bar;E*
-   *def~B&tex-tilde;E*
   E
 
 .gdef.reduceXMLescapetokens*
-  B.def#B.string#E*
+  B.activateXMLescapetokens*
+   .def#B.string#E*
    .def$B.string$E*
    .def%B.string%E*
    .def\B.string\E*
@@ -311,7 +292,17 @@
    .def{B.string{E*
    .def}B.string}E*
    .def|B.string|E*
-   *def~B.string~E*
+  E
+
+.gdef.ignoreXMLescapetokens*
+  B.catcode`.$=.@@other * or letter ? 
+   .catcode`.%=.@@other
+   .catcode`.\=.@@other
+   .catcode`.^=.@@other
+   .catcode`._=.@@other
+   .catcode`.{=.@@other
+   .catcode`.}=.@@other
+   .catcode`.|=.@@other
   E
 
 * The following macro can be invokes when reading from 
@@ -498,11 +489,11 @@
 
 \def\parseXMLprocess#1#2% 
   {\cleanupXMLprocess{#2}%
-  %\convertcommand\currentXMLprocess\to\ascii
+   \convertcommand#1\to\ascii
   %\writestatus{xml-process}{\ascii}
    \expanded
      {\executeifdefined
-        {\@@XMLinstruction:#1}
+        {\@@XMLinstruction:\ascii}
         \noexpand\gobbleoneargument
         {\expandafter\noexpand\currentXMLprocess}}}
 
@@ -691,7 +682,7 @@
      \ifcsname\@@XMLelement:\currentXMLfullidentifier\endcsname
        \currentXMLfullidentifier
      \else
-       \defaultXMLelement
+       \s!default % \defaultXMLelement
      \fi
    \endcsname}
 
@@ -702,7 +693,7 @@
      \else\ifcsname\@@XMLelement:\currentXMLidentifier\endcsname
        \currentXMLidentifier
      \else
-       \defaultXMLelement
+       \s!default % \defaultXMLelement
      \fi\fi
    \endcsname}
 
@@ -723,7 +714,7 @@
    \else\ifcsname\normal@@XMLelement:\currentXMLidentifier\endcsname
      \normal@@XMLelement:\currentXMLidentifier
    \else
-     \@@XMLelement:\defaultXMLelement
+     \@@XMLelement:\s!default % \defaultXMLelement
    \fi\fi}
 
 \def\setXMLfallbackmode#1%
@@ -741,7 +732,7 @@
      \let\automateXMLnamespace\automateXMLnamespaceD 
    \fi}
 
-\setXMLfallbackmode2 % will be 3 
+\setXMLfallbackmode3 % was 2 
 
 %D An example of fall back modes is given below. 
 
@@ -1708,21 +1699,37 @@
 \long\def\longempty{}
 \long\def\longspace{ }
 
+% \def\doifelseXMLdata#1% always empty at start [gets a long assignment]
+%   {\@EA\ifx\csname\@@XMLdata:#1\endcsname\longempty
+%      \expandafter\secondoftwoarguments
+%    \else
+%      \expandafter\firstoftwoarguments
+%    \fi} 
+%
+% \def\doifXMLdata#1% always empty at start [gets a long assignment]
+%   {\@EA\ifx\csname\@@XMLdata:#1\endcsname\longempty
+%      \expandafter\gobbleoneargument
+%    \else
+%      \expandafter\firstofoneargument
+%    \fi} 
+%
+% \let\doifXMLdataelse\doifelseXMLdata 
+
 \def\doifelseXMLdata#1% always empty at start [gets a long assignment]
   {\@EA\ifx\csname\@@XMLdata:#1\endcsname\longempty
      \expandafter\secondoftwoarguments
    \else
      \expandafter\firstoftwoarguments
-   \fi} 
+   \fi}
 
 \def\doifXMLdata#1% always empty at start [gets a long assignment]
   {\@EA\ifx\csname\@@XMLdata:#1\endcsname\longempty
      \expandafter\gobbleoneargument
    \else
      \expandafter\firstofoneargument
-   \fi} 
+   \fi}
 
-\let\doifXMLdataelse\doifelseXMLdata 
+\let\doifXMLdataelse\doifelseXMLdata
 
 \def\doifelseXMLempty#1% 
   {\@EA\ifx\csname\@@XMLdata:#1\endcsname\longempty
@@ -1752,14 +1759,24 @@
 % <test>   x    </test>
 % \stopXMLdata
 
+% \def\XMLflush#1% one level
+%   {\csname\@@XMLdata:#1\endcsname}
+
+% evt meer van dit gedoe en alle \longempty's vervangen
+
 \def\XMLflush#1% one level
-  {\csname\@@XMLdata:#1\endcsname}
+  {\csname\ifcsname\@@XMLdata:#1\endcsname\@@XMLdata:#1\else\s!empty\fi\endcsname}
+
+\let\XMLflushdata\XMLflush
 
 \def\XMLflushdata#1% see m-steps for usage
   {\@EA\ifx\csname\@@XMLdata:#1\endcsname\longempty\else
      %\@EAEAEA\XMLdata\@EA\@EA\@EA{\csname\@@XMLdata:#1\endcsname}%
      \@EA\XMLdata\csname\@@XMLdata:#1\endcsname
    \fi}
+
+\def\XMLflushasis#1%
+  {\detokenize\@EAEAEA{\csname\@@XMLdata:#1\endcsname}}
 
 \let\XMLpop    \XMLflush
 
@@ -2110,7 +2127,7 @@
 %D here. The macro \type {\processXMLbuffer} behaves like
 %D any buffer processor.
 
-\def\processXMLbuffer%
+\def\processXMLbuffer
   {\dosingleempty\doprocessXMLbuffer}
 
 \def\doprocessXMLbuffer[#1]%

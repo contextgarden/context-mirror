@@ -380,5 +380,15 @@
    \setuplayout[\c!markering=\v!aan]
    \dorecurse{4}{\showsetups\pagina}
    \egroup}
+
+\gdef\showmargins
+  {\starttabulate
+   \NC asynchrone   \NC \doifoddpageelse     {odd}   {even} \NC \NR
+   \NC synchrone    \NC \doifrightpageelse   {right} {left} \NC \NR
+   \NC right margin \NC \the\rightmarginwidth               \NC \NR
+   \NC left margin  \NC \the\leftmarginwidth                \NC \NR
+   \NC outer margin \NC \the\outermarginwidth               \NC \NR
+   \NC inner margin \NC \the\innermarginwidth               \NC \NR
+   \stoptabulate}
 
 \protect \endinput 

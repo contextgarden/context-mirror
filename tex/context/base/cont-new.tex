@@ -18,120 +18,38 @@
 %D excellent place for hacks and new features.
 
 \unprotect
+
+\writestatus{\m!systems}{beware: some patches loaded from cont-new.tex!}
 
-\setupclipping
-  [\c!linkeroffset=\zeropoint,
-   \c!rechteroffset=\zeropoint,
-   \c!bovenoffset=\zeropoint,
-   \c!onderoffset=\zeropoint]
-
-\def\doclip[#1]% nb top->bottom left->right
-  {\bgroup
-   \getparameters[\??cp][#1]%
-   \dowithnextbox
-     {\ifdim\@@cpbreedte>\zeropoint
-        \dimen0=\@@cpbreedte
-        \dimen4=\@@cphoffset
+\def\toplinebox
+  {\dowithnextbox
+     {\ifdim\dp\nextbox>\strutdepth
+        \scratchdimen\dp\nextbox
+        \advance\scratchdimen-\strutdepth 
+        \getnoflines\scratchdimen
+        \struttedbox{\box\nextbox}%
+        \dorecurse\noflines{\vbox{\hsize\zeropoint\strut}}%
       \else
-        \dimen0=\wd\nextbox
-        \divide\dimen0 \@@cpnx
-        \dimen4=\@@cpx\dimen0
-        \advance\dimen4 -\dimen0
-        \dimen0=\@@cpsx\dimen0
-      \fi
-      \relax % sure
-      \ifdim\@@cphoogte>\zeropoint
-        \dimen2=\@@cphoogte
-        \dimen6=\ht\nextbox
-        \advance\dimen6 -\@@cpvoffset
-        \advance\dimen6 -\dimen2
-      \else
-        \dimen2=\ht\nextbox
-        \divide\dimen2 \@@cpny
-        \dimen6=-\@@cpy\dimen2
-        \advance\dimen6 -\@@cpsy\dimen2
-        \advance\dimen6 \dimen2
-        \dimen2=\@@cpsy\dimen2
-        \advance\dimen6 \ht\nextbox
-      \fi
-      \setbox\nextbox\hbox                       % old 
-        {\advance\dimen4 -\@@cplinkeroffset      % new !
-         \advance\dimen6  \@@cpbovenoffset       % new !
-         \hskip-\dimen4\lower\dimen6\box\nextbox}% old 
-      \wd\nextbox\zeropoint
-      \ht\nextbox\zeropoint
-      \dp\nextbox\zeropoint
-      \setbox\nextbox\hbox
-        {\advance\dimen0 \@@cplinkeroffset        % new !
-         \advance\dimen0 \@@cprechteroffset       % new !
-         \advance\dimen2 \@@cpbovenoffset         % new !
-         \advance\dimen2 \@@cponderoffset         % new !
-         \dostartclipping\@@cpmp{\dimen0}{\dimen2}% old
-           \box\nextbox
-         \dostopclipping}%
-      \setbox\nextbox\hbox                      % new !
-        {\dimen0-\@@cplinkeroffset              % new !
-         \dimen2-\@@cpbovenoffset               % new !
-         \hskip\dimen0\lower\dimen2\box\nextbox}% new !
-      \wd\nextbox\dimen0
-      \ht\nextbox\dimen2
-      \dp\nextbox\zeropoint
-      \box\nextbox
-      \egroup}%
-   \hbox}
+        \box\nextbox
+      \fi}%
+   \tbox}
 
-% beware, we have clipping offsets of 2\lineheight by default 
-
-\def\columntextareaparameter#1%
-  {\csname\??mt\currentcolumntestarea#1\endcsname}
-
-\def\dodoplacecolumntextareas#1#2%
-  {\def\currentcolumntestarea{#1#2}%
-   \!!counta\columntextareaparameter\c!x
-   \!!countb\columntextareaparameter\c!nx
-   \docalculatecolumnsetspan
-   \!!heighta\columntextareaparameter\c!ny\lineheight
-   % to do: met/zonder ht/dp
-   \ifnum\columntextareaparameter\c!y=\zerocount
-     \advance\!!heighta -\lineheight
-     \advance\!!heighta \topskip
+\def\expandifnonempty#1% 
+  {\@EA\ifx\csname#1\endcsname\empty
+     \expandafter\secondoftwoarguments
+   \else
+     \expandafter\firstoftwoarguments
    \fi
-   \advance\!!heighta -\lineheight % option
-   \setbox\scratchbox\vbox
-     {\donetrue\localframed
-        [\??mt\currentcolumntestarea] 
-        [\c!breedte=\!!widtha,\c!hoogte=\!!heighta,\c!regels=]
-        {\columntextareaparameter\empty}}%
-   \!!counta\columntextareaparameter\c!x
-   \!!countb\columntextareaparameter\c!y
-   \advance\!!countb \columntextareaparameter\c!ny
-   \advance\!!countb \minusone
-   \OTRSETsetgridcell
-     \!!counta\!!countb
-     \hbox{\clip
-       [\c!bovenoffset=\columntextareaparameter\c!clipoffset,%
-        \c!onderoffset=\columntextareaparameter\c!clipoffset,%
-        \c!linkeroffset=\columntextareaparameter\c!clipoffset,%
-        \c!breedte=\!!widthb,%
-        \c!hoogte=\!!heighta]%
-       {\copy\scratchbox}}%
-   \ifcase\!!countc\else
-     \advance\!!counta \columntextareaparameter\c!nx
-     \advance\!!counta -\!!countc
-     \advance\!!widtha -\!!widthb
-     \OTRSETsetgridcell
-       \!!counta\!!countb
-       \hbox
-         {\hskip-\namedlayoutparameter\v!oneven\c!rugwit
-          \clip
-            [\c!bovenoffset=\columntextareaparameter\c!clipoffset,%
-             \c!onderoffset=\columntextareaparameter\c!clipoffset,%
-             \c!rechteroffset=\columntextareaparameter\c!clipoffset,%
-             \c!breedte=\!!widtha,%
-             \c!hoogte=\!!heighta,%
-             \c!hoffset=\!!widthb]%
-            {\copy\scratchbox}}%
-   \fi}
+   {\csname#1\endcsname}}
+
+\def\@@sectiekoppeling#1%
+  {\expandifnonempty{\??ko#1\c!koppeling}{#1}}
+
+\def\@@sectiesectie#1%
+  {\expandifnonempty{\??ko#1\c!sectie}{\@@sectiekoppeling{#1}}}
+
+\def\sectioncountervalue#1%
+  {\@@sectionvalue{\@@sectiesectie{#1}}}
 
 \def\NormalizeFontSize#1#2#3#4#5% the normal struggle with accuracy 
   {\bgroup
@@ -152,8 +70,6 @@
    \expandafter
    \egroup
    \expandafter\font\expandafter#2\fontname\font\relax}
-
-
 
 % todo namespace \@@meta:#1:... ! ! ! ! ! !
 
@@ -162,55 +78,6 @@
 
 \def\dopresetMPvariable[#1][#2=#3]% 
   {\doifundefined{#1:#2}{\setvalue{#1:#2}{#3}}}
-
-\def\complexcolumnbreak[#1]% if empty, do nothing and avoid processing
-  {\doifsomething{#1}{\executecolumnbreakhandlers{#1}}}   
-
-\def\OTRSETsethsize
-  {%\OTRSETassignwidth\OTRSETidentifier\to\localcolumnwidth
-   \localcolumnwidth\OTRSETlocalwidth\mofcolumns
-   \tekstbreedte\localcolumnwidth
-   \hsize\localcolumnwidth}
-
-\def\OTRSETsynchronizehsize  
-  {\ifcase0\getvalue{\??mc\??mc\c!breedte}\else % some width set  
-     \bgroup
-     \scratchdimen\OTRSETlocalwidth\mofcolumns
-     \ifdim\scratchdimen=\tekstbreedte
-       \egroup 
-     \else
-       \egroup \OTRSETsethsize % only if change in width and \column/\break 
-     \fi
-   \fi } 
-
-\def\filluparrangedpages % beware: \realpageno is 1 ahead
-  {\ifarrangingpages
-     \scratchcounter\realpageno 
-     \advance\scratchcounter \minusone
-     \dosetmodulo\scratchcounter\arrangedpageT\scratchcounter 
-     \ifcase\scratchcounter\else
-       \advance\scratchcounter \plusone
-       \dostepwiserecurse\scratchcounter\arrangedpageT\plusone
-         {\noheaderandfooterlines\ejectdummypage}%
-     \fi
-   \fi}
-
-\def\substituteincommalist#1#2#3% old, new, list (slooow) 
-  {\edef\!!stringb{#1}%
-   \edef\!!stringd{#2}%
-   \let\!!stringa#3%
-   \let#3\empty
-   \def\dosubstituteincommalist##1%
-     {\edef\!!stringc{##1}%
-      \ifx\!!stringb\!!stringc
-        \ifx\!!stringd\empty\else
-          \edef#3{#3\ifx#3\empty\else,\fi\!!stringd}%
-        \fi
-        \def\docommando####1{\edef#3{#3,####1}}%
-      \else
-        \edef#3{#3\ifx#3\empty\else,\fi##1}%
-      \fi}%
-   \@EA\rawprocesscommacommand\@EA[\!!stringa]\dosubstituteincommalist}
 
 % experiment, not yet to be used 
 
@@ -226,23 +93,9 @@
 
 \def\tightvbox
   {\dowithnextbox{\dp\nextbox\zeropoint\box\nextbox}\vbox}
+
 \def\tightvtop
   {\dowithnextbox{\ht\nextbox\zeropoint\box\nextbox}\vtop}
-
-% cleaner 
-
-\def\@@nmpre#1{\doiftext{#1}{{#1}\tfskip}}
-\def\@@nmpos#1{\doiftext{#1}{\tfskip{#1}}}
-
-% newer 
-
-\def\@@nmprepos#1#2#3#4#5%
-  {\doifelsenothing\@@nmbreedte
-     {\doiftext{#5}{#1{#5}#2}}
-     {\doiftext{#5}{\hbox to \@@nmbreedte{#3{#5}#4}}}}
-
-\def\@@nmpre{\@@nmprepos\empty\tfskip\relax\hss}
-\def\@@nmpos{\@@nmprepos\tfskip\empty\hss\relax}
 
 \def\startpagefigure
   {\dodoubleempty\dostartpagefigure}
@@ -263,157 +116,14 @@
 \def\dopagefigure[#1][#2]%
   {\dostartpagefigure[#1][#2]\stoppagefigure}
 
-\def\doprocesstabskipline#1%
-  {\bgroup
-   \scratchcounter\plusone
-   \dodoprocesstabskipline#1\relax 
-   \egroup}
-      
-\def\dodoprocesstabskipline#1%
-  {\ifnum\scratchcounter>\spacespertab\relax
-     \donetrue \else \donefalse \advance
-   \fi \scratchcounter \plusone
-   \ifx#1\relax \else
-     \ifcase\tabskipmode
-       % can't happen 
-     \or 
-       % go on 
-     \else\ifnum`#1<128
-       % ok, no special character  
-     \else\ifnum\catcode`#1=\active
-       % quits parsing, else utf lookahead problems  
-       \chardef\tabskipmode\zerocount
-     \fi\fi\fi
-     \ifcase\tabskipmode 
-       \@EAEAEA#1%
-     \else
-       \@EAEAEA#1\@EAEAEA\dodoprocesstabskipline
-     \fi
-   \fi}
-
-\setuptyping[\c!tab=\s!ascii] % better default than \v!yes 
-
-% obey eigennummer
-
-\def\doresetsectioncounters#1%
-  {\resetcounter{\??se#1}%
-   \letgvalue{\??se#1\c!eigennummer}\relax
-   \donexttracklevel{#1}}
-
-\def\@@shortsectionnumber#1%
-  {\@EA\ifx\csname\??se#1\c!eigennummer\endcsname\relax
-     \@EA\ifx\csname\??se#1\@@sectieblok\c!conversie\endcsname\relax
-       \@EA\ifx\csname\??se#1\c!conversie\endcsname\relax
-         \@@sectionvalue{#1}%
-       \else
-         \@@sectionconversion{#1}{\@@sectionvalue{#1}}%
-       \fi
-     \else
-       \@@sectionconversion{#1}{\@@sectionvalue{#1}}%
-     \fi
-   \else
-     \csname\??se#1\c!eigennummer\endcsname
-   \fi}
-
-\def\setsomeheadconversion#1#2%
-   {\someheadconversionfalse
-    \doifelsevalue{\??ko#1\c!eigennummer}\v!ja
-      {\setgvalue{\??se\@@sectie\c!eigennummer}{#2}%
-       \def\someheadconversion{#2}}
-      {\letgvalue{\??se\@@sectie\c!eigennummer}\relax
-       \bepaalkopnummer[#1]%
-       \@EA\ifx\csname\??se\@@sectie\@@sectieblok\c!kopconversie\endcsname\relax
-         \@EA\ifx\csname\??se\@@sectie\c!kopconversie\endcsname\relax
-           \def\someheadconversion{#2}%
-         \else
-           \@EA\ifx\csname\??se\@@sectie\c!kopconversie\endcsname\empty
-             \def\someheadconversion{#2}%
-           \else
-             \someheadconversiontrue
-             \def\someheadconversion%
-               {\fullsectionnumber{#1}{\getvalue{\??se\@@sectie\c!kopconversie}}{#2}}%
-           \fi
-         \fi
-       \else
-         \@EA\ifx\csname\??se\@@sectie\@@sectieblok\c!kopconversie\endcsname\empty
-           \def\someheadconversion{#2}%
-         \else
-           \someheadconversiontrue
-           \def\someheadconversion%
-             {\fullsectionnumber{#1}{\getvalue{\??se\@@sectie\@@sectieblok\c!kopconversie}}{#2}}%
-         \fi
-       \fi}}
-
 % pretty important (esp since we now ignore shipouts) 
 %
 % actually we should nil all writes, marks, specials 
 
 \appendtoks \globallet\popcolor\relax \to \everylastshipout
 
-\def\doscalelikeafigure % quite dirty and potential interference possible
-  {\doifsomething{\@@xyfactor\@@xyhfactor\@@xybfactor\@@xyschaal
-                  \@@xybreedte\@@xyhoogte\@@xyregels}
-     {\let \@@efschaal \@@xyschaal
-      \let \@@effactor \@@xyfactor
-      \let \@@efbfactor\@@xybfactor
-      \let \@@efhfactor\@@xyhfactor
-      \let \@@efbreedte\@@xybreedte
-      \let \@@efhoogte \@@xyhoogte
-      \let \@@efregels \@@xyregels
-      \let \@@epx      \!!zeropoint
-      \let \@@epy      \!!zeropoint
-      \edef\@@epw     {\the\wd\nextbox}%
-      \edef\@@eph     {\the\ht\nextbox}%
-      \figwid\zeropoint \figxsca\plusone % see note * (core-fig)
-      \fighei\zeropoint \figysca\plusone % see note * (core-fig)
-      \checkfiguresettings
-      \setfactorfiguresize
-      \setscalefiguresize
-      \setdimensionfiguresize
-      \convertfigureinsertscale\@@epx\figx\figxsca\scax
-      \convertfigureinsertscale\@@epy\figy\figysca\scay
-      \scratchdimen\scax\s!pt \divide\scratchdimen 100
-      \edef\@@xysx{\withoutpt\the\scratchdimen}%
-      \scratchdimen\scay\s!pt \divide\scratchdimen 100
-      \edef\@@xysy{\withoutpt\the\scratchdimen}}}
-
-\def\doschaal[#1]%
-  {\bgroup
-   \forgetall
-   \getparameters
-     [\??xy]
-     [\c!schaal=,\c!breedte=,\c!hoogte=,\c!regels=,
-      \c!factor=,\c!hfactor=,\c!bfactor=,
-      \c!sx=1,\c!sy=1,#1]%
-   \dowithnextbox
-     {\dontshowcomposition
-      \ifdim\ht\nextbox>\zeropoint \ifdim\wd\nextbox>\zeropoint
-        \doscalelikeafigure
-        \dimen0=\@@xysy\ht\nextbox
-        \dimen2=\@@xysy\dp\nextbox
-        \dimen4=\@@xysx\wd\nextbox
-        \dimen6=\dimen0\advance\dimen6 \dimen2
-%        \setbox\nextbox\vbox to \dimen6
-%          {\ht\nextbox\zeropoint
-%           \dp\nextbox\zeropoint
-%           \vfill % erbij
-%           \dostartscaling\@@xysx\@@xysy\box\nextbox\dostopscaling}%
-        \setbox\nextbox\hbox
-          {\smashbox\nextbox
-           \dostartscaling\@@xysx\@@xysy\box\nextbox\dostopscaling}%
-        \ht\nextbox\dimen0
-        \dp\nextbox\dimen2
-        \wd\nextbox\dimen4
-      \fi \fi
-      \box\nextbox
-      \egroup}
-   \hbox}
-
-\def\incrementvalue#1%
-  {\expandafter\increment\csname#1\endcsname}
-
-\def\decrementvalue#1%
-  {\expandafter\decrement\csname#1\endcsname}
+\def\incrementvalue#1{\expandafter\increment\csname#1\endcsname}
+\def\decrementvalue#1{\expandafter\decrement\csname#1\endcsname}
 
 % \translateMPinput{il2-pl}
 %
@@ -427,118 +137,6 @@
 % draw btex MetaPost: ± ¶ etex scaled 5 ;  
 % \stopMPcode
 
-\def\doMPpositiongraphic#1#2% tag setups
-  {\bgroup
-   \def\@@meta{#1:}%
-   \setupMPvariables[#2]%
-   \prepareMPpositionvariables
-   \MPshiftdrawingtrue
-   \def\doMPpositiongraphic##1##2%
-     {{% new, see (techniek) 
-       \def\@@meta{##1:}%
-       \setupMPvariables[#2,##2]%
-       \prepareMPpositionvariables
-       % and needed 
-       \getvalue{MPG:##1}}}% temp hack
-   \setbox\positiongraphicbox\hbox
-     {\ignorespaces 
-      \executeifdefined{MPM:#1}{\executeifdefined{MPG:#1}\donothing}%
-      \removelastspace}%
-   \smashbox\positiongraphicbox
-   \box\positiongraphicbox
-   \egroup}
-
-\writestatus{\m!systems}{beware: some patches loaded from cont-new.tex!}
-
-\def\columnhbreak
-  {\ifhmode
-     \bgroup
-     \removeunwantedspaces
-     \parfillskip\zeropoint
-     \OTRSETcolumnseparator
-     \par
-     \egroup
-   \fi}
-
-\installcolumnbreakhandler {SET} \v!lokaal
-  {\columnhbreak
-   \ejectinsert
-   \ejectpage % brrr
-   \OTRSETsynchronizehsize} % no \OTRSETsethsize, can be mid smaller (like tabulate)
-
-% We need to make sure that we really leave the column; mid 
-% column we may end up in an empty gap, and we don;t want to 
-% stay there (basically such a gap is a small empty page 
-% then).  
-
-\installcolumnbreakhandler {SET} \v!ja
-  {\columnhbreak
-   \edef\savedmofcolumns{\the\mofcolumns}%
-   \edef\savedrealpageno{\the\realpageno}%
-   \ejectinsert
-   \ejectpage % brrr
-   \doloop
-     {\ifnum\savedmofcolumns=\mofcolumns
-        \ifnum\savedrealpageno=\realpageno
-          \OTRSETdummycolumn
-        \else
-          \exitloop
-        \fi 
-      \else      
-        \exitloop
-      \fi}%
-   \OTRSETsynchronizehsize} 
-
-% testcase : pascal demo-bbi, paragraaf/aanduiding koppen 
-
-\ifx\lastskipinotr\undefined \newskip\lastskipinotr \fi 
-
-\installoutput\OTRSETflushpreposttext
-  {\global\setbox\precolumnbox\vbox
-     {\unvbox\normalpagebox
-      \global\lastskipinotr\lastskip}%
-   \ifdim\lastskipinotr>\zeropoint
-     \global\setbox\precolumnbox\hbox
-       {\lower\strutdepth\box\precolumnbox}%
-   \fi 
-   \global\dp\precolumnbox\strutdepth
-   \ifcarryoverfootnotes \else
-     \global\setbox\postcolumnbox\vbox{\placebottomnotes}%
-   \fi}
-
-\def\dopositionaction#1% test saves hash entry in etex
-  {\ifundefined{\POSactionprefix#1::}\else
-     \ifnum\MPp{#1}>\zerocount % new 
-\setbox\scratchbox\hbox
-       \bgroup
-       \traceposstring\clap\red{<#1>}%
-       \the\everyinsertpositionaction
-       \the\everypositionaction
-       \ifcollectMPpositiongraphics 
-         % can save a lot of run time 
-         \pushMPdrawing
-         \MPshiftdrawingtrue
-         \resetMPdrawing
-         \getvalue{\POSactionprefix#1::}%
-         \ifMPdrawingdone
-           \getMPdrawing
-         \fi
-         \resetMPdrawing
-         \popMPdrawing
-       \else
-         \getvalue{\POSactionprefix#1::}%
-       \fi
-       \cleanuppositionaction{#1}%
-       \egroup
-\smashedbox\scratchbox
-     \else
-       % shouldn't happen too often 
-       \traceposstring\clap\cyan{<#1>}%
-     \fi
-   \fi}
-
-\def\MPspacechar{\char32\relax} % old solution does not work with math 
-
 \def\begintbl
   {\doglobal\newcounter\colTBL
    \doglobal\newcounter\rowTBL
@@ -551,63 +149,6 @@
 % \startcolumnset[two] \input tufte
 % \startcolumnsetspan[two] \input tufte \stopcolumnsetspan
 % \input tufte \stopcolumnset
-
-%D Well, here comes some real trickery. When we have the 100\%
-%D spot color or black color, we don't want to erase the
-%D background. So, instead we hide the content by giving it
-%D zero transparency.
-
-% todo : #1#2#3 met #2 > of < and #3 een threshold
-
-% \newif\ifhidesplitcolor \hidesplitcolortrue
-
-\def\dohidecolor#1#2%
-  {\ifhidesplitcolor
-     \ifx#1#2%
-       \dostartgraycolormode\@@cl@@o
-     \else
-       \fullytransparentcolor
-     \fi
-   \else
-     \dostartgraycolormode\@@cl@@o
-   \fi}
-
-\def\dovidecolor#1#2%
-  {\ifhidesplitcolor
-     \ifx#1#2%
-       \fullytransparentcolor
-     \else
-       \dostartgraycolormode\@@cl@@o
-     \fi
-   \else
-     \dostartgraycolormode\@@cl@@o
-   \fi}
-
-\def\fullytransparentcolor
-  {\dostartgraycolormode\@@cl@@o % better than z
-  %\global\@EA\chardef\csname\@@currenttransparent\endcsname\plusone
-  %\global\intransparenttrue 
-   \dostarttransparency10}
-
-\def\noexeccolorS#1:#2\od
-  {\edef\@@cl@@s{#1}%
-   \dohidecolor\@@cl@@s\@@cl@@o}
-
-\def\noexeccolorP#1:#2:#3\od
-  {\edef\@@cl@@p{#2}%
-   \dohidecolor\@@cl@@p\@@cl@@z}
-
-\def\doexeccolorPP#1:#2:%
-  {\edef\@@cl@@n{#1}%
-   \edef\@@cl@@p{#2}%
-   \registerusedspotcolor\@@cl@@n
-   \ifx\@@cl@@n\currentspotcolor
-     \normalizeSPOT
-     \dostartgraycolormode\@@cl@@p % was spotcolormode
-   \else
-     \dovidecolor\@@cl@@p\@@cl@@o
-   \fi
-   \exectransparency}
 
 % now in cont-loc.tex, for the sake of testing.
 %
@@ -688,6 +229,8 @@
    \@EA\rawreference\@EA\s!ref\@EA\asciia\@EA{\asciib}%
    \egroup}
 
+% what is this stupid macro meant for:
+
 \def\hyphenationpoint
   {\hskip\zeropoint}
 
@@ -733,274 +276,6 @@
 %   \let\registerparoptions\relax
 % \to \everyforgetall
 
-\newsignal\noblanksignal
-
-\def\docomplexdoblanko[#1]% pas op \relax's zijn nodig ivm volgende \if
-  {\global\blankoresetfalse
-   \global\blankoblokkeerfalse
-   \global\blankogeenwitfalse
-   \global\lokaalblankoflexibelfalse
-   \global\lokaalblankovastfalse
-   \global\blankoskip\zeropoint
-   \global\blankoforceerfalse
-   \blankobuitenfalse
-   \expanded{\rawprocesscommalist[#1]}\doblanko
-   \ifdim\blankoskip=\zeropoint\relax
-     \iflokaalblankoflexibel
-       \doglobal\advance\blankoskip \currentblanko
-     \else\iflokaalblankovast
-       \doglobal\advance\blankoskip \currentblanko
-     \fi\fi
-   \fi
-   \ifblankobuiten
-   \else
-     \par
-     \ifvmode          %in pos fonts gaat dit mis
-       \ifblankoforceer%\ifdim\prevdepth>\zeropoint\else
-         % -1000pt signals top of page or column (\ejectcolumn)
-         \vbox{\strut}\kern-\lineheight
-       \fi
-       \ifblankoblokkeer
-         \global\doeblankofalse
-         \ifgridsnapping
-           \ifdim\prevdepth<\zeropoint
-             % brrr
-           \else
-             % dirty trick: smaller blanks are ignored after
-             % a larger one, so 10 lines is probably safe; first make
-             % sure that we honor penalties
-             \scratchcounter\lastpenalty
-             % now comes the trick (cross our fingers that this works
-             % well in multi columns; maybe an ifinner test is needed
-             % \vskip-10\lineheight
-             %    \ifnum\scratchcounter=\zerocount \else \penalty\lastpenalty \fi
-             %    \vskip 10\lineheight
-             % allas, this leads to overfull pages, so we try this:
-             \kern-\noblanksignal
-             \ifnum\scratchcounter=\zerocount
-             \else
-               \penalty\lastpenalty
-             \fi
-             \kern\noblanksignal
-             % end-of-dirty-trick
-           \fi
-         \else
-           \ifdim\prevdepth<\zeropoint
-             % brrr
-           \else
-             % ensure at least a proper prevdepth, this should be
-             % an option
-             \vskip-\prevdepth
-             \vskip\strutdepth
-             \prevdepth\strutdepth
-           \fi
-           % the old crappy piece of code
-           \edef\oldprevdepth{\the\prevdepth}%
-           \prevdepth\newprevdepth
-         \fi
-       \else
-         \global\doeblankotrue
-       \fi
-       \ifblankoreset
-         \global\doeblankotrue
-         \ifgridsnapping
-            % let's play safe and not fool around with the depth, if
-            % only because it took a lot of effort to sort out the grid
-            % stuff in the first place
-         \else
-           \ifdim\prevdepth=\newprevdepth
-             \prevdepth\oldprevdepth
-           \fi
-         \fi
-       \fi
-       \ifdoeblanko
-         \ifdim1\lastskip<1\blankoskip\relax
-           % else when \blanko[2*groot] + \blanko[3*groot] with parskip
-           % equaling 1*groot, gives a groot=\parskip so adding a small
-           % value makes it distinguishable; can also be done at parskip
-           % setting time (better)
-           \global\advance\blankoskip \mindimen\relax % = skip
-           % test this on 2* + 3* and parskip groot
-           \ifblankogeenwit
-             \global\advance\blankoskip -\parskip
-           \else
-             \ifdim\lastskip=\parskip
-             \else  % force this due to previous comment
-               \ifdim\parskip>\zeropoint\relax
-                 \ifdim\blankoskip<\parskip\relax
-                   \global\blankoskip\zeropoint
-                 \else
-                   \global\advance\blankoskip -\parskip
-                 \fi
-               \fi
-             \fi
-           \fi
-           \ifblankoflexibel \else
-             \blankoskip1\blankoskip
-           \fi
-           \iflokaalblankovast
-             \blankoskip1\blankoskip
-           \fi
-           \iflokaalblankoflexibel
-             \blankoskip1\blankoskip
-               \!!plus\skipgluefactor\blankoskip
-               \!!minus\skipgluefactor\blankoskip
-           \fi
-           \ifgridsnapping
-             \ifdim\lastkern=\noblanksignal
-               \global\doeblankofalse
-             \fi
-           \else
-             \ifdim\prevdepth=\newprevdepth
-               \global\doeblankofalse
-             \fi
-           \fi
-           \ifdoeblanko
-             \iffuzzyvskip
-               \removelastfuzzyvskip
-               \fuzzyvskip\blankoskip\relax
-             \else
-               \removelastskip
-               \vskip\blankoskip\relax
-             \fi
-           \fi
-         \else
-           \iffuzzyvskip
-             \removelastfuzzyvskip
-             \fuzzyvskip\blankoskip\relax
-           \else
-             % new, test this on pascal
-             \ifdim\blankoskip<\zeropoint
-               \advance\blankoskip-\lastskip
-               \removelastskip
-               \ifdim\blankoskip>\zeropoint
-                 \vskip\blankoskip
-               \else
-                 \vskip\zeropoint
-               \fi
-             \else
-               % also new 
-               \ifdim\blankoskip=\zeropoint
-                 \ifblankogeenwit
-                   \geenwitruimte 
-                 \fi
-               \fi
-             \fi
-           \fi
-         \fi
-       \fi
-     \fi
-   \fi
-   \global\fuzzyvskipfalse
-   \presetindentation}
-
-\def\processfilelinesverbatim#1#2#3%
-  {\bgroup
-   \let\saveddoflushverbatimline\doflushverbatimline
-   \let\saveddoemptyverbatimline\doemptyverbatimline
-   \def\checkverbatimfileline##1%
-     {\ifnum\verbatimlinenumber<#2\else
-      \ifnum\verbatimlinenumber>#3\else
-        ##1%
-      \fi\fi}%
-   \def\doflushverbatimline
-     {\checkverbatimfileline\saveddoflushverbatimline}%
-   \def\doemptyverbatimline
-     {\checkverbatimfileline\saveddoemptyverbatimline}%
-   \processfileverbatim{#1}%
-   \egroup}
-
-\def\typefile
-  {\dodoubleempty\dotypefile}
-
-\def\dotypefile[#1][#2]#3%
-  {\ifsecondargument
-     \dodotypefile[#1][#2]{#3}%
-   \else\iffirstargument
-     \doifassignmentelse{#1}
-       {\dodotypefile[\v!file][#1]{#3}}
-       {\dodotypefile[#1][]{#3}}%
-   \else
-     \dodotypefile[\v!file][]{#3}%
-   \fi\fi}
-
-\def\dosetuptypelinenumbering#1#2%
-  {\setuptyping[#1][\c!start=,\c!stop=,\c!stap=,\c!nregels=,#2]%
-   \doifelsevalue{\??tp#1\c!nummeren}\v!file
-     {\stelregelnummerenin[\c!methode=\v!file]%
-      \donetrue}
-     {\doifelsevalue{\??tp#1\c!nummeren}\v!regel
-        {% \stelregelnummerenin defaults start/step to 1/1, so we need
-         \doifvaluenothing{\??tp#1\c!start}{\setvalue{\??tp#1\c!start}{1}}%
-         \doifvaluenothing{\??tp#1\c!stap }{\setvalue{\??tp#1\c!stap }{1}}%
-         \stelregelnummerenin
-           [\c!methode=\v!type,
-            \c!start=\getvalue{\??tp#1\c!start},
-            \c!stap=\getvalue{\??tp#1\c!stap}]%
-         \donetrue}
-        {\donefalse}}%
-   \ifdone
-     \def\beginofverbatimlines{\startregelnummeren}%
-     \def\endofverbatimlines  {\stopregelnummeren }%
-   \fi}
-
-\def\dodotypefile[#1][#2]#3%
-  {\getvalue{\??tp#1\c!voor}%
-   \doiflocfileelse{#3}
-     {\startopelkaar % includes \bgroup
-      \dosetuptypelinenumbering{#1}{#2}%
-      \doifinset{\getvalue{\??tp#1\c!optie}}{\v!commandos,\v!schuin,\v!normaal}
-        {\setuptyping[#1][\c!optie=\v!geen]}%
-      \doifvalue{\??tp#1\c!optie}\v!kleur
-        {\expandafter\aftersplitstring#3\at.\to\prettyidentifier
-         \letvalue{\??tp#1\c!optie}\prettyidentifier}%
-      \initializetyping{#1}%
-      \startverbatimcolor
-      \makelocreadfilename{#3}%
-      \doifundefinedelse{\??tp#3\v!globaal\c!start}
-        {\scratchcounter\zerocount}
-        {\scratchcounter\getvalue{\??tp#3\v!globaal\c!start}}%
-      \advance\scratchcounter\plusone
-      \setxvalue{\??tp#3\v!globaal\c!start}{\the\scratchcounter}%
-      \doifelsevaluenothing{\??tp#1\c!start}
-        {\processfileverbatim\readfilename}
-        {\doifvalue{\??tp#1\c!start}\v!verder
-           {\setevalue{\??tp#1\c!start}%
-              {\getvalue{\??tp#3\v!globaal\c!start}}}%
-         \doifelsevaluenothing{\??tp#1\c!stop}
-           {\doifelsevaluenothing{\??tp#1\c!nregels}
-              {\processfileverbatim\readfilename}
-              {\scratchcounter\getvalue{\??tp#1\c!start}%
-               \advance\scratchcounter\getvalue{\??tp#1\c!nregels}%
-               \advance\scratchcounter\minusone
-               \setxvalue{\??tp#3\v!globaal\c!start}%
-                 {\the\scratchcounter}%
-               \processfilelinesverbatim\readfilename
-                 {\getvalue{\??tp#1\c!start}}
-                 {\getvalue{\??tp#3\v!globaal\c!start}}}}%
-           {\processfilelinesverbatim\readfilename
-              {\getvalue{\??tp#1\c!start}}
-              {\getvalue{\??tp#1\c!stop }}}}%
-      \stopverbatimcolor
-      \stopopelkaar}  % includes \egroup
-     {\bgroup
-      \expanded{\convertargument#3}\to\ascii
-      \tttf[\makemessage\m!verbatims1\ascii]%
-      \showmessage\m!verbatims1\ascii
-      \egroup}%
-   \getvalue{\??tp#1\c!na}}
-
-% \setuptyping[file][numbering=file]
-%
-% \typefile[start=2,nlines=3]{zapf}
-% \typefile[start=continue,nlines=13]{zapf}
-% \typefile{zapf}
-%
-% \setuptyping[file][numbering=line]
-%
-% \typefile[start=4,step=3]{zapf}
-% \typefile{zapf}
-
 \def\startgridcorrection
   {\dosingleempty\dostartgridcorrection}
 
@@ -1021,40 +296,6 @@
 
 \def\checkgridsnapping
   {\lineskip\ifgridsnapping\zeropoint\else\normallineskip\fi}
-
-\def\splittblbox#1% #1 <> 0/2
-  {\ifinsidefloat
-     \unvbox#1%
-   \else
-     % spacing between rows gets lost in split
-     \setbox4\vbox
-       {\doifsomething\tbltbltussenwit{\blank[\tbltbltussenwit]}}%
-     \setbox2\vbox
-       {}%
-     \dorecurse\noftblheadlines
-       {\setbox0\vsplit#1 to \lineheight
-        \setbox2\vbox{\unvcopy2\unvcopy0}}%
-     \ifcase\noftblheadlines\else\unvcopy2\fi
-     \donefalse
-     \doloop
-       {\setbox0\vsplit#1 to \lineheight
-        \ifdim\pagegoal<\maxdimen
-          \setbox0\vbox{\unvbox0}%
-          \dimen0\ht0
-          \advance\dimen0\ht4
-          \advance\dimen0\pagetotal
-          \ifdim\dimen0>\pagegoal
-            \bgroup \pagina \egroup % make sure that local vars are kept
-            \ifcase\noftblheadlines\else\unvcopy2\fi
-          \fi
-        \fi
-        \ifdone
-          \doifsomething\tbltbltussenwit{\blank[\tbltbltussenwit]}%
-        \fi
-        \unvbox0
-        \allowbreak
-        \ifvoid#1 \exitloop \else \donetrue \fi}%
-   \fi}
 
 \def\startplaatsen
   {\dosingleempty\dostartplaatsen}
@@ -1127,18 +368,6 @@
 %\definefontsynonym [KopFont] [\fontclassname{officina}{SerifBold}]
 %
 %\defineclassfontsynonym [KopFont] [officina] [SerifBold]
-
-\def\woordrechts % zie naw
-  {\groupedcommand
-     {\removeunwantedspaces
-      \hfill
-      \hskip\zeropoint % permit break, \allowbreak fails here
-      \strut
-      \hfill
-      \quad % decent spacing
-      \hbox}
-     {\parfillskip\zeropoint
-      \par}}
 
 \def\startkolomopmaak % don't change
   {\bgroup

@@ -1,0 +1,1259 @@
+%D \module
+%D   [       file=enco-cyr,
+%D        version=2003.01.24, 
+%D          title=\CONTEXT\ Encoding Macros,
+%D       subtitle=Cyrillic,
+%D         author=...,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
+%C details. 
+
+%D The following kerning test is inspired by a test file 
+%D provided by Victor Figurnov. I hope he still recognizes 
+%D some bit and pieces. 
+%D 
+%D \starttyping
+%D \setupoutput[pdftex]
+%D
+%D \setuplayout[middle] \noheaderandfooterlines
+%D
+%D \startMPenvironment[global]
+%D   \useregime[cyr]
+%D   \useencoding[cyr]
+%D   \mainlanguage[ru]
+%D   \enableregime[cp1251]
+%D   \setupbodyfont[cyr]
+%D \stopMPenvironment
+%D 
+%D \startbuffer
+%D \starttabulate[|l|l|l|]
+%D \NC \ruledhbox{Где}          \NC \ruledhbox{AV}        \NC with kerning    \NC \NR
+%D \NC \ruledhbox{Г{}д{}е}      \NC \ruledhbox{A{}V}      \NC without kerning \NC \NR
+%D \NC \ruledhbox{\tfd Где}     \NC \ruledhbox{\tfd AV}   \NC with kerning    \NC \NR
+%D \NC \ruledhbox{\tfd Г{}д{}е} \NC \ruledhbox{\tfd A{}V} \NC without kerning \NC \NR
+%D \stoptabulate
+%D 
+%D \showkerning{Как сделать документ}
+%D \stopbuffer
+%D 
+%D \starttext
+%D 
+%D \title{Kerning test} 
+%D 
+%D \typebuffer
+%D 
+%D \rm \subject{Serif      font} \getbuffer
+%D \ss \subject{SansSerif  font} \getbuffer
+%D \tt \subject{MonoSpacec font} \getbuffer
+%D 
+%D \stoptext
+%D \stoptyping 
+
+%D We start with a fallback, define by HH, who assumes that 
+%D this is phonetic.
+
+\startencoding[default] 
+
+\definecharacter cyrillicA                 {A}
+\definecharacter cyrillica                 {a}
+\definecharacter cyrillicB                 {B}
+\definecharacter cyrillicb                 {b}
+\definecharacter cyrillicV                 {V}
+\definecharacter cyrillicv                 {v}
+\definecharacter cyrillicG                 {G}
+\definecharacter cyrillicg                 {g}
+\definecharacter cyrillicD                 {D}
+\definecharacter cyrillicd                 {d}
+\definecharacter cyrillicE                 {E}
+\definecharacter cyrillice                 {e}
+\definecharacter cyrillicZH                {ZH}
+\definecharacter cyrilliczh                {zh}
+\definecharacter cyrillicZ                 {Z}
+\definecharacter cyrillicz                 {z}
+\definecharacter cyrillicI                 {I}
+\definecharacter cyrillici                 {i}
+\definecharacter cyrillicISHRT             {ISHRT}
+\definecharacter cyrillicishrt             {ishrt}
+\definecharacter cyrillicK                 {K}
+\definecharacter cyrillick                 {k}
+\definecharacter cyrillicL                 {L}
+\definecharacter cyrillicl                 {l}
+\definecharacter cyrillicM                 {M}
+\definecharacter cyrillicm                 {m}
+\definecharacter cyrillicN                 {N}
+\definecharacter cyrillicn                 {n}
+\definecharacter cyrillicO                 {O}
+\definecharacter cyrillico                 {o}
+\definecharacter cyrillicP                 {P}
+\definecharacter cyrillicp                 {p}
+\definecharacter cyrillicR                 {R}
+\definecharacter cyrillicr                 {r}
+\definecharacter cyrillicS                 {S}
+\definecharacter cyrillics                 {s}
+\definecharacter cyrillicT                 {T}
+\definecharacter cyrillict                 {t}
+\definecharacter cyrillicU                 {U}
+\definecharacter cyrillicu                 {u}
+\definecharacter cyrillicF                 {F}
+\definecharacter cyrillicf                 {f}
+\definecharacter cyrillicH                 {H}
+\definecharacter cyrillich                 {h}
+\definecharacter cyrillicC                 {C}
+\definecharacter cyrillicc                 {c}
+\definecharacter cyrillicCH                {CH}
+\definecharacter cyrillicch                {ch}
+\definecharacter cyrillicSH                {SH}
+\definecharacter cyrillicsh                {sh}
+\definecharacter cyrillicSHCH              {SHCH}
+\definecharacter cyrillicshch              {shch}
+\definecharacter cyrillicHRDSN             {HRDSN}
+\definecharacter cyrillichrdsn             {hrdsn}
+\definecharacter cyrillicERY               {ERY}
+\definecharacter cyrillicery               {ery}
+\definecharacter cyrillicSFTSN             {SFTSN}
+\definecharacter cyrillicsftsn             {sftsn}
+\definecharacter cyrillicEREV              {EREV}
+\definecharacter cyrillicerev              {erev}
+\definecharacter cyrillicYU                {YU}
+\definecharacter cyrillicyu                {yu}
+\definecharacter cyrillicYA                {YA}
+\definecharacter cyrillicya                {ya}
+\definecharacter cyrillicGUP               {GUP}
+\definecharacter cyrillicgup               {gup}
+\definecharacter cyrillicGHCRS             {GHCRS}
+\definecharacter cyrillicghcrs             {ghcrs}
+\definecharacter cyrillicDJE               {DJE}
+\definecharacter cyrillicdje               {dje}
+\definecharacter cyrillicTSHE              {TSHE}
+\definecharacter cyrillictshe              {tshe}
+\definecharacter cyrillicSHHA              {SHHA}
+\definecharacter cyrillicshha              {shha}
+\definecharacter cyrillicZHDSC             {ZHDSC}
+\definecharacter cyrilliczhdsc             {zhdsc}
+\definecharacter cyrillicZDSC              {ZDSC}
+\definecharacter cyrilliczdsc              {zdsc}
+\definecharacter cyrillicLJE               {LJE}
+\definecharacter cyrilliclje               {lje}
+\definecharacter cyrillicYI                {YI}
+\definecharacter cyrillicyi                {yi}
+\definecharacter cyrillicKDSC              {KDSC}
+\definecharacter cyrillickdsc              {kdsc}
+\definecharacter cyrillicKBEAK             {KBEAK}
+\definecharacter cyrillickbeak             {kbeak}
+\definecharacter cyrillicKVCRS             {KVCRS}
+\definecharacter cyrillickvcrs             {kvcrs}
+\definecharacter cyrillicAE                {AE}
+\definecharacter cyrillicae                {ae}
+\definecharacter cyrillicNDSC              {NDSC}
+\definecharacter cyrillicndsc              {ndsc}
+\definecharacter cyrillicNG                {NG}
+\definecharacter cyrillicng                {ng}
+\definecharacter cyrillicDZE               {DZE}
+\definecharacter cyrillicdze               {dze}
+\definecharacter cyrillicOTLD              {OTLD}
+\definecharacter cyrillicotld              {otld}
+\definecharacter cyrillicSDSC              {SDSC}
+\definecharacter cyrillicsdsc              {sdsc}
+\definecharacter cyrillicUSHRT             {USHRT}
+\definecharacter cyrillicushrt             {ushrt}
+\definecharacter cyrillicY                 {Y}
+\definecharacter cyrillicy                 {y}
+\definecharacter cyrillicYHCRS             {YHCRS}
+\definecharacter cyrillicyhcrs             {yhcrs}
+\definecharacter cyrillicHDSC              {HDSC}
+\definecharacter cyrillichdsc              {hdsc}
+\definecharacter cyrillicDZHE              {DZHE}
+\definecharacter cyrillicdzhe              {dzhe}
+\definecharacter cyrillicCHVCRS            {CHVCRS}
+\definecharacter cyrillicchvcrs            {chvcrs}
+\definecharacter cyrillicCHRDSC            {CHRDSC}
+\definecharacter cyrillicchrdsc            {chrdsc}
+\definecharacter cyrillicIE                {IE}
+\definecharacter cyrillicie                {ie}
+\definecharacter cyrillicSCHWA             {SCHWA}
+\definecharacter cyrillicschwa             {schwa}
+\definecharacter cyrillicNJE               {NJE}
+\definecharacter cyrillicnje               {nje}
+\definecharacter cyrillicYO                {YO}
+\definecharacter cyrillicyo                {yo}
+\definecharacter cyrillicII                {II}
+\definecharacter cyrillicii                {ii}
+\definecharacter cyrillicJE                {JE}
+\definecharacter cyrillicje                {je}
+\definecharacter cyrillicQ                 {Q}
+\definecharacter cyrillicq                 {q}
+\definecharacter cyrillicW                 {W}
+\definecharacter cyrillicw                 {w}
+
+\stopencoding
+
+\startmapping[t2a]
+
+\resetcaserange 128 to 255
+
+\definecasemaps 192 to 223 lc +32 uc   0  % base letters (russian)
+\definecasemaps 224 to 255 lc   0 uc -32
+
+\definecasemaps 128 to 156 lc +32 uc   0  % extra letters (cyrillic and old-slav)
+\definecasemaps 160 to 188 lc   0 uc -32
+
+\definecasemap 73 105 73  \definecasemap 105 105 73  % cyrillicII
+\definecasemap 74 106 74  \definecasemap 106 106 74  % cyrillicJE
+\definecasemap 81 113 81  \definecasemap 113 113 81  % cyrillicQ
+\definecasemap 87 119 87  \definecasemap 119 119 87  % cyrillicW
+
+\stopmapping
+
+\startcoding[t2a]
+
+\definecharacter textgrave                   0
+\definecharacter textacute                   1
+\definecharacter textcircumflex              2
+\definecharacter texttilde                   3
+\definecharacter textdiaeresis               4
+\definecharacter texthungarumlaut            5
+\definecharacter textring                    6
+\definecharacter textcaron                   7
+\definecharacter textbreve                   8
+\definecharacter textmacron                  9
+\definecharacter textdotaccent              10
+\definecharacter textcedilla                11
+\definecharacter textogonek                 12
+
+\definecharacter textcyrillicflex           18
+\definecharacter textcyrillicumlaut         19
+\definecharacter textcyrillicbreve          20
+
+\definecharacter endash                     21
+\definecharacter emdash                     22
+\definecharacter emdash                     22
+
+\definecharacter textcompwordmark           23
+\definecharacter textvisiblespace           32
+\definecharacter textdollar                 36
+\definecharacter textless                   60
+\definecharacter textgreater                62
+\definecharacter textbackslash              92
+\definecharacter textasciicircum            94
+\definecharacter textunderscore             95
+\definecharacter textbraceleft             123
+\definecharacter textbar                   124
+\definecharacter textbraceright            125
+\definecharacter textasciitilde            126
+\definecharacter textnumero                157
+\definecharacter textcurrency              158
+\definecharacter textsection               159
+\definecharacter textquotedbl               34
+
+\definecharacter upperleftsinglesixquote    96
+\definecharacter upperleftsingleninequote   39
+\definecharacter upperleftsinglesixquote    16
+\definecharacter upperleftdoubleninequote   17
+\definecharacter lowerleftdoubleninequote  189
+
+\definecharacter upperrightsinglesixquote   96
+\definecharacter upperrightsingleninequote  39
+\definecharacter upperrightsinglesixquote   16
+\definecharacter upperrightdoubleninequote  17
+\definecharacter lowerrightdoubleninequote 189 
+
+\definecharacter cyrillicpalochka           13
+\definecharacter cyrilliclangle             14
+\definecharacter cyrillicrangle             15
+
+\definecharacter leftguillemot             190
+\definecharacter rightguillemot            191
+\definecharacter leftsubguillemot          190
+\definecharacter rightsubguillemot         191
+
+\definecharacter dotlessi                   25
+\definecharacter dotlessj                   26
+
+\definecharacter cyrillicA                 192
+\definecharacter cyrillica                 224
+\definecharacter cyrillicB                 193
+\definecharacter cyrillicb                 225
+\definecharacter cyrillicV                 194
+\definecharacter cyrillicv                 226
+\definecharacter cyrillicG                 195
+\definecharacter cyrillicg                 227
+\definecharacter cyrillicD                 196
+\definecharacter cyrillicd                 228
+\definecharacter cyrillicE                 197
+\definecharacter cyrillice                 229
+\definecharacter cyrillicZH                198
+\definecharacter cyrilliczh                230
+\definecharacter cyrillicZ                 199
+\definecharacter cyrillicz                 231
+\definecharacter cyrillicI                 200
+\definecharacter cyrillici                 232
+\definecharacter cyrillicISHRT             201
+\definecharacter cyrillicishrt             233
+\definecharacter cyrillicK                 202
+\definecharacter cyrillick                 234
+\definecharacter cyrillicL                 203
+\definecharacter cyrillicl                 235
+\definecharacter cyrillicM                 204
+\definecharacter cyrillicm                 236
+\definecharacter cyrillicN                 205
+\definecharacter cyrillicn                 237
+\definecharacter cyrillicO                 206
+\definecharacter cyrillico                 238
+\definecharacter cyrillicP                 207
+\definecharacter cyrillicp                 239
+\definecharacter cyrillicR                 208
+\definecharacter cyrillicr                 240
+\definecharacter cyrillicS                 209
+\definecharacter cyrillics                 241
+\definecharacter cyrillicT                 210
+\definecharacter cyrillict                 242
+\definecharacter cyrillicU                 211
+\definecharacter cyrillicu                 243
+\definecharacter cyrillicF                 212
+\definecharacter cyrillicf                 244
+\definecharacter cyrillicH                 213
+\definecharacter cyrillich                 245
+\definecharacter cyrillicC                 214
+\definecharacter cyrillicc                 246
+\definecharacter cyrillicCH                215
+\definecharacter cyrillicch                247
+\definecharacter cyrillicSH                216
+\definecharacter cyrillicsh                248
+\definecharacter cyrillicSHCH              217
+\definecharacter cyrillicshch              249
+\definecharacter cyrillicHRDSN             218
+\definecharacter cyrillichrdsn             250
+\definecharacter cyrillicERY               219
+\definecharacter cyrillicery               251
+\definecharacter cyrillicSFTSN             220
+\definecharacter cyrillicsftsn             252
+\definecharacter cyrillicEREV              221
+\definecharacter cyrillicerev              253
+\definecharacter cyrillicYU                222
+\definecharacter cyrillicyu                254
+\definecharacter cyrillicYA                223
+\definecharacter cyrillicya                255
+\definecharacter cyrillicGUP               128
+\definecharacter cyrillicgup               160
+\definecharacter cyrillicGHCRS             129
+\definecharacter cyrillicghcrs             161
+\definecharacter cyrillicDJE               130
+\definecharacter cyrillicdje               162
+\definecharacter cyrillicTSHE              131
+\definecharacter cyrillictshe              163
+\definecharacter cyrillicSHHA              132
+\definecharacter cyrillicshha              164
+\definecharacter cyrillicZHDSC             133
+\definecharacter cyrilliczhdsc             165
+\definecharacter cyrillicZDSC              134
+\definecharacter cyrilliczdsc              166
+\definecharacter cyrillicLJE               135
+\definecharacter cyrilliclje               167
+\definecharacter cyrillicYI                136
+\definecharacter cyrillicyi                168
+\definecharacter cyrillicKDSC              137
+\definecharacter cyrillickdsc              169
+\definecharacter cyrillicKBEAK             138
+\definecharacter cyrillickbeak             170
+\definecharacter cyrillicKVCRS             139
+\definecharacter cyrillickvcrs             171
+\definecharacter cyrillicAE                140
+\definecharacter cyrillicae                172
+\definecharacter cyrillicNDSC              141
+\definecharacter cyrillicndsc              173
+\definecharacter cyrillicNG                142
+\definecharacter cyrillicng                174
+\definecharacter cyrillicDZE               143
+\definecharacter cyrillicdze               175
+\definecharacter cyrillicOTLD              144
+\definecharacter cyrillicotld              176
+\definecharacter cyrillicSDSC              145
+\definecharacter cyrillicsdsc              177
+\definecharacter cyrillicUSHRT             146
+\definecharacter cyrillicushrt             178
+\definecharacter cyrillicY                 147
+\definecharacter cyrillicy                 179
+\definecharacter cyrillicYHCRS             148
+\definecharacter cyrillicyhcrs             180
+\definecharacter cyrillicHDSC              149
+\definecharacter cyrillichdsc              181
+\definecharacter cyrillicDZHE              150
+\definecharacter cyrillicdzhe              182
+\definecharacter cyrillicCHVCRS            151
+\definecharacter cyrillicchvcrs            183
+\definecharacter cyrillicCHRDSC            152
+\definecharacter cyrillicchrdsc            184
+\definecharacter cyrillicIE                153
+\definecharacter cyrillicie                185
+\definecharacter cyrillicSCHWA             154
+\definecharacter cyrillicschwa             186
+\definecharacter cyrillicNJE               155
+\definecharacter cyrillicnje               187
+\definecharacter cyrillicYO                156
+\definecharacter cyrillicyo                188
+\definecharacter cyrillicII                 73
+\definecharacter cyrillicii                105
+\definecharacter cyrillicJE                 74
+\definecharacter cyrillicje                106
+\definecharacter cyrillicQ                  81
+\definecharacter cyrillicq                 113
+\definecharacter cyrillicW                  87
+\definecharacter cyrillicw                 119
+
+% \defineaccentforchar " ^^c5  {\cyrillicYO}
+% \defineaccentforchar " ^^e5  {\cyrillicyo}
+% \defineaccentforchar U ^^c8  {\cyrillicISHRT}
+% \defineaccentforchar U ^^e8  {\cyrillicishrt}
+% \defineaccentforchar " ^^49  {\cyrillicYI}
+% \defineaccentforchar " ^^69  {\cyrillicyi}
+% \defineaccentforchar c ^^c7  {\cyrillicZDSC}
+% \defineaccentforchar c ^^e7  {\cyrilliczdsc}
+% \defineaccentforchar k ^^d1  {\cyrillicSDSC}
+% \defineaccentforchar k ^^f1  {\cyrillicsdsc}
+% \defineaccentforchar U ^^d3  {\cyrillicUSHRT}
+% \defineaccentforchar U ^^f3  {\cyrillicushrt}
+
+\definecharacter textperthousand    {\%\char 24 }
+\definecharacter textpertenthousand {\%\char 24\char 24 }
+
+\stopcoding
+
+\startmapping[t2b]
+
+\resetcaserange 128 to 255
+
+\definecasemaps 192 to 223 lc +32 uc   0  % base letters (russian)
+\definecasemaps 224 to 255 lc   0 uc -32
+
+\definecasemaps 128 to 156 lc +32 uc   0  % extra letters (cyrillic and old-slav)
+\definecasemaps 160 to 188 lc   0 uc -32
+
+\definecasemap 73  105 73   \definecasemap 105 105 73   % cyrillicII
+\definecasemap 74  106 74   \definecasemap 106 106 74   % cyrillicJE
+\definecasemap 81  113 81   \definecasemap 113 113 81   % cyrillicQ
+\definecasemap 83  115 83   \definecasemap 115 115 83   % cyrillicDZE
+\definecasemap 87  119 87   \definecasemap 119 119 87   % cyrillicW
+
+\stopmapping
+
+\startcoding[t2b]
+
+\definecharacter textgrave                   0
+\definecharacter textacute                   1
+\definecharacter textcircumflex              2
+\definecharacter texttilde                   3
+\definecharacter textdiaeresis               4
+\definecharacter texthungarumlaut            5
+\definecharacter textring                    6
+\definecharacter textcaron                   7
+\definecharacter textbreve                   8
+\definecharacter textmacron                  9
+\definecharacter textdotaccent              10
+\definecharacter textcedilla                11
+\definecharacter textogonek                 12
+
+\definecharacter textcyrillicflex           18
+\definecharacter textcyrillicumlaut         19
+\definecharacter textcyrillicbreve          20
+
+\definecharacter endash                     21
+\definecharacter emdash                     22
+
+\definecharacter textcompwordmark           23
+\definecharacter textvisiblespace           32
+\definecharacter textdollar                 36
+\definecharacter textless                   60
+\definecharacter textgreater                62
+\definecharacter textbackslash              92
+\definecharacter textasciicircum            94
+\definecharacter textunderscore             95
+\definecharacter textbraceleft             123
+\definecharacter textbar                   124
+\definecharacter textbraceright            125
+\definecharacter textasciitilde            126
+\definecharacter textnumero                157
+\definecharacter textcurrency              158
+\definecharacter textsection               159
+\definecharacter textquotedbl               34
+
+\definecharacter upperleftsinglesixquote    96
+\definecharacter upperleftsingleninequote   39
+\definecharacter upperleftsinglesixquote    16
+\definecharacter upperleftdoubleninequote   17
+\definecharacter lowerleftdoubleninequote  189
+
+\definecharacter upperrightsinglesixquote   96
+\definecharacter upperrightsingleninequote  39
+\definecharacter upperrightsinglesixquote   16
+\definecharacter upperrightdoubleninequote  17
+\definecharacter lowerrightdoubleninequote 189
+
+\definecharacter cyrillicpalochka           13
+\definecharacter cyrilliclangle             14
+\definecharacter cyrillicrangle             15
+
+\definecharacter leftguillemot             190
+\definecharacter rightguillemot            191
+\definecharacter leftsubguillemot          190
+\definecharacter rightsubguillemot         191
+
+\definecharacter dotlessi                   25
+\definecharacter dotlessj                   26
+
+\definecharacter cyrillicA                 192
+\definecharacter cyrillica                 224
+\definecharacter cyrillicB                 193
+\definecharacter cyrillicb                 225
+\definecharacter cyrillicV                 194
+\definecharacter cyrillicv                 226
+\definecharacter cyrillicG                 195
+\definecharacter cyrillicg                 227
+\definecharacter cyrillicD                 196
+\definecharacter cyrillicd                 228
+\definecharacter cyrillicE                 197
+\definecharacter cyrillice                 229
+\definecharacter cyrillicZH                198
+\definecharacter cyrilliczh                230
+\definecharacter cyrillicZ                 199
+\definecharacter cyrillicz                 231
+\definecharacter cyrillicI                 200
+\definecharacter cyrillici                 232
+\definecharacter cyrillicISHRT             201
+\definecharacter cyrillicishrt             233
+\definecharacter cyrillicK                 202
+\definecharacter cyrillick                 234
+\definecharacter cyrillicL                 203
+\definecharacter cyrillicl                 235
+\definecharacter cyrillicM                 204
+\definecharacter cyrillicm                 236
+\definecharacter cyrillicN                 205
+\definecharacter cyrillicn                 237
+\definecharacter cyrillicO                 206
+\definecharacter cyrillico                 238
+\definecharacter cyrillicP                 207
+\definecharacter cyrillicp                 239
+\definecharacter cyrillicR                 208
+\definecharacter cyrillicr                 240
+\definecharacter cyrillicS                 209
+\definecharacter cyrillics                 241
+\definecharacter cyrillicT                 210
+\definecharacter cyrillict                 242
+\definecharacter cyrillicU                 211
+\definecharacter cyrillicu                 243
+\definecharacter cyrillicF                 212
+\definecharacter cyrillicf                 244
+\definecharacter cyrillicH                 213
+\definecharacter cyrillich                 245
+\definecharacter cyrillicC                 214
+\definecharacter cyrillicc                 246
+\definecharacter cyrillicCH                215
+\definecharacter cyrillicch                247
+\definecharacter cyrillicSH                216
+\definecharacter cyrillicsh                248
+\definecharacter cyrillicSHCH              217
+\definecharacter cyrillicshch              249
+\definecharacter cyrillicHRDSN             218
+\definecharacter cyrillichrdsn             250
+\definecharacter cyrillicERY               219
+\definecharacter cyrillicery               251
+\definecharacter cyrillicSFTSN             220
+\definecharacter cyrillicsftsn             252
+\definecharacter cyrillicEREV              221
+\definecharacter cyrillicerev              253
+\definecharacter cyrillicYU                222
+\definecharacter cyrillicyu                254
+\definecharacter cyrillicYA                223
+\definecharacter cyrillicya                255
+\definecharacter cyrillicGDSCHCRS          128
+\definecharacter cyrillicgdschcrs          160
+\definecharacter cyrillicGHCRS             129
+\definecharacter cyrillicghcrs             161
+\definecharacter cyrillicGDSC              130
+\definecharacter cyrillicgdsc              162
+\definecharacter cyrillicGHK               131
+\definecharacter cyrillicghk               163
+\definecharacter cyrillicSHHA              132
+\definecharacter cyrillicshha              164
+\definecharacter cyrillicZHDSC             133
+\definecharacter cyrilliczhdsc             165
+\definecharacter cyrillicDELTA             134
+\definecharacter cyrillicdelta             166
+\definecharacter cyrillicABHDZE            135
+\definecharacter cyrillicabhdze            167
+\definecharacter cyrillicLJE               136
+\definecharacter cyrilliclje               168
+\definecharacter cyrillicKDSC              137
+\definecharacter cyrillickdsc              169
+\definecharacter cyrillicLDSC              138
+\definecharacter cyrillicldsc              170
+\definecharacter cyrillicKHK               139
+\definecharacter cyrillickhk               171
+\definecharacter cyrillicLHK               140
+\definecharacter cyrilliclhk               172
+\definecharacter cyrillicNDSC              141
+\definecharacter cyrillicndsc              173
+\definecharacter cyrillicNG                142
+\definecharacter cyrillicng                174
+\definecharacter cyrillicNHK               143
+\definecharacter cyrillicnhk               175
+\definecharacter cyrillicOTLD              144
+\definecharacter cyrillicotld              176
+\definecharacter cyrillicSACRS             145
+\definecharacter cyrillicsacrs             177
+\definecharacter cyrillicUSHRT             146
+\definecharacter cyrillicushrt             178
+\definecharacter cyrillicY                 147
+\definecharacter cyrillicy                 179
+\definecharacter cyrillicHHCRS             148
+\definecharacter cyrillichhcrs             180
+\definecharacter cyrillicHDSC              149
+\definecharacter cyrillichdsc              181
+\definecharacter cyrillicHHK               150
+\definecharacter cyrillichhk               182
+\definecharacter cyrillicCHLDSC            151
+\definecharacter cyrillicchldsc            183
+\definecharacter cyrillicCHRDSC            152
+\definecharacter cyrillicchrdsc            184
+\definecharacter cyrillicNJE               153
+\definecharacter cyrillicnje               185
+\definecharacter cyrillicSCHWA             154
+\definecharacter cyrillicschwa             186
+\definecharacter cyrillicEPS               155
+\definecharacter cyrilliceps               187
+\definecharacter cyrillicYO                156
+\definecharacter cyrillicyo                188
+\definecharacter cyrillicII                 73
+\definecharacter cyrillicii                105
+\definecharacter cyrillicJE                 74
+\definecharacter cyrillicje                106
+\definecharacter cyrillicQ                  81
+\definecharacter cyrillicq                 113
+\definecharacter cyrillicDZE                83
+\definecharacter cyrillicdze               115
+\definecharacter cyrillicW                  87
+\definecharacter cyrillicw                 119
+
+% \defineaccentforchar " ^^c5 {\cyrillicYO}
+% \defineaccentforchar " ^^e5 {\cyrillicyo}
+% \defineaccentforchar U ^^c8 {\cyrillicISHRT}
+% \defineaccentforchar U ^^e8 {\cyrillicishrt}
+% \defineaccentforchar U ^^d3 {\cyrillicUSHRT}
+% \defineaccentforchar U ^^f3 {\cyrillicushrt}
+
+% \definecharacter textperthousand    {\%\char 24 }
+% \definecharacter textpertenthousand {\%\char 24\char 24 }
+
+\stopcoding
+
+\startmapping[t2c]
+
+\resetcaserange 128 to 255
+
+\definecasemaps 192 to 223 lc +32 uc   0  % base letters (russian)
+\definecasemaps 224 to 255 lc   0 uc -32
+
+\definecasemaps 128 to 156 lc +32 uc   0  % extra letters (cyrillic and old-slav)
+\definecasemaps 160 to 188 lc   0 uc -32
+
+\definecasemap 73 105 73  \definecasemap 105 105 73  % cyrillicII
+\definecasemap 74 106 74  \definecasemap 106 106 74  % cyrillicJE
+\definecasemap 81 113 81  \definecasemap 113 113 81  % cyrillicQ
+\definecasemap 83 115 83  \definecasemap 115 115 83  % cyrillicDZE
+\definecasemap 87 119 87  \definecasemap 119 119 87  % cyrillicW
+
+\stopmapping
+
+\startcoding[t2c]
+
+\definecharacter textgrave                    0
+\definecharacter textacute                    1
+\definecharacter textcircumflex               2
+\definecharacter texttilde                    3
+\definecharacter textdiaeresis                4
+\definecharacter texthungarumlaut             5
+\definecharacter textring                     6
+\definecharacter textcaron                    7
+\definecharacter textbreve                    8
+\definecharacter textmacron                   9
+\definecharacter textdotaccent               10
+\definecharacter textcedilla                 11
+\definecharacter textogonek                  12
+
+\definecharacter textcyrillicflex            18
+\definecharacter textcyrillicumlaut          19
+\definecharacter textcyrillicbreve           20
+
+\definecharacter endash                      21
+\definecharacter emdash                      22
+\definecharacter emdash                      22 
+
+\definecharacter textcompwordmark            23
+\definecharacter textvisiblespace            32
+\definecharacter textdollar                  36
+\definecharacter textless                    60
+\definecharacter textgreater                 62
+\definecharacter textbackslash               92
+\definecharacter textasciicircum             94
+\definecharacter textunderscore              95
+\definecharacter textbraceleft              123
+\definecharacter textbar                    124
+\definecharacter textbraceright             125
+\definecharacter textasciitilde             126
+\definecharacter textnumero                 157
+\definecharacter textcurrency               158
+\definecharacter textsection                159
+\definecharacter textquotedbl                34
+
+\definecharacter cyrillicpalochka            13
+\definecharacter cyrilliclangle              14
+\definecharacter cyrillicrangle              15
+
+\definecharacter leftguillemot              190
+\definecharacter rightguillemot             191
+\definecharacter leftsubguillemot           190
+\definecharacter rightsubguillemot          191
+
+\definecharacter upperleftsinglesixquote     96
+\definecharacter upperleftsingleninequote    39
+\definecharacter upperleftsinglesixquote     16
+\definecharacter upperleftdoubleninequote    17
+\definecharacter lowerleftdoubleninequote   189
+
+\definecharacter upperrightsinglesixquote    96
+\definecharacter upperrightsingleninequote   39
+\definecharacter upperrightsinglesixquote    16
+\definecharacter upperrightdoubleninequote   17
+\definecharacter lowerrightdoubleninequote  189
+
+\definecharacter dotlessi                    25
+\definecharacter dotlessj                    26
+
+\definecharacter cyrillicA                  192
+\definecharacter cyrillica                  224
+\definecharacter cyrillicB                  193
+\definecharacter cyrillicb                  225
+\definecharacter cyrillicV                  194
+\definecharacter cyrillicv                  226
+\definecharacter cyrillicG                  195
+\definecharacter cyrillicg                  227
+\definecharacter cyrillicD                  196
+\definecharacter cyrillicd                  228
+\definecharacter cyrillicE                  197
+\definecharacter cyrillice                  229
+\definecharacter cyrillicZH                 198
+\definecharacter cyrilliczh                 230
+\definecharacter cyrillicZ                  199
+\definecharacter cyrillicz                  231
+\definecharacter cyrillicI                  200
+\definecharacter cyrillici                  232
+\definecharacter cyrillicISHRT              201
+\definecharacter cyrillicishrt              233
+\definecharacter cyrillicK                  202
+\definecharacter cyrillick                  234
+\definecharacter cyrillicL                  203
+\definecharacter cyrillicl                  235
+\definecharacter cyrillicM                  204
+\definecharacter cyrillicm                  236
+\definecharacter cyrillicN                  205
+\definecharacter cyrillicn                  237
+\definecharacter cyrillicO                  206
+\definecharacter cyrillico                  238
+\definecharacter cyrillicP                  207
+\definecharacter cyrillicp                  239
+\definecharacter cyrillicR                  208
+\definecharacter cyrillicr                  240
+\definecharacter cyrillicS                  209
+\definecharacter cyrillics                  241
+\definecharacter cyrillicT                  210
+\definecharacter cyrillict                  242
+\definecharacter cyrillicU                  211
+\definecharacter cyrillicu                  243
+\definecharacter cyrillicF                  212
+\definecharacter cyrillicf                  244
+\definecharacter cyrillicH                  213
+\definecharacter cyrillich                  245
+\definecharacter cyrillicC                  214
+\definecharacter cyrillicc                  246
+\definecharacter cyrillicCH                 215
+\definecharacter cyrillicch                 247
+\definecharacter cyrillicSH                 216
+\definecharacter cyrillicsh                 248
+\definecharacter cyrillicSHCH               217
+\definecharacter cyrillicshch               249
+\definecharacter cyrillicHRDSN              218
+\definecharacter cyrillichrdsn              250
+\definecharacter cyrillicERY                219
+\definecharacter cyrillicery                251
+\definecharacter cyrillicSFTSN              220
+\definecharacter cyrillicsftsn              252
+\definecharacter cyrillicEREV               221
+\definecharacter cyrillicerev               253
+\definecharacter cyrillicYU                 222
+\definecharacter cyrillicyu                 254
+\definecharacter cyrillicYA                 223
+\definecharacter cyrillicya                 255
+\definecharacter cyrillicPHK                128
+\definecharacter cyrillicphk                160
+\definecharacter cyrillicTETSE              129
+\definecharacter cyrillictetse              161
+\definecharacter cyrillicTDSC               130
+\definecharacter cyrillictdsc               162
+\definecharacter cyrillicGHK                131
+\definecharacter cyrillicghk                163
+\definecharacter cyrillicSHHA               132
+\definecharacter cyrillicshha               164
+\definecharacter cyrillicRDSC               133
+\definecharacter cyrillicrdsc               165
+\definecharacter cyrillicRTICK              134
+\definecharacter cyrillicrtick              166
+\definecharacter cyrillicABHDZE             135
+\definecharacter cyrillicabhdze             167
+\definecharacter cyrillicMDSC               136
+\definecharacter cyrillicmdsc               168
+\definecharacter cyrillicKDSC               137
+\definecharacter cyrillickdsc               169
+\definecharacter cyrillicLDSC               138
+\definecharacter cyrillicldsc               170
+\definecharacter cyrillicKHCRS              139
+\definecharacter cyrillickhcrs              171
+\definecharacter cyrillicLHK                140
+\definecharacter cyrilliclhk                172
+\definecharacter cyrillicNDSC               141
+\definecharacter cyrillicndsc               173
+\definecharacter cyrillicMHK                142
+\definecharacter cyrillicmhk                174
+\definecharacter cyrillicNHK                143
+\definecharacter cyrillicnhk                175
+\definecharacter cyrillicOTLD               144
+\definecharacter cyrillicotld               176
+\definecharacter cyrillicABHCH              145
+\definecharacter cyrillicabhch              177
+\definecharacter cyrillicABHCHDSC           146
+\definecharacter cyrillicabhchdsc           178
+\definecharacter cyrillicSEMISFTSN          147
+\definecharacter cyrillicsemisftsn          179
+\definecharacter cyrillicISHRTDSC           148
+\definecharacter cyrillicishrtdsc           180
+\definecharacter cyrillicHDSC               149
+\definecharacter cyrillichdsc               181
+\definecharacter cyrillicDZHE               150
+\definecharacter cyrillicdzhe               182
+\definecharacter cyrillicABHHA              151
+\definecharacter cyrillicabhha              183
+\definecharacter cyrillicCHRDSC             152
+\definecharacter cyrillicchrdsc             184
+\definecharacter cyrillicNLHK               153
+\definecharacter cyrillicnlhk               185
+\definecharacter cyrillicSCHWA              154
+\definecharacter cyrillicschwa              186
+\definecharacter cyrillicRHK                155
+\definecharacter cyrillicrhk                187
+\definecharacter cyrillicYO                 156
+\definecharacter cyrillicyo                 188
+\definecharacter cyrillicII                  73
+\definecharacter cyrillicii                 105
+\definecharacter cyrillicJE                  74
+\definecharacter cyrillicje                 106
+\definecharacter cyrillicQ                   81
+\definecharacter cyrillicq                  113
+\definecharacter cyrillicDZE                 83
+\definecharacter cyrillicdze                115
+\definecharacter cyrillicW                   87
+\definecharacter cyrillicw                  119
+
+% \defineaccentforchar " ^^c5 {\cyrillicYO}
+% \defineaccentforchar " ^^e5 {\cyrillicyo}
+% \defineaccentforchar U ^^c8 {\cyrillicISHRT }
+% \defineaccentforchar U ^^e8 {\cyrillicishrt }
+% \defineaccentforchar k ^^91 {\cyrillicABHCHDSC}
+% \defineaccentforchar k ^^b1 {\cyrillicabhchdsc}
+% 
+% \definecharacter textperthousand    {\%\char 24 }
+% \definecharacter textpertenthousand {\%\char 24\char 24 }
+
+\stopcoding
+
+\startmapping[x2]
+
+\resetcaserange 0 to 255
+
+\definecasemaps 192 to 223 lc +32 uc   0  % base letters (russian)
+\definecasemaps 224 to 255 lc   0 uc -32
+
+\definecasemaps 128 to 156 lc +32 uc   0  % extra letters (cyrillic and old-slav)
+\definecasemaps 160 to 188 lc   0 uc -32
+
+\definecasemaps  65 to  90 lc +32 uc   0  % more extra letters (cyrillic and old-slav)
+\definecasemaps  97 to 122 lc   0 uc -32
+
+\definecasemap 28 29 28  \definecasemap 29 29 28 % cyrillicNLHK
+\definecasemap 30 31 30  \definecasemap 31 31 30 % cyrillicDELTA
+
+\stopmapping
+
+\startcoding[x2]
+
+\definecharacter endash                      21
+\definecharacter emdash                      22
+\definecharacter emdash                      22
+
+\definecharacter textcompwordmark            23
+\definecharacter textvisiblespace            32
+\definecharacter textdollar                  36
+\definecharacter textless                    60
+\definecharacter textgreater                 62
+\definecharacter textbackslash               92
+\definecharacter textasciicircum             94
+\definecharacter textunderscore              95
+\definecharacter textbraceleft              123
+\definecharacter textbar                    124
+\definecharacter textbraceright             125
+\definecharacter textasciitilde             126
+\definecharacter textnumero                 157
+\definecharacter textcurrency               158
+\definecharacter textsection                159
+\definecharacter textquotedbl                34
+
+\definecharacter cyrillicpalochka            13
+\definecharacter cyrilliclangle              14
+\definecharacter cyrillicrangle              15
+     
+\definecharacter leftguillemot              190
+\definecharacter rightguillemot             191
+\definecharacter leftsubguillemot           190
+\definecharacter rightsubguillemot          191
+
+\definecharacter upperleftsinglesixquote     96
+\definecharacter upperleftsingleninequote    39
+\definecharacter upperleftsinglesixquote     16
+\definecharacter upperleftdoubleninequote    17
+\definecharacter lowerleftdoubleninequote   189
+
+\definecharacter upperrightsinglesixquote    96
+\definecharacter upperrightsingleninequote   39
+\definecharacter upperrightsinglesixquote    16
+\definecharacter upperrightdoubleninequote   17
+\definecharacter lowerrightdoubleninequote  189
+
+\definecharacter cyrillicA                  192
+\definecharacter cyrillica                  224
+\definecharacter cyrillicB                  193
+\definecharacter cyrillicb                  225
+\definecharacter cyrillicV                  194
+\definecharacter cyrillicv                  226
+\definecharacter cyrillicG                  195
+\definecharacter cyrillicg                  227
+\definecharacter cyrillicD                  196
+\definecharacter cyrillicd                  228
+\definecharacter cyrillicE                  197
+\definecharacter cyrillice                  229
+\definecharacter cyrillicZH                 198
+\definecharacter cyrilliczh                 230
+\definecharacter cyrillicZ                  199
+\definecharacter cyrillicz                  231
+\definecharacter cyrillicI                  200
+\definecharacter cyrillici                  232
+\definecharacter cyrillicISHRT              201
+\definecharacter cyrillicishrt              233
+\definecharacter cyrillicK                  202
+\definecharacter cyrillick                  234
+\definecharacter cyrillicL                  203
+\definecharacter cyrillicl                  235
+\definecharacter cyrillicM                  204
+\definecharacter cyrillicm                  236
+\definecharacter cyrillicN                  205
+\definecharacter cyrillicn                  237
+\definecharacter cyrillicO                  206
+\definecharacter cyrillico                  238
+\definecharacter cyrillicP                  207
+\definecharacter cyrillicp                  239
+\definecharacter cyrillicR                  208
+\definecharacter cyrillicr                  240
+\definecharacter cyrillicS                  209
+\definecharacter cyrillics                  241
+\definecharacter cyrillicT                  210
+\definecharacter cyrillict                  242
+\definecharacter cyrillicU                  211
+\definecharacter cyrillicu                  243
+\definecharacter cyrillicF                  212
+\definecharacter cyrillicf                  244
+\definecharacter cyrillicH                  213
+\definecharacter cyrillich                  245
+\definecharacter cyrillicC                  214
+\definecharacter cyrillicc                  246
+\definecharacter cyrillicCH                 215
+\definecharacter cyrillicch                 247
+\definecharacter cyrillicSH                 216
+\definecharacter cyrillicsh                 248
+\definecharacter cyrillicSHCH               217
+\definecharacter cyrillicshch               249
+\definecharacter cyrillicHRDSN              218
+\definecharacter cyrillichrdsn              250
+\definecharacter cyrillicERY                219
+\definecharacter cyrillicery                251
+\definecharacter cyrillicSFTSN              220
+\definecharacter cyrillicsftsn              252
+\definecharacter cyrillicEREV               221
+\definecharacter cyrillicerev               253
+\definecharacter cyrillicYU                 222
+\definecharacter cyrillicyu                 254
+\definecharacter cyrillicYA                 223
+\definecharacter cyrillicya                 255
+\definecharacter cyrillicGUP                128
+\definecharacter cyrillicgup                160
+\definecharacter cyrillicGHCRS              129
+\definecharacter cyrillicghcrs              161
+\definecharacter cyrillicGDSC               130
+\definecharacter cyrillicgdsc               162
+\definecharacter cyrillicGHK                131
+\definecharacter cyrillicghk                163
+\definecharacter cyrillicSHHA               132
+\definecharacter cyrillicshha               164
+\definecharacter cyrillicZHDSC              133
+\definecharacter cyrilliczhdsc              165
+\definecharacter cyrillicZDSC               134
+\definecharacter cyrilliczdsc               166
+\definecharacter cyrillicABHDZE             135
+\definecharacter cyrillicabhdze             167
+\definecharacter cyrillicYI                 136
+\definecharacter cyrillicyi                 168
+\definecharacter cyrillicKDSC               137
+\definecharacter cyrillickdsc               169
+\definecharacter cyrillicKBEAK              138
+\definecharacter cyrillickbeak              170
+\definecharacter cyrillicKHK                139
+\definecharacter cyrillickhk                171
+\definecharacter cyrillicLHK                140
+\definecharacter cyrilliclhk                172
+\definecharacter cyrillicNDSC               141
+\definecharacter cyrillicndsc               173
+\definecharacter cyrillicNG                 142
+\definecharacter cyrillicng                 174
+\definecharacter cyrillicNHK                143
+\definecharacter cyrillicnhk                175
+\definecharacter cyrillicOTLD               144
+\definecharacter cyrillicotld               176
+\definecharacter cyrillicSDSC               145
+\definecharacter cyrillicsdsc               177
+\definecharacter cyrillicUSHRT              146
+\definecharacter cyrillicushrt              178
+\definecharacter cyrillicY                  147
+\definecharacter cyrillicy                  179
+\definecharacter cyrillicYHCRS              148
+\definecharacter cyrillicyhcrs              180
+\definecharacter cyrillicHDSC               149
+\definecharacter cyrillichdsc               181
+\definecharacter cyrillicHHK                150
+\definecharacter cyrillichhk                182
+\definecharacter cyrillicCHLDSC             151
+\definecharacter cyrillicchldsc             183
+\definecharacter cyrillicCHRDSC             152
+\definecharacter cyrillicchrdsc             184
+\definecharacter cyrillicIE                 153
+\definecharacter cyrillicie                 185
+\definecharacter cyrillicSCHWA              154
+\definecharacter cyrillicschwa              186
+\definecharacter cyrillicEPS                155
+\definecharacter cyrilliceps                187
+\definecharacter cyrillicYO                 156
+\definecharacter cyrillicyo                 188
+\definecharacter cyrillicAE                  65
+\definecharacter cyrillicae                  97
+\definecharacter cyrillicDJE                 66
+\definecharacter cyrillicdje                 98
+\definecharacter cyrillicTSHE                67
+\definecharacter cyrillictshe                99
+\definecharacter cyrillicABHCH               68
+\definecharacter cyrillicabhch              100
+\definecharacter cyrillicABHCHDSC            69
+\definecharacter cyrillicabhchdsc           101
+\definecharacter cyrillicKVCRS               70
+\definecharacter cyrillickvcrs              102
+\definecharacter cyrillicKHCRS               71
+\definecharacter cyrillickhcrs              103
+\definecharacter cyrillicLDSC                72
+\definecharacter cyrillicldsc               104
+\definecharacter cyrillicII                  73
+\definecharacter cyrillicii                 105
+\definecharacter cyrillicJE                  74
+\definecharacter cyrillicje                 106
+\definecharacter cyrillicLJE                 75
+\definecharacter cyrilliclje                107
+\definecharacter cyrillicMDSC                76
+\definecharacter cyrillicmdsc               108
+\definecharacter cyrillicNJE                 77
+\definecharacter cyrillicnje                109
+\definecharacter cyrillicABHHA               78
+\definecharacter cyrillicabhha              110
+\definecharacter cyrillicPHK                 79
+\definecharacter cyrillicphk                111
+\definecharacter cyrillicRDSC                80
+\definecharacter cyrillicrdsc               112
+\definecharacter cyrillicQ                   81
+\definecharacter cyrillicq                  113
+\definecharacter cyrillicTDSC                82
+\definecharacter cyrillictdsc               114
+\definecharacter cyrillicDZE                 83
+\definecharacter cyrillicdze                115
+\definecharacter cyrillicTETSE               84
+\definecharacter cyrillictetse              116
+\definecharacter cyrillicDZHE                85
+\definecharacter cyrillicdzhe               117
+\definecharacter cyrillicCHVCRS              86
+\definecharacter cyrillicchvcrs             118
+\definecharacter cyrillicW                   87
+\definecharacter cyrillicw                  119
+\definecharacter cyrillicYAT                 88
+\definecharacter cyrillicyat                120
+\definecharacter cyrillicBYUS                89
+\definecharacter cyrillicbyus               121
+\definecharacter cyrillicIZH                 90
+\definecharacter cyrillicizh                122
+\definecharacter cyrillicNLHK                28
+\definecharacter cyrillicnlhk                29
+\definecharacter cyrillicDELTA               30
+\definecharacter cyrillicdelta               31
+
+% \defineaccentforchar " ^^c5 {\cyrillicYO}
+% \defineaccentforchar " ^^e5 {\cyrillicyo}
+% \defineaccentforchar U ^^c8 {\cyrillicISHRT}
+% \defineaccentforchar U ^^e8 {\cyrillicishrt}
+% \defineaccentforchar " ^^49 {\cyrillicYI}
+% \defineaccentforchar " ^^69 {\cyrillicyi}
+% \defineaccentforchar c ^^c7 {\cyrillicZDSC}
+% \defineaccentforchar c ^^e7 {\cyrilliczdsc}
+% \defineaccentforchar k ^^d1 {\cyrillicSDSC}
+% \defineaccentforchar k ^^f1 {\cyrillicsdsc}
+% \defineaccentforchar U ^^d3 {\cyrillicUSHRT}
+% \defineaccentforchar U ^^f3 {\cyrillicushrt}
+% \defineaccentforchar k ^^44 {\cyrillicABHCHDSC}
+% \defineaccentforchar k ^^64 {\cyrillicabhchdsc}
+ 
+% \definecharacter textperthousand    {\%\char 24 }
+% \definecharacter textperthousand    {\%\char 24 }
+% \definecharacter textpertenthousand {\%\char 24\char 24 }
+
+\stopcoding
+
+\startmapping[lcy]
+
+\resetcaserange 128 to 255
+
+\definecasemaps 128 to 143 lc +32 uc   0
+\definecasemaps 160 to 175 lc   0 uc -32
+
+\definecasemaps 144 to 159 lc +80 uc   0
+\definecasemaps 224 to 239 lc   0 uc -80
+
+\definecasemap 240 241 240  \definecasemap 241 241 240  % cyrillicYO
+\definecasemap 242 243 242  \definecasemap 243 243 242  % cyrillicGUP
+\definecasemap 244 245 244  \definecasemap 245 245 244  % cyrillicIE
+\definecasemap 244 247 244  \definecasemap 247 247 244  % cyrillicII
+\definecasemap 248 249 248  \definecasemap 249 249 248  % cyrillicYI
+\definecasemap 250 251 240  \definecasemap 241 241 240  % cyrillicUSHRT
+
+\stopmapping
+
+\startcoding[lcy]
+
+%D Characters 0 to 127 are as in normal cmr slots 
+
+\definecharacter cyrillicA                128
+\definecharacter cyrillicB                129
+\definecharacter cyrillicV                130
+\definecharacter cyrillicG                131
+\definecharacter cyrillicD                132
+\definecharacter cyrillicE                133
+\definecharacter cyrillicZH               134
+\definecharacter cyrillicZ                135
+\definecharacter cyrillicI                136
+\definecharacter cyrillicISHRT            137
+\definecharacter cyrillicK                138
+\definecharacter cyrillicL                139
+\definecharacter cyrillicM                140
+\definecharacter cyrillicN                141
+\definecharacter cyrillicO                142
+\definecharacter cyrillicP                143
+\definecharacter cyrillicR                144
+\definecharacter cyrillicS                145
+\definecharacter cyrillicT                146
+\definecharacter cyrillicU                147
+\definecharacter cyrillicF                148
+\definecharacter cyrillicH                149
+\definecharacter cyrillicC                150
+\definecharacter cyrillicCH               151
+\definecharacter cyrillicSH               152
+\definecharacter cyrillicSHCH             153
+\definecharacter cyrillicHRDSN            154
+\definecharacter cyrillicERY              155
+\definecharacter cyrillicSFTSN            156
+\definecharacter cyrillicEREV             157
+\definecharacter cyrillicYU               158
+\definecharacter cyrillicYA               159
+\definecharacter cyrillica                160
+\definecharacter cyrillicb                161
+\definecharacter cyrillicv                162
+\definecharacter cyrillicg                163
+\definecharacter cyrillicd                164
+\definecharacter cyrillice                165
+\definecharacter cyrilliczh               166
+\definecharacter cyrillicz                167
+\definecharacter cyrillici                168
+\definecharacter cyrillicishrt            169
+\definecharacter cyrillick                170
+\definecharacter cyrillicl                171
+\definecharacter cyrillicm                172
+\definecharacter cyrillicn                173
+\definecharacter cyrillico                174
+\definecharacter cyrillicp                175
+\definecharacter cyrillicr                224
+\definecharacter cyrillics                225
+\definecharacter cyrillict                226
+\definecharacter cyrillicu                227
+\definecharacter cyrillicf                228
+\definecharacter cyrillich                229
+\definecharacter cyrillicc                230
+\definecharacter cyrillicch               231
+\definecharacter cyrillicsh               232
+\definecharacter cyrillicshch             233
+\definecharacter cyrillichrdsn            234
+\definecharacter cyrillicery              235
+\definecharacter cyrillicsftsn            236
+\definecharacter cyrillicerev             237
+\definecharacter cyrillicyu               238
+\definecharacter cyrillicya               239
+\definecharacter cyrillicYO               240
+\definecharacter cyrillicyo               241
+\definecharacter cyrillicGUP              242
+\definecharacter cyrillicgup              243
+\definecharacter cyrillicIE               244
+\definecharacter cyrillicie               245
+\definecharacter cyrillicII               246
+\definecharacter cyrillicii               247
+\definecharacter cyrillicYI               248
+\definecharacter cyrillicyi               249
+\definecharacter cyrillicUSHRT            250
+\definecharacter cyrillicushrt            251
+
+\definecharacter emdash                   196
+\definecharacter textcurrency             197
+\definecharacter textnumero               252
+\definecharacter leftguillemot            253
+\definecharacter rightguillemot           254
+\definecharacter lowerleftdoubleninequote 255
+
+% \defineaccentforchar " ^^85 {\cyrillicYO}
+% \defineaccentforchar " ^^a5 {\cyrillicyo}
+% \defineaccentforchar U ^^88 {\cyrillicISHRT}
+% \defineaccentforchar U ^^a8 {\cyrillicishrt}
+% \defineaccentforchar " ^^f6 {\cyrillicYI}
+% \defineaccentforchar " ^^f7 {\cyrillicyi}
+% \defineaccentforchar U ^^93 {\cyrillicUSHRT}
+% \defineaccentforchar U ^^e3 {\cyrillicushrt}
+
+\stopcoding
+
+\endinput 

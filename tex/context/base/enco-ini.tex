@@ -229,9 +229,13 @@
    \dostepwiserecurse{#1}{#2}\plusone
      {\@EA\appendtoks\@EA\dodefineactivedecimal\@EA{\recurselevel}{#3}\to\regimetoks}}
 
-\long\def\defineactivetoken #1 #2% watch the {} 
+% \long\def\defineactivetoken #1 #2% watch the {} 
+%   {\setregimetoks
+%    \appendtoks\defineactivecharacter#1 {#2{}}\to\regimetoks}
+
+\long\def\defineactivetoken #1 #2% no {} after #2, else no kern
   {\setregimetoks
-   \appendtoks\defineactivecharacter#1 {#2{}}\to\regimetoks}
+   \appendtoks\defineactivecharacter#1 {#2}\to\regimetoks}
 
 \long\def\defineactiveinspector #1 #2% watch the missing {} 
   {\setregimetoks
@@ -299,7 +303,7 @@
 
 \def\douseencoding#1%
   {\doifundefined{\c!file\f!encodingprefix#1}%
-     {\setvalue{\c!file\f!encodingprefix#1}{}%
+     {\letvalue{\c!file\f!encodingprefix#1}\empty
       \makeshortfilename[\f!encodingprefix#1]%
       \startreadingfile
       \readsysfile\shortfilename
@@ -372,6 +376,17 @@
 %D \stoptypen 
 %D
 %D and saves a lot of typing (copying). 
+
+% \def\resetcaserange #1 to #2
+%   {\dostepwiserecurse{#1}{#2}{1}
+%      {\expanded{\definecasemap\recurselevel\space0\space0\space}}}
+
+\def\resetcaserange #1 to #2
+ {\setmappingtoks
+  \dostepwiserecurse{#1}{#2}\plusone
+    {\edef\@@expanded{\recurselevel\space}% 
+     \@EA\appendtoks\@EA\setcasemap\@@expanded 0 0 \to\mappingtoks}%
+  \ignorespaces}
 
 \def\presetcaserange#1#2%
   {\dostepwiserecurse{#1}{#2}\plusone
@@ -661,7 +676,8 @@
    \fi
    \convertargument#1\to\asciiA \convertargument#2\to\asciiB
    \convertargument#3\to\asciiC \convertargument#4\to\asciiD
-   \setevalue{\!!stringa}{\!!stringb\flushsortkey{\asciiA}{\asciiB}{\asciiC}{\asciiD}}}
+   \setevalue{\!!stringa}%
+     {\!!stringb\flushsortkey{\asciiA}{\asciiB}{\asciiC}{\asciiD}}}
 
 \def\definesortkey#1#2#3#4%
   {}
@@ -1402,7 +1418,7 @@
 %         {}}%
 %    \def\startencoding[##1]{}
 %    \def\stopencoding{\endinput}  
-%    \readfile{xxxx-#1}{}{}% 
+%    \readfile{xxxx-#1}\donothing\donothing
 %    \popmacro\stopencoding
 %    \popmacro\startencoding
 %    \popmacro\definecharacter}

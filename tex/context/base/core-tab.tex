@@ -581,7 +581,7 @@
 %D \em Test for bracket: invoked by the keys \type{q} and
 %D \type{Q}.
 
-\def\!tqTestForBracket%
+\def\!tqTestForBracket
   {\ifx[\!tnext
      \!thx\!tqGetArgument
    \else
@@ -2323,8 +2323,8 @@
       \v!middel=>\OpenUp{1}{1}\def\LOW{\Lower7 },
        \v!groot=>\OpenUp{2}{2}\def\LOW{\Lower8 }]%
    \doifelse\@@tiafstand\v!geen
-     {\chardef\TABLErowfactor0 }
-     {\chardef\TABLErowfactor2 }}
+     {\chardef\TABLErowfactor\zerocount}
+     {\chardef\TABLErowfactor\plustwo  }}
 
 \def\dohandlebar
   {\ifmmode

@@ -30,6 +30,12 @@
 
 \def\defaultXMLelement{\iftraceXMLelements[\currentXMLelement]\fi}
 
+%D We can use the default handler to implement automatic 
+%D element hiding. Beware: this overloads the tracer.  
+
+\def\startXMLignore{\dododefineXMLignore \s!default}
+\def\stopXMLignore {\dododefineXMLprocess\s!default}
+
 %D The following entities need to be defined anyway. They
 %D may be overloaded later.
 
@@ -190,7 +196,7 @@
 \def\dohandleXMLdoctok
   {\ifx\nexttoken>%
    % [doctype: \XMLdoctype]
-     \@EA\gobbleuntil\@EA>\@EA
+     \@EA\gobbleuntil\@EA>%
    \else\ifx\nexttoken\blankspace
    % [doctype: \XMLdoctype]
      \@EAEAEA\dodohandleXMLdoctype
@@ -205,19 +211,21 @@
   {\executeifdefined{XMLdoctype#1}{\gobbleuntil>}}
 
 \setvalue{XMLdoctype>}{}
-\setvalue{XMLdoctype[}{\processuntil{]>}}
+\setvalue{XMLdoctype[}{\processuntil{]>}} % or \gobbleuntil{]>}} 
 
-%\def\XMLdoctypeS YSTEM %
-%  {\dowithgrabbedstring\dodohandleXMLdoctype}
+\def\XMLdoctypeS YSTEM %
+  {\dowithgrabbedstring\dodohandleXMLdoctype}
 
-%\def\XMLdoctypeP UBLIC %
-%  {\dowithgrabbedstring{\dowithgrabbedstring\dodohandleXMLdoctype}}
+\def\XMLdoctypeP UBLIC %
+  {\dowithgrabbedstring{\dowithgrabbedstring\dodohandleXMLdoctype}}
 
-\def\XMLdoctypeS YSTEM {\XMLgrabstring}
-\def\XMLdoctypeP UBLIC {\XMLgrabstring}
-
-\def\XMLgrabstring
-  {\doifnextcharelse>{\gobbleuntil>}{\dowithgrabbedstring\XMLgrabstring}}
+% wrong 
+%
+% \def\XMLdoctypeS YSTEM {\XMLgrabstring}
+% \def\XMLdoctypeP UBLIC {\XMLgrabstring}
+% 
+% \def\XMLgrabstring
+%   {\doifnextcharelse>{\gobbleuntil>}{\dowithgrabbedstring\XMLgrabstring}}
 
 %D Some day we may need to support entities within a
 %D document type namespace.

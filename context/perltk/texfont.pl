@@ -245,7 +245,7 @@ if (($batch)||($ARGV[0] =~ /.+\.dat$/io))
       { if ($batchfile !~ /\.dat$/io) { $batchfile .= ".dat" } }
     unless (-f $batchfile)
       { report ("trying to locate : $batchfile") ;
-        $batchfile = `kpsewhich -progname=context --format="other text files" $batchfile` ;
+        $batchfile = `kpsewhich -progname=context --format="other text file" $batchfile` ;
         chomp $batchfile }
     error ("unknown batch file $batchfile") unless -e $batchfile ;
     report ("processing batch file : $batchfile") ;

@@ -1840,6 +1840,7 @@ var:nregels:*getal::
 var:default:*naam::
 var:linkermargeafstand:*maat::
 var:rechtermargeafstand:*maat::
+var:zijuitlijnen:normaal,regel::
 ivr:stelomlijndin::
 stopsetup
 
@@ -1870,7 +1871,7 @@ stopsetup
 startsetup
 com:stelkoppeltekenin:
 typ:var/:
-var:teken:--,---,-,\penalty 10000\ ,),(,=,/::
+var:teken:--,---,-,~,),(,=,/::
 stopsetup
 
 startsetup
@@ -2968,7 +2969,7 @@ stopsetup
 startsetup
 com:plaats<<blok>>:
 typ:val/refs/arg/arg/:
-val:links,rechts,hier,boven,onder, inlinker,inrechter,inmarge,marge, pagina,naast,altijd,forceer,lang:hier:
+val:links,rechts,hier,boven,onder, inlinker,inrechter,inmarge,marge, linkermarge,rechtermarge,linkerrand,rechterrand, binnenmarge,buitenmarge,binnenrand,buitenrand, binnen,buiten,regel,hoog,laag,passend, pagina,naast,altijd,forceer,lang:hier:
 val:*tekst::
 val:*tekst::
 stopsetup
@@ -2998,8 +2999,11 @@ var:hoogte:*maat::
 var:breedte:*maat::
 var:maxhoogte:*maat::
 var:maxbreedte:*maat::
+var:minbreedte:*maat::
 var:default:*naam::
 var:paginaovergangen:*lijst::
+var:linkermargeafstand:*maat::
+var:rechtermargeafstand:*maat::
 var:plaats:links,midden,rechts::
 ivr:stelomlijndin::
 stopsetup
@@ -3438,6 +3442,8 @@ var:hoogte:*maat,passend::
 var:breedte:*maat,passend::
 var:plaats:boven,midden,onder,links,rechts::
 var:uitlijnen:nee,links,rechts,midden,normaal::
+var:letter:normaal,vet,schuin,vetschuin,type,kap,klein...*commando::
+var:kleur:*naam::
 stopsetup
 
 startsetup
@@ -3482,7 +3488,7 @@ var:rugwit:*maat::
 var:kopwit:*maat::
 var:rugoffset:*maat::
 var:kopoffset:*maat::
-var:optie:max,bookmark::
+var:optie:max,passend,dubbelzijdig,bookmark::
 var:wachttijd:*getal,geen::
 stopsetup
 
@@ -3527,7 +3533,7 @@ stopsetup
 
 startsetup
 com:stelinteractiemenuin:
-typ:vals/vars/dests/:
+typ:vals/vars/:
 val:links,rechts,boven,onder,*naam::
 var:voor:*commando::
 var:na:*commando::

@@ -18,7 +18,7 @@
 \unprotect 
 
 \newbox\spreadbox
-\newif\ifinspread
+\newif \ifinspread
 
 \chardef\showspreadmode=1
 
@@ -52,14 +52,15 @@
 
 \def\doflushspread
   {\ifinspread \ifvoid\spreadbox\else 
-     \null % \s!dummy % dummy text. will be discarded  
-     \pagina 
+     % this page will be discarded later  
+     \null \pagina 
    \fi \fi }
 
 \def\startspread
   {\bgroup
    \ifdubbelzijdig
      \pagina[\v!links]%
+    %\setsystemmode{spread}%
      \inspreadtrue
      \scratchdimen2\tekstbreedte
      \advance\scratchdimen2\rugwit

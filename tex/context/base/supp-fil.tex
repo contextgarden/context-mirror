@@ -169,10 +169,12 @@
 \bgroup % todo: _ cleanup 
  
 \catcode`\/=\@@active 
+\catcode`\:=\@@active 
 
 \gdef\sanitizefilename#1\to#2%
   {\bgroup
-   \let/=\f!pathseparator
+   \edef/{\string/}%
+   \edef:{\string:}%
    \expanded{\xdef\noexpand\sanitizedfilename{#1}}%
    \egroup
    \let#2\sanitizedfilename}
@@ -181,7 +183,7 @@
 
 %D NEW:
 
-\chardef\kindoffile=0 % 0=normal 1=http
+\chardef\kindoffile=0 % 0=normal 1=full path spec (or http)
 
 \def\checkfilename#1%
   {\doifinstringelse{@@/}{@@#1}%    unix: /full/path 
@@ -261,7 +263,9 @@
    \checkfilename\readfilename
    \ifcase\kindoffile
      % not a full path or url, check for existence 
-     \def\next{\redoreadfile{\pathplusfile{#1}{\readfilename}}{#3}{#4}}%
+     \doifelsenothing{#1}
+       {\def\next{\redoreadfile\readfilename{#3}{#4}}}%
+       {\def\next{\redoreadfile{\pathplusfile{#1}{\readfilename}}{#3}{#4}}}%
    \else
      % a full path or url, no further checking done  
      \def\next{#3\dodoreadfile}%
@@ -269,17 +273,20 @@
    \next}
 
 \def\redoreadfile#1#2#3%
-  {\immediate\openin\scratchread=\readfilename\relax
+  {\immediate\openin\scratchread=#1\relax
    \ifeof\scratchread
+   % \writestatus\m!systems{cannot locate #1}\wait
      \immediate\closein\scratchread
      \decrement\readlevel\relax
      \ifnum\readlevel>\zerocount
-       \def\next{\redoreadfile{\pathplusfile{\f!parentpath}{#1}}{#2}{#3}}%
+       \edef\readfilename{\pathplusfile{\f!parentpath}{\readfilename}}%
+       \def\next{\redoreadfile\readfilename{#2}{#3}}%
      \else
        \def\next{#3}%
      \fi
    \else
      \immediate\closein\scratchread 
+   % \writestatus\m!systems{#1 located}\wait
      \def\next{#2\dodoreadfile}%
    \fi
    \next}               

@@ -667,8 +667,42 @@
       \vbox{\the\tbltoks}%
     \fi\fi}
 
-\def\splittblbox#1% #1 <> 0/2 
-  {\unvbox#1}
+% \def\splittblbox#1% #1 <> 0/2 
+%   {\unvbox#1}
+
+\def\splittblbox#1% #1 <> 0/2
+  {\ifinsidefloat
+     \unvbox#1%
+   \else
+     % spacing between rows gets lost in split
+     \setbox4\vbox
+       {\doifsomething\tbltbltussenwit{\blank[\tbltbltussenwit]}}%
+     \setbox2\vbox
+       {}%
+     \dorecurse\noftblheadlines
+       {\setbox0\vsplit#1 to \lineheight
+        \setbox2\vbox{\unvcopy2\unvcopy0}}%
+     \ifcase\noftblheadlines\else\unvcopy2\fi
+     \donefalse
+     \doloop
+       {\setbox0\vsplit#1 to \lineheight
+        \ifdim\pagegoal<\maxdimen
+          \setbox0\vbox{\unvbox0}%
+          \dimen0\ht0
+          \advance\dimen0\ht4
+          \advance\dimen0\pagetotal
+          \ifdim\dimen0>\pagegoal
+            \bgroup \pagina \egroup % make sure that local vars are kept
+            \ifcase\noftblheadlines\else\unvcopy2\fi
+          \fi
+        \fi
+        \ifdone
+          \doifsomething\tbltbltussenwit{\blank[\tbltbltussenwit]}%
+        \fi
+        \unvbox0
+        \allowbreak
+        \ifvoid#1 \exitloop \else \donetrue \fi}%
+   \fi}
 
 \def\checktblwidthsone{\dochecktblwidths0} % 0 = trial run
 \def\checktblwidthstwo{\dochecktblwidths1} % 1 = real run

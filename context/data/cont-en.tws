@@ -1840,6 +1840,7 @@ var:nlines:*number::
 var:default:*name::
 var:leftmargindistance:*dimension::
 var:rightmargindistance:*dimension::
+var:sidealign:normal,line::
 ivr:setupframed::
 stopsetup
 
@@ -1870,7 +1871,7 @@ stopsetup
 startsetup
 com:setuphyphenmark:
 typ:var/:
-var:sign:--,---,-,\penalty 10000\ ,),(,=,/::
+var:sign:--,---,-,~,),(,=,/::
 stopsetup
 
 startsetup
@@ -2968,7 +2969,7 @@ stopsetup
 startsetup
 com:place<<float>>:
 typ:val/refs/arg/arg/:
-val:left,right,here,top,bottom, inleft,inright,inmargin,margin, page,opposite,always,force,tall:here:
+val:left,right,here,top,bottom, inleft,inright,inmargin,margin, leftmargin,rightmargin,leftedge,rightedge, innermargin,outermargin,inneredge,outeredge, inner,outer,regel,high,low,fit, page,opposite,always,force,tall:here:
 val:*text::
 val:*text::
 stopsetup
@@ -2998,8 +2999,11 @@ var:height:*dimension::
 var:width:*dimension::
 var:maxheight:*dimension::
 var:maxwidth:*dimension::
+var:minwidth:*dimension::
 var:default:*name::
 var:pageboundaries:*list::
+var:leftmargindistance:*dimension::
+var:rightmargindistance:*dimension::
 var:location:left,middle,right::
 ivr:setupframed::
 stopsetup
@@ -3396,7 +3400,7 @@ stopsetup
 
 startsetup
 com:startfact:
-typ:tex/{geg}nop/sep/nop/sep/nop/sep/tex/{geg}stp/:
+typ:tex/{fact}nop/sep/nop/sep/nop/sep/tex/{fact}stp/:
 val:*text::
 val:*text::
 val:*text::
@@ -3438,6 +3442,8 @@ var:height:*dimension,fit::
 var:width:*dimension,fit::
 var:location:boven,midden,onder,links,rechts::
 var:align:no,left,right,middle,normal::
+var:style:normal,bold,slanted,boldslanted,type,cap,small...*command::
+var:color:*name::
 stopsetup
 
 startsetup
@@ -3482,7 +3488,7 @@ var:backspace:*dimension::
 var:topspace:*dimension::
 var:horoffset:*dimension::
 var:veroffset:*dimension::
-var:option:max,bookmark::
+var:option:max,fit,doublesided,bookmark::
 var:delay:*number,none::
 stopsetup
 
@@ -3527,7 +3533,7 @@ stopsetup
 
 startsetup
 com:setupinteractionmenu:
-typ:vals/vars/dests/:
+typ:vals/vars/:
 val:left,right,top,bottom,*name::
 var:before:*command::
 var:after:*command::

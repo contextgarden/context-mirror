@@ -1840,6 +1840,7 @@ var:nrighe:*numero::
 var:implicito:*nome::
 var:distanzamarginesinistro:*dimensione::
 var:distanzamarginedestro:*dimensione::
+var:sidealign:normale,riga::
 ivr:impostaincorniciato::
 stopsetup
 
@@ -1870,7 +1871,7 @@ stopsetup
 startsetup
 com:impostasegnosillabazione:
 typ:var/:
-var:segno:--,---,-,\penalty 10000\ ,),(,=,/::
+var:segno:--,---,-,~,),(,=,/::
 stopsetup
 
 startsetup
@@ -2968,7 +2969,7 @@ stopsetup
 startsetup
 com:metti<<oggettomobile>>:
 typ:val/refs/arg/arg/:
-val:sinistra,destra,qui,cima,fondo, insinistra,indestra,inmargine,margine, pagina,opposto,sempre,forza,alto:qui:
+val:sinistra,destra,qui,cima,fondo, insinistra,indestra,inmargine,margine, marginesinistro,marginedestro,bordosinistro,bordodestro, margineinterno,margineesterno,bordointerno,bordoesterno, interno,esterno,regel,alto,basso,adatta, pagina,opposto,sempre,forza,alto:qui:
 val:*testo::
 val:*testo::
 stopsetup
@@ -2998,8 +2999,11 @@ var:altezza:*dimensione::
 var:ampiezza:*dimensione::
 var:altezzamax:*dimensione::
 var:ampiezzamax:*dimensione::
+var:ampiezzamin:*dimensione::
 var:implicito:*nome::
 var:limitipagina:*elenco::
+var:distanzamarginesinistro:*dimensione::
+var:distanzamarginedestro:*dimensione::
 var:luogo:sinistra,centro,destra::
 ivr:impostaincorniciato::
 stopsetup
@@ -3396,7 +3400,7 @@ stopsetup
 
 startsetup
 com:iniziafatto:
-typ:tex/{geg}nop/sep/nop/sep/nop/sep/tex/{geg}stp/:
+typ:tex/{fatto}nop/sep/nop/sep/nop/sep/tex/{fatto}stp/:
 val:*testo::
 val:*testo::
 val:*testo::
@@ -3438,6 +3442,8 @@ var:altezza:*dimensione,adatta::
 var:ampiezza:*dimensione,adatta::
 var:luogo:boven,midden,onder,links,rechts::
 var:allinea:no,sinistra,destra,centro,normale::
+var:stile:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...*comando::
+var:colore:*nome::
 stopsetup
 
 startsetup
@@ -3482,7 +3488,7 @@ var:backspace:*dimensione::
 var:spaziocima:*dimensione::
 var:horoffset:*dimensione::
 var:veroffset:*dimensione::
-var:opzione:max,segnalibro::
+var:opzione:max,adatta,doppiafaccia,segnalibro::
 var:attesa:*numero,nessuno::
 stopsetup
 
@@ -3527,7 +3533,7 @@ stopsetup
 
 startsetup
 com:impostamenuinterazione:
-typ:vals/vars/dests/:
+typ:vals/vars/:
 val:sinistra,destra,cima,fondo,*nome::
 var:prima:*comando::
 var:dopo:*comando::

@@ -54,6 +54,7 @@
    \else
      \xdef\PDFdestination{#1}%
    \fi
+   % nicer \xdef\PDFdestination{\ifovercomePDFbugs'\fi#1\ifovercomePDFbugs'\fi}%
    \lowercase\@EA{\@EA\xdef\@EA\PDFdestination\@EA{\PDFdestination}}%
    \egroup}
 
@@ -130,7 +131,6 @@
    % we diminish the processing time considerably
    \scratchcounter\maxPDFstringsize
    \def\docommando##1%
-    %{\ifnum\scratchcounter>0
      {\ifcase\scratchcounter\else
         \advance\scratchcounter \minusone
         \ifcase\lccode`##1\relax
@@ -332,10 +332,20 @@
 %   \xdef\currentPDFcropboxspec
 %     {[\left\space\bottom\space\width\space\height]}%
 %   \global\let\currentPDFtrimboxspec\currentPDFcropboxspec
+%
+%   \xdef\currentPDFpagemode
+%     {/PageMode \ifcase#6 
+%        /UseNone\or/FullScreen\or/UseOutlines\else/UseNone\fi}%
+%
    \xdef\currentPDFpagemode
-     {/PageMode \ifcase#6 /UseNone\or/FullScreen\or/UseOutlines\else/UseNone\fi}%
+     {\ifnum#6=4 
+        /PageLayout /TwoColumnRight
+      \else
+        /PageMode \ifcase#6  
+        /UseNone\or/FullScreen\or/UseOutlines\else/UseNone\fi
+      \fi}%
    \xdef\currentPDFviewerprefs % space after #6 needed, else \relax
-     {\ifcase#6 \or\or\or /ViewerPreferences << /FitWindow true >>\fi}%
+     {\ifcase#6 \or\or\else /ViewerPreferences << /FitWindow true >>\fi}%
    \egroup}
 
 \appendtoksonce % hack to prevent duplicates

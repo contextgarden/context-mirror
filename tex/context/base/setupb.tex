@@ -3417,7 +3417,7 @@
   \command
     [\y!stelinterliniein]
   \type
-    [\c!opt!\c!val!\c!or!\c!vars!]
+    [\c!opt!\c!or!\c!val!\c!vars!]
   \value
     [\v!reset,\v!klein,\v!middel,\v!groot,\v!aan,\v!uit]
     [\v!klein]
@@ -3754,6 +3754,10 @@
     [\c!rechtermargeafstand]
     [\c!dimension!]
     [\!!zeropoint]
+  \variable 
+    [\c!zijuitlijnen]
+    [\v!normaal,\v!regel]        
+    [\v!normaal]
   \inheritvariables
     [\y!setupframed]
     []
@@ -6291,6 +6295,9 @@
   \value
     [\v!links,\v!rechts,\v!hier,\v!boven,\v!onder,
      \v!inlinker,\v!inrechter,\v!inmarge,\v!marge,
+     \v!linkermarge,\v!rechtermarge,\v!linkerrand,\v!rechterrand,
+     \v!binnenmarge,\v!buitenmarge,\v!binnenrand,\v!buitenrand,
+     \v!binnen,\v!buiten,\c!regel,\v!hoog,\v!laag,\v!passend,
      \v!pagina,\v!naast,\v!altijd,\v!forceer,\v!lang]
     [\v!hier]
   \value
@@ -6366,6 +6373,10 @@
     [\c!dimension!]
     []
   \variable
+    [\c!minbreedte]
+    [\c!dimension!]
+    []
+  \variable
     [\c!default]
     [\c!identifier!]
     []
@@ -6373,6 +6384,14 @@
     [\c!paginaovergangen]
     [\c!list!]
     []
+  \variable
+    [\c!linkermargeafstand]
+    [\c!dimension!]         
+    [0pt]
+  \variable
+    [\c!rechtermargeafstand]
+    [\c!dimension!]         
+    [0pt]
   \variable
     [\c!plaats]
     [\v!links,\v!midden,\v!rechts]
@@ -7318,33 +7337,34 @@
   \type
     [\c!opt!\c!val!\c!tex!{leg}\c!nop!\c!sep!\c!nop!\c!sep!\c!nop!\c!sep!\c!tex!{leg}\c!stp!]
   \value
-     [\v!twee]
-     []
+    [\v!twee]
+    []
   \value
-     [\c!text!]
-     []
+    [\c!text!]
+    []
   \value
-     [\c!text!]
-     []
+    [\c!text!]
+    []
   \value
-     [\c!text!]
-     []
+    [\c!text!]
+    []
 \stopsetup
 
 \startsetup
   \command
     [\e!start\e!gegeven]
   \type
-    [\c!tex!{geg}\c!nop!\c!sep!\c!nop!\c!sep!\c!nop!\c!sep!\c!tex!{geg}\c!stp!]
+%    [\c!tex!{geg}\c!nop!\c!sep!\c!nop!\c!sep!\c!nop!\c!sep!\c!tex!{geg}\c!stp!]
+    [\c!tex!{\y!geg}\c!nop!\c!sep!\c!nop!\c!sep!\c!nop!\c!sep!\c!tex!{\y!geg}\c!stp!]
   \value
-     [\c!text!]
-     []
+    [\c!text!]
+    []
   \value
-     [\c!text!]
-     []
+    [\c!text!]
+    []
   \value
-     [\c!text!]
-     []
+    [\c!text!]
+    []
 \stopsetup
 
 \startsetup
@@ -7430,6 +7450,14 @@
     [\c!uitlijnen]
     [\v!nee,\v!links,\v!rechts,\v!midden,\v!normaal]
     [\v!midden]
+  \variable
+    [\c!letter]
+    [\v!normaal,\v!vet,\v!schuin,\v!vet\v!schuin,\v!type,\v!kap,\v!klein...\c!command!]
+    [\v!vet]
+  \variable
+    [\c!kleur]
+    [\c!identifier!]
+    []
 \stopsetup
 
 \startsetup
@@ -7529,7 +7557,7 @@
     [0pt]
   \variable
     [\c!optie]
-    [\v!max,\v!bookmark]
+    [\v!max,\v!passend,\v!dubbelzijdig,\v!bookmark]
     []
   \variable
     [\c!wachttijd]
@@ -7662,7 +7690,7 @@
   \command
     [\y!stelinteractiemenuin]
   \type
-    [\c!alwint!\c!vals!\c!opt!\c!vars!\c!opt!\c!dests!]
+    [\c!alwint!\c!vals!\c!opt!\c!vars!] % \c!opt!\c!dests!
   \value
     [\v!links,\v!rechts,\v!boven,\v!onder,\c!identifier!]
     []

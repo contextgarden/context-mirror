@@ -534,7 +534,7 @@
         \csname\??lew\number\linetablecolumn\endcsname
       \fi\fi}}
 
-\def\linetableER
+\def\linetableBR
   {\dosingleempty\dolinetableBR}
 
 \def\dolinetableBR[#1]% #1 not yet implemented 
@@ -544,7 +544,7 @@
    \fi
    \global\linetablecolumn\plusone
    \global\linetablesubcol\plusone
-   \xdef\linetableheight{\linetablerparameter\c!hoogte}%
+%   \linetableheight\linetablerparameter\c!hoogte
 %
 %   \ifx\linetableheight\empty 
 %     % nothing 
