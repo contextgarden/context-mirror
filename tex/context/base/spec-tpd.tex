@@ -67,6 +67,15 @@
   \newcount\pdflastximagepages \pdflastximagepages=1
 \fi
 
+%D In order to get high quality \METAPOST\ inclusion, we set
+%D the number of digits to~5 (prevents rounding errors). 
+
+\ifx\pdfdecimaldigits\undefined
+  \newcount\pdfdecimaldigits
+\fi
+
+\pdfdecimaldigits=5 
+
 % %D Why are the Acrobat viewers so buggy? To prevent font cache
 % %D mismatches, we say:
 %
@@ -110,7 +119,6 @@
 
 \pdfoutput       =1 % we reset that one with \everyresetspecials
 \pdfcompresslevel=9 % apart from debugging, no reason for value 0
-\pdfdecimaldigits=5 % otherwise wrong rounding for mp stuff 
 
 %D Just in case we mimmick specials, we have to make sure no
 %D default specials end up in the process.
@@ -749,25 +757,42 @@
 %D \CONTEXT\ only uses relative positions, the origin is of
 %D less importance.
 
-\def\doTPDsetposition#1#2#3%
-  {\bgroup
-   \edef\doTPDsetposition%
-     {\writeutilitycommand
-        {#1%
-         {#2}%
-         {\noexpand\realfolio}%
-         {\noexpand\number\pdflastxpos}%
-         {\noexpand\number\pdflastypos}%
-         #3}}%
-   \pdfsavepos
-   \doTPDsetposition
-   \egroup}
+% \def\doTPDsetposition#1#2#3%
+%   {\bgroup
+%    \edef\doTPDsetposition%
+%      {\writeutilitycommand
+%         {#1%
+%          {#2}%
+%          {\noexpand\realfolio}%
+%          {\noexpand\number\pdflastxpos}%
+%          {\noexpand\number\pdflastypos}%
+%          #3}}%
+%    \pdfsavepos
+%    \doTPDsetposition
+%    \egroup}
+% 
+% \definespecial\dosetposition#1%
+%   {\doTPDsetposition{\pospxy}{#1}{}}
+% 
+% \definespecial\dosetpositionwhd#1#2#3#4%
+%   {\doTPDsetposition{\pospxywhd}{#1}{{#2}{#3}{#4}}}
 
 \definespecial\dosetposition#1%
-  {\doTPDsetposition{\pospxy}{#1}{}}
+  {\pdfsavepos
+   \dolazysaveposition
+     {#1}%
+     {\noexpand\realfolio}%
+     {\noexpand\number\pdflastxpos}%
+     {\noexpand\number\pdflastypos}}%
 
 \definespecial\dosetpositionwhd#1#2#3#4%
-  {\doTPDsetposition{\pospxywhd}{#1}{{#2}{#3}{#4}}}
+  {\pdfsavepos
+   \dolazysavepositionwhd
+     {#1}%
+     {\noexpand\realfolio}%
+     {\noexpand\number\pdflastxpos}%
+     {\noexpand\number\pdflastypos}%
+     {#2}{#3}{#4}}
 
 %D \macros
 %D   {doPDFdestination}

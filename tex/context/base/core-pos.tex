@@ -138,6 +138,29 @@
 
 \appendtoks \checkpositions \to \everystarttext
 
+%D Positions are either generated at a delayed write time
+%D (in \PDFTEX), or derived from the dvi file. The actual
+%D method is implemented in a special driver. If needed, the
+%D driver can fall back on the following macros. 
+
+\def\dolazysaveposition#1#2#3#4% tag page x y 
+  {\expanded{\writeutilitycommand{\noexpand\pospxy
+     {#1}{#2}{#3}{#4}}}}
+
+\def\dolazysavepositionwhd#1#2#3#4#5#6#7% tag page x y w h d 
+  {\expanded{\writeutilitycommand{\noexpand\pospxywhd
+     {#1}{#2}{#3}{#4}{#5}{#6}{#7}}}}
+
+\def\dosaveposition#1#2#3#4% tag page x y 
+  {\expanded{\immediatewriteutilitycommand{\noexpand\pospxy
+     {#1}{#2}{#3}{#4}}}}
+
+\def\dosavepositionwhd#1#2#3#4#5#6#7% tag page x y w h d 
+  {\expanded{\immediatewriteutilitycommand{\noexpand\pospxywhd
+     {#1}{#2}{#3}{#4}{#5}{#6}{#7}}}}
+
+
+
 %D \macros
 %D   {MPp, MPx, MPy, MPw, MPh, MPd,
 %D    MPxy, MPll, MPlr, MPur, MPul, MPpos}

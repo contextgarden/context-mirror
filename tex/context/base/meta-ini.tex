@@ -466,6 +466,16 @@
 \def\MPstring#1{"\getvalue{\@@MPT#1}"} 
 \def\MPbetex #1{btex \getvalue{\@@MPT#1} etex}
 
+%D Unfortunately \METAPOST\ does not have \CMYK\ support 
+%D built in, but by means of specials we can supply the 
+%D information needed to handle them naturaly. 
+
+\newif\ifMPcmyk \MPcmyktrue 
+
+\appendtoks
+  cmykcolors := \ifMPcmyk true \else false \fi ;   
+\to \MPinitializations 
+
 %D In order to communicate conveniently with the \TEX\ 
 %D engine, we introduce some typesetting variables. 
 

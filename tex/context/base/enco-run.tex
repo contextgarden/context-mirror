@@ -80,4 +80,12 @@
    \stopcolumns
    \egroup}
 
+\gdef\showhyphenations#1%
+  {\hbox 
+     {language: \currentlanguage/\the\normallanguage\quad
+      font:     \fontname\font\quad
+      encoding: \currentencoding\quad 
+      mapping:  \currentencoding\quad 
+      sample:   \hyphenatedword{#1}}}
+
 \protect \endinput 

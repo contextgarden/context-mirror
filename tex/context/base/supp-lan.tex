@@ -393,6 +393,9 @@
    \expandafter\def\next{#2}% unexpanded goes wrong in pdfdoc 
    \uccode`~=\scratchcounter}
 
+%D One reason for abusing the \type{~} is that it is already
+%D an active character, so it is unlikely to appear as argument.
+
 %D Although adapting character codes and making characters
 %D active can interfere with other features of macropackages,
 %D normally there should be no problems with things like:

@@ -157,17 +157,25 @@
   {\bgroup
    \dowithnextbox
      {\getparameters[\??ox]
-        [\c!x=\!!zeropoint,\c!y=\!!zeropoint,\c!plaats=,#2]%
-      \edef\next%
-        {\wd\nextbox\the\wd\nextbox
-         \ht\nextbox\the\ht\nextbox
-         \dp\nextbox\the\dp\nextbox}%
+        [\c!x=\!!zeropoint,
+         \c!y=\!!zeropoint,
+         \c!breedte=\wd\nextbox,
+         \c!hoogte=\wd\nextbox,
+         \c!diepte=\dp\nextbox,
+         \c!plaats=,
+         #2]%
+      \freezedimenmacro\@@oxbreedte
+      \freezedimenmacro\@@oxhoogte
+      \freezedimenmacro\@@oxdiepte
       \setbox\nextbox\hbox
         {\hskip\@@oxx\lower\@@oxy\hbox
            {\doifelsenothing{\@@oxplaats}
               {\box\nextbox}
               {\alignedbox[\@@oxplaats]\hbox{\box\nextbox}}}}%
-      \next\box\nextbox
+      \wd\nextbox\@@oxbreedte
+      \ht\nextbox\@@oxhoogte 
+      \dp\nextbox\@@oxdiepte 
+      \box\nextbox
       \egroup}#1}
 
 \def\offset {\dodoubleempty\dooffsetbox [\hbox]} % yes or no

@@ -24,6 +24,8 @@ def box_found (expr n,x,y,w,h,d) =
   not ((x=0) and (y=0) and (w=0) and (h=0) and (d=0))
 enddef ;
 
+% left / right page problem ! ! ! ! !
+
 def initialize_box_pos (expr pos,n,x,y,w,h,d) =
   pair lxy, rxy, cxy, llxy, lrxy, ulxy, urxy ;
   path pxy ; numeric hxy, wxy, dxy, nxy;

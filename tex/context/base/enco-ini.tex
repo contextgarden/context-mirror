@@ -29,6 +29,11 @@
 %D modules. While implementing Czech support, I decided to
 %D isolate this code.
 
+%D Patterns are kind of mixed with font encodings and 
+%D mappings. Alas.  
+
+\ifx\synchronizepatterns\undefined \let\synchronizepatterns\relax \fi
+
 %D While dealing with input (the text source) and output (the
 %D glyphs), encoding comes into view. To summarize a few:
 %D
@@ -383,7 +388,8 @@
        {\the\csname\@map@\charactermapping\endcsname}%
      \enablelanguagespecifics[\currentlanguage]% new 
      \edef\enabledmapping{\charactermapping\currentlanguage}%
-   \fi}
+   \fi
+   \synchronizepatterns}
 
 %D This macro wil be implemented in \type {lang-ini.tex}. 
 
@@ -497,15 +503,15 @@
 %D \type {\reduceto}||command for local switching to 
 %D simplified commands. 
 
-%\def\donthandleaccent#1#2% \empty makes #2={} save % no \unexpanded 
-%  {\ifundefined{\characterencoding#1\string#2\empty}% 
-%     #2%
-%   \else
-%     \getvalue{\characterencoding#1\string#2\empty}%
-%   \fi}
+\def\donthandleaccent#1#2% \empty makes #2={} save % no \unexpanded 
+  {\ifundefined{\characterencoding#1\string#2\empty}% 
+     #2%
+   \else
+     \getvalue{\characterencoding#1\string#2\empty}%
+   \fi}
 
 \def\donthandlecommand#1% % no \unexpanded, otherwise pdfdoc will fail 
-  {\ifundefined{\characterencoding#1}%
+  {\ifundefined{\characterencoding#1}% as well as hyph patterns
      #1%
    \else
      \getvalue{\characterencoding#1}%
@@ -516,7 +522,8 @@
 
 \def\doenableencoding[#1][#2]% main fallback 
   {\iffirstargument\edef\characterencoding{@#1@}\fi
-   \edef\nocharacterencoding{@\ifsecondargument#2\else\s!default\fi @}}
+   \edef\nocharacterencoding{@\ifsecondargument#2\else\s!default\fi @}%
+   \synchronizepatterns}
 
 \def\startcoding%
   {\dodoubleempty\dostartcoding}
@@ -647,16 +654,16 @@
 %         \@EA\ifx\csname\nocharacterencoding#1\endcsname\relax
 %           \donormaltextaccent{#1}{#2}%
 %         \else
-           \csname\nocharacterencoding#1\endcsname#2%
+           \csname\nocharacterencoding#1\endcsname{#2}%
 %         \fi
        \else
-         \csname\characterencoding#1\endcsname#2%
+         \csname\characterencoding#1\endcsname{#2}%
        \fi
      \else
        \csname\nocharacterencoding#1\string#2\empty\endcsname
      \fi
    \else
-     \csname\characterencoding#1\string#2\endcsname
+     \csname\characterencoding#1\string#2\empty\endcsname
    \fi}
 
 \endTEX
@@ -665,18 +672,33 @@
 
 \def\dohandleaccent#1#2%
   {\ifcsname\characterencoding#1\string#2\empty\endcsname 
-     \csname\characterencoding#1\string#2\endcsname
+     \csname\characterencoding#1\string#2\empty\endcsname
    \else\ifcsname\nocharacterencoding#1\string#2\empty\endcsname
      \csname\nocharacterencoding#1\string#2\empty\endcsname
    \else\ifcsname\characterencoding#1\endcsname
-     \csname\characterencoding#1\endcsname#2%
+     \csname\characterencoding#1\endcsname{#2}%
    \else%\ifcsname\nocharacterencoding#1\endcsname
-     \csname\nocharacterencoding#1\endcsname#2%
+     \csname\nocharacterencoding#1\endcsname{#2}%
 %   \else
 %     \donormaltextaccent{#1}{#2}%
    \fi\fi\fi}%\fi}
 
 \endETEX
+
+%D In patterns, characters have to be bytes. These will be 
+%D mapped onto the compact pattern arrays. 
+
+\let\normaldohandleaccent\dohandleaccent
+
+\def\patternchar#1 {\rawcharacter{#1}}
+
+\def\startpatternaccents%
+  {\let\savedpatternchar\char
+   \let\char\patternchar
+   \let\dohandleaccent\normaldohandleaccent}
+
+\def\stoppatternaccents%
+  {\let\char\savedpatternchar}
 
 %\def\presetcharacter#1%
 %  {\setvalue{#1}{\dohandlecharacter{#1}}}
@@ -915,7 +937,7 @@
 \def\docurrentencoding @#1@{#1}
 
 %D \macros 
-%D   {showaccents, showcharacters}
+%D   {showaccents, showcharacters, showhyphenations}
 %D
 %D Encoding is a tricky business. Therefore we provide a 
 %D a few macros that show most of the characters involved. The
@@ -928,9 +950,19 @@
 %D \plaatstabel
 %D   {The special glyphs in texnansi encoding.} 
 %D   {\switchtobodyfont[lbr]\showaccents}
+%D
+%D The command 
+%D   
+%D \starttypen 
+%D \showhyphenations{doordefini\"eren}
+%D \stoptypen 
+%D
+%D can be used to check the correct loading of hyphenation 
+%D patterns. 
 
-\fetchruntimecommand \showaccents    {\f!encodingprefix run}
-\fetchruntimecommand \showcharacters {\f!encodingprefix run}
+\fetchruntimecommand \showaccents      {\f!encodingprefix run}
+\fetchruntimecommand \showcharacters   {\f!encodingprefix run}
+\fetchruntimecommand \showhyphenations {\f!encodingprefix run}
 
 %D {\em The next section is experimental and implements font 
 %D specific features, like hanging punctuation.}
@@ -1383,9 +1415,6 @@
 % \stopregime
 
 %D We preload several encodings: 
-
-%\input enco-def \input enco-acc \input enco-raw
-%\input enco-com \input enco-cas \input enco-mis
 
 \useencoding[def,acc,raw,com,cas,mis]
 

@@ -1031,8 +1031,6 @@ vardef thefreelabel (expr str, loc, ori) =
   (s shifted -l)
 enddef ;
 
-
-
 vardef freelabel (expr str, loc, ori) = 
   draw thefreelabel(str,loc,ori) ;
 enddef ; 
@@ -1040,7 +1038,7 @@ enddef ;
 vardef freedotlabel (expr str, loc, ori) = 
   interim linecap:=rounded ;
   draw loc withpen pencircle scaled freedotlabelsize ;
-  freelabel(str,loc,ori) ;
+  draw thefreelabel(str,loc,ori) ;
 enddef ; 
 
 %D \starttypen
@@ -1457,6 +1455,12 @@ primarydef p cornered c =
      (point i   of p) shifted (c*(unitvector(point i-1 of p - point i   of p))) ..
      controls point i of p .. 
    endfor cycle) 
+enddef ;
+
+% cmyk color support 
+
+vardef cmyk(expr c,m,y,k) =
+  (1-c-k,1-m-k,1-y-k)
 enddef ;
 
 % done 

@@ -265,37 +265,12 @@
         {\doifelsevaluenothing{\??la#1\s!patterns}
            {\edef\languagesuffix{#1}}
            {\edef\languagesuffix{\getvalue{\??la#1\s!patterns}}}%
-         \doifundefinedelse{\??la\??la\languagesuffix}
-           {\normallanguage=\loadedlanguage
-            \letvalue{\??la\??la\languagesuffix}=\loadedlanguage
-            \bgroup
-            \scratchtoks=\everyjob % we don't want additional junk put there
-            \let\showpatterns\relax
-            \startencoding[\getvalue{\??la\languagesuffix\s!encoding}]%
-            \enablemapping[\getvalue{\??la\languagesuffix\s!mapping}]%
-\startreadingfile
-\let\dohandleaccent\donthandleaccent % no checking done
-            \readsysfile{\truefilename{\f!languageprefix\languagesuffix.\f!patternsextension}}
-              {\setxvalue{\??la#1\s!patterns}{\languagesuffix}%
-               \xdef\preloadedpatterns{\preloadedpatterns\showpatterns{\languagesuffix}}%
-               \showmessage{\m!linguals}{1}{\languagesuffix,#1,\loadedlanguage}}
-              {\readsysfile{\f!languageprefix\languagesuffix.\f!patternsextension}
-                 {\setxvalue{\??la#1\s!patterns}{\languagesuffix}%
-                  \xdef\preloadedpatterns{\preloadedpatterns\showpatterns{\languagesuffix}}%
-                  \showmessage{\m!linguals}{1}{\languagesuffix,#1,\loadedlanguage}}
-                 {\showmessage{\m!linguals}{2}{\languagesuffix,#1,\loadedlanguage}}}%
-            \readsysfile{\truefilename{\f!languageprefix\languagesuffix.\f!hyphensextension}}
-              {\showmessage{\m!linguals}{3}{\languagesuffix,#1,\loadedlanguage}}
-              {\readsysfile{\f!languageprefix\languagesuffix.\f!hyphensextension}
-                 {\showmessage{\m!linguals}{3}{\languagesuffix,#1,\loadedlanguage}}
-                 {\showmessage{\m!linguals}{4}{\languagesuffix,#1,\loadedlanguage}}}%
-\stopreadingfile
-            \stopencoding
-            \global\everyjob=\scratchtoks
-            \egroup
-            \increment\loadedlanguage}
+%         \doifundefinedelse{\??la\??la\languagesuffix}
+\doifundefinedelse{\??la\??la:\currentencoding:\currentmapping:\languagesuffix}
+           {\doloadpatterns{#1}{\languagesuffix}}
            {\bgroup
-            \edef\loadedlanguage{\getvalue{\??la\??la\languagesuffix}}%
+%            \edef\loadedlanguage{\getvalue{\??la\??la\languagesuffix}}%
+\edef\loadedlanguage{\getvalue{\??la\??la:\currentencoding:\currentmapping:\languagesuffix}}%
             \showmessage{\m!linguals}{1}{\languagesuffix,#1,\loadedlanguage}%
             \showmessage{\m!linguals}{3}{\languagesuffix,#1,\loadedlanguage}%
             \egroup}}
@@ -312,6 +287,62 @@
 %D synonym is created. This feature is present because we 
 %D used dutch mnemonics in the dutch version, but nowadays 
 %D conform a standard.  
+
+\let \patternencoding \s!default
+\let \patternmapping  \s!default
+
+\def\doloadpatterns#1#2%
+  {\expanded{\getcommacommandsize[\getvalue{\??la#2\s!encoding}]}%
+   \ifnum\commalistsize>0
+\message{[nofpatterns #2: \commalistsize/\getvalue{\??la#2\s!encoding}]}%
+     \dorecurse\commalistsize
+       {\expanded{\getfromcommacommand[\getvalue{\??la#2\s!encoding}][\recurselevel]}%
+        \let\patternencoding\commalistelement
+        \expanded{\getfromcommacommand[\getvalue{\??la#2\s!mapping }][\recurselevel]}%
+        \let\patternmapping \commalistelement
+\message{[patterns: #1/#2/\patternencoding/\patternmapping]}%
+        \dodoloadpatterns{#1}{#2}\patternencoding\patternmapping}%
+   \else
+\message{[patterns: #1/#2]}%
+     \dodoloadpatterns{#1}{#2}{}{}%
+   \fi}
+
+\let\normalpatterns\patterns
+
+\def\dodoloadpatterns#1#2#3#4%
+  {\normallanguage=\loadedlanguage
+%  \letvalue{\??la\??la#2}=\loadedlanguage
+   \bgroup
+   \scratchtoks=\everyjob % we don't want additional junk put there
+   \let\showpatterns\relax
+   \startencoding[#3]%
+   \enablemapping[#4]%
+   \doifnothing{\currentencoding}{\let\currentencoding\s!default}%
+   \doifnothing{\currentmapping }{\let\currentmapping \s!default}%
+   \global\letvalue{\??la\??la:\currentencoding:\currentmapping:#2}=\loadedlanguage
+   \startreadingfile
+   \startpatternaccents
+%\def\patterns##1{\message{#1/#2/#3/#4/##1}\normalpatterns{##1}}%
+   \readsysfile{\truefilename{\f!languageprefix#2.\f!patternsextension}}
+     {\setxvalue{\??la#1\s!patterns}{#2}%
+      \xdef\preloadedpatterns{\preloadedpatterns\showpatterns{#2}}%
+      \showmessage{\m!linguals}{1}{#2,#1,\loadedlanguage}}
+     {\readsysfile{\f!languageprefix#2.\f!patternsextension}
+        {\setxvalue{\??la#1\s!patterns}{#2}%
+         \xdef\preloadedpatterns{\preloadedpatterns\showpatterns{#2}}%
+         \showmessage{\m!linguals}{1}{#2,#1,\loadedlanguage}}
+        {\showmessage{\m!linguals}{2}{#2,#1,\loadedlanguage}}}%
+      \readsysfile{\truefilename{\f!languageprefix#2.\f!hyphensextension}}
+        {\showmessage{\m!linguals}{3}{#2,#1,\loadedlanguage}}
+        {\readsysfile{\f!languageprefix#2.\f!hyphensextension}
+           {\showmessage{\m!linguals}{3}{#2,#1,\loadedlanguage}}
+           {\showmessage{\m!linguals}{4}{#2,#1,\loadedlanguage}}}%
+   \stoppatternaccents
+   \stopreadingfile
+   \stopencoding
+   \global\everyjob=\scratchtoks
+   \egroup
+   \increment\loadedlanguage}
 
 %D \macros 
 %D   {setuplanguage}
@@ -385,22 +416,67 @@
 %D We take care of local as well as standardized language
 %D switching (fr and fa, de and du, but nl and nl).
 
+% new, encoding specific patterns 
+
+\ifx\synchronizepatterns\undefined \let\synchronizepatterns\relax \fi
+
+\def\dosetnormallanguage#1#2#3#4%
+  {\doifdefinedelse{\??la\??la#2#3}
+     {\doifelsevaluenothing{\??la\??la#2#3}
+        {#4}
+        {\donetrue
+         \setxvalue{\??la#1\s!patterns}{#3}%
+         \normallanguage=\getvalue{\??la\??la#2#3}\relax}} % \relax is needed for lookahead problems 
+     {#4}}     
+
 \def\setnormallanguage#1#2%
-  {\doifdefined{\??la\??la#2}{\doifvaluesomething{\??la\??la#2}
-     {\donetrue
-      \setxvalue{\??la#1\s!patterns}{#2}%
-      \normallanguage=\getvalue{\??la\??la#2}}}} 
-    
+  {\dosetnormallanguage{#1}{:\currentencoding:\currentmapping:}{#2}{%
+   \dosetnormallanguage{#1}{:\currentencoding:\s!default     :}{#2}{%   
+   \dosetnormallanguage{#1}{:\s!default      :\currentmapping:}{#2}{%   
+   \dosetnormallanguage{#1}{:\s!default      :\s!default     :}{#2}{}}}}}   
+
+%
+
+% \def\docomplexlanguage[#1]%
+%   {\donefalse
+%    \setnormallanguage{#1}{\getvalue{\??la#1\s!patterns}}%
+%    \ifdone\else
+%      \setnormallanguage{#1}{#1}%
+%      \ifdone\else
+%        \doifvaluesomething{\??la#1\c!default}
+%          {\setnormallanguage{#1}{\getvalue{\??la\defaultlanguage{#1}\s!patterns}}%
+%           \ifdone\else
+%             \setnormallanguage{#1}{\defaultlanguage{#1}}%
+%           \fi}%
+%      \fi
+%    \fi          
+%    \edef\currentlanguage{#1}%
+%    \enablelanguagespecifics[#1]%
+%    \enablemapping[\getvalue{\??la#1\s!mapping}]%
+%    \lefthyphenmin =0\getvalue{\??la#1\s!lefthyphenmin}\relax
+%    \righthyphenmin=0\getvalue{\??la#1\s!righthyphenmin}\relax
+%    \processaction
+%      [\getvalue{\??la#1\c!spatiering}]
+%      [\v!opelkaar=>\frenchspacing,
+%           \v!ruim=>\nonfrenchspacing,
+%        \s!unknown=>\frenchspacing]}
+
 \def\docomplexlanguage[#1]%
   {\donefalse
-   \setnormallanguage{#1}{\getvalue{\??la#1\s!patterns}}%
+   \def\synchronizepatterns{\setnormallanguage
+     {#1}{\getvalue{\??la#1\s!patterns}}}%
+   \synchronizepatterns
    \ifdone\else
-     \setnormallanguage{#1}{#1}%
+     \def\synchronizepatterns{\setnormallanguage{#1}{#1}}%
+     \synchronizepatterns
      \ifdone\else
        \doifvaluesomething{\??la#1\c!default}
-         {\setnormallanguage{#1}{\getvalue{\??la\defaultlanguage{#1}\s!patterns}}%
+         {\def\synchronizepatterns{\setnormallanguage
+            {#1}{\getvalue{\??la\defaultlanguage{#1}\s!patterns}}}%
+          \synchronizepatterns
           \ifdone\else
             \setnormallanguage{#1}{\defaultlanguage{#1}}%
+            \synchronizepatterns
           \fi}%
      \fi
    \fi          

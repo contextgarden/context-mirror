@@ -242,12 +242,33 @@
 \def\MPrgbnumber#1{\expandafter\doMPrgbnumber#1000.0000\relax}
 \def\doMPrgbnumber#1.#2#3#4#5\relax{#2#3#4}
 
+%D The naive case looks like: 
+%D 
+%D \starttypen 
+%D \def\handleMPrgbcolor%
+%D   {\setMPcolor
+%D    \ifcase\MPspecialversion
+%D      \resetMPcolor\normalhandleMPrgbcolor
+%D    \else\ifnum\MPrgbnumber\lastMPrvalue=\MPspecialsignal
+%D      % consider it to be a signal
+%D    \else
+%D      \resetMPcolor\normalhandleMPrgbcolor
+%D    \fi\fi}
+%D \stoptypen 
+%D
+%D However, since we want \CMYK\ support, we will use the 
+%D following implementation: 
+
 \def\handleMPrgbcolor%
   {\setMPcolor
    \ifcase\MPspecialversion
      \resetMPcolor\normalhandleMPrgbcolor
-   \else\ifnum\MPrgbnumber\lastMPrvalue=\MPspecialsignal
-     % consider it to be a signal
+   \else\ifnum\MPrgbnumber\lastMPrvalue=\MPspecialsignal\relax
+     \ifMPcmyk \ifnum\MPrgbnumber\lastMPgvalue=1 % cmyk color spec
+       \doifdefined{mps:k:\number\MPrgbnumber\lastMPbvalue}
+         {\getvalue{mps:k:\number\MPrgbnumber\lastMPbvalue}%
+          \resetMPcolor\normalhandleMPcmykcolor}%
+     \fi \fi 
    \else
      \resetMPcolor\normalhandleMPrgbcolor
    \fi\fi}
@@ -598,5 +619,111 @@
   {\getvalue{mps:hl:\currentMPspecial}} % or \relax 
 
 \appendtoks \invokeMPhyperlinkspecial \to \invokeMPspecials
+
+%D Special number~1 is dedicated to \CMYK\ support. If you 
+%D want to know why: look at this: 
+%D 
+%D \startbuffer[mp]
+%D   fill fullcircle xyscaled (3cm,1cm) withcolor \MPcolor{test} ;
+%D \stopbuffer
+%D 
+%D \startbuffer[cmyk]
+%D \startcombinatie[4*1]
+%D   {\definecolor[test][c=1,y=.3,k=.3] \processMPbuffer[mp]} {c=1 y=.3 k=.3} 
+%D   {\definecolor[test][c=.9,y=.15]    \processMPbuffer[mp]} {c=.9 y=.15}    
+%D   {\definecolor[test][c=.25,y=.8]    \processMPbuffer[mp]} {c=.25 y=.8}   
+%D   {\definecolor[test][c=.45,y=.1]    \processMPbuffer[mp]} {c=.45 y=.1}  
+%D \stopcombinatie
+%D \stopbuffer
+%D 
+%D \plaatsfiguur
+%D   {\CMYK\ support disabled, 
+%D    conversion to \RGB.}
+%D   {\setupcolors[cmyk=nee,status=start]\haalbuffer[cmyk]}
+%D 
+%D \plaatsfiguur
+%D   {\CMYK\ support enabled, 
+%D    no support in \METAPOST.}
+%D   {\setupcolors[cmyk=ja,mpcmyk=nee,status=start]\haalbuffer[cmyk]}
+%D 
+%D \plaatsfiguur
+%D   {\CMYK\ support enabled, 
+%D    no conversion to \RGB, 
+%D    support in \METAPOST}
+%D   {\setupcolors[cmyk=ja,status=start]\haalbuffer[cmyk]}
+
+\defineMPspecial{1}
+  {\ifMPcmyk 
+     \setxvalue{mps:k:\gMPs1}{\noexpand\setMPcmyk\gMPs2 \gMPs3 \gMPs4 \gMPs5 }%
+   \fi}
+
+\def\setMPcmyk#1 #2 #3 #4 %
+  {\setvalue{\@@MP01}{#1}%
+   \setvalue{\@@MP02}{#2}%
+   \setvalue{\@@MP03}{#3}%
+   \setvalue{\@@MP04}{#4}}
+
+%D This special (number 50) passes positions to a tex file. 
+%D This method uses a two||pass approach an (mis|)|used the 
+%D context positioning macros. In \type {core-pos} we will 
+%D implement the low level submacro needed. 
+%D
+%D \startbuffer
+%D \definelayer[test] 
+%D
+%D \setlayer
+%D   [test]
+%D   [x=\MPx{somepos-1},y=\MPy{somepos-1}]
+%D   {Whatever we want here!}
+%D 
+%D \setlayer
+%D   [test]
+%D   [x=\MPx{somepos-2},y=\MPy{somepos-2}]
+%D   {Whatever we need there!}
+%D 
+%D \startuseMPgraphic{oeps}
+%D   draw fullcircle scaled 6cm withcolor red ; 
+%D   register ("somepos-1",1cm,2cm,center currentpicture) ; 
+%D   register ("somepos-2",4cm,3cm,(-1cm,-2cm)) ; 
+%D \stopuseMPgraphic
+%D 
+%D \framed[background=test,offset=overlay]{\useMPgraphic{oeps}}
+%D \stopbuffer
+%D 
+%D \typebuffer 
+%D 
+%D Here the width and height are not realy used, but one can
+%D imagine situations where tex has to work with values 
+%D calculated by \METAPOST.  
+%D 
+%D \startlinecorrection
+%D \getbuffer
+%D \stoplinecorrection
+%D
+%D Later we will implement a more convenient macro: 
+%D
+%D \starttyping 
+%D \setMPlayer [test] [somepos-1] {Whatever we want here!}
+%D \setMPlayer [test] [somepos-2] {Whatever we need there!}
+%D \stoptyping
+ 
+\ifx\dosavepositionwhd\undefined
+  \let\dosavepositionwhd\gobblesevenarguments
+\fi
+
+\defineMPspecial{50} % x y width height label 
+  {\bgroup
+   \scratchdimen\MPllx bp \scratchdimen=-\scratchdimen
+   \advance\scratchdimen\gMPs1bp 
+   \edef\x{\number\scratchdimen}%
+   \scratchdimen\gMPs2bp \scratchdimen=-\scratchdimen
+   \advance\scratchdimen\MPury bp 
+   \edef\y{\number\scratchdimen}%
+   \scratchdimen=\gMPs3bp
+   \edef\w{\number\scratchdimen}%
+   \scratchdimen=\gMPs4bp
+   \edef\h{\number\scratchdimen}%
+   \dosavepositionwhd{\gMPs5}{0}{\x}{\y}{\w}{\h}{0}%
+   \egroup}
 
 \protect \endinput

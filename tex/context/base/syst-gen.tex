@@ -161,14 +161,14 @@
 \def\unprotect%
   {\ifcase\protectionlevel
      \edef\doprotectcharacters%
-       {\catcode`\noexpand @=\the\catcode`@ %\relax
-        \catcode`\noexpand !=\the\catcode`! %\relax
-        \catcode`\noexpand ?=\the\catcode`?}%\relax}%
-     \catcode`@=11
-     \catcode`!=11
-     \catcode`?=11
+       {\catcode`\noexpand @=\the\catcode`@ 
+        \catcode`\noexpand !=\the\catcode`! 
+        \catcode`\noexpand ?=\the\catcode`? }%
      \let\protect\doprotect
    \fi
+   \catcode`@=11
+   \catcode`!=11
+   \catcode`?=11
    \advance\protectionlevel 1
    \ifnum\protectionlevel>1
      \message{<unprotect \the\protectionlevel>}%
@@ -177,13 +177,14 @@
 \def\doprotect%
   {\ifnum\protectionlevel=1
      \doprotectcharacters
+     \let\doprotectcharacters\relax
      \let\protect\normalprotect
    \fi
    \ifnum\protectionlevel>1
      \message{<protect \the\protectionlevel>}%
    \fi
    \advance\protectionlevel -1 }
-
+
 %D Now it is defined, we can make use of this very useful
 %D macro.
 
@@ -1980,7 +1981,19 @@
 %D    \rawdoifinsetelse{\firstcharacter}{1,2,3,4,5,6,7,8,9,0}}
 %D \stoptypen
 %D
-%D The current implementation is much faster. 
+%D The current implementation is much faster, but the next 
+%D one is not, not even when testing milion calls.  
+%D 
+%D \starttypen 
+%D \newif\ifitsanumber
+%D 
+%D \long\def\isitanumber#1%
+%D   {\itsanumberfalse
+%D    \ifcase1#1\or\or\or\or\or\or\or\or\or\else\itsanumbertrue\fi}
+%D 
+%D \long\def\doifnumberelse#1#2#3%
+%D   {\isitanumber{#1}\ifitsanumber#2\else#3\fi}
+%D \stoptypen 
 
 %D \macros
 %D   {makerawcommalist,
@@ -2892,7 +2905,7 @@
         {\def\dodogetargument#1########1#2%
            {\def\dodogetargument#1################1#2%
               {\def\dodogetargument#1################################1#2%
-                 {\def\dodogetargument#1###############################%
+                 {\def\dodogetargument#1################################%
                                         ################################1#2%
                     {\def\dodogetargument%
                        {#3#1{##1}#2%
@@ -2900,7 +2913,7 @@
                           #1{########1}#2%
                           #1{################1}#2%
                           #1{################################1}#2%
-                          #1{###############################%
+                          #1{################################%
                              ################################1}#2}%
                    \dogetargument#1#2\seventhargumenttrue\seventhargumentfalse}%
                  \dogetargument#1#2\sixthargumenttrue\sixthargumentfalse}%

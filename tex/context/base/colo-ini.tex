@@ -206,7 +206,7 @@
 
 \def\dodefinecolor[#1][#2]%
   {% beware
-\saveglobal
+\saveglobal % ? \dodoglobal  
      \addtocommalist{#1}\colorlist
 \restoreglobal
    \doifassignmentelse{#2}
@@ -464,20 +464,34 @@
    \else\ifnum#1<1000 0.\the#1%
    \else              1\fi\fi\fi}
 
+% \def\doconvertCMYKtoRGB#1\k#2\to#3%
+%   {\scratchdimen=#1\s!pt
+%    \advance\scratchdimen by #2\s!pt\relax
+%    \ifdim\scratchdimen>1\s!pt
+%      \scratchdimen=-1\s!pt
+%    \else
+%      \scratchdimen=-\scratchdimen
+%    \fi
+%    \advance\scratchdimen by 1\s!pt
+%    \multiply\scratchdimen by 1000
+%    \scratchcounter=\scratchdimen
+%    \advance\scratchcounter by \!!medcard
+%    \divide\scratchcounter by \!!maxcard
+%    \edef#3{\realcolorvalue\scratchcounter}}
+
 \def\doconvertCMYKtoRGB#1\k#2\to#3%
-  {\scratchdimen=#1\s!pt
-   \advance\scratchdimen by #2\s!pt\relax
-   \ifdim\scratchdimen>1\s!pt
-     \scratchdimen=-1\s!pt
+  {\ifdim#2\s!pt<#1\s!pt  % k>color
+     \scratchdimen=1\s!pt
+     \advance\scratchdimen -#1\s!pt
+     \advance\scratchdimen -#2\s!pt
+     \multiply\scratchdimen by 1000
+     \scratchcounter=\scratchdimen
+     \advance\scratchcounter by \!!medcard
+     \divide\scratchcounter by \!!maxcard
+     \edef#3{\realcolorvalue\scratchcounter}%
    \else
-     \scratchdimen=-\scratchdimen
-   \fi
-   \advance\scratchdimen by 1\s!pt
-   \multiply\scratchdimen by 1000
-   \scratchcounter=\scratchdimen
-   \advance\scratchcounter by \!!medcard
-   \divide\scratchcounter by \!!maxcard
-   \edef#3{\realcolorvalue\scratchcounter}}
+     \edef#3{0}%
+   \fi}
 
 \def\convertCMYKtoRGB#1#2#3#4%
   {\doconvertCMYKtoRGB#1\k#4\to\@@cl@@r
@@ -570,6 +584,9 @@
   \doifelse{\@@clcmyk}{\v!nee}
     {\showmessage{\m!colors}{9}{\v!cmyk}\CMYKsupportedfalse}
     {\showmessage{\m!colors}{10}{\v!cmyk}\CMYKsupportedtrue}%
+  \doifelse{\@@clmpcmyk}{\v!nee}
+    {\showmessage{\m!colors}{9} {\v!mp\v!cmyk}\MPcmykfalse}
+    {\showmessage{\m!colors}{10}{\v!mp\v!cmyk}\MPcmyktrue}%
   \processaction
     [\@@clconversie]
     [    \v!ja=>\preferGRAYtrue,
@@ -1543,7 +1560,7 @@
       \box#1\dostopnegative}}
 
 %D \macros 
-%D   {ifMPgraphics, MPcolor}
+%D   {ifMPgraphics, ifMPcmyk, MPcolor}
 %D 
 %D A very special macro is \type{\MPcolor}. This one can be 
 %D used to pass a \CONTEXT\ color to \METAPOST. 
@@ -1553,7 +1570,11 @@
 %D \stoptypen
 %D
 %D This macro returns a \METAPOST\ triplet \type{(R,G,B)}. 
-%D Only \kap{RGB} colors and gray scales are supported. 
+%D Unless \CMYK\ color support is turned on with \type 
+%D {MPcmyk}, only \kap{RGB} colors and gray scales are 
+%D supported. 
+
+\newif\ifMPcmyk % \MPcmykfalse
 
 \def\MPcolor#1%
   {\ifMPgraphics
@@ -1562,14 +1583,21 @@
      #1%
    \fi}
 
-\def\doMPcolor#1:#2:#3:#4:#5:#6\end%
+% \def\doMPcolor#1:#2:#3:#4:#5:#6\end%
+%   {\if     #1R(#2,#3,#4)%
+%    \else\if#1C(1-#2-#5,1-#3-#5,1-#4-#5)%
+% %   \else\if#1C(1-#2+#5,1-#3+#5,1-#4+#5)%
+%    \else\if#1S(#2,#2,#2)% 
+%    \else      (0,0,0)%
+%    \fi\fi\fi}
+
+\def\doMPcolor#1:#2:#3:#4:#5:#6\end
   {\if     #1R(#2,#3,#4)%
-   \else\if#1C(1-#2-#5,1-#3-#5,1-#4-#5)%
-%   \else\if#1C(1-#2+#5,1-#3+#5,1-#4+#5)%
-   \else\if#1S(#2,#2,#2)% 
+   \else\if#1C\ifMPcmyk cmyk(#2,#3,#4,#5)\else(1-#2-#5,1-#3-#5,1-#4-#5)\fi
+   \else\if#1S(#2,#2,#2)%
    \else      (0,0,0)%
    \fi\fi\fi}
- 
+
 %D \macros 
 %D   {PDFcolor,FDFcolor}
 %D 
@@ -1603,7 +1631,8 @@
    \c!conversie=\v!ja,
    \c!reductie=\v!nee,
    \c!rgb=\v!ja,
-   \c!cmyk=\v!ja]
+   \c!cmyk=\v!ja,
+   \c!mp\c!cmyk=\@@clcmyk]
 
 \setupcolor
   [\v!rgb]
@@ -1611,6 +1640,4 @@
 %D As we can see, color support is turned off by default. 
 %D Reduction of gray colors to gray scales is turned on. 
 
-\protect
-
-\endinput
+\protect \endinput

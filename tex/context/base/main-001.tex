@@ -8003,10 +8003,10 @@
      \fi
    \else
      % float is smaller of equal to \hsize 
-     \scratchdimen=\ifdim\wd\tempfloatbox<\captionminwidth\relax
-       \captionminwidth % float smaller than min width 
+     \ifdim\wd\tempfloatbox<\captionminwidth\relax
+       \scratchdimen\captionminwidth % float smaller than min width 
      \else 
-       \wd\tempfloatbox % float width 
+       \scratchdimen\wd\tempfloatbox % float width 
      \fi 
      \setbox\scratchbox=\vbox     % test with overshoot 
        {\advance\scratchdimen \captionovershoot

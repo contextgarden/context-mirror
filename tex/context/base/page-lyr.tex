@@ -240,4 +240,56 @@
 \def\resetlayer[#1]%
   {\doresetlayer{#1}\doresetlayer{#1:\realfolio}}
 
+%D \macros
+%D 
+%D  {setMPlayer}
+%D 
+%D The following layer macro uses the positions that are 
+%D registered by \METAPOST. 
+%D
+%D \starttypen
+%D \definelayer[test] 
+%D 
+%D \setMPlayer [test] [somepos-1] {Whatever we want here!}
+%D \setMPlayer [test] [somepos-2] {Whatever we need there!}
+%D \setMPlayer [test] [somepos-3] {\externalfigure[cow.mps][width=2cm]}
+%D 
+%D \startuseMPgraphic{oeps}
+%D   draw fullcircle scaled 10cm withcolor red ; 
+%D   register ("somepos-1",2cm,3cm,center currentpicture) ; 
+%D   register ("somepos-2",8cm,5cm,(-1cm,-2cm)) ; 
+%D   register ("somepos-3",0cm,0cm,(-2cm,2cm)) ; 
+%D \stopuseMPgraphic
+%D 
+%D \getMLlayer[test]{\useMPgraphic{oeps}}
+%D \stoptypen
+%D 
+%D The last line is equivalent to 
+%D
+%D \starttypen
+%D \framed
+%D   [background={foreground,test},offset=overlay]
+%D   {\useMPgraphic{oeps}}
+%D \stoptypen
+
+\def\setMPlayer%
+  {\dotripleempty\dosetMPlayer}
+
+\def\MPlayerwidth {\hsize}
+\def\MPlayerheight{\vsize}
+
+\def\dosetMPlayer[#1][#2][#3]%
+  {\edef\MPlayerwidth {\MPw{#2}}%
+   \edef\MPlayerheight{\MPh{#2}}%
+   \setlayer[#1][\c!x=\MPx{#2},\c!y=\MPy{#2},\c!positie=\v!nee,#3]}
+
+\def\getMPlayer
+  {\dodoubleempty\dogetMPlayer}
+
+\def\dogetMPlayer[#1][#2]%
+  {\framed
+     [\c!achtergrond={\v!voorgrond,#1},
+      \c!kader=\v!uit,
+      \c!offset=\v!overlay,#2]}
+
 \protect \endinput 

@@ -1090,9 +1090,9 @@ sub PopResult
         unlink "$Result.tuo" ; rename "$File.tuo", "$Result.tuo" ;
         unlink "$Result.log" ; rename "$File.log", "$Result.log" ;
         unlink "$Result.dvi" ; rename "$File.dvi", "$Result.dvi" ;
-if (-e "$File.dvi") { CopyFile("$File.dvi", "$Result.dvi") }  
+        if (-e "$File.dvi") { CopyFile("$File.dvi", "$Result.dvi") }  
         unlink "$Result.pdf" ; rename "$File.pdf", "$Result.pdf" ;
-if (-e "$File.pdf") { CopyFile("$File.pdf", "$Result.pdf") }  
+        if (-e "$File.pdf") { CopyFile("$File.pdf", "$Result.pdf") }  
         return if ($File ne "texexec") ;
         rename "texexec.tuo", "$File.tuo" ;
         rename "texexec.log", "$File.log" ;

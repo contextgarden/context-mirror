@@ -12,40 +12,69 @@
 %C details.
 
 % manual : offsetbox alignbox 
-
 
 \def\placefloats{\doflushfloats}  % keep this one 
 
-% already patched, spurious space due to stupid optimization  
+\unprotect
+
+\def\definieertekst%
+  {\doseventupleempty\dodefinieertekst}
 
-\def\unprotect%
-  {\ifcase\protectionlevel
-     \edef\doprotectcharacters%
-       {\catcode`\noexpand @=\the\catcode`@ %
-        \catcode`\noexpand !=\the\catcode`! %
-        \catcode`\noexpand ?=\the\catcode`?}%
-     \catcode`@=11
-     \catcode`!=11
-     \catcode`?=11
-     \let\protect\doprotect
-   \fi
-   \advance\protectionlevel 1
-   \ifnum\protectionlevel>1
-     \message{<unprotect \the\protectionlevel>}%
-   \fi}
+\def\dodefinieertekst[#1][#2][#3][#4][#5][#6][#7]%
+  {\ifseventhargument
+     \setvalue{\??tk#2#3#1}{\dosixtupleempty\dodododoteksten[#2][#3][#4][#5][#6][#7]}%
+   \else\ifsixthargument
+     \setvalue{\??tk  #2#1}{\dosixtupleempty\dodododoteksten[#2][#3][#4][#5][#6]}%
+   \else\iffifthargument
+     \setvalue{\??tk#2#3#1}{\dosixtupleempty\dodododoteksten[#2][#3][#4][#5]}%
+   \else\iffourthargument
+     \setvalue{\??tk  #2#1}{\dosixtupleempty\dodododoteksten[#2][#3][#4]}%
+   \else
+     \setvalue{\??tk  #2#1}{\dosixtupleempty\dodododoteksten[#2][#3]}%
+   \fi\fi\fi\fi}
+
+\def\plaatslayoutregel#1#2%  % handelt o.b.v. tekst
+  {%\message{#1: \getvalue{\??tk#1\v!tekst\c!status}}\wait
+   \ExpandFirstAfter\processaction
+     [\getvalue{\??tk#1\v!tekst\c!status}]
+     [        \v!geen=>,
+              \v!hoog=>, % is reset later on
+             \v!start=>\setgvalue{\??tk#1\v!tekst\c!status}{\v!normaal}%
+                       \doplaatslayoutregel{#1}{#2},
+              \v!stop=>\vskip#2\relax,
+              \v!leeg=>\setgvalue{\??tk#1\v!tekst\c!status}{\v!normaal}%
+                       \vskip#2\relax,
+     \v!geenmarkering=>\bgroup
+                       \setgvalue{\??tk#1\v!tekst\c!status}{\v!normaal}%
+                       \let\dohaalmarkering=\nohaalmarkering
+                       \doplaatslayoutregel{#1}{#2}%
+                       \egroup,
+           \v!normaal=>\doplaatslayoutregel{#1}{#2},
+           \s!default=>\doplaatslayoutregel{#1}{#2},
+           \s!unknown=>\bgroup % new
+                       \setgvalue{\??tk#1\v!tekst\c!status}{\v!normaal}%
+%                      \getvalue{\??tk#1\commalistelement}%
+\setlocallayoutline{#1\commalistelement}%
+\setlocallayoutline{#1\v!tekst\commalistelement}%
+\setlocallayoutline{#1\v!marge\commalistelement}%
+\setlocallayoutline{#1\v!rand\commalistelement}%
+                       \doplaatslayoutregel{#1}{#2}%
+                       \egroup]}
+
+\def\setlocallayoutline#1%
+  {\ifundefined{\??tk#1}\else\getvalue{\??tk#1}\fi}
+
+% permits \stoptext inside module 
 
 \def\dousemodules[#1]%
   {\doifelsenothing{#1}
      {\let\next\relax}
      {\def\next{\processcommalist[#1]\dodousemodules}}
    \next}
-
-\unprotect
-
-% permits \stoptext inside module 
 
-\def\dododousemodules#1#2%
-  {\ifconditional\moduleisloaded
+\def\dododousemodules#1#2% we need to protect \next somehow 
+  {\relax
+   \ifconditional\moduleisloaded
      \let\next\relax
    \else
      \makeshortfilename[#1\truefilename{#2}]%
@@ -63,8 +92,6 @@
         \let\next\relax}%
    \fi
    \next}
-
-
 
 %D This file is loaded at runtime, thereby providing an
 %D excellent place for hacks and new features.
@@ -99,6 +126,30 @@
    \advance\displaywidth-\rightdisplaymargin}
 
 % already patched 
+
+\def\dochecksidefloat%
+  {\progresssidefloat
+   \ifdim\!!heighta>\!!zeropoint
+%     \advance\!!heighta by \sidefloatbottomskip
+%     \!!counta=\!!heighta
+\scratchdimen=\!!heighta
+\advance\scratchdimen \ht\strutbox
+\!!counta=\scratchdimen
+     \divide\!!counta by \baselineskip
+     \ifnum\!!counta>0
+       \ifrightfloat
+         \hangindent=-\sidefloatwidth
+       \else
+         \hangindent=\sidefloatwidth
+       \fi
+       \hangafter=-\!!counta
+     \fi
+     \setsidefloatparagraph
+   \else
+     \resetsidefloatparagraph
+   \fi
+   \parskip=\tussenwit}
+
 
 \def\setsidefloat%
   {\vbox{\strut}\vskip-\lineheight

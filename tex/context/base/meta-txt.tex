@@ -53,7 +53,9 @@
      \global\parseriestrue
      \xdef\totalparlines{\the\!!counta}%
      \global\partoks\!!toksa
-     \expanded{\parshape \the\!!counta \the\!!toksa}%
+    %\ifx\partoks\emptytoks\else % safeguard 
+       \expanded{\parshape \the\!!counta \the\!!toksa}%
+    %\fi
      \setshapecharacteristics % extra dummy 
      \ifparseries\def\par{\endgraf\adaptparshape}\fi
      \EveryPar{\begstrut}}
@@ -78,8 +80,10 @@
    \!!toksa=\emptytoks
    \expanded{\processseparatedlist[\the\partoks][\space]}\docommando
    \global\partoks=\!!toksa
-   \expanded{\parshape\totalparlines\the\partoks}}
-
+  %\ifx\partoks\emptytoks\else % safeguard 
+     \expanded{\parshape\totalparlines\the\partoks}%
+ }%\fi}
+  
 \def\getshapecharacteristics%
   {\doglobal\increment\currentshapetext
    \doifdefinedelse{parlines:\currentshapetext}

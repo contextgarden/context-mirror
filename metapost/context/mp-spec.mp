@@ -227,4 +227,41 @@ enddef ;
 % 
 % \blank Does it work or not?  
 
+_cmyk_counter_ := 0 ;
+
+numeric cmykcolorhash[][][][] ;
+
+boolean cmykcolors ; % cmykcolors := true ;
+
+let normalcmyk = cmyk ; % see mp-tool.mp 
+
+vardef cmyk(expr c,m,y,k) =
+  if cmykcolors :
+    if not known cmykcolorhash[c][m][y][k] :
+      _cmyk_counter_ := _cmyk_counter_ + 1 ;
+      cmykcolorhash[c][m][y][k] := _cmyk_counter_ ;
+      flush_special(1, 7,
+        decimal _cmyk_counter_ & " "  & 
+        decimal c & " " &
+        decimal m & " " &
+        decimal y & " " &
+        decimal k) ;
+    fi
+    (_special_signal_/1000,1/1000,cmykcolorhash[c][m][y][k]/1000)
+  else :
+    normalcmyk(1-c-k,1-m-k,1-y-k)
+  fi
+enddef ;
+
+%D Basic position tracking: 
+
+def register (expr label, width, height, offset) = 
+  begingroup ; 
+  flush_special(50, 7,
+    ddecimal offset & " " & 
+    decimal  width  & " " & 
+    decimal  height & " " & label) ; 
+  endgroup ; 
+enddef ; 
+
 endinput ; 

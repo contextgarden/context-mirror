@@ -625,8 +625,13 @@
   {\setvalue{\@@XMLdata:#1}}
 
 \def\defXMLstring#1#2%
-  {\@EA\convertcommand\csname\@@XMLdata:#2\endcsname\to#1}
-
+%  {\@EA\convertcommand\csname\@@XMLdata:#2\endcsname\to#1}
+  {\bgroup
+   \let\getXMLentity\firstofoneargument
+   \xdef\@@XML@@string{\csname\@@XMLdata:#2\endcsname}%
+   \egroup                                                
+   \@EA\convertcommand\@@XML@@string\to#1}
+   
 \def\XMLshow#1%
   {\showvalue{\@@XMLdata:#1\endcsname}}
 
