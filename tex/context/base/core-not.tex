@@ -66,7 +66,8 @@
 
 \newif\ifendnotes    \endnotesfalse
 \newif\ifbottomnotes \bottomnotestrue
-\newif\ifclevernotes \clevernotesfalse % being [plaats=kolommen]
+
+\chardef\clevernotes=\zerocount % 0=page 1=firstcolumn 2=lastcolumn
 
 %D The next definitions indicate that we can frame the footnote
 %D area. The footnotes themselves are treated as definitions.
@@ -250,22 +251,18 @@
        {\edef\noteinsertions{#1}}%
    \fi\fi}
 
-\def\dochecknote % for the moment no mixed text/endnotes modes
-  {\setnotedistance
-   \count\currentnoteins1000
-   %ExpandBothAfter\doifinsetelse\v!kolommen{\noteparameter\c!plaats}
-   \ExpandBothAfter\doifinsetelse\v!kolommen{\footnoteparameter\c!plaats}
-     {\clevernotestrue % global ?
-      \ifnum\@@kln=\zerocount
-        \scratchcounter\plusone
-      \else
-        %scratchcounter\noteparameter\c!n\relax
-        \scratchcounter\footnoteparameter\c!n\relax
-      \fi
-      \global\endnotesfalse
-      \global\bottomnotestrue
-      \setclevernotes}
-     {\clevernotesfalse
+\def\dochecknote
+  {% for the moment no mixed text/endnotes modes, so we use
+   % \footnoteparameter and not \noteparameter (**)
+   \setnotedistance
+   \count\currentnoteins\plusthousand
+   \ExpandBothAfter\doifcommonelse{\v!kolommen,\v!laatstekolom}{\footnoteparameter\c!plaats} % **
+     {\chardef\clevernotes\plustwo}
+     {\ExpandBothAfter\doifinsetelse{\v!eerstekolom}{\footnoteparameter\c!plaats} % **
+       {\chardef\clevernotes\plusone}
+       {\chardef\clevernotes\zerocount}}%
+    \ifcase\clevernotes\relax
+      % notes not in column areas
       \ifnum\noteparameter\c!n=\zerocount
         \settextnotes
         \scratchcounter\plusone
@@ -274,16 +271,25 @@
         \scratchcounter\noteparameter\c!n\relax
         \divide\count\currentnoteins \scratchcounter
       \fi
-      %ExpandBothAfter\doifinsetelse\v!pagina{\noteparameter\c!plaats}
-      \ExpandBothAfter\doifinsetelse\v!pagina{\footnoteparameter\c!plaats}
+      \ExpandBothAfter\doifinsetelse\v!pagina{\footnoteparameter\c!plaats} % **
         {\global\endnotesfalse
-         %ExpandBothAfter\doifinsetelse\v!hoog{\noteparameter\c!plaats}
-         \ExpandBothAfter\doifinsetelse\v!hoog{\footnoteparameter\c!plaats}
+         \ExpandBothAfter\doifinsetelse\v!hoog{\footnoteparameter\c!plaats} % **
            {\global\bottomnotesfalse}
            {\global\bottomnotestrue}}
         {\global\endnotestrue
          \global\bottomnotestrue
-         \postponenotes}}%
+         \postponenotes}%
+    \else
+      % notes in column areas
+      \ifnum\@@kln=\zerocount % brrr dependency on \??kl
+        \scratchcounter\plusone
+      \else
+        \scratchcounter\footnoteparameter\c!n\relax % **
+      \fi
+      \global\endnotesfalse
+      \global\bottomnotestrue
+      \setclevernotes
+   \fi
    \ifnotelimit
      \dimen\currentnoteins\noteparameter\c!hoogte
      \multiply\dimen\currentnoteins \scratchcounter
@@ -708,8 +714,11 @@
 \let\stoppopnotes  = \relax
 
 \def\placenoteinserts
+  {\processnotes\doplacenoteinserts}
+
+\def\doplacenoteinserts
   {%\ifvoid\currentnoteins \else % unsafe, strange
-   \ifdim\ht\currentnoteins>\zeropoint\relax
+   \relax\ifdim\ht\currentnoteins>\zeropoint\relax
      \ifendnotes \else
        \noteparameter\c!voor
        \placenoterule  % alleen in ..mode
@@ -727,17 +736,21 @@
 %          \fi
           % this is too ugly actually
           \stoppopnotes}%
-       \localframed
-         [\??vn\currentnote]
-         [\c!breedte=\v!passend,
-          \c!hoogte=\v!passend,
-          \c!strut=\v!nee,
-          \c!offset=\v!overlay]
-         {\ifdim\dp0=\zeropoint             % this hack is needed because \vadjust
-            \hbox{\lower\strutdp\box0}% % in margin number placement
-          \else                             % hides the (always) present depth
-            \box0
-          \fi}%
+       \setbox2\hbox
+         {\localframed
+            [\??vn\currentnote]
+            [\c!breedte=\v!passend,
+             \c!hoogte=\v!passend,
+             \c!strut=\v!nee,
+             \c!offset=\v!overlay]
+            {\ifdim\dp0=\zeropoint         % this hack is needed because \vadjust
+               \hbox{\lower\strutdp\box0}% % in margin number placement
+             \else                         % hides the (always) present depth
+               \box0
+             \fi}}%
+       \setbox2\hbox{\lower\strutdepth\box2}%
+       \dp2=\strutdepth % so we know that it has the note bodyfont depth
+       \box2
        \egroup
        \noteparameter\c!na
      \fi
@@ -1028,7 +1041,7 @@
      \endgraf
    \fi
    \ifvmode
-     \calculatetotalnoteheight
+     \calculatetotalclevernoteheight
      \ifdim\totalnoteheight>\zeropoint \kern\totalnoteheight \fi
    \fi}
 
@@ -1036,18 +1049,36 @@
 
 \def\docalculatetotalnoteheight
   {\ifdim\ht\currentnoteins>\zeropoint
-     \ifclevernotes % tricky here ! ! ! to be sorted out ! ! !
-       \advance\totalnoteheight\ht  \currentbackupnoteins
-       \advance\totalnoteheight\skip\currentbackupnoteins
+     \ifcase\clevernotes % tricky here ! ! ! to be sorted out ! ! !
+       \ifdim\ht\currentnoteins>\zeropoint
+         \advance\totalnoteheight\ht  \currentnoteins
+         \advance\totalnoteheight\skip\currentnoteins
+       \fi
      \else
-       \advance\totalnoteheight\ht  \currentnoteins
-       \advance\totalnoteheight\skip\currentnoteins
+       \ifdim\ht\currentbackupnoteins>\zeropoint
+         \advance\totalnoteheight\ht  \currentbackupnoteins
+         \advance\totalnoteheight\skip\currentbackupnoteins
+       \fi
      \fi
    \fi}
 
 \def\calculatetotalnoteheight
   {\totalnoteheight\zeropoint
    \processnotes\docalculatetotalnoteheight}
+
+\def\docalculatetotalclevernoteheight
+  {\ifdim\ht\currentnoteins>\zeropoint
+     \ifcase\clevernotes\else % tricky here ! ! ! to be sorted out ! ! !
+       \ifdim\ht\currentnoteins>\zeropoint
+         \advance\totalnoteheight\ht  \currentnoteins
+         \advance\totalnoteheight\skip\currentnoteins
+       \fi
+     \fi
+   \fi}
+
+\def\calculatetotalclevernoteheight
+  {\totalnoteheight\zeropoint
+   \processnotes\docalculatetotalclevernoteheight}
 
 \newif\ifnotespresent
 
@@ -1126,3 +1157,51 @@
 \def\autopostponefootnotes{\autopostponenotes}
 
 \protect \endinput
+
+% \def\myfootnote[#1]#2% let's guess that #2 is without catcode problems
+%   {\setgvalue{note:t:#1}%
+%      {\setxvalue{note:l:#1}{\getvalue{note:n:#1}}%
+%       \footnote[note:a:#1:\getvalue{note:l:#1}]{#2}}%
+%    \setgvalue{note:n:#1}%
+%      {1}%
+%    \getvalue{note:t:#1}}%
+
+% \def\mynote[#1]%
+%   {\removeunwantedspaces
+%    \scratchcounter\getvalue{note:n:#1}\relax
+%    \edef\NoteNumber{\the\scratchcounter}%
+%    \doglobal\incrementvalue{note:n:#1}\relax
+%    \doifreferencefoundelse{note:a:#1:1}
+%      {\edef\NotePageA{\number\currentrealreference}%
+%       \doifreferencefoundelse{note:a:#1:\getvalue{note:n:#1}}
+%         {\edef\NotePageB{\number\currentrealreference}%
+%          \doifreferencefoundelse{note:a:#1:\NoteNumber}
+%            {\ifnum\currentrealreference=\NotePageB\relax
+%               \pagereference[note:a:#1:\getvalue{note:n:#1}]%
+%               \note[note:a:#1:\getvalue{note:l:#1}]%
+%             \else\ifnum\NotePageA=\NotePageB\relax
+%               \pagereference[note:a:#1:\getvalue{note:n:#1}]%
+%               \note[note:a:#1:\getvalue{note:l:#1}]%
+%             \else
+%               \getvalue{note:t:#1}%
+%             \fi\fi}
+%            {\ifnum\NotePageA=\NotePageB\relax
+%               \pagereference[note:a:#1:\getvalue{note:n:#1}]%
+%               \note[note:a:#1:\getvalue{note:l:#1}]%
+%             \else
+%               \getvalue{note:t:#1}%
+%             \fi}}
+%         {\pagereference[note:a:#1:\getvalue{note:n:#1}]%
+%          \note[note:a:#1:\getvalue{note:l:#1}]}}
+%      {\pagereference[note:a:#1:\getvalue{note:n:#1}]%
+%       \note[note:a:#1:\getvalue{note:l:#1}]}}
+
+% \starttext
+
+% funny \myfootnote[funny]{funny} funny \mynote[funny] \page
+
+% funny \mynote[funny] funny \mynote[funny] funny \mynote[funny] \page
+% funny \mynote[funny] funny \mynote[funny] \page
+% funny \mynote[funny] funny \mynote[funny] funny \mynote[funny] \page
+
+% \stoptext

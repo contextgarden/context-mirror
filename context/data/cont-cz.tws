@@ -344,7 +344,7 @@ com:nastavpoznamkypodcarou:
 typ:vars/:
 var:konverze:cisla,pismena,Pismena,rimskecislice,Rimskecislice::
 var:zpusob:skrztext,skrz*sekce::
-var:misto:stranka,text,sloupce,vysoko,zadny::
+var:misto:stranka,text,sloupce,firstcolumn,lastcolumn,vysoko,zadny::
 var:linka:zap,vyp::
 var:pred:*prikaz::
 var:po:*prikaz::

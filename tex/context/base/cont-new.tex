@@ -23,6 +23,27 @@
 
 \tracefonthandlingtrue
 
+\def\complexdozieregister[#1]#2#3%
+  {\begingroup
+     \thisisnextinternal\s!ind
+     \ifduplicate\getlastregisterentry{#2}\fi
+     \convertexpanded{\??id\currentregister}{#2}\asciiregisterentryA
+     \convertexpanded{\??id\currentregister}{#3}\asciiregisterentryB
+     \makesectionformat
+     \edef\schrijfwegnaarregister%
+       {\writeutility%
+          {r s %
+           {\currentregister} %
+           {\nextinternalreference} %
+           {#1} %
+           {\asciiregisterentryA} %
+           {\asciiregisterentryB} %
+           {\sectionformat}}}%
+     \schrijfwegnaarregister
+   \endgroup
+   \registerinfo{> zie}{#2}%
+   \GotoPar}
+
 \def\dodododoinatreference#1#2#3[#4]% \removeunwantedspaces added june 2004
   {\ifx\next\bgroup
      \dododododoinatreference

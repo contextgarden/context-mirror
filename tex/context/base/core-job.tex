@@ -261,6 +261,8 @@
      \expandafter\normalend
    \fi}
 
+\def\currentfile{\inputfilename}
+
 \def\doexecutefileonce#1%
   {\beforesplitstring#1\at.\to\currentfile
    \fullexpandtwoargsafter\doifnotinset\currentfile\loadedfiles

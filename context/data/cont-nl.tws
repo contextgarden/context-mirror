@@ -344,7 +344,7 @@ com:stelvoetnotenin:
 typ:vars/:
 var:conversie:cijfers,letters,Letters,romeins,Romeins::
 var:wijze:pertekst,per*sectie::
-var:plaats:pagina,tekst,kolommen,hoog,geen::
+var:plaats:pagina,tekst,kolommen,eerstekolom,laatstekolom,hoog,geen::
 var:lijn:aan,uit::
 var:voor:*commando::
 var:na:*commando::

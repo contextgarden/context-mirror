@@ -489,9 +489,10 @@
      \endpspicture
    \or
      \resetchemicalcoordinates
-     \setbox2=\hbox
-       {\MPshiftdrawingtrue\MPstaticgraphictrue\getMPdrawing}%
-     \wd2=\!!zeropoint\ht2=\!!zeropoint\dp2=\!!zeropoint
+     \setbox2\hbox{\MPshiftdrawingtrue\MPstaticgraphictrue\getMPdrawing}%
+     \wd2=\!!zeropoint
+     \ht2=\!!zeropoint
+     \dp2=\!!zeropoint
      \put {\box2} at 0 0
      \endpicture
      \popMPdrawing
@@ -529,9 +530,10 @@
      \put {\box\chemicalsymbols} at 0 0 %  elders
      \ifMPdrawingdone
        \resetchemicalcoordinates
-       \setbox2=\hbox
-         {\MPshiftdrawingtrue\MPstaticgraphictrue\getMPdrawing}%
-       \wd2=\!!zeropoint\ht2=\!!zeropoint\dp2=\!!zeropoint
+       \setbox2\hbox{\MPshiftdrawingtrue\MPstaticgraphictrue\getMPdrawing}%
+       \wd2=\!!zeropoint
+       \ht2=\!!zeropoint
+       \dp2=\!!zeropoint
        \put {\box2} at 0 0 %
      \fi
      \endpicture
@@ -3381,11 +3383,15 @@ RT##3##4##5=>\processchemicaltextelement{RN}{##3##4##5}{#1}{0}{},
    \c!kleur=]
 
 \def\cpos#1#2%
-  {\bgroup
-   \pushmacro\dowithchemical
-   \gdef\dowithchemical##1{\hpos{#1}{##1}\popmacro\dowithchemical}%
-   #2%
-   \egroup}
+  {\iftrialtypesetting
+     #2%
+   \else
+     \bgroup
+     \globalpushmacro\dowithchemical
+     \gdef\dowithchemical##1{\hpos{#1}{##1}\globalpopmacro\dowithchemical}%
+     #2%
+     \egroup
+  \fi}
 
 \fi
 

@@ -344,7 +344,7 @@ com:seteazanotasubsol:
 typ:vars/:
 var:conversie:numere,caractere,Caractere,numereromane,Numereromane::
 var:mod:detext,de*sectiune::
-var:locatie:pagina,text,coloane,inalt,niciunul::
+var:locatie:pagina,text,coloane,firstcolumn,lastcolumn,inalt,niciunul::
 var:rigla:on,dezactivat::
 var:inainte:*comanda::
 var:dupa:*comanda::

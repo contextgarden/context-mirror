@@ -32,27 +32,46 @@ module CommandBase
 
     def initialize(commandline,logger,banner)
         @commandline, @logger, @banner = commandline, logger, banner
+        @forcenewline, @versiondone = false, false
         version if @commandline.option('version')
-    end
-
-    def report(*str)
-        @logger.report(str)
     end
 
     def reportlines(*str)
         @logger.reportlines(str)
     end
 
-    def version # just a bit of playing with defs
-        report(@banner.join(' - '))
-        def report(*str)
+    # only works in 1.8
+    #
+    # def report(*str)
+        # @logger.report(str)
+    # end
+    #
+    # def version # just a bit of playing with defs
+        # report(@banner.join(' - '))
+        # def report(*str)
+            # @logger.report
+            # @logger.report(str)
+            # def report(*str)
+                # @logger.report(str)
+            # end
+        # end
+        # def version
+        # end
+    # end
+
+    def report(*str)
+        if @forcenewline then
             @logger.report
-            @logger.report(str)
-            def report(*str)
-                @logger.report(str)
-            end
+            @forcenewline = false
         end
-        def version
+        @logger.report(str)
+    end
+
+    def version # just a bit of playing with defs
+        unless @versiondone then
+            report(@banner.join(' - '))
+            @forcenewline = true
+            @versiondone = true
         end
     end
 

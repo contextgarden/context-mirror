@@ -344,7 +344,7 @@ com:impostanotepdp:
 typ:vars/:
 var:conversione:numeri,lettere,Lettere,numeriromani,Numeriromani::
 var:modo:datesto,da*sezione::
-var:luogo:pagina,testo,colonne,alto,nessuno::
+var:luogo:pagina,testo,colonne,firstcolumn,lastcolumn,alto,nessuno::
 var:linea:attivo,disattivo::
 var:prima:*comando::
 var:dopo:*comando::

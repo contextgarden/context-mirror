@@ -154,7 +154,8 @@
   {\begingroup
      \thisisnextinternal\s!ind
      \ifduplicate\getlastregisterentry{#2}\fi
-     \convertexpanded{\??id\currentregister}{#2}\asciiregisterentry
+     \convertexpanded{\??id\currentregister}{#2}\asciiregisterentryA
+     \convertexpanded{\??id\currentregister}{#3}\asciiregisterentryB
      \makesectionformat
      \edef\schrijfwegnaarregister%
        {\writeutility%
@@ -162,8 +163,8 @@
            {\currentregister} %
            {\nextinternalreference} %
            {#1} %
-           {\asciiregisterentry} %
-           {#3} %
+           {\asciiregisterentryA} %
+           {\asciiregisterentryB} %
            {\sectionformat}}}%
      \schrijfwegnaarregister
    \endgroup

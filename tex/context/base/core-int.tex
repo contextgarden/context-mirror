@@ -458,7 +458,7 @@
   {\ifx\flushpostponedbookmark\relax \else
      \bgroup
      \convertargument#1\to\ascii
-     \writestatus{system}{clashing bookmarks: \ascii}% ECHTE MESSAGE MAKEN
+     \writestatus\m!systems{clashing bookmarks: \ascii}% ECHTE MESSAGE MAKEN
      \egroup
    \fi
    \doglobal\prependtoks
@@ -510,7 +510,7 @@
    \setxvalue{\@@bookcount0}{1}%
    \global\chardef\currentbookmarklevel\zerocount
    \global\chardef\previousbookmarklevel\zerocount
-   \doutilities{#1,\@@bookmark}\jobname{#1}\relax\relax}
+   \doutilities{listentries,#1,\@@bookmark}\jobname{#1}\relax\relax}
 
 \def\dodogetbookmarkelement#1#2#3#4#5#6%
   {\doifelsenothing{#1}

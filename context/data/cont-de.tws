@@ -344,7 +344,7 @@ com:stellefussnotenein:
 typ:vars/:
 var:konversion:ziffern,buchstaben,Buchstaben,roemischezahlen,Roemischezahlen::
 var:art:protext,pro*Abschnitt::
-var:platz:seite,text,spalten,hoch,kein::
+var:platz:seite,text,spalten,firstcolumn,lastcolumn,hoch,kein::
 var:linie:an,aus::
 var:vor:*Befehl::
 var:nach:*Befehl::

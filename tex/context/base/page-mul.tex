@@ -352,24 +352,46 @@
 %D dimensions are influenced by bodyfont switches inside
 %D multi||column mode.
 
-\def\setcolumnvsize
-  {%\global\vsize\columntextheight
-   \global\vsize-\columntextoffset
-   \global\multiply\vsize 2
-   \global\advance\vsize \columntextheight
+% \def\setcolumnvsize
+%   {%\global\vsize\columntextheight
+%    \global\vsize-\columntextoffset
+%    \global\multiply\vsize \plustwo
+%    \global\advance\vsize \columntextheight
+%    \ifdim\precolumnboxheight>\zeropoint
+%      \global\advance\vsize -\precolumnboxheight
+%    \fi
+%   %\getinsertionheights\to\dimen0\\%
+%   %\global\advance\vsize -\dimen0
+%    \settotalinsertionheight
+%    \global\advance\vsize -\totalinsertionheight
+%      %%%\ifgridsnapping % evt altijd, nog testen, testing now, see columned tocs
+%        \getnoflines\vsize
+%        \vsize\noflines\openlineheight
+%        \advance\vsize .5\openlineheight % collect enough data
+%      %%%\fi
+%    \global\vsize\nofcolumns\vsize
+%    \global\pagegoal\vsize} % let's do it only here
+
+\newdimen\mcscratchdimen
+\newcount\nofcolumnlines
+
+\def\getmulticolumnlines
+  {\mcscratchdimen-\columntextoffset
+   \multiply\mcscratchdimen \plustwo
+   \advance\mcscratchdimen \columntextheight
    \ifdim\precolumnboxheight>\zeropoint
-     \global\advance\vsize -\precolumnboxheight
+     \advance\mcscratchdimen -\precolumnboxheight
    \fi
-  %\getinsertionheights\to\dimen0\\%
-  %\global\advance\vsize -\dimen0
    \settotalinsertionheight
-   \global\advance\vsize -\totalinsertionheight
-%%%\ifgridsnapping % evt altijd, nog testen, testing now, see columned tocs
-     \getnoflines\vsize
-     \vsize\noflines\openlineheight
-     \advance\vsize .5\openlineheight % collect enough data
-%%%\fi
-   \global\vsize\nofcolumns\vsize
+   \advance\mcscratchdimen -\totalinsertionheight
+   \getnoflines\mcscratchdimen
+   \nofcolumnlines\noflines}
+
+\def\setcolumnvsize
+  {\getmulticolumnlines
+   \mcscratchdimen\nofcolumnlines\openlineheight
+   \advance\mcscratchdimen .5\openlineheight % collect enough data
+   \global\vsize\nofcolumns\mcscratchdimen
    \global\pagegoal\vsize} % let's do it only here
 
 %D It really starts here. After some checks and initializations
@@ -756,16 +778,16 @@
         \fuzzysnappedbox\unvbox0
         \fakecolumnfootnotes{#1}}%
    \else
-     \ifclevernotes
+     \ifcase\clevernotes
+       \global\setbox#1\vsplit#2 to \dimen#3%
+       \global\setbox#1\vbox
+         {\fuzzysnappedbox\unvbox{#1}}% % or \box ?
+     \else
        \columnfootnotecorrection{#1}{\dimen#3}%
        \setbox0\vsplit#2 to \dimen#3%
        \global\setbox#1\vbox to \dimen#3%
          {\fuzzysnappedbox\unvbox0
           \fakecolumnfootnotes{#1}}%
-     \else
-       \global\setbox#1\vsplit#2 to \dimen#3%
-       \global\setbox#1\vbox
-         {\fuzzysnappedbox\unvbox{#1}}% % or \box ?
      \fi
    \fi
    \egroup}
@@ -786,7 +808,7 @@
 
 \def\fakecolumnfootnotes#1%
   {\relax
-   \ifclevernotes
+   \ifcase\clevernotes\else
      \ifnum#1=\lastcolumnbox
        \fakenotes
      \fi
@@ -794,34 +816,91 @@
 
 \def\columnfootnotecorrection#1#2%
   {\relax
-   \ifclevernotes
+   \ifcase\clevernotes
+     % page notes
+   \or
+     \ifnum#1=\firstcolumnbox\relax
+       \calculatetotalclevernoteheight
+       \advance#2 -\totalnoteheight
+     \fi
+   \else
      \ifnum#1=\lastcolumnbox\relax
-       \calculatetotalnoteheight
+       \calculatetotalclevernoteheight
        \advance#2 -\totalnoteheight
      \fi
    \fi}
 
-\def\overlaycolumnfootnotes % VERVANGEN !!!
+% \def\overlaycolumnfootnotes % VERVANGEN !!!
+%   {\relax
+%    \ifcase\clevernotes\else
+%      \checknotepresence
+%      \ifnotespresent
+%        % the note box has the depth of the notefont
+%        % because a column (i.e. first column has no depth,
+%        % we need to anchor top down)
+%        \bgroup
+%        \scratchdimen\ht\firstcolumnbox
+%        \advance\scratchdimen -\openstrutdepth % \strutdp
+%        \getnoflines\scratchdimen
+%        \advance\noflines -2
+%        \scratchdimen\noflines\lineheight
+%        \advance\scratchdimen \topskip
+%        \setbox0\hbox
+%          {\lower\scratchdimen\vbox{\placenoteinserts}}%
+%        \ht0=\openstrutheight % \strutht
+%        \dp0=\openstrutdepth  % \strutdp
+%        \scratchdimen\ht\lastcolumnbox
+%        \global\setbox\lastcolumnbox\vbox to \scratchdimen
+%          {\box\lastcolumnbox
+%           \vskip-\scratchdimen
+%           \restoretextcolor{\box0}}%
+%        \egroup
+%      \fi
+%    \fi}
+
+\def\overlaycolumnfootnotes
   {\relax
-   \ifclevernotes
+   \ifcase\clevernotes
+     % page notes
+   \else
      \checknotepresence
      \ifnotespresent
+       % the note box has the depth of the notefont
+       % because a column (i.e. first column has no depth,
+       % we need to anchor top down)
        \bgroup
-       \scratchdimen\ht\firstcolumnbox
-       \advance\scratchdimen -\openstrutdepth % \strutdp
-       \getnoflines\scratchdimen
-       \advance\noflines -2
-       \scratchdimen\noflines\lineheight
-       \advance\scratchdimen \topskip
-       \setbox0\hbox
-         {\lower\scratchdimen\vbox{\placenoteinserts}}%
-       \ht0=\openstrutheight % \strutht
-       \dp0=\openstrutdepth  % \strutdp
-       \scratchdimen\ht\lastcolumnbox
-       \global\setbox\lastcolumnbox\vbox to \scratchdimen
-         {\box\lastcolumnbox
-          \vskip-\scratchdimen
-          \restoretextcolor{\box0}}%
+       \ifcase\clevernotes\or
+         \getmulticolumnlines
+         \advance\nofcolumnlines -2 % ?
+         \scratchdimen\nofcolumnlines\lineheight
+         \advance\scratchdimen \topskip
+         \setbox0\hbox
+           {\lower\scratchdimen\vbox{\placenoteinserts}}%
+         \ht0=\openstrutheight % \strutht
+         \dp0=\openstrutdepth  % \strutdp
+         \scratchdimen\ht\firstcolumnbox
+         \global\setbox\firstcolumnbox\vbox to \scratchdimen
+           {\box\firstcolumnbox
+            \vskip-\scratchdimen
+            \restoretextcolor{\box0}}%
+       \else
+         % maybe here also \getmulticolumnlines
+         \scratchdimen\ht\firstcolumnbox
+         \advance\scratchdimen -\openstrutdepth % \strutdp
+         \getnoflines\scratchdimen
+         \advance\noflines -2
+         \scratchdimen\noflines\lineheight
+         \advance\scratchdimen \topskip
+         \setbox0\hbox
+           {\lower\scratchdimen\vbox{\placenoteinserts}}%
+         \ht0=\openstrutheight % \strutht
+         \dp0=\openstrutdepth  % \strutdp
+         \scratchdimen\ht\lastcolumnbox
+         \global\setbox\lastcolumnbox\vbox to \scratchdimen
+           {\box\lastcolumnbox
+            \vskip-\scratchdimen
+            \restoretextcolor{\box0}}%
+       \fi
        \egroup
      \fi
    \fi}
@@ -837,14 +916,16 @@
    \forgetall
    \setmulticolumnsout
    \dontshowcomposition
-   \dimen0=\columntextheight
-   \advance\dimen0 -\precolumnboxheight
-   \settotalinsertionheight
-   \advance\dimen0 -\totalinsertionheight
-   \ifgridsnapping % evt altijd, nog testen
-     \getnoflines{\dimen0}
-     \dimen0=\noflines\openlineheight
-   \fi
+%    \dimen0=\columntextheight
+%    \advance\dimen0 -\precolumnboxheight
+%    \settotalinsertionheight
+%    \advance\dimen0 -\totalinsertionheight
+%    \ifgridsnapping % evt altijd, nog testen
+%      \getnoflines{\dimen0}
+%      \dimen0=\noflines\openlineheight
+%    \fi
+   \getmulticolumnlines
+   \dimen0=\nofcolumnlines\openlineheight
    \dohandleallcolumns
      {\splitcurrentcolumn from \box\normalpagebox to \dimen0}
    \setbox\restofpage\vbox{\unvbox\normalpagebox}%
@@ -1154,7 +1235,7 @@
    #2=\dimen4
    #3=\dimen6 }
 
-\def\getinsertionheight%
+\def\getinsertionheight
   {\ifdim\pagegoal<\maxdimen
      \bgroup
      \dimen0=\columntextheight
@@ -1162,7 +1243,7 @@
      \xdef\insertionheight{\the\dimen0}%
      \egroup
    \else
-     \global\let\insertionheight=\zeropoint
+     \global\let\insertionheight\zeropoint
    \fi}
 
 \def\docolumnroomfloat

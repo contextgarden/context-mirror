@@ -118,6 +118,7 @@ class Commands
 
         file  = @commandline.argument('first')
         eps   = @commandline.option('eps')
+        jpg   = @commandline.option('jpg')
         png   = @commandline.option('png')
         style = @commandline.option('style')
         modes = @commandline.option('modes')
@@ -128,51 +129,57 @@ class Commands
             style = "--arg=\"style=#{style}\"" unless style.empty?
             modes = "--mode=#{modes}" unless modes.empty?
             if system("texmfstart texexec.pl --batch --pdf --once --result=#{long} --use=mmlpag #{style} #{modes} #{file}.xml") then
-                if f = open("#{file}-mmlpages.txt") then
-                    while line = f.gets do
-                        data = Hash.new
-                        if fields = line.split then
-                            fields.each do |fld|
-                                key, value = fld.split('=')
-                                data[key] = value if key && value
-                            end
-                            if data.key?('p') then
-                                page = data['p']
-                                name = "#{long}-#{page}"
-                                if eps then
-                                    report("generating eps file #{name}")
-                                    if system("pdftops -eps -f #{page} -l #{page} #{long}.pdf #{name}.eps") then
-                                        if data.key?('d') then
-                                            if epsfile = IO.read("#{name}.eps") then
-                                                epsfile.sub!(/^(\%\%BoundingBox:.*?$)/i) do
-                                                    newline = $1 + "\n%%Baseline: #{data['d']}\n"
-                                                    if data.key?('w') && data.key?('h') then
-                                                        newline += "%%PositionWidth: #{data['w']}\n"
-                                                        newline += "%%PositionHeight: #{data['h']}\n"
-                                                        newline += "%%PositionDepth: #{data['d']}"
+                if eps then
+                    if f = open("#{file}-mmlpages.txt") then
+                        while line = f.gets do
+                            data = Hash.new
+                            if fields = line.split then
+                                fields.each do |fld|
+                                    key, value = fld.split('=')
+                                    data[key] = value if key && value
+                                end
+                                if data.key?('p') then
+                                    page = data['p']
+                                    name = "#{long}-#{page.to_i-1}"
+                                    if eps then
+                                        report("generating eps file #{name}")
+                                        if system("pdftops -eps -f #{page} -l #{page} #{long}.pdf #{name}.eps") then
+                                            if data.key?('d') then
+                                                if epsfile = IO.read("#{name}.eps") then
+                                                    epsfile.sub!(/^(\%\%BoundingBox:.*?$)/i) do
+                                                        newline = $1 + "\n%%Baseline: #{data['d']}\n"
+                                                        if data.key?('w') && data.key?('h') then
+                                                            newline += "%%PositionWidth: #{data['w']}\n"
+                                                            newline += "%%PositionHeight: #{data['h']}\n"
+                                                            newline += "%%PositionDepth: #{data['d']}"
+                                                        end
+                                                        newline
                                                     end
-                                                    newline
-                                                end
-                                                if g = File.open("#{name}.eps",'wb') then
-                                                    g.write(epsfile)
-                                                    g.close
+                                                    if g = File.open("#{name}.eps",'wb') then
+                                                        g.write(epsfile)
+                                                        g.close
+                                                    end
                                                 end
                                             end
+                                        else
+                                            report("error in generating eps from #{name}")
                                         end
-                                    else
-                                        report("error in generating eps from #{name}")
                                     end
-                                end
-                                if png then
-                                    report("generating png file #{name}")
-                                    system("imagemagick #{name}.eps #{name}.png")
                                 end
                             end
                         end
+                        f.close
+                    else
+                        report("missing data log file #{filename}")
                     end
-                    f.close
-                else
-                    report("missing data log file #{filename}")
+                end
+                if png then
+                    report("generating png file for #{long}")
+                    system("imagemagick #{long}.pdf #{long}-%d.png")
+                end
+                if jpg then
+                    report("generating jpg files for #{long}")
+                    system("imagemagick #{long}.pdf #{long}-%d.jpg")
                 end
             else
                 report("error in processing file #{filename}")
@@ -207,6 +214,7 @@ commandline.registervalue('root')
 
 commandline.registerflag('eps')
 commandline.registerflag('png')
+commandline.registerflag('jpg')
 commandline.registervalue('style')
 commandline.registervalue('modes')
 

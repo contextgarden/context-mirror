@@ -344,7 +344,7 @@ com:setupfootnotes:
 typ:vars/:
 var:conversion:numbers,characters,Characters,romannumerals,Romannumerals::
 var:way:bytext,by*section::
-var:location:page,text,columns,high,none::
+var:location:page,text,columns,firstcolumn,lastcolumn,high,none::
 var:rule:on,off::
 var:before:*command::
 var:after:*command::

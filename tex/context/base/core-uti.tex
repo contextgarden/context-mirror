@@ -260,8 +260,8 @@
    \resetutilities
    % more than one utility thing can be handled in one pass,
    % for instance lists, so we process ##1 as list
-   \def\docommando##1{\csname\s!set##1\endcsname}%
-   \processcommacommand[#1]\docommando
+   \def\douticommand##1{\csname\s!set##1\endcsname}%
+   \processcommacommand[#1]\douticommand
    \begingroup
    \def\currentutilityfilename{#2}%
    \notesenabledfalse

@@ -987,7 +987,10 @@ sub RunPerlScript {
     } else {
         $cmd = "$ScriptName $Options";
     }
-    unless ( $cmd eq "" ) { system($cmd) }
+    unless ( $cmd eq "" ) {
+        print $cmd if ($Verbose) ;
+        system($cmd) ;
+    }
 }
 
 my $FullFormat = '';
@@ -1524,7 +1527,7 @@ my $DummyFile = 0;
 
 sub isXMLfile {
     my $Name = shift;
-    if ( ($ForceXML) || ( $Name =~ /\.xml$/io ) ) { return 1 }
+    if ( ($ForceXML) || ( $Name =~ /\.(xml|fo)$/io ) ) { return 1 }
     else {
         open( XML, $Name );
         my $str = <XML>;
@@ -1546,7 +1549,7 @@ sub RunConTeXtFile {
         system("pdfclose --all") unless $ok ;
     }
     if ( -e "$JobName.$JobSuffix" ) {
-        $DummyFile = ( ($ForceXML) || ( $JobSuffix =~ /xml/io ) );
+        $DummyFile = ( ($ForceXML) || ( $JobSuffix =~ /(xml|fo)/io ) );
     }
     # to be considered :
     # { $DummyFile = isXMLfile("$JobName.$JobSuffix") }
@@ -1558,7 +1561,7 @@ sub RunConTeXtFile {
     }
     if ($DummyFile) {
         open( TMP, ">$JobName.run" );
-        if ( ( $JobSuffix =~ /xml/io ) || $ForceXML ) {
+        if ( ( $JobSuffix =~ /(xml|fo)/io ) || $ForceXML ) {
             if ( $Filters ne "" ) {
                 print "     using xml filters : $Filters\n";
             }

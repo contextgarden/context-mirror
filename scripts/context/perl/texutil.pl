@@ -2023,7 +2023,7 @@ sub SaveFigurePresets
       { ++$NOfFigures ;
         $Figures[$NOfFigures] = "\\presetfigure[$FNam][e=$FTyp" ;
         if ($FUni)
-          { $Figures[$NOfFigures] .= (sprintf ",w=%5.3fcm,h=%5.3fcm\n", $FWid, $FHei) }
+          { $Figures[$NOfFigures] .= (sprintf ",w=%5.3fcm,h=%5.3fcm", $FWid, $FHei) }
         else
           { $Figures[$NOfFigures] .= ",w=${FWid}bp,h=${FHei}bp" }
         if (($FXof!=0)||($FYof!=0))
