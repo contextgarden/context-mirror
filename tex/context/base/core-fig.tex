@@ -48,6 +48,7 @@
        8: figuurobject -- wordt opnieuw gebruikt
        9: figuur -- wordt niet afgehandeld
       10: figuur -- heeft geen afmetingen
+      11: invoegen bron --
 \stopmessages
 
 \startmessages  english  library: figures
@@ -62,6 +63,7 @@
        8: figureobject -- is reused
        9: figure -- is not handled
       10: figure -- has zero dimensions
+      11: including resource --
 \stopmessages
 
 \startmessages  german  library: figures
@@ -76,9 +78,8 @@
        8: Abbildungobjekt -- wurde wiederverwandt
        9: Abbildung -- wird nicht unterstuetzt
       10: figure -- has zero dimensions
+      11: including resource --
 \stopmessages
-
-% TOBIAS: 10
 
 \startmessages  czech  library: figures
    title: obrazy
@@ -92,9 +93,8 @@
        8: obrazovy objekt -- je znovu pouzit
        9: figure -- is not handled
       10: figure -- has zero dimensions
+      11: including resource --
 \stopmessages
-
-% TOM : 10
 
 \startmessages  italian  library: figures
    title: figure
@@ -108,6 +108,7 @@
        8: oggetto-figura -- riutilizzato
        9: figura -- non gestita
       10: la figura -- ha dimensioni nulle
+      11: including resource --
 \stopmessages
 
 \startmessages  romanian  library: figures
@@ -122,6 +123,7 @@
        8: obiectul figura -- este refolosit
        9: sufixul -- din figura -- nu este folosit
       10: figura -- are dimensiuni nule
+      11: including resource --
 \stopmessages
 
 %D Due to the mere fact that \DVI|/|\PDF\ drivers differ in their
@@ -986,7 +988,7 @@
    \def\@@eflabel{#2}%
    \global\let\externalfigurelog\empty
    \iftraceexternalfigures
-     \writestatus\m!figures{including \expandedfigurename}%
+     \showmessage\m!figures{11}\expandedfigurename
    \fi
    \getparameters
      [\??ep]
@@ -1151,25 +1153,24 @@
    \ifcase\figurestatus
      \let\@@efframe\v!on
      \let\@@efobject\v!no
-     \showmessage\m!figures1{\@@effilename}%
+     \showmessage\m!figures1\@@effilename
    \or
-     \showmessage\m!figures2{\@@effullname}%
+     \showmessage\m!figures2\@@effullname
    \or
      \showmessage\m!figures3{\@@effullname,\@@eflenttype}%
    \or
-     \showmessage\m!figures4{\@@effullname}%
+     \showmessage\m!figures4\@@effullname
    \or
      \showmessage\m!figures5{\@@effullname,\@@efloadname}%
    \or % no message
-     \doifnot\@@efsymbol\v!yes
-       {\showmessage\m!figures8{\@@effullname}}%
+     \doifnot\@@efsymbol\v!yes{\showmessage\m!figures8\@@effullname}%
    \fi
    \ifdim\@@epw=\zeropoint \chardef\figurestatus1 \fi
    \ifdim\@@eph=\zeropoint \chardef\figurestatus1 \fi
    \global\gridfigurefalse
    \ifnum\figurestatus=1 % unknown dimensions, take width or height or scale
      \setnaturalfiguresize
-     \xdef\naturalfigurewidth{\the\figwid}%
+     \xdef\naturalfigurewidth {\the\figwid}%
      \xdef\naturalfigureheight{\the\fighei}%
      \let\@@efframe\v!off
    \else

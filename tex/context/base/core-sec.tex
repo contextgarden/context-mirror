@@ -166,7 +166,7 @@
   {\bgroup % added
    \globallet\voorafgaandenummer\empty
    \ifsectienummer
-     \doifvalue{\??sb\@@sectieblok\c!number}\v!yes % added
+     \doifvalue{\??sb\@@sectionblock\c!number}\v!yes % added
        {\doifelsevalue{\@@thenumber{#1}\c!sectionnumber}\v!yes
           \donetrue\donefalse
         \doifvalue{\@@thenumber{#1}\c!sectionnumber}\v!number
@@ -207,13 +207,6 @@
      {\voorafgaandenummer\convertednumber[#1]}%
    \egroup}
 
-% \def\preparethenumber#1#2#3% {\??id#1} \number \result
-%   {\doifelsevaluenothing{#1\c!scheider}
-%      {\let\numberseparator\empty
-%       \let#3#2}
-%      {\unexpanded\def\numberseparator{\getvalue{#1\c!scheider}}%
-%       \edef#3{\@EA\separatednumber\@EA{#2}}}}  % hm, etex
-
 \def\preparethenumber#1#2#3% {\??id#1} \number \result
   {\doifelsevaluenothing{#1\c!separator}
      {\let\numberseparator\empty
@@ -225,11 +218,6 @@
 \def\lossenummer[#1]%
   {\maakhetnummer[#1]%
    \hetnummer}
-
-%\def\currentnumber[#1]%
-%  {%\getvalue{\getvalue{\@@thenumber{#1}\c!zetwijze}}%
-%   \getvalue{\getvalue{\@@thenumber{#1}\c!plaats}}%
-%     {\dotextprefix{\getvalue{\@@thenumber{#1}\c!tekst}}\lossenummer[#1]}}
 
 \def\currentnumber[#1]% kan tekst hier weg ?
   {\dotextprefix{\getvalue{\@@thenumber{#1}\c!text}}\lossenummer[#1]}
@@ -356,33 +344,33 @@
   {\countervalue{\??se#1}}   % zoeken op \??se
 
 % \def\@@sectionconversion#1%
-%   {\getvalue{\??cv\getvalue{\??se#1\@@sectieblok\c!conversie}}}
+%   {\getvalue{\??cv\getvalue{\??se#1\@@sectionblock\c!conversion}}}
 
 % suited for chinese too:
 
 % \def\@@sectionconversion#1#2% a doublure with \@@shortsectionnumber
 %   {\ifnum#2=0 0\else % else troubles with \uchar
-%      \@EA\ifx\csname\??se#1\@@sectieblok\c!conversie\endcsname\relax
-%        \@EA\ifx\csname\??se#1\c!conversie\endcsname\relax
+%      \@EA\ifx\csname\??se#1\@@sectionblock\c!conversion\endcsname\relax
+%        \@EA\ifx\csname\??se#1\c!conversion\endcsname\relax
 %          #2%
 %        \else
-%          \getvalue{\??cv\getvalue{\??se#1\c!conversie}}{#2}%
+%          \getvalue{\??cv\getvalue{\??se#1\c!conversion}}{#2}%
 %        \fi
 %      \else
-%        \getvalue{\??cv\getvalue{\??se#1\@@sectieblok\c!conversie}}{#2}%
+%        \getvalue{\??cv\getvalue{\??se#1\@@sectionblock\c!conversion}}{#2}%
 %      \fi
 %    \fi}
 
 \def\@@sectionconversion#1#2% a doublure with \@@shortsectionnumber
   {\ifnum#2=0 0\else % else troubles with \uchar
-     \@EA\ifx\csname\??se#1\@@sectieblok\c!conversion\endcsname\relax
+     \@EA\ifx\csname\??se#1\@@sectionblock\c!conversion\endcsname\relax
        \@EA\ifx\csname\??se#1\c!conversion\endcsname\relax
          #2%
        \else
          \convertnumber{\getvalue{\??se#1\c!conversion}}{#2}%
        \fi
      \else
-       \convertnumber{\getvalue{\??se#1\@@sectieblok\c!conversion}}{#2}%
+       \convertnumber{\getvalue{\??se#1\@@sectionblock\c!conversion}}{#2}%
      \fi
    \fi}
 
@@ -837,7 +825,7 @@
 % suited for chinese too:
 %
 % \def\@@shortsectionnumber#1%
-%   {\@EA\ifx\csname\??se#1\@@sectieblok\c!conversie\endcsname\relax
+%   {\@EA\ifx\csname\??se#1\@@sectionblock\c!conversie\endcsname\relax
 %      \@@sectionvalue{#1}%
 %    \else
 %      \@@sectionconversion{#1}{\@@sectionvalue{#1}}%
@@ -847,7 +835,7 @@
 %
 % \def\@@shortsectionnumber#1%
 %  {\@EA\ifx\csname\??se#1\c!eigennummer\endcsname\relax
-%     \@EA\ifx\csname\??se#1\@@sectieblok\c!conversie\endcsname\relax
+%     \@EA\ifx\csname\??se#1\@@sectionblock\c!conversie\endcsname\relax
 %       \@EA\ifx\csname\??se#1\c!conversie\endcsname\relax
 %         \@@sectionvalue{#1}%
 %       \else
@@ -862,7 +850,7 @@
 
 \def\@@shortsectionnumber#1%
   {\@EA\ifx\csname\??se#1\c!ownnumber\endcsname\relax
-     \@EA\ifx\csname\??se#1\@@sectieblok\c!conversion\endcsname\relax
+     \@EA\ifx\csname\??se#1\@@sectionblock\c!conversion\endcsname\relax
        \@EA\ifx\csname\??se#1\c!conversion\endcsname\relax
          \@@sectionvalue{#1}%
        \else
@@ -875,60 +863,60 @@
      \csname\??se#1\c!ownnumber\endcsname
    \fi}
 
-\def\dosetlocalsectieblok#1#2#3% new \edef's
+\def\dosetlocalsectionblock#1#2#3% new \edef's
   {\edef\@@sectiontype  {#1}%
-   \edef\@@sectieblok   {#2}%
-   \edef\@@sectieblokken{#3}}
+   \edef\@@sectionblock   {#2}%
+   \edef\@@sectionblocks{#3}}
 
 % beware, the \resetsectionmarks generates some nodes that
 % will result in an additional last page, which needs to be
 % captured at the end
 
-% \def\doaroundsectieblok#1%
-%   {\doifvaluesomething{\??sb#1\c!pagina}
-%      {\ExpandFirstAfter\page[\getvalue{\??sb#1\c!pagina}]}%
+% \def\doaroundsectionblock#1%
+%   {\doifvaluesomething{\??sb#1\c!page}
+%      {\ExpandFirstAfter\page[\getvalue{\??sb#1\c!page}]}%
 %    \resetsectioncounters\zerosection % was firstsection
 %    \resetsectionmarks\zerosection}
 
-% \def\dostartsectieblok#1#2%
+% \def\dostartsectionblock#1#2%
 %   {\begingroup
-%    \doaroundsectieblok{#1}%            % going to a new page or so
+%    \doaroundsectionblock{#1}%            % going to a new page or so
 %    \getvalue{\??sb#1}%                 % set name of section block
-%    \getsectieblokomgeving{#1}%         % special settings, grouped
+%    \getsectionblockenvironment{#1}%         % special settings, grouped
 %   %\expandafter\csname#2true\endcsname % obsolete
 %    \setsystemmode{#1}%                 % can be used in conditionals
-%    \getvalue{\??sb\@@sectieblok\c!voor}% this one is not to be moved!
-%    \showmessage\m!structures1\@@sectieblokken}
+%    \getvalue{\??sb\@@sectionblock\c!before}% this one is not to be moved!
+%    \showmessage\m!structures1\@@sectionblocks}
 
-% \def\dostopsectieblok
-%   {\showmessage\m!structures2\@@sectieblokken
-%    \getvalue{\??sb\@@sectieblok\c!na}% don't move
-%    \doaroundsectieblok\@@sectieblok
+% \def\dostopsectionblock
+%   {\showmessage\m!structures2\@@sectionblocks
+%    \getvalue{\??sb\@@sectionblock\c!after}% don't move
+%    \doaroundsectionblock\@@sectionblock
 %    \endgroup}
 
-\def\doaroundsectieblok
-  {\doifvaluesomething{\??sb\@@sectieblok\c!page}
-     {\page[\getvalue{\??sb\@@sectieblok\c!page}]}%
+\def\doaroundsectionblock
+  {\doifvaluesomething{\??sb\@@sectionblock\c!page}
+     {\page[\getvalue{\??sb\@@sectionblock\c!page}]}%
    \resetsectioncounters\zerosection % was firstsection
    \resetsectionmarks\zerosection}
 
 \def\dostartsectionblock#1#2%
   {\begingroup
    \getvalue{\??sb#1}%
-   \doaroundsectieblok
-%    \doifvaluesomething{\??sb\@@sectieblok\c!pagina}{\page[\getvalue{\??sb\@@sectieblok\c!pagina}]}%
+   \doaroundsectionblock
+%    \doifvaluesomething{\??sb\@@sectionblock\c!page}{\page[\getvalue{\??sb\@@sectionblock\c!page}]}%
 %    \resetsectioncounters\zerosection % was firstsection
 %    \resetsectionmarks\zerosection
-   \getsectieblokomgeving\@@sectieblok
-   \setsystemmode\@@sectieblok
-   \getvalue{\??sb\@@sectieblok\c!before}%
-   \showmessage\m!structures1\@@sectieblokken}
+   \getsectionblockenvironment\@@sectionblock
+   \setsystemmode\@@sectionblock
+   \getvalue{\??sb\@@sectionblock\c!before}%
+   \showmessage\m!structures1\@@sectionblocks}
 
 \def\dostopsectionblock
-  {\showmessage\m!structures2\@@sectieblokken
-   \getvalue{\??sb\@@sectieblok\c!after}% don't move
-   \doaroundsectieblok
-%    \doifvaluesomething{\??sb\@@sectieblok\c!pagina}{\page[\getvalue{\??sb\@@sectieblok\c!pagina}]}%
+  {\showmessage\m!structures2\@@sectionblocks
+   \getvalue{\??sb\@@sectionblock\c!after}% don't move
+   \doaroundsectionblock
+%    \doifvaluesomething{\??sb\@@sectionblock\c!page}{\page[\getvalue{\??sb\@@sectionblock\c!page}]}%
 %    \resetsectioncounters\zerosection % was firstsection
 %    \resetsectionmarks\zerosection
    \endgroup}
@@ -940,17 +928,17 @@
 \def\setupsectionblock
   {\dodoubleargument\dosetupsectionblock}
 
-\long\def\setsectieblokomgeving#1#2%
+\long\def\setsectionblockenvironment#1#2%
   {\long\setvalue{\??sb\s!do#1}{\do{#2}}}
 
-\def\getsectieblokomgeving#1%
+\def\getsectionblockenvironment#1%
   {\let\do\firstofoneargument\getvalue{\??sb\s!do#1}}
 
 \setvalue{\e!start\v!sectionblockenvironment}%
-  {\dosingleargument\dostartsectieblokomgeving}
+  {\dosingleargument\dostartsectionblockenvironment}
 
-\def\dostartsectieblokomgeving[#1]% evt \pushendofline \popendofline
-  {\long\def\do##1##2{\setsectieblokomgeving{#1}{##1##2}}%
+\def\dostartsectionblockenvironment[#1]% evt \pushendofline \popendofline
+  {\long\def\do##1##2{\setsectionblockenvironment{#1}{##1##2}}%
    \grabuntil{\e!stop\v!sectionblockenvironment}{\getvalue{\??sb\s!do#1}}}
 
 %D \starttyping
@@ -978,7 +966,7 @@
 
 \newcounter\currentsectionblock
 
-\def\currentsection{\@@sectieblok}
+\def\currentsection{\@@sectionblock}
 
 \def\dodefinesectionblock[#1][#2][#3]%
   {\getparameters
@@ -990,9 +978,9 @@
       #3]%
    \expandafter\newif\csname if#2\endcsname % better a mode
    \doglobal\increment\currentsectionblock
-   \setsectieblokomgeving{#1}{}%
+   \setsectionblockenvironment{#1}{}%
    \setevalue{\??sb#1}%
-     {\noexpand\dosetlocalsectieblok{\currentsectionblock}{#1}{#2}}%
+     {\noexpand\dosetlocalsectionblock{\currentsectionblock}{#1}{#2}}%
    \setvalue{\e!start#2}%
      {\dostartsectionblock{#1}{#2}}%
    \setvalue{\e!stop#2}%
@@ -1001,14 +989,14 @@
 \def\definesectionblock
   {\dotripleargument\dodefinesectionblock}
 
-\def\sectiebloklabel#1#2%
-  {\@EA\ifx\csname\??ko#1\@@sectieblok\c!label\endcsname\relax
+\def\sectionblocklabel#1#2%
+  {\@EA\ifx\csname\??ko#1\@@sectionblock\c!label\endcsname\relax
      \labeltexts{#1}{#2}%
    \else
-     \labeltexts{\getvalue{\??ko#1\@@sectieblok\c!label}}{#2}%
+     \labeltexts{\getvalue{\??ko#1\@@sectionblock\c!label}}{#2}%
    \fi}
 
-\dosetlocalsectieblok{2}{\v!bodypart}{\v!bodymatter} % hm, dirty
+\dosetlocalsectionblock{2}{\v!bodypart}{\v!bodymatter} % hm, dirty
 
 \def\setsectiontype[#1]%
   {\getvalue{\??sb#1}}
@@ -1023,12 +1011,12 @@
 
 \def\@@kolevel{1}        \def\headlevel{\@@kolevel}
 
-\def\dohandelpaginaafAA#1%
+\def\dohandlepagebreakAA#1%
   {\ifnum\lastpenalty>0
      \global\paginageblokkeerdtrue
    \fi}
 
-\def\dohandelpaginaafAB#1% will be replaced by a more clever (signaling) mechanism (in beta)
+\def\dohandlepagebreakAB#1% will be replaced by a more clever (signaling) mechanism (in beta)
   {\flushsidefloats
    \getvalue{\??ko#1\c!before}%
    %\whitespace vervangen door \noindent elders
@@ -1048,21 +1036,21 @@
    \fi
    \xdef\@@kolevel{\getvalue{\??se\@@sectie\c!level}}}
 
-\def\dohandelpaginaafBB#1#2#3%
+\def\dohandlepagebreakBB#1#2#3%
   {\doifinset{\getvalue{\??tk#2\c!state}}{\v!normal,\v!start}
      {\doifvaluesomething{\??ko#1#3}
         {\setuplayouttext[#2][\c!state=\getvalue{\??ko#1#3}]}}}
 
-\def\dohandelpaginaafB#1%
+\def\dohandlepagebreakB#1%
   {\doifvaluesomething{\??ko#1\c!page}
      {\def\resetcurrentsectionmarks% toegevoegd, zie \page
         {\resetsectionmarks{\previoussection\@@sectie}}%
       \page[\getvalue{\??ko#1\c!page}]%
-      \dohandelpaginaafBB{#1}\v!header\c!header
-      \dohandelpaginaafBB{#1}\v!text  \c!text
-      \dohandelpaginaafBB{#1}\v!footer\c!footer}}
+      \dohandlepagebreakBB{#1}\v!header\c!header
+      \dohandlepagebreakBB{#1}\v!text  \c!text
+      \dohandlepagebreakBB{#1}\v!footer\c!footer}}
 
-\def\dohandelpaginaafX#1% zie doordefinieren / boven
+\def\dohandlepagebreakX#1% zie doordefinieren / boven
   {\bgroup
    \!!countb\@@kolevel
    \advance\!!countb #1
@@ -1072,20 +1060,20 @@
    \dosomebreak{\penalty\!!counta}%
    \egroup}
 
-\def\handelpaginaaf#1%
-  {\dohandelpaginaafAA{#1}%
+\def\handlepagebreak#1%
+  {\dohandlepagebreakAA{#1}%
    \ifnum\countervalue{\??se\previoussection\@@sectie}>\zerocount\relax
      \ifnum\countervalue{\??se\@@sectie}>\zerocount
-       \dohandelpaginaafB{#1}%
+       \dohandlepagebreakB{#1}%
      \else
-       \doifnotvalue{\??ko#1\c!continue}\v!yes{\dohandelpaginaafB{#1}}%
+       \doifnotvalue{\??ko#1\c!continue}\v!yes{\dohandlepagebreakB{#1}}%
      \fi
    \else
-     \dohandelpaginaafB{#1}%
+     \dohandlepagebreakB{#1}%
    \fi
-   \dohandelpaginaafAB{#1}}
+   \dohandlepagebreakAB{#1}}
 
-\def\handelpaginaafC#1%
+\def\handlepagebreakC#1%
   {\xdef\@@kolevel{\getvalue{\??se\@@sectie\c!level}}%
    \nobreak}
 
@@ -1126,7 +1114,7 @@
    \doifnothing\@@sectie
      {\edef\@@sectie{\getvalue{\??ko\@@koppeling\c!section}}}}
 
-% \handelpaginaaf komt het eerst omdat eventueel
+% \handlepagebreak komt het eerst omdat eventueel
 % subpaginanummers moeten worden afgehandeld. Vervolgens
 % worden de nummers opgehoogd en referenties geset, dan
 % volgt de kop en tot slot de worden de marks en de prefix
@@ -1190,7 +1178,7 @@
 %     \doifelsevalue{\??ko#1\c!eigennummer}\v!ja
 %       {\def\someheadconversion{#2}}
 %       {\bepaalkopnummer[#1]%
-%        \@EA\ifx\csname\??se\@@sectie\@@sectieblok\c!kopconversie\endcsname\relax
+%        \@EA\ifx\csname\??se\@@sectie\@@sectionblock\c!kopconversie\endcsname\relax
 %          \@EA\ifx\csname\??se\@@sectie\c!kopconversie\endcsname\relax
 %            \def\someheadconversion{#2}%
 %          \else
@@ -1203,12 +1191,12 @@
 %            \fi
 %          \fi
 %        \else
-%          \@EA\ifx\csname\??se\@@sectie\@@sectieblok\c!kopconversie\endcsname\empty
+%          \@EA\ifx\csname\??se\@@sectie\@@sectionblock\c!kopconversie\endcsname\empty
 %            \def\someheadconversion{#2}%
 %          \else
 %            \someheadconversiontrue
 %            \def\someheadconversion%
-%              {\fullsectionnumber{#1}{\getvalue{\??se\@@sectie\@@sectieblok\c!kopconversie}}{#2}}%
+%              {\fullsectionnumber{#1}{\getvalue{\??se\@@sectie\@@sectionblock\c!kopconversie}}{#2}}%
 %          \fi
 %        \fi}}
 %
@@ -1221,7 +1209,7 @@
        \def\someheadconversion{#2}}
       {\letgvalue{\??se\@@sectie\c!ownnumber}\relax
        \determineheadnumber[#1]%
-       \@EA\ifx\csname\??se\@@sectie\@@sectieblok\c!headconversion\endcsname\relax
+       \@EA\ifx\csname\??se\@@sectie\@@sectionblock\c!headconversion\endcsname\relax
          \@EA\ifx\csname\??se\@@sectie\c!headconversion\endcsname\relax
            \def\someheadconversion{#2}%
          \else
@@ -1234,12 +1222,12 @@
            \fi
          \fi
        \else
-         \@EA\ifx\csname\??se\@@sectie\@@sectieblok\c!headconversion\endcsname\empty
+         \@EA\ifx\csname\??se\@@sectie\@@sectionblock\c!headconversion\endcsname\empty
            \def\someheadconversion{#2}%
          \else
            \someheadconversiontrue
            \def\someheadconversion%
-             {\fullsectionnumber{#1}{\getvalue{\??se\@@sectie\@@sectieblok\c!headconversion}}{#2}}%
+             {\fullsectionnumber{#1}{\getvalue{\??se\@@sectie\@@sectionblock\c!headconversion}}{#2}}%
          \fi
        \fi}}
 
@@ -1247,7 +1235,7 @@
             \def   \ignoredfullsectionnumber#1#2#3{#3}
             \let    \storedfullsectionnumber       \relax
 %           \def\expandablefullsectionnumber#1#2#3{#3}
-%\unexpanded\def   \naturalfullsectionnumber#1#2#3{\sectiebloklabel{#1}{\getvalue{\??cv#2}{#3}}}
+%\unexpanded\def   \naturalfullsectionnumber#1#2#3{\sectionblocklabel{#1}{\getvalue{\??cv#2}{#3}}}
 %\unexpanded\def   \limitedfullsectionnumber#1#2#3{\getvalue{\??cv#2}{#3}}
 
 % under test:
@@ -1258,7 +1246,7 @@
   {\convertnumber{#2}{#3}}
 
 \unexpanded\def\naturalfullsectionnumber#1#2#3%
-  {\sectiebloklabel{#1}{\convertnumber{#2}{#3}}}
+  {\sectionblocklabel{#1}{\convertnumber{#2}{#3}}}
 
 \unexpanded\def\limitedfullsectionnumber#1#2#3%
   {\convertnumber{#2}{#3}}
@@ -1330,27 +1318,19 @@
    \else
      \let\localkoprefix\empty
    \fi
-%    \doifelsevalue{\??ko#1\c!plaatskop}\v!ja
-%      \placeheadtrue\placeheadfalse
-%    \processaction
-%      [\getvalue{\??ko#1\c!plaatskop}]
-%      [  \v!ja=>\placeheadtrue \emptyheadfalse,
-%       \v!leeg=>\placeheadtrue \emptyheadtrue,
-%        \v!nee=>\placeheadfalse\emptyheadtrue]%
    \placeheadtrue
    \processaction
      [\getvalue{\??ko#1\c!placehead}]
      [  \v!yes=>\emptyheadfalse,
       \v!empty=>\emptyheadtrue,
-       \v!no=>\emptyheadtrue\placeheadfalse]%
-%
+         \v!no=>\emptyheadtrue\placeheadfalse]%
    \doifelsevalue{\??ko#1\c!resetnumber}\v!no
      {\setfalse\@@resetsubheadnumbers}%
      {\settrue \@@resetsubheadnumbers}%
    \writetolistfalse
    \processaction
      [\getvalue{\??ko#1\c!incrementnumber}]
-     [     \v!yes=>\incrementnumbertrue,
+     [   \v!yes=>\incrementnumbertrue,
           \v!no=>\incrementnumberfalse,
         \v!list=>\incrementnumberfalse
                   % beware, since no numbers are used, no nested lists are
@@ -1366,7 +1346,7 @@
      \displaysectionheadfalse
      \displaysectionheadtrue
    \ifsectienummer
-     \doifelsevalue{\??sb\@@sectieblok\c!number}\v!yes
+     \doifelsevalue{\??sb\@@sectionblock\c!number}\v!yes
        {\doifelsevalue{\??ko#1\c!number}\v!yes
           \headnumbertrue
           \headnumberfalse}
@@ -1381,7 +1361,7 @@
    %
    \ifincrementnumber
      \ifplacehead
-       \checknexthead\handelpaginaaf{#1}%
+       \checknexthead\handlepagebreak{#1}%
        \setsectieenkoppeling{#1}% can be changed when [voor=\somehead{..}...]
        \ifheadprefix
         %\setupreferencing[\c!prefix=-]%
@@ -1395,7 +1375,7 @@
          \getvalue{\??ko#1\c!inbetween}%
          \ifsomeheadconversion
            \let\fullsectionnumber\naturalfullsectionnumber
-           \doplaatskopnummertekst
+           \doplaceheadnumbertext
              {#1}
              {\setsectionlistreference{\@@sectie}{#1}%
               \pagetype[\@@koppeling]%
@@ -1413,7 +1393,7 @@
            \let\fullsectionnumber\ignoredfullsectionnumber
            \writesection{#1}{\someheadconversion}{#4}%
          \else
-           \doplaatskopnummertekst
+           \doplaceheadnumbertext
              {#1}
              {\setsectionlistreference{\@@sectie}{#1}%
               \pagetype[\@@koppeling]%
@@ -1421,7 +1401,7 @@
               \resetsectionmarks\@@sectie
               \setlistparameter\@@koppeling\c!expansion{\getvalue{\??ko#1\c!expansion}}%
               \dowritetolist\@@koppeling{#3}{#4}\v!head}
-             {\sectiebloklabel{#1}{\dohandleheadnumber{#3}}}% handle is new
+             {\sectionblocklabel{#1}{\dohandleheadnumber{#3}}}% handle is new
              {#4}
              {\marking[#1]{#4}%
               \doifelsevalue{\??ko#1\c!ownnumber}\v!yes % rommelig omdat
@@ -1439,7 +1419,10 @@
             \rawreference\s!sec{#2}{{#3}{\asciititle}}%
             \resetsectionmarks\@@sectie
             \setlistparameter\@@koppeling\c!expansion{\getvalue{\??ko#1\c!expansion}}%
-            \dowritetolist\@@koppeling{}{#4}\v!head}
+\doifelsevalue{\??ko#1\c!ownnumber}\v!yes % brrr, new per 18/1/2005, sometimes we need
+  {\dowritetolist\@@koppeling{#3}{#4}\v!head} % entries in the list (special purpose) but
+  {\dowritetolist\@@koppeling  {}{#4}\v!head}% not in the header, ok we could pop in a command
+}%            \dowritetolist\@@koppeling{}{#4}\v!head}
            {#4}
            {\marking[#1]{#4}%
             \doifelsevalue{\??ko#1\c!ownnumber}\v!yes % brrr
@@ -1466,7 +1449,7 @@
        %
        % do nothing / should be vbox to 0pt
        %
-       \checknexthead\dohandelpaginaafB{#1}% toegevoegd ivm subpaginanr / tug sheets
+       \checknexthead\dohandlepagebreakB{#1}% toegevoegd ivm subpaginanr / tug sheets
        \setsectieenkoppeling{#1}% can be changed when [voor=\somehead{..}...]
        \ifheadprefix
          \setupreferenceprefix[-]%
@@ -1506,7 +1489,7 @@
    \else
      % todo : ref prefix
      \ifplacehead
-       \checknexthead\handelpaginaaf{#1}%
+       \checknexthead\handlepagebreak{#1}%
        \setsectieenkoppeling{#1}% can be changed when [voor=\somehead{..}...]
        \getvalue{\??ko#1\c!inbetween}%
        \doplaceheadtext
@@ -1525,7 +1508,7 @@
        \fi
      \else
        % do nothing / should be vbox to 0pt
-       \checknexthead\handelpaginaaf{#1}%
+       \checknexthead\handlepagebreak{#1}%
        \setsectieenkoppeling{#1}% can be changed when [voor=\somehead{..}...]
        \getvalue{\??ko#1\c!inbetween}%
        \forcesectiontolist{#1}{#4}%
@@ -1703,7 +1686,7 @@
    \fi
    \endheadplacement{#1}{#4}}
 
-\def\doplaatskopnummertekst#1#2#3#4#5% maybe move modes outside box
+\def\doplaceheadnumbertext#1#2#3#4#5% maybe move modes outside box
   {\beginheadplacement{#1}%
    \ifemptyhead % = needed
      \setbox0=\ifvertical\vbox\else\hbox\fi to \zeropoint
@@ -1864,7 +1847,7 @@
   {\ifhmode
      \scratchcounter=\lastpenalty\unpenalty % no beauty in this
      \ifdim\lastskip=\headsignal
-       \handelpaginaafC{#1}%
+       \handlepagebreakC{#1}%
        \global\continuousheadtrue
      \else
        \penalty\scratchcounter
@@ -1966,27 +1949,6 @@
      \vbox
        {\localheadsetup\noindent#2}%
    \fi}
-
-% \defineheadplacement[\v!inmarge][\v!vertikaal]#1#2%
-%   {\vbox
-%      {\localheadsetup
-%       \begstrut            % but use one \strut here!
-%       \ifheadnumbercontent
-%         \llap{\hbox to 5em{\hfill{#1}\hskip\linkermargeafstand}}%
-%       \fi
-%       {#2}}}
-
-% \defineheadplacement[\v!inmarge][\v!vertikaal]#1#2%
-%   {\vbox
-%      {\scratchdimen\linkermargeafstand
-%       \advance\scratchdimen\leftskip
-%       \edef\plaatskopinmarge{\the\scratchdimen}% re-use saves hash entry
-%       \localheadsetup
-%       \begstrut            % but use one \strut here!
-%       \ifheadnumbercontent
-%         \llap{\hbox to 5em{\hfill{#1}\hskip\plaatskopinmarge}}%
-%       \fi
-%       {#2}}}
 
 \def\placeheadmargin#1#2%
   {\vbox

@@ -30,7 +30,9 @@
 
 %D Literal \PDF\ inclusion is implemented as:
 
-\def\PDFcode#1{\special{pdf: content #1}}
+\def\PDFcode       #1{\special{pdf: content #1}}
+\def\PDFcontentcode#1{\special{pdf: content #1}}
+\def\PDFdirectcode #1{\special{pdf: literal #1}}
 
 %D \macros
 %D   {dosetuppaper}

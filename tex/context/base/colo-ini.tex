@@ -81,6 +81,7 @@
       9: -- kleurruimte wordt niet ondersteund
      10: -- kleurruimte wordt ondersteund
      11: kleur wordt vertaald in grijs
+     12: -- is geregistreerd
 \stopmessages
 
 \startmessages  english  library: colors
@@ -96,6 +97,7 @@
       9: -- color space is not supported
      10: -- color space is supported
      11: color is converted to gray
+     12: -- is registered
 \stopmessages
 
 \startmessages  german  library: colors
@@ -111,6 +113,7 @@
       9: -- Farbraum wird nicht unterstuetzt
      10: -- Farbraum wird unterstuetzt
      11: Farbe wird in Grau umgewandelt
+     12: -- is registered
 \stopmessages
 
 \startmessages  czech  library: colors
@@ -126,6 +129,7 @@
       9: -- prostor barev neni podporovan
      10: -- prostor barev je podporovan
      11: barva je prevedena na sed
+     12: -- is registered
 \stopmessages
 
 \startmessages  italian  library: colors
@@ -141,6 +145,7 @@
       9: spazio dei colori -- non supportato
      10: spazio dei colori -- supportato
      11: il colore è convertito in grigio
+     12: -- is registered
 \stopmessages
 
 \startmessages  norwegian  library: colors
@@ -156,6 +161,7 @@
       9: -- fargerom er ikke støttet
      10: -- fargerom er støttet
      11: fargen vil bli vist som grå
+     12: -- is registered
 \stopmessages
 
 \startmessages  romanian  library: colors
@@ -171,6 +177,7 @@
       9: spatiul de culoare -- nu este suportat
      10: spatiul de culoare -- este suportat
      11: culoarea este convertita la gri
+     12: -- is registered
 \stopmessages
 
 %D We use a couple of local registers. That way we don't have
@@ -1089,7 +1096,7 @@
 \def\registerindexcolor#1:%
   {\ifundefined{\??cl:i:\@@cl@@n}%
      \letgvalue{\??cl:i:\@@cl@@n}\empty % signal
-     \writestatus\m!colors{registering index color \@@cl@@n}%
+     \showmessage\m!colors{12}\@@cl@@n
      \@EA\@EA\csname registerindexcolor#1\endcsname
    \else
      \@EA\dontregisterindexcolor

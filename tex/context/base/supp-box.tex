@@ -200,7 +200,7 @@
 \def\dodosmash[#1]%
   {\edef\@@smash{#1}\futurelet\nexttoken\dododosmash}
 
-\def\dododosmash
+\def\dododosmash % if needed we can avoid the \next
   {\ifmmode
      \def\next##1{\mathpalette\mathsm@sh{##1}}%
    \else\ifx\nexttoken\bgroup
@@ -622,6 +622,24 @@
 %D But since this macro is used often and since this implementation
 %D is slower, we will not use that definition.
 
+% maybe:
+%
+% depending on the size of the action, about 10% faster
+%
+% \newtoks\nextboxtoks
+%
+% \def\dowithnextbox    {\afterassignment\redowithnextbox\nextboxtoks}
+% \def\redowithnextbox  {\afterassignment\dododowithnextbox\setbox\nextbox}
+% \def\dododowithnextbox{\aftergroup\dodowithnextbox}
+% \def\dodowithnextbox  {\the\nextboxtoks}
+%
+% \long\def\dowithnextboxcontent#1% #2% inside, after
+%   {\def\dododowithnextbox{#1\aftergroup\dodowithnextbox}%
+%    \afterassignment\redowithnextboxcontent\nextboxtoks}
+%
+% \def\redowithnextboxcontent
+%   {\afterassignment\dododowithnextbox\setbox\nextbox}
+
 %D \macros
 %D   {llap, rlap, tlap, blap, clap}
 %D
@@ -779,7 +797,7 @@
 
 \newevery \everyshapebox \relax
 
-\def\shapesignal{.12345678pt}
+\def\shapesignal{.12345678pt} % or 12345sp
 
 % todo: in etex lastnode
 
@@ -950,6 +968,7 @@
 %D \macros
 %D   {hyphenatedword,
 %D    hyphenatedpar,
+%D    hyphenatedfile,
 %D    dohyphenateword}
 %D
 %D The next one is a tricky one. \PLAIN\ \TEX\ provides
@@ -998,13 +1017,19 @@
       \setbox0\normalvbox
         {\hsize\zeropoint
          \hskip\zeropoint % really needed
-         \ifnum#1=\minusone
+         \ifnum#1<\zeropoint
            \obeyspaces
            \obeylines
            \def\obeyedspace{\hskip\zeropoint\hbox to \onepoint{}\hskip\zeropoint}%
            \let\obeyedline  \obeyedspace
-           \def\next{#3}\scantokens\expandafter{\next}%
-           % also ok: \scantokens{#3}%
+           \ifcase-#1\or
+             \def\next{#3}\scantokens\expandafter{\next}%
+             % also ok: \scantokens{#3}%
+           \or
+             \readfile{#3}\donothing\donothing
+           \else
+             #3%
+           \fi
          \else
            #3%
          \fi}%
@@ -1026,7 +1051,7 @@
               {\unvbox2
                \setbox2\lastbox
                \normalhbox{\unhbox2}}}%
-         \ifnum#1=\minusone\ifdim\wd2=\onepoint\space\else\box2\allowbreak\fi\else\box2\fi
+         \ifnum#1<\zeropoint\ifdim\wd2=\onepoint\space\else\box2\allowbreak\fi\else\box2\fi
          \ifzeropt\ht0 \exitloop\fi}% % \ifdim\ht0=\zeropoint\exitloop\fi}%
       \removeunwantedspaces}%
     \ifnum#1>\zerocount
@@ -1040,6 +1065,7 @@
 
 \def\hyphenatedword{\dohyphenateword\zerocount\empty}
 \def\hyphenatedpar {\dohyphenateword\minusone \empty}
+\def\hyphenatedfile{\dohyphenateword{-2}\empty}
 
 %D You may want to give the following call a try:
 %D

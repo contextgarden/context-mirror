@@ -3529,17 +3529,17 @@
 
 \def\dointeractionbuttons[#1][#2]% er is een verdeel macro \horizontalfractions
   {\iflocation
+     % BUG: fails when frame=off; best is to rewrite this macro
      \bgroup
      \doif\@@ibstate\v!stop\locationfalse
      \iflocation
        \ifsecondargument
+         \setupinteractionbar[#1]%
          \checkinteractionbar{1.5em}\v!broad\!!zeropoint % brrrrr
-         \setbox2=\hbox
-           {\setupsymbolset[\@@iasymbolset]%
-            \localframed[\??ib][#1,\c!background=]{\symbol[\v!previouspage]}}%
+         \setbox2\hbox
+           {\localframed[\??ib][\c!background=]{\symbol[\@@iasymbolset][\v!previouspage]}}%
          \!!heighta\ht2 % needed because we default to nothing
-         \setupinteractionbar[#1,\c!strut=\v!no]%
-        %\setupinteraction[\c!width=\!!zeropoint]%
+         \setupinteractionbar[\c!strut=\v!no]%
          \setinteractionparameter\c!width\!!zeropoint
          \!!counta\zerocount % new, was 1
          \processallactionsinset
@@ -3547,7 +3547,7 @@
            [   \v!page=>\advance\!!counta 4,
             \v!subpage=>\advance\!!counta 4,
             \s!unknown=>\advance\!!counta 1]%
-         \ifdim\@@ibwidth=\!!zeropoint\relax
+         \ifdim\@@ibwidth=\zeropoint
            \!!widtha2em
            \advance\!!widtha \@@ibdistance  % new
            \!!widthb\!!counta\!!widtha
@@ -3561,13 +3561,11 @@
            \divide\!!widtha \!!counta
            \!!widthb\@@ibwidth
          \fi
-         \def\goto##1%
+         \def\goto##1% clash ?
            {\setnostrut
-            \setupsymbolset[\@@iasymbolset]%
             \edef\localreference{##1}%
-            \dodocomplexbutton\??ib
-              [\c!height=\!!heighta,\c!width=\!!widtha]%
-              {\dontleavehmode\symbol[\localreference]}%
+            \expanded{\dodocomplexbutton\??ib[\c!height=\the\!!heighta,\c!width=\the\!!widtha]}%
+              {\dontleavehmode\symbol[\@@iasymbolset][\localreference]}%
               [\localreference]%
             \hss}%
          \hbox to \!!widthb

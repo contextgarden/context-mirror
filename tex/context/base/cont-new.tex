@@ -24,6 +24,25 @@
 
 \ifx\normalcompound\undefined \let\normalcompound=| \fi
 
+% twice as fast in #1=5 #2=40 situations, only gains some speed when
+% multiple runs of large docs are done; fully expandable, no
+% statuscounter needed, no restore (due to grouping) needed etc
+
+\beginETEX \numexpr
+
+\def\writestatus#1#2%
+  {\writestring{\expandafter\dosplitstatus\expandafter\statuswidth#1%
+     \space\space\space\space\space\space\space
+     \space\space\space\space\space\space\space
+     \space\space\space\space\space\space\end
+     \space:\space#2}}
+
+\def\dosplitstatus#1#2%
+  {\ifcase#1 \expandafter\nosplitstatus\fi#2%
+   \expandafter\dosplitstatus\expandafter{\the\numexpr#1+\minusone\relax}}
+
+\endETEX
+
 \beginETEX
 
 % fallback to math when in text mode (handy for unicode vectors)
@@ -73,10 +92,6 @@
 
 \egroup
 
-% in xtag-ini:
-
-\def\doexecuteXMLhexcharacter#1\relax{\getXMLcharacter{"#1}}
-
 % in xtag-map:
 
 \unexpanded\def\xmlrent#1{\doXMLentity#1;}
@@ -111,6 +126,69 @@
 
 \def\XMLprocess#1%
   {\begingroup\enableXML\XMLflush{#1}\endgroup}
+
+%D (Inspired by a discussion on the \CONTEXT\ mailing list)
+%D
+%D In \TEX\ each character can have one of 16 catcodes. This way the
+%D backslash, dollar, ampersand, hash and some more characters get
+%D their  special meaning. If you want to process tokens under a
+%D certain catcode  regime, passing arguments can interfere badly.
+%D
+%D \startbuffer[a]
+%D \def\whatever#1{[#1]}
+%D \whatever{whatever \type {\whatever{you want}} $or$ not!}
+%D \stopbuffer
+%D
+%D \typebuffer[a]
+%D
+%D Here we pass an argument to \type {\whatever} but part of that
+%D argument is to be processed under a different catcode regime, i.e.\
+%D all characters that need to be typeset verbatim need to get
+%D the catcode that makes it a letter. This is what we get when we typeset
+%D the text verbatim:
+%D
+%D \starttyping
+%D whatever \type {\whatever{you want}} $or$ not!
+%D \stoptyping
+%D
+%D However, when passed to \type {\whatever} we get:
+%D
+%D \getbuffer[a]
+%D
+%D In \ETEX\ one can use  \type {\scantokens} to circumvent this problem.
+%D
+%D \startbuffer[b]
+%D \def\rescan#1{\scantokens{#1}}
+%D \def\whatever#1{[\rescan{#1}]}
+%D \whatever{whatever \type {\whatever{you want}} $or$ not!}
+%D \stopbuffer
+%D
+%D \getbuffer[b] \typebuffer[b]
+%D
+%D This time the \type {\whatever} call gives:
+%D
+%D \getbuffer[b]
+%D
+%D In this example, two spaces have crept in. The first one, after the
+%D macro name, is inserted by \TEX\ and cannot be avoided. The last space
+%D is inserted by \type {\scantokens}, and is the consequence of the fact
+%D that this macro mimics reading from a file. You can avoid the last
+%D space by a slightly different definition:
+%D
+%D \startbuffer[c]
+%D \def\rescan#1{\scantokens{#1\ignorespaces}}
+%D \def\whatever#1{[\rescan{#1}]}
+%D \whatever{whatever \type {\whatever{you want}} $or$ not!}
+%D \stopbuffer
+%D
+%D \typebuffer[c]
+%D
+%D Unfortunately we still keep the first space, but at least it's better than
+%D a failure:
+%D
+%D \getbuffer[c]
+
+\def\rescan#1{\scantokens{#1\ignorespaces}}
 
 % In 2005 we will abandon support for font encodings that don't have
 % the ascii characters { } $ etc in their normal slot, i.e. latin modern
@@ -896,7 +974,7 @@
 
 \beginETEX
 
-  \unexpanded\def\retype#1{\scantokens{\normaltype{#1}}}
+  \unexpanded\def\retype#1{\scantokens{\normaltype{#1}\ignorespaces}}
 
 \endETEX
 

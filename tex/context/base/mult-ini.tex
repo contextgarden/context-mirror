@@ -71,6 +71,7 @@
 \def\k!prefix!{k!} \def\l!prefix!{l!} \def\m!prefix!{m!}
 \def\p!prefix!{p!} \def\r!prefix!{r!} \def\s!prefix!{s!}
 \def\v!prefix!{v!} \def\x!prefix!{x!} \def\y!prefix!{y!}
+\def\t!prefix!{t!}
 
 %D \macros
 %D   [constants,variables,commands]
@@ -152,6 +153,10 @@
 
 \def\definereferenceconstant #1#2{\setvalue{\r!prefix!#1}{#2}}
 \def\definefileconstant      #1#2{\setvalue{\f!prefix!#1}{#2}}
+
+%D A new one:
+
+\def\definetypescriptconstant#1#2{\setvalue{\t!prefix!#1}{#2}}
 
 %D And finaly we have the one argument, space saving constants
 %D

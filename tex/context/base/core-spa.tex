@@ -2171,13 +2171,21 @@
        #1\minusone
      \fi}
 
+%   \def\setpenalties#1#2#3%
+%     {\ifx#1\undefined\else % space before #3 prevents lookahead problems, needed when #3=text
+%        #1\numexpr(#2+1)\space\doexpandedrecurse{\the\numexpr(#2)}{ #3}\zerocount\relax
+%      \fi}
+
   \def\setpenalties#1#2#3%
     {\ifx#1\undefined\else % space before #3 prevents lookahead problems, needed when #3=text
-       #1\numexpr(#2+1)\space\doexpandedrecurse{\the\numexpr(#2)}{ #3}\zerocount\relax
+       #1\numexpr#2+\plusone\relax\space\doexpandedrecurse{\the\numexpr#2\relax}{ #3}\zerocount\relax
      \fi}
 
+%   \def\doexpandedrecurse#1#2%
+%     {\ifnum#1>\zerocount#2\@EA\doexpandedrecurse\@EA{\the\numexpr(#1-1)}{#2}\fi}
+
   \def\doexpandedrecurse#1#2%
-    {\ifnum#1>\zerocount#2\@EA\doexpandedrecurse\@EA{\the\numexpr(#1-1)}{#2}\fi}
+    {\ifnum#1>\zerocount#2\@EA\doexpandedrecurse\@EA{\the\numexpr#1-1\relax}{#2}\fi}
 
 \endETEX
 
@@ -3852,7 +3860,7 @@
 %   \vskip10pt
 % \hrule width10cm \endgraf
 
-% etex only, evt splitskip macro gebruiken (syst-new)
+% ! ! ! etex only, evt splitskip macro gebruiken (syst-new)
 
 \newskip\simplifiedskip
 \newskip\simplifiedcounter
@@ -3869,10 +3877,10 @@
 
 \def\getsimplifiedskip#1#2%
   {\simplifiedskip#1\relax
-   \ifdim\simplifiedskip=\zeropoint
+   \ifzeropt\simplifiedskip % \ifdim\simplifiedskip=\zeropoint
      #2\zerocount
    \else
-     \simplifiedcounter\dimexpr(10\dimexpr(#1/10))\relax
+     \simplifiedcounter\dimexpr10\dimexpr#1/10\relax\relax
      \advance\simplifiedskip-\simplifiedcounter
      #2\number\simplifiedskip\relax
    \fi}

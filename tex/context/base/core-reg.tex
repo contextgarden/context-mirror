@@ -817,11 +817,11 @@
   {\useJSscripts[reg]%
    \useJSpreamblenow{LinkedRegisters}%
    \setupinteraction[\c!openpageaction=JS(UpdateRegisterField{\v!register})]%
-   \definereference[\v!reset   \v!register][JS(ResetRegisterEntry{\v!register})]%
-   \definereference[\v!first  \v!register][JS(GotoFirstRegisterEntry{\v!register})]%
-   \definereference[\v!previous  \v!register][JS(GotoPreviousRegisterEntry{\v!register})]%
+   \definereference[\v!reset\v!register][JS(ResetRegisterEntry{\v!register})]%
+   \definereference[\v!first\v!register][JS(GotoFirstRegisterEntry{\v!register})]%
+   \definereference[\v!previous\v!register][JS(GotoPreviousRegisterEntry{\v!register})]%
    \definereference[\v!next\v!register][JS(GotoNextRegisterEntry{\v!register})]%
-   \definereference[\v!last \v!register][JS(GotoLastRegisterEntry{\v!register})]}
+   \definereference[\v!last\v!register][JS(GotoLastRegisterEntry{\v!register})]}
 
 \def\doinitializelinkregister#1%
   {}

@@ -284,32 +284,6 @@
 
 \def\unknownitemsymbol{?}
 
-% \def\setitemmark#1% % en pas op: resets \docommando
-%   {\doifelsenothing{#1}
-%      {\edef\currentitemsymbol{\itemlevel}}
-%      {\edef\currentitemsymbol{#1}}%
-%    \doifsymboldefinedelse\currentitemsymbol
-%      {\setxvalue{\@@globalitemsymbol\itemlevel}{\currentitemsymbol}%
-%       \setgvalue{\@@localitemsymbol \itemlevel}{\unknownitemsymbol}%
-%       \def\listitem{\symbol[\currentitemsymbol]}%
-%       \let\docommando\gobbleoneargument}
-%      {\doifconversiondefinedelse\currentitemsymbol
-%         {\setxvalue{\@@globalitemsymbol\itemlevel}{\currentitemsymbol}%
-%          \setgvalue{\@@localitemsymbol \itemlevel}%
-%            {\convertnumber{\currentitemsymbol}{\countervalue{\@@itemcounter\itemlevel}}}%
-%          \iftextitems
-%            \doifsomething{\getitemparameter\itemlevel\c!linkertekst}
-%              {\let\tempsymbol\empty}%
-%          \fi
-%          \def\listitem
-%            {\getitemparameter\itemlevel
-%               {\iftextitems\c!linkertekst\else\c!links\fi}%
-%             \getvalue{\@@localitemsymbol\itemlevel}\tempsymbol
-%             \getitemparameter\itemlevel
-%               {\iftextitems\c!rechtertekst\else\c!rechts\fi}}%
-%          \let\docommando\gobbleoneargument}
-%        {\let\listitem\empty}}}
-
 \def\setitemmark#1% % en pas op: resets \docommando
   {\doifsymboldefinedelse{#1}
      {\edef\currentitemsymbol{#1}%

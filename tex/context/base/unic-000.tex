@@ -120,7 +120,8 @@
 
 \startunicodevector 0
   \expandafter\strippedcsname
-  \ifcase\numexpr(#1-159)!\@@unknownchar\or
+  \ifcase\numexpr(#1-159) % space needed, terminates expr
+    \unknownchar       \or
     \nonbreakablespace \or
     \exclamdown        \or
     \textcent          \or
@@ -132,7 +133,7 @@
     \textdiaeresis     \or
     \copyright         \or
     \ordfeminine       \or %  FEMININE ORDINAL INDICATOR
-    \leftguillemot    \or %  LEFT-POINTING DOUBLE ANGLE QUOTATION MARK
+    \leftguillemot     \or %  LEFT-POINTING DOUBLE ANGLE QUOTATION MARK
     \textlognot        \or
     \softhyphen        \or
     \registered        \or

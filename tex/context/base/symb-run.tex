@@ -13,18 +13,18 @@
 
 \unprotect
 
-\gdef\doshowsymbolset[#1][#2]% looks like \showexternalfigureb
+\gdef\doshowsymbolset[#1][#2]% todo: make nicer, use legend or so
   {\vbox\bgroup
    \blank
    \getparameters[\??ss][\c!n=5,#2]%
    \forcesymbolset[#1]%
-   \doifdefined{\??ss#1}
+   \doifsymbolsetelse{#1}
      {\global\let\allfigures\empty
       \doglobal\newcounter\figurecounter
       \setupcolors[\c!state=\v!start]% to prevent mps color conversion
       \dontcomplain
       \def\doshowsymbols% global needed due to grouping in alignment
-        {\expanded{\globalprocesscommalist[\getvalue{\??ss#1}]\noexpand\docommando}}%
+        {\expanded{\globalprocesscommalist[\symbolset{#1}]}\docommando}%
       \def\docommando##1%
         {\vbox
            {\forgetall
@@ -44,10 +44,11 @@
       \tabskip\zeropoint \!!plus 1fill
       \halign to \hsize
         {&\hss##\hss\cr\doshowsymbols\crcr}}%
+      {}%
    \blank
    \egroup}
 
-\gdef\showsymbolset%
+\gdef\showsymbolset
   {\dodoubleempty\doshowsymbolset}
 
 \protect \endinput

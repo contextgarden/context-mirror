@@ -222,7 +222,7 @@
      \doglobal\addtocommalist{#1}\collectedfields
    \fi
    \the\everysetfield
-   \setxvalue{fielddata#1}% kortere tag
+   \setxvalue{fielddata#1}% kortere tag #7 needs expansion etc
      {\noexpand\dosetfield{#1}{#2}{#3}{#4}{#5}{#6}{#7}{#8}{#9}}%
    \egroup}
 
@@ -557,7 +557,7 @@
      \writestatus\m!fields{pass values too}%
   \fi}
 
-\def\definesubfield%
+\def\definesubfield
   {\dotripleempty\dodefinesubfield}
 
 \def\dodefinesubfield[#1][#2][#3]% for the moment only radio ones
@@ -587,7 +587,7 @@
      \ifx\@@DriverFieldType\empty
        \writestatus\m!fields{unknown field #1}%
      \else
-       \let\@@DriverFieldMode=\fieldparentmode
+       \let\@@DriverFieldMode\fieldparentmode
       %\def\docommando##1{\addtocommalist{##1}\@@DriverFieldKids}%
        \def\docommando##1{\appendtocommalist{##1}\@@DriverFieldKids}%
        \processcommalist[#2]\docommando
@@ -613,7 +613,7 @@
      \writestatus\m!fields{pass parent field and clones}%
    \fi}
 
-\def\clonefield%
+\def\clonefield
   {\doquadrupleempty\doclonefield}
 
 \def\docopyfield[#1][#2]% parent children
@@ -628,7 +628,7 @@
        \def\docommando##1{\appendtocommalist{##1}\@@DriverFieldKids}%
        \processcommalist[#2]\docommando
        \changefield{#1}%
-       \let\@@DriverFieldAutoParent=\@@DriverFieldAuto
+       \let\@@DriverFieldAutoParent\@@DriverFieldAuto
        \def\@@DriverFieldParent{#1}%
        \let\@@DriverFieldKids\empty
        \let\@@DriverFieldRoot\empty

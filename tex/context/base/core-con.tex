@@ -139,7 +139,7 @@
 \def\doconvertcharacters#1#2%
   {\ifnum#2>26
      \bgroup
-     \!!counta#2
+     \!!counta#2\relax
      \ifnum\!!counta>\zerocount
        \advance\!!counta \minusone
        \!!countb\!!counta
@@ -352,18 +352,14 @@
      \doifleapyearelse{#3}{\advance\!!countb 1}{}\relax
    \fi
    \!!countc\!!counta
-%  \DoDiv\!!countc by4to\!!countc
    \dosetdivision\!!countc4\!!countc
    \advance\!!countb \!!countc
    \!!countc\!!counta
-%  \DoDiv\!!countc by100to\!!countc
    \dosetdivision\!!countc{100}\!!countc
    \advance\!!countb -\!!countc
    \!!countc\!!counta
-%  \DoDiv\!!countc by400to\!!countc
    \dosetdivision\!!countc{400}\!!countc
    \advance\!!countb \!!countc
-%  \DoMod\!!countb by7to\!!countb
    \dosetmodulo\!!countb7\!!countb
    \advance\!!countb \plusone
    \@EA\egroup\@EA\normalweekday\the\!!countb\relax}
@@ -446,13 +442,10 @@
   {\bgroup
    \!!doneafalse
    \!!counta#1%
-%  \DoMod\!!counta by4to\!!countb
    \dosetmodulo\!!counta4\!!countb
    \ifcase\!!countb
-%    \DoMod\!!counta by100to\!!countb
      \dosetmodulo\!!counta{100}\!!countb
      \ifcase\!!countb \else \!!doneatrue \fi
-%    \DoMod\!!counta by400to\!!countb
      \dosetmodulo\!!counta{400}\!!countb
      \ifcase\!!countb \!!doneatrue \fi
    \fi
@@ -466,7 +459,7 @@
   {\doifleapyearelse{#1}
      {\def\numberofdays{29}}
      {\def\numberofdays{28}}%
-   \edef\numberofdays%
+   \edef\numberofdays
      {\ifcase#2 \or31\or\numberofdays\or31\or30\or
         31\or30\or31\or31\or30\or31\or30\or31\fi}}
 

@@ -606,7 +606,7 @@
      \the\everyXMLelement
    \fi
    \ifcase\kindofXMLelement\or
-     \let\currentXMLidentifier       \rawXMLidentifier
+     \let \currentXMLidentifier      \rawXMLidentifier
      \edef\currentXMLfullidentifier {\rawXMLelement    }%
    \or
      \edef\currentXMLidentifier    {/\rawXMLidentifier }%
@@ -863,27 +863,33 @@
 
 \chardef\XMLancestormode=2 % never change this one globally
 
+% \def\XMLancestor#1%
+%   {\ifnum\numexpr(\XMLdepth-#1)>0
+%      \csname\@@XMLdepth:\the\numexpr(\XMLdepth-#1)\endcsname
+%    \else
+%      \ifcase\XMLancestormode\or\s!unknown\or\currentXMLelement\fi
+%    \fi}
+
 \def\XMLancestor#1%
-  {\ifnum\numexpr(\XMLdepth-#1)>0
-     \csname\@@XMLdepth:\the\numexpr(\XMLdepth-#1)\endcsname
+  {\ifnum\numexpr\XMLdepth-#1\relax>\zerocount
+     \csname\@@XMLdepth:\the\numexpr\XMLdepth-#1\relax\endcsname
    \else
      \ifcase\XMLancestormode\or\s!unknown\or\currentXMLelement\fi
    \fi}
 
-\def\XMLpureancestor#1%
-  {\ifnum\numexpr(\XMLdepth-#1)>0
-     \csname\@@XMLdepth:\the\numexpr(\XMLdepth-#1)\endcsname
-   \fi}
-
-% \def\XMLpureancestor#1% test for relax insertion
-%   {\ifcase\numexpr(\XMLdepth-#1)\or
+% \def\XMLpureancestor#1%
+%   {\ifnum\numexpr(\XMLdepth-#1)>0
 %      \csname\@@XMLdepth:\the\numexpr(\XMLdepth-#1)\endcsname
 %    \fi}
 
-\def\XMLparent{\XMLancestor\plusone}
-\def\XMLself  {\XMLancestor\zerocount}
+\def\XMLpureancestor#1%
+  {\ifnum\numexpr\XMLdepth-#1\relax>\zerocount
+     \csname\@@XMLdepth:\the\numexpr\XMLdepth-#1\relax\endcsname
+   \fi}
 
-\def\XMLpureparent{\XMLpureancestor\plusone}
+\def\XMLparent    {\XMLancestor    \plusone  }
+\def\XMLself      {\XMLancestor    \zerocount}
+\def\XMLpureparent{\XMLpureancestor\plusone  }
 \def\XMLpureself  {\XMLpureancestor\zerocount}
 
 % \def\XMLpureancestor#1%
@@ -915,8 +921,11 @@
 \def\XMLinh
   {\XMLinhpar\currentXMLelement}
 
+% \def\pXMLinh#1%
+%   {\@EA\ppXMLinh\@EA{\the\numexpr(#1-\plusone)}}
+
 \def\pXMLinh#1%
-  {\@EA\ppXMLinh\@EA{\the\numexpr(#1-\plusone)}}
+  {\@EA\ppXMLinh\@EA{\the\numexpr#1-\plusone\relax}}
 
 \def\ppXMLinh#1#2%
   {\@EA\ifx\csname\@@XMLvariable:#1:#2\endcsname\empty
@@ -1217,62 +1226,75 @@
 
 \def\executeXMLcharacter#1#2\relax
   {\if#1x%
-     \@EA\executeXMLhexcharacter
+     \@EA\noexecuteXMLhexcharacter
    \else
-     \@EA\executeXMLdeccharacter
+     \@EA\doexecuteXMLdeccharacter
    \fi#1#2\relax}
 
-% \def\executeXMLhexcharacter x#1\relax % can be overloaded
-%   {\ifnum"#1<256
-%      \@EA\getXMLcharacter
-%    \else\ifXMLrawentities
-%      \@EAEAEA\firstofoneargument
-%    \else
-%      \@EAEAEA\unknownXMLcharacter
-%    \fi\fi{\number"#1}}
-
-\def\executeXMLhexcharacter x#1\relax % can be overloaded
+\def\noexecuteXMLhexcharacter x#1\relax
   {\uppercase{\doexecuteXMLhexcharacter#1\relax}}
 
-\def\doexecuteXMLhexcharacter#1\relax
-  {\ifnum"#1<256
-     \@EA\getXMLcharacter
-   \else\ifXMLrawentities
-     \@EAEAEA\firstofoneargument
-   \else
-     \@EAEAEA\unknownXMLcharacter
-   \fi\fi{\number"#1}}
-
-% ==
-%
-% \def\executeXMLhexcharacter x#1\relax
-%   {\uppercase{\ifnum"#1}<256
-%      \@EA\getXMLcharacter
-%    \else\ifXMLrawentities
-%      \@EAEAEA\firstofoneargument
+% \unexpanded\def\getXMLcharacter#1%
+%   {\ifXMLrawentities
+%      \@EA\firstofoneargument
+%    \else\ifcsname\@@XMLentity:#1\endcsname
+%      \@EAEAEA\getXMLentity
 %    \else
-%      \@EAEAEA\unknownXMLcharacter
-%    \fi\fi{\uppercase{\number"#1}}}
+%      \@EAEAEA\unicodechar % was: \rawcharacter
+%    \fi\fi{#1}}
+%
+% \def\doexecuteXMLhexcharacter#1\relax{\getXMLcharacter{"#1}}
+% \def\doexecuteXMLdeccharacter#1\relax{\getXMLcharacter {#1}}
+%
+% if we want to support x in entity overloading, we prefer:
 
-\def\executeXMLdeccharacter#1\relax % can be overloaded
-  {\ifnum#1<256
-     \@EA\getXMLcharacter
-   \else\ifXMLrawentities
-     \@EAEAEA\firstofoneargument
+\unexpanded\def\getXMLdeccharacter#1%
+  {\ifXMLrawentities
+     \@EA\rawXMLdecentity
+   \else\ifcsname\@@XMLentity:#1\endcsname
+     \@EAEAEA\getXMLdecentity
    \else
-     \@EAEAEA\unknownXMLcharacter
-   \fi\fi{\number#1}}
+     \@EAEAEA\unicodechar
+   \fi\fi{#1}}
 
-\ifx\unicodechar\undefined\let\unicodechar\rawcharacter\fi
-
-\unexpanded\def\getXMLcharacter#1%
-  {\ifcsname\@@XMLentity:#1\endcsname
-     \@EA\getXMLentity
+\unexpanded\def\getXMLhexcharacter#1%
+  {\ifXMLrawentities
+     \@EA\rawXMLhexentity
+   \else\ifcsname\@@XMLentity:x#1\endcsname
+     \@EAEAEA\getXMLhexentity
    \else
-     \@EA\unicodechar % was: \rawcharacter
-   \fi{#1}}
+     \@EAEAEA\unicodehexchar
+   \fi\fi{#1}}
+
+\def\unicodehexchar#1{\unicodechar{"#1}}
+
+\let\getXMLcharacter\getXMLdeccharacter
+
+\def\getXMLdecentity#1{\getXMLentity {#1}}
+\def\getXMLhexentity#1{\getXMLentity{x#1}}
+
+\def\rawXMLdecentity#1{#1}
+\def\rawXMLhexentity#1{x#1}
+
+\def\doexecuteXMLhexcharacter#1\relax{\getXMLhexcharacter{#1}}
+\def\doexecuteXMLdeccharacter#1\relax{\getXMLdeccharacter{#1}}
+
+% \defineXMLentity[8218] {Adam}
+% \defineXMLentity[x007D]{Eve}
+%
+% \startbuffer
+% &#64; &#8216; &#8218; &#8220; &#8221; &#8222;&#8226;
+% &amp;
+% &#x0024; &#x007B; &#x007D; &#x00A0; &#x2026;
+% \stopbuffer
+%
+% \typebuffer \processXMLbuffer
+
+% left overs
 
 \def\unknownXMLcharacter#1{[#1]}
+
+\ifx\unicodechar\undefined\let\unicodechar\rawcharacter\fi  % brrrr
 
 % \useXMLfilter[ent]
 %
@@ -1575,8 +1597,12 @@
 
 \let\dodocopyXMLargument\relax
 
+% \def\dododocopyXMLargument
+%   {\@EA\let\csname\@@XMLvariable:\the\numexpr(\XMLdepth+1):\@@XMLname\@EA\endcsname
+%      \csname\@@XMLvariable:\@@XMLclass:\@@XMLname\endcsname}
+
 \def\dododocopyXMLargument
-  {\@EA\let\csname\@@XMLvariable:\the\numexpr(\XMLdepth+1):\@@XMLname\@EA\endcsname
+  {\@EA\let\csname\@@XMLvariable:\the\numexpr\XMLdepth+\plusone\relax:\@@XMLname\@EA\endcsname
      \csname\@@XMLvariable:\@@XMLclass:\@@XMLname\endcsname}
 
 \def\copyXMLargumentindeed
@@ -1978,17 +2004,19 @@
 
 % \let\@@globalprefix\empty
 
+% \long\def\prepareXMLargument#1#2#3%
+%   {\expanded{\scratchtoks
+%      {\the\scratchtoks
+%       \def\@EA\noexpand\csname\@@XMLvariable:#1:#2\endcsname{#3}%
+%       \noexpand\@EA\let\noexpand\csname\@@XMLvariable:\noexpand\the\numexpr(\XMLdepth+1):#2\endcsname
+%       \@EA\noexpand\csname\@@XMLvariable:#1:#2\endcsname}}}
+
 \long\def\prepareXMLargument#1#2#3%
   {\expanded{\scratchtoks
      {\the\scratchtoks
       \def\@EA\noexpand\csname\@@XMLvariable:#1:#2\endcsname{#3}%
-\noexpand\@EA\let\noexpand\csname\@@XMLvariable:\noexpand\the\numexpr(\XMLdepth+1):#2\endcsname
-\@EA\noexpand\csname\@@XMLvariable:#1:#2\endcsname
-%       \ifx\@@globalprefix\empty\else
-%         \let\@EA\noexpand\csname\@@XMLvariable:\@@globalprefix:#2\endcsname
-%             \@EA\noexpand\csname\@@XMLvariable:#1:#2\endcsname
-%       \fi}}}
-}}}
+      \noexpand\@EA\let\noexpand\csname\@@XMLvariable:\noexpand\the\numexpr\XMLdepth+\plusone\relax:#2\endcsname
+      \@EA\noexpand\csname\@@XMLvariable:#1:#2\endcsname}}}
 
 \long\def\setXMLargumentsN#1#2#3% element [tag] settings
   {\doifassignmentelse{#2}
@@ -2048,8 +2076,7 @@
    \chardef\@@precompile\plusone}
 
 \def\stopXMLcompiling
-  {\chardef\@@precompile\zerocount
-   }%\let\@@globalprefix\empty}
+  {\chardef\@@precompile\zerocount} % no \let\@@globalprefix\empty
 
 %D Interesting what kind of things are needed \unknown
 
@@ -2343,8 +2370,11 @@
      \@EA\pXMLanc
    \fi\XMLdepth{#1}}
 
+% \def\pXMLanc#1%
+%   {\@EA\ppXMLanc\@EA{\the\numexpr(#1-\plusone)}}
+
 \def\pXMLanc#1%
-  {\@EA\ppXMLanc\@EA{\the\numexpr(#1-\plusone)}}
+  {\@EA\ppXMLanc\@EA{\the\numexpr#1-\plusone\relax}}
 
 \def\ppXMLanc#1#2#3%
   {\ifcsname\@@XMLdepth:#1\endcsname % is er altijd dus redundant

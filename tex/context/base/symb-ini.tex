@@ -19,8 +19,6 @@
 
 \unprotect
 
-% TOBIAS
-
 \startmessages  dutch  library: symbols
   title: symbolen
       1: symboolset -- wordt geladen
@@ -82,49 +80,61 @@
 % ss:set:tag -> symbol out of set
 % sstag      -> list of symbols in set
 
-% \def\dodefinesymbol[#1][#2]%
-%   {\ifx\currentsymboldef\empty
-%      \setvalue{\??ss:#1}{#2}%
-%    \else
-%      \doifundefinedelse{\??ss\currentsymboldef}
-%        {\let\currentsymbollist\empty}
-%        {\edef\currentsymbollist{\csname\??ss\currentsymboldef\endcsname}}%
-%      \addtocommalist{#1}\currentsymbollist
-%      \setvalue{\??ss:\currentsymboldef:#1}{#2}%
-%      \letvalue{\??ss\currentsymboldef}\currentsymbollist
-%    \fi}
+\def\definesymbol
+  {\dotripleempty\dodefinesymbol}
 
-\def\dodefinesymbol[#1][#2]%
-  {\ifx\currentsymboldef\empty
-     \setvalue{\??ss:#1}{#2}%
+\def\dodefinesymbol[#1][#2][#3]% class name meaning
+  {\ifthirdargument
+     \setvalue{\??ss:#1:#2}{#3}%
+     \doifsomething{#1}{\addvalue{\??ss*#1}{#2}}%
    \else
      \setvalue{\??ss:\currentsymboldef:#1}{#2}%
-     \addvalue{\??ss\currentsymboldef}{#1}%
    \fi}
 
-\def\definesymbol
-  {\dodoubleargument\dodefinesymbol}
+\def\doifinsymbolsetelse#1#2{\doifdefinedelse{\??ss:#1:#2}}
+\def\doifinsymbolset    #1#2{\doifdefined    {\??ss:#1:#2}}
+\def\doifsymbolsetelse    #1{\doifdefinedelse{\??ss*#1}}
+
+\def\symbolset#1{\executeifdefined{\??ss*#1}\empty} % no [#1], to be used in commalists etc
+
+%D Since symbols are used frequently in interactive
+%D documents, we speed up this one. Well, that was history,
+%D since now we simplified things a bit, because the low
+%D level macros have been sped up now and then.
 
 \unexpanded\def\symbol       % This one always gobbles spaces,
   {\dodoubleempty\dosymbol}  % so never change it again!
 
-%D Since symbols are used frequently in interactive
-%D documents, we speed up this one.
-
 \newif\ifnosymbol \newtoks\everysymbol
 
-\def\dodosymbol#1% \relax's prevent lookahead problems
-  {\nosymbolfalse{\the\everysymbol\csname\??ss:#1\endcsname\relax}\relax}
+\def\dodosymbol#1#2% \relax's prevent lookahead problems
+  {\nosymbolfalse{\the\everysymbol\csname\??ss:#1:#2\endcsname\relax}\relax}
 
-\beginTEX
+\def\directsymbol#1#2% no \relax, there can be an argument, see lists
+  {\executeifdefined{\??ss:#1:#2}\firstofoneargument}
+
+% \def\dosymbol[#1][#2]%
+%   {\nosymboltrue
+%    \ifsecondargument
+%      \doifinsymbolset{#1}{#2}{\dodosymbol{#1}{#2}}%
+%    \fi
+%    \ifnosymbol
+%      \edef\currentsymbol{#1}%
+%      \the\symbolsetups
+%      \ifnosymbol
+%        \redosymbol\currentsymbol
+%      \fi
+%    \fi}
 
 \def\dosymbol[#1][#2]%
   {\nosymboltrue
-   \ifsecondargument \@EA\ifx\csname\??ss:#1:#2\endcsname\relax\else
-     \dodosymbol{#1:#2}%
-   \fi \fi
-   \ifnosymbol
+   \ifsecondargument
+     \edef\currentsymbol{#2}%
+     \doifinsymbolset{#1}{#2}{\dodosymbol{#1}{#2}}%
+   \else
      \edef\currentsymbol{#1}%
+   \fi
+   \ifnosymbol
      \the\symbolsetups
      \ifnosymbol
        \redosymbol\currentsymbol
@@ -133,42 +143,12 @@
 
 \def\fetchsymbol#1%
   {\ifnosymbol
-     \@EA\ifx\csname\??ss:#1:\currentsymbol\endcsname\relax\else
-       \dodosymbol{#1:\currentsymbol}%
-     \fi
+     \doifinsymbolset{#1}\currentsymbol{\dodosymbol{#1}\currentsymbol}%
    \fi}
 
 \def\redosymbol#1%
-  {\@EA\ifx\csname\??ss:#1\endcsname\relax\else\@EA\dodosymbol\fi{#1}}
-
-\endTEX
-
-\beginETEX \ifcsname
-
-\def\dosymbol[#1][#2]%
-  {\nosymboltrue
-   \ifsecondargument \ifcsname\??ss:#1:#2\endcsname
-     \dodosymbol{#1:#2}%
-   \fi \fi
-   \ifnosymbol
-     \edef\currentsymbol{#1}%
-     \the\symbolsetups
-     \ifnosymbol
-       \redosymbol\currentsymbol
-     \fi
-   \fi}
-
-\def\fetchsymbol#1%
-  {\ifnosymbol
-     \ifcsname\??ss:#1:\currentsymbol\endcsname
-       \dodosymbol{#1:\currentsymbol}%
-     \fi
-   \fi}
-
-\def\redosymbol#1%
-  {\ifcsname\??ss:#1\endcsname\@EA\dodosymbol\else\fi{#1}}
-
-\endETEX
+% {\doifinsymbolsetelse\empty{#1}{\dodosymbol\empty{#1}}{#1}} % more efficient:
+  {\doifinsymbolsetelse\empty{#1}{\dodosymbol\empty}\firstofoneargument{#1}}
 
 % % % % %
 % this should go in symb-fig, to be loaded after core-fig
@@ -213,39 +193,23 @@
 %D
 %D A handy private one:
 
-\beginTEX
+% a bit messy
 
 \def\xfetchsymbol#1%
   {\ifnosymbol
-     \@EA\ifx\csname\??ss:#1:\currentsymbol\endcsname\relax\else\nosymbolfalse\fi
+     \doifinsymbolset{#1}\currentsymbol\nosymbolfalse
    \fi}
 
 \def\xredosymbol#1%
-  {\@EA\ifx\csname\??ss:#1\endcsname\relax\else\nosymbolfalse\fi}
-
-\endTEX
-
-\beginETEX
-
-\def\xfetchsymbol#1%
-  {\ifnosymbol
-     \ifcsname\??ss:#1:\currentsymbol\endcsname\nosymbolfalse\fi
-   \fi}
-
-\def\xredosymbol#1%
-  {\ifcsname\??ss:#1\endcsname\nosymbolfalse\fi}
-
-\endETEX
+  {\doifinsymbolset\empty\currentsymbol\nosymbolfalse}
 
 \def\doifsymboldefinedelse#1%
   {\bgroup
    \edef\currentsymbol{#1}%
    \let\fetchsymbol\xfetchsymbol
-  %\let\redosymbol \xredosymbol
    \nosymboltrue
    \the\symbolsetups
    \ifnosymbol
-    %\redosymbol\currentsymbol
      \xredosymbol\currentsymbol
      \ifnosymbol
        \egroup\@EAEAEA\secondoftwoarguments

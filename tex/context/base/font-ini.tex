@@ -1217,8 +1217,8 @@
 %D We could instead have used dirty grouping tricks, but this
 %D one works too.
 
-\def\defaultrelativefontsize{1}
-\def\localrelativefontsize  {1}
+\let\defaultrelativefontsize \plusone
+\let\localrelativefontsize   \plusone
 \def\localabsolutefontsize  {\fontbody}
 
 \let\relativefontsize \defaultrelativefontsize
@@ -1320,21 +1320,21 @@
    \xdef\somefontspec{ at \the\scaledfont}}
 
 \def\getfontparameters
-  {\expandafter\setfontparameter\@@fontdata,]=,}
+  {\expandafter\dogetfontparameter\@@fontdata,]=,}
 
 \def\getglobalfontparameters
-  {\expandafter\setglobalfontparameter\@@fontdata,]=,}
+  {\expandafter\dogetglobalfontparameter\@@fontdata,]=,}
 
-\def\setfontparameter#1=#2,%
+\def\dogetfontparameter#1=#2,%
   {\if]#1\else
      \expandafter\def\csname\??ff\@@fontfile#1\endcsname{#2}%
-     \expandafter\setfontparameter
+     \expandafter\dogetfontparameter
    \fi}
 
-\def\setglobalfontparameter#1=#2,%
+\def\dogetglobalfontparameter#1=#2,%
   {\if]#1\else
      \expandafter\gdef\csname\??ff\@@fontfile#1\endcsname{#2}%
-     \expandafter\setglobalfontparameter
+     \expandafter\dogetglobalfontparameter
    \fi}
 
 \let\@@fontencoding\empty
@@ -1710,7 +1710,6 @@
       \else
         \unexpanded\setvalue{#1}{\dododefinefont{#1}{#2}}%
       \fi}
-%    {\definefont[#1][#2 sa 1][#3]}}
      {\definefont[#1][#2 sa *][#3]}}
 
 %\def\redodefinefont#1#2#3%
@@ -2669,7 +2668,7 @@
 %D sequence of a session. After the loading job is done, the
 %D macro relaxes itself and reset the signal.
 
-\def\preloadfonts%
+\def\preloadfonts
   {\showmessage\m!fonts6{\normalizedbodyfontsize\normalspace\fontstyle}%
    \global\loadingfontsfalse
    \doswitchpoints[\normalizedbodyfontsize]%

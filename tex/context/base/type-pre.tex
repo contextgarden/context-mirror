@@ -14,24 +14,27 @@
 %D This file defines some typescripts that simulate the pre-typescript way
 %D of defining fonts. This file will not be extended.
 
+%D default font cmr,ams,rm,12pt
+
 %D The Computer Modern Roman is derived from the Monotype~8a
 %D Times Roman. In this module, that is loaded by default, we
 %D define all relevant alternatives.
 
 \starttypescript [cmr]
 
-  \usetypescript [serif,sans,mono,math] [computer-modern] [default,name,size]
+  \usetypescript [serif,sans,mono,math] [computer-modern,latin-modern] [default,name,size]
 
   \usemathcollection[default]
 
 \stoptypescript
 
 %D This script remaps the default Computer Modern Font Files
-%D onto the virtual EC ones, so that hyphenations work well.
+%D onto the EC ones, so that hyphenations work well. (The proper
+%D latin modern ec variants have replaed the ae ones.)
 
 \starttypescript [aer]
 
-  \usetypescript [serif,sans,mono,math] [computer-modern] [default,name,size,ec]
+  \usetypescript [serif,sans,mono,math] [computer-modern,latin-modern] [default,name,size,ec]
 
   \usemathcollection[default]
 
@@ -42,7 +45,7 @@
 
 \starttypescript [csr]
 
-  \usetypescript [serif,sans,mono,math] [computer-modern] [default,name,size,il2]
+  \usetypescript [serif,sans,mono,math] [computer-modern,latin-modern] [default,name,size,il2]
 
   \usemathcollection[default]
 
@@ -53,7 +56,7 @@
 
 \starttypescript [plr]
 
-  \usetypescript [serif,sans,mono,math] [computer-modern] [default,name,size,pl0]
+  \usetypescript [serif,sans,mono,math] [computer-modern,latin-modern] [default,name,size,pl0]
 
   \usemathcollection[default]
 
@@ -64,7 +67,7 @@
 
 \starttypescript [cyr]
 
-  \usetypescript [serif,sans,mono,math] [computer-modern] [default,name,size,cyr]
+  \usetypescript [serif,sans,mono,math] [computer-modern,latin-modern] [default,name,size,cyr]
 
   \usemathcollection[default]
 
@@ -72,7 +75,7 @@
 
 \starttypescript [lh-ec]
 
-  \usetypescript [serif,sans,mono,math] [computer-modern] [default,name,size,ec]
+  \usetypescript [serif,sans,mono,math] [computer-modern,latin-modern] [default,name,size,ec]
 
   \usemathcollection[default]
 
@@ -80,7 +83,7 @@
 
 \starttypescript [lh-t2a]
 
-  \usetypescript [serif,sans,mono,math] [computer-modern] [default,name,size,t2a]
+  \usetypescript [serif,sans,mono,math] [computer-modern,latin-modern] [default,name,size,t2a]
 
   \usemathcollection[default]
 
@@ -88,7 +91,7 @@
 
 \starttypescript [lh-t2b]
 
-  \usetypescript [serif,sans,mono,math] [computer-modern] [default,name,size,t2b]
+  \usetypescript [serif,sans,mono,math] [computer-modern,latin-modern] [default,name,size,t2b]
 
   \usemathcollection[default]
 
@@ -96,7 +99,7 @@
 
 \starttypescript [lh-t2c]
 
-  \usetypescript [serif,sans,mono,math] [computer-modern] [default,name,size,t2c]
+  \usetypescript [serif,sans,mono,math] [computer-modern,latin-modern] [default,name,size,t2c]
 
   \usemathcollection [default]
 
@@ -104,7 +107,7 @@
 
 \starttypescript [lh-x2]
 
-  \usetypescript [serif,sans,mono,math] [computer-modern] [default,name,size,x2]
+  \usetypescript [serif,sans,mono,math] [computer-modern,latin-modern] [default,name,size,x2]
 
   \usemathcollection [default]
 
@@ -112,7 +115,7 @@
 
 \starttypescript [lh-lcy]
 
-  \usetypescript [serif,sans,mono,math] [computer-modern] [default,name,size,lcy]
+  \usetypescript [serif,sans,mono,math] [computer-modern,latin-modern] [default,name,size,lcy]
 
   \usemathcollection [default]
 
@@ -136,6 +139,8 @@
 \starttypescript [con]
 
   \usetypescript [serif] [concrete] [all]
+
+  \usemathcollection[default]
 
 \stoptypescript
 

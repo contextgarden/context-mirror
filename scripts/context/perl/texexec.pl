@@ -169,6 +169,7 @@ my $TypesetModule    = 0;
 my $UseColor         = 0;
 my $Verbose          = 0;
 my $PdfCopy          = 0;
+my $PdfTrim          = 0;
 my $LogFile          = "";
 my $MpyForce         = 0;
 my $InpPath          = "";
@@ -253,6 +254,7 @@ my $MakeMpy = '';
     "pdfselect"      => \$PdfSelect,
     "pdfcombine"     => \$PdfCombine,
     "pdfcopy"        => \$PdfCopy,
+    "pdftrim"        => \$PdfTrim,
     "scale=s"        => \$PageScale,
     "selection=s"    => \$Selection,
     "combination=s"  => \$Combination,
@@ -362,7 +364,7 @@ if ( $DoMPTeX || $DoMPXTeX ) {
     $ProducePdfXTX = 0;
 }
 
-if ( $PdfArrange || $PdfSelect || $PdfCopy || $PdfCombine ) {
+if ( $PdfArrange || $PdfSelect || $PdfCopy || $PdfTrim || $PdfCombine ) {
     $ProducePdfT = 1;
     $RunOnce     = 1;
 }
@@ -404,7 +406,7 @@ if ( ( $LogFile ne '' ) && ( $LogFile =~ /\w+\.log$/io ) ) {
     *STDERR = *LOGFILE;
 }
 
-my $Program = " TeXExec 5.2.3 - ConTeXt / PRAGMA ADE 1997-2004";
+my $Program = " TeXExec 5.2.4 - ConTeXt / PRAGMA ADE 1997-2005";
 
 print "\n$Program\n\n";
 
@@ -1151,7 +1153,7 @@ sub MakeOptionFile {
     print OPT "\\setupsystem[\\c!n=$KindOfRun]\n";
     $_ = $PaperFormat;
     #unless (($PdfArrange)||($PdfSelect)||($PdfCombine)||($PdfCopy))
-    unless ( ($PdfSelect) || ($PdfCombine) || ($PdfCopy) ) {
+    unless ( ($PdfSelect) || ($PdfCombine) || ($PdfCopy) || ($PdfTrim) ) {
         if    (/.4.3/goi)     { print OPT "\\setuppapersize[A4][A3]\n" }
         elsif (/.5.4/goi)     { print OPT "\\setuppapersize[A5][A4]\n" }
         elsif ( !/standard/ ) {
@@ -1162,7 +1164,7 @@ sub MakeOptionFile {
             print OPT "\\setuppapersize[$from][$to]\n";
         }
     }
-    if (   ( $PdfSelect || $PdfCombine || $PdfCopy || $PdfArrange )
+    if (   ( $PdfSelect || $PdfCombine || $PdfCopy || $PdfTrim || $PdfArrange )
         && ( $Background ne '' ) )
     {
         print "    background graphic : $Background\n";
@@ -2137,6 +2139,7 @@ sub RunSelect {
 }
 
 sub RunCopy {
+    my $DoTrim = shift ;
     my @Files = @_ ;
     if ( $PageScale == 1000 ) {
         print "                offset : $PaperOffset\n";
@@ -2150,7 +2153,12 @@ sub RunCopy {
     for my $FileName (@Files) {
         print "               pdffile : $FileName\n";
         print COP "\\getfiguredimensions\n";
-        print COP "  [$FileName][page=1]\n";
+        print COP "  [$FileName]\n";
+        print COP "  [page=1";
+        if ($DoTrim) {
+            print COP ",\n   size=trimbox";
+        }
+        print COP "]\n";
         print COP "\\definepapersize\n";
         print COP "  [copy]\n";
         print COP "  [width=\\naturalfigurewidth,\n";
@@ -2158,13 +2166,7 @@ sub RunCopy {
         print COP "\\setuppapersize\n";
         print COP "  [copy][copy]\n";
         print COP "\\setuplayout\n";
-        print COP "  [location=middle,\n";
-        print COP "   topspace=0pt,\n";
-        print COP "   backspace=0pt,\n";
-        print COP "   header=0pt,\n";
-        print COP "   footer=0pt,\n";
-        print COP "   width=middle,\n";
-        print COP "   height=middle]\n";
+        print COP "  [page]\n";
         print COP "\\setupexternalfigures\n";
         print COP "  [directory=]\n";
         print COP "\\copypages\n";
@@ -2173,6 +2175,10 @@ sub RunCopy {
         if ($Markings) {
             print COP "   marking=on,\n";
             print "           cutmarkings : on\n";
+        }
+        if ($DoTrim) {
+            print COP "   size=trimbox,\n";
+            print "           cropping to : trimbox\n";
         }
         print COP "   offset=$PaperOffset]\n";
     }
@@ -2386,7 +2392,7 @@ sub RunFiles {
             push @arrangedfiles, $JobName;
         }
         if (@arrangedfiles) { RunArrange(@arrangedfiles) }
-    } elsif ( ($PdfSelect) || ($PdfCopy) || ($PdfCombine) ) {
+    } elsif ( ($PdfSelect) || ($PdfCopy) || ($PdfTrim) || ($PdfCombine) ) {
         my $JobName = $ARGV[0];
         if ( $JobName ne '' ) {
             unless ( $JobName =~ /.*\.pdf$/oi ) {
@@ -2397,7 +2403,10 @@ sub RunFiles {
                 RunSelect($JobName) ;
             } elsif ($PdfCopy) {
                 # RunCopy($JobName) ;
-                RunCopy(@ARGV) ;
+                RunCopy(0,@ARGV) ;
+            } elsif ($PdfTrim) {
+                # RunCopy($JobName) ;
+                RunCopy(1,@ARGV) ;
             } else {
                 # RunCombine ($JobName) ;
                 RunCombine(@ARGV);

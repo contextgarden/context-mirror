@@ -120,7 +120,7 @@
   \newcount\pdfdecimaldigits
 \fi
 
-\pdfdecimaldigits=5
+\pdfdecimaldigits=10
 
 \ifx\pdfoptionpdfinclusionerrorlevel\undefined
     \newcount\pdfoptionpdfinclusionerrorlevel
@@ -189,7 +189,9 @@
   \let\defaultspecial\normalspecial
 \to \everyresetspecials
 
-\let\PDFcode\pdfliteral
+\let\PDFcode        \pdfliteral
+\def\PDFcontentcode{\pdfliteral}
+\def\PDFdirectcode {\pdfliteral direct}
 
 %D \macros
 %D   {everyPDFximage}
@@ -341,7 +343,7 @@
         \ifdim#7>\zeropoint \!!width  #7\fi
         \ifdim#8>\zeropoint \!!height #8\fi
         \pdfimagepagenumber
-%         \@@DriverImageBox
+\@@DriverImageBox
         {#1}%
       \xdef\PDFimagereference{\the\pdflastximage}%
       \xdef\nofinsertpages{\the\pdflastximagepages}%
@@ -733,11 +735,11 @@
    \PointsToBigPoints{#3}\height
    \grabMPclippath{#1}{1}\width\height
      {0 0 m \width\space 0 l \width \height l 0 \height l}%
-   \pdfliteral
+   \pdfliteral % PDFcode ?
      {q 0 w \MPclippath\space W n}}
 
 \definespecial\dostopclipping
-  {\pdfliteral{Q n}}
+  {\pdfliteral{Q n}} % PDFcode
 
 %D \macros
 %D   {dosetupinteraction}

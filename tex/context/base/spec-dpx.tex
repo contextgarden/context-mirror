@@ -52,7 +52,9 @@
 %D
 %D Literal \PDF\ inclusion is implemented as:
 
-\def\PDFcode#1{\special{pdf: literal #1}} % no direct in pdftex ! ! !
+\def\PDFcode       #1{\special{pdf: literal #1}}
+\def\PDFcontentcode#1{\special{pdf: literal #1}}
+\def\PDFdirectcode #1{\special{pdf: literal direct #1}}
 
 %D \type{\dosetuppaper} in \type{spec-dpm} did not work properly
 %D because DVIPDFM did not permit changing the page size.

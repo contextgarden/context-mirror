@@ -2,30 +2,32 @@
 %D   [       file=cont-cz,
 %D        version=1998.12.02,
 %D          title=\CONTEXT,
-%D       subtitle=\CONTEXT\ Czech Format Generation, 
+%D       subtitle=\CONTEXT\ Czech Format Generation,
 %D         author=Hans Hagen,
 %D           date=\currentdate,
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
-%C details. 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
 
-\catcode`\{=1 \catcode`\}=2 \def\defaultinterface{czech} 
+\catcode`\{=1 \catcode`\}=2 \def\defaultinterface{czech}
 
-\input context.tex 
+\input context.tex
 
-\unprotect 
+\unprotect
 
 \setupcurrentlanguage[\s!cz]
 
-\loaduserspecifications 
+\loaduserspecifications
 
-\installlanguage [\s!en] [\c!state=\v!start] 
-\installlanguage [\s!de] [\c!state=\v!start] 
+\installlanguage [\s!en] [\c!state=\v!start]
+\installlanguage [\s!de] [\c!state=\v!start]
 \installlanguage [\s!sk] [\c!state=\v!start]
 \installlanguage [\s!cz] [\c!state=\v!start]
 
 \setupbodyfont [csr,ams,rm,12pt]
+
+% \usetypescript[modern][\defaultencoding] \setupbodyfont[modern,12pt]
 
 \protect \errorstopmode \dump \endinput

@@ -1282,6 +1282,8 @@
 \def\FDFflagPopUp            {131072} % 18
 \def\FDFflagEdit             {262144} % 19
 
+\def\FDFflagRadiosInUnison {33554412} % 26
+
 %D A few more (pdf 1.4) flags, what the spell check one: for
 %D obscure reasons for Adobe downward compatibility means
 %D enabling features that harm old applications like testing.
@@ -1368,25 +1370,32 @@
 \let\FDFdefaultindex\!!zerocount
 \let\FDFdefaultvalue\empty
 
+% Why do we need to tweak this mechanism each time acrobat updates ...
+% it would make sense to have version specific sections in pdf files
+% since my guess is that it never will be done right since each year
+% new programmers have new ideas about what is supposed to happen with
+% kids. So .. best is not to trust this feature esp not for radio
+% widgets. (new flags, different interpretation of AS etc etc)
+
 \def\setFDFvalues[#1][#2]% #1 = list (item=>value) #2 = default
   {\let\FDFvalues      \empty
    %when radio opt works ok
    %\let\FDFfirstvalues \empty
    %\let\FDFsecondvalues\empty
-   %\let\FDFkidlist     \empty
+   \let\FDFkidlist     \empty
    %\let\FDFdefaultindex\!!zerocount
    %\let\FDFdefaultvalue\empty
    %\scratchcounter\zerocount
    \def\dodocommando##1=>##2=>##3\end
-     {%\addtocommalist{##1}\FDFkidlist
+     {\addtocommalist{##1}\FDFkidlist
       %\edef\FDFfirstvalues{\FDFfirstvalues(##1)}%
       %\doif{##1}{#2}{\edef\FDFdefaultindex{\the\scratchcounter}}%
       %\advance\scratchcounter\plusone
       \doifelsenothing{##2}
-        {%\doif{##1}{#2}{\edef\FDFdefaultvalue{##1}}%
+        {\doif{##1}{#2}{\edef\FDFdefaultvalue{##1}}%
          %\edef\FDFsecondvalues{\FDFsecondvalues(##1)}%
          \edef\FDFvalues{\FDFvalues [(##1)(##1)] }}
-        {%\doif{##1}{#2}{\edef\FDFdefaultvalue{##2}}%
+        {\doif{##1}{#2}{\edef\FDFdefaultvalue{##2}}%
          %\edef\FDFsecondvalues{\FDFsecondvalues(##2)}%
          \edef\FDFvalues{\FDFvalues [(##2)(##1)] }}}% ! ##1 is shown
    \def\docommando##1%
@@ -1781,13 +1790,16 @@
    \def\docommando##1%
      {\doPDFgetobjectreference{FDF}{#1##1}\PDFobjectreference
       \edef\FDFkids{\FDFkids\PDFobjectreference\space}}%
-   \@EA\processcommalist\@EA[#2]\docommando}
+   \@EA\processcommalist\@EA[#2]\docommando
+   \ifx\FDFkids\empty\else\edef\FDFkids{/Kids [\FDFkids]}\fi
+%    \edef\FDFkids{/Kids [\FDFkids]}%
+   }
 
 %D \macros
 %D   {doFDFpresetlinefield,doFDFpresettextfield,
 %D    doFDFpresetchoicefield,doFDFpresetpopupfield,doFDFpresetcombofield,
 %D    doFDFpresetpushfield,doFDFpresetcheckfield,
-%D    doFDFpresetradiofield,doFDFpresetradiorecord}
+%D    doFDFpresetfield,doFDFpresetradiorecord}
 %D
 %D I would say: read the \PDF\ reference manual first and see
 %D what happens here next. Lucky us that they have so much in
@@ -1820,7 +1832,7 @@
      \doPDFdictionaryobject class FDF name #1 data
        {/T (#1) /FT /Tx
         /MaxLen \ifcase0#5 1000 \else#5 \fi
-        /Kids [\FDFkids]
+        \FDFkids\space
        %/DV (#4) /V (#4) % value added
         /DV (\FDFtext) /V (\FDFtext) % value added
         /Ff \FDFflag\space
@@ -1882,7 +1894,7 @@
      \setFDFkids[kids:][\currentFDFkids]%
      \doPDFdictionaryobject class FDF name #1 data
        {/T (#1) /FT /Ch
-        /Kids [\FDFkids]
+        \FDFkids\space
         /DV (#4) /V (#4)
         /Ff \FDFflag\space
         /F \FDFplus\space
@@ -1946,13 +1958,14 @@
         /F \FDFplus\space
         \FDFlayer\space
         \FDFappearance\space
+% /IF << /SW /N >> % strange, only works for stupid buttons
         \FDFactions}%
      \registerFDFobject{#1}%
    \or % no appearance and layer ?
      \setFDFkids[kids:][\currentFDFkids]%
      \doPDFdictionaryobject class FDF name #1 data
        {/T (#1) /FT /Btn
-        /Kids [\FDFkids]
+        \FDFkids\space
         \ifFDFvalues
           /DV /\FDFdefault\space
           /V  /\FDFdefault\space
@@ -2032,7 +2045,7 @@
      \doPDFgetobjectreference{FDF}{#6}\PDFobjectreference
      \doPDFdictionaryobject class FDF name #1 data
        {/Parent \PDFobjectreference\space
-        /Kids [\FDFkids]
+        \FDFkids\space
         /F \FDFplus\space
         \FDFactions}%
      \registerFDFobject{#1}%
@@ -2075,12 +2088,32 @@
 %   \def\docommando##1{\edef\FDFstrings{\FDFstrings(##1)}}%
 %   \processcommacommand[#1]\docommando}
 
+% Beware, RadiosInUnison is really needed in the pre 1.5/6 time this
+% was the default but out of a sudden it's no longer the case.  Also
+% the NoToggleToOff interferes with kids of kids and both it will
+% break older documents, i.e. so much for pdf as standard. With
+% features like widgets we can probably best wait till adobe tools
+% themselves support it because that's probably the moment that
+% functionality gets frozen/becomes definitive. Actually, acrobat
+% flattens the kids tree, so that's yet another situation. The
+% interesting thing is that it worked ok in acrobat 2/3 but got bugged
+% in later versions. [The rationale is in html compatibility, which
+% seems to be more important than compatibility of documents, which in
+% turn renders acrobat useless for forms.] Anyway, synchronization is
+% broken or not depending on the combination pdfversion/acrobatversion.
+
 \def\doFDFpresetradiorecord#1#2#3#4#5%
   {\bgroup
-   \setFDFswitches[Radio,NoToggleToOff,#3]%
-   \setFDFkids[#4][]%
-%\setFDFvalues[#4][#2]%
-%\expanded{\setFDFkids[][\FDFkidlist]}%
+   % < pdf 1.5 (1.5 was broken)
+   % \setFDFswitches[Radio,NoToggleToOff,RadiosInUnison,#3]%
+   % > pdf 1.5
+   \setFDFswitches[Radio,RadiosInUnison,#3]%
+   % older, else fatal error
+   % \setFDFkids[#4][]%
+   % newer
+   \setFDFvalues[#4][#2]% inits kidlist
+   \expanded{\setFDFkids[][\FDFkidlist]}%
+   %
    \setFDFactions[#5]%
    \doPDFdictionaryobject class FDF name #1 data
      {%/Subtype /Widget
@@ -2095,14 +2128,14 @@
       /H /N
       % /opt is buggy in 5.05, only works once, sigh
       %\ifx\FDFfirstvalues\FDFsecondvalues
-      /V /#2
+        /V /#2
       %\else
       %  /V /\FDFdefaultindex\space
       %  /Opt [\FDFsecondvalues]
       %\fi
       /Ff \FDFflag\space
       /F \FDFplus\space
-      /Kids [\FDFkids]
+      \FDFkids\space
       \FDFactions}%
    \egroup}
 
@@ -2670,7 +2703,7 @@
 
 \def\doPDFovalbox#1#2#3#4#5#6#7% todo: \scratchdimen/\scatchbox
   {\bgroup
-   \dimen0=#4\divide\dimen0 2
+   \dimen0=#4\divide\dimen0 \plustwo
    \doPDFovalcalc{0pt}{+\dimen0}\xmin
    \doPDFovalcalc{#1}{-\dimen0}\xmax
    \doPDFovalcalc{#2}{-\dimen0}\ymax
@@ -2684,9 +2717,10 @@
    \doPDFovalcalc{#5}{\zeropoint}\radius
    \edef\dostroke{#6}%
    \edef\dofill{#7}%
-   \setbox0\hbox
-     {\ifnum\dostroke\dofill>0
-        \ifPDFstrokecolor\else\ifnum\dostroke=1
+   % no \ifcase, else \relax in pdfcode
+   \setbox\scratchbox\hbox
+     {\ifnum\dostroke\dofill>\zerocount
+        \ifPDFstrokecolor\else\ifnum\dostroke=\plusone
           \writestatus\m!colors{pdf stroke color will fail}\wait
         \fi\fi
         \PDFcode
@@ -2701,11 +2735,11 @@
            \xmin \space \ymax\space  \xmin\space  \yymax\space y
            \xmin \space \yymin\space l
            \xmin \space \ymin\space  \xxmin\space \ymin\space  y
-           \ifnum\dostroke=1 S \fi
-           \ifnum\dofill=1 f \fi
+           \ifnum\dostroke=\plusone S \fi
+           \ifnum\dofill  =\plusone f \fi
            Q}%
       \fi}%
-   \wd0=#1\ht0=#2\dp0=#3\box0
+   \wd\scratchbox#1\ht\scratchbox#2\dp\scratchbox#3\box\scratchbox
    \egroup}
 
 %D \macros
@@ -2723,22 +2757,22 @@
 % \newif\ifPDFstrokecolor \PDFstrokecolortrue
 
 \def\doPDFstartgraymode#1%
-  {\PDFcode{#1 g\ifPDFstrokecolor\space#1 G\fi}}
+  {\PDFdirectcode{#1 g\ifPDFstrokecolor\space#1 G\fi}}
 
 \def\doPDFstopgraymode
-  {\PDFcode{0 g\ifPDFstrokecolor\space0 G\fi}}
+  {\PDFdirectcode{0 g\ifPDFstrokecolor\space0 G\fi}}
 
 \def\doPDFstartrgbcolormode#1#2#3%
-  {\PDFcode{#1 #2 #3 rg\ifPDFstrokecolor\space#1 #2 #3 RG\fi}}
+  {\PDFdirectcode{#1 #2 #3 rg\ifPDFstrokecolor\space#1 #2 #3 RG\fi}}
 
 \def\doPDFstartcmykcolormode#1#2#3#4%
-  {\PDFcode{#1 #2 #3 #4 k\ifPDFstrokecolor\space#1 #2 #3 #4 K\fi}}
+  {\PDFdirectcode{#1 #2 #3 #4 k\ifPDFstrokecolor\space#1 #2 #3 #4 K\fi}}
 
 \def\doPDFstartgraycolormode#1%
-  {\PDFcode{#1 g\ifPDFstrokecolor\space#1 G\fi}}
+  {\PDFdirectcode{#1 g\ifPDFstrokecolor\space#1 G\fi}}
 
 % \def\doPDFstartspotcolormode#1#2%
-%   {\PDFcode{/#1 CS #2 SC /#1 cs #2 sc}}
+%   {\PDFdirectcode{/#1 CS #2 SC /#1 cs #2 sc}}
 
 \def\doPDFstartspotcolormode#1#2% redefining spotcolors is not possible anyway
   {\ifundefined{pdf:scs:#2}%
@@ -2754,16 +2788,16 @@
      \fi
      \egroup
    \fi
-   \PDFcode{/#1 cs /#1 CS \PDFgetspotcolorspec{#2}}}
+   \PDFdirectcode{/#1 cs /#1 CS \PDFgetspotcolorspec{#2}}}
 
 \def\PDFgetspotcolorspec#1%
   {\executeifdefined{pdf:scs:#1}\empty} % better no default than one with too less args
 
 \def\doPDFstartnonecolormode
-  {\PDFcode{/None CS 1 SC /None cs 1 sc}}
+  {\PDFdirectcode{/None CS 1 SC /None cs 1 sc}}
 
 \def\doPDFstopcolormode
-  {\PDFcode{0 g\ifPDFstrokecolor\space0 G\fi}}
+  {\PDFdirectcode{0 g\ifPDFstrokecolor\space0 G\fi}}
 
 %D We need to register the spot colors and their fallbacks.
 
@@ -2872,12 +2906,11 @@
 % can use the next alternative without running into inaccuracies.
 
 \def\doPDFstartrotation#1% grouped
-  {\PDFcode{q}%
-   \calculatecos{#1}% already calculated in core macro
+  {\calculatecos{#1}% already calculated in core macro
    \calculatesin{#1}% already calculated in core macro
    \edef\cos{\calculatedcos{#1}}%
    \edef\sin{\calculatedsin{#1}}%
-   \PDFcode{\cos\space\sin\space\negated\sin\space\cos\space0 0 cm}}
+   \PDFcode{q \cos\space\sin\space\negated\sin\space\cos\space0 0 cm}}
 
 \def\doPDFstoprotation
   {\PDFcode{Q}}
@@ -2893,7 +2926,7 @@
   {\PDFcode{q \ifdim#1\points=\zeropoint\@@PDFzeroscale\else#1\fi\space 0 0
               \ifdim#2\points=\zeropoint\@@PDFzeroscale\else#2\fi\space 0 0 cm}}
 
-\def\doPDFstopscaling%
+\def\doPDFstopscaling
   {\PDFcode{Q}}
 
 %D \macros
@@ -2901,10 +2934,10 @@
 %D
 %D Mirroring is implemented in a similar way:
 
-\def\doPDFstartmirroring%
+\def\doPDFstartmirroring
   {\PDFcode{-1 0 0 1 0 0 cm}}
 
-\def\doPDFstopmirroring%
+\def\doPDFstopmirroring
   {\PDFcode{-1 0 0 1 0 0 cm}}
 
 %D \macros
@@ -2916,13 +2949,13 @@
 \def\doPDFstartnegative
   {\ifx\initializePDFnegative\undefined\else
      \initializePDFnegative
-     \PDFcode{/GSnegative gs}%
+     \PDFdirectcode{/GSnegative gs}%
    \fi}
 
 \def\doPDFstopnegative
   {\ifx\initializePDFnegative\undefined\else
      \initializePDFnegative
-     \PDFcode{/GSpositive gs}%
+     \PDFdirectcode{/GSpositive gs}%
    \fi}
 
 %D \macros
@@ -2933,13 +2966,13 @@
 \def\doPDFstartoverprint
   {\ifx\initializePDFoverprint\undefined\else
      \initializePDFoverprint
-     \PDFcode{/GSoverprint gs}%
+     \PDFdirectcode{/GSoverprint gs}%
    \fi}
 
 \def\doPDFstopoverprint
   {\ifx\initializePDFoverprint\undefined\else
      \initializePDFoverprint
-     \PDFcode{/GSknockout gs}%
+     \PDFdirectcode{/GSknockout gs}%
    \fi}
 
 %D Transparency support (experimental):
@@ -2957,10 +2990,10 @@
 
 \def\dodoPDFstarttransparency#1#2%
   {\presetPDFtransparency{#1}{#2}%
-   \PDFcode{\PDFtransparencyidentifier\space gs }}
+   \PDFdirectcode{\PDFtransparencyidentifier\space gs }}
 
 \def\dodoPDFstoptransparency
-  {\PDFcode{/Tr0 gs }}
+  {\PDFdirectcode{/Tr0 gs }}
 
 \def\doPDFstarttransparency
   {\ifPDFtransparencysupported
@@ -3014,8 +3047,8 @@
 \let\PDFhidelayers\empty
 \let\PDFvidelayers\empty
 
-\def\doPDFstartlayer#1{\PDFcode{/OC /#1 BDC}}
-\def\doPDFstoplayer   {\PDFcode        {EMC}}
+\def\doPDFstartlayer#1{\PDFdirectcode{/OC /#1 BDC}}
+\def\doPDFstoplayer   {\PDFdirectcode        {EMC}}
 
 % resource -> prop -> mc's -> OCG|OCMD (nested)
 
@@ -3111,19 +3144,19 @@
 \def\doPDFstartfonteffect#1#2#3%
   {\ifdim#2>\zeropoint
      \PointsToBigPoints{#2}\ascii
-     \PDFcode{\ascii\space w}%
+     \PDFdirectcode{\ascii\space w}%
    \fi
    \ifdim#3\points=\onepoint\else
      \scratchdimen#3\points
-     \PDFcode{\withoutpt{\the\scratchdimen}\space Tc}%
+     \PDFdirectcode{\withoutpt{\the\scratchdimen}\space Tc}%
    \fi
 %    \ifdim#3\points=\onepoint\else
 %      \PDFcode{#3\space Tc}%
 %    \fi
-   \PDFcode{\purenumber#1 Tr}}
+   \PDFdirectcode{\purenumber#1 Tr}}
 
 \def\doPDFstopfonteffect
-  {\PDFcode{1 w 0 Tc 0 Tr}}
+  {\PDFdirectcode{1 w 0 Tc 0 Tr}}
 
 %D And that was all.
 

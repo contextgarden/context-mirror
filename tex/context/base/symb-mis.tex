@@ -39,27 +39,27 @@
 %D Special hyperlinks, namely those to pages or navigational
 %D properties, are associated with symbols.
 
-\definesymbol [\v!firstpage]      [\gotobegincharacter]
-\definesymbol [\v!previouspage]      [\gobackwardcharacter]
-\definesymbol [\v!nextpage]    [\goforwardcharacter]
-\definesymbol [\v!lastpage]     [\gotoendcharacter]
-\definesymbol [\v!firstsubpage]   [\gotobegincharacter]
-\definesymbol [\v!previoussubpage]   [\gobackwardcharacter]
-\definesymbol [\v!nextsubpage] [\goforwardcharacter]
-\definesymbol [\v!lastsubpage]  [\gotoendcharacter]
-\definesymbol [\v!PreviousJump]      [\gobackjumpcharacter]
-\definesymbol [\v!NextJump]          [\goforjumpcharacter]
-\definesymbol [\v!CloseDocument]     [\closecharacter]
+\definesymbol [\v!firstpage]       [\gotobegincharacter]
+\definesymbol [\v!previouspage]    [\gobackwardcharacter]
+\definesymbol [\v!nextpage]        [\goforwardcharacter]
+\definesymbol [\v!lastpage]        [\gotoendcharacter]
+\definesymbol [\v!firstsubpage]    [\gotobegincharacter]
+\definesymbol [\v!previoussubpage] [\gobackwardcharacter]
+\definesymbol [\v!nextsubpage]     [\goforwardcharacter]
+\definesymbol [\v!lastsubpage]     [\gotoendcharacter]
+\definesymbol [\v!PreviousJump]    [\gobackjumpcharacter]
+\definesymbol [\v!NextJump]        [\goforjumpcharacter]
+\definesymbol [\v!CloseDocument]   [\closecharacter]
 
-\definesymbol [\v!first]   [{\symbol[\v!firstpage]}]
-\definesymbol [\v!previous]   [{\symbol[\v!previouspage]}]
-\definesymbol [\v!next] [{\symbol[\v!nextpage]}]
-\definesymbol [\v!last]  [{\symbol[\v!lastpage]}]
-\definesymbol [\v!somewhere]   [\gotosomewherecharacter]
-\definesymbol [\v!nowhere]  [\gonowherecharacter]
+\definesymbol [\v!first]           [{\symbol[\v!firstpage]}]
+\definesymbol [\v!previous]        [{\symbol[\v!previouspage]}]
+\definesymbol [\v!next]            [{\symbol[\v!nextpage]}]
+\definesymbol [\v!last]            [{\symbol[\v!lastpage]}]
+\definesymbol [\v!somewhere]       [\gotosomewherecharacter]
+\definesymbol [\v!nowhere]         [\gonowherecharacter]
 
-\definesymbol [\v!backward] [{\symbol[\v!previouspage]}]
-\definesymbol [\v!forward]   [{\symbol[\v!nextpage]}]
+\definesymbol [\v!backward]        [{\symbol[\v!previouspage]}]
+\definesymbol [\v!forward]         [{\symbol[\v!nextpage]}]
 
 %D The next two symbols (\symbol[P] and \symbol[S]) are
 %D variations in their math counterparts. The following ones
@@ -67,8 +67,8 @@
 
 % todo : hook this into \textsection
 
-\definesymbol[S][\getglyph{MathSymbol}{\char"78}]
-\definesymbol[P][\getglyph{MathSymbol}{\char"7B}]
+\definesymbol [S] [\getglyph{MathSymbol}{\char"78}]
+\definesymbol [P] [\getglyph{MathSymbol}{\char"7B}]
 
 %D These symbols are taken from the Computer Moders Roman
 %D symbol set or, when present, from the additional symbols of
@@ -78,50 +78,50 @@
 \def\dogotocharacter#1#2#3%
   {\ifx#1\undefined#2\else#3\fi}
 
-\def\gotobegincharacter%
+\def\gotobegincharacter
   {\hbox
      {\dogotocharacter\blacktriangleleft
-        {\setbox0=\hbox{\mathematics{\triangleleft}}%
+        {\setbox0\hbox{\mathematics{\triangleleft}}%
          \vrule\!!width.085ex\!!height1.075\ht0\!!depth\dp0
          \kern-.11ex\box0}
-        {\setbox0=\hbox{\mathematics{\blacktriangleleft}}%
-         \setbox2=\hbox{\vrule\!!height\ht0\!!depth\dp0\!!width.25ex}%
+        {\setbox0\hbox{\mathematics{\blacktriangleleft}}%
+         \setbox2\hbox{\vrule\!!height\ht0\!!depth\dp0\!!width.25ex}%
          \hbox{\lower.03ex\box2\kern-.35ex\box0}}}}
 
-\def\gotoendcharacter%
+\def\gotoendcharacter
   {\hbox
      {\dogotocharacter\blacktriangleright
-        {\setbox0=\hbox{\mathematics{\triangleright}}%
+        {\setbox0\hbox{\mathematics{\triangleright}}%
          \copy0\kern-.11ex
          \vrule\!!width.085ex\!!height1.075\ht0\!!depth\dp0}
-        {\setbox0=\hbox{\mathematics{\blacktriangleright}}%
-         \setbox2=\hbox{\vrule\!!height\ht0\!!depth\dp0\!!width.25ex}%
+        {\setbox0\hbox{\mathematics{\blacktriangleright}}%
+         \setbox2\hbox{\vrule\!!height\ht0\!!depth\dp0\!!width.25ex}%
          \hbox{\box0\kern-.35ex\lower.03ex\box2}}}}
 
-\def\gobackwardcharacter%
+\def\gobackwardcharacter
   {\mathematics{\dogotocharacter\blacktriangleright\triangleleft\blacktriangleleft}}
 
-\def\goforwardcharacter%
+\def\goforwardcharacter
   {\mathematics{\dogotocharacter\blacktriangleright\triangleright\blacktriangleright}}
 
-\def\gonowherecharacter%
+\def\gonowherecharacter
   {\mathematics{\bullet}}
 
 %\def\gotosomewherecharacter% {} permits ^\...
 %  {{\hbox{\hsmash{\gobackwardcharacter}\goforwardcharacter}}}
 
-\def\gotosomewherecharacter%
+\def\gotosomewherecharacter
   {{\hbox{\hsmash{\symbol[\v!previous]}\symbol[\v!next]}}}
 
-\unexpanded\def\closecharacter%
+\unexpanded\def\closecharacter
   {\dogotocharacter\boxtimes
      {\ruledhbox{\mathematics{\times}}}
      {\mathematics{\boxtimes}}}
 
-\def\goforjumpcharacter%
+\def\goforjumpcharacter
   {\hbox{\goforwardcharacter \kern-.5em\goforwardcharacter}}
 
-\def\gobackjumpcharacter%
+\def\gobackjumpcharacter
   {\hbox{\gobackwardcharacter\kern-.5em\gobackwardcharacter}}
 
 %D The next two symbols are for Daniel Flipo:

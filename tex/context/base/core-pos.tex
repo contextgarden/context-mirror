@@ -1797,12 +1797,12 @@
 \def\dopresettextbackground#1% todo: \backgroundparameter
   {\ExpandFirstAfter\processaction % \EFA niet echt nodig
      [\getvalue{\??td#1\c!location}]
-     [ \v!text=>\let\dodostarttextbackground\dostarttextbackgroundtxt
-                 \let\dodostoptextbackground \dostoptextbackgroundtxt,
-      \v!paragraph=>\let\dodostarttextbackground\dostarttextbackgroundpar
-                 \let\dodostoptextbackground \dostoptextbackgroundpar,
-        \v!none=>\let\dodostarttextbackground\relax
-                 \let\dodostoptextbackground \relax]%
+     [   \v!text=>\let\dodostarttextbackground\dostarttextbackgroundtxt
+                  \let\dodostoptextbackground \dostoptextbackgroundtxt,
+    \v!paragraph=>\let\dodostarttextbackground\dostarttextbackgroundpar
+                  \let\dodostoptextbackground \dostoptextbackgroundpar,
+         \v!none=>\let\dodostarttextbackground\relax
+                  \let\dodostoptextbackground \relax]%
    \ifx\dodostarttextbackground\dostarttextbackgroundpar % untested
      \ifnum\textbackgrounddepth>\plusone % new
        \let\dodostarttextbackground\dostarttextbackgroundtxt

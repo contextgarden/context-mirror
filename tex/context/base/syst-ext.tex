@@ -258,10 +258,8 @@
 
 \def\doincrement#1% 10% faster alternative
   {\ifx#1\undefined
-    %\dodoglobal\edef#1{1}%
      \dodoglobal\let#1\!!plusone
    \else\ifx#1\relax % \csname...\endcsname
-    %\dodoglobal\edef#1{1}%
      \dodoglobal\let#1\!!plusone
    \else
      \fastincrement#1%
@@ -269,10 +267,8 @@
 
 \def\dodecrement#1% 10% faster alternative
   {\ifx#1\undefined
-    %\dodoglobal\edef#1{-1}%
      \dodoglobal\let#1\!!minusone
    \else\ifx#1\relax % \csname...\endcsname
-    %\dodoglobal\edef#1{-1}%
      \dodoglobal\let#1\!!minusone
    \else
      \fastdecrement#1%
@@ -290,25 +286,34 @@
 
 \beginETEX \numexpr
 
+% \def\doindecrement#1#2%
+%   {\dodoglobal\edef#2%
+%      {\the\numexpr(\ifx#2\undefined\else\ifx#2\relax\else#2\fi\fi#11)}}
+%
+% \def\doincrement{\doindecrement+}
+% \def\dodecrement{\doindecrement-}
+%
+% some 3\% faster:
+
 \def\doindecrement#1#2%
   {\dodoglobal\edef#2%
-     {\the\numexpr(\ifx#2\undefined\else\ifx#2\relax\else#2\fi\fi#11)}}
+     {\the\numexpr\ifx#2\undefined\else\ifx#2\relax\else#2\fi\fi+#1\relax}}
 
-\def\doincrement{\doindecrement+}
-\def\dodecrement{\doindecrement-}
+\def\doincrement{\doindecrement\plusone }
+\def\dodecrement{\doindecrement\minusone}
 
 \def\dodoindecrement#1#2,#3)%
   {\dodoglobal\edef#2%
-     {\the\numexpr(\ifx#2\undefined\else\ifx#2\relax\else#2\fi\fi#1#3)}}
+     {\the\numexpr\ifx#2\undefined\else\ifx#2\relax\else#2\fi\fi#1#3\relax}}
 
 \def\dodoincrement(#1%
-  {\doifnextcharelse,{\dodoindecrement+#1}{\dodoindecrement+#1,1}}
+  {\doifnextcharelse,{\dodoindecrement+#1}{\dodoindecrement+#1,\plusone}}
 
 \def\dododecrement(#1%
-  {\doifnextcharelse,{\dodoindecrement-#1}{\dodoindecrement-#1,1}}
+  {\doifnextcharelse,{\dodoindecrement-#1}{\dodoindecrement-#1,\plusone}}
 
-\def\fastincrement#1{\dodoglobal\edef#1{\the\numexpr(#1+1)}}
-\def\fastdecrement#1{\dodoglobal\edef#1{\the\numexpr(#1-1)}}
+\def\fastincrement#1{\dodoglobal\edef#1{\the\numexpr#1+\plusone \relax}}
+\def\fastdecrement#1{\dodoglobal\edef#1{\the\numexpr#1+\minusone\relax}}
 
 \endETEX
 
@@ -729,7 +734,7 @@
    \else
      \def\recurselevel{#1}%
      \@EAEAEA\redorecurse
-   \fi\@EA{\the\numexpr\recurselevel+1\relax}{#2}}
+   \fi\@EA{\the\numexpr\recurselevel+\plusone\relax}{#2}}
 
 \endETEX
 
@@ -1320,7 +1325,7 @@
 
 %D Now we can for instance define \type{\ifinstringelse} as:
 
-\def\ifinstringelse%
+\def\ifinstringelse
   {\ExpandBothAfter\p!doifinstringelse}
 
 %D \macros
@@ -2375,22 +2380,22 @@
   {\csname#1\endcsname}
 
 \def\pluscounter#1%
-  {\@EA\xdef\csname#1\endcsname{\the\numexpr(\csname#1\endcsname+1)}}
+  {\@EA\xdef\csname#1\endcsname{\the\numexpr\csname#1\endcsname+\plusone\relax}}
 
 \def\minuscounter#1%
-  {\@EA\xdef\csname#1\endcsname{\the\numexpr(\csname#1\endcsname-1)}}
+  {\@EA\xdef\csname#1\endcsname{\the\numexpr\csname#1\endcsname-\plusone\relax}}
 
 \def\resetcounter#1%
   {\global\@EA\let\csname#1\endcsname\zerocountervalue}
 
 \def\setcounter#1#2%
-  {\@EA\xdef\csname#1\endcsname{\the\numexpr(#2)}}
+  {\@EA\xdef\csname#1\endcsname{\the\numexpr#2\relax}}
 
 \def\savecounter#1%
-  {\@EA\xdef\csname !#1\endcsname{\the\numexpr(\csname#1\endcsname)}}
+  {\@EA\xdef\csname !#1\endcsname{\the\numexpr\csname#1\endcsname\relax}}
 
 \def\restorecounter#1%
-  {\@EA\xdef\csname#1\endcsname{\the\numexpr(\csname !#1\endcsname)}}
+  {\@EA\xdef\csname#1\endcsname{\the\numexpr\csname !#1\endcsname\relax}}
 
 \endETEX
 
@@ -2899,61 +2904,112 @@
 %D
 %D Beware: global!
 
-\def\@s@{@s@}
+% \def\@s@{@s@}
+%
+% \beginTEX
+%
+% \def\globalpushmacro#1% we can use a faster incement here
+%   {\@EA\doglobal\@EA\increment\csname\@s@*\string#1\endcsname
+%    \global\@EA\let\csname\csname\@s@*\string#1\endcsname*\string#1\endcsname#1}
+%
+% \def\globalpopmacro#1% \global\let
+%   {\global\@EA\let\@EA#1\csname\csname\@s@*\string#1\endcsname*\string#1\endcsname
+%    \@EA\doglobal\@EA\decrement\csname\@s@*\string#1\endcsname}
+%
+% \def\localpushmacro#1% this one can be used to push a value over an \egroup
+%   {\@EA\doglobal\@EA\increment\csname\@s@**\string#1\endcsname
+%    \global\@EA\let\csname\csname\@s@**\string#1\endcsname**\string#1\endcsname#1}
+%
+% \def\localpopmacro#1% \local\let
+%   {\@EA\let\@EA#1\csname\csname\@s@**\string#1\endcsname**\string#1\endcsname
+%    \global\@EA\decrement\csname\@s@**\string#1\endcsname}
+%
+% \endTEX
+%
+% \beginETEX \newcount
+%
+% \def\globalpushmacro#1%
+%   {\ifcsname\@s@*\string#1\endcsname \else
+%      \@EA\newcount\csname\@s@*\string#1\endcsname
+%    \fi
+%    \global\advance\csname\@s@*\string#1\endcsname \plusone
+%    \global\@EA\let\csname\the\csname\@s@*\string#1\endcsname*\string#1\endcsname#1}
+%
+% \def\globalpopmacro#1% \global\let
+%   {\global\@EA\let\@EA#1\csname\the\csname\@s@*\string#1\endcsname*\string#1\endcsname
+%    \global\advance\csname\@s@*\string#1\endcsname \minusone}
+%
+% \def\localpushmacro#1% this one can be used to push a value over an \egroup
+%   {\ifcsname\@s@**\string#1\endcsname \else
+%      \@EA\newcount\csname\@s@**\string#1\endcsname
+%    \fi
+%    \global\advance\csname\@s@**\string#1\endcsname \plusone
+%    \global\@EA\let\csname\the\csname\@s@**\string#1\endcsname**\string#1\endcsname#1}
+%
+% \def\localpopmacro#1% \local\let
+%   {\@EA\let\@EA#1\csname\the\csname\@s@**\string#1\endcsname**\string#1\endcsname
+%    \global\advance\csname\@s@**\string#1\endcsname \minusone }
+%
+% \endETEX
+%
+% some 5% faster (used a lot in typescripts, so ...)
+
+\def\@sl@{@sl@}
+\def\@sg@{@sg@}
+
+\let\@@pushedmacro\empty
 
 \beginTEX
 
 \def\globalpushmacro#1% we can use a faster incement here
-  {\@EA\doglobal\@EA\increment\csname\@s@:\string#1\endcsname
-   \global\@EA\let\csname\csname\@s@:\string#1\endcsname:\string#1\endcsname#1}
+  {\xdef\@@pushedmacro{\string#1}%
+   \@EA\doglobal\@EA\increment\csname\@sg@\@@pushedmacro\endcsname
+   \global\@EA\let\csname\csname\@sg@\@@pushedmacro\endcsname\@@pushedmacro\endcsname#1}
 
-\def\globalpopmacro#1% \global\let
-  {\global\@EA\let\@EA#1\csname\csname\@s@:\string#1\endcsname:\string#1\endcsname
-   \@EA\doglobal\@EA\decrement\csname\@s@:\string#1\endcsname}
+\def\globalpopmacro#1%
+  {\xdef\@@pushedmacro{\string#1}%
+   \global\@EA\let\@EA#1\csname\csname\@sg@\@@pushedmacro\endcsname\@@pushedmacro\endcsname
+   \@EA\doglobal\@EA\decrement\csname\@sg@\@@pushedmacro\endcsname}
 
-% this one can be used to push a value over an \egroup
+\def\localpushmacro#1% this one can be used to push a value over an \egroup
+  {\xdef\@@pushedmacro{\string#1}%
+   \@EA\doglobal\@EA\increment\csname\@sl@\@@pushedmacro\endcsname
+   \global\@EA\let\csname\csname\@sl@\@@pushedmacro\endcsname\@@pushedmacro\endcsname#1}
 
-\def\localpushmacro#1%
-  {\@EA\doglobal\@EA\increment\csname\@s@::\string#1\endcsname
-   \global\@EA\let\csname\csname\@s@::\string#1\endcsname::\string#1\endcsname#1}
-
-\def\localpopmacro#1% \local\let
-  {\@EA\let\@EA#1\csname\csname\@s@::\string#1\endcsname::\string#1\endcsname
-   \global\@EA\decrement\csname\@s@::\string#1\endcsname}
+\def\localpopmacro#1%
+  {\xdef\@@pushedmacro{\string#1}%
+   \@EA\let\@EA#1\csname\csname\@sl@\@@pushedmacro\endcsname\@@pushedmacro\endcsname
+   \global\@EA\decrement\csname\@sl@\@@pushedmacro\endcsname}
 
 \endTEX
 
-% * niet nodig, in @s@ stoppen
-
-\beginETEX \newcount
+\beginETEX
 
 \def\globalpushmacro#1%
-  {\ifcsname\@s@*\string#1\endcsname \else
-     \@EA\newcount\csname\@s@*\string#1\endcsname
+  {\xdef\@@pushedmacro{\string#1}%
+   \ifcsname\@sg@\@@pushedmacro\endcsname \else
+     \@EA\newcount\csname\@sg@\@@pushedmacro\endcsname
    \fi
-   \global\advance\csname\@s@*\string#1\endcsname \plusone
-   \global\@EA\let\csname\the\csname\@s@*\string#1\endcsname*\string#1\endcsname#1}
+   \global\advance\csname\@sg@\@@pushedmacro\endcsname \plusone
+   \global\@EA\let\csname\the\csname\@sg@\@@pushedmacro\endcsname\@@pushedmacro\endcsname#1}
 
-\def\globalpopmacro#1% \global\let
-  {%\ifcsname\@s@*\string#1\endcsname
-     \global\@EA\let\@EA#1\csname\the\csname\@s@*\string#1\endcsname*\string#1\endcsname
-     \global\advance\csname\@s@*\string#1\endcsname \minusone
-   %\else
-   %  \message{error in \string#1}\wait
-   }%\fi}
+\def\globalpopmacro#1%
+  {\xdef\@@pushedmacro{\string#1}%
+   \global\@EA\let\@EA#1\csname\the\csname\@sg@\@@pushedmacro\endcsname\@@pushedmacro\endcsname
+   \global\advance\csname\@sg@\@@pushedmacro\endcsname \minusone}
 
-% this one can be used to push a value over an \egroup
-
-\def\localpushmacro#1%
-  {\ifcsname\@s@**\string#1\endcsname \else
-     \@EA\newcount\csname\@s@**\string#1\endcsname
+\def\localpushmacro#1% this one can be used to push a value over an \egroup
+  {\xdef\@@pushedmacro{\string#1}%
+   \ifcsname\@sl@\@@pushedmacro\endcsname \else
+     \@EA\newcount\csname\@sl@\@@pushedmacro\endcsname
    \fi
-   \global\advance\csname\@s@**\string#1\endcsname \plusone
-   \global\@EA\let\csname\the\csname\@s@**\string#1\endcsname**\string#1\endcsname#1}
+   \global\advance\csname\@sl@\@@pushedmacro\endcsname \plusone
+   \global\@EA\let\csname\the\csname\@sl@\@@pushedmacro\endcsname\@@pushedmacro\endcsname#1}
 
-\def\localpopmacro#1% \local\let
-  {\@EA\let\@EA#1\csname\the\csname\@s@**\string#1\endcsname**\string#1\endcsname
-   \global\advance\csname\@s@**\string#1\endcsname \minusone }
+\def\localpopmacro#1%
+  {\xdef\@@pushedmacro{\string#1}%
+   \@EA\let\@EA#1\csname\the\csname\@sl@\@@pushedmacro\endcsname\@@pushedmacro\endcsname
+   \global\advance\csname\@sl@\@@pushedmacro\endcsname \minusone }
 
 \endETEX
 
@@ -3801,11 +3857,17 @@
 
 \beginETEX \dimexpr \numexpr
 
+%   \def\PointsToBigPoints#1#2%
+%     {\edef#2{\withoutpt\the\dimexpr(.996264\dimexpr(#1))}}
+
+%   \def\PointsToWholeBigPoints#1#2%
+%     {\edef#2{\the\numexpr(\numexpr(\dimexpr(.996264\dimexpr(#1)))/\maxcard)}}
+
   \def\PointsToBigPoints#1#2%
-    {\edef#2{\withoutpt\the\dimexpr(.996264\dimexpr(#1))}}
+    {\edef#2{\withoutpt\the\dimexpr.996264\dimexpr#1\relax\relax}}
 
   \def\PointsToWholeBigPoints#1#2%
-    {\edef#2{\the\numexpr(\numexpr(\dimexpr(.996264\dimexpr(#1)))/\maxcard)}}
+    {\edef#2{\the\numexpr\dimexpr.996264\dimexpr#1\relax\relax/\maxcard\relax}}
 
 \endETEX
 

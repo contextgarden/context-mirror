@@ -825,7 +825,7 @@
    %  [\getvalue{\??am#1\c!dummy}]
    %  [  \v!yes=>\chardef\handleunknownmenuitem=0\relax,
    %   \v!empty=>\chardef\handleunknownmenuitem=1\relax,
-   %    \v!no=>\chardef\handleunknownmenuitem=2\relax]%
+   %      \v!no=>\chardef\handleunknownmenuitem=2\relax]%
    \getvalue{\??am#1#3}\relax
    \ifextendedmenu
      \setamboxcommands{#1}{#4}%
@@ -1256,8 +1256,7 @@
 \def\domenubox[#1][#2]#3%
   {\bgroup
    \def\setlocationbox##1[##2]##3[##4]%
-     {\localframed[##1][##2]%
-        {\dolocationattributes{##1}\c!style\c!color{##3}}}%
+     {\localframed[##1][##2]{\dolocationattributes{##1}\c!style\c!color{##3}}}%
    \domenubutton[#1][#2]#3[]%
    \egroup}
 
@@ -1325,13 +1324,12 @@
   {\bgroup
   %\setupinteraction[\c!width=\!!zeropoint]%
    \setinteractionparameter\c!width\!!zeropoint
-   \setbox0=\hbox
-     {\localframed[\??ba][]%
-        {\dolocationattributes\??ba\c!style\c!color{\strut\@@batext}}}%
+   \setbox0\hbox
+     {\localframed[\??ba][]{\dolocationattributes\??ba\c!style\c!color{\strut\@@batext}}}%
    \dontcomplain
-   \def\onder%
+   \def\atthebottom
      {\leaders\hrule\!!depth1ex\!!height-.5ex\hfil}%
-   \def\boven##1##2##3%
+   \def\atthetop##1##2##3%
      {\dimen0=\wd0
       \divide\dimen0 3
       \multiply\dimen0 ##2\relax
@@ -1339,9 +1337,9 @@
       \advance\dimen0 -##3\dimen2
       %\gotodestination
       %  {}{#1}{\syncprefix:##1}{}
-      %  {\hbox to \dimen0{\color[\locationcolor\@@bacolor]{\onder}}}}%
+      %  {\hbox to \dimen0{\color[\locationcolor\@@bacolor]{\atthebottom}}}}%
       \gotobox
-        {\hbox to \dimen0{\color[\locationcolor\@@bacolor]{\onder}}}%
+        {\hbox to \dimen0{\color[\locationcolor\@@bacolor]{\atthebottom}}}%
         [#1::\syncprefix:##1]}%
    \hbox
      {\def\check##1##2%
@@ -1353,15 +1351,15 @@
       \setbox2\hbox to \wd0
         {\ifnum\top=\first\relax
            \ifnum\first=\bot\relax
-             \boven\first30\relax
+             \atthetop\first30\relax
            \else
-             \boven\first21\hss\boven\bot11\relax
+             \atthetop\first21\hss\atthetop\bot11\relax
            \fi
          \else
            \ifnum\first=\bot\relax
-             \boven\top11\hss\boven\first21\relax
+             \atthetop\top11\hss\atthetop\first21\relax
            \else
-             \boven\top11\hss\boven\first11\hss\boven\bot11\relax
+             \atthetop\top11\hss\atthetop\first11\hss\atthetop\bot11\relax
            \fi
          \fi}%
       \wd2=\zeropoint\box2
@@ -1490,10 +1488,7 @@
 \def\interactionbarb
   {\ifnum\lastpage>\firstpage\relax
      \interactionbuttons
-       [\v!firstpage,
-        \v!previouspage,
-        \v!nextpage,
-        \v!lastpage]%
+       [\v!firstpage,\v!previouspage,\v!nextpage,\v!lastpage]%
    \fi}
 
 \def\interactionbarc
@@ -1723,10 +1718,7 @@
 \def\interactionbarg
   {\ifnum\lastsubpage>\firstsubpage\relax
      \interactionbuttons
-       [\v!firstsubpage,
-        \v!previoussubpage,
-        \v!nextsubpage,
-        \v!lastsubpage]%
+       [\v!firstsubpage,\v!previoussubpage,\v!nextsubpage,\v!lastsubpage]%
    \fi}
 
 \def\checkinteractionbar#1#2#3%
@@ -2346,23 +2338,6 @@
      \edef\attachmentname{\attachmentname.\!!stringd}%
    \fi}
 
-% \def\attachment[#1]% currently title equals newname
-%   {\iflocation
-%      \doifundefinedelse{\??at:#1}
-%        {\writestatus\m!interactions6{#1}}%
-%        {\doif\@@atstatus\v!start
-%           {\bgroup
-%            \getattachmentdata[#1]%
-%            \doiffileelse\attachmentfile
-%              {\doattachfile
-%                 \attachmenttitle
-%                   {1em}{\strutheight}{\strutdepth}\@@atkleur\@@atsymbool
-%                 \attachmentname
-%                 \attachmentfile}%
-%              {\writestatus\m!interactions5\attachmentfile}%
-%            \egroup}}%
-%    \fi}
-
 \def\attachment
   {\dodoubleempty\doattachment}
 
@@ -2370,7 +2345,7 @@
   {\iflocation
      \ifsecondargument
        \doifundefined{\??at:#2}
-         {\writestatus\m!interactions6{#2}%
+         {\showmessage\m!interactions6{#2}%
           \useattachment[#2]}%
        \doif\@@atstatus\v!start
          {\bgroup
@@ -2385,7 +2360,7 @@
                \attachmentname
                \attachmentfile}%
 }}%
-            {\writestatus\m!interactions5\attachmentfile}%
+            {\showmessage\m!interactions5\attachmentfile}%
           \egroup}%
      \else\iffirstargument
         \attachment[][#1]%

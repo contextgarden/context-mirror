@@ -159,6 +159,8 @@
 
 \letvalue{\??py\s!empty}\empty
 
+% beware, normally \*parameter concerns the current one
+
 \def\propertyparameter#1#2% expands to #1 when not defined (see \define...)
   {\csname\??py
      \ifcsname\??py#1#2\endcsname
