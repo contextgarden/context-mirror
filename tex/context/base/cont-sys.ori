@@ -42,8 +42,12 @@
 \setupencoding [\s!default=ec]
 
 % If you want the default berry names:
+%
+% \usetypescript [berry] [\defaultencoding]
+%
+% or, if you also want other encodings:
 
-\usetypescript [berry] [\defaultencoding]
+\usetypescript [berry] [\defaultencoding,t5,8r] % texnansi is never present
 
 % If you run into missing font metrics kind of problems,
 % you may want to uncomment:
@@ -54,20 +58,9 @@
 
 \autoloadmapfilestrue
 
-% (1) use this when you have a big mapfile
+% (1) you can prevent loading with:
 %
-% \preloadmapfile[original-base.map]
-% \preloadmapfile[ec-base.map]
-% \preloadmapfile[8r-base.map]
-% \preloadmapfile[qx-base.map]
-% \preloadmapfile[t5-base.map]
-% \preloadmapfile[texnansi-base.map]
-% \preloadmapfile[original-ams-cmr.map]
-% \preloadmapfile[original-ams-euler.map]
-% \preloadmapfile[original-public-lm.map]
-% \preloadmapfile[original-public-plr.map]
-% \preloadmapfile[original-public-csr.map]
-% \preloadmapfile[original-public-vnr.map]
+% \preloadmapfile[<...somename...>.map]
 %
 % (2) otherwise, use this if you have a fast machine
 %
@@ -78,19 +71,24 @@
 \resetmapfiles
 
 \loadmapfile[original-base.map]
+\loadmapfile[texnansi-base.map]
 \loadmapfile[ec-base.map]
-\loadmapfile[8r-base.map]
 \loadmapfile[qx-base.map]
 \loadmapfile[t5-base.map]
-\loadmapfile[texnansi-base.map]
-\loadmapfile[original-ams-cmr.map]
+%loadmapfile[il2-base.map]
+%loadmapfile[pl0-base.map]
+\loadmapfile[8r-base.map]
+
+\loadmapfile[original-ams-base.map]
 \loadmapfile[original-ams-euler.map]
+
 \loadmapfile[original-public-lm.map]
-\loadmapfile[original-public-plr.map]
-\loadmapfile[original-public-csr.map]
-\loadmapfile[original-public-vnr.map]
 \loadmapfile[texnansi-public-lm.map]
 \loadmapfile[ec-public-lm.map]
+\loadmapfile[qx-public-lm.map]
+\loadmapfile[t5-public-lm.map]
+\loadmapfile[pl0-public-lm.map]
+\loadmapfile[il2-public-lm.map]
 
 % When you have your own fonts installed, you may want to predefine:
 %
@@ -110,7 +108,7 @@
 
 % Setting up a global figure path
 %
-% \setupexternalfigures [\c!gebied={e:/fig/eps,t:/mine/figs}]
+% \setupexternalfigures [\c!directory={e:/fig/eps,t:/mine/figs}]
 %
 % Loading a specific special driver:
 %

@@ -341,11 +341,12 @@ if ($Paranoid) {
     $ENV{openin_any}   = 'a' ;
 }
 
-if ($ENV{openin_any} eq 'p') {
+if (defined $ENV{openin_any} && $ENV{openin_any} eq 'p') {
     $Paranoid = 1 ; # extra test in order to set readlevel
 }
 
-if (($ENV{shell_escape} eq 'f') || ($ENV{SHELL_ESCAPE} eq 'f')) {
+if ((defined $ENV{shell_escape} && $ENV{shell_escape} eq 'f') ||
+    (defined $ENV{SHELL_ESCAPE} && $ENV{SHELL_ESCAPE} eq 'f')) {
     $AutoMPRun = 1 ;
 }
 

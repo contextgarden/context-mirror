@@ -14,18 +14,13 @@
 %D This file defines some typescripts that simulate the pre-typescript way
 %D of defining fonts. This file will not be extended.
 
-%D default font cmr,ams,rm,12pt
-
 %D The Computer Modern Roman is derived from the Monotype~8a
 %D Times Roman. In this module, that is loaded by default, we
 %D define all relevant alternatives.
 
 \starttypescript [cmr]
-
   \usetypescript [serif,sans,mono,math] [computer-modern,latin-modern] [default,name,size]
-
   \usemathcollection[default]
-
 \stoptypescript
 
 %D This script remaps the default Computer Modern Font Files
@@ -33,92 +28,69 @@
 %D latin modern ec variants have replaed the ae ones.)
 
 \starttypescript [aer]
-
   \usetypescript [serif,sans,mono,math] [computer-modern,latin-modern] [default,name,size,ec]
-
   \usemathcollection[default]
-
 \stoptypescript
 
 %D This script defines the Computer Modern Roman with iso
 %D latin 2 encoding, as needed for Czech and other languages.
 
 \starttypescript [csr]
-
   \usetypescript [serif,sans,mono,math] [computer-modern,latin-modern] [default,name,size,il2]
-
   \usemathcollection[default]
-
 \stoptypescript
 
 %D This script defines the Computer Modern Roman with a
 %D polish encoding, as needed for Czech and other languages.
 
 \starttypescript [plr]
-
   \usetypescript [serif,sans,mono,math] [computer-modern,latin-modern] [default,name,size,pl0]
-
   \usemathcollection[default]
+\stoptypescript
 
+%D Vietnamese.
+
+\starttypescript [vnr]
+  \usetypescript [serif,sans,mono,math] [computer-modern,latin-modern] [default,name,size,t5]
+  \usemathcollection[default]
 \stoptypescript
 
 %D Cyrillic alternatives are available under the symbolic
 %D name \type {cyr}.
 
 \starttypescript [cyr]
-
   \usetypescript [serif,sans,mono,math] [computer-modern,latin-modern] [default,name,size,cyr]
-
   \usemathcollection[default]
-
 \stoptypescript
 
 \starttypescript [lh-ec]
-
   \usetypescript [serif,sans,mono,math] [computer-modern,latin-modern] [default,name,size,ec]
-
   \usemathcollection[default]
-
 \stoptypescript
 
 \starttypescript [lh-t2a]
-
   \usetypescript [serif,sans,mono,math] [computer-modern,latin-modern] [default,name,size,t2a]
-
   \usemathcollection[default]
-
 \stoptypescript
 
 \starttypescript [lh-t2b]
-
   \usetypescript [serif,sans,mono,math] [computer-modern,latin-modern] [default,name,size,t2b]
-
   \usemathcollection[default]
-
 \stoptypescript
 
 \starttypescript [lh-t2c]
-
   \usetypescript [serif,sans,mono,math] [computer-modern,latin-modern] [default,name,size,t2c]
-
   \usemathcollection [default]
-
 \stoptypescript
 
 \starttypescript [lh-x2]
-
   \usetypescript [serif,sans,mono,math] [computer-modern,latin-modern] [default,name,size,x2]
-
   \usemathcollection [default]
-
 \stoptypescript
 
 \starttypescript [lh-lcy]
-
   \usetypescript [serif,sans,mono,math] [computer-modern,latin-modern] [default,name,size,lcy]
-
   \usemathcollection [default]
-
 \stoptypescript
 
 %D Here we implement the symbol fonts as provided by the
@@ -126,33 +98,24 @@
 %D can be found in The Joy of \TeX\ by M.~Spivak.
 
 \starttypescript [ams]
-
   \usetypescript [math] [ams] [all]
-
   \usemathcollection[default]
-
 \stoptypescript
 
 %D The Concrete Modern Roman is just an alternative Computer
 %D Modern Roman.
 
 \starttypescript [con]
-
   \usetypescript [serif] [concrete] [all]
-
   \usemathcollection[default]
-
 \stoptypescript
 
 %D The Euler Fonts are designed by Herman Zapf and can be
 %D used with the Concrete Fonts defined elsewhere.
 
 \starttypescript [eul]
-
   \usetypescript [math] [euler] [all]
-
   \usemathcollection[eul]
-
 \stoptypescript
 
 %D The Lucida Bright fonts are both good looking and and
@@ -163,14 +126,10 @@
 %D fonts come in one design size.
 
 \starttypescript [lbr]
-
   \usetypescript [serif,sans,mono,math,calligraphy,handwriting] [lucida]  [name,special,\defaultencoding]
   \usetypescript [serif,sans,mono,math,calligraphy,handwriting] [default] [size]
-
   \usemathcollection[lbr]
-
   \usetypescript [all] [lucida] [\defaultencoding]
-
 \stoptypescript
 
 % %D With thanks to Berthold Horn from YandY for providing me
@@ -179,14 +138,10 @@
 % todo: \starttypescript [mt,tim]
 
 \starttypescript [tim]
-
   \usetypescript [math] [times]   [all]
   \usetypescript [math] [default] [size]
-
   \usemathcollection[tim]
-
   \usetypescript [all] [times] [\defaultencoding]
-
 \stoptypescript
 
 %D The Antikwa Torunska font family is a rather nice
@@ -194,73 +149,54 @@
 %D language, it can be used for other languages as well.
 
 \starttypescript [ant]
-
   \usetypescript [serif] [antykwa-torunska] [name,\defaultencoding]
   \usetypescript [serif] [default]          [size]
-
   \usetypescript [all] [antykwa-torunska] [\defaultencoding]
-
 \stoptypescript
 
 %D This script defines the Standard Adobe Courier fonts.
 
 \starttypescript [pcr]
-
   \usetypescript [mono] [courier] [name,\defaultencoding]
   \usetypescript [mono] [default] [size]
-
   \usetypescript [all] [courier] [\defaultencoding]
-
 \stoptypescript
 
 %D This script defines the Standard Adobe Helvetica fonts.
 
 \starttypescript [phv]
-
   \usetypescript [sans] [helvetica] [name,\defaultencoding]
   \usetypescript [sans] [default]   [size]
-
   \usetypescript [all] [helvetica] [\defaultencoding]
-
 \stoptypescript
 
 %D This script defines the Standard Adobe Times fonts.
 
 \starttypescript [ptm]
-
   \usetypescript [serif] [times]   [name,\defaultencoding]
   \usetypescript [serif] [default] [size]
-
   \usetypescript [all] [times] [\defaultencoding]
-
 \stoptypescript
 
 %D This script loads the Adobe Times Roman, Helvetica and
 %D Courier.
 
 \starttypescript [pos]
-
   \usetypescript [serif] [times]     [name,\defaultencoding]
   \usetypescript [sans]  [helvetica] [name,\defaultencoding]
   \usetypescript [mono]  [courier]   [name,\defaultencoding]
-
   \usetypescript [serif,sans,mono] [default] [size]
-
 % \usetypescript [math] [times]   [all]
 % \usetypescript [math] [default] [size]
-
   \usetypescript [all] [times,helvetica,courier] [\defaultencoding]
-
 \stoptypescript
 
 %D This script defines the Palatino font.
 
 \starttypescript [ppl]
-
   \usetypescript [serif] [palatino] [name,\defaultencoding]
   \usetypescript [serif] [default]  [size]
   \usetypescript [all]   [palatino] [\defaultencoding]
-
 \stoptypescript
 
 %D The following scripts fake the old \type {font-ber} and
@@ -273,7 +209,7 @@
 %D But for old time sake we provide:
 
 \starttypescript[ber]
-  \usetypescript [berry] [ec]
+  \usetypescript [berry] [ec,t5] % could be [all]
 \stoptypescript
 
 \endinput

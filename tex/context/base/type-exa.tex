@@ -13,7 +13,7 @@
 
 %D A couple of goodies:
 
-\starttypescript [modern] [texnansi,ec,il2,qx,pl0,t5,default]
+\starttypescript [modern] [texnansi,ec,qx,il2,pl0,t5,default]
 
   \definetypeface [modern] [rm] [serif] [latin-modern] [computer-modern] [encoding=\typescripttwo]
   \definetypeface [modern] [ss] [sans]  [latin-modern] [computer-modern] [encoding=\typescripttwo]
@@ -22,7 +22,16 @@
 
 \stoptypescript
 
-\starttypescript [modern-base] [texnansi,ec,qx,il2,t2a,pl0,t5,default]
+\starttypescript [modern-base] [texnansi,ec,qx,pl0,il2,t5,default]
+
+  \definetypeface [modern] [rm] [serif] [latin-modern] [default] [encoding=\typescripttwo]
+  \definetypeface [modern] [ss] [sans]  [latin-modern] [default] [encoding=\typescripttwo]
+  \definetypeface [modern] [tt] [mono]  [latin-modern] [default] [encoding=\typescripttwo]
+  \definetypeface [modern] [mm] [math]  [latin-modern] [default] [encoding=\typescripttwo]
+
+\stoptypescript
+
+\starttypescript [modern-base] [t2a,t2b,t2c]
 
   \definetypeface [modern] [rm] [serif] [computer-modern] [default] [encoding=\typescripttwo]
   \definetypeface [modern] [ss] [sans]  [computer-modern] [default] [encoding=\typescripttwo]

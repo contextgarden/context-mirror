@@ -234,7 +234,7 @@
 \let\preloadedpmessage\empty
 
 \def\showpatterns#1#2#3#4% language number encoding mapping
-  {#1->#3:#4->#2->\getvalue{\??la#1\s!lefthyphenmin}:\getvalue{\??la#1\s!righthyphenmin}\space}
+  {#1->#3:#4->#2->\xxlanguageparameter{#1}\s!lefthyphenmin:\xxlanguageparameter{#1}\s!righthyphenmin\space}
 
 \def\preloadlanguages
   {\doifsomething\preloadedpmessage{\showmessage\m!linguals{10}\preloadedpmessage}}
@@ -251,53 +251,54 @@
          \dodoinstalllanguage{#1}{#1}%
          \getparameters
            [\??la#1]
-           [\s!lefthyphenmin=2,
-            \s!righthyphenmin=2,
-            \c!spacing=\v!packed,
-            \c!midsentence=---,
-            \c!leftsentence=---,
-            \c!rightsentence=---,
-            \c!leftsubsentence=---,
-            \c!rightsubsentence=---,
-            \c!leftquote=\upperleftsinglesixquote,
-            \c!rightquote=\upperrightsingleninequote,
-            \c!leftquotation=\upperleftdoublesixquote,
-            \c!rightquotation=\upperrightdoubleninequote,
-            \c!leftspeech=\getvalue{\??la#1\c!leftquotation},
-            \c!middlespeech=,
-            \c!rightspeech=\getvalue{\??la#1\c!rightquotation},
-            \c!limittext=\unknown,
-            \c!date={\v!year,\ ,\v!month,\ ,\v!day},
-            \c!state=\v!stop,
+           [\c!state=\v!stop,
             \c!default=,
             \s!patterns=,
             \s!mapping=,
             \s!encoding=,
-            \c!text=Ag,
+%             \s!lefthyphenmin=2,
+%             \s!righthyphenmin=2,
+%             \c!spacing=\v!packed,
+%             \c!midsentence=---,
+%             \c!leftsentence=---,
+%             \c!rightsentence=---,
+%             \c!leftsubsentence=---,
+%             \c!rightsubsentence=---,
+%             \c!leftquote=\upperleftsinglesixquote,
+%             \c!rightquote=\upperrightsingleninequote,
+%             \c!leftquotation=\upperleftdoublesixquote,
+%             \c!rightquotation=\upperrightdoubleninequote,
+%             \c!leftspeech=\getvalue{\??la#1\c!leftquotation},
+%             \c!middlespeech=,
+%             \c!rightspeech=\getvalue{\??la#1\c!rightquotation},
+%             \c!limittext=\unknown,
+%             \c!date={\v!year,\ ,\v!month,\ ,\v!day},
+%             \c!text=Ag,
             #2]%
-         \doifvaluesomething{\??la#1\c!default}
-           {\doifnotvalue{\??la#1\c!default}{#1}
-              {\getparameters
-                 [\??la#1]
-                 [\s!lefthyphenmin=\languagedefault{#1}\s!lefthyphenmin,
-                  \s!righthyphenmin=\languagedefault{#1}\s!righthyphenmin,
-                  \c!spacing=\languagedefault{#1}\c!spacing,
-                  \c!leftsentence=\languagedefault{#1}\c!leftsentence,
-                  \c!rightsentence=\languagedefault{#1}\c!rightsentence,
-                  \c!leftsubsentence=\languagedefault{#1}\c!leftsubsentence,
-                  \c!rightsubsentence=\languagedefault{#1}\c!rightsubsentence,
-                  \c!leftquote=\languagedefault{#1}\c!leftquote,
-                  \c!rightquote=\languagedefault{#1}\c!rightquote,
-                  \c!leftquotation=\languagedefault{#1}\c!leftquotation,
-                  \c!rightquotation=\languagedefault{#1}\c!rightquotation,
-                  \c!leftspeech=\languagedefault{#1}\c!leftspeech,
-                  \c!middlespeech=\languagedefault{#1}\c!middlespeech,
-                  \c!rightspeech=\languagedefault{#1}\c!rightspeech,
-                  \c!date=\languagedefault{#1}\c!date,
-                  \s!mapping=\languagedefault{#1}\s!mapping,
-                  \s!encoding=\languagedefault{#1}\s!encoding,
-                  \c!text=\languagedefault{#1}\c!text,
-                  #2]}}}%
+%          \doifvaluesomething{\??la#1\c!default}
+%            {\doifnotvalue{\??la#1\c!default}{#1}
+%               {\getparameters
+%                  [\??la#1]
+%                  [\s!lefthyphenmin=\languagedefault{#1}\s!lefthyphenmin,
+%                   \s!righthyphenmin=\languagedefault{#1}\s!righthyphenmin,
+%                   \c!spacing=\languagedefault{#1}\c!spacing,
+%                   \c!leftsentence=\languagedefault{#1}\c!leftsentence,
+%                   \c!rightsentence=\languagedefault{#1}\c!rightsentence,
+%                   \c!leftsubsentence=\languagedefault{#1}\c!leftsubsentence,
+%                   \c!rightsubsentence=\languagedefault{#1}\c!rightsubsentence,
+%                   \c!leftquote=\languagedefault{#1}\c!leftquote,
+%                   \c!rightquote=\languagedefault{#1}\c!rightquote,
+%                   \c!leftquotation=\languagedefault{#1}\c!leftquotation,
+%                   \c!rightquotation=\languagedefault{#1}\c!rightquotation,
+%                   \c!leftspeech=\languagedefault{#1}\c!leftspeech,
+%                   \c!middlespeech=\languagedefault{#1}\c!middlespeech,
+%                   \c!rightspeech=\languagedefault{#1}\c!rightspeech,
+%                   \c!date=\languagedefault{#1}\c!date,
+%                   \s!mapping=\languagedefault{#1}\s!mapping,
+%                   \s!encoding=\languagedefault{#1}\s!encoding,
+%                   \c!text=\languagedefault{#1}\c!text,
+%                   #2]}}}%
+}%
       \doifvalue{\??la#1\c!default}{#1}{\letvalue{\??la#1\c!default}\empty}%
        % loop in deo
        % \doifvalue{\??la#1\s!patterns}{#1}{\letvalue{\??la#1\c!default}\empty}%
@@ -446,6 +447,35 @@
      \docomplexlanguage
    \fi}
 
+\setuplanguage
+  [\s!default]
+  [\s!lefthyphenmin=2,
+   \s!righthyphenmin=2,
+   \c!spacing=\v!packed,
+   \c!midsentence=---,
+   \c!leftsentence=---,
+   \c!rightsentence=---,
+   \c!leftsubsentence=---,
+   \c!rightsubsentence=---,
+   \c!leftquote=\upperleftsinglesixquote,
+   \c!rightquote=\upperrightsingleninequote,
+   \c!leftquotation=\upperleftdoublesixquote,
+   \c!rightquotation=\upperrightdoubleninequote,
+   \c!leftspeech=\languageparameter\c!leftquotation,
+   \c!middlespeech=,
+   \c!rightspeech=\languageparameter\c!rightquotation,
+   \c!limittext=\unknown,
+   \c!date={\v!year,\ ,\v!month,\ ,\v!day},
+   \c!text=Ag]
+
+% rather new, split and per language
+
+\setuplanguage
+  [\s!default]
+  [\c!compoundhyphen=\compoundhyphen,
+   \c!leftcompoundhyphen=\compoundhyphen,
+   \c!rightcompoundhyphen=]
+
 %D The values \type {leftsentence} and \type
 %D {rightsentence} can be (and are) used to implement
 %D automatic subsentence boundary glyphs, like in {\fr
@@ -460,8 +490,7 @@
 %D Just to make things easy we can ask for the current date
 %D specification by saying:
 
-\def\currentdatespecification
-  {\csname\??la\currentlanguage\c!date\endcsname}
+\def\currentdatespecification{\languageparameter\c!date}
 
 %D This command is not meant for users.
 
@@ -597,10 +626,11 @@
    %   \ifx\languagemapping\empty\else
    %     \fastenablemapping\languagemapping
    %   \fi
-   \lefthyphenmin 0\csname\??la\currentlanguage\s!lefthyphenmin \endcsname
-   \righthyphenmin0\csname\??la\currentlanguage\s!righthyphenmin\endcsname\relax
+   \lefthyphenmin 0\languageparameter\s!lefthyphenmin
+   \righthyphenmin0\languageparameter\s!righthyphenmin
+   \relax
    % will be definable and move to core-spa !
-   \doifelsevalue{\??la\currentlanguage\c!spacing}\v!broad
+   \doifelse{\languageparameter\c!spacing}\v!broad
      \nonfrenchspacing\frenchspacing}
 
 \ifx\enablelanguagespecifics\undefined
@@ -691,13 +721,6 @@
 %D {\languagedefault{id}\c!parameter} returns the default's
 %D parameter.
 
-%\def\defaultlanguage#1%
-%  {\@EA\ifx\csname\??la#1\c!default\endcsname\empty
-%     #1%
-%   \else
-%     \@EA\defaultlanguage\@EA{\csname\??la#1\c!default\endcsname}%
-%   \fi}
-
 \def\defaultlanguage#1%
   {\@EA\ifx\csname\??la#1\c!default\endcsname\empty
      #1%
@@ -708,8 +731,46 @@
 \def\languagedefault#1#2%
   {\csname\??la\defaultlanguage{#1}#2\endcsname}
 
-\def\languageparameter#1%
-  {\csname\??la\defaultlanguage\currentlanguage#1\endcsname}
+% \def\languageparameter#1%
+%   {\csname\??la\defaultlanguage\currentlanguage#1\endcsname}
+
+\def\languageparameter
+  {\@EA\dolanguageparameter\@EA{\defaultlanguage\currentlanguage}}
+
+\def\xxlanguageparameter#1%
+  {\@EA\dolanguageparameter\@EA{\defaultlanguage{#1}}}
+
+\beginETEX
+
+  \def\dolanguageparameter#1#2%
+    {\csname\??la
+       \ifcsname\??la\currentlanguage#2\endcsname
+         \currentlanguage
+       \else\ifcsname\??la#1#2\endcsname
+         \@EA\ifx\csname\??la#1#2\endcsname\empty\s!default\else#1\fi
+       \else
+         \s!default
+       \fi\fi
+     #2\endcsname}
+
+\endETEX
+
+\beginTEX
+
+  \def\dolanguageparameter#1#2%
+    {\csname\??la
+       \@EA\ifx\csname\??la\currentlanguage#2\endcsname\relax
+         \@EA\ifx\csname\??la#1#2\endcsname\relax
+           \s!default
+         \else
+           \@EA\ifx\csname\??la#1#2\endcsname\empty\s!default\else#1\fi
+         \fi
+       \else
+         \currentlanguage
+       \fi
+     #2\endcsname}
+
+\endTEX
 
 % moved
 %

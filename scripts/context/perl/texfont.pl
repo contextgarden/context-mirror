@@ -660,40 +660,40 @@ sub globafmfiles
       { report("locating afm files : using pattern $pattern") }
     else
       { @files = validglob("$runpath/$pattern.ttf") ;
-	if (@files)
-	  { report("locating afm files : using ttf files") ;
-	    $extension = "ttf" ;
-	    foreach my $file (@files)
-               { $file =~ s/\.ttf$//io ;
-                 report ("generating afm file : $file.afm") ;
-                 my $command = "ttf2afm \"$file.ttf\" -o \"$file.afm\"" ;
-                 system($command) ;
-                 print "$command\n" if $trace ;
-                 push(@cleanup, "$file.afm") }
-	    @files = validglob("$runpath/$pattern.afm") }
-	else # try doing the pre-processing earlier
-	  { report("locating afm files : using otf files") ;
-	    $extension = "otf" ;
-	    @files = validglob("$runpath/$pattern.otf") ;
-	    foreach my $file (@files)
-	      { $file =~ s/\.otf$//io ;
-		if (!$lcdf)
-		{ report ("generating afm file : $file.afm") ;
-		  preprocess_font("$file.otf", "$file.bdf") ;
-          push(@cleanup,"$file.afm") }
-		if ($preproc)
-		{ my $command = "cfftot1 --output=$file.pfb $file.otf" ;
-                  print "$command\n" if $trace ;
-		  report("converting : $file.otf to $file.pfb") ;
-                  system($command) ;
-                  push(@cleanup, "$file.pfb") ;
-	        }
-	      }
-      	    if ($lcdf)
-	    { @files = validglob("$runpath/$pattern.otf") }
-	    else
-	    { @files = validglob("$runpath/$pattern.afm") }
-	  }
+        if (@files)
+          { report("locating afm files : using ttf files") ;
+            $extension = "ttf" ;
+            foreach my $file (@files)
+                   { $file =~ s/\.ttf$//io ;
+                     report ("generating afm file : $file.afm") ;
+                     my $command = "ttf2afm \"$file.ttf\" -o \"$file.afm\"" ;
+                     system($command) ;
+                     print "$command\n" if $trace ;
+                     push(@cleanup, "$file.afm") }
+            @files = validglob("$runpath/$pattern.afm") }
+        else # try doing the pre-processing earlier
+          { report("locating afm files : using otf files") ;
+            $extension = "otf" ;
+            @files = validglob("$runpath/$pattern.otf") ;
+            foreach my $file (@files)
+              { $file =~ s/\.otf$//io ;
+            if (!$lcdf)
+            { report ("generating afm file : $file.afm") ;
+              preprocess_font("$file.otf", "$file.bdf") ;
+              push(@cleanup,"$file.afm") }
+            if ($preproc)
+            { my $command = "cfftot1 --output=$file.pfb $file.otf" ;
+                      print "$command\n" if $trace ;
+              report("converting : $file.otf to $file.pfb") ;
+                      system($command) ;
+                      push(@cleanup, "$file.pfb") ;
+                }
+              }
+                if ($lcdf)
+            { @files = validglob("$runpath/$pattern.otf") }
+            else
+            { @files = validglob("$runpath/$pattern.afm") }
+          }
        }
     return @files }
 

@@ -725,7 +725,10 @@
      \checkafterdiscretionary
      \bgroup
        \checkbeforediscretionary
-       \prewordbreak\hbox{\textmodediscretionary\nextnext}\allowbreak\postwordbreak
+       % this was:
+       % \prewordbreak\hbox{\textmodediscretionary\nextnext}\allowbreak\postwordbreak
+       % but an hbox blocks a possible \discretionary
+       \prewordbreak\textmodediscretionary\nextnext\allowbreak\postwordbreak
      \egroup
    \else\convertargument=\to\next\ifx\next\discretionarytoken
      \prewordbreak\textmodediscretionary
@@ -787,7 +790,10 @@
        \checkafterdiscretionary
        \bgroup
          \checkbeforediscretionary
-         \prewordbreak\hbox{\textmodediscretionary\nextnext}\allowbreak\postwordbreak
+         % the next line has been changed (20050203)
+         % \prewordbreak\hbox{\textmodediscretionary\nextnext}\allowbreak\postwordbreak
+         % but an hbox blocks a possible \discretionary
+         \prewordbreak\textmodediscretionary\nextnext\allowbreak\postwordbreak
        \egroup
      \fi
    \else\expandafter\ifx\csname\@tmd@\discretionarytoken\endcsname\relax

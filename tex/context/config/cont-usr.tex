@@ -45,7 +45,8 @@
 \definefilesynonym [lang-sv.pat]  [svhyph.tex]   % was [sehyph.tex]
 \definefilesynonym [lang-tr.pat]  [tkhyph.tex]   % was [trhyph.tex]
 \definefilesynonym [lang-ua.pat]  [ukrenhyp.tex] % sic ukren
-\definefilesynonym [lang-uk.pat]  [ukhyph.tex]
+
+\definefilesynonym [lang-uk.pat]  [ukhyphen.tex] % symbolic name, see below
 
 \definefilesynonym [lang-nl.pat]  [nlhyphen.tex] % symbolic name, see below
 \definefilesynonym [lang-af.pat]  [nlhyphen.tex] % symbolic name, see below
@@ -81,11 +82,23 @@
 %D practical tex conference 2004 in sf. Yet another proof of a mess in
 %D filenames. So, we now use \type {ushyphen} as name and do some
 %D searching.
+%D
+%D Well, it happened again, this time in 2004/2005. We're now back at
+%D \type {hyphen.tex}. At the same time the uk patterns have changed. It
+%D clearly demonstrates that those taking care of patterns don't think
+%D generic and completely trust this aliasses mechanism in kpse. It's about
+%D time that \CONTEXT\ starts shipping its own pattern files again in order
+%D to get around this everlasting mess.
 
- \doiffileelse{ushyph.tex}  {\definefilesynonym[ushyphen.tex][ushyph.tex]}
+ \doiffileelse{hyphen.tex}  {\definefilesynonym[ushyphen.tex][hyphen.tex] }
+{\doiffileelse{ushyph.tex}  {\definefilesynonym[ushyphen.tex][ushyph.tex] }
 {\doiffileelse{ushyph1.tex} {\definefilesynonym[ushyphen.tex][ushyph1.tex]}
-{\doiffileelse{ushyph2.tex} {\definefilesynonym[ushyphen.tex][ushyph2.tex]}
-                            {\definefilesynonym[ushyphen.tex][ukhyph.tex]}}}
+{\doiffileelse{ushyph2.tex} {\definefilesynonym[ushyphen.tex][ushyph2.tex]}}}}
+
+ \doiffileelse{ukhyph.tex}  {\definefilesynonym[ukhyphen.tex][ukhyph.tex] }
+{\doiffileelse{ukhyph1.tex} {\definefilesynonym[ukhyphen.tex][ukhyph1.tex]}
+{\doiffileelse{ukhyph2.tex} {\definefilesynonym[ukhyphen.tex][ukhyph2.tex]}
+                            {\definefilesynonym[ukhyphen.tex][hyphen.tex] }}}
 
 %D In order to get 8 bit characters hyphenated, we need to load
 %D patterns under the right circumstances. In some countries, more

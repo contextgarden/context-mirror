@@ -11,10 +11,29 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-% wat te doen met casual, evt `cs', danwel een manier om te
-% mappen (zie showcase)
-
 \writestatus{loading}{Context Typescript Macros (ini)}
+
+% torture test : proper typefaces (and namespace)
+%
+% \starttext
+%   \usetypescript[modern][default]  default:  \setupbodyfont[modern] \eacute \eogonek \zcaron \acircumflexgrave
+%   \usetypescript[modern][texnansi] texnansi: \setupbodyfont[modern] \eacute \eogonek \zcaron \acircumflexgrave
+%   \usetypescript[modern][ec]       ec:       \setupbodyfont[modern] \eacute \eogonek \zcaron \acircumflexgrave
+%   \usetypescript[modern][qx]       qx:       \setupbodyfont[modern] \eacute \eogonek \zcaron \acircumflexgrave
+%   \usetypescript[modern][il2]      il2:      \setupbodyfont[modern] \eacute \eogonek \zcaron \acircumflexgrave
+%   \usetypescript[modern][pl0]      pl0:      \setupbodyfont[modern] \eacute \eogonek \zcaron \acircumflexgrave
+%   \usetypescript[modern][t5]       t5:       \setupbodyfont[modern] \eacute \eogonek \zcaron \acircumflexgrave
+% \stoptext
+%
+% torture test : no typeface, just definitions
+%
+% \starttext
+%   {\setupbodyfont[reset] \setupbodyfont[cmr] cmr: \eacute \eogonek \zcaron \acircumflexgrave \endgraf}
+%   {\setupbodyfont[reset] \setupbodyfont[plr] plr: \eacute \eogonek \zcaron \acircumflexgrave \endgraf}
+%   {\setupbodyfont[reset] \setupbodyfont[csr] csr: \eacute \eogonek \zcaron \acircumflexgrave \endgraf}
+%   {\setupbodyfont[reset] \setupbodyfont[vnr] vnr: \eacute \eogonek \zcaron \acircumflexgrave \endgraf}
+%   {\setupbodyfont[reset] \setupbodyfont[aer] aer: \eacute \eogonek \zcaron \acircumflexgrave \endgraf}
+% \stoptext
 
 \unprotect
 

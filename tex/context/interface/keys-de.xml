@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 
-<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="de" version="2005.01.31">
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="de" version="2005.02.03">
 
   <cd:variables>
     <cd:variable name="one" value="eins"/>
@@ -120,6 +120,9 @@
     <cd:constant name="rightquotation" value="rechterzitat"/>
     <cd:constant name="leftquote" value="linkerzitieren"/>
     <cd:constant name="rightquote" value="rechterzitieren"/>
+    <cd:constant name="compoundhyphen" value="compoundhyphen"/>
+    <cd:constant name="leftcompoundhyphen" value="leftcompoundhyphen"/>
+    <cd:constant name="rightcompoundhyphen" value="rightcompoundhyphen"/>
     <cd:constant name="midsentence" value="midsentence"/>
     <cd:constant name="leftsentence" value="linkersatz"/>
     <cd:constant name="rightsentence" value="rechtersatz"/>

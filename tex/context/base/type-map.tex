@@ -16,21 +16,30 @@
 \starttypescript [map] [base] [all]
   \loadmapfile[original-base.map]
   \loadmapfile[ec-base.map]
+  \loadmapfile[texnansi-base.map]
   \loadmapfile[8r-base.map]
   \loadmapfile[qx-base.map]
   \loadmapfile[t5-base.map]
-  \loadmapfile[texnansi-base.map]
-  \loadmapfile[original-ams-cmr.map]
+\stoptypescript
+
+\starttypescript [map] [base] [all]
+  \loadmapfile[original-ams-base.map]
+% \loadmapfile[original-ams-cmr.map]
   \loadmapfile[original-ams-euler.map]
   \loadmapfile[original-public-lm.map]
-  \loadmapfile[original-public-plr.map]
-  \loadmapfile[original-public-csr.map]
-  \loadmapfile[original-public-vnr.map]
 \stoptypescript
+
+% per 20050201 we moved to latin modern for plr/csr/vnr
+%
+% \starttypescript [map] [base] [all]
+%   \loadmapfile[original-public-plr.map]
+%   \loadmapfile[original-public-csr.map]
+%   \loadmapfile[original-public-vnr.map]
+% \stoptypescript
 
 % This is the base map file, load it to be sure.
 
-\starttypescript [map] [all] [ec,8r,texnansi]
+\starttypescript [map] [all] [ec,8r,texnansi,qx,t5,pl0,il2]
   \loadmapfile[original-base.map]
   \loadmapfile[\typescriptthree-base.map]
 \stoptypescript
@@ -43,25 +52,45 @@
 
 % cmr and related
 
-\starttypescript [map] [cmr]
-  \loadmapfile[original-ams-cmr.map]
+% \starttypescript [map] [cmr]
+%   \loadmapfile[original-ams-cmr.map]
+%   \loadmapfile[original-ams-euler.map]
+% \stoptypescript
+%
+% \starttypescript [map] [lm,lmr]
+%   \loadmapfile[original-public-lm.map]
+% \stoptypescript
+
+\starttypescript [map] [cmr,lm,lmr]
+  \loadmapfile[original-public-lm.map]
+  \loadmapfile[original-ams-base.map]
   \loadmapfile[original-ams-euler.map]
 \stoptypescript
 
+% per 20050201 we moved to latin modern for plr/csr/vnr
+%
+% \starttypescript [map] [il2,csr]
+%   \loadmapfile[original-public-csr.map]
+% \stoptypescript
+%
+% \starttypescript [map] [pl0,plr]
+%   \loadmapfile[original-public-plr.map]
+% \stoptypescript
+%
+% \starttypescript [map] [vnr]
+%   \loadmapfile[original-public-vnr.map]
+% \stoptypescript
+
 \starttypescript [map] [il2,csr]
-  \loadmapfile[original-public-csr.map]
+  \loadmapfile[il2-public-lm.map]
 \stoptypescript
 
 \starttypescript [map] [pl0,plr]
-  \loadmapfile[original-public-plr.map]
+  \loadmapfile[pl0-public-lm.map]
 \stoptypescript
 
-\starttypescript [map] [lm,lmr]
-  \loadmapfile[original-public-lm.map]
-\stoptypescript
-
-\starttypescript [map] [vnr]
-  \loadmapfile[original-public-vnr.map]
+\starttypescript [map] [t5,vnr]
+  \loadmapfile[t5-public-lm.map]
 \stoptypescript
 
 % cyrillic
@@ -70,9 +99,9 @@
   \loadmapfile[cm-super-\typescriptthree.map]
 \stoptypescript
 
-% latin modern (t5 to be done)
+% latin modern
 
-\starttypescript [map] [latin-modern] [ec,texnansi,qx,t5,pl0]
+\starttypescript [map] [latin-modern] [ec,texnansi,qx,t5,pl0,il2]
   \loadmapfile[\typescriptthree-public-lm.map]
   \loadmapfile[\typescriptthree-var-exclusive-public-lm.map]
 \stoptypescript

@@ -572,12 +572,30 @@
    \languageparameter#1}
 
 % actually this is pretty old, but temporary moved here
+%
+% obsolete:
 
 \def\setuphyphenmark
   {\dodoubleargument\getparameters[\??kp]}
 
 \setuphyphenmark
-  [\c!sign=\compoundhyphen]
+  [\c!sign=\composedhyphen]
+
+\installdiscretionaries || \@@kpsign
+
+% will become:
+%
+% \installdiscretionaries || \composedhyphen
+
+\def\composedhyphen
+  {\discretionary
+     {\hbox{\directsymbol\empty\c!leftcompoundhyphen}}
+     {\hbox{\directsymbol\empty\c!rightcompoundhyphen}}
+     {\hbox{\directsymbol\empty\c!compoundhyphen}}}
+
+\definesymbol[\c!leftcompoundhyphen]  [\languageparameter\c!leftcompoundhyphen]
+\definesymbol[\c!rightcompoundhyphen] [\languageparameter\c!rightcompoundhyphen]
+\definesymbol[\c!compoundhyphen]      [\languageparameter\c!compoundhyphen]
 
 \definehspace [sentence]      [\zeropoint]
 \definehspace [intersentence] [.250em]
@@ -601,8 +619,6 @@
 \definesymbol
   [\c!rightsubsentence]
   [\rightboundarycharacter\c!rightsubsentence{sentence}]
-
-\installdiscretionaries || \@@kpsign
 
 \newsignal \subsentencesignal
 \newcounter\subsentencelevel

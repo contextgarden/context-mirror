@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 
-<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="cz" version="2005.01.31">
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="cz" version="2005.02.03">
 
   <cd:variables>
     <cd:variable name="one" value="jedna"/>
@@ -120,6 +120,9 @@
     <cd:constant name="rightquotation" value="citacevpravo"/>
     <cd:constant name="leftquote" value="citovatvlevo"/>
     <cd:constant name="rightquote" value="citovatvpravo"/>
+    <cd:constant name="compoundhyphen" value="compoundhyphen"/>
+    <cd:constant name="leftcompoundhyphen" value="leftcompoundhyphen"/>
+    <cd:constant name="rightcompoundhyphen" value="rightcompoundhyphen"/>
     <cd:constant name="midsentence" value="midsentence"/>
     <cd:constant name="leftsentence" value="vetavlevo"/>
     <cd:constant name="rightsentence" value="vetavpravo"/>

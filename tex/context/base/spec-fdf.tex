@@ -2757,22 +2757,24 @@
 % \newif\ifPDFstrokecolor \PDFstrokecolortrue
 
 \def\doPDFstartgraymode#1%
-  {\PDFdirectcode{#1 g\ifPDFstrokecolor\space#1 G\fi}}
+%   {\PDFdirectcode{#1 g\ifPDFstrokecolor\space#1 G\fi}}
+  {\PDFcode{#1 g\ifPDFstrokecolor\space#1 G\fi}}
 
 \def\doPDFstopgraymode
-  {\PDFdirectcode{0 g\ifPDFstrokecolor\space0 G\fi}}
+%   {\PDFdirectcode{0 g\ifPDFstrokecolor\space0 G\fi}}
+  {\PDFcode{0 g\ifPDFstrokecolor\space0 G\fi}}
 
 \def\doPDFstartrgbcolormode#1#2#3%
-  {\PDFdirectcode{#1 #2 #3 rg\ifPDFstrokecolor\space#1 #2 #3 RG\fi}}
+%   {\PDFdirectcode{#1 #2 #3 rg\ifPDFstrokecolor\space#1 #2 #3 RG\fi}}
+  {\PDFcode{#1 #2 #3 rg\ifPDFstrokecolor\space#1 #2 #3 RG\fi}}
 
 \def\doPDFstartcmykcolormode#1#2#3#4%
-  {\PDFdirectcode{#1 #2 #3 #4 k\ifPDFstrokecolor\space#1 #2 #3 #4 K\fi}}
+%   {\PDFdirectcode{#1 #2 #3 #4 k\ifPDFstrokecolor\space#1 #2 #3 #4 K\fi}}
+  {\PDFcode{#1 #2 #3 #4 k\ifPDFstrokecolor\space#1 #2 #3 #4 K\fi}}
 
 \def\doPDFstartgraycolormode#1%
-  {\PDFdirectcode{#1 g\ifPDFstrokecolor\space#1 G\fi}}
-
-% \def\doPDFstartspotcolormode#1#2%
-%   {\PDFdirectcode{/#1 CS #2 SC /#1 cs #2 sc}}
+%   {\PDFdirectcode{#1 g\ifPDFstrokecolor\space#1 G\fi}}
+  {\PDFcode{#1 g\ifPDFstrokecolor\space#1 G\fi}}
 
 \def\doPDFstartspotcolormode#1#2% redefining spotcolors is not possible anyway
   {\ifundefined{pdf:scs:#2}%
@@ -2788,16 +2790,19 @@
      \fi
      \egroup
    \fi
-   \PDFdirectcode{/#1 cs /#1 CS \PDFgetspotcolorspec{#2}}}
+%    \PDFdirectcode{/#1 cs /#1 CS \PDFgetspotcolorspec{#2}}}
+   \PDFcode{/#1 cs /#1 CS \PDFgetspotcolorspec{#2}}}
 
 \def\PDFgetspotcolorspec#1%
   {\executeifdefined{pdf:scs:#1}\empty} % better no default than one with too less args
 
 \def\doPDFstartnonecolormode
-  {\PDFdirectcode{/None CS 1 SC /None cs 1 sc}}
+%   {\PDFdirectcode{/None CS 1 SC /None cs 1 sc}}
+  {\PDFcode{/None CS 1 SC /None cs 1 sc}}
 
 \def\doPDFstopcolormode
-  {\PDFdirectcode{0 g\ifPDFstrokecolor\space0 G\fi}}
+%   {\PDFdirectcode{0 g\ifPDFstrokecolor\space0 G\fi}}
+  {\PDFcode{0 g\ifPDFstrokecolor\space0 G\fi}}
 
 %D We need to register the spot colors and their fallbacks.
 
@@ -2949,13 +2954,15 @@
 \def\doPDFstartnegative
   {\ifx\initializePDFnegative\undefined\else
      \initializePDFnegative
-     \PDFdirectcode{/GSnegative gs}%
+%      \PDFdirectcode{/GSnegative gs}%
+     \PDFcode{/GSnegative gs}%
    \fi}
 
 \def\doPDFstopnegative
   {\ifx\initializePDFnegative\undefined\else
      \initializePDFnegative
-     \PDFdirectcode{/GSpositive gs}%
+%      \PDFdirectcode{/GSpositive gs}%
+     \PDFcode{/GSpositive gs}%
    \fi}
 
 %D \macros
@@ -2966,13 +2973,15 @@
 \def\doPDFstartoverprint
   {\ifx\initializePDFoverprint\undefined\else
      \initializePDFoverprint
-     \PDFdirectcode{/GSoverprint gs}%
+%      \PDFdirectcode{/GSoverprint gs}%
+     \PDFcode{/GSoverprint gs}%
    \fi}
 
 \def\doPDFstopoverprint
   {\ifx\initializePDFoverprint\undefined\else
      \initializePDFoverprint
-     \PDFdirectcode{/GSknockout gs}%
+%      \PDFdirectcode{/GSknockout gs}%
+     \PDFcode{/GSknockout gs}%
    \fi}
 
 %D Transparency support (experimental):
@@ -2990,10 +2999,12 @@
 
 \def\dodoPDFstarttransparency#1#2%
   {\presetPDFtransparency{#1}{#2}%
-   \PDFdirectcode{\PDFtransparencyidentifier\space gs }}
+%    \PDFdirectcode{\PDFtransparencyidentifier\space gs }}
+   \PDFcode{\PDFtransparencyidentifier\space gs }}
 
 \def\dodoPDFstoptransparency
-  {\PDFdirectcode{/Tr0 gs }}
+%   {\PDFdirectcode{/Tr0 gs }}
+  {\PDFcode{/Tr0 gs }}
 
 \def\doPDFstarttransparency
   {\ifPDFtransparencysupported
@@ -3047,8 +3058,11 @@
 \let\PDFhidelayers\empty
 \let\PDFvidelayers\empty
 
-\def\doPDFstartlayer#1{\PDFdirectcode{/OC /#1 BDC}}
-\def\doPDFstoplayer   {\PDFdirectcode        {EMC}}
+% \def\doPDFstartlayer#1{\PDFdirectcode{/OC /#1 BDC}}
+% \def\doPDFstoplayer   {\PDFdirectcode        {EMC}}
+
+\def\doPDFstartlayer#1{\PDFcode{/OC /#1 BDC}}
+\def\doPDFstoplayer   {\PDFcode        {EMC}}
 
 % resource -> prop -> mc's -> OCG|OCMD (nested)
 
@@ -3144,19 +3158,20 @@
 \def\doPDFstartfonteffect#1#2#3%
   {\ifdim#2>\zeropoint
      \PointsToBigPoints{#2}\ascii
-     \PDFdirectcode{\ascii\space w}%
+%      \PDFdirectcode{\ascii\space w}%
+     \PDFcode{\ascii\space w}%
    \fi
    \ifdim#3\points=\onepoint\else
      \scratchdimen#3\points
-     \PDFdirectcode{\withoutpt{\the\scratchdimen}\space Tc}%
+%      \PDFdirectcode{\withoutpt{\the\scratchdimen}\space Tc}%
+     \PDFcode{\withoutpt{\the\scratchdimen}\space Tc}%
    \fi
-%    \ifdim#3\points=\onepoint\else
-%      \PDFcode{#3\space Tc}%
-%    \fi
-   \PDFdirectcode{\purenumber#1 Tr}}
+%    \PDFdirectcode{\purenumber#1 Tr}}
+   \PDFcode{\purenumber#1 Tr}}
 
 \def\doPDFstopfonteffect
-  {\PDFdirectcode{1 w 0 Tc 0 Tr}}
+%   {\PDFdirectcode{1 w 0 Tc 0 Tr}}
+  {\PDFcode{1 w 0 Tc 0 Tr}}
 
 %D And that was all.
 
