@@ -8,8 +8,8 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. Non||commercial use is 
-%C granted. 
+%C therefore copyrighted by \PRAGMA. See licen-en.pdf for 
+%C details. 
 
 %D \gdef\ShowBufferedExample% private typeseting macro
 %D   {\startregelcorrectie
@@ -1763,13 +1763,14 @@
   {\let\penalty  = \normalpenalty}
 
 %D \macros
-%D   {showingcomposition,
-%D    showcomposition,dontshowcomposition}
+%D   {showcomposition,dontshowcomposition,
+%D    showingcomposition}
 %D
-%D All these nice options come together in two macros. The
-%D first one turns the options on, the second turnes them off.
-%D Both macros only do their job when we are actually showing
-%D the composition.
+%D All these nice options come together in three macros. One
+%D for turning the options on, one for turning them off, and a
+%D boolean for enabling the mechanism outside the scope of the
+%D user. The first two macros only do their job when we are
+%D actually showing the composition. 
 %D
 %D \starttypen
 %D \showingcompositiontrue

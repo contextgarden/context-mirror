@@ -1,7 +1,3 @@
-% NOT YET DOCUMENTED !!
-%
-% overal \normalinput 
- 
 %D \module
 %D   [       file=core-fil,
 %D        version=1997.11.15,
@@ -12,13 +8,17 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. Non||commercial use is
-%C granted.
+%C therefore copyrighted by \PRAGMA. See licen-en.pdf for 
+%C details. 
 
 \writestatus{loading}{Context Core Macros / File Support}
 
 \unprotect
 
+% NOT YET DOCUMENTED !!
+%
+% overal \normalinput 
+ 
 \startmessages  dutch  library: files
    title: files 
        1: file synoniem -- is al in gebruik voor --
@@ -64,9 +64,10 @@
   {\dodoubleempty\dodefinefilesynonym}
 
 \def\dodefinefilesynonym[#1][#2]%
-  {\doifdefinedelse{\??fs#1}
-     {\showmessage{\m!systems}{1}{#1 (#2),\getvalue{\??fs#1}}} % alleen naar log 
-     {\setevalue{\??fs#1}{#2}}}
+  {\doifdefined{\??fs#1}
+     {\doifnotvalue{\??fs#1}{#2} 
+        {\showmessage{\m!files}{1}{#1 (#2),\getvalue{\??fs#1}}}}%
+   \setevalue{\??fs#1}{#2}}
     
 %D \macros 
 %D   {truefilename}

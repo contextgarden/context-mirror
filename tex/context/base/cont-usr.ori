@@ -6,6 +6,10 @@
 %D         author=Hans Hagen,
 %D           date=\currentdate,
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See licen-en.pdf for 
+%C details. 
 
 %D In this file users can specify what hyphenation patterns 
 %D they want to load into the format file. Normally, when 
@@ -16,7 +20,35 @@
 
 \unprotect
 
-% \usespecials[reset,ps,tr,pdf]
+%D Hyphenation patterns are normally sought in filed named
+%D \type {lang-xx.pat}. When present on the system, those 
+%D patterns take precedence. (The next list is inspired on 
+%D Thomas Esser's \TETEX\ distribution.) This list will be 
+%D adapted to the actual situation.
+
+\definefilesynonym [lang-de.pat]  [dehyphn.tex]
+\definefilesynonym [lang-deo.pat] [dehypht.tex]
+\definefilesynonym [lang-nl.pat]  [nehyph2.tex]
+\definefilesynonym [lang-nlx.pat] [dutch96.pat]
+\definefilesynonym [lang-us.pat]  [ushyph1.tex]
+\definefilesynonym [lang-uk.pat]  [ukhyph.tex]
+\definefilesynonym [lang-fr.pat]  [frhyph.tex]
+\definefilesynonym [lang-sp.pat]  [sphyph.tex]
+\definefilesynonym [lang-it.pat]  [ithyph.tex]
+\definefilesynonym [lang-da.pat]  [dkhyph.tex]
+\definefilesynonym [lang-pt.pat]  [pthyph.tex]
+\definefilesynonym [lang-sv.pat]  [sehyph.tex]
+\definefilesynonym [lang-pl.pat]  [plhyph.tex]
+\definefilesynonym [lang-fi.pat]  [fihyph.tex]
+\definefilesynonym [lang-no.pat]  [nohyph.tex]
+\definefilesynonym [lang-tr.pat]  [trhyph.tex]
+\definefilesynonym [lang-cz.pat]  [czhyph.tex]
+\definefilesynonym [lang-sk.pat]  [skhyph.tex]
+
+%D Additional languages can be defined here. Beware of 
+%D encoding incompatibilities. Please take a look at the 
+%D \type {cont-en.tex}, \type {cont-nl.tex}, enz.\ files 
+%D first. Normally you don't have to change a byte. 
 
 % \installlanguage [\s!af] [\c!status=\v!start] % afrikaans 
 % \installlanguage [\s!da] [\c!status=\v!start] % danish    
@@ -37,6 +69,9 @@
 % \installlanguage [deo]   [\c!status=\v!start] % old german
 % \installlanguage [nlx]   [\c!status=\v!start] % dutch 8 bit 
 
+%D The next lines can be used for setting the language to be 
+%D used at startup time. 
+
 % \appendtoks \language[\s!af] \to \everyjob
 % \appendtoks \language[\s!cz] \to \everyjob
 % \appendtoks \language[\s!da] \to \everyjob
@@ -54,9 +89,20 @@
 % \appendtoks \language[\s!sv] \to \everyjob
 % \appendtoks \language[\s!tr] \to \everyjob
 
+%D When one of the current lines is uncommented, please also 
+%D uncomment the next one. 
+
 % \appendtoks \mainlanguage[\currentlanguage] \to \everyjob
 
+%D Local font settings can go here. Normally suitable 
+%D defaults are already preloaded, almost certainly the 
+%D Computer Modern Roman typefaces or some derivate. So, the 
+%D next line is only meant as sample, take a look at the 
+%D format related files first. 
+
 % \setupbodyfont[cmr]
+
+%D Don't remove the next few lines. 
 
 \protect
 

@@ -8,8 +8,8 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. Non||commercial use is 
-%C granted. 
+%C therefore copyrighted by \PRAGMA. See licen-en.pdf for 
+%C details. 
 
 \writestatus{loading}{Context Core Macros / Verbatim}
 
@@ -57,7 +57,8 @@
       \setbox0=\hbox % get rid of spaces when in-line \newpretty loading
         {\restorecatcodes % also needed when loading during \newpretty 
          \startreadingfile % restore < and > if needed
-         \readsysfile{verb-\prettyidentifier.tex}{}{}
+         \lowercasestring verb-\prettyidentifier.tex\to\filename
+         \readsysfile{\filename}{}{}
          \stopreadingfile}%
       \egroup}%
    \doifdefinedelse{setuppretty\prettyidentifier type}%

@@ -1,0 +1,98 @@
+%D \module
+%D   [     file=font-cmx,
+%D      version=1996.11.10,
+%D        title=\CONTEXT\ Font Macros,
+%D     subtitle=Large Computer Modern,
+%D       author=J. Hagen,
+%D         date=\currentdate,
+%D    copyright=J. Hagen]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See licen-en.pdf for 
+%C details. 
+
+%D Small is beautiful, but sometimes large is needed. We 
+%D therefore define some rather large Computer Modern Roman 
+%D bodyfont sizes, that cna be used in for instance headings. 
+%D 
+%D First we define some bodyfont environments. This enables us 
+%D to typeset lerge math. 
+
+\unprotect
+
+\definebodyfontenvironment
+  [14.4pt]
+  [        \s!text=14.4pt,
+         \s!script=11pt, 
+   \s!scriptscript=9pt, 
+              \c!x=12pt,
+             \c!xx=10pt,
+          \c!groot=17.3pt,
+          \c!klein=12pt]
+
+\definebodyfontenvironment
+  [17.3pt]
+  [        \s!text=17.3pt,
+         \s!script=12pt, 
+   \s!scriptscript=10pt, 
+              \c!x=14.4pt,
+             \c!xx=12pt,
+          \c!groot=20.7pt,
+          \c!klein=14.4pt]
+
+\definebodyfontenvironment
+  [20.7pt]
+  [        \s!text=20.7pt,
+         \s!script=14.4pt, 
+   \s!scriptscript=12pt, 
+              \c!x=17.3pt,
+             \c!xx=14.4pt,
+          \c!groot=20.7pt,    % !!!!
+          \c!klein=17.3pt]
+
+\protect
+
+%D We can use \type{sa} here because there are no genuine design
+%D sizes larger than 12pt (exept from cmr17). 
+
+\definebodyfont [14.4pt,17.3pt,20.7pt] [rm] 
+  [tf=cmr12    sa 1,
+   bf=cmbx12   sa 1,
+   it=cmti12   sa 1,
+   sl=cmsl12   sa 1,
+   bi=cmbxti10 sa 1,
+   bs=cmbxsl10 sa 1,
+  tfa=cmr12    sa 1.200,
+  tfb=cmr12    sa 1.440,
+  tfc=cmr12    sa 1.728,
+  tfd=cmr12    sa 2.074,
+   sc=cmcsc10  sa 1.200]
+
+\definebodyfont [14.4pt,17.3pt,20.7pt] [ss] 
+  [tf=cmss12   sa 1,
+   bf=cmssbx10 sa 1,
+   it=cmssi12  sa 1,
+   sl=cmssi12  sa 1,
+   bi=cmssbx10 sa 1,
+   bs=cmssbx10 sa 1,
+  tfa=cmss12   sa 1.200,
+  tfb=cmss12   sa 1.440,
+  tfc=cmss12   sa 1.728,
+  tfd=cmss12   sa 2.074,
+   sc=cmss12   sa 1]
+
+\definebodyfont [12pt,17.3pt,20.7pt] [tt] 
+  [tf=cmtt12   sa 1,
+   sl=cmsltt10 sa 1,
+   it=cmitt10  sa 1,
+  tfa=cmtt12   sa 1.200,
+  tfb=cmtt12   sa 1.440,
+  tfc=cmtt12   sa 1.728,
+  tfd=cmtt12   sa 2.074]
+
+\definebodyfont [14.4pt,17.3pt,20.7pt] [mm] 
+  [ex=cmex10   sa 1,
+   mi=cmmi12   sa 1,
+   sy=cmsy10   sa 1]
+
+\endinput

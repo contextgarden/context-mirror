@@ -8,10 +8,10 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. Non||commercial use is
-%C granted.
+%C therefore copyrighted by \PRAGMA. See licen-en.pdf for 
+%C details. 
 
-\def\contextversion{1999.2.17}
+\def\contextversion{1999.3.31}
 
 %D Welcome to the main module. When this module is ran through
 %D \type{initex} or \type{tex -i} or \type{whatevertex} using
@@ -76,11 +76,16 @@
 \input core-var.tex
 \input core-fil.tex
 
+%D We already need some synonyms (patterns). At runtime this 
+%D file will be reloaded. 
+
+\input cont-fil.tex 
+
 %D \CONTEXT\ does not implement its own table handling. We
 %D just go for the best there is and load \TABLE. Just to be
 %D sure we do it here, before we redefine \type{|}.
 
-\doinputonce{table}
+\input thrd-tab.tex   % \doinputonce{table}
 
 %D Here comes the last support modules. They take care of
 %D some language specific things.

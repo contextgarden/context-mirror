@@ -15,33 +15,8 @@
 %D    suggestions={Tobias Burnus, Dirk Kuypers \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. Non||commercial use is 
-%C granted. 
-
-% Copyright Notice / 1995-1999
-%
-% This module is part of the ConTeXt distribution. This
-% macropackage will be put in the public domain as soon as the
-% source is fully documented.
-%
-% This module is to be used as a whole and may not be adapted
-% without knowledge of the authors. No separate parts may be
-% distributed.
-%
-% Non-commercial (educational) institutions are hereby granted
-% to use this module. Commercial use is only permitted after
-% written permission.
-%
-% Errors can be reported to the authors and will be solved as
-% soon as possible. Suggestions are welcome.
-%
-% copyright : PRAGMA
-% author    : Hans Hagen
-% address   : Postbox 125
-%             8000 AC Zwolle
-%             The Netherlands
-% telephone : 038 4 229 775
-% e-mail    : pragma@pi.net
+%C therefore copyrighted by \PRAGMA. See licen-en.pdf for 
+%C details. 
 
 % Deze module ondersteunt het zetten van chemische
 % (structuur)formules. Hoewel de macro' zijn afgestemd op
@@ -494,7 +469,8 @@
    \or
      \pushMPdrawing
      \startMPdrawing
-       prologues := 1 ; 
+       %prologues := 1 ; 
+       input mp-tool ; 
        u := 10*\@@chemicalunit;
        bboxmargin := 0pt ; 
        pickup pencircle scaled 2u ; % ??? 
@@ -564,7 +540,8 @@
    \or
      \setcoordinatesystem units <\@@chemicalunit,\@@chemicalunit> %
      \startMPdrawing
-       prologues := 1 ; 
+       input mp-tool ; 
+      %prologues := 1 ; 
        u := 10*#1;
        bboxmargin := 0pt ; 
        pickup pencircle scaled 2u ; % ??? 

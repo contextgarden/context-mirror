@@ -2,14 +2,14 @@
 %D   [       file=core-mat,
 %D        version=1998.12.07,
 %D          title=\CONTEXT\ Core Macros,
-%D       subtitle=Math Fundsmentals,
+%D       subtitle=Math Fundamentals,
 %D         author=Hans Hagen,
 %D           date=\currentdate,
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. Non||commercial use is
-%C granted.
+%C therefore copyrighted by \PRAGMA. See licen-en.pdf for 
+%C details. 
 
 \writestatus{loading}{Context Core Macros / Math Fundamentals}
 
@@ -123,7 +123,12 @@
 %D chemicals come out ok. 
 
 \def\frac#1#2%
-  {{{\mathstyle{#1}}\over{\mathstyle{#2}}}}
+  {\relax
+   \ifmmode
+      {{\mathstyle{#1}}\over{\mathstyle{#2}}}%
+   \else
+      $\frac{#1}{#2}$%
+   \fi}
 
 %D The next macro, \type {\ch}, is \PPCHTEX\ aware. In
 %D formulas one can therefore best use \type {\ch} instead of

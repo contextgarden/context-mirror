@@ -8,8 +8,8 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. Non||commercial use is
-%C granted.
+%C therefore copyrighted by \PRAGMA. See licen-en.pdf for 
+%C details. 
 
 %D This environment can be used to typeset interactive
 %D presentations. This module was first used at the 1997 \TUG\
@@ -142,7 +142,7 @@
      \framed
        [framecolor=white,linethickness=1pt,
         height=\bottomheight,strut=no]
-       {\interactionbar[alternative=e,height=1ex]}
+       {\interactionbar[alternative=f,width=.5\textwidth,height=1ex]}
    \fi}
 
 %D \macros
@@ -368,7 +368,7 @@
 %D be counted by topic.
 
 \setupsubpagenumber
-  [way=byTopic,
+  [way=bytext, % Topic,
    state=start]
 
 \endinput

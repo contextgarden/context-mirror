@@ -1,3 +1,18 @@
+%D \module
+%D   [       file=core-ref,
+%D        version=1998.01.15,
+%D          title=\CONTEXT\ Core Macros,
+%D       subtitle=Cross Referencing,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See licen-en.pdf for 
+%C details. 
+
+\writestatus{loading}{Context Core Macros / Cross Referencing}
+
 % DUE TO NEW/FUTURE FEATURES THIS MODULE IS UNDER RECONSTRUCTION !
 %
 % uitprinten
@@ -25,20 +40,6 @@
 % not, because the current implementation permits to
 % determine the page state and is more efficient.
 
-%D \module
-%D   [       file=core-ref,
-%D        version=1998.01.15,
-%D          title=\CONTEXT\ Core Macros,
-%D       subtitle=Cross Referencing,
-%D         author=Hans Hagen,
-%D           date=\currentdate,
-%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
-%C
-%C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. Non||commercial use is
-%C granted.
-
-\writestatus{loading}{Context Core Macros / Cross Referencing}
 
 \unprotect
 
@@ -1606,8 +1607,10 @@
    \else\ifx\@@rfprefix\incrementreferenceprefix
      \advance\prefixcounter by 1
      \edef\referenceprefix{\the\prefixcounter:}%
+\let\@@rfprefix\s!unknown
    \else\ifx\@@rfprefix\decrementreferenceprefix
      \let\referenceprefix=\empty
+\let\@@rfprefix\s!unknown
    \else
      \edef\referenceprefix{\@@rfprefix:}%
    \fi\fi\fi\fi}

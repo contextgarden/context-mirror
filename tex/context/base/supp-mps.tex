@@ -8,8 +8,8 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. Non||commercial use is
-%C granted.
+%C therefore copyrighted by \PRAGMA. See licen-en.pdf for 
+%C details. 
 
 % E-tex   : a primitive that tells us that \write18 works
 % E-tex   : \executeMetaPost filename
@@ -549,7 +549,6 @@
 
 %D \macros
 %D   {includeMPfonts, ifincludeMPfonts}
-%D   {}
 %D
 %D The method we use is both robust and simple: one can do
 %D with calling the next macro with the filename as argument:
@@ -590,6 +589,42 @@
 %D dimensions and can be prepended (appended) to the special
 %D that handles the inclusion. The characters are in the file
 %D but made invisible.
+%D
+%D In \CONTEXT\ font handling is intergrated in the figure 
+%D inclusion macros. A decent plain \TEX\ alternative is:
+%D 
+%D \starttypen
+%D \def\includeMPgraphics#1%
+%D   {\hbox\bgroup
+%D    \includeMPfonts{#1}%
+%D    \dogetEPSboundingbox{#1}{\dimen2}{\dimen4}{\dimen6}{\dimen8}%
+%D    \advance\dimen6 by -\dimen2
+%D    \advance\dimen8 by -\dimen4
+%D    \vbox to \dimen8
+%D      {\forgetall
+%D       \vfill
+%D       \hsize\dimen6
+%D       \special
+%D         {PSfile="#1"\space
+%D          llx=\EPSllx\space
+%D          lly=\EPSlly\space
+%D          urx=\EPSurx\space
+%D          ury=\EPSury\space}}%
+%D    \egroup}
+%D \stoptypen  
+%D
+%D This macro needs \type {supp-eps.tex} and provided no 
+%D scaling. For \LATEX\ users the next one wil do: 
+%D
+%D \starttypen
+%D \def\includeMPgraphics#1#%
+%D   {\hbox\bgroup
+%D    \def\includeMPgraphics##1%
+%D      {\includeMPfonts{##1}%
+%D       \includegraphics[type=mps,#1]{##1}%  or whatever type they use
+%D       \egroup}%
+%D    \includeMPgraphics} 
+%D \stoptypen  
 
 %D We scan the graphics file for the \type{fshow} operator,
 %D that is, lines that start with \type{(}. If found it

@@ -8,8 +8,8 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. Non||commercial use is
-%C granted.
+%C therefore copyrighted by \PRAGMA. See licen-en.pdf for 
+%C details. 
 
 \writestatus{loading}{Context Core Macros / Footnote Handling}
 
@@ -432,6 +432,7 @@
 
 \def\postponefootnotes%
   {\let\autopostponefootnotes=\postponefootnotes
+   \let\postponefootnotes\relax % prevent loops 
    \gdef\localfootinsert%
      {%\message{[postponed footnote]}%
       \global\setbox\postponedfootnotes=\vbox\bgroup

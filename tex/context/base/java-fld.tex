@@ -1,5 +1,3 @@
-% nu nog alles geladen, moet dus anders
-
 %D \module
 %D   [       file=java-fld,
 %D        version=1998.05.20,
@@ -10,8 +8,10 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. Non||commercial use is 
-%C granted. 
+%C therefore copyrighted by \PRAGMA. See licen-en.pdf for 
+%C details. 
+
+% nu nog alles geladen, moet dus anders
 
 \startJSpreamble {Sanitize_TeX_Input} used later 
 
@@ -127,6 +127,9 @@
 
 \startJSpreamble {Do_With_Field} 
 
+var visible_field  = new Array() ; % no garbage collection ! 
+var visible_fields = 0 ; 
+
 function Hide_When_Down ()
   { event.target.hidden = true }
 
@@ -136,7 +139,19 @@ function Hide_Field ( Name )
 
 function Vide_Field ( Name ) 
   { var v = this.getField(Name) ;   
-    if (v) { v.hidden = false } } 
+    if (v) 
+      { ++visible_fields ; 
+        visible_field[visible_fields] = Name ;  
+        v.hidden = false } } 
+
+function Hide_Fields () 
+  { while (visible_fields>0)
+      { Hide_Field(visible_field[visible_fields]) ;
+        --visible_fields } } 
+
+function Vide_Fields ( Name ) % show only one field 
+  { Hide_Fields () ; 
+    Vide_Field ( Name) } 
 
 function Toggle_Hide ( Name ) 
   { var v = this.getField(Name) ; 

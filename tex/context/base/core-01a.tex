@@ -8,9 +8,9 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. Non||commercial use is
-%C granted.
-
+%C therefore copyrighted by \PRAGMA. See licen-en.pdf for 
+%C details. 
+
 % nog oplossen: voetnoot setten ivm later veranderde
 % witruimte; probleem: als lijn graphic
 
@@ -813,11 +813,24 @@
    \let\endstrut=\empty
    \let\begstrut=\empty}
 
+% unsave: 
+%
+% \def\pseudostrut%
+%   {\bgroup
+%    \setnostrut       
+%    \normalstrut 
+%    \egroup}
+%
+% try: 
+%
+% \startchemie
+%   \chemie[ONE,Z0,SB15,MOV1,SB15,Z0][C,C]
+% \stopchemie
+%
+% so:
+
 \def\pseudostrut%
-  {\bgroup
-   \setnostrut
-   \normalstrut
-   \egroup}
+  {\noindent}
 
 \def\resetteststrut%
   {\let\strutwidth=\!!zeropoint
@@ -5720,13 +5733,24 @@
       \hangafter=-\noflines}
      {\hangafter=-\getvalue{\??dd#1\c!hang}}}%
 
+%\setvalue{@@definitie\v!boven}#1[#2]#3%
+%  {%\pagina[\v!voorkeur]%         % Weg ermee!
+%   \dosomebreak{\goodbreak}%      % Dit is beter en nodig!
+%   \@@dostartdefinitie{#1}[#2]{\let\\=\space#3}%
+%   \copy\@@definitiebox
+%   \nobreak
+%   \getvalue{\??dd#1\c!tussen}%
+%   \@@dodefinitie{#1}}
+
 \setvalue{@@definitie\v!boven}#1[#2]#3%
-  {%\pagina[\v!voorkeur]%         % Weg ermee!
-   \dosomebreak{\goodbreak}%      % Dit is beter en nodig!
+  {%\pagina[\v!voorkeur]%       % Weg ermee!
+   %\dosomebreak{\goodbreak}%   % Dit is beter en nodig!
+   \dohandelpaginaafX1          % En dit moet het maar worden.
    \@@dostartdefinitie{#1}[#2]{\let\\=\space#3}%
-   \copy\@@definitiebox
+   \copy\@@definitiebox\par
    \nobreak
    \getvalue{\??dd#1\c!tussen}%
+   \nobreak
    \@@dodefinitie{#1}}
 
 \setvalue{@@definitie\v!inmarge}#1[#2]#3%
@@ -6544,6 +6568,8 @@
 \def\regelrechts{\doalignline \hss   \relax}
 \def\regelmidden{\doalignline \hss   \hss  }
 
+\def\regelbegrensd#1{\limitatetext{#1}{\hsize}{\onbekend}}
+
 % indirecte commando's 
 
 \setvalue{regel\v!links }{\doalignline \relax \hss  }
@@ -6698,6 +6724,7 @@
 \def\maakmargetekstblok#1#2#3#4#5#6%
   {#4\relax
    \bgroup
+   \forgetall % added, else problems with 'center' and nested itemize
    \mindermeldingen
    \hsize#1\relax
    \ifnum\margetekstnummer=0
@@ -8519,50 +8546,6 @@
 
 \def\@@koniveau{1}        \def\kopniveau{\@@koniveau}
 
-% \def\dohandelpaginaafA#1%
-%   {\ifnum\lastpenalty>0
-%      \global\paginageblokkeerdtrue
-%    \fi
-%    \witruimte
-%    \flushsidefloats
-%    \getvalue{\??ko#1\c!voor}%
-%    \ifpaginageblokkeerd
-%      \global\paginageblokkeerdfalse
-%    \else
-%      \!!countb=\getvalue{\??se\@@sectie\c!niveau}\relax
-%      \ifnum\!!countb>\@@koniveau\relax
-%        \!!counta=20000
-%        \multiply\!!countb by 500
-%        \advance\!!counta by \!!countb
-%        \dosomebreak{\penalty\!!counta}%
-%      \else
-%        \dosomebreak{\allowbreak}%
-%      \fi
-%    \fi
-%    \xdef\@@koniveau{\getvalue{\??se\@@sectie\c!niveau}}}
-%
-% \def\dohandelpaginaafB#1%
-%   {\doifinset{\getvalue{\??ko#1\c!pagina}}{\v!ja,\v!rechts,\v!links}
-%      {\def\resetcurrentsectionmarks% toegevoegd, zie \pagina
-%         {\resetsectionmarks[\previoussection{\@@sectie}]}%
-%       \pagina[\getvalue{\??ko#1\c!pagina}]%
-%       \doifinset{\getvalue{\??tk\v!hoofd\v!tekst\c!status}}{\v!normaal,\v!start}
-%         {\doifvaluesomething{\??ko#1\c!hoofd}
-%            {\stelhoofdin[\c!status=\getvalue{\??ko#1\c!hoofd}]}}}}
-%
-% \def\handelpaginaaf#1%
-%   {\dohandelpaginaafA{#1}%
-%    \ifnum\countervalue{\??se\previoussection{\@@sectie}}>0
-%      \ifnum\countervalue{\??se\@@sectie}>0
-%        \dohandelpaginaafB{#1}%
-%      \else
-%        \doifnotvalue{\??ko#1\c!doorgaan}{\v!ja}
-%          {\dohandelpaginaafB{#1}}%
-%      \fi
-%    \else
-%      \dohandelpaginaafB{#1}%
-%    \fi}
-
 \def\dohandelpaginaafAA#1%
   {\ifnum\lastpenalty>0
      \global\paginageblokkeerdtrue
@@ -8599,6 +8582,16 @@
       \doifinset{\getvalue{\??tk\v!voet\v!tekst\c!status}}{\v!normaal,\v!start}
         {\doifvaluesomething{\??ko#1\c!voet} % new 
            {\stelvoetin[\c!status=\getvalue{\??ko#1\c!voet}]}}}}
+
+\def\dohandelpaginaafX#1% zie doordefinieren / boven 
+  {\bgroup
+   \!!countb=\@@koniveau
+   \advance\!!countb by #1
+   \multiply\!!countb by 500
+   \!!counta=20000
+   \advance\!!counta by \!!countb
+   \dosomebreak{\penalty\!!counta}%
+   \egroup}
 
 \def\handelpaginaaf#1%
   {\dohandelpaginaafAA{#1}%
@@ -8763,7 +8756,9 @@
            {#3#4}
            {#5}
            {\marking[#1]{#5}% 
-            \bepaalkopnummer[#1]%
+\doifelsevalue{\??ko#1\c!eigennummer}{\v!ja}
+  {\edef\finalsectionnumber{#4}}
+  {\bepaalkopnummer[#1]}%
             \expanded{\marking[#1\v!nummer]{\finalsectionnumber}}}%
          \writesection{#1}{#4}{#5}%
        \else
@@ -8778,7 +8773,9 @@
             \doschrijfnaarlijst{\@@koppeling}{}{#5}{\v!kop}}
            {#5}
            {\marking[#1]{#5}% 
-            \bepaalkopnummer[#1]%
+\doifelsevalue{\??ko#1\c!eigennummer}{\v!ja}
+  {\edef\finalsectionnumber{#4}}
+  {\bepaalkopnummer[#1]}%
             \expanded{\marking[#1\v!nummer]{\finalsectionnumber}}}%
          \writesection{#1}{-}{#5}%
        \fi
@@ -8798,7 +8795,9 @@
        \setsectionlistreference{\@@sectie}{#1}%
        \resetsectionmarks[\@@sectie]%
        \marking[#1]{#5}%
-       \bepaalkopnummer[#1]%
+\doifelsevalue{\??ko#1\c!eigennummer}{\v!ja}
+  {\edef\finalsectionnumber{#4}}
+  {\bepaalkopnummer[#1]}%
        \expanded{\marking[#1\v!nummer]{\finalsectionnumber}}%
        \ExpandFirstAfter\soortpagina[\@@koppeling]%
 \bgroup
@@ -8998,7 +8997,11 @@
      \let\headlastlinewidth\!!zeropoint
      \snaptogrid\hbox
        {\iflocation
+\ifautocrossdocument
           \naarbox{\box0}[\getvalue{\??ko#1\c!file}::#1]%
+\else
+  \hbox{\box0}%
+\fi
         \else
           \hbox{\box0}%
         \fi}%
@@ -9009,10 +9012,15 @@
    \else
      \strut
      \iflocation
+\ifautocrossdocument
        \hhboxindent=\ifcontinuoushead\headlastlinewidth\else\!!zeropoint\fi
        \unhhbox0\with{\naarbox{\box\hhbox}[\getvalue{\??ko#1\c!file}::#1]}%
        \advance\lasthhboxwidth by \numberheaddistance
        \xdef\headlastlinewidth{\the\lasthhboxwidth}% 
+\else
+  \unhbox0
+  \global\let\headlastlinewidth\!!zeropoint
+\fi
      \else
        \unhbox0
        \global\let\headlastlinewidth\!!zeropoint
@@ -9196,7 +9204,8 @@
            {\definieermarkering[#1]%
             \koppelmarkering[#1][\getvalue{\??ko#1\c!sectie}]%
             \definieermarkering[#1\v!nummer]%
-            \koppelmarkering[#1\v!nummer][\getvalue{\??ko#1\c!sectie}\v!nummer]}}%
+            \koppelmarkering[#1\v!nummer][\getvalue{\??ko#1\c!sectie}]}}%
+%            \koppelmarkering[#1\v!nummer][\getvalue{\??ko#1\c!sectie}\v!nummer]}}%
       \doifundefined{\??li#1}{\definieerlijst[#1]}}
      {\ConvertToConstant\doifelse{#1}{#2}
         {\doifundefined{\??li#1}{\definieerlijst[#1]}}
@@ -9540,8 +9549,8 @@
 
 \def\startregels%
   {\@@rgvoor
-   \pagina[\v!voorkeur]
    \witruimte
+  %\pagina[\v!voorkeur]} gaat mis na koppen, nieuw: later \nobreak
    \begingroup
    \def\@@rgstepyes{\parindent\!!zeropoint}%
    \def\@@rgstepno{\parindent\!!zeropoint}%
@@ -9561,8 +9570,13 @@
    \let\checkindentation=\relax
    \@@rgstepno
    \ignorespaces
+   \gdef\afterfirstobeyedline% tzt two pass, net als opsomming
+     {\gdef\afterfirstobeyedline%
+        {\nobreak
+         \global\let\afterfirstobeyedline\relax}}%
    \def\obeyedline%
      {\par
+      \afterfirstobeyedline
       \ifdim\lastskip>\!!zeropoint
         \def\@@rglinesteptoggle{0}%
       \else
@@ -11934,52 +11948,43 @@
 \def\stelformulesin%
   {\dodoubleargument\getparameters[\??fm]}
 
-\def\dodoplaatsformule#1[#2]#3$$#4$$%
-  {\begingroup
-   \setdisplayskips
-   \!!doneafalse
-   \doif{#2}{-}{\!!doneatrue}%
-   \doif{#3}{-}{\!!doneatrue}%
-   \if!!donea % no number
-     \def\complexformulenummer[##1]##2{}%
-     \definecomplexorsimpleempty\formulenummer
-     \def\subformulenummer{\formulenummer}%
-     \dostartformula#4\dostopformula
-   \else
-     \doifelse{#1}{\v!ja}
-       {\def\verhoogformulenummer{\verhoognummer[\v!formule]}}
-       {\let\verhoogformulenummer=\relax}%
-     \def\simpleformulenummer%
-       {\gdef\doeqno{}%
-        \gdef\doleqno{}%
-        \gdef\formulenummer{\doformulenummer}%
-        \doformulenummer[#2]{#3}}%
-     \def\complexformulenummer%
-       {\gdef\doeqno{}%
-        \gdef\doleqno{}%
-        \gdef\formuleummer{\doformulenummer}%
-        \doformulenummer}%
-     \definecomplexorsimple\formulenummer
-     \def\subformulenummer%
-       {\let\verhoogformulenummer=\relax
-        \complexorsimple\formulenummer}%
-     \gdef\doleqno{\leqno{\formulenummer}}%
-     \gdef\doeqno{\eqno{\formulenummer}}%
-     \doifelse{\@@fmplaats}{\v!links}
-       {\dostartformula#4\doleqno\dostopformula}
-       {\dostartformula#4\doeqno\dostopformula}%
-   \fi
-   \par
-   \ignorespaces
-   \endgroup}
+%%
 
-\def\complexdoformulenummer[#1]#2%
-  {\verhoogformulenummer
-   \doifelse{#2}{ }
-     {\def\hetsubnummer{}}
-     {\def\hetsubnummer{#2}}%
-   {\rm\strut\@@fmlinks\lossenummer[\v!formule]\hetsubnummer\@@fmrechts}%
-   \rawreference{\s!for}{#1}{\hetnummer\hetsubnummer}}
+\newconditional\handleformulanumber 
+\newconditional\incrementformulanumber
+
+\def\dododoformulenummer#1#2#3#4% (#1,#2)=outer(ref,sub) (#3,#4)=inner(ref,sub)
+  {\hbox\bgroup
+   \ifconditional\handleformulanumber
+     \ifconditional\incrementformulanumber
+       \verhoognummer[\v!formule]%
+     \fi
+     \maakhetnummer[\v!formule]%
+     \setbox0=\hbox{\ignorespaces#2\unskip}%
+     \ifdim\wd0>\!!zeropoint
+       \edef\hetsubnummer{#2}%
+     \else
+       \let\hetsubnummer\empty
+     \fi
+     \doifsomething{#1}{\rawreference{\s!for}{#1}{\hetnummer\hetsubnummer}}%
+     \setbox0=\hbox{\ignorespaces#4\unskip}%
+     \ifdim\wd0>\!!zeropoint
+       \edef\hetsubnummer{#4}%
+     \fi
+     \doifsomething{#3}{\rawreference{\s!for}{#3}{\hetnummer\hetsubnummer}}%
+     \rm\strut\@@fmlinks
+     \ignorespaces\hetnummer\ignorespaces\hetsubnummer\unskip
+     \@@fmrechts
+   \fi
+   \egroup}
+
+\def\dodoformulenummer[#1][#2][#3]%
+  {\doquadruplegroupempty\dododoformulenummer{#1}{#2}{#3}}
+
+\def\doformulenummer% 
+  {\dotripleempty\dodoformulenummer}
+
+%
 
 \letvalue{\e!start\e!formule}=\undefined
 \letvalue{\e!stop \e!formule}=\undefined
@@ -12006,27 +12011,74 @@
      \belowdisplayskip\!!zeropoint
      \abovedisplayshortskip\!!zeropoint
      \belowdisplayshortskip\!!zeropoint
+\vbox{\strut}\vskip-2\lineheight % Why 2 and not 1? 
      $$\def\dostopformula{$$\egroup}}
 
-\def\doplaatsformule#1[#2]#3% % #3 gobbles spaces between [] and $$ or \startformule
-  {\def\redoplaatsformule%    % we can't lose {} after $$
+\def\plaatsformule%
+  {\settrue\incrementformulanumber
+   \dodoubleempty\doplaatsformule}
+
+\def\plaatssubformule%
+  {\setfalse\incrementformulanumber
+   \dodoubleempty\doplaatsformule}
+
+\def\doplaatsformule[#1][#2]% #2 = dummy, gobbles spaces
+  {\def\redoplaatsformule%
+     {\ifx\next\bgroup
+        \expandafter\xdoplaatsformule
+      \else
+        \expandafter\ydoplaatsformule
+      \fi[#1]}%
+   \futurelet\next\redoplaatsformule}
+
+\long\def\xdoplaatsformule[#1]#2#3% #3 gobbles spaces
+  {\def\redoplaatsformule%  
      {\expandafter\ifx\csname\e!start\e!formule\endcsname\next
         \expandafter\dodoplaatsstartformule
       \else
         \expandafter\dodoplaatsformule
-      \fi
-      #1[#2]}%
+      \fi[#1]{#2}}%
    \futurelet\next\redoplaatsformule#3}
 
-\def\complexplaatsformule%
-  {\doplaatsformule{\v!ja}}
+\long\def\ydoplaatsformule[#1]#2% #3 gobbles spaces
+  {\def\redoplaatsformule%
+     {\expandafter\ifx\csname\e!start\e!formule\endcsname\next
+        \expandafter\dodoplaatsstartformule
+      \else
+        \expandafter\dodoplaatsformule
+      \fi[#1]}%
+   \futurelet\next\redoplaatsformule#2}
 
-\def\complexplaatssubformule%
-  {\doplaatsformule{\v!nee}}
-
-\definecomplexorsimpleempty\doformulenummer
-\definecomplexorsimpleempty\plaatsformule
-\definecomplexorsimpleempty\plaatssubformule
+\def\dodoplaatsformule[#1]#2$$#3$$%
+  {\begingroup
+   \setdisplayskips
+   \doifelse{#1}{-}
+     {\setfalse\handleformulanumber}
+     {\doifelse{#2}{-}
+        {\setfalse\handleformulanumber}
+        {\settrue\handleformulanumber}}%
+   \ifconditional\handleformulanumber
+     \def\formulenummer%
+       {\global\let\doeqno\empty
+        \global\let\doleqno\empty
+       %\global\let\formulenummer\doformulenummer ???
+        \doformulenummer[#1][#2]}%
+     \def\subformulenummer%
+       {\setfalse\incrementformulanumber
+        \formulenummer}%
+     \gdef\doleqno{\leqno{\doformulenummer[#1][#2][]{}}}%
+     \gdef\doeqno {\eqno {\doformulenummer[#1][#2][]{}}}%
+     \doifelse{\@@fmplaats}{\v!links}
+       {\dostartformula#3\doleqno\dostopformula}
+       {\dostartformula#3\doeqno \dostopformula}%
+   \else
+     \def\formulenummer{\doformulenummer[#1][#2]}%
+     \let\subformulenummer\doformulenummer
+     \dostartformula#3\dostopformula
+   \fi
+   \par
+   \ignorespaces
+   \endgroup}
 
 %I n=Naast
 %I c=\startnaast,\stelnaastplaatsenin
@@ -12394,14 +12446,6 @@
 \def\stellijstin%
   {\dodoubleargument\dostellijstin}
 
-%\def\dodosetlijst#1%
-%  {\setvalue{#1\c!tussen}{\dotussenlijst{#1}}%
-%   \setvalue{#1\c!lijst}{\dolijstelement{#1}}}
-%
-%\def\dodoresetlijst#1%
-%  {\setvalue{#1\c!tussen}{\gobblefourarguments{#1}}%
-%   \setvalue{#1\c!lijst}{\gobblesixarguments{#1}}}
-
 \def\dodosetlijst#1%
   {\def\geenlijst##1{\unknown}%
    \setvalue{#1\c!tussen}{\dotussenlijst{#1}}%
@@ -12421,7 +12465,7 @@
      [\c!hoogte=\v!ruim,
       \c!diepte=\v!ruim,
       \c!offset=0.25em,
-      %
+      \c!maxbreedte=,
       \c!status=\v!start,
       \c!koppeling=\v!uit,
       \c!criterium=\v!lokaal,
@@ -12549,7 +12593,11 @@
 \def\dodolijstelementf{\let\dosomelijstelement\dodofixdlijstelementF}
 \def\dodolijstelementg{\let\dosomelijstelement\dodofixdlijstelementG}
 
-\setvalue{dodolijstelement\v!geen}{\let\dosomelijstelement\dodofreelijstelement}
+\setvalue{dodolijstelement\v!geen}%
+  {\let\dosomelijstelement\dodofreelijstelement}
+
+\setvalue{dodolijstelement\v!commando}%
+  {\let\dosomelijstelement\dodocommandlijstelement}
 
 % Here I learned something new: \leftskip can be changed
 % within a paragraph and the last one counts. Therefore we
@@ -12583,199 +12631,11 @@
      {\stelinteractiein[\c!kleur=,\c!contrastkleur=]}%
    \doattributes{\??li#1}{#2}{#3}}
 
-% \def\dodofreelijstelement#1#2#3#4#5#6%
-%   {\def\makelijstelement##1##2%
-%      {\hbox
-%         {\doifelsevalue{\??li#1\c!interactie}{##1}
-%            {\setbox0=\hbox{\showcontrastlocation{\??ia}{#6}{##2}}%
-%             \gotonextinternal{#1}{#2}{#6}{\copy0}}
-%            {##2}}}%
-%    \getvalue{\??li#1\c!voor}% can be \hskip
-%    \doifdefinedelse{\??li#1\c!commando}
-%      {\makelijstelement{\getvalue{\??li#1\c!interactie}}% this forces all
-%         {\getvalue{\??li#1\c!commando}%
-%            {#3}% geen conversies etc
-%            {#4}% geen conversies etc
-%            {\paginaprefix\??li#1[#5]%
-%             \translatednumber[#5]}}}
-%      {\ifvmode\nointerlineskip\fi % recently added
-%       \vbox
-%         {\forgetall
-%          \makelijstelement\v!alles
-%            {\makelijstelement\v!sectienummer
-%               {\dolistattributes{#1}\c!nummertekst\c!nummerkleur
-%                  {\getvalue{\??li#1\c!nummercommando}{\listsymbol}}}%
-%             \makelijstelement\v!tekst
-%               {\dolistattributes{#1}\c!tekstletter\c!tekstkleur
-%                  {\def\\{ }%
-%                   \dontconvertfont
-%                   \getvalue{\??li#1\c!tekstcommando}{#4}}}%
-%             \doifvalue{\??li#1\c!paginanummer}{\v!ja}
-%               {\doifsomething{#5}
-%                  {\makelijstelement\v!paginanummer
-%                     {\dolistattributes{#1}\c!paginaletter\c!paginakleur
-%                        {\getvalue{\??li#1\c!paginacommando}
-%                           {\paginaprefix\??li#1[#5]%
-%                            \translatednumber[#5]}}}}}}}%
-% \nointerlineskip % anders verkeerde spatiering bij multi-line
-%       \endgraf
-% \allowbreak
-% }%
-%    \getvalue{\??li#1\c!na}}
-% 
-% \def\dodofixdlijstelementABC#1#2#3#4#5#6% weeden
-%   {\endgraf
-%    \leftskip=\getvalue{\??li#1\c!marge}% na de \endgraf !
-%    \getvalue{\??li#1\c!voor}%
-%    \doifelsenothing{#3}
-%      {\doifelsevalue{\??li#1\c!titeluitlijnen}{\v!ja}
-%         {\!!widtha=\!!zeropoint}
-%         {\!!widtha=\getvalue{\??li#1\c!breedte}}}
-%      {\!!widtha=\getvalue{\??li#1\c!breedte}}%
-%    \getvalue{\??li\c!variant\getvalue{\??li#1\c!variant}}%
-%    \endgraf
-%    \def\makelijstelement##1##2%
-%      {\doifelsevalue{\??li#1\c!interactie}{##1}
-%         {\setbox0=\hbox{\showcontrastlocation{\??ia}{#6}{##2}}%
-%          \gotonextinternal{#1}{#2}{#6}{\copy0}}
-%         {\hbox{##2}}}%
-%    \doifvalue{\??li#1\c!interactie}{\v!tekst} % not supported
-%      {\doassign[\??li#1][\c!interactie=\v!alles]}%
-%    \makelijstelement\v!alles
-%      {\hbox to \hsize
-%         {\!!widthb=\hsize
-%          \setbox2=\hbox \ifdim\!!widtha>\!!zeropoint to \!!widtha \fi
-%            {\makelijstelement\v!sectienummer
-%               {\dolistattributes{#1}\c!nummerletter\c!nummerkleur
-%                  {\getvalue{\??li#1\c!nummercommando}{\listsymbol}}%
-%             \hfill}}%
-%          \setbox4=\hbox
-%            {\doifvalue{\??li#1\c!paginanummer}{\v!ja}
-%               {\doifsomething{#5}
-%                  {\hbox to 2em
-%                     {\hfill
-%                      \makelijstelement\v!paginanummer
-%                        {\dolistattributes{#1}\c!paginaletter\c!paginakleur
-%                           {\getvalue{\??li#1\c!paginacommando}
-%                              {\paginaprefix\??li#1[#5]%
-%                               \translatednumber[#5]}}}}}}}%
-%          \vbox
-%            {\hsize\!!widthb
-%             \ifdim\!!widtha<\hsize
-%               \hangindent=\wd2
-%               \dimen2=\getvalue{\??li#1\c!afstand}%
-%               \advance\hangindent by \dimen2
-%               \hangafter=1
-%               \ifvoid4
-%                 % we kunnen gewoon afbreken aan het eind
-%               \else
-%                 \ifdim\lijstskip>\!!zeropoint\relax
-%                   \rightskip=\lijstskip\!!plus10em\relax
-%                   \parfillskip=-\rightskip
-%                 \fi
-%               \fi
-%             \else
-%               \dimen2=\!!zeropoint
-%             \fi
-%             \parindent=\!!zeropoint\relax
-%             \leavevmode
-%             \box2\relax
-%             \hskip\dimen2
-%             \bgroup
-%             \dolistattributes{#1}\c!tekstletter\c!tekstkleur
-%               {\def\\{ }%
-%                \dontconvertfont
-%                \getvalue{\??li#1\c!tekstcommando}{#4}}%
-%             \egroup
-%             \ifvoid4
-%               \ifdim\!!widtha<\hsize
-%                 \hfill\strut
-%               \fi
-%             \else
-%               \nobreak\hskip.5em\lijstfill
-%               \box4\relax
-%               \relax
-%             \fi}%
-%          \hss}}%
-% \nointerlineskip % anders verkeerde spatiering bij multi-line
-%    \endgraf
-% \allowbreak
-%    \getvalue{\??li#1\c!na}}
-% 
-% % overrulen interactie kan sneller, bv door hulpconstanten
-% % te gebruiken en die te letten
-% 
-% \def\dodofixdlijstelementD#1#2#3#4#5#6%
-%   {\leftskip=\getvalue{\??li#1\c!marge}%
-%    \bgroup
-%    \ifvmode
-%      \noindent\leavevmode
-%    \fi
-%    \doifvalue{\??li#1\c!interactie}{\v!tekst} % not supported
-%      {\doassign[\??li#1][\c!interactie=\v!sectienummer]}%
-%    \doifvalue{\??li#1\c!interactie}{\v!alles} % not supported
-%      {\doassign[\??li#1][\c!interactie=\v!sectienummer]}%
-%    \def\makelijstelement##1##2%
-%      {\doifelsevalue{\??li#1\c!interactie}{##1}
-%         {\setbox0=\hbox{\showcontrastlocation{\??ia}{#6}{##2}}%
-%          \gotonextinternal{#1}{#2}{#6}{\copy0}}
-%         {\hbox{##2}}}%
-%    \setbox4=\hbox
-%      {\doifvalue{\??li#1\c!paginanummer}{\v!ja}
-%         {\doifsomething{#5}
-%            {\makelijstelement\v!paginanummer
-%               {\dolistattributes{#1}\c!paginaletter\c!paginakleur
-%                  {\getvalue{\??li#1\c!paginacommando}
-%                     {\paginaprefix\??li#1[#5]%
-%                      \translatednumber[#5]}}}}}}%
-%    \hbox
-%      {\getvalue{\??li#1\c!links}%
-%       \makelijstelement\v!sectienummer
-%         {\dolistattributes{#1}\c!nummerletter\c!nummerkleur
-%            {\getvalue{\??li#1\c!nummercommando}{\listsymbol}}}%
-%       \getvalue{\??li#1\c!rechts}%
-%       \hskip.5em}%
-%    \nobreak
-%    \tolerance3500
-%    \dolistattributes{#1}\c!tekstletter\c!tekstkleur
-%      {\def\\{ }%
-%       \dontconvertfont
-%       \getvalue{\??li#1\c!tekstcommando}{#4}}%
-%    \ifvoid4\else
-%      \nobreak
-%      \hskip.75em\relax
-%      \nobreak
-%      \box4
-%    \fi
-%    \dimen0=\getvalue{\??li#1\c!afstand}\relax
-%    \ifdim\dimen0<1em\relax
-%      \hskip1em\!!plus1em\!!minus.25em\relax
-%    \else
-%      \hskip\dimen0\!!plus.5\dimen0\!!minus.25\dimen0\relax
-%    \fi
-%    \egroup}
-% 
-% \def\dodofixdlijstelementE#1%
-%   {\dodofixdlijstelementEFG{\localframed
-%      [\??li#1][\c!diepte=\!!zeropoint,\c!kleur=]}{#1}}
-% 
-% \def\dodofixdlijstelementF%
-%   {\dodofixdlijstelementEFG\relax}
-% 
-% \def\dodofixdlijstelementG#1%
-%   {\dodofixdlijstelementEFG\regelmidden{#1}}
-% 
-% \def\dodofixdlijstelementEFG#1#2#3#4#5#6#7%
-%   {\noindent
-%    \hbox
-%      {\def\\={ }% or better \relax ?
-%       \setbox0=\hbox
-%         {#1{\showcontrastlocation{\??ia}{#7}
-%           {\dostartattributes{\??li#2}\c!letter\c!kleur{}%
-%            \ignorespaces\dontconvertfont#5%
-%            \dostopattributes}}}%
-%       \gotonextinternal{#2}{#3}{#7}{\copy0}}
-%    \par}
+\def\dodocommandlijstelement#1#2#3#4#5#6% 
+  {\doifdefinedelse{\??li#1\c!commando}
+     {\getvalue{\??li#1\c!commando}
+        {#3}{#4}{\paginaprefix\??li#1[#5]\translatednumber[#5]}}
+     {[#1: #3 - #4 - \paginaprefix\??li#1[#5]\translatednumber[#5]]}}
 
 \def\dodofreelijstelement#1#2#3#4#5#6%
   {\def\makelijstelement##1##2%
@@ -12982,7 +12842,9 @@
           {\dostartattributes{\??li#3}\c!letter\c!kleur{}%
            \ignorespaces\dontconvertfont\setstrut
            \begstrut
-           \getvalue{\??li#3\c!tekstcommando}{#6}% tekstcommando nieuw 
+           \doifelsenothing{\??li#3\c!maxbreedte}
+             {\getvalue{\??li#3\c!tekstcommando}{#6}}
+             {\getvalue{\??li#3\c!tekstcommando}{\limitatetext{#6}{\getvalue{\??li#3\c!maxbreedte}}{\onbekend}}}%
            \endstrut % struts new
            \dostopattributes}}}%
       \linklisttoelement{#3}{#4}{#7}{#8}{\copy0}}%
@@ -13387,7 +13249,7 @@
 
 \def\dosetsynonym#1%
   {\doifdefinedelse{\??sm#1\c!commando}
-     {\setvalue{#1\s!entry}{\getvalue{\??sm#1\c!commando}}}
+     {\setvalue{#1\s!entry}{\getvalue{\??sm#1\c!commando}}} % 3 argumenten 
      {\setvalue{#1\s!entry}{\dohandlesynonymentry{#1}}}}
 
 \def\doplaatslijstmetsynoniemen#1#2%
@@ -13636,7 +13498,7 @@
       \global\utilitydonetrue
       \bgroup
       \doifdefinedelse{\??so#1\c!commando}
-        {\getvalue{\??so#1\c!commando}{##2}}
+        {\getvalue{\??so#1\c!commando}{##2}}  % 1 argument 
         {\getvalue{\??so#1\c!voor}%
          \doattributes{\??so#1}\c!letter\c!kleur{##2}%
          \getvalue{\??so#1\c!na}}%
@@ -14577,28 +14439,57 @@
          \let\prevlistreference=\empty
          \let\nextlistreference=\empty
        \fi
+%
+%       \def\dodocommando[##1-##2]%
+%         {\gotonextinternal{\s!ind}{##1}{##2}{\copy0}}%
+%       \def\docommando##1##2%
+%         {\setbox0=\hbox to 1em{\hss\showlocation{\symbol[##2]}\hss}%
+%          \ifx##1\empty
+%            \hskip\wd0 % (optioneel maken)
+%          \else
+%            \expandafter\dodocommando\expandafter[##1]%
+%          \fi}%
+%       \bgroup
+%         \docommando\prevlistreference{\v!vorige}% 
+%       \egroup
+%       \bgroup
+%         \doifreferencefoundelse{\s!lin:\internallistreference}
+%           {\gotosomeinternal
+%              {\s!lin}{\internallistreference}{\currentrealreference}
+%              {\showlocation{#3}}}
+%           {\hbox{#3}}%
+%       \egroup
+%       \bgroup
+%         \docommando\nextlistreference{\v!volgende}% 
+%       \egroup}}
+%
        \def\dodocommando[##1-##2]%
          {\gotonextinternal{\s!ind}{##1}{##2}{\copy0}}%
        \def\docommando##1##2%
-         {\setbox0=\hbox to 1em{\hss\showlocation{\symbol[##2]}\hss}%
+         {\bgroup
           \ifx##1\empty
-            \hskip\wd0 % (optioneel maken)
+            \doifvalue{\??id#1\c!onbekendeverwijzing}{\v!leeg}
+              {\hskip1em}%
           \else
+            \setbox0=\hbox to 1em{\hss\showlocation{\symbol[##2]}\hss}%
             \expandafter\dodocommando\expandafter[##1]%
-          \fi}%
-       \bgroup
-         \docommando\prevlistreference{\v!vorige}% 
-       \egroup
-       \bgroup
-         \doifreferencefoundelse{\s!lin:\internallistreference}
-           {\gotosomeinternal
-              {\s!lin}{\internallistreference}{\currentrealreference}
-              {\showlocation{#3}}}
-           {\hbox{#3}}%
-       \egroup
-       \bgroup
-         \docommando\nextlistreference{\v!volgende}% 
-       \egroup}}
+          \fi
+          \egroup}%
+       \processaction   
+         [\getvalue{\??id#1\c!plaats}]     
+         [\v!midden=>\docommando\prevlistreference\v!vorige,
+           \v!links=>\docommando\prevlistreference\v!vorige
+                     \docommando\nextlistreference\v!volgende]%
+       \doifreferencefoundelse{\s!lin:\internallistreference}
+         {\gotosomeinternal
+            {\s!lin}{\internallistreference}{\currentrealreference}
+            {\showlocation{#3}}}
+         {\hbox{#3}}%
+       \processaction   
+         [\getvalue{\??id#1\c!plaats}]     
+         [ \v!midden=>\docommando\nextlistreference\v!volgende,
+           \v!rechts=>\docommando\prevlistreference\v!vorige
+                      \docommando\nextlistreference\v!volgende]}}
 
 \def\dodolinkedregister[#1][#2]#3%
   {\bgroup
@@ -14671,7 +14562,9 @@
       \v!hoofdstuk\c!nummer=\v!nee,
       \c!criterium=\v!alles,
       \c!commando=,
-      \c!refereren=\v!aan]%
+      \c!refereren=\v!aan,
+      \c!plaats=\v!midden,
+      \c!onbekendeverwijzing=\v!leeg]%
    \presetheadtext[#1=\Word{#1}]%
    \setvalue{#1}%
      {\doregister{#1}}%
@@ -14834,7 +14727,7 @@
 
 \letvalue{\e!start\e!buffer}\dostartbuffer
 
-% \setbuffer[name]#2\endbuffer : saves to file #2.tmp
+% \setbuffer[name]#2\endbuffer : saves to file #1.tmp
 
 \def\setbuffer[#1]#2\endbuffer%
   {\immediate\openout\tmpblocks=#1.\f!temporaryextension
@@ -17067,17 +16960,20 @@
 \definieerkop
   [\v!sub\v!sub\v!paragraaf]
   [\c!sectie=\v!sectionlevel-5,
-   \c!default=\v!paragraaf]
+  %\c!default=\v!paragraaf]
+   \c!default=\v!sub\v!paragraaf]             % nieuw 
 
 \definieerkop
   [\v!sub\v!sub\v!sub\v!paragraaf]
   [\c!sectie=\v!sectionlevel-6,
-   \c!default=\v!paragraaf]
+  %\c!default=\v!paragraaf]
+   \c!default=\v!sub\v!sub\v!paragraaf]       % nieuw 
 
 \definieerkop
   [\v!sub\v!sub\v!sub\v!sub\v!paragraaf]
   [\c!sectie=\v!sectionlevel-7,
-   \c!default=\v!paragraaf]
+  %\c!default=\v!paragraaf]
+   \c!default=\v!sub\v!sub\v!sub\v!paragraaf] % nieuw 
 
 \definieerkop
   [\v!titel]
@@ -17127,22 +17023,22 @@
 \stelkopin
   [\v!hoofdstuk]
   [\v!bijlage\c!label=\v!bijlage,
-   \v!hoofdtekst\c!label=\v!hoofdstuk]          %   bijlageconversie=\Character
+   \v!hoofdtekst\c!label=\v!hoofdstuk]             %   bijlageconversie=\Character
 
 \stelkopin
   [\v!paragraaf]
   [\v!bijlage\c!label=\v!paragraaf,
-   \v!hoofdtekst\c!label=\v!paragraaf]          %   bijlageconversie=\Character
+   \v!hoofdtekst\c!label=\v!paragraaf]             %   bijlageconversie=\Character
 
 \stelkopin
   [\v!sub\v!paragraaf]
   [\v!bijlage\c!label=\v!sub\v!paragraaf,
-   \v!hoofdtekst\c!label=\v!sub\v!paragraaf]    %   bijlageconversie=\Character
+   \v!hoofdtekst\c!label=\v!sub\v!paragraaf]       %   bijlageconversie=\Character
 
 \stelkopin
   [\v!sub\v!sub\v!paragraaf]
   [\v!bijlage\c!label=\v!sub\v!sub\v!paragraaf,
-   \v!hoofdtekst\c!label=\v!sub\v!sub\v!paragraaf]    %   bijlageconversie=\Character
+   \v!hoofdtekst\c!label=\v!sub\v!sub\v!paragraaf] %   bijlageconversie=\Character
 
 \stelkopin
   [\v!deel,\v!hoofdstuk]
@@ -17164,6 +17060,10 @@
    \c!springvolgendein=\v!nee,
    \c!voor={\blanko[2*\v!groot]},
    \c!na=\blanko]
+
+\stelkopin                 % nieuw 
+  [\v!sub\v!paragraaf]
+  [\c!pagina=]
 
 \definieersamengesteldelijst
   [\v!inhoud]
@@ -17256,7 +17156,7 @@
    \c!tussen=\blanko,
    \c!na=\blanko,
    \c!afsluiter=.,
-   \c!plaatsafsluiter=\v!ja, % kan gewoon check zijn op afsluiter
+   \c!plaatsafsluiter=\v!ja,
    \c!binnen=,
    \c!n=2,
    \c!items=4,

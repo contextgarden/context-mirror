@@ -8,8 +8,8 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. Non||commercial use is 
-%C granted. 
+%C therefore copyrighted by \PRAGMA. See licen-en.pdf for 
+%C details. 
 
 \writestatus{loading}{Context Core Macros / Tabulation}
 
@@ -100,7 +100,7 @@
 \newdimen  \tabulateunit
 \newif     \iftabulateequal
 
-\def\noftabcolumns{10} % quick and dirty stack
+\def\noftabcolumns{16} % quick and dirty stack
 
 \def\@@tabbox@@ {@@tabbox@}
 \def\@@tabhook@@{@@tabhook@}
@@ -397,7 +397,7 @@
      \witruimte
      \getvalue{\??tt\currenttabulate\c!voor}%
    \fi
-   \bgroup
+   \bgroup 
    \getvalue{\??tt\currenttabulate\c!binnen}%
    \dimen0=\leftskip
    \advance\dimen0 by \hangindent

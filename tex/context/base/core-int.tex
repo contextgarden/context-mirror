@@ -8,8 +8,8 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. Non||commercial use is 
-%C granted. 
+%C therefore copyrighted by \PRAGMA. See licen-en.pdf for 
+%C details. 
 
 %D Still to be done properly.
 
@@ -50,13 +50,13 @@
    \definieerkoppeling[#1]%
    \doglobal\increment\numberoflinks
    \gettwopassdata{\s!link:#1}%
-   \edef\numberoflinks    {0\getvalue{\s!link:#1:s}}%
-   \edef\firstlink   {0\getvalue{\s!link:#1:f}}%
-   \edef\lastlink    {0\getvalue{\s!link:#1:l}}%
-   \edef\currentlink {0\getvalue{\s!link:#1:n}}%
-   \edef\prevlink    {0\getvalue{\s!link:#1:c}}% 
+   \edef\numberoflinks{0\getvalue{\s!link:#1:s}}%
+   \edef\firstlink{0\getvalue{\s!link:#1:f}}%
+   \edef\lastlink{0\getvalue{\s!link:#1:l}}%
+   \edef\currentlink{0\getvalue{\s!link:#1:n}}%
+   \edef\prevlink{0\getvalue{\s!link:#1:c}}% 
    \iftwopassdatafound
-     \edef\nextlink  {0\twopassdata}%
+     \edef\nextlink{0\twopassdata}%
      \setxvalue{\s!link:#1:n}{\nextlink}%
      \setxvalue{\s!link:#1:c}{\currentlink}%
    \else
@@ -75,34 +75,19 @@
    \iflocation
      \hbox
        {\stelinteractiein[\c!breedte=\!!zeropoint]%
-        \def\goto##1##2%
-          {\doganaarpagina
-             {}%
-             {\localframed
-                [\??lk]
-                {$\ifgoingtopage
-                    \ifnum##2=\realpageno\relax
-                      ##1%
-                    \else
-                      \color[\locationcolor\@@lkkleur]{##1}%
-                    \fi
-                  \else
-                    ##1%
-                  \fi$}}%
-             [##2]}%
-        \goto {\gotobegincharacter} \firstlink\hss
+        \doganaareenpagina\??lk\gotobegincharacter\firstlink\hss
         \ifnum\noflinks>2
           \hskip\@@lkafstand
-          \goto {\gobackwardcharacter}\prevlink\hss
+          \doganaareenpagina\??lk\gobackwardcharacter\prevlink\hss
         \fi
         \hskip\@@lkafstand
         #2\relax
         \hskip\@@lkafstand
         \ifnum\noflinks>2
-          \goto {\goforwardcharacter} \nextlink\hss
+          \doganaareenpagina\??lk\goforwardcharacter\nextlink\hss
           \hskip\@@lkafstand
         \fi
-        \goto {\gotoendcharacter}   \lastlink}%
+        \doganaareenpagina\??lk\gotoendcharacter\lastlink}%
    \else
      \hbox{#2}%
    \fi
@@ -151,46 +136,32 @@
    \iflocation
      \hbox
        {\stelinteractiein[\c!breedte=\!!zeropoint]%
-        \def\goto##1##2%
-          {\doganaarpagina
-             {}%
-             {\localframed
-                [\??lk]
-                {$\ifgoingtopage
-                    \ifnum##2=\realpageno\relax
-                      ##1%
-                    \else
-                      \color[\locationcolor\@@lkkleur]{##1}%
-                    \fi
-                  \else
-                    ##1%
-                  \fi$}}%
-             [##2]}%
-%        \goto {\gotobegincharacter} \firstlink\hss
+%
+%        \doganaareenpagina\??lk\gotobegincharacter\firstlink\hss
 %        \ifnum\noflinks>2
 %          \hskip\@@lkafstand
-%          \goto {\gobackwardcharacter}\prevlink\hss
+%          \doganaareenpagina\??lk\gobackwardcharacter\prevlink\hss
 %        \fi
 %        \hskip\@@lkafstand
 %        #2\relax
 %        \hskip\@@lkafstand
 %        \ifnum\noflinks>2
-%          \goto {\goforwardcharacter} \nextlink\hss
+%          \doganaareenpagina\??lk\goforwardcharacter\nextlink\hss
 %          \hskip\@@lkafstand
 %        \fi
-%        \goto {\gotoendcharacter} \lastlink}%
+%        \doganaareenpagina\??lk\gotoendcharacter\lastlink}%
 %
         #2\relax
         \hskip\@@lkafstand
-        \goto {\gotobegincharacter} \firstlink\hss
+        \doganaareenpagina\??lk\gotobegincharacter\firstlink\hss
         \ifnum\noflinks>2
-          \goto {\gobackwardcharacter}\prevlink\hss
+          \doganaareenpagina\??lk\gobackwardcharacter\prevlink\hss
         \fi
         \ifnum\noflinks>2
-          \goto {\goforwardcharacter} \nextlink\hss
+          \doganaareenpagina\??lk\goforwardcharacter\nextlink\hss
           \hskip\@@lkafstand
         \fi
-        \goto {\gotoendcharacter} \lastlink}%
+        \doganaareenpagina\??lk\gotoendcharacter\lastlink}%
 %
    \else
      \hbox{#2}%

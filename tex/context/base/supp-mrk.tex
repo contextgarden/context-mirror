@@ -8,8 +8,11 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. Non||commercial use is
-%C granted.
+%C therefore copyrighted by \PRAGMA. See licen-en.pdf for 
+%C details. 
+
+%D Remark: due to the lack of \type {\clearmark}, the \ETEX\ 
+%D dedicated mechanism is not yet operational. 
 
 %D There are 256 \COUNTERS, \DIMENSIONS, \SKIPS, \MUSKIPS\ and
 %D \BOXES, 16~in- and output buffers, but there is only one
@@ -26,7 +29,7 @@
 
 \unprotect
 
-\beginTEX
+%% \beginTEX
 
 %D This implementation is more or less compatible with the
 %D other \type {\new} macros in \PLAIN\ \TEX. A mark is
@@ -332,7 +335,9 @@
 %D postprocessing, as needed when we want to make those
 %D clickable.
 
-\endTEX
+%% \endTEX
+
+\protect \endinput 
 
 %D Right from the beginning, \CONTEXT\ supported more than one
 %D mark, using an extended version of Jim Fox multiple mark
@@ -429,8 +434,22 @@
 %D Here a node is inserted, which can interfere badly. In 
 %D fact, a real \type {\clearmarks\name} is needed. 
 
-\def\resetmark#1%
-  {\marks#1{}} % interferes ! test this one on the big manual footers 
+\def\resetmark#1% interferes ! test this one on the big manual footers 
+  {\marks#1{}}
+
+%D What a hack! 
+
+\newcount\resettedmarks
+
+\def\clearmarks#1% a rather memory hungry alternative 
+  {\edef\rubish{\topmarks#1\botmarks#1\firstmarks#1}%
+   \ifx\rubish\empty\else
+    %\global\advance\resettedmarks by 1 \message{(m:\the\resettedmarks)}%
+     \newmarks#1%
+   \fi}
+
+\def\resetmark% 
+  {\clearmarks}
 
 \def\noninterferingmarks%
   {\let\savedsetmark\setmark

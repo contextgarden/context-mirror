@@ -8,8 +8,10 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. Non||commercial use is
-%C granted.
+%C therefore copyrighted by \PRAGMA. See licen-en.pdf for 
+%C details. 
+
+\writestatus{loading}{Context Core Macros / TaBlE Embedding}
 
 % e-tex: reverse rows or vadjust or ... in tables
 % \ifalign
@@ -62,7 +64,6 @@
 
 % THIS RENEWED MODULE WORKS OK BUT STILL LOOKS BAD
 
-\writestatus{loading}{Context Core Macros / TaBlE Embedding}
 
 %D We felt no need to write our own table building macros,
 %D simply because Michael Wichura made a terrific one. This
@@ -424,6 +425,49 @@
 \def\normalTABLElineending {\normalTABLEendofrow0 }
 \def\normalTABLEsinglerule {&\normalTABLElongrule&}
 \def\normalTABLEmultirule#1{&\use{#1}\normalTABLElongrule&}
+
+%D The next hack is dedicated to Tobias, who found out that 
+%D paragraph entries don't break well. 
+
+\def\TABLEhack{\hskip\!!zeropoint}
+
+%D The first attemp to solve this problem was: 
+%D
+%D \starttypen
+%D \def\normalTABLEquote%
+%D   {\unskip\TABLEhack\!ttRightGlue&\omit&\TABLEhack}
+%D \stoptypen
+%D
+%D But, as usual, this interfered with \type {\omit}. 
+%D
+%D The next attempt is redefining some core \TABLE\ macro: 
+
+\def\!tfAdjoinPriorColumn%
+  {\ifnum\!taColumnNumber=0
+     \!taPreamble=\!taRuleColumnTemplate 
+     \ifnum\TracingFormats>0 \!tfShowRuleTemplate\fi
+  \else
+    \ifx\!tfRowOfWidths\empty \else \!tfUpdateRowOfWidths\fi
+    \!thToksEdef\!taDataColumnTemplate=
+      {\the\!taLeftGlue \the\!taDataColumnTemplate \the\!taRightGlue}%
+    \ifnum\TracingFormats>0 \!tfShowTemplates\fi
+    \!thToksEdef\!taPreamble=
+      {\the\!taPreamble&\the\!taDataColumnTemplate&\the\!taRuleColumnTemplate}%
+  \fi
+  \advance\!taColumnNumber 1
+  \if!taOnceOnlyTabskip              
+    \!thToksEdef\!taDataColumnTemplate=
+      {\TABLEhack####\TABLEhack\tabskip\the\!taLastRegularTabskip}
+  \else
+    \!taDataColumnTemplate{\TABLEhack##\TABLEhack}%
+  \fi
+  \!taRuleColumnTemplate{}%
+  \!taLeftGlue{\hfil}%     
+  \!taRightGlue{\hfil}%         
+  \!taMinimumColumnWidth=0pt
+  \def\!tfWidthText{}%
+  \!taOnceOnlyTabskipfalse 
+  \ReadFormatKeys}
 
 %D To give an impression of what the (well documented) source
 %D of \TABLE\ looks like, we first implement an alternative for
@@ -1459,9 +1503,9 @@
      \fi
      \egroup
    \else\ifx\TABLEgraylineerror\empty \else
-     \bgroup
-     \tttf\space\TABLEgraylineerror
-     \egroup
+  %   \bgroup
+  %   \tttf\space\TABLEgraylineerror
+  %   \egroup
    \fi\fi
    \global\let\TABLEgraylinestatus=\empty
    \global\let\TABLEgraylineerror =\empty

@@ -8,8 +8,8 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. Non||commercial use is
-%C granted.
+%C therefore copyrighted by \PRAGMA. See licen-en.pdf for 
+%C details. 
 
 %D This module implements the (for the moment still simple)
 %D multi||language support of \CONTEXT, which should not be
@@ -123,6 +123,10 @@
    \expanded{\noexpand\uppercase{\noexpand\edef\noexpand\ascii{#1}}}%
    \doifundefined{\ascii}{\setvalue{\ascii}{\language[#2]}}}      
 
+%D We first try to load the files defined as file synonym 
+%D for \type {lang-*.pat} and \type {lang-*.hyp}. After that we
+%D fall back on those files. 
+
 \def\doinstalllanguage[#1][#2]%
   {\doifinstringelse{=}{#2}
      {\doifdefinedelse{\??la#1\c!status}
@@ -180,13 +184,25 @@
             \bgroup
             \startencoding[\getvalue{\??la\languagesuffix\s!encoding}]%
             \usemapping[\getvalue{\??la\languagesuffix\s!mapping}]%
-            \readsysfile{\f!languageprefix\languagesuffix.\f!patternsextension}
+           %\readsysfile{\f!languageprefix\languagesuffix.\f!patternsextension}
+           %  {\setxvalue{\??la#1\s!patterns}{\languagesuffix}%
+           %   \showmessage{\m!linguals}{1}{\languagesuffix,#1,\loadedlanguage}}
+           %  {\showmessage{\m!linguals}{2}{\languagesuffix,#1,\loadedlanguage}}%
+           %\readsysfile{\f!languageprefix\languagesuffix.\f!hyphensextension}
+           %  {\showmessage{\m!linguals}{3}{\languagesuffix,#1,\loadedlanguage}}
+           %  {\showmessage{\m!linguals}{4}{\languagesuffix,#1,\loadedlanguage}}%
+            \readsysfile{\truefilename{\f!languageprefix\languagesuffix.\f!patternsextension}}
               {\setxvalue{\??la#1\s!patterns}{\languagesuffix}%
                \showmessage{\m!linguals}{1}{\languagesuffix,#1,\loadedlanguage}}
-              {\showmessage{\m!linguals}{2}{\languagesuffix,#1,\loadedlanguage}}%
-            \readsysfile{\f!languageprefix\languagesuffix.\f!hyphensextension}
+              {\readsysfile{\f!languageprefix\languagesuffix.\f!patternsextension}
+                 {\setxvalue{\??la#1\s!patterns}{\languagesuffix}%
+                  \showmessage{\m!linguals}{1}{\languagesuffix,#1,\loadedlanguage}}
+                 {\showmessage{\m!linguals}{2}{\languagesuffix,#1,\loadedlanguage}}}%
+            \readsysfile{\truefilename{\f!languageprefix\languagesuffix.\f!hyphensextension}}
               {\showmessage{\m!linguals}{3}{\languagesuffix,#1,\loadedlanguage}}
-              {\showmessage{\m!linguals}{4}{\languagesuffix,#1,\loadedlanguage}}%
+              {\readsysfile{\f!languageprefix\languagesuffix.\f!hyphensextension}
+                 {\showmessage{\m!linguals}{3}{\languagesuffix,#1,\loadedlanguage}}
+                 {\showmessage{\m!linguals}{4}{\languagesuffix,#1,\loadedlanguage}}}%
             \stopencoding
             \egroup
             \increment\loadedlanguage}

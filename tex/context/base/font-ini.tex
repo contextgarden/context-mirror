@@ -8,8 +8,8 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. Non||commercial use is
-%C granted.
+%C therefore copyrighted by \PRAGMA. See licen-en.pdf for 
+%C details. 
 
 \writestatus{loading}{Context Font Macros (ini)}
 
@@ -1312,7 +1312,7 @@
 
 %D When we assign for instance 12pt to a \DIMENSION\ register
 %D the \type{\the}'d value comes out as 12.0pt, which is
-%D often not the way users specifie the bodyfont size. Therefore
+%D often not the way users specify the bodyfont size. Therefore
 %D we also store the normalized value.
 
 \chardef\fontdigits=1 % 
@@ -2080,6 +2080,22 @@
 \definefont[os][OldStyle sa \currentfontscale]
 
 \definefontsynonym[OldStyle][Serif]
+
+%D \macros
+%D   {frac, goth, cal}
+%D
+%D On behalf of {\frac Tobias Burnus}, we define some more of
+%D these: 
+
+\definefont [frak] [Fraktur     sa \currentfontscale]
+\definefont [goth] [Gothic      sa \currentfontscale]
+\definefont [cal]  [Caligraphic sa \currentfontscale]
+
+\definefontsynonym [Fraktur]     [Serif]
+\definefontsynonym [Gothic]      [Serif]
+\definefontsynonym [Caligraphic] [Serif]
+
+%D In \type {font-cmr} we will link these to real file names.
 
 %D \macros
 %D   {definebodyfontswitch}

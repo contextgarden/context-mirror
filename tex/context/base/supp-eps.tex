@@ -8,8 +8,8 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. Non||commercial use is 
-%C granted. 
+%C therefore copyrighted by \PRAGMA. See licen-en.pdf for 
+%C details. 
 
 \ifx \undefined \writestatus \input supp-mis.tex \relax \fi
 
@@ -96,17 +96,17 @@
   {\ifx#1\EPSpercenttag
      \def\!!stringa{#2}%
      \ifx\!!stringa\EPScreatortag
-       \def\!!stringa{#3}%
+       \edef\!!stringa{#3}%
        \global\chardef\EPScreator=\ifx\!!stringa\EPSmetaposttag1 \else0 \fi
      \else\ifx\!!stringa\EPSboundingboxtag
-       \getEPSboundingbox #3 . . . \end
+       \expandafter \getEPSboundingbox #3 . . . \end
        \global\chardef\EPSfound=1
      \else\ifx\!!stringa\EPShiresboundingboxtag
-       \getEPSboundingbox #3 . . . \end
+       \expandafter \getEPSboundingbox #3 . . . \end
        \global\chardef\EPSfound=2
        \dofinishfile
      \else\ifx\!!stringa\EPSexactboundingboxtag
-       \getEPSboundingbox #3 . . . \end
+       \expandafter \getEPSboundingbox #3 . . . \end
        \global\chardef\EPSfound=2
        \dofinishfile
      \fi\fi\fi\fi

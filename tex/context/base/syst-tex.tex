@@ -1,6 +1,6 @@
 %D \module
 %D   [       file=syst-tex,
-%D        version=1995.10.10,
+%D        version=1999.03.17,  % an oldie: 1995.10.10
 %D          title=\CONTEXT\ System Macros,
 %D       subtitle=Efficient \PLAIN\ \TEX\ loading,
 %D         author=Hans Hagen,
@@ -8,8 +8,8 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. Non||commercial use is 
-%C granted. 
+%C therefore copyrighted by \PRAGMA. See licen-en.pdf for 
+%C details. 
 
 %D We've build \CONTEXT\ on top of \PLAIN\ \TEX. Because we 
 %D want to make the format file as independant as possible of 
@@ -165,7 +165,20 @@
 
 \egroup
 
+%D Well, this redefintion of \type {\input} fails on \ETEX, 
+%D because of some \type {\cs\fi} construts. So now we use:
+
 \beginETEX etex.src etexdefs.lib 
+
+  \def\input#1%
+    {\bgroup
+     \skipmessage{\string\input}%
+     \expandafter\ifx\expandafter#1\csname l@ngdefnfile\endcsname    
+       \let\input\egroup
+     \else
+       \def\input##1 {\egroup}%
+     \fi
+     \input}
 
   \normalinput     etex.src \relax 
   \normalinput etexdefs.lib \relax 

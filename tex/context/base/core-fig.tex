@@ -1,7 +1,3 @@
-% figurefilemode checken
-% zowieso alles checken 
-% movie scanner
-
 %D \module
 %D   [       file=core-fig,
 %D        version=1997.03.31,
@@ -12,12 +8,16 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. Non||commercial use is
-%C granted.
+%C therefore copyrighted by \PRAGMA. See licen-en.pdf for 
+%C details. 
 
 \writestatus{loading}{Context Core Macros / Figure Inclusion}
 
 \unprotect
+
+% figurefilemode checken
+% zowieso alles checken 
+% movie scanner
 
 %D Scanning for illustrations is automated to the max. Right
 %D from the beginning \CONTEXT\ supported figure inclusion
@@ -632,7 +632,7 @@
      [\c!tex=>\let\@@eftype\c!tex,
       \c!tmp=>\let\@@eftype\c!tex,
       \c!mov=>\presetfiguremov]%
-\edef\figuretypes{\c!tex,\figuretypes}%
+\edef\figuretypes{\figuretypes,\c!tex}%
    \doifelse{\@@efobject}{\v!nee}
      {\donefalse}
      {\doifspecialavailableelse\dostartscaling
@@ -1289,6 +1289,9 @@
   [\c!hokjes=\v!uit,
    \c!ymax=24,
    \c!xmax=]
+
+\useexternalfigure
+  [buffer] [\jobname.\c!tmp] [\c!type=\c!tex,\c!object=\v!nee]
 
 \protect
  

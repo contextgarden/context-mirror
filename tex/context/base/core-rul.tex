@@ -8,8 +8,8 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. Non||commercial use is
-%C granted.
+%C therefore copyrighted by \PRAGMA. See licen-en.pdf for 
+%C details. 
 
 \writestatus{loading}{Context Core Macros / Ruled Stuff Handling}
 
@@ -627,6 +627,10 @@
      \let\localbegstrut=\pseudostrut % was: \relax
      \let\localendstrut=\relax
      \let\localstrut   =\pseudostrut % was: \relax
+    %\ifboxhasheight\ifdim\!!heighta<\ht\strutbox % saveguard 
+    %  \let\localbegstrut=\relax
+    %  \let\localstrut   =\relax
+    %\fi\fi
    \fi
    \ifboxhasheight
      \let\\=\vboxednewline
@@ -778,27 +782,50 @@
 
 \ifx\restoremathstyle\undefined \let\restoremathstyle\relax \fi
 
+%\def\domframed[#1][#2]#3% 
+%  {\begingroup
+%   \ifmmode
+%     \ifinner
+%       \let\mframedstyle\relax
+%     \else
+%       \let\mframedstyle\displaystyle
+%     \fi
+%   \else
+%     \let\mframedstyle\relax
+%   \fi
+%   #1\ifdone
+%     \def\normalstrut{$\mframedstyle\restoremathstyle\vphantom($}%
+%     \framed
+%      %[\c!kaderoffset=.25ex,\c!offset=\v!overlay,#2]
+%       [\c!kaderoffset=\@@oioffset,\c!offset=\v!overlay,#2]
+%       {$\mframedstyle\restoremathstyle#3$}%
+%   \else
+%     \inframed
+%       [#2]
+%       {$\mframedstyle\restoremathstyle#3$}%
+%   \fi
+%   \endgroup}
+
 \def\domframed[#1][#2]#3% 
   {\begingroup
    \ifmmode
      \ifinner
-       \let\mframedstyle\relax
+       \let\mframedstyle\restoremathstyle
      \else
        \let\mframedstyle\displaystyle
      \fi
    \else
-     \let\mframedstyle\relax
+     \let\mframedstyle\restoremathstyle
    \fi
    #1\ifdone
-     \def\normalstrut{$\mframedstyle\restoremathstyle\vphantom($}%
+     \def\normalstrut{$\mframedstyle\vphantom($}%
      \framed
-      %[\c!kaderoffset=.25ex,\c!offset=\v!overlay,#2]
        [\c!kaderoffset=\@@oioffset,\c!offset=\v!overlay,#2]
-       {$\mframedstyle\restoremathstyle#3$}%
+       {$\mframedstyle#3$}%
    \else
      \inframed
        [#2]
-       {$\mframedstyle\restoremathstyle#3$}%
+       {$\mframedstyle#3$}%
    \fi
    \endgroup}
 

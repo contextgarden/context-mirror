@@ -8,8 +8,8 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. Non||commercial use is
-%C granted.
+%C therefore copyrighted by \PRAGMA. See licen-en.pdf for 
+%C details. 
 
 %D Some support modules are more or less independant. This
 %D module, which is not part of plain \CONTEXT, provides the
@@ -365,7 +365,11 @@
 \ifnocontextobject \uncatcodespecials \do
 
   \def\uncatcodespecials%
-    {\def\do##1{\catcode`##1=12 }\dospecials}
+    {\def\do##1{\catcode`##1=12 }\dospecials
+     \catcode`\   =\@@space
+     \catcode`\^^L=\@@ignore
+     \catcode`\^^M=\@@endofline
+     \catcode`\^^?=\@@ignore}
 
 \fi
 

@@ -8,8 +8,32 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. Non||commercial use is 
-%C granted. 
+%C therefore copyrighted by \PRAGMA. See licen-en.pdf for 
+%C details. 
+
+%D This module is one big hack. This hack is not needed when
+%D using \ETEX, so there we simply load \PICTEX\ and quit.  
+
+\ifx\eTeXversion\undefined \else 
+
+  \ifx\undefined\fiverm
+    \font\fiverm=cmr5
+  \fi
+
+  \ifx\beginpicture\undefined
+    \ifx\newenvironment\undefined
+      \input pictex.tex     \relax
+    \else
+      \input prepictex.tex  \relax
+      \input pictex.tex     \relax
+      \input postpictex.tex \relax
+    \fi
+  \fi
+
+\expandafter \endinput \fi 
+ 
+%D When not in \ETEX\ and not in \CONTEXT, we load a few 
+%D auxiliary macros. 
 
 \ifx \undefined \writestatus \input supp-mis.tex \relax \fi
 

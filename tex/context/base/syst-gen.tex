@@ -1,6 +1,3 @@
-% nagaan : \ifinstringelse in syst-ext.tex
-% do => p! dodo pp! dododo ppp!
-
 %D \module 
 %D   [       file=syst-gen,
 %D        version=1996.3.20,
@@ -11,8 +8,11 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. Non||commercial use is 
-%C granted. 
+%C therefore copyrighted by \PRAGMA. See licen-en.pdf for 
+%C details. 
+
+% nagaan : \ifinstringelse in syst-ext.tex
+% do => p! dodo pp! dododo ppp!
 
 %D The following macros are responsible for the interaction
 %D with \CONTEXT. These macros have proven their use. These
@@ -1847,7 +1847,8 @@
 %D reather dirty one.
 
 \long\def\doifnumberelse#1#2#3%
-  {\bgroup\donefalse\ifcase1#1\or\or\or\or\or\or\or\or\or\else\donetrue\fi
+  {\bgroup\donefalse
+   \ifcase1#1\or\or\or\or\or\or\or\or\or\else\donetrue\fi
    \ifdone\egroup#2\else\egroup#3\fi}
 
 %D The previous implementation was:
