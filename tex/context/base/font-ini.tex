@@ -34,7 +34,7 @@
    \pushmacro\charactermapping
    \pushmacro\characterencoding}
 
-\def\restorefont%
+\def\restorefont
   {\popmacro\characterencoding
    \popmacro\charactermapping
    \popmacro\characterregime
@@ -1327,10 +1327,10 @@
 \beginTEX
 
 \def\truefontdata#1#2% 
-  {\ifx\csname\??ff#1#2\endcsname\relax
-     \ifx\csname\??ff\fontclass#1\endcsname\relax
-       \ifx\csname\??ff#1\endcsname\relax
-         \ifx\csname\??ff#2\endcsname\relax 
+  {\expandafter\ifx\csname\??ff#1#2\endcsname\relax
+     \expandafter\ifx\csname\??ff\fontclass#1\endcsname\relax
+       \expandafter\ifx\csname\??ff#1\endcsname\relax
+         \expandafter\ifx\csname\??ff#2\endcsname\relax 
          \else
            % raw(key)
            \csname\??ff#2\endcsname
@@ -1345,7 +1345,7 @@
      \fi
    \else
      % raw(Regular) raw(key) 
-     \csname\??ff#1#2\endcsname\relax
+     \csname\??ff#1#2\endcsname
    \fi}
 
 \def\truefontname#1%
@@ -1523,6 +1523,7 @@
      \setfontcharacteristics
      \the\everyfontswitch
    \fi}
+
 \endTEX
 
 \beginETEX \ifcsname
@@ -1674,24 +1675,6 @@
 
 \beginETEX \ifcsname
 
-% \def\currentfontscale%
-%   {\ifcsname\??ft\s!default\xfontsize\endcsname
-%      \csname\??ft\s!default\xfontsize\endcsname
-%    \else\ifcsname\??ft\s!default\s!text\endcsname
-%      \csname\??ft\s!default\s!text\endcsname
-%    \else
-%      1%
-%    \fi\fi}
-%
-% \def\currentfontbodyscale%
-%   {\ifcsname\??ft\s!default\fontsize\endcsname
-%      \csname\??ft\s!default\fontsize\endcsname
-%    \else\ifcsname\??ft\s!default\s!text\endcsname
-%      \csname\??ft\s!default\s!text\endcsname
-%    \else
-%      1%
-%    \fi\fi}
-
 \def\currentfontscale
   {\csname\??ft\s!default
      \ifcsname\??ft\s!default\xfontsize\endcsname \xfontsize \else
@@ -1830,7 +1813,6 @@
      \copyparameters
        [\??ft#2#1][\??ft\s!default]
        [\c!interlinie,\c!em]}%
- % \@@beginfontdef
    \getparameters[\??ft#2#1][#3]%
    \@@endfontdef
    % new code, see remark
@@ -1999,26 +1981,6 @@
    \definebodyfont[#1][#2][#3]%
    \popmacro\fontclass}
 
-% \def\dodefinebodyfont[#1][#2][#3]% body|identifier style defs|identifier
-%   {\ifthirdargument
-%      \doifnumberelse{#1}
-%        {\doifassignmentelse{#3}
-%           {% [12pt] [style] [settings]
-%            \doifundefined{#2}{\expanded{\definefontstyle[#2][#2]}}% new
-%            \processcommalist[#1]{\dododefinebodyfont{#2}{#3}}}
-%           {% [12pt] [style] [identifier]
-%            \dodefinedefaultbodyfont[#1][#2][#3]}} % body style identifier
-%        {% [identifier] [style] [settings]
-%         \setvalue{\s!default#1#2}##1##2{\expanded{\dodefinebodyfont[##1][##2][#3]}}}%
-%    \else\ifsecondargument
-%      \definebodyfont[#1][\c!rm][#2]%
-%    \else
-%      \doifundefined{\@size@#1} % Maybe there are default dependancies
-%        {\defineunknownfont{#1}}% defined which we can use ([unknown])
-%      \doifundefined{\@size@#1} % and if not, then we have at least to
-%        {\definebodyfont[#1][\c!rm][]}% make sure some basics are set up.
-%    \fi\fi}
-
 \def\dodefinebodyfont[#1][#2][#3]% body|identifier style defs|identifier
   {\ifthirdargument
      \doifnumberelse{#1}
@@ -2057,7 +2019,7 @@
 
 \def\xdodefinebodyfont[#1][#2][#3]% body|identifier style defs|identifier
   {%\writestatus{[#1]}{[#2][#3]}%
-   \doifundefined{#2}{\expanded{\definefontstyle[#2][#2]}}% new
+   \ifundefined{#2}\expanded{\definefontstyle[#2][#2]}\fi % new
    \processcommalist[#1]{\dododefinebodyfont{#2}{#3}}}
 
 \def\dododefinebodyfont#1#2#3% style defs body
@@ -2165,8 +2127,8 @@
        \ifdefiningunknownfont \else
          \definingunknownfonttrue
          \def\defineunknownsubfont##1%
-           {\doifundefined{\@size@\getvalue{\??ft#1##1}}
-              {\defineunknownfont{\getvalue{\??ft#1##1}}}}%
+          {\doifundefined{\@size@\getvalue{\??ft#1##1}}
+             {\defineunknownfont{\getvalue{\??ft#1##1}}}}%
          \processcommalist
            [\s!text,\s!script,\s!scriptscript,\c!x,\c!xx,\c!groot,\c!klein]
            \defineunknownsubfont
@@ -2177,6 +2139,11 @@
        \showmessage{\m!fonts}{14}{#1}%
      \fi
    \fi}
+
+\def\defineunknownfontstyles#1%
+  {\def\defineunknownbodyfont##1% see ***
+     {\executeifdefined{\s!default\s!default##1}\gobbletwoarguments{#1}{##1}}%
+   \rawprocesscommacommand[\stylelist]\defineunknownbodyfont}
 
 %D These macros show that quite some definitions take place.
 %D Fonts are not loaded yet! This means that at format
@@ -2349,8 +2316,9 @@
   {\expanded{\dodoswitchpoints{#1}}}
 
 \def\dodoswitchpoints#1%
-  {\doifundefined{\@size@#1}
-     {\defineunknownfont{#1}}%
+  {\doifundefined{\@size@#1} 
+     {\defineunknownfont{#1}}% 
+   \defineunknownfontstyles{#1}%
    \doifdefinedelse{\@size@#1}
      {\getvalue{\@size@#1}%
       \localbodyfontsize=#1\relax
@@ -2848,7 +2816,7 @@
   {\edef#1{\bodyfontcsname\normalizedbodyfontsize#2\endcsname}}
 
 \def\docompletefontswitch[#1]%
-  {\bodyfontsize=#1\relax
+  {\bodyfontsize#1\relax
    \dimensiontocount\bodyfontsize\bodyfontpoints
    \edef\bodyfontfactor{\withoutpt\the\bodyfontsize}%
    \normalizebodyfontsize\bodyfontsize\to\normalizedbodyfontsize
@@ -2888,15 +2856,15 @@
 
 \definecomplexorsimple\setupbodyfont
 
-\def\simplesetupbodyfont%
+\def\simplesetupbodyfont
   {\restoreglobalbodyfont}
 
 \def\complexsetupbodyfont[#1]%
   {\doifsomething{#1}
      {\dosetfont1{#1}%
-      \globalbodyfontsize=\localbodyfontsize
+      \globalbodyfontsize\localbodyfontsize
       \normalizebodyfontsize\globalbodyfontsize\to\normalizedglobalbodyfontsize
-      \let\globalfontstyle=\fontstyle
+      \let\globalfontstyle\fontstyle
       \ifloadingfonts\else
         \the\everybodyfont % indeed needed in case \dosetfont is not executed
       \fi}}
@@ -2972,31 +2940,6 @@
    \edef\@@fontmapping {\truefontdata\fontfile    \s!mapping }%
    \edef\@@fonthandling{\truefontdata\somefontname\s!handling}%
    \edef\@@fontskewchar{\truefontdata\fontfile    \s!skewchar}}
-
-% \def\setfontcharacteristics%
-%   {\updatefontparameters
-%    \enableencoding
-%      [\ifx\@@fontencoding\empty
-%         \s!default
-%       \else
-%         \@@fontencoding
-%       \fi]%
-%    \enablemapping
-%      [\ifx\@@fontmapping\empty
-%         \ifx\@@fontencoding\empty
-%           \s!default
-%         \else
-%           \@@fontencoding
-%         \fi
-%       \else
-%         \@@fontmapping
-%       \fi]%
-%    \enablehandling
-%      [\ifx\@@fonthandling\empty
-%         \s!default
-%       \else
-%         \@@fonthandling
-%       \fi][\lastfontidentifier]}
 
 \def\setfontcharacteristics%
   {\updatefontparameters
@@ -3161,7 +3104,7 @@
        \ifx\normalizedbodyfontsize\normalizedglobalbodyfontsize
          \partialrestoreglobalbodyfont
        \else
-        \fullrestoreglobalbodyfont
+         \fullrestoreglobalbodyfont
        \fi
      \else
        \fullrestoreglobalbodyfont
@@ -3293,26 +3236,6 @@
 %D second specification is used. We can also directly call for
 %D \type{\noconvertfont}. In nested calls, we can restore the
 %D conversion by saying \type{\redoconvertfont}.
-
-% \unexpanded\def\dodoconvertfont#1#2%
-%   {\doifdefinedelse{\@letter@#1}
-%      {\doifelsenothing{#1}
-%         {\let\next\empty}
-%         {\def\next{\getvalue{\@letter@#1}}}}
-%      {\doifdefinedelse{#1}
-%         {\def\next{\getvalue{#1}}}
-%         {\def\next{#1}}}%
-%    \next{#2}}
-%
-% \let\doconvertfont=\dodoconvertfont
-%
-% \def\noconvertfont#1#2%
-%   {\doifdefinedelse{\@noletter@#1}
-%      {\doifelsenothing{#1}
-%         {\let\next\empty}
-%         {\def\next{\getvalue{\@noletter@#1}}}}
-%      {\def\next{#1}}%
-%    \next{#2}}
 
 \def\@@dodoconvertfont#1{\csname\@letter@  #1\endcsname}
 \def\@@donoconvertfont#1{\csname\@noletter@#1\endcsname}

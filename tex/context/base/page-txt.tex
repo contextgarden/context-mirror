@@ -767,18 +767,18 @@
 \def\dodocommando[#1][#2]%
   {\getparameters
      [\??tk#1#2]
-     [%\c!status=\v!normaal, % moved, kan tzt weg  
-      \c!voor=,
-      \c!na=,
-      \c!strut=,
-      \c!letter=,
-      \c!kleur=,
+     [%\c!status=\v!normaal, % moved 
+      \c!voor=,  % both global and local are used  
+      \c!na=,    % both global and local are used  
+      \c!strut=, % the local one, not (yet) used 
+      \c!letter=\getvalue{\??tk#1\c!letter},% hm, got lost
+      \c!kleur=\getvalue{\??tk#1\c!kleur},  % hm, got lost
       \c!linkertekst=,
       \c!middentekst=,
       \c!rechtertekst=,
       \c!kantlijntekst=,
       \c!margetekst=,
-      \c!breedte=]%
+      \c!breedte=]% 
    \inheritparameter[\??tk#1#2][\c!linkerletter  ][\c!letter ]% 
    \inheritparameter[\??tk#1#2][\c!rechterletter ][\c!letter ]%
    \inheritparameter[\??tk#1#2][\c!linkerkleur   ][\c!kleur  ]%
@@ -803,16 +803,16 @@
 %D While the header and footer lines are moved away from the
 %D main text, the top and bottom lines are centered. 
 
-%\setuptop     [\c!voor=\vss, \c!na=\vss, \c!strut=]
-%\setupheader  [\c!voor=,     \c!na=\vss, \c!strut=\v!ja]
-%\setuptext    [\c!voor=\vss, \c!na=\vss, \c!strut=]
-%\setupfooter  [\c!voor=\vss, \c!na=,     \c!strut=\v!ja]
-%\setupbottom  [\c!voor=\vss, \c!na=\vss, \c!strut=]
-
 \setuptop   [\c!status=\v!normaal,\c!voor=\vss,\c!na=\vss,\c!strut=]
 \setupheader[\c!status=\v!normaal,\c!voor=,    \c!na=\vss,\c!strut=\v!ja]
 \setuptext  [\c!status=\v!normaal,\c!voor=\vss,\c!na=\vss,\c!strut=]
 \setupfooter[\c!status=\v!normaal,\c!voor=\vss,\c!na=,    \c!strut=\v!ja]
 \setupbottom[\c!status=\v!normaal,\c!voor=\vss,\c!na=\vss,\c!strut=]
+
+\setuptop   [\c!letter=,\c!kleur=]
+\setupheader[\c!letter=,\c!kleur=]
+\setuptext  [\c!letter=,\c!kleur=]
+\setupfooter[\c!letter=,\c!kleur=]
+\setupbottom[\c!letter=,\c!kleur=]
 
 \protect \endinput

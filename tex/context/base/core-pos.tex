@@ -13,6 +13,8 @@
 
 \writestatus{loading}{Context Positioning Support}
 
+% todo: topskip als optie voor eerste regel achtergrond 
+
 %D Although \TEX\ has a rather powerful channel to the outside
 %D world, called \type {\special}, real communication with
 %D other programs is complicated by the fact that no positional
@@ -150,10 +152,11 @@
   {\xdef#1{\number#2}}
 
 \def\checkpositions%
-  {\bgroup
-   \setbox0=\hbox{\doutilities{positions}{\jobname}{}{}{}}%
-   \global\let\checkpositions=\relax
-   \egroup}
+  {\startnointerference
+   \protectlabels 
+   \doutilities{positions}{\jobname}{}{}{}%
+   \global\let\checkpositions\relax
+   \stopnointerference}
 
 %D Since the positional values are to be fully expandable, we
 %D need to preload them as soon as possible, which is why we
@@ -964,6 +967,13 @@
   \let\dohandleMPpositiongraphicrange\docleanMPpositiongraphicrange
 \to \everycleanpositionaction
 
+% will be overloaded, and/or code below moved to core-box 
+
+\defineoverlay[\v!tekst-2][\positionoverlay{\v!tekst-2}]
+\defineoverlay[\v!tekst-1][\positionoverlay{\v!tekst-1}]
+\defineoverlay[\v!tekst+1][\positionoverlay{\v!tekst+1}]
+\defineoverlay[\v!tekst+2][\positionoverlay{\v!tekst+2}]
+
 %D The auxiliary \METAPOST\ macros are defined by default,
 %D by saying:
 
@@ -1123,6 +1133,8 @@
 
 %D So far for the unreadable alternative.
 
+\newcounter\textbackgrounddepth
+
 \appendtoks
   \savecurrentvalue\totalnofparbackgrounds\nofparbackgrounds
 \to \everybye
@@ -1140,8 +1152,9 @@
      \global\positioningpartrue
    \fi}
 
-\unexpanded\def\starttextbackground%
+\unexpanded\def\starttextbackground
   {\bgroup
+   \increment\textbackgrounddepth
    \dodoubleempty\dostarttextbackground}
 
 \let\dodostarttextbackground\relax
@@ -1181,6 +1194,10 @@
                  \let\dodostoptextbackground \dostoptextbackgroundtxt,
       \v!alinea=>\let\dodostarttextbackground\dostarttextbackgroundpar
                  \let\dodostoptextbackground \dostoptextbackgroundpar]%
+   \ifnum\textbackgrounddepth>1 % new 
+     \let\dodostarttextbackground\dostarttextbackgroundtxt
+     \let\dodostoptextbackground \dostoptextbackgroundtxt
+   \fi
    \doifelsevalue{\??td#1\c!kader}{\v!aan}
      {\doifelsevalue{\??td#1\c!hoek}{\v!rond}
         {\setvalue{\??td#1\c!kader}{2}}
@@ -1369,11 +1386,6 @@
 
 \def\checktextbackgrounds
   {\ifproductionrun \enablehiddenbackground \fi}
-
-\defineoverlay[\v!tekst-2][\positionoverlay{\v!tekst-2}]
-\defineoverlay[\v!tekst-1][\positionoverlay{\v!tekst-1}]
-\defineoverlay[\v!tekst+1][\positionoverlay{\v!tekst+1}]
-\defineoverlay[\v!tekst+2][\positionoverlay{\v!tekst+2}]
 
 \setuptextbackground
   [\c!mp=mpos:par:shape,

@@ -105,7 +105,7 @@
 
 \beginETEX \tracing... 
 
-\def\tracingall%
+\def\tracingall
   {\tracingonline    \@ne
    \tracingcommands  \thr@@
    \tracingstats     \tw@
@@ -124,11 +124,11 @@
    \tracingassigns   \tw@
    \errorstopmode}
 
-\def\loggingall%
+\def\loggingall
   {\tracingall 
-   \tracingonline=\z@}
+   \tracingonline    \z@}
 
-\def\tracingnone%
+\def\tracingnone
   {\tracingassigns   \z@
    \tracingnesting   \z@
    \tracingscantokens\z@
@@ -196,6 +196,11 @@
 %D are needed, so we say:
 
 \chardef\@@insallocation=8 
+
+%D But, for critical editions, we may need many more, so 
+%D here we go again:
+
+\chardef\@@insallocation=24
 
 %D My low level allocation macro now comes down to: 
 

@@ -192,7 +192,7 @@
 
 \def\dofilledbox\width#1\height#2\depth#3\corner#4\radius#5\\%
   {\bgroup
-   \doifelse{#4}{\v!rond}
+   \doifelse{#4}\v!rond
      {\dimen0=#5\relax   % just in case of .x\bodyfontsize
       \ifzeropt\dimen0
         \dofilledlinedbox\width#1\height#2\depth#3\\%
@@ -206,7 +206,7 @@
   {\vrule\!!width#1\!!height#2\!!depth#3}%
 
 \def\dofilledroundbox\width#1\height#2\depth#3\radius#4\\%
-  {\ovalbox{#1}{#2}{#3}{\ruledlinewidth}{#4}{\v!uit}{\v!aan}}
+  {\ovalbox{#1}{#2}{#3}{\ruledlinewidth}{#4}\v!uit\v!aan}
 
 \def\ovalbox#1#2#3#4#5#6#7% direct #1 etc passeren 
   {\bgroup
@@ -504,18 +504,20 @@
       \dimen4=\ht#1\advance\dimen4 \dimen0
       \dimen6=\dp#1\advance\dimen6 \dimen0\advance\dimen6 by #6\relax
       \ifdim\dimen6<\zeropoint
-        \advance\dimen4 by \dimen6 \dimen8=-\dimen6 \dimen6=\zeropoint
+        \advance\dimen4 \dimen6 
+        \dimen8=-\dimen6 
+        \dimen6=\zeropoint
       \else
         \dimen8=\zeropoint
       \fi
-      \setbox\extraframebox=\hbox
+      \setbox\extraframebox\hbox
         {\dostrokedbox\width\dimen2\height\dimen4\depth\dimen6%
            \corner#4\radius#5\toggle#7\\}%
-      \setbox\extraframebox=\hbox
+      \setbox\extraframebox\hbox
         {\raise\dimen8\vbox{\moveleft#3\box\extraframebox}}%
-      \wd\extraframebox=\wd#1%
-      \ht\extraframebox=\ht#1%
-      \dp\extraframebox=\dp#1%
+      \wd\extraframebox\wd#1%
+      \ht\extraframebox\ht#1%
+      \dp\extraframebox\dp#1%
       \hbox
         {%\copy#1\hskip-\wd#1%
          \box#1\hskip-\wd\extraframebox % faster
@@ -525,7 +527,7 @@
 
 \def\dostrokedbox\width#1\height#2\depth#3\corner#4\radius#5\toggle#6\\%
   {\bgroup
-   \doifelse{#4}{\v!rond}
+   \doifelse{#4}\v!rond
      {\dimen0=#5\relax   % just in case of .x\bodyfontsize
       \ifzeropt\dimen0
         \dostrokedlinedbox\width#1\height#2\depth#3\toggle#6\\%
@@ -691,9 +693,9 @@
   {\bgroup
    \inframedtrue
    \edef\@@framed{#1}%
-%   % this piece of pre expansion is needed (sometimes used in frameoffset)
-%   \doifvaluesomething{\@@framed\c!lijndikte}
-%     {\ruledlinewidth\getvalue{\@@framed\c!lijndikte}}%
+   % this piece of pre expansion is needed (sometimes used in frameoffset)
+   % \doifvaluesomething{\@@framed\c!lijndikte}         % obsolete 
+   %   {\ruledlinewidth\getvalue{\@@framed\c!lijndikte}}% obsolete 
    % this piece of pre expansion is needed (sometimes used circular)
    \scratchdimen\getvalue{\@@framed\c!kaderoffset}%
    \setevalue{\@@framed\c!kaderoffset}{\the\scratchdimen}%
@@ -710,14 +712,27 @@
    \doifvaluesomething{\@@framed\c!voorgrondletter}
      {\@EA\doconvertfont\csname\@@framed\c!voorgrondletter\endcsname\empty}%
    % beware, both the frame and background offset can be overruled
-   \edef\localoffset{\getvalue{\@@framed\c!offset}}%
-   \edef\localwidth{\getvalue{\@@framed\c!breedte}}%
-   \edef\localheight{\getvalue{\@@framed\c!hoogte}}%
+   %
+   % the next macros are visible 
+   \edef\localoffset{\getvalue{\@@framed\c!offset   }}%
+   \edef\localwidth {\getvalue{\@@framed\c!breedte  }}%
+   \edef\localheight{\getvalue{\@@framed\c!hoogte   }}%
    \edef\localformat{\getvalue{\@@framed\c!uitlijnen}}%
-   \edef\localstrut{\getvalue{\@@framed\c!strut}}%
-   \doifvaluesomething{\@@framed\c!lijndikte}
-     {\ruledlinewidth\getvalue{\@@framed\c!lijndikte}\relax
-      \ifinheritruledlinewidth\linewidth\ruledlinewidth\fi}%
+   \edef\localstrut {\getvalue{\@@framed\c!strut    }}%
+   % these are not 
+   \edef\@@localframing {\getvalue{\@@framed\c!kader }}%
+   \edef\@@locallocation{\getvalue{\@@framed\c!plaats}}%
+   %
+   \ifx\@@localframing\v!overlay   % no frame, no offset, no framewidth 
+     \linewidth\zeropoint
+     \let\localoffset\v!overlay
+   \else\ifx\@@localframing\v!geen % no frame, no framewidth
+     \linewidth\zeropoint
+   \else % \v!ja or \v!nee         % if no frame then still framewidth
+     \doifvaluesomething{\@@framed\c!lijndikte}
+       {\ruledlinewidth\getvalue{\@@framed\c!lijndikte}\relax
+        \ifinheritruledlinewidth\linewidth\ruledlinewidth\fi}%
+   \fi\fi
    \ifx\localformat\empty
      \boxhasformatfalse
    \else
@@ -747,7 +762,7 @@
        \let\defaultframeoffset\localoffset
      \fi
      \@@localoffset\localoffset
-     \advance\@@localoffset by \ruledlinewidth
+     \advance\@@localoffset \ruledlinewidth
    \fi\fi
    \ifx\localwidth\v!passend
      \ifboxhasformat
@@ -829,9 +844,9 @@
        \let\next\doformatboxNoSize
      \fi
    \fi
-   \edef\framedwidth % a new feature
+   \edef\framedwidth % a new feature, visible fo ruser
      {\ifdim\!!widtha >\zeropoint\the\!!widtha \else\zeropoint\fi}%
-   \edef\framedheight% a new feature
+   \edef\framedheight% a new feature, visible fo ruser
      {\ifdim\!!heighta>\zeropoint\the\!!heighta\else\zeropoint\fi}%
    % first alternative 
    %\def\dowithframedbox%
@@ -879,10 +894,6 @@
 \def\stoplocalframed%
   {\dontshowcomposition
    \ifboxhasformat
-%     \doifelse{\localwidth}{\v!passend}
-%       {\ifreshapeframebox\doreshapeframedbox\fi
-%        \boxhaswidthfalse}%
-%       {\resetshapeframebox}%
      \ifx\localwidth\v!passend
        \ifreshapeframebox\doreshapeframedbox\fi
        \boxhaswidthfalse
@@ -916,12 +927,21 @@
      \postprocessframebox\framebox
    \fi
    \edef\overlaylinecolor{\getvalue{\@@framed\c!kaderkleur}}%
-   \edef\overlaylinewidth{\the\ruledlinewidth}%
-   \doifnotvalue      {\@@framed\c!kader      }\v!overlay\doframedbox
+   \edef\overlaylinewidth{\the\ruledlinewidth}% \@@...
+   \ifx\@@localframing\v!overlay
+     % rather tight, not even linewidth as offset, can be 
+     % used with offset=0pt and auto strut  
+   \else\ifx\@@localframing\v!geen
+     % idem 
+   \else
+     \doframedbox
+   \fi\fi
    \doifvaluesomething{\@@framed\c!achtergrond}\dobackedbox
-   \doifelsevalue{\@@framed\c!plaats}\v!laag
-     {\doinlineframedbox}
-     {\doifvalue{\@@framed\c!plaats}\v!diepte\doloweredframedbox}%
+   \ifx\@@locallocation\v!laag
+     \doinlineframedbox
+   \else\ifx\@@locallocation\v!diepte
+     \doloweredframedbox
+   \fi\fi
    \box\framebox
    \egroup
    \egroup}
@@ -2340,6 +2360,9 @@
 %D because we have to handle an optional identifier (and
 %D because these commands evolved out of a single case).
 
+\def\framedtextparameter#1#2%
+  {\csname\??kd#1#2\endcsname}
+
 \def\dosetupframedtexts[#1][#2]%
   {\ifsecondargument
      \def\docommando##1{\getparameters[\??kd##1][#2]}%
@@ -2415,9 +2438,44 @@
 %          \dostartattributes{\??kd#1}\c!letter\c!kleur{}%
 %          \def\dostopframedtext{\dodostopframedtext{#1}{#2}}}
 
+% \def\dododostartframedtext[#1][#2][#3]%
+%   {\processaction
+%      [#2]
+%      [  \v!links=>\letvalue{\??kd#1\c!links }\relax
+%                   \letvalue{\??kd#1\c!rechts}\hfill,
+%        \v!rechts=>\letvalue{\??kd#1\c!links }\hfill
+%                   \letvalue{\??kd#1\c!rechts}\relax,
+%        \v!midden=>\letvalue{\??kd#1\c!links }\hfill
+%                   \letvalue{\??kd#1\c!rechts}\hfill,
+%          \v!geen=>\letvalue{\??kd#1\c!links }\relax % new
+%                   \letvalue{\??kd#1\c!rechts}\relax]% new
+%    % removed 06/2001
+%    % \forgetparindent
+%    % added 06/2001 [see demo-bbv]
+%    \localhsize\hsize \checkframedtext
+%    % so far
+%    \setbox\framebox=\vbox
+%      \startboxedcontent
+%        \hsize\localhsize
+%     %  \insidefloattrue % ? better
+%        \expanded{\switchtobodyfont[\getvalue{\??kd#1\c!korps}]}%
+%        \startcolor[\getvalue{\??kd#1\c!kleur}]%
+%        \localframed[\??kd#1][\c!strut=\v!nee,#3]%
+%        \bgroup
+%          \let\\=\endgraf
+%          \getvalue{\??kd#1\c!binnen}%
+%          \doifvalue{\??kd#1\c!dieptecorrectie}{\v!aan} % new, inside box
+%            {\bgroup
+%             \vbox{\strut}
+%             \vskip-\lineheight}%
+%          \blanko[\v!blokkeer]% plaatst signal
+%          \doconvertfont{\getvalue{\??kd#1\c!letter}}{}%
+%          \def\dostopframedtext{\dodostopframedtext{#1}{#2}}}
+
 \def\dododostartframedtext[#1][#2][#3]%
-  {\processaction
-     [#2]
+  {\doifsomething{#2}{\setvalue{\??kd#1\c!plaats}{#2}}%
+   \processaction % \v!laag en \v!diepte are already taken !
+     [\getvalue{\??kd#1\c!plaats}]
      [  \v!links=>\letvalue{\??kd#1\c!links }\relax
                   \letvalue{\??kd#1\c!rechts}\hfill,
        \v!rechts=>\letvalue{\??kd#1\c!links }\hfill
@@ -2426,6 +2484,7 @@
                   \letvalue{\??kd#1\c!rechts}\hfill,
          \v!geen=>\letvalue{\??kd#1\c!links }\relax % new
                   \letvalue{\??kd#1\c!rechts}\relax]% new
+   \letvalue{\??kd#1\c!plaats}\empty
    % removed 06/2001
    % \forgetparindent
    % added 06/2001 [see demo-bbv]
@@ -2990,19 +3049,18 @@
 %D \egroup
 
 %D \macros
-%D   {copyright, registered}
+%D   {encircled}
 %D
 %D Some not so robust left||overs (borrowed from Knuth,
 %D \TEX Book\ page 356):
 
-\def\omcirkeld#1%
+\def\encircled#1%
   {{\ooalign{\hfil\raise0.07ex\hbox{{\tx#1}}\hfil\crcr\mathhexbox20D}}}
 
-\def\copyright%
-  {\omcirkeld{C}}
+\let\omcirkeld\encircled
 
-\def\registered%
-  {\omcirkeld{R}}
+% \def\copyright {\encircled{C}}
+% \def\registered{\encircled{R}}
 
 % \setuprules
 %   [\c!dikte=\v!middel]

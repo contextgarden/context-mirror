@@ -663,6 +663,26 @@
 
 %D ... and to be completed! 
 
+%D Next we implement couple of ordinal mumber converters: 
+
+\def\enordinaldaynumber#1%
+  {#1\ifnum\lasttwodigits{#1}=11
+     \ordinalstr{th}%
+   \else\ifcase\lastdigit{#1}%
+     \ordinalstr{th}%
+   \or % 1
+     \ordinalstr{rst}%
+   \or % 2
+     \ordinalstr{nd}%
+   \or % 3
+     \ordinalstr{rd}%
+   \else
+     \ordinalstr{th}%
+   \fi\fi}
+
+\def\nlordinaldaynumber#1%
+  {#1\highordinalstr{e}}
+
 %D \ShowAllLanguageValues [\s!en] [english]   engelse humor
 %D \ShowAllLanguageValues [\s!nl] [dutch]     nederlandse zuinigheid
 %D \ShowAllLanguageValues [\s!de] [german]    duitse degelijkheid

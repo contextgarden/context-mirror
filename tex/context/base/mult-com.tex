@@ -697,6 +697,9 @@
                  stelnummeringin: stelnummeringin                  setuppagenumbering
                                   stelleseitennummeriernungein     nastavcislovanistran
                                   impostanumerazionepagina         seteazanumerotarepagina
+stelnummerin: stelnummerin setupnumber
+              setupnumber  setupnumber
+              impostanumerazione  setupnumber
                      setupbottom: stelonderin                      setupbottom
                                   stelleuntenein                   nastavspodek
                                   impostafondo                     seteazajos
@@ -1370,6 +1373,9 @@
                 plaatssubformule: plaatssubformule                 placesubformula
                                   platziereunterformel             umistipodrovnici
                                   mettisottoformula                punesubformula
+moveformula: verplaatsformule  moveformula
+             moveformula       moveformula 
+             spostaformula       moveformula 
                    setupformulas: stelformulesin                   setupformulae
                                   stelleformelnein                 nastavrovnice
                                   impostaformule                   seteazaformule
@@ -1568,10 +1574,10 @@
                 setuppositioning: stelpositionerenin               setuppositioning
                                   stellepositionierenein           nastavumistovani
                                   impostaposizionamento            setarepozitie
-                          roteer: roteer                           rotate
+                          rotate: roteer                           rotate
                                   drehen                           otocit
                                   ruota                            roteste % GB
-                   stelroterenin: stelroterenin                    setuprotate
+                     setuprotate: stelroterenin                    setuprotate
                                   stelledrehenein                  nastavotoceni
                                   impostarotazione                 seteazarotare
                          spiegel: spiegel                          mirror
@@ -1739,6 +1745,15 @@
                  switchtorawfont: switchtorawfont                  switchtorawfont
                                   switchtorawfont                  switchtorawfont
                                   passaafontgrezzo                 trecilafontraw
+
+ placeheadtext: plaatskoptekst   placeheadtext 
+                placeheadtext    placeheadtext 
+                posizionatestotesta    placeheadtext 
+
+placeheadnumber: plaatskopnummer  placeheadnumber
+                 placeheadnumber  placeheadnumber
+                 posizionanumerotesta  placeheadnumber
+
 \stopcommands
 
 % ^ ^ ^ nadenken over \settextvariable vs \setuptextvariable in nl
@@ -1873,16 +1888,16 @@
 
 definecolumnset: definieerkolomgroep definecolumnset 
                  definecolumnset     definecolumnset 
-                 definecolumnset     definecolumnset 
+                 definiscigruppocolonne     definecolumnset 
  setupcolumnset: stelkolomgroepin    setupcolumnset 
                  setupcolumnset      setupcolumnset 
-                 setupcolumnset      setupcolumnset 
+                 impostagruppocolonne      setupcolumnset 
  startcolumnset: startkolomgroep     startcolumnset 
                  startcolumnset      startcolumnset 
-                 startcolumnset      startcolumnset 
+                 iniziagruppocolonne      startcolumnset 
   stopcolumnset: stopkolomgroep      stopcolumnset 
                  stopcolumnset       stopcolumnset 
-                 stopcolumnset       stopcolumnset 
+                 terminagruppocolonne       stopcolumnset 
 
 \stopcommands
 

@@ -27,7 +27,7 @@
   \long\gdef\beginETEX#1\endETEX%
     {}
 
-  \gdef\beginTEX% 
+  \gdef\beginTEX%
     {\bgroup\obeylines\dobeginTEX}
 
   \gdef\dobeginTEX#1 
@@ -50,6 +50,24 @@
   \global\let\endETEX\relax
 
 \fi 
+
+\ifx\OmegaVersion\undefined 
+
+  \long\gdef\beginOMEGA#1\endOMEGA%
+    {}
+
+\else
+
+  \gdef\beginOMEGA% 
+    {\bgroup\obeylines\dobeginOMEGA}
+
+  \gdef\dobeginOMEGA#1 
+    {\egroup\immediate\write16%
+       {system (OMEGA) : [line \the\inputlineno] \string#1}}
+
+  \global\let\endOMEGA\relax
+
+\fi
 
 \egroup
 

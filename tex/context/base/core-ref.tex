@@ -157,12 +157,22 @@
 %D full reference, but it's the concept that counts. The low
 %D level implementation is:
 
+\def\rawreference#1#2#3%
+  {\bgroup
+   \the\everyreference
+   \makesectionformat
+   \writereference{#2}
+     {\sectionformat\sectionseparator\sectionseparator\noexpand\pagenumber}
+     {\noexpand\realfolio}{#3}%
+   \egroup}
+
 \def\rawpagereference#1#2%
   {\bgroup
    \the\everyreference
    \makesectionformat
    \writereference{#2}
-     {\sectionformat::\noexpand\pagenumber}{\noexpand\realfolio}{}%
+     {\sectionformat\sectionseparator\sectionseparator\noexpand\pagenumber}
+     {\noexpand\realfolio}{}%
    \egroup}
 
 \def\rawtextreference#1#2#3%
@@ -172,13 +182,6 @@
      {}{\noexpand\realfolio}{#3}%
    \egroup}
 
-\def\rawreference#1#2#3%
-  {\bgroup
-   \the\everyreference
-   \makesectionformat
-   \writereference{#2}
-     {\sectionformat::\noexpand\pagenumber}{\noexpand\realfolio}{#3}%
-   \egroup}
 
 %D As we can see, these macros depend on three other ones,
 %D \type {\makesectionformat}, that generated \type
@@ -409,7 +412,7 @@
 %   \egroup}
 
 \def\usereferences[#1]%
-  {\bgroup\setbox\scratchbox=\hbox\bgroup
+  {\startnointerference
    \checkreferences
    \doifparentfileelse{#1}
      {\ifconditional\jobreferencesloaded\else
@@ -421,8 +424,7 @@
          \ifx\fileprefix\empty\else
            \doglobal\addtocommalist{#1}\loadedreferences
          \fi}}
-   \egroup\egroup}
-
+   \stopnointerference}
 
 %D As mentioned we will also use the cross reference mechanism
 %D for navigational purposes. The main reason for this is that
@@ -1479,20 +1481,20 @@
    \ifx\currentreferencearguments\empty
      \@EA\ifx\csname\r!cross\referenceprefix\currentfullreference\endcsname\relax
        \let\referenceprefix\empty
-       \ifcsname\r!cross\currentfullreference\endcsname
-         \global\referencefoundtrue
-       \else
+       \@EA\ifx\csname\r!cross\currentfullreference\endcsname\relax
          \global\referencefoundfalse
+       \else
+         \global\referencefoundtrue
        \fi
      \else
        \global\referencefoundtrue
      \fi
    \else % [SomeThing{with,me}]
      \let\referenceprefix\empty
-     \ifcsname\r!cross\currentinnerreference\endcsname
-       \global\referencefoundtrue
-     \else
+     \@EA\ifx\csname\r!cross\currentinnerreference\endcsname\relax
        \global\referencefoundfalse
+     \else
+       \global\referencefoundtrue
      \fi
    \fi
    \doifpredefinedreferenceelse{\global\referencefoundfalse}\donothing}
@@ -2795,10 +2797,11 @@
 %D specified. This is logical when one keeps in mind that a
 %D valid \URL\ can also be a mail address.
 
-\def\gebruikURL%
+\def\gebruikURL
   {\bgroup
+   \protectlabels 
    \catcode`\#=12\catcode`\%=12\catcode`\/=12
-   \catcode`\_=12\catcode`\~=12
+   \catcode`\_=12\catcode`\~=12\catcode`\:=12
    \dodoubleempty\dogebruikURL}
 
 \def\dogebruikURL[#1][#2]%
@@ -2815,7 +2818,7 @@
      \fi\fi\fi
    \fi}
 
-\let\gebruikurl=\gebruikURL
+\let\gebruikurl\gebruikURL
 
 %D \macros
 %D   {url,setupurl}
@@ -2933,6 +2936,7 @@
 
 \def\simpleuit
   {\bgroup
+   \protectlabels 
    \ifundefined{\v!file:::\otherlabel}%
      {\tttf[\otherlabel]}%
    \else
@@ -2940,13 +2944,25 @@
      \csname\v!file:::\otherlabel\endcsname
    \egroup}
 
-\def\complexuit[#1]%
-  {\doifinstringelse{::}{#1}{\docomplexuit[#1]}{\docomplexuit[#1::]}}
+% normal version:
+%
+% \def\complexuit[#1]%
+%   {\dontleavehmode % added, but probably not needed
+%    \bgroup
+%    \doifinstringelse{::}{#1}{\docomplexuit[#1]}{\docomplexuit[#1::]}}
+%
+% since we need to serve active :'s we need the less readable:
 
-\def\docomplexuit[#1::#2]%
+\def\complexuit[#1]%
   {\dontleavehmode % added, but probably not needed
    \bgroup
-   \ifundefined{\v!file:::#1}%
+   \protectlabels % needed for active french :'s 
+   \edef\!!stringa{#1}%
+   \doifincsnameelse{::}\!!stringa\donothing{\edef\!!stringa{#1::}}%
+   \@EA\docomplexuit\@EA[\!!stringa]}
+
+\def\docomplexuit[#1::#2]%
+  {\ifundefined{\v!file:::#1}%
      {\tttf[#1]}%
    \else
      \def\doexternaldocument[##1][##2][##3]{\naar{##3}[#1::#2]}%
@@ -3266,12 +3282,12 @@
 
 \newif\ifautocrossdocument
 
-\def\docoupledocument[#1][#2][#3][#4]%
+\def\docoupledocument[#1][#2][#3][#4]% is this :/- safe ? 
   {\ifthirdargument
      \begingroup
      \def\dolijstelement##1##2##3##4##5##6% 2=aut 6=pag / 2 goes into text ref slot
        {\global\utilitydonetrue %{Watch the braces here below!}
-        \setglobalcrossreference{{##1::\strippedlistentry[##5]}}{}{##6}{##2}}%
+        \setglobalcrossreference{{##1::\@@filterblocknumberpart[##5]}}{}{##6}{##2}}%
      \def\usereferences[##1]%
        {\setbox0=\vbox{\doutilities{#3}{##1}{#3}{}{}}}%
      \dogebruikexterndocument[#1][#2][#4]%

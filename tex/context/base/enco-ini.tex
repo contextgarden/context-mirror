@@ -329,7 +329,7 @@
    \doifundefined{\@map@\charactermapping}
      {\expanded{\newtoks\csname\@map@\charactermapping\endcsname}}}
 
-\def\stopmapping%
+\def\stopmapping
   {\popmacro\charactermapping}
 
 \def\setmappingtoks%
@@ -783,6 +783,9 @@
 
 \endETEX
 
+\def\defaultcharacter#1%
+  {\csname\nocharacterencoding\strippedcsname#1\endcsname}
+
 %D Instead of numbers, a command may be entered.
 
 \def\definecommand#1 #2 %
@@ -1017,7 +1020,8 @@
 \def\docurrentencoding @#1@{#1}
 
 %D \macros 
-%D   {showaccents, showcharacters, showhyphenations}
+%D   {showaccents, showcharacters, 
+%D    showcharacterbounds, showhyphenations}
 %D
 %D Encoding is a tricky business. Therefore we provide a 
 %D a few macros that show most of the characters involved. The
@@ -1040,9 +1044,10 @@
 %D can be used to check the correct loading of hyphenation 
 %D patterns. 
 
-\fetchruntimecommand \showaccents      {\f!encodingprefix\s!run}
-\fetchruntimecommand \showcharacters   {\f!encodingprefix\s!run}
-\fetchruntimecommand \showhyphenations {\f!encodingprefix\s!run}
+\fetchruntimecommand \showaccents         {\f!encodingprefix\s!run}
+\fetchruntimecommand \showcharacters      {\f!encodingprefix\s!run}
+\fetchruntimecommand \showcharacterbounds {\f!encodingprefix\s!run}
+\fetchruntimecommand \showhyphenations    {\f!encodingprefix\s!run}
 
 %D \macros
 %D   {everyuppercase, EveryUppercase,
@@ -1439,6 +1444,6 @@
 
 \useencoding[ans,il2,ec,tbo,pdf,uc,pol,x5]
 
-\setupencoding[\s!default=\s!default]
+\setupencoding[\s!default=ec] % was: [\s!default=\s!default]
 
 \protect \endinput 

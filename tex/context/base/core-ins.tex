@@ -26,14 +26,27 @@
 
 \let\doprocessinsert\gobbleoneargument
 
+%\def\installinsertion#1%
+%  {\ifx#1\undefined
+%     \newinsert#1%
+%     \count#1\!!thousand
+%     \skip #1\zeropoint
+%     \dimen#1\maxdimen
+%     \appendtoks\doprocessinsert#1\to\@@insertionlist
+%   \fi}
+
 \def\installinsertion#1%
   {\ifx#1\undefined
+     \let#1\relax
+   \fi
+   \ifx#1\relax % permits \csname...\endcsname
      \newinsert#1%
      \count#1\!!thousand
      \skip #1\zeropoint
      \dimen#1\maxdimen
      \appendtoks\doprocessinsert#1\to\@@insertionlist
    \fi}
+
 
 \def\synchronizeinsertions
   {\def\doprocessinsert##1{\ifvoid##1\else\insert##1{\unvbox##1}\fi}%

@@ -112,7 +112,9 @@
      % so far for option
      \kern\!!heighta
    \fi
+% == \forgetsidefloats 
    \global\sidefloatvsize\nofloatvsize
+   \global\floatshortfalse
    \global\floatflagfalse}
 
 \def\flushsidefloatsafterpar%
@@ -125,20 +127,21 @@
       \fi}}
 
 \def\forgetsidefloats% 
-  {\global\sidefloatvsize=\nofloatvsize
+  {\global\sidefloatvsize\nofloatvsize
+   \global\floatshortfalse
    \global\floatflagfalse}
 
 \let\logsidefloat=\relax
 
 \def\pushpenalties%
-  {\widowpenalty=1
-   \clubpenalty=2
-   \brokenpenalty=1
-   \let\pushpenalties=\relax
+  {\widowpenalty1
+   \clubpenalty2
+   \brokenpenalty1
+   \let\pushpenalties\relax
    \edef\poppenalties%
-     {\widowpenalty=\the\widowpenalty
-      \clubpenalty=\the\clubpenalty
-      \brokenpenalty=\the\brokenpenalty}}
+     {\widowpenalty\the\widowpenalty
+      \clubpenalty\the\clubpenalty
+      \brokenpenalty\the\brokenpenalty}}
 
 \let\poppenalties=\relax
 

@@ -46,14 +46,32 @@
 \newif\ifutilitydone
 
 \def\@@utilityerrormessage%
-  {\showmessage{\m!systems}{8}{}%
-   \global\let\@@utilityerrormessage=\relax}
+  {\showmessage\m!systems{8}{}%
+   \global\let\@@utilityerrormessage\relax}
 
 \def\thisisutilityversion#1%
-  {\doifnot{\utilityversion}{#1}%
+  {\doifelse\utilityversion{#1}%
+     {\checksectionseparator}
      {\@@utilityerrormessage
       \resetutilities
       \endinput}}
+
+\def\checksectionseparator % catches backward compatibility conflict 
+  {\doifnot\sectionseparator:\endinput}
+
+\def\thisissectionseparator#1%
+  {\bgroup
+   \global\let\checksectionseparator\relax
+   \convertcommand \sectionseparator\to\asciiA   
+   \convertargument               #1\to\asciiB
+   \ifx\asciiA\asciiB
+     \egroup
+   \else
+     \egroup
+     % todo \@@utilityerrormessage
+     \resetutilities
+     \endinput
+   \fi}
 
 \def\writeutility%
   {\write\uti}
@@ -67,9 +85,14 @@
 \def\immediatewriteutilitycommand#1%
   {\immediate\write\uti{c \string#1}}
 
-\def\openutilities%
+%\def\openutilities%
+%  {\immediate\openout\uti=\jobname.\f!inputextension
+%   \immediatewriteutilitycommand{\thisisutilityversion{\utilityversion}}}
+
+\def\openutilities
   {\immediate\openout\uti=\jobname.\f!inputextension
-   \immediatewriteutilitycommand{\thisisutilityversion{\utilityversion}}}
+   \immediatewriteutilitycommand{\thisissectionseparator{\sectionseparator}}%
+   \immediatewriteutilitycommand{\thisisutilityversion  {\utilityversion}}}
 
 \def\closeutilities%
   {%\savenofsubpages
@@ -79,6 +102,10 @@
    % should be a message : 
    \let\immediatewriteutilitycommand\gobbleoneargument
    \let\immediatewriteutility\gobbleoneargument}
+
+\def\reopenutilities
+  {\immediate\closeout\uti
+   \openutilities}
 
 \def\abortutilitygeneration%
   {\immediatewriteutilitycommand{\utilitygenerationaborted}%
@@ -328,11 +355,14 @@
 
 \def\doloadtwopassdata#1%
   {\doifundefined{#1:\s!list}
-     {\global\letvalue{#1:\s!list}\empty
+     {\startnointerference 
+      \global\letvalue{#1:\s!list}\empty
+      \protectlabels 
       \doutilities{#1\s!pass}{\jobname}{}{}{}%
       \ifx\twopassdata\empty\else
         \appendtwopasselement{#1}{0}\twopassdata
-      \fi}}
+      \fi
+      \stopnointerference}}
 
 \def\loadtwopassdata%
   {\ifx\alltwopasslists\empty\else

@@ -405,17 +405,30 @@
      \global\copyingblocksfalse
    \fi}
 
-\def\dodosetblockcounters[#1:#2]#3%
-  {\setvalue{\??se\s!old#3}{#1}%
-   \doifnot{#3}{\lastsection}
-     {\dodosetblockcounters[#2:0]{\getvalue{\??se#3\c!na}}}}
+% \def\dodosetblockcounters[#1:#2]#3%
+%   {\setvalue{\??se\s!old#3}{#1}%
+%    \doifnot{#3}{\lastsection}
+%      {\dodosetblockcounters[#2:0]{\getvalue{\??se#3\c!na}}}}
+% 
+% \def\dosetblockcounters[#1#2::#3]%
+%   {\ifblockpermitted
+%      \dodosetblockcounters[#3:0]\firstsection
+%      \setsectiontype[#1]%
+%      \def\@@sectionvalue##1{\getvalue{\??se\s!old##1}}%
+%      \def\@@sectionconversion##1##2{##2}% to get rid of {##2}
+%    \fi}
 
-\def\dosetblockcounters[#1#2::#3]%
+\def\dodosetblockcounters[#1]#2%
+  {\expanded{\setvalue{\??se\s!old#2}{\@@filterheadpart[#1]}}%
+   \doifnot{#2}{\lastsection}
+     {\expanded{\dodosetblockcounters[\@@filtertailpart[#1]]}{\getvalue{\??se#2\c!na}}}}
+
+\def\dosetblockcounters[#1]%
   {\ifblockpermitted
-     \dodosetblockcounters[#3:0]\firstsection
-     \setsectiontype[#1]%
+     \expanded{\dodosetblockcounters[\@@filtersecondpart[#1]]}\firstsection
+     \expanded{\setsectiontype[\@@filterfirstpart[#1]]}%
      \def\@@sectionvalue##1{\getvalue{\??se\s!old##1}}%
-     \def\@@sectionconversion##1##2{##2}% to get rid of {##2}
+     \let\@@sectionconversion\secondoftwoarguments
    \fi}
 
 \let\blockstatus\empty
@@ -425,9 +438,16 @@
      \@EA\dosetblockcounters\@EA[\blockstatus]%
    \fi}
 
+%\def\getblockstatus#1%
+%  {\dosetblklevel{\getvalue{\??by\@@bscriterium}}%
+%   \doifblklevelelse[#1]
+%     {\global\blockpermittedtrue}
+%     {\global\blockpermittedfalse}%
+%   \def\blockstatus{#1}}
+
 \def\getblockstatus#1%
   {\dosetblklevel{\getvalue{\??by\@@bscriterium}}%
-   \doifblklevelelse[#1]
+   \expanded{\doifblklevelelse[#1\sectionseparator\sectionseparator0]}
      {\global\blockpermittedtrue}
      {\global\blockpermittedfalse}%
    \def\blockstatus{#1}}
@@ -466,9 +486,15 @@
 
 \newcount\blocklevel     \blocklevel=0
 
-\def\setblocklevel#1%
+%\def\setblocklevel#1%
+%  {\global\advance\blocklevel by #11
+%   \ifnum\blocklevel>2\relax\doingblockstrue\else\doingblocksfalse\fi}
+%
+% oeps, got bugged 
+
+\def\setblocklevel#1% sign 
   {\global\advance\blocklevel by #11
-   \ifnum\blocklevel>2\relax\doingblockstrue\else\doingblocksfalse\fi}
+   \ifcase\blocklevel\doingblocksfalse\else\doingblockstrue\fi}
 
 \def\opentmpblock%
   {\immediate\openout\tmpblocks=\TEXbufferfile{\f!utilityfilename\the\blocklevel}}
@@ -503,6 +529,7 @@
    \else
      \immediate\openout\outblocks\f!utilityfilename.\f!blockextension
      \immediate\write\outblocks{\string\thisisblockversion{\blockversion}}%
+     \immediate\write\outblocks{\string\thisissectionseparator{\sectionseparator}}%
      \global\copyingblockstrue
    \fi}
 

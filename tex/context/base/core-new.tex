@@ -244,22 +244,61 @@
 \def\alignedbox%
   {\dodoubleempty\doalignedbox[]}
 
+% \def\doalignedbox[#1][#2]%
+%   {\bgroup
+%   %\let\iftraceboxplacement\iftracelayers % ugly
+%    \dowithnextbox
+%      {\let\next\middlebox
+%       \processaction
+%         [#2]
+%         [ t=>\let\next\topbox       , b=>\let\next\bottombox     ,
+%           l=>\let\next\leftbox      , r=>\let\next\rightbox      ,
+%          bl=>\let\next\bottomleftbox,br=>\let\next\bottomrightbox,
+%          tl=>\let\next\topleftbox   ,tr=>\let\next\toprightbox   ,
+%          lt=>\let\next\lefttopbox   ,lb=>\let\next\leftbottombox ,
+%          rt=>\let\next\righttopbox  ,rb=>\let\next\rightbottombox]%
+%       \next{\box\nextbox}%
+%       \egroup}#1}
+
 \def\doalignedbox[#1][#2]%
   {\bgroup
   %\let\iftraceboxplacement\iftracelayers % ugly
    \dowithnextbox
-     {\let\next\middlebox
-      \processaction
-        [#2]
-        [ t=>\let\next\topbox       , b=>\let\next\bottombox     ,
-          l=>\let\next\leftbox      , r=>\let\next\rightbox      ,
-         bl=>\let\next\bottomleftbox,br=>\let\next\bottomrightbox,
-         tl=>\let\next\topleftbox   ,tr=>\let\next\toprightbox   ,
-         lt=>\let\next\lefttopbox   ,lb=>\let\next\leftbottombox ,
-         rt=>\let\next\righttopbox  ,rb=>\let\next\rightbottombox]%
-      \next{\box\nextbox}%
+     {\serializecommalist[#2]%
+      \executeifdefined{\??ab\??ab\serializedcommalist}\middlebox{\box\nextbox}%
       \egroup}#1}
 
+\setvalue{\??ab\??ab         }{\middlebox}
+\setvalue{\??ab\??ab\v!midden}{\middlebox}
+\setvalue{\??ab\??ab\v!links }{\leftbox  }
+\setvalue{\??ab\??ab\v!rechts}{\rightbox }
+\setvalue{\??ab\??ab\v!onder }{\bottombox}
+\setvalue{\??ab\??ab\v!boven }{\topbox   }
+
+\setvalue{\??ab\??ab\v!links \v!boven }{\lefttopbox}
+\setvalue{\??ab\??ab\v!links \v!onder }{\leftbottombox}
+\setvalue{\??ab\??ab\v!rechts\v!boven }{\righttopbox}
+\setvalue{\??ab\??ab\v!rechts\v!onder }{\rightbottombox}
+\setvalue{\??ab\??ab\v!boven \v!links }{\topleftbox}
+\setvalue{\??ab\??ab\v!onder \v!links }{\bottomleftbox}
+\setvalue{\??ab\??ab\v!boven \v!rechts}{\toprightbox}
+\setvalue{\??ab\??ab\v!onder \v!rechts}{\bottomrightbox}
+
+\setvalue{\??ab\??ab  c}{\middlebox}
+\setvalue{\??ab\??ab  l}{\leftbox}
+\setvalue{\??ab\??ab  r}{\rightbox}
+\setvalue{\??ab\??ab  o}{\bottombox}
+\setvalue{\??ab\??ab  b}{\topbox}
+
+\setvalue{\??ab\??ab lt}{\lefttopbox}
+\setvalue{\??ab\??ab lb}{\leftbottombox}
+\setvalue{\??ab\??ab rt}{\righttopbox}
+\setvalue{\??ab\??ab rb}{\rightbottombox}
+\setvalue{\??ab\??ab tl}{\topleftbox}
+\setvalue{\??ab\??ab bl}{\bottomleftbox}
+\setvalue{\??ab\??ab tr}{\toprightbox}
+\setvalue{\??ab\??ab br}{\bottomrightbox}
+
 \def\offsetbox%
   {\dodoubleempty\dooffsetbox[]}
 
@@ -270,7 +309,7 @@
         [\c!x=\zeropoint,
          \c!y=\zeropoint,
          \c!breedte=\wd\nextbox,
-         \c!hoogte=\wd\nextbox,
+         \c!hoogte=\ht\nextbox,
          \c!diepte=\dp\nextbox,
          \c!plaats=,
          #2]%
@@ -445,6 +484,34 @@
 
 \endETEX
 
-\protect
+\bgroup
 
-\endinput
+\gdef\cleanedupcolon{:} \catcode`:=\@@active 
+
+\gdef\cleanuplabel#1%
+  {\bgroup\let:\cleanedupcolon
+   \xdef\cleanlabel{#1}%
+   \egroup}
+
+\gdef\cleanupprefixedlabel#1#2%
+  {\bgroup\let:\cleanedupcolon
+   \xdef\cleanprefix{#1}%
+   \xdef\cleanlabel {#2}%
+   \egroup}
+
+\gdef\protectlabels
+  {\let:\cleanedupcolon}
+
+\global\def\blabelgroup {\bgroup \let:\cleanedupcolon}
+\global\let\elabelgroup  \egroup
+
+\gdef\labelcsname
+  {\bgroup\let:\cleanedupcolon
+   \expandafter\egroup\csname}
+
+\gdef\labelvalue#1%
+  {\labelcsname#1\endcsname}
+
+\egroup
+
+\protect \endinput

@@ -100,7 +100,7 @@
          \@EA\globalprocesscommalist\@EA[\bodyfontenvironmentlist]\next}}
    \ifinsidefloat\else\stopbaselinecorrection\fi}
 
-\gdef\showfont%
+\gdef\showfont
   {\dosingleempty\doshowfont}
 
 \beginTEX \iffontchar
@@ -180,17 +180,17 @@
    \nointerlineskip
    \vskip2pt
    \edef\ascii % \noexpand needed for non etex 
-     {name:~{\noexpand\black\fontname\font}\quad
-      encoding:~{\noexpand\black\currentencoding}\quad
-      mapping:~{\noexpand\black\currentmapping}\quad
-      handling:~{\noexpand\black\fonthandling}}%
+     {name:     {\noexpand\black\fontname\font  }\quad
+      encoding: {\noexpand\black\currentencoding}\quad
+      mapping:  {\noexpand\black\currentmapping }\quad
+      handling: {\noexpand\black\fonthandling   }}%
    \tf\hbox to 40em
      {\blue\hfill\tinyfont\setstrut\strut\ascii}
    \egroup
    \ifinsidefloat\else\stopbaselinecorrection\fi
    \egroup}
 
-\gdef\showfontstyle%
+\gdef\showfontstyle
   {\dotripleempty\doshowfontstyle}
 
 \gdef\doshowfontstyle[#1][#2][#3]%

@@ -470,7 +470,8 @@
 
 \endETEX
 
-\newevery \everylanguage \relax
+\newevery \everylanguage               \relax
+\newevery \everyresetlanguagespecifics \relax
 
 \def\setnormallanguage#1%
   {\dosetnormallanguage{:\currentencoding:\currentmapping:}{#1}{%
@@ -511,6 +512,12 @@
    % will be definable 
    \doifelsevalue{\??la\currentlanguage\c!spatiering}\v!ruim
      \nonfrenchspacing\frenchspacing}
+
+\ifx\enablelanguagespecifics\undefined
+
+  \def\enablelanguagespecifics[#1]{}
+
+\fi
 
 \beginETEX
 
@@ -614,200 +621,64 @@
 \def\languageparameter#1%
   {\csname\??la\defaultlanguage\currentlanguage#1\endcsname}
 
-%D \macros
-%D   {startlanguagespecifics,enablelanguagespecifics}
-%D
-%D Each language has its own typographic pecularities. Some of
-%D those can be influenced by parameters, others are handled by
-%D the interface, but as soon as specific commands come into
-%D view we need another mechanism. In the macro that activates
-%D a language, we call \type{\enablelanguagespecifics}. This
-%D macro in return calls for the setup of language specific
-%D macros. Such specifics are defined as:
-%D
-%D \starttypen
-%D \startlanguagespecifics[de]
-%D   \installcompoundcharacter "a {\"a}
-%D   \installcompoundcharacter "e {\"e}
-%D   \installcompoundcharacter "s {\SS}
-%D \stoplanguagespecifics
-%D \stoptypen
-%D
-%D Instead of \type{[du]} we can pass a comma separated
-%D list, like \type{[du,nl]}. Next calls to this macro add the
-%D specifics to the current list.
-%D
-%D Before we actually read the specifics, we first take some
-%D precautions that will prevent spurious spaces to creep into
-%D the list.
-
-\def\startlanguagespecifics%                % we use double to
-  {\bgroup
-   \catcode`\^^I=\@@ignore
-   \catcode`\^^M=\@@ignore
-   \catcode`\^^L=\@@ignore
-   \dodoubleempty\dostartlanguagespecifics} % get rid of spaces
-
-%D The main macro looks quite complicated but actually does
-%D nothing special. By embedding \type{\do} we can easily
-%D append to the lists and also execute them at will. Just to
-%D be sure, we check on spurious spaces. The second dummy
-%D argument gobbles spaces.
-
-\def\languageencoding%
-  {\ifx\characterencoding\nocharacterencoding \else
-     \characterencoding-%
-   \fi}
-
-% \long\def\dostartlanguagespecifics[#1][#2]#3\stoplanguagespecifics%
-%   {\egroup
-%    \long\def\docommando##1%
-%      {\doifdefinedelse{\??la\languageencoding##1\??la}
-%         {\long\def\do####1####2####3%
-%            {\setvalue{\??la\languageencoding####1\??la}{\do{####1}{####2####3}}}%
-%          \getvalue{\??la\languageencoding##1\??la}{#3}}
-%         {\setvalue{\??la\languageencoding##1\??la}{\do{##1}{#3}}}%
-%       \bgroup
-%       \setbox0=\hbox{\enablelanguagespecifics[##1]}%
-%       \ifdim\wd0>\!!zeropoint
-%         \showmessage{\m!linguals}{7}{\currentencoding-##1,\the\wd0\space}\wait
-%       \else
-%         \showmessage{\m!linguals}{8}{\currentencoding-##1}%
-%       \fi
-%       \egroup
-%       \doif{##1}{\currentmainlanguage}
-%         {\enablelanguagespecifics[##1]}}%
-%    \processcommalist[#1]\docommando}
-
-% This saves 3K in the fmt file.
-
-\long\def\dostartlanguagespecifics[#1][#2]#3\stoplanguagespecifics%
-  {\egroup
-   \processcommalist[#1]{\dosetlanguagespecifics{#3}}}
-
-\long\def\dosetlanguagespecifics#1#2%
-  {\doifdefinedelse{\??la\languageencoding#2\??la}
-     {\long\def\do##1##2##3%
-        {\setvalue{\??la\languageencoding##1\??la}{\do{##1}{##2##3}}}%
-      \getvalue{\??la\languageencoding#2\??la}{#1}}
-     {\setvalue{\??la\languageencoding#2\??la}{\do{#2}{#1}}}%
-   \bgroup
-   \setbox0=\hbox{\enablelanguagespecifics[#2]}%
-   \ifdim\wd0>\!!zeropoint
-     \showmessage{\m!linguals}{7}{\currentencoding-#2,\the\wd0\space}\wait
-   \else
-     \showmessage{\m!linguals}{8}{\currentencoding-#2}%
-   \fi
-   \egroup
-   \doif{#2}{\currentmainlanguage}
-     {\enablelanguagespecifics[#2]}}
-
-%D Enabling them is rather straightforward. We only have to
-%D define \type{\do} in such a way that \type{{ }} is removed
-%D and the language key is gobbled.
-
-%\def\enablelanguagespecifics[#1]%
-%  {\let\do\secondoftwoarguments
-%   \doifvaluesomething{\??la#1\c!default}
-%     {\getvalue{\??la\getvalue{\??la#1\c!default}\??la}%
-%      \getvalue{\??la\languageencoding\??la}}%
-%   \getvalue{\??la#1\??la}%
-%   \getvalue{\??la\languageencoding#1\??la}}
+% moved 
 %
-% sped up since used often:
-
-\def\enablelanguagespecifics[#1]%
-  {\let\do\secondoftwoarguments
-   \csname
-     \??la
-     \@EA\ifx\csname\??la#1\c!default\endcsname\relax
-       \languageencoding
-     \else
-       \csname\??la#1\c!default\endcsname
-     \fi
-     \??la
-   \endcsname
-   \csname\??la#1\??la\endcsname
-   \csname\??la\languageencoding#1\??la\endcsname} % dup ?
-
-%D \macros 
-%D   {everyresetlanguagespecifics,resetlanguagespecifics}
-%D 
-%D Cleanup macros. 
-
-\newtoks\everyresetlanguagespecifics
-
-\def\resetlanguagespecifics{\the\everyresetlanguagespecifics}
-
-\appendtoks
-  \resetlanguagespecifics
-\to \everycleanupfeatures
-
-%D \macros
-%D   {leftguillemot,rightguillemot,leftsubguillemot,rightsubguillemot,
-%D    ...single...quote,...double...quote}
-%D
-%D We assign logical names to all kind of quote and sentence
-%D boundary characters.
-%D
-%D When using Computer Modern Roman, the next definitions
-%D looks a bit better than the default ligatures.
-%D
-%D \starttypen
-%D \def\lowerleftsingleninequote  {,}
-%D \def\lowerleftdoubleninequote  {,\kern-.1em,}
-%D \def\upperleftsingleninequote  {'}
-%D \def\upperleftdoubleninequote  {''\kern-.1em}
-%D \def\upperleftsinglesixquote   {`}
-%D \def\upperleftdoublesixquote   {`\kern-.1em`}
-%D
-%D \def\lowerrightsingleninequote {,}
-%D \def\lowerrightdoubleninequote {,\kern-.1em,}
-%D \def\upperrightsingleninequote {'}
-%D \def\upperrightdoubleninequote {''}
-%D \def\upperrightsinglesixquote  {`}
-%D \def\upperrightdoublesixquote  {\kern-.125em``}
-%D \stoptypen
-%D
-%D But in other fonts, these definitions can give problems, so
-%D we just say:
-
-\def\lowerleftsingleninequote  {,}
-\def\lowerleftdoubleninequote  {,,}
-\def\upperleftsingleninequote  {'}
-\def\upperleftdoubleninequote  {''}
-\def\upperleftsinglesixquote   {`}
-\def\upperleftdoublesixquote   {``}
-
-\def\lowerrightsingleninequote {,}
-\def\lowerrightdoubleninequote {,,}
-\def\upperrightsingleninequote {'}
-\def\upperrightdoubleninequote {''}
-\def\upperrightsinglesixquote  {`}
-\def\upperrightdoublesixquote  {``}
-
-%D Yes I know, they are ugly:
-
-\def\leftfakeguillemot
-  {\dontleavehmode\hbox{\raise.25ex\hbox{$\scriptscriptstyle\ll$}}}
-
-\def\rightfakeguillemot
-  {\hbox{\raise.25ex\hbox{$\scriptscriptstyle\gg$}}}
-
-\def\leftsubfakeguillemot
-  {\dontleavehmode\hbox{\raise.25ex\hbox{$\scriptscriptstyle<$}}}
-
-\def\rightsubfakeguillemot
-  {\hbox{\raise.25ex\hbox{$\scriptscriptstyle>$}}}
-
-%D Pretty Plain: 
-
-\def\fakeunderscore{\leavevmode\kern.06em\vbox{\hrule\!!width.3em}} 
-
-\ifx\mathunderscore\undefined \let\mathunderscore\fakeunderscore \fi
-\ifx\textunderscore\undefined \let\textunderscore\fakeunderscore \fi
-
-\def\_{\ifmmode\mathunderscore\else\textunderscore\fi}
+% %D \macros
+% %D   {leftguillemot,rightguillemot,leftsubguillemot,rightsubguillemot,
+% %D    ...single...quote,...double...quote}
+% %D
+% %D We assign logical names to all kind of quote and sentence
+% %D boundary characters.
+% %D
+% %D When using Computer Modern Roman, the next definitions
+% %D looks a bit better than the default ligatures.
+% %D
+% %D \starttypen
+% %D \def\lowerleftsingleninequote  {,}
+% %D \def\lowerleftdoubleninequote  {,\kern-.1em,}
+% %D \def\upperleftsingleninequote  {'}
+% %D \def\upperleftdoubleninequote  {''\kern-.1em}
+% %D \def\upperleftsinglesixquote   {`}
+% %D \def\upperleftdoublesixquote   {`\kern-.1em`}
+% %D
+% %D \def\lowerrightsingleninequote {,}
+% %D \def\lowerrightdoubleninequote {,\kern-.1em,}
+% %D \def\upperrightsingleninequote {'}
+% %D \def\upperrightdoubleninequote {''}
+% %D \def\upperrightsinglesixquote  {`}
+% %D \def\upperrightdoublesixquote  {\kern-.125em``}
+% %D \stoptypen
+% %D
+% %D But in other fonts, these definitions can give problems, so
+% %D we just say:
+% 
+% \def\lowerleftsingleninequote  {,}
+% \def\lowerleftdoubleninequote  {,,}
+% \def\upperleftsingleninequote  {'}
+% \def\upperleftdoubleninequote  {''}
+% \def\upperleftsinglesixquote   {`}
+% \def\upperleftdoublesixquote   {``}
+% 
+% \def\lowerrightsingleninequote {,}
+% \def\lowerrightdoubleninequote {,,}
+% \def\upperrightsingleninequote {'}
+% \def\upperrightdoubleninequote {''}
+% \def\upperrightsinglesixquote  {`}
+% \def\upperrightdoublesixquote  {``}
+% 
+% %D Yes I know, they are ugly:
+% 
+% \def\leftfakeguillemot
+%   {\dontleavehmode\hbox{\raise.25ex\hbox{$\scriptscriptstyle\ll$}}}
+% 
+% \def\rightfakeguillemot
+%   {\hbox{\raise.25ex\hbox{$\scriptscriptstyle\gg$}}}
+% 
+% \def\leftsubfakeguillemot
+%   {\dontleavehmode\hbox{\raise.25ex\hbox{$\scriptscriptstyle<$}}}
+% 
+% \def\rightsubfakeguillemot
+%   {\hbox{\raise.25ex\hbox{$\scriptscriptstyle>$}}}
 
 %D Just like with subsentence boundary symbols, quotes
 %D placement depends on the current language, therefore we show
@@ -921,8 +792,6 @@
 %D \HL
 %D \stoptabel
 %D \protect
-
-%D 
 
 % \bgroup \normallanguage255 \patterns{} \egroup
 % \def\nopatterns{\normallanguage255 }

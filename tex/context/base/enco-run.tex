@@ -19,19 +19,19 @@
    \let\normalbuildtextaccent\buildtextaccent
    \let\normalbottomaccent   \bottomaccent
   %\def\char{\green\normalchar}%
-   \def\char% can be used in \oalign
+   \def\char % can be used in \oalign
      {\bgroup\def\char{\green\normalchar\scratchcounter\egroup}%
       \afterassignment\char\scratchcounter}%
    \def\buildtextaccent{\let\green\empty\blue\normalbuildtextaccent}%
    \def\bottomaccent{\let\green\empty\red\normalbottomaccent}}
 
-\unexpanded\gdef\visualizecharacterslegend%
+\unexpanded\gdef\visualizecharacterslegend
   {\hbox
      {\edef\banner{\currentencoding\space\fontname\font}%
       \tttf\banner:\space
       {\blue composed}\space{\red bottom}\space{\green char}\space raw}}
 
-\gdef\showaccents%
+\gdef\showaccents
   {\bgroup
    \savefont
    \setuptextrules[\c!korps=,\c!letter=]
@@ -59,7 +59,7 @@
    \stoptextrule
    \egroup}
 
-\gdef\showcharacters%
+\gdef\showcharacters
   {\bgroup
    \savefont
    \setuptextrules[\c!korps=,\c!letter=]
@@ -69,8 +69,8 @@
    \forgetall
    \def\startencoding[##1]{}
    \def\stopencoding{\endinput}
-   \dimen0=\!!zeropoint
-   \dimen2=\!!zeropoint
+   \dimen0=\zeropoint
+   \dimen2=\zeropoint
    \def\definecharacter ##1 ##2 %
      {\setbox0=\hbox spread 1em{\getvalue{##1}}%
       \ifdim\wd0>\dimen0 \dimen0=\wd0 \fi
@@ -93,6 +93,37 @@
    \stopcolumns
    \stoptextrule
    \egroup}
+
+% \hbox
+%   {\font\test=uplr8t \test \ruledhbox{t}
+%    \font\test=uplr8r \test \ruledhbox{t}}
+
+\beginETEX \fontcharwd
+
+\gdef\showcharacterbounds
+  {\bgroup
+   \localcolortrue
+   \dorecurse{255}
+     {\ifnum\fontcharwd\font\recurselevel>\zeropoint
+        \noindent\ruledhbox{\darkgray\char\recurselevel}\space
+      \fi}\unskip
+   \egroup}
+
+\endETEX
+
+\beginTEX
+
+\gdef\showcharacterbounds
+  {\bgroup
+   \localcolortrue
+   \dorecurse{255}
+     {\setbox\scratchbox\ruledhbox{\darkgray\char\recurselevel}%
+      \ifnum\wd\scratchbox>\zeropoint
+        \noindent\box\scratchbox\space
+      \fi}\unskip
+   \egroup}
+
+\endTEX
 
 \gdef\showhyphenations#1%
   {\starttabulate[|le|l|]

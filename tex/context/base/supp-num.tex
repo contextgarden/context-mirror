@@ -93,13 +93,13 @@
 %D the grouped call, the other branch handles the fuzzy 
 %D delimited calls. 
 
-\def\digits%
+\unexpanded\def\digits
   {\bgroup\let~@\doifnextcharelse\bgroup\dodigits\grabdigit}
 
 \def\dodigits#1%
   {\grabdigit#1\relax}
 
-\def\grabdigit%
+\def\grabdigit
   {\futurelet\next\scandigit}
 
 %D Watch the test for \type {\nextobeyedline}, because the 

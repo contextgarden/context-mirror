@@ -238,7 +238,7 @@
 \appendtoksonce 
   \doPDFresetpageattributes 
   \doPDFresetpageresources
-\to \everyshipout
+\to \everyaftershipout
 
 \ifx\PDFcode\undefined
   \ifx\pdfliteral\undefined
@@ -264,7 +264,9 @@
      \doPDFpageresource{/ExtGState \PDFobjectreference}%
    \fi}
 
-\appendtoks \checkPDFextgstates \to \everyshipout
+\appendtoksonce 
+  \checkPDFextgstates
+\to \everyshipout
 
 \def\appendtoPDFdocumentextgstates#1%
   {\xdef\docuPDFextgstates{\docuPDFextgstates\space#1}}

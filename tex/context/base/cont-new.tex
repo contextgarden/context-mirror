@@ -12,27 +12,299 @@
 %C details.
 
 % manual : offsetbox alignbox
+
+% todo achtergronden in kolommen 
 
 %D This file is loaded at runtime, thereby providing an
 %D excellent place for hacks and new features.
 
 \unprotect
+
+\appendtoks \checkcurrentlayout \to \everystarttext 
 
+\def\flushfootnotes  {\flushnotes}
+\def\doflushfootnotes{\doflushnotes}
+
+\def\usesubpath[#1]%
+  {\ifx\allinputpaths\empty
+     \edef\allinputpaths{#1}%
+   \else
+     \def\docommando##1%
+       {\def\dodocommando####1{\addtocommalist{##1/####1}\allinputpaths}%
+        \processcommalist[#1]\dodocommando}%
+     \processcommacommand[\allinputpaths]\docommando
+   \fi}
+
+\newif\ifboxhasframe
+
+\def\startlocalframed[#1][#2]%
+  {\bgroup
+   \inframedtrue
+   \edef\@@framed{#1}%
+   % this piece of pre expansion is needed (sometimes used in frameoffset)
+   % \doifvaluesomething{\@@framed\c!lijndikte}         % obsolete 
+   %   {\ruledlinewidth\getvalue{\@@framed\c!lijndikte}}% obsolete 
+   % this piece of pre expansion is needed (sometimes used circular)
+   \scratchdimen\getvalue{\@@framed\c!kaderoffset}%
+   \setevalue{\@@framed\c!kaderoffset}{\the\scratchdimen}%
+   \doifnotvalue{\@@framed\c!achtergrondoffset}\v!kader
+     {\scratchdimen\getvalue{\@@framed\c!achtergrondoffset}%
+      \setevalue{\@@framed\c!achtergrondoffset}{\the\scratchdimen}}%
+   % we need to register the (outer) color
+   \startregistercolor[\getvalue{\@@framed\c!voorgrondkleur}]%
+   % to prevent deadlock in case of self refering
+   \ifsecondargument % faster
+     \getparameters[\@@framed][#2]% here !
+   \fi
+   % to get the right spacing
+   \doifvaluesomething{\@@framed\c!voorgrondletter}
+     {\@EA\doconvertfont\csname\@@framed\c!voorgrondletter\endcsname\empty}%
+   % beware, both the frame and background offset can be overruled
+   %
+   % the next macros are visible 
+   \edef\localoffset{\getvalue{\@@framed\c!offset   }}%
+   \edef\localwidth {\getvalue{\@@framed\c!breedte  }}%
+   \edef\localheight{\getvalue{\@@framed\c!hoogte   }}%
+   \edef\localformat{\getvalue{\@@framed\c!uitlijnen}}%
+   \edef\localstrut {\getvalue{\@@framed\c!strut    }}%
+   % these are not 
+   \edef\@@localframing {\getvalue{\@@framed\c!kader }}%
+   \edef\@@locallocation{\getvalue{\@@framed\c!plaats}}%
+   %
+   \ifx\@@localframing\v!overlay   % no frame, no offset, no framewidth 
+     \boxhasframefalse
+     \let\localoffset\v!overlay
+   \else\ifx\@@localframing\v!geen % no frame, no framewidth
+     \boxhasframefalse
+   \else
+     \boxhasframetrue
+   \fi\fi
+   \ifboxhasframe
+     \doifvaluesomething{\@@framed\c!lijndikte}
+       {\ruledlinewidth\getvalue{\@@framed\c!lijndikte}\relax
+        \ifinheritruledlinewidth\linewidth\ruledlinewidth\fi}%
+   \else
+     \ruledlinewidth\zeropoint
+   \fi
+   \ifx\localformat\empty
+     \boxhasformatfalse
+   \else
+     \boxhasformattrue
+     \dosetraggedcommand\localformat
+     \edef\dobeforeframedbox{\raggedtopcommand\getvalue{\@@framed\c!boven}}%
+     \edef\doafterframedbox {\getvalue{\@@framed\c!onder}\raggedbottomcommand}%
+   \fi
+   \ifx\localoffset\v!geen
+     \boxhasoffsetfalse
+     \boxhasstrutfalse
+     \boxisoverlaidfalse
+     \@@localoffset\ruledlinewidth
+   \else\ifx\localoffset\v!overlay
+% \ifx\@@localframing\v!nee \boxhasframefalse \fi % test first 
+     \boxhasoffsetfalse
+     \boxhasstrutfalse
+     \boxisoverlaidtrue
+     \@@localoffset\zeropoint
+   \else
+     \boxhasoffsettrue
+     \boxhasstruttrue
+     \boxisoverlaidfalse
+     \ifx\localoffset\v!default % new per 2-6-2000
+       \let\localoffset\defaultframeoffset
+       \letvalue{\@@framed\c!offset}\defaultframeoffset
+     \else
+       \let\defaultframeoffset\localoffset
+     \fi
+     \@@localoffset\localoffset
+     \advance\@@localoffset \ruledlinewidth
+   \fi\fi
+   \ifx\localwidth\v!passend
+     \ifboxhasformat
+       \boxhaswidthtrue
+       \!!widtha\hsize
+     \else
+       \boxhaswidthfalse
+     \fi
+   \else\ifx\localwidth\v!ruim
+     \boxhaswidthtrue
+     \!!widtha\hsize
+   \else
+     \boxhaswidthtrue
+     \!!widtha\localwidth
+   \fi\fi
+   \ifx\localheight\v!passend
+     \boxhasheightfalse % no longer: \boxhasstrutfalse
+   \else\ifx\localheight\v!ruim
+     \boxhasheightfalse
+   \else
+     \boxhasheighttrue
+     \!!heighta\localheight
+   \fi\fi
+   \ifdim\!!widtha=\hsize
+     \parindent\zeropoint
+     \setlocalhsize
+     \!!widtha\localhsize
+   \fi
+   \advance\!!widtha  -2\@@localoffset
+   \advance\!!heighta -2\@@localoffset
+   \ifx\localstrut\v!nee
+     \boxhasstrutfalse
+   \fi
+   \ifboxhasstrut
+     \setstrut
+     \let\localbegstrut\begstrut
+     \let\localendstrut\endstrut
+     \let\localstrut   \strut
+   \else
+     \let\localbegstrut\pseudobegstrut % was: \relax
+     \let\localendstrut\pseudoendstrut % was: \relax
+     \let\localstrut   \pseudostrut    % was: \relax
+    %\ifboxhasheight\ifdim\!!heighta<\ht\strutbox % saveguard
+    %  \let\localbegstrut\relax                  % but not that
+    %  \let\localstrut   \relax                  % save afterall
+    %\fi\fi
+   \fi
+   \ifboxhasheight
+     \let\\\vboxednewline
+     \ifboxhaswidth
+       \let\hairline\vboxedhairline
+       \ifboxhasformat
+         \let\next\doformatboxSomeFormat
+       \else
+         \let\next\doformatboxNoFormat
+       \fi
+     \else
+       \let\hairline\hboxedhairline
+       \ifboxhasformat
+         \let\next\doformatboxHeight
+       \else
+         \let\next\doformatboxVSize
+       \fi
+     \fi
+   \else
+     \ifboxhaswidth
+       \ifboxhasformat
+         \let\hairline\vboxedhairline
+         \let\\\vboxednewline
+         \let\next\doformatboxWidth
+       \else
+         \let\hairline\hboxedhairline
+         \let\\\hboxednewline
+         \let\next\doformatboxHSize
+       \fi
+     \else
+       \let\hairline\hboxedhairline
+       \let\\\hboxednewline
+       \let\next\doformatboxNoSize
+     \fi
+   \fi
+   \edef\framedwidth % a new feature, visible fo ruser
+     {\ifdim\!!widtha >\zeropoint\the\!!widtha \else\zeropoint\fi}%
+   \edef\framedheight% a new feature, visible fo ruser
+     {\ifdim\!!heighta>\zeropoint\the\!!heighta\else\zeropoint\fi}%
+   % first alternative 
+   %\def\dowithframedbox%
+   %  {\let\postprocessframebox\undefined %new
+   %   \aftergroup\stoplocalframed}%
+   % \afterassignment\dowithframedbox
+   % \setbox\framebox=\next}
+   % second alternative 
+   %\dowithnextbox 
+   %  {\setbox\framebox=\box\nextbox
+   %   \let\postprocessframebox\undefined %new
+   %   \stoplocalframed}
+   %  \next}
+   % third alternative 
+   \afterassignment\dodowithframebox
+   \setbox\framebox\next}
+
+\def\stoplocalframed%
+  {\dontshowcomposition
+   \ifboxhasformat
+     \ifx\localwidth\v!passend
+       \ifreshapeframebox\doreshapeframedbox\fi
+       \boxhaswidthfalse
+     \else
+       \resetshapeframebox
+     \fi
+   \else
+     \resetshapeframebox
+   \fi
+   \ifboxhaswidth
+     \wd\framebox\!!widtha
+   \fi
+   \ifboxhasheight
+     \ht\framebox\!!heighta
+   \fi
+   \doifvalue{\@@framed\c!leeg}\v!ja
+     {\setbox\scratchbox\null
+      \wd\scratchbox\wd\framebox 
+      \ht\scratchbox\ht\framebox 
+      \dp\scratchbox\dp\framebox
+      \setbox\framebox\box\scratchbox}%
+   \stopregistercolor
+   \docolorframebox
+   \ifboxhasoffset
+     \dooffsetframebox
+   \fi
+   \ifboxisoverlaid \else
+     \dolocateframebox
+   \fi
+   \ifx\postprocessframebox\undefined \else
+     \postprocessframebox\framebox
+   \fi
+   \edef\overlaylinecolor{\getvalue{\@@framed\c!kaderkleur}}%
+   \edef\overlaylinewidth{\the\ruledlinewidth}% \@@...
+   \ifboxhasframe % real or invisible frame 
+     \doframedbox 
+   \fi
+   \doifvaluesomething{\@@framed\c!achtergrond}\dobackedbox
+   \ifx\@@locallocation\v!laag
+     \doinlineframedbox
+   \else\ifx\@@locallocation\v!diepte
+     \doloweredframedbox
+   \fi\fi
+   \box\framebox
+   \egroup
+   \egroup}
+
+\def\fontclassname#1#2%
+  {\ifcsname\??ff#1#2\endcsname
+     \fontclassname{#1}{\csname\??ff#1#2\endcsname}%
+   \else\ifcsname\??ff#2\endcsname
+     \fontclassname{#1}{\csname\??ff#2\endcsname}%
+   \else
+     #2%
+   \fi\fi}
+
+\def\defineclassfontsynonym
+  {\dotripleargument\dodefineclassfontsynonym}
+
+\def\dodefineclassfontsynonym[#1][#2][#3]%
+  {\definefontsynonym[#1][\fontclassname{#2}{#3}]} 
+
+%\definefontsynonym [KopFont] [\fontclassname{officina}{SerifBold}] 
+%
+%\defineclassfontsynonym [KopFont] [officina] [SerifBold] 
 
 \def\woordrechts % zie naw 
   {\groupedcommand
      {\hfill\allowbreak\strut\hfill\hbox}
      {\parfillskip\zeropoint\par}}
 
-\def\startkolomopmaak
+\def\startkolomopmaak % don't change 
   {\bgroup
-   \getnoflines\vsize
+   \getrawnoflines\teksthoogte % teksthoogte kan topskip hebben, dus raw  
    \scratchdimen\noflines\lineheight
-   \vbox to \scratchdimen\bgroup}
+   \advance\scratchdimen-\lineheight
+   \advance\scratchdimen\topskip
+   \setbox\scratchbox\vbox to \scratchdimen\bgroup}
 
 \def\stopkolomopmaak
-  {\vss % niet meer aanpassen 
-   \egroup
+  {\egroup
+   \dp\scratchbox\zeropoint
+   \wd\scratchbox\tekstbreedte
+   \box\scratchbox
    \egroup}
 
 % transparency ! 
@@ -63,121 +335,6 @@
        \fi
      \fi
    \fi}
-
-\unexpanded\def\placeheadtext
-  {\doquintupleempty\doplaceheadtextornumber
-     [\c!tekstletter][\c!tekstkleur][\empty]}
-
-\unexpanded\def\placeheadnumber
-  {\doquintupleempty\doplaceheadtextornumber
-     [\c!nummerletter][\c!nummerkleur][\v!nummer]}
-
-\def\doplaceheadtextornumber[#1][#2][#3][#4][#5]%
-  {\bgroup
-   \edef\@@sectie{\??ko\iffifthargument#5\else#4\fi}%
-   \dostartattributes\@@sectie\c!letter\c!kleur\empty
-     \dontconvertfont
-     \dostartattributes\@@sectie#1#2\empty
-       \stelinterliniein % \setupinterlinespace
-       \begstrut\getmarking[\hoofdmarkering{#4#3}]\endstrut
-       \endgraf
-     \dostopattributes
-   \dostopattributes
-   \egroup}
-
-\def\doplaatskoptekst#1#2#3#4%
-  {\beginheadplacement{#1}%
-   \iflegekop
-     \setbox0\ifvertical\vbox\else\hbox\fi to \zeropoint
-       {\headnumbercontentfalse
-        \resetsystemmode\v!sectienummer
-        #2}%
-     \makestrutofbox0
-   \else
-     \setbox0=\ifvertical\vbox\else\hbox\fi % \vhbox
-       {\headnumbercontentfalse
-        \resetsystemmode\v!sectienummer
-        % outerside font determines distance
-        \dosetfontattribute{\??ko#1}\c!letter
-        % but we don't want color to influence user commands 
-        \getvalue{\??ko#1\c!commando}        
-          {} % no number
-          {\dostartattributes{\??ko#1}\c!letter\c!kleur\empty 
-             \dostartattributes{\??ko#1}\c!tekstletter\c!tekstkleur\empty
-               \dontconvertfont
-               \ifdisplaysectionhead
-                 \stelinterliniein
-               \else
-                 \stelspatieringin
-               \fi
-               #2%
-               \getvalue{\??ko#1\c!voorcommando}%
-               \ifdisplaysectionhead
-                 \getvalue{\??ko#1\c!tekstcommando}%
-                   {\setstrut\begstrut#3\endstrut}%
-                 \xdef\localheaddepth{\the\dp\strutbox}%
-               \else
-                 \getvalue{\??ko#1\c!tekstcommando}{#3}%
-               \fi
-               \getvalue{\??ko#1\c!nacommando}%
-               \ifdisplaysectionhead\endgraf\fi
-             \dostopattributes
-          \dostopattributes}}%  
-   \fi  
-   \endheadplacement{#1}{#4}}
-
-\def\doplaatskopnummertekst#1#2#3#4#5%
-  {\beginheadplacement{#1}%
-   \iflegekop
-     \setbox0\ifvertical\vbox\else\hbox\fi to \zeropoint
-       {\doiftextelse{#3}
-          {\setsystemmode  \v!sectienummer\headnumbercontenttrue }
-          {\resetsystemmode\v!sectienummer\headnumbercontentfalse}%
-        #2}%
-     \makestrutofbox0
-   \else
-     \setbox0=\ifvertical\vbox\else\hbox\fi % \vhbox
-       {\doiftextelse{#3}
-          {\setsystemmode  \v!sectienummer\headnumbercontenttrue }
-          {\resetsystemmode\v!sectienummer\headnumbercontentfalse}%
-        % outerside font determines distance
-        \dosetfontattribute{\??ko#1}\c!letter
-        % but we don't want color to influence user commands 
-        \getvalue{\??ko#1\c!commando}%
-          {\dostartattributes{\??ko#1}\c!letter\c!kleur\empty
-             \dostartattributes{\??ko#1}\c!nummerletter\c!nummerkleur\empty
-               \getvalue{\??ko#1\c!voorcommando}%
-               \ifdisplaysectionhead
-                 \getvalue{\??ko#1\c!nummercommando}%
-                   {\setstrut\begstrut#3\endstrut}%
-               \else
-                 \getvalue{\??ko#1\c!nummercommando}{#3}%
-               \fi
-             \dostopattributes
-           \dostopattributes}
-          {\dostartattributes{\??ko#1}\c!letter\c!kleur\empty
-             \dostartattributes{\??ko#1}\c!tekstletter\c!tekstkleur\empty
-               \dontconvertfont
-               \ifdisplaysectionhead
-                 \stelinterliniein
-               \else
-                 \stelspatieringin
-               \fi
-               #2%
-               \ifdisplaysectionhead
-                 \getvalue{\??ko#1\c!tekstcommando}%
-                   {\setstrut\begstrut#4\endstrut}%
-                 \xdef\localheaddepth{\the\dp\strutbox}%
-               \else
-                 \getvalue{\??ko#1\c!tekstcommando}{#4}%
-               \fi
-               \getvalue{\??ko#1\c!nacommando}%
-               \ifdisplaysectionhead\endgraf\fi
-           \dostopattributes
-          \dostopattributes}}%
-   \fi
-   \endheadplacement{#1}{#5}}
-
 
 \writestatus{\m!systems}{beware: some patches loaded from cont-new.tex!}
 
@@ -221,114 +378,205 @@
    \doanalyzefigurefiles\doanalyzefigurefilesB
    \doanalyzefigurefiles\doanalyzefigurefilesC}
 
-\definesystemvariable {bl} % bleeding
+\def\regelweergave
+  {\@@rnlinks\convertnumber\@@rnconversie\linenumber\@@rnrechts}
 
-\newcounter\nofbleeds % per pag 
+% extension to page-lin 
 
-\def\setupbleeding
-  {\dodoubleempty\getparameters[\??bl]}
-
-\setupbleeding
-  [\c!plaats=l,
-   \c!rek=\v!ja,
-   \c!breedte=3cm,
-   \c!hoogte=3cm,
-   \c!offset=2mm,
-   \c!voffset=\@@bloffset,
-   \c!hoffset=\@@bloffset]
-
-\def\bleed
-  {\dosingleempty\dobleed}
-
-\def\dobleed[#1]#2%
-  {\hbox\bgroup  
-   \def\bleedwidth {\hsize}%
-   \def\bleedheight{\vsize}%
-   \doglobal\increment\nofbleeds
-   \getparameters[\??bl][#1]%
-   \!!doneafalse % left
-   \!!donebfalse % right 
-   \!!donecfalse % top
-   \!!donedfalse % bottom  
-   \processaction
-     [\@@blplaats]
-     [ t=>\!!donectrue\let\@@blhoffset\!!zeropoint, 
-       b=>\!!donedtrue\let\@@blhoffset\!!zeropoint,
-       l=>\!!doneatrue\let\@@blvoffset\!!zeropoint, 
-       r=>\!!donebtrue\let\@@blvoffset\!!zeropoint,
-      bl=>\!!doneatrue\!!donedtrue,   
-      lb=>\!!doneatrue\!!donedtrue,   
-      br=>\!!donebtrue\!!donedtrue,   
-      rb=>\!!donebtrue\!!donedtrue,  
-      tl=>\!!doneatrue\!!donectrue,  
-      lt=>\!!doneatrue\!!donectrue,  
-      tr=>\!!donebtrue\!!donectrue,  
-      rt=>\!!donebtrue\!!donectrue]%  
-   \doifelse\@@blrek\v!ja\donetrue\donefalse
-   \scratchdimen\@@blbreedte
-   \ifdone
-     \if!!donea
-       \advance\scratchdimen\MPx{\??bl:\nofbleeds}%
-     \else\if!!doneb
-       \scratchdimen\papierbreedte
-       \advance\scratchdimen-\MPx{\??bl:\nofbleeds}%
-     \fi\fi
-   \fi
-   \advance\scratchdimen\@@blhoffset
-   \edef\bleedwidth{\the\scratchdimen}%
-   \scratchdimen\@@blhoogte
-   \ifdone
-     \if!!donec
-       \scratchdimen\papierhoogte
-       \advance\scratchdimen-\MPy{\??bl:\nofbleeds}%
-     \else\if!!doned
-       \advance\scratchdimen\MPy{\??bl:\nofbleeds}%
-     \fi\fi
-   \fi
-   \advance\scratchdimen\@@blvoffset
-   \edef\bleedheight{\the\scratchdimen}%
-   \hsize\bleedwidth
-   \vsize\bleedheight
-   \setbox\scratchbox\hbox{#2}%
-   \setbox\scratchbox\hbox to \@@blbreedte
-     {\if!!donea\hss\fi\box\scratchbox\if!!doneb\hss\fi}%
-   \if!!doned 
-     \setbox\scratchbox\hbox
-       {\lower\bleedheight\hbox{\raise\@@blhoogte\box\scratchbox}}%
-   \fi
-   \wd\scratchbox\@@blbreedte
-   \ht\scratchbox\@@blhoogte
-   \dp\scratchbox\zeropoint
-   \ifdone
-     \hpos{\??bl:\nofbleeds}{\box\scratchbox}%
+\def\dodoschrijfregelnummer%
+  {% beware of em's, the font is already switched ! 
+   \setbox0=\hbox{\@@rncommando{\regelweergave}}%
+   \vsmashbox0%
+   \ifcase\linenumberlocation
+     \rlap{\hbox to \@@rnbreedte{\box0\hss}}% was \llap, nog testen !! 
+   \or
+     %\llap{\hbox to \@@rnbreedte{\hss\box0\hskip\linkermargeafstand}}%
+     \inleftmargin
+       {\forgetall 
+        \doifelse\@@rnbreedte\v!marge
+          {\hsize\linkermargebreedte}{\hsize\@@rnbreedte}%
+        \alignedline\@@rnuitlijnen\v!rechts{\box0\hskip\@@rnafstand}}%
    \else
-     \box\scratchbox
+     \inrightmargin
+       {\forgetall 
+        \doifelse\@@rnbreedte\v!marge
+          {\hsize\rechtermargebreedte}{\hsize\@@rnbreedte}%
+        \alignedline\@@rnuitlijnen\v!links{\hskip\@@rnafstand\box0}}%
+   \fi}
+
+\stelregelnummerenin
+  [\c!breedte=\ifcase\linenumberlocation2em\else\v!marge\fi,
+   \c!links=,
+   \c!rechts=,
+   \c!commando=,
+   \c!afstand=\zeropoint,
+   \c!uitlijnen=\ifcase\linenumberlocation\v!rechts\or\v!rechts\or\v!links\fi]
+
+% another one 
+
+\newevery \everylinenumber \relax
+
+\let\normaldodoschrijfregelnummer\dodoschrijfregelnummer
+
+\def\dodoschrijfregelnummer
+  {\normaldodoschrijfregelnummer
+   \the\everylinenumber}
+
+% new 
+
+\newcounter\linenotecounter
+\newtoks   \collectedlinenotes
+\newif     \iftracelinenotes
+
+\appendtoks
+  \the\collectedlinenotes
+\to \everylinenumber 
+
+\appendtoks 
+  \global\collectedlinenotes\emptytoks
+\to \beforeeverylinenumbering
+
+\def\handlelinenote#1#2%
+  {\bgroup
+   \expanded{\beforesplitstring#1}\at--\to\linenotelinenumber
+   \ifnum\linenotelinenumber=\linenumber\relax
+     % todo: \onlyfootnote{#1}{#2}% == configurable 
+     \setupfootnotes[\c!nummercommando=\gobbleoneargument]%
+     \footnotetext{#1: #2}% 
    \fi
    \egroup}
 
-\setupbleeding[\c!rek=\v!ja]
+\def\tracedlinenote#1%
+  {\iftracelinenotes
+     \hbox to \zeropoint
+       {\forgetall
+        \localcolortrue
+        \hsize\zeropoint
+        \hss
+        \vbox to \strutheight{\llap{\red\infofont\setstrut\linenotecounter}\vss}%
+        {\blue\vl}%
+        \vbox to \strutheight{\rlap{\red\infofont\setstrut#1}\vss}%
+        \hss}%
+      \prewordbreak
+   \fi}
 
-\defineexternalfigure[bleed][\c!breedte=\bleedwidth,\c!hoogte=\bleedheight]
+\def\linenote#1%
+  {\doglobal\increment\linenotecounter
+   \doifreferencefoundelse{\??rr:\linenotecounter}%
+     {\doglobal\@EA\appendtoks\@EA\handlelinenote\@EA
+        {\currenttextreference}{#1}\to\collectedlinenotes}
+     {}%
+   \tracedlinenote\empty
+   \expanded{\eenregel[\??rr:\linenotecounter]}}
 
-% \placefloat[left]{none}
-%   {\bleed[width=5cm,height=3cm,location=lt]{\externalfigure[koe][bleed]}}
+\def\startlinenote[#1]#2%
+  {\doifreferencefoundelse{\??rr:#1}%
+     {\doglobal\@EA\appendtoks\@EA\handlelinenote\@EA
+        {\currenttextreference}{#2}\to\collectedlinenotes}
+     {}%
+   \tracedlinenote{#1}%
+   \startregel[\??rr:#1]}
+
+\def\stoplinenote[#1]%
+  {\stopregel[\??rr:#1]}
+
+% \startbuffer[test]
+% \startlinenumbering[100]
+% test \linenote {oeps} test test test test test test
+% test \startlinenote [well] {oeps} test test test test test test
+% test \linenote {oeps} test test test test test test
+% test \linenote {oeps} test test test test test test
+% test \linenote {oeps} test test test test test test
+% test \linenote {oeps} test test test test test test
+% test \stoplinenote [well] test test test test test test 
+% \stoplinenumbering
+% \stopbuffer
 % 
-% \input tufte 
+% {\typebuffer[test] \getbuffer[test]} \page
 % 
-% \placefloat[left]{none}
-%   {\bleed[width=5cm,height=3cm,location=l]{\externalfigure[koe][bleed]}}
+% \startbuffer[setup]
+% \setuplinenumbering
+%   [align=left]
+% \stopbuffer
 % 
-% \input tufte 
+% {\typebuffer[setup] \getbuffer[setup,test]} \page
 % 
-% \placesomefloat[right]{none}
-%   {\bleed[width=5cm,height=3cm,location=r]{\externalfigure[koe][bleed]}}
+% \startbuffer[setup]
+% \setuplinenumbering
+%   [width=1em,
+%    align=left]
+% \stopbuffer
 % 
-% \input tufte 
+% {\typebuffer[setup] \getbuffer[setup,test]} \page
 % 
-% \placesomefloat[right]{none}
-%   {\bleed[width=5cm,height=3cm,location=rb]{\externalfigure[koe][bleed]}}
+% \startbuffer[setup]
+% \setuplinenumbering
+%   [width=2em,
+%    distance=.5em,
+%    align=left]
+% \stopbuffer
 % 
-% \input tufte 
+% {\typebuffer[setup] \getbuffer[setup,test]} \page
+% 
+% \startbuffer[setup]
+% \setuplinenumbering
+%   [width=2em,
+%    align=middle]
+% \stopbuffer
+% 
+% {\typebuffer[setup] \getbuffer[setup,test]} \page
+% 
+% \startbuffer[setup]
+% \setuplinenumbering
+%   [conversion=romannumerals,
+%    start=1,
+%    step=1,
+%    location=text,
+%    style=slanted,
+%    color=blue,
+%    width=1.5em]
+% \stopbuffer
+% 
+% {\typebuffer[setup] \startnarrower\getbuffer[setup,test]\stopnarrower} \page
+% 
+% \startbuffer[setup]
+% \setuplinenumbering
+%   [width=4em,
+%    left=--,
+%    right=--,
+%    align=middle]
+% \stopbuffer
+% 
+% {\typebuffer[setup] \getbuffer[setup,test]} \page
+% 
+% \startbuffer[setup-1]
+% \setuplinenumbering
+%   [style=\bfxx,
+%    command=\WatchThis]
+% \stopbuffer
+% 
+% \startbuffer[setup-2]
+% \def\WatchThis#1%
+%   {\ifodd\linenumber
+%      \definecolor[linecolor][red]%
+%    \else
+%      \definecolor[linecolor][green]%
+%    \fi
+%    \inframed
+%      [offset=1pt,frame=off,background=color,backgroundcolor=linecolor]
+%      {#1}}
+% \stopbuffer
+% 
+% {\typebuffer[setup-1,setup-2] \getbuffer[setup-1,setup-2,test]} \page
+% 
+% \startbuffer[setup-1]
+% \setuplinenumbering
+%   [location=inright,
+%    style=\bfxx,
+%    command=\WatchThis]
+% \stopbuffer
+% 
+% {\typebuffer[setup-1] \getbuffer[setup-1,setup-2,test]} \page
 
 \def\OTRSETgotocell#1#2% not that robust 
   {\endgraf
@@ -429,11 +677,23 @@
      {\doifassignmentelse{#3}
         {\stelinterliniein[#3]\stelspatieringin}
         {\setups[#3]}}}
+
+% \def\defineclassfont
+%   {\doquadrupleempty\dodefineclassfont}
+% 
+% \def\dodefineclassfont[#1][#2][#3][#4]%  #2 = class 
+%   {\iffourthargument
+%      \definefont[#1][#2#3][#4]%
+%   %\else\ifthirdargument
+%   %  \definefont[#1][#2#3]%
+%    \else
+%      \definefont[#1][#2]%
+%    \fi}
 
 % todo, but now more easy to do:\definepage
 
 \def\docomplexpagina[#1]%
-  {\flushfootnotes
+  {\flushnotes
    \bgroup
    \def\dodocomplexpagina##1%
      {\csname
@@ -575,32 +835,6 @@
      %\fi
    \od
    \filluparrangedpages}
-
-% \setlayerframed[layer id][layer settings][framed setting]{data}
-% \setlayerframed[layer id][combined settings]{data}
-
-\def\setlayerframed
-  {\dotripleempty\dosetlayerframed}
-
-\def\dosetlayerframed
-  {\ifthirdargument
-     \expandafter\dosetlayerframedT
-   \else
-     \expandafter\dosetlayerframedS
-   \fi}
-
-\def\dosetlayerframedT[#1][#2][#3]%
-  {\dowithnextbox{\setlayer[#1][#2]{\box\nextbox}}%
-   \hbox\framed[#3]}
-
-\def\dosetlayerframedS[#1][#2][#3]%
-  {\dowithnextbox
-     {\setlayer
-        [#1]
-        [\c!breedte=\wd\nextbox,\c!hoogte=\ht\nextbox,
-         \c!offset=\!!zeropoint,#2]
-        {\box\nextbox}}%
-   \hbox\framed[\c!plaats=\v!normaal,#2]}
 
 \beginETEX \dimexpr
 

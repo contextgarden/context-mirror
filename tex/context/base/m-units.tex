@@ -362,7 +362,8 @@
 \def\Kilo    {\dimensionprefix{k}}
 \def\Mega    {\dimensionprefix{M}}
 \def\Giga    {\dimensionprefix{G}}
-\def\Terra   {\dimensionprefix{T}}
+\def\Terra   {\dimensionprefix{T}} % for odl times sake 
+\def\Tera    {\dimensionprefix{T}}
 \def\Peta    {\dimensionprefix{P}}
 \def\Exa     {\dimensionprefix{E}}
 
@@ -654,14 +655,14 @@
 
 %D Computer memory is specified in Bytes:
 
-\getvalue{\v!eenheid} [Baud]  {Baud}         {Baud (Bit/s)}
-\getvalue{\v!eenheid} [Bit]   {Bit}          {Bit}
+\getvalue{\v!eenheid} [Baud]  {Baud}        {Baud (Bit/s)}
+\getvalue{\v!eenheid} [Bit]   {Bit}         {Bit}
 
-\getvalue{\v!eenheid} [Byte]  {Byte}         {Byte}
-\getvalue{\v!eenheid} [kByte] {\Kilo  \Byte} {kilo Byte}
-\getvalue{\v!eenheid} [MByte] {\Mega  \Byte} {mega Byte}
-\getvalue{\v!eenheid} [GByte] {\Giga  \Byte} {giga Byte}
-\getvalue{\v!eenheid} [TByte] {\Terra \Byte} {terra Byte}
+\getvalue{\v!eenheid} [Byte]  {Byte}        {Byte}
+\getvalue{\v!eenheid} [kByte] {\Kilo \Byte} {kilo Byte}
+\getvalue{\v!eenheid} [MByte] {\Mega \Byte} {mega Byte}
+\getvalue{\v!eenheid} [GByte] {\Giga \Byte} {giga Byte}
+\getvalue{\v!eenheid} [TByte] {\Tera \Byte} {tera Byte}
 
 %D Some radiation related units:
 

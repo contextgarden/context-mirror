@@ -707,7 +707,7 @@ var:strut:yes,no::
 var:align:no,left,right,middle,normal,high,low,lohi::
 var:bottom:*command::
 var:top:*command::
-var:frame:on,off,overlay::
+var:frame:on,off,none,overlay::
 var:topframe:on,off::
 var:bottomframe:on,off::
 var:leftframe:on,off::
@@ -809,6 +809,7 @@ var:inner:*command::
 var:linecorrection:on,off::
 var:depthcorrection:on,off::
 var:margin:standard,yes,no::
+var:location:left,right,middle,none::
 ivr:setupframed::
 stopsetup
 

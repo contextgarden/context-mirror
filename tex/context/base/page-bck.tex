@@ -188,9 +188,22 @@
 
 \def\addtextbackground#1%
   {\ifconditional\hiddenbackgroundenabled
-     \addsomebackground\v!verborgen#1\zetbreedte\teksthoogte % mine ! 
+    \addsomebackground\v!verborgen#1\zetbreedte\teksthoogte % mine ! 
    \fi 
    \addsomebackground\v!tekst#1\zetbreedte\teksthoogte}
+
+% \def\addtextbackground#1%
+%   {\ifconditional\hiddenbackgroundenabled
+%      \addsomebackground\v!verborgen   #1\zetbreedte\teksthoogte % mine ! 
+%    \fi 
+%    \doifbothsidesoverruled
+%      \addsomebackground\v!rechtertekst#1\zetbreedte\teksthoogte
+%    \orsideone
+%      \addsomebackground\v!rechtertekst#1\zetbreedte\teksthoogte
+%    \orsidetwo
+%      \addsomebackground\v!linkertekst #1\zetbreedte\teksthoogte
+%    \od
+%      \addsomebackground\v!tekst       #1\zetbreedte\teksthoogte}
 
 %D The next couple of macros implement the area backgrounds.
 %D As said, these are cached in dedicated boxes. The offsets
@@ -376,7 +389,9 @@
      \processcommalist[#1]\docommando
    \else\ifsecondargument
      \global\somebackgroundtrue
-     \doifcommonelse{#1}{\v!tekst,\v!verborgen,\v!papier,\v!pagina,\v!linkerpagina,\v!rechterpagina}
+     \doifcommonelse{#1}{\v!tekst,\v!verborgen,%
+                        %\v!linkertekst,\v!rechtertekst,%
+                         \v!papier,\v!pagina,\v!linkerpagina,\v!rechterpagina}
        {\def\docommando##1%
           {\getparameters[\??ma##1][#2]\checkbackground{##1}}%
         \processcommalist[#1]\docommando}%
@@ -461,8 +476,10 @@
 
 %D The stand alone text area inherits from the page too.
 
-\dodocommando\v!tekst    \empty
-\dodocommando\v!verborgen\empty
+\dodocommando\v!tekst       \empty
+%dodocommando\v!linkertekst \empty
+%dodocommando\v!rechtertekst\empty
+\dodocommando\v!verborgen   \empty
 
 %D We now define all 25 main areas in a row.
 

@@ -1,11 +1,11 @@
 %D \module
 %D   [     file=enco-il2,
-%D      version=1998.12.1,
+%D      version=2000.5.7, % 1998.12.1,
 %D        title=\CONTEXT\ Encoding Macros,
 %D     subtitle=Czech and Slovak ISO Latin 2 Encoding,
 %D       author=Hans Hagen,
 %D         date=\currentdate,
-%D    copyright=Hans Hagen]
+%D    copyright=PRAGMA-ADE]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
@@ -59,78 +59,86 @@
 \definecharacter texttilde         126
 \definecharacter textdiaeresis     127
 
+\definecharacter dotlessi       16
+\definecharacter dotlessj       17
+
 \definecharacter aeligature     26
 \definecharacter AEligature     29
 \definecharacter oeligature     27
 \definecharacter OEligature     30
-\definecharacter ostroke        28
-\definecharacter Ostroke        31
-\definecharacter dotlessi       16
-\definecharacter dotlessj       17
+
 \definecharacter ssharp         25
 
-\definecharacter Agrave        152
+\definecharacter Racute        192
+\definecharacter Aacute        193
+\definecharacter Lacute        197
+\definecharacter Eacute        201
+\definecharacter Iacute        205
+\definecharacter Oacute        211
+\definecharacter Uacute        218
+\definecharacter Yacute        221
+\definecharacter racute        224
+\definecharacter aacute        225
+\definecharacter lacute        229
+\definecharacter eacute        233
+\definecharacter iacute        237
+\definecharacter oacute        243
+\definecharacter uacute        250
+\definecharacter yacute        253
+
 \definecharacter Lcaron        165
 \definecharacter Scaron        169
 \definecharacter Tcaron        171
 \definecharacter Zcaron        174
 \definecharacter lcaron        181
-\definecharacter agrave        184
 \definecharacter scaron        185
 \definecharacter tcaron        187
 \definecharacter zcaron        190
-\definecharacter Racute        192
-\definecharacter Aacute        193
-\definecharacter Adiaeresis    196
-\definecharacter Lacute        197
 \definecharacter Ccaron        200
-\definecharacter Eacute        201
 \definecharacter Ecaron        204
-\definecharacter Iacute        205
 \definecharacter Dcaron        207
 \definecharacter Ncaron        210
-\definecharacter Oacute        211
-\definecharacter Ocircumflex   212
-\definecharacter Ohungarumlaut 213
-\definecharacter Odiaeresis    214
 \definecharacter Rcaron        216
-\definecharacter Uring         217
-\definecharacter Uacute        218
-\definecharacter Uhungarumlaut 219
-\definecharacter Udiaeresis    220
-\definecharacter Yacute        221
-\definecharacter racute        224
-\definecharacter aacute        225
-\definecharacter adiaeresis    228
-\definecharacter lacute        229
 \definecharacter ccaron        232
-\definecharacter eacute        233
 \definecharacter ecaron        236
-\definecharacter iacute        237
 \definecharacter dcaron        239
 \definecharacter ncaron        242
-\definecharacter oacute        243
-\definecharacter ocircumflex   244
-\definecharacter ohungarumlaut 245
-\definecharacter odiaeresis    246
 \definecharacter rcaron        248
-\definecharacter uring         249
-\definecharacter uacute        250
-\definecharacter uhungarumlaut 251
-\definecharacter udiaeresis    252
-\definecharacter yacute        253
 
+\definecharacter Ocircumflex   212
+\definecharacter ocircumflex   244
+
+\definecharacter Adiaeresis    196
+\definecharacter Odiaeresis    214
+\definecharacter Udiaeresis    220
+\definecharacter adiaeresis    228
+\definecharacter odiaeresis    246
+\definecharacter udiaeresis    252
+
+\definecharacter Agrave        152
+\definecharacter agrave        184
+
+\definecharacter Ohungarumlaut 213
+\definecharacter Uhungarumlaut 219
+\definecharacter ohungarumlaut 245
+\definecharacter uhungarumlaut 251
+
+\definecharacter Uring         217
+\definecharacter uring         249
 \definecharacter Aring         {\ilencodedrA}
-\definecharacter lstroke       {\ilencodedl}
+
+\definecharacter ostroke        28
+\definecharacter Ostroke        31
 \definecharacter Lstroke       {\ilencodedL}
+\definecharacter lstroke       {\ilencodedl}
 
 \def\ilencodedrA%
-   {\leavevmode\hbox\bgroup
-    \setbox0\hbox{h}%
-    \dimen0=\ht0
-    \advance\dimen0 by -1ex
-    \rlap{\raise.67\dimen0\hbox{\char'27}}A%
-    \egroup}
+  {\leavevmode\hbox\bgroup
+   \setbox0\hbox{h}%
+   \dimen0=\ht0
+   \advance\dimen0 by -1ex
+   \rlap{\raise.67\dimen0\hbox{\char'27}}A%
+   \egroup}
 
 \def\ilencodedl%
   {{\char32l}}

@@ -80,7 +80,7 @@
    \fi
    \setbox2=\hbox
      {\checksinglecolumnfootnotes
-      \lower\scratchdimen\vbox{\placefootnotes}}%
+      \lower\scratchdimen\vbox{\placebottomnotes}}%
    \smashbox2% % needed here 
    \ifbottomnotes
      \ht0\zeropoint
@@ -91,9 +91,6 @@
 
 \def\OTRONEfinalsidefloatoutput%
   {\finaloutput\unvbox\normalpagebox}
-
-\def\OTRONEsetfootnotehsize%
-  {\hsize\@@vnbreedte}
 
 \OTRONEoutput%
   {\sidefloatoutput} 

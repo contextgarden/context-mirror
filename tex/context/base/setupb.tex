@@ -13,6 +13,8 @@
 
 % nieuw: oncomment plaatssamengesteldelijst
 
+% placeheadtext placeheadnumber  placefloatnumber
+
 % nog 'reductie=ja/nee' in \setupcolors
 
 \startsetupfile
@@ -1338,7 +1340,7 @@
     []
   \variable
     [\c!kader]
-    [\v!aan,\v!uit,\v!overlay]
+    [\v!aan,\v!uit,\v!geen,\v!overlay]
     [\v!aan]
   \variable
     [\c!bovenkader]
@@ -1613,6 +1615,10 @@
     [\c!marge]
     [\v!standaard,\v!ja,\v!nee]
     [\v!standaard]
+  \variable
+    [\c!plaats]
+    [\v!links,\v!rechts,\v!midden,\v!geen]
+    []
   \inheritvariables
     [\y!setupframed]
     []
@@ -7206,17 +7212,17 @@
 
 \startsetup
   \command
-    [\y!roteer]
+    [\y!rotate]
   \type
     [\c!opt!\c!vars!\c!arg!]
   \inheritvariables
-    [\y!stelroterenin]
+    [\y!setuprotate]
     []
 \stopsetup
 
 \startsetup
   \command
-    [\y!stelroterenin]
+    [\y!setuprotate]
   \type
     [\c!vars!]
   \variable

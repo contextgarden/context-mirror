@@ -82,6 +82,13 @@
      \getvalue{\??ly\currentlayout#1}%
    \fi}
 
+\def\namedlayoutparameter#1#2%
+  {\ifundefined{\??ly#1#2}%
+     \layoutparameter{#2}%
+   \else
+     \getvalue{\??ly#1#2}%
+   \fi}
+
 %D Look how ugly a speed up looks:
 
 \beginTEX
@@ -90,6 +97,14 @@
   {\csname\??ly\@EA\ifx\csname
      \??ly\currentlayout#1\endcsname\relax\else\currentlayout
    \fi#1\endcsname}
+
+\def\namedlayoutparameter#1#2%
+  {\csname\??ly
+     \@EA\ifx\csname\??ly#1#2\endcsname\relax
+       \@EA\ifx\csname\??ly\currentlayout#2\endcsname\relax
+       \else\currentlayout\fi
+     \else#1\fi      
+   \fi#2\endcsname}
 
 \endTEX
 
@@ -101,6 +116,11 @@
   {\csname\??ly\ifcsname
      \??ly\currentlayout#1\endcsname\currentlayout
    \fi#1\endcsname}
+
+\def\namedlayoutparameter#1#2%
+  {\csname\??ly\ifcsname\??ly            #1#2\endcsname#1\else
+               \ifcsname\??ly\currentlayout#2\endcsname\currentlayout
+   \fi\fi#2\endcsname}
 
 \endETEX
 
@@ -570,6 +590,9 @@
               % inconsistent specification 
             \fi}}}%
      {\global\zethoogte\layoutparameter\c!regels\lineheight
+% new, cleaner 
+\global\advance\zethoogte-\strutheight
+\global\advance\zethoogte \topskip
 % new, was a bug 
 \global\advance\zethoogte \hoofdafstand
 \global\advance\zethoogte \voetafstand
@@ -603,6 +626,7 @@
 
 \def\checkcurrentevenlayout
   {\ifundefined{\??ly\v!even  \c!status}\else\stellayoutin[\v!even  ]\fi}
+
 % not much faster at all 
 %
 % \beginETEX
@@ -915,7 +939,7 @@
 \def\freezetextwidth%        % \zetbreedte may be set to \tekstbreedte
   {\tekstbreedte\zetbreedte % which is a tricky but valid value
    \doifsomething{\layoutparameter\c!tekstbreedte}
-     {\tekstbreedte\layoutparaneter\c!tekstbreedte}}
+     {\tekstbreedte\layoutparameter\c!tekstbreedte}}
 
 \def\calculatehsizes%
   {\freezetextwidth

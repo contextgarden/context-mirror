@@ -26,7 +26,6 @@
 
 \let\OTRMULsetvsize            \OTRONEsetvsize
 \let\OTRMULsethsize            \OTRONEsethsize
-\let\OTRMULsetfootnotehsize    \OTRONEsetfootnotehsize
 \let\OTRMULdopagecontents      \OTRONEdopagecontents
 \let\OTRMULfinalsidefloatoutput\OTRONEfinalsidefloatoutput
 \let\OTRMULflushfloatbox       \OTRONEflushfloatbox
@@ -288,8 +287,10 @@
    \ifdim\precolumnboxheight>\zeropoint
      \global\advance\vsize by -\precolumnboxheight
    \fi
-   \getinsertionheights\to\dimen0\\% 
-   \global\advance\vsize by -\dimen0
+  %\getinsertionheights\to\dimen0\\% 
+  %\global\advance\vsize by -\dimen0
+   \settotalinsertionheight
+   \global\advance\vsize -\totalinsertionheight
 %%%\ifgridsnapping % evt altijd, nog testen, testing now, see columned tocs 
      \getnoflines\vsize
      \vsize=\noflines\openlineheight
@@ -317,7 +318,7 @@
 
 \def\beginmulticolumns%
   {\par
-   \flushfootnotes
+   \flushnotes
    \xdef\precolumndepth{\the\prevdepth}%
    \begingroup
    \dontshowcomposition
@@ -392,9 +393,9 @@
   {%\par
    \vskip\lineheight\vskip-\lineheight % take footnotes into account
    \dontshowcomposition
-   \doflushcolumnfloat % added recently
+   \doflushcolumnfloat  % added recently
   %\doflushcolumnfloats % no, since it results in wrong top floats
-   \flushfootnotes      % before start of columns 
+   \flushnotes          % before start of columns 
    \par
    \ifbalancecolumns
      \global\output={\continuousmulticolumnsout}%
@@ -706,16 +707,16 @@
   {\relax
    \ifcleverfootnotes
      \ifnum#1=\lastcolumnbox\relax
-       \calculatefootnotevsize
-       \advance#2 -\footnotevsize
+       \calculatetotalnoteheight
+       \advance#2 -\totalnoteheight
      \fi
    \fi}
 
 \def\overlaycolumnfootnotes%   VERVANGEN !!!
   {\relax
    \ifcleverfootnotes
-     \checkfootnotepresence
-     \iffootnotespresent
+     \checknotepresence
+     \ifnotespresent
        \bgroup
        \scratchdimen=\ht\firstcolumnbox
        \advance\scratchdimen by -\openstrutdepth % \dp\strutbox
@@ -760,7 +761,6 @@
    \setbox\restofpage=\vbox{\unvbox\normalpagebox}%
    \ifinheritcolumns
      \ifr@ggedbottom % vreemd 
-%\ifbottomnotes % can better be a state 
        \dohandleallcolumns
          {\global\setbox\currentcolumnbox=\vbox to \ht\firstcolumnbox
             {\dimen0=\dp\currentcolumnbox
@@ -769,12 +769,9 @@
              \vskip\openstrutdepth % \dp\strutbox
              \prevdepth\openstrutdepth % \dp\strutbox
              \vfill}}%
-%\else
-%  \dimen0=\ht\firstcolumnbox
-%\fi
-\ifbottomnotes \else
-  \dimen0=\ht\firstcolumnbox
-\fi
+       \ifbottomnotes \else
+         \dimen0=\ht\firstcolumnbox
+       \fi
      \fi
      \ifn@rmalbottom
        \advance\dimen0 by \maxdepth
@@ -1017,7 +1014,7 @@
 
 \def\setlocalcolumnfloats%
   {\everypar=
-     {\flushfootnotes\flushcolumnfloat\flushmargincontents\checkindentation}%
+     {\flushnotes\flushcolumnfloat\flushmargincontents\checkindentation}%
    \let\flushcolumnfloat=\doflushcolumnfloat
   %\let\doroomfloat=\docolumnroomfloat
    \let\docheckiffloatfits=\docolumnroomfloat

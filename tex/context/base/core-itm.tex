@@ -520,10 +520,10 @@
 \appendtoks \letvalue\v!mar \itemgroupmargin  \to \itemgroupcommands
 
 \def\itembreak   % -10
-  {\flushfootnotes\penalty-5\relax}   
+  {\flushnotes\penalty-5\relax}   
 
 \def\itemnobreak %  +5
-  {\flushfootnotes\penalty+5\ifbinnenkolommen\else00\fi\relax} 
+  {\flushnotes\penalty+5\ifbinnenkolommen\else00\fi\relax} 
 
 \def\dolistitem % evt aantal items opslaan per niveau, scheelt zoeken
   {\iftextitems

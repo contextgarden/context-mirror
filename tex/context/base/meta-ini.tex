@@ -62,7 +62,7 @@
 %D macros. so let's first preload a few auxiliary \METAPOST\
 %D files. 
 
-\maxnofMPgraphics = 8000 % metafun disables the 4K boundary 
+\maxnofMPgraphics = 4000 % metafun disables the 4K boundary 
 
 \appendtoks 
   if unknown context_tool : input mp-tool ; fi ;  
@@ -212,7 +212,8 @@
 %D \stoptypen
 
 \long\def\handleuniqueMPgraphic#1#2#3%
-  {\def\@@meta{#1:}%
+  {\blabelgroup
+   \def\@@meta{#1:}%
    \extendMPoverlaystamp{#2}% incl prepare
    \ifundefined{\@@MPG\overlaystamp:#1}%
      \enableincludeMPgraphics
@@ -224,23 +225,28 @@
        \@EA\nouseMPbox
      \fi {\@@MPG\overlaystamp:#1}%
    \fi
-   \getvalue{\@@MPG\overlaystamp:#1}}
+   \getvalue{\@@MPG\overlaystamp:#1}%
+   \elabelgroup}
 
 \long\def\startuniqueMPgraphic%
   {\dodoublegroupempty\dostartuniqueMPgraphic}
 
 \long\def\dostartuniqueMPgraphic#1#2#3\stopuniqueMPgraphic%
-  {\long\setvalue{\@@MPG#1}{\handleuniqueMPgraphic{#1}{#2}{#3}}}
+  {\blabelgroup
+   \long\setgvalue{\@@MPG#1}{\handleuniqueMPgraphic{#1}{#2}{#3}}%
+   \elabelgroup}
 
-\unexpanded\def\uniqueMPgraphic%
+\unexpanded\def\uniqueMPgraphic
   {\dodoublegroupempty\douniqueMPgraphic}
 
 \def\douniqueMPgraphic#1#2%
-%  {{\def\@@meta{#1:}\setupMPvariables[#2]\getvalue{\@@MPG#1}{}}}
-  {{\setupMPvariables[#1][#2]\getvalue{\@@MPG#1}{}}}
+  {\blabelgroup
+   \setupMPvariables[#1][#2]%
+   \getvalue{\@@MPG#1}{}%
+   \elabelgroup}
 
 \long\def\handleuseMPgraphic#1#2#3%
-  {\bgroup
+  {\blabelgroup
    \def\@@meta{#1:}%
    \prepareMPvariables{#2}%
    \enableincludeMPgraphics
@@ -250,22 +256,26 @@
      \placeMPgraphic
    \fi
    \deallocateMPslot\currentMPgraphic
-   \egroup}
+   \elabelgroup}
 
 \long\def\startuseMPgraphic% 
   {\dodoublegroupempty\dostartuseMPgraphic}
 
 \long\def\dostartuseMPgraphic#1#2#3\stopuseMPgraphic% 
-  {\long\setgvalue{\@@MPG#1}{\handleuseMPgraphic{#1}{#2}{#3}}}
+  {\blabelgroup
+   \long\setgvalue{\@@MPG#1}{\handleuseMPgraphic{#1}{#2}{#3}}%
+   \elabelgroup}
 
 \long\def\startusableMPgraphic% % redundant but handy 
   {\dodoublegroupempty\dostartusableMPgraphic}
 
 \long\def\dostartusableMPgraphic#1#2#3\stopusableMPgraphic% 
-  {\long\setgvalue{\@@MPG#1}{\handleuseMPgraphic{#1}{#2}{#3}}}
+  {\blabelgroup
+   \long\setgvalue{\@@MPG#1}{\handleuseMPgraphic{#1}{#2}{#3}}%
+   \elabelgroup}
 
 \long\def\handlereusableMPgraphic#1#2#3%
-  {\bgroup
+  {\blabelgroup
    \def\@@meta{#1:}%
    \prepareMPvariables{#2}%
    \enableincludeMPgraphics
@@ -277,7 +287,7 @@
      \@EA\nouseMPbox
    \fi {\@@MPG#1}%
    \getvalue{\@@MPG#1}%
-   \egroup}
+   \elabelgroup}
 
 \long\def\startreusableMPgraphic%
   {\dodoublegroupempty\dostartreusableMPgraphic}
@@ -288,17 +298,22 @@
 %    \fi}
 
 \long\def\dostartreusableMPgraphic#1#2#3\stopreusableMPgraphic
-  {\long\setgvalue{\@@MPG#1}{\handlereusableMPgraphic{#1}{#2}{#3}}}
+  {\blabelgroup
+   \long\setgvalue{\@@MPG#1}{\handlereusableMPgraphic{#1}{#2}{#3}}%
+   \elabelgroup}
 
 \unexpanded\def\useMPgraphic%
   {\dodoublegroupempty\douseMPgraphic}
 
 \def\douseMPgraphic#1#2%
-  {{\setupMPvariables[#1][#2]\getvalue{\@@MPG#1}{}}}
+  {\blabelgroup
+   \setupMPvariables[#1][#2]%
+   \getvalue{\@@MPG#1}{}%
+   \elabelgroup}
 
 \let\reuseMPgraphic\useMPgraphic
 
-\def\enableincludeMPgraphics%
+\def\enableincludeMPgraphics
   {\let\handleuseMPgraphic     \thirdofthreearguments
    \let\handlereusableMPgraphic\thirdofthreearguments}
 
@@ -383,22 +398,26 @@
 %D
 %D The current data is loaded with: 
 
-\def\getMPdata%
-  {\startreadingfile
+\def\getMPdata
+  {\blabelgroup
+   \startreadingfile
    \readlocfile{\MPdatafile}{}{}%
-   \stopreadingfile}
+   \stopreadingfile
+   \elabelgroup}
 
 %D When we collect graphics in one file, we run into 
 %D troubles, since \METAPOST\ has a built in limit (of 4) 
 %D on the number of files it can handle. It's therefore 
 %D better to collect all data in one file and filter it. 
 
-\def\getMPdata%
-  {\long\def\MPdata##1##2%
+\def\getMPdata
+  {\blabelgroup
+   \long\def\MPdata##1##2%
      {\ifnum##1=\currentMPgraphic\relax##2\fi}%
    \startreadingfile
    \readlocfile{\MPgraphicfile.mpd}{}{}%
-   \stopreadingfile}
+   \stopreadingfile
+   \elabelgroup}
 
 %D We have to enable this mechanism with: 
 
@@ -426,7 +445,7 @@
       \@EA\startMPcode\the\!!toksa\stopMPcode % more efficient 
       \egroup}}
 
-\def\runMPbuffer%
+\def\runMPbuffer
   {\dosingleempty\dorunMPbuffer}
 
 \def\dorunMPbuffer[#1]% processing only 
@@ -540,10 +559,10 @@
 
 \def\@@MPT{@MPT@}
 
-\def\forceMPTEXgraphic%
+\def\forceMPTEXgraphic
   {\long\def\checkMPTEXgraphic##1{\global\MPTEXgraphictrue}}
 
-\def\setMPtext#1#2%
+\def\setMPtext#1#2% todo : #1 must be made : safe 
   {%\forceMPTEXgraphic
    \convertargument#2\to\ascii
    \setevalue{\@@MPT#1}{\ascii}}

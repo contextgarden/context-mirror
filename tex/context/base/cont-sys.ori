@@ -68,14 +68,6 @@
 % Loading a specific special driver: 
 %
 % \setupoutput [dviwindo]
-%
-% Enabling \CONTEXT\ navigation symbols as well as \euro's. 
-
-\usesymbols [nav,mvs]  
-
-\setupsymbolset [navigation 1] % not that clever 
-
-\setupinteraction [\c!symboolset=navigation 1]
 
 % Changing language defaults: 
 % 
@@ -95,8 +87,6 @@
 % \runMPgraphicstrue 
 % \runMPTEXgraphicstrue
 
-% \recycleMPslotstrue 
-
 % This saves some runtime, but needs a format, which you can
 % make with 'texexec --make --alone metafun'. Make sure that 
 % the mem files are moved to the used web2c path (locate with 
@@ -113,8 +103,8 @@
 
 \protectbufferstrue
 
-% You can enable a rigurous figure searching, but normally 
-% this is not really needed and even annoying. 
+% You can enable a more extensive figure searching, but 
+% normally this is not really needed and even annoying. 
 %
 % \runutilityfiletrue 
 

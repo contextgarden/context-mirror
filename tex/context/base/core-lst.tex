@@ -27,95 +27,11 @@
         {\edef#2{#3}}}
      {\edef#2{#3}}}
 
-% \def\doschrijfnaarlijst#1#2#3#4%
-%   {\doifvalue{\??li#1\c!status}{\v!start}
-%      {\begingroup
-%       \thisisnextinternal{#1}%
-%       %
-%       % Dit gaat goed als #2 geen commando's bevat. Dit is
-%       % bij interactieve teksten echter soms wel het geval.
-%       % Vandaar dat we dit optioneel moeten maken, bijvoorbeeld
-%       % met \stellijstin[referentie=ja].
-%       %
-%       \ExpandFirstAfter\processaction
-%         [\getvalue{\??li#1\c!expansie}]
-%         [      \v!ja=>{\edef\ascii{#3}},
-%          \v!commando=>{\convertcommand#3\to\ascii},
-%           \s!unknown=>{\convertargument#3\to\ascii}]%
-%       \makesectionformat
-%       \doifelse{\@@nmstatus}{\v!start}
-%         {\def\dopaginanummer{\noexpand\pagenumber}}
-%         {\def\dopaginanummer{0}}%
-%       \edef\schrijfwegnaarlijst%
-%         {\writeutilitycommand%
-%            {\listentry%
-%               {#1}%
-%               {\nextinternalreference}%
-%               {#2}%
-%               {\ascii}%
-%               {\sectionformat::\dopaginanummer}%
-%               {\noexpand\realfolio}}}%
-%       \schrijfwegnaarlijst
-%       \endgroup}}
-
 % Auto cross document links work by either using logical or 
 % page references, depending on the general settings. The 
 % locations are stored in global references where the auto tag
 % number uses the text container. We use reference mapping 
 % (define reference) to keep track of the current ref. 
-
-% \def\doschrijfnaarlijst#1#2#3#4%
-%   {\doifvalue{\??li#1\c!status}{\v!start}
-%      {\dodoschrijfnaarlijst{#1}{#2}{#3}{#4}}}
-% 
-% \def\dodoschrijfnaarlijst#1#2#3#4%
-%   {\begingroup
-%    \convertexpanded{\??li#1}{#3}\asciilistentry
-%    \makesectionformat
-%    \doifelse{\@@nmstatus}{\v!start}
-%      {\def\dopaginanummer{\noexpand\pagenumber}}
-%      {\def\dopaginanummer{0}}%
-%    % niet waterdicht, wat te doen met figuren en zo
-%    % first hack: scheelt rommel, second hack: alleen koppen
-%    \doifelsevalue{\??rf#1\c!status}{\v!start}
-%      {\doif{\@@sectionlevel\@@sectie}{0}{\autocrossdocumentfalse}}
-%      {\autocrossdocumentfalse}%
-%    % blijft nog wat zwakjes en inefficient 
-%    \ifautocrossdocument
-%      \bgroup
-%      \thisisnextinternal{#1}%
-%     %\thisisdestination{#1::\sectionformat}% 
-%      \@EA\setsectieenkoppeling\@EA{#1}%
-%      \edef\currentlevel{\@@sectionlevel\@@sectie}%
-%      \def\docommando##1% naar buiten brengen 
-%        {\def\dodocommando####1% 
-%           {\doifvalue{\??rf####1\c!status}{\v!start}
-%              {\setsectieenkoppeling{####1}%
-%               \def\level{\@@sectionlevel\@@sectie}%
-%               \ifnum\level>\currentlevel
-%                 \expanded{\definereference[##1::####1][\v!geen]}%
-%               \else\ifnum\level=\currentlevel
-%                 \expanded{\definereference[##1::####1][##1::{####1::\sectionformat}]}%
-%               \fi\fi}}%
-%         \processcommacommand[\crossdocumentelements]\dodocommando}%
-%      \processcommacommand[\crossdocumentreferences]\docommando
-%      \egroup
-%    \else
-%      \thisisnextinternal{#1}%
-%    \fi
-%    \edef\schrijfwegnaarlijst%
-%      {\writeutilitycommand%
-%         {\listentry%
-%            {#1}%
-%            {\nextinternalreference}%
-%            {#2}%
-%            {\asciilistentry}%
-%            {\sectionformat::\dopaginanummer}%
-%            {\noexpand\realfolio}}}%
-%    \schrijfwegnaarlijst
-%    \endgroup}
-%
-% adapted 
 
 \def\doschrijfnaarlijst#1%
   {\doifelsevalue{\??li#1\c!status}{\v!start}
@@ -153,7 +69,7 @@
            {\nextinternalreference}%
            {#2}%
            {\asciilistentry}%
-           {\sectionformat::\dopaginanummer}%
+           {\sectionformat\sectionseparator\sectionseparator\dopaginanummer}%
            {\noexpand\realfolio}}}%
    \schrijfwegnaarlijst
    \endgroup}
@@ -188,7 +104,7 @@
         {\listbetween%
            {#1}%
            {\ascii}%
-           {\sectionformat::\dopaginanummer}%
+           {\sectionformat\sectionseparator\sectionseparator\dopaginanummer}%
            {\noexpand\realfolio}}}%
    \schrijfwegnaarlijst
    \endgroup}
@@ -690,15 +606,19 @@
    \par % should be an option
    \getvalue{\??li#3\c!tussen}}
 
-\def\strippedlistentry[#1::#2::#3]{#1::#2}%
+% better:
+%
+% \def\linklisttoelement#1#2#3#4#5% % list location format page data
+%   {\ifautocrossdocument
+%     \gotodestination{}{}{#1::\@@filterblocknumberpart[#3]}{#4}{#5}%
+%    \else
+%      \gotonextinternal{#1}{#2}{#4}{#5}%
+%    \fi}
+%
+% but for the moment:
 
 \def\linklisttoelement#1#2#3#4#5% % list location format page data
-  {%\ifautocrossdocument
-   % \gotodestination{}{}{#1::\strippedlistentry[#3]}{#4}{#5}%
-   %\else
-     \gotonextinternal{#1}{#2}{#4}{#5}%
-   %\fi}
-   }
+  {\gotonextinternal{#1}{#2}{#4}{#5}}
 
 \def\schrijfnaarlijst[#1]#2#3%
   {\doifsomething{#1}
@@ -835,7 +755,7 @@
               {#1}%  tag
               {#2}%  number
               {#3}%  data
-              {\sectionformat::\dopaginanummer}%
+              {\sectionformat\sectionseparator\sectionseparator\dopaginanummer}%
               {\noexpand\realfolio}}}%
       \schrijfwegnaarlijst
       \endgroup}}

@@ -314,4 +314,17 @@
 \definefonthandling [boldslanted] [punctuation] [\c!rechts=1.5]
 \definefonthandling [bolditalic]  [punctuation] [\c!rechts=1.5]
 
+% A special case of guillemots, beware: when used ungriuped,
+% it overloads all successive (current) encoding vector 
+% instances!  
+
+\startfonthandling [glm]
+
+  \overloadcharacter guilsingleleft  {\defaultcharacter\guilsingleleft }
+  \overloadcharacter guilsingleright {\defaultcharacter\guilsingleright}
+  \overloadcharacter leftguillemot   {\defaultcharacter\leftguillemot  }
+  \overloadcharacter rightguillemot  {\defaultcharacter\rightguillemot }
+
+\stopfonthandling 
+
 \protect \endinput 

@@ -1221,12 +1221,102 @@
 %D
 %D But, this one is still too inaccurate, so we now have: 
 
+% \def\doMPconcat#1#2#3#4%
+%   {\dimen12=#1pt % p_x
+%    \dimen14=#3pt % p_y
+%    %
+%    % we should test for >-1024 too, but for the moment take the gamble
+%    \chardef\MPfactor1\ifdim\dimen12<1024pt \ifdim\dimen14<1024pt 6\fi\fi
+%    %
+%    \multiply\dimen12 \MPfactor
+%    \multiply\dimen14 \MPfactor
+%    %
+%    \doMPreducedimen12
+%    \doMPreducedimen14
+%    %
+%    \dimen16  \dimen 0
+%    \multiply \dimen16  \dimen 6
+%    \dimen20  \dimen 2
+%    \multiply \dimen20  \dimen 4
+%    \advance  \dimen16 -\dimen20
+%    %
+%    \dimen18  \dimen12
+%    \multiply \dimen18  \dimen 6
+%    \dimen20  \dimen14
+%    \multiply \dimen20  \dimen 4
+%    \advance  \dimen18 -\dimen20
+%    \dimen20  \dimen 4
+%    \multiply \dimen20  \dimen10
+%    \advance  \dimen18  \dimen20
+%    \dimen20  \dimen 6
+%    \multiply \dimen20  \dimen 8
+%    \advance  \dimen18 -\dimen20
+%    %
+%    \multiply \dimen12 -\dimen 2
+%    \multiply \dimen14  \dimen 0
+%    \advance  \dimen12  \dimen14
+%    \dimen20  \dimen 2
+%    \multiply \dimen20  \dimen 8
+%    \advance  \dimen12  \dimen20
+%    \dimen20  \dimen 0
+%    \multiply \dimen20  \dimen10
+%    \advance  \dimen12 -\dimen20
+%    %
+%    \ifdim\dimen16=1pt \else
+%      \ifdim\dimen16>\MPconcatfactor pt
+%        \doMPreducedimen16
+%        \divide \dimen18 \dimen16 \doMPexpanddimen18
+%        \divide \dimen12 \dimen16 \doMPexpanddimen12
+%      \else
+%        \divide \dimen18 \dimen16 \doMPexpanddimen18 \doMPexpanddimen18
+%        \divide \dimen12 \dimen16 \doMPexpanddimen12 \doMPexpanddimen12
+%      \fi
+%    \fi
+%    %
+%    \divide\dimen18 \MPfactor
+%    \divide\dimen12 \MPfactor
+%    %
+%    \edef#2{\withoutpt{\the\dimen18}}% % p_x^\prime
+%    \edef#4{\withoutpt{\the\dimen12}}} % p_y^\prime
+
+\beginETEX
+
+  \newdimen\MPcriteriumA \MPcriteriumA=512pt
+  \newdimen\MPcriteriumB \MPcriteriumB=  2pt
+
+\endETEX
+
+%D We don't waste dimen registers when uting normal \TEX:
+
+\beginTEX 
+
+  \def\MPcriteriumA{512pt} % position 
+  \def\MPcriteriumB  {2pt} % scale 
+
+\endTEX
+
 \def\doMPconcat#1#2#3#4%
   {\dimen12=#1pt % p_x
    \dimen14=#3pt % p_y
    %
-   % we should test for >-1024 too, but for the moment take the gamble
-   \chardef\MPfactor1\ifdim\dimen12<1024pt \ifdim\dimen14<1024pt 6\fi\fi
+\chardef\MPfactor0
+\ifdim\dimen4<\MPcriteriumB\ifdim\dimen4>-\MPcriteriumB
+  \ifdim\dimen6<\MPcriteriumB\ifdim\dimen6>-\MPcriteriumB
+    \ifdim\dimen8<\MPcriteriumB\ifdim\dimen8>-\MPcriteriumB
+      \ifdim\dimen10<\MPcriteriumB\ifdim\dimen10>-\MPcriteriumB
+        \chardef\MPfactor1
+      \fi\fi
+    \fi\fi
+  \fi\fi
+\fi\fi
+\ifcase\MPfactor0 
+  \chardef\MPfactor1
+  \ifdim\dimen12<\MPcriteriumA\ifdim\dimen12>-\MPcriteriumA
+    \ifdim\dimen14<\MPcriteriumA\ifdim\dimen14>-\MPcriteriumA
+      \chardef\MPfactor16
+    \fi\fi
+  \fi\fi
+\fi
    %
    \multiply\dimen12 \MPfactor
    \multiply\dimen14 \MPfactor

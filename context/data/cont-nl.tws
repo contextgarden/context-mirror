@@ -707,7 +707,7 @@ var:strut:ja,nee::
 var:uitlijnen:nee,links,rechts,midden,normaal,hoog,laag,laho::
 var:onder:*commando::
 var:boven:*commando::
-var:kader:aan,uit,overlay::
+var:kader:aan,uit,geen,overlay::
 var:bovenkader:aan,uit::
 var:onderkader:aan,uit::
 var:linkerkader:aan,uit::
@@ -809,6 +809,7 @@ var:binnen:*commando::
 var:regelcorrectie:aan,uit::
 var:dieptecorrectie:aan,uit::
 var:marge:standaard,ja,nee::
+var:plaats:links,rechts,midden,geen::
 ivr:stelomlijndin::
 stopsetup
 

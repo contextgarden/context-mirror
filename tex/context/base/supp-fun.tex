@@ -72,7 +72,7 @@
 %D \DroppedCaps 
 %D   {\color[red]} {cmbx12} 
 %D   {2\baselineskip} {0pt} {\baselineskip} {2} 
-%D   In this ugly 
+%D   Is this ugly 
 %D \stopbuffer
 %D 
 %D \haalbuffer example the third argument tells 
@@ -156,6 +156,8 @@
 
 \let\globaldropcaps\global % will be an option, but on by default
 
+\def\localdropcaps{\let\globaldropcaps\relax}
+
 \chardef\DroppedStatus=0 % 0=done 1=starting 2=doing 3=error
 
 \def\DroppedCaps#1#2#3#4#5#6#7% does not yet handle accented chars
@@ -194,6 +196,7 @@
       \globaldropcaps\edef\DroppedLines {\number\maxdimen}%
       \globaldropcaps\chardef\DroppedStatus=3
       \def\next{#7}}%
+   \let\globaldropcaps\global 
    \next}
 
 %D Before we go to the next topic, we summarize this command:
@@ -203,6 +206,27 @@
 %D   {command} {font} 
 %D   {height} {hoffset} {voffset} {lines}
 %D \stoptypen
+%D 
+%D Sometimes you need to make sure that the global settings are
+%D kept local, as in:  
+%D 
+%D \startbuffer
+%D \defineparagraphs[SomePar][n=2,rule=on]
+%D \setupparagraphs [SomePar][1][width=.5\textwidth]
+%D \setupparagraphs [SomePar][2][width=.5\textwidth]
+%D 
+%D \startSomePar
+%D   \localdropcaps\NiceDroppedCaps{}{cmr12}{0pt}{2}Here we need
+%D   to explicitly keep the hanging indentation local, like it or
+%D   not. 
+%D \SomePar
+%D   \localdropcaps\NiceDroppedCaps{}{cmr12}{0pt}{2}Here we need
+%D   to explicitly keep the hanging indentation local, like it or
+%D   not. 
+%D \stopSomePar
+%D \stopbuffer
+%D 
+%D \typebuffer \getbuffer
 
 %D \macros 
 %D   {AutoDroppedCaps, CheckDroppedCaps}

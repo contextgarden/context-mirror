@@ -390,10 +390,14 @@
 %D Because some graphics interact with \TEX\ (i.e.\ \CONTEXT), we
 %D provide a hook for additional actions: \type {\everyMPgraphic}.
 
-\newtoks\everyMPgraphic
+\newtoks\everyMPgraphic \everyMPgraphic{\everyMPgraphic\emptytoks}
 
-\def\writeMPgraph
-  {\immediate\write\MPwrite{mpgraph:=\the\currentMPgraphic;}}
+\ifx\blabelgroup\undefined 
+
+  \let\blabelgroup\bgroup 
+  \let\elabelgroup\egroup
+
+\fi
 
 \newconditional\firstMPgraphic \settrue\firstMPgraphic
 
@@ -405,6 +409,9 @@
   \let \} \letterclosebrace
 \to \everyMPgraphic
 
+\def\writeMPgraph
+  {\immediate\write\MPwrite{mpgraph:=\the\currentMPgraphic;}}
+
 \beginTEX
 
 \ifx \honorunexpanded \undefined \else % not really needed 
@@ -414,7 +421,7 @@
 \endTEX
 
 \def\startwritingMPgraphic
-  {\bgroup
+  {\blabelgroup
    \global\advance\nofMPgraphics 1 
    \ifMPrun \else
      \allocateMPslot\currentMPgraphic
@@ -466,7 +473,7 @@
    \ifrunMPgraphics
      \dodostopwritingMPgraphic
    \fi
-   \egroup}
+   \elabelgroup}
 
 \def\dodostopwritingMPgraphic%
   {\ifnum\currentMPgraphic>0
@@ -641,7 +648,7 @@
 \ifCONTEXT \else \let\doifobjectssupportedelse=\relax \fi
 
 \long\def\handlereusableMPgraphic#1#2%
-  {\bgroup
+  {\blabelgroup
    \enableincludeMPgraphics
    \startMPgraphic#2\stopMPgraphic
    \doifobjectssupportedelse\donothing\useMPboxfalse
@@ -651,7 +658,7 @@
      \expandafter \nouseMPbox
    \fi {\@@MPG#1}%
    \getvalue{\@@MPG#1}%
-   \egroup}
+   \elabelgroup}
 
 % \long\def\startreusableMPgraphic#1#2\stopreusableMPgraphic
 %   {\ifundefined{\@@MPG#1}%
@@ -659,10 +666,14 @@
 %    \fi}
 
 \long\def\dostartreusableMPgraphic#1#2\stopreusableMPgraphic
-  {\long\setgvalue{\@@MPG#1}{\handlereusableMPgraphic{#1}{#2}}}
+  {\blabelgroup
+   \long\setgvalue{\@@MPG#1}{\handlereusableMPgraphic{#1}{#2}}%
+   \elabelgroup}
 
 \def\reuseMPgraphic#1%
-  {\getvalue{\@@MPG#1}}
+  {\blabelgroup
+   \getvalue{\@@MPG#1}%
+   \elabelgroup}
 
 %D \macros
 %D   {startuseMPgraphic,useMPgraphic}
@@ -688,20 +699,30 @@
    \egroup}
 
 \long\def\startuseMPgraphic#1#2\stopuseMPgraphic
-  {\long\setgvalue{\@@MPG#1}{\handleuseMPgraphic{#1}{#2}}}
+  {\blabelgroup
+   \long\setgvalue{\@@MPG#1}{\handleuseMPgraphic{#1}{#2}}%
+   \elabelgroup}
 
-\long\def\startusableMPgraphic#1#2\stopusableMPgraphicv% dummy
-  {\long\setgvalue{\@@MPG#1}{\handleuseMPgraphic{#1}{#2}}} % unsafe {}{}
+\long\def\startusableMPgraphic#1#2\stopusableMPgraphic % dummy
+  {\blabelgroup 
+   \long\setgvalue{\@@MPG#1}{\handleuseMPgraphic{#1}{#2}}%
+   \elabelgroup} 
 
 \let\useMPgraphic=\reuseMPgraphic
 
 %D \macro
 %D   {doifMPgraphicelse}
 %D
-%D For (mainly internal) pusposes we provide a test macro.
+%D For (mainly internal) purposes we provide a test macro.
+
+% \def\doifMPgraphicelse#1%
+%   {\doifdefinedelse{\@@MPG#1}}
 
 \def\doifMPgraphicelse#1%
-  {\doifdefinedelse{\@@MPG#1}}
+  {\blabelgroup
+   \doifdefinedelse{\@@MPG#1}%
+     {\elabelgroup\firstoftwoarguments}
+     {\elabelgroup\secondoftwoarguments}}
 
 %D \macros
 %D   {includeMPgraphic}
@@ -1459,11 +1480,13 @@
 \let\MPclippath\empty
 
 \long\def\startMPclip#1#2\stopMPclip%
-  {\long\setgvalue{MPC:#1}%
-     {\startMPgraphic#2\stopMPgraphic\dograbMPclippath}}
+  {\blabelgroup
+   \long\setgvalue{MPC:#1}%
+     {\startMPgraphic#2\stopMPgraphic\dograbMPclippath}%
+   \elabelgroup}
 
 \def\grabMPclippath#1#2#3#4#5%
-  {\bgroup
+  {\blabelgroup
    \edef\width {#3\space}\let\overlaywidth \width
    \edef\height{#4\space}\let\overlayheight\height
    \doifdefinedelse{MPC:#1}
@@ -1475,7 +1498,7 @@
      \doglobal\stripcharacter  oveto\from\MPclippath\to\MPclippath
      \doglobal\stripcharacter  ineto\from\MPclippath\to\MPclippath
    \fi
-   \egroup}
+   \elabelgroup}
 
 %D We pose some restrictions to the \METAPOST\ code and pickup
 %D the clip path from the file.
@@ -1507,7 +1530,7 @@
 %D document, one can save quite some disk space by using
 %D \PDFTEX\ and setting the next switch:
 
-\newif\ifrecycleMPslots \recycleMPslotsfalse
+\newif\ifrecycleMPslots \recycleMPslotstrue
 
 % \def\allocateMPslot#1%
 %   {\ifrunMPgraphics

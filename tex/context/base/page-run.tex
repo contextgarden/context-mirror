@@ -92,6 +92,13 @@
 \gdef\doshowframe[#1][#2]%
   {\ifsecondargument
      \setupbackgrounds
+       [\v!pagina]
+       [\c!kader=\v!aan,
+        \c!hoek=\v!recht,
+        \c!kaderoffset=\!!zeropoint,
+        \c!kaderdiepte=\!!zeropoint,
+        \c!kaderkleur=green]
+     \setupbackgrounds
        [#1][#2]
        [\c!achtergrond=,
         \c!kader=\v!aan,

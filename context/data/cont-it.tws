@@ -707,7 +707,7 @@ var:strut:si,no::
 var:allinea:no,sinistra,destra,centro,normale,alto,basso,pedap::
 var:fondo:*comando::
 var:cima:*comando::
-var:cornice:attivo,disattivo,sovrapponi::
+var:cornice:attivo,disattivo,nessuno,sovrapponi::
 var:cornicecima:attivo,disattivo::
 var:cornicefondo:attivo,disattivo::
 var:cornicesinistra:attivo,disattivo::
@@ -809,6 +809,7 @@ var:interno:*comando::
 var:correzioneriga:attivo,disattivo::
 var:correzioneprofondita:attivo,disattivo::
 var:margine:standard,si,no::
+var:luogo:sinistra,destra,centro,nessuno::
 ivr:impostaincorniciato::
 stopsetup
 

@@ -1,11 +1,11 @@
 %D \module
-%D   [       file=enco-il1,
-%D        version=1997.08.29,
+%D   [       file=regi-il1,
+%D        version=200.5.7, 
 %D          title=\CONTEXT\ Encoding Macros,
 %D       subtitle=ISO Latin 1 keys,
-%D         author={Denis Roegel},
+%D         author={Daniel Flipo, Hans Hagen, Denis Roegel},
 %D           date=\currentdate,
-%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%D      copyright=PRAGMA-ADE]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
@@ -16,208 +16,139 @@
 
 \startregime [il1]
 
-\defineactivetoken 144 {\dotlessi}
-\defineactivetoken 145 {\textgrave}
-\defineactivetoken 146 {\textacute}        % also see 180
-\defineactivetoken 147 {\textcircumflex}
-\defineactivetoken 148 {\texttilde}
-\defineactivetoken 149 {\textmacron}
-\defineactivetoken 150 {\textbreve}
-\defineactivetoken 151 {\textdotaccent}
-
-\defineactivetoken 154 {\textring}
-
-\defineactivetoken 157 {\texthungarumlaut}
-\defineactivetoken 158 {\textogonek}
-\defineactivetoken 159 {\textcaron}
-
-\defineactivetoken 160 {\nonbreakablespace} 
-
-% \defineactivetoken 161 {!`}
-
-% this command must be defined (symbol
-% exists in TC fonts; I took the same name)
-% \defineactivetoken 162 {\textcent} 
-
-\defineactivetoken 163 {\sterling}
-
-% this command must be defined (symbol
-% exists in TC fonts; I took the same name)
-% \defineactivetoken 164 {\textcurrency} 
-
-% this command must be defined (symbol
-% exists in TC fonts; I took the same name)
-% \defineactivetoken 165 {\textyen} 
-
-% this command must be defined (symbol
-% exists in TC fonts; I took the same name)
-% \defineactivetoken 166 {\textbrokenbar} 
-
-\defineactivetoken 167 {\S}
-\defineactivetoken 168 {\textdiaeresis}
-\defineactivetoken 169 {\copyright}
-
-% this command must be defined
-% = $^{\underline {\rm a}}$ (symbol
-% exists in TC fonts; I took the same name)
-% \defineactivetoken 170 {\textordfeminine} 
-
-% we want real guillemots 
-\defineactivetoken 171 {\ifvmode\leavevmode\fi\leftguillemot\prewordbreak}
-
-% = $\neg$ (must be defined) (symbol
-% exists in TC fonts; I took the same name)
-% \defineactivetoken 172 {\textlnot}
-
-% = soft hyphen 
-% \defineactivetoken 173 {\-} 
-
-% this command must be defined (symbol
-% exists in TC fonts; I took the same name)
-% \defineactivetoken 174 {\textregistered} 
-
-\defineactivetoken 175 {\textmacron}
-
-% = $^\circle$ (must be defined)
-% \defineactivetoken 176 {\textdegree} 
-
-% = $\pm$ (must be defined) (symbol
-% exists in TC fonts; I took the same name)
-% \defineactivetoken 177 {\textpm} 
-
-% = $^2$  (must be defined) (symbol
-% exists in TC fonts; I took the same name)
-% \defineactivetoken 178 {\texttwosuperior} 
-
-% = $^3$  (must be defined) (symbol
-% exists in TC fonts; I took the same name)
-% \defineactivetoken 179 {\textthreesuperior} 
-
 \defineactivetoken 180 {\textacute}
-
-% =$\mu$ (must be defined) (symbol
-% exists in TC fonts; I took the same name)
-% \defineactivetoken 181 {\textmu} 
-
-\defineactivetoken 182 {\P}
-
-% = $\cdot$ (must be defined)
-% \defineactivetoken 183 {\textperiodcentered} 
-
+\defineactivetoken 146 {\textacute}        % also see 180
+\defineactivetoken 150 {\textbreve}
+\defineactivetoken 159 {\textcaron}
 \defineactivetoken 184 {\textcedilla}
+\defineactivetoken 147 {\textcircumflex}
+\defineactivetoken 168 {\textdiaeresis}
+\defineactivetoken 151 {\textdotaccent}
+\defineactivetoken 145 {\textgrave}
+\defineactivetoken 157 {\texthungarumlaut}
+\defineactivetoken 175 {\textmacron}
+\defineactivetoken 149 {\textmacron}
+\defineactivetoken 158 {\textogonek}
+\defineactivetoken 154 {\textring}
+\defineactivetoken 148 {\texttilde}
 
-% = $^1$  (must be defined) (symbol
-% exists in TC fonts; I took the same name)
-% \defineactivetoken 185 {\textonesuperior} 
+\defineactivetoken 144 {\dotlessi}
 
-% this command must be defined
-% = $^{\underline\circle}$ (symbol
-% exists in TC fonts; I took the same name)
-% \defineactivetoken 186 {\textordmasculine} 
+\defineactivetoken 162 {\textcent} 
+\defineactivetoken 163 {\textsterling}
+\defineactivetoken 164 {\textcurrency} 
+\defineactivetoken 165 {\textyen} 
 
+\defineactivetoken 167 {\sectionmark}
+\defineactivetoken 182 {\paragraphmark}
+
+\defineactivetoken 171 {\ifvmode\leavevmode\fi\leftguillemot\prewordbreak}
 \defineactivetoken 187 {\prewordbreak\rightguillemot}
 
-% = $1\over4$ % to define (symbol
-% exists in TC fonts; I took the same name)
-% \defineactivetoken 188 {\textonequarter} 
+\defineactivetoken 173 {\softhyphen} 
+\defineactivetoken 160 {\nonbreakablespace} % ? 
 
-% = $1\over2$ % to define (symbol
-% exists in TC fonts; I took the same name)
-% \defineactivetoken 189 {\textonehalf} 
+\defineactivetoken 169 {\copyright}
+\defineactivetoken 174 {\registered} 
 
-% = $3\over4$ % to define (symbol
-% exists in TC fonts; I took the same name)
-% \defineactivetoken 190 {\textthreequarters} 
+\defineactivetoken 185 {\textonesuperior} 
+\defineactivetoken 178 {\texttwosuperior} 
+\defineactivetoken 179 {\textthreesuperior} 
 
-% \defineactivetoken 191 {?`}
+\defineactivetoken 188 {\textonequarter} 
+\defineactivetoken 189 {\textonehalf} 
+\defineactivetoken 190 {\textthreequarters} 
 
-\defineactivetoken 192 {\Agrave}
-\defineactivetoken 193 {\Aacute}
-\defineactivetoken 194 {\Acircumflex}
-\defineactivetoken 195 {\Atilde}
-\defineactivetoken 196 {\Adiaeresis}
-\defineactivetoken 197 {\Aring}
-\defineactivetoken 198 {\AEligature}
-\defineactivetoken 199 {\Ccedilla}
-\defineactivetoken 200 {\Egrave}
-\defineactivetoken 201 {\Eacute}
-\defineactivetoken 202 {\Ecircumflex}
-\defineactivetoken 203 {\Ediaeresis}
-\defineactivetoken 204 {\Igrave}
-\defineactivetoken 205 {\Iacute}
-\defineactivetoken 206 {\Icircumflex}
-\defineactivetoken 207 {\Idiaeresis}
+\defineactivetoken 183 {\textperiodcentered} 
 
-% to define (missing in enco-ec.tex)
-% \defineactivetoken 208 {\Eth} 
-
-\defineactivetoken 209 {\Ntilde}
-\defineactivetoken 210 {\Ograve}
-\defineactivetoken 211 {\Oacute}
-\defineactivetoken 212 {\Ocircumflex}
-\defineactivetoken 213 {\Otilde}
-\defineactivetoken 214 {\Odiaeresis}
-
-% = $\times$  was wrong in regi-win.tex 
-% to define (symbol
-% exists in TC fonts; I took the same name)
-% \defineactivetoken 215 {\texttimes} 
-                                   
-\defineactivetoken 216 {\Ostroke}
-\defineactivetoken 217 {\Ugrave}
-\defineactivetoken 218 {\Uacute}
-\defineactivetoken 219 {\Ucircumflex}
-\defineactivetoken 220 {\Udiaeresis}
-
-% was wrong in regi-win.tex
-\defineactivetoken 221 {\Yacute} 
-
-\defineactivetoken 222 {\THorn}
-\defineactivetoken 223 {\ssharp}
-\defineactivetoken 224 {\agrave}
-\defineactivetoken 225 {\aacute}
-\defineactivetoken 226 {\acircumflex}
-\defineactivetoken 227 {\atilde}
-\defineactivetoken 228 {\adiaeresis}
-\defineactivetoken 229 {\aring}
-\defineactivetoken 230 {\aeligature}
-\defineactivetoken 231 {\ccedilla}
-\defineactivetoken 232 {\egrave}
-\defineactivetoken 233 {\eacute}
-\defineactivetoken 234 {\ecircumflex}
-\defineactivetoken 235 {\ediaeresis}
-\defineactivetoken 236 {\igrave}
-\defineactivetoken 237 {\iacute}
-\defineactivetoken 238 {\icircumflex}
-\defineactivetoken 239 {\idiaeresis}
-
-% to define (missing in enco-ec.tex)
-% \defineactivetoken 240 {\eth} 
-
-\defineactivetoken 241 {\ntilde}
-\defineactivetoken 242 {\ograve}
-\defineactivetoken 243 {\oacute}
-\defineactivetoken 244 {\ocircumflex}
-\defineactivetoken 245 {\otilde}
-\defineactivetoken 246 {\odiaeresis}
-
-% = $.\over.$ % was wrong in regi-win.tex
-% to define (symbol
-% exists in TC fonts; I took the same name)
-% \defineactivetoken 247 {\textdiv} 
-
-\defineactivetoken 248 {\ostroke}
-\defineactivetoken 249 {\ugrave}
-\defineactivetoken 250 {\uacute}
-\defineactivetoken 251 {\ucircumflex}
-\defineactivetoken 252 {\udiaeresis}
-
-% was wrong in regi-win.tex
-\defineactivetoken 253 {\yacute} 
+\defineactivetoken 166 {\textbrokenbar} 
+\defineactivetoken 176 {\textdegree} 
+\defineactivetoken 247 {\textdiv} 
+\defineactivetoken 172 {\textlognot}
+\defineactivetoken 215 {\textmultiply} 
+\defineactivetoken 181 {\textmu} 
+\defineactivetoken 177 {\textpm} 
 
 \defineactivetoken 254 {\thorn}
+\defineactivetoken 222 {\THorn}
+
+\defineactivetoken 223 {\ssharp}
+
+\defineactivetoken 208 {\Eth} 
+\defineactivetoken 240 {\eth} 
+
+\defineactivetoken 198 {\AEligature}
+\defineactivetoken 230 {\aeligature}
+
+\defineactivetoken 225 {\aacute}
+\defineactivetoken 193 {\Aacute}
+\defineactivetoken 233 {\eacute}
+\defineactivetoken 201 {\Eacute}
+\defineactivetoken 237 {\iacute}
+\defineactivetoken 205 {\Iacute}
+\defineactivetoken 243 {\oacute}
+\defineactivetoken 211 {\Oacute}
+\defineactivetoken 250 {\uacute}
+\defineactivetoken 218 {\Uacute}
+\defineactivetoken 253 {\yacute} 
+\defineactivetoken 221 {\Yacute} 
+
+\defineactivetoken 231 {\ccedilla}
+\defineactivetoken 199 {\Ccedilla}
+
+\defineactivetoken 226 {\acircumflex}
+\defineactivetoken 194 {\Acircumflex}
+\defineactivetoken 234 {\ecircumflex}
+\defineactivetoken 202 {\Ecircumflex}
+\defineactivetoken 238 {\icircumflex}
+\defineactivetoken 206 {\Icircumflex}
+\defineactivetoken 244 {\ocircumflex}
+\defineactivetoken 212 {\Ocircumflex}
+\defineactivetoken 251 {\ucircumflex}
+\defineactivetoken 219 {\Ucircumflex}
+
+\defineactivetoken 228 {\adiaeresis}
+\defineactivetoken 196 {\Adiaeresis}
+\defineactivetoken 235 {\ediaeresis}
+\defineactivetoken 203 {\Ediaeresis}
+\defineactivetoken 239 {\idiaeresis}
+\defineactivetoken 207 {\Idiaeresis}
+\defineactivetoken 246 {\odiaeresis}
+\defineactivetoken 214 {\Odiaeresis}
+\defineactivetoken 252 {\udiaeresis}
+\defineactivetoken 220 {\Udiaeresis}
 \defineactivetoken 255 {\ydiaeresis}
+
+\defineactivetoken 224 {\agrave}
+\defineactivetoken 192 {\Agrave}
+\defineactivetoken 232 {\egrave}
+\defineactivetoken 200 {\Egrave}
+\defineactivetoken 236 {\igrave}
+\defineactivetoken 204 {\Igrave}
+\defineactivetoken 242 {\ograve}
+\defineactivetoken 210 {\Ograve}
+\defineactivetoken 249 {\ugrave}
+\defineactivetoken 217 {\Ugrave}
+
+\defineactivetoken 229 {\aring}
+\defineactivetoken 197 {\Aring}
+
+\defineactivetoken 248 {\ostroke}
+\defineactivetoken 216 {\Ostroke}
+
+\defineactivetoken 227 {\atilde}
+\defineactivetoken 195 {\Atilde}
+\defineactivetoken 241 {\ntilde}
+\defineactivetoken 209 {\Ntilde}
+\defineactivetoken 245 {\otilde}
+\defineactivetoken 213 {\Otilde}
 
 \stopregime
 
 \endinput
+
+% \defineactivetoken 186 {\textordmasculine} 
+% \defineactivetoken 170 {\textordfeminine} 
+
+% \defineactivetoken 161 {!`}
+% \defineactivetoken 191 {?`}

@@ -3834,14 +3834,14 @@
 %D
 %D These two macros savely grab and dispose two arguments. 
 
-\def\dogobblesingleempty%
-  {\dosingleempty\dodogobblesingleempty}
-
-\def\dogobbledoubleempty%
-  {\dodoubleempty\dodogobbledoubleempty}
+\def\dogobblesingleempty{\dosingleempty\dodogobblesingleempty}
+\def\dogobbledoubleempty{\dodoubleempty\dodogobbledoubleempty}
 
 \def\dodogobblesingleempty    [#1]{}
 \def\dodogobbledoubleempty[#1][#2]{}
+
+\let\gobblesingleempty\dogobblesingleempty % also used 
+\let\gobbledoubleempty\dogobbledoubleempty % also used 
 
 %D \macros
 %D   {sortcommalist,sortcommacommand,
@@ -4078,5 +4078,12 @@
 
 \def\thelasttwodigits#1#2#3% 0 dig ... \relax
   {\ifx#3\relax#1#2\else\@EA\thelasttwodigits\@EA#2\@EA#3\fi}
+
+%D Concatenate commalists: 
+
+\def\serializecommalist[#1]%
+  {\let\serializedcommalist\empty
+   \def\docommando##1{\edef\serializedcommalist{\serializedcommalist##1}}%
+   \processcommacommand[#1]\docommando}
 
 \protect \endinput

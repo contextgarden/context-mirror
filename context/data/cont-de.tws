@@ -707,7 +707,7 @@ var:strut:ja,nein::
 var:ausrichtung:nein,links,rechts,mittig,normal,hoch,tief,hoti::
 var:unten:*Befehl::
 var:oben:*Befehl::
-var:rahmen:an,aus,overlay::
+var:rahmen:an,aus,kein,overlay::
 var:obenrahmen:an,aus::
 var:untenrahmen:an,aus::
 var:linkerrahmen:an,aus::
@@ -809,6 +809,7 @@ var:innen:*Befehl::
 var:zeilekorrektur:an,aus::
 var:tiefekorrektur:an,aus::
 var:marginalie:standard,ja,nein::
+var:platz:links,rechts,mittig,kein::
 ivr:stelleumrahmtein::
 stopsetup
 

@@ -66,8 +66,27 @@
 % from now on, internaly numbers are separated by a period 
 % and postprocessed on demand
 
-\def\numberseparator{.} % reasonable default 
+\def\numberseparator {.} % reasonable default 
+\def\sectionseparator{:} % was : but is now - 
 
+\def\@@filterfirstpart      [#1::#2]{#1}
+\def\@@filtersecondpart     [#1::#2]{#2}
+
+\def\@@filterblockpart      [#1::#2::#3]{#1}
+\def\@@filternumberpart     [#1::#2::#3]{#2}
+\def\@@filterpagepart       [#1::#2::#3]{#3}
+\def\@@filterblocknumberpart[#1::#2::#3]{#1::#2}
+
+\def\@@filterheadpart[#1]{\@EA\@@dofilterheadpart\@EA[#1:0]}
+\def\@@filtertailpart[#1]{\@EA\@@dofiltertailpart\@EA[#1:0]}
+
+\def\@@dofilterheadpart[#1:#2]{#1}
+\def\@@dofiltertailpart[#1:#2]{#2}
+
+\def\@@filterlevelpart[#1::#2::#3]{\@@dofilterlevelpart[#2:0:0:0:0]}
+
+\def\@@dofilterlevelpart[#1:0:0:0:#2]{#1}
+
 \def\gobbleuntilrelax#1\relax{}
 
 \def\separatednumber  #1{\doseparatednumber  #1.\empty\relax}
@@ -365,11 +384,20 @@
 %       \donexttracklevel{#1}}%
 %      {\fastresetmarker[\hoofdmarkering{#1}]}} % redundant \hoofdmarkering
 
+% \def\doresetsectionmarks#1%
+%   {\ifundefined{\??se#1\c!markering}\else % skip zero level
+%      \fastresetmarkerlist[\csname\??se#1\c!markering\endcsname]%
+%    \fi
+%    \donexttracklevel{#1}}
+%
+% not sure if the next one is better: 
+
 \def\doresetsectionmarks#1%
-  {\ifundefined{\??se#1\c!markering}\else % skip zero level
+  {\ifundefined{\??se#1\c!markering} % skip zero level
+     \donexttracklevel{#1}%
+   \else
      \fastresetmarkerlist[\csname\??se#1\c!markering\endcsname]%
-   \fi
-   \donexttracklevel{#1}}
+   \fi}
 
 \def\resetsectionmarks#1%
   {\ifundefined{\??se#1}%
@@ -402,9 +430,10 @@
 
 % evt ook level gaan opslaan tbv snelle selectie
 
-\def\makesectionformat%
-  {\@EA\edef\@EA\sectionformat\@EA%
-     {\@@sectiontype:\getvalue{\lastsection\s!format}}}
+\def\makesectionformat
+  {\edef\sectionformat
+     {\@@sectiontype\sectionseparator
+      \csname\lastsection\s!format\endcsname}}
 
 \def\dobacktracklevel#1%
   {\doifnot{\previoussection{#1}}\zerosection
@@ -641,8 +670,8 @@
 
 \def\somesavedlevel{0}
 
-\def\dosavesomelevel[#1:0:0:0:#2]%
-  {\def\somesavedlevel{:#1}}
+% \def\dosavesomelevel[#1:0:0:0:#2]%
+%   {\def\somesavedlevel{:#1}}
 
 % \def\doifnextlevelelse[#1::#2]%
 %   {\dosavesomelevel[#2:0:0:0:0]%
@@ -678,17 +707,55 @@
 %
 % again faster:
 
-\def\doifnextlevelelse[#1::#2]% beware: this one is \let
-  {\dosavesomelevel[#2:0:0:0:0]%
+% \def\doifnextlevelelse[#1::#2]% beware: this one is \let
+%  {\dosavesomelevel[#2:0:0:0:0]%
+%   \ifalllevels
+%     \donetrue
+%   \else\ifnum\@@sectiontype=#1
+%     \def\levelstring{=:#2:}%
+%     \doifincsnameelse{=\currentlevel:}\levelstring
+%       {\doifincsnameelse{=\currentlevel:0}\levelstring\donefalse\donetrue}
+%       \donefalse
+%   \else
+%     \donefalse
+%   \fi\fi
+%   \ifdone
+%     \expandafter\firstoftwoarguments
+%   \else
+%     \expandafter\secondoftwoarguments
+%   \fi}
+%
+%\def\doifprevlevelelse[#1::#2]% beware: this one is \let
+%  {\dosavesomelevel[#2:0:0:0:0]%
+%   \ifalllevels
+%     \donetrue
+%   \else\ifnum\@@sectiontype=#1
+%     \doifinstringelse{=\currentlevel:}{=:#2:}\donetrue\donefalse
+%   \else
+%     \donefalse
+%   \fi\fi
+%   \ifdone
+%     \expandafter\firstoftwoarguments
+%   \else
+%     \expandafter\secondoftwoarguments
+%   \fi}
+%
+% \let\doiftoclevelelse\doifnextlevelelse
+% \let\doifreglevelelse\doifprevlevelelse
+% \let\doifblklevelelse\doifprevlevelelse
+%
+% we want to be able to overload them globally 
+
+\def\doifnextlevelelse[#1]% !! this one is \let / uti seperator --
+  {\edef\somesavedlevel{\sectionseparator\@@filterlevelpart[#1]}%
    \ifalllevels
      \donetrue
-   \else\ifnum\@@sectiontype=#1
-%     \doifinstringelse{=\currentlevel:}{=:#2:}
-%       {\doifinstringelse{=\currentlevel:0}{=:#2:}\donefalse\donetrue}
-%       \donefalse
-     \def\levelstring{=:#2:}%
-     \doifincsnameelse{=\currentlevel:}\levelstring
-       {\doifincsnameelse{=\currentlevel:0}\levelstring\donefalse\donetrue}
+   \else\ifnum\@@sectiontype=\@@filterblockpart[#1]\relax
+     \edef\levelstring{=\sectionseparator\@@filternumberpart[#1]\sectionseparator}%
+     \doifincsnameelse{=\currentlevel\sectionseparator}\levelstring
+       {\doifincsnameelse{=\currentlevel\sectionseparator0}\levelstring
+          \donefalse
+          \donetrue}
        \donefalse
    \else
      \donefalse
@@ -699,12 +766,15 @@
      \expandafter\secondoftwoarguments
    \fi}
 
-\def\doifprevlevelelse[#1::#2]% beware: this one is \let
-  {\dosavesomelevel[#2:0:0:0:0]%
+\def\doifprevlevelelse[#1]% !! this one is \let / uti seperator --
+  {\edef\somesavedlevel{\sectionseparator\@@filterlevelpart[#1]}%
    \ifalllevels
      \donetrue
-   \else\ifnum\@@sectiontype=#1
-     \doifinstringelse{=\currentlevel:}{=:#2:}\donetrue\donefalse
+   \else\ifnum\@@sectiontype=\@@filterblockpart[#1]\relax
+     \doifinstringelse
+       {=\currentlevel\sectionseparator}
+       {=\sectionseparator\@@filternumberpart[#1]\sectionseparator}
+       \donetrue\donefalse
    \else
      \donefalse
    \fi\fi
@@ -714,21 +784,18 @@
      \expandafter\secondoftwoarguments
    \fi}
 
-% \def\doiftoclevelelse{\doifnextlevelelse}
-% \def\doifreglevelelse{\doifprevlevelelse}
-% \def\doifblklevelelse{\doifprevlevelelse}
-
-\let\doiftoclevelelse\doifnextlevelelse
-\let\doifreglevelelse\doifprevlevelelse
-\let\doifblklevelelse\doifprevlevelelse
+\def\doiftoclevelelse{\doifnextlevelelse}
+\def\doifreglevelelse{\doifprevlevelelse}
+\def\doifblklevelelse{\doifprevlevelelse}
 
 \def\@@longformatnumber#1%
-  {\getvalue{\previoussection{#1}\s!format}:\@@shortsectionnumber{#1}}
+  {\csname\previoussection{#1}\s!format\endcsname
+   \sectionseparator
+   \@@shortsectionnumber{#1}}
 
 \def\@@longsectionnumber#1%
   {\ifnum\countervalue{\??se\previoussection{#1}}>0
-    %\getvalue{\previoussection{#1}\c!nummer}\@@koscheider
-     \getvalue{\previoussection{#1}\c!nummer}.%
+     \csname\previoussection{#1}\c!nummer\endcsname.%
    \fi
    \@@shortsectionnumber{#1}}
 
@@ -752,10 +819,10 @@
      \@@sectionconversion{#1}{\@@sectionvalue{#1}}%
    \fi}
 
-\def\dosetlocalsectieblok#1#2#3%
-  {\def\@@sectiontype{#1}%
-   \def\@@sectieblok{#2}%
-   \def\@@sectieblokken{#3}}
+\def\dosetlocalsectieblok#1#2#3% new \edef's 
+  {\edef\@@sectiontype  {#1}%
+   \edef\@@sectieblok   {#2}%
+   \edef\@@sectieblokken{#3}}
 
 \def\doaroundsectieblok#1%
   {\doifvaluesomething{\??sb#1\c!pagina}
@@ -984,24 +1051,35 @@
      \fi
    \fi}
 
-\def\findsectionnumber#1#2#3% class file title
+\def\findsectionnumber#1#2#3% class file title / uti seperator --
   {\begingroup
    \setsectieenkoppeling{#1}%
    \xdef\foundsectionnumber{1}%
    \def\dolijstelement##1##2##3##4##5##6%
      {\doif{##1}{#1}
         {\ConvertConstantAfter\doif{##4}{#3}
-           {\global\utilitydonetrue
+           {\wait
+            \global\utilitydonetrue
             \scratchcounter=0\getvalue{\??se\@@sectie\c!niveau}%
-            \advance\scratchcounter by 2
-            \def\do####1:####2]%
-              {\advance\scratchcounter by -1
+            %
+            %\advance\scratchcounter 2
+            %\@EA\def\@EA\do\@EA####\@EA1\sectionseparator####2]%
+            %  {\advance\scratchcounter -1
+            %   \ifcase\scratchcounter
+            %     \xdef\foundsectionnumber{####1}%
+            %   \else
+            %     \do####2]%
+            %   \fi}%
+            %\do##5]}}}%
+            %
+            \def\do####1\relax % :/- clean 
+              {\advance\scratchcounter -1
                \ifcase\scratchcounter
-                 \xdef\foundsectionnumber{####1}%
+                 \xdef\foundsectionnumber{\@@filterheadpart[####1]}%
                \else
-                 \do####2]%
+                 \@EAEAEA\do\@@filtertailpart[####1]\relax
                \fi}%
-            \do##5]}}}%
+            \@EA\do\@@filternumberpart[##5]\relax}}}%
    \setbox0=\vbox
      {\doutilities{#1}{#2}{#1}{}{}}%
    \endgroup
@@ -1364,6 +1442,112 @@
 
 % todo: kap
 
+% \def\doplaatskoptekst#1#2#3#4%
+%   {\beginheadplacement{#1}%
+%    \iflegekop
+%      \setbox0\ifvertical\vbox\else\hbox\fi to \zeropoint
+%        {\headnumbercontentfalse
+%         \resetsystemmode\v!sectienummer
+%         #2}%
+%      \makestrutofbox0
+%    \else
+%      \setbox0=\ifvertical\vbox\else\hbox\fi % \vhbox
+%        {\headnumbercontentfalse
+%         \resetsystemmode\v!sectienummer
+%         \getvalue{\??ko#1\c!commando}
+%           {} % no number
+%           {\doattributes
+%              {\??ko#1}\c!letter\c!kleur
+%              {\doattributes
+%                 {\??ko#1}\c!tekstletter\c!tekstkleur
+%                 {\dontconvertfont
+%                  \ifdisplaysectionhead
+%                    \stelinterliniein
+%                  \else
+%                    \stelspatieringin
+%                  \fi
+%                  #2%
+%                  \getvalue{\??ko#1\c!voorcommando}%
+%                  \ifdisplaysectionhead
+%                    \getvalue{\??ko#1\c!tekstcommando}%
+%                      {\setstrut\begstrut#3\endstrut}%
+%                    \xdef\localheaddepth{\the\dp\strutbox}%
+%                  \else
+%                    \getvalue{\??ko#1\c!tekstcommando}{#3}%
+%                  \fi
+%                  \getvalue{\??ko#1\c!nacommando}%
+%                  \ifdisplaysectionhead\endgraf\fi}}}}%  
+%    \fi  
+%    \endheadplacement{#1}{#4}}
+% 
+% \def\doplaatskopnummertekst#1#2#3#4#5%
+%   {\beginheadplacement{#1}%
+%    \iflegekop
+%      \setbox0\ifvertical\vbox\else\hbox\fi to \zeropoint
+%        {\doiftextelse{#3}
+%           {\setsystemmode  \v!sectienummer\headnumbercontenttrue }
+%           {\resetsystemmode\v!sectienummer\headnumbercontentfalse}%
+%         #2}%
+%      \makestrutofbox0
+%    \else
+%      \setbox0=\ifvertical\vbox\else\hbox\fi % \vhbox
+%        {\doiftextelse{#3}
+%           {\setsystemmode  \v!sectienummer\headnumbercontenttrue }
+%           {\resetsystemmode\v!sectienummer\headnumbercontentfalse}%
+%         \getvalue{\??ko#1\c!commando}%
+%           {\doattributes{\??ko#1}\c!letter\c!kleur
+%              {\doattributes{\??ko#1}\c!nummerletter\c!nummerkleur
+%                 {\getvalue{\??ko#1\c!voorcommando}%
+%                  \ifdisplaysectionhead
+%                    \getvalue{\??ko#1\c!nummercommando}%
+%                      {\setstrut\begstrut#3\endstrut}%
+%                  \else
+%                    \getvalue{\??ko#1\c!nummercommando}{#3}%
+%                  \fi}}}
+%           {\doattributes{\??ko#1}\c!letter\c!kleur
+%              {\doattributes{\??ko#1}\c!tekstletter\c!tekstkleur
+%                 {\dontconvertfont
+%                  \ifdisplaysectionhead
+%                    \stelinterliniein
+%                  \else
+%                    \stelspatieringin
+%                  \fi
+%                  #2%
+%                  \ifdisplaysectionhead
+%                    \getvalue{\??ko#1\c!tekstcommando}%
+%                      {\setstrut\begstrut#4\endstrut}%
+%                    \xdef\localheaddepth{\the\dp\strutbox}%
+%                  \else
+%                    \getvalue{\??ko#1\c!tekstcommando}{#4}%
+%                  \fi
+%                  \getvalue{\??ko#1\c!nacommando}%
+%                  \ifdisplaysectionhead\endgraf\fi}}}}%
+%    \fi
+%    \endheadplacement{#1}{#5}}
+
+% to be documented: \placeheadtext \placeheadnumber
+
+\unexpanded\def\placeheadtext
+  {\doquintupleempty\doplaceheadtextornumber
+     [\c!tekstletter][\c!tekstkleur][\empty]}
+
+\unexpanded\def\placeheadnumber
+  {\doquintupleempty\doplaceheadtextornumber
+     [\c!nummerletter][\c!nummerkleur][\v!nummer]}
+
+\def\doplaceheadtextornumber[#1][#2][#3][#4][#5]%
+  {\bgroup
+   \edef\@@sectie{\??ko\iffifthargument#5\else#4\fi}%
+   \dostartattributes\@@sectie\c!letter\c!kleur\empty
+     \dontconvertfont
+     \dostartattributes\@@sectie#1#2\empty
+       \stelinterliniein % \setupinterlinespace
+       \begstrut\getmarking[\hoofdmarkering{#4#3}]\endstrut
+       \endgraf
+     \dostopattributes
+   \dostopattributes
+   \egroup}
+
 \def\doplaatskoptekst#1#2#3#4%
   {\beginheadplacement{#1}%
    \iflegekop
@@ -1376,29 +1560,32 @@
      \setbox0=\ifvertical\vbox\else\hbox\fi % \vhbox
        {\headnumbercontentfalse
         \resetsystemmode\v!sectienummer
-        \getvalue{\??ko#1\c!commando}
+        % outerside font determines distance
+        \dosetfontattribute{\??ko#1}\c!letter
+        % but we don't want color to influence user commands 
+        \getvalue{\??ko#1\c!commando}        
           {} % no number
-          {\doattributes
-             {\??ko#1}\c!letter\c!kleur
-             {\doattributes
-                {\??ko#1}\c!tekstletter\c!tekstkleur
-                {\dontconvertfont
-                 \ifdisplaysectionhead
-                   \stelinterliniein
-                 \else
-                   \stelspatieringin
-                 \fi
-                 #2%
-                 \getvalue{\??ko#1\c!voorcommando}%
-                 \ifdisplaysectionhead
-                   \getvalue{\??ko#1\c!tekstcommando}%
-                     {\setstrut\begstrut#3\endstrut}%
-                   \xdef\localheaddepth{\the\dp\strutbox}%
-                 \else
-                   \getvalue{\??ko#1\c!tekstcommando}{#3}%
-                 \fi
-                 \getvalue{\??ko#1\c!nacommando}%
-                 \ifdisplaysectionhead\endgraf\fi}}}}%  
+          {\dostartattributes{\??ko#1}\c!letter\c!kleur\empty 
+             \dostartattributes{\??ko#1}\c!tekstletter\c!tekstkleur\empty
+               \dontconvertfont
+               \ifdisplaysectionhead
+                 \stelinterliniein
+               \else
+                 \stelspatieringin
+               \fi
+               #2%
+               \getvalue{\??ko#1\c!voorcommando}%
+               \ifdisplaysectionhead
+                 \getvalue{\??ko#1\c!tekstcommando}%
+                   {\setstrut\begstrut#3\endstrut}%
+                 \xdef\localheaddepth{\the\dp\strutbox}%
+               \else
+                 \getvalue{\??ko#1\c!tekstcommando}{#3}%
+               \fi
+               \getvalue{\??ko#1\c!nacommando}%
+               \ifdisplaysectionhead\endgraf\fi
+             \dostopattributes
+          \dostopattributes}}%  
    \fi  
    \endheadplacement{#1}{#4}}
 
@@ -1416,34 +1603,41 @@
        {\doiftextelse{#3}
           {\setsystemmode  \v!sectienummer\headnumbercontenttrue }
           {\resetsystemmode\v!sectienummer\headnumbercontentfalse}%
+        % outerside font determines distance
+        \dosetfontattribute{\??ko#1}\c!letter
+        % but we don't want color to influence user commands 
         \getvalue{\??ko#1\c!commando}%
-          {\doattributes{\??ko#1}\c!letter\c!kleur
-             {\doattributes{\??ko#1}\c!nummerletter\c!nummerkleur
-                {\getvalue{\??ko#1\c!voorcommando}%
-                 \ifdisplaysectionhead
-                   \getvalue{\??ko#1\c!nummercommando}%
-                     {\setstrut\begstrut#3\endstrut}%
-                 \else
-                   \getvalue{\??ko#1\c!nummercommando}{#3}%
-                 \fi}}}
-          {\doattributes{\??ko#1}\c!letter\c!kleur
-             {\doattributes{\??ko#1}\c!tekstletter\c!tekstkleur
-                {\dontconvertfont
-                 \ifdisplaysectionhead
-                   \stelinterliniein
-                 \else
-                   \stelspatieringin
-                 \fi
-                 #2%
-                 \ifdisplaysectionhead
-                   \getvalue{\??ko#1\c!tekstcommando}%
-                     {\setstrut\begstrut#4\endstrut}%
-                   \xdef\localheaddepth{\the\dp\strutbox}%
-                 \else
-                   \getvalue{\??ko#1\c!tekstcommando}{#4}%
-                 \fi
-                 \getvalue{\??ko#1\c!nacommando}%
-                 \ifdisplaysectionhead\endgraf\fi}}}}%
+          {\dostartattributes{\??ko#1}\c!letter\c!kleur\empty
+             \dostartattributes{\??ko#1}\c!nummerletter\c!nummerkleur\empty
+               \getvalue{\??ko#1\c!voorcommando}%
+               \ifdisplaysectionhead
+                 \getvalue{\??ko#1\c!nummercommando}%
+                   {\setstrut\begstrut#3\endstrut}%
+               \else
+                 \getvalue{\??ko#1\c!nummercommando}{#3}%
+               \fi
+             \dostopattributes
+           \dostopattributes}
+          {\dostartattributes{\??ko#1}\c!letter\c!kleur\empty
+             \dostartattributes{\??ko#1}\c!tekstletter\c!tekstkleur\empty
+               \dontconvertfont
+               \ifdisplaysectionhead
+                 \stelinterliniein
+               \else
+                 \stelspatieringin
+               \fi
+               #2%
+               \ifdisplaysectionhead
+                 \getvalue{\??ko#1\c!tekstcommando}%
+                   {\setstrut\begstrut#4\endstrut}%
+                 \xdef\localheaddepth{\the\dp\strutbox}%
+               \else
+                 \getvalue{\??ko#1\c!tekstcommando}{#4}%
+               \fi
+               \getvalue{\??ko#1\c!nacommando}%
+               \ifdisplaysectionhead\endgraf\fi
+           \dostopattributes
+          \dostopattributes}}%
    \fi
    \endheadplacement{#1}{#5}}
 
@@ -1523,14 +1717,14 @@
         \else
           \hbox{\box0}%
         \fi}%
-     \doflushfootnotes % new, not really needed
+     \doflushnotes % new, not really needed
      \endgraf
      \nointerlineskip
      \dosomebreak\nobreak
      #2%
    \else
      \strut
-     \doflushfootnotes % new, here since we're in par mode
+     \doflushnotes % new, here since we're in par mode
      \iflocation
        \ifautocrossdocument
          \hhboxindent=\ifcontinuoushead\headlastlinewidth\else\zeropoint\fi

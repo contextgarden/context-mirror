@@ -113,7 +113,8 @@
 
 \ifx\beginTEX\undefined
   \long\def\beginETEX#1\endETEX{}
-  \let\beginTEX\relax \let\endTEX\relax
+  \long\def\beginOMEGA#1\endOMEGA{}
+  \let\beginTEX\relax\let\endTEX\relax
 \fi
 
 %D \macros
@@ -161,6 +162,7 @@
 %D to put it there as a reminder. I only mention this once.
 
 \chardef\protectionthreshold=2
+%chardef\protectionthreshold=0 % for testing 
 
 % \def\unprotect
 %   {\ifcase\protectionlevel

@@ -1,0 +1,200 @@
+%D \module
+%D   [       file=type-omg,
+%D        version=2002.05.15,
+%D          title=\CONTEXT\ Typescript Macros,
+%D       subtitle=Basic \OMEGA\ Gamma Definitions, 
+%D         author={Idris Samawi Hamid, Hans Hagen},
+%D           date=\currentdate,
+%D      copyright={PRAGMA-ADE, Idris Samawi Hamid}]
+%
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D I need to document this module a bit. See \type {m-gamma}
+%D for more information. 
+
+\definestyle [normalvariant] [\nv] [] % so we can get ucvtt (Unicode Variable Typewriter)
+
+%D omarab: 
+
+\starttypescript [naskh] [omega] [name]
+
+  \definefontsynonym [OmegaArabic]       [omarab]
+  \definefontsynonym [OmegaArabic-Bold]  [omarabb]
+
+  \definefontsynonym [Naskh]             [OmegaArabic]
+  \definefontsynonym [NaskhBold]         [OmegaArabic-Bold]
+
+\stoptypescript
+
+\starttypescript [naskh] [omega] [size]
+
+  \definebodyfont
+    [20.7pt,17.3pt,14.4pt,12pt,11pt,10pt,9pt,8pt,7pt,6pt]
+    [rm]
+    [tf=Naskh sa 1,
+     bf=NaskhBold sa 1,
+     it=Naskh sa 1,
+     sl=Naskh sa 1,
+     bi=NaskhBold sa 1,
+     bs=NaskhBold sa 1,
+     sc=Naskh sa 1]
+
+\usetypescript [math] [computer-modern] [size]
+
+\stoptypescript
+
+\starttypescript [OmegaArab]
+
+  \definebodyfontenvironment
+    [omarb]
+    [default]
+    [interlinespace=3ex]
+
+  \definetypeface [omarb] [rm] [naskh] [omega] [omega]
+
+\stoptypescript
+
+%D omlgc:
+
+\starttypescript [serif] [omega] [name]
+
+  \definefontsynonym [OmegaSerif]            [omlgc]
+  \definefontsynonym [OmegaSerif-Bold]       [omlgcb]
+  \definefontsynonym [OmegaSerif-Italic]     [omlgci]
+  \definefontsynonym [OmegaSerif-Slanted]    [omlgci]
+  \definefontsynonym [OmegaSerif-BoldItalic] [omlgcbi]
+  \definefontsynonym [OmegaSerif-BoldSlanted][omlgcbi]
+  \definefontsynonym [OmegaSerif-Caps]       [omlgc]
+
+  \definefontsynonym [Serif]                 [OmegaSerif]
+  \definefontsynonym [SerifBold]             [OmegaSerif-Bold]
+  \definefontsynonym [SerifItalic]           [OmegaSerif-Italic]
+  \definefontsynonym [SerifSlanted]          [OmegaSerif-Slanted]
+  \definefontsynonym [SerifBoldItalic]       [OmegaSerif-BoldItalic]
+  \definefontsynonym [SerifBoldSlanted]      [OmegaSerif-BoldSlanted]
+  \definefontsynonym [SerifCaps]             [OmegaSerif-Caps]
+  
+\stoptypescript
+
+\starttypescript [mono] [omega] [name]
+
+  \definefontsynonym [OmegaMono]             [uctt10]
+  \definefontsynonym [OmegaMono-Italic]      [ucitt10]
+  \definefontsynonym [OmegaMono-Slanted]     [ucsltt10]
+  \definefontsynonym [OmegaMono-Bold]        [uctt10]
+  \definefontsynonym [OmegaMono-BoldItalic]  [ucitt10]
+  \definefontsynonym [OmegaMono-BoldSlanted] [ucsltt10]
+  \definefontsynonym [OmegaMono-Caps]        [uctt10]
+  \definefontsynonym [OmegaMono-Variable]    [ucvtt10]
+
+  \definefontsynonym [Mono]                  [OmegaMono]
+  \definefontsynonym [MonoBold]              [OmegaMono-Bold]
+  \definefontsynonym [MonoItalic]            [OmegaMono-Italic]
+  \definefontsynonym [MonoSlanted]           [OmegaMono-Slanted]
+  \definefontsynonym [MonoBoldItalic]        [OmegaMono-BoldItalic]
+  \definefontsynonym [MonoBoldSlanted]       [OmegaMono-BoldSlanted]
+  \definefontsynonym [MonoCaps]              [OmegaMono-Caps]
+  \definefontsynonym [MonoVariable]          [OmegaMono-Variable]
+
+\stoptypescript
+
+\starttypescript [serif] [omega] [size]
+
+  \definebodyfont
+    [20.7pt,17.3pt,14.4pt,12pt,11pt,10pt,9pt,8pt,7pt,6pt,5pt,4pt]
+    [rm]
+    [tf=Serif sa 1,
+     bf=SerifBold sa 1,
+     it=SerifItalic sa 1,
+     sl=SerifSlanted sa 1,
+     bi=SerifBoldItalic sa 1,
+     bs=SerifBoldSlanted sa 1,
+     sc=SerifCaps sa 1]
+
+\usetypescript [math,sans] [computer-modern] [size]
+
+\stoptypescript
+
+%D In order to get default Unicode Variable Typewriter, 
+%D uncomment the first \type {\definebodyfont} and then 
+%D comment the rest of this typescript.
+
+\starttypescript [mono] [omega] [size]
+
+% \definebodyfont
+%   [20.7pt,17.3pt,14.4pt,12pt,11pt,10pt,9pt,8pt,7pt,6pt,5pt,4pt]
+%   [rm]
+%   [tf=MonoVariable sa 1,
+%    bf=MonoBold sa 1
+%    it=MonoItalic sa 1,
+%    sl=MonoSlanted sa 1,
+%    bi=MonoBoldItali sa 1,
+%    bs=MonoBoldSlanted sa 1,
+%    sc=MonoCaps sa 1]
+
+  \definebodyfont
+    [20.7pt,17.3pt,14.4pt,12pt,11pt] 
+    [tt]
+    [tf=uctt12 sa 1,
+     bf=uctt12 sa 1,
+     it=ucitt10 sa 1,
+     sl=ucsltt10 sa 1,
+     bi=ucitt10 sa 1,
+     bs=ucsltt10 sa 1,
+     sc=uctt10 sa 1,
+     nv=ucvtt10 sa 1]
+
+  \definebodyfont
+    [10pt] 
+    [tt]
+    [tf=uctt10 at 10pt,
+     bf=uctt10 at 10pt,
+     it=ucitt10 at 10pt,
+     sl=ucsltt10 at 10pt,
+     bi=ucitt10 at 10pt,
+     bs=ucsltt10 at 10pt,
+     sc=uctt10 at 10pt,
+     nv=ucvtt10 at 10pt]
+
+  \definebodyfont
+    [9pt]
+    [tt]
+    [tf=uctt9 at 9pt,
+     bf=uctt9 at 9pt,
+     it=ucitt10 at 9pt,
+     sl=ucsltt10 at 9pt,
+     bi=ucitt10 at 9pt,
+     bs=ucsltt10 at 9pt,
+     sc=uctt10 at 9pt,
+     nv=ucvtt10 at 9pt]
+
+  \definebodyfont
+    [8pt,7pt,6pt,5pt,4pt]
+    [tt]
+    [tf=uctt8 sa 1,
+     bf=uctt8 sa 1,
+     it=ucitt10 sa 1,
+     sl=ucsltt10 sa 1,
+     bi=ucitt10 sa 1,
+     bs=ucsltt10 sa 1,
+     sc=uctt10 sa 1,
+     nv=ucvtt10 sa 1]
+
+\stoptypescript
+
+\starttypescript [OmegaLGC]
+
+  \definebodyfontenvironment
+    [omlgc]
+    [default]
+    [interlinespace=2.8ex]
+
+  \definetypeface [omlgc] [rm] [serif] [omega] [omega]
+  \definetypeface [omlgc] [tt] [mono] [omega] [omega]
+
+\stoptypescript
+
+\endinput 

@@ -157,37 +157,38 @@
 
 \def\dostartgoto\data#1\start#2\stop#3\dostopgoto
   {\ifsecondaryreference
-     \bgroup\setbox0=\hbox{#2#3}\egroup
+     \bgroup\setbox0\hbox{#2#3}\egroup
    \else
      \hbox
-       {\setbox0=\hbox{#1}%
+       {\setbox0\hbox{#1}%
         \ifdim\wd0<\@@iabreedte\relax
-          \buttonwidth=\@@iabreedte\relax
+          \buttonwidth\@@iabreedte\relax
         \else
-          \buttonwidth=\wd0\relax
+          \buttonwidth\wd0
         \fi
         \ifdim\ht0<\@@ia@@hoogte\relax
-          \buttonheight=\@@ia@@hoogte\relax
+          \buttonheight\@@ia@@hoogte\relax
         \else
-          \buttonheight=\ht0
+          \buttonheight\ht0
         \fi
         \ifdim\dp0<\@@ia@@diepte\relax
-          \dimen0=\@@ia@@diepte\relax
+          \dimen0=\@@ia@@diepte\relax % = ! 
         \else
-          \dimen0=\dp0\relax
+          \dimen0\dp0
         \fi
-        \advance\buttonheight by \dimen0
-        \setbox2=\hbox
+        \advance\buttonheight \dimen0
+        \setbox2\hbox
           {\lower\dimen0\hbox
              {\mindermeldingen
               \dimen0=.5\wd0 % direct skipping is faster of course
-              \advance\dimen0 by -.5\buttonwidth % buts this is nicer 
+              \advance\dimen0 -.5\buttonwidth % buts this is nicer 
               \hskip\dimen0#2#3}}% when visualizing things
-        \ifreversegoto
-          \dimen0=\wd0\box0\kern-\dimen0\smashbox2\box2\kern\dimen0
-        \else 
-          \smashbox2\box2\box0
-        \fi
+        \naturalhbox % needed for omega / moved from plus-omg  
+          {\ifreversegoto
+             \dimen0=\wd0\box0\kern-\dimen0\smashbox2\box2\kern\dimen0
+           \else 
+             \smashbox2\box2\box0
+           \fi}%
         \resetgoto}%
    \fi}
 

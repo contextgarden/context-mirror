@@ -1,11 +1,11 @@
 %D \module
 %D   [     file=enco-ec,
-%D      version=1999.16.7,
+%D      version=2000.5.7, % 1999.16.7,
 %D        title=\CONTEXT\ Encoding Macros,
 %D     subtitle=\LATEX\ EC Encoding,
-%D       author={Hans Hagen, Taco Hoekwater, Patrick Gundlach},
+%D       author={Patrick Gundlach, Hans Hagen, Taco Hoekwater}, 
 %D         date=\currentdate,
-%D    copyright={Hans Hagen \& Taco Hoekwater \& Patrick Gundlach}]
+%D    copyright=PRAGMA-ADE]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
@@ -23,7 +23,7 @@
 
 \startmapping[ec]
 
-%D The case mappings are fairly simple. 
+%D The case mappings are fairly simple.
 
 %\definecasemaps 128 to 156 lc 0 uc 0
 
@@ -41,175 +41,227 @@
 
 %D So far for the mapping.
 
+%D The following characters are kind of dangerous, 
+%D that is, they are normally not part of fonts, unless 
+%D explicitly constructed. 
+%D 
+%D \startopsomming[columns,two]
+%D \som \type{\dotlessj}
+%D \som \type{\IJligature}
+%D \som \type{\ijligature}
+%D \som \type{\Ssharp}
+%D \som \type{\perthousand}
+%D \som \type{\compoundwordmark}
+% %D \som \type{\textvisiblespace}
+% %D \som \type{\tcaron} 
+% %D \som \type{\tcedilla }
+% %D \som \type{\Tcedilla}
+% %D \som \type{\ydiaeresis}
+%D \stopopsomming
+
+%D So, for the moment we nil them; we can always create 
+%D another vector if needed. 
+
 \stopmapping
 
-\startencoding[ec][ec] % second arg defines auto regime 
+\startencoding[ec][ec] % second arg defines auto regime, needed here ? 
 
-\definecharacter textgrave         0
 \definecharacter textacute         1
-\definecharacter textcircumflex    2
-\definecharacter texttilde         3
-\definecharacter textdiaeresis     4
-\definecharacter texthungarumlaut  5
-\definecharacter textring          6
-\definecharacter textcaron         7
 \definecharacter textbreve         8
-\definecharacter textmacron        9
+\definecharacter textcaron         7
+\definecharacter textcedilla      11
+\definecharacter textcircumflex    2
+\definecharacter textdiaeresis     4
 \definecharacter textdotaccent    10
-\definecharacter textcedilla      11 
-\definecharacter textogonek       12 
+\definecharacter textgrave         0
+\definecharacter texthungarumlaut  5
+\definecharacter textmacron        9
+\definecharacter textogonek       12
+\definecharacter textring          6
+\definecharacter texttilde         3
 
-\definecharacter quotesinglebase  13 % singlebasequote 
-\definecharacter guilsingleleft   14 % singleleftguillemot
-\definecharacter guilsingleright  15 % singlerightguillemot
-\definecharacter quotedblleft     16 % doubleleftquote
-\definecharacter quotedblright    17 % doublerightquote
-\definecharacter quotedblbase     18 % doiublebasequote 
-\definecharacter leftguillemot    19
-\definecharacter rightguillemot   20
-\definecharacter endash           21 % lig
-\definecharacter emdash           22 % lig
-\definecharacter cwm              23 % compoundwordmark
-\definecharacter perthousand      24
 \definecharacter dotlessi         25
-\definecharacter dotlessj         26
+%definecharacter dotlessj         26
 
-\definecharacter textbackslash    92  
-\definecharacter textasciicircum  94 % ? 
-\definecharacter textunderscore   95 
-\definecharacter textbraceleft   123 % textleftbrace
-\definecharacter textbraceright  125 % textrightbrace
-\definecharacter texttilde       126 
-\definecharacter softhyphen      127 % ?
+\definecharacter endash           21
+\definecharacter emdash           22
 
-\definecharacter Abreve          128
-\definecharacter Aogonek         129
-\definecharacter Cacute          130
-\definecharacter Ccaron          131
-\definecharacter Dcaron          132
-\definecharacter Ecaron          133
-\definecharacter Eogonek         134
-\definecharacter Gbreve          135
-\definecharacter Lacute          136
-\definecharacter Lcaron          137
-\definecharacter Lstroke         138
-\definecharacter Nacute          139
-\definecharacter Ncaron          140
-%definecharacter NG              141
-\definecharacter Ohungarumlaut   142
-\definecharacter Racute          143
-\definecharacter Rcaron          144
-\definecharacter Sacute          145
-\definecharacter Scaron          146
-\definecharacter Scedilla        147
-\definecharacter Tcaron          148
-\definecharacter Tcedilla        149
-\definecharacter Uhungarumlaut   150
-\definecharacter Uring           151
-\definecharacter Ydiaeresis      152
-\definecharacter Zacute          153
-\definecharacter Zcaron          154
-\definecharacter Zdotaccent      155
-\definecharacter IJligature      156
-\definecharacter Idotaccent      157
-\definecharacter dmacron         158
-\definecharacter sectionmark     159  
-\definecharacter abreve          160
-\definecharacter aogonek         161
-\definecharacter cacute          162
-\definecharacter ccaron          163
-\definecharacter dcaron          164
-\definecharacter ecaron          165
-\definecharacter eogonek         166
-\definecharacter gbreve          167
-\definecharacter lacute          168
-\definecharacter lcaron          169
-\definecharacter lstroke         170
-\definecharacter nacute          171
-\definecharacter ncaron          172
-%definecharacter ng              173
-\definecharacter ohungarumlaut   174
-\definecharacter racute          175
-\definecharacter rcaron          176
-\definecharacter sacute          177
-\definecharacter scaron          178
-\definecharacter scedilla        179
-\definecharacter tcaron          180
-\definecharacter tcedilla        181
-\definecharacter uhungarumlaut   182
-\definecharacter uring           183
-\definecharacter ydiaeresis      184
-\definecharacter zacute          185
-\definecharacter zcaron          186
-\definecharacter zdotaccent      187
-\definecharacter ijligature      188
+\definecharacter aeligature      230
+\definecharacter AEligature      198
+%definecharacter ijligature      188
+%definecharacter IJligature      156
+\definecharacter oeligature      247
+\definecharacter OEligature      215
+
+\definecharacter ssharp          255
+%definecharacter Ssharp          223
+
+\definecharacter thorn           254
+\definecharacter Thorn           222
+
+\definecharacter Eth             208
+\definecharacter eth             240
+
 \definecharacter exclamdown      189 % lig
 \definecharacter questiondown    190 % lig
-\definecharacter pounds          191
-\definecharacter Agrave          192
-\definecharacter Aacute          193
-\definecharacter Acircumflex     194
-\definecharacter Atilde          195
-\definecharacter Adiaeresis      196
-\definecharacter Aring           197
-\definecharacter AEligature      198
-\definecharacter Ccedilla        199
-\definecharacter Egrave          200
-\definecharacter Eacute          201
-\definecharacter Ecircumflex     202
-\definecharacter Ediaeresis      203
-\definecharacter Igrave          204
-\definecharacter Iacute          205
-\definecharacter Icircumflex     206
-\definecharacter Idiaeresis      207
-\definecharacter Eth             208
-\definecharacter Ntilde          209
-\definecharacter Ograve          210
-\definecharacter Oacute          211
-\definecharacter Ocircumflex     212
-\definecharacter Otilde          213
-\definecharacter Odiaeresis      214
-\definecharacter OEligature      215
-\definecharacter Ostroke         216
-\definecharacter Ugrave          217
-\definecharacter Uacute          218
-\definecharacter Ucircumflex     219
-\definecharacter Udiaeresis      220
-\definecharacter Yacute          221
-\definecharacter Thorn           222
-\definecharacter Ssharp          223  
-\definecharacter agrave          224
+
+\definecharacter sectionmark     159
+
+\definecharacter textsterling    191
+
+\definecharacter percent          37
+%definecharacter perthousand      24
+
+\definecharacter softhyphen      127 % ?
+%definecharacter compoundwordmark 23 
+
+\definecharacter textasciicircum  94
+\definecharacter textasciitilde  126
+\definecharacter textbackslash    92
+\definecharacter textbraceleft   123 
+\definecharacter textbraceright  125
+\definecharacter textunderscore   95
+%definecharacter textvisiblespace 32
+
+\definecharacter quotedbl         34
+\definecharacter quotedblbase     18
+\definecharacter quotedblleft     16
+\definecharacter quotedblright    17
+
+\definecharacter quotesingle      17 % fake 'm 
+\definecharacter quotesinglebase  13
+
+\definecharacter quoteleft        96
+\definecharacter quoteright       39
+
+\definecharacter guilsingleleft   14
+\definecharacter guilsingleright  15
+\definecharacter leftguillemot    19
+\definecharacter rightguillemot   20
+
 \definecharacter aacute          225
-\definecharacter acircumflex     226
-\definecharacter atilde          227
-\definecharacter adiaeresis      228
-\definecharacter aring           229
-\definecharacter aeligature      230
-\definecharacter ccedilla        231
-\definecharacter egrave          232
+\definecharacter Aacute          193
+\definecharacter cacute          162
+\definecharacter Cacute          130
 \definecharacter eacute          233
-\definecharacter ecircumflex     234
-\definecharacter ediaeresis      235
-\definecharacter igrave          236
+\definecharacter Eacute          201
 \definecharacter iacute          237
-\definecharacter icircumflex     238
-\definecharacter idiaeresis      239
-\definecharacter eth             240
-\definecharacter ntilde          241
-\definecharacter ograve          242
+\definecharacter Iacute          205
+\definecharacter lacute          168
+\definecharacter Lacute          136
+\definecharacter Nacute          139
+\definecharacter Oacute          211
+\definecharacter nacute          171
 \definecharacter oacute          243
-\definecharacter ocircumflex     244
-\definecharacter otilde          245
-\definecharacter odiaeresis      246
-\definecharacter oeligature      247
-\definecharacter ostroke         248
-\definecharacter ugrave          249
+\definecharacter racute          175
+\definecharacter Racute          143
+\definecharacter sacute          177
+\definecharacter Sacute          145
 \definecharacter uacute          250
-\definecharacter ucircumflex     251
-\definecharacter udiaeresis      252
+\definecharacter Uacute          218
 \definecharacter yacute          253
-\definecharacter thorn           254 
-\definecharacter ssharp          255  
+\definecharacter Yacute          221
+\definecharacter zacute          185
+\definecharacter Zacute          153
+
+\definecharacter abreve          160
+\definecharacter Abreve          128
+\definecharacter gbreve          167
+\definecharacter Gbreve          135
+
+\definecharacter ccaron          163
+\definecharacter Ccaron          131
+\definecharacter dcaron          164
+\definecharacter Dcaron          132
+\definecharacter ecaron          165
+\definecharacter Ecaron          133
+\definecharacter lcaron          169
+\definecharacter Lcaron          137
+\definecharacter ncaron          172
+\definecharacter Ncaron          140
+\definecharacter rcaron          176
+\definecharacter Rcaron          144
+\definecharacter scaron          178
+\definecharacter Scaron          146
+\definecharacter tcaron          180
+\definecharacter Tcaron          148
+\definecharacter zcaron          186
+\definecharacter Zcaron          154
+
+\definecharacter ccedilla        231
+\definecharacter Ccedilla        199
+\definecharacter scedilla        179
+\definecharacter Scedilla        147
+\definecharacter tcedilla        181
+\definecharacter Tcedilla        149
+
+\definecharacter acircumflex     226
+\definecharacter Acircumflex     194
+\definecharacter ecircumflex     234
+\definecharacter Ecircumflex     202
+\definecharacter icircumflex     238
+\definecharacter Icircumflex     206
+\definecharacter ocircumflex     244
+\definecharacter Ocircumflex     212
+\definecharacter ucircumflex     251
+\definecharacter Ucircumflex     219
+
+\definecharacter adiaeresis      228
+\definecharacter Adiaeresis      196
+\definecharacter ediaeresis      235
+\definecharacter Ediaeresis      203
+\definecharacter idiaeresis      239
+\definecharacter Idiaeresis      207
+\definecharacter odiaeresis      246
+\definecharacter Odiaeresis      214
+\definecharacter udiaeresis      252
+\definecharacter Udiaeresis      220
+\definecharacter ydiaeresis      184
+\definecharacter Ydiaeresis      152
+
+\definecharacter Idotaccent      157
+\definecharacter zdotaccent      187
+\definecharacter Zdotaccent      155
+
+\definecharacter agrave          224
+\definecharacter Agrave          192
+\definecharacter egrave          232
+\definecharacter Egrave          200
+\definecharacter igrave          236
+\definecharacter Igrave          204
+\definecharacter ograve          242
+\definecharacter Ograve          210
+\definecharacter ugrave          249
+\definecharacter Ugrave          217
+
+\definecharacter ohungarumlaut   174
+\definecharacter Ohungarumlaut   142
+\definecharacter uhungarumlaut   182
+\definecharacter Uhungarumlaut   150
+
+\definecharacter dmacron         158
+
+\definecharacter aogonek         161
+\definecharacter Aogonek         129
+\definecharacter eogonek         166
+\definecharacter Eogonek         134
+
+\definecharacter aring           229
+\definecharacter Aring           197
+\definecharacter uring           183
+\definecharacter Uring           151
+
+\definecharacter lstroke         170
+\definecharacter Lstroke         138
+\definecharacter ostroke         248
+\definecharacter Ostroke         216
+
+\definecharacter atilde          227
+\definecharacter Atilde          195
+\definecharacter ntilde          241
+\definecharacter Ntilde          209
+\definecharacter otilde          245
+\definecharacter Otilde          213
 
 \stopencoding
 

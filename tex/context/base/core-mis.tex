@@ -515,25 +515,16 @@
 
 % \def\bedragprefix{\mathematics{f\normalfixedspace}}
 
-\def\bedragprefix{\euro\normalfixedspace}
-\def\bedragsuffix{}
+\def\bedragprefix {\euro\normalfixedspace}
+\def\bedragsuffix {}
+\def\bedragempty  {\euro}
 
-\def\bedrag#1%
+\unexpanded\def\bedrag#1%
   {\strut\hbox\bgroup
    \let\normalfixedspace~%
-  % \def~{\futurelet\next\dofixedspace}%
-  % \def\dofixedspace%
-  %   {\hskip.5em\relax
-  %    \ifx\next,%
-  %      \hphantom{,}\let\next\gobbleoneargument
-  %    \else\ifx\next.%
-  %      \hphantom{.}\let\next\gobbleoneargument
-  %    \else
-  %      \let\next\relax
-  %    \fi\fi
-  %    \next}%
-  % \bedragprefix#1\bedragsuffix
-   \bedragprefix\digits{#1}\bedragsuffix
+   \doifelsenothing{#1}
+     {\bedragempty}
+     {\bedragprefix\digits{#1}\bedragsuffix}%
    \egroup}
 
 % \definieeralineas[test][n=3]
@@ -571,70 +562,20 @@
 \def\ongeveer%
   {\mathematics{\pm}}
 
-\def\permille%
-  {\mathematics{^{\scriptscriptstyle0}\kern-.25em/\kern-.2em_{\scriptscriptstyle00}}}
-
-\def\percent%
-  {\mathematics{^{\scriptscriptstyle0}\kern-.25em/\kern-.2em_{\scriptscriptstyle0}}}
-
-\let\promille=\permille
-\let\procent =\percent
-
-\def\permine%
-  {\dontleavehmode
-   \bgroup
-   \setbox0=\hbox
-     {\mathematics{+}}%
-   \hbox to \wd0
-     {\hss
-      \mathematics{^{\scriptscriptstyle-}\kern-.4em/\kern-.3em_{\scriptscriptstyle-}}%
-      \hss}%
-   \egroup}
-
 % for compatibility
 
 \def\unknown%
   {\dontleavehmode\punten[3]}
+
+\def\leftboundarycharacter#1#2%
+  {\languageparameter#1%
+   \nobreak
+   \hskip\hspaceamount\currentlanguage{#2}}
 
-% currency
-
-\def\dollar%
-  {\bgroup
-   \ifnum\fam=\itfam
-     \sl
-   \else\ifnum\fam=\bifam
-     \bs
-   \fi\fi
-   \$%
-   \egroup}
-
-\def\sterling%
-  {\bgroup
-   \ifnum\fam=\bffam
-     \bi
-   \else\ifnum\fam=\bifam
-     \bi
-   \else\ifnum\fam=\bsfam
-     \bi
-   \else
-     \it
-   \fi\fi\fi
-   \$%
-   \egroup}
-
-\def\florijn%
-  {\bgroup
-   \ifnum\fam=\bffam
-     \bi
-   \else\ifnum\fam=\bifam
-     \bi
-   \else\ifnum\fam=\bsfam
-     \bi
-   \else
-     \it
-   \fi\fi\fi
-   f%
-   \egroup}
+\def\rightboundarycharacter#1#2%
+  {\nobreak
+   \hskip\hspaceamount\currentlanguage{#2}%
+   \languageparameter#1}
 
 % actually this is pretty old, but temporary moved here
 
@@ -649,27 +590,23 @@
 
 \definesymbol
   [\c!leftsentence]
-  [\languageparameter\c!leftsentence
-   \hskip\hspaceamount\currentlanguage{sentence}]
+  [\leftboundarycharacter\c!leftsentence{sentence}]
 
 \definesymbol
   [\c!rightsentence]
-  [\hskip\hspaceamount\currentlanguage{sentence}%
-   \languageparameter\c!rightsentence]
+  [\rightboundarycharacter\c!rightsentence{sentence}]
 
 \definesymbol
   [\c!leftsubsentence]
-  [\languageparameter\c!leftsubsentence
-   \hskip\hspaceamount\currentlanguage{sentence}]
+  [\leftboundarycharacter\c!leftsubsentence{sentence}]
 
 \definesymbol
   [\c!rightsubsentence]
-  [\hskip\hspaceamount\currentlanguage{sentence}%
-   \languageparameter\c!rightsubsentence]
+  [\rightboundarycharacter\c!rightsubsentence{sentence}]
 
 \installdiscretionaries || \@@kpteken
 
-\newsignal\subsentencesignal
+\newsignal \subsentencesignal
 \newcounter\subsentencelevel
 
 \def\beginofsubsentence%
@@ -713,60 +650,58 @@
 \definehspace [quotation]      [\zeropoint]
 \definehspace [interquotation] [.125em]
 
+%definehspace [quote]  [\zeropoint]
+%definehspace [speech] [\zeropoint]
+
+\definehspace [quote]  [\hspaceamount\currentlanguage{quotation}]
+\definehspace [speech] [\hspaceamount\currentlanguage{quotation}]
+
 \definesymbol
   [\c!leftquotation] 
-  [\languageparameter\c!leftquotation
-   \hskip\hspaceamount\currentlanguage{quotation}]
+  [\leftboundarycharacter\c!leftquotation{quotation}]
 
 \definesymbol
-  [\c!rightquotation]
-  [\hskip\hspaceamount\currentlanguage{quotation}%
-   \languageparameter\c!rightquotation]
+  [\c!rightquotation] 
+  [\rightboundarycharacter\c!rightquotation{quotation}]
 
 \definesymbol
-  [\c!leftquote]     
-  [\languageparameter\c!leftquote
-   \hskip\hspaceamount\currentlanguage{quote}]
+  [\c!leftquote]      
+  [\leftboundarycharacter\c!leftquote{quote}]
 
 \definesymbol
-  [\c!rightquote]    
-  [\hskip\hspaceamount\currentlanguage{quote}%
-   \languageparameter\c!rightquote]
+  [\c!rightquote]     
+  [\rightboundarycharacter\c!rightquote{quote}]
 
 \definesymbol
   [\c!leftspeech]   
-  [\languageparameter\c!leftspeech
-   \hskip\hspaceamount\currentlanguage{speech}]
+  [\leftboundarycharacter\c!leftspeech{speech}]
 
 \definesymbol
-  [\c!rightspeech]   
-  [\hskip\hspaceamount\currentlanguage{speech}%
-   \languageparameter\c!rightspeech]
+  [\c!rightspeech]  
+  [\rightboundarycharacter\c!rightspeech{speech}]
 
 \definesymbol
-  [\c!middlespeech]  
-  [\hspace\hspaceamount\currentlanguage{speech}% brr 
-   \languageparameter\c!middlespeech]
+  [\c!middlespeech] 
+  [\leftboundarycharacter\c!middlespeech{speech}]
 
 \newsignal\quotationsignal
 
-\def\stelciterenin%
+\def\stelciterenin
   {\dodoubleargument\getparameters[\??ci]}
 
-\def\stelcitatenin%
+\def\stelcitatenin
   {\stelciterenin}
 
-\def\startcitaat%
-  {\bgroup
-   \dosingleempty\dostartcitaat}
+\def\startcitaat
+  {\bgroup\dosingleempty\dostartcitaat}
 
-\def\leftquotationmark%
-  {\setbox\scratchbox\hbox{\leftquotation}%
+\def\leftquotationmark
+  {\setbox\scratchbox\hbox{\symbol[\c!leftquotation]}%
    \doif\@@ciplaats\v!marge{\hskip-\wd\scratchbox}%
    \box\scratchbox}
 
-\def\rightquotationmark%
-  {\hsmash{\rightquotation}}
+\def\rightquotationmark
+  {\hsmash{\symbol[\c!rightquotation]}}
 
 \def\dostartcitaat[#1]%
   {\@@civoor
@@ -803,23 +738,26 @@
 \def\handlequotation#1%
   {\dohandlequotation{#1}\relax}
 
-\unexpanded\def\citaat%
+\unexpanded\def\citaat
   {\groupedcommand
-     {\dohandlequotation\c!leftquotation\relax}
+     {\dohandlequotation\c!leftquotation \relax}
      {\dohandlequotation\c!rightquotation\removelastskip}}
 
-\unexpanded\def\citeer%
-  {\doifelse{\@@ciletter}{\v!normaal}
-     {\let\next\doquotedcite}
-     {\let\next\doattributedcite}%
-   \next}
+%\unexpanded\def\citeer
+%  {\doifelse\@@ciletter\v!normaal
+%     {\let\next\doquotedcite}
+%     {\let\next\doattributedcite}%
+%   \next}
 
-\def\doquotedcite%
+\unexpanded\def\citeer
+  {\doifelse\@@ciletter\v!normaal\doquotedcite\doattributedcite}
+
+\def\doquotedcite
   {\groupedcommand
      {\dohandlequotation\c!leftquote \relax}
      {\dohandlequotation\c!rightquote\removelastskip}}
 
-\def\doattributedcite%
+\def\doattributedcite
   {\groupedcommand
      {\dostartattributes\??ci\c!letter\c!kleur}
      {\dostopattributes}}
@@ -1815,47 +1753,55 @@
 
 \presetlocalframed[\??ro]
 
-\def\stelroterenin%
+\def\setuprotate
   {\dodoubleargument\getparameters[\??ro]}
 
 % \ht, \vfillvoor, \vfillna, \wd, \hfillvoor, \hfillna
 
-\def\dodostoproteer#1#2#3#4#5#6%
-  {\dontshowcomposition
-   \vbox to #1\nextbox
-     {#2\relax
-      \hbox to #4\nextbox
-        {#5\relax % \number removes leading spaces too
-         \edef\@@rorotatie{\number\@@rorotatie}%
-         \doifelsenothing{\@@rorotatie}
-           {\dostartrotation{90}}
-           {\dostartrotation{\@@rorotatie}}%
-         \wd\nextbox=\!!zeropoint
-         \ht\nextbox=\!!zeropoint
-         \box\nextbox
-         \dostoprotation
-         #6}
-      #3}%
-   \egroup}
-
-
-\def\dostoproteer%
-  {\!!counta=\@@rorotatie
-   \divide\!!counta by 90
-   \ifcase\!!counta
-     \dodostoproteer\ht\relax\vfill\wd\relax\hfill
-   \or
-     \dodostoproteer\wd\vfill\relax\ht\relax\hfill
-   \or
-     \dodostoproteer\ht\vfill\relax\wd\hfill\relax
-   \or
-     \dodostoproteer\wd\relax\vfill\ht\hfill\relax
-   \or
-     \dodostoproteer\ht\relax\vfill\wd\relax\hfill
-   \else
-     \def\@@rotatie{90}%
-     \dodostoproteer\ht\relax\vfill\wd\relax\hfill
-   \fi}
+% \def\dodostoprotate#1#2#3#4#5#6%
+%   {\dontshowcomposition
+%    \vbox to #1\nextbox
+%      {#2\relax
+%       \hbox to #4\nextbox
+%         {#5\relax % \number removes leading spaces too
+%          \edef\@@rorotatie{\number\@@rorotatie}%
+%          \doifelsenothing{\@@rorotatie}
+%            {\dostartrotation{90}}
+%            {\dostartrotation{\@@rorotatie}}%
+%          \wd\nextbox\zeropoint
+%          \ht\nextbox\zeropoint
+%          \box\nextbox
+%          \dostoprotation
+%          #6}
+%       #3}%
+%    \egroup}
+% 
+% \def\dostoprotate%
+%   {\!!counta=\@@rorotatie
+%    \divide\!!counta by 90
+%    \ifcase\!!counta
+%      \dodostoprotate\ht\relax\vfill\wd\relax\hfill
+%    \or
+%      \dodostoprotate\wd\vfill\relax\ht\relax\hfill
+%    \or
+%      \dodostoprotate\ht\vfill\relax\wd\hfill\relax
+%    \or
+%      \dodostoprotate\wd\relax\vfill\ht\hfill\relax
+%    \or
+%      \dodostoprotate\ht\relax\vfill\wd\relax\hfill
+%    \else
+%      \def\@@rotatie{90}%
+%      \dodostoprotate\ht\relax\vfill\wd\relax\hfill
+%    \fi}
+% 
+% \def\dorotatebox#1% {angle} \hbox/\vbox/\vtop
+%   {\bgroup
+%    \hbox\bgroup % compatibility hack
+%    \dowithnextbox
+%      {\edef\@@rorotatie{#1}%
+%       \setbox\nextbox=\vbox{\box\nextbox}%
+%       \dostoprotate
+%       \egroup}}
 
 \def\dorotatebox#1% {angle} \hbox/\vbox/\vtop
   {\bgroup
@@ -1863,20 +1809,76 @@
    \dowithnextbox
      {\edef\@@rorotatie{#1}%
       \setbox\nextbox=\vbox{\box\nextbox}%
-      \dostoproteer
+      \dostoprotate
       \egroup}}
 
-\def\complexroteer[#1]%
+\def\dodostoprotate#1#2#3#4#5#6%
+  {\dontshowcomposition
+\scratchdimen\nextboxht\advance\scratchdimen\nextboxdp
+\doif\@@roplaats\v!hoog
+  {\setbox\nextbox\vbox{\hbox{\raise\nextboxdp\box\nextbox}}}%
+\setbox\nextbox=\vbox to #1
+     {#2\relax
+      \hbox to #4
+        {#5\relax % \number removes leading spaces too
+         \edef\@@rorotatie{\number\@@rorotatie}%
+         \doifelsenothing{\@@rorotatie}
+           {\dostartrotation{90}}
+           {\dostartrotation{\@@rorotatie}}%
+         \nextboxwd\zeropoint
+         \nextboxht\zeropoint
+        %\nextboxdp\zeropoint
+         \box\nextbox
+         \dostoprotation
+         #6}
+      #3}%
+\nextboxdp\zeropoint
+\box\nextbox
+   \egroup}
+
+\def\dostoprotate%
+  {\!!counta=\@@rorotatie
+   \divide\!!counta 90
+   \ifcase\!!counta
+     \dodostoprotate\nextboxht\relax\vfill\nextboxwd\relax\hfill
+   \or
+    %\dodostoprotate\nextboxwd\vfill\relax\nextboxht\relax\hfill
+     \dodostoprotate\nextboxwd\vfill\relax\scratchdimen\relax\hfill
+   \or
+     \dodostoprotate\nextboxht\vfill\relax\nextboxwd\hfill\relax
+   \or
+    %\dodostoprotate\nextboxwd\relax\vfill\nextboxht\hfill\relax
+     \dodostoprotate\nextboxwd\relax\vfill\scratchdimen\hfill\relax
+   \or
+     \dodostoprotate\nextboxht\relax\vfill\nextboxwd\relax\hfill
+   \else
+     \def\@@rotatie{90}%
+     \dodostoprotate\nextboxht\relax\vfill\nextboxwd\relax\hfill
+   \fi}
+
+%D A couple of examples, demonstrating how the depth ios 
+%D taken care of: 
+%D
+%D \startbuffer
+%D test\rotate[frame=on, rotation=0]  {gans}%
+%D test\rotate[frame=on, rotation=90] {gans}%
+%D test\rotate[frame=on, rotation=180]{gans}%
+%D test\rotate[frame=on, rotation=270]{gans}%
+%D test
+%D \stopbuffer
+%D 
+%D \typebuffer \getbuffer
+
+\def\complexrotate[#1]%
   {\dowithnextbox
      {\getparameters[\??ro][#1]%
-      \dostoproteer}%
+      \dostoprotate}%
    \vbox\localframed[\??ro][#1]}
 
-\def\roteer%
-  {\bgroup     % \roteer kan argument zijn
-   \complexorsimpleempty\roteer}
+\unexpanded\def\rotate % \bgroup: \rotate kan argument zijn
+  {\bgroup\complexorsimpleempty\rotate}
 
-\stelroterenin
+\setuprotate
   [\c!rotatie=90,
    \c!breedte=\v!passend,
    \c!hoogte=\v!passend,
@@ -1917,6 +1919,7 @@
       \c!sx=1,\c!sy=1,#1]%
    \dowithnextbox
      {\dontshowcomposition
+\ifdim\ht\nextbox>\zeropoint \ifdim\wd\nextbox>\zeropoint
       \doscalelikeafigure
       \dimen0=\@@xysy\ht\nextbox
       \dimen2=\@@xysy\dp\nextbox
@@ -1930,11 +1933,12 @@
       \ht\nextbox=\dimen0
       \dp\nextbox=\dimen2
       \wd\nextbox=\dimen4
+\fi \fi
       \box\nextbox
       \egroup}
    \hbox}
 
-\def\schaal%
+\def\schaal
   {\dosingleempty\doschaal}
 
 % mirror
@@ -2076,5 +2080,46 @@
 %D \NC 3 \NC \chardef\vulgarfractionmethod3\vulgarfraction{1}{2} \NC\NR
 %D \HL
 %D \stoptabulate
+
+%D Under construction: 
+%D
+%D \starttypen 
+%D \commalistsentence[aap,noot,mies]
+%D \commalistsentence[aap,noot]
+%D \commalistsentence[aap]
+%D \stoptypen 
+
+\let\handlecommalistsentence\firstofoneargument
+
+\def\commalistsentence[#1]%
+  {\bgroup 
+   \getcommalistsize[#1]%
+   \ifcase\commalistsize\relax
+     \def\serializedcommalist{#1}%
+   \else
+     \let\serializedcommalist\empty
+     \scratchcounter\zerocount
+     \def\docommando##1%
+       {\advance\scratchcounter 1 
+        \ifnum\scratchcounter=1 
+          \scratchtoks{\handlecommalistsentence{##1}}%
+        \else
+          \ifnum\scratchcounter=\commalistsize
+            \appendtoks\labeltext{and-2}\handlecommalistsentence{##1}\to\scratchtoks
+          \else
+            \appendtoks\labeltext{and-1}\handlecommalistsentence{##1}\to\scratchtoks
+          \fi
+        \fi}%
+     \processcommacommand[#1]\docommando
+     \edef\serializedcommalist{\the\scratchtoks}%
+   \fi
+   \serializedcommalist
+   \egroup}
+
+\ifx\textcomma\undefined \def\textcomma{,} \fi 
+
+\setuplabeltext [\s!nl] [and-1=\textcomma\ , and-2= en ]
+\setuplabeltext [\s!en] [and-1=\textcomma\ , and-2=\textcomma\ and ]
+\setuplabeltext [\s!de] [and-1=\textcomma\ , and-2= und ]
 
 \protect \endinput

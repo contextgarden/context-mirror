@@ -458,15 +458,6 @@
 %
 % best, beware, chapter (yes) can be followed by title (no)
 
-%\def\preparepaginaprefix#1%
-%  {\def\dopreparepaginaprefix##1%
-%     {\setvalue{#1\getvalue{\??by##1}\v!nummer}{\v!nee}}%  %v
-%   \processcommacommand[\@@kolijst]\dopreparepaginaprefix
-%   \def\dopreparepaginaprefix##1%
-%     {\doifvalue{#1##1\v!nummer}{\v!ja}                    %v
-%        {\setvalue{#1\getvalue{\??by##1}\v!nummer}{\v!ja}}}%
-%   \processcommacommand[\@@kolijst]\dopreparepaginaprefix}
-
 \def\preparepaginaprefix#1%
   {\def\dopreparepaginaprefix##1%
      {\letvalue{#1\getvalue{\??by##1}\v!nummer}\v!nee}%  %v
@@ -476,48 +467,42 @@
         {\letvalue{#1\getvalue{\??by##1}\v!nummer}\v!ja}}%
    \rawprocesscommalist[\@@kolijst]\dopreparepaginaprefix}
 
-% \def\dopaginaprefix#1#2%
+% \def\dodopaginaprefix#1% uti seperator --
 %   {\let\normaluchar\uchar\let\uchar\relax % ugly but needed
-%    \doifelsevalue{#1#2\v!nummer}{\v!ja} % \v! and no \c!
-%      {\@EA\beforesplitstring\@EA{\postprefix}\at:\to\preprefix
-%       \@EA\aftersplitstring\@EA{\postprefix}\at:\to\postprefix
+%    \doifelsevalue{\paginatype#1\v!nummer}\v!ja % \v! and no \c!
+%      {\@EA\beforesplitstring\@EA\postprefix\@EA\at\sectionseparator\to\preprefix
+%       \@EA\aftersplitstring \@EA\postprefix\@EA\at\sectionseparator\to\postprefix
 %       \let\uchar\normaluchar % ugly but needed
-%       \doifsomething{\preprefix}
-%         {\doifnot{\preprefix}{0}{\preprefix\@@nmnummerscheider}}}%
-%      {\@EA\aftersplitstring\@EA{\postprefix}\at:\to\postprefix
+%       \ifx\preprefix\empty \else
+%         \ifx\preprefix\zerocountervalue\else
+%           \preprefix\@@nmnummerscheider
+%         \fi
+%       \fi}
+%      {\@EA\aftersplitstring\@EA\postprefix\@EA\at\sectionseparator\to\postprefix
 %       \let\uchar\normaluchar}} % ugly but needed
-% 
-% \def\paginaprefix#1[#2::#3::#4]% kan wat sneller ####1:0:
-%   {\bgroup
-%    \edef\postprefix{#3}%
-%    \def\donexttrackcommando##1%
-%      {\dopaginaprefix{#1}{##1}%
-%       \donexttracklevel{##1}}%
-%    \donexttrackcommando\firstsection
-%    \egroup}
 
-\def\dodopaginaprefix#1%
+\def\dodopaginaprefix#1% uti seperator --
   {\let\normaluchar\uchar\let\uchar\relax % ugly but needed
    \doifelsevalue{\paginatype#1\v!nummer}\v!ja % \v! and no \c!
-     {\@EA\beforesplitstring\postprefix\at:\to\preprefix
-      \@EA\aftersplitstring\postprefix\at:\to\postprefix
+     {\edef\preprefix {\@@filterheadpart[\postprefix]}%
+      \edef\postprefix{\@@filtertailpart[\postprefix]}%
       \let\uchar\normaluchar % ugly but needed
       \ifx\preprefix\empty \else
         \ifx\preprefix\zerocountervalue\else
           \preprefix\@@nmnummerscheider
         \fi
       \fi}
-     {\@EA\aftersplitstring\postprefix\at:\to\postprefix
+     {\edef\postprefix{\@@filtertailpart[\postprefix]}%
       \let\uchar\normaluchar}} % ugly but needed
 
 \def\dopaginaprefix#1%
   {\dodopaginaprefix{#1}%
    \donexttracklevel{#1}}
 
-\def\paginaprefix#1[#2::#3::#4]% kan wat sneller ####1:0:
+\def\paginaprefix#1[#2]% 
   {\bgroup
    \edef\paginatype{#1}%
-   \edef\postprefix{#3}%
+   \edef\postprefix{\@@filternumberpart[#2]}% 
    \let\donexttrackcommando\dopaginaprefix
    \donexttrackcommando\firstsection
    \egroup}
@@ -562,8 +547,9 @@
   {\doif{\@@nmstatus\@@pnstatus}{\v!start\v!start}
      {\labeltexts{\v!paginanummer}{\pagenumber}}}
 
-\def\translatednumber[#1::#2::#3]%
-  {#3}
+% \def\translatednumber[#1::#2::#3]{#3}
+
+\def\translatednumber{\@@filterpagepart}
 
 \unexpanded\def\referencepagenumber[#1]%
   {\doifelsenothing{#1}{?}{\paginaprefix\??rf[#1]\translatednumber[#1]}}

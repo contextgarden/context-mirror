@@ -1,3 +1,7 @@
+\unprotect 
+
+% clean up footnotes to notes 
+
 % We need to set the \dimen globally since we are in the 
 % OTR. Unfortunately this interferes with local settings, 
 % although we may assume that they will not cross page 
@@ -57,7 +61,7 @@
    % prepare trial box 
    \global\setbox5=\vbox
      {\ifdim\ht1>\!!zeropoint 
-        \unvcopy1 \ifdim\ht3>\!!zeropoint \kern\skip\footins \fi
+        \unvcopy1 \ifdim\ht3>\zeropoint \kern\skip\footins \fi
       \fi
       \ifdim\ht3>\!!zeropoint \unvcopy3 \fi}
    \egroup
@@ -181,9 +185,9 @@
                      \columnsettextbox\recurselevel=\hbox
                        {\raise\dp\strutbox\hbox % ugly but needed
                           {\setfootnotebodyfont % both these moves
-                           \lower\dp\strutbox\hbox{\placefootnotes}}}
+                           \lower\dp\strutbox\hbox{\placebottomnotes}}}
                    \else
-                     \columnsetfootbox\recurselevel=\hbox{\placefootnotes}
+                     \columnsetfootbox\recurselevel=\hbox{\placebottomnotes}
                    \fi
                  \fi
                \fi}
@@ -197,3 +201,5 @@
      \OTRSETdoflush
    \fi
    \egroup}
+
+\protect \endinput 

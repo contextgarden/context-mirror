@@ -271,7 +271,7 @@
 \setuplabeltext [\s!pt] [\v!bijlage=]
 \setuplabeltext [\s!ro] [\v!bijlage=]
 
-\setuplabeltext [\s!fr] [\v!deel=Section ]
+\setuplabeltext [\s!fr] [\v!deel=Partie ]
 \setuplabeltext [\s!es] [\v!deel=Parte ]
 \setuplabeltext [\s!it] [\v!deel=Parte ]
 \setuplabeltext [\s!la] [\v!deel=Pars ]
@@ -440,6 +440,13 @@
 \setuplabeltext [\s!it] [\v!hierboven=come mostrato sopra]
 \setuplabeltext [\s!it] [\v!hieronder=come mostrato sotto]
 \setuplabeltext [\s!it]       [\v!zie=cf. ]
+
+%D Ordinal converters:
+
+\def\frordinaldaynumber#1% date is masculine
+  {#1\ifcase#1\or
+     \highordinalstr{er}%
+   \fi}
 
 %D \ShowAllLanguageValues [\s!fr] [french]     franse slag
 %D \ShowAllLanguageValues [\s!es] [spanish]    spaans benauwd

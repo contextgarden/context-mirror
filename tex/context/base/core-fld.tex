@@ -340,11 +340,11 @@
   {\immediatewriteutilitycommand{\fieldreference{#1}{#2}}}
 
 \def\checkfieldreferences%
-  {\bgroup
-   \setbox0=\hbox
-     {\doutilities{fieldreferences}{\jobname}{}{}{}}%
-   \global\let\checkfieldreferences=\relax
-   \egroup}
+  {\startnointerference
+   \protectlabels 
+   \doutilities{fieldreferences}{\jobname}{}{}{}%
+   \global\let\checkfieldreferences\relax
+   \stopnointerference}
 
 \def\setfieldreferences%
   {\def\fieldreference##1##2%
@@ -531,11 +531,11 @@
        \def\docommando##1{\appendtocommalist{##1}\@@FieldKids}%
        \processcommalist[#2]\docommando
        \changefield{#1}%
-       \let\@@FieldAutoParent=\@@FieldAuto
+       \let\@@FieldAutoParent\@@FieldAuto
        \def\@@FieldParent{#1}%
-       \let\@@FieldKids=\empty
-       \let\@@FieldRoot=\empty
-       \let\@@FieldMode=\fieldchildmode
+       \let\@@FieldKids\empty
+       \let\@@FieldRoot\empty
+       \let\@@FieldMode\fieldchildmode
        \def\@@FieldFree{0}%
        \def\@@FieldAuto{0}%
        \doifsomething{#3}{\edef\@@FieldGroup{#3}}%
@@ -562,16 +562,16 @@
      \ifx\@@FieldType\empty
        \writestatus{\m!fields}{unknown field #1}%
      \else
-       \let\@@FieldMode=\fieldparentmode
+       \let\@@FieldMode\fieldparentmode
       %\def\docommando##1{\addtocommalist{##1}\@@FieldKids}%
        \def\docommando##1{\appendtocommalist{##1}\@@FieldKids}%
        \processcommalist[#2]\docommando
        \changefield{#1}%
        \let\@@FieldAutoParent=\@@FieldAuto
        \def\@@FieldParent{#1}%
-       \let\@@FieldKids=\empty
-       \let\@@FieldRoot=\empty
-       \let\@@FieldMode=\fieldcopymode
+       \let\@@FieldKids\empty
+       \let\@@FieldRoot\empty
+       \let\@@FieldMode\fieldcopymode
        \def\@@FieldFree{0}%
        \def\@@FieldAuto{0}%
        \def\docommando##1%

@@ -150,6 +150,13 @@
 \gdef\flushXMLelement#1%
   {\csname\@@XMLsave:#1\endcsname}
 
+%\gdef\flushXMLelement#1%
+%  {\csname
+%     \@@XMLsave:\ifcsname\@@XMLsave:#1\endcsname#1\else\@@XMLsave\fi
+%   \endcsname}
+%
+%\letvalue{\@@XMLsave:\@@XMLsave}\empty
+
 \gdef\showXMLelement#1%
   {\showvalue{\@@XMLsave:#1}}
 
@@ -165,7 +172,7 @@
 \gdef\texXMLelement#1%
   {\begingroup
    \setnormalcatcodes
-   \scantokens\@EA\@EA\@EA{\csname\@@XMLsave#1\endcsname}%
+   \scantokens\@EA\@EA\@EA{\csname\@@XMLsave:#1\endcsname}%
    \endgroup}
 
 \egroup

@@ -1,11 +1,11 @@
 %D \module
 %D   [     file=enco-ans,
-%D      version=1995.1.1,
+%D      version=2000.5.7, % 1995.1.1,
 %D        title=\CONTEXT\ Encoding Macros,
 %D     subtitle=\YandY\ texnansi Encoding,
-%D       author=Hans Hagen,
+%D       author={Patrick Gundlach, Hans Hagen},
 %D         date=\currentdate,
-%D    copyright=Hans Hagen]
+%D    copyright=PRAGMA-ADE]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
@@ -47,117 +47,178 @@
 \definecasemap 241 241 209 \definecasemap 209 241 209
 \definecasemap 245 245 213 \definecasemap 213 245 213
 
-% texnansx
-
-%\definecasemap  26  26  29 \definecasemap  29  26  29 
-%\definecasemap  27  27  30 \definecasemap  30  27  30 
-%\definecasemap  28  28  31 \definecasemap  31  28  31 
-
 \stopmapping
 
 \startencoding[texnansi]
 
-\definecharacter textdotaccent       5
-\definecharacter texthungarumlaut    6
-\definecharacter textmacron        175 
-\definecharacter textcedilla       184  
+\definecharacter textacute         19
+\definecharacter textbreve         21
+\definecharacter textcaron         20
+\definecharacter textcedilla      184  
+\definecharacter textcircumflex    94 % 136
+\definecharacter textdiaeresis    168
+\definecharacter textdotaccent      5
+\definecharacter textgrave         18
+\definecharacter texthungarumlaut   6
+\definecharacter textmacron       175 
+\definecharacter textogonek         7
+\definecharacter textring          23
+\definecharacter texttilde        152
 
-\definecharacter textunderscore     95
+\definecharacter dotlessi          16 % 105 
+\definecharacter dotlessj          17
 
-\definecharacter dotlessi           16 % 105 
+\definecharacter endash           150 % lig
+\definecharacter emdash           151 % lig
 
-\definecharacter Lstroke           128
+\definecharacter aeligature       230
+\definecharacter AEligature       198
+\definecharacter oeligature       156
+\definecharacter OEligature       140
 
-\definecharacter Scaron            138
+\definecharacter ssharp           223
 
-\definecharacter OEligature        140
-\definecharacter Zcaron            141
+\definecharacter thorn            254
+\definecharacter Thorn            222
 
-\definecharacter lstroke           144
+\definecharacter exclamdown       161
+\definecharacter questiondown     191
 
-\definecharacter scaron            154
+\definecharacter copyright        169
+\definecharacter registered       174
+\definecharacter trademark        153
 
-\definecharacter oeligature        156
-\definecharacter zcaron            157
+\definecharacter sectionmark      167
+\definecharacter paragraphmark    182
 
-\definecharacter Ydiaeresis        159
+\definecharacter onequarter       188
+\definecharacter onehalf          189
+\definecharacter threequarter     190
 
-\definecharacter Agrave            192
-\definecharacter Aacute            193
-\definecharacter Acircumflex       194
-\definecharacter Atilde            195
-\definecharacter Adiaeresis        196      
-\definecharacter Aring             197
-\definecharacter AEligature        198
-\definecharacter cCedile           199
-\definecharacter Egrave            200
-\definecharacter Eacute            201
-\definecharacter Ecircumflex       202
-\definecharacter Ediaeresis        203
-\definecharacter Igrave            204
-\definecharacter Iacute            205
-\definecharacter Icircumflex       206
-\definecharacter Idiaeresis        207
+\definecharacter onesuperior      185
+\definecharacter twosuperior      178
+\definecharacter threesuperior    179
 
-\definecharacter Ntilde            209
-\definecharacter Ograve            210
-\definecharacter Oacute            211
-\definecharacter Ocircumflex       212
-\definecharacter Otilde            213
-\definecharacter Odiaeresis        214
+\definecharacter textcent         162 % ?
+\definecharacter textcurrency     164 
+\definecharacter texteuro           1
+\definecharacter textflorin       131
+\definecharacter textsterling     163
+\definecharacter textyen          165 
 
-\definecharacter Ostoke            216
-\definecharacter Ugrave            217
-\definecharacter Uacute            218
-\definecharacter Ucircumflex       219
-\definecharacter Udiaeresis        220
-\definecharacter Yacute            221
-\definecharacter Thorn             222
-\definecharacter ssharp            223
-\definecharacter agrave            224
-\definecharacter aacute            225
-\definecharacter acircumflex       226
-\definecharacter atilde            227
-\definecharacter adiaeresis        228      
-\definecharacter aring             229
-\definecharacter aeligature        230
-\definecharacter ccedile           231
-\definecharacter egrave            232
-\definecharacter eacute            233
-\definecharacter ecircumflex       234
-\definecharacter ediaeresis        235      
-\definecharacter igrave            236
-\definecharacter iacute            237
-\definecharacter icircumflex       238
-\definecharacter idiaeresis        239
+\definecharacter percent           37
+\definecharacter perthousand      137
 
-\definecharacter ntilde            241
-\definecharacter ograve            242
-\definecharacter oacute            243
-\definecharacter ocircumflex       244
-\definecharacter otilde            245
-\definecharacter odiaeresis        246
+\definecharacter softhyphen        45 
+\definecharacter periodcentered   183
 
-\definecharacter ostroke           248
-\definecharacter ugrave            249
-\definecharacter uacute            250
-\definecharacter ucircumflex       251
-\definecharacter udiaeresis        252
-\definecharacter yacute            253
-\definecharacter thorn             254
-\definecharacter ydiaeresis        255
+\definecharacter textasciicircum  142 
+\definecharacter textasciitilde   158
+\definecharacter textbackslash     92  
+\definecharacter textbraceleft    123 
+\definecharacter textbraceright   125 
+\definecharacter textunderscore    95
 
-% texnansx
+\definecharacter textbrokenbar    166 
+\definecharacter textbullet       149
+\definecharacter textdag          134
+\definecharacter textddag         135
+\definecharacter textdegree       176 
+\definecharacter textdiv          247
+\definecharacter textellipsis     133
+\definecharacter textfraction       4
+\definecharacter textlognot       172
+\definecharacter textminus        143
+\definecharacter textmu           181
+\definecharacter textmultiply     215
+\definecharacter textpm           177
 
-%\definecharacter aeligature         26
-%\definecharacter oeligature         27
-%\definecharacter ostroke            28
-%
-%\definecharacter AEligature         29 
-%\definecharacter OEligature         30 
-%\definecharacter Ostroke            31
-%
-%\definecharacter ssharp             25
+\definecharacter quotedbl          34
+\definecharacter quotedblbase     132
+\definecharacter quotedblleft     147
+\definecharacter quotedblright    148
+
+\definecharacter quotesingle      129
+\definecharacter quotesinglebase  130 
+
+\definecharacter quoteleft        145
+\definecharacter quoteright       146
+
+\definecharacter guilsingleleft   139 
+\definecharacter guilsingleright  155 
+\definecharacter leftguillemot    171
+\definecharacter rightguillemot   187
+
+\definecharacter aacute           225
+\definecharacter Aacute           193
+\definecharacter eacute           233
+\definecharacter Eacute           201
+\definecharacter iacute           237
+\definecharacter Iacute           205
+\definecharacter oacute           243
+\definecharacter Oacute           211
+\definecharacter uacute           250
+\definecharacter Uacute           218
+\definecharacter yacute           253
+\definecharacter Yacute           221
+
+\definecharacter scaron           154
+\definecharacter Scaron           138
+\definecharacter zcaron           157
+\definecharacter Zcaron           141
+
+\definecharacter ccedilla         231
+\definecharacter Ccedilla         199
+
+\definecharacter acircumflex      226
+\definecharacter Acircumflex      194
+\definecharacter ecircumflex      234
+\definecharacter Ecircumflex      202
+\definecharacter icircumflex      238
+\definecharacter Icircumflex      206
+\definecharacter ocircumflex      244
+\definecharacter Ocircumflex      212
+\definecharacter ucircumflex      251
+\definecharacter Ucircumflex      219
+
+\definecharacter adiaeresis       228      
+\definecharacter Adiaeresis       196      
+\definecharacter ediaeresis       235      
+\definecharacter Ediaeresis       203
+\definecharacter idiaeresis       239
+\definecharacter Idiaeresis       207
+\definecharacter odiaeresis       246
+\definecharacter Odiaeresis       214
+\definecharacter udiaeresis       252
+\definecharacter Udiaeresis       220
+\definecharacter ydiaeresis       255
+\definecharacter Ydiaeresis       159
+
+\definecharacter agrave           224
+\definecharacter Agrave           192
+\definecharacter egrave           232
+\definecharacter Egrave           200
+\definecharacter igrave           236
+\definecharacter Igrave           204
+\definecharacter ograve           242
+\definecharacter Ograve           210
+\definecharacter ugrave           249
+\definecharacter Ugrave           217
+
+\definecharacter aring            229
+\definecharacter Aring            197
+
+\definecharacter Lstroke          128
+\definecharacter lstroke          144
+\definecharacter ostroke          248
+\definecharacter Ostoke           216
+
+\definecharacter atilde           227
+\definecharacter Atilde           195
+\definecharacter ntilde           241
+\definecharacter Ntilde           209
+\definecharacter otilde           245
+\definecharacter Otilde           213
 
 \stopencoding
 
@@ -175,22 +236,3 @@
 \stopencoding
 
 \endinput
-
-% \startencoding[texnansi]
-% 
-% \definecommand b {\texnansiencodedb}
-% \definecommand c {\texnansiencodedc}
-% 
-% \stopencoding 
-% 
-% \def\texnansiencodedb#1%
-%   {\oalign{#1\crcr\hidewidth\vbox to.2ex{\hbox{\textmacron}\vss}\hidewidth}}
-% 
-% \def\texnansiencodedc#1%
-%   {\setbox\scratchbox\hbox{#1}%
-%    \ifdim\ht\scratchbox=1ex
-%      \buildtextaccent\textcedilla{#1}%
-%    \else
-%      {\ooalign{\hidewidth\textcedilla\hidewidth\crcr
-%                \unhbox\scratchbox}}%
-%    \fi}

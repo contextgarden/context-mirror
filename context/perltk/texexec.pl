@@ -792,9 +792,9 @@ sub MPJobName
   { my $JobName = shift ;
     my $MPfile = shift ;
     my $MPJobName = '' ;
-    if (-s "$JobName-$MPfile.mp">100)
+    if (-s "$JobName-$MPfile.mp">50)
       { $MPJobName = "$JobName-$MPfile.mp" }
-    elsif (-s "$MPfile.mp">100)
+    elsif (-s "$MPfile.mp">50)
       { $MPJobName = "$MPfile.mp" }
     else
       { $MPJobName = "" }
@@ -804,11 +804,13 @@ sub RunPerlScript
   { my ($ScriptName, $Options) = @_ ;
     if ($dosish)
 #      { if (-e "$TeXScriptsPath$ScriptName.pl")
-      { if (-e "$TeXScriptsPath$ScriptName$own_type")
+      { # print "$TeXScriptsPath$ScriptName$own_type" ;
+        if (-e "$TeXScriptsPath$ScriptName$own_type")
 #          { system ("perl $TeXScriptsPath$ScriptName.pl $Options") } }
           { system ("$own_stub$TeXScriptsPath$ScriptName$own_type $Options") } }
     else
       { system ("$ScriptName $Options") } }
+
 
 sub ConvertXMLFile
   { my $FileName = shift ; RunPerlScript($SGMLtoTeX, "$FileName.xml") }
@@ -839,7 +841,9 @@ sub CheckOutputFormat
 
 sub MakeOptionFile
   { my ($FinalRun, $FastDisabled, $JobName, $JobSuffix) = @_ ;
-    open (OPT, ">$JobName.top") ;
+    unless (open (OPT, ">$JobName.top")) 
+      { print "  problem with writing : $JobName.top\n" ;
+        open (OPT, ">$JobName-opt.log") } 
     print OPT "\\unprotect\n" ;
     if ($Result) # no '' test
       { print OPT "\\setupsystem[file=$Result]\n" }
@@ -1321,7 +1325,7 @@ sub RunConTeXtFile
         if ($Mode)
           { print "          current mode : $Mode\n" }
         else
-          { print "          current mode : all\n" }
+          { print "          current mode : none\n" }
         if ($Arguments)
           { print "             arguments : $Arguments\n" }
         if ($Modules)

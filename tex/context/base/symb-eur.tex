@@ -36,7 +36,13 @@
  
 \definesymbol [euro] [\getglyph{Euro}{\char160}]
 
-\unexpanded\def\euro{\symbol[euro]}
+\startencoding[default]
+
+  \definecharacter texteuro {\symbol[euro]}
+
+\stopencoding 
+
+\unexpanded\def\euro{\doiftextelse{\texteuro}{\texteuro}{\symbol[euro]}}
 
 %D The next table shows the complete set of symbols:
 %D

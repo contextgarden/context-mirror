@@ -97,7 +97,13 @@
 
 \stopsymbolset
 
-\unexpanded\def\euro{\symbol[europe][EUR]}
+\startencoding[default]
+
+  \definecharacter texteuro {\symbol[europe][EUR]}
+
+\stopencoding 
+
+\unexpanded\def\euro{\doiftextelse{\texteuro}{\texteuro}{\symbol[europe][EUR]}}
 
 % Numbers 0 to 9, @, A and p
 

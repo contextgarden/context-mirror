@@ -313,6 +313,17 @@
 \def\usehandling[#1]%
   {\processcommalist[#1]\dousehandling}
 
+%D New: 
+
+\def\overloadcharacter#1 #2 %
+  {\setfonttoks
+   \doifnumberelse{\string#2}
+     {\appendtoks\dooverloadcharacter{#1}{\char#2 }\to\fonttoks}
+     {\appendtoks\dooverloadcharacter{#1}{#2}\to\fonttoks}}
+
+\def\dooverloadcharacter#1%
+  {\setvalue{\characterencoding\string#1}}
+
 %D Let's now see if this macro works: 
 
 \setupfonthandling[\s!default][\c!links=1,\c!rechts=1]

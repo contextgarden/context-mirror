@@ -606,7 +606,6 @@
 
 \def\setvsize             {\OTRcommand\setvsize}
 \def\sethsize             {\OTRcommand\sethsize}
-\def\setfootnotehsize     {\OTRcommand\setfootnotehsize}
 \def\finalsidefloatoutput {\OTRcommand\finalsidefloatoutput}
 \def\dopagecontents       {\OTRcommand\dopagecontents}
 
@@ -690,11 +689,7 @@
 \newif\ifinotr
 
 \def\invokeoutputroutine
-  {\ifcsname\@@OTR\the\outputpenalty\endcsname
-     \csname\@@OTR\the\outputpenalty\endcsname
-   \else
-     \the\OTRcommand\output
-   \fi}
+  {\executeifdefined{\@@OTR\the\outputpenalty}{\the\OTRcommand\output}}
 
 \mainoutput{\invokeoutputroutine} \output{\inotrtrue\the\mainoutput}
 
@@ -855,7 +850,7 @@
   {\doejectpage\supereject}
 
 \def\ejectinsert%
-  {\flushfootnotes
+  {\flushnotes
    \bgroup
    \noftopfloats=\!!thousand
    \nofbotfloats=0
@@ -1304,7 +1299,7 @@
    \fi}
 
 \def\docomplexpagina[#1]% % will be installable 
-  {\flushfootnotes
+  {\flushnotes
    \bgroup
    \processallactionsinset
      [#1]
@@ -1410,7 +1405,7 @@
    \egroup}
 
 \def\simplepagina
-  {\flushfootnotes
+  {\flushnotes
    \ifpaginageblokkeerd\else
      \ejectinsert
      \ejectpage

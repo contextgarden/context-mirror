@@ -167,7 +167,7 @@
 \appendtoks \openutilities        \to \everyjob
 \appendtoks \loadoptionfile       \to \everyjob
 %appendtoks \loadtwopassdata      \to \everyjob
-\appendtoks \setupfootnotes       \to \everyjob % depends on bodyfont
+\appendtoks \checknotes           \to \everyjob % depends on bodyfont
 \appendtoks \initializeMPgraphics \to \everyjob % after loading system files
 
 \appendtoks \pagina[\v!laatste] \pagina           \to \everybye
@@ -355,15 +355,15 @@
 
 \neverypar=\emptytoks
 
-\appendtoks \flushfootnotes                 \to \everypar    
+\appendtoks \flushnotes                     \to \everypar    
 \appendtoks \ifinner\else\checksidefloat\fi \to \everypar    
 \appendtoks \checkindentation               \to \everypar    
 \appendtoks \showparagraphnumber            \to \everypar    
 \appendtoks \flushmargincontents            \to \everypar    
 \appendtoks \flushcommentanchors            \to \everypar    
-\appendtoks \synchronizefootnotes           \to \everypar    
+\appendtoks \synchronizenotes               \to \everypar    
 
-\appendtoks \flushfootnotes                 \to \everydisplay
+\appendtoks \flushnotes                     \to \everydisplay
 \appendtoks \adjustsidefloatdisplaylines    \to \everydisplay
 
 % Default-instellingen (verborgen)

@@ -15,7 +15,7 @@
 
 \catcode`\{=1 \catcode`\}=2 
 
-\def\contextversion{2002.4.17}
+\def\contextversion{2002.5.15}
 
 %D Welcome to the main module. When this module is ran through
 %D \type{initex} or \type{tex -i} or \type{whatevertex} using
@@ -36,7 +36,8 @@
 
 \input math-pln.tex % basic plain math 
 
-\input syst-etx.tex  
+\input syst-etx.tex % etex 
+\input syst-omg.tex % omega 
 \input syst-gen.tex
 \input syst-ext.tex
 \input syst-new.tex
@@ -126,6 +127,7 @@
 %D load additional definition modules when needed.
 
 \input enco-ini.tex 
+\input filt-ini.tex 
 \input hand-ini.tex 
 \input regi-ini.tex 
 \input lang-ini.tex
@@ -139,6 +141,7 @@
 %D For the moment we load a lot of languages. In the future
 %D we'll have to be more space conservative.
 
+\input lang-spe.tex
 \input lang-lab.tex
 
 \input lang-alt.tex
@@ -155,7 +158,7 @@
 
 \input lang-vn.tex    % vietnamese, will be grouped 
 
-%D All kind of symbols are handles in:
+%D All kind of symbols are handled in:
 
 \input symb-ini.tex
 
@@ -228,7 +231,7 @@
 
 %D On which the next one depends:
 
-\input core-pos.tex
+\input core-pos.tex 
 
 %D A few more languages, that have specifics using core 
 %D functionality: 
@@ -267,6 +270,8 @@
 \input core-fig.tex % after page body 
 \input core-par.tex
 
+\input core-box.tex
+
 %D Language specific spacing. 
 
 \input lang-spa.tex
@@ -294,6 +299,11 @@
 %D Here they come:
 
 \input cont-log.tex
+
+%D Defaults go here (more will be moved to this module 
+%D later): 
+
+\input core-def.tex 
 
 %D At run time, a few more files are loaded, like:
 %D

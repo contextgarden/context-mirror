@@ -707,7 +707,7 @@ var:strut:ano,ne::
 var:zarovnani:ne,vlevo,vpravo,nastred,normalni,vysoko,nizko,nivy::
 var:spodek:*prikaz::
 var:vrsek:*prikaz::
-var:ramecek:zap,vyp,prekryv::
+var:ramecek:zap,vyp,zadny,prekryv::
 var:rameceknahore:zap,vyp::
 var:ramecekdole:zap,vyp::
 var:ramecekvlevo:zap,vyp::
@@ -809,6 +809,7 @@ var:vnitrni:*prikaz::
 var:korekceradku:zap,vyp::
 var:korekcehloubky:zap,vyp::
 var:marginalie:standardni,ano,ne::
+var:misto:vlevo,vpravo,nastred,zadny::
 ivr:nastavoramovani::
 stopsetup
 

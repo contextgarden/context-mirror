@@ -105,7 +105,7 @@
 \def\definesymbol
   {\dodoubleargument\dodefinesymbol}
 
-\unexpanded\def\symbol%      % This one always gobbles spaces, 
+\unexpanded\def\symbol       % This one always gobbles spaces, 
   {\dodoubleempty\dosymbol}  % so never change it again!
 
 %D Since symbols are used frequently in interactive 
@@ -132,10 +132,10 @@
    \fi}
 
 \def\fetchsymbol#1%
-  {\ifnosymbol % will be a \cs anyway, so no test needed 
-     %\@EA\ifx\csname\??ss:#1:\currentsymbol\endcsname\relax\else
+  {\ifnosymbol 
+     \@EA\ifx\csname\??ss:#1:\currentsymbol\endcsname\relax\else
        \dodosymbol{#1:\currentsymbol}%
-     %\fi 
+     \fi 
    \fi}
 
 \def\redosymbol#1%
@@ -219,10 +219,10 @@
 \beginTEX
 
 \def\xfetchsymbol#1%
-  {\ifnosymbol % will be a \cs anyway, so no test needed 
-     %\@EA\ifx\csname\??ss:#1:\currentsymbol\endcsname\relax\else
+  {\ifnosymbol 
+     \@EA\ifx\csname\??ss:#1:\currentsymbol\endcsname\relax\else
        \nosymbolfalse
-     %\fi 
+     \fi 
    \fi}
 
 \def\xredosymbol#1%
@@ -336,124 +336,5 @@
 %D also use the conversion mechanism, but in for instance the 
 %D itemization macros, we prefer symbols because they can more 
 %D easier be (partially) redefined. 
-
-%D We predefine some common symbols and conversions that will
-%D be understood by many commands. 
-
-\definesymbol [\v!geen]   []
-\definesymbol [bullet]    [\mathematics{\bullet}]
-\definesymbol [dash]      [\mathematics{-}]
-\definesymbol [star]      [\mathematics{\star}]
-\definesymbol [triangle]  [\mathematics{\triangleright}]
-\definesymbol [circle]    [\mathematics{\circ}]
-\definesymbol [medcircle] [\hbox{\setsmallbodyfont\raise\!!onepoint\hbox{$\bigcirc$}}]
-\definesymbol [bigcircle] [\mathematics{\bigcirc}]
-\definesymbol [square]    [\mathematics{\square}]
-\definesymbol [diamond]   [\mathematics{\diamond}]
-
-\definesymbol [1] [{\symbol[bullet]}]
-\definesymbol [2] [{\symbol[dash]}]
-\definesymbol [3] [{\symbol[star]}]
-\definesymbol [4] [{\symbol[triangle]}]
-\definesymbol [5] [{\symbol[circle]}]
-\definesymbol [6] [{\symbol[medcircle]}]
-\definesymbol [7] [{\symbol[bigcircle]}]
-\definesymbol [8] [{\symbol[square]}]
-
-%D Special hyperlinks, namely those to pages or navigational 
-%D properties, are associated with symbols. 
-
-\definesymbol [\v!eerstepagina]      [\gotobegincharacter]
-\definesymbol [\v!vorigepagina]      [\gobackwardcharacter]
-\definesymbol [\v!volgendepagina]    [\goforwardcharacter]
-\definesymbol [\v!laatstepagina]     [\gotoendcharacter]
-\definesymbol [\v!eerstesubpagina]   [\gotobegincharacter]
-\definesymbol [\v!vorigesubpagina]   [\gobackwardcharacter]
-\definesymbol [\v!volgendesubpagina] [\goforwardcharacter]
-\definesymbol [\v!laatstesubpagina]  [\gotoendcharacter]
-\definesymbol [\v!PreviousJump]      [\gobackjumpcharacter]
-\definesymbol [\v!NextJump]          [\goforjumpcharacter]
-\definesymbol [\v!CloseDocument]     [\closecharacter]
-
-\definesymbol [\v!eerste]   [{\symbol[\v!eerstepagina]}]
-\definesymbol [\v!vorige]   [{\symbol[\v!vorigepagina]}]
-\definesymbol [\v!volgende] [{\symbol[\v!volgendepagina]}]
-\definesymbol [\v!laatste]  [{\symbol[\v!laatstepagina]}]
-\definesymbol [\v!ergens]   [\gotosomewherecharacter]
-\definesymbol [\v!nergens]  [\gonowherecharacter]
-
-\definesymbol [\v!achteruit] [{\symbol[\v!vorigepagina]}]
-\definesymbol [\v!vooruit]   [{\symbol[\v!volgendepagina]}]
-
-%D The next two symbols (\symbol[P] and \symbol[S]) are 
-%D variations in their math counterparts. The following ones 
-%D {\em do} scale. 
-
-\definesymbol[S][\getglyph{MathSymbol}{\char"78}]
-\definesymbol[P][\getglyph{MathSymbol}{\char"7B}]
-
-%D These symbols are taken from the Computer Moders Roman
-%D symbol set or, when present, from the additional symbols of
-%D the American Mathematical Society. Of course one can use 
-%D his or her own symbols by redefining them. 
-
-\def\dogotocharacter#1#2#3%
-  {\ifx#1\undefined#2\else#3\fi}
-
-\def\gotobegincharacter%
-  {\hbox
-     {\dogotocharacter\blacktriangleleft
-        {\setbox0=\hbox{\mathematics{\triangleleft}}%
-         \vrule\!!width.085ex\!!height1.075\ht0\!!depth\dp0
-         \kern-.11ex\box0} 
-        {\setbox0=\hbox{\mathematics{\blacktriangleleft}}%
-         \setbox2=\hbox{\vrule\!!height\ht0\!!depth\dp0\!!width.25ex}%
-         \hbox{\lower.03ex\box2\kern-.35ex\box0}}}}
-
-\def\gotoendcharacter%
-  {\hbox
-     {\dogotocharacter\blacktriangleright
-        {\setbox0=\hbox{\mathematics{\triangleright}}%
-         \copy0\kern-.11ex 
-         \vrule\!!width.085ex\!!height1.075\ht0\!!depth\dp0}  
-        {\setbox0=\hbox{\mathematics{\blacktriangleright}}%
-         \setbox2=\hbox{\vrule\!!height\ht0\!!depth\dp0\!!width.25ex}%
-         \hbox{\box0\kern-.35ex\lower.03ex\box2}}}}
-
-\def\gobackwardcharacter%
-  {\mathematics{\dogotocharacter\blacktriangleright\triangleleft\blacktriangleleft}}
-
-\def\goforwardcharacter%
-  {\mathematics{\dogotocharacter\blacktriangleright\triangleright\blacktriangleright}}
-
-\def\gonowherecharacter%
-  {\mathematics{\bullet}}
-
-%\def\gotosomewherecharacter% {} permits ^\...
-%  {{\hbox{\hsmash{\gobackwardcharacter}\goforwardcharacter}}}
-
-\def\gotosomewherecharacter%
-  {{\hbox{\hsmash{\symbol[\v!vorige]}\symbol[\v!volgende]}}}
-
-\unexpanded\def\closecharacter%
-  {\dogotocharacter\boxtimes
-     {\ruledhbox{\mathematics{\times}}}
-     {\mathematics{\boxtimes}}}
-
-\def\goforjumpcharacter%
-  {\hbox{\goforwardcharacter \kern-.5em\goforwardcharacter}}
-
-\def\gobackjumpcharacter%
-  {\hbox{\gobackwardcharacter\kern-.5em\gobackwardcharacter}}
-
-% temporarily here
-
-% gejat van Knuth (zie \copyright, p356)
-
-\def\omcirkeld#1%
-  {{\ooalign{\hfil\raise0.07ex\hbox{{\tfx#1}}\hfil\crcr\mathhexbox20D}}}
-
-\def\copyright
-  {\omcirkeld{c}}
 
 \protect \endinput

@@ -257,6 +257,7 @@
   {\doifnotflagged{#2}
      {\let#1\undefined
       \startreadingfile
+      \cleanupfeatures % better \setnormalcatcodes / test first 
       \readfile{#2}\donothing\donothing
       \stopreadingfile
       \doglobal\setflag{#2}}% 
@@ -265,6 +266,15 @@
      \def#1{{\infofont[unknown command \string#1]}}%
    \fi 
    #1}
+
+%D To be documented and probably moved
+
+\def\stelexternebronnenin
+  {\dodoubleargument\getparameters[\??er]}
+
+\def\documentresources{\@@erurl}
+
+\stelexternebronnenin[url=]
 
 %D This module will be perfected / changed / weeded. 
  

@@ -1,77 +1,77 @@
-plb10    <plb10.pfb
-plbsy10  <plbsy10.pfb
-plbx10   <plbx10.pfb
-plbx12   <plbx12.pfb
-plbx5    <plbx5.pfb
-plbx6    <plbx6.pfb
-plbx7    <plbx7.pfb
-plbx8    <plbx8.pfb
-plbx9    <plbx9.pfb
-plbxsl10 <plbxsl10.pfb
-plbxti10 <plbxti10.pfb
-plcsc10  <plcsc10.pfb
-pldunh10 <pldunh10.pfb
-plex10   <plex10.pfb
-plex9    <plex9.pfb
-plff10   <plff10.pfb
-plfi10   <plfi10.pfb
-plfib8   <plfib8.pfb
-plinch   <plinch.pfb
-plitt10  <plitt10.pfb
-plmi10   <plmi10.pfb
-plmi12   <plmi12.pfb
-plmi5    <plmi5.pfb
-plmi6    <plmi6.pfb
-plmi7    <plmi7.pfb
-plmi8    <plmi8.pfb
-plmi9    <plmi9.pfb
-plmib10  <plmib10.pfb
-plr10    <plr10.pfb
-plr12    <plr12.pfb 
-plr17    <plr17.pfb    
-plr5     <plr5.pfb     
-plr6     <plr6.pfb     
-plr7     <plr7.pfb     
-plr8     <plr8.pfb     
-plr9     <plr9.pfb     
-plsl10   <plsl10.pfb
-plsl12   <plsl12.pfb
-plsl8    <plsl8.pfb
-plsl9    <plsl9.pfb
-plsltt10 <plsltt10.pfb
-plss10   <plss10.pfb
-plss12   <plss12.pfb
-plss17   <plss17.pfb
-plss8    <plss8.pfb
-plss9    <plss9.pfb
-plssbi10 <plssbi10.pfb
-plssbx10 <plssbx10.pfb
-plssdc10 <plssdc10.pfb
-plssi10  <plssi10.pfb
-plssi12  <plssi12.pfb
-plssi17  <plssi17.pfb
-plssi8   <plssi8.pfb
-plssi9   <plssi9.pfb
-plssq8   <plssq8.pfb
-plssqi8  <plssqi8.pfb
-plsy10   <plsy10.pfb
-plsy5    <plsy5.pfb
-plsy6    <plsy6.pfb
-plsy7    <plsy7.pfb
-plsy8    <plsy8.pfb
-plsy9    <plsy9.pfb
-pltcsc10 <pltcsc10.pfb
-pltex10  <pltex10.pfb
-pltex8   <pltex8.pfb
-pltex9   <pltex9.pfb
-plti10   <plti10.pfb
-plti12   <plti12.pfb
-plti7    <plti7.pfb
-plti8    <plti8.pfb
-plti9    <plti9.pfb
-pltt10   <pltt10.pfb
-pltt12   <pltt12.pfb
-pltt8    <pltt8.pfb
-pltt9    <pltt9.pfb
-plu10    <plu10.pfb
-plvtt10  <plvtt10.pfb
+plb10    <plrm.enc  <plb10.pfb
+plbsy10  <plms.enc  <plbsy10.pfb
+plbx10   <plrm.enc  <plbx10.pfb
+plbx12   <plrm.enc  <plbx12.pfb
+plbx5    <plrm.enc  <plbx5.pfb
+plbx6    <plrm.enc  <plbx6.pfb
+plbx7    <plrm.enc  <plbx7.pfb
+plbx8    <plrm.enc  <plbx8.pfb
+plbx9    <plrm.enc  <plbx9.pfb
+plbxsl10 <plrm.enc  <plbxsl10.pfb
+plbxti10 <plit.enc  <plbxti10.pfb
+plcsc10  <plsc.enc  <plcsc10.pfb
+pldunh10 <plrm.enc  <pldunh10.pfb
+plex10   <plme.enc  <plex10.pfb
+plex9    <plme.enc  <plex9.pfb
+plff10   <plrm.enc  <plff10.pfb
+plfi10   <plit.enc  <plfi10.pfb
+plfib8   <plrm.enc  <plfib8.pfb
+plinch   <plin.enc  <plinch.pfb
+plitt10  <plitt.enc <plitt10.pfb
+plmi10   <plmi.enc  <plmi10.pfb
+plmi12   <plmi.enc  <plmi12.pfb
+plmi5    <plmi.enc  <plmi5.pfb
+plmi6    <plmi.enc  <plmi6.pfb
+plmi7    <plmi.enc  <plmi7.pfb
+plmi8    <plmi.enc  <plmi8.pfb
+plmi9    <plmi.enc  <plmi9.pfb
+plmib10  <plmi.enc  <plmib10.pfb
+plr10    <plrm.enc  <plr10.pfb
+plr12    <plrm.enc  <plr12.pfb
+plr17    <plrm.enc  <plr17.pfb
+plr5     <plsc.enc  <plr5.pfb
+plr6     <plrm.enc  <plr6.pfb
+plr7     <plrm.enc  <plr7.pfb
+plr8     <plrm.enc  <plr8.pfb
+plr9     <plrm.enc  <plr9.pfb
+plsl10   <plrm.enc  <plsl10.pfb
+plsl12   <plrm.enc  <plsl12.pfb
+plsl8    <plrm.enc  <plsl8.pfb
+plsl9    <plrm.enc  <plsl9.pfb
+plsltt10 <pltt.enc  <plsltt10.pfb
+plss10   <plrm.enc  <plss10.pfb
+plss12   <plrm.enc  <plss12.pfb
+plss17   <plrm.enc  <plss17.pfb
+plss8    <plrm.enc  <plss8.pfb
+plss9    <plrm.enc  <plss9.pfb
+plssbi10 <plrm.enc  <plssbi10.pfb
+plssbx10 <plrm.enc  <plssbx10.pfb
+plssdc10 <plrm.enc  <plssdc10.pfb
+plssi10  <plrm.enc  <plssi10.pfb
+plssi12  <plrm.enc  <plssi12.pfb
+plssi17  <plrm.enc  <plssi17.pfb
+plssi8   <plrm.enc  <plssi8.pfb
+plssi9   <plrm.enc  <plssi9.pfb
+plssq8   <plrm.enc  <plssq8.pfb
+plssqi8  <plrm.enc  <plssqi8.pfb
+plsy10   <plms.enc  <plsy10.pfb
+plsy5    <plms.enc  <plsy5.pfb
+plsy6    <plms.enc  <plsy6.pfb
+plsy7    <plms.enc  <plsy7.pfb
+plsy8    <plms.enc  <plsy8.pfb
+plsy9    <plms.enc  <plsy9.pfb
+pltcsc10 <pltt.enc  <pltcsc10.pfb
+pltex10  <plte.enc  <pltex10.pfb
+pltex8   <plte.enc  <pltex8.pfb
+pltex9   <plte.enc  <pltex9.pfb
+plti10   <plit.enc  <plti10.pfb
+plti12   <plit.enc  <plti12.pfb
+plti7    <plit.enc  <plti7.pfb
+plti8    <plit.enc  <plti8.pfb
+plti9    <plit.enc  <plti9.pfb
+pltt10   <pltt.enc  <pltt10.pfb
+pltt12   <pltt.enc  <pltt12.pfb
+pltt8    <pltt.enc  <pltt8.pfb
+pltt9    <pltt.enc  <pltt9.pfb
+plu10    <plit.enc  <plu10.pfb
+plvtt10  <plrm.enc  <plvtt10.pfb

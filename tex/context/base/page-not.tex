@@ -26,22 +26,22 @@
 
 \def\checkbegincolumnfootnotes % should happen inside otr 
   {\ifcleverfootnotes
-     \doflushfootnotes
+     \doflushnotes
      \saveinsertionbox\footins
    \else
      \eraseinsertionbackup\footins
    \fi
    \saveinsertiondata\footins
-   \setupfootnotes}
+   \checknotes}
 
 \def\checkendcolumnfootnotes
-  {\restoreinsertiondata\footins
+  {\restoreinsertiondata\footins % maybe better just \checknotes 
    \ifcleverfootnotes
      \restoreinsertionbox\footins
    \fi}
 
 \def\checksinglecolumnfootnotes
-  {\restoreinsertiondata\footins}
+  {\checknotes} % njet : \restoreinsertiondata\footins
 
 \def\columnfootins % expands to an insert number 
   {\ifcleverfootnotes
@@ -56,43 +56,40 @@
 
 \def\settotalinsertionheight
   {\totalinsertionheight\zeropoint
-   \doaddinsertionheight\topins       \to\totalinsertionheight
-   \doaddinsertionheight\botins       \to\totalinsertionheight
-   \doaddinsertionheight\columnfootins\to\totalinsertionheight}
-
-% also wrong place + wrong macro 
-
-\def\synchronizevsize
-  {\ifdim\ht\footins>\zeropoint % updates vsize 
-     \insert\footins{\unvbox\footins}%
-   \fi}
+   \addinsertionheight\topins       \to\totalinsertionheight
+   \addinsertionheight\botins       \to\totalinsertionheight
+   \addinsertionheight\columnfootins\to\totalinsertionheight}
 
 % idem 
 
-\def\enablecolumnfootnotes
+\def\enablenotes
   {\global\count\footins=1000
    \global\skip\footins=1\baselineskip\relax}
 
-\def\disablecolumnfootnotes
+\def\disablenotes
   {\global\count\footins=0
    \global\skip\footins=\zeropoint}
 
 % also 
 
-\def\flushsavedcolumnfootnotes
-  {\insert\footins{\unvbox\OTRSETsavedfootnotes}}
+%\def\flushsavedcolumnfootnotes
+%  {\insert\footins{\unvbox\OTRSETsavedfootnotes}}
+%
+%\def\savecolumnfootnotes
+%  {\global\setbox\OTRSETsavedfootnotes=\vbox
+%       {\unvbox\OTRSETsavedfootnotes\box\footins}}
 
-\def\savecolumnfootnotes
-  {\global\setbox\OTRSETsavedfootnotes=\vbox
-       {\unvbox\OTRSETsavedfootnotes\box\footins}}
+\newbox\savednotes
 
-% hack 
+\def\flushsavednotes
+  {\ifvoid\savednotes\else
+     \insert\footins{\unvbox\savednotes}%
+   \fi}
 
-\def\savefootnotedimensions
-  {\edef\savedfootnotedimen{\the\dimen\footins}}
-
-\def\restorefootnotedimensions
-  {\dimen\footins\savedfootnotedimen}
+\def\savenotes
+  {\global\setbox\savednotes=\vbox
+     {\ifvoid\savednotes\else\unvbox\savednotes\fi
+      \box\footins}}
 
 % hm 
 
@@ -100,13 +97,13 @@
 
 \def\checkbegincolumnfootnotes % should happen inside otr 
   {\ifcleverfootnotes
-     \doflushfootnotes
+     \doflushnotes
      \saveinsertionbox\footins
    \else
      \eraseinsertionbackup\footins
    \fi
    \saveinsertiondata\footins
-   \setupfootnotes}
+   \checknotes}
 
 \def\checkendcolumnfootnotes
   {\restoreinsertiondata\footins

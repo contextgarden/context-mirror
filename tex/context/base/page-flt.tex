@@ -191,8 +191,67 @@
      {\edef\floatlocation{#2}}%
    \expanded{\dodocomplexplaatsblok[\floattype][\floatlocation]}}
 
+% \def\dodocomplexplaatsblok[#1][#2][#3]#4%
+%   {\flushnotes
+%    \ifsomefloatwaiting
+%      % this was \checkwaitingfloats spread all over
+%      \doifinsetelse{\v!altijd}{#2}
+%        {\showmessage{\m!floatblocks}{5}{}}
+%        {\doifcommonelse
+%           {#2}
+%           {\v!tekst,\v!naast,% \v!pagina,
+%            \v!links,\v!rechts,\v!inlinker,\v!inrechter,%
+%            \v!inmarge}
+%           {\doflushfloats}
+%           {}}%
+%      % but which should be done before using box \floatbox
+%    \fi
+%    \ifmargeblokken
+%      \doifinset{\v!marge}{#2}
+%        {\bgroup\everypar{\egroup\the\everypar}%
+%         \hsize\@@mbbreedte}%
+%    \fi
+%    \global\insidefloattrue
+%    \let\@@extrafloat\empty
+%    \dowithnextboxcontent % better a \the\everyfloattoks
+%      {\postponefootnotes} % new
+%      {\xdocompletefloat{#1}{#3}{#1}{#2}{#1}{#4}}%
+%    \vbox}
+
+\def\presetfloatvariables#1#2#3#4%
+  {\doifcommonelse
+      {#2}
+      {\v!links,\v!rechts,\v!inlinker,\v!inrechter,\v!inmarge,%
+       \v!linkermarge,\v!linkerrand,\v!rechtermarge,\v!rechterrand}
+      {\global\parfloattrue}
+      {\global\parfloatfalse}%
+   \ifbinnenkolommen
+     \global\parfloatfalse
+   \fi
+   \calculatefloatskips{#1}%
+   \ifparfloat
+     \doifinset{\v!hoog}{#2}
+       {\global\sidefloattopskip   \zeropoint}%
+     \doifinset{\v!laag}{#2}
+       {\global\sidefloatbottomskip\zeropoint}%
+     \doifinset{\v!passend}{#2}
+       {\global\sidefloattopskip   \zeropoint
+        \global\sidefloatbottomskip\zeropoint
+        \global\floatsideskip      \zeropoint}%
+   \fi
+   \doifinsetelse{\v!geennummer}{#2}
+     {\doifelsevalue{\??kj#1\c!nummer}{\v!ja}
+        {\global\nofloatnumbertrue}
+        {\global\nofloatnumberfalse}}
+     {\global\nofloatnumberfalse}%
+   \doifinsetelse{\v!geen}{#2}
+     {\global\nofloatcaptiontrue}
+     {\ConvertToConstant\doifelse{#4}{\v!geen}
+        {\global\nofloatcaptiontrue}
+        {\global\nofloatcaptionfalse}}}
+
 \def\dodocomplexplaatsblok[#1][#2][#3]#4%
-  {\flushfootnotes
+  {\flushnotes
    \ifsomefloatwaiting
      % this was \checkwaitingfloats spread all over
      \doifinsetelse{\v!altijd}{#2}
@@ -215,9 +274,9 @@
    \let\@@extrafloat\empty
    \dowithnextboxcontent % better a \the\everyfloattoks
      {\postponefootnotes} % new
-     {\xdocompletefloat{#1}{#3}{#1}{#2}{#1}{#4}}%
+     {\xdocompletefloat{#1}{#3}{#1}{#2}{#1}{#4}}
    \vbox}
-
+ 
 \def\xxdocompletefloat#1#2%
   {\setbox\nextbox\hbox{\signalrightpage\box\nextbox}%
    \doifrightpageelse{\let\@@extrafloat#1}{\let\@@extrafloat#2}}
@@ -264,7 +323,7 @@
       \fi}}
 
 \def\docomplexstarttekstblok[#1][#2][#3]%
-  {\flushfootnotes
+  {\flushnotes
    \flushsidefloats % hoort eigenlijk niet hier
    \docomplexplaatsblok[#1][\v!tekst,#2,\v!links][#3]}
 
@@ -312,7 +371,7 @@
       \c!rechterkader=\@@bkrechterkader,
       \c!kaderoffset=\@@bkkaderoffset,
       \c!paginaovergangen=,
-      \c!default=\@@bkdefault]%
+      \c!default=]%
    \stelblokkopjein
      [#1]
      [\c!plaats=\@@kjplaats,
@@ -823,6 +882,9 @@
 \newcount\noftopfloats          \noftopfloats=2
 \newcount\nofbotfloats          \nofbotfloats=0
 
+\newif\ifnofloatcaption  
+\newif\ifnofloatnumber
+
 \def\docalculatefloatskip#1#2%
   {\doifelsenothing{#2}
      {\global#1\zeropoint}
@@ -880,27 +942,51 @@
 \def\setfloatcaption % \dosetfloatcaption already in use
   {\dodoubleempty\dodosetfloatcaption} % beware, name clash
 
+% \def\dodosetfloatcaption[#1][#2]#3% to do namespace for number/ascii
+%   {\doifelsevalue{\??kj#1\c!nummer}{\v!ja} % also handle trialtypesetting
+%      {\verhoognummer[#1]%
+%       \maakhetnummer[#1]%
+%       \global\let\flhetnummer\hetnummer
+%       \setgvalue{@fl@r@#1}%
+%         {\dofloatreference
+%          \redofloatorder{#1}%
+%          \doschrijfnaarlijst{#1}{\flhetnummer}{#3}{#1}%
+%          \doglobal\convertargument#3\to\flasciititle % \asciititle is global
+%          \doifsomething{#2}{\rawreference{\s!flt}{#2}{{\flhetnummer}{\flasciititle}}}%
+%          \global\letvalue{@fl@r@#1}\relax}% nills
+%       \setgvalue{@fl@t@#1}%
+%         {\preparethenumber{\??kj#1}\flhetnummer\preparednumber
+%          \doattributes{\??kj#1}\c!letter\c!kleur
+%            {\doattributes{\??kj#1}\c!kopletter\c!kopkleur
+%               {\labeltexts{#1}{\preparednumber}}%
+%             \doattributes{\??kj#1}\c!tekstletter\c!tekstkleur
+%               {\tfskip#3}}}}
+%      {\global\letvalue{@fl@r@#1}\relax
+%       \global\letvalue{@fl@t@#1}\relax}}
+
 \def\dodosetfloatcaption[#1][#2]#3% to do namespace for number/ascii
-  {\doifelsevalue{\??kj#1\c!nummer}{\v!ja} % also handle trialtypesetting
-     {\verhoognummer[#1]%
-      \maakhetnummer[#1]%
-      \global\let\flhetnummer\hetnummer
-      \setgvalue{@fl@r@#1}%
-        {\dofloatreference
-         \redofloatorder{#1}%
-         \doschrijfnaarlijst{#1}{\flhetnummer}{#3}{#1}%
-         \doglobal\convertargument#3\to\flasciititle % \asciititle is global
-         \doifsomething{#2}{\rawreference{\s!flt}{#2}{{\flhetnummer}{\flasciititle}}}%
-         \global\letvalue{@fl@r@#1}\relax}% nills
-      \setgvalue{@fl@t@#1}%
-        {\preparethenumber{\??kj#1}\flhetnummer\preparednumber
-         \doattributes{\??kj#1}\c!letter\c!kleur
-           {\doattributes{\??kj#1}\c!kopletter\c!kopkleur
-              {\labeltexts{#1}{\preparednumber}}%
-            \doattributes{\??kj#1}\c!tekstletter\c!tekstkleur
-              {\tfskip#3}}}}
-     {\global\letvalue{@fl@r@#1}\relax
-      \global\letvalue{@fl@t@#1}\relax}}
+  {\ifnofloatnumber               % also handle trialtypesetting
+     \global\letvalue{@fl@r@#1}\relax
+     \global\letvalue{@fl@t@#1}\relax
+   \else
+     \verhoognummer[#1]%
+     \maakhetnummer[#1]%
+     \global\let\flhetnummer\hetnummer
+     \setgvalue{@fl@r@#1}%
+       {\dofloatreference
+        \redofloatorder{#1}%
+        \doschrijfnaarlijst{#1}{\flhetnummer}{#3}{#1}%
+        \doglobal\convertargument#3\to\flasciititle % \asciititle is global
+        \doifsomething{#2}{\rawreference{\s!flt}{#2}{{\flhetnummer}{\flasciititle}}}%
+        \global\letvalue{@fl@r@#1}\relax}% nills
+     \setgvalue{@fl@t@#1}%
+       {\preparethenumber{\??kj#1}\flhetnummer\preparednumber
+        \doattributes{\??kj#1}\c!letter\c!kleur
+          {\doattributes{\??kj#1}\c!kopletter\c!kopkleur
+             {\labeltexts{#1}{\preparednumber}}%
+           \doattributes{\??kj#1}\c!tekstletter\c!tekstkleur
+             {\tfskip#3}}}%
+    \fi}
 
 \def\placefloatcaptiontext     [#1]{\getvalue{@fl@t@#1}}
 \def\placefloatcaptionreference[#1]{\getvalue{@fl@r@#1}}
@@ -923,18 +1009,35 @@
 
 \newbox\captionbox
 
+% \def\putcompletecaption#1#2#3#4%
+%   {\noindent
+%    \xdef\floatcaptionnumber{#1}%
+%    \doattributes{\??kj#1}\c!letter\c!kleur
+%      {\doifvalue{\??kj#1\c!nummer}{\v!ja}
+%         {\hbox{\doattributes{\??kj#1}\c!kopletter\c!kopkleur{\strut#2\floatcaptionsuffix}}%
+%          \ConvertToConstant\doifnot{#3}{}
+%            {\ifcase#4\relax
+%               \tfskip\emergencystretch=.5em
+%             \else
+%               \ifx\@@kjkjtussen\empty\else\unskip\@@kjkjtussen\fi
+%             \fi}}%
+%       \doattributes{\??kj#1}\c!tekstletter\c!tekstkleur
+%         {\begstrut#3\endstrut\endgraf}}}
+
 \def\putcompletecaption#1#2#3#4%
   {\noindent
    \xdef\floatcaptionnumber{#1}%
    \doattributes{\??kj#1}\c!letter\c!kleur
-     {\doifvalue{\??kj#1\c!nummer}{\v!ja}
-        {\hbox{\doattributes{\??kj#1}\c!kopletter\c!kopkleur{\strut#2\floatcaptionsuffix}}%
-         \ConvertToConstant\doifnot{#3}{}
-           {\ifcase#4\relax
-              \tfskip\emergencystretch=.5em
-            \else
-              \ifx\@@kjkjtussen\empty\else\unskip\@@kjkjtussen\fi
-            \fi}}%
+     {\ifnofloatnumber 
+      \else
+        \hbox{\doattributes{\??kj#1}\c!kopletter\c!kopkleur{\strut#2\floatcaptionsuffix}}%
+        \ConvertToConstant\doifnot{#3}{}
+          {\ifcase#4\relax
+             \tfskip\emergencystretch=.5em
+           \else
+             \ifx\@@kjkjtussen\empty\else\unskip\@@kjkjtussen\fi
+           \fi}%
+      \fi
       \doattributes{\??kj#1}\c!tekstletter\c!tekstkleur
         {\begstrut#3\endstrut\endgraf}}}
 
@@ -947,6 +1050,35 @@
 %\stelblokkopjesin[\c!uitlijnen=\v!links]
 %\stelblokkopjesin[\c!uitlijnen=\v!rechts]
 
+% \def\dosetpagfloat#1#2#3#4% \copy wegwerken
+%   {\bgroup
+%    \forgetall
+%    \postponefootnotes
+%    \mindermeldingen
+%    \putborderedfloat#4\in\tempfloatbox\\%
+%    \def\locatefloat%
+%      {\doregelplaats\@@flflplaats}%
+%    \ConvertToConstant\doifelse{#3}{\v!geen}
+%      {\dopreparenocaption{#1}{#2}{#3}{#4}
+%       \edef\width{\the\wd\floatbox}}
+%      {\setbox\tempcaptionbox=\hbox
+%         {\footnotesenabledfalse\putcompletecaption{#4}{#2}{#3}{0}}%
+%       \doifinsetelse{\@@kjkjplaats}{\v!hoog,\v!midden,\v!laag}
+%         {\dopreparesidecaption{#1}{#2}{#3}{#4}}
+%         {\doifelse{\@@kjkjbreedte}{\v!max}
+%            {\dopreparestackcaptionmax{#1}{#2}{#3}{#4}}
+%            {\ifdim\wd\tempcaptionbox>\wd\tempfloatbox % wider caption
+%               \doifelse{\@@kjkjbreedte}{\v!passend}
+%                 {\dopreparestackcaptionaut{#1}{#2}{#3}{#4}}
+%                 {\dopreparestackcaptionwid{#1}{#2}{#3}{#4}}%
+%             \else
+%               \dopreparestackcaptionmin{#1}{#2}{#3}{#4}%
+%             \fi}}
+%       \edef\width{\the\wd\tempfloatbox}%
+%       \buildfloatbox}%
+%    \postcenterfloatbox\width
+%    \egroup}
+
 \def\dosetpagfloat#1#2#3#4% \copy wegwerken
   {\bgroup
    \forgetall
@@ -955,24 +1087,26 @@
    \putborderedfloat#4\in\tempfloatbox\\%
    \def\locatefloat%
      {\doregelplaats\@@flflplaats}%
-   \ConvertToConstant\doifelse{#3}{\v!geen}
-     {\dopreparenocaption{#1}{#2}{#3}{#4}
-      \edef\width{\the\wd\floatbox}}
-     {\setbox\tempcaptionbox=\hbox
-        {\footnotesenabledfalse\putcompletecaption{#4}{#2}{#3}{0}}%
-      \doifinsetelse{\@@kjkjplaats}{\v!hoog,\v!midden,\v!laag}
-        {\dopreparesidecaption{#1}{#2}{#3}{#4}}
-        {\doifelse{\@@kjkjbreedte}{\v!max}
-           {\dopreparestackcaptionmax{#1}{#2}{#3}{#4}}
-           {\ifdim\wd\tempcaptionbox>\wd\tempfloatbox % wider caption
-              \doifelse{\@@kjkjbreedte}{\v!passend}
-                {\dopreparestackcaptionaut{#1}{#2}{#3}{#4}}
-                {\dopreparestackcaptionwid{#1}{#2}{#3}{#4}}%
-            \else
-              \dopreparestackcaptionmin{#1}{#2}{#3}{#4}%
-            \fi}}
-      \edef\width{\the\wd\tempfloatbox}%
-      \buildfloatbox}%
+   \ifnofloatcaption
+     \dopreparenocaption{#1}{#2}{#3}{#4}
+     \edef\width{\the\wd\floatbox}%
+   \else
+     \setbox\tempcaptionbox=\hbox
+       {\footnotesenabledfalse\putcompletecaption{#4}{#2}{#3}{0}}%
+     \doifinsetelse{\@@kjkjplaats}{\v!hoog,\v!midden,\v!laag}
+       {\dopreparesidecaption{#1}{#2}{#3}{#4}}
+       {\doifelse{\@@kjkjbreedte}{\v!max}
+          {\dopreparestackcaptionmax{#1}{#2}{#3}{#4}}
+          {\ifdim\wd\tempcaptionbox>\wd\tempfloatbox % wider caption
+             \doifelse{\@@kjkjbreedte}{\v!passend}
+               {\dopreparestackcaptionaut{#1}{#2}{#3}{#4}}
+               {\dopreparestackcaptionwid{#1}{#2}{#3}{#4}}%
+           \else
+             \dopreparestackcaptionmin{#1}{#2}{#3}{#4}%
+           \fi}}
+     \edef\width{\the\wd\tempfloatbox}%
+     \buildfloatbox
+   \fi
    \postcenterfloatbox\width
    \egroup}
 
@@ -1175,6 +1309,41 @@
 %     {\hfill\box\floatbox\hfill}} % geen \hss, gaat mis in kolommen !
      {\hss\box\floatbox\hss}} % wel \hss, anders mis in colset
 
+% \def\dosetparfloat#1#2#3#4%
+%   {\bgroup
+%    \forgetall
+%    \postponefootnotes
+%    \mindermeldingen
+%    %\showcomposition
+%    \putborderedfloat#4\in4\\
+%    \ConvertToConstant\doifelse{#3}{\v!geen}
+%      {\global\setbox\floatbox=\vbox{\box4}}
+%      {\setbox2=\hbox
+%         {\forgetall\putcompletecaption{#4}{#2}{#3}{0}}%
+%       \doifelse{\@@kjkjbreedte}{\v!max}
+%         {\dosetraggedvbox{\@@kjkjuitlijnen}%
+%          \setbox2=\raggedbox
+%            {\hsize\wd4\putcompletecaption{#4}{#2}{#3}{0}}}%
+%         {\doifelse{\@@kjkjbreedte}{\v!passend}
+%            {\ifdim\wd2>\wd4\relax
+%               \setbox2=\vbox
+%                 {\forgetall\hsize\wd4\putcompletecaption{#4}{#2}{#3}{0}}%
+%             \else
+%               \setbox2=\hbox to \wd4
+%                 {\hss\box2\hss}%
+%             \fi}
+%            {\dosetraggedvbox{\@@kjkjuitlijnen}%
+%             \setbox2=\raggedbox
+%               {\hsize\wd4\putcompletecaption{#4}{#2}{#3}{0}}}}%
+%       \global\setbox\floatbox=\vbox
+%         {\processaction
+%            [\@@kjkjplaats]
+%            [ \v!boven=>\box2\endgraf\@@kjkjtussen\box4,
+%              \v!onder=>\box4\endgraf\@@kjkjtussen\box2,
+%               \v!geen=>\box4,
+%            \s!unknown=>\box4\endgraf\@@kjkjtussen\box2]}}%
+%    \egroup}
+
 \def\dosetparfloat#1#2#3#4%
   {\bgroup
    \forgetall
@@ -1182,63 +1351,103 @@
    \mindermeldingen
    %\showcomposition
    \putborderedfloat#4\in4\\
-   \ConvertToConstant\doifelse{#3}{\v!geen}
-     {\global\setbox\floatbox=\vbox{\box4}}
-     {\setbox2=\hbox
-        {\forgetall\putcompletecaption{#4}{#2}{#3}{0}}%
-      \doifelse{\@@kjkjbreedte}{\v!max}
-        {\dosetraggedvbox{\@@kjkjuitlijnen}%
-         \setbox2=\raggedbox
-           {\hsize\wd4\putcompletecaption{#4}{#2}{#3}{0}}}%
-        {\doifelse{\@@kjkjbreedte}{\v!passend}
-           {\ifdim\wd2>\wd4\relax
-              \setbox2=\vbox
-                {\forgetall\hsize\wd4\putcompletecaption{#4}{#2}{#3}{0}}%
-            \else
-              \setbox2=\hbox to \wd4
-                {\hss\box2\hss}%
-            \fi}
-           {\dosetraggedvbox{\@@kjkjuitlijnen}%
-            \setbox2=\raggedbox
-              {\hsize\wd4\putcompletecaption{#4}{#2}{#3}{0}}}}%
-      \global\setbox\floatbox=\vbox
-        {\processaction
-           [\@@kjkjplaats]
-           [ \v!boven=>\box2\endgraf\@@kjkjtussen\box4,
-             \v!onder=>\box4\endgraf\@@kjkjtussen\box2,
-              \v!geen=>\box4,
-           \s!unknown=>\box4\endgraf\@@kjkjtussen\box2]}}%
+   \ifnofloatcaption
+     \global\setbox\floatbox=\vbox{\box4}%
+   \else
+     \setbox2=\hbox
+       {\forgetall\putcompletecaption{#4}{#2}{#3}{0}}%
+     \doifelse{\@@kjkjbreedte}{\v!max}
+       {\dosetraggedvbox{\@@kjkjuitlijnen}%
+        \setbox2=\raggedbox
+          {\hsize\wd4\putcompletecaption{#4}{#2}{#3}{0}}}%
+       {\doifelse{\@@kjkjbreedte}{\v!passend}
+          {\ifdim\wd2>\wd4\relax
+             \setbox2=\vbox
+               {\forgetall\hsize\wd4\putcompletecaption{#4}{#2}{#3}{0}}%
+           \else
+             \setbox2=\hbox to \wd4
+               {\hss\box2\hss}%
+           \fi}
+          {\dosetraggedvbox{\@@kjkjuitlijnen}%
+           \setbox2=\raggedbox
+             {\hsize\wd4\putcompletecaption{#4}{#2}{#3}{0}}}}%
+     \global\setbox\floatbox=\vbox
+       {\processaction
+          [\@@kjkjplaats]
+          [ \v!boven=>\box2\endgraf\@@kjkjtussen\box4,
+            \v!onder=>\box4\endgraf\@@kjkjtussen\box2,
+             \v!geen=>\box4,
+          \s!unknown=>\box4\endgraf\@@kjkjtussen\box2]}%
+   \fi
    \egroup}
 
 \newif\ifparfloat
 
+% \long\def\dosetfloatbox#1#2#3#4% todo : \global\setbox
+%   {\ifvisible
+%      \par
+%      \doifcommonelse
+%         {#1}
+%         {\v!links,\v!rechts,\v!inlinker,\v!inrechter,\v!inmarge,%
+%          \v!linkermarge,\v!linkerrand,\v!rechtermarge,\v!rechterrand}
+%         {\global\parfloattrue}
+%         {\global\parfloatfalse}%
+%      \ifbinnenkolommen
+%        \global\parfloatfalse
+%      \fi
+%      \edef\@@kjkjbreedte  {\getvalue{\??kj#4\c!breedte  }}%
+%       \def\@@kjkjtussen   {\getvalue{\??kj#4\c!tussen   }}%  no \edef
+%      \edef\@@kjkjplaats   {\getvalue{\??kj#4\c!plaats   }}%
+%      \edef\@@kjkjuitlijnen{\getvalue{\??kj#4\c!uitlijnen}}%
+%      \edef\@@flflplaats   {\getvalue{\??fl#4\c!plaats   }}%
+%      \ifparfloat
+%        \@EA\dosetparfloat % {#1}{#2}{#3}{#4}%
+%      \else
+%        \@EA\dosetpagfloat % {#1}{#2}{#3}{#4}%
+%      \fi{#1}{#2}{#3}{#4}%
+%      \setbox\floatbox=\hbox{\restoretextcolor{\box\floatbox}}%
+%      \global\floatheight\ht\floatbox
+%      \global\advance\floatheight \dp\floatbox
+%      \global\floatwidth\wd\floatbox
+%      \global\advance\totalnoffloats 1
+%      \doifnotinset{\v!marge}{#1} % gaat namelijk nog fout
+%        {\setbox\floatbox=\vbox
+%           {\parindent\zeropoint
+%            \ifvoorlopig
+%              \inleftmargin{\framed{\infofont\the\totalnoffloats}}%
+%            \fi
+%            \box\floatbox}}%
+%      \wd\floatbox\floatwidth
+%      \dimen0=\floatheight
+%      \advance\dimen0 \lineheight
+%      \ifdim\dimen0<\teksthoogte
+%      \else
+%        \global\floatheight\teksthoogte
+%        \global\advance\floatheight -\lineheight
+%        \ht\floatbox\floatheight
+%        \dp\floatbox\zeropoint
+%        \showmessage{\m!floatblocks}{10}{\the\totalnoffloats}%
+%      \fi
+%    \fi}
+
 \long\def\dosetfloatbox#1#2#3#4% todo : \global\setbox
   {\ifvisible
      \par
-     \doifcommonelse
-        {#1}
-        {\v!links,\v!rechts,\v!inlinker,\v!inrechter,\v!inmarge,%
-         \v!linkermarge,\v!linkerrand,\v!rechtermarge,\v!rechterrand}
-        {\global\parfloattrue}
-        {\global\parfloatfalse}%
-     \ifbinnenkolommen
-       \global\parfloatfalse
-     \fi
      \edef\@@kjkjbreedte  {\getvalue{\??kj#4\c!breedte  }}%
-     \def \@@kjkjtussen   {\getvalue{\??kj#4\c!tussen   }}%  no \edef
+      \def\@@kjkjtussen   {\getvalue{\??kj#4\c!tussen   }}%  no \edef
      \edef\@@kjkjplaats   {\getvalue{\??kj#4\c!plaats   }}%
      \edef\@@kjkjuitlijnen{\getvalue{\??kj#4\c!uitlijnen}}%
      \edef\@@flflplaats   {\getvalue{\??fl#4\c!plaats   }}%
      \ifparfloat
-       \dosetparfloat{#1}{#2}{#3}{#4}%
+       \@EA\dosetparfloat % {#1}{#2}{#3}{#4}%
      \else
-       \dosetpagfloat{#1}{#2}{#3}{#4}%
-     \fi
+       \@EA\dosetpagfloat % {#1}{#2}{#3}{#4}%
+     \fi{#1}{#2}{#3}{#4}%
      \setbox\floatbox=\hbox{\restoretextcolor{\box\floatbox}}%
-     \global\floatheight=\ht\floatbox
-     \global\advance\floatheight by \dp\floatbox
-     \global\floatwidth=\wd\floatbox
-     \global\advance\totalnoffloats by 1
+     \global\floatheight\ht\floatbox
+     \global\advance\floatheight \dp\floatbox
+     \global\floatwidth\wd\floatbox
+     \global\advance\totalnoffloats 1
      \doifnotinset{\v!marge}{#1} % gaat namelijk nog fout
        {\setbox\floatbox=\vbox
           {\parindent\zeropoint
@@ -1246,15 +1455,15 @@
              \inleftmargin{\framed{\infofont\the\totalnoffloats}}%
            \fi
            \box\floatbox}}%
-     \wd\floatbox=\floatwidth
+     \wd\floatbox\floatwidth
      \dimen0=\floatheight
-     \advance\dimen0 by \lineheight
+     \advance\dimen0 \lineheight
      \ifdim\dimen0<\teksthoogte
      \else
-       \global\floatheight=\teksthoogte
-       \global\advance\floatheight by -\lineheight
-       \ht\floatbox=\floatheight
-       \dp\floatbox=\zeropoint
+       \global\floatheight\teksthoogte
+       \global\advance\floatheight -\lineheight
+       \ht\floatbox\floatheight
+       \dp\floatbox\zeropoint
        \showmessage{\m!floatblocks}{10}{\the\totalnoffloats}%
      \fi
    \fi}
@@ -1292,9 +1501,45 @@
   {\dosetfloatbox{#1}{#2}{#3}{#4}%
    \dogetfloatbox{#1}}%
 
+% \long\def\docompletefloat#1#2#3#4#5#6#7%
+%   {\flushsidefloats
+%    \calculatefloatskips{#1}%
+%    \bgroup
+%    \global\setbox\floatbox=\vbox{#7}%
+%    \dimen0=\ht\floatbox
+%    \advance\dimen0 by \dp\floatbox
+%    \ifdim\dimen0=\zeropoint
+%      \showmessage{\m!floatblocks}{11}{}%
+%      \global\setbox\floatbox=\vbox{\getvalue{\e!lege#3}}%
+%    \fi
+%    \ConvertToConstant\doifelse{#6}{\v!geen}
+%      {\global\setbox\floatbox=\vbox
+%         {\unvbox\floatbox
+%          \vss % gets rid of the depth
+%          \rawpagereference{\s!flt}{#2}}%
+%       \egroup\dofloat{#4}{}{#6}{#1}}
+%      {\doglobal\convertargument#6\to\asciititle % \asciititle is global
+%       \doifelsevalue{\??kj#1\c!nummer}{\v!ja}
+%         {\verhoognummer[#1]%
+%          \maakhetnummer[#1]%
+%          \global\setbox\floatbox=\vbox
+%             {\unvbox\floatbox % no \vss, keep the depth
+%              \dofloatreference
+%              \redofloatorder{#1}%
+%              \rawreference{\s!flt}{#2}{{\hetnummer}{\asciititle}}%
+%              \doschrijfnaarlijst{#3}{\hetnummer}{#6}{#3}}%
+%          \egroup
+%          \preparethenumber{\??kj#1}\hetnummer\preparednumber
+%          \dofloat{#4}{\labeltexts{#5}{\preparednumber}}{#6}{#1}}
+%         {\global\setbox\floatbox=\vbox
+%            {\unvbox\floatbox % no \vss, keep the depth
+%             \rawreference{\s!flt}{#2}{{}{\asciititle}}}%
+%          \egroup\dofloat{#4}{}{#6}{#1}}}%
+%    \global\insidefloatfalse}
+
 \long\def\docompletefloat#1#2#3#4#5#6#7%
   {\flushsidefloats
-   \calculatefloatskips{#1}%
+\presetfloatvariables{#1}{#4}{#2}{#6}%
    \bgroup
    \global\setbox\floatbox=\vbox{#7}%
    \dimen0=\ht\floatbox
@@ -1303,29 +1548,36 @@
      \showmessage{\m!floatblocks}{11}{}%
      \global\setbox\floatbox=\vbox{\getvalue{\e!lege#3}}%
    \fi
-   \ConvertToConstant\doifelse{#6}{\v!geen}
-     {\global\setbox\floatbox=\vbox
-        {\unvbox\floatbox
+   \ifnofloatcaption
+     \global\setbox\floatbox=\vbox
+       {\unvbox\floatbox
          \vss % gets rid of the depth
          \rawpagereference{\s!flt}{#2}}%
-      \egroup\dofloat{#4}{}{#6}{#1}}
-     {\doglobal\convertargument#6\to\asciititle % \asciititle is global
-      \doifelsevalue{\??kj#1\c!nummer}{\v!ja}
-        {\verhoognummer[#1]%
-         \maakhetnummer[#1]%
-         \global\setbox\floatbox=\vbox
-            {\unvbox\floatbox % no \vss, keep the depth
-             \dofloatreference
-             \redofloatorder{#1}%
-             \rawreference{\s!flt}{#2}{{\hetnummer}{\asciititle}}%
-             \doschrijfnaarlijst{#3}{\hetnummer}{#6}{#3}}%
-         \egroup
-         \preparethenumber{\??kj#1}\hetnummer\preparednumber
-         \dofloat{#4}{\labeltexts{#5}{\preparednumber}}{#6}{#1}}
-        {\global\setbox\floatbox=\vbox
-           {\unvbox\floatbox % no \vss, keep the depth
-            \rawreference{\s!flt}{#2}{{}{\asciititle}}}%
-         \egroup\dofloat{#4}{}{#6}{#1}}}%
+      \egroup
+      \dofloat{#4}{}{#6}{#1}%
+   \else
+     \doglobal\convertargument#6\to\asciititle % \asciititle is global
+%     \doifelsevalue{\??kj#1\c!nummer}{\v!ja}
+     \ifnofloatnumber
+       \global\setbox\floatbox=\vbox
+         {\unvbox\floatbox % no \vss, keep the depth
+          \rawreference{\s!flt}{#2}{{}{\asciititle}}}%
+       \egroup
+       \dofloat{#4}{}{#6}{#1}%
+     \else
+       \verhoognummer[#1]%
+       \maakhetnummer[#1]%
+       \global\setbox\floatbox=\vbox
+          {\unvbox\floatbox % no \vss, keep the depth
+           \dofloatreference
+           \redofloatorder{#1}%
+           \rawreference{\s!flt}{#2}{{\hetnummer}{\asciititle}}%
+           \doschrijfnaarlijst{#3}{\hetnummer}{#6}{#3}}%
+       \egroup
+       \preparethenumber{\??kj#1}\hetnummer\preparednumber
+       \dofloat{#4}{\labeltexts{#5}{\preparednumber}}{#6}{#1}%
+     \fi
+   \fi
    \global\insidefloatfalse}
 
 \newif\ifmargeblokken

@@ -397,6 +397,16 @@
 %D we don't really need this functionality now. 
 
 %D \macros
+%D   {nextboxht,nextboxwd,nextboxdp}
+%D
+%D The next couple of shortcuts saves us memory as well as 
+%D \type {{}}'s in passing parameters.  
+
+\def\nextboxht{\ht\nextbox}
+\def\nextboxwd{\wd\nextbox}
+\def\nextboxdp{\dp\nextbox}
+
+%D \macros
 %D   {dowithnextboxcontent}
 %D
 %D But, occasionally we do need to pass some local settings 
@@ -1392,7 +1402,7 @@
    \multiply\scratchdimen #3\relax
    \advance\scratchdimen  #2\relax
    \advance\hsize \scratchdimen
-   \divide\hsize  #3\relax}
+   \divide\hsize #3\relax}
 
 \newbox\rigidcolumnbox
 
@@ -1425,10 +1435,10 @@
               \hfill}%
            \hfillneg}%
        \advance\scratchdimen -\openstrutdepth
-       \setbox\scratchbox\normalhbox{\raise\scratchdimen\box\scratchbox}
+       \setbox\scratchbox\normalhbox{\raise\scratchdimen\box\scratchbox}%
        \dp\scratchbox\openstrutdepth
        \ht\scratchbox\scratchdimen
-       \box\scratchbox}
+       \box\scratchbox}%
    \fi}
 
 %D \macros
@@ -1988,60 +1998,129 @@
      \copy\fakedboxcursor
    \fi}
 
-\def\placedbox%
+\def\placedbox
   {\iftraceboxplacement\ruledhbox\else\normalhbox\fi}
 
 \newdimen\boxoffset
+\newdimen\boxhdisplacement
+\newdimen\boxvdisplacement
+
+%\def\rightbox#1%
+%  {\normalhbox
+%     {\setbox0=\placedbox{#1}%
+%      \dimen0=.5\ht0\advance\dimen0 -.5\dp0
+%      \boxcursor\hskip\boxoffset\lower\dimen0\box0}}
 
 \def\rightbox#1%
   {\normalhbox
-     {\setbox0=\placedbox{#1}%
-      \dimen0=.5\ht0\advance\dimen0 -.5\dp0
-      \boxcursor\hskip\boxoffset\lower\dimen0\box0}}
+     {\setbox0\placedbox{#1}%
+      \global\boxhdisplacement\boxoffset
+      \global\boxvdisplacement.5\ht0
+      \global\advance\boxvdisplacement-.5\dp0
+      \boxcursor\hskip\boxhdisplacement\lower\boxvdisplacement\box0}}
+
+%\def\leftbox#1%
+%  {\normalhbox
+%     {\setbox0=\placedbox{#1}%
+%      \dimen0=.5\ht0\advance\dimen0 -.5\dp0
+%      \boxcursor\hskip-\wd0\hskip-\boxoffset\lower\dimen0\box0}}
 
 \def\leftbox#1%
   {\normalhbox
-     {\setbox0=\placedbox{#1}%
-      \dimen0=.5\ht0\advance\dimen0 -.5\dp0
-      \boxcursor\hskip-\wd0\hskip-\boxoffset\lower\dimen0\box0}}
+     {\setbox0\placedbox{#1}%
+      \global\boxhdisplacement-\wd0
+      \global\advance\boxhdisplacement-\boxoffset
+      \global\boxvdisplacement.5\ht0
+      \global\advance\boxvdisplacement-.5\dp0
+      \boxcursor\hskip\boxhdisplacement\lower\boxvdisplacement\box0}}
+
+%\def\topbox#1%
+%  {\normalhbox
+%     {\setbox0=\placedbox{#1}%
+%      \dimen0=\boxoffset\advance\dimen0 \dp0
+%      \boxcursor\hskip-.5\wd0\raise\dimen0\box0}}
 
 \def\topbox#1%
   {\normalhbox
-     {\setbox0=\placedbox{#1}%
-      \dimen0=\boxoffset\advance\dimen0 \dp0
-      \boxcursor\hskip-.5\wd0\raise\dimen0\box0}}
+     {\setbox0\placedbox{#1}%
+      \global\boxhdisplacement-.5\wd0
+      \global\boxvdisplacement-\dp0
+      \global\advance\boxvdisplacement-\boxoffset
+      \boxcursor\hskip\boxhdisplacement\raise-\boxvdisplacement\box0}}
 
+%\def\bottombox#1%
+%  {\normalhbox
+%     {\setbox0=\placedbox{#1}%
+%      \dimen0=\boxoffset\advance\dimen0 \ht0
+%      \boxcursor\hskip-.5\wd0\lower\dimen0\box0}}
+      
 \def\bottombox#1%
   {\normalhbox
-     {\setbox0=\placedbox{#1}%
-      \dimen0=\boxoffset\advance\dimen0 \ht0
-      \boxcursor\hskip-.5\wd0\lower\dimen0\box0}}
+     {\setbox0\placedbox{#1}%
+      \global\boxhdisplacement-.5\wd0
+      \global\boxvdisplacement\ht0
+      \global\advance\boxvdisplacement\boxoffset
+      \boxcursor\hskip\boxhdisplacement\lower\boxvdisplacement\box0}}
+
+%\def\lefttopbox#1%
+%  {\normalhbox
+%     {\setbox0=\placedbox{#1}%
+%      \dimen0=\boxoffset\advance\dimen0 \dp0
+%      \advance\boxoffset\wd0
+%      \boxcursor\hskip-\boxoffset\raise\dimen0\box0}}
 
 \def\lefttopbox#1%
   {\normalhbox
-     {\setbox0=\placedbox{#1}%
-      \dimen0=\boxoffset\advance\dimen0 \dp0
-      \advance\boxoffset\wd0
-      \boxcursor\hskip-\boxoffset\raise\dimen0\box0}}
+     {\setbox0\placedbox{#1}%
+      \global\boxhdisplacement-\wd0
+      \global\advance\boxhdisplacement-\boxoffset
+      \global\boxvdisplacement-\dp0
+      \global\advance\boxvdisplacement-\boxoffset
+      \boxcursor\hskip\boxhdisplacement\raise-\boxvdisplacement\box0}}
+
+%\def\righttopbox#1%
+%  {\normalhbox
+%     {\setbox0=\placedbox{#1}%
+%      \dimen0=\boxoffset\advance\dimen0 \dp0
+%      \boxcursor\hskip\boxoffset\raise\dimen0\box0}}
 
 \def\righttopbox#1%
   {\normalhbox
-     {\setbox0=\placedbox{#1}%
-      \dimen0=\boxoffset\advance\dimen0 \dp0
-      \boxcursor\hskip\boxoffset\raise\dimen0\box0}}
+     {\setbox0\placedbox{#1}%
+      \global\boxhdisplacement\boxoffset
+      \global\boxvdisplacement-\dp0
+      \global\advance\boxvdisplacement-\boxoffset
+      \boxcursor\hskip\boxhdisplacement\raise-\boxvdisplacement\box0}}
+
+%\def\leftbottombox#1%
+%  {\normalhbox
+%     {\setbox0=\placedbox{#1}%
+%      \dimen0=\boxoffset\advance\dimen0 \ht0
+%      \advance\boxoffset\wd0
+%      \boxcursor\hskip-\boxoffset\lower\dimen0\box0}}
 
 \def\leftbottombox#1%
   {\normalhbox
-     {\setbox0=\placedbox{#1}%
-      \dimen0=\boxoffset\advance\dimen0 \ht0
-      \advance\boxoffset\wd0
-      \boxcursor\hskip-\boxoffset\lower\dimen0\box0}}
+     {\setbox0\placedbox{#1}%
+      \global\boxhdisplacement-\wd0
+      \global\advance\boxhdisplacement-\boxoffset
+      \global\boxvdisplacement\ht0
+      \global\advance\boxvdisplacement\boxoffset
+      \boxcursor\hskip\boxhdisplacement\lower\boxvdisplacement\box0}}
+
+%\def\rightbottombox#1%
+%  {\normalhbox
+%     {\setbox0=\placedbox{#1}%
+%      \dimen0=\boxoffset\advance\dimen0 \ht0
+%      \boxcursor\hskip\boxoffset\lower\dimen0\box0}}
 
 \def\rightbottombox#1%
   {\normalhbox
-     {\setbox0=\placedbox{#1}%
-      \dimen0=\boxoffset\advance\dimen0 \ht0
-      \boxcursor\hskip\boxoffset\lower\dimen0\box0}}
+     {\setbox0\placedbox{#1}%
+      \global\boxhdisplacement\boxoffset
+      \global\boxvdisplacement\ht0
+      \global\advance\boxvdisplacement\boxoffset
+      \boxcursor\hskip\boxhdisplacement\lower\boxvdisplacement\box0}}
 
 \let\topleftbox    \lefttopbox
 \let\toprightbox   \righttopbox
@@ -2353,15 +2432,31 @@
 \def\setdimentoatleast#1#2%
   {\ifdim#1>\zeropoint\else#1=#2\fi}
 
-%D \macros 
-%D   {vcenter}
-%D
-%D Also new: tex mode \type {\vcenter}. 
+%D We need'm raw. 
 
 \ifx \normalhbox    \undefined \let \normalhbox    = \hbox    \fi 
 \ifx \normalvbox    \undefined \let \normalvbox    = \vbox    \fi 
 \ifx \normalvtop    \undefined \let \normalvtop    = \vtop    \fi 
 \ifx \normalvcenter \undefined \let \normalvcenter = \vcenter \fi 
+
+%D And even rawer: 
+
+\let\naturalhbox \normalhbox 
+\let\naturalvbox \normalvbox 
+%let\naturalvtop \normalvtop
+
+\beginOMEGA dir 
+
+\def\naturalhbox{\normalhbox dir TLT}
+\def\naturalvbox{\normalvbox dir TLT}
+%def\naturalvtop{\normalvtop dir TLT}
+
+\endOMEGA 
+
+%D \macros 
+%D   {vcenter}
+%D
+%D Also new: tex mode \type {\vcenter}. 
 
 \let\verynormalvcenter \vcenter % since \vcenter can be visualized
 
@@ -2372,6 +2467,4 @@
 
 \prependtoks \let\vcenter\normalvcenter \to \everymath
 
- \protect
-
-\endinput
+\protect \endinput

@@ -88,7 +88,8 @@
          {\nextinternalreference} %
          {#1} %
          {\asciiregisterentry} %
-         {\sectionformat::\ifdone#2\else\noexpand\pagenumber\fi} %
+         {\sectionformat\sectionseparator\sectionseparator
+          \ifdone#2\else\noexpand\pagenumber\fi} %
          {\noexpand\realfolio}}}%
    \schrijfwegnaarregister
    \getfirstcharacter\currentregister
@@ -333,8 +334,8 @@
     \fi
     \global\firstregisterpagefalse}
 
-\def\dosetpageregistersee#1#2#3#4%
-  {\doifreglevelelse[#4::0]
+\def\dosetpageregistersee#1#2#3#4% ugly separator hack 
+  {\expanded{\doifreglevelelse[#4\sectionseparator\sectionseparator0]}%
      {{\global\utilitydonetrue
        \setregisterhowto[#2]%
        \def\dohandleregisterentry##1% dubbelop | \strut nieuw

@@ -707,7 +707,7 @@ var:strut:da,nu::
 var:aliniere:nu,stanga,dreapta,centru,normal,inalt,jos,lohi::
 var:jos:*comanda::
 var:sus:*comanda::
-var:frame:on,dezactivat,overlay::
+var:frame:on,dezactivat,niciunul,overlay::
 var:framesus:on,dezactivat::
 var:framejos:on,dezactivat::
 var:framestanga:on,dezactivat::
@@ -809,6 +809,7 @@ var:intern:*comanda::
 var:corectielinie:on,dezactivat::
 var:corectieadancime:on,dezactivat::
 var:margine:standard,da,nu::
+var:locatie:stanga,dreapta,centru,niciunul::
 ivr:seteazainconjurat::
 stopsetup
 

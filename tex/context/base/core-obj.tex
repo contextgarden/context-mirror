@@ -88,18 +88,20 @@
 
 \def\objectplaceholder{NOT YET FLUSHED}%
 
-\def\presetobject#1#2%
-  {\ifundefined{\r!object#1::#2}%   
-\global % added 
-     \@EA\let\csname\r!object#1::#2\endcsname\objectplaceholder
-   \fi}
+\def\presetobject#1#2% \global added 
+  {\blabelgroup
+   \ifundefined{\r!object#1::#2}%   
+     \global\@EA\let\csname\r!object#1::#2\endcsname\objectplaceholder
+   \fi
+   \elabelgroup}
 
 \def\dosetobject#1#2#3% \initializepaper this will move to \everyshipout
-  {\initializepaper   
+  {\initializepaper
+   \blabelgroup 
    \ifundefined{\r!object#2::#3}%   
-     \expandafter\dodosetobject
+     \elabelgroup \expandafter\dodosetobject
    \else
-     \expandafter\gobblefivearguments
+     \elabelgroup \expandafter\gobblefivearguments
    \fi
    {#1}{#2}{#3}}
 
@@ -116,7 +118,8 @@
    \dowithnextbox{\dododosetobject{#1}{#2}{#3}\egroup}}
 
 \def\dododosetobject#1#2#3%
-  {\dontshowcomposition % rather fuzzy in \setxvalue ... \hbox
+  {\blabelgroup
+   \dontshowcomposition % rather fuzzy in \setxvalue ... \hbox
    \@EA\xdef\csname\r!object#2::#3\endcsname
      {\noexpand\dohandleobject{#2}{#3}% 
         {\ifhbox\nextbox\hbox\else\vbox\fi}%
@@ -140,11 +143,16 @@
      \dp\nextbox\depth
    \fi \fi
    \box\nextbox
-   \dostopobject}
+   \dostopobject
+   \elabelgroup}
+
+\def\getobject#1#2%
+  {\blabelgroup
+   \let\dohandleobject\dogetobject
+   \csname\r!object#1::#2\endcsname}
 
 \def\dogetobject#1#2#3#4#5#6%
   {\initializepaper
-   \bgroup
    \forgetall 
    \dontshowcomposition
    \setbox\scratchbox\vbox
@@ -161,11 +169,7 @@
    \ht\scratchbox#5\s!sp
    \dp\scratchbox#6\s!sp
    \box\scratchbox
-   \egroup}
-
-\def\getobject#1#2%
-  {\let\dohandleobject\dogetobject
-   \csname\r!object#1::#2\endcsname}
+   \elabelgroup}
 
 %D If needed one can ask for the dimensions of an object with:
 %D
@@ -186,7 +190,7 @@
    \let\objectwidth \!!zeropoint
    \let\objectheight\!!zeropoint
    \let\objectdepth \!!zeropoint
-   \csname\r!object#1::#2\endcsname}
+   \labelcsname\r!object#1::#2\endcsname}
 
 %D Apart from this kind of objects, that have typeset content, 
 %D we can have low level driver specific objects. Both types 
@@ -208,15 +212,10 @@
 
 \def\checkobjectreferences%
   {\startnointerference
+   \protectlabels 
    \doutilities{objectreferences}\jobname\empty\empty\empty
    \global\let\checkobjectreferences\relax
    \stopnointerference}
-
-% \def\setobjectreferences
-%   {\def\objectreference##1##2##3%
-%      {\doifundefinedelse{\r!driver##1::##2}
-%         {\setxvalue{\r!driver##1::##2}{##3}}
-%         {\showmessage{\m!references}{31}{[##1 ##2=>##3]}}}}
 
 \def\setobjectreferences
   {\def\objectreference##1##2##3%
@@ -233,34 +232,29 @@
 
 \def\dosetobjectreference#1#2#3%
   {\checkobjectreferences
+   \blabelgroup
    \ifobjectreferencing 
-     \bgroup
      \edef\dowritereference% why not immediate ? 
        {\writeutilitycommand{\objectreference{#1}{#2}{#3}}}%
      \dowritereference
-     \egroup
    \else
      \global\objectreferencingtrue
    \fi
-   \setxvalue{\r!driver#1::#2}{#3}}
+   \setxvalue{\r!driver#1::#2}{#3}%
+   \elabelgroup}
 
 \def\defaultobjectreference#1#2{0}
 
-% \def\dogetobjectreference#1#2#3%
-%   {\checkobjectreferences
-%    \doifdefinedelse{\r!driver#1::#2}
-%      {\@EA\xdef\@EA#3\@EA{\csname\r!driver#1::#2\endcsname}}
-%      {\showmessage{\m!references}{30}{[#1 #2=>\defaultobjectreference{#1}{#2}]}%
-%       \xdef#3{\defaultobjectreference{#1}{#2}}}}
-
 \def\dogetobjectreference#1#2#3%
   {\checkobjectreferences
+   \blabelgroup 
    \ifundefined{\r!driver#1::#2}%
      \showmessage{\m!references}{30}{[#1 #2=>\defaultobjectreference{#1}{#2}]}%
      \xdef#3{\defaultobjectreference{#1}{#2}}%
    \else
      \global\@EA\let\@EA#3\csname\r!driver#1::#2\endcsname
-   \fi}
+   \fi
+   \elabelgroup}
 
 \def\setobject     {\global\objectreferencingfalse\dosetobject1}
 \def\settightobject{\global\objectreferencingfalse\dosetobject0}
@@ -279,18 +273,18 @@
 \beginTEX
 
 \def\doifobjectfoundelse#1#2%
-  {\@EA\ifx\csname\r!object#1::#2\endcsname\relax
-     \expandafter\secondoftwoarguments
+  {\blabelgroup \@EA\ifx\csname\r!object#1::#2\endcsname\relax
+     \elabelgroup \expandafter\secondoftwoarguments
    \else
-     \expandafter\firstoftwoarguments
+     \elabelgroup \expandafter\firstoftwoarguments
    \fi}
 
 \def\doifobjectreferencefoundelse#1#2%
   {\checkobjectreferences
-   \@EA\ifx\csname\r!driver#1::#2\endcsname\relax
-     \expandafter\secondoftwoarguments
+   \blabelgroup \@EA\ifx\csname\r!driver#1::#2\endcsname\relax
+     \elabelgroup \expandafter\secondoftwoarguments
    \else
-     \expandafter\firstoftwoarguments
+     \elabelgroup \expandafter\firstoftwoarguments
    \fi}
 
 \endTEX
@@ -298,18 +292,18 @@
 \beginETEX
 
 \def\doifobjectfoundelse#1#2%
-  {\ifcsname\r!object#1::#2\endcsname
-     \expandafter\firstoftwoarguments
+  {\blabelgroup \ifcsname\r!object#1::#2\endcsname
+     \elabelgroup \expandafter\firstoftwoarguments
    \else
-     \expandafter\secondoftwoarguments
+     \elabelgroup \expandafter\secondoftwoarguments
    \fi}
 
 \def\doifobjectreferencefoundelse#1#2%
   {\checkobjectreferences
-   \ifcsname\r!driver#1::#2\endcsname
-     \expandafter\firstoftwoarguments
+   \blabelgroup \ifcsname\r!driver#1::#2\endcsname
+     \elabelgroup \expandafter\firstoftwoarguments
    \else
-     \expandafter\secondoftwoarguments
+     \elabelgroup \expandafter\secondoftwoarguments
    \fi}
 
 \endETEX

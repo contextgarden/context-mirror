@@ -8,20 +8,20 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
-%C details. 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
 
 \writestatus{loading}{Context Core Macros / Footnote Handling}
 
-%D Unfortunately we cannot force an even number of lines in 
-%D a two column footnote placement. 
+%D Unfortunately we cannot force an even number of lines in
+%D a two column footnote placement.
 
 %D There are some (still) dutch core commands used in this
 %D file.
 
 \unprotect
 
-% splitskips setten 
+% splitskips setten
 
 %D Footnotes are can be characterized by three components:
 %D
@@ -72,7 +72,7 @@
 %D The footnoterule can be a graphic and therefore calling this
 %D setup macro at every skipswitch is tricky (many many MP
 %D runs). Let's just reserve a few points, that probably match
-%D those of the stretch component. 
+%D those of the stretch component.
 
 \def\setupfootnotedefinition%
   {\steldoordefinierenin[\??vn\??vn]}
@@ -89,10 +89,10 @@
 \presetlocalframed
   [\??vn]
 
-%D The previous definitions indicate that we can frame 
-%D the footnote area. The footnotes themselves are treated as 
-%D definitions. 
-%D 
+%D The previous definitions indicate that we can frame
+%D the footnote area. The footnotes themselves are treated as
+%D definitions.
+%D
 %D \showsetup{\y!setupfootnotes}
 
 \newif\ifcleverfootnotes % being [plaats=kolommen]
@@ -108,11 +108,11 @@
      \kern\strutdepth
    \fi}
 
-%D The following switch can be used to disable limiting the 
-%D height of the footnote area, something that is needed in 
-%D multi column balancing. Use this switch with care. 
+%D The following switch can be used to disable limiting the
+%D height of the footnote area, something that is needed in
+%D multi column balancing. Use this switch with care.
 
-\newif\iffootnotelimit \footnotelimittrue  
+\newif\iffootnotelimit \footnotelimittrue
 
 \def\dosetupfootnotes[#1]%
   {\iffirstargument
@@ -130,12 +130,12 @@
         \v!zeerstreng=>\footnotepenalty\maxdimen,
            \s!default=>\footnotepenalty\zeropoint,
            \v!unknown=>\footnotepenalty\commalistelement]%
-   \fi 
+   \fi
    \setfootnotedistance
    \count\footins=1000
    \ExpandBothAfter\doifinsetelse{\v!kolommen}{\@@vnplaats}
-     {\cleverfootnotestrue % global ? 
-      \ifnum\@@kln=0 
+     {\cleverfootnotestrue % global ?
+      \ifnum\@@kln=0
         \scratchcounter=1
       \else
         \scratchcounter=\@@vnn\relax
@@ -144,14 +144,14 @@
       \global\bottomnotestrue
       \setcleverfootnotes}
      {\cleverfootnotesfalse
-      \ifnum\@@vnn=0 
-        \settextfootnotes 
+      \ifnum\@@vnn=0
+        \settextfootnotes
         \scratchcounter=1
       \else
-        \setcolumnfootnotes 
+        \setcolumnfootnotes
         \scratchcounter=\@@vnn\relax
-        \divide\count\footins by \scratchcounter
-      \fi 
+        \divide\count\footins \scratchcounter
+      \fi
       \ExpandBothAfter\doifinsetelse{\v!pagina}{\@@vnplaats}
         {\global\endnotesfalse
          \ExpandBothAfter\doifinsetelse{\v!hoog}{\@@vnplaats}
@@ -161,27 +161,29 @@
          \global\bottomnotestrue
          \postponefootnotes}}%
    \iffootnotelimit
-     \dimen\footins=\@@vnhoogte
-     \multiply\dimen\footins by \scratchcounter
+     \dimen\footins\@@vnhoogte
+     \multiply\dimen\footins \scratchcounter
    \fi}
 
+\def\checknotes{\setupfootnotes\relax} % will be replaced 
+
 \def\setfootnotedistance
-  {\setbox\scratchbox=\vbox
+  {\setbox\scratchbox\vbox
      {\forgetall
       \@@vnvoor
-      \dofootnoterule 
+      \dofootnoterule
       \@@vnna}%
-   \skip\footins=\ht\scratchbox
-   \setbox\scratchbox=\box\voidb@x} % scratchbox can be in use
+   \global\skip\footins\ht\scratchbox
+   \setbox\scratchbox\box\voidb@x} % scratchbox can be in use
 
 \ifx\setfootnotehsize\undefined
 
-  \def\setfootnotehsize{\hsize=\@@vnbreedte} % can be overloaded
+  \def\setfootnotehsize{\hsize\@@vnbreedte} % can be overloaded
 
-\fi 
+\fi
 
 \def\setcleverfootnotes%
-  {\def\startpushfootnote  {\bgroup % wellicht ooit kopuitlijnen 
+  {\def\startpushfootnote  {\bgroup % wellicht ooit kopuitlijnen
                             \stelinmargein[\c!uitlijnen=\v!links]%
                             \getvalue{\e!start\??vn\??vn}}%
    \def\stoppushfootnote   {\getvalue{\e!stop\??vn\??vn}%
@@ -189,8 +191,8 @@
    \def\startpopfootnotes  {}%
    \def\stoppopfootnotes   {}}
 
-\def\setcolumnfootnotes% 
-  {\def\startpushfootnote  {\setfootnotehsize % possibly overloaded 
+\def\setcolumnfootnotes%
+  {\def\startpushfootnote  {\setfootnotehsize % possibly overloaded
                             \setrigidcolumnhsize\hsize\@@vnkolomafstand\@@vnn
                             \bgroup
                             \stelinmargein[\c!uitlijnen=\v!links]%
@@ -198,7 +200,7 @@
    \def\stoppushfootnote   {\getvalue{\e!stop\??vn\??vn}%
                             \egroup}%
    \def\startpopfootnotes  {\bgroup
-                            \setfootnotehsize 
+                            \setfootnotehsize
                             \setrigidcolumnhsize\hsize\@@vnkolomafstand\@@vnn
                             \setbox0=\vbox\bgroup}%
    \def\stoppopfootnotes   {\egroup
@@ -208,25 +210,25 @@
                             \rigidcolumnbalance0\egroup}}
 
 % \def\settextfootnotes%
-%   {\def\startpushfootnote  {\startvboxtohbox 
+%   {\def\startpushfootnote  {\startvboxtohbox
 %                             \dostartattributes\??vn\c!letter\c!kleur{}}%
 %    \def\stoppushfootnote   {\hskip\@@vnkolomafstand % plus.5em minus.5em
 %                             \dostopattributes
 %                             \stopvboxtohbox}%
 %    \def\startpopfootnotes  {\vbox\bgroup % \doifdimenelse
 %                             \doifnotinset{\@@vnbreedte}{\v!passend,\v!ruim}
-%                               {\setfootnotehsize}}% 
+%                               {\setfootnotehsize}}%
 %    \def\stoppopfootnotes   {\convertvboxtohbox\egroup}}
 
 \def\settextfootnotes%
-  {\def\startpushfootnote  {\startvboxtohbox 
+  {\def\startpushfootnote  {\startvboxtohbox
                             \dostartattributes\??vn\c!letter\c!kleur{}}%
    \def\stoppushfootnote   {\hskip\@@vnkolomafstand % plus.5em minus.5em
                             \dostopattributes
                             \stopvboxtohbox}%
-   \def\startpopfootnotes  {\vbox\bgroup 
+   \def\startpopfootnotes  {\vbox\bgroup
                             \doifnotinset{\@@vnbreedte}{\v!passend,\v!ruim}
-                              {\setfootnotehsize}% 
+                              {\setfootnotehsize}%
                             \beginofshapebox}%
    \def\stoppopfootnotes   {\endofshapebox
                             \reshapebox
@@ -235,7 +237,7 @@
                             \flushshapebox
                             \egroup}}
 
-%D The formatting depends on the width of the table, so we 
+%D The formatting depends on the width of the table, so we
 %D have to set \type {n} to zero.
 %D
 %D \starttypen
@@ -245,7 +247,7 @@
 %D \bTR \bTD three fout five six seven eight nine \eTD \bTD ten \eTD \eTR
 %D \eTABLE
 %D \stopbuffer
-%D 
+%D
 %D \startlocalfootnotes[n=0,location={text,none}]
 %D \placelegend[n=2]{\getbuffer}{\placelocalfootnotes}
 %D \stoplocalfootnotes
@@ -305,12 +307,12 @@
 %D Typesetting footnotes is, at least for the moment, disabled
 %D when reshaping boxes.
 %D
-%D The additional macro \type {\footnotetext} and the 
-%D associated \type {\note} macro were implemented at 
-%D request of users on the mailing list and a suggestion by 
-%D taco to split of the symbol placement. I decided to 
-%D merge this functionality with the existing \type {\note} 
-%D functionality.  
+%D The additional macro \type {\footnotetext} and the
+%D associated \type {\note} macro were implemented at
+%D request of users on the mailing list and a suggestion by
+%D taco to split of the symbol placement. I decided to
+%D merge this functionality with the existing \type {\note}
+%D functionality.
 
 \newif\iffootnotesymbol
 
@@ -322,7 +324,7 @@
 %   \ifcase#1\relax
 %     \global\footnotesymbolfalse
 %   \else
-%     \global\footnotesymboltrue  
+%     \global\footnotesymboltrue
 %   \fi
 %   \ifvisible
 %     \ifreshapingbox
@@ -340,7 +342,7 @@
    \ifcase#1\relax
      \global\footnotesymbolfalse
    \else
-     \global\footnotesymboltrue  
+     \global\footnotesymboltrue
    \fi
    \ifvisible
      \ifreshapingbox
@@ -348,7 +350,7 @@
      \else
        \@EAEAEA\dodofootnote
      \fi
-   \else % todo: \iftrialtypesetting 
+   \else % todo: \iftrialtypesetting
      \@EA\gobbletwoarguments
    \fi{#2}}
 
@@ -365,8 +367,8 @@
 %D \stoptypen
 %D
 %D which can be handy while for instance typesetting tables
-%D of contents. The pagewise footnote numbering is dedicated 
-%D to Han The Thanh, who needed it first.  
+%D of contents. The pagewise footnote numbering is dedicated
+%D to Han The Thanh, who needed it first.
 
 \newif\iffootnotesenabled \footnotesenabledtrue
 
@@ -378,7 +380,7 @@
   {\ifconditional\pagewisefootnotes
      \doifreferencefoundelse{\s!fnt:t:\internalfootreference}
        {\let\savedrealreference\currentrealreference
-        \doifreferencefoundelse{\s!fnt:f:\internalfootreference}    
+        \doifreferencefoundelse{\s!fnt:f:\internalfootreference}
           {\ifnum\savedrealreference<\currentrealreference\relax\symbol[#1]\else
            \ifnum\savedrealreference>\currentrealreference\relax\symbol[#2]\fi\fi}
           {}}
@@ -421,8 +423,8 @@
      \@EA\gobbletwoarguments
    \fi}
 
-\def\nododofootnote#1% 
-  {\doifnot{#1}{-}{\kern.5em}% quick hack, approximation 
+\def\nododofootnote#1%
+  {\doifnot{#1}{-}{\kern.5em}% quick hack, approximation
    \gobbleoneargument}
 
 \def\dododofootnote#1%
@@ -469,14 +471,14 @@
 \let\stoppushfootnote  = \relax
 
 \newsignal\footnotesignal
-\newcount \footnotepenalty 
+\newcount \footnotepenalty
 
 \footnotepenalty=0 % needed in order to split in otrset
 
 \def\dostartfootnote% nog gobble als in pagebody
   {\bgroup
-  %\restorecatcodes % to be tested first 
-   \ifinregels % otherwise problems with \type <crlf> {xxx} 
+  %\restorecatcodes % to be tested first
+   \ifinregels % otherwise problems with \type <crlf> {xxx}
      \ignorelines % makes footnotes work in \startlines ... \stoplines
    \fi
    \iffootnotesymbol
@@ -493,14 +495,14 @@
      \redoconvertfont % to undo \undo calls in in headings etc
      \splittopskip\ht\strutbox  % not actually needed here
      \splitmaxdepth\dp\strutbox % not actually needed here
-     \iffixedlayoutdimensions % ugly hack, will change 
+     \iffixedlayoutdimensions % ugly hack, will change
        \linkermargeafstand\@@vnmargeafstand
        \rechtermargeafstand\linkermargeafstand
      \else
        \def\linkermargeafstand{\@@vnmargeafstand}%
        \let\rechtermargeafstand\linkermargeafstand
      \fi
-     \ifcase\@@vnn\relax % new 31-07-99 ; always ? 
+     \ifcase\@@vnn\relax % new 31-07-99 ; always ?
        \doifnotinset{\@@vnbreedte}{\v!passend,\v!ruim}
          {\setfootnotehsize}%
      \fi
@@ -595,17 +597,17 @@
 \let\stoppopfootnotes  = \relax
 
 \def\placefootnoteinserts%
-  {%\ifvoid\footins \else % unsafe, strange 
+  {%\ifvoid\footins \else % unsafe, strange
    \ifdim\ht\footins>\!!zeropoint\relax
      \ifendnotes \else
        \@@vnvoor
        \dofootnoterule  % alleen in ..mode
        \bgroup
        \setfootnotebodyfont
-       \setbox0=\hbox 
+       \setbox0=\hbox
          {\startpopfootnotes
-          \setfootnotebodyfont   
-%          % this should be checked, smells like a mix-up 
+          \setfootnotebodyfont
+%          % this should be checked, smells like a mix-up
 %          % does not split: \ifcase\@@vnn\unvbox\else\box\fi\footins
 %          \ifcase\@@vnn
             \box\footins
@@ -614,19 +616,19 @@
 %          \fi
           % this is too ugly actually
           \stoppopfootnotes}%
-       \localframed 
+       \localframed
          [\??vn]
          [\c!breedte=\v!passend,
           \c!hoogte=\v!passend,
           \c!strut=\v!nee,
-          \c!offset=\v!overlay]   
+          \c!offset=\v!overlay]
          {\ifdim\dp0=\zeropoint            % this hack is needed because \vadjust
-            \hbox{\lower\dp\strutbox\box0}% % in margin number placement 
+            \hbox{\lower\dp\strutbox\box0}% % in margin number placement
           \else                             % hides the (always) present depth
             \box0
           \fi}%
        \egroup
-       \@@vnna   
+       \@@vnna
      \fi
    \fi}
 
@@ -638,7 +640,7 @@
 %D \starttypen
 %D \postponefootnotes
 %D \.box{whatever we want with footnotes}
-%D \flushfootnotes
+%D \flushnotes
 %D \stoptypen
 %D
 %D This alternative can be used in headings, captions, tables
@@ -655,8 +657,8 @@
 %D insert operation. A not too robust method uses the
 %D \type{\insert} primitive when possible. This method fails in
 %D situations where it's not entirely clear in what mode \TEX\
-%D is. Therefore the auto method can is to be overruled when 
-%D needed.  
+%D is. Therefore the auto method can is to be overruled when
+%D needed.
 
 \newbox\postponedfootnotes
 
@@ -678,7 +680,7 @@
 
 \def\postponefootnotes%
   {\let\autopostponefootnotes=\postponefootnotes
-   \let\postponefootnotes\relax % prevent loops 
+   \let\postponefootnotes\relax % prevent loops
 %   \gdef\localfootinsert%
    \def\localfootinsert%
      {%\message{[postponed footnote]}%
@@ -686,9 +688,9 @@
         \unvbox\postponedfootnotes
         \gobbletwoarguments}}
 
-\def\doflushfootnotes% also called directly, \ifvoid is needed ! 
-  {\ifendnotes \else 
-     \ifvoid\postponedfootnotes 
+\def\doflushnotes% also called directly, \ifvoid is needed !
+  {\ifendnotes \else
+     \ifvoid\postponedfootnotes
 %       \global\let\localfootinsert=\insert
        \let\localfootinsert=\insert
      \else
@@ -704,49 +706,34 @@
 %       \global\let\localfootinsert=\insert
        \let\localfootinsert=\insert
        \insert\footins\bgroup\unvbox\postponedfootnotes\egroup
-     \fi 
+     \fi
    \fi}
 
-% \def\flushfootnotes%
-%   {\ifinpagebody \else 
-%      \ifinner \else
-%        \ifendnotes \else 
-%          \ifvoid\postponedfootnotes \else
-%            %\ifvmode % less interference, but also less secure
-%               \doflushfootnotes
-%            %\fi
-%          \fi
-%        \fi
-%      \fi
-%    \fi}
-%
-% more efficient 
-
-\def\flushfootnotes%
+\def\flushnotes
   {\ifvoid\postponedfootnotes \else
      \ifinner \else
-       \ifendnotes \else 
-         \ifinpagebody \else 
+       \ifendnotes \else
+         \ifinpagebody \else
            %\ifvmode % less interference, but also less secure
-              \doflushfootnotes
+              \doflushnotes
            %\fi
          \fi
        \fi
      \fi
    \fi}
 
-%D This is a nasty and new secondary footnote flusher. It 
-%D can be hooked into \type {\everypar} like: 
-%D 
-%D \starttypen 
-%D \appendtoks \synchronizefootnotes \to \everypar
+%D This is a nasty and new secondary footnote flusher. It
+%D can be hooked into \type {\everypar} like:
+%D
+%D \starttypen
+%D \appendtoks \synchronizenotes \to \everypar
 %D \stoptypen
 
-\def\dosynchronizefootnotes%
+\def\dosynchronizenotes
   {\insert\footins{\unvbox\footins}}
 
-\def\synchronizefootnotes% indirect because of everypar 
-  {\ifvoid\footins\else\dosynchronizefootnotes\fi}
+\def\synchronizenotes% indirect because of everypar
+  {\ifvoid\footins\else\dosynchronizenotes\fi}
 
 \def\placefootnotesintext#1%
   {\ifdim\ht#1>\zeropoint
@@ -755,27 +742,27 @@
        \witruimte
        \@@vnvoor
      \fi
-     \snaptogrid\hbox  
+     \snaptogrid\hbox
        {\setfootnotebodyfont
         \setbox0=\hbox
           {\startpopfootnotes
            \unvbox#1\endgraf\relax
            \stoppopfootnotes}%
-        \doif{\@@vnbreedte}{\v!passend} % new, auto width 
-          {\setbox0=\hbox               % uggly but ok. 
-             {\beginofshapebox          
+        \doif{\@@vnbreedte}{\v!passend} % new, auto width
+          {\setbox0=\hbox               % uggly but ok.
+             {\beginofshapebox
               \unhbox0\setbox0=\lastbox\unvbox0
               \endofshapebox
               \reshapebox{\hbox{\unhbox\shapebox}}%
               \vbox{\flushshapebox}}}%
-        \localframed 
+        \localframed
           [\??vn]
           [\c!breedte=\v!passend,
             \c!hoogte=\v!passend,
              \c!strut=\v!nee,
             \c!offset=\v!overlay]
           {\ifdim\dp0=\!!zeropoint % this hack is needed because \vadjust
-             \hbox{\lower\dp\strutbox\box0}% % in margin number placement 
+             \hbox{\lower\dp\strutbox\box0}% % in margin number placement
            \else                   % hides the (always) present depth
              \box0
            \fi}}%
@@ -786,19 +773,19 @@
 
 %D A stupid alternative is also provided:
 %D
-%D \starttypen 
+%D \starttypen
 %D \setupfootnotes[location={text,none}]
-%D \stoptypen 
+%D \stoptypen
 
-\def\placefootnotesasnone#1% is grouped already 
+\def\placefootnotesasnone#1% is grouped already
   {\ifdim\ht#1>\zeropoint
      \@@vnvoor
-     \setfootnotebodyfont 
-     \startpopfootnotes % make sure that fake height is killed 
+     \setfootnotebodyfont
+     \startpopfootnotes % make sure that fake height is killed
      \unvbox#1\endgraf
      \stoppopfootnotes
-     \setbox0=\lastbox \ifvbox0 \unvbox0\else\box0\fi % enable columns 
-     \@@vnna 
+     \setbox0=\lastbox \ifvbox0 \unvbox0\else\box0\fi % enable columns
+     \@@vnna
    \fi}
 
 %D \macros
@@ -840,7 +827,7 @@
 \def\stoplocalfootnotes%
   {\restorenumber[\v!voetnoot]%
    \egroup
-   \setupfootnotes\relax} % really needed, else wrong main settings 
+   \checknotes} % really needed, else wrong main settings
 
 \def\doplacelocalfootnotes[#1]%
   {\bgroup
@@ -849,7 +836,7 @@
      {\placefootnotesasnone\localpostponedfootnotes}%
      {\placefootnotesintext\localpostponedfootnotes}%
    \egroup
-   \setupfootnotes\relax}
+   \checknotes}
 
 \def\placelocalfootnotes%
   {\dosingleempty\doplacelocalfootnotes}
@@ -900,8 +887,8 @@
        \ExpandBothAfter\doifinsetelse{\v!geen}{\@@vnplaats}
          {\placefootnotesasnone\postponedfootnotes}%
          {\placefootnotesintext\postponedfootnotes}%
-     \fi \fi 
-   \else \ifdim\ht\footins>\zeropoint 
+     \fi \fi
+   \else \ifdim\ht\footins>\zeropoint
      \iffirstargument\setupfootnotes[#1,\c!hoogte=\teksthoogte]\fi
      \placefootnoteinserts
    \fi \fi
@@ -909,27 +896,29 @@
 
 \def\fakefootnotes
   {\ifhmode \endgraf \fi
-   \ifvmode 
-     \calculatefootnotevsize
-     \ifdim\footnotevsize>\zeropoint \kern\footnotevsize \fi
+   \ifvmode
+     \calculatetotalnoteheight
+     \ifdim\totalnoteheight>\zeropoint \kern\totalnoteheight \fi
    \fi}
 
-\newdimen\footnotevsize
+\def\placebottomnotes{\placefootnotes}
 
-\def\calculatefootnotevsize
-  {\footnotevsize\zeropoint
+\newdimen\totalnoteheight
+
+\def\calculatetotalnoteheight
+  {\totalnoteheight\zeropoint
    \ifdim\ht\footins>\zeropoint
-     \advance\footnotevsize\ht\footins
-     \advance\footnotevsize\skip\footins
+     \advance\totalnoteheight\ht\footins
+     \advance\totalnoteheight\skip\footins
    \fi}
 
-\newif\iffootnotespresent % global ?  
+\newif\ifnotespresent % global ?
 
-\def\checkfootnotepresence
-  {\ifdim\ht\footins>\zeropoint     
-     \footnotespresenttrue
+\def\checknotepresence
+  {\ifdim\ht\footins>\zeropoint
+     \notespresenttrue
    \else
-     \footnotespresentfalse
+     \notespresentfalse
    \fi}
 
 %D Now how can this mechanism be hooked into \CONTEXT\ without
@@ -937,7 +926,7 @@
 %D be rather simple:
 %D
 %D \starttypen
-%D \everypar  {...\flushfootnotes...}
+%D \everypar  {...\flushnotes...}
 %D \neverypar {...\postponefootnoes}
 %D \stoptypen
 %D
@@ -946,7 +935,7 @@
 %D \starttypen
 %D \def\ejectinsert%
 %D   {...
-%D    \flushfootnotes
+%D    \flushnotes
 %D    ...}
 %D \stoptypen
 %D

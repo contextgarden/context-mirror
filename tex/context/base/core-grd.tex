@@ -311,13 +311,13 @@
      \expandafter\dodosnaptogrid
    \fi}
 
-\def\forcedpresnapcorrection
-  {\ifforcepresnap
-     % we don't want top of page space  when 'top' option 
-     %\vbox{\strut}\nobreak\vskip-\openlineheight
-     \vbox{\strut}\vskip-\openlineheight
-   \fi}
-
+% \def\forcedpresnapcorrection
+%   {\ifforcepresnap
+%      % we don't want top of page space  when 'top' option 
+%      %\vbox{\strut}\nobreak\vskip-\openlineheight
+%      \vbox{\strut}\vskip-\openlineheight
+%    \fi}
+% 
 %\def\forcedpresnapcorrection
 %  {\ifforcepresnap
 %     \ifvmode \else \par \fi
@@ -328,9 +328,26 @@
 %     \fi
 %   \fi}
 
+\def\forcedpresnapcorrection
+  {\ifforcepresnap
+     \ifvmode \else \par \fi % new 
+     % we don't want top of page space  when 'top' option 
+     %\vbox{\strut}\nobreak\vskip-\openlineheight
+     \vbox{\strut}\vskip-\openlineheight
+%\ifdim\pagetotal>\topskip \else
+%% eigenlijk signal 
+%\writestatus{grid}{removing dummy at top of page}%
+%\bgroup
+%\output{\setbox\scratchbox\box255}%
+%\penalty\outputpenalty
+%\egroup
+%\fi
+   \fi}
+
 \def\dodosnaptogrid
   {\dowithnextbox
      {\bgroup
+\ifdim\nextboxht<\teksthoogte % handle special case (like page fig)
       \ifcase\@@alignsnapbox\relax
         \ifcase\@@alignsnap\else % 1=top 2=high 3=middle 4=low
           \ifshowgridboxes
@@ -498,6 +515,18 @@
         \nointerlineskip
         \box\nextbox 
       \fi
+\else
+  \setbox\nextbox\vbox to \teksthoogte
+    {\ifdim\nextboxdp=\zeropoint
+       \hbox{\lower\strutdepth\box\nextbox}
+     \else % this branch is yet untested 
+       \vss
+       \hbox{\lower\nextboxdepth\box\nextbox}
+       \vskip-\strutdepth
+     \fi}%
+  \nextboxdp\strutdepth
+  \box\nextbox 
+\fi
       \extrasnapreset
       \enablepresnapcorrection
       \global\chardef\@@alignsnap0
@@ -507,7 +536,7 @@
 \def\tracedgridamount#1#2%
   {\color[grid:four]{\vrule\!!width\wd\nextbox\!!height#1\!!depth#2}}
 
-\def\snaptomathgrid% probably not working ok
+\def\snaptomathgrid% probably not working ok, also kind of obsolete
   {\ifgridsnapping
      \dowithnextbox
        {\blanko[\v!regel]
@@ -576,7 +605,8 @@
       \hsize=#2
       \baselinerulefalse
       \ruledvbox % calculated size 
-        {\getnoflines{#3}%
+%        {\getnoflines{#3}%
+        {\getrawnoflines{#3}%
          \vskip\topskip
          \vskip-\ht\strutbox
          \scratchdimen=#2\advance\scratchdimen by \lineheight

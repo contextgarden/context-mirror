@@ -11,19 +11,17 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-% todo: XMLfullsave == also attributes 
+\writestatus{loading}{Context XML Macros (initialization)}
 
-% csnames 
+%D To be sure: 
+
+\newif\ifprocessingXML 
 
 \beginTEX
   \writestatus{XML}{sorry, XML is only supported in (pdf)etex}
   \def\startXMLdefinitions{\gobbleuntil\stopXMLdefinitions}
   \endinput
 \endTEX
-
-\writestatus{loading}{Context XML Macros (initialization)}
-
-% XMLelse -> elseXML
 
 %D This module is highly optimized for speed, which sometimes 
 %D reads to rather unreadable code. Sorry for this. 
@@ -44,7 +42,9 @@
 
 \endETEX
 
-\writestatus{loading}{Context XML Macros (ini)}
+% todo: XMLfullsave == also attributes 
+% csnames 
+% XMLelse -> elseXML
 
 %D Remark: some hard coded character things will be replaced
 %D by named glyphs as soon as the upgraded encoding modules
@@ -169,7 +169,7 @@
 \newif\ifignoreXMLspaces
 \newif\iffixedXMLfont
 \newif\iftraceXMLelements
-\newif\ifprocessingXML
+%newif\ifprocessingXML
 
 \newcount\XMLlevel % scratchcounter 
 \newcount\XMLdepth % used here 
@@ -1556,7 +1556,7 @@
 
 \def\XMLunspace#1% kan sneller 
   {\@EA\ifx\csname\@@XMLdata:#1\endcsname\longempty\else
-     \long\@EA\edef\csname\@@XMLdata:#1\csname
+     \long\@EA\edef\csname\@@XMLdata:#1\endcsname
        {\@EAEAEA\dounspaced\csname\@@XMLdata:#1\endcsname\end}%
    \fi}
 

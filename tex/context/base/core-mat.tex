@@ -162,7 +162,7 @@
   {\doifsomething{#1}
      {\copyparameters
         [\??fm#1][\??fm]
-        [\c!voorwit,\c!nawit,
+        [\c!voorwit,\c!nawit,\c!grid,
          \c!linkermarge,\c!rechtermarge,\c!marge,
          \c!springvolgendein,\c!variant,
          \c!strut,\c!uitlijnen,\c!afstand]%
@@ -204,10 +204,11 @@
 \def\currentformula          {}
 \def\predisplaysizethreshhold{3em}
 
-\def\leftdisplayskip   {\leftskip}
-\def\rightdisplayskip  {\rightskip}
-\def\leftdisplaymargin {\getvalue{\??fm\currentformula\c!linkermarge}}
-\def\rightdisplaymargin{\getvalue{\??fm\currentformula\c!rechtermarge}}
+\def\leftdisplayskip    {\leftskip}
+\def\rightdisplayskip   {\rightskip}
+\def\leftdisplaymargin  {\getvalue{\??fm\currentformula\c!linkermarge}}
+\def\rightdisplaymargin {\getvalue{\??fm\currentformula\c!rechtermarge}}
+\def\displaygridsnapping{\getvalue{\??fm\currentformula\c!grid}}
 
 \def\beforedisplayspace
   {\doifnotvalue{\??fm\currentformula\c!voorwit}{\v!geen}
@@ -276,37 +277,19 @@
    \doifvalue{\??fm\currentformula\c!springvolgendein}{\v!nee}
      {\noindentation}}
 
-% \def\predisplaycorrection%
-%   {\par\ifvmode\vbox{\strut}\vskip-2\baselineskip\fi} 
-% 
-% \def\startdisplaymath%
-%   {\ifgridsnapping
-%      \beforedisplayspace   
-%      \snaptogrid\vbox\bgroup 
-%      % \vskip\parskip 
-%      \forgetall
-%    \else
-%      \bgroup
-%      \par\ifvmode\vskip-\parskip\fi
-%      \beforedisplayspace   
-%      \predisplaycorrection
-%    \fi
-%    $$\setdisplaydimensions
-%    \setpredisplaysize\lastlinewidth}
-% 
-% \def\stopdisplaymath%
-%   {$$\egroup
-%    \par\ifvmode\vskip-\parskip\fi
-%    \afterdisplayspace}
+\newif\ifinformula
 
 % \def\startdisplaymath%
 %   {\ifgridsnapping
 %      \beforedisplayspace   
-%      \snaptogrid\vbox\bgroup 
-%      % \vskip\parskip 
+%      \snaptogrid[\displaygridsnapping]\vbox
+%      \bgroup 
+%      \informulatrue   
 %      \forgetall
-%    \else
+%   \else
 %      \bgroup
+%      \informulatrue   
+%     %\forgetall % otherwise backgrounds fail 
 %      \ifdim\lastskip<\!!zeropoint\else
 %        \par\ifvmode\ifdim\parskip>\!!zeropoint\relax\vskip-\parskip\fi\fi
 %      \fi
@@ -319,25 +302,27 @@
 % 
 % \def\stopdisplaymath%
 %   {\stopinnermath
-%     $$\egroup
-%    \par\ifvmode\ifdim\parskip>\!!zeropoint\relax\vskip-\parskip\fi\fi
-%    \afterdisplayspace}
-
-\newif\ifinformula
+%    $$%
+%    \ifgridsnapping 
+%    \else
+%      \par\ifvmode\ifdim\parskip>\zeropoint\vskip-\parskip\fi\fi
+%    \fi 
+%    \afterdisplayspace
+%    \egroup}
 
 \def\startdisplaymath%
   {\ifgridsnapping
      \beforedisplayspace   
-     \snaptogrid\vbox
+     \snapmathtogrid\vbox
      \bgroup 
      \informulatrue   
      \forgetall
-  \else
+   \else
      \bgroup
      \informulatrue   
     %\forgetall % otherwise backgrounds fail 
      \ifdim\lastskip<\!!zeropoint\else
-       \par\ifvmode\ifdim\parskip>\!!zeropoint\relax\vskip-\parskip\fi\fi
+       \par\ifvmode\ifdim\parskip>\zeropoint\relax\vskip-\parskip\fi\fi
      \fi
      \beforedisplayspace   
      \par\ifvmode\vbox{\strut}\vskip-2\baselineskip\fi 
@@ -350,11 +335,53 @@
   {\stopinnermath
    $$%
    \ifgridsnapping 
+     \egroup
+     \afterdisplayspace
    \else
      \par\ifvmode\ifdim\parskip>\zeropoint\vskip-\parskip\fi\fi
-   \fi 
-   \afterdisplayspace
-   \egroup}
+     \afterdisplayspace
+     \egroup
+   \fi} 
+
+\newif\ifclipdisplaymath \clipdisplaymathtrue 
+\def\displaymathclipfactor{1.1}
+
+\def\snapmathtogrid % to do \dp 
+  {\dowithnextbox
+     {\bgroup
+      \donefalse
+      \ifclipdisplaymath 
+        \ifdim\nextboxht<\displaymathclipfactor\lineheight 
+          \donetrue
+        \fi 
+      \fi
+      \ifdone
+        \nextboxht\lineheight 
+      \else
+        \getnoflines{\ht\nextbox}%
+        \setbox\nextbox\vbox to \noflines\lineheight
+          {\vfill\box\nextbox\vfill}%
+        \setbox\nextbox\hbox{\lower\strutdepth\box\nextbox}%
+      \fi
+      \snaptogrid[\displaygridcorrection]\hbox{\box\nextbox}%
+      \gdef\displaygridcorrection{\displaygridsnapping}%
+      \egroup}}
+
+\def\displaygridcorrection{\displaygridsnapping}
+
+\def\moveformula
+  {\dosingleempty\domoveformula}
+
+\def\domoveformula[#1]%
+  {\ifgridsnapping
+     \iffirstargument
+       \xdef\displaygridcorrection{#1}%
+     \else
+       \gdef\displaygridcorrection{-\v!boven}% handy with short preline
+     \fi
+   \else
+     \gdef\displaygridcorrection{\displaygridsnapping}
+   \fi}
 
 \let\startinnermath\empty
 \let\stopinnermath \empty
@@ -948,6 +975,7 @@
    \c!nummerkleur=,
    \c!nummercommando=,
    \c!voorwit=\v!groot,
-   \c!nawit=\@@fmvoorwit]
+   \c!nawit=\@@fmvoorwit,
+   \c!grid=]
 
 \protect \endinput 
