@@ -69,16 +69,13 @@
 \def\@@dodoglobal
   {\resetglobal\global}
 
-% for the moment only one level: 
-
-\def\saveglobal                  % slower but safer 
-  {\let\@@dodoglobal\dodoglobal  % \pushmacro\dodoglobal
-   \let\@@redoglobal\redoglobal  % \pushmacro\redoglobal 
-   \resetglobal}
-
-\def\restoreglobal               % slower but safer 
-  {\let\redoglobal\@@redoglobal  % \popmacro\redoglobal
-   \let\dodoglobal\@@dodoglobal} % \popmacro\dodoglobal
+\def\saveglobal                  
+  {\let\@@dodoglobal\dodoglobal  
+   \let\@@redoglobal\redoglobal} 
+   
+\def\restoreglobal               
+  {\let\redoglobal\@@redoglobal  
+   \let\dodoglobal\@@dodoglobal} 
    
 %D A very useful application of this macro is \type {\newif}, 
 %D \TEX's fake boolean type. Not being a primitive, 
@@ -2184,21 +2181,10 @@
 %D \stoptypen 
 %D 
 %D Even better:
-%D 
-%D \starttypen 
-%D \def\doifintokselse#1#2% #1 en #2 zijn toks 
-%D   {\@EA\convertargument\the#1\to\asciiA
-%D    \@EA\convertargument\the#2\to\asciiB
-%D    \doifstringinstringelse\asciiA\asciiB}
-%D \stoptypen 
-%D 
-%D The correct one (with regards to global): 
 
 \def\doifintokselse#1#2% #1 en #2 zijn toks
-  {\saveglobal
-   \@EA\convertargument\the#1\to\asciiA
+  {\@EA\convertargument\the#1\to\asciiA
    \@EA\convertargument\the#2\to\asciiB
-   \restoreglobal
    \doifstringinstringelse\asciiA\asciiB}
 
 %D Also: 

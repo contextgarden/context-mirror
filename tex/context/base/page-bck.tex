@@ -130,7 +130,7 @@
 %D features can be used.
 
 \def\addsomebackground#1#2#3#4% area box width height / zero test added
-  {\ifdim#3>\zeropoint\ifdim#4>\zeropoint\ifsomebackgroundfound#1%
+  {\ifsomebackgroundfound#1\ifdim#3>\zeropoint\ifdim#4>\zeropoint
      \setbox#2\vbox\localframed
        [\??ma#1]
        [\c!strut=\v!nee,\c!offset=\v!overlay,
@@ -355,7 +355,7 @@
        \hskip#1%
      \fi
    \else
-    \hskip#1%
+     \hskip#1%
    \fi}
 
 %D The background mechanism is quite demanding in terms or
@@ -535,6 +535,9 @@
 %D The hidden layer can be populated by extending the 
 %D following comma separated list. This only happens in core
 %D modules. 
+
+% todo page-2   .. page+2   achter pagina -> bleed 
+%      spread-2 .. spread+2 achter spread -> spread (repeat 2 times)
 
 \def\enablehiddenbackground
   {\global\settrue\hiddenbackgroundenabled

@@ -567,6 +567,26 @@
 % \setlayer[pagefigures][preset=righttop]
 % \setlayer[pagefigures][preset=leftbottom]
 % \setlayer[pagefigures][preset=rightbottom]
+
+\definelayerpreset 
+  [\v!links\v!boven]
+  [\c!hoek={\v!links,\v!boven},%
+   \c!plaats={\v!rechts,\v!onder}]
+
+\definelayerpreset 
+  [\v!rechts\v!boven]
+  [\c!hoek={\v!rechts,\v!boven},%
+   \c!plaats={\v!links,\v!onder}]
+
+\definelayerpreset 
+  [\v!links\v!onder]
+  [\c!hoek={\v!links,\v!onder},%
+   \c!plaats={\v!rechts,\v!boven}]
+
+\definelayerpreset 
+  [\v!rechts\v!onder] 
+  [\c!hoek={\v!rechts,\v!onder},%
+   \c!plaats={\v!links,\v!boven}]
 
 \def\alignedbox
   {\dodoubleempty\doalignedbox[]}

@@ -65,6 +65,7 @@
 %D specified in \type {size}. The \type {number} is the number
 %D of the fill that needs the special treatment. For a type~2
 %D and~3 shaded fill, the datablock contains the following
+
 %D data:
 %D
 %D \starttypen
@@ -591,6 +592,19 @@
        \ifMPspotcolors
          \expanded{\resolveMPspotcolor\getvalue{\@@MPSP\number\MPrgbnumber\tempMPbvalue}}\end
        \fi
+     \or 
+       % 3 = rgb transparency 
+     %   to do 
+     \or
+       % 4 == cmyk transparency
+     % \ifMPcmykcolors 
+     %   to do 
+     % \fi 
+     \or
+       % 5 == spot transparency
+     % \ifMPspotcolors
+     %   to do 
+     % \fi
      \fi
    \else
      \ifx\tempMPrvalue\tempMPgvalue
@@ -608,39 +622,6 @@
 
 %D We also need to make sure that we have two \RGB\ or 
 %D \CMYK colors, since we have to set the colorspace. 
-
-% \def\setMPshadingcolors#1#2#3#4#5#6%
-%   {\checkMPshadingcolor{#1}{#2}{#3}\MPshadeA\MPshadeAA
-%    \checkMPshadingcolor{#4}{#5}{#6}\MPshadeB\MPshadeBB
-%    \ifx\MPshadeA\empty 
-%      \ifx\MPshadeB\empty 
-%        \edef\MPshadeA{\gMPs{#1} \gMPs{#2} \gMPs{#3}}%
-%        \edef\MPshadeB{\gMPs{#4} \gMPs{#5} \gMPs{#6}}%
-%        \def \MPshadeC{RGB}%   
-%      \else
-%        \ifx\MPshadeAA\empty
-%          \let\MPshadeA\MPcmykWhite
-%          \let\MPshadeB\MPcmykBlack
-%        \else
-%          \scratchdimen\!!onepoint
-%          \advance\scratchdimen -\MPshadeAA\s!pt
-%          \edef\MPshadeA{0 0 0 \withoutpt\the\scratchdimen}%
-%        \fi
-%        \def\MPshadeC{CMYK}%   
-%      \fi
-%    \else
-%      \ifx\MPshadeB\empty 
-%        \ifx\MPshadeBB\empty
-%          \let\MPshadeA\MPcmykWhite
-%          \let\MPshadeB\MPcmykBlack
-%        \else
-%          \scratchdimen\!!onepoint
-%          \advance\scratchdimen -\MPshadeBB\s!pt
-%          \edef\MPshadeB{0 0 0 \withoutpt\the\scratchdimen}%
-%        \fi
-%      \fi
-%      \def\MPshadeC{CMYK}%   
-%    \fi}
 
 \def\setMPshadingcolors#1#2#3#4#5#6% color space 
   {\checkMPshadingcolor{#1}{#2}{#3}\MPshadeAc\MPshadeAs
