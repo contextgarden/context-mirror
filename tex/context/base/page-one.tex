@@ -11,29 +11,29 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-\writestatus{loading}{Context OTR Macros / Default Routine} 
+\writestatus{loading}{Context OTR Macros / Default Routine}
 
-%D This is just the good old \CONTEXT\ output routine, which 
-%D has been there right from the start. 
+%D This is just the good old \CONTEXT\ output routine, which
+%D has been there right from the start.
 
-\unprotect 
+\unprotect
 
 % OTRONE: basic single column
 
-\activateotr{ONE}{} % the default one 
+\activateotr{ONE}{} % the default one
 
 \newtoks\OTRONEoutput
 
 \def\OTRONEgotonextpage
   {\ejectpage}
 
-\def\OTRONEgotonextpageX % will become obsolete 
+\def\OTRONEgotonextpageX % will become obsolete
   {\superejectpage}
 
 \def\OTRONEsethsize
   {\global\hsize\tekstbreedte}
 
-% keep (original one) 
+% keep (original one)
 %
 % \def\OTRONEsetvsize
 %    {\ifdim\vsize=\teksthoogte \else
@@ -48,7 +48,7 @@
 %       \egroup
 %    \fi}
 %
-% no (keep) 
+% no (keep)
 %
 % \def\OTRONEsetvsize
 %   {\ifdim\vsize=\teksthoogte \else
@@ -80,7 +80,7 @@
      \else
        \noflines\layoutlines
      \fi
-     \global\vsize\noflines\openlineheight 
+     \global\vsize\noflines\openlineheight
    \else
      \global\vsize\teksthoogte
    \fi
@@ -88,12 +88,12 @@
      \global\pagegoal\vsize
    \fi}
 
-% \def\OTRONEdopagecontents#1#2% \box<n> \unvbox<n> 
-%   {\bgroup             % niet breedte zetten, kan fractie zijn! 
+% \def\OTRONEdopagecontents#1#2% \box<n> \unvbox<n>
+%   {\bgroup             % niet breedte zetten, kan fractie zijn!
 %    \setbox0\vbox \ifbottomnotes to \teksthoogte \fi
 %      {\edef\currentpagedepth{\the\dp#2}% still to be derived from #1
 %       \dotopinsertions
-%       #1#2% 
+%       #1#2%
 %       \pushcolor
 %       \ifgridsnapping
 %         \vskip-\currentpagedepth
@@ -128,7 +128,7 @@
 %    \setbox2\hbox
 %      {\checksinglecolumnfootnotes
 %       \lower\scratchdimen\vbox{\placebottomnotes}}%
-%    \smashbox2% % needed here 
+%    \smashbox2% % needed here
 %    \ifbottomnotes
 %      \ht0\zeropoint
 %    \fi
@@ -138,10 +138,10 @@
 
 %\def\OTRONEregisteredtextarea#1#2#3%
 %  {\ifregistertextareas
-%     % sub optimal, unvbox is nilled here 
-%     \setbox#2\vbox{#1#2}% 
+%     % sub optimal, unvbox is nilled here
+%     \setbox#2\vbox{#1#2}%
 %     \wd#2\zetbreedte % somehow a space creeps in (in unvbox'd #2)
-%     \vbox{\registeredtextarea00#2}% 
+%     \vbox{\registeredtextarea00#2}%
 %     #3%
 %   \else
 %     #1#2#3%
@@ -225,11 +225,11 @@
   {\finaloutput\unvbox\normalpagebox}
 
 \OTRONEoutput
-  {\sidefloatoutput} 
+  {\sidefloatoutput}
 
-%D Insertions 
+%D Insertions
 
-\newif\iftopofinsert 
+\newif\iftopofinsert
 
 \def\OTRONEdosettopinserts
   {\bgroup
@@ -336,7 +336,7 @@
 \def\OTRONEdosetbothinserts
   {\ifflushingfloats
      \global\topinserted\zeropoint
-     \global\botinserted\zeropoint 
+     \global\botinserted\zeropoint
    \else
      \global\topinserted\zeropoint \OTRONEdosettopinserts
      \global\botinserted\zeropoint \OTRONEdosetbotinserts
@@ -345,9 +345,8 @@
 \def\OTRONEdotopinsertions
   {\ifvoid\topins\else
      \ifgridsnapping
-       %\topsnaptogrid{\box\topins}
-       \box\topins % already snapped
-     \else
+       \box\topins % not \topsnaptogrid{\box\topins}% 
+     \else        
        \unvbox\topins
      \fi
    \fi
@@ -396,17 +395,17 @@
      \ifpackflushedfloats
        \centerfloatboxfalse
        \dogetfloat
-       \ifdim\wd\floatbox>\zetbreedte 
+       \ifdim\wd\floatbox>\zetbreedte
          \global\setbox\floatbox\hbox to \zetbreedte{\hss\box\floatbox\hss}%
        \fi
        \OTRONEsetvsize
        \!!widtha\wd\floatbox
        \dofloatflushedinfo
        \doloop
-         {\ifsomefloatwaiting 
+         {\ifsomefloatwaiting
             \dosavefloatstatus
             \dogetfloat
-            \advance\!!widtha 1em % variable 
+            \advance\!!widtha 1em % variable
             \advance\!!widtha \wd\floatbox\relax
             \ifdim\!!widtha>\hsize
               \dorestorefloatstatus
@@ -416,7 +415,7 @@
               \global\setbox\floatbox\hbox
                 {\ifcase\columndirection % nog document wide
                    \ifvoid\savedfloatbox\else
-                     \ifhbox\savedfloatbox\unhbox\else\box\fi\savedfloatbox\hfil 
+                     \ifhbox\savedfloatbox\unhbox\else\box\fi\savedfloatbox\hfil
                    \fi
                    \ifhbox\floatbox\unhbox\else\box\fi\floatbox
                  \else
@@ -427,25 +426,25 @@
                  \fi}%
               \dofloatflushedinfo
             \fi
-          \else 
-            \exitloop 
+          \else
+            \exitloop
           \fi}%
        \global\setbox\floatbox\hbox to \hsize
          {\hfil\ifhbox\floatbox\unhbox\else\box\fi\floatbox\hfil}%
      \else
-      %\bgroup % \box\floatbox can be in use!? messy 
+      %\bgroup % \box\floatbox can be in use!? messy
        \dogetfloat
       %\doplacefloatbox
       %\egroup
        \dofloatflushedinfo
      \fi
-     % there is a chance that due to rounding errors, the float 
-     % fits on a page where it was first rejected, in which case 
-     % the prevdepth is -maxdimen and we cannot obey the grid 
+     % there is a chance that due to rounding errors, the float
+     % fits on a page where it was first rejected, in which case
+     % the prevdepth is -maxdimen and we cannot obey the grid
      \doplacefloatbox
      \expandafter\OTRONEdodoflushfloats
    \fi}
- 
+
 % \def\OTRONEdocheckiffloatfits % vervangen ivm downward comp
 %   {\ifnofloatpermitted
 %      \global\roomforfloatfalse
@@ -473,16 +472,16 @@
      \advance\dimen0 \floattopskip
      \advance\dimen0 -\pageshrink  % toegevoegd
     %\message{c:\the\mofcolumns,t:\the\pagetotal,g:\the\pagegoal}%\wait
-     \dimen2\pagegoal 
-     \relax % needed 
+     \dimen2\pagegoal
+     \relax % needed
      \ifcase\textfloatmethod
-       % method 0 : raw 
-     \or 
-       % method 1 : safe 
-       \dimen2 .99\pagegoal 
+       % method 0 : raw
      \or
-       % method 2 : tight 
-       \advance\dimen0 -\!!onepoint 
+       % method 1 : safe
+       \dimen2 .99\pagegoal
+     \or
+       % method 2 : tight
+       \advance\dimen0 -\!!onepoint
      \fi
      \relax % really needed ! ! ! !
      \ifdim\dimen0>\dimen2
@@ -499,7 +498,7 @@
   {\baselinecorrection
    \doplacefloatbox
    \doinsertfloatinfo
-   \dochecknextindentation\??bk} 
+   \dochecknextindentation\??bk}
 
 \def\OTRONEsomefixdfloat % [#1]
   {\docheckiffloatfits
@@ -535,7 +534,7 @@
      \doifinset\v!lang{#1}\flushsidefloatsafterpar
    \fi}
 
-\def\OTRONEsomepagefloat[#1]%  
+\def\OTRONEsomepagefloat[#1]%
   {%\checkwaitingfloats{#1}%
    \global\setbox\collectedpagefloats\vbox
      {\unvbox\collectedpagefloats
@@ -581,4 +580,4 @@
 \def\OTRONEnextcolumn[#1]%
   {}
 
-\protect \endinput 
+\protect \endinput

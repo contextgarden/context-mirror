@@ -1345,6 +1345,12 @@
       \egroup}%
      \normalvbox}
 
+%D \macros
+%D   {struttedbox}
+%D  
+%D This boxing macro limits the height and depth to those of
+%D a strut. 
+
 \def\struttedbox
   {\normalhbox\bgroup % new ! ! ! 
    \dowithnextbox
@@ -1352,6 +1358,23 @@
       \nextboxht\strutheight
       \flushnextbox
       \egroup}%
+     \normalhbox}
+
+%D \macros
+%D   {topskippedbox}
+%D
+%D This macro compensates the difference between the topskip
+%D and strutheight. Watch how we preserve the depth when it 
+%D equals strutdepth.
+
+\def\topskippedbox
+  {\normalhbox\bgroup 
+     \dowithnextbox
+       {\edef\next
+          {\ifdim\strutdepth=\nextboxdp\nextboxdp\the\nextboxdp\fi}%
+        \lower\topskip\normalhbox{\raise\strutheight\flushnextbox}%
+        \next
+        \egroup}%
      \normalhbox}
 
 %D \macros

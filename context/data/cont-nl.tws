@@ -1695,7 +1695,7 @@ stopsetup
 startsetup
 com:verplaatsopgrid:
 typ:vals/:
-val:boven,beide,onder,-boven,-beide,-onder, hoog,midden,laag,pagina,geen,standaard, ruim,passend,diepte,regel,*maat:standaard:
+val:boven,beide,onder,-boven,-beide,-onder,tekst, hoog,midden,laag,pagina,geen,standaard, ruim,passend,diepte,regel,*maat:standaard:
 stopsetup
 
 startsetup
@@ -1799,6 +1799,7 @@ var:titeluitlijnen:ja,nee::
 var:tolerantie:zeerstreng,streng,soepel,zeersoepel,rek::
 var:springvolgendein:ja,nee::
 var:commando:*\commando#1#2::
+var:marge:*maat::
 stopsetup
 
 startsetup
@@ -1806,6 +1807,7 @@ com:stelblokkopjesin:
 typ:vars/:
 var:plaats:boven,onder,geen,hoog,laag,midden::
 var:breedte:passend,ruim,max,*maat::
+var:minbreedte:passend,*maat::
 var:kopletter:normaal,vet,schuin,vetschuin,type,kap,klein...,*commando::
 var:letter:normaal,vet,schuin,vetschuin,type,kap,klein...,*commando::
 var:nummer:ja,nee::
@@ -1814,6 +1816,7 @@ var:uitlijnen:links,midden,rechts,nee::
 var:conversie:cijfers,letters,Letters,romeins,Romeins::
 var:wijze:pertekst,per*sectie::
 var:scheider:*tekst::
+var:commando:*commando::
 var:afstand:*maat::
 stopsetup
 
@@ -3280,6 +3283,7 @@ var:lijndikte:*maat::
 var:afstand:blanko,grid,diepte,*maat,klein,middel,groot,geen::
 var:korps:5pt,...,12pt,klein,groot::
 var:lijn:normaal,regel::
+var:splitsen:ja,nee::
 stopsetup
 
 startsetup
@@ -3866,6 +3870,8 @@ var:titel:*tekst::
 var:spatie:ja,nee::
 var:symbool:normaal, Nieuw,Ballon,Toevoeging,Help,Paragraaf,Sleutel, *naam::
 var:optie:max,buffer::
+var:marge:*maat::
+var:afstand:*maat::
 stopsetup
 
 startsetup

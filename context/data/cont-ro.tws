@@ -1695,7 +1695,7 @@ stopsetup
 startsetup
 com:mutapegrid:
 typ:vals/:
-val:sus,ambele,subsol,-sus,-ambele,-subsol, inalt,centru,jos,pagina,niciunul,standard, broad,ajustat,adancime,linie,*dimensiune:standard:
+val:sus,ambele,subsol,-sus,-ambele,-subsol,text, inalt,centru,jos,pagina,niciunul,standard, broad,ajustat,adancime,linie,*dimensiune:standard:
 stopsetup
 
 startsetup
@@ -1799,6 +1799,7 @@ var:alinieretitlu:da,nu::
 var:toleranta:foartestrict,strict,tolerant,foartetolerant,dilatat::
 var:aliniaturmator:da,nu::
 var:comanda:*\comanda#1#2::
+var:margine:*dimensiune::
 stopsetup
 
 startsetup
@@ -1806,6 +1807,7 @@ com:seteazalegendele:
 typ:vars/:
 var:locatie:sus,subsol,niciunul,inalt,jos,centru::
 var:latime:ajustat,broad,max,*dimensiune::
+var:latimeminima:ajustat,*dimensiune::
 var:stiltitlu:normal,aldin,inclinat,aldininclinat,type,cap,mic...,*comanda::
 var:stil:normal,aldin,inclinat,aldininclinat,type,cap,mic...,*comanda::
 var:numar:da,nu::
@@ -1814,6 +1816,7 @@ var:aliniere:stanga,centru,dreapta,nu::
 var:conversie:numere,caractere,Caractere,numereromane,Numereromane::
 var:mod:detext,de*sectiune::
 var:separator:*text::
+var:comanda:*comanda::
 var:distanta:*dimensiune::
 stopsetup
 
@@ -3280,6 +3283,7 @@ var:grosimerigla:*dimensiune::
 var:distanta:blank,grila,adancime,*dimensiune,mic,mediu,mare,niciunul::
 var:fonttext:5pt,...,12pt,mic,mare::
 var:rigla:normal,linie::
+var:split:da,nu::
 stopsetup
 
 startsetup
@@ -3866,6 +3870,8 @@ var:titlu:*text::
 var:spatiu:da,nu::
 var:simbol:normal, Nou,Balon,Adaugare,Ajutor,Paragraf,Cheie, *nume::
 var:optiune:max,buffer::
+var:margine:*dimensiune::
+var:distanta:*dimensiune::
 stopsetup
 
 startsetup

@@ -100,10 +100,14 @@
    \blabelgroup 
    \ifundefined{\r!object#2::#3}%   
      \elabelgroup \expandafter\dodosetobject
-   \else
+   \else % tzt, overload internal referenced objects to save entries 
      \elabelgroup \expandafter\gobblefivearguments
    \fi
    {#1}{#2}{#3}}
+
+\def\resetobject#1#2%
+  {\checkobjectreferences
+   \letbeundefined{\r!object#1::#2}}
 
 %D Somehow there is a rounding error problem in either \PDFTEX\
 %D or in viewers, or maybe it is conforming the specs. The next
@@ -111,40 +115,12 @@
 %D clip. 
 
 \def\objectoffset{1cm}
+  {}
 
 \def\dodosetobject#1#2#3%   
   {\bgroup
    \inobjecttrue
    \dowithnextbox{\dododosetobject{#1}{#2}{#3}\egroup}}
-
-% \def\dododosetobject#1#2#3%
-%   {\blabelgroup
-%    \dontshowcomposition % rather fuzzy in \setxvalue ... \hbox
-%    \@EA\xdef\csname\r!object#2::#3\endcsname
-%      {\noexpand\dohandleobject{#2}{#3}% 
-%         {\ifhbox\nextbox\hbox\else\vbox\fi}%
-%        %{\the\nextboxwd}{\the\nextboxht}{\the\nextboxdp}}%
-%         {\number\nextboxwd}{\number\nextboxht}{\number\nextboxdp}}%
-%    \expanded % freeze the dimensions since \dostartobject may use \nextbox
-%      {\dostartobject
-%         {#2}{#3}{\the\nextboxwd}{\the\nextboxht}{\the\nextboxdp}}%
-%    \ifcase#1\relax\else \ifdim\objectoffset>\zeropoint
-%      \scratchdimen\objectoffset
-%      \edef\width {\the\nextboxwd}%
-%      \edef\height{\the\nextboxht}%
-%      \edef\depth {\the\nextboxdp}%
-%      \setbox\nextbox\vbox spread 2\scratchdimen
-%        {\forgetall
-%         \vss\hbox spread 2\scratchdimen{\hss\flushnextbox\hss}\vss}%
-%      \setbox\nextbox\hbox
-%        {\hskip-\scratchdimen\lower\scratchdimen\flushnextbox}% 
-%      \nextboxwd\width
-%      \nextboxht\height
-%      \nextboxdp\depth
-%    \fi \fi
-%    \flushnextbox
-%    \dostopobject
-%    \elabelgroup}
 
 \def\dododosetobject#1#2#3%
   {\blabelgroup
@@ -259,7 +235,11 @@
 %D These commands are to be called by the \type{\startobject},
 %D \type{\stopobject} and \type{\insertobject} specials.
 
-\newif\ifobjectreferencing \objectreferencingtrue
+
+\def\objectreferenced{\global\chardef\crossreferenceobject\plusone} 
+\def\driverreferenced{\global\chardef\crossreferenceobject\zerocount}
+
+\objectreferenced
 
 \def\checkobjectreferences
   {\startnointerference
@@ -267,14 +247,6 @@
    \doutilities{objectreferences}\jobname\empty\relax\relax
    \global\let\checkobjectreferences\relax
    \stopnointerference}
-
-% \def\setobjectreferences
-%   {\def\objectreference##1##2##3%
-%      {\ifundefined{\r!driver##1::##2}%
-%         \setxvalue{\r!driver##1::##2}{##3}%
-%       \else
-%         \showmessage\m!references{31}{[##1 ##2=>##3]}%
-%       \fi}}
 
 \def\setobjectreferences
   {\def\objectreference##1##2##3##4%
@@ -284,62 +256,31 @@
         \showmessage\m!references{31}{[##1 ##2=>##3/##4]}%
       \fi}}
 
-% \def\resetobjectreferences
-%   {\let\objectreference\gobblethreearguments}
-
 \def\resetobjectreferences
   {\let\objectreference\gobblefourarguments}
 
 \resetobjectreferences
 
-% \def\dosetobjectreference#1#2#3%
-%   {\checkobjectreferences
-%    \blabelgroup
-%    \ifobjectreferencing 
-%      \edef\dowritereference % why not immediate ? 
-%        {\writeutilitycommand{\objectreference{#1}{#2}{#3}}}%
-%      \dowritereference
-%    \else
-%      \global\objectreferencingtrue
-%    \fi
-%    \setxvalue{\r!driver#1::#2}{#3}%
-%    \elabelgroup}
-
 \def\dosetobjectreference#1#2#3%
   {\checkobjectreferences
    \blabelgroup
-   \ifobjectreferencing
+   \ifcase\crossreferenceobject
+     \objectreferenced
+   \else
      \edef\dowritereference
        {\writeutilitycommand{\objectreference{#1}{#2}{#3}{\noexpand\realfolio}}}%
      \dowritereference
-   \else
-     \global\objectreferencingtrue
    \fi
-   \ifundefined{\r!driver#1::#2}%
+  %\ifundefined{\r!driver#1::#2}% could have been be replaced ! 
      \setxvalue{\r!driver#1::#2}{{#3}{\noexpand\realfolio}}%
-   \fi
+  %\fi % so no test ! ! ! ! (pdftex fails on undefined objects) 
    \elabelgroup}
 
 \def\dosetdriverreference
   {\driverreferenced\dosetobjectreference}
 
-\def\driverreferenced
-  {\global\objectreferencingfalse}
-
 \def\defaultobjectreference#1#2{0}
 \def\defaultobjectpage     #1#2{\realfolio}
-
-% \def\dogetobjectreference#1#2#3%
-%   {\checkobjectreferences
-%    \blabelgroup 
-%    \ifundefined{\r!driver#1::#2}%
-%      \showmessage\m!references
-%        {30}{[#1 #2=>\defaultobjectreference{#1}{#2}]}%
-%      \xdef#3{\defaultobjectreference{#1}{#2}}%
-%    \else
-%      \global\@EA\let\@EA#3\csname\r!driver#1::#2\endcsname
-%    \fi
-%    \elabelgroup}
 
 \def\dodogetobjectreference#1#2#3#4#5%
   {\checkobjectreferences
@@ -358,8 +299,8 @@
 \def\dogetobjectreferencepage
   {\dodogetobjectreference\secondoftwoarguments\defaultobjectpage}
 
-\def\setobject     {\global\objectreferencingfalse\dosetobject1}
-\def\settightobject{\global\objectreferencingfalse\dosetobject0}
+\def\setobject     {\driverreferenced\dosetobject1}
+\def\settightobject{\driverreferenced\dosetobject0}
 
 %D \macros
 %D   {doifobjectfoundelse,doifobjectreferencefoundelse}

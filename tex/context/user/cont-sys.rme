@@ -13,17 +13,42 @@
 
 \unprotect
 
+% Occasionally we will support both A4 and letter in 
+% styles. If you want letter size paper to be the default, 
+% uncomment:
+%
+% \enablemode[\systemmodeprefix letter]
+%
+% If you always want to default to letter, you may uncomment
+% the following line, but beware: it makes your documents less
+% portable:  
+%
+% \setuppapersize[letter][letter]
+%
 % If you want some extras, just uncomment the following 
 % line:
 %
-% \usemodule[plus]
+% \usemodule[plus] % experimental code 
 %
 % Here you can take care of overloading some (style) 
 % defaults. What goes here, depends on your local system. 
 %
 % The following commands sets the default font encoding:
 %
+% \setupencoding [\s!default=texnansi] 
+%
+% or: 
+%
 % \setupencoding [\s!default=ec] 
+%
+% If you want the default berry names: 
+%
+% \usetypescript [berry] [\defaultencoding]
+%
+% If you run into missing font metrics kind of problems, 
+% you may want to uncomment: 
+% 
+% \usetypescript[adobekb] [\defaultencoding]
 %
 % You can let \CONTEXT\ load the map files for \PDFTEX. 
 %
@@ -48,11 +73,9 @@
 % \preloadmapfile [il2-ams-cmr]
 % \preloadmapfile [pl0-ams-cmr]
 %
-% If you want the default berry names (ec and 8r only): 
-%
-% \usetypescript [berry] [\defaultencoding]
-%
-% Overload Lucida by Times cum suis:
+% Some styles default to Lucida Bright. You can overload 
+% Lucida by Times cum suis. Watch out, the pos collection 
+% is not scaled relatively. 
 %
 % \definetypescriptsynonym [lbr] [pos] 
 %
@@ -115,6 +138,8 @@
 
 % You can also load additional encodings here: 
 
+% \useencoding[x5]
+%
 % \useregime[cyr]
 % \useencoding[cyr]
 % \enableregime[cp1251]

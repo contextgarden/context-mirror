@@ -1615,11 +1615,11 @@
     [\c!binnen]
     [\c!command!]
     []
-  \variable   
+  \variable
     [\c!regelcorrectie]
     [\v!aan,\v!uit]
     [\v!aan]
-  \variable   
+  \variable
     [\c!dieptecorrectie]
     [\v!aan,\v!uit]
     [\v!aan]
@@ -3308,15 +3308,15 @@
     [\c!snijwit]
     [\c!dimension!]
     []
-  \variable 
+  \variable
     [\c!tekstafstand]
     [\c!dimension!]
     []
-  \variable 
+  \variable
     [\c!tekstbreedte]
     [\c!number!]
     []
-  \variable 
+  \variable
     [\c!tekstmarge]
     [\c!dimension!]
     []
@@ -3367,7 +3367,7 @@
   \type
     [\c!opt!\c!vals!]
   \value
-    [\v!boven,\v!beide,\v!onder,-\v!boven,-\v!beide,-\v!onder,
+    [\v!boven,\v!beide,\v!onder,-\v!boven,-\v!beide,-\v!onder,\v!tekst,
      \v!hoog,\v!midden,\v!laag,\v!pagina,\v!geen,\v!standaard,
      \v!ruim,\v!passend,\v!diepte,\v!regel,\c!dimension!]
     [\v!standaard]
@@ -3515,7 +3515,7 @@
     [\v!start]
   \variable
     [\c!breedte]
-    [\c!dimension!]          
+    [\c!dimension!]
     []
   \variable
     [\c!commando]
@@ -3622,6 +3622,10 @@
     [\c!commando]
     [\c!twoarguments!]
     []
+  \variable
+    [\c!marge]
+    [\c!dimension!]
+    [0pt]
 \stopsetup
 
 \startsetup
@@ -3636,6 +3640,10 @@
   \variable
     [\c!breedte]
     [\v!passend,\v!ruim,\v!max,\c!dimension!]
+    [\v!passend]
+  \variable
+    [\c!minbreedte]
+    [\v!passend,\c!dimension!]
     [\v!passend]
   \variable
     [\c!kopletter]
@@ -3677,6 +3685,10 @@
     [\c!scheider]
     [\c!text!]
     [.]
+  \variable
+    [\c!commando]
+    [\c!command!]
+    []
   \variable
     [\c!afstand]
     [\c!dimension!]
@@ -3769,9 +3781,9 @@
     [\c!rechtermargeafstand]
     [\c!dimension!]
     [\!!zeropoint]
-  \variable 
+  \variable
     [\c!zijuitlijnen]
-    [\v!normaal,\v!regel]        
+    [\v!normaal,\v!regel]
     [\v!normaal]
   \inheritvariables
     [\y!setupframed]
@@ -3987,11 +3999,11 @@
     [\c!scheider]
     [\c!text!]
     [~]
-  \variable 
+  \variable
     [\c!autofile]
     [\v!ja,\v!nee,\v!pagina]
     [\v!nee]
-  \variable 
+  \variable
     [\c!globaal]
     [\v!ja,\v!nee]
     [\v!nee]
@@ -4112,7 +4124,7 @@
 \startsetup
   \command
     [\y!listsymbol]
-  \type 
+  \type
     [\c!val!\c!arg!]
   \value
     [\c!identifier!]
@@ -4431,7 +4443,7 @@
     [{)}]
   \variable
     [\c!uitlijnen]
-    [\v!links,\v!midden,\v!rechts] 
+    [\v!links,\v!midden,\v!rechts]
     []
   \variable
     [\c!strut]
@@ -5062,11 +5074,11 @@
     []
   \variable
     [\c!plaatskop]
-    [\v!ja,\v!nee,\v!leeg] % leeg: wel markering 
+    [\v!ja,\v!nee,\v!leeg] % leeg: wel markering
     [\v!ja]
   \variable
     [\c!verhoognummer]
-    [\v!ja,\v!nee,\v!lijst,\c!filename!] % lijst: wel lijstentry 
+    [\v!ja,\v!nee,\v!lijst,\c!filename!] % lijst: wel lijstentry
     [\v!ja]
   \variable
     [\c!resetnummer]
@@ -5837,7 +5849,7 @@
     [\c!number!]
     []
   \value
-    [\v!dag,\v!dag+,\v!maand,\v!weekdag,\v!jaar, % \v!WEEKDAG,\v!MAAND, 
+    [\v!dag,\v!dag+,\v!maand,\v!weekdag,\v!jaar, % \v!WEEKDAG,\v!MAAND,
      dd,dd+,mm,jj,yy,d,d+,m,j,y,\v!kenmerk]
     [\v!dag,\v!maand,\v!jaar]
 \stopsetup
@@ -6432,11 +6444,11 @@
     []
   \variable
     [\c!linkermargeafstand]
-    [\c!dimension!]         
+    [\c!dimension!]
     [0pt]
   \variable
     [\c!rechtermargeafstand]
-    [\c!dimension!]         
+    [\c!dimension!]
     [0pt]
   \variable
     [\c!plaats]
@@ -7042,6 +7054,10 @@
     [\c!lijn]
     [\v!normaal,\v!regel]
     [\v!regel]
+  \variable
+    [\c!splitsen]
+    [\v!ja,\v!nee]
+    [\v!ja]
 \stopsetup
 
 \startsetup
@@ -8418,6 +8434,14 @@
     [\c!optie]
     [\v!max,\v!buffer]
     []
+  \variable
+    [\c!marge]
+    [\c!dimension!]
+    [2.5em]
+  \variable
+    [\c!afstand]
+    [\c!dimension!]
+    [1em]
 \stopsetup
 
 \startsetup

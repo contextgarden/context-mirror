@@ -14,12 +14,15 @@
 %D This module needs a drastic update: can be made simplier
 %D and faster; code can move to core module. 
 
-%D \gdef\starttest%
+%D Also, commenting the previous versions code will clear up
+%D some memory.
+
+%D \gdef\starttest
 %D   {\blanko
 %D    \noindent
 %D    \halign\bgroup\tt##\hskip2em&##\hskip2em&##\cr}
 %D
-%D \gdef\stoptest%
+%D \gdef\stoptest
 %D   {\egroup
 %D    \blanko}
 %D
@@ -444,7 +447,7 @@
    \futurelet\next\dodotextmodediscretionary}
 
 \def\dododotextmodediscretionary
-  {\let\nextnextnext=\egroup
+  {\let\nextnextnext\egroup
    \ifx\discretionarycommand\next
      \checkafterdiscretionary
      \bgroup
@@ -487,14 +490,14 @@
    \fi\fi\fi\fi\fi\fi\fi\fi\fi
    \nextnextnext}
 
-\def\checkbeforediscretionary%
+\def\checkbeforediscretionary
   {\setbox0\lastbox
    \ifdim\wd0=\zeropoint
      \let\postwordbreak\prewordbreak
    \fi
    \box0\relax}
 
-\def\checkafterdiscretionary%
+\def\checkafterdiscretionary
   {\ifx,\nextnext
      \def\nextnextnext{\afterassignment\egroup\let\next=}%
    \else
@@ -533,7 +536,7 @@
 %D \goto{Some||Long||Word}
 %D \stoptypen
 
-\def\currentspaceskip%
+\def\currentspaceskip
   {\fontdimen2\font\!!plus\fontdimen3\font\!!minus\fontdimen4\font\relax}
 
 % \def\fakecompoundhyphen% wrong
@@ -581,7 +584,7 @@
 %D
 %D which is defined as:
 
-\def\enableactivediscretionaries%
+\def\enableactivediscretionaries
   {\uccode`'=`'\relax \uccode`~=`~\relax \uccode`_=`_\relax
    \uccode`(=`(\relax \uccode`)=`)\relax \uccode`==`=\relax
    \uccode`<=`<\relax \uccode`>=`>\relax
@@ -611,7 +614,7 @@
 
 %D This time we use \type{\ifnum}:
 
-\def\activedododotextmodediscretionary%
+\def\activedododotextmodediscretionary
   {\let\nextnextnext\egroup
    \ifx\discretionarycommand\next
      \checkafterdiscretionary
@@ -825,6 +828,9 @@
 
 \definetextmodediscretionary >
   {\endofsubsentencespacing\prewordbreak\endofsubsentence}
+
+\definetextmodediscretionary . % not yet definitive 
+  {\prewordbreak\midsentence\prewordbreak}
 
 \definetextmodediscretionary ^
   {\prewordbreak\discretionary{\hbox{$|$}}{}{\hbox{$|$}}%
@@ -1064,8 +1070,7 @@
 \beginTEX
 
 \long\def\handlecompoundcharacterone#1#2%
-%  {\ifx#1#2%
-  {\if\string#1\string#2%
+  {\if\string#1\string#2% was: \ifx#1#2%
     %\def\next{\getvalue{\@nc@\string#1}\getvalue{\@nc@\string#2}}%
      \def\next{\getvalue{\@nc@\string#1}}%
    \else\expandafter\ifx\csname\@cc@\string#1\string#2\endcsname\relax
@@ -1076,8 +1081,7 @@
    \next}
 
 \long\def\handlecompoundcharactertwo#1#2#3%
-%  {\ifx#1#2%
-  {\if\string#1\string#2%
+  {\if\string#1\string#2% was: \ifx#1#2%
     %\def\next{\getvalue{\@nc@\string#1}\getvalue{\@nc@\string#2}#3}%
      \def\next{\getvalue{\@nc@\string#1}#3}%
    \else\@EA\ifx\csname\@cs@\string#1\string#2\string#3\endcsname\relax
@@ -1096,8 +1100,7 @@
 \beginETEX \ifcsname
 
 \long\def\handlecompoundcharacterone#1#2%
-%  {\ifx#1#2%
-  {\if\string#1\string#2%
+  {\if\string#1\string#2% was: \ifx#1#2%
     %\def\next{\getvalue{\@nc@\string#1}\getvalue{\@nc@\string#2}}%
      \def\next{\getvalue{\@nc@\string#1}}%
    \else\ifcsname\@cc@\string#1\string#2\endcsname
@@ -1108,8 +1111,7 @@
    \next}
 
 \long\def\handlecompoundcharactertwo#1#2#3%
-%  {\ifx#1#2%
-  {\if\string#1\string#2%
+  {\if\string#1\string#2% was: \ifx#1#2%
     %\def\next{\getvalue{\@nc@\string#1}\getvalue{\@nc@\string#2}#3}%
      \def\next{\getvalue{\@nc@\string#1}#3}%
    \else\ifcsname\@cs@\string#1\string#2\string#3\endcsname
@@ -1173,7 +1175,7 @@
 %D earlier, this one also looks ahead for spaces and grouping
 %D tokens.
 
-\def\domidworddiscretionary%
+\def\domidworddiscretionary
   {\ifx\next\blankspace\else
    \ifx\next\bgroup    \else
    \ifx\next\egroup    \else

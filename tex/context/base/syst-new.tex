@@ -226,10 +226,16 @@
 % here ? 
 
 \def\dosetrawvalue #1#2#3{\@EA \def\csname#1#2\endcsname{#3}}
+\def\dosetrawevalue#1#2#3{\@EA\edef\csname#1#2\endcsname{#3}}
 \def\dosetrawgvalue#1#2#3{\@EA\gdef\csname#1#2\endcsname{#3}}
+\def\dosetrawxvalue#1#2#3{\@EA\xdef\csname#1#2\endcsname{#3}}
 
 \def\getrawparameters      {\dogetparameters\dosetrawvalue }
-\def\globalgetrawparameters{\dogetparameters\dosetrawgvalue}
+\def\getraweparameters     {\dogetparameters\dosetrawevalue}
+\def\getrawgparameters     {\dogetparameters\dosetrawgvalue}
+\def\getrawxparameters     {\dogetparameters\dosetrawxvalue}
+
+\def\globalgetrawparameters{\dogetparameters\dosetrawgvalue} % obsolete 
 
 \def\splitskip#1%
   {\scratchskip\zeropoint \!!plus 1pt \!!minus 1pt
@@ -552,16 +558,6 @@
     \long\xdef\@@expanded{\noexpand#1}%
     \let\notexpanded\empty
     \@@expanded}
-
-% \def\doifdimensionelse#1%
-%   {\afterassignment\dodoifdimensionelse\scratchdimen=#1pt\relax\empty\empty\empty\empty}
-% 
-% \def\dodoifdimensionelse#1#2#3#4%
-%   {\ifx#3\relax
-%      \expandafter\firstoftwoarguments
-%    \else
-%      \expandafter\secondoftwoarguments
-%    \fi}
 
 % for Simon ; watch how we make them fully expandable (i.e. 
 % no \type {\relax}es) popping up

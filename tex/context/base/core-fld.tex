@@ -47,9 +47,12 @@
      {\processcommalist[##1]\dopresetfieldsymbol}%
    \@EA\processcommalist\@EA[#1]\dopresetfieldsymbols}
 
-\def\definedefaultsymbols%
+\def\definedefaultsymbols
   {\definesymbol[defaultyes][$\times$]%
    \definesymbol[defaultno][$\cdot$]}
+
+\def\resetfieldsymbol[#1]% for experimental usage only 
+  {\resetobject{SYM}{#1}}
 
 %D The interface to the specials. DEFAULT NOG ANDERS  
 
@@ -577,7 +580,7 @@
      \getfield{#1}%
 \iftrialtypesetting\else
      \ifx\@@FieldType\empty
-       \writestatus{\m!fields}{unknown field #1}%
+       \writestatus\m!fields{unknown field #1}%
      \else
        \let\@@FieldMode\fieldparentmode
       %\def\docommando##1{\addtocommalist{##1}\@@FieldKids}%
@@ -622,7 +625,7 @@
        \let\@@FieldLabel\@@FieldName
      \fi
      \ifx\@@FieldType\empty
-       \writestatus{\m!fields}{unknown field #2}%
+       \writestatus\m!fields{unknown field #2}%
      \else\ifcase\@@FieldFree\relax
        \doifdefinedelse{\strippedcsname\setupfield\@@FieldGroup}
          {\let\dosetupfield=#1\getvalue{\strippedcsname\setupfield\@@FieldGroup}}
@@ -632,9 +635,9 @@
        \changefield{#2}%
 \fi
      \else\ifcase\@@FieldAuto\relax
-     % \writestatus{\m!fields}{field #2 already typeset}%
+     % \writestatus\m!fields{field #2 already typeset}%
      \else
-     % \writestatus{\m!fields}{field #2 automatically copied}%
+     % \writestatus\m!fields{field #2 automatically copied}%
        \nextsystemfield
        \copyfield[\@@FieldName][\currentsystemfield]%
        \dotripleempty\dofield[#1][\currentsystemfield][#3]% get the if's right
@@ -715,10 +718,10 @@
      \def\docommando##1{\dodosetupfield[##1][][][][]}%
      \processcommalist[#1]\docommando
    \else
-     \writestatus{\m!fields}{provide either 1, 2, 3 or 5 arguments}%
+     \writestatus\m!fields{provide either 1, 2, 3 or 5 arguments}%
    \fi\fi\fi\fi}
 
-\def\setupfield%
+\def\setupfield
   {\doquintupleempty\dosetupfield}
 
 \def\dosetupfields[#1][#2][#3][#4]%
@@ -730,14 +733,14 @@
            \getvalue{\strippedcsname\setupfield##1}}
           {\setvalue{\strippedcsname\setupfield##1}{\dosetupfield[##1][#1,##2][#2,##3][#3,##4][#4,##5]}}}%
    \else\iffirstargument
-     \doifelse{#1}{\v!reset}
+     \doifelse{#1}\v!reset
        {\let\dodosetupfield\normaldodosetupfield}
        {\setupfields[][][][#1]}% checken 
    \else
-     \writestatus{\m!fields}{provide either 1 or 4 arguments}%
+     \writestatus\m!fields{provide either 1 or 4 arguments}%
    \fi\fi}
 
-\def\setupfields%
+\def\setupfields
   {\doquadrupleempty\dosetupfields}
 
 % opties: veld, label, kader, vertikaal/horizontaal

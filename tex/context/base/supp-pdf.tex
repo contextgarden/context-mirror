@@ -1,6 +1,6 @@
 %D \module
 %D   [       file=supp-pdf,
-%D        version=2003.01.20,
+%D        version=2003.08.12,
 %D          title=\CONTEXT\ Support Macros,
 %D       subtitle=\METAPOST\ to \PDF\ conversion,
 %D         author=Hans Hagen,
@@ -52,6 +52,10 @@
     \let\PDFcode\pdfliteral
   \fi
 \fi
+
+%D First we define a handy constant: 
+
+\bgroup \catcode`\%=\@@other \xdef\letterpercent{\string%} \egroup
 
 %D \macros 
 %D   {pdfimage,pdfimages,pdfclippedimage}
@@ -213,14 +217,14 @@
    \global\let\PDFxoffset\PDFxoffset
    \global\let\PDFyoffset\PDFyoffset}
 
-\def\setPDFmediabox#1[#2 #3 #4 #5]#6\done%
+\def\setPDFmediabox#1[#2 #3 #4 #5]#6\done
   {\dimen2=#2bp\dimen2=-\dimen2
    \dimen4=#3bp\dimen4=-\dimen4
    \dimen6=#4bp\advance\dimen6 \dimen2
    \dimen8=#5bp\advance\dimen8 \dimen4
    \setPDFboundingbox{\dimen2}{\dimen4}{\dimen6}{\dimen8}\PDFxscale\PDFyscale}
 
-\def\checkPDFmediabox#1/MediaBox#2#3\done%
+\def\checkPDFmediabox#1/MediaBox#2#3\done
   {\ifx#2\relax \else
      \message{mediabox}%
      \setPDFmediabox#2#3\done
@@ -230,7 +234,7 @@
 %D with a line handling macro that changes it's behavior when
 %D the stream operators are encountered.
 
-\def\handlePDFline%
+\def\handlePDFline
   {\ifx\@@PDFstream@@\fileline
      \let\doprocessPDFline\copyPDFobject
      \startPDFtoPDF
@@ -238,7 +242,7 @@
      \expandafter\checkPDFmediabox\fileline/MediaBox\relax\done
    \fi\fi}
 
-\def\copyPDFobject%
+\def\copyPDFobject
   {\ifx\@@PDFendstream@@\fileline
      \ifPDFmediaboxprefered
        \let\doprocessPDFline\findPDFmediabox
@@ -250,7 +254,7 @@
      \PDFcode{\fileline}%
    \fi}
 
-\def\findPDFmediabox%
+\def\findPDFmediabox
   {\expandafter\checkPDFmediabox\fileline/MediaBox\relax\done}
 
 %D The main conversion macro wraps the \PDF\ codes in a box
@@ -391,12 +395,21 @@
 \def \PSnfont            {nfont}    % was needed for TUG98 proceedings 
 \def \PSspecial          {special}  % extensions to MetaPost
  
-\def \PSBoundingBox      {BoundingBox:}
-\def \PSHiResBoundingBox {HiResBoundingBox:}
-\def \PSExactBoundingBox {ExactBoundingBox:}
-\def \PSMetaPostSpecial  {MetaPostSpecial:}
-\def \PSMetaPostSpecials {MetaPostSpecials:}
-\def \PSPage             {Page:}
+%D A previous version set \type {%} to ignore, which 
+%D simplified the following definitions. At the start of 
+%D conversion the percent character was made active again. 
+%D Because the whole graphic is one paragraph (there are no 
+%D empty lines) this does not give the desired effect. This 
+%D went unnoticed untill Scott Pakin sent me a test file 
+%D percent characters in a string. So, from now on we have 
+%D to prefix the following strings with percentages. 
+
+\edef \PSBoundingBox      {\letterpercent\letterpercent BoundingBox:}
+\edef \PSHiResBoundingBox {\letterpercent\letterpercent HiResBoundingBox:}
+\edef \PSExactBoundingBox {\letterpercent\letterpercent ExactBoundingBox:}
+\edef \PSMetaPostSpecial  {\letterpercent\letterpercent MetaPostSpecial:}
+\edef \PSMetaPostSpecials {\letterpercent\letterpercent MetaPostSpecials:}
+\edef \PSPage             {\letterpercent\letterpercent Page:}
 
 %D By the way, the \type {setcmykcolor} operator is not
 %D output by \METAPOST\ but can result from converting the
@@ -501,12 +514,11 @@
 %D comments are processed and use the simple alternative 
 %D when dealing with comments. 
 
-\def\doresetMPstack%
+\def\doresetMPstack
   {\nofMParguments0 }
 
-\def\resetMPstack%
-  {\catcode`\%=\@@active
-   \let\handleMPgraphic\handleMPendgraphic
+\def\resetMPstack
+  {\let\handleMPgraphic\handleMPendgraphic
    \let\resetMPstack\doresetMPstack
    \resetMPstack}
 
@@ -542,7 +554,7 @@
 \catcode`B=\@@begingroup
 \catcode`E=\@@endgroup
 \gdef\ignoreMPspecials|
-  B\def%BE|
+  B\let%\letterpercent|
    \def[BE|
    \def]BE|
    \def{BE|
@@ -556,11 +568,12 @@
 \gdef\setMPspecials|
   B\setnaturalcatcodes
    \catcode`\\=\@@escape
-   \catcode`\%=\@@active
+   \catcode`\%=\@@active 
    \catcode`\[=\@@active
    \catcode`\]=\@@active
    \catcode`\{=\@@active
    \catcode`\}=\@@active
+   \lccode`\%=`\% | otherwise it's seen as a number
    \def\(B\char40\relax     E|
    \def\)B\char41\relax     E|
    \def\\B\char92\relax     E|
@@ -576,7 +589,9 @@
    \def\9B\octalMPcharacter9EE
 \egroup
 
-%D We use the comment symbol as a sort of trigger:
+%D We use the comment symbol as a sort of trigger. Beware! 
+%D The whole graphic is seen as on eparagraph, which means 
+%D that we cannot change the catcodes in between. 
 
 \bgroup
 \catcode`\%=\@@active
@@ -596,9 +611,8 @@
 %D originates in the redefinition by \LATEX\ of the
 %D \type{\input} primitive.)
 
-\def\startMPconversion%
-  {\catcode`\%=\@@ignore
-   \ignoreMPspecials
+\def\startMPconversion
+  {\ignoreMPspecials
    \handleMPsequence}
 
 %D Here comes the main loop. Most arguments are numbers. This
@@ -792,7 +806,7 @@
 
 %D Unless defined otherwise, we simply ignore specialcomments. 
 
-\def\handleMPspecialcomment%
+\def\handleMPspecialcomment
   {\doresetMPstack
    \let\handleMPsequence\dohandleMPsequence
    \handleMPsequence}
@@ -935,7 +949,7 @@
 %D at the same time keep the output readable by packing the
 %D literals.
 
-\def\handleMPsetdash%
+\def\handleMPsetdash
   {\bgroup
    \def\somestring{[}%
    \scratchcounter1
@@ -975,7 +989,7 @@
 %D The common operator in these sequences is \type{dtransform},
 %D so we can use this one to trigger setting the linewidth.
 
-\def\handleMPdtransform%
+\def\handleMPdtransform
   {\ifdim\gMPa1pt>\!!zeropoint
      \PDFcode{\gMPa1 w}%
      \def\next##1 ##2 ##3 ##4 ##5 ##6 {\handleMPsequence}%
@@ -1015,7 +1029,7 @@
 %D the path loop is done by means of the recursely called
 %D macro \type{\handleMPsequence}.
 
-\def\handleMPpath%
+\def\handleMPpath
   {\chardef\finiMPpath0
    \let\closeMPpath\relax
    \let\flushMPpath\flushnormalMPpath
@@ -1040,7 +1054,7 @@
      \PDFcode{\!MP\lastMPmoveX\space \!MP\lastMPmoveY\space m}%
    \fi}
 
-\def\flushnormalMPpath%
+\def\flushnormalMPpath
   {\scratchcounter\nofMPsegments
    \nofMPsegments1
    \loop
@@ -1073,7 +1087,7 @@
      \PDFcode{\!MP\a\space\!MP\b\space m}%
    \fi}
 
-\def\flushconcatMPpath%
+\def\flushconcatMPpath
   {\scratchcounter\nofMPsegments
    \nofMPsegments1
    \loop
@@ -1119,7 +1133,7 @@
 \def\doMPexpanddimen#1
   {\multiply\dimen#1 \MPconcatfactor\relax}
 
-\def\presetMPconcat%
+\def\presetMPconcat
   {\dimen 0=\gMPs1 pt \doMPreducedimen 0    % r_x
    \dimen 2=\gMPs2 pt \doMPreducedimen 2    % s_x
    \dimen 4=\gMPs3 pt \doMPreducedimen 4    % s_y
@@ -1127,7 +1141,7 @@
    \dimen 8=\gMPs5 pt \doMPreducedimen 8    % t_x
    \dimen10=\gMPs6 pt \doMPreducedimen10 }  % t_y
 
-\def\presetMPscale%
+\def\presetMPscale
   {\dimen 0=\gMPs1 pt \doMPreducedimen 0 
    \dimen 2=\!!zeropoint
    \dimen 4=\!!zeropoint
@@ -1135,7 +1149,7 @@
    \dimen 8=\!!zeropoint 
    \dimen10=\!!zeropoint}  
 
-\def\noMPtranslate% use this one grouped
+\def\noMPtranslate % use this one grouped
   {\dimen 8=\!!zeropoint                    % t_x
    \dimen10=\!!zeropoint}                   % t_y
 
@@ -1617,10 +1631,10 @@
 %D The path is output using the values saved on the stack. If
 %D needed, all coordinates are recalculated.
 
-\def\finishMPpath%
+\def\finishMPpath
   {\PDFcode{\ifcase\finiMPpath W n\or S\or f\or B\fi}}
 
-\def\processMPpath%
+\def\processMPpath
   {\checkMPpath
    \ifcase\nofMPsegments\else
      \flushMPpath
@@ -1656,12 +1670,12 @@
 %D specification. We therefore can output the \type{cm} at
 %D the moment we encounter it.
 
-\def\handleMPpathconcat%
+\def\handleMPpathconcat
   {\presetMPconcat
    \PDFcode{\gMPs1 \gMPs2 \gMPs3 \gMPs4 \gMPs5 \gMPs6 cm}%
    \resetMPstack}
 
-\def\handleMPpathscale%
+\def\handleMPpathscale
   {\presetMPscale
    \PDFcode{\gMPs1 0 0 \gMPs2 0 0 cm}%
    \resetMPstack}
@@ -1771,7 +1785,7 @@
      \startMPresources
      \doprocessMPtoPDFfile{#1}{#2}{#3}} % {#1}{0#2}{0#3} would be saver 
 
-\def\processMPtoPDFfile% file xscale yscale 
+\def\processMPtoPDFfile % file xscale yscale 
   {\bgroup
    \let\finishMPgraphic\egroup
    \doprocessMPtoPDFfile}
@@ -1917,7 +1931,7 @@
 %D
 %D This option only works in \CONTEXT\ combined with \ETEX. 
 
-\def\twodigitMPoutput%
+\def\twodigitMPoutput
   {\let\!MP        \twodigitrounding
    \def\!MPgMPs##1{\twodigitrounding{\gMPs##1}}%
    \def\!MPgMPa##1{\twodigitrounding{\gMPa##1}}}

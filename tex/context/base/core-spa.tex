@@ -869,7 +869,7 @@
 \def\nietinspringen{\inspringen[\v!nee,\v!volgende]}
 \def\welinspringen {\inspringen[\v!ja,\v!eerste]}
 
-\def\dochecknextindentation#1% internal one 
+\def\dochecknextindentation#1% internal one
   {\checknextindentation[\getvalue{#1\c!springvolgendein}]}
 
 \def\checknextindentation[#1]%
@@ -881,7 +881,7 @@
 \def\doindentation% too simple
   {\gdef\checkindentation{\global\indentationtrue}}
 
-\ifx\autoindentation\undefined 
+\ifx\autoindentation\undefined
   \let\autoindentation\relax
 \fi
 
@@ -923,7 +923,7 @@
 \def\removelastspace{\ifhmode\unskip\fi}
 \def\nospace        {\removelastspace\ignorespaces}
 
-% in tables we need: 
+% in tables we need:
 %
 % \def\fixedspace   {\hskip.5em\relax}
 %
@@ -933,9 +933,9 @@
   {\setbox\scratchbox\hbox\ifmmode{$0$}\else{0}\fi
    \hskip\wd\scratchbox\relax}
 
-\def\fixedspaces    
+\def\fixedspaces
   {\catcode`\~=\@@active
-   \def~{\fixedspace}} 
+   \def~{\fixedspace}}
 
 % \def\removeunwantedspaces{\ifhmode\unskip\unskip\unskip\unskip\unskip\fi}
 
@@ -1351,9 +1351,6 @@
 \def\verticalstrut  {\normalvbox{\hsize\zeropoint\strut}}
 \def\horizontalstrut{\normalhbox                {\strut}}
 
-\def\showstruts
-  {\setteststrut}
-
 % Hieronder volgen enkele instellingen en macro's ten behoeve
 % van de interlinie en \strut. De waarden 2.8, 0.07, 0.72 en
 % 0.28 zijn ooit eens ontleend aan INRS-TEX en moeten wellicht
@@ -1545,18 +1542,18 @@
 %    \dosetstrut}
 
 \def\setstrut
-  {\strutdimen\normallineheight       
-   \strutdimen\strutheightfactor\strutdimen           
-   \strutdimen\spacingfactor\strutdimen           
-   \edef\strutheight{\the\strutdimen}% 
-   \strutdimen\normallineheight     
+  {\strutdimen\normallineheight
+   \strutdimen\strutheightfactor\strutdimen
+   \strutdimen\spacingfactor\strutdimen
+   \edef\strutheight{\the\strutdimen}%
+   \strutdimen\normallineheight
    \ifgridsnapping
-     \advance\strutdimen-\strutheight 
+     \advance\strutdimen-\strutheight
    \else
-     \strutdimen\strutdepthfactor\strutdimen         
-     \strutdimen\spacingfactor\strutdimen         
+     \strutdimen\strutdepthfactor\strutdimen
+     \strutdimen\spacingfactor\strutdimen
    \fi
-   \edef\strutdepth{\the\strutdimen}% 
+   \edef\strutdepth{\the\strutdimen}%
    \dosetstrut}
 
 \def\setcharstrut#1%
@@ -1587,8 +1584,8 @@
    \advance\struttotal\strutdp}
 
 %D The dimen \type {\struttotal} holds the exact size of the
-%D strut; occasionally a one scaled point difference can show 
-%D up with the lineheight. 
+%D strut; occasionally a one scaled point difference can show
+%D up with the lineheight.
 
 %D Sometimes a capstrut comes in handy
 %D
@@ -1618,7 +1615,7 @@
   {\def\strutwidth{.8pt}%
    \setstrut}
 
-% simple version 
+% simple version
 %
 % \def\begstrut
 %   {\relax\ifcase\strutht\else
@@ -1627,7 +1624,7 @@
 %      \normalhskip\zeropoint
 %      \ignorespaces
 %    \fi}
-% 
+%
 % \def\endstrut
 %   {\relax\ifhmode\ifcase\strutht\else
 %      \removeunwantedspaces
@@ -1636,10 +1633,10 @@
 %      \strut
 %    \fi\fi}
 
-% when enabled, sigstruts will remove themselves if nothing 
+% when enabled, sigstruts will remove themselves if nothing
 % goes inbetween
 
-\newsignal\strutsignal \setfalse\sigstruts 
+\newsignal\strutsignal \setfalse\sigstruts
 
 \def\begstrut
   {\relax\ifcase\strutht\else
@@ -1659,7 +1656,7 @@
 \def\endstrut
   {\relax\ifhmode\ifcase\strutht\else
      \ifconditional\sigstruts
-       \ifdim\lastskip=\strutsignal 
+       \ifdim\lastskip=\strutsignal
          \unskip\unskip\unpenalty\setbox\scratchbox\lastbox
        \else
          \normalpenalty\@M % \!!tenthousand
@@ -1856,22 +1853,38 @@
 \def\rbox{\lrcbox\raggedright}
 \def\cbox{\lrcbox\raggedcenter}
 
+\def\iobox#1#2#3#% here #3# is not really needed
+  {\vbox\bgroup  % we want to return a vbox like the others
+     \hbox\bgroup% we need to pack the signal with the box
+       \signalrightpage
+       \dowithnextboxcontent
+         {\let\\=\endgraf\forgetall\doifrightpageelse#1#2}
+         {\box\nextbox\egroup\egroup}
+       \vbox#3}
+
+\def\obox{\iobox\raggedleft \raggedright} % outerbox
+\def\ibox{\iobox\raggedright\raggedleft}  % innerbox
+
 \def\dosetraggedvbox#1%
   {\processaction
      [#1]
      [  \v!links=>\let\raggedbox\lbox,
        \v!rechts=>\let\raggedbox\rbox,
        \v!midden=>\let\raggedbox\cbox,
+       \v!binnen=>\let\raggedbox\ibox,
+       \v!buiten=>\let\raggedbox\obox,
           \v!nee=>\def\raggedbox{\vbox\bgroup\raggedright\let\next=},
       \s!default=>\let\raggedbox\vbox,
       \s!unknown=>\let\raggedbox\vbox]}
 
 \def\dosetraggedhbox#1%
-  {\processaction
+  {\processaction % slow
      [#1]
-     [  \v!links=>\let\raggedbox\regellinks,
-       \v!rechts=>\let\raggedbox\regelrechts,
-       \v!midden=>\let\raggedbox\regelmidden,
+     [  \v!links=>\def\raggedbox{\doregelplaats\v!links },
+       \v!rechts=>\def\raggedbox{\doregelplaats\v!rechts},
+       \v!midden=>\def\raggedbox{\doregelplaats\v!midden},
+       \v!binnen=>\def\raggedbox{\doregelplaats\v!binnen},
+       \v!buiten=>\def\raggedbox{\doregelplaats\v!buiten},
       \v!normaal=>\let\raggedbox\hbox,
       \s!default=>\let\raggedbox\hbox,
       \s!unknown=>\let\raggedbox\hbox]}
@@ -1984,11 +1997,18 @@
 
 \setvalue{\@@ragged@@command\v!normaal}%
   {\let\raggedcommand\notragged}
+
+\setvalue{\@@ragged@@command\v!binnen}% not yet perfect
+  {\signalrightpage % may interfere
+   \getvalue{\@@ragged@@command\doifrightpageelse\v!rechts\v!links}}
+
+\setvalue{\@@ragged@@command\v!buiten}% not yet perfect
+  {\signalrightpage % may interfere
+   \getvalue{\@@ragged@@command\doifrightpageelse\v!links\v!rechts}}
 
 % Nodig i.v.m. inspringen eerste alineas
 
-\def\explicithmode%
-  {\unhbox\voidb@x}
+\def\explicithmode{\unhbox\voidb@x}
 
 % Nodig voor gebruikers
 
@@ -2754,16 +2774,18 @@
 
 \chardef\alignstrutmode=1
 
+% see later for the real definition, which in the simple case is:
+
 \def\doalignline#1#2% \\ == newline
-  {\bgroup
-   \setlocalhsize % new
-   \def\\{\egroup\par\doalignline{#1}{#2}\bgroup}%
-   \dowithnextbox
-     {\noindent
-      \hbox to \localhsize
-        {\ifcase\alignstrutmode\or\strut\fi
-          #1\unhbox\nextbox#2}\egroup}
-     \hbox}
+ {\bgroup
+  \setlocalhsize % new
+  \def\\{\egroup\par\doalignline{#1}{#2}\bgroup}%
+  \dowithnextbox
+    {\noindent
+     \hbox to \localhsize
+       {\ifcase\alignstrutmode\or\strut\fi
+         #1\unhbox\nextbox#2}\egroup}
+    \hbox}
 
 % directe commando's
 
@@ -2783,20 +2805,60 @@
 
 %D Experimental:
 
-\def\doxalignline#1#2%
+% simple version
+%
+% \def\doxalignline#1#2%
+%   {\bgroup
+%    \setlocalhsize
+%    \def\\{\egroup\par\doxalignline{#1}{#2}\bgroup}% inefficient
+%    \dowithnextbox
+%      {\noindent\hbox to \localhsize
+%         {\ifcase\alignstrutmode\or\strut\fi
+%          \signalrightpage
+%          \doifrightpageelse{#1\unhbox\nextbox#2}{#2\unhbox\nextbox#1}}%
+%       \egroup}
+%      \hbox}
+%
+% \setvalue{\s!do\v!regel\v!binnen}{\doxalignline\relax\hss}
+% \setvalue{\s!do\v!regel\v!buiten}{\doxalignline\hss\relax}
+%
+% more extensive:
+
+\def\doxalignline#1#2#3#4#5#6%
   {\bgroup
    \setlocalhsize
-   \def\\{\egroup\par\doxalignline{#1}{#2}\bgroup}% inefficient
+   \def\\{\egroup\par\doxalignline#1#2#3#4#5#6\bgroup}% inefficient
    \dowithnextbox
-     {\noindent\hbox to \localhsize
-        {\ifcase\alignstrutmode\or\strut\fi
-         \signalrightpage
-         \doifrightpageelse{#1\unhbox\nextbox#2}{#2\unhbox\nextbox#1}}%
-      \egroup}
+     {\noindent
+      \hbox to \localhsize
+        {#1\hskip\ifdone#2\else#3\fi#4%
+         \hbox to \localhsize
+           {\ifcase\alignstrutmode\or\strut\fi
+            \ifdone#5\unhbox\nextbox#6\else#6\unhbox\nextbox#5\fi}%
+         \hss}%
+        \egroup}
      \hbox}
 
-\setvalue{\s!do\v!regel\v!binnen}{\doxalignline\relax\hss}
-\setvalue{\s!do\v!regel\v!buiten}{\doxalignline\hss\relax}
+\def\doxcheckline
+  {\signalrightpage\doifrightpageelse\donetrue\donefalse}
+
+\setvalue{\s!do\v!regel\v!binnen      }{\doxalignline\doxcheckline++\zeropoint       \relax\hss  }
+\setvalue{\s!do\v!regel\v!buiten      }{\doxalignline\doxcheckline++\zeropoint       \hss  \relax}
+\setvalue{\s!do\v!regel\v!binnenmarge }{\doxalignline\doxcheckline-+\innermargintotal\relax\hss  }
+\setvalue{\s!do\v!regel\v!buitenmarge }{\doxalignline\doxcheckline+-\outermargintotal\hss  \relax}
+\setvalue{\s!do\v!regel\v!binnenrand  }{\doxalignline\doxcheckline-+\inneredgetotal  \relax\hss  }
+\setvalue{\s!do\v!regel\v!buitenrand  }{\doxalignline\doxcheckline+-\outeredgetotal  \hss  \relax}
+\setvalue{\s!do\v!regel\v!rugwit      }{\doxalignline\doxcheckline-+\rugwit          \relax\hss  }
+\setvalue{\s!do\v!regel\v!snijwit     }{\doxalignline\doxcheckline+-\snijwit         \hss  \relax}
+
+\setvalue{\s!do\v!regel\v!linkermarge }{\doxalignline\donefalse   --\leftmargintotal \hss  \relax}
+\setvalue{\s!do\v!regel\v!rechtermarge}{\doxalignline\donefalse   ++\rightmargintotal\relax\hss  }
+\setvalue{\s!do\v!regel\v!linkerrand  }{\doxalignline\donefalse   --\leftedgetotal   \hss  \relax}
+\setvalue{\s!do\v!regel\v!rechterrand }{\doxalignline\donefalse   ++\rightedgetotal  \relax\hss  }
+
+% ! ! ! beware, redefining \doalignline gives the wrong results ! ! !
+%
+% \def\doalignline{\doxalignline\donefalse++\zeropoint}
 
 %D Better:
 
@@ -2895,14 +2957,14 @@
 %D can be redefined as:
 %D
 %D \starttypen
-%D \def\strut%
+%D \def\strut
 %D   {\relax\ifmmode\else\hskip0pt\fi\copy\strutbox}
 %D \stoptypen
 %D
 %D Or more compatible:
 %D
 %D \starttypen
-%D \def\strut%
+%D \def\strut
 %D   {\relax\ifmmode
 %D      \copy\strutbox
 %D    \else
@@ -2912,6 +2974,64 @@
 %D
 %D In \CONTEXT\ however we save some processing time by putting
 %D an extra \type{\hbox} around the \type{\strutbox}.
+
+% moved from page-lin.tex to here (due to visualization added
+% in august 2003)
+%
+% \unexpanded \def\crlf
+%   {\ifhmode\unskip\else\strut\fi\ifcase\raggedstatus\hfil\fi\break}
+
+\unexpanded \def\crlf
+  {\ifhmode
+     \unskip
+     \prewordbreak\crlfplaceholder
+     \ifcase\raggedstatus\hfil\or\or\or\hfil\fi
+     \break
+   \else
+     \crlfplaceholder
+     \endgraf
+   \fi}
+
+\def\crlfplaceholder
+  {\strut}
+
+\def\settestcrlf
+  {\def\crlfplaceholder
+     {\hbox to \zeropoint
+        {\strut{\infofont\kern.25em}\lohi{\infofont CR}{\infofont LF}\hss}}}
+
+%D \starttyping
+%D % \setuplayout[grid=yes] \showgrid
+%D
+%D \startbuffer
+%D test 1\crlf
+%D test 2\crlf
+%D
+%D \crlf test 3
+%D
+%D test 4\crlf
+%D test 5
+%D
+%D \crlf
+%D \crlf
+%D \crlf
+%D test 6
+%D \stopbuffer
+%D
+%D \hbox
+%D   {\hsize5em
+%D    \ruledvtop{\getbuffer}\enspace
+%D    \ruledvtop{\showstruts\getbuffer}\enspace
+%D    \hsize15em \setuptyping[before=,after=]%
+%D    \ruledvtop{\typebuffer}}
+%D \stoptyping
+
+\def\opeenregel % to be used grouped
+  {\def\crlf{\removelastspace\space}\let\\\crlf}
+
+\def\showstruts
+  {\setteststrut
+   \settestcrlf}
 
 \def\definehspace
   {\dotripleempty\dodefinehspace}
@@ -3005,8 +3125,8 @@
          \dostopgraphicgroup}}%
      \vbox}
 
-%D This works only in a properly strutted line, and is meant 
-%D for deeply burried operations, like in heads. 
+%D This works only in a properly strutted line, and is meant
+%D for deeply burried operations, like in heads.
 
 \def\fakedvadjust
   {\dowithnextbox

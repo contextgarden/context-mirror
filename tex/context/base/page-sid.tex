@@ -83,88 +83,34 @@
 \newdimen\sidefloatrightskip
 \newdimen\sidefloatmaximum
 
-% \def\setsidefloatskips
-%   {\global\sidefloatrightskip\zeropoint
-%    \global\sidefloatleftskip \zeropoint
-%    \rightorleftpageaction\donefalse\donetrue
-%    \ifdone
-%      \ifcase\sidefloattype
-%      \or % backspace 
-%        \global        \sidefloatleftskip \snijwit
-%      \or % leftedge
-%        \global        \sidefloatleftskip \rechtermargeafstand
-%        \global\advance\sidefloatleftskip \rechtermargebreedte
-%        \global\advance\sidefloatleftskip \rechterrandafstand
-%      \or % leftmargin
-%        \global        \sidefloatleftskip \rechtermargeafstand
-%      \or % leftside
-%      \or % rightside
-%      \or % rightmargin
-%        \global        \sidefloatrightskip\linkermargeafstand
-%      \or % rightedge
-%        \global        \sidefloatrightskip\linkermargeafstand
-%        \global\advance\sidefloatrightskip\linkermargebreedte
-%        \global\advance\sidefloatrightskip\linkerrandafstand
-%      \or % cutspace 
-%        \global        \sidefloatrightskip\rugwit
-%      \fi
-%    \else
-%      \ifcase\sidefloattype
-%      \or % backspace 
-%        \global        \sidefloatleftskip \rugwit
-%      \or % leftedge
-%        \global        \sidefloatleftskip \linkermargeafstand
-%        \global\advance\sidefloatleftskip \linkermargebreedte
-%        \global\advance\sidefloatleftskip \linkerrandafstand
-%      \or % leftmargin
-%        \global        \sidefloatleftskip \linkermargeafstand
-%      \or % leftside
-%      \or % rightside
-%      \or % rightmargin
-%        \global        \sidefloatrightskip\rechtermargeafstand
-%      \or % rightedge
-%        \global        \sidefloatrightskip\rechtermargeafstand
-%        \global\advance\sidefloatrightskip\rechtermargebreedte
-%        \global\advance\sidefloatrightskip\rechterrandafstand
-%      \or % cutspace 
-%        \global        \sidefloatrightskip\snijwit
-%      \fi
-%    \fi
-%    \ifdim\sidefloatrightskip>\zeropoint
-%      \doglobal\advance\sidefloatrightskip\rightskip 
-%    \fi
-%    \ifdim\sidefloatleftskip>\zeropoint
-%      \doglobal\advance\sidefloatleftskip\leftskip 
-%    \fi}
-
 \def\checksidefloatshift
   {\ifdim\sidefloatmaximum>\zeropoint
-     \ifcase\sidefloattype 
-       % invalid 
-     \or 
+     \ifcase\sidefloattype
+       % invalid
+     \or
        % backspace
-     \or 
-       \global\sidefloatshift-\sidefloatmaximum
-       \global\advance\sidefloatshift-\rightorleftpageaction \linkerrandafstand \rechterrandafstand
-       \global\advance\sidefloatshift-\rightorleftpageaction \linkermargebreedte \rechtermargebreedte
-       \global\advance\sidefloatshift-\rightorleftpageaction \linkermargeafstand \rechtermargeafstand
-     \or 
-       \global\sidefloatshift-\sidefloatmaximum
-       \global\advance\sidefloatshift-\rightorleftpageaction \linkermargeafstand \rechtermargeafstand
-     \or
-       % left 
-     \or
-       % right 
-     \or
-       \global\sidefloatshift-\sidefloatmaximum
-       \global\advance\sidefloatshift-\rightorleftpageaction \linkermargeafstand \rechtermargeafstand
      \or
        \global\sidefloatshift-\sidefloatmaximum
        \global\advance\sidefloatshift-\rightorleftpageaction \linkerrandafstand \rechterrandafstand
        \global\advance\sidefloatshift-\rightorleftpageaction \linkermargebreedte \rechtermargebreedte
        \global\advance\sidefloatshift-\rightorleftpageaction \linkermargeafstand \rechtermargeafstand
      \or
-       % cutspace 
+       \global\sidefloatshift-\sidefloatmaximum
+       \global\advance\sidefloatshift-\rightorleftpageaction \linkermargeafstand \rechtermargeafstand
+     \or
+       % left
+     \or
+       % right
+     \or
+       \global\sidefloatshift-\sidefloatmaximum
+       \global\advance\sidefloatshift-\rightorleftpageaction \linkermargeafstand \rechtermargeafstand
+     \or
+       \global\sidefloatshift-\sidefloatmaximum
+       \global\advance\sidefloatshift-\rightorleftpageaction \linkerrandafstand \rechterrandafstand
+       \global\advance\sidefloatshift-\rightorleftpageaction \linkermargebreedte \rechtermargebreedte
+       \global\advance\sidefloatshift-\rightorleftpageaction \linkermargeafstand \rechtermargeafstand
+     \or
+       % cutspace
      \fi
    \fi}
 
@@ -172,7 +118,7 @@
   {\global\sidefloatrightskip\zeropoint
    \global\sidefloatleftskip \zeropoint
    \ifcase\sidefloattype
-   \or % backspace 
+   \or % backspace
      \global        \sidefloatleftskip \rightorleftpageaction \rugwit \snijwit
    \or % leftedge
      \global        \sidefloatleftskip \rightorleftpageaction \linkermargeafstand\rechtermargeafstand
@@ -188,14 +134,14 @@
      \global        \sidefloatrightskip\rightorleftpageaction \rechtermargeafstand\linkermargeafstand
      \global\advance\sidefloatrightskip\rightorleftpageaction \rechtermargebreedte\linkermargebreedte
      \global\advance\sidefloatrightskip\rightorleftpageaction \rechterrandafstand\linkerrandafstand
-   \or % cutspace 
+   \or % cutspace
      \global        \sidefloatrightskip\rightorleftpageaction \snijwit\rugwit
    \fi
    \ifdim\sidefloatrightskip>\zeropoint
-     \doglobal\advance\sidefloatrightskip\rightskip 
+     \doglobal\advance\sidefloatrightskip\rightskip
    \fi
    \ifdim\sidefloatleftskip>\zeropoint
-     \doglobal\advance\sidefloatleftskip\leftskip 
+     \doglobal\advance\sidefloatleftskip\leftskip
    \fi}
 
 % eq is still crap
@@ -229,7 +175,7 @@
 %
 % no, too buggy, leads to top of page crap
 %
-%\def\flushsidefloats%
+%\def\flushsidefloats
 %  {\par
 %   \dochecksidefloat
 %   \scratchcounter=-\hangafter
@@ -439,19 +385,19 @@
    {\everypar\emptytoks\forgetall\verticalstrut\vskip-\struttotal}% moved
    \checksidefloatshift
    \ifdim\sidefloatshift=\zeropoint \relax
-     \ifnum\sidefloattype=4 
+     \ifnum\sidefloattype=4
        \global\advance\sidefloatshift\sidefloatextrashift
        \global\sidefloatextrashift\zeropoint
-     \else\ifnum\sidefloattype=5 
+     \else\ifnum\sidefloattype=5
        \global\advance\sidefloatshift\sidefloatextrashift
        \global\sidefloatextrashift\zeropoint
-     \fi\fi 
+     \fi\fi
    \else
-     \ifnum\sidefloattype<4 
-       \global\chardef\sidefloattype4 
-     \else\ifnum\sidefloattype>5 
-       \global\chardef\sidefloattype5 
-     \fi\fi 
+     \ifnum\sidefloattype<4
+       \global\chardef\sidefloattype4
+     \else\ifnum\sidefloattype>5
+       \global\chardef\sidefloattype5
+     \fi\fi
    \fi
    \previoussidefloat
    \stallsidefloat
@@ -462,9 +408,9 @@
   %   \kern\ifrightfloat\sidefloatshift\else-\sidefloatextrashift\fi
   %   \ifmarginfloat\else\ifrightfloat\kern\sidefloatrightshift\fi\fi}%
    \global\setbox\floatbox\hbox % no \hskip, but \kern here
-     {\ifnum\sidefloattype=4 
+     {\ifnum\sidefloattype=4
         \hskip\sidefloatleftshift
-      \else\ifnum\sidefloattype=1 
+      \else\ifnum\sidefloattype=1
         \hskip\sidefloatleftshift
       \fi\fi
       \ifnum\sidefloattype>4
@@ -478,9 +424,9 @@
       \else
         \kern-\sidefloatextrashift
       \fi
-      \ifnum\sidefloattype=8 
+      \ifnum\sidefloattype=8
         \kern\sidefloatrightshift
-      \else\ifnum\sidefloattype=5 
+      \else\ifnum\sidefloattype=5
         \kern\sidefloatrightshift
       \fi\fi}%
    \ifnum\sidefloatalign=4
@@ -552,13 +498,13 @@
 \def\measuresidefloat
   {\global\floatflagtrue
    \global\sidefloatpagetotal \pagetotal % global
-   \ifnum\sidefloattype<4 
+   \ifnum\sidefloattype<4
      \global        \sidefloatwidth \zeropoint
    \else\ifnum\sidefloattype>5
      \global        \sidefloatwidth \zeropoint
    \else
      \global        \sidefloatwidth \wd\floatbox
-     \global\advance\sidefloatwidth \floatsideskip 
+     \global\advance\sidefloatwidth \floatsideskip
    \fi\fi
    \ifdim\sidefloatwidth<\zeropoint
      \global\sidefloatwidth\zeropoint
@@ -616,7 +562,7 @@
    \relax
    \ifcase\sidefloattype
      % invalid
-   \or % backspace 
+   \or % backspace
      \noindent\llap{\rlap{\box\floatbox}\hskip\sidefloatleftskip}\hfill
    \or % leftedge
      \noindent\llap{\box\floatbox\hskip\sidefloatleftskip}\hfill

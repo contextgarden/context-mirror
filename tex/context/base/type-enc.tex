@@ -18,90 +18,178 @@
 
 % Free fonts.
 
-% Computer Modern Roman (AMS/BJ)
 
-\starttypescript [all] [computer-modern] [lm] % will be ec
+% Computer & Latin Modern Roman (DEK/AMS/BJ)
 
-  % map 
-  
-  \loadmapfile[lm_ec.map]
+% \usetypescript [all] [latin-modern] [texnansi]
+% 
+% \setupbodyfont[reset] \setupbodyfont[cmr]
+% 
+% \starttext \showfont[Serif] \stoptext
+
+\starttypescript [all] [latin-modern] [texnansi,qx] 
+
+  \loadmapfile[\typescriptthree-lm.map]
 
   % Regular 
 
-  \definefontsynonym [cmr5]     [lmr5_ec]     [encoding=ec]
-  \definefontsynonym [cmr6]     [lmr6_ec]     [encoding=ec]
-  \definefontsynonym [cmr7]     [lmr7_ec]     [encoding=ec]
-  \definefontsynonym [cmr8]     [lmr8_ec]     [encoding=ec]
-  \definefontsynonym [cmr9]     [lmr9_ec]     [encoding=ec]
-  \definefontsynonym [cmr10]    [lmr10_ec]    [encoding=ec]
-  \definefontsynonym [cmr12]    [lmr12_ec]    [encoding=ec]
-  \definefontsynonym [cmr17]    [lmr17_ec]    [encoding=ec]
+  \definefontsynonym [cmr5]     [\typescriptthree-lmr5]     [encoding=\typescriptthree]
+  \definefontsynonym [cmr6]     [\typescriptthree-lmr6]     [encoding=\typescriptthree]
+  \definefontsynonym [cmr7]     [\typescriptthree-lmr7]     [encoding=\typescriptthree]
+  \definefontsynonym [cmr8]     [\typescriptthree-lmr8]     [encoding=\typescriptthree]
+  \definefontsynonym [cmr9]     [\typescriptthree-lmr9]     [encoding=\typescriptthree]
+  \definefontsynonym [cmr10]    [\typescriptthree-lmr10]    [encoding=\typescriptthree]
+  \definefontsynonym [cmr12]    [\typescriptthree-lmr12]    [encoding=\typescriptthree]
+  \definefontsynonym [cmr17]    [\typescriptthree-lmr17]    [encoding=\typescriptthree]
   
-  \definefontsynonym [cmbx5]    [lmbx5_ec]    [encoding=ec]
-  \definefontsynonym [cmbx6]    [lmbx6_ec]    [encoding=ec]
-  \definefontsynonym [cmbx7]    [lmbx7_ec]    [encoding=ec]
-  \definefontsynonym [cmbx8]    [lmbx8_ec]    [encoding=ec]
-  \definefontsynonym [cmbx9]    [lmbx9_ec]    [encoding=ec]
-  \definefontsynonym [cmbx10]   [lmbx10_ec]   [encoding=ec]
-  \definefontsynonym [cmbx12]   [lmbx12_ec]   [encoding=ec]
+  \definefontsynonym [cmbx5]    [\typescriptthree-lmbx5]    [encoding=\typescriptthree]
+  \definefontsynonym [cmbx6]    [\typescriptthree-lmbx6]    [encoding=\typescriptthree]
+  \definefontsynonym [cmbx7]    [\typescriptthree-lmbx7]    [encoding=\typescriptthree]
+  \definefontsynonym [cmbx8]    [\typescriptthree-lmbx8]    [encoding=\typescriptthree]
+  \definefontsynonym [cmbx9]    [\typescriptthree-lmbx9]    [encoding=\typescriptthree]
+  \definefontsynonym [cmbx10]   [\typescriptthree-lmbx10]   [encoding=\typescriptthree]
+  \definefontsynonym [cmbx12]   [\typescriptthree-lmbx12]   [encoding=\typescriptthree]
 
-  \definefontsynonym [cmsl10]   [lmro10_ec]   [encoding=ec]
-  \definefontsynonym [cmsl12]   [lmro12_ec]   [encoding=ec]
-  \definefontsynonym [cmsl8]    [lmro8_ec]    [encoding=ec]
-  \definefontsynonym [cmsl9]    [lmro9_ec]    [encoding=ec]
+  \definefontsynonym [cmsl10]   [\typescriptthree-lmro10]   [encoding=\typescriptthree]
+  \definefontsynonym [cmsl12]   [\typescriptthree-lmro12]   [encoding=\typescriptthree]
+  \definefontsynonym [cmsl8]    [\typescriptthree-lmro8]    [encoding=\typescriptthree]
+  \definefontsynonym [cmsl9]    [\typescriptthree-lmro9]    [encoding=\typescriptthree]
   
-  \definefontsynonym [cmti7]    [lmri7_ec]    [encoding=ec]
-  \definefontsynonym [cmti8]    [lmri8_ec]    [encoding=ec]
-  \definefontsynonym [cmti9]    [lmri9_ec]    [encoding=ec]
-  \definefontsynonym [cmti10]   [lmri10_ec]   [encoding=ec]
-  \definefontsynonym [cmti12]   [lmri12_ec]   [encoding=ec]
+  \definefontsynonym [cmti7]    [\typescriptthree-lmri7]    [encoding=\typescriptthree]
+  \definefontsynonym [cmti8]    [\typescriptthree-lmri8]    [encoding=\typescriptthree]
+  \definefontsynonym [cmti9]    [\typescriptthree-lmri9]    [encoding=\typescriptthree]
+  \definefontsynonym [cmti10]   [\typescriptthree-lmri10]   [encoding=\typescriptthree]
+  \definefontsynonym [cmti12]   [\typescriptthree-lmri12]   [encoding=\typescriptthree]
   
-  \definefontsynonym [cmb10]    [lmb10_ec]    [encoding=ec]
-  \definefontsynonym [cmbsl10]  [lmbo10_ec]   [encoding=ec]
-  \definefontsynonym [cmbxsl10] [lmbxo10_ec]  [encoding=ec]
-  \definefontsynonym [cmbxti10] [lmbxi10_ec]  [encoding=ec]
+  \definefontsynonym [cmb10]    [\typescriptthree-lmb10]    [encoding=\typescriptthree]
+  \definefontsynonym [cmbsl10]  [\typescriptthree-lmbo10]   [encoding=\typescriptthree]
+  \definefontsynonym [cmbxsl10] [\typescriptthree-lmbxo10]  [encoding=\typescriptthree]
+  \definefontsynonym [cmbxti10] [\typescriptthree-lmbxi10]  [encoding=\typescriptthree]
 
-  \definefontsynonym [cmcsc10]  [lmcsc10_ec]  [encoding=ec]
-  \definefontsynonym [cmcscsl10][lmcsco10_ec] [encoding=ec]
+  \definefontsynonym [cmcsc10]  [\typescriptthree-lmcsc10]  [encoding=\typescriptthree]
+  \definefontsynonym [cmcscsl10][\typescriptthree-lmcsco10] [encoding=\typescriptthree]
 
   % Mono 
 
-  \definefontsynonym [cmtt8]    [lmtt8_ec]    [encoding=ec]
-  \definefontsynonym [cmtt9]    [lmtt9_ec]    [encoding=ec]
-  \definefontsynonym [cmtt10]   [lmtt10_ec]   [encoding=ec]
-  \definefontsynonym [cmtt12]   [lmtt12_ec]   [encoding=ec]
+  \definefontsynonym [cmtt8]    [\typescriptthree-lmtt8]    [encoding=\typescriptthree]
+  \definefontsynonym [cmtt9]    [\typescriptthree-lmtt9]    [encoding=\typescriptthree]
+  \definefontsynonym [cmtt10]   [\typescriptthree-lmtt10]   [encoding=\typescriptthree]
+  \definefontsynonym [cmtt12]   [\typescriptthree-lmtt12]   [encoding=\typescriptthree]
 
-  \definefontsynonym [cmitt10]  [lmtti10_ec]  [encoding=ec]
-  \definefontsynonym [cmsltt10] [lmtto10_ec]  [encoding=ec]
+  \definefontsynonym [cmitt10]  [\typescriptthree-lmtti10]  [encoding=\typescriptthree]
+  \definefontsynonym [cmsltt10] [\typescriptthree-lmtto10]  [encoding=\typescriptthree]
 
-  \definefontsynonym [cmvtt10]  [lmvtt10_ec]  [encoding=ec]
-  \definefontsynonym [cmvtti10] [lmvtto_ec]   [encoding=ec]
+  \definefontsynonym [cmvtt10]  [\typescriptthree-lmvtt10]  [encoding=\typescriptthree]
+  \definefontsynonym [cmvtti10] [\typescriptthree-lmvtto]   [encoding=\typescriptthree]
 
-  \definefontsynonym [cmcsc10]  [lmcsc10_ec]  [encoding=ec]
+  \definefontsynonym [cmcsc10]  [\typescriptthree-lmcsc10]  [encoding=\typescriptthree]
 
   % Sans 
 
-  \definefontsynonym [cmss8]    [lmss8_ec]    [encoding=ec]
-  \definefontsynonym [cmss9]    [lmss9_ec]    [encoding=ec]
-  \definefontsynonym [cmss10]   [lmss10_ec]   [encoding=ec]
-  \definefontsynonym [cmss12]   [lmss12_ec]   [encoding=ec]
-  \definefontsynonym [cmss17]   [lmss17_ec]   [encoding=ec]
+  \definefontsynonym [cmss8]    [\typescriptthree-lmss8]    [encoding=\typescriptthree]
+  \definefontsynonym [cmss9]    [\typescriptthree-lmss9]    [encoding=\typescriptthree]
+  \definefontsynonym [cmss10]   [\typescriptthree-lmss10]   [encoding=\typescriptthree]
+  \definefontsynonym [cmss12]   [\typescriptthree-lmss12]   [encoding=\typescriptthree]
+  \definefontsynonym [cmss17]   [\typescriptthree-lmss17]   [encoding=\typescriptthree]
   
-  \definefontsynonym [cmssi10]  [lmsso10_ec]  [encoding=ec]
-  \definefontsynonym [cmssi12]  [lmsso12_ec]  [encoding=ec]
-  \definefontsynonym [cmssi17]  [lmsso17_ec]  [encoding=ec]
-  \definefontsynonym [cmssi8]   [lmsso8_ec]   [encoding=ec]
-  \definefontsynonym [cmssi9]   [lmsso9_ec]   [encoding=ec]
+  \definefontsynonym [cmssi10]  [\typescriptthree-lmsso10]  [encoding=\typescriptthree]
+  \definefontsynonym [cmssi12]  [\typescriptthree-lmsso12]  [encoding=\typescriptthree]
+  \definefontsynonym [cmssi17]  [\typescriptthree-lmsso17]  [encoding=\typescriptthree]
+  \definefontsynonym [cmssi8]   [\typescriptthree-lmsso8]   [encoding=\typescriptthree]
+  \definefontsynonym [cmssi9]   [\typescriptthree-lmsso9]   [encoding=\typescriptthree]
   
-  \definefontsynonym [cmssq8]   [lmssq8_ec]   [encoding=ec]
-  \definefontsynonym [cmssqb8]  [lmssqbx8_ec] [encoding=ec]
-  \definefontsynonym [cmssqbi8] [lmssqbo8_ec] [encoding=ec]
-  \definefontsynonym [cmssqi8]  [lmssqo8_ec]  [encoding=ec]
+  \definefontsynonym [cmssq8]   [\typescriptthree-lmssq8]   [encoding=\typescriptthree]
+  \definefontsynonym [cmssqb8]  [\typescriptthree-lmssqbx8] [encoding=\typescriptthree]
+  \definefontsynonym [cmssqbi8] [\typescriptthree-lmssqbo8] [encoding=\typescriptthree]
+  \definefontsynonym [cmssqi8]  [\typescriptthree-lmssqo8]  [encoding=\typescriptthree]
   
-  \definefontsynonym [cmssbx10] [lmssbx10_ec] [encoding=ec]
-  \definefontsynonym [cmssdc10] [lmssdc10_ec] [encoding=ec]
-  \definefontsynonym [cmssbi10] [lmssbo10_ec] [encoding=ec]
-  \definefontsynonym [cmssdi10] [lmssdo10_ec] [encoding=ec]
+  \definefontsynonym [cmssbx10] [\typescriptthree-lmssbx10] [encoding=\typescriptthree]
+  \definefontsynonym [cmssdc10] [\typescriptthree-lmssdc10] [encoding=\typescriptthree]
+  \definefontsynonym [cmssbi10] [\typescriptthree-lmssbo10] [encoding=\typescriptthree]
+  \definefontsynonym [cmssdi10] [\typescriptthree-lmssdo10] [encoding=\typescriptthree]
+
+\stoptypescript
+
+\starttypescript [all] [latin-modern] [ec] 
+
+  \loadmapfile[cork-lm.map]
+
+  % Regular 
+
+  \definefontsynonym [cmr5]     [cork-lmr5]     [encoding=cork]
+  \definefontsynonym [cmr6]     [cork-lmr6]     [encoding=cork]
+  \definefontsynonym [cmr7]     [cork-lmr7]     [encoding=cork]
+  \definefontsynonym [cmr8]     [cork-lmr8]     [encoding=cork]
+  \definefontsynonym [cmr9]     [cork-lmr9]     [encoding=cork]
+  \definefontsynonym [cmr10]    [cork-lmr10]    [encoding=cork]
+  \definefontsynonym [cmr12]    [cork-lmr12]    [encoding=cork]
+  \definefontsynonym [cmr17]    [cork-lmr17]    [encoding=cork]
+  
+  \definefontsynonym [cmbx5]    [cork-lmbx5]    [encoding=cork]
+  \definefontsynonym [cmbx6]    [cork-lmbx6]    [encoding=cork]
+  \definefontsynonym [cmbx7]    [cork-lmbx7]    [encoding=cork]
+  \definefontsynonym [cmbx8]    [cork-lmbx8]    [encoding=cork]
+  \definefontsynonym [cmbx9]    [cork-lmbx9]    [encoding=cork]
+  \definefontsynonym [cmbx10]   [cork-lmbx10]   [encoding=cork]
+  \definefontsynonym [cmbx12]   [cork-lmbx12]   [encoding=cork]
+
+  \definefontsynonym [cmsl10]   [cork-lmro10]   [encoding=cork]
+  \definefontsynonym [cmsl12]   [cork-lmro12]   [encoding=cork]
+  \definefontsynonym [cmsl8]    [cork-lmro8]    [encoding=cork]
+  \definefontsynonym [cmsl9]    [cork-lmro9]    [encoding=cork]
+  
+  \definefontsynonym [cmti7]    [cork-lmri7]    [encoding=cork]
+  \definefontsynonym [cmti8]    [cork-lmri8]    [encoding=cork]
+  \definefontsynonym [cmti9]    [cork-lmri9]    [encoding=cork]
+  \definefontsynonym [cmti10]   [cork-lmri10]   [encoding=cork]
+  \definefontsynonym [cmti12]   [cork-lmri12]   [encoding=cork]
+  
+  \definefontsynonym [cmb10]    [cork-lmb10]    [encoding=cork]
+  \definefontsynonym [cmbsl10]  [cork-lmbo10]   [encoding=cork]
+  \definefontsynonym [cmbxsl10] [cork-lmbxo10]  [encoding=cork]
+  \definefontsynonym [cmbxti10] [cork-lmbxi10]  [encoding=cork]
+
+  \definefontsynonym [cmcsc10]  [cork-lmcsc10]  [encoding=cork]
+  \definefontsynonym [cmcscsl10][cork-lmcsco10] [encoding=cork]
+
+  % Mono 
+
+  \definefontsynonym [cmtt8]    [cork-lmtt8]    [encoding=cork]
+  \definefontsynonym [cmtt9]    [cork-lmtt9]    [encoding=cork]
+  \definefontsynonym [cmtt10]   [cork-lmtt10]   [encoding=cork]
+  \definefontsynonym [cmtt12]   [cork-lmtt12]   [encoding=cork]
+
+  \definefontsynonym [cmitt10]  [cork-lmtti10]  [encoding=cork]
+  \definefontsynonym [cmsltt10] [cork-lmtto10]  [encoding=cork]
+
+  \definefontsynonym [cmvtt10]  [cork-lmvtt10]  [encoding=cork]
+  \definefontsynonym [cmvtti10] [cork-lmvtto]   [encoding=cork]
+
+  \definefontsynonym [cmcsc10]  [cork-lmcsc10]  [encoding=cork]
+
+  % Sans 
+
+  \definefontsynonym [cmss8]    [cork-lmss8]    [encoding=cork]
+  \definefontsynonym [cmss9]    [cork-lmss9]    [encoding=cork]
+  \definefontsynonym [cmss10]   [cork-lmss10]   [encoding=cork]
+  \definefontsynonym [cmss12]   [cork-lmss12]   [encoding=cork]
+  \definefontsynonym [cmss17]   [cork-lmss17]   [encoding=cork]
+  
+  \definefontsynonym [cmssi10]  [cork-lmsso10]  [encoding=cork]
+  \definefontsynonym [cmssi12]  [cork-lmsso12]  [encoding=cork]
+  \definefontsynonym [cmssi17]  [cork-lmsso17]  [encoding=cork]
+  \definefontsynonym [cmssi8]   [cork-lmsso8]   [encoding=cork]
+  \definefontsynonym [cmssi9]   [cork-lmsso9]   [encoding=cork]
+  
+  \definefontsynonym [cmssq8]   [cork-lmssq8]   [encoding=cork]
+  \definefontsynonym [cmssqb8]  [cork-lmssqbx8] [encoding=cork]
+  \definefontsynonym [cmssqbi8] [cork-lmssqbo8] [encoding=cork]
+  \definefontsynonym [cmssqi8]  [cork-lmssqo8]  [encoding=cork]
+  
+  \definefontsynonym [cmssbx10] [cork-lmssbx10] [encoding=cork]
+  \definefontsynonym [cmssdc10] [cork-lmssdc10] [encoding=cork]
+  \definefontsynonym [cmssbi10] [cork-lmssbo10] [encoding=cork]
+  \definefontsynonym [cmssdi10] [cork-lmssdo10] [encoding=cork]
 
 \stoptypescript
 

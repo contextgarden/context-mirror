@@ -1146,8 +1146,8 @@
 
 \let\PDFlaststreamobject\s!unknown
 
-\def\doPDFfilestreamobject class #1 name #2 file #3%
-  {\immediate\pdfobj stream file{#3}%
+\def\doPDFfilestreamobject class #1 name #2 file #3 source #4%
+  {\immediate\pdfobj stream file{#4}%
    \edef\PDFlaststreamobject{\the\pdflastobj}%
    \dosetobjectreference{PDFFS}{#2}{\PDFlaststreamobject}%
    \doPDFdictionaryobject class {#1} name {#2} data

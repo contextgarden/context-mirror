@@ -183,11 +183,16 @@
 
 \def\layerparameter#1{\csname\??ll\currentlayer#1\endcsname}
 
+\newdimen\layerwidth
+\newdimen\layerheight
+
 \def\dododosetlayer[#1][#2][#3]% will be sped up
   {% we use the global width, never change this 
    \def\currentlayer{#1}%
    \@@layerxsiz\layerparameter\c!breedte
    \@@layerysiz\layerparameter\c!hoogte
+\layerwidth \@@layerxsiz
+\layerheight\@@layerysiz
    % preroll 
    \getparameters[\??ll#1][#3]%
    % presets and real roll  

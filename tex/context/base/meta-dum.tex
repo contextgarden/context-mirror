@@ -107,7 +107,7 @@
       \c!achtergrond=\s!dummy,
       \c!voorgrondkleur=white]}%
      {\doif\@@eftekst\v!ja
-        {\infofont \setupinterlinespace \nohyphens
+        {\infofont \setupinterlinespace \dohyphens % \nohyphens
          \doifelse{#1}\s!dummy  \!!doneafalse\!!doneatrue
          \doifelse{#2}\s!dummy  \!!donebfalse\!!donebtrue
          \doifelse{#3}\s!unknown\!!donecfalse\!!donectrue

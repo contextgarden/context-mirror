@@ -105,7 +105,7 @@
       \leftskip\zeropoint
       \rightskip\zeropoint
       #2\setupalign[\getvalue{\??dd#1\c!uitlijnen}]%
-      \unhcopy\@@definitiebox}%
+      \ifhbox\@@definitiebox\unhcopy\else\copy\fi\@@definitiebox}%
    \ht\@@definitiebox\strutht
    \dp\@@definitiebox\strutdp}
 
@@ -144,7 +144,7 @@
       \mindermeldingen
       \hsize\!!widtha
       #2\setupalign[\getvalue{\??dd#1\c!uitlijnen}]#3%
-      \unhcopy\@@definitiebox}%
+      \ifhbox\@@definitiebox\unhcopy\else\copy\fi\@@definitiebox}%
    \ht\@@definitiebox\strutht
    \dp\@@definitiebox\strutdp
    \doifinsetelse{\getvalue{\??dd#1\c!hang}}{\v!passend,\v!ruim}
@@ -171,32 +171,32 @@
 \setvalue{@@definitie\v!inmarge}#1[#2]#3%
   {\@@dostartdefinitie{#1}[#2]{#3}%
    \noindent\ignorespaces
-   \inmarge{\unhcopy\@@definitiebox}%
+   \inmarge{\ifhbox\@@definitiebox\unhcopy\else\copy\fi\@@definitiebox}%
    \@@dodefinitie{#1}}
 
 \setvalue{@@definitie\v!inlinker}#1[#2]#3%
   {\@@dostartdefinitie{#1}[#2]{#3}%
    \noindent\ignorespaces
-   \inlinker{\unhcopy\@@definitiebox}%
+   \inlinker{\ifhbox\@@definitiebox\unhcopy\else\copy\fi\@@definitiebox}%
    \@@dodefinitie{#1}}
 
 \setvalue{@@definitie\v!inrechter}#1[#2]#3%
   {\@@dostartdefinitie{#1}[#2]{#3}%
    \noindent\ignorespaces
-   \inrechter{\unhcopy\@@definitiebox}%
+   \inrechter{\ifhbox\@@definitiebox\unhcopy\else\copy\fi\@@definitiebox}%
    \@@dodefinitie{#1}}
 
 \def\@@definitieaanelkaarpassend#1[#2]#3%
   {\@@dostartdefinitie{#1}[#2]{#3}%
    \noindent\ignorespaces
-   \unhcopy\@@definitiebox
+   \ifhbox\@@definitiebox\unhcopy\else\copy\fi\@@definitiebox
    \hskip\!!widthb % toegevoegd
    \@@dodefinitie{#1}}
 
 \def\@@definitieaanelkaarruim#1[#2]#3%
   {\@@dostartdefinitie{#1}[#2]{#3}%
    \noindent\ignorespaces
-   \unhcopy\@@definitiebox
+   \ifhbox\@@definitiebox\unhcopy\else\copy\fi\@@definitiebox
    \hskip\!!widthb \!!plus .5\!!widthb \!!minus .25\!!widthb
    \@@dodefinitie{#1}}
 
@@ -204,7 +204,7 @@
   {\@@dostartdefinitie{#1}[#2]{#3}%
    \noindent\ignorespaces
    \hbox to \!!widtha
-     {\unhcopy\@@definitiebox\hss}%
+     {\ifhbox\@@definitiebox\unhcopy\else\copy\fi\@@definitiebox\hss}%
    \hskip\!!widthb
    \ignorespaces
    \@@dodefinitie{#1}}
@@ -234,7 +234,7 @@
      \advance\leftskip \leftskipadaption
    \fi
    \hskip-\leftskipadaption
-   \unhcopy\@@definitiebox
+   \ifhbox\@@definitiebox\unhcopy\else\copy\fi\@@definitiebox
    \ifdim\!!widthb=\zeropoint
      \kern.75em                     % another default
    \else
@@ -270,7 +270,7 @@
 %      {\!!widtha}
 %      {\getvalue{\??dd#1\c!breedte}}
 %      {\doifelsevaluenothing{\??dd#1\c!monster}
-%         {\unhcopy\@@definitiebox}
+%         {\ifhbox\@@definitiebox\unhcopy\else\copy\fi \@@definitiebox}
 %         {\doattributes
 %            {\??dd#1}\c!kopletter\c!kopkleur
 %            {\getvalue{\??dd#1\c!tekst}\getvalue{\??dd#1\c!monster}}}}
@@ -299,11 +299,22 @@
    \ifdim\!!widthb=\zeropoint\relax
      \doifvalue{\??dd#1\c!breedte}\v!ruim{\!!widthb=1em}%
    \fi
+   % temp hack, we need to avoid this kind of preprocessing
+   \setbox\@@definitiebox\hbox % preroll 
+     {\forgetall
+      \trialtypesettingtrue 
+      \mindermeldingen
+      \def\\{\crcr}%
+      \doattributes
+        {\??dd#1}\c!kopletter\c!kopkleur
+        {\getvalue{\??dd#1\c!commando}{\begstrut
+           \getvalue{\??dd#1\c!tekst}#3\endstrut}}}%
+   % so far 
    \assignwidth
      {\!!widtha}
      {\getvalue{\??dd#1\c!breedte}}
      {\doifelsevaluenothing{\??dd#1\c!monster}
-        {\unhcopy\@@definitiebox}
+        {\ifhbox\@@definitiebox\unhcopy\else\copy\fi \@@definitiebox}
         {\doattributes
            {\??dd#1}\c!kopletter\c!kopkleur
            {\getvalue{\??dd#1\c!tekst}\getvalue{\??dd#1\c!monster}}}}
@@ -333,7 +344,7 @@
    \fi} % now happens elsewhere : \noindent\ignorespaces
 
 \def\@@stopdefinitie#1%
-  {\par
+  {\par % maybe better after \dostopattributes 
    \dostopattributes
    \endgroup
    \getvalue{\??dd#1\c!na}%

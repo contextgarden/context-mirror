@@ -1695,7 +1695,7 @@ stopsetup
 startsetup
 com:moveongrid:
 typ:vals/:
-val:top,both,bottom,-top,-both,-bottom, high,middle,low,page,none,standard, broad,fit,depth,line,*dimension:standard:
+val:top,both,bottom,-top,-both,-bottom,text, high,middle,low,page,none,standard, broad,fit,depth,line,*dimension:standard:
 stopsetup
 
 startsetup
@@ -1799,6 +1799,7 @@ var:aligntitle:yes,no::
 var:tolerance:verystrict,strict,tolerant,verytolerant,stretch::
 var:indentnext:yes,no::
 var:command:*\command#1#2::
+var:margin:*dimension::
 stopsetup
 
 startsetup
@@ -1806,6 +1807,7 @@ com:setupcaptions:
 typ:vars/:
 var:location:top,bottom,none,high,low,middle::
 var:width:fit,broad,max,*dimension::
+var:minwidth:fit,*dimension::
 var:headstyle:normal,bold,slanted,boldslanted,type,cap,small...,*command::
 var:style:normal,bold,slanted,boldslanted,type,cap,small...,*command::
 var:number:yes,no::
@@ -1814,6 +1816,7 @@ var:align:left,middle,right,no::
 var:conversion:numbers,characters,Characters,romannumerals,Romannumerals::
 var:way:bytext,by*section::
 var:separator:*text::
+var:command:*command::
 var:distance:*dimension::
 stopsetup
 
@@ -3280,6 +3283,7 @@ var:rulethickness:*dimension::
 var:distance:blank,grid,depth,*dimension,small,medium,big,none::
 var:bodyfont:5pt,...,12pt,small,big::
 var:rule:normal,line::
+var:split:yes,no::
 stopsetup
 
 startsetup
@@ -3866,6 +3870,8 @@ var:title:*text::
 var:space:yes,no::
 var:symbol:normal, New,Balloon,Addition,Help,Paragraph,Key, *name::
 var:option:max,buffer::
+var:margin:*dimension::
+var:distance:*dimension::
 stopsetup
 
 startsetup

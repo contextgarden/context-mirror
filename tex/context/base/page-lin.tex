@@ -370,16 +370,6 @@
    \the\aftereverylinenumbering
    \egroup}
 
-% \unexpanded \def\crlf
-%   {\ifhmode\unskip\else\strut\fi\ifcase\raggedstatus\hfil\fi\break}
-
-\unexpanded \def\crlf
-  {\ifhmode\unskip\else\strut\fi
-   \ifcase\raggedstatus\hfil\or\or\or\hfil\fi\break}
-
-\def\opeenregel
-  {\def\crlf{\removelastspace\space}\let\\\crlf}
-
 \def\emptylines
   {\dosingleempty\doemptylines}
 

@@ -149,10 +149,12 @@
 
 \def\??vars{@@vars}
 
-\def\setvariables
-  {\dotripleargument\dosetvariables[\getrawparameters]}
+\def\setvariables {\dotripleargument\dosetvariables[\getrawparameters ]}
+\def\setevariables{\dotripleargument\dosetvariables[\getraweparameters]}
+\def\setgvariables{\dotripleargument\dosetvariables[\getrawgparameters]}
+\def\setxvariables{\dotripleargument\dosetvariables[\getrawxparameters]}
 
-\def\globalsetvariables
+\def\globalsetvariables % obsolete 
   {\dotripleargument\dosetvariables[\globalgetrawparameters]}
 
 \def\dosetvariables[#1][#2][#3]%

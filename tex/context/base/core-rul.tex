@@ -1597,7 +1597,7 @@
 %D possible.
 
 \def\vboxedhairline
-  {\bgroup
+  {\bgroup         
    \dimen2=\ifboxhasoffset \localoffset \else \zeropoint \fi
    \dimen4=\dimen2
    \advance\dimen4 \ruledlinewidth
@@ -1609,10 +1609,12 @@
         \!!depth\zeropoint
         \!!width\hsize
       \vskip\dimen2}%
-   \endgraf\nointerlineskip\endgraf
+  %\endgraf\nointerlineskip\endgraf
+  %\moveleft\dimen4\box0
+  %\endgraf\nointerlineskip\localbegstrut
+   \endgraf\obeydepth\nointerlineskip
    \moveleft\dimen4\box0
-   \endgraf\nointerlineskip\endgraf
-   \localbegstrut
+   \endgraf\nointerlineskip\localbegstrut
    \egroup}
 
 \def\hboxedhairline

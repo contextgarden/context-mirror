@@ -1,5 +1,5 @@
 %D \module
-%D   [       file=core-itm, % updated 
+%D   [       file=core-itm, % updated
 %D        version=1997.03.31,
 %D          title=\CONTEXT\ Core Macros,
 %D       subtitle=itemgroups,
@@ -12,7 +12,7 @@
 %C details.
 
 % new: text + lefttext=(,righttext=)
-%      start=     
+%      start=
 
 \writestatus{loading}{Context Core Macros / itemgroup}
 
@@ -68,11 +68,11 @@
 
 \definetwopasslist\s!list
 
-\let\currentitemgroup\empty 
+\let\currentitemgroup\empty
 
 \def\unknownitemreference{0} \let\itemreferences\unknownitemreference
 
-% #1=level #2=parameter 
+% #1=level #2=parameter
 
 \def\getitemparameter #1#2{\csname\??op\currentitemgroup#1#2\endcsname}
 \def\setitemparameter #1#2{\@EA\def\csname\??op\currentitemgroup#1#2\endcsname}
@@ -90,7 +90,7 @@
 
 \def\dolistreference
   {\immediatewriteutilitycommand
-     {\twopassentry 
+     {\twopassentry
         {\s!list}%
         {\currentlist}%
         {\currentlist:\noflistelements}}}
@@ -102,12 +102,12 @@
      \setevalue{\@@globalitemsymbol{#1}}{#1}%
    \fi}
 
-\def\initializeitemgrouplevel#1% safeguard 
+\def\initializeitemgrouplevel#1% safeguard
   {\ifundefined{\??op\currentitemgroup#1\c!breedte}%
      \doinitializeitemgrouplevel{#1}%
    \fi}
 
-\def\doinitializeitemgrouplevel#1% 
+\def\doinitializeitemgrouplevel#1%
   {\copyparameters
      [\??op\currentitemgroup#1][\??oo]
      [\c!breedte,\c!factor,\c!afstand,\c!uitlijnen,\c!optie,
@@ -123,7 +123,7 @@
 
 \def\dosetupitemgroups[#1]% still undocumented
   {\getparameters[\??oo][\c!niveaus=4,#1]%
-   % will change (remove) 
+   % will change (remove)
    \ifnum\@@ooniveaus>\maxitemlevel
      \edef\maxitemlevel{\@@ooniveaus}%
      \dorecurse\maxitemlevel{\initializeitemgroupslevel\recurselevel}%
@@ -159,7 +159,7 @@
         #2#3*\v!ruim*=>\setitemparameter{#1}\c!factor{#2#3},
           #2*\v!ruim*=>\setitemparameter{#1}\c!factor{#2},
             \v!tekst*=>\textitemstrue
-                       \settrue\inlinelistitem 
+                       \settrue\inlinelistitem
                        \dosetuppackeditemgroup{#1}%
                        \packitems,
          \v!kolommen*=>\packitems,
@@ -261,7 +261,7 @@
 %      \doifelse{\getitemparameter\itemlevel\c!plaatsafsluiter}\v!ja
 %        {\def\tempsymbol{\getitemparameter\itemlevel\c!afsluiter}}
 %        {\let\tempsymbol\empty}%
-%    \fi} 
+%    \fi}
 
 \def\setitemlevel#1%
   {\ifnum\itemlevel>\zerocount
@@ -277,7 +277,7 @@
      \doifelse{\getitemparameter\itemlevel\c!plaatsafsluiter}\v!ja
        {\def\tempsymbol{\getitemparameter\itemlevel\c!afsluiter}}
        {\let\tempsymbol\empty}%
-   \fi} 
+   \fi}
 
 % PAS OP: ook 'opelkaar' en zo worden getest, nog eens afvangen!
 
@@ -349,7 +349,7 @@
 %          \settrue\concatnextitem       % new, concat
 %        \fi                             % new, concat
 %      \fi                               % new, concat
-%      \iftextitems\else\doifnotinset\v!tekst{#1}\par\fi % suboptimal 
+%      \iftextitems\else\doifnotinset\v!tekst{#1}\par\fi % suboptimal
 %    \fi
 %    \ifnum\itemlevel=\maxitemlevel\relax
 %      \showmessage\m!layouts9\maxitemlevel
@@ -358,7 +358,7 @@
 %      \def\itemincrement{1}%
 %    \fi
 %    \doglobal\increment(\itemlevel,\itemincrement)%
-%    \initializeitemgrouplevel\itemlevel % safeguard 
+%    \initializeitemgrouplevel\itemlevel % safeguard
 %    \begingroup
 %    \ifnum\itemlevel=\plusone % NIEUW
 %      \doadaptleftskip{\getitemparameter1\c!marge}%
@@ -427,7 +427,7 @@
 %            {\dosetupitemgroupconstant[\itemlevel][#1]%
 %             \dosetupitemgroupvariable[\itemlevel][#2]}}%
 %       \def\docommando##1% \setitemmark resets \docommando
-%         {\doifnot{##1}{0}{\setitemmark{##1}}}% 
+%         {\doifnot{##1}{0}{\setitemmark{##1}}}%
 %       \processcommalist[#1,\@@opsymbool]\docommando}%
 %    \ifautoitemintro\ifnum\prevgraf<3
 %      \itemintrotrue
@@ -447,7 +447,7 @@
 %    \fi}
 
 \def\dodostartitemgroup[#1]% [#2]%
-  {\relax % prevents lookahead 
+  {\relax % prevents lookahead
    \ifnum\itemlevel=\maxitemlevel\relax
      \showmessage\m!layouts9\maxitemlevel
      \let\itemincrement\zerocount
@@ -455,15 +455,15 @@
      \let\itemincrement\plusone
    \fi
    \doglobal\increment(\itemlevel,\itemincrement)%
-   \initializeitemgrouplevel\itemlevel % safeguard 
+   \initializeitemgrouplevel\itemlevel % safeguard
    \edef\itemgroupoptions{\getitemparameter\itemlevel\c!optie}%
    \ifx\itemgroupoptions\empty
-     \edef\itemgroupoptions{#1}% 
+     \edef\itemgroupoptions{#1}%
    \else
-     \doifsomething{#1}{\edef\itemgroupoptions{\itemgroupoptions,#1}}% 
+     \doifsomething{#1}{\edef\itemgroupoptions{\itemgroupoptions,#1}}%
    \fi
    \expanded{\redostartitemgroup[\itemgroupoptions]}}% [#2]
-   
+
 \def\redostartitemgroup[#1][#2]%
   {\setfalse\inlinelistitem % new, no indent (leftskip)
    \setfalse\concatnextitem % new, concat
@@ -473,7 +473,7 @@
          \settrue\concatnextitem       % new, concat
        \fi                             % new, concat
      \fi                               % new, concat
-     \iftextitems\else\doifnotinset\v!tekst{#1}\par\fi % suboptimal 
+     \iftextitems\else\doifnotinset\v!tekst{#1}\par\fi % suboptimal
    \fi
    \begingroup
    \ifnum\itemlevel=\plusone % NIEUW
@@ -481,7 +481,7 @@
    \fi
    \dosetraggedcommand{\getitemparameter\itemlevel\c!uitlijnen}\raggedcommand
    \doifsomething{\getitemparameter\itemlevel\c!inspringen}
-     {% is \expanded needed? 
+     {% is \expanded needed?
       \expanded{\setupindenting[\getitemparameter\itemlevel\c!inspringen]}}%
    \doifinset\v!kolommen{#1}%
      {\ifbinnenkolommen\else\ifnum\itemcolumndepth=\zerocount
@@ -544,7 +544,7 @@
            {\dosetupitemgroupconstant[\itemlevel][#1]%
             \dosetupitemgroupvariable[\itemlevel][#2]}}%
       \def\docommando##1% \setitemmark resets \docommando
-        {\doifnot{##1}{0}{\setitemmark{##1}}}% 
+        {\doifnot{##1}{0}{\setitemmark{##1}}}%
       \processcommalist[#1,\@@opsymbool]\docommando}%
    \ifautoitemintro\ifnum\prevgraf<3
      \itemintrotrue
@@ -580,6 +580,13 @@
        \doitembreak\allowbreak           % toegevoegd
        \getitemparameter1\c!na
        \dochecknextindentation\??oo
+     \else
+       % nieuw, not yet nobreak handling
+       \ifcase\autoitemgroupspacing
+         \getitemparameter\itemlevel\c!na
+       \or
+         \getitemparameter\itemlevel\c!na
+       \fi
      \fi
    \fi
    \endgroup
@@ -598,7 +605,7 @@
 \def\itemgroupdummy
   {\itemgroupsymbol{\strut}\strut}
 
-\def\itemgroupsubitem 
+\def\itemgroupsubitem
   {\subitemtrue\itemgroupitem}
 
 \def\itemgroupsymbol#1%
@@ -612,18 +619,18 @@
       \hbox to \dimen0
         {#1\hskip\getitemparameter\itemlevel\c!afstand}}}
 
-\def\itemgrouphead    
+\def\itemgrouphead
   {\headitemtrue\doitemgrouphead}
 
 \def\itemgroupitems
   {\dosingleempty\doitemgroupitems}
 
-\def\doitemgroupitems[#1]%   
+\def\doitemgroupitems[#1]%
   {\itemgroupedge
      {\dorecurse{0\getitemparameter\itemlevel\c!items}{\listitem\hss}%
       \unskip}}
 
-\def\itemgroupmargin#1%  
+\def\itemgroupmargin#1%
   {\def\marsymbol
      {\llap
         {\doitemattributes\itemlevel\c!marletter\c!markleur{#1}%
@@ -642,14 +649,14 @@
 \appendtoks \letvalue\v!mar \itemgroupmargin  \to \itemgroupcommands
 
 \def\itembreak   % -10
-  {\flushnotes\penalty-5\relax}   
+  {\flushnotes\penalty-5\relax}
 
 \def\itemnobreak %  +5
-  {\flushnotes\penalty+5\ifbinnenkolommen\else00\fi\relax} 
+  {\flushnotes\penalty+5\ifbinnenkolommen\else00\fi\relax}
 
 \def\dolistitem % evt aantal items opslaan per niveau, scheelt zoeken
   {\iftextitems
-    % begin of item 
+    % begin of item
    \else
      \par
    \fi
@@ -661,7 +668,7 @@
      \fi                                    % verstoord, vandaar \find
      \iftwopassdatafound
        \ifcase0\twopassdata\relax \twopassdatafoundfalse \fi
-     \fi  
+     \fi
      \iftwopassdatafound
        \ifnum\twopassdata=3
          \ifnum\noflistelements>1
@@ -689,7 +696,7 @@
      {\ifheaditem
         \doitemattributes\itemlevel\c!kopletter\c!kopkleur{\listitem}%
       \else\ifsymbolitem
-        \symsymbol 
+        \symsymbol
       \else
         \doitemattributes\itemlevel\c!letter\c!kleur{\listitem}%
       \fi\fi}%
@@ -715,12 +722,12 @@
        \ifconditional\inlinelistitem
          \hbox to \dimen0{\ifsubitem\llap{+}\fi\box8\hfill}%
        \else
-         % todo: align+marge binnen de hbox 
+         % todo: align+marge binnen de hbox
          \llap{\hbox to \dimen0{\ifsubitem\llap{+}\fi\box8\hfill}}%
        \fi
      \fi
    \fi
-\forceunexpanded % needed for m conversion (\os) / i need to look into this  
+\forceunexpanded % needed for m conversion (\os) / i need to look into this
    \setevalue{\@@currentitemsymbol\itemlevel}%
      {\getvalue{\@@localitemsymbol\itemlevel}}% still problems with \uchar ?
     %{\noexpand\getvalue{\@@localitemsymbol\itemlevel}}% no, spoils subrefs
@@ -730,6 +737,8 @@
    \symbolitemfalse
    \EveryPar{\ignorespaces}%
    \ignorespaces}
+
+\chardef\autoitemgroupspacing=2 % 0 = voor/na, 1=tussen als geen voor 2=(prev)tussen=old/normal
 
 \def\complexdoitemgroupitem[#1]%
   {\iftextitems
@@ -759,7 +768,15 @@
        \ifparagraphitems \else
          \let\previtemlevel\itemlevel
          \decrement\previtemlevel
-         \getitemparameter\previtemlevel\c!tussen % = itemlevel-1
+         \ifcase\autoitemgroupspacing\relax % nieuw
+           \getitemparameter\itemlevel\c!voor
+         \or
+            \doifelsenothing{\getitemparameter\itemlevel\c!voor}
+              {\getitemparameter\itemlevel\c!voor}
+              {\getitemparameter\previtemlevel\c!tussen}%
+         \else
+           \getitemparameter\previtemlevel\c!tussen % == itemlevel-1
+         \fi
        \fi
      \fi
    \else
@@ -842,8 +859,8 @@
    \c!factor=0,
    \c!afstand=.5em,
   %\c!uitlijnen=\v!normaal, % definitely not \v!normaal, see mails and
-   \c!uitlijnen=, % debug reports of David A & Patrick G on context list 
-   \c!kleur=,      
+   \c!uitlijnen=, % debug reports of David A & Patrick G on context list
+   \c!kleur=,
    \c!inspringen=, % untouched if empty
    \c!kleur=,
    \c!letter=, % kan tzt weg
@@ -882,19 +899,19 @@
       \getparameters[\??ig#1][\c!niveaus=3,#2]%
       \ifnum\getvalue{\??ig#1\c!niveaus}<\maxitemlevel\relax
         \letvalue{\??ig#1\c!niveaus}\maxitemlevel
-      \fi 
+      \fi
       \dorecurse{\getvalue{\??ig#1\c!niveaus}}{\initializeitemgrouplevel\recurselevel}%
       \popmacro\currentitemgroup}}
 
-% efficient default itemize as well as upward compatible 
-% definition: 
+% efficient default itemize as well as upward compatible
+% definition:
 
 \defineitemgroup [\v!itemize] [\c!niveaus=6]
 
-% keep these, needed for styles: 
+% keep these, needed for styles:
 
-% \def\startitemize {\startitemgroup[\v!itemize]} 
+% \def\startitemize {\startitemgroup[\v!itemize]}
 % \def\stopitemize  {\stopitemgroup}
-% \def\setupitemize {\setupitemgroup[\v!itemize]} 
+% \def\setupitemize {\setupitemgroup[\v!itemize]}
 
 \protect \endinput

@@ -4332,34 +4332,51 @@
 %D \filterfromvalue{xx}{3}{2}
 %D \filterfromvalue{xx}{3}{1}
 %D \stoptypen
+%D
+%D An alternative is to store 'max' in the list, say:
+%D
+%D \starttypen 
+%D \setvalue{xx}{3{A}{B}{C}}
+%D
+%D \filterfromvalues{xx}{3}
+%D \filterfromvalues{xx}{2}
+%D \filterfromvalues{xx}{1}
+%D \stoptypen
+%D
+%D I'll implement this when I'm in \quotation {writing dirty
+%D macros mood}. 
 
 \def\filterfromvalue#1#2#3% value max n
-  {\@EA\@EAEAEA\csname
-     \ifcase#2\or
-       \ifcase#3\or
-         \strippedcsname\firstofoneargument
-       \else
-         \strippedcsname\gobbleoneargument
-       \fi
-     \or
-       \ifcase#3\or
-         \strippedcsname\firstoftwoarguments
+  {\@EA\@EAEAEA\csname                   % we use the fact that an 
+     \@EA\ifx\csname#1\endcsname\relax   % undefined cs has become \relax
+       \strippedcsname\gobbleoneargument % which we then gobble here
+     \else
+       \ifcase#2\or
+         \ifcase#3\or
+           \strippedcsname\firstofoneargument
+         \else
+           \strippedcsname\gobbleoneargument
+         \fi
        \or
-         \strippedcsname\secondoftwoarguments
-       \else
-         \strippedcsname\gobbletwoarguments
-       \fi
-     \or
-       \ifcase#3\or
-         \strippedcsname\firstofthreearguments
+         \ifcase#3\or
+           \strippedcsname\firstoftwoarguments
+         \or
+           \strippedcsname\secondoftwoarguments
+         \else
+           \strippedcsname\gobbletwoarguments
+         \fi
        \or
-         \strippedcsname\secondofthreearguments
-       \or
-         \strippedcsname\thirdofthreearguments
-       \else
-         \strippedcsname\gobblethreearguments
+         \ifcase#3\or
+           \strippedcsname\firstofthreearguments
+         \or
+           \strippedcsname\secondofthreearguments
+         \or
+           \strippedcsname\thirdofthreearguments
+         \else
+           \strippedcsname\gobblethreearguments
+         \fi
        \fi
      \fi
-   \endcsname\csname#1\endcsname}
+     \endcsname\csname#1\endcsname}
 
 \protect \endinput

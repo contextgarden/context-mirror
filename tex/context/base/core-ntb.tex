@@ -2,33 +2,33 @@
 %D   [       file=core-ntb,
 %D        version=2000.04.18,
 %D          title=\CONTEXT\ Core Macros,
-%D       subtitle=Natural Tables, 
+%D       subtitle=Natural Tables,
 %D         author=Hans Hagen,
 %D           date=\currentdate,
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
-%C details. 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
 
-%D This is an unfinished, preliminary module. At least two 
-%D runs are needed to get the table fixed. 
+%D This is an unfinished, preliminary module. At least two
+%D runs are needed to get the table fixed.
 
 % optie=rek beschrijven
 
 \writestatus{loading}{Context Core Macros / Natural Tables}
 
-%D As always, this is the nth version. Much time went in 
-%D trying to speed up the many cell calculations, some 
-%D optimizations were rejected in order not to complicate this 
+%D As always, this is the nth version. Much time went in
+%D trying to speed up the many cell calculations, some
+%D optimizations were rejected in order not to complicate this
 %D module too much (and in order to prevail extensibility).
 
 %D To Do:
 %D
-%D \starttypen 
+%D \starttypen
 %D break over pagina
-%D kop herhalen 
-%D reset settings 
+%D kop herhalen
+%D reset settings
 %D
 %D \setupTABLE [c|column|x]            [nx|odd|even|first|last][a=b]
 %D \setupTABLE [r|row   |y]            [nx|odd|even|first|last][a=b]
@@ -36,24 +36,24 @@
 %D \setupTABLE [nx|odd|even|first|last]                        [a=b]
 %D \setupTABLE                                                 [a=b]
 %D
-%D \bTH \eTH 
-%D \stoptypen 
+%D \bTH \eTH
+%D \stoptypen
 
-% the section setup does not work yet, data needs to be stored, 
-% i.e.each row should know if it's a head/body/foot, and there 
-% should be \setupTABLE[head]... and alike 
+% the section setup does not work yet, data needs to be stored,
+% i.e.each row should know if it's a head/body/foot, and there
+% should be \setupTABLE[head]... and alike
 
 \unprotect
 
-%D A simple way to force equal line spacing is to say: 
-%D 
-%D \starttypen 
+%D A simple way to force equal line spacing is to say:
+%D
+%D \starttypen
 %D \def\bTBLCELL{\begstrut}
 %D \def\eTBLCELL{\endstrut}
-%D \stoptypen 
+%D \stoptypen
 
 %D However, the next alternative also takes care of preceding
-%D and following white space. 
+%D and following white space.
 
 \def\bTBLCELL
   {\inhibitblank\doconvertfont\tbltblletter\empty\everypar{\begstrut}}
@@ -76,7 +76,7 @@
 
 \def\@@tblprefix{tbl:} \let\@@rawtblprefix\@@tblprefix
 
-%D This should be done more efficient: 
+%D This should be done more efficient:
 
 \def\settbltag#1#2#3{\setevalue{\@@tblprefix#1:#2:s}{#3}} % \number#3
 \def\settblcol#1#2#3{\setevalue{\@@tblprefix#1:#2:c}{#3}}
@@ -113,7 +113,7 @@
 % \def\settblspn#1#2{\setvalue     {\@@tblprefix#1:s}{#2}}
 % \def\doiftblspn #1{\doifelsevalue{\@@tblprefix#1:s}{1}}
 
-\newif\ifsqueezeTBLspan % \squeezeTBLspantrue 
+\newif\ifsqueezeTBLspan % \squeezeTBLspantrue
 
 \def\settblspn     #1{\setvalue     {\@@tblprefix#1:s}{1}}
 \def\doifelsetblspn#1{\doifelsevalue{\@@tblprefix#1:s}{1}}
@@ -129,7 +129,7 @@
 %\let\doifnottbltag \doifnottbl
 %\let\doifelsetbltag\doifelsetbl
 
-\newtoks\tbltoks 
+\newtoks\tbltoks
 
 \let\pushTBLparameters\relax
 \let\popTBLparameters \relax
@@ -147,7 +147,7 @@
 
 \def\noftblheadlines{0}
 
-\presetlocalframed[\@@tbl\@@tbl] 
+\presetlocalframed[\@@tbl\@@tbl]
 
 \long\def\handleTBLcell#1#2[#3]{}
 
@@ -171,6 +171,7 @@
                y=>{\dosetupTABLExy[\c!y][#2][#3]},%
                x=>{\dosetupTABLExy[\c!x][#2][#3]},%
         \v!start=>{\dosetupTABLExy[#1][#2][#3]},%
+        \v!hoofd=>{\dosetupTABLExy[#1][#2][#3]},%
       \s!unknown=>{\dosetupTABLEzz[#1][#2][#3]}]%
    \else\ifsecondargument
      \processaction
@@ -182,17 +183,18 @@
                y=>{\dosetupTABLExy[\c!y][\v!elk][#2]},%
                x=>{\dosetupTABLExy[\c!x][\v!elk][#2]},%
         \v!start=>{\dosetupTABLExy[#1][\v!elk][#2]},%
+        \v!hoofd=>{\dosetupTABLExy[#1][\v!elk][#2]},%
       \s!unknown=>{\dosetupTABLEzz[\c!x][#1][#2]}]%
    \else
      \getparameters[\@@tbl\@@tbl][#1]%
    \fi\fi}
 
-\def\dosetupTABLExy[#1][#2][#3]% 
+\def\dosetupTABLExy[#1][#2][#3]%
   {\def\dodosetupTABLE##1%
      {\setTABLEparameters[#1##1][#3]}%
    \processcommalist[#2]\dodosetupTABLE}
 
-\def\dosetupTABLEzz[#1][#2][#3]% 
+\def\dosetupTABLEzz[#1][#2][#3]%
   {\def\dodosetupTABLE##1%
      {\def\dododosetupTABLE####1%
         {\setTABLEparameters[\c!x##1\c!y####1][#3]}%
@@ -218,27 +220,6 @@
 
 \let\setupTBLsection\relax
 
-% \def\setupTBLcell#1#2% cell over col over row
-%   {\setupTBLsection % already forgotten 
-%    \getvalue{\@@tblprefix\c!y\v!elk}%
-%    \getvalue{\@@tblprefix\c!x\v!elk}%
-%    \getvalue{\@@tblprefix\c!y\v!oddeven{#1}}%
-%    \getvalue{\@@tblprefix\c!x\v!oddeven{#2}}%
-%    \getvalue{\@@tblprefix\c!x\v!oddeven{#2}\c!y\v!oddeven{#1}}%
-%    \ifnum#1=\plusone         \getvalue{\@@tblprefix\c!y\v!eerste }\fi
-%    \ifnum#2=\plusone         \getvalue{\@@tblprefix\c!x\v!eerste }\fi
-%    \ifnum#1=\maximumrow\relax\getvalue{\@@tblprefix\c!y\v!laatste}\fi
-%    \ifnum#2=\maximumcol\relax\getvalue{\@@tblprefix\c!x\v!laatste}\fi
-%    \ifnum#1=\maximumrow\relax\ifnum#2=\maximumcol\relax
-%      \getvalue{\@@tblprefix\c!x\v!laatste\c!y\v!laatste}%
-%    \fi\fi
-%    \ifnum#1=\plusone \ifnum#2=\plusone
-%      \getvalue{\@@tblprefix\c!x\v!eerste\c!y\v!eerste}%
-%    \fi\fi
-%    \getvalue{\@@tblprefix\c!y#1}%
-%    \getvalue{\@@tblprefix\c!x#2}%
-%    \getvalue{\@@tblprefix\c!x#2\c!y#1}\relax}
-
 \def\setupTBLcell#1#2% cell over col over row
   {\setupTBLsection % already forgotten
    \getvalue{\@@tblprefix\c!y\v!elk}%
@@ -246,11 +227,11 @@
    \getvalue{\@@tblprefix\c!y\v!oddeven{#1}}%
    \getvalue{\@@tblprefix\c!x\v!oddeven{#2}}%
    \getvalue{\@@tblprefix\c!x\v!oddeven{#2}\c!y\v!oddeven{#1}}%
-   \ifnum#1=\plusone         
+   \ifnum#1=\plusone
      \getvalue{\@@tblprefix\c!y\v!eerste}%
      \executeifdefined{\@@tblprefix\c!x#2\c!y\v!eerste}\donothing
    \fi
-   \ifnum#2=\plusone         
+   \ifnum#2=\plusone
      \getvalue{\@@tblprefix\c!x\v!eerste}%
      \executeifdefined{\@@tblprefix\c!x\v!eerste\c!y#1}\donothing
    \fi
@@ -268,16 +249,17 @@
    \ifnum#1=\plusone \ifnum#2=\plusone
      \getvalue{\@@tblprefix\c!x\v!eerste\c!y\v!eerste}%
    \fi\fi
-  %\getvalue{\@@tblprefix\c!y#1}%
-  %\getvalue{\@@tblprefix\c!x#2}%
-  %\getvalue{\@@tblprefix\c!x#2\c!y#1}\relax}
+   \ifnum#1>\noftblheadlines\else
+     \executeifdefined{\@@tblprefix\v!hoofd\v!elk}\donothing
+     \executeifdefined{\@@tblprefix\v!hoofd#2}\donothing
+   \fi
    \executeifdefined{\@@tblprefix\c!y#1}\donothing
    \executeifdefined{\@@tblprefix\c!x#2}\donothing
    \executeifdefined{\@@tblprefix\c!x#2\c!y#1}\donothing
    \relax}
- 
-%\long\def\parseTR[#1][#2]#3\eTR% [#2] is dummy that kills spaces
-%  {\def\currentcol{0}\increment\maximumrow#3}
+
+% \long\def\parseTR[#1][#2]#3\eTR% [#2] is dummy that kills spaces
+%   {\def\currentcol{0}\increment\maximumrow#3}
 
 \long\def\parseTR[#1][#2]#3\eTR% [#2] is dummy that kills spaces
   {\def\currentcol{0}\increment\maximumrow
@@ -287,7 +269,7 @@
   {\getparameters[\@@tbl][\c!ny=\tblnr,\c!nx=\tblnc,nc=1,nr=1,#1]%
    % goto first cell
    \doloop
-     {\increment\currentcol 
+     {\increment\currentcol
       \doifnottbltag\maximumrow\currentcol\exitloop}%
    % fill r*c cells and set span
    \let\row\maximumrow
@@ -303,11 +285,11 @@
          \increment\col}%
       \increment\row}%
    % check max column
-   \decrement\col 
+   \decrement\col
    \ifnum\col>\maximumcol\relax
      \let\maximumcol\col
    \fi
-   % set values 
+   % set values
    \settbltag\maximumrow\currentcol\tblcell
    \settblcol\maximumrow\currentcol\tblnx
    \settblrow\maximumrow\currentcol\tblny
@@ -330,7 +312,7 @@
 \newtoks\TBLbody
 \newtoks\TBLfoot
 
-% to be done: head <raw> foot, dus state var 
+% to be done: head <raw> foot, dus state var
 
 \long\def\bTABLEhead{\dosingleempty\doTABLEhead}
 \long\def\bTABLEbody{\dosingleempty\doTABLEbody}
@@ -345,7 +327,7 @@
 \long\def\doTABLEfoot[#1]#2\eTABLEfoot
   {\appendtoks\doTABLEsection[#1]{#2}\to\TBLfoot}
 
-\long\def\doTABLEsection[#1]#2% 
+\long\def\doTABLEsection[#1]#2%
   {\def\setupTBLsection{\getparameters[\@@tbl\@@tbl][#1]}%
    #2%
    \let\setupTBLsection\relax}
@@ -365,20 +347,20 @@
 
 \def\dobTABLE[#1]%
   {\pushTBL
-   % box not here 
+   % box not here
    \bgroup
-\resetcharacteralign % new 
+\resetcharacteralign % new
    \getparameters
      [\@@tbl\@@tbl]
      [\c!uitlijnen={\v!rechts,\v!ruim,\v!hoog},#1]%
-   \processaction 
+   \processaction
      [\tbltblsplitsen]
      [     \v!ja=>\enableTBLbreaktrue,
       \v!herhaal=>\enableTBLbreaktrue\multipleTBLheadstrue]%
    \ifnum\TBLlevel>\plusone
      \vbox
    \else\ifenableTBLbreak
-     % no \vbox 
+     % no \vbox
    \else
      \vbox
    \fi\fi
@@ -402,18 +384,18 @@
 
 % permits \expanded{\bTD ... \eTD}
 
-\unexpanded\def\eTR{} 
+\unexpanded\def\eTR{}
 \unexpanded\def\eTD{}
 \unexpanded\def\eTH{}
-\unexpanded\def\eTN{} 
+\unexpanded\def\eTN{}
 
 \def\eTABLE
   {% tricky and dirty order -)
    \the\TBLhead
-   \edef\noftblheadlines{\number\maximumrow}% 
+   \edef\noftblheadlines{\number\maximumrow}%
    \the\TBLbody
    \the\TBLfoot
-   \endgraf 
+   \endgraf
    % finish cells
    \dorecurse\maximumrow
      {\let\row\recurselevel
@@ -458,8 +440,8 @@
         {\let\col\recurselevel
          \doiftblrow\row\col
            {\scratchcounter\maximumrow
-            \advance\scratchcounter -\row 
-            \advance\scratchcounter \plusone 
+            \advance\scratchcounter -\row
+            \advance\scratchcounter \plusone
             \ifnum\gettblrow\row\col>\scratchcounter
               \settblrow\row\col{\the\scratchcounter}%
             \fi}%
@@ -497,8 +479,8 @@
 \def\bTBL{\appendtoks\begintblrow\to\tbltoks}
 \def\eTBL{\appendtoks\endtblrow  \to\tbltoks}
 
-% We use aligments to handle the empty (skipped) columns, so 
-% that we don't have to (re|)|calculate these. 
+% We use aligments to handle the empty (skipped) columns, so
+% that we don't have to (re|)|calculate these.
 
 \def\skiptblcol
   {\doglobal\increment\colTBL}
@@ -542,7 +524,7 @@
    \doglobal\decrement\rowTBL
    \tabskip\zeropoint
    \halign\bgroup
-   \registerparoptions %  new 
+   \registerparoptions %  new
    \ignorespaces##\unskip&&\ignorespaces##\unskip\cr}
 
 \def\endtbl
@@ -553,7 +535,7 @@
 
 \setvalue{\tblcell TBL}#1#2%
   {\appendtoks
-     \makeTBL{#1}{#2}%    % append nog isoleren 
+     \makeTBL{#1}{#2}%    % append nog isoleren
    \to\tbltoks
    \spanTBL{#1}{#2}}
 
@@ -580,20 +562,20 @@
         {\strut}}%
    \edef\minimalcellheight{\the\ht\scratchbox}%
    \dorecurse\maximumcol
-     {\settblaut\recurselevel\!!zeropoint % \zeropoint etc 
-      % new 
+     {\settblaut\recurselevel\!!zeropoint % \zeropoint etc
+      % new
       \let\xcol\recurselevel
       \dorecurse\maximumrow
         {\settblwd \recurselevel\xcol\!!zeropoint
          \settblht \recurselevel\xcol\!!zeropoint}%
-      % till here 
+      % till here
       \settblwid\recurselevel\!!zeropoint}%
    \dorecurse\maximumrow
      {\settblhei\recurselevel\maxdimen}%
    \chardef\TBLpass\plusone
    \let\handleTBLcell\dohandleTBLcellA
    \def\makeTBL##1##2%
-     {\gettbltxt{##1}{##2}}%   
+     {\gettbltxt{##1}{##2}}%
    \def\inTBLcell##1##2%
      {\ExpandBothAfter\doifinsetelse\localwidth{\v!passend,\v!ruim} % user set
         {}
@@ -601,32 +583,32 @@
          \ifdim\localwidth>\scratchdimen
            \settblaut\colTBL\localwidth
          \fi}}%
-   \setbox0\vbox{\trialtypesettingtrue \the\tbltoks}% 
+   \setbox0\vbox{\trialtypesettingtrue \the\tbltoks}%
    \ifautoTBLspread
-     % experimental, stretch non fixed cells to \hsize 
-     \checktblwidthsone   % trial run 
-     \checktblwidthstwo   % real run 
+     % experimental, stretch non fixed cells to \hsize
+     \checktblwidthsone   % trial run
+     \checktblwidthstwo   % real run
      \stretchtblwidths
      \let\handleTBLcell\dohandleTBLcellB
      \setbox\scratchbox\vbox{\trialtypesettingtrue \the\tbltoks}%
    \else\ifdim\wd0>\hsize
      \ifautoTBLhsize
-       \checktblwidthsone % trial run 
-       \checktblwidthstwo % real run 
+       \checktblwidthsone % trial run
+       \checktblwidthstwo % real run
        \let\handleTBLcell\dohandleTBLcellB
        \setbox\scratchbox\vbox{\trialtypesettingtrue \the\tbltoks}%
      \fi
-   \else\ifautoTBLrowspan\ifnum\maximumrowspan>1 % max ? 
-     % added jan 2002 because nx=* did no longer work 
-     \checktblwidthsone % trial run 
-     \checktblwidthstwo % real run 
+   \else\ifautoTBLrowspan\ifnum\maximumrowspan>1 % max ?
+     % added jan 2002 because nx=* did no longer work
+     \checktblwidthsone % trial run
+     \checktblwidthstwo % real run
      %
      \let\handleTBLcell\dohandleTBLcellC
      \setbox\scratchbox\vbox{\trialtypesettingtrue \the\tbltoks}%
    \fi\fi\fi\fi
    \let\handleTBLcell\dohandleTBLcellD
    \chardef\TBLpass2
-   \def\makeTBL##1##2% meer in cellD 
+   \def\makeTBL##1##2% meer in cellD
      {\dimen2\zeropoint
       \pushmacro\colTBL
       \dorecurse{\gettblcol{##1}{##2}}
@@ -651,12 +633,12 @@
       \scratchdimen\zeropoint
       \def\rowTBL{##1}%
       \ifnum\gettblcol{##1}{##2}=\maximumcol\relax
-        % case: nc=maxcolumns 
+        % case: nc=maxcolumns
       \else
         \dorecurse{\gettblrow{##1}{##2}}
           {\advance\scratchdimen \gettblhei\rowTBL
            \increment\rowTBL}%
-        \ifdim\scratchdimen<\gettblht{##1}{##2}\relax    
+        \ifdim\scratchdimen<\gettblht{##1}{##2}\relax
           \scratchdimen\gettblht{##1}{##2}\relax
         \fi
       \fi
@@ -666,26 +648,26 @@
       \pushmacro\colTBL
       \scratchdimen\zeropoint
       \dorecurse{\gettblcol{##1}{##2}}
-        {\advance\scratchdimen \gettblwid\colTBL 
+        {\advance\scratchdimen \gettblwid\colTBL
          \increment\colTBL}%
       \edef\widthTBL{\the\scratchdimen}%
       \popmacro\colTBL
-      % cell 
+      % cell
       \setbox\scratchbox\hbox{\gettbltxt{##1}{##2}}%
       \ifnum\gettblcol{##1}{##2}=\maximumcol\relax
-        % case: nc=maxcolumns 
+        % case: nc=maxcolumns
       \else
         \scratchdimen\gettblhei{##1}%
         \setbox\scratchbox\hbox
           {\lower\ht\scratchbox\hbox{\raise\scratchdimen\box\scratchbox}}%
-        \ht\scratchbox\scratchdimen 
+        \ht\scratchbox\scratchdimen
       \fi
       \dp\scratchbox\zeropoint
       \box\scratchbox}%
     \iftraceTABLE\showtbltoks\fi
     \ifnum\TBLlevel>\plusone
       \vbox{\the\tbltoks}%
-    \else\ifenableTBLbreak  
+    \else\ifenableTBLbreak
       \ifmultipleTBLheads
         \setbox\scratchbox\vbox{\the\tbltoks}%
         \splittblbox\scratchbox
@@ -708,10 +690,10 @@
      \dorecurse\maximumcol
        {\scratchdimen\gettblwid\recurselevel
         \advance\scratchdimen\!!dimend
-        \settblwid\recurselevel{\the\scratchdimen}}% 
-   \fi} 
+        \settblwid\recurselevel{\the\scratchdimen}}%
+   \fi}
 
-% \def\splittblbox#1% #1 <> 0/2 
+% \def\splittblbox#1% #1 <> 0/2
 %   {\unvbox#1}
 
 \def\splittblbox#1% #1 <> 0/2
@@ -751,9 +733,9 @@
 \def\checktblwidthsone{\dochecktblwidths0} % 0 = trial run
 \def\checktblwidthstwo{\dochecktblwidths1} % 1 = real run
 
-\def\dochecktblwidths#1% 
+\def\dochecktblwidths#1%
   {\iftraceTABLE\showtblwids{B#1}\fi
-   \!!dimena\hsize 
+   \!!dimena\hsize
    \!!counta\zerocount
    \dorecurse\maximumcol
      {\scratchdimen\gettblaut\recurselevel\relax
@@ -768,7 +750,7 @@
           \ifdim\scratchdimen>\zeropoint\relax
             \advance\!!dimena -\scratchdimen
           \else
-            % eigenlijk moet dit alleen als de kolom wordt overspannen door een 
+            % eigenlijk moet dit alleen als de kolom wordt overspannen door een
             % vorige, maw extra dubbele loop en status var
             \advance\!!counta \plusone
           \fi
@@ -777,32 +759,32 @@
    \ifcase\!!counta \else \divide\!!dimena \!!counta \fi
    \dorecurse\maximumcol
      {\scratchdimen\gettblwid\recurselevel\relax
-      \ifcase#1\relax 
+      \ifcase#1\relax
         \ifdim\scratchdimen<\!!dimena  % take natural width
           \settblaut\recurselevel{\the\scratchdimen}%
         \fi
       \else
-        \ifdim\scratchdimen=\zeropoint % auto set width 
-          \settblwid\recurselevel{\the\!!dimena}% 
+        \ifdim\scratchdimen=\zeropoint % auto set width
+          \settblwid\recurselevel{\the\!!dimena}%
         \fi
       \fi}%
    \iftraceTABLE\showtblwids{E#1}\fi}
 
-\def\checktblheightsone 
+\def\checktblheightsone
   {\dorecurse\maximumrow
      {\let\xrowTBL\recurselevel
       \dorecurse\maximumcol
         {\let\xcolTBL\recurselevel
-         \!!countb=0\gettblrow\xrowTBL\xcolTBL\relax 
-         % check row span 
+         \!!countb=0\gettblrow\xrowTBL\xcolTBL\relax
+         % check row span
          \ifnum\!!countb>1
-           % current height in row 
-           \dimen0=\gettblht\xrowTBL\xcolTBL 
-           % find nearest height in row 
-           \dimen2=\zeropoint              
+           % current height in row
+           \dimen0=\gettblht\xrowTBL\xcolTBL
+           % find nearest height in row
+           \dimen2=\zeropoint
            \dorecurse\maximumcol
              {\ifnum\recurselevel=\xcolTBL\else
-                \!!countc=0\gettblrow\xrowTBL\recurselevel\relax 
+                \!!countc=0\gettblrow\xrowTBL\recurselevel\relax
                 \ifnum\!!countc=\plusone
                   \dimen4=\gettblht\xrowTBL\recurselevel\relax
                   \ifdim\dimen2<\dimen4
@@ -811,17 +793,17 @@
                 \fi
               \fi}%
            \let\xxrowTBL\xrowTBL
-           % calculate cummulative height 
-           \dimen4=\dimen2 
+           % calculate cummulative height
+           \dimen4=\dimen2
            \dorecurse{\!!countb}
              {\ifnum\xxrowTBL=\xrowTBL\else
-                \advance\dimen4 \gettblhei\xxrowTBL 
+                \advance\dimen4 \gettblhei\xxrowTBL
               \fi
               \increment\xxrowTBL}%
            % distribute overshoot equally
-           \ifdim\dimen4<\dimen0 
+           \ifdim\dimen4<\dimen0
              \advance\dimen0 -\dimen4
-             \divide\dimen0 \!!countb 
+             \divide\dimen0 \!!countb
              \let\xxrowTBL\xrowTBL
              \settblhei\xrowTBL{\the\dimen2}%
              \dorecurse{\!!countb}
@@ -835,7 +817,7 @@
                      \fi
                    \fi}%
                 \increment\xxrowTBL}%
-           \else\ifdim\dimen4>\dimen0 
+           \else\ifdim\dimen4>\dimen0
              \settblhei\xrowTBL{\the\dimen2}%
            \fi\fi
          \fi}}}
@@ -853,7 +835,7 @@
   {\vbox
      {\forgetall\tttf
       \let\begintbl   \relax  \let\endtbl    \relax
-      \let\begintblrow\par    \let\endtblrow \par 
+      \let\begintblrow\par    \let\endtblrow \par
       \def\nexttblcol {[next]}\def\spantblcol{[span]}
       \def\makeTBL##1##2{[##1,##2]}
       \the\tbltoks}}
@@ -867,8 +849,8 @@
    \edef\alignmentcharacter{\tbltbluitlijnkarakter}%
    \ifcase\TBLpass\or
      \setfirstpasscharacteralign\checkalignment{#2}% {\strut#2\unskip}%
-   \fi % force hsize, so always a second 
-   \setsecondpasscharacteralign \checkalignment{#2}% {\strut#2\unskip}% 
+   \fi % force hsize, so always a second
+   \setsecondpasscharacteralign \checkalignment{#2}% {\strut#2\unskip}%
    \ignorespaces}
 
 % \long\def\dohandleTBLcellA#1#2[#3]#4%
@@ -891,26 +873,26 @@
 %    \settblwd{#1}{#2}{\the\wd\scratchbox}%
 %    \ifautoTBLcheckwidth
 %      \ifdim\wd\scratchbox<.75\hsize
-%        \ifdim\ht\scratchbox>2\openlineheight % honor width since this can be a 
+%        \ifdim\ht\scratchbox>2\openlineheight % honor width since this can be a
 %          \scratchdimen\gettblaut\colTBL\relax % figure or so
 %          \ifdim\scratchdimen=\zeropoint
 %            % side effect: when width is set to 0pt,
-%            % we can force a span that fits the sum of spans widths 
+%            % we can force a span that fits the sum of spans widths
 %            \settblaut\colTBL{\the\scratchdimen}%
 %          \else\ifdim\wd\scratchbox>\scratchdimen
-% % unless span 
+% % unless span
 %            \settblaut\colTBL{\the\wd\scratchbox}%
-%            % to be translated 
+%            % to be translated
 %            \writestatus\m!TABLE{no auto width in (\number#1,\number#2)\space\the\wd\scratchbox/\the\hsize}%
 %          \fi\fi
 %        \fi
 %      \fi
-%    \fi 
+%    \fi
 %    \setbox2\null
 %    \wd2\wd\scratchbox \ht2\ht\scratchbox \dp2\dp\scratchbox
 %    \box2}
 
-% new, needed for icare first col of 'doeltabel', experimental 
+% new, needed for icare first col of 'doeltabel', experimental
 
 \long\def\dohandleTBLcellA#1#2[#3]#4%
   {\setbox\scratchbox\hbox
@@ -922,7 +904,7 @@
    \scratchdimen\gettblwid\colTBL\relax
    \ifdim\wd\scratchbox>\scratchdimen
      \ifsqueezeTBLspan
-       \ifnum0\number\gettblcol{#1}{#2}>1\relax \settblspn\colTBL \fi 
+       \ifnum0\number\gettblcol{#1}{#2}>1\relax \settblspn\colTBL \fi
      \fi
      \doifelsetblspn\colTBL
        \donothing{\settblwid\colTBL{\the\wd\scratchbox}}% auto set
@@ -936,21 +918,21 @@
    \settblwd{#1}{#2}{\the\wd\scratchbox}%
    \ifautoTBLcheckwidth
      \ifdim\wd\scratchbox<.75\hsize
-       \ifdim\ht\scratchbox>2\openlineheight % honor width since this can be a 
+       \ifdim\ht\scratchbox>2\openlineheight % honor width since this can be a
          \scratchdimen\gettblaut\colTBL\relax % figure or so
          \ifdim\scratchdimen=\zeropoint
            % side effect: when width is set to 0pt,
-           % we can force a span that fits the sum of spans widths 
+           % we can force a span that fits the sum of spans widths
            \settblaut\colTBL{\the\scratchdimen}%
          \else\ifdim\wd\scratchbox>\scratchdimen
-           % unless span 
+           % unless span
            \settblaut\colTBL{\the\wd\scratchbox}%
-           % to be translated 
+           % to be translated
            \writestatus\m!TABLE{no auto width in (\number#1,\number#2)\space\the\wd\scratchbox/\the\hsize}%
          \fi\fi
        \fi
      \fi
-   \fi 
+   \fi
    \setbox2\null
    \wd2\wd\scratchbox \ht2\ht\scratchbox \dp2\dp\scratchbox
    \box2}
@@ -960,13 +942,13 @@
      {\setupTBLcell{#2}{#3}%
       \localframed
         [\@@tbl\@@tbl]
-        [#4,#1,\c!kader=\v!uit,\c!achtergrond=] 
+        [#4,#1,\c!kader=\v!uit,\c!achtergrond=]
         {\bTBLCELL#5\eTBLCELL}}%
-   \setbox2\null 
-   \wd2\wd\scratchbox \ht2\ht\scratchbox \dp2\dp\scratchbox 
+   \setbox2\null
+   \wd2\wd\scratchbox \ht2\ht\scratchbox \dp2\dp\scratchbox
    \ifautoTBLrowspan
      \let\rowTBLx\rowTBL\increment\rowTBLx
-     \scratchdimen\gettblhei\rowTBLx\relax 
+     \scratchdimen\gettblhei\rowTBLx\relax
      \ifnum\gettblrow\rowTBLx\colTBL>1 \ifdim\ht\scratchbox>\scratchdimen
        \scratchdimen-\scratchdimen \advance\scratchdimen -\ht\scratchbox
        \ht2\scratchdimen
@@ -1006,16 +988,16 @@
 
 \long\def\dohandleTBLcellE#1#2[#3]#4%
   {\setupTBLcell{#1}{#2}%
-   \getparameters[\@@tbl\@@tbl][#3]% to get the color right, the way we  
-   \color % handle color here prevents interference due to whatsit nodes 
+   \getparameters[\@@tbl\@@tbl][#3]% to get the color right, the way we
+   \color % handle color here prevents interference due to whatsit nodes
      [\tbltblkleur] % as well as permits local colors to take precedence
-     {\ifdim\heightTBL=\zeropoint\relax % case: nc=maxcolumns 
-        \localframed 
+     {\ifdim\heightTBL=\zeropoint\relax % case: nc=maxcolumns
+        \localframed
           [\@@tbl\@@tbl]
           [\c!kleur=,\c!breedte=\widthTBL]
           {\bTBLCELL\TBLcharalign{#2}{#4}\eTBLCELL}%
       \else
-        \localframed 
+        \localframed
           [\@@tbl\@@tbl]
           [\c!kleur=,\c!breedte=\widthTBL,\c!hoogte=\heightTBL]
           {\bTBLCELL\TBLcharalign{#2}{#4}\eTBLCELL}%
@@ -1032,15 +1014,15 @@
    \c!strut=\v!nee,
    \c!karakteruitlijnen=\v!nee,
    \c!uitlijnkarakter={,},
-   \c!optie=, % \v!rek 
+   \c!optie=, % \v!rek
    \c!splitsen=\v!nee,
    \c!tussenwit=,
    \c!maxbreedte=8em]
 
-%D We have already prepared the previous macros for nesting, 
-%D so we only have to pop in the right ones: 
+%D We have already prepared the previous macros for nesting,
+%D so we only have to pop in the right ones:
 
-%D Redefined: 
+%D Redefined:
 
 \newcounter\TBLlevel
 
@@ -1056,11 +1038,11 @@
 \def\gettbltxt#1#2%
   {\getvalue{\@@tblprefix#1:#2:t}}
 
-%D New: 
+%D New:
 
 \def\pushTBLparameters
   {\pushmacro\TBLlevel
-   \ifcase\TBLpass 
+   \ifcase\TBLpass
      % we're just after \bTABLE
    \else\ifnum\TBLlevel>\zerocount
      \doglobal\increment\TBLlevel\relax
@@ -1075,7 +1057,7 @@
    \fi
    \doglobal\increment\TBLlevel\relax
    \ifnum\TBLlevel>\plusone
-     \resetallTABLEparameters 
+     \resetallTABLEparameters
      \pushmacro\colTBL
      \pushmacro\rowTBL
    \else
@@ -1094,11 +1076,11 @@
 \newconditional\resetTABLEmode \settrue\resetTABLEmode
 
 \def\resetallTABLEparameters% moet genest wel werken
-  {\ifnum\TBLlevel>\plusone % in ieder geval 
+  {\ifnum\TBLlevel>\plusone % in ieder geval
      \ifconditional\resetTABLEmode
-       \presetlocalframed   % breedte hoogte diepte offset 
+       \presetlocalframed   % breedte hoogte diepte offset
          [\@@tbl\@@tbl]%    % achtergrond, achtergrondraster, achtergrondkleur
-       % not ok yet            
+       % not ok yet
        \setupTABLE
          [\c!kaderoffset=.5\linewidth,
           \c!achtergrondoffset=\v!kader,
@@ -1118,4 +1100,4 @@
      \fi
   \fi}
 
-\protect \endinput 
+\protect \endinput

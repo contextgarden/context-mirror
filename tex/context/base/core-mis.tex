@@ -555,6 +555,13 @@
 \unexpanded\def\unknown
   {\dontleavehmode\punten[3]}
 
+\def\midboundarycharacter#1#2% 
+  {%\nobreak
+   \hskip\hspaceamount\currentlanguage{#2}%
+   \languageparameter#1%
+   %\nobreak
+   \hskip\hspaceamount\currentlanguage{#2}}
+
 \def\leftboundarycharacter#1#2%
   {\languageparameter#1%
    \nobreak
@@ -577,6 +584,10 @@
 \definehspace [intersentence] [.250em]
 
 \definesymbol
+  [\c!midsentence]
+  [\midboundarycharacter\c!midsentence{sentence}]
+
+\definesymbol
   [\c!leftsentence]
   [\leftboundarycharacter\c!leftsentence{sentence}]
 
@@ -596,6 +607,9 @@
 
 \newsignal \subsentencesignal
 \newcounter\subsentencelevel
+
+\def\midsentence
+  {\symbol[\c!midsentence]}
 
 \def\beginofsubsentence
   {\ifdim\lastkern=\subsentencesignal

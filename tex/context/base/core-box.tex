@@ -439,16 +439,21 @@
    \c!breedte=3cm,
    \c!hoogte=3cm,
    \c!offset=2mm,
+   \c!pagina=\v!nee,
    \c!voffset=\@@bgoffset,
    \c!hoffset=\@@bgoffset]
 
 \def\bleed
   {\dosingleempty\dobleed}
 
+
+\def\bleedwidth {\the\hsize}%
+\def\bleedheight{\the\vsize}%
+
 \def\dobleed[#1]#2%
   {\hbox\bgroup  
-   \def\bleedwidth {\hsize}%
-   \def\bleedheight{\vsize}%
+   \xdef\bleedwidth {\the\hsize}%
+   \xdef\bleedheight{\the\vsize}%
    \doglobal\increment\nofbleeds
    \getparameters[\??bg][#1]%
    \!!doneafalse % left
@@ -481,7 +486,7 @@
      \fi\fi
    \fi
    \advance\scratchdimen\@@bghoffset
-   \edef\bleedwidth{\the\scratchdimen}%
+   \xdef\bleedwidth{\the\scratchdimen}%
    \scratchdimen\@@bghoogte
    \ifdone
      \if!!donec
@@ -492,10 +497,12 @@
      \fi\fi
    \fi
    \advance\scratchdimen\@@bgvoffset
-   \edef\bleedheight{\the\scratchdimen}%
+   \xdef\bleedheight{\the\scratchdimen}%
    \hsize\bleedwidth
    \vsize\bleedheight
    \setbox\scratchbox\hbox{#2}%
+   \doif\@@bgpagina\v!ja
+     {\setbox\scratchbox\topskippedbox{\box\scratchbox}}%
    \setbox\scratchbox\hbox to \@@bgbreedte
      {\if!!donea\hss\fi\box\scratchbox\if!!doneb\hss\fi}%
    \if!!doned 
@@ -535,6 +542,18 @@
 %   {\bleed[width=5cm,height=3cm,location=rb]{\externalfigure[koe][bleed]}}
 % 
 % \input tufte 
+% 
+% \placefigure
+%   [top,none]
+%   {} % no caption
+%   {\bleed
+%      [hoffset=-\backspace,
+%       voffset=3mm,
+%       width=0cm,
+%       height=6\lineheight,
+%       page=yes, % correct for topskip 
+%       location=lt]
+%      {\externalfigure[koe][bleed][frame=on]}}
 
 % \setlayerframed[layer id][layer settings][framed setting]{data}
 % \setlayerframed[layer id][combined settings]{data}

@@ -11,12 +11,14 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-%D For the moment we keep this downward compatible hack: 
+%D For the moment we keep this downward compatible hack:
 
-%% see end of file 
+% todo: \depth van symbol appearance controleren
 
-%D We need to check if we can use \type {\driverreferenced} 
-%D object in more places.  
+%% see end of file
+
+%D We need to check if we can use \type {\driverreferenced}
+%D object in more places.
 
 %D Initialization of fields is tricky. If a field has no
 %D value, it is kind of not there. If ResetForm is used, the
@@ -362,14 +364,14 @@
 %   \global\let\currentPDFtrimboxspec\currentPDFcropboxspec
 %
 %   \xdef\currentPDFpagemode
-%     {/PageMode \ifcase#6 
+%     {/PageMode \ifcase#6
 %        /UseNone\or/FullScreen\or/UseOutlines\else/UseNone\fi}%
 %
    \xdef\currentPDFpagemode
-     {\ifnum#6=4 
+     {\ifnum#6=4
         /PageLayout /TwoColumnRight
       \else
-        /PageMode \ifcase#6  
+        /PageMode \ifcase#6
         /UseNone\or/FullScreen\or/UseOutlines\else/UseNone\fi
       \fi}%
    \xdef\currentPDFviewerprefs % space after #6 needed, else \relax
@@ -526,7 +528,7 @@
 %D The goto macros use the switch \type{\ifsecondaryreference}
 %D to determine if actions should be linked.
 
-\def\locationfilesuffix{pdf} 
+\def\locationfilesuffix{pdf}
 
 % \def\preparePDFlocationfile#1#2%
 %   {\setreferencefilename#1\to#2%
@@ -578,7 +580,7 @@
 
 \def\doPDFstartgotorealpage#1#2#3#4#5% watch the R append trick
   {\bgroup
-   \doifelsenothing{#3}% #1 = url 
+   \doifelsenothing{#3}% #1 = url
      {\scratchcounter0#5\relax
       \ifnum\scratchcounter>0
         \advance\scratchcounter \minusone % pdf starts numbering at zero
@@ -680,7 +682,7 @@
 % bit 6 = xml
 % bit 4 = get
 
-\ifx\PDFsubmitfiller\undefined \let\PDFsubmitfiller\empty \fi 
+\ifx\PDFsubmitfiller\undefined \let\PDFsubmitfiller\empty \fi
 
 \chardef\PDFformmethod=1 % 0=GET 1=POST
 
@@ -697,7 +699,7 @@
                                    \or   \PDFformflag{40}{32} % 3=XML
                                    \else \PDFformflag{12} {4} % ?=unknown
                                    \fi
-                            /F (\argumentA)\PDFsubmitfiller} 
+                            /F (\argumentA)\PDFsubmitfiller}
 
 % urifill permits url substitution
 
@@ -747,9 +749,9 @@
 %          \edef\next{\doPDFactionobject
 %            class {\PDFobjectclass} name {\PDFobjectname} }%
 %          \globalletempty\PDFobjectclass
-%          \globalletempty\PDFobjectname 
-%        \fi 
-%        \next 
+%          \globalletempty\PDFobjectname
+%        \fi
+%        \next
 \doPDFaction
           width #1 height #2
           action {\action \secondaryPDFreferences}%
@@ -906,48 +908,43 @@
          \ifx\pdf@@actions\empty\else/A << \pdf@@actions >>\fi}}%
    \egroup}
 
-%D \macros 
-%D   {doPDFattachfile} 
+%D \macros
+%D   {doPDFattachfile}
 
-\def\doPDFfilestreamobject class #1 name #2 file #3%
+\def\doPDFfilestreamobject class #1 name #2 file #3 source #4%
   {}
 
-\def\doPDFattachfile#1#2#3#4#5#6% 
+\def\doPDFattachfile#1#2#3#4#5#6#7#8% 
   {\bgroup % title width height color symbol file
-   \edef\PDFfile{#6}\convertcommand\PDFfile\to\PDFfile
-   % beware: the symbol may (indirectly) use the file 
-   % reference when typesetting the object number;  
-   \presetPDFsymbolappearance{#4}{#5}% sets width/height 
-   \setbox\scratchbox\vbox to #3
-     {\vfill
-      \doifnotflagged{a:\PDFfile}%
-        {\doPDFfilestreamobject class PDFEF name {\PDFfile} file {#6}%
-         \doglobal\setflag{a:\PDFfile}}%
-      \doPDFgetobjectreference{PDFEF}\PDFfile\PDFobjectreference
-      \doPDFannotation width {\width} height {\height} data
-        {/Subtype /FileAttachment
-         /FS \PDFobjectreference\space
-         /Contents (#1)
-         \PDFsymbol
-         \PDFattributes}%
-      \vskip#3%
-      \vskip-\height}%
-   \smashbox\scratchbox
-   \wd\scratchbox\width
-   \ht\scratchbox\height
-   \box\scratchbox
+   \edef\PDFfile{#8}\convertcommand\PDFfile\to\PDFfile
+   % beware: the symbol may (indirectly) use the file
+   % reference when typesetting the object number;
+   \presetPDFsymbolappearance{#5}{#6}{#2}{#3}{#4}% sets width/height
+   \startPDFsymbolappearance
+     \doifnotflagged{a:\PDFfile}%
+       {\doPDFfilestreamobject
+          class PDFEF name {\PDFfile} file {#7} source {#8}%
+        \doglobal\setflag{a:\PDFfile}}%
+     \doPDFgetobjectreference{PDFEF}\PDFfile\PDFobjectreference
+     \doPDFannotation width {\width} height {\totalheight} data
+       {/Subtype /FileAttachment
+        /FS \PDFobjectreference\space
+        /Contents (#1)
+        \PDFsymbol
+        \PDFattributes}%
+   \stopPDFsymbolappearance
    \egroup}
 
 \definespecial \doattachfile {\doPDFattachfile}
 
 % requested by Jens-Uwe Morawski: permits usage of pdftosrc
 % in viewers that don't support attachments:
-% 
+%
 % \definesymbol
 %   [ObjectNumber]
 % % [object number {\PDFattachmentnumber[xx]}] % named
 %   [object number \PDFattachmentnumber]       % current
-% 
+%
 % \useattachment[test][xx][test.tex]
 % \setupattachments[symbol=ObjectNumber]
 % \attachment[test]
@@ -1522,7 +1519,7 @@
      \registerFDFobject{#1}%
    \or
      \doPDFgetobjectreference{FDF}\currentFDFparent\PDFobjectreference
-     \global\objectreferencingtrue
+    %\global\objectreferencingtrue
      \doPDFannotationobject class FDF name kids:#1 width #2 height #3 data
        {/Subtype /Widget
         /Parent \PDFobjectreference
@@ -1534,7 +1531,7 @@
         \FDFactions}%
    \or
      \doPDFgetobjectreference{FDF}\currentFDFparent\PDFobjectreference
-     \global\objectreferencingtrue
+    %\global\objectreferencingtrue
      \doPDFannotationobject class FDF name kids:#1 width #2 height #3 data
        {/Subtype /Widget
         /Parent \PDFobjectreference
@@ -1579,7 +1576,7 @@
      \registerFDFobject{#1}%
    \or
      \doPDFgetobjectreference{FDF}\currentFDFparent\PDFobjectreference
-     \global\objectreferencingtrue
+    %\global\objectreferencingtrue
      \doPDFannotationobject class FDF name kids:#1 width #2 height #3 data
        {/Subtype /Widget
         /Parent \PDFobjectreference
@@ -1590,7 +1587,7 @@
         \FDFactions}%
    \or
      \doPDFgetobjectreference{FDF}\currentFDFparent\PDFobjectreference
-     \global\objectreferencingtrue
+    %\global\objectreferencingtrue
      \doPDFannotationobject class FDF name kids:#1 width #2 height #3 data
        {/Subtype /Widget
         /Parent \PDFobjectreference
@@ -1646,7 +1643,7 @@
    \or
      \doFDFappearance{On}{#6}{#8}%
      \doPDFgetobjectreference{FDF}\currentFDFparent\PDFobjectreference
-     \global\objectreferencingtrue
+    %\global\objectreferencingtrue
      \doPDFannotationobject class FDF name kids:#1 width #2 height #3 data
        {/Subtype /Widget
         /Parent \PDFobjectreference\space
@@ -1662,7 +1659,7 @@
    \or
      \doFDFappearance{On}{#6}{#8}%
      \doPDFgetobjectreference{FDF}\currentFDFparent\PDFobjectreference
-     \global\objectreferencingtrue
+    %\global\objectreferencingtrue
      \doPDFannotationobject class FDF name kids:#1 width #2 height #3 data
        {/Subtype /Widget
         /Parent \PDFobjectreference\space
@@ -1717,7 +1714,7 @@
      %\doFDFappearance{#1}{#7}{1}%
      \doFDFappearance{\currentFDFparent}{#7}{1}%
      \doPDFgetobjectreference{FDF}\currentFDFparent\PDFobjectreference
-     \global\objectreferencingtrue % nb
+    %\global\objectreferencingtrue % nb
      \doPDFannotationobject class FDF name kids:#1 width #2 height #3 data
        {/Subtype /Widget
         /Parent \PDFobjectreference\space
@@ -1729,7 +1726,7 @@
      %\doFDFappearance{#1}{#7}{1}%
      \doFDFappearance{\currentFDFparent}{#7}{1}%
      \doPDFgetobjectreference{FDF}\currentFDFparent\PDFobjectreference
-     \global\objectreferencingtrue
+    %\global\objectreferencingtrue
      \doPDFannotationobject class FDF name kids:#1 width #2 height #3 data
        {/Subtype /Widget
         /Parent \PDFobjectreference\space
@@ -2082,8 +2079,13 @@
 
 %D This will be reimplemented using the mapping mechanism.
 
+% \def\enablePDFdocencoding
+%   {\reducetocoding[pdfdoc]\simplifycommands}
+
 \def\enablePDFdocencoding
-  {\reducetocoding[pdfdoc]\simplifycommands}
+  {\enablecoding[pdfdoc]
+   \enablelanguagespecifics[\currentlanguage]% redundant ? 
+   \simplifycommands}
 
 \long\def\sanitizePDFdocencoding#1\to#2%
   {\enablePDFcrlf
@@ -2096,6 +2098,7 @@
 \gdef\enablePDFcrlf%
   {\def\\{\string\r}%
    \def\par{\\\\}%
+   \def\endgraf{\\\\}%
    \catcode`\^^M=\@@active%
    \let^^M=\\}
 \egroup
@@ -2118,7 +2121,7 @@
 %D text annotations.
 
 % starting point (keep this)
-% 
+%
 % \long\def\doPDFinsertcomment#1#2#3#4#5#6#7#8%
 %   {\bgroup % title width height color open symbol collect data
 %    \doifelsenothing{#1}
@@ -2155,72 +2158,68 @@
 
 \long\def\doPDFinsertcomment#1#2#3#4#5#6#7#8%
   {\bgroup % title width height color open symbol collect data
-   \presetPDFsymbolappearance{#4}{#6}% sets width/height 
+   \presetPDFsymbolappearance{#4}{#6}{#2}{#3}\!!zeropoint% sets width/height
    \doifelsenothing{#1}
      {\let\PDFidentifier\empty}
      {\def\PDFidentifier{/T (#1)}}%
    \sanitizePDFencoding#8\to\PDFdata
-   \setbox\scratchbox\vbox to #3
-     {\vfill
-      \ifPDFpopupcomments
-        \doglobal\increment\nofFDFcomments
-        \doifobjectreferencefoundelse{FDF}{c:\nofFDFcomments}
-          {\doPDFgetobjectreference{FDF}{c:\nofFDFcomments}\PDFobjectreference
-           \donetrue}
-          \donefalse
-        \ifdone
-          \setbox\scratchbox\hbox
+   \startPDFsymbolappearance
+     \ifPDFpopupcomments
+       \doglobal\increment\nofFDFcomments
+       \doifobjectreferencefoundelse{FDF}{c:\nofFDFcomments}
+         {\doPDFgetobjectreference{FDF}{c:\nofFDFcomments}\PDFobjectreference
+          \donetrue}
+         \donefalse
+       \ifdone
+         \setbox\scratchbox\hbox
+         % pdftex (efficient)
+         % {\doPDFannotation
+         % generic (less efficient)
+           {\doPDFannotationobject class FDF name {c::\nofFDFcomments}
+         % argument (common)
+                 width #2 height #3 data % text window
+              {/Subtype /Popup
+               /Parent \PDFobjectreference}}%
+         \ifcase#7\relax
+           \vbox to \height{\forgetall\vskip#3\box\scratchbox\vss}%
+         \else % incredible trial and error hack
+           \global\setbox\PDFsymbolbox\vbox
+             {\hsize#2%
+              \forgetall
+              \vsmash{\box\PDFsymbolbox}
+              \box\scratchbox}%
+         \fi
+       \fi
+       % generic
+       \doifobjectreferencefoundelse{FDF}{c::\nofFDFcomments}
+         {\doPDFgetobjectreference{FDF}{c::\nofFDFcomments}\PDFobjectreference
+          \donetrue}
+         \donefalse
+       \doPDFannotationobject class FDF name {c:\nofFDFcomments}
+           width {\width} height {\height} data
+         {/Subtype /Text
+          \ifcase#5 \else/Open true\fi
           % pdftex (efficient)
-          % {\doPDFannotation
+          % \ifdone /Popup \the\pdflastannot\space 0 R\fi
           % generic (less efficient)
-            {\doPDFannotationobject class FDF name {c::\nofFDFcomments}
-          % argument (common)
-                  width #2 height #3 data % text window
-               {/Subtype /Popup
-                /Parent \PDFobjectreference}}%
-          \ifcase#7\relax
-            \vbox to \height{\forgetall\vskip#3\box\scratchbox\vss}%
-          \else % incredible trial and error hack
-            \global\setbox\PDFsymbolbox\vbox
-              {\hsize#2%
-               \forgetall
-               \vsmash{\box\PDFsymbolbox}
-               \box\scratchbox}%
-          \fi
-        \fi
-        % generic 
-        \doifobjectreferencefoundelse{FDF}{c::\nofFDFcomments}
-          {\doPDFgetobjectreference{FDF}{c::\nofFDFcomments}\PDFobjectreference
-           \donetrue}
-          \donefalse
-        \doPDFannotationobject class FDF name {c:\nofFDFcomments}
-            width {\width} height {\height} data
-          {/Subtype /Text
-           \ifcase#5 \else/Open true\fi
-           % pdftex (efficient)
-           % \ifdone /Popup \the\pdflastannot\space 0 R\fi
-           % generic (less efficient)
-           \ifdone /Popup \PDFobjectreference\fi
-           /Contents \ifPDFunicode <\PDFdata> \else(\PDFdata) \fi
-           \PDFidentifier
-           \PDFsymbol
-           \PDFattributes}%
-        \vskip#3%
-        \vskip-\height
-      \else
-        \doPDFannotation width #2 height #3 data
-          {/Subtype /Text
-           \ifcase#5 \else/Open true\fi
-           /Contents \ifPDFunicode <\PDFdata> \else(\PDFdata) \fi
-           \PDFsymbol
-           \PDFidentifier
-           \PDFattributes}%
-      \fi}%
-   \smashbox\scratchbox
-   \box\scratchbox
+          \ifdone /Popup \PDFobjectreference\fi
+          /Contents \ifPDFunicode <\PDFdata> \else(\PDFdata) \fi
+          \PDFidentifier
+          \PDFsymbol
+          \PDFattributes}%
+     \else
+       \doPDFannotation width #2 height #3 data
+         {/Subtype /Text
+          \ifcase#5 \else/Open true\fi
+          /Contents \ifPDFunicode <\PDFdata> \else(\PDFdata) \fi
+          \PDFsymbol
+          \PDFidentifier
+          \PDFattributes}%
+     \fi
+   \stopPDFsymbolappearance
    \egroup}
 
-% symbols with a reasonable default of 18/24 pt 
+% symbols with a reasonable default of 18/24 pt
 
 \newbox\PDFsymbolbox
 
@@ -2236,12 +2235,25 @@
 \def\PDFsymbolAttachment{/Attachment}
 \def\PDFsymbolTag       {/Tag}
 
-\def\presetPDFsymbolappearance#1#2% 
+\def\startPDFsymbolappearance
+  {\setbox\scratchbox\vbox to \totalheight \bgroup \vfill}
+
+\def\stopPDFsymbolappearance
+  {\egroup
+   \setbox\scratchbox\hbox{\lower\depth\box\scratchbox}%
+   \wd\scratchbox\width
+   \ht\scratchbox\height
+   \dp\scratchbox\depth
+   \box\scratchbox}
+
+\def\presetPDFsymbolappearance#1#2#3#4#5% symbol color width height depth
   {\doifelsenothing{#1}
      {\let\PDFattributes\empty}
      {\def\PDFattributes{/C \FDFcolor{#1}}}%
-   \def\width {1.5\bodyfontsize}%
-   \def\height{\bodyfontsize}%
+   \scratchdimen#3\edef\width {\the\scratchdimen}%
+   \scratchdimen#4\edef\height{\the\scratchdimen}%
+   \scratchdimen#5\edef\depth {\the\scratchdimen}%
+   \advance\scratchdimen\height\edef\totalheight{\the\scratchdimen}%
    \doifelsenothing{#2}
      {\let\PDFsymbol\empty}
      {\ifundefined{PDFsymbol#2}%
@@ -2267,6 +2279,9 @@
    \setbox\scratchbox\hbox{\symbol[#1]}%
    \edef\width {\the\wd\scratchbox}%
    \edef\height{\the\ht\scratchbox}%
+   \edef\depth {\the\dp\scratchbox}%
+   \scratchdimen\height \advance\scratchdimen\depth
+   \edef\totalheight{\the\scratchdimen}%
    \doPDFgetobjectreference{SYM}{#1}\FDFsymbolNappearance
    \doPDFgetobjectreference{SYM}{#2}\FDFsymbolDappearance
    \edef\PDFsymbol
@@ -2394,7 +2409,7 @@
 \def\doPDFregistersomespotcolor#1#2#3#4%
   {\writestatus\m!systems{missing spot color definition}\wait}
 
-\def\doPDFregisternonecolor % internal command 
+\def\doPDFregisternonecolor % internal command
   {\doPDFregistergrayspotcolor{None}{1}%
    \globallet\doPDFregisternonecolor\relax}
 
@@ -2502,12 +2517,12 @@
    \fi}
 
 % \let\doPDFstoptransparency\relax
-% 
-% This is tricky: because a text stream is handled before 
-% the page body is built, we can run into stops that will 
-% match an outer start; however, the stop is needed in case 
-% of a text color: [text color text] [other color text] on a 
-% first page combined with color splitting will go wrong if 
+%
+% This is tricky: because a text stream is handled before
+% the page body is built, we can run into stops that will
+% match an outer start; however, the stop is needed in case
+% of a text color: [text color text] [other color text] on a
+% first page combined with color splitting will go wrong if
 % we stick to the relaxing method.
 
 \def\doPDFstoptransparency
@@ -2532,68 +2547,68 @@
 \definespecial\dostartgraphicgroup{\PDFcode{q}}
 \definespecial\dostopgraphicgroup {\PDFcode{Q}}
 
-%D Even newer trickery: 
+%D Even newer trickery:
 
 \definespecial\dostartviewerlayer {\doPDFstartlayer}
 \definespecial\dostopviewerlayer  {\doPDFstoplayer}
 \definespecial\dodefineviewerlayer{\doPDFdefinelayer}
 
-\let\PDFtextlayers\empty 
-\let\PDFpagelayers\empty 
-\let\PDFhidelayers\empty 
-\let\PDFvidelayers\empty 
+\let\PDFtextlayers\empty
+\let\PDFpagelayers\empty
+\let\PDFhidelayers\empty
+\let\PDFvidelayers\empty
 
 \def\doPDFstartlayer#1{\PDFcode{/OC /#1 BDC}}
 \def\doPDFstoplayer   {\PDFcode        {EMC}}
 
 % resource -> prop -> mc's -> OCG|OCMD (nested)
 
-% ocg: 
+% ocg:
 
 % /Intent/Design
 
-% ocmd 
+% ocmd
 
 % /P /AllOn
 
-% kan zelf ocmd bevatten 
+% kan zelf ocmd bevatten
 
-\def\doPDFdefinelayer#1#2#3#4#5% tag title visible type printable 
-%  {\driverreferenced \doPDFdictionaryobject class PDLN name #1 data 
-  {\doPDFdictionaryobject class PDLN name #1 data 
-     {/Type /OCG 
+\def\doPDFdefinelayer#1#2#3#4#5% tag title visible type printable
+%  {\driverreferenced \doPDFdictionaryobject class PDLN name #1 data
+  {\doPDFdictionaryobject class PDLN name #1 data
+     {/Type /OCG
       \ifcase#4 \or
-        /Intent /Design % disable layer hiding by user 
-      \fi 
+        /Intent /Design % disable layer hiding by user
+      \fi
       \ifcase#5 \or
-        /Usage << /Print << /PrintState /OFF >> >> % printable or not 
-      \fi 
+        /Usage << /Print << /PrintState /OFF >> >> % printable or not
+      \fi
       /Name (#2)}%
-   \doPDFgetobjectreference{PDLN}{#1}\PDFobjectreference 
+   \doPDFgetobjectreference{PDLN}{#1}\PDFobjectreference
      \xdef\PDFtextlayers{\PDFtextlayers\space\PDFobjectreference}%
    \ifcase#3\relax
      \xdef\PDFhidelayers{\PDFhidelayers\space\PDFobjectreference}%
-   \or            
+   \or
      \xdef\PDFvidelayers{\PDFvidelayers\space\PDFobjectreference}%
    \fi
-  %\driverreferenced \doPDFdictionaryobject class PDLD name #1 data 
-   \doPDFdictionaryobject class PDLD name #1 data 
-     {/Type /OCMD 
+  %\driverreferenced \doPDFdictionaryobject class PDLD name #1 data
+   \doPDFdictionaryobject class PDLD name #1 data
+     {/Type /OCMD
       /OCGs [\PDFobjectreference]}%
-   \doPDFgetobjectreference{PDLD}{#1}\PDFobjectreference 
+   \doPDFgetobjectreference{PDLD}{#1}\PDFobjectreference
    \xdef\PDFpagelayers{\PDFpagelayers\space /#1 \PDFobjectreference}}
 
-\def\flushPDFtextlayers 
+\def\flushPDFtextlayers
   {\ifx\PDFtextlayers\empty \else
        \driverreferenced \doPDFarrayobject class PDF name textlayers data {\PDFtextlayers}%
        \doPDFgetobjectreference{PDF}{textlayers}\!!stringa
-     \ifx\PDFhidelayers\empty 
+     \ifx\PDFhidelayers\empty
        \def\!!stringb{[null]}%
      \else
        \driverreferenced \doPDFarrayobject class PDF name hidelayers data {\PDFhidelayers}%
        \doPDFgetobjectreference{PDF}{hidelayers}\!!stringb
      \fi
-     \ifx\PDFvidelayers\empty 
+     \ifx\PDFvidelayers\empty
        \def\!!stringc{[null]}%
      \else
        \driverreferenced \doPDFarrayobject class PDF name videlayers data {\PDFvidelayers}%
@@ -2601,38 +2616,38 @@
      \fi
      \doPDFaddtocatalog
        {/OCProperties
-        << % display in menu   
-           /D  << /Order \!!stringa 
-                  /On    \!!stringb 
+        << % display in menu
+           /D  << /Order \!!stringa
+                  /On    \!!stringb
                   /Off   \!!stringc >>
-           % used properties        
+           % used properties
            /OCGs \!!stringa >>}%
      \globallet\flushPDFtextlayers\relax
-   \fi} 
+   \fi}
 
-\def\flushPDFpagelayers 
-  {\ifx\PDFpagelayers\empty \else 
+\def\flushPDFpagelayers
+  {\ifx\PDFpagelayers\empty \else
      \doPDFpageresource{/Properties <<\PDFpagelayers>>}%
-   \fi} 
+   \fi}
 
-\prependtoksonce \flushPDFpagelayers \to \everyshipout 
-\prependtoksonce \flushPDFtextlayers \to \everylastshipout 
+\prependtoksonce \flushPDFpagelayers \to \everyshipout
+\prependtoksonce \flushPDFtextlayers \to \everylastshipout
 
-\def\PDFlayeractionlist{null} % \PDFlayeractionlist{5 0 R} 
+\def\PDFlayeractionlist{null} % \PDFlayeractionlist{5 0 R}
 
-\def\PDFexecutehidelayer   {/SetOCGState /State [/OFF    \PDFlayeractionlist]} 
-\def\PDFexecutevidelayer   {/SetOCGState /State [/ON     \PDFlayeractionlist]} 
-\def\PDFexecutetogglelayer {/SetOCGState /State [/Toggle \PDFlayeractionlist]} 
+\def\PDFexecutehidelayer   {/SetOCGState /State [/OFF    \PDFlayeractionlist]}
+\def\PDFexecutevidelayer   {/SetOCGState /State [/ON     \PDFlayeractionlist]}
+\def\PDFexecutetogglelayer {/SetOCGState /State [/Toggle \PDFlayeractionlist]}
 
 \def\domakeviewerlayerlist#1%
   {\bgroup
    \globallet\PDFlayeractionlist\empty
    \def\docommando##1%
-     {\doPDFgetobjectreference{PDLN}{##1}\PDFobjectreference 
+     {\doPDFgetobjectreference{PDLN}{##1}\PDFobjectreference
       \xdef\PDFlayeractionlist{\PDFlayeractionlist\space\PDFobjectreference}}%
    \processcommalist[#1]\docommando
    \egroup}
- 
+
 %D And that was all.
 
 \stopspecials
@@ -2646,6 +2661,6 @@
   \let\doPDFstarttransparency\gobbletwoarguments
   \let\doPDFstoptransparency\relax
 
-\fi 
+\fi
 
 \protect \endinput

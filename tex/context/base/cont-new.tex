@@ -12,12 +12,155 @@
 %C details.
 
 %D This file is loaded at runtime, thereby providing an
-%D excellent place for hacks, patches, extensions and new 
-%D features. 
+%D excellent place for hacks, patches, extensions and new
+%D features.
 
 \unprotect
 
-\def\tabulaterule % to be redone, not correct 
+\def\OTRONEsometopsfloat[#1]%
+  {\ifdim\topinserted=\zeropoint
+     \topofinserttrue
+   \else
+     \topofinsertfalse
+   \fi
+   \global\advance\topinserted \ht\floatbox
+   \global\advance\topinserted \dp\floatbox
+   \global\advance\topinserted \floatbottomskip
+   \insert\topins
+     {\forgetall
+      \iftopofinsert
+        \topskipcorrection % [xx] new: see icare topbleed
+        \kern-\lineskip\par\prevdepth\maxdimen
+      \else
+        %\blanko[-\@@bknawit,\@@bkvoorwit]% inserts can't look back
+        \betweenfloatblanko
+      \fi
+      \flushfloatbox
+      \blanko[\@@bknawit]}%
+   \doinsertfloatinfo}
+
+\def\OTRONEdotopinsertions
+  {\ifvoid\topins\else
+     \ifgridsnapping
+       \box\topins
+       \vskip-\topskip \vskip\strutheight % [xx] new: see icare topbleed
+     \else
+       \unvbox\topins
+     \fi
+   \fi
+   \global\topinserted\zeropoint}
+
+
+\def\tightlayer[#1]%
+  {\hbox
+     {\def\currentlayer{#1}% todo: left/right
+      \hsize\layerparameter\c!breedte
+      \vsize\layerparameter\c!hoogte
+      \composedlayer{#1}}}
+
+\def\dodosetobject#1#2#3%
+  {\bgroup
+   \globalpushmacro\crossreferenceobject \objectreferenced
+   \inobjecttrue
+   \dowithnextbox
+     {\globalpopmacro\crossreferenceobject
+      \dododosetobject{#1}{#2}{#3}\egroup}}
+
+% Just a simple and fast hanger, for usage in macros.
+
+\def\setuphanging
+  {\dodoubleempty\getparameters[\??ha]}
+
+\setuphanging
+  [\c!afstand=.5em]
+
+\def\starthanging
+  {\noindent\bgroup
+   \dowithnextbox
+     {\setbox\nextbox\hbox{\flushnextbox\hskip\@@haafstand}%
+      \hangindent\nextboxwd
+      \hangafter\plusone
+      \flushnextbox\ignorespaces}
+   \hbox}
+
+\def\stophanging
+  {\endgraf
+   \egroup}
+
+\def\doifdimensionelse#1%
+  {\afterassignment\dodoifdimensionelse\scratchdimen#1pt\relax}
+
+\def\dodoifdimensionelse#1%
+  {\ifx#1\relax
+     \expandafter\secondoftwoarguments
+   \else % #1=p ... t\relax
+     \expandafter\thirdoffourarguments
+   \fi}
+
+\def\definepushbutton % name optional setup
+  {\dodoubleempty\dodefinepushbutton}
+
+\def\dodefinepushbutton[#1][#2]% name setup
+  {\dododefinepushbutton{#1}{n}{push}%
+   \dododefinepushbutton{#1}{r}{\symbol[psym:#1:n]}%
+   \dododefinepushbutton{#1}{d}{\symbol[psym:#1:r]}%
+   \setvalue{pushbutton:#1}{\dohandlepushbutton{#1}{#2}}}
+
+\def\dododefinepushbutton#1#2#3%
+  {\doifsymboldefinedelse{psym:#1:#2}%
+     \donothing{\definesymbol[psym:#1:#2][{#3}]}}
+
+\def\definepushsymbol
+  {\dotripleargument\dodefinepushsymbol}
+
+\def\dodefinepushsymbol[#1][#2]% [#3]
+  {\definesymbol[psym:#1:#2]}
+
+\def\dopushbutton[#1][#2]%
+  {\executeifdefined{pushbutton:#1}\gobbleoneargument{#2}}
+
+\def\pushbutton
+  {\dodoubleargument\dopushbutton}
+
+\def\dohandlepushbutton#1#2#3% identifier setup script
+  {\bgroup
+   \nextsystemfield
+   \setupfield
+     [pushbutton]
+     [\c!kader=\v!overlay,
+      \c!offset=\v!overlay,
+      \c!klikuit=#3,#2]%
+   \definefield
+     [\currentsystemfield]
+     [push]
+     [pushbutton]
+     [psym:#1:n,psym:#1:r,psym:#1:d]%
+   \fitfield
+     [\currentsystemfield]%
+   \egroup}
+
+% \def\do@@ampsh
+%   {\dodoubleargument\dodo@@ampsh}
+%
+% \def\dodo@@ampsh[#1][#2]#3\\%
+%   {\txt\pushbutton[#1][#2]\\}%
+%
+%\appendtoks \let\psh\do@@ampsh \to \everysetmenucommands
+
+\def\@@ampsh{\txt\pushbutton}
+
+\appendtoks \let\psh\@@ampsh \to \everysetmenucommands
+
+% \definepushbutton [reset]
+%
+% \definepushsymbol [reset] [n] [\uniqueMPgraphic{whatever}{color=green}]
+% \definepushsymbol [reset] [r] [\uniqueMPgraphic{whatever}{color=white}]
+%
+% \startinteractionmenu[bottom]
+%   \psh [reset] [JS(reset_something)] \\
+% \stopinteractionmenu
+
+\def\tabulaterule % to be redone, not correct
   {\dotabulaterule
      {\hrule\!!height.5\scratchdimen\!!depth.5\scratchdimen\relax
       \doifvalue{\??tt\currenttabulate\c!afstand}\v!grid
@@ -25,7 +168,7 @@
 
 % todo: \setupinterlinespace[\c!regel=\v!vast] => ==\the\baselineskip
 
-%%%%%%%% todo: \chardef\snapstruts=1 => d=l-h 
+%%%%%%%% todo: \chardef\snapstruts=1 => d=l-h
 
 \writestatus{\m!systems}{beware: some patches loaded from cont-new.tex!}
 
@@ -37,16 +180,16 @@
    \prepareMPvariables{#2}}
 
 \def\countXMLchildren[#1]#2%
-  {\startnointerference  
+  {\startnointerference
      \doglobal\newcounter\nofXMLchildren
      \defineXMLargument[#1]{\doglobal\increment\nofXMLchildren}%
-     \startXMLignore 
+     \startXMLignore
        #2%
      \stopXMLignore
    \stopnointerference}
 
 \def\processlinetableXMLfile#1%
-  {\bgroup 
+  {\bgroup
    \let\startlinetable\donothing
    \let\stoplinetable \donothing
    \startlinetableanalysis\processXMLfile{#1}\stoplinetableanalysis
@@ -61,23 +204,23 @@
    \ignorespaces}
 
 \def\stoplinetablepart
-  {\ifnum\linetablepart>\zerocount 
+  {\ifnum\linetablepart>\zerocount
      \unskip \unskip % remove last intercolumn skip (distance+fill)
    \fi
    \stopcolor
    \egroup
    \iflinetablepreroll \else
      \ifcase\linetablepart
-       % we're collecting the repeater 
+       % we're collecting the repeater
      \else
        \scratchdimen\hsize \advance\scratchdimen-\wd\scratchbox\relax
        \ifdim\scratchdimen>\linetableparameter\c!rek\else
          \setbox\scratchbox\hbox to \hsize{\unhbox\scratchbox}%
-       \fi 
+       \fi
      \fi
    \fi}
 
-% experimental: \synchronizegrid bla bla bla 
+% experimental: \synchronizegrid bla bla bla
 
 \newcounter\currentgridsync
 
@@ -88,29 +231,31 @@
    \par\prevdepth\zeropoint
    \nointerlineskip
    \hpos\gridsynctag{\strut}\par
-   \vskip-\lineheight 
+   \vskip-\lineheight
    \nointerlineskip
-   % top of text 
+   % top of text
    \scratchdimen\MPy{\v!tekst:\MPp\gridsynctag}%
    \advance\scratchdimen\MPh{\v!tekst:\MPp\gridsynctag}%
-   % move to first baseline 
+   % move to first baseline
    \advance\scratchdimen-\topskip
    % subtract wrong baseline
    \advance\scratchdimen-\MPy\gridsynctag
-   % get minimal number of lines 
-   \advance\scratchdimen\lineheight 
+   % get minimal number of lines
+   \advance\scratchdimen\lineheight
    \getnoflines\scratchdimen
    % calculate difference
    \advance\scratchdimen-\noflines\lineheight\relax
-   \scratchdimen-\scratchdimen
+   \scratchdimen-\scratchdimen\relax
    \ifdim\scratchdimen>\zeropoint
-     \nointerlineskip 
-     \advance\scratchdimen-\lineheight 
-     \vskip\scratchdimen \strut 
+     \nointerlineskip
+     \advance\scratchdimen-\lineheight
+     \vskip\scratchdimen \dontleavehmode \quad \strut
      \par
+  %\else
+  %  \message{no grid correction: \the\scratchdimen}\wait
    \fi}
 
-% needed for extreme 
+% needed for extreme
 
 \definesystemvariable{ie}
 
@@ -125,13 +270,13 @@
    \ifsecondargument
       \processaction
         [#2]
-        [% first test true, rest depends   
+        [% first test true, rest depends
          \v!volgende=>\setgvalue{\??ie#1}{\setgvalue{\??ie#1}{#3}\firstoftwoarguments},
-         % rest true if first true 
+         % rest true if first true
          % \v!eerste=>\setgvalue{\??ie#1}{#3{\letgvalue{\??ie#1}%
          %              \firstoftwoarguments\firstoftwoarguments}%
          %              \secondoftwoarguments},
-         % always true 
+         % always true
                \v!ja=>\letgvalue{\??ie#1}\firstoftwoarguments,
          % always false
               \v!nee=>\letgvalue{\??ie#1}\secondoftwoarguments]%
@@ -148,39 +293,39 @@
      \OTRSETinitializecolumns
      \OTRSETassignwidths
      \OTRSETsethsize
-   \fi 
+   \fi
    \!!counta#2\!!countb#3\docalculatecolumnsetspan
    \expandafter\egroup\expandafter\edef\expandafter
      #4\expandafter{\the\!!widtha}}
 
-% so far 
+% so far
 
-% test this prikkels/pascal margin text before heads (mode 
-% 1) as well as uitwerkingen (mode 2) 
+% test this prikkels/pascal margin text before heads (mode
+% 1) as well as uitwerkingen (mode 2)
 
-%chardef\graphicvadjustmode=0 % fake 
-%chardef\graphicvadjustmode=1 % normal 
-\chardef\graphicvadjustmode=2 % normal + compensate (== default)  
+%chardef\graphicvadjustmode=0 % fake
+%chardef\graphicvadjustmode=1 % normal
+\chardef\graphicvadjustmode=2 % normal + compensate (== default)
 
 \def\placemargintexts % to be documented and translated
-  {\ifcase\margincontent\else           
+  {\ifcase\margincontent\else
      \bgroup
-       \chardef\graphicvadjustmode\zerocount 
-       \doflushmargincontents 
+       \chardef\graphicvadjustmode\zerocount
+       \doflushmargincontents
      \egroup
-   \fi}                                 
+   \fi}
 
 \def\graphicvadjust % bad, those low level color calls here
   {\dowithnextboxcontent
      {\forgetall}
-     {\ifcase\graphicvadjustmode \@EA \fakedvadjust \else \@EA\normalvadjust \fi 
+     {\ifcase\graphicvadjustmode \@EA \fakedvadjust \else \@EA\normalvadjust \fi
         {\dostartgraphicgroup
          \localstarttextcolor
          \unvbox\nextbox
          \localstoptextcolor
          \dostopgraphicgroup
          \ifcase\graphicvadjustmode \or \or
-           % corrects for one line paragraphs 
+           % corrects for one line paragraphs
            \nointerlineskip
            \kern-\struttotal
            \nointerlineskip
@@ -193,12 +338,6 @@
      \strut\crcr
      \TABLEnoalign{\kern-\lineheight}%
    \fi}
-
-% \def\fulltabulatecontent
-%   {\tabulateheadcontent
-%    \tabulatecontent
-%    \tabulatetailcontent
-%    \removefunnytabulateline}
 
 \def\showexternalfigured
   {\bgroup
@@ -213,13 +352,13 @@
    \immediate\closeout\scratchwrite
    \egroup}
 
-% between alignment lines certain rules apply, and even a 
-% simple test can mess up a table, which is why we have a 
-% special test facility 
-% 
+% between alignment lines certain rules apply, and even a
+% simple test can mess up a table, which is why we have a
+% special test facility
+%
 % \ruledvbox
 %   {\starttabulate[|l|p|]
-%    \NC 1test \NC test \NC \NR 
+%    \NC 1test \NC test \NC \NR
 %    \tableifelse{\doifelse{a}{a}}{\NC Xtest \NC test \NC \NR}{}%
 %    \stoptabulate}
 
@@ -228,7 +367,7 @@
      {\aftergroup \firstoftwoarguments}%
      {\aftergroup\secondoftwoarguments}}}
 
-% \long \def\tableif#1% whow, this is real ugly 
+% \long \def\tableif#1% whow, this is real ugly
 %   {\TABLEnoalign{\let\gnext\gobbleoneargument#1%
 %      {\let\gnext\firstofoneargument}}\gnext}
 
@@ -468,7 +607,7 @@
    \advance\scratchdimen\topskip
    \setbox\scratchbox
    \ifcase\showgridstate\vbox\else\ruledvbox\fi to \scratchdimen\bgroup
-   \forgetall} % ! don't change 
+   \forgetall} % ! don't change
 
 \def\stopcolumnmakeup
   {\egroup
@@ -575,7 +714,7 @@
 \def\changedpage#1%
   {\getvalue{\s!paragraph:p:#1}}
 
-% incomplete, will be a special case of float placement 
+% incomplete, will be a special case of float placement
 
 \def\startfixed{\dosingleempty\dostartfixed}
 

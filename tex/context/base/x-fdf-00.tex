@@ -23,10 +23,10 @@
 
 \defineXMLenvironment [fdf:field] [name=,value=]
   {\XMLerase{fdf:value}} 
-  {\doglobal\saveXMLdata{fdf:\XMLop{name}}{fdf:value}}
+  {\gsaveXMLdata{fdf:\XMLop{name}}{fdf:value}}
 
 \defineXMLsingular [fdf:field] [name=,value=]
-  {\doglobal\saveasXMLdata{fdf:\XMLop{name}}{\XMLop{value}}}
+  {\gsaveXMLasdata{fdf:\XMLop{name}}{\XMLop{value}}}
 
 \def\doifelseFDFfield#1{\doifelseXMLelement{fdf:#1}}
 \def\flushFDFfield   #1{\flushXMLelement   {fdf:#1}}

@@ -634,7 +634,7 @@
   {\getparameters[\??ly#1][\c!status=\v!start,#2]}
 
 \def\dodosetuplayout[#1][#2]%
-  {\ConvertToConstant\doifnot{#2}\v!reset
+  {\ConvertToConstant\doifnot{#2}\v!reset % #2 ? 
      {\getparameters[\??ly#1][#2]%
       \checkforems[#2]}}
 

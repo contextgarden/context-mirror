@@ -46,6 +46,10 @@
 
 \def\@@MPG{@MPG@}
 
+%D First we define a handy constant: 
+
+\bgroup \catcode`\%=\@@other \xdef\letterpercent{\string%} \egroup
+
 %D \macros
 %D   {startMPgraphic}
 %D
@@ -1136,7 +1140,7 @@
 \catcode`B=\@@begingroup
 \catcode`E=\@@endgroup
 \gdef\ignoreMPspecials|
-  B\def%BE|
+  B\let%\letterpercent|
    \def[BE|
    \def]BE|
    \def{BE|
@@ -1155,6 +1159,7 @@
    \catcode`\]=\@@active
    \catcode`\{=\@@active
    \catcode`\}=\@@active
+   \lccode`\%=`\% | otherwise it's seen as a number
    \def\(B\char40\relax     E|
    \def\)B\char41\relax     E|
    \def\\B\char92\relax     E|
@@ -1187,7 +1192,8 @@
 %D \stoptypen
 %D
 %D which comes to rounding sizes. This is something
-%D experimental.
+%D experimental. (The macro in supp-pdf.tex is more 
+%D advanced.)
 
 \def\PSnfont{nfont}
 

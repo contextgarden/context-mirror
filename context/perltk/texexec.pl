@@ -58,21 +58,21 @@ $ENV{"MPXCOMMAND"} = "0" ; # otherwise loop
 
 my $TotalTime = time ;
 
-# start random seed hack 
+# start random seed hack
 #
-# This hack is needed since tex has 1 minute resolution, so 
-# we need to be smaller about 1440 (== 24*60 == tex's max time) 
-# in which case (david a's) random calculator will overflow. 
+# This hack is needed since tex has 1 minute resolution, so
+# we need to be smaller about 1440 (== 24*60 == tex's max time)
+# in which case (david a's) random calculator will overflow.
 
-my ($sec,$min,$rest) = gmtime ; 
-my $RandomSeed = $min*60+$sec ;  
-# i have to look up the mod function -) 
-if ($RandomSeed>2880) { $RandomSeed -= 2880 } 
-if ($RandomSeed>1440) { $RandomSeed -= 1440 } 
+my ($sec,$min,$rest) = gmtime ;
+my $RandomSeed = $min*60+$sec ;
+# i have to look up the mod function -)
+if ($RandomSeed>2880) { $RandomSeed -= 2880 }
+if ($RandomSeed>1440) { $RandomSeed -= 1440 }
 
-# See usage of $Random and $RandomSeed later on. 
+# See usage of $Random and $RandomSeed later on.
 #
-# end random seed hack 
+# end random seed hack
 
 ## $dosish      = ($Config{'osname'} =~ /dos|mswin/i) ;
 ## $dosish      = ($Config{'osname'} =~ /^(ms)?dos|^os\/2|^(ms|cyg)win/i) ;
@@ -172,7 +172,7 @@ my $GlobalFile       = 0 ;
 my $AllPatterns      = 0 ;
 my $ForceXML         = 0 ;
 my $Random           = 0 ;
-my $Filters          = '' ; 
+my $Filters          = '' ;
 
 # makempy :
 
@@ -1091,7 +1091,7 @@ sub MakeOptionFile
     print OPT "\\unprotect\n" ;
     if ($ModeFile ne '')
       { print OPT "\\readlocfile{$ModeFile}{}{}" }
-    if ($Result ne '') 
+    if ($Result ne '')
       { print OPT "\\setupsystem[file=$Result]\n" }
     elsif ($Suffix)
       { print OPT "\\setupsystem[file=$JobName$Suffix]\n" }
@@ -1173,7 +1173,7 @@ sub MakeOptionFile
       { print OPT "\\setupsystem[inputfile=$Input]\n" }
     else
       { print OPT "\\setupsystem[inputfile=$JobName.$JobSuffix]\n" }
-    if ($Random) 
+    if ($Random)
       { print OPT "\\setupsystem[\\c!willekeur=$RandomSeed]\n" }
     if ($Mode)
       { print OPT "\\enablemode[$Mode]\n" }
@@ -1348,32 +1348,32 @@ sub ScanContent
   { my ($ConTeXtInput) = @_ ;
     open (TEX, $ConTeXtInput) ;
     while (<TEX>)
-      { if    (/\\(starttekst|stoptekst|startonderdeel|startdocument|startoverzicht)/)
+      { if    (/\\(starttekst|stoptekst|startonderdeel|startdocument|startoverzicht)/o)
           { $ConTeXtInterface = "nl" ; last }
-        elsif (/\\(stelle|verwende|umgebung|benutze)/)
+        elsif (/\\(stelle|verwende|umgebung|benutze)/o)
           { $ConTeXtInterface = "de" ; last }
-        elsif (/\\(stel|gebruik|omgeving)/)
+        elsif (/\\(stel|gebruik|omgeving)/o)
           { $ConTeXtInterface = "nl" ; last }
-        elsif (/\\(use|setup|environment)/)
+        elsif (/\\(use|setup|environment)/o)
           { $ConTeXtInterface = "en" ; last }
-        elsif (/\\(usa|imposta|ambiente)/)
+        elsif (/\\(usa|imposta|ambiente)/o)
           { $ConTeXtInterface = "it" ; last }
-        elsif (/(height|width|style)=/)
+        elsif (/(height|width|style)=/o)
           { $ConTeXtInterface = "en" ; last }
-        elsif (/(hoehe|breite|schrift)=/)
+        elsif (/(hoehe|breite|schrift)=/o)
           { $ConTeXtInterface = "de" ; last }
         # brr, can be \c!
-        elsif (/(hoogte|breedte|letter)=/)
+        elsif (/(hoogte|breedte|letter)=/o)
           { $ConTeXtInterface = "nl" ; last }
-        elsif (/(altezza|ampiezza|stile)=/)
+        elsif (/(altezza|ampiezza|stile)=/o)
           { $ConTeXtInterface = "it" ; last }
-        elsif (/externfiguur/)
+        elsif (/externfiguur/o)
           { $ConTeXtInterface = "nl" ; last }
-        elsif (/externalfigure/)
+        elsif (/externalfigure/o)
           { $ConTeXtInterface = "en" ; last }
-        elsif (/externeabbildung/)
+        elsif (/externeabbildung/o)
           { $ConTeXtInterface = "de" ; last }
-        elsif (/figuraesterna/)
+        elsif (/figuraesterna/o)
           { $ConTeXtInterface = "it" ; last } }
     close (TEX) }
 
@@ -1534,12 +1534,12 @@ sub CheckChanges # also tub
 my $DummyFile = 0 ;
 
 sub isXMLfile
-  { my $Name = shift ; 
-    if (($ForceXML)||($name =~ /\.xml$/io)) 
-      { return 1 } 
+  { my $Name = shift ;
+    if (($ForceXML)||($name =~ /\.xml$/io))
+      { return 1 }
     else
       { open(XML,$Name) ;
-        my $str = <XML> ;   
+        my $str = <XML> ;
         close(XML) ;
         return ($str =~ /\<\?xml /io) } }
 
@@ -1550,7 +1550,7 @@ sub RunConTeXtFile
     my $OriSuffix = $JobSuffix ;
     if (-e "$JobName.$JobSuffix")
       { $DummyFile = (($ForceXML)||($JobSuffix =~ /xml/io)) }
-    # to be considered : 
+    # to be considered :
     # { $DummyFile = isXMLfile("$JobName.$JobSuffix") }
     elsif ($RunPath ne "")
       { my @RunPaths = split(/,/,$RunPath) ;
@@ -1646,7 +1646,7 @@ sub RunConTeXtFile
         else
           { while (!$StopRunning&&($TeXRuns<$NOfRuns)&&(!$Problems))
              { ++$TeXRuns ;
-               if ($TeXRuns==1) 
+               if ($TeXRuns==1)
                  { MakeOptionFile (0, 0, $JobName, $OriSuffix, 1) }
                else
                  { MakeOptionFile (0, 0, $JobName, $OriSuffix, 2) }
@@ -1677,7 +1677,7 @@ sub RunConTeXtFile
         if ($Purge)
           { PurgeFiles($JobName) }
         if ($DummyFile) # $JobSuffix == run
-          { unlink "$JobName.$JobSuffix" } } } 
+          { unlink "$JobName.$JobSuffix" } } }
 
 sub RunSomeTeXFile
   { my ($JobName, $JobSuffix) = @_ ;
@@ -2045,7 +2045,7 @@ sub RunOneFormat
     else
       { $Problems = 1 }
     if ($Problems)
-      { $Problems = 0 ; 
+      { $Problems = 0 ;
         if ($TeXExecutable =~ /etex|eetex|pdfetex|pdfeetex|eomega/io)
           {$TeXPrefix = "*" }
         my $CurrentPath = cwd() ;
@@ -2073,13 +2073,13 @@ sub RunFormats
       { @ConTeXtFormats = $Format; $ConTeXtFormatsPrefix='' ; }
     else
       { $ConTeXtFormatsPrefix="cont-" ; }
-    if ($TeXHashExecutable ne '') 
+    if ($TeXHashExecutable ne '')
       { my $cmd = "$TeXProgramPath$TeXHashExecutable" ;
         print "\n" ;
         print "       TeX hash binary : $TeXProgramPath$TeXHashExecutable\n" ;
         print "               comment : hashing may take a while ...\n" ;
         if ($Verbose) { print "\n$cmd\n\n" }
-        system ($cmd) }  
+        system ($cmd) }
     foreach my $Interface (@ConTeXtFormats)
       { if ($Interface eq $MetaFun)
           { RunMpFormat ($MetaFun) ; $MetaFunDone = 1 }

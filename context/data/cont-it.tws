@@ -1695,7 +1695,7 @@ stopsetup
 startsetup
 com:spostaagriglia:
 typ:vals/:
-val:cima,entrambi,fondo,-cima,-entrambi,-fondo, alto,centro,basso,pagina,nessuno,standard, ampio,adatta,profondita,riga,*dimensione:standard:
+val:cima,entrambi,fondo,-cima,-entrambi,-fondo,testo, alto,centro,basso,pagina,nessuno,standard, ampio,adatta,profondita,riga,*dimensione:standard:
 stopsetup
 
 startsetup
@@ -1799,6 +1799,7 @@ var:allineatitolo:si,no::
 var:tolleranza:moltorigido,rigido,tollerante,moltotollerante,dilata::
 var:rientrasuccessivo:si,no::
 var:comando:*\comando#1#2::
+var:margine:*dimensione::
 stopsetup
 
 startsetup
@@ -1806,6 +1807,7 @@ com:impostacaptions:
 typ:vars/:
 var:luogo:cima,fondo,nessuno,alto,basso,centro::
 var:ampiezza:adatta,ampio,max,*dimensione::
+var:ampiezzamin:adatta,*dimensione::
 var:stiletesta:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...,*comando::
 var:stile:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...,*comando::
 var:numero:si,no::
@@ -1814,6 +1816,7 @@ var:allinea:sinistra,centro,destra,no::
 var:conversione:numeri,lettere,Lettere,numeriromani,Numeriromani::
 var:modo:datesto,da*sezione::
 var:separatore:*testo::
+var:comando:*comando::
 var:distanza:*dimensione::
 stopsetup
 
@@ -3280,6 +3283,7 @@ var:spessorelinea:*dimensione::
 var:distanza:rigovuoto,griglia,profondita,*dimensione,piccolo,medio,grande,nessuno::
 var:fonttesto:5pt,...,12pt,piccolo,grande::
 var:linea:normale,riga::
+var:separa:si,no::
 stopsetup
 
 startsetup
@@ -3866,6 +3870,8 @@ var:titolo:*testo::
 var:spazio:si,no::
 var:simbolo:normale, Nuovo,Pallone,Aggiunta,Aiuto,Capoverso,Tasto, *nome::
 var:opzione:max,buffer::
+var:margine:*dimensione::
+var:distanza:*dimensione::
 stopsetup
 
 startsetup

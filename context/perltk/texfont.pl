@@ -89,7 +89,7 @@ my $width = "" ;
 my $preproc         = 0 ;     # atl: formerly OpenType switch
 my $variant         = "" ;    # atl: encoding variant
 my $extension       = "pfb" ; # atl: default font extension
-my $lcdf            = "" ;    # atl: trigger for lcdf otftopl
+my $lcdf            = "" ;    # atl: trigger for lcdf otftotfm
 
 # todo: parse name for style, take face from command line
 #
@@ -237,7 +237,7 @@ if ($help)
     report "--vendor=name       : vendor name/directory" ;
     report "--collection=name   : font collection" ;
     report "--encoding=name     : encoding vector (default: $encoding)" ;
-    report "--variant=name      : encoding variant (.enc file or otftopl)" ;
+    report "--variant=name      : encoding variant (.enc file or otftotfm features)" ;
     print  "\n" ;
     report "--slant=s           : slant glyphs in font by factor (0.0 - 1.5)" ;
     report "--extend=s          : extend glyphs in font by factor (0.0 - 1.5)" ;
@@ -306,6 +306,9 @@ if ($lcdf)
 { $varlabel =~ s/,/-/goi ;
   $varlabel =~ tr/a-z/A-Z/ }
 
+if ($varlabel ne "")
+{ $varlabel = "-$varlabel" }
+
 my $identifier = "$encoding$varlabel-$vendor-$collection" ;
 
 my $outlinepath = $sourcepath ; my $path = "" ; 
@@ -365,11 +368,11 @@ if ($sourcepath eq "auto")
                           { $file =~ s/.*\/(.*)\.afm/$1/io }
                         foreach my $sub ("tfm","vf")
                           { foreach my $typ ("","-raw")
-                              { my $nam = "$path/fonts/$sub/$vendor/$collection/$encoding$variant$typ-$file.$sub" ;
+                              { my $nam = "$path/fonts/$sub/$vendor/$collection/$encoding$varlabel$typ-$file.$sub" ;
                                 if (-s $nam)
-                                  { report ("removing : $encoding$variant$typ-$file.$sub") ;
+                                  { report ("removing : $encoding$varlabel$typ-$file.$sub") ;
                                     unlink $nam } } } }
-                    my $nam = "$encoding$variant-$vendor-$collection.tex" ;
+                    my $nam = "$encoding$varlabel-$vendor-$collection.tex" ;
                     if (-e $nam) 
                       { report ("removing : $nam") ;
                         unlink "$nam" }
@@ -716,9 +719,9 @@ foreach my $file (@files)
       { report ("font identifier : $cleanfont$namesuffix -> text -> tfm") }
     # don't handle strange fonts 
     if ($strange eq "")    
-      { # atl: experimental support for lcdf otftopl
+      { # atl: experimental support for lcdf otftotfm
         if ($lcdf && $extension eq "otf")
-          { # no vf, bypass afm, use otftopl to get encoding and tfm
+          { # no vf, bypass afm, use otftotfm to get encoding and tfm
             my $varstr = my $encout = my $tfmout = "" ;
             report "processing files : otf -> tfm + enc" ;
             if ($encoding ne "")
@@ -728,15 +731,17 @@ foreach my $file (@files)
             if ($variant ne "")
               { ( $varstr = $variant ) =~ s/,/ -f /goi ;
                 $varstr = " -f $varstr" }
-                $encout = "$encpath/$use$cleanfont.enc" ;
+            $encout = "$encpath/$use$cleanfont.enc" ;
             if (-e $encout)
               { report ("renaming : $encout -> $use$cleanfont.bak") ;
                 unlink "$encpath/$use$cleanfont.bak" ;
                 rename $encout, "$encpath/$use$cleanfont.bak" }
-            $tfmout = "$use$cleanfont.tfm" ;
-            my $otfcommand = "otftopl $varstr $encstr $shape --tfm --output=$tfmout --output-encoding=$encout $file" ;
+	    unlink "texfont.map" ; 
+            $tfmout = "$use$cleanfont" ;
+            my $otfcommand = "otftotfm -a $varstr $encstr $shape --name=\'$tfmout\' --encoding-dir=\'$encpath/\' --tfm-dir=\'$tfmpath/\' --vf-dir=\'$vfpath/\' --no-type1 --map-file=./texfont.map \'$file\'" ;
             print "$otfcommand\n" ;
             system("$otfcommand") ;
+#	    $namesuffix = "--base" ; #atl: lcdf currently appends --base to the filename...sometimes
             $encfil = $encout } 
 	else
 	  { # generate tfm and vpl, $file is on afm path
@@ -769,24 +774,25 @@ foreach my $file (@files)
     # copy files
     my $usename = "$use$cleanname$fontsuffix" ;
     my $rawname = "$raw$cleanname$fontsuffix" ;
-    if ($strange ne "") 
-      { unlink "$vfpath/$cleanname.vf", "$tfmpath/$cleanname.tfm" ;
-        copy ("$cleanname.tfm","$tfmpath/$cleanname.tfm") ;
-        # or when available, use vendor one :
-        copy ("$sourcepath/$cleanname.tfm","$tfmpath/$cleanname.tfm") }
-    elsif ($virtual)
-      { unlink "$vfpath/$rawname.vf", "$vfpath/$usename.vf" ;
-        unlink "$tfmpath/$rawname.tfm", "$tfmpath/$usename.tfm" ;
-        copy ("$usename.vf" ,"$vfpath/$usename.vf") ;
-        copy ("$rawname.tfm","$tfmpath/$rawname.tfm") ;
-        copy ("$usename.tfm","$tfmpath/$usename.tfm") }
-    else
-      { unlink "$vfpath/$usename.vf", "$tfmpath/$usename.tfm" ;
-        # slow but prevents conflicting vf's 
-        my $rubish = `kpsewhich $usename.vf` ; chomp $rubish ; 
-        if ($rubish ne "") { unlink $rubish }
-        # 
-        copy ("$usename.tfm","$tfmpath/$usename.tfm") }
+    if ($lcdf eq "")
+    { if ($strange ne "") 
+        { unlink "$vfpath/$cleanname.vf", "$tfmpath/$cleanname.tfm" ;
+          copy ("$cleanname.tfm","$tfmpath/$cleanname.tfm") ;
+          # or when available, use vendor one :
+          copy ("$sourcepath/$cleanname.tfm","$tfmpath/$cleanname.tfm") }
+      elsif ($virtual)
+        { unlink "$vfpath/$rawname.vf", "$vfpath/$usename.vf" ;
+          unlink "$tfmpath/$rawname.tfm", "$tfmpath/$usename.tfm" ;
+          copy ("$usename.vf" ,"$vfpath/$usename.vf") ;
+          copy ("$rawname.tfm","$tfmpath/$rawname.tfm") ;
+          copy ("$usename.tfm","$tfmpath/$usename.tfm") }
+      else
+        { unlink "$vfpath/$usename.vf", "$tfmpath/$usename.tfm" ;
+          # slow but prevents conflicting vf's 
+          my $rubish = `kpsewhich $usename.vf` ; chomp $rubish ; 
+          if ($rubish ne "") { unlink $rubish }
+          # 
+          copy ("$usename.tfm","$tfmpath/$usename.tfm") } }
     # cleanup
     foreach my $suf ("tfm", "vf", "vpl")
       { unlink "$rawname.$suf", unlink "$usename.$suf" ;
@@ -822,14 +828,32 @@ foreach my $file (@files)
     # now add entry to map 
     if ($strange eq "") 
       { if ($extension eq "otf")
-          { if ($preproc)
-              { $str = "$thename $cleanfont $option < $fontname.pfb$theencoding\n"}
-            else
+          { if ($lcdf)
+	    { my $mapline = "";
+	      if (open(ALTMAP,"texfont.map"))
+	      { while (<ALTMAP>)
+		{ chomp ;
+		  # atl: we assume this b/c we always force otftotfm --no-type1
+		  if (/<<(.*)\.otf$/oi)
+		  { $mapline = $_ ; last } }
+		close(ALTMAP) }
+	      else
+  	        { report("no mapfile from otftotfm : texfont.map") } 
+	      if ($preproc)
+ 	        { $mapline =~ s/^(\S+)/$1 </;
+	          $mapline =~ s/<<(\S+)\.otf$// }
+	      else
+	        { $mapline =~ s/<<(\S+)\.otf$/<< $ttfpath\/$fontname.$extension/ }
+	      $str = "$mapline\n" }
+	    else
+	    { if ($preproc)
+                { $str = "$thename $cleanfont $option < $fontname.pfb$theencoding\n"}
+              else
               # PdfTeX can't subset OTF files, so we have to include the whole thing
               # It looks like we also need to be explicit on where to find the file
-              { $str = "$thename $cleanfont $option << $ttfpath/$fontname.$extension <[$theencoding\n" } }
-        else
-          { $str = "$thename $cleanfont $option < $fontname.$extension$theencoding\n" } }
+	        { $str = "$thename $cleanfont $option << $ttfpath/$fontname.$extension <[$theencoding\n" } } }
+	else
+	{ $str = "$thename $cleanfont $option < $fontname.$extension$theencoding\n" } }
     else
       { $str = "$thename $cleanfont < $fontname.$extension\n" }
     if ($map) # check for redundant entries

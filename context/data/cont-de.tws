@@ -1695,7 +1695,7 @@ stopsetup
 startsetup
 com:amgitterneuausrichten:
 typ:vals/:
-val:oben,beide,unten,-oben,-beide,-unten, hoch,mittig,tief,seite,kein,standard, breit,passend,tiefe,zeile,*Dimension:standard:
+val:oben,beide,unten,-oben,-beide,-unten,text, hoch,mittig,tief,seite,kein,standard, breit,passend,tiefe,zeile,*Dimension:standard:
 stopsetup
 
 startsetup
@@ -1799,6 +1799,7 @@ var:titelausrichten:ja,nein::
 var:toleranz:sehrstreng,streng,tolerant,sehrtolerant,strecken::
 var:ziehefolgendeein:ja,nein::
 var:befehl:*\Befehl#1#2::
+var:marginalie:*Dimension::
 stopsetup
 
 startsetup
@@ -1806,6 +1807,7 @@ com:stellebilderunterschriftein:
 typ:vars/:
 var:platz:oben,unten,kein,hoch,tief,mittig::
 var:breite:passend,breit,max,*Dimension::
+var:minbreite:passend,*Dimension::
 var:kopfstil:normal,fett,geneigt,fettgeneigt,tippen,kap,klein...,*Befehl::
 var:stil:normal,fett,geneigt,fettgeneigt,tippen,kap,klein...,*Befehl::
 var:nummer:ja,nein::
@@ -1814,6 +1816,7 @@ var:ausrichtung:links,mittig,rechts,nein::
 var:konversion:ziffern,buchstaben,Buchstaben,roemischezahlen,Roemischezahlen::
 var:art:protext,pro*Abschnitt::
 var:seperator:*Text::
+var:befehl:*Befehl::
 var:abstand:*Dimension::
 stopsetup
 
@@ -3280,6 +3283,7 @@ var:liniendicke:*Dimension::
 var:abstand:blanko,gritter,tiefe,*Dimension,klein,mittel,gross,kein::
 var:fliesstext:5pt,...,12pt,klein,gross::
 var:linie:normal,zeile::
+var:split:ja,nein::
 stopsetup
 
 startsetup
@@ -3866,6 +3870,8 @@ var:titel:*Text::
 var:spatium:ja,nein::
 var:symbol:normal, Neu,Ballon,Zusatz,Hilfe,Absatz,Schluessel, *Name::
 var:option:max,puffer::
+var:marginalie:*Dimension::
+var:abstand:*Dimension::
 stopsetup
 
 startsetup

@@ -1695,7 +1695,7 @@ stopsetup
 startsetup
 com:premistinamrizku:
 typ:vals/:
-val:vrsek,obe,spodek,-vrsek,-obe,-spodek, vysoko,nastred,nizko,stranka,zadny,standardni, siroky,prizpusobive,podlehloubky,radek,*dimenze:standardni:
+val:vrsek,obe,spodek,-vrsek,-obe,-spodek,text, vysoko,nastred,nizko,stranka,zadny,standardni, siroky,prizpusobive,podlehloubky,radek,*dimenze:standardni:
 stopsetup
 
 startsetup
@@ -1799,6 +1799,7 @@ var:zarovnejtitul:ano,ne::
 var:tolerance:velmistriktni,striktni,tolerantni,velmitolerantni,natahnout::
 var:odsadpristi:ano,ne::
 var:prikaz:*\prikaz#1#2::
+var:marginalie:*dimenze::
 stopsetup
 
 startsetup
@@ -1806,6 +1807,7 @@ com:nastavpopisky:
 typ:vars/:
 var:misto:vrsek,spodek,zadny,vysoko,nizko,nastred::
 var:sirka:prizpusobive,siroky,max,*dimenze::
+var:minsirka:prizpusobive,*dimenze::
 var:stylhlavicky:normalni,tucne,sklonene,tucnesklonene,opis,kap,male...,*prikaz::
 var:pismeno:normalni,tucne,sklonene,tucnesklonene,opis,kap,male...,*prikaz::
 var:cislo:ano,ne::
@@ -1814,6 +1816,7 @@ var:zarovnani:vlevo,nastred,vpravo,ne::
 var:konverze:cisla,pismena,Pismena,rimskecislice,Rimskecislice::
 var:zpusob:skrztext,skrz*sekce::
 var:oddelovac:*text::
+var:prikaz:*prikaz::
 var:vzdalenost:*dimenze::
 stopsetup
 
@@ -3280,6 +3283,7 @@ var:tloustkalinky:*dimenze::
 var:vzdalenost:prazdny,mrizka,podlehloubky,*dimenze,male,stredni,velke,zadny::
 var:zakladnifont:5pt,...,12pt,male,velke::
 var:linka:normalni,radek::
+var:split:ano,ne::
 stopsetup
 
 startsetup
@@ -3866,6 +3870,8 @@ var:titul:*text::
 var:mezera:ano,ne::
 var:symbol:normalni, Novy,Bublinka,Pridavek,Napoveda,Odstavec,Klavesa, *jmeno::
 var:volba:max,buffer::
+var:marginalie:*dimenze::
+var:vzdalenost:*dimenze::
 stopsetup
 
 startsetup

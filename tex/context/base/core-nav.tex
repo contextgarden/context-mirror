@@ -282,20 +282,19 @@
 
 \def\dolocationattributes#1#2#3#4% 
   {\bgroup
-   \doifdefinedelse{#1#2}
-     {\def\fontattribute{\getvalue{#1#2}}}
-     {\let\fontattribute\empty}%
+   \let\fontattribute\empty
+   \let\colorattribute\empty
+   \doifdefined{#1#2}{\def\fontattribute{\getvalue{#1#2}}}%
    \iflocation
-     \doifdefinedelse{#1#3}
-       {\def\colorattribute{\getvalue{#1#3}}}
-       {\let\colorattribute\empty}%
-   \else
-     \let\colorattribute\empty
+     \doifdefined{#1#3}{\def\colorattribute{\getvalue{#1#3}}}%
    \fi
    \startcolor[\colorattribute]%
    \@EA\doconvertfont\@EA{\fontattribute}{#4}% no \edef, but \@EA here
    \stopcolor
    \egroup}
+
+\def\navigating
+  {\dolocationattributes\??ia\c!letter\c!kleur}
 
 %D Although not decently supported in current viewers, a 
 %D provisory hiding mechanims is implemented. Areas marked as
