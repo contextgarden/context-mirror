@@ -328,8 +328,8 @@
 \def\!!twelvepoint       {12pt}
 \def\!!fourteenpointfour {14.4pt}
 
-\ifx\z@\undefined \newdimen\zeropoint \else \let\zeropoint\z@ \fi \zeropoint = 0pt
-\ifx\p@\undefined \newdimen\onepoint  \else \let\onepoint \p@ \fi \onepoint  = 1pt
+\newdimen\zeropoint \zeropoint = 0pt
+\newdimen\onepoint  \onepoint  = 1pt
 
 \newcount\medcard \medcard\!!medcard % used in font module
 \newcount\maxcard \maxcard\!!maxcard % used in font module

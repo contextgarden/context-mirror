@@ -868,10 +868,10 @@
 % \def\eject         {\par\penalty-\@M } % == {\par\break} % plain
 % \def\supereject    {\par\penalty-\@MM} % also plain
 
-\def\eject         {\par\penalty-\@M \resetpagebreak} % == {\par\break} % plain
-\def\supereject    {\par\penalty-\@MM\resetpagebreak} % also plain
+\def\eject         {\par\ifvmode\penalty-\@M \fi\resetpagebreak} % == {\par\break} % plain
+\def\supereject    {\par\ifvmode\penalty-\@MM\fi\resetpagebreak} % also plain
 
-\def\doejectpage   {\par\ifdim\pagetotal>\pagegoal\else\normalvfil\fi}
+\def\doejectpage   {\par\ifvmode\ifdim\pagetotal>\pagegoal\else\normalvfil\fi\fi}
 \def\ejectpage     {\doejectpage\eject}
 \def\superejectpage{\doejectpage\supereject}
 
@@ -900,10 +900,12 @@
    \egroup}
 
 \def\ejectdummypage
-  {\ejectinsert
-   \hardespatie % will be different
-   \vfill
-   \gotonextpage}
+  {\endgraf \ifvmode
+     \ejectinsert
+     \hardespatie % will be different
+     \vfill
+     \gotonextpage
+   \fi}
 
 \def\beforefinaloutput
   {}

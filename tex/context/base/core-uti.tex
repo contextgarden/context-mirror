@@ -590,6 +590,11 @@
      \expandafter#1%
    \fi}
 
+% shorter:
+%
+% \long\def\doplugincommand#1%
+%   {\ifx#1\undefined\expandafter\noplugincommand\fi#1}
+
 \long\def\noplugincommand#1\relax
   {}
 

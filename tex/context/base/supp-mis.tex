@@ -160,8 +160,8 @@
 \ifnocontextobject \scratchread    \do \newread   \scratchread    \fi
 \ifnocontextobject \scratchwrite   \do \newwrite  \scratchwrite   \fi
 
-\ifnocontextobject \zeropoint      \do \let       \zeropoint \z@  \fi
-\ifnocontextobject \onepoint       \do \let       \onepoint  \p@  \fi
+\ifnocontextobject \zeropoint      \do \newdimen  \zeropoint      \fi % else problems with dimen12
+\ifnocontextobject \onepoint       \do \newdimen  \onepoint       \fi
 \ifnocontextobject \zerocount      \do \chardef   \zerocount =0   \fi
 \ifnocontextobject \plusone        \do \chardef   \plusone   =1   \fi
 \ifnocontextobject \minusone       \do \newcount  \minusone       \fi
@@ -169,7 +169,9 @@
 \ifnocontextobject \thousandpoint  \do \newdimen  \thousandpoint  \fi
 
 \thousandpoint=1000pt
-\minusone     = -1
+\zeropoint    =   0pt
+\onepoint     =   1pt
+\minusone     =  -1
 
 \ifnocontextobject \emptytoks      \do \newtoks   \emptytoks      \fi
 

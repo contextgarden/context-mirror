@@ -2013,8 +2013,15 @@
 %
 % expands to \widowpenalty \maxdimen \maxdimen \zeropoint
 
+\def\resetpenalties#1%
+  {\ifx#1\undefined\else
+      #1\minusone
+   \fi}
+
 \def\setpenalties#1#2#3%
-  {#1\numexpr(#2+1)\space\doexpandedrecurse{\numexpr(#2)}{#3}\zerocount\relax}
+  {\ifx#1\undefined\else
+     #1\numexpr(#2+1)\space\doexpandedrecurse{\numexpr(#2)}{#3}\zerocount\relax
+   \fi}
 
 \def\doexpandedrecurse#1#2%
   {\ifnum#1>\zerocount#2\@EA\doexpandedrecurse\@EA{\the\numexpr(#1-1)}{#2}\fi}
@@ -2046,9 +2053,9 @@
   {\setups[\systemsetupsprefix\s!default]}
 
 \startsetups [\systemsetupsprefix\v!reset]
-  \widowpenalties     \minusone
-  \clubpenalties      \minusone
-  \interlinepenalties \minusone
+  \resetpenalties\widowpenalties
+  \resetpenalties\clubpenalties
+  \resetpenalties\interlinepenalties
 \stopsetups
 
 \startsetups [\systemsetupsprefix\s!default]

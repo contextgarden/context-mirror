@@ -396,6 +396,8 @@
 \def \PSscale            {scale}
 \def \PSconcat           {concat}
 \def \PSdtransform       {dtransform}
+\def \PSsetlinewidth     {setlinewidth}
+\def \PSpop              {pop}
 
 \def \PSnfont            {nfont}    % was needed for TUG98 proceedings
 \def \PSspecial          {special}  % extensions to MetaPost
@@ -662,6 +664,17 @@
      \resetMPstack
    \else\ifx\somestring\PSdtransform  % == setlinewidth
      \let\handleMPsequence\handleMPdtransform
+     % after that we will encounter more tokens until setlinewidth+pop
+     % or pop+setlinewidth which we catch next; we explicitly need to
+     % reset the stack since [] n setdash may follow; a more clever
+     % approach would be to read on till the condition is met, but it's
+     % the only pop / setlinewidth we will encounter so ...
+   \else\ifx\somestring\PSsetlinewidth
+     % already handled in dtransform
+     \resetMPstack
+   \else\ifx\somestring\PSpop
+     % already handled in dtransform
+     \resetMPstack
    \else\ifx\somestring\PSconcat
      \PDFcode{\gMPa1 \gMPa2 \gMPa3 \gMPa4 \gMPa5 \gMPa6 cm}%
      \resetMPstack
@@ -704,7 +717,7 @@
      \resetMPstack
    \else
      \handleMPgraphic% {#1}%
-   \fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi
+   \fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi
    \handleMPsequence}
 
 \def\dohandleMPsequenceC#1 %

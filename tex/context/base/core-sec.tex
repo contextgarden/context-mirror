@@ -14,7 +14,8 @@
 % nummeren per sectieblok implementeren
 
 % this module needs a clean up, currently some manipulations
-% take place multiple times
+% take place multiple times; also, some clever recursive level
+% thing makes more sense
 
 % in manual (zie prikkels) : tussen=\blanko is enige hook om
 % met kop-in-hoofd een spatiering af te dwingen
@@ -674,7 +675,7 @@
 %
 % we want to be able to overload them globally
 
-% This will be reimplmented
+% This will be reimplemented
 %
 % {nn}{xx}{yy}
 %
@@ -1219,9 +1220,8 @@
    \someheadconversionfalse
    \let\fullsectionnumber\limitedfullsectionnumber
    \setsectieenkoppeling{#1}%
-   \doifelsevalue{\??ko#1\c!prefix}{}
-     {\kopprefixfalse}
-     {\kopprefixtrue}%
+   \doifelsevaluenothing{\??ko#1\c!prefix}
+     \kopprefixfalse\kopprefixtrue
    \ifkopprefix
      \doifelsevalue{\??ko#1\c!prefix}{+}
        {\doifelsenothing{#2}
@@ -1231,13 +1231,20 @@
    \else
      \let\localkoprefix\empty
    \fi
-   \doifelsevalue{\??ko#1\c!plaatskop}\v!ja
-     \plaatskoptrue\plaatskopfalse
+%    \doifelsevalue{\??ko#1\c!plaatskop}\v!ja
+%      \plaatskoptrue\plaatskopfalse
+%    \processaction
+%      [\getvalue{\??ko#1\c!plaatskop}]
+%      [  \v!ja=>\plaatskoptrue \legekopfalse,
+%       \v!leeg=>\plaatskoptrue \legekoptrue,
+%        \v!nee=>\plaatskopfalse\legekoptrue]%
+   \plaatskoptrue
    \processaction
      [\getvalue{\??ko#1\c!plaatskop}]
-     [  \v!ja=>\plaatskoptrue \legekopfalse,
-      \v!leeg=>\plaatskoptrue \legekoptrue,
-       \v!nee=>\plaatskopfalse\legekoptrue]%
+     [  \v!ja=>\legekopfalse,
+      \v!leeg=>\legekoptrue,
+       \v!nee=>\legekoptrue\plaatskopfalse]%
+%
    \doifelsevalue{\??ko#1\c!resetnummer}\v!nee
      {\setfalse\@@resetsubheadnumbers}%
      {\settrue \@@resetsubheadnumbers}%

@@ -1,8 +1,1 @@
-% This map file defined the fonts that come with the ConTeXt
-% macro package. Currently only some navigational symbols 
-% are distributed. These can be fetched from the pragma site
-% www.pragma-ade.nl as part of the ConTeXt distribution, or 
-% can be found on CTAN as well as in the teTeX distribution 
-% (look for /hoekwater/context). 
-
-contnav  ContextNavigation  <contnav.pfb
+contnav ContextNavigation <contnav.pfb

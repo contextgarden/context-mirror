@@ -306,7 +306,7 @@
    \dosetlistmode
    \endgroup}
 
-% th esimple appreach:
+% the simple appreach:
 %
 % \def\dosettoclevel#1#2%
 %   {\dosetfilterlevel{\getvalue{#1#2\c!criterium}}\empty}
@@ -910,13 +910,11 @@
       \c!criterium=\v!alles,
       \c!voor=,
       \c!na=,
-      #2]
+      #2]%
    \setcounter{#1}{0}%
    \addutilityreset{#1}%
-   \setvalue{\s!set#1}%
-     {\dodosetreferentielijst{#1}}%
-   \setvalue{\s!reset#1}%
-     {\dodoresetreferentielijst{#1}}}
+   \setvalue{\s!set  #1}{\dodosetreferentielijst  {#1}}%
+   \setvalue{\s!reset#1}{\dodoresetreferentielijst{#1}}}
 
 \def\definieerreferentielijst%
   {\dodoubleempty\dodefinieerreferentielijst}

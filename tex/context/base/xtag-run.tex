@@ -46,7 +46,7 @@
 
 .egroup
 
-\gdef\@@XMLshow{\@@XML shw}  
+\gdef\@@XMLshow{\@@XML shw}
 
 \gdef\@XMLindent#1%
   {\ifnum\XMLlevel>\plusone\advance\leftskip#11em\relax\fi}
@@ -88,7 +88,7 @@
 
 \egroup
 
-\ifx\XMLprettycycle\undefined \gdef\XMLprettycycle{3} \fi 
+\ifx\XMLprettycycle\undefined \gdef\XMLprettycycle{3} \fi
 
 \doglobal\newcounter\@XMLnofelements
 \doglobal\newif\ifXMLunspacepretty
@@ -97,14 +97,14 @@
   {\ifnum\XMLlevel<\@@xfniveau\relax
      \ifnum\kindofXMLelement=2\else
        \doglobal\increment\@XMLnofelements\relax
-       \ifcase\@XMLnofelements\else\@@xftussen\fi 
-     \fi 
+       \ifcase\@XMLnofelements\else\@@xftussen\fi
+     \fi
    \fi
-   % no, too fragile: \hangindent2em  
-\ifcase\kindofXMLelement\or\or
-  \getvalue{\@@XMLshow::\currentXMLelement}\relax
-\fi
-   \indent 
+   % no, too fragile: \hangindent2em
+   \ifcase\kindofXMLelement\or\or
+     \getvalue{\@@XMLshow::\currentXMLelement}\relax
+   \fi
+   \indent
    \bgroup
      % \localcolortrue
      \advance\XMLlevel \minusone
@@ -124,18 +124,18 @@
      \ifnum\kindofXMLelement=3\string/\fi
      \string>%
      \stopcolor
-   \egroup 
-\ifcase\kindofXMLelement\or
-  \getvalue{\@@XMLshow::\currentXMLelement}\relax
-\fi
+   \egroup
+   \ifcase\kindofXMLelement\or
+     \getvalue{\@@XMLshow::\currentXMLelement}\relax
+   \fi
    \ifnum\XMLlevel<\@@xfniveau\relax
      \ifnum\kindofXMLelement=1\else
        \doglobal\increment\@XMLnofelements\relax
-       \ifcase\@XMLnofelements\else\@@xftussen\fi 
-     \fi 
+       \ifcase\@XMLnofelements\else\@@xftussen\fi
+     \fi
    \fi
    \ifXMLunspacepretty\ignorespaces\fi}
-   
+
 \gdef\nextXMLtext{\blank\@XMLlevel+\@XMLelement1\par}
 \gdef\prevXMLtext{\par\@XMLelement0\par\@XMLlevel-\blank}
 \gdef\nextXMLpara{\nextXMLline\par}
@@ -213,20 +213,40 @@
 
 \gdef\showXMLfile#1%
   {\bgroup
+   % temp hack, will be the normal definition
+   \long\def\docleanupXMLarguments##1/ ##2\relax{\def\currentXMLarguments{##1}}%
+   % so far for hack
    \nohyphens
    \dontcomplain
    \XMLlevel\zerocount
-   \increment\@@xfniveau % hack 
+   \increment\@@xfniveau % hack
    \tttf
    \startopelkaar[\v!blanko]
      \ifautoXMLshow \let\executeXMLelement\autoshowXMLelement \fi
      \let\executeXMLentity\@XMLentity
      \enableXML\verbatimXML
-\enableregime[utf]%
-\chardef\utfunicodetracer8
+     \enableregime[utf]%
+     \chardef\utfunicodetracer8
      \readfile{\truefilename{#1}}\donothing\donothing\endgraf
-     \removelastskip % really needed 
+     \removelastskip % really needed
    \stopopelkaar
+   \egroup}
+
+\gdef\showXMLtext#1%
+  {\bgroup
+   % temp hack, will be the normal definition
+   \long\def\docleanupXMLarguments##1/ ##2\relax{\def\currentXMLarguments{##1}}%
+   % so far for hack
+   \dontcomplain
+   \XMLlevel\maxcard
+   \increment\@@xfniveau % hack
+   \tttf
+   \ifautoXMLshow \let\executeXMLelement\autoshowXMLelement \fi
+   \let\executeXMLentity\@XMLentity
+   \let\par\allowbreak\let\endgraf\par
+   \setbox\scratchbox\hbox
+     {\enableXML\verbatimXML\scantokens{#1}\removelastskip}%
+   \unhbox\scratchbox
    \egroup}
 
 \gdef\showXMLbuffer
@@ -240,30 +260,16 @@
       \processcommalist[#1]\dodoprocessXMLbuffer
       \egroup}}
 
-\gdef\showXMLtext#1%
-  {\bgroup
-   \dontcomplain
-   \XMLlevel\maxcard
-   \increment\@@xfniveau % hack 
-   \tttf
-   \ifautoXMLshow \let\executeXMLelement\autoshowXMLelement \fi
-   \let\executeXMLentity\@XMLentity
-   \let\par\allowbreak\let\endgraf\par
-   \setbox\scratchbox\hbox
-     {\enableXML\verbatimXML\scantokens{#1}\removelastskip}%
-   \unhbox\scratchbox 
-   \egroup}
-
-%D 
+%D
 
 \gdef\showXSDcomponent
   {\dodoubleargument\doshowXSDcomponent}
 
 \gdef\doshowXSDcomponent[#1][#2]%
   {\bgroup
-   \showXMLnop[xsd:schema] 
-   \showXMLign[xsd:appInfo] 
-   \showXMLign[xsd:annotation] 
+   \showXMLnop[xsd:schema]
+   \showXMLign[xsd:appInfo]
+   \showXMLign[xsd:annotation]
    \videXMLcontextblock[#2]
    \showXMLfile{#1}
    \egroup}

@@ -2,7 +2,7 @@
 %D   [       file=xtag-exp,
 %D        version=2001.08.20,
 %D          title=\CONTEXT\ XML Support,
-%D       subtitle=Expansion Related Things, 
+%D       subtitle=Expansion Related Things,
 %D         author=Hans Hagen,
 %D           date=\currentdate,
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
@@ -19,34 +19,34 @@
 
 \writestatus{loading}{Context XML Macros (expansion)}
 
-\unprotect 
+\unprotect
 
-%D Files 
+%D Files
 
 \newcounter\XMLfilenesting \let\restoreXMLelements\relax
 
 \def\startXMLreading
   {\increment \XMLfilenesting \relax
-   \ifnum\XMLfilenesting=1 
+   \ifnum\XMLfilenesting=1
 %\ifcase\XMLfilenesting\or
-     \ifprocessingXML 
+     \ifprocessingXML
        \let\restoreXMLelements\relax
-     \else 
+     \else
        \let\restoreXMLelements\disableXMLelements
-       \enableXMLelements 
+       \enableXMLelements
      \fi
-   \fi}  
+   \fi}
 
 \def\stopXMLreading
-  {\ifnum\XMLfilenesting=1 
+  {\ifnum\XMLfilenesting=1
 %\ifcase\XMLfilenesting\or
-     \restoreXMLelements 
+     \restoreXMLelements
      \let\restoreXMLelements\relax
-   \fi  
+   \fi
    \decrement \XMLfilenesting \relax}
 
 \def\enableXMLfiledata
-  {\prependtoks \enableXMLelements      \to \mainoutput % brrr, will change 
+  {\prependtoks \enableXMLelements      \to \mainoutput % brrr, will change
    \appendtoks  \startXMLreading        \to \everybeforeutilityread
    \appendtoks  \stopXMLreading         \to \everyafterutilityread
    \appendtoks  \forcefileexpansiontrue \to \everyenableXML
@@ -54,16 +54,16 @@
 
 \setupXMLprocessing[\c!status=\v!start]
 
-\appendtoks 
-  \ifproductionrun \enableXMLfiledata \fi 
+\appendtoks
+  \ifproductionrun \enableXMLfiledata \fi
 \to \aftersetupXMLprocessing
 
-%D Here we overload the mark handler. 
+%D Here we overload the mark handler.
 
 \def\XMLexpanded#1%
   {\bgroup
    \honorunexpanded
-   \dontexpandencoding 
+   \dontexpandencoding
    \xdef\@@globalexpanded{\noexpand#1}%
    \egroup
    \@@globalexpanded}
@@ -71,15 +71,15 @@
 \let\normalsetnormalmark\setnormalmark
 
 \long\def\setnormalmark#1% overloaded
-  {\ifprocessingXML 
+  {\ifprocessingXML
      \expandafter\setXMLexpandedmark
    \else
      \expandafter\normalsetnormalmark
    \fi#1}
 
-\def\setXMLexpandedmark#1#2% using a tok prevents unwanted expansion in mark 
+\def\setXMLexpandedmark#1#2% using a tok prevents unwanted expansion in mark
   {\XMLexpanded{\scratchtoks{\enableXMLelements#2}}%
    \setxvalue{\@@crk\string#1}{\the\scratchtoks}%
    \normalmarks#1{\the\scratchtoks}}
 
-\protect \endinput 
+\protect \endinput

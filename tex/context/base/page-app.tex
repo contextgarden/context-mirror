@@ -22,6 +22,7 @@
   {\pagina % this is kind of tricky! there can be preceding page refs
    \bgroup % resulting in a zero height page; test fig-make !
    \dontcomplain
+   % runs under current page regime, i.e. page variables passed to mp
    \setbox\scratchbox\hbox
      \bgroup
      \getparameters[#1][#2]%
@@ -38,6 +39,10 @@
    \c!kopwit=\!!zeropoint,\c!rugwit=\!!zeropoint,
    \c!snijwit=\!!zeropoint,\c!bodemwit=\!!zeropoint,
    \c!tekstafstand=\!!zeropoint,\c!regels=0,\c!grid=\v!nee,
+   \c!boven=\!!zeropoint,\c!onder=\!!zeropoint,
+   \c!marge=\!!zeropoint,\c!rand=\!!zeropoint,
+   \c!linkermarge=\!!zeropoint,\c!linkerrand=\!!zeropoint,
+   \c!rechtermarge=\!!zeropoint,\c!rechterrand=\!!zeropoint,
    \c!hoofd=\!!zeropoint,\c!voet=\!!zeropoint]
 
 \def\dostopfittingpage
@@ -50,10 +55,16 @@
      \setbox\scratchbox\vbox to \lineheight{\vss\box\scratchbox\vss}%
      \edef\fittinght{\the\lineheight}%
    \fi
+   \let\checkcurrentlayout\relax % else interference with odd/even layout
    \setuppapersize
      [\??fp\s!dummy][\??fp\s!dummy]%
+   \definelayout
+     [\v!pagina]%
+     [\c!plaats=\v!midden,
+      \c!breedte=\fittingwd,
+      \c!hoogte=\fittinght]%
    \setuplayout
-     [\??fp\s!dummy]%
+     [\v!pagina]%
    \startmakeup[\v!standaard][\c!tekststatus=\v!leeg,\c!dubbelzijdig=\v!nee,\c!pagina=]%
      \centerbox{\box\scratchbox}%
    \stopmakeup

@@ -19,7 +19,7 @@
 %D usage of the the original \TEX\ fonts, where composed
 %D characters were not part of the design. So, occasionally
 %D we have to revert to hacks. Thanks to all those users who
-%D helped me to fill in the details! 
+%D helped me to fill in the details!
 
 \startencoding[default]
 
@@ -97,32 +97,32 @@
 \definecharacter percent          {\fakepercent}
 \definecharacter perthousand      {\fakeperthousand}
 
-\definecharacter softhyphen        45 
+\definecharacter softhyphen        45
 \definecharacter periodcentered   {\mathematics\cdot}
-\definecharacter compoundwordmark  23 
+\definecharacter compoundwordmark  23
 
 \definecharacter textasciicircum    94
 \definecharacter textasciitilde    126
 \definecharacter textslash          47
-\definecharacter textbackslash    {\tex{}} % todo 
+\definecharacter textbackslash    {\tex{}} % todo
 \definecharacter textbraceleft    {\mathematics\{}
 \definecharacter textbraceright   {\mathematics\}}
 \definecharacter textunderscore   {\fakeunderscore}
-\definecharacter textvisiblespace {\fakevisiblespace} 
+\definecharacter textvisiblespace {\fakevisiblespace}
 
-\definecharacter textbrokenbar    {\mathematics\vert} 
-\definecharacter textbullet       {\mathematics\bullet} 
-\definecharacter textdag          {\mathematics\dag} 
-\definecharacter textddag         {\mathematics\ddag} 
-\definecharacter textdegree       {\mathematics{{}^{\circ}}} 
+\definecharacter textbrokenbar    {\mathematics\vert}
+\definecharacter textbullet       {\mathematics\bullet}
+\definecharacter textdag          {\mathematics\dag}
+\definecharacter textddag         {\mathematics\ddag}
+\definecharacter textdegree       {\mathematics{{}^{\circ}}}
 \definecharacter textdiv          {\mathematics\div}
-\definecharacter textellipsis     {\mathematics\cdots} 
+\definecharacter textellipsis     {\mathematics\cdots}
 \definecharacter textfraction     {\mathematics/}
 \definecharacter textlognot       {\mathematics\neg}
-\definecharacter textminus        {\mathematics-} 
+\definecharacter textminus        {\mathematics-}
 \definecharacter textmu           {\mathematics\mu}
 \definecharacter textmultiply     {\mathematics\times}
-\definecharacter textpm           {\mathematics\pm} 
+\definecharacter textpm           {\mathematics\pm}
 
 \definecharacter quotedbl         {"}
 \definecharacter quotedblbase     {,,}
@@ -135,8 +135,8 @@
 \definecharacter quoteleft        {`}
 \definecharacter quoteright       {'}
 
-\definecharacter guilsingleleft   {\fakeleftsubguillemot } 
-\definecharacter guilsingleright  {\fakerightsubguillemot}    
+\definecharacter guilsingleleft   {\fakeleftsubguillemot }
+\definecharacter guilsingleright  {\fakerightsubguillemot}
 
 \definecharacter leftguillemot    {\fakeleftguillemot }
 \definecharacter rightguillemot   {\fakerightguillemot}
@@ -347,7 +347,7 @@
 
 \stopencoding
 
-%D A few goodies: 
+%D A few goodies:
 
 \def\eszett  {\ssharp}
 \def\Eszett  {\Ssharp}
@@ -359,59 +359,59 @@
 \def\oslash  {\ostroke}
 \def\Oslash  {\Ostroke}
 
-% for plain tex's sake 
+% for plain tex's sake
 
 \def\S       {\sectionmark  }
 \def\P       {\paragraphmark}
 
-% for latex users sake 
+% for latex users sake
 
 \def\textS   {\sectionmark  }
 \def\textP   {\paragraphmark}
 
-% for old times sake 
+% for old times sake
 
 \def\florin  {\textflorin  }  \def\florijn{\textflorin}
 \def\dollar  {\textdollar  }
 \def\pound   {\textsterling}
 \def\sterling{\textsterling}
 
-% idem 
+% idem
 
 \def\promille{\perthousand}
 \def\permille{\perthousand}
 \def\procent {\percent }
 \def\permine {\fakepermine}
 
-% some more 
+% some more
 
 \def\hyphen  {\softhyphen}
 \def\cwm     {\compoundwordmark}
 
-% quotes 
+% quotes
 
 \def\lowerleftsingleninequote  {\quotesinglebase}
-\def\lowerleftdoubleninequote  {\quotedblbase}      
-\def\lowerrightsingleninequote {\quotesinglebase}   
-\def\lowerrightdoubleninequote {\quotedblbase}      
+\def\lowerleftdoubleninequote  {\quotedblbase}
+\def\lowerrightsingleninequote {\quotesinglebase}
+\def\lowerrightdoubleninequote {\quotedblbase}
 
 \def\upperleftsingleninequote  {\quoteright}
-\def\upperleftdoubleninequote  {\quotedblright}     
+\def\upperleftdoubleninequote  {\quotedblright}
 \def\upperrightsingleninequote {\quoteright}
-\def\upperrightdoubleninequote {\quotedblright}     
+\def\upperrightdoubleninequote {\quotedblright}
 
 \def\upperleftsinglesixquote   {\quoteleft}
-\def\upperleftdoublesixquote   {\quotedblleft}       
+\def\upperleftdoublesixquote   {\quotedblleft}
 \def\upperrightsinglesixquote  {\quoteleft}
-\def\upperrightdoublesixquote  {\quotedblleft}       
+\def\upperrightdoublesixquote  {\quotedblleft}
 
 \def\leftsubguillemot          {\guilsingleleft}
 \def\rightsubguillemot         {\guilsingleright}
 
-%D A couple of fallbacks suggestion by users, slightly 
-%D adapted and obscured by memory saving hacks.  
+%D A couple of fallbacks suggestion by users, slightly
+%D adapted and obscured by memory saving hacks.
 
-\unprotect 
+\unprotect
 
 \startencoding[default]
 
@@ -430,9 +430,9 @@
   \vrule\!!width.4\s!pt\!!height.35\s!ex\!!depth.6\s!ex}%
                                   \kern.05\s!em}}
 
-\stopencoding 
+\stopencoding
 
-\protect 
+\protect
 
 %D We also use symbolic names for math accents.
 

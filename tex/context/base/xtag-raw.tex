@@ -13,7 +13,7 @@
 
 \writestatus{loading}{Context XML Macros (raw specials)}
 
-%D Some day this module will be obsolete. 
+%D Some day this module will be obsolete.
 
 \defineXMLentity [tex-hash]       {\letterhash}
 \defineXMLentity [tex-dollar]     {\letterdollar}
@@ -26,10 +26,11 @@
 \defineXMLentity [tex-bar]        {\letterbar}
 \defineXMLentity [tex-tilde]      {\lettertilde}
 
-\endinput 
- 
+\endinput
+
 \defineXMLsingular[test][oeps=,whow=,hm=]
-  {\tttf \input \XMLop{oeps} [\XMLop{whow}] [\XMLop{hm}]}
+% {\tttf \input \XMLop{oeps} [\XMLop{whow}] [\XMLop{hm}]}
+  {\tttf \XMLop{oeps} [\XMLop{whow}] [\XMLop{hm}]}
 
 \startXMLdata
 <test oeps="oeps_tst.tmp" whow="#FFEEGG" hm="^{}~"/>

@@ -1153,8 +1153,8 @@
 \def\processtabulate[|#1|]% in the process of optimizing
   {\tabulateunit\getvalue{\??tt\currenttabulate\c!eenheid}%
    \checkfulltabulatecontent
-\globallet\tabulateruledepth \!!zeropoint
-\globallet\tabulateruleheight\!!zeropoint
+   \globallet\tabulateruledepth \!!zeropoint
+   \globallet\tabulateruleheight\!!zeropoint
    \ExpandFirstAfter\processaction % use \setalignmentswitch instead
      [\getvalue{\??tt\currenttabulate\c!uitlijnen}]
      [\v!normaal=>\def\@@tabulatealign{0},% = default value
@@ -1173,12 +1173,12 @@
    \global\tabulatepwidth\zeropoint
    \global\tabulateequalfalse
    \resettabulatepheight
-\ifinsidefloat \else
-  \processaction
-    [\getvalue{\??tt\currenttabulate\c!hoofd}]
-    [\v!herhaal=>\chardef\tabulaterepeathead\plusone,
-       \v!tekst=>\chardef\tabulaterepeathead\plustwo]%
-\fi
+   \ifinsidefloat \else
+     \processaction
+       [\getvalue{\??tt\currenttabulate\c!hoofd}]
+       [\v!herhaal=>\chardef\tabulaterepeathead\plusone,
+          \v!tekst=>\chardef\tabulaterepeathead\plustwo]%
+   \fi
    \unexpanded \def\NC{\tabulatenormalcolumn0}%
    \unexpanded \def\RC{\tabulatenormalcolumn1}%
    \unexpanded \def\HC{\tabulatenormalcolumn2}%
@@ -1203,9 +1203,9 @@
       \unskip\unskip\crcr\flushtabulated
       \TABLEnoalign
         {\iftolerantTABLEbreak\else
-\ifconditional\tabulatesomeamble \ifcase\tabulaterepeathead \else
-  \allowbreak
-\fi \fi
+           \ifconditional\tabulatesomeamble \ifcase\tabulaterepeathead \else
+             \allowbreak
+           \fi \fi
            \ifnum\noftabulatelines=\plusone
              \dotabulatenobreak
            \else\ifnum\noftabulatelines=\minusnoftabulatelines

@@ -157,8 +157,9 @@
        {\forgetall
         \offinterlineskip
         \mindermeldingen
-        \vskip-1in
-        \hskip-1in
+        \scratchdimen-1in
+        \vskip\scratchdimen
+        \hskip\scratchdimen
         \hbox % \setbox0=\box.. is nicer
           {\setbox0\hbox{#1}% just in case there are objects there
            \setbox\scratchbox\hbox
@@ -244,6 +245,9 @@
                \s!reset=>\global\arrangingpagesfalse,
              \s!unknown=>\checkinstalledpagearrangement\commalistelement]%
         % no \s!default=> we can have aaa,,bbb
+     \ifx\handlearrangedpage\undefined
+       \global\arrangingpagesfalse
+     \fi
      \doifcommonelse{#1}{90,270,\v!geroteerd}
        {\swapmacros\horizontalcutmarks\verticalcutmarks}{}% ugly solution
      \setuppapersize
@@ -315,9 +319,9 @@
   {\dosetuparrangement{2}{1}{8}{3}{2}%
      \pusharrangedpageSIXTEENFOUR\poparrangedpagesAtoH\relax}
 
-\installpagearrangement 4SIDE
+\installpagearrangement 2TOPSIDE
   {\dosetuparrangement{1}{2}{4}{2}{3}%
-     \pusharrangedpageFOURSIDE\poparrangedpagesFOURSIDE\handlearrangedpageTOP}
+     \pusharrangedpageTWOTOPSIDE\poparrangedpagesTWOTOPSIDE\handlearrangedpageTOP}
 
 % \def\filluparrangedpages % beware: \realpageno is 1 ahead
 %   {\ifarrangingpages
@@ -605,17 +609,18 @@
       \dp#1\zeropoint
       \vbox{\box#1}}}
 
-\def\poparrangedpagesFOURSIDE
-  {\bgroup
-   \gdef\arrangedpageN{2}%
-   \poparrangedpagesTWO
-   \let\arrangedpageA\arrangedpageC
-   \let\arrangedpageB\arrangedpageD
-   \gdef\arrangedpageN{2}%
-   \poparrangedpagesTWO
-   \egroup}
+\def\poparrangedpagesTWOTOPSIDE
+  {\ifnum\arrangedpageN>\zerocount
+     \bgroup
+     \gdef\arrangedpageN{2}\poparrangedpagesTWO
+     \let\arrangedpageA\arrangedpageC
+     \let\arrangedpageB\arrangedpageD
+     \gdef\arrangedpageN{2}\poparrangedpagesTWO
+     \doglobal\newcounter\arrangedpageN
+     \egroup
+  \fi}
 
-\def\pusharrangedpageFOURSIDE#1%
+\def\pusharrangedpageTWOTOPSIDE#1%
   {\doglobal\increment\arrangedpageN
    \reportarrangedpage\arrangedpageN
    \ifcase\arrangedpageN

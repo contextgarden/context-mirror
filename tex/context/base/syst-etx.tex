@@ -1,6 +1,6 @@
 %D \module
 %D   [       file=syst-etx,
-%D        version=1999.03.17, % some time ...  
+%D        version=1999.03.17, % some time ...
 %D          title=\CONTEXT\ System Macros,
 %D       subtitle=Efficient \PLAIN\ \TEX\ loading,
 %D         author=Hans Hagen,
@@ -8,12 +8,12 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
-%C details. 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
 
-%D This module prepares \CONTEXT\ for \ETEX. We don't use 
-%D the definition files that come with this useful \TEX\ 
-%D extension, but implement our own alternatives. 
+%D This module prepares \CONTEXT\ for \ETEX. We don't use
+%D the definition files that come with this useful \TEX\
+%D extension, but implement our own alternatives.
 
 \unprotect
 
@@ -101,9 +101,9 @@
 \endTEX
 
 %D Of course we want even bigger log files, so we copied this
-%D from the \ETEX\ source files. 
+%D from the \ETEX\ source files.
 
-\beginETEX \tracing... 
+\beginETEX \tracing...
 
 \def\tracingall
   {\tracingonline    \@ne
@@ -125,7 +125,7 @@
    \errorstopmode}
 
 \def\loggingall
-  {\tracingall 
+  {\tracingall
    \tracingonline    \z@}
 
 \def\tracingnone
@@ -148,7 +148,7 @@
 
 \endETEX
 
-%D Just to be sure: 
+%D Just to be sure:
 
 \ifx\eTeX\undefined
 
@@ -156,11 +156,11 @@
 
 \fi
 
-%D In \ETEX\ we have lots of registers, so we redefine a few 
-%D low level macros. We reserve some extra space for inserts 
-%D and as soon as we near the end of the first register 
-%D memory bank (often some 10 less than 255), we switch to the 
-%D slower range \type {\@@medallocation}||\type {\@@maxallocation}. 
+%D In \ETEX\ we have lots of registers, so we redefine a few
+%D low level macros. We reserve some extra space for inserts
+%D and as soon as we near the end of the first register
+%D memory bank (often some 10 less than 255), we switch to the
+%D slower range \type {\@@medallocation}||\type {\@@maxallocation}.
 
 \beginETEX \new...
 
@@ -177,14 +177,14 @@
 \def\newmarks   {\myalloc@8\marks   \mathchardef\@@maxallocation}
 \def\newlanguage{\myalloc@9\language\chardef    \@@minallocation}
 
-%D Since in \CONTEXT\ we only have one math family left we 
+%D Since in \CONTEXT\ we only have one math family left we
 %D redefine \type {\newfam}.
 
-\def\newfam#1{\chardef#1=15 } 
+\def\newfam#1{\chardef#1=15 }
 
-%D Therefore we should reset the related counter. 
+%D Therefore we should reset the related counter.
 
-\count18=1 
+\count18=1
 
 %D We use some constants in the tests.
 
@@ -192,21 +192,21 @@
 \mathchardef\@@medallocation =   256
 \mathchardef\@@maxallocation = 32767
 
-%D I cannot imagine that more than~8 extra insert classes 
+%D I cannot imagine that more than~8 extra insert classes
 %D are needed, so we say:
 
-\chardef\@@insallocation=8 
+\chardef\@@insallocation=8
 
-%D But, for critical editions, we may need many more, so 
+%D But, for critical editions, we may need many more, so
 %D here we go again:
 
 \chardef\@@insallocation=24
 
-%D My low level allocation macro now comes down to: 
+%D My low level allocation macro now comes down to:
 
 \def\myalloc@#1#2#3#4#5%
   {\global\advance\count1#1by\@ne
-   \ifnum\count1#1>\@@medallocation \else 
+   \ifnum\count1#1>\@@medallocation \else
      \global\advance\insc@unt by -\@@insallocation
      \ifnum\count1#1<\insc@unt \else
        \global\count1#1=\@@medallocation % \wait
@@ -225,26 +225,26 @@
 
 %D These macros can be checked by tests like:
 %D
-%D \starttypen 
+%D \starttypen
 %D \let\wlog\message \dorecurse{1000}{\newcount\dummy}
-%D \stoptypen 
+%D \stoptypen
 
-%D A few bonus bindings. 
+%D A few bonus bindings.
 
 \let\normalprotected  = \protected
 \let\normalunexpanded = \unexpanded
 
-%D \macros 
+%D \macros
 %D   {begcsname}
 %D
-%D Handy for \ETEX-only usage: 
+%D Handy for \ETEX-only usage:
 
 \beginETEX \ifcsname
 
 \def\begcsname#1\endcsname
   {\ifcsname#1\endcsname\csname#1\endcsname\fi}
 
-\endETEX 
+\endETEX
 
 \beginTEX
 

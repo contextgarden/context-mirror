@@ -1761,9 +1761,6 @@ vardef repathed (expr mode, p) text t =
   endgroup
 enddef ;
 
-
-
-
 % After a question of Denis on how to erase a z variable, Jacko
 % suggested to assign whatever to x and y. So a clearz
 % variable can be defined as:
@@ -2125,6 +2122,35 @@ vardef colorpart(expr i) =
   (redpart i, greenpart i,bluepart i)
 enddef ;
 
+% for david arnold:
+
+% showgrid(-5,10,1cm,-10,10,1cm);
+
+def showgrid (expr MinX, MaxX, DeltaX, MinY, MaxY, DeltaY)=
+  begingroup
+    save defaultfont, defaultscale, size ;
+    string  defaultfont  ; defaultfont  := "cmtt10"; % i.e. infofont
+    numeric defaultscale ; defaultscale := 8pt / fontsize defaultfont;
+    numeric size         ; size         := 2pt ;
+    for x=MinX upto MaxX :
+      for y=MinY upto MaxY :
+    	draw (x*DeltaX, y*DeltaY)
+          withpen pencircle scaled
+          if (x mod 5 = 0) and (y mod 5 = 0) :
+            1.5size withcolor .50white
+          else :
+               size withcolor .75white
+          fi ;
+      endfor ;
+    endfor ;
+    for x=MinX upto MaxX:
+      label.bot(decimal x, (x*DeltaX,-size));
+    endfor ;
+    for y=MinY upto MaxY:
+      label.lft(decimal y, (-size,y*DeltaY)) ;
+    endfor ;
+  endgroup
+enddef;
 
 % done
 

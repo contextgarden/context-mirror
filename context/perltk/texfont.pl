@@ -8,7 +8,7 @@ eval '(exit $?0)' && eval 'exec perl -S $0 ${1+"$@"}' && eval 'exec perl -S $0 $
 
 #D \module
 #D   [       file=texfont.pl,
-#D        version=2003.08.08, % 2000.12.14
+#D        version=2004.01.10, % 2000.12.14
 #D          title=Font Handling,
 #D       subtitle=installing and generating,
 #D         author=Hans Hagen ++,
@@ -26,7 +26,7 @@ eval '(exit $?0)' && eval 'exec perl -S $0 ${1+"$@"}' && eval 'exec perl -S $0 $
 #D Todo : list of encodings [texnansi, ec, textext]
 
 #D Thanks to George N. White III for solving a couple of bugs.
-#D Thanks to Adam T. Lindsay for adding Open Type support.
+#D Thanks to Adam T. Lindsay for adding Open Type support (and more).
 
 use strict ;
 
@@ -124,6 +124,9 @@ my $variant         = "" ;    # atl: encoding variant
 my $extension       = "pfb" ; # atl: default font extension
 my $lcdf            = "" ;    # atl: trigger for lcdf otftotfm
 
+my $pdfpath         = 0 ;
+my $mappath         = 'dvips' ;
+
 # todo: parse name for style, take face from command line
 #
 # @Faces  = ("Serif","Sans","Mono") ;
@@ -156,6 +159,7 @@ my $lcdf            = "" ;    # atl: trigger for lcdf otftotfm
     "batch"        => \$batch,
     "weight=s"     => \$weight,
     "width=s"      => \$width,
+    "pdfpath"      => \$pdfpath,  # for old texmf trees < 2004
     "expert"       => \$expert,
     "preproc"      => \$preproc,  # atl: trigger conversion to pfb
     "lcdf"         => \$lcdf ) ;  # atl: trigger use of lcdf fonttoools
@@ -173,6 +177,13 @@ if ($own_type =~ /pl/oi) { $own_stub = "perl " }
 
 if ($lcdf) { $novirtual = 1 }
 if (!$novirtual) { $virtual = 1 }
+
+# starting with 2004 tetex/fptex/texlive will combine pdftex and dvips paths
+
+if ($pdfpath)
+  { $mappath = 'pdftex' }
+else
+  { $mappath = 'dvips' }
 
 # A couple of routines.
 
@@ -192,7 +203,7 @@ sub error
 # The banner.
 
 print "\n" ;
-report ("TeXFont 1.8 - ConTeXt / PRAGMA ADE 2000-2003") ;
+report ("TeXFont 2.0 - ConTeXt / PRAGMA ADE 2000-2004") ;
 print "\n" ;
 
 # Handy for scripts: one can provide a preferred path, if it
@@ -299,6 +310,8 @@ if ($help)
     print  "\n" ;
     report "--preproc           : pre-process ttf/otf, converting them to pfb" ;
     report "--lcdf              : use lcdf fonttools to create virtual encoding" ;
+    print  "\n" ;
+    report "--pdfpath           : use /pdftex/config (since 2004: /dvips/config)" ;
     exit }
 
 if (($batch)||(($ARGV[0]) && ($ARGV[0] =~ /.+\.dat$/io)))
@@ -416,7 +429,7 @@ if ($sourcepath eq "auto")
                       { report ("removing : $nam") ;
                         unlink "$nam" }
                     my $mapfile = "$encoding$varlabel-$vendor-$collection" ;
-                    my $maproot = "$fontroot/pdftex/config/";
+                    my $maproot = "$fontroot/$mappath/config/";
                     if (-e "$maproot$mapfile.map")
                       { report ("renaming : $mapfile.map -> $mapfile.bak") ;
                         unlink "$maproot$mapfile.bak" ;
@@ -434,7 +447,7 @@ my $tfmpath = "$fontroot/fonts/tfm/$vendor/$collection" ;
 my $vfpath  = "$fontroot/fonts/vf/$vendor/$collection" ;
 my $pfbpath = "$fontroot/fonts/type1/$vendor/$collection" ;
 my $ttfpath = "$fontroot/fonts/truetype/$vendor/$collection" ;
-my $pdfpath = "$fontroot/pdftex/config" ;
+my $pdfpath = "$fontroot/$mappath/config" ;
 my $encpath = "$fontroot/dvips/local" ;
 
 # are not on local path ! ! ! !
@@ -459,8 +472,8 @@ sub make_path
 if ($makepath&&$install)
   { make_path ("afm") ; make_path ("type1") }
 
-do_make_path("$fontroot/pdftex") ;
-do_make_path("$fontroot/pdftex/config") ;
+do_make_path("$fontroot/$mappath") ;
+do_make_path("$fontroot/$mappath/config") ;
 
 if ($lcdf)
   { do_make_path("$fontroot/dvips") ;
@@ -506,7 +519,6 @@ sub globafmfiles
         unless (@files)
           { @files = validglob("$sourcepath/$pattern.ttf") ;
 	        report("locating ttf files : using pattern $pattern") }
-      #     if ($lcdf) { $extension = "otf" }
           }
     if (@files) # also elsewhere
       { report("locating afm files : using pattern $pattern") }
@@ -518,7 +530,7 @@ sub globafmfiles
 	    foreach my $file (@files)
                { $file =~ s/\.ttf$//io ;
 		report ("generating afm file : $file.afm") ;
-		system("ttf2afm $file.ttf -o $file.afm") }
+		system("ttf2afm '$file.ttf' -o '$file.afm'") }
 	    @files = validglob("$runpath/$pattern.afm") }
 	else # try doing the pre-processing earlier
 	  { report("locating afm files : using otf files") ;
@@ -526,8 +538,9 @@ sub globafmfiles
 	    @files = validglob("$runpath/$pattern.otf") ;
 	    foreach my $file (@files)
 	      { $file =~ s/\.otf$//io ;
-		report ("generating afm file : $file.afm") ;
-		preprocess_font("$file.otf", "$file.bdf") ;
+		if (!$lcdf)
+		{ report ("generating afm file : $file.afm") ;
+		  preprocess_font("$file.otf", "$file.bdf") }
 		if ($preproc)
 		{ system("cfftot1 --output=$file.pfb $file.otf") ;
 		  report("converting : $file.otf to $file.pfb") ;
@@ -738,14 +751,14 @@ foreach my $file (@files)
     my $font = "";
     # let's see what we have here (we force texnansi.enc to avoid error messages)
     if ($lcdf)
-      { ( my $fileafm = $file ) =~ s/\.otf$/\.afm/ ;
-        $font = `afm2tfm $fileafm -p texnansi.enc texfont.tfm` ;
-        unlink $fileafm }
+      { $font = `otfinfo -p $file` ;
+        chomp $font ;
+        $cleanfont = $font }
     else
-      { $font = `afm2tfm $file -p texnansi.enc texfont.tfm` }
-    unlink "texfont.tfm" ;
+      { $font = `afm2tfm '$file' -p texnansi.enc texfont.tfm`;
+        unlink "texfont.tfm" ;
+        ($rawfont,$cleanfont,$restfont) = split(/\s/,$font) }
     if ($font =~ /(math|expert)/io) { $strange = lc $1 }
-    ($rawfont,$cleanfont,$restfont) = split(/\s/,$font) ;
     $cleanfont =~ s/\_/\-/goi ;
     $cleanfont =~ s/\-+$//goi ;
     print "\n" ;
@@ -808,7 +821,8 @@ foreach my $file (@files)
     else
       { report "use supplied tfm : $cleanname" }
     # report results
-    ($rawfont,$cleanfont,$restfont) = split(/\s/,$font) ;
+    if (!$lcdf)
+    { ($rawfont,$cleanfont,$restfont) = split(/\s/,$font) }
     $cleanfont =~ s/\_/\-/goi ;
     $cleanfont =~ s/\-+$//goi ;
     # copy files
