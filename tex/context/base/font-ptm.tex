@@ -1,0 +1,53 @@
+%D \module
+%D   [       file=font-ptm,
+%D        version=1995.1.1,
+%D          title=\CONTEXT\ Font Macros,
+%D       subtitle=Adobe Times Roman,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+
+%D This module defines the Standard Adobe Times Roman. We use
+%D the \YandY\ texnansi encoding vector. 
+
+\startcoding [texnansi]
+
+\definecorps [14.4pt,12pt,11pt,10pt,9pt,8pt] [rm]
+  [tf=tir sa 1, 
+   bf=tib sa 1, 
+   it=tii sa 1, 
+   sl=tii sa 1,         % tio
+   bi=tibi sa 1, 
+   bs=tib sa 1,         % tibio 
+  tfa=tir sa 1.200,
+  tfb=tir sa 1.440,
+  tfc=tir sa 1.728,
+  tfd=tir sa 2.074,
+   sc=tir sa 0.833]
+
+\definecorps [7pt,6pt,5pt] [rm]
+  [tf=tir sa 1, 
+   bf=tib sa 1, 
+   it=tii sa 1, 
+   sl=tii sa 1,         % tio 
+   bi=tibi sa 1,
+   bs=tib sa 1]         % tibio 
+ 
+\definecorps [14.4pt,12pt,11pt,10pt,9pt,8pt] [rm]
+  [bfa=tib sa 1.200,
+   bfb=tib sa 1.440,
+   bfc=tib sa 1.728,
+   bfd=tib sa 2.074,
+   sla=tii sa 1.200,    % tio
+   slb=tii sa 1.440,    % tio
+   slc=tii sa 1.728,    % tio
+   sld=tii sa 2.074,    % tio
+   bsa=tib sa 1.200,    % tibio 
+   bsb=tib sa 1.440,    % tibio 
+   bsc=tib sa 1.728,    % tibio 
+   bsd=tib sa 2.074]    % tibio 
+
+\stopcoding
+
+\endinput
+

@@ -1,0 +1,87 @@
+%D \module
+%D   [       file=lang-alt,
+%D        version=1997.09.03,
+%D          title=\CONTEXT\ Language Macros,
+%D       subtitle=Altaic Languages,
+%D         author=Hans Hagen / Tobias Burnus,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. Non||commercial use is
+%C granted.
+
+%  Uigur, Uzbek
+%  Azeri/Azerbaijani, Chuvash, TURKISH, Turkmen
+%  Kazakh, Kazar, Kireghiz, Noghay, Talar
+%  Buryat, Kalmuck, Khalkha
+
+\writestatus{loading}{Altaic Languages}
+
+\unprotect
+
+\installlanguage
+  [\s!tr]
+  [\c!spatiering=\v!opelkaar,
+   \c!leftsentence=---,
+   \c!rightsentence=---,
+   \c!leftsubsentence=---,
+   \c!rightsubsentence=---,
+   \c!leftquote=\upperleftsinglesixquote,
+   \c!rightquote=\upperrightsingleninequote,
+   \c!leftquotation=\upperleftdoublesixquote,
+   \c!rightquotation=\upperrightdoubleninequote,
+   \c!datum={\v!jaar,\ ,\v!maand,\ ,\v!dag},
+   \c!default=\s!en,
+   \c!status=\v!stop]
+
+\setupheadtext [\s!tr] [\v!inhoud=Fihrist]
+\setupheadtext [\s!tr] [\v!tabellen=Cetrel..]
+\setupheadtext [\s!tr] [\v!figuren=Risim..]
+\setupheadtext [\s!tr] [\v!grafieken=Grafik..]
+\setupheadtext [\s!tr] [\v!intermezzos=Entermezzos]
+\setupheadtext [\s!tr] [\v!index=Endeks]
+\setupheadtext [\s!tr] [\v!afkortingen=K\i saltma..]
+\setupheadtext [\s!tr] [\v!logos=Logos]
+\setupheadtext [\s!tr] [\v!eenheden=Birlik]
+
+\setuplabeltext [\s!tr] [\v!tabel=Cetrel ]
+\setuplabeltext [\s!tr] [\v!figuur=Risim ]
+\setuplabeltext [\s!tr] [\v!intermezzo=Entermezzo ]
+\setuplabeltext [\s!tr] [\v!grafiek=Grafik ]
+\setuplabeltext [\s!tr] [\v!hoofdstuk=]
+\setuplabeltext [\s!tr] [\v!paragraaf=]
+\setuplabeltext [\s!tr] [\v!sub\v!paragraaf=]
+\setuplabeltext [\s!tr] [\v!sub\v!sub\v!paragraaf=]
+\setuplabeltext [\s!tr] [\v!bijlage=]
+\setuplabeltext [\s!tr] [\v!deel=Fas\i l ]
+\setuplabeltext [\s!tr] [\v!regel=sat\i r]
+\setuplabeltext [\s!tr] [\v!regels=sat\i r..]
+
+\setuplabeltext [\s!tr]   [\v!january=ocak]
+\setuplabeltext [\s!tr]  [\v!february=\c{s}ubat]
+\setuplabeltext [\s!tr]     [\v!march=mart]
+\setuplabeltext [\s!tr]     [\v!april=nisan]
+\setuplabeltext [\s!tr]       [\v!may=may\i s]
+\setuplabeltext [\s!tr]      [\v!june=haziran]
+\setuplabeltext [\s!tr]      [\v!july=temmuz]
+\setuplabeltext [\s!tr]    [\v!august=a\u{g}ustos]
+\setuplabeltext [\s!tr] [\v!september=eyl\"ul]
+\setuplabeltext [\s!tr]   [\v!october=ekim]
+\setuplabeltext [\s!tr]  [\v!november=kas\i m]
+\setuplabeltext [\s!tr]  [\v!december=aral\i k]
+
+\setuplabeltext [\s!tr]    [\v!sunday=pazar]
+\setuplabeltext [\s!tr]    [\v!monday=pazartesi]
+\setuplabeltext [\s!tr]   [\v!tuesday=sal\i]
+\setuplabeltext [\s!tr] [\v!wednesday=\c{c}ar\c{s}amba]
+\setuplabeltext [\s!tr]  [\v!thursday=per\c{s}embe]
+\setuplabeltext [\s!tr]    [\v!friday=cuma]
+\setuplabeltext [\s!tr]  [\v!saturday=cumartesi]
+
+%D \ShowAllLanguageValues [\s!tr] [turkish] turks fruit
+
+\protect
+
+\endinput
+

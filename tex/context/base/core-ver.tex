@@ -1,0 +1,594 @@
+%D \module
+%D   [       file=core-ver,
+%D        version=1996.06.01,
+%D          title=\CONTEXT\ Core Macros,
+%D       subtitle=Verbatim,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. Non||commercial use is 
+%C granted. 
+
+\writestatus{loading}{Context Core Macros / Verbatim}
+
+\unprotect
+
+% \type{ <crlf> char} geeft bagger
+
+%D We are going to embed the general verbatim support macros in
+%D a proper environment. First we show the common setup
+%D macro, so we know what features are supported. The options
+%D are hooked into the support macros via the \type{\obey}
+%D macros.
+
+\def\setupcommonverbatim#1%
+  {\def\verbatimfont{\tttf}%
+   \doifvalue{#1\c!spatie}{\v!aan}
+     {\def\obeyspaces{\setcontrolspaces}}%
+   \doifvalue{#1\c!tab}{\v!aan}
+     {\def\obeytabs{\settabskips}}%
+   \doifvalue{#1\c!pagina}{\v!nee}
+     {\def\obeypages{\ignorepages}}%
+   \ExpandFirstAfter\processaction
+     [\getvalue{#1\c!optie}]
+     [\v!commandos=>\def\obeycharacters{\setupcommandsintype{#1}}%
+                    \let\obeytabs=\ignoretabs,
+         \v!schuin=>\let\obeycharacters=\setupslantedtype
+                    \let\obeytabs=\ignoretabs,
+        \v!normaal=>\let\obeycharacters=\setupgroupedtype,
+           \v!geen=>\let\obeycharacters=\relax,
+          \v!kleur=>\let\obeycharacters=\setupprettytextype 
+                    \let\obeytabs=\ignoretabs]}
+
+%D The verbatim commands have a rather long and turbulent
+%D history. Most users of \CONTEXT\ probably will never use
+%D some of the features, but I've kept in mind that when one is
+%D writing a users manual, about everything can and undoubtly
+%D will be subject to a verbatim treatment.
+%D
+%D Verbatim command are very sensitive to argument processing,
+%D which is a direct result of the \CATCODES\ being fixed at
+%D reading time. With our growing understanding of \TEX,
+%D especially of the mechanism that can be used for looking
+%D ahead and manipulating \CATCODES, the verbatim support
+%D became more and more advanced and natural.
+%D
+%D Typesetting inline verbatim can be accomplished by
+%D \type{\type}, which in this sentence was typeset by saying
+%D just \type{\type{\type}}, which in turn was typeset by
+%D \onbekend. Using the normal grouping characters \type{{}} is
+%D the most natural way of using this command.
+%D
+%D A second, more or less redundant, alternative is delimiting
+%D the argument with an own character. This method was
+%D implemented in the context of a publication in the \MAPS,
+%D where this way of delimiting is recognized by \LATEX\ users.
+%D
+%D The third, more original alternative, is the one using
+%D \type{<<} and \type{>>} as delimiters. This alternative can
+%D be used in situations where slanted typeseting is needed.
+
+\def\lesscharacter     {<}
+\def\morecharacter     {>}
+
+\chardef\texescape     = `\\
+\chardef\leftargument  = `\{
+\chardef\rightargument = `\}
+
+%D \macros
+%D   {type}
+%D   {}
+%D
+%D We define \type{\type} as a protected command. First we
+%D set the catcodes of \type{<} and \type{>} and then we start
+%D looking ahead.
+
+\unexpanded\def\type%
+  {\bgroup
+   \catcode`\<=\@@other
+   \catcode`\>=\@@other
+   \futurelet\next\dotype}
+
+%D Next we distinguish between the three alternatives and call
+%D for the appropriate macros.
+
+\def\dotype%
+  {\ifx\next\bgroup
+     \initializetype
+     \initializetypegrouping
+     \def\next%
+       {\afterassignment\protectfirsttype\let\next=}%
+   \else\if\next<%
+     \doifelse{\@@tyoptie}{\v!geen}
+       {\initializetype
+        \setupnotypegrouping
+        \def\next%
+          {\let\next=}}
+       {\def\next<##1%
+          {\initializetype
+           \if##1<%
+           \else
+             \setupalternativetypegrouping
+             ##1%
+           \fi}}%
+   \else
+     \def\next##1%
+       {\initializetype
+        \catcode`##1=\@@endgroup}%
+   \fi\fi
+   \next}
+
+\bgroup
+\catcode`\[=\@@begingroup
+\catcode`\]=\@@endgroup
+\catcode`\{=\@@active
+\catcode`\}=\@@active
+\gdef\initializetypegrouping%
+  [\catcode`\{=\@@active
+   \catcode`\}=\@@endgroup         % otherwise things go wrong ...
+   \def\activerightargument%
+     [\rightargument
+      \egroup]%
+   \def\activeleftargument%
+     [\bgroup
+      \leftargument               %% this way TeXEdit can check: { 
+      \catcode`\}=\@@active        % ... in alignments (tables)
+      \let}=\activerightargument]%
+   \let{=\activeleftargument]%    %% this way TeXEdit can check: } 
+\egroup
+
+\bgroup
+\catcode`\<=\@@active
+\catcode`\>=\@@active
+\gdef\setupalternativetypegrouping%
+  {\catcode`\<=\@@active
+   \catcode`\>=\@@active
+   \def<%
+     {\bgroup
+      \switchslantedtype}%
+   \def>%
+     {\egroup}}
+\egroup
+
+\def\setupnotypegrouping%
+  {\catcode`\<=\@@begingroup
+   \catcode`\>=\@@endgroup}
+
+%D When writing the manual to \CONTEXT\ and documenting this 
+%D source we needed to typeset \type{<<} and \type{>>}. Because 
+%D we wanted to do this in the natural way, we've adapted the 
+%D original definition a bit. We still show teh original 
+%D because we think it's shows a bit better what we are 
+%D doing. 
+%D 
+%D \starttypen 
+%D \bgroup
+%D \catcode`\<=\@@active
+%D \catcode`\>=\@@active
+%D \gdef\setupgroupedtype%
+%D   {\catcode`\<=\@@active
+%D    \catcode`\>=\@@active
+%D    \def<%
+%D      {\def\do%
+%D         {\ifx\next<%
+%D            \def\next{\bgroup\switchslantedtype\let\next=}%
+%D          \else
+%D            \let\next=\lesscharacter
+%D          \fi
+%D          \next}%
+%D       \futurelet\next\do}%
+%D    \def>%
+%D      {\def\do%
+%D         {\ifx\next>%
+%D            \def\next{\egroup\let\next=}%
+%D          \else
+%D            \let\next=\morecharacter
+%D          \fi
+%D          \next}%
+%D       \futurelet\next\do}}
+%D \egroup
+%D \stoptypen
+%D
+%D The final implementation looks a bit further and treats the 
+%D lone \type{<<} and \type{>>} a bit different.
+
+\def\doenterdoublelesstype%
+  {\ifx\next\egroup
+      \lesscharacter\lesscharacter
+   \else
+     \bgroup\switchslantedtype
+     \let\doenterdoublemoretype=\egroup
+   \fi}
+
+\def\doenterdoublemoretype%
+  {\def\doenterdoubletype%
+     {\ifx\next\egroup
+        \morecharacter\morecharacter
+      \fi}}
+
+\bgroup
+\catcode`\<=\@@active
+\catcode`\>=\@@active
+\gdef\setupgroupedtype%
+  {\catcode`\<=\@@active
+   \catcode`\>=\@@active
+   \def\doless%
+     {\ifx<\next
+        \def\next%
+          {\def\enterdoubletype%           
+             {\futurelet\next\doenterdoublelesstype}%
+           \afterassignment\enterdoubletype
+           \let\next=}%
+      \else
+        \let\next=\lesscharacter
+      \fi
+      \next}%
+   \def\domore%
+     {\ifx>\next
+        \def\next%
+          {\def\enterdoubletype%           
+             {\futurelet\next\doenterdoublemoretype}%
+           \afterassignment\enterdoubletype
+           \let\next=}%
+      \else
+        \let\next=\morecharacter
+      \fi
+      \next}%
+   \def<{\futurelet\next\doless}%
+   \def>{\futurelet\next\domore}}
+\egroup
+
+\newif\ifslantedtypeactivated
+\newif\ifslantedtypepermitted
+
+\def\switchslantedtype%
+  {\ifslantedtypepermitted
+     \ifslantedtypeactivated
+       \slantedtypeactivatedfalse\tttf
+     \else
+       \slantedtypeactivatedtrue\ttsl
+     \fi
+   \fi}
+
+\def\setupcommandsintype#1%
+  {\setupgroupedtype
+   \edef\!!stringa{\getvalue{#1\c!escape}}%
+   \@EA\catcode\@EA`\!!stringa=\@@escape}
+
+\def\setupslantedtype%
+  {\setupgroupedtype
+   \slantedtypepermittedtrue}
+
+\bgroup
+\catcode`\<=\active
+\catcode`\>=\active
+\gdef\doprotectfirsttype%
+  {\ifx\next<%
+     \let\next=\relax
+   \else\ifx\next\bgroup
+     \let\next=\relax
+   \else\ifx\next\activeleftargument
+     \let\next=\relax
+   \else
+     \let\next=\string
+   \fi\fi\fi
+   \next}
+\egroup
+
+\def\protectfirsttype%
+  {\futurelet\next\doprotectfirsttype}
+
+%D The neccessary initializations are done by calling
+%D \type{\initializetype} which in return calls for the support
+%D macro \type{\setupinlineverbatim}.
+
+\def\initializetype%
+  {\let\obeylines=\ignorelines
+   \setupcommonverbatim{\??ty}%
+   \setupinlineverbatim}
+
+%D \macros
+%D   {setuptype}
+%D   {}
+%D
+%D Some characteristics of \type{\type} can be set up by:
+
+\def\setuptype%
+  {\dodoubleargument\getparameters[\??ty]}
+
+%D \macros
+%D   {typ}
+%D   {}
+%D
+%D Although it's not clear from the macros, one character trait
+%D of this macros, which are build on top of the support
+%D module, is that they don't hyphenate. We therefore offer the
+%D alternative \type{\typ}. The current
+%D implementation works all right, but a decent hyphenation
+%D support of \type{\tt} text will be implemented soon.
+
+% \def\obeyhyphens% % after fontswitch
+%   {\def\obeyedspace%
+%      {\hyphenchar\font=45
+%       \spaceskip.5em\!!plus.25em\!!minus.25em\relax%
+%       \def\obeyedspace{ }}}
+
+\unexpanded\def\typ%
+  {\bgroup
+   \def\obeyedspace{ }%
+   \tttf\hyphenchar\font=45
+   \ttsl\hyphenchar\font=45
+   \spaceskip.5em\!!plus.25em\!!minus.25em\relax
+   \futurelet\next\dotype}
+
+%D \macros
+%D   {tex,arg,mat,dis}
+%D   {}
+%D
+%D Sometimes, for instance when we pass verbatim text as an
+%D argument, the fixed \CATCODES\ interfere with our wishes. An
+%D experimental implementation of character by character
+%D processing of verbatim text did overcome this limitation,
+%D but we've decided not to use that slow and sometimes
+%D troublesome solution. Instead we stick to some 'old'
+%D \CONTEXT\ macros for typesetting typical \TEX\ characters.
+%D
+%D The next implementation is more clear but less versatile,
+%D so we treated it for a beter one.
+%D
+%D \starttypen
+%D \def\dospecialtype#1#2%
+%D   {\bgroup
+%D    \initializetype
+%D    \catcode`\{=\@@begingroup
+%D    \catcode`\}=\@@endgroup
+%D    \def\dospecialtype%
+%D      {\def\dospecialtype{#2\egroup}%
+%D       \bgroup
+%D       \aftergroup\dospecialtype
+%D       #1}%
+%D    \afterassignment\dospecialtype
+%D    \let\next=}
+%D
+%D \unexpanded\def\tex{\dospecialtype\texescape\relax}
+%D \unexpanded\def\arg{\dospecialtype\leftargument\rightargument}
+%D \unexpanded\def\mat{\dospecialtype\$\$}
+%D \unexpanded\def\dis{\dospecialtype{\$\$}{\$\$}}
+%D \stoptypen
+%D
+%  %D For sometime we used the better but less readable is 
+%  %D alternative
+%  %D 
+%  %D \starttypen
+%  %D \def\doprocessgroup#1#2#3%
+%  %D   {\bgroup
+%  %D    #1%
+%  %D    \def\doprocessgroup%
+%  %D      {\def\doprocessgroup{#3\egroup}%
+%  %D       \bgroup
+%  %D       \aftergroup\doprocessgroup
+%  %D       #2}%
+%  %D    \afterassignment\doprocessgroup
+%  %D    \let\next=}
+%  %D 
+%  %D \def\setgroupedtype%
+%  %D   {\initializetype
+%  %D    \catcode`\{=\@@begingroup
+%  %D    \catcode`\}=\@@endgroup}
+%  %D 
+%  %D \unexpanded\def\tex{\doprocessgroup\setgroupedtype\texescape\relax}
+%  %D \unexpanded\def\arg{\doprocessgroup\setgroupedtype\leftargument\rightargument}
+%  %D \unexpanded\def\mat{\doprocessgroup\setgroupedtype\$\$}
+%  %D \unexpanded\def\dis{\doprocessgroup\setgroupedtype{\$\$}{\$\$}}
+%  %D \stoptypen
+%  %D 
+%D
+%D But since \type{\groupedcommand} became available, we use
+%D however
+
+\def\setgroupedtype%
+  {\initializetype
+   \catcode`\{=\@@begingroup
+   \catcode`\}=\@@endgroup}
+
+\unexpanded\def\tex{\groupedcommand{\setgroupedtype\texescape}{\relax}}
+\unexpanded\def\arg{\groupedcommand{\setgroupedtype\leftargument}{\rightargument}}
+\unexpanded\def\mat{\groupedcommand{\setgroupedtype\$}{\$}}
+\unexpanded\def\dis{\groupedcommand{\setgroupedtype\$\$}{\$\$}}
+
+%D \macros
+%D   {starttyping}
+%D   {}
+%D
+%D Display verbatim is realized far more easy, which is mostly
+%D due to the fact that we use \type{\stop...} as delimiter.
+%D The implementation inherits  some features, for instance the
+%D support of linenumbering, which can best be studied in the
+%D documented support module.
+
+\def\initializetyping#1%
+  {\doifelsevalue{\??tp#1\c!marge}{\v!standaard}
+    {\ifdim\voorwit=\!!zeropoint
+       \advance\leftskip by \@@sllinks
+     \else
+       \advance\leftskip by \voorwit
+     \fi}
+     {\advance\leftskip by \getvalue{\??tp#1\c!marge}}%
+   \processaction
+     [\getvalue{\??tp#1\c!blanko}]
+     [\v!standaard=>\skip0=\tussenwit,
+          \v!klein=>\skip0=\blankokleinmaat,
+         \v!middel=>\skip0=\blankomiddelmaat,
+          \v!groot=>\skip0=\blankogrootmaat,
+          \v!regel=>\skip0=\baselineskip,
+           \v!geen=>\skip0=\!!zeropoint,
+        \s!unknown=>\skip0=\getvalue{\??tp#1\c!blanko}]%
+   \edef\verbatimbaselineskip{\the\skip0}% 
+   \setupcommonverbatim{\??tp#1}}
+
+%D The basic display verbatim commands are defined in an
+%D indirect way. As we will see, they are a specific case of a
+%D more general mechanism.
+
+\def\dostarttyping#1%
+  {\getvalue{\??tp#1\c!voor}%
+   \startopelkaar % includes \bgroup
+   \initializetyping{#1}%
+   \expandafter\processdisplayverbatim\expandafter{\s!stop#1}}
+
+\def\dostoptyping#1%
+  {\stopopelkaar  % includes \egroup
+   \getvalue{\??tp#1\c!na}}
+
+%D \macros
+%D   {definetyping}
+%D   {}
+%D
+%D For most users the standard \type{\start}||\type{\stop}||pair
+%D will suffice, but for documentation purposes the next
+%D definition command can be of use:
+%D
+%D \starttypen
+%D \definetyping[extratyping][margin=3em]
+%D
+%D \startextratyping
+%D these extra ones are indented by 1 em
+%D \stopextratyping
+%D \stoptypen
+%D
+%D The definitions default to the standard typing values. 
+
+\def\presettyping[#1][#2]%
+  {\getparameters
+     [\??tp#1]
+     [\c!voor=\@@tpvoor,
+      \c!na=\@@tpna,
+      \c!spatie=\@@tpspatie,
+      \c!pagina=\@@tppagina,
+      \c!tab=\@@tptab,
+      \c!optie=\@@tpoptie,
+      \c!marge=\@@tpmarge,
+      \c!blanko=\@@tpblanko,
+      \c!escape=\@@tpescape,
+      #2]}
+
+\def\dodefinetyping[#1][#2]%
+  {\setvalue{\e!start#1}{\dostarttyping{#1}}%
+   \setvalue{\e!stop#1}{\dostoptyping{#1}}%
+   \presettyping[#1][#2]}
+
+\def\definetyping%
+  {\dodoubleempty\dodefinetyping}
+
+\definetyping[\v!typen]
+
+%D \macros
+%D   {setuptyping}
+%D   {}
+%D
+%D The setup of typing accepts two arguments. The optional
+%D first one identifies the user defined ones. If only one
+%D argument is given, the values apply to both the standard
+%D command \type{\starttyping} and \type{\typefile}.
+
+%\indirect\def\setuptyping\dodoubleempty[#1][#2]%
+%  {\iffirstargument
+%     \getparameters[\??tp#1][#2]%
+%   \else
+%     \getparameters[\??tp][#1]%
+%   \fi}
+%
+%\doubleemptied\def\setuptyping[#1][#2]%
+%  {\iffirstargument
+%     \getparameters[\??tp#1][#2]%
+%   \else
+%     \getparameters[\??tp][#1]%
+%   \fi}
+
+\def\dosetuptyping[#1][#2]%
+  {\ifsecondargument
+     \getparameters[\??tp#1][#2]%
+   \else
+     \getparameters[\??tp][#1]%
+   \fi}
+
+\def\setuptyping%
+  {\dodoubleempty\dosetuptyping}
+
+%D We use the \CONTEXT\ color system for switching to and from
+%D color mode. We can always redefine these colors afterwards.
+
+\definecolor [texprettyone]   [r=.9, g=.0, b=.0] % red
+\definecolor [texprettytwo]   [r=.0, g=.8, b=.0] % green
+\definecolor [texprettythree] [r=.0, g=.0, b=.9] % blue
+\definecolor [texprettyfour]  [r=.8, g=.8, b=.6] % yellow
+
+%D We can use some core color commands. These are faster than
+%D the standard color swithing ones and work ok on a line by 
+%D line basis.
+
+\def\texbeginofpretty[#1]{\startcolormode{#1}}
+\def\texendofpretty      {\stopcolormode}
+
+%D \macros
+%D   {EveryPar, EveryLine, iflinepar}
+%D   {}
+%D
+%D One of the features of these commands is the support of
+%D \type{\EveryPar}, \type{\EveryLine} and \type{\iflinepar}.
+%D In the documentation of the verbatim support module we give
+%D some examples of line- and paragraph numerbering using these
+%D macros.
+
+%D \macros
+%D   {typefile}
+%D   {}
+%D
+%D Typesetting files verbatim (for the moment) only supports
+%D colorization of \TEX\ sources as valid option. The other
+%D setup values are inherited from display verbatim.
+%D The implementation of \type{\typefile} is straightforward:
+
+\presettyping[\v!file][]
+
+\def\typefile#1%
+  {\getvalue{\??tp\v!file\c!voor}%
+   \startopelkaar % includes \bgroup
+   \doifnotvalue{\??tp\v!file\c!optie}{\v!kleur}
+     {\setuptyping[\v!file][\c!optie=\v!geen]}%
+   \initializetyping\v!file
+   \processfileverbatim{#1}%
+   \stopopelkaar  % includes \egroup
+   \getvalue{\??tp\v!file\c!na}}
+
+%D The setups for inline verbatim default to:
+
+\setuptype
+  [\c!spatie=\v!uit,
+   \c!pagina=\v!nee,
+      \c!tab=\v!nee,
+    \c!optie=\v!normaal]
+
+%D The setups for display verbatim and file verbatim are
+%D shared. One can adapt the extra defined typing environments,
+%D but they also default to the values below. Watch the 
+%D alternative escape character. 
+
+\setuptyping
+  [  \c!voor=\blanko,
+       \c!na=\blanko,
+   \c!spatie=\v!uit,
+   \c!pagina=\v!nee,
+      \c!tab=\v!aan,
+    \c!optie=\v!geen,
+    \c!marge=\!!zeropoint,
+   \c!blanko=\v!regel,
+   \c!escape=/]
+
+\permitshiftedendofverbatim
+
+\protect
+
+\endinput

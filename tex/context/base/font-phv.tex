@@ -1,0 +1,53 @@
+%D \module
+%D   [       file=font-phv,
+%D        version=1995.1.1,
+%D          title=\CONTEXT\ Font Macros,
+%D       subtitle=Adobe Helvetica,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+
+%D This module defines the Standard Adobe Helvetica. We use
+%D the \YandY\ texnansi encoding vector. 
+
+\startcoding [texnansi]
+
+\definecorps [14.4pt,12pt,11pt,10pt,9pt,8pt] [ss]
+  [tf=hv sa 1,
+   bf=hvb sa 1,
+   it=hvo sa 1,
+   sl=hvo sa 1,
+   bs=hvbo sa 1,
+   bi=hvbo sa 1,
+  tfa=hv sa 1.200,
+  tfb=hv sa 1.440,
+  tfc=hv sa 1.728,
+  tfd=hv sa 2.074,
+   sc=hv sa 0.833]
+
+\definecorps [7pt,6pt,5pt] [ss]
+  [tf=hv sa 1, 
+   bf=hvb sa 1, 
+   it=hvo sa 1, 
+   sl=hvo sa 1, 
+   bs=hvbo sa 1, 
+   bi=hvbo sa 1]
+
+\definecorps [14.4pt,12pt,11pt,10pt,9pt,8pt] [tt]
+  [bfa=hvb sa 1.200,
+   bfb=hvb sa 1.440,
+   bfc=hvb sa 1.728,
+   bfd=hvb sa 2.074,
+   sla=hvo sa 1.200,
+   slb=hvo sa 1.440,
+   slc=hvo sa 1.728,
+   sld=hvo sa 2.074,
+   bsa=hvbo sa 1.200,
+   bsb=hvbo sa 1.440,
+   bsc=hvbo sa 1.728,
+   bsd=hvbo sa 2.074]
+
+\stopcoding
+
+\endinput
+

@@ -1,0 +1,73 @@
+%D \module
+%D   [       file=spec-yy,
+%D        version=1996.01.25,
+%D          title=\CONTEXT\ Special Macros,
+%D       subtitle=\YandY's \DVIPSONE\ and \DVIWINDO,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. Non||commercial use is 
+%C granted. 
+
+%D \macros
+%D   {dostartgraymode,dostopgraymode,
+%D    dostartrgbcolormode,dostartcmykcolormode,dostartgraycolormode,dostopcolormode,
+%D    doinsertfile}
+%D   {}
+%D
+%D We implement a nice and simple figure||insertion special
+%D and make use of \YandY's color specials. Otherwise \DVIWINDO\
+%D would not show colors.
+
+\startspecials[yandy]   % [postscript]
+
+\def\@@insertpostscriptliteral {ps: }
+\def\@@insertpostscriptretain  {" } % this was: {postscript} 
+
+\definespecial\dostartgraymode#1%
+  {\special{color gray #1}}
+
+\definespecial\dostopgraymode%
+  {\special{color gray 0}}
+
+\definespecial\dostartrgbcolormode#1#2#3%
+  {\special{color rgb #1 #2 #3}}
+
+\definespecial\dostartcmykcolormode#1#2#3#4%
+  {\special{color cmyk #1 #2 #3 #4}}
+
+\definespecial\dostartgraycolormode#1%
+  {\special{color gray #1}}
+
+\definespecial\dostopcolormode%
+  {\special{color gray 0}}
+
+\def\doyyinserteps#1#2#3#4#5#6#7#8%  equals rockiky
+  {\ScaledPointsToBigPoints{#4}\width 
+   \ScaledPointsToBigPoints{#5}\height 
+   \special 
+     {psfile=#1
+        hscale=#2\space
+        vscale=#3\space
+        hoffset=\width \space
+        voffset=\height}} 
+
+\def\doyyinsertmps#1#2#3#4#5#6#7#8%  
+  {\hbox
+     {\UseMetaPostGraphic{#1}%
+      \doyyinserteps{#1}{#2}{#3}{#4}{#5}{#6}{#7}{#8}}}
+
+\def\doyyinserttif#1#2#3#4#5#6#7#8%
+  {\special{insertimage: #1 #6 #7}}
+
+\definespecial\doinsertfile#1#2#3#4#5#6#7#8#9%
+  {\bgroup
+   \dodoinsertfile{yy}{#1}{#2}{#3}{#4}{#5}{#6}{#7}{#8}{#9}%
+   \egroup}
+
+\stopspecials
+
+\endinput
+

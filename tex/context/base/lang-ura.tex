@@ -1,0 +1,85 @@
+%D \module
+%D   [       file=lang-sla,
+%D        version=1997.09.03,
+%D          title=\CONTEXT\ Language Macros,
+%D       subtitle=Uralic Languages,
+%D         author=Hans Hagen / Tobias Burnus,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. Non||commercial use is
+%C granted.
+
+%  Cheremiss, Estonian, Finnish, Karelian, Laap, Mordvinian, 
+%  Permian tongues, Hungarianm Ostyak, Vogul, Samoyed
+
+\writestatus{loading}{Uralic Languages}
+
+\unprotect
+
+\installlanguage
+  [\s!fi]
+  [\c!spatiering=\v!opelkaar,
+   \c!leftsentence=---,
+   \c!rightsentence=---,
+   \c!leftsubsentence=---,
+   \c!rightsubsentence=---,
+   \c!leftquote=\upperleftsinglesixquote,
+   \c!rightquote=\upperrightsingleninequote,
+   \c!leftquotation=\upperleftdoublesixquote,
+   \c!rightquotation=\upperrightdoubleninequote,
+   \c!datum={\v!jaar,\ ,\v!maand,\ ,\v!dag},
+   \c!default=\s!en,
+   \c!status=\v!stop]
+
+\setupheadtext  [\s!fi] [\v!inhoud=Sis\"allys]
+\setupheadtext  [\s!fi] [\v!tabellen=Taulukkoj]
+\setupheadtext  [\s!fi] [\v!figuren=Kuvi]
+\setupheadtext  [\s!fi] [\v!grafieken=Grafiikkaoi]
+\setupheadtext  [\s!fi] [\v!intermezzos=Intermezzos]
+\setupheadtext  [\s!fi] [\v!index=Indeksiluku]
+\setupheadtext  [\s!fi] [\v!afkortingen=Lyhennyksi]
+\setupheadtext  [\s!fi] [\v!logos=Vertauskuva]
+\setupheadtext  [\s!fi] [\v!eenheden=Yksik\"ot]
+
+\setuplabeltext [\s!fi] [\v!tabel=Taulukko ]
+\setuplabeltext [\s!fi] [\v!figuur=Kuva ]
+\setuplabeltext [\s!fi] [\v!intermezzo=Intermezzo ]
+\setuplabeltext [\s!fi] [\v!grafiek=Grafiikka ]
+\setuplabeltext [\s!fi] [\v!hoofdstuk=]
+\setuplabeltext [\s!fi] [\v!paragraaf=]
+\setuplabeltext [\s!fi] [\v!sub\v!paragraaf=]
+\setuplabeltext [\s!fi] [\v!sub\v!sub\v!paragraaf=]
+\setuplabeltext [\s!fi] [\v!bijlage=]
+\setuplabeltext [\s!fi] [\v!deel=Osa ]
+\setuplabeltext [\s!fi] [\v!regel=rivi]
+\setuplabeltext [\s!fi] [\v!regels=rivie]
+
+\setuplabeltext [\s!fi]   [\v!january=tammikuu]
+\setuplabeltext [\s!fi]  [\v!february=helmikuu]
+\setuplabeltext [\s!fi]     [\v!march=maaliskuu]
+\setuplabeltext [\s!fi]     [\v!april=huhtikuu]
+\setuplabeltext [\s!fi]       [\v!may=toukokuu]
+\setuplabeltext [\s!fi]      [\v!june=kes\"akuu]
+\setuplabeltext [\s!fi]      [\v!july=hein\"akuu]
+\setuplabeltext [\s!fi]    [\v!august=elokuu]
+\setuplabeltext [\s!fi] [\v!september=syyskuu]
+\setuplabeltext [\s!fi]   [\v!october=lokakuu]
+\setuplabeltext [\s!fi]  [\v!november=marraskuu]
+\setuplabeltext [\s!fi]  [\v!december=joulukuu]
+
+\setuplabeltext [\s!fi]    [\v!sunday=sunnuntai]
+\setuplabeltext [\s!fi]    [\v!monday=maanantai]
+\setuplabeltext [\s!fi]   [\v!tuesday=tiistai]
+\setuplabeltext [\s!fi] [\v!wednesday=keskiviikko]
+\setuplabeltext [\s!fi]  [\v!thursday=torstai]
+\setuplabeltext [\s!fi]    [\v!friday=perjantai]
+\setuplabeltext [\s!fi]  [\v!saturday=lauantai]
+
+%D \ShowAllLanguageValues [\s!fi] [finnish] finse ...
+
+\protect 
+
+\endinput 
+

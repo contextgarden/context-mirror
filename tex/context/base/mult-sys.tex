@@ -1,0 +1,553 @@
+%D \module
+%D   [       file=mult-sys,
+%D        version=1996.06.01,
+%D          title=\CONTEXT\ Multilingual Macros, 
+%D       subtitle=System,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. Non||commercial use is 
+%C granted. 
+
+%D In boring module we define a lot of obscure but useful
+%D system constants. By doing so we save lots of memory while
+%D at the same time we prevent ourself from typing errors. 
+
+\writestatus{loading}{Context Multilingual Macros / System}
+
+\unprotect
+
+%D The constants are grouped in such a way that there is a
+%D minimal change of conflicts.
+%D
+%D \starttypen
+%D \definesystemconstants {word}    
+%D \definemessageconstant {word}
+%D \stoptypen
+%D
+%D This commands generate \type{\s!word} and \type{\m!word}.
+
+%D First we define some system constants used for both the
+%D multi||lingual interface and multi||linguag typesetting.
+
+\definesystemconstant {dutch}      \definesystemconstant {nl}
+\definesystemconstant {english}    \definesystemconstant {en}
+\definesystemconstant {french}     \definesystemconstant {fr}
+\definesystemconstant {german}     \definesystemconstant {de}
+\definesystemconstant {spanish}    \definesystemconstant {sp}
+\definesystemconstant {italian}    \definesystemconstant {it}
+\definesystemconstant {danish}     \definesystemconstant {da}
+\definesystemconstant {portuguese} \definesystemconstant {pt}
+\definesystemconstant {swedish}    \definesystemconstant {sv}
+\definesystemconstant {polish}     \definesystemconstant {pl}
+\definesystemconstant {finish}     \definesystemconstant {fi}
+\definesystemconstant {afrikaans}  \definesystemconstant {af}
+\definesystemconstant {norwegian}  \definesystemconstant {no}
+\definesystemconstant {turkish}    \definesystemconstant {tr}
+
+%D As the name of their define command states, the next set of
+%D constants is used in the message macro's.
+
+\definemessageconstant {colors}
+\definemessageconstant {columns}
+\definemessageconstant {figures}
+\definemessageconstant {floatblocks}
+\definemessageconstant {fonts}
+\definemessageconstant {interactions}
+\definemessageconstant {layouts}
+\definemessageconstant {linguals}
+\definemessageconstant {references}
+\definemessageconstant {specials}
+\definemessageconstant {structures}
+\definemessageconstant {systems}
+\definemessageconstant {textblocks}
+\definemessageconstant {versions}
+
+%D The word \type{height} takes 6~token memory cells. The
+%D control sequence \type{\height} on the other hand uses only
+%D one. Knowing this, we can improve the performance of \TEX,
+%D both is terms of speed and memory usage, by using control
+%D sequences instead of the words written in full.
+%D
+%D Where in the \ASCII\ file the second lines takes nine extra
+%D characters, \TEX\ saves us 13~tokens.
+%D
+%D \starttypen
+%D \hrule width 10pt height 2pt depth 1pt
+%D \hrule \!!width 10pt \!!height 2pt \!!depth 1pt
+%D \stoptypen
+%D
+%D One condition is that we have defined \type{\!!height},
+%D \type{\!!width} and \type{\!!depth} as respectively
+%D \type{height}, \type{width} and \type{depth}. Using this
+%D scheme therefore only makes sense when a token sequence is
+%D used more than once. Savings like this should of course be
+%D implemented in english, just because \TEX\ is english.
+
+\def\!!width  {width}
+\def\!!height {height}
+\def\!!depth  {depth}
+
+\def\!!plus   {plus}
+\def\!!minus  {minus}
+
+\def\!!fill   {fill}
+
+%D The same goes for some \CONTEXT\ constants, used in the
+%D definition of private commands:
+
+\definesystemconstant  {next}
+\definesystemconstant  {pickup}
+
+\definesystemconstant  {default}
+\definesystemconstant  {unknown}
+
+\definesystemconstant  {action}
+\definesystemconstant  {compare}
+
+\definesystemconstant  {do}
+\definesystemconstant  {dodo}
+
+\definesystemconstant  {complex}
+\definesystemconstant  {simple}
+
+\definesystemconstant  {start}
+\definesystemconstant  {stop}
+
+\definesystemconstant  {dummy}
+
+\definesystemconstant  {local}
+\definesystemconstant  {global}
+
+\definesystemconstant  {done}
+
+%D A more experienced \TEX\ user will recognize the next four
+%D constants. We need these because font-definitions are
+%D partially english.
+
+\definesystemconstant  {fam}
+\definesystemconstant  {text}
+\definesystemconstant  {script}
+\definesystemconstant  {scriptscript}
+
+\definesystemconstant  {lefthyphenmin}
+\definesystemconstant  {righthyphenmin}
+
+%D Just to be complete we define the standard \TEX\ units.
+
+\definesystemconstant  {cm}
+\definesystemconstant  {em}
+\definesystemconstant  {ex}
+\definesystemconstant  {mm}
+\definesystemconstant  {pt}
+\definesystemconstant  {sp}
+\definesystemconstant  {in}
+
+%D These constants are used for internal and utility
+%D commands.
+
+\definesystemconstant  {check}
+\definesystemconstant  {reset}
+\definesystemconstant  {set}
+
+\definesystemconstant  {entrya}
+\definesystemconstant  {entryb}
+\definesystemconstant  {entryc}
+\definesystemconstant  {entry}
+\definesystemconstant  {see}
+\definesystemconstant  {page}
+\definesystemconstant  {line}
+
+\definesystemconstant  {synonym}
+
+\definesystemconstant  {reference}
+\definesystemconstant  {main}
+
+\definesystemconstant  {list}
+
+\definesystemconstant  {item}
+\definesystemconstant  {itemcount}
+
+\definesystemconstant  {number}
+\definesystemconstant  {references}
+\definesystemconstant  {between}
+\definesystemconstant  {format}
+\definesystemconstant  {old}
+
+\definesystemconstant  {thisisblock}
+\definesystemconstant  {thiswasblock}
+
+\definesystemconstant  {figurepreset}
+
+%D Some \CONTEXT\ commands take a two||pass aproach to
+%D optimize the typesetting. Each two||pass object has its
+%D own tag.
+
+\definesystemconstant  {pass}
+
+\definesystemconstant  {float}
+\definesystemconstant  {list}
+\definesystemconstant  {page}
+\definesystemconstant  {subpage}
+\definesystemconstant  {margin}
+\definesystemconstant  {profile}
+\definesystemconstant  {versionbegin}
+\definesystemconstant  {versionend}
+\definesystemconstant  {cross}
+\definesystemconstant  {paragraph}
+
+%D A lot of macros use tags to distinguish between different
+%D objects, e.g. lists and registers.
+
+\definesystemconstant  {prt}  % part (deel)
+\definesystemconstant  {chp}  % chapter (hoofdstuk)
+\definesystemconstant  {sec}  % section (paragraaf)
+\definesystemconstant  {tit}  % title (titel)
+\definesystemconstant  {sub}  % subject (onderwerp)
+\definesystemconstant  {mar}  % margin (marge)
+\definesystemconstant  {num}  % number (doornummeren)
+\definesystemconstant  {def}  % definition (doordefinieren)
+\definesystemconstant  {for}  % formula (formule)
+\definesystemconstant  {fnt}  % footnote (voetnoot)
+\definesystemconstant  {ind}  % index (register)
+\definesystemconstant  {lin}  % linked index
+\definesystemconstant  {lst}  % list (opsomming)
+\definesystemconstant  {flt}  % float (plaatsblok)
+\definesystemconstant  {pag}  % page (pagina)
+\definesystemconstant  {txt}  % text (tekst)
+\definesystemconstant  {ref}  % reference (verwijzing)
+\definesystemconstant  {lab}  % label (label)
+\definesystemconstant  {aut}  % automatic (inhoud, index)
+
+\definesystemconstant  {kop}  % kop  % still dutch
+
+%D Reference labels can be tagged by users, for instance by
+%D means of \type{tag:}. The reference mechanism itself uses
+%D some tags too. These are definitely not to be used by users.
+%D Here they are:
+
+\definereferenceconstant {cross}   {:c:} % cross reference
+\definereferenceconstant {view}    {:v:} % view reference
+\definereferenceconstant {viewa}   {:a:} % view reference test a
+\definereferenceconstant {viewb}   {:b:} % view reference test b
+\definereferenceconstant {page}    {:p:} % page referece
+\definereferenceconstant {list}    {:l:} % list reference
+\definereferenceconstant {exec}    {:e:} % execution reference
+
+\definereferenceconstant {from}    {:f:} % from list reference
+\definereferenceconstant {to}      {:t:} % to list reference
+
+%D When we use numbers and dimensions the same applies as
+%D with the keywords like \type{width} and \type{plus}
+%D mentioned earlier.
+
+\def\!!ten             {10}
+\def\!!twelve          {12}
+\def\!!hundred        {100}
+\def\!!thousand      {1000}
+\def\!!tenthousand  {10000}
+\def\!!maxcard      {65536}
+\def\!!medcard      {32768}
+
+\def\!!zeropoint          {0pt}    
+\def\!!onepoint           {1pt}
+\def\!!twopoint           {2pt}
+\def\!!threepoint         {3pt}
+\def\!!fourpoint          {4pt}
+\def\!!fivepoint          {5pt}
+\def\!!sixpoint           {6pt}
+\def\!!sevenpoint         {7pt}
+\def\!!eightpoint         {8pt}
+\def\!!ninepoint          {9pt}
+\def\!!tenpoint          {10pt}
+\def\!!elevenpoint       {11pt}
+\def\!!twelvepoint       {12pt}
+\def\!!fourteenpointfour {14.4pt}
+
+%D Variables are composed of a command specific tag and a user
+%D supplied variable (system constant). The first tag \type{ag}
+%D for instance is available as \type{\??ag} and expands to
+%D \type{@@ag} in composed variables.
+
+% vervallen : hd hr hm vt vr vm tr tn te br bm bo on om or 
+
+\definesystemvariable {ag}   % AchterGrond
+\definesystemvariable {al}   % ALinea's
+\definesystemvariable {am}   % interActieMenu
+\definesystemvariable {ba}   % synchronisatieBAlk
+\definesystemvariable {be}   % startstop (BeginEnd)
+\definesystemvariable {bj}   % BlokJe
+\definesystemvariable {bk}   % Blokken (floats)
+\definesystemvariable {bl}   % BLanko
+\definesystemvariable {bs}   % SelecteerBlokken
+\definesystemvariable {bt}   % BuTton
+\definesystemvariable {bu}   % BUffer
+\definesystemvariable {bv}   % Brieven
+\definesystemvariable {by}   % Per
+\definesystemvariable {ci}   % CItaat
+\definesystemvariable {cl}   % kleur (CoLor setup)
+\definesystemvariable {co}   % COmbinaties
+\definesystemvariable {cr}   % kleur (ColoR)
+\definesystemvariable {cv}   % ConVersie
+\definesystemvariable {dd}   % DoorDefinieren
+\definesystemvariable {de}   % DEel
+\definesystemvariable {dl}   % DunneLijnen
+\definesystemvariable {dn}   % DoorNummeren
+\definesystemvariable {do}   % DefinieerOpmaak
+\definesystemvariable {ds}   % DoorSpringen
+\definesystemvariable {ef}   % ExternFiguur
+\definesystemvariable {ep}   % ExternfiguurPreset
+\definesystemvariable {ex}   % ExterneFiguren
+\definesystemvariable {fg}   % FiGuurmaten
+\definesystemvariable {fi}   % FIle
+\definesystemvariable {fl}   % Floats
+\definesystemvariable {fm}   % ForMules
+\definesystemvariable {ft}   % FonTs
+\definesystemvariable {fp}   % FilegroeP
+\definesystemvariable {ia}   % Interactie
+\definesystemvariable {ib}   % InteractieBalk
+\definesystemvariable {id}   % Index
+\definesystemvariable {ih}   % InHoudsopgave
+\definesystemvariable {ii}   % stelIndexIn
+\definesystemvariable {il}   % stelInvulRegelsin
+\definesystemvariable {im}   % InMarge
+\definesystemvariable {in}   % INspringen
+\definesystemvariable {is}   % Items
+\definesystemvariable {iv}   % stelInvulLijnenin
+\definesystemvariable {ka}   % KAntlijn
+\definesystemvariable {kd}   % KaDerteksten
+\definesystemvariable {kj}   % KopJes (floats)
+\definesystemvariable {kl}   % KoLommen
+\definesystemvariable {km}   % KenMerk
+\definesystemvariable {ko}   % KOp(pen)
+\definesystemvariable {kp}   % KopPelteken
+\definesystemvariable {kr}   % KoRps
+\definesystemvariable {kt}   % KonTakten
+\definesystemvariable {kw}   % KontaktWaarde
+\definesystemvariable {la}   % LAnguage
+\definesystemvariable {lg}   % taal (LanGuage)
+\definesystemvariable {li}   % LIjst
+\definesystemvariable {ln}   % LijNen
+\definesystemvariable {lo}   % LOgos
+\definesystemvariable {lt}   % LiTeratuur
+\definesystemvariable {ly}   % LaYout
+\definesystemvariable {ma}   % MargeAchtergrond
+\definesystemvariable {mb}   % MargeBlokken
+\definesystemvariable {mk}   % MarKering
+\definesystemvariable {nm}   % Nummering
+\definesystemvariable {np}   % NaastPlaatsen
+\definesystemvariable {nr}   % Nummeren
+\definesystemvariable {oi}   % OmlijndInstellingen
+\definesystemvariable {ol}   % OmLijnd
+\definesystemvariable {on}   % ONderstreep
+\definesystemvariable {oo}   % OpsOmmingen
+\definesystemvariable {op}   % OPsomming
+\definesystemvariable {op}   % OPsomming
+\definesystemvariable {os}   % OffSet
+\definesystemvariable {pa}   % PAlet
+\definesystemvariable {pb}   % PuBlicatie
+\definesystemvariable {pf}   % ProFiel
+\definesystemvariable {pg}   % KoppelPagina
+\definesystemvariable {pl}   % PLaats
+\definesystemvariable {pn}   % PaginaNummer
+\definesystemvariable {pp}   % PaPier
+\definesystemvariable {pr}   % PRogrammas
+\definesystemvariable {ps}   % PoSitioneren
+\definesystemvariable {rf}   % ReFereren
+\definesystemvariable {rg}   % ReGel
+\definesystemvariable {rl}   % ReferentieLijst
+\definesystemvariable {rn}   % RegelNummer
+\definesystemvariable {ro}   % ROteren
+\definesystemvariable {rs}   % RaSters
+\definesystemvariable {rt}   % RoosTers
+\definesystemvariable {rv}   % ReserVeerfiguur
+\definesystemvariable {sb}   % SectieBlok
+\definesystemvariable {sc}   % SCherm
+\definesystemvariable {se}   % SEctie
+\definesystemvariable {si}   % SplIt
+\definesystemvariable {sk}   % SectieKop
+\definesystemvariable {sl}   % SmalLer
+\definesystemvariable {sm}   % SynonieMen
+\definesystemvariable {sn}   % SubNummer
+\definesystemvariable {so}   % SOrteren
+\definesystemvariable {sp}   % SelecteerPapier
+\definesystemvariable {ss}   % Symbool
+\definesystemvariable {st}   % STickers
+\definesystemvariable {sv}   % SysteemVariabelen
+\definesystemvariable {sy}   % SYnchronisatie
+\definesystemvariable {ta}   % TAb
+\definesystemvariable {tb}   % TekstBlokken
+\definesystemvariable {ti}   % TabelInstellingen
+\definesystemvariable {tk}   % Teksten
+\definesystemvariable {tl}   % TekstLijnen
+\definesystemvariable {tp}   % TyPen
+\definesystemvariable {tu}   % TabUlatie
+\definesystemvariable {ty}   % TYpe
+\definesystemvariable {ve}   % VErsie
+\definesystemvariable {vn}   % VoetNoten
+\definesystemvariable {wr}   % WitRuimte
+\definesystemvariable {za}   % ZetspiegelAanpassing
+
+%D Next we define some language independant one letter 
+%D variables and keywords.
+
+\defineinterfaceconstant {x} {x}  % x offset
+\defineinterfaceconstant {y} {y}  % y offset
+\defineinterfaceconstant {w} {w}  % width
+\defineinterfaceconstant {h} {h}  % height
+\defineinterfaceconstant {s} {s}  % size
+\defineinterfaceconstant {t} {t}  % title
+\defineinterfaceconstant {c} {c}  % creator
+\defineinterfaceconstant {e} {e}  % extension
+\defineinterfaceconstant {f} {f}  % file
+
+\defineinterfaceconstant {a} {a}  % kunnen weg 
+\defineinterfaceconstant {b} {b}  % kunnen weg 
+\defineinterfaceconstant {c} {c}  % kunnen weg 
+\defineinterfaceconstant {d} {d}  % kunnen weg 
+\defineinterfaceconstant {e} {e}  % kunnen weg 
+
+\defineinterfaceconstant {r} {r}
+\defineinterfaceconstant {g} {g}
+\defineinterfaceconstant {b} {b}
+\defineinterfaceconstant {c} {c}
+\defineinterfaceconstant {m} {m}
+\defineinterfaceconstant {y} {y}
+\defineinterfaceconstant {k} {k}
+
+\defineinterfaceconstant {t} {t}
+\defineinterfaceconstant {h} {h}
+\defineinterfaceconstant {b} {b}
+
+\defineinterfaceconstant {rgb}  {rgb}
+\defineinterfaceconstant {cmyk} {cmyk}
+
+\defineinterfacevariable {rgb}  {rgb}
+\defineinterfacevariable {cmyk} {cmyk}
+\defineinterfacevariable {gray} {k}
+
+%D The names of files and their extensions are fixed.
+%D \CONTEXT\ uses as less files as possible. Utility files can
+%D be recognized by the first two characters of the extension:
+%D \type{tu}.
+
+\definefileconstant {utilityfilename}    {texutil}
+
+\definefileconstant {blockextension}     {tub}
+\definefileconstant {figureextension}    {tuf}
+\definefileconstant {inputextension}     {tui}
+\definefileconstant {outputextension}    {tuo}
+\definefileconstant {temporaryextension} {tmp}
+\definefileconstant {patternsextension}  {pat}
+\definefileconstant {hyphensextension}   {hyp}
+
+%D These files are loaded at start||up. They may contain system
+%D specific setups (or calls to other files), old macro's, to
+%D garantee compatibility and new macro's noy yet present in 
+%D the format.
+
+\definefileconstant {systemfilename}     {cont-sys}
+\definefileconstant {oldfilename}        {cont-old}
+\definefileconstant {newfilename}        {cont-new}
+
+%D The setup files for the language, font, color and special
+%D subsystems have a common prefix. This means that we have at
+%D most three characters for unique filenames.
+
+\definefileconstant {languageprefix}     {lang-}
+\definefileconstant {fontprefix}         {font-}
+\definefileconstant {colorprefix}        {colo-}
+\definefileconstant {specialprefix}      {spec-}
+
+%D \CONTEXT\ follows different strategies for finding files. 
+%D The macros that are responsible for this 'clever' searching 
+%D make use of two (very important) path specifiers. 
+
+\definefileconstant {currentpath}        {.}
+\definefileconstant {parentpath}         {..}
+
+%D The way fonts are defined and called upon is language 
+%D independant. We follow the scheme laid down by Knuth in 
+%D Plain \TEX. We'll explain their meaning later. 
+
+\defineinterfaceconstant {tf} {tf}
+\defineinterfaceconstant {bf} {bf}
+\defineinterfaceconstant {bs} {bs}
+\defineinterfaceconstant {bi} {bi}
+\defineinterfaceconstant {sl} {sl}
+\defineinterfaceconstant {it} {it}
+\defineinterfaceconstant {sc} {sc}
+\defineinterfaceconstant {rm} {rm}
+\defineinterfaceconstant {ss} {ss}
+\defineinterfaceconstant {tt} {tt}
+\defineinterfaceconstant {hw} {hw}
+\defineinterfaceconstant {cg} {cg}
+\defineinterfaceconstant {os} {os}
+\defineinterfaceconstant {mm} {mm}
+\defineinterfaceconstant {i}  {i}
+
+\defineinterfaceconstant {x}  {x}
+\defineinterfaceconstant {xx} {xx}
+
+\defineinterfaceconstant {mi} {mi}
+\defineinterfaceconstant {sy} {sy}
+\defineinterfaceconstant {ex} {ex}
+\defineinterfaceconstant {mr} {mr}
+
+\defineinterfaceconstant {ma} {ma}
+\defineinterfaceconstant {mb} {mb}
+\defineinterfaceconstant {mc} {mc}
+
+%D Finally we need:
+
+\defineinterfaceconstant {tif}  {tif}
+\defineinterfaceconstant {eps}  {eps}
+
+%D A careful reader will have noticed that in the module 
+%D \type{mult-ini} we defined \type{\selectinterface}. We were
+%D not yet able to actually select an interface, because we 
+%D still had to define the constants and variables. Now we've
+%D done so, selection is permitted. 
+
+\selectinterface
+
+%D And only after this selection is done, we can define 
+%D messages, otherwise the default language is in use. 
+
+\ifinterfacetranslation \else
+
+\startmessages  dutch  library: check
+  title: controle
+      1: '=' ontbreekt na '--' in regel --
+      2: -- argument(en) verwacht in regel --
+      3: -- -- vervangt een macro, gebruik HOOFDLETTERS!
+\stopmessages
+
+\startmessages  english library: check
+  title: check
+      1: missing '=' after '--' in line --
+      2: -- argument(s) expected in line --
+      3: -- -- replaces a macro, use CAPITALS!
+\stopmessages
+
+\startmessages  german library: check
+  title: check
+      1: Fehlendes '=' nach '--' in Zeile --
+      2: -- Argument(e) in Zeile -- erwartet
+      3: -- -- ersetzt ein Makro, verwende VERSALIEN!
+\stopmessages
+
+\fi
+
+%D Ok, here are some more, because we've got ouselves some 
+%D extensions to \CONTEXT.
+
+\definemessageconstant {addresses}   
+\definemessageconstant {documents}
+
+\protect
+
+\endinput
+

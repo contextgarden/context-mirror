@@ -1,0 +1,1121 @@
+%D \module
+%D   [       file=core-01c,
+%D        version=1997.03.31,
+%D          title=\CONTEXT\ Core Macros,
+%D       subtitle=1C (to be split),
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. Non||commercial use is 
+%C granted. 
+
+\writestatus{loading}{Context Core Macros (c)}
+
+\unprotect
+
+\startmessages  dutch  library: figures
+   title: figuren
+      1: maten van -- geladen uit locale figuurfile
+      2: maten van -- geladen uit globale figuurfile
+      3: maten van -- geladen uit figuurfile zelf 
+      4: figuur -- is niet te vinden
+      5: er moet een nieuwe figuurfile worden aangemaakt
+\stopmessages
+
+\startmessages  english  library: figures
+   title: figures
+      1: dimensions of -- loaded from local figurefile
+      2: dimensions of -- loaded from global figurefile
+      3: dimensions of -- loaded from figurefile itself
+      4: figure -- can not be found 
+      5: you have to regenerate a new figure file 
+\stopmessages
+
+\startmessages  german  library: figures
+   title: figures
+      1: Dimensionen von -- geladen von lokaler Abbildungsdatei
+      2: Dimensionen von -- geladen von globaler Abbildungsdatei
+      3: Dimensionen von -- geladen von Abbildungsdatei selbst
+      4: Abbildung -- kann nicht gefunden werden
+      5: Sie haben eine neu Abbildungsdatei erstellt 
+\stopmessages
+
+\startmessages  dutch  library: systems
+     41: externe file -- in groep -- bestaat niet
+\stopmessages
+
+\startmessages  english  library: systems
+     41: external file -- in group -- does not exist 
+\stopmessages
+
+\startmessages  german  library: systems
+     41: Externe Datei -- in Gruppe -- existiert nicht 
+\stopmessages
+
+% Een verdere 'besparing' kan worden gerealiseerd als de
+% variabelen (ef#1...) lokaal blijven als een figuur wordt
+% geladen. Ook kunnen in texutil.tuf \c!variabelen worden
+% gebruikt.
+
+%I n=Figuren+
+%I c=\gebruikexternfiguur,\gebruikexternefiguren,\externfiguur
+%I c=\figuurintekst
+%I
+%I Extern aangemaakte (postscript)-figuren kunnen in
+%I de tekst worden opgenomen. De afmetingen van deze
+%I figuren kunnen op verschillende manieren worden
+%I ingesteld:
+%I
+%I   \gebruikexternfiguur[naam][file][schaal=,kader=]
+%I
+%I   \gebruikexternfiguur[naam][file][hfactor=,kader=]
+%I   \gebruikexternfiguur[naam][file][bfactor=,kader=]
+%I
+%I   \gebruikexternfiguur[naam][file][hoogte=,kader=]
+%I   \gebruikexternfiguur[naam][file][breedte=,kader=]
+%I 
+%I   \gebruikexternfiguur[eerste naam][file][....] 
+%I   \gebruikexternfiguur[tweede naam][file][eerste naam]
+%I
+%I Externe figuren kunnen vervolgens worden opgeroepen op
+%I naam:
+%I
+%I   \naam
+%P
+%I De schaal wordt opgegeven in tienden procenten. Dat
+%I betekent dat 12.5 procent wordt opgegeven als 125.
+%I
+%I In plaats van een schaal kan ook een schaalfactor worden
+%I opgegeven. Een factor 15 resulteert in een figuur met een
+%I hoogte van 1.5 maal de korpsgrootte. In plaats van een
+%I getal kan ook 'max', 'passend' of 'ruim' worden opgegeven.
+%I
+%I De breedte en hoogte worden opgegeven in de gebruikelijke
+%I TeX-maten.
+%I
+%I Als men automatisch wil laten bepalen wat de maximale
+%I hoogte of breedte is, dan kan men 'factor=max' meegeven.
+%P
+%I Externe figuren moeten worden voorgedefinieerd. Dit doet
+%I men met het commando:
+%I
+%I   \presetfigure[file][type=,breedte=,hoogte=,
+%I     omvang=,bron=,titel=]
+%I
+%I Met behulp van texutil kan een file 'texutil.tuf'
+%I worden aangemaakt waarin de op het werkgebied beschikbare
+%I figuren worden voorgedefinieerd. In dat geval kan het
+%I commando \presetfigure achterwege blijven.
+%I
+%I De voorinstellingen worden geladen met het commando:
+%I
+%I   \gebruikexternefiguren[optie=,korps=,lokatie=]
+%I
+%I waarbij als opties kader en leeg mogelijk zijn. In
+%I het eerste geval wordt een kader om de figuren
+%I geplaatst, in het tweede geval worden alleen kenmerken
+%I van de figuur weergegeven. Lokatie kan lokaal, globaal 
+%I of {lokaal,globaal} (default) zijn. 
+%P
+%I Figuren kunnen op het actuele gebied staan, op een root
+%I van het actuele gebied of op een nader in te stellen gebied.
+%I Dit instellen gebeurt door aan 'gebied' een naam toe te
+%I kennen.
+%I
+%I De in de file 'system.tex' opgenomen standaardinstelling
+%I is (let op het gebruik van /):
+%I
+%I   \stelexternefigurenin[gebied=c:/figuren/eps,file=]
+%P
+%I Het eerder genoemde commando \gebruikexternfiguur ziet
+%I er als volgt uit:
+%I
+%I   \gebruikexternfiguur[naam][file][instellingen]
+%I
+%I De naam is facultatief en is standaard gelijk aan de
+%I filenaam. Als een (file)naam cijfers bevat, moet het
+%I commando \naam{naam} worden gebruikt.
+%I
+%I Het is mogelijk in \plaatsfiguur direkt een externe
+%I figuur op te roepen:
+%I
+%I   \plaatsfiguur{commentaar}{\naam}
+%I
+%I Ook is het mogelijk een figuur in de tekst op te nemen
+%I met het commando:
+%I
+%I   \figuurintekst{\naam}
+
+%T n=extern
+%T m=ext
+%T a=e
+%T
+%T \gebruikexternfiguur [] [?] [bfactor=]
+
+%D The following macro's are derived from Thomas Rockicky's 
+%D macro's. They are rewritten to a more compact form, made a 
+%D bit more robust and also handle the \type{HiResBoundingBox} 
+%D or \type{ExactBoundingBox} that sometimes is present.
+%D
+%D A bounding box has the form: 
+%D
+%D \starttypen
+%D %%BoundingBox: llx lly urx ury 
+%D \stoptypen
+%D
+%D Before we scan the file, we have to reset special 
+%D characters and set some others. The percentage symbol also 
+%D needs special treatment. When a bounding box is 
+%D encountered, we keep on scanning until no more directives are
+%D found, i.e. a line is found that does not start with a 
+%D percentage symbol. We also abort scanning after finding a 
+%D high resolution bounding box. 
+%D
+%D This method also works inside verbatim mode (like when we 
+%D are typesettinmg sources and putting eps coded logos into 
+%D a heading. Temporary restoring the \CATCODES\ is done in 
+%D the calling routine.  
+
+\def\dogetfiguresizeeps#1#2#3#4#5%
+  {\bgroup
+   \openjobin{\scratchread}{#1}%
+   \ifeof\scratchread
+     \doifsomething{\@@exgebied}
+       {\closein\scratchread
+        \openfixin{\scratchread}{\@@exgebied}{#1}}%
+   \fi
+   \global\chardef\epsffound=0
+   \ifeof\scratchread
+   \else
+     \uncatcodespecials
+     \def\next%
+       {\read\scratchread to \epsffileline
+        \ifeof\scratchread
+          \let\next=\relax
+        \else
+          \expandafter\epsfaux\epsffileline:. \\%
+        \fi
+        \next}%
+     \next
+   \fi
+   \closein\scratchread
+   \egroup
+   \ifnum\epsffound>0
+     \dimen0=1bp\relax
+     #2=\epsfllx\dimen0
+     #4=\epsfurx\dimen0
+     \advance#4 by -\epsfllx\dimen0
+     #3=\epsflly\dimen0
+     #5=\epsfury\dimen0
+     \advance#5 by -\epsflly\dimen0
+   \else
+     #2=\!!zeropoint
+     #3=\!!zeropoint
+     #4=\!!zeropoint
+     #5=\!!zeropoint
+   \fi}
+
+\bgroup
+\catcode`\%=\@@other
+\global\let\epsfpercent=%
+\gdef\epsfboundingbox     {%BoundingBox}  
+\gdef\epsfhiresboundingbox{%HiResBoundingBox}  
+\gdef\epsfexactboundingbox{%ExactBoundingBox}  
+\egroup  
+
+\long\def\epsfaux#1#2:#3\\%
+  {\ifx#1\epsfpercent
+     \def\!!stringa{#2}%
+     \ifx\!!stringa\epsfboundingbox
+       \epsfgrab #3 . . . \\%
+       \global\chardef\epsffound=1
+     \else\ifx\!!stringa\epsfhiresboundingbox
+       \epsfgrab #3 . . . \\%
+       \global\chardef\epsffound=2
+       \let\next=\relax
+     \else\ifx\!!stringa\epsfexactboundingbox
+       \epsfgrab #3 . . . \\%
+       \global\chardef\epsffound=2
+       \let\next=\relax
+     \fi\fi\fi
+   \else\ifnum\epsffound>0
+     \let\next=\relax
+   \fi\fi}
+
+\def\epsfgrab #1 #2 #3 #4 #5\\%
+  {\gdef\epsfllx{#1}%
+   \ifx\epsfllx\empty
+     \epsfgrab #2 #3 #4 #5 .\\%
+   \else
+     \gdef\epsflly{#2}%
+     \gdef\epsfurx{#3}%
+     \gdef\epsfury{#4}%
+   \fi}
+
+\edef\figureversion {1996.06.01}
+
+\def\@@figureerrormessage%
+  {\showmessage{\m!figures}{5}{}%
+   \global\let\@@figureerrormessage=\relax}
+
+\def\thisisfigureversion#1%
+  {\doifnot{\figureversion}{#1}%
+     {\@@figureerrormessage
+      \endinput}}
+
+\newcount \figxsca
+\newcount \figysca
+
+\newdimen \fighei
+\newdimen \figwid
+
+\newif    \iffigurefound
+\newif    \iflocalfigures
+\newif    \ifglobalfigures
+
+\def\doreadlocalfigurefile%
+  {\iflocalfigures
+     \pushendofline
+     \readlocfile{\@@exfile}{}{}%
+     \popendofline
+   \fi}   
+
+\def\doreadglobalfigurefile%
+  {\ifglobalfigures
+     \doifsomething{\@@exgebied}
+       {\pushendofline
+        \readfixfile{\@@exgebied}{\@@exfile}{}{}%
+        \popendofline}%
+   \fi}
+
+\def\complexgebruikexternefiguren[#1]%
+  {\getparameters[\??ex][#1]%
+   \ExpandFirstAfter\processallactionsinset
+     [\@@exlokatie]
+     [    \v!geen=>,
+       \v!globaal=>\globalfigurestrue,
+        \v!lokaal=>\localfigurestrue,
+       \s!default=>\globalfigurestrue
+                   \localfigurestrue]%
+   \doifnothing{\@@exfile}
+     {\globalfiguresfalse
+      \localfiguresfalse}}
+
+\def\gebruikexternefiguren%
+  {\complexorsimpleempty{gebruikexternefiguren}}
+
+\def\stelexternefigurenin%
+  {\dodoubleargument\getparameters[\??ex]}
+
+\presetlocalframed[\??ef]
+
+\def\docalculatenorm#1#2#3#4#5%
+  {\processaction
+      [#2]
+      [     \v!max=>#1=#4\relax,
+        \v!passend=>#1=#5\relax,
+           \v!ruim=>#1=#5\relax
+                    \advance #1 by -4\@@exkorps\relax,
+        \s!default=>\doifsomething{#3}{#1=#3\relax},
+        \s!unknown=>#1=\@@exkorps\relax
+                    \divide#1 by \!!ten\relax
+                    \multiply#1 by #2\relax]}
+
+\def\docalculatescales#1#2#3#4%
+  {\dimen0=#1\relax                           % #1 = new 1-value
+   \dimen2=#2\relax                           % #2 = old 1-value
+   \divide\dimen2 by \!!thousand\relax
+   \divide\dimen0 by \dimen2\relax
+   \figxsca=\dimen0\relax                     %      x scale
+   \figysca=\dimen0\relax                     %      y scale
+   \dimen2=#4\relax                           % #4 = old 2-value
+   \divide\dimen2 by \!!thousand\relax
+   \multiply\dimen2 by \dimen0\relax
+   #3=\dimen2\relax}                          % #3 = new 2-value
+
+\def\docalculatescale#1#2#3%
+  {\dimen0=#1\relax                           % #1 = new value
+   \dimen2=#2\relax                           % #2 = old value
+   \divide\dimen2 by \!!thousand\relax
+   \divide\dimen0 by \dimen2\relax
+   #3=\dimen0\relax}                          % #3 = schaal
+
+\def\doapplyscale#1#2#3%
+  {#1=#2\relax
+   #3=\@@efschaal\relax
+   \divide#1 by \!!thousand\relax
+   \multiply#1 by #3\relax}
+
+\def\dosetefsize%
+  {\ifinner
+     \teksthoogte=\vsize
+     \dimen0=\teksthoogte
+   \else
+     \ifdim\pagegoal<\maxdimen
+       \ifdim\pagetotal<\pagegoal
+         \dimen0=\pagegoal
+         \advance\dimen0 by -\pagetotal
+       \else
+         \dimen0=\teksthoogte
+       \fi
+     \else
+       \dimen0=\teksthoogte
+     \fi
+   \fi  
+   \doifelsenothing{\@@efhoogte}
+     {\edef\@@efvsize{\the\dimen0}}
+     {\let\@@efvsize=\@@efhoogte}%
+   \doifelsenothing{\@@efbreedte}
+     {\edef\@@efhsize{\the\hsize}}
+     {\let\@@efhsize=\@@efbreedte}}
+
+\def\berekenexternfiguur[#1][#2]%
+  {\mindermeldingen
+   \restorecatcodes  % recently added; we presume local use
+   \beforesplitstring#2\at.\to\@@effilename
+   \aftersplitstring #2\at.\to\@@efextension
+   \getparameters
+     [\??ep]
+     [\c!e=\s!unknown,
+      \c!w=15\korpsgrootte,
+      \c!h=10\korpsgrootte,
+      \c!x=\!!zeropoint,
+      \c!y=\!!zeropoint,
+      \c!t=,
+      \c!s=,
+      \c!a=,
+      \c!f=\@@effilename]%
+   \getparameters
+     [\??ef]
+     [\c!type=\s!unknown,
+      \c!methode=\@@eftype,
+      \c!preset=\v!ja,
+      \c!preview=\v!nee,
+      \c!schaal=\!!thousand,
+      \c!factor=,
+      \c!hfactor=,
+      \c!bfactor=,
+      \c!breedte=,
+      \c!hoogte=,
+      \c!achtergrond=,
+      \c!achtergrondkleur=,
+      \c!achtergrondraster=\@@rsraster,
+      \c!hoek=,
+      \c!straal=.5\korpsgrootte,
+      \c!kader=\v!uit]%
+   \getvalue{\??ef#1}%
+   \def\@@effullname{#2.\@@eftype}% waarom per se nodig?
+   \doifelse{\@@efpreset}{\v!nee}  % iets anders 
+     {\figurefoundtrue}
+     {\doifelse{#1}{\s!figurepreset}
+        {\figurefoundtrue
+         \let\@@eftype=\@@epe}
+        {\figurefoundfalse
+         \def\presetfigure[##1][##2]%
+           {\iffigurefound
+              \endinput
+            \else
+              \DOIF{#2}{##1}
+                {\getparameters[\??ep][##2]%
+                 \doifelse{\@@eftype}{\s!unknown}
+                   {\let\@@eftype=\@@epe
+                    \figurefoundtrue}
+                   {\doif{\@@epe}{\@@eftype}
+                      {\figurefoundtrue}}}%
+            \fi}%
+         \doreadlocalfigurefile
+         \iffigurefound
+           \showmessage{\m!figures}{1}{#2.\@@eftype}%
+         \else
+           \doreadglobalfigurefile
+           \iffigurefound
+             \showmessage{\m!figures}{2}{#2.\@@eftype}%
+           \else
+             \doif{\@@eftype}{\s!unknown}
+               {\let\@@eftype=\c!eps}%
+             \doifelse{\@@efextension}{}
+               {\edef\@@effullname{\@@effilename.\@@eftype}}
+               {\edef\@@effullname{\@@effilename.\@@efextension}}%
+             \doiffileelse{\@@effullname}
+               {\executeifdefined{dogetfiguresize\@@eftype}\gobblefivearguments
+                  {\@@effullname}
+                  {\!!widtha}
+                  {\!!heighta}
+                  {\!!widthb}
+                  {\!!heightb}%
+                \ifdim\!!widthb>\!!zeropoint\relax
+                  \figurefoundtrue
+                  \geteparameters % e !
+                    [\??ep]
+                    [\c!x=\the\!!widtha,
+                     \c!y=\the\!!heighta,
+                     \c!w=\the\!!widthb,
+                     \c!h=\the\!!heightb]%
+                \fi}
+               {\figurefoundfalse}%
+             \iffigurefound
+               \showmessage{\m!figures}{3}{\@@effullname}%
+             \else
+               \showmessage{\m!figures}{4}{\@@effullname}%
+               \def\@@efkader{\v!aan}%
+             \fi
+           \fi
+         \fi}}%
+   \let\@@epe=\@@eftype
+   \doif{\@@exoptie}{\v!kader}
+     {\doassign[\??ef][\c!kader=\v!aan]}%
+   \figwid=\!!zeropoint
+   \fighei=\!!zeropoint
+   \doifinsetelse{\@@effactor}{\v!max,\v!passend,\v!ruim}
+     {\dosetefsize
+      \ifdim\@@epw>\@@eph\relax
+        \docalculatenorm\figwid\@@effactor\@@efbreedte\hsize\@@efhsize
+        \docalculatescales\figwid\@@epw\fighei\@@eph
+      \else
+        \docalculatenorm\fighei\@@effactor\@@efhoogte\teksthoogte\@@efvsize
+        \docalculatescales\fighei\@@eph\figwid\@@epw
+      \fi
+      \!!doneatrue}
+     {\doifinsetelse{\@@efhfactor}{\v!max,\v!passend,\v!ruim}
+        {\dosetefsize
+         \docalculatenorm\fighei\@@efhfactor\@@efhoogte\teksthoogte\@@efvsize
+         \docalculatescales\fighei\@@eph\figwid\@@epw
+         \!!doneatrue}
+        {\doifinsetelse{\@@efbfactor}{\v!max,\v!passend,\v!ruim}
+           {\dosetefsize
+            \docalculatenorm\figwid\@@efbfactor\@@efbreedte\hsize\@@efhsize
+            \docalculatescales\figwid\@@epw\fighei\@@eph
+            \!!doneatrue}
+           {\docalculatenorm\fighei\@@effactor\@@efhoogte\teksthoogte\@@efvsize
+            \docalculatenorm\fighei\@@efhfactor\@@efhoogte\teksthoogte\@@efvsize
+            \docalculatenorm\figwid\@@efbfactor\@@efbreedte\hsize\hsize
+            \!!doneafalse}}}%
+   \if!!donea
+     \ifdim\figwid>\@@efhsize\relax
+       \fighei=\!!zeropoint\relax
+       \figwid=\@@efhsize\relax
+     \else\ifdim\fighei>\@@efvsize\relax
+       \fighei=\@@efvsize\relax
+       \figwid=\!!zeropoint\relax
+     \fi\fi
+   \fi
+   \ifdim\figwid>\!!zeropoint\relax
+     \ifdim\fighei>\!!zeropoint\relax
+       \docalculatescale\fighei\@@eph\figysca
+       \docalculatescale\figwid\@@epw\figxsca
+     \else
+       \docalculatescales\figwid\@@epw\fighei\@@eph
+     \fi
+   \else
+     \ifdim\fighei>\!!zeropoint\relax
+       \docalculatescales\fighei\@@eph\figwid\@@epw
+     \else
+       \doapplyscale\figwid\@@epw\figxsca
+       \doapplyscale\fighei\@@eph\figysca
+     \fi
+   \fi
+   \doif{\@@exoptie}{\v!leeg}
+     {\getparameters
+        [\??ef]
+        [\c!kader=\v!aan,
+         \c!file=\v!leeg]}}
+
+\def\convertinsertscale#1#2#3#4% 
+  {\dimen0=#1\relax
+   %\advance\dimen0 by .0005pt\relax
+   \divide\dimen0 by \!!thousand
+   \multiply\dimen0 by #3\relax
+   \dimen0=-\dimen0  % beter hier - dan in driver 
+   \edef#2{\number\dimen0}%
+   \dimen0=#3pt\divide\dimen0 by \!!ten\relax
+   \edef#4{\@EA\withoutpt\@EA{\the\dimen0}}}
+
+\def\doplaatsexternfiguur[#1][#2]%
+  {\gebruikexternefiguren
+   \berekenexternfiguur[#1][#2]%
+   \iffigurefound
+     \localframed
+       [\??ef]
+       [\c!breedte=\figwid,
+        \c!hoogte=\fighei,
+        \c!offset=\v!overlay]
+       {\vfilll
+        \convertinsertscale\@@epx\figx\figxsca\scax
+        \convertinsertscale\@@epy\figy\figysca\scay
+        \doifelse{\@@efpreview}{\v!ja}
+          {\def\@@efpreview{1}}
+          {\def\@@efpreview{0}}%
+        \doinsertfile
+          {\@@eftype,\@@efmethode}{\@@effullname} %{\@@epf.\@@epe}
+          {\scax}{\scay}
+          {\figx}{\figy}
+          {\number\figwid}{\number\fighei}
+          {\@@efpreview}}%
+   \else
+     \localframed
+       [\??ef]
+       [\c!breedte=\figwid,
+        \c!hoogte=\fighei,
+        \c!kader=\v!aan]
+       {#1 / #2}%
+   \fi}
+
+\def\dopresetfigure[#1][#2]%
+  {\getparameters[\??ef][#1]%
+   \getparameters[\??ep][#2]}
+
+\def\doprecopfigure[#1][#2]%
+  {\getvalue{\??ef#1}%
+   \getparameters[\??ep][#2]}
+
+\def\dosetgebruikexternfiguur[#1][#2][#3][#4]% 
+  {\doifsomething{#3}
+     {\doifinstringelse{=}{#3}
+        {\setvalue{\??ef#1}{\dopresetfigure[#3][#4]}}
+        {\setvalue{\??ef#1}{\doprecopfigure[#3][#4]}}}%
+   \setvalue{#1}{\doplaatsexternfiguur[#1][#2]}}
+
+\def\dogebruikexternfiguur[#1][#2][#3][#4]%
+  {\doifelsenothing{#1}
+     {\doifsomething{#2}
+        {\dosetgebruikexternfiguur[#2][#2][#3][#4]}}
+     {\doifelsenothing{#2}
+        {\dosetgebruikexternfiguur[#1][#1][#3][#4]}
+        {\dosetgebruikexternfiguur[#1][#2][#3][#4]}}}
+
+\def\gebruikexternfiguur%
+  {\doquadrupleempty\dogebruikexternfiguur}
+
+\def\doexternalfigure[#1][#2]%
+  {\bgroup
+   \gebruikexternfiguur[#1][#1][#2]%
+   \getvalue{#1}%
+   \egroup}
+
+\unexpanded\def\externalfigure%
+  {\dodoubleempty\doexternalfigure}
+
+\def\toonexternefiguren%
+  {\bgroup
+   \mindermeldingen
+   \def\presetfigure[##1][##2]%
+     {\gebruikexternfiguur
+        [\s!figurepreset][##1]
+        [\c!kader=\v!aan,\c!breedte=6cm][##2]%
+      \startfiguurtekst[\v!links][]
+        {\v!geen}
+        {\hbox
+           {\getvalue{\s!figurepreset}%
+            \tfskip
+            \framed[\c!breedte=\figwid,\c!hoogte=\fighei]{}}}%
+        {\tfa ##1}%
+        \blanko
+        \tfx
+        \def\docommando####1%
+          {\beforesplitstring####1\at=\to\asciia
+           \aftersplitstring####1\at=\to\asciib
+           \doifsomething{\asciib}
+             {\hsmash{\hbox to .75em{\asciia\hss}: \asciib}%
+              \endgraf}}%
+        \processcommalist[##2]\docommando
+        \strut
+        \endgraf
+      \stopfiguurtekst}%
+   \localfigurestrue
+   \doreadlocalfigurefile
+   \egroup}
+
+%I n=Formules+
+%I c=\startlegenda,\startgegeven
+%I
+%I Ten behoeve van een consistente toelichting op een
+%I formule zijn er de volgende commando's:
+%I
+%I \startlegenda
+%I   \leg symbool \\ betekenis \\ dimensie \\
+%I   \leg symbool \\ betekenis \\ dimensie \\
+%I \stoplegenda
+%I
+%I \startgegeven
+%I   \geg betekenis \\ symbool \\ waarde \\
+%I   \geg betekenis \\ symbool \\ waarde \\
+%I \stopgegeven
+%I
+%I Ten behoeve van het zetten van ub- en superscripts zijn 
+%I er, naast \hbox, de commando's \xbox en \xxbox. 
+%P
+%I Het onderstaande mag ook:
+%I 
+%I \startlegenda[twee]
+%I   \leg symbool \\ symbool \\ betekenis \\ dimensie \\
+%I   \leg symbool \\ symbool \\ betekenis \\ dimensie \\
+%I \stoplegenda
+
+\newif\ifdoublelegends
+
+\def\dostartlegenda[#1]%
+  {\witruimte
+   \blanko
+   \bgroup
+   \doifelse{#1}{\v!twee}
+     {\doublelegendstrue
+      \let\leg=\doubleleg}
+     {\doublelegendsfalse
+      \let\leg=\singleleg}%
+   \tabskip=\!!zeropoint
+   \halign 
+   \bgroup
+   \hskip\leftskip
+   $##$\hfil&\hfil~##~\hfil&
+   \ifdoublelegends$##$\hfil\fi&\ifdoublelegends\hfil~##~\hfil\fi& 
+   ##\unskip\hfil~~&
+   $\rm##$\hfill\cr}
+
+\def\singleleg#1\\#2\\#3\\%
+  {#1&\doifsomething{#1}{=}&
+   &&
+   #2\unskip&
+   #3\cr}
+
+\def\doubleleg#1\\#2\\#3\\#4\\%
+  {#1&\doifsomething{#1}{\doifnot{#1}{ }{=}}&
+   #2&\doifsomething{#2}{\doifnot{#2}{ }{=}}&
+   #3\unskip&
+   #4\cr}
+
+\def\startlegenda%
+  {\dosingleempty\dostartlegenda}
+
+\def\stoplegenda%
+  {\egroup
+   \egroup
+   \blanko}
+
+% tzt: \crlf == \\ \\ \leg \\ afh kolom 
+
+\def\startgegeven%
+  {\witruimte
+   \blanko
+   \bgroup
+   \tabskip=\!!zeropoint
+   \halign
+   \bgroup
+   \hskip\leftskip##\unskip\hfil&
+   ~\hfil$##$&\hfil~##~\hfil&
+   $\rm##$\hfil\cr}
+
+\def\stopgegeven%
+  {\egroup
+   \egroup
+   \blanko}
+
+\def\geg#1\\#2\\#3\\%
+  {#1&
+   #2&=&
+   #3\cr}
+
+\unexpanded\def\xbox%
+  {\bgroup\aftergroup\egroup\hbox\bgroup\tx\let\next=}
+
+\unexpanded\def\xxbox%
+  {\bgroup\aftergroup\egroup\hbox\bgroup\txx\let\next=}
+
+% \def\mrm#1%
+%   {$\rm#1$}
+
+%I n=Combinaties
+%I c=\startcombinatie,\stelcombinatiesin
+%I
+%I Er kunnen meerdere tabellen, figuren enz. worden
+%I gecombineerd. Dit gebeurt met het commando:
+%I
+%I   \startcombinatie[n*m]
+%I      {inhoud 1}{ondertitel 1}
+%I      {inhoud 2}{ondertitel 2}
+%I      .....
+%I   \stopcombinatie
+%I
+%I Eventueel kan volstaan worden met [n]. Vier inhouden
+%I kunnen bijvoorbeeld worden gecombineerd als:
+%I
+%I   [4*1] of [4]     vier inhouden naast elkaar
+%I   [1*4]            vier inhouden onder elkaar
+%I   [2*2]            inhouden twee aan twee onder elkaar
+%P
+%I Dit commando is goed te combineren met \plaats-commando's:
+%I
+%I   \plaatsfiguur[][]{}
+%I     \startcombinatie[2]
+%I       {\legefiguur}{a}
+%I       {\legefiguur}{b}
+%I     \stopcombinatie
+%I
+%I Rond \start-\stopcombineer hoeven geen {} te worden
+%I geplaatst.
+%I
+%I De afstanden tussen de inhouden en de titels kunnen worden
+%I ingesteld met:
+%I
+%I   \stelcombinatiesin[voor=,na=,tussen=,afstand=,
+%I     uitlijnen=,hoogte=,breedte=]
+%I
+%I Waarbij de afstand betrekking heeft op de horizontale
+%I afstand (een maat dus) en voor, na en tussen commando's
+%I zijn (bijvoorbeeld \blanko).
+
+%T n=combinaties
+%T m=com
+%T a=c
+%T
+%T \startcombinatie
+%T   {?} {}
+%T   {} {}
+%T \stopcombinatie
+
+\newcount\horcombinatie  % counter 
+\newcount\totcombinatie
+
+\def\stelcombinatiesin%
+  {\dodoubleargument\getparameters[\??co]}
+
+\long\def\dodostartcombinatie[#1*#2*#3]%
+  {\stelfractiesin
+     [\c!n=\v!passend,
+      \c!afstand=\@@coafstand]%
+   \global\horcombinatie=#1\relax
+   \global\totcombinatie=#2\relax
+   \multiply\totcombinatie by \horcombinatie
+   \long\def\docombinatie##1##2##3%               % ##3 gobbles spaces.
+     {\vbox
+        {\setbox0=\vbox
+           {\hbox{##1}}%
+         \doifemptyelse{##2}                      % Dit moet per se 
+           {\setbox2=\box\voidb@x}                % \doifempty zijn!
+           {\setbox2=\vtop
+              {\hsize\wd0
+               \forgetall
+               \steluitlijnenin[\@@couitlijnen]%  % \raggedcenter
+               \begstrut##2\endstrut}}%
+         \vbox
+           {\forgetall % \stelwitruimtein[\v!geen]%
+            \box0\relax
+            \ifvoid2\relax  
+            \else
+              \@@cotussen
+              \nointerlineskip  % recently added 
+              \box2\relax
+            \fi}}%
+      \ifnum\totcombinatie>1\relax
+        \global\advance\totcombinatie by -1\relax
+        \global\advance\horcombinatie by -1\relax
+        \ifnum\horcombinatie=0\relax
+          \def\next%
+            {\cr
+             \noalign
+               {\forgetall %\stelwitruimtein[\v!geen]%
+                \nointerlineskip
+                \@@cona
+                \@@covoor
+                \vss
+                \nointerlineskip}%
+             \global\horcombinatie=#1\relax
+             \docombinatie{##3}}%
+        \else
+          \def\next%
+            {&&&\hskip\@@coafstand
+             &\docombinatie{##3}}% 
+        \fi
+      \else
+        \def\next%
+          {\cr
+           \egroup
+           ##3}%
+      \fi 
+      \next}%
+   \tabskip=\!!zeropoint
+   \doifelse{\@@cobreedte}{\v!passend}
+     {\halign}
+     {\halign to \@@cobreedte}% 
+   \bgroup&\hfil##\hfil&\tabskip\!!zeropoint \!!plus 1fill##\cr
+   \docombinatie}
+
+\def\complexdostartcombinatie[#1]%
+  {\dodostartcombinatie[#1*1*]}
+
+\def\simpledostartcombinatie%
+  {\complexdostartcombinatie[2]}
+
+\def\startcombinatie%
+  {\bgroup
+   \forgetall
+   \doifelse{\@@cohoogte}{\v!passend}
+     {\vbox}
+     {\vbox to \@@cohoogte}% 
+   \bgroup
+   \complexorsimple{dostartcombinatie}}
+
+\def\stopcombinatie%
+  {\egroup
+   \egroup}
+
+\def\plaatsonderelkaar%
+  {\bgroup
+   \dowithnextbox
+     {\setbox0=\box\nextbox
+      \dowithnextbox
+         {\mindermeldingen
+          \halign{\hss########\hss\cr\box0\cr\box\nextbox\cr}%
+          \egroup}
+      \hbox}
+   \hbox}
+
+\def\plaatsnaastelkaar%
+  {\bgroup
+   \dowithnextbox
+     {\dowithnextbox
+         {\valign{\vss########\vss\cr\box0\cr\box\nextbox\cr}% 
+          \egroup}
+      \vbox}
+   \vbox}
+
+%I n=Overlay
+%I c=\startoverlay
+%I
+%I De onderstaande commando's zijn beschikbaar, maar nog in
+%I ontwikkeling.
+%I
+%I \startoverlay
+%I    {} {} {} 
+%I \stopoverlay
+
+\def\startoverlay%
+  {\hbox\bgroup\futurelet\next\dogetoverlay}
+
+\def\stopoverlay%
+  {\unskip\egroup}
+
+\def\dogetoverlay%
+  {\ifx\next\bgroup
+     \let\next=\dodogetoverlay
+   \else
+     \let\next=\relax
+   \fi
+   \next}
+
+\def\dodogetoverlay%
+  {\dowithnextbox{\unskip\copy\nextbox\hskip-\wd\nextbox}\hbox}
+
+%I n=Files
+%I c=\definieerfile
+%I
+%I De onderstaande commando's zijn beschikbaar, maar nog in
+%I ontwikkeling.
+%I
+%I   \gebruikexternefile  [groep] [naam] [file] [instellingen]
+%I
+%I   \gebruikexternefiles [groep] [korps=,file=]
+%I   \stelexternefilesin  [groep] [korps=,file=]
+%I
+%I   \naam{naam} of \naam
+%I
+%I Standaard zijn gedefinieerd:
+%I
+%I   \gebruikexternefiles[pictex][korps=klein,file=pictex]
+%I   \gebruikexternefiles[table][file=table]
+
+\def\dogebruikexternefiles[#1][#2]%
+  {\getparameters
+     [\??fi#1]
+     [\c!file=,
+      \c!korps=,
+      \c!optie=,
+      #2]}
+
+\def\gebruikexternefiles%
+  {\dodoubleargument\dogebruikexternefiles}
+
+\def\dostelexternefilesin[#1][#2]%
+  {\doifundefinedelse{\??fi#1\c!file}
+     {\gebruikexternefiles[#1][#2]}
+     {\getparameters[\??fi#1][#2]}}
+
+\def\stelexternefilesin%
+  {\dodoubleargument\dostelexternefilesin}
+
+\def\verwerkexternefile#1#2#3%
+  {\bgroup
+   \getparameters[\??fi#1][\c!file=,#3]%
+   \doinputonce{\getvalue{\??fi#1\c!file}}%
+   \ExpandFirstAfter\switchtocorps[\getvalue{\??fi#1\c!korps}]%
+   \readsysfile{#2}  % beter: loc of fix gebied 
+     {}
+     {\showmessage{\m!systems}{41}{#2,#1}}%
+   \egroup}
+
+\def\dogebruikexternefile[#1][#2][#3][#4]%
+  {\stelexternefilesin[#1][]%
+   \doinputonce{\getvalue{\??fi#1\c!file}}%
+   \doifelsenothing{#2}
+     {\setvalue{#3}{\verwerkexternefile{#1}{#3}{#4}}}
+     {\setvalue{#2}{\verwerkexternefile{#1}{#3}{#4}}}}
+
+\def\gebruikexternefile%
+  {\doquadrupleargument\dogebruikexternefile}
+
+%I n=Roteren
+%I c=\roteer
+%I
+%I Er is een rotatiecommando beschikbaar:
+%I
+%I   \roteer[rotatie=]{}
+%I
+%I Waarbij als rotatie 0, 90, 180 of 270 kan worden opgegeven.
+%I Als extra instellingen kunnen de instellingen van
+%I \omlijnd worden meegegeven. Er wordt gebruik gemaakt van
+%I het \special commando en het rotatiemechanisme van
+%I PostScript. Dit betekent dat in de previewer de tekst
+%I niet (!) geroteerd wordt. Overigens draagt TeX zorg voor
+%I de exacte plaatsing, uitlijnen enz. De afhankelijkheid
+%I van PostScript is dus tot een minimum beperkt.
+%I
+%I Verder zijn dezelfde instellingen mogelijk als bij 
+%I \omlijnd. 
+
+\presetlocalframed[\??ro]
+
+\def\stelroterenin%
+  {\dodoubleargument\getparameters[\??ro]}
+
+% \ht, \vfillvoor, \vfillna, \wd, \hfillvoor, \hfillna 
+
+\def\dodostoproteer#1#2#3#4#5#6%  
+  {\vbox to #1\framebox
+     {#2\relax
+      \hbox to #4\framebox
+        {#5\relax
+         \doif{\@@rorotatie}{}%
+           {\def\@@rorotatie{90}}%
+         \dostartrotation{\@@rorotatie}%
+         \wd\framebox=\!!zeropoint
+         \ht\framebox=\!!zeropoint
+         \box\framebox\relax
+         \dostoprotation
+         #6}%
+      #3}}
+
+\def\dostoproteer%
+  {\egroup
+   \!!counta=\@@rorotatie\relax
+   \divide\!!counta by 90\relax
+   \ifcase\!!counta
+     \dodostoproteer\ht\relax\vfill\wd\relax\hfill
+   \or
+     \dodostoproteer\wd\vfill\relax\ht\relax\hfill
+   \or
+     \dodostoproteer\ht\vfill\relax\wd\hfill\relax
+   \or
+     \dodostoproteer\wd\relax\vfill\ht\hfill\relax
+   \else
+     \dodostoproteer\ht\relax\vfill\wd\relax\hfill
+   \fi
+   \egroup
+   \egroup}
+
+\def\complexroteer[#1]%
+  {\bgroup 
+   \getparameters[\??ro][#1]%
+   \setbox\framebox=\vbox  
+     \bgroup
+     \localframed[\??ro][#1]%
+     \bgroup
+     \aftergroup\dostoproteer
+     \let\next=}
+
+\def\roteer%
+  {\bgroup     % \roteer kan argument zijn 
+   \complexorsimpleempty{roteer}}
+
+% verdelen \hsize in fracties
+%
+% \fractie[n/m,elementen,afstand]
+%
+% \fractie[2/5,3,1em]
+% \fractie[2/5,3,1em]
+% \fractie[1/5,3,1em]
+%
+% \stelfractiesin[afstand=,aantal=]  (passend,passend)
+
+\def\??fr{@@fr}
+
+\def\stelfractiesin%
+  {\dodoubleargument\getparameters[\??fr]}
+
+\def\dodofractie[#1/#2,#3,#4,#5]%
+  {\doifelsenothing{#3}
+     {\doifelse{\@@frn}{\v!passend}
+        {\!!counta=#2\relax}
+        {\!!counta=\@@frn\relax}}
+     {\!!counta=#3\relax}%
+   \doifelsenothing{#4}
+     {\doifelse{\@@frafstand}{\v!passend}
+        {\!!widtha=\!!zeropoint}
+        {\!!widtha=\@@frafstand}}
+     {\!!widtha=#4}%
+   \advance\!!counta by -1\relax
+   \multiply\!!widtha by \!!counta
+   \advance\hsize by -\!!widtha
+   \divide\hsize by #2\relax
+   \hsize=#1\hsize}
+
+\def\dofractie[#1]%
+  {\dodofractie[#1,,,,,,]}
+
+\def\fractie%
+  {\dosingleargument\dofractie}
+
+\stelfractiesin
+  [\c!afstand=\tfskipsize,
+   \c!n=\v!passend]
+
+% Standaardinstellingen
+
+\stelexternefigurenin
+  [\c!optie=,
+   \c!korps=\korpsgrootte,
+   \c!gebied=,
+   \c!file=\f!utilityfilename.\f!figureextension,
+   \c!straal=.5\korpsgrootte,
+   \c!hoek=\v!recht,
+   \c!lokatie=]
+
+\stelroterenin
+  [\c!rotatie=90,
+   \c!breedte=\v!passend,
+   \c!hoogte=\v!passend,
+   \c!offset=\v!geen,
+   \c!kader=\v!uit]
+
+\stelcombinatiesin
+  [\c!breedte=\v!passend,
+   \c!hoogte=\v!passend,
+   \c!afstand=1em,
+   \c!voor=\blanko,
+   \c!tussen={\blanko[\v!middel]},
+   \c!na=,
+   \c!uitlijnen=\v!midden]
+
+\gebruikexternefiles
+  [pictex]
+  [\c!korps=\v!klein,
+   \c!file=pictex]
+
+\gebruikexternefiles
+  [table]
+  [\c!file=table]
+
+\protect
+
+\endinput
+

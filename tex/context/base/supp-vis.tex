@@ -1,0 +1,1900 @@
+%D \module
+%D   [       file=supp-vis,
+%D        version=1996.10.21,
+%D          title=\CONTEXT\ Support Macros,
+%D       subtitle=Visualization,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. Non||commercial use is 
+%C granted. 
+
+%D \gdef\ShowBufferedExample% private typeseting macro
+%D   {\startregelcorrectie
+%D    \bgroup
+%D    \steltypenin[marge=0pt,optie=kleur]
+%D    \showmakeup
+%D    \centeredvcuetrue
+%D    \dontinterfere
+%D    \baselinerulefalse
+%D    \normalvbox
+%D      {\normalhbox to \hsize
+%D         {$\hsize=.5\hsize
+%D          \advance\hsize by -.5em
+%D          \normalvcenter{\vbox{\haalbuffer}}\normalhss
+%D          \normalvcenter{\vbox{\dontshowcomposition\typebuffer}}$}}
+%D    \egroup
+%D    \stopregelcorrectie}
+%D
+%D \gdef\ShowBufferedExampleBox% private typeseting macro
+%D   {\startregelcorrectie
+%D    \bgroup
+%D    \steltypenin[marge=0pt,optie=kleur]
+%D    \showmakeup
+%D    \centeredvcuetrue
+%D    \dontinterfere
+%D    \baselinerulefalse
+%D    \normalvbox
+%D      {\normalhbox to \hsize
+%D         {$\hsize=.5\hsize
+%D          \advance\hsize by -.5em
+%D          \normalvcenter{\baselineruletrue\vbox{\haalbuffer}}\normalhss
+%D          \normalvcenter{\vbox{\dontshowcomposition\typebuffer}}$}}
+%D    \egroup
+%D    \stopregelcorrectie}
+
+%D Although an integral part of \CONTEXT, this module is one
+%D of the support modules. Its stand alone character permits
+%D use in \PLAIN\ \TEX\ or \TEX\ based macropackages.
+%D \ifCONTEXT \else If in some examples the verbatim listings
+%D don't show up nice, this is due to processing by a system
+%D that does not support buffering. In \CONTEXT\ we show the
+%D commands in the margin, use bit more advanced way of
+%D numbering, and typeset the source in \TEX nicolored
+%D verbatim. Sorry for this inconvenience.\fi 
+
+%D This module is still in development. Depending on my 
+%D personal need and those of whoever uses it, the macros will
+%D be improved in terms of visualization, efficiency and 
+%D compatibility.  
+
+\ifx \undefined \writestatus \input supp-mis.tex \fi
+
+%D One of the strong points of \TEX\ is abstraction of textual
+%D input. When macros are defined well and do what we
+%D want them to do, we will seldom need the tools present in
+%D What You See Is What You Get systems. For instance, when
+%D entering text we don't need rulers, because no manual
+%D shifting and/or alignment of text is needed. On the other
+%D hand, when we are designing macros or specifying layout
+%D elements, some insight in \TEX's advanced spacing, kerning,
+%D filling, boxing and punishment abilities will be handy.
+%D That's why we've implemented a mechanism that shows some of
+%D the inner secrets of \TEX.
+
+\writestatus{loading}{Context Support Macros / Visualization}
+
+%D In this module we are going to redefine some \TEX\
+%D primitives and \PLAIN\ macro's. Their original meaning is
+%D saved in macros with corresponding names, preceded by
+%D \type{normal}. These original macros are (1)~used to
+%D temporary restore the old values when needed and
+%D (2)~used to prevent recursive calls in the macros that
+%D replace them.
+
+\unprotect
+
+%D \macros
+%D   {normalhbox,
+%D    normalvbox,normalvtop}
+%D   {}
+%D
+%D There are three types of boxes, one horizontal and two
+%D vertical in nature. As we will see later on, all three types
+%D are to be handled according to their orientation and
+%D baseline behavior. Especially \type{\vtop}'s need our
+%D special attention.
+
+\let\normalhbox     = \hbox
+\let\normalvbox     = \vbox
+\let\normalvtop     = \vtop
+\let\normalvcenter  = \vcenter
+
+%D \macros
+%D   {normalhskip,
+%D    normalvskip}
+%D   {}
+%D
+%D Next come the flexible skips, which come in two flavors
+%D too. Like boxes these are handled with \TEX\ primitives.
+
+\let\normalhskip    = \hskip
+\let\normalvskip    = \vskip
+
+%D \macros
+%D   {normalpenalty,
+%D    normalkern}
+%D   {}
+%D
+%D Both penalties and kerns are taken care of by mode sensitive
+%D primitives. This means that when making them visible, we
+%D have to take the current mode into account.
+
+\let\normalpenalty  = \penalty
+\let\normalkern     = \kern
+
+%D \macros
+%D   {normalhglue,
+%D    normalvglue}
+%D   {}
+%D
+%D Glues on the other hand are macro's defined in \PLAIN\ \TEX.
+%D As we will see, their definitions make the implementation of
+%D their visible counterparts a bit more \TeX{}nical.
+
+\let\normalhglue    = \hglue
+\let\normalvglue    = \vglue
+
+%D \macros
+%D   {normalmkern,
+%D    normalmskip}
+%D   {}
+%D
+%D Math mode has its own spacing primitives, preceded by
+%D \type{m}. Due to the relation with the current font and the
+%D way math is typeset, their unit \type{mu} is not compatible
+%D with other dimensions. As a result, the visual appearance
+%D of these primitives is kept primitive too.
+
+\let\normalmkern    = \mkern
+\let\normalmskip    = \mskip
+
+%D \macros
+%D   {hfilneg,
+%D    vfilneg}
+%D   {}
+%D
+%D Fills can be made visible quite easy. We only need some
+%D additional negation macros. Because \PLAIN\ \TEX\ only
+%D offers \type{\hfilneg} and \type{\vfilneg}, we define our
+%D own alternative double \type{ll}'ed ones.
+
+\def\hfillneg%
+  {\normalhskip\!!zeropoint \!!plus-1fill\relax}
+
+\def\vfillneg%
+  {\normalvskip\!!zeropoint \!!plus-1fill\relax}
+
+%D \macros
+%D   {normalhss,normalhfil,normalhfill,
+%D    normalvss,normalvfil,normalvfill}
+%D   {}
+%D
+%D The positive stretch primitives are used independant and in
+%D combination with \type{\leaders}.
+
+\let\normalhss      = \hss
+\let\normalhfil     = \hfil
+\let\normalhfill    = \hfill
+\let\normalvss      = \vss
+\let\normalvfil     = \vfil
+\let\normalvfill    = \vfill
+
+%D \macros
+%D   {normalhfilneg,normalhfillneg,
+%D    normalvfilneg,normalvfillneg}
+%D   {}
+%D
+%D Keep in mind that both \type{\hfillneg} and \type{\vfillneg}
+%D are not part of \PLAIN\ \TEX\ and therefore not documented
+%D in standard \TEX\ documentation. They can nevertheless be
+%D used at will.
+
+\let\normalhfilneg  = \hfilneg
+\let\normalhfillneg = \hfillneg
+\let\normalvfilneg  = \vfilneg
+\let\normalvfillneg = \vfillneg
+
+%D Visualization is not always wanted. Instead of turning this
+%D option off in those (unpredictable) situations, we just
+%D redefine a few \PLAIN\ macros.
+
+\def\rlap#1{\normalhbox to \!!zeropoint{#1\normalhss}}
+\def\llap#1{\normalhbox to \!!zeropoint{\normalhss#1}}
+
+\def~{\normalpenalty\!!tenthousand\ }
+
+%D \macros
+%D   {makeruledbox}
+%D   {}
+%D
+%D Ruled boxes can be typeset is many ways. Here we present
+%D just one alternative. This implementation may be a little 
+%D complicated, but it supports all three kind of boxes. The 
+%D next command expects a \BOX\ specification, like: 
+%D
+%D \starttypen
+%D \makeruledbox0
+%D \stoptypen
+
+%D \macros
+%D   {baselinerule,baselinefill}
+%D   {}
+%D
+%D We can make the baseline of a box visible, both dashed and
+%D as a rule. The line is drawn on top of the baseline. All 
+%D we have to say is:
+%D
+%D \starttypen
+%D \baselineruletrue
+%D \baselinefilltrue
+%D \stoptypen
+%D
+%D At the cost of some overhead these alternatives are
+%D implemented using \type{\if}'s:
+
+\newif\ifbaselinerule  \baselineruletrue
+\newif\ifbaselinefill  \baselinefillfalse
+
+%D \macros
+%D   {iftoprule,ifbottomrule,ifleftrule,ifrightrule}
+%D   {}
+%D
+%D Rules can be turned on and off, but by default we have:
+%D
+%D \starttypen
+%D \topruletrue
+%D \bottomruletrue
+%D \leftruletrue
+%D \rightruletrue
+%D \stoptypen
+%D
+%D As we see below:
+
+\newif\iftoprule       \topruletrue
+\newif\ifbottomrule    \bottomruletrue
+\newif\ifleftrule      \leftruletrue
+\newif\ifrightrule     \rightruletrue
+
+%D \macros
+%D   {boxrulewidth}
+%D   {}
+%D
+%D The width in the surrounding rules can be specified by
+%D assigning an apropriate value to the dimension used. This
+%D module defaults the width to:
+%D
+%D \starttypen
+%D \boxrulewidth=.2pt
+%D \stoptypen
+%D
+%D Although we are already low on \DIMENSIONS\ it's best to
+%D spend one here, mainly because it enables easy manipulation,
+%D like multiplication by a given factor.
+
+\newdimen\boxrulewidth \boxrulewidth=.2pt
+
+%D The core macro \type{\makeruledbox} looks a bit hefty. The
+%D manipulation at the end is needed because we want to
+%D preserve both the mode and the baseline. This means that
+%D \type{\vtop}'s and \type{\vbox}'es behave the way we expect
+%D them to do.
+%D
+%D \startregelcorrectie
+%D \hbox
+%D   {\ruledhbox to 5em{\strut test\normalhss}\hskip1em
+%D    \ruledvbox{\hsize 5em\strut test \par test\strut}\hskip1em
+%D    \ruledvtop{\hsize 5em\strut test \par test\strut}}
+%D \stopregelcorrectie
+%D
+%D The \type{\cleaders} part of the macro is responsible for
+%D the visual baseline. The \type{\normalhfill} belongs to this
+%D primitive too. By storing and restoring the height and depth
+%D of box \type{#1}, we preserve the mode.
+
+\def\makeruledbox#1%
+  {\edef\ruledheight {\the\ht#1}%
+   \edef\ruleddepth  {\the\dp#1}%
+   \edef\ruledwidth  {\the\wd#1}%
+   \setbox\scratchbox=\normalvbox
+     {\dontcomplain
+      \offinterlineskip
+      \hrule
+        \!!height\boxrulewidth
+        \iftoprule\else\!!width\!!zeropoint\fi
+      \normalvskip-\boxrulewidth
+      \normalhbox to \ruledwidth
+        {\vrule
+           \!!height\ruledheight
+           \!!depth\ruleddepth
+           \!!width\ifleftrule\else0\fi\boxrulewidth
+         \ifdim\ruledheight>\!!zeropoint \else \baselinerulefalse \fi
+         \ifdim\ruleddepth>\!!zeropoint \else \baselinerulefalse \fi
+         \ifbaselinerule
+           \ifdim\ruledwidth<20\boxrulewidth
+             \baselinefilltrue
+           \fi
+           \cleaders
+             \ifbaselinefill
+               \hrule
+                 \!!height\boxrulewidth
+             \else
+               \normalhbox
+                 {\normalhskip2.5\boxrulewidth
+                  \vrule
+                    \!!height\boxrulewidth
+                    \!!width5\boxrulewidth
+                  \normalhskip2.5\boxrulewidth}%
+             \fi
+         \fi
+         \normalhfill
+         \vrule
+           \!!width\ifrightrule\else0\fi\boxrulewidth}%
+       \normalvskip-\boxrulewidth
+       \hrule
+         \!!height\boxrulewidth
+         \ifbottomrule\else\!!width\!!zeropoint\fi}%
+   \wd#1=\!!zeropoint
+   \setbox#1=\ifhbox#1\normalhbox\else\normalvbox\fi
+     {\normalhbox{\box#1\lower\ruleddepth\box\scratchbox}}%
+   \ht#1=\ruledheight
+   \wd#1=\ruledwidth
+   \dp#1=\ruleddepth}
+
+%D Just in case one didn't notice: the rules are in fact layed
+%D over the box. This way the contents of a box cannot
+%D visually interfere with the rules around (upon) it. A more
+%D advanced version of ruled boxes can be found in one of the 
+%D core modules of \CONTEXT. There we take offsets, color, 
+%D rounded corners, backgrounds and alignment into account too.
+
+%D \macros
+%D   {ruledhbox,
+%D    ruledvbox,ruledvtop,
+%D    ruledvcenter}
+%D   {}
+%D 
+%D These macro's can be used instead of \type{\hbox},
+%D \type{\vbox}, \type{\vtop} and, when in math mode,
+%D \type{\vcenter}. They just do what their names state. Using
+%D an auxiliary macro would save us a few words of memory, but
+%D it would make their appearance even more obscure. 
+%D 
+%D \startbuffer
+%D \hbox
+%D   {\strut
+%D    one
+%D    two
+%D    \hbox{three}
+%D    four
+%D    five}
+%D \stopbuffer
+%D
+%D \ShowBufferedExampleBox
+
+\def\ruledhbox%
+  {\normalhbox\bgroup
+   \dowithnextbox{\makeruledbox\nextbox\box\nextbox\egroup}%
+   \normalhbox}
+
+%D \startbuffer
+%D \vbox
+%D   {\strut
+%D    first line  \par
+%D    second line \par
+%D    third line  \par
+%D    fourth line \par
+%D    fifth line
+%D    \strut }
+%D \stopbuffer
+%D
+%D \ShowBufferedExampleBox
+
+\def\ruledvbox%
+  {\normalvbox\bgroup
+   \dowithnextbox{\makeruledbox\nextbox\box\nextbox\egroup}%
+   \normalvbox}
+
+%D \startbuffer
+%D \vtop
+%D   {\strut
+%D    first line  \par
+%D    second line \par
+%D    third line  \par
+%D    fourth line \par
+%D    fifth line
+%D    \strut }
+%D \stopbuffer
+%D
+%D \ShowBufferedExampleBox
+
+\def\ruledvtop%
+  {\normalvtop\bgroup
+   \dowithnextbox{\makeruledbox\nextbox\box\nextbox\egroup}%
+   \normalvtop}
+
+%D \startbuffer
+%D \hbox
+%D   {$\vcenter{\hsize.2\hsize 
+%D       alfa \par beta}$
+%D    $\vcenter to 3cm{\hsize.2\hsize 
+%D       alfa \par beta \par gamma}$
+%D    $\vcenter{\hsize.2\hsize 
+%D       alfa \par beta}$}
+%D \stopbuffer
+%D
+%D \ShowBufferedExampleBox
+
+\def\ruledvcenter%
+  {\normalvbox\bgroup
+   \dontinterfere
+   \dowithnextbox
+     {\scratchdimen=.5\ht\nextbox
+      \advance\scratchdimen by .5\dp\nextbox
+      \ht\nextbox=\scratchdimen
+      \dp\nextbox=\scratchdimen
+      \ruledhbox{\box\nextbox}%
+      \egroup}%
+   \normalvbox}
+
+%D \macros
+%D   {ruledbox,
+%D    setruledbox}
+%D   {}
+%D
+%D Of the next two macros the first can be used to precede a
+%D box of ones own choice. One can for instance prefix boxes
+%D with \type{\ruledbox} and afterwards --- when the macro
+%D satisfy the needs --- let it to \type{\relax}.
+%D
+%D \starttypen
+%D \ruledbox\hbox{What rules do you mean?}
+%D \stoptypen
+%D
+%D The macro \type{\setruledbox} can be used to directly
+%D rule a box.
+%D
+%D \starttypen
+%D \setruledbox12=\hbox{Who's talking about rules here?}
+%D \stoptypen
+%D
+%D At the cost of some extra macros we can implement a
+%D variant that does not need the~\type{=}, but we stick to:
+
+\def\ruledbox%
+  {\dowithnextbox{\makeruledbox\nextbox\box\nextbox}}
+
+\def\setruledbox#1=%
+  {\dowithnextbox{\makeruledbox\nextbox\setbox#1=\nextbox}}
+
+%D \macros
+%D   {investigateskip,
+%D    investigatecount,
+%D    investigatemuskip}
+%D   {}
+%D
+%D Before we meet the visualizing macro's, we first implement
+%D ourselves some handy utility ones. Just for the sake of
+%D efficiency and readability, we introduce some status
+%D variables, that tell us a bit more about the registers we
+%D use:
+%D
+%D \starttypen
+%D \ifflexible
+%D \ifzero
+%D \ifnegative
+%D \ifpositive
+%D \stoptypen
+%D
+%D These status variables are set when we call for one of the
+%D investigation macros, e.g.
+%D
+%D \starttypen
+%D \investigateskip\scratchskip
+%D \stoptypen
+%D
+%D We use some dirty trick to check stretchability of \SKIPS.
+%D Users of these macros are invited to study their exact
+%D behavior first. The positive and negative states both
+%D include zero and are in fact non-negative ($\geq0$) and
+%D non-positive ($\leq0$) .
+
+\newif\ifflexible
+\newif\ifzero
+\newif\ifnegative
+\newif\ifpositive
+
+\def\investigateskip#1%
+  {\relax
+   \scratchdimen=#1\relax
+   \edef\!!stringa{\the\scratchdimen}%
+   \edef\!!stringb{\the#1}%
+   \ifx\!!stringa\!!stringb \flexiblefalse \else \flexibletrue \fi
+   \ifdim#1=\!!zeropoint\relax
+     \zerotrue      \else
+     \zerofalse     \fi
+   \ifdim#1<\!!zeropoint\relax
+     \positivefalse \else
+     \positivetrue  \fi
+   \ifdim#1>\!!zeropoint\relax
+     \negativefalse \else
+     \negativetrue  \fi}
+
+\def\investigatecount#1%
+  {\relax
+   \flexiblefalse
+   \ifnum#1=0
+     \zerotrue      \else
+     \zerofalse     \fi
+   \ifnum#1<0
+     \positivefalse \else
+     \positivetrue  \fi
+   \ifnum#1>0
+     \negativefalse \else
+     \negativetrue  \fi}
+
+\def\investigatemuskip#1%
+  {\relax
+   \edef\!!stringa{\the\scratchmuskip}%
+   \edef\!!stringb{0mu}%
+   \def\!!stringc##1##2\\{##1}%
+   \expandafter\edef\expandafter\!!stringc\expandafter
+     {\expandafter\!!stringc\!!stringa\\}%
+   \edef\!!stringd{-}%
+   \flexiblefalse
+   \ifx\!!stringa\!!stringb
+     \zerotrue
+     \negativefalse
+     \positivefalse
+   \else
+     \zerofalse
+     \ifx\!!stringc\!!stringd
+       \positivefalse
+       \negativetrue
+     \else
+       \positivetrue
+       \negativefalse
+     \fi
+   \fi}
+
+%D \macros
+%D   {dontinterfere}
+%D   {}
+%D
+%D Indentation, left and/or right skips, redefinition of
+%D \type{\par} and assignments to \type{\everypar} can lead to
+%D  unwanted results. We can therefore turn all those things
+%D off with \type{\dontinterfere}.
+
+\def\dontinterfere%
+  {\everypar  = {}%
+   \let\par   = \endgraf
+   \parindent = \!!zeropoint
+   \parskip   = \!!zeropoint
+   \leftskip  = \!!zeropoint
+   \rightskip = \!!zeropoint
+   \relax}
+
+%D \macros
+%D   {dontcomplain}
+%D   {}
+%D
+%D In this module we do a lot of box manipulations. Because we
+%D don't want to be confronted with to many over- and underfull
+%D messages we introduce \type{\dontcomplain}.
+
+\def\dontcomplain%
+  {\hbadness  = \!!tenthousand
+   \hfuzz     = \maxdimen
+   \vbadness  = \!!tenthousand
+   \vfuzz     = \maxdimen}
+
+%D Now the neccessary utility macros are defined, we can make a
+%D start with the visualizing ones. The implementation of these
+%D macros is a compromise between readability, efficiency of
+%D coding and processing speed. Sometimes we do in steps what
+%D could have been done in combination, sometimes we use a few
+%D boxes more or less then actually needed, and more than once
+%D one can find the same piece of rule drawing code twice.
+
+%D \macros
+%D   {ifcenteredvcue,normalvcue}
+%D   {}
+%D
+%D Depending on the context, one can force visual vertical cues 
+%D being centered along \type{\hsize} or being put at the 
+%D current position. Although centering often looks better, 
+%D we've chosen the second alternative as default. The main 
+%D reason for doing so is that often when we don't set the 
+%D \type{\hsize} ourselves, \TEX\ takes the value of the 
+%D surrounding box. As a result the visual cues can migrate 
+%D outside the current context. 
+%D 
+%D This behavior is accomplished by a small but effective 
+%D auxiliary macro, which behavior can be influenced by the 
+%D boolean \type{\centeredvcue}. By saying 
+%D
+%D \starttypen 
+%D \centeredvcuetrue
+%D \stoptypen
+%D 
+%D one turns centering on. As said, we turn it off. 
+
+\newif\ifcenteredvcue  \centeredvcuefalse
+
+\def\normalvcue#1%
+  {\normalhbox \ifcenteredvcue to \hsize \fi {\normalhss#1\normalhss}}
+
+%D We could have used the more robust version 
+%D 
+%D \starttypen
+%D \def\normalvcue%
+%D   {\normalhbox \ifcenteredvcue to \hsize \fi
+%D    \bgroup\bgroup\normalhss
+%D    \aftergroup\normalhss\aftergroup\egroup
+%D    \let\next=}
+%D \stoptypen
+%D 
+%D or the probably best one: 
+%D 
+%D \starttypen
+%D \def\normalvcue%
+%D   {\hbox \ifcenteredvcue to \hsize
+%D      \bgroup\bgroup\normalhss
+%D      \aftergroup\normalhss\aftergroup\egroup
+%D    \else
+%D      \bgroup
+%D    \fi
+%D    \let\next=}
+%D \stoptypen
+%D 
+%D Because we don't have to preserve \CATCODES\ and only use 
+%D small arguments, we stick to the first alternative. 
+
+%D \macros
+%D   {testrulewidth}
+%D   {}
+%D
+%D We build our visual cues out of rules. At the cost of a much
+%D bigger \DVI\ file, this is to be prefered over using
+%D characters (1)~because we cannot be sure of their
+%D availability and (2)~because their dimensions are fixed.
+%D
+%D As with ruled boxes, we use a \DIMENSION\ to specify the
+%D width of the ruled elements. This dimension defaults to:
+%D
+%D \starttypen
+%D \testrulewidth=\boxrulewidth
+%D \stoptypen
+%D
+%D Because we prefer whole numbers for specifying the
+%D dimensions, we often use even multiples of
+%D \type{\testrulewidth}.
+
+%D \macros
+%D   {visiblestretch}
+%D   {}
+%D 
+%D A second variable is introduced because of the stretch
+%D components of \SKIPS. At the cost of some accuracy we can
+%D make this stretch visible. 
+%D 
+%D \starttypen
+%D \visiblestretchtrue
+%D \stoptypen
+
+\newdimen\testrulewidth  \testrulewidth=\boxrulewidth
+\newif\ifvisiblestretch  \visiblestretchfalse
+
+%D \macros
+%D   {ruledhss,
+%D    ruledhfil,ruledhfilneg,
+%D    ruledhfill,ruledhfillneg}
+%D   {}
+%D
+%D We start with the easiest part, the fills. The scheme we
+%D follow is {\em visual filling -- going back -- normal
+%D filling}. Visualizing is implemented using \type{\cleaders}.
+%D Because the \BOX\ that follows this command is constructed
+%D only once, the \type{\copy} is not really a prerequisite. We
+%D prefer using a \type{\normalhbox} here instead of a
+%D \type{\hbox}.
+
+\def\setvisiblehfilbox#1\to#2#3#4%
+  {\setbox#1=\normalhbox
+     {\vrule
+        \!!width#2\testrulewidth
+        \!!height#3\testrulewidth
+        \!!depth#4\testrulewidth}%
+   \smashbox#1}
+
+\def\doruledhfiller#1#2#3#4%
+  {#1#2%
+   \bgroup
+     \dontinterfere
+     \dontcomplain
+     \setvisiblehfilbox0\to{4}{#3}{#4}%
+     \setvisiblehfilbox2\to422%
+     \copy0\copy2
+     \bgroup
+       \setvisiblehfilbox0\to422%
+       \cleaders
+         \normalhbox to 12\testrulewidth
+           {\normalhss\copy0\normalhss}%
+         #1%
+     \egroup
+     \setbox0=\normalhbox
+       {\normalhskip-4\testrulewidth\copy0\copy2}%
+     \smashbox0
+     \box0
+   \egroup}
+
+%D The horizontal fillers differ in their boundary
+%D visualization. Watch the small dots. Fillers can be 
+%D combined within reasonable margins.   
+%D
+%D \startregelcorrectie
+%D \baselinerulefalse
+%D \ruledhbox to \hsize
+%D   {\strut\type{\hss}\ruledhss test}
+%D \stopregelcorrectie
+%D
+%D \startregelcorrectie
+%D \baselinerulefalse
+%D \ruledhbox to \hsize
+%D   {\strut\type{\hfil}\ruledhfil test}
+%D \stopregelcorrectie
+%D
+%D \startregelcorrectie
+%D \baselinerulefalse
+%D \ruledhbox to \hsize
+%D   {\strut\type{\hfill}\ruledhfill test}
+%D \stopregelcorrectie
+%D
+%D \startregelcorrectie
+%D \baselinerulefalse
+%D \ruledhbox to \hsize
+%D   {\strut
+%D    \type{\hfil}\type{\hfil}\ruledhfil\ruledhfil 
+%D    test%
+%D    \ruledhfil\type{\hfil}}
+%D \stopregelcorrectie
+%D
+%D The negative counterparts are visualizes, but seldom
+%D become visible, apart from their boundaries.
+%D
+%D \startregelcorrectie
+%D \baselinerulefalse
+%D \ruledhbox to \hsize
+%D   {\strut\type{\hfilneg}\ruledhfilneg test}
+%D \stopregelcorrectie
+%D
+%D \startregelcorrectie
+%D \baselinerulefalse
+%D \ruledhbox to \hsize
+%D   {\strut\type{\hfillneg}\ruledhfillneg test}
+%D \stopregelcorrectie
+%D
+%D Although leaders are used for visualizing, they are
+%D visualized themselves correctly as the next example shows.
+%D
+%D \startregelcorrectie
+%D \baselinerulefalse
+%D \ruledhbox to \hsize
+%D   {\strut\cleaders\normalhbox to 2em{\normalhss$\circ$\normalhss}\ruledhfill}
+%D \stopregelcorrectie
+%D
+%D All five substitutions use the same auxiliary macro. Watch
+%D the positive first -- negative next approach.
+
+\def\ruledhss%
+  {\doruledhfiller\normalhss\normalhfilneg{0}{0}}
+
+\def\ruledhfil%
+  {\doruledhfiller\normalhfil\normalhfilneg{10}{-6}}
+
+\def\ruledhfill%
+  {\doruledhfiller\normalhfill\normalhfillneg{18}{-14}}
+
+\def\ruledhfilneg%
+  {\doruledhfiller\normalhfilneg\normalhfil{-6}{10}}
+
+\def\ruledhfillneg%
+  {\doruledhfiller\normalhfillneg\normalhfill{-14}{18}}
+
+%D \macros
+%D   {ruledvss,
+%D    ruledvfil,ruledvfilneg,
+%D    ruledvfill,ruledvfillneg}
+%D   {}
+%D
+%D The vertical mode commands adopt the same visualization
+%D scheme, but are implemented in a slightly different way.
+
+\def\setvisiblevfilbox#1\to#2#3#4%
+  {\setbox#1=\normalhbox
+     {\vrule
+        \!!width#2\testrulewidth
+        \!!height#3\testrulewidth
+        \!!depth#4\testrulewidth}%
+   \smashbox#1}%
+
+\def\doruledvfiller#1#2#3%
+  {#1#2%
+   \bgroup
+     \dontinterfere
+     \dontcomplain
+     \offinterlineskip
+     \setvisiblevfilbox0\to422%
+     \setbox2=\normalvcue 
+       {\normalhskip -#3\testrulewidth\copy0}%
+     \smashbox2
+     \copy2
+     \bgroup
+       \setbox2=\normalvcue 
+         {\normalhskip -2\testrulewidth\copy0}%
+       \smashbox2
+       \copy2
+       \cleaders
+         \normalvbox to 12\testrulewidth
+           {\normalvss\copy2\normalvss}%
+         #1%
+       \setbox2=\normalvbox
+         {\normalvskip-2\testrulewidth\copy2}%
+       \smashbox2
+       \box2
+     \egroup
+     \box2
+   \egroup}
+
+%D Because they act the same as their horizontal counterparts
+%D we only show a few examples.
+%D
+%D \startregelcorrectie
+%D \hbox to \hsize
+%D   {\dontinterfere
+%D    \baselinerulefalse
+%D    \centeredvcuetrue
+%D    \ruledvbox to 10ex
+%D      {\hsize.18\hsize
+%D       \type{\vss}\ruledvss last line}\normalhss
+%D    \ruledvbox to 10ex
+%D      {\hsize.18\hsize
+%D       \type{\vfil}\ruledvfil last line}\normalhss
+%D    \ruledvbox to 10ex
+%D      {\hsize.18\hsize
+%D       \type{\vfill}\ruledvfill last line}\normalhss
+%D    \ruledvbox to 10ex
+%D      {\hsize.18\hsize
+%D       \type{\vfilneg}\ruledvfilneg last line}\normalhss
+%D    \ruledvbox to 10ex
+%D      {\hsize.18\hsize
+%D       \type{\vfillneg}\ruledvfillneg last line}}
+%D \stopregelcorrectie
+%D 
+%D Keep in mind that \type{\vfillneg} is not part of \PLAIN\
+%D \TEX, but are mimmicked by a macro. 
+
+\def\ruledvss%
+  {\doruledvfiller\normalvss\normalvfilneg{2}}
+
+\def\ruledvfil%
+  {\doruledvfiller\normalvfil\normalvfilneg{-4}}
+
+\def\ruledvfill%
+  {\doruledvfiller\normalvfill\normalvfillneg{-12}}
+
+\def\ruledvfilneg%
+  {\doruledvfiller\normalvfilneg\normalvfil{8}}
+
+\def\ruledvfillneg%
+  {\doruledvfiller\normalvfillneg\normalvfill{16}}
+
+%D \macros
+%D   {ruledhskip}
+%D   {}
+%D
+%D Skips differ from kerns in two important aspects:
+%D
+%D \startopsomming[opelkaar]
+%D \som  line and pagebreaks are allowed at a skip
+%D \som  skips can have a positive and/or negative
+%D       stretchcomponent
+%D \stopopsomming
+%D
+%D Stated a bit different: kerns are fixed skips at which no
+%D line or pagebreak can occur. Because skips have a more open
+%D character, they are visualized in a open way.
+%D
+%D \startbuffer
+%D one
+%D \hskip +30pt plus 5pt
+%D two
+%D \hskip +30pt
+%D \hskip -10pt plus 5pt
+%D three
+%D \hskip   0pt
+%D four
+%D \hskip +30pt
+%D five
+%D \stopbuffer
+%D
+%D \ShowBufferedExample
+%D
+%D When skips have a stretch component, this is visualized by
+%D means of a dashed line. Positive skips are on top of the
+%D baseline, negative ones are below it. This way we can show
+%D the combined results. An alternative visualization of
+%D stretch could be drawing the mid line over a length of the
+%D stretch, in positive or negative direction.
+
+\def\doruledhskip%
+  {\relax
+   \dontinterfere
+   \dontcomplain
+   \investigateskip\scratchskip
+   \ifzero
+     \setbox0=\normalhbox
+       {\normalhskip-\testrulewidth
+        \vrule
+          \!!width4\testrulewidth
+          \!!height16\testrulewidth
+          \!!depth16\testrulewidth}%
+   \else
+     \setbox0=\normalhbox to \ifnegative-\fi\scratchskip
+       {\vrule
+          \!!width2\testrulewidth
+          \ifnegative\!!depth\else\!!height\fi16\testrulewidth
+        \cleaders
+          \hrule
+            \ifnegative
+              \!!depth2\testrulewidth
+              \!!height\!!zeropoint
+            \else
+              \!!height2\testrulewidth
+              \!!depth\!!zeropoint
+            \fi
+          \normalhfill
+        \ifflexible
+          \normalhskip\ifnegative\else-\fi\scratchskip 
+          \normalhskip2\testrulewidth
+          \cleaders
+            \normalhbox
+              {\normalhskip 2\testrulewidth
+               \vrule
+                 \!!width2\testrulewidth
+                 \!!height\ifnegative-7\else9\fi\testrulewidth
+                 \!!depth\ifnegative9\else-7\fi\testrulewidth
+               \normalhskip 2\testrulewidth}%
+            \normalhfill
+        \fi
+        \vrule
+          \!!width2\testrulewidth
+          \ifnegative\!!depth\else\!!height\fi16\testrulewidth}%
+     \setbox0=\normalhbox
+       {\ifnegative\else\normalhskip-\scratchskip\fi
+        \box0}%
+   \fi
+   \smashbox0%
+   \ifvisiblestretch \else
+     \flexiblefalse
+   \fi
+   \ifflexible
+     % breaks ok but small displacements can occur
+     \skip2=\scratchskip
+     \advance\skip2 by -1\scratchskip
+     \divide\skip2 by 2
+     \advance\scratchskip by -\skip2
+     \normalhskip\scratchskip
+     \normalpenalty\!!tenthousand
+     \box0
+     \normalhskip\skip2
+   \else
+     \normalhskip\scratchskip
+     \box0
+   \fi
+   \egroup}
+
+\def\ruledhskip%
+  {\bgroup
+   \afterassignment\doruledhskip
+   \scratchskip=}
+
+%D The visual skip is located at a feasible point. Normally
+%D this does not interfere with the normaltypesetting process.
+%D The next examples show (1)~the default behavior, (2)~the
+%D (not entirely correct) distributed stretch and (3)~the way
+%D the text is typeset without cues.
+%D
+%D \startbuffer
+%D \dorecurse
+%D   {15}
+%D   {test\hskip1em plus .5em minus .5em
+%D    test\hskip2em
+%D    test}
+%D \stopbuffer
+%D
+%D \startregelcorrectie
+%D \showmakeup
+%D \haalbuffer
+%D \stopregelcorrectie
+%D
+%D \startregelcorrectie
+%D \showmakeup
+%D \visiblestretchtrue
+%D \haalbuffer
+%D \stopregelcorrectie
+%D
+%D \startregelcorrectie
+%D \haalbuffer
+%D \stopregelcorrectie
+
+%D \macros
+%D   {ruledvskip}
+%D   {}
+%D
+%D We are less fortunate when implementing the vertical skips.
+%D This is a direct result of interference between the boxes that
+%D visualize the skip and skip removal at a pagebreak. Normally
+%D skips disappear at the top of a page, but not of course when
+%D visualized in a \type{\vbox}. A quite perfect simulation
+%D could have been built if we would have had available two
+%D more primitives: \type{\hnop} and \type{\vnop}. These new
+%D primitives could stand for boxes that are visible but are
+%D not taken into account in any way. They are there for us,
+%D but not for \TEX.
+%D
+%D \startbuffer
+%D first line
+%D \vskip +30pt plus 5pt
+%D second line
+%D \vskip +30pt
+%D \vskip -10pt plus 5pt
+%D third line
+%D \par
+%D fourth line
+%D \vskip +30pt
+%D fifth line
+%D \vskip   0pt
+%D sixth line
+%D \stopbuffer
+%D
+%D \ShowBufferedExample
+%D
+%D We have to postpone \type{\prevdepth}. Although this 
+%D precaution probably is not completely waterproof, it works 
+%D quite well. 
+
+\def\dodoruledvskip%
+  {\nextdepth=\prevdepth
+   \dontinterfere
+   \dontcomplain
+   \offinterlineskip
+   \investigateskip\scratchskip
+   \ifzero
+     \setbox0=\normalvcue
+       {\vrule
+          \!!width32\testrulewidth
+          \!!height2\testrulewidth
+          \!!depth2\testrulewidth}%
+   \else
+     \setbox0=\normalvbox to \ifnegative-\fi\scratchskip
+       {\hrule
+          \!!width16\testrulewidth
+          \!!height2\testrulewidth
+        \ifflexible
+          \cleaders
+            \normalhbox to 16\testrulewidth
+              {\normalhss
+               \normalvbox
+                 {\normalvskip 2\testrulewidth
+                  \hrule
+                  \!!width2\testrulewidth
+                  \!!height2\testrulewidth
+                  \normalvskip 2\testrulewidth}%
+               \normalhss}%
+            \normalvfill
+        \else
+          \normalvfill
+        \fi
+        \hrule
+          \!!width16\testrulewidth
+          \!!height2\testrulewidth}%
+     \setbox2=\normalvbox to \ht0
+       {\hrule
+          \!!width2\testrulewidth
+          \!!height\ht0}%
+     \ifnegative
+       \ht0=\!!zeropoint
+       \setbox0=\normalhbox
+         {\normalhskip2\testrulewidth % will be improved
+          \normalhskip-\wd0\box0}%
+     \fi
+     \smashbox0%
+     \smashbox2%
+     \setbox0=\normalvcue
+       {\box2\box0}%
+     \setbox0=\normalvbox
+       {\ifnegative\normalvskip\scratchskip\fi\box0}%
+     \smashbox0%
+   \fi
+   \ifvisiblestretch
+     \ifflexible                      
+       \skip2=\scratchskip            
+       \advance\skip2 by -1\scratchskip
+       \divide\skip2 by 2              
+       \advance\scratchskip by -\skip2 
+       \normalvskip\skip2              
+     \fi
+   \fi
+   \normalpenalty\!!tenthousand
+   \box0
+   \prevdepth=\nextdepth % not \dp0=\nextdepth
+   \normalvskip\scratchskip}
+
+%D We try to avoid interfering at the top of a page. Of course
+%D we only do so when we are in the main vertical list.
+
+\def\doruledvskip%
+  {\endgraf % \par
+   \ifdim\pagegoal=\maxdimen
+     \ifinner
+       \dodoruledvskip
+     \fi
+   \else
+     \dodoruledvskip
+   \fi
+   \egroup}
+
+\def\ruledvskip%
+  {\bgroup
+   \afterassignment\doruledvskip
+   \scratchskip=}
+
+%D \macros
+%D   {ruledkern}
+%D   {}
+%D
+%D The macros that implement the kerns are a bit more
+%D complicated than needed, because they also serve the
+%D visualization of glue, our \PLAIN\ defined kerns with
+%D stretch or shrink. We've implemented both horizontal and
+%D vertical kerns as ruled boxes.
+%D
+%D \startbuffer
+%D one
+%D \kern +30pt
+%D two
+%D \kern +30pt
+%D \kern -10pt
+%D three
+%D \kern   0pt
+%D four
+%D \kern +30pt
+%D five
+%D \stopbuffer
+%D
+%D \ShowBufferedExample
+%D
+%D Positive and negative kerns are placed on top or below the
+%D baseline, so we are able to track their added result. We
+%D didn't mention spacings of 0~pt yet. Zero values are 
+%D visualized a bit different, because we want to see them 
+%D anyhow.
+
+\def\doruledhkern%
+  {\dontinterfere
+   \dontcomplain
+   \baselinerulefalse
+   \investigateskip\scratchskip
+   \boxrulewidth=2\testrulewidth
+   \ifzero
+     \setbox0=\ruledhbox to 8\testrulewidth
+       {\vrule
+          \!!width\!!zeropoint
+          \!!height16\testrulewidth
+          \!!depth16\testrulewidth}%
+     \setbox0=\normalhbox
+       {\normalhskip-4\testrulewidth\box0}%
+   \else
+     \setbox0=\ruledhbox to \ifnegative-\fi\scratchskip
+       {\vrule
+          \!!width\!!zeropoint
+          \ifnegative\!!depth\else\!!height\fi16\testrulewidth
+        \ifflexible
+          \normalhskip2\testrulewidth
+          \cleaders
+            \normalhbox
+              {\normalhskip 2\testrulewidth
+               \vrule
+                 \!!width2\testrulewidth
+                 \!!height\ifnegative-7\else9\fi\testrulewidth
+                 \!!depth\ifnegative9\else-7\fi\testrulewidth
+               \normalhskip 2\testrulewidth}%
+            \normalhfill
+        \else
+          \normalhfill
+        \fi}%
+     \testrulewidth=2\testrulewidth
+     \setbox0=\ruledhbox{\box0}%  \make...
+   \fi
+   \smashbox0%
+   \normalpenalty\!!tenthousand
+   \normalhbox to \!!zeropoint
+     {\ifnegative\normalhskip1\scratchskip\fi
+      \box0}%
+   \afterwards\scratchskip
+   \egroup}
+
+\def\ruledhkern#1%
+  {\bgroup
+   \let\afterwards=#1\relax
+   \afterassignment\doruledhkern
+   \scratchskip=}
+
+%D After having seen the horizontal ones, the vertical kerns
+%D will not surprise us. In this example we use \type{\par} to
+%D switch to vertical mode.
+%D
+%D \startbuffer
+%D first line
+%D \par \kern +30pt
+%D second line
+%D \par \kern +30pt
+%D \par \kern -10pt
+%D third line
+%D \par
+%D fourth line
+%D \par \kern +30pt
+%D fifth line
+%D \par \kern   0pt
+%D sixth line
+%D \stopbuffer
+%D
+%D \ShowBufferedExample
+%D
+%D Like before, we have to postpone \type{\prevdepth}. If we 
+%D leave out this trick, we got ourselves some wrong spacing. 
+
+\def\dodoruledvkern%
+  {\nextdepth=\prevdepth
+   \dontinterfere
+   \dontcomplain
+   \baselinerulefalse
+   \offinterlineskip
+   \investigateskip\scratchskip
+   \boxrulewidth=2\testrulewidth
+   \ifzero
+     \setbox0=\ruledhbox to 32\testrulewidth
+       {\vrule
+          \!!width\!!zeropoint
+          \!!height4\testrulewidth
+          \!!depth4\testrulewidth}%
+   \else
+     \setbox0=\ruledvbox to \ifnegative-\fi\scratchskip
+       {\hsize16\testrulewidth
+        \ifflexible
+          \cleaders
+            \normalhbox to 16\testrulewidth
+              {\normalhss
+               \normalvbox
+                 {\normalvskip 2\testrulewidth
+                  \hrule
+                    \!!width2\testrulewidth
+                    \!!height2\testrulewidth
+                  \normalvskip 2\testrulewidth}%
+               \normalhss}%
+            \normalvfill
+        \else
+          \vrule
+            \!!width\!!zeropoint
+            \!!height\ifnegative-\fi\scratchskip
+          \normalhfill
+        \fi}
+   \fi
+   \testrulewidth=2\testrulewidth
+   \setbox0=\ruledvbox{\box0}%  \make...
+   \smashbox0%
+   \setbox0=\normalvbox
+     {\ifnegative\normalvskip\scratchskip\fi
+      \normalvcue 
+       {\ifnegative\normalhskip-16\testrulewidth\fi\box0}}%
+   \smashbox0%
+   \normalpenalty\!!tenthousand
+   \box0
+   \prevdepth=\nextdepth} % not \dp0=\nextdepth
+
+\def\doruledvkern%
+  {\ifdim\pagegoal=\maxdimen
+     \ifinner
+       \dodoruledvkern
+     \fi
+   \else
+     \dodoruledvkern
+   \fi
+   \afterwards\scratchskip
+   \egroup}
+
+\def\ruledvkern#1%
+  {\bgroup
+   \let\afterwards=#1\relax
+   \afterassignment\doruledvkern
+   \scratchskip=}
+
+\def\ruledkern%
+  {\ifvmode
+     \let\next=\ruledvkern
+   \else
+     \let\next=\ruledhkern
+   \fi
+   \next\normalkern}
+
+%D A a bit more \TEX nice solution is:
+%D 
+%D \starttypen
+%D \def\ruledkern%
+%D   {\csname ruled\ifvmode v\else h\fi kern\endcsname\normalkern}
+%D \stoptypen
+
+%D \macros
+%D   {ruledhglue,ruledvglue}
+%D   {}
+%D
+%D The non-primitive glue commands are treated as kerns with
+%D stretch. This stretch is presented as a dashed line. I
+%D have to admit that until now, I've never used these glue
+%D commands.
+%D
+%D \startbuffer
+%D one
+%D \hglue +30pt plus 5pt
+%D two
+%D \hglue +30pt
+%D \hglue -10pt plus 5pt
+%D three
+%D \hglue   0pt
+%D four
+%D \hglue +30pt
+%D five
+%D \stopbuffer
+%D
+%D \ShowBufferedExample
+
+\def\doruledhglue%
+  {\leavevmode
+   \scratchcounter=\spacefactor
+   \vrule\!!width\!!zeropoint
+   \normalpenalty\!!tenthousand
+   \ruledhkern\normalhskip\scratchskip
+   \spacefactor=\scratchcounter
+   \egroup}
+
+\def\ruledhglue%
+  {\bgroup
+   \afterassignment\doruledhglue\scratchskip=}
+
+%D \startbuffer
+%D first line
+%D \vglue +30pt plus 5pt
+%D second line
+%D \vglue +30pt
+%D \vglue -10pt plus 5pt
+%D third line
+%D \par
+%D fourth line
+%D \vglue +30pt
+%D fifth line
+%D \vglue   0pt
+%D sixth line
+%D \stopbuffer
+%D
+%D \ShowBufferedExample
+
+\def\doruledvglue%
+  {\endgraf % \par
+   \nextdepth=\prevdepth 
+   \hrule\!!height\!!zeropoint
+   \normalpenalty\!!tenthousand
+   \ruledvkern\normalvskip\scratchskip
+   \prevdepth=\nextdepth
+   \egroup}
+
+\def\ruledvglue%
+  {\bgroup
+   \afterassignment\doruledvglue\scratchskip=}
+
+%D \macros
+%D   {ruledmkern,ruledmskip}
+%D   {}
+%D
+%D Mathematical kerns and skips are specified in mu. This
+%D font related unit is incompatible with those of \DIMENSIONS\
+%D and \SKIPS. Because in math mode spacing is often a very
+%D subtle matter, we've used a very simple, not overloaded way
+%D to show them.
+
+\def\dodoruledmkern#1%
+  {\dontinterfere
+   \dontcomplain
+   \setbox0=\normalhbox
+     {$\normalmkern\ifnegative-\fi\scratchmuskip$}%
+   \setbox0=\normalhbox to \wd0
+     {\vrule
+        \!!height16\testrulewidth
+        \!!depth16\testrulewidth
+        \!!width\testrulewidth
+      \leaders
+        \hrule
+          \!!height\ifpositive16\else-14\fi\testrulewidth
+          \!!depth\ifpositive-14\else16\fi\testrulewidth
+        \normalhfill
+      \ifflexible
+        \normalhskip-\wd0
+        \leaders
+          \hrule
+            \!!height\testrulewidth
+            \!!depth\testrulewidth
+          \normalhfill
+      \fi
+      \vrule
+        \!!height16\testrulewidth
+        \!!depth16\testrulewidth
+        \!!width\testrulewidth}%
+   \smashbox0%
+   \ifnegative
+      #1\scratchmuskip
+     \box0
+   \else
+     \box0
+      #1\scratchmuskip
+   \fi
+   \egroup}
+
+%D \startbuffer
+%D $a \mkern3mu = \mkern3mu
+%D  b \quad
+%D  \mkern-2mu + \mkern-2mu
+%D  \quad c$
+%D \stopbuffer
+%D
+%D \ShowBufferedExample
+
+\def\doruledmkern%
+  {\investigatemuskip\scratchmuskip
+   \flexiblefalse
+   \dodoruledmkern\normalmkern}
+
+\def\ruledmkern%
+  {\bgroup
+   \afterassignment\doruledmkern\scratchmuskip=}
+
+%D \startbuffer
+%D $a \mskip3mu = \mskip3mu
+%D  b \quad
+%D  \mskip-2mu + \mskip-2mu
+%D  \quad c$
+%D \stopbuffer
+%D
+%D \ShowBufferedExample
+
+\def\doruledmskip%
+  {\investigatemuskip\scratchmuskip
+   \flexibletrue
+   \dodoruledmkern\normalmskip}
+
+\def\ruledmskip%
+  {\bgroup
+   \afterassignment\doruledmskip\scratchmuskip=}
+
+%D \macros
+%D   {penalty}
+%D   {}
+%D
+%D After presenting fills, skip, kerns and glue we've come to
+%D see penalties. In the first implementation --- most of the
+%D time needed to develop this set of macros went into testing
+%D different types of visualization --- penalties were mere
+%D small blocks with one black half, depending on the sign.
+%D This most recent version also gives an indication of the
+%D amount of penalty. Penalties can go from less than $-10000$
+%D to over $+10000$, and their behavior is somewhat
+%D non-lineair, with some values having special meanings. We
+%D therefore decided not to use its value for a lineair
+%D indicator.
+%D
+%D \startbuffer
+%D one
+%D \penalty +100
+%D two
+%D \penalty +100
+%D \penalty -100
+%D three
+%D \penalty    0
+%D four
+%D \penalty +100
+%D five
+%D \stopbuffer
+%D
+%D \ShowBufferedExample
+%D
+%D The small sticks at the side of the penalty indicate it
+%D size. The next example shows the positive and negative
+%D penalties of 0, 1, 10, 100, 1000 and 10000.
+%D
+%D \startregelcorrectie
+%D \hbox
+%D   {test \ruledhpenalty0
+%D    test \ruledhpenalty1
+%D    test \ruledhpenalty10
+%D    test \ruledhpenalty100
+%D    test \ruledhpenalty1000
+%D    test \ruledhpenalty10000
+%D    test}
+%D \stopregelcorrectie
+%D
+%D \blanko
+%D
+%D \startregelcorrectie
+%D \hbox
+%D   {test \ruledhpenalty0
+%D    test \ruledhpenalty-1
+%D    test \ruledhpenalty-10
+%D    test \ruledhpenalty-100
+%D    test \ruledhpenalty-1000
+%D    test \ruledhpenalty-10000
+%D    test}
+%D \stopregelcorrectie
+%D
+%D \blanko
+%D
+%D This way stacked penalties of different severance can be
+%D shown in combination.
+%D
+%D test \ruledhpenalty10 \ruledhpenalty100
+%D test
+%D test \ruledhpenalty1000 \ruledhpenalty-1000
+%D test
+
+\def\setruledpenaltybox#1#2#3#4#5#6%
+  {\setbox#1=\normalhbox
+     {\ifnum#2=0 \else
+        \ifnum#2>0
+          \def\sign{+}%
+        \else
+          \def\sign{-}%
+        \fi
+        \dimen0=\ifnum\sign#2>9999
+                  28\else
+                \ifnum\sign#2>999
+                  22\else
+                \ifnum\sign#2>99
+                  16\else
+                \ifnum\sign#2>9
+                  10\else
+                  4
+                \fi\fi\fi\fi \testrulewidth
+        \ifnum#2<0
+          \normalhskip-\dimen0
+          \normalhskip-2\testrulewidth
+          \vrule
+            \!!width2\testrulewidth
+            \!!height#3\testrulewidth
+            \!!depth#4\testrulewidth
+        \fi
+        \vrule
+          \!!width\dimen0
+          \!!height#5\testrulewidth
+          \!!depth#6\testrulewidth
+        \ifnum#2>0
+          \vrule
+            \!!width2\testrulewidth
+            \!!height#3\testrulewidth
+            \!!depth#4\testrulewidth
+         \fi
+      \fi}%
+   \smashbox#1}
+
+\def\doruledhpenalty%
+  {\dontinterfere
+   \dontcomplain
+   \investigatecount\scratchcounter
+   \testrulewidth=2\testrulewidth
+   \boxrulewidth=\testrulewidth
+   \setbox0=\ruledhbox to 8\testrulewidth
+     {\ifnegative\else\normalhss\fi
+      \vrule
+        \!!depth8\testrulewidth
+        \!!width\ifzero0\else4\fi\testrulewidth
+      \ifpositive\else\normalhss\fi}%
+   \setruledpenaltybox{2}{\scratchcounter}{0}{8}{-3.5}{4.5}%
+   \normalpenalty\!!tenthousand
+   \setbox0=\normalhbox
+     {\normalhskip-4\testrulewidth
+      \ifnegative
+        \box2\box0
+      \else
+        \box0\box2
+      \fi}%
+   \smashbox0%
+   \box0
+   \normalpenalty\scratchcounter
+   \egroup}
+
+\def\ruledhpenalty%
+  {\bgroup
+   \afterassignment\doruledhpenalty
+   \scratchcounter=}
+
+%D The size of a vertical penalty is also shown on the
+%D horizontal axis. This way there is less interference with
+%D the often preceding or following skips and kerns.
+%D
+%D \startbuffer
+%D first line
+%D \par \penalty +100
+%D second line
+%D \par \penalty +100
+%D \par \penalty -100
+%D third line
+%D \par \penalty    0
+%D fourth line
+%D \par \penalty +100
+%D fifth line
+%D \stopbuffer
+%D
+%D \ShowBufferedExample
+
+\def\doruledvpenalty%
+  {\ifdim\pagegoal=\maxdimen
+   \else
+     \nextdepth=\prevdepth  
+     \dontinterfere
+     \dontcomplain
+     \investigatecount\scratchcounter
+     \testrulewidth=2\testrulewidth
+     \boxrulewidth=\testrulewidth
+     \setbox0=\ruledhbox
+       {\vrule
+          \!!height4\testrulewidth
+          \!!depth4\testrulewidth
+          \!!width\!!zeropoint
+        \vrule
+          \!!height\ifnegative.5\else4\fi\testrulewidth
+          \!!depth\ifpositive.5\else4\fi\testrulewidth
+          \!!width8\testrulewidth}%
+     \setruledpenaltybox{2}{\scratchcounter}{4}{4}{.5}{.5}%
+     \setbox0=\normalhbox
+       {\normalhskip-4\testrulewidth
+        \ifnegative
+          \box2\box0
+        \else
+          \box0\box2
+        \fi
+        \normalhss}%
+     \smashbox0%
+     \normalpenalty\!!tenthousand
+     \nointerlineskip
+     \dp0=\nextdepth  % not \prevdepth=\nextdepth 
+     \normalvbox
+       {\normalvcue{\box0}}%
+   \fi
+   \normalpenalty\scratchcounter
+   \egroup}
+
+\def\ruledvpenalty%
+  {\bgroup
+   \afterassignment\doruledvpenalty
+   \scratchcounter=}
+
+\def\ruledpenalty%
+  {\ifvmode
+     \let\next=\ruledvpenalty
+   \else
+     \let\next=\ruledhpenalty
+   \fi
+   \next}
+
+%D At the cost of some more tokens, a bit more clever 
+%D implementation would be:
+%D
+%D \starttypen
+%D \def\ruledpenalty%
+%D   {\csname ruled\ifvmode v\else h\fi penalty\endcsname}
+%D \stoptypen
+
+%D \macros
+%D   {showfils,dontshowfils,
+%D    showboxes,dontshowboxes,
+%D    showskips,dontshowskips,
+%D    showpenalties,dontshowpenalties}
+%D   {}
+%D
+%D For those who want to manipulate the visual cues in detail,
+%D we have grouped them.
+
+\def\showfils%
+  {\let\hss      = \ruledhss
+   \let\hfil     = \ruledhfil
+   \let\hfill    = \ruledhfill
+   \let\hfilneg  = \ruledhfilneg
+   \let\hfillneg = \ruledhfillneg
+   \let\vss      = \ruledvss
+   \let\vfil     = \ruledvfil
+   \let\vfill    = \ruledvfill
+   \let\vfilneg  = \ruledvfilneg
+   \let\vfillneg = \ruledvfillneg}
+
+\def\dontshowfils%
+  {\let\hss      = \normalhss
+   \let\hfil     = \normalhfil
+   \let\hfill    = \normalhfill
+   \let\hfilneg  = \normalhfilneg
+   \let\hfillneg = \normalhfillneg
+   \let\vss      = \normalvss
+   \let\vfil     = \normalvfil
+   \let\vfill    = \normalvfill
+   \let\vfilneg  = \normalvfilneg
+   \let\vfillneg = \normalvfillneg}
+
+\def\showboxes%
+  {\baselineruletrue
+   \let\hbox     = \ruledhbox
+   \let\vbox     = \ruledvbox
+   \let\vtop     = \ruledvtop
+   \let\vcenter  = \ruledvcenter}
+
+\def\dontshowboxes%
+  {\let\hbox     = \normalhbox
+   \let\vbox     = \normalvbox
+   \let\vtop     = \normalvtop
+   \let\vcenter  = \normalvcenter}
+
+\def\showskips%
+  {\let\hskip    = \ruledhskip
+   \let\vskip    = \ruledvskip
+   \let\kern     = \ruledkern
+   \let\mskip    = \ruledmskip
+   \let\mkern    = \ruledmkern
+   \let\hglue    = \ruledhglue
+   \let\vglue    = \ruledvglue}
+
+\def\dontshowskips%
+  {\let\hskip    = \normalhskip
+   \let\vskip    = \normalvskip
+   \let\kern     = \normalkern
+   \let\mskip    = \normalmskip
+   \let\mkern    = \normalmkern
+   \let\hglue    = \normalhglue
+   \let\vglue    = \normalvglue}
+
+\def\showpenalties%
+  {\let\penalty  = \ruledpenalty}
+
+\def\dontshowpenalties%
+  {\let\penalty  = \normalpenalty}
+
+%D \macros
+%D   {showingcomposition,
+%D    showcomposition,dontshowcomposition,}
+%D   {}
+%D
+%D All these nice options come together in two macros. The
+%D first one turns the options on, the second turnes them off.
+%D Both macros only do their job when we are actually showing
+%D the composition.
+%D
+%D \starttypen
+%D \showingcompositiontrue
+%D \showcomposition
+%D \stoptypen
+%D 
+%D Because the output routine can do tricky things, like
+%D multiple column typesetting and manipulation of the
+%D pagebody, shifting things around and so on, the macro
+%D \type{\dontshowcomposition} best can be called when we enter
+%D this routine. Too much visual cues just don't make sense. In
+%D \CONTEXT\ this has been taken care of. 
+
+\newif\ifshowingcomposition
+
+\def\showcomposition%
+  {\ifshowingcomposition
+     \showfils
+     \showboxes
+     \showskips
+     \showpenalties
+   \fi}
+
+\def\dontshowcomposition%
+  {\ifshowingcomposition
+     \dontshowfils
+     \dontshowboxes
+     \dontshowskips
+     \dontshowpenalties
+   \fi}
+
+%D \macros
+%D   {showmakeup,
+%D    defaulttestrulewidth}
+%D   {}
+%D
+%D Just to make things even more easy, we have defined:
+%D
+%D \starttypen
+%D \showmakeup
+%D \stoptypen
+%D
+%D For the sake of those who don't (yet) use \CONTEXT\ we 
+%D preset \type{\defaulttestrulewidth} to the already set 
+%D value. Otherwise we default to a corps related value.
+%D
+%D \starttypen
+%D \def\defaulttestrulewidth{.2pt}
+%D \stoptypen
+%D
+%D Beware, it's a macro not a \DIMENSION.
+
+\ifx\korpsgrootte\undefined
+  \edef\defaulttestrulewidth{\the\testrulewidth}
+\else
+  \def\defaulttestrulewidth{.02\korpsgrootte}  % still dutch
+\fi
+
+\def\showmakeup%
+  {\testrulewidth=\defaulttestrulewidth
+   \showingcompositiontrue
+   \showcomposition}
+
+\protect
+
+%D \ifCONTEXT \let\next=\relax \else \let\next=\endinput 
+%D The documented source you have been reading was processed
+%D using some surrogate makeup. When this file is processed
+%D in \CONTEXT, a few more examples show up here, like a local
+%D table of contents and a local register. 
+%D \fi \next
+
+% %D Lets end with some more advanced examples. When visualized,
+% %D the table of contents of the outer level is typeset as:
+% %D
+% %D {\showmakeup\plaatsinhoud[criterium=vorige]}
+% %D
+%D Lets end with some more advanced examples. 
+%D Definitions and enumerations come in many flavors. The 
+%D next one for instance is defined as: 
+%D
+%D \starttypen
+%D \definedescription[test][place=left,hang=3,width=6em]
+%D \stoptypen
+%D
+%D When applied to some text, this would look like: 
+%D
+%D \bgroup
+%D \showmakeup
+%D \doordefinieren[test][plaats=links,hang=3,breedte=6em]
+%D
+%D \test{visual\\debugger} I would be very pleased if \TEX\
+%D had two more primitives: \type{\vnop} and \type{\hnop}. Both
+%D should act and show up as normal boxes, but stay invisible
+%D for \TEX\ when it's doing calculations. The \type{\vnop} 
+%D for instance should not interact with the internal mechanism 
+%D responsible for the disappearing skips, kerns and penalties
+%D at a pagebreak. As long as we don't have these two boxtypes, 
+%D visual debugging will never be perfect. 
+%D
+%D \egroup
+%D
+%D The index to this section looks like:
+%D
+%D {\stelrefererenin[prefix=dummy]\showmakeup\plaatsindex[criterium=lokaal]}
+%D
+%D Although not impressive examples or typesetting, both
+%D show us how and where things happen. When somehow the last
+%D lines in this two column index don't allign, then this is
+%D due to some still unknown interference.
+
+\endinput
+
+

@@ -1,0 +1,527 @@
+%D \module
+%D   [       file=lang-ger,
+%D        version=1997.09.03,
+%D          title=\CONTEXT\ Language Macros,
+%D       subtitle=Germanic Languages,
+%D         author=Hans Hagen / Tobias Burnus,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. Non||commercial use is
+%C granted.
+
+%  Danish, Faeroese, Icelandic, Norwegian, Swedish, German, Yiddish
+%  Afrikaans, Dutch, English, Flemush, Frisian, Plattdeutsch
+
+\writestatus{loading}{Germanic Languages}
+
+\unprotect
+
+\installlanguage
+  [\s!nl]
+  [\c!spatiering=\v!opelkaar,
+   \c!leftsentence=---,
+   \c!rightsentence=---,
+   \c!leftsubsentence=---,
+   \c!rightsubsentence=---,
+   \c!leftquote=\lowerleftsingleninequote,
+   \c!rightquote=\upperrightsingleninequote,
+   \c!leftquotation=\lowerleftdoubleninequote,
+   \c!rightquotation=\upperrightdoubleninequote,
+   \c!datum={\v!dag,\ ,\v!maand,\ ,\v!jaar},
+   \c!default=\s!en,
+   \c!status=\v!stop]
+
+\installlanguage
+  [\s!en]
+  [\c!spatiering=\v!ruim,
+   \c!leftsentence=---,
+   \c!rightsentence=---,
+   \c!leftsubsentence=---,
+   \c!rightsubsentence=---,
+   \c!leftquote=\upperleftsinglesixquote,
+   \c!rightquote=\upperrightsingleninequote,
+   \c!leftquotation=\upperleftdoublesixquote,
+   \c!rightquotation=\upperrightdoubleninequote,
+   \c!datum={\v!jaar,\ ,\v!maand,\ ,\v!dag},
+   \c!default=\s!en,
+   \c!status=\v!start] % always preloaded!
+
+\installlanguage
+  [\s!de]
+  [\c!spatiering=\v!opelkaar,
+   \c!leftsentence={\hbox{--~}},
+   \c!rightsentence={\hbox{~--}},
+   \c!leftsubsentence={--},
+   \c!rightsubsentence={--},
+   \c!leftquote=\lowerleftsingleninequote,
+   \c!rightquote=\upperrightsinglesixquote,
+   \c!leftquotation=\lowerleftdoubleninequote,
+   \c!rightquotation=\upperrightdoublesixquote,
+   \c!datum={\v!dag,{.},\ ,\v!maand,\ ,\v!jaar},
+   \c!default=\s!en,
+   \c!status=\v!stop]
+
+\installlanguage
+  [\s!da]
+  [\c!spatiering=\v!opelkaar,
+   \c!leftsentence=---,
+   \c!rightsentence=---,
+   \c!leftsubsentence=---,
+   \c!rightsubsentence=---,
+   \c!leftquote=\upperleftsinglesixquote,
+   \c!rightquote=\upperrightsingleninequote,
+   \c!leftquotation=\upperleftdoublesixquote,
+   \c!rightquotation=\upperrightdoubleninequote,
+   \c!datum={\v!jaar,\ ,\v!maand,\ ,\v!dag},
+   \c!default=\s!en,
+   \c!status=\v!stop]
+
+\installlanguage
+  [\s!sv]
+  [\c!spatiering=\v!opelkaar,
+   \c!leftsentence=---,
+   \c!rightsentence=---,
+   \c!leftsubsentence=---,
+   \c!rightsubsentence=---,
+   \c!leftquote=\upperleftsinglesixquote,
+   \c!rightquote=\upperrightsingleninequote,
+   \c!leftquotation=\upperleftdoublesixquote,
+   \c!rightquotation=\upperrightdoubleninequote,
+   \c!datum={\v!jaar,\ ,\v!maand,\ ,\v!dag},
+   \c!default=\s!en,
+   \c!status=\v!stop]
+
+\installlanguage
+  [\s!af]
+  [\c!spatiering=\v!opelkaar,
+   \c!leftsentence=---,
+   \c!rightsentence=---,
+   \c!leftsubsentence=---,
+   \c!rightsubsentence=---,
+   \c!leftquote=\upperleftsinglesixquote,
+   \c!rightquote=\upperrightsingleninequote,
+   \c!leftquotation=\upperleftdoublesixquote,
+   \c!rightquotation=\upperrightdoubleninequote,
+   \c!datum={\v!jaar,\ ,\v!maand,\ ,\v!dag},
+   \c!default=\s!en,
+   \c!status=\v!stop]
+
+\installlanguage
+  [\s!no]
+  [\c!spatiering=\v!opelkaar,
+   \c!leftsentence=---,
+   \c!rightsentence=---,
+   \c!leftsubsentence=---,
+   \c!rightsubsentence=---,
+   \c!leftquote=\upperleftsinglesixquote,
+   \c!rightquote=\upperrightsingleninequote,
+   \c!leftquotation=\upperleftdoublesixquote,
+   \c!rightquotation=\upperrightdoubleninequote,
+   \c!datum={\v!jaar,\ ,\v!maand,\ ,\v!dag},
+   \c!default=\s!en,
+   \c!status=\v!stop]
+
+%D Hey look, some experiment:
+
+\installlanguage
+  [nlx]
+  [\c!spatiering=\v!opelkaar,
+   \c!default=\s!nl,
+   \c!status=\v!stop]
+
+%D For compatibility reasons we also define:
+
+\installlanguage [du] [\s!de]
+
+\let\normaldoublequote="
+
+\startlanguagespecifics[\s!de]
+
+  \installcompoundcharacter "a {\moveaccent{-.1ex}\"a\midworddiscretionary}
+  \installcompoundcharacter "e {\moveaccent{-.1ex}\"e\midworddiscretionary}
+  \installcompoundcharacter "i {\moveaccent{-.1ex}\"\i\midworddiscretionary}
+  \installcompoundcharacter "o {\moveaccent{-.1ex}\"o\midworddiscretionary}
+  \installcompoundcharacter "u {\moveaccent{-.1ex}\"u\midworddiscretionary}
+  \installcompoundcharacter "s {\SS}
+  \installcompoundcharacter "z {\SS}
+
+  \installcompoundcharacter "A {\smashaccent\"A}
+  \installcompoundcharacter "E {\smashaccent\"E}
+  \installcompoundcharacter "I {\smashaccent\"I}
+  \installcompoundcharacter "O {\smashaccent\"O}
+  \installcompoundcharacter "U {\smashaccent\"U}
+  \installcompoundcharacter "Z {SZ}
+  \installcompoundcharacter "S {SS}
+
+\stoplanguagespecifics
+
+\startlanguagespecifics[\s!de]
+
+  \installcompoundcharacter "ck {\discretionary {k-}{k}{ck}}
+  \installcompoundcharacter "ff {\discretionary{ff-}{f}{ff}}
+  \installcompoundcharacter "ll {\discretionary{ll-}{l}{ll}}
+  \installcompoundcharacter "mm {\discretionary{mm-}{m}{mm}}
+  \installcompoundcharacter "nn {\discretionary{nn-}{n}{nn}}
+  \installcompoundcharacter "pp {\discretionary{pp-}{p}{pp}}
+  \installcompoundcharacter "rr {\discretionary{rr-}{r}{rr}}
+  \installcompoundcharacter "tt {\discretionary{tt-}{t}{tt}}
+
+  \installcompoundcharacter "CK {\discretionary {K-}{K}{CK}}
+  \installcompoundcharacter "FF {\discretionary{FF-}{F}{FF}}
+  \installcompoundcharacter "LL {\discretionary{LL-}{L}{LL}}
+  \installcompoundcharacter "MM {\discretionary{MM-}{M}{MM}}
+  \installcompoundcharacter "NN {\discretionary{NN-}{N}{NN}}
+  \installcompoundcharacter "PP {\discretionary{PP-}{P}{PP}}
+  \installcompoundcharacter "RR {\discretionary{RR-}{R}{RR}}
+  \installcompoundcharacter "TT {\discretionary{TT-}{T}{TT}}
+
+\stoplanguagespecifics
+
+\startlanguagespecifics[\s!de]
+
+  \installcompoundcharacter "` {\handlequotation\c!leftquotation}
+  \installcompoundcharacter "' {\handlequotation\c!rightquotation}
+  \installcompoundcharacter ". {\kern.1em\ignorespaces}
+
+  \def\setupDElanguage%
+    {\setuplanguage
+       [\s!de]
+       [\c!leftsentence=\leftguillemot,
+        \c!rightsentence=\rightguillemot,
+        \c!leftsubsentence=\leftsubguillemot,
+        \c!rightsubsentence=\rightsubguillemot]}
+ 
+  \installcompoundcharacter "<   {{\setupDElanguage|<|}}
+  \installcompoundcharacter ">   {{\setupDElanguage|>|}}
+
+\stoplanguagespecifics
+
+\setupheadtext [\s!en] [\v!inhoud=Contents]
+\setupheadtext [\s!nl] [\v!inhoud=Inhoud]
+\setupheadtext [\s!de] [\v!inhoud=Inhalt]
+\setupheadtext [\s!da] [\v!inhoud=Indhold]
+\setupheadtext [\s!sv] [\v!inhoud=Inneh\aa l]
+\setupheadtext [\s!af] [\v!inhoud=Inhoud]
+\setupheadtext [\s!no] [\v!inhoud=Innhold]
+
+\setupheadtext [\s!en] [\v!tabellen=Tables]
+\setupheadtext [\s!nl] [\v!tabellen=Tabellen]
+\setupheadtext [\s!de] [\v!tabellen=Tabellen]
+\setupheadtext [\s!da] [\v!tabellen=Tablen]
+\setupheadtext [\s!sv] [\v!tabellen=Tabellen]
+\setupheadtext [\s!af] [\v!tabellen=Tabellen]
+\setupheadtext [\s!no] [\v!tabellen=Tabellen]
+
+\setupheadtext [\s!en] [\v!figuren=Figures]
+\setupheadtext [\s!nl] [\v!figuren=Figuren]
+\setupheadtext [\s!de] [\v!figuren=Abbildungen]
+\setupheadtext [\s!da] [\v!figuren=Figuren]
+\setupheadtext [\s!sv] [\v!figuren=Figuren]
+\setupheadtext [\s!af] [\v!figuren=Afbeeldingen]
+\setupheadtext [\s!no] [\v!figuren=Avbildningen]
+
+\setupheadtext [\s!en] [\v!grafieken=Graphics]
+\setupheadtext [\s!nl] [\v!grafieken=Grafieken]
+\setupheadtext [\s!de] [\v!grafieken=Graphiken]
+\setupheadtext [\s!da] [\v!grafieken=Grafiken]
+\setupheadtext [\s!sv] [\v!grafieken=Grafiskt]
+\setupheadtext [\s!af] [\v!grafieken=Grafieken]
+\setupheadtext [\s!no] [\v!grafieken=Grafikken]
+
+\setupheadtext [\s!en] [\v!intermezzos=Intermezzos]
+\setupheadtext [\s!nl] [\v!intermezzos=Intermezzo's]
+\setupheadtext [\s!de] [\v!intermezzos=Intermezzi]
+\setupheadtext [\s!da] [\v!intermezzos=Intermezzos]
+\setupheadtext [\s!sv] [\v!intermezzos=Intermezzot]
+\setupheadtext [\s!af] [\v!intermezzos=Intermezzos]
+\setupheadtext [\s!no] [\v!intermezzos=Intermezzos]
+
+\setupheadtext [\s!en] [\v!index=Index]
+\setupheadtext [\s!nl] [\v!index=Index]
+\setupheadtext [\s!de] [\v!index=Index]
+\setupheadtext [\s!da] [\v!index=Indeks]
+\setupheadtext [\s!sv] [\v!index=Index]
+\setupheadtext [\s!af] [\v!index=Indeks]
+\setupheadtext [\s!no] [\v!index=Indeks]
+
+\setupheadtext [\s!en] [\v!afkortingen=Abbreviations]
+\setupheadtext [\s!nl] [\v!afkortingen=Afkortingen]
+\setupheadtext [\s!de] [\v!afkortingen=Abk\"urzungen]
+\setupheadtext [\s!da] [\v!afkortingen=Abbreviations]
+\setupheadtext [\s!sv] [\v!afkortingen=F\"orkortningen]
+\setupheadtext [\s!af] [\v!afkortingen=Afkortingen]
+\setupheadtext [\s!no] [\v!afkortingen=Forkortelsen]
+
+\setupheadtext [\s!en] [\v!logos=Logos]
+\setupheadtext [\s!nl] [\v!logos=Logo's]
+\setupheadtext [\s!de] [\v!logos=Logos]
+\setupheadtext [\s!da] [\v!logos=Logos]
+\setupheadtext [\s!sv] [\v!logos=Logo]
+\setupheadtext [\s!af] [\v!logos=Logos]
+\setupheadtext [\s!no] [\v!logos=Logos]
+
+\setupheadtext [\s!en] [\v!eenheden=Units]
+\setupheadtext [\s!nl] [\v!eenheden=Eenheden]
+\setupheadtext [\s!de] [\v!eenheden=Einheiten]
+\setupheadtext [\s!da] [\v!eenheden=Enheden]
+\setupheadtext [\s!sv] [\v!eenheden=Enheten]
+\setupheadtext [\s!af] [\v!eenheden=Eenheiden]
+\setupheadtext [\s!no] [\v!eenheden=Enheten]
+
+\setuplabeltext [\s!en] [\v!tabel=Table ]
+\setuplabeltext [\s!nl] [\v!tabel=Tabel ]
+\setuplabeltext [\s!de] [\v!tabel=Tabelle ]
+\setuplabeltext [\s!da] [\v!tabel=Tabel ]
+\setuplabeltext [\s!sv] [\v!tabel=Tabell ]
+\setuplabeltext [\s!af] [\v!tabel=Tabel]
+\setuplabeltext [\s!no] [\v!tabel=Tabell ]
+
+\setuplabeltext [\s!en] [\v!figuur=Figure ]
+\setuplabeltext [\s!nl] [\v!figuur=Figuur ]
+\setuplabeltext [\s!de] [\v!figuur=Abbildung ]
+\setuplabeltext [\s!da] [\v!figuur=Figur ]
+\setuplabeltext [\s!sv] [\v!figuur=Figur ]
+\setuplabeltext [\s!af] [\v!figuur=Afbeelding ]
+\setuplabeltext [\s!no] [\v!figuur=Avbildning ]
+
+\setuplabeltext [\s!en] [\v!intermezzo=Intermezzo ]
+\setuplabeltext [\s!nl] [\v!intermezzo=Intermezzo ]
+\setuplabeltext [\s!de] [\v!intermezzo=Intermezzo ]
+\setuplabeltext [\s!da] [\v!intermezzo=Intermezzo ]
+\setuplabeltext [\s!sv] [\v!intermezzo=Intermezzo ]
+\setuplabeltext [\s!af] [\v!intermezzo=Intermezzo ]
+\setuplabeltext [\s!no] [\v!intermezzo=Intermezzo ]
+
+\setuplabeltext [\s!en] [\v!grafiek=Graphic ]
+\setuplabeltext [\s!nl] [\v!grafiek=Grafiek ]
+\setuplabeltext [\s!de] [\v!grafiek=Graphik ]
+\setuplabeltext [\s!da] [\v!grafiek=Grafik ]
+\setuplabeltext [\s!sv] [\v!grafiek=Grafisk ]
+\setuplabeltext [\s!af] [\v!grafiek=Grafiek ]
+\setuplabeltext [\s!no] [\v!grafiek=Grafikk ]
+
+\setuplabeltext [\s!en] [\v!hoofdstuk=]
+\setuplabeltext [\s!nl] [\v!hoofdstuk=]
+\setuplabeltext [\s!de] [\v!hoofdstuk=]
+\setuplabeltext [\s!da] [\v!hoofdstuk=]
+\setuplabeltext [\s!sv] [\v!hoofdstuk=]
+\setuplabeltext [\s!af] [\v!hoofdstuk=]
+\setuplabeltext [\s!no] [\v!hoofdstuk=]
+
+\setuplabeltext [\s!en] [\v!paragraaf=]
+\setuplabeltext [\s!nl] [\v!paragraaf=]
+\setuplabeltext [\s!de] [\v!paragraaf=]
+\setuplabeltext [\s!da] [\v!paragraaf=]
+\setuplabeltext [\s!sv] [\v!paragraaf=]
+\setuplabeltext [\s!af] [\v!paragraaf=]
+\setuplabeltext [\s!no] [\v!paragraaf=]
+
+\setuplabeltext [\s!en] [\v!sub\v!paragraaf=]
+\setuplabeltext [\s!nl] [\v!sub\v!paragraaf=]
+\setuplabeltext [\s!de] [\v!sub\v!paragraaf=]
+\setuplabeltext [\s!da] [\v!sub\v!paragraaf=]
+\setuplabeltext [\s!sv] [\v!sub\v!paragraaf=]
+\setuplabeltext [\s!af] [\v!sub\v!paragraaf=]
+\setuplabeltext [\s!no] [\v!sub\v!paragraaf=]
+
+\setuplabeltext [\s!en] [\v!sub\v!sub\v!paragraaf=]
+\setuplabeltext [\s!nl] [\v!sub\v!sub\v!paragraaf=]
+\setuplabeltext [\s!de] [\v!sub\v!sub\v!paragraaf=]
+\setuplabeltext [\s!da] [\v!sub\v!sub\v!paragraaf=]
+\setuplabeltext [\s!sv] [\v!sub\v!sub\v!paragraaf=]
+\setuplabeltext [\s!af] [\v!sub\v!sub\v!paragraaf=]
+\setuplabeltext [\s!no] [\v!sub\v!sub\v!paragraaf=]
+
+\setuplabeltext [\s!en] [\v!bijlage=]
+\setuplabeltext [\s!nl] [\v!bijlage=]
+\setuplabeltext [\s!de] [\v!bijlage=]
+\setuplabeltext [\s!da] [\v!bijlage=]
+\setuplabeltext [\s!sv] [\v!bijlage=]
+\setuplabeltext [\s!af] [\v!bijlage=]
+\setuplabeltext [\s!no] [\v!bijlage=]
+
+\setuplabeltext [\s!en] [\v!deel=Part ]
+\setuplabeltext [\s!nl] [\v!deel=Deel ]
+\setuplabeltext [\s!de] [\v!deel=Teil ]
+\setuplabeltext [\s!da] [\v!deel=Del ]
+\setuplabeltext [\s!sv] [\v!deel=Del ]
+\setuplabeltext [\s!af] [\v!deel=Deel ]
+\setuplabeltext [\s!no] [\v!deel=Del ]
+
+\setuplabeltext [\s!en] [\v!regel=line]
+\setuplabeltext [\s!nl] [\v!regel=regel]
+\setuplabeltext [\s!de] [\v!regel=Zeile]
+\setuplabeltext [\s!da] [\v!regel=linie]
+\setuplabeltext [\s!sv] [\v!regel=rad]
+\setuplabeltext [\s!af] [\v!regel=re\"el]
+\setuplabeltext [\s!no] [\v!regel=linje]
+
+\setuplabeltext [\s!en] [\v!regels=lines]
+\setuplabeltext [\s!nl] [\v!regels=regels]
+\setuplabeltext [\s!de] [\v!regels=Zeilen]
+\setuplabeltext [\s!da] [\v!regels=linien]
+\setuplabeltext [\s!sv] [\v!regels=raden]
+\setuplabeltext [\s!af] [\v!regels=re\"elen]
+\setuplabeltext [\s!no] [\v!regels=linjen]
+
+\setuplabeltext [\s!en]   [\v!january=January]
+\setuplabeltext [\s!en]  [\v!february=February]
+\setuplabeltext [\s!en]     [\v!march=March]
+\setuplabeltext [\s!en]     [\v!april=April]
+\setuplabeltext [\s!en]       [\v!may=May]
+\setuplabeltext [\s!en]      [\v!june=June]
+\setuplabeltext [\s!en]      [\v!july=July]
+\setuplabeltext [\s!en]    [\v!august=August]
+\setuplabeltext [\s!en] [\v!september=September]
+\setuplabeltext [\s!en]   [\v!october=October]
+\setuplabeltext [\s!en]  [\v!november=November]
+\setuplabeltext [\s!en]  [\v!december=December]
+
+\setuplabeltext [\s!nl]   [\v!january=januari]
+\setuplabeltext [\s!nl]  [\v!february=februari]
+\setuplabeltext [\s!nl]     [\v!march=maart]
+\setuplabeltext [\s!nl]     [\v!april=april]
+\setuplabeltext [\s!nl]       [\v!may=mei]
+\setuplabeltext [\s!nl]      [\v!june=juni]
+\setuplabeltext [\s!nl]      [\v!july=juli]
+\setuplabeltext [\s!nl]    [\v!august=augustus]
+\setuplabeltext [\s!nl] [\v!september=september]
+\setuplabeltext [\s!nl]   [\v!october=oktober]
+\setuplabeltext [\s!nl]  [\v!november=november]
+\setuplabeltext [\s!nl]  [\v!december=december]
+
+\setuplabeltext [\s!de]   [\v!january=Januar]
+\setuplabeltext [\s!de]  [\v!february=Februar]
+\setuplabeltext [\s!de]     [\v!march=M\"arz]
+\setuplabeltext [\s!de]     [\v!april=April]
+\setuplabeltext [\s!de]       [\v!may=Mai]
+\setuplabeltext [\s!de]      [\v!june=Juni]
+\setuplabeltext [\s!de]      [\v!july=Juli]
+\setuplabeltext [\s!de]    [\v!august=August]
+\setuplabeltext [\s!de] [\v!september=September]
+\setuplabeltext [\s!de]   [\v!october=Oktober]
+\setuplabeltext [\s!de]  [\v!november=November]
+\setuplabeltext [\s!de]  [\v!december=Dezember]
+
+\setuplabeltext [\s!da]   [\v!january=januar]
+\setuplabeltext [\s!da]  [\v!february=februar]
+\setuplabeltext [\s!da]     [\v!march=marts]
+\setuplabeltext [\s!da]     [\v!april=april]
+\setuplabeltext [\s!da]       [\v!may=maj]
+\setuplabeltext [\s!da]      [\v!june=juni]
+\setuplabeltext [\s!da]      [\v!july=juli]
+\setuplabeltext [\s!da]    [\v!august=august]
+\setuplabeltext [\s!da] [\v!september=september]
+\setuplabeltext [\s!da]   [\v!october=oktober]
+\setuplabeltext [\s!da]  [\v!november=november]
+\setuplabeltext [\s!da]  [\v!december=december]
+
+\setuplabeltext [\s!sv]   [\v!january=januari]
+\setuplabeltext [\s!sv]  [\v!february=februari]
+\setuplabeltext [\s!sv]     [\v!march=mars]
+\setuplabeltext [\s!sv]     [\v!april=april]
+\setuplabeltext [\s!sv]       [\v!may=maj]
+\setuplabeltext [\s!sv]      [\v!june=juni]
+\setuplabeltext [\s!sv]      [\v!july=juli]
+\setuplabeltext [\s!sv]    [\v!august=augusti]
+\setuplabeltext [\s!sv] [\v!september=september]
+\setuplabeltext [\s!sv]   [\v!october=oktober]
+\setuplabeltext [\s!sv]  [\v!november=november]
+\setuplabeltext [\s!sv]  [\v!december=december]
+
+\setuplabeltext [\s!af]   [\v!january=januarie]
+\setuplabeltext [\s!af]  [\v!february=februarie]
+\setuplabeltext [\s!af]     [\v!march=maart]
+\setuplabeltext [\s!af]     [\v!april=april]
+\setuplabeltext [\s!af]       [\v!may=mei]
+\setuplabeltext [\s!af]      [\v!june=junie]
+\setuplabeltext [\s!af]      [\v!july=julie]
+\setuplabeltext [\s!af]    [\v!august=augustus]
+\setuplabeltext [\s!af] [\v!september=september]
+\setuplabeltext [\s!af]   [\v!october=oktober]
+\setuplabeltext [\s!af]  [\v!november=november]
+\setuplabeltext [\s!af]  [\v!december=desember]
+
+\setuplabeltext [\s!no]   [\v!january=januar]
+\setuplabeltext [\s!no]  [\v!february=februae]
+\setuplabeltext [\s!no]     [\v!march=mars]
+\setuplabeltext [\s!no]     [\v!april=april]
+\setuplabeltext [\s!no]       [\v!may=mai]
+\setuplabeltext [\s!no]      [\v!june=juni]
+\setuplabeltext [\s!no]      [\v!july=juli]
+\setuplabeltext [\s!no]    [\v!august=august]
+\setuplabeltext [\s!no] [\v!september=september]
+\setuplabeltext [\s!no]   [\v!october=oktober]
+\setuplabeltext [\s!no]  [\v!november=november]
+\setuplabeltext [\s!no]  [\v!december=desember]
+
+\setuplabeltext [\s!en]    [\v!sunday=Sunday]
+\setuplabeltext [\s!en]    [\v!monday=Monday]
+\setuplabeltext [\s!en]   [\v!tuesday=Tuesday]
+\setuplabeltext [\s!en] [\v!wednesday=Wednesday]
+\setuplabeltext [\s!en]  [\v!thursday=Thursday]
+\setuplabeltext [\s!en]    [\v!friday=Friday]
+\setuplabeltext [\s!en]  [\v!saturday=Saturday]
+
+\setuplabeltext [\s!nl]    [\v!sunday=zondag]
+\setuplabeltext [\s!nl]    [\v!monday=maandag]
+\setuplabeltext [\s!nl]   [\v!tuesday=dinsdag]
+\setuplabeltext [\s!nl] [\v!wednesday=woensdag]
+\setuplabeltext [\s!nl]  [\v!thursday=donderdag]
+\setuplabeltext [\s!nl]    [\v!friday=vrijdag]
+\setuplabeltext [\s!nl]  [\v!saturday=zaterdag]
+
+\setuplabeltext [\s!de]    [\v!sunday=Sonntag]
+\setuplabeltext [\s!de]    [\v!monday=Montag]
+\setuplabeltext [\s!de]   [\v!tuesday=Dienstag]
+\setuplabeltext [\s!de] [\v!wednesday=Mittwoch]
+\setuplabeltext [\s!de]  [\v!thursday=Donnerstag]
+\setuplabeltext [\s!de]    [\v!friday=Freitag]
+\setuplabeltext [\s!de]  [\v!saturday=Samstag]
+
+\setuplabeltext [\s!da]    [\v!sunday=s\o ndag]
+\setuplabeltext [\s!da]    [\v!monday=mandag]
+\setuplabeltext [\s!da]   [\v!tuesday=tirsdag]
+\setuplabeltext [\s!da] [\v!wednesday=onsdag]
+\setuplabeltext [\s!da]  [\v!thursday=torsdag]
+\setuplabeltext [\s!da]    [\v!friday=fredag]
+\setuplabeltext [\s!da]  [\v!saturday=l\o rdag]
+
+\setuplabeltext [\s!sv]    [\v!sunday=s\"ondag]
+\setuplabeltext [\s!sv]    [\v!monday=m\aa ndag]
+\setuplabeltext [\s!sv]   [\v!tuesday=tisdag]
+\setuplabeltext [\s!sv] [\v!wednesday=onsdag]
+\setuplabeltext [\s!sv]  [\v!thursday=torsdag]
+\setuplabeltext [\s!sv]    [\v!friday=fredag]
+\setuplabeltext [\s!sv]  [\v!saturday=l\"ordag]
+
+\setuplabeltext [\s!af]    [\v!sunday=sondag]
+\setuplabeltext [\s!af]    [\v!monday=maandag]
+\setuplabeltext [\s!af]   [\v!tuesday=dinsdag]
+\setuplabeltext [\s!af] [\v!wednesday=woensdag]
+\setuplabeltext [\s!af]  [\v!thursday=donderdag]
+\setuplabeltext [\s!af]    [\v!friday=vrydag]
+\setuplabeltext [\s!af]  [\v!saturday=saterdag]
+
+\setuplabeltext [\s!no]    [\v!sunday=s\o ndag]
+\setuplabeltext [\s!no]    [\v!monday=mandag]
+\setuplabeltext [\s!no]   [\v!tuesday=tirsdag]
+\setuplabeltext [\s!no] [\v!wednesday=onsdag]
+\setuplabeltext [\s!no]  [\v!thursday=torsdag]
+\setuplabeltext [\s!no]    [\v!friday=fredag]
+\setuplabeltext [\s!no]  [\v!saturday=l\o rdag]
+
+%D \ShowAllLanguageValues [\s!en] [english]   engelse humor
+%D \ShowAllLanguageValues [\s!nl] [dutch]     nederlandse zuinigheid
+%D \ShowAllLanguageValues [\s!de] [german]    duitse degelijkheid
+%D \ShowAllLanguageValues [\s!da] [danish]    deense ...
+%D \ShowAllLanguageValues [\s!sv] [swedish]   zweedse ...
+%D \ShowAllLanguageValues [\s!af] [afrikaans] afrikaanse ...
+%D \ShowAllLanguageValues [\s!no] [norwegian] noorse ...
+
+\protect
+
+\endinput
+

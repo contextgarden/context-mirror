@@ -1,0 +1,869 @@
+%D \module
+%D   [       file=spec-ini,
+%D        version=1996.01.25,
+%D          title=\CONTEXT\ Special Macros,
+%D       subtitle=Initialization,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. Non||commercial use is 
+%C granted. 
+
+%D Specials are \TEX's channel to the outside world. They make
+%D \TEX\ even more platform independant and permit easy
+%D adaption to new developments. One major drawback of specials
+%D is that they have to be supported by printer drivers. We've
+%D tried to overcome this problem by implementinmg specials as
+%D a sort of drivers themselves.
+
+\writestatus{loading}{Context Special Macros / Initialization}
+
+\unprotect
+
+\startmessages  dutch  library: specials
+  title: specials
+      1: -- geladen
+      2: verdere nesting is niet toegestaan --
+      3: -- gereset
+      4: commando -- bestaat niet
+      5: definitiefile -- wordt geladen
+      6: nesting is niet toegestaan
+\stopmessages
+
+\startmessages  english  library: specials
+  title: specials
+      1: -- loaded
+      2: no deeper nesting is permitted --
+      3: -- is reset
+      4: command -- does not exist
+      5: loading definition file --
+      6: nesting is not permitted
+\stopmessages
+
+\startmessages  german  library: specials
+  title: spezielles
+      1: -- geladen
+      2: Keine tiefere Verschachtelung erlaubt --
+      3: -- ist zurueckgesetzt
+      4: Befehl -- existiert nicht
+      5: Lade Definitionsdatei --
+      6: Verschachtelung nicht erlaubt
+\stopmessages
+
+\startmessages  dutch  library: interactions
+     21: -- code tussengevoegd
+\stopmessages
+
+\startmessages  english  library: interactions
+     21: -- code inserted
+\stopmessages
+
+\startmessages  german  library: interactions
+     21: -- Code eingefuegt
+\stopmessages
+
+%D Because there is no standardization in the use of specials,
+%D more than one driver or program can be supported. The
+%D specials are grouped in libraries. Some of these are
+%D general, such as the \type{postscript} library, some are
+%D tuned to a special kind of program, like the \type{pdf}
+%D ones, and some support a specific driver, as we can see in
+%D the \type{yandy} library. A library is build with the
+%D commands:
+%D
+%D \starttypen
+%D \startspecials[name][inheritance]
+%D
+%D \definespecial\none{...}
+%D \definespecial\onlyone#1{...}
+%D \definespecial\alot#1#2#3#4{...}
+%D
+%D \stopspecials
+%D \stoptypen
+%D
+%D Because drivers show some overlap in their support of
+%D specials, a mechanism of inheritance is implemented. The
+%D predefined libraries show this feature.
+%D
+%D Every special has to be predefined first. We  do this with
+%D the command:
+%D
+%D \starttypen
+%D \installspecial [\none]    [and] [0]
+%D \installspecial [\onlyone] [and] [1]
+%D \installspecial [\alot]    [or]  [4]
+%D \stoptypen
+%D
+%D This means as much as: there is a special names
+%D \type{\none} which has no arguments and has more than one
+%D appearance. The special \type{\alot} on the other hand has
+%D four arguments and is only defined once. Every instance in
+%D the libraries of a special of category \type{and} is
+%D executed when called upon, but only one special of
+%D category \type{or} can be active. Most of the
+%D \type{postscript}||specials are of category \type{or},
+%D because they tend to interfere with driver specific ones.
+%D The interactive specials of \type{dviwindo} and \type{pdf}
+%D are an example of specials that can be called both.
+%D
+%D A library is defined in a file with the name
+%D \type{spec-...}. We load a library with the command:
+%D
+%D \starttypen
+%D \usespecials [list]
+%D \stoptypen
+%D
+%D where the list can contain one or more file tags, the
+%D \type{...} in the filename. The keyword \type{reset}
+%D resets all loaded specials. This is equivalent to
+%D \type{\resetspecials}.
+
+%D Although a mechanism of nesting can be implemented, we
+%D prefer to use a inheritance mechanism as mentioned. Calls
+%D upon \type{\usespecials} within a \type{\startspecials}
+%D would lead to confusion and errors.
+
+\newif\ifinheritspecials
+
+%D We define some local constants and variables. They look a
+%D bit horrible but we don't want conflicts.
+
+\def\@@specfil@@{@@specfil@@}
+\def\@@speclst@@{@@speclst@@}
+\def\@@speccat@@{@@speccat@@}
+\def\@@specarg@@{@@specarg@@}
+\def\@@specexc@@{@@specexc@@}
+
+\def\currentspecial      {}
+\def\currentspecialfile  {}
+\def\preloadedspecials   {}
+
+%D \macros
+%D   {preloadspecials}
+%D   {}
+%D
+%D The following command can be used to show the loaded list
+%D of specials.
+
+\def\preloadspecials%
+  {\doifsomething{\preloadedspecials}
+     {\showmessage{\m!specials}{1}{\preloadedspecials}}}
+
+%D \macros
+%D   {startspecials}
+%D   {}
+%D
+%D Every library has a unique name, which is given as the first
+%D argument to \type{\startspecials}. When another library is
+%D defined with the same name, previous specials can be
+%D overruled. The name may differ from the file||tag.
+%D
+%D The optional second argument can consist of a list of
+%D libraries that are to be loaded first. This list can contain
+%D file||tags or names of libraries. Names are often more
+%D meaningful.
+
+\def\dostartspecials[#1][#2]%
+  {\let\mainspecialfile=\currentspecialfile
+   \doifelsenothing{#2}
+     {\inheritspecialsfalse}
+     {\ifinheritspecials
+        \showmessage{\m!specials}{2}{(#2)}%
+      \else
+        \inheritspecialstrue
+        \processcommalist[#2]\dousespecials
+        \inheritspecialsfalse
+      \fi}%
+   \doifelsenothing{#1}
+     {\def\currentspecial{\s!unknown}}
+     {\def\currentspecial{#1}}%
+   \let\currentspecialfile=\mainspecialfile
+   \setevalue{\@@specfil@@\currentspecial}{\currentspecialfile}%
+   \unprotect
+   \addtocommalist{\currentspecial}\preloadedspecials}
+
+\def\startspecials%
+  {\dodoubleempty\dostartspecials}
+
+\def\stopspecials%
+  {\def\currentspecial{}%
+   \protect}
+
+%D \macros
+%D   {installspecial,
+%D    resetspecials}
+%D   {}
+%D
+%D We have to install specials before we can define and use
+%D them. The command itself is defined as a call to another
+%D command that executes one or more user||defined specials,
+%D depending of it's category: \type{or} versus \type{and}.
+%D
+%D The command \type{\installspecial} takes three
+%D (non||optional) arguments: the name of the command, the
+%D category it belongs to and the number of arguments it
+%D takes.
+%D
+%D With \type{\resetspecials} we can unload the predefined
+%D specials.
+
+\def\@@allspecials{}
+
+\def\doinstallspecial[#1][#2][#3]%
+  {\setvalue{\@@speclst@@\string#1}{}%
+   \setvalue{\@@speccat@@\string#1}{#2}%
+   \setvalue{\@@specarg@@\string#1}{#3}%
+   \addtocommalist{\string#1}\@@allspecials
+   \def#1{\executespecial#1}}
+
+\def\installspecial%
+  {\dotripleargument\doinstallspecial}
+
+\def\resetspecials%
+  {\def\docommando##1%
+     {\setvalue{\@@speclst@@##1}{}}%
+   \processcommacommand[\@@allspecials]\docommando
+   \showmessage{\m!specials}{3}{\preloadedspecials}%
+   \def\preloadedspecials{}%
+   \def\@@allspecials{}}
+
+%D \macros
+%D   {definespecial}
+%D   {}
+%D
+%D The command \type{\definespecial} take the place of
+%D \type{\def} in the definition of a special. Just to be
+%D sure, we first check if the command is permitted, i.e.
+%D installed. If not, we give a warning and gobble the
+%D illegal command in an quite elegant way.
+%D
+%D If the command can be combined (\type{and}) with others,
+%D we append it to a list, otherwise (\type{or}) it becomes
+%D the only item in the list.
+
+\def\definespecial#1%
+  {\ifx#1\undefined
+     \showmessage{\m!specials}{4}{\string#1}%
+     \def\next%
+       {\def\@@illegalspecial@@}%
+   \else
+     \def\next%
+       {\doifelse{\getvalue{\@@speccat@@\string#1}}{or}
+          {\edef\@@newspeclst@@{\currentspecial}}
+          {\edef\@@newspeclst@@{\getvalue{\@@speclst@@\string#1}}%
+           \addtocommalist{\currentspecial}\@@newspeclst@@}%
+        \setevalue{\@@speclst@@\string#1}{\@@newspeclst@@}%
+        \setvalue{\currentspecial\string#1}}%
+   \fi
+   \next}
+
+%D \macros
+%D   {usespecials}
+%D   {}
+%D
+%D We use \type{\usespecials} to load a specific library.
+%D This command is only permitted outside de definition part.
+
+\def\dousespecials#1%
+  {\doifelse{#1}{\v!reset}
+     {\resetspecials}
+     {\doifdefinedelse{\@@specfil@@#1}
+        {\edef\currentspecialfile{\getvalue{\@@specfil@@#1}}}
+        {\edef\currentspecialfile{#1}}%
+      \showmessage{\m!specials}{5}{\f!specialprefix\currentspecialfile}%
+      \readsysfile{\f!specialprefix\currentspecialfile}{}{}%
+      \showmessage{\m!specials}{1}{\preloadedspecials}}}
+
+\def\usespecials[#1]%
+  {\doifelsenothing{\currentspecial}
+     {\processcommalist[#1]\dousespecials}
+     {\showmessage{\m!specials}{6}{}}}
+
+%D \macros
+%D   {executespecials}
+%D   {}
+%D
+%D The command \type{\executespecials} is used to execute the
+%D defined specials. Once a special is installed, the special
+%D itself calls for this command, so it's not needed outside
+%D this module. One can use it if wanted.
+%D 
+%D A former implementation grouped the execution. Recent 
+%D additions however |<|like the specials that implement object 
+%D handling|>| asked for non||grouped execution. 
+
+\def\executespecials#1#2%
+  {\def\doonespecial##1%
+     {\getvalue{##1\string#1}#2\relax}%
+   \processcommacommand
+     [\getvalue{\@@speclst@@\string#1}]\doonespecial}
+
+\def\executespecial#1%
+  {\expandafter\ifcase\getvalue{\@@specarg@@\string#1}\relax
+     \def\next%
+       {\executespecials#1{}}%
+   \or
+     \def\next##1%
+       {\executespecials#1{{##1}}}%
+   \or
+     \def\next##1##2%
+       {\executespecials#1{{##1}{##2}}}%
+   \or
+     \def\next##1##2##3%
+       {\executespecials#1{{##1}{##2}{##3}}}%
+   \or
+     \def\next##1##2##3##4%
+       {\executespecials#1{{##1}{##2}{##3}{##4}}}%
+   \or
+     \def\next##1##2##3##4##5%
+       {\executespecials#1{{##1}{##2}{##3}{##4}{##5}}}%
+   \or
+     \def\next##1##2##3##4##5##6%
+       {\executespecials#1{{##1}{##2}{##3}{##4}{##5}{##6}}}%
+   \or
+     \def\next##1##2##3##4##5##6##7%
+       {\executespecials#1{{##1}{##2}{##3}{##4}{##5}{##6}{##7}}}%
+   \or
+     \def\next##1##2##3##4##5##6##7##8%
+       {\executespecials#1{{##1}{##2}{##3}{##4}{##5}{##6}{##7}{##8}}}%
+   \or
+     \def\next##1##2##3##4##5##6##7##8##9%
+       {\executespecials#1{{##1}{##2}{##3}{##4}{##5}{##6}{##7}{##8}{##9}}}% 
+   \else
+     \def\next%
+       {\message{illegal special: \string#1}}%
+   \fi
+   \next}
+
+%D The \type{{{...}}} are needed because we pass all those 
+%D arguments to the specials support macro. 
+
+\let\openspecialfile  = \relax
+\let\closespecialfile = \relax
+
+% %D This is some new, experimental code, used for testing some 
+% %D proposals of Laurent Siebenmann on behalf of the 
+% %D \kap{EMJ} discussionlist. 
+% 
+% \newif\ifexternalspecials  \externalspecialsfalse
+% \newif\ifspecialstatus     \specialstatustrue
+% 
+% \newwrite\specialfile
+% 
+% \def\openspecialfile%
+%   {\immediate\openout\specialfile=\jobname.etc\relax}
+% 
+% \def\closespecialfile%
+%   {\immediate\closeout\specialfile}
+% 
+% \let\internalspecial=\special
+% 
+% \def\externalspecial#1%
+%   {\internalspecial{}%
+%    \immediate\write\specialfile{\currentspecialdriver\space: #1}}
+% 
+% \def\doinstallspecial[#1][#2][#3]%
+%   {\setvalue{\@@specexc@@\string#1}{}%
+%    \setvalue{\@@speclst@@\string#1}{}%
+%    \setvalue{\@@speccat@@\string#1}{#2}%
+%    \setvalue{\@@specarg@@\string#1}{#3}%
+%    \addtocommalist{\string#1}\@@allspecials
+%    \def#1{\executespecial#1}}
+% 
+% \def\resetspecials%
+%   {\def\docommando##1%
+%      {\setvalue{\@@specexc@@##1}{}%
+%       \setvalue{\@@speclst@@##1}{}}%
+%    \processcommacommand[\@@allspecials]\docommando
+%    \showmessage{\m!specials}{3}{\preloadedspecials}}
+% 
+% \def\executespecials#1#2%
+%   {\edef\supportedspecials{\getvalue{\@@speclst@@\string#1}}%
+%    \def\doonespecial##1%
+%      {\doifdefined{##1\string#1}
+%         {\def\currentspecialdriver{##1}%
+%          \getvalue{##1\string#1}#2\relax}}%
+%    \ifexternalspecials
+%      \let\special=\externalspecial
+%      \doifelse{\supportedspecials}{}
+%        {\ifspecialstatus
+%           \immediate\write\specialfile{}%
+%           \immediate\write\specialfile{skipping  : \string#1}
+%           \immediate\write\specialfile{}%
+%         \fi}
+%        {\ifspecialstatus
+%           \immediate\write\specialfile{}%
+%           \immediate\write\specialfile{executing : \string#1}%
+%           \immediate\write\specialfile{supported : \supportedspecials}%
+%         \fi
+%         \immediate\write\specialfile{}%
+%         \processcommacommand[\supportedspecials]\doonespecial}%
+%    \else
+%      \let\special=\internalspecial
+%      \doifelse{\getvalue{\@@speccat@@\string#1}}{or}
+%        {\doonespecial{\getvalue{\@@specexc@@\string#1}}}
+%        {\processcommacommand[\supportedspecials]\doonespecial}%
+%    \fi}
+% 
+% \def\definespecial#1%
+%   {\ifx#1\undefined
+%      \showmessage{\m!specials}{4}{\string#1}%
+%      \def\next%
+%        {\def\@@illegalspecial@@}%
+%    \else
+%      \def\next%
+%        {\edef\@@newspeclst@@{\getvalue{\@@speclst@@\string#1}}%
+%         \addtocommalist{\currentspecial}\@@newspeclst@@
+%         \setevalue{\@@speclst@@\string#1}{\@@newspeclst@@}%
+%         \setevalue{\@@specexc@@\string#1}{\currentspecial}%
+%         \setvalue{\currentspecial\string#1}}%
+%    \fi
+%    \next}
+% 
+% %D So far for the experiment. 
+
+\protect
+
+% \startspecials
+% \stopspecials
+% \installspecial
+% \definespecial
+
+%D The following libraries are defined. Two postscript
+%D drivers are supported, as well as two mechanisms for
+%D interactive texts.
+%D
+%D \startregelcorrectie
+%D \starttabel[|l|l|l|l|l|]
+%D \HL
+%D \NC \bf file             \NC
+%D     \bf name             \NC
+%D     \bf calls            \NC
+%D     \bf support          \NC
+%D     \bf program / driver \NC\SR
+%D \HL
+%D \NC \tttf spec-tex       \NC
+%D     \tttf tex            \NC
+%D                          \NC
+%D     Generic \TEX\ (\DVI) \NC
+%D     (default)            \NC\FR
+%D \NC \tttf spec-ps        \NC
+%D     \tttf postscript     \NC
+%D                          \NC
+%D     Adobe PostScript     \NC
+%D     (default)            \NC\MR
+%D \NC \tttf spec-tr        \NC
+%D     \tttf rokicky        \NC
+%D     \tttf postscript     \NC
+%D     Thomas Rokicky       \NC
+%D     (dvips)              \NC\MR
+%D \NC \tttf spec-yy        \NC
+%D     \tttf yandy          \NC
+%D     \tttf postscript     \NC
+%D     YandY                \NC
+%D     (dvipsone, dviwindo) \NC\MR
+%D \NC \tttf spec-pdf       \NC
+%D     \tttf pdf            \NC
+%D                          \NC
+%D     Adobe PDF V2.1       \NC
+%D     (Acrobat)            \NC\MR
+%D \NC \tttf spec-win       \NC
+%D     \tttf dviwindo       \NC
+%D     YandY                \NC
+%D     (dviwindo)           \NC\MR
+%D \NC \tttf spec-1p0       \NC
+%D     \tttf pdf            \NC
+%D                          \NC
+%D     Adobe PDF V 1.0      \NC
+%D     (Acrobat)            \NC\MR
+%D \NC \tttf spec-2p0       \NC
+%D     \tttf pdf            \NC
+%D                          \NC
+%D     Adobe PDF V 2.0      \NC
+%D     (Acrobat)            \NC\MR
+%D \NC \tttf spec-htm       \NC
+%D     \tttf html           \NC
+%D                          \NC
+%D     HTML V 2.0           \NC
+%D     (dvips)              \NC\LR
+%D \HL
+%D \stoptabel
+%D \stopregelcorrectie
+
+%D \macros
+%D   {dostartgraymode,dostopgraymode,
+%D    dostartrgbcolormode,dostartcmykcolormode,dostartgraycolormode,dostopcolormode}
+%D   {}
+%D
+%D We start with the installation of color and grayscale
+%D specials. The values are in the range 0..1 (e.g. 0.25).
+%D
+%D \starttypen
+%D \dostartgraymode      {gray} ... \dostopgraymode
+%D \dostartrgbcolormode  {red} {green} {blue} ... \dostopcolormode
+%D \dostartcmykcolormode {cyan} {magenta} {yellow} {black} ... \dostopcolormode
+%D \dostartgraycolormode {gray} ... \dostopcolormode
+%D \stoptypen
+%D
+%D Because we can expect conflicts between drivers, we
+%D implement them as category \type{or}. In previous versions
+%D of \DVIPSONE\ the use of their color||specials did not
+%D interfere with the PostScript ones, but recent versions do.
+
+\installspecial [\dostartgraymode]      [or] [1]
+\installspecial [\dostopgraymode]       [or] [0]
+
+\installspecial [\dostartrgbcolormode]  [or] [3]
+\installspecial [\dostartcmykcolormode] [or] [4]
+\installspecial [\dostartgraycolormode] [or] [1]
+\installspecial [\dostopcolormode]      [or] [0]
+
+%D \macros
+%D   {doinsertfile}
+%D   {}
+%D
+%D Probably the most problematic special is the following
+%D one. Because we want to be able to support different
+%D schemes, we pass a lot of data to it.
+%D
+%D \starttypen
+%D \doinsertfile {type,method} {file} {xscale} {yscale} {x} {y} {w} {h} {options}
+%D \stoptypen
+%D
+%D The scale is given percents, the other values are base 
+%D points.
+%D
+%D The special is implemented as \type{or}. Because
+%D \DVIPSONE\ understands them all, a chain of alternatives
+%D would generate multiple courrences of the same
+%D illustration.
+%D
+%D When option 1 is passed, the viewers is asked to present a
+%D preview, like the first frame of a movie. 
+
+\installspecial [\doinsertfile] [or] [9]
+
+%D \macros
+%D   {dostartrotation,
+%D    dostoprotation}
+%D   {}
+%D
+%D We support rotation with the special:
+%D
+%D \starttypen
+%D \dostartrotation {angle} ... \dostoprotation
+%D \stoptypen
+%D
+%D For the moment these specials are installed as
+%D category \type{or}.
+
+\installspecial [\dostartrotation] [or] [1]
+\installspecial [\dostoprotation]  [or] [0]
+
+%D \macros
+%D   {doselectfirstpaperbin,
+%D    doselectsecondpaperbin}
+%D   {}
+%D
+%D Here are some very printer||specific ones. No further
+%D comment.
+
+\installspecial [\doselectfirstpaperbin]  [or]  [0]
+\installspecial [\doselectsecondpaperbin] [or]  [0]
+
+%D \macros
+%D   {doovalbox}
+%D   {}
+%D
+%D When we look at the implementation, this is a complicated
+%D one. There are seven arguments.
+%D
+%D \starttypen
+%D \doovalbox {w} {h} {d} {linewidth} {radius} {stroke} {fill}
+%D \stoptypen
+%D
+%D This command has to return a \type{\vbox} which can be used
+%D to lay over another one (with text). The radius is in
+%D degrees, the stroke and fill are~\type{1} (true) of~\type{0}
+%D (false). 
+
+\installspecial [\doovalbox] [or] [7]
+
+%D \macros
+%D   {dosetupidentity}
+%D   {}
+%D
+%D We can declare some characteristics of the document with
+%D
+%D \starttypen 
+%D \dosetupidentity {title} {subject} {author} {creator} {date} 
+%D \stoptypen
+%D
+%D All data is in string format. 
+
+\installspecial [\dosetupidentity] [and] [5]
+
+%D \macros
+%D   {dosetuppaper}
+%D   {}
+%D
+%D This special can be used to tell the driver what page size
+%D to use. The special takes three arguments. 
+%D
+%D \starttypen
+%D \dosetuppaper {type} {width} {height}
+%D \stoptypen
+%D
+%D The type is one of the common identifiers, like A4, A5 or 
+%D B2. 
+
+\installspecial [\dosetuppaper] [and] [3]
+
+%D \macros
+%D   {dosetupprinter}
+%D   {}
+%D
+%D Some drivers enable the user to specify the paper type 
+%D used and/or page dimensions to be taken into account. 
+%D
+%D \starttypen
+%D \dosetupprinter {type} {hoffset} {voffset} {width} {height}
+%D \stoptypen
+%D
+%D The first argument is one of \type{letter}, \type{legal}, 
+%D \type{A4}, \type{A5} etc. The dimensions are in 
+%D basepoints. 
+
+\installspecial [\dosetupprinter] [and] [5]
+
+%D \macros
+%D   {dosetuppage,
+%D    dosetupinteraction,
+%D    dosetupscreen}
+%D   {}
+%D
+%D Here come some obscure interactive commands. Probably the
+%D specs will change with the development of the macros that
+%D use them.
+%D
+%D The first ones can be used to set up the interaction.
+%D
+%D \starttypen
+%D \dosetupinteraction
+%D \stoptypen
+%D
+%D Normally this command does nothing but giving a message
+%D that some scheme is supported. Postscript prolog files
+%D can best be loaded by the printer driver program.
+%D
+%D The second one sets up the screen. It takes three
+%D arguments:
+%D
+%D \starttypen
+%D \dosetupscreen {hoffset} {voffset} {width} {height} {options}
+%D \stoptypen
+%D
+%D The first four arguments are in scaled points. Option~1 
+%D results in a full screen launch.
+
+\installspecial [\dosetupinteraction] [and] [0]
+\installspecial [\dosetupscreen]      [and] [5]
+
+%D \macros
+%D   {dostarthide,
+%D    dostophide}
+%D   {}
+%D
+%D Not every part of the screen is suitable for paper. Menus
+%D for instance have no meaning on an non||interactive medium.
+%D These elements are hidden by means of:
+%D
+%D \starttypen
+%D \dostarthide
+%D \dostophide
+%D \stoptypen
+
+\installspecial [\dostarthide]        [or]  [0]
+\installspecial [\dostophide]         [or]  [0]
+
+%D \macros
+%D   {dostartgotolocation, dostopgotolocation,
+%D    dostartgotorealpage, dostopgotorealpage}
+%D   {}
+%D
+%D The interactive real work is done by the following four
+%D specials. The reason for providing the first one with both
+%D a label and a number, is a result of the quite poor
+%D implementation of \type{pdfmarks} in version 1.0 of
+%D Acrobat. Because only pagenumbers were supported as
+%D destination, we had to provide both labels (\DVIWINDO) and
+%D pagenumbers (\PDF). Some drivers use start stop pairs. 
+%D
+%D \starttypen
+%D \dostartgotolocation {w} {h} {url} {file} {label} {page}
+%D \dostartgotorealpage {w} {h} {url} {file}         {page}
+%D \stoptypen
+%D
+%D Their counterparts are:
+%D
+%D \starttypen
+%D \dostopgotolocation  
+%D \dostopgotorealpage  
+%D \stoptypen
+%D
+%D The internal alternative is used for system||generated
+%D links, the external one for user||generated links. The 
+%D Uniform Resource Locator can be used to let the reader 
+%D surf the net. 
+
+\installspecial [\dostartgotolocation] [and] [6]
+\installspecial [\dostopgotolocation]  [and] [0]
+\installspecial [\dostartgotorealpage] [and] [5]
+\installspecial [\dostopgotorealpage]  [and] [0]
+
+%D \macros
+%D   {dostartthisislocation, dostopthisislocation,
+%D    dostartthisisrealpage, dostopthisisrealpage}
+%D   {}
+%D
+%D The opposite commands of \type{\dogotosomething} have only
+%D one argument:
+%D
+%D \starttypen
+%D \dostartthisislocation {label}
+%D \dostartthisisrealpage {page}
+%D \stoptypen
+%D
+%D These commands are accompanied by: 
+%D
+%D \starttypen
+%D \dostopthisislocation  
+%D \dostopthisisrealpage 
+%D \stoptypen
+%D
+%D As with all interactive commands's they are installed as
+%D \type{and} category specials.
+
+\installspecial [\dostartthisislocation] [and] [1]
+\installspecial [\dostopthisislocation]  [and] [0]
+\installspecial [\dostartthisisrealpage] [and] [1]
+\installspecial [\dostopthisisrealpage]  [and] [0]
+
+%D \macros
+%D   {dostartexecutecommand, dostopexecutecommand}
+%D   {}
+%D
+%D The actual behavior of the next pair of commands depends 
+%D much on the viewing engine. Therefore one cannot depend 
+%D too much on their support. 
+%D
+%D \starttypen
+%D \dostartexecutecommand {w} {h} {command} {options} 
+%D \stoptypen
+%D
+%D
+%D The next commands are supported: 
+%D
+%D \startregelcorrectie\steluitlijnenin[midden]\leavevmode
+%D \starttabel[|l|l|] 
+%D \HL
+%D \NC \bf command  \NC \bf action                  \NC\SR 
+%D \HL
+%D \NC first        \NC go to the first page        \NC\FR
+%D \NC previous     \NC go to the previous page     \NC\MR
+%D \NC next         \NC go to the next page         \NC\MR
+%D \NC last         \NC go to the last page         \NC\MR
+%D \NC backward     \NC go back to the  link list   \NC\MR
+%D \NC forward      \NC go forward in the link list \NC\MR
+%D \NC print        \NC enter print mode            \NC\MR
+%D \NC exit         \NC exit viewer                 \NC\MR
+%D \NC close        \NC close document              \NC\MR
+%D \NC enter        \NC enter viewer                \NC\MR
+%D \NC help         \NC show help on the viewer     \NC\LR
+%D \HL
+%D \stoptabel
+%D \stopregelcorrectie
+%D
+%D There are no options yet. Options are to be passed as a 
+%D comma separated list of assignments.
+
+\installspecial [\dostartexecutecommand] [and] [4]
+\installspecial [\dostopexecutecommand]  [and] [0]
+
+%D \macros
+%D   {dostartobject, 
+%D    dostopobject,
+%D    doinsertobject}
+%D   {}
+%D
+%D Reuse of object can reduce the output filesize 
+%D considerably. Reusable objects are implemented with: 
+%D
+%D \starttypen
+%D \dostartobject{name}{width}{height}{depth}
+%D some typeset material
+%D \dostopobject
+%D \stoptypen
+%D
+%D \starttypen
+%D \doinsertobject{name}
+%D \stoptypen
+%D
+%D The savings can be huge in interactive texts. 
+
+\installspecial [\dostartobject]  [or] [4]
+\installspecial [\dostopobject]   [or] [0]
+\installspecial [\doinsertobject] [or] [1]
+
+%D \macros
+%D   {dostartrunprogram, dostoprunprogram,
+%D    dostartgotoprofile, dostopgotoprofile,
+%D    dobeginofprofile,
+%D    doendofprofile}
+%D   {}
+%D
+%D These specials are still experimental. They are not yet
+%D supported by the programs the way they should be.
+%D
+%D {\em --- still undocumented ---}
+
+\installspecial [\dostartrunprogram]  [and] [3]
+\installspecial [\dostoprunprogram]   [and] [0]
+\installspecial [\dostartgotoprofile] [and] [3]
+\installspecial [\dostopgotoprofile]  [and] [0]
+\installspecial [\dobeginofprofile]   [and] [3]
+\installspecial [\doendofprofile]     [and] [3]
+
+%D \macros
+%D   {doinsertbookmark}
+%D 
+%D Bookmarks, that is viewer generated tables of contents, are
+%D a strange phenomena, mainly because \TEX\ can provide
+%D whatever kind of table in much better quality. 
+
+\installspecial [\doinsertbookmark] [and] [5]
+
+%D This special is called as:
+%D 
+%D \starttypen
+%D \doinstallbookmark {level} {nofsubentries} {text} {page} {open}
+%D \stoptypen
+%D
+%D This definition is very \PDF\ oriented, so for more 
+%D information we kindly refer to the \PDF\ manuals. 
+
+%D So far for the installation. Finally we preload our
+%D favorite set of specials.
+
+\usespecials[ps,yy,win,pdf]
+
+%D One can overrule this by for instance
+%D 
+%D \starttypen
+%D \usespecials[reset,ps,tr,pdf]
+%D \stoptypen
+
+\endinput
+

@@ -1,0 +1,484 @@
+%D \module
+%D   [       file=supp-mps,
+%D        version=1997.07.05,
+%D          title=\CONTEXT\ Support Macros,
+%D       subtitle=\METAPOST\ Inclusion,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. Non||commercial use is
+%C granted.
+
+% E-tex   : a primitive that tells us that \write18 works
+% E-tex   : \executeMetaPost filename
+% ConTeXt : automatic flush at end of job
+ 
+%D \METAPOST\ is John Hobbys alternative for \METAFONT\ and
+%D produces superior \POSTSCRIPT\ code. In this module we
+%D integrate \METAPOST\ support int \CONTEXT.  We offer two
+%D tracks:
+%D
+%D \startopsomming
+%D \som generating \METAPOST\ code, running this program from
+%D      within \TEX\ using \type{\write18}, and importing the
+%D      result
+%D \som generating \METAPOST\ code, processing the code
+%D      afterward, and importing the result in a second pass
+%D \stopopsomming
+%D
+%D The first approach uses a non standard \TEX\ feature,
+%D implemented in Web2c. I'm not going to discuss the pros and
+%D cons of running programs from within others, but all
+%D arguments against this can be overcome by implementing a
+%D \TEX\ worthy primitive:
+%D
+%D \starttypen
+%D \excuteMetaPost filename
+%D \stoptypen
+%D
+%D Ok then, let's start:
+
+\writestatus{loading}{Context Support Macros / MetaPost Inclusion}
+
+\unprotect
+
+%D \macros
+%D   {startMPgraphic}
+%D
+%D From within \TEX\ one can execute \METAPOST\ code by putting
+%D it between the two commands
+%D
+%D \starttypen
+%D \startMPgraphic
+%D \stopMPgraphic
+%D \stoptypen
+%D
+%D This is implemented as:
+
+\def\startMPgraphic#1\stopMPgraphic%
+  {\startwritingMPgraphic
+   \writeMPgraphic{#1}%
+   \stopwritingMPgraphic}
+
+%D \macros
+%D   {startwritingMPgraphic,
+%D    writeMPgraphic,
+%D    stopwritingMPgraphic}
+%D
+%D If the writing process is divided into more steps, one can
+%D use the components of this macro directly.
+%D
+%D \starttypen
+%D \startwritingMPgraphic
+%D ...
+%D \writeMPgraphic{...}
+%D ...
+%D \writeMPgraphic{...}
+%D ...
+%D \stopwritingMPgraphic
+%D \stoptypen
+
+%D \macros
+%D   {ifrunMPgraphics}
+%D
+%D These macros look a bit more complicated that one would
+%D expect at first sight. This is due to the two ways of
+%D processing these graphics, mentioned in a previous
+%D paragraph. Which method is used, the direct or indirect
+%D one, depends on a boolean.
+
+\newif\ifrunMPgraphics
+
+%D If set to true, one can do with a single pass, else one must
+%D process the \METAPOST\ file \type{mpgraph} between two
+%D succesive \TEX\ runs.
+
+\def\MPgraphicfile{mpgraph}
+
+%D When we run \METAPOST\ from within \TEX, each graphic is 
+%D processed at once, which means that we reuse this file many 
+%D times. When however the execution is delayed, all graphics 
+%D are saved in a separate figure. The current graphic is 
+%D characterized bij a number:
+
+\newcounter\currentMPgraphic
+
+%D \macros
+%D   {ifreuseMPgraphics}
+%D
+%D If one want to reuse grapics, one can save much redundant
+%D run time by setting the next switch to true. 
+
+\newif\ifreuseMPgraphics
+
+%D The three macros responsible for writing the graphic 
+%D implement both schemes. 
+
+%D \macro
+%D   {MPinclusions}
+%D
+%D One can include for instance common input commands by 
+%D assigning those to the token register:
+
+\newtoks\MPinclusions
+
+\def\writeMPgraphic%
+  {\immediate\write\scratchwrite}
+
+\def\startwritingMPgraphic%
+  {\ifrunMPgraphics
+     \ifreuseMPgraphics \else
+       \doglobal\newcounter\currentMPgraphic 
+     \fi
+     \doglobal\increment\currentMPgraphic 
+     \immediate\openout\scratchwrite=\MPgraphicfile.mp
+     \immediate\write\scratchwrite{\the\MPinclusions}%
+   \else
+     \doglobal\increment\currentMPgraphic 
+     \ifnum\currentMPgraphic=1
+       \immediate\openout\scratchwrite=\MPgraphicfile.mp
+       \immediate\write\scratchwrite{\the\MPinclusions}%
+     \fi
+   \fi
+   \immediate\write\scratchwrite{beginfig(\currentMPgraphic);}%
+   \global\let\flushMPgraphics\dodostopwritingMPgraphic
+   \global\let\stopwritingMPgraphic=\dostopwritingMPgraphic}
+
+\def\dostopwritingMPgraphic%
+  {\immediate\write\scratchwrite{endfig;}%
+   \ifrunMPgraphics
+     \dodostopwritingMPgraphic
+   \fi}
+
+\def\dodostopwritingMPgraphic%
+  {\ifnum\currentMPgraphic>0
+     \immediate\write\scratchwrite{end.}%
+     \immediate\closeout\scratchwrite
+     \runMPgraphic{\MPgraphicfile}%
+   \fi
+   \global\let\flushMPgraphics=\relax}
+
+\let\stopwritingMPgraphic=\relax
+\let\flushMPgraphics     =\relax
+
+%D \macros
+%D   {flushMPgraphics}
+%D
+%D When we use the indirect method, all graphics are saved in
+%D one file. This means that we cannot close this file after 
+%D every \type{\stopMPgraphic}. Therefore we need to say:
+%D
+%D \starttypen
+%D \flushMPgraphic
+%D \stoptypen
+%D 
+%D else the file is closed without writing the \METAPOST\ end
+%D command. One will notice this fast enough when in indirect 
+%D mode. When using the direct mode this command is not 
+%D implicitly needed, but ommiting it makes files less 
+%D portable.
+
+%D \macros
+%D   {loadcurrentMPgraphic,
+%D    placeMPgraphic}
+%D
+%D Once defined, we can call for this graphic by saying:
+%D
+%D \starttypen
+%D \loadcurrentMPgraphic{setups}
+%D \placeMPgraphic
+%D \stoptypen
+%D
+%D This two stage insert permits some intermediate manipulations
+%D of the graphic, which temporary saved in:
+
+\newbox\MPgraphic
+
+\def\loadcurrentMPgraphic#1%
+  {\loadMPgraphic{\MPgraphicfile.\currentMPgraphic}{#1}}
+
+\def\loadMPgraphic#1#2%
+  {\setbox\MPgraphic=\hbox{\insertMPfile{#1}{#2}}}
+
+\def\placeMPgraphic%
+  {\box\MPgraphic}
+
+%D \macros
+%D   {startreusableMPgraphic, reuseMPgraphic, useMPbox}
+%D 
+%D One can use the next macro for defining graphics that are
+%D to be reused. When the next switch is set, graphics are 
+%D cached. 
+ 
+\newif\ifuseMPbox % nog eens cyclische buffer
+
+\long\def\startreusableMPgraphic#1#2\stopreusableMPgraphic%
+  {\reuseMPgraphicstrue
+   \doifundefined{MP:#1}
+     {\startMPgraphic#2\stopMPgraphic
+      \ifuseMPbox
+        \ifx\setobject\undefined
+          \newbox\somebox
+          \global\setbox\somebox=\vbox
+            {\loadMPgraphic{\MPgraphicfile.\currentMPgraphic}{}%
+             \placeMPgraphic}%
+          \global\setevalue{MP:#1}%
+            {\copy\the\somebox\relax}%
+        \else
+          \setobject{MP:#1}
+            \vbox
+              {\loadMPgraphic{\MPgraphicfile.\currentMPgraphic}{}%
+               \placeMPgraphic}%
+          \global\setvalue{MP:#1}%
+            {\getobject{MP:#1}}%
+        \fi
+      \else
+        \global\setevalue{MP:#1}%
+          {\noexpand\loadMPgraphic{\MPgraphicfile.\currentMPgraphic}{}%
+           \noexpand\placeMPgraphic}%
+      \fi}}
+
+\def\reuseMPgraphic#1%
+  {\getvalue{MP:#1}}
+
+%D \macro
+%D   {startuseMPgraphic,useMPgraphic}
+%D
+%D The every||time||it's||used original one is defined below.
+%D This one makes sense when the graphic uses random numbers.
+
+\def\startuseMPgraphic#1#2\stopuseMPgraphic%
+  {\reuseMPgraphicstrue 
+   \long\setvalue{MP:#1}%
+     {\startMPgraphic#2\stopMPgraphic 
+      \loadcurrentMPgraphic{}%
+      \placeMPgraphic}}
+
+\let\useMPgraphic=\reuseMPgraphic
+
+%D We didn't yet define the macro responsible for processing 
+%D the graphic from within \TEX. 
+
+\def\runMPgraphic#1%
+  {\ifrunMPgraphics
+     \executeMETAPOST{#1}%
+   \else 
+     \message{[flush and process \MPgraphicfile.mp afterwards]}%
+   \fi}
+
+%D \macros
+%D   {executeMetaPost, executeMETAPOST, executesystemcommand}
+%D
+%D With \type{\executeMETAPOST} being defined as:
+ 
+\ifx\undefined\executeMetaPost
+  \def\executeMETAPOST#1{\executesystemcommand{\executeMetaPost{#1}}}
+\fi
+
+%D There are two system dependant definitions: 
+
+\ifx\undefined\executesystemcommand 
+  \def\executesystemcommand#1{\immediate\write18{#1}}
+\fi
+
+\ifx\undefined\executeMetaPost
+  \def\executeMetaPost#1{mpost #1}
+\fi
+
+%D \macros
+%D   {insertMPfile}
+%D
+%D One can define this command in advance or redefine it after
+%D loading this module. The same goes for the forward 
+%D reference to the figure loading macro:
+
+\ifx\undefined\insertMPfile 
+
+  \def\insertMPfile#1#2%
+      {\ifx\undefined\externalfigure 
+         \message{[insert file #1 here]}%
+       \else
+         \externalfigure[#1][\c!type=eps,\c!methode=mps,#2]%
+       \fi}
+
+\fi
+
+%D This macro takes {\em two} arguments, the second one can be
+%D used to pass info to the inclusion macro. Some examples 
+%D of its use can be found in the modules \type{supp-tpi} and 
+%D \type{prag-log}. 
+
+%D For some reason, \METAPOST\ needs the public domain \DVI\ to
+%D \POSTSCRIPT\ converter \DVIPS. This symbiosis originates in
+%D the need to include the fonts (glyphs) that \METAPOST\ uses
+%D in the \POSTSCRIPT\ file. Driver independancy was one of my
+%D prerequisites for using \METAPOST, so I decided to build
+%D this kind of support myself. Personally I consider driver
+%D dependancy a drawback for the dissemination of such a
+%D package. The second part of this module more or less 
+%D decouples \METAPOST\ and \DVIPS. 
+%D 
+%D The macros hereafter are copied from the module
+%D \type{m-metapost}. After writing module \type{supp-pdf} I
+%D added this method to the module named and after a while
+%D decided to hook it into module \type{spec-yy}. Therefore 
+%D they made it into a support module, but in a slightly 
+%D different way. 
+
+%D \macros
+%D   {UseMetaPostGraphic, DontUseMetaPostGraphics}
+%D   {}
+%D 
+%D The method we use is both robust and simple: one can do 
+%D with calling the next macro with the filename as argument:
+%D
+%D \starttypen
+%D \UseMetaPostGraphic{filename}
+%D \stoptypen
+%D
+%D We can turn of this mechanism with: 
+%D
+%D \starttypen
+%D \DontUseMetaPostGraphics
+%D \stoptypen
+
+\def\UseMetaPostGraphic#1%
+  {\bgroup
+   \message{[MP fonts #1]}%
+   %\uncatcodespecials
+   \endlinechar=-1
+   \setMPspecials
+   \obeyMPspecials
+   \setbox0=\hbox
+     {\hskip-\maxdimen
+      \doprocessfile\scratchread{#1}\handleMPSline}%
+   \smashbox0 
+   \box0
+   \egroup}
+
+\def\DontUseMetaPostGraphics%
+  {\let\UseMetaPostGraphic=\gobbleoneargument}
+
+%D The characters are collected in a box and moved as far as
+%D possible into the left margin. The resulting box has no
+%D dimensions and can be prepended (appended) to the special
+%D that handles the inclusion. The characters are in the file
+%D but made invisible. 
+
+%D We scan the graphics file for the \type{fshow} operator,
+%D that is, lines that start with \type{(}. If found it
+%D interprets the line, which looks like: 
+%D
+%D \starttypen
+%D (string ... string) font size fshow
+%D \stoptypen
+%D 
+%D Font definitions specified in the preamble are simply 
+%D ignored. Only lines starting with \type{(} are interpreted.  
+
+\def\dohandleMPSline#1#2\relax%
+  {\if#1(%
+     \expandafter\includeMPcharacters\fileline\relax
+   \fi}
+
+\def\handleMPSline%
+  {\expandafter\dohandleMPSline\fileline\relax}
+
+%D Before we start scanning for data, we first change some 
+%D \CATCODES. The first set of macro's is copied from module 
+%D \type{supp-pdf}. This scheme is a bit overdone for this 
+%D module, but using the same macros saves us some memory.
+
+\def\octalMPcharacter#1#2#3%
+  {\char'#1#2#3\relax}
+
+\bgroup
+\catcode`\|=\@@comment
+\catcode`\%=\@@active
+\catcode`\[=\@@active
+\catcode`\]=\@@active
+\catcode`\{=\@@active
+\catcode`\}=\@@active
+\catcode`B=\@@begingroup
+\catcode`E=\@@endgroup
+\gdef\ignoreMPspecials|
+  B\def%BE|
+   \def[BE|
+   \def]BE|
+   \def{BE|
+   \def}BEE     
+\gdef\obeyMPspecials|
+  B\def%B\char 37\relax E|
+   \def[B\char 91\relax E|
+   \def]B\char 93\relax E|
+   \def{B\char123\relax E|
+   \def}B\char125\relax EE   
+\gdef\setMPspecials|
+  B\catcode`\%=\@@active
+   \catcode`\[=\@@active
+   \catcode`\]=\@@active
+   \catcode`\{=\@@active
+   \catcode`\}=\@@active
+   \catcode`\$=\@@letter
+   \catcode`\_=\@@letter
+   \catcode`\#=\@@letter
+   \catcode`\^=\@@letter
+   \catcode`\&=\@@letter
+   \catcode`\|=\@@letter
+   \catcode`\~=\@@letter
+   \def\(B\char40\relax     E|
+   \def\)B\char41\relax     E|
+   \def\\B\char92\relax     E|
+   \def\0B\octalMPcharacter0E|
+   \def\1B\octalMPcharacter1E|
+   \def\2B\octalMPcharacter2E|
+   \def\3B\octalMPcharacter3E|
+   \def\4B\octalMPcharacter4E|
+   \def\5B\octalMPcharacter5E|
+   \def\6B\octalMPcharacter6E|
+   \def\7B\octalMPcharacter7E|
+   \def\8B\octalMPcharacter8E|
+   \def\9B\octalMPcharacter9EE
+\egroup
+
+%D The lines starting with \type{(} are interpreted and 
+%D handled by 
+
+\def\includeMPcharacters(#1) #2 #3 #4\relax%
+  {\font\temp=#2 at #3bp\temp#1}
+
+%D This method is both robust and reasonable fast. The only 
+%D disadvantage is that when not embedded properly in the 
+%D graphics inclusion macros, one has to load all graphics by
+%D hand.  
+
+%D Now let's see if things work all right and show the example 
+%D files that are part of the \METAPOST\ distribution:
+%D
+%D \startregelcorrectie
+%D \steluitlijnenin[midden]
+%D \leavevmode
+%D \startcombinatie[3*3]
+%D   {\externfiguur[mp-exa-1][methode=mps,kader=aan,breedte=.2\hsize]} {}
+%D   {\externfiguur[mp-exa-2][methode=mps,kader=aan,breedte=.2\hsize]} {}
+%D   {\externfiguur[mp-exa-3][methode=mps,kader=aan,breedte=.2\hsize]} {}
+%D   {\externfiguur[mp-exa-4][methode=mps,kader=aan,breedte=.2\hsize]} {}
+%D   {\externfiguur[mp-exa-5][methode=mps,kader=aan,breedte=.2\hsize]} {}
+%D   {\externfiguur[mp-exa-6][methode=mps,kader=aan,breedte=.2\hsize]} {}
+%D   {\externfiguur[mp-exa-7][methode=mps,kader=aan,breedte=.2\hsize]} {}
+%D   {\externfiguur[mp-exa-8][methode=mps,kader=aan,breedte=.2\hsize]} {}
+%D   {\externfiguur[mp-exa-9][methode=mps,kader=aan,breedte=.2\hsize]} {}
+%D \stopcombinatie
+%D \stopregelcorrectie
+%D
+%D Here we used calls like: 
+%D
+%D \starttypen
+%D \externfiguur[mp-exa-1][methode-mps,kader=aan,breedte=.2\hsize]
+%D \stoptypen
+
+\protect 
+
+\endinput

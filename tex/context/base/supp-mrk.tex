@@ -1,0 +1,299 @@
+%D \module
+%D   [       file=supp-mrk,
+%D        version=1995.10.10,
+%D          title=\CONTEXT\ Support Macros,
+%D       subtitle=Marks,
+%D         author=Jim Fox / Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. Non||commercial use is 
+%C granted. 
+
+%D There are 256 \COUNTERS, \DIMENSIONS, \SKIPS, \MUSKIPS\ and
+%D \BOXES, 16~in- and output buffers, but there is only one
+%D \MARK. In TugBoat~8 (1987, no~1) Jim Fox presents a set of
+%D macros that can be used to mimmick multiple marks. We
+%D gladly adopt them here.
+
+\writestatus{loading}{Context Support Macros / Marks}
+
+\unprotect
+
+%D This implementation is more or less compatible with the
+%D other register macros in \PLAIN\ \TEX. A mark is defined by:
+%D
+%D \starttypen
+%D \newmark\name
+%D \stoptypen
+%D
+%D and can be called upon with:
+%D
+%D \starttypen
+%D \topname
+%D \botname
+%D \firstname
+%D \stoptypen
+%D
+%D The only drawback of his approach is that the marks must be
+%D preloaded in the output routine. This is accomplished by
+%D means of:
+%D
+%D \starttypen
+%D \getmarks\name
+%D \stoptypen
+%D
+%D The macros presented here are in most aspects copies of
+%D those presented by Jim Fox. We've taken the freedom to
+%D change a few things for more or less obvious reasons:
+%D
+%D \startopsomming
+%D \som  Because the original macros look quite complicated,
+%D       which is mainly due to extensive use of
+%D       \type{\expandafter}'s and \type{\csname}'s, we changed
+%D       those in favor of \type{\getvalue}.
+%D \som  To be more in line with the rest of \CONTEXT, we've
+%D       changed some of the names of macros.
+%D \som  Because we are already short on \COUNTERS\ we use
+%D       macros when possible.
+%D \som  We maintain a list of defined marks and use one
+%D       call for getting them all at once.
+%D \som  We have extended the mechanism to splitmarks (not 
+%D       perfected yet).
+%D \som  We've introduced optional expansion of the contents
+%D       of marks.
+%D \stopopsomming
+%D
+%D Whatever changes we've made, the credits still go to Jim,
+%D whatever goes wrong is due to me. The method is described 
+%D in the TugBoat mentioned before, so we won't go into 
+%D details. All marks belonging to a group are packed in a 
+%D list. In this list they are preceded by a macro that can 
+%D be defined at will and a number concerning the position at
+%D which it was defined.
+%D
+%D \starttypen
+%D \def\somelist{... \domark5{this} ... \domark31{that} ...}
+%D \stoptypen
+%D
+%D The original \type{\mark} keeps track of the number and
+%D \type{\topmark} and \type{\botmark} are used to extract the
+%D actual marks from the list. The counting is done by
+%D
+%D \starttypen
+%D \currentmarker
+%D \stoptypen
+%D
+%D In \CONTEXT\ we use the mark mechanism to keep track of
+%D colors. In a complicated documents with many colors per 
+%D page, \type{\currentmarker} can therefore get pretty high.
+%D (Well, this is not completely true, because we don't 
+%D always have to use marks.) 
+
+\newcount\currentmarker
+
+%D The original implementation used a few more \COUNTERS. Two
+%D have been substituted by macros, one has been replaced by
+%D our scratch counter.
+%D 
+%D \starttypen
+%D % \newcount\topmarker
+%D % \newcount\botmarker
+%D % \newcount\foundmarker
+%D \stoptypen
+%D 
+%D We've also introduced some constants, one for the lists and
+%D three for composing the mark commands.
+
+\def\@@marklist@@  {marklist}
+\def\@@marktop@@   {top}
+\def\@@markbot@@   {bot}
+\def\@@markfirst@@ {first}
+
+%D The next one is new too. All defined marks are packed in a
+%D comma seperated list. This could of course have been a token
+%D list but \CONTEXT\ has some preference for comma lists.
+
+\def\markers {}
+
+%D \macros
+%D   {expandmarks}
+%D   {}
+%D
+%D There are two booleans. The first one handles the first
+%D marks, the second concerns expansion. This second one is 
+%D new.
+
+\newif\ifnofirstmarker
+\newif\ifexpandmarks     \expandmarkstrue
+
+%D We use an indirect call to the mack mechanism. 
+
+\let\normalmark           = \mark
+\let\normaltopmark        = \topmark
+\let\normalbotmark        = \botmark
+\let\normalfirstmark      = \firstmark
+\let\normalsplitbotmark   = \splitbotmark
+\let\normalsplitfirstmark = \splitfirstmark
+
+%D The next macro replaces the multiple step expansion and
+%D command name constructors of Jim. This alternative leads to
+%D a more readable source (we hope).
+
+\def\makemarknames#1%
+  {\bgroup
+   \escapechar=-1
+   \xdef\markname{\string#1}%
+   \xdef\marklist{\@@marklist@@\string#1}%
+   \egroup}
+
+%D \macros
+%D   {newmark}
+%D   {}
+%D
+%D A mark is defined by \type{\newmark}. At the same time,
+%D the name of the mark is added to a commalist. The 
+%D three initializations were not in the original design, but 
+%D make calls from outside the output routine a bit more 
+%D robust. 
+
+\def\newmark#1%
+  {\bgroup
+   \makemarknames{#1}%
+   \doglobal\addtocommalist{\markname}\markers%
+   \long\setgvalue{\@@marktop@@\markname}{}%
+   \long\setgvalue{\@@markfirst@@\markname}{}%
+   \long\setgvalue{\@@markbot@@\markname}{}%
+   \setgvalue{\marklist}{\domark0{}}%
+   \long\gdef#1{\addmarker#1}%
+   \egroup}
+
+%D Setting a new mark and adding a mark to the designated
+%D list is done by \type{\addmarker}. This is an internal
+%D command, the user set a marks bij calling it's name:
+%D
+%D \starttypen
+%D \mymark{some text}
+%D \stoptypen
+%D
+%D Where \type{\mymark} is previously defined by
+%D \type{\newmark}.
+
+\long\def\addmarker#1#2%
+  {\bgroup
+   \makemarknames{#1}%
+   \global\advance\currentmarker by 1\relax
+   \normalmark{\the\currentmarker}%
+   \@EA\!!toksa\@EA=\@EA\@EA\@EA{\csname\marklist\endcsname}%
+   \ifexpandmarks
+     \setxvalue{\marklist}%
+       {\the\!!toksa
+        \noexpand\domark
+        \the\currentmarker{#2}}%
+   \else
+     \!!toksb=\@EA{#2}%
+     \setxvalue{\marklist}%
+       {\the\!!toksa
+        \noexpand\domark
+        \the\currentmarker{\the\!!toksb}}%
+   \fi
+   \egroup}
+
+%D \macros
+%D   {getmarks,getallmarks,
+%D    getsplitmarks,getallsplitmarks}
+%D   {}
+%D
+%D In fact, marks make only sense in the output routine. Marks
+%D are derived from their list by means of \type{\getmarks}. 
+%D Only one call per mark is permitted in the output routine.
+%D Therefore, it's far more easy to get them all at once, by 
+%D means of \type{\getallmarks}, which is not part of the 
+%D original design. 
+%D
+%D This grabbing is done by processing the list using the
+%D embedded \type{\domark} macros. When a relevant mark is
+%D found, this macro is reassigned and from then on serves
+%D in building the new list.
+
+\def\getmarks#1%
+  {\bgroup
+   \makemarknames{#1}%
+   \edef\topmarker{0\normaltopmark}%
+   \edef\botmarker{0\normalbotmark}%
+   \!!toksb={}%
+   \nofirstmarkertrue
+   \let\@fi=\fi     \let\fi=\relax
+   \let\@or=\or     \let\or=\relax
+   \let\@else=\else \let\else=\relax
+   \let\domark=\doscanmarks
+   \getvalue{\marklist}\lastmark
+   %\message{markstatus : [\the\!!toksa\the\!!toksb\the\!!toksc]}%
+   \long\setxvalue{\marklist}{\the\!!toksa\the\!!toksb\the\!!toksc}%
+   \egroup}
+
+\def\getallmarks%
+  {\processcommacommand[\markers]\getmarks}
+
+\def\getsplitmarks#1%
+  {\bgroup
+   \makemarknames{#1}%
+   \@EA\let\@EA\savedmarklist\@EA=\csname\marklist\endcsname
+   \edef\topmarker{0\normalsplitfirstmark}%
+   \edef\botmarker{0\normalsplitbotmark}%
+   \!!toksb={}%
+   \nofirstmarkertrue
+   \let\@fi=\fi     \let\fi=\relax
+   \let\@or=\or     \let\or=\relax
+   \let\@else=\else \let\else=\relax
+   \let\domark=\doscanmarks
+   \getvalue{\marklist}\lastmark
+   \@EA\global\@EA\let\csname\marklist\endcsname=\savedmarklist
+   \egroup}
+
+\def\getallsplitmarks%
+  {\processcommacommand[\markers]\getsplitmarks}
+
+\long\def\dodoscanmarks#1%
+  {\ifnum\scratchcounter>\topmarker\relax
+   \@else
+     \long\setgvalue{\@@marktop@@\markname}{#1}%
+   \@fi
+   \ifnum\scratchcounter>\botmarker\relax
+     \let\domark=\dorecovermarks
+     \!!toksb=\@EA{\@EA\domark\the\scratchcounter{#1}}%
+   \@else
+     \ifnofirstmarker
+       \long\setgvalue{\@@markfirst@@\markname}{#1}%
+       \ifnum\scratchcounter>\topmarker\relax
+         \nofirstmarkerfalse
+       \@fi
+     \@fi
+     \long\setgvalue{\@@markbot@@\markname}{#1}%
+     \!!toksa=\@EA{\@EA\domark\the\scratchcounter{#1}}%
+   \@fi}
+
+\def\doscanmarks%
+  {\afterassignment\dodoscanmarks\scratchcounter=}
+
+\long\def\dorecovermarks#1\lastmark%
+  {\!!toksc={\domark#1}}
+
+\def\lastmark%
+  {\!!toksc={}}
+
+%D No watch what happens next. Because we used an indirect 
+%D call to the mark mechanism we can redefine the original 
+%D \type{\mark} command. 
+
+\newmark\mark
+
+%D One final advice. Use marks with care. When used in globally
+%D assigned boxes, the list can grow quite big, and processing
+%D can slow down considerably.
+
+\protect
+
+\endinput
+

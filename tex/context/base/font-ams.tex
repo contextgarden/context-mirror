@@ -1,0 +1,497 @@
+%D \module
+%D   [       file=font-ams,
+%D        version=1995.1.1,
+%D          title=\CONTEXT\ Font Macros,
+%D       subtitle=AMS Math Symbols,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+
+%D Here we implement the symbol fonts as provided by the
+%D American Mathematical Society. The names of these symbols 
+%D can be found in The Joy of \TeX\ by M.~Spivak.
+%D 
+%D First we extend the already defined font sets a bit. We make
+%D use of the \type{sa} option.
+
+\definecorps [14.4pt,12pt,11pt,10pt,9pt] [mm]
+  [ma=msam10 sa 1,
+   mb=msbm10 sa 1]
+
+\definecorps [8pt,7pt] [mm]
+  [ma=msam7 sa 1,
+   mb=msbm7 sa 1]
+
+\definecorps [6pt,5pt,4pt] [mm]
+  [ma=msam5 sa 1,
+   mb=msbm5 sa 1]
+
+%D We already have defined some additional math families. This
+%D means that do not have to do this again. It would exhaust our
+%D limited pool of \type{\fam}'s anyway.
+
+\unprotect
+
+\let\msafam@=\hexmafam
+\let\msbfam@=\hexmbfam
+
+\protect
+
+%D The following piece of \TEX\ is part of the distribution
+%D of the \AMS\ fonts. The macros are slightly adapted to the
+%D \CONTEXT\ way of font handling, which means that we have
+%D commented out some sections. The comments are original.
+
+%D \starttypen
+%D %% @texfile{
+%D %%     filename="amssym.def",
+%D %%     version="2.1",
+%D %%     date="5-APR-1991",
+%D %%     filetype="TeX: option",
+%D %%     copyright="Copyright (C) American Mathematical Society,
+%D %%            all rights reserved.  Copying of this file is
+%D %%            authorized only if either:
+%D %%            (1) you make absolutely no changes to your copy
+%D %%                including name; OR
+%D %%            (2) if you do make changes, you first rename it to some
+%D %%                other name.",
+%D %%     author="American Mathematical Society",
+%D %%     address="American Mathematical Society,
+%D %%            Technical Support Department,
+%D %%            P. O. Box 6248,
+%D %%            Providence, RI 02940,
+%D %%            USA",
+%D %%     telephone="401-455-4080 or (in the USA) 800-321-4AMS",
+%D %%     email="Internet: Tech-Support@Math.AMS.org",
+%D %%     codetable="ISO/ASCII",
+%D %%     checksumtype="line count",
+%D %%     checksum="108",
+%D %%     keywords="amsfonts, tex",
+%D %%     abstract="This file contains definitions that perform the same
+%D %%            functions as similar ones in AMS-TeX, so that the file
+%D %%            AMSSYM.TEX can be used outside of AMS-TeX. Instructions
+%D %%            for using this file and the AMS symbol fonts are
+%D %%            included in the AMSFonts 2.0 User's Guide."
+%D %%     }
+%D \stoptypen
+
+\expandafter\ifx\csname amssym.def\endcsname\relax \else\endinput\fi
+
+%D Store the catcode of the @ in the csname so that it can be
+%D restored later.
+
+\expandafter\edef\csname amssym.def\endcsname%
+  {\catcode`\noexpand\@=\the\catcode`\@\normalspace}
+
+%D Set the catcode to 11 for use in private control sequence
+%D names.
+
+\catcode`\@=11
+
+%D Include all definitions related to the fonts msam, msbm and
+%D eufm, so that when this file is used by itself, the results
+%D with respect to those fonts are equivalent to what they
+%D would have been using \AMSTEX. Most symbols in fonts msam
+%D and msbm are defined using \type{\newsymbol}; however, a few
+%D symbols that replace composites defined in plain must be
+%D defined with \type{\mathchardef}.
+
+\def\undefine#1%
+  {\let#1\undefined}
+
+\def\newsymbol#1#2#3#4#5%
+  {\let\next@\relax
+   \ifnum#2=\@ne
+     \let\next@\msafam@
+   \else
+     \ifnum#2=\tw@
+       \let\next@\msbfam@
+     \fi
+   \fi
+   \mathchardef#1="#3\next@#4#5}
+
+\def\mathhexbox@#1#2#3%
+  {\relax
+   \ifmmode
+     \mathpalette{}{\m@th\mathchar"#1#2#3}%
+   \else
+     \leavevmode
+     \hbox{$\m@th\mathchar"#1#2#3$}%
+   \fi}
+
+%D \starttypen
+%D \def\hexnumber@#1%
+%D   {\ifcase#1
+%D      0\or 1\or 2\or 3\or
+%D      4\or 5\or 6\or 7\or
+%D      8\or 9\or A\or B\or
+%D      C\or D\or E\or F\fi}
+%D
+%D \font\tenmsa=msam10
+%D \font\sevenmsa=msam7
+%D \font\fivemsa=msam5
+%D \newfam\msafam
+%D \textfont\msafam=\tenmsa
+%D \scriptfont\msafam=\sevenmsa
+%D \scriptscriptfont\msafam=\fivemsa
+%D
+%D \edef\msafam@%
+%D   {\hexnumber@\msafam}
+%D \stoptypen
+
+\mathchardef\dabar@"0\msafam@39
+
+\def\dashrightarrow  {\mathrel{\dabar@\dabar@\mathchar"0\msafam@4B}}
+\def\dashleftarrow   {\mathrel{\mathchar"0\msafam@4C\dabar@\dabar@}}
+\let\dasharrow       \dashrightarrow
+\def\ulcorner        {\delimiter"4\msafam@70\msafam@70 }
+\def\urcorner        {\delimiter"5\msafam@71\msafam@71 }
+\def\llcorner        {\delimiter"4\msafam@78\msafam@78 }
+\def\lrcorner        {\delimiter"5\msafam@79\msafam@79 }
+\def\yen             {{\mathhexbox@\msafam@55 }}
+\def\checkmark       {{\mathhexbox@\msafam@58 }}
+\def\circledR        {{\mathhexbox@\msafam@72 }}
+\def\maltese         {{\mathhexbox@\msafam@7A }}
+
+%D \starttypen
+%D \font\tenmsb=msbm10
+%D \font\sevenmsb=msbm7
+%D \font\fivemsb=msbm5
+%D \newfam\msbfam
+%D \textfont\msbfam=\tenmsb
+%D \scriptfont\msbfam=\sevenmsb
+%D \scriptscriptfont\msbfam=\fivemsb
+%D
+%D \edef\msbfam@%
+%D   {\hexnumber@\msbfam}
+%D \stoptypen
+
+\def\Bbb#1%
+  {{\fam\msbfam\relax#1}}
+
+\def\widehat#1%
+  {\setbox\z@\hbox{$\m@th#1$}%
+   \ifdim\wd\z@>\tw@ em%
+     \mathaccent"0\msbfam@5B{#1}%
+   \else
+     \mathaccent"0362{#1}%
+   \fi}
+
+\def\widetilde#1%
+  {\setbox\z@\hbox{$\m@th#1$}%
+   \ifdim\wd\z@>\tw@ em%
+     \mathaccent"0\msbfam@5D{#1}%
+   \else
+     \mathaccent"0365{#1}%
+   \fi}
+
+%D \starttypen
+%D \font\teneufm=eufm10
+%D \font\seveneufm=eufm7
+%D \font\fiveeufm=eufm5
+%D \newfam\eufmfam
+%D \textfont\eufmfam=\teneufm
+%D \scriptfont\eufmfam=\seveneufm
+%D \scriptscriptfont\eufmfam=\fiveeufm
+%D \def\frak#1{{\fam\eufmfam\relax#1}}
+%D \let\goth\frak
+%D \stoptypen
+
+%D  Restore the catcode value for @ that was previously saved.
+
+\csname amssym.def\endcsname
+
+%D \starttypen
+%D %% @texfile{
+%D %%     filename="amssym.tex",
+%D %%     version="2.1a",
+%D %%     date="31-OCT-1991",
+%D %%     filetype="TeX: option",
+%D %%     copyright="Copyright (C) American Mathematical Society,
+%D %%            all rights reserved.  Copying of this file is
+%D %%            authorized only if either:
+%D %%            (1) you make absolutely no changes to your copy
+%D %%                including name; OR
+%D %%            (2) if you do make changes, you first rename it to some
+%D %%                other name.",
+%D %%     author="American Mathematical Society",
+%D %%     address="American Mathematical Society,
+%D %%            Technical Support Department,
+%D %%            P. O. Box 6248,
+%D %%            Providence, RI 02940,
+%D %%            USA",
+%D %%     telephone="401-455-4080 or (in the USA) 800-321-4AMS",
+%D %%     email="Internet: Tech-Support@Math.AMS.org",
+%D %%     codetable="ISO/ASCII",
+%D %%     checksumtype="line count",
+%D %%     checksum="279",
+%D %%     keywords="amstex, ams-tex, tex, amsfonts, math symbols",
+%D %%     abstract="This file defines names for all the math symbols in
+%D %%            the math symbol fonts of the AMSFonts package (MSAM and
+%D %%            MSBM). If this file is not used by way of the AMS-TeX
+%D %%            \UseAMSsymbols command, it must be used in conjunction
+%D %%            with AMSSYM.DEF, which provides a definition of the
+%D %%            \newsymbol and \undefine commands.
+%D %%            Instructions for using the AMS symbol fonts are
+%D %%            included in: AMS-TeX 2.1 User's Guide; AMSFonts 2.1
+%D %%            User's Guide; The Joy of TeX, editions dated 1990 or
+%D %%            later."
+%D %%     }
+%D \stoptypen
+
+%D Save the current value of the @-sign catcode so that it can
+%D be restored afterwards. This allows us to call amssym.tex
+%D either within an \AMSTEX\ document style file or by itself,
+%D in addition to providing a means of testing whether the file
+%D has been previously loaded. We want to avoid inputting this
+%D file twice because when \AMSTEX\ is being used
+%D \type{\newsymbol} will give an error message if used to
+%D define a control sequence name that is already defined.
+
+%D If the csname is not equal to \type{\relax}, we assume this
+%D file has already been loaded and \type{\endinput}
+%D immediately.
+
+\expandafter\ifx\csname pre amssym.tex at\endcsname\relax \else \endinput\fi
+
+%D Otherwise we store the catcode of the @ in the csname.
+
+\expandafter\chardef\csname pre amssym.tex at\endcsname=\the\catcode`\@
+
+%D Set the catcode to 11 for use in private control sequence
+%D names.
+
+\catcode`\@=11
+
+%D Most symbols in fonts msam and msbm are defined using
+%D \type{\newsymbol}. A few that are delimiters or otherwise
+%D require special treatment have already been defined as soon
+%D as the fonts were loaded. Finally, a few symbols that
+%D replace composites defined in plain must be undefined first.
+
+\newsymbol\boxdot 1200
+\newsymbol\boxplus 1201
+\newsymbol\boxtimes 1202
+\newsymbol\square 1003
+\newsymbol\blacksquare 1004
+\newsymbol\centerdot 1205
+\newsymbol\lozenge 1006
+\newsymbol\blacklozenge 1007
+\newsymbol\circlearrowright 1308
+\newsymbol\circlearrowleft 1309
+\undefine\rightleftharpoons
+\newsymbol\rightleftharpoons 130A
+\newsymbol\leftrightharpoons 130B
+\newsymbol\boxminus 120C
+\newsymbol\Vdash 130D
+\newsymbol\Vvdash 130E
+\newsymbol\vDash 130F
+\newsymbol\twoheadrightarrow 1310
+\newsymbol\twoheadleftarrow 1311
+\newsymbol\leftleftarrows 1312
+\newsymbol\rightrightarrows 1313
+\newsymbol\upuparrows 1314
+\newsymbol\downdownarrows 1315
+\newsymbol\upharpoonright 1316
+ \let\restriction\upharpoonright
+\newsymbol\downharpoonright 1317
+\newsymbol\upharpoonleft 1318
+\newsymbol\downharpoonleft 1319
+\newsymbol\rightarrowtail 131A
+\newsymbol\leftarrowtail 131B
+\newsymbol\leftrightarrows 131C
+\newsymbol\rightleftarrows 131D
+\newsymbol\Lsh 131E
+\newsymbol\Rsh 131F
+\newsymbol\rightsquigarrow 1320
+\newsymbol\leftrightsquigarrow 1321
+\newsymbol\looparrowleft 1322
+\newsymbol\looparrowright 1323
+\newsymbol\circeq 1324
+\newsymbol\succsim 1325
+\newsymbol\gtrsim 1326
+\newsymbol\gtrapprox 1327
+\newsymbol\multimap 1328
+\newsymbol\therefore 1329
+\newsymbol\because 132A
+\newsymbol\doteqdot 132B
+ \let\Doteq\doteqdot
+\newsymbol\triangleq 132C
+\newsymbol\precsim 132D
+\newsymbol\lesssim 132E
+\newsymbol\lessapprox 132F
+\newsymbol\eqslantless 1330
+\newsymbol\eqslantgtr 1331
+\newsymbol\curlyeqprec 1332
+\newsymbol\curlyeqsucc 1333
+\newsymbol\preccurlyeq 1334
+\newsymbol\leqq 1335
+\newsymbol\leqslant 1336
+\newsymbol\lessgtr 1337
+\newsymbol\backprime 1038
+\newsymbol\risingdotseq 133A
+\newsymbol\fallingdotseq 133B
+\newsymbol\succcurlyeq 133C
+\newsymbol\geqq 133D
+\newsymbol\geqslant 133E
+\newsymbol\gtrless 133F
+\newsymbol\sqsubset 1340
+\newsymbol\sqsupset 1341
+\newsymbol\vartriangleright 1342
+\newsymbol\vartriangleleft 1343
+\newsymbol\trianglerighteq 1344
+\newsymbol\trianglelefteq 1345
+\newsymbol\bigstar 1046
+\newsymbol\between 1347
+\newsymbol\blacktriangledown 1048
+\newsymbol\blacktriangleright 1349
+\newsymbol\blacktriangleleft 134A
+\newsymbol\vartriangle 134D
+\newsymbol\blacktriangle 104E
+\newsymbol\triangledown 104F
+\newsymbol\eqcirc 1350
+\newsymbol\lesseqgtr 1351
+\newsymbol\gtreqless 1352
+\newsymbol\lesseqqgtr 1353
+\newsymbol\gtreqqless 1354
+\newsymbol\Rrightarrow 1356
+\newsymbol\Lleftarrow 1357
+\newsymbol\veebar 1259
+\newsymbol\barwedge 125A
+\newsymbol\doublebarwedge 125B
+\undefine\angle
+\newsymbol\angle 105C
+\newsymbol\measuredangle 105D
+\newsymbol\sphericalangle 105E
+\newsymbol\varpropto 135F
+\newsymbol\smallsmile 1360
+\newsymbol\smallfrown 1361
+\newsymbol\Subset 1362
+\newsymbol\Supset 1363
+\newsymbol\Cup 1264
+ \let\doublecup\Cup
+\newsymbol\Cap 1265
+ \let\doublecap\Cap
+\newsymbol\curlywedge 1266
+\newsymbol\curlyvee 1267
+\newsymbol\leftthreetimes 1268
+\newsymbol\rightthreetimes 1269
+\newsymbol\subseteqq 136A
+\newsymbol\supseteqq 136B
+\newsymbol\bumpeq 136C
+\newsymbol\Bumpeq 136D
+\newsymbol\lll 136E
+ \let\llless\lll
+\newsymbol\ggg 136F
+ \let\gggtr\ggg
+\newsymbol\circledS 1073
+\newsymbol\pitchfork 1374
+\newsymbol\dotplus 1275
+\newsymbol\backsim 1376
+\newsymbol\backsimeq 1377
+\newsymbol\complement 107B
+\newsymbol\intercal 127C
+\newsymbol\circledcirc 127D
+\newsymbol\circledast 127E
+\newsymbol\circleddash 127F
+\newsymbol\lvertneqq 2300
+\newsymbol\gvertneqq 2301
+\newsymbol\nleq 2302
+\newsymbol\ngeq 2303
+\newsymbol\nless 2304
+\newsymbol\ngtr 2305
+\newsymbol\nprec 2306
+\newsymbol\nsucc 2307
+\newsymbol\lneqq 2308
+\newsymbol\gneqq 2309
+\newsymbol\nleqslant 230A
+\newsymbol\ngeqslant 230B
+\newsymbol\lneq 230C
+\newsymbol\gneq 230D
+\newsymbol\npreceq 230E
+\newsymbol\nsucceq 230F
+\newsymbol\precnsim 2310
+\newsymbol\succnsim 2311
+\newsymbol\lnsim 2312
+\newsymbol\gnsim 2313
+\newsymbol\nleqq 2314
+\newsymbol\ngeqq 2315
+\newsymbol\precneqq 2316
+\newsymbol\succneqq 2317
+\newsymbol\precnapprox 2318
+\newsymbol\succnapprox 2319
+\newsymbol\lnapprox 231A
+\newsymbol\gnapprox 231B
+\newsymbol\nsim 231C
+\newsymbol\ncong 231D
+\newsymbol\diagup 231E
+\newsymbol\diagdown 231F
+\newsymbol\varsubsetneq 2320
+\newsymbol\varsupsetneq 2321
+\newsymbol\nsubseteqq 2322
+\newsymbol\nsupseteqq 2323
+\newsymbol\subsetneqq 2324
+\newsymbol\supsetneqq 2325
+\newsymbol\varsubsetneqq 2326
+\newsymbol\varsupsetneqq 2327
+\newsymbol\subsetneq 2328
+\newsymbol\supsetneq 2329
+\newsymbol\nsubseteq 232A
+\newsymbol\nsupseteq 232B
+\newsymbol\nparallel 232C
+\newsymbol\nmid 232D
+\newsymbol\nshortmid 232E
+\newsymbol\nshortparallel 232F
+\newsymbol\nvdash 2330
+\newsymbol\nVdash 2331
+\newsymbol\nvDash 2332
+\newsymbol\nVDash 2333
+\newsymbol\ntrianglerighteq 2334
+\newsymbol\ntrianglelefteq 2335
+\newsymbol\ntriangleleft 2336
+\newsymbol\ntriangleright 2337
+\newsymbol\nleftarrow 2338
+\newsymbol\nrightarrow 2339
+\newsymbol\nLeftarrow 233A
+\newsymbol\nRightarrow 233B
+\newsymbol\nLeftrightarrow 233C
+\newsymbol\nleftrightarrow 233D
+\newsymbol\divideontimes 223E
+\newsymbol\varnothing 203F
+\newsymbol\nexists 2040
+\newsymbol\Finv 2060
+\newsymbol\Game 2061
+\newsymbol\mho 2066
+\newsymbol\eth 2067
+\newsymbol\eqsim 2368
+\newsymbol\beth 2069
+\newsymbol\gimel 206A
+\newsymbol\daleth 206B
+\newsymbol\lessdot 236C
+\newsymbol\gtrdot 236D
+\newsymbol\ltimes 226E
+\newsymbol\rtimes 226F
+\newsymbol\shortmid 2370
+\newsymbol\shortparallel 2371
+\newsymbol\smallsetminus 2272
+\newsymbol\thicksim 2373
+\newsymbol\thickapprox 2374
+\newsymbol\approxeq 2375
+\newsymbol\succapprox 2376
+\newsymbol\precapprox 2377
+\newsymbol\curvearrowleft 2378
+\newsymbol\curvearrowright 2379
+\newsymbol\digamma 207A
+\newsymbol\varkappa 207B
+\newsymbol\Bbbk 207C
+\newsymbol\hslash 207D
+\undefine\hbar
+\newsymbol\hbar 207E
+\newsymbol\backepsilon 237F
+
+%D Restore the catcode value for @ that was previously saved.
+
+\catcode`\@=\csname pre amssym.tex at\endcsname
+
+\endinput
+

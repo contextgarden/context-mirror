@@ -1,0 +1,150 @@
+%D \module
+%D   [       file=context,
+%D        version=1995.10.10,
+%D          title=\CONTEXT,
+%D       subtitle=\CONTEXT\ Format Generation, 
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. Non||commercial use is 
+%C granted. 
+
+%D Welcome to the main module. When this module is ran through
+%D \type{initex} or \type{tex -i} or \type{whatevertex} using
+%D \type{whatever switch}, the \CONTEXT\ format file is
+%D generated. During this process the user is asked for an
+%D interface language. Supplying \type{dutch} will generate a
+%D dutch version of \CONTEXT, supplying \type{english} will of
+%D course end op in a english version. 
+%D 
+%D First we load the system modules. These implement a lot of 
+%D manipulation macros. The first one loads \PLAIN\ \TEX, as 
+%D minimal as possible. 
+
+\input syst-tex.tex  
+\input syst-gen.tex
+\input syst-ext.tex
+\input syst-new.tex
+
+%D After this we're ready for the multi||lingual interface 
+%D modules. 
+
+\input mult-ini.tex
+\input mult-sys.tex
+\input mult-con.tex
+\input mult-com.tex
+
+%D Now we're ready for some general support modules. These 
+%D modules implement some basic typesetting functionality.  
+
+\input supp-ini.tex
+\input supp-fil.tex
+\input supp-ver.tex
+\input supp-box.tex
+\input supp-mrk.tex
+\input supp-vis.tex
+\input supp-mul.tex
+\input supp-fun.tex
+\input supp-pdf.tex
+\input supp-spe.tex
+\input supp-mps.tex
+\input supp-tpi.tex
+
+%D \CONTEXT\ does not implement its own table handling. We 
+%D just go for the best there is and load \TABLE. Just to be 
+%D sure we do it here, before we redefine \type{|}. 
+
+\doinputonce{table}       
+
+%D Here comes the last support module. 
+
+\input supp-lan.tex
+
+%D The next three modules do what their names state. They 
+%D load additional definition modules when needed. 
+
+\input lang-ini.tex
+\input spec-ini.tex
+\input colo-ini.tex
+
+%D For the moment we load a lot of languages. In the future 
+%D we'll have to be more space conservative. 
+
+\input lang-lab.tex
+
+\input lang-alt.tex
+\input lang-ana.tex
+\input lang-art.tex
+\input lang-bal.tex
+\input lang-cel.tex
+\input lang-ger.tex
+\input lang-grk.tex
+\input lang-hnl.tex
+\input lang-ind.tex
+\input lang-ita.tex
+\input lang-sla.tex
+\input lang-ura.tex
+
+%D The special modules need some additional macro's: 
+
+\input spec-mis.tex
+
+%D Next we load some core macro's. These implement the 
+%D macros' that are seen by the users. 
+
+\input core-gen.tex
+\input core-mak.tex
+\input core-fil.tex
+\input core-ver.tex
+\input core-vis.tex
+\input core-con.tex
+\input core-rul.tex
+\input core-tab.tex
+\input core-fil.tex
+\input core-01a.tex
+
+%D Of course we do need fonts. There are no \TFM\ files 
+%D loaded yet, so the format file is independant of their 
+%D content. Here we also redefine \type{\it} as {\it italic} 
+%D instead of italian. 
+
+\input font-ini.tex
+
+%D Now we're ready for more core modules. 
+
+\input core-fnt.tex
+\input core-not.tex
+
+\input core-01b.tex
+\input core-01c.tex
+\input core-01d.tex
+\input core-01e.tex
+
+\input core-02a.tex
+\input core-02b.tex
+%      core-02c.tex
+\input core-02d.tex
+
+%D Except from english, no hyphenation pattersn are loaded 
+%D yet. Users can specify their needs in the next module: 
+
+\input cont-usr.tex
+
+%D The next two modules implement some additional 
+%D functionality concenring classes of documents and output.  
+%D These modules probably will be replaced some day. 
+
+\input docs-ini.tex
+\input list-ini.tex
+
+%D \TEX\ related logo's are always typeset in a special way. 
+%D Here they come: 
+
+\input cont-log.tex
+
+%D Dumping the format is all that's left to be done. 
+
+\dump
+

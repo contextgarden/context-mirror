@@ -1,0 +1,557 @@
+%D \module
+%D   [       file=core-not,
+%D        version=1997.09.15,
+%D          title=\CONTEXT\ Core Macros,
+%D       subtitle=Footnote Handling,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. Non||commercial use is
+%C granted.
+
+\writestatus{loading}{Context Core Macros / Footnote Handling}
+
+%D There are some (still) dutch core commands used in this
+%D file.
+
+\unprotect
+
+%D Footnotes are can be characterized by three components:
+%D
+%D \startopsomming[opelkaar]
+%D \som a small number \voetnoot{a footnote number} or
+%D symbol {\stelvoetnotenin[conversie=set 2]\voetnoot{a
+%D footnote}}
+%D \som and a similar mark at the bottom of the page
+%D \som followed by some additional text
+%D \stopopsomming
+%D
+%D Because footnotes are declared at the location of their
+%D reference. Footnotes can be seen as a special kind of
+%D floating bodies. There placement is postponed but has to be
+%D taken into account in the pagebreak calculations. This kind
+%D of calculations are forced by using \type{\insert}.
+
+\ifx\footins\undefined \newinsert\footins \fi
+
+%D \macros
+%D   {setupfootnotes}
+%D
+%D We can influence footnote typesetting with the setup
+%D command:
+%D
+%D \showsetup{\y!setupfootnotes}
+%D
+%D It's sort of a custom to precede footnotes by a horizontal
+%D rule and although fancy rules like
+%D
+%D \starttypen
+%D \hbox to 10em{\hskip-3em\dotfill}
+%D \stoptypen
+%D
+%D Are quite ligitimate, we default to a simple one 20\% of the
+%D text width.
+%D
+%D When \type{n} exceeds~1, footnotes are typeset in
+%D multi||columns, using the algoritm presented on page~397
+%D of \TEX book. Footnotes can be places on a per page basis
+%D or whereever suitable. When we set~\type{n} to~0, we get a
+%D rearanged paragraph, typeset by the algoritms on pages 398
+%D and~389. We definitely did not reinvent that wheel.
+
+\newif\ifendnotes \endnotesfalse
+
+\def\dosetupfootnotes[#1]%
+  {\getparameters[\??vn][#1]%
+   \processaction
+     [\@@vnlijn]
+     [    \v!aan=>\def\footnoterule{\hrule \!!width .2\hsize},
+          \v!uit=>\let\footnoterule=\relax,
+      \s!unknown=>\let\footnoterule=\@@vnlijn]%
+   \bgroup
+   \setbox0=\vbox
+     {\vskip\parskip % still to be tested in multi-column mode
+      \@@vnvoor
+      \footnoterule
+      \@@vnna}%
+   \global\skip\footins =\ht0
+   \global\count\footins=1000
+   \ifnum\@@vnn=0 \chardef\@@vnn=1 \fi % temporary (grouped)
+   \global\divide\count\footins by \@@vnn
+   \global\dimen\footins=\@@vnhoogte
+   \global\multiply\dimen\footins by \@@vnn
+   \egroup
+   \ifnum\@@vnn=0
+     \settextfootnotes
+   \else
+     \setcolumnfootnotes
+   \fi
+   \doifelse{\@@vnplaats}{\v!pagina}
+     {\global\endnotesfalse}
+     {\global\endnotestrue
+      \postponefootnotes}}
+
+\def\setupfootnotes%
+  {\dosingleargument\dosetupfootnotes}
+
+\def\setcolumnfootnotes%
+  {\def\formatfootnumber##1{\indent\llap{##1\hskip\@@vnmargeafstand}}%
+   \def\startpushfootnote  {\setrigidcolumnhsize\@@vnbreedte\@@vnkolomafstand\@@vnn}%
+   \def\stoppushfootnote   {}%
+   \def\startpopfootnotes  {\setbox0=\vbox\bgroup}%
+   \def\stoppopfootnotes   {\egroup\rigidcolumnbalance0\@@vnn}}
+
+\def\settextfootnotes%
+  {\def\formatfootnumber##1{\noindent##1}%
+   \def\startpushfootnote  {\startvboxtohbox}%
+   \def\stoppushfootnote   {\hskip\@@vnkolomafstand % plus.5em minus.5em
+                            \stopvboxtohbox}%
+   \def\startpopfootnotes  {\vbox\bgroup\hsize=\@@vnbreedte}% \setvboxtohbox}%
+   \def\stoppopfootnotes   {\convertvboxtohbox\egroup}}
+
+%D The numbers that accompany a footnote are generated using
+%D the standard \CONTEXT\ numbering mechanism, and thereby can
+%D be assigned on a per whatever sectioning basis.
+
+\definieernummer
+  [\v!voetnoot]
+  [\c!wijze=\@@vnwijze,
+   \c!sectienummer=\@@vnwijze,
+   \c!conversie=\@@vnconversie]
+
+%D Both these parameters are coupled to the setup command we
+%D will implement in a moment. This means that, given a
+%D suitable symbol set, symbols can be used instead of numbers,
+%D by saying:
+%D
+%D \starttypen
+%D \setupfootnotes[conversion=set 2]
+%D \stoptypen
+
+%D \macros
+%D   {footnote}
+%D
+%D A footnote can have a reference as optional argument and
+%D therefore its formal specification looks like:
+%D
+%D \showsetup{\y!footnote}
+%D
+%D This command has one optional command: the reference. By
+%D saying \type{[-]} the number is omitted. The footnote
+%D command is not that sensitive to spacing, so it's quite
+%D legal to say:
+%D
+%D \startbuffer
+%D Users of \CONTEXT\ must keep both feet \footnote{Given they
+%D have two.} on the ground and not get confused \footnote{Or
+%D even crazy.} by all those obscure \footnote{But fortunately
+%D readable.} parameters.
+%D \stopbuffer
+%D
+%D \typebuffer
+%D
+%D When setting the \type{conversion} to \type{set 2} we get
+%D something like:
+%D
+%D \bgroup
+%D \startsmaller
+%D \stelvoetnotenin[conversie=set 1]
+%D \haalbuffer
+%D \stopsmaller
+%D \egroup
+%D
+%D Typesetting footnotes is, at least for the moment, disabled
+%D when reshaping boxes.
+
+\definecomplexorsimpleempty\footnote
+
+\def\complexfootnote[#1]%
+  {\unskip
+   \ifvisible
+     \ifreshapingbox
+       \let\next=\gobbletwoarguments
+     \else
+       \let\next=\dofootnote
+     \fi
+   \else
+     \let\next=\gobbletwoarguments
+   \fi
+   \next{#1}}
+
+%D \macros
+%D   {footnotesenabled}
+%D
+%D Before we come to typesetting a footnote, we first check
+%D if we have to typeset a number. When a \type{-} is passed
+%D instead of a reference, no number is typeset. We can
+%D temporary disable footnotes by saying
+%D
+%D \starttypen
+%D \footnotesenabledfalse
+%D \stoptypen
+%D
+%D which can be handy while for instance typesetting tables
+%D of contents.
+
+\newif\iffootnotesenabled \footnotesenabledtrue
+
+\def\dofootnote#1%
+  {\iffootnotesenabled
+     \doifelse{#1}{-}
+       {\let\footnotenumber=\empty}
+       {\verhoognummer[\v!voetnoot]%
+        \maakhetnummer[\v!voetnoot]%
+        \rawtextreference{\s!fnt}{#1}{\hetnummer}%
+        \def\footnotenumber{\hoog{\hetnummer}}}%
+     \let\next=\dostartfootnote
+   \else
+     \let\next=\gobbleoneargument
+   \fi
+   \next}
+
+%D The main typesetting routine is more or less the same as the
+%D \PLAIN\ \TEX\ one, except that we only handle one type while
+%D \PLAIN\ also has something \type{\v...}. In most cases
+%D footnotes can be handled by a straight insert, but we do so
+%D by using an indirect call to the \type{\insert} primitive.
+
+\let\localfootinsert=\insert
+
+%D Making footnote numbers active is not always that logical,
+%D especially when we keep the reference and text at one page.
+%D On the other hand we need interactivity when we refer to
+%D previous notes or use end notes. Therefore we support
+%D interactive footnote numbers in two ways \voetnoot{This
+%D feature was implemented years after we were able to do so,
+%D mainly because endnotes had to be supported.} that is,
+%D automatically (vise versa) and by user supplied reference.
+
+\newcounter\internalfootreference
+
+\let\startpushfootnote = \relax
+\let\stoppushfootnote  = \relax
+
+\newsignal\footnotesignal
+
+\def\dostartfootnote% nog gobble als in pagebody
+  {\bgroup
+   \unskip\unskip
+   \ifdim\lastkern=\footnotesignal
+     \hoog{\kern\@@vnafstand}% gets the font right
+   \fi
+   \ignorespaces
+   \doglobal\increment\internalfootreference
+   \nobreak
+   \iflocation
+     \naarbox{\footnotenumber}[\s!fnt:t:\internalfootreference]%
+     \rawreference{\s!fnt}{\s!fnt:f:\internalfootreference}{}%
+   \else
+     \footnotenumber
+   \fi
+   \localfootinsert\footins\bgroup
+     \forgetall
+     \setfootnotecorps
+     \redoconvertfont % to undo \undo calls in in headings etc
+     \startpushfootnote
+     \dostartattributes\??vn\relax
+     \interlinepenalty=\interfootnotelinepenalty
+     \splittopskip\ht\strutbox  % not actually needed here
+     \splitmaxdepth\dp\strutbox % not actually needed here
+     \ifx\footnotenumber\empty \else
+       \@@vnnummercommando
+         {\iflocation
+            \naarbox{\footnotenumber}[\s!fnt:f:\internalfootreference]%
+          \else
+            \footnotenumber
+          \fi}%
+     \fi
+     \iflocation
+       \rawreference{\s!fnt}{\s!fnt:t:\internalfootreference}{}%
+     \fi
+     \bgroup
+     \aftergroup\dostopfootnote
+     \begstrut
+     \let\next}
+
+\def\dostopfootnote%
+  {\endstrut
+   \dostopattributes
+   \stoppushfootnote
+   \egroup
+   \egroup
+   \kern\footnotesignal\relax} % \relax is needed to honor spaces
+
+%D \macros
+%D   {note}
+%D
+%D Refering to a note is accomplished by the rather short
+%D command:
+%D
+%D \showsetup{\y!note}
+%D
+%D This command is implemented rather straightforward as:
+
+\def\note[#1]%
+  {\iffootnotesenabled
+     \bgroup
+     \unskip
+     \gettextreference{#1}%
+     \naarbox{\hoog{\currenttextreference}}[#1]%
+     \egroup
+   \fi}
+
+%D Normally footnotes are saved as inserts that are called upon
+%D as soon as the pagebody is constructed. The footnote
+%D insertion routine looks just like the \PLAIN\ \TEX\ one,
+%D except that we check for the end note state.
+
+\let\startpopfootnotes = \relax
+\let\stoppopfootnotes  = \relax
+
+\def\placefootnoteinserts%
+  {\ifvoid\footins \else
+     \ifendnotes \else
+       \vfill
+       \witruimte % kan dit \vskip\parskip zijn? testen
+       \@@vnvoor
+       \footnoterule
+       \bgroup
+       \setfootnotecorps
+       \startpopfootnotes
+       \unvbox\footins
+       \stoppopfootnotes
+       \egroup
+       \@@vnna
+     \fi
+   \fi}
+
+%D Supporting end notes is surprisingly easy. Even better, we
+%D can combine this feature with solving the common \TEX\
+%D problem of disappearing inserts when they're called for in
+%D deeply nested boxes. The general case looks like:
+%D
+%D \starttypen
+%D \postponefootnotes
+%D \.box{whatever we want with footnotes}
+%D \flushfootnotes
+%D \stoptypen
+%D
+%D This alternative can be used in headings, captions, tables
+%D etc. The latter one sometimes calls for notes local to
+%D the table, which can be realized by saying
+%D
+%D \starttypen
+%D \setlocalfootnotes
+%D some kind of table with local footnotes
+%D \placelocalfootnotes
+%D \stoptypen
+%D
+%D Postponing is accomplished by simply redefining the (local)
+%D insert operation. A not too robust method uses the
+%D \type{\insert} primitive when possible. This method fails in
+%D situations where it's not entirely clear in what mode \TEX\
+%D is. Therefore the auto method can is to be overruled when 
+%D needed.  
+
+\newbox\postponedfootnotes
+
+\def\autopostponefootnotes%
+  {\gdef\localfootinsert%
+     {\ifinner
+        %\message{[postponed footnote]}%
+        \global\setbox\postponedfootnotes=\vbox\bgroup
+          \unvbox\postponedfootnotes
+          \let\next=\gobbletwoarguments
+      \else
+        %\message{[inserted footnote]}%
+        \let\next=\insert
+      \fi
+      \next}}
+
+\def\postponefootnotes%
+  {\let\autopostponefootnotes=\postponefootnotes
+   \gdef\localfootinsert%
+     {%\message{[postponed footnote]}%
+      \global\setbox\postponedfootnotes=\vbox\bgroup
+        \unvbox\postponedfootnotes
+        \gobbletwoarguments}}
+
+\def\flushfootnotes%
+  {\ifinpagebody \else \ifinner \else
+     \ifendnotes \else \ifvoid\postponedfootnotes \else
+      %\ifvmode % less interference, but also less secure
+         \bgroup
+           \scratchdimen=\pagegoal
+           \advance\scratchdimen by -\pagetotal
+           \ifdim\scratchdimen<\ht\postponedfootnotes
+             \message{[moved footnote]}%
+           \fi
+         \egroup
+         \global\let\localfootinsert=\insert
+         \insert\footins\bgroup\unvbox\postponedfootnotes\egroup
+       %\fi
+     \fi\fi
+   \fi\fi}
+
+\def\placefootnotesintext#1%
+  {\bgroup
+   \@@vnvoor
+   \setfootnotecorps
+   \startpopfootnotes
+   \unvbox#1\relax
+   \stoppopfootnotes
+   \@@vnna
+   \egroup}
+
+%D \macros
+%D   {startlocalfootnotes,placelocalfootnotes}
+%D
+%D The next two macros can be used in for instance tables, as
+%D we'll demonstrate later on.
+%D
+%D \showsetup{\y!startlocalfootnotes}
+%D \showsetup{\y!placelocalfootnotes}
+
+\newbox\localpostponedfootnotes
+
+\def\collectlocalfootnotes%
+  {\gdef\localfootinsert##1%
+     {%\message{[local footnote]}%
+      \global\setbox\localpostponedfootnotes=\vbox\bgroup
+        \unvbox\localpostponedfootnotes
+        \let\next}}
+
+\def\dostartlocalfootnotes[#1]%
+  {\let\autopostponefootnotes=\postponefootnotes
+   \let\postponefootnotes=\collectlocalfootnotes
+   \setupfootnotes[#1]%
+   \savenumber[\v!voetnoot]%
+   \resetnummer[\v!voetnoot]%
+   \collectlocalfootnotes}
+
+\def\startlocalfootnotes%
+  {\bgroup % here because we support \vbox\startlocalfootnotes
+   \dosingleempty\dostartlocalfootnotes}
+
+\def\stoplocalfootnotes%
+  {\restorenumber[\v!voetnoot]%
+   \egroup}
+
+\def\doplacelocalfootnotes[#1]%
+  {\bgroup
+   \setupfootnotes[#1]%
+   \placefootnotesintext\localpostponedfootnotes
+   \egroup}
+
+\def\placelocalfootnotes%
+  {\dosingleempty\doplacelocalfootnotes}
+
+%D These commands can be used like:
+%D
+%D \startbuffer
+%D \startlocalfootnotes[breedte=.3\hsize,n=0]
+%D   \plaatstabel
+%D     {Some Table}
+%D     \plaatsonderelkaar
+%D       {\starttabel[|l|r|]
+%D        \HL
+%D        \VL Nota\voetnoot{Bene} \VL Bene\voetnoot{Nota} \VL\SR
+%D        \VL Bene\voetnoot{Nota} \VL Nota\voetnoot{Bene} \VL\SR
+%D        \HL
+%D        \stoptabel}
+%D       {\placelocalfootnotes}
+%D \stoplocalfootnotes
+%D \stopbuffer
+%D
+%D \typebuffer
+%D
+%D Because this table placement macro expect box content, and
+%D thanks to the grouping of the local footnotes, we don't need
+%D additional braces.
+%D
+%D \haalbuffer
+
+%D \macros
+%D   {placefootnotes}
+%D
+%D We still have no decent command for placing footnotes
+%D somewhere else than at the bottom of the page (for which no
+%D user action is needed). Footnotes (endnotes) can be
+%D placed by using
+%D
+%D \showsetup{\y!placefootnotes}
+
+\def\doplacefootnotes[#1]%
+  {\bgroup
+   \setupfootnotes[#1]%
+   \ifendnotes
+     \ifinpagebody \else
+       \placefootnotesintext\postponedfootnotes
+     \fi
+   \else
+     \placefootnoteinserts
+   \fi
+   \egroup}
+
+\def\placefootnotes%
+  {\dosingleempty\doplacefootnotes}
+
+%D Now how can this mechanims be hooked into \CONTEXT\ without
+%D explictly postponing footnotes? The solution turned out to
+%D be rather simple:
+%D
+%D \starttypen
+%D \everypar  {...\flushfootnotes...}
+%D \neverypar {...\postponefootnoes}
+%D \stoptypen
+%D
+%D and
+%D
+%D \starttypen
+%D \def\ejectinsert%
+%D   {...
+%D    \flushfootnotes
+%D    ...}
+%D \stoptypen
+%D
+%D We can use \type{\neverypar} because in most commands
+%D sensitive to footnote gobbling we disable \type{\everypar}
+%D in favor for \type{\neverypar}. In fact, this footnote
+%D implementation is the first to use this scheme.
+
+%D When typesetting footnotes, we have to return to the
+%D footnote specific corps size, which is in most cases derived
+%D from the global document corps size. In the previous macros
+%D we already used a footnote specific font setting macro.
+
+\def\setfootnotecorps%
+  {\restoreglobalcorps
+   \switchtocorps[\@@vnkorps]}
+
+%D The footnote mechanism defaults to a traditional one
+%D column way of showing them. By default we precede them by
+%D a small line.
+
+\setupfootnotes
+  [\c!plaats=\v!pagina,
+   \c!wijze=\v!per\v!deel,
+   \c!sectienummer=\v!nee,
+   \c!conversie=,
+   \c!lijn=\v!aan,
+   \c!voor=\blanko,
+   \c!korps=\v!klein,
+   \c!letter=,
+   \c!na=,
+   \c!margeafstand=.5em,
+   \c!kolomafstand=1em,
+   \c!afstand=.125em,
+   \c!breedte=\zetbreedte,
+   \c!hoogte=\teksthoogte,
+   \c!nummercommando=\formatfootnumber,
+   \c!n=1]
+
+\protect
+
+\endinput

@@ -1,0 +1,40 @@
+%D \module
+%D   [     file=list-ini,
+%D       versie=1995.10.10,
+%D         naam=\CONTEXT\ List Macros, 
+%D       auteur=J. Hagen,
+%D        datum=\currentdate,
+%D    copyright=J. Hagen]
+
+\writestatus{loading}{Context List Macros}
+
+\unprotect
+
+%I n=Overzichten
+%I c=\startoverzicht
+%I
+%I Ten behoeve van veel voorkomende soorten overzichten 
+%I zijn speciale commando's beschikbaar. Bij dergelijke
+%I overzichten worden in plaats van de gebruikelijke
+%I commando's \starttekst..\stoptekst de onderstaande
+%I commando's gebruikt:
+%I
+%I   \startoverzicht[soort overzicht]
+%I   \stopoverzicht
+%I
+%I Overzichten staan in files met de naam list-xxx, waarbij 
+%I xxx de eerste drie letters van het soort overzicht zijn.
+%I
+%I Vooralsnog zijn alleen overzichten van 'figuren' en 
+%I 'kontakten' beschikbaar. 
+
+\definieerfilegroep 
+  [overzicht] 
+  [file=list,
+   voor=,
+   na=]
+
+\protect
+
+\endinput
+

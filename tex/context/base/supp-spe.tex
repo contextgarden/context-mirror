@@ -1,0 +1,166 @@
+%D \module
+%D   [       file=supp-spe,
+%D        version=1997.07.05,
+%D          title=\CONTEXT\ Support Macros,
+%D       subtitle=Specials,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. Non||commercial use is
+%C granted.
+
+\unprotect
+
+%D This module implements some \type{\special} manipulation 
+%D macros. I needed these when I implemented the code that 
+%D handles the conversion of \TPIC\ specials to \PDF\ code. 
+
+\writestatus{loading}{Context Support Macros / Specials}
+
+%D When interpreting specials we need to do some basic scanning.
+%D For the moment we distinguish between three cases. We need 
+%D 
+%D \starttypen
+%D \special{tag: arguments}
+%D \special{tag arguments}
+%D \special{tag}
+%D \stoptypen
+%D 
+%D We cannot be sure that the first case isn't 
+%D 
+%D \starttypen
+%D \special{tag:arguments}
+%D \stoptypen
+%D 
+%D So we have to take care of that one too. 
+
+%D \macros
+%D   {redefinespecial}
+%D 
+%D Specials that are to be interpreted are defined with 
+%D commands like:
+%D 
+%D \startbuffer[tmp-1]
+%D \redefinespecial a: \using#1\endspecial%
+%D   {let's execute special 'a:' using '#1'}
+%D 
+%D \redefinespecial a  \using#1\endspecial%
+%D   {let's execute special 'a' using '#1'}
+%D 
+%D \redefinespecial a  \using#1\endspecial%
+%D   {let's execute special 'a' using nothing}
+%D \stopbuffer
+%D
+%D \typebuffer[tmp-1]
+%D 
+%D The first two always take an argument, the last one not. 
+%D The definition of this redefinition macro is not that 
+%D complex. The names are internally tagged with \type{\@rds@} 
+%D which saves both time and space.  
+
+\def\@rds@{@rds@}
+
+\def\redefinespecial #1 %
+  {\setvalue{\@rds@#1}}
+
+%D \macros
+%D   {mimmickspecials}
+%D
+%D Mimmicking specials is activated by saying: 
+%D
+%D \starttypen
+%D \mimmickspecials
+%D \stoptypen
+%D
+%D This commands redefines the \PLAIN\ \TEX\ primitive 
+%D \type{\special}. 
+
+\def\mimmickspecials%
+  {\let\special=\domimmickspecial}
+
+%D The special mimmicking macro first looks if it can find an
+%D colon terminated tag, next it searches for a tag that end
+%D with a space. If both cannot find, the tag itself is treated
+%D without argument. 
+
+\def\domimmickspecial#1%
+  {\domimmickcolonspecial#1:\relax/:\relax/\end}
+
+\def\domimmickcolonspecial#1:#2#3:\relax/#4\end%
+  {\ifx#2\relax
+     \domimmickspacespecial#1 \relax/ \relax/\end
+   \else
+     \dodomimmickspecial#1:\using#2#3\endspecial
+   \fi}
+
+\def\domimmickspacespecial#1 #2#3 \relax/#4\end%
+  {\ifx#2\relax
+     \dodomimmickspecial#1\using\endspecial
+   \else
+     \dodomimmickspecial#1\using#2#3\endspecial
+   \fi}
+
+\def\dodomimmickspecial#1\using#2\endspecial%
+  {\expandafter\ifx\csname\@rds@#1\endcsname\relax % \doifdefinedelse
+     \defaultspecial{#2}%
+   \else  
+     %\message{[mimmick special #1 with #2#3]}% 
+     \getvalue{\@rds@#1}\using#2\endspecial
+   \fi}
+
+%D Now let's show that things work the way we want, using the 
+%D previous definitions of tag~a.
+%D 
+%D \startbuffer[tmp-2]
+%D \mimmickspecials
+%D \special{a: 1 2 3 4 5}
+%D \special{a: 1 2 3 4 5}
+%D \special{a}
+%D \stopbuffer
+%D 
+%D \typebuffer[tmp-2]
+%D 
+%D Which results in:
+%D 
+%D \startregels
+%D \haalbuffer[tmp-1]
+%D \haalbuffer[tmp-2]
+%D \stopregels
+
+%D \macros
+%D   {mimmickspecial}
+%D   
+%D When needed, one can call a mimmicked special directly by 
+%D saying for instance: 
+%D 
+%D \starttypen 
+%D \mimmickspecial a: \using...\endspecial
+%D \stoptypen
+%D
+%D This can be handy when specials have much in common.
+
+\def\mimmickspecial #1 %
+  {\getvalue{\@rds@#1}}
+
+%D \macros
+%D   {normalspecial,defaultspecial}
+%D 
+%D Unknown specials are passed to the default special handler. 
+%D One can for instance ignore all further specials by saying
+%D \type{\normalspecial}:
+%D 
+%D \starttypen
+%D \def\defaultspecial#1{\normalspecial}
+%D \stoptypen
+%D 
+%D But here we default to idle. 
+
+\let\normalspecial =\special
+\let\defaultspecial=\special
+
+\protect 
+
+\endinput 
+

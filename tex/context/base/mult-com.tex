@@ -1,0 +1,1184 @@
+%D \module
+%D   [       file=mult-com,
+%D        version=1996.06.01,
+%D          title=\CONTEXT\ Multilingual Macros,
+%D       subtitle=Commands,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. Non||commercial use is
+%C granted.
+
+%D In this module we define the commands. A more than quick
+%D glance at this list leans that it's incomplete. This is due
+%D to the fact that the system generated a lot of commands by
+%D means of the elements specified somewhere else.
+%D
+%D {\em Because the original interface to \CONTEXT\ is dutch,
+%D the words left of the \type{:} are in dutch. In the near
+%D future english will be the core language.}
+
+\writestatus{loading}{Context Multilingual Macros / Commands}
+
+%D The commands are grouped according to their functionality.
+%D Although the \type{\stop} counterpart of the
+%D \type{\start}||commands could be generated automatically,
+%D we've chosen do define it explicitly.
+%D
+%D One complication of the english commands, is that we don't
+%D want them to overrule or conflict with Plain \TEX. The
+%D names therefore are not always optimal.
+
+%D \startcompressdefinitions
+
+\startcommands                  dutch                        english
+                                german
+
+                     language:  taal                         language
+                                sprache
+                 mainlanguage:  hoofdtaal                    mainlanguage
+                                hauptsprache
+                    translate:  vertaal                      translate
+                                uebersetzten
+              installlanguage:  installeertaal               installlanguage
+                                installieresprache
+                setuplanguage:  steltaalin                   setuplanguage
+                                stellespracheein
+
+                   showmakeup:  toonopmaak                   showmakeup
+                                zeigeumbruch
+
+                  usespecials:  gebruikspecials              usespecials
+                                benutzespezielles
+
+% system       redefineaccent:  herdefinieeraccent           redefineaccent
+%                               redefiniereakzent
+% system    redefinecharacter:  herdefinieerkarakter         redefinecharacter
+%                               redefinierezeichen
+% system      redefinecommand:  herdefinieercommando         redefinecommand
+%                               redefinierbefehl
+                 defineaccent:  definieeraccent              defineaccent
+                                definiereakzent
+              definecharacter:  definieerkarakter            definecharacter
+                                definierezeichen
+                definecommand:  definieercommando            definecommand
+                                definierebefehl
+                  startcoding:  startcodering                startcoding
+                                startkodierung
+                   stopcoding:  stopcodering                 stopcoding
+                                stopkodierung
+       definecorpsenvironment:  definieerkorpsomgeving       definecorpsenvironment
+                                definierefliesstextumgebung
+                  definecorps:  definieerkorps               definecorps
+                                definierefliesstext
+
+                    setuptype:  steltypein                   setuptype
+                                stelletipein
+                         type:  type                         type
+                                tippen
+                          typ:  typ                          typ
+                                tip
+                          arg:  arg                          arg
+                                arg
+                          tex:  tex                          tex
+                                tex
+                 definetyping:  definieertypen               definetyping
+                                definieretippen
+                  setuptyping:  steltypenin                  setuptyping
+                                stelletippenein
+% generated       starttyping:  starttypen                   starttyping
+%                               starttippen
+% generated        stoptyping:  stoptypen                    stoptyping
+%                               stoptippen
+                     typefile:  typefile                     typefile
+                                tippedatei
+
+               setupfootnotes:  stelvoetnotenin              setupfootnotes
+                                stellefussnotenein
+                         note:  noot                         note
+                                notiz
+                     footnote:  voetnoot                     footnote
+                                fussnote
+          startlocalfootnotes:  startlokalevoetnoten         startlocalfootnotes
+                                startlokalefussnoten
+           stoplocalfootnotes:  stoplokalevoetnoten          stoplocalfootnotes
+                                stoplokalefussnoten
+          placelocalfootnotes:  plaatslokalevoetnoten        placelocalfootnotes
+                                platzierelokalefussnoten
+               placefootnotes:  plaatsvoetnoten              placefootnotes
+                                platzierefussnoten
+
+                  currentdate:  huidigedatum                 currentdate
+                                heutigesdatum
+                      weekday:  weekdag                      weekday
+                                wochentag
+                      WEEKDAY:  WEEKDAG                      WEEKDAY
+                                WOCHENTAG
+                        month:  maand                        month
+                                monat
+                        MONTH:  MAAND                        MONTH
+                                MONAT
+
+                      Numbers:  Cijfers                      Numbers
+                                Ziffern
+                      numbers:  cijfers                      numbers
+                                ziffern
+                romannumerals:  romeins                      romannummerals
+                                roemischezahlen
+                Romannumerals:  Romeins                      Romannummerals
+                                Roemischezahlen
+                    character:  letter                       character
+                                buchstabe
+                    Character:  Letter                       Character
+                                Buchstabe
+                   characters:  letters                      characters
+                                buchstaben
+                   Characters:  Letters                      Characters
+                                Buchstaben
+
+                 definesymbol:  definieersymbool             definesymbol
+                                definieresymbol
+                       symbol:  symbool                      symbol
+                                symbol
+             defineconversion:  definieerconversie           defineconversion
+                                definierekonversion
+                convertnumber:  converteernummer             convertnumber
+                                konvertierezahl
+
+                          kap:  kap                          kap
+                                kap
+                          KAP:  KAP                          KAP
+                                KAP
+                        nokap:  nokap                        nokap
+                                nokap
+                          Kap:  Kap                          Kap
+                                Kap
+                         Kaps:  Kaps                         Kaps
+                                Kaps
+                         WORD:  WOORD                        WORD
+                                WORT
+                        WORDS:  WOORDEN                      WORDS
+                                WOERTER
+                         Word:  Woord                        Word
+                                Wort
+                        Words:  Woorden                      Words
+                                Woerter
+                    stretched:  opgerekt                     stretched
+                                gestreckt
+                   overstrike:  doorstreep                   overstrike
+                                durchgestrichen
+                  overstrikes:  doorstrepen                  overstrikes
+                                durchstreichen
+                     underbar:  onderstreep                  underbar
+                                unterstrichen
+                    underbars:  onderstrepen                 underbars
+                                unterstreichen
+                setupunderbar:  stelonderstrepenin           setupunderbar
+                                stelleunterstreichenein
+
+                   setupcorps:  stelkorpsin                  setupcorps
+                                stellefliesstextein
+                switchtocorps:  switchnaarkorps              switchtocorps
+                                wechselezumfliesstext
+                    showcorps:  toonkorps                    showcorps
+                                zeigefliesstext
+         showcorpsenvironment:  toonkorpsomgeving            showcorpsenvironment
+                                zeigefliesstextumgebung
+
+                     headtext:  koptekst                     headtext
+                                ueberschrift
+                    labeltext:  labeltekst                   labeltext
+                                labeltext
+                    LABELTEXT:  LABELTEKST                   LABELTEXT
+                                LABELTEXT
+                setupheadtext:  stelkoptekstin               setupheadtext
+                                stelleueberschriftein
+               setuplabeltext:  stellabeltekstin             setuplabeltext
+                                stellelabeltextein
+
+                   marginrule:  kantlijn                     marginrule
+                                marginallinie
+              startmarginrule:  startkantlijn                startmarginrule
+                                startmarginallinie
+               stopmarginrule:  stopkantlijn                 stopmarginrule
+                                stopmarginallinie
+             setupmarginrules:  stelkantlijnin               setupmarginrules
+                                stellemarginallinieein
+
+                    blackrule:  blokje                       blackrule
+                                rechteck
+                   blackrules:  blokjes                      blackrules
+                                rechtecke
+              setupblackrules:  stelblokjesin                setupblackrules
+                                stellerechteckein
+
+                 setupscreens:  stelrastersin                setupscreens
+                                stellerasterein
+
+                       framed:  omlijnd                      framed
+                                umrahmt
+                     inframed:  inlijnd                      inframed
+                                imumriss
+                  setupframed:  stelomlijndin                setupframed
+                                stelleumrahmtein
+%                  setuprules:  stellijnenin                 setuprules
+%                               stelleumrissein
+               setuplinewidth:  stellijndiktein              setuplinewidth
+                                stellelinienbreiteein
+
+               setupthinrules:  steldunnelijnenin            setupthinrules
+                                stelleduennerumrissein
+                     thinrule:  dunnelijn                    thinrule
+                                duennelinie
+                    thinrules:  dunnelijnen                  thinrules
+                                duennerumriss
+                     hairline:  haarlijn                     hairline
+                                haarlinie
+
+                           vl:  vl                           vl
+                                vl
+                           hl:  hl                           hl
+                                hl
+
+             defineframedtext:  definieerkadertekst          defineframedtext
+                                definiereumrahmtertext
+%             startframedtext:  startkadertekst              startframedtext
+%                               startumrahmtertext
+%              stopframedtext:  stopkadertekst               stopframedtext
+%                               stopumrahmtertext
+             setupframedtexts:  stelkadertekstenin           setupframedtexts
+                                stelleumrahmtetexteein
+
+                defineoverlay:  definieeroverlay             defineoverlay
+                                definiereoverlay
+
+                   background:  achtergrond                  background
+                                hintergrund
+              startbackground:  startachtergrond             startbackground
+                                starthintergrund
+               stopbackground:  stopachtergrond              stopbackground
+                                stophintergrund
+              setupbackground:  stelachtergrondin            setupbackground
+                                stellehintergrundein
+
+                  fillinrules:  invullijnen                  fillinrules
+                                gefuelltesrechteck
+             setupfillinrules:  stelinvullijnenin            setupfillinrules
+                                stellegefuelltesrechteckein
+                   fillintext:  invulltekst                  fillintext
+                                ausfuelltext
+
+             setupfillinlines:  stelinvulregelsin            setupfillinlines
+                                stellegefuelltezeileein
+                   fillinline:  invulregel                   fillinline
+                                gefuelltezeile
+
+               setuptextrules:  steltekstlijnenin            setuptextrules
+                                stelletextumrissein
+                     textrule:  tekstlijn                    textrule
+                                textlinie
+                starttextrule:  starttekstlijn               starttextrule
+                                starttextlinie
+                 stoptextrule:  stoptekstlijn                stoptextrule
+                                stoptextlinie
+
+                    usemodule:  gebruikmodule                usemodule
+                                verwendemodul
+                   usemodules:  gebruikmodules               usemodules
+                                verwendemodule
+
+                   starttekst:  starttekst                   starttext
+                                starttext
+                    stoptekst:  stoptekst                    stoptext
+                                stoptext
+
+                   margetitel:  margetitel                   margintitle
+                                marginaltitel
+                   margewoord:  margewoord                   marginword
+                                marginalwort
+
+                  % dit wordt:
+
+                   margetekst:  margetekst                   margintext
+                                marginaltext
+
+                     inlinker:  inlinker                     inleft
+                                imlinken
+                      inmarge:  inmarge                      inmargin
+                                inmarginalie
+                inanderemarge:  inanderemarge                inothermargin
+                                inanderermarginale
+                    inrechter:  inrechter                    inright
+                                imrechten
+               startmargeblok:  startmargeblok               startmarginblock
+                                startmarginalblock
+                stopmargeblok:  stopmargeblok                stopmarginblock
+                                stopmarginalblock
+                stelinmargein:  stelinmargein                setupinmargin
+                                stelleinmarginalieein
+           stelmargeblokkenin:  stelmargeblokkenin           setupmarginblocks
+                                stellemarginalblockein
+
+                   inleftside:  inlinkerrand                 inleftside
+                                imlinkenrand
+                 inleftmargin:  inlinkermarge                inleftmargin
+                                inlinkermarginale
+                inrightmargin:  inrechtermarge               inrightmargin
+                                inrechtermarginale
+                  inrightside:  inrechterrand                inrightside
+                                imrechtenrand
+
+                  woordrechts:  woordrechts                  wordright
+                                wortrechts
+
+                       blanko:  blanko                       blank
+                                blanko
+                 stelblankoin:  stelblankoin                 setupblank
+                                stelleblankoein
+           corrigeerwitruimte:  corrigeerwitruimte           correctwhitespace
+                                korrigierezwischenraum
+                  fixedspaces:  vastespaties                 fixedspaces
+                                festesspatium
+                      nospace:  geenspatie                   nospace
+                                keinspatium
+                        space:  spatie                       space
+                                spatium
+                geenwitruimte:  geenwitruimte                nowhitespace
+                                keinzwischenraum
+                     opelkaar:  opelkaar                     packed
+                                kleinerdurchschuss
+                startopelkaar:  startopelkaar                startpacked
+                                startkleinerdurchschuss
+                 stopopelkaar:  stopopelkaar                 stoppacked
+                                stopkleinerdurchschuss
+               startvanelkaar:  startvanelkaar               startunpacked
+                                startgrosserdurchschuss
+                stopvanelkaar:  stopvanelkaar                stopunpacked
+                                stopkleinerdurchschuss
+          startregelcorrectie:  startregelcorrectie          startlinecorrection
+                                startzeilenkorrektur
+           stopregelcorrectie:  stopregelcorrectie           stoplinecorrection
+                                stopzeilenkorrektur
+                       omlaag:  omlaag                       godown
+                                nachunten
+                    witruimte:  witruimte                    whitespace
+                                zwischenraum
+
+               nietinspringen:  nietinspringen               noindenting
+                                nichteinziehen
+                   inspringen:  inspringen                   indenting
+                                einziehen
+             stelinspringenin:  stelinspringenin             setupindenting
+                                stelleeinziehenein
+
+               startuitlijnen:  startuitlijnen               startalignment
+                                startausrichtung
+                stopuitlijnen:  stopuitlijnen                stopalignment
+                                stopausrichtung
+
+                  startregels:  startregels                  startlines
+                                startzeilen
+                   stopregels:  stopregels                   stoplines
+                                stopzeilen
+          stelregelnummerenin:  stelregelnummerenin          setuplinenumbering
+                                stellezeilennummerierungein
+           startregelnummeren:  startregelnummeren           startlinenumbering
+                                startzeilennummerierung
+            stopregelnummeren:  stopregelnummeren            stoplinenumbering
+                                stopzeilennummerierung
+                   startregel:  startregel                   startline
+                                startzeile
+                    stopregel:  stopregel                    stopline
+                                stopzeile
+                     eenregel:  eenregel                     someline
+                                einezeile
+                      inregel:  inregel                      inline
+                                inzeile
+                         crlf:  crlf                         crlf
+                                crlf
+                 stelregelsin:  stelregelsin                 setuplines
+                                stellezeilenein
+
+                 startsmaller:  startsmaller                 startnarrower
+                                startenger
+                  stopsmaller:  stopsmaller                  stopnarrower
+                                stopenger
+                stelsmallerin:  stelsmallerin                setupnarrower
+                                stelleengerein
+
+                   starttabel:  starttabel                   starttable
+                                starttabelle
+                    stoptabel:  stoptabel                    stoptable
+                                stoptabelle
+                starttabellen:  starttabellen                starttables
+                                starttabellen                
+                 stoptabellen:  stoptabellen                 stoptables
+                                stoptabellen                 
+               steltabellenin:  steltabellenin               setuptables
+                                stelletabellenein
+
+                       pagina:  pagina                       page
+                                seite
+                 koppelpagina:  koppelpagina                 couplepage
+                                doppelseite
+                  soortpagina:  soortpagina                  pagetype
+                                seitentyp
+                verwerkpagina:  verwerkpagina                processpage
+                                bearbeiteseite
+                 koppelpapier:  koppelpapier                 couplepaper
+                                doppelseitigespapier
+              selecteerpapier:  selecteerpapier              selectpaper
+                                waehlepapieraus
+                       scherm:  scherm                       screen
+                                bildschirm
+
+              definieersectie:  definieersectie              definesection
+                                definiereabschnitt
+          definieersectieblok:  definieersectieblok          definesectionblock
+                                definiereabschnittsblock
+             stelsectieblokin:  stelsectieblokin             setupsectionblock
+                                stelleabschnittsblockein
+                 stelsectiein:  stelsectiein                 setupsection
+                                stelleabschnittein
+
+       geenbovenenonderregels:  geenbovenenonderregels       notopandbottomlines
+                                keinzeilenobenundunten
+        geenhoofdenvoetregels:  geenhoofdenvoetregels        noheaderandfooterlines
+                                keinekopfundfusszeilen
+                  stelbovenin:  stelbovenin                  setuptop
+                                stellenobenein
+           stelboventekstenin:  stelboventekstenin           setuptoptexts
+                                stelletextobenein
+                  stelhoofdin:  stelhoofdin                  setupheader
+                                stellekopfzeileein
+           stelhoofdtekstenin:  stelhoofdtekstenin           setupheadertexts
+                                stellekopfzeilentextein
+              stelnummeringin:  stelnummeringin              setuppagenumbering
+                                stelleseitennummeriernungein
+                  stelonderin:  stelonderin                  setupbottom
+                                stelleuntenein
+           stelondertekstenin:  stelondertekstenin           setupbottomtexts
+                                stelletextuntenein
+                   stelvoetin:  stelvoetin                   setupfooter
+                                stellefusszeileein
+            stelvoettekstenin:  stelvoettekstenin            setupfootertexts
+                                stellefusszeilentextein
+           stelpaginanummerin:  stelpaginanummerin           setuppagenumber
+                                stelleseitennummerein
+        stelsubpaginanummerin:  stelsubpaginanummerin        setupsubpagenumber
+                                stelleunterseitennummerein
+                  steltekstin:  steltekstin                  setuptext
+                                stelletextein
+           stelteksttekstenin:  stelteksttekstenin           setuptexttexts
+                                stelletexttexteein
+
+                        items:  items                        items
+                                posten
+                  stelitemsin:  stelitemsin                  setupitems
+                                stellepostenein
+
+                   regellinks:  regellinks                   leftlined
+                                zeilelinks  % better: linksbuendig
+                  regelmidden:  regelmidden                  middlelined
+                                zeilemitte  % better: zentriert
+                  regelrechts:  regelrechts                  rightlined
+                                zeilerechts % better: rechtsbuendig
+
+                startkolommen:  startkolommen                startcolumns
+                                startspalten
+                 stopkolommen:  stopkolommen                 stopcolumns
+                                stopspalten
+               stelkolommenin:  stelkolommenin               setupcolumns
+                                stellespaltenein
+                        kolom:  kolom                        column
+                                spalte
+
+                          kop:  kop                          head
+                                kopf
+                          but:  but                          but
+                                but
+                          som:  som                          item
+                                pos
+                          nop:  nop                          nop
+                                nop
+                          mar:  mar                          mar
+                                mar
+                          sym:  sym                          sym
+                                sym
+                          its:  its                          its
+                                its
+               startopsomming:  startopsomming               startitemize
+                                startaufzaehlung
+              stelopsommingin:  stelopsommingin              setupitemize
+                                stelleaufzaehlungein
+                stopopsomming:  stopopsomming                stopitemize
+                                stopaufzaehlung
+
+                 definieerkop:  definieerkop                 definehead
+                                definierekopf
+                    stelkopin:  stelkopin                    setuphead
+                                stellekopfein
+                 stelkoppenin:  stelkoppenin                 setupheads
+                                stellekoepfeein
+              stelkopnummerin:  stelkopnummerin              setupheadnumber
+                                stellekopfzahlein
+                    kopnummer:  kopnummer                    headnumber
+                                kopfnummer
+
+               resetmarkering:  resetmarkering               resetmarking
+                                ruecksetztenbeschriftung
+              stelmarkeringin:  stelmarkeringin              setupmarking
+                                stellebeschriftungein
+           definieermarkering:  definieermarkering           definemarking
+                                definierebeschriftung
+                geenmarkering:  geenmarkering                nomarking
+                                keinebeschriftung
+                      markeer:  markeer                      marking
+                                beschriftung
+           ontkoppelmarkering:  ontkoppelmarkering           decouplemarking
+                                entknuepfebeschriftung
+              koppelmarkering:  koppelmarkering              couplemarking
+                                verknuepfebeschriftung
+                haalmarkering:  haalmarkering                getmarking
+                                holebeschriftung
+
+                 stellayoutin:  stellayoutin                 setuplayout
+                                stellelayoutein
+                 paslayoutaan:  paslayoutaan                 adaptlayout
+                                passelayoutan
+                 steloffsetin:  steloffsetin                 setupoffset
+                                stelleoffsetein
+             tooninstellingen:  tooninstellingen             showsetups
+                                zeigeeinstellungen
+                    toonkader:  toonkader                    showframe
+                                zeigerahmen
+                     toongrid:  toongrid                     showgrid
+                                zeigegrid  
+                   toonopbouw:  toonopbouw                   showbuildup
+                                zeigeaufbau
+                   toonlayout:  toonlayout                   showlayout
+                                zeigelayout
+                   toonstruts:  toonstruts                   showstruts
+                                zeigestruts
+       definieerpapierformaat:  definieerpapierformaat       definepapersize
+                                definierepapierformat
+          stelpapierformaatin:  stelpapierformaatin          setuppapersize
+                                stellepapierformatin
+
+                       versie:  versie                       version
+                                version
+
+          stelachtergrondenin:  stelachtergrondenin          setupbackgrounds
+                                stellehintergruendeein
+
+              steluitlijnenin:  steluitlijnenin              setupalign
+                                stelleausrichtungein
+              stelwitruimtein:  stelwitruimtein              setupwhitespace
+                                stellezwischenraumein
+
+             stelinteractiein:  stelinteractiein             setupinteraction
+                                stelleinteraktionein
+         stelinteractiemenuin:  stelinteractiemenuin         setupinteractionmenu
+                                stelleinteraktionsmenueein
+      definieerinteractiemenu:  definieerinteractiemenu      defineinteractionmenu
+                                definiereinteraktionsmenue
+          startinteractiemenu:  startinteractiemenu          startinteractionmenu
+                                startinteraktionsmenue
+       blokkeerinteractiemenu:  blokkeerinteractiemenu       disableinteractionmenu
+                                inaktiviereinteraktionsmenue
+            interactiebuttons:  interactiebuttons            interactionbuttons
+                                interaktionsknopfe
+               interactiebalk:  interactiebalk               interactionbar
+                                interaktionsbalken
+         stelinteractiebalkin:  stelinteractiebalkin         setupinteractionbar
+                                stelleinteraktionsbalkenein
+       stelinteractieschermin:  stelinteractieschermin       setupinteractionscreen
+                                stelleinteraktionsbildschirmein
+
+               placebookmarks:  plaatsbookmarks              placebookmarks
+                                platzierebookmarks 
+                     bookmark:  bookmark                     bookmark
+                                bookmark % - 
+
+           definieerbeeldmerk:  definieerbeeldmerk           definelogo
+                                definierelogo
+            plaatsbeeldmerken:  plaatsbeeldmerken            placelogos
+                                platzierelogo
+
+                  definecolor:  definieerkleur               definecolor
+                                definierefarbe
+             definecolorgroup:  definieerkleurgroep          definecolorgroup
+                                definierefarbengruppe
+                  definepalet:  definieerpalet               definepalet
+                                definierepalette
+                         gray:  grijs                        gray
+                                grau
+                        color:  kleur                        color
+                                farbe
+                   startcolor:  startkleur                   startcolor
+                                startfarbe
+                    stopcolor:  stopkleur                    stopcolor
+                                stopfarbe
+                  setupcolors:  stelkleurenin                setupcolors
+                                stellefarbenein
+                   setupcolor:  stelkleurin                  setupcolor
+                                stellefarbeein
+                   setuppalet:  stelpaletin                  setuppalet
+                                stellepaletteein
+                    showcolor:  toonkleur                    showcolor
+                                zeigefarbe
+               showcolorgroup:  toonkleurgroep               showcolorgroup
+                                zeigefarbengruppe
+                    showpalet:  toonpalet                    showpalet
+                                zeigepalette
+            comparecolorgroup:  vergelijkkleurgroep          comparecolorgroup
+                                vergleichefarbengruppe
+                 comparepalet:  vergelijkpalet               comparepalet
+                                vergleichepalette
+                   colorvalue:  kleurwaarde                  colorvalue
+                                farbewert
+                    grayvalue:  grijswaarde                  grayvalue
+                                grauwert
+
+                  startraster:  startraster                  startraster
+                                startraster
+                   stopraster:  stopraster                   stopraster
+                                stopraster
+
+                definieerblok:  definieerblok                defineblock
+                                definiereblock
+               gebruikblokken:  gebruikblokken               useblocks
+                                verwendeblock
+              geenblokkenmeer:  geenblokkenmeer              nomoreblocks
+                                keinebloeckemehr
+              handhaafblokken:  handhaafblokken              keepblocks
+                                behaltebloecke
+             selecteerblokken:  selecteerblokken             selectblocks
+                                waehlebloeckeaus
+                   stelblokin:  stelblokin                   setupblock
+                                stelleblockein
+               verbergblokken:  verbergblokken               hideblocks
+                                verbergebloecke
+
+               definieerlijst:  definieerlijst               definelist
+                                definiereliste
+  definieersamengesteldelijst:  definieersamengesteldelijst  definecombinedlist
+                                definierezusammengestellteliste
+                  plaatslijst:  plaatslijst                  placelist
+                                platziereliste
+             schrijfnaarlijst:  schrijfnaarlijst             writetolist
+                                schreibezurliste
+           schrijftussenlijst:  schrijftussenlijst           writebetweenlist
+                                schreibezwischenliste
+                  stellijstin:  stellijstin                  setuplist
+                                stellelisteein
+     stelsamengesteldelijstin:  stelsamengesteldelijstin     setupcombinedlist
+                                stellezusammengestelltelisteein
+
+     definieerreferentielijst:  definieerreferentielijst     definereferencelist
+                                definierereferenzliste
+        plaatsreferentielijst:  plaatsreferentielijst        placereferencelist
+                                platzierereferenzliste
+   schrijfnaarreferentielijst:  schrijfnaarreferentielijst   writetoreferencelist
+                                schreibezurreferenzliste
+        stelreferentielijstin:  stelreferentielijstin        setupreferencelist
+                                stellereferenzlisteein
+
+          definieerplaatsblok:  definieerplaatsblok          definefloat
+                                definieregleitobjekt
+             stelplaatsblokin:  stelplaatsblokin             setupfloat
+                                stellegleitobjektein
+          stelplaatsblokkenin:  stelplaatsblokkenin          setupfloats
+                                stellegleitobjekteein
+             splitsplaatsblok:  splitsplaatsblok             splitfloat
+                                teilegleitobjekt
+  stelplaatsblokkensplitsenin:  stelplaatsblokkensplitsenin  setupfloatsplitting
+                                stelleplatziegeteiltegleitobjekteein
+              startcombinatie:  startcombinatie              startcombination
+                                startkombination
+               stopcombinatie:  stopcombinatie               stopcombination
+                                stopkombination
+            plaatsnaastelkaar:  plaatsnaastelkaar            placesidebyside
+                                platzierenebeneinander
+            plaatsonderelkaar:  plaatsonderelkaar            placeontopofeachother
+                                platziereuntereinander
+
+              stelblokkopjein:  stelblokkopjein              setupcaption
+                                stellebildunterschriftein
+             stelblokkopjesin:  stelblokkopjesin             setupcaptions
+                                stellebilderunterschriftein
+            stelcombinatiesin:  stelcombinatiesin            setupcombinations
+                                stellekombinationein
+
+                 startoverlay:  startoverlay                 startoverlay
+                                startoverlay
+                  stopoverlay:  stopoverlay                  stopoverlay
+                                stopoverlay
+
+            definieerregister:  definieerregister            defineregister
+                                definiereregister
+               koppelregister:  koppelregister               coupleregister
+                                verknuepfregister
+               stelregisterin:  stelregisterin               setupregister
+                                stelleregisterein
+          schrijfnaarregister:  schrijfnaarregister          writetoregister
+                                schreibezumregister
+               plaatsregister:  plaatsregister               placeregister
+                                platziereregister
+
+            definieersorteren:  definieersorteren            definesorting
+                                definieresortieren
+          definieersynoniemen:  definieersynoniemen          definesynonyms
+                                definieresynonyme
+               stelsorterenin:  stelsorterenin               setupsorting
+                                stellesortierenein
+               stelsynoniemin:  stelsynoniemin               setupsynonym
+                                stellesynonymein
+
+          startsynchronisatie:  startsynchronisatie          startsynchronization
+                                startsynchronisation
+           stopsynchronisatie:  stopsynchronisatie           stopsynchronization
+                                stopsynchronisation
+     stelsynchronisatiebalkin:  stelsynchronisatiebalkin     setupsynchronizationbar
+                                stellesynchronisationsbalkenein
+         stelsynchronisatiein:  stelsynchronisatiein         setupsynchronization
+                                stellesynchronisationein
+           synchronisatiebalk:  synchronisatiebalk           synchronizationbar
+                                synchronisationsbalken
+                synchroniseer:  synchroniseer                synchronize
+                                synchronisieren
+
+        gebruikexterndocument:  gebruikexterndocument        useexternaldocument
+                                verwendeexteresdokument
+                   gebruikURL:  gebruikURL                   useURL
+                                verwendeURL % -
+
+             stelprogrammasin:  stelprogrammasin             setupprograms
+                                stelleprogrammein
+           definieerprogramma:  definieerprogramma           defineprogram
+                                definiereprogramme
+                    programma:  programma                    program
+                                programm
+
+             definieerprofiel:  definieerprofiel             defineprofile
+                                definiereprofil
+              definieerversie:  definieerversie              defineversion
+                                definiereversion
+                markeerversie:  markeerversie                markversion
+                                beschrifteversion
+              selecteerversie:  selecteerversie              selectversion
+                                waehleversionaus
+                 startprofiel:  startprofiel                 startprofile
+                                startprofil
+                  startversie:  startversie                  startversion
+                                startversion
+              stelprofielenin:  stelprofielenin              setupprofiles
+                                stelleprofilein
+                stelversiesin:  stelversiesin                setupversions
+                                stelleversionein
+                  stopprofiel:  stopprofiel                  stopprofile
+                                stopprofil
+                   stopversie:  stopversie                   stopversion
+                                stopversion
+                  volgprofiel:  volgprofiel                  followprofile
+                                folgeprofil
+            volgprofielversie:  volgprofielversie            followprofileversion
+                                folgeprofilversion
+                   volgversie:  volgversie                   followversion
+                                folgeversion
+
+               doordefinieren:  doordefinieren               definedescription
+                                definierebeschreibung
+                  doorlabelen:  doorlabelen                  definelabel
+                                definierelabel
+                 doornummeren:  doornummeren                 defineenumeration
+                                definierenummerierung
+                 doorspringen:  doorspringen                 defineindenting
+                                definiereeinzug
+         steldoordefinierenin:  steldoordefinierenin         setupdescriptions
+                                definierebeschreibungen
+           steldoornummerenin:  steldoornummerenin           setupenumerations
+                                stellebeschreibungein
+           steldoorspringenin:  steldoorspringenin           setupindentations
+                                stelleeinzuegein
+
+                    steltabin:  steltabin                    setuptab
+                                stelletabein
+                          tab:  tab                          tab
+                                tab
+
+         stelexternefigurenin:  stelexternefigurenin         setupexternalfigures
+                                stelleexterneabbildungenein
+           toonexternefiguren:  toonexternefiguren           showexternalfigures
+                                zeigeexterneabbildungen
+               externalfigure:  externfiguur                 externalfigure
+                                externeabbildung
+             toonexternfiguur:  toonexternfiguur             showexternalfigure
+                                zeigeexterneabbildung
+          gebruikexternfiguur:  gebruikexternfiguur          useexternalfigure
+                                verwendeexterneabbildung
+
+                  startfiguur:  startfiguur                  startfigure
+                                startabbildung
+                   stopfiguur:  stopfiguur                   stopfigure
+                                stopabbildung
+                     refereer:  refereer                     referring
+                                referieren
+                      markeer:  markeer                      marking
+                                beschriftung
+
+                      rooster:  rooster                      grid
+                                gitter
+
+                       button:  button                       button
+                                knopf
+                   menubutton:  menubutton                   menubutton
+                                menueknopf
+                stelbuttonsin:  stelbuttonsin                setupbuttons
+                                stelleknopfein
+
+           gebruikreferenties:  gebruikreferenties           usereferences
+                                verwendereferenzen
+                     reflijst:  reflijst                     reflist
+                                refliste
+             paginareferentie:  paginareferentie             pagereference
+                                seitenreferenz
+                   referentie:  referentie                   reference
+                                referenz
+        stelreferentielijstin:  stelreferentielijstin        setupreferencelist
+                                stellereferenzlisteein
+              stelrefererenin:  stelrefererenin              setupreferencing
+                                stellereferenzierenein
+              tekstreferentie:  tekstreferentie              textreference
+                                textreferenz
+                          uit:  uit                          from
+                                von
+                           in:  in                           in
+                                in
+                           op:  op                           at
+                                bei
+                         naar:  naar                         goto
+                                zu
+                      naarbox:  naarbox                      gotobox
+                                zurbox
+
+                 startformule:  startformule                 startformula
+                                startformel
+                  stopformule:  stopformule                  stopformula
+                                stopformel
+                plaatsformule:  plaatsformule                placeformula
+                                platziereformel
+             plaatssubformule:  plaatssubformule             placesubformula
+                                platziereunterformel
+               stelformulesin:  stelformulesin               setupformulas
+                                stelleformelnein
+                 startgegeven:  startgegeven                 startfact
+                                startgegeben
+                  stopgegeven:  stopgegeven                  stopfact
+                                stopgegeben
+                 startlegenda:  startlegenda                 startlegend
+                                startlegende
+                  stoplegenda:  stoplegenda                  stoplegend
+                                stoplegende
+leg: leg leg leg 
+geg: geg fact geg
+                  mathematics:  wiskunde                     mathematics
+                                mathematik
+                    dimension:  dimensie                     dimension
+                                dimension
+                  nodimension:  geendimensie                 nodimension
+                                keindimension
+
+                startomgeving:  startomgeving                startenvironment
+                                startumgebung
+                 stopomgeving:  stopomgeving                 stopenvironment
+                                stopumgebung
+            startdeelomgeving:  startdeelomgeving            startlocalenvironment
+                                startlokaleumgebung
+               startonderdeel:  startonderdeel               startcomponent
+                                startkomponente
+                stoponderdeel:  stoponderdeel                stopcomponent
+                                stopkomponente
+                 startprodukt:  startprodukt                 startproduct
+                                startprodukt
+                  stopprodukt:  stopprodukt                  stopproduct
+                                stopprodukt
+                 startproject:  startproject                 startproject
+                                startprojekt
+                  stopproject:  stopproject                  stopproject
+                                stopprojekt
+
+                      project:  project                      project
+                                projekt
+                    onderdeel:  onderdeel                    component
+                                komponente
+                      produkt:  produkt                      product
+                                produkt
+                     omgeving:  omgeving                     environment
+                                umgebung
+                geenfilesmeer:  geenfilesmeer                nomorefiles
+                                keinedateienmehr
+
+                   haalbuffer:  haalbuffer                   getbuffer
+                                holebuffer
+                  startbuffer:  startbuffer                  startbuffer
+                                startbuffer
+                   stopbuffer:  stopbuffer                   stopbuffer
+                                stopbuffer
+                 stelbufferin:  stelbufferin                 setupbuffer
+                                stellebufferein
+                   typebuffer:  typebuffer                   typebuffer
+                                tippebuffer
+
+                    betekenis:  betekenis                    united
+                                bedeutung
+                       voluit:  voluit                       infull
+                                volleswort
+
+                       citaat:  citaat                       quotation
+                                zitat
+                       citeer:  citeer                       quote
+                                zitieren
+                  startcitaat:  startcitaat                  startquotation
+                                startzitat
+                   stopcitaat:  stopcitaat                   stopquotation
+                                stopzitat
+                stelciterenin:  stelciterenin                setupquote
+                                stellezitierenein
+
+                    definieer:  definieer                    define
+                                definieren
+                      herhaal:  herhaal                      redo
+                                wiederholen
+             gebruikcommandos:  gebruikcommandos             usecommands
+                                verwendebefehl
+           definieerstartstop:  definieerstartstop           definestartstop
+                                definierestartstop
+                  startlokaal:  startlokaal                  startlocal
+                                startlokal
+                   stoplokaal:  stoplokaal                   stoplocal
+                                stoplokal
+                         naam:  naam                         name
+                                name
+
+              definieeropmaak:  definieeropmaak              definemakeup
+                                definiereumbruch
+                 stelopmaakin:  stelopmaakin                 setupmakeup
+                                stelleumbruchein
+                  startopmaak:  startopmaak                  startmakeup
+                                startumbruch
+                   stopopmaak:  stopopmaak                   stopmakeup
+                                stopumbruch
+  
+           gebruikexternefile:  gebruikexternefile           useexternalfile
+                                verwendeexternedatei
+          gebruikexternefiles:  gebruikexternefiles          useexternalfiles
+                                verwendeexternedateien
+
+                      kenmerk:  kenmerk                      referral
+                                verweis
+                 kenmerkdatum:  kenmerkdatum                 referraldate
+                                verweisdatum
+
+                         hoog:  hoog                         high
+                                hoch
+                         laho:  laho                         lohi
+                                hoti
+                         laag:  laag                         low
+                                tief
+
+              startuitstellen:  startuitstellen              startpostponing
+                                startverschieben
+               stopuitstellen:  stopuitstellen               stoppostponing
+                                stopverschieben
+               startverbergen:  startverbergen               starthiding
+                                startverbergen
+                stopverbergen:  stopverbergen                stophiding
+                                stopverbergen
+
+                        breuk:  breuk                        fraction
+                                bruch
+                         chem:  chem                         chem
+                                chem
+
+                   startnaast:  startnaast                   startopposite
+                                startgegenueber
+
+                    stopnaast:  stopnaast                    stopopposite
+                                stopgegenueber
+          stelnaastplaatsenin:  stelnaastplaatsenin          setupoppositeplacing
+                                stellegegenueberplatzierenein
+
+            startpositioneren:  startpositioneren            startpositioning
+                                startpositionieren
+             stoppositioneren:  stoppositioneren             stoppositioning
+                                stoppositionieren
+                  positioneer:  positioneer                  position
+                                position
+           stelpositionerenin:  stelpositionerenin           setuppositioning
+                                stellepositionierenein
+
+                       roteer:  roteer                       rotate
+                                drehen
+                stelroterenin:  stelroterenin                setuprotate
+                                stelledrehenein
+
+               stelnummerenin:  stelnummerenin               setupnumbering
+                                stellenummerierungein
+                        reset:  reset                        reset
+                                ruecksetzten
+
+            stelpublicatiesin:  stelpublicatiesin            setuppublications
+                                stellepublikationein
+                   publicatie:  publicatie                   publication
+                                publikation
+
+                definieerhbox:  definieerhbox                definehbox
+                                definierehbox
+
+                  toelichting:  toelichting                  remark
+                                bemerkung
+
+                    toevoegen:  toevoegen                    adding
+                                zusatz
+
+                       punten:  punten                       periods
+                                punkt
+
+            stelkoppeltekenin:  stelkoppeltekenin            setuphyphenmark
+                                stellebindestrichein
+             stelinterliniein:  stelinterliniein             setupinterlinespace
+                                stellezeilenabstandein
+             stelspatieringin:  stelspatieringin             setupspacing
+                                stellespatiumein
+             steltolerantiein:  steltolerantiein             setuptolerance
+                                stelletoleranzein
+                stelsysteemin:  stelsysteemin                setupsystem
+                                stellesystemein
+
+             definieeralineas:  definieeralineas             defineparagraphs
+                                definiereabsaetz
+                stelalineasin:  stelalineasin                setupparagraphs
+                                stelleabsaetzein
+
+                     geentest:  geentest                     donttest
+                                keintest
+
+\stopcommands
+
+%D \stopcompressdefinitions
+
+%D There are a lot of variables that users can use in setups
+%D and dedicated macros. ({\em I still have to check the
+%D english names.})
+
+%D \startcompressdefinitions
+
+\startcommands                  dutch                        english
+                                german
+
+
+                  bovenhoogte:  bovenhoogte                  topheight
+                                hoeheoben
+                 bovenafstand:  bovenafstand                 topdistance
+                                abstandoben
+                  hoofdhoogte:  hoofdhoogte                  headerheight
+                                kopfzeilenhoehe
+                 hoofdafstand:  hoofdafstand                 headerdistance
+                                kopfzeilenabstand
+                  teksthoogte:  teksthoogte                  textheight
+                                texthoehe
+                  voetafstand:  voetafstand                  footerdistance
+                                fusszeileabstand
+                   voethoogte:  voethoogte                   footerheight
+                                fusszeilenhoehe
+                 onderafstand:  onderafstand                 bottomdistance
+                                abstandunten
+                  onderhoogte:  onderhoogte                  bottomheight
+                                hoeheunten
+                 margebreedte:  margebreedte                 marginwidth
+                                marginalbreite
+           linkermargebreedte:  linkermargebreedte           leftmarginwidth
+                                linkemarginalbreite
+          rechtermargebreedte:  rechtermargebreedte          rightmarginwidth
+                                rechtemarginalbreite
+                 margeafstand:  margeafstand                 margindistance
+                                marginalafstand
+                  randbreedte:  randbreedte                  edgewidth
+                                randbreite
+            linkerrandbreedte:  linkerrandbreedte            leftedgewidth
+                                breitelinkerrand
+           rechterrandbreedte:  rechterrandbreedte           rightedgewidth
+                                breiterechterrand
+                  randafstand:  randafstand                  edgedistance
+                                randabstand
+                 tekstbreedte:  tekstbreedte                 textwidth
+                                textbreite
+                   zetbreedte:  zetbreedte                   makeupwidth
+                                satzbreite
+                    zethoogte:  zethoogte                    makeupheight
+                                satzhoehe
+                       kopwit:  kopwit                       topspace
+                                kopfweite
+                       rugwit:  rugwit                       backspace
+                                rumpfweite
+
+                papierbreedte:  papierbreedte                paperwidth 
+                                papierbreite
+                 papierhoogte:  papierhoogte                 paperheight 
+                                papierhoehe
+                                
+                    kopniveau:  kopniveau                    headlevel 
+                                kopfniveau
+
+                    linewidth:  lijndikte                    linethickness
+                                liniendicke
+
+\stopcommands
+
+%D \stopcompressdefinitions
+
+%D At \PRAGMA\ we use an extended version of \CONTEXT. The
+%D commands below are part of this. Beware of conflicts when
+%D defining your own.
+
+%D \startcompressdefinitions
+
+\startcommands                  dutch                        english
+                                german
+
+                startdocument:  startdocument                startdocument
+                                startdokument
+                 stopdocument:  stopdocument                 stopdocument
+                                stopdokument
+               startoverzicht:  startoverzicht               startoverview
+                                startueberblick
+                stopoverzicht:  stopoverzicht                stopoverview
+                                stopueberblick
+                stelbrievenin:  stelbrievenin                setupcorrespondence
+                                stellekorrespondenzein
+                      brieven:  brieven                      letters
+                                briefe
+                        brief:  brief                        letter
+                                brief
+                        label:  label                        label
+                                label
+                        sheet:  sheet                        sheet
+                                blatt
+               stelstickersin:  stelstickersin               setupstickers
+                                stellestickerein
+                 stelsheetsin:  stelsheetsin                 setupsheets
+                                stelleblattein
+                       labels:  labels                       labels
+                                labels
+                   woonplaats:  woonplaats                   domicile
+                                wohnort
+
+\stopcommands
+
+%D \stopcompressdefinitions
+
+\endinput
+

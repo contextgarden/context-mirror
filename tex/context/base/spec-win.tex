@@ -1,0 +1,98 @@
+%D \module
+%D   [       file=spec-win,
+%D        version=1996.01.25,
+%D          title=\CONTEXT\ Special Macros,
+%D       subtitle=\YandY's \DVIWINDO,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. Non||commercial use is 
+%C granted. 
+
+\unprotect
+
+%D \macros
+%D   {dosetupinteraction,
+%D    dostartthisislocation,
+%D    dostartthisisrealpage,
+%D    dostartgotolocation,
+%D    dostartgotorealpage,
+%D    dostartrunprogram,
+%D    usepagedestinations}
+%D   {}
+%D
+%D As told before, these were the first interactive specials.
+%D In those days, these kind of specials were still elegant 
+%D and straightforward. 
+
+\startspecials[dviwindo]
+
+\definespecial\dosetupinteraction%
+  {\showmessage{\m!interactions}{21}{dviwindo}}
+
+\definespecial\dostartgotolocation#1#2#3#4#5#6%
+  {\bgroup  
+   \doifelsenothing{#3}
+     {\doifelsenothing{#4}
+        {\!!doneafalse}
+        {\doifparentfileelse{#4}
+           {\!!doneafalse}
+           {\!!doneatrue}}%
+      \special
+        {button: 
+           #1 #2
+           \if!!donea 
+             file: #4, 
+           \fi
+           \ifusepagedestinations 
+             page: #6 
+           \else 
+             "#5" 
+           \fi}}
+     {}% nog uri afhandelen 
+   \egroup}
+
+\definespecial\dostartgotorealpage#1#2#3#4#5%
+  {\bgroup  
+   \doifelsenothing{#3}
+     {\doifelsenothing{#4}
+        {\!!doneafalse}
+        {\doifparentfileelse{#4}
+           {\!!doneafalse}
+           {\!!doneatrue}}%
+      \special
+        {button: 
+           #1 #2
+           \if!!donea 
+             file: #4, 
+           \fi 
+           page:#5}}
+     {}% nog uri afhandelen 
+   \egroup}
+
+\definespecial\dostartthisislocation#1%
+  {\ifusepagedestinations \else
+     \special{mark: "#1"}%
+   \fi}
+
+\definespecial\dostartthisisrealpage#1%
+  {}
+
+\definespecial\dostartrunprogram#1#2#3%
+  {\special{button: #1 #2 launch: #3}}
+
+\let\doyandyinsertmov = \docommoninsertmov
+\let\dotrinsertmov    = \docommoninsertmov
+
+%\def\doyandyinsertmov#1#2#3#4#5#6#7#8%
+%  {\special
+%     {button: 20000000 23000000 launch: w:/play32.exe #1}}
+
+\stopspecials
+
+\protect
+
+\endinput
+

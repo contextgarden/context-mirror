@@ -1,0 +1,1423 @@
+%D \module
+%D   [       file=colo-ini,
+%D        version=1997.4.1,
+%D          title=\CONTEXT\ Color Macros,
+%D       subtitle=Initialization,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. Non||commercial use is 
+%C granted. 
+
+\writestatus{loading}{Context Color Macros}
+
+\unprotect
+
+%D Color support is not present in \TEX. Colorful output can 
+%D however be accomplished by using specials. This also means 
+%D that this support depends on the \DVI\ driver used. At the 
+%D moment this module was written, still no decent standard on 
+%D color specials has been agreed upon. We therefore decided to 
+%D implement a mechanism that is as independant as possible of 
+%D drivers. 
+%D 
+%D Color support shares with fonts that is must be implemented
+%D in a way that permits processing of individual \DVI\ pages.
+%D Furthermore it should honour grouping. The first condition
+%D forces us to use a scheme that keeps track of colors at
+%D page boundaries. This can be done by means of \TEX's
+%D marking mechanism (\type{\mark}). 
+%D 
+%D When building pages, \TEX\ periodically looks at the
+%D accumulated typeset contents and breaks the page when
+%D suitable. At that moment, control is transfered to the
+%D output routine. This routine takes care of building the
+%D pagebody and for instance adds headers and footers. The page
+%D can be broken in the middle of some colored text, but
+%D headers and footers are often in black upon white or
+%D background. If colors are applied there, they definitely
+%D are used local, which means that they don't cross page
+%D borders. 
+%D 
+%D Boxes are handled as a whole, which means that when we 
+%D apply colors inside a box, those colors don't cross page 
+%D boundaries, unless of course boxes are split or unboxed. 
+%D Especially in interactive texts, colors are often used in 
+%D such a local way: in boxes (buttons and navigational tools) 
+%D or in the pagebody (backgrounds). 
+%D 
+%D So we can distinguish local colors, that don't cross
+%D pages from global colors, of which we can end many pages 
+%D later. The color macros will treat both types in a different 
+%D way, thus gaining some speed.   
+%D 
+%D This module also deals with gray scales. Because similar
+%D colors can end up in the same gray scale when printed in
+%D black and white, we also implement a palet system that deals
+%D with these matters. Because of fundamental differences
+%D between color and gray scale printing, in \CONTEXT\ we also
+%D differ between these. For historic reasons |<|we first
+%D implemented gray scales using patterns of tiny periods|>| 
+%D and therefore called them {\em rasters}. So don't be 
+%D surprised if this term shows up.
+
+\startmessages  dutch  library: colors
+  title: kleur
+      1: systeem -- is globaal actief
+      2: systeem -- is lokaal actief
+      3: -- is niet gedefinieerd
+      4: systeem -- wordt geladen
+      5: onbekend systeem --
+      6: palet -- is beschikbaar
+      7: palet -- is niet beschikbaar
+      8: (verkeerde) specificatie -- bij -- wordt zwart
+      9: -- kleurruimte wordt niet ondersteund
+     10: -- kleurruimte wordt ondersteund
+     11: kleur wordt vertaald in grijs
+\stopmessages
+
+\startmessages  english  library: colors
+  title: color
+      1: system -- is global activated 
+      2: system -- is local activated 
+      3: -- is not defined
+      4: system -- is loaded
+      5: unknown system --
+      6: palette -- is available
+      7: palette -- is not available 
+      8: (invalid) specification -- at color -- becomes black
+      9: -- color space is not supported 
+     10: -- color space is supported 
+     11: color is converted to gray
+\stopmessages
+
+\startmessages  german  library: colors
+  title: farbe
+      1: system -- ist global aktiviert
+      2: system -- ist lokal aktiviert
+      3: -- ist undefiniert
+      4: system -- ist geladen
+      5: unbekanntes System --
+      6: palette -- ist verfuegbar
+      7: palette -- ist nicht verfuegbar
+      8: (ungueltige) Spezifikation -- bei Farbe -- wird schwarz
+      9: -- Farbraum wird nicht unterstuetzt
+     10: -- Farbraum wird unterstuetzt 
+     11: Farbe wird in Grau umgewandelt
+\stopmessages
+
+%D \macros
+%D   {definecolor}
+%D   {}
+%D
+%D We will enable users to specify colors in \kap{RGB} and 
+%D \kap{CMYK} color spaces or gray scales using 
+%D
+%D \showsetup{\y!definecolor}
+%D
+%D For example:
+%D
+%D \starttypen
+%D \definecolor [SomeKindOfRed] [r=.8,g=.05,b=.05]
+%D \stoptypen
+%D 
+%D Such color specifications are saved in a macro in the 
+%D following way:
+%D 
+%D \starttypen 
+%D \setvalue{\??cr name}{R:r:g:b}
+%D \setvalue{\??cr name}{C:c:m:y:k}
+%D \setvalue{\??cr name}{K:k}
+%D \stoptypen
+%D
+%D Gray scales are specified with the \type{k} parameter, 
+%D the same as used in \kap{CMYK} specifications. 
+
+\def\colorlist{}
+
+\def\@@cl@@z{0} 
+\def\@@cl@@o{1} 
+
+\def\definecolor%
+  {\dodoubleargument\dodefinecolor}
+
+\def\dodefinecolor[#1][#2]%
+  {\redoglobal\addtocommalist{#1}\colorlist
+   \doifassignmentelse{#2}
+     {\let\@@cl@@r=\@@cl@@z\let\@@cl@@g=\@@cl@@z\let\@@cl@@b=\@@cl@@z
+      \let\@@cl@@c=\@@cl@@z\let\@@cl@@m=\@@cl@@z\let\@@cl@@y=\@@cl@@z
+      \let\@@cl@@k=\@@cl@@z
+      \getparameters[\??cl @@][#2]%
+      \doifelse{\@@cl@@r\@@cl@@g\@@cl@@b}{\@@cl@@z\@@cl@@z\@@cl@@z}
+        {\doifelse{\@@cl@@c\@@cl@@m\@@cl@@y}{\@@cl@@z\@@cl@@z\@@cl@@z}
+           {\doifelse{\@@cl@@k}{\@@cl@@z}
+              {\showmessage{\m!colors}{8}{{[#2]},#1}%
+               \redoglobal\setevalue{\??cr#1}{K:\@@cl@@z}}
+              {\redoglobal\setevalue{\??cr#1}{K:\@@cl@@k}}}
+           {\redoglobal\setevalue{\??cr#1}{C:\@@cl@@c:\@@cl@@m:\@@cl@@y:\@@cl@@k}}}
+        {\redoglobal\setevalue{\??cr#1}{R:\@@cl@@r:\@@cl@@g:\@@cl@@b}}}
+     {\doifdefinedelse{\??cr#2}
+        {\redoglobal\setevalue{\??cr#1}{\getvalue{\??cr#2}}}
+        {\showmessage{\m!colors}{3}{#1}}}%
+   \dodoglobal\setvalue{#1}{\color[#1]}}
+
+%D The names of colors are stored in a comma separated list 
+%D only for the purpose of showing them with \type{\showcolor}.
+%D 
+%D Colors can be defined global by using \type{\doglobal}, 
+%D like in 
+%D 
+%D \startbuffer
+%D \doglobal\definecolor [SomeKindOfRed] [r=.8,g=.05,b=.05]
+%D \stopbuffer
+%D
+%D \typebuffer
+%D
+%D \haalbuffer
+%D 
+%D This color shows up as \color[SomeKindOfRed]{some kind 
+%D of red}.
+
+%D \macros
+%D   {setupcolor}
+%D   {}
+%D
+%D Color definitions can be grouped in files with the name: 
+%D
+%D \starttypen
+%D \f!colorprefix-identifier.tex
+%D \stoptypen
+%D
+%D where \type{\f!colorprefix} is {\tttf \f!colorprefix}. Loading 
+%D such a file is done by 
+%D
+%D \showsetup{\y!setupcolor} 
+%D
+%D Some default colors are specified in \type{colo-rgb.tex},
+%D which is loaded into the format by: 
+%D
+%D \starttypen
+%D \setupcolor[rgb]
+%D \stoptypen
+ 
+\def\colorstyle{}
+
+\def\setupcolor%
+  {\dosingleargument\dosetupcolor}
+
+\def\dosetupcolor[#1]%
+  {\doifnot{#1}{\colorstyle}
+     {\def\colorstyle{#1}%
+      \def\dodosetupcolor##1%
+        {\readsysfile{\f!colorprefix##1}%
+           {\showmessage{\m!colors}{4}{\colorstyle}}
+           {\showmessage{\m!colors}{5}{\colorstyle}}}%
+      \processcommalist[#1]\dodosetupcolor}}
+
+%D When typesetting for paper, we prefer using the \kap{CMYK} 
+%D color space, but for on||screen viewing we prefer \kap{RGB} 
+%D (the previous implementation supported only this scheme). 
+%D Independant of such specifications, we support some automatic 
+%D conversions: 
+%D 
+%D \startopsomming[opelkaar]
+%D \som  convert all colors to \kap{RGB}
+%D \som  convert all colors to \kap{CMYK}
+%D \som  convert all colors to gray scales
+%D \stopopsomming
+%D 
+%D We also support optimization of colors to gray scales. 
+%D 
+%D \startopsomming[verder]
+%D \som  reduce gray colors to gray scales
+%D \stopopsomming
+%D 
+%D These options are communicated by means of: 
+
+\newif\ifRGBsupported
+\newif\ifCMYKsupported
+\newif\ifconverttoGRAY
+\newif\ifpreferGRAY
+\newif\ifGRAYprefered
+\newif\ifreduceCMYK
+
+%D The last boolean controls reduction of \kap{CMYK} to 
+%D \kap{CMY} colors. When set to true, the black component 
+%D is added to the other ones. 
+
+%D Color modes are entered using the next set of commands. 
+%D The \type{\stop} alternatives are implemented in a way 
+%D that permits non||grouped use.
+
+\def\dostartcolormodeR#1:#2:#3\od%
+  {\bgroup
+   \def\@@cl@@r{#1}\def\@@cl@@g{#2}\def\@@cl@@b{#3}%
+   \ifpreferGRAY\ifx\@@cl@@r\@@cr@@g\ifx\@@cl@@r\@@cl@@b
+     \GRAYpreferedtrue
+   \fi\fi\fi
+   \ifGRAYprefered
+     \dostartgraycolormode\@@cl@@r
+   \else\ifRGBsupported
+     \dostartrgbcolormode\@@cl@@r\@@cl@@g\@@cl@@b
+   \else\ifCMYKsupported
+     \convertRGBtoCMYK\@@cl@@r\@@cl@@g\@@cl@@b
+     \dostartcmykcolormode\@@cl@@c\@@cl@@m\@@cl@@y\@@cl@@k
+   \else
+     \convertRGBtoGRAY\@@cl@@r\@@cl@@g\@@cl@@b
+     \dostartgraycolormode\@@cl@@k
+   \fi\fi\fi
+   \egroup}
+
+\def\dostartcolormodeC#1:#2:#3:#4\od%
+  {\bgroup
+   \def\@@cl@@c{#1}\def\@@cl@@m{#2}\def\@@cl@@y{#3}\def\@@cl@@k{#4}%
+   \ifpreferGRAY\ifx\@@cl@@k\@@cl@@z\ifx\@@cl@@c\@@cr@@m\ifx\@@cl@@c\@@cl@@y
+     \GRAYpreferedtrue
+   \fi\fi\fi\fi
+   \ifGRAYprefered
+     \dostartgraycolormode\@@cl@@c
+   \else\ifCMYKsupported
+     \ifreduceCMYK
+       \convertCMYKtoCMY\@@cl@@c\@@cl@@m\@@cl@@y\@@cl@@k
+       \dostartcmykcolormode\@@cl@@c\@@cl@@m\@@cl@@y\@@cl@@k
+     \else
+       \dostartcmykcolormode\@@cl@@c\@@cl@@m\@@cl@@y\@@cl@@k
+     \fi
+   \else\ifRGBsupported
+     \convertCMYKtoRGB\@@cl@@c\@@cl@@m\@@cl@@y\@@cl@@k
+     \dostartrgbcolormode\@@cl@@r\@@cl@@g\@@cl@@b
+   \else
+     \convertCMYKtoGRAY\@@cl@@c\@@cl@@m\@@cl@@y\@@cl@@k
+     \dostartgraycolormode\@@cl@@k
+   \fi\fi\fi
+   \egroup}
+
+\def\dostartcolormodeK#1\od%
+  {\dostartgraycolormode{#1}}
+
+%D Prefering gray is not the same as converting to gray. Conversion treats 
+%D each color components  in a different way, while prefering is just a 
+%D reduction and thus a space||saving option.
+
+%D \macros
+%D   {startcolormode,stopcolormode}
+%D 
+%D We use \type{\stopcolormode} to reset the color in 
+%D whatever color space and do so by calling the corresponding
+%D special. Both commands can be used for fast color 
+%D switching, like in colored verbatim,
+
+\def\dostartcolormode#1:%
+  {\getvalue{dostartcolormode#1}}  
+
+\def\startcolormode#1% 
+  {\doifcolorelse{#1}
+     {\getcurrentcolorspecs{#1}%
+      \expandafter\dostartcolormode\currentcolorspecs\od}
+     {\dostopcolormode}}
+
+\def\stopcolormode%
+  {\dostopcolormode}
+
+%D We use some reserved names for local color components. 
+%D Consistent use of these scratch variables saves us 
+%D unneccessary hash entries. 
+%D 
+%D \starttypen 
+%D \@@cl@@r \@@cl@@g \@@cl@@b
+%D \@@cl@@c \@@cl@@m \@@cl@@y \@@cl@@k
+%D \@@cl@@k
+%D \stoptypen
+%D 
+%D We implement several conversion routines. 
+%D
+%D \starttypen
+%D \convertRGBtoCMYK  {r} {g} {b} 
+%D \convertRGBtoGRAY  {r} {g} {b} 
+%D \convertCMYKtoRGB  {c} {m} {y} {k} 
+%D \convertCMYKtoGRAY {c} {m} {y} {k}
+%D \convertCMYKtoCMY  {c} {m} {y} {k}
+%D \stoptypen
+%D 
+%D The relation between \kap{Gray}, \kap{RGB} and \kap{CMYK} 
+%D is: 
+%D 
+%D \plaatsformule[-]
+%D   \startformule
+%D   G = .30r + .59g + .11b 
+%D     = 1.0 - \min(1.0,\ .30c + .59m + .11y + k)
+%D   \stopformule
+%D 
+%D When converting from \kap{CMYK} to \kap{RGB} we use the 
+%D formula: 
+%D 
+%D \plaatsformule[-]
+%D   \startformule
+%D   \eqalign
+%D     {r &= 1.0 - \min(1.0,\ c+k) \cr
+%D      g &= 1.0 - \min(1.0,\ m+k) \cr
+%D      b &= 1.0 - \min(1.0,\ y+k)}
+%D   \stopformule
+%D 
+%D In the conversion routine the color components are calculated 
+%D in three digits precision. 
+
+\def\realcolorvalue#1%  
+  {\ifnum     #1<10   0.00\the#1%
+   \else\ifnum#1<100  0.0\the#1%
+   \else\ifnum#1<1000 0.\the#1%
+   \else              1\fi\fi\fi}
+
+\def\doconvertCMYKtoRGB#1\k#2\to#3%
+  {\scratchdimen=#1\s!pt
+   \advance\scratchdimen by #2\s!pt\relax
+   \ifdim\scratchdimen>1\s!pt
+     \scratchdimen=-1\s!pt
+   \else
+     \scratchdimen=-\scratchdimen
+   \fi
+   \advance\scratchdimen by 1\s!pt
+   \multiply\scratchdimen by 1000
+   \scratchcounter=\scratchdimen
+   \advance\scratchcounter by \!!medcard
+   \divide\scratchcounter by \!!maxcard
+   \edef#3{\realcolorvalue\scratchcounter}}
+
+\def\convertCMYKtoRGB#1#2#3#4%
+  {\doconvertCMYKtoRGB#1\k#4\to\@@cl@@r
+   \doconvertCMYKtoRGB#2\k#4\to\@@cl@@g
+   \doconvertCMYKtoRGB#3\k#4\to\@@cl@@b}
+
+\def\doconvertRGBtoCMYK#1\to#2%
+  {\scratchdimen=#1\s!pt
+   \multiply\scratchdimen by 1000
+   \scratchcounter=\scratchdimen
+   \advance\scratchcounter by \!!medcard
+   \divide\scratchcounter by \!!maxcard
+   \scratchcounter=-\scratchcounter
+   \advance\scratchcounter by 1000
+   \edef#2{\realcolorvalue\scratchcounter}}
+
+\def\convertRGBtoCMYKvalue#1#2#3%
+  {\doconvertRGBtoCMYK#1\to\@@cl@@c
+   \doconvertRGBtoCMYK#2\to\@@cl@@m
+   \doconvertRGBtoCMYK#3\to\@@cl@@y
+   \let\@@cl@@k=\@@cl@@z}
+
+\def\convertRGBtoGRAY#1#2#3%  
+  {\scratchdimen=#1\s!pt
+   \scratchdimen=300\scratchdimen
+   \scratchcounter=\scratchdimen
+   \scratchdimen=#2\s!pt
+   \scratchdimen=590\scratchdimen
+   \advance\scratchcounter by \scratchdimen
+   \scratchdimen=#3\s!pt
+   \scratchdimen=110\scratchdimen
+   \advance\scratchcounter by \scratchdimen
+   \advance\scratchcounter by \!!medcard
+   \divide\scratchcounter by \!!maxcard 
+   \edef\@@cl@@k{\realcolorvalue\scratchcounter}}
+
+\def\convertCMYKtoGRAY#1#2#3#4%  
+  {\convertCMYKtoRGB{#1}{#2}{#3}{#4}%
+   \convertRGBtoGRAY\@@cl@@r\@@cl@@g\@@cl@@b}
+
+\def\doconvertCMYKtoCMY#1\k#2\to#3%
+  {\scratchdimen=#1\s!pt
+   \advance\scratchdimen by #2\s!pt\relax
+   \ifdim\scratchdimen>1\s!pt
+     \scratchdimen=1\s!pt
+   \else
+     \scratchdimen=\scratchdimen
+   \fi
+   \multiply\scratchdimen by 1000
+   \scratchcounter=\scratchdimen
+   \advance\scratchcounter by \!!medcard
+   \divide\scratchcounter by \!!maxcard
+   \edef#3{\realcolorvalue\scratchcounter}}
+
+\def\convertCMYKtoCMY#1#2#3#4%
+  {\doconvertCMYKtoCMY#1\k#4\to\@@cl@@c
+   \doconvertCMYKtoCMY#2\k#4\to\@@cl@@m
+   \doconvertCMYKtoCMY#3\k#4\to\@@cl@@y
+   \let\@@cl@@k=\@@cl@@z}
+
+%D We already mentioned that colors interfere with building
+%D the pagebody. This means that when the page is composed,
+%D the colors temporary have to be reset. After the page is
+%D shipped out, we have to revive the current color. 
+%D 
+%D We use \type{\marks} to keep track of colors across page 
+%D boundaries. Unfortunately standard \TEX\ supports only one mark, 
+%D and using this one for color support only would be a waste. 
+%D We therefore use an adapted version of J.~Fox's multiple mark
+%D mechanism as (re|)|implemented in \module{supp-mrk}. 
+
+\doifdefinedelse{newmark}
+  {\newmark\colormark}  
+  {\def\colormark#1{}}
+
+%D Using this mark mechanism with lots of colors has one 
+%D major drawback: \TEX's memory tends to overflow when 
+%D very colorful text is stored in a global box. Even worse is that
+%D the processing time grows considerably. We therefore support
+%D local as well as global color switching. 
+%D 
+%D Of the next macros, \type{\popcolor} is to be used after
+%D the actual \type{\shipout} and \type{\startcolorpage} and
+%D \type{\stopcolorpage} are called when entering and leaving
+%D the \type{\pagebody} builder. In case of emergencies
+%D \type{\pushcolor} can be used to undo the current color, 
+%D for instance when insertions are appended to the page.  
+
+%D Before we present the color macros, we first define the 
+%D setup command. This command takes care of setting up the 
+%D booleans that control local and global behavior and 
+%D conversion to other color spaces. 
+
+\newif\ifincolor
+\newif\iflocalcolor
+
+\def\setupcolors%
+  {\dosingleargument\dosetupcolors}
+
+\def\dosetupcolors[#1]%
+ {\getparameters[\??cl][#1]%
+  \doifelse{\@@clconversie}{\v!ja}
+    {\preferGRAYtrue}
+    {\preferGRAYfalse}%
+  \doifelse{\@@clrgb}{\v!nee}
+    {\showmessage{\m!colors}{9}{\v!rgb}\RGBsupportedfalse} 
+    {\showmessage{\m!colors}{10}{\v!rgb}\RGBsupportedtrue}%
+  \doifelse{\@@clcmyk}{\v!nee}
+    {\showmessage{\m!colors}{9}{\v!cmyk}\CMYKsupportedfalse}
+    {\showmessage{\m!colors}{10}{\v!cmyk}\CMYKsupportedtrue}%
+  \ifRGBsupported 
+    \converttoGRAYfalse
+  \else\ifCMYKsupported
+    \converttoGRAYfalse
+  \else
+    \converttoGRAYtrue
+    \showmessage{\m!colors}{11}{}%
+  \fi\fi
+  \processaction
+    [\@@clstatus]
+    [\v!globaal=>\incolortrue\localcolorfalse
+                 \showmessage{\m!colors}{1}{\colorstyle}, 
+      \v!lokaal=>\incolortrue\localcolortrue
+                 \showmessage{\m!colors}{2}{\colorstyle}, 
+       \v!start=>\let\@@clstatus=\v!globaal
+                 \incolortrue\localcolorfalse
+                 \showmessage{\m!colors}{1}{\colorstyle}, 
+        \v!stop=>\incolorfalse\localcolorfalse]}
+
+%D \macros
+%D   {doifcolorelse}
+%D   {}
+%D
+%D Switching to a color is done by means of the following 
+%D command. Later on we will explain the use of palets.  We 
+%D define ourselves a color conditional first.  
+
+\def\currentpalet{}
+
+\def\doifcolorelse#1%
+  {\doifdefinedelse{\??cr\currentpalet#1}}
+
+\def\getcurrentcolorspecs#1%
+  {\edef\currentcolorspecs{\getvalue{\??cr\currentpalet#1}}}
+
+%D \macros
+%D   {localstartcolor,localstopcolor}
+%D   {}
+%D
+%D Simple color support, that is without nesting, is provided 
+%D by:
+
+\def\localstartcolor[#1]% 
+  {\ifincolor
+     \localcolortrue
+     \doglobalstartcolor[#1]%
+   \fi}
+
+\def\localstopcolor%
+ {\ifincolor
+    \doglobalstopcolor
+  \fi}
+
+%D \macros
+%D   {startcolor,stopcolor}
+%D   {}
+%D
+%D The more save method, the one that saves the current color 
+%D state and returns to this state afterward, is activated by: 
+%D
+%D \showsetup{\y!startcolor}
+
+\def\startcolor[#1]%
+  {\ifincolor
+     \doglobalstartcolor[#1]%
+   \fi}
+
+\def\stopcolor%
+  {\ifincolor
+     \doglobalstopcolor
+   \fi}
+
+%D This macros call the global color switching ones. Starting 
+%D a global, i.e. a possible page boundary crossing, color 
+%D mode also sets a \type{\mark} in \TEX's internal list. 
+
+\newcount\colorlevel
+
+\setvalue{\??cl0C}{}  % saved color 
+\setvalue{\??cl0S}{}  % stop command
+
+\def\dodoglobalstartcolor[#1]%
+  {\xdef\currentcolor{\getvalue{\??cl\the\colorlevel C}}%
+   \global\advance\colorlevel by 1
+   \setxvalue{\??cl\the\colorlevel C}{#1}%
+   \debuggerinfo{\m!colors}
+     {start #1 at level \the\colorlevel}%
+   \doifelsenothing{#1}
+     {\setxvalue{\??cl\the\colorlevel C}{\currentcolor}%
+      \setgvalue{\??cl\the\colorlevel S}{\donoglobalstopcolor}}
+     {\doifelse{#1}{\currentcolor}
+        {\setgvalue{\??cl\the\colorlevel S}{\donoglobalstopcolor}}
+        {\doifcolorelse{#1}
+           {\docolormark{#1}%
+            \setgvalue{\??cl\the\colorlevel S}{\dodoglobalstopcolor}%
+            \startcolormode{#1}}
+        {\setgvalue{\??cl\the\colorlevel S}{\donoglobalstopcolor}%
+         \showmessage{\m!colors}{3}{#1}}}}}
+
+\def\doglobalstartcolor[#1]%
+  {\ifnum\colorlevel=0
+     \doifelsenothing{#1}
+       {\setgvalue{\??cl\the\colorlevel S}{}}
+       {\dodoglobalstartcolor[#1]}%
+   \else
+     \dodoglobalstartcolor[#1]%
+   \fi
+   \ignorespaces}
+
+\def\donoglobalstopcolor%
+  {\ifnum\colorlevel>0
+     \xdef\currentcolor{\getvalue{\??cl\the\colorlevel C}}%
+     \debuggerinfo{\m!colors}
+       {stop \currentcolor\normalspace at level \the\colorlevel}%
+     \global\advance\colorlevel by -1
+   \fi}
+
+\def\dodoglobalstopcolor%
+  {\ifnum\colorlevel>0
+     \donoglobalstopcolor
+     \xdef\previouscolor{\getvalue{\??cl\the\colorlevel C}}%
+     \ifnum\colorlevel=0
+       \docolormark{}%
+       \stopcolormode
+     \else % let's do a bit redundant testing here
+       \docolormark{\previouscolor}% 
+       \doifelsenothing{\previouscolor}
+         {\dostopcolormode}
+         {\doifcolorelse{\previouscolor} 
+            {\doifnot{\currentcolor}{\previouscolor}
+               {\startcolormode{\previouscolor}}} 
+            {\dostopcolormode}}%
+     \fi
+   \fi}
+
+\def\doglobalstopcolor%
+  {\getvalue{\??cl\the\colorlevel S}}
+
+%D We don't use grouping and save each stop alternative. This 
+%D permits be especially useful in for instance local color 
+%D support in verbatim. Using \type{\bgroup}||\type{\egroup} 
+%D pairs could interfere with calling commands 
+
+%D This color mechanism takes care of nested colors, like in:
+%D
+%D \startbuffer
+%D \kleur[groen]{groen \kleur[groen]{groen \kleur[rood]{rood}} groen}
+%D \kleur[groen]{groen \kleur[]{groen \kleur[rood]{rood}} groen}
+%D \kleur[groen]{groen \kleur[rood]{rood \kleur[rood]{rood}} groen}
+%D \kleur[groen]{groen \kleur[groen]{groen \kleur[]{groen}} groen}
+%D \kleur[groen]{groen \kleur[rood]{rood} groen}
+%D \kleur[groen]{groen \kleur[]{groen} groen}
+%D \kleur[]{zwart \kleur[rood]{rood} zwart}
+%D \kleur[]{zwart}
+%D \stopbuffer
+%D 
+%D \typebuffer
+%D 
+%D or 
+%D 
+%D \startvoorbeeld
+%D \startregels
+%D \haalbuffer
+%D \stopregels
+%D \stopvoorbeeld
+%D
+%D Crossing page boundaries is of course also handled. 
+%D Undefined or empty color specifications are treated as 
+%D efficient as possible.  
+%D 
+%D \startbuffer
+%D \startkleur[groen]
+%D   [groen] \input tufte [groen] \par 
+%D   \startkleur[]
+%D     [groen] \input knuth [groen] \par 
+%D     \startkleur[rood]
+%D       [rood] \input tufte [rood] \par 
+%D       \startkleur[geel]
+%D         [geel] \input knuth [geel] \par 
+%D       \stopkleur
+%D       [rood] \input tufte [rood] \par 
+%D     \stopkleur
+%D     [groen] \input knuth [groen] \par 
+%D   \stopkleur
+%D   [groen] \input tufte [groen] \par 
+%D \stopkleur
+%D \stopbuffer
+%D 
+%D \startvoorbeeld
+%D \haalbuffer
+%D \stopvoorbeeld
+%D 
+%D These quotes are typeset by saying:
+%D 
+%D \typebuffer
+%D 
+%D Out of efficiency we only use marks when needed. The next 
+%D macro tries to find out if indeed a mark should be set. 
+%D This macro uses the boolean \type{\ifinpagebody}, which can 
+%D be defined and set in the module that handles the pagebody. 
+
+\ifx\ifinpagebody\undefined \newif\ifinpagebodytrue \fi
+
+\def\docolormark#1%
+  {\ifinpagebody \else
+     \iflocalcolor \else
+       \dodocolormark{#1}%
+     \fi
+   \fi}
+
+\let\lastcolormark=\empty
+
+\def\dodocolormark#1%
+  {\doifnot{#1}{\lastcolormark}
+     {\colormark{#1}%
+      \xdef\lastcolormark{#1}}}
+
+%D \macros
+%D   {pushcolor, popcolor}
+%D   {}
+%D
+%D Pushing the current state in the output routine simply comes 
+%D to resetting the color to black, while popping restores the 
+%D color state to that of before the break. 
+
+\def\pushcolor%
+  {\stopcolormode} 
+
+\def\popcolor%
+  {\doifsomething{\botcolormark}
+     {\debuggerinfo{\m!colors}{popping \botcolormark}%
+      \startcolormode{\botcolormark}}}
+
+\def\popsplitcolor% 
+  {\getsplitmarks\colormark  % hier wel 
+   \doifsomething{\botcolormark}
+     {\debuggerinfo{\m!colors}{split popping \botcolormark}%
+      \startcolormode{\botcolormark}}}
+
+%D \macros
+%D   {startcolorpage, stopcolorpage}
+%D   {}
+%D
+%D Local use can be forced with the next two macros. Nesting 
+%D is still supported but colors are no longer marked. 
+
+\def\startcolorpage%    
+  {\bgroup
+   \def\docolormark##1{}%
+   \edef\savedcolorlevel{\the\colorlevel}%
+   \ifnum\colorlevel>0
+     \stopcolormode
+   \fi
+   \global\colorlevel=0\relax}
+
+\def\stopcolorpage%
+  {\global\colorlevel=\savedcolorlevel\relax
+   \egroup}
+
+%D \macros
+%D   {color,gray}
+%D   {}
+%D 
+%D This leaves the simple color command: 
+%D
+%D \showsetup{\y!color}
+%D \showsetup{\y!gray}
+%D
+%D Which can be used straightforward: \color[groen]{green as gras}. 
+%D We want color support to be similar to font support and 
+%D therefore implement \type{\color} as:
+
+\unexpanded\def\color[#1]%
+  {\groupedcommand
+     {\startcolor[#1]}
+     {\stopcolor}}
+
+\unexpanded\def\gray[#1]%
+  {\groupedcommand
+     {\RGBsupportedfalse\CMYKsupportedfalse\startcolor[#1]}
+     {\stopcolor}}
+
+%D This implementation enables use of defined colors like:
+%D
+%D \starttypen
+%D Look at the {\brightgreen bright} side of life and get 
+%D yourself no \red{red} head!
+%D \stoptypen
+
+%D \macros 
+%D   {colorvalue, grayvalue}
+%D   {}
+%D 
+%D We can typeset the color components using \type{\colorvalue} and 
+%D \type{\grayvalue}. The commands: 
+%D
+%D \startbuffer
+%D color value of SomeKindOfRed: \colorvalue{SomeKindOfRed} \crlf
+%D gray value of SomeKindOfRed: \grayvalue{SomeKindOfRed}
+%D \stopbuffer
+%D
+%D \typebuffer
+%D
+%D show us: 
+%D
+%D \startvoorbeeld
+%D \haalbuffer
+%D \stopvoorbeeld
+
+\def\realcolorformat#1% 
+  {\ifnum#1<10        0.00\the#1%
+   \else\ifnum#1<100  0.0\the#1%
+   \else\ifnum#1<1000 0.\the#1%
+   \else              1.000\fi\fi\fi}
+
+\def\colorformatseparator{ }
+
+\def\dodoformatcolor#1%
+  {\scratchdimen=#1\s!pt\relax
+   \ifdim\scratchdimen>1\s!pt
+     \scratchdimen=1\s!pt
+   \fi
+   \multiply\scratchdimen by 1000
+   \scratchcounter=\scratchdimen
+   \advance\scratchcounter by \!!medcard
+   \divide\scratchcounter by \!!maxcard \relax
+   \realcolorformat\scratchcounter}
+
+\def\doformatcolorR#1:#2:#3\od%
+  {\dodoformatcolor{#1}\colorformatseparator
+   \dodoformatcolor{#2}\colorformatseparator 
+   \dodoformatcolor{#3}}
+
+\def\doformatcolorC#1:#2:#3:#4\od%
+  {\dodoformatcolor{#1}\colorformatseparator 
+   \dodoformatcolor{#2}\colorformatseparator 
+   \dodoformatcolor{#3}\colorformatseparator 
+   \dodoformatcolor{#4}}
+
+\def\doformatcolorK#1\od%
+  {\dodoformatcolor{#1}}
+
+\def\doformatcolor#1:%
+  {\getvalue{doformatcolor#1}}  
+
+\def\colorvalue#1% 
+  {\doifcolorelse{#1}
+     {\getcurrentcolorspecs{#1}%
+      \expandafter\doformatcolor\currentcolorspecs\od}
+     {}}
+
+\def\doformatgrayR#1:#2:#3\od%
+  {\convertRGBtoGRAY{#1}{#2}{#3}%
+   \dodoformatcolor\@@cl@@k}
+
+\def\doformatgrayC#1:#2:#3:#4\od%
+  {\convertCMYKtoGRAY{#1}{#2}{#3}{#4}%
+   \dodoformatcolor\@@cl@@k}
+
+\def\doformatgrayK#1\od%
+  {\dodoformatcolor{#1}}
+
+\def\doformatgray#1:%
+  {\getvalue{doformatgray#1}}  
+
+\def\grayvalue#1% 
+  {\doifcolorelse{#1}
+     {\getcurrentcolorspecs{#1}%
+      \expandafter\doformatgray\currentcolorspecs\od}
+     {}}
+
+%D \macros
+%D   {locatstartraster,localstopraster,
+%D    startraster,stopraster}   
+%D   {}
+%D 
+%D The previous conversions are not linear and treat each color
+%D component according to human perception curves. Pure gray
+%D (we call them rasters) has equal color components. In
+%D \CONTEXT\ rasters are only used as backgrounds and these
+%D don't cross page boundaries in the way color does. Therefore
+%D we don't need stacks and marks. Just to be compatible with
+%D color support we offer both 'global' and 'local' commands.  
+
+\def\localstartraster[#1]%       
+  {\doifinstringelse{.}{#1}
+     {\dostartgraymode{#1}}
+     {\dostartgraymode{\@@rsraster}}}
+
+\def\localstopraster%        
+  {\dostopgraymode}
+
+\def\startraster%
+  {\localstartraster}
+
+\def\stopraster%
+  {\localstopraster}
+
+%D In this documentation we will not go into too much details
+%D on palets. Curious users can find more information on this
+%D topic in \uit[use of color]. 
+%D 
+%D At the moment we implemented color in \CONTEXT\ color
+%D printing was not yet on the desktop. In spite of this lack our
+%D graphics designer made colorfull illustrations. When printed
+%D on a black and white printer, distinctive colors can come
+%D out equally gray. We therefore decided to use only colors
+%D that were distinctive in colors as well as in black and
+%D white print. 
+%D 
+%D Although none of the graphic packages we used supported
+%D logical colors and global color redefition, we build this
+%D support into \CONTEXT. This enabled us to experiment and
+%D also prepared us for the future. 
+
+%D \macros
+%D   {definepalet}
+%D   {}
+%D 
+%D Colors are grouped in palets. The colors in such a palet can
+%D have colorful names, but best is to use names that specify
+%D their use, like {\em important} or {\em danger}. As a sort
+%D of example \CONTEXT\ has some palets predefined, 
+%D like:\voetnoot{At the time I wrote the palet support, I was 
+%D reading 'A hort history of time' of S.~Hawkins, so that's
+%D why we stuck to quarks.} 
+%D 
+%D \starttypen
+%D \definepalet    
+%D   [alfa]
+%D   [     top=rood:7,
+%D      bottom=groen:6,
+%D          up=blauw:5,
+%D        down=cyaan:4,
+%D     strange=magenta:3,
+%D       charm=geel:2]
+%D \stoptypen
+%D
+%D It's formal definition is: 
+%D 
+%D \showsetup{\y!definepalet}
+%D
+%D Visualized, such a palet looks like: 
+%D 
+%D \startbuffer[palet]
+%D \showpalet [alfa] [horizontaal,naam,nummer,waarde]
+%D \stopbuffer
+%D 
+%D \startregelcorrectie
+%D \haalbuffer[palet]
+%D \stopregelcorrectie
+%D
+%D This bar shows both the color and gray alternatives of the 
+%D palet components (not visible in black and white print).
+
+\def\definepalet%
+  {\dodoubleargument\dodefinepalet}
+
+\def\dodefinepalet[#1][#2]%
+  {\setvalue{\??pa#1}{}%
+   \showmessage{\m!colors}{6}{#1}%
+   \def\dodododefinepalet[##1=##2]%
+     {\doifvaluesomething{\??pa#1}
+        {\setevalue{\??pa#1}{\getvalue{\??pa#1},}}%
+      \setevalue{\??pa#1}{\getvalue{\??pa#1}##1}%
+     \doifdefinedelse{\??cr##2}
+       {\setevalue{\??cr#1:##1}{\getvalue{\??cr##2}}}
+       {\setevalue{\??cr#1:##1}{G:0}}}%
+   \def\dododefinepalet##1%
+     {\dodododefinepalet[##1]}%
+   \processcommalist[#2]\dododefinepalet}
+
+%D \macros 
+%D   {setuppalet}
+%D   {}
+%D
+%D Colors are taken from the current palet, if defined. 
+%D Setting the current palet is done by:
+%D
+%D \showsetup{\y!setuppalet}
+
+\def\currentpalet{}
+
+\def\setuppalet%
+  {\dosingleempty\dosetuppalet}
+
+\def\dosetuppalet[#1]%
+  {\doifelsenothing{#1}
+     {\def\currentpalet{}}
+     {\doifelsevaluenothing{\??pa#1}
+        {\showmessage{\m!colors}{7}{#1}%
+         \def\currentpalet{}}
+        {\def\currentpalet{#1:}}}}
+
+%D \macros 
+%D   {showpalet}
+%D   {}
+%D 
+%D The previous visualization was typeset with: 
+%D 
+%D \typebuffer[palet]
+%D
+%D This commands is defined as: 
+%D
+%D \showsetup{\y!showpalet}
+
+\def\showpalet%
+  {\dodoubleargument\doshowpalet}
+
+\def\doshowpalet[#1][#2]%
+  {\doifdefined{\??pa#1}
+     {\doifinsetelse{\v!vertikaal}{#2}
+        {\showverticalpalet[#1][#2]}
+        {\showhorizontalpalet[#1][#2]}}}
+
+\def\showhorizontalpalet[#1][#2]%
+  {\localvbox
+     {\offinterlineskip
+      \!!widtha=\hsize
+      \doifinsetelse{\v!naam}{#2}
+        {\!!widthb=5em}
+        {\!!widthb=\!!zeropoint}
+      \advance\!!widtha by -\!!widthb
+      \getcommacommandsize[\getvalue{\??pa#1}]
+      \divide\!!widtha by \commalistsize
+      \setuppalet[#1]
+      \doifinset{\v!nummer}{#2}%
+        {\def\doshowpalet##1%
+           {\hbox to \!!widtha{\hss\strut##1\hss}}
+         \hbox{\hskip\!!widthb\processpalet[#1]\doshowpalet}
+         \endgraf}
+      \def\doshowpalet##1%
+        {\color[##1]{\vrule\!!width\!!widtha\!!height\ht\strutbox}}
+      \hbox
+        {\ifdim\!!widthb>\!!zeropoint\relax
+           \hbox to \!!widthb{\hss#1\hskip.75em}%
+         \fi
+         \processpalet[#1]\doshowpalet}
+      \endgraf
+      \def\doshowpalet##1%
+        {\gray[##1]{\vrule\!!width\!!widtha\!!depth\dp\strutbox}}
+      \hbox{\hskip\!!widthb\processpalet[#1]\doshowpalet}
+      \endgraf
+      \doifinset{\v!waarde}{#2}
+        {\def\doshowpalet##1%
+           {\vbox
+              {\hsize\!!widtha
+               \vskip.25ex
+               \everypar{\strut}
+               \veryraggedcenter
+               \let\colorformatseparator=\endgraf
+               \colorvalue{##1}}}
+         \hbox{\hskip\!!widthb\processpalet[#1]\doshowpalet}}}}
+
+\def\showverticalpalet[#1][#2]%
+  {\localvbox
+     {\offinterlineskip
+      \setuppalet[#1]
+      \def\rule%
+        {\vrule\!!width3em\!!height\ht\strutbox\!!depth\dp\strutbox}
+      \doifinsetelse{\v!nummer}{#2}
+        {\!!widthb=5em}
+        {\!!widthb=\!!zeropoint}
+      \advance\!!widtha by \!!widthb
+      \doifinset{\v!naam}{#2}
+        {\hbox{\hskip\!!widthb\hbox to 6em{\hss\strut#1\hss}}
+         \endgraf}
+      \def\doshowpalet##1%
+        {\hbox
+           {\ifdim\!!widthb>\!!zeropoint
+              \hbox to \!!widthb{\hss##1\hskip.75em}%
+            \fi
+            \color[##1]{\rule}%
+            \gray[##1]{\rule}%
+            \doifinset{\v!waarde}{#2}%
+              {\hbox to 7em{\hskip.75em\colorvalue{##1}\hss}}}
+         \endgraf}
+      \processpalet[#1]\doshowpalet}}
+
+\def\processpalet[#1]%
+  {\processcommacommand[\getvalue{\??pa#1}]}
+
+%D \macros
+%D   {definecolorgroup}
+%D   {}
+%D
+%D The naming of the colors in this palet suggests some 
+%D ordening, which in turn is suported by color grouping. 
+%D 
+%D \starttypen
+%D \definecolorgroup
+%D   [rood]
+%D   [1.00:0.90:0.90,
+%D    1.00:0.80:0.80,
+%D    1.00:0.70:0.70,
+%D    1.00:0.55:0.55,
+%D    1.00:0.40:0.40,
+%D    1.00:0.25:0.25,
+%D    1.00:0.15:0.15,
+%D    0.90:0.00:0.00]
+%D \stoptypen
+%D 
+%D In such a color group colors are numbered from~$1$ to~$n$. 
+%D
+%D \showsetup{\y!definecolorgroup}
+%D
+%D This kind of specification is not only more compact than 
+%D defining each color separate, it also loads faster and takes 
+%D less bytes. 
+
+\def\definecolorgroup%
+  {\dotripleempty\dodefinecolorgroup}
+
+\def\dodefinecolorgroup[#1][#2][#3]%
+  {\ifthirdargument
+     \processaction
+       [#2]
+       [    \v!cmyk=>\edef\currentcolorspace{C},
+             \v!rgb=>\edef\currentcolorspace{R},
+            \v!gray=>\edef\currentcolorspace{K},
+         \s!unknown=>\edef\currentcolorspace{R}]%
+     \scratchcounter=0
+     \def\dododefinecolorgroup##1%
+       {\advance\scratchcounter by 1
+        \setevalue{\??cr#1:\the\scratchcounter}{\currentcolorspace:##1}}%
+     \processcommalist[#3]\dododefinecolorgroup
+   \else
+     \doifinstringelse{:}{#2}
+       {\definecolorgroup[#1][\v!rgb][#2]}
+       {\doloop
+          {\doifdefinedelse{\??cr#2:\recurselevel}
+             {\setevalue{\??cr#1:\recurselevel}%
+                {\getvalue{\??cr#2:\recurselevel}}}
+             {\exitloop}}}%
+   \fi}
+
+%D \macros
+%D   {showcolorgroup}
+%D   {}
+%D 
+%D We can show the group by:
+%D 
+%D \startbuffer
+%D \showcolorgroup [blauw] [horizontaal,naam,nummer,waarde]
+%D \stopbuffer
+%D 
+%D \typebuffer
+%D 
+%D or in color: 
+%D 
+%D \startregelcorrectie
+%D \haalbuffer
+%D \stopregelcorrectie
+%D
+%D which uses: 
+%D
+%D \showsetup{\y!showcolorgroup}
+
+\def\showcolorgroup%
+  {\dodoubleargument\doshowcolorgroup} 
+
+\def\doshowcolorgroup[#1][#2]%
+  {\doifdefined{\??cr#1:1}
+     {\doifinsetelse{\v!vertikaal}{#2}
+        {\showverticalcolorgroup[#1][#2]}
+        {\showhorizontalcolorgroup[#1][#2]}}}
+
+\def\showhorizontalcolorgroup[#1][#2]%
+  {\localvbox
+     {\offinterlineskip
+      \!!widtha=\hsize
+      \setuppalet
+      \!!counta=0
+      \dorecurse{15}
+        {\doifdefined{\??cr#1:\recurselevel}{\advance\!!counta by 1}}
+      \doifinsetelse{\v!naam}{#2}
+        {\!!widthb=5em}
+        {\!!widthb=\!!zeropoint}
+     \advance\!!widtha by -\!!widthb
+     \divide\!!widtha by \!!counta
+     \doifinset{\v!nummer}{#2}
+       {\hbox
+          {\hskip\!!widthb
+           \dorecurse{\!!counta}
+             {\hbox to \!!widtha{\hss\strut\recurselevel\hss}}}
+        \endgraf}
+     \hbox
+       {\ifdim\!!widthb>\!!zeropoint
+          \hbox to \!!widthb{\hss#1\hskip.75em}%
+        \fi
+        \dorecurse{\!!counta}
+          {\vbox
+             {\hsize\!!widtha
+              \color[#1:\recurselevel]
+                {\vrule\!!width\!!widtha\!!height\ht\strutbox}
+              \endgraf
+              \gray[#1:\recurselevel]
+                {\vrule\!!width\!!widtha\!!depth\dp\strutbox}}}}%
+     \endgraf
+     \doifinset{\v!waarde}{#2}
+       {\hbox
+          {\hskip\!!widthb
+           \dorecurse{\!!counta}
+             {\vbox
+                {\hsize\!!widtha
+                 \vskip.25ex
+                 \everypar{\strut}
+                 \veryraggedcenter
+                 \let\colorformatseparator=\endgraf
+                 \colorvalue{#1:\recurselevel}}}}}}}
+
+\def\showverticalcolorgroup[#1][#2]%
+  {\localvbox
+     {\offinterlineskip
+      \setuppalet
+      \def\rule%
+        {\vrule\!!width2.5em\!!height\ht\strutbox\!!depth\dp\strutbox}
+      \doifinsetelse{\v!nummer}{#2}
+        {\!!widthb=2em}
+        {\!!widthb=\!!zeropoint}
+      \doifinset{\v!naam}{#2}
+        {\hbox{\hskip\!!widthb\hbox to 5em{\hss\strut#1\hss}}
+         \endgraf}
+      \dorecurse{15}
+        {\doifdefined{\??cr#1:\recurselevel}
+           {\hbox
+              {\ifdim\!!widthb>\!!zeropoint
+                 \hbox to \!!widthb{\hss\recurselevel\hskip.75em}%
+               \fi
+               \color[#1:\recurselevel]{\rule}%
+               \gray[#1:\recurselevel]{\rule}%
+               \doifinset{\v!waarde}{#2}%
+                 {\hbox to 7em{\hskip.75em\colorvalue{#1:\recurselevel}\hss}}}
+            \endgraf}}}}
+
+%D There are ten predefined color groups, like
+%D \color[groen]{\em groen}, \color[rood]{\em rood},
+%D \color[blauw]{\em blauw}, \color[cyaan]{\em cyaan},
+%D \color[magenta]{\em magenta} and \color[geel]{\em geel}. 
+%D 
+%D \startregelcorrectie
+%D \hbox to \hsize
+%D   {\hss
+%D    \showcolorgroup [rood]    [vertikaal,naam,nummer]\hss
+%D    \showcolorgroup [groen]   [vertikaal,naam]\hss
+%D    \showcolorgroup [blauw]   [vertikaal,naam]\hss
+%D    \showcolorgroup [cyaan]   [vertikaal,naam]\hss
+%D    \showcolorgroup [magenta] [vertikaal,naam]\hss
+%D    \showcolorgroup [geel]    [vertikaal,naam]\hss}
+%D \stopregelcorrectie
+%D 
+%D These groups are used to define palets {\em alfa} upto {\em
+%D zeta}. As long as we don't use colors from the same row, we
+%D get ourselves distinctive palets. By activating such a palet
+%D one gains access to its members {\em top} to {\em charm} (of
+%D course one should use more suitable names than these). 
+%D 
+%D \startregelcorrectie
+%D \hbox to \hsize
+%D   {\showpalet [alfa]    [vertikaal,naam,nummer]\hss
+%D    \showpalet [beta]    [vertikaal,naam]\hss
+%D    \showpalet [gamma]   [vertikaal,naam]\hss
+%D    \showpalet [delta]   [vertikaal,naam]\hss
+%D    \showpalet [epsilon] [vertikaal,naam]\hss
+%D    \showpalet [zeta]    [vertikaal,naam]}
+%D \stopregelcorrectie
+%D  
+%D By using the keyword \type{\v!waarde} the individual color
+%D components are shown too. When printed in color, these
+%D showcases show both the colors and the gray value. 
+
+%D \macros
+%D   {comparepalet}
+%D   {}
+%D 
+%D There are some more testing macros available:
+%D 
+%D \startbuffer
+%D \comparepalet [alfa]
+%D \stopbuffer
+%D 
+%D \typebuffer
+%D 
+%D shows the palet colors against a background:
+%D 
+%D \startregelcorrectie
+%D \haalbuffer
+%D \stopregelcorrectie
+%D
+%D The formal definition is: 
+%D 
+%D \showsetup{\y!comparepalet}
+
+\def\comparepalet%
+  {\dosingleargument\docomparepalet}
+
+\def\docomparepalet[#1]%
+  {\doifdefined{\??pa#1}
+     {\hbox
+        {\dodocomparepalet\color[#1]%
+         \quad
+         \dodocomparepalet\gray[#1]}}}
+
+\def\dodocomparepalet#1[#2]%
+  {\localvbox
+     {\offinterlineskip
+      \setuppalet[#2]
+      \getcommacommandsize[\getvalue{\??pa#2}]
+      \!!widtha=2em\relax
+      \hsize=\commalistsize\!!widtha
+      \def\rule%
+        {\vrule\!!width.5\!!widtha\!!height2.25ex\!!depth-.75ex}
+      \def\dododocomparepalet##1%
+        {\hbox
+           {\setbox0=\hbox
+              {#1[##1]{\vrule\!!width\hsize\!!height3ex}}%
+            \wd0=\!!zeropoint\box0
+            \hbox to \hsize
+              {\def\dododocomparepalet####1%
+                 {\hbox to \!!widtha
+                    {\hss#1[####1]{\rule}\hss}}%
+               \processcommacommand[\getvalue{\??pa#2}]\dododocomparepalet}}
+         \endgraf}
+      \processcommacommand[\getvalue{\??pa#2}]\dododocomparepalet}}
+
+%D \macros
+%D   {comparecolorgroup}
+%D   {}
+%D
+%D The similar command: 
+%D
+%D \startbuffer
+%D \comparecolorgroup [blauw]
+%D \stopbuffer
+%D 
+%D \typebuffer
+%D 
+%D shows color groups:
+%D 
+%D \startregelcorrectie
+%D \haalbuffer
+%D \stopregelcorrectie
+%D
+%D this commands are defined as: 
+%D
+%D \showsetup{\y!comparecolorgroup}
+
+\def\comparecolorgroup%
+  {\dosingleargument\docomparecolorgroup}
+
+\def\docomparecolorgroup[#1]%
+  {\doifdefined{\??cr#1:1}
+     {\hbox
+        {\dodocomparecolorgroup\color[#1]%
+         \quad
+         \dodocomparecolorgroup\gray[#1]}}}
+
+\def\dodocomparecolorgroup#1[#2]%
+  {\localvbox
+     {\!!counta=0
+      \dorecurse{15}
+        {\doifdefined{\??cr#2:\recurselevel}{\advance\!!counta by 1}}
+      \!!widtha=2em\relax
+      \hsize=\!!counta\!!widtha
+      \def\rule%
+        {\vrule\!!width.5\!!widtha\!!height2.25ex\!!depth-.75ex}
+      \def\dododocomparecolorgroup##1%
+        {\hbox to \hsize
+           {\setbox0=\hbox
+              {#1[#2:##1]{\vrule\!!width\hsize\!!height3ex}}%
+            \wd0=\!!zeropoint\box0
+            \hbox to \hsize
+              {\hss\dorecurse{\!!counta}{#1[#2:\recurselevel]{\rule}\hss}}}
+         \endgraf}
+      \dorecurse{\!!counta}{\dododocomparecolorgroup\recurselevel}}}
+
+%D \macros 
+%D   {showcolor}
+%D   {}
+%D 
+%D But let's not forget that we also have the more traditional 
+%D non||related colors. These show up after: 
+%D 
+%D \starttypen
+%D \showcolor [name]
+%D \stoptypen
+%D 
+%D Where \type{name} for instance can be \type{rgb}. 
+%D
+%D \showsetup{\y!showcolor}
+
+\def\showcolor[#1]%
+  {\bgroup
+     \setupcolor[#1]
+     \stelwitruimtein[\v!geen]
+     \def\rule%
+       {\vrule\!!width4em\!!height\ht\strutbox\!!depth\dp\strutbox}
+     \def\docommand##1%
+       {\hbox 
+          {\gray[##1]{\rule}\quad
+           \color[##1]{\rule}\quad
+           \grayvalue{##1}\quad
+           \hbox to 12em{\colorvalue{##1}\hss}%
+           \strut##1}
+        \endgraf}
+     \processcommacommand[\colorlist]\docommand
+   \egroup}
+
+%D We default to the colors defined in \module{colo-rgb} and
+%D support both \kap{RGB} and \kap{CMYK} output. 
+
+\setupcolor
+  [\v!rgb]
+
+\setupcolors
+  [\c!status=\v!stop,
+   \c!conversie=\v!ja,
+   \c!rgb=\v!ja,
+   \c!cmyk=\v!ja]
+
+%D As we can see, color support is turned off by default. 
+%D Reduction of gray colors to gray scales is turned on. 
+
+\protect
+
+\endinput
+

@@ -1,0 +1,149 @@
+%D \module
+%D   [       file=syst-tex,
+%D        version=1995.10.10,
+%D          title=\CONTEXT\ System Macros,
+%D       subtitle=Efficient \PLAIN\ \TEX\ loading,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. Non||commercial use is 
+%C granted. 
+
+%D We've build \CONTEXT\ on top of \PLAIN\ \TEX. Because we 
+%D want to make the format file as independant as possible of 
+%D machine dependant font encodings, we have to bypass the 
+%D loading of fonts. 
+%D 
+%D Let's start at the beginning. Because \PLAIN\ is not yet
+%D loaded we have to define some \CATCODES\ ourselves. 
+
+\catcode`\{=1 % left brace is begin-group character
+\catcode`\}=2 % right brace is end-group character
+\catcode`\#=6 % hash mark is macro parameter character
+
+%D We are going to report to the user what we are skipping.
+
+\def\skipmessage#1{\immediate\write16{skipping #1 in plain}} 
+
+%D We want to be able to use the \type{\newsomething}
+%D declarations not only on the \type{\outer} level. This can
+%D be done by redefining \type{\outer} so we have to save its
+%D original meaning. 
+
+\let\normalouter = \outer       
+\let\outer       = \relax
+
+%D We also want to postpone the loading of hyphenation patters,
+%D so we redefine and therefore save \type{\input}. 
+
+\let\normalinput = \input  
+\def\input       #1 {\skipmessage{\string\input}}
+
+%D Finaly are going to we redefine some font specification 
+%D commands and that's why we save them too. The redefinitions
+%D are straightforward because the macros have to do nothing 
+%D but skipping.
+
+\let\normalskewchar         = \skewchar
+\def\skewchar               #1=#2 {\skipmessage{\string\skewchar}}
+
+\let\normaltextfont         = \textfont
+\let\normalscriptfont       = \scriptfont
+\let\normalscriptscriptfont = \scriptscriptfont
+
+\def\textfont               #1=#2{\skipmessage{\string\textfont}}
+\def\scriptfont             #1=#2{\skipmessage{\string\scriptfont}}
+\def\scriptscriptfont       #1=#2{\skipmessage{\string\scriptscriptfont}}
+
+%D The redefinition of \type{\font} is a bit more complicated, 
+%D because in version 3.14159 a scaled specification was 
+%D introduced. 
+
+\let\normalfont = \font
+
+\def\skipscaled scaled #1 {}
+
+\long\def\font#1=#2 #3%
+  {\ifx#3s%
+     \skipmessage{scaled \string\font}%
+     \let\next=\skipscaled
+   \else
+     \skipmessage{\string\font}%
+     \let\next=\relax
+   \fi
+   \next#3}
+
+%D Relaxing some font switching macros is needed because we 
+%D don't want any error messages during loading. These 
+%D unharmfull messages could be ingored. 
+%D
+%D The next substitution is needed for determining 
+%D \type{\p@renwd} in the macro \type{\bordermatrix}. 
+
+\def\tenex#1%
+  {\skipmessage{used \string\tenex}\hskip8.75002pt} 
+
+%D We need to define \type{\tenrm} for switching to 
+%D \type{\rm}. 
+
+\def\tenrm%
+  {\skipmessage{\string\tenrm}} 
+
+%D In \CONTEXT\ all \PLAIN\ \TEX\ fonts are available, just 
+%D like \type{\p@renwd}. We only postpone loading them until
+%D they are actually needed.
+
+%D By bypassing fonts, some definitions become less valid so 
+%D we have to redefine them afterwards. 
+%D 
+%D \starttypen
+%D \let\normalbordermatrix=\bordermatrix
+%D 
+%D \def\bordermatrix%
+%D   {\bgroup
+%D    \setbox0=\hbox{\getvalue{\textface\c!mm\c!ex}B}%
+%D    \global\p@renwd=\wd0\relax
+%D    \egroup
+%D    \normalbordermatrix}
+%D \stoptypen
+
+%D Now we are ready for loading \PLAIN\ \TEX. Of couse we use 
+%D \type{\normalinput} and not \type{\input}.
+
+\normalinput plain.tex
+
+%D We restore some redefined primitives to their old meaning. 
+
+\let\font             = \normalfont
+\let\skewchar         = \normalskewchar
+\let\textfont         = \normaltextfont
+\let\scriptfont       = \normalscriptfont
+\let\scriptscriptfont = \normalscriptscriptfont
+\let\input            = \normalinput
+\let\outer            = \normalouter
+
+%D We reset some of the used auxiliary macro's to 
+%D \type{\undefined}. One never knows what testing on them is
+%D done elsewhere. 
+
+\let\skipmessage            = \undefined
+\let\skipscaled             = \undefined
+\let\normalfont             = \undefined
+\let\normalskewchar         = \undefined
+\let\normaltextfont         = \undefined
+\let\normalscriptfont       = \undefined
+\let\normalscriptscriptfont = \undefined
+\let\normalinput            = \undefined
+\let\normalouter            = \undefined
+
+%D We want a bit more statistics and some less logging info 
+%D in the \type{log} file. 
+
+\def\wlog#1{} 
+
+\tracingstats=1
+
+\endinput
+

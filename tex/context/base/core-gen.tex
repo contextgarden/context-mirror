@@ -1,0 +1,179 @@
+%D \module
+%D   [       file=core-gen,
+%D        version=1995.10.10,
+%D          title=\CONTEXT\ Core Macros,
+%D       subtitle=General,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. Non||commercial use is 
+%C granted. 
+
+\writestatus{loading}{Context Core Macros / General}
+
+\unprotect
+
+%D \macros
+%D   {assigndimension,assignalfadimension}
+%D   {}
+%D
+%D Hieronder worden enkele commando's gedefinieerd rond
+%D toekenningen. Allereerst een commando om waarden aan
+%D een \DIMENSION\ toe te kennen:
+%D
+%D \starttypen
+%D \assigndimension
+%D   {<waarde>|klein|middel|groot|-klein|-middel|-groot|geen}
+%D   {\dimensie}
+%D   {waarde klein}
+%D   {waarde middel}
+%D   {waarde groot}
+%D \stoptypen
+%D
+%D Hierbij krijgt de \DIMENSION\ \type{\dimensie} een waarde 
+%D afhankelijk van het meegegeven trefwoord.
+%D
+%D \startsmaller
+%D \startregels
+%D \type{(-)klein }\qquad (--) waarde klein
+%D \type{(-)middel}\qquad (--) waarde middel
+%D \type{(-)groot }\qquad (--) waarde groot
+%D \type{geen     }\qquad 0pt
+%D \type{waarde   }\qquad waarde
+%D \stopregels
+%D \stopsmaller
+%D
+%D Een trefwoord mag worden voorafgegaan door een \type{-}.
+%D Deze macro toont een voorbeeld van het gebruik van
+%D \type{\processaction} en constanten.
+%D
+%D Analoog aan het bovenstaande commando kennen we een
+%D commando om waarden toe te kennen aan een macro:
+%D
+%D \starttypen
+%D \assignalfadimension
+%D   {<waarde>|klein|middel|groot|geen}
+%D   {\macro}
+%D   {waarde klein}
+%D   {waarde middel}
+%D   {waarde groot}
+%D \stoptypen
+
+\def\assigndimension#1#2#3#4#5%
+  {\processaction
+     [#1]
+     [   \v!klein=>#2=#3,
+        \v!middel=>#2=#4,
+         \v!groot=>#2=#5,
+          \v!geen=>#2=\!!zeropoint,
+        -\v!klein=>#2=-#3,
+       -\v!middel=>#2=-#4,
+        -\v!groot=>#2=-#5,
+       \s!unknown=>#2=#1]}
+
+\def\assignalfadimension#1#2#3#4#5%
+  {\processaction
+     [#1]
+     [   \v!klein=>\edef#2{#3},
+        \v!middel=>\edef#2{#4},
+         \v!groot=>\edef#2{#5},
+          \v!geen=>\edef#2{0},
+       \s!unknown=>\edef#2{#1}]}
+
+%D De onderstaande implementatie is veel sneller, maar
+%D tegelijkertijd ook veel lelijker. Omdat we deze macro
+%D relatief weinig aanroepen laten we deze optimalisatie maar
+%D achterwege. Bovendien kunnen oplossingen als deze de
+%D hash||table aardig uitputten (\type{\doifdefined}).
+%D
+%D \starttypen
+%D \edef\@@dimension{@@dim}
+%D \edef\@@negdimension{\@@dimension-}
+%D
+%D \def\assigndimension#1#2#3#4#5%
+%D   {\setvalue{\@@dimension\v!klein}{#3}%
+%D    \setvalue{\@@dimension\v!middel}{#4}%
+%D    \setvalue{\@@dimension\v!groot}{#5}%
+%D    \setvalue{\@@negdimension\v!klein}{-#3}%
+%D    \setvalue{\@@negdimension\v!middel}{-#4}%
+%D    \setvalue{\@@negdimension\v!groot}{-#5}%
+%D    \setvalue{\@@negdimension\v!geen}{\!!zeropoint}%
+%D    \doifdefinedelse{\@@dimension#1}
+%D      {#2=\getvalue{\@@dimension#1}}
+%D      {#2=#1}}
+%D \stoptypen
+
+%D \macros
+%D   {assignvalue}
+%D   {}
+%D
+%D Een variant hierop is het commando:
+%D
+%D \starttypen
+%D \assignvalue
+%D   {<waarde>|klein|middel|groot}
+%D   {\macro}
+%D   {waarde klein }
+%D   {waarde middel}
+%D   {waarde groot}
+%D \stoptypen
+%D
+%D Hierbij krijgt \type{\macro} een waarde afhankelijk van
+%D het meegegeven trefwoord:
+%D
+%D \startsmaller
+%D \startregels
+%D \type{klein }\qquad waarde klein
+%D \type{middel}\qquad waarde middel
+%D \type{groot }\qquad waarde groot
+%D \type{waarde}\qquad waarde
+%D \stopregels
+%D \stopsmaller
+%D
+%D Hier doet \type{geen} dus niet mee.
+
+\def\assignvalue#1#2#3#4#5%
+  {\processaction
+     [#1]
+     [   \v!klein=>\def#2{#3},
+        \v!middel=>\def#2{#4},
+         \v!groot=>\def#2{#5},
+     \s!unknown=>\def#2{#1}]}
+
+%D \macros
+%D   {assignwidth}
+%D   {}
+%D
+%D Een breedte van een opgegeven tekst kan worden berekend en
+%D toegekend aan een \DIMENSION\ met:
+%D
+%D \starttypen
+%D \assignwidth
+%D   {\dimensie}
+%D   {<waarde>|passend|ruim}
+%D   {tekst}
+%D \stoptypen
+%D
+%D Dit commando sluit, evenals de bovenstaande
+%D \type{\assign}||commando's, aan op de wijze waarop
+%D in de andere \CONTEXT||modules toekenningen
+%D plaatsvinden. Bij \type{ruim} wordt de gemeten breedte
+%D met 1~em vermeerderd.
+
+\def\assignwidth#1#2#3%
+  {\doifelse{#2}{}
+     {\setbox0=\hbox{#3}%
+      #1=\wd0}
+     {\doifinsetelse{#2}{\v!passend,\v!ruim}
+        {\setbox0=\hbox{#3}%
+         #1=\wd0
+         \doif{#2}{\v!ruim}
+           {\advance#1 by 1em}}%
+        {#1=#2}}}%
+
+\protect
+
+\endinput
+

@@ -1,0 +1,87 @@
+%D \module
+%D   [       file=lang-sla,
+%D        version=1997.09.03,
+%D          title=\CONTEXT\ Language Macros,
+%D       subtitle=Slavic Languages,
+%D         author=Hans Hagen / Tobias Burnus,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. Non||commercial use is
+%C granted.
+
+%  Belarussian, Russian, Ukrainian, Bulgarian, Macedonian, 
+%  Serbo-Croatian, Slovenian, Czech, Kushubian, 
+%  Lusatian/Sorbian/Wendish, Polish, Slovak, Albanian, 
+%  Illyrian, Armenian
+
+\writestatus{loading}{Slavic Languages}
+
+\unprotect
+
+\installlanguage
+  [\s!pl]
+  [\c!spatiering=\v!opelkaar,
+   \c!leftsentence=---,
+   \c!rightsentence=---,
+   \c!leftsubsentence=---,
+   \c!rightsubsentence=---,
+   \c!leftquote=\upperleftsinglesixquote,
+   \c!rightquote=\upperrightsingleninequote,
+   \c!leftquotation=\upperleftdoublesixquote,
+   \c!rightquotation=\upperrightdoubleninequote,
+   \c!datum={\v!jaar,\ ,\v!maand,\ ,\v!dag},
+   \c!default=\s!en,
+   \c!status=\v!start]
+
+\setupheadtext [\s!pl] [\v!inhoud=Spis rzeczy]
+\setupheadtext [\s!pl] [\v!tabellen=Tabele]
+\setupheadtext [\s!pl] [\v!figuren=Ilustracje]
+\setupheadtext [\s!pl] [\v!grafieken=Grafika]
+\setupheadtext [\s!pl] [\v!intermezzos=Intermezzi]
+\setupheadtext [\s!pl] [\v!index=Indeks]
+\setupheadtext [\s!pl] [\v!afkortingen=Skr\'ocenie]
+\setupheadtext [\s!pl] [\v!logos=Snaki]
+\setupheadtext [\s!pl] [\v!eenheden=Jednostki]
+
+\setuplabeltext [\s!pl] [\v!tabel=Tabela ]
+\setuplabeltext [\s!pl] [\v!figuur=Ilustracja ]
+\setuplabeltext [\s!pl] [\v!intermezzo=Intermezzo ]
+\setuplabeltext [\s!pl] [\v!grafiek=Grafika ]
+\setuplabeltext [\s!pl] [\v!hoofdstuk=]
+\setuplabeltext [\s!pl] [\v!paragraaf=]
+\setuplabeltext [\s!pl] [\v!sub\v!paragraaf=]
+\setuplabeltext [\s!pl] [\v!sub\v!sub\v!paragraaf=]
+\setuplabeltext [\s!pl] [\v!bijlage=]
+\setuplabeltext [\s!pl] [\v!deel=Ust\c{e}p] %%% NOTE: Below the e should be something which looks rather like |_ than like _| (\c{c}edile), suggestions?
+\setuplabeltext [\s!pl] [\v!regel=wiersz]
+\setuplabeltext [\s!pl] [\v!regels=wiersze]
+
+\setuplabeltext [\s!pl]   [\v!january=stycze\'n]
+\setuplabeltext [\s!pl]  [\v!february=luty]
+\setuplabeltext [\s!pl]     [\v!march=marzec]
+\setuplabeltext [\s!pl]     [\v!april=kwiecie\'n]
+\setuplabeltext [\s!pl]       [\v!may=maj]
+\setuplabeltext [\s!pl]      [\v!june=czerwcowy]
+\setuplabeltext [\s!pl]      [\v!july=lipiec]
+\setuplabeltext [\s!pl]    [\v!august=sierpie\'n]
+\setuplabeltext [\s!pl] [\v!september=wrzesie\'n]
+\setuplabeltext [\s!pl]   [\v!october=pa\'zdziernik]
+\setuplabeltext [\s!pl]  [\v!november=listopad]
+\setuplabeltext [\s!pl]  [\v!december=grudzie\'n]
+
+\setuplabeltext [\s!pl]    [\v!sunday=niedziela]
+\setuplabeltext [\s!pl]    [\v!monday=poniedzia\l ek]
+\setuplabeltext [\s!pl]   [\v!tuesday=wtorek]
+\setuplabeltext [\s!pl] [\v!wednesday=\'sroda]
+\setuplabeltext [\s!pl]  [\v!thursday=czwartek]
+\setuplabeltext [\s!pl]    [\v!friday=pi\c{a}tek] %%% NOTE: Below the a should be something which looks rather like |_ than like _| (\c{c}edile), suggestions?
+\setuplabeltext [\s!pl]  [\v!saturday=sobota]
+
+%D \ShowAllLanguageValues [\s!pl] [polish] poolse ...
+
+\protect
+
+\endinput
+

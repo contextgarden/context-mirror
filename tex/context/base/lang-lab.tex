@@ -1,0 +1,179 @@
+%D \module
+%D   [       file=lang-lab,
+%D        version=1997.08.27,
+%D          title=\CONTEXT\ Language Macros,
+%D       subtitle=Language Head and Label Texts,
+%D         author=Hans Hagen / Tobias Burnus,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. Non||commercial use is
+%C granted.
+
+\writestatus{loading}{Language Head and Label Texts}
+
+\unprotect
+
+%D In this module we deal with language dependant labels and
+%D prefixes, like in {\em Figure~12} and {\em Chapter 1}. In
+%D this file we set the default values. Users can easily
+%D overrule these.
+%D
+%D This module is dedicated to the grandfather of Tobias
+%D Burnus, who's extensive languages oriented library helped us
+%D a lot in finding the right translations. All those labels 
+%D are collected in files that reflect their common ancestor.
+
+%D \macros
+%D   {setupheadtext, setuplabeltext}
+%D
+%D First we present some macros that deal with what we will
+%D call head and label texts. Such texts are defines by:
+%D
+%D \showsetup{\y!setupheadtext}
+%D \showsetup{\y!setuplabeltext}
+%D
+%D In a few paragraphs we'll show quite a lot of examples
+%D of its use.
+
+\def\setupheadtext%
+  {\dosetupsometextprefix\v!kop}
+
+\def\setuplabeltext%
+  {\dosetupsometextprefix\c!label}
+
+\let\handletextprefix=\relax
+
+\def\dodosetupsometextprefix#1%
+  {\def\dododosetupsometextprefix[##1][##2]%
+     {\ifsecondargument
+        \def\docommando####1{\dodocommando[#1##1][####1]}%
+        \processcommalist[##2]\docommando
+      \else
+        \def\docommando####1{\dodocommando[#1\currentmainlanguage][####1]}%
+        \processcommalist[##1]\docommando
+      \fi}%
+   \dodoubleempty\dododosetupsometextprefix}
+
+\def\dosetupsometextprefix#1%
+  {\def\dodocommando[##1][##2=##3]%
+     {\setvalue{##1##2}{\handletextprefix{##3}}}%
+   \dodosetupsometextprefix{#1}}
+
+%D By setting \type{\handletextprefix} to something else than
+%D \type{\relax}, like \type{\uppercase}, one can influence the
+%D conversion.
+%D
+%D These commands accept all kind of inputs: 
+%D
+%D \starttypen
+%D \setuplabeltext [language] [label=text]
+%D \setuplabeltext [language] [label=text,label=text,...]
+%D \setuplabeltext            [label=text]
+%D \setuplabeltext            [label=text,label=text,...]
+%D \stoptypen
+%D 
+%D The last two cases concern the current language. 
+
+%D \macros
+%D   {headtext, labeltext, LABELTEXT}
+%D
+%D Once defined, head and label texts can be called upon using:
+%D
+%D \showsetup{\y!headtext}
+%D \showsetup{\y!labeltext}
+%D
+%D The latter one has an upcased alternative \type{\LABELTEXT}.
+
+\def\headtext%
+  {\dogetupsometextprefix\v!kop}
+
+\def\labeltext%
+  {\dogetupsometextprefix\c!label}
+
+\def\LABELTEXT#1%
+  {\bgroup
+   \let\handletextprefix=\uppercase
+   \the\everyuppercase
+   \dogetupsometextprefix\c!label{#1}% not \labeltext (see \MONTH)
+   \egroup}
+
+\unexpanded\def\dogetupsometextprefix#1#2%
+  {\doifdefinedelse{#1\currentmainlanguage#2}
+     {\getvalue{#1\currentmainlanguage#2}}
+     {\doifdefinedelse{#1#2}
+        {\getvalue{#1#2}}
+        {{\tttf[#1: #2/\currentmainlanguage]~}}}}
+
+%D \macros
+%D   {presetheadtext,presetlabeltext}
+%D
+%D The next two macros enable us to automatically define
+%D head and label texts without replacing predefined ones.
+%D This are internal macros.
+
+\def\dopresetsometextprefix#1%
+  {\def\dodocommando[##1][##2=##3]%
+     {\doifundefined{##1##2}
+        {\setvalue{##1##2}{\handletextprefix{##3}}}}%
+   \dodosetupsometextprefix{#1}}
+
+\def\presetheadtext%
+  {\dopresetsometextprefix\v!kop}
+
+\def\presetlabeltext%
+  {\dopresetsometextprefix\c!label}
+
+%D \macros
+%D   {translate}
+%D   {}
+%D
+%D Sometismes macros contain language specific words that are to
+%D be typeset. Such macros can be made (more) language
+%D independant by using:
+%D
+%D \showsetup{\y!translate}
+%D
+%D like for instance:
+%D
+%D \starttypen
+%D \translate[en=something,nl=iets]
+%D \stoptypen
+%D
+%D which expands to {\em something} or {\em iets}, depending on
+%D de current language.
+
+\def\dotranslate[#1]%
+  {\getparameters[\??lg][#1]%
+   \getvalue{\??lg\currentlanguage}}
+
+\unexpanded\def\translate%
+  {\dosingleempty\dotranslate}
+
+%D When used without argument, the last defined values are
+%D used. This enables repetitive use like
+%D
+%D \starttypen
+%D \en \translate\ means \nl \translate
+%D \stoptypen
+
+%D \macros
+%D   {assigntranslation}
+%D   {}
+%D
+%D This macro is a system macro, and can be used to assign a
+%D translation to a macro. Its form is:
+%D
+%D \starttypen
+%D \assigntranslation[en=something,nl=iets]\to\command
+%D \stoptypen
+
+\def\assigntranslation[#1]\to#2%
+  {\getparameters[\??lg][#1]%
+   \edef#2{\getvalue{\??lg\currentlanguage}}}
+
+\protect
+
+\endinput
+

@@ -1,0 +1,311 @@
+%D \module
+%D   [       file=core-vis,
+%D        version=1996.06.01,
+%D          title=\CONTEXT\ Core Macros,
+%D       subtitle=Visualization,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. Non||commercial use is 
+%C granted. 
+
+%D This module adds some more visualization cues to the ones 
+%D supplied in the support module. 
+%D 
+%D %\everypar   dual character, \the\everypar and \everypar=
+%D %\hrule      cannot be grabbed in advance, switches mode
+%D %\vrule      cannot be grabbed in advance, switches mode
+%D %
+%D %\indent     only explicit ones
+%D %\noindent   only explicit ones
+%D %\par        only explicit ones
+%D
+%D %\leftskip   only if explicit one
+%D %\rightskip  only if explicit one
+
+\writestatus{loading}{Context Support Macros / Visualization}
+
+\unprotect
+
+%D \macros
+%D   {indent, noindent,
+%D    leavevmode,
+%D    par}
+%D   {}
+%D 
+%D \TeX\ acts upon paragraphs. In mosts documents paragraphs 
+%D are separated by empty lines, which internally are handled as
+%D \type{\par}. Paragraphs can be indented or not, depending on
+%D the setting of \type{\parindent}, the first token of a 
+%D paragraph and/or user suppressed or forced indentation. 
+%D 
+%D Because the actual typesetting is based on both explicit
+%D user and implicit system actions, visualization is only
+%D possible for the user supplied \type{\indent},
+%D \type{\noindent}, \type{\leavevmode} and \type{\par}. Other
+%D 'clever' tricks will quite certainly lead to more failures
+%D than successes, so we only support these three explicit 
+%D primitives and one macro: 
+
+\let\normalnoindent   = \noindent
+\let\normalindent     = \indent
+\let\normalpar        = \par
+
+\let\normalleavevmode = \leavevmode
+
+\def\showparagraphcue#1#2#3#4#5%
+  {\bgroup
+   \scratchdimen#1\relax
+   \dontinterfere
+   \dontcomplain
+   \boxrulewidth=5\testrulewidth 
+   #3#4\relax
+   \setbox0=\normalhbox to \scratchdimen
+     {#2{\ruledhbox to \scratchdimen
+           {\vrule 
+              #5 20\testrulewidth 
+              \!!width \!!zeropoint
+            \normalhss}}}%
+   \smashbox0
+   \normalpenalty\!!tenthousand
+   \box0
+   \egroup}
+
+\def\ruledhanging%
+  {\ifdim\hangindent>\!!zeropoint\relax
+     \ifnum\hangafter<0
+       \normalhbox 
+         {\boxrulewidth=5\testrulewidth
+          \setbox0=\ruledhbox to \hangindent
+            {\scratchdimen=\ht\strutbox
+             \advance\scratchdimen by \dp\strutbox
+             \vrule
+               \!!width\!!zeropoint
+               \!!height\!!zeropoint
+               \!!depth-\hangafter\scratchdimen}%
+          \normalhskip-\hangindent
+          \smashbox0
+          \raise\ht\strutbox\box0}%
+     \fi
+   \fi}
+
+\def\ruledparagraphcues%
+  {\bgroup
+   \dontcomplain
+   \normalhbox to \!!zeropoint
+     {\ifdim\leftskip>\!!zeropoint\relax
+        \showparagraphcue\leftskip\llap\relax\relax\!!depth
+        \normalhskip-\leftskip
+      \fi
+      \ruledhanging
+      \normalhskip\hsize
+      \ifdim\rightskip>\!!zeropoint\relax
+        \normalhskip-\rightskip
+        \showparagraphcue\rightskip\relax\relax\relax\!!depth
+      \fi}%
+   \egroup}
+
+\def\ruledpar%
+  {\relax
+   \ifhmode 
+     \showparagraphcue{40\testrulewidth}\relax\rightrulefalse\relax\!!height 
+   \fi
+   \normalpar}
+
+\def\rulednoindent%  
+  {\relax
+   \normalnoindent
+   \ruledparagraphcues
+   \showparagraphcue{40\testrulewidth}\llap\leftrulefalse\relax\!!height}
+
+\def\ruledindent%  
+  {\relax 
+   \normalnoindent 
+   \ruledparagraphcues
+   \ifdim\parindent>\!!zeropoint\relax
+     \showparagraphcue\parindent\relax\relax\relax\!!height 
+   \else
+     \showparagraphcue{40\testrulewidth}\llap\relax\relax\!!height 
+   \fi
+   \normalhskip\parindent}
+
+\def\ruledleavevmode%
+  {\relax
+   \normalleavevmode
+   \ifdim\parindent>\!!zeropoint\relax
+     \normalhskip-\parindent
+     \ruledparagraphcues
+     \showparagraphcue\parindent\relax\leftrulefalse\rightrulefalse\!!height 
+     \normalhskip\parindent
+   \else
+     \ruledparagraphcues
+     \showparagraphcue{40\testrulewidth}\llap\leftrulefalse\rightrulefalse\!!height 
+   \fi}
+
+\def\dontshowimplicits%
+  {\let\noindent   = \normalnoindent  
+   \let\indent     = \normalindent    
+   \let\leavevmode = \normalleavevmode
+   \let\par        = \normalpar}
+
+\def\showimplicits%
+  {\testrulewidth  = \defaulttestrulewidth
+   \let\noindent   = \rulednoindent  
+   \let\indent     = \ruledindent    
+   \let\leavevmode = \ruledleavevmode
+   \let\par        = \ruledpar}
+
+%D The next few||line examples show the four cues. Keep in 
+%D mind that we only see them when we explicitly open or close
+%D a paragraph. 
+%D 
+%D \bgroup
+%D \def\voorbeeld#1%
+%D   {#1Visualizing some \TeX\ primitives and Plain \TeX\
+%D    macros can be very instructive, at least it is to me.
+%D    Here we see {\tt\string#1} and {\tt\string\ruledpar} in
+%D    action, while {\tt\string\parindent} equals
+%D    {\tt\the\parindent}.\ruledpar} 
+%D 
+%D \showimplicits
+%D 
+%D \voorbeeld \indent   
+%D \voorbeeld \noindent   
+%D \voorbeeld \leavevmode 
+%D 
+%D \parindent=60pt
+%D 
+%D \voorbeeld \indent     
+%D \voorbeeld \noindent   
+%D \voorbeeld \leavevmode 
+%D
+%D \startsmaller
+%D \voorbeeld \indent     
+%D \voorbeeld \noindent   
+%D \voorbeeld \leavevmode 
+%D \stopsmaller
+%D \egroup
+%D
+%D These examples also demonstrate the visualization of 
+%D \type{\leftskip} and \type{\rightskip}. 
+
+\newcounter\ruledbaselines
+
+\def\debuggertext#1%
+  {\ifx\ttxx\undefined
+     $\scriptscriptstyle#1$%
+   \else
+     {\ttxx#1}%
+   \fi}
+
+\def\ruledbaseline%
+  {\vrule \!!width \!!zeropoint
+   \bgroup
+   \dontinterfere
+   \doglobal\increment\ruledbaselines
+   \scratchdimen=3\baselineskip
+   \setbox\scratchbox=\normalvbox to 2\scratchdimen
+     {\leaders
+        \normalhbox
+          {\strut
+           \vrule
+             \!!height \testrulewidth
+             \!!depth \testrulewidth
+             \!!width 120pt}
+      \normalvfill}%
+   \smashbox\scratchbox
+   \advance\scratchdimen by \strutheightfactor\baselineskip
+   \setbox\scratchbox=\normalhbox
+     {\normalhskip -48pt
+      \normalhbox to 24pt
+        {\normalhss\debuggertext\ruledbaselines\normalhskip6pt}%
+      \raise\scratchdimen\box\scratchbox}%
+   \smashbox\scratchbox
+   \box\scratchbox
+   \egroup}
+
+\def\showbaselines%
+  {\testrulewidth=\defaulttestrulewidth
+   \EveryPar{\ruledbaseline}}
+
+%D {\em Not yet documented!}
+
+\def\makecutbox#1%
+  {\edef\ruledheight{\the\ht#1}%
+   \edef\ruleddepth {\the\dp#1}%
+   \edef\ruledwidth {\the\wd#1}%
+   \setbox\scratchbox=\normalvbox
+     {\dontcomplain
+      \offinterlineskip
+      \scratchdimen=12pt\relax
+      \def\verrule##1##2%
+        {\vrule
+           \!!width\boxrulewidth
+           \!!height##1\scratchdimen
+           \!!depth##2\scratchdimen}%
+      \def\horrule##1##2##3%
+        {\normalhskip##1\scratchdimen
+         \vrule
+           \!!height\boxrulewidth
+           \!!width##2\scratchdimen
+         \normalhskip##3\scratchdimen}%
+      \normalvskip-3\scratchdimen
+      \normalhbox to \ruledwidth
+        {\verrule{3}{-1}\normalhss\verrule{3}{-1}}%
+      \normalhbox to \ruledwidth
+        {\horrule{-3}{2}{1}\normalhss\horrule{1}{2}{-3}}%
+      \normalvskip-\boxrulewidth
+      \vskip\ruledheight
+      \ifdim\ruleddepth>\!!zeropoint\relax
+        \normalvskip-.5\boxrulewidth
+        \normalhbox to \ruledwidth
+          {\horrule{-2}{1}{1}\normalhss\horrule{1}{1}{-2}}%
+        \normalvskip-.5\boxrulewidth
+        \vskip\ruleddepth
+      \fi
+      \normalvskip-\boxrulewidth
+      \normalhbox to \ruledwidth
+        {\horrule{-3}{2}{1}\normalhss\horrule{1}{2}{-3}}%
+      \normalhbox to \ruledwidth
+        {\verrule{-1}{3}\normalhss\verrule{-1}{3}}}%
+   \dp\scratchbox=\ruleddepth      % This re-bounding is needed and 
+   \ht\scratchbox=\ruledheight     % surfaced while typesetting continuous 
+   \setbox\scratchbox=\normalhbox  % double culumns with pagecutmark 
+     {\lower\ruleddepth\box\scratchbox}%
+   \setbox#1=\ifhbox#1\normalhbox\else\normalvbox\fi
+     {\normalhbox
+        {\wd#1=\!!zeropoint 
+         \box#1\relax
+         \box\scratchbox}}%
+   \wd#1=\ruledwidth
+   \ht#1=\ruledheight
+   \dp#1=\ruleddepth}
+
+\def\cuthbox%
+  {\normalhbox\bgroup
+   \dowithnextbox{\makecutbox\nextbox\box\nextbox\egroup}%
+   \normalhbox}
+
+\def\cutvbox%
+  {\normalvbox\bgroup
+   \dowithnextbox{\makecutbox\nextbox\box\nextbox\egroup}%
+   \normalvbox}
+
+\def\cutvtop%
+  {\normalvtop\bgroup
+   \dowithnextbox{\makecutbox\nextbox\box\nextbox\egroup}%
+   \normalvtop}
+
+%
+% \cutvbox
+% \cutvtop
+% \cuthbox
+%
+% \cutvbox{\ruledvbox{hello\par world \par \strut ziezo}}
+
+\protect
+
+\endinput
+

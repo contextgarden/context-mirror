@@ -1,0 +1,95 @@
+%D \module
+%D   [       file=supp-new,
+%D        version=1997.01.03,
+%D          title=\CONTEXT\ Support Macros,
+%D       subtitle=New Ones,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. Non||commercial use is 
+%C granted. 
+
+\unprotect
+
+\def\DoMod #1by#2to#3%
+  {\scratchcounter=#1\relax
+   \divide\scratchcounter by #2\relax
+   \multiply\scratchcounter by #2\relax
+   #3=#1\relax
+   \advance#3 by -\scratchcounter}
+
+\def\DoDiv #1by#2to#3%
+  {#3=#1\relax
+   \divide#3 by #2\relax}
+
+\def\dounprotected#1\par%
+  {#1\protect}
+
+\def\unprotected%
+  {\unprotect\dounprotected}
+
+%D \pagina
+%D \starttypen
+%D \def\obeyhyphens% % after fontswitch
+%D   {\def\obeyedspace%
+%D      {\hyphenchar\font=45
+%D       \spaceskip.5em\!!plus.25em\!!minus.25em\relax%
+%D       \def\obeyedspace{ }}}
+%D \stoptypen
+
+%D Standaard kan een spatie (zoals ~) uitrekken. Dit is in
+%D overzichten niet altijd de bedoeling, vandaar:
+
+\def\fixedspace%
+  {\hskip\fontdimen2\font\relax}
+
+%\def\ExpandSecondAfter#1#2#3%
+%  {\!!toksa={#2}%
+%   \edef\!!stringa{#3}%
+%   \edef\expanded%
+%     {\noexpand#1{\the\!!toksa}{\!!stringa}}%
+%   \expanded}
+%
+%\def\ExpandThirdAfter#1#2#3#4%
+%  {\!!toksa={#2}%
+%   \!!toksb={#3}%
+%   \edef\!!stringa{#4}%
+%   \edef\expanded%
+%     {\noexpand#1{\the\!!toksa}{\the\!!toksb}{\!!stringa}}%
+%   \expanded}
+
+%\def\indirect#1#2#3%
+%  {\@EA#1\@EA#2\@EA{\@EA#3\csname\s!do\string#2\endcsname}%
+%   \@EA#1\csname\s!do\string#2\endcsname}
+%
+%\def\doubleemptied#1#2#3%
+%  {\indirect#1#2\dodoublempty}
+%
+%\indirect\def\stelietsin\dodoubleempty[#1][#2]%
+%  {...}
+%
+%\doubleemptied\def\stelietsin[#1][#2]%
+%  {...}
+
+% in mult-set
+%
+%\def\defaultsetup{def}
+%
+%\def\selectdefaultsetup#1#2%
+%  {\writestatus{setup}{choose #1 setupfile}%
+%   \bgroup
+%   \endlinechar=-1
+%   \global\read16 to \usersetup
+%   \egroup
+%   \ifx\usersetup\empty
+%     \let\usersetup=\defaultsetup
+%   \fi
+%   \readfile{#2\usersetup}{}{}%
+%   \writestatus{setup}{loading #1 setupfile #2\usersetup}}
+
+\protect
+
+\endinput
+

@@ -1,0 +1,41 @@
+%D \module
+%D   [     file=docs-ini,
+%D       versie=1995.10.10,
+%D         naam=\CONTEXT\ Document Macros (ini), 
+%D       auteur=J. Hagen,
+%D        datum=\currentdate,
+%D    copyright=J. Hagen]
+
+\writestatus{loading}{Context Document Macros (ini)}
+
+\unprotect
+
+%I n=Documenten
+%I c=\startdocument
+%I
+%I Ten behoeve van veel voorkomende soorten documenten
+%I zijn speciale commando's beschikbaar. Bij dergelijke
+%I documenten worden in plaats van de gebruikelijke
+%I commando's \starttekst..\stoptekst de onderstaande
+%I commando's gebruikt:
+%I
+%I   \startdocument[soort document]
+%I   \stopdocument
+%I
+%I Documenten worden gedefinieerd in files met de naam 
+%I docs-xxx, waarbij xxx de eerste drie letters van het 
+%I soort overzicht zijn. 
+%I 
+%I Vooralsnog zijn alleen 'brief', 'sheet', 'sticker' en 
+%I 'lijst' beschikbaar.
+
+\definieerfilegroep 
+  [document]  
+  [file=docs,
+   voor=\starttekst,
+   na=\stoptekst]
+
+\protect
+
+\endinput
+

@@ -1,0 +1,171 @@
+%D \module
+%D   [       file=supp-fun,
+%D        version=1995.10.10,
+%D          title=\CONTEXT\ Support Macros,
+%D       subtitle=Fun Stuff,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. Non||commercial use is 
+%C granted. 
+
+\unprotect
+
+%\dorecurse{10}
+%  {\horizontalpositionbar\pos\recurselevel\min1\max10\token\blokje\\}
+%
+%\hbox to 15em
+%  {\hss
+%   \dorecurse{10}
+%     {\verticalpositionbar\pos\recurselevel\min1\max10\token\blokje\\
+%      \hss}}
+
+\def\horizontalpositionbar\pos#1\min#2\max#3\token#4\\%
+  {\hbox to \hsize
+     {\hskip\!!zeropoint\!!plus #1\!!fill
+      \hskip\!!zeropoint\!!plus-#2\!!fill
+      #4\relax
+      \hskip\!!zeropoint\!!plus #3\!!fill
+      \hskip\!!zeropoint\!!plus-#1\!!fill}}
+
+\def\verticalpositionbar\pos#1\min#2\max#3\token#4\\%
+  {\vbox to \vsize
+     {\vskip\!!zeropoint\!!plus #1\!!fill
+      \vskip\!!zeropoint\!!plus-#2\!!fill
+      \hbox{#4}\relax
+      \vskip\!!zeropoint\!!plus #3\!!fill
+      \vskip\!!zeropoint\!!plus-#1\!!fill}}
+
+\def\horizontalgrowingbar\pos#1\min#2\max#3\height#4\depth#5\\%
+  {\hbox to \hsize
+     {\scratchcounter=#1\relax
+      \advance\scratchcounter by -#2\relax
+      \advance\scratchcounter by 1\relax
+      \leaders\vrule\hskip\!!zeropoint\!!plus \scratchcounter\!!fill
+      \vrule\!!width\!!zeropoint\!!height#4\!!depth#5\relax 
+      \hskip\!!zeropoint\!!plus #3\!!fill
+      \hskip\!!zeropoint\!!plus-#1\!!fill}}
+
+\def\verticalgrowingbar\pos#1\min#2\max#3\width#4\\%
+  {\vbox to \vsize
+     {\scratchcounter=#1\relax
+      \advance\scratchcounter by -#2\relax
+      \advance\scratchcounter by 1\relax
+      \leaders\hrule\vskip\!!zeropoint\!!plus\scratchcounter\!!fill
+      \hrule\!!width#4\!!height\!!zeropoint\!!depth\!!zeropoint
+      \vskip\!!zeropoint\!!plus #3\!!fill
+      \vskip\!!zeropoint\!!plus-#1\!!fill}}
+
+% \font\GROOT=cminch \GROOT
+%
+% \showmakeup
+% 
+% \def\dodoprocesstokens%
+%   {\ifx\next\lastcharacter
+%      \after
+%      \let\next=\relax
+%    \else
+%      \expandafter\if\normalspace\next
+%        \before{\white}%
+%      \else
+%        \before{\next}%
+%      \fi
+%      \let\before=\between
+%      \let\next=\doprocesstokens
+%    \fi
+%    \next}
+% 
+% \def\stapel#1%
+%   {\setbox0=\vbox
+%      {\processtokens
+%         {\leavevmode\hbox}
+%         {\endgraf\leavevmode\hbox}
+%         {\endgraf}
+%         {\relax}
+%         {#1}}%
+%    \vbox
+%      {\raggedcenter
+%       \hsize\wd0
+%       \lineskip=5pt
+%       \processtokens
+%         {\leavevmode\hbox}
+%         {\endgraf\leavevmode\hbox}
+%         {\endgraf}
+%         {\relax}
+%         {#1}}}
+% 
+% \stapel{NEWMAN 1}
+% 
+% \stelkleurenin[status=start]
+% 
+% \def\TreatFirstLine#1#2#3#4% before, after, first, next
+%   {\bgroup
+%    #1%
+%    \setbox0=\box\voidb@x
+%    \setbox2=\box\voidb@x
+%    \def\grabfirstline##1 %
+%      {\setbox2=\hbox{\ifvoid0 #3{##1}\else\unhcopy0\ #4{##1}\fi}%
+%       \ifdim\wd2>\hsize
+%         \hbox to \hsize{\unhbox0}#2##1\
+%         \egroup
+%       \else
+%         \setbox0=\box2    
+%         \expandafter\grabfirstline
+%       \fi}%
+%    \grabfirstline}
+%    
+% \TreatFirstLine {\bgroup\startkleur[rood]\sc}
+% {\stopkleur\egroup} {} {}Hello there are we once more hello
+% there are we once more hello there are we once more hello
+% there are we once more hello there are we once more hello
+% there are we once more hello there are we once more hello
+% there are we once more 
+% 
+% \def\DroppedCaps#1#2#3#4#5#6#7% command font height hoffset voffset lines
+%   {\setbox0=\hbox
+%      {\font\temp=#2 at #3%
+%       \temp#1{#7}\hskip#4}%
+%    \setbox0=\hbox 
+%      {\lower#5\box0}%
+%    \ht0=\ht\strutbox
+%    \dp0=\dp\strutbox
+%    \hangindent\wd0
+%    \hangafter-#6\noindent\hskip-\wd0\vbox{\box0\nobreak}}
+% 
+% \DroppedCaps {\kleur[groen]} {cmbx12} {2.2\baselineskip}
+% {2pt} {\baselineskip} {2} Hello there are we once more hello
+% there are we once more hello there are we once more hello
+% there are we once more hello there are we once more hello
+% there are we once more hello there are we once more hello
+% there are we once more 
+% 
+% \def\MyDroppedCaps%
+%   {\DroppedCaps 
+%      {\kleur[groen]} 
+%      {cmbx12} 
+%      {2.2\baselineskip}  
+%      {2pt} 
+%      {\baselineskip} 
+%      {2}}   
+% 
+% \MyDroppedCaps Hello there etc etc etc etc etc etc etc etc
+% etc etc etc etc etc etc etc etc etc etc etc etc 
+% etc etc etc etc etc etc etc etc etc etc etc etc 
+% etc etc etc etc etc etc etc etc etc etc etc etc 
+% 
+% 
+% \def\TreatFirstCharacter#1#2% command, char 
+%   {#1{#2}}
+% 
+% \TreatFirstCharacter {\kleur[groen]} Hello there are we once
+% more hello there are we once more hello there are we once
+% more hello there are we once more hello there are we once
+% more hello there are we once more hello there are we once
+% more hello there are we once more 
+
+\protect
+
+\endinput
+

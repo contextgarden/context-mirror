@@ -1,0 +1,2345 @@
+%D \module
+%D   [       file=syst-ext,
+%D        version=1995.10.10,
+%D          title=\CONTEXT\ System Macros,
+%D       subtitle=Extras,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. Non||commercial use is 
+%C granted. 
+
+\writestatus{loading}{Context System Macro's / Extras}
+
+%D In this second system module, we continue the definition of
+%D some handy commands.
+
+\unprotect
+
+%D \macros
+%D   {doglobal,
+%D    redoglobal,dodoglobal,resetglobal}
+%D
+%D The two macros \type{\redoglobal} and \type{\dodoglobal} are
+%D used in this and some other modules to enforce a user
+%D specified \type{\doglobal} action. The last and often only
+%D global assignment in a macro is done with
+%D \type{\dodoglobal}, but all preceding ones with
+%D \type{\redoglobal}. When using only alternatives, one can 
+%D reset this mechanism with \type{\resetglobal}. 
+
+\def\doglobal%
+  {\let\redoglobal=\global
+   \def\dodoglobal%
+     {\resetglobal\global}}
+
+\def\resetglobal%
+  {\let\redoglobal=\relax
+   \let\dodoglobal=\relax}
+
+\resetglobal
+
+%D \macros
+%D   {newcounter,
+%D    increment,decrement}
+%D   {}
+%D
+%D Unfortunately the number of \COUNTERS\ in \TEX\ is limited,
+%D but fortunately we can store numbers in a macro. We can
+%D increment such pseudo \COUNTERS\ with \type{\increment}.
+%D
+%D \starttypen
+%D \increment(\counter,20)
+%D \increment(\counter,-4)
+%D \increment(\counter)
+%D \increment\counter
+%D \stoptypen
+%D
+%D After this sequence of commands, the value of
+%D \type{\counter} is 20, 16, 17 and~18. Of course there is
+%D also the complementary command \type{\decrement}.
+%D
+%D Global assignments are possible too, using \type{\doglobal}:
+%D
+%D \starttypen
+%D \doglobal\increment\counter
+%D \stoptypen
+%D
+%D When \type{\counter} is undefined, it's value is initialized
+%D at~0. It is nevertheless better to define a \COUNTER\
+%D explicitly. One reason could be that the \COUNTER\ can be
+%D part of a test with \type{\ifnum} and this conditional does
+%D not accept undefined macro's. The \COUNTER\ in our example
+%D can for instance be defined with:
+%D
+%D \starttypen
+%D \newcounter\counter
+%D \stoptypen
+%D
+%D The command \type{\newcounter} must not be confused with
+%D \type{\newcount}! Of course this mechanism is much slower
+%D than using \TEX's \COUNTERS\ directly. In practice
+%D \COUNTERS\ (and therefore our pseudo counters too) are
+%D seldom the bottleneck in the processing of a text. Apart
+%D from some other incompatilities we want to mention a pitfal
+%D when using \type{\ifnum}.
+%D
+%D \starttypen
+%D \ifnum\normalcounter=\pseudocounter \doif \else \doelse \fi
+%D \ifnum\pseudocounter=\normalcounter \doif \else \doelse \fi
+%D \stoptypen
+%D
+%D In the first test, \TEX\ continues it's search for the
+%D second number after reading  \type{\pseudocounter}, while 
+%D in the second test, it stops reading after having
+%D encountered a real one. Tests like the first one therefore
+%D can give unexpected results, for instance execution
+%D of \type{\doif} even if both numbers are unequal.
+
+\def\newcounter#1%
+  {\dodoglobal\def#1{0}}
+
+\def\dodododoincrement(#1,#2)%
+  {\ifx#1\undefined
+     \def#1{0}%
+   \fi
+   \scratchcounter=#2\relax
+   \scratchcounter=\incrementsign\scratchcounter
+   \advance\scratchcounter by #1\relax
+   \dodoglobal\edef#1{\the\scratchcounter}}
+
+\def\dododoincrement#1%
+  {\dodododoincrement(#1,1)}
+
+\def\dodoincrement(#1%
+  {\doifnextcharelse{,}
+     {\dodododoincrement(#1}
+     {\dodododoincrement(#1,1}}
+
+\def\doincrement#1%
+  {\def\incrementsign{#1}%
+   \doifnextcharelse{(}
+     {\dodoincrement}
+     {\dododoincrement}}
+
+\def\increment%
+  {\doincrement+}
+
+\def\decrement%
+  {\doincrement-}
+
+%D \macros
+%D  {newsignal}
+%D
+%D When writing advanced macros, we cannot do without
+%D signaling. A signal is a small (invisible) kern or penalty
+%D that signals the next macro that something just happened.
+%D This macro can take any action depending onthe previous
+%D signal. Signals must be unique and the next macro takes care
+%D of that. 
+%D
+%D \starttypen
+%D \newsignal\somesignal
+%D \stoptypen
+%D
+%D Signals old dimensions and can be used in skips, kerns and 
+%D tests like \type{\ifdim}. 
+
+\newdimen\currentsignal
+
+\def\newsignal#1%
+  {\advance\currentsignal by 0.00025pt 
+   \edef#1{\the\currentsignal}}
+
+%D \macros
+%D   {newskimen}
+%D 
+%D \TEX\ offers 256 \DIMENSIONS\ and \SKIPS. Unfortunately this
+%D amount is too small to suit certain packages. Therfore when
+%D possible one should use 
+%D 
+%D \starttypen
+%D \newskimen\tempskimen
+%D \stoptypen
+%D 
+%D This commands allocates a \DIMENSION\ or a \SKIP, depending
+%D on the availability. One should be aware of the difference
+%D between both. When searching for some glue \TEX\ goes on
+%D searching till it's sure that no other glue component if
+%D found. This search can be canceled by using \type{\relax}
+%D when possible and needed. 
+
+\def\newskimen#1%
+  {\ifx#1\undefined
+     \ifnum\count11>\count12
+       \newskip#1\relax
+     \else
+       \newdimen#1\relax
+     \fi
+   \fi} 
+
+%D \macros
+%D   {strippedcsname}
+%D   {}
+%D
+%D The next macro can be very useful when using \type{\csname}
+%D like in: 
+%D
+%D \starttypen
+%D \csname if\strippedcsname\something\endcsname
+%D \stoptypen
+%D
+%D This expands to \type{\ifsomething}. 
+
+\def\strippedcsname%
+  {\expandafter\gobbleoneargument\string}
+
+%D \macros
+%D   {newconditional, 
+%D    settrue, setfalse, 
+%D    ifconditional}
+%D   {}
+%D 
+%D \TEX's lacks boolean variables, although the \PLAIN\ format 
+%D implements \type{\newif}. The main disadvantage of this 
+%D scheme is that it takes three hash table entries. A more 
+%D memory saving alternative is presented here. A conditional 
+%D is defined by: 
+%D 
+%D \starttypen
+%D \newconditional\doublesided
+%D \setfalse
+%D 
+%D Setting a conditional is done by \type{\settrue} and 
+%D \type{\setfalse}: 
+%D 
+%D \starttypen
+%D \settrue\doublesided
+%D \setfalse
+%D 
+%D while testing is accomplished by: 
+%D 
+%D \starttypen
+%D \ifconditional\doublesided  ... \else ... \fi
+%D \setfalse
+%D 
+%D We cannot use the simple scheme: 
+%D
+%D \starttypen
+%D \def\settrue#1{\let#1=\iftrue}
+%D \def\settrue#1{\let#1=\iffalse}
+%D \stoptypen
+%D
+%D Such an implementation gives problems with nested 
+%D conditionals. The next implementation is abaou as fast 
+%D and just as straightforward: 
+
+\def\settrue#1%  
+  {\chardef#1=0 }
+
+\def\setfalse#1%  
+  {\chardef#1=1 }
+
+\let\newconditional = \setfalse
+\let\ifconditional  = \ifcase
+
+%D \macros
+%D   {dorecurse,recurselevel,recursedepth
+%D    dostepwiserecurse,
+%D    for}
+%D   {}
+%D
+%D \TEX\ does not offer us powerfull for||loop mechanisms. On 
+%D the other hand its recursion engine is quite unique. We
+%D therefore identify the for||looping macros by this method.
+%D The most simple alternative is the one that only needs a
+%D number. 
+%D
+%D \starttypen
+%D \dorecurse {n} {whatever we want}
+%D \stoptypen
+%D
+%D This macro can be nested without problems and therefore be
+%D used in situations where \PLAIN\ \TEX's \type{\loop} macro
+%D ungracefully fails. The current value of the counter is
+%D available in \type{\recurselevel}, before as well as after
+%D the \typ{whatever we wat} stuff.
+%D
+%D \starttypen
+%D \dorecurse               % inner loop
+%D   {10}
+%D   {\recurselevel:          % outer value
+%D      \dorecurse          % inner loop
+%D        {\recurselevel}     % outer value
+%D        {\recurselevel}     % inner value
+%D      \dorecurse          % inner loop
+%D        {\recurselevel}     % outer value
+%D        {\recurselevel}     % inner value
+%D    \endgraf}
+%D \stoptypen
+%D
+%D In this example the first, second and fourth
+%D \type{\recurselevel} concern the outer loop, while the third
+%D and fifth one concern the inner loop. The depth of the
+%D nesting is available for inspection in \type{\recursedepth}.
+%D 
+%D Both \type{\recurselevel} and \type{\recursedepth} are 
+%D macros. The real \COUNTERS\ are hidden from the user because
+%D we don't want any interference. 
+
+\def\@@irecurse{@@irecurse}  % stepper
+\def\@@nrecurse{@@nrecurse}  % number of steps 
+\def\@@srecurse{@@srecurse}  % step 
+\def\@@drecurse{@@drecurse}  % direction, < or > 
+\def\@@arecurse{@@arecurse}  % action 
+
+\newcount\outerrecurse
+\newcount\innerrecurse
+
+\def\recursedepth%
+  {\the\outerrecurse}
+
+\long\def\dostepwiserecurse#1#2#3#4%
+  {\ifnum#2=0
+     \def\recurselevel{0}% 
+     \let\next=\relax
+   \else
+     \global\advance\outerrecurse by 1
+     \innerrecurse=#1\setevalue{\@@irecurse\recursedepth}{\the\innerrecurse}%
+     \innerrecurse=#2\setevalue{\@@nrecurse\recursedepth}{\the\innerrecurse}%
+     \innerrecurse=#3\setevalue{\@@srecurse\recursedepth}{\the\innerrecurse}%
+     \ifnum#3>0\relax\ifnum#2<#1\relax
+     \else
+       \setevalue{\@@drecurse\recursedepth}{>}%
+       \long\setvalue{\@@arecurse\recursedepth}{#4}%
+       \let\next=\dodorecurse
+     \fi\fi
+     \ifnum#3<0\relax\ifnum#1<#2\relax
+     \else
+       \setevalue{\@@drecurse\recursedepth}{<}%
+       \long\setvalue{\@@arecurse\recursedepth}{#4}%
+       \let\next=\dodorecurse
+     \fi\fi
+   \fi
+   \next}
+
+\def\donorecurse%
+  {}
+
+\def\dodonorecurse%
+  {\global\advance\outerrecurse by -1\relax}
+
+\def\dododorecurse%
+  {\edef\recurselevel{\getvalue{\@@irecurse\recursedepth}}%
+   \getvalue{\@@arecurse\recursedepth}%
+   \edef\recurselevel{\getvalue{\@@irecurse\recursedepth}}%
+   \innerrecurse=\recurselevel
+   \advance\innerrecurse  by \getvalue{\@@srecurse\recursedepth}\relax
+   \setevalue{\@@irecurse\recursedepth}{\the\innerrecurse}%
+   \dodorecurse}
+
+\def\dodorecurse%
+  {\ifnum\getvalue{\@@irecurse\recursedepth}
+         \getvalue{\@@drecurse\recursedepth}
+         \getvalue{\@@nrecurse\recursedepth}\relax
+     \expandafter\dodonorecurse
+   \else
+     \expandafter\dododorecurse
+   \fi}
+
+\def\dorecurse#1%
+  {\dostepwiserecurse{1}{#1}{1}}
+
+%D For those we like to offer visual beauty for efficiency we 
+%D say however:\voetnoot{In this kind of macro's we tend to 
+%D minimalize the overhead.}
+
+\def\dodorecurse%
+  {\ifnum\getvalue{\@@irecurse\recursedepth}
+         \getvalue{\@@drecurse\recursedepth}
+         \getvalue{\@@nrecurse\recursedepth}\relax
+     \global\advance\outerrecurse by -1
+   \else
+     \expandafter\dododorecurse
+   \fi}
+
+%D As we can see here, the simple command \type{\dorecurse} is
+%D a special case of the more general:
+%D
+%D \starttypen
+%D \dostepwiserecurse {from} {to} {step} {action}
+%D \stoptypen
+%D
+%D This commands accepts positive and negative steps. Illegal
+%D values are handles as good as possible and the macro accepts
+%D numbers and \COUNTERS.
+%D
+%D \starttypen
+%D \dostepwiserecurse  {1} {10}  {2} {...}
+%D \dostepwiserecurse {10}  {1} {-2} {...}
+%D \stoptypen
+%D
+%D The third alternative looks a bit different and uses a
+%D pseudo counter. When this macro is nested, we have to use
+%D different counters. This time we use keywords. 
+%D
+%D \starttypen
+%D \def\alfa{2} \def\beta{100} \def\gamma{3}
+%D
+%D \for \n=55    \to 100   \step  1      \do {... \n ...}
+%D \for \n=\alfa \to \beta \step  \gamma \do {... \n ...}
+%D \for \n=\n    \to 120   \step  1      \do {... \n ...}
+%D \for \n=120   \to 100   \step -3      \do {... \n ...}
+%D \for \n=55    \to 100   \step  2      \do {... \n ...}
+%D \stoptypen
+%D
+%D Only in the third example we need to predefine \type{\n}. 
+%D The use of \type{\od} as a dilimiter would have made nested
+%D use more problematic. 
+
+\def\for#1=#2\to#3\step#4\do#5%
+  {\dostepwiserecurse{#2}{#3}{#4}
+     {\edef#1{\recurselevel}%
+      #5%
+      \edef#1{\recurselevel}}}
+
+%D \macros
+%D   {doloop,exitloop}
+%D   {}
+%D
+%D Sometimes loops are not determined by counters, but by 
+%D (a combinations of) conditions. We therefore implement a 
+%D straightforward loop, which can only be left when we 
+%D explictly exit it. Nesting is supported. First we present 
+%D a more extensive alternative. 
+%D
+%D \starttypen
+%D \doloop
+%D   {Some kind of typesetting punishment \par
+%D    \ifnum\pageno>100 \exitloop \fi}
+%D \stoptypen
+%D 
+%D When needed, one can call for \type{\looplevel} and 
+%D \type{\loopdepth}.
+%D
+%D If we write this macros from scratch, we end up with 
+%D something like the ones described above: 
+%D 
+%D \starttypen
+%D \def\@@eloop{@@eloop}  % exit 
+%D \def\@@iloop{@@iloop}  % stepper
+%D \def\@@aloop{@@aloop}  % action
+%D 
+%D \newcount\outerloop
+%D 
+%D \def\loopdepth%
+%D   {\the\outerloop}
+%D 
+%D \def\exitloop%
+%D   {\setevalue{\@@eloop\loopdepth}{0}}
+%D 
+%D \long\def\doloop#1%
+%D   {\global\advance\outerloop by 1
+%D    \setevalue{\@@iloop\loopdepth}{1}%
+%D    \setevalue{\@@eloop\loopdepth}{1}%
+%D    \long\setvalue{\@@aloop\loopdepth}{#1}%
+%D    \dodoloop}
+%D 
+%D \def\dodonoloop%
+%D   {\global\advance\outerloop by -1\relax}
+%D 
+%D \def\dododoloop%
+%D   {\edef\looplevel{\getvalue{\@@iloop\loopdepth}}%
+%D    \innerrecurse=\looplevel
+%D    \advance\innerrecurse by 1
+%D    \setevalue{\@@iloop\loopdepth}{\the\innerrecurse}%
+%D    \getvalue{\@@aloop\loopdepth}%
+%D    \edef\looplevel{\getvalue{\@@iloop\loopdepth}}%
+%D    \dodoloop}
+%D 
+%D \def\dodoloop%
+%D   {\ifnum\getvalue{\@@eloop\loopdepth}=0
+%D      \expandafter\dodonoloop
+%D    \else
+%D      \expandafter\dododoloop
+%D    \fi}  
+%D 
+%D \def\doloop%
+%D   {\dostepwiserecurse{1}{\maxdimen}{1}}
+%D 
+%D \def\exitloop
+%D   {\setvalue{\@@irecurse\recursedepth}{\maxdimen}}
+%D 
+%D \def\looplevel{\recurselevel}
+%D \def\loopdepth{\recursedepth}
+%D \stoptypen
+%D
+%D We prefer however a more byte saving implementation, that 
+%D executes of course a bit slower. 
+
+\def\doloop%
+  {\dostepwiserecurse{1}{\maxdimen}{1}}
+
+\def\exitloop
+  {\setvalue{\@@irecurse\recursedepth}{\maxdimen}}
+
+%D We don't declare new counters for \type{\looplevel} and 
+%D \type{\loopdepth} because one can use \type{\recurselevel} 
+%D and \type{\recursedepth}. 
+%D
+%D The loop is executed at least once, so beware of situations
+%D like: 
+%D
+%D \starttypen
+%D \doloop {\exitloop some commands} 
+%D \stoptypen
+%D
+%D It's just a matter of putting the text into the \type{\if}
+%D statement that should be there anyway, like in: 
+%D
+%D \starttypen
+%D \doloop {\ifwhatever \exitloop \else some commands\fi} 
+%D \stoptypen
+
+%D \macros
+%D   {newevery,everyline,EveryLine,EveryPar}
+%D   {}
+%D
+%D Lets skip to something quite different. It's common use
+%D to use \type{\everypar} for special purposes. In \CONTEXT\
+%D we use this primitive for locating sidefloats. This means
+%D that when user assignments to \type{\everypar} can interfere
+%D with those of the package. We therefore introduce
+%D \type{\EveryPar}.
+%D
+%D The same goes for \type{\EveryLine}. Because \TEX\ offers
+%D no \type{\everyline} primitive, we have to call for
+%D \type{\everyline} when we are working on a line by line
+%D basis. Just by calling \type{\EveryPar{}} and
+%D \type{\EveryLine{}} we restore the old situation.
+%D
+%D The definition command \type{\DoWithEvery} will be quite 
+%D unreadable, so let's first show an implementation that 
+%D shows how things are done: 
+%D
+%D \starttypen 
+%D \newtoks \everyline
+%D \newtoks \oldeveryline
+%D \newif   \ifeveryline
+%D 
+%D \def\DoWithEvery#1#2#3#4%
+%D   {#3\else\edef\next{\noexpand#2={\the#1}}\next\fi
+%D    \edef\next{\noexpand#1={\the#2\the\scratchtoks}}\next
+%D    #4}
+%D 
+%D \def\doEveryLine%
+%D   {\DoWithEvery\everyline\oldeveryline\ifeveryline\everylinetrue}
+%D 
+%D \def\EveryLine%
+%D   {\afterassignment\doEveryLine\scratchtoks}
+%D
+%D The real implementation is a bit more complicated but we 
+%D prefer something more versatile. 
+
+\def\DoWithEvery#1%
+  {\csname if\strippedcsname#1\endcsname \else
+     \edef\next%
+       {\@EA\noexpand\csname old\strippedcsname#1\endcsname=
+          {\the#1}}%
+     \next
+   \fi
+   \edef\next%
+     {\noexpand#1=
+        {\@EA\the\csname old\strippedcsname#1\endcsname\the\scratchtoks}}%
+   \next
+   \csname\strippedcsname#1true\endcsname}
+
+\def\dowithevery#1%
+  {\@EA\afterassignment\csname do\strippedcsname#1\endcsname\scratchtoks}
+
+\def\newevery#1#2%
+  {\ifx#2\undefined
+     \ifx#1\undefined\newtoks#1\fi
+     \@EA\newtoks\csname old\strippedcsname#1\endcsname
+     \@EA\newif  \csname  if\strippedcsname#1\endcsname
+     \@EA\def    \csname  do\strippedcsname#2\endcsname{\DoWithEvery#1}%
+     \def#2{\dowithevery#2}%
+   \fi}
+
+%D This one permits definitions like: 
+
+\newevery \everypar  \EveryPar
+\newevery \everyline \EveryLine
+
+%D and how about: 
+
+\newevery \neverypar  \NeveryPar
+
+%D Which indeed we're going to use indeed!
+
+%D Technically spoken we could have used the method we are 
+%D going to present in the visual debugger. First we save 
+%D the primitive \type{\everypar}: 
+%D 
+%D \starttypen 
+%D \let\normaleverypar=\everypar
+%D \stoptypen
+%D
+%D Next we allocate a \TOKENLIST\ named \type{\everypar}, 
+%D which means that \type{\everypar} is no longer a primitive 
+%D but something like \type{\toks44}. 
+%D
+%D \starttypen 
+%D \newtoks\everypar
+%D \stoptypen
+%D
+%D Because \TEX\ now executes \type{\normaleverypar} instead 
+%D of \type{\everypar}, we are ready to assign some tokens to 
+%D this internally known and used \TOKENLIST.
+%D 
+%D \starttypen 
+%D \normaleverypar={all the things the system wants to do \the\everypar}
+%D \stoptypen
+%D 
+%D Where the user can provide his own tokens to be expanded 
+%D every time he expects them to expand. 
+%D 
+%D \starttypen 
+%D \everypar={something the user wants to do}
+%D \stoptypen
+%D 
+%D We don't use this method because it undoubtly leads to 
+%D confusing situations, especially when other packages are 
+%D used, but it's this kind of tricks that make \TEX\ so 
+%D powerful. 
+
+%D \macros
+%D   {convertargument,convertcommand}
+%D   {}
+%D
+%D Some persistent experimenting led us to the next macro. This
+%D macro converts a parameter or an expanded macro to it's
+%D textual meaning.
+%D
+%D \starttypen
+%D \convertargument ... \to \command
+%D \stoptypen
+%D
+%D For example,
+%D
+%D \starttypen
+%D \convertargument{one \two \three{four}}\to\ascii
+%D \stoptypen
+%D
+%D The resulting macro \type{\ascii} can be written to a file
+%D or the terminal without problems. In \CONTEXT\ we use this
+%D macro for generating registers and tables of contents.
+%D
+%D The second conversion alternative accepts a command:
+%D
+%D \starttypen
+%D \convertcommand\command\to\ascii
+%D \stoptypen
+%D
+%D Both commands accept the prefix \type{\doglobal} for global
+%D assignments.
+
+\def\doconvertargument#1>{}
+
+\def\convertedcommand%
+  {\expandafter\doconvertargument\meaning}
+
+\long\def\convertargument#1\to#2%
+  {\long\def\convertedargument{#1}%
+   \dodoglobal\edef#2%
+     {\convertedcommand\convertedargument}}
+
+\long\def\convertcommand#1\to#2%
+  {\dodoglobal\edef#2%
+     {\convertedcommand#1}}
+
+%D This is typically a macro that one comes to after reading
+%D the \TEX book carefully. Even then, the definite solution
+%D was found after rereading the \TEX book. The first
+%D implementation was:
+%D
+%D \starttypen
+%D \def\doconvertargument#1->#2\\\\{#2}
+%D \stoptypen
+%D
+%D The \type{-}, the delimiter \type{\\\\} and the the second 
+%D argument are completely redundant.
+
+%D \macros
+%D   {ExpandFirstAfter,ExpandSecondAfter,ExpandBothAfter}
+%D   {}
+%D
+%D These three commands support expansion of arguments before
+%D executing the commands that uses them. We can best
+%D illustrate this with an example.
+%D
+%D \starttypen
+%D \def\first  {alfa,beta,gamma}
+%D \def\second {alfa,epsilon,zeta}
+%D
+%D \ExpandFirstAfter  \doifcommon {\first} {alfa}    {\message{OK}}
+%D \ExpandSecondAfter \doifcommon {alfa}   {\second} {\message{OK}}
+%D \ExpandBothAfter   \doifcommon {\first} {\second} {\message{OK}}
+%D
+%D \ExpandFirstAfter\processcommalist[\first]\message
+%D
+%D \ExpandAfter       \doifcommon {\first} {alfa}    {\message{OK}}
+%D \stoptypen
+%D
+%D The first three calls result in the threefold message
+%D \type{OK}, the fourth one shows the three elements of 
+%D \type{\first}. The command \type{\ExpandFirstAfter} takes 
+%D care of (first) arguments that are delimited by \type{[ ]},
+%D but the faster \type{\ExpandAfter} does not.
+
+%D RECONSIDER
+
+\def\simpleExpandFirstAfter#1%
+  {\edef\!!stringa{#1}%
+   \@EA\ExpandCommand\@EA{\!!stringa}}
+
+\def\complexExpandFirstAfter[#1]%
+  {\edef\!!stringa{#1}%
+   \@EA\ExpandCommand\@EA[\!!stringa]}
+
+\def\ExpandFirstAfter#1%
+  {\def\ExpandCommand{#1}%
+   \complexorsimple{ExpandFirstAfter}}
+
+\def\ExpandSecondAfter#1#2#3%
+  {\def\!!stringa{#2}%
+   \edef\!!stringb{#3}%
+   \@EA#1\@EA{\@EA\!!stringa\@EA}\@EA{\!!stringb}}
+
+% \def\ExpandSecondAfter#1#2#3%
+%   {\toks0={#2}%
+%    \edef\!!stringa{#3}%
+%    \@EA\@EA\@EA#1\@EA\@EA\@EA{\@EA\the\@EA\toks0\@EA}\@EA{\!!stringa}}
+
+\def\ExpandBothAfter#1#2#3%
+  {\edef\!!stringa{#2}%
+   \edef\!!stringb{#3}%
+   \@EA\@EA\@EA#1\@EA\@EA\@EA{\@EA\!!stringa\@EA}\@EA{\!!stringb}}
+
+\def\ExpandAfter#1#2%
+  {\edef\!!stringa{#2}%
+   \@EA#1\@EA{\!!stringa}}
+
+%D Now we can for instance redefine \type{\ifinstringelse} as:
+
+\def\ifinstringelse%
+  {\ExpandBothAfter\v!ifinstringelse}
+
+%D \macros
+%D   {ConvertToConstant,ConvertConstantAfter}
+%D   {}
+%D
+%D When comparing arguments with a constant, we can get into
+%D trouble when this argument consists of tricky expandable
+%D commands. One solution for this is converting the
+%D argument to a string of unexpandable characters. To make
+%D comparison possible, we have to convert the constant too
+%D
+%D \starttypen
+%D \ConvertToConstant\doifelse {...} {...} {then ...} {else ...}
+%D \stoptypen
+%D
+%D This construction is only needed when the first argument
+%D can give troubles. Misuse can slow down processing.
+%D
+%D \starttypen
+%D \ConvertToConstant\doifelse{\c!alfa}        {\c!alfa}{...}{...}
+%D \ConvertToConstant\doifelse{alfa}           {\c!alfa}{...}{...}
+%D \ConvertToConstant\doifelse{alfa}           {alfa}   {...}{...}
+%D \ConvertToConstant\doifelse{alfa \alfa test}{\c!alfa}{...}{...}
+%D \stoptypen
+%D
+%D In examples~2 and~3 both arguments equal, in~1 and~4
+%D they differ.
+
+\def\ConvertToConstant#1#2#3%
+  {\expandafter\convertargument\expandafter{#2}\to\!!stringa
+   \expandafter\convertargument\expandafter{#3}\to\!!stringb
+   #1{\!!stringa}{\!!stringb}}
+
+%D When the argument \type{#1} consists of commands, we had
+%D better use
+%D
+%D \starttypen
+%D \ConvertConstantAfter\processaction[#1][...]
+%D \ConvertConstantAfter\doifelse{#1}{\v!iets}{}{}
+%D \stoptypen
+%D
+%D This commands accepts things like:
+%D
+%D \starttypen
+%D \v!constant
+%D constant
+%D \hbox to \hsize{\rubish}
+%D \stoptypen
+%D
+%D As we will see in the core moudles, this macro permits 
+%D constructions like:
+%D
+%D \starttypen
+%D \setupfoottexts[...][...]
+%D \setupfoottexts[margin][...][...]
+%D \setupfoottexts[\v!margin][...][...]
+%D \stoptypen
+%D
+%D where \type{...} can be anything legally \TEX.
+
+\def\CheckConstantAfter#1#2%
+  {\@EA\convertargument\v!prefix!\to\ascii
+   \convertargument#1\to#2\relax
+   \doifinstringelse{\ascii}{#2}
+     {\expandafter\convertargument#1\to#2}
+     {}}
+
+\def\simpleConvertConstantAfter#1#2%
+  {\CheckConstantAfter{#1}\asciiA
+   \CheckConstantAfter{#2}\asciiB
+   \ConvertCommand{\asciiA}{\asciiB}}
+
+\def\complexConvertConstantAfter[#1]%
+  {\doConvertConstantAfter{#1}%
+   \@EA\ConvertCommand\@EA[\!!stringa]}
+
+\def\ConvertConstantAfter#1%
+  {\def\ConvertCommand{#1}%
+   \complexorsimple{ConvertConstantAfter}}
+
+%D \macros
+%D   {assignifempty}
+%D   {}
+%D
+%D We can assign a default value to an empty macro using:
+%D
+%D \starttypen
+%D \assignifempty \macro {default value}
+%D \stoptypen
+%D
+%D We don't explicitly test if the macro is defined.
+
+\def\assignifempty#1#2%
+  {\doifnot{#1}{}
+     {\def#1{#2}}}
+
+%D \macros
+%D   {gobbleuntil,grabuntil,processbetween}
+%D   {}
+%D
+%D In \TEX\ gobbling usually stand for skipping arguments, so
+%D here are our gobbling macros.
+%D
+%D In \CONTEXT\ we use a lot of \type{\start}||\type{\stop}
+%D like constructions. Sometimes, the \type{\stop} is used as a
+%D hard coded delimiter like in:
+%D
+%D \starttypen
+%D \def\startcommand#1\stopcommand%
+%D   {... #1 ...}
+%D \stoptypen
+%D
+%D In many cases the \type{\start}||\type{\stop} pair is
+%D defined at format generation time or during a job. This
+%D means that we cannot hardcode the \type{\stop} criterium.
+%D Only after completely understanding \type{\csname} and
+%D \type{\expandafter} I was able to to implement a solution,
+%D starting with:
+%D
+%D \starttypen
+%D \grabuntil{stop}\command
+%D \stoptypen
+%D
+%D This commands executed, after having encountered
+%D \type{\stop} the command \type{\command}. This command
+%D receives as argument the text preceding the \type{\stop}.
+%D This means that:
+%D
+%D \starttypen
+%D \def\starthello%
+%D   {\grabuntil{stophello}\message}
+%D
+%D \starthello Hello world!\stophello
+%D \stoptypen
+%D
+%D results in: \type{\message{Hello world!}}.
+
+\def\dograbuntil#1#2%
+  {\long\def\next##1#1{#2{##1}}\next}
+
+\def\grabuntil#1%
+  {\expandafter\dograbuntil\expandafter{\csname#1\endcsname}}
+
+%D The next command build on this mechanism:
+%D
+%D \starttypen
+%D \processbetween{string}\command
+%D \stoptypen
+%D
+%D Here:
+%D
+%D \starttypen
+%D \processbetween{hello}\message
+%D \starthello Hello again!\stophello
+%D \stoptypen
+%D
+%D leads to: \type{\message{Hello again!}}. The command
+%D
+%D \starttypen
+%D \gobbleuntil\command
+%D \stoptypen
+%D
+%D is related to these commands. This one simply throws away
+%D everything preceding \type{\command}.
+
+\long\def\processbetween#1#2%
+  {\setvalue{\s!start#1}%
+     {\grabuntil{\s!stop#1}{#2}}}
+
+\def\gobbleuntil#1%
+  {\long\def\next##1#1{}\next}
+
+%D \macros
+%D   {groupedcommand}
+%D   {}
+%D
+%D Commands often manipulate argument as in:
+%D
+%D \starttypen
+%D \def\doezomaarwat#1{....#1....}
+%D \stoptypen
+%D
+%D A disadvantage of this approach is that the tokens that
+%D form \type{#1} are fixed the the moment the argument is read
+%D in. Normally this is no problem, but for instance verbatim
+%D environments adapt the \CATCODES\ of characters and therefore
+%D are not always happy with already fixed tokens.
+%D
+%D Another problem arises when the argument is grouped not by
+%D \type{{}} but by \type{\bgroup} and \type{\egroup}. Such an
+%D argument fails, because the \type{\bgroup} is een as the
+%D argument (which is quite normal).
+%D
+%D The next macro offers a solution for both unwanted
+%D situations:
+%D
+%D \starttypen
+%D \groupedcommand {before} {after}
+%D \stoptypen
+%D
+%D Which can be used like:
+%D
+%D \starttypen
+%D \def\cite%
+%D   {\groupedcommand{\rightquote\rightquote}{\leftquote\leftquote}}
+%D \stoptypen
+%D
+%D This command is equivalent to, but more 'robust' than:
+%D
+%D \starttypen
+%D \def\cite#1%
+%D   {\rightquote\rightquote#1\leftquote\leftquote}
+%D \stoptypen
+%D
+%D One should say that the next implementation would suffice:
+%D
+%D \starttypen
+%D \def\groupedcommand#1#2%
+%D   {\def\BeforeGroup{#1\ignorespaces}%
+%D    \def\AfterGroup{\unskip#2\egroup}%
+%D    \bgroup\bgroup
+%D    \aftergroup\AfterGroup
+%D    \afterassignment\BeforeGroup
+%D    \let\next=}
+%D \stoptypen
+%D
+%D It did indeed, but one day we decided to support the
+%D processing of boxes too:
+%D
+%D \starttypen
+%D \def\rightword%
+%D   {\groupedcommand{\hfill\hbox}{\parfillskip\!!zeropoint}}
+%D
+%D .......... \rightword{the right way}
+%D \stoptypen
+%D
+%D Here \TEX\ typesets \type{\bf the right way} unbreakable
+%D at the end of the line. The solution mentioned before does
+%D not work here.
+%D 
+%D \starttypen
+%D \long\unexpanded\def\groupedcommand#1#2%
+%D   {\bgroup
+%D    \long\def\BeforeGroup%
+%D      {\bgroup#1\bgroup\aftergroup\AfterGroup}%
+%D    \long\def\AfterGroup%
+%D      {#2\egroup\egroup}%
+%D    \afterassignment\BeforeGroup
+%D    \let\next=}
+%D \stoptypen
+%D 
+%D We used this method some time until the next alternative 
+%D was needed. From now on we support both 
+%D 
+%D \starttypen 
+%D to be \bold{bold} or not, that's the question
+%D \stoptypen
+%D 
+%D and 
+%D 
+%D \starttypen 
+%D to be {\bold bold} or not, that's the question
+%D \stoptypen
+%D 
+%D This alternative checks for a \type{\bgroup} token first.
+%D The internal alternative does not accept the box handling
+%D mentioned before, but further nesting works all right. The
+%D extra \type{\bgroup}||\type{\egroup} is needed to keep
+%D \type{\AfterGroup} both into sight and local. 
+
+\long\def\HandleGroup#1#2%
+  {\bgroup
+   \long\def\BeforeGroup%
+     {\bgroup#1\bgroup\aftergroup\AfterGroup}%
+   \long\def\AfterGroup%
+     {#2\egroup\egroup}%
+   \afterassignment\BeforeGroup
+   \let\next=}
+
+\long\def\HandleNoGroup#1#2%
+  {\long\def\AfterGroup{#2\egroup}%
+   \bgroup\aftergroup\AfterGroup#1}
+
+%D These macros come together in:
+%D
+%D \starttypen
+%D \long\unexpanded\def\groupedcommand#1#2%
+%D   {\def\dogroupedcommand%
+%D      {\ifx\next\bgroup
+%D         \let\next=\HandleGroup
+%D       \else
+%D         \let\next=\HandleNoGroup
+%D       \fi
+%D       \next{#1}{#2}}%
+%D    \futurelet\next\dogroupedcommand}
+%D \stoptypen
+%D 
+%D From the missing paragraph number one can deduce that the 
+%D last macro is not the real one yet. I considered it a 
+%D nuisance that 
+%D 
+%D \starttypen
+%D \kleur[groen] 
+%D   {as gras} 
+%D \stoptypen
+%D 
+%D was not interpreted as one would expect. This is due to the
+%D fact that \type{\futurelet} obeys blank spaces, and a
+%D line||ending token is treated as a blank space. So the final
+%D implementation became: 
+
+\long\unexpanded\def\groupedcommand#1#2%
+  {\bgroup
+   \def\dogroupedcommand%
+     {\ifx\next\bgroup
+        \def\\{\egroup\HandleGroup{#1}{#2}}%
+      \else\ifx\next\blankspace
+        \def\\ {\egroup\groupedcommand{#1}{#2}}% 
+      \else
+        \def\\{\egroup\HandleNoGroup{#1}{#2}}%
+      \fi\fi
+      \\}%
+   \futurelet\next\dogroupedcommand}
+
+%D Users should be aware of the fact that grouping can 
+%D interfere with ones paragraph settings that are executed 
+%D after the paragraph is closed. One should therefore 
+%D explictly close the paragraph with \type{\par}, else the 
+%D settings will be forgotten and not applied. So it's:
+%D
+%D \starttypen
+%D \def\BoldRaggedCenter%
+%D   {\groupedcommand{\raggedcenter\bf}{\par}}
+%D \stoptypen
+
+%D \macros
+%D   {checkdefined}
+%D   {}
+%D
+%D The bigger the system, the greater the change that
+%D user defined commands collide with those that are part of
+%D the system. The next macro gives a warning when a command is
+%D already defined. We considered blocking the definition, but
+%D this is not always what we want.
+%D
+%D \starttypen
+%D \checkdefined {category} {class} {command}
+%D \stoptypen
+%D
+%D The user is warned with the suggestion to use
+%D \type{CAPITALS}. This suggestion is feasible, because
+%D \CONTEXT only defines lowcased macros.
+
+\def\checkdefined#1#2#3% redefined in mult-ini
+  {\doifdefined{#3}
+     {\writestatus{#1}{#2 #3 replaces a macro, use CAPITALS!}}}
+
+%D \macros
+%D   {GotoPar,GetPar}
+%D   {}
+%D
+%D Typesetting a paragraph in a special way can be done by
+%D first grabbing the contents of the paragraph and processing
+%D this contents grouped. The next macro for instance typesets
+%D a paragraph in boldface.
+%D
+%D \starttypen
+%D \def\remark#1\par%
+%D   {\bgroup\bf#1\egroup}
+%D \stoptypen
+%D
+%D This macro has to be called like
+%D
+%D \starttypen
+%D \remark some text ... ending with \par
+%D \stoptypen
+%D
+%D Instead of \type{\par} we can of course use an empty line.
+%D When we started typesetting with \TEX, we already had
+%D produced lots of text in plain \ASCII. In producing such
+%D simple formatted texts, we adopted an open layout, and when
+%D switching to \TEX, we continued this open habit. Although
+%D \TEX\ permits a cramped and badly formatted source, it adds
+%D to confusion and sometimes introduces errors. So we prefer:
+%D
+%D \starttypen
+%D \remark
+%D
+%D some text ... ending with an empty line
+%D \stoptypen
+%D
+%D We are going to implement a mechanism that allows such open
+%D specifications. The definition of the macro handling
+%D \type{\remark} becomes:
+%D
+%D \starttypen
+%D \def\remark%
+%D   {\BeforePar{\bgroup\bf}%
+%D    \AfterPar{\egroup}%
+%D    \GetPar}
+%D \stoptypen
+%D
+%D A macro like \type{\GetPar} can be defined in several
+%D ways. The recent version, the fourth one in a row,
+%D originally was far more complicated, but some functionality
+%D has been moved to other macros.
+%D
+%D We start with the more simple but in some cases more
+%D appropriate alternative is \type{\GotoPar}. This one leaves
+%D \type{\par} unchanged and is therefore more robust. On the
+%D other hand, \type{\AfterPar} is not supported.
+
+\newtoks\BeforePar
+\newtoks\AfterPar
+
+\def\doGotoPar%
+  {\ifx\nextchar\blankspace
+     \let\donext=\GotoPar
+   \else\ifx\nextchar\endoflinetoken
+     \let\donext=\GotoPar
+   \else
+     \def\donext%
+       {\the\BeforePar
+        \BeforePar{}%
+        \nextchar}%
+   \fi\fi
+   \donext}
+
+\def\GotoPar%
+  {\afterassignment\doGotoPar\let\nextchar=}
+
+%D Its big brother \type{\GetPar} redefines the \type{\par}
+%D primitive, which can lead to unexpected results, depending
+%D in the context.
+
+\def\GetPar%
+  {\edef\next%
+     {\BeforePar
+        {\the\BeforePar
+         \BeforePar{}%
+         \bgroup
+         \def\par%
+           {\egroup
+            \par
+            \the\AfterPar
+            \BeforePar{}%
+            \AfterPar{}}}}%
+   \next
+   \GotoPar}
+
+%D \macros
+%D   {dowithpargument,dowithwargument}
+%D   {}
+%D
+%D The next macros are a variation on \type{\GetPar}. When
+%D macros expect an argument, it interprets a grouped sequence
+%D of characters a one token. While this adds to robustness and
+%D less ambiguous situations, we sometimes want to be a bit
+%D more flexible, or at least want to be a bit more tolerant
+%D to user input.
+%D
+%D We start with a commands that acts on paragraphs. This
+%D command is called as:
+%D
+%D \starttypen
+%D \dowithpargument\command
+%D \dowithpargument{\command ... }
+%D \stoptypen
+%D
+%D In \CONTEXT\ we use this one to read in the titles of
+%D chapters, sections etc. The commands responsible for these
+%D activities accept several alternative ways of argument
+%D passing. In these examples, the \type{\par} can be omitted
+%D when an empty line is present.
+%D
+%D \starttypen
+%D \command{...}
+%D \command ... \par
+%D \command
+%D   {...}
+%D \command
+%D   ... \par
+%D \stoptypen
+%D
+%D We show two implementations, of which for the moment the
+%D we prefier to use the second one:
+%D
+%D \starttypen
+%D \def\dowithpargument#1%
+%D   {\def\dodowithpargument%
+%D      {\ifx\next\bgroup
+%D         \def\next{#1}%
+%D       \else
+%D         \def\next####1 \par{#1{####1}}%
+%D       \fi
+%D       \next}%
+%D    \futurelet\next\dodowithpargument}
+%D \stoptypen
+%D
+%D A second and better implementation was:
+%D 
+%D \starttypen
+%D \def\dowithpargument#1%
+%D   {\def\nextpar##1 \par{#1{##1}}%
+%D    \def\nextarg##1{#1{##1}}%
+%D    \doifnextcharelse{\bgroup}
+%D      {\nextarg}
+%D      {\nextpar}}
+%D \stoptypen
+%D 
+%D We ended up with an alternative that also accepts en empty 
+%D argument. This command permits for instance chapters to 
+%D have no title. 
+
+\def\dowithpargument#1%
+  {\def\nextpar##1 \par{#1{##1}}%
+   \def\nextarg##1{#1{##1}}%
+   \doifnextcharelse{\bgroup}
+     {\nextarg}
+     {\doifnextcharelse{\par}
+        {#1{}}
+        {\nextpar}}}
+
+%D The \type{p} in the previous command stands for paragraph.
+%D When we want to act upon words we can use the \type{w}
+%D alternative.
+%D
+%D \starttypen
+%D \dowithwargument\command
+%D \dowithwargument{... \command ...}
+%D \stoptypen
+%D
+%D The main difference bwteen two alternatives is in the
+%D handling of \type{\par}'s. This time the space token acts
+%D as a delimiter.
+%D
+%D \starttypen
+%D \command{...}
+%D \command ...
+%D \command
+%D   {...}
+%D \command
+%D   ...
+%D \stoptypen
+%D
+%D Again there are two implementations possible:
+%D
+%D \starttypen
+%D \def\dowithwargument#1%
+%D   {\def\dodowithwargument%
+%D      {\ifx\next\bgroup
+%D         \def\next{#1}%
+%D       \else
+%D         \def\next####1 {#1{####1}}%
+%D       \fi
+%D       \next}%
+%D    \futurelet\next\dodowithwargument}
+%D \stoptypen
+%D
+%D We've chosen:
+
+\def\dowithwargument#1%
+  {\def\nextwar##1 {#1{##1}}%
+   \def\nextarg##1{#1{##1}}%
+   \doifnextcharelse{\bgroup}
+     {\nextarg}
+     {\nextwar}}
+
+%D \macros
+%D   {dorepeat,dorepeatwithcommand}
+%D   {}
+%D
+%D When doing repetitive tasks, we stromgly advice to use
+%D \type{\dorecurse}. The next alternative however, suits
+%D better some of the \CONTEXT\ interface commands.
+%D
+%D \starttypen
+%D \dorepeat[n*\command]
+%D \stoptypen
+%D
+%D The value of the used \COUNTER\ can be called within
+%D \type{\command} by \type{\repeater}.
+%D
+%D A slightly different alternative is:
+%D
+%D \starttypen
+%D \dorepeatwithcommand[n*{...}]\command
+%D \stoptypen
+%D
+%D When we call for something like:
+%D
+%D \starttypen
+%D \dorepeatwithcommand[3*{Hello}]\message
+%D \stoptypen
+%D
+%D we get ourselves three \type{\message{Hello}} messages in
+%D a row. In both commands, the \type{n*} is optional. When this
+%D specification is missing, the command executes once.
+
+\long\def\dodorepeat[#1*#2*#3*]%
+  {\doifelse{#3}{}
+     {#1}
+     {\dorecurse{#1}{#2}}}
+
+\long\def\dorepeat[#1]%
+  {\dodorepeat[#1***]}
+
+\def\repeater%
+  {\recurselevel}
+
+\def\dorepeatwithcommand[#1]#2%
+  {\def\p!dorepeatnot%
+     {#2{#1}}%
+   \def\p!dorepeatyes[##1*##2]%
+     {\dorecurse{##1}{#2{##2}}}%
+   \doifinstringelse{*}{#1}
+     {\doifnumberelse{#1}{\p!dorepeatyes[#1]}{\p!dorepeatnot}}%
+     {\p!dorepeatnot}}
+
+%D \macros
+%D   {appendtoks,prependtoks,flushtoks,dotoks}
+%D   {}
+%D
+%D We use \TOKENLISTS\ sparsely within \CONTEXT, because the
+%D comma separated lists are more suitable for the user
+%D interface. Nevertheless we have:
+%D
+%D \starttypen
+%D (\doglobal) \appendtoks ... \to\tokenlist
+%D (\doglobal) \prependtoks ... \to\tokenlist
+%D (\doglobal) \flushtoks\tokenlist
+%D             \dotoks\tokenlist
+%D \stoptypen
+%D
+%D Er worden eerst enkele klad||registers gedefinieerd. These
+%D macros are clones of the ones implemented in page~378 of
+%D Knuth's \TeX book.
+
+\def\appendtoks#1\to#2%
+  {\scratchtoks={#1}%
+   \edef\next{\noexpand#2={\the#2\the\scratchtoks}}%
+   \next
+   \doglobal#2=#2} 
+
+\def\prependtoks#1\to#2%
+  {\scratchtoks={#1}%
+   \edef\next{\noexpand#2={\the\scratchtoks\the#2}}%
+   \next
+   \doglobal#2=#2} 
+
+\def\flushtoks#1%
+  {\scratchtoks=#1\relax
+   \doglobal#1={}% 
+   \the\scratchtoks\relax}
+
+\let\dotoks=\the
+
+%D \macros
+%D   {makecounter,pluscounter,minuscounter,
+%D    resetcounter,setcounter,countervalue}
+%D   {}
+%D
+%D Declaring, setting and resetting \COUNTERS\ can be doen
+%D with the next set of commands.
+%D
+%D \starttypen
+%D \makecounter   {name}
+%D \pluscounter   {name}
+%D \minuscounter  {name}
+%D \resetcounter  {name}
+%D \setcounter    {name} {value}
+%D \countervalue  {name}
+%D \stoptypen
+%D
+%D We prefer the use of global counters. This means that we
+%D have to load \PLAIN\ \TEX\ in a bit different way:
+%D
+%D \starttypen
+%D \let\oldouter=\outer
+%D \let\outer=\relax
+%D \input plain.tex
+%D \let\outer=\oldouter
+%D
+%D \def\newcount%
+%D   {\alloc@0\count\countdef\insc@unt}
+%D \stoptypen
+%D
+%D First we show a solution in which we use real \COUNTERS.
+%D Apart from some expansion, nothing special is done.
+%D
+%D \starttypen
+%D \def\makecounter#1%
+%D   {\expandafter\newcount\csname#1\endcsname}
+%D
+%D \def\pluscounter#1%
+%D   {\expandafter\global\expandafter\advance\csname#1\endcsname by 1 }
+%D
+%D \def\minuscounter#1%
+%D   {\expandafter\global\expandafter\advance\csname#1\endcsname by -1 }
+%D
+%D \def\resetcounter#1%
+%D   {\expandafter\global\csname#1\endcsname=0 }
+%D
+%D \def\setcounter#1#2%
+%D   {\expandafter\global\csname#1\endcsname=#2 }
+%D
+%D \def\countervalue#1%
+%D   {\the\getvalue{#1}}
+%D \stoptypen
+%D
+%D Because these macros are already an indirect way of working
+%D with counters, there is no harm in using pseudo \COUNTERS\
+%D here:
+
+\def\makecounter#1%
+  {\setxvalue{#1}{0}}
+
+\def\pluscounter#1%
+  {\scratchcounter=\getvalue{#1}\relax
+   \advance\scratchcounter by 1\relax
+   \setxvalue{#1}{\the\scratchcounter}}
+
+\def\minuscounter#1%
+  {\scratchcounter=\getvalue{#1}\relax
+   \advance\scratchcounter by -1\relax
+   \setxvalue{#1}{\the\scratchcounter}}
+
+\def\resetcounter#1%
+  {\setxvalue{#1}{0}}
+
+\def\setcounter#1#2%
+  {\scratchcounter=#2\relax
+   \setxvalue{#1}{\the\scratchcounter}}
+
+\def\countervalue#1%
+  {\getvalue{#1}}
+
+%D \macros
+%D   {savecounter,restorecounter}
+%D 
+%D These two commands can be used to save and restore counter 
+%D values. Only one level is saved. 
+
+\def\savecounter#1%
+  {\expanded{\setgvalue{!#1}{\getvalue{#1}}}}
+
+\def\restorecounter#1%
+  {\expanded{\setgvalue{#1}{\getvalue{!#1}}}}
+
+%D \macros
+%D   {beforesplitstring,aftersplitstring}
+%D   {}
+%D
+%D These both commands split a string at a given point in two
+%D parts, so \type{x.y} becomes \type{x} or \type{y}.
+%D
+%D \starttypen
+%D \beforesplitstring test.tex\at.\to\filename
+%D \aftersplitstring  test.tex\at.\to\extension
+%D \stoptypen
+%D
+%D The first routine looks (and is indeed) a bit simpler than
+%D the second one. The alternative looking more or less like
+%D the first one did not always give the results we needed.
+%D Both implementations show some insight in the manipulation
+%D of arguments.
+
+\def\beforesplitstring#1\at#2\to#3%
+  {\def\dosplitstring##1#2##2#2##3\\%
+     {\def#3{##1}}%
+   \@EA\dosplitstring#1#2#2\\}
+
+\def\aftersplitstring#1\at#2\to#3%
+  {\def\dosplitstring##1#2##2@@@##3\\%
+     {\def#3{##2}}%
+   \@EA\dosplitstring#1@@@#2@@@\\}
+
+%D \macros
+%D   {removesubstring}
+%D   {}
+%D
+%D A first application of the two routines defined above is:
+%D
+%D \starttypen
+%D \removesubstringtest-\from first-last\to\nothyphenated
+%D \stoptypen
+%D 
+%D Which in terms of \TEX\ looks like: 
+
+\def\removesubstring#1\from#2\to#3%
+  {\doifinstringelse{#1}{#2}
+     {\beforesplitstring#2\at#1\to\!!stringa
+      \aftersplitstring #2\at#1\to\!!stringb
+      \edef#3{\!!stringa\!!stringb}%
+      \def\next{\removesubstring#1\from#3\to#3}}
+     {\let\next=\relax}%
+   \next}
+
+%D \macros
+%D   {addtocommalist,removefromcommalist}
+%D   {}
+%D
+%D When working with comma separated lists, oen sooner or
+%D later want the tools to append or remove items from such a
+%D list. When we add an item, we first check if it's already
+%D there. This means that every item in the list is unique.
+%D
+%D \starttypen
+%D \addtocommalist      {alfa}  \naam
+%D \addtocommalist      {beta}  \naam
+%D \addtocommalist      {gamma} \naam
+%D \removefromcommalist {beta}  \naam
+%D \stoptypen
+%D
+%D These commands can be prefixed with \type{\doglobal}. The
+%D implementation of the second command is more complecated,
+%D because we have to take leading spaces into account. Keep in
+%D mind that useres may provide lists with spaces after the
+%D commas. When one item is left, we also have to get rid of
+%D trailing spaces.
+%D
+%D \starttypen
+%D \def\words{alfa, beta, gamma, delta}
+%D \def\words{alfa,beta,gamma,delta}
+%D \stoptypen
+%D
+%D Removing an item takes more time than adding one.
+
+\def\addtocommalist#1#2%
+  {\doifelse{#2}{}
+     {\dodoglobal\edef#2{#1}}
+     {\edef\!!stringa{#2,,}%
+      \beforesplitstring#2\at,,\to#2\relax
+      \ExpandBothAfter\doifnotinset{#1}{#2}
+        {\dodoglobal\edef#2{#2,#1}}}}
+
+\def\doremovefromcommalist#1#2#3%
+  {\edef\!!stringa{,,#3,,}%
+   \beforesplitstring\!!stringa\at,#1#2,\to\!!stringb
+   \aftersplitstring\!!stringa\at,#1#2,\to\!!stringc
+   \edef#3{\!!stringb,\!!stringc}%
+   \aftersplitstring#3\at,,\to#3\relax
+   \beforesplitstring#3\at,,\to#3}
+
+\def\dodofrontstrip[#1#2]#3%
+  {\ifx#1\space
+     \def#3{#2}%
+   \else
+     \def#3{#1#2}%
+   \fi}%
+
+\def\dofrontstrip#1%
+  {\edef\!!stringa{#1}%
+   \ifx\!!stringa\empty
+   \else
+     \@EA\dodofrontstrip\@EA[#1]#1%
+   \fi}
+
+\def\removefromcommalist#1#2%
+  {\doremovefromcommalist{ }{#1}{#2}%
+   \doremovefromcommalist{}{#1}{#2}%
+   \dofrontstrip#2%
+   \dodoglobal\edef#2{#2}}
+
+%D \macros
+%D   {withoutunit,withoutpt,
+%D    PtToCm,
+%D    numberofpoints,dimensiontocount}
+%D   {}
+%D
+%D We can convert point into centimeters with:
+%D
+%D \starttypen
+%D \PtToCm{dimension}
+%D \stoptypen
+%D
+%D Splitting the value and the unit is done by:
+
+\def\withoutunit#1#2%
+  {\bgroup
+   \dimen0=#1\relax
+   \@EA\convertargument\the\dimen0\to\asciiA
+   \@EA\convertargument#2\to\asciiB
+   \@EA\@EA\@EA\beforesplitstring\@EA\asciiA\@EA\at\asciiB\to\!!stringa%
+   \!!stringa
+   \egroup}
+
+\def\withoutpt#1%
+  {\withoutunit{#1}{pt}}
+
+\def\withoutcm#1%
+  {\withoutunit{#1}{cm}}
+
+%D A bit faster alternative is one that manipulates the
+%D \CATCODES.
+
+{\catcode`\.=\@@other
+ \catcode`\p=\@@other
+ \catcode`\t=\@@other
+ \gdef\WITHOUTPT#1pt{#1}}
+
+\def\withoutpt#1%
+  {\expandafter\WITHOUTPT#1}
+
+%D The capitals are needed because \type{p} and \type{t} have
+%D \CATCODE~12, while macronames only permit tokens with the
+%D \CATCODE~11. As a result we cannot use the \type{.group}
+%D primitives. Those who want to know more about this kind of
+%D manipulations, we advice to study the \TEX book in detail.
+%D Because this macro does not do any assignment, we can use it
+%D in the following way too.
+
+\def\PtToCm#1%
+  {\bgroup
+   \scratchdimen=#1\relax
+   \scratchdimen=0.0351459804\scratchdimen % 2.54/72.27
+   \withoutpt{\the\scratchdimen}cm%
+   \egroup}
+
+%D We also support:
+%D
+%D \starttypen
+%D \numberofpoints   {dimension}
+%D \dimensiontocount {dimension} {\count}
+%D \stoptypen
+%D
+%D Both macros return a rounded number.
+
+\def\numberofpoints#1%
+  {\scratchdimen=#1\relax
+   \advance\scratchdimen by .5pt\relax
+   \withoutpt{\the\scratchdimen}}
+
+\def\dimensiontocount#1#2%
+  {\scratchdimen=#1\relax
+   \advance\scratchdimen by .5pt\relax
+   #2=\scratchdimen
+   \divide#2 by \!!maxcard\relax}
+
+%D \macros
+%D   {swapdimens,swapmacros}
+%D   {}
+%D
+%D Simple but effective are the next two macros. There name
+%D exactly states their purpose. The \type{\scratchdimen} and
+%D \type{\!!stringa} can only be swapped when being the first
+%D argument.
+
+\def\swapdimens#1#2%
+  {\scratchdimen=#1\relax
+   #1=#2\relax
+   #2=\scratchdimen}
+
+\def\swapmacros#1#2%
+  {\let\!!stringa=#1\relax
+   \let#1=#2\relax
+   \let#2=\!!stringa\relax}
+
+%D \macros
+%D   {setlocalhsize}
+%D   {}
+%D
+%D Sometimes we need to work with the \type{\hsize} that is
+%D corrected for indentation and left and right skips. The
+%D corrected value is available in \type{\localhsize}, which
+%D needs to be calculated with \type{\setlocalhsize} first.
+%D
+%D \starttypen
+%D \setlocalhsize        \hbox to \localhsize{...}
+%D \setlocalhsize[-1em]  \hbox to \localhsize{...}
+%D \setlocalhsize[.5ex]  \hbox to \localhsize{...}
+%D \stoptypen
+%D
+%D These examples show us that an optional can be used. The
+%D value provided is added to \type{\localhsize}.
+
+\newdimen\localhsize
+
+\def\complexsetlocalhsize[#1]%
+  {\localhsize=\hsize
+   \advance\localhsize by -\parindent
+   \advance\localhsize by -\leftskip
+   \advance\localhsize by -\rightskip
+   \advance\localhsize by #1\relax}
+
+\def\simplesetlocalhsize%
+  {\complexsetlocalhsize[\!!zeropoint]}
+
+\definecomplexorsimple\setlocalhsize
+
+%D \macros
+%D   {processtokens}
+%D   {}
+%D
+%D We fully agree with (most) typogaphers that inter||letter
+%D spacing is only permitted in fancy titles, we provide a
+%D macro that can be used to do so. Because this is
+%D (definitely and fortunately) no feature of \TEX, we have to
+%D step through the token list ourselves.
+%D
+%D \starttypen
+%D \processtokens {before} {between} {after} {space} {tokens}
+%D \stoptypen
+%D
+%D An example of a call is:
+%D
+%D \startbuffer
+%D \processtokens {[} {+} {]} {\space} {hello world}
+%D \stopbuffer
+%D
+%D \typebuffer
+%D
+%D This results in:
+%D
+%D \haalbuffer
+%D
+%D The list of tokens may contain spaces, while \type{\\},
+%D \type{{}} and \type{\ } are handled as space too.
+
+\def\dodoprocesstokens%
+  {\ifx\next\lastcharacter
+     \after
+     \let\next=\relax
+   \else\ifx\next\bgroup
+     \def\next%
+       {\dowithnextbox
+          {\before\box\nextbox
+           \let\before=\between
+           \doprocesstokens}
+          \hbox\bgroup}%          
+   \else
+     \expandafter\if\space\next 
+       \before\white
+     \else
+       \before\next
+     \fi
+     \let\before=\between
+     \let\next=\doprocesstokens
+   \fi\fi
+   \next}
+
+\def\doprocesstokens% the space after = is essential
+  {\afterassignment\dodoprocesstokens\let\next= }
+
+\def\processtokens#1#2#3#4#5%
+  {\bgroup
+   \def\lastcharacter{\lastcharacter}%
+   \def\space{ }%
+   \let\\=\space
+   \def\before{#1}%
+   \def\between{#2}%
+   \def\after{#3}%
+   \def\white{#4}%
+   \doprocesstokens#5\lastcharacter
+   \egroup}
+
+%D \macros
+%D   {doifvalue,doifnotvalue,doifelsevalue,
+%D    doifnothing,doifsomething,doifelsenothing,
+%D    doifvaluenothing,doifvaluesomething,doifelsevaluenothing}
+%D   {}
+%D
+%D These long named \type{\if} commands can be used to access
+%D macros (or variables) that are normally accessed by using
+%D \type{\getvalue}. Using these alternatives safes us three
+%D tokens per call. Anyone familiar with the not||values
+%D ones, can derive their meaning from the definitions.
+
+           \def\doifvalue#1{\doif{\getvalue{#1}}}
+        \def\doifnotvalue#1{\doifnot{\getvalue{#1}}}
+       \def\doifelsevalue#1{\doifelse{\getvalue{#1}}}
+
+         \def\doifnothing#1{\doif{#1}{}}
+       \def\doifsomething#1{\doifnot{#1}{}}
+     \def\doifelsenothing#1{\doifelse{#1}{}}
+
+    \def\doifvaluenothing#1{\doif{\getvalue{#1}}{}}
+  \def\doifvaluesomething#1{\doifnot{\getvalue{#1}}{}}
+\def\doifelsevaluenothing#1{\doifelse{\getvalue{#1}}{}}
+
+%D \macros
+%D   {DOIF,DOIFELSE,DOIFNOT}
+%D   {}
+%D
+%D \TEX\ is case sensitive. When comparing arguments, this
+%D feature sometimes is less desirable, for instance when we
+%D compare filenames. The next three alternatives upcase their
+%D arguments before comparing them.
+%D
+%D \starttypen
+%D \DOIF     {string1} {string2} {...}
+%D \DOIFNOT  {string1} {string2} {...}
+%D \DOIFELSE {string1} {string2} {then ...}{else ...}
+%D \stoptypen
+%D
+%D We have to use a two||step implementation, because the
+%D expansion has to take place outside \type{\uppercase}.
+
+\def\p!DOIF#1#2#3%
+  {\uppercase{\ifinstringelse{$#1$}{$#2$}}%
+     #3%
+   \fi}
+
+\def\p!DOIFNOT#1#2#3%
+  {\uppercase{\ifinstringelse{$#1$}{$#2$}}%
+   \else
+     #3%
+   \fi}
+
+\def\p!DOIFELSE#1#2#3#4%
+  {\uppercase{\ifinstringelse{$#1$}{$#2$}}%
+     #3%
+   \else
+     #4%
+   \fi}
+
+\def\DOIF     {\ExpandBothAfter\p!DOIF}
+\def\DOIFNOT  {\ExpandBothAfter\p!DOIFNOT}
+\def\DOIFELSE {\ExpandBothAfter\p!DOIFELSE}
+
+%D \macros
+%D   {stripcharacters,stripspaces}
+%D   {}
+%D
+%D The next command was needed first when we implemented
+%D the \CONTEXT\ interactivity macros. When we use labeled
+%D destinations, we often cannot use all the characters we
+%D want. We therefore strip some of the troublemakers, like
+%D spaces, from the labels before we write them to the
+%D \DVI||file, which passes them to for instance a PostScript
+%D file.
+%D
+%D \starttypen
+%D \stripspaces\from\one\to\two
+%D \stoptypen
+%D
+%D Both the old string \type{\one} and the new one \type{\two}
+%D are expanded. This command is a special case of:
+%D
+%D \starttypen
+%D \stripcharacter\char\from\one\to\two
+%D \stoptypen
+%D
+%D As we can see below, spaces following a control sequence are
+%D to enclosed in \type{{}}.
+
+\def\stripcharacter#1\from#2\to#3%
+  {\def\dostripcharacter##1#1##2\end%
+     {\edef\p!strippedstring{\p!strippedstring##1}%
+      \doifemptyelse{##2}
+        {\let\next=\relax}
+        {\def\next{\dostripcharacter##2\end}}%
+      \next}%
+   \let\p!strippedstring=\empty
+   \edef\!!stringa{#2}%
+   \@EA\dostripcharacter\!!stringa#1\end
+   \let#3=\p!strippedstring}
+
+\def\stripspaces\from#1\to#2%
+  {\stripcharacter{ }\from#1\to#2}
+
+%D \macros
+%D   {executeifdefined}
+%D   {}
+%D
+%D \CONTEXT\ uses one auxiliary file for all data concerning
+%D tables of contents, references, two||pass optimizations,
+%D sorted lists etc. This file is loaded as many times as
+%D needed. During such a pass we skip the commands thate are of
+%D no use at that moment. Because we don't want to come into
+%D trouble with undefined auxiliary commands, we call the
+%D macros in a way similar to \type{\getvalue}. The next macro
+%D take care of such executions and when not defined, gobbles
+%D the unwanted arguments.
+%D
+%D \starttypen
+%D \executeifdefined{name}\gobbleoneargument
+%D \stoptypen
+%D
+%D We can of course globble more arguments using the
+%D appropriate globbling command.
+
+\def\executeifdefined#1#2%
+  {\ifundefined{#1}%
+     \def\next{#2}%
+   \else
+     \def\next{\getvalue{#1}}%
+   \fi
+   \next}
+
+%D We considered an alternative imlementation accepting
+%D commands directly, like:
+%D
+%D \starttypen
+%D \executeifdefined\naam\gobblefivearguments
+%D \stoptypen
+%D
+%D For the moment we don't need this one, so we stick to the
+%D faster one. The more versatile alternative is:
+%D
+%D \starttypen
+%D \def\executeifdefined#1#2%
+%D   {\setnameofcommand{#1}%
+%D    \@EA\ifundefined\@EA{\nameofcommand}
+%D      \def\next{#2}%
+%D    \else
+%D      \def\next{\getvalue{\nameofcommand}}%
+%D    \fi
+%D    \next}
+%D \stoptypen
+
+%D \macros
+%D   {doifsomespaceelse}
+%D   {}
+%D
+%D The next command checks a string on the presence of a space
+%D and executed a command accordingly.
+%D
+%D \starttypen
+%D \doifsomespaceelse {tekst} {then ...} {else ...}
+%D \stoptypen
+%D
+%D We use this command in \CONTEXT\ for determing if an
+%D argument must be broken into words when made interactive.
+%D Watch the use of \type{\noexpand}.
+
+\long\def\doifsomespaceelse#1#2#3%
+  {\def\c!doifsomespaceelse##1 ##2##3\war%
+     {\if\noexpand##2@%
+        #3%
+      \else
+        #2%
+      \fi}%
+   \c!doifsomespaceelse#1 @ @\war}
+
+%D \macros
+%D   {adaptdimension,balancedimensions}
+%D   {}
+%D
+%D Again we introduce some macros that are closely related to
+%D an interface aspect of \CONTEXT. The first command can be
+%D used to adapt a \DIMENSION.
+%D
+%D \starttypen
+%D \adaptdimension {dimension} {value}
+%D \stoptypen
+%D
+%D When the value is preceed by a \type{+} or minus, the
+%D dimension is advanced accordingly, otherwise it gets the
+%D value.
+
+\def\doadaptdimension#1#2\\#3\\%
+  {\if#1+%
+     \dodoglobal\advance#3 by #1#2\relax
+   \else\if##1-%
+     \dodoglobal\advance#3 by #1#2\relax
+   \else
+     \dodoglobal#3=#1#2\relax
+   \fi\fi}
+
+\def\adaptdimension#1#2%
+  {\expandafter\doadaptdimension#2\\#1\\}
+
+%D A second command takes two \DIMENSIONS. Both are adapted,
+%D depending on the sign of the given value.
+%D maat. This time we take the value as it is, and don't look
+%D explicitly at the preceding sign.
+%D
+%D \starttypen
+%D \balancedimensions {dimension 1} {dimension 2} {value}
+%D \stoptypen
+%D
+%D When a positive value is given, the first dimension is
+%D incremented, the second ond is decremented. A negative value
+%D has the opposite result.
+
+\def\balancedimensions#1#2#3%
+  {\scratchdimen=#3\relax
+   \redoglobal\advance#1 by \scratchdimen\relax
+   \dodoglobal\advance#2 by -\scratchdimen\relax}
+
+%D Both commands can be preceded by \type{\doglobal}. Here we
+%D use \type{\redo} first, because \type{\dodo} resets the 
+%D global character.
+
+%D \macros
+%D   {processconcanatedlist}
+%D   {}
+%D
+%D Maybe a bit late, but here is a more general version of the
+%D \type{\processcommalist} command. This time we don't handle
+%D nesting but accept arbitrary seperators.
+%D
+%D \starttypen
+%D \processconcanatedlist[list][separator]\command
+%D \stoptypen
+%D
+%D One can think of things like:
+%D
+%D \starttypen
+%D \processconcanatedlist[alfa+beta+gamma][+]\message
+%D \stoptypen
+
+\def\processconcanatedlist[#1][#2]#3%
+  {\def\doprocessconcanatedlist##1##2#2%
+     {\if]##1%
+        \let\next=\relax
+      \else\if]##2%
+        \let\next=\relax
+      \else\ifx\blankspace##2%
+        #3{##1}%
+        \let\next=\doprocessconcanatedlist
+      \else
+        #3{##1##2}%
+        \let\next=\doprocessconcanatedlist
+      \fi\fi\fi
+      \next}%
+   \doprocessconcanatedlist#1#2]#2}
+
+%D \macros
+%D   {processassignlist}
+%D   {}
+%D
+%D Is possible to combine an assignment list with one
+%D containing keywords. Assignments are treated accordingly,
+%D keywords are treated by \type{\command}.
+%D
+%D \starttypen
+%D \processassignlist[...=...,...=...,...]\commando
+%D \stoptypen
+%D
+%D This command can be integrated in \type{\getparameters}, but
+%D we decided best not to do so.
+
+\def\processassignlist#1[#2]#3%
+  {\def\p!dodogetparameter[##1=##2=##3]%
+     {\doifnot{##3}{\relax}{#3{##1}}}%
+   \def\p!dogetparameter##1%
+     {\p!dodogetparameter[##1==\relax]}%
+   \processcommalist[#2]\p!dogetparameter}
+
+%D \macros
+%D   {DoAfterFi,DoAfterFiFi}
+%D   {}
+%D
+%D Sometimes \type{\fi}'s can get into the way. We can reach
+%D over such a troublemaker with:
+%D
+%D \starttypen
+%D \DoAfterFi{some commands}
+%D \DoAfterFiFi{some commands}
+%D \stoptypen
+%D
+%D It saves us a \type{\next} construction. Skipping
+%D \type{\else...\fi} is more tricky, so this one is not
+%D provided.
+
+\def\DoAfterFi#1\fi{\fi#1}
+\def\DoAfterFiFi#1\fi#2\fi{\fi\fi#1}
+
+%D \macros
+%D   {untextargument
+%D    untexcommand}
+%D 
+%D When manipulating data(bases) and for instance generating 
+%D index entries, the next three macros can be of help: 
+%D 
+%D \starttypen
+%D \untextargument{...}\to\name
+%D \untexcommand  {...}\to\name
+%D \stoptypen
+%D 
+%D They remove braces and backslashes and give us something to 
+%D sort. 
+
+\def\untexsomething%
+  {\bgroup
+   \catcode`\{=\@@ignore
+   \catcode`\}=\@@ignore
+   \escapechar=-1
+   \dountexsomething}
+
+\long\def\dountexsomething#1#2\to#3%
+  {\doglobal#1#2\to\untexedargument
+   \egroup
+   \let#3=\untexedargument}
+
+\def\untexargument%
+  {\untexsomething\convertargument}
+
+\def\untexcommand%
+  {\untexsomething\convertcommand}
+
+%D \macros
+%D   {ScaledPointsToBigPoints,ScaledPointsToWholeBigPoints}
+%D 
+%D One characteristic of \POSTSCRIPT\ and \PDF\ is that both 
+%D used big points (\TEX's bp). The next macros convert points 
+%D and scaled points into big points. 
+%D 
+%D \starttypen
+%D \ScaledPointsToBigPoints      {number} \target
+%D \ScaledPointsToWholeBigPoints {number} \target
+%D \stoptypen
+%D 
+%D The magic factor $72/72.27$ can be found in most \TEX\ 
+%D related books. 
+
+\def\ScaledPointsToBigPoints#1#2%       
+  {\scratchdimen=#1sp\relax
+   \scratchdimen=.996264\scratchdimen    
+   \edef#2{\withoutpt{\the\scratchdimen}}}
+
+\def\ScaledPointsToWholeBigPoints#1#2%  
+  {\scratchdimen=#1sp\relax
+   \scratchdimen=.996264\scratchdimen    
+   \scratchcounter=\scratchdimen
+   \advance\scratchcounter by \!!medcard
+   \divide\scratchcounter by \!!maxcard
+   \edef#2{\the\scratchcounter}}
+
+%D \macros
+%D   {PointsToReal}
+%D 
+%D Points can be stripped from their suffix by using 
+%D \type{\withoutpt}. The next macro enveloppes this macro. 
+%D 
+%D \starttypen
+%D \PointsToReal {dimension} \target
+%D \stoptypen 
+
+\def\PointsToReal#1#2%
+  {\scratchdimen=#1%  
+   \edef#2{\withoutpt{\the\scratchdimen}}}
+
+%D \macros 
+%D  {dontleavehmode}
+%D 
+%D Sometimes when we enter a paragraph with some command, the 
+%D first token gets the whole first line. We can prevent this 
+%D by saying:
+%D 
+%D \starttypen
+%D \dontleavehmode
+%D \stoptypen
+%D 
+%D This command is used in for instance the language module 
+%D \type{lang-ini}.
+
+\def\dontleavehmode{\ifmmode\else$ $\fi}
+
+%D \macro
+%D   {handletokens}
+%D
+%D With the next macro we enter a critical area of macro 
+%D expansion. What we want is a macro that looks like:
+%D 
+%D \handletokens some tokens\with \somemacro
+%D 
+%D At first sight the next implementation will suffice, but 
+%D running this one shows that we loose the spaces. This is no 
+%D surprise because we grab arguments and spaces preceding those
+%D are just ignored. 
+%D 
+%D \starttypen
+%D \def\nohandletokens#1\end%
+%D   {}
+%D 
+%D \def\dohandletokens#1#2\end%
+%D   {\ifx#1\endoftoken 
+%D      \expandafter\nohandletokens
+%D    \else
+%D      \docommando{#1}%
+%D      \expandafter\dohandletokens
+%D    \fi
+%D    #2\end}
+%D 
+%D \long\def\handletokens#1\with#2%
+%D   {\let\docommando=#2\relax
+%D    \dohandletokens#1\endoftoken\end}
+%D \stoptypen
+%D 
+%D A second approach therefore grabs the indicidual characters 
+%D by using \type{\afterassignment}, in which case the space is 
+%D read in as space.  
+%D 
+%D \starttypen
+%D \def\dodohandletokens%
+%D   {\ifx\next\end \else
+%D      \docommando\next
+%D      \expandafter\dohandletokens
+%D    \fi}
+%D 
+%D \def\dohandletokens%
+%D   {\afterassignment\dodohandletokens\let\next= }
+%D 
+%D \long\def\handletokens#1\with#2%
+%D   {\let\docommando=#2%
+%D    \dohandletokens#1\end}
+%D \stoptypen
+
+%D \macro
+%D   {counttoken}
+%D
+%D For the few occasion sthat we want to know the number of 
+%D specific tokens in a string, we can use: 
+%D 
+%D \starttypen
+%D \counttoken token\in string\to \count
+%D \stoptypen
+%D 
+%D This macro, that for instance is used in \type{cont-tab}, 
+%D takes a real counter. The macro can be preceded by \type 
+%D {\doglobal}.  
+
+\def\counttoken#1\in#2\to#3%
+  {\redoglobal#3=0
+   \def\!!stringa{#1}%
+   \def\!!stringb{\end}%
+   \def\docounttoken##1% obeys {}
+     {\def\!!stringc{##1}%
+      \ifx\!!stringb\!!stringc \else
+        \ifx\!!stringa\!!stringc
+          \dodoglobal\advance#3 by 1
+        \fi
+        \expandafter\docounttoken
+      \fi}%
+   \docounttoken#2\end
+   \resetglobal}
+
+%D \macros
+%D   {splitofftokens}
+%D
+%D Running this one not always gives the expected results. 
+%D Consider for instance the macro for which I originally 
+%D wrote this token handler. 
+
+\long\def\splitofftokens#1\from#2\to#3%
+  {\ifnum#1>0
+     \scratchcounter=#1\relax
+     \def\dosplitofftokens##1%
+       {\ifnum\scratchcounter>0
+          \advance\scratchcounter by -1
+          \edef#3{#3##1}%
+        \fi}%
+     % \let#3=\empty % #3 can be #2, so:  
+     \@EA\let\@EA#3\@EA\empty
+     \@EA\handletokens#2\with\dosplitofftokens
+   \else
+     \edef#3{#2}%
+   \fi}
+
+%D This macro can be called like:
+%D 
+%D \startbuffer[example] 
+%D \splitofftokens10\from01234567 890123456789\to\test [\test]
+%D \stopbuffer
+%D 
+%D However, the characters that we expect to find in
+%D \type{\test} just don;t show up there. The reason for this
+%D is not that logical but follows from \TEX's sometimes
+%D mysterious way of expanding. Look at this: 
+%D 
+%D \startbuffer[next]
+%D \def\next{a} \edef\test{\next}                  [\test]
+%D \let\next=b  \edef\test{\test\next}             [\test]
+%D \let\next=c  \edef\test{\next}                  [\test]
+%D \let\next=d  \edef\test{\test\next}             [\test]
+%D \let\next=e  \@EA\edef\@EA\test\@EA{\test\next} [\test]
+%D \stopbuffer
+%D 
+%D \typebuffer[next]
+%D 
+%D Careful reading shows that inside an \type{\edef} macro's 
+%D that are \type{\let} are not expanded!
+%D 
+%D \haalbuffer[next]
+%D 
+%D That's why we finally end up with a macro that looks ahead
+%D by using an assignment, this time by using
+%D \type{\futurelet}, and grabbing an argument as well. That
+%D way we can handle both the sentinal and the blank space. 
+
+\def\dodohandletokens#1%
+  {\ifx\next\blankspace
+     \docommando{ }%
+   \fi
+   \ifx#1\end \else
+     \docommando{#1}%
+     \expandafter\dohandletokens
+   \fi}
+
+\def\dohandletokens% 
+  {\futurelet\next\dodohandletokens}
+
+\long\def\handletokens#1\with#2%
+  {\let\docommando=#2% #2 can be \docommando itself 
+   \dohandletokens#1\end}
+
+%D So our example finaly shows up as:
+%D 
+%D \haalbuffer[example]
+
+\protect
+
+\endinput
+

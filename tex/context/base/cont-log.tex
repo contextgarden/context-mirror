@@ -1,0 +1,108 @@
+%D \module
+%D   [       file=cont-log,
+%D        version=1995.10.10,
+%D          title=\CONTEXT\ Miscellaneous Macros,
+%D       subtitle=\TEX\ Logos,
+%D         author=J. Hagen,
+%D           date=\currentdate,
+%D      copyright=J. Hagen]
+
+\writestatus{loading}{Context TeX Logos}
+
+%D The system that is used to typeset this text is called \TEX,
+%D typeset with an lowered~E. From te beginning of \TEX,
+%D authors of macro packages adapted this raising and lowering
+%D style. In this module we define some of those logos. 
+
+\unprotect
+
+\def\TeX%
+  {T%
+   \kern-.1667em\lower.5ex\hbox{E}%
+   \kern-.125emX}
+
+\def\ConTeXt%
+  {C\kern-.0333emO\kern-.0333emN\kern-.0333em\TeX\kern-.0333emT}
+
+\def\PPCHTeX%
+  {PPCH\TeX}
+
+\def\LaTeX%
+  {{L%
+    \kern-.30em\raise.3ex\hbox{\tfxx A}%
+    \kern-.18em\TeX}}
+
+\def\TaBlE%
+  {T%
+   \kern-.27em\lower.5ex\hbox{A}%
+   \kern-.18em B%
+   \kern-.1em\lower.5ex\hbox{L}%
+   \kern-.075em E}
+
+\def\PiCTeX%
+  {P%
+   \kern-.12em\lower.5ex\hbox{I}%
+   \kern-.075em C%
+   \kern-.11em\TeX}
+
+\def\AMSswitch#1%
+  {$\fam2\ifdim\korpsgrootte>1.1em\scriptstyle\fi#1$}
+
+\def\AmSTeX%
+  {\AMSswitch A%
+   \kern-.1667em\lower.5ex\hbox{\AMSswitch M}%
+   \kern-.125em\AMSswitch S%
+   -\TeX}
+
+\def\LamSTeX%
+  {L%
+   \kern-.4em\raise.3ex\hbox{\AMSswitch A}%
+   \kern-.25em\lower.4ex\hbox{\AMSswitch M}%
+   \kern-.1em{\AMSswitch S}%
+   -\TeX}
+
+\def\MetaFont% \hbox prevents missing - warning in YandYTEX
+  {\hbox{\font\logofont=logo10 at \korpsgrootte\logofont METAFONT}}
+
+\def\MetaPost% \hbox prevents missing - warning in YandYTEX
+  {\hbox{\font\logofont=cmss10 at \korpsgrootte\logofont METAPOST}}
+
+%D \macros
+%D  {TEX, METAFONT, METAPOST,
+%D   PICTEX, TABLE,      
+%D   CONTEXT, PPCHTEX, 
+%D   AMSTEX, LATEX, LAMSTEX}
+%D  {}    
+%D 
+%D We define the funny written ones as well as th eless 
+%D error prone upper case names (in \CONTEXT\ we tend to 
+%D write all user defined commands, like abbreviations, in 
+%D uppercase.) 
+
+\def\METAFONT {\MetaFont}
+\def\METAPOST {\MetaPost}
+\def\PPCHTEX  {\PPCHTeX}
+\def\CONTEXT  {\ConTeXt}
+
+\def\TEX      {\TeX}
+\def\LATEX    {\LaTeX}
+\def\PICTEX   {\PiCTeX}
+\def\TABLE    {\TaBlE}
+\def\AMSTEX   {\AmSTeX}
+\def\LAMSTEX  {\LamSTeX}
+
+%D And this is how they show up: \TeX, \MetaFont, \MetaPost,
+%D \PiCTeX, \TaBlE, \ConTeXt, \PPCHTeX, \AmSTeX, \LaTeX,
+%D \LamSTeX. We also define some logos for the programs that
+%D we wrote and use at \PRAGMA: \TeX EDIT, \TeX FORM, \TeX
+%D ADRES, \TeX SPELL, \TeX UTIL. 
+
+\def\TEXEDIT  {\TeX EDIT}
+\def\TEXFORM  {\TeX FORM}
+\def\TEXADRES {\TeX ADRES}
+\def\TEXSPELL {\TeX SPELL}
+\def\TEXUTIL  {\TeX UTIL}
+
+\protect
+
+\endinput

@@ -1,0 +1,172 @@
+%D \module
+%D   [       file=core-02b,
+%D        version=1997.03.31,
+%D          title=\CONTEXT\ Core Macros,
+%D       subtitle=2B (to be split),
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. Non||commercial use is 
+%C granted. 
+
+\writestatus{loading}{Context Extra Macros (b)}
+
+\unprotect
+
+%I n=Karakters 
+%I
+%I Het is mogelijk bij het definieren van tabellen gebruik 
+%I te maken van speciale karakters: 
+%I
+%I \starttabel[|l|c|r|]
+%I ÚÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄ¿
+%I ³ eerste ³ tweede ³ derde ³
+%I ÃÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄ´
+%I ³ alfa   ³   a    ³  1    ³
+%I ³ beta   ³   b    ³  22   ³
+%I ÃÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄ´
+%I ³ gamma  ³   c    ³  333  ³
+%I ÀÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÙ
+%I \stoptabel
+%I
+%I Eventueel kunnen \starttabel en \stoptabel worden weggelaten.
+%P
+%I Naast \hoog en \laag kunnen (ook in de wiskunde-mode) de 
+%I karakters  en  worden gebruikt: m2, x{23} enz.
+%P
+%I De volgende hoge ascii-karakters worden vertaald:
+%I
+%I   Ÿ bedrag       geen haakjes nodig, wel spaties 
+
+\newcount\row
+\newcount\columns
+\newcount\column
+
+\newif\iffullrow
+
+\def\firstrow%
+  {\ifintabel
+     \HL
+   \fi
+   \global\row=0\relax
+   \global\fullrowfalse}
+
+\def\nextrow%
+  {\global\advance\column by 1\relax
+   \ifnum\column=\columns
+     \global\fullrowtrue
+     \VL
+   \else
+     \iffullrow
+       \global\column=1\relax
+       \global\fullrowfalse
+       \global\advance\row by 1\relax
+       \ifnum\row=1
+         \FR\VL
+       \else
+         \MR\VL
+       \fi
+     \else
+       \VL
+     \fi
+   \fi}
+
+\def\lastrow%
+  {\global\fullrowfalse
+   \ifnum\row=0
+     \global\row=0\relax
+     \global\column=0\relax
+     \SR\HL
+   \else
+     \global\row=0\relax
+     \global\column=0\relax
+     \LR\HL
+   \fi}
+
+\def\firstcolumn%
+  {\global\column=0\relax
+   \global\columns=1}
+
+\def\nextcolumn%
+  {\global\advance\columns by 1\relax}
+
+\newif\iflocalintabel
+\localintabelfalse
+
+\def\beginoftable%
+  {\ifintabel
+   \else\ifcase\columns\or
+     \or\starttabel[|l|]\HL
+     \or\starttabel[|l|l|]\HL
+     \or\starttabel[|l|l|l|]\HL
+     \or\starttabel[|l|l|l|l|]\HL
+     \or\starttabel[|l|l|l|l|l|]\HL
+     \or\starttabel[|l|l|l|l|l|l|]\HL
+     \or\starttabel[|l|l|l|l|l|l|l|]\HL
+     \or\starttabel[|l|l|l|l|l|l|l|l|]\HL
+     \or\starttabel[|l|l|l|l|l|l|l|l|l|]\HL
+     \or\starttabel[|l|l|l|l|l|l|l|l|l|l|]\HL
+     \or\starttabel[|l|l|l|l|l|l|l|l|l|l|l|]\HL
+     \or\starttabel[|l|l|l|l|l|l|l|l|l|l|l|l|]\HL
+     \or\starttabel[|l|l|l|l|l|l|l|l|l|l|l|l|l|l|]\HL
+     \or\starttabel[|l|l|l|l|l|l|l|l|l|l|l|l|l|l|l|]\HL
+     \fi
+     \global\localintabeltrue
+   \fi}
+
+\def\endoftable%
+  {\iflocalintabel
+     \stoptabel
+     \global\localintabelfalse
+   \fi}
+
+% \catcode`\Ú=\@@active  \defÚ{\firstrow\firstcolumn}
+% \catcode`\Ã=\@@active  \defÃ{\lastrow}
+% \catcode`\À=\@@active  \defÀ{\lastrow}
+% 
+% \catcode`\¿=\@@active  \def¿{\nextcolumn}
+% \catcode`\´=\@@active  \def´{}
+% \catcode`\Ù=\@@active  \defÙ{\endoftable}
+% 
+% \catcode`\Â=\@@active  \defÂ{\nextcolumn}
+% \catcode`\Å=\@@active  \defÅ{}
+% \catcode`\Á=\@@active  \defÁ{}
+% 
+% \catcode`\³=\@@active  \def³{\beginoftable\nextrow}
+% \catcode`\Ä=\@@active  \defÄ{}
+
+\catcode`\Ú=\@@active  \defÚ{\ifprocessingverbatim{ }\else\firstrow\firstcolumn\fi}
+\catcode`\Ã=\@@active  \defÃ{\ifprocessingverbatim\char`|\else\lastrow\fi}
+\catcode`\À=\@@active  \defÀ{\ifprocessingverbatim{ }\else\lastrow\fi}
+
+\catcode`\¿=\@@active  \def¿{\ifprocessingverbatim{ }\else\nextcolumn\fi}
+\catcode`\´=\@@active  \def´{\ifprocessingverbatim\char`|\else\fi} 
+\catcode`\Ù=\@@active  \defÙ{\ifprocessingverbatim{ }\else\endoftable\fi}%
+
+\catcode`\Â=\@@active  \defÂ{\ifprocessingverbatim\char`-\else\nextcolumn\fi}
+\catcode`\Å=\@@active  \defÅ{\ifprocessingverbatim\char`|\else\fi}
+\catcode`\Á=\@@active  \defÁ{\ifprocessingverbatim\char`-\else\fi}
+
+\catcode`\³=\@@active  \def³{\ifprocessingverbatim\char`|\else\beginoftable\nextrow\fi}
+\catcode`\Ä=\@@active  \defÄ{\ifprocessingverbatim\char`-\else\fi} 
+
+\catcode`\=\@@active
+\catcode`\=\@@active
+
+\def#1%
+  {\ifprocessingverbatim\char`^\relax#1\else\ifmmode^{#1}\else\hoog{#1}\fi\fi}
+
+\def#1%
+  {\ifprocessingverbatim\char`_\relax#1\ifmmode_{#1}\else\laag{#1}\fi\fi}
+
+\catcode`\Ÿ=\@@active
+
+\defŸ%
+  {\ifprocessingverbatim f\else\bedrag{}~\ignorespaces\fi}
+
+\protect
+
+\endinput
+

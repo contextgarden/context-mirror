@@ -1,0 +1,778 @@
+%D \module
+%D   [       file=mult-con,
+%D        version=1996.06.01,
+%D          title=\CONTEXT\ Multilingual Macros,
+%D       subtitle=Constants,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. Non||commercial use is 
+%C granted. 
+
+%D In this rather large definition file we are going to tell 
+%D \CONTEXT\ which constants, variables and elements we use.
+
+\writestatus{loading}{Context Multilingual Macros / Constants}
+
+%D First come some variables. These are used as keywords and 
+%D therefore need a different treatment.
+
+%D \startcompressdefinitions
+
+\startvariables       dutch                english             german
+
+                een:  een                  one                 eins
+               twee:  twee                 two                 zwei
+               drie:  drie                 three               drei
+               vier:  vier                 four                vier
+               vijf:  vijf                 five                fuenf
+
+\stopvariables
+
+%D \stopcompressdefinitions
+
+%D Of course we need the names of the months. 
+
+%D \startcompressdefinitions
+
+\startvariables  dutch       english     german 
+
+        sunday:  zondag      sunday      sonntag
+        monday:  maandag     monday      montag
+       tuesday:  dinsdag     tuesday     dienstag
+     wednesday:  woensdag    wednesday   mittwoch
+      thursday:  donderdag   thursday    donnerstag
+        friday:  vrijdag     friday      freitag
+      saturday:  zaterdag    saturday    samstag
+
+\stopvariables
+
+\startvariables  dutch       english     german 
+
+       january:  januari     January     Januar 
+      february:  februari    February    Februar
+         march:  maart       March       Maerz 
+         april:  april       April       April 
+           may:  mei         May         Mai 
+          june:  juni        June        Juni
+          july:  juli        July        Juli
+        august:  augustus    August      August
+     september:  september   September   September
+       october:  oktober     October     Oktober
+      november:  november    November    November
+      december:  december    December    Dezember
+
+\stopvariables
+
+%D \stopcompressdefinitions
+
+%D User defined commands are language specific, so we have to
+%D use variable when defining them. First we define some
+%D general structuring variables:
+
+%D \startcompressdefinitions
+
+\startvariables       dutch                english             german
+
+             sectie:  sectie               section             abschnitt
+
+               deel:  deel                 part                teil
+          hoofdstuk:  hoofdstuk            chapter             kapitel
+          onderwerp:  onderwerp            subject             thema
+          paragraaf:  paragraaf            section             absatz
+              titel:  titel                title               titel
+
+             inhoud:  inhoud               content             inhalt
+           inhouden:  inhouden             contents            inhalte
+
+            bijlage:  bijlage              appendix            anhang
+           bijlagen:  bijlagen             appendices          anhaenge
+         hoofdtekst:  hoofdtekst           maintext            haupttext
+       hoofdteksten:  hoofdteksten         maintexts           haupttexte
+          inleiding:  inleiding            introduction        einleitung
+        inleidingen:  inleidingen          introductions       einleitungen
+         uitleiding:  uitleiding           extroduction        epilog
+       uitleidingen:  uitleidingen         extroductions       epiloge
+
+           voetnoot:  voetnoot             footnote            fussnote
+
+            systeem:  systeem              system              systeme
+
+\stopvariables
+
+\startvariables       dutch                english             german
+
+              typen:  typen                typing              tippen
+               file:  file                 file                datei
+
+\stopvariables
+
+%D \stopcompressdefinitions
+
+%D As we can see below, there are some more variables needed,
+%D for instance for the definition of macro's for handling
+%D floating bodies.
+
+%D \startcompressdefinitions
+
+\startvariables       dutch                english             german
+
+            formule:  formule              formula             formel
+           formules:  formules             formulas            formeln
+
+             figuur:  figuur               figure              abbildung
+            figuren:  figuren              figures             abbildungen
+              tabel:  tabel                table               tabelle
+           tabellen:  tabellen             tables              tabellen
+            grafiek:  grafiek              graphic             grafik
+          grafieken:  grafieken            graphics            grafiken
+         intermezzo:  intermezzo           intermezzo          intermezzo
+        intermezzos:  intermezzos          intermezzos         intermezzi
+
+              index:  index                index               index
+            indices:  indices              indices             indizies
+
+          afkorting:  afkorting            abbreviation        abkuerzung
+        afkortingen:  afkortingen          abbreviations       abkuerzungen
+               logo:  logo                 logo                logo
+              logos:  logos                logos               logos
+            eenheid:  eenheid              unit                einheit
+           eenheden:  eenheden             units               einheiten
+
+              regel:  regel                line                zeile
+             regels:  regels               lines               zeilen
+
+         framedtext:  kadertekst           framedtext          umrahmtertext
+
+\stopvariables
+
+%D \stopcompressdefinitions
+
+%D The setup commands can take a lot of different arguments,
+%D often in the form \type{variable=value}. Here we define the
+%D variable part. Keep in mind that for the system, user defined
+%D variables have a constant character.
+
+%D \startcompressdefinitions
+
+\startconstants       dutch                english             german
+
+      leftquotation:  linkercitaat         leftquotation       linkerzitat
+     rightquotation:  rechtercitaat        rightquotation      rechterzitat
+          leftquote:  linkerciteer         leftquote           linkerzitieren
+         rightquote:  rechterciteer        rightquote          rechterzitieren
+       leftsentence:  linkerzin            leftsentence        linkersatz
+      rightsentence:  rechterzin           rightsentence       rechtersatz
+    leftsubsentence:  linkersubzin         leftsubsentence     linkersubsatz
+   rightsubsentence:  rechtersubzin        rightsubsentence    rechtersubsatz
+
+              datum:  datum                date                datum
+
+                aan:  aan                  to                  zu
+         aanduiding:  aanduiding           indicator           indikator
+        achtergrond:  achtergrond          background          hintergrund
+   achtergrondkleur:  achtergrondkleur     backgroundcolor     hintergrundfarbe
+  achtergrondoffset:  achtergrondoffset    backgroundoffset    hintergrundoffset
+    achtergrondhoek:  achtergrondhoek      backgroundcorner    hintergrundwinkel
+  achtergrondstraal:  achtergrondstraal    backgroundradius    hintergrundradius
+  achtergronddiepte:  achtergronddiepte    backgrounddepth     hintergrundtiefe
+  achtergrondraster:  achtergrondraster    backgroundscreen    hintergrundraster
+              adres:  adres                address             adresse
+           afmeting:  afmeting             size                abmessung
+          afsluiter:  afsluiter            stopper             abschnitttrenner
+            afstand:  afstand              distance            abstand
+       assenstelsel:  assenstelsel         axis                achsen
+             auteur:  auteur               author              autor
+         balanceren:  balanceren           balance             ausgleichen
+            bfactor:  bfactor              wfactor             bfaktor
+             binnen:  binnen               inner               innen
+          bladzijde:  bladzijde            page                seite
+             blanko:  blanko               blank               blanko
+           blokkade:  blokkade             obstruction         gesperrt
+          blokwijze:  blokwijze            blockway            blockauf
+              boven:  boven                top                 oben
+       bovenafstand:  bovenafstand         topdistance         obenabstand
+         bovenkader:  bovenkader           topframe            obenrahmen
+        bovenoffset:  bovenoffset          topoffset           obenoffset
+        bovenstatus:  bovenstatus          topstatus           statusoben
+            breedte:  breedte              width               breite
+               bron:  bron                 source              quelle
+           commando:  commando             command             befehl
+          commandos:  commandos            commands            befehle
+          conversie:  conversie            conversion          konversion
+          criterium:  criterium            criterium           kriterium
+              datum:  datum                date                datum
+            default:  default              default             norm
+             diepte:  diepte               depth               tiefe
+    dieptecorrectie:  dieptecorrectie      depthcorrection     tiefekorrektur
+              dikte:  dikte                thickness           dicke
+           doorgaan:  doorgaan             continue            fortsetzen
+       dubbelzijdig:  dubbelzijdig         doublesided         doppelseitig
+              dummy:  dummy                dummy               dummy
+            eenheid:  eenheid              unit                einheit
+        eigennummer:  eigennummer          ownnumber           eigenenummer
+      contrastkleur:  contrastkleur        contrastcolor       kontrastfarbe
+           expansie:  expansie             expansion           expansion
+             factor:  factor               factor              faktor
+               file:  file                 file                datei
+            formaat:  formaat              size                groesse
+             gebied:  gebied               directory           verzeichnis
+              groot:  groot                big                 gross
+               haal:  haal                 get                 hole
+               hang:  hang                 hang                haengend
+            hfactor:  hfactor              hfactor             hfaktor
+               hoek:  hoek                 corner              winkel
+            hoffset:  hoffset              hoffset             hoffset
+             hokjes:  hokjes               frames              umrahmen
+              hoofd:  hoofd                header              kopfzeile
+       hoofdafstand:  hoofdafstand         headerdistance      kopfzeilenabstand
+        hoofdstatus:  hoofdstatus          headerstatus        kopfzeilenstatus
+             hoogte:  hoogte               height              hoehe
+            huidige:  huidige              current             aktuell
+                 in:  in                   in                  in
+         interactie:  interactie           interaction         interaktion
+         inspringen:  inspringen           indenting           einziehen
+              items:  items                items               posten
+              kader:  kader                frame               rahmen
+         kaderkleur:  kaderkleur           framecolor          rahmenfarbe
+        kaderoffset:  kaderoffset          frameoffset         rahmenoffset
+        kaderdiepte:  kaderdiepte          framedepth          rahmentiefe
+          kaderhoek:  kaderhoek            framecorner         rahmenwinkel
+        kaderstraal:  kaderstraal          frameradius         rahmenradius
+           kantlijn:  kantlijn             marginedge          marginal
+      kantlijntekst:  kantlijntekst        marginedgetext      marginaltext
+              klein:  klein                small               klein
+              kleur:  kleur                color               farbe
+              kolom:  kolom                column              spalte
+       kolomafstand:  kolom                columndistance      spaltenabstand
+           kopkleur:  kopkleur             headcolor           kopffarbe
+          kopletter:  kopletter            headstyle           kopfschrift
+              kopna:  kopna                afterhead           nachkopf
+          kopoffset:  kopoffset            topoffset           kopfoffset 
+          koppeling:  koppeling            coupling            verknuepfung
+            kopvoor:  kopvoor              beforehead          vorkopf
+             kopwit:  kopwit               topspace            kopfspatium
+              korps:  korps                corps               fliesstext
+              label:  label                label               label
+             letter:  letter               style               schrift
+               lijn:  lijn                 line                linie
+          lijndikte:  lijndikte            linethickness       liniendicke
+          lijnkleur:  lijnkleur            linecolor           linienfarbe
+              lijst:  lijst                list                liste
+             linker:  linker               left                linker
+      linkerbreedte:  linkerbreedte        leftwidth           linkerbreite
+        linkerkader:  linkerkader          leftframe           linkerrahmen
+        linkerkleur:  linkerkleur          leftcolor           linkerfarbe
+       linkerletter:  linkerletter         leftstyle           linkerschrift
+        linkermarge:  linkermarge          leftmargin          linkerrand
+ linkermargeafstand:  linkermargeafstand   leftmargindistance  linkerrandabstand
+       linkeroffset:  linkeroffset         leftoffset          linkeroffset
+         linkerrand:  linkerrand           leftedge            linkekante
+  linkerrandafstand:  linkerrandafstand    leftedgedistance    linkerkantenabstand
+        linkertekst:  linkertekst          lefttext            linkertext
+              links:  links                left                links
+               logo:  logo                 logo                logo
+              logos:  logos                logos               logos
+             lokaal:  lokaal               local               lokal
+             lokale:  lokale               local               lokal
+            lokatie:  lokatie              location            position
+              marge:  marge                margin              marginalie
+       margeafstand:  margeafstand         margindistance      marginalabstand
+         margetekst:  margetekst           margintext          marginaltext
+          markering:  markering            mark                beschriftung
+           markleur:  markleur             marcolor            beschrfarbe
+          marletter:  marletter            marstyle            beschrschrift
+               menu:  menu                 menu                menue
+            methode:  methode              method              methode
+             midden:  midden               middle              mittig
+        middentekst:  middentekst          middletext          mittigertext
+                min:  min                  min                 min
+            monster:  monster              sample              muster
+                 na:  na                   after               nach
+               naam:  naam                 name                name
+         nacommando:  nacommando           commandafter        zumbefehl
+             nboven:  nboven               ntop                noben
+             niveau:  niveau               level               niveau
+            niveaus:  niveaus              levels              niveaus
+             nonder:  nonder               nbottom             nunten
+               norm:  norm                 norm                norm
+            nregels:  nregels              nlines              zzeile
+             nummer:  nummer               number              nummer
+     nummercommando:  nummercommando       numbercommand       nummerbefehl
+           nummeren:  nummeren             numbering           nummerierung
+        nummerkleur:  nummerkleur          numbercolor         nummernfarbe
+       nummerletter:  nummerletter         numberstyle         nummernschrift
+     nummerscheider:  nummerscheider       numberseparator     nummernseperator
+             offset:  offset               offset              offset
+             omvang:  omvang               size                umfang
+onbekendeverwijzing:  verwijzing           unknownreference    unbekantereferenz
+              onder:  onder                bottom              unten
+       onderafstand:  onderafstand         bottomdistance      abstandunten
+         onderkader:  onderkader           bottomframe         untenrahmen
+        onderoffset:  onderoffset          bottomoffset        untenoffset
+        onderstatus:  onderstatus          bottomstatus        untenstatus
+                 op:  op                   at                  bei
+              optie:  optie                option              option
+             pagina:  pagina               page                seite
+     paginacommando:  paginacommando       pagecommand         seitenbefehl
+        paginakleur:  paginakleur          pagecolor           seitenfarbe
+       paginaletter:  paginaletter         pagestyle           seitenschrift
+       paginanummer:  paginanummer         pagenumber          seitennummer
+   paginaovergangen:  paginaovergangen     pageboundaries      seitenbegrenzung
+             papier:  papier               paper               papier
+             plaats:  plaats               location            platz
+    plaatsafsluiter:  plaatsafsluiter      placestopper        setzetrenner
+           plaatsen:  plaatsen             place               platziere
+          plaatskop:  plaatskop            placehead           setzekopf
+             prefix:  prefix               prefix              prefix
+             preset:  preset               preset              voreinstellung
+            preview:  preview              preview             preview
+               punt:  punt                 period              punkt
+               rand:  rand                 edge                kante
+        randafstand:  randafstand          edgedistance        kantenabstand
+             raster:  raster               screen              raster
+            rechter:  rechter              right               rechter
+     rechterbreedte:  rechterbreedte       rightwidth          rechterbreite
+       rechterkader:  rechterkader         rightframe          rechterrahmen
+       rechterkleur:  rechterkleur         rightcolor          rechterfarbe
+      rechterletter:  rechterletter        rightstyle          rechterschrift
+       rechtermarge:  rechtermarge         rightmargin         rechterrand
+rechtermargeafstand:  rechtermargeafstand  rightmargindistance rechterrandabstand
+      rechteroffset:  rechteroffset        rightoffset         rechterabstand
+        rechterrand:  rechterrand          rightedge           rechtekante
+ rechterrandafstand:  rechterrandafstand   rightedgedistance   rechterkantenabstand
+       rechtertekst:  rechtertekst         righttext           rechtertext
+             rechts:  rechts               right               rechts
+          refereren:  refereren            referencing         referieren
+              regel:  regel                line                zeile
+     regelcorrectie:  regelcorrectie       linecorrection      zeilekorrektur
+             regels:  regels               lines               zeilen
+          resolutie:  resolutie            resolution          aufloesung
+            rotatie:  rotatie              rotation            rotation
+          rugoffset:  rugoffset            backoffset          rumpfabstand
+             rugwit:  rugwit               backspace           rumpfspatium
+             schaal:  schaal               scale               format
+           scheider:  scheider             separator           seperator
+              scope:  scope                scope               bereich
+             sectie:  sectie               section             abschnitt
+       sectienummer:  sectienummer         sectionnumber       abschnittsnummer
+              soort:  soort                family              familie
+             spatie:  spatie               space               spatium
+         spatiering:  spatiering           spacing             spatiumausgleich
+               stap:  stap                 step                schritt
+              start:  start                start               start
+             status:  status               state               status
+               stop:  stop                 stop                stop
+             straal:  straal               radius              radius
+                sub:  sub                  sub                 unter
+            symbool:  symbool              symbol              symbol
+           symkleur:  symkleur             symcolor            symfarbe
+          symletter:  symletter            symstyle            symschrift
+           synoniem:  synoniem             synonym             synonym
+      synoniemkleur:  synoniemkleur        synonymcolor        synonymfarbe
+     synoniemletter:  synoniemletter       synonymstyle        synonymschrift
+                tab:  tab                  tab                 tab
+              teken:  teken                sign                zeichen
+              tekst:  tekst                text                text
+      tekstcommando:  tekstcommando        textcommand         textbefehl
+       tekstformaat:  tekstformaat         textsize            textgroesse
+         tekstkleur:  tekstkleur           textcolor           textfarbe
+        tekstletter:  tekstletter          textstyle           textschrift
+      tekstscheider:  tekstscheider        textseparator       textseparator
+        tekststatus:  tekststatus          textstatus          textstatus
+           subtitel:  subtitel             subtitle            untertitel
+              titel:  titel                title               titel
+     titeluitlijnen:  titeluitlijnen       aligntitle          titelausrichten
+         tolerantie:  tolerantie           tolerance           toleranz
+             tussen:  tussen               inbetween           zwischen
+               type:  type                 type                typ
+          uitlijnen:  uitlijnen            align               ausrichtung
+                van:  van                  from                von
+            variant:  variant              alternative         alternative
+            verhoog:  verhoog              increment           erhoehen
+      verhoognummer:  verhoognummer        incrementnumber     nummererhoehen
+         verwijzing:  verwijzing           reference           referenz
+               voet:  voet                 footer              fusszeile
+        voetafstand:  voetafstand          footerdistance      fusszeilenabstand
+         voetstatus:  voetstatus           footerstatus        fusszeilenstatus
+            voffset:  voffset              voffset             voffset
+           volgende:  volgende             next                folgende
+               voor:  voor                 before              vor
+       voorcommando:  voorcommando         commandbefore       vorigerbefehl
+             vorige:  vorige               previous            vorige
+       vorigenummer:  vorigenummer         previousnumber      vorigenummer
+              wijze:  wijze                way                 art
+                wit:  wit                  white               weiss
+               xmax:  xmax                 xmax                xmax
+            xschaal:  xschaal              xscale              xformat 
+            xoffset:  xoffset              xoffset             xoffset
+              xstap:  xstap                xstep               xschritt
+            xfactor:  xfactor              xfactor             xfaktor
+               ymax:  ymax                 ymax                ymax
+            yschaal:  yschaal              yscale              yformat
+            yoffset:  yoffset              yoffset             yoffset
+              ystap:  ystap                ystep               yschritt
+            yfactor:  yfactor              yfactor             yfaktor 
+                zij:  zij                  side                objektabstand
+       zelfdepagina:  zelfdepagina         samepage            selbeseite
+
+\stopconstants
+
+%D \stopcompressdefinitions
+
+%D The keywords of values are very language specific and
+%D therefore variables for the systems. This list shows soem
+%D overlap with the previous one.
+
+%D \startcompressdefinitions
+
+\startvariables       dutch                english             german
+
+                aan:  aan                  on                  an
+          aanelkaar:  aanelkaar            serried             kleinerabstand
+        aansluitend:  aansluitend          joinedup            keinabstand
+           absoluut:  absoluut             absolute            absolut
+          afsluiter:  afsluiter            stopper             trenner
+        achtergrond:  achtergrond          background          hintergrund
+              alles:  alles                all                 alles
+             altijd:  altijd               always              immer
+              beide:  beide                both                beide
+             binnen:  binnen               inner               innen
+             blanko:  blanko               blank               blanko
+           blokkeer:  blokkeer             disable             sperren
+              boven:  boven                top                 oben
+              breed:  breed                wide                breit
+            breedte:  breedte              width               breite
+             buiten:  buiten               outer               aussen
+            Cijfers:  Cijfers              Numbers             Ziffern
+            cijfers:  cijfers              numbers             ziffern
+          commandos:  commandos            commands            befehle
+           commando:  commando             command             befehl
+            concept:  concept              concept             konzept
+                dag:  dag                  day                 tag
+              datum:  datum                date                datum
+             diepte:  diepte               depth               tiefe
+         definitief:  definitief           final               endfassung
+       dubbelzijdig:  dubbelzijdig         doublesided         doppelseitig
+             eerste:  eerste               first               erste
+                elk:  elk                  each                jede
+        enkelzijdig:  enkelzijdig          singlesided         einzelseitig
+               even:  even                 even                gerade
+             extern:  extern               external            extern
+           flexibel:  flexibel             flexible            flexibel
+            forceer:  forceer              force               zwinge
+           gebruikt:  gebruikt             used                verwende
+               geen:  geen                 none                kein
+            geenwit:  geenwit              nowhite             keinweiss
+            globaal:  globaal              global              global
+              groot:  groot                big                 gross
+      grotevoorkeur:  grotevoorkeur        bigpreference       grosszuegig
+           handhaaf:  handhaaf             keep                behalte
+            herstel:  herstel              fix                 stellewiederher
+            herhaal:  herhaal              repeat              wiederholen
+               hier:  hier                 here                hier
+              hoofd:  hoofd                header              kopfzeile
+               hoog:  hoog                 high                hoch
+             hoogte:  hoogte               height              hoehe
+        horizontaal:  horizontaal          horizontal          horizontal
+           inlinker:  inlinker             inleft              imlinken
+            inmarge:  inmarge              inmargin            imrand
+          inrechter:  inrechter            inright             imrechten
+            intekst:  intekst              intext              imtext
+          autointro:  autointro            autointro           autointro
+              intro:  intro                intro               intro
+                 ja:  ja                   yes                 ja
+               jaar:  jaar                 year                jahr
+              kader:  kader                frame               rahmen
+           kantlijn:  kantlijn             marginedge          marginal
+                kap:  kap                  cap                 kap
+           kapitaal:  kapitaal             capital             grossbuchstabe
+            kenmerk:  kenmerk              referral            merkmal
+              klein:  klein                small               klein
+       kleinnormaal:  kleinnormaal         smallnormal         kleinnormal
+        kleinschuin:  kleinschuin          smallslanted        kleingeneigt
+     kleinschuinvet:  kleinschuinvet       smallslantedbold    kleingeneigtfett
+          kleintype:  kleintype            smalltype           kleintippen
+           kleinvet:  kleinvet             smallbold           kleinfett
+     kleinvetschuin:  kleinvetschuin       smallboldslanted    kleinfettgeneigt
+              kleur:  kleur                color               farbe
+           kolommen:  kolommen             columns             spalten
+                kop:  kop                  head                kopf
+              label:  label                label               label
+               laag:  laag                 low                 tief
+            laatste:  laatste              last                letzte
+               lang:  lang                 tall                lang
+               leeg:  leeg                 empty               leer
+             Letter:  Letter               Character           Buchstabe
+             letter:  letter               character           buchstabe
+            Letters:  Letters              Characters          Buchstaben
+            letters:  letters              characters          buchstaben
+               lijn:  lijn                 line                linie
+             linker:  linker               left                linker
+        linkermarge:  linkermarge          leftmargin          linkerrand
+         linkerrand:  linkerrand           leftedge            linkekante
+              links:  links                left                links
+             lokaal:  lokaal               local               lokal
+              maand:  maand                month               monat
+              MAAND:  MAAND                MONTH               MONAT
+                mar:  mar                  mar                 mar
+              marge:  marge                margin              marginalie
+                max:  max                  max                 max
+          mediaeval:  mediaeval            mediaeval           mittelalterlich
+             middel:  middel               medium              mittel
+             midden:  midden               middle              mittig
+               naam:  naam                 name                name
+              naast:  naast                opposite            gegenueber
+                nee:  nee                  no                  nein
+               niet:  niet                 not                 nicht
+              nooit:  nooit                never               nie
+            normaal:  normaal              normal              normal
+             nummer:  nummer               number              nummer
+           onbekend:  onbekend             unknown             unbekannt
+              onder:  onder                bottom              unten
+             oneven:  oneven               odd                 ungerade
+           opelkaar:  opelkaar             packed              kleinerdurchschuss
+             opmaak:  opmaak               markup              umbruch
+            opmarge:  opmarge              atmargin            amrand
+            overlay:  overlay              overlay             overlay
+             pagina:  pagina               page                seite
+       paginanummer:  paginanummer         pagenumber          seitennummer
+            passend:  passend              fit                 passend
+                per:  per                  by                  pro
+         postscript:  postscript           postscript          postscript
+               punt:  punt                 dot                 punkt
+               rand:  rand                 edge                kante
+             raster:  raster               screen              raster
+              recht:  recht                right               rechts
+            rechter:  rechter              right               rechter
+       rechtermarge:  rechtermarge         rightmargin         rechterrand
+        rechterrand:  rechterrand          rechterrand         rechterkante
+             rechts:  rechts               right               rechts
+              regel:  regel                line                zeile
+           relatief:  relatief             relative            relativ
+              reset:  reset                reset               zuruecksetzten
+            Romeins:  Romeins              Romannumerals       Roemischezahlen
+            romeins:  romeins              romannumerals       roemischezahlen
+               rond:  rond                 round               rund
+               ruim:  ruim                 broad               breit
+             schuin:  schuin               slanted             geneigt
+          schuinvet:  schuinvet            slantedbold         geneigtfett
+       sectienummer:  sectienummer         sectionnumber       abschnittsnummer
+               smal:  smal                 tall                schmall
+             soepel:  soepel               tolerant            tolerant
+          standaard:  standaard            standard            standard
+              start:  start                start               start
+               stop:  stop                 stop                stop
+             streng:  streng               rigged              streng
+                sub:  sub                  sub                 sub
+                sym:  sym                  sym                 sym
+                its:  its                  its                 its
+            symbool:  symbool              symbol              symbol
+              tekst:  tekst                text                text
+              terug:  terug                backward            rueckwaerts
+               test:  test                 test                test
+               type:  type                 type                tippen
+                uit:  uit                  off                 aus
+               vast:  vast                 fixed               fest
+             verder:  verder               continue            fortsetzten
+          vertikaal:  vertikaal            vertical            vertikal
+                vet:  vet                  bold                fett
+          vetschuin:  vetschuin            boldslanted         fettgeneigt
+            viertal:  viertal              quadruple           viertel
+               voet:  voet                 footer              fusszeile
+           volgende:  volgende             next                folgende
+           voorkeur:  voorkeur             preference          einstellung
+          voorlopig:  voorlopig            temporary           temporaer
+             vorige:  vorige               previous            vorig
+               week:  week                 week                woche
+            weekdag:  weekdag              weekday             wochentag
+            WEEKDAG:  WEEKDAG              WEEKDAY             WOCHENTAG
+             waarde:  waarde               value               wert
+                wit:  wit                  white               weiss
+               zeer:  zeer                 very                sehr
+         zeersoepel:  zeersoepel           verytolerant        sehrtolerant
+         zeerstreng:  zeerstreng           veryrigged          sehrstreng
+
+\stopvariables
+
+%D \stopcompressdefinitions
+
+%D The next setup shows the use of the keyword \type{all}.
+%D These constants are the same for all languages.
+
+%D \startcompressdefinitions
+
+\startconstants       all
+
+                 dx:  dx
+                 dy:  dy
+                 nx:  nx
+                 ny:  ny
+                  n:  n
+               vfil:  vfil
+               hfil:  hfil
+              strut:  strut
+              reset:  reset
+                set:  set
+                
+             escape:  escape
+                
+                apa:  apa 
+
+\stopconstants
+
+%D \stopcompressdefinitions
+
+%D We need some font family switching names both as constant
+%D and as variable.
+
+%D \startcompressdefinitions
+
+\startconstants       dutch                english             german
+
+        calligrafie:  calligrafie          calligraphy         kalligraphie
+        handschrift:  handschrift          handwritten         handschrift
+        schreefloos:  schreefloos          sansserif           grotesk
+             romaan:  romaan               roman               antiqua
+           teletype:  teletype             teletype            fernschreiber
+               type:  type                 type                tippen
+
+\stopconstants
+
+\startvariables       dutch                english             german
+
+        calligrafie:  calligrafie          calligraphy         kalligraphie
+        handschrift:  handschrift          handwritten         handschrift
+        schreefloos:  schreefloos          sansserif           grotesk
+             romaan:  romaan               roman               antiqua
+           teletype:  teletype             teletype            fernschreiber
+               type:  type                 type                tippen
+
+\stopvariables
+
+%D \stopcompressdefinitions
+
+%D All relevent commands of \CONTEXT\ are specified in a
+%D structured way that enables the generation of reference
+%D cards. This specification is setup in a language independant
+%D way. The next category of variables is only used in this
+%D context.
+
+%D \startcompressdefinitions
+
+\startsetupvariables  dutch                english             german
+
+      doornummering:  doornummering        enumeration         nummerierung
+      doordefinitie:  doordefinitie        description         beschreibung
+         doorsprong:  doorsprong           indentation         einzug
+          doorlabel:  doorlabel            labeling            beschriften
+ samengesteldelijst:  samengesteldelijst   combinedlist        kombiniereliste
+             sectie:  sectie               section             abschnitt
+           register:  register             register            register
+           synoniem:  synoniem             synonym             synonym
+         synoniemen:  synoniemen           synonyms            synonyme
+            sorteer:  sorteer              sort                sortiere
+           sorteren:  sorteren             sorts               sortieren   
+               naam:  naam                 name                name
+               blok:  blok                 block               block
+            blokken:  blokken              blocks              bloecke
+             alinea:  alinea               paragraphs          absaetze
+         framedtext:  kadertekst           framedtext          umrahmtertext
+
+\stopsetupvariables
+
+%D \stopcompressdefinitions
+
+%D The number of elements used for composing user defined
+%D commands is rather small. We use a \type{-} for empty
+%D elements.
+
+%D \startcompressdefinitions
+
+\startelements        dutch                english             german
+
+           beginvan:  beginvan             beginof             anfang
+            eindvan:  eindvan              endof               ende
+
+         gekoppelde:  gekoppelde           coupled             verknuepft
+                 in:  in                   -                   ein  
+               leeg:  leeg                 empty               leer
+               lege:  lege                 empty               leer
+               laad:  laad                 load                laden
+              lijst:  lijst                list                auflisten
+           lijstmet:  lijstmet             listof              auflistenvon
+             opmaak:  opmaak               makeup              umbruch
+             plaats:  plaats               place               platziere
+          reserveer:  reserveer            reserve             reservieren
+              start:  start                start               start
+               stel:  stel                 setup               stelle
+               stop:  stop                 stop                stop
+              tekst:  tekst                text                text
+            verhoog:  verhoog              increment           erhoehen
+           volgende:  volgende             next                folgende
+          volledige:  volledige            complete            vollende
+             vorige:  vorige               previous            vorige
+                zie:  zie                  see                 sieh
+           tabelkop:  tabelkop             tablehead           tabellenueberschrift
+        tabelstaart:  tabelstaart          tabletail           tabellenende
+            formule:  formule              formula             formel
+
+\stopelements
+
+%D \stopcompressdefinitions
+
+%D The next set of definitions is used when accessing viewer
+%D capabilities. Their foreign nature is reflected by using 
+%D Capitals. 
+
+%D \startcompressdefinitions
+
+\startvariables      dutch             english              german
+ 
+         FirstPage:  EerstePagina      FirstPage            ErsteSeite
+      PreviousPage:  VorigePagina      PreviousPage         VorigeSeite
+          NextPage:  VolgendePagina    NextPage             FolgendeSeite
+          LastPage:  LaatstePagina     LastPage             LetzteSeite
+      PreviousJump:  VorigeSprong      PreviousJump         VorigerSprung
+          NextJump:  VolgendeSprong    NextJump             NaechsterSprung
+        SwapViewer:  WisselViewer      SwapViewer           WechseleViewer
+        ExitViewer:  VerlaatViewer     ExitViewer           BeendeViewer
+     CloseDocument:  SluitDocument     CloseDocument        SchliesseDokument
+        ViewerHelp:  ViewerHelp        ViewerHelp           ViewerHilfe
+     PrintDocument:  PrintDocument     PrintDocument        DruckeDokument
+    SearchDocument:  DoorzoekDocument  SearchDocument       DokumentDurchsuchen
+       SearchAgain:  HerhaalZoeken     SearchAgain          WeiterSuchen
+
+\stopvariables
+
+%D \stopcompressdefinitions
+
+%D Last we define some constants and variables that are used
+%D in the \PRAGMA\ extensions of \CONTEXT.
+
+%D \startcompressdefinitions
+
+\startconstants       all
+                bet:  bet
+                dat:  dat
+                ken:  ken
+                ref:  ref
+\stopconstants
+
+\startvariables       all
+            formeel:  formeel
+          informeel:  informeel
+           rekening:  rekening
+            sticker:  sticker
+              sheet:  sheet
+              brief:  brief       
+                 ls:  ls
+              avery:  avery
+\stopvariables
+
+%D \stopcompressdefinitions
+
+\endinput
+

@@ -1,0 +1,339 @@
+%D \module
+%D   [       file=font-lbr,
+%D        version=1995.1.1,
+%D          title=\CONTEXT\ Font Macros,
+%D       subtitle=Lucida Bright,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+
+%D The Lucida Bright fonts are both good looking and and
+%D complete. These fonts have prebuilt accented characters,
+%D which means that we use another encoding vector: \YandY\
+%D texnansi. These fonts are a good illustration that a 12 
+%D point corps is indeed never that size. The Lucida Bright 
+%D fonts come in one design size. 
+
+\startcoding[texnansi]
+
+\definecorps [14.4pt,12pt,11pt,10pt,9pt,8pt] [rm]
+  [tf=lbr sa 1, 
+   bf=lbd sa 1, 
+   it=lbi sa 1, 
+   sl=lbsl sa 1, 
+   bi=lbdi sa 1, 
+   bs=lbdi sa 1, 
+  tfa=lbr sa 1.200,
+  tfb=lbr sa 1.440,
+  tfc=lbr sa 1.728,
+  tfd=lbr sa 2.074,
+   sc=lbr sa 0.833]
+
+\definecorps [14.4pt,12pt,11pt,10pt,9pt,8pt] [ss]
+  [tf=lsr sa 1, 
+   bf=lsd sa 1, 
+   it=lsi sa 1, 
+   sl=lsi sa 1, 
+   bi=lsdi sa 1, 
+   bs=lsdi sa 1, 
+  tfa=lsr sa 1.200,
+  tfb=lsr sa 1.440,
+  tfc=lsr sa 1.728,
+  tfd=lsr sa 2.074,
+   sc=lsr sa 0.833]
+
+\definecorps [14.4pt,12pt,11pt,10pt,9pt,8pt] [tt]
+  [tf=lstr sa 1, 
+   sl=lsto sa 1, 
+  tfa=lstr sa 1.200,
+  tfb=lstr sa 1.440,
+  tfc=lstr sa 1.728,
+  tfd=lstr sa 2.074]
+
+\definecorps [14.4pt,12pt,11pt,10pt,9pt,8pt] [hw]
+  [tf=lbh sa 1]
+
+\definecorps [14.4pt,12pt,11pt,10pt,9pt,8pt] [cg]
+  [tf=lbc sa 1]
+
+\definecorps [14.4pt,12pt,11pt,10pt,9pt,8pt] [mm]
+  [ex=lbme sa 1,
+   mi=lbmo sa 1,
+   sy=lbms sa 1,
+   ma=lbma sa 1]
+
+\definecorps [7pt,6pt,5pt] [rm]
+  [tf=lbr sa 1,
+   bf=lbd sa 1,
+   sl=lbi sa 1,
+   it=lbi sa 1]
+
+\definecorps [7pt,6pt,5pt] [ss]
+  [tf=lsr sa 1,
+   sl=lsd sa 1,
+   it=lsi sa 1,
+   bf=lsi sa 1]
+
+\definecorps [7pt,6pt,5pt] [tt]
+  [tf=lstr sa 1,
+   sl=lsto sa 1]
+
+\definecorps [7pt,6pt,5pt] [mm]
+  [ex=lbme sa 1,
+   mi=lbmo sa 1,
+   sy=lbms sa 1,
+   ma=lbma sa 1]
+
+%D Defining the larger alternatives takes only a few 
+%D commands, thanks to \type{sa}. 
+
+\definecorps [14.4pt,12pt,11pt,10pt,9pt,8pt] [rm]
+  [bfa=lbd sa 1.200,
+   bfb=lbd sa 1.440,
+   bfc=lbd sa 1.728,
+   bfd=lbd sa 2.074,
+   sla=lbsl sa 1.200,
+   slb=lbsl sa 1.440,
+   slc=lbsl sa 1.728,
+   sld=lbsl sa 2.074,
+   bsa=lbdi sa 1.200,
+   bsb=lbdi sa 1.440,
+   bsc=lbdi sa 1.728,
+   bsd=lbdi sa 2.074]
+
+\definecorps [14.4pt,12pt,11pt,10pt,9pt,8pt] [ss]
+  [bfa=lsr sa 1.200,
+   bfb=lsr sa 1.440,
+   bfc=lsr sa 1.728,
+   bfd=lsr sa 2.074,
+   sla=lsd sa 1.200,
+   slb=lsd sa 1.440,
+   slc=lsd sa 1.728,
+   sld=lsd sa 2.074,
+   bsa=lsi sa 1.200,
+   bsb=lsi sa 1.440,
+   bsc=lsi sa 1.728,
+   bsd=lsi sa 2.074]
+
+\definecorps [14.4pt,12pt,10pt] [tt]
+  [sla=lsto sa 1.220,
+   slb=lsto sa 1.440,
+   slc=lsto sa 1.728,
+   sld=lsto sa 2.074]
+
+\stopcoding
+
+%D Firt we implement some alternatives for \AMS\ symbols. 
+%D These can be overrules by loading the \AMS\ font module 
+%D afterwards. 
+
+\mathchardef\blacktriangleleft ="01F0 
+\mathchardef\blacktriangleright="01F1 
+\mathchardef\boxtimes          ="02EC 
+
+%D Here I copied the definition file that is part of the 
+%D \YandY\ distribution.  
+
+%D \framed[breedte=\hsize]
+%D   {Copyright (C) 1991 - 1993 \YandY, Inc. All Rights Reserved} 
+
+%D This part of the definition is adapted bij J. Hagen. There
+%D is already an extra family: \type{\mafam} (Math A ). Also, 
+%D the loading of fonts is done somewhere else. 
+
+\unprotect
+
+\let\arfam    = \mafam
+\let\thearfam = \hexmafam
+
+%D This part is adapted to the \CONTEXT\ font||naming method.
+%D Also, we use \type{\setskewchar}, which activates the not 
+%D yet loaded font.   
+
+%D The next definitions are already taken care of.  
+
+%D \starttypen
+%D % \setskewchar{12ptmmmi}='177
+%D % \setskewchar{11ptmmmi}='177 
+%D % \setskewchar{10ptmmmi}='177 
+%D % \setskewchar{9ptmmmi}='177
+%D % \setskewchar{8ptmmmi}='177 
+%D % \setskewchar{7ptmmmi}='177 
+%D % \setskewchar{6ptmmmi}='177
+%D % \setskewchar{5ptmmmi}='177
+%D \stoptypen
+ 
+%D \starttypen
+%D % \setskewchar{12ptmmsy}='60
+%D % \setskewchar{11ptmmsy}='60 
+%D % \setskewchar{10ptmmsy}='60 
+%D % \setskewchar{9ptmmsy}='60
+%D % \setskewchar{8ptmmsy}='60 
+%D % \setskewchar{7ptmmsy}='60 
+%D % \setskewchar{6ptmmsy}='60
+%D % \setskewchar{5ptmmsy}='60
+%D \stoptypen
+
+%D Adjusted for LucidaNewMath||Extension at 10pt and math axis
+%D at 3.13pt Note: delimiter increments are 5.5pt (as opposed
+%D to 6pt in \kap{CM}).
+
+\def\big    #1{{\hbox{$\left#1\vbox to8.20\p@{}\right.\n@space$}}}
+\def\Big    #1{{\hbox{$\left#1\vbox to10.80\p@{}\right.\n@space$}}}
+\def\bigg   #1{{\hbox{$\left#1\vbox to13.42\p@{}\right.\n@space$}}}
+\def\Bigg   #1{{\hbox{$\left#1\vbox to16.03\p@{}\right.\n@space$}}}
+\def\biggg  #1{{\hbox{$\left#1\vbox to17.72\p@{}\right.\n@space$}}}
+\def\Biggg  #1{{\hbox{$\left#1\vbox to21.25\p@{}\right.\n@space$}}}
+\def\n@space  {\nulldelimiterspace\z@ \m@th}
+
+%D Define some extra large sizes. It's always done using 
+%D extensible parts.
+
+\def\bigggl{\mathopen\biggg}
+\def\bigggr{\mathclose\biggg}
+\def\Bigggl{\mathopen\Biggg}
+\def\Bigggr{\mathclose\Biggg}
+
+%D The following is needed if the roman text font is {\em 
+%D not} just \kap{LBR}.
+
+%D Draw the small sizes of $[$ and $]$ from \kap{LBMO} instead
+%D of \kap{LBR}.
+
+\mathcode`\[="4186 \delcode`\[="186302
+\mathcode`\]="5187 \delcode`\]="187303
+
+%D Draw the small sizes of $($ and $)$ from \kap{LBMO} instead 
+%D of \kap{LBR}.
+
+\mathcode`\(="4184 \delcode`\(="184300
+\mathcode`\)="5185 \delcode`\)="185301
+
+%D The small sizes of $\{$ and $\}$ are already drawn from 
+%D \kap{LBMS}. 
+
+%D Draw small $/$ from \kap{LBMO} instead of \kap{LBR}.
+
+\mathcode`\/="013D \delcode`\/="13D30E
+
+%D Draw $=$ and $+$ from \kap{LBMS} instead of \kap{LBR}.
+
+\mathcode`\=="3283 \mathcode`\+="2282
+
+%D Make open face brackets accessible, i.e. [[ and ]].
+
+\def\ldbrack{\delimiter"4182382}
+\def\rdbrack{\delimiter"5183383}
+
+%D Provide access to surface integral signs (linked from text 
+%D to display size).
+
+\mathchardef\surfintop="1390 
+\def\surfint{\surfintop\nolimits}
+
+%D Make medium size integrals available ({\em not} linked to 
+%D display size).
+
+\mathchardef\midintop="1392 
+\def\midint{\midintop\nolimits}
+
+\mathchardef\midointop="1393 
+\def\midoint{\midointop\nolimits}
+
+\mathchardef\midsurfintop="1394 
+\def\midsurfint{\midsurfintop\nolimits}
+
+%D Extensible integral (use with \type{\bigg}, \type{\Bigg}, 
+%D \type{\biggg}, \type{\Biggg} etc).
+
+\def\largeint{\delimiter"135A395}
+
+%D Various types of small integrals.
+
+\mathchardef\dblint  ="0188
+\mathchardef\trplint ="0189
+\mathchardef\contint ="018A
+\mathchardef\surfint ="018B
+\mathchardef\volint  ="018C
+\mathchardef\clwint  ="018D
+\mathchardef\cclwcint="018E
+\mathchardef\clwcint ="018F
+
+%D To close up gaps in special math characters constructed 
+%D from pieces.
+
+\def\joinrel{\mathrel{\mkern-4mu}} 
+
+%D Some characters that need construction in \kap{CM} exist 
+%D complete in \kap{LBMO} or \kap{LBMS}.
+
+\mathchardef\bowtie="31F6
+\mathchardef\models="32EE
+\mathchardef\doteq ="32C9
+\mathchardef\cong  ="329B
+\mathchardef\angle ="028B
+
+%D Some more characters.
+
+% \mathchardef\hbar           ="0\thearfam 1B
+\mathchardef\hbar             ="019D
+\mathchardef\neq              ="3\thearfam 94
+\mathchardef\rightleftharpoons="3\thearfam 7A
+\mathchardef\leftrightharpoons="3\thearfam 79
+\mathchardef\hookleftarrow    ="3\thearfam 3C
+\mathchardef\hookrightarrow   ="3\thearfam 3E
+\mathchardef\mapsto           ="3\thearfam 2C
+
+% \def\longmapsto{\mapstochar\longrightarrow}
+
+%D The ( is not large enough for strut in \kap{LBMO}.
+
+\def\mathstrut{\vphantom{f}}
+
+%D In $n$\hoog{th} root, don't want the $n$ to come too close 
+%D to the radical.
+
+\def\r@@t#1#2%
+  {\setbox\z@\hbox{$\m@th#1\sqrt{#2}$}
+   \dimen@\ht\z@ \advance\dimen@-\dp\z@
+   \mkern5mu\raise.6\dimen@\copy\rootbox \mkern-7.5mu \box\z@}
+
+%D Draw upper case upright greek from LucidaNewMath||Extension.
+
+\mathchardef\Gamma  ="03D0
+\mathchardef\Delta  ="03D1
+\mathchardef\Theta  ="03D2
+\mathchardef\Lambda ="03D3
+\mathchardef\Xi     ="03D4
+\mathchardef\Pi     ="03D5
+\mathchardef\Sigma  ="03D6
+\mathchardef\Upsilon="03D7
+\mathchardef\Phi    ="03D8
+\mathchardef\Psi    ="03D9
+\mathchardef\Omega  ="03DA
+
+%D Draw upper case italic greek from LucidaNewMath||Italic. 
+
+\mathchardef\varGamma  ="0100
+\mathchardef\varDelta  ="0101
+\mathchardef\varTheta  ="0102
+\mathchardef\varLambda ="0103
+\mathchardef\varXi     ="0104
+\mathchardef\varPi     ="0105
+\mathchardef\varSigma  ="0106
+\mathchardef\varUpsilon="0107
+\mathchardef\varPhi    ="0108
+\mathchardef\varPsi    ="0109
+\mathchardef\varOmega  ="010A
+
+%D \type{\matrix} is changed because \kap{LBMO} is not at 10pt.
+
+\def\matrix#1%
+  {\null\,\vcenter{\normalbaselines\m@th
+   \ialign{\hfil$##$\hfil&&\quad\hfil$##$\hfil\crcr
+   \mathstrut\crcr\noalign{\kern-0.9\baselineskip}
+   #1\crcr\mathstrut\crcr\noalign{\kern-0.9\baselineskip}}}\,}
+
+\protect
+
+\endinput

@@ -1,0 +1,687 @@
+%D \module
+%D   [       file=supp-lan,
+%D        version=1997.03.20,
+%D          title=\CONTEXT\ Support Macros,
+%D       subtitle=Language Options,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. Non||commercial use is
+%C granted.
+
+%D \gdef\starttest%
+%D   {\blanko
+%D    \noindent
+%D    \halign\bgroup\tt##\hskip2em&##\hskip2em&##\cr}
+%D
+%D \gdef\stoptest%
+%D   {\egroup
+%D    \blanko}
+%D
+%D \gdef\test#1%
+%D   {\convertargument#1\to\ascii\ascii&\hyphenatedword{#1}&#1\cr}
+
+%D One of \TEX's strong points in building paragraphs is the way
+%D hyphenations are handled. Although for real good hyphenation
+%D of non||english languages some extensions to the program are
+%D needed, fairly good results can be reached with the standard
+%D mechanisms and an additional macro, at least in Dutch.
+
+\unprotect
+
+%D \CONTEXT\ originates in the wish to typeset educational
+%D materials, especially in a technical environment. In
+%D production oriented environments, a lot of compound words
+%D are used. Because the Dutch language poses no limits on
+%D combining words, we often favor putting dashes between those
+%D words, because it facilitates reading, at least for those
+%D who are not that accustomed to it.
+%D
+%D In \TEX\ compound words, separated by a hyphen, are not
+%D hyphenated at all. In spite of the multiple pass paragraph
+%D typesetting this can lead to parts of words sticking into
+%D the margin. The solution lays in saying
+%D \type{spoelwater||terugwinunit} instead of
+%D \type{spoelwater-terugwinunit}. By using a one character
+%D command like \type{|}, delimited by the same character
+%D \type{|}, we get ourselves both a decent visualization (in
+%D \TEXEDIT\ and colored verbatim we color these commands
+%D yellow) and an efficient way of combining words.
+%D
+%D The sequence \type{||} simply leads to two words connected by
+%D a hyphen. Because we want to distinguish such a hyphen from
+%D the one inserted when \TEX\ hyphenates a word, we use a bit
+%D longer one.
+%D
+%D \hyphenation {spoel-wa-ter te-rug-win-unit}
+%D
+%D \starttest
+%D \test {spoelwater||terugwinunit}
+%D \stoptest
+%D
+%D As we already said, the \type{|} is a command. This commands
+%D accepts an optional argument before it's delimiter, which is
+%D also a \type{|}.
+%D
+%D \hyphenation {po-ly-meer che-mie}
+%D
+%D \starttest
+%D \test {polymeer|*|chemie}
+%D \stoptest
+%D
+%D Arguments like \type{*} are not interpreted and inserted
+%D directly, in contrary to arguments like:
+%D
+%D \starttest
+%D \test {polymeer|~|chemie}
+%D \test {|(|polymeer|)|chemie}
+%D \test {polymeer|(|chemie|)| }
+%D \stoptest
+%D
+%D Although such situations seldom occur |<|we typeset thousands
+%D of pages before we encountered one that forced us to enhance
+%D this mechanism|>| we also have to take care of comma's.
+%D
+%D \hyphenation {uit-stel-len}
+%D
+%D \starttest
+%D \test {op||, in|| en uitstellen}
+%D \stoptest
+%D
+%D The next special case (concerning quotes) was brought to my
+%D attention by Piet Tutelaers, one of the driving forces
+%D behind rebuilding hyphenation patterns for the dutch
+%D language.\voetnoot{In 1996 the spelling of the dutch
+%D language has been slightly reformed which made this topic
+%D actual again.} We'll also take care of this case.
+%D
+%D \starttest
+%D \test {AOW|'|er}
+%D \test {cd|'|tje}
+%D \test {ex|-|PTT|'|er}
+%D \test {rock|-|'n|-|roller}
+%D \stoptest
+%D
+%D Tobias Burnus pointed out that I should also support
+%D something like
+%D
+%D \starttest
+%D \test {well|_|known}
+%D \stoptest
+%D 
+%D to strees the compoundness of hyphenated words. 
+%D
+%D Of course we also have to take care of the special case: 
+%D
+%D \starttest
+%D \test {text||color and ||font}
+%D \stoptest
+
+%D \macros
+%D   {installdiscretionaries}
+%D   {}
+%D
+%D The mechanism described here is one of the older inner parts
+%D of \CONTEXT. The most recent extensions concerns some
+%D special cases as well as the possibility to install other
+%D characters as delimiters. The prefered way of specifying
+%D compound words is using \type{||}, which is installed by:
+%D
+%D \starttypen
+%D \installdiscretionaries || -
+%D \stoptypen
+%D
+%D Some alternative definitions are:
+%D
+%D \startbuffer
+%D \installdiscretionaries ** -
+%D \installdiscretionaries ++ -
+%D \installdiscretionaries // -
+%D \installdiscretionaries ~~ -
+%D \stopbuffer
+%D
+%D \typebuffer
+%D
+%D after which we can say:
+%D
+%D \bgroup
+%D \haalbuffer
+%D \starttest
+%D \test {test**test**test}
+%D \test {test++test++test}
+%D \test {test//test//test}
+%D \test {test~~test~~test}
+%D \stoptest
+%D \egroup
+
+%D \macros
+%D   {compoundhyphen,
+%D    beginofsubsentence,endofsubsentence}
+%D   {}
+%D
+%D Now let's go to the macros. First we define some variables.
+%D In the main \CONTEXT\ modules these can be tuned by a setup
+%D command. Watch the (maybe) better looking compound hyphen.
+
+\def\compoundhyphen     {{-}\kern-.25ex{-}}
+\def\beginofsubsentence {---}
+\def\endofsubsentence   {---}
+
+%D The last two variables are needed for subsentences
+%D |<|like this one|>| which we did not yet mention.
+%D
+%D We want to enable breaking but at the same time don't want
+%D compound characters like |-| or || to be separated from the
+%D words. \TEX\ hackers will recognise the next two macro's:
+
+\def\prewordbreak  {\penalty10000\hskip0pt\relax}
+\def\postwordbreak {\penalty0\prewordbreak}
+
+%D We first show the original implementation, which only
+%D supports \type{|} as command and delimiter. Before
+%D activating \type{|} we save it's value:
+%D
+%D \starttypen
+%D \edef\domathmodediscretionary{\string|}
+%D \stoptypen
+%D
+%D after which we're ready to define it's meaning to:
+%D
+%D \starttypen
+%D \catcode`\|=\@@active
+%D
+%D \unexpanded\def|%
+%D   {\ifmmode
+%D      \expandafter\domathmodediscretionary
+%D    \else
+%D      \expandafter\dotextmodediscretionary
+%D    \fi}
+%D \stoptypen
+%D
+%D We need a two stage \type{\futurelet} because we want to
+%D look ahead for both the compound character definition and
+%D the (optional) comma that follows it, and because we want to
+%D prevent that \TEX\ puts this comma on the next line. We use
+%D \type{\next} for easy and fast checking of the argument, we
+%D save this argument (which can consist of more tokens) and
+%D also save the character following the \type{|#1|} in
+%D \type{\nextnext}.
+%D
+%D \starttypen
+%D \def\dotextmodediscretionary%
+%D   {\bgroup
+%D    \futurelet\next\dodotextmodediscretionary}
+%D
+%D \def\dodotextmodediscretionary#1|%
+%D   {\def\betweendiscretionaries{#1}%
+%D    \futurelet\nextnext\dododotextmodediscretionary}
+%D \stoptypen
+%D
+%D The main macro consists of quite some \type{\ifx} tests
+%D while \type{\checkafterdiscretionary} handles the commas.
+%D We show the simplified version here:
+%D
+%D \starttypen
+%D \def\dododotextmodediscretionary%
+%D   {\let\nextnextnext=\egroup
+%D    \ifx     |\next
+%D      \checkafterdiscretionary
+%D      \prewordbreak\hbox{\compoundhyphen\nextnext}\allowbreak
+%D    \else\ifx=\next
+%D      \prewordbreak\compoundhyphen
+%D    \else\ifx~\next
+%D      \discretionary{-}{}{\thinspace}\postwordbreak
+%D    \else\ifx(\next
+%D      \prewordbreak\discretionary{}{(-}{(}\prewordbreak
+%D    \else\ifx)\next
+%D      \prewordbreak\discretionary{-)}{}{)}\prewordbreak
+%D    \else\ifx'\next
+%D      \prewordbreak\discretionary{-}{}{'}\postwordbreak
+%D    \else
+%D      \checkafterdiscretionary
+%D      \prewordbreak\hbox{\betweendiscretionaries\nextnext}\allowbreak
+%D    \fi\fi\fi\fi\fi\fi
+%D    \nextnextnext}
+%D
+%D \def\checkafterdiscretionary%
+%D   {\ifx,\nextnext
+%D      \def\nextnextnext{\afterassignment\egroup\let\next=}%
+%D    \else
+%D      \let\nextnext=\relax
+%D    \fi}
+%D \stoptypen
+%D 
+%D Handling \type{(} and \type{)} is a a bit special, because
+%D \TEX\ sees them as decent hyphenation points, according to
+%D their \type{\lccode} being non||zero. For the same reason,
+%D later on in this module we cannot manipulate the
+%D \type{\lccode} but take the \type{\uccode}.
+
+%D The most recent implementation is more advanced. As
+%D demonstrated we can install delimiters, like:
+%D
+%D \starttypen
+%D \installdiscretionaries || \compoundhyphen
+%D \stoptypen
+%D
+%D This time we have to use a bit more clever way of saving the
+%D math mode specification of the character we're going to
+%D make active. We also save the user supplied compound hyphen.
+%D We show the a bit more traditional implementation first.
+%D
+%D \starttypen
+%D \def\installdiscretionaries#1%
+%D   {\catcode`#1\@@other
+%D    \expandafter\doinstalldiscretionaries\string#1}
+%D
+%D \def\doinstalldiscretionaries#1%
+%D   {\setvalue{mathmodediscretionary#1}{#1}%
+%D    \catcode`#1\@@active
+%D    \dodoinstalldiscretionaries}
+%D
+%D \def\dodoinstalldiscretionaries#1#2%
+%D   {\setvalue{textmodediscretionary\string#1}{#2}%
+%D    \unexpanded\def#1{\discretionarycommand#1}}
+%D \stoptypen
+%D
+%D A bit more \CATCODE\ and character trickery enables us to
+%D discard the two intermediate steps. This trick originates
+%D on page~394 of the \TEX book, in the appendix full of
+%D dirty tricks. The second argument has now become redundant,
+%D but I decided to reserve it for future use. At least it
+%D remembers us of the symmetry.
+
+\def\installdiscretionaries#1#2#3%
+  {\setvalue{mathmodediscretionary\string#1}{\char`#1}%
+   \setvalue{textmodediscretionary\string#1}{#3}%
+   \catcode`#1=\@@active
+   \scratchcounter=\the\uccode`~
+   \uccode`~=`#1
+   \uppercase{\unexpanded\def~{\discretionarycommand~}}%
+   \uccode`~=\scratchcounter}
+
+\def\dohandlemathmodebar#1%
+  {\getvalue{mathmodediscretionary\string#1}}
+
+\def\discretionarycommand%
+  {\ifmmode
+     \expandafter\dohandlemathmodebar
+   \else
+     \expandafter\dotextmodediscretionary
+   \fi}
+
+%D Although adapting character codes and making characters
+%D active can interfere with other features of macropackages,
+%D normally there should be no problems with things like:
+%D
+%D \starttypen
+%D \installdiscretionary || +
+%D \installdiscretionary ++ =
+%D \stoptypen
+%D
+%D The real work is done by the next set of macros. We have
+%D to use a double \type{\futurelet} because we have to take
+%D following characters into account.
+
+\def\dotextmodediscretionary#1%
+  {\bgroup
+   \def\dodotextmodediscretionary##1#1%
+     {\def\betweendiscretionary{##1}%
+      \futurelet\nextnext\dododotextmodediscretionary}%
+   \let\discretionarycommand=#1%
+   \def\textmodediscretionary{\getvalue{textmodediscretionary\string#1}}%
+   \futurelet\next\dodotextmodediscretionary}
+
+\def\dododotextmodediscretionary%
+  {\let\nextnextnext=\egroup
+   \ifx\discretionarycommand\next
+     \checkafterdiscretionary
+     \bgroup
+       \checkbeforediscretionary
+       \prewordbreak\hbox{\textmodediscretionary\nextnext}\allowbreak
+     \egroup
+   \else\ifx=\next
+     \prewordbreak\textmodediscretionary
+   \else\ifx~\next
+     \prewordbreak\discretionary{-}{}{\thinspace}\postwordbreak
+   \else\ifx_\next
+     \prewordbreak\discretionary{\textmodediscretionary}
+       {\textmodediscretionary}{\textmodediscretionary}\prewordbreak
+   \else\ifx(\next
+     \ifdim\lastskip>\!!zeropoint\relax
+       (\prewordbreak
+     \else
+       \prewordbreak\discretionary{}{(-}{(}\prewordbreak
+     \fi
+   \else\ifx)\next
+     \ifx\nextnext\blankspace
+       \prewordbreak)\relax
+     \else
+       \prewordbreak\discretionary{-)}{}{)}\prewordbreak
+     \fi
+   \else\ifx'\next
+     \prewordbreak\discretionary{-}{}{'}\postwordbreak
+   \else\ifx<\next
+     \beginofsubsentence\prewordbreak\beginofsubsentencespacing
+   \else\ifnum\uccode`>=\nextuccode
+     \endofsubsentencespacing\prewordbreak\endofsubsentence
+   \else
+     \checkafterdiscretionary
+     \bgroup
+       \checkbeforediscretionary
+       \prewordbreak\hbox{\betweendiscretionary\nextnext}\allowbreak
+     \egroup
+   \fi\fi\fi\fi\fi\fi\fi\fi\fi
+   \nextnextnext}
+
+\def\checkbeforediscretionary%
+  {\setbox0=\lastbox
+   \ifdim\wd0=\!!zeropoint
+     \let\postwordbreak=\prewordbreak
+   \fi
+   \box0\relax}
+
+\def\checkafterdiscretionary%
+  {\ifx,\nextnext
+     \def\nextnextnext{\afterassignment\egroup\let\next=}%
+   \else
+     \let\nextnext=\relax
+   \fi}
+
+%D The macro \type{\checkbeforediscretionary} takes care of 
+%D loners like \type{||word}, while it counterpart 
+%D \type{\checkafterdiscretionary} is responsible for handling 
+%D the comma. 
+
+%D \macros
+%D   {beginofsubsentencespacing,endofsubsentencespacing}
+%D   {}
+%D 
+%D In the previous macros we provided two hooks which can be 
+%D used to support nested sub||sentences. In \CONTEXT\ these 
+%D hooks are used to insert a small space when needed. 
+
+\let\beginofsubsentencespacing=\relax
+\let\endofsubsentencespacing  =\relax
+
+%D Before we show some more tricky alternative, we first install
+%D the mechanism:
+
+\installdiscretionaries || \compoundhyphen
+
+%D One of the drawbacks of this mechanism is that characters can
+%D be made active afterwards. The next alternative can be used
+%D in such situations.  This time we don't compare the arguments
+%D directly but use the \type{\uccode}'s instead. \TEX\
+%D initializes these codes of the alphabetics glyphs to their
+%D uppercase counterparts. Normally the other characters remain
+%D zero. If so, we can use the \type{\uccode} as a signal.
+
+%D \macros
+%D   {enableactivediscretionaries}
+%D   {}
+%D
+%D The more advanced mechanism is activated by calling:
+%D
+%D \starttypen
+%D \enableactivediscretionaries
+%D \stoptypen
+%D
+%D which is defined as:
+
+\def\enableactivediscretionaries%
+  {\uccode`'=`'\relax \uccode`~=`~\relax \uccode`_=`_\relax
+   \uccode`(=`(\relax \uccode`)=`)\relax \uccode`==`=\relax
+   \uccode`<=`<\relax \uccode`>=`>\relax
+   \let\dotextmodediscretionary     = \activedotextmodediscretionary
+   \let\dododotextmodediscretionary = \activedododotextmodediscretionary}
+
+%D We only have to redefine two macros. While saving the
+%D \type{\uccode} in a macro we have to take care of empty
+%D arguments, like in \type{||}.
+
+\def\activedotextmodediscretionary#1%
+  {\bgroup
+   \def\dodotextmodediscretionary##1#1%
+     {\def\betweendiscretionary{##1}%
+      \def\nextuccode####1####2\relax%
+        {\ifcat\noexpand####1\noexpand\relax
+           \edef\nextuccode{0}%
+         \else
+           \edef\nextuccode{\the\uccode`####1}%
+         \fi}%
+      \nextuccode##1@\relax
+      \futurelet\nextnext\dododotextmodediscretionary}%
+   \let\discretionarycommand=#1%
+   \def\textmodediscretionary{\getvalue{textmodediscretionary\string#1}}%
+   \futurelet\next\dodotextmodediscretionary}
+
+%D This time we use \type{\ifnum}:
+
+\def\activedododotextmodediscretionary%
+  {\let\nextnextnext=\egroup
+   \ifx\discretionarycommand\next
+     \checkafterdiscretionary
+     \bgroup
+       \checkbeforediscretionary
+       \prewordbreak\hbox{\textmodediscretionary\nextnext}\allowbreak
+     \egroup
+   \else\ifnum\uccode`==\nextuccode
+     \prewordbreak\textmodediscretionary
+   \else\ifnum\uccode`~=\nextuccode
+     \prewordbreak\discretionary{-}{}{\thinspace}\postwordbreak
+   \else\ifnum\uccode`_=\nextuccode
+     \prewordbreak\discretionary{\textmodediscretionary} 
+       {\textmodediscretionary}{\textmodediscretionary}\prewordbreak
+   \else\ifnum\uccode`(=\nextuccode
+     \ifdim\lastskip>\!!zeropoint\relax
+       (\prewordbreak
+     \else
+       \prewordbreak\discretionary{}{(-}{(}\prewordbreak
+     \fi
+   \else\ifnum\uccode`)=\nextuccode
+     \ifx\nextnext\blankspace
+       \prewordbreak)\relax
+     \else
+       \prewordbreak\discretionary{-)}{}{)}\prewordbreak
+     \fi
+   \else\ifnum\uccode`'=\nextuccode
+     \prewordbreak\discretionary{-}{}{'}\postwordbreak
+   \else\ifnum\uccode`<=\nextuccode
+     \beginofsubsentence\prewordbreak\beginofsubsentencespacing
+   \else\ifnum\uccode`>=\nextuccode
+     \endofsubsentencespacing\prewordbreak\endofsubsentence
+   \else 
+     \checkafterdiscretionary
+     \bgroup
+       \checkbeforediscretionary
+       \prewordbreak\hbox{\betweendiscretionary\nextnext}\allowbreak
+     \egroup
+   \fi\fi\fi\fi\fi\fi\fi\fi\fi
+   \nextnextnext}
+
+%D Now we can safely do things like: \enableactivediscretionaries
+%D
+%D \starttypen
+%D \catcode`<=\@@active  \def<{hello there}
+%D \catcode`>=\@@active  \def>{hello there}
+%D \catcode`(=\@@active  \def({hello there}
+%D \catcode`)=\@@active  \def){hello there}
+%D \stoptypen
+%D
+%D In normal day||to||day production of texts this kind of
+%D activation is seldom used.\voetnoot{In the \CONTEXT\ manual
+%D the \type{<} and \type{>} are made active and used for some
+%D cross||reference trickery.} If so, we have to take care of
+%D the math mode explicitly, just like we did when making
+%D \type{|} active. It can be confusing too, especially when we
+%D load macropackages afterwards that make use of \type{<} in
+%D \type{\ifnum} or \type{\ifdim} statements.
+
+%D \macros
+%D   {installcompoundcharacter}
+%D   {}
+%D
+%D When Tobias Burnus started translating the dutch manual of
+%D \PPCHTEX\ into german, he suggested to let \CONTEXT\ support
+%D the \type{german.sty} method of handling compound
+%D characters, especially the umlaut. This package is meant for
+%D use with \PLAIN\ \TEX\ as well as \LATEX. 
+%D 
+%D I decided to implement compound character support as
+%D versatile as possible. As a result one can define his own
+%D compound character support, like: 
+%D 
+%D \starttypen
+%D \installcompoundcharacter "a {\"a}
+%D \installcompoundcharacter "e {\"e}
+%D \installcompoundcharacter "i {\"i}
+%D \installcompoundcharacter "u {\"u}
+%D \installcompoundcharacter "o {\"o}
+%D \installcompoundcharacter "s {\SS} 
+%D \stoptypen
+%D
+%D or even 
+%D 
+%D \starttypen
+%D \installcompoundcharacter "ck {\discretionary {k-}{k}{ck}}
+%D \installcompoundcharacter "ff {\discretionary{ff-}{f}{ff}}
+%D \stoptypen
+%D 
+%D The support is not limited to alphabetic characters, so the 
+%D next definition is also valid. 
+%D 
+%D \starttypen
+%D \installcompoundcharacter ". {.\doifnextcharelse{\spacetoken}{}{\kern.125em}}
+%D \stoptypen
+%D 
+%D The implementation looks familiar and uses the same tricks as
+%D mentioned earlier in this module. We take care of two 
+%D arguments, which complicates things a bit.  
+
+\def\@nc@{@nc@} % normal character 
+\def\@cc@{@cc@} % compound character 
+\def\@cs@{@cs@} % compound characters 
+
+\def\installcompoundcharacter #1#2#3 #4% 
+  {\setvalue{\@nc@\string#1}{\char`#1}%
+   \def\!!stringa{#3}%
+   \ifx\!!stringa\empty
+     \setvalue{\@cc@\string#1\string#2}{#4}%
+   \else
+     \setvalue{\@cs@\string#1\string#2\string#3}{#4}%
+   \fi
+   \catcode`#1=\@@active
+   \scratchcounter=\the\uccode`~
+   \uccode`~=`#1
+   \uppercase{\unexpanded\def~{\handlecompoundcharacter~}}%
+   \uccode`~=\scratchcounter}
+
+%D In handling the compound characters we have to take care of
+%D \type{\bgroup} and \type{\egroup} tokens, so we end up with
+%D a multi||step interpretation macro. We look ahead for a
+%D \type{\bgroup}, \type{\egroup} or \type{\blankspace}. Being
+%D no user of this mechanism, the credits for testing them goes
+%D to Tobias Burnus, the first german user of \CONTEXT.
+%D
+%D We define these macros as \type{\long} because we can
+%D expect \type{\par} tokens. We need to look into the future
+%D with \type{\futurelet} to prevent spaces from
+%D disappearing.
+
+\def\handlecompoundcharacter#1%
+  {\def\dohandlecompoundcharacter%
+     {\ifx\next\bgroup
+       %\def\next{\dodohandlecompoundcharacter#1}%    % handle "{ee} -> \"ee
+       %\let\next=\relax                              % forget "{ee} -> ee
+        \def\next{\handlecompoundcharacterone#1}%     % ignore "{ee} -> "ee
+      \else\ifx\next\egroup
+        \let\next=\relax
+      \else\ifx\next\blankspace
+        \let\next=\relax
+      \else
+        \def\next{\dodohandlecompoundcharacter#1}%
+      \fi\fi\fi
+      \next}%
+   \futurelet\next\dohandlecompoundcharacter}
+
+\def\dodohandlecompoundcharacter#1#2%
+  {\def\dododohandlecompoundcharacter%
+     {\ifx\next\bgroup
+        \def\next{\handlecompoundcharacterone#1#2}%
+      \else\ifx\next\egroup
+        \def\next{\handlecompoundcharacterone#1#2}%
+      \else\ifx\next\blankspace
+        \def\next{\handlecompoundcharacterone#1#2}%
+      \else
+        \def\next{\handlecompoundcharactertwo#1#2}%
+      \fi\fi\fi
+      \next}%
+   \futurelet\next\dododohandlecompoundcharacter}
+
+%D Besides taken care of the grouping and space tokens, we have
+%D to deal with three situations. First we look if the next
+%D character equals the first one, if so, then we just insert
+%D the original. Next we look if indeed a compound character is
+%D defined. We either execute the compound character or just
+%D insert the first. So we have
+%D
+%D \starttypen
+%D <key><key>  <key><known>  <key><unknown>  
+%D \stoptypen
+%D
+%D In later modules we will see how these commands are used.
+
+\long\def\handlecompoundcharacterone#1#2%
+  {\ifx#1#2%
+     \def\next{\getvalue{\@nc@\string#1}\getvalue{\@nc@\string#2}}%
+   \else
+     \expandafter\ifx\csname\@cc@\string#1\string#2\endcsname\relax
+       \def\next{\getvalue{\@nc@\string#1}#2}%
+     \else
+       \def\next{\getvalue{\@cc@\string#1\string#2}}%
+     \fi
+   \fi
+   \next}
+
+\long\def\handlecompoundcharactertwo#1#2#3%
+  {\ifx#1#2%
+     \def\next{\getvalue{\@nc@\string#1}\getvalue{\@nc@\string#2}#3}%
+   \else
+     \@EA\ifx\csname\@cs@\string#1\string#2\string#3\endcsname\relax
+       \expandafter\ifx\csname\@cc@\string#1\string#2\endcsname\relax
+         \def\next{\getvalue{\@nc@\string#1}#2#3}%
+       \else
+         \def\next{\getvalue{\@cc@\string#1\string#2}#3}%
+       \fi
+     \else
+       \def\next{\getvalue{\@cs@\string#1\string#2\string#3}}%
+     \fi
+   \fi
+   \next}
+
+%D \macros
+%D  {midworddiscretionary}
+%D
+%D If needed, one can add a discretionary hyphen using \type
+%D {\midworddiscretionary}. This macro does the same as 
+%D \PLAIN\ \TEX's \type {\-}, but, like the ones implemented 
+%D earlier, this one also looks ahead for spaces and grouping
+%D tokens. 
+ 
+\def\domidworddiscretionary%
+  {\ifx\next\blankspace\else
+   \ifx\next\bgroup    \else
+   \ifx\next\egroup    \else
+     \discretionary{-}{}{}%
+   \fi\fi\fi}
+
+\def\midworddiscretionary%
+  {\futurelet\next\domidworddiscretionary}
+
+\protect
+
+\endinput
+

@@ -1,0 +1,2548 @@
+%D \module
+%D   [       file=font-ini,
+%D        version=1995.1.1,
+%D          title=\CONTEXT\ Font Macros,
+%D       subtitle=Initialization,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. Non||commercial use is
+%C granted.
+
+\writestatus{loading}{Context Font Macros (ini)}
+
+\unprotect
+
+\startmessages  dutch  library: fonts
+  title: korps
+      1: codering --, groepeer zonodig
+      2: variant -- wordt geladen
+      3: onbekende variant --
+      4: korps -- is niet gedefinieerd
+      5: stijl -- is niet gedefinieerd
+      6: -- wordt geladen
+      7: onbekend formaat --
+      8: stijl -- gedefinieerd
+\stopmessages
+
+\startmessages  english  library: fonts
+  title: corps
+      1: coding --, one could use grouping
+      2: variant -- is loaded
+      3: unknown variant --
+      4: corps -- is not defined
+      5: style -- is not defined
+      6: -- is loaded
+      7: unknown format --
+      8: style -- defined
+\stopmessages
+
+\startmessages  german  library: fonts
+  title: Fliesstext
+      1: Kodierung --, Gruppierung moeglich
+      2: Variante -- ist geladen
+      3: Unbekannte Variante --
+      4: Fliesstext -- ist nicht definiert
+      5: Stil -- ist nicht definiert
+      6: -- ist geladen
+      7: unbekanntes Format --
+      8: Stil -- definiert
+\stopmessages
+
+%D This module is one of the oldest modules of \CONTEXT. The
+%D macros below evolved out of the \PLAIN\ \TEX\ macros and
+%D therefore use a similar naming scheme (\type{\rm},
+%D \type{\bf}, etc). This module grew out of our needs. We
+%D started with the \PLAIN\ \TEX\ definitions, generalized the
+%D underlaying macros, and extended those to a level at which
+%D probably no one will ever recognize them.
+%D
+%D One important characteristic of the font mechanism presented
+%D here is the postponing of font loading. This makes it
+%D possible to distribute \type{fmt} files without bothering
+%D about the specific breed of \type{tfm} files.
+%D
+%D Another feature implemented here is the massive switching
+%D from roman to {\ss sans serif}, {\tt teletype} or else. This
+%D means one doesn't have to take care of all kind of relations
+%D between fonts.
+
+%D \macros
+%D   {rm,ss,tt,hw,cg}
+%D
+%D Fonts are defined in separate files. When we define a font,
+%D we distinguish between several styles. In most cases we will
+%D use:
+%D
+%D \startregelcorrectie
+%D \starttabel[|l||]
+%D \HL
+%D \NC roman     \NC \type{\rm} \NC\FR
+%D \NC sansserif \NC \type{\ss} \NC\MR
+%D \NC type      \NC \type{\tt} \NC\LR
+%D \HL
+%D \stoptabel
+%D \stopregelcorrectie
+%D
+%D The number of styles is not limited to these three. When
+%D using Lucida Bright we can for instance also define:
+%D
+%D \startregelcorrectie
+%D \starttabel[|l||]
+%D \HL
+%D \NC handwritten \NC \type{\hw} \NC\FR
+%D \NC calligraphy \NC \type{\cg} \NC\LR
+%D \HL
+%D \stoptabel
+%D \stopregelcorrectie
+%D
+%D Anyone who feels the need, can define additional ones, like
+%D
+%D \startregelcorrectie
+%D \starttabel[|l||]
+%D \HL
+%D \NC faxfont    \NC \type{\ff} \NC\FR
+%D \NC blackboard \NC \type{\bb} \NC\LR
+%D \HL
+%D \stoptabel
+%D \stopregelcorrectie
+%D
+%D Or even
+%D
+%D \startregelcorrectie
+%D \starttabel[|l||]
+%D \HL
+%D \NC hebrew \NC \type{\hb} \NC\SR
+%D \HL
+%D \stoptabel
+%D \stopregelcorrectie
+%D
+%D Styles are grouped in font sets. At the moment there are
+%D three main sets defined:
+%D
+%D \startregelcorrectie
+%D \starttabel[|l|l||]
+%D \HL
+%D \NC Computer Modern Roman     \NC Knuth             \NC \type{cmr} \NC\FR
+%D \NC Lucida Bright             \NC Bigelow \& Holmes \NC \type{lbr} \NC\MR
+%D \NC Standard Postscript Fonts \NC Adobe             \NC \type{pos} \NC\LR
+%D \HL
+%D \stoptabel
+%D \stopregelcorrectie
+%D
+%D There are also some Computer Modern Roman alternatives:
+%D
+%D \startregelcorrectie
+%D \starttabel[|l|l||]
+%D \HL
+%D \NC Computer Modern Roman    \NC Knuth \& Sauter \NC \type{sau} \NC\FR
+%D \NC Euler fonts              \NC Zapf            \NC \type{eul} \NC\MR
+%D \NC Computer Modern Concrete \NC Knuth \& Zapf   \NC \type{con} \NC\LR
+%D \HL
+%D \stoptabel
+%D \stopregelcorrectie
+%D
+%D All these definitions are ordered in files with names like
+%D \type{font-cmr} and \type{font-pos}, where the last three
+%D characters specifiy the name as known to \CONTEXT.
+%D
+%D Within such a font set (\type{cmr}) and style (\type{\rm}) 
+%D we can define a number of text font alternatives:
+%D
+%D \startregelcorrectie
+%D \starttabel[|l||]
+%D \HL
+%D \NC typeface    \NC \type{\tf} \NC\FR
+%D \NC boldface    \NC \type{\bf} \NC\MR
+%D \NC slanted     \NC \type{\sl} \NC\MR
+%D \NC italic      \NC \type{\it} \NC\MR
+%D \NC boldslanted \NC \type{\bs} \NC\MR
+%D \NC bolditalic  \NC \type{\bi} \NC\MR
+%D \NC smallcaps   \NC \type{\sc} \NC\LR
+%D \HL
+%D \stoptabel
+%D \stopregelcorrectie
+
+%D The more primitive is (still) predefined:
+%D
+%D \startregelcorrectie
+%D \starttabel[|l||]
+%D \HL
+%D \NC oldstyle \NC \type{\os} \NC\SR
+%D \HL
+%D \stoptabel
+%D \stopregelcorrectie
+%D
+%D The availability of these alternatives depends on the
+%D completeness of a font family and of course the definitions
+%D in the font files.
+%D
+%D But let's not forget math. In addition to the previous \TEX\
+%D families (the mysterious \type{\fam}'s) we've got some more:
+%D
+%D \startregelcorrectie
+%D \starttabel[|l||]
+%D \HL
+%D \NC Math Roman  \NC \type{\mr} \NC\FR
+%D \NC Math Italic \NC \type{\mi} \NC\MR
+%D \NC Math Symbol \NC \type{\sy} \NC\MR
+%D \NC Math Extra  \NC \type{\ex} \NC\MR
+%D \NC Math A      \NC \type{\ma} \NC\MR
+%D \NC Math B      \NC \type{\mb} \NC\MR
+%D \NC Math C      \NC \type{\mc} \NC\LR
+%D \HL
+%D \stoptabel
+%D \stopregelcorrectie
+%D
+%D Users can call for specific fonts in many ways. Switches to
+%D other typefaces, like the switch from normal to bold, are as
+%D intuitive as possible, which means that all dependant fonts
+%D also switch. One can imagine that this takes quite some
+%D processing time.
+%D
+%D Internally fonts are stored as combination of size, style
+%D and alternative, e.g. \type{12pt}+\type{\ss}+\type{\bf}.
+%D Users are not confronted with sizes, but use the style or
+%D style+alternative to activate them.
+%D
+%D During the definition of a corps one can also declare the
+%D available larger alternatives:
+%D
+%D \starttypen
+%D \tf \tfa \tfb \tfc ...
+%D \bf \bfa \bfb \bfc ...
+%D \sl \sla \slb \slc ...
+%D \stoptypen
+%D
+%D The smaller ones are automatically supplied and derived from
+%D the the corps environment.
+%D
+%D \starttypen
+%D \tfx \tfxx
+%D \bfx \bfxx
+%D \slx \slxx
+%D \stoptypen
+%D
+%D There are only two smaller alternatives per style. The
+%D larger alternatives on the other hand have no limitations.
+%D
+%D These larger alternatives are mostly used in chapter and
+%D section titles or on title pages. When one switches to a
+%D larger alternative, the bold an other ones automatically
+%D adapt themselves:
+%D
+%D \startbuffer
+%D \tfd Hi \bf there\sl, here \tfb I \bf am
+%D \stopbuffer
+%D
+%S \startsmaller
+%D \typebuffer
+%S \stopsmaller
+%D
+%D therefore becomes:
+%D
+%D \startvoorbeeld
+%D \haalbuffer
+%D \stopvoorbeeld
+%D
+%D Maybe this mechanism isn't always as logic, but as said
+%D before, we tried to make it as intuitive as possible.
+%D
+%D So a specific kind of glyph can be characterized by:
+%D
+%D \startsmaller
+%D family (cmr) + corps (12pt) + style (rm) + alternative (bf) + size (a)
+%D \stopsmaller
+%D
+%D The last component (the size) is optional.
+%D
+%D We introduced \type{\tf} as command to call for the current
+%D normally sized typeface. This commands results in roman,
+%D sans serif, teletype or whatever style is in charge. Such
+%D rather massive switches of style sometimes take more
+%D processing time than comfortable. Of course there is a
+%D workaround for this: we can call fonts directly by means of
+%D commands like:
+%D
+%D \starttypen
+%D \rmtf \sssl \tttf \rmbsa
+%D \stoptypen
+%D
+%D One should realize that this fast calls have limitations,
+%D they lack for instance automatic super- and subscript
+%D support.
+%D
+%D This leaves us two more commands: \type{\tx} and
+%D \type{\txx}. These activate a smaller and even more smaller
+%D font than the current one and adapt themselves to the
+%D current alternative, so when \type{\bf} is active,
+%D \type{\tx} gives a smaller boldface, which in turn can be
+%D called directly by \type{\bfx}.
+%D
+%D These two smaller alternatives are specified by the corps
+%D environment and therefore not necessarily have similar sizes
+%D as \type{\scriptsize} and \type{\scriptscriptsize}. The main
+%D reason for this incompatibility (which can easily be undone)
+%D lays in the fact that we often want a bit bigger characters
+%D than in math mode. In \CONTEXT\ for instance the \type{\tx}
+%D and \type{\txx} commands are used for surrogate
+%D \kap{smallcaps} which support both nesting and alternatives,
+%D like in {\bf\kap{a \kap{small} world}}, which was typeset by
+%D
+%D \starttypen
+%D \bf\kap{a \kap{small} world}
+%D \stoptypen
+%D
+%D And compare $\rm \scriptstyle THIS$ with the slightly larger
+%D \kap{THIS}: \ruledhbox{$\rm \scriptstyle\ scriptstyle THIS$}
+%D or \ruledhbox{\kap{THIS x style}} makes a big difference.
+
+%D \macros
+%D   {mf}
+%D  
+%D Math fonts are a species in their own. They are tightly
+%D hooked into smaller and even smaller ones of similar breed
+%D to form a tight family. Let's first see how these are
+%D related:
+%D
+%D \startbuffer
+%D $\tf x^2+\bf x^2+\sl x^2+\it x^2+\bs x^2+ \bi x^2 =\rm 6x^2$
+%D $\tf x^2+\bf x^2+\sl x^2+\it x^2+\bs x^2+{\bi x^2}=\rm 6x^2$
+%D $\tf x^2+\bf x^2+\sl x^2+\it x^2+\bs x^2+ \bi x^2 =\tf 6x^2$
+%D $\tf x^2+\bf x^2+\sl x^2+\it x^2+\bs x^2+{\bi x^2}=\tf 6x^2$
+%D $\tf x^2+\bf x^2+\sl x^2+\it x^2+\bs x^2+ \bi x^2 =\bf 6x^2$
+%D $\tf x^2+\bf x^2+\sl x^2+\it x^2+\bs x^2+{\bi x^2}=\bf 6x^2$
+%D $\tf x^2+\bf x^2+\sl x^2+\it x^2+\bs x^2+ \bi x^2 =\sl 6x^2$
+%D $\tf x^2+\bf x^2+\sl x^2+\it x^2+\bs x^2+{\bi x^2}=\sl 6x^2$
+%D \stopbuffer
+%D
+%D \typebuffer
+%D
+%D Gives both an expected and unexpected result:
+%D
+%D \startvoorbeeld
+%D \startregels
+%D \haalbuffer
+%D \stopregels
+%D \stopvoorbeeld
+%D
+%D We see here that the character shapes change accordingly to
+%D the current family, but that the symbols are always typeset
+%D in the font assigned to \type{\fam0}. 
+%D
+%D \startbuffer
+%D $\tf\mf x^2 + x^2 + x^2 + x^2 + x^2 + x^2 = 6x^2$
+%D $\bf\mf x^2 + x^2 + x^2 + x^2 + x^2 + x^2 = 6x^2$
+%D $\sl\mf x^2 + x^2 + x^2 + x^2 + x^2 + x^2 = 6x^2$
+%D $\bs\mf x^2 + x^2 + x^2 + x^2 + x^2 + x^2 = 6x^2$
+%D $\it\mf x^2 + x^2 + x^2 + x^2 + x^2 + x^2 = 6x^2$
+%D $\bi\mf x^2 + x^2 + x^2 + x^2 + x^2 + x^2 = 6x^2$
+%D \stopbuffer
+%D 
+%D \startvoorbeeld
+%D \startregels
+%D \haalbuffer
+%D \stopregels
+%D \stopvoorbeeld
+%D
+%D In this example we see a new command \type{\mf} surface
+%D which means as much as {\em math font}. This commands
+%D reactivates the last font alternative and therefore equals
+%D \type{\bf}, \type{\sl} etc. but by default it equals
+%D \type{\tf}:
+
+\def\mf{\tf}
+
+%D The previous example was typeset saying:
+%D
+%D \typebuffer
+%D 
+%D Beware: the exact location of \type{\mf} is not that 
+%D important, we could as well has said
+%D
+%D \startbuffer
+%D $\bf x^2 + x^2 + x^2 + x^2 + x^2 + x^2 = \mf 6x^2$
+%D \stopbuffer
+%D
+%D This is due to the way \TEX\ handles fonts in math mode. 
+%D
+%D Of course we'll have to redefine \type{\mf} every time we
+%D change the current \type{\fam}.
+
+%D \macros
+%D   {mbox,enablembox,mathop}
+%D   
+%D Now how can we put this to use? Will the next sequence
+%D give the desired result?
+%D
+%D \startbuffer
+%D $\bf x^2 + \hbox{\mf whatever} + \sin(2x)$
+%D \stopbuffer
+%D
+%D \typebuffer
+%D
+%D It won't!
+%D
+%D \startvoorbeeld
+%D \let\mathop=\normalmathop \haalbuffer
+%D \stopvoorbeeld
+%D
+%D The reason for this is that \type{\sin} is defined as:
+%D
+%D \starttypen
+%D \def\sin{\mathop{\rm sin}\nolimits}
+%D \stoptypen
+%D
+%D We can fix this by defining
+
+\let\normalmathop=\mathop
+
+\def\mathop%
+  {\normalmathop
+   \bgroup
+   \let\rm=\mf
+   \let\next=}
+
+%D Of course this can be fixed, if not by a very dirty trick:
+%D redefining the \TEX\ primitive \type{\hbox}:
+%D
+%D \starttypen
+%D \let\normalhbox=\hbox
+%D
+%D \def\hbox%
+%D   {\ifmmode\mbox\else\normalhbox\fi}
+%D \stoptypen
+%D
+%D With
+%D
+%D \starttypen
+%D \def\mbox#1#%
+%D   {\normalhbox#1\bgroup\mf\let\next=}
+%D \stoptypen
+%D
+%D or more robust, that is, also accepting \type{\hbox\bgroup}:
+%D
+%D \starttypen
+%D \def\mbox%
+%D   {\normalhbox\bgroup\mf
+%D    \dowithnextbox{\box\nextbox\egroup}%
+%D    \normalhbox}
+%D \stoptypen
+%D
+%D And now:
+%D
+%D \startbuffer
+%D $\bf x^2 + \hbox{whatever} + \sin(2x)$
+%D \stopbuffer
+%D
+%D \typebuffer
+%D
+%D Indeed gives:
+%D
+%D \startvoorbeeld
+%D \enablembox\haalbuffer
+%D \stopvoorbeeld
+%D
+%D But, do we want this kind of trickery to be activated? No,
+%D simply because we cannot be sure of incompatibilties,
+%D although for instance unboxing goes ok. Therefore we
+%D introduce:
+
+\def\normalmbox%
+  {\normalhbox\bgroup\mf
+   \dowithnextbox{\box\nextbox\egroup}\normalhbox}
+
+\def\mbox%
+  {\ifmmode\normalmbox\else\normalhbox\fi}
+
+\def\enablembox%
+  {\appendtoks
+     \let\normalhbox=\hbox
+     \let\hbox=\mbox
+   \to\everymath}
+
+%D So in fact one can enable feature if needed. I would say:
+%D go along, but use grouping if needed!
+
+%D \macros
+%D   {mrfam,mifam,syfam,exfam,
+%D    bsfam,bifam,scfam,tffam,
+%D    mafam,mbfam,msfam}
+%D   
+%D After this short mathematical excursion, we enter the world
+%D of fonts and fontswitching. We start with something very
+%D \TEX: \type{\fam} specified font families. \TEX\ uses
+%D families for managing fonts in math mode. Such a family has
+%D three members: text, script and scriptscript: $x^{y^z}$. In
+%D \CONTEXT\ we take a bit different approach than \PLAIN\
+%D \TEX\ does. \PLAIN\ \TEX\ needs at least four families for
+%D typesetting math. We use those but give them symbolic names.
+
+\def\mrfam{0}  %  0  (Plain TeX)  Math Roman
+\def\mifam{1}  %  1  (Plain TeX)  Math Italic
+\def\syfam{2}  %  2  (Plain TeX)  Math Symbol
+\def\exfam{3}  %  3  (Plain TeX)  Math Extra
+
+%D \PLAIN\ \TEX\ also defines families for {\it italic}, {\sl
+%D slanted} and {\bf bold} typefaces, so we don't have to
+%D define them here.
+%D
+%D \starttypen
+%D \itfam  %  4  (Plain TeX)  Italic
+%D \slfam  %  5  (Plain TeX)  Slanted
+%D \bffam  %  6  (Plain TeX)  Boldface
+%D \stoptypen
+%D
+%D Family~7 in \PLAIN\ \TEX\ is not used in \CONTEXT, because
+%D we do massive switches from roman to sans serif, teletype or
+%D other faces.
+%D
+%D \starttypen
+%D \ttfam  %  7  (Plain TeX)  can be reused!
+%D \stoptypen
+%D
+%D We define ourselves some more families for {\bs bold
+%D slanted}, {\bi bold italic} and {\sc Small Caps}, so
+%D we can use them in math mode too. Instead of separate
+%D families for {\ss sans serif} and \type{teletype} we use the
+%D more general \type{\tffam}, which stands for typeface.
+
+\newfam\bsfam  %  8  (ConTeXt)  BoldSlanted
+\newfam\bifam  %  9  (ConTeXt)  BoldItalic
+\newfam\scfam  %  A  (ConTeXt)  SmallCaps
+\newfam\tffam  %  B  (ConTeXt)  TypeFace
+
+%D Normally \type{\mrfam} equals \type{\tffam}, but a more
+%D distinctive alternatives are possible, for instance the
+%D Euler and Concrete Typefaces.
+%D
+%D After having defined all those in nature non||mathematical
+%D families, we define ourselves some real math ones. These are
+%D needed for the \AMS\ Symbol Fonts and Extended Lucida
+%D Bright.
+
+\newfam\mafam  %  C  (ConTeXt)  Math A Fam (AmsTeX A)
+\newfam\mbfam  %  D  (ConTeXt)  Math B Fam (AmsTeX B)
+\newfam\mcfam  %  E  (ConTeXt)  Math C Fam
+
+%D Because there are 16~families and because \type{\ttfam}
+%D isn't used, at the moment we have two families left:~7
+%D and~F.
+%D
+%D To ease the support of font packages, we als define
+%D shortcuts to these familynames. This is necessary because
+%D the family names are in fact \type{\chardef}'s, which means
+%D that we're dealing with numbers (one can check this by
+%D applying \type{\showthe} and \type{\show}). In the
+%D specification of math symbols however we need hexadecimal
+%D numbers, so we have to convert the \type{\fam}'s value.
+
+\def\hexnumber#1%
+  {\ifcase#1
+     0\or1\or2\or3\or4\or5\or6\or7\or8\or9\or A\or B\or C\or D\or E\or F%
+   \fi}
+
+\edef\hexmrfam {\hexnumber\mrfam}  \edef\hexbsfam {\hexnumber\bsfam}
+\edef\hexmifam {\hexnumber\mifam}  \edef\hexbifam {\hexnumber\bifam}
+\edef\hexsyfam {\hexnumber\syfam}  \edef\hexscfam {\hexnumber\scfam}
+\edef\hexexfam {\hexnumber\exfam}  \edef\hextffam {\hexnumber\tffam}
+\edef\hexitfam {\hexnumber\itfam}  \edef\hexmafam {\hexnumber\mafam}
+\edef\hexslfam {\hexnumber\slfam}  \edef\hexmbfam {\hexnumber\mbfam}
+\edef\hexbffam {\hexnumber\bffam}  \edef\hexmcfam {\hexnumber\mcfam}
+
+%D We define some (very private) constants to improve speed,
+%D memory usage and consistency.
+
+\def\@plain@      {@f@pl@} % plain TeX encoding vector
+\def\@size@       {@f@si@} % corps size prefix (12pt etc)
+\def\@style@      {@f@st@} % full style prefix (roman etc)
+\def\@shortstyle@ {@f@sh@} % short style prefix (rm etc)
+\def\@letter@     {@f@le@} % first alternative typeface
+\def\@noletter@   {@f@no@} % second alternative typeface
+
+%D We also define a list of all text (i.e.\ non math symbol)
+%D families. I considered using something like:
+%D
+%D \starttypen
+%D \def\familylist%
+%D   {\do\c!tf\do\c!sl\do\c!it\do\c!bf\do\c!bs\do\c!bi\do\c!sc}
+%D \stoptypen
+%D
+%D By assigning \type{\do} some suitable meaning one can
+%D process such lists quite fast. The current implementation
+%D uses the commalist processing macros and is not that
+%D slow either.
+
+\def\familylist%
+  {\c!tf,\c!sl,\c!it,\c!bf,\c!bs,\c!bi,\c!sc}
+
+%D All used styles, like rm, ss and tt, are saved in a comma
+%D separated list. Appart from practical limitations one can
+%D define as many styles as needed, but first we
+
+\let\stylelist=\empty
+
+%D Further on we have to take some precautions when dealing
+%D with special characters like~\type{~}, \type{_}
+%D and~\type{^}, so let us define ourselve some handy macros
+%D first.
+
+\def\protectfontcharacters%
+  {\catcode`\~=\@@letter
+   \catcode`\_=\@@letter
+   \catcode`\^=\@@letter\relax}
+
+\def\unprotectfontcharacters%
+  {\catcode`\~=\@@active
+   \catcode`\_=\@@subscript
+   \catcode`\^=\@@superscript\relax}
+
+%D The completeness of the Computer Modern Roman typefaces
+%D makes clear how incomplete other faces are. To honour 7~bit
+%D \ASCII, these fonts were designed using only the first 127
+%D values of the 256 ones that can be presented by one byte.
+%D Nowadays 8~bit character codings are more common, mainly
+%D because they permit us to predefine some composed
+%D characters, which are needed in most european languages.
+%D
+%D Supporting more than the standard \TEX\ encoding vector
+%D |<|which in itself is far from standard and differs per
+%D font|>| puts a burden on the fonts mechanism. The \CONTEXT\
+%D mechanism is far from complete, but can handle several
+%D schemes at once. The main problem lays in the accented
+%D characters and ligatures like~ff, although handling
+%D ligatures is not the responsibility of this module.
+%D
+%D By default, we use \PLAIN\ \TEX's approach of placing
+%D accents. All other schemes sooner or later give problems
+%D when we distribute \DVI||files are distributed across
+%D machines and platforms. Nevertheless, we have to take care
+%D of different encoding vectors, which tell us where to find
+%D the characters we need. This means that all kind of
+%D character placement macro's like \type{\"} and \type{\ae}
+%D have to be implemented  and adapted in a way that suits
+%D these vectors.
+%D
+%D The main difference between different vector is the way
+%D accents are ordered and/or the availability of prebuilt
+%D accented characters. Accented characters can for instance be
+%D called for by sequences like \type{\"e}. Here the \type{\"}
+%D is defined as:
+%D
+%D \starttypen
+%D \def\"#1{{\accent"7F #1}}
+%D \stoptypen
+%D
+%D This macro places the accent \accent"7F {} on top of an~e
+%D gives \"e. Some fonts however can have prebuild accents and
+%D use a more direct approach like
+%D
+%D \starttypen
+%D \def\"#1{\if#1e\char 235\else ... \fi}
+%D \stoptypen
+%D
+%D The latter approach is not used in \CONTEXT, because we
+%D store relevant combinations of accents and characters in
+%D individual macros.
+
+%D We define character substitutes and commands with definition
+%D commands like:
+%D
+%D \starttypen
+%D \startcoding[texnansi]
+%D
+%D \defineaccent " a           228
+%D \defineaccent ^ e           234
+%D \defineaccent ' {\dotlessi} 237
+%D
+%D \definecharacter ae 230
+%D \definecharacter oe 156
+%D
+%D \definecommand b \newansib
+%D \definecommand c \newansic
+%D
+%D \stopcoding
+%D \stoptypen
+%D 
+%D The last argument of \type{\defineaccent} and
+%D \type{\definecharacter} tells \TEX\ the position of the
+%D accented character in the encoding vector. In order to
+%D complish this, we tag each implementation with the character
+%D coding identifier. We therefore need two auxiliary variables
+%D \type{\charactercoding} and \type{\nocharactercoding}. These
+%D contain the current and default encoding vectors and both
+%D default to the \PLAIN\ one. 
+
+\let\charactercoding   = \@plain@
+\let\nocharactercoding = \@plain@
+
+%D \macros
+%D   {startcoding}
+%D   
+%D Before we can redefine accents and special characters, we
+%D have to tell \CONTEXT\ what encoding is in force. The next
+%D command is responsible for doing this and also takes care of
+%D the definition of the recoding commands.
+
+\def\startcoding[#1]%
+  {\protectfontcharacters
+   \showmessage{\m!fonts}{1}{#1}%
+   \def\charactercoding{@#1@}}
+
+\def\stopcoding%
+  {\let\charactercoding=\@plain@
+   \unprotectfontcharacters}
+
+%D \macros
+%D   {defineaccent, definecharacter, definecommand}
+%D   
+%D The actual definition of accents, special characters and
+%D commands is done with the next three commands.
+
+\def\defineaccent#1 #2 #3 %
+  {\setvalue{\charactercoding#1\string#2}{\char#3}}%
+
+\def\definecommand#1 #2 %
+  {\setvalue{\charactercoding\string#1}{#2}}
+
+\def\definecharacter#1 #2 %
+  {\setvalue{\charactercoding\string#1}{\char#2}}
+
+%D Here we see that redefining accents is characters is more
+%D or less the same as redefining commands. We also could have
+%D said:
+%D
+%D \starttypen
+%D \def\defineaccent#1 #2 {\definecommand#1\string#2 \char}
+%D \def\definecharacter#1 {\definecommand#1 \char}
+%D \stoptypen
+
+%D \macros
+%D   {redefineaccent}
+%D   
+%D Telling \CONTEXT\ how to treat accents and special
+%D characters is a two stage process. First we signal the
+%D system which commands are to be adapted, after which we can
+%D redefine their behavior when needed. We showed this in the
+%D previous paragraphs. These redefinitions are grouped at the
+%D end of this file, but we show some examples here.
+%D
+%D Accents or accent generating commands are redefined by:
+%D
+%D \starttypen
+%D \redefineaccent  '  % grave
+%D \redefineaccent  "  % dieresis
+%D \redefineaccent  ^  % circumflex
+%D \redefineaccent  v  % caron
+%D \stoptypen
+%D
+%D The original \PLAIN\ \TEX\ meaning of each accent generating
+%D command is saved first. Next these commands are redefined to
+%D do an indirect call to a macro that acts according to the
+%D encoding vector in use.
+
+\def\redefineaccent%
+  {\protectfontcharacters
+   \doredefineaccent}
+
+\def\doredefineaccent#1 %
+  {\def\!!stringa{\nocharactercoding\string#1}%
+   \@EA\letvalue\@EA\!!stringa\@EA=\csname\string#1\endcsname
+   \setvalue{\string#1}{\dohandleaccent#1}%
+   \unprotectfontcharacters}
+
+%D The next (in fact three) macros to take care of \type{\"e}
+%D as well as \type{\"{e}} situations. The latter one is always
+%D handled by \TEX's \type{\accent} primitive, but the former
+%D one can put the accents on top of characters as well as use
+%D \type{\char} to call for a character directly.
+
+\unexpanded\def\dohandleaccent#1%
+  {\def\dodohandleaccent%
+     {\ifx\next\bgroup
+        \def\next{\getvalue{\nocharactercoding#1}}%
+      \else
+        \def\next{\dododohandleaccent#1}%
+      \fi
+      \next}%
+   \futurelet\next\dodohandleaccent}
+
+\def\dododohandleaccent#1#2%
+  {\bgroup
+   \ifundefined{\charactercoding#1\string#2}%
+     \def\\{\getvalue{\nocharactercoding#1}#2\egroup}%
+   \else
+     \def\\{\getvalue{\charactercoding#1\string#2}\egroup}%
+   \fi
+   \\}
+
+%D The trick with \type{\\} is needed to prevent spaces from
+%D being gobbled after the accented character, should we have
+%D \type{\next}, we should have ended up with gobbled spaces.
+
+%D \macros
+%D   {redefinecommand}
+%D   
+%D Redefinition of encoding dependant commands like \type{\b}
+%D and \type{\c} can be triggered by:
+%D
+%D \starttypen
+%D \redefinecommand  b  % something math
+%D \redefinecommand  c  % something math
+%D \stoptypen
+%D
+%D Handling of characters is easier than handling accents
+%D because here we don't have to take care of arguments. We
+%D just call for the right glyph in the right place.
+%D
+%D The \type{\next} construction permits handling of commands
+%D that take arguments. This means that we can use this
+%D command to redefine accent handling commands too.
+
+\def\redefinecommand#1 %
+  {\def\!!stringa{\nocharactercoding#1}%
+   \@EA\letvalue\@EA\!!stringa\@EA=\csname#1\endcsname
+   \setvalue{#1}{\dohandlecommand{#1}}}%
+
+\unexpanded\def\dohandlecommand#1%
+  {\doifdefinedelse{\charactercoding#1}
+     {\def\next{\getvalue{\charactercoding#1}}}
+     {\def\next{\getvalue{\nocharactercoding#1}}}%
+   \next}
+
+%D \macros
+%D   {redefinecharacter}
+%D   
+%D Special characters, which differ from accented characters
+%D in that they are to be presented as they are, are redefined
+%D by
+%D
+%D \starttypen
+%D \redefinecharacter  ae  % ae
+%D \redefinecharacter  cc  % ccedilla
+%D \stoptypen
+%D
+%D To keep things simple, we just copy this command:
+
+\let\redefinecharacter=\redefinecommand
+
+%D \macros
+%D   {magfactor,magfactorhalf}
+%D   
+%D There are several ways to specify a font. Three of them are
+%D pure \TeX\ ones, the fourth one is new:
+%D
+%D \starttypen
+%D \font\name=cmr12
+%D \font\name=cmr12 at 10pt
+%D \font\name=cmr12 scaled \magstep2
+%D \font\name=cmr12 sa 1.440
+%D \stoptypen
+%D
+%D The non||\TEX\ alternative \type{sa} stands for {\em scaled
+%D at}. This means as much as: scale the corpssize with this
+%D factor. The value 1.440 in this example is derived
+%D from the \type{\magstep}'s as mentioned in
+%D \in{table}[tab:magstep]. We therefore introduce
+%D \type{\magfactor} as an alternative for \type{\magstep}.
+%D
+%D \plaatstabel[hier][tab:magstep]
+%D   {Factors to be used with \type{sa.}}
+%D \starttabel[|c|c|c|]
+%D \HL
+%D \NC \bf magstep \NC \bf equivalent     \NC \bf factor \NC\SR
+%D \HL
+%D \NC 1           \NC \type{\magfactor1} \NC 1.200      \NC\FR
+%D \NC 2           \NC \type{\magfactor2} \NC 1.440      \NC\MR
+%D \NC 3           \NC \type{\magfactor3} \NC 1.728      \NC\MR
+%D \NC 4           \NC \type{\magfactor4} \NC 2.074      \NC\MR
+%D \NC 5           \NC \type{\magfactor5} \NC 2.488      \NC\LR
+%D \HL
+%D \stoptabel
+
+\def\magfactor#1%
+  {\ifcase#1 1.000\or 1.200\or 1.440\or 1.728\or 2.074\or 2.488\or 1\fi}
+
+\def\magfactorhalf%
+  {1.095}
+
+%D These macros enable the use of definitions like \type{sa
+%D \magfactor3} which saves us both (mis|)|calculations and
+%D potential mistypings.
+%D
+%D Because \type{sa} is not a \TEX\ supported alternative, we
+%D have to test for it ourselves. In doing so, we need an
+%D auxiliary \DIMENSION. We cannot use \type{\scratchdimen}
+%D because font loading can happen at any moment due to
+%D postponed loading. We could instead have used dirty grouping
+%D tricks, but this one works too.
+
+\newdimen\scaledfont
+
+\def\docalculatefont#1 sa #2sa#3*#4*#5*% The spaces are needed!
+  {\edef\fontscale{#2}%
+   \ifx\fontscale\empty
+     \expandafter\font\csname#4#5\endcsname=#1\relax
+   \else
+     \scaledfont=#4\relax
+     \expandafter\font\csname#4#5\endcsname=#1 at \fontscale\scaledfont\relax
+   \fi}
+
+%D I considered checking for mistakenly use of \PLAIN's
+%D \type{\magstep}'s but although it would take only a few
+%D lines of code, this would not add to consistent use. I
+%D therefore removed this check. 
+
+\def\dodoloadfont#1#2#3%
+  {\expanded{\docalculatefont\getvalue{\??ft#1#2} sa sa*#1*#2*}%
+   #3\relax
+   \getvalue{#1#2}}
+
+%D A more ugly but correct alternative for this is:
+%D
+%D \starttypen
+%D \def\docalculatefont#1sa #2sa#3*#4*#5*%
+%D   {\edef\fontscale{#2}%
+%D    \scaledfont=#4\relax
+%D    \expandafter\font\csname#4#5\endcsname=#1
+%D      \ifx\fontscale\empty\else at \fontscale\scaledfont\fi}
+%D \stoptypen
+%D
+%D This one saves a few bytes of memory, but is not particular
+%D faster due to the often unneeded assignment.
+
+%D The loading macro is used in two macros. One of them takes
+%D care of fixed width teletype fonts.
+
+\def\doloadfont#1#2%
+  {\debuggerinfo{\m!fonts}{loaded #1#2}%
+   \dodoloadfont{#1}{#2}{}}
+
+\def\doloadttfont#1#2%
+  {\debuggerinfo{\m!fonts}{loaded fixed #1#2}%
+   \dodoloadfont{#1}{#2}{\expandafter\hyphenchar\csname#1#2\endcsname=-1}}
+
+%D \macros
+%D   {getfontname}
+%D   
+%D The names of the fonts can be called with the rather simple
+%D macro \type{\getfontname}. When for instance we pass
+%D \type{12ptrmtf} as argument, we get \getfontname{12ptrmtf}.
+
+\def\getfontname#1%
+  {\getvalue{\??ft#1}}
+
+%D Now we enter the area of font switching. The switching
+%D mechanism has to take care of several situations, like:
+%D
+%D \startopsomming[opelkaar]
+%D \som  changing the overal document fonts (including margins,
+%D       headers and footers)
+%D \som  changing local fonts (only the running text)
+%D \som  smaller and even more smaller alternatives (super-
+%D       and subscripts)
+%D \stopopsomming
+%D
+%D \TEX\ offers a powerfull family mechanism for super- and
+%D subscripts in math mode. In text mode however, we don't use
+%D families for the smaller alternatives, and therefore have
+%D to take care of it otherwise.
+
+%D \macros
+%D   {definecorpsenvironment}
+%D   
+%D The relationship between the several sizes of a font, is
+%D defined by:
+%D
+%D \showsetup{\y!definecorpsenvironment}
+%D
+%D Later on we will see how these parameters are used, so for
+%D the moment we stick with an example:
+%D
+%D \starttypen
+%D \definecorpsenvironment
+%D   [12pt]
+%D   [        text=12pt,
+%D          script=9pt,
+%D    scriptscript=7pt,
+%D               x=10pt,
+%D              xx=8pt,
+%D             big=12pt,
+%D           small=10pt]
+%D \stoptypen
+%D 
+%D The first argument specifies the corps size to which the
+%D settings apply. All second parameters are specified in
+%D dimensions and tell us more about related sizes. 
+%D 
+%D Due to the fact that \type{\c!text} and \type{\s!text} can
+%D have a similar meaning, and therefore can lead to an
+%D unwanted loop, we temporary redefine \type{\c!text}. For
+%D the moment this in only place that some trickery is needed
+%D to fool the multilingual interface.
+
+\def\definecorpsenvironment%
+  {\dodoubleempty\dodefinecorpsenvironment}
+
+\def\dodefinecorpsenvironment[#1][#2]%
+  {\let\c!savedtext=\c!text
+   \let\c!text=\s!text
+   \doifundefined{\??ft#1\s!text}
+     {\getparameters[\??ft#1]
+        [\s!text=#1,\s!script=#1,\s!scriptscript=#1,
+         \c!x=#1,\c!xx=#1,
+         \c!groot=#1,\c!klein=#1]}%
+   \getparameters[\??ft#1][#2]%
+   \let\c!text=\c!savedtext
+   \setvalue{\@size@#1}{\docompletefontswitch[#1]}}
+
+%D We default all parameters to the main corps size (begin
+%D \type{#1}), so the next setup is valid too:
+%D
+%D \starttypen
+%D \definecorpsenvironment[24pt]
+%D \stoptypen
+%D
+%D All parameters can be redefined when needed, so one does
+%D not have to stick to the default ones.
+
+%D \macros
+%D   {definecorps}
+%D   
+%D The next step in defining a corps involves the actual font
+%D files, which can be recognized by their extension
+%D \type{tfm}. Installing those file is often beyond the
+%D scope of the user and up to the system administrator.
+%D
+%D \showsetup{\y!definecorps}
+%D
+%D This commands takes three arguments, where \showparameter\ 
+%D takes a (series of) corps size(s) and \showparameter\
+%D the style group to which the definitions belong. 
+%D 
+%D Argument \showparameter\ accepts any suitable alternative, 
+%D as specified by the \TEX\ families, extended with a, b and
+%D higher sizes or the normal \TEX\ mathematical families and 
+%D some more.
+%D 
+%D We show two examples, that show all the alternative
+%D scaling options. The \type{\tfa} alternatives can be
+%D extended with \type{\bfa}, \type{\slb}, etc. or even
+%D \type{e} and higher alternatives.
+%D
+%D \starttypen
+%D \definecorps [12pt] [rm]
+%D   [tf=cmr12,
+%D    bf=cmbx12,
+%D    it=cmti12,
+%D    sl=cmsl12,
+%D    bi=cmbxti10 at 12pt,
+%D    bs=cmbxsl10 at 12pt,
+%D   tfa=cmr12    scaled \magstep1,
+%D   tfb=cmr12    scaled \magstep2,
+%D   tfc=cmr12    scaled \magstep3,
+%D   tfd=cmr12    scaled \magstep4,
+%D    sc=cmcsc10  at 12pt]
+%D
+%D \definecorps [12pt,11pt,10pt,9pt,8pt] [rm]
+%D   [tf=lbr  sa 1,
+%D    bf=lbd  sa 1,
+%D    it=lbi  sa 1,
+%D    sl=lbsl sa 1,
+%D    bi=lbdi sa 1,
+%D    bs=lbdi sa 1,
+%D   tfa=lbr  sa 1.200,
+%D   tfb=lbr  sa 1.440,
+%D   tfc=lbr  sa 1.728,
+%D   tfd=lbr  sa 2.074,
+%D    sc=lbr  sa 0.833]
+%D \stoptypen
+%D
+%D The second example shows that we can define more sizes at
+%D once. The main difference between these examples is that the
+%D Computer Modern Roman come in many design sizes. This means
+%D that there we cannot define them in bulk using \type{sa}.
+%D Instead of \type{rm} (roman) one can define \type{ss} (sans
+%D serif), \type{tt} (teletype), \type{hw} (hand written),
+%D \type{cg} (calygraphic) and whatever styles.
+
+\def\definecorps%
+  {\dotripleargument\dodefinecorps}
+
+%D The first argument may be a comma separated list. This,
+%D combined with specifications using \type{sa} can save a lot
+%D of typing. Although all arguments should be specified, we 
+%D treat the second argument as optional. 
+
+\def\dodefinecorps[#1][#2][#3]%
+  {\ifthirdargument
+     \def\dododefinecorps##1%
+       {\dodododefinecorps[##1][#2][#3]}%
+     \processcommalist[#1]\dododefinecorps
+   \else
+     \definecorps[#1][\c!rm][#2]%
+   \fi}
+
+%D Defining a corps involves two actions: defining the specific
+%D style related alternatives, like \type{\rma}, \type{\bfa}
+%D and \type{\rmsla}, and storing the definitions of their
+%D corps size related fonts. The first step is corps
+%D independant but executed every time. This permits user
+%D definitions like \type{\tfw} or \type{\bfq} for real large
+%D alterbatives.
+
+\def\dodododefinecorps[#1][#2][#3]%
+  {\geteparameters[\??ft#1#2][#3]% We expand them!
+   \dodefinecorpsenvironment[#1][]% Just to be sure.
+   \def\doiffamily##1##2##3\\%
+     {\rawdoifinsetelse{##1##2}{\familylist}
+        {\doifsomething{##3}
+           {\setvalue{#2##3}% eg: \rma, \ssa
+              {\donottest\switchtofontstyle{#2}{##3}}%
+            \setvalue{##1##2##3}% eg: \tfa, \bfa
+              {\donottest\switchtofontalternative{##1##2}{##3}}%
+            \setvalue{#2##1##2##3}% eg: \rmtfa, \ssbfa
+              {\donottest\switchtofontstylealternative{#2}{##1##2}{##3}}}}
+        {}}%
+   \def\dodefinefont##1%
+     {\doifdefined{\??ft#1#2##1}
+        {\letvalue{@#1#2##1@}=\charactercoding
+         \doifelse{#2}{\c!tt}
+           {\setvalue{#1#2##1}{\donottest\doloadttfont{#1}{#2##1}}}
+           {\setvalue{#1#2##1}{\donottest\doloadfont{#1}{#2##1}}}%
+         \bgroup
+         \let\relax=\empty
+         \debuggerinfo
+           {\m!fonts}{\getvalue{\??ft#1#2##1} defined as #1 #2 ##1}%
+         \egroup}%
+      \expandafter\doiffamily##1\\}%
+   \processassignlist[#3]\dodefinefont}
+
+%D These macros show that quite some definitions take place. 
+%D Fonts are not loeaded yet! This means that at format 
+%D generation time, no font files are preloaded.
+%D
+%D We could have use \type{\unexpanded\setvalue} instead of
+%D the \type{\donottest} prefixes. However, this would lead to
+%D about 400 extra entries in the hash table.
+%D
+%D We can save ourselved some 400 csnames by packing the name
+%D and the encoding. But ..... not done yet .....
+
+%D \macros
+%D   {everycorps,EveryCorps}
+%D   
+%D Every change in corps size has conseqences for the baseline
+%D distance and skips between paragraphs. These are initialized
+%D in other modules. Here we only provide the hooks that
+%D garantees their handling.
+
+\newevery \everycorps \EveryCorps
+
+%D At the system level one can initialize thing like:
+%D
+%D \starttypen
+%D \appendtoks \setupspacing \to \everycorps
+%D \stoptypen
+%D
+%D While users can add their own non standard commands like:
+%D
+%D \starttypen
+%D \EveryCorps{\message{changing to corps \the\corpssize}}
+%D \stoptypen
+%D
+%D Personnaly I never felt the need for such extensions, but
+%D at least its possible.
+
+%D \macros
+%D   {globalcorpssize,localcorpssize}
+%D   
+%D Next we'll do the tough job of font switching. Here we
+%D have to distinguish between the global (overal) corps size
+%D and the local (sometimes in the textflow) size. We store
+%D these dimensions in two \DIMENSION\ registers.
+
+\newdimen\globalcorpssize  \globalcorpssize=12pt
+\newdimen\localcorpssize   \localcorpssize =\globalcorpssize
+
+%D \macros
+%D   {corpssize}
+%D   
+%D These two registers are not to be misused in calculations.
+%D For this purpose we keep a copy:
+
+\newdimen\corpssize  \corpssize=\globalcorpssize
+
+%D \macros
+%D   {outputresolution}
+%D   
+%D Sometimes (to be honest: not in this module) we need to
+%D take the system resolution into account. Therefore we also
+%D define a macro:
+
+\def\outputresolution {300}
+
+%D \macros
+%D   {corpsfactor,corpspoints}
+%D   
+%D For multiplication purposes we keep an auxiliary counter
+%D and macro (here the expansion is not explicitly needed):
+
+\newcount\corpspoints \dimensiontocount\corpssize\corpspoints
+
+\edef\corpsfactor{\withoutpt\the\corpssize} 
+
+%D When we assign for instance 12pt to a \DIMENSION\ register
+%D the \type{\the}'d value comes out as 12.0pt, which is
+%D often not the way users specifies the corps size. Therefore
+%D we also store normalized value.
+
+\def\normalizecorpssize#1\to#2%
+  {\scratchdimen=#1\relax
+   \doifinstringelse{.0}{\withoutpt\the\scratchdimen}
+     {\dimensiontocount\scratchdimen\scratchcounter
+      \edef#2{\the\scratchcounter pt}}
+     {\edef#2{\the\scratchdimen}}}
+
+\normalizecorpssize\corpssize\to\normalizedglobalcorpssize
+\normalizecorpssize\corpssize\to\normalizedlocalcorpssize
+\normalizecorpssize\corpssize\to\normalizedcorpssize
+
+%D To be internationalized:
+
+\def\korpsgrootte {\corpssize}
+\def\korpspunten  {\corpspoints}
+
+%D some day.
+
+%D \macros
+%D   {fontsize,fontstyle}
+%D   
+%D Within a corps, fonts can come in different sizes. For
+%D instance \type{\tf} is accompanied by \type{\tfa},
+%D \type{\tfb} etc. The third character in these sequences
+%D represents the size. The actual size is saved in a macro
+
+\let\fontsize  = \empty
+
+%D The style, being roman (\type{\rm}), sans serif (\type{\ss})
+%D etc. is also available in a macro in \type{rm}, \type{ss}
+%D etc. form:
+
+\let\fontstyle = \empty
+
+%D All things related to fonts are grouped into files with
+%D names like \expandafter\type\expandafter{\f!fontprefix cmr}.
+%D These files are loaded by:
+
+\def\doreadfontdefinitionfile#1%
+  {\doifundefined{\c!file\f!fontprefix#1}%
+     {\setvalue{\c!file\f!fontprefix#1}{}%
+      \edef\saveddqcatcode{\the\catcode`"}%
+      \catcode`\"=\@@other
+      \readsysfile{\f!fontprefix#1}
+        {\showmessage{\m!fonts}{2}{#1}}
+        {\showmessage{\m!fonts}{3}{#1}}%
+      \catcode`\"=\saveddqcatcode}}
+
+%D Such files are only loaded once! This permits redundant
+%D loading, but at the same time forced grouping when we want
+%D continuously mix all kind of font, which of course is a kind
+%D of typographically sin. The \type{"} is made inactibe if 
+%D needed to prevent problems with loading files that use this 
+%D character in numbers. 
+
+\def\doswitchpoints[#1]%
+  {\expanded{\dodoswitchpoints{#1}}}
+
+\def\dodoswitchpoints#1%
+  {\doifdefinedelse{\@size@#1}
+     {\getvalue{\@size@#1}%
+      \localcorpssize=#1\relax
+      \normalizecorpssize\localcorpssize\to\normalizedcorpssize
+      \the\everycorps}
+     {\showmessage{\m!fonts}{4}{#1}}}
+
+\def\doswitchstyle[#1]%
+  {\doifdefinedelse{\@style@#1}
+     {\getvalue{\@style@#1}%
+      \edef\fontstyle{#1}}
+     {\showmessage{\m!fonts}{5}{#1}}}
+
+%D \TEX\ loads font metric files like \type{cmr10.tfm} and
+%D \type{tir.tfm} only once. In \PLAIN\ \TEX\ some font files
+%D are {\em preloaded}. This means that the font files are
+%D loaded, but not accessible yet by name. This is accomplished
+%D by saying: 
+%D 
+%D \starttypen 
+%D \font\preloaded=cmr10 at 11pt 
+%D \stoptypen 
+%D 
+%D and using the name \type{\preloaded} again and again, so
+%D fonts are indeed loaded, but unnamed, and therefore
+%D unaccessible. In \CONTEXT\ we don't preload fonts, not even
+%D the \PLAIN\ \TEX\ ones, although users can access them. Now
+%D why is this done? 
+
+%D Defining fonts using \type{\definecorps} takes time, so we
+%D prefer to predefine at least the Computer Modern Roman
+%D fonts. However, loading all those fonts at definition time
+%D would take both time and space. But even worse, once fonts
+%D are loaded into memory, their encoding vector is fixed,
+%D which is a handicap when we want to distribute the compact
+%D \type{fmt} files. So what we want to do is defining fonts in
+%D a way that postpones the loading. We accomplish this by only
+%D loading the fonts when we switch to another corps size.
+%D Among the other alternatives, such as loading the font at
+%D the moment of activation and redefining the activation 
+%D macro afterwards, this proved to be the most efficient
+%D alternative.
+%D 
+%D The next few macros take care of the one exeption on this
+%D scheme. When at format generation time we load the default
+%D font file, the one that defines the Computer Modern Fonts,
+%D we don't want the fonts metrics to end up in the format
+%D file, so we temporary prohibit loading. This means that at
+%D runtime we have to load the default corps size just before
+%D we start typesetting. 
+%D 
+%D Therefore we have to signal the font switching macros that 
+%D we are preloading fonts. As long as the next boolean is,
+%D true, no loading is done.
+
+\newif\ifloadingfonts \loadingfontstrue
+
+%D \macros
+%D   {preloadfonts}
+%D   
+%D Preloading is only called for once, during the startup
+%D sequence of a session. After the loading job is done, the
+%D macro relaxes itself and reset the signal.
+
+\def\preloadfonts%
+  {\showmessage{\m!fonts}{6}{\normalizedcorpssize\normalspace\fontstyle}%
+   \doswitchpoints[\normalizedcorpssize]%
+   \doswitchstyle[\fontstyle]%
+   \global\let\preloadfonts=\relax
+   \global\loadingfontsfalse}
+
+%D Here comes the main font switching macros. These macros
+%D handle changes in size as well as returning to the global
+%D corps size.
+
+\def\dosetfont[#1]%
+  {\doifelse{#1}{\v!globaal}
+     {\restoreglobalcorps}
+     {\processcommalist[#1]\dodosetfont
+      \ifloadingfonts\else
+        \doswitchpoints[\normalizedcorpssize]%
+        \doswitchstyle[\fontstyle]%
+      \fi}}
+
+\def\dodosetfont#1%
+  {\dododosetfont{#1}{\showmessage{\m!fonts}{4}{#1}}}
+
+\def\dododosetfont#1#2%
+  {\doifnumberelse{#1}
+     {\scratchdimen=#1\relax
+      \normalizecorpssize\scratchdimen\to\normalizedsetfont
+      \doifdefinedelse{\@size@\normalizedsetfont}
+        {\localcorpssize=\normalizedsetfont
+         \let\normalizedcorpssize=\normalizedsetfont}
+        {#2\dosetsubstitutefont{#1}}}
+     {\doifdefinedelse{\@style@#1}
+        {\edef\fontstyle{#1}}
+        {\doreadfontdefinitionfile{#1}}}}
+
+%D When users specify for instance a 13 point corps while no
+%D such corps is defined, the system automatically tries to
+%D find a best fit, that is the nearest smaller defined
+%D corpszize. A smaller one is definitely better than a larger
+%D one, simply because otherwise a lot of overfull box messages
+%D are more probable to occur. By taking a value slightly 
+%D smaller than half a point, we can use the next method.
+
+\def\dosetsubstitutefont#1%
+  {\scratchdimen=#1\relax
+   \advance\scratchdimen by .499pt
+   \dimensiontocount\scratchdimen\scratchcounter
+   \advance\scratchcounter by -1
+   \ifnum\scratchcounter>3
+     \dododosetfont{\the\scratchcounter pt}{}%
+   \fi}
+
+%D Next we're going to implement some switching macros we
+%D already used in when defining fonts. The first one takes
+%D care of the style and is used by commands like \type{\rma}.
+
+\def\switchtofontstyle#1#2%
+  {\getvalue{#1}%
+   \getvalue{\c!tf#2}}
+
+%D The second one is responsible for commands like \type{\bfa}
+%D and the third one handles the combined \type{\rmbfa}
+%D alternatives.
+
+\def\switchtofontalternative#1#2%
+  {\def\fontsize{#2}%
+   \setfontstyle{\fontstyle}{\fontstyle}%
+   \donottest\getvalue{#1}}
+
+\def\switchtofontstylealternative#1#2#3%
+  {\getvalue{\normalizedcorpssize#1#2#3}}
+
+%D Setting the normal sized as well as the x and xx smaller
+%D sizes is accomplished by the next set of macros. When in
+%D math mode, the commands \type{\tx} and \type{\txx} are 
+%D just a switch to the script and double script styles, but 
+%D in text mode the values defined by the corpsenvironment are 
+%D used.
+
+\def\dosetsomextypeface#1%
+  {\doifdefinedelse{#1}
+     {\getvalue{#1}}
+     {\showmessage{\m!fonts}{7}{#1}}}%
+
+\def\dosetxtypeface#1%
+  {\ifmmode
+     \scriptstyle
+   \else
+     \dosetsomextypeface
+       {\getvalue{\??ft\normalizedcorpssize\c!x}%  % pt
+        \getvalue{\@shortstyle@\fontstyle}%        % rm
+        #1}%                                       % tf
+     \unexpanded\def\tx{\dosetxxtypeface{#1}}%
+   \fi}
+
+\def\dosetxxtypeface#1%
+  {\ifmmode
+     \scriptscriptstyle
+   \else
+     \dosetsomextypeface
+       {\getvalue{\??ft\normalizedcorpssize\c!xx}%  % pt
+        \getvalue{\@shortstyle@\fontstyle}%         % rm
+        #1}%                                        % tf
+     \let\tx=\relax
+     \let\txx=\relax
+   \fi}
+
+%D These macros also show us that when we call for \type{\tx},
+%D this macro is redefined to be \type{\txx}. Therefore calls
+%D like:
+%D
+%D \startbuffer
+%D {small \tx  is \tx  beautiful}
+%D {small \tx  is \txx beautiful}
+%D {small \txx is \tx  beautiful}
+%D {small \txx is \txx beautiful}
+%D \stopbuffer
+%D
+%D \typebuffer
+%D
+%D result in:
+%D
+%D \startvoorbeeld
+%D \startregels
+%D \haalbuffer
+%D \stopregels
+%D \stopvoorbeeld
+%D
+%D Setting the main size involves the style list and therefore
+%D takes a bit more time. Keep in mind that the fontsize is 
+%D represented by a character or empty.
+
+\def\settextfont#1%
+  {\def\dosettextfont##1%
+     {\doifdefinedelse{\textface#1##1\fontsize}
+        {\setvalue{#1##1}{\donottest\getvalue{\textface#1##1\fontsize}}}
+        {\setvalue{#1##1}{\donottest\getvalue{\textface#1##1}}}}%
+   \rawprocesscommalist[\familylist]\dosettextfont}
+
+\def\settextfonts%
+  {\rawprocesscommalist[\stylelist]\settextfont}
+
+%D All three sizes come together in the macro:
+
+\def\settypefaces#1#2%
+  {\setvalue{#2}%
+     {\donottest\dosettypeface{#1}{#2}}%
+   \setvalue{#2\c!x}%
+     {\donottest\dosetxtypeface{#2}}%
+   \setvalue{#2\c!xx}%
+     {\donottest\dosetxxtypeface{#2}}}%
+
+%D Earlier in this module we defined some \TEX\ families. Here
+%D we introduce the macros that are responsible for setting
+%D them. The first argument of the next macro takes the style
+%D in its short form (rm, ss, etc). The second argument is the
+%D alternative (tf, bf, etc). 
+
+%D Before actually assigning the font to a family we activate
+%D it. This is needed because loading of fonts is postponed
+%D until the first time it's called for. This also forces us to
+%D set the text family after we've set the script ones, else
+%D the latter one would be in force after executing this macro.
+
+\def\settextfamily#1#2%
+  {\def\setfamily##1##2%
+     {\doifdefinedelse{##2#1#2}
+        {\debuggerinfo{\m!fonts}{defined ##2#1#2}%
+         \getvalue{##2#1#2}\relax % activate font
+         \expandafter##1\getvalue{#2\s!fam}=\getvalue{##2#1#2}}
+        {\doifdefinedelse{##2#1\c!tf}
+           {\debuggerinfo{\m!fonts}{##2#1#2 replaced by ##2#1\c!tf}%
+            \getvalue{##2#1\c!tf}\relax % activate font
+            \expandafter##1\getvalue{#2\s!fam}=\getvalue{##2#1\c!tf}}
+           {\debuggerinfo{\m!fonts}{not defined ##2#1#2}}}}%
+   \scriptscriptfont\getvalue{#2\s!fam}=\scriptfont\getvalue{#2\s!fam}%
+   \setfamily\scriptscriptfont\scriptscriptface
+   \scriptfont\getvalue{#2\s!fam}=\textfont\getvalue{#2\s!fam}%
+   \setfamily\scriptfont\scriptface
+   \textfont\getvalue{#2\s!fam}=\textfont\tffam
+   \setfamily\textfont\textface}
+
+%D \macros
+%D   {defineoverallstyle}
+%D   
+%D When setting of switching the overall style we can use the
+%D short identifier like rm and ss, but when defined we can 
+%D also use more verbose names like roman or sansserif. Such 
+%D names are defined by:
+%D
+%D \starttypen
+%D \defineoverallstyle [roman, rm] [rm]
+%D \defineoverallstyle [sansserif, ss] [ss]
+%D \stoptypen
+
+\def\dodefineoverallstyle[#1][#2]%
+  {\rawdoifinsetelse{#2}{\stylelist}
+     {\debuggerinfo{\m!fonts}{unknown style #2}}
+     {\addtocommalist{#2}\stylelist
+      \showmessage{\m!fonts}{8}{#2}}%
+   \setvalue{#2\c!x}%
+     {\getvalue{#2}\getvalue{\c!tf\c!x}}%
+   \setvalue{#2\c!xx}%
+     {\getvalue{#2}\getvalue{\c!tf\c!xx}}%
+   \def\docommando##1%
+     {\setvalue{\@shortstyle@##1}{#2}%
+      \setvalue{\@style@##1}{\getvalue{#2}}%
+      \setvalue{#2}{\donottest\setfontstyle{##1}{#2}}}%
+   \processcommalist[#1]\docommando}
+
+\def\defineoverallstyle%
+  {\dodoubleargument\dodefineoverallstyle}
+
+%D CHECKEN WAT \type{\fontstyle} HIER DOET
+
+\def\setfontstyle#1#2%  #1:name (roman, romaan)  #2:style (rm)
+  {\edef\fontstyle{#1}%
+   \def\dosettextfamily##1%
+     {\settextfamily{#2}{##1}%
+      \settypefaces{#2}{##1}}%
+   \rawprocesscommalist[\familylist]\dosettextfamily
+   \fam\tffam\relax
+   \unexpanded\def\tx{\tfx}%
+   \donottest\tf}
+
+%D Setting the math families looks much like setting the texts\
+%D ones. This time however we use the 12 point font as a
+%D default when nothing is defined. This enables us to
+%D implement partial schemes. Here we also set the
+%D \type{\skewchar}, which takes care of accents in math mode
+%D (actually it's the largest accent). The first family needs a
+%D bit different treatment because it can be set to the default
+%D roman as well as a user defined font. 
+
+\def\setmathfamilies%
+  {\setskewchar{\textface\c!mm\c!mi}{'177}%
+   \setskewchar{\textface\c!mm\c!sy}{'60}%
+   \setmathfamily\mrfam\textface\scriptface\scriptscriptface
+     {\c!mm\c!mr}{\c!rm\c!tf}%
+   \setmathfamily\mifam\textface\scriptface\scriptscriptface
+     {\c!mm\c!mi}{}%
+   \setmathfamily\syfam\textface\scriptface\scriptscriptface
+     {\c!mm\c!sy}{}%
+   \setmathfamily\exfam\textface\textface\textface
+     {\c!mm\c!ex}{}%
+   \setmathfamily\mafam\textface\scriptface\scriptscriptface
+     {\c!mm\c!ma}{}%
+   \setmathfamily\mbfam\textface\scriptface\scriptscriptface
+     {\c!mm\c!mb}{}%
+   \setmathfamily\mcfam\textface\scriptface\scriptscriptface
+     {\c!mm\c!mc}{}}
+
+%D When setting the \type{\skewchar} we need to test on the
+%D availability first.
+
+\def\setskewchar#1#2%
+  {\doifdefined{#1}
+     {\getvalue{#1}\expandafter\skewchar\getvalue{#1}=#2\relax}}
+
+%D First we try to set the font at the math specific one (the
+%D fifth argment), next we take the alternative the last
+%D argument, which of often empty, and finally we default to
+%D the 12 point alternative.
+
+\def\setmathfamily#1#2#3#4#5#6%
+  {\def\dosetmathfamily##1##2%
+     {\doifdefinedelse{##2#5}
+        {\getvalue{##2#5}\relax
+         ##1#1=\getvalue{##2#5}\relax}
+        {\doifdefinedelse{##2#6}
+           {\getvalue{##2#6}\relax
+            ##1#1=\getvalue{##2#6}\relax}
+           {\doifdefinedelse{12pt#5}
+              {\getvalue{12pt#5}\relax
+               ##1#1=\getvalue{12pt#5}\relax}
+              {##1#1=\nullfont}}}}%
+   \dosetmathfamily\scriptscriptfont{#4}%
+   \dosetmathfamily\scriptfont{#3}%
+   \dosetmathfamily\textfont{#2}}
+
+%D The previous macros show that it's is not always
+%D neccessary to define the whole bunch of fonts, take for
+%D instance the sequence:
+%D
+%D \starttypen
+%D \setupcorps
+%D   [ams]
+%D
+%D \definecorps [24pt] [mm]
+%D   [ma=msam10 at 24pt,
+%D    mb=msbm10 at 24pt]
+%D
+%D \switchtocorps
+%D   [24pt]
+%D
+%D This is a 24pt $\blacktriangleleft$
+%D \stoptypen
+%D 
+%D Here we didn't define the 24 point corps environment, so
+%D it's defined automatically. Of course one can always use the
+%D \TEX\ primitive \type{\font} to switch to whatever font
+%D needed. 
+
+%D When asking for a complete font switch, for instance from 10
+%D to 12~points, the next macro does the job. First we
+%D normalize the size, nect we define the current range of
+%D text, script and scriptscript sizes, then we set the text
+%D fonts and the math families and finally we activate the
+%D default typeface and also set the font specific parameters
+%D assigned to \type{\everycorps} 
+
+\def\docompletefontswitch[#1]%
+  {\corpssize=#1\relax
+   \dimensiontocount\corpssize\corpspoints
+   \edef\corpsfactor{\withoutpt\the\corpssize}%
+   \normalizecorpssize\corpssize\to\normalizedcorpssize
+   \edef\textface{\getvalue{\??ft\normalizedcorpssize\s!text}}%
+   \edef\scriptface{\getvalue{\??ft\normalizedcorpssize\s!script}}%
+   \edef\scriptscriptface{\getvalue{\??ft\normalizedcorpssize\s!scriptscript}}%
+   \settextfonts
+   \setmathfamilies
+   \rmtf
+   \the\everycorps}
+
+%D \macros
+%D   {setupcorps,switchtocorps}
+%D   
+%D The next two macros are user ones. With \type{\setupcorps}
+%D one can set the document corps size, font family, style
+%D and/or options defined in files, for example:
+%D
+%D \starttypen
+%D \setupcorps[cmr,ams,12pt,roman]
+%D \stoptypen
+%D
+%D This command affects the document as a whole: text, headers
+%D and footers. The second macro however affects only the text:
+%D
+%D \starttypen
+%D \switchtocorps[10pt]
+%D \stoptypen
+%D
+%D So we've got:
+%D
+%D \showsetup{\y!setupcorps}
+%D \showsetup{\y!switchtocorps}
+%D
+%D Both macros look alike. The second one also has to take
+%D all kind of keywords into account.
+
+\def\setupcorps[#1]%
+  {\doifsomething{#1}
+     {\dosetfont[#1]%
+      \globalcorpssize=\localcorpssize
+      \normalizecorpssize\globalcorpssize\to\normalizedglobalcorpsize
+      \let\globalfontstyle=\fontstyle
+      \the\everycorps}}
+
+\unexpanded\def\switchtocorps[#1]%
+  {\doifsomething{#1}
+     {\doifdefinedelse{\??ft\normalizedcorpssize\interfaced{#1}}
+        {\doswitchpoints[\getvalue{\??ft\normalizedcorpssize\interfaced{#1}}]%
+         \doswitchstyle[\fontstyle]}
+        {\dosetfont[#1]}%
+      \the\everycorps}}
+
+%D Because the last macro can appear in arguments or be assigned
+%D to parameters, we protect this one for unwanted expansion.
+
+\def\dosetmathfont#1%
+  {\def\rm{\fam0}%
+   \edef\mffam{\getvalue{#1\s!fam}}%
+   \textfont\mrfam=\textfont\mffam
+   \scriptfont\mrfam=\scriptfont\mffam
+   \scriptscriptfont\mrfam=\scriptscriptfont\mffam}
+
+\def\dosettypeface#1#2%
+  {\doifdefinedelse{@\normalizedcorpssize#1#2@}
+     {\edef\charactercoding{\getvalue{@\normalizedcorpssize#1#2@}}}
+     {\let\charactercoding=\@plain@}%
+   \unexpanded\def\tx%
+     {\dosetxtypeface{#2\fontsize}}%
+   \unexpanded\def\txx%
+     {\dosetxxtypeface{#2\fontsize}}%
+   \expandafter\fam\getvalue{#2\s!fam}%
+   \def\mf{\donottest{\dosetmathfont{#2}}}%
+   \donottest\getvalue{#1#2}}
+
+%D \macros
+%D   {os}
+%D   
+%D Old style numerals can be typeset with \type{\os} and look
+%D like {\os 1234567890} instead of the more common looking
+%D 1234567890.
+%D
+%D {\em Some day this macro will be made more geneal. For the
+%D moment it's behavior is tigthly coupled to the Computer
+%D Modern Roman.}
+
+\def\os%
+  {\getvalue{\normalizedcorpssize\c!mm\c!mi}}
+
+%D \macros
+%D   {definecorpsswitch}
+%D   
+%D \PLAIN\ \TEX\ defines some macro's like \type{\tenpoint}
+%D to switch to a specific corpssize. Just for the sake of
+%D compatibility we can define them like:
+%D
+%D \starttypen
+%D \definecorpsswitch [twelvepoint] [12pt]
+%D \stoptypen
+%D
+%D We don't support language specific synonyms here, mainly
+%D because \PLAIN\ \TEX\ is english anyway.
+
+\def\dodefinecorpsswitch[#1][#2]%
+  {\def\docommando##1%
+     {\setvalue{##1}{\switchtocorps[#2]}}%
+   \processcommalist[#1]\docommando}
+
+\def\definecorpsswitch%
+  {\dodoubleargument\dodefinecorpsswitch}
+
+%D \macros
+%D   {setsmallcorps,setmaincorps,setbigcorps}
+%D   
+%D When we're typesetting at for instance 10pt, we can call for
+%D the \type{small} as well as the \type{big} alternative,
+%D related to this main size, using \type{\switchtocorps[small]}.
+%D The three alternatives can be activated by the next three
+%D system calls and are defined by the corpsenvironment.
+
+\def\setsmallcorps%
+  {\doswitchpoints[\getvalue{\??ft\normalizedcorpssize\v!klein}]%
+   \doswitchstyle[\fontstyle]}
+
+\def\setmaincorps%
+  {\doswitchpoints[\normalizedcorpssize]%
+   \doswitchstyle[\fontstyle]}
+
+\def\setbigcorps%
+  {\doswitchpoints[\getvalue{\??ft\normalizedcorpssize\v!groot}]%
+   \doswitchstyle[\fontstyle]}
+
+%D \macros
+%D   {restoreglobalcorps}
+%D   
+%D Users can set whatever font available while typesetting text.
+%D Pagenumnbers, footers, headers etc. however must be typeset
+%D in the main corps and style of the document. Returning to
+%D the global state can be done with the next macro:
+
+\def\restoreglobalcorps%
+  {\let\fontsize=\empty
+   \doswitchpoints[\normalizedglobalcorpsize]%
+   \doswitchstyle[\globalfontstyle]%
+   \redoconvertfont % just in case a pagebreak occurs
+   \tf}
+
+%D This macro has to be called when entering the pagebody
+%D handling routine as well as the footnote insert routine.
+%D Users can access this feature |<|for instance when one wants
+%D to typeset tables and alike in the main corps and style
+%D while the running text is temporary set to a smaller one|>|
+%D by saying \type{\switchtocorps[global]}.
+
+%D \macros
+%D   {rasterfont}
+%D   
+%D There are (at the moment) two situations in which we want to
+%D have fast access to a particular font. When we are using
+%D \TEX\ to typeset rasters, we use small {\rasterfont.}'s
+%D (a rather small period indeed), the same as \PICTEX\ uses
+%D for drawing purposes.
+
+\def\rasterfont%
+  {\getvalue{\!!fivepoint\c!rm\c!tf}}
+
+%D \macros
+%D   {infofont}
+%D   
+%D The second situation occurs when we enable the info mode,
+%D and put all kind of status information in the margin. We
+%D don't want huge switches to the main corps and style, so
+%D here too we use a direct method.
+
+\def\infofont%
+  {\getvalue{\!!sixpoint\c!tt\c!tf}%
+   \the\everycorps}
+
+%D \macros
+%D   {definealternativestyle}
+%D   
+%D In the main modules we are going to implement lots of
+%D parameterized commands and one of these parameters will
+%D concern the font to use. To suit consistent use of fonts we
+%D here implement a mechanism for defining the keywords that
+%D present a particular style or alternative.
+%D
+%D \starttypen
+%D \definealternativestyle [keywords] [\style] [\nostyle]
+%D \stoptypen
+%D
+%D The first command is used in the normal textflow, while the
+%D second command takes care of headings and alike. Consider
+%D the next two definitions:
+%D
+%D \starttypen
+%D \definealternativestyle [bold] [\bf]  []
+%D \definealternativestyle [cap]  [\kap] [\kap]
+%D \stoptypen
+%D
+%D A change \type{\bf} in a heading which is to be set in
+%D \type{\tfd} does not look that well, so therefore we leave
+%D the second argument of \type{\definealternativestyle} empty.
+%D When we capatalize characters using the pseudo small cap
+%D command \type{\kap}, we want this to take effect in both
+%D text and headings, which is accomplished by assigning both
+%D arguments.
+
+\def\dodefinealternativestyle[#1][#2][#3]%
+  {\def\docommando##1%
+     {\doifundefined{##1}
+        {\expandafter\ifx\csname##1\endcsname#2\else
+           \setvalue{##1}{\groupedcommand{#2}{}}%
+         \fi}%
+      \setvalue{\@letter@##1}{#2}%
+      \setvalue{\@noletter@##1}{#3}}%
+   \processcommalist[#1]\docommando}
+
+\def\definealternativestyle%
+  {\dotripleargument\dodefinealternativestyle}
+
+%D This command also defines the keyword as command. This means
+%D that the example definition of \type{bold} we gave before,
+%D results in a command \type{\bold} which can be used as:
+%D
+%D \startbuffer
+%D He's a \bold{man} man with a {\bold head}.
+%D \stopbuffer
+%D
+%D \typebuffer
+%D
+%D or
+%D
+%D \startvoorbeeld
+%D \definealternativestyle[bold][\bf][]\haalbuffer
+%D \stopvoorbeeld
+%D
+%D Such definitions are of course unwanted for \type{\kap}
+%D because this would result in an endless recursive call.
+%D Therefore we check on the existance of both the command and
+%D the substitution. The latter is needed because for instance
+%D \type{\type} is an entirely diferent command. That command
+%D handles verbatim, while the style command would just switch
+%D to teletype font. This is just an example of a tricky
+%D naming coincidence.
+
+%D \macros
+%D   {doconvertfont,noconvertfont,
+%D    dontconvertfont,redoconvertfont}
+%D   
+%D After having defined such keywords, we can call for them by
+%D using
+%D
+%D \starttypen
+%D \doconvertfont{keyword}{text}
+%D \stoptypen
+%D
+%D We deliberately pass an argument. This enables us to 
+%D assign converters that handle one agrument, like 
+%D \type{\kap}.
+%D
+%D By default the first specification is used to set the style,
+%D exept when we say \type{\dontconvertfont}, after which the
+%D second specification is used. We can also directly call for
+%D \type{\noconvertfont}. In nested calls, we can restore the
+%D conversion by saying \type{\redoconvertfont}. 
+
+\unexpanded\def\dodoconvertfont#1#2%
+  {\doifdefinedelse{\@letter@#1}
+     {\doifelsenothing{#1}
+        {\def\next{}}
+        {\def\next{\getvalue{\@letter@#1}}}}
+     {\doifdefinedelse{#1}
+        {\def\next{\getvalue{#1}}}
+        {\def\next{#1}}}%
+   \next{#2}}
+
+\let\doconvertfont=\dodoconvertfont
+
+\def\noconvertfont#1#2%
+  {\doifdefinedelse{\@noletter@#1}
+     {\doifelsenothing{#1}
+        {\def\next{}}
+        {\def\next{\getvalue{\@noletter@#1}}}}
+     {\def\next{#1}}%
+   \next{#2}}
+
+\unexpanded\def\dontconvertfont%
+  {\let\doconvertfont=\noconvertfont}
+
+\unexpanded\def\redoconvertfont%
+  {\let\doconvertfont=\dodoconvertfont}
+
+%D These commands are not grouped! Grouping is most probably
+%D done by the calling macro's and would lead to unnecessary
+%D overhead.
+
+%D \macros
+%D  {em,emphasistypeface,emphasisboldface}
+%D  
+%D The next macro started as a copy of Donald Arseneau's
+%D \type{\em} (\TUGNEWS\ Vol.~3, no.~1, 1994). His
+%D implementation was a bit more sophisticated version of the
+%D standard \LATEX\ one. We furter enhanced the macro, so now
+%D it also adapts itself to boldface mode. Because we favor
+%D {\sl slanted} type over {\it italic}, we made the emphasis
+%D adaptable, for instance:
+%D
+%D \starttypen
+%D \def\emphasistypeface {\it}
+%D \def\emphasisboldface {\bi}
+%D \stoptypen
+%D
+%D But we prefer:
+
+\def\emphasistypeface {\sl}
+\def\emphasisboldface {\bs}
+
+\unexpanded\def\em%
+  {\ifnum\fam=\itfam
+     \def\emphasistypeface{\it}\tf
+   \else\ifnum\fam=\slfam
+     \def\emphasistypeface{\sl}\tf
+   \else\ifnum\fam=\bffam
+     \emphasisboldface
+   \else\ifnum\fam=\bsfam
+     \def\emphasisboldface{\bs}\bf
+   \else\ifnum\fam=\bifam
+     \def\emphasisboldface{\bi}\bf
+   \else
+     \emphasistypeface
+   \fi\fi\fi\fi\fi
+   \ifdim\fontdimen1\font>\!!zeropoint
+     \expandafter\aftergroup
+   \fi
+   \emphasiscorrection}
+
+%D Donald's (adapted) macros take the next character into
+%D account when placing italic correction. As a bonus we also
+%D look for something that looks like a dash, in which case we
+%D don't correct. 
+
+\def\emphasiscorrection%
+  {\ifhmode
+     \expandafter\emphasislook
+   \fi}
+
+\def\emphasislook%
+  {\begingroup
+   \futurelet\next\emphasistest}
+
+\def\emphasistest%
+  {\ifcat\noexpand\next,%
+     \setbox\scratchbox=\hbox{\next}%
+     \ifdim\ht\scratchbox<.3ex
+       \let\doemphasiscorrection\endgroup
+     \fi
+   \fi
+   \doemphasiscorrection}
+
+\def\doemphasiscorrection%
+  {\scratchskip=\lastskip
+   \ifdim\scratchskip=\!!zeropoint
+     \/\relax
+   \else
+     \unskip\/\hskip\scratchskip
+   \fi
+   \endgroup}
+
+%D We end with some examples which show the behavior when
+%D some punctuation is met. We also show how the mechanism
+%D adapts itself to bold, italic and slanted typing.
+%D
+%D \startbuffer
+%D test {test}test       \par
+%D test {\em test}test   \par
+%D test {\em test}--test \par
+%D
+%D test {test}, test     \par
+%D test {\em test}, test \par
+%D
+%D test {\em test {\em test {\em test} test} test} test \par
+%D test {\bf test {\em test {\em test} test} test} test \par
+%D test {\sl test {\em test {\em test} test} test} test \par
+%D test {\it test {\em test {\em test} test} test} test \par
+%D \stopbuffer
+%D
+%D \typebuffer
+%D
+%D We get:
+%D
+%D \startvoorbeeld
+%D \startopelkaar
+%D \haalbuffer
+%D \stopopelkaar
+%D \stopvoorbeeld
+
+%D \macros
+%D   {setfont}
+%D 
+%D Every now and then we want to define a font directly, for 
+%D instance when we typeset title pages. The next macro saves
+%D some typing: 
+
+\def\setfont%
+  {\def\dosetfont%
+     {\nextfont\stelinterliniein}%
+   \afterassignment\dosetfont
+   \font\nextfont=}
+
+%D One can call this macro as:
+%D
+%D \starttypen
+%D \setfont cmr10 at 60pt
+%D \stoptypen
+%D
+%D After which the font is active and the baselines and 
+%D struts are set. 
+
+%D \macros
+%D   {showcorps}
+%D   
+%D One can call for a rather simple overview of a corps and the
+%D relations between its alternative fonts.
+%D
+%D \showsetup{\y!showcorps}
+%D
+%D The current corps (here we omitted the argument) looks like:
+%D
+%D \showcorps
+%D
+%D The implementation is rather straightforward in using 
+%D \type{\halign}. 
+
+\def\doshowcorps[#1]%
+  {\startbaselinecorrection
+   \vbox
+     {\def\bigstrut##1##2%
+        {\hbox{\vrule
+           \!!height ##1\ht\strutbox
+           \!!depth  ##2\dp\strutbox
+           \!!width  \!!zeropoint}}
+      \doifelsenothing{#1}
+        {\def\title{\the\korpsgrootte}}
+        {\switchtocorps[#1]\def\title{#1}}
+      \tabskip\!!zeropoint
+      \parindent\!!zeropoint
+      \def\next##1##2##3%
+        {&&##1&&##2\tf##3&&##2\sc##3%
+         &&##2\sl##3&&##2\it##3&&##2\bf##3&&##2\bs##3&&##2\bi##3%
+         &&##2\tfx##3&&##2\tfxx##3%
+         &&##2\tfa##3&&##2\tfb##3&&##2\tfc##3&&##2\tfd##3&\cr}%
+      \setlocalhsize
+      \halign to \localhsize
+        {\bigstrut{1.5}{2}##&\vrule##
+         \tabskip=\!!zeropoint \!!plus 1fill
+         &\hfil##\hfil&\vrule##&\hfil##\hfil&\vrule##
+         &\hfil##\hfil&\vrule##&\hfil##\hfil&\vrule##
+         &\hfil##\hfil&\vrule##&\hfil##\hfil&\vrule##
+         &\hfil##\hfil&\vrule##&\hfil##\hfil&\vrule##
+         &\hfil##\hfil&\vrule##&\hfil##\hfil&\vrule##
+         &\hfil##\hfil&\vrule##&\hfil##\hfil&\vrule##
+         &\hfil##\hfil&\vrule##&\hfil##\hfil&##\vrule
+         \tabskip=\!!zeropoint\cr
+         \noalign{\hrule}
+         &\multispan{29}{\vrule\hfil\tttf\strut[\title]\hfil\vrule}\cr
+         \noalign{\hrule}\next{}{\tt\string}{}
+         \noalign{\hrule}\next{\tt\string\rm}{\rm}{Ag}
+         \noalign{\hrule}\next{\tt\string\ss}{\ss}{Ag}
+         \noalign{\hrule}\next{\tt\string\tt}{\tt}{Ag}
+         \noalign{\hrule}}}
+   \stopbaselinecorrection}
+
+\def\showcorps%
+  {\dosingleempty\doshowcorps}
+
+%D \macros
+%D   {showcorpsenvironment}
+%D
+%D The current corpsenvironment is:
+%D
+%D \showcorpsenvironment
+%D
+%D This overview is generated using:
+%D
+%D \showsetup{\y!showcorpsenvironment}
+
+\def\doshowcorpsenvironment[#1]%
+  {\startbaselinecorrection
+   \vbox
+     {\tabskip\!!zeropoint
+      \parindent\!!zeropoint
+      \doifelsenothing{#1}
+        {\def\title{\the\korpsgrootte}}
+        {\switchtocorps[#1]\def\title{#1}}
+      \def\do##1##2%
+        {\getvalue{\??ft##1##2}}
+      \def\next##1##2%
+        {&&##1{##2}{\s!text}&&##1{##2}{\s!script}&&##1{##2}{\s!scriptscript}%
+         &&##1{##2}{\c!x}&&##1{##2}{\c!xx}%
+         &&##1{##2}{\v!klein}&&##1{##2}{\v!groot}&\cr
+         \noalign{\hrule}}
+      \def\donext##1%
+        {\doifdefined{\??ft##1\s!text}{\next\do##1}}
+      \setlocalhsize
+      \halign to \localhsize
+        {##&\vrule##\strut
+         \tabskip=\!!zeropoint \!!plus 1fill
+         &\hfil##\hfil&\vrule##&\hfil##\hfil&\vrule##&\hfil##\hfil&\vrule##
+         &\hfil##\hfil&\vrule##&\hfil##\hfil&\vrule##&\hfil##\hfil&\vrule##
+         &\hfil##\hfil&##\vrule
+         \tabskip=\!!zeropoint\cr
+         \noalign{\hrule}
+         &\multispan{15}{\vrule\hfil\tttf\strut[\title]\hfil}\vrule\cr
+         \noalign{\hrule}
+         \next\bf\relax
+         \donext\!!twelvepoint\donext\!!elevenpoint\donext\!!tenpoint
+         \donext\!!ninepoint  \donext\!!eightpoint \donext\!!sevenpoint
+         \donext\!!sixpoint   \donext\!!fivepoint  \donext\!!fourpoint}}
+   \stopbaselinecorrection}
+
+\def\showcorpsenvironment%
+  {\dosingleempty\doshowcorpsenvironment}
+
+%D Fonts can only be used when loaded. In \CONTEXT\ we
+%D postpone the loading of fonts, even when we load \PLAIN.
+%D This means that we have to redefine one of the \PLAIN\
+%D macros. Let's tell that to the user first:
+
+\writestatus{loading}{Postponed Plain TeX Font Definitions}
+
+%D \macros
+%D   {bordermatrix}
+%D
+%D In \PLAIN\ \TEX\ the width of a parenthesis is stored in
+%D the \DIMENSION\ \type{\p@renwd}. This value is derived from
+%D the width of \type{\tenrm B}, so let's take care of it now:
+
+\let\normalbordermatrix=\bordermatrix
+
+\def\bordermatrix%
+  {\bgroup
+   \setbox0=\hbox{\getvalue{\textface\c!mm\c!ex}B}%
+   \global\p@renwd=\wd0\relax
+   \egroup
+   \normalbordermatrix}
+
+%D Because we want to be as \PLAIN\ compatible as possible, we
+%D make most of \PLAIN's font mechanisme available to the
+%D \CONTEXT\ user.
+
+\def\setplainfonts#1#2%
+  {\setvalue{ten#1}{\getvalue{\!!tenpoint#2}}%
+   \setvalue{seven#1}{\getvalue{\!!sevenpoint#2}}%
+   \setvalue{five#1}{\getvalue{\!!fivepoint#2}}}
+
+\setplainfonts {\c!rm} {\c!rm\c!tf}
+\setplainfonts {\c!bf} {\c!rm\c!bf}
+\setplainfonts {\c!sl} {\c!rm\c!sl}
+\setplainfonts {\c!it} {\c!rm\c!it}
+\setplainfonts {\c!tt} {\c!rm\c!tt}
+\setplainfonts {\c!sy} {\c!mm\c!sy}
+\setplainfonts {\c!ex} {\c!mm\c!ex}
+\setplainfonts {\c!i}  {\c!mm\c!mi}
+
+\let\setplainfonts=\undefined
+
+%D \macros
+%D   {ss, SS}
+%D   
+%D We are going to redefine \type{\ss} but for those wo still
+%D want to have access to the german \SS, we save it's value in
+%D \type{\SS}. Ok, I should have used \type{\sf} insead of
+%D \type{\ss} in the first place.
+
+\let\SS=\ss
+
+%D \macros
+%D   {xi}
+%D
+%D We are going to redefine \type{\xi}, but fortunately this 
+%D is a math mode character, so we can just say:
+
+\let\normalxi=\xi
+
+%D \macros
+%D   {dotlessi,dotlessj}
+%D
+%D We also save both dotless~\dotlessi\ and~\dotlessj. This
+%D way we still have them were we expect them, even when
+%D macros of font providers redefine them.
+
+\let\dotlessi=\i
+\let\dotlessj=\j
+
+%D \macros
+%D   {smashaccent}
+%D   {}
+%D
+%D When we let \TEX\ put an accent on top of a character, such
+%D composed characters can get more height that height of a
+%D standard \type{\strut}. The next macro takes care of such
+%D unwanted compositions.
+%D
+%D We need to reach over the number that specifies the accent,
+% %D and in doing so we use \type{\hyphenchar} as a placeholder
+%D and in doing so we use \type{\scratchcounter} as a placeholder
+%D because it accepts 8 bit numbers in octal, decimal or
+%D hexadecimal format. Next we set the height of the accented
+%D character to the natural height of the character.
+
+\let\normalaccent=\accent
+
+\def\dodosmashaccent#1%
+  {\setbox0=\hbox{#1}%
+   \setbox2=\hbox{\normalaccent\scratchcounter#1}%
+   \ht2=\ht0\box2
+   \egroup
+   \nobreak}
+
+\def\dosmashaccent%
+  {\afterassignment\dodosmashaccent\expandafter\scratchcounter}
+
+\def\smashaccent%
+  {\dontleavehmode
+   \bgroup
+   \let\accent=\dosmashaccent}
+
+%D For instance we can say:
+%D
+%D \starttypen
+%D \smashaccent\"Uberhaupt
+%D \stoptypen
+%D
+%D But normally one will use it as a prefix in definitions.
+
+%D \macros
+%D   {moveaccent}
+%D
+%D Exact positioning of accents cns be realized by saying: 
+%D
+%D \starttypen
+%D \moveaccent{-.1ex}\"uberhaupt
+%D \stoptypen
+%D
+%D Again, this one will mostly used as a prefix in definitions.
+
+\def\dodomoveaccent#1%
+  {\dimen2=\fontdimen5\font
+   \dimen4=\dimen2
+   \advance\dimen4 by -\dimen0
+   \fontdimen5\font=\dimen4
+   \normalaccent\scratchcounter#1\relax
+   \fontdimen5\font=\dimen2
+   \egroup}
+
+\def\domoveaccent%
+  {\afterassignment\dodomoveaccent\expandafter\scratchcounter}
+
+\def\moveaccent#1%
+  {\dontleavehmode
+   \bgroup
+   \dimen0=#1\relax
+   \let\accent=\domoveaccent}
+
+%D \macros
+%D   {everyuppercase, EveryUppercase}
+%D 
+%D When we want to uppercase strings of characters, we have to
+%D take care of those characters that have a special meaning or
+%D are only accessible by means of macros. The next hack was
+%D introduced when Tobias Burnus started translating head and
+%D label texts into spanish and italian. The first application
+%D of this token register therefore can be found in the module
+%D that deals with these texts. 
+
+\newevery \everyuppercase \EveryUppercase
+
+\appendtoks   \def\i{I}\to \everyuppercase
+\appendtoks   \def\j{J}\to \everyuppercase
+\appendtoks \def\ss{SS}\to \everyuppercase
+\appendtoks   \let\l=\L\to \everyuppercase
+\appendtoks \let\ae=\AE\to \everyuppercase
+\appendtoks \let\aa=\AA\to \everyuppercase
+\appendtoks   \let\o=\O\to \everyuppercase
+\appendtoks \let\oe=\OE\to \everyuppercase
+
+%D \macros
+%D   {everysanitize, EverySanitize}
+%D
+%D Whenever we are sanitizing strings, like we sometimes do 
+%D when we deal with specials, the next token register can be
+%D called. 
+
+\newevery \everysanitize \EverySanitize
+
+%D \macros
+%D   {obeylccodes}
+%D
+%D One way of manipulating characters is changing the their 
+%D \type{\lccode} and applying \type{\lowcase}. An example of
+%D this can be found in \type{spec-mis}. 
+
+\def\obeylccodes%
+  {\scratchcounter=32
+   \loop
+     \ifnum\scratchcounter<127
+       \lccode\scratchcounter=\scratchcounter
+       \advance\scratchcounter by 1
+   \repeat
+   \ifeightbitcharacters 
+     \scratchcounter=128
+     \loop
+       \ifnum\scratchcounter<255
+         \lccode\scratchcounter=`.
+         \advance\scratchcounter by 1
+     \repeat
+   \fi}
+
+%D Here come the definitions.
+
+\redefineaccent    '   % grave
+\redefineaccent    `   % acute
+\redefineaccent    "   % dieresis
+\redefineaccent    ^   % circumflex
+\redefineaccent    ~   % tilde
+\redefineaccent    v   % caron
+\redefineaccent    u   % breve
+\redefineaccent    .   % dotaccent
+\redefineaccent    H   % hungarumlaut
+\redefineaccent    t   % ........
+
+\redefinecharacter ae  % ae
+\redefinecharacter AE  % AE
+\redefinecharacter oe  % oe
+\redefinecharacter OE  % OE
+\redefinecharacter o   % oslash
+\redefinecharacter O   % Oslash
+\redefinecharacter ss  % germandbls
+\redefinecharacter SS  % germandbls
+\redefinecharacter aa  % aring
+\redefinecharacter AA  % Aring
+\redefinecharacter cc  % ccedilla
+\redefinecharacter CC  % Ccedilla
+
+\redefinecommand   b
+\redefinecommand   c
+
+\definecorpsenvironment
+  [\!!fourteenpointfour]
+  [        \s!text=\!!fourteenpointfour,
+         \s!script=\!!elevenpoint,
+   \s!scriptscript=\!!ninepoint,
+              \c!x=\!!twelvepoint,
+             \c!xx=\!!tenpoint,
+          \c!groot=\!!fourteenpointfour,
+          \c!klein=\!!twelvepoint]
+
+\definecorpsenvironment
+  [\!!twelvepoint]
+  [        \s!text=\!!twelvepoint,
+         \s!script=\!!ninepoint,
+   \s!scriptscript=\!!sevenpoint,
+              \c!x=\!!tenpoint,
+             \c!xx=\!!eightpoint,
+          \c!groot=\!!fourteenpointfour,
+          \c!klein=\!!tenpoint]
+
+\definecorpsenvironment
+  [\!!elevenpoint]
+  [        \s!text=\!!elevenpoint,
+         \s!script=\!!eightpoint,
+   \s!scriptscript=\!!sixpoint,
+              \c!x=\!!ninepoint,
+             \c!xx=\!!sevenpoint,
+          \c!groot=\!!twelvepoint,
+          \c!klein=\!!ninepoint]
+
+\definecorpsenvironment
+  [\!!tenpoint]
+  [        \s!text=\!!tenpoint,
+         \s!script=\!!sevenpoint,
+   \s!scriptscript=\!!fivepoint,
+              \c!x=\!!eightpoint,
+             \c!xx=\!!sixpoint,
+          \c!groot=\!!twelvepoint,
+          \c!klein=\!!eightpoint]
+
+\definecorpsenvironment
+  [\!!ninepoint]
+  [        \s!text=\!!ninepoint,
+         \s!script=\!!sevenpoint,
+   \s!scriptscript=\!!fivepoint,
+              \c!x=\!!sevenpoint,
+             \c!xx=\!!fivepoint,
+          \c!groot=\!!elevenpoint,
+          \c!klein=\!!sevenpoint]
+
+\definecorpsenvironment
+  [\!!eightpoint]
+  [        \s!text=\!!eightpoint,
+         \s!script=\!!sixpoint,
+   \s!scriptscript=\!!fivepoint,
+              \c!x=\!!sixpoint,
+             \c!xx=\!!fivepoint,
+          \c!groot=\!!tenpoint,
+          \c!klein=\!!sixpoint]
+
+\definecorpsenvironment
+  [\!!sevenpoint]
+  [        \s!text=\!!sevenpoint,
+         \s!script=\!!sixpoint,
+   \s!scriptscript=\!!fivepoint,
+              \c!x=\!!sixpoint,
+             \c!xx=\!!fivepoint,
+          \c!groot=\!!ninepoint,
+          \c!klein=\!!fivepoint]
+
+\definecorpsenvironment
+  [\!!sixpoint]
+  [        \s!text=\!!sixpoint,
+         \s!script=\!!fivepoint,
+   \s!scriptscript=\!!fivepoint,
+              \c!x=\!!fivepoint,
+             \c!xx=\!!fivepoint,
+          \c!groot=\!!eightpoint,
+          \c!klein=\!!fivepoint]
+
+\definecorpsenvironment
+  [\!!fivepoint]
+  [        \s!text=\!!fivepoint,
+         \s!script=\!!fivepoint,
+   \s!scriptscript=\!!fivepoint,
+              \c!x=\!!fivepoint,
+             \c!xx=\!!fivepoint,
+          \c!groot=\!!sevenpoint,
+          \c!klein=\!!fivepoint]
+
+\definecorpsenvironment
+  [\!!fourpoint]
+  [        \s!text=\!!fourpoint,
+         \s!script=\!!fourpoint,
+   \s!scriptscript=\!!fourpoint,
+              \c!x=\!!fourpoint,
+             \c!xx=\!!fourpoint,
+          \c!groot=\!!sixpoint,
+          \c!klein=\!!fourpoint]
+
+\definecorpsswitch [fourteenpointfour] [\!!fourteenpointfour]
+\definecorpsswitch [twelvepoint]       [\!!twelvepoint]
+\definecorpsswitch [elevenpoint]       [\!!elevenpoint]
+\definecorpsswitch [tenpoint]          [\!!tenpoint]
+\definecorpsswitch [ninepoint]         [\!!ninepoint]
+\definecorpsswitch [eightpoint]        [\!!eightpoint]
+\definecorpsswitch [sevenpoint]        [\!!sevenpoint]
+\definecorpsswitch [sixpoint]          [\!!sixpoint]
+\definecorpsswitch [fivepoint]         [\!!fivepoint]
+\definecorpsswitch [fourpoint]         [\!!fourpoint]
+
+\definecorpsswitch [xii]         [\!!twelvepoint]
+\definecorpsswitch [xi]          [\!!elevenpoint]
+\definecorpsswitch [x]           [\!!tenpoint]
+\definecorpsswitch [ix]          [\!!ninepoint]
+\definecorpsswitch [viii]        [\!!eightpoint]
+\definecorpsswitch [vii]         [\!!sevenpoint]
+\definecorpsswitch [vi]          [\!!sixpoint]
+
+\defineoverallstyle [\v!romaan,      \c!rm] [\c!rm]
+\defineoverallstyle [\v!schreefloos, \c!ss] [\c!ss]
+\defineoverallstyle [\v!type,        \c!tt] [\c!tt]
+\defineoverallstyle [\v!handschrift, \c!hw] [\c!hw]
+\defineoverallstyle [\v!calligrafie, \c!cg] [\c!cg]
+
+\definealternativestyle [\v!mediaeval]                        [\os]  []
+\definealternativestyle [\v!normaal]                          [\tf]  []
+\definealternativestyle [\v!vet]                              [\bf]  []
+\definealternativestyle [\v!type]                             [\tt]  []
+\definealternativestyle [\v!schuin]                           [\sl]  []
+\definealternativestyle [\v!vetschuin,\v!schuinvet]           [\bs]  []
+\definealternativestyle [\v!klein,\v!kleinnormaal]            [\tfx] []
+\definealternativestyle [\v!kleinvet]                         [\bfx] []
+\definealternativestyle [\v!kleintype]                        [\ttx] []
+\definealternativestyle [\v!kleinschuin]                      [\slx] []
+\definealternativestyle [\v!kleinvetschuin,\v!kleinschuinvet] [\bsx] []
+\definealternativestyle [\v!kap,\v!kapitaal]                  [\kap] [\kap]
+
+%D We still have to take care of \type{\xi}, so: 
+
+\def\xi%
+  {\ifmmode\normalxi\else\elevenpoint\fi}
+
+%D By default we load the Computer Modern Roman fonts and
+%D activate the 12pt roman corps. Sans serif and teletype are
+%D also available and can be called for by \type{\ss} and
+%D \type{\tt}.
+
+%D We also load the high \ASCII\ waarde as defined by the
+%D standard \kap{IBM PC} codepage. Finaly we load the
+%D \POSTSCRIPT\ standard predefined accented characters
+%D encoding vector as provided by Y\&Y named \type{texnansi}.
+%D These are for instance used when we load Lucida Bright
+%D (\type{lbr}) or \POSTSCRIPT\ Times Roman (\type{ptr}),
+%D Helvetica (\type{phv}) and Courier (\type{pcr}) which are
+%D also available as whole (\type{\setupcorps[pos]}).
+
+\setupcorps [cmr, 12pt, \v!romaan, ibm, ans]
+
+\protect
+
+\endinput
+

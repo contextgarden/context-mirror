@@ -1,0 +1,160 @@
+%D \module
+%D   [       file=spec-ps,
+%D        version=1996.01.25,
+%D          title=\CONTEXT\ Special Macros,
+%D       subtitle=Adobe PostScript,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. Non||commercial use is 
+%C granted. 
+
+%D \macros
+%D   {dostartgraymode,dostopgraymode,
+%D    dostartrgbcolormode,dostartcmykcolormode,dostartgraycolormode,dostopcolormode,
+%D    dostartrotation,
+%D    dostoprotation,
+%D    doselectfirstpaperbin,
+%D    doselectsecondpaperbin}
+%D   {}
+%D
+%D This implementation is straightforward and can be used as 
+%D a default with postscript||drivers. We use \type{ps:} as 
+%D opening, because most drivers support this. 
+
+\startspecials[postscript]
+
+\def\@@insertpostscriptliteral {ps: }
+\def\@@insertpostscriptretain  {" } 
+
+\definespecial\dostartgraymode#1%
+  {\special
+     {\@@insertpostscriptliteral 
+        #1\space setgray}}
+
+\definespecial\dostopgraymode%
+  {\special
+     {\@@insertpostscriptliteral 
+        0 setgray}}
+
+\definespecial\dostartrgbcolormode#1#2#3%
+  {\special
+     {\@@insertpostscriptliteral 
+        #1\space #2\space #3\space setrgbcolor}}
+
+\definespecial\dostartcmykcolormode#1#2#3#4%
+  {\special
+     {\@@insertpostscriptliteral 
+        #1\space #2\space #3\space #4\space setcmykcolor}}
+
+\definespecial\dostartgraycolormode#1%
+  {\special
+     {\@@insertpostscriptliteral 
+        #1\space setgray}}
+
+\definespecial\dostopcolormode
+  {\special
+     {\@@insertpostscriptliteral 
+        0 setgray}}
+
+\definespecial\doselectfirstpaperbin%
+  {\special
+     {\@@insertpostscriptliteral 
+        statusdict begin 1 setpapertray end}}  % checken 
+
+\definespecial\doselectsecondpaperbin%
+  {\special
+     {\@@insertpostscriptliteral 
+        statusdict begin 0 setpapertray end}}  % checken 
+
+\definespecial\dostartrotation#1%
+  {\special
+     {\@@insertpostscriptliteral 
+        gsave #1\space rotate}}
+
+\definespecial\dostoprotation%
+  {\special
+     {\@@insertpostscriptliteral 
+        currentfont grestore setfont}}
+
+%D \macros
+%D   {doovalbox}
+%D   {}
+%D
+%D This implementation is a mixture of several possible 
+%D implementations. We use some constants that may not be 
+%D changed. It took some time to find them, but these values 
+%D offer quite accurate results. The macro calls for 
+%D \type{\forgetall}, which resets indentation, skips and 
+%D \type{\everypar}.
+%D
+%D Because a stroke follows the line, we correct for half of
+%D the linewidth. Furthermore we use scaling to overcome some 
+%D limitations in the precision ($<1$~sp) and to prevent 
+%D rounding errors. We also do some correction for large 
+%D values. We let PostScript compare some arguments with 
+%D \type{a b eq {action} fi}.  
+%D
+%D The path is based on a macro of J.~Hefferon cs. We also 
+%D tried the D.~Salomon implementation, but this did not work 
+%D well, just like some other alternatives. 
+
+% #1 = width            #2 = height           #3 = depth 
+% #4 = linewidth        #5 = radius 
+% #5 = stroke (ja,nee)  #7 = fill (ja,nee)
+
+\def\@@insertpostscriptliteral {ps: }
+\def\@@insertpostscriptretain  {postscript } % unknown 
+
+\def\dosomeovalcalc#1#2#3%
+  {\dimen2=#1sp%
+   \advance\dimen2 by #2%   
+   \ScaledPointsToBigPoints{\number\dimen2}#3}
+
+\definespecial\doovalbox#1#2#3#4#5#6#7% 
+  {\bgroup
+   \dimen0=#4sp\divide\dimen0 by 2
+   \dosomeovalcalc {0}{+\dimen0}\xmin
+   \dosomeovalcalc{#1}{-\dimen0}\xmax
+   \dosomeovalcalc{#2}{-\dimen0}\ymax
+   \dosomeovalcalc{#3}{+\dimen0}\ymin
+   \dosomeovalcalc{#4}{0pt}\stroke
+   \dosomeovalcalc{#5}{0pt}\radius
+   \edef\dostroke{#6}%
+   \edef\dofill{#7}% 
+   \vbox
+     \bgroup
+     \offinterlineskip
+     \forgetall
+     \hsize\!!zeropoint
+     \vrule\!!width\!!zeropoint\!!height#2sp\!!depth#3sp\relax
+     \special 
+       {\@@insertpostscriptretain
+          gsave
+            newpath
+            \xmin\space \radius\space add \ymin\space moveto
+            \xmax\space \ymin\space \xmax\space \ymax\space \radius\space arcto
+            \xmax\space \ymax\space \xmin\space \ymax\space \radius\space arcto
+            \xmin\space \ymax\space \xmin\space \ymin\space \radius\space arcto
+            \xmin\space \ymin\space \xmax\space \ymin\space \radius\space arcto 
+            \xmin\space \radius\space add \ymin\space moveto
+            16 {pop} repeat
+            closepath
+            (\dostroke) (1) eq 
+              {\stroke\space 0 ne 
+                {gsave 
+                  \stroke\space setlinewidth 
+                   stroke 
+                 grestore} if} if
+            (\dofill) (1) eq 
+              {fill} if
+          grestore}% 
+     \egroup
+   \egroup}
+
+\stopspecials
+
+\endinput
+

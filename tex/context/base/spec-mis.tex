@@ -1,0 +1,132 @@
+%D \module
+%D   [       file=spec-mis,
+%D        version=1997.04.01,
+%D          title=\CONTEXT\ Special Macros,
+%D       subtitle=Miscellaneous Macros,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. Non||commercial use is 
+%C granted. 
+
+%D Quite some modules in this group are dedicated to supporting
+%D \PDF\ directly by means of \PDFTEX or indirectly by using
+%D Acrobat Distiller. This module implements some common
+%D features. 
+
+\writestatus{loading}{Context Special Macros / Miscellaneous Macros}
+
+\unprotect
+
+%D \macros 
+%D   {setPDFdestination}
+%D 
+%D \PDF\ destinations should obey the specifications laid down 
+%D in the \PDF\ reference manual. The next macro strips illegal 
+%D characters from the destination name. 
+
+\def\setPDFdestination#1%
+  {\bgroup
+   \obeylccodes
+   \lccode`\/=`-\lccode`\#=`-\lccode`\<=`-\lccode`\>=`-%
+   \lccode`\[=`-\lccode`\]=`-\lccode`\(=`-\lccode`\)=`-%
+   \stripcharacter{ }\from#1\to\PDFdestination
+   \@EA\lowercase\@EA{\@EA\xdef\@EA\PDFdestination\@EA{\PDFdestination}}%
+   \egroup}
+
+%D \macro
+%D   {URLhash}
+%D
+%D A rather trivial macro: 
+
+\expandafter\def\expandafter\URLhash\expandafter{\string#}
+
+%D \macros 
+%D   {ifusepagedestinations}
+%D 
+%D In \PDF\ version 1.0 only page references were supported,
+%D while in \DVIWINDO\ 1.N only named references were accepted.
+%D Therefore \CONTEXT\ supports both methods of referencing. In
+%D \PDF\ version 1.1 named destinations arrived. Lack of
+%D continuous support of version 1.1 viewers for \MSDOS\
+%D therefore sometimes forces us to prefer page references. As
+%D a bonus, they are faster too and have no limitations. How
+%D fortunate we were having both mechanisms available when the
+%D version 3.0 (\PDF\ version 1.2) viewers proved to be too 
+%D bugged to support named destinations. 
+
+\newif\ifusepagedestinations
+
+%D \macro
+%D   {sanitizePDFstring}
+%D
+%D This macro at least tries to convert a arbitrary string 
+%D into a sequence of characters valid for \PDF\ bookmarks and 
+%D alike. It's a slow one, that uses \type{\lccode}'s to 
+%D change the glyph as well as converts sensisitve ones into a 
+%D \PDF\ command sequence, so \type{(} becomes \type{\(}.  In
+%D fact we translate the string to lowercase inactive and non 
+%D special characters, limit their number and finaly convert 
+%D some of the characters to save ones. 
+
+\chardef\maxPDFstringsize=60
+
+\def\sanitizePDFstring#1\to#2%
+  {\bgroup
+   \obeylccodes
+   \lccode`( =1  \lccode`) =1
+   \lccode`< =1  \lccode`> =1
+   \lccode`[ =1  \lccode`] =1
+   \lccode`\\=1  \lccode`/ =1
+   \lowercase{\convertargument#1\to\ascii}%
+   % by integrating the split in the loop below
+   % \splitofftokens\maxPDFstringsize\from\ascii\to\ascii 
+   % we diminish the processing time considerably
+   \scratchcounter=\maxPDFstringsize
+   \def\docommando##1%
+     {\ifnum\scratchcounter>0
+        \advance\scratchcounter by -1
+        \ifcase\lccode`##1\relax
+          \xdef#2{#2.}% let's show that something is missing
+        \or
+          \xdef#2{#2\expandafter\string\csname##1\endcsname}%
+        \else
+          \xdef#2{#2##1}%
+        \fi
+      \fi}%
+   %\global\let#2=\empty 
+   % or to permit #2 to be \ascii too:
+   \@EA\global\@EA\let\@EA#2\@EA\empty
+   \@EA\handletokens\ascii\with\docommando
+   \egroup}
+
+%D \macros 
+%D   {dodoinsertfile}
+%D 
+%D File insertion depend on the driver or \TEX\ variant used.
+%D All driver modules use the same scheme for file insertion,
+%D and therefore have the next macro in common: 
+
+\def\dododoinsertfile[#1][#2,#3][#4]%
+  {\def\fileinsertionclass{do#1insert}%
+   \doifdefinedelse{\fileinsertionclass#3}
+     {\def\next{\getvalue{\fileinsertionclass#3}{#4}}}
+     {\doifdefinedelse{\fileinsertionclass#2}
+        {\def\next{\getvalue{\fileinsertionclass#2}{#4}}}
+        {\def\next{\gobblesevenarguments}}}%
+   \next}
+
+\def\dodoinsertfile#1#2#3%
+  {\dododoinsertfile[#1][#2][#3]}
+
+%D This macro is called with 10 arguments, where the first 
+%D one specifies the driver, like \type{yy} or \type{tr}. The
+%D second argument is a \type{{type,method}} pair and the 
+%D third the filename. 
+
+\protect
+
+\endinput
+

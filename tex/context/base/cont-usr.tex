@@ -1,0 +1,51 @@
+%D \module
+%D   [       file=cont-usr,
+%D        version=1997.10.05,
+%D          title=\CONTEXT\ User Format Specifications,
+%D       subtitle=System Specific Setups,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+
+%D In this file users can specify what hyphenation patterns 
+%D they want to load into the format file. 
+
+\unprotect
+
+% \installlanguage [\s!af] [\c!status=\v!start] % afrikaans 
+% \installlanguage [\s!da] [\c!status=\v!start] % danish    
+  \installlanguage [\s!de] [\c!status=\v!start] % german    
+  \installlanguage [\s!en] [\c!status=\v!start] % english   
+% \installlanguage [\s!fi] [\c!status=\v!start] % finnish
+  \installlanguage [\s!fr] [\c!status=\v!start] % french     
+% \installlanguage [\s!it] [\c!status=\v!start] % italian 
+  \installlanguage [\s!nl] [\c!status=\v!start] % dutch     
+% \installlanguage [\s!no] [\c!status=\v!start] % norwegian 
+% \installlanguage [\s!pl] [\c!status=\v!start] % polish
+% \installlanguage [\s!pt] [\c!status=\v!start] % portuguese 
+% \installlanguage [\s!sp] [\c!status=\v!start] % spanish    
+% \installlanguage [\s!sv] [\c!status=\v!start] % swedish   
+% \installlanguage [\s!tr] [\c!status=\v!start] % turkish    
+
+% \appendtoks \language[\s!nl]\to \everyjob
+% \appendtoks \language[\s!en]\to \everyjob
+% \appendtoks \language[\s!de]\to \everyjob
+% \appendtoks \language[\s!fr]\to \everyjob
+% \appendtoks \language[\s!sp]\to \everyjob
+% \appendtoks \language[\s!it]\to \everyjob
+% \appendtoks \language[\s!da]\to \everyjob
+% \appendtoks \language[\s!pt]\to \everyjob
+% \appendtoks \language[\s!sv]\to \everyjob
+% \appendtoks \language[\s!pl]\to \everyjob
+% \appendtoks \language[\s!fi]\to \everyjob
+% \appendtoks \language[\s!af]\to \everyjob
+% \appendtoks \language[\s!no]\to \everyjob
+% \appendtoks \language[\s!tr]\to \everyjob
+
+\appendtoks \mainlanguage[\currentlanguage] \to \everyjob
+
+
+\protect
+
+\endinput 
+
