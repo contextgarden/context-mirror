@@ -2342,6 +2342,9 @@ val:*sezione::
 var:stile:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...,*comando::
 var:stiletesto:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...,*comando::
 var:stilenumero:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...,*comando::
+var:colore:*nome::
+var:coloretesto:*nome::
+var:colorenumero:*nome::
 var:numero:si,no::
 var:numeroproprio:si,no::
 var:pagina:sinistra,destra,si::

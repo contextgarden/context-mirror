@@ -2342,6 +2342,9 @@ val:*sectiune::
 var:stil:normal,aldin,inclinat,aldininclinat,type,cap,mic...,*comanda::
 var:stiltext:normal,aldin,inclinat,aldininclinat,type,cap,mic...,*comanda::
 var:stilnumar:normal,aldin,inclinat,aldininclinat,type,cap,mic...,*comanda::
+var:culoare:*nume::
+var:culoaretext:*nume::
+var:culoarenumar:*nume::
 var:numar:da,nu::
 var:numarpropriu:da,nu::
 var:pagina:stanga,dreapta,da::

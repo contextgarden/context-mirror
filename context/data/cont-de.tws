@@ -2342,6 +2342,9 @@ val:*Abschnitt::
 var:stil:normal,fett,geneigt,fettgeneigt,tippen,kap,klein...,*Befehl::
 var:textstil:normal,fett,geneigt,fettgeneigt,tippen,kap,klein...,*Befehl::
 var:nummernstil:normal,fett,geneigt,fettgeneigt,tippen,kap,klein...,*Befehl::
+var:farbe:*Name::
+var:textfarbe:*Name::
+var:nummernfarbe:*Name::
 var:nummer:ja,nein::
 var:eigenenummer:ja,nein::
 var:seite:links,rechts,ja::

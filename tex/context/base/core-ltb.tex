@@ -332,7 +332,7 @@
      \ifcase\linetablepart
        % we're collecting the repeater 
      \else
-       \scratchdimen\hsize \advance\scratchdimen-\wd\scratchbox
+       \scratchdimen\hsize \advance\scratchdimen-\wd\scratchbox\relax
        \ifdim\scratchdimen>\linetableparameter\c!rek\else
          \setbox\scratchbox\hbox to \hsize{\unhbox\scratchbox}%
        \fi 
@@ -446,8 +446,8 @@
      {\setuplinetable[\c!maxbreedte=\zeropoint]}%
    \processaction
      [\linetableparameter\c!rek]
-     [\v!nee=>{\setuplinetable[\c!rek=\maxdimen]}% no stretch
-       \v!ja=>{\setuplinetable[\c!rek=\zerocount]}]% max stretch 
+     [\v!nee=>{\setuplinetable[\c!rek=\maxdimen]},% no stretch
+       \v!ja=>{\setuplinetable[\c!rek=\zeropoint]}]% max stretch 
    \chardef\linetablerepeat\linetableparameter\c!nlinks
    \chardef\linetablesplitstatus % = 
      \ifdim\linetableparameter\c!maxbreedte>\zeropoint
@@ -503,31 +503,31 @@
    \globallet\noflinetableparts\!!zerocount
    \egroup}
 
-\def\checklinecolumnwidth
-  {\ifundefined{\??lew\number\linetablecolumn}%
-     \donetrue
-   \else\ifdim\getvalue{\??lew\number\linetablecolumn}<\wd\linetablecell
-     \donetrue
-   \else
-     \donefalse
-   \fi\fi
-   \ifdone
-     \setxvalue{\??lew\number\linetablecolumn}{\the\wd\linetablecell}%
-   \fi}
-
-\def\checklinecolumnwidth
-  {\ifcsname\??lew\number\linetablecolumn\endcsname
-     \ifdim\csname\??lew\number\linetablecolumn\endcsname<\wd\linetablecell
-       \donetrue
-     \else
-       \donefalse
-     \fi
-   \else
-     \donetrue
-   \fi
-   \ifdone
-     \setxvalue{\??lew\number\linetablecolumn}{\the\wd\linetablecell}%
-   \fi}
+% \def\checklinecolumnwidth
+%   {\ifundefined{\??lew\number\linetablecolumn}%
+%      \donetrue
+%    \else\ifdim\getvalue{\??lew\number\linetablecolumn}<\wd\linetablecell
+%      \donetrue
+%    \else
+%      \donefalse
+%    \fi\fi
+%    \ifdone
+%      \setxvalue{\??lew\number\linetablecolumn}{\the\wd\linetablecell}%
+%    \fi}
+%
+% \def\checklinecolumnwidth
+%   {\ifcsname\??lew\number\linetablecolumn\endcsname
+%      \ifdim\csname\??lew\number\linetablecolumn\endcsname<\wd\linetablecell
+%        \donetrue
+%      \else
+%        \donefalse
+%      \fi
+%    \else
+%      \donetrue
+%    \fi
+%    \ifdone
+%      \setxvalue{\??lew\number\linetablecolumn}{\the\wd\linetablecell}%
+%    \fi}
 
 \def\checklinecolumnwidth
   {\expandafter\xdef\csname\??lew\number\linetablecolumn\endcsname
@@ -661,6 +661,8 @@
       \setevalue{\??lec\recurselevel\c!breedte}{\getvalue{\??lew\recurselevel}}%
       \letgvalue{\??lew\recurselevel}\!!zeropoint}} % init next table 
 
+% todo: store in box instead of macro 
+
 \newtoks \@@linetablehead
 
 \long\def\startlinetablehead#1\stoplinetablehead

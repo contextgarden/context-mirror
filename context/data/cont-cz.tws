@@ -2342,6 +2342,9 @@ val:*sekce::
 var:pismeno:normalni,tucne,sklonene,tucnesklonene,opis,kap,male...,*prikaz::
 var:styltextu:normalni,tucne,sklonene,tucnesklonene,opis,kap,male...,*prikaz::
 var:stylcisla:normalni,tucne,sklonene,tucnesklonene,opis,kap,male...,*prikaz::
+var:barva:*jmeno::
+var:barvatextu:*jmeno::
+var:barvacisla:*jmeno::
 var:cislo:ano,ne::
 var:vlastnicislo:ano,ne::
 var:stranka:vlevo,vpravo,ano::

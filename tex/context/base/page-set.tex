@@ -1466,7 +1466,7 @@
    \splitstring#1\at*\to\column\and\row
    \bgroup
      \ifx\column\empty\else\expanded{\doOTRSETgotoCOLUMN{\column}}\fi
-   \egroup
+   \egroup                           
    \bgroup
      \ifx\row   \empty\else\expanded{\doOTRSETgotoROW   {\row   }}\fi
    \egroup
@@ -1545,10 +1545,10 @@
 %    \fi
 %    \OTRSETsetvsize}
 
-\def\OTRSETgotocell#1#2%
+\def\OTRSETgotocell#1#2% obsolete: now \column[#1*#2]
   {\endgraf
-   \doOTRSETgotocolumnCOLUMN{#1}%
-   \doOTRSETgotocolumnROW   {#2}}
+   \doOTRSETgotoCOLUMN{#1}%
+   \doOTRSETgotoROW   {#2}}
 
 \def\OTRSETdummycolumn
   {\verticalstrut

@@ -2342,6 +2342,9 @@ val:*sectie::
 var:letter:normaal,vet,schuin,vetschuin,type,kap,klein...,*commando::
 var:tekstletter:normaal,vet,schuin,vetschuin,type,kap,klein...,*commando::
 var:nummerletter:normaal,vet,schuin,vetschuin,type,kap,klein...,*commando::
+var:kleur:*naam::
+var:tekstkleur:*naam::
+var:nummerkleur:*naam::
 var:nummer:ja,nee::
 var:eigennummer:ja,nee::
 var:pagina:links,rechts,ja::

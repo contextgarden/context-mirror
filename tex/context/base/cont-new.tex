@@ -21,7 +21,44 @@
 
 \writestatus{\m!systems}{beware: some patches loaded from cont-new.tex!}
 
+\long\def\preservePSpar#1\to#2%
+  {\bgroup
+   \def\par{\rawcharacter{12}\rawcharacter{12}}%
+   \expanded{\egroup\noexpand\def\noexpand#2{#1}}}
+
 \appendtoks\optimizeverbatimfalse\to\everytabulate
+
+\def\processlinetableXMLfile#1%
+  {\bgroup 
+   \let\startlinetable\donothing
+   \let\stoplinetable \donothing
+   \startlinetableanalysis\processXMLfile{#1}\stoplinetableanalysis
+   \startlinetablerun     \processXMLfile{#1}\stoplinetablerun
+   \egroup}
+
+\def\startlinetablepart
+  {\global\linetablesubcol\zerocount
+   \setbox\scratchbox\hbox\bgroup
+   \doconvertfont{\linetablerparameter\c!letter}%
+   \startcolor[\linetablerparameter\c!kleur]%
+   \ignorespaces}
+
+\def\stoplinetablepart
+  {\ifnum\linetablepart>\zerocount 
+     \unskip \unskip % remove last intercolumn skip (distance+fill)
+   \fi
+   \stopcolor
+   \egroup
+   \iflinetablepreroll \else
+     \ifcase\linetablepart
+       % we're collecting the repeater 
+     \else
+       \scratchdimen\hsize \advance\scratchdimen-\wd\scratchbox\relax
+       \ifdim\scratchdimen>\linetableparameter\c!rek\else
+         \setbox\scratchbox\hbox to \hsize{\unhbox\scratchbox}%
+       \fi 
+     \fi
+   \fi}
 
 \def\centertogrid % meant for special situations 
   {\ifgridsnapping

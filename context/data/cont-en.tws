@@ -2342,6 +2342,9 @@ val:*section::
 var:style:normal,bold,slanted,boldslanted,type,cap,small...,*command::
 var:textstyle:normal,bold,slanted,boldslanted,type,cap,small...,*command::
 var:numberstyle:normal,bold,slanted,boldslanted,type,cap,small...,*command::
+var:color:*name::
+var:textcolor:*name::
+var:numbercolor:*name::
 var:number:yes,no::
 var:ownnumber:yes,no::
 var:page:left,right,yes::
