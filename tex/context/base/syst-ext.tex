@@ -24,15 +24,28 @@
 %D A raw and dirty alternative for \type {\getparameters}; no
 %D checking is done!
 
-\def\rawgetparameters[#1][#2]% scheelt 5\%
-  {\def\rawparameterprefix{#1}%
-   \expandafter\rawsetparameter#2,]=,}
+% \def\rawgetparameters[#1][#2]% scheelt 5\%
+%   {\def\rawparameterprefix{#1}%
+%    \expandafter\rawsetparameter#2,]=,}
 
 \def\rawsetparameter#1=#2,%
   {\if]#1\else
      \expandafter\def\csname\rawparameterprefix#1\endcsname{#2}%
      \expandafter\rawsetparameter
    \fi}
+
+% the next one handles empty #1 okay:
+
+\def\rawgetparameters[#1][#2% some 5-10% faster
+  {\ifx#2]% test is needed, else bomb on [#1][]
+     \expandafter\gobbleoneargument
+   \else
+     \def\rawparameterprefix{#1}%
+     \expandafter\dorawgetparameters
+   \fi#2}
+
+\def\dorawgetparameters#1]%
+  {\expandafter\rawsetparameter#1,]=,}
 
 %D \macros
 %D   {doglobal,
@@ -82,16 +95,16 @@
 %D \type {\global} hopelessly fails here. But a slight
 %D adaption of Knuth's original macro permits:
 %D
-%D \starttypen
+%D \starttyping
 %D \doglobal\newif\iftest
-%D \stoptypen
+%D \stoptyping
 %D
 %D Of course one can still say:
 %D
-%D \starttypen
+%D \starttyping
 %D \global\testtrue
 %D \global\testfalse
-%D \stoptypen
+%D \stoptyping
 %D
 %D Apart from the prefixes, a few more \type{\expandafters}
 %D are needed:
@@ -136,12 +149,12 @@
 %D but fortunately we can store numbers in a macro. We can
 %D increment such pseudo \COUNTERS\ with \type{\increment}.
 %D
-%D \starttypen
+%D \starttyping
 %D \increment(\counter,20)
 %D \increment(\counter,-4)
 %D \increment(\counter)
 %D \increment\counter
-%D \stoptypen
+%D \stoptyping
 %D
 %D After this sequence of commands, the value of
 %D \type{\counter} is 20, 16, 17 and~18. Of course there is
@@ -149,9 +162,9 @@
 %D
 %D Global assignments are possible too, using \type{\doglobal}:
 %D
-%D \starttypen
+%D \starttyping
 %D \doglobal\increment\counter
-%D \stoptypen
+%D \stoptyping
 %D
 %D When \type{\counter} is undefined, it's value is initialized
 %D at~0. It is nevertheless better to define a \COUNTER\
@@ -160,9 +173,9 @@
 %D not accept undefined macro's. The \COUNTER\ in our example
 %D can for instance be defined with:
 %D
-%D \starttypen
+%D \starttyping
 %D \newcounter\counter
-%D \stoptypen
+%D \stoptyping
 %D
 %D The command \type{\newcounter} must not be confused with
 %D \type{\newcount}! Of course this mechanism is much slower
@@ -172,10 +185,10 @@
 %D from some other incompatilities we want to mention a pitfal
 %D when using \type{\ifnum}.
 %D
-%D \starttypen
+%D \starttyping
 %D \ifnum\normalcounter=\pseudocounter \doif \else \doelse \fi
 %D \ifnum\pseudocounter=\normalcounter \doif \else \doelse \fi
-%D \stoptypen
+%D \stoptyping
 %D
 %D In the first test, \TEX\ continues it's search for the
 %D second number after reading  \type{\pseudocounter}, while
@@ -312,9 +325,9 @@
 %D signal. Signals must be unique and the next macro takes care
 %D of that.
 %D
-%D \starttypen
+%D \starttyping
 %D \newsignal\somesignal
-%D \stoptypen
+%D \stoptyping
 %D
 %D Signals old dimensions and can be used in skips, kerns and
 %D tests like \type{\ifdim}.
@@ -334,9 +347,9 @@
 %D amount is too small to suit certain packages. Therefore when
 %D possible one should use:
 %D
-%D \starttypen
+%D \starttyping
 %D \newskimen\tempskimen
-%D \stoptypen
+%D \stoptyping
 %D
 %D This commands allocates a \DIMENSION\ or a \SKIP, depending
 %D on the availability. One should be aware of the difference
@@ -345,7 +358,7 @@
 %D found. This search can be canceled by using \type{\relax}
 %D when possible and needed.
 %D
-%D \starttypen
+%D \starttyping
 %D \def\newskimen#1%
 %D   {\ifx#1\undefined
 %D      \ifnum\count11>\count12
@@ -354,7 +367,7 @@
 %D        \newdimen#1\relax
 %D      \fi
 %D    \fi}
-%D \stoptypen
+%D \stoptyping
 %D
 %D In order to make this macro work in plain \TEX\ too, we
 %D use the following alternative, which fools \TEX\ about
@@ -371,9 +384,9 @@
 %D The next macro can be very useful when using \type{\csname}
 %D like in:
 %D
-%D \starttypen
+%D \starttyping
 %D \csname if\strippedcsname\something\endcsname
-%D \stoptypen
+%D \stoptyping
 %D
 %D This expands to \type{\ifsomething}.
 
@@ -401,29 +414,29 @@
 %D memory saving alternative is presented here. A conditional
 %D is defined by:
 %D
-%D \starttypen
+%D \starttyping
 %D \newconditional\doublesided
 %D \setfalse
 %D
 %D Setting a conditional is done by \type{\settrue} and
 %D \type{\setfalse}:
 %D
-%D \starttypen
+%D \starttyping
 %D \settrue\doublesided
 %D \setfalse
 %D
 %D while testing is accomplished by:
 %D
-%D \starttypen
+%D \starttyping
 %D \ifconditional\doublesided  ... \else ... \fi
 %D \setfalse
 %D
 %D We cannot use the simple scheme:
 %D
-%D \starttypen
+%D \starttyping
 %D \def\settrue#1{\let#1=\iftrue}
 %D \def\settrue#1{\let#1=\iffalse}
-%D \stoptypen
+%D \stoptyping
 %D
 %D Such an implementation gives problems with nested
 %D conditionals. The next implementation is abaou as fast
@@ -442,9 +455,9 @@
 %D pretty \type{\if}||safe too. It can be used in cases
 %D like:
 %D
-%D \starttypen
+%D \starttyping
 %D \ifzeropt \somedimen ... \else ... \fi
-%D \stoptypen
+%D \stoptyping
 
 \let\ifzeropt\ifcase
 
@@ -459,9 +472,9 @@
 %D The most simple alternative is the one that only needs a
 %D number.
 %D
-%D \starttypen
+%D \starttyping
 %D \dorecurse {n} {whatever we want}
-%D \stoptypen
+%D \stoptyping
 %D
 %D This macro can be nested without problems and therefore be
 %D used in situations where \PLAIN\ \TEX's \type{\loop} macro
@@ -469,7 +482,7 @@
 %D available in \type{\recurselevel}, before as well as after
 %D the \typ{whatever we wat} stuff.
 %D
-%D \starttypen
+%D \starttyping
 %D \dorecurse               % inner loop
 %D   {10}
 %D   {\recurselevel:          % outer value
@@ -480,7 +493,7 @@
 %D        {\recurselevel}     % outer value
 %D        {\recurselevel}     % inner value
 %D    \endgraf}
-%D \stoptypen
+%D \stoptyping
 %D
 %D In this example the first, second and fourth
 %D \type{\recurselevel} concern the outer loop, while the third
@@ -501,7 +514,7 @@
 
 %D Acceptable:
 %D
-%D \starttypen
+%D \starttyping
 %D \long\def\dostepwiserecurse#1#2#3%
 %D   {\let\nextrecurse\gobblefourarguments
 %D    \ifnum#3>0\relax\ifnum#2<#1\relax\else
@@ -511,11 +524,11 @@
 %D      \def\nextrecurse{\dosetstepwiserecurse<}%
 %D    \fi\fi
 %D    \nextrecurse{#1}{#2}{#3}}
-%D \stoptypen
+%D \stoptyping
 %D
 %D Better:
 %D
-%D \starttypen
+%D \starttyping
 %D \long\def\dostepwiserecurse#1#2#3%
 %D   {\let\nextrecurse\gobblefourarguments
 %D    \ifnum#3>0\relax \ifnum#2<#1\relax \else
@@ -564,7 +577,7 @@
 %D \def\nododorecurse
 %D   {\global\advance\outerrecurse -1
 %D    \edef\recurselevel{\csname\@@irecurse\recursedepth\endcsname}}
-%D \stoptypen
+%D \stoptyping
 %D
 %D Cleaner and much faster:
 
@@ -669,18 +682,18 @@
 %D As we can see here, the simple command \type{\dorecurse} is
 %D a special case of the more general:
 %D
-%D \starttypen
+%D \starttyping
 %D \dostepwiserecurse {from} {to} {step} {action}
-%D \stoptypen
+%D \stoptyping
 %D
 %D This commands accepts positive and negative steps. Illegal
 %D values are handles as good as possible and the macro accepts
 %D numbers and \COUNTERS.
 %D
-%D \starttypen
+%D \starttyping
 %D \dostepwiserecurse  {1} {10}  {2} {...}
 %D \dostepwiserecurse {10}  {1} {-2} {...}
-%D \stoptypen
+%D \stoptyping
 %D
 %D Because the simple case is used often, we implement it
 %D more efficiently:
@@ -744,7 +757,7 @@
 %D pseudo counter. When this macro is nested, we have to use
 %D different counters. This time we use keywords.
 %D
-%D \starttypen
+%D \starttyping
 %D \def\alfa{2} \def\beta{100} \def\gamma{3}
 %D
 %D \for \n=55    \to 100   \step  1      \do {... \n ...}
@@ -752,7 +765,7 @@
 %D \for \n=\n    \to 120   \step  1      \do {... \n ...}
 %D \for \n=120   \to 100   \step -3      \do {... \n ...}
 %D \for \n=55    \to 100   \step  2      \do {... \n ...}
-%D \stoptypen
+%D \stoptyping
 %D
 %D Only in the third example we need to predefine \type{\n}.
 %D The use of \type{\od} as a dilimiter would have made nested
@@ -773,11 +786,11 @@
 %D explictly exit it. Nesting is supported. First we present
 %D a more extensive alternative.
 %D
-%D \starttypen
+%D \starttyping
 %D \doloop
 %D   {Some kind of typesetting punishment \par
 %D    \ifnum\pageno>100 \exitloop \fi}
-%D \stoptypen
+%D \stoptyping
 %D
 %D When needed, one can call for \type{\looplevel} and
 %D \type{\loopdepth}.
@@ -785,7 +798,7 @@
 %D If we write this macros from scratch, we end up with
 %D something like the ones described above:
 %D
-%D \starttypen
+%D \starttyping
 %D \def\@@eloop{@@eloop}  % exit
 %D \def\@@iloop{@@iloop}  % stepper
 %D \def\@@aloop{@@aloop}  % action
@@ -832,7 +845,7 @@
 %D
 %D \def\looplevel{\recurselevel}
 %D \def\loopdepth{\recursedepth}
-%D \stoptypen
+%D \stoptyping
 %D
 %D We don't have to declare new counters for \type{\looplevel}
 %D and \type{\loopdepth} because we can use \type{\recurselevel}
@@ -841,13 +854,13 @@
 %D We prefer however a more byte saving implementation, that
 %D executes of course a bit slower.
 %D
-%D \starttypen
+%D \starttyping
 %D \def\doloop%
 %D   {\dostepwiserecurse1\maxdimen1}
 %D
 %D \def\exitloop%
 %D   {\letvalue{\@@irecurse\recursedepth}\maxdimen}
-%D \stoptypen
+%D \stoptyping
 %D
 %D Although, the next version is faster because it used the
 %D simple loop.
@@ -882,8 +895,9 @@
   {\csname\@@arecurse\recursedepth\endcsname\endofloop}
 
 \def\nodoloop#1%
-  {\@EA\let\@EA\recurselevel\csname\@@irecurse\recursedepth\endcsname
-   \global\advance\outerrecurse \minusone }
+  {\let\endofloop\dodoloop % new, permits nested \doloop's
+   \@EA\let\@EA\recurselevel\csname\@@irecurse\recursedepth\endcsname
+   \global\advance\outerrecurse\minusone}
 
 \def\exitloop                     % \exitloop quits at end
   {\let\endofloop\nodoloop}
@@ -894,16 +908,16 @@
 %D The loop is executed at least once, so beware of situations
 %D like:
 %D
-%D \starttypen
+%D \starttyping
 %D \doloop {\exitloop some commands}
-%D \stoptypen
+%D \stoptyping
 %D
 %D It's just a matter of putting the text into the \type{\if}
 %D statement that should be there anyway, like in:
 %D
-%D \starttypen
+%D \starttyping
 %D \doloop {\ifwhatever \exitloop \else some commands\fi}
-%D \stoptypen
+%D \stoptyping
 %D
 %D You can also quit a loop immediately, by using \type
 %D {\exitloopnow} instead. Beware, this is more sensitive
@@ -929,7 +943,7 @@
 %D unreadable, so let's first show an implementation that
 %D shows how things are done:
 %D
-%D \starttypen
+%D \starttyping
 %D \newtoks \everyline
 %D \newtoks \oldeveryline
 %D \newif   \ifeveryline
@@ -1037,32 +1051,32 @@
 %D going to present in the visual debugger. First we save
 %D the primitive \type{\everypar}:
 %D
-%D \starttypen
+%D \starttyping
 %D \let\normaleverypar=\everypar
-%D \stoptypen
+%D \stoptyping
 %D
 %D Next we allocate a \TOKENLIST\ named \type{\everypar},
 %D which means that \type{\everypar} is no longer a primitive
 %D but something like \type{\toks44}.
 %D
-%D \starttypen
+%D \starttyping
 %D \newtoks\everypar
-%D \stoptypen
+%D \stoptyping
 %D
 %D Because \TEX\ now executes \type{\normaleverypar} instead
 %D of \type{\everypar}, we are ready to assign some tokens to
 %D this internally known and used \TOKENLIST.
 %D
-%D \starttypen
+%D \starttyping
 %D \normaleverypar={all the things the system wants to do \the\everypar}
-%D \stoptypen
+%D \stoptyping
 %D
 %D Where the user can provide his own tokens to be expanded
 %D every time he expects them to expand.
 %D
-%D \starttypen
+%D \starttyping
 %D \everypar={something the user wants to do}
-%D \stoptypen
+%D \stoptyping
 %D
 %D We don't use this method because it undoubtly leads to
 %D confusing situations, especially when other packages are
@@ -1076,15 +1090,15 @@
 %D macro converts a parameter or an expanded macro to it's
 %D textual meaning.
 %D
-%D \starttypen
+%D \starttyping
 %D \convertargument ... \to \command
-%D \stoptypen
+%D \stoptyping
 %D
 %D For example,
 %D
-%D \starttypen
+%D \starttyping
 %D \convertargument{one \two \three{four}}\to\ascii
-%D \stoptypen
+%D \stoptyping
 %D
 %D The resulting macro \type{\ascii} can be written to a file
 %D or the terminal without problems. In \CONTEXT\ we use this
@@ -1092,9 +1106,9 @@
 %D
 %D The second conversion alternative accepts a command:
 %D
-%D \starttypen
+%D \starttyping
 %D \convertcommand\command\to\ascii
-%D \stoptypen
+%D \stoptyping
 %D
 %D Both commands accept the prefix \type{\doglobal} for global
 %D assignments.
@@ -1153,9 +1167,9 @@
 %D was found after rereading the \TEX book. The first
 %D implementation was:
 %D
-%D \starttypen
+%D \starttyping
 %D \def\doconvertargument#1->#2\\\\{#2}
-%D \stoptypen
+%D \stoptyping
 %D
 %D The \type{-}, the delimiter \type{\\\\} and the the second
 %D argument are completely redundant.
@@ -1163,9 +1177,9 @@
 % %D As said, the \TEX\ alternative fails on expanding primitives,
 % %D like in:
 % %D
-% %D \starttypen
+% %D \starttyping
 % %D \convertcommand\someprimitive\to\ascii
-% %D \stoptypen
+% %D \stoptyping
 % %D
 % %D Because these primitives convert to themselves, we can use
 % %D the backslash as a signal to treat them different. At the
@@ -1197,7 +1211,7 @@
 \def\showvalue#1%
   {\expandafter\show\csname#1\endcsname}
 
-\def\showargument#1%
+\long\def\showargument#1%
   {\convertargument#1\to\ascii\show\ascii}
 
 %D \macros
@@ -1208,9 +1222,9 @@
 %D in the \ETEX\ implementation, but since we want
 %D compatibility, we need:
 %D
-%D \starttypen
+%D \starttyping
 %D \doifmeaningelse {\next} {\something} {true} {false}
-%D \stoptypen
+%D \stoptyping
 %D
 %D Watch the one level expansion of the second argument.
 
@@ -1265,7 +1279,7 @@
 %D executing the commands that uses them. We can best
 %D illustrate this with an example.
 %D
-%D \starttypen
+%D \starttyping
 %D \def\first  {alfa,beta,gamma}
 %D \def\second {alfa,epsilon,zeta}
 %D
@@ -1276,7 +1290,7 @@
 %D \ExpandFirstAfter\processcommalist[\first]\message
 %D
 %D \ExpandAfter       \doifcommon {\first} {alfa}    {\message{OK}}
-%D \stoptypen
+%D \stoptyping
 %D
 %D The first three calls result in the threefold message
 %D \type{OK}, the fourth one shows the three elements of
@@ -1318,19 +1332,19 @@
 %D argument to a string of unexpandable characters. To make
 %D comparison possible, we have to convert the constant too
 %D
-%D \starttypen
+%D \starttyping
 %D \ConvertToConstant\doifelse {...} {...} {then ...} {else ...}
-%D \stoptypen
+%D \stoptyping
 %D
 %D This construction is only needed when the first argument
 %D can give troubles. Misuse can slow down processing.
 %D
-%D \starttypen
+%D \starttyping
 %D \ConvertToConstant\doifelse{\c!alfa}        {\c!alfa}{...}{...}
 %D \ConvertToConstant\doifelse{alfa}           {\c!alfa}{...}{...}
 %D \ConvertToConstant\doifelse{alfa}           {alfa}   {...}{...}
 %D \ConvertToConstant\doifelse{alfa \alfa test}{\c!alfa}{...}{...}
-%D \stoptypen
+%D \stoptyping
 %D
 %D In examples~2 and~3 both arguments equal, in~1 and~4
 %D they differ.
@@ -1356,27 +1370,27 @@
 %D When the argument \type{#1} consists of commands, we had
 %D better use
 %D
-%D \starttypen
+%D \starttyping
 %D \ConvertConstantAfter\processaction[#1][...]
-%D \ConvertConstantAfter\doifelse{#1}{\v!iets}{}{}
-%D \stoptypen
+%D \ConvertConstantAfter\doifelse{#1}{\v!something}{}{}
+%D \stoptyping
 %D
 %D This commands accepts things like:
 %D
-%D \starttypen
+%D \starttyping
 %D \v!constant
 %D constant
 %D \hbox to \hsize{\rubish}
-%D \stoptypen
+%D \stoptyping
 %D
 %D As we will see in the core modules, this macro permits
 %D constructions like:
 %D
-%D \starttypen
+%D \starttyping
 %D \setupfootertexts[...][...]
 %D \setupfootertexts[margin][...][...]
 %D \setupfootertexts[\v!margin][...][...]
-%D \stoptypen
+%D \stoptyping
 %D
 %D where \type{...} can be anything legally \TEX.
 
@@ -1397,9 +1411,9 @@
 %D
 %D We can assign a default value to an empty macro using:
 %D
-%D \starttypen
+%D \starttyping
 %D \assignifempty \macros {default value}
-%D \stoptypen
+%D \stoptyping
 %D
 %D We don't explicitly test if the macro is defined.
 
@@ -1417,10 +1431,10 @@
 %D like constructions. Sometimes, the \type{\stop} is used as a
 %D hard coded delimiter like in:
 %D
-%D \starttypen
+%D \starttyping
 %D \def\startcommand#1\stopcommand%
 %D   {... #1 ...}
-%D \stoptypen
+%D \stoptyping
 %D
 %D In many cases the \type{\start}||\type{\stop} pair is
 %D defined at format generation time or during a job. This
@@ -1429,21 +1443,21 @@
 %D \type{\expandafter} I was able to to implement a solution,
 %D starting with:
 %D
-%D \starttypen
+%D \starttyping
 %D \grabuntil{stop}\command
-%D \stoptypen
+%D \stoptyping
 %D
 %D This commands executes, after having encountered
 %D \type {\stop} the command \type {\command}. This command
 %D receives as argument the text preceding the \type {\stop}.
 %D This means that:
 %D
-%D \starttypen
+%D \starttyping
 %D \def\starthello%
 %D   {\grabuntil{stophello}\message}
 %D
 %D \starthello Hello world!\stophello
-%D \stoptypen
+%D \stoptyping
 %D
 %D results in: \type{\message{Hello world!}}.
 
@@ -1455,22 +1469,22 @@
 
 %D The next command build on this mechanism:
 %D
-%D \starttypen
+%D \starttyping
 %D \processbetween{string}\command
-%D \stoptypen
+%D \stoptyping
 %D
 %D Here:
 %D
-%D \starttypen
+%D \starttyping
 %D \processbetween{hello}\message
 %D \starthello Hello again!\stophello
-%D \stoptypen
+%D \stoptyping
 %D
 %D leads to: \type{\message{Hello again!}}. The command
 %D
-%D \starttypen
+%D \starttyping
 %D \gobbleuntil{sequence}
-%D \stoptypen
+%D \stoptyping
 %D
 %D is related to these commands. This one simply throws away
 %D everything preceding \type{\command}.
@@ -1486,9 +1500,9 @@
 
 %D The next one simply expands the pickup up tokens.
 %D
-%D \starttypen
+%D \starttyping
 %D \processuntil{sequence}
-%D \stoptypen
+%D \stoptyping
 
 \def\processuntil#1%
   {\long\def\next##1#1{##1}\next}
@@ -1498,9 +1512,9 @@
 %D
 %D Commands often manipulate argument as in:
 %D
-%D \starttypen
+%D \starttyping
 %D \def\doezomaarwat#1{....#1....}
-%D \stoptypen
+%D \stoptyping
 %D
 %D A disadvantage of this approach is that the tokens that
 %D form \type{#1} are fixed the the moment the argument is read
@@ -1516,27 +1530,27 @@
 %D The next macro offers a solution for both unwanted
 %D situations:
 %D
-%D \starttypen
+%D \starttyping
 %D \groupedcommand {before} {after}
-%D \stoptypen
+%D \stoptyping
 %D
 %D Which can be used like:
 %D
-%D \starttypen
+%D \starttyping
 %D \def\cite%
 %D   {\groupedcommand{\rightquote\rightquote}{\leftquote\leftquote}}
-%D \stoptypen
+%D \stoptyping
 %D
 %D This command is equivalent to, but more 'robust' than:
 %D
-%D \starttypen
+%D \starttyping
 %D \def\cite#1%
 %D   {\rightquote\rightquote#1\leftquote\leftquote}
-%D \stoptypen
+%D \stoptyping
 %D
 %D One should say that the next implementation would suffice:
 %D
-%D \starttypen
+%D \starttyping
 %D \def\groupedcommand#1#2%
 %D   {\def\BeforeGroup{#1\ignorespaces}%
 %D    \def\AfterGroup{\unskip#2\egroup}%
@@ -1544,23 +1558,23 @@
 %D    \aftergroup\AfterGroup
 %D    \afterassignment\BeforeGroup
 %D    \let\next=}
-%D \stoptypen
+%D \stoptyping
 %D
 %D It did indeed, but one day we decided to support the
 %D processing of boxes too:
 %D
-%D \starttypen
+%D \starttyping
 %D \def\rightword%
 %D   {\groupedcommand{\hfill\hbox}{\parfillskip\!!zeropoint}}
 %D
 %D .......... \rightword{the right way}
-%D \stoptypen
+%D \stoptyping
 %D
 %D Here \TEX\ typesets \type{\bf the right way} unbreakable
 %D at the end of the line. The solution mentioned before does
 %D not work here.
 %D
-%D \starttypen
+%D \starttyping
 %D \long\unexpanded\def\groupedcommand#1#2%
 %D   {\bgroup
 %D    \long\def\BeforeGroup%
@@ -1569,20 +1583,20 @@
 %D      {#2\egroup\egroup}%
 %D    \afterassignment\BeforeGroup
 %D    \let\next=}
-%D \stoptypen
+%D \stoptyping
 %D
 %D We used this method some time until the next alternative
 %D was needed. From now on we support both
 %D
-%D \starttypen
+%D \starttyping
 %D to be \bold{bold} or not, that's the question
-%D \stoptypen
+%D \stoptyping
 %D
 %D and
 %D
-%D \starttypen
+%D \starttyping
 %D to be {\bold bold} or not, that's the question
-%D \stoptypen
+%D \stoptyping
 %D
 %D This alternative checks for a \type{\bgroup} token first.
 %D The internal alternative does not accept the box handling
@@ -1603,7 +1617,7 @@
 
 %D These macros come together in:
 %D
-%D \starttypen
+%D \starttyping
 %D \long\unexpanded\def\groupedcommand#1#2%
 %D   {\def\dogroupedcommand%
 %D      {\ifx\next\bgroup
@@ -1613,16 +1627,16 @@
 %D       \fi
 %D       \next{#1}{#2}}%
 %D    \futurelet\next\dogroupedcommand}
-%D \stoptypen
+%D \stoptyping
 %D
 %D From the missing paragraph number one can deduce that the
 %D last macro is not the real one yet. I considered it a
 %D nuisance that
 %D
-%D \starttypen
-%D \kleur[groen]
+%D \starttyping
+%D \color[green]
 %D   {as grass}
-%D \stoptypen
+%D \stoptyping
 %D
 %D was not interpreted as one would expect. This is due to the
 %D fact that \type{\futurelet} obeys blank spaces, and a
@@ -1654,10 +1668,10 @@
 %D explictly close the paragraph with \type{\par}, else the
 %D settings will be forgotten and not applied. So it's:
 %D
-%D \starttypen
+%D \starttyping
 %D \def\BoldRaggedCenter%
 %D   {\groupedcommand{\raggedcenter\bf}{\par}}
-%D \stoptypen
+%D \stoptyping
 
 %D \macros
 %D   {checkdefined}
@@ -1668,9 +1682,9 @@
 %D already defined. We considered blocking the definition, but
 %D this is not always what we want.
 %D
-%D \starttypen
+%D \starttyping
 %D \checkdefined {category} {class} {command}
-%D \stoptypen
+%D \stoptyping
 %D
 %D The user is warned with the suggestion to use
 %D \type{CAPITALS}. This suggestion is feasible, because
@@ -1690,16 +1704,16 @@
 %D this contents grouped. The next macro for instance typesets
 %D a paragraph in boldface.
 %D
-%D \starttypen
+%D \starttyping
 %D \def\remark#1\par%
 %D   {\bgroup\bf#1\egroup}
-%D \stoptypen
+%D \stoptyping
 %D
 %D This macro has to be called like
 %D
-%D \starttypen
+%D \starttyping
 %D \remark some text ... ending with \par
-%D \stoptypen
+%D \stoptyping
 %D
 %D Instead of \type{\par} we can of course use an empty line.
 %D When we started typesetting with \TEX, we already had
@@ -1709,22 +1723,22 @@
 %D \TEX\ permits a cramped and badly formatted source, it adds
 %D to confusion and sometimes introduces errors. So we prefer:
 %D
-%D \starttypen
+%D \starttyping
 %D \remark
 %D
 %D some text ... ending with an empty line
-%D \stoptypen
+%D \stoptyping
 %D
 %D We are going to implement a mechanism that allows such open
 %D specifications. The definition of the macro handling
 %D \type{\remark} becomes:
 %D
-%D \starttypen
+%D \starttyping
 %D \def\remark%
 %D   {\BeforePar{\bgroup\bf}%
 %D    \AfterPar{\egroup}%
 %D    \GetPar}
-%D \stoptypen
+%D \stoptyping
 %D
 %D A macro like \type{\GetPar} can be defined in several
 %D ways. The recent version, the fourth one in a row,
@@ -1743,7 +1757,7 @@
 
 %D The original definition was:
 %D
-%D \starttypen
+%D \starttyping
 %D \def\doGotoPar
 %D   {\ifx\nextchar\blankspace
 %D      \@EA\GotoPar
@@ -1760,13 +1774,13 @@
 %D
 %D \def\GotoPar
 %D   {\afterassignment\doGotoPar\let\nextchar=}
-%D \stoptypen
+%D \stoptyping
 
 %D Its big brother \type{\GetPar} redefines the \type{\par}
 %D primitive, which can lead to unexpected results, depending
 %D in the context.
 %D
-%D \starttypen
+%D \starttyping
 %D \def\GetPar
 %D   {\expanded
 %D      {\BeforePar
@@ -1780,16 +1794,16 @@
 %D             \BeforePar\emptytoks
 %D             \AfterPar\emptytoks}}}%
 %D    \GotoPar}
-%D \stoptypen
+%D \stoptyping
 
 %D However, we can implement a better alternative by using:
 %D
-%D \starttypen
+%D \starttyping
 %D \def\dowithpar#1#2%
 %D   {\def\handlepar##1\par{#1##1#2}%
 %D    \def\gobblepar\par{\dowithpar{#1}{#2}}%
 %D    \doifnextcharelse\par\gobblepar\handlepar}
-%D \stoptypen
+%D \stoptyping
 %D
 %D Or, nicer
 
@@ -1837,10 +1851,10 @@
 %D We start with a commands that acts on paragraphs. This
 %D command is called as:
 %D
-%D \starttypen
+%D \starttyping
 %D \dowithpargument\command
 %D \dowithpargument{\command ... }
-%D \stoptypen
+%D \stoptyping
 %D
 %D In \CONTEXT\ we use this one to read in the titles of
 %D chapters, sections etc. The commands responsible for these
@@ -1848,19 +1862,19 @@
 %D passing. In these examples, the \type{\par} can be omitted
 %D when an empty line is present.
 %D
-%D \starttypen
+%D \starttyping
 %D \command{...}
 %D \command ... \par
 %D \command
 %D   {...}
 %D \command
 %D   ... \par
-%D \stoptypen
+%D \stoptyping
 %D
 %D We show two implementations, of which for the moment the
 %D we prefier to use the second one:
 %D
-%D \starttypen
+%D \starttyping
 %D \def\dowithpargument#1%
 %D   {\def\dodowithpargument%
 %D      {\ifx\next\bgroup
@@ -1870,18 +1884,18 @@
 %D       \fi
 %D       \next}%
 %D    \futurelet\next\dodowithpargument}
-%D \stoptypen
+%D \stoptyping
 %D
 %D A second and better implementation was:
 %D
-%D \starttypen
+%D \starttyping
 %D \def\dowithpargument#1%
 %D   {\def\nextpar##1 \par{#1{##1}}%
 %D    \def\nextarg##1{#1{##1}}%
 %D    \doifnextcharelse{\bgroup}
 %D      {\nextarg}
 %D      {\nextpar}}
-%D \stoptypen
+%D \stoptyping
 %D
 %D We ended up with an alternative that also accepts en empty
 %D argument. This command permits for instance chapters to
@@ -1905,27 +1919,27 @@
 %D When we want to act upon words we can use the \type{w}
 %D alternative.
 %D
-%D \starttypen
+%D \starttyping
 %D \dowithwargument\command
 %D \dowithwargument{... \command ...}
-%D \stoptypen
+%D \stoptyping
 %D
 %D The main difference bwteen two alternatives is in the
 %D handling of \type{\par}'s. This time the space token acts
 %D as a delimiter.
 %D
-%D \starttypen
+%D \starttyping
 %D \command{...}
 %D \command ...
 %D \command
 %D   {...}
 %D \command
 %D   ...
-%D \stoptypen
+%D \stoptyping
 %D
 %D Again there are two implementations possible:
 %D
-%D \starttypen
+%D \starttyping
 %D \def\dowithwargument#1%
 %D   {\def\dodowithwargument%
 %D      {\ifx\next\bgroup
@@ -1935,7 +1949,7 @@
 %D       \fi
 %D       \next}%
 %D    \futurelet\next\dodowithwargument}
-%D \stoptypen
+%D \stoptyping
 %D
 %D We've chosen:
 
@@ -1958,43 +1972,41 @@
 %D \type{\dorecurse}. The next alternative however, suits
 %D better some of the \CONTEXT\ interface commands.
 %D
-%D \starttypen
+%D \starttyping
 %D \dorepeat[n*\command]
-%D \stoptypen
+%D \stoptyping
 %D
 %D The value of the used \COUNTER\ can be called within
 %D \type{\command} by \type{\repeater}.
 %D
 %D A slightly different alternative is:
 %D
-%D \starttypen
+%D \starttyping
 %D \dorepeatwithcommand[n*{...}]\command
-%D \stoptypen
+%D \stoptyping
 %D
 %D When we call for something like:
 %D
-%D \starttypen
+%D \starttyping
 %D \dorepeatwithcommand[3*{Hello}]\message
-%D \stoptypen
+%D \stoptyping
 %D
 %D we get ourselves three \type{\message{Hello}} messages in
 %D a row. In both commands, the \type{n*} is optional. When this
 %D specification is missing, the command executes once.
 
-% ! ! ! obsolete ! ! !
+% this one is obsolete:
 
 \def\dorepeat[#1]%
   {\dodorepeat#1*\empty*\relax}
 
 \long\def\dodorepeat#1*#2#3*#4\relax
-  {\ifx#2\empty
-     #1%
-   \else
-     \dorecurse{#1}{#2#3}%
-   \fi}
+  {\ifx#2\empty#1\else\dorecurse{#1}{#2#3}\fi}
 
 \def\repeater
   {\recurselevel}
+
+% this one will be kept
 
 \def\dorepeatwithcommand[#1]%
   {\dodorepeatwithcommand#1*\empty*\relax}
@@ -2008,23 +2020,62 @@
 %
 % more complex but better:
 
+% \long\def\dodorepeatwithcommand#1*#2#3*#4\relax#5%
+%   {\ifx#2\empty
+%      #5{#1}%
+%    \else\ifnum#1<\zerocount
+%      % a la etex
+%      % \dorecurse{-\numexpr(#1)}{#5{-#2#3}}%
+%      % indirect
+%      %\innerrecurse#1%
+%      %\expanded{\dorecurse{\number-\innerrecurse}}{#5{-#2#3}}%
+%      % safer:
+%      \bgroup\scratchcounter#1%
+%      \expanded{\egroup\noexpand\dorecurse{\number-\scratchcounter}}{#5{-#2#3}}%
+%    \else\ifx#2+%
+%      \dorecurse{#1}{#5{#3}}%
+%    \else
+%      \dorecurse{#1}{#5{#2#3}}%
+%    \fi\fi\fi}
+
+\def\dorepeatwithcommand[#1]%
+  {\dodorepeatwithcommand#1*\empty*\relax}
+
 \long\def\dodorepeatwithcommand#1*#2#3*#4\relax#5%
-  {\ifx#2\empty
-     #5{#1}%
+  {\ifx#2\empty\redorepeatwithcommand[#1]#5\else\dododorepeatwithcommand{#1}{#2}{#3}#5\fi}
+
+\long\def\dododorepeatwithcommand#1#2#3#4%
+  {\ifx#2\empty % redundant but gives cleaner extensions
+     #4{#1}%
    \else\ifnum#1<\zerocount
-     % a la etex
-     % \dorecurse{-\numexpr(#1)}{#5{-#2#3}}%
-     % indirect
-     %\innerrecurse#1%
-     %\expanded{\dorecurse{\number-\innerrecurse}}{#5{-#2#3}}%
-     % safer:
      \bgroup\scratchcounter#1%
-     \expanded{\egroup\noexpand\dorecurse{\number-\scratchcounter}}{#5{-#2#3}}%
+     \expanded{\egroup\noexpand\dorecurse{\number-\scratchcounter}}{#4{-#2#3}}%
    \else\ifx#2+%
-     \dorecurse{#1}{#5{#3}}%
+     \dorecurse{#1}{#4{#3}}%
    \else
-     \dorecurse{#1}{#5{#2#3}}%
+     \dorecurse{#1}{#4{#2#3}}%
    \fi\fi\fi}
+
+\def\redorepeatwithcommand[#1]#2%
+  {#2{#1}}
+
+%D The extension hook permits something like:
+%D
+%D \starttyping
+%D \bgroup
+%D
+%D \catcode`\*=\@@superscript
+%D
+%D \gdef\redorepeatwithcommand[#1]%
+%D   {\redodorepeatwithcommand#1*\empty*\relax}
+%D
+%D \long\gdef\redodorepeatwithcommand#1*#2#3*#4\relax#5%
+%D   {\dododorepeatwithcommand{#1}{#2}{#3}#5}
+%D
+%D \egroup
+%D \stoptyping
+%D
+%D although one may wonder if changing the catcode of \type {*} is wise.
 
 %D \macros
 %D   {normalbgroup,normalgroup}
@@ -2040,14 +2091,14 @@
 %D The next macro is meant for situations where both strings
 %D are macros. This save some unneeded expansion.
 %D
-%D \starttypen
+%D \starttyping
 %D \long\def\doifstringinstringelse#1#2%
 %D   {\p!doifinstringelse#1#2%
 %D      \@EA\firstoftwoarguments
 %D    \else
 %D      \@EA\secondoftwoarguments
 %D    \fi}
-%D \stoptypen
+%D \stoptyping
 %D
 %D A bit faster is:
 
@@ -2071,12 +2122,12 @@
 %D comma separated lists are more suitable for the user
 %D interface. Nevertheless we have:
 %D
-%D \starttypen
+%D \starttyping
 %D (\doglobal) \appendtoks ... \to\tokenlist
 %D (\doglobal) \prependtoks ... \to\tokenlist
 %D (\doglobal) \flushtoks\tokenlist
 %D             \dotoks\tokenlist
-%D \stoptypen
+%D \stoptyping
 %D
 %D Er worden eerst enkele klad||registers gedefinieerd. These
 %D macros are clones of the ones implemented in page~378 of
@@ -2085,7 +2136,7 @@
 %D A simple implementation, one that does not handle braces
 %D at the outer level, is:
 %D
-%D \starttypen
+%D \starttyping
 %D \def\appendtoks#1\to#2%
 %D   {\scratchtoks={#1}%
 %D    \expanded{\dodoglobal\noexpand#2{\the#2\the\scratchtoks}}}
@@ -2093,7 +2144,7 @@
 %D \def\prependtoks#1\to#2%
 %D   {\scratchtoks={#1}%
 %D    \expanded{\dodoglobal\noexpand#2{\the\scratchtoks\the#2}}}
-%D \stoptypen
+%D \stoptyping
 %D
 %D But here we prefer:
 
@@ -2166,28 +2217,41 @@
 
 %D The test macro:
 %D
-%D \starttypen
+%D \starttyping
 %D \def\doifintokselse#1#2% #1 en #2 zijn toks
 %D   {\edef\!!stringa{\the#1}\convertcommand\!!stringa\to\asciiA
 %D    \edef\!!stringb{\the#2}\convertcommand\!!stringb\to\asciiB
 %D    \doifinstringelse\asciiA\asciiB}
-%D \stoptypen
+%D \stoptyping
 %D
 %D Better:
 %D
-%D \starttypen
+%D \starttyping
 %D \def\doifintokselse#1#2% #1 en #2 zijn toks
 %D   {\edef\!!stringa{\the#1}\convertcommand\!!stringa\to\asciiA
 %D    \edef\!!stringb{\the#2}\convertcommand\!!stringb\to\asciiB
 %D    \doifstringinstringelse\asciiA\asciiB}
-%D \stoptypen
+%D \stoptyping
 %D
 %D Even better:
 
-\def\doifintokselse#1#2% #1 en #2 zijn toks
-  {\@EA\convertargument\the#1\to\asciiA
-   \@EA\convertargument\the#2\to\asciiB
-   \doifstringinstringelse\asciiA\asciiB}
+\beginETEX
+
+  \def\doifintokselse#1#2% #1 en #2 zijn toks
+    {\@EA\convertargument\the#1\to\asciiA
+     \@EA\convertargument\the#2\to\asciiB
+     \doifstringinstringelse\asciiA\asciiB}
+
+\endETEX
+
+\beginTEX
+
+  \def\doifintokselse#1#2% #1 en #2 zijn toks
+    {\edef\asciiA{\the#1}\convertcommand\asciiA\to\asciiA
+     \edef\asciiB{\the#2}\convertcommand\asciiB\to\asciiB
+     \doifstringinstringelse\asciiA\asciiB}
+
+\endTEX
 
 %D Also:
 
@@ -2210,19 +2274,19 @@
 %D Declaring, setting and resetting \COUNTERS\ can be doen
 %D with the next set of commands.
 %D
-%D \starttypen
+%D \starttyping
 %D \makecounter   {name}
 %D \pluscounter   {name}
 %D \minuscounter  {name}
 %D \resetcounter  {name}
 %D \setcounter    {name} {value}
 %D \countervalue  {name}
-%D \stoptypen
+%D \stoptyping
 %D
 %D We prefer the use of global counters. This means that we
 %D have to load \PLAIN\ \TEX\ in a bit different way:
 %D
-%D \starttypen
+%D \starttyping
 %D \let\oldouter=\outer
 %D \let\outer=\relax
 %D \input plain.tex
@@ -2230,12 +2294,12 @@
 %D
 %D \def\newcount%
 %D   {\alloc@0\count\countdef\insc@unt}
-%D \stoptypen
+%D \stoptyping
 %D
 %D First we show a solution in which we use real \COUNTERS.
 %D Apart from some expansion, nothing special is done.
 %D
-%D \starttypen
+%D \starttyping
 %D \def\makecounter#1%
 %D   {\expandafter\newcount\csname#1\endcsname}
 %D
@@ -2253,7 +2317,7 @@
 %D
 %D \def\countervalue#1%
 %D   {\the\getvalue{#1}}
-%D \stoptypen
+%D \stoptyping
 %D
 %D Because these macros are already an indirect way of working
 %D with counters, there is no harm in using pseudo \COUNTERS\
@@ -2336,10 +2400,10 @@
 %D These both commands split a string at a given point in two
 %D parts, so \type{x.y} becomes \type{x} or \type{y}.
 %D
-%D \starttypen
+%D \starttyping
 %D \beforesplitstring test.tex\at.\to\filename
 %D \aftersplitstring  test.tex\at.\to\extension
-%D \stoptypen
+%D \stoptyping
 %D
 %D The first routine looks (and is indeed) a bit simpler than
 %D the second one. The alternative looking more or less like
@@ -2417,9 +2481,9 @@
 %D
 %D A first application of the two routines defined above is:
 %D
-%D \starttypen
+%D \starttyping
 %D \removesubstringtest-\from first-last\to\nothyphenated
-%D \stoptypen
+%D \stoptyping
 %D
 %D Which in terms of \TEX\ looks like:
 
@@ -2444,12 +2508,12 @@
 %D list. When we add an item, we first check if it's already
 %D there. This means that every item in the list is unique.
 %D
-%D \starttypen
+%D \starttyping
 %D \addtocommalist      {alfa}  \name
 %D \addtocommalist      {beta}  \name
 %D \addtocommalist      {gamma} \name
 %D \removefromcommalist {beta}  \name
-%D \stoptypen
+%D \stoptyping
 %D
 %D These commands can be prefixed with \type{\doglobal}. The
 %D implementation of the second command is more complecated,
@@ -2458,24 +2522,24 @@
 %D commas. When one item is left, we also have to get rid of
 %D trailing spaces.
 %D
-%D \starttypen
+%D \starttyping
 %D \def\words{alfa, beta, gamma, delta}
 %D \def\words{alfa,beta,gamma,delta}
-%D \stoptypen
+%D \stoptyping
 %D
 %D Removing an item takes more time than adding one.
 %D
 %D A fast appending alternative, without any testing, is
 %D also provided:
 %D
-%D \starttypen
+%D \starttyping
 %D \appendtocommalist  {something} \name
 %D \prependtocommalist {something} \name
-%D \stoptypen
+%D \stoptyping
 %D
 %D This can be implemented as follows:
 %D
-%D \starttypen
+%D \starttyping
 %D \def\appendtocommalist#1#2%
 %D   {\ifx#2\empty
 %D      \dodoglobal\edef#2{#1}%
@@ -2489,7 +2553,7 @@
 %D    \else % no test on empty
 %D      \dodoglobal\edef#2{#1,#2}%
 %D    \fi}
-%D \stoptypen
+%D \stoptyping
 %D
 %D The faster alternatives are:
 
@@ -2501,7 +2565,7 @@
 
 %D The old ones are:
 %D
-%D \starttypen
+%D \starttyping
 %D \def\addtocommalist#1#2%
 %D   {\ifx#2\empty
 %D      \dodoglobal\edef#2{#1}%
@@ -2537,7 +2601,7 @@
 %D    \doremovefromcommalist{}{#1}{#2}%
 %D    \dofrontstrip#2%
 %D    \dodoglobal\edef#2{#2}}
-%D \stoptypen
+%D \stoptyping
 %D
 %D Significantly faster (especially for longer lists):
 
@@ -2586,9 +2650,9 @@
 %D Slow but seldom used, so for the moment we stick to this
 %D implementation.
 %D
-%D \starttypen
+%D \starttyping
 %D \substituteincommalist{old}{new}{list}
-%D \stoptypen
+%D \stoptyping
 
 \def\substituteincommalist#1#2#3% old, new, list (slooow)
   {\edef\!!stringb{#1}%
@@ -2628,21 +2692,21 @@
 %D The next macro can be used to replace an indexed element
 %D in a commalist:
 %D
-%D \starttypen
+%D \starttyping
 %D \replaceincommalist\MyList{2}
-%D \stoptypen
+%D \stoptyping
 %D
 %D Element~2 will be replaced by the current meaning of the macro
 %D \type {\newcommalistelement}. The old meaning is saved in
 %D \type {\commalistelement}. The replacement honors grouped items,
 %D like in:
 %D
-%D \starttypen
+%D \starttyping
 %D \def\MyList{a,b,c,d,e,f}   \replaceincommalist\MyList{3}
 %D \def\MyList{a,b,c,d,e,f}   \replaceincommalist\MyList{3}
 %D \def\MyList{a,{b,c},d,e,f} \replaceincommalist\MyList{3}
 %D \def\MyList{a,b,c,{d,e,f}} \replaceincommalist\MyList{3}
-%D \stoptypen
+%D \stoptyping
 
 \let\newcommalistelement\empty
 
@@ -2706,9 +2770,9 @@
 %D
 %D We can convert point into centimeters with:
 %D
-%D \starttypen
+%D \starttyping
 %D \PtToCm{dimension}
-%D \stoptypen
+%D \stoptyping
 %D
 %D Splitting the value and the unit is done by:
 
@@ -2753,10 +2817,10 @@
 
 %D We also support:
 %D
-%D \starttypen
+%D \starttyping
 %D \numberofpoints   {dimension}
 %D \dimensiontocount {dimension} {\count}
-%D \stoptypen
+%D \stoptyping
 %D
 %D Both macros return a rounded number.
 
@@ -2792,10 +2856,10 @@
 %D
 %D Premature and a bit of beta, we offer:
 %D
-%D \starttypen
+%D \starttyping
 %D \pushmacro\macro
 %D \popmacro\macro
-%D \stoptypen
+%D \stoptyping
 %D
 %D Beware: global!
 
@@ -2871,11 +2935,11 @@
 %D corrected value is available in \type{\localhsize}, which
 %D needs to be calculated with \type{\setlocalhsize} first.
 %D
-%D \starttypen
+%D \starttyping
 %D \setlocalhsize        \hbox to \localhsize{...}
 %D \setlocalhsize[-1em]  \hbox to \localhsize{...}
 %D \setlocalhsize[.5ex]  \hbox to \localhsize{...}
-%D \stoptypen
+%D \stoptyping
 %D
 %D These examples show us that an optional can be used. The
 %D value provided is added to \type{\localhsize}.
@@ -2884,12 +2948,14 @@
 
 \def\complexsetlocalhsize[#1]% don't change !
   {\localhsize\hsize
- % \advance\localhsize -\parindent % changed anyway
+   \ifnum\hangafter<\zerocount
+     \advance\localhsize\ifdim\hangindent>\zeropoint-\fi\hangindent
+   \fi
    \advance\localhsize -\leftskip
    \advance\localhsize -\rightskip
    \advance\localhsize #1\relax}
 
-\def\simplesetlocalhsize%
+\def\simplesetlocalhsize
   {\complexsetlocalhsize[\zeropoint]}
 
 \definecomplexorsimple\setlocalhsize
@@ -2903,9 +2969,9 @@
 %D (definitely and fortunately) no feature of \TEX, we have to
 %D step through the token list ourselves.
 %D
-%D \starttypen
+%D \starttyping
 %D \processtokens {before} {between} {after} {space} {tokens}
-%D \stoptypen
+%D \stoptyping
 %D
 %D An example of a call is:
 %D
@@ -2917,7 +2983,7 @@
 %D
 %D This results in:
 %D
-%D \haalbuffer
+%D \getbuffer
 %D
 %D The list of tokens may contain spaces, while \type{\\},
 %D \type{{}} and \type{\ } are handled as space too.
@@ -3023,7 +3089,7 @@
 
 %D Faster but spoiling inheritance (copying parameters):
 %D
-%D \starttypen
+%D \starttyping
 %D \def\doifelsevaluesomething#1#2#3%
 %D   {\expandafter\ifx\csname#1\endcsname\empty#3\else#2\fi}
 %D
@@ -3032,7 +3098,7 @@
 %D
 %D \def\doifvaluenothing#1#2%
 %D   {\expandafter\ifx\csname#1\endcsname\empty#2\fi}
-%D \stoptypen
+%D \stoptyping
 %D
 %D Slightly more efficient:
 
@@ -3180,11 +3246,11 @@
 %D compare filenames. The next three alternatives upcase their
 %D arguments before comparing them.
 %D
-%D \starttypen
+%D \starttyping
 %D \DOIF     {string1} {string2} {...}
 %D \DOIFNOT  {string1} {string2} {...}
 %D \DOIFELSE {string1} {string2} {then ...}{else ...}
-%D \stoptypen
+%D \stoptyping
 %D
 %D We have to use a two||step implementation, because the
 %D expansion has to take place outside \type{\uppercase}.
@@ -3233,16 +3299,16 @@
 %D \DVI||file, which passes them to for instance a PostScript
 %D file.
 %D
-%D \starttypen
+%D \starttyping
 %D \stripspaces\from\one\to\two
-%D \stoptypen
+%D \stoptyping
 %D
 %D Both the old string \type{\one} and the new one \type{\two}
 %D are expanded. This command is a special case of:
 %D
-%D \starttypen
+%D \starttyping
 %D \stripcharacter\char\from\one\to\two
-%D \stoptypen
+%D \stoptyping
 %D
 %D As we can see below, spaces following a control sequence are
 %D to enclosed in \type{{}}.
@@ -3281,9 +3347,9 @@
 %D take care of such executions and when not defined, gobbles
 %D the unwanted arguments.
 %D
-%D \starttypen
+%D \starttyping
 %D \executeifdefined{name}\gobbleoneargument
-%D \stoptypen
+%D \stoptyping
 %D
 %D We can of course gobble more arguments using the
 %D appropriate gobbling command.
@@ -3329,9 +3395,9 @@
 %D
 %D An also fully expandable variant is the following:
 %D
-%D \starttypen
+%D \starttyping
 %D \executeifdefinedcs{a}{b}
-%D \stoptypen
+%D \stoptyping
 %D
 %D In dit geval zijn beide argumenten csnames.
 
@@ -3341,9 +3407,9 @@
 %D We considered an alternative implementation accepting
 %D commands directly, like:
 %D
-%D \starttypen
-%D \executeifdefined\naam\gobblefivearguments
-%D \stoptypen
+%D \starttyping
+%D \executeifdefined\name\gobblefivearguments
+%D \stoptyping
 %D
 %D For the moment we don't need this one, so we stick to the
 %D faster one.
@@ -3354,10 +3420,10 @@
 %D The following macros were requested by Simon. Watch the
 %D global variant.
 %D
-%D \starttypen
+%D \starttyping
 %D          \executeandforget\SomeCommand
 %D \doglobal\executeandforget\AnotherCommand
-%D \stoptypen
+%D \stoptyping
 
 \def\executeandforget#1%
   {\global\let\@@expanded#1%
@@ -3370,9 +3436,9 @@
 %D The next command checks a string on the presence of a space
 %D and executed a command accordingly.
 %D
-%D \starttypen
+%D \starttyping
 %D \doifsomespaceelse {tekst} {then ...} {else ...}
-%D \stoptypen
+%D \stoptyping
 %D
 %D We use this command in \CONTEXT\ for determing if an
 %D argument must be broken into words when made interactive.
@@ -3401,9 +3467,9 @@
 %D an interface aspect of \CONTEXT. The first command can be
 %D used to adapt a \DIMENSION.
 %D
-%D \starttypen
+%D \starttyping
 %D \adaptdimension {dimension} {value}
-%D \stoptypen
+%D \stoptyping
 %D
 %D When the value is preceed by a \type{+} or minus, the
 %D dimension is advanced accordingly, otherwise it gets the
@@ -3438,9 +3504,9 @@
 %D maat. This time we take the value as it is, and don't look
 %D explicitly at the preceding sign.
 %D
-%D \starttypen
+%D \starttyping
 %D \balancedimensions {dimension 1} {dimension 2} {value}
-%D \stoptypen
+%D \stoptyping
 %D
 %D When a positive value is given, the first dimension is
 %D incremented, the second ond is decremented. A negative value
@@ -3462,19 +3528,19 @@
 %D \type{\processcommalist} command. This time we don't handle
 %D nesting but accept arbitrary seperators.
 %D
-%D \starttypen
+%D \starttyping
 %D \processseparatedlist[list][separator]\command
-%D \stoptypen
+%D \stoptyping
 %D
 %D One can think of things like:
 %D
-%D \starttypen
+%D \starttyping
 %D \processseparatedlist[alfa+beta+gamma][+]\message
-%D \stoptypen
+%D \stoptyping
 
 %D First we show the simple alternative:
 %D
-%D \starttypen
+%D \starttyping
 %D \def\processseparatedlist[#1][#2]#3%
 %D   {\def\doprocessseparatedlist##1##2#2%
 %D      {\if]##1%
@@ -3490,7 +3556,7 @@
 %D       \fi\fi\fi
 %D       \next}%
 %D    \doprocessseparatedlist#1#2]#2}
-%D \stoptypen
+%D \stoptyping
 %D
 %D However, we want to handle all situations, like:
 %D
@@ -3529,16 +3595,16 @@
 %D An even more general list processing macro is the
 %D following one:
 %D
-%D \starttypen
+%D \starttyping
 %D \processlist{beginsym}{endsym}{separator}\docommando list
-%D \stoptypen
+%D \stoptyping
 %D
 %D This one supports arbitrary open and close symbols as well
 %D as user defined separators.
 %D
-%D \starttypen
+%D \starttyping
 %D \processlist(){=>}\docommando(a=>b=>c=>d)
-%D \stoptypen
+%D \stoptyping
 
 \def\processlist#1#2#3#4%
   {\def\doprocesslist##1#2%
@@ -3577,9 +3643,9 @@
 %D containing keywords. Assignments are treated accordingly,
 %D keywords are treated by \type{\command}.
 %D
-%D \starttypen
+%D \starttyping
 %D \processassignlist[...=...,...=...,...]\commando
-%D \stoptypen
+%D \stoptyping
 %D
 %D This command can be integrated in \type{\getparameters}, but
 %D we decided best not to do so.
@@ -3599,10 +3665,10 @@
 % %D Sometimes \type{\fi}'s can get into the way. We can reach
 % %D over such a troublemaker with:
 % %D
-% %D \starttypen
+% %D \starttyping
 % %D \DoAfterFi{some commands}
 % %D \DoAfterFiFi{some commands}
-% %D \stoptypen
+% %D \stoptyping
 % %D
 % %D It saves us a \type{\next} construction. Skipping
 % %D \type{\else...\fi} is more tricky, so this one is not
@@ -3618,10 +3684,10 @@
 %D When manipulating data(bases) and for instance generating
 %D index entries, the next three macros can be of help:
 %D
-%D \starttypen
+%D \starttyping
 %D \untextargument{...}\to\name
 %D \untexcommand  {...}\to\name
-%D \stoptypen
+%D \stoptyping
 %D
 %D They remove braces and backslashes and give us something to
 %D sort.
@@ -3648,10 +3714,10 @@
 %D used big points (\TEX's bp). The next macros convert points
 %D and scaled points into big points.
 %D
-%D \starttypen
+%D \starttyping
 %D \ScaledPointsToBigPoints      {number} \target
 %D \ScaledPointsToWholeBigPoints {number} \target
-%D \stoptypen
+%D \stoptyping
 %D
 %D The magic factor $72/72.27$ can be found in most \TEX\
 %D related books.
@@ -3716,9 +3782,9 @@
 %D Points can be stripped from their suffix by using
 %D \type{\withoutpt}. The next macro enveloppes this macro.
 %D
-%D \starttypen
+%D \starttyping
 %D \PointsToReal {dimension} \target
-%D \stoptypen
+%D \stoptyping
 
 \def\PointsToReal#1#2%
   {\scratchdimen#1%
@@ -3731,9 +3797,9 @@
 %D first token gets the whole first line. We can prevent this
 %D by saying:
 %D
-%D \starttypen
+%D \starttyping
 %D \dontleavehmode
-%D \stoptypen
+%D \stoptyping
 %D
 %D This command is used in for instance the language module
 %D \type{lang-ini}.
@@ -3747,22 +3813,26 @@
      {\mathsurround\zeropoint\everymath\emptytoks$ $}%
    \fi \fi}
 
+%D And now your version of \TEX\ may provide:
+
+\ifx\quitvmode\undefined \else \let\dontleavehmode\quitvmode \fi
+
 %D \macros
 %D   {uppercasestring,lowercasestring}
 %D
 %D The names tell what they do:
 %D
-%D \starttypen
+%D \starttyping
 %D \uppercasestring somestring\to\somestring
 %D \lowercasestring somestring\to\somestring
-%D \stoptypen
+%D \stoptyping
 %D
 %D the first argument may be a \type{\macro}.
 
-\def\uppercasestring#1\to#2%
+\def\uppercasestring#1\to#2% first @EA redundant
   {\edef#2{#1}\@EA\uppercase\@EA{\@EA\dodoglobal\@EA\edef\@EA#2\@EA{#2}}}
 
-\def\lowercasestring#1\to#2%
+\def\lowercasestring#1\to#2% first @EA redundant
   {\edef#2{#1}\@EA\lowercase\@EA{\@EA\dodoglobal\@EA\edef\@EA#2\@EA{#2}}}
 
 %D \macros
@@ -3771,16 +3841,16 @@
 %D With the next macro we enter a critical area of macro
 %D expansion. What we want is a macro that looks like:
 %D
-%D \starttypen
+%D \starttyping
 %D \handletokens some tokens\with \somemacro
-%D \stoptypen
+%D \stoptyping
 %D
 %D At first sight the next implementation will suffice, but
 %D running this one shows that we loose the spaces. This is no
 %D surprise because we grab arguments and spaces preceding those
 %D are just ignored.
 %D
-%D \starttypen
+%D \starttyping
 %D \def\nohandletokens#1\end%
 %D   {}
 %D
@@ -3796,13 +3866,13 @@
 %D \long\def\handletokens#1\with#2%
 %D   {\let\docommando=#2\relax
 %D    \dohandletokens#1\endoftoken\end}
-%D \stoptypen
+%D \stoptyping
 %D
 %D A second approach therefore grabs the individual characters
 %D by using \type{\afterassignment}, in which case the space is
 %D read in as space.
 %D
-%D \starttypen
+%D \starttyping
 %D \def\dodohandletokens%
 %D   {\ifx\next\end \else
 %D      \docommando{\next}%
@@ -3815,17 +3885,17 @@
 %D \long\def\handletokens#1\with#2%
 %D   {\let\docommando=#2%
 %D    \dohandletokens#1\end}
-%D \stoptypen
+%D \stoptyping
 
 %D A bonus example:
 %D
-%D \starttypen
+%D \starttyping
 %D \hbox{\handletokens tekst en meer tekst\with\ruledhbox}
 %D
 %D \def\weetikveel#1{\if#1\blankspace\space\else\ruledhbox{#1}\fi}
 %D
 %D \hbox{\handletokens tekst en meer tekst\with\weetikveel}
-%D \stoptypen
+%D \stoptyping
 
 %D \macros
 %D   {counttoken,counttokens}
@@ -3833,10 +3903,10 @@
 %D For the few occasions that we want to know the number of
 %D specific tokens in a string, we can use:
 %D
-%D \starttypen
+%D \starttyping
 %D \counttoken  token\in string\to \count
 %D \counttokens          string\to \count
-%D \stoptypen
+%D \stoptyping
 %D
 %D This macro, that for instance is used in \type{cont-tab},
 %D takes a real counter. The macro can be preceded by \type
@@ -3920,7 +3990,7 @@
 %D Careful reading shows that inside an \type{\edef} macro's
 %D that are \type{\let} are not expanded!
 %D
-%D \unprotect\haalbuffer[next]\protect
+%D \unprotect\getbuffer[next]\protect
 %D
 %D That's why we finally end up with a macro that looks
 %D ahead by using an assignment, this time by using \type
@@ -3932,7 +4002,7 @@
   {\futurelet\nexthandledtoken\dodohandletokens}
 
 \long\def\handletokens#1\with#2%
-  {\global\let\dododohandletokens#2%
+  {\gdef\dododohandletokens{#2}% permits more complex #2's
    \dohandletokens#1\end}
 
 %D A previous version said \type{\docommando=#2}, but to enable
@@ -3942,7 +4012,7 @@
 %D This alternatives does not handle grouped tokens well, so
 %D next we had (for a short moment):
 %D
-%D \starttypen
+%D \starttyping
 %D \def\dodohandletokens#1%
 %D  {\ifx\nexthandledtoken\blankspace
 %D     \dododohandletokens{ }%
@@ -3951,12 +4021,12 @@
 %D     \dododohandletokens{#1}%
 %D     \expandafter\dohandletokens
 %D   \fi}
-%D \stoptypen
+%D \stoptyping
 %D
 %D This one failed on a trailing space, something we
 %D encounter in \JAVASCRIPT\ cleaning.
 %D
-%D \starttypen
+%D \starttyping
 %D \def\dodohandletokens#1%
 %D   {\ifx\nexthandledtoken\blankspace
 %D      \dododohandletokens{ }%
@@ -3965,7 +4035,7 @@
 %D      \dododohandletokens{#1}%
 %D      \expandafter\dohandletokens
 %D    \fi}
-%D \stoptypen
+%D \stoptyping
 %D
 %D So, now we have:
 
@@ -3983,17 +4053,17 @@
 %D
 %D \def\xxx#1{[#1]}
 %D
-%D \startregels
+%D \startlines
 %D \handletokens         abc\with\xxx
 %D \handletokens       a b c\with\xxx
 %D \handletokens     a  b  c\with\xxx
 %D \handletokens      a{bc}d\with\xxx
 %D \handletokens a\space bc \with\xxx
-%D \stopregels
+%D \stoplines
 %D
 %D And our previous example shows up as:
 %D
-%D \haalbuffer[example]
+%D \getbuffer[example]
 
 %D \macros
 %D   {iftrialtypesetting}
@@ -4011,7 +4081,7 @@
 %D
 %D The next four macros are rather self explaining:
 %D
-%D \starttypen
+%D \starttyping
 %D \startlocal
 %D   whatever assignments
 %D \stoplocal
@@ -4019,7 +4089,7 @@
 %D \startglobal
 %D   whatever assignments
 %D \stopglobal
-%D \stoptypen
+%D \stoptyping
 %D
 %D These macros are meant for those who know the difference
 %D between local and global assignments and are aware of the
@@ -4079,10 +4149,10 @@
 %D longer compatible, although in many cases things go ok.
 %D Beware of verbatim, i.e. catcode changes.
 %D
-%D \starttypen
+%D \starttyping
 %D \def\starthans%
 %D   {\processcontent{stophans}\test{\message{\test}\wait}}
-%D \stoptypen
+%D \stoptyping
 %D
 %D This macro is first used in the tabulation macros.
 
@@ -4134,13 +4204,13 @@
 %D supported. The sorting algorithm is very simple, so the list
 %D should not be too long or sorting will be very slow.
 %D
-%D \starttypen
+%D \starttyping
 %D \sortcommalist[10,2,4,5,6,1,2,3,4,10,20]\donumericcompare
 %D
 %D \def\test{10,2,4,5,6,1,2,3,4,10,20}
 %D
 %D \sortcommacommand[\test]\donumericcompare
-%D \stoptypen
+%D \stoptyping
 %D
 %D In both cases, the result is available in the macro \type
 %D {\sortedcommalist}.
@@ -4276,13 +4346,13 @@
 %D
 %D The next assignments are all valid:
 %D
-%D \starttypen
+%D \starttyping
 %D \setdimensionwithunit\scratchdimen{10}  {cm}
 %D \setdimensionwithunit\scratchdimen{10cm}{cm}
 %D \setdimensionwithunit\scratchdimen{10cm}{}
 %D \freezedimensionwithunit\SomeWidth{\textwidth}
 %D \freezedimensionwithunit\SomeDepth{\dp\strutbox}
-%D \stoptypen
+%D \stoptyping
 %D
 %D As an alternative for the next macro we can use a global
 %D assignment inside a box. The \type{\empty}'s permits
@@ -4379,9 +4449,9 @@
 %D number, especially in full expandable macros where using
 %D \type {\relax} would lead to disasters.
 %D
-%D \starttypen
+%D \starttyping
 %D \ifodd\purenumber{...}\space ... \else ... \fi
-%D \stoptypen
+%D \stoptyping
 %D
 %D Here we use a space as number delimiter in combination
 %D with a space- and relax-less \type {\purenumber}. This
@@ -4393,25 +4463,25 @@
 %D \macros
 %D   {filterfromvalue}
 %D
-%D \starttypen
+%D \starttyping
 %D \setvalue{xx}{{A}{B}{C}}
 %D
 %D \filterfromvalue{xx}{3}{3}
 %D \filterfromvalue{xx}{3}{2}
 %D \filterfromvalue{xx}{3}{1}
-%D \stoptypen
+%D \stoptyping
 %D
 %D An alternative is to store 'max' in the list, say:
 %D
-%D \starttypen
+%D \starttyping
 %D \setvalue{xx}{3{A}{B}{C}}
 %D
-%D \filterfromvalues{xx}{3}
-%D \filterfromvalues{xx}{2}
-%D \filterfromvalues{xx}{1}
-%D \stoptypen
+%D \filterfromvalues{3}{xx}{3}
+%D \filterfromvalues{3}{xx}{2}
+%D \filterfromvalues{3}{xx}{1}
+%D \stoptyping
 %D
-%D I'll implement this when I'm in \citaat {writing dirty
+%D I'll implement this when I'm in \quotation {writing dirty
 %D macros mood}.
 
 \def\filterfromvalue#1#2#3% value max n
@@ -4476,11 +4546,11 @@
 %D \macros
 %D   {definemeasure}
 %D
-%D \starttypen
+%D \starttyping
 %D \definemeasure[mywidth][\dimexpr(\textwidth-1cm)]
 %D
 %D ... \measure{mywidth} ...
-%D \stoptypen
+%D \stoptyping
 
 \def\??dm{@@dm} % brrr
 
@@ -4509,5 +4579,57 @@
    \else % #1=p ... t\relax
      \expandafter\thirdoffourarguments
    \fi}
+
+%D \macros
+%D   {comparedimension,comparedimensioneps}
+%D
+%D This is a dirty one: we simply append a unit and discard it when needed.
+
+\newdimen\roundingeps \roundingeps=10sp
+
+\def\comparedimension#1#2%
+  {\chardef\compresult
+     \ifdim#1<#2%
+       \zerocount
+     \else\ifdim#1<#2%
+       \plusone
+     \else
+       \plustwo
+     \fi\fi}
+
+\beginETEX
+
+\def\comparedimensioneps#1#2%
+  {\chardef\compresult
+     \ifdim\dimexpr(#1-#2)<\roudingeps
+       \zerocount
+     \else\ifdim\dimexpr(#2-#1)<\roudingeps
+       \zerocount
+     \else\ifdim#1<#2%
+       \plusone
+     \else
+       \plustwo
+     \fi\fi\fi}
+
+\endETEX
+
+\beginTEX
+
+\newdimen\comparedimen
+
+\def\comparedimensioneps#1#2%
+  {\comparedimen#1\advance\comparedimen-#2\relax
+   \chardef\compresult
+     \ifdim\comparedimen<\roudingeps
+       \zerocount
+     \else\ifdim-\comparedimen<\roudingeps
+       \zerocount
+     \else\ifdim#1<#2%
+       \plusone
+     \else
+       \plustwo
+     \fi\fi\fi}
+
+\endTEX
 
 \protect \endinput

@@ -22,17 +22,19 @@
 
 \chardef\showspreadmode=1
 
-\def\settextpagecontent#1#2#3% #2 and #3 will disappear
+% beware, ugly overload, to be redone
+
+\def\normalsettextpagecontent#1#2#3% #2 and #3 will disappear
   {\setbox#1\hbox
-     {\vbox to \teksthoogte
+     {\vbox to \textheight
         {\offinterlineskip
          \freezetextwidth
-         \hsize\tekstbreedte   % local variant of \sethsize
+         \hsize\textwidth   % local variant of \sethsize
          \boxmaxdepth\maxdepth
          \noindent             % content can be < \hsize
          \dopagecontents#2#3}}%
    \dp#1\zeropoint
-   \setbox#1\hbox to \zetbreedte
+   \setbox#1\hbox to \makeupwidth
      {\ifinspread
         \ifvoid\spreadbox
           \global\setbox\spreadbox\box#1%
@@ -41,8 +43,8 @@
           % prevent duplicate writes in normal run
           \ifarrangingpages \else \ifcase\showspreadmode
             \global\setbox\spreadbox\null
-            \wd\spreadbox\zetbreedte
-            \ht\spreadbox\teksthoogte
+            \wd\spreadbox\makeupwidth
+            \ht\spreadbox\textheight
           \fi \fi
           \hss\box\spreadbox % right page
         \fi
@@ -53,18 +55,18 @@
 \def\doflushspread
   {\ifinspread \ifvoid\spreadbox\else
      % this page will be discarded later
-     \null \pagina
+     \null \page
    \fi \fi }
 
 \def\startspread
   {\bgroup
    \ifdubbelzijdig
-     \pagina[\v!links]%
+     \page[\v!left]%
     %\setsystemmode{spread}%
      \inspreadtrue
-     \scratchdimen2\tekstbreedte
-     \advance\scratchdimen2\rugwit
-     \expanded{\setuplayout[\c!tekstbreedte=\the\scratchdimen]}%
+     \scratchdimen2\textwidth
+     \advance\scratchdimen2\backspace
+     \expanded{\setuplayout[\c!textwidth=\the\scratchdimen]}%
      \def\startspread{\bgroup\let\stopspread\egroup}%
      \let\stopspread\dostopspread
    \else
@@ -74,10 +76,10 @@
 \let\stopspread\relax
 
 \def\dostopspread
-  {\kern\zeropoint\pagina
+  {\kern\zeropoint\page
    \inspreadfalse
-   \setuplayout[\c!tekstbreedte=\tekstbreedte]
-   \pagina[\v!links]
+   \setuplayout[\c!textwidth=\textwidth]
+   \page[\v!left]
    \egroup}
 
 \protect \endinput

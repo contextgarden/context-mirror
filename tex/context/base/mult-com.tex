@@ -24,7 +24,7 @@
 %D the Czech ones by Tom Hudec, and the Italian ones
 %D by Giuseppe Bilotta. Here we include their comments.
 
-%D Giuseppe Bilotta: \citaat {Having to choose between a
+%D Giuseppe Bilotta: \quotation {Having to choose between a
 %D full|-|length name and a shortcut, I decided to resort to the
 %D latter, especially in the case of commonly used commands, or
 %D when shortened commands become too short. This led to one
@@ -253,19 +253,19 @@
                    setupcapitals: stelkapitalenin                  setupcapitals
                                   stelleversalienein               nastavkapitalky
                                   impostamaiuscole                 seteazamajuscule
-                             kap: kap                              kap
+                     smallcapped: kap                              cap
                                   kap                              kap
                                   cap                              kap
-                             KAP: KAP                              CAP
-                                  KAP                              KAP
-                                  CAP                              KAP
-                           nokap: nokap                            nocap
+                  notsmallcapped: nokap                            nocap
                                   nokap                            nokap
                                   nocap                            nokap
-                             Kap: Kap                              Cap
+                          CAPPED: KAP                              CAP
+                                  KAP                              KAP
+                                  CAP                              KAP
+                     SmallCapped: Kap                              Cap
                                   Kap                              Kap
                                   Cap                              Kap
-                            Kaps: Kaps                             Caps
+                       SmallCaps: Kaps                             Caps
                                   Kaps                             Kaps
                                   Caps                             Kaps
                             WORD: WOORD                            WORD
@@ -451,46 +451,55 @@
                       usemodules: gebruikmodules                   usemodules
                                   verwendemodule                   uzijmoduly
                                   usamoduli                        folosestemodule
-                      starttekst: starttekst                       starttext
+                       starttext: starttekst                       starttext
                                   starttext                        starttext
                                   iniziatesto                      starttext
-                       stoptekst: stoptekst                        stoptext
+                        stoptext: stoptekst                        stoptext
                                   stoptext                         stoptext
                                   terminatesto                     stoptext
-                      margetitel: margetitel                       margintitle
+                     margintitle: margetitel                       margintitle
                                   marginaltitel                    marginalninadpis
                                   titoloinmargine                  titlumarginal
-                      margewoord: margewoord                       marginword
+                      marginword: margewoord                       marginword
                                   marginalwort                     marginalnislovo
                                   parolainmargine                  cuvantmarginal
-                      margetekst: margetekst                       margintext
+                      margintext: margetekst                       margintext
                                   marginaltext                     marginalnitext
                                   testoinmargine                   textmarginal
-                        inlinker: inlinker                         inleft
+                          inleft: inlinker                         inleft
                                   imlinken                         vlevo
                                   insinistra                       instanga
-                         inmarge: inmarge                          inmargin
+                        inmargin: inmarge                          inmargin
                                   inmarginalie                     naokraj
                                   inmargine                        marginal
-                   inanderemarge: inanderemarge                    inothermargin
+                   inothermargin: inanderemarge                    inothermargin
                                   inanderermarginale               nadruhyokraj
                                   inaltromargine                   inaltamargine
-                       inrechter: inrechter                        inright
+                         inright: inrechter                        inright
                                   imrechten                        vpravo
                                   indestra                         indreapta
-                  startmargeblok: startmargeblok                   startmarginblock
+ininner: inbinnen ininner
+         ininner  ininner
+         ininner  ininner
+inouter: inbuiten inouter
+         inouter  inouter
+         inouter  inouter
+                startmarginblock: startmargeblok                   startmarginblock
                                   startmarginalblock               startmarginalniblok
                                   iniziabloccomargine              startblocmarginal
-                   stopmargeblok: stopmargeblok                    stopmarginblock
+                 stopmarginblock: stopmargeblok                    stopmarginblock
                                   stopmarginalblock                stopmarginalniblok
                                   terminabloccomargine             stopblocmarginal
-                   stelinmargein: stelinmargein                    setupinmargin
+defineinmargin: definieerinmarge defineinmargin
+                defineinmargin   defineinmargin
+                defineinmargin   defineinmargin
+                   setupinmargin: stelinmargein                    setupinmargin
                                   stelleinmarginalieein            nastavmarginalie
                                   impostainmargine                 seteazamarginal
-              stelmargeblokkenin: stelmargeblokkenin               setupmarginblocks
+               setupmarginblocks: stelmargeblokkenin               setupmarginblocks
                                   stellemarginalblockein           nastavmarginalniblok
                                   impostablocchimargine            seteazablocurimarginale
-                      inleftside: inlinkerrand                     inleftside
+                      inleftedge: inlinkerrand                     inleftedge
                                   imlinkenrand                     nalevo
                                   inlatosinistro                   inparteastanga
                     inleftmargin: inlinkermarge                    inleftmargin
@@ -499,7 +508,7 @@
                    inrightmargin: inrechtermarge                   inrightmargin
                                   inrechtermarginale               napravyokraj
                                   inmarginedestro                  inmargineadreapta
-                     inrightside: inrechterrand                    inrightside
+                     inrightedge: inrechterrand                    inrightedge
                                   imrechtenrand                    napravo
                                   inlatodestro                     inparteadreapta
  atleftmargin: oplinkermarge                    atleftmargin
@@ -509,19 +518,19 @@ atrightmargin: oprechtermarge                   atrightmargin
                atrightmargin                    atrightmargin
                atrightmargin                    atrightmargin
 
-                     woordrechts: woordrechts                      wordright
+                       wordright: woordrechts                      wordright
                                   wortrechts                       slovovpravo
                                   paroladestra                     cuvantdreapta
-                 definieerblanko: definieerblanko                  defineblank
+                     defineblank: definieerblanko                  defineblank
                                   definiereblanko                  definujpreskok
                                   definiscirigovuoto               definesteblanc
-                          blanko: blanko                           blank
+                           blank: blanko                           blank
                                   blanko                           preskoc
                                   rigovuoto                        blanc
                       setupblank: stelblankoin                     setupblank
                                   stelleblankoein                  nastavpreskok
                                   impostarigovuoto                 seteazablanc
-              corrigeerwitruimte: corrigeerwitruimte               correctwhitespace
+               correctwhitespace: corrigeerwitruimte               correctwhitespace
                                   korrigierezwischenraum           korekcebilehomista
                                   correggispaziobianco             corecteazaspatiualb
                      fixedspaces: vastespaties                     fixedspaces
@@ -536,79 +545,79 @@ atrightmargin: oprechtermarge                   atrightmargin
                            space: spatie                           space
                                   spatium                          mezera
                                   spazio                           spatiu
-                   geenwitruimte: geenwitruimte                    nowhitespace
+                    nowhitespace: geenwitruimte                    nowhitespace
                                   keinzwischenraum                 zadnebilemisto
                                   nientespaziobianco               faraspatiualb
-                        opelkaar: opelkaar                         packed
+                          packed: opelkaar                         packed
                                   kleinerdurchschuss               zhustene
                                   impaccato                        impachetat
-                   startopelkaar: startopelkaar                    startpacked
+                     startpacked: startopelkaar                    startpacked
                                   startkleinerdurchschuss          startzhustene
                                   iniziaimpaccato                  startimpachetat
-                    stopopelkaar: stopopelkaar                     stoppacked
+                      stoppacked: stopopelkaar                     stoppacked
                                   stopkleinerdurchschuss           stopzhustene
                                   terminaimpaccato                 stopimpachetat
-                  startvanelkaar: startvanelkaar                   startunpacked
+                   startunpacked: startvanelkaar                   startunpacked
                                   startgrosserdurchschuss          startnezhustene
                                   iniziaunpacked                   startneimpachetat
-                   stopvanelkaar: stopvanelkaar                    stopunpacked
+                    stopunpacked: stopvanelkaar                    stopunpacked
                                   stopgrosserdurchschuss           stopnezhustene
                                   terminaunpacked                  stopneimpachetat
-             startregelcorrectie: startregelcorrectie              startlinecorrection
+             startlinecorrection: startregelcorrectie              startlinecorrection
                                   startzeilenkorrektur             startkorekceradku
                                   iniziacorrezioneriga             startcorectielinie
-              stopregelcorrectie: stopregelcorrectie               stoplinecorrection
+              stoplinecorrection: stopregelcorrectie               stoplinecorrection
                                   stopzeilenkorrektur              stopkorekceradku
                                   terminacorrezioneriga            stopcorectielinie
-                          omlaag: omlaag                           godown
+                          godown: omlaag                           godown
                                   nachunten                        jdidolu
                                   vaigiu                           injos
-                       witruimte: witruimte                        whitespace
+                      whitespace: witruimte                        whitespace
                                   zwischenraum                     bilemisto
                                   spaziobianco                     spatiualb
-                  nietinspringen: nietinspringen                   noindenting
+                     noindenting: nietinspringen                   noindenting
                                   nichteinziehen                   zadneodsazovani
                                   nienterientro                    faraaliniat
-                      inspringen: inspringen                       indenting
+                       indenting: inspringen                       indenting
                                   einziehen                        odsazovani
                                   rientro                          aliniat
                   setupindenting: stelinspringenin                 setupindenting
                                   stelleeinziehenein               nastavodsazovani
                                   impostarientro                   seteazaaliniat
-                  startuitlijnen: startuitlijnen                   startalignment
+                  startalignment: startuitlijnen                   startalignment
                                   startausrichtung                 startzarovnavani
                                   iniziaallineamento               startaliniere
-                   stopuitlijnen: stopuitlijnen                    stopalignment
+                   stopalignment: stopuitlijnen                    stopalignment
                                   stopausrichtung                  stopzarovnavani
                                   terminaallineamento              stopaliniere
-                     startregels: startregels                      startlines
+                      startlines: startregels                      startlines
                                   startzeilen                      startradky
                                   iniziarighe                      startlinii
-                      stopregels: stopregels                       stoplines
+                       stoplines: stopregels                       stoplines
                                   stopzeilen                       stopradky
                                   terminarighe                     stoplinii
-         stelparagraafnummerenin: stelparagraafnummerenin          setupparagraphnumbering
+         setupparagraphnumbering: stelparagraafnummerenin          setupparagraphnumbering
                                   stelleabsatznummerierungein      nastavcislovaniodstavcu
                                   impostanumerazionecapoversi      seteazanumerotareparagrafe
-             stelregelnummerenin: stelregelnummerenin              setuplinenumbering
+              setuplinenumbering: stelregelnummerenin              setuplinenumbering
                                   stellezeilennumerierungein       nastavcislovaniradku
                                   impostanumerazionerighe          seteazanumerotarelinii
-              startregelnummeren: startregelnummeren               startlinenumbering
+              startlinenumbering: startregelnummeren               startlinenumbering
                                   startzeilennumerierung           startcislovaniradku
                                   inizianumerazionerighe           startnumerotarelinii
-               stopregelnummeren: stopregelnummeren                stoplinenumbering
+               stoplinenumbering: stopregelnummeren                stoplinenumbering
                                   stopzeilennumerierung            stopcislovaniradku
                                   terminanumerazionerighe          stopnumerotarelinii
-                      startregel: startregel                       startline
+                       startline: startregel                       startline
                                   startzeile                       startradek
                                   iniziariga                       startlinie
-                       stopregel: stopregel                        stopline
+                        stopline: stopregel                        stopline
                                   stopzeile                        stopradek
                                   terminariga                      stoplinie
-                        eenregel: eenregel                         someline
+                        someline: eenregel                         someline
                                   einezeile                        nejakyradek
                                   qualcheriga                      olinie
-                         inregel: inregel                          inline
+                          inline: inregel                          inline
                                   inzeile                          vradku
                                   inriga                           inlinie
                             crlf: crlf                             crlf
@@ -617,13 +626,13 @@ atrightmargin: oprechtermarge                   atrightmargin
 emptylines: legeregels emptylines
             emptylines emptylines
             emptylines emptylines
-                    stelregelsin: stelregelsin                     setuplines
+                      setuplines: stelregelsin                     setuplines
                                   stellezeilenein                  nastavradky
                                   impostarighe                     seteazalinii
-                    startsmaller: startsmaller                     startnarrower
+                   startnarrower: startsmaller                     startnarrower
                                   startenger                       startzuzeni
                                   iniziapiustretto                 startingust
-                     stopsmaller: stopsmaller                      stopnarrower
+                    stopnarrower: stopsmaller                      stopnarrower
                                   stopenger                        stopzuzeni
                                   terminapiustretto                stopingust
                    setupnarrower: stelsmallerin                    setupnarrower
@@ -662,34 +671,34 @@ emptylines: legeregels emptylines
                         testpage: testpagina                       testpage
                                   testpage                         testpage
                                   testpage                         testpage
-                    koppelpagina: koppelpagina                     couplepage
+                     couplepage: koppelpagina                     couplepage
                                   doppelseite                      parovastrana
                                   accoppiapagina                   paginadubla
-                     soortpagina: soortpagina                      pagetype
+                        pagetype: soortpagina                      pagetype
                                   seitentyp                        typstrany
                                   tipopagina                       tippagina
-                   verwerkpagina: verwerkpagina                    processpage
+                     processpage: verwerkpagina                    processpage
                                   bearbeiteseite                   zpracujstranu
                                   elaborapagina                    proceseazapagina
-                    koppelpapier: koppelpapier                     couplepaper
+                     couplepaper: koppelpapier                     couplepaper
                                   doppelseitigespapier             dvoustrannypapir
                                   accoppiacarta                    hartiedubla
-                 selecteerpapier: selecteerpapier                  selectpaper
+                     selectpaper: selecteerpapier                  selectpaper
                                   waehlepapieraus                  vyberpapir
                                   selezionacarta                   selecteazahartie
-                          scherm: scherm                           screen
+                          screen: scherm                           screen
                                   bildschirm                       obrazovka
                                   schermo                          ecran
-                 definieersectie: definieersectie                  definesection
+                   definesection: definieersectie                  definesection
                                   definiereabschnitt               definujsekci
                                   definiscisezione                 definestesectiune
-             definieersectieblok: definieersectieblok              definesectionblock
+              definesectionblock: definieersectieblok              definesectionblock
                                   definiereabschnittsblock         definujbloksekce
                                   definiscibloccosezione           definesteblocsectiune
-                stelsectieblokin: stelsectieblokin                 setupsectionblock
+               setupsectionblock: stelsectieblokin                 setupsectionblock
                                   stelleabschnittsblockein         nastavbloksekce
                                   impostabloccosezione             seteazablocsectiune
-                    stelsectiein: stelsectiein                     setupsection
+                    setupsection: stelsectiein                     setupsection
                                   stelleabschnittein               nastavsekci
                                   impostasezione                   seteazasectiune
              notopandbottomlines: geenbovenenonderregels           notopandbottomlines
@@ -713,15 +722,24 @@ emptylines: legeregels emptylines
               setuppagenumbering: stelpaginanummeringin            setuppagenumbering
                                   stelleseitennummeriernungein     nastavcislovanistran
                                   impostanumerazionepagina         seteazanumerotarepagina
- resetnumber: resetnummer  resetnumber
-              resetnumber  resetnumber
-              resetnumber  resetnumber
-   setnumber: setnummer    setnumber
-              setnumber    setnumber
-              setnumber    setnumber
-stelnummerin: stelnummerin setupnumber
-              setupnumber  setupnumber
-              impostanumerazione  setupnumber
+      getnumber: haalnummer          getnumber
+                 getnumber           getnumber
+                 getnumber           getnumber
+incrementnumber: verhoognummer       incrementnumber
+                 nummererhoehen      zvysujicicislo
+                 incrementanumero    numarincrement
+decrementnumber: verlaagnummer       decrementnumber
+                 decrementnumber     decrementnumber
+                 decrementnumber     decrementnumber
+    resetnumber: resetnummer         resetnumber
+                 resetnumber         resetnumber
+                 resetnumber         resetnumber
+      setnumber: setnummer           setnumber
+                 setnumber           setnumber
+                 setnumber           setnumber
+    setupnumber: stelnummerin        setupnumber
+                 setupnumber         setupnumber
+                 impostanumerazione  setupnumber
                      setupbottom: stelonderin                      setupbottom
                                   stelleuntenein                   nastavspodek
                                   impostafondo                     seteazajos
@@ -734,12 +752,15 @@ stelnummerin: stelnummerin setupnumber
                 setupfootertexts: stelvoettekstenin                setupfootertexts
                                   stellefusszeilentextein          nastavtextyupati
                                   impostatestipdp                  seteazatextesubsol
-              stelpaginanummerin: stelpaginanummerin               setuppagenumber
+                 setuppagenumber: stelpaginanummerin               setuppagenumber
                                   stelleseitennummerein            nastavcislostrany
                                   impostanumeropagina              seteazanumarpagina
-           stelsubpaginanummerin: stelsubpaginanummerin            setupsubpagenumber
+              setupsubpagenumber: stelsubpaginanummerin            setupsubpagenumber
                                   stelleunterseitennummerein       nastavpodcislostrany
                                   impostanumerosottopagina         seteazanumarsubpagina
+subpagenumber: subpaginanummer              subpagenumber
+               subpagenumber                subpagenumber
+               subpagenumber                subpagenumber
                        setuptext: steltekstin                      setuptext
                                   stelletextein                    nastavtext
                                   impostatesto                     seteazatext
@@ -761,25 +782,25 @@ stelnummerin: stelnummerin setupnumber
                            items: items                            items
                                   posten                           polozky
                                   elementi                         element
-                     stelitemsin: stelitemsin                      setupitems
+                      setupitems: stelitemsin                      setupitems
                                   stellepostenein                  nastavpolozky
                                   impostaelementi                  seteazaelemente
-                      regellinks: regellinks                       leftaligned
+                     leftaligned: regellinks                       leftaligned
                                   linksbuendig                     zarovnanovlevo
                                   allineasinistra                  aliniatstanga
-                     regelmidden: regelmidden                      midaligned
+                      midaligned: regelmidden                      midaligned
                                   zentriert                        zarovnanonastred
                                   allineacentro                    aliniatcentru
-                     regelrechts: regelrechts                      rightaligned
+                    rightaligned: regelrechts                      rightaligned
                                   rechtsbuendig                    zarovnanovpravo
                                   allineadestra                    aliniatdreapta
-                   startkolommen: startkolommen                    startcolumns
+                    startcolumns: startkolommen                    startcolumns
                                   startspalten                     startsloupce
                                   iniziacolonne                    startcoloane
-                    stopkolommen: stopkolommen                     stopcolumns
+                     stopcolumns: stopkolommen                     stopcolumns
                                   stopspalten                      stopsloupce
                                   terminacolonne                   stopcoloane
-                  stelkolommenin: stelkolommenin                   setupcolumns
+                    setupcolumns: stelkolommenin                   setupcolumns
                                   stellespaltenein                 nastavsloupce
                                   impostacolonne                   seteazacoloane
                           column: kolom                            column
@@ -836,49 +857,49 @@ stelnummerin: stelnummerin setupnumber
 
                                   % so far
 
-                    definieerkop: definieerkop                     definehead
+                      definehead: definieerkop                     definehead
                                   definiereueberschrift            definujnadpis
                                   definiscitesta                   definesteantet
-                       stelkopin: stelkopin                        setuphead
+                       setuphead: stelkopin                        setuphead
                                   stelleueberschriftein            nastavnadpis
                                   impostatesta                     seteazatitlu
-                    stelkoppenin: stelkoppenin                     setupheads
+                      setupheads: stelkoppenin                     setupheads
                                   stelleueberschriftenein          nastavnadpisy
                                   impostateste                     seteazatitluri
-                 stelkopnummerin: stelkopnummerin                  setupheadnumber
+                 setupheadnumber: stelkopnummerin                  setupheadnumber
                                   stellekopfzahlein                nastavcislonadpisu
                                   impostanumerotesta               seteazanumartitlu
-                       kopnummer: kopnummer                        headnumber
+                      headnumber: kopnummer                        headnumber
                                   kopfnummer                       cislonadpisu
                                   numerotesta                      numartitlu
-                huidigekopnummer: huidigekopnummer                 currentheadnumber
+               currentheadnumber: huidigekopnummer                 currentheadnumber
                                   heutigeskopfnummer               aktualnicislonadpisu
                                   numerotestacorrente              numartitlucurent
-                 bepaalkopnummer: bepaalkopnummer                  determineheadnumber
+             determineheadnumber: bepaalkopnummer                  determineheadnumber
                                   bestimmekopfnummer               stanovcislonadpisu
                                   determinanumerotesta             determinanumartitlu
-                  resetmarkering: resetmarkering                   resetmarking
+                    resetmarking: resetmarkering                   resetmarking
                                   ruecksetztenbeschriftung         resetznaceni
                                   reimpostamarcatura               reseteazamarcaje
-                 stelmarkeringin: stelmarkeringin                  setupmarking
+                    setupmarking: stelmarkeringin                  setupmarking
                                   stellebeschriftungein            nastavznaceni
                                   impostamarcatura                 seteazamarcaje
-              definieermarkering: definieermarkering               definemarking
+                   definemarking: definieermarkering               definemarking
                                   definierebeschriftung            definujznaceni
                                   definiscimarcatura               definestemarcaje
-                   geenmarkering: geenmarkering                    nomarking
+                       nomarking: geenmarkering                    nomarking
                                   keinebeschriftung                zadneznaceni
                                   nientemarcatura                  faramarcaje
                          marking: markeer                          marking
                                   beschriftung                     znaceni
                                   marcatura                        marcaje
-              ontkoppelmarkering: ontkoppelmarkering               decouplemarking
+                 decouplemarking: ontkoppelmarkering               decouplemarking
                                   entknuepfebeschriftung           rozpojeneznaceni
                                   separamarcatura                  decupleazamarcaje % GB
-                 koppelmarkering: koppelmarkering                  couplemarking
+                   couplemarking: koppelmarkering                  couplemarking
                                   verknuepfebeschriftung           propojeneznaceni
                                   accoppiamarcatura                cupleazamarcaje % GB
-                   haalmarkering: haalmarkering                    getmarking
+                      getmarking: haalmarkering                    getmarking
                                   holebeschriftung                 ziskejznaceni
                                   prendimarcatura                  adumarcaje % GB
                     definelayout: definieerlayout                  definelayout
@@ -887,16 +908,13 @@ stelnummerin: stelnummerin setupnumber
                      setuplayout: stellayoutin                     setuplayout
                                   stellelayoutein                  nastavvzhled
                                   impostalayout                    seteazaaspect
-                    paslayoutaan: paslayoutaan                     adaptlayout
+                     adaptlayout: paslayoutaan                     adaptlayout
                                   passelayoutan                    prizpusobvzhled
                                   adattalayout                     adapteazaaspect
-                    steloffsetin: steloffsetin                     setupoffset
-                                  stelleoffsetein                  nastavoffset
-                                  impostaoffest                    seteazaoffset
-                    plaatsopgrid: plaatsopgrid                     placeongrid
+                     placeongrid: plaatsopgrid                     placeongrid
                                   amgitterausrichten               umistinamrizku
                                   mettiingriglia                   plaseazapegrid
-                 verplaatsopgrid: verplaatsopgrid                  moveongrid
+                      moveongrid: verplaatsopgrid                  moveongrid
                                   amgitterneuausrichten            premistinamrizku
                                   spostaagriglia                   mutapegrid
                       showsetups: tooninstellingen                 showsetups
@@ -932,7 +950,7 @@ setuppaper: stelpapierin  setuppaper
                   setuparranging: stelarrangerenin                 setuparranging
                                   stelleanordnenein                nastavusporadani
                                   impostaparranging                seteazaaranjareapag
-                          versie: versie                           version
+                         version: versie                           version
                                   version                          verze
                                   versione                         versiune
                 setupbackgrounds: stelachtergrondenin              setupbackgrounds
@@ -947,28 +965,28 @@ setuppaper: stelpapierin  setuppaper
                 setupinteraction: stelinteractiein                 setupinteraction
                                   stelleinteraktionein             nastavinterakci
                                   impostainterazione               seteazainteractiunea
-            stelinteractiemenuin: stelinteractiemenuin             setupinteractionmenu
+            setupinteractionmenu: stelinteractiemenuin             setupinteractionmenu
                                   stelleinteraktionsmenueein       nastavinterakcnimenu
                                   impostamenuinterazione           seteazameniuinteractiune
-         definieerinteractiemenu: definieerinteractiemenu          defineinteractionmenu
+           defineinteractionmenu: definieerinteractiemenu          defineinteractionmenu
                                   definiereinteraktionsmenue       definujinterakcnimenu
                                   definiscimenuinterazione         definestemeniuinteractiune
-          blokkeerinteractiemenu: blokkeerinteractiemenu           disableinteractionmenu
+          disableinteractionmenu: blokkeerinteractiemenu           disableinteractionmenu
                                   inaktiviereinteraktionsmenue     zablokujinterakcnimenu
                                   disabilitamenuinterazione        dezactiveazameniuinteractiune
-                  interactiemenu: interactiemenu                   interactionmenu
+                 interactionmenu: interactiemenu                   interactionmenu
                                   interaktionsmenue                interaktivnimenu
                                   menuinterattivo                  meniuinteractiune
-               interactiebuttons: interactiebuttons                interactionbuttons
+              interactionbuttons: interactiebuttons                interactionbuttons
                                   interaktionsknopfe               interakcnitlacitka
                                   pulsantinterazione               butoaneinteractiune
-                  interactiebalk: interactiebalk                   interactionbar
+                  interactionbar: interactiebalk                   interactionbar
                                   interaktionsbalken               interakcnilista
                                   barrainterazione                 barainteractiune
-            stelinteractiebalkin: stelinteractiebalkin             setupinteractionbar
+             setupinteractionbar: stelinteractiebalkin             setupinteractionbar
                                   stelleinteraktionsbalkenein      nastavinterakcnilistu
                                   impostabarrainterazione          seteazabarainteractiune
-          stelinteractieschermin: stelinteractieschermin           setupinteractionscreen
+          setupinteractionscreen: stelinteractieschermin           setupinteractionscreen
                                   stelleinteraktionsbildschirmein  nastavinterakcniobrazovku
                                   impostaschermointerazione        seteazaecraninteractiune
                   placebookmarks: plaatsbookmarks                  placebookmarks
@@ -1043,58 +1061,58 @@ setuppaper: stelpapierin  setuppaper
                      stopraster:  stopraster                       stopraster
                                   stopraster                       stoprastr
                                   terminaraster                    stopraster
-                  definieerblok:  definieerblok                    defineblock
+                    defineblock:  definieerblok                    defineblock
                                   definiereblock                   definujblok
                                   definisciblocco                  definestebloc
-                     stelblokin:  stelblokin                       setupblock
+                     setupblock:  stelblokin                       setupblock
                                   stelleblockein                   nastavblok
                                   impostablocco                    seteazabloc
-                 gebruikblokken:  gebruikblokken                   useblocks
+                      useblocks:  gebruikblokken                   useblocks
                                   verwendebloecke                  uzijbloky
                                   usablocco                        folosestebloc
-                 verwerkblokken:  verwerkblokken                   processblocks
+                  processblocks:  verwerkblokken                   processblocks
                                   bearbeitebloecke                 zpracujbloky
                                   elaborablocchi                   proceseazabloc
-                handhaafblokken:  handhaafblokken                  keepblocks
+                     keepblocks:  handhaafblokken                  keepblocks
                                   behaltebloecke                   zachovejbloky
                                   tieniblocchi                     pastreazablocuri
-               selecteerblokken:  selecteerblokken                 selectblocks
+                   selectblocks:  selecteerblokken                 selectblocks
                                   waehlebloeckeaus                 vyberbloky
                                   selezionablocchi                 selecteazablocuri
-                 verbergblokken:  verbergblokken                   hideblocks
+                     hideblocks:  verbergblokken                   hideblocks
                                   verbergebloecke                  schovejbloky
                                   nascondiblocchi                  ascundeblocuri
-                 passeerblokken:  passeerblokken                   bypassblocks
+                   bypassblocks:  passeerblokken                   bypassblocks
                                   bypassblocks                     bypassblocks
                                   saltablocchi                     saripesteblocuri
-                 forceerblokken:  forceerblokken                   forceblocks
+                    forceblocks:  forceerblokken                   forceblocks
                                   forceblocks                      forceblocks
                                   forzablocchi                     forteazablocuri
-                geenblokkenmeer:  geenblokkenmeer                  nomoreblocks
+                   nomoreblocks:  geenblokkenmeer                  nomoreblocks
                                   keinebloeckemehr                 zadnedalsibloky
                                   bastablocchi                     gatablocuri
-                 definieerlijst:  definieerlijst                   definelist
+                     definelist:  definieerlijst                   definelist
                                   definiereliste                   definujseznam
                                   definiscielenco                  definestelista
-    definieersamengesteldelijst:  definieersamengesteldelijst      definecombinedlist
+             definecombinedlist:  definieersamengesteldelijst      definecombinedlist
                                   definierezusammengestellteliste  definujkombinovanyseznam
                                   definiscielencocombinato         definestelistacombinata
 listsymbol: lijstsymbool listsymbol
             listsymbol   listsymbol
             listsymbol   listsymbol
-                    plaatslijst:  plaatslijst                      placelist
+                      placelist:  plaatslijst                      placelist
                                   platziereliste                   umistiseznam
                                   mettielenco                      punelista
                 plaatsruwelijst:  plaatslruweijst                  placerawlist
                                   placerawlist                     placerawlist
                                   placerawlist                     placerawlist
-       plaatssamengesteldelijst:  plaatssamengesteldelijst         placecombinedlist
+              placecombinedlist:  plaatssamengesteldelijst         placecombinedlist
                                   platzierezusammengestellteliste  umistikombinovanyseznam
                                   mettielencocombinato             punelistacombinata
-               schrijfnaarlijst:  schrijfnaarlijst                 writetolist
+                    writetolist:  schrijfnaarlijst                 writetolist
                                   schreibezurliste                 zapisdoseznamu
                                   scriviinelenco                   scrieinlista
-             schrijftussenlijst:  schrijftussenlijst               writebetweenlist
+               writebetweenlist:  schrijftussenlijst               writebetweenlist
                                   schreibezwischenliste            zapismeziseznam
                                   scrividentroelenco               scrieintreliste
 
@@ -1108,52 +1126,52 @@ listsymbol: lijstsymbool listsymbol
                                   immediatebetweenlist             immediatebetweenlist
                                   immediatebetweenlist             immediatebetweenlist
 
-                    stellijstin:  stellijstin                      setuplist
+                       setuplist: stellijstin                      setuplist
                                   stellelisteein                   nastavseznam
                                   impostaelenco                    seteazalista
-       stelsamengesteldelijstin:  stelsamengesteldelijstin         setupcombinedlist
+               setupcombinedlist: stelsamengesteldelijstin         setupcombinedlist
                                   stellezusammengestelltelisteein  nastavkombinovanyseznam
                                   impostaelencocombinato           seteazalistacombinata
-           bepaallijstkenmerken:  bepaallijstkenmerken             determinelistcharacteristics
+    determinelistcharacteristics: bepaallijstkenmerken             determinelistcharacteristics
                                   bestimmelistencharakeristika     stanovcharakteristickuseznamu
                                   determinacarattersticheelenco    determinacaracteristicilelistei
-                    lijstlengte:  lijstlengte                      listlength
+                      listlength: lijstlengte                      listlength
                                   listenlaenge                     delkaseznamu
                                   lunghezzaelenco                  lungimelista
-                   lijstbreedte:  lijstbreedte                     listwidth
+                       listwidth: lijstbreedte                     listwidth
                                   listenbreite                     sirkaseznamu
                                   ampiezzaelenco                   latimelista
-                    lijsthoogte:  lijsthoogte                      listheight
+                      listheight: lijsthoogte                      listheight
                                   listenhoehe                      vyskaseznamu
                                   altezzaelenco                    inaltimelista
-                      geenlijst:  geenlijst                        nolist
+                          nolist: geenlijst                        nolist
                                   keineliste                       zadnyseznam
                                   nienteelenco                     faralista
-        definieerreferentielijst: definieerreferentielijst         definereferencelist
+             definereferencelist: definieerreferentielijst         definereferencelist
                                   definierereferenzliste           definujseznamodkazu
                                   definiscilistariferimenti        definestelistareferinte
-           plaatsreferentielijst: plaatsreferentielijst            placereferencelist
+              placereferencelist: plaatsreferentielijst            placereferencelist
                                   platzierereferenzliste           umistiseznamodkazu
                                   mettilistariferimenti            punelistareferinte
-      schrijfnaarreferentielijst: schrijfnaarreferentielijst       writetoreferencelist
+            writetoreferencelist: schrijfnaarreferentielijst       writetoreferencelist
                                   schreibezurreferenzliste         zapisdoseznamuodkazu
                                   scriviinlistariferimenti         scrieinlistareferinte
-           stelreferentielijstin: stelreferentielijstin            setupreferencelist
+              setupreferencelist: stelreferentielijstin            setupreferencelist
                                   stellereferenzlisteein           nastavseznamodkazu
                                   impostalistariferimenti          seteazalistareferinte
-             definieerplaatsblok: definieerplaatsblok              definefloat
+                     definefloat: definieerplaatsblok              definefloat
                                   definieregleitobjekt             definujplvouciobjekt
                                   definiscioggettomobile           definestefloat
-                stelplaatsblokin: stelplaatsblokin                 setupfloat
+                      setupfloat: stelplaatsblokin                 setupfloat
                                   stellegleitobjektein             nastavplvouciobjekt
                                   impostaoggettomobile             seteazafloat
-             stelplaatsblokkenin: stelplaatsblokkenin              setupfloats
+                     setupfloats: stelplaatsblokkenin              setupfloats
                                   stellegleitobjekteein            nastavplvouciobjekty
                                   impostaoggettimobili             seteazafloats
-                splitsplaatsblok: splitsplaatsblok                 splitfloat
+                      splitfloat: splitsplaatsblok                 splitfloat
                                   teilegleitobjekt                 rozdelplvouciobjekt
                                   spezzaoggettomobile              impartefloat
-     stelplaatsblokkensplitsenin: stelplaatsblokkensplitsenin      setupfloatsplitting
+             setupfloatsplitting: stelplaatsbloksplitsenin         setupfloatsplitting
                                   stelleplatziegeteiltegleitobjekt nastavdeleniplvoucichobjektu
                                   impostaspezzamentooggettomobile  seteazaimpartireafloat
                       placefloat: plaatsplaatsblok                 placefloat
@@ -1183,10 +1201,10 @@ defineplacement: definieerplaats                  defineplacement
            placeontopofeachother: plaatsonderelkaar                placeontopofeachother
                                   platziereuntereinander           umistinadsebe
                                   mettiunosullaltro                punedeasuprafiecareia
-                 stelblokkopjein: stelblokkopjein                  setupcaption
+                    setupcaption: stelblokkopjein                  setupcaption
                                   stellebildunterschriftein        nastavpopisek
                                   impostacaption                   seteazalegenda % GB
-                stelblokkopjesin: stelblokkopjesin                 setupcaptions
+                   setupcaptions: stelblokkopjesin                 setupcaptions
                                   stellebilderunterschriftein      nastavpopisky
                                   impostacaptions                  seteazalegendele % GB
                setupcombinations: stelcombinatiesin                setupcombinations
@@ -1198,61 +1216,64 @@ defineplacement: definieerplaats                  defineplacement
                      stopoverlay: stopoverlay                      stopoverlay
                                   stopoverlay                      stopprekryv
                                   terminasovrapposizione           stopoverlay
-               definieerregister: definieerregister                defineregister
+                  defineregister: definieerregister                defineregister
                                   definiereregister                definujrejstrik
                                   definisciregistro                definesteregistru
-                  koppelregister: koppelregister                   coupleregister
+                  coupleregister: koppelregister                   coupleregister
                                   verknuepfregister                propojenyrejstrik
                                   accoppiaregistro                 cupleazaregistru
-                  stelregisterin: stelregisterin                   setupregister
+                   setupregister: stelregisterin                   setupregister
                                   stelleregisterein                nastavrejstrik
                                   impostaregistro                  seteazaregistru
-             schrijfnaarregister: schrijfnaarregister              writetoregister
+                 writetoregister: schrijfnaarregister              writetoregister
                                   schreibezumregister              zapisdorejstriku
                                   scriviinregistro                 scrieinregistru
-                  plaatsregister: plaatsregister                   placeregister
+completeregister: volledigregister              completeregister
+                  completeregister              completeregister
+                  completeregister              completeregister
+                   placeregister: plaatsregister                   placeregister
                                   platziereregister                umistirejstrik
                                   mettiregistro                    puneregistru
-         bepaalregisterkenmerken: bepaalregisterkenmerken          determineregistercharacteristics
+determineregistercharacteristics: bepaalregisterkenmerken          determineregistercharacteristics
                                   bestimmeregistercharakteristika  urcicharakteristikurejstriku
                                   determinacaratteristicheregistro determinacaracteristiciregistru
-               definieersorteren: definieersorteren                definesorting
+                   definesorting: definieersorteren                definesorting
                                   definieresortieren               definujtrideni
                                   definisciordinamento             definestesortare
-             definieersynoniemen: definieersynoniemen              definesynonyms
+                  definesynonyms: definieersynoniemen              definesynonyms
                                   definieresynonyme                definujsynonyma
                                   definiscisinonimi                definestesinonim
-                  stelsorterenin: stelsorterenin                   setupsorting
+                    setupsorting: stelsorterenin                   setupsorting
                                   stellesortierenein               nastavtrideni
                                   impostaordinamento               seteazasortare
-                stelsynoniemenin: stelsynoniemenin                 setupsynonyms
+                   setupsynonyms: stelsynoniemenin                 setupsynonyms
                                   stellesynonymein                 nastavsynonyma
                                   impostasinonimi                  seteazasinonime
-             startsynchronisatie: startsynchronisatie              startsynchronization
+            startsynchronization: startsynchronisatie              startsynchronization
                                   startsynchronisation             startsynchronizace
                                   iniziasincronizzazione           startsincronizare
-              stopsynchronisatie: stopsynchronisatie               stopsynchronization
+             stopsynchronization: stopsynchronisatie               stopsynchronization
                                   stopsynchronisation              stopsynchronizace
                                   terminasincronizzazione          stopsincronizare
-        stelsynchronisatiebalkin: stelsynchronisatiebalkin         setupsynchronizationbar
+         setupsynchronizationbar: stelsynchronisatiebalkin         setupsynchronizationbar
                                   stellesynchronisationsbalkenein  nastavsynchronizacnilistu
                                   impostabarrasincronizzazione     setarebarasincronizare
-            stelsynchronisatiein: stelsynchronisatiein             setupsynchronization
+            setupsynchronization: stelsynchronisatiein             setupsynchronization
                                   stellesynchronisationein         nastavsynchronizaci
                                   impostasincronizzazione          setaresincronizare
-              synchronisatiebalk: synchronisatiebalk               synchronizationbar
+              synchronizationbar: synchronisatiebalk               synchronizationbar
                                   synchronisationsbalken           synchronizacnilista
                                   barrasincronizzazione            barasincronizare
-                   synchroniseer: synchroniseer                    synchronize
+                     synchronize: synchroniseer                    synchronize
                                   synchronisieren                  synchronizovat
                                   sincronizza                      sincronizeaza
-           gebruikexterndocument: gebruikexterndocument            useexternaldocument
+             useexternaldocument: gebruikexterndocument            useexternaldocument
                                   verwendeexteresdokument          uzijexternidokument
                                   usadocumentoesterno              folosestedocumentextern
-                      gebruikURL: gebruikURL                       useURL
+                          useURL: gebruikURL                       useURL
                                   verwendeURL                      uzijURL
                                   usaURL                           folosesteURL
-                      gebruikurl: gebruikurl                       useurl
+                          useurl: gebruikurl                       useurl
                                   verwendeurl                      uzijurl
                                   usaurl                           folosesteurl
                         setupurl: stelurlin                        setupurl
@@ -1261,79 +1282,79 @@ defineplacement: definieerplaats                  defineplacement
                   coupledocument: koppeldocument                   coupledocument
                                   verknuepfedokument               propojenydokument
                                   accoppiadocumento                cupleazadocument
-                stelprogrammasin: stelprogrammasin                 setupprograms
+                   setupprograms: stelprogrammasin                 setupprograms
                                   stelleprogrammein                nastavprogramy
                                   impostaprogrammi                 seteazaprograme
-              definieerprogramma: definieerprogramma               defineprogram
+                   defineprogram: definieerprogramma               defineprogram
                                   definiereprogramme               definujprogram
                                   definisciprogramma               definesteprogram
-                       programma: programma                        program
+                         program: programma                        program
                                   programm                         program
                                   programma                        program
-          stelpaginaovergangenin: stelpaginaovergangenin           setuppagetransitions
+            setuppagetransitions: stelpaginaovergangenin           setuppagetransitions
                                   stelleseitenuebergangein         nastavprechodstrany
                                   impostatransizionepagina         seteazatranzitiepagina
-                definieerprofiel: definieerprofiel                 defineprofile
+                   defineprofile: definieerprofiel                 defineprofile
                                   definiereprofil                  definujprofil
                                   definisciprofilo                 definesteprofil
-                 definieerversie: definieerversie                  defineversion
+                   defineversion: definieerversie                  defineversion
                                   definiereversion                 definujverzi
                                   definisciversion                 definesteversiune
-                   markeerversie: markeerversie                    markversion
+                     markversion: markeerversie                    markversion
                                   beschrifteversion                oznacverzi
                                   marcaversione                    marcheazaversiune % GB
-                 selecteerversie: selecteerversie                  selectversion
+                   selectversion: selecteerversie                  selectversion
                                   waehleversionaus                 vyberverzi
                                   selezionaversione                selecteazaversiune % GB
-                    startprofiel: startprofiel                     startprofile
+                    startprofile: startprofiel                     startprofile
                                   startprofil                      startprofil
                                   iniziaprofilo                    startprofil
-                     startversie: startversie                      startversion
+                    startversion: startversie                      startversion
                                   startversion                     startverze
                                   iniziaversione                   startversiune
-                 stelprofielenin: stelprofielenin                  setupprofiles
+                   setupprofiles: stelprofielenin                  setupprofiles
                                   stelleprofilein                  nastavprofily
                                   impostaprofili                   seteazaprofile
-                   stelversiesin: stelversiesin                    setupversions
+                   setupversions: stelversiesin                    setupversions
                                   stelleversionein                 nastavverze
                                   impostaversioni                  seteazaversiuni
-                     stopprofiel: stopprofiel                      stopprofile
+                     stopprofile: stopprofiel                      stopprofile
                                   stopprofil                       stopprofil
                                   terminaprofili                   stopprofil
-                      stopversie: stopversie                       stopversion
+                     stopversion: stopversie                       stopversion
                                   stopversion                      stopverze
                                   terminaversioni                  stopversiune
-                     volgprofiel: volgprofiel                      followprofile
+                   followprofile: volgprofiel                      followprofile
                                   folgeprofil                      dodrzujprofil
                                   seguiprofilo                     urmeazaprofil
-               volgprofielversie: volgprofielversie                followprofileversion
+            followprofileversion: volgprofielversie                followprofileversion
                                   folgeprofilversion               dodrzujverziprofilu
                                   seguiversioneprofilo             urmeazaversiuneprofil
-                      volgversie: volgversie                       followversion
+                   followversion: volgversie                       followversion
                                   folgeversion                     dodrzujverzi
                                   seguiversione                    urmeazaversiune
-                  doordefinieren: doordefinieren                   definedescription
+               definedescription: doordefinieren                   definedescription
                                   definierebeschreibung            definujpopis
                                   definiscidescrizione             definestedescriere
-                     doorlabelen: doorlabelen                      definelabel
+                     definelabel: doorlabelen                      definelabel
                                   definierelabel                   definujpopisek
                                   definiscietichetta               definesteeticheta
-                    doornummeren: doornummeren                     defineenumeration
+               defineenumeration: doornummeren                     defineenumeration
                                   definierenummerierung            definujvycet
                                   definiscienumerazione            definesteenumerare
-                    doorspringen: doorspringen                     defineindenting
+                 defineindenting: doorspringen                     defineindenting
                                   definiereeinzug                  definujodsazovani
                                   definiscirientro                 definestealiat
-            steldoordefinierenin: steldoordefinierenin             setupdescriptions
+               setupdescriptions: steldoordefinierenin             setupdescriptions
                                   definierebeschreibungen          nastavpopisy
                                   impostadescrizioni               seteazadescriere
-              steldoornummerenin: steldoornummerenin               setupenumerations
+               setupenumerations: steldoornummerenin               setupenumerations
                                   stellebeschreibungein            nastavvycty
                                   impostaenumerazioni              seteazaenumerare
-              steldoorspringenin: steldoorspringenin               setupindentations
+               setupindentations: steldoorspringenin               setupindentations
                                   stelleeinzuegein                 nastavodsazovani
                                   impostarientri                   seteazaaliniate
-                       steltabin: steltabin                        setuptab
+                        setuptab: steltabin                        setuptab
                                   stelletabein                     nastavtab
                                   impostatab                       seteazatab
                              tab: tab                              tab
@@ -1372,7 +1393,7 @@ defineplacement: definieerplaats                  defineplacement
                       menubutton: menubutton                       menubutton
                                   menueknopf                       tlacitkomenu
                                   pulsantemenu                     butonmeniu
-                   stelbuttonsin: stelbuttonsin                    setupbuttons
+                    setupbuttons: stelbuttonsin                    setupbuttons
                                   stelleknopfein                   nastavtlacitka
                                   impostapulsanti                  seteazabutoane
                    usereferences: gebruikreferenties               usereferences
@@ -1405,19 +1426,19 @@ defineplacement: definieerplaats                  defineplacement
                     useJSscripts: gebruikJSscripts                 useJSscripts
                                   verwendeJSscript                 uzijJSscripts
                                   usaJSscripts                     folosestescriptJS
-                             uit: uit                              from
+                            from: uit                              from
                                   von                              zref
                                   da                               din
                               in: in                               in
                                   in                               tref
                                   in                               in
-                              op: op                               at
+                              at: op                               at
                                   bei                              pref
                                   al                               la % GB
-                            over: over                             about
+                           about: -                                about
                                   ueber                            oref
                                   intorno                          despre
-                            naar: naar                             goto
+                            goto: naar                             goto
                                   zu                               jdina
                                   vaia                             dute
                           atpage: oppagina                         atpage
@@ -1432,16 +1453,16 @@ navigating: navigerend navigating
                              ref: ref                              ref
                                   ref                              ref
                                   rif                              ref
-                         naarbox: naarbox                          gotobox
+                         gotobox: naarbox                          gotobox
                                   zurbox                           jdinabox
                                   vaiabox                          dutebox  % GB
-                      naarpagina: naarpagina                       gotopage
+                        gotopage: naarpagina                       gotopage
                                   zurseite                         jdinastranu
                                   vaiapagina                       dutepagina
-                   plaatsformule: plaatsformule                    placeformula
+                    placeformula: plaatsformule                    placeformula
                                   platziereformel                  umistirovnici
                                   mettiformula                     puneformula
-                plaatssubformule: plaatssubformule                 placesubformula
+                 placesubformula: plaatssubformule                 placesubformula
                                   platziereunterformel             umistipodrovnici
                                   mettisottoformula                punesubformula
 moveformula: verplaatsformule  moveformula
@@ -1450,16 +1471,16 @@ moveformula: verplaatsformule  moveformula
                    setupformulas: stelformulesin                   setupformulae
                                   stelleformelnein                 nastavrovnice
                                   impostaformule                   seteazaformule
-                   formulenummer: formulenummer                    formulanumber
+                   formulanumber: formulenummer                    formulanumber
                                   formelnummer                     cislorovnice
                                   numeroformula                    numarformula
-                subformulenummer: subformulenummer                 subformulanumber
+                subformulanumber: subformulenummer                 subformulanumber
                                   unterformelnummer                cislopodrovnice
                                   numerosottoformula               numarsubformula
                              leg: leg                              leg
                                   leg                              leg
                                   leg                              leg
-                             geg: geg                              fact
+                            fact: geg                              fact
                                   geg                              fakt
                                   fatto                            fact
                      mathematics: wiskunde                         mathematics
@@ -1471,28 +1492,22 @@ moveformula: verplaatsformule  moveformula
                      nodimension: geendimensie                     nodimension
                                   keindimension                    zadnyrozmer
                                   nientedimensioni                 faradimensiune
-                   startomgeving: startomgeving                    startenvironment
+                startenvironment: startomgeving                    startenvironment
                                   startumgebung                    startprostredi
                                   iniziaambiente                   startmediu
-                    stopomgeving: stopomgeving                     stopenvironment
+                 stopenvironment: stopomgeving                     stopenvironment
                                   stopumgebung                     stopprostredi
                                   terminaambiente                  stopmediu
-               startdeelomgeving: startdeelomgeving                startlocalenvironment
-                                  startlokaleumgebung              startlokalnihoprostredi
-                                  iniziaambientelocale             startmediulocal
-                    deelomgeving: deelomgeving                     localenvironment
-                                  lokaleumgebung                   lokalnihoprostredi
-                                  ambientelocale                   mediulocal
-                  startonderdeel: startonderdeel                   startcomponent
+                  startcomponent: startonderdeel                   startcomponent
                                   startkomponente                  startkomponenta
                                   iniziacomponente                 startcomponenta
-                   stoponderdeel: stoponderdeel                    stopcomponent
+                   stopcomponent: stoponderdeel                    stopcomponent
                                   stopkomponente                   stopkomponenta
                                   terminacomponente                stopcomponenta
-                    startprodukt: startprodukt                     startproduct
+                    startproduct: startprodukt                     startproduct
                                   startprodukt                     startprodukt
                                   iniziaprodotto                   startprodus
-                     stopprodukt: stopprodukt                      stopproduct
+                     stopproduct: stopprodukt                      stopproduct
                                   stopprodukt                      stopprodukt
                                   terminaprodotto                  stopprodus
                     startproject: startproject                     startproject
@@ -1507,58 +1522,58 @@ moveformula: verplaatsformule  moveformula
                          project: project                          project
                                   projekt                          projekt
                                   progetto                         proiect
-                       onderdeel: onderdeel                        component
+                       component: onderdeel                        component
                                   komponente                       komponenta
                                   componenet                       componenta
-                         produkt: produkt                          product
+                         produxt: produkt                          product
                                   produkt                          produkt
                                   prodotto                         produs
-                        omgeving: omgeving                         environment
+                     environment: omgeving                         environment
                                   umgebung                         prostredi
                                   ambiente                         mediu
-                   geenfilesmeer: geenfilesmeer                    nomorefiles
+                     nomorefiles: geenfilesmeer                    nomorefiles
                                   keinedateienmehr                 zadnedalsisoubory
                                   bastafile                        farafisiere
-                      haalbuffer: haalbuffer                       getbuffer
+                       getbuffer: haalbuffer                       getbuffer
                                   holepuffer                       ziskejbuffer
                                   prendibuffer                     adubuffer
-                    stelbufferin: stelbufferin                     setupbuffer
+                     setupbuffer: stelbufferin                     setupbuffer
                                   stellepufferein                  nastavbuffer
                                   impostabuffer                    seteazabuffer
                       typebuffer: typebuffer                       typebuffer
                                   tippepuffer                      typebuffer
                                   typebuffer                       scriebuffer % GB
-                 definieerbuffer: definieerbuffer                  definebuffer
+                    definebuffer: definieerbuffer                  definebuffer
                                   definierepuffer                  definujbuffer
                                   definiscibuffer                  definestebuffer
-                       betekenis: betekenis                        unitmeaning
+                     unitmeaning: betekenis                        unitmeaning
                                   bedeutung                        vyznam
                                   nomeunita                        numeunitate % GB
-                          voluit: voluit                           infull
+                          infull: voluit                           infull
                                   volleswort                       plnezneni
                                   perlungo                         pelung
-                          citaat: citaat                           quotation
+                       quotation: citaat                           quotation
                                   zitat                            citace
                                   citazione                        citat
-                          citeer: citeer                           quote
+                           quote: citeer                           quote
                                   zitieren                         citovat
                                   menzione                         minicitat
-                     startcitaat: startcitaat                      startquotation
+                  startquotation: startcitaat                      startquotation
                                   startzitat                       startcitace
                                   iniziacitazione                  startcitat
-                      stopcitaat: stopcitaat                       stopquotation
+                   stopquotation: stopcitaat                       stopquotation
                                   stopzitat                        stopcitace
                                   terminacitazione                 stopcitat
-                   stelciterenin: stelciterenin                    setupquote
+                      setupquote: stelciterenin                    setupquote
                                   stellezitierenein                nastavcitaci
                                   impostamenzione                  seteazaminicitat
-                       definieer: definieer                        define
+                          define: definieer                        define
                                   definieren                       definuj
                                   definisci                        defineste
-                         herhaal: herhaal                          redo
+                            redo: herhaal                          redo
                                   wiederholen                      opakovat
                                   rifai                            refa
-                gebruikcommandos: gebruikcommandos                 usecommands
+                     usecommands: gebruikcommandos                 usecommands
                                   verwendebefehl                   uzijprikazy
                                   usacomandi                       folosestecomenzi
                  definestartstop: definieerstartstop               definestartstop
@@ -1579,7 +1594,7 @@ moveformula: verplaatsformule  moveformula
                       stopglobal: stopglobaal                      stopglobal
                                   stopglobal                       stopglobalni
                                   terminaglobale                   stopblobal
-                            naam: naam                             name
+                       macroname: naam                             name
                                   name                             jmeno
                                   nome                             nume
                     definemakeup: definieeropmaak                  definemakeup
@@ -1597,16 +1612,16 @@ moveformula: verplaatsformule  moveformula
            useexternalsoundtrack: gebruikexterngeluidsfragment     useexternalsoundtrack
                                   verwendeexternestonstueck        uzijexternizvuk
                                   usacolonnasonoraesterna          folosestemuzicaexterna
-              gebruikexternefile: gebruikexternefile               useexternalfile
+                 useexternalfile: gebruikexternefile               useexternalfile
                                   verwendeexternedatei             uzijexternisoubor
                                   usafileesterno                   folosestefisierextern
-             gebruikexternefiles: gebruikexternefiles              useexternalfiles
+                useexternalfiles: gebruikexternefiles              useexternalfiles
                                   verwendeexternedateien           uzijexternisoubory
                                   usafileesterni                   folosestefisiereexterne
-                         kenmerk: kenmerk                          referral
+                        referral: kenmerk                          referral
                                   verweis                          odkaz
                                   referral                         referit % GB
-                    kenmerkdatum: kenmerkdatum                     referraldate
+                    referraldate: kenmerkdatum                     referraldate
                                   verweisdatum                     odkaznadatum
                                   datareferral                     datareferit
                             high: hoog                             high
@@ -1618,19 +1633,19 @@ moveformula: verplaatsformule  moveformula
                              low: laag                             low
                                   tief                             nizky
                                   ped                              jos
-                           breuk: breuk                            fraction
+                        fraction: breuk                            fraction
                                   bruch                            zlomek
                                   frazione                         fractie
                             chem: chem                             chem
                                   chem                             chem
                                   chim                             chem
-                      startnaast: startnaast                       startopposite
+                   startopposite: startnaast                       startopposite
                                   startgegenueber                  startprotejsek
                                   iniziaopposto                    startopozit
-                       stopnaast: stopnaast                        stopopposite
+                    stopopposite: stopnaast                        stopopposite
                                   stopgegenueber                   stopprotejsek
                                   terminaopposto                   stopopozit
-             stelnaastplaatsenin: stelnaastplaatsenin              setupoppositeplacing
+            setupoppositeplacing: stelnaastplaatsenin              setupoppositeplacing
                                   stellegegenueberplatzierenein    nastavumisteniprotejsku
                                   impostaposizionamentoopposti     seteazaplasareaopozita
                 startpositioning: startpositioneren                startpositioning
@@ -1651,34 +1666,34 @@ moveformula: verplaatsformule  moveformula
                      setuprotate: stelroterenin                    setuprotate
                                   stelledrehenein                  nastavotoceni
                                   impostarotazione                 seteazarotare
-                         spiegel: spiegel                          mirror
+                          mirror: spiegel                          mirror
                                   spiegeln                         zrcadlit
                                   riflessione                      reflexie
-                          schaal: schaal                           scale
+                           scale: schaal                           scale
                                   format                           meritko
                                   scala                            scala % GB
-                  stelnummerenin: stelnummerenin                   setupnumbering
+                  setupnumbering: stelnummerenin                   setupnumbering
                                   stellenummerierungein            nastavcislovani
                                   impostanumerazione               seteazanumerotare
                            reset: reset                            reset
                                   ruecksetzten                     reset
                                   reimposta                        reset
-               stelpublicatiesin: stelpublicatiesin                setuppublications
+               setuppublications: stelpublicatiesin                setuppublications
                                   stellepublikationein             nastavpublikace
                                   impostapubblicazioni             seteazapublicatii
-                      publicatie: publicatie                       publication
+                     publication: publicatie                       publication
                                   publikation                      publikace
                                   pubblicazione                    publicatie
-                   definieerhbox: definieerhbox                    definehbox
+                      definehbox: definieerhbox                    definehbox
                                   definierehbox                    definujhbox
                                   definiscihbox                    definestehbox
-                       toevoegen: toevoegen                        adding
+                          adding: toevoegen                        adding
                                   zusatz                           scitani
                                   adding                           adauga % GB
-                          punten: punten                           periods
+                         periods: punten                           periods
                                   punkt                            tecky
                                   punti                            puncte
-               stelkoppeltekenin: stelkoppeltekenin                setuphyphenmark
+                 setuphyphenmark: stelkoppeltekenin                setuphyphenmark
                                   stellebindestrichein             nastavdelitko
                                   impostasegnosillabazione         seteazaliniesilabe % GB
              setupinterlinespace: stelinterliniein                 setupinterlinespace
@@ -1696,19 +1711,19 @@ moveformula: verplaatsformule  moveformula
                          usepath: gebruikgebied                    usedirectory
                                   benutzeverzeichnis               uzijadresar % TOBIAS
                                   usacartella                      folosestedirector % GB
-                definieeralineas: definieeralineas                 defineparagraphs
+                defineparagraphs: definieeralineas                 defineparagraphs
                                   definiereabsaetze                definujodstavce
                                   definiscicapoversi               definesteparagraf
-                   stelalineasin: stelalineasin                    setupparagraphs
+                 setupparagraphs: stelalineasin                    setupparagraphs
                                   stelleabsaetzeein                nastavodstavce
                                   impostacapoversi                 seteazaparagrafe
-                        geentest: geentest                         donttest
+                        donttest: geentest                         donttest
                                   keintest                         zadnytest
                                   notest                           nutesta
                     setupcomment: stelcommentaarin                 setupcomment
                                   stellekommentarein               nastavkomentar
                                   impostacommento                  seteazacomentariu
-                      commentaar: commentaar                       comment
+                         comment: commentaar                       comment
                                   kommentar                        komentar
                                   commento                         comentariu
                      definefield: definieerveld                    definefield
@@ -1861,67 +1876,67 @@ definecolumnbreak: definieerkolomovergang  definecolumnbreak
                                   german                           czech
                                   italian                          romanian
 
-                     bovenhoogte: bovenhoogte                      topheight
+                       topheight: bovenhoogte                      topheight
                                   hoeheoben                        vyskahorejsku
                                   altezzacima                      inaltimesus
-                    bovenafstand: bovenafstand                     topdistance
+                     topdistance: bovenafstand                     topdistance
                                   abstandoben                      vzdalenosthorejsku
                                   distanzacima                     distantasus
-                     hoofdhoogte: hoofdhoogte                      headerheight
+                    headerheight: hoofdhoogte                      headerheight
                                   kopfzeilenhoehe                  vyskazahlavi
                                   altezzaintestazione              inaltimeantet
-                    hoofdafstand: hoofdafstand                     headerdistance
+                  headerdistance: hoofdafstand                     headerdistance
                                   kopfzeilenabstand                vzdalenostzahlavi
                                   distanzaintestazione             distantaantet
-                     teksthoogte: teksthoogte                      textheight
+                      textheight: teksthoogte                      textheight
                                   texthoehe                        vyskatextu
                                   altezzatesto                     inaltimetext
-                     voetafstand: voetafstand                      footerdistance
+                  footerdistance: voetafstand                      footerdistance
                                   fusszeileabstand                 vzdalenostupati
                                   distanzapdp                      distantasubsol
-                      voethoogte: voethoogte                       footerheight
+                    footerheight: voethoogte                       footerheight
                                   fusszeilenhoehe                  vyskaupati
                                   altezzapdp                       inaltimesubsol
-                    onderafstand: onderafstand                     bottomdistance
+                  bottomdistance: onderafstand                     bottomdistance
                                   abstandunten                     vzdalenostspodku
                                   distanzafondo                    distantajos
-                     onderhoogte: onderhoogte                      bottomheight
+                    bottomheight: onderhoogte                      bottomheight
                                   hoeheunten                       vyskaspodku
                                   altezzafondo                     inaltimejos
-                    margebreedte: margebreedte                     marginwidth
+                     marginwidth: margebreedte                     marginwidth
                                   marginalbreite                   sirkamarginalie
                                   ampiezzamargine                  latimemargine % GB
-              linkermargebreedte: linkermargebreedte               leftmarginwidth
+                 leftmarginwidth: linkermargebreedte               leftmarginwidth
                                   linkemarginalbreite              sirkalevemarginalie
                                   ampiezzamarginesinistro          latimemarginestanga
-             rechtermargebreedte: rechtermargebreedte              rightmarginwidth
+                rightmarginwidth: rechtermargebreedte              rightmarginwidth
                                   rechtemarginalbreite             sirkapravemarginalie
                                   ampiezzamarginedestro            latimemarginedreapta
-                    margeafstand: margeafstand                     margindistance
+                  margindistance: margeafstand                     margindistance
                                   marginalafstand                  vzdalenostmarginalie
                                   distanzamargine                  distantamargine
-              linkermargeafstand: linkermargeafstand               leftmargindistance
+              leftmargindistance: linkermargeafstand               leftmargindistance
                                   linkemarginalafstand             vzdalenostlevemarginalie
                                   distanzamarginesinistro          distantamarginestanga
-             rechtermargeafstand: rechtermargeafstand              rightmargindistance
+             rightmargindistance: rechtermargeafstand              rightmargindistance
                                   rechtemarginalafstand            vzdalenostpravemarginalie
                                   distanzamarginedestro            distantamarginedreapta
-                     randbreedte: randbreedte                      edgewidth
+                       edgewidth: randbreedte                      edgewidth
                                   randbreite                       sirkaokraje
                                   ampiezzabordo                    latimecolturi
-               linkerrandbreedte: linkerrandbreedte                leftedgewidth
+                   leftedgewidth: linkerrandbreedte                leftedgewidth
                                   breitelinkerrand                 sirkalevehookraje
                                   ampiezzabordosinistro            latimecoltstanga
-              rechterrandbreedte: rechterrandbreedte               rightedgewidth
+                  rightedgewidth: rechterrandbreedte               rightedgewidth
                                   breiterechterrand                sirkapravehookraje
                                   ampiezzabordodestro              latimecoltdreapta
-                     randafstand: randafstand                      edgedistance
+                    edgedistance: randafstand                      edgedistance
                                   randabstand                      vzdalenostokraje
                                   distanzabordo                    distantacolt
-               linkerrandafstand: linkerrandafstand                leftedgedistance
+                leftedgedistance: linkerrandafstand                leftedgedistance
                                   abstandlinkerrand                vzdalenostlevehookraje
                                   distanzabordosinistro            distantacoltstanga
-              rechterrandafstand: rechterrandafstand               rightedgedistance
+               rightedgedistance: rechterrandafstand               rightedgedistance
                                   abstandrechterrand               vzdalenostpravehookraje
                                   distanzabordodestro              distantacoltdreapta
  innermarginwidth:   binnenmargebreedte  innermarginwidth
@@ -1948,37 +1963,37 @@ outermargindistance: buitenmargeafstand  outermargindistance
   outeredgedistance: buitenrandafstand  outeredgedistance
                      outeredgedistance  outeredgedistance
                      outeredgedistance  outeredgedistance
-                    tekstbreedte: tekstbreedte                     textwidth
+                       textwidth: tekstbreedte                     textwidth
                                   textbreite                       sirkatextu
                                   ampiezzatesto                    latimetext
-                      zetbreedte: zetbreedte                       makeupwidth
+                     makeupwidth: zetbreedte                       makeupwidth
                                   satzbreite                       sirkasazby
                                   ampiezzamakeup                   latimemakeup % GB
-                       zethoogte: zethoogte                        makeupheight
+                    makeupheight: zethoogte                        makeupheight
                                   satzhoehe                        vyskasazby
                                   altezzamakeup                    inaltimemakeup
-                          kopwit: kopwit                           topspace
+                        topspace: kopwit                           topspace
                                   kopfweite                        odsazenishora
                                   spaziocima                       spatiusus
-                        bodemwit: bodemwit                         bottomspace
+                     bottomspace: bodemwit                         bottomspace
                                   bottomspace                      bottomspace
                                   spaziofondo                      spatiujos
-                          rugwit: rugwit                           backspace
+                       backspace: rugwit                           backspace
                                   rumpfweite                       odsazenizleva
                                   spaziodietro                     spatiuspate % GB
-                         snijwit: snijwit                          cutspace
+                        cutspace: snijwit                          cutspace
                                   cutspace                         cutspace
                                   cutspace                         cutspace % GB
-                   papierbreedte: papierbreedte                    paperwidth
+                      paperwidth: papierbreedte                    paperwidth
                                   papierbreite                     sirkapapiru
                                   ampiezzacarta                    latimehartie
-                    papierhoogte: papierhoogte                     paperheight
+                     paperheight: papierhoogte                     paperheight
                                   papierhoehe                      vyskapapiru
                                   altezzacarta                     inaltimehartie
-              printpapierbreedte: printpapierbreedte               printpaperwidth
+                 printpaperwidth: printpapierbreedte               printpaperwidth
                                   printpapierbreite                sirkatiskpapiru
                                   ampiezzacartastampa              latimehartieimprimanta % GB
-               printpapierhoogte: printpapierhoogte                printpaperheight
+                printpaperheight: printpapierhoogte                printpaperheight
                                   printpapierhoehe                 vyskatiskpapiru
                                   altezzacartastampa               inaltimehartieimprimanta  % GB
                       pageoffset: paginaoffset                     pageoffset
@@ -1987,16 +2002,18 @@ outermargindistance: buitenmargeafstand  outermargindistance
                        pagedepth: paginadiepte                     pagedepth
                                   pagedepth                        pagedepth
                                   pagedepth                        pagedepth
-                       kopniveau: kopniveau                        headlevel
+                       headlevel: kopniveau                        headlevel
                                   kopfniveau                       hlavniuroven
                                   livellotesta                     niveltitlu % GB
                        linewidth: lijndikte                        linethickness
                                   liniendicke                      tloustkacary
                                   spessoreriga                     grosimelinie
-             totaalaantalpaginas: totaalaantalpaginas              totalnumberofpages
+              totalnumberofpages: totaalaantalpaginas              totalnumberofpages
                                   gesamtseitenanzahl               celkovypocetstran
                                   numerototaledipagine             numartotalpagini
-
+numberofsubpages: aantalsubpaginas             numberofsubpages
+                  numberofsubpages             numberofsubpages
+                  numberofsubpages             numberofsubpages
                     useXMLfilter: gebruikXMLfilter                 useXMLfilter
                                   useXMLfilter                     useXMLfilter
                                   useXMLfilter                     useXMLfilter
@@ -2059,31 +2076,35 @@ startcolumnmakeup: startkolomopmaak  startcolumnmakeup
                    stopoverzicht: stopoverzicht                    stopoverview
                                   stopueberblick                   stopprehled
                                   terminaoverview                  stopoverview
-                   stelbrievenin: stelbrievenin                    setupcorrespondence
-                                  stellekorrespondenzein           nastavkorespondenci
-                                  impostacorrispondenza            seteazacorespondenta
-                         brieven: brieven                          letters
-                                  briefe                           dopisy
-                                  lettere                          litere
-                           brief: brief                            letter
-                                  brief                            dopis
-                                  lettera                          litera
                            label: label                            label
                                   label                            poppisek
                                   etichetta                        eticheta
-                           sheet: sheet                            sheet
-                                  blatt                            list
-                                  foglio                           sheet
-                  stelstickersin: stelstickersin                   setupstickers
-                                  stellestickerein                 nastavetikety
-                                  impostafrancobolli               seteazastickers % GB
-                    stelsheetsin: stelsheetsin                     setupsheets
-                                  stelleblattein                   nastavlisty
-                                  impostafogli                     seteazasheets
+%
+% obsolete
+%
+%                    stelbrievenin: stelbrievenin                    setupcorrespondence
+%                                   stellekorrespondenzein           nastavkorespondenci
+%                                   impostacorrispondenza            seteazacorespondenta
+%                          brieven: brieven                          letters
+%                                   briefe                           dopisy
+%                                   lettere                          litere
+%                            brief: brief                            letter
+%                                   brief                            dopis
+%                                   lettera                          litera
+%                            sheet: sheet                            sheet
+%                                   blatt                            list
+%                                   foglio                           sheet
+%                   stelstickersin: stelstickersin                   setupstickers
+%                                   stellestickerein                 nastavetikety
+%                                   impostafrancobolli               seteazastickers % GB
+%                     stelsheetsin: stelsheetsin                     setupsheets
+%                                   stelleblattein                   nastavlisty
+%                                   impostafogli                     seteazasheets
+%
                           labels: labels                           labels
                                   labels                           popisky
                                   etichette                        etichete
-                      woonplaats: woonplaats                       domicile
+                        domicile: woonplaats                       domicile
                                   wohnort                          bydliste
                                   domicilio                        domiciliu
 

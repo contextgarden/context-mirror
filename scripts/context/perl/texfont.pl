@@ -57,7 +57,7 @@ BEGIN {
     $IsWin32 = ($^O =~ /MSWin32/i) ;
     $SpacyPath = 0 ;
     if ($IsWin32) {
-        my $str = `kpsewhich --expand-path=\$TEXMF` ;
+        my $str = `kpsewhich -expand-path=\$TEXMF` ;
         $SpacyPath = ($str =~ / /) ;
         if ($SpacyPath) {
             require Win32::API; import Win32::API;
@@ -155,9 +155,6 @@ my $variant         = "" ;    # atl: encoding variant
 my $extension       = "pfb" ; # atl: default font extension
 my $lcdf            = "" ;    # atl: trigger for lcdf otftotfm
 
-my $mappath         = 'fonts/map' ; # will be set later
-my $encpath         = 'fonts/enc' ; # will be set later
-
 my @cleanup         = () ;    # atl: build list of generated files to delete
 
 # todo: parse name for style, take face from command line
@@ -226,8 +223,6 @@ if ($lcdf) {
 if (!$novirtual) {
     $virtual = 1 ;
 }
-
-# starting with 2004 tetex/fptex/texlive will combine pdftex and dvips paths
 
 # A couple of routines.
 
@@ -305,9 +300,9 @@ if (($listing||$remove)&&($sourcepath eq "."))
 
 if ($fontroot eq "")
   { if ($dosish)
-      { $fontroot = `kpsewhich --expand-path=\$$installpath` }
+      { $fontroot = `kpsewhich -expand-path=\$$installpath` }
     else
-      { $fontroot = `kpsewhich --expand-path=\\\$$installpath` }
+      { $fontroot = `kpsewhich -expand-path=\\\$$installpath` }
     chomp $fontroot }
 
 
@@ -381,11 +376,8 @@ if (($batch)||(($ARGV[0]) && ($ARGV[0] =~ /.+\.dat$/io)))
       { if ($batchfile !~ /\.dat$/io) { $batchfile .= ".dat" } }
     unless (-f $batchfile)
       { report ("trying to locate : $batchfile") ;
-        $batchfile = `kpsewhich --format="scripts" -progname=context $batchfile` ;
-        chomp $batchfile ;
-        if ($batchfile eq '')
-          { $batchfile = `kpsewhich --format="other text files" -progname=context $batchfile` ;
-            chomp $batchfile } }
+        $batchfile = `kpsewhich -format="other text files" -progname=context $batchfile` ;
+        chomp $batchfile }
     error ("unknown batch file $batchfile") unless -e $batchfile ;
     report ("processing batch file : $batchfile") ;
     my $select = (($vendor ne "")||($collection ne "")) ;
@@ -500,7 +492,7 @@ if ($sourcepath eq "auto") # todo uppercase root
         else
           { $path = `kpsewhich -expand-path=\\\$$root` }
         chomp $path ;
-        $path = $ENV{$root} if (($path == '') && defined($ENV{$root})) ;
+        $path = $ENV{$root} if (($path eq '') && defined($ENV{$root})) ;
         report ("checking root : $root") ;
         if ($preproc)
           { $sourcepath = "$path/fonts/truetype/$vendor/$collection" }
@@ -560,7 +552,7 @@ if ($sourcepath eq "auto") # todo uppercase root
                   { report ("removing : $nam") ;
                     unlink "$nam" }
                 my $mapfile = "$encoding$varlabel-$vendor-$collection" ;
-                my $maproot = "$fontroot/fonts/map/";
+                my $maproot = "$fontroot/fonts/map/pdftex/context";
                 if (-e "$maproot$mapfile.map")
                   { report ("renaming : $mapfile.map -> $mapfile.bak") ;
                     unlink "$maproot$mapfile.bak" ;
@@ -571,15 +563,15 @@ if ($sourcepath eq "auto") # todo uppercase root
     error ("unknown subpath ../fonts/afm/$vendor/$collection") unless -d $sourcepath }
 
 error ("unknown source path $sourcepath") unless -d $sourcepath ;
-error ("unknown option $ARGV[0]")         if ($ARGV[0] =~ /\-\-/) ;
+error ("unknown option $ARGV[0]")         if (($ARGV[0]||'') =~ /\-\-/) ;
 
 my $afmpath = "$fontroot/fonts/afm/$vendor/$collection" ;
 my $tfmpath = "$fontroot/fonts/tfm/$vendor/$collection" ;
 my $vfpath  = "$fontroot/fonts/vf/$vendor/$collection" ;
 my $pfbpath = "$fontroot/fonts/type1/$vendor/$collection" ;
 my $ttfpath = "$fontroot/fonts/truetype/$vendor/$collection" ;
-my $mappath = "$fontroot/fonts/map" ;
-my $encpath = "$fontroot/fonts/enc" ;
+my $mappath = "$fontroot/fonts/map/pdftex/context" ;
+my $encpath = "$fontroot/fonts/enc/dvips/context" ;
 
 # are not on local path ! ! ! !
 
@@ -588,10 +580,14 @@ foreach my $path ($afmpath, $pfbpath)
     foreach my $file (@gzipped)
       { print "file = $file\n";
 	system ("gzip -d $file") } }
+
 system ("mktexlsr $fontroot");  # needed ?
 
 sub do_make_path
-  { my $str = shift ; mkdir $str, 0755 unless -d $str }
+  { my $str = shift ;
+    if ($str =~ /^(.*)\/.*?$/)
+      { do_make_path($1) }
+    mkdir $str, 0755 unless -d $str }
 
 sub make_path
   { my $str = shift ;
@@ -607,10 +603,6 @@ do_make_path($mappath) ;
 do_make_path($encpath) ;
 
 # now fonts/map and fonts/enc
-#
-# if ($lcdf)
-#   { do_make_path("$fontroot/dvips") ;
-#     do_make_path("$fontroot/dvips/local") }
 
 make_path ("vf") ;
 make_path ("tfm") ;
@@ -699,7 +691,7 @@ sub globafmfiles
        }
     return @files }
 
-if ($ARGV[0] ne "")
+if ($ARGV[0])
   { $pattern = $ARGV[0] ;
     report ("processing files : all in pattern $ARGV[0]") ;
     @files = globafmfiles($runpath,$pattern) }
@@ -765,7 +757,7 @@ if ($map)
     print MAP "%\n" ;
     print MAP "% Alternatively in your TeX source you can say:\n" ;
     print MAP "%\n" ;
-    print MAP "%   \\pdfmapfile\{+$mapfile\}\n" ;
+    print MAP "%   \\pdf    \{+$mapfile\}\n" ;
     print MAP "%\n" ;
     print MAP "% In ConTeXt you can best use:\n" ;
     print MAP "%\n" ;
@@ -905,46 +897,46 @@ foreach my $file (@files)
             print "$otfcommand\n"  if $trace ;
             system("$otfcommand") ;
             $encfil = $encout }
-	else
-	  { # generate tfm and vpl, $file is on afm path
-        my $font = '' ;
-        if ($afmpl)
-          { report "         generating pl : $cleanname$fontsuffix (from $cleanname)" ;
-            $encstr = " -p $encfil" ;
-            my $command = "afm2pl $shape $passon $encstr $file $cleanname$fontsuffix.vpl" ;
-            print "$command\n" if $trace ;
-            my $ok = `$command` ;
-            if (open (TMP,"$cleanname$fontsuffix.map"))
-               { $font = <TMP> ;
-                 close(TMP) ;
-                 UnLink "$cleanname$fontsuffix.map" } }
         else
-          { report "generating raw tfm/vpl : $raw$cleanname$fontsuffix (from $cleanname)" ;
-            my $command = "afm2tfm $file $shape $passon $encstr $vfstr $raw$cleanname$fontsuffix" ;
-            print "$command\n" if $trace ;
-            $font = `$command` }
-        # generate vf file if needed
-        chomp $font ;
-        if ($font =~ /.*?([\d\.]+)\s*ExtendFont/io) { $extend = $1 }
-        if ($font =~ /.*?([\d\.]+)\s*SlantFont/io)  { $slant  = $1 }
-        if ($extend ne "") { $option .= " $1 ExtendFont " }
-        if ($slant ne "")  { $option .= " $1 SlantFont " }
-        if ($noligs) { removeligatures("$raw$cleanname$fontsuffix") }
-        if ($afmpl)
-          { report "generating new tfm : $use$cleanname$fontsuffix" ;
-            my $command = "pltotf $cleanname$fontsuffix.vpl $use$cleanname$fontsuffix.tfm" ;
-            print "$command\n" if $trace ;
-            my $ok = `$command` }
-        elsif ($virtual)
-          { report "generating new vf : $use$cleanname$fontsuffix (from $raw$cleanname)" ;
-            my $command = "vptovf $raw$cleanname$fontsuffix.vpl $use$cleanname$fontsuffix.vf $use$cleanname$fontsuffix.tfm" ;
-            print "$command\n" if $trace ;
-            my $ok = `$command` }
-        else
-          { report "generating new tfm : $use$cleanname$fontsuffix (from $raw$cleanname)" ;
-            my $command = "pltotf $raw$cleanname$fontsuffix.vpl $use$cleanname$fontsuffix.tfm" ;
-            print "$command\n" if $trace ;
-            my $ok = `$command` } } }
+          { # generate tfm and vpl, $file is on afm path
+            my $font = '' ;
+            if ($afmpl)
+              { report "         generating pl : $cleanname$fontsuffix (from $cleanname)" ;
+                $encstr = " -p $encfil" ;
+                my $command = "afm2pl -f afm2tfm $shape $passon $encstr $file $cleanname$fontsuffix.vpl" ;
+                print "$command\n" if $trace ;
+                my $ok = `$command` ;
+                if (open (TMP,"$cleanname$fontsuffix.map"))
+                   { $font = <TMP> ;
+                     close(TMP) ;
+                     UnLink "$cleanname$fontsuffix.map" } }
+            else
+              { report "generating raw tfm/vpl : $raw$cleanname$fontsuffix (from $cleanname)" ;
+                my $command = "afm2tfm $file $shape $passon $encstr $vfstr $raw$cleanname$fontsuffix" ;
+                print "$command\n" if $trace ;
+                $font = `$command` }
+                # generate vf file if needed
+                chomp $font ;
+                if ($font =~ /.*?([\d\.]+)\s*ExtendFont/io) { $extend = $1 }
+                if ($font =~ /.*?([\d\.]+)\s*SlantFont/io)  { $slant  = $1 }
+                if ($extend ne "") { $option .= " $1 ExtendFont " }
+                if ($slant ne "")  { $option .= " $1 SlantFont " }
+                if ($noligs) { removeligatures("$raw$cleanname$fontsuffix") }
+                if ($afmpl)
+                  { report "generating new tfm : $use$cleanname$fontsuffix" ;
+                    my $command = "pltotf $cleanname$fontsuffix.vpl $use$cleanname$fontsuffix.tfm" ;
+                    print "$command\n" if $trace ;
+                    my $ok = `$command` }
+                elsif ($virtual)
+                  { report "generating new vf : $use$cleanname$fontsuffix (from $raw$cleanname)" ;
+                    my $command = "vptovf $raw$cleanname$fontsuffix.vpl $use$cleanname$fontsuffix.vf $use$cleanname$fontsuffix.tfm" ;
+                    print "$command\n" if $trace ;
+                    my $ok = `$command` }
+                else
+                  { report "generating new tfm : $use$cleanname$fontsuffix (from $raw$cleanname)" ;
+                    my $command = "pltotf $raw$cleanname$fontsuffix.vpl $use$cleanname$fontsuffix.tfm" ;
+                    print "$command\n" if $trace ;
+                    my $ok = `$command` } } }
     elsif (-e "$sourcepath/$cleanname.tfm" )
       { report "using existing tfm : $cleanname.tfm" }
     elsif (($strange eq "expert")&&($expert))

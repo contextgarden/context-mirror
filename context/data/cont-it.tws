@@ -71,7 +71,7 @@ startsetup
 com:definisciambientefontdeltesto:
 typ:val/vars/:
 val:5pt,...,12pt,default::
-var:text:*dimensione::
+var:testo:*dimensione::
 var:script:*dimensione::
 var:scriptscript:*dimensione::
 var:x:*dimensione::
@@ -344,7 +344,7 @@ com:impostanotepdp:
 typ:vars/:
 var:conversione:numeri,lettere,Lettere,numeriromani,Numeriromani::
 var:modo:datesto,da*sezione::
-var:luogo:pagina,testo,colonne,alto,nessuno::
+var:luogo:pagina,testo,colonne,firstcolumn,lastcolumn,alto,nessuno::
 var:linea:attivo,disattivo::
 var:prima:*comando::
 var:dopo:*comando::
@@ -1072,6 +1072,20 @@ val:*testo::
 stopsetup
 
 startsetup
+com:ininner:
+typ:val/ref/arg/:
+val:+,-,basso::
+val:*testo::
+stopsetup
+
+startsetup
+com:inouter:
+typ:val/ref/arg/:
+val:+,-,basso::
+val:*testo::
+stopsetup
+
+startsetup
 com:colonna:
 typ::
 stopsetup
@@ -1314,12 +1328,6 @@ typ::
 stopsetup
 
 startsetup
-com:rifai:
-typ:val/:
-val:repeat/*testo::
-stopsetup
-
-startsetup
 com:impostadescrizioni:
 typ:vals/vars/:
 val:*nome::
@@ -1332,7 +1340,8 @@ var:campione:*testo::
 var:testo:*testo::
 var:allinea:sinistra,centro,destra::
 var:margine:standard,si,no,*dimensione::
-var:luogo:sinistra,destra,cima,vicino, inmargine,insinistra,indestra,sospeso::
+var:luogo:sinistra,destra,cima,vicino,command, inmargine,insinistra,indestra,sospeso::
+var:headcommand:::
 var:sospendi:adatta,ampio,*numero::
 var:prima:*comando::
 var:tra:*comando::
@@ -1675,6 +1684,8 @@ var:distanzatesto:*dimensione::
 var:ampiezzatesto:*numero::
 var:textmargin:*dimensione::
 var:clipoffset:*dimensione::
+var:pagina:*nome::
+var:carta:*nome::
 stopsetup
 
 startsetup
@@ -1872,6 +1883,9 @@ startsetup
 com:impostaposizionamentoopposti:
 typ:var/:
 var:stato:inizia,termina::
+var:prima:*comando::
+var:tra:*comando::
+var:dopo:*comando::
 stopsetup
 
 startsetup
@@ -2017,6 +2031,13 @@ com:determinacarattersticheelenco:
 typ:vals/vars/:
 val:*nome::
 ivr:impostaelenco::
+stopsetup
+
+startsetup
+com:mettielencocombinato:
+typ:val/vars/:
+val:*nome::
+ivr:impostaelencocombinato::
 stopsetup
 
 startsetup
@@ -2259,6 +2280,7 @@ var:ampiezza:*dimensione::
 var:altezza:*dimensione::
 var:spaziocima:*dimensione::
 var:backspace:*dimensione::
+var:opzione:max,adatta::
 stopsetup
 
 startsetup
@@ -2419,6 +2441,8 @@ val:*nome::
 val:*numero,ogni::
 val:standard,repeat/ampio,repeat/vicino,impaccato, unpacked,stopper,unito,almargine,inmargine, autointro,lento,capoverso,intesto:standard:
 var:margine:no,standard,*dimensione::
+var:marginesinistro:no,standard,*dimensione::
+var:marginedestro:no,standard,*dimensione::
 var:ampiezza:*dimensione::
 var:distanza:*dimensione::
 var:fattore:*numero::
@@ -2561,6 +2585,13 @@ startsetup
 com:accoppiaregistro:
 typ:val/:
 val:*nome::
+stopsetup
+
+startsetup
+com:mettiregistro:
+typ:val/vars/:
+val:*nome::
+ivr:impostaregistro::
 stopsetup
 
 startsetup
@@ -2942,6 +2973,20 @@ val:*nome::
 stopsetup
 
 startsetup
+com:saltablocchi:
+typ:vals/vals/:
+val:*nome::
+val:*nome::
+stopsetup
+
+startsetup
+com:forzablocchi:
+typ:vals/vals/:
+val:*nome::
+val:*nome::
+stopsetup
+
+startsetup
 com:selezionablocchi:
 typ:vals/vals/var/:
 val:*nome::
@@ -2989,7 +3034,7 @@ stopsetup
 startsetup
 com:metti<<oggettomobile>>:
 typ:val/refs/arg/arg/:
-val:sinistra,destra,qui,cima,fondo, insinistra,indestra,inmargine,margine, marginesinistro,marginedestro,bordosinistro,bordodestro, margineinterno,margineesterno,bordointerno,bordoesterno, interno,esterno,regel,alto,basso,adatta, pagina,opposto,sempre,forza,alto,reimposta, riga,altezza,profondita:qui:
+val:sinistra,destra,qui,cima,fondo, insinistra,indestra,inmargine,margine, marginesinistro,marginedestro,bordosinistro,bordodestro, margineinterno,margineesterno,bordointerno,bordoesterno, interno,esterno,line,alto,basso,adatta, pagina,opposto,sempre,forza,alto,reimposta, riga,altezza,profondita:qui:
 val:*testo::
 val:*testo::
 stopsetup
@@ -3053,8 +3098,8 @@ typ:vars/:
 var:bet:*testo::
 var:ken:*testo::
 var:dat:*testo::
-var:da:*testo::
-var:verso:*testo::
+var:van:*testo::
+var:aan:*testo::
 var:ref:*testo::
 stopsetup
 
@@ -3216,45 +3261,9 @@ val:*nome::
 stopsetup
 
 startsetup
-com:lettere:
-typ:val/:
-val:*nome::
-stopsetup
-
-startsetup
 com:etichette:
 typ:val/:
 val:*nome::
-stopsetup
-
-startsetup
-com:impostacorrispondenza:
-typ:vals/:
-val:formeel,informeel,rekening,ls, alto,centro,basso:formeel,basso:
-stopsetup
-
-startsetup
-com:impostafogli:
-typ:vars/:
-var:alternativa:*numero::
-var:testo:*testo::
-var:dimensione:piccolo,medio,grande::
-var:stile:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...,*comando::
-var:numero:*numero,unito::
-stopsetup
-
-startsetup
-com:foglio:
-typ:val/:
-val:*testo::
-stopsetup
-
-startsetup
-com:impostafrancobolli:
-typ:vars/:
-var:alternativa:a::
-var:n:*numero,tutti::
-var:luogo:margine,sinistra,destra,centro::
 stopsetup
 
 startsetup
@@ -3456,13 +3465,13 @@ stopsetup
 startsetup
 com:impostacombinazioni:
 typ:vars/:
-var:prima:commando::
-var:tra:commando::
-var:dopo:commando::
+var:prima:command::
+var:tra:command::
+var:dopo:command::
 var:distanza:*dimensione::
 var:altezza:*dimensione,adatta::
 var:ampiezza:*dimensione,adatta::
-var:luogo:boven,midden,onder,links,rechts::
+var:luogo:top,middle,bottom,left,right::
 var:allinea:no,sinistra,destra,centro,normale::
 var:stile:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...*comando::
 var:colore:*nome::
@@ -3551,10 +3560,11 @@ var:titolo:*testo::
 var:sottotitolo:*testo::
 var:autore:*testo::
 var:data:*testo::
+var:parolachiave:*testo::
 stopsetup
 
 startsetup
-com:impostamenuinterazione:
+com:definiscimenuinterazione:
 typ:vals/vars/:
 val:sinistra,destra,cima,fondo,*nome::
 var:prima:*comando::
@@ -3648,8 +3658,8 @@ typ:vars/:
 var:stato:inizia,termina::
 var:alternativa:a,b,c,d,e,f,g::
 var:simbolo:si,no::
-var:ampiezza:*dimensione,hoogte,adatta::
-var:altezza:*dimensione,hoogte,adatta::
+var:ampiezza:*dimensione,height,adatta::
+var:altezza:*dimensione,height,adatta::
 var:profondita:*dimensione::
 var:colore:*nome::
 var:passo:*numero,piccolo,medio,grande::
@@ -3670,7 +3680,7 @@ startsetup
 com:impostabarrasincronizzazione:
 typ:vars/:
 var:alternativa:pagina,locale::
-var:ampiezza:*dimensione,hoogte,adatta::
+var:ampiezza:*dimensione,height,adatta::
 var:altezza:*dimensione::
 var:stile:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...,*comando::
 var:colore:*nome::

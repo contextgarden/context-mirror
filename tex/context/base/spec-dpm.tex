@@ -14,7 +14,9 @@
 \unprotect
 
 %D This driver is build on top of the general \PDF\ macros,
-%D as defined in \type{spec-fdf}, so we inherit that one.
+%D as defined in \type{spec-fdf}, so we inherit that one. Remark:
+%D this driver is no longer actively maintained, use the dpx one
+%D instead!
 
 \startspecials[dpm][reset,fdf]
 
@@ -57,7 +59,7 @@
 \definefileinsertion{dpm}{mps}#1#2#3#4#5#6#7#8#9%
   {\PointsToWholeBigPoints{#7}\width
    \PointsToWholeBigPoints{#8}\height
-   % brrr, should use #1->#9 
+   % brrr, should use #1->#9
    \special
      {PSfile="#1"\space
       llx=\EPSllx\space lly=\EPSlly\space
@@ -84,7 +86,7 @@
 %D \macros
 %D  {doinsertsoundtrack}
 %D
-%D Sounds are supported too. 
+%D Sounds are supported too.
 
 \definespecial\doinsertsoundtrack{\doPDFinsertsoundtrack}
 
@@ -133,7 +135,7 @@
 %D    dosetupopenaction,dosetupcloseaction}
 
 \definespecial\dosetupinteraction%
-  {\showmessage{\m!interactions}{21}{DVIPDFM}}
+  {\showmessage\m!interactions{21}{DVIPDFM}}
 
 \definespecial\dosetupopenaction {\doPDFsetupopenaction}
 \definespecial\dosetupcloseaction{\doPDFsetupcloseaction}
@@ -175,12 +177,12 @@
 %D \macros
 %D   {dosetupscreen}
 
-\definespecial\dosetupscreen  {\doPDFsetupscreen  \printpapierhoogte}
+\definespecial\dosetupscreen  {\doPDFsetupscreen  \printpaperheight}
 
-\definespecial\dosetupartbox  {\doPDFsetupartbox  \printpapierhoogte}
-\definespecial\dosetupcropbox {\doPDFsetupcropbox \printpapierhoogte}
-\definespecial\dosetupbleedbox{\doPDFsetupbleedbox\printpapierhoogte}
-\definespecial\dosetuptrimbox {\doPDFsetuptrimbox \printpapierhoogte}
+\definespecial\dosetupartbox  {\doPDFsetupartbox  \printpaperheight}
+\definespecial\dosetupcropbox {\doPDFsetupcropbox \printpaperheight}
+\definespecial\dosetupbleedbox{\doPDFsetupbleedbox\printpaperheight}
+\definespecial\dosetuptrimbox {\doPDFsetuptrimbox \printpaperheight}
 
 %D \macros
 %D   {dostartexecutecommand}
@@ -226,26 +228,52 @@
 %D \macros
 %D  {dostartobject,dostopobject,doinsertobject}
 
+% \definespecial\dostartobject#1#2#3#4#5%
+%   {\bgroup
+%    \setbox\nextbox=\hbox\bgroup
+%      \dosetobjectreference{#1}{#2}{#1::#2}%
+%      \scratchdimen#3\edef\width {\the\scratchdimen\space}%
+%      \scratchdimen#4\edef\height{\the\scratchdimen\space}%
+%      \special{pdf: bxobj @#1::#2 width \width height \height}}
+
+% \definespecial\dostopobject%
+%   {\special{pdf: exobj}%
+%    \egroup
+%    \smashbox\nextbox
+%    \flushatshipout{\box\nextbox}%
+%    \egroup}
+
 \definespecial\dostartobject#1#2#3#4#5%
   {\bgroup
-   \setbox\nextbox=\hbox\bgroup
-     \dosetobjectreference{#1}{#2}{#1::#2}%
-     \scratchdimen#3\edef\width {\the\scratchdimen\space}%
-     \scratchdimen#4\edef\height{\the\scratchdimen\space}%
-     \special{pdf: bxobj @#1::#2 width \width height \height}}
+   \dowithnextbox
+     {\dosetobjectreference{#1}{#2}{#1::#2}%
+      \scratchdimen#3\edef\width {\the\scratchdimen\space}%
+      \scratchdimen#4\edef\height{\the\scratchdimen\space}%
+      \setbox\nextbox\vbox
+        {\special{pdf: bxobj @#1::#2 width \width height \height}%
+         % we need to compensate for the box offset (ugly, sigh)
+         \scratchdimen\nextboxht
+         \advance\scratchdimen\nextboxdp
+         \advance\scratchdimen-#4\relax
+         \nextboxdp\zeropoint
+         \nextboxht\zeropoint
+         \hbox to #3{\hss\lower.5\scratchdimen\box\nextbox\hss}%
+         \special{pdf: exobj}%
+         \global\let\currentPDFresources\empty}%
+      \smashbox\nextbox
+      \flushatshipout{\box\nextbox}%
+      \egroup}%
+    \hbox\bgroup}
 
-\definespecial\dostopobject%
-  {\special{pdf: exobj}%
-   \egroup
-   \smashbox\nextbox
-   \flushatshipout{\box\nextbox}%
-   \egroup}
+\definespecial\dostopobject
+  {\egroup}
+
 
 \definespecial\doinsertobject#1#2%
   {\hbox
      {\dogetobjectreference{#1}{#2}\PDFobjectreference
       \ifx\PDFobjectreference\empty \else
-        \special{pdf: usexobj @\PDFobjectreference}%
+        \special{pdf: usexobj @#1::#2}%
       \fi}}
 
 %D \macros
@@ -301,11 +329,11 @@
 \newif\ifsharePDFactions \sharePDFactionsfalse
 
 \def\dodoPDFaction#1#2#3#4%
-  {\ifcollectreferenceactions 
+  {\ifcollectreferenceactions
      \xdef\lastPDFaction{#4}%
    \else
      \bgroup
-    % this is yet untested 
+    % this is yet untested
     %\ifsharePDFactions
     %  \ifcase\similarreference\relax
     %    \xdef\lastPDFaction{<<#4>>}%
@@ -314,7 +342,7 @@
     %    \special{pdf: object @PDF::sim:\the\nofPDFsimilar\space<<#4>>}%
     %    \xdef\lastPDFaction{@PDF::sim:\the\nofPDFsimilar}%
     %  \else
-    %    % leave \lastPDFaction untouched 
+    %    % leave \lastPDFaction untouched
     %  \fi
     %\else
        \xdef\lastPDFaction{<<#4>>}%
@@ -361,7 +389,7 @@
 \def\doPDFaddtocatalog#1%
   {\special{pdf: put @catalog <<#1>>}}
 
-\def\doPDFaddtoinfo#1% Is this auto appended? Not checked! 
+\def\doPDFaddtoinfo#1% Is this auto appended? Not checked!
   {\special{pdf: docinfo <<#1>>}} % put @docinfo <<#1>>}}
 
 \def\doPDFpageattribute#1%

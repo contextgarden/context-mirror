@@ -28,12 +28,12 @@
   {\withoutpt\the\dimexpr(2\paperheight/(\paperwidth/32768))}
 
 \def\layouthfheight
-  {\dimexpr(\layoutparameter\c!hoofd+\layoutparameter\c!hoofdafstand+
-            \layoutparameter\c!voet +\layoutparameter\c!voetafstand )}
+  {\dimexpr(\layoutparameter\c!header+\layoutparameter\c!headerdistance+
+            \layoutparameter\c!footer +\layoutparameter\c!footerdistance )}
 
 \startsetups[preset-1]
 
-  \xdef\layoutwidth {\dimexpr(\layoutparameter\c!breedte)}
+  \xdef\layoutwidth {\dimexpr(\layoutparameter\c!width)}
   \gdef\layoutheight{\dimexpr(\layouthwratio\dimexpr(\layoutwidth)+\layouthfheight)}
 
 \stopsetups
@@ -41,56 +41,56 @@
 \definelayout
   [preset-1-1]
   [\c!preset=preset-1,
-   \c!rugwit=\dimexpr((\paperwidth-\layoutwidth)/2),
-   \c!breedte=\dimexpr(2\paperwidth/3),
-   \c!snijwit=\dimexpr((\paperwidth-\layoutwidth)/2),
-   \c!marge=\dimexpr((\paperwidth-\layoutwidth)/3),
-   \c!hoofd=2\lineheight,
-   \c!hoofdafstand=\lineheight,
-   \c!hoogte=\v!midden, % \layoutheight
-   \c!voetafstand=\layoutparameter\c!hoofdafstand, % \lineheight,
-   \c!voet=\layoutparameter\c!hoofd, % 2\lineheight,
-   \c!kopwit=\dimexpr(1\dimexpr(\paperheight-(\layoutheight+\layouthfheight))/3),
-   \c!bodemwit=\dimexpr(2\dimexpr(\paperheight-(\layoutheight+\layouthfheight))/3)]
+   \c!backspace=\dimexpr((\paperwidth-\layoutwidth)/2),
+   \c!width=\dimexpr(2\paperwidth/3),
+   \c!cutspace=\dimexpr((\paperwidth-\layoutwidth)/2),
+   \c!margin=\dimexpr((\paperwidth-\layoutwidth)/3),
+   \c!header=2\lineheight,
+   \c!headerdistance=\lineheight,
+   \c!height=\v!middle, % \layoutheight
+   \c!footerdistance=\layoutparameter\c!headerdistance, % \lineheight,
+   \c!footer=\layoutparameter\c!header, % 2\lineheight,
+   \c!topspace=\dimexpr(1\dimexpr(\paperheight-(\layoutheight+\layouthfheight))/3),
+   \c!bottomspace=\dimexpr(2\dimexpr(\paperheight-(\layoutheight+\layouthfheight))/3)]
 
 \startsetups[preset-2]
 
-  \gdef\layouthstep{\dimexpr(\paperwidth /\layoutparameter\c!kolommen)}
-  \gdef\layoutvstep{\dimexpr(\paperheight/\layoutparameter\c!kolommen)}
+  \gdef\layouthstep{\dimexpr(\paperwidth /\layoutparameter\c!columns)}
+  \gdef\layoutvstep{\dimexpr(\paperheight/\layoutparameter\c!columns)}
 
 \stopsetups
 
 \definelayout
   [preset-2-1]
   [\c!preset=preset-2,
-   \c!kolommen=12,
-   \c!rugwit=\layouthstep,
-   \c!breedte=\v!midden,
-   \c!snijwit=2\layouthstep,
-   \c!marge=\layouthstep,
-   \c!hoofd=2\lineheight,
-   \c!hoofdafstand=\lineheight,
-   \c!hoogte=\v!midden, % \layoutheight
-   \c!voetafstand=\layoutparameter\c!hoofdafstand,
-   \c!voet=\layoutparameter\c!hoofd,
-   \c!kopwit=\dimexpr(\layoutvstep-\layoutparameter\c!hoofd-\layoutparameter\c!hoofdafstand),
-   \c!bodemwit=\dimexpr(2\layoutvstep-\layoutparameter\c!hoofd-\layoutparameter\c!hoofdafstand)]
+   \c!columns=12,
+   \c!backspace=\layouthstep,
+   \c!width=\v!middle,
+   \c!cutspace=2\layouthstep,
+   \c!margin=\layouthstep,
+   \c!header=2\lineheight,
+   \c!headerdistance=\lineheight,
+   \c!height=\v!middle, % \layoutheight
+   \c!footerdistance=\layoutparameter\c!headerdistance,
+   \c!footer=\layoutparameter\c!header,
+   \c!topspace=\dimexpr(\layoutvstep-\layoutparameter\c!header-\layoutparameter\c!headerdistance),
+   \c!bottomspace=\dimexpr(2\layoutvstep-\layoutparameter\c!header-\layoutparameter\c!headerdistance)]
 
 \definelayout
   [preset-2-2]
   [\c!preset=preset-2,
-   \c!kolommen=12,
-   \c!rugwit=\layouthstep,
-   \c!breedte=\v!midden,
-   \c!snijwit=2\layouthstep,
-   \c!marge=\layouthstep,
-   \c!hoofd=2\lineheight,
-   \c!hoofdafstand=\lineheight,
-   \c!hoogte=\v!midden, % \layoutheight
-   \c!voetafstand=\layoutparameter\c!hoofdafstand,
-   \c!voet=\layoutparameter\c!hoofd,
-   \c!kopwit=\layoutvstep,
-   \c!bodemwit=\layoutvstep] % maybe 1.5
+   \c!columns=12,
+   \c!backspace=\layouthstep,
+   \c!width=\v!middle,
+   \c!cutspace=2\layouthstep,
+   \c!margin=\layouthstep,
+   \c!header=2\lineheight,
+   \c!headerdistance=\lineheight,
+   \c!height=\v!middle, % \layoutheight
+   \c!footerdistance=\layoutparameter\c!headerdistance,
+   \c!footer=\layoutparameter\c!header,
+   \c!topspace=\layoutvstep,
+   \c!bottomspace=\layoutvstep] % maybe 1.5
 
 %                                                     \setuplayout[preset-1-1] test \showframe \page
 % \setuplayout[preset-1-1][width=65\averagecharwidth] \setuplayout[preset-1-1] test \showframe \page

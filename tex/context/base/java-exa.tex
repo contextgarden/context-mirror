@@ -11,25 +11,191 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-\startJSpreamble request_0 used now
+% XFDF versus HTML
+% localhost versus remote versus set
 
-    exa_command    = "" ;
-    exa_option     = "" ;
-    exa_filename   = "" ;
-    exa_filelist   = "" ;
-    exa_registered = "" ;
-
-\stopJSpreamble
+% filename | filename-nr => name
+% fakename | fakename-nr => file upload, unless localhost
+%
+% we erase the list because otherwise we end up in browser remembering
+% problems; also, it is not possible to set upload fields 'manually'
 
 \startJSpreamble request_1 used now
 
+    var example_method = "HTML" ;
+    var example_host   = "" ;
+    var example_port   = "" ;
+    var example_url    = "" ;
+    var example_file   = "" ;
+
+    var example_log    = true ; % false
+
+    function stripped_exa_value( name ) {
+        f = this.getField(name) ;
+        if (f) {
+            str = f.value ;
+            if (str.indexOf(name+'-')==0) {
+                str = str.substr(name.length+1) ;
+            }
+            return str ;
+        } else {
+            return "" ;
+        }
+    }
+
+    function identify_example_url ( ) {
+        if (example_log) {
+            console.clear ;
+            console.println("base url: "+this.baseURL) ;
+            console.println("this url: "+this.URL) ;
+        }
+        if (this.baseURL != "") {
+            example_url = this.baseURL ;
+        } else {
+            if (this.URL != "") {
+                example_url = this.URL
+            }
+        }
+        if (example_url.indexOf("file://")>=0) {
+            example_url = "" ;
+        }
+        str = stripped_exa_value("examplehost") ;
+        if (str != "auto") {
+            example_host = str ;
+            if (str == "localhost") {
+                example_port = "8061"
+            }
+        }
+        str = stripped_exa_value("exampleport") ;
+        if (str != "auto") {
+            example_port = str ;
+        }
+        if (example_log) {
+            console.println("example_url: "+example_url) ;
+            console.println("example_host: "+example_host) ;
+            console.println("example_port: "+example_port) ;
+        }
+    }
+
+    function check_example_url ( url ) {
+        if (url.indexOf("file://")>=0) {
+            url = "http://localhost:8061" ;
+            console.println("file url replaced by: "+url) ;
+        } else {
+            if (url.indexOf("://")<0) {
+                url = "http://" + url ;
+            }
+            if (example_log) {
+                console.println("url before check: "+url) ;
+            }
+%            url = url.replace(/(http:\\\/\\\/.+)(\\\/.*$)/, "$1") ;
+            url = url.replace(/(http:\\\/\\\/.+?)(\\\/.*$)/, "$1") ;
+            if (example_log) {
+                console.println("url after check: "+url) ;
+            }
+        }
+        return url ;
+    }
+
+    function set_example_xfdf ( method ) {
+        example_method = method ;
+    }
+
+    function set_example_file ( file ) {
+        example_method = file ;
+    }
+
+    function set_example_host ( host ) {
+        example_host = host ;
+    }
+
+    function set_example_port ( port ) {
+        example_host = host ;
+    }
+
+    function do_erase_example_file(tag) {
+        f = this.getField(tag) ;
+        if (f) {
+            f.value = "" ;
+        }
+    }
+
+    function do_erase_example_list(tag) {
+        for (i=1;i<=100;i++) {
+            f = this.getField(tag+"-"+i) ;
+            if (f) {
+                f.value = "" ;
+            } else {
+                return
+            }
+        }
+    }
+
+    function do_submit_example_url ( url ) {
+        if ((example_method == "XFDF" ) || (url.indexOf("localhost")>=0)) {
+            do_erase_example_file("fakename") ;
+            do_erase_example_list("fakename") ;
+        }
+        url = check_example_url(url) ;
+        if (example_log) {
+            console.println("submitting form to "+url+" using method "+example_method) ;
+        }
+        if (example_file != "") {
+            url = url + "/" + example_file ;
+        }
+        % we need the bFDF for acrobat 5
+        this.submitForm({cURL : url, bFDF : false, cSubmitAs : example_method}) ;
+    }
+
+    function submit_example_form ( ) {
+        identify_example_url() ;
+        if (example_host != "") {
+            if (example_port != "") {
+                do_submit_example_url(example_host+":"+example_port) ;
+            } else {
+                do_submit_example_url(example_host) ;
+            }
+        } else {
+            if (example_url != "") {
+                do_submit_example_url(example_url) ;
+            } else {
+                if (example_port != "") {
+                    do_submit_example_url("localhost"+":"+example_port) ;
+                } else {
+                    do_submit_example_url("localhost:8061") ; % local exampler
+                }
+            }
+        }
+        resetfilename () ;
+    }
+
+    function submit_form ( host, port) {
+        set_example_host(host) ;
+        set_example_post(post) ;
+        submit_example_form ;
+    }
+
+\stopJSpreamble
+
+\startJSpreamble request_2 used now
+
+    var exa_command    = "" ;
+    var exa_option     = "" ;
+    var exa_filename   = "" ;
+    var exa_filelist   = "" ;
+    var exa_registered = "" ;
+
     function set_request (command,option) {
         exa_command = command ;
-        if (option.indexOf("--")<0) {
+        if (exa_command == "") {
+            exa_option = option ;
+        } else { if (option == "") {
+            exa_option = "" ;
+        } else { if (option.indexOf("--")<0) {
             exa_option = "--action=" + option ;
         } else {
             exa_option = option ;
-        }
+        } } }
     }
 
     function assemble_request ( ) {
@@ -41,49 +207,85 @@
         if (v) {
             exa_filelist = v.value ;
         }
-        % exa_filename = exa_filename.replace(/\\\\/g,'/') ;
-        % exa_filelist = exa_filelist.replace(/\\\\/g,'/') ;
+%       exa_filename = exa_filename.replace(/\\\\/g,'/') ;
+%       exa_filelist = exa_filelist.replace(/\\\\/g,'/') ;
         str = "<exa:request><exa:application>" ;
-        if (exa_filelist == '') {
+        if (exa_filelist == "") {
             exa_filelist = exa_registered ;
-        } else {
-            if (exa_registered != '') {
-                exa_filelist = exa_filelist + "\\n" + exa_registered ;
-            }
-        }
-        if (exa_command != '') {
+        } else { if (exa_registered != "") {
+            exa_filelist = exa_filelist + "\\n" + exa_registered ;
+        } }
+        if (exa_command != "") {
             str = str+"<exa:command>"+exa_command+"</exa:command>" ;
         }
-        if (exa_option != '') {
+        if (exa_option != "") {
             str = str+"<exa:option>"+exa_option+"</exa:option>" ;
         }
-        if (exa_filename != '') {
+        if (exa_filename != "") {
             str = str+"<exa:filename>"+exa_filename+"</exa:filename>" ;
         }
-        if (exa_filelist != '') {
+        var fls = "" ;
+        if (exa_filelist != "") {
+            % old method, soon obsolete
             lst = exa_filelist.split(/\\s/) ;
-            str = str+"<exa:filelist>" ;
             for (i=0;i<lst.length;i++) {
-                str = str+"<exa:entry>"+lst[i]+"</exa:entry>" ;
+                fls = fls+"<exa:entry>"+lst[i]+"</exa:entry>" ;
             }
-            str = str+"</exa:filelist>" ;
+        } else { if (exa_multiple) {
+            for (i=1;i<=100;i++) {
+                % console.println("file field "+i) ;
+                f = this.getField("filename-"+ i) ;
+%                 if (f) { if (f.value != "") {
+%                     if (g) { if (g.value == "") {
+%                         fls = fls+"<exa:entry>"+f.value+"</exa:entry>" ;
+%                     } else {
+%                         fls = fls+"<exa:entry label='" + g.value + "'>"+f.value+"</exa:entry>" ;
+%                     } } else {
+%                         fls = fls+"<exa:entry>"+f.value+"</exa:entry>" ;
+%                     }
+%                 } }
+                if (f) { if (f.value != "") {
+                    fls = fls + "<exa:entry" ;
+                    g = this.getField("dataname-"+ i) ;
+                    if (g) { if (g.value == "") {
+                        % console.println("a") ;
+                        fls = fls + ">" ;
+                    } else {
+                        % console.println("b") ;
+                        fls = fls + " label='" + g.value + "'>" ;
+                    } } else {
+                        % console.println("c") ;
+                        fls = fls + ">" ;
+                    }
+                    fls = fls + f.value + "</exa:entry>" ;
+                } }
+            }
+        } }
+        if (fls != "") {
+            str = str + "<exa:filelist>" + fls + "</exa:filelist>" ;
         }
         str = str + "</exa:application></exa:request>" ;
         v = this.getField('exa:request') ;
         if (v) {
-            % console.println(str) ;
             v.value = str ;
         }
     }
 
 \stopJSpreamble
 
-\startJSpreamble request_2 used now
+\startJSpreamble request_3 used now
 
-    multiplefiles = false ;
+    var exa_multiple = false ;
 
     function setfilename ( suffixes ) {
-        f = this.getField("fakename") ;
+        if (event.targetName) {
+            var name = event.targetName ;
+            var fake = name.replace(/filename/,"fakename") ;
+        } else {
+            var name = 'filename' ;
+            var fake = 'fakename' ;
+        }
+        f = this.getField(fake) ;
         if (f) {
             f.browseForFileToSubmit() ;
             if (suffixes != "") {
@@ -91,52 +293,60 @@
                 r = new RegExp() ;
                 s = "\\\\.(" + s + ")$" ;
                 r.compile(s, "i") ;
-                if (f.value.search(r)<=0) {
+                if ((f.value != "")&&(f.value.search(r)<=0)) {
                     f.value = "" ;
                     app.alert('This filetype is not permitted.') ;
                 }
             }
-            g = this.getField("filename") ;
+            g = this.getField(name) ;
             if (g) {
                 g.value = f.value ;
             }
-            % we need to set the value of the selector to empty else
-            % we get some funny preloading of multimeg files in spite
-            % of the specs that say that xml fields will not get sent
-            f.value = '' }
+% we need to set the value of the selector to empty else
+% we get some funny preloading of multimeg files in spite
+% of the specs that say that xml fields will not get sent
+%             if (example_method == "XFDF" ) {
+%                 f.value = "" ;
+%             } else {
+%                 identify_example_url ;
+%                 if (example_url.indexOf("localhost")>=0) {
+%                     f.value = "" ;
+%                 }
+%             }
+        }
         this.dirty = false ;
     }
 
     function addfilename () {
-        if (multiplefiles) {
+        if (exa_multiple) {
             h = this.getField("filelist") ;
             g = this.getField("filename") ;
             if ((g) && (h)) {
                 str = g.value ;
-                if (h.value == '') {
+                if (h.value == "") {
                     h.value = str ;
                 } else {
                     h.value = h.value + "\\n" + str ;
                 }
-                g.value = '' ;
-                this.value = '' ;
+                g.value = "" ;
+                this.value = "" ;
             }
         }
         this.dirty = false ;
     }
 
-    % not needed (why is it in here then)
+    % this only works with client that assembles request
 
     function registerfilename (str) {
-        if (str!='') {
+        if (str!="") {
             h = this.getField("filelist") ;
             if (h) {
-                if (h.value != '') {
+                if (h.value != "") {
                     h.value = h.value + "\\n" ;
                 }
                 h.value = h.value + str ;
             } else {
-                if (exa_registered != '') {
+                if (exa_registered != "") {
                     exa_registered = exa_registered + "\\n" ;
                 }
                 exa_registered = exa_registered + str ;
@@ -159,72 +369,11 @@
     }
 
     function resetfilename () {
-        f = this.getField("filename") ;
-        if (f) {
-            f.value = '' ;
-        }
-        f = this.getField("fakename") ;
-        if (f) {
-            f.value = '' ;
-        }
-        f = this.getField("filelist") ;
-        if (f) {
-            f.value = '' ;
-        }
-    }
-
-\stopJSpreamble
-
-\startJSpreamble request_3 used now
-
-    function set_example_host ( host ) {
-        if (host.indexOf("://")<0) {
-            global.examplehost = "http://" + host ;
-        } else {
-            global.examplehost = host ;
-        }
-    }
-
-    function set_example_port ( port ) {
-        global.exampleport = port ;
-    }
-
-    function show_example_url ( ) {
-        console.println("example url: " + global.examplehost + ":" + global.exampleport) ;
-    }
-
-    function report_example_url ( ) {
-        app.alert("Requests will be submitted to port " + global.exampleport + " on " + global.examplehost + '.') ;
-    }
-
-    function submit_form (host, port) {
-        console.println("form: submit") ;
-        console.println("host: "+host) ;
-        console.println("port: "+port) ;
-        % example_url = "http://" + host + ":" + port ;
-        example_url = host + ":" + port ;
-        this.submitForm({cURL : example_url, bXML : true}) ;
-    }
-
-    function submit_example_form ( ) {
-        console.println("example form: submit") ;
-        console.println("example host: "+global.examplehost) ;
-        console.println("example port: "+global.exampleport) ;
-        % example_url = "http://" + global.examplehost + ":" + global.exampleport ;
-        example_url = global.examplehost + ":" + global.exampleport ;
-        this.submitForm({cURL : example_url, bXML : true}) ;
-    }
-
-    if (typeof global.examplehost == "undefined" ) {
-        if (this.baseURL == "") {
-            set_example_host("http://localhost") ;
-        } else {
-            set_example_host(this.baseURL) ;
-        }
-    }
-
-    if (typeof global.exampleport == "undefined" ) {
-        set_example_port("8061") ;
+        do_erase_example_file("fakename") ;
+        do_erase_example_file("filename") ;
+        do_erase_example_file("filelist") ;
+        do_erase_example_list("filename") ;
+        do_erase_example_list("fakename") ;
     }
 
 \stopJSpreamble

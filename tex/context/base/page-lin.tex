@@ -15,35 +15,39 @@
 
 \unprotect
 
-\newif\ifinregels % \newif\ifregelnummersinmarge
+\newif\ifnumberinglines
+\newif\iftypesettinglines
+
+\newcount\linenumber
+\newcount\linestepper
 
 \chardef\linenumberlocation=0
 
 \newtoks\beforeeverylinenumbering
 \newtoks\aftereverylinenumbering
 
-\def\stelregelsin
+\def\setuplines
   {\dodoubleargument\getparameters[\??rg]}
 
-\def\startregels
-  {\@@rgvoor
-   \witruimte
-  %\pagina[\v!voorkeur]} gaat mis na koppen, nieuw: later \nobreak
+\def\startlines
+  {\@@rgbefore
+   \whitespace
+  %\page[\v!preference]} gaat mis na koppen, nieuw: later \nobreak
    \begingroup
    \def\@@rgstepyes{\parindent\zeropoint}%
    \def\@@rgstepno {\parindent\zeropoint}%
    \edef\@@rgparindent{\the\parindent}%
    \globallet\@@rglinesteptoggle\!!plusone
    \processaction
-     [\@@rginspringen]
-     [    \v!ja=>\def\@@rgstepyes{\parindent\@@rgparindent}%
+     [\@@rgindenting]
+     [    \v!yes=>\def\@@rgstepyes{\parindent\@@rgparindent}%
                  \def\@@rgstepno {\parindent\@@rgparindent},
-      \v!oneven=>\def\@@rgstepyes{\parindent\zeropoint    }%
+      \v!odd=>\def\@@rgstepyes{\parindent\zeropoint    }%
                  \def\@@rgstepno {\parindent\@@rgparindent},
         \v!even=>\def\@@rgstepno {\parindent\zeropoint    }%
                  \def\@@rgstepyes{\parindent\@@rgparindent}]%
-   \inregelstrue
-   \setupwhitespace[\v!geen]%
+   \typesettinglinestrue
+   \setupwhitespace[\v!none]%
    \obeylines
    \let\checkindentation\relax
    \@@rgstepno
@@ -77,41 +81,37 @@
 %    \fi}                                     % etex
 
 \def\dobetweenthelines
-  {\doifmeaningelse\next\obeyedline\@@rgtussen\donothing}
+  {\doifmeaningelse\next\obeyedline\@@rginbetween\donothing}
 
-\def\stopregels
+\def\stoplines
   {\endgroup
-   \@@rgna}
-
-\newcount\linenumber
-\newcount\linestepper
-\newif\ifinregelnummeren
+   \@@rgafter}
 
 % het gebruik van \setlocalreference scheelt een hash entry
 
 \def\dodoshowlinenumber % for use elsewhere, to be extended
-  {\doschrijfregelnummer
+  {\doplacelinenumber
    \global\advance\linenumber \plusone}
 
-\def\regelweergave
-  {\@@rnlinks\convertnumber\@@rnconversie\linenumber\@@rnrechts}
+\def\completelinenumber
+  {\@@rnleft\convertnumber\@@rnconversion\linenumber\@@rnright}
 
-\def\dostelregelnummerenin[#1]%
-  {\getparameters[\??rn][\c!start=1,\c!stap=1,#1]%
+\def\dosetuplinenumbering[#1]%
+  {\getparameters[\??rn][\c!start=1,\c!step=1,#1]%
    \global\linenumber\plusone}
 
-\def\stelregelnummerenin
-  {\dosingleargument\dostelregelnummerenin}
+\def\setuplinenumbering
+  {\dosingleargument\dosetuplinenumbering}
 
 \def\dostartnummerenLINE
-  {\EveryPar{\schrijfregelnummer}}
+  {\EveryPar{placelinenumber}}
 
 \def\dostopnummerenLINE
   {\the\aftereverylinenumbering
    \egroup}
 
 \def\dostartnummerenVERB
-  {\EveryLine{\schrijfregelnummer}}
+  {\EveryLine{\placelinenumber}}
 
 \def\dostopnummerenVERB
   {\the\aftereverylinenumbering
@@ -119,31 +119,31 @@
 
 \newevery \everylinenumber \relax
 
-\def\dodoschrijfregelnummer
+\def\dodoplacelinenumber
   {% beware of em's, the font is already switched !
    \setbox\scratchbox\hbox
-     {\setbox0\hbox{\@@rncommando{\regelweergave}}\vsmashbox0%
+     {\setbox0\hbox{\@@rncommand{\completelinenumber}}\vsmashbox0%
       \ifcase\linenumberlocation
-        \rlap{\hbox to \@@rnbreedte{\box0\hss}}% was \llap, nog testen !!
+        \rlap{\hbox to \@@rnwidth{\box0\hss}}% was \llap, nog testen !!
       \or
         \inleftmargin
           {\forgetall
-           \doifelse\@@rnbreedte\v!marge
-             {\hsize\linkermargebreedte}{\hsize\@@rnbreedte}%
-           \alignedline\@@rnuitlijnen\v!rechts{\box0\hskip\@@rnafstand}}%
+           \doifelse\@@rnwidth\v!margin
+             {\hsize\leftmarginwidth}{\hsize\@@rnwidth}%
+           \alignedline\@@rnalign\v!right{\box0\hskip\@@rndistance}}%
       \else
         \inrightmargin
           {\forgetall
-           \doifelse\@@rnbreedte\v!marge
-             {\hsize\rechtermargebreedte}{\hsize\@@rnbreedte}%
-           \alignedline\@@rnuitlijnen\v!links{\hskip\@@rnafstand\box0}}%
+           \doifelse\@@rnwidth\v!margin
+             {\hsize\rightmarginwidth}{\hsize\@@rnwidth}%
+           \alignedline\@@rnalign\v!left{\hskip\@@rndistance\box0}}%
       \fi}%
    \vsmashbox\scratchbox
    \box\scratchbox
    \the\everylinenumber}
 
-\def\complexstartregelnummeren[#1]%
-  {\doifnot{#1}\v!verder
+\def\complexstartlinenumbering[#1]%
+  {\doifnot{#1}\v!continue
      {\doifnumberelse{#1}
         {\global\linenumber#1\relax}
         {\doifelsenothing\@@rnstart
@@ -151,97 +151,85 @@
            {\global\linenumber\@@rnstart}}}%
    \chardef\linenumberlocation\zerocount
    \processaction
-     [\@@rnplaats]
-     [  \v!inmarge=>\chardef\linenumberlocation1,
-       \v!inlinker=>\chardef\linenumberlocation1,
-      \v!inrechter=>\chardef\linenumberlocation2,
-          \v!marge=>\chardef\linenumberlocation1]%
-       %  \v!tekst=>\chardef\linenumberlocation0,
+     [\@@rnlocation]
+     [  \v!inmargin=>\chardef\linenumberlocation1,
+       \v!inleft=>\chardef\linenumberlocation1,
+      \v!inright=>\chardef\linenumberlocation2,
+          \v!margin=>\chardef\linenumberlocation1]%
+       %  \v!text=>\chardef\linenumberlocation0,
        %\s!unknown=>\chardef\linenumberlocation0,
        %\s!default=>\chardef\linenumberlocation0]%
    \ifcase\linenumberlocation % text
-     \advance\leftskip \@@rnbreedte\relax
+     \advance\leftskip \@@rnwidth\relax
    \fi
    \chardef\@@rn@@rnmethod
-     \ifprocessingverbatim0\else\ifinregels1\else2\fi\fi
+     \ifprocessingverbatim0\else\iftypesettinglines1\else2\fi\fi
    \processaction
-     [\@@rnmethode]
+     [\@@rnmethod]
      [ \v!type=>\chardef\@@rn@@rnmethod0,
-      \v!regel=>\chardef\@@rn@@rnmethod1,
-      \v!tekst=>\chardef\@@rn@@rnmethod2,
+      \v!line=>\chardef\@@rn@@rnmethod1,
+      \v!text=>\chardef\@@rn@@rnmethod2,
        \v!file=>\chardef\@@rn@@rnmethod3]%
    \ifcase\@@rn@@rnmethod % verbatim, line by line
-     \inregelstrue
+     \typesettinglinestrue
      \let\dostartnummeren\dostartnummerenVERB
-     \let\stopregelnummeren\dostopnummerenVERB
-     \def\schrijfregelnummer
-       {\doschrijfregelnummer
+     \let\stoplinenumbering\dostopnummerenVERB
+     \def\placelinenumber
+       {\doplacelinenumber
         \global\advance\linenumber \plusone}%
    \or % text, line by line
      \let\dostartnummeren\dostartnummerenLINE
-     \let\stopregelnummeren\dostopnummerenLINE
-     \def\schrijfregelnummer
-       {\doschrijfregelnummer
+     \let\stoplinenumbering\dostopnummerenLINE
+     \def\placelinenumber
+       {\doplacelinenumber
         \global\advance\linenumber \plusone}%
    \or % text, whole lot
      \let\dostartnummeren\dostartnummerenPAR
-     \let\stopregelnummeren\dostopnummerenPAR
-     \def\schrijfregelnummer
+     \let\stoplinenumbering\dostopnummerenPAR
+     \def\placelinenumber
        {\global\advance\linenumber \minusone
-        \doschrijfregelnummer}%
+        \doplacelinenumber}%
    \or % verbatim, selective line by line
-     \inregelstrue
+     \typesettinglinestrue
      \let\dostartnummeren\dostartnummerenVERB
-     \let\stopregelnummeren\dostopnummerenVERB
-     \def\schrijfregelnummer
+     \let\stoplinenumbering\dostopnummerenVERB
+     \def\placelinenumber
        {\global\linenumber\verbatimlinenumber
-        \doschrijfregelnummer}%
+        \doplacelinenumber}%
    \fi
    \dostartnummeren}
 
-\def\startregelnummeren
+\def\startlinenumbering
   {\bgroup
    \the\beforeeverylinenumbering
-   \inregelnummerentrue
-   \complexorsimpleempty\startregelnummeren}
+   \numberinglinestrue
+   \complexorsimpleempty\startlinenumbering}
 
-\def\doschrijfregelnummer
+\def\doplacelinenumber
   {\ifnum\linenumber<\@@rnstart\relax
    \else
      \!!counta\linenumber
-     \divide\!!counta \@@rnstap
-     \multiply\!!counta \@@rnstap\relax
+     \divide\!!counta \@@rnstep
+     \multiply\!!counta \@@rnstep\relax
      \ifnum\!!counta=\linenumber
-       \doattributes\??rn\c!letter\c!kleur\dodoschrijfregelnummer
+       \doattributes\??rn\c!style\c!color\dodoplacelinenumber
      \fi
    \fi}
 
-\def\eenregel[#1]%
-  {\regelreferentie0[#1]\ignorespaces}
+\def\someline[#1]%
+  {\dolinereference0[#1]\ignorespaces}
 
-\def\startregel[#1]%
-  {\regelreferentie1[#1]\ignorespaces}
+\def\startline[#1]%
+  {\dolinereference1[#1]\ignorespaces}
 
-\def\stopregel[#1]%
-  {\removelastspace\regelreferentie2[#1]}
+\def\stopline[#1]%
+  {\removelastspace\dolinereference2[#1]}
 
-% \def\inregellabel#1%
-%   {\doifinstringelse{--}{#1}
-%      {\labeltext{\v!regels}}
-%      {\labeltext{\v!regel}}}
-%
-% \def\inregel#1[#2]%
-%   {\doifelsenothing{#1}
-%      {\in{\inregellabel{\currenttextreference}}[\@@rnprefix#2]}
-%      {\in{#1}[\@@rnprefix#2]}}
-%
-% double labels:
-
-\def\inregel#1[#2]%
+\def\inline#1[#2]%
   {\doifelsenothing{#1}
      {\doifinstringelse{--}\currenttextreference
-        {\in{\leftlabeltext\v!regels}{\rightlabeltext\v!regels}[\@@rnprefix#2]}
-        {\in{\leftlabeltext\v!regel }{\rightlabeltext\v!regel }[\@@rnprefix#2]}}
+        {\in{\leftlabeltext\v!lines}{\rightlabeltext\v!lines}[\@@rnprefix#2]}
+        {\in{\leftlabeltext\v!line }{\rightlabeltext\v!line }[\@@rnprefix#2]}}
      {\in{#1}[\@@rnprefix#2]}}
 
 \def\dostartnummerenPAR
@@ -267,26 +255,10 @@
 % 4 yyy yyy yyy yyy yyy xxx xxx <= stop y
 % 5 xxx xxx xxx xxx xxx xxx xxx
 
-%\def\regelreferentie#1[#2]%
-%  {\bgroup
-%   \dimen0\strutdp
-%   \doif{\@@rnrefereren}{\v!aan}
-%     {\doglobal\increment\linereference
-%      % start 1=>(n=y,l=0,p=1)
-%      % stop  2=>(n=y,l=0,p=2)
-%      \setxvalue{lrf:n:\linereference}{\@@rnprefix#2}%
-%      \setxvalue{lrf:l:\linereference}{0}%
-%      \setxvalue{lrf:p:\linereference}{#1}%
-%      \advance\dimen0 by \linereference sp}%
-%   \prewordbreak
-%   \vrule \!!width \!!zeropoint \!!depth \dimen0 \!!height \!!zeropoint
-%   \prewordbreak
-%   \egroup}
-
-\def\regelreferentie#1[#2]%
+\def\dolinereference#1[#2]%
   {\bgroup
    \dimen0=\strutdp
-   \doif\@@rnrefereren\v!aan
+   \doif\@@rnreferencing\v!on
      {\doglobal\increment\linereference
       % start 1=>(n=y,l=0,p=1)
       % stop  2=>(n=y,l=0,p=2)
@@ -303,7 +275,7 @@
    \linestepper\zerocount
    \reshapebox{\global\advance\linestepper \plusone}%
    \global\advance\linenumber \linestepper
-   \doifelse\@@rnrefereren\v!aan
+   \doifelse\@@rnreferencing\v!on
      {\reshapebox % We are going back!
         {\global\advance\linenumber \minusone
          \dimen0=\dp\shapebox
@@ -358,13 +330,13 @@
               \ifdim\dimen0>\zeropoint
                 \dp\shapebox\strutdp
               \fi
-              \schrijfregelnummer\box\shapebox}}% no \strut !
+              \placelinenumber\box\shapebox}}% no \strut !
       \else
-        \reshapebox{\hbox{\schrijfregelnummer\box\shapebox}}% no \strut !
+        \reshapebox{\hbox{\placelinenumber\box\shapebox}}% no \strut !
       \fi}
      {\reshapebox{\global\advance\linenumber \minusone}%
       \global\advance\linenumber \linestepper
-      \reshapebox{\hbox{\schrijfregelnummer\box\shapebox}}}% no \strut !
+      \reshapebox{\hbox{\placelinenumber\box\shapebox}}}% no \strut !
    \global\advance\linenumber \linestepper
    \flushshapebox
    \the\aftereverylinenumbering
@@ -378,25 +350,25 @@
 
 \newcount\internalparagraphnumber
 
-\def\stelparagraafnummerenin%
-  {\dosingleempty\dostelparagraafnummerenin}
+\def\setupparagraphnumbering%
+  {\dosingleempty\dosetupparagraphnumbering}
 
-\def\dostelparagraafnummerenin[#1]%
+\def\dosetupparagraphnumbering[#1]%
   {\getparameters
      [\??ph][#1]%
    \processaction
-     [\@@phstatus]
+     [\@@phstate]
      [\v!start=>\let\showparagraphnumber\doshowparagraphnumberA,
        \v!stop=>\let\showparagraphnumber\relax,
-      \v!regel=>\let\showparagraphnumber\doshowparagraphnumberB,
+      \v!line=>\let\showparagraphnumber\doshowparagraphnumberB,
       \v!reset=>\global\internalparagraphnumber\zerocount
                 \let\showparagraphnumber\doshowparagraphnumberA]}
 
 \def\dodoshowparagraphnumber
   {\global\advance\internalparagraphnumber \plusone
    \inleftmargin % \tf normalizes em
-     {\tf{\doattributes\??ph\c!letter\c!kleur{\the\internalparagraphnumber}}%
-      \kern\@@phafstand}}
+     {\tf{\doattributes\??ph\c!style\c!color{\the\internalparagraphnumber}}%
+      \kern\@@phdistance}}
 
 \def\doshowparagraphnumberA
   {\ifprocessingverbatim
@@ -406,42 +378,42 @@
    \fi}
 
 \def\doshowparagraphnumberB
-  {\ifinregelnummeren
+  {\ifnumberinglines
      \doshowparagraphnumberA
    \fi}
 
-\stelregelnummerenin
-  [\c!methode=,
-   \c!conversie=\v!cijfers,
+\setuplinenumbering
+  [\c!method=,
+   \c!conversion=\v!numbers,
    \c!start=1,
-   \c!stap=1,
-   \c!plaats=\v!marge,
-   \c!letter=,
-   \c!kleur=,
-   \c!breedte=2em,
+   \c!step=1,
+   \c!location=\v!margin,
+   \c!style=,
+   \c!color=,
+   \c!width=2em,
    \c!prefix=,
-   \c!refereren=\v!aan]
+   \c!referencing=\v!on]
 
 % new
 
-\stelregelnummerenin
-  [\c!breedte=\ifcase\linenumberlocation2em\else\v!marge\fi,
-   \c!links=,
-   \c!rechts=,
-   \c!commando=,
-   \c!afstand=\zeropoint,
-   \c!uitlijnen=\ifcase\linenumberlocation\v!rechts\or\v!rechts\or\v!links\fi]
+\setuplinenumbering
+  [\c!width=\ifcase\linenumberlocation2em\else\v!margin\fi,
+   \c!left=,
+   \c!right=,
+   \c!command=,
+   \c!distance=\zeropoint,
+   \c!align=\ifcase\linenumberlocation\v!right\or\v!right\or\v!left\fi]
 
-\stelparagraafnummerenin
-  [\c!status=\v!stop,
-   \c!letter=,
-   \c!kleur=,
-   \c!afstand=\ifcase\linenumberlocation2em\else\!!zeropoint\fi]
+\setupparagraphnumbering
+  [\c!state=\v!stop,
+   \c!style=,
+   \c!color=,
+   \c!distance=\ifcase\linenumberlocation2em\else\!!zeropoint\fi]
 
-\stelregelsin
-  [\c!voor=\blanko,
-   \c!na=\blanko,
-   \c!tussen=\blanko,
-   \c!inspringen=\v!nee]
+\setuplines
+  [\c!before=\blank,
+   \c!after=\blank,
+   \c!inbetween=\blank,
+   \c!indenting=\v!no]
 
 \protect \endinput

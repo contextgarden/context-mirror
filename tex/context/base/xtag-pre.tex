@@ -34,8 +34,8 @@
 \def\defaultXMLelement
   {\iftraceXMLelements{\infofont<\currentXMLfullidentifier>}\fi}
 
-%D We can use the default handler to implement automatic 
-%D element hiding. Beware: this overloads the tracer.  
+%D We can use the default handler to implement automatic
+%D element hiding. Beware: this overloads the tracer.
 
 \def\startXMLignore{\dododefineXMLignore \s!default}
 \def\stopXMLignore {\dododefineXMLprocess\s!default}
@@ -43,7 +43,9 @@
 %D The following entities need to be defined anyway. They
 %D may be overloaded later.
 
-\defineXMLentities [amp]  {\string&} {\&}
+% rest also \letter
+
+\defineXMLentities [amp]  {\letterampersand} {\&}
 \defineXMLentities [gt]   {\string>} {\mathematics{>}}
 \defineXMLentities [lt]   {\string<} {\mathematics{<}}
 \defineXMLentities [quot] {\string"} {\mathematics{"}}
@@ -90,8 +92,8 @@
 \def\setupXMLfile{\dodoubleargument\getparameters[\??xf]}
 
 \setupXMLfile
-  [\c!tussen=\blanko,
-   \c!niveau=1]
+  [\c!inbetween=\blank,
+   \c!level=1]
 
 \fetchruntimecommand\showXMLfile  {\f!xtagprefix\s!run}
 \fetchruntimecommand\showXMLbuffer{\f!xtagprefix\s!run}
@@ -114,37 +116,58 @@
 
 %D The comment escape has the form:
 %D
-%D \starttypen
+%D \starttyping
 %D <!-- a couple of remarks -->
-%D \stoptypen
+%D \stoptyping
 
 \defineXMLescape [--] {\gobbleuntil{-->}}
 
 %D The \type {CDATA} escape is kind of unique in its
 %D strange syntax.
 %D
-%D \starttypen
+%D \starttyping
 %D <!CDATA[it starts here
 %D whatever you like to be shown verbatim
 %D and ends here]]>
-%D \stoptypen
+%D \stoptyping
 %D
 %D Watch this rather obscure definition (we need to pass an
 %D \type {[} to the macro.
 
-% \defineXMLescape [{CDATA[}]
-%   {\skipfirstverbatimlinefalse
-%    \processtaggeddisplayverbatim{]]>}}
+\chardef\XMLcdatamethod=1
 
-\defineXMLescape [CDATA]
+\newtoks \everyXMLcdata % \appendtoks \tt \to \everyXMLcdata
+
+\setvalue{XMLcdatamethod1}%
   {\skipfirstverbatimlinefalse
    \processtaggeddisplayverbatim{]]>}}
 
-%D \starttypen
+\setvalue{XMLcdatamethod2}%
+  {\begingroup
+   \obeylines
+   \obeyspaces
+   \the\everyXMLcdata
+   \processXMLcdata}
+
+\long\def\processXMLcdata#1]]>%
+  {#1\endgroup}
+
+\defineXMLescape [CDATA]
+  {\executeifdefined{XMLcdatamethod\number\XMLcdatamethod}{\begingroup\processXMLcdata}}
+
+%D \starttyping
+%D <!ELEMENT ...">
+%D <!ATTLIST ...">
+%D \stoptyping
+
+\defineXMLescape [ATTLIST]{\gobbleuntil>}
+\defineXMLescape [ELEMENT]{\gobbleuntil>}
+
+%D \starttyping
 %D <!ENTITY crap "very new [&#x7B;] crap">
 %D <!ENTITY crap SYSTEM "crapfile.xml">
 %D <!ENTITY crap SYSTEM "crapfile.pdf" NDATA ignoredanyway>
-%D \stoptypen
+%D \stoptyping
 
 \defineXMLescape [ENTITY] \handleXMLentityescape
 
@@ -178,7 +201,7 @@
 %D Such entities can be encapsulated in a \type {DOCTYPE}
 %D element. Therefore we remove the outer level of document
 %D type definitions.
-%D 
+%D
 %D \starttyping
 %D <!DOCTYPE Something>
 %D <!DOCTYPE Something >
@@ -218,7 +241,7 @@
   {\executeifdefined{XMLdoctype#1}{\gobbleuntil>}}
 
 \setvalue{XMLdoctype>}{}
-\setvalue{XMLdoctype[}{\processuntil{]>}} % or \gobbleuntil{]>}} 
+\setvalue{XMLdoctype[}{\processuntil{]>}} % or \gobbleuntil{]>}}
 
 \def\XMLdoctypeS YSTEM %
   {\dowithgrabbedstring\dodohandleXMLdoctype}
@@ -226,11 +249,11 @@
 \def\XMLdoctypeP UBLIC %
   {\dowithgrabbedstring{\dowithgrabbedstring\dodohandleXMLdoctype}}
 
-% wrong 
+% wrong
 %
 % \def\XMLdoctypeS YSTEM {\XMLgrabstring}
 % \def\XMLdoctypeP UBLIC {\XMLgrabstring}
-% 
+%
 % \def\XMLgrabstring
 %   {\doifnextcharelse>{\gobbleuntil>}{\dowithgrabbedstring\XMLgrabstring}}
 
@@ -260,7 +283,7 @@
 %D because the possibility to process \CONTEXT\ commands is
 %D gone.
 
-\setupXMLprocessing[\c!commando=\v!ja]
+\setupXMLprocessing[\c!command=\v!yes]
 
 %\def\contextXMLcommand#1%
 %  {\doif\@@xpcommando\v!ja
@@ -271,7 +294,7 @@
 %      \popmacro\disableXML}}
 
 \def\contextXMLcommand#1% we don't use #1 here
-  {\doif\@@xpcommando\v!ja
+  {\doif\@@xpcommand\v!yes
      {\disableXML\scantokens\@EA{\currentXMLprocess}\enableXML}}
 
 %D The indirect method (using the macro \type
@@ -280,9 +303,9 @@
 %D definition, and given that \ETEX\ is used, we can now
 %D say:
 %D
-%D \starttypen
+%D \starttyping
 %D <?context-command {\bf Start Of Some \TeX\ Text} ?>
-%D \stoptypen
+%D \stoptyping
 %D
 %D A non||\ETEX\ solution is also possible, using buffers,
 %D but for the moment we assume that \ETEX\ is used.
@@ -297,7 +320,7 @@
   {\docontextXMLdirective#1 @ @ @\end}
 
 \def\docontextXMLdirective#1 #2 #3 #4\end % class variable value
-  {\csname\@@XMLvariable:#1:#2\endcsname{#3}}
+  {\expandafter\def\csname\@@XMLvariable:#1:#2\endcsname{#3}}
 
 %D A simple processing instruction is the following. It just
 %D writes a message to the screen.
@@ -344,24 +367,24 @@
 
 %D Say that a file contains blocks like the following:
 %D
-%D \starttypen
+%D \starttyping
 %D <?context-block begin whatevername ?>
 %D
 %D <to/> <be> <or/> maybe <not/> so much <to/> </be>
 %D
 %D <?context-block end whatevername ?>
-%D \stoptypen
+%D \stoptyping
 %D
 %D The following commands will show only this block:
 %D
-%D \starttypen
+%D \starttyping
 %D \videXMLcontextblock[whatevername] \showXMLfile{yourfile}
-%D \stoptypen
+%D \stoptyping
 %D
 %D You can also mark blocks in the following way, thereby
 %D saving yourself some work:
 %D
-%D \starttypen
+%D \starttyping
 %D <?context-block what ?>
 %D
 %D <what>What do you want?</what>
@@ -371,7 +394,7 @@
 %D <how>How do you want?</how>
 %D
 %D <?context-block done ?>
-%D \stoptypen
+%D \stoptyping
 
 % yet undocumented and experimental
 

@@ -34,9 +34,9 @@
 
 %D There is no interaction at all unless enabled by saying:
 %D
-%D \starttypen
+%D \starttyping
 %D \setupinteraction[state=start]
-%D \stoptypen
+%D \stoptyping
 %D
 %D The other settings are:
 %D
@@ -57,7 +57,7 @@
 
 \def\dodosetupinteraction[#1]% % \dosetupinteraction == special
   {\getparameters[\??ia][#1]%
-   \doifelse\@@iastatus\v!start
+   \doifelse\@@iastate\v!start
      {\iflocation\else
         \showmessage\m!interactions2{\ifusepagedestinations\space(PAGE)\fi}%
         \global\locationtrue
@@ -67,26 +67,26 @@
         \global\locationfalse
       \fi}%
    \iflocation
-     \setsystemmode  \v!interactie
+     \setsystemmode  \v!interaction
    \else
-     \resetsystemmode\v!interactie
+     \resetsystemmode\v!interaction
    \fi
    \dosetuppageview\@@iafocus
-   \doifsomething\@@iabereken
-     {\doregistercalculationset\@@iabereken}%
-   \doifelse\@@iastrut\v!ja
+   \doifsomething\@@iacalculate
+     {\doregistercalculationset\@@iacalculate}%
+   \doifelse\@@iastrut\v!yes
      \locationstruttrue
      \locationstrutfalse
-   \doifelse\@@iaklik\v!ja
+   \doifelse\@@iaclick\v!yes
      \highlighthyperlinkstrue
      \highlighthyperlinksfalse
-   \doifelse\@@iasplitsen\v!ja
+   \doifelse\@@iasplit\v!yes
      \locationsplittrue
      \locationsplitfalse
-   \doifelse\@@iascherm\v!nieuw
+   \doifelse\@@iadisplay\v!new
      \gotonewwindowtrue
      \gotonewwindowfalse
-   \doifelse\@@iapagina\v!ja
+   \doifelse\@@iapage\v!yes
      {\global\usepagedestinationstrue}
      {\global\usepagedestinationsfalse}}
 
@@ -95,8 +95,8 @@
 \def\dolocationstartup
   {\iflocation
      \dosetupinteraction
-     \handlereferenceactions\@@iaopenactie \dosetupopenaction
-     \handlereferenceactions\@@iasluitactie\dosetupcloseaction
+     \handlereferenceactions\@@iaopenaction \dosetupopenaction
+     \handlereferenceactions\@@iacloseaction\dosetupcloseaction
      \setupinteractionscreens
      \global\let\dolocationstartup\relax
    \fi}
@@ -105,8 +105,8 @@
 
 \def\dolocationpagecheck % brr pdf dependent
   {\iflocation
-     \handlereferenceactions\@@iaopenpaginaactie \dosetupopenpageaction
-     \handlereferenceactions\@@iasluitpaginaactie\dosetupclosepageaction
+     \handlereferenceactions\@@iaopenpageaction \dosetupopenpageaction
+     \handlereferenceactions\@@iaclosepageaction\dosetupclosepageaction
    \fi}
 
 \appendtoks \dolocationpagecheck \to \everyshipout
@@ -127,9 +127,9 @@
 %D The solution lays in passing the strut characteristics in
 %D a proper way, in our case by applying \type{\presetgoto}:
 %D
-%D \starttypen
+%D \starttyping
 %D {some piece of text \presetgoto}
-%D \stoptypen
+%D \stoptyping
 %D
 %D This macro stores the current strut values.
 
@@ -150,12 +150,20 @@
      \globallet\@@ia@@hoogte\strutheight
      \globallet\@@ia@@diepte\strutdepth
    \else
-     \globallet\@@ia@@hoogte\@@iahoogte
-     \globallet\@@ia@@diepte\@@iadiepte
+     \globallet\@@ia@@hoogte\@@iaheight
+     \globallet\@@ia@@diepte\@@iadepth
    \fi}
 
 %D In the macros that deal with making areas into hyperlinks,
 %D we use:
+
+\newbox\driverresources
+
+\def\collectdriverresource#1%
+  {\global\setbox\driverresources\hbox{\box\driverresources#1}}
+
+\def\flushdriverresources
+  {\ifvoid\driverresources\else\box\driverresources\fi}
 
 \def\dostartgoto\data#1\start#2\stop#3\dostopgoto
   {\ifsecondaryreference
@@ -163,8 +171,8 @@
    \else
      \hbox
        {\setbox0\hbox{#1}%
-        \ifdim\wd0<\@@iabreedte\relax
-          \buttonwidth\@@iabreedte\relax
+        \ifdim\wd0<\@@iawidth\relax
+          \buttonwidth\@@iawidth\relax
         \else
           \buttonwidth\wd0
         \fi
@@ -181,7 +189,7 @@
         \advance\buttonheight \dimen0
         \setbox2\hbox
           {\lower\dimen0\hbox
-             {\mindermeldingen
+             {\dontcomplain
               \dimen0=.5\wd0 % direct skipping is faster of course
               \advance\dimen0 -.5\buttonwidth % buts this is nicer
               \hskip\dimen0#2#3}}% when visualizing things
@@ -190,7 +198,8 @@
              \dimen0\wd0\box0\kern-\dimen0\smashbox2\box2\kern\dimen0
            \else
              \smashbox2\box2\box0
-           \fi}%
+           \fi
+           \flushdriverresources}%
         \resetgoto}%
    \fi}
 
@@ -233,16 +242,16 @@
 \def\interactioncolor
   {\iflocation
      \ifrealreferencepage
-       \@@iacontrastkleur
+       \@@iacontrastcolor
      \else
-       \@@iakleur
+       \@@iacolor
      \fi
    \fi}
 
 %D CHECK WHERE USED / CONSISTENCY
 
 \def\showlocation#1%
-  {\iflocation\color[\@@iakleur]{#1\presetgoto}\else#1\fi}
+  {\iflocation\color[\@@iacolor]{#1\presetgoto}\else#1\fi}
 
 %D When local color settings are to be used, we can use the
 %D next macro, where \type{#1} is a tag like \type{\??tg} and
@@ -250,7 +259,7 @@
 
 \def\showcoloredlocation#1#2%
   {\iflocation
-     \color[\getvalue{#1\c!kleur}]{#2\presetgoto}%
+     \color[\getvalue{#1\c!color}]{#2\presetgoto}%
    \else
      #2%
    \fi}
@@ -261,11 +270,11 @@
 \def\showcontrastlocation#1#2#3% the \@EA is needed
   {\iflocation
      \ifnum#2=\realpageno\relax
-       \doifelsevaluenothing{#1\c!kleur}
+       \doifelsevaluenothing{#1\c!color}
          {#3\presetgoto}
-         {\color[\getvalue{#1\c!contrastkleur}]{#3\presetgoto}}%
+         {\color[\getvalue{#1\c!contrastcolor}]{#3\presetgoto}}%
      \else
-       \color[\getvalue{#1\c!kleur}]{#3\presetgoto}%
+       \color[\getvalue{#1\c!color}]{#3\presetgoto}%
      \fi
    \else
      #3%
@@ -294,20 +303,20 @@
    \egroup}
 
 \def\navigating
-  {\dolocationattributes\??ia\c!letter\c!kleur}
+  {\dolocationattributes\??ia\c!style\c!color}
 
 %D Although not decently supported in current viewers, a
 %D provisory hiding mechanims is implemented. Areas marked as
 %D such, are visible on screen, but invisible on paper. Don't
 %D trust this mechanism yet!
 
-\def\dostartinteractie
+\def\dostartinteraction
   {\bgroup
-   \let\stopinteractie\egroup
+   \let\stopinteraction\egroup
    \dowithnextbox{\dostarthide\flushnextbox\dostophide\egroup}\hbox}
 
-\let\startinteractie = \relax
-\let\stopinteractie  = \relax
+\let\startinteraction = \relax
+\let\stopinteraction  = \relax
 
 % in the future:
 %
@@ -326,34 +335,34 @@
 % \definereference [AtOpenInitializeForm] [\v!geen]
 
 \setupinteraction % start fit page and reset form
-  [\c!status=\v!stop,
-   \c!pagina=\v!nee,
-   \c!klik=\v!ja,
-   \c!scherm=,
-  %\c!openactie={\v!eerstepagina,AtOpenInitializeForm},
-  %\c!openactie={\v!eerstepagina,\v!ResetForm},
-  %\c!openactie=\v!ResetForm, % too buggy in reader 4.05
-   \c!openactie=,
-   \c!sluitactie=,
-   \c!openpaginaactie=,
-   \c!sluitpaginaactie=,
-   \c!scherm=\v!normaal,
-   \c!focus=\v!passend,
-   \c!menu=\v!uit,
-   \c!letter=\v!vet,
-   \c!bereken=,
-   \c!strut=\v!ja,
-   \c!splitsen=\v!ja,
-   \c!kleur=interactioncolor,
-   \c!contrastkleur=interactioncontrastcolor,
-   \c!symboolset=,
-   \c!breedte=1em,
-   \c!hoogte=\!!zeropoint,
-   \c!diepte=\!!zeropoint,
-   \c!titel=\jobname, % needed for fdf/x
-   \c!subtitel=,
-   \c!auteur=,
-   \c!trefwoord=,
-   \c!datum=\@@iatimestamp]
+  [\c!state=\v!stop,
+   \c!page=\v!no,
+   \c!click=\v!yes,
+   \c!display=,
+  %\c!openaction={\v!firstpage,AtOpenInitializeForm},
+  %\c!openaction={\v!firstpage,\v!ResetForm},
+  %\c!openaction=\v!ResetForm, % too buggy in reader 4.05
+   \c!openaction=,
+   \c!closeaction=,
+   \c!openpageaction=,
+   \c!closepageaction=,
+   \c!display=\v!normal,
+   \c!focus=\v!fit,
+   \c!menu=\v!off,
+   \c!style=\v!bold,
+   \c!calculate=,
+   \c!strut=\v!yes,
+   \c!split=\v!yes,
+   \c!color=interactioncolor,
+   \c!contrastcolor=interactioncontrastcolor,
+   \c!symbolset=,
+   \c!width=1em,
+   \c!height=\!!zeropoint,
+   \c!depth=\!!zeropoint,
+   \c!title=\jobname, % needed for fdf/x
+   \c!subtitle=,
+   \c!author=,
+   \c!keyword=,
+   \c!date=\@@iatimestamp]
 
 \protect \endinput

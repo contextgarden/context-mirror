@@ -664,19 +664,6 @@
 \newtoks \mainoutput
 \newcount\otrlevel
 
-% Shipout handler (see page[stop] for example usage)
-
-\ifx\undefined\normalshipout \let\normalshipout=\shipout \fi
-
-\def\noshipout
-  {\writestatus\m!systems{ignoring further shipouts}%
-   \dowithnextbox{\deadcycles\zerocount}}
-
-\def\doignorerestoftext
-  {\ifarrangingpages \else \ifnum\textlevel>\zerocount \else
-     \globallet\shipout\noshipout
-   \fi \fi}
-
 % When issuing two \par\penalty-\@M's, only the first
 % triggers the otr; obscure feature or optimization?
 
@@ -934,25 +921,39 @@
    \ifnum\outputpenalty>-\@MM \else % better use a proper otr signal
      \dosupereject
    \fi
-   % but does not hurt either
-   \inpagebodytrue      % needed for enabling \blanko !
+   % but does not hurt either (we're still in the otr!)
+   \inpagebodytrue      % needed for enabling \blank !
    \flushsavedfloats    % was \dosetbothinserts; only otr one !
    \setvsize            % this is needed for interacting components, like floats and multicolumns
    \adaptfuzzypagegoal} % watch this hack!
 
-\def\dofinaloutput#1#2%
+% \def\dofinaloutput#1#2%
+%   {\beforefinaloutput
+%    \the\everybeforeshipout
+%    \ifspecialbasedsettings
+%      \myshipout{\hbox{\hbox to \zeropoint{\the\pageboundsettings}%
+%                       \hbox{\dopagebody#1#2\setpagecounters}}}%
+%    \else
+%      \the\pageboundsettings
+%      \myshipout{\hbox{\dopagebody#1#2\setpagecounters}}%
+%    \fi
+%    \the\everyaftershipout
+%    \afterfinaloutput
+%    \popproperties}  % ... and here ...
+
+\def\dofinaloutput#1#2% \vbox: prevents spurious spaces in every..pagebody
   {\beforefinaloutput
    \the\everybeforeshipout
    \ifspecialbasedsettings
      \myshipout{\hbox{\hbox to \zeropoint{\the\pageboundsettings}%
-                      \hbox{\dopagebody#1#2\setpagecounters}}}%
+                      \hbox{\vbox{\dopagebody#1#2\setpagecounters}}}}%
    \else
      \the\pageboundsettings
-     \myshipout{\hbox{\dopagebody#1#2\setpagecounters}}%
+     \myshipout{\hbox{\vbox{\dopagebody#1#2\setpagecounters}}}%
    \fi
    \the\everyaftershipout
    \afterfinaloutput
-   \popcolor}  % ... and here ...
+   \popproperties}  % ... and here ...
 
 \def\donofinaloutput#1#2%
   {\beforefinaloutput
@@ -966,7 +967,7 @@
    \gotonextrealpage
    \the\everyaftershipout
    \afterfinaloutput
-   \popcolor}  % ... and here
+   \popproperties}  % ... and here
 
 \def\finaloutput#1#2%
   {\checkpageversion
@@ -990,7 +991,7 @@
      \dosupereject
    \fi
    \doflushspread
-   \douitstellen}
+   \dopostponeblock}
 
 \ifx\doflushspread\undefined \let\doflushspread\relax \fi
 
@@ -1017,14 +1018,14 @@
    \or
      % simple
      \vskip\!!sixpoint
-     \hbox to \zetbreedte
+     \hbox to \makeupwidth
        {\infofont
         Concept: \currentdate
         \hss\reportpagedimensions}%
    \or
      % extensive
      \vskip\!!sixpoint
-     \hbox to \zetbreedte
+     \hbox to \makeupwidth
        {\infofont
         \getmessage\m!systems{27}: \currentdate\
         \doplaatsversieaanduiding{Project}\currentproject
@@ -1036,19 +1037,19 @@
 
 % tot hier
 
-\def\doversie[#1]%
+\def\doversion[#1]%
   {\voorlopigfalse
    \chardef\conceptmode\zerocount
    \overfullrule\zeropoint
-   \processaction % \v!definitief=>
+   \processaction % \v!final=>
      [#1]
      [  \v!concept=>\chardef\conceptmode\plusone,% simple banner
            \v!file=>\chardef\conceptmode\plustwo,% full banner
-      \v!voorlopig=>\chardef\conceptmode\plustwo % full banner plus
+      \v!temporary=>\chardef\conceptmode\plustwo % full banner plus
                     \overfullrule5\points]}      % info in the margin
 
-\def\versie
-  {\dosingleargument\doversie}
+\def\version
+  {\dosingleargument\doversion}
 
 %\def\addstatusinfo
 %  {\ifvoorlopig
@@ -1067,11 +1068,11 @@
    \fi}
 
 \def\doaddstatusinfo#1%
-  {\setbox#1\vbox to \papierhoogte
+  {\setbox#1\vbox to \paperheight
      {\vsmashbox#1\box#1%
       \offinterlineskip
-      \vskip\kopwit
-      \hsize\papierbreedte
+      \vskip\topspace
+      \hsize\paperwidth
       \hfill\hbox{\plaatstestinfo\hskip.5cm}\vss
       \settexthoffset\hskip\texthoffset % brrrr
      %\tlap{\plaatsversieaanduiding}\vskip.5cm}}
@@ -1116,7 +1117,7 @@
 
 \def\plaatstestinfo
   {\ifvoorlopig
-     \vbox to \zethoogte
+     \vbox to \makeupheight
        {\forgetall
         \infofont
         \hsize10em
@@ -1140,20 +1141,9 @@
         \vss}
    \fi}
 
-\versie[\v!definitief]
-
-% De volgende macro's worden gedefinieerd in de module
-% colo-ini. Om resetten bij twee maal laden te voorkomen
-% checken we wel even. Anders krijgen we een mark-build-up.
+\version[\v!final]
 
 \newif\ifinpagebody
-
-\ifx\pushcolor\undefined
-  \let \pushcolor      \relax
-  \let \popcolor       \relax
-  \let \startcolorpage \relax
-  \let \stopcolorpage  \relax
-\fi
 
 % bewaren tvb documentatie
 %
@@ -1199,21 +1189,21 @@
    \processaction
      [#1]%
      [\v!reset=>\chardef\showgridstate\zerocount,
-     %\v!onder=>\chardef\showgridstate\plusone,
-      \v!boven=>\chardef\showgridstate\plustwo]}
+     %\v!bottom=>\chardef\showgridstate\plusone,
+      \v!top=>\chardef\showgridstate\plustwo]}
 
 \def\buildpagebox#1%
-  {\setbox#1\vbox to \papierhoogte
-     {\hsize\papierbreedte
-      \vskip\kopwit
+  {\setbox#1\vbox to \paperheight
+     {\hsize\paperwidth
+      \vskip\topspace
       \doifbothsides
-        \hskip\rugwit
+        \hskip\backspace
       \orsideone
-        \hskip\rugwit
+        \hskip\backspace
       \orsidetwo
-        \hskip\papierbreedte
-        \hskip-\rugwit
-        \hskip-\zetbreedte
+        \hskip\paperwidth
+        \hskip-\backspace
+        \hskip-\makeupwidth
       \od
       \box#1}%
    \dp#1\zeropoint}
@@ -1257,7 +1247,7 @@
 
 % beware, \??ly is used before defined, i.e. bad module design
 
-\setuplayout[\c!methode=\v!normaal]
+\setuplayout[\c!method=\v!normal]
 
 \def\buildpagebody#1#2%
   {\ifsavepagebody\global\setbox\savedpagebody\fi
@@ -1265,18 +1255,18 @@
      {\beginrestorecatcodes
       \forgetall  % igv problemen, check: \boxmaxdepth\maxdimen
       \boxmaxdepth\maxdimen % new
-      \mindermeldingen
+      \dontcomplain
       % the following plugin uses and sets pagebox; beware: this
       % will change and is for my (hh) personal experiments
-      \executeifdefined{\??ly\c!methode\@@lymethode}%
-        {\getvalue{\??ly\c!methode\v!normaal}}#1#2%
+      \executeifdefined{\??ly\c!method\@@lymethod}%
+        {\getvalue{\??ly\c!method\v!normal}}#1#2%
       % the finishing touch
       \ifcase\pageornamentstate
         \addpagebackground \pagebox
       \fi
       \registerpageposition\pagebox
       \ifarrangingpages
-        \shiftpaperpagebox \pagebox % \v!papier
+        \shiftpaperpagebox \pagebox % \v!paper
       \else
         \clippagebox       \pagebox
         \addpagecutmarks   \pagebox
@@ -1289,7 +1279,7 @@
         \addprintbackground\pagebox
         \mirrorprintbox    \pagebox
         \rotateprintbox    \pagebox
-        \shiftprintpagebox \pagebox % \v!pagina
+        \shiftprintpagebox \pagebox % \v!page
         \offsetprintbox    \pagebox
         \negateprintbox    \pagebox
       \fi
@@ -1297,12 +1287,12 @@
       \endrestorecatcodes}%
    \ifsavepagebody\copy\savedpagebody\fi}
 
-\setvalue{\??ly\c!methode\v!normaal}#1#2%
+\setvalue{\??ly\c!method\v!normal}#1#2%
   {\setbox\pagebox\vbox
      {\offinterlineskip
       \ifcase\pageornamentstate
         \bgroup % else footnotes get inconsistent font/baseline
-          \dostartattributes\??ly\c!letter\c!kleur\empty
+          \dostartattributes\??ly\c!style\c!color\empty
             \offinterlineskip
             \gettextboxes
           \dostopattributes
@@ -1337,10 +1327,10 @@
 \def\dopagebody#1#2%
   {%\getallmarks % now in following token register
    \the\everybeforepagebody
-   \startcolorpage
+   \starttextproperties
    \gotonextsubpage  % nog eens: als in pagina (tbv standaard opmaak)
    \dontshowboxes    % dan hier blokkeren en verderop resetten
-   \naastpagina
+%    \shipoutfacingpage
    \checkreferences
    \checkmargeblokken
    \dotoks\beforeeverypage
@@ -1351,7 +1341,7 @@
    \resetpagebreak
    \updatelistreferences
    \resetlayouttextlines % will go to \aftereverypage
-   \stopcolorpage
+   \stoptextproperties
    \the\everyafterpagebody}
 
 \newtoks\pageboundsettings
@@ -1364,46 +1354,58 @@
 
 \newif\ifpaginageblokkeerd \paginageblokkeerdfalse
 
-\chardef\testpagemethod=0
+\def\testpage     {\dotripleempty\dotestpage[\plusone]}
+\def\testpageonly {\dotripleempty\dotestpage[\plustwo]}
 
-\def\testpage
-  {\dodoubleempty\dotestpage}
+\chardef\testpagemethod=0 % todo: \testnewpage[method=,lines=,voffset=]
 
-\def\dotestpage[#1][#2]%
+\def\dotestpage[#1][#2][#3]%
   {%\relax % needed  before \if
    \endgraf
-   \ifpaginageblokkeerd \else \ifdim\pagegoal<\maxdimen
-     \ifdim\pagetotal<\pagegoal % \relax
-       \scratchdimen\lineheight
-       \multiply\scratchdimen#1\relax
-       \advance\scratchdimen \pagetotal
-       \ifdim\lastskip<\parskip
-         \advance\scratchdimen \parskip
-       \fi
-       \ifsecondargument
-         \advance\scratchdimen#2\relax
-       \fi
-       % quite inaccurate, better pagegoal 1pt or so
-       \ifcase\testpagemethod
-         \ifdim\scratchdimen>.99\pagegoal
-           \penalty-\!!tenthousand\relax
-         \fi
-       \or
-         \advance\scratchdimen-\pagegoal
-         \ifdim\scratchdimen>-\lineheight
-           \penalty-\!!tenthousand\relax
-         \fi
-       \or
-         \getnoflines\pagegoal
-         \advance\scratchdimen-\noflines\lineheight \relax
-         \ifdim\scratchdimen>-\lineheight
-           \penalty-\!!tenthousand\relax
-         \fi
-       \fi
-     \fi
+   \ifpaginageblokkeerd
+     % do nothing
    \else
-     \goodbreak
-   \fi \fi}
+%      \ifnum#1=\plusone\synchronizeoutput\fi
+     \ifdim\pagegoal<\maxdimen \relax
+       \ifdim\pagetotal<\pagegoal \relax
+         \scratchdimen\lineheight
+         \multiply\scratchdimen#2\relax
+         \advance\scratchdimen \pagetotal
+         \ifdim\lastskip<\parskip
+           \advance\scratchdimen \parskip
+         \fi
+         \ifthirdargument
+           \advance\scratchdimen#3\relax
+         \fi
+         \ifcase\testpagemethod
+           \ifdim\scratchdimen>.99\pagegoal
+             \vfill\eject % \penalty-\!!tenthousand\relax
+           \fi
+         \or
+           \advance\scratchdimen-\pagegoal
+           \ifdim\scratchdimen>-\lineheight
+             \vfill\eject % \penalty-\!!tenthousand\relax
+           \fi
+         \or
+           \getnoflines\pagegoal
+           \advance\scratchdimen-\noflines\lineheight \relax
+           \ifdim\scratchdimen>-\lineheight
+             \vfill\eject % \penalty-\!!tenthousand\relax
+           \fi
+         \or % same as 0 but more accurate
+           \advance\scratchdimen-10\s!sp\relax
+           \ifdim\scratchdimen>\pagegoal
+             \vfill\eject % \penalty-\!!tenthousand\relax
+           \fi
+         \fi
+       \else
+         % force page break / new
+         % \vfill\eject % \penalty-\!!tenthousand\relax
+       \fi
+     \else
+       \ifnum#1=\plusone\goodbreak\fi
+     \fi
+   \fi}
 
 \def\testcolumn
   {\dodoubleempty\dotestcolumn}
@@ -1434,7 +1436,7 @@
 % was: \resetsectionmarks\firstsection, zie \handelpaginaaf
 
 \def\page  {\pagebreak} % the short form of \pagebreak (mult-com one)
-\def\pagina{\pagebreak} % for the moment, keep this one
+\def\page{\pagebreak} % for the moment, keep this one
 
 \def\resetpagebreak
   {\global\paginageblokkeerdfalse}
@@ -1475,7 +1477,7 @@
    \iffirstargument % or if empty i.e. []
      \flushnotes\executepagebreakhandlers{#1}%
    \else % so, no pagebreak when \pagebreak[] ! ! !
-     \flushnotes\executepagebreakhandler\v!ja
+     \flushnotes\executepagebreakhandler\v!yes
    \fi
    \ifnum\prevrealpageno<\realpageno
      \global\chardef\pageornamentstate\zerocount
@@ -1490,8 +1492,8 @@
    \gotonextpage
    \ejectdummypage}
 
-\installpagebreakhandler \v!kader
-  {\page\bgroup\showframe\page[\v!leeg]\egroup}
+\installpagebreakhandler \v!frame
+  {\page\bgroup\showframe\page[\v!empty]\egroup}
 
 \installpagebreakhandler \s!unknown
   {\doifinstringelse{+}\@@pagespecification
@@ -1512,63 +1514,63 @@
 \installpagebreakhandler \s!default
   {} % do nothing if empty
 
-\installpagebreakhandler  \v!reset
+\installpagebreakhandler \v!reset
   {% better not: \global\chardef\pageornamentstate\zerocount
    \resetpagebreak}
 
-\installpagebreakhandler \v!blokkeer
+\installpagebreakhandler \v!disable
   {\global\paginageblokkeerdtrue}
 
-\installpagebreakhandler \v!ja
+\installpagebreakhandler \v!yes
   {\ifpaginageblokkeerd\else
      \ejectinsert
      \gotonextpage
-     \ifbinnenkolommen % this will move to MUL
+     \ifinsidecolumns % this will move to MUL
        \ejectpage  % anders soms geen overgang
      \fi
    \fi}
 
-\installpagebreakhandler \v!opmaak % ??
+\installpagebreakhandler \v!makeup % ??
   {\ifpaginageblokkeerd\else
      \eject
    \fi}
 
-\installpagebreakhandler \v!blanko
+\installpagebreakhandler \v!blank
   {\ifcase\pageornamentstate
      \global\chardef\pageornamentstate\plusone
    \fi}
 
-\installpagebreakhandler \v!nee
+\installpagebreakhandler \v!no
   {\ifpaginageblokkeerd\else
      \dosomebreak\nobreak
    \fi}
 
-\installpagebreakhandler \v!voorkeur
+\installpagebreakhandler \v!preference
   {\ifpaginageblokkeerd\else
-     \ifbinnenkolommen % this will move to MUL
+     \ifinsidecolumns % this will move to MUL
        \dosomebreak\goodbreak
      \else
        \testpage[3][\zeropoint]%
      \fi
     \fi}
 
-\installpagebreakhandler \v!grotevoorkeur
+\installpagebreakhandler \v!bigpreference
   {\ifpaginageblokkeerd\else
-     \ifbinnenkolommen % this will move to MUL
+     \ifinsidecolumns % this will move to MUL
        \dosomebreak\goodbreak
      \else
        \testpage[5][\zeropoint]%
      \fi
    \fi}
 
-\installpagebreakhandler \v!leeg
+\installpagebreakhandler \v!empty
   {\ejectinsert
    \gotonextpage
-   \doifnotvalue{\??tk\v!hoofd\c!status}\v!stop{\setupheader[\c!status=\v!leeg]}%
-   \doifnotvalue{\??tk\v!voet \c!status}\v!stop{\setupfooter[\c!status=\v!leeg]}%
+   \doifnotvalue{\??tk\v!header\c!state}\v!stop{\setupheader[\c!state=\v!empty]}%
+   \doifnotvalue{\??tk\v!footer \c!state}\v!stop{\setupfooter[\c!state=\v!empty]}%
    \ejectdummypage}
 
-\installpagebreakhandler \v!links
+\installpagebreakhandler \v!left
   {\ejectinsert
    \gotonextpageX % will become \gotonextpage
    \doifbothsidesoverruled
@@ -1578,7 +1580,7 @@
    \orsidetwo
    \od}
 
-\installpagebreakhandler \v!rechts
+\installpagebreakhandler \v!right
   {\ejectinsert
    \gotonextpageX % will become \gotonextpage
    \doifbothsidesoverruled
@@ -1589,14 +1591,14 @@
    \od}
 
 \installpagebreakhandler \v!even
-  {\pagina
+  {\page
    \doifoddpageelse{\resetcurrentsectionmarks\ejectdummypage}\donothing}
 
-\installpagebreakhandler \v!oneven
-  {\pagina
+\installpagebreakhandler \v!odd
+  {\page
    \doifoddpageelse\donothing{\resetcurrentsectionmarks\ejectdummypage}}
 
-\installpagebreakhandler \v!viertal % not yet ok inside columnsets
+\installpagebreakhandler \v!quadruple % not yet ok inside columnsets
   {\ifdubbelzijdig
      \!!counta\realpageno
      \!!countb\realpageno
@@ -1604,18 +1606,18 @@
      \divide\!!countb 2
      \ifnum\!!counta=\!!countb
      \else
-       \executepagebreakhandler\v!ja
-       \executepagebreakhandler\v!leeg
-       \executepagebreakhandler\v!leeg
+       \executepagebreakhandler\v!yes
+       \executepagebreakhandler\v!empty
+       \executepagebreakhandler\v!empty
      \fi
    \fi}
 
-\installpagebreakhandler \v!laatste
+\installpagebreakhandler \v!last
   {\ejectinsert
    \gotonextpageX % will become \gotonextpage
    \relax
    \doifbothsidesoverruled
-     \naastpagina
+     \shipoutfacingpage
    \orsideone
    \orsidetwo
      \noheaderandfooterlines
@@ -1631,11 +1633,11 @@
 
 % nb: \executepagebreakhandler\v!hoofd in other ones
 
-\installpagebreakhandler \v!hoofd
-  {\doifnotvalue{\??tk\v!hoofd\c!status}\v!stop{\setupheader[\c!status=\v!leeg]}}
+\installpagebreakhandler \v!header
+  {\doifnotvalue{\??tk\v!header\c!state}\v!stop{\setupheader[\c!state=\v!empty]}}
 
-\installpagebreakhandler \v!voet
-  {\doifnotvalue{\??tk\v!voet \c!status}\v!stop{\setupfooter[\c!status=\v!leeg]}}
+\installpagebreakhandler \v!footer
+  {\doifnotvalue{\??tk\v!footer \c!state}\v!stop{\setupfooter[\c!state=\v!empty]}}
 
 % \definepagebreak
 %   [chapter]
@@ -1686,7 +1688,7 @@
 \definecomplexorsimple\columnbreak
 
 \def\simplecolumnbreak
-  {\executecolumnbreakhandler\v!ja}
+  {\executecolumnbreakhandler\v!yes}
 
 \def\complexcolumnbreak[#1]% if empty, do nothing and avoid processing
   {\doifsomething{#1}{\executecolumnbreakhandlers{#1}}}
@@ -1707,14 +1709,16 @@
 
 % We don't want spurious last pages (due to left over marks):
 
+\ifx\undefined\normalshipout \let\normalshipout=\shipout \fi
+
+\def\noshipout
+  {\writestatus\m!systems{ignoring further shipouts}%
+   \dowithnextbox{\deadcycles\zerocount}}
+
 \def\doignorerestoftext
-  {\ifarrangingpages \else
-     \ifnum\textlevel>\zerocount \else
-       \gdef\shipout
-         {\writestatus\m!systems{ignoring further shipouts}%
-          \dowithnextbox{\deadcycles\zerocount}}%
-     \fi
-   \fi}
+  {\ifarrangingpages \else \ifnum\textlevel>\zerocount \else
+     \globallet\shipout\noshipout
+   \fi \fi}
 
 \let\ignorerestoftext\donothing
 
@@ -1722,9 +1726,9 @@
   \globallet\ignorerestoftext\doignorerestoftext
 \to \everystarttext
 
-\appendtoks
-  \ignorerestoftext
-\to \everylastshipout
+% \appendtoks
+%   \ignorerestoftext
+% \to \everylastshipout
 
 \newif\ifgeselecteerd \geselecteerdtrue
 \newif\ifselecteren   \selecterenfalse
@@ -1732,13 +1736,12 @@
 
 \let\selectie   \empty
 \let\paginasoort\empty
-\let\naastpagina\relax
 \let\napagina   \relax
 \let\voorpagina \relax
 
 \def\dodovoorpagina#1%
   {\global\let\voorpagina\relax
-   \getvalue{\??pg#1\c!voor}}
+   \getvalue{\??pg#1\c!before}}
 
 \def\dovoorpagina
   {\doifsomething\paginasoort
@@ -1747,10 +1750,10 @@
 \def\dododonapagina#1%
   {\global\let\napagina\relax
    \global\let\paginasoort\empty
-   \getvalue{\??pg#1\c!na}}
+   \getvalue{\??pg#1\c!after}}
 
 \def\dodonapagina#1%
-  {\doifelsevalue{\??pg#1\c!optie}\v!dubbelzijdig
+  {\doifelsevalue{\??pg#1\c!option}\v!doublesided
      {\doifbothsidesoverruled
         \dododonapagina{#1}%
       \orsideone
@@ -1766,7 +1769,7 @@
 % Dit wordt eigenlijk nooit en moet worden vervangen door
 % het meer algemene mechanisme.
 
-\def\dosoortpagina[#1]%
+\def\dopagetype[#1]%
   {\edef\desoortpagina{#1}%
    \ifx\desoortpagina\empty \else
      \@EA\doglobal\@EA\addtocommalist\@EA{\desoortpagina}\paginasoort
@@ -1778,38 +1781,38 @@
      \gdef\napagina  {\donapagina  }%
    \fi}
 
-\def\soortpagina
-  {\dosingleargument\dosoortpagina}
+\def\pagetype
+  {\dosingleargument\dopagetype}
 
-\def\dokoppelpagina[#1][#2]%
+\def\docouplepage[#1][#2]%
   {\getparameters
      [\??pg]
-     [\c!voor=,
-      \c!na=,
-      \c!optie=,
+     [\c!before=,
+      \c!after=,
+      \c!option=,
       #2]%
    \def\docommando##1%
      {\getparameters
         [\??pg##1]
-        [\c!voor=\@@pgvoor,
-         \c!na=\@@pgna,
-         \c!optie=\@@pgoptie]}%
+        [\c!before=\@@pgbefore,
+         \c!after=\@@pgafter,
+         \c!option=\@@pgoption]}%
    \processcommalist[#1]\docommando}%
 
-\def\koppelpagina
-  {\dodoubleargument\dokoppelpagina}
+\def\couplepage
+  {\dodoubleargument\docouplepage}
 
-\def\doverwerkpagina[#1][#2]%
+\def\doprocesspage[#1][#2]%
   {\processaction
      [#2]
-     [ \v!ja=>\global\verwerkentrue,
-      \v!nee=>\global\verwerkenfalse]%
+     [ \v!yes=>\global\verwerkentrue,
+      \v!no=>\global\verwerkenfalse]%
    \gdef\selectie{#1}%
    \global\selecterentrue
    \global\geselecteerdfalse}
 
-\def\verwerkpagina
-  {\dodoubleargument\doverwerkpagina}
+\def\processpage
+  {\dodoubleargument\doprocesspage}
 
 \def\resetselectiepagina
   {\ifselecteren
@@ -1856,5 +1859,67 @@
      \fi \fi
      \box#3%
    \egroup}
+
+%D \macros
+%D   {setupoppositeplacing,startopposite}
+%D
+%D \starttyping
+%D \starttext
+%D test \startopposite \blackrule[width=3cm,height=4cm] \stopopposite test
+%D test \startopposite \blackrule[width=3cm,height=4cm] \stopopposite test
+%D \stoptext
+%D \stoptyping
+
+% Moved from page-mar.tex, made english, cleaned up, but still to be
+% redesigned
+
+\newbox\facingpage
+
+\def\setupoppositeplacing
+  {\dodoubleargument\getparameters[\??np]}
+
+\def\startopposite
+  {\dowithnextboxcontent
+     {\hsize\makeupwidth}%
+     {\global\setbox\facingpage\vbox
+        {\ifvoid\facingpage
+           \@@npbefore
+         \else
+           \@@npinbetween
+           \unvbox\facingpage
+         \fi
+         \box\nextbox}}%
+     \vbox\bgroup}
+
+\def\stopopposite
+  {\egroup}
+
+\def\finishfacingpage
+  {\ifvoid\facingpage\else
+     \global\setbox\facingpage\vbox to \makeupheight
+       {\unvbox\facingpage
+        \@@npafter
+        \vss}%
+   \fi}
+
+\def\shipoutfacingpage
+  {\doif\@@npstate\v!start
+     {\ifvoid\facingpage\else
+        \ifnum\realpageno>\plusone
+          \bgroup
+          \chardef\pageornamentstate\plusone
+          \finishfacingpage
+          \myshipout{\buildpagebody\box\facingpage}%
+          \egroup
+        \else
+          \global\setbox\facingpage\emptybox
+        \fi
+      \fi}}
+
+\setupoppositeplacing
+  [\c!state=\v!start,
+   \c!before=,
+   \c!inbetween=\blank,
+   \c!after=]
 
 \protect \endinput

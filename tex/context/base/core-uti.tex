@@ -17,6 +17,7 @@
 
 % todo : safe lan etc too
 % todo : load all commands at once (tok)
+% todo : merge status info patch into tui file (language, encoding, etc),
 
 % Utility-file
 %
@@ -55,14 +56,18 @@
      {\checksectionseparator}
      {\@@utilityerrormessage\resetutilities\endinput}}
 
-\def\checksectionseparator % catches backward compatibility conflict
-  {\doifnot\sectionseparator:\endinput}
+\def\checksectionseparator               % catches backward compatibility conflict
+  {\doifnot\sectionseparator:\endinput}  % this dependency may go in a few years
+
+\def\dosplitofffoliopart[#1::#2::#3]{#3}
 
 \def\thisissectionseparator#1%
   {\bgroup
    \globallet\checksectionseparator\relax
    \convertcommand \sectionseparator\to\asciiA
    \convertargument               #1\to\asciiB
+   \expanded{\gdef\noexpand\dosplitofffoliopart[####1\sectionseparator
+     \sectionseparator####2\sectionseparator\sectionseparator####3]{####3}}%
    \ifx\asciiA\asciiB
      \egroup
    \else
@@ -107,6 +112,18 @@
   \let\checkedutility\docheckedutility
 \to \everybeforeshipout
 
+\edef\testbytesequence{\rawcharacter{7}\rawcharacter{27}\rawcharacter{227}}
+
+\def\thisisbytesequence#1%
+  {\ifx\testbytesequence\empty\else
+     \convertcommand\testbytesequence\to\testbytesequence
+     \convertargument#1\to\ascii
+     \ifx\testbytesequence\ascii \else
+       \writestatus\m!systems{possible problem with 8 bit output}%
+     \fi
+   \fi
+   \global\let\thisisbytesequence\gobbleoneargument}
+
 % Better use marks.
 
 \def\checkutilities
@@ -119,9 +136,10 @@
 % this trickery is used in s-pre-50
 
 \def\openutilities
-  {\immediate\openout\uti=\jobname.\f!inputextension
-   \immediatewriteutilitycommand{\thisissectionseparator{\sectionseparator}}%
-   \immediatewriteutilitycommand{\thisisutilityversion  {\utilityversion}}}
+  {\immediate\openout\uti\jobname.\f!inputextension
+   \immediatewriteutilitycommand{\thisissectionseparator{\sectionseparator}}% for the moment
+   \immediatewriteutilitycommand{\thisisutilityversion  {\utilityversion  }}% in this order
+   \immediatewriteutilitycommand{\thisisbytesequence    {\testbytesequence}}}
 
 \def\closeutilities
   {\immediate\closeout\uti % niet echt nodig
@@ -205,8 +223,8 @@
 
 % no longer needed, since texutil is now multi platform
 %
-% \def\utilitycheckmessage%
-%   {\showmessage{\m!systems}{12}{}%
+% \def\utilitycheckmessage
+%   {\showmessage\m!systems{12}{}%
 %    \globallet\utilitycheckmessage=\relax}
 %
 % \def\saveutilityline#1 #2\txen% tricky maar ok, want achter \command
@@ -218,12 +236,12 @@
 %      \utilitycheckmessage
 %    \fi\fi\fi}
 %
-% \def\checkutilityfile%
+% \def\checkutilityfile
 %   {\doiflocfileelse{\jobname.\f!outputextension}
 %      {}
 %      {\doiflocfileelse{\jobname.\f!inputextension}
 %         {\bgroup
-%          \showmessage{\m!systems}{11}{}%
+%          \showmessage\m!systems{11}{}%
 %          \openout\scratchwrite=\jobname.\f!outputextension
 %          \openlocin\scratchread{\jobname.\f!inputextension}%
 %          \def\doprocessline%
@@ -245,10 +263,10 @@
 \long\def\doutilities#1#2#3#4#5% % introduceren in utility file
   {\restorecatcodes
    \resetutilities
-  %\message{#1}%
-   \def\docommando##1%                 % more than one utility thing
-     {\csname\s!set##1\endcsname}%     % can be handled in one pass,
-   \processcommacommand[#1]\docommando % for instance lists
+   % more than one utility thing can be handled in one pass,
+   % for instance lists, so we process ##1 as list
+   \def\douticommand##1{\csname\s!set##1\endcsname}%
+   \processcommacommand[#1]\douticommand
    \begingroup
    \def\currentutilityfilename{#2}%
    \notesenabledfalse
@@ -282,9 +300,9 @@
      \doifsomething{#3}
        {\showmessage\m!systems9{{#3}}%
         \ifvoorlopig
-          \blanko
+          \blank
           \type{[\currentmessagetext]}%
-          \blanko
+          \blank
         \fi}%
    \fi
    \disableinitializevariables
@@ -330,8 +348,18 @@
 
 \newif\iftwopassdatafound
 
-\def\twopassentry#1%
-  {\executeifdefined{@@#1\s!pass}\gobbletwoarguments}
+\def\settwopassentries
+  {\def\twopassentry##1{\executeifdefined{@@##1\s!pass}\gobbletwoarguments}}
+
+\def\resettwopassentries
+  {\let\twopassentry\gobblethreearguments}
+
+\addutilityreset{twopassentries}
+
+\resettwopassentries
+
+% \def\twopassentry#1%
+%   {\executeifdefined{@@#1\s!pass}\gobbletwoarguments}
 
 %\def\appendtwopasselement#1#2#3%
 %  {%\debuggerinfo{\m!systems}{twopass data #1 - #2 = #3}%
@@ -375,7 +403,7 @@
      {\startnointerference
       \letgvalueempty{#1:\s!list}%
       \protectlabels
-      \doutilities{#1\s!pass}\jobname\empty\relax\relax
+      \doutilities{twopassentries,#1\s!pass}\jobname\empty\relax\relax
       \ifx\twopassdata\empty\else
         \appendtwopasselement{#1}{0}\twopassdata
       \fi
@@ -551,7 +579,7 @@
 % left over
 
 \def\plaatsvolledig#1#2#3#4%   kop, ref, tit, do
-  {#1[#2]{#3}#4\pagina[\v!ja]}
+  {#1[#2]{#3}#4\page[\v!yes]}
 
 % Experiment
 %

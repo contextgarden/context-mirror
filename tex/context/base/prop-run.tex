@@ -11,18 +11,23 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-\unprotect 
+\unprotect
 
-\doglobal\newif\ifshowcomponents 
+\doglobal\newif\ifshowcomponents
 
 \gdef\showlayoutcomponents
   {\showcomponentstrue}
-   
+
+% By postponing loading of the next two macro's till their usage, we
+% don't put a burden on the system when they are not used.
+
 \gdef\startlayoutcomponent#1#2%
-  {\ifshowcomponents 
-     \doifelsenothing{#2}%
-       {\defineproperty[#1][layer][\c!titel=#1]}%
-       {\defineproperty[#1][layer][\c!titel=#2]}%
+  {\ifshowcomponents
+     \doifelseproperty{#1}
+        \donothing
+       {\doifelsenothing{#2}%
+          {\defineproperty[#1][\s!layer]}% [\c!title=#1]
+          {\defineproperty[#1][\s!layer][\c!title=#2]}}%
      \startproperty[#1]%
    \fi}
 
@@ -31,4 +36,4 @@
      \stopproperty
    \fi}
 
-\protect \endinput 
+\protect \endinput

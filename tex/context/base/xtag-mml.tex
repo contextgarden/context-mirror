@@ -13,6 +13,9 @@
 
 \writestatus{loading}{Context XML Macros (math ml)}
 
+% I will reimplement this one without mapping since we now have more
+% tricks available
+
 %\enablemathpunctuation
 
 % First some general formula element definitions.
@@ -60,6 +63,7 @@
 \defineXMLargument [math]  \doXMLmath
 \defineXMLargument [imath] \doXMLimath
 \defineXMLargument [dmath] \doXMLdmath
+\defineXMLargument [m]     \doXMLimath
 
 \unexpanded\def\doXMLmath {\ifhmode\@EA\doXMLimath\else\@EA\doXMLdmath\fi}
 \unexpanded\def\doXMLimath{\XMLremapdata[mml]{$}{$}}
@@ -96,7 +100,7 @@
 
 \bgroup \obeylines
 
-\gdef\defineMMLentity
+\gdef\defineMMLentity% % needed !
   {\bgroup\obeylines\xdefineMMLentity}
 
 \gdef\xdefineMMLentity #1 #2 #3 #4
@@ -104,7 +108,7 @@
 
 \global\let\dodefineMMLentity\gobblefourarguments
 
-\gdef\defineMMLsynonym
+\gdef\defineMMLsynonym% % needed !
   {\bgroup\obeylines\xdefineMMLsynonym}
 
 \gdef\xdefineMMLsynonym #1 #2
@@ -124,7 +128,7 @@
    \egroup}
 
 \newbox\unknownXMLentity
-\setbox\unknownXMLentity\hbox{\inframed[strut=no,offset=1pt]{\ttx ?}}
+\setbox\unknownXMLentity\hbox{\inframed[\c!strut=\v!no,\c!offset=1pt]{\ttx ?}}
 
 \defineXMLentity [unknown] {\copy\unknownXMLentity}
 
@@ -399,7 +403,8 @@
 \def\somespaceentity#1#2%
   {\mathortext
      {\mskip#1mu}
-     {\unskip\hskip#2em\strut\hskip\zeropoint\ignorespaces}\relax}
+     {\ifvmode\dontleavehmode\else\unskip\fi\hskip#2em\strut\hskip\zeropoint\ignorespaces}%
+   \relax}
 
 \defineXMLentity [VeryThinSpace]         {\somespaceentity {2}{.125}}
 \defineXMLentity [ThinSpace]             {\somespaceentity {3}{.25}}

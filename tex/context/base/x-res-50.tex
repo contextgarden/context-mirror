@@ -14,7 +14,7 @@
 %D This is a preliminary module, using a preliminary xml media format that
 %D looks as follows (record is embedded in resource library element):
 %D
-%D \starttypen
+%D \starttyping
 %D <rl:mediaclip label="sample 1">
 %D   <rl:name>Sample One</rl:name>
 %D   <rl:mime>application/x-shockwave-flash</rl:mime>
@@ -31,17 +31,17 @@
 %D   <rl:file>mb.mp3</rl:file>
 %D   <rl:picture>mb.jpg</rl:picture>
 %D </rl:mediaclip>
-%D \stoptypen
+%D \stoptyping
 %D
-%D \starttypen
+%D \starttyping
 %D texexec --pdf --use=med-show yourfile.xml
-%D \stoptypen
+%D \stoptyping
 %D
 %D Bonus:
 %D
-%D \starttypen
+%D \starttyping
 %D --arg="url=http://localhost:8881/e:/media"
-%D \stoptypen
+%D \stoptyping
 
 % output=pdftex
 
@@ -55,8 +55,7 @@
 
 % property (eigenschap) aan framed en layer
 
-\usemodule[meta-dum]
-\usemodule[contml]
+\usemodule[meta-dum] \usemodule[contml] \autoXMLnamespace [context]
 
 \doifelsevariable{environment}{url}
   {\setvariables[mediaclip][url=\getvariable{environment}{url}/]}
@@ -262,14 +261,25 @@
 
 \stopsetups
 
+\setuptabulate
+  [before=,
+   after=]
+
+\def\rlCleanupFileName#1%
+  {\bgroup
+   \def\cleanup##1##2{\ifnum##1##2=20 \space\else\char\octnumber{##1##2}\fi}%
+   \defineactivecharacter 37 {\cleanup}%
+   \scantokens{#1}%
+   \egroup}
+
 \startsetups[mediaclip:data]
 
   \noindent \buttonframed
     [framecolor=lightgray,
      foregroundcolor=lightgray]
-    {\bf\XMLflush{rl:file}}
+    {\bf\expanded{\rlCleanupFileName{\XMLflush{rl:file}}}}
 
-  \vskip12pt
+  \vskip.75\measure{GapSize}
 
   \noindent \buttonframed
     [framecolor=lightgray,

@@ -217,7 +217,7 @@
 %D interface macros. These must be provided by the special
 %D drivers \type{pdf} (\ACROBAT) and \type{tpd} (\PDFTEX).
 %D
-%D \starttypen
+%D \starttyping
 %D \doPDFdestination        name #1
 %D \doPDFaction             width #1 height #2 action #3
 %D \doPDFannotation         width #1 height #2 data #3
@@ -234,7 +234,7 @@
 %D \defaultobjectreference      #1#2   % class name
 %D \doPDFgetobjectreference     #1#2#3 % class name \PDFobjectreference
 %D \doPDFgetobjectpagereference #1#2#3 % class name \PDFobjectreference
-%D \stoptypen
+%D \stoptyping
 %D
 %D The keywords reflect their use. For the moment we stick to
 %D keywords, because that way at we get an indication of what
@@ -378,11 +378,23 @@
      {\ifcase#6 \or\or\else /ViewerPreferences << /FitWindow true >>\fi}%
    \egroup}
 
+% not that good if we switch drivers
+
 \appendtoksonce % hack to prevent duplicates
   \doPDFaddtocatalog{\currentPDFpagemode\currentPDFviewerprefs}%
   \doPDFaddtoinfo{/Trapped /False}%
   \doPDFaddtoinfo{/ConTeXt.Version (\contextversion)}%
 \to \everyfirstshipout
+
+\def\PDFversion{1.5}
+
+\appendtoksonce
+  \def\PDFversion{1.5}%
+\to \everyresetspecials
+
+\appendtoksonce % we catch both n and 1.n
+  \doPDFaddtocatalog{/Version \ifdim\PDFversion00\points>100\points 1.\fi\PDFversion}%
+\to \everylastshipout
 
 \def\doPDFsetupwhateverbox#1#2#3#4#5#6% watch the extra arguments
   {\bgroup
@@ -945,8 +957,8 @@
    \donefalse
    \@EA\processallactionsinset\@EA
      [#9]
-     [\v!sturing=>\donetrue,
-      \v!herhaal=>\edef\pdf@@actions{\pdf@@actions /Mode /Repeat },
+     [\v!controls=>\donetrue,
+      \v!repeat=>\edef\pdf@@actions{\pdf@@actions /Mode /Repeat },
       \v!preview=>\edef\pdf@@options{\pdf@@options /Poster true  }]%
    \edef\pdf@@actions{\pdf@@actions /ShowControls \ifdone true\else false\fi}%
    \doPDFannotation width #7 height #8 data
@@ -962,6 +974,8 @@
 %D
 %D In \PDF\ sounds can be embedded like movies.
 
+\ifx\everygoto\undefined \newtoks\everygoto \fi
+
 \let\currentsound\s!unknown
 
 \def\doPDFinsertsoundtrack#1#2#3%
@@ -970,8 +984,9 @@
    \let\pdf@@actions\empty
    \@EA\processallactionsinset\@EA
      [#3]
-     [\v!herhaal=>\edef\pdf@@actions{\pdf@@actions /Mode /Repeat }]%
-   \flushatshipout % since it can be buried in a chained box
+     [\v!repeat=>\edef\pdf@@actions{\pdf@@actions /Mode /Repeat }]%
+\collectdriverresource
+%    \flushatshipout % since it can be buried in a chained box
      {\doPDFannotation width 0pt height 0pt data
         {/Subtype /Movie
          /Border [0 0 0]
@@ -1022,11 +1037,13 @@
    \startPDFsymbolappearance
      \doPDFembedfile\PDFfile{#7}{#8}%
      \doPDFgetembeddedfilereference\PDFfile\PDFobjectreference
+     \setFDFlayer\@@DriverAttachmentLayer
      \doPDFannotation width {\width} height {\totalheight} data
        {/Subtype /FileAttachment
         /FS \PDFobjectreference\space
         /Contents (#1)
         \PDFsymbol
+        \FDFlayer
         \PDFattributes}%
    \stopPDFsymbolappearance
    \egroup}
@@ -1257,37 +1274,6 @@
 %D support. These macros are complicated by the fact that
 %D cloning is possible.
 
-% new approach, 'global' variables, since we run out of
-% arguments
-
-\ifx\undefined\@@DriverFieldName
-
-  \letempty \@@DriverFieldName
-  \letempty \@@DriverFieldWidth
-  \letempty \@@DriverFieldHeight
-  \letempty \@@DriverFieldDefault
-  \letempty \@@DriverFieldNumber
-  \letempty \@@DriverFieldNumber
-  \letempty \@@DriverFieldStyle
-  \letempty \@@DriverFieldColor
-  \letempty \@@DriverFieldBackgroundColor
-  \letempty \@@DriverFieldFrameColor
-  \letempty \@@DriverFieldLayer
-  \letempty \@@DriverFieldOption
-  \letempty \@@DriverFieldAlign
-  \letempty \@@DriverFieldClickIn
-  \letempty \@@DriverFieldClickOut
-  \letempty \@@DriverFieldRegionIn
-  \letempty \@@DriverFieldRegionOut
-  \letempty \@@DriverFieldAfterKey
-  \letempty \@@DriverFieldFormat
-  \letempty \@@DriverFieldValidate
-  \letempty \@@DriverFieldCalculate
-  \letempty \@@DriverFieldFocusIn
-  \letempty \@@DriverFieldFocusOut
-
-\fi
-
 %D \macros
 %D   {FDFflag...,FDFplus...}
 %D
@@ -1341,17 +1327,17 @@
 \def\@@FDFflag{FDFflag}
 \def\@@FDFplus{FDFplus}
 
-\letvalue  {\@@FDFflag\v!alleenleesbaar}=\FDFflagReadOnly
-\letvalue       {\@@FDFflag\v!verplicht}=\FDFflagRequired
-\letvalue       {\@@FDFflag\v!beschermd}=\FDFflagPassword
-\letvalue      {\@@FDFflag\v!gesorteerd}=\FDFflagSort
-\letvalue {\@@FDFflag\v!nietbeschikbaar}=\FDFflagNoExport
-\letvalue    {\@@FDFflag\v!geencontrole}=\FDFflagDoNotSpellCheck
-\letvalue            {\@@FDFflag\v!vast}=\FDFflagDoNotScroll
+\letvalue  {\@@FDFflag\v!readonly}=\FDFflagReadOnly
+\letvalue       {\@@FDFflag\v!required}=\FDFflagRequired
+\letvalue       {\@@FDFflag\v!protected}=\FDFflagPassword
+\letvalue      {\@@FDFflag\v!sorted}=\FDFflagSort
+\letvalue {\@@FDFflag\v!unavailable}=\FDFflagNoExport
+\letvalue    {\@@FDFflag\v!nocheck}=\FDFflagDoNotSpellCheck
+\letvalue            {\@@FDFflag\v!fixed}=\FDFflagDoNotScroll
 \letvalue            {\@@FDFflag\v!file}=\FDFflagFileSelect
 
-\letvalue       {\@@FDFplus\v!verborgen}=\FDFplusHidden
-\letvalue       {\@@FDFplus\v!printbaar}=\FDFplusPrintable
+\letvalue       {\@@FDFplus\v!hidden}=\FDFplusHidden
+\letvalue       {\@@FDFplus\v!printable}=\FDFplusPrintable
 
 \letvalue            {\@@FDFplus\v!auto}=\FDFplusAutoView
 
@@ -1429,9 +1415,9 @@
 \def\setFDFalignment[#1]%
   {\processaction
      [#1]
-     [ \v!links=>\edef\FDFalign{2},    % raggedleft
-      \v!midden=>\edef\FDFalign{1},    % raggedcenter
-      \v!rechts=>\edef\FDFalign{0}]}   % raggedright
+     [ \v!left=>\edef\FDFalign{2},    % raggedleft
+      \v!middle=>\edef\FDFalign{1},    % raggedcenter
+      \v!right=>\edef\FDFalign{0}]}   % raggedright
 
 %D \macros
 %D   {setFDFattributes}
@@ -1556,10 +1542,10 @@
 
 %D The event handler becomes something:
 %D
-%D \starttypen
+%D \starttyping
 %D /AA << /D << /S ... >> ... /C << /S ... >>
 %D /A << /S /JavaScript /JS (...) >>
-%D \stoptypen
+%D \stoptyping
 
 % \def\setFDFaction#1#2%
 %   {\bgroup
@@ -1595,9 +1581,9 @@
 %D This rather confusion prone series of script can be tested
 %D with:
 %D
-%D \starttypen
+%D \starttyping
 %D \testFDFactions
-%D \stoptypen
+%D \stoptyping
 %D
 %D which simply redefined the previous macro to one that prints
 %D a message to the console.
@@ -1665,7 +1651,7 @@
      \xdef\FDFcollection{\FDFcollection\space\PDFobjectreference}%
    \fi}
 
-\prependtoksonce \flushFDFnames \to \everylastshipout % test \everybye
+\appendtoksonce \flushFDFnames \to \everylastshipout % test \everybye / was \prependtoksonce
 
 %D \macros
 %D   {defineFDFfonts,
@@ -1776,25 +1762,21 @@
 %D screen is adapted when going to a destination. Watch the
 %D space.
 
-\def\PDFpageviewkey{  fit}
-\def\PDFpageviewwrd{ /Fit}
+\def\PDFpageviewkey{fit}
+\def\PDFpageviewwrd{/Fit}
 \def\PDFpageview   {/View [\PDFpageviewwrd] }
+\def\PDFpagexyzspec{0 0 0} % hack, pdftex does handle this
 
-\def\PDFpagexyzspec{ 0 0 0} % hack, pdftex does handle this
-
-\def\dosetuppageview#1%
+\def\dosetuppageview#1% watch the v-h swapping here
   {\processaction
      [#1]
-     [\v!passend=>\def\PDFpageviewkey{   fit}%
-                  \def\PDFpageviewwrd{  /Fit},
-      \v!breedte=>\def\PDFpageviewkey{  fith}%   % watch the v-h
-                  \def\PDFpageviewwrd{ /FitH},   % swapping here
-       \v!hoogte=>\def\PDFpageviewkey{  fitv}%   % and here and
-                  \def\PDFpageviewwrd{ /FitV},   % here too
-    \v!standaard=>\def\PDFpageviewkey{   xyz\PDFpagexyzspec}%
-                  \def\PDFpageviewwrd{  /XYZ\PDFpagexyzspec},
-      \s!unknown=>\def\PDFpageviewkey{   fit}%
-                  \def\PDFpageviewwrd{  /Fit}]%
+     [\v!fit=>\def\PDFpageviewkey  {fit}\def\PDFpageviewwrd{/Fit},
+      \v!width=>\def\PDFpageviewkey {fith}\def\PDFpageviewwrd{/FitH},
+       \v!height=>\def\PDFpageviewkey {fitv}\def\PDFpageviewwrd{/FitV},
+   \v!minbreedte=>\def\PDFpageviewkey{fitbh}\def\PDFpageviewwrd{/FitBH},
+    \v!minhoogte=>\def\PDFpageviewkey{fitbv}\def\PDFpageviewwrd{/FitBV},
+    \v!standard=>\def\PDFpageviewkey{xyz \PDFpagexyzspec}\def\PDFpageviewwrd{/XYZ \PDFpagexyzspec},
+      \s!unknown=>\def\PDFpageviewkey  {fit}\def\PDFpageviewwrd{/Fit}]%
    \edef\PDFpageview{/View [\PDFpageviewwrd]}}
 
 %D \macros
@@ -1823,7 +1805,7 @@
 
 \def\doFDFpresetlinefield#1#2#3#4#5#6#7#8#9%
   {\bgroup
-   \setFDFlayer
+   \setFDFlayer\@@DriverFieldLayer
    \setFDFswitches[#7]%
    \setFDFattributes[#6]%
    \setFDFalignment[#8]%
@@ -1888,7 +1870,7 @@
 
 \def\doFDFpresetchoicefield#1#2#3#4#5#6#7#8%
   {\bgroup
-   \setFDFlayer
+   \setFDFlayer\@@DriverFieldLayer
    \setFDFswitches[#6]%
    \setFDFattributes[#5]%
    \setFDFvalues[#7][#4]%
@@ -1953,7 +1935,7 @@
 
 \def\doFDFpresetpushcheckfield#1#2#3#4#5#6#7#8% in acro<5 (\FDFdefault)
   {\bgroup                                    % in acro>5 /\FDFdefault
-   \setFDFlayer
+   \setFDFlayer\@@DriverFieldLayer
    \ifcase#8\relax\FDFvaluesfalse\else\FDFvaluestrue\fi
    \setFDFswitches[#5]%
    \setFDFactions[#7]%
@@ -2034,7 +2016,7 @@
 
 \def\doFDFpresetradiofield#1#2#3#4#5#6#7#8%
   {\bgroup
-   \setFDFlayer
+   \setFDFlayer\@@DriverFieldLayer
    \FDFvaluestrue
    \setFDFswitches[#5]%
    \setFDFactions[#8]%
@@ -2199,22 +2181,22 @@
 
 %D Layer support:
 
-\def\setFDFlayer % todo : \ifx\PDFobjectreference\noPDFobjectreference ipv found
+\def\setFDFlayer#1% todo : \ifx\PDFobjectreference\noPDFobjectreference ipv found
   {\letempty\FDFlayer
-   \doifsomething\@@DriverFieldLayer
-     {\checkproperty\@@DriverFieldLayer
-      \doifobjectreferencefoundelse{PDLN}\@@DriverFieldLayer
-        {\doPDFgetobjectreference{PDLN}\@@DriverFieldLayer\PDFobjectreference
-         \edef\FDFlayer{/OC \PDFobjectreference}}%
+   \doifsomething{#1}%
+     {\checkproperty[#1]% == \dodocheckproperty\@@DriverFieldLayer
+      \doifobjectreferencefoundelse{PDLN}{#1}
+        {\doPDFgetobjectreference{PDLN}{#1}\!!stringa % we need to avoid a clash with other macros
+         \edef\FDFlayer{/OC \!!stringa}}%
         \donothing}}
 
 %D The three appearances {\em normal}, \type{roll over} and
 %D \type{push down} are passed as comma separated triplets,
 %D that is, the second argument can look like:
 %D
-%D \starttypen
+%D \starttyping
 %D {yes,ok,fine},{no,rubish,awful}
-%D \stoptypen
+%D \stoptyping
 
 %D \macros
 %D   {doFDFdefinefieldset,doFDFgetfieldset,doFDFiffieldset}
@@ -2222,11 +2204,11 @@
 %D Field sets, the ones we use in submitting and resetting
 %D fields, are implemented using the next low level specials:
 %D
-%D \starttypen
+%D \starttyping
 %D \doFDFdefinefieldset{TAG}{name,name,...}
 %D \doFDFgetfieldset{TAG}
 %D \doFDFiffieldset{TAG}{sequence}
-%D \stoptypen
+%D \stoptyping
 
 \def\doFDFdefinefieldset#1#2% tag commalist
   {\let\FDFfieldset\empty
@@ -2308,22 +2290,22 @@
 %D Once filled in, we can export or submit the field in the
 %D \FDF\ file format. Such a file can be loaded by
 %D
-%D \starttypen
+%D \starttyping
 %D \loadFDFfields{fiel-ini}
-%D \stoptypen
+%D \stoptyping
 %D
 %D or inspected by
 %D
-%D \starttypen
+%D \starttyping
 %D \showFDFfields{fiel-ini}
-%D \stoptypen
+%D \stoptyping
 %D
 %D After both commands, one can use
 %D
-%D \starttypen
+%D \starttyping
 %D \getFDFfield{name}
 %D \setFDFfield{name}{value}
-%D \stoptypen
+%D \stoptyping
 %D
 %D to inspect and overrule the data.
 %D
@@ -2332,9 +2314,9 @@
 %D named \type{filename.fdt}. If one disables the call to this
 %D script, by saying:
 %D
-%D \starttypen
+%D \starttyping
 %D \runFDFconverterfalse
-%D \stoptypen
+%D \stoptyping
 %D
 %D or when \CONTEXT\ cannot find the \type{fdt} file, it tries
 %D to interpret the \type{fdf} file directly. Both mechanisms
@@ -2344,7 +2326,7 @@
 
 %D The \PERL\ script produces a file formatted as:
 %D
-%D \starttypen
+%D \starttyping
 %D \beginFDFobject
 %D \beginFDFdata
 %D \beginFDFfields
@@ -2352,7 +2334,7 @@
 %D \endFDFfields
 %D \endFDFdata
 %D \endFDFobject
-%D \stoptypen
+%D \stoptyping
 %D
 %D One reason for using key value pairs is that we cannot be
 %D sure or the order in which the name and value are given
@@ -2523,13 +2505,14 @@
 \def\doPDFflushcomments
   {\box\PDFsymbolbox}
 
-\long\def\doPDFinsertcomment#1#2#3#4#5#6#7#8%
+\long\def\doPDFinsertcomment#1#2#3#4#5#6#7#8% % \@@DriverCommentLayer set otherwise
   {\bgroup % title width height color open symbol collect data
    \presetPDFsymbolappearance{#4}{#6}{#2}{#3}\!!zeropoint% sets width/height
    \doifelsenothing{#1}
      {\let\PDFidentifier\empty}
      {\def\PDFidentifier{/T (#1)}}%
    \sanitizePDFencoding#8\to\PDFdata
+   \setFDFlayer\@@DriverCommentLayer
    \startPDFsymbolappearance
      \ifPDFpopupcomments
        \doglobal\increment\nofFDFcomments
@@ -2539,22 +2522,26 @@
          \donefalse
        \ifdone
          \setbox\scratchbox\hbox
-         % pdftex (efficient)
-         % {\doPDFannotation
-         % generic (less efficient)
            {\doPDFannotationobject class FDF name {c::\nofFDFcomments}
-         % argument (common)
-                 width #2 height #3 data % text window
+                 width #2 height #3 data % text window, size does not work
               {/Subtype /Popup
                /Parent \PDFobjectreference}}%
          \ifcase#7\relax
            \vbox to \height{\forgetall\vskip#3\box\scratchbox\vss}%
          \else % incredible trial and error hack
+           % it's quite a mess, the annot width cannot be set, well, it can
+           % but the appearance and text sizes get mixed up
+%            \setbox\scratchbox\vbox to \height{\forgetall\vskip#3\box\scratchbox\vss}%
+%            \global\setbox\PDFsymbolbox\vbox
+%              {\hsize#2%
+%               \forgetall
+%               \vsmash{\box\PDFsymbolbox}
+%               \box\scratchbox}%
+           % this may change when acrobat gets less bugged
+           \setbox\scratchbox\vbox to #3{\forgetall\vss\box\scratchbox}%
+           \wd\scratchbox#2%
            \global\setbox\PDFsymbolbox\vbox
-             {\hsize#2%
-              \forgetall
-              \vsmash{\box\PDFsymbolbox}
-              \box\scratchbox}%
+             {\startoverlay{\box\PDFsymbolbox}{\box\scratchbox}\stopoverlay}%
          \fi
        \fi
        % generic
@@ -2572,6 +2559,7 @@
           \ifdone /Popup \PDFobjectreference\fi
           /Contents \ifPDFunicode <\PDFdata> \else(\PDFdata) \fi
           \PDFidentifier
+          \FDFlayer
           \PDFsymbol
           \PDFattributes}%
      \else
@@ -2579,6 +2567,7 @@
          {/Subtype /Text
           \ifcase#5 \else/Open true\fi
           /Contents \ifPDFunicode <\PDFdata> \else(\PDFdata) \fi
+          \FDFlayer
           \PDFsymbol
           \PDFidentifier
           \PDFattributes}%
@@ -2656,7 +2645,7 @@
 
 %D Hooked into \CONTEXT, this special supports
 %D
-%D \starttypen
+%D \starttyping
 %D \startcomment
 %D   hello beautiful\\world
 %D \stopcomment
@@ -2666,12 +2655,12 @@
 %D   the f\'irst time
 %D \stopcommen
 %D
-%D \startcommentaar[hallo][kleur=groen,breedte=4cm,hoogte=3cm]
+%D \startcommentaar[hallo][color=green,width=4cm,height=3cm]
 %D   first
 %D
 %D   second
 %D \stopcommentaar
-%D \stoptypen
+%D \stoptyping
 %D
 %D So, special characters, forced linebreaks using \type{\\}
 %D and \type{\par} are handled in the appropriate way.
@@ -2757,8 +2746,27 @@
 \def\doPDFstartgraycolormode#1%
   {\PDFcode{#1 g\ifPDFstrokecolor\space#1 G\fi}}
 
-\def\doPDFstartspotcolormode#1#2%
-  {\PDFcode{/#1 CS #2 SC /#1 cs #2 sc}}
+% \def\doPDFstartspotcolormode#1#2%
+%   {\PDFcode{/#1 CS #2 SC /#1 cs #2 sc}}
+
+\def\doPDFstartspotcolormode#1#2% redefining spotcolors is not possible anyway
+  {\ifundefined{pdf:scs:#2}%
+     \bgroup
+     \getcommacommandsize[#2]%
+     \ifcase\commalistsize\or
+       \setxvalue{pdf:scs:#2}{#2 SCN #2 scn}% \setxvalue{pdf:scs:#2}{#2 SC #2 sc}%
+     \else
+       \let\PDFspotcolorspecs\empty
+       \def\dospotcolorcommand##1{\edef\PDFspotcolorspecs{\PDFspotcolorspecs##1\space}}%
+       \processcommacommand[#2]\dospotcolorcommand
+       \setxvalue{pdf:scs:#2}{\PDFspotcolorspecs SCN \PDFspotcolorspecs scn}%
+     \fi
+     \egroup
+   \fi
+   \PDFcode{/#1 cs /#1 CS \PDFgetspotcolorspec{#2}}}
+
+\def\PDFgetspotcolorspec#1%
+  {\executeifdefined{pdf:scs:#1}\empty} % better no default than one with too less args
 
 \def\doPDFstartnonecolormode
   {\PDFcode{/None CS 1 SC /None cs 1 sc}}
@@ -2773,27 +2781,59 @@
 % /Device#2 \the\pdflastobj\space0 R]} so we use separation
 % colors that work and print ok
 
-\def\doPDFregistersomespotcolor#1#2#3#4%
+\def\doPDFregistersomespotcolor#1#2#3#4% implemented in the driver
   {\writestatus\m!systems{missing spot color definition}\wait}
 
 \def\doPDFregisternonecolor % internal command
   {\doPDFregistergrayspotcolor{None}{1}%
    \globallet\doPDFregisternonecolor\relax}
 
-\def\doPDFregisterrgbspotcolor#1#2#3#4%
-  {\doPDFregistersomespotcolor
-     {#1}{RGB}{[0.0 1.0 0.0 1.0 0.0 1.0]}%
-     {{dup #2 mul exch dup #3 mul exch #4 mul}}}
+\def\doPDFregisterspotcolorname#1#2% implemented in the driver
+  {}
 
-\def\doPDFregistercmykspotcolor#1#2#3#4#5%
-  {\doPDFregistersomespotcolor
-     {#1}{CMYK}{[0.0 1.0 0.0 1.0 0.0 1.0 0.0 1.0]}%
-     {{dup #2 mul exch dup #3 mul exch dup #4 mul exch #5 mul}}}
+\definespecial\doregisterspotcolorname{\doPDFregisterspotcolorname}
 
-\def\doPDFregistergrayspotcolor#1#2%
-  {\doPDFregistersomespotcolor
-     {#1}{Gray}{[0.0 1.0]}%
-     {{pop}}}
+% \def\doPDFregisterrgbspotcolor#1#2#3#4%
+%   {\doPDFregistersomespotcolor
+%      {#1}{RGB}{[0.0 1.0 0.0 1.0 0.0 1.0]}%
+%      {{dup #2 mul exch dup #3 mul exch #4 mul}}}
+%
+% \def\doPDFregistercmykspotcolor#1#2#3#4#5%
+%   {\doPDFregistersomespotcolor
+%      {#1}{CMYK}{[0.0 1.0 0.0 1.0 0.0 1.0 0.0 1.0]}%
+%      {{dup #2 mul exch dup #3 mul exch dup #4 mul exch #5 mul}}}
+%
+% \def\doPDFregistergrayspotcolor#1#2%
+%   {\doPDFregistersomespotcolor
+%      {#1}{Gray}{[0.0 1.0]}%
+%      {{pop}}}
+
+
+\def\doPDFregisterrgbspotcolor#1#2#3#4#5#6#7% name noffractions names p's r g b
+  {\doPDFregistersomespotcolor{#1}{#2}{#3}{#4}{RGB}{0.0 1.0 0.0 1.0 0.0 1.0}%
+     {\ifcase#2\or dup #5 mul exch dup #6 mul exch #7 mul\else#5 #6 #7\fi}}
+
+\def\doPDFregistercmykspotcolor#1#2#3#4#5#6#7#8% name noffractions names p's c m y k
+  {\doPDFregistersomespotcolor{#1}{#2}{#3}{#4}{CMYK}{0.0 1.0 0.0 1.0 0.0 1.0 0.0 1.0}%
+     {\ifcase#2\or dup #5 mul exch dup #6 mul exch dup #7 mul exch #8 mul\else #5 #6 #7 #8\fi}}
+
+\def\doPDFregistergrayspotcolor#1#2#3#4#5% name noffractions names p's s
+  {\doPDFregistersomespotcolor{#1}{#2}{#3}{#4}{Gray}{0.0 1.0}%
+     {\ifcase#2\or pop\else#5\fi}}
+
+%D New and very experimental.
+
+\def\doPDFregistercmykindexcolor#1#2#3#4#5#6#7#8% name noffractions names p's c m y k
+  {\doPDFregistersomeindexcolor{#1}{#2}{#3}{#4}{CMYK}{0.0 1.0 0.0 1.0 0.0 1.0 0.0 1.0}%
+     {dup #5 mul exch dup #6 mul exch dup #7 mul exch #8 mul}}
+
+\def\doPDFregisterrgbindexcolor#1#2#3#4#5#6#7% name noffractions names p's r g b
+  {\doPDFregistersomeindexcolor{#1}{#2}{#3}{#4}{RGB}{0.0 1.0 0.0 1.0 0.0 1.0}%
+     {dup #5 mul exch dup #6 mul exch #7 mul}}
+
+\def\doPDFregistergrayindexcolor#1#2#3#4#5% name noffractions names p's s
+  {\doPDFregistersomeindexcolor{#1}{#2}{#3}{#4}{Gray}{0.0 1.0}%
+     {pop}}
 
 %D \macros
 %D   {doPDFstartrotation,doPDFstoprotation}
@@ -2858,8 +2898,11 @@
 %D
 %D Scaling is rather straightforward:
 
-\def\doPDFstartscaling#1#2%
-  {\PDFcode{q #1\space 0 0 #2\space 0 0 cm}}
+\def\@@PDFzeroscale{.0001}
+
+\def\doPDFstartscaling#1#2% the test is needed because acrobat is bugged!
+  {\PDFcode{q \ifdim#1\points=\zeropoint\@@PDFzeroscale\else#1\fi\space 0 0
+              \ifdim#2\points=\zeropoint\@@PDFzeroscale\else#2\fi\space 0 0 cm}}
 
 \def\doPDFstopscaling%
   {\PDFcode{Q}}
@@ -2889,10 +2932,30 @@
 
 \def\doPDFstopnegative
   {\ifx\initializePDFnegative\undefined\else
+     \initializePDFnegative
      \PDFcode{/GSpositive gs}%
    \fi}
 
+%D \macros
+%D   {doPDFstartoverprint,doPDFstopoverprint}
+%D
+%D Some printers like overprint more than knockout.
+
+\def\doPDFstartoverprint
+  {\ifx\initializePDFoverprint\undefined\else
+     \initializePDFoverprint
+     \PDFcode{/GSoverprint gs}%
+   \fi}
+
+\def\doPDFstopoverprint
+  {\ifx\initializePDFoverprint\undefined\else
+     \initializePDFoverprint
+     \PDFcode{/GSknockout gs}%
+   \fi}
+
 %D Transparency support (experimental):
+
+\newif\ifPDFtransparencysupported
 
 \def\PDFtransparancydictionary#1#2#3% type fraction extras
   {<</Type /ExtGState
@@ -2902,8 +2965,6 @@
           ColorBurn\or Darken\or Lighten\or Difference\or
           Exclusion\else Compatible\fi
      #3>>}
-
-\newif\ifPDFtransparencysupported
 
 \def\dodoPDFstarttransparency#1#2%
   {\presetPDFtransparency{#1}{#2}%
@@ -2991,7 +3052,7 @@
       \fi
       /Name (#2)}%
    \doPDFgetobjectreference{PDLN}{#1}\PDFobjectreference
-     \xdef\PDFtextlayers{\PDFtextlayers\space\PDFobjectreference}%
+   \xdef\PDFtextlayers{\PDFtextlayers\space\PDFobjectreference}%
    \doifelse{#3}\v!start
      {\xdef\PDFvidelayers{\PDFvidelayers\space\PDFobjectreference}}%
      {\xdef\PDFhidelayers{\PDFhidelayers\space\PDFobjectreference}}%
@@ -3004,8 +3065,8 @@
 
 \def\flushPDFtextlayers
   {\ifx\PDFtextlayers\empty \else
-       \driverreferenced \doPDFarrayobject class PDF name textlayers data {\PDFtextlayers}%
-       \doPDFgetobjectreference{PDF}{textlayers}\!!stringa
+     \driverreferenced \doPDFarrayobject class PDF name textlayers data {\PDFtextlayers}%
+     \doPDFgetobjectreference{PDF}{textlayers}\!!stringa
      \ifx\PDFvidelayers\empty
        \def\!!stringb{[null]}%
      \else
@@ -3051,6 +3112,29 @@
       \xdef\PDFlayeractionlist{\PDFlayeractionlist\space\PDFobjectreference}}%
    \processcommalist[#1]\docommando
    \egroup}
+
+%D Something rather pdf dependent:
+
+% #1 => 1=fill 2=stroke 3=strokedfill 4=invisible
+% #2 => linewidth
+% #3 => spacing (beware, one needs to set the hsize as well)
+
+\def\doPDFstartfonteffect#1#2#3%
+  {\ifdim#2>\zeropoint
+     \PointsToBigPoints{#2}\ascii
+     \PDFcode{\ascii\space w}%
+   \fi
+   \ifdim#3\points=\onepoint\else
+     \scratchdimen#3\points
+     \PDFcode{\withoutpt{\the\scratchdimen}\space Tc}%
+   \fi
+%    \ifdim#3\points=\onepoint\else
+%      \PDFcode{#3\space Tc}%
+%    \fi
+   \PDFcode{\purenumber#1 Tr}}
+
+\def\doPDFstopfonteffect
+  {\PDFcode{1 w 0 Tc 0 Tr}}
 
 %D And that was all.
 

@@ -11,23 +11,22 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-\unprotect 
+\unprotect
 
-\gdef\typetypescript%
+\gdef\typetypescript
   {\dotripleempty\dotypetypescript}
 
 \gdef\dotypetypescript[#1][#2][#3]%
   {\bgroup
-   \def\dochecktypescript##1##2% script use 
+   \def\dochecktypescript##1##2% script use
      {\doifelsenothing{##1##2}
         {\donetrue}
-        {\donefalse
-         \ExpandBothAfter\doifcommonelse{##1}{##2}\donetrue\donefalse}}
+        {\ExpandBothAfter\doifcommonelse{##1}{##2}\donetrue\donefalse}}
    \edef\typescriptone  {\truetypescript{#1}}%
    \edef\typescripttwo  {\truetypescript{#2}}%
    \edef\typescriptthree{\truetypescript{#3}}%
    \def\starttypescript
-     {\bgroup 
+     {\bgroup
       \obeylines % else we loose the first line due to lookahead
       \dotripleempty\dostarttypescript}
    \def\dostarttypescript[##1][##2][##3]%
@@ -38,7 +37,7 @@
         \def\next%
           {\def\stoptypescript%
              {\egroup\type{\stoptypescript}}
-           % what follows now is quite ugly 
+           % what follows now is quite ugly
            \skipfirstverbatimlinefalse
            \processdisplayverbatim{\stoptypescript}%
            \type{\starttypescript}
@@ -46,8 +45,8 @@
            \doifsomething{##2}{\type{[##2]}}
            \doifsomething{##3}{\type{[##3]}}}
       \fi\fi\fi
-      \next}  
+      \next}
   \processcommacommand[\typescriptfiles]\dodousetypescript
   \egroup}
 
-\protect \endinput 
+\protect \endinput

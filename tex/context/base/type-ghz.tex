@@ -6,17 +6,21 @@
 
 % zapfino
 
-\starttypescript [serif] [zapfino] [texnansi,ec,8r] % todo: handwriting
+\starttypescript [serif,handwriting] [zapfino] [texnansi,ec,8r] % todo: handwriting
 
-  \definefontsynonym [ZapfinoOne]   [\typefaceencoding-lt-54223] [encoding=\typefaceencoding]
-  \definefontsynonym [ZapfinoTwo]   [\typefaceencoding-lt-54224] [encoding=\typefaceencoding]
-  \definefontsynonym [ZapfinoThree] [\typefaceencoding-lt-54225] [encoding=\typefaceencoding]
-  \definefontsynonym [ZapfinoFour]  [\typefaceencoding-lt-54226] [encoding=\typefaceencoding]
+  \definefontsynonym [ZapfinoOne]   [\typefaceencoding-lt54223] [encoding=\typefaceencoding]
+  \definefontsynonym [ZapfinoTwo]   [\typefaceencoding-lt54224] [encoding=\typefaceencoding]
+  \definefontsynonym [ZapfinoThree] [\typefaceencoding-lt54225] [encoding=\typefaceencoding]
+  \definefontsynonym [ZapfinoFour]  [\typefaceencoding-lt54226] [encoding=\typefaceencoding]
 
   \loadmapfile[\typefaceencoding-linotype-zapfino.map]
 
 \stoptypescript
 
+% \starttypescript [handwriting] [zapfino-1] \definefontsynonym [Handwriting]  [ZapfinoOne] \stoptypescript
+% \starttypescript [handwriting] [zapfino-2] \definefontsynonym [Handwriting]  [ZapfinoTwo] \stoptypescript
+% \starttypescript [handwriting] [zapfino-3] \definefontsynonym [Handwriting]  [ZapfinoThree] \stoptypescript
+% \starttypescript [handwriting] [zapfino-4] \definefontsynonym [Handwriting]  [ZapfinoFour] \stoptypescript
 
 % optima
 
@@ -52,6 +56,13 @@
 
 \stoptypescript
 
+
+\starttypescript [map] [optima,optima-nova] [texnansi,ec,8r]
+
+  \loadmapfile[\typefaceencoding-linotype-optima.map]
+
+\stoptypescript
+
 % optima nova
 
 \starttypescript [sans] [optima-nova] [name]
@@ -73,6 +84,10 @@
   \definefontsynonym [OptimaNovaLT-Regular] [\typefaceencoding-lt55483] [encoding=\typefaceencoding]
   \definefontsynonym [OptimaNovaLT-Italic]  [\typefaceencoding-lt55486] [encoding=\typefaceencoding]
 
+\stoptypescript
+
+\starttypescript [map] [optima-nova] [texnansi,ec,8r]
+  \loadmapfile[\typefaceencoding-linotype-optima-nova.map]
 \stoptypescript
 
 % palatino
@@ -112,6 +127,10 @@
 
   \definefontsynonym[Palatino-SC]             [\typefaceencoding-posc]     [encoding=\typefaceencoding]
 
+\stoptypescript
+
+\starttypescript [map] [palatino] [texnansi,ec,8r]
+  \loadmapfile[\typefaceencoding-linotype-palatino.map]
 \stoptypescript
 
 \endinput

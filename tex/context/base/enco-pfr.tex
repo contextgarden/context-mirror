@@ -21,7 +21,7 @@
 %D load the encoding and then the font; previous font
 %D definitions are left untouched.)
 %D
-%D \starttypen
+%D \starttyping
 %D % output=pdftex interface=en
 %D
 %D \useencoding[pfr]
@@ -31,7 +31,7 @@
 %D   test \`z \'z \bf test \sl test \bs quite funny \`z \page
 %D   test \`z \'z \bf test \sl test \bs quite funny \`z \page
 %D \stoptext
-%D \stoptypen
+%D \stoptyping
 %D
 %D We do our best to include a (often large) font resources
 %D only once. The current implementation is not that
@@ -57,11 +57,11 @@
 %D macro defined with \type {\pdffontfileresource} can have
 %D three states:
 %D
-%D \startopsomming[opelkaar]
-%D \som undefined: not yet loaded, and not yet included
-%D \som some value: loaded, but not yet included
-%D \som empty: loaded, and already included
-%D \stopopsomming
+%D \startitemize[packed]
+%D \item undefined: not yet loaded, and not yet included
+%D \item some value: loaded, but not yet included
+%D \item empty: loaded, and already included
+%D \stopitemize
 
 \def\pdffontresource    {pdfr:\currentencoding}
 \def\pdffontfileresource{pdff:\pdffontresource}
@@ -70,7 +70,7 @@
 %D The following \PDF\ code is composed by Ondrej Koala Vacha (I
 %D probably mispelled this name).
 %D
-%D \starttypen
+%D \starttyping
 %D \startpdffontresource[il2]
 %D /CIDInit /ProcSet findresource begin
 %D 12 dict begin
@@ -95,17 +95,17 @@
 %D CMapName currentdict /CMap defineresource pop end
 %D end
 %D \stoppdffontresource
-%D \stoptypen
+%D \stoptyping
 %D
 %D We don't preload such huge definitions, and process them
 %D run||time to save memory. Therefore, in the encoding
 %D vector, we only add an entry like:
 %D
-%D \starttypen
+%D \starttyping
 %D \startencoding [il2]
 %D   \usepdffontresource il2
 %D \stopencoding
-%D \stoptypen
+%D \stoptyping
 %D
 %D This macro is defined as follows.
 

@@ -25,16 +25,16 @@
 \def\dodefineplacement[#1][#2]%
   {\getparameters
      [\??pl#1]
-     [\c!links=\hss,
-      \c!rechts=\hss,
-      \c!regelcorrectie=\v!uit,
-      \c!dieptecorrectie=\v!uit,
-      \c!marge=\v!standaard,
-      \c!grid=\v!midden,
-      %\c!voor=,
-      %\c!na=,
+     [\c!left=\hss,
+      \c!right=\hss,
+      \c!linecorrection=\v!off,
+      \c!depthcorrection=\v!off,
+      \c!margin=\v!standard,
+      \c!grid=\v!middle,
+      %\c!before=,
+      %\c!after=,
       #2]%
-   \setvalue{\e!plaats#1}{\doplacement[\??pl#1]}}
+   \setvalue{\e!place#1}{\doplacement[\??pl#1]}}
 
 \def\defineplacement
   {\dodoubleempty\dodefineplacement}
@@ -72,30 +72,30 @@
      {\forgetall}
      {\setlocalhsize
       \getparameters[#1][#2]%
-      \getvalue{#1\c!voor}%
+      \getvalue{#1\c!before}%
       \begingroup
       \positioningparfalse
       \setbox\nextbox\hbox to \localhsize
-        {\getvalue{#1\c!links}%
+        {\getvalue{#1\c!left}%
          \flushnextbox
-         \getvalue{#1\c!rechts}}%
+         \getvalue{#1\c!right}}%
       \ifinsidefloat \else
         \addlocalbackgroundtobox\nextbox
       \fi
       \ifgridsnapping
-        \doifundefined{#1\c!grid}{\letvalue{#1\c!grid}\v!midden}%
+        \doifundefined{#1\c!grid}{\letvalue{#1\c!grid}\v!middle}%
         % unchecked
-        \doifinset{\getvalue{#1\c!marge}}{\v!standaard,\v!ja}\noindent
+        \doifinset{\getvalue{#1\c!margin}}{\v!standard,\v!yes}\noindent
         \snaptogrid[\getvalue{#1\c!grid}]\hbox{\flushnextbox}%
       \else
-        \doifvalue{#1\c!regelcorrectie}\v!aan \startbaselinecorrection
-        \doifinset{\getvalue{#1\c!marge}}{\v!standaard,\v!ja}\noindent
+        \doifvalue{#1\c!linecorrection}\v!on \startbaselinecorrection
+        \doifinset{\getvalue{#1\c!margin}}{\v!standard,\v!yes}\noindent
         \flushnextbox
-        \doifvalue{#1\c!dieptecorrectie}\v!aan\baselinecorrection
-        \doifvalue{#1\c!regelcorrectie }\v!aan\stopbaselinecorrection
+        \doifvalue{#1\c!depthcorrection}\v!on\baselinecorrection
+        \doifvalue{#1\c!linecorrection }\v!on\stopbaselinecorrection
       \fi
       \endgroup
-      \getvalue{#1\c!na}%
+      \getvalue{#1\c!after}%
       \egroup}
    \vbox}
 

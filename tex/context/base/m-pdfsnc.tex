@@ -1,0 +1,200 @@
+%D \module
+%D   [       file=m-pdfsnc,
+%D        version=2003.12.23,
+%D          title=\CONTEXT\ Modules,
+%D       subtitle=Editor Synchronization
+%D         author={Hans Hagen \& Ton Otten},
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+% \enablemode[demo]
+
+% This file is a variation of the file pdfsync4context.tex that ships
+% with the pdfsync package (used by iTeXMac and TeXShop) by Piero
+% D'Ancona and Jérôme Laurens. I made the macros a bit more efficient
+% and added some basic tracing options as well as a few more options.
+% I made this one while playing a bit with the Mac and TeX). Maybe I'll
+% add a bit of support to the kernel in in order to get rid of redundant
+% markers. Also, this had better be rewritten in a bit less \pdf
+% dependent way so that it can also be supported by dvipdfmx. I could
+% write a generic file as well, but since there is already support for
+% other packages I'll not do that (now).
+
+% compatible commands:
+%
+%  \pdfsyncstart \pdfsyncstop \pdfsync
+%
+% extra commands:
+%
+%  \enablepdfsync \disablepdfsync \pdfsynctext \pdfsyncnode \pdfsynctracemode
+
+\ifx\pdfoutput\undefined
+  \donefalse
+\else\ifcase\pdfoutput
+  \donefalse
+\else\ifx\pdfsavepos\undefined
+  \donefalse
+\else
+  \donetrue
+\fi\fi\fi
+
+\chardef \pdfsyncstate     \zerocount
+\chardef \pdfsynctracemode \zerocount
+
+\ifdone
+
+  \writestatus{pdfsync}{loading and enabling synchronization support}
+
+\else
+
+  \writestatus{pdfsync}{synchronization is only available with pdftex}
+
+  \let \pdfsyncstart   \relax % brr, not per se symmetrically used, so
+  \let \pdfsyncstop    \relax % enable and disable are better names
+  \let \pdfsync        \relax
+
+  \let \pdfsynctext    \gobbleoneargument
+  \let \pdfsyncnode    \gobbleoneargument
+
+  \let \enablepdfsync  \pdfsyncstart
+  \let \disablepdfsync \pdfsyncstop
+
+  \expandafter\endinput
+\fi
+
+\unprotect % not really needed
+
+\newcount \pdfsynccounter
+\newwrite \pdfsyncwrite
+
+\def\pdfsyncstart{\chardef\pdfsyncstate\plusone}   \let\enablepdfsync \pdfsyncstart
+\def\pdfsyncstop {\chardef\pdfsyncstate\zerocount} \let\disablepdfsync\pdfsyncstop
+
+\def\dostartpdfsync
+  {\immediate\openout\pdfsyncwrite\jobname.pdfsync
+   \immediate\write\pdfsyncwrite{\jobname}%
+   \immediate\write\pdfsyncwrite{version 0}}
+
+\def\dostoppdfsync
+  {\immediate\closeout\pdfsyncwrite}
+
+\def\doregisterpdfsyncpage
+  {\immediate\write\pdfsyncwrite{s\space\realfolio}}
+
+\def\dopdfsyncopenfile
+  {\immediate\write\pdfsyncwrite{(\space\readfilename}}
+
+\def\dopdfsyncclosefile
+  {\immediate\write\pdfsyncwrite{)}}
+
+\def\doregisterpdfsyncnode#1%
+  {\ifcase\pdfsyncstate\else
+     \pdfsavepos
+     \immediate\write\pdfsyncwrite{l\space\the\pdfsynccounter\space\the\inputlineno}%
+     \expanded{\write\pdfsyncwrite{p\ifnum#1=\plusone*\fi\space\the\pdfsynccounter\space\noexpand\the\pdflastxpos\space\noexpand\the\pdflastypos}}%
+     \global\advance\pdfsynccounter\plusone
+   \fi}
+
+\let\pdfsynctracer\gobbleoneargument
+
+\def\pdfsync    {\doregisterpdfsyncnode\plusone  \pdfsynctracer*}
+\def\pdfsyncnode{\doregisterpdfsyncnode\zerocount\pdfsynctracer}
+\def\pdfsynctext{\doregisterpdfsyncnode\plusone  \pdfsynctracer}
+
+\appendtoks \dostartpdfsync        \to \everystarttext
+%appendtoks \dostoppdfsync         \to \everystoptext
+\appendtoks \doregisterpdfsyncpage \to \everyshipout
+\appendtoks \dopdfsyncopenfile     \to \everybeforereadfile
+\appendtoks \dopdfsyncclosefile    \to \everyafterreadfile
+
+\appendtoks \enablepdfsync         \to \everystarttext
+\appendtoks \disablepdfsync        \to \everypagebody
+
+% beware, adding nodes this way will interfere with the typesetting
+
+\appendtoks \pdfsyncnode p\to \everypar
+\appendtoks \pdfsyncnode m\to \everymath
+\appendtoks \pdfsyncnode h\to \everyhbox
+
+% just for fun
+
+\def\pdfsynctracer#1%
+  {\ifcase\pdfsynctracemode\else
+     \ifcase\pdfsyncstate\else
+       \begingroup
+       \forgetall
+       \disablepdfsync
+       \ifcase\pdfsynctracemode\or % could be done more efficient, box around ifcase
+         \setbox\scratchbox\hbox to \zeropoint{\hss\infofont#1\hss}%   1
+       \else
+         \setbox\scratchbox\hbox to \zeropoint{\hss\traceboxplacementtrue\boxcursor\hss}% 2/3/4
+       \fi
+       \smashbox\scratchbox\box\scratchbox
+       \ifcase\pdfsynctracemode\or\or\or
+         \setbox\scratchbox\hbox to \zeropoint{\hss\raise1.25ex\hbox{\infofont#1}\hss}%  3
+         \smashbox\scratchbox\box\scratchbox
+       \or
+         \setbox\scratchbox\hbox to \zeropoint{\hss\lower1.25ex\hbox{\infofont#1}\hss}%  4
+         \smashbox\scratchbox\box\scratchbox
+       \fi
+       \endgroup
+     \fi
+   \fi}
+
+% \def\pdfsynctracer#1% more efficient but unreadable
+%   {\ifcase\pdfsynctracemode\else
+%      \ifcase\pdfsyncstate\else
+%        \begingroup
+%        \forgetall
+%        \disablepdfsync
+%        \setbox\scratchbox\hbox to \zeropoint
+%           {\hss
+%            \ifcase\pdfsynctracemode\or
+%              \infofont#1%   1
+%            \else
+%              \traceboxplacementtrue\boxcursor% 2/3/4
+%            \fi
+%            \hss}%
+%        \smashbox\scratchbox\box\scratchbox
+%        \setbox\scratchbox\hbox to \zeropoint
+%          {\hss
+%           \ifcase\pdfsynctracemode\or\or\or
+%             \raise1.25ex\hbox{\infofont#1}%  3
+%           \or
+%             \lower1.25ex\hbox{\infofont#1}%  4
+%           \fi
+%           \hss}%
+%        \smashbox\scratchbox\box\scratchbox
+%        \endgroup
+%      \fi
+%    \fi}
+
+\protect
+
+\doifnotmode{demo}{\endinput}
+
+\chardef\pdfsynctracemode=3
+
+\starttext
+
+\chapter{Test}
+
+\processfile{tufte}
+
+\startitemize
+\item first
+\item second
+\stopitemize
+
+\processfile{tufte}
+
+\startlines
+some local \pdfsync sync and \pdfsynctext{here}a marked point
+some local \pdfsync sync and \pdfsyncnode{here}a marked point
+\stoplines
+
+\stoptext

@@ -97,7 +97,7 @@
 %D
 %D \showelements [context] [references]
 
-\defineXMLpickup [context:pageref] [label=] {\op}     {[\XMLop{label}]}
+\defineXMLpickup [context:pageref] [label=] {\at}     {[\XMLop{label}]}
 \defineXMLpickup [context:textref] [label=] {\in}     {[\XMLop{label}]}
 \defineXMLpickup [context:lineref] [label=] {\inline} {[\XMLop{label}]}
 
@@ -201,16 +201,36 @@
 
 \defineXMLenvironment [context:itemize] [type=,packed=]
   {\let\XMLoptions\empty
-   \doifsomethingXMLop{type}
-     {\addtocommalist{\XMLop{type}}\XMLoptions}
-   \doifXMLop{packed}{yes}
-     {\addtocommalist{packed}\XMLoptions}
+   \doifsomethingXMLop{type}{\addtocommalist{\XMLop{type}}\XMLoptions}%
+   \doifXMLop{packed}{yes}{\addtocommalist{packed}\XMLoptions}%
    \expanded{\startitemize[\XMLoptions]}}
   {\stopitemize}
 
 \defineXMLenvironment [context:item] [label=]
   {\expanded{\item[\XMLop{label}]}}
   {\endgraf}
+
+%D \elements {externalfigure}
+%D
+%D \startbuffer
+%D The previous examples already demonstrated how we can include a graphic:
+%D
+%D <verbatim>
+%D <line><externalfigure file="koe" width="5cm" /></line>
+%D </verbatim>
+%D \stopbuffer
+%D
+%D \showelements [context] [externalfigure]
+
+\defineXMLsingular [context:externalfigure] [\??ef] [base=,label=,file=]
+  {\bgroup % \getXMLta \expandXMLta \expandXMLtp{file}%
+   \expandXMLta
+   \getXMLta % expand entities first
+   \doifelsenothing{\XMLtp{label}}
+     {\expanded{\externalfigure[\XMLtp{file}][\XMLta]}}
+     {\doifsomething{\XMLtp{base}}{\usefigurebase[\XMLtp{base}]}%
+      \expanded{\externalfigure[\XMLtp{label}][\XMLta]}}
+   \egroup}
 
 %D \elements {fixed}
 %D
@@ -236,12 +256,12 @@
   {\bgroup
    \defineXMLsave[context:caption]
    \defineXMLsave[context:content]}
-  {\expanded{\startfixed[\XMLop{location}]}
-   \doifXMLdataelse{context:caption}
-     {\startcombination[1*1]
-        {\XMLflush{context:content}} {\XMLflush{context:caption}}
-      \stopcombination}
-     {\XMLflush{context:content}}
+  {\expanded{\startfixed[\XMLop{location}]}%
+     \doifXMLdataelse{context:caption}
+       {\startcombination[1*1]
+          {\XMLflush{context:content}} {\XMLflush{context:caption}}
+        \stopcombination}
+       {\XMLflush{context:content}}%
    \stopfixed
    \egroup}
 
@@ -270,27 +290,6 @@
      {\placefloat
         [\XMLop{type}] [\XMLop{location}] [\XMLop{label}]
         {\XMLflush{context:caption}} {\XMLflush{context:content}}}
-   \egroup}
-
-%D \elements {externalfigure}
-%D
-%D \startbuffer
-%D The previous examples already demonstrated how we can include a graphic:
-%D
-%D <verbatim>
-%D <line><externalfigure file="koe" width="5cm" /></line>
-%D </verbatim>
-%D \stopbuffer
-%D
-%D \showelements [context] [externalfigure]
-
-\defineXMLsingular [context:externalfigure] [\??ef] [base=,label=,file=]
-  {\bgroup % \getXMLta \expandXMLta \expandXMLtp{file}%
-   \expandXMLta \getXMLta % expand entities first
-   \doifelsenothing{\XMLtp{label}}
-     {\expanded{\externalfigure[\XMLtp{file}][\XMLta]}}
-     {\doifsomething{\XMLtp{base}}{\usefigurebase[\XMLtp{base}]}%
-      \expanded{\externalfigure[\XMLtp{label}][\XMLta]}}
    \egroup}
 
 %D \elements {quotation,quote}
@@ -390,12 +389,13 @@
 
 \defineXMLsingular [context:tcell] [align=]
   {\appendtoks|\to\XMLtabtoks
-   \processaction
-     [\XMLop{align}]
-     [  left=>\appendtoks l\to\XMLtabtoks,
-       right=>\appendtoks r\to\XMLtabtoks,
-      center=>\appendtoks c\to\XMLtabtoks,
-      middle=>\appendtoks c\to\XMLtabtoks]}
+   \expanded{\processallactionsinset
+     [\XMLop{align}]}
+     [  paragraph=>\appendtoks p\to\XMLtabtoks,
+             left=>\appendtoks l\to\XMLtabtoks,
+            right=>\appendtoks r\to\XMLtabtoks,
+           center=>\appendtoks c\to\XMLtabtoks,
+           middle=>\appendtoks c\to\XMLtabtoks]}
 
 \defineXMLenvironment [context:tr] {\ignorespaces} {\NC\NR}
 \defineXMLenvironment [context:td] {\NC}           {\ignorespaces}
@@ -476,3 +476,5 @@
 
 \defineXMLpickup [combinationcaption]
   {\appendtoks\bgroup}{\egroup\to\scratchtoks}
+
+\endinput

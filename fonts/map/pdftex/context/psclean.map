@@ -1,0 +1,1433 @@
+% courier / urw
+
+ucrb8r  NimbusMonL-Bold          <8r.enc <ucrb8a.pfb
+ucrbo8r NimbusMonL-BoldObli      <8r.enc <ucrbo8a.pfb
+ucrr8r  NimbusMonL-Regu          <8r.enc <ucrr8a.pfb
+ucrro8r NimbusMonL-ReguObli      <8r.enc <ucrro8a.pfb
+
+% courier / adobe
+
+pcrb8r  NimbusMonL-Bold          <8r.enc <ucrb8a.pfb
+pcrbo8r NimbusMonL-BoldObli      <8r.enc <ucrbo8a.pfb
+pcrr8r  NimbusMonL-Regu          <8r.enc <ucrr8a.pfb
+pcrro8r NimbusMonL-ReguObli      <8r.enc <ucrro8a.pfb
+
+% helvetica / urw
+
+uhvb8r  NimbusSanL-Bold          <8r.enc <uhvb8a.pfb
+uhvbo8r NimbusSanL-BoldItal      <8r.enc <uhvbo8a.pfb
+uhvr8r  NimbusSanL-Regu          <8r.enc <uhvr8a.pfb
+uhvro8r NimbusSanL-ReguItal      <8r.enc <uhvro8a.pfb
+
+% helvetica / adobe
+
+phvb8r  NimbusSanL-Bold          <8r.enc <uhvb8a.pfb
+phvbo8r NimbusSanL-BoldItal      <8r.enc <uhvbo8a.pfb
+phvr8r  NimbusSanL-Regu          <8r.enc <uhvr8a.pfb
+phvro8r NimbusSanL-ReguItal      <8r.enc <uhvro8a.pfb
+
+% times / urw
+
+utmb8r  NimbusRomNo9L-Medi       <8r.enc <utmb8a.pfb
+utmbi8r NimbusRomNo9L-MediItal   <8r.enc <utmbi8a.pfb
+utmr8r  NimbusRomNo9L-Regu       <8r.enc <utmr8a.pfb
+utmri8r NimbusRomNo9L-ReguItal   <8r.enc <utmri8a.pfb
+
+utmbo8r NimbusRomNo9L-Medi       ".167 SlantFont" <8r.enc <utmb8a.pfb
+utmro8r NimbusRomNo9L-Regu       ".167 SlantFont" <8r.enc <utmr8a.pfb
+
+% times / adobe
+
+ptmb8r  NimbusRomNo9L-Medi       <8r.enc <utmb8a.pfb
+ptmbi8r NimbusRomNo9L-MediItal   <8r.enc <utmbi8a.pfb
+ptmr8r  NimbusRomNo9L-Regu       <8r.enc <utmr8a.pfb
+ptmri8r NimbusRomNo9L-ReguItal   <8r.enc <utmri8a.pfb
+
+ptmbo8r NimbusRomNo9L-Medi       ".167 SlantFont" <8r.enc <utmb8a.pfb
+ptmro8r NimbusRomNo9L-Regu       ".167 SlantFont" <8r.enc <utmr8a.pfb
+
+% palatino / urw
+
+uplb8r  URWPalladioL-Bold        <8r.enc <uplb8a.pfb
+uplbi8r URWPalladioL-BoldItal    <8r.enc <uplbi8a.pfb
+uplr8r  URWPalladioL-Roma        <8r.enc <uplr8a.pfb
+uplri8r URWPalladioL-Ital        <8r.enc <uplri8a.pfb
+
+uplbo8r URWPalladioL-Bold        ".167 SlantFont" <8r.enc <uplb8a.pfb
+uplro8r URWPalladioL-Roma        ".167 SlantFont" <8r.enc <uplr8a.pfb
+
+% palatino / adobe
+
+pplb8r  URWPalladioL-Bold        <8r.enc <uplb8a.pfb
+pplbi8r URWPalladioL-BoldItal    <8r.enc <uplbi8a.pfb
+pplr8r  URWPalladioL-Roma        <8r.enc <uplr8a.pfb
+pplri8r URWPalladioL-Ital        <8r.enc <uplri8a.pfb
+
+pplbo8r URWPalladioL-Bold        ".167 SlantFont" <8r.enc <uplb8a.pfb
+pplro8r URWPalladioL-Roma        ".167 SlantFont" <8r.enc <uplr8a.pfb
+
+% bookman / urw
+
+ubkd8r  URWBookmanL-DemiBold     <8r.enc <ubkd8a.pfb
+ubkdi8r URWBookmanL-DemiBoldItal <8r.enc <ubkdi8a.pfb
+ubkl8r  URWBookmanL-Ligh         <8r.enc <ubkl8a.pfb
+ubkli8r URWBookmanL-LighItal     <8r.enc <ubkli8a.pfb
+
+ubkdo8r URWBookmanL-DemiBold     ".167 SlantFont" <8r.enc <ubkd8a.pfb
+ubklo8r URWBookmanL-Ligh         ".167 SlantFont" <8r.enc <ubkl8a.pfb
+
+% bookman / adobe
+
+pbkd8r  URWBookmanL-DemiBold     <8r.enc <ubkd8a.pfb
+pbkdi8r URWBookmanL-DemiBoldItal <8r.enc <ubkdi8a.pfb
+pbkl8r  URWBookmanL-Ligh         <8r.enc <ubkl8a.pfb
+pbkli8r URWBookmanL-LighItal     <8r.enc <ubkli8a.pfb
+
+pbkdo8r URWBookmanL-DemiBold     ".167 SlantFont" <8r.enc <ubkd8a.pfb
+pbklo8r URWBookmanL-Ligh         ".167 SlantFont" <8r.enc <ubkl8a.pfb
+
+% chancery / urw
+
+uzcmi8r URWChanceryL-MediItal    <8r.enc <uzcmi8a.pfb
+
+% chancery / adobe
+
+pzcmi8r URWChanceryL-MediItal    <8r.enc <uzcmi8a.pfb
+
+% schoolbook / urw
+
+uncb8r  CenturySchL-Bold         <8r.enc <uncb8a.pfb
+uncbi8r CenturySchL-BoldItal     <8r.enc <uncbi8a.pfb
+uncr8r  CenturySchL-Roma         <8r.enc <uncr8a.pfb
+uncri8r CenturySchL-Ital         <8r.enc <uncri8a.pfb
+
+uncbo8r CenturySchL-Bold         ".167 SlantFont" <8r.enc <uncb8a.pfb
+uncro8r CenturySchL-Roma         ".167 SlantFont" <8r.enc <uncr8a.pfb
+
+% schoolbook / adobe
+
+pncb8r  CenturySchL-Bold         <8r.enc <uncb8a.pfb
+pncbi8r CenturySchL-BoldItal     <8r.enc <uncbi8a.pfb
+pncr8r  CenturySchL-Roma         <8r.enc <uncr8a.pfb
+pncri8r CenturySchL-Ital         <8r.enc <uncri8a.pfb
+
+pncbo8r CenturySchL-Bold         ".167 SlantFont" <8r.enc <uncb8a.pfb
+pncro8r CenturySchL-Roma         ".167 SlantFont" <8r.enc <uncr8a.pfb
+
+% utopia
+
+putb8r  Utopia-Bold              <8r.enc <putb8a.pfb
+putbi8r Utopia-BoldItalic        <8r.enc <putbi8a.pfb
+putr8r  Utopia-Regular           <8r.enc <putr8a.pfb
+putri8r Utopia-Italic            <8r.enc <putri8a.pfb
+
+putbo8r Utopia-Bold              ".167 SlantFont" <8r.enc <putb8a.pfb
+putro8r Utopia-Regular           ".167 SlantFont" <8r.enc <putr8a.pfb
+
+% charter
+
+bchb8r  CharterBT-Bold           <8r.enc <bchb8a.pfb
+bchbi8r CharterBT-BoldItalic     <8r.enc <bchbi8a.pfb
+bchr8r  CharterBT-Roman          <8r.enc <bchr8a.pfb
+bchri8r CharterBT-Italic         <8r.enc <bchri8a.pfb
+
+bchbo8r CharterBT-Bold           ".167 SlantFont" <8r.enc <bchb8a.pfb
+bchro8r CharterBT-Roman          ".167 SlantFont" <8r.enc <bchr8a.pfb
+
+% this is an empty map file
+
+% courier / urw
+
+ucrb8t  NimbusMonL-Bold          <ec.enc <ucrb8a.pfb
+ucrbo8t NimbusMonL-BoldObli      <ec.enc <ucrbo8a.pfb
+ucrr8t  NimbusMonL-Regu          <ec.enc <ucrr8a.pfb
+ucrro8t NimbusMonL-ReguObli      <ec.enc <ucrro8a.pfb
+
+% courier / adobe
+
+pcrb8t  NimbusMonL-Bold          <ec.enc <ucrb8a.pfb
+pcrbo8t NimbusMonL-BoldObli      <ec.enc <ucrbo8a.pfb
+pcrr8t  NimbusMonL-Regu          <ec.enc <ucrr8a.pfb
+pcrro8t NimbusMonL-ReguObli      <ec.enc <ucrro8a.pfb
+
+% helvetica / urw
+
+uhvb8t  NimbusSanL-Bold          <ec.enc <uhvb8a.pfb
+uhvbo8t NimbusSanL-BoldItal      <ec.enc <uhvbo8a.pfb
+uhvr8t  NimbusSanL-Regu          <ec.enc <uhvr8a.pfb
+uhvro8t NimbusSanL-ReguItal      <ec.enc <uhvro8a.pfb
+
+% helvetica / adobe
+
+phvb8t  NimbusSanL-Bold          <ec.enc <uhvb8a.pfb
+phvbo8t NimbusSanL-BoldItal      <ec.enc <uhvbo8a.pfb
+phvr8t  NimbusSanL-Regu          <ec.enc <uhvr8a.pfb
+phvro8t NimbusSanL-ReguItal      <ec.enc <uhvro8a.pfb
+
+% times / urw
+
+utmb8t  NimbusRomNo9L-Medi       <ec.enc <utmb8a.pfb
+utmbi8t NimbusRomNo9L-MediItal   <ec.enc <utmbi8a.pfb
+utmr8t  NimbusRomNo9L-Regu       <ec.enc <utmr8a.pfb
+utmri8t NimbusRomNo9L-ReguItal   <ec.enc <utmri8a.pfb
+
+utmbo8t NimbusRomNo9L-Medi       ".167 SlantFont" <ec.enc <utmb8a.pfb
+utmro8t NimbusRomNo9L-Regu       ".167 SlantFont" <ec.enc <utmr8a.pfb
+
+% times / adobe
+
+ptmb8t  NimbusRomNo9L-Medi       <ec.enc <utmb8a.pfb
+ptmbi8t NimbusRomNo9L-MediItal   <ec.enc <utmbi8a.pfb
+ptmr8t  NimbusRomNo9L-Regu       <ec.enc <utmr8a.pfb
+ptmri8t NimbusRomNo9L-ReguItal   <ec.enc <utmri8a.pfb
+
+ptmbo8t NimbusRomNo9L-Medi       ".167 SlantFont" <ec.enc <utmb8a.pfb
+ptmro8t NimbusRomNo9L-Regu       ".167 SlantFont" <ec.enc <utmr8a.pfb
+
+% palatino / urw
+
+uplb8t  URWPalladioL-Bold        <ec.enc <uplb8a.pfb
+uplbi8t URWPalladioL-BoldItal    <ec.enc <uplbi8a.pfb
+uplr8t  URWPalladioL-Roma        <ec.enc <uplr8a.pfb
+uplri8t URWPalladioL-Ital        <ec.enc <uplri8a.pfb
+
+uplbo8t URWPalladioL-Bold        ".167 SlantFont" <ec.enc <uplb8a.pfb
+uplro8t URWPalladioL-Roma        ".167 SlantFont" <ec.enc <uplr8a.pfb
+
+% palatino / adobe
+
+pplb8t  URWPalladioL-Bold        <ec.enc <uplb8a.pfb
+pplbi8t URWPalladioL-BoldItal    <ec.enc <uplbi8a.pfb
+pplr8t  URWPalladioL-Roma        <ec.enc <uplr8a.pfb
+pplri8t URWPalladioL-Ital        <ec.enc <uplri8a.pfb
+
+pplbo8t URWPalladioL-Bold        ".167 SlantFont" <ec.enc <uplb8a.pfb
+pplro8t URWPalladioL-Roma        ".167 SlantFont" <ec.enc <upplr8a.pfb
+
+% bookman / urw
+
+ubkd8t  URWBookmanL-DemiBold     <ec.enc <ubkd8a.pfb
+ubkdi8t URWBookmanL-DemiBoldItal <ec.enc <ubkdi8a.pfb
+ubkl8t  URWBookmanL-Ligh         <ec.enc <ubkl8a.pfb
+ubkli8t URWBookmanL-LighItal     <ec.enc <ubkli8a.pfb
+
+ubkdo8t URWBookmanL-DemiBold     ".167 SlantFont" <ec.enc <ubkd8a.pfb
+ubklo8t URWBookmanL-Ligh         ".167 SlantFont" <ec.enc <ubkl8a.pfb
+
+% bookman / adobe
+
+pbkd8t  URWBookmanL-DemiBold     <ec.enc <ubkd8a.pfb
+pbkdi8t URWBookmanL-DemiBoldItal <ec.enc <ubkdi8a.pfb
+pbkl8t  URWBookmanL-Ligh         <ec.enc <ubkl8a.pfb
+pbkli8t URWBookmanL-LighItal     <ec.enc <ubkli8a.pfb
+
+pbkdo8t URWBookmanL-DemiBold     ".167 SlantFont" <ec.enc <ubkd8a.pfb
+pbklo8t URWBookmanL-Ligh         ".167 SlantFont" <ec.enc <ubkl8a.pfb
+
+% chancery / urw
+
+uzcmi8t URWChanceryL-MediItal    <ec.enc <uzcmi8a.pfb
+
+% chancery / adobe
+
+pzcmi8t URWChanceryL-MediItal    <ec.enc <uzcmi8a.pfb
+
+% schoolbook / urw
+
+uncb8t  CenturySchL-Bold         <ec.enc <uncb8a.pfb
+uncbi8t CenturySchL-BoldItal     <ec.enc <uncbi8a.pfb
+uncr8t  CenturySchL-Roma         <ec.enc <uncr8a.pfb
+uncri8t CenturySchL-Ital         <ec.enc <uncri8a.pfb
+
+uncbo8t CenturySchL-Bold         ".167 SlantFont" <ec.enc <uncb8a.pfb
+uncro8t CenturySchL-Roma         ".167 SlantFont" <ec.enc <uncr8a.pfb
+
+% schoolbook / adobe
+
+pncb8t  CenturySchL-Bold         <ec.enc <uncb8a.pfb
+pncbi8t CenturySchL-BoldItal     <ec.enc <uncbi8a.pfb
+pncr8t  CenturySchL-Roma         <ec.enc <uncr8a.pfb
+pncri8t CenturySchL-Ital         <ec.enc <uncri8a.pfb
+
+pncbo8t CenturySchL-Bold         ".167 SlantFont" <ec.enc <uncb8a.pfb
+pncro8t CenturySchL-Roma         ".167 SlantFont" <ec.enc <uncr8a.pfb
+
+% utopia
+
+putb8t  Utopia-Bold              <ec.enc <putb8a.pfb
+putbi8t Utopia-BoldItalic        <ec.enc <putbi8a.pfb
+putr8t  Utopia-Regular           <ec.enc <putr8a.pfb
+putri8t Utopia-Italic            <ec.enc <putri8a.pfb
+
+putbo8t Utopia-Bold              ".167 SlantFont" <ec.enc <putb8a.pfb
+putro8t Utopia-Regular           ".167 SlantFont" <ec.enc <putr8a.pfb
+
+% charter
+
+bchb8t  CharterBT-Bold           <ec.enc <bchb8a.pfb
+bchbi8t CharterBT-BoldItalic     <ec.enc <bchbi8a.pfb
+bchr8t  CharterBT-Roman          <ec.enc <bchr8a.pfb
+bchri8t CharterBT-Italic         <ec.enc <bchri8a.pfb
+
+bchbo8t CharterBT-Bold           ".167 SlantFont" <ec.enc <bchb8a.pfb
+bchro8t CharterBT-Roman          ".167 SlantFont" <ec.enc <bchr8a.pfb
+
+% this is an empty map file
+
+cork-lmb10    LMRomanDemi10-Regular        <cork-lm.enc <lmb10.pfb
+cork-lmbo10   LMRomanDemi10-Italic         <cork-lm.enc <lmbo10.pfb
+cork-lmbx10   LMRoman10-Bold               <cork-lm.enc <lmbx10.pfb
+cork-lmbx12   LMRoman12-Bold               <cork-lm.enc <lmbx12.pfb
+cork-lmbx5    LMRoman5-Bold                <cork-lm.enc <lmbx5.pfb
+cork-lmbx6    LMRoman6-Bold                <cork-lm.enc <lmbx6.pfb
+cork-lmbx7    LMRoman7-Bold                <cork-lm.enc <lmbx7.pfb
+cork-lmbx8    LMRoman8-Bold                <cork-lm.enc <lmbx8.pfb
+cork-lmbx9    LMRoman9-Bold                <cork-lm.enc <lmbx9.pfb
+cork-lmbxi10  LMRoman10-BoldItalic         <cork-lm.enc <lmbxi10.pfb
+cork-lmbxo10  LMSlanted10-BoldItalic       <cork-lm.enc <lmbxo10.pfb
+cork-lmcsc10  LMCaps10-Regular             <cork-lm.enc <lmcsc10.pfb
+cork-lmcsco10 LMCaps10-Italic              <cork-lm.enc <lmcsco10.pfb
+cork-lmr10    LMRoman10-Regular            <cork-lm.enc <lmr10.pfb
+cork-lmr12    LMRoman12-Regular            <cork-lm.enc <lmr12.pfb
+cork-lmr17    LMRoman17-Regular            <cork-lm.enc <lmr17.pfb
+cork-lmr5     LMRoman5-Regular             <cork-lm.enc <lmr5.pfb
+cork-lmr6     LMRoman6-Regular             <cork-lm.enc <lmr6.pfb
+cork-lmr7     LMRoman7-Regular             <cork-lm.enc <lmr7.pfb
+cork-lmr8     LMRoman8-Regular             <cork-lm.enc <lmr8.pfb
+cork-lmr9     LMRoman9-Regular             <cork-lm.enc <lmr9.pfb
+cork-lmri10   LMRoman10-Italic             <cork-lm.enc <lmri10.pfb
+cork-lmri12   LMRoman12-Italic             <cork-lm.enc <lmri12.pfb
+cork-lmri7    LMRoman7-Italic              <cork-lm.enc <lmri7.pfb
+cork-lmri8    LMRoman8-Italic              <cork-lm.enc <lmri8.pfb
+cork-lmri9    LMRoman9-Italic              <cork-lm.enc <lmri9.pfb
+cork-lmro10   LMSlanted10-Italic           <cork-lm.enc <lmro10.pfb
+cork-lmro12   LMSlanted12-Italic           <cork-lm.enc <lmro12.pfb
+cork-lmro8    LMSlanted8-Italic            <cork-lm.enc <lmro8.pfb
+cork-lmro9    LMSlanted9-Italic            <cork-lm.enc <lmro9.pfb
+cork-lmss10   LMSans10-Regular             <cork-lm.enc <lmss10.pfb
+cork-lmss12   LMSans12-Regular             <cork-lm.enc <lmss12.pfb
+cork-lmss17   LMSans17-Regular             <cork-lm.enc <lmss17.pfb
+cork-lmss8    LMSans8-Regular              <cork-lm.enc <lmss8.pfb
+cork-lmss9    LMSans9-Regular              <cork-lm.enc <lmss9.pfb
+cork-lmssbo10 LMSans10-BoldItalic          <cork-lm.enc <lmssbo10.pfb
+cork-lmssbx10 LMSans10-Bold                <cork-lm.enc <lmssbx10.pfb
+cork-lmssdc10 LMSansDemiCond10-Regular     <cork-lm.enc <lmssdc10.pfb
+cork-lmssdo10 LMSansDemiCond10-Italic      <cork-lm.enc <lmssdo10.pfb
+cork-lmsso10  LMSans10-Italic              <cork-lm.enc <lmsso10.pfb
+cork-lmsso12  LMSans12-Italic              <cork-lm.enc <lmsso12.pfb
+cork-lmsso17  LMSans17-Italic              <cork-lm.enc <lmsso17.pfb
+cork-lmsso8   LMSans8-Italic               <cork-lm.enc <lmsso8.pfb
+cork-lmsso9   LMSans9-Italic               <cork-lm.enc <lmsso9.pfb
+cork-lmssq8   LMSansQuotation8-Regular     <cork-lm.enc <lmssq8.pfb
+cork-lmssqbo8 LMSansQuotation8-BoldItalic  <cork-lm.enc <lmssqbo8.pfb
+cork-lmssqbx8 LMSansQuotation8-Bold        <cork-lm.enc <lmssqbx8.pfb
+cork-lmssqo8  LMSansQuotation8-Italic      <cork-lm.enc <lmssqo8.pfb
+cork-lmtcsc10 LMTypewriterCaps10-Regular   <cork-lm.enc <lmtcsc10.pfb
+cork-lmtt10   LMTypewriter10-Regular       <cork-lm.enc <lmtt10.pfb
+cork-lmtt12   LMTypewriter12-Regular       <cork-lm.enc <lmtt12.pfb
+cork-lmtt8    LMTypewriter8-Regular        <cork-lm.enc <lmtt8.pfb
+cork-lmtt9    LMTypewriter9-Regular        <cork-lm.enc <lmtt9.pfb
+cork-lmtti10  LMTypewriter10-Italic        <cork-lm.enc <lmtti10.pfb
+cork-lmtto10  LMTypewriterSlanted10-Italic <cork-lm.enc <lmtto10.pfb
+cork-lmvtt10  LMTypewriterVarWd10-Regular  <cork-lm.enc <lmvtt10.pfb
+cork-lmvtto10 LMTypewriterVarWd10-Italic   <cork-lm.enc <lmvtto10.pfb
+
+% this is an empty map file
+
+% courier / urw
+
+qcrb  <qcr.enc <qcrb.pfb
+qcrbi <qcr.enc <qcrbi.pfb
+qcrr  <qcr.enc <qcrr.pfb
+qcrri <qcr.enc <qcrri.pfb
+
+% helvetica / urw
+
+qhvb   <qhv.enc <qhvb.pfb
+qhvbi  <qhv.enc <qhvbi.pfb
+qhvcb  <qhv.enc <qhvcb.pfb
+qhvcbi <qhv.enc <qhvcbi.pfb
+qhvcr  <qhv.enc <qhvcr.pfb
+qhvcri <qhv.enc <qhvcri.pfb
+qhvr   <qhv.enc <qhvr.pfb
+qhvri  <qhv.enc <qhvri.pfb
+
+% times / urw
+
+qtmb  <qtm.enc <qtmb.pfb
+qtmbi <qtm.enc <qtmbi.pfb
+qtmr  <qtm.enc <qtmr.pfb
+qtmri <qtm.enc <qtmri.pfb
+
+% palatino / urw
+
+qplb  <qpl.enc <qplb.pfb
+qplbi <qpl.enc <qplbi.pfb
+qplr  <qpl.enc <qplr.pfb
+qplri <qpl.enc <qplri.pfb
+
+% bookman / urw
+
+qbkb  <qbk.enc <qbkb.pfb
+qbkbi <qbk.enc <qbkbi.pfb
+qbkr  <qbk.enc <qbkr.pfb
+qbkri <qbk.enc <qbkri.pfb
+
+% chancery / urw
+
+qzcmi <qzc.enc <qzcmi.pfb
+
+% schoolbook / urw
+%
+% not available
+
+% utopia
+%
+% not available
+
+% charter
+%
+% not available
+
+
+
+% this is an empty map file
+
+qx-lmb10    LMRomanDemi10-Regular        <qx-lm.enc   <lmb10.pfb
+qx-lmbo10   LMRomanDemi10-Italic         <qx-lm.enc   <lmbo10.pfb
+qx-lmbx10   LMRoman10-Bold               <qx-lm.enc   <lmbx10.pfb
+qx-lmbx12   LMRoman12-Bold               <qx-lm.enc   <lmbx12.pfb
+qx-lmbx5    LMRoman5-Bold                <qx-lm.enc   <lmbx5.pfb
+qx-lmbx6    LMRoman6-Bold                <qx-lm.enc   <lmbx6.pfb
+qx-lmbx7    LMRoman7-Bold                <qx-lm.enc   <lmbx7.pfb
+qx-lmbx8    LMRoman8-Bold                <qx-lm.enc   <lmbx8.pfb
+qx-lmbx9    LMRoman9-Bold                <qx-lm.enc   <lmbx9.pfb
+qx-lmbxi10  LMRoman10-BoldItalic         <qx-lm.enc   <lmbxi10.pfb
+qx-lmbxo10  LMSlanted10-BoldItalic       <qx-lm.enc   <lmbxo10.pfb
+qx-lmcsc10  LMCaps10-Regular             <qx-lm.enc   <lmcsc10.pfb
+qx-lmcsco10 LMCaps10-Italic              <qx-lm.enc   <lmcsco10.pfb
+qx-lmr10    LMRoman10-Regular            <qx-lm.enc   <lmr10.pfb
+qx-lmr12    LMRoman12-Regular            <qx-lm.enc   <lmr12.pfb
+qx-lmr17    LMRoman17-Regular            <qx-lm.enc   <lmr17.pfb
+qx-lmr5     LMRoman5-Regular             <qx-lm.enc   <lmr5.pfb
+qx-lmr6     LMRoman6-Regular             <qx-lm.enc   <lmr6.pfb
+qx-lmr7     LMRoman7-Regular             <qx-lm.enc   <lmr7.pfb
+qx-lmr8     LMRoman8-Regular             <qx-lm.enc   <lmr8.pfb
+qx-lmr9     LMRoman9-Regular             <qx-lm.enc   <lmr9.pfb
+qx-lmri10   LMRoman10-Italic             <qx-lm.enc   <lmri10.pfb
+qx-lmri12   LMRoman12-Italic             <qx-lm.enc   <lmri12.pfb
+qx-lmri7    LMRoman7-Italic              <qx-lm.enc   <lmri7.pfb
+qx-lmri8    LMRoman8-Italic              <qx-lm.enc   <lmri8.pfb
+qx-lmri9    LMRoman9-Italic              <qx-lm.enc   <lmri9.pfb
+qx-lmro10   LMSlanted10-Italic           <qx-lm.enc   <lmro10.pfb
+qx-lmro12   LMSlanted12-Italic           <qx-lm.enc   <lmro12.pfb
+qx-lmro8    LMSlanted8-Italic            <qx-lm.enc   <lmro8.pfb
+qx-lmro9    LMSlanted9-Italic            <qx-lm.enc   <lmro9.pfb
+qx-lmss10   LMSans10-Regular             <qx-lm.enc   <lmss10.pfb
+qx-lmss12   LMSans12-Regular             <qx-lm.enc   <lmss12.pfb
+qx-lmss17   LMSans17-Regular             <qx-lm.enc   <lmss17.pfb
+qx-lmss8    LMSans8-Regular              <qx-lm.enc   <lmss8.pfb
+qx-lmss9    LMSans9-Regular              <qx-lm.enc   <lmss9.pfb
+qx-lmssbo10 LMSans10-BoldItalic          <qx-lm.enc   <lmssbo10.pfb
+qx-lmssbx10 LMSans10-Bold                <qx-lm.enc   <lmssbx10.pfb
+qx-lmssdc10 LMSansDemiCond10-Regular     <qx-lm.enc   <lmssdc10.pfb
+qx-lmssdo10 LMSansDemiCond10-Italic      <qx-lm.enc   <lmssdo10.pfb
+qx-lmsso10  LMSans10-Italic              <qx-lm.enc   <lmsso10.pfb
+qx-lmsso12  LMSans12-Italic              <qx-lm.enc   <lmsso12.pfb
+qx-lmsso17  LMSans17-Italic              <qx-lm.enc   <lmsso17.pfb
+qx-lmsso8   LMSans8-Italic               <qx-lm.enc   <lmsso8.pfb
+qx-lmsso9   LMSans9-Italic               <qx-lm.enc   <lmsso9.pfb
+qx-lmssq8   LMSansQuotation8-Regular     <qx-lm.enc   <lmssq8.pfb
+qx-lmssqbo8 LMSansQuotation8-BoldItalic  <qx-lm.enc   <lmssqbo8.pfb
+qx-lmssqbx8 LMSansQuotation8-Bold        <qx-lm.enc   <lmssqbx8.pfb
+qx-lmssqo8  LMSansQuotation8-Italic      <qx-lm.enc   <lmssqo8.pfb
+qx-lmtcsc10 LMTypewriterCaps10-Regular   <qx-lmtt.enc <lmtcsc10.pfb
+qx-lmtt10   LMTypewriter10-Regular       <qx-lmtt.enc <lmtt10.pfb
+qx-lmtt12   LMTypewriter12-Regular       <qx-lmtt.enc <lmtt12.pfb
+qx-lmtt8    LMTypewriter8-Regular        <qx-lmtt.enc <lmtt8.pfb
+qx-lmtt9    LMTypewriter9-Regular        <qx-lmtt.enc <lmtt9.pfb
+qx-lmtti10  LMTypewriter10-Italic        <qx-lmtt.enc <lmtti10.pfb
+qx-lmtto10  LMTypewriterSlanted10-Italic <qx-lmtt.enc <lmtto10.pfb
+qx-lmvtt10  LMTypewriterVarWd10-Regular  <qx-lm.enc   <lmvtt10.pfb
+qx-lmvtto10 LMTypewriterVarWd10-Italic   <qx-lm.enc   <lmvtto10.pfb
+
+
+
+% this is an empty map file
+
+% author: Hans Hagen
+%
+% This map file defines the texnansi alternatives of the public fonts,
+% beware, these are seldom present on your system. If you really want
+% to use these fonts, uncomment the relevant lines. If no fonts are
+% present, pdftex may get confused.
+
+% courier / urw
+
+% ucrb8y  NimbusMonL-Bold          <texnansi.enc <ucrb8a.pfb
+% ucrbo8y NimbusMonL-BoldObli      <texnansi.enc <ucrbo8a.pfb
+% ucrr8y  NimbusMonL-Regu          <texnansi.enc <ucrr8a.pfb
+% ucrro8y NimbusMonL-ReguObli      <texnansi.enc <ucrro8a.pfb
+
+% courier / adobe
+
+% pcrb8y  NimbusMonL-Bold          <texnansi.enc <ucrb8a.pfb
+% pcrbo8y NimbusMonL-BoldObli      <texnansi.enc <ucrbo8a.pfb
+% pcrr8y  NimbusMonL-Regu          <texnansi.enc <ucrr8a.pfb
+% pcrro8y NimbusMonL-ReguObli      <texnansi.enc <ucrro8a.pfb
+
+% helvetica / urw
+
+% uhvb8y  NimbusSanL-Bold          <texnansi.enc <uhvb8a.pfb
+% uhvbo8y NimbusSanL-BoldItal      <texnansi.enc <uhvbo8a.pfb
+% uhvr8y  NimbusSanL-Regu          <texnansi.enc <uhvr8a.pfb
+% uhvro8y NimbusSanL-ReguItal      <texnansi.enc <uhvro8a.pfb
+
+% helvetica / adobe
+
+% phvb8y  NimbusSanL-Bold          <texnansi.enc <uhvb8a.pfb
+% phvbo8y NimbusSanL-BoldItal      <texnansi.enc <uhvbo8a.pfb
+% phvr8y  NimbusSanL-Regu          <texnansi.enc <uhvr8a.pfb
+% phvro8y NimbusSanL-ReguItal      <texnansi.enc <uhvro8a.pfb
+
+% times / urw
+
+% utmb8y  NimbusRomNo9L-Medi       <texnansi.enc <utmb8a.pfb
+% utmbi8y NimbusRomNo9L-MediItal   <texnansi.enc <utmbi8a.pfb
+% utmr8y  NimbusRomNo9L-Regu       <texnansi.enc <utmr8a.pfb
+% utmri8y NimbusRomNo9L-ReguItal   <texnansi.enc <utmri8a.pfb
+
+% utmbo8y NimbusRomNo9L-Medi       ".167 SlantFont" <texnansi.enc <utmb8a.pfb
+% utmro8y NimbusRomNo9L-Regu       ".167 SlantFont" <texnansi.enc <utmr8a.pfb
+
+% times / adobe
+
+% ptmb8y  NimbusRomNo9L-Medi       <texnansi.enc <utmb8a.pfb
+% ptmbi8y NimbusRomNo9L-MediItal   <texnansi.enc <utmbi8a.pfb
+% ptmr8y  NimbusRomNo9L-Regu       <texnansi.enc <utmr8a.pfb
+% ptmri8y NimbusRomNo9L-ReguItal   <texnansi.enc <utmri8a.pfb
+
+% ptmbo8y NimbusRomNo9L-Medi       ".167 SlantFont" <texnansi.enc <utmb8a.pfb
+% ptmro8y NimbusRomNo9L-Regu       ".167 SlantFont" <texnansi.enc <utmr8a.pfb
+
+% palatino / urw
+
+% uplb8y  URWPalladioL-Bold        <texnansi.enc <uplb8a.pfb
+% uplbi8y URWPalladioL-BoldItal    <texnansi.enc <uplbi8a.pfb
+% uplr8y  URWPalladioL-Roma        <texnansi.enc <uplr8a.pfb
+% uplri8y URWPalladioL-Ital        <texnansi.enc <uplri8a.pfb
+
+% uplbo8y URWPalladioL-Bold        ".167 SlantFont" <texnansi.enc <uplb8a.pfb
+% uplro8y URWPalladioL-Roma        ".167 SlantFont" <texnansi.enc <uplr8a.pfb
+
+% palatino / adobe
+
+% pplb8y  URWPalladioL-Bold        <texnansi.enc <uplb8a.pfb
+% pplbi8y URWPalladioL-BoldItal    <texnansi.enc <uplbi8a.pfb
+% pplr8y  URWPalladioL-Roma        <texnansi.enc <uplr8a.pfb
+% pplri8y URWPalladioL-Ital        <texnansi.enc <uplri8a.pfb
+
+% pplbo8y URWPalladioL-Bold        ".167 SlantFont" <texnansi.enc <uplb8a.pfb
+% pplro8y URWPalladioL-Roma        ".167 SlantFont" <texnansi.enc <uplr8a.pfb
+
+% bookman / urw
+
+% ubkd8y  URWBookmanL-DemiBold     <texnansi.enc <ubkd8a.pfb
+% ubkdi8y URWBookmanL-DemiBoldItal <texnansi.enc <ubkdi8a.pfb
+% ubkl8y  URWBookmanL-Ligh         <texnansi.enc <ubkl8a.pfb
+vubkli8y URWBookmanL-LighItal     <texnansi.enc <ubkli8a.pfb
+
+% ubkdo8y URWBookmanL-DemiBold     ".167 SlantFont" <texnansi.enc <ubkd8a.pfb
+% ubklo8y URWBookmanL-Ligh         ".167 SlantFont" <texnansi.enc <ubkl8a.pfb
+
+% bookman / adobe
+
+% pbkd8y  URWBookmanL-DemiBold     <texnansi.enc <ubkd8a.pfb
+% pbkdi8y URWBookmanL-DemiBoldItal <texnansi.enc <ubkdi8a.pfb
+% pbkl8y  URWBookmanL-Ligh         <texnansi.enc <ubkl8a.pfb
+% pbkli8y URWBookmanL-LighItal     <texnansi.enc <ubkli8a.pfb
+
+% pbkdo8y URWBookmanL-DemiBold     ".167 SlantFont" <texnansi.enc <ubkd8a.pfb
+% pbklo8y URWBookmanL-Ligh         ".167 SlantFont" <texnansi.enc <ubkl8a.pfb
+
+% chancery / urw
+
+% uzcmi8y URWChanceryL-MediItal    <texnansi.enc <uzcmi8a.pfb
+
+% chancery / adobe
+
+% pzcmi8y URWChanceryL-MediItal    <texnansi.enc <uzcmi8a.pfb
+
+% schoolbook / urw
+
+% uncb8y  CenturySchL-Bold         <texnansi.enc <uncb8a.pfb
+% uncbi8y CenturySchL-BoldItal     <texnansi.enc <uncbi8a.pfb
+% uncr8y  CenturySchL-Roma         <texnansi.enc <uncr8a.pfb
+% uncri8y CenturySchL-Ital         <texnansi.enc <uncri8a.pfb
+
+% uncbo8y CenturySchL-Bold         ".167 SlantFont" <texnansi.enc <uncb8a.pfb
+% uncro8y CenturySchL-Roma         ".167 SlantFont" <texnansi.enc <uncr8a.pfb
+
+% schoolbook / adobe
+
+% pncb8y  CenturySchL-Bold         <texnansi.enc <uncb8a.pfb
+% pncbi8y CenturySchL-BoldItal     <texnansi.enc <uncbi8a.pfb
+% pncr8y  CenturySchL-Roma         <texnansi.enc <uncr8a.pfb
+% pncri8y CenturySchL-Ital         <texnansi.enc <uncri8a.pfb
+
+% pncbo8y CenturySchL-Bold         ".167 SlantFont" <texnansi.enc <uncb8a.pfb
+% pncro8y CenturySchL-Roma         ".167 SlantFont" <texnansi.enc <uncr8a.pfb
+
+% utopia
+
+% putb8y  Utopia-Bold              <texnansi.enc <putb8a.pfb
+% putbi8y Utopia-BoldItalic        <texnansi.enc <putbi8a.pfb
+% putr8y  Utopia-Regular           <texnansi.enc <putr8a.pfb
+% putri8y Utopia-Italic            <texnansi.enc <putri8a.pfb
+
+% putbo8y Utopia-Bold              ".167 SlantFont" <texnansi.enc <putb8a.pfb
+% putro8y Utopia-Regular           ".167 SlantFont" <texnansi.enc <putr8a.pfb
+
+% charter
+
+% bchb8y  CharterBT-Bold           <texnansi.enc <bchb8a.pfb
+% bchbi8y CharterBT-BoldItalic     <texnansi.enc <bchbi8a.pfb
+% bchr8y  CharterBT-Roman          <texnansi.enc <bchr8a.pfb
+% bchri8y CharterBT-Italic         <texnansi.enc <bchri8a.pfb
+
+% bchbo8y CharterBT-Bold           ".167 SlantFont"  <texnansi.enc <bchb8a.pfb
+% bchro8y CharterBT-Roman          ".167 SlantFont " <texnansi.enc <bchr8a.pfb
+
+% this is an empty map file
+
+texnansi-lmb10    LMRomanDemi10-Regular        <texnansi-lm.enc <lmb10.pfb
+texnansi-lmbo10   LMRomanDemi10-Italic         <texnansi-lm.enc <lmbo10.pfb
+texnansi-lmbx10   LMRoman10-Bold               <texnansi-lm.enc <lmbx10.pfb
+texnansi-lmbx12   LMRoman12-Bold               <texnansi-lm.enc <lmbx12.pfb
+texnansi-lmbx5    LMRoman5-Bold                <texnansi-lm.enc <lmbx5.pfb
+texnansi-lmbx6    LMRoman6-Bold                <texnansi-lm.enc <lmbx6.pfb
+texnansi-lmbx7    LMRoman7-Bold                <texnansi-lm.enc <lmbx7.pfb
+texnansi-lmbx8    LMRoman8-Bold                <texnansi-lm.enc <lmbx8.pfb
+texnansi-lmbx9    LMRoman9-Bold                <texnansi-lm.enc <lmbx9.pfb
+texnansi-lmbxi10  LMRoman10-BoldItalic         <texnansi-lm.enc <lmbxi10.pfb
+texnansi-lmbxo10  LMSlanted10-BoldItalic       <texnansi-lm.enc <lmbxo10.pfb
+texnansi-lmcsc10  LMCaps10-Regular             <texnansi-lm.enc <lmcsc10.pfb
+texnansi-lmcsco10 LMCaps10-Italic              <texnansi-lm.enc <lmcsco10.pfb
+texnansi-lmr10    LMRoman10-Regular            <texnansi-lm.enc <lmr10.pfb
+texnansi-lmr12    LMRoman12-Regular            <texnansi-lm.enc <lmr12.pfb
+texnansi-lmr17    LMRoman17-Regular            <texnansi-lm.enc <lmr17.pfb
+texnansi-lmr5     LMRoman5-Regular             <texnansi-lm.enc <lmr5.pfb
+texnansi-lmr6     LMRoman6-Regular             <texnansi-lm.enc <lmr6.pfb
+texnansi-lmr7     LMRoman7-Regular             <texnansi-lm.enc <lmr7.pfb
+texnansi-lmr8     LMRoman8-Regular             <texnansi-lm.enc <lmr8.pfb
+texnansi-lmr9     LMRoman9-Regular             <texnansi-lm.enc <lmr9.pfb
+texnansi-lmri10   LMRoman10-Italic             <texnansi-lm.enc <lmri10.pfb
+texnansi-lmri12   LMRoman12-Italic             <texnansi-lm.enc <lmri12.pfb
+texnansi-lmri7    LMRoman7-Italic              <texnansi-lm.enc <lmri7.pfb
+texnansi-lmri8    LMRoman8-Italic              <texnansi-lm.enc <lmri8.pfb
+texnansi-lmri9    LMRoman9-Italic              <texnansi-lm.enc <lmri9.pfb
+texnansi-lmro10   LMSlanted10-Italic           <texnansi-lm.enc <lmro10.pfb
+texnansi-lmro12   LMSlanted12-Italic           <texnansi-lm.enc <lmro12.pfb
+texnansi-lmro8    LMSlanted8-Italic            <texnansi-lm.enc <lmro8.pfb
+texnansi-lmro9    LMSlanted9-Italic            <texnansi-lm.enc <lmro9.pfb
+texnansi-lmss10   LMSans10-Regular             <texnansi-lm.enc <lmss10.pfb
+texnansi-lmss12   LMSans12-Regular             <texnansi-lm.enc <lmss12.pfb
+texnansi-lmss17   LMSans17-Regular             <texnansi-lm.enc <lmss17.pfb
+texnansi-lmss8    LMSans8-Regular              <texnansi-lm.enc <lmss8.pfb
+texnansi-lmss9    LMSans9-Regular              <texnansi-lm.enc <lmss9.pfb
+texnansi-lmssbo10 LMSans10-BoldItalic          <texnansi-lm.enc <lmssbo10.pfb
+texnansi-lmssbx10 LMSans10-Bold                <texnansi-lm.enc <lmssbx10.pfb
+texnansi-lmssdc10 LMSansDemiCond10-Regular     <texnansi-lm.enc <lmssdc10.pfb
+texnansi-lmssdo10 LMSansDemiCond10-Italic      <texnansi-lm.enc <lmssdo10.pfb
+texnansi-lmsso10  LMSans10-Italic              <texnansi-lm.enc <lmsso10.pfb
+texnansi-lmsso12  LMSans12-Italic              <texnansi-lm.enc <lmsso12.pfb
+texnansi-lmsso17  LMSans17-Italic              <texnansi-lm.enc <lmsso17.pfb
+texnansi-lmsso8   LMSans8-Italic               <texnansi-lm.enc <lmsso8.pfb
+texnansi-lmsso9   LMSans9-Italic               <texnansi-lm.enc <lmsso9.pfb
+texnansi-lmssq8   LMSansQuotation8-Regular     <texnansi-lm.enc <lmssq8.pfb
+texnansi-lmssqbo8 LMSansQuotation8-BoldItalic  <texnansi-lm.enc <lmssqbo8.pfb
+texnansi-lmssqbx8 LMSansQuotation8-Bold        <texnansi-lm.enc <lmssqbx8.pfb
+texnansi-lmssqo8  LMSansQuotation8-Italic      <texnansi-lm.enc <lmssqo8.pfb
+texnansi-lmtcsc10 LMTypewriterCaps10-Regular   <texnansi-lm.enc <lmtcsc10.pfb
+texnansi-lmtt10   LMTypewriter10-Regular       <texnansi-lm.enc <lmtt10.pfb
+texnansi-lmtt12   LMTypewriter12-Regular       <texnansi-lm.enc <lmtt12.pfb
+texnansi-lmtt8    LMTypewriter8-Regular        <texnansi-lm.enc <lmtt8.pfb
+texnansi-lmtt9    LMTypewriter9-Regular        <texnansi-lm.enc <lmtt9.pfb
+texnansi-lmtti10  LMTypewriter10-Italic        <texnansi-lm.enc <lmtti10.pfb
+texnansi-lmtto10  LMTypewriterSlanted10-Italic <texnansi-lm.enc <lmtto10.pfb
+texnansi-lmvtt10  LMTypewriterVarWd10-Regular  <texnansi-lm.enc <lmvtt10.pfb
+texnansi-lmvtto10 LMTypewriterVarWd10-Italic   <texnansi-lm.enc <lmvtto10.pfb
+
+
+% this is an empty map file
+
+
+
+% this is an empty map file
+
+cmb10      CMB10     <cmb10.pfb
+
+cmbsy6     CMBSY6    <cmbsy6.pfb
+cmbsy7     CMBSY7    <cmbsy7.pfb
+cmbsy8     CMBSY8    <cmbsy8.pfb
+cmbsy9     CMBSY9    <cmbsy9.pfb
+cmbsy10    CMBSY10   <cmbsy10.pfb
+
+cmbx5      CMBX5     <cmbx5.pfb
+cmbx6      CMBX6     <cmbx6.pfb
+cmbx7      CMBX7     <cmbx7.pfb
+cmbx8      CMBX8     <cmbx8.pfb
+cmbx9      CMBX9     <cmbx9.pfb
+cmbx10     CMBX10    <cmbx10.pfb
+cmbx12     CMBX10    <cmbx12.pfb
+
+cmbxsl10   CMBXSL10  <cmbxsl10.pfb
+cmbxti10   CMBXTI10  <cmbxti10.pfb
+
+cmcsc10    CMCSC10   <cmcsc10.pfb
+cmdunh10   CMDUNH10  <cmdunh10.pfb
+cmex10     CMEX10    <cmex10.pfb
+cmff10     CMFF10    <cmff10.pfb
+cmfi10     CMFI10    <cmfi10.pfb
+cmfib8     CMFIB8    <cmfib8.pfb
+cminch     CMINCH    <cminch.pfb
+cmitt10    CMITT10   <cmitt10.pfb
+cmmib10    CMMIB10   <cmmib10.pfb
+
+cmmi5      CMMI5     <cmmi5.pfb
+cmmi6      CMMI6     <cmmi6.pfb
+cmmi7      CMMI7     <cmmi7.pfb
+cmmi8      CMMI8     <cmmi8.pfb
+cmmi9      CMMI9     <cmmi9.pfb
+cmmi10     CMMI10    <cmmi10.pfb
+cmmi12     CMMI12    <cmmi12.pfb
+
+cmr5       CMR5      <cmr5.pfb
+cmr6       CMR6      <cmr6.pfb
+cmr7       CMR7      <cmr7.pfb
+cmr8       CMR8      <cmr8.pfb
+cmr9       CMR9      <cmr9.pfb
+cmr10      CMR10     <cmr10.pfb
+cmr12      CMR12     <cmr12.pfb
+cmr17      CMR17     <cmr17.pfb
+
+cmsl8      CMSL8     <cmsl8.pfb
+cmsl9      CMSL9     <cmsl9.pfb
+cmsl10     CMSL10    <cmsl10.pfb
+cmsl12     CMSL12    <cmsl12.pfb
+
+cmsltt10   CMSLTT10  <cmsltt10.pfb
+
+cmss8      CMSS8     <cmss8.pfb
+cmss9      CMSS9     <cmss9.pfb
+cmss10     CMSS10    <cmss10.pfb
+cmss12     CMSS12    <cmss12.pfb
+cmss17     CMSS17    <cmss17.pfb
+
+cmssbx10   CMSSBX10  <cmssbx10.pfb
+cmssdc10   CMSSDC10  <cmssdc10.pfb
+
+cmssi8     CMSSI8    <cmssi8.pfb
+cmssi9     CMSSI9    <cmssi9.pfb
+cmssi10    CMSSI10   <cmssi10.pfb
+cmssi12    CMSSI12   <cmssi12.pfb
+cmssi17    CMSSI17   <cmssi17.pfb
+
+cmssq8     CMSSQ8    <cmssq8.pfb
+cmssqi8    CMSSQI8   <cmssqi8.pfb
+
+cmsy5      CMSY5     <cmsy5.pfb
+cmsy6      CMSY6     <cmsy6.pfb
+cmsy7      CMSY7     <cmsy7.pfb
+cmsy8      CMSY8     <cmsy8.pfb
+cmsy9      CMSY9     <cmsy9.pfb
+cmsy10     CMSY10    <cmsy10.pfb
+
+cmtcsc10   CMTCSC10  <cmtcsc10.pfb
+
+cmtex8     CMTEX8    <cmtex8.pfb
+cmtex9     CMTEX9    <cmtex9.pfb
+cmtex10    CMTEX10   <cmtex10.pfb
+
+cmti7      CMTI7     <cmti7.pfb
+cmti8      CMTI8     <cmti8.pfb
+cmti9      CMTI9     <cmti9.pfb
+cmti10     CMTI10    <cmti10.pfb
+cmti12     CMTI12    <cmti12.pfb
+
+cmtt8      CMTT8     <cmtt8.pfb
+cmtt9      CMTT9     <cmtt9.pfb
+cmtt10     CMTT10    <cmtt10.pfb
+cmtt12     CMTT12    <cmtt12.pfb
+
+cmu10      CMU10     <cmu10.pfb
+cmvtt10    CMVTT10   <cmvtt10.pfb
+
+lasy5      LASY5      <lasy5.pfb
+lasy6      LASY6      <lasy6.pfb
+lasy7      LASY7      <lasy7.pfb
+lasy8      LASY8      <lasy8.pfb
+lasy9      LASY9      <lasy9.pfb
+lasy10     LASY10     <lasy10.pfb
+
+lasyb10    LASYB10    <lasyb10.pfb
+lcircle10  LCIRCLE10  <lcircle1.pfb
+lcirclew10 LCIRCLEW10 <lcirclew.pfb
+lcmss8     LCMSS8     <lcmss8.pfb
+lcmssb8    LCMSSB8    <lcmssb8.pfb
+lcmssi8    LCMSSI8    <lcmssi8.pfb
+line10     LINE10     <line10.pfb
+linew10    LINEW10    <linew10.pfb
+
+logo8      LOGO8      <logo8.pfb
+logo9      LOGO9      <logo9.pfb
+logo10     LOGO10     <logo10.pfb
+logobf10   LOGOBF10   <logobf10.pfb
+logosl10   LOGOSL10   <logosl10.pfb
+
+msam5      MSAM5      <msam5.pfb
+msam7      MSAM7      <msam7.pfb
+msam10     MSAM10     <msam10.pfb
+msbm5      MSBM5      <msbm5.pfb
+msbm7      MSBM7      <msbm7.pfb
+msbm10     MSBM10     <msbm10.pfb
+
+wncyb10    WNCYB10    <wncyb10.pfb
+wncyi10    WNCYI10    <wncyi10.pfb
+wncyr10    WNCYR10    <wncyr10.pfb
+wncysc10   WNCYSC10   <wncysc10.pfb
+wncyss10   WNCYSS10   <wncyss10.pfb
+
+manfnt     MANFNT     <manfnt.pfb
+
+% i dunno what this is
+
+icmex10    <icmex10.pfb
+icmmi8     <icmmi8.pfb
+icmsy8     <icmsy8.pfb
+icmtt8     <icmtt8.pfb
+ilasy8     <ilasy8.pfb
+ilcmss8    <ilcmss8.pfb
+ilcmssb8   <ilcmssb8.pfb
+ilcmssi8   <ilcmssi8.pfb
+
+% this is an empty map file
+
+euex10 EUEX10 <euex10.pfb
+
+eufb5  EUFB5  <eufb5.pfb
+eufb7  EUFB7  <eufb7.pfb
+eufb10 EUFB10 <eufb10.pfb
+
+eufm5  EUFM5  <eufm5.pfb
+eufm7  EUFM7  <eufm7.pfb
+eufm10 EUFM10 <eufm10.pfb
+
+eurb5  EURB5  <eurb5.pfb
+eurb7  EURB7  <eurb7.pfb
+eurb10 EURB10 <eurb10.pfb
+
+eurm5  EURM5  <eurm5.pfb
+eurm7  EURM7  <eurm7.pfb
+eurm10 EURM10 <eurm10.pfb
+
+eusb5  EUSB5  <eusb5.pfb
+eusb7  EUSB7  <eusb7.pfb
+eusb10 EUSB10 <eusb10.pfb
+
+eusm5  EUSM5  <eusm5.pfb
+eusm7  EUSM7  <eusm7.pfb
+eusm10 EUSM10 <eusm10.pfb
+
+% this is an empty map file
+
+lmb10    LMRomanDemi10-Regular        <lmb10.enc    <lmb10.pfb
+lmbsl10  LMRomanDemi10-BoldItalic     <lmbsl10.enc  <lmbsl10.pfb
+lmbx10   LMRoman10-Bold               <lmbx10.enc   <lmbx10.pfb
+lmbx12   LMRoman12-Bold               <lmbx12.enc   <lmbx12.pfb
+lmbx5    LMRoman5-Bold                <lmbx5.enc    <lmbx5.pfb
+lmbx6    LMRoman6-Bold                <lmbx6.enc    <lmbx6.pfb
+lmbx7    LMRoman7-Bold                <lmbx7.enc    <lmbx7.pfb
+lmbx8    LMRoman8-Bold                <lmbx8.enc    <lmbx8.pfb
+lmbx9    LMRoman9-Bold                <lmbx9.enc    <lmbx9.pfb
+lmbxsl10 LMSlanted10-BoldItalic       <lmbxsl10.enc <lmbxsl10.pfb
+lmbxti10 LMRoman10-BoldItalic         <lmbxti10.enc <lmbxti10.pfb
+lmcsc10  LMCaps10-Regular             <lmcsc10.enc  <lmcsc10.pfb
+lmitt10  LMTypewriter10-Italic        <lmitt10.enc  <lmitt10.pfb
+lmr10    LMRoman10-Regular            <lmr10.enc    <lmr10.pfb
+lmr12    LMRoman12-Regular            <lmr12.enc    <lmr12.pfb
+lmr17    LMRoman17-Regular            <lmr17.enc    <lmr17.pfb
+lmr5     LMRoman5-Regular             <lmr5.enc     <lmr5.pfb
+lmr6     LMRoman6-Regular             <lmr6.enc     <lmr6.pfb
+lmr7     LMRoman7-Regular             <lmr7.enc     <lmr7.pfb
+lmr8     LMRoman8-Regular             <lmr8.enc     <lmr8.pfb
+lmr9     LMRoman9-Regular             <lmr9.enc     <lmr9.pfb
+lmsl10   LMSlanted10-Italic           <lmsl10.enc   <lmsl10.pfb
+lmsl12   LMSlanted12-Italic           <lmsl12.enc   <lmsl12.pfb
+lmsl8    LMSlanted8-Italic            <lmsl8.enc    <lmsl8.pfb
+lmsl9    LMSlanted9-Italic            <lmsl9.enc    <lmsl9.pfb
+lmsltt10 LMTypewriterSlanted10-Italic <lmsltt10.enc <lmsltt10.pfb
+lmss10   LMSans10-Regular             <lmss10.enc   <lmss10.pfb
+lmss12   LMSans12-Regular             <lmss12.enc   <lmss12.pfb
+lmss17   LMSans17-Regular             <lmss17.enc   <lmss17.pfb
+lmss8    LMSans8-Regular              <lmss8.enc    <lmss8.pfb
+lmss9    LMSans9-Regular              <lmss9.enc    <lmss9.pfb
+lmssbi10 LMSans10-BoldItalic          <lmssbi10.enc <lmssbi10.pfb
+lmssbx10 LMSans10-Bold                <lmssbx10.enc <lmssbx10.pfb
+lmssdc10 LMSansDemiCond10-Regular     <lmssdc10.enc <lmssdc10.pfb
+lmssdi10 LMSansDemiCond10-BoldItalic  <lmssdi10.enc <lmssdi10.pfb
+lmssi10  LMSans10-Italic              <lmssi10.enc  <lmssi10.pfb
+lmssi12  LMSans12-Italic              <lmssi12.enc  <lmssi12.pfb
+lmssi17  LMSans17-Italic              <lmssi17.enc  <lmssi17.pfb
+lmssi8   LMSans8-Italic               <lmssi8.enc   <lmssi8.pfb
+lmssi9   LMSans9-Italic               <lmssi9.enc   <lmssi9.pfb
+lmssq8   LMSansQuotation8-Regular     <lmssq8.enc   <lmssq8.pfb
+lmssqb8  LMSansQuotation8-Bold        <lmssqb8.enc  <lmssqb8.pfb
+lmssqbi8 LMSansQuotation8-BoldItalic  <lmssqbi8.enc <lmssqbi8.pfb
+lmssqi8  LMSansQuotation8-Italic      <lmssqi8.enc  <lmssqi8.pfb
+lmtcsc10 LMTypewriterCaps10-Regular   <lmtcsc10.enc <lmtcsc10.pfb
+lmti10   LMRoman10-Italic             <lmti10.enc   <lmti10.pfb
+lmti12   LMRoman12-Italic             <lmti12.enc   <lmti12.pfb
+lmti7    LMRoman7-Italic              <lmti7.enc    <lmti7.pfb
+lmti8    LMRoman8-Italic              <lmti8.enc    <lmti8.pfb
+lmti9    LMRoman9-Italic              <lmti9.enc    <lmti9.pfb
+lmtt10   LMTypewriter10-Regular       <lmtt10.enc   <lmtt10.pfb
+lmtt12   LMTypewriter12-Regular       <lmtt12.enc   <lmtt12.pfb
+lmtt8    LMTypewriter8-Regular        <lmtt8.enc    <lmtt8.pfb
+lmtt9    LMTypewriter9-Regular        <lmtt9.enc    <lmtt9.pfb
+
+% this is an empty map file
+
+csr5     CSR5     <csr1.enc <csr5.pfb
+csr6     CSR6     <csr.enc  <csr6.pfb
+csr7     CSR7     <csr.enc  <csr7.pfb
+csr8     CSR8     <csr.enc  <csr8.pfb
+csr9     CSR9     <csr.enc  <csr9.pfb
+csr10    CSR10    <csr.enc  <csr10.pfb
+csr12    CSR12    <csr.enc  <csr12.pfb
+csr17    CSR17    <csr.enc  <csr17.pfb
+csbx5    CSBX5    <csr.enc  <csbx5.pfb
+csbx6    CSBX6    <csr.enc  <csbx6.pfb
+csbx7    CSBX7    <csr.enc  <csbx7.pfb
+csbx8    CSBX8    <csr.enc  <csbx8.pfb
+csbx9    CSBX9    <csr.enc  <csbx9.pfb
+csbx10   CSBX10   <csr.enc  <csbx10.pfb
+csbx12   CSBX12   <csr.enc  <csbx12.pfb
+csb10    CSB10    <csr.enc  <csb10.pfb
+csti7    CSTI7    <csr.enc  <csti7.pfb
+csti8    CSTI8    <csr.enc  <csti8.pfb
+csti9    CSTI9    <csr.enc  <csti9.pfb
+csti10   CSTI10   <csr.enc  <csti10.pfb
+csti12   CSTI12   <csr.enc  <csti12.pfb
+cstt8    CSTT8    <cstt.enc <cstt8.pfb
+cstt9    CSTT9    <cstt.enc <cstt9.pfb
+cstt10   CSTT10   <cstt.enc <cstt10.pfb
+cstt12   CSTT12   <cstt.enc <cstt12.pfb
+cssltt10 CSSLTT10 <cstt.enc <cssltt10.pfb
+csvtt10  CSVTT10  <cstt.enc <csvtt10.pfb
+csss8    CSSS8    <csr.enc  <csss8.pfb
+csss9    CSSS9    <csr.enc  <csss9.pfb
+csss10   CSSS10   <csr.enc  <csss10.pfb
+csss12   CSSS12   <csr.enc  <csss12.pfb
+csss17   CSSS17   <csr.enc  <csss17.pfb
+csssi8   CSSSI8   <csr.enc  <csssi8.pfb
+csssi9   CSSSI9   <csr.enc  <csssi9.pfb
+csssi10  CSSSI10  <csr.enc  <csssi10.pfb
+csssi12  CSSSI12  <csr.enc  <csssi12.pfb
+csssi17  CSSSI17  <csr.enc  <csssi17.pfb
+cssl8    CSSL8    <csr.enc  <cssl8.pfb
+cssl9    CSSL9    <csr.enc  <cssl9.pfb
+cssl10   CSSL10   <csr.enc  <cssl10.pfb
+cssl12   CSSL12   <csr.enc  <cssl12.pfb
+csssq8   CSSSQ8   <csr.enc  <csssq8.pfb
+csssqi8  CSSSQI8  <csr.enc  <csssqi8.pfb
+csssdc10 CSSSDC10 <csr.enc  <csssdc10.pfb
+csssbx10 CSSSBX10 <csr.enc  <csssbx10.pfb
+csinch   CSINCH   <csin.enc <csinch.pfb
+csdunh10 CSDUNH10 <csr.enc  <csdunh10.pfb
+csbxsl10 CSBXSL10 <csr.enc  <csbxsl10.pfb
+csff10   CSFF10   <csr.enc  <csff10.pfb
+csfib8   CSFIB8   <csr.enc  <csfib8.pfb
+csbxti10 CSBXTI10 <csr.enc  <csbxti10.pfb
+csitt10  CSITT10  <cstt.enc <csitt10.pfb
+csu10    CSU10    <csr.enc  <csu10.pfb
+csfi10   CSFI10   <csr.enc  <csfi10.pfb
+cscsc10  CSCSC10  <csr1.enc <cscsc10.pfb
+cstcsc10 CSTCSC10 <cstt.enc <cstcsc10.pfb
+
+% this is an empty map file
+
+plb10    PLB10     <plrm.enc  <plb10.pfb
+plbsy10  PLBSY10   <plms.enc  <plbsy10.pfb
+plbx5    PLBX5     <plrm.enc  <plbx5.pfb
+plbx6    PLBX6     <plrm.enc  <plbx6.pfb
+plbx7    PLBX7     <plrm.enc  <plbx7.pfb
+plbx8    PLBX8     <plrm.enc  <plbx8.pfb
+plbx9    PLBX9     <plrm.enc  <plbx9.pfb
+plbx10   PLBX10    <plrm.enc  <plbx10.pfb
+plbx12   PLBX12    <plrm.enc  <plbx12.pfb
+plbxsl10 PLBXSL10  <plrm.enc  <plbxsl10.pfb
+plbxti10 PLBXTI10  <plit.enc  <plbxti10.pfb
+plcsc10  PLCSC10   <plsc.enc  <plcsc10.pfb
+pldunh10 PLDUNH10  <plrm.enc  <pldunh10.pfb
+plex9    PLEX9     <plme.enc  <plex9.pfb
+plex10   PLEX10    <plme.enc  <plex10.pfb
+plff10   PLFF10    <plrm.enc  <plff10.pfb
+plfi10   PLFI10    <plit.enc  <plfi10.pfb
+plfib8   PLFIB8    <plrm.enc  <plfib8.pfb
+plinch   PLINCH    <plin.enc  <plinch.pfb
+plitt10  PLITT10   <plitt.enc <plitt10.pfb
+plmi5    PLMI5     <plmi.enc  <plmi5.pfb
+plmi6    PLMI6     <plmi.enc  <plmi6.pfb
+plmi7    PLMI7     <plmi.enc  <plmi7.pfb
+plmi8    PLMI8     <plmi.enc  <plmi8.pfb
+plmi9    PLMI9     <plmi.enc  <plmi9.pfb
+plmi10   PLMI10    <plmi.enc  <plmi10.pfb
+plmi12   PLMI12    <plmi.enc  <plmi12.pfb
+plmib10  PLMIB10   <plmi.enc  <plmib10.pfb
+plr5     PLR5      <plsc.enc  <plr5.pfb
+plr6     PLR6      <plrm.enc  <plr6.pfb
+plr7     PLR7      <plrm.enc  <plr7.pfb
+plr8     PLR8      <plrm.enc  <plr8.pfb
+plr9     PLR9      <plrm.enc  <plr9.pfb
+plr10    PLR10     <plrm.enc  <plr10.pfb
+plr12    PLR12     <plrm.enc  <plr12.pfb
+plr17    PLR17     <plrm.enc  <plr17.pfb
+plsl8    PLSL8     <plrm.enc  <plsl8.pfb
+plsl9    PLSL9     <plrm.enc  <plsl9.pfb
+plsl10   PLSL10    <plrm.enc  <plsl10.pfb
+plsl12   PLSL12    <plrm.enc  <plsl12.pfb
+plsltt10 PLSLTT10  <pltt.enc  <plsltt10.pfb
+plss8    PLSS8     <plrm.enc  <plss8.pfb
+plss9    PLSS9     <plrm.enc  <plss9.pfb
+plss10   PLSS10    <plrm.enc  <plss10.pfb
+plss12   PLSS12    <plrm.enc  <plss12.pfb
+plss17   PLSS17    <plrm.enc  <plss17.pfb
+plssbi10 PLSSBI10  <plrm.enc  <plssbi10.pfb
+plssbx10 PLSSBX10  <plrm.enc  <plssbx10.pfb
+plssdc10 PLSSDC10  <plrm.enc  <plssdc10.pfb
+plssi8   PLSSI8    <plrm.enc  <plssi8.pfb
+plssi9   PLSSI9    <plrm.enc  <plssi9.pfb
+plssi10  PLSSI10   <plrm.enc  <plssi10.pfb
+plssi12  PLSSI12   <plrm.enc  <plssi12.pfb
+plssi17  PLSSI17   <plrm.enc  <plssi17.pfb
+plssq8   PLSSQ8    <plrm.enc  <plssq8.pfb
+plssqi8  PLSSQI8   <plrm.enc  <plssqi8.pfb
+plsy5    PLSY5     <plms.enc  <plsy5.pfb
+plsy6    PLSY6     <plms.enc  <plsy6.pfb
+plsy7    PLSY7     <plms.enc  <plsy7.pfb
+plsy8    PLSY8     <plms.enc  <plsy8.pfb
+plsy9    PLSY9     <plms.enc  <plsy9.pfb
+plsy10   PLSY10    <plms.enc  <plsy10.pfb
+pltcsc10 PLTCSC10  <pltt.enc  <pltcsc10.pfb
+pltex8   PLTEX8    <plte.enc  <pltex8.pfb
+pltex9   PLTEX9    <plte.enc  <pltex9.pfb
+pltex10  PLTEX10   <plte.enc  <pltex10.pfb
+plti7    PLTI7     <plit.enc  <plti7.pfb
+plti8    PLTI8     <plit.enc  <plti8.pfb
+plti9    PLTI9     <plit.enc  <plti9.pfb
+plti10   PLTI10    <plit.enc  <plti10.pfb
+plti12   PLTI12    <plit.enc  <plti12.pfb
+pltt8    PLTT8     <pltt.enc  <pltt8.pfb
+pltt9    PLTT9     <pltt.enc  <pltt9.pfb
+pltt10   PLTT10    <pltt.enc  <pltt10.pfb
+pltt12   PLTT12    <pltt.enc  <pltt12.pfb
+plu10    PLU10     <plit.enc  <plu10.pfb
+plvtt10  PLVTT10   <plrm.enc  <plvtt10.pfb% This file a (slightly adapted) copy of the map file
+% that comes with the PX fonts by Young Ryu.
+
+% URW Palatino
+
+rpxpplb  URWPalladioL-Bold                      <tx8r.enc <uplb8a.pfb
+rpxpplbo URWPalladioL-Bold     ".167 SlantFont" <tx8r.enc <uplb8a.pfb
+rpxpplbi URWPalladioL-BoldItal                  <tx8r.enc <uplbi8a.pfb
+rpxpplr  URWPalladioL-Roma                      <tx8r.enc <uplr8a.pfb
+rpxpplro URWPalladioL-Roma     ".167 SlantFont" <tx8r.enc <uplr8a.pfb
+rpxpplri URWPalladioL-Ital                      <tx8r.enc <uplri8a.pfb
+
+% PX Text
+
+rpxr    rpxr                    <rpxr.pfb
+rpxsl   rpxr   ".167 SlantFont" <rpxr.pfb
+rpxi    rpxi                    <rpxi.pfb
+rpxsc   rpxsc                   <rpxsc.pfb
+rpxb    rpxb                    <rpxb.pfb
+rpxbsl  rpxb   ".167 SlantFont" <rpxb.pfb
+rpxbi   rpxbi                   <rpxbi.pfb
+rpxbsc  rpxbsc                  <rpxbsc.pfb
+rpcxb   rpcxb                   <rpcxb.pfb
+rpcxbsl rpcxb  ".167 SlantFont" <rpcxb.pfb
+rpcxbi  rpcxbi                  <rpcxbi.pfb
+rpcxi   rpcxi                   <rpcxi.pfb
+rpcxr   rpcxr                   <rpcxr.pfb
+rpcxsl  rpcxsl ".167 SlantFont" <rpcxr.pfb
+
+% PX Math
+
+rpxbmi  rpxbmi                  <rpxbmi.pfb
+rpxmi   rpxmi                   <rpxmi.pfb
+
+pxbex   pxbex                   <pxbex.pfb
+pxbexa  pxbexa                  <pxbexa.pfb
+pxbmia  pxbmia                  <pxbmia.pfb
+pxbsy   pxbsy                   <pxbsy.pfb
+pxbsya  pxbsya                  <pxbsya.pfb
+pxbsyb  pxbsyb                  <pxbsyb.pfb
+pxbsyc  pxbsyc                  <pxbsyc.pfb
+pxex    pxex                    <pxex.pfb
+pxexa   pxexa                   <pxexa.pfb
+pxmia   pxmia                   <pxmia.pfb
+pxsy    pxsy                    <pxsy.pfb
+pxsya   pxsya                   <pxsya.pfb
+pxsyb   pxsyb                   <pxsyb.pfb
+pxsyc   pxsyc                   <pxsyc.pfb
+
+% this is an empty map file
+
+% This file is a (slightly adapted) copy of the map file
+% that comes with the TX fonts by Young Ryu.
+
+% URW times
+
+rtxptmb  NimbusRomNo9L-Medi                      <tx8r.enc <utmb8a.pfb
+rtxptmbo NimbusRomNo9L-Medi     ".167 SlantFont" <tx8r.enc <utmb8a.pfb
+rtxptmbi NimbusRomNo9L-MediItal                  <tx8r.enc <utmbi8a.pfb
+rtxptmr  NimbusRomNo9L-Regu                      <tx8r.enc <utmr8a.pfb
+rtxptmro NimbusRomNo9L-Regu     ".167 SlantFont" <tx8r.enc <utmr8a.pfb
+rtxptmri NimbusRomNo9L-ReguItal                  <tx8r.enc <utmri8a.pfb
+
+% URW Helvetica
+
+rtxphvr  NimbusSanL-Regu                         <tx8r.enc <uhv8a.pfb
+rtxphvro NimbusSanL-Regu        ".167 SlantFont" <tx8r.enc <uhv8a.pfb
+rtxphvb  NimbusSanL-Bold                         <tx8r.enc <uhvb8a.pfb
+rtxphvbo NimbusSanL-Bold        ".167 SlantFont" <tx8r.enc <uhvb8a.pfb
+
+% TX Text
+
+rtxr     rtxr                      <rtxr.pfb
+rtxsl    rtxr    ".167 SlantFont"  <rtxr.pfb
+rtxi     rtxi                      <rtxi.pfb
+rtxsc    rtxsc                     <rtxsc.pfb
+rtxb     rtxb                      <rtxb.pfb
+rtxbsl   rtxb    ".167 SlantFont"  <rtxb.pfb
+rtxbi    rtxbi                     <rtxbi.pfb
+rtxbsc   rtxbsc                    <rtxbsc.pfb
+rtcxb    rtcxb                     <rtcxb.pfb
+rtcxbsl  rtcxb   ".167 SlantFont"  <rtcxb.pfb
+rtcxbi   rtcxbi                    <rtcxbi.pfb
+rtcxi    rtcxi                     <rtcxi.pfb
+rtcxr    rtcxr                     <rtcxr.pfb
+rtcxsl   rtcx    ".167 SlantFont"  <rtcxr.pfb
+
+% TX Math
+
+rtxbmi   rtxbmi                    <rtxbmi.pfb
+rtxmi    rtxmi                     <rtxmi.pfb
+
+txbex    txbex                     <txbex.pfb
+txbexa   txbexa                    <txbexa.pfb
+txbmia   txbmia                    <txbmia.pfb
+txbsy    txbsy                     <txbsy.pfb
+txbsya   txbsya                    <txbsya.pfb
+txbsyb   txbsyb                    <txbsyb.pfb
+txbsyc   txbsyc                    <txbsyc.pfb
+txex     txex                      <txex.pfb
+txexa    txexa                     <txexa.pfb
+txmia    txmia                     <txmia.pfb
+txsy     txsy                      <txsy.pfb
+txsya    txsya                     <txsya.pfb
+txsyb    txsyb                     <txsyb.pfb
+txsyc    txsyc                     <txsyc.pfb
+
+% TX TT Text
+
+txtt     txtt                      <txtt.pfb
+txttsl   txtt     ".167 SlantFont" <txtt.pfb
+txttsc   txttsc                    <txttsc.pfb
+txbtt    txbtt                     <txbtt.pfb
+txbttsl  txbtt    ".167 SlantFont" <txbtt.pfb
+txbttsc  txbttsc                   <txbttsc.pfb
+t1xtt    t1xtt                     <t1xtt.pfb
+t1xttsl  t1xtt    ".167 SlantFont" <t1xtt.pfb
+t1xttsc  t1xttsc                   <t1xttsc.pfb
+t1xbtt   t1xbtt                    <t1xbtt.pfb
+t1xbttsl t1xbtt   ".167 SlantFont" <t1xbtt.pfb
+t1xbttsc t1xbttsc                  <t1xbttsc.pfb
+tcxtt    tcxtt                     <tcxtt.pfb
+tcxttsl  tcxtt    ".167 SlantFont" <tcxtt.pfb
+tcxbtt   tcxbtt                    <tcxbtt.pfb
+tcxbttsl tcxbtt   ".167 SlantFont" <tcxbtt.pfb
+
+% TX SS Text
+
+rtxss    rtxss                     <rtxss.pfb
+rtxsssl  rtxss    ".167 SlantFont" <rtxss.pfb
+rtxsssc  rtxsssc                   <rtxsssc.pfb
+rtxbss   rtxbss                    <rtxbss.pfb
+rtxbsssl rtxbss   ".167 SlantFont" <rtxbss.pfb
+rtxbsssc rtxbsssc                  <rtxbsssc.pfb
+rtcxss   rtcxss                    <rtcxss.pfb
+rtcxbss  rtcxbss                   <rtcxbss.pfb
+rtcxsssl rtcxss   ".167 SlantFont" <rtcxss.pfb
+rtcxbsso rtcxbss  ".167 SlantFont" <rtcxbss.pfb
+
+% this is an empty map file
+
+% author: Hans Hagen
+%
+% This map file remaps ec (cork) encoded Latin Modern adapted for
+% umlauts and other variations.
+
+ec-lmb10    LMRomanDemi10-Regular        <ec-var-lm.enc <lmb10.pfb
+ec-lmbo10   LMRomanDemi10-Italic         <ec-var-lm.enc <lmbo10.pfb
+ec-lmbx10   LMRoman10-Bold               <ec-var-lm.enc <lmbx10.pfb
+ec-lmbx12   LMRoman12-Bold               <ec-var-lm.enc <lmbx12.pfb
+ec-lmbx5    LMRoman5-Bold                <ec-var-lm.enc <lmbx5.pfb
+ec-lmbx6    LMRoman6-Bold                <ec-var-lm.enc <lmbx6.pfb
+ec-lmbx7    LMRoman7-Bold                <ec-var-lm.enc <lmbx7.pfb
+ec-lmbx8    LMRoman8-Bold                <ec-var-lm.enc <lmbx8.pfb
+ec-lmbx9    LMRoman9-Bold                <ec-var-lm.enc <lmbx9.pfb
+ec-lmbxi10  LMRoman10-BoldItalic         <ec-var-lm.enc <lmbxi10.pfb
+ec-lmbxo10  LMSlanted10-BoldItalic       <ec-var-lm.enc <lmbxo10.pfb
+ec-lmcsc10  LMCaps10-Regular             <ec-var-lm.enc <lmcsc10.pfb
+ec-lmcsco10 LMCaps10-Italic              <ec-var-lm.enc <lmcsco10.pfb
+ec-lmr10    LMRoman10-Regular            <ec-var-lm.enc <lmr10.pfb
+ec-lmr12    LMRoman12-Regular            <ec-var-lm.enc <lmr12.pfb
+ec-lmr17    LMRoman17-Regular            <ec-var-lm.enc <lmr17.pfb
+ec-lmr5     LMRoman5-Regular             <ec-var-lm.enc <lmr5.pfb
+ec-lmr6     LMRoman6-Regular             <ec-var-lm.enc <lmr6.pfb
+ec-lmr7     LMRoman7-Regular             <ec-var-lm.enc <lmr7.pfb
+ec-lmr8     LMRoman8-Regular             <ec-var-lm.enc <lmr8.pfb
+ec-lmr9     LMRoman9-Regular             <ec-var-lm.enc <lmr9.pfb
+ec-lmri10   LMRoman10-Italic             <ec-var-lm.enc <lmri10.pfb
+ec-lmri12   LMRoman12-Italic             <ec-var-lm.enc <lmri12.pfb
+ec-lmri7    LMRoman7-Italic              <ec-var-lm.enc <lmri7.pfb
+ec-lmri8    LMRoman8-Italic              <ec-var-lm.enc <lmri8.pfb
+ec-lmri9    LMRoman9-Italic              <ec-var-lm.enc <lmri9.pfb
+ec-lmro10   LMSlanted10-Italic           <ec-var-lm.enc <lmro10.pfb
+ec-lmro12   LMSlanted12-Italic           <ec-var-lm.enc <lmro12.pfb
+ec-lmro8    LMSlanted8-Italic            <ec-var-lm.enc <lmro8.pfb
+ec-lmro9    LMSlanted9-Italic            <ec-var-lm.enc <lmro9.pfb
+ec-lmss10   LMSans10-Regular             <ec-var-lm.enc <lmss10.pfb
+ec-lmss12   LMSans12-Regular             <ec-var-lm.enc <lmss12.pfb
+ec-lmss17   LMSans17-Regular             <ec-var-lm.enc <lmss17.pfb
+ec-lmss8    LMSans8-Regular              <ec-var-lm.enc <lmss8.pfb
+ec-lmss9    LMSans9-Regular              <ec-var-lm.enc <lmss9.pfb
+ec-lmssbo10 LMSans10-BoldItalic          <ec-var-lm.enc <lmssbo10.pfb
+ec-lmssbx10 LMSans10-Bold                <ec-var-lm.enc <lmssbx10.pfb
+ec-lmssdc10 LMSansDemiCond10-Regular     <ec-var-lm.enc <lmssdc10.pfb
+ec-lmssdo10 LMSansDemiCond10-Italic      <ec-var-lm.enc <lmssdo10.pfb
+ec-lmsso10  LMSans10-Italic              <ec-var-lm.enc <lmsso10.pfb
+ec-lmsso12  LMSans12-Italic              <ec-var-lm.enc <lmsso12.pfb
+ec-lmsso17  LMSans17-Italic              <ec-var-lm.enc <lmsso17.pfb
+ec-lmsso8   LMSans8-Italic               <ec-var-lm.enc <lmsso8.pfb
+ec-lmsso9   LMSans9-Italic               <ec-var-lm.enc <lmsso9.pfb
+ec-lmssq8   LMSansQuotation8-Regular     <ec-var-lm.enc <lmssq8.pfb
+ec-lmssqbo8 LMSansQuotation8-BoldItalic  <ec-var-lm.enc <lmssqbo8.pfb
+ec-lmssqbx8 LMSansQuotation8-Bold        <ec-var-lm.enc <lmssqbx8.pfb
+ec-lmssqo8  LMSansQuotation8-Italic      <ec-var-lm.enc <lmssqo8.pfb
+ec-lmtcsc10 LMTypewriterCaps10-Regular   <ec-var-lm.enc <lmtcsc10.pfb
+ec-lmtt10   LMTypewriter10-Regular       <ec-var-lm.enc <lmtt10.pfb
+ec-lmtt12   LMTypewriter12-Regular       <ec-var-lm.enc <lmtt12.pfb
+ec-lmtt8    LMTypewriter8-Regular        <ec-var-lm.enc <lmtt8.pfb
+ec-lmtt9    LMTypewriter9-Regular        <ec-var-lm.enc <lmtt9.pfb
+ec-lmtti10  LMTypewriter10-Italic        <ec-var-lm.enc <lmtti10.pfb
+ec-lmtto10  LMTypewriterSlanted10-Italic <ec-var-lm.enc <lmtto10.pfb
+ec-lmvtt10  LMTypewriterVarWd10-Regular  <ec-var-lm.enc <lmvtt10.pfb
+ec-lmvtto10 LMTypewriterVarWd10-Italic   <ec-var-lm.enc <lmvtto10.pfb
+
+% this is an empty map file
+
+% author: Hans Hagen
+%
+% This map file defines ec (cork) encoded Latin Modern adapted for
+% umlauts and other variations.
+
+ec-var-lmb10    LMRomanDemi10-Regular        <ec-var-lm.enc <lmb10.pfb
+ec-var-lmbo10   LMRomanDemi10-Italic         <ec-var-lm.enc <lmbo10.pfb
+ec-var-lmbx10   LMRoman10-Bold               <ec-var-lm.enc <lmbx10.pfb
+ec-var-lmbx12   LMRoman12-Bold               <ec-var-lm.enc <lmbx12.pfb
+ec-var-lmbx5    LMRoman5-Bold                <ec-var-lm.enc <lmbx5.pfb
+ec-var-lmbx6    LMRoman6-Bold                <ec-var-lm.enc <lmbx6.pfb
+ec-var-lmbx7    LMRoman7-Bold                <ec-var-lm.enc <lmbx7.pfb
+ec-var-lmbx8    LMRoman8-Bold                <ec-var-lm.enc <lmbx8.pfb
+ec-var-lmbx9    LMRoman9-Bold                <ec-var-lm.enc <lmbx9.pfb
+ec-var-lmbxi10  LMRoman10-BoldItalic         <ec-var-lm.enc <lmbxi10.pfb
+ec-var-lmbxo10  LMSlanted10-BoldItalic       <ec-var-lm.enc <lmbxo10.pfb
+ec-var-lmcsc10  LMCaps10-Regular             <ec-var-lm.enc <lmcsc10.pfb
+ec-var-lmcsco10 LMCaps10-Italic              <ec-var-lm.enc <lmcsco10.pfb
+ec-var-lmr10    LMRoman10-Regular            <ec-var-lm.enc <lmr10.pfb
+ec-var-lmr12    LMRoman12-Regular            <ec-var-lm.enc <lmr12.pfb
+ec-var-lmr17    LMRoman17-Regular            <ec-var-lm.enc <lmr17.pfb
+ec-var-lmr5     LMRoman5-Regular             <ec-var-lm.enc <lmr5.pfb
+ec-var-lmr6     LMRoman6-Regular             <ec-var-lm.enc <lmr6.pfb
+ec-var-lmr7     LMRoman7-Regular             <ec-var-lm.enc <lmr7.pfb
+ec-var-lmr8     LMRoman8-Regular             <ec-var-lm.enc <lmr8.pfb
+ec-var-lmr9     LMRoman9-Regular             <ec-var-lm.enc <lmr9.pfb
+ec-var-lmri10   LMRoman10-Italic             <ec-var-lm.enc <lmri10.pfb
+ec-var-lmri12   LMRoman12-Italic             <ec-var-lm.enc <lmri12.pfb
+ec-var-lmri7    LMRoman7-Italic              <ec-var-lm.enc <lmri7.pfb
+ec-var-lmri8    LMRoman8-Italic              <ec-var-lm.enc <lmri8.pfb
+ec-var-lmri9    LMRoman9-Italic              <ec-var-lm.enc <lmri9.pfb
+ec-var-lmro10   LMSlanted10-Italic           <ec-var-lm.enc <lmro10.pfb
+ec-var-lmro12   LMSlanted12-Italic           <ec-var-lm.enc <lmro12.pfb
+ec-var-lmro8    LMSlanted8-Italic            <ec-var-lm.enc <lmro8.pfb
+ec-var-lmro9    LMSlanted9-Italic            <ec-var-lm.enc <lmro9.pfb
+ec-var-lmss10   LMSans10-Regular             <ec-var-lm.enc <lmss10.pfb
+ec-var-lmss12   LMSans12-Regular             <ec-var-lm.enc <lmss12.pfb
+ec-var-lmss17   LMSans17-Regular             <ec-var-lm.enc <lmss17.pfb
+ec-var-lmss8    LMSans8-Regular              <ec-var-lm.enc <lmss8.pfb
+ec-var-lmss9    LMSans9-Regular              <ec-var-lm.enc <lmss9.pfb
+ec-var-lmssbo10 LMSans10-BoldItalic          <ec-var-lm.enc <lmssbo10.pfb
+ec-var-lmssbx10 LMSans10-Bold                <ec-var-lm.enc <lmssbx10.pfb
+ec-var-lmssdc10 LMSansDemiCond10-Regular     <ec-var-lm.enc <lmssdc10.pfb
+ec-var-lmssdo10 LMSansDemiCond10-Italic      <ec-var-lm.enc <lmssdo10.pfb
+ec-var-lmsso10  LMSans10-Italic              <ec-var-lm.enc <lmsso10.pfb
+ec-var-lmsso12  LMSans12-Italic              <ec-var-lm.enc <lmsso12.pfb
+ec-var-lmsso17  LMSans17-Italic              <ec-var-lm.enc <lmsso17.pfb
+ec-var-lmsso8   LMSans8-Italic               <ec-var-lm.enc <lmsso8.pfb
+ec-var-lmsso9   LMSans9-Italic               <ec-var-lm.enc <lmsso9.pfb
+ec-var-lmssq8   LMSansQuotation8-Regular     <ec-var-lm.enc <lmssq8.pfb
+ec-var-lmssqbo8 LMSansQuotation8-BoldItalic  <ec-var-lm.enc <lmssqbo8.pfb
+ec-var-lmssqbx8 LMSansQuotation8-Bold        <ec-var-lm.enc <lmssqbx8.pfb
+ec-var-lmssqo8  LMSansQuotation8-Italic      <ec-var-lm.enc <lmssqo8.pfb
+ec-var-lmtcsc10 LMTypewriterCaps10-Regular   <ec-var-lm.enc <lmtcsc10.pfb
+ec-var-lmtt10   LMTypewriter10-Regular       <ec-var-lm.enc <lmtt10.pfb
+ec-var-lmtt12   LMTypewriter12-Regular       <ec-var-lm.enc <lmtt12.pfb
+ec-var-lmtt8    LMTypewriter8-Regular        <ec-var-lm.enc <lmtt8.pfb
+ec-var-lmtt9    LMTypewriter9-Regular        <ec-var-lm.enc <lmtt9.pfb
+ec-var-lmtti10  LMTypewriter10-Italic        <ec-var-lm.enc <lmtti10.pfb
+ec-var-lmtto10  LMTypewriterSlanted10-Italic <ec-var-lm.enc <lmtto10.pfb
+ec-var-lmvtt10  LMTypewriterVarWd10-Regular  <ec-var-lm.enc <lmvtt10.pfb
+ec-var-lmvtto10 LMTypewriterVarWd10-Italic   <ec-var-lm.enc <lmvtto10.pfb
+
+% this is an empty map file
+
+% author: Hans Hagen
+%
+% This map file remaps texnansi encoded Latin Modern adapted for
+% umlauts and other variations.
+
+texnansi-lmb10    LMRomanDemi10-Regular        <texnansi-var-lm.enc <lmb10.pfb
+texnansi-lmbo10   LMRomanDemi10-Italic         <texnansi-var-lm.enc <lmbo10.pfb
+texnansi-lmbx10   LMRoman10-Bold               <texnansi-var-lm.enc <lmbx10.pfb
+texnansi-lmbx12   LMRoman12-Bold               <texnansi-var-lm.enc <lmbx12.pfb
+texnansi-lmbx5    LMRoman5-Bold                <texnansi-var-lm.enc <lmbx5.pfb
+texnansi-lmbx6    LMRoman6-Bold                <texnansi-var-lm.enc <lmbx6.pfb
+texnansi-lmbx7    LMRoman7-Bold                <texnansi-var-lm.enc <lmbx7.pfb
+texnansi-lmbx8    LMRoman8-Bold                <texnansi-var-lm.enc <lmbx8.pfb
+texnansi-lmbx9    LMRoman9-Bold                <texnansi-var-lm.enc <lmbx9.pfb
+texnansi-lmbxi10  LMRoman10-BoldItalic         <texnansi-var-lm.enc <lmbxi10.pfb
+texnansi-lmbxo10  LMSlanted10-BoldItalic       <texnansi-var-lm.enc <lmbxo10.pfb
+texnansi-lmcsc10  LMCaps10-Regular             <texnansi-var-lm.enc <lmcsc10.pfb
+texnansi-lmcsco10 LMCaps10-Italic              <texnansi-var-lm.enc <lmcsco10.pfb
+texnansi-lmr10    LMRoman10-Regular            <texnansi-var-lm.enc <lmr10.pfb
+texnansi-lmr12    LMRoman12-Regular            <texnansi-var-lm.enc <lmr12.pfb
+texnansi-lmr17    LMRoman17-Regular            <texnansi-var-lm.enc <lmr17.pfb
+texnansi-lmr5     LMRoman5-Regular             <texnansi-var-lm.enc <lmr5.pfb
+texnansi-lmr6     LMRoman6-Regular             <texnansi-var-lm.enc <lmr6.pfb
+texnansi-lmr7     LMRoman7-Regular             <texnansi-var-lm.enc <lmr7.pfb
+texnansi-lmr8     LMRoman8-Regular             <texnansi-var-lm.enc <lmr8.pfb
+texnansi-lmr9     LMRoman9-Regular             <texnansi-var-lm.enc <lmr9.pfb
+texnansi-lmri10   LMRoman10-Italic             <texnansi-var-lm.enc <lmri10.pfb
+texnansi-lmri12   LMRoman12-Italic             <texnansi-var-lm.enc <lmri12.pfb
+texnansi-lmri7    LMRoman7-Italic              <texnansi-var-lm.enc <lmri7.pfb
+texnansi-lmri8    LMRoman8-Italic              <texnansi-var-lm.enc <lmri8.pfb
+texnansi-lmri9    LMRoman9-Italic              <texnansi-var-lm.enc <lmri9.pfb
+texnansi-lmro10   LMSlanted10-Italic           <texnansi-var-lm.enc <lmro10.pfb
+texnansi-lmro12   LMSlanted12-Italic           <texnansi-var-lm.enc <lmro12.pfb
+texnansi-lmro8    LMSlanted8-Italic            <texnansi-var-lm.enc <lmro8.pfb
+texnansi-lmro9    LMSlanted9-Italic            <texnansi-var-lm.enc <lmro9.pfb
+texnansi-lmss10   LMSans10-Regular             <texnansi-var-lm.enc <lmss10.pfb
+texnansi-lmss12   LMSans12-Regular             <texnansi-var-lm.enc <lmss12.pfb
+texnansi-lmss17   LMSans17-Regular             <texnansi-var-lm.enc <lmss17.pfb
+texnansi-lmss8    LMSans8-Regular              <texnansi-var-lm.enc <lmss8.pfb
+texnansi-lmss9    LMSans9-Regular              <texnansi-var-lm.enc <lmss9.pfb
+texnansi-lmssbo10 LMSans10-BoldItalic          <texnansi-var-lm.enc <lmssbo10.pfb
+texnansi-lmssbx10 LMSans10-Bold                <texnansi-var-lm.enc <lmssbx10.pfb
+texnansi-lmssdc10 LMSansDemiCond10-Regular     <texnansi-var-lm.enc <lmssdc10.pfb
+texnansi-lmssdo10 LMSansDemiCond10-Italic      <texnansi-var-lm.enc <lmssdo10.pfb
+texnansi-lmsso10  LMSans10-Italic              <texnansi-var-lm.enc <lmsso10.pfb
+texnansi-lmsso12  LMSans12-Italic              <texnansi-var-lm.enc <lmsso12.pfb
+texnansi-lmsso17  LMSans17-Italic              <texnansi-var-lm.enc <lmsso17.pfb
+texnansi-lmsso8   LMSans8-Italic               <texnansi-var-lm.enc <lmsso8.pfb
+texnansi-lmsso9   LMSans9-Italic               <texnansi-var-lm.enc <lmsso9.pfb
+texnansi-lmssq8   LMSansQuotation8-Regular     <texnansi-var-lm.enc <lmssq8.pfb
+texnansi-lmssqbo8 LMSansQuotation8-BoldItalic  <texnansi-var-lm.enc <lmssqbo8.pfb
+texnansi-lmssqbx8 LMSansQuotation8-Bold        <texnansi-var-lm.enc <lmssqbx8.pfb
+texnansi-lmssqo8  LMSansQuotation8-Italic      <texnansi-var-lm.enc <lmssqo8.pfb
+texnansi-lmtcsc10 LMTypewriterCaps10-Regular   <texnansi-var-lm.enc <lmtcsc10.pfb
+texnansi-lmtt10   LMTypewriter10-Regular       <texnansi-var-lm.enc <lmtt10.pfb
+texnansi-lmtt12   LMTypewriter12-Regular       <texnansi-var-lm.enc <lmtt12.pfb
+texnansi-lmtt8    LMTypewriter8-Regular        <texnansi-var-lm.enc <lmtt8.pfb
+texnansi-lmtt9    LMTypewriter9-Regular        <texnansi-var-lm.enc <lmtt9.pfb
+texnansi-lmtti10  LMTypewriter10-Italic        <texnansi-var-lm.enc <lmtti10.pfb
+texnansi-lmtto10  LMTypewriterSlanted10-Italic <texnansi-var-lm.enc <lmtto10.pfb
+texnansi-lmvtt10  LMTypewriterVarWd10-Regular  <texnansi-var-lm.enc <lmvtt10.pfb
+texnansi-lmvtto10 LMTypewriterVarWd10-Italic   <texnansi-var-lm.enc <lmvtto10.pfb
+
+% this is an empty map file
+
+% author: Hans Hagen
+%
+% This map file defines texnansi encoded Latin Modern adapted for
+% umlauts and other variations.
+
+texnansi-var-lmb10    LMRomanDemi10-Regular        <texnansi-var-lm.enc <lmb10.pfb
+texnansi-var-lmbo10   LMRomanDemi10-Italic         <texnansi-var-lm.enc <lmbo10.pfb
+texnansi-var-lmbx10   LMRoman10-Bold               <texnansi-var-lm.enc <lmbx10.pfb
+texnansi-var-lmbx12   LMRoman12-Bold               <texnansi-var-lm.enc <lmbx12.pfb
+texnansi-var-lmbx5    LMRoman5-Bold                <texnansi-var-lm.enc <lmbx5.pfb
+texnansi-var-lmbx6    LMRoman6-Bold                <texnansi-var-lm.enc <lmbx6.pfb
+texnansi-var-lmbx7    LMRoman7-Bold                <texnansi-var-lm.enc <lmbx7.pfb
+texnansi-var-lmbx8    LMRoman8-Bold                <texnansi-var-lm.enc <lmbx8.pfb
+texnansi-var-lmbx9    LMRoman9-Bold                <texnansi-var-lm.enc <lmbx9.pfb
+texnansi-var-lmbxi10  LMRoman10-BoldItalic         <texnansi-var-lm.enc <lmbxi10.pfb
+texnansi-var-lmbxo10  LMSlanted10-BoldItalic       <texnansi-var-lm.enc <lmbxo10.pfb
+texnansi-var-lmcsc10  LMCaps10-Regular             <texnansi-var-lm.enc <lmcsc10.pfb
+texnansi-var-lmcsco10 LMCaps10-Italic              <texnansi-var-lm.enc <lmcsco10.pfb
+texnansi-var-lmr10    LMRoman10-Regular            <texnansi-var-lm.enc <lmr10.pfb
+texnansi-var-lmr12    LMRoman12-Regular            <texnansi-var-lm.enc <lmr12.pfb
+texnansi-var-lmr17    LMRoman17-Regular            <texnansi-var-lm.enc <lmr17.pfb
+texnansi-var-lmr5     LMRoman5-Regular             <texnansi-var-lm.enc <lmr5.pfb
+texnansi-var-lmr6     LMRoman6-Regular             <texnansi-var-lm.enc <lmr6.pfb
+texnansi-var-lmr7     LMRoman7-Regular             <texnansi-var-lm.enc <lmr7.pfb
+texnansi-var-lmr8     LMRoman8-Regular             <texnansi-var-lm.enc <lmr8.pfb
+texnansi-var-lmr9     LMRoman9-Regular             <texnansi-var-lm.enc <lmr9.pfb
+texnansi-var-lmri10   LMRoman10-Italic             <texnansi-var-lm.enc <lmri10.pfb
+texnansi-var-lmri12   LMRoman12-Italic             <texnansi-var-lm.enc <lmri12.pfb
+texnansi-var-lmri7    LMRoman7-Italic              <texnansi-var-lm.enc <lmri7.pfb
+texnansi-var-lmri8    LMRoman8-Italic              <texnansi-var-lm.enc <lmri8.pfb
+texnansi-var-lmri9    LMRoman9-Italic              <texnansi-var-lm.enc <lmri9.pfb
+texnansi-var-lmro10   LMSlanted10-Italic           <texnansi-var-lm.enc <lmro10.pfb
+texnansi-var-lmro12   LMSlanted12-Italic           <texnansi-var-lm.enc <lmro12.pfb
+texnansi-var-lmro8    LMSlanted8-Italic            <texnansi-var-lm.enc <lmro8.pfb
+texnansi-var-lmro9    LMSlanted9-Italic            <texnansi-var-lm.enc <lmro9.pfb
+texnansi-var-lmss10   LMSans10-Regular             <texnansi-var-lm.enc <lmss10.pfb
+texnansi-var-lmss12   LMSans12-Regular             <texnansi-var-lm.enc <lmss12.pfb
+texnansi-var-lmss17   LMSans17-Regular             <texnansi-var-lm.enc <lmss17.pfb
+texnansi-var-lmss8    LMSans8-Regular              <texnansi-var-lm.enc <lmss8.pfb
+texnansi-var-lmss9    LMSans9-Regular              <texnansi-var-lm.enc <lmss9.pfb
+texnansi-var-lmssbo10 LMSans10-BoldItalic          <texnansi-var-lm.enc <lmssbo10.pfb
+texnansi-var-lmssbx10 LMSans10-Bold                <texnansi-var-lm.enc <lmssbx10.pfb
+texnansi-var-lmssdc10 LMSansDemiCond10-Regular     <texnansi-var-lm.enc <lmssdc10.pfb
+texnansi-var-lmssdo10 LMSansDemiCond10-Italic      <texnansi-var-lm.enc <lmssdo10.pfb
+texnansi-var-lmsso10  LMSans10-Italic              <texnansi-var-lm.enc <lmsso10.pfb
+texnansi-var-lmsso12  LMSans12-Italic              <texnansi-var-lm.enc <lmsso12.pfb
+texnansi-var-lmsso17  LMSans17-Italic              <texnansi-var-lm.enc <lmsso17.pfb
+texnansi-var-lmsso8   LMSans8-Italic               <texnansi-var-lm.enc <lmsso8.pfb
+texnansi-var-lmsso9   LMSans9-Italic               <texnansi-var-lm.enc <lmsso9.pfb
+texnansi-var-lmssq8   LMSansQuotation8-Regular     <texnansi-var-lm.enc <lmssq8.pfb
+texnansi-var-lmssqbo8 LMSansQuotation8-BoldItalic  <texnansi-var-lm.enc <lmssqbo8.pfb
+texnansi-var-lmssqbx8 LMSansQuotation8-Bold        <texnansi-var-lm.enc <lmssqbx8.pfb
+texnansi-var-lmssqo8  LMSansQuotation8-Italic      <texnansi-var-lm.enc <lmssqo8.pfb
+texnansi-var-lmtcsc10 LMTypewriterCaps10-Regular   <texnansi-var-lm.enc <lmtcsc10.pfb
+texnansi-var-lmtt10   LMTypewriter10-Regular       <texnansi-var-lm.enc <lmtt10.pfb
+texnansi-var-lmtt12   LMTypewriter12-Regular       <texnansi-var-lm.enc <lmtt12.pfb
+texnansi-var-lmtt8    LMTypewriter8-Regular        <texnansi-var-lm.enc <lmtt8.pfb
+texnansi-var-lmtt9    LMTypewriter9-Regular        <texnansi-var-lm.enc <lmtt9.pfb
+texnansi-var-lmtti10  LMTypewriter10-Italic        <texnansi-var-lm.enc <lmtti10.pfb
+texnansi-var-lmtto10  LMTypewriterSlanted10-Italic <texnansi-var-lm.enc <lmtto10.pfb
+texnansi-var-lmvtt10  LMTypewriterVarWd10-Regular  <texnansi-var-lm.enc <lmvtt10.pfb
+texnansi-var-lmvtto10 LMTypewriterVarWd10-Italic   <texnansi-var-lm.enc <lmvtto10.pfb

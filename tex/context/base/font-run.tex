@@ -58,11 +58,11 @@
          \tabskip=\!!zeropoint\cr
          \noalign{\hrule}
          &\multispan{29}{\vrule\hfil\tttf\strut\title\hfil
-          \llap{\string\mr\hbox to 1em{\hss:\hss}$\mr \languageparameter\c!tekst$\quad}\vrule}\cr
+          \llap{\string\mr\hbox to 1em{\hss:\hss}$\mr \languageparameter\c!text$\quad}\vrule}\cr
          \noalign{\hrule}\next{}{\tt\string}{}
-         \noalign{\hrule}\next{\tt\string\rm}\rm{\languageparameter\c!tekst}
-         \noalign{\hrule}\next{\tt\string\ss}\ss{\languageparameter\c!tekst}
-         \noalign{\hrule}\next{\tt\string\tt}\tt{\languageparameter\c!tekst}
+         \noalign{\hrule}\next{\tt\string\rm}\rm{\languageparameter\c!text}
+         \noalign{\hrule}\next{\tt\string\ss}\ss{\languageparameter\c!text}
+         \noalign{\hrule}\next{\tt\string\tt}\tt{\languageparameter\c!text}
          \noalign{\hrule}}}
    \ifinsidefloat\else\stopbaselinecorrection\fi}
 
@@ -79,9 +79,9 @@
          &&\getvalue{\bodyfontvariable{##1\s!scriptscript}}%
          &&\getvalue{\bodyfontvariable{##1\c!x}}%
          &&\getvalue{\bodyfontvariable{##1\c!xx}}%
-         &&\getvalue{\bodyfontvariable{##1\interfaced\v!klein}}%
-         &&\getvalue{\bodyfontvariable{##1\interfaced\v!groot}}%
-         &&\getvalue{\bodyfontvariable{##1\c!interlinie}}&\cr
+         &&\getvalue{\bodyfontvariable{##1\interfaced\v!small}}%
+         &&\getvalue{\bodyfontvariable{##1\interfaced\v!big}}%
+         &&\getvalue{\bodyfontvariable{##1\c!interlinespace}}&\cr
          \noalign{\hrule}}
       \halign to \localhsize
         {##&\vrule##\strut
@@ -94,8 +94,8 @@
          &\multispan{17}{\vrule\hfil\tttf\strut\title\hfil}\vrule\cr
          \noalign{\hrule}
          &&\tttf\tx\s!text&&\tttf\tx\s!script&&\tttf\tx\s!scriptscript
-         &&\tttf\tx\c!x&&\tttf\tx\c!xx&&\tttf\tx\v!klein&&\tttf\tx\v!groot
-         &&\tttf\tx\c!interlinie&\cr
+         &&\tttf\tx\c!x&&\tttf\tx\c!xx&&\tttf\tx\v!small&&\tttf\tx\v!big
+         &&\tttf\tx\c!interlinespace&\cr
          \noalign{\hrule}
          \@EA\globalprocesscommalist\@EA[\bodyfontenvironmentlist]\next}}
    \ifinsidefloat\else\stopbaselinecorrection\fi}
@@ -111,7 +111,7 @@
 
 \gdef\doshowfont[#1]%
   {\bgroup
-   \setupcolors[\c!status=\v!lokaal]%
+   \setupcolors[\c!state=\v!local]%
    \iffirstargument
      \definefont[\s!dummy][#1]\dummy
    \else\ifdim2.5em>.05\hsize \tx
@@ -175,7 +175,7 @@
                         \fi}}
                   \stopoverlay}}}
           \par}}
-     {\tf\basegrid[\c!nx=16,\c!ny=16,\c!dx=2.5,\c!dy=2.5,\c!eenheid=em]}
+     {\tf\basegrid[\c!nx=16,\c!ny=16,\c!dx=2.5,\c!dy=2.5,\c!unit=em]}
    \stopoverlay
    \nointerlineskip
    \vskip2pt
@@ -224,10 +224,10 @@
 
 \gdef\showligatures[#1]%
   {\ifx\starttabulate\undefined
-     \blanko{\tttf \type {\showligatures} is only available in thr english interface}\blanko
+     \blank{\tttf \type {\showligatures} is only available in thr english interface}\blank
    \else
      \bgroup
-     \setupcolors[\c!status=\v!lokaal]%
+     \setupcolors[\c!state=\v!local]%
      \def\show##1{\hbox{\red\ruledhbox{\black##1}}}%
      \definefont[\s!dummy][#1]\dummy
      \starttabulate[|*{9}{c|}]
@@ -244,7 +244,7 @@
 
 \gdef\doshowfontstrip[#1]%
   {\ifx\starttabulate\undefined
-     \blanko{\tttf \type {\showfontstrip} is only available in thr english interface}\blanko
+     \blank{\tttf \type {\showfontstrip} is only available in thr english interface}\blank
    \else
      \bgroup
      \def\dofontstripa##1##2%
@@ -300,7 +300,7 @@
 
 \gdef\showminimalbaseline
   {\ifx\starttabulate\undefined
-     \blanko{\tttf \type {\showminimalbaseline} is only available in thr english interface}\blanko
+     \blank{\tttf \type {\showminimalbaseline} is only available in thr english interface}\blank
    \else
      \starttabulate[||T|T|T|T|T|T|T|T|T|]
      \testminimalbaseline{\hbox to 1em{\hss\showstruts\strut\hss}}%

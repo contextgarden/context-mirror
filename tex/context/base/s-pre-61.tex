@@ -17,7 +17,8 @@
 
 \definetypeface[mainface][ss][sans][optima-nova][default][encoding=\defaultencoding]
 
-\setupbodyfont[mainface,ss,22pt]
+\setupbodyfont[mainface,ss,18pt]
+\setupinterlinespace[line=3.25ex]
 
 \setuppapersize
   [S6][S6]
@@ -41,7 +42,10 @@
 \setupinteraction
   [state=start,
    click=off,
-   menu=on]
+   menu=on,
+   style=,
+   color=interactioncolor,
+   contrastcolor=interactioncolor]
 
 \setupinteractionscreen
   [option=max]
@@ -85,6 +89,8 @@
 \definecolor [maincolor] [bright]
 \definecolor [textcolor] [red]
 
+\definecolor [interactioncolor] [r=.8,g=.8,b=.6]
+
 \setupcolors
   [state=start,
    textcolor=maincolor]
@@ -93,6 +99,19 @@
   [page]
   [background=page,
    backgroundcolor=textcolor]
+
+\setupbackgrounds
+  [text]% [text]
+  [background={comments,text,invoke}]
+
+\definelayer
+  [text]
+  [width=\textwidth,
+   height=\textheight]
+
+\defineoverlay
+  [comments]
+  [{\setlayer[text][preset=middle]{\placecomments}}]
 
 \defineoverlay[page][\uniqueMPgraphic{page-\ifcase\realpageno\or one\else plus\fi}]
 
@@ -121,13 +140,15 @@
   StopPage ;
 \stopuniqueMPgraphic
 
-\NormalizeFontHeight \HeadFont  {\setstrut\strut\quad} {\headerheight}  {SansBold}
-\NormalizeFontHeight \TitleFont {\setstrut\strut\quad} {2\headerheight} {SansBold}
+\NormalizeFontHeight \HeadFont        {\setstrut\strut\quad} {1.0\headerheight} {SansBold}
+\NormalizeFontHeight \TitleFont       {\setstrut\strut\quad} {2.0\headerheight} {SansBold}
+\NormalizeFontHeight \SubTitleFont    {\setstrut\strut\quad} {1.5\headerheight} {SansBold}
+\NormalizeFontHeight \SubSubTitleFont {\setstrut\strut\quad} {1.0\headerheight} {SansBold}
 
 \setuphead
   [chapter]
   [placehead=empty,
-   after={\blank[big]},
+   after={\blank[medium]},
    color=maincolor,
    placenumber=no,
    style=\HeadFont]
@@ -141,14 +162,26 @@
 \setuppagenumbering
   [location=]
 
-\definesymbol[emdash][\emdash] \setupitemize[each][packed][symbol=emdash]
+\definesymbol
+  [emdash]
+  [\emdash]
 
-\setupalign[broad,right]
+\setupitemize
+  [each]
+  [loose,serried,joinedup]
+  [symbol=emdash]
 
-\def\TitlePage#1%
+\setupalign
+  [broad,right]
+
+\def\doTitlePage#1#2#3%
   {\startstandardmakeup[headerstate=high]
-   \def\\{\endgraf\quad}\TitleFont\setstrut\setupinterlinespace\vfil#1\vfil\vfil
+     \def\\{\def\\{\endgraf\quad\quad}\endgraf\quad#2}%
+     #1\setstrut\setupinterlinespace\vfil#3\vfil\vfil
    \stopstandardmakeup}
+
+\def\TitlePage   {\doTitlePage\TitleFont\relax}
+\def\SubTitlePage{\doTitlePage\TitleFont\SubTitleFont}
 
 \definehead[Topic][chapter]
 \definehead[Nopic][title]

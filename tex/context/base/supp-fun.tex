@@ -38,7 +38,7 @@
 %D   Let's start
 %D \stopbuffer
 %D
-%D \haalbuffer with dropped caps, those blown up first
+%D \getbuffer with dropped caps, those blown up first
 %D characters of a paragraph. It's hard to implement a general
 %D mechanism that suits all situations, but dropped caps are so
 %D seldomly used that we can permit ourselves a rather user
@@ -63,7 +63,7 @@
 %D   This simple
 %D \stopbuffer
 %D
-%D \haalbuffer case shows us what happens when we apply minimal
+%D \getbuffer case shows us what happens when we apply minimal
 %D values. Here we used:
 %D
 %D \typebuffer
@@ -75,7 +75,7 @@
 %D   Is this ugly
 %D \stopbuffer
 %D
-%D \haalbuffer example the third argument tells
+%D \getbuffer example the third argument tells
 %D this macro that we want a dropped capital scaled to the
 %D baseline distance. The two zero point arguments are the
 %D horizontal and vertical offsets and the last arguments
@@ -106,7 +106,7 @@
 %D
 %D \typebuffer
 %D
-%D \haalbuffer of the general macro is rather simple and only
+%D \getbuffer of the general macro is rather simple and only
 %D depends on the arguments given and the dimensions of the
 %D strut box. We explicitly load the font, which is no problem
 %D because \TEX\ does not load a font twice. We could have
@@ -253,11 +253,11 @@
 
 %D Before we go to the next topic, we summarize this command:
 %D
-%D \starttypen
+%D \starttyping
 %D \DroppedCaps
 %D   {command} {font}
 %D   {height} {hoffset} {voffset} {lines}
-%D \stoptypen
+%D \stoptyping
 %D
 %D Sometimes you need to make sure that the global settings are
 %D kept local, as in:
@@ -267,9 +267,9 @@
 % %D \setupparagraphs [SomePar][1][width=.5\textwidth]
 % %D \setupparagraphs [SomePar][2][width=.5\textwidth]
 %D \startbuffer
-%D \definieeralineas[SomePar][n=2,rule=on]
-%D \stelalineasin [SomePar][1][width=.5\textwidth]
-%D \stelalineasin [SomePar][2][width=.5\textwidth]
+%D \defineparagraphs[SomePar][n=2,rule=on]
+%D \setupparagraphs [SomePar][1][width=.5\textwidth]
+%D \setupparagraphs [SomePar][2][width=.5\textwidth]
 %D
 %D \startSomePar
 %D   \localdropcaps\NiceDroppedCaps{}{cmr12}{0pt}{2}Here we need
@@ -349,10 +349,10 @@
 %D
 %D To save definitions, we also provide:
 %D
-%D \starttypen
+%D \starttyping
 %D \LineDroppedCaps {command} {font} {hoffset} {lines}
 %D \NiceDroppedCaps {command} {font} {hoffset} {lines}
-%D \stoptypen
+%D \stoptyping
 %D
 %D The first command scales the font to the exact height, while
 %D the second command scales the font to a nice 2.5 times the
@@ -383,7 +383,7 @@
 %D saying:
 %D \stopbuffer
 %D
-%D \haalbuffer
+%D \getbuffer
 %D
 %D \typebuffer
 %D
@@ -395,7 +395,7 @@
 %D respect.
 %D \stopbuffer
 %D
-%D \haalbuffer
+%D \getbuffer
 %D
 %D \typebuffer
 %D
@@ -433,7 +433,7 @@
         \egroup
       \else
         \setbox0\box2
-        \@EAEAES\grabfirstline
+        \@EAEAEA\grabfirstline
       \fi\fi}%
    \grabfirstline}
 
@@ -450,7 +450,7 @@
 %D effects on the individual words. Of course one needs ...
 %D \stopbuffer
 %D
-%D \haalbuffer
+%D \getbuffer
 %D to know a bit more about the macro package used to get real
 %D nice effects, but this example probably demonstrates the
 %D principles well.
@@ -460,10 +460,10 @@
 %D Like in dropped caps case, one can hide such treatments in a
 %D macro, like:
 %D
-%D \starttypen
+%D \starttyping
 %D \def\MyTreatFirstLine%
 %D   {\TreatFirstLine{\bf}{}{\FunnyCommand}{\FunnyCommand}}
-%D \stoptypen
+%D \stoptyping
 
 %D \macros
 %D   {reshapebox}
@@ -481,7 +481,7 @@
 %D \reshapebox{\FunnyCommand{\box\shapebox}} \flushshapebox
 %D \stopbuffer
 %D
-%D \haalbuffer
+%D \getbuffer
 %D
 %D \typebuffer
 %D
@@ -496,7 +496,7 @@
 %D \TreatFirstCharacter{\bf\color[green]} Just to be
 %D \stopbuffer
 %D
-%D \haalbuffer complete we also offer a very simple one
+%D \getbuffer complete we also offer a very simple one
 %D character alternative, that is not that hard to understand:
 
 \def\TreatFirstCharacter#1#2% command, character
@@ -526,7 +526,7 @@
 %D
 %D Such a stack looks like:
 %D
-%D \startregelcorrectie
+%D \startlinecorrection
 %D \hbox to \hsize
 %D    {$\hss\bfd
 %D     \vcenter{\StackCharacters{TEX}    {}{\vskip.2ex}{\FunnyCommand}}%
@@ -537,7 +537,7 @@
 %D     \hss
 %D     \vcenter{\StackCharacters{CONTEXT}{}{\vskip.2ex}{\FunnyCommand}}
 %D     \hss$}
-%D \stopregelcorrectie
+%D \stoplinecorrection
 %D
 %D and is typeset by saying:
 %D
@@ -545,9 +545,9 @@
 %D
 %D An alternative would have been
 %D
-%D \starttypen
+%D \starttyping
 %D \StackCharacters {CONTEXT} {to 5cm} {\vfill} {\FunnyCommand}
-%D \stoptypen
+%D \stoptyping
 
 %D \macros
 %D   {processtokens}
@@ -555,9 +555,9 @@
 %D At a lower level horizontal and vertical manipulations are
 %D already supported by:
 %D
-%D \starttypen
+%D \starttyping
 %D \processtokens {begin} {between} {end} {space} {text}
-%D \stoptypen
+%D \stoptyping
 %D
 %D \startbuffer[a]
 %D \processtokens
@@ -575,9 +575,9 @@
 %D
 %D \leavevmode\hbox to \hsize
 %D   {$\hfil\hfil
-%D    \vcenter{\bf\haalbuffer[a]}%
+%D    \vcenter{\bf\getbuffer[a]}%
 %D    \hfil
-%D    \vcenter{\bfd\haalbuffer[b]}%
+%D    \vcenter{\bfd\getbuffer[b]}%
 %D    \hfil\hfil$}
 %D
 %D which was specified as:
@@ -595,10 +595,10 @@
 %D word spacing. In such situations the next few macros can be
 %D of help:
 %D
-%D \starttypen
+%D \starttyping
 %D \NormalizeFontHeight \name {sample text} {height} {font}
 %D \NormalizeFontWidth  \name {sample text} {width}  {font}
-%D \stoptypen
+%D \stoptyping
 %D
 %D These are implemented using an auxilliary macro:
 
@@ -667,7 +667,7 @@
 %D
 %D This shows up as (we also show the baselines):
 %D
-%D {\showbaselines\haalbuffer}
+%D {\showbaselines\getbuffer}
 %D
 %D The horizontal counterpart is:
 %D
@@ -682,24 +682,24 @@
 %D The calculated font scale is avaliable in the macro
 %D \type{\NormalizedFontSize}.
 %D
-%D \startregelcorrectie
-%D \ruledhbox{\haalbuffer}
-%D \stopregelcorrectie
+%D \startlinecorrection
+%D \ruledhbox{\getbuffer}
+%D \stoplinecorrection
 %D
 %D One can of course combine these macros with the ones
 %D described earlier, like in:
 %D
-%D \starttypen
+%D \starttyping
 %D \NormalizeFontHeight {text} \DroppedFont {2\baselineskip} {cmbx12}
 %D
 %D \def\NicelyDroppedCaps
 %D   {\DroppedCaps
-%D      {\kleur[groen]}
+%D      {\color[green]}
 %D      {\DroppedFont}
 %D      {2pt}
 %D      {\baselineskip}
 %D      {2}}
-%D \stoptypen
+%D \stoptyping
 %D
 %D It's up to the reader to test this one.
 
@@ -741,14 +741,14 @@
   {\bgroup
    \forgetall
    \dontcomplain
-   \setuptolerance[\v!zeersoepel]% == \tolerance4500
+   \setuptolerance[\v!verytolerant]% == \tolerance4500
    \hsize#1%
    \def\\{\softbreak}%
    \!!heighta#4%
    \!!heightb#2%
    \doloop
      {\ifdim\!!heighta>\onepoint
-        \expanded{\definefont[\s!dummy][#3 at \the\!!heighta][\c!interlinie=#6]}%
+        \expanded{\definefont[\s!dummy][#3 at \the\!!heighta][\c!interlinespace=#6]}%
         \getvalue\s!dummy
         \setbox\scratchbox\vbox{#7\endgraf}%
         \ifdim\ht\scratchbox>\!!heightb
@@ -800,7 +800,6 @@
    \fi}
 
 \def\SpreadGapText#1#2%
-% {{\def\+{\blackrule[\c!breedte=#1]}#2}}
   {{\def\+{\kern#1}#2}}
 
 \def\GapText#1#2#3#4#5% width distance font spec title

@@ -58,14 +58,14 @@
 
 \definetextbackground
   [\v!answerarea]
-  [\c!plaats=\v!tekst,
+  [\c!location=\v!text,
    \c!n=0,
-   \c!kader=\v!uit,
-   \c!kaderkleur=answerlinecolor,       
-   \c!lijndikte=2pt,
-   \c!achtergrond=\v!kleur,
-   \c!achtergrondkleur=answerareacolor, 
-   \c!variant=2] % betweenline
+   \c!frame=\v!off,
+   \c!framecolor=answerlinecolor,       
+   \c!rulethickness=2pt,
+   \c!background=\v!color,
+   \c!backgroundcolor=answerareacolor, 
+   \c!alternative=2] % betweenline
 
 % n=gedwongen
 % m=extra auto
@@ -80,7 +80,7 @@
   {\begingroup
    \dontcomplain
    \setupanswerarea
-     [\c!n=0,\c!m=,#1,\c!plaats=\v!tekst]%
+     [\c!n=0,\c!m=,#1,\c!location=\v!text]%
    \doifelsenothing{\backgroundvariable\c!m}
      {\expandafter\donoanswerspace}
      {\expandafter\dodoanswerspace}%
@@ -88,11 +88,11 @@
 
 \def\donoanswerspace[#1]#2%
   {\setupthinrules
-     [\c!variant=\backgroundvariable\c!variant,
-      \c!kleur=\backgroundvariable\c!kaderkleur,
-      \c!achtergrond=\backgroundvariable\c!achtergrond,
-      \c!achtergrondkleur=\backgroundvariable\c!achtergrondkleur,
-      \c!lijndikte=\backgroundvariable\c!lijndikte]%
+     [\c!alternative=\backgroundvariable\c!alternative,
+      \c!color=\backgroundvariable\c!framecolor,
+      \c!background=\backgroundvariable\c!background,
+      \c!backgroundcolor=\backgroundvariable\c!backgroundcolor,
+      \c!rulethickness=\backgroundvariable\c!rulethickness]%
    \doifelse{\backgroundvariable\c!n}{*}
      {\thinrule
       \par}
@@ -142,8 +142,8 @@
   {\begingroup
    \dontcomplain
    \setupanswerarea
-     [\c!n=0,\c!m=,#1,\c!plaats=\v!tekst]%
-   \doifnot{\backgroundvariable\c!optie}\v!aansluitend\softbreak
+     [\c!n=0,\c!m=,#1,\c!location=\v!text]%
+   \doifnot{\backgroundvariable\c!option}\v!joinedup\softbreak
    \doifelsenothing{\backgroundvariable\c!m}
      {\expandafter\donostartanswerlines}
      {\expandafter\dodostartanswerlines}%
@@ -151,11 +151,11 @@
 
 \def\donostartanswerlines[#1]%
   {\setupthinrules
-     [\c!variant=\backgroundvariable\c!variant,
-      \c!kleur=\backgroundvariable\c!kaderkleur,
-      \c!achtergrond=\backgroundvariable\c!achtergrond,
-      \c!achtergrondkleur=\backgroundvariable\c!achtergrondkleur,
-      \c!lijndikte=\backgroundvariable\c!lijndikte]%
+     [\c!alternative=\backgroundvariable\c!alternative,
+      \c!color=\backgroundvariable\c!framecolor,
+      \c!background=\backgroundvariable\c!background,
+      \c!backgroundcolor=\backgroundvariable\c!backgroundcolor,
+      \c!rulethickness=\backgroundvariable\c!rulethickness]%
    \thinrules[\c!n=\backgroundvariable\c!n]\par
    \endgroup
    \grabuntil{\e!stop\e!answerlines}}

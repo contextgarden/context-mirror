@@ -179,16 +179,21 @@
 
 \ifnocontextobject \zeropoint      \do \newdimen  \zeropoint      \fi % else problems with dimen12
 \ifnocontextobject \onepoint       \do \newdimen  \onepoint       \fi
+\ifnocontextobject \onebasepoint   \do \newdimen  \onebasepoint   \fi
 \ifnocontextobject \zerocount      \do \chardef   \zerocount =0   \fi
 \ifnocontextobject \plusone        \do \chardef   \plusone   =1   \fi
 \ifnocontextobject \minusone       \do \newcount  \minusone       \fi
 
 \ifnocontextobject \thousandpoint  \do \newdimen  \thousandpoint  \fi
 
-\thousandpoint=1000pt
-\zeropoint    =   0pt
-\onepoint     =   1pt
-\minusone     =  -1
+\ifnocontextobject \onerealpoint   \do \newdimen  \onerealpoint   \fi % latex has a funny \onepoint
+
+\thousandpoint = 1000pt
+\zeropoint     =    0pt
+\onepoint      =    1pt
+\onebasepoint  =    1bp
+\minusone      =   -1
+\onerealpoint  =    1pt
 
 \ifnocontextobject \emptytoks      \do \newtoks   \emptytoks      \fi
 
@@ -630,9 +635,9 @@
 %D The following macro is the simplified version, but good
 %D enough for day to day hacks.
 %D
-%D \starttypen
+%D \starttyping
 %D \dohandletokens some text\with\somemacro
-%D \stoptypen
+%D \stoptyping
 
 \ifnocontextobject \dohandletokens \do
 

@@ -8,17 +8,15 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
-%C details. 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
 
 \writestatus{loading}{Context Old Macros}
 
 \unprotect
 
 \def\dosubstitutecommand#1#2%
-  {\writestatus
-     {pas op}
-     {\string#1\normalspace is nu \string#2}%
+  {\writestatus\m!systems{\string#1\normalspace -> \string#2}%
    \gdef#1{#2}%
    #2}
 
@@ -34,16 +32,16 @@
 %substitutecommand \stelmargesin            \stellayoutin
 %substitutecommand \steloffsetin            \stellayoutin
 
-              %def \randbreedte             {\rechterrandbreedte}
+              %def \edgewidth             {\rightedgewidth}
 
 %substitutecommand \steldoordefinitiein     \steldoordefinierenin
 %substitutecommand \steldoornummerin        \steldoornummerenin
 %substitutecommand \steldoorsprongin        \steldoorspringenin
 
-\substitutecommand \volgendehoofdstuk       {\stelkopnummerin[hoofdstuk][+1]}
-\substitutecommand \volgendeparagraaf       {\stelkopnummerin[paragraaf][+1]}
-\substitutecommand \volgendesubparagraaf    {\stelkopnummerin[subparagraaf][+1]}
-\substitutecommand \volgendesubsubparagraaf {\stelkopnummerin[subsubparagraaf][+1]}
+\substitutecommand \volgendehoofdstuk       {\setupheadnumber[hoofdstuk][+1]}
+\substitutecommand \volgendeparagraaf       {\setupheadnumber[paragraaf][+1]}
+\substitutecommand \volgendesubparagraaf    {\setupheadnumber[subparagraaf][+1]}
+\substitutecommand \volgendesubsubparagraaf {\setupheadnumber[subsubparagraaf][+1]}
 
 \substitutecommand \volledigeinhoudsopgave  \volledigeinhoud
 \substitutecommand \plaatsinhoudsopgave     \plaatsinhoud
@@ -52,9 +50,9 @@
 \substitutecommand \streep                  \onderstreep
 \substitutecommand \strepen                 \onderstrepen
 
-\substitutecommand \pragmakenmerk           \kenmerk
+\substitutecommand \pragmakenmerk           \referral
 
-\substitutecommand \definieersynoniem       \definieersynoniemen       
+\substitutecommand \definieersynoniem       \definesynonyms
 
 %substitutecommand \stelvoetnootin          \stelvoetnotenin
 
@@ -62,9 +60,9 @@
 
 %substitutecommand \diepevoetnoot           \voetnoot
 
-% english: 
+% english:
 
-%substitutecommand \setupformulas           \setupformulae 
+%substitutecommand \setupformulas           \setupformulae
 
 %substitutecommand \useexternalfigures      \setupexternalfigures
 
@@ -85,6 +83,4 @@
 
 \substitutecommand \showencoding            {\showaccents\showcharacters}
 
-\protect
-
-\endinput
+\protect \endinput

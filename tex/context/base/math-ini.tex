@@ -281,7 +281,7 @@
       \endgraf}%
    \fi}
 
-\def\definemathcommand%
+\def\definemathcommand
   {\dotripleempty\dodefinemathcommand}
 
 \def\dodefinemathcommand[#1][#2][#3]#4% command class args meaning
@@ -317,10 +317,10 @@
 \def\stopmathcollection
   {\popmacro\mathcollection}
 
-\def\startrawmathcollection%
+\def\startrawmathcollection
   {\startmathcollection}
 
-\def\stoprawmathcollection%
+\def\stoprawmathcollection
   {\stopmathcollection}
 
 \newtoks\mathtoks
@@ -367,10 +367,10 @@
 %D   {ifmathpunctuation, enablemathpunctuation,
 %D    definemathpunctuation}
 %D
-%D \starttypen
+%D \starttyping
 %D \definemathpunctuation . mathperiod textperiod
 %D \definemathpunctuation , mathcomma  textcomma
-%D \stoptypen
+%D \stoptyping
 
 \newif\ifmathpunctuation
 
@@ -392,12 +392,12 @@
    \futurelet\nexttoken\next}
 
 %D \startbuffer
-%D \enablemathpunctuationtrue$(1,2) (1, 2) (1{,}2) \hbox{foo, not bar}$
+%D \enablemathpunctuation$(1,2) (1, 2) (1{,}2) \hbox{foo, not bar}$
 %D \stopbuffer
 %D
 %D \typebuffer
 %D
-%D \blanko{\getbuffer}\blanko
+%D \blank{\getbuffer}\blank
 
 %D needed for sin, cos etc
 
@@ -435,7 +435,7 @@
 
 %D Bold math:
 %D
-%D \starttypen
+%D \starttyping
 %D \usetypescript [lucida] [texnansi]
 %D
 %D \definetypeface [boldmath] [rm] [serif]
@@ -454,7 +454,7 @@
 %D \switchtobodyfont[boldmath,10pt]
 %D
 %D \showmathtoken{Gamma} $\Gamma \Delta \alpha \delta \zeta$
-%D \stoptypen
+%D \stoptyping
 
 \protect \endinput
 
@@ -465,10 +465,11 @@
 \setupbodyfont[lbr] \enablemathcollection[lbr] \input math-lbr \page
 \setupbodyfont[eul] \enablemathcollection[eul] \input math-eul \stoptext
 
-% to be checked
+% to be checked, overloads supp-lan !
 
 \def\defineactivecharacter #1 #2%
-  {\scratchcounter=\the\uccode`~
+%   {\scratchcounter=\the\uccode`~
+  {\scratchcounter\uccode`~\relax
    \expandafter\doifnumberelse\expandafter{\string#1}
      {\catcode #1=\@@active \uccode`~= #1\relax}
      {\catcode`#1=\@@active \uccode`~=`#1\relax}%
@@ -481,19 +482,25 @@
    \expandafter\def\next{\dohandleactivecharacter{#1}{#2}}% new
    \uccode`~=\scratchcounter}
 
-\def\dohandleactivecharacter%
+\def\dohandleactivecharacter
   {\ifmmode
      \expandafter\dohandleactivemathcharacter
    \else
      \expandafter\secondoftwoarguments
    \fi}
 
-\let\dohandleactivemathcharacter\secondoftwoarguments
-
-\def\dohandleactivemathcharacter#1#2%
-  {\ifundefined{@ma@\string#1}
+\def\dohandleactivemathcharacter#1#2#3%
+  {\ifundefined{@ma@\string#2}%
      \expandafter\firstofoneargument
    \else
-     \getvalue{@ma@\string#1}%
+     \getvalue{@ma@\string#2}%
      \expandafter\gobbleoneargument
-   \fi{#2}}
+   \fi{#3}}
+
+% \def\dohandleactivemathcharacter#1#2%
+%   {\ifcsname @ma@\string#1\endcsname
+%      \csname @ma@\string#1\expandafter\endcsname
+%      \expandafter\gobbleoneargument
+%    \else
+%      \expandafter\firstofoneargument
+%    \fi{#2}}

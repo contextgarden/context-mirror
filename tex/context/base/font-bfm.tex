@@ -169,15 +169,15 @@
 
 \def\boldfacemath    {\ifcase\boldfacemathmethod\else\the\everyboldfacemath\fi}
 \def\bfm             {\boldfacemath} % no \let, so that we can redefine
-\def\autoboldfacemath{\appendtoks\ifcase\boldfacemathmethod\else\let\bf\boldfacemath\fi\to\everymath}
+\def\autoboldfacemath{\appendtoks\ifcase\boldfacemathmethod\else\let\bf\boldfacemath\fi\to\everymathematics}
 
 %D We hook this feature into the formula mechanism.
 
 \setupformulas
-  [\c!methode=\v!normaal]
+  [\c!method=\v!normal]
 
 \appendtoks
-  \doifelse{\formulaparameter\c!methode}\v!vet
+  \doifelse{\formulaparameter\c!method}\v!bold
     {\chardef\boldfacemathmethod\plusone}
     {\chardef\boldfacemathmethod\zerocount}%
 \to \everysetupformulas

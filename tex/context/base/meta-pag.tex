@@ -20,65 +20,72 @@
 \unprotect
 
 \appendtoks
-  if unknown context_page : input mp-page ; fi ;
-\to \MPinitializations
+  if unknown context_page: input mp-page; fi;
+\to \MPextensions
 
 %D The next few macros tell \METAPOST\ how the \CONTEXT\
 %D pagebody looks.
 
-\startuseMPgraphic{page data}
-  boolean PageStateAvailable, OnRightPage, InPageBody ;
-  PageStateAvailable := OnRightPage := true ;
-  InPageBody         := \ifinpagebody true \else false \fi ;
+\appendtoks
+  boolean PageStateAvailable,OnRightPage,InPageBody;
+  PageStateAvailable:=true;
+\to \MPextensions
+
+\appendtoks
+  OnRightPage:=true;
+  InPageBody:=\ifinpagebody true \else false \fi;
+\to \MPinitializations
+
+\appendtoks
   def LoadPageState =
-    OnRightPage         :=      \MPonrightpage ;
-    OnOddPage           :=      \MPonoddpage ;
-    RealPageNumber      :=  \the\realpageno ;
-    PageNumber          :=  \the\pageno ;
-    NOfPages            :=      \lastpage ;
-    PaperHeight         :=  \the\papierhoogte ;
-    PaperWidth          :=  \the\papierbreedte ;
-    PrintPaperHeight    :=  \the\printpapierhoogte ;
-    PrintPaperWidth     :=  \the\printpapierbreedte ;
-    TopSpace            :=  \the\kopwit ;
-    BottomSpace         :=  \the\bodemwit ;
-    BackSpace           :=  \the\rugwit ;
-    CutSpace            :=  \the\snijwit ;
-    MakeupHeight        :=  \the\zethoogte ;
-    MakeupWidth         :=  \the\zetbreedte ;
-    TopHeight           :=  \the\bovenhoogte ;
-    TopDistance         := \@the\bovenafstand ;
-    HeaderHeight        :=  \the\hoofdhoogte ;
-    HeaderDistance      := \@the\hoofdafstand ;
-    TextHeight          :=  \the\teksthoogte ;
-    FooterDistance      := \@the\voetafstand ;
-    FooterHeight        :=  \the\voethoogte ;
-    BottomDistance      := \@the\onderafstand ;
-    BottomHeight        :=  \the\onderhoogte ;
-    LeftEdgeWidth       :=  \the\linkerrandbreedte ;
-    LeftEdgeDistance    := \@the\linkerrandafstand ;
-    LeftMarginWidth     :=  \the\linkermargebreedte ;
-    LeftMarginDistance  := \@the\linkermargeafstand ;
-    TextWidth           :=  \the\tekstbreedte ;
-    RightMarginDistance := \@the\rechtermargeafstand ;
-    RightMarginWidth    :=  \the\rechtermargebreedte ;
-    RightEdgeDistance   := \@the\rechterrandafstand ;
-    RightEdgeWidth      :=  \the\rechterrandbreedte ;
-    InnerMarginDistance := \@the\innermargindistance ;
-    InnerMarginWidth    :=  \the\innermarginwidth ;
-    OuterMarginDistance := \@the\outermargindistance ;
-    OuterMarginWidth    :=  \the\outermarginwidth ;
-    InnerEdgeDistance   := \@the\inneredgedistance ;
-    InnerEdgeWidth      :=  \the\inneredgewidth ;
-    OuterEdgeDistance   := \@the\outeredgedistance ;
-    OuterEdgeWidth      :=  \the\outeredgewidth ;
-    PageOffset          :=  \the\pageoffset ;
-    PageDepth           :=  \the\pagedepth ;
-    LayoutColumns       := \the\layoutcolumns ;
-    LayoutColumnDistance:= \the\layoutcolumndistance ;
-    LayoutColumnWidth   := \the\layoutcolumnwidth ;
-  enddef ;
-\stopuseMPgraphic
+    OnRightPage:=\MPonrightpage;
+    OnOddPage:=\MPonoddpage;
+    RealPageNumber:=\the\realpageno;
+    PageNumber:=\the\pageno;
+    NOfPages:=\lastpage;
+    PaperHeight:=\the\paperheight;
+    PaperWidth:=\the\paperwidth;
+    PrintPaperHeight:=\the\printpaperheight;
+    PrintPaperWidth:=\the\printpaperwidth;
+    TopSpace:=\the\topspace;
+    BottomSpace:=\the\bottomspace;
+    BackSpace:=\the\backspace;
+    CutSpace:=\the\cutspace;
+    MakeupHeight:=\the\makeupheight;
+    MakeupWidth:=\the\makeupwidth;
+    TopHeight:=\the\topheight;
+    TopDistance:=\the\topdistance;
+    HeaderHeight:=\the\headerheight;
+    HeaderDistance:=\the\headerdistance;
+    TextHeight:=\the\textheight;
+    FooterDistance:=\the\footerdistance;
+    FooterHeight:=\the\footerheight;
+    BottomDistance:=\the\bottomdistance;
+    BottomHeight:=\the\bottomheight;
+    LeftEdgeWidth:=\the\leftedgewidth;
+    LeftEdgeDistance:=\the\leftedgedistance;
+    LeftMarginWidth:=\the\leftmarginwidth;
+    LeftMarginDistance:=\the\leftmargindistance;
+    TextWidth:=\the\textwidth ;
+    RightMarginDistance:=\the\rightmargindistance;
+    RightMarginWidth:=\the\rightmarginwidth;
+    RightEdgeDistance:=\the\rightedgedistance;
+    RightEdgeWidth:=\the\rightedgewidth;
+    InnerMarginDistance:=\the\innermargindistance;
+    InnerMarginWidth:=\the\innermarginwidth;
+    OuterMarginDistance:=\the\outermargindistance;
+    OuterMarginWidth:=\the\outermarginwidth;
+    InnerEdgeDistance:=\the\inneredgedistance;
+    InnerEdgeWidth:=\the\inneredgewidth;
+    OuterEdgeDistance:=\the\outeredgedistance;
+    OuterEdgeWidth:=\the\outeredgewidth;
+    PageOffset:=\the\pageoffset;
+    PageDepth:=\the\pagedepth;
+    LayoutColumns:=\the\layoutcolumns;
+    LayoutColumnDistance:=\the\layoutcolumndistance;
+    LayoutColumnWidth:=\the\layoutcolumnwidth;
+  enddef;
+\to \MPinitializations
 
 \def\MPonrightpage{true}
 \def\MPonoddpage  {true}
@@ -93,23 +100,7 @@
    \od
    \edef\MPonoddpage{\doifoddpageelse{true}{false}}}
 
-\iffixedlayoutdimensions
-
-  \let\freezeMPlayout\relax
-
-\else
-
-  \def\freezeMPlayout% must be done more efficient
-    {\freezedimenmacro\bovenafstand
-     \freezedimenmacro\hoofdafstand
-     \freezedimenmacro\voetafstand
-     \freezedimenmacro\onderafstand
-     \freezedimenmacro\linkerrandafstand
-     \freezedimenmacro\linkermargeafstand
-     \freezedimenmacro\rechtermargeafstand
-     \freezedimenmacro\rechterrandafstand}
-
-\fi
+\let\freezeMPlayout\relax % obsolete
 
 %D We need to freeze the pagelayout before the backgrounds
 %D are build, because the overlay will temporarily become
@@ -129,10 +120,6 @@
   \freezeMPlayout % to be used grouped
 \to \everyMPgraphic
 
-\appendtoks
-  \includeMPgraphic{page data}
-\to \MPinitializations
-
 %D The next feature provides information about for instance
 %D column positions. This is an experimental feature,
 %D introduced when we needed backgrounds in columns (fill||in
@@ -140,14 +127,14 @@
 %D
 %D See \type {mp-page.mp} for the definition of the macros:
 %D
-%D \startabulatie[|tl|l|p|]
+%D \starttabulate[|tl|l|p|]
 %D \NC ResetTextAreas        \NC no arguments \NC
 %D     reset areas on page                    \NC \NR
 %D \NC RegisterTextArea      \NC x, y, w, h   \NC
 %D     adds area to the list                  \NC \NR
 %D \NC TextAreaX,Y,W,H,XY,WH \NC x and/or y   \NC
 %D     reports offsets and dimensions         \NC \NR
-%D \stoptabulatie
+%D \stoptabulate
 %D
 %D The \type {TextArea*} macros can be used to determine
 %D overlap.
@@ -198,20 +185,19 @@
   {\global\MPlocaltextareadata\emptytoks}
 
 \appendtoks
-  \includeMPgraphic{area data}%
-\to \MPinitializations
+   path PlainTextArea;
+\to \MPextensions
 
-\startuseMPgraphic{area data}
-  ResetTextAreas ;
-  \the\MPsavedtextareadata
-  SaveTextAreas ;
-  ResetTextAreas ;
-  \the\MPtextareadata
-  \the\MPlocaltextareadata
-  % maybe tzt somewhere else
-   path PlainTextArea ; PlainTextArea :=
-     boundingbox(\MPxy{text:\realfolio}--\MPxy{text:\realfolio} shifted (\MPw{text:\realfolio},\MPh{text:\realfolio})) ;
-\stopuseMPgraphic
+\appendtoks
+  ResetTextAreas;
+  \the\MPsavedtextareadata;
+  SaveTextAreas;
+  ResetTextAreas;
+  \the\MPtextareadata;
+  \the\MPlocaltextareadata;
+  PlainTextArea:=boundingbox(\MPxy{text:\realfolio}--\MPxy{text:\realfolio}
+    shifted (\MPw{text:\realfolio},\MPh{text:\realfolio}));
+\to \MPinitializations
 
 \appendtoks
   \global\MPsavedtextareadata\MPtextareadata

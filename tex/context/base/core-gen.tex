@@ -8,8 +8,8 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
-%C details. 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
 
 \writestatus{loading}{Context Core Macros / General}
 
@@ -22,27 +22,27 @@
 %D toekenningen. Allereerst een commando om waarden aan
 %D een \DIMENSION\ toe te kennen:
 %D
-%D \starttypen
+%D \starttyping
 %D \assigndimension
 %D   {<waarde>|klein|middel|groot|-klein|-middel|-groot|geen}
-%D   {\dimensie}
+%D   {\dimension}
 %D   {waarde klein}
 %D   {waarde middel}
 %D   {waarde groot}
-%D \stoptypen
+%D \stoptyping
 %D
-%D Hierbij krijgt de \DIMENSION\ \type{\dimensie} een waarde 
+%D Hierbij krijgt de \DIMENSION\ \type{\dimension} een waarde
 %D afhankelijk van het meegegeven trefwoord.
 %D
-%D \startsmaller
-%D \startregels
+%D \startnarrower
+%D \startlines
 %D \type{(-)klein }\qquad (--) waarde klein
 %D \type{(-)middel}\qquad (--) waarde middel
 %D \type{(-)groot }\qquad (--) waarde groot
 %D \type{geen     }\qquad 0pt
 %D \type{waarde   }\qquad waarde
-%D \stopregels
-%D \stopsmaller
+%D \stoplines
+%D \stopnarrower
 %D
 %D Een trefwoord mag worden voorafgegaan door een \type{-}.
 %D Deze macro toont een voorbeeld van het gebruik van
@@ -51,106 +51,87 @@
 %D Analoog aan het bovenstaande commando kennen we een
 %D commando om waarden toe te kennen aan een macro:
 %D
-%D \starttypen
+%D \starttyping
 %D \assignalfadimension
 %D   {<waarde>|klein|middel|groot|geen}
 %D   {\macro}
 %D   {waarde klein}
 %D   {waarde middel}
 %D   {waarde groot}
-%D \stoptypen
+%D \stoptyping
 
 \def\assigndimension#1#2#3#4#5%
   {\processaction
      [#1]
-     [   \v!klein=>#2=#3,
-        \v!middel=>#2=#4,
-         \v!groot=>#2=#5,
-          \v!geen=>#2=\zeropoint,
-        -\v!klein=>#2=-#3,
-       -\v!middel=>#2=-#4,
-        -\v!groot=>#2=-#5,
+     [   \v!small=>#2=#3,
+        \v!medium=>#2=#4,
+         \v!big=>#2=#5,
+          \v!none=>#2=\zeropoint,
+        -\v!small=>#2=-#3,
+       -\v!medium=>#2=-#4,
+        -\v!big=>#2=-#5,
        \s!unknown=>#2=#1]}
 
 \def\assignalfadimension#1#2#3#4#5%
   {\processaction
      [#1]
-     [   \v!klein=>\edef#2{#3},
-        \v!middel=>\edef#2{#4},
-         \v!groot=>\edef#2{#5},
-          \v!geen=>\edef#2{0},
+     [   \v!small=>\edef#2{#3},
+        \v!medium=>\edef#2{#4},
+         \v!big=>\edef#2{#5},
+          \v!none=>\edef#2{0},
        \s!unknown=>\edef#2{#1}]}
 
 %D De onderstaande implementatie is veel sneller, maar
 %D tegelijkertijd ook veel lelijker. Omdat we deze macro
 %D relatief weinig aanroepen laten we deze optimalisatie maar
 %D achterwege. Bovendien kunnen oplossingen als deze de
-%D hash||table aardig uitputten (\type{\doifdefined}).
+%D hash||table aardig uitputten (\type {\doifdefined}).
 %D
-%D \starttypen
+%D \starttyping
 %D \edef\@@dimension{@@dim}
 %D \edef\@@negdimension{\@@dimension-}
 %D
 %D \def\assigndimension#1#2#3#4#5%
-%D   {\setvalue{\@@dimension\v!klein}{#3}%
-%D    \setvalue{\@@dimension\v!middel}{#4}%
-%D    \setvalue{\@@dimension\v!groot}{#5}%
-%D    \setvalue{\@@dimension\v!geen}{\!!zeropoint}%
-%D    \setvalue{\@@negdimension\v!klein}{-#3}%
-%D    \setvalue{\@@negdimension\v!middel}{-#4}%
-%D    \setvalue{\@@negdimension\v!groot}{-#5}%
-%D    \setvalue{\@@negdimension\v!geen}{\!!zeropoint}%
+%D   {\setvalue{\@@dimension   \v!small }{#3}%
+%D    \setvalue{\@@dimension   \v!medium}{#4}%
+%D    \setvalue{\@@dimension   \v!big   }{#5}%
+%D    \setvalue{\@@dimension   \v!none  }{\!!zeropoint}%
+%D    \setvalue{\@@negdimension\v!small }{-#3}%
+%D    \setvalue{\@@negdimension\v!medium}{-#4}%
+%D    \setvalue{\@@negdimension\v!big   }{-#5}%
+%D    \setvalue{\@@negdimension\v!none  }{\!!zeropoint}%
 %D    \doifdefinedelse{\@@dimension#1}
 %D      {#2=\getvalue{\@@dimension#1}}
 %D      {#2=#1}}
-%D \stoptypen
+%D \stoptyping
 %D
-%D Let's give this a try: 
+%D Let's give this a try:
 
-\let\nopv!geen     \v!geen
-\let\posv!groot    \v!groot 
-\let\posv!middel   \v!middel
-\let\posv!klein    \v!klein 
-\edef\negv!groot {-\v!groot }
-\edef\negv!middel{-\v!middel}
-\edef\negv!klein {-\v!klein }
-
-%\def\assigndimension#1#2#3#4#5%
-%  {\edef\!!stringa{#1}%
-%   \ifx\!!stringa\nopv!geen  #2=\zeropoint\else
-%   \ifx\!!stringa\posv!groot #2=#5\else
-%   \ifx\!!stringa\posv!middel#2=#4\else
-%   \ifx\!!stringa\posv!klein #2=#3\else
-%   \ifx\!!stringa\negv!groot #2=-#5\else
-%   \ifx\!!stringa\negv!middel#2=-#4\else
-%   \ifx\!!stringa\negv!klein #2=-#3\else
-%                             #2=#1\fi\fi\fi\fi\fi\fi\fi}
-%
-%\def\assignalfadimension#1#2#3#4#5%
-%  {\edef\!!stringa{#1}%
-%   \ifx\!!stringa\posv!groot \edef#2{#5}\else
-%   \ifx\!!stringa\posv!middel\edef#2{#4}\else
-%   \ifx\!!stringa\posv!klein \edef#2{#3}\else
-%   \ifx\!!stringa\nopv!geen  \edef#2{0}\else
-%                             \edef#2{#1}\fi\fi\fi\fi}
+\let\nopv!none     \v!none
+\let\posv!big      \v!big
+\let\posv!middle   \v!medium
+\let\posv!small    \v!small
+\edef\negv!big   {-\v!big}
+\edef\negv!middle{-\v!medium}
+\edef\negv!small {-\v!small}
 
 \def\assigndimension#1#2#3#4#5%
   {\edef\!!stringa{#1}%
-   #2=\ifx\!!stringa\nopv!geen   \zeropoint\else
-      \ifx\!!stringa\posv!groot  #5\else
-      \ifx\!!stringa\posv!middel #4\else
-      \ifx\!!stringa\posv!klein  #3\else
-      \ifx\!!stringa\negv!groot -#5\else
-      \ifx\!!stringa\negv!middel-#4\else
-      \ifx\!!stringa\negv!klein -#3\else
+   #2=\ifx\!!stringa\nopv!none   \zeropoint\else
+      \ifx\!!stringa\posv!big    #5\else
+      \ifx\!!stringa\posv!middle #4\else
+      \ifx\!!stringa\posv!small  #3\else
+      \ifx\!!stringa\negv!big   -#5\else
+      \ifx\!!stringa\negv!middle-#4\else
+      \ifx\!!stringa\negv!small -#3\else
                                  #1\fi\fi\fi\fi\fi\fi\fi}
 
 \def\assignalfadimension#1#2#3#4#5%
   {\edef\!!stringa{#1}%
-   \edef#2{\ifx\!!stringa\posv!groot #5\else
-           \ifx\!!stringa\posv!middel#4\else
-           \ifx\!!stringa\posv!klein #3\else
-           \ifx\!!stringa\nopv!geen   0\else
+   \edef#2{\ifx\!!stringa\posv!big   #5\else
+           \ifx\!!stringa\posv!middle#4\else
+           \ifx\!!stringa\posv!small #3\else
+           \ifx\!!stringa\nopv!none   0\else
                                      #1\fi\fi\fi\fi}}
 
 %D \macros
@@ -158,51 +139,44 @@
 %D
 %D Een variant hierop is het commando:
 %D
-%D \starttypen
+%D \starttyping
 %D \assignvalue
 %D   {<waarde>|klein|middel|groot}
 %D   {\macro}
 %D   {waarde klein }
 %D   {waarde middel}
 %D   {waarde groot}
-%D \stoptypen
+%D \stoptyping
 %D
 %D Hierbij krijgt \type{\macro} een waarde afhankelijk van
 %D het meegegeven trefwoord:
 %D
-%D \startsmaller
-%D \startregels
+%D \startnarrower
+%D \startlines
 %D \type{klein }\qquad waarde klein
 %D \type{middel}\qquad waarde middel
 %D \type{groot }\qquad waarde groot
 %D \type{waarde}\qquad waarde
-%D \stopregels
-%D \stopsmaller
+%D \stoplines
+%D \stopnarrower
 %D
 %D Hier doet \type{geen} dus niet mee.
 
 \def\assignvalue#1#2#3#4#5%
   {\processaction
      [#1]
-     [   \v!klein=>\edef#2{#3},
-        \v!middel=>\edef#2{#4},
-         \v!groot=>\edef#2{#5},
+     [   \v!small=>\edef#2{#3},
+        \v!medium=>\edef#2{#4},
+           \v!big=>\edef#2{#5},
        \s!unknown=>\edef#2{#1}]}
 
-%D Or faster: 
-
-%\def\assignvalue#1#2#3#4#5%
-%  {\edef\!!stringa{#1}%
-%   \ifx\!!stringa\posv!groot \edef#2{#5}\else
-%   \ifx\!!stringa\posv!middel\edef#2{#4}\else
-%   \ifx\!!stringa\posv!klein \edef#2{#3}\else
-%                             \edef#2{#1}\fi\fi\fi}
+%D Or faster:
 
 \def\assignvalue#1#2#3#4#5%
   {\edef\!!stringa{#1}%
-   \edef#2{\ifx\!!stringa\posv!groot #5\else
-           \ifx\!!stringa\posv!middel#4\else
-           \ifx\!!stringa\posv!klein #3\else
+   \edef#2{\ifx\!!stringa\posv!big   #5\else
+           \ifx\!!stringa\posv!middle#4\else
+           \ifx\!!stringa\posv!small #3\else
                                      #1\fi\fi\fi}}
 
 %D \macros
@@ -211,12 +185,12 @@
 %D Een breedte van een opgegeven tekst kan worden berekend en
 %D toegekend aan een \DIMENSION\ met:
 %D
-%D \starttypen
+%D \starttyping
 %D \assignwidth
-%D   {\dimensie}
+%D   {\dimension}
 %D   {<waarde>|passend|ruim}
 %D   {tekst}
-%D \stoptypen
+%D \stoptyping
 %D
 %D Dit commando sluit, evenals de bovenstaande
 %D \type{\assign}||commando's, aan op de wijze waarop
@@ -228,10 +202,10 @@
   {\doifelsenothing{#2}
      {\setbox0\hbox{#3}%
       #1\wd0}
-     {\doifinsetelse{#2}{\v!passend,\v!ruim}
+     {\doifinsetelse{#2}{\v!fit,\v!broad}
         {\setbox0=\hbox{#3}%
          #1\wd0
-         \doif{#2}\v!ruim{\advance#1 #4}}%
+         \doif{#2}\v!broad{\advance#1 #4}}%
         {#1=#2}}}%
 
 \protect \endinput

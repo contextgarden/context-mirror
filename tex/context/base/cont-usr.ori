@@ -26,11 +26,9 @@
 %D Thomas Esser's \TETEX\ distribution.) This list will be
 %D adapted to the actual situation.
 
-%definefilesynonym [lang-cz.pat]  [czhyph.tex]   % is bound to latex (tl 8+)
-\definefilesynonym [lang-cz.pat]  [czhyphen.tex]
+\definefilesynonym [lang-ca.pat]  [cahyph.tex]
 \definefilesynonym [lang-da.pat]  [dkhyph.tex]
 \definefilesynonym [lang-de.pat]  [dehyphn.tex]
-\definefilesynonym [lang-en.pat]  [ushyph1.tex]
 \definefilesynonym [lang-es.pat]  [eshyph.tex]
 \definefilesynonym [lang-fi.pat]  [fihyph.tex]
 \definefilesynonym [lang-fr.pat]  [frhyph.tex]
@@ -38,19 +36,30 @@
 \definefilesynonym [lang-hu.pat]  [huhyph.tex]
 \definefilesynonym [lang-it.pat]  [ithyph.tex]
 \definefilesynonym [lang-la.pat]  [lahyph7.tex]
-\definefilesynonym [lang-nl.pat]  [nehyph.tex]
 \definefilesynonym [lang-no.pat]  [nohyph.tex]
 \definefilesynonym [lang-pl.pat]  [plhyph.tex]
 \definefilesynonym [lang-pt.pat]  [pthyph.tex]
 \definefilesynonym [lang-ro.pat]  [rohyph.tex]
-\definefilesynonym [lang-ru.pat]  [ruenhyph.tex]
-%definefilesynonym [lang-sk.pat]  [skhyph.tex] % is bound to latex (tl 8+)
-\definefilesynonym [lang-sk.pat]  [skhyphen.tex]
-\definefilesynonym [lang-sv.pat]  [sehyph.tex]
-\definefilesynonym [lang-tr.pat]  [trhyph.tex]
-\definefilesynonym [lang-ua.pat]  [ukrenhyp.tex]
-\definefilesynonym [lang-uk.pat]  [ukhyphen.tex]
-\definefilesynonym [lang-us.pat]  [ushyph1.tex]
+\definefilesynonym [lang-ru.pat]  [ruenhyph.tex] % sic: ruen
+\definefilesynonym [lang-sl.pat]  [sihyph.tex]   % sic: sl/si
+\definefilesynonym [lang-sv.pat]  [svhyph.tex]   % was [sehyph.tex]
+\definefilesynonym [lang-tr.pat]  [tkhyph.tex]   % was [trhyph.tex]
+\definefilesynonym [lang-ua.pat]  [ukrenhyp.tex] % sic ukren
+\definefilesynonym [lang-uk.pat]  [ukhyph.tex]
+
+\definefilesynonym [lang-nl.pat]  [nlhyphen.tex] % symbolic name, see below
+\definefilesynonym [lang-af.pat]  [nlhyphen.tex] % symbolic name, see below
+
+\definefilesynonym [lang-en.pat]  [ushyphen.tex] % symbolic name, see below
+\definefilesynonym [lang-us.pat]  [ushyphen.tex] % symbolic name, see below
+
+\definefilesynonym [lang-cz.pat]  [czhyphen.tex] % in a different part of the tree, sigh
+\definefilesynonym [lang-sk.pat]  [skhyphen.tex] % in a different part of the tree, sigh
+
+%definefilesynonym [lang-cz.hyp]  [czhyphen.ex]  % in a different part of the tree, sigh
+%definefilesynonym [lang-sk.hyp]  [skhyphen.ex]  % in a different part of the tree, sigh
+
+\definefilesynonym [lang-deo.pat] [dehypht.tex]  % old german patterns
 
 %D When the dutch spelling changed, new patterns were
 %D constructed. For long these were named \type {dutch96.pat}.
@@ -60,63 +69,78 @@
 %D files as well as their coding is one of the dark areas of
 %D \TEX\ distributions.
 
-\doiffileelse{nehyph96.tex}
-  {\definefilesynonym[lang-nl.pat][nehyph96.tex]}
-  {\doiffileelse{dutch96.pat}
-     {\definefilesynonym[lang-nl.pat][dutch96.pat]}
-     {\definefilesynonym[lang-nl.pat][nehyph.tex]}}
+ \doiffileelse{nehyph96.tex} {\definefilesynonym[nlhyphen.tex][nehyph96.tex]}
+{\doiffileelse{dutch96.pat}  {\definefilesynonym[nlhyphen.tex][dutch96.pat]}
+                             {\definefilesynonym[nlhyphen.tex][nehyph.tex]}}
 
-%D Pattern files are (can be) encoded! And, alas, not all
-%D pattern files are self contained, which is why (for the
-%D moment) we specify encodings here.
+%D Ah, something changed in 2003 with respect to ushyph.tex, so let's
+%D fall back when needed. I first noticed this during a workshop at  the
+%D practical tex conference 2004 in sf. Yet another proof of a mess in
+%D filenames. So, we now use \type {ushyphen} as name and do some
+%D searching.
 
-\installlanguage [\s!cz] [\s!mapping={il2,ec},\s!encoding={il2,ec}]
+ \doiffileelse{ushyph.tex}  {\definefilesynonym[ushyphen.tex][ushyph.tex]}
+{\doiffileelse{ushyph1.tex} {\definefilesynonym[ushyphen.tex][ushyph1.tex]}
+{\doiffileelse{ushyph2.tex} {\definefilesynonym[ushyphen.tex][ushyph2.tex]}
+                            {\definefilesynonym[ushyphen.tex][ukhyph.tex]}}}
+
+%D In order to get 8 bit characters hyphenated, we need to load
+%D patterns under the right circumstances. In some countries, more
+%D than one font encoding is in use. I can add more defaults here
+%D if users let me know what encoding they use.
+
+\installlanguage [\s!nl] [\s!mapping={texnansi,ec},\s!encoding={texnansi,ec}]
+\installlanguage [\s!fr] [\s!mapping={texnansi,ec},\s!encoding={texnansi,ec}]
+\installlanguage [\s!de] [\s!mapping={texnansi,ec},\s!encoding={texnansi,ec}]
+\installlanguage [\s!it] [\s!mapping={texnansi,ec},\s!encoding={texnansi,ec}]
+
 \installlanguage [\s!hr] [\s!mapping={il2,ec},\s!encoding={il2,ec}]
-%installlanguage [\s!pl] [\s!mapping=pl0,\s!encoding=pl0]
 \installlanguage [\s!pl] [\s!mapping={pl0,ec},\s!encoding={pl0,ec}]
+\installlanguage [\s!cz] [\s!mapping={il2,ec},\s!encoding={il2,ec}]
 \installlanguage [\s!sk] [\s!mapping={il2,ec},\s!encoding={il2,ec}]
-
-%D Sometimes these are not wanted:
-
-%\definefilesynonym [lang-deo.pat] [dehypht.tex]  % old patterns
-%\definefilesynonym [lang-nlx.pat] [dutch96.pat]  % new patterns
+\installlanguage [\s!sl] [\s!mapping={il2,ec},\s!encoding={il2,ec}]
 
 %D Additional languages can be defined here. Beware of
 %D encoding incompatibilities. Please take a look at the
 %D \type {cont-en.tex}, \type {cont-nl.tex}, enz.\ files
-%D first. Normally you don't have to change a byte.
+%D first. Normally you don't have to change a byte. If you
+%D want to play safe, use \typ {texexec --make --alone
+%D --all}.
 
-% \installlanguage [\s!af] [\c!status=\v!start] % afrikaans
-% \installlanguage [\s!cz] [\c!status=\v!start] % czech
-% \installlanguage [\s!da] [\c!status=\v!start] % danish
-% \installlanguage [\s!de] [\c!status=\v!start] % german
-% \installlanguage [\s!en] [\c!status=\v!start] % english us
-% \installlanguage [\s!es] [\c!status=\v!start] % spanish
-% \installlanguage [\s!fi] [\c!status=\v!start] % finnish
-% \installlanguage [\s!fr] [\c!status=\v!start] % french
-% \installlanguage [\s!hr] [\c!status=\v!start] % croatian
-% \installlanguage [\s!hu] [\c!status=\v!start] % hungarian
-% \installlanguage [\s!it] [\c!status=\v!start] % italian
-% \installlanguage [\s!la] [\c!status=\v!start] % latin
-% \installlanguage [\s!nl] [\c!status=\v!start] % dutch
-% \installlanguage [\s!no] [\c!status=\v!start] % norwegian
-% \installlanguage [\s!pl] [\c!status=\v!start] % polish
-% \installlanguage [\s!pt] [\c!status=\v!start] % portuguese
-% \installlanguage [\s!ro] [\c!status=\v!start] % romanian
-% \installlanguage [\s!ru] [\c!status=\v!start] % russian
-% \installlanguage [\s!sk] [\c!status=\v!start] % slovak
-% \installlanguage [\s!sv] [\c!status=\v!start] % swedish
-% \installlanguage [\s!tr] [\c!status=\v!start] % turkish
-% \installlanguage [\s!ua] [\c!status=\v!start] % ukrainian
-% \installlanguage [\s!uk] [\c!status=\v!start] % english uk
+% \installlanguage [\s!af] [\c!state=\v!start] % afrikaans
+% \installlanguage [\s!ca] [\c!state=\v!start] % catalan
+% \installlanguage [\s!cz] [\c!state=\v!start] % czech
+% \installlanguage [\s!da] [\c!state=\v!start] % danish
+% \installlanguage [\s!de] [\c!state=\v!start] % german
+% \installlanguage [\s!en] [\c!state=\v!start] % english us
+% \installlanguage [\s!es] [\c!state=\v!start] % spanish
+% \installlanguage [\s!fi] [\c!state=\v!start] % finnish
+% \installlanguage [\s!fr] [\c!state=\v!start] % french
+% \installlanguage [\s!hr] [\c!state=\v!start] % croatian
+% \installlanguage [\s!hu] [\c!state=\v!start] % hungarian
+% \installlanguage [\s!it] [\c!state=\v!start] % italian
+% \installlanguage [\s!la] [\c!state=\v!start] % latin
+% \installlanguage [\s!nl] [\c!state=\v!start] % dutch
+% \installlanguage [\s!no] [\c!state=\v!start] % norwegian
+% \installlanguage [\s!pl] [\c!state=\v!start] % polish
+% \installlanguage [\s!pt] [\c!state=\v!start] % portuguese
+% \installlanguage [\s!ro] [\c!state=\v!start] % romanian
+% \installlanguage [\s!ru] [\c!state=\v!start] % russian
+% \installlanguage [\s!sk] [\c!state=\v!start] % slovak
+% \installlanguage [\s!sl] [\c!state=\v!start] % slovenian
+% \installlanguage [\s!sv] [\c!state=\v!start] % swedish
+% \installlanguage [\s!tr] [\c!state=\v!start] % turkish
+% \installlanguage [\s!ua] [\c!state=\v!start] % ukrainian
+% \installlanguage [\s!uk] [\c!state=\v!start] % english uk
+% \installlanguage [\s!vn] [\c!state=\v!start] % vietnamese
 
-% \installlanguage [deo]   [\c!status=\v!start] % old german
-% \installlanguage [nlx]   [\c!status=\v!start] % dutch 8 bit
+% \installlanguage [deo]   [\c!state=\v!start] % old german
 
 %D The next lines can be used for setting the language to be
 %D used at startup time.
 
 % \setupcurrentlanguage[\s!af]
+% \setupcurrentlanguage[\s!ca]
 % \setupcurrentlanguage[\s!cz]
 % \setupcurrentlanguage[\s!da]
 % \setupcurrentlanguage[\s!de]
@@ -135,6 +159,7 @@
 % \setupcurrentlanguage[\s!ro]
 % \setupcurrentlanguage[\s!ru]
 % \setupcurrentlanguage[\s!sk]
+% \setupcurrentlanguage[\s!sl]
 % \setupcurrentlanguage[\s!sv]
 % \setupcurrentlanguage[\s!tr]
 % \setupcurrentlanguage[\s!ua]

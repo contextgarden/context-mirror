@@ -1,0 +1,42 @@
+%D \module
+%D   [       file=xtag-prs,
+%D        version=2004.08.18,
+%D          title=\CONTEXT\ XML Support,
+%D       subtitle=Parsing,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\unprotect
+
+\def\analyzefunction#1%
+  {\expanded{\doanalyzefunction#1\relax\relax(#1)}\empty\relax\end}
+
+\def\doanalyzefunction#1#2(#3)#4\relax#5\end
+  {\ifx#4\empty
+     \let\functionname\empty
+   \else
+     \def\functionname{#1#2}%
+   \fi
+   \getfunctionargs#3,\empty,\empty,\empty,\empty,\empty,\empty,\empty,\empty\relax}
+
+\def\getfunctionargs#1,#2,#3,#4,#5,#6,#7,#8,#9\relax
+  {\edef\functionA{#1}\edef\functionB{#2}%
+   \edef\functionC{#3}\edef\functionD{#4}%
+   \edef\functionE{#5}\edef\functionF{#6}%
+   \edef\functionG{#7}\edef\functionH{#8}}
+
+% \analyzefunction{x}                                     [\functionname][a:\functionA/b:\functionB/c:\functionC/d:\functionD] \endgraf
+% \analyzefunction{sin(x)}                                [\functionname][a:\functionA/b:\functionB/c:\functionC/d:\functionD] \endgraf
+% \analyzefunction{1pt,2pt,3pt,4pt}                       [\functionname][a:\functionA/b:\functionB/c:\functionC/d:\functionD] \endgraf
+% \analyzefunction{rect(1pt,2pt,3pt,4pt)}                 [\functionname][a:\functionA/b:\functionB/c:\functionC/d:\functionD] \endgraf
+% \analyzefunction{1pt,2pt,3pt,4pt,5pt,6pt,7pt,8pt}       [\functionname][e:\functionE/f:\functionF/g:\functionG/h:\functionH] \endgraf
+% \analyzefunction{rect(1pt,2pt,3pt,4pt,5pt,6pt,7pt,8pt)} [\functionname][e:\functionE/f:\functionF/g:\functionG/h:\functionH] \endgraf
+
+% todo [#1][settings][maxwidth,maxheight,method=] with method=x y xy [1]
+
+\protect \endinput

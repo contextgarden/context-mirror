@@ -13,162 +13,170 @@
 
 \writestatus{loading}{Context Property Macros / initialization}
 
-%D Experimental module.
-
-%D local or not? like colors? cross pages? needed?
-
-%D combine with newfont.tex
+%D Welcome to the third alternative of this yet undocumented module,
+%D which means that there is no public interface yet!
 
 \unprotect
+
+\newcount\propertylevel
+
+\def\currentpropertylevel {\csname\??py:l:\currentpropertytype\endcsname} % counter
+\def\previouspropertylevel{\csname\??py:p:\currentpropertytype\endcsname} % counter
+
+\def\currentproperty      {\csname\??py:c:\number\currentpropertylevel \endcsname} % string
+\def\previousproperty     {\csname\??py:c:\number\previouspropertylevel\endcsname} % string
+
+% more efficient:
+
+\def\currentproperty      {\csname\??py:c:\number\propertylevel\endcsname} % string
+
+% \def\previouspropertylevel{\numexpr(\csname\??py:p:\currentpropertytype\endcsname+1)}
+% \letvalue{\??py:p:0}\empty
+
+\def\currentpropertytype {\csname\??py\currentproperty\c!type\endcsname}
+
+\def\docheckproperty % watch the s instead of e
+  {\csname\s!check\currentpropertytype property\endcsname
+   \global\expandafter\let\csname\??py\s!check\currentproperty\endcsname\empty}
+
+% \def\checkproperty[#1]%
+%   {\bgroup
+%    \def\currentproperty{#1}%
+%    \docheckproperty
+%    \egroup}
+%
+% oeps, was wrong, no reset
+
+\def\checkproperty[#1]%
+  {\bgroup
+   \def\currentproperty{#1}%
+   \csname\??py\s!check\currentproperty\endcsname
+   \egroup}
+
+\unexpanded\def\property[#1]%
+  {\groupedcommand{\dostartproperty{#1}}\dostopproperty}
+
+\unexpanded\def\startproperty[#1]%
+  {\dostartproperty{#1}}
+
+\unexpanded\def\stopproperty
+  {\dostopproperty}
+
+\def\dostartgproperty
+  {\begingroup\dostartproperty}
+
+\def\dostopgproperty
+  {\dostopproperty\endgroup}
+
+\def\dostartproperty#1% evt pack: {current}{level}{
+  {\global\advance\propertylevel\plusone
+   \@EAEAEA\xdef\currentproperty{#1}%
+   \global\advance\previouspropertylevel\plusone
+   \global\advance\currentpropertylevel\plusone
+   \csname\??py\s!check\currentproperty\endcsname
+   \csname\s!start\currentpropertytype\s!property\endcsname}
+
+\def\dostopproperty
+  {\csname\s!stop\currentpropertytype\s!property\endcsname
+   \global\advance\currentpropertylevel\minusone
+   \global\advance\previouspropertylevel\minusone
+   \global\advance\propertylevel\minusone}
+
+% \def\propertyparameter       #1{\csname\??py\currentproperty#1\endcsname}
+% \def\checkedpropertyparameter#1{\executeifdefined{\??py\currentproperty#1}}
 
 \def\defineproperty
   {\dotripleempty\dodefineproperty}
 
-% \def\dodefineproperty[#1][#2][#3]% todo : global def
-%   {\ifundefined{\??py#1\c!titel}%
-%      \getgparameters[\??py#1][\c!titel=#1,\c!type=#2,#3]% global ! ! ! !
-%      \setgvalue{\e!start#1}{\getvalue{init#2property}{#1}{#2}}% init should set "start#2property"
-%      \setgvalue{\e!stop #1}{\getvalue{stop#2property}}%
+% \def\dodefineproperty[#1][#2][#3]% global ! ! !
+%   {\ifundefined{\??py#1\c!globaal}%
+%      ... actions ...
 %    \fi}
+%
+% since we may perform tests each time before a call, we prefer the faster:
 
-\def\dodefineproperty[#1][#2][#3]% todo : global def
-  {\ifundefined{\??py#1\c!titel}%
-     \getgparameters[\??py#1][\c!titel=#1,\c!type=#2,#3]% global ! ! ! !
-     \setgvalue{\s!check#1}{\docheckproperty{#1}}%
-     \setgvalue{\e!start#1}{\dostartproperty{#1}}%
-     \setgvalue{\e!stop #1}{\dostopproperty {#1}}%
+\def\defineproperty
+  {\dotripleempty\dodefineproperty}
+
+\def\dodefineproperty[#1]%
+  {\ifundefined{\??py#1\c!global}%
+     \expandafter\dododefineproperty
+   \else
+     \expandafter\nododefineproperty
+   \fi[#1]}
+
+% due to initializations/counters, definitions are always global
+%
+% global : yes     : ungrouped
+%          no      : grouped
+% method : command : define commands
+%          none    : no commands
+
+\def\dododefineproperty[#1][#2][#3]% global ! ! !
+  {\getgparameters[\??py#1][\c!global=\v!no,\c!type=#2,\c!method=\v!none,#3]% global ! ! ! !
+   \expandafter\newcount\csname\??py:l:#2\endcsname % current level
+   \expandafter\newcount\csname\??py:p:#2\endcsname % previous level
+   \global\csname\??py:p:#2\endcsname\minusone
+   \global\expandafter\expandafter\let\csname\??py:c:0\endcsname\empty
+   \letgvalue{\??py\s!check#1}\docheckproperty
+   \doifelsevalue{\??py#1\c!method}\v!command
+     {\doifelsevalue{\??py#1\c!global}\v!yes
+        {\setgvalue{\e!start#1}{\dostartproperty{#1}}%
+         \letgvalue{\e!stop#1}\dostopproperty}%
+        {\setgvalue{\e!start#1}{\dostartgproperty{#1}}%
+         \letgvalue{\e!stop#1}\dostopgproperty}}%
+     {\doifelsevalue{\??py#1\c!global}\v!yes
+        {\setgvalue{\e!start#2}[##1]{\dostartproperty{##1}}%
+         \letgvalue{\e!stop#2}\dostopproperty}%
+        {\setgvalue{\e!start#2}[##1]{\dostartgproperty{##1}}%
+         \letgvalue{\e!stop#2}\dostopgproperty}}}
+
+\def\nododefineproperty[#1][#2][#3]%
+  {}
+
+\def\doifelseproperty#1{\doifdefinedelse{\??py#1\c!global}}
+
+\def\setupproperty
+  {\dodoubleempty\dosetupproperty}
+
+\def\dosetupproperty[#1][#2]% local
+  {\ifsecondargument
+     \getparameters[\??py#1][#2]%
+   \else
+     \getparameters[\??py][#1]%
    \fi}
 
-\def\docheckproperty#1% watch the s instead of e
-  {\def\currentproperty{#1}%
-   \csname\s!check\csname\??py#1\c!type\endcsname property\endcsname{#1}%
-   \letgvalue{\s!check#1}\relax}
+% \def\propertyparameter#1% expands to #1 when not defined (see \define...)
+%   {\csname\??py
+%      \ifcsname\??py\currentproperty#1\endcsname
+%        \currentproperty#1%
+%      \else\ifcsname\??py\currentpropertytype#1\endcsname
+%        \currentpropertytype#1%
+%      \else
+%        :n:\currentproperty
+%      \fi\fi
+%    \endcsname}
 
-\def\dostartproperty#1%
-  {\checkproperty{#1}%
-   \csname\s!start\csname\??py#1\c!type\endcsname property\endcsname{#1}}
+\letvalue{\??py\s!empty}\empty
 
-\def\dostopproperty#1%
-  {\csname\s!stop\csname\??py#1\c!type\endcsname property\endcsname}
+\def\propertyparameter#1#2% expands to #1 when not defined (see \define...)
+  {\csname\??py
+     \ifcsname\??py#1#2\endcsname
+       #1#2%
+     \else\ifcsname\??py\csname\??py#1\c!type\endcsname#2\endcsname
+       \csname\??py#1\c!type\endcsname#2%
+     \else
+       \s!empty
+     \fi\fi
+   \endcsname}
 
-\def\checkproperty#1%
-  {\csname\s!check#1\endcsname}
+\def\currentpropertyparameter % self and class
+  {\propertyparameter\currentproperty}
 
-\def\propertyparameter#1{\csname\??py\currentproperty     #1\endcsname}
-%def\currentpropertytype{\csname\??py\currentproperty\c!type\endcsname}
+\def\checkedpropertyparameter#1% only self
+  {\executeifdefined{\??py\currentproperty#1}}
 
-%def\checkedpropertyparameter#1#2{\executeifdefined{\??py\currentproperty#1}{#2}}
-\def\checkedpropertyparameter  #1{\executeifdefined{\??py\currentproperty#1}}
-
-\let\currentproperty\s!unknown
-
-\unexpanded\def\startproperty[#1]%
-  {\bgroup\edef\currentproperty{#1}%
-   \csname\e!start\currentproperty\endcsname}
-
-\unexpanded\def\stopproperty
-  {\csname\e!stop \currentproperty\endcsname
-   \egroup}
-
-\unexpanded\def\property[#1]%
-  {\groupedcommand
-     {\edef\currentproperty{#1}%
-      \csname\e!start\currentproperty\endcsname}
-     {\csname\e!stop \currentproperty\endcsname}}
-
-% The next alternative provides optional non-grouping:
-
-\def\dodefineproperty[#1][#2][#3]% todo : global def
-  {\ifundefined{\??py#1\c!titel}%
-     \getgparameters[\??py#1][\c!globaal=\v!nee,\c!titel=#1,\c!type=#2,#3]% global ! ! ! !
-     \doifelsevalue{\??py#1\c!globaal}\v!ja
-       {\setgvalue{\s!check#1}{\docheckproperty{#1}}%
-        \setgvalue{\e!start#1}{\dostartproperty{#1}}%
-        \setgvalue{\e!stop #1}{\dostopproperty {#1}}}%
-       {\setgvalue{\s!check#1}{\docheckproperty{#1}}%
-        \setgvalue{\e!start#1}{\begingroup\dostartproperty{#1}}%
-        \setgvalue{\e!stop #1}{\dostopproperty {#1}\endgroup}}%
-   \fi}
-
-\unexpanded\def\startproperty[#1]%
-  {\globalpushmacro\currentproperty
-   \edef\currentproperty{#1}%
-   \csname\e!start\currentproperty\endcsname}
-
-\unexpanded\def\stopproperty
-  {\csname\e!stop \currentproperty\endcsname
-   \globalpopmacro\currentproperty}
-
-% % % % % old % % % % %
-
-% grouped
-
-% \def\restartproperty#1%
-%   {\edef\currentproperty{#1}%
-%    \csname\e!start\currentproperty\endcsname}
-
-% \def\restopproperty
-%   {\csname\e!stop \currentproperty\endcsname}
-
-% \unexpanded\def\startproperty[#1]%
-%   {\bgroup\restartproperty{#1}}
-
-% \unexpanded\def\stopproperty
-%   {\restopproperty\egroup}
-
-% \unexpanded\def\property[#1]%
-%   {\groupedcommand{\restartproperty{#1}}\restopproperty}
-
-% \newtoks\nestedproperties
-
-% \unexpanded\def\startproperties[#1]%
-%   {\bgroup
-%    \getcommalistsize[#1]\edef\nofnestedproperties{\number\commalistsize}%
-%    \nestedproperties\emptytoks
-%    \doxprecurse\nofnestedproperties
-%      {\appendtoks\restopproperty\to\nestedproperties
-%       \expanded{\appendtoks\noexpand\restartproperty{\commalistelement}}\to\scratchtoks}%
-%    \the\scratchtoks}
-
-% \unexpanded\def\stopproperties
-%   {\the\nestedproperties\egroup}
-
-% not grouped (but we assume grouped, maybe some day an ungrouped extra!)
-
-% \newcount\propertydepth
-% \newcount\pstackeddepth
-
-% \def\currentproperty{\csname\??py:\number\propertydepth\endcsname}
-% \def\currentpstacked{\csname\??py:\number\pstackeddepth\endcsname}
-
-% \def\restartproperty#1%
-%   {\advance\propertydepth\plusone
-%    \setvalue{\??py:\number\propertydepth}{#1}%
-%    \csname\e!start\currentproperty\endcsname}
-
-% \def\restopproperty
-%   {\csname\e!stop \currentproperty\endcsname
-%    \advance\propertydepth\minusone}
-
-% \unexpanded\def\startproperty[#1]%
-%   {\restartproperty{#1}}
-
-% \unexpanded\def\stopproperty
-%   {\restopproperty}
-
-% \unexpanded\def\property[#1]%
-%   {\groupedcommand{\restartproperty{#1}}\restopproperty}
-
-% \unexpanded\def\startproperties[#1]%
-%   {\advance\pstackeddepth\plusone
-%    \getcommacommandsize[#1]%
-%    \setvalue{\??py:\number\pstackeddepth}{\number\commalistsize}%
-%    \rawprocesscommacomand[#1]\restartproperty}
-
-% \unexpanded\def\stopproperties
-%   {\doxprecurse\currentpstacked\restopproperty
-%    \advance\pstackeddepth\minusone}
-
-% so far
+\def\definepropertyhandler#1{\setvalue{\??py*#1}}
+\def\propertyhandler      #1{\getvalue{\??py*#1}}
 
 \protect \endinput

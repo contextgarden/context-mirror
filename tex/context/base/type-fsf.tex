@@ -19,8 +19,6 @@
 
 \starttypescript [sans] [opus] [texnansi,ec,8r]
 
-  \loadmapfile[\typefaceencoding-fontsite-opus.map]
-
   \definefontsynonym [Opus]              [\typefaceencoding-opusrg]   [encoding=\typefaceencoding]
   \definefontsynonym [OpusSmCaps]        [\typefaceencoding-opusscrg] [encoding=\typefaceencoding]
   \definefontsynonym [Opus-Italic]       [\typefaceencoding-opusi]    [encoding=\typefaceencoding]
@@ -31,6 +29,10 @@
   \definefontsynonym [Opus-Slanted]      [\typefaceencoding-opusrg-slanted-167] [encoding=\typefaceencoding]
   \definefontsynonym [Opus-BoldSlanted]  [\typefaceencoding-opusb-slanted-167] [encoding=\typefaceencoding]
 
+\stoptypescript
+
+\starttypescript [map] [opus] [texnansi,ec,8r]
+  \loadmapfile[\typefaceencoding-fontsite-opus.map]
 \stoptypescript
 
 \starttypescript [mono] [typewriter] [name]
@@ -47,7 +49,6 @@
 
 \starttypescript [mono] [typewriter] [texnansi,ec,8r]
 
-  \loadmapfile[\typefaceencoding-fontsite-typewriter.map]
 
   \definefontsynonym [Typewriter]              [\typefaceencoding-typerg]   [encoding=\typefaceencoding]
   \definefontsynonym [Typewriter-Italic]       [\typefaceencoding-typei]    [encoding=\typefaceencoding]
@@ -60,6 +61,10 @@
   \definefontsynonym [TypewriterCond]          [\typefaceencoding-typecrg]
   \definefontsynonym [TypewriterCond-Bold]     [\typefaceencoding-typecb]
 
+\stoptypescript
+
+\starttypescript [map] [typewriter] [texnansi,ec,8r]
+  \loadmapfile[\typefaceencoding-fontsite-typewriter.map]
 \stoptypescript
 
 \starttypescript [serif] [garamond] [name]
@@ -77,8 +82,6 @@
 
 \starttypescript [serif] [garamond] [texnansi,ec,8r]
 
-  \loadmapfile[\typefaceencoding-fontsite-garamond.map]
-
   \definefontsynonym [FSGaramond]              [\typefaceencoding-garamond] [encoding=\typefaceencoding]
   \definefontsynonym [FSGaramondSmCaps]        [\typefaceencoding-garasc]   [encoding=\typefaceencoding]
   \definefontsynonym [FSGaramond-Italic]       [\typefaceencoding-garai]    [encoding=\typefaceencoding]
@@ -89,6 +92,10 @@
   \definefontsynonym [FSGaramond-Slanted]      [\typefaceencoding-garamond-slanted-167] [encoding=\typefaceencoding]
   \definefontsynonym [FSGaramond-BoldSlanted]  [\typefaceencoding-garab-slanted-167] [encoding=\typefaceencoding]
 
+\stoptypescript
+
+\starttypescript [map] [garamond] [texnansi,ec,8r]
+  \loadmapfile[\typefaceencoding-fontsite-garamond.map]
 \stoptypescript
 
 \endinput

@@ -8,8 +8,8 @@
 %D      copyright={PRAGMA / Taco Hoekwater}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See licen-en.pdf for 
-%C details. 
+%C therefore copyrighted by \PRAGMA. See licen-en.pdf for
+%C details.
 
 %D This module collects macros that \TEX\ users kind of expect
 %D to be available when typesetting math. Most of them
@@ -17,73 +17,73 @@
 %D freedom to adapt them to \CONTEXT. This module is derived
 %D from the \type {m-math} module by Taco Hoekwater (partially
 %D derived from AMS math modules) and adapted|/|extended by
-%D Hans Hagen. 
+%D Hans Hagen.
 
 %D Here we will add code on demand. So, just let us know what
-%D should go in here. 
+%D should go in here.
 
 %M \usemodule[newmat]
 
-\unprotect 
+\unprotect
 
-%D \macros 
+%D \macros
 %D   {qedsymbol}
-%D 
+%D
 %D [HH] The general Quod Erat Domonstrandum symbol is defined
 %D in such a way that we can configure it. Because this symbol
 %D is also used in text mode, we make it a normal text symbol
-%D with special behavior. 
+%D with special behavior.
 
 \def\qedsymbol#1%
-  {\ifhmode 
+  {\ifhmode
      \unskip~\hfill#1\par
-   \else\ifmmode 
+   \else\ifmmode
      \eqno#1\relax % Do we really need the \eqno here?
    \else
      \leavevmode\hbox{}\hfill#1\par
    \fi\fi}
 
-\definesymbol [qed] [\qedsymbol{\mathematics{\square}}] 
+\definesymbol [qed] [\qedsymbol{\mathematics{\square}}]
 
 %D \macros
 %D   {QED}
-%D 
+%D
 %D [HH] For compatbility reasons we also provide the \type
 %D {\QED} command. In case this command is overloaded, we still
-%D have the symbol available. \symbol[qed] 
+%D have the symbol available. \symbol[qed]
 
 \def\QED{\symbol[qed]}
 
 %D \macros
 %D   {genfrac}
-%D 
+%D
 %D [TH] The definition of \type {\genfrac} \& co. is not
 %D trivial, because it allows some flexibility. This is
 %D supposed to be a user||level command, but will fail quite
 %D desparately if called outside math mode (\CONTEXT\ redefines
-%D \type {\over}) 
-%D 
-%D [HH] We clean up this macro a bit and (try) to make it 
-%D understandable. The expansion is needed for generating 
-%D the second argument to \type {\dogenfrac}, which is to 
-%D be a control sequence like \type {\over}. 
+%D \type {\over})
+%D
+%D [HH] We clean up this macro a bit and (try) to make it
+%D understandable. The expansion is needed for generating
+%D the second argument to \type {\dogenfrac}, which is to
+%D be a control sequence like \type {\over}.
 
 \unexpanded\def\genfrac#1#2#3#4%
   {\edef\!!stringa
      {#1#2}%
    \expanded
-     {\dogenfrac{#4}% 
+     {\dogenfrac{#4}%
       \csname
         \ifx @#3@%
-          \ifx\!!stringa\empty 
+          \ifx\!!stringa\empty
             \strippedcsname\normalover
-          \else 
+          \else
             \strippedcsname\normaloverwithdelims
           \fi
-        \else 
-          \ifx\!!stringa\empty 
+        \else
+          \ifx\!!stringa\empty
             \strippedcsname\normalabove
-          \else 
+          \else
             \strippedcsname\normalabovewithdelims
           \fi
         \fi
@@ -115,84 +115,84 @@
 
 %D Better:
 
-\def\frac#1#2{\mathematics{\genfrac{}{}{}\donothing{#1}{#2}}}
+\unexpanded\def\frac#1#2{\mathematics{\genfrac{}{}{}\donothing{#1}{#2}}}
 
-%D [HH] This shows up as: 
+%D [HH] This shows up as:
 %D
 %D \startbuffer
 %D $\dfrac {1}{2} \tfrac {1}{2} \frac {1}{2}$
 %D $\dbinom{1}{2} \tbinom{1}{2} \binom{1}{2}$
 %D \stopbuffer
-%D 
+%D
 %D \typebuffer
-%D 
+%D
 %D \getbuffer
 
 %D \macros
 %D   {text}
-%D 
+%D
 %D [TH] \type {\text} is a command to typeset more or less
 %D ordinary text inside of super- and sub|-|scripts. It has to
 %D do a full font switch to get the sides right, so it will be
 %D quite slow. \type {\text} kind of replaces \CONTEXT's \type
-%D {\mathstyle} command. 
+%D {\mathstyle} command.
 
-%D [HH] This macro is now also moved to the core, but we 
-%D keep it here as well for completeness.  
-%D 
-%D \startypen 
+%D [HH] This macro is now also moved to the core, but we
+%D keep it here as well for completeness.
+%D
+%D \starttyping
 %D \unexpanded\def\mathtext
 %D   {\mathortext\domathtext\hbox} % {\ifmmode\@EA\dotext\else\@EA\hbox\fi}
-%D 
+%D
 %D \def\domathtext#1%
 %D   {\mathchoice
 %D      {\dodomathtext\displaystyle\textface        {#1}}%
 %D      {\dodomathtext\textstyle   \textface        {#1}}%
 %D      {\dodomathtext\textstyle   \scriptface      {#1}}%
 %D      {\dodomathtext\textstyle   \scriptscriptface{#1}}}
-%D 
+%D
 %D \def\dodomathtext#1#2#3% no \everymath !
 %D  %{\hbox{\everymath{#1}\switchtobodyfont  [#2]#3}} % 15 sec
 %D   {\hbox{\everymath{#1}\setcurrentfontbody{#2}#3}} %  3 sec (no math)
-%D \stoptypen 
+%D \stoptyping
 
-%D [HH] We use the following indirectness because \type {\text} 
-%D is a natural candidate for user macros (actually, it is 
-%D used in some modules). 
+%D [HH] We use the following indirectness because \type {\text}
+%D is a natural candidate for user macros (actually, it is
+%D used in some modules).
 %D
-%D \starttypen 
-%D \let\text\mathtext 
-%D \stoptypen 
+%D \starttyping
+%D \let\text\mathtext
+%D \stoptyping
 
-%D [HH] Actually, the font switch is not that slow when 
-%D typefaces are used. If needed this macro can be sped up. 
-%D 
+%D [HH] Actually, the font switch is not that slow when
+%D typefaces are used. If needed this macro can be sped up.
+%D
 %D \startbuffer
 %D ordinary text $x^{\text{extra ordinary text}}$
 %D \stopbuffer
 %D
 %D \typebuffer
-%D 
+%D
 %D \getbuffer
 
 %D \macros
 %D  {mathhexbox}
-%D 
+%D
 %D [TH] \type {\mathhexbox} is also user||level (already
 %D defined in Plain \TEX). It allows to get a math character
-%D inserted as if it was a text character. 
+%D inserted as if it was a text character.
 
 \gdef\mathhexbox#1#2#3{\mathtext{$\m@th\mathchar"#1#2#3$}}
 
-%D \macros 
+%D \macros
 %D   {boxed}
 %D
-%D [HH] Another macro that users expect (slightly adapted): 
+%D [HH] Another macro that users expect (slightly adapted):
 
 \def\boxed%
   {\ifmmode\expandafter\mframed\else\expandafter\framed\fi}
 
-%D \macros 
+%D \macros
 %D   {cfrac}
 %D
 %D [HH] Now let us see what this one does:
@@ -201,9 +201,9 @@
 %D $\cfrac{12}{3} \cfrac[l]{12}{3} \cfrac[c]{12}{3} \cfrac[r]{12}{3}$
 %D $\cfrac{1}{23} \cfrac[l]{1}{23} \cfrac[c]{1}{23} \cfrac[r]{1}{23}$
 %D \stopbuffer
-%D 
-%D \typebuffer 
-%D 
+%D
+%D \typebuffer
+%D
 %D \getbuffer
 
 \definecomplexorsimple\cfrac
@@ -218,7 +218,7 @@
       {#3}}%
     \kern-\nulldelimiterspace}
 
-%D [HH] The next alternative is nicer: 
+%D [HH] The next alternative is nicer:
 
 \def\simplecfrac     {\docfrac[cc]}
 \def\complexcfrac[#1]{\docfrac[#1cc]}
@@ -231,7 +231,7 @@
       {\ifx r#2\hfill\fi#5\ifx l#2\hfill\fi}%
     \kern-\nulldelimiterspace}}
 
-%D [HH] Now we can align every combination we want: 
+%D [HH] Now we can align every combination we want:
 %D
 %D \startbuffer
 %D $\cfrac{12}{3} \cfrac[l]{12}{3} \cfrac[c]{12}{3} \cfrac[r]{12}{3}$
@@ -239,19 +239,19 @@
 %D $\cfrac[cl]{12}{3} \cfrac[cc]{12}{3} \cfrac[cr]{12}{3}$
 %D $\cfrac[lc]{1}{23} \cfrac[cc]{1}{23} \cfrac[rc]{1}{23}$
 %D \stopbuffer
-%D 
-%D \typebuffer 
-%D 
+%D
+%D \typebuffer
+%D
 %D \getbuffer
 
-\protect \endinput 
+\protect \endinput
 
 %D \macros
 %D   {startsubarray,substack,startsmallmatrix}
 %D
-%D [HH] I wonder what these are supposed to do. An example 
-%D will be inserted later. Contrary to the original we 
-%D support an optional argument between either \type {{}} or 
+%D [HH] I wonder what these are supposed to do. An example
+%D will be inserted later. Contrary to the original we
+%D support an optional argument between either \type {{}} or
 %D \type {[]}.
 
 \def\startsubarray
@@ -287,8 +287,8 @@
   {\null
    \,%
    \vcenter\bgroup
-   \baselineskip6\ex@ 
-   \lineskip1.5\ex@ 
+   \baselineskip6\ex@
+   \lineskip1.5\ex@
    \lineskiplimit\lineskip
    \ialign\bgroup\hfil$\m@th\scriptstyle##$\hfil&&\thickspace\hfil
      $\m@th\scriptstyle##$\hfil\crcr}
@@ -298,4 +298,4 @@
    \egroup
    \,}
 
-\protect \endinput 
+\protect \endinput

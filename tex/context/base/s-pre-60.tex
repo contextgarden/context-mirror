@@ -21,7 +21,8 @@
     \ifnum\getvariable{stepper}{nofsteps}>\StepMaximum
 
         \dostepwiserecurse {\numexpr(\StepMaximum+1)} {\getvariable{stepper}{nofsteps}} {1}
-          {\expanded{\defineproperty[step:\recurselevel][layer][state=stop,global=yes]}}
+          {\doifnotmode{nosteps,nostep}
+             {\expanded{\defineproperty[step:\recurselevel][layer][state=stop,global=yes]}}}
 
         \xdef\StepMaximum{\getvariable{stepper}{nofsteps}}
 
@@ -47,14 +48,16 @@
 
 % todo: roll back blank
 
+\def\StepLayer{step:\StepCounter}
+
 \def\StartStep
   {\ifvmode
      \scratchskip\lastskip
      \vskip-\scratchskip
-     \startproperty[step:\StepCounter]%
+     \startproperty[\StepLayer]%
      \vskip\scratchskip
    \else
-     \startproperty[step:\StepCounter]%
+     \startproperty[\StepLayer]%
    \fi
    \ignorespaces}
 
@@ -62,9 +65,9 @@
   {\removeunwantedspaces
    \stopproperty}
 
-\def\StartSteps{\ResetStep\NextStep\StartStep}
-\def\StopSteps {\StopStep\PrevStep}
-\def\FlushStep {\StopStep\NextStep\StartStep}
+\def\StartSteps{\iftrialtypesetting\else\ResetStep\NextStep\StartStep\fi}
+\def\StopSteps {\iftrialtypesetting\else\StopStep\PrevStep\fi}
+\def\FlushStep {\iftrialtypesetting\else\StopStep\NextStep\StartStep\fi}
 
 \appendtoks
   \ResetStep
@@ -83,5 +86,26 @@
 \setupbackgrounds
   [text]
   [background=invoke]
+
+% bonus
+
+\useMPlibrary[nav]
+
+\definepalet
+  [navplus]
+  [attach=interactioncolor,
+   comment=interactioncolor]
+
+\setupcomment
+  [symbol={comment-normal,comment-down},
+   textlayer=\StepLayer,
+   option=buffer,
+   height=\textheight,
+   width=\textwidth,
+   margin=0pt]
+
+\setupattachments
+  [symbol={attach-normal,attach-down},
+   textlayer=\StepLayer]
 
 \endinput

@@ -1,0 +1,224 @@
+%D \module
+%D   [       file=prop-mis,
+%D        version=2004.05.29, % some code moved from private modules
+%D          title=\CONTEXT\ Property Macros,
+%D       subtitle=Miscelaneous,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{Context Property Macros / initialization}
+
+%D This module contains some code that has been in use in some
+%D private modules (p-*). These features depend on the fact
+%D that pdftex writes the page content as one stream.
+
+%D EXPERIMENTAL
+
+\unprotect
+
+%D Stream based overprint and knockout:
+
+\defineproperty[\v!overprint][\s!overprint] [\c!method=\v!command]
+\defineproperty[\v!knockout] [\s!overprint] [\c!method=\v!command]
+
+\definepropertyhandler \v!overprint {\dostartoverprint}
+\definepropertyhandler \v!knockout  {\dostopoverprint }
+
+\def\startoverprintproperty
+  {\ifincolor
+     \propertyhandler\currentproperty
+     \dooverprintmark\currentproperty
+   \fi}
+
+\def\stopoverprintproperty
+  {\ifincolor
+     \ifcase\currentpropertylevel\or
+       \dostopoverprint
+       \dooverprintmark\empty
+     \else
+       \propertyhandler\previousproperty
+       \dooverprintmark\previousproperty
+     \fi
+   \fi}
+
+\rawnewmark\overprintmark
+
+\def\dooverprintmark#1%
+  {\ifinpagebody \else \ifinframed \else
+     \expanded{\rawsetmark\noexpand\overprintmark{#1}}%
+   \fi \fi}
+
+\def\pushoverprintproperty
+  {\doifsomething{\rawgetbotmark\overprintmark}\dostopoverprint}
+
+\def\popoverprintproperty
+  {\doifsomething{\rawgetbotmark\overprintmark}%
+     {\propertyhandler{\rawgetbotmark\overprintmark}}}
+
+\def\popsplitoverprintproperty
+  {\getsplitmarks\overprintmark  % hier wel
+   \doifsomething{\rawgetsplitbotmark\overprintmark}%
+     {\propertyhandler{\rawgetsplitbotmark\overprintmark}}}
+
+\appendtoks \pushoverprintproperty     \to \everypushproperties
+\appendtoks \popoverprintproperty      \to \everypopproperties
+\appendtoks \popsplitoverprintproperty \to \everypopsplitproperties
+
+%D Negation.
+
+\defineproperty [\v!negative] [\s!negative] [\c!method=\v!command]
+\defineproperty [\v!positive] [\s!negative] [\c!method=\v!command]
+
+\definepropertyhandler \v!negative {\dostartnegative}
+\definepropertyhandler \v!positive {\dostopnegative }
+
+\def\startnegativeproperty
+  {\ifincolor
+     \propertyhandler\currentproperty
+     \donegativemark\currentproperty
+   \fi}
+
+\def\stopnegativeproperty
+  {\ifincolor
+     \ifcase\currentpropertylevel\or
+       \dostopnegative
+       \donegativemark\empty
+     \else
+       \propertyhandler\previousproperty
+       \donegativemark\previousproperty
+     \fi
+   \fi}
+
+\rawnewmark\negativemark
+
+\def\donegativemark#1%
+  {\ifinpagebody \else \ifinframed \else
+     \expanded{\rawsetmark\noexpand\negativemark{#1}}%
+   \fi \fi}
+
+\def\pushnegativeproperty
+  {\doifsomething{\rawgetbotmark\negativemark}\dostopnegative}
+
+\def\popnegativeproperty
+  {\doifsomething{\rawgetbotmark\overprintmark}%
+     {\propertyhandler{\rawgetbotmark\negativemark}}}
+
+\def\popsplitnegativeproperty
+  {\getsplitmarks\negativemark  % hier wel
+   \doifsomething{\rawgetsplitbotmark\negativemark}%
+     {\propertyhandler{\rawgetsplitbotmark\negativemark}}}
+
+\appendtoks \pushnegativeproperty     \to \everypushproperties
+\appendtoks \popnegativeproperty      \to \everypopproperties
+\appendtoks \popsplitnegativeproperty \to \everypopsplitproperties
+
+%D Special font effects.
+
+\setupproperty
+  [\s!effect]
+  [\c!rulethickness=.25pt,
+   \c!stretch=1]
+
+\defineproperty [\v!inner]  [\s!effect]
+\defineproperty [\v!outer]  [\s!effect]
+\defineproperty [\v!both]   [\s!effect]
+\defineproperty [\v!normal] [\s!effect]
+\defineproperty [\v!hidden] [\s!effect]
+
+\definepropertyhandler \v!normal {0}
+\definepropertyhandler \v!inner  {0}
+\definepropertyhandler \v!outer  {1}
+\definepropertyhandler \v!both   {2}
+\definepropertyhandler \v!hidden {3}
+
+% \def\handleeffectproperty#1%
+%   {\expanded{\dostartfonteffect
+%      {\propertyhandler{#1}}%
+%      {\propertyparameter{#1}\c!lijndikte}%
+%      {\propertyparameter{#1}\c!rek}}}
+
+% \def\starteffectproperty
+%   {\handleeffectproperty\currentproperty
+%    \doeffectmark\currentproperty}
+
+% \def\stopeffectproperty
+%   {\dostopfonteffect
+%    \ifcase\currentpropertylevel\or
+%      \doeffectmark\empty
+%    \else
+%      \handleeffectproperty\previousproperty
+%      \doeffectmark\previousproperty
+%    \fi}
+
+% \rawnewmark\effectmark
+
+% \def\doeffectmark#1%
+%   {\ifinpagebody \else \ifinframed \else
+%      \expanded{\rawsetmark\noexpand\effectmark{#1}}% could be number
+%    \fi \fi}
+
+% \def\pusheffectproperty
+%   {\doifsomething{\rawgetbotmark\effectmark}\dostopfonteffect}
+
+% \def\popeffectproperty
+%   {\doifsomething{\rawgetbotmark\effectmark}%
+%      {\handleeffectproperty{\rawgetbotmark\effectmark}}}
+
+% \def\popspliteffectproperty
+%   {\getsplitmarks\effectmark
+%    \doifsomething{\rawgetsplitbotmark\effectmark}%
+%      {\handleeffectproperty{\rawgetsplitbotmark\effectmark}}}
+
+% \appendtoks \pusheffectproperty     \to \everypushproperties
+% \appendtoks \popeffectproperty      \to \everypopproperties
+% \appendtoks \popspliteffectproperty \to \everypopsplitproperties
+
+% %
+
+\def\effectpropertydata#1%
+  {{\propertyhandler{#1}}%
+   {\propertyparameter{#1}\c!rulethickness}%
+   {\propertyparameter{#1}\c!stretch}}
+
+\def\starteffectproperty
+  {\expanded{\dostartfonteffect\effectpropertydata\currentproperty}%
+   \doeffectmark{\effectpropertydata\currentproperty}}
+
+\def\stopeffectproperty
+  {\dostopfonteffect
+   \ifcase\currentpropertylevel\or
+     \doeffectmark\empty
+   \else
+     \expanded{\dostartfonteffect\effectpropertydata\previousproperty}%
+     \doeffectmark{\effectpropertydata\previousproperty}%
+   \fi}
+
+\rawnewmark\effectmark
+
+\def\doeffectmark#1%
+  {\ifinpagebody \else \ifinframed \else
+     \expanded{\rawsetmark\noexpand\effectmark{#1}}% could be number
+   \fi \fi}
+
+\def\pusheffectproperty
+  {\doifsomething{\rawgetbotmark\effectmark}\dostopfonteffect}
+
+\def\popeffectproperty
+  {\doifsomething{\rawgetbotmark\effectmark}%
+     {\expanded{\dostartfonteffect\rawgetbotmark\effectmark}}}
+
+\def\popspliteffectproperty
+  {\getsplitmarks\effectmark
+   \doifsomething{\rawgetsplitbotmark\effectmark}%
+     {\expanded{\dostartfonteffect\rawgetsplitbotmark\effectmark}}}
+
+\appendtoks \pusheffectproperty     \to \everypushproperties
+\appendtoks \popeffectproperty      \to \everypopproperties
+\appendtoks \popspliteffectproperty \to \everypopsplitproperties
+
+\protect \endinput

@@ -19,34 +19,34 @@
 %D variable). You can apply this style to a database by
 %D saying:
 %D
-%D \starttypen
+%D \starttyping
 %D texexec --pdf --use=fig-make yourfile.xml
-%D \stoptypen
+%D \stoptyping
 %D
 %D The following modes are supported:
 %D
-%D \starttabulatie[|lT|l|]
+%D \starttabulate[|lT|l|]
 %D \NC letter  \NC map the preview on letter size  \NC \NR
 %D \NC compact \NC use an alternative presentation \NC \NR
-%D \stoptabulatie
+%D \stoptabulate
 %D
 %D The resulting file has the following characteristics:
 %D
-%D \startopsomming[opelkaar]
-%D \som  the document is split into three sections: first each
+%D \startitemize[packed]
+%D \item  the document is split into three sections: first each
 %D       figure is shown at its own page, then an overview of
 %D       figures is shown with some data alongside, and
 %D       finally an index and table of contents shows up
-%D \som  there is no title page, which means that one can
+%D \item  there is no title page, which means that one can
 %D       access a figure by page number without offset
-%D \som  the document is opened at the first overview page,
+%D \item  the document is opened at the first overview page,
 %D       that is, when the viewer supports it
-%D \som  the graphic is shown 3~times: on a page of its own,
+%D \item  the graphic is shown 3~times: on a page of its own,
 %D       scaled to a fixed dimension, and relative to a4 or
 %D       letter paper size
-%D \som  the labels can be accessed in an index and list at
+%D \item  the labels can be accessed in an index and list at
 %D       the end of the document
-%D \stopopsomming
+%D \stopitemize
 %D
 %D We use named destinations, which means that one can
 %D access a figure by name from an external application.

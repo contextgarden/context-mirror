@@ -32,7 +32,7 @@
 
 \installlanguage
   [\s!nl]
-  [\c!spatiering=\v!opelkaar,
+  [\c!spacing=\v!packed,
    \c!leftsentence=---,
    \c!rightsentence=---,
    \c!leftsubsentence=---,
@@ -41,12 +41,12 @@
    \c!rightquote=\upperrightsingleninequote,
    \c!leftquotation=\lowerleftdoubleninequote,
    \c!rightquotation=\upperrightdoubleninequote,
-   \c!datum={\v!dag,\ ,\v!maand,\ ,\v!jaar},
-   \c!status=\v!stop]
+   \c!date={\v!day,\ ,\v!month,\ ,\v!year},
+   \c!state=\v!stop]
 
 \installlanguage
   [\s!en]
-  [\c!spatiering=\v!ruim,
+  [\c!spacing=\v!broad,
    \c!leftsentence=---,
    \c!rightsentence=---,
    \c!leftsubsentence=---,
@@ -55,12 +55,12 @@
    \c!rightquote=\upperrightsingleninequote,
    \c!leftquotation=\upperleftdoublesixquote,
    \c!rightquotation=\upperrightdoubleninequote,
-   \c!datum={\v!maand,\ ,\v!dag,{,\ },\v!jaar},
-   \c!status=\v!stop] % elders always preloaded!
+   \c!date={\v!month,\ ,\v!day,{,\ },\v!year},
+   \c!state=\v!stop] % elders always preloaded!
 
 \installlanguage
   [\s!de]
-  [\c!spatiering=\v!opelkaar,
+  [\c!spacing=\v!packed,
    \c!leftsentence={\hbox{--~}},
    \c!rightsentence={\hbox{~--}},
    \c!leftsubsentence={--},
@@ -69,12 +69,12 @@
    \c!rightquote=\upperrightsinglesixquote,
    \c!leftquotation=\lowerleftdoubleninequote,
    \c!rightquotation=\upperrightdoublesixquote,
-   \c!datum={\v!dag,{.},\ ,\v!maand,\ ,\v!jaar},
-   \c!status=\v!stop]
+   \c!date={\v!day,{.},\ ,\v!month,\ ,\v!year},
+   \c!state=\v!stop]
 
 \installlanguage
   [\s!da]
-  [\c!spatiering=\v!opelkaar,
+  [\c!spacing=\v!packed,
    \c!leftsentence={\hbox{--\hskip.5em}},
    \c!rightsentence={\hbox{\hskip.5em--}},
    \c!leftsubsentence={--},
@@ -83,12 +83,12 @@
    \c!rightquote=\upperrightsinglesixquote,
    \c!leftquotation=\lowerleftdoubleninequote,
    \c!rightquotation=\upperrightdoublesixquote,
-   \c!datum={\v!dag,{.},\ ,\v!maand,\ ,\v!jaar},
-   \c!status=\v!stop]
+   \c!date={\v!day,{.},\ ,\v!month,\ ,\v!year},
+   \c!state=\v!stop]
 
 \installlanguage
   [\s!sv]
-  [\c!spatiering=\v!opelkaar,
+  [\c!spacing=\v!packed,
    \c!leftsentence={\hbox{--~}},
    \c!rightsentence={\hbox{~--}},
    \c!leftsubsentence={--},
@@ -97,12 +97,12 @@
    \c!rightquote=\upperrightsingleninequote,
    \c!leftquotation=\upperrightdoubleninequote,
    \c!rightquotation=\upperrightdoubleninequote,
-   \c!datum={\v!dag,\ ,\v!maand,\ ,\v!jaar},
-   \c!status=\v!stop]
+   \c!date={\v!day,\ ,\v!month,\ ,\v!year},
+   \c!state=\v!stop]
 
 \installlanguage
   [\s!af]
-  [\c!spatiering=\v!opelkaar,
+  [\c!spacing=\v!packed,
    \c!leftsentence=---,
    \c!rightsentence=---,
    \c!leftsubsentence=---,
@@ -111,12 +111,12 @@
    \c!rightquote=\upperrightsingleninequote,
    \c!leftquotation=\upperleftdoublesixquote,
    \c!rightquotation=\upperrightdoubleninequote,
-   \c!datum={\v!jaar,\ ,\v!maand,\ ,\v!dag},
-   \c!status=\v!stop]
+   \c!date={\v!year,\ ,\v!month,\ ,\v!day},
+   \c!state=\v!stop]
 
 \installlanguage
   [\s!no]
-  [\c!spatiering=\v!opelkaar,
+  [\c!spacing=\v!packed,
    \c!leftsentence=---,
    \c!rightsentence=---,
    \c!leftsubsentence=---,
@@ -125,34 +125,29 @@
    \c!rightquote=\upperrightsingleninequote,
    \c!leftquotation=\upperleftdoublesixquote,
    \c!rightquotation=\upperrightdoubleninequote,
-   \c!datum={\v!dag,{.},\ ,\v!maand,\ ,\v!jaar},
-   \c!status=\v!stop]
+   \c!date={\v!day,{.},\ ,\v!month,\ ,\v!year},
+   \c!default=\s!nl, % patterns
+   \c!state=\v!stop]
 
-%D Hey look, some experiment:
-
-\installlanguage % eight bit dutch
-  [nlx]
-  [\c!spatiering=\v!opelkaar,
-   \c!default=\s!nl,
-   \c!status=\v!stop]
+%D Extra:
 
 \installlanguage % old german
   [deo]
-  [\c!spatiering=\v!opelkaar,
+  [\c!spacing=\v!packed,
    \c!default=\s!de,
-   \c!status=\v!stop]
+   \c!state=\v!stop]
 
 %D And some alternative (but very real) english patterns:
 
 \installlanguage
   [uk]
   [\c!default=\s!en,
-   \c!status=\v!stop]
+   \c!state=\v!stop]
 
 \installlanguage
   [us]
   [\c!default=\s!en,
-   \c!status=\v!stop]
+   \c!state=\v!stop]
 
 %D For compatibility reasons we also define:
 
@@ -307,45 +302,45 @@
 %   \stoplanguagespecifics
 % \stopencoding
 
-\setupheadtext [\s!en] [\v!inhoud=Contents]
-\setupheadtext [\s!nl] [\v!inhoud=Inhoud]
-\setupheadtext [\s!de] [\v!inhoud=Inhalt]
-\setupheadtext [\s!da] [\v!inhoud=Indhold]
-\setupheadtext [\s!sv] [\v!inhoud=Inneh\aring ll]
-\setupheadtext [\s!af] [\v!inhoud=Inhoud]
-\setupheadtext [\s!no] [\v!inhoud=Innhold]
+\setupheadtext [\s!en] [\v!content=Contents]
+\setupheadtext [\s!nl] [\v!content=Inhoud]
+\setupheadtext [\s!de] [\v!content=Inhalt]
+\setupheadtext [\s!da] [\v!content=Indhold]
+\setupheadtext [\s!sv] [\v!content=Inneh\aring ll]
+\setupheadtext [\s!af] [\v!content=Inhoud]
+\setupheadtext [\s!no] [\v!content=Innhold]
 
-\setupheadtext [\s!en] [\v!tabellen=Tables]
-\setupheadtext [\s!nl] [\v!tabellen=Tabellen]
-\setupheadtext [\s!de] [\v!tabellen=Tabellen]
-\setupheadtext [\s!da] [\v!tabellen=Tabeller]
-\setupheadtext [\s!sv] [\v!tabellen=Tabeller]
-\setupheadtext [\s!af] [\v!tabellen=Tabelle]
-\setupheadtext [\s!no] [\v!tabellen=Tabeller]
+\setupheadtext [\s!en] [\v!tables=Tables]
+\setupheadtext [\s!nl] [\v!tables=Tabellen]
+\setupheadtext [\s!de] [\v!tables=Tabellen]
+\setupheadtext [\s!da] [\v!tables=Tabeller]
+\setupheadtext [\s!sv] [\v!tables=Tabeller]
+\setupheadtext [\s!af] [\v!tables=Tabelle]
+\setupheadtext [\s!no] [\v!tables=Tabeller]
 
-\setupheadtext [\s!en] [\v!figuren=Figures]
-\setupheadtext [\s!nl] [\v!figuren=Figuren]
-\setupheadtext [\s!de] [\v!figuren=Abbildungen]
-\setupheadtext [\s!da] [\v!figuren=Figurer]
-\setupheadtext [\s!sv] [\v!figuren=Figurer]
-\setupheadtext [\s!af] [\v!figuren=Figure]
-\setupheadtext [\s!no] [\v!figuren=Figurer]
+\setupheadtext [\s!en] [\v!figures=Figures]
+\setupheadtext [\s!nl] [\v!figures=Figuren]
+\setupheadtext [\s!de] [\v!figures=Abbildungen]
+\setupheadtext [\s!da] [\v!figures=Figurer]
+\setupheadtext [\s!sv] [\v!figures=Figurer]
+\setupheadtext [\s!af] [\v!figures=Figure]
+\setupheadtext [\s!no] [\v!figures=Figurer]
 
-\setupheadtext [\s!en] [\v!grafieken=Graphics]
-\setupheadtext [\s!nl] [\v!grafieken=Grafieken]
-\setupheadtext [\s!de] [\v!grafieken=Graphiken]
-\setupheadtext [\s!da] [\v!grafieken=Grafik]
-\setupheadtext [\s!sv] [\v!grafieken=Grafik]
-\setupheadtext [\s!af] [\v!grafieken=Grafieke]
-\setupheadtext [\s!no] [\v!grafieken=Grafikk]
+\setupheadtext [\s!en] [\v!graphics=Graphics]
+\setupheadtext [\s!nl] [\v!graphics=Grafieken]
+\setupheadtext [\s!de] [\v!graphics=Graphiken]
+\setupheadtext [\s!da] [\v!graphics=Grafik]
+\setupheadtext [\s!sv] [\v!graphics=Grafik]
+\setupheadtext [\s!af] [\v!graphics=Grafieke]
+\setupheadtext [\s!no] [\v!graphics=Grafikk]
 
-\setupheadtext [\s!en] [\v!intermezzos=Intermezzos]
-\setupheadtext [\s!nl] [\v!intermezzos=Intermezzo's]
-\setupheadtext [\s!de] [\v!intermezzos=Intermezzi]
-\setupheadtext [\s!da] [\v!intermezzos=Intermezzoer]
-\setupheadtext [\s!sv] [\v!intermezzos=Intermezzon]
-\setupheadtext [\s!af] [\v!intermezzos=Intermezzos]
-\setupheadtext [\s!no] [\v!intermezzos=Intermesso]
+\setupheadtext [\s!en] [\v!intermezzi=Intermezzos]
+\setupheadtext [\s!nl] [\v!intermezzi=Intermezzo's]
+\setupheadtext [\s!de] [\v!intermezzi=Intermezzi]
+\setupheadtext [\s!da] [\v!intermezzi=Intermezzoer]
+\setupheadtext [\s!sv] [\v!intermezzi=Intermezzon]
+\setupheadtext [\s!af] [\v!intermezzi=Intermezzos]
+\setupheadtext [\s!no] [\v!intermezzi=Intermesso]
 
 \setupheadtext [\s!en] [\v!index=Index]
 \setupheadtext [\s!nl] [\v!index=Index]
@@ -355,13 +350,13 @@
 \setupheadtext [\s!af] [\v!index=Indeks]
 \setupheadtext [\s!no] [\v!index=Indeks]
 
-\setupheadtext [\s!en] [\v!afkortingen=Abbreviations]
-\setupheadtext [\s!nl] [\v!afkortingen=Afkortingen]
-\setupheadtext [\s!de] [\v!afkortingen=Abk\uumlaut rzungen]
-\setupheadtext [\s!da] [\v!afkortingen=Forkortelser]
-\setupheadtext [\s!sv] [\v!afkortingen=F\oumlaut rkortningar]
-\setupheadtext [\s!af] [\v!afkortingen=Afkortings]
-\setupheadtext [\s!no] [\v!afkortingen=Forkortelser]
+\setupheadtext [\s!en] [\v!abbreviations=Abbreviations]
+\setupheadtext [\s!nl] [\v!abbreviations=Afkortingen]
+\setupheadtext [\s!de] [\v!abbreviations=Abk\uumlaut rzungen]
+\setupheadtext [\s!da] [\v!abbreviations=Forkortelser]
+\setupheadtext [\s!sv] [\v!abbreviations=F\oumlaut rkortningar]
+\setupheadtext [\s!af] [\v!abbreviations=Afkortings]
+\setupheadtext [\s!no] [\v!abbreviations=Forkortelser]
 
 \setupheadtext [\s!en] [\v!logos=Logos]
 \setupheadtext [\s!nl] [\v!logos=Logo's]
@@ -371,29 +366,29 @@
 \setupheadtext [\s!af] [\v!logos=Logos]
 \setupheadtext [\s!no] [\v!logos=Logoer]
 
-\setupheadtext [\s!en] [\v!eenheden=Units]
-\setupheadtext [\s!nl] [\v!eenheden=Eenheden]
-\setupheadtext [\s!de] [\v!eenheden=Einheiten]
-\setupheadtext [\s!da] [\v!eenheden=Enheder]
-\setupheadtext [\s!sv] [\v!eenheden=Enheter]
-\setupheadtext [\s!af] [\v!eenheden=Eenhede]
-\setupheadtext [\s!no] [\v!eenheden=Enheter]
+\setupheadtext [\s!en] [\v!units=Units]
+\setupheadtext [\s!nl] [\v!units=Eenheden]
+\setupheadtext [\s!de] [\v!units=Einheiten]
+\setupheadtext [\s!da] [\v!units=Enheder]
+\setupheadtext [\s!sv] [\v!units=Enheter]
+\setupheadtext [\s!af] [\v!units=Eenhede]
+\setupheadtext [\s!no] [\v!units=Enheter]
 
-\setuplabeltext [\s!en] [\v!tabel=Table ]
-\setuplabeltext [\s!nl] [\v!tabel=Tabel ]
-\setuplabeltext [\s!de] [\v!tabel=Tabelle ]
-\setuplabeltext [\s!da] [\v!tabel=Tabel ]
-\setuplabeltext [\s!sv] [\v!tabel=Tabell ]
-\setuplabeltext [\s!af] [\v!tabel=Tabel]
-\setuplabeltext [\s!no] [\v!tabel=Tabell ]
+\setuplabeltext [\s!en] [\v!table=Table ]
+\setuplabeltext [\s!nl] [\v!table=Tabel ]
+\setuplabeltext [\s!de] [\v!table=Tabelle ]
+\setuplabeltext [\s!da] [\v!table=Tabel ]
+\setuplabeltext [\s!sv] [\v!table=Tabell ]
+\setuplabeltext [\s!af] [\v!table=Tabel]
+\setuplabeltext [\s!no] [\v!table=Tabell ]
 
-\setuplabeltext [\s!en] [\v!figuur=Figure ]
-\setuplabeltext [\s!nl] [\v!figuur=Figuur ]
-\setuplabeltext [\s!de] [\v!figuur=Abbildung ]
-\setuplabeltext [\s!da] [\v!figuur=Figur ]
-\setuplabeltext [\s!sv] [\v!figuur=Figur ]
-\setuplabeltext [\s!af] [\v!figuur=Figuur ]
-\setuplabeltext [\s!no] [\v!figuur=Figur ]
+\setuplabeltext [\s!en] [\v!figure=Figure ]
+\setuplabeltext [\s!nl] [\v!figure=Figuur ]
+\setuplabeltext [\s!de] [\v!figure=Abbildung ]
+\setuplabeltext [\s!da] [\v!figure=Figur ]
+\setuplabeltext [\s!sv] [\v!figure=Figur ]
+\setuplabeltext [\s!af] [\v!figure=Figuur ]
+\setuplabeltext [\s!no] [\v!figure=Figur ]
 
 \setuplabeltext [\s!en] [\v!intermezzo=Intermezzo ]
 \setuplabeltext [\s!nl] [\v!intermezzo=Intermezzo ]
@@ -403,85 +398,85 @@
 \setuplabeltext [\s!af] [\v!intermezzo=Intermezzo ]
 \setuplabeltext [\s!no] [\v!intermezzo=Intermesso ]
 
-\setuplabeltext [\s!en] [\v!grafiek=Graphic ]
-\setuplabeltext [\s!nl] [\v!grafiek=Grafiek ]
-\setuplabeltext [\s!de] [\v!grafiek=Graphik ]
-\setuplabeltext [\s!da] [\v!grafiek=Grafik ]
-\setuplabeltext [\s!sv] [\v!grafiek=Grafik ]
-\setuplabeltext [\s!af] [\v!grafiek=Grafiek ]
-\setuplabeltext [\s!no] [\v!grafiek=Grafikk ]
+\setuplabeltext [\s!en] [\v!graphic=Graphic ]
+\setuplabeltext [\s!nl] [\v!graphic=Grafiek ]
+\setuplabeltext [\s!de] [\v!graphic=Graphik ]
+\setuplabeltext [\s!da] [\v!graphic=Grafik ]
+\setuplabeltext [\s!sv] [\v!graphic=Grafik ]
+\setuplabeltext [\s!af] [\v!graphic=Grafiek ]
+\setuplabeltext [\s!no] [\v!graphic=Grafikk ]
 
-\setuplabeltext [\s!en] [\v!hoofdstuk=]
-\setuplabeltext [\s!nl] [\v!hoofdstuk=]
-\setuplabeltext [\s!de] [\v!hoofdstuk=]
-\setuplabeltext [\s!da] [\v!hoofdstuk=]
-\setuplabeltext [\s!sv] [\v!hoofdstuk=]
-\setuplabeltext [\s!af] [\v!hoofdstuk=] % [\v!hoofdstuk=hoofstuk]
-\setuplabeltext [\s!no] [\v!hoofdstuk=]
+\setuplabeltext [\s!en] [\v!chapter=]
+\setuplabeltext [\s!nl] [\v!chapter=]
+\setuplabeltext [\s!de] [\v!chapter=]
+\setuplabeltext [\s!da] [\v!chapter=]
+\setuplabeltext [\s!sv] [\v!chapter=]
+\setuplabeltext [\s!af] [\v!chapter=] % [\v!chapter=hoofstuk]
+\setuplabeltext [\s!no] [\v!chapter=]
 
-\setuplabeltext [\s!en] [\v!paragraaf=]
-\setuplabeltext [\s!nl] [\v!paragraaf=]
-\setuplabeltext [\s!de] [\v!paragraaf=]
-\setuplabeltext [\s!da] [\v!paragraaf=]
-\setuplabeltext [\s!sv] [\v!paragraaf=]
-\setuplabeltext [\s!af] [\v!paragraaf=] % [\v!paragraaf=paragraaf]
-\setuplabeltext [\s!no] [\v!paragraaf=]
+\setuplabeltext [\s!en] [\v!section=]
+\setuplabeltext [\s!nl] [\v!section=]
+\setuplabeltext [\s!de] [\v!section=]
+\setuplabeltext [\s!da] [\v!section=]
+\setuplabeltext [\s!sv] [\v!section=]
+\setuplabeltext [\s!af] [\v!section=] % [\v!section=paragraaf]
+\setuplabeltext [\s!no] [\v!section=]
 
-\setuplabeltext [\s!en] [\v!sub\v!paragraaf=]
-\setuplabeltext [\s!nl] [\v!sub\v!paragraaf=]
-\setuplabeltext [\s!de] [\v!sub\v!paragraaf=]
-\setuplabeltext [\s!da] [\v!sub\v!paragraaf=]
-\setuplabeltext [\s!sv] [\v!sub\v!paragraaf=]
-\setuplabeltext [\s!af] [\v!sub\v!paragraaf=]
-\setuplabeltext [\s!no] [\v!sub\v!paragraaf=]
+\setuplabeltext [\s!en] [\v!subsection=]
+\setuplabeltext [\s!nl] [\v!subsection=]
+\setuplabeltext [\s!de] [\v!subsection=]
+\setuplabeltext [\s!da] [\v!subsection=]
+\setuplabeltext [\s!sv] [\v!subsection=]
+\setuplabeltext [\s!af] [\v!subsection=]
+\setuplabeltext [\s!no] [\v!subsection=]
 
-\setuplabeltext [\s!en] [\v!sub\v!sub\v!paragraaf=]
-\setuplabeltext [\s!nl] [\v!sub\v!sub\v!paragraaf=]
-\setuplabeltext [\s!de] [\v!sub\v!sub\v!paragraaf=]
-\setuplabeltext [\s!da] [\v!sub\v!sub\v!paragraaf=]
-\setuplabeltext [\s!sv] [\v!sub\v!sub\v!paragraaf=]
-\setuplabeltext [\s!af] [\v!sub\v!sub\v!paragraaf=]
-\setuplabeltext [\s!no] [\v!sub\v!sub\v!paragraaf=]
+\setuplabeltext [\s!en] [\v!subsubsection=]
+\setuplabeltext [\s!nl] [\v!subsubsection=]
+\setuplabeltext [\s!de] [\v!subsubsection=]
+\setuplabeltext [\s!da] [\v!subsubsection=]
+\setuplabeltext [\s!sv] [\v!subsubsection=]
+\setuplabeltext [\s!af] [\v!subsubsection=]
+\setuplabeltext [\s!no] [\v!subsubsection=]
 
-\setuplabeltext [\s!en] [\v!sub\v!sub\v!sub\v!paragraaf=]
-\setuplabeltext [\s!nl] [\v!sub\v!sub\v!sub\v!paragraaf=]
-\setuplabeltext [\s!de] [\v!sub\v!sub\v!sub\v!paragraaf=]
-\setuplabeltext [\s!da] [\v!sub\v!sub\v!sub\v!paragraaf=]
-\setuplabeltext [\s!sv] [\v!sub\v!sub\v!sub\v!paragraaf=]
-\setuplabeltext [\s!af] [\v!sub\v!sub\v!sub\v!paragraaf=]
-\setuplabeltext [\s!no] [\v!sub\v!sub\v!sub\v!paragraaf=]
+\setuplabeltext [\s!en] [\v!subsubsubsection=]
+\setuplabeltext [\s!nl] [\v!subsubsubsection=]
+\setuplabeltext [\s!de] [\v!subsubsubsection=]
+\setuplabeltext [\s!da] [\v!subsubsubsection=]
+\setuplabeltext [\s!sv] [\v!subsubsubsection=]
+\setuplabeltext [\s!af] [\v!subsubsubsection=]
+\setuplabeltext [\s!no] [\v!subsubsubsection=]
 
-\setuplabeltext [\s!en] [\v!bijlage=]
-\setuplabeltext [\s!nl] [\v!bijlage=]
-\setuplabeltext [\s!de] [\v!bijlage=]
-\setuplabeltext [\s!da] [\v!bijlage=] % [\v!bijlage=bilag]
-\setuplabeltext [\s!sv] [\v!bijlage=]
-\setuplabeltext [\s!af] [\v!bijlage=] % [\v!bijlage=bylae]
-\setuplabeltext [\s!no] [\v!bijlage=]
+\setuplabeltext [\s!en] [\v!appendix=]
+\setuplabeltext [\s!nl] [\v!appendix=]
+\setuplabeltext [\s!de] [\v!appendix=]
+\setuplabeltext [\s!da] [\v!appendix=] % [\v!appendix=bilag]
+\setuplabeltext [\s!sv] [\v!appendix=]
+\setuplabeltext [\s!af] [\v!appendix=] % [\v!appendix=bylae]
+\setuplabeltext [\s!no] [\v!appendix=]
 
-\setuplabeltext [\s!en] [\v!deel=Part ]
-\setuplabeltext [\s!nl] [\v!deel=Deel ]
-\setuplabeltext [\s!de] [\v!deel=Teil ]
-\setuplabeltext [\s!da] [\v!deel=Del ]
-\setuplabeltext [\s!sv] [\v!deel=Del ]
-\setuplabeltext [\s!af] [\v!deel=Deel ]
-\setuplabeltext [\s!no] [\v!deel=Del ]
+\setuplabeltext [\s!en] [\v!part=Part ]
+\setuplabeltext [\s!nl] [\v!part=Deel ]
+\setuplabeltext [\s!de] [\v!part=Teil ]
+\setuplabeltext [\s!da] [\v!part=Del ]
+\setuplabeltext [\s!sv] [\v!part=Del ]
+\setuplabeltext [\s!af] [\v!part=Deel ]
+\setuplabeltext [\s!no] [\v!part=Del ]
 
-\setuplabeltext [\s!en] [\v!regel=line ]
-\setuplabeltext [\s!nl] [\v!regel=regel ]
-\setuplabeltext [\s!de] [\v!regel=Zeile ]
-\setuplabeltext [\s!da] [\v!regel=linie ] % or linje
-\setuplabeltext [\s!sv] [\v!regel=rad ]
-\setuplabeltext [\s!af] [\v!regel=re\ediaeresis l ]
-\setuplabeltext [\s!no] [\v!regel=linje ]
+\setuplabeltext [\s!en] [\v!line=line ]
+\setuplabeltext [\s!nl] [\v!line=regel ]
+\setuplabeltext [\s!de] [\v!line=Zeile ]
+\setuplabeltext [\s!da] [\v!line=linie ] % or linje
+\setuplabeltext [\s!sv] [\v!line=rad ]
+\setuplabeltext [\s!af] [\v!line=re\ediaeresis l ]
+\setuplabeltext [\s!no] [\v!line=linje ]
 
-\setuplabeltext [\s!en] [\v!regels=lines ]
-\setuplabeltext [\s!nl] [\v!regels=regels ]
-\setuplabeltext [\s!de] [\v!regels=Zeilen ]
-\setuplabeltext [\s!da] [\v!regels=linier ] % or linjer
-\setuplabeltext [\s!sv] [\v!regels=rader ]
-\setuplabeltext [\s!af] [\v!regels=re\ediaeresis ls ]
-\setuplabeltext [\s!no] [\v!regels=linjer ]
+\setuplabeltext [\s!en] [\v!lines=lines ]
+\setuplabeltext [\s!nl] [\v!lines=regels ]
+\setuplabeltext [\s!de] [\v!lines=Zeilen ]
+\setuplabeltext [\s!da] [\v!lines=linier ] % or linjer
+\setuplabeltext [\s!sv] [\v!lines=rader ]
+\setuplabeltext [\s!af] [\v!lines=re\ediaeresis ls ]
+\setuplabeltext [\s!no] [\v!lines=linjer ]
 
 \setuplabeltext [\s!en]   [\v!january=January]
 \setuplabeltext [\s!en]  [\v!february=February]
@@ -632,41 +627,41 @@
 
 %D Rather new ...
 
-\setuplabeltext [\s!nl]    [\v!pagina=pagina ]
-\setuplabeltext [\s!nl]  [\v!oppagina=op pagina ]
-\setuplabeltext [\s!nl] [\v!hierboven=hierboven]
-\setuplabeltext [\s!nl] [\v!hieronder=hieronder]
-\setuplabeltext [\s!nl]       [\v!zie=zie ]
+\setuplabeltext [\s!nl]    [\v!page=pagina ]
+\setuplabeltext [\s!nl]  [\v!atpage=op pagina ]
+\setuplabeltext [\s!nl] [\v!hencefore=hierboven]
+\setuplabeltext [\s!nl] [\v!hereafter=hieronder]
+\setuplabeltext [\s!nl]       [\v!see=zie ]
 
-\setuplabeltext [\s!en]    [\v!pagina=page ]
-\setuplabeltext [\s!en]  [\v!oppagina=at page ]
-\setuplabeltext [\s!en] [\v!hierboven=as we show above]
-\setuplabeltext [\s!en] [\v!hieronder=as we show below]
-\setuplabeltext [\s!en]       [\v!zie=see ]
+\setuplabeltext [\s!en]    [\v!page=page ]
+\setuplabeltext [\s!en]  [\v!atpage=at page ]
+\setuplabeltext [\s!en] [\v!hencefore=as we show above]
+\setuplabeltext [\s!en] [\v!hereafter=as we show below]
+\setuplabeltext [\s!en]       [\v!see=see ]
 
-\setuplabeltext [\s!de]    [\v!pagina=Seite ]
-\setuplabeltext [\s!de]  [\v!oppagina=auf Seite ]
-\setuplabeltext [\s!de] [\v!hierboven=siehe oben]
-\setuplabeltext [\s!de] [\v!hieronder=siehe unten]
-\setuplabeltext [\s!de]       [\v!zie=siehe ]
+\setuplabeltext [\s!de]    [\v!page=Seite ]
+\setuplabeltext [\s!de]  [\v!atpage=auf Seite ]
+\setuplabeltext [\s!de] [\v!hencefore=siehe oben]
+\setuplabeltext [\s!de] [\v!hereafter=siehe unten]
+\setuplabeltext [\s!de]       [\v!see=siehe ]
 
-\setuplabeltext [\s!da]    [\v!pagina=Side ]
-\setuplabeltext [\s!da]  [\v!oppagina=p\aring\ side ]
-\setuplabeltext [\s!da] [\v!hierboven=se foroven]
-\setuplabeltext [\s!da] [\v!hieronder=se forneden]
-\setuplabeltext [\s!da]       [\v!zie=se ]
+\setuplabeltext [\s!da]    [\v!page=Side ]
+\setuplabeltext [\s!da]  [\v!atpage=p\aring\ side ]
+\setuplabeltext [\s!da] [\v!hencefore=se foroven]
+\setuplabeltext [\s!da] [\v!hereafter=se forneden]
+\setuplabeltext [\s!da]       [\v!see=se ]
 
-\setuplabeltext [\s!sv]    [\v!pagina=Sida ]
-\setuplabeltext [\s!sv]  [\v!oppagina=p\aring\ sida ]
-\setuplabeltext [\s!sv] [\v!hierboven=se ovan]
-\setuplabeltext [\s!sv] [\v!hieronder=se nedan]
-\setuplabeltext [\s!sv]       [\v!zie=se ]
+\setuplabeltext [\s!sv]    [\v!page=Sida ]
+\setuplabeltext [\s!sv]  [\v!atpage=p\aring\ sida ]
+\setuplabeltext [\s!sv] [\v!hencefore=se ovan]
+\setuplabeltext [\s!sv] [\v!hereafter=se nedan]
+\setuplabeltext [\s!sv]       [\v!see=se ]
 
-\setuplabeltext [\s!no]    [\v!pagina=Side ]
-\setuplabeltext [\s!no]  [\v!oppagina=p\aring\ side ]
-\setuplabeltext [\s!no] [\v!hierboven=se foroven]
-\setuplabeltext [\s!no] [\v!hieronder=se forneden]
-\setuplabeltext [\s!no]       [\v!zie=se ]
+\setuplabeltext [\s!no]    [\v!page=Side ]
+\setuplabeltext [\s!no]  [\v!atpage=p\aring\ side ]
+\setuplabeltext [\s!no] [\v!hencefore=se foroven]
+\setuplabeltext [\s!no] [\v!hereafter=se forneden]
+\setuplabeltext [\s!no]       [\v!see=se ]
 
 %D ... and to be completed!
 

@@ -127,14 +127,14 @@
 %D predefined. When applied to a whole picture, their usage
 %D is:
 %D
-%D \starttypen
+%D \starttyping
 %D \clip[nx=1,ny=1,mp=ellipse]{some clippable content}
-%D \stoptypen
+%D \stoptyping
 %D
 %D \startbuffer
 %D \setupclipping  [nx=1,ny=1,x=1,y=1]
 %D \setupblackrules[width=2cm,height=1cm]
-%D \startcombinatie[6*3] % \startcombination[6*3]
+%D \startcombination[6*3] % \startcombination[6*3]
 %D   {\clip[mp=urellipse] {\blackrule}} {urellipse}
 %D   {\clip[mp=ulellipse] {\blackrule}} {ulellipse}
 %D   {\clip[mp=llellipse] {\blackrule}} {llellipse}
@@ -153,12 +153,12 @@
 %D   {\clip[mp=lrtriangle]{\blackrule}} {lrtriangle}
 %D   {\clip[mp=diamond]   {\blackrule}} {diamond}
 %D   {\clip[mp=negdiamond]{\blackrule}} {negdiamond}
-%D \stopcombinatie % \stopcombination
+%D \stopcombination % \stopcombination
 %D \stopbuffer
 %D
-%D \plaatsfiguur % \placefigure
+%D \placefigure % \placefigure
 %D   [here][fig:clipping paths]
 %D   {The predefined clipping paths.}
-%D   {\haalbuffer} % {\getbuffer}
+%D   {\getbuffer} % {\getbuffer}
 
 \endinput

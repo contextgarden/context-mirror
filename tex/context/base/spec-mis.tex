@@ -8,13 +8,13 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
-%C details. 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
 
 %D Quite some modules in this group are dedicated to supporting
 %D \PDF\ directly by means of \PDFTEX or indirectly by using
 %D Acrobat Distiller. This module implements some common
-%D features. 
+%D features.
 
 \writestatus{loading}{Context Special Macros / Miscellaneous Macros}
 
@@ -23,13 +23,13 @@
 %D \macros
 %D   {URLhash}
 %D
-%D A rather trivial macro: 
+%D A rather trivial macro:
 
 \expandafter\def\expandafter\URLhash\expandafter{\string#}
 
-%D \macros 
+%D \macros
 %D   {ifusepagedestinations}
-%D 
+%D
 %D In \PDF\ version 1.0 only page references were supported,
 %D while in \DVIWINDO\ 1.N only named references were accepted.
 %D Therefore \CONTEXT\ supports both methods of referencing. In
@@ -38,55 +38,79 @@
 %D therefore sometimes forces us to prefer page references. As
 %D a bonus, they are faster too and have no limitations. How
 %D fortunate we were having both mechanisms available when the
-%D version 3.0 (\PDF\ version 1.2) viewers proved to be too 
-%D bugged to support named destinations. 
+%D version 3.0 (\PDF\ version 1.2) viewers proved to be too
+%D bugged to support named destinations.
 
 \newif\ifusepagedestinations
 
-%D \macros 
-%D   {ifhighlighthyperlinks} 
-%D 
-%D The next switch can be used to make user hyperlinks are 
-%D not highlighted when clicked on. 
+%D \macros
+%D   {ifhighlighthyperlinks}
+%D
+%D The next switch can be used to make user hyperlinks are
+%D not highlighted when clicked on.
 
-\newif\ifhighlighthyperlinks 
+\newif\ifhighlighthyperlinks
 
-%D \macros 
+%D \macros
 %D   {ifgotonewwindow}
-%D 
-%D To make the {\em goto previous jump} feature more 
-%D convenient when using more than one file, it makes sense 
-%D to force the viewer to open a new window for each file 
-%D opened. 
+%D
+%D To make the {\em goto previous jump} feature more
+%D convenient when using more than one file, it makes sense
+%D to force the viewer to open a new window for each file
+%D opened.
 
-\newif\ifgotonewwindow 
+\newif\ifgotonewwindow
 
-%D \macros 
+%D \macros
 %D   {ifPDFstrokecolor}
 %D
-%D We can reduce the filesize a bit by setting the next switch 
-%D to false. The amount of reduction depends on the use of 
-%D color, but don't expect more than a few percent. Zip 
-%D compression is already rather efficient in itself. 
+%D We can reduce the filesize a bit by setting the next switch
+%D to false. The amount of reduction depends on the use of
+%D color, but don't expect more than a few percent. Zip
+%D compression is already rather efficient in itself.
 
 \newif\ifPDFstrokecolor \PDFstrokecolortrue
 
-%D \macros 
+%D \macros
 %D   {dodoinsertfile,dofileinsertion,
 %D    definefileinsertion,doiffileinsertionsupported}
-%D 
+%D
 %D File insertion depend on the driver or \TEX\ variant used.
 %D All driver modules use the same scheme for file insertion,
-%D and therefore have the next macro in common: 
+%D and therefore have the next macro in common:
 
-\def\dododoinsertfile[#1][#2,#3][#4,#5]% \next kan weg 
-  {\def\fileinsertionclass{do#1insert}%
-   \doifdefinedelse{\fileinsertionclass#3}
-     {\def\next{\getvalue{\fileinsertionclass#3}}}
-     {\doifdefinedelse{\fileinsertionclass#2}
-        {\def\next{\getvalue{\fileinsertionclass#2}}}
-        {\def\next{\gobbleninearguments}}}%
-   \next{#4}{#5}}
+% \def\dododoinsertfile[#1][#2,#3][#4,#5]% \next kan weg
+%   {\def\fileinsertionclass{do#1insert}%
+%    \doifdefinedelse{\fileinsertionclass#3}
+%      {\def\next{\getvalue{\fileinsertionclass#3}}}
+%      {\doifdefinedelse{\fileinsertionclass#2}
+%         {\def\next{\getvalue{\fileinsertionclass#2}}}
+%         {\def\next{\gobbleninearguments}}}%
+%    \next{#4}{#5}}
+%
+% more modern
+%
+% \def\dododoinsertfile[#1][#2,#3][#4,#5]%
+%   {\def\fileinsertionclass{do#1insert}%
+%    \doifdefinedelse{\fileinsertionclass#3}
+%      {\getvalue{\fileinsertionclass#3}}
+%      {\doifdefinedelse{\fileinsertionclass#2}
+%         {\getvalue{\fileinsertionclass#2}}
+%         {\gobbleninearguments}}%
+%    {#4}{#5}}
+%
+% more efficient
+%
+% \def\dododoinsertfile[#1][#2,#3][#4,#5]%
+%   {\def\fileinsertionclass{do#1insert}%
+%    \executeifdefined{\fileinsertionclass#3}
+%      {\executeifdefined{\fileinsertionclass#2}\gobbleninearguments}%
+%    {#4}{#5}}
+%
+% cleaner
+
+\def\dododoinsertfile[#1][#2,#3][#4,#5]%
+  {\executeifdefined{do#1insert#3}{\executeifdefined{do#1insert#2}\gobbleninearguments}{#4}{#5}}
 
 \def\dodoinsertfile#1#2#3%
   {\dododoinsertfile[#1][#2][#3]}
@@ -107,18 +131,18 @@
 \def\doiffileinsertionsupportedelse#1%
   {\ExpandBothAfter\doifinstringelse{#1}{\c!tex,\c!tmp,\supportedfileinsertions}}
 
-%D This macro is called with 10 arguments, where the first 
+%D This macro is called with 10 arguments, where the first
 %D one specifies the driver, like \type{yy} or \type{tr}. The
-%D second argument is a \type{{type,method}} pair and the 
-%D third the filename. 
+%D second argument is a \type{{type,method}} pair and the
+%D third the filename.
 
-%D Just in case this one is undefined (which can happen if 
-%D this module is used outside \CONTEXT): 
+%D Just in case this one is undefined (which can happen if
+%D this module is used outside \CONTEXT):
 
 \ifx\setreferencefilename\undefined
 
   \def\setreferencefilename#1\to#2{\edef#2{#1}}
- 
+
 \fi
 
 %D When submitting forms, we need to communicate the format.
@@ -127,20 +151,20 @@
 
 \def\setsubmitoutputformat#1%
   {\doifinsetelse{#1}{FDF,fdf}
-     {\chardef\submitoutputformat2} 
+     {\chardef\submitoutputformat2}
      {\doifinsetelse{#1}{XML,xml}
         {\chardef\submitoutputformat3}
         {\chardef\submitoutputformat1}}%
-   \relax} 
+   \relax}
 
-%D \macros 
+%D \macros
 %D   {escapePSstring}
 %D
-%D \starttypen 
-%D \escapePSstring(t\e\1st)))))\to\crap \crap 
-%D \stoptypen 
+%D \starttyping
+%D \escapePSstring(t\e\1st)))))\to\crap \crap
+%D \stoptyping
 
-% testcase: webschrift met lege regels en unbalanced () 
+% testcase: webschrift met lege regels en unbalanced ()
 
 \bgroup
 
@@ -188,12 +212,26 @@
    \def\par{\rawcharacter{12}\rawcharacter{12}}%
    \expanded{\egroup\noexpand\def\noexpand#2{#1}}}
 
-%D \macros 
+%D \macros
 %D   {ifPDFunicode}
-%D 
+%D
 %D We can use this switch to signal that content streams has
-%D to be unicoded. 
+%D to be unicoded.
 
 \newif\ifPDFunicode
+
+%D \macros
+%D   {makeMPintoPDFobject, handleMPfshow, setMPPDFobject, getMPPDFobject}
+%D
+%D \METAPOST\ support.
+
+\appendtoks
+  \chardef\makeMPintoPDFobject\zerocount
+  \def\setMPPDFobject#1#2{\def\getMPPDFobject{\box#2}}%
+\to \everyresetspecials
+
+\appendtoks
+  \let\handleMPfshow\dohandleMPfshow
+\to \everyresetspecials
 
 \protect \endinput

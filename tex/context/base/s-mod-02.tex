@@ -20,24 +20,24 @@
 
 % todo: internationalize + setups
 
-\stelkopin[paragraaf][expansie=commando]
+\setuphead[paragraaf][expansie=commando]
 
 \def\complexmodule[#1]% redefined
-  {\startglobaal % i.v.m. \bgroup in \startdocumentation
+  {\startglobal % i.v.m. \bgroup in \startdocumentation
    \getparameters[Module][#1]
-   \stopglobaal  % i.v.m. \bgroup in \startdocumentation
+   \stopglobal  % i.v.m. \bgroup in \startdocumentation
    \paragraaf{\Modulesubtitle}
    \SchrijfLijstenWeg}
 
 \def\stopmodule% redefined
-  {\pagina
-   \bepaalregisterkenmerken
+  {\page
+   \determineregistercharacteristics
      [index]
      [criterium=paragraaf]
    \ifutilitydone
-     \paginareferentie
+     \pagereference
        [index]
-     \plaatsregister
+     \placeregister
        [index]
        [balanceren=ja,
         aanduiding=nee,
@@ -50,15 +50,15 @@
 
 \newwrite\BatchFile \openout\BatchFile=\jobname.bat
 
-\def\WriteBatchFile%
+\def\WriteBatchFile
   {\doglobal\increment\ModuleNumber
    \immediate\write\BatchFile{call modu-run \FileName\space \ModuleNumber}}
 
 \newif\ifProcessingPublic
 
-\def\SchrijfLijstenWeg%
-  {\schrijfnaarlijst[FileNames] {}{\FileName}
-   \schrijfnaarlijst[GroupItems]{}{\GroupItem}}
+\def\SchrijfLijstenWeg
+  {\writetolist[FileNames] {}{\FileName}
+   \writetolist[GroupItems]{}{\GroupItem}}
 
 \def\moduletitel{}
 
@@ -87,11 +87,11 @@
    \WriteBatchFile}
 
 \def\verwerkmodule#1#2%
-  {\pagina
+  {\page
    \bgroup
    \def\FileName{#1}
-   \stelrefererenin[prefix=#1]
-   \gebruikexterndocument[PaperVersion][#1][]
+   \setupreferencing[prefix=#1]
+   \useexternaldocument[PaperVersion][#1][]
    \aftersplitstring#1\at-\to\GroupItem
    \StelLijstenSamen
    \ifcase#2
@@ -103,16 +103,16 @@
    \or
      \TypeThreeModule{#1}
    \fi
-   \pagina
-   \stelrefererenin[prefix=]
+   \page
+   \setupreferencing[prefix=]
    \egroup}
 
 \def\ModuleGroep#1#2%
-  {\pagina
+  {\page
    \let\Modulefile=\empty
-   \stelrefererenin[prefix=#1]
+   \setupreferencing[prefix=#1]
    \def\FileGroup{#1}
-   \schrijfnaarlijst[FileGroups]{}{\FileGroup}
+   \writetolist[FileGroups]{}{\FileGroup}
    \hoofdstuk[inhoud]{#2}
    \MaakLijstMetItems
    \MaakLijstMetNames
@@ -121,13 +121,13 @@
 
 % Layout
 
-\stelkorpsin
+\setupbodyfont
   [9pt,ams]
 
-\taal
+\mainlanguage
   [en]
 
-\stelpapierformaatin
+\setuppapersize
   [S6][S6]
 
 \setuplayout
@@ -147,139 +147,139 @@
    hoogte=410pt,
    letter=\ss]
 
-\steltypenin
+\setuptyping
   [palet=colorpretty]
 
-\stelsetupin
+\setupsetup
   [verwijzing=3]
 
-\definieerkleur [AchtergrondKleur] [s=.6]
-\definieerkleur [ButtonKleur]      [r=.2,g=.2,b=.6]
-\definieerkleur [TekstKleur]       [r=.6,g=.2,b=.2]
+\definecolor [AchtergrondKleur] [s=.6]
+\definecolor [ButtonKleur]      [r=.2,g=.2,b=.6]
+\definecolor [TekstKleur]       [r=.6,g=.2,b=.2]
 
-\definieerkleur [colorprettyone]   [r=.6,g=.0,b=.0]  % red
-\definieerkleur [colorprettytwo]   [r=.0,g=.6,b=.0]  % green
-\definieerkleur [colorprettythree] [r=.0,g=.0,b=.6]  % blue
-\definieerkleur [colorprettyfour]  [r=.6,g=.6,b=.0]  % yellow
+\definecolor [colorprettyone]   [r=.6,g=.0,b=.0]  % red
+\definecolor [colorprettytwo]   [r=.0,g=.6,b=.0]  % green
+\definecolor [colorprettythree] [r=.0,g=.0,b=.6]  % blue
+\definecolor [colorprettyfour]  [r=.6,g=.6,b=.0]  % yellow
 
-\stelinteractiein
+\setupinteraction
   [status=start,
    pagina=ja,
    contrastkleur=,
    menu=aan,
    kleur=]
 
-\stelachtergrondenin
+\setupbackgrounds
   [pagina]
   [achtergrond=kleur,
    achtergrondkleur=AchtergrondKleur,
    offset=2.5pt]  % this offset influences the menus!
 
-\stelachtergrondenin
+\setupbackgrounds
   [tekst,voet]
   [tekst,linkermarge]
   [achtergrond=kleur,
    achtergrondkleur=wit]
 
-\stelsubpaginanummerin
+\setupsubpagenumber
   [wijze=perparagraaf,
    status=start]
 
-\stelinteractiebalkin
+\setupinteractionbar
   [kader=uit,
    offset=0pt,
    hoogte=passend]
 
-\stelwitruimtein
+\setupwhitespace
   [groot]
 
-\steltypenin
+\setuptyping
   [typen]
   [optie=kleur]
 
-\steltypenin
+\setuptyping
   [definition]
   [optie=kleur]
 
-\steltypenin
+\setuptyping
   [file]
   [optie=kleur]
 
-\stelpaginanummeringin
+\setuppagenumbering
   [variant=enkelzijdig,
    wijze=perparagraaf,
    status=geen]
 
-\stelinmargein
+\setupinmargin
   [plaats=links]
 
-\stelkoppenin
+\setupheads
   [variant=inmarge]
 
-\stelkopin
+\setuphead
   [hoofdstuk]
   [letter=\ssc,
    pagina=rechts]
 
-\stelkopin
+\setuphead
   [paragraaf]
   [letter=\ssb,
    pagina=rechts]
 
-\stellijstin
+\setuplist
   [hoofdstuk]
   [letter=vet,
-   na=\blanko]
+   na=\blank]
 
-\stelinhoudin
+\setupcontent
   [breedte=2em]
 
-\stelindexin
+\setupindex
   [balanceren=ja,
    aanduiding=nee]
 
-\stelkleurenin
+\setupcolors
   [status=start]
 
 \def\TitelBlad#1%
-  {\startstandaardopmaak
+  {\startstandardmakeup
      \definefont[GrootFont] [SansBold at 72pt]
      \definefont[MiddelFont][Sans at 32pt]
      \definefont[KleinFont] [Sans at 24pt]
-     \startkleur[AchtergrondKleur]
+     \startcolor[AchtergrondKleur]
      \vskip12pt
-     \regelmidden{\GrootFont\setstrut\strut    Con\TeX t}
+     \midaligned{\GrootFont\setstrut\strut    Con\TeX t}
      \vskip24pt
-     \regelmidden{\MiddelFont\setstrut\strut   #1}
+     \midaligned{\MiddelFont\setstrut\strut   #1}
      \vskip24pt
-     \regelmidden{\KleinFont\setstrut\strut    Hans Hagen}
+     \midaligned{\KleinFont\setstrut\strut    Hans Hagen}
      \vfilll
-     \regelmidden{\KleinFont\setstrut\strut    PRAGMA ADE}
+     \midaligned{\KleinFont\setstrut\strut    PRAGMA ADE}
      \vskip24pt
-     \regelmidden{\KleinFont\setstrut\strut    www.pragma-ade.nl --- \currentdate}
+     \midaligned{\KleinFont\setstrut\strut    www.pragma-ade.nl --- \currentdate}
      \vskip12pt
-     \stopkleur
-   \stopstandaardopmaak}
+     \stopcolor
+   \stopstandardmakeup}
 
 \def\ColofonBlad%
   {\startmode[atpragma]
-   \pagina
+   \page
    \bgroup
-     \def\PragmaHoogte {\zethoogte}
-     \def\PragmaBreedte{\tekstbreedte}
-     \def\PragmaKopwit {\kopwit}
+     \def\PragmaHoogte {\makeupheight}
+     \def\PragmaBreedte{\textwidth}
+     \def\PragmaKopwit {\topspace}
      \def\PragmaRugwit {\rugwit}
      \def\PragmaMarge  {0pt}
      \PragmaLijnentrue
      \PlaatsPragmaLogo[ADE]
      \vfill
-     \startsmaller[3*midden]
+     \startnarrower[3*midden]
      This is the official documentation of \CONTEXT\ version
-     \kenmerkdatum, a \TEX\ macropackage developed by J.~Hagen
+     \referraldate, a \TEX\ macropackage developed by J.~Hagen
      \& A.F.~Otten, who both hold the copyrights.
-     \stopsmaller
+     \stopnarrower
      \vfill
-     \pagina
+     \page
    \egroup
    \stopmode}
 
@@ -287,23 +287,23 @@
 \newbox\LijstMetGroups
 \newbox\LijstMetNames
 
-\definieerlijst[FileNames]   \def\FileName  {}
-\definieerlijst[FileGroups]  \def\FileGroup {}
-\definieerlijst[GroupItems]  \def\GroupItem {}
+\definelist[FileNames]   \def\FileName  {}
+\definelist[FileGroups]  \def\FileGroup {}
+\definelist[GroupItems]  \def\GroupItem {}
 
-\stellijstin
+\setuplist
   [FileNames,FileGroups,FileGroups]
   [expansie=ja,
    paginanummer=nee,
    letter=\ss\bf]
 
-\stellijstin
+\setuplist
   [FileNames]
   [commando=\FileNameEntry,
    na=\endgraf,
    variant=geen]
 
-\stellijstin
+\setuplist
   [FileGroups]
   [commando=\FileGroupEntry,
    na=\hss,
@@ -315,33 +315,33 @@
 \def\FileGroupEntry#1#2#3%
   {\strut#2\endgraf}
 
-\def\MaakLijstMetItems%
+\def\MaakLijstMetItems
   {\setbox\LijstMetItems=\vbox
      {\ss\bf
-      \plaatslijst[GroupItems][kleur=ButtonKleur,contrastkleur=wit,criterium=hoofdstuk]}}
+      \placelist[GroupItems][kleur=ButtonKleur,contrastkleur=wit,criterium=hoofdstuk]}}
 
-\def\MaakLijstMetNames%
+\def\MaakLijstMetNames
   {\setbox\LijstMetNames=\vbox
-     {\hsize\rechterrandbreedte
+     {\hsize\rightedgewidth
       \ss\bf\stelinterliniein
       \startsimplecolumns[afstand=10pt]
-        \plaatslijst[FileNames][kleur=ButtonKleur,contrastkleur=wit,criterium=hoofdstuk]
+        \placelist[FileNames][kleur=ButtonKleur,contrastkleur=wit,criterium=hoofdstuk]
       \stopsimplecolumns}}
 
-\def\MaakLijstMetGroups%
-  {\setbox\LijstMetGroups=\hbox to \tekstbreedte
+\def\MaakLijstMetGroups
+  {\setbox\LijstMetGroups=\hbox to \textwidth
      {\ss\bf
-      \stelinteractiein[kleur=ButtonKleur]%
-      \plaatslijst[FileGroups][kleur=ButtonKleur,contrastkleur=wit,criterium=alles]\unskip\unskip}}
+      \setupinteraction[kleur=ButtonKleur]%
+      \placelist[FileGroups][kleur=ButtonKleur,contrastkleur=wit,criterium=alles]\unskip\unskip}}
 
 \setbox\LijstMetGroups=\hbox{}
 
-%\stelvoettekstenin
+%\setupfootertexts
 %  [rand]
 %  []
 %  [{\interactiebalk[variant=g]}]
 
-\stelinteractiemenuin
+\setupinteractionmenu
   [rechts,onder]
   [status=start,
    kader=uit,
@@ -354,8 +354,8 @@
    achtergrond=kleur,
    achtergrondkleur=ButtonKleur]
 
-\startinteractiemenu[rechts]
-  \boxofsize \vbox \teksthoogte \voetafstand \voethoogte 5pt
+\startinteractionmenu[rechts]
+  \boxofsize \vbox \textheight \voetafstand \voethoogte 5pt
     \bgroup
       \copy\LijstMetNames
       \vfill
@@ -368,27 +368,27 @@
       \but [VerlaatViewer]       close document \\
       \unskip
     \egroup
-\stopinteractiemenu
+\stopinteractionmenu
 
-\startinteractiemenu[onder]
+\startinteractionmenu[onder]
   \unhcopy\LijstMetGroups
-\stopinteractiemenu
+\stopinteractionmenu
 
-\def\plaatsmoduleregister%
-  {\startuitleidingen
-   \stelsubpaginanummerin[reset]
-   \titel[-:index]{Register}
-   \plaatsindex
-   \stopuitleidingen}
+\def\plaatsmoduleregister
+  {\startbackmatter
+   \setupsubpagenumber[reset]
+   \title[-:index]{Register}
+   \placeregister[index]
+   \stopbackmatter}
 
-\def\plaatsmoduleinhoud%
-  {\startinleidingen
-   \titel[-:inhoud]{Contents}
-   \stelinteractiebalkin[status=stop]
-   \plaatsinhoud[criterium=tekst,niveau=hoofdstuk]
-   \stopinleidingen}
+\def\plaatsmoduleinhoud
+  {\startfrontmatter
+   \title[-:inhoud]{Contents}
+   \setupinteractionbar[status=stop]
+   \placecontent[criterium=tekst,niveau=hoofdstuk]
+   \stopfrontmatter}
 
-\stelinhoudin
+\setupcontent
   [paginanummer=nee,
    niveau=hoofdstuk,
    interactie=alles,
@@ -396,19 +396,19 @@
    voor=,
    na=]
 
-\stelvoettekstenin
+\setupfootertexts
   [marge]
   [\tt\Modulefile]
   []
 
-\stelvoettekstenin
+\setupfootertexts
   [tekst]
   [hoofdstuk][paragraaf]
 
-\stelindexin
+\setupindex
   [symbool=1]
 
-\steltolerantiein
+\setuptolerance
   [zeersoepel]
 
 \endinput

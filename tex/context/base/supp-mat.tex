@@ -8,11 +8,11 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
-%C details. 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
 
-%D For practical reasons, I decided to move some math things to 
-%D a support module. There is nothing spectacular here. 
+%D For practical reasons, I decided to move some math things to
+%D a support module. There is nothing spectacular here.
 
 \writestatus{loading}{Context Support Macros / Math}
 
@@ -20,33 +20,32 @@
 
 %D \macros
 %D   {mathematics, math, nomathematics, startmathmode}
-%D 
+%D
 %D The \type{$} can be both an begin and end math character.
 %D This can lead to confusing and errorprone situations when
-%D macros insert \type{$}. When for instance we have defined: 
-%D 
-%D \starttypen
+%D macros insert \type{$}. When for instance we have defined:
+%D
+%D \starttyping
 %D \def\MyPlus{$\,+\,$}
-%D \stoptypen
-%D 
+%D \stoptyping
+%D
 %D the sequence \type{$x^2 \MyPlus y^2 = r^2$} will expand to:
-%D 
-%D \starttypen
+%D
+%D \starttyping
 %D $x^2 $\,+\,$ y^2 = r^2$
-%D \stoptypen
-%D 
+%D \stoptyping
+%D
 %D Here the \type{\,} are given outside math mode and \TEX\ will
-%D definitely complain about this. A more save definition would 
-%D have been: 
-%D 
-%D \starttypen
+%D definitely complain about this. A more save definition would
+%D have been:
+%D
+%D \starttyping
 %D \def\MyPlus{\mathematics{\,+\,}}
-%D \stoptypen
-%D 
+%D \stoptyping
+%D
 %D Which is implemented as:
 
-\def\mathematics#1%
-  {\ifmmode#1\else$#1$\fi}
+\def\mathematics#1{\relax\ifmmode#1\else$#1$\fi} % lookahead bug reported by brooks
 
 \def\startmathmode
   {\ifmmode
@@ -64,11 +63,11 @@
 %D   {dimension, nodimension}
 %D
 %D The next few macros are used for typesetting dimensions in
-%D such a way that spacing is acceptable. I won't spend much 
-%D words on these macros, because they will be overloaded in 
+%D such a way that spacing is acceptable. I won't spend much
+%D words on these macros, because they will be overloaded in
 %D the units module.
 
-\newsignal\dimensionsignal 
+\newsignal\dimensionsignal
 
 \def\dimensiontypeface  {\tf}
 \def\dimensionhalfspace {\,}
@@ -98,13 +97,13 @@
 %D \macros
 %D   {super, suber}
 %D
-%D \TEX\ uses \type{^} and \type{_} for entering super- and 
-%D subscript mode. We want however a bit more control than 
-%D normally provided, and therefore provide \type {\super} 
-%D and \type{\suber} (\type {\sub} is already taken). 
+%D \TEX\ uses \type{^} and \type{_} for entering super- and
+%D subscript mode. We want however a bit more control than
+%D normally provided, and therefore provide \type {\super}
+%D and \type{\suber} (\type {\sub} is already taken).
 
-\global\let\normalsuper=^ 
-\global\let\normalsuber=_ 
+\global\let\normalsuper=^
+\global\let\normalsuber=_
 
 \newcount\supersubmode
 
@@ -114,10 +113,10 @@
 
 % \def\dodosuper#1{\normalsuper{\the\everysupersub#1}}
 % \def\dodosuber#1{\normalsuber{\the\everysupersub#1}}
-% 
+%
 % \def\dosuper{\ifx\next\bgroup\expandafter\dodosuper\else\normalsuper\fi}
 % \def\dosuber{\ifx\next\bgroup\expandafter\dodosuber\else\normalsuber\fi}
-% 
+%
 % \def\super{\futurelet\next\dosuper}
 % \def\suber{\futurelet\next\dosuber}
 
@@ -126,9 +125,9 @@
 
 %D \macros
 %D   {enablesupsub}
-%D 
-%D We can let \type {^} and \type {_} act like \type {\super} 
-%D and \type {\suber} by saying \type {\enablesupsub}. 
+%D
+%D We can let \type {^} and \type {_} act like \type {\super}
+%D and \type {\suber} by saying \type {\enablesupsub}.
 
 \bgroup
 \catcode`\^=\@@active
@@ -140,10 +139,10 @@
    \def_{\ifmmode\expandafter\suber\else\expandafter\normalsuber\fi}}
 \egroup
 
-%D \macro
+%D \macros
 %D   {restoremathstyle}
 %D
-%D We can pick up the current math style by calling \type 
+%D We can pick up the current math style by calling \type
 %D {\restoremathstyle}.
 
 \def\restoremathstyle

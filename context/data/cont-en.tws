@@ -344,7 +344,7 @@ com:setupfootnotes:
 typ:vars/:
 var:conversion:numbers,characters,Characters,romannumerals,Romannumerals::
 var:way:bytext,by*section::
-var:location:page,text,columns,high,none::
+var:location:page,text,columns,firstcolumn,lastcolumn,high,none::
 var:rule:on,off::
 var:before:*command::
 var:after:*command::
@@ -532,7 +532,7 @@ var:sc:yes,no::
 stopsetup
 
 startsetup
-com:kap:
+com:cap:
 typ:arg/:
 val:*text::
 stopsetup
@@ -1072,6 +1072,20 @@ val:*text::
 stopsetup
 
 startsetup
+com:ininner:
+typ:val/ref/arg/:
+val:+,-,low::
+val:*text::
+stopsetup
+
+startsetup
+com:inouter:
+typ:val/ref/arg/:
+val:+,-,low::
+val:*text::
+stopsetup
+
+startsetup
 com:column:
 typ::
 stopsetup
@@ -1314,12 +1328,6 @@ typ::
 stopsetup
 
 startsetup
-com:redo:
-typ:val/:
-val:repeat/*text::
-stopsetup
-
-startsetup
 com:setupdescriptions:
 typ:vals/vars/:
 val:*name::
@@ -1332,7 +1340,8 @@ var:sample:*text::
 var:text:*text::
 var:align:left,middle,right::
 var:margin:standard,yes,no,*dimension::
-var:location:left,right,top,serried, inmargin,inleft,inright,hanging::
+var:location:left,right,top,serried,command, inmargin,inleft,inright,hanging::
+var:headcommand:::
 var:hang:fit,broad,*number::
 var:before:*command::
 var:inbetween:*command::
@@ -1675,6 +1684,8 @@ var:textdistance:*dimension::
 var:textwidth:*number::
 var:textmargin:*dimension::
 var:clipoffset:*dimension::
+var:page:*name::
+var:paper:*name::
 stopsetup
 
 startsetup
@@ -1872,6 +1883,9 @@ startsetup
 com:setupoppositeplacing:
 typ:var/:
 var:state:start,stop::
+var:before:*command::
+var:inbetween:*command::
+var:after:*command::
 stopsetup
 
 startsetup
@@ -2017,6 +2031,13 @@ com:determinelistcharacteristics:
 typ:vals/vars/:
 val:*name::
 ivr:setuplist::
+stopsetup
+
+startsetup
+com:placecombinedlist:
+typ:val/vars/:
+val:*name::
+ivr:setupcombinedlist::
 stopsetup
 
 startsetup
@@ -2259,6 +2280,7 @@ var:width:*dimension::
 var:height:*dimension::
 var:topspace:*dimension::
 var:backspace:*dimension::
+var:option:max,fit::
 stopsetup
 
 startsetup
@@ -2419,6 +2441,8 @@ val:*name::
 val:*number,each::
 val:standard,repeat/broad,repeat/serried,packed, unpacked,stopper,joinedup,atmargin,inmargin, autointro,loose,section,intext:standard:
 var:margin:no,standard,*dimension::
+var:leftmargin:no,standard,*dimension::
+var:rightmargin:no,standard,*dimension::
 var:width:*dimension::
 var:distance:*dimension::
 var:factor:*number::
@@ -2561,6 +2585,13 @@ startsetup
 com:coupleregister:
 typ:val/:
 val:*name::
+stopsetup
+
+startsetup
+com:placeregister:
+typ:val/vars/:
+val:*name::
+ivr:setupregister::
 stopsetup
 
 startsetup
@@ -2942,6 +2973,20 @@ val:*name::
 stopsetup
 
 startsetup
+com:bypassblocks:
+typ:vals/vals/:
+val:*name::
+val:*name::
+stopsetup
+
+startsetup
+com:forceblocks:
+typ:vals/vals/:
+val:*name::
+val:*name::
+stopsetup
+
+startsetup
 com:selectblocks:
 typ:vals/vals/var/:
 val:*name::
@@ -2989,7 +3034,7 @@ stopsetup
 startsetup
 com:place<<float>>:
 typ:val/refs/arg/arg/:
-val:left,right,here,top,bottom, inleft,inright,inmargin,margin, leftmargin,rightmargin,leftedge,rightedge, innermargin,outermargin,inneredge,outeredge, inner,outer,regel,high,low,fit, page,opposite,always,force,tall,reset, line,height,depth:here:
+val:left,right,here,top,bottom, inleft,inright,inmargin,margin, leftmargin,rightmargin,leftedge,rightedge, innermargin,outermargin,inneredge,outeredge, inner,outer,line,high,low,fit, page,opposite,always,force,tall,reset, line,height,depth:here:
 val:*text::
 val:*text::
 stopsetup
@@ -3053,8 +3098,8 @@ typ:vars/:
 var:bet:*text::
 var:ken:*text::
 var:dat:*text::
-var:from:*text::
-var:to:*text::
+var:van:*text::
+var:aan:*text::
 var:ref:*text::
 stopsetup
 
@@ -3216,45 +3261,9 @@ val:*name::
 stopsetup
 
 startsetup
-com:letters:
-typ:val/:
-val:*name::
-stopsetup
-
-startsetup
 com:labels:
 typ:val/:
 val:*name::
-stopsetup
-
-startsetup
-com:setupcorrespondence:
-typ:vals/:
-val:formeel,informeel,rekening,ls, high,middle,low:formeel,low:
-stopsetup
-
-startsetup
-com:setupsheets:
-typ:vars/:
-var:alternative:*number::
-var:text:*text::
-var:size:small,medium,big::
-var:style:normal,bold,slanted,boldslanted,type,cap,small...,*command::
-var:number:*number,joinedup::
-stopsetup
-
-startsetup
-com:sheet:
-typ:val/:
-val:*text::
-stopsetup
-
-startsetup
-com:setupstickers:
-typ:vars/:
-var:alternative:a::
-var:n:*number,all::
-var:location:margin,left,right,middle::
 stopsetup
 
 startsetup
@@ -3456,13 +3465,13 @@ stopsetup
 startsetup
 com:setupcombinations:
 typ:vars/:
-var:before:commando::
-var:inbetween:commando::
-var:after:commando::
+var:before:command::
+var:inbetween:command::
+var:after:command::
 var:distance:*dimension::
 var:height:*dimension,fit::
 var:width:*dimension,fit::
-var:location:boven,midden,onder,links,rechts::
+var:location:top,middle,bottom,left,right::
 var:align:no,left,right,middle,normal::
 var:style:normal,bold,slanted,boldslanted,type,cap,small...*command::
 var:color:*name::
@@ -3551,10 +3560,11 @@ var:title:*text::
 var:subtitle:*text::
 var:author:*text::
 var:date:*text::
+var:keyword:*text::
 stopsetup
 
 startsetup
-com:setupinteractionmenu:
+com:defineinteractionmenu:
 typ:vals/vars/:
 val:left,right,top,bottom,*name::
 var:before:*command::
@@ -3648,8 +3658,8 @@ typ:vars/:
 var:state:start,stop::
 var:alternative:a,b,c,d,e,f,g::
 var:symbol:yes,no::
-var:width:*dimension,hoogte,fit::
-var:height:*dimension,hoogte,fit::
+var:width:*dimension,height,fit::
+var:height:*dimension,height,fit::
 var:depth:*dimension::
 var:color:*name::
 var:step:*number,small,medium,big::
@@ -3670,7 +3680,7 @@ startsetup
 com:setupsynchronizationbar:
 typ:vars/:
 var:alternative:page,local::
-var:width:*dimension,hoogte,fit::
+var:width:*dimension,height,fit::
 var:height:*dimension::
 var:style:normal,bold,slanted,boldslanted,type,cap,small...,*command::
 var:color:*name::

@@ -71,7 +71,7 @@ startsetup
 com:definieerkorpsomgeving:
 typ:val/vars/:
 val:5pt,...,12pt,default::
-var:text:*maat::
+var:tekst:*maat::
 var:script:*maat::
 var:scriptscript:*maat::
 var:x:*maat::
@@ -344,7 +344,7 @@ com:stelvoetnotenin:
 typ:vars/:
 var:conversie:cijfers,letters,Letters,romeins,Romeins::
 var:wijze:pertekst,per*sectie::
-var:plaats:pagina,tekst,kolommen,hoog,geen::
+var:plaats:pagina,tekst,kolommen,eerstekolom,laatstekolom,hoog,geen::
 var:lijn:aan,uit::
 var:voor:*commando::
 var:na:*commando::
@@ -1072,6 +1072,20 @@ val:*tekst::
 stopsetup
 
 startsetup
+com:inbinnen:
+typ:val/ref/arg/:
+val:+,-,laag::
+val:*tekst::
+stopsetup
+
+startsetup
+com:inbuiten:
+typ:val/ref/arg/:
+val:+,-,laag::
+val:*tekst::
+stopsetup
+
+startsetup
 com:kolom:
 typ::
 stopsetup
@@ -1192,7 +1206,7 @@ val:*tekst::
 stopsetup
 
 startsetup
-com:over:
+com:about:
 typ:arg/ref/:
 val:*tekst::
 stopsetup
@@ -1314,12 +1328,6 @@ typ::
 stopsetup
 
 startsetup
-com:herhaal:
-typ:val/:
-val:repeat/*tekst::
-stopsetup
-
-startsetup
 com:steldoordefinierenin:
 typ:vals/vars/:
 val:*naam::
@@ -1332,7 +1340,8 @@ var:monster:*tekst::
 var:tekst:*tekst::
 var:uitlijnen:links,midden,rechts::
 var:marge:standaard,ja,nee,*maat::
-var:plaats:links,rechts,boven,aanelkaar, inmarge,inlinker,inrechter,hangend::
+var:plaats:links,rechts,boven,aanelkaar,command, inmarge,inlinker,inrechter,hangend::
+var:kopcommando:::
 var:hang:passend,ruim,*getal::
 var:voor:*commando::
 var:tussen:*commando::
@@ -1675,6 +1684,8 @@ var:tekstafstand:*maat::
 var:tekstbreedte:*getal::
 var:tekstmarge:*maat::
 var:clipoffset:*maat::
+var:pagina:*naam::
+var:papier:*naam::
 stopsetup
 
 startsetup
@@ -1856,7 +1867,7 @@ ivr:stelomlijndin::
 stopsetup
 
 startsetup
-com:stelplaatsblokkensplitsenin:
+com:stelplaatsbloksplitsenin:
 typ:vars/:
 var:conversie:cijfers,letters,Letters,romeins,Romeins::
 var:regels:*getal::
@@ -1865,13 +1876,16 @@ stopsetup
 startsetup
 com:splitsplaatsblok:
 typ:vars/arg/arg/:
-ivr:stelplaatsblokkensplitsenin::
+ivr:stelplaatsbloksplitsenin::
 stopsetup
 
 startsetup
 com:stelnaastplaatsenin:
 typ:var/:
 var:status:start,stop::
+var:voor:*commando::
+var:tussen:*commando::
+var:na:*commando::
 stopsetup
 
 startsetup
@@ -2017,6 +2031,13 @@ com:bepaallijstkenmerken:
 typ:vals/vars/:
 val:*naam::
 ivr:stellijstin::
+stopsetup
+
+startsetup
+com:plaatssamengesteldelijst:
+typ:val/vars/:
+val:*naam::
+ivr:stelsamengesteldelijstin::
 stopsetup
 
 startsetup
@@ -2259,6 +2280,7 @@ var:breedte:*maat::
 var:hoogte:*maat::
 var:kopwit:*maat::
 var:rugwit:*maat::
+var:optie:max,passend::
 stopsetup
 
 startsetup
@@ -2419,6 +2441,8 @@ val:*naam::
 val:*getal,elk::
 val:standaard,repeat/ruim,repeat/aanelkaar,opelkaar, vanelkaar,afsluiter,aansluitend,opmarge,inmarge, autointro,los,paragraaf,intekst:standaard:
 var:marge:nee,standaard,*maat::
+var:linkermarge:nee,standaard,*maat::
+var:rechtermarge:nee,standaard,*maat::
 var:breedte:*maat::
 var:afstand:*maat::
 var:factor:*getal::
@@ -2561,6 +2585,13 @@ startsetup
 com:koppelregister:
 typ:val/:
 val:*naam::
+stopsetup
+
+startsetup
+com:plaatsregister:
+typ:val/vars/:
+val:*naam::
+ivr:stelregisterin::
 stopsetup
 
 startsetup
@@ -2942,6 +2973,20 @@ val:*naam::
 stopsetup
 
 startsetup
+com:passeerblokken:
+typ:vals/vals/:
+val:*naam::
+val:*naam::
+stopsetup
+
+startsetup
+com:forceerblokken:
+typ:vals/vals/:
+val:*naam::
+val:*naam::
+stopsetup
+
+startsetup
 com:selecteerblokken:
 typ:vals/vals/var/:
 val:*naam::
@@ -2989,7 +3034,7 @@ stopsetup
 startsetup
 com:plaats<<blok>>:
 typ:val/refs/arg/arg/:
-val:links,rechts,hier,boven,onder, inlinker,inrechter,inmarge,marge, linkermarge,rechtermarge,linkerrand,rechterrand, binnenmarge,buitenmarge,binnenrand,buitenrand, binnen,buiten,regel,hoog,laag,passend, pagina,naast,altijd,forceer,lang,reset, regel,hoogte,diepte:hier:
+val:links,rechts,hier,boven,onder, inlinker,inrechter,inmarge,marge, linkermarge,rechtermarge,linkerrand,rechterrand, binnenmarge,buitenmarge,binnenrand,buitenrand, binnen,buiten,line,hoog,laag,passend, pagina,naast,altijd,forceer,lang,reset, regel,hoogte,diepte:hier:
 val:*tekst::
 val:*tekst::
 stopsetup
@@ -3216,45 +3261,9 @@ val:*naam::
 stopsetup
 
 startsetup
-com:brieven:
-typ:val/:
-val:*naam::
-stopsetup
-
-startsetup
 com:labels:
 typ:val/:
 val:*naam::
-stopsetup
-
-startsetup
-com:stelbrievenin:
-typ:vals/:
-val:formeel,informeel,rekening,ls, hoog,midden,laag:formeel,laag:
-stopsetup
-
-startsetup
-com:stelsheetsin:
-typ:vars/:
-var:variant:*getal::
-var:tekst:*tekst::
-var:formaat:klein,middel,groot::
-var:letter:normaal,vet,schuin,vetschuin,type,kap,klein...,*commando::
-var:nummer:*getal,aansluitend::
-stopsetup
-
-startsetup
-com:sheet:
-typ:val/:
-val:*tekst::
-stopsetup
-
-startsetup
-com:stelstickersin:
-typ:vars/:
-var:variant:a::
-var:n:*getal,alles::
-var:plaats:marge,links,rechts,midden::
 stopsetup
 
 startsetup
@@ -3456,13 +3465,13 @@ stopsetup
 startsetup
 com:stelcombinatiesin:
 typ:vars/:
-var:voor:commando::
-var:tussen:commando::
-var:na:commando::
+var:voor:command::
+var:tussen:command::
+var:na:command::
 var:afstand:*maat::
 var:hoogte:*maat,passend::
 var:breedte:*maat,passend::
-var:plaats:boven,midden,onder,links,rechts::
+var:plaats:top,middle,bottom,left,right::
 var:uitlijnen:nee,links,rechts,midden,normaal::
 var:letter:normaal,vet,schuin,vetschuin,type,kap,klein...*commando::
 var:kleur:*naam::
@@ -3551,10 +3560,11 @@ var:titel:*tekst::
 var:subtitel:*tekst::
 var:auteur:*tekst::
 var:datum:*tekst::
+var:trefwoord:*tekst::
 stopsetup
 
 startsetup
-com:stelinteractiemenuin:
+com:definieerinteractiemenu:
 typ:vals/vars/:
 val:links,rechts,boven,onder,*naam::
 var:voor:*commando::
@@ -3648,8 +3658,8 @@ typ:vars/:
 var:status:start,stop::
 var:variant:a,b,c,d,e,f,g::
 var:symbool:ja,nee::
-var:breedte:*maat,hoogte,passend::
-var:hoogte:*maat,hoogte,passend::
+var:breedte:*maat,height,passend::
+var:hoogte:*maat,height,passend::
 var:diepte:*maat::
 var:kleur:*naam::
 var:stap:*getal,klein,middel,groot::
@@ -3670,7 +3680,7 @@ startsetup
 com:stelsynchronisatiebalkin:
 typ:vars/:
 var:variant:pagina,lokaal::
-var:breedte:*maat,hoogte,passend::
+var:breedte:*maat,height,passend::
 var:hoogte:*maat::
 var:letter:normaal,vet,schuin,vetschuin,type,kap,klein...,*commando::
 var:kleur:*naam::

@@ -27,7 +27,7 @@
        {\setbox\textflowcollector{#1}\emptybox}
        {\@EA\newbox\csname\??tx:c:#1\endcsname}%
      \getparameters[\??tx:p:#1]
-       [\c!breedte=\hsize,\c!letter=,#2]%
+       [\c!width=\hsize,\c!style=,#2]%
    \fi}
 
 \def\textflowparameter#1#2{\csname\??tx:p:#1#2\endcsname}
@@ -52,9 +52,9 @@
      {\global\setbox\textflowcollector{#1}\vbox
         \bgroup
         \unvbox\textflowcollector{#1}%
-        \hsize\textflowparameter{#1}\c!breedte
-        \doifsomething{\textflowparameter{#1}\c!letter}%
-          {\doconvertfont{\textflowparameter{#1}\c!letter}}%
+        \hsize\textflowparameter{#1}\c!width
+        \doifsomething{\textflowparameter{#1}\c!style}%
+          {\doconvertfont{\textflowparameter{#1}\c!style}}%
         \def\stoptextflow{\endgraf\egroup}}
      {\let\stoptextflow\relax}}
 

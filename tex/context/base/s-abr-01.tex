@@ -13,16 +13,17 @@
 
 \unprotect
 
-\stelsorterenin[logo][\c!letter=\v!kapitaal]
+\setupsorting[logo][\c!style=\v!capital]
 
-\setupcapitals[\c!titel=\v!nee]
+\setupcapitals[\c!title=\v!no]
 
 \protect
 
 \logo [ACROBAT]    {Acro\-bat}
 \logo [AFM]        {afm}
-\logo [ALEPH]      {Aleph}
+\logo [ALEPH]      {Aleph} % {\mathematics{\aleph}}
 \logo [ALGOL]      {ALGOL}
+\logo [ARABTEX]    {Arab\TeX}
 \logo [AMSLATEX]   {\AmSLaTeX}
 \logo [AMSTEX]     {\AmSTeX}
 \logo [AMS]        {ams}
@@ -50,6 +51,7 @@
 \logo [DVIPSONE]   {dvipsone}
 \logo [DVIPDFM]    {dvipdfm}
 \logo [DVIPDFMX]   {dvipdfmx}
+\logo [DVIPOS]     {dvipos}
 \logo [DVIPS]      {dvips}
 \logo [DVISCR]     {dviscr}
 \logo [DVIWINDO]   {dviwindo}
@@ -76,6 +78,7 @@
 %logo [FGBBS]      {fgbbs}
 \logo [FPTEX]      {fp\TeX}
 \logo [FREEBSD]    {FreeBSD}
+\logo [FOXET]      {foXet}
 \logo [FTP]        {ftp}
 \logo [GHOSTSCRIPT]{Ghost\-Script}
 \logo [GHOSTVIEW]  {Ghost\-View}
@@ -85,6 +88,7 @@
 \logo [GUST]       {Gust}
 \logo [GWTEX]      {gw\TeX}
 \logo [HTTP]       {http}
+\logo [HSB]        {hsb}
 \logo [HTML]       {html}
 \logo [IBM]        {ibm}
 \logo [IMAGEMAGICK]{ImageMagick}
@@ -121,6 +125,7 @@
 \logo [NTS]        {nts}
 \logo [OMEGA]      {Omega}
 \logo [OPI]        {opi}
+\logo [OTP]        {otp}
 \logo [PASCAL]     {Pascal}
 \logo [PCTEX]      {pc\TeX}
 \logo [PDFETEX]    {pdfe\TeX}
@@ -169,6 +174,11 @@
 \logo [TEXUTIL]    {\TeX util}
 \logo [TEXWORK]    {\TeX work}
 \logo [TEXFONT]    {\TeX font}
+\logo [TEXTOOLS]   {textools}
+\logo [XMLTOOLS]   {xmltools}
+\logo [PDFTOOLS]   {pdftools}
+\logo [TEXMFSTART] {texmfstart}
+\logo [TEXSYNC]    {texsync}
 \logo [TEX]        {\TeX}
 \logo [TFM]        {tfm}
 \logo [TIFFINFO]   {tiffinfo}
@@ -200,9 +210,13 @@
 \logo [XPDFETEX]   {xpdfe\TeX}
 \logo [XSLT]       {xslt}
 \logo [XSL]        {xsl}
+\logo [XSLFO]      {xsl-fo}
+\logo [XYPIC]      {XYPIC} % wrong logo
 \logo [YandY]      {y\&y}
 
 \def\METAFUN       {\MetaFun}
+
+\logo [METAFUN]    {\MetaFun}
 
 \def\SystemSpecialA#1{$\langle\it#1\rangle$}
 \def\SystemSpecialB#1{{\tttf<#1>}}

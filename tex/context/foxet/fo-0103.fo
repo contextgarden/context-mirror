@@ -1,0 +1,12 @@
+<?xml version='1.0'?>
+
+<!-- foxet test file - Hans Hagen - PRAGMA ADE - www.pragma-ade.com -->
+
+<fo:root xmlns:fo='http://www.w3.org/1999/XSL/Format'
+         xmlns:fe='http://www.pragma-ade.com/schemas/foxet.rng'>
+
+    <fo:color-profile>
+        <!-- maybe some day ... -->
+    </fo:color-profile>
+
+</fo:root>

@@ -13,6 +13,12 @@
 
 \writestatus{loading}{Context Core Macros / TaBlE Embedding}
 
+% Don't change the splitter:
+%
+% ... \NR
+% \TABLEnoalign{\page}\TABLEhead
+% \NC ...
+
 % e-tex: reverse rows or vadjust or ... in tables
 % \ifalign
 % \xhrule : calls for 'special' with width
@@ -113,10 +119,10 @@
 %D \stoptable
 %D \stopbuffer
 %D
-%D \startcombinatie
-%D   {\tracetablesfalse\haalbuffer} {\type{\tracetablesfalse}}
-%D   {\tracetablestrue\haalbuffer}  {\type{\tracetablestrue}}
-%D \stopcombinatie
+%D \startcombination
+%D   {\tracetablesfalse\getbuffer} {\type{\tracetablesfalse}}
+%D   {\tracetablestrue\getbuffer}  {\type{\tracetablestrue}}
+%D \stopcombination
 %D
 %D This table is specified as:
 %D
@@ -143,7 +149,7 @@
 %D When we use the split table feature, we get a bit more
 %D information.
 %D
-%D {\tracetablesfalse\haalbuffer}
+%D {\tracetablesfalse\getbuffer}
 %D
 %D Sometimes in tables information shows up that is not typed
 %D in by the user. These messages give a cue in what aspect a
@@ -168,7 +174,7 @@
 %D therefore can result in two or more succesive messages, like
 %D in the last row.
 %D
-%D \haalbuffer
+%D \getbuffer
 
 %D Bringing color into tables is complicated by the mere fact
 %D that color is not part of \TEX. The main complication is
@@ -189,7 +195,7 @@
 %D \gdef\ShowExample%
 %D   {\startfiguurtekst
 %D      {geen}
-%D      {\haalbuffer}
+%D      {\getbuffer}
 %D    \typebuffer
 %D    \stopfiguurtekst}
 %D
@@ -409,9 +415,9 @@
 %D tables. If for some reason one wants to use the \TABLE\
 %D primitives, one can say:
 %D
-%D \starttypen
+%D \starttyping
 %D \ObeyTableBarAndQuote
-%D \stoptypen
+%D \stoptyping
 %D
 %D To keep things verbose, as well as to show what \TABLE\
 %D commands we affect, we show some meanings.
@@ -435,10 +441,10 @@
 
 %D The first attemp to solve this problem was:
 %D
-%D \starttypen
+%D \starttyping
 %D \def\normalTABLEquote%
 %D   {\unskip\TABLEhack\!ttRightGlue&\omit&\TABLEhack}
-%D \stoptypen
+%D \stoptyping
 %D
 %D But, as usual, this interfered with \type {\omit}.
 %D
@@ -446,7 +452,7 @@
 %D This works ok, but breaks for instance the~\type{b}
 %D key handling.
 %D
-%D \starttypen
+%D \starttyping
 %D \def\!tfAdjoinPriorColumn%
 %D   {\ifnum\!taColumnNumber=0
 %D      \!taPreamble=\!taRuleColumnTemplate
@@ -459,7 +465,7 @@
 %D    \fi
 %D    ...
 %D    \ReadFormatKeys}
-%D \stoptypen
+%D \stoptyping
 
 \newdimen\TABLEparheight
 
@@ -469,14 +475,14 @@
      \normalbaselines
      \let~\!ttTie
      \let\-\!ttDH
-     \blanko[\v!blokkeer]% % added
+     \blank[\v!disable]% % added
      \the\EveryTableParBox}
 
 \def\EndTableParBox
   {\removelastskip                                   % itemize or so
    \par
    \ifnum\prevgraf>\zerocount                        % we want at least
-     \verticalstrut \geenwitruimte \vskip-\struttotal% one line of text
+     \verticalstrut \nowhitespace \vskip-\struttotal% one line of text
      \egroup
      \ifdim\dp\scratchbox>\lineheight                % see (*) for an
        \getnoflines{\dp\scratchbox}%                 % example of where
@@ -492,6 +498,63 @@
      \global\TABLEparheight\scratchdimen             % multi-line box
    \fi                                               % i.e. vtop
    \box\scratchbox}
+
+% We also need to patch away the interfering math switch:
+
+% \mathpunctuationtrue
+
+% test, test
+% \starttable[|c|]
+% \NC1,,10\NC\AR
+% \stoptable
+% test, test
+
+\def\!ttBeginTableA[#1]{%
+  \if #1u%                  % "unboxed" table
+    \ifmmode
+      \def\!ttEndTable{%    % user had better be in display math mode
+        \relax}%            %   and have only one table at the outer level
+    \else                   % user had better be in vertical mode
+      \bgroup
+      \def\!ttEndTable{%
+        \egroup}%
+    \fi
+  \else
+    %\hbox\bgroup $
+    %\def\!ttEndTable{%
+    %  \egroup %   for the \vtop, \vbox, or \vcenter, yet to come
+    %  $%          for math mode
+    %  \egroup}%   for the \hbox
+    %\if #1t%
+    %  \vtop
+    %\else
+    %  \if #1b%
+    %    \vbox
+    %  \else
+    %    \vcenter % math mode was essential for this
+    %  \fi
+    %\fi
+    %
+    \hbox\bgroup
+    \def\!ttEndTable{\egroup\egroup}%
+    \if#1t%
+      \vtop
+    \else\if#1b%
+      \vbox
+    \else
+      \def\!ttEndTable{\egroup$\egroup}%
+      %$\vcenter
+      \scratchtoks\everymath\everymath\emptytoks$\everymath\scratchtoks\vcenter
+    \fi\fi
+    %
+    \bgroup % for the \vtop, \vbox, or \vcenter
+  \fi
+  \advance\!taRecursionLevel 1 % RecursionLevel governs initialization
+  \let\!ttRightGlue=\relax  % This may be changed by \JustCenter, etc
+  \everycr\emptytoks % ={}
+  \ifnum \!taRecursionLevel=1
+    \!ttInitializeTable
+  \fi}
 
 % (*) Try this one with \type {direction} and {girection};
 % the \PPCHTEX\ manual is a nice testcase.
@@ -532,9 +595,9 @@
 %D the numeric keys. The quantity keys (\type{q} and \type{Q})
 %D support the more european way of writing numbers:
 %D
-%D \startsmaller
+%D \startnarrower
 %D 100.000.000,00 instead of 100,000,000.00
-%D \stopsmaller
+%D \stopnarrower
 %D
 %D The next table shows how to use these keys. We use braces
 %D instead of brackets because we need brackets to specify the
@@ -626,9 +689,9 @@
 
 %D \em Get argument:
 %D
-%D \starttypen
+%D \starttyping
 %D <sample left field> <optional, sample right field>
-%D \stoptypen
+%D \stoptyping
 
 \def\!tqGetArgument[#1]%
   {\!tqMakeQuantityTemplate\!tqStyle#1,,!}
@@ -662,12 +725,12 @@
 %D Here ends the Q||extension. Did you watch the clever use
 %D of aftergroup in \type{\!tqConvertCode}.
 
-% %D We also (have to) define a key for \type{\kap}:
+% %D We also (have to) define a key for \type{\cap}:
 %
 % \letvalue{!tk<\string K>}=\undefined
 %
 % \NewFormatKey K%
-%   {\ReadFormatKeys b\kap}
+%   {\ReadFormatKeys b\smallcapped}
 
 %D A few pages back we saw backgrounds, further on we will see
 %D colored rules, and here we provide a means to color the
@@ -884,7 +947,7 @@
 %D All commands that are executed between rows are to be put in
 %D \type {\noalign}. We can however not verify if we (that is
 %D \TABLE) does or did not enter this mode. A moderate dirty
-%D but useful trick is using our own alternative:\voetnoot{Once
+%D but useful trick is using our own alternative:\footnote{Once
 %D one has entered the stage of redefining \TEX\ primitives,
 %D such hacks become a second nature. However, redefining \type
 %D {\omit} and \type{\span} is not that easy.}
@@ -898,17 +961,17 @@
 %D The rest of this module is not easy to comprehend, mainly
 %D because we have to take care of:
 %D
-%D \startopsomming[opelkaar]
-%D \som  \type{\startopsomming[template]}
-%D \som  \type{\startopsomming{template}}
-%D \som  \type{\startopsomming[predefined]}
-%D \stopopsomming
+%D \startitemize[packed]
+%D \item  \type{\startitemize[template]}
+%D \item  \type{\startitemize{template}}
+%D \item  \type{\startitemize[predefined]}
+%D \stopitemize
 %D
 %D as well as:
 %D
-%D \startopsomming[verder]
-%D \som  restart after table break
-%D \stopopsomming
+%D \startitemize[continue]
+%D \item  restart after table break
+%D \stopitemize
 %D
 %D The official specification of the start command is:
 %D
@@ -916,9 +979,9 @@
 
 \def\starttable
   {\bgroup
-   \doifelsenothing\@@tikader
+   \doifelsenothing\@@tiframe
      {\ifinsidefloat\else\startbaselinecorrection\fi}
-     {\startframedcontent[\@@tikader]}%
+     {\startframedcontent[\@@tiframe]}%
    \postponefootnotes
    \firststagestartTABLE}
 
@@ -927,7 +990,7 @@
    \globalletempty\@@TABLEhead
    \globalletempty\@@TABLEtail
    \finishTABLE
-   \doifelsenothing\@@tikader
+   \doifelsenothing\@@tiframe
      {\ifinsidefloat\else
         \stopbaselinecorrection
         \goodbreak % compensates all the nobreaks
@@ -954,7 +1017,7 @@
 %D The complex (and main) start macro first takes care of the
 %D predefined case. Such a predefined setup looks like:
 %D
-%D \starttypen
+%D \starttyping
 %D \definetabletemplate[test][|||]
 %D
 %D \starttable[test]
@@ -962,7 +1025,7 @@
 %D \VL test \VL test \VL\AR
 %D \VL test \VL test \VL\AR
 %D \stoptable
-%D \stoptypen
+%D \stoptyping
 %D
 %D The implementation of the definition macro is not that
 %D complicated:
@@ -975,6 +1038,9 @@
 %  {\bgroup
 %   \catcode`\|=\@@other
 %   \dodoubleargument\dodefinetabletemplate}
+
+
+% \TABLEnoalign{\page}\TABLEhead is valid
 
 \def\douseTABLEtemplate#1#2#3%
   {\gdef\TABLEhead{\getvalue{@@TABLEhead#2}}%
@@ -995,18 +1061,18 @@
 %D The optional third and fourth arguments define which table
 %D head and tail to use.
 %D
-%D \starttypen
+%D \starttyping
 %D \definetabletemplate[test][|||][before][after]
-%D \stoptypen
+%D \stoptyping
 %D
 %D This also means that one can define table heads and tails
 %D by name!
 %D
-%D \starttypen
+%D \starttyping
 %D \starttablehead[before]
 %D \HL \VL first \VL second \VL \SR \HL
 %D \stoptablehead
-%D \stoptypen
+%D \stoptyping
 %D
 %D Templates defined this way get protected names, that cannot
 %D conflict with existing commands.
@@ -1145,7 +1211,7 @@
 %D
 %D For example:
 %D
-%D \starttypen
+%D \starttyping
 %D \starttables[|||]
 %D \HL
 %D \VL element \VL atom weight \VL\AR
@@ -1154,7 +1220,7 @@
 %D \VL ....... \VL ........... \VL\AR
 %D \HL
 %D \stoptables
-%D \stoptypen
+%D \stoptyping
 
 \def\starttables
   {\bgroup
@@ -1182,7 +1248,7 @@
 %D pages, only the first gets a head. We could have said
 %D something like:
 %D
-%D \starttypen
+%D \starttyping
 %D \starttablekop
 %D \HL
 %D \VL element \VL atom weight \VL\AR
@@ -1197,7 +1263,7 @@
 %D \VL ....... \VL ........... \VL\AR
 %D \VL ....... \VL ........... \VL\AR
 %D \stoptables
-%D \stoptypen
+%D \stoptyping
 %D
 %D This time each split table gets a head line and ends with
 %D a rule. Keep in mind that such heads also apply to the
@@ -1240,7 +1306,7 @@
 %D and will probably be improved bit by bit.
 
 \def\docalculatemaxTABLEheight
-  {\ifbinnenkolommen
+  {\ifinsidecolumns
      \getcolumnstatus\column\scratchcounter\total\dimen0\goal\dimen2\\%
    \else
      \ifdim\pagegoal<\maxdimen
@@ -1248,7 +1314,7 @@
        \dimen2\pagegoal
      \else
        \dimen0\zeropoint
-       \dimen2\teksthoogte
+       \dimen2\textheight
      \fi
    \fi
    \advance\dimen2 -\dimen0
@@ -1260,11 +1326,11 @@
    \fi\fi}
 
 \def\nocalculatemaxTABLEheight
-  {\ifbinnenkolommen
+  {\ifinsidecolumns
      \getcolumnstatus\column\scratchcounter\total\dimen0\goal\dimen2\\%
    \else
      \dimen0\zeropoint
-     \dimen2\teksthoogte
+     \dimen2\textheight
    \fi
    \advance\dimen2 -\dimen0
    \global\TABLEmaxheight\dimen2
@@ -1274,12 +1340,12 @@
   {\ifsplittables
      #1\relax
      \ifdim\TABLEmaxheight<3\baselineskip \relax % instelbaar maken
-       \ifbinnenkolommen
+       \ifinsidecolumns
          \nobreak
          \kern\dimen2
          \goodbreak
        \else
-         \goodbreak % \pagina
+         \goodbreak % \page
        \fi
        \removeTABLEtopskip
        \nocalculatemaxTABLEheight
@@ -1387,24 +1453,24 @@
 %D switching. I won't go into much detail from now on, but just
 %D mention the general principles.
 %D
-%D \startopsomming[3*ruim]
+%D \startitemize[3*ruim]
 %D \sym{\type{\SR}} end a separate row (between rules)
 %D \sym{\type{\FR}} end a first row (after a rule)
 %D \sym{\type{\MR}} end a mid row (between text lines)
 %D \sym{\type{\LR}} end a last row (before a rule)
-%D \stopopsomming
+%D \stopitemize
 %D
 %D and best of all:
 %D
-%D \startopsomming[verder]
+%D \startitemize[continue]
 %D \sym{\type{\AR}} end a row with automatic spacing
-%D \stopopsomming
+%D \stopitemize
 %D
 %D As far as possible, we report confusing situations. In
 %D most cases one can use \type{\AR}, which transfigurates
 %D itself into one of the other types.
 %D
-%D \starttypen
+%D \starttyping
 %D \starttable[||]
 %D \HL
 %D \VL a separate row \VL\SR
@@ -1414,7 +1480,7 @@
 %D \VL a last row     \VL\LR
 %D \HL
 %D \stoptable
-%D \stoptypen
+%D \stoptyping
 %D
 %D In this example we could have used \type{\AR} without
 %D problems.
@@ -1684,7 +1750,7 @@
 %D While defining this macro we change the \CATCODE\ of
 %D \type{|}. When counting the bars, we use a non active
 %D representation of the bar, simply because we cannot be sure
-%D if the bar is active or not.\voetnoot{Normally it is, but
+%D if the bar is active or not.\footnote{Normally it is, but
 %D \TABLE\ changes the catcode when needed.}
 
 \bgroup
@@ -1713,12 +1779,12 @@
    \span\the\!taPreamble
    \ifx \!tfRowOfWidths \empty \else \!tfRowOfWidths \cr \fi}
 
-%D \startopsomming[3*ruim]
+%D \startitemize[3*ruim]
 %D \sym{\type{\VL}} a vertical line
 %D \sym{\type{\VC}} a vertical colored line
 %D \sym{\type{\HL}} a horizontal line
 %D \sym{\type{\HC}} a horizontal colored line
-%D \stopopsomming
+%D \stopitemize
 
 % \def\defineTABLErules
 %   {\let\VL\TableVL
@@ -1880,14 +1946,14 @@
       \globallet\stopHLcommand \stopHCcommand}%
    \HL}
 
-%D \startopsomming[3*ruim]
+%D \startitemize[3*ruim]
 %D \sym{\type{\NL}} a vertical skip
 %D \sym{\type{\NR}} goto the next row
 %D \sym{\type{\NC}} goto the next column
 %D \sym{\type{\FC}} a first column
 %D \sym{\type{\MC}} a mid column
 %D \sym{\type{\LC}} a last column
-%D \stopopsomming
+%D \stopitemize
 
 % n+1 uitleggen
 
@@ -1910,7 +1976,7 @@
 \def\simpleTableNL
   {\TABLEnoalign
      {\nobreak
-      \setbox0\vbox{\blanko[\@@tiNL]}%
+      \setbox0\vbox{\blank[\@@tiNL]}%
       \global\advance\TABLEheight \ht0
       \vskip\ht0
       \nobreak}}
@@ -1947,12 +2013,12 @@
    \def"{\NC}}           % \normalTABLEquote
 \egroup
 
-%D \startopsomming[3*ruim]
+%D \startitemize[3*ruim]
 %D \sym{\type{\DL}}
 %D \sym{\type{\DV}} (\type{\VD})
 %D \sym{\type{\DC}}
 %D \sym{\type{\DR}}
-%D \stopopsomming
+%D \stopitemize
 
 \newif\ifTABLEdivision
 
@@ -2054,7 +2120,7 @@
   {\scratchdimen\LineThicknessUnit
    \global\advance\TABLEheight \@@tiHLheight\scratchdimen}
 
-%D \startopsomming[3*ruim]
+%D \startitemize[3*ruim]
 %D \sym{\type{\BC}}
 %D \sym{\type{\BR}}
 %D \sym{\type{\BACKGROUND}}
@@ -2063,7 +2129,7 @@
 %D \sym{\type{\BL}}
 %D \sym{\type{\RASTER}}
 %D \sym{\type{\COLOR}}
-%D \stopopsomming
+%D \stopitemize
 
 % definieer: \BC \BL
 % herhaal: \BR
@@ -2079,9 +2145,9 @@
    \let\RL        \TableRL
    \let\COLOR     \TableCOLOR
    \let\RASTER    \TableRASTER
-   \globallet\lastTABLEc\@@tiachtergrondkleur
-   \globallet\lastTABLEr\@@tiachtergrondraster
-   \doifinsetelse\@@tiachtergrond{c,color} % \v!kleur
+   \globallet\lastTABLEc\@@tibackgroundcolor
+   \globallet\lastTABLEr\@@tibackgroundscreen
+   \doifinsetelse\@@tibackground{c,color} % \v!color
      {\global\chardef\TABLEcr\plusone}
      {\global\chardef\TABLEcr\plustwo}}
 
@@ -2382,12 +2448,12 @@
 
 \def\defineTABLEunits
   {\processaction
-     [\@@tiafstand]
-     [  \v!geen=>\OpenUp00\def\LOW{\Lower6 },
-       \v!klein=>\OpenUp00\def\LOW{\Lower6 }, % == baseline
-      \v!middel=>\OpenUp11\def\LOW{\Lower7 },
-       \v!groot=>\OpenUp22\def\LOW{\Lower8 }]%
-   \doifelse\@@tiafstand\v!geen
+     [\@@tidistance]
+     [  \v!none=>\OpenUp00\def\LOW{\Lower6 },
+       \v!small=>\OpenUp00\def\LOW{\Lower6 }, % == baseline
+      \v!medium=>\OpenUp11\def\LOW{\Lower7 },
+       \v!big=>\OpenUp22\def\LOW{\Lower8 }]%
+   \doifelse\@@tidistance\v!none
      {\chardef\TABLErowfactor\zerocount}
      {\chardef\TABLErowfactor\plustwo  }}
 
@@ -2408,18 +2474,18 @@
 \def\dosetuptables[#1]%
   {\getparameters[\??ti][#1]%
    \processaction
-     [\@@tiuitlijnen]
-     [ \v!rechts=>\def\TABLEparalignment{\raggedright},
-        \v!links=>\def\TABLEparalignment{\raggedleft},
-       \v!midden=>\def\TABLEparalignment{\raggedcenter},
+     [\@@tialign]
+     [ \v!right=>\def\TABLEparalignment{\raggedright},
+        \v!left=>\def\TABLEparalignment{\raggedleft},
+       \v!middle=>\def\TABLEparalignment{\raggedcenter},
       \s!default=>\def\TABLEparalignment{\notragged},
       \s!unknown=>\def\TABLEparalignment{\notragged}]%
    \assignalfadimension\@@tiVL\@@tiVLwidth 246%
    \assignalfadimension\@@tiHL\@@tiHLheight246}
 
 \def\localTABLEsetup
-  {\@@ticommandos\relax
-   \expanded{\switchtobodyfont[\@@tikorps]}%
+  {\@@ticommands\relax
+   \expanded{\switchtobodyfont[\@@tibodyfont]}%
    \StrutHeightFactor  8
    \StrutDepthFactor   4
    \LineThicknessFactor4
@@ -2435,25 +2501,25 @@
 \let\stopglobalTABLEcolor \empty
 
 \def\localTABLEsetup
-  {\@@ticommandos\relax
+  {\@@ticommands\relax
    % bodyfont
-   \expanded{\switchtobodyfont[\@@tikorps]}%
+   \expanded{\switchtobodyfont[\@@tibodyfont]}%
    % linecolor
-   \doifsomething\@@tilijnkleur
-     {\def\startglobalTABLEcolor{\localstartcolor[\@@tilijnkleur]}%
+   \doifsomething\@@tirulecolor
+     {\def\startglobalTABLEcolor{\localstartcolor[\@@tirulecolor]}%
       \def\stopglobalTABLEcolor {\localstopcolor}}%
    % linethickness
    \LineThicknessFactor4
-   \scratchdimen\@@tilijndikte
+   \scratchdimen\@@tirulethickness
    \divide\scratchdimen \LineThicknessFactor
    \expanded{\NormalTLTU{\the\scratchdimen}}%
    % spacing, was depth=4 height=8 (counters, sigh, now macros)
-   \doifelse\@@tihoogte\v!strut
-     {\let\StrutHeightFactor\@@ithoogte}
-     {\let\StrutHeightFactor\@@tihoogte}%
-   \doifelse\@@tidiepte\v!strut
-     {\let\StrutDepthFactor\@@itdiepte}
-     {\let\StrutDepthFactor\@@tidiepte}%
+   \doifelse\@@tiheight\v!strut
+     {\let\StrutHeightFactor\@@itheight}
+     {\let\StrutHeightFactor\@@tiheight}%
+   \doifelse\@@tidepth\v!strut
+     {\let\StrutDepthFactor\@@itdepth}
+     {\let\StrutDepthFactor\@@tidepth}%
    \scratchdimen\StrutHeightFactor\points \multiply\scratchdimen 10%
    \edef\StrutHeightFactor{\withoutpt\the\scratchdimen}%
    \scratchdimen\StrutDepthFactor \points \multiply\scratchdimen 10%
@@ -2483,14 +2549,14 @@
 %D \stopbuffer
 %D
 %D \startbuffer[b]
-%D \starttabulatie[|c|]
+%D \starttabulate[|c|]
 %D \HL
 %D \NC test \NC \NR
 %D \NC test \NC \NR
 %D \NC test \NC \NR
 %D \NC test \NC \NR
 %D \HL
-%D \stoptabulatie
+%D \stoptabulate
 %D \stopbuffer
 %D
 %D In the next example, the first table is defined as:
@@ -2507,33 +2573,33 @@
 %D happens when we set the values to zero. The rightmost table
 %D is typeset using the tabulate environment.
 %D
-%D \startcombinatie[4*1]
-%D   {$\vcenter{\haalbuffer[a]}$}
+%D \startcombination[4*1]
+%D   {$\vcenter{\getbuffer[a]}$}
 %D     {\hbox{h=.8 d=.4}}
-%D   {\setuptables[hoogte=strut,diepte=strut]$\vcenter{\haalbuffer[a]}$}
+%D   {\setuptables[height=strut,depth=strut]$\vcenter{\getbuffer[a]}$}
 %D     {\hbox{h=d=\type{strut}}}
-%D   {\setuptables[hoogte=0,diepte=0]$\vcenter{\haalbuffer[a]}$}
+%D   {\setuptables[height=0,depth=0]$\vcenter{\getbuffer[a]}$}
 %D     {\hbox{h=d=0}}
-%D   {$\vcenter{\haalbuffer[b]}$}
+%D   {$\vcenter{\getbuffer[b]}$}
 %D     {\hbox{tabulate}}
-%D \stopcombinatie
+%D \stopcombination
 
 \setuptables
-  [HL=\v!middel,
-   VL=\v!middel,
-   NL=\v!klein,
-   \c!kader=,
-   \c!uitlijnen=\v!rechts,
-   \c!diepte=.40, % \v!strut
-   \c!hoogte=.80, % \v!strut
-   \c!lijndikte=\linewidth,
-   \c!lijnkleur=,
-   \c!afstand=\v!middel,
-   \c!korps=\the\bodyfontsize,
-   \c!commandos=,
-   \c!achtergrond=\v!raster,
-   \c!achtergrondraster=\@@rsraster,
-   \c!achtergrondkleur=]
+  [HL=\v!medium,
+   VL=\v!medium,
+   NL=\v!small,
+   \c!frame=,
+   \c!align=\v!right,
+   \c!depth=.40, % \v!strut
+   \c!height=.80, % \v!strut
+   \c!rulethickness=\linewidth,
+   \c!rulecolor=,
+   \c!distance=\v!medium,
+   \c!bodyfont=\the\bodyfontsize,
+   \c!commands=,
+   \c!background=\v!screen,
+   \c!backgroundscreen=\@@rsscreen,
+   \c!backgroundcolor=]
 
 \def\ifintabel{\ifintable} % upward compatible
 

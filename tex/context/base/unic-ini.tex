@@ -28,12 +28,12 @@
 %D macros below deal with conversions. Thanks to Taco for
 %D providing the following conversion rules.
 %D
-%D \starttabulatie[|c|c|c|c|c|]
+%D \starttabulate[|c|c|c|c|c|]
 %D \NC  $b_1$  \NC  $b_2$  \NC  $b_3$  \NC  $b_4$  \NC     unicode     \NC \NR
 %D \NC192---223\NC128---191\NC         \NC         \NC   0x80---0x7FF  \NC \NR
 %D \NC224---239\NC128---191\NC128---191\NC         \NC  0x800---0xFFFF \NC \NR
 %D \NC240---247\NC128---191\NC128---191\NC128---191\NC0x10000---0x1FFFF\NC \NR
-%D \stoptabulatie
+%D \stoptabulate
 %D
 %D In \UTF-8 the characters in the range 128---191 are illegal
 %D as first characters. The characters 254 and 255 are
@@ -43,12 +43,12 @@
 %D The unicode number for an \UTF-8 sequence can be calculated
 %D as follows:
 %D
-%D \starttabulatie[|mc|m|mc|m|mc|m|mc|m|]
+%D \starttabulate[|mc|m|mc|m|mc|m|mc|m|]
 %D \NC       b_1     \NC \NC             \NC \NC           \NC \NC         \NC if     b_1<=127\NC \NR
 %D \NC    64(b_1-192)\NC+\NC    (b_2-128)\NC \NC           \NC \NC         \NC if 192<=b1<=223\NC \NR
 %D \NC  4096(b_1-224)\NC+\NC  64(b_2-128)\NC+\NC  (b_3-128)\NC \NC         \NC if 224<=b1<=239\NC \NR
 %D \NC262144(b_1-240)\NC+\NC4096(b_2-128)\NC+\NC64(b_3-128)\NC+\NC(b_4-128)\NC if 240<=b1<=247\NC \NR
-%D \stoptabulatie
+%D \stoptabulate
 %D
 %D A lot of information abou tunicode can be found on the
 %D web (search for Markus Kuhn and unicode and you'll
@@ -58,7 +58,7 @@
 %D We need the \type {`} in order to turn a character into a
 %D number.
 %D
-%D \starttypen
+%D \starttyping
 %D \def\utftwounicode#1#2%
 %D   {\number\numexpr    (64*(\numexpr (#1-192))+%
 %D                           (\numexpr(`#2-128)))}
@@ -73,7 +73,7 @@
 %D                      4096*(\numexpr(`#1-128))+
 %D                        64*(\numexpr(`#2-128))+%
 %D                           (\numexpr(`#3-128)))}
-%D \stoptypen
+%D \stoptyping
 %D
 %D When we map the unicode number on one of the 256 char wide
 %D unicode tables, we need to do a bit of div and mod. Watch
@@ -84,10 +84,10 @@
 %D also makes it possible to avoid scratch counters, so that we
 %D get fast and fully expandable conversions.
 %D
-%D \starttypen
+%D \starttyping
 %D \def\utfdiv#1{\number\numexpr((#1-128)/256)}
 %D \def\utfmod#1{\number\numexpr((#1)-(256*(\utfdiv{#1})))}
-%D \stoptypen
+%D \stoptyping
 %D
 %D So far for the readable alternatives. When using \type
 %D {\numexpr} you should be aware of rather unexpected look
@@ -109,7 +109,7 @@
 
 %D The definitions now become:
 %D
-%D \starttypen
+%D \starttyping
 %D \def\utftwounicode#1#2%
 %D   {\number\numexpr(\utf@a*(\numexpr (#1-\utf@d))+%
 %D                           (\numexpr(`#2-\utf@g)))}
@@ -124,18 +124,18 @@
 %D                    \utf@b*(\numexpr(`#2-\utf@g))+
 %D                    \utf@a*(\numexpr(`#3-\utf@g))+%
 %D                           (\numexpr(`#4-\utf@g)))}
-%D \stoptypen
+%D \stoptyping
 %D
 %D And:
 %D
-%D \starttypen
+%D \starttyping
 %D \def\utfdiv#1{\number\numexpr((#1-\utf@g)/\utf@h)}
 %D \def\utfmod#1{\number\numexpr((#1)-(\utf@h*(\utfdiv{#1})))}
-%D \stoptypen
+%D \stoptyping
 %D
 %D Depending on the usage, you can rely on parenthesis only:
 %D
-%D \starttypen
+%D \starttyping
 %D \def\utftwounicode#1#2%
 %D   {\numexpr(\utf@a*(#1-\utf@d)+%
 %D                    `#2-\utf@g)}
@@ -150,7 +150,7 @@
 %D            \utf@b*(`#2-\utf@g)+%
 %D            \utf@a*(`#3-\utf@g)+%
 %D                    `#4-\utf@g)}
-%D \stoptypen
+%D \stoptyping
 
 \def\utfdiv#1{\number\numexpr((#1-\utf@g)/\utf@h)}
 \def\utfmod#1{\number\numexpr(#1-\utf@h*((#1-\utf@g)/\utf@h))}
@@ -163,7 +163,7 @@
 %D a few handlers. They all call the general \type
 %D {\unicodechar} conversion macro.
 %D
-%D \starttypen
+%D \starttyping
 %D \def\utftwouniglph#1#2%
 %D   {\unicodechar{\utftwounicode  {#1}{#2}}}
 %D
@@ -172,13 +172,13 @@
 %D
 %D \def\utffouruniglph#1#2#3#4%
 %D   {\unicodechar{\utffourunicode {#1}{#2}{#3}{#4}}}
-%D \stoptypen
+%D \stoptyping
 %D
 %D Because the unicode number is used a few times per
 %D conversion, we can expand it once (\type {\the} and \type
 %D {\number} make sure of this). This saves us another 10\%.
 %D
-%D \starttypen
+%D \starttyping
 %D \def\utftwouniglph#1#2%
 %D   {\@EA\unicodechar\@EA{\the\utftwounicode{#1}{#2}}}
 %D
@@ -187,7 +187,7 @@
 %D
 %D \def\utffouruniglph#1#2#3#4%
 %D   {\@EA\unicodechar\@EA{\the\utffourunicode{#1}{#2}{#3}{#4}}}
-%D \stoptypen
+%D \stoptyping
 %D
 %D We can rewrite these macros to faster alternatives: the
 %D less arguments we pass, the faster the conversion will be,
@@ -229,7 +229,7 @@
 %D \def\TraceUnic#1%
 %D   {\chardef\utfunicodetracer#1\relax\enableregime[utf]Ű}
 %D
-%D \starttabulatie[|c|c|c|c|c|c|]
+%D \starttabulate[|c|c|c|c|c|c|]
 %D \NC option   \NC number\NC mapping\NC glyph\NC string\NC example    \NC \NR
 %D \NC 0        \NC       \NC        \NC \star\NC       \NC \TraceUnic0\NC \NR
 %D \NC 1        \NC \star \NC        \NC      \NC       \NC \TraceUnic1\NC \NR
@@ -241,7 +241,7 @@
 %D \NC 7        \NC       \NC        \NC      \NC \star \NC \TraceUnic7\NC \NR
 %D \NC 8        \NC \star \NC        \NC      \NC       \NC \TraceUnic8\NC \NR
 %D \NC otherwise\NC       \NC        \NC \star\NC       \NC \TraceUnic9\NC \NR
-%D \stoptabulatie
+%D \stoptabulate
 
 %D \macros
 %D   {unicodechar}
@@ -291,25 +291,18 @@
 %D problems; somehow \type {\numexpr} cannot look beyond this
 %D sign, and expects a number.
 
-\def\utfunichar #1%
-  {{\tttf U\low{\unicodenumber{#1}}}}
-
-\def\utfunisplit#1%
-  {{\tttf U\low{\unicodepair{#1}}}}
-
-\def\utfuniboth #1%
-  {{\tttf U\low{\unicodenumber{#1\relax}->\unicodepair{#1}}}}
-
-\def\utfunientity #1%
-  {{\tttf\&\#\unicodehexnumber{#1};}}
+\def\utfunichar   #1{{\tttf U\low{\unicodenumber{#1}}}}
+\def\utfunisplit  #1{{\tttf U\low{\unicodepair{#1}}}}
+\def\utfuniboth   #1{{\tttf U\low{\unicodenumber{#1\relax}->\unicodepair{#1}}}}
+\def\utfunientity #1{{\tttf\&\#\unicodehexnumber{#1};}}
 
 %D The character itself is accessed and typeset by:
 %D
-%D \starttypen
+%D \starttyping
 %D \def\utfunihash#1%
 %D   {\executeifdefined{\@@univector\utfdiv{#1}}%
 %D      \gobbleoneargument{\utfmod{#1}}}
-%D \stoptypen
+%D \stoptyping
 %D
 %D Again, we can provide a faster alternative, because inside
 %D the conditional executer, the argument is expanded twice,
@@ -318,16 +311,16 @@
 %D forehand. Just to remind you: \type {#1} is the \UNICODE\
 %D number.
 %D
-%D \starttypen
+%D \starttyping
 %D \def\utfunihash#1%
 %D   {\@EA\executeifdefined\@EA{\@EA\@@univector\number\utfdiv{#1}}%
 %D      {\unknownchar\gobbleoneargument}{\utfmod{#1}}}
-%D \stoptypen
+%D \stoptyping
 %D
 %D In order to save calculation time, I decided to change
 %D this definition into:
 
-%D \starttypen
+%D \starttyping
 %D \def\utfunihash#1%
 %D   {\@EA\doutfunihash\@EA{\number\utfdiv{#1}}{#1}}
 %D
@@ -337,11 +330,11 @@
 %D    \else
 %D      \unknownchar
 %D    \fi}
-%D \stoptypen
+%D \stoptyping
 %D
 %D Or leaner and meaner:
 %D
-%D \starttypen
+%D \starttyping
 %D \def\doutfunihash#1#2%
 %D   {\csname
 %D      \ifcsname\@@univector\number#1\endcsname
@@ -350,7 +343,7 @@
 %D        \@@unknownchar
 %D      \fi
 %D    \endcsname}
-%D \stoptypen
+%D \stoptyping
 %D
 %D And finaly it became:
 
@@ -431,7 +424,7 @@
 %D inside the name constructor, we prevent problems with
 %D partial expansion in macros and special cases.
 %D
-%D \starttypen
+%D \starttyping
 %D \startunicodevector 0
 %D   \ifcase\numexpr(#1-159)\or
 %D     \@@unknownchar\or % NO-BREAK SPACE
@@ -441,7 +434,7 @@
 %D     \@@unknowncharacter
 %D   \fi
 %D \stopunicodevector
-%D \stoptypen
+%D \stoptyping
 %D
 %D In vector \type {unix-000} you will find another
 %D optimizations. By using as less tokens as possible, we limit

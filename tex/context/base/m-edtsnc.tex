@@ -1,0 +1,207 @@
+%D \module
+%D   [       file=m-editsnc,
+%D        version=2003.12.23,
+%D          title=\CONTEXT\ Modules,
+%D       subtitle=Editor Synchronization
+%D         author={Hans Hagen \& Ton Otten},
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.edit for
+%C details.
+
+% \enablemode[demo]
+
+% This file is a variation of the file m-pdfsync. This time we do it
+% in a more abstract way and prepare ourselves for support in dvi
+% output.
+
+% \enableeditsync
+% \disableeditsync
+% \editsync
+% \editsynctext      {string}
+% \editsyncnode      {char}
+% \editsynctracemode [chardef: 0-4]
+
+\writestatus{editsync}{loading and enabling editor synchronization support}
+
+\unprotect % not really needed
+
+\ifx\pdfoutput\undefined
+  \donefalse
+\else\ifcase\pdfoutput
+  \donefalse
+\else\ifx\pdfsavepos\undefined
+  \donefalse
+\else
+  \donetrue
+\fi\fi\fi
+
+\chardef  \editsyncstate     \zerocount
+\chardef  \editsynctracemode \zerocount
+\newcount \editsynccounter
+\newwrite \editsyncwrite
+
+\def\enableeditsync {\chardef\editsyncstate\plusone}
+\def\disableeditsync{\chardef\editsyncstate\zerocount}
+
+% The following definitions can go into the special drivers, but
+% for the moment we do it this way.
+
+\ifdone
+
+  \def\dostarteditsync
+    {\immediate\openout\editsyncwrite\jobname.pdfsync
+     \immediate\write\editsyncwrite{\jobname}%
+     \immediate\write\editsyncwrite{version 0}}
+
+  \def\dostopeditsync
+    {\closeout\editsyncwrite}
+
+  \def\doeditsyncregisterpage#1{\immediate\write\editsyncwrite{s\space\number#1}}
+  \def\doeditsyncopenfile    #1{\immediate\write\editsyncwrite{(\space#1}}
+  \def\doeditsyncclosefile   #1{\immediate\write\editsyncwrite{)}}
+
+  \def\doregistereditsyncnode#1#2#3% tag counter linenumber
+    {\pdfsavepos
+     \immediate\write\editsyncwrite{l\space\number#2\space\number#3}%
+     \expanded{\write\editsyncwrite{p\ifnum#1=\plusone*\fi\space\number#2\space\noexpand\the\pdflastxpos\space\noexpand\the\pdflastypos}}}
+
+\else
+
+  \let\dostarteditsync       \relax
+  \let\dostopeditsync        \relax
+
+  \let\doeditsyncregisterpage\gobbleoneargument
+  \let\doeditsyncopenfile    \gobbleoneargument
+  \let\doeditsyncclosefile   \gobbleoneargument
+  \let\doregistereditsyncnode\gobblethreearguments
+
+  % These specials could be filtered by a dvitopdf backend and
+  % written to a jobname.pdfsync file. In that case, the x and
+  % y coordinates have to be to be resolved by driver.
+
+  % \def\doeditsyncregisterpage#1{\special{pdfsync: s\space\number#1}}
+  % \def\doeditsyncopenfile    #1{\special{pdfsync: ( #1}}
+  % \def\doeditsyncclosefile   #1{\special{pdfsync: )}}
+
+  % \def\doregistereditsyncnode#1#2#3%
+  %   {\special{pdfsync: l the\editsynccounter\space\number#3}%
+  %    \special{pdfsync: p\ifnum#1=\plusone*\fi\space\number#2}}
+
+\fi
+
+\let\editsynctracer\gobbleoneargument
+
+\editsynccounter\minusone % counting starts at zero and we increment beforehand
+
+\def\registereditsyncnode#1% we assume #1 is one token
+  {\ifcase\editsyncstate
+     \expandafter\gobbleoneargument
+   \else
+     \global\advance\editsynccounter\plusone
+     \doregistereditsyncnode#1\editsynccounter\inputlineno
+     \expandafter\editsynctracer
+   \fi}
+
+\def\editsync    {\registereditsyncnode\plusone *}
+\def\editsyncnode{\registereditsyncnode\zerocount}
+\def\editsynctext{\registereditsyncnode\plusone  }
+
+\appendtoks \dostarteditsync                  \to \everystarttext
+%appendtoks \dostopeditsync                   \to \everystoptext
+\appendtoks \doeditsyncregisterpage\realfolio \to \everyshipout
+\appendtoks \doeditsyncopenfile\readfilename  \to \everybeforereadfile
+\appendtoks \doeditsyncclosefile\readfilename \to \everyafterreadfile
+
+\appendtoks \enableeditsync         \to \everystarttext
+\appendtoks \disableeditsync        \to \everypagebody
+
+\def\editsynctracer#1%
+  {\ifcase\editsynctracemode\else
+     \begingroup
+     \forgetall
+     \disableeditsync
+     \ifcase\editsynctracemode\or % could be done more efficient, box around ifcase
+       \setbox\scratchbox\hbox to \zeropoint{\hss\infofont#1\hss}%   1
+     \else
+       \setbox\scratchbox\hbox to \zeropoint{\hss\traceboxplacementtrue\boxcursor\hss}% 2/3/4
+     \fi
+     \smashbox\scratchbox\box\scratchbox
+     \ifcase\editsynctracemode\or\or\or
+       \setbox\scratchbox\hbox to \zeropoint{\hss\raise1.25ex\hbox{\infofont#1}\hss}%  3
+       \smashbox\scratchbox\box\scratchbox
+     \or
+       \setbox\scratchbox\hbox to \zeropoint{\hss\lower1.25ex\hbox{\infofont#1}\hss}%  4
+       \smashbox\scratchbox\box\scratchbox
+     \fi
+     \endgroup
+   \fi}
+
+% \def\editsynctracer#1% more efficient but unreadable
+%   {\ifcase\editsynctracemode\else
+%      \ifcase\editsyncstate\else
+%        \begingroup
+%        \forgetall
+%        \disableeditsync
+%        \setbox\scratchbox\hbox to \zeropoint
+%           {\hss
+%            \ifcase\editsynctracemode\or
+%              \infofont#1%   1
+%            \else
+%              \traceboxplacementtrue\boxcursor% 2/3/4
+%            \fi
+%            \hss}%
+%        \smashbox\scratchbox\box\scratchbox
+%        \setbox\scratchbox\hbox to \zeropoint
+%          {\hss
+%           \ifcase\editsynctracemode\or\or\or
+%             \raise1.25ex\hbox{\infofont#1}%  3
+%           \or
+%             \lower1.25ex\hbox{\infofont#1}%  4
+%           \fi
+%           \hss}%
+%        \smashbox\scratchbox\box\scratchbox
+%        \endgroup
+%      \fi
+%    \fi}
+
+% beware, adding nodes this way will interfere with the typesetting
+
+\appendtoks \editsyncnode p\to \everypar
+\appendtoks \editsyncnode m\to \everymath
+\appendtoks \editsyncnode d\to \everydisplay
+\appendtoks \editsyncnode h\to \everyhbox
+
+% For compatibility with 'pdfsync4context' we provide:
+
+\let\pdfsyncstart\enableeditsync
+\let\pdfsyncstop \disablepdfsync
+\let\pdfsync     \editsync
+
+\protect
+
+\doifnotmode{demo}{\endinput}
+
+\chardef\editsynctracemode=3
+
+\starttext
+
+\chapter{Test}
+
+\processfile{tufte}
+
+\startitemize
+\item first
+\item second
+\stopitemize
+
+\processfile{tufte}
+
+\startlines
+some local \editsync sync and \editsynctext{here}a marked point
+some local \editsync sync and \editsyncnode{here}a marked point
+\stoplines
+
+\stoptext

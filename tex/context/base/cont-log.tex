@@ -23,14 +23,17 @@
 
 \convertargument cmr\to\someCMRfont
 
-\def\doifCMRfontelse#1#2%
-  {\doifinstringelse{\someCMRfont}{\fontname\font}
-     {\def\next{#1}}
-     {\def\next{#2}}%
-   \next}
+% \def\doifCMRfontelse#1#2%
+%   {\doifinstringelse{\someCMRfont}{\fontname\font}
+%      {\def\next{#1}}
+%      {\def\next{#2}}%
+%    \next}
+
+\def\doifCMRfontelse
+  {\doifinstringelse\someCMRfont{\fontname\font}}
 
 \unexpanded\def\CMRkern
-  {\doifCMRfontelse{\kern}{\scratchdimen=}}
+  {\doifCMRfontelse\kern{\scratchdimen=}}
 
 % \def\TeX
 %   {T%
@@ -124,7 +127,7 @@
 %D The \METAFONT\ and \METAPOST\ logos adapt themselves to the
 %D current fontsize, an ugly but usefull hack.
 
-\unexpanded\def\setMFPfont%
+\unexpanded\def\setMFPfont
   {\font\logofont=logo%
      \ifnum\fam=\bffam bf\else
      \ifnum\fam=\slfam sl\else
@@ -166,13 +169,13 @@
 \def\MetaHyphen% there is no hyphenchar in this font
   {\discretionary{\vrule\!!height.33em\!!depth-.27em\!!width.33em}{}{}}
 
-\unexpanded\def\MetaFont%
+\unexpanded\def\MetaFont
   {{\setMFPfont META\MetaHyphen FONT}}
 
-\unexpanded\def\MetaPost%
+\unexpanded\def\MetaPost
   {{\setMFPfont META\MetaHyphen POST}}
 
-\unexpanded\def\MetaFun%
+\unexpanded\def\MetaFun
   {MetaFun}
 
 %D \macros

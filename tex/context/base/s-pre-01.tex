@@ -103,12 +103,12 @@
 %D I considered the next setup too, but finaly decided to
 %D comment it out.
 %D
-%D \starttypen
+%D \starttyping
 %D \setupbackgrounds
 %D   [bottom][text]
 %D   [frame=on,
 %D    framecolor=white]
-%D \stoptypen
+%D \stoptyping
 
 %D \macros
 %D   {setupinteraction}
@@ -182,17 +182,17 @@
 %D The titlepage is rather simple and can be typeset in two 
 %D ways: 
 %D
-%D \starttypen
+%D \starttyping
 %D \StartTitlePage
 %D text \\ text \\ text 
 %D \StopTitlepage
-%D \stoptypen
+%D \stoptyping
 %D
 %D or more straightforward:
 %D
-%D \starttypen
+%D \starttyping
 %D \TitlePage{text\\text\\text} 
-%D \stoptypen
+%D \stoptyping
 %D 
 %D The first alternative can be used for more complicated 
 %D title pages.  
@@ -216,7 +216,7 @@
 %D
 %D A presentation after loading this module looks like:
 %D
-%D \starttypen
+%D \starttyping
 %D \TitlePage {About Whatever\\Topics}
 %D
 %D \Topics {Todays Talk}
@@ -230,7 +230,7 @@
 %D \Subject {Beta}
 %D
 %D .....
-%D \stoptypen
+%D \stoptyping
 
 %D \macros
 %D   {definehead}
@@ -291,7 +291,7 @@
 %D subject line by using one of the default alternatives (g). We
 %D could have said:
 %D
-%D \starttypen
+%D \starttyping
 %D \setuplist
 %D   [Subject]
 %D   [alternative=none,
@@ -300,7 +300,7 @@
 %D
 %D \def\SubjectListLine#1#2#3%
 %D   {\midaligned{#2}}
-%D \stoptypen
+%D \stoptyping
 %D
 %D But why should we complicate things when we can use 
 %D alternative~\type{g}. The test is only needed if one 
@@ -332,7 +332,7 @@
 %D   {setuplist, placelist,startinteractionmenu}
 %D
 %D The actual topic list is typeset using a \type{\vbox}. We
-%D have to specify \type{criterium=all} because otherwise no 
+%D have to specify \type{criteriumcriterium=all} because otherwise no 
 %D list will be typeset. (By default lists are typeset 
 %D locally.)
 

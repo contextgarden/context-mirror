@@ -26,7 +26,7 @@ eval '(exit $?0)' && eval 'exec perl -S $0 ${1+"$@"}' && eval 'exec perl -S $0 $
 #D next few lines are more appropriate:
 
 BEGIN {
-    $cont_pm_path = `kpsewhich --format="scripts" --progname=context cont_mis.pm` ;
+    $cont_pm_path = `kpsewhich --format="texmfscripts" --progname=context cont_mis.pm` ;
     chomp($cont_pm_path) ;
     if ($cont_pm_path eq '') {
         $cont_pm_path = `kpsewhich --format="other text files" --progname=context cont_mis.pm` ;

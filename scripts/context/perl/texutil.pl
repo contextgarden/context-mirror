@@ -40,7 +40,7 @@ eval '(exit $?0)' && eval 'exec perl -S $0 ${1+"$@"}' && eval 'exec perl -S $0 $
 #D binary version, like scanning illustrations other than \EPS.
 #D I would suggest to keep an eye on the version number:
 
-$Program = "TeXUtil 8.2 - ConTeXt / PRAGMA ADE 1992-2004" ;
+$Program = "TeXUtil 9.0 - ConTeXt / PRAGMA ADE 1992-2004" ;
 
 #D By the way, this is my first \PERL\ script, which means
 #D that it will be improved as soon as I find new and/or more
@@ -979,13 +979,15 @@ sub HandleCommand
     $RestOfLine =~ s/^\\//go ;
     if ($RestOfLine =~ /^pospxy/o)
       { ++$NOfPositionsFound }
-    elsif ($RestOfLine =~ /^initializevariable\\totalnofpositions\{(.*)\}/i)
+    elsif ($RestOfLine =~ /^initializevariable\\totalnofpositions\{(.*)\}/o)
       { $TotalNOfPositions = $1 }
-    elsif ($RestOfLine =~ /^initializevariable\\totalnofMPgraphics\{(.*)\}/i)
+    elsif ($RestOfLine =~ /^initializevariable\\totalnofMPgraphics\{(.*)\}/o)
       { $TotalNOfMPgraphics = $1 }
 # todo: reg how to
 #    elsif ($RestOfLine =~ /^thisissectionseparator\{(.*)\}/o)
 #      { $SectionSeparator = $1 }
+    elsif ($RestOfLine =~ /^thisisbytesequence\{(.*)\}/o)
+      { $RestOfLine =~ s/\^//go }
     print TUO "\\$RestOfLine\n" }
 
 sub FlushCommands
@@ -2021,7 +2023,7 @@ sub SaveFigurePresets
       { ++$NOfFigures ;
         $Figures[$NOfFigures] = "\\presetfigure[$FNam][e=$FTyp" ;
         if ($FUni)
-          { $Figures[$NOfFigures] .= (sprintf ",w=%5.3fcm,h=%5.3fcm\n", $FWid, $FHei) }
+          { $Figures[$NOfFigures] .= (sprintf ",w=%5.3fcm,h=%5.3fcm", $FWid, $FHei) }
         else
           { $Figures[$NOfFigures] .= ",w=${FWid}bp,h=${FHei}bp" }
         if (($FXof!=0)||($FYof!=0))
@@ -2129,7 +2131,7 @@ sub HandleEpsFigure
                if (($BBoxFound) && ((substr $SomeLine,0,1) ne "%"))
                  { last }
                if ($BBoxFound<2)
-                 { if ($SomeLine =~ /^%%BoundingBox:/io)
+                 { if ($SomeLine =~ /^%%BoundingBox:(?!\s+\(atend\))/io) # atend (th)
                      { $EpsBBox = $SomeLine ; $BBoxFound = 1 ; next }
                    elsif ($SomeLine =~ /^%%HiResBoundingBox:/io)
                      { $EpsBBox = $SomeLine ; $BBoxFound = 2 ; next }
@@ -2716,7 +2718,7 @@ if ($PurgeAllFiles)
   { push @forsuresuffixes, @texnonesuffixes  ; @texnonesuffixes = [] }
 
 sub PurgeFiles # no my in foreach
-  { my $pattern = $ARGV[0] ; my $strippedname ;
+  { my $pattern = $ARGV[0] ; my $strippedname, $basename ;
     my @files = () ;
     if ($pattern eq '')
       { $pattern = "*.*" ;
@@ -2742,9 +2744,11 @@ sub PurgeFiles # no my in foreach
       { foreach (@files)
           { if (/\.$suffix$/i)
               { RemoveContextFile($_) } } }
-    foreach (@files)
-      { if (/\.\d*$/)
-          { RemoveContextFile($_) } }
+    foreach $file (@files)
+      { if ($file =~ /(.*?)\.\d+$/)
+          { $basename = $1 ;
+            if (($file =~ /mp(graph|run)/) || (-e "$basename.mp"))
+              { RemoveContextFile($file) } } }
     foreach $suffix (@texnonesuffixes)
       { foreach (@files)
           { if (/(.*)\.$suffix$/i)

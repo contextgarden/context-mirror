@@ -18,15 +18,40 @@
 
 \unprotect
 
-\appendtoks \flushsyncresets      \to \everyendoftextbody
+\everypar  \emptytoks
+\neverypar \emptytoks
 
-\appendtoks \ignorespaces         \to \everybeginofpar
+\appendtoks \flushnotes                  \to \everypar
+\appendtoks \synchronizesidefloats       \to \everypar
+\appendtoks \checkindentation            \to \everypar
+\appendtoks \showparagraphnumber         \to \everypar
+\appendtoks \flushmargincontents         \to \everypar
+\appendtoks \flushcommentanchors         \to \everypar
+\appendtoks \synchronizenotes            \to \everypar
+\appendtoks \OTRSETshowstatus            \to \everypar
+\appendtoks \flushpostponedbookmark      \to \everypar
+\appendtoks \registerparoptions          \to \everypar
+\appendtoks \flushsyncpositions          \to \everypar
+\appendtoks \flushpostponednodedata      \to \everypar
+\appendtoks \dohandlespeech              \to \everypar
+\appendtoks \insertparagraphintro        \to \everypar
 
-\appendtoks \removeunwantedspaces \to \everyendofpar
-%appendtoks \strut                \to \everyendofpar % option ?
-\appendtoks \flushsyncresets      \to \everyendofpar
-\appendtoks \setlastlinewidth     \to \everyendofpar % must happen before endgraf
-\appendtoks \endgraf              \to \everyendofpar
+\appendtoks \flushpostponedbookmark      \to \neverypar
+
+\appendtoks \flushnotes                  \to \everydisplay
+\appendtoks \adjustsidefloatdisplaylines \to \everydisplay
+
+\appendtoks \flushsyncpositions          \to \everyheadstart
+
+\appendtoks \flushsyncresets             \to \everyendoftextbody
+
+\appendtoks \ignorespaces                \to \everybeginofpar
+
+\appendtoks \removeunwantedspaces        \to \everyendofpar
+%appendtoks \strut                       \to \everyendofpar % option ?
+\appendtoks \flushsyncresets             \to \everyendofpar
+\appendtoks \setlastlinewidth            \to \everyendofpar % must happen before endgraf
+\appendtoks \endgraf                     \to \everyendofpar
 
 % Todo: verbatim, xml, tex, move code to here
 

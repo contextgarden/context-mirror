@@ -22,9 +22,9 @@
 %D to save its meaning in order to be able to use this handy
 %D macro.
 %D
-%D \starttypen
+%D \starttyping
 %D so test\compound{}test can be used instead of test||test
-%D \stoptypen
+%D \stoptyping
 
 \bgroup \catcode`\|=\@@active \gdef\compound#1{|#1|} \egroup
 
@@ -39,104 +39,107 @@
 %D \macros
 %D   {kap,KAP,Kap,Kaps,nokap,userealcaps,usepseudocaps}
 %D
-%D We already introduced \type{\kap} as way to capitalize
+%D We already introduced \type{\cap} as way to capitalize
 %D words. This command comes in several versions:
 %D
 %D \startbuffer
-%D \kap {let's put on a \kap{cap}}
-%D \kap {let's put on a \nokap{cap}}
-%D \KAP {let's put on a \\{cap}}
-%D \Kap {let's put on a \\{cap}}
-%D \Kaps{let's put on a cap}
+%D \cap {let's put on a \cap{cap}}
+%D \cap {let's put on a \nocap{cap}}
+%D \CAP {let's put on a \\{cap}}
+%D \Cap {let's put on a \\{cap}}
+%D \Caps{let's put on a cap}
 %D \stopbuffer
 %D
 %D \typebuffer
 %D
-%D Note the use of \type{\nokap}, \type{\\} and the nested
-%D \type{\kap}.
+%D Note the use of \type{\nocap}, \type{\\} and the nested
+%D \type{\cap}.
 %D
 %D \startvoorbeeld
-%D \startregels
-%D \haalbuffer
-%D \stopregels
+%D \startlines
+%D \getbuffer
+%D \stoplines
 %D \stopvoorbeeld
 %D
 %D These macros show te main reason why we introduced the
 %D smaller \type{\tx} and \type{\txx}.
 %D
-%D \starttypen
-%D \kap\romeins{1995}
-%D \stoptypen
+%D \starttyping
+%D \cap\romannumerals{1995}
+%D \stoptyping
 %D
 %D This at first sight unusual capitilization is completely
 %D legal.
 %D
-%D \showsetup{\y!kap}
-%D \showsetup{\y!Kap}
-%D \showsetup{\y!KAP}
-%D \showsetup{\y!Kaps}
-%D \showsetup{\y!nokap}
+%D \showsetup{\y!smallcapped}
+%D \showsetup{\y!notsmallcapped}
+%D \showsetup{\y!CAPPED}
+%D \showsetup{\y!SmallCapped}
+%D \showsetup{\y!SmallCaps}
 %D
 %D The difference between pseudo and real caps is demonstrated
 %D below:
 %D
 %D \startbuffer
-%D \usepseudocaps \kap{Hans Hagen}
-%D \userealcaps   \kap{Hans Hagen}
+%D \usepseudocaps \cap{Hans Hagen}
+%D \userealcaps   \cap{Hans Hagen}
 %D \stopbuffer
 %D
 %D \typebuffer
 %D
-%D \haalbuffer
+%D \getbuffer
 %D
 %D The \type {\bgroup} trickery below is needed because of
 %D \type {\groupedcommand}.
 
-\def\usepseudocaps%
+\def\usepseudocaps
   {\def\cap@@uppercase{\the\everyuppercase\uppercased}%
    \def\cap@@lowercase{\the\everylowercase\lowercased}%
    \def\cap@@visualize{\tx}}
 
-\def\userealcaps%
+\def\userealcaps
   {\let\cap@@uppercase\relax
   %\let\cap@@lowercase\relax % Definitely not!
    \def\cap@@visualize{\sc}}
 
 \usepseudocaps
 
-\def\dodokap#1#2%
+\unexpanded\def\smallcapped % else conflict with math
+  {\futurelet\next\dosmallcapped}
+
+\def\disablepseudocaps
+  {\let\smallcapped\donothing}
+
+\def\dosmallcapped
+  {\ifx\next\bgroup
+     \expandafter\dodosmallcapped\expandafter\relax
+   \else
+     \expandafter\dodosmallcapped
+   \fi}
+
+\def\dodosmallcapped#1#2%
   {\ifmmode\hbox\fi
    \bgroup
    \cap@@visualize
    \cap@@uppercase{#1{#2}}%
    \egroup}
 
-\unexpanded\def\nokap#1%
+\unexpanded\def\notsmallcapped#1%
   {\cap@@lowercase{#1}}
 
-\unexpanded\def\kap%
-  {\futurelet\next\dokap}
+\unexpanded\def\CAPPED#1%
+  {{\def\\##1{\smallcapped{##1}}#1}}
 
-\def\dokap%
-  {\ifx\next\bgroup
-     \expandafter\dodokap\expandafter\relax
-   \else
-     \expandafter\dodokap
-   \fi}
+\unexpanded\def\SmallCapped#1%
+  {\CAPPED{\\#1}}
 
-\unexpanded\def\KAP#1%
-  {{\def\\##1{\kap{##1}}#1}}
-
-\unexpanded\def\Kap#1%
-  {\KAP{\\#1}}
-
-\unexpanded\def\Kaps
-  {\let\processword\Kap
+\unexpanded\def\SmallCaps
+  {\let\processword\SmallCapped
    \processwords}
 
 %D Sure:
 
-\let\normalkap\kap
+\def\kap{\smallcapped} % for old times sake
 
 %D Some precautions for a \PLAIN\ \TEX\ definition.
 
@@ -146,7 +149,7 @@
   {\ifmmode
      \expandafter\normalcap
    \else
-     \expandafter\kap
+     \expandafter\smallcapped
    \fi}
 
 %D \macros
@@ -157,21 +160,23 @@
 %D
 %D \showsetup{setupcapitals}
 
-\def\setupcapitals%
+\let\normalsmallcapped\smallcapped
+
+\def\setupcapitals
   {\dosingleempty\dosetupcapitals}
 
 \def\dosetupcapitals[#1]%
   {\getparameters[\??kk][#1]%
-   \doifelse{\@@kktitel}{\v!ja}
-     {\definealternativestyle[\v!kapitaal][\normalkap][\normalkap]%
+   \doifelse\@@kktitle\v!yes
+     {\definealternativestyle[\v!capital][\normalsmallcapped][\normalsmallcapped]%
       \definealternativestyle[\v!smallcaps][\sc][\sc]%
-      \let\kap\normalkap}
-     {\definealternativestyle[\v!kapitaal][\normalkap][\uppercased]%
+      \let\smallcapped\normalsmallcapped}
+     {\definealternativestyle[\v!capital][\normalsmallcapped][\uppercased]%
       \definealternativestyle[\v!smallcaps][\sc][\uppercased]%
-      \def\kap{\doconvertfont{\v!kapitaal}}}%
-   \doifelse{\@@kksc}{\v!ja}
-     {\userealcaps}
-     {\usepseudocaps}}
+      \def\smallcapped{\doconvertfont\v!capital}}%
+   \doifelse\@@kksc\v!yes
+     \userealcaps
+     \usepseudocaps}
 
 \ifx\uppercased\undefined \let\uppercased\uppercase \fi
 \ifx\lowercased\undefined \let\lowercased\lowercase \fi
@@ -188,8 +193,8 @@
 \def\lowercased#1{{\forceunexpanded\xdef\@@expanded{\lowercase{#1}}}\@@expanded}
 
 \setupcapitals
-  [\c!titel=\v!ja,
-   \c!sc=\v!nee]
+  [\c!title=\v!yes,
+   \c!sc=\v!no]
 
 %D \macros
 %D   {Word, Words, WORD, WORDS, doprocesswords}
@@ -197,21 +202,21 @@
 %D This is probably not the right place to present the next set
 %D of macros.
 %D
-%D \starttypen
+%D \starttyping
 %D \Word {far too many words}
 %D \Words{far too many words}
 %D \WORD {far too many words}
 %D \WORDS{far too many words}
-%D \stoptypen
+%D \stoptyping
 %D
 %D \typebuffer
 %D
 %D This calls result in:
 %D
 %D \startvoorbeeld
-%D \startregels
-%D \haalbuffer
-%D \stopregels
+%D \startlines
+%D \getbuffer
+%D \stoplines
 %D \stopvoorbeeld
 %D
 %D \showsetup{\y!Word}
@@ -245,9 +250,7 @@
 \unexpanded\def\WORD#1%
   {\bgroup
    \the\everyuppercase
-   %\def\kap##1{##1}%
-   %\def\WORD##1{##1}%
-   \let\kap\firstofoneargument
+   \let\smallcapped\firstofoneargument
    \let\WORD\firstofoneargument
    \uppercase{#1}% No expansion here, otherwise \getvalue problems!
    %\edef\next{#1}% keep this to prevent roll back
@@ -264,16 +267,16 @@
 %D murder. Nevertheless we support this manipulation for use in
 %D for instance titles.
 %D
-%D \starttypen
+%D \starttyping
 %D \hbox to 5cm{\stretched{murder}}
-%D \stoptypen
+%D \stoptyping
 %D
 %D \typebuffer
 %D
 %D or
 %D
 %D \startvoorbeeld
-%D \haalbuffer
+%D \getbuffer
 %D \stopvoorbeeld
 %D
 %D \showsetup{\y!stretched}
@@ -289,7 +292,7 @@
 %D \hbox to 3cm{\stretched{sp{\'e}c{\`\i}{\"a}l}}
 %D \stopbuffer
 %D
-%D \haalbuffer
+%D \getbuffer
 %D
 %D The first line of this macros takes care of boxing. Normally
 %D one will use an \type{\hbox} specification. The last line
@@ -302,16 +305,16 @@
 %D
 %D A convenient alternative is:
 %D
-%D \starttypen
+%D \starttyping
 %D \stretcheduppercase{Is this what you like?}
-%D \stoptypen
+%D \stoptyping
 %D
 %D \typebuffer
 %D
 %D this one uses fixed skips and kerns.
 %D
 %D \startvoorbeeld
-%D \haalbuffer
+%D \getbuffer
 %D \stopvoorbeeld
 %D
 %D The default skip can be set with:
@@ -383,8 +386,8 @@
    \else
      \setbox\scratchbox\hbox
        {\expandafter\handletokens\midwordbreaktokens\with\setmidwordbreaktoken
-        a\space \!!dimena=\the\lastskip
-        #1\space\!!dimenb=\the\lastskip \relax % needed
+        a\space \!!dimena\lastskip
+        #1\space\!!dimenb\lastskip \relax % needed
         \ifdim\!!dimena=\!!dimenb
           \globallet\domidwordbreak\relax
         \else
@@ -412,9 +415,9 @@
 %D \typebuffer
 %D
 %D \startvoorbeeld
-%D \startregels
-%D \haalbuffer
-%D \stopregels
+%D \startlines
+%D \getbuffer
+%D \stoplines
 %D \stopvoorbeeld
 %D
 %D The next macros are derived from the \PLAIN\ \TEX\ one, but
@@ -434,12 +437,12 @@
 %D \showsetup{\y!setupunderbar}
 %D
 %D The alternatives show up as
-%D   {\setupunderbar [variant=a]\underbar{alternative a}},
-%D   {\setupunderbar [variant=b]\underbar{alternative b}},
-%D   {\setupunderbar [variant=c]\underbar{alternative c}}
+%D   {\setupunderbar [alternativevariant=a]\underbar{alternative a}},
+%D   {\setupunderbar [alternativevariant=b]\underbar{alternative b}},
+%D   {\setupunderbar [alternativevariant=c]\underbar{alternative c}}
 %D and
-%D   {\setupunderbar [lijndikte=1pt]\underbar{1pt width}},
-%D   {\setupunderbar [lijndikte=2pt]\underbar{2pt width}},
+%D   {\setupunderbar [rulethickness=1pt]\underbar{1pt width}},
+%D   {\setupunderbar [rulethickness=2pt]\underbar{2pt width}},
 %D or whatever. Because \type{\overstrike} uses the same
 %D method, the settings also apply to that macro.
 
@@ -467,7 +470,7 @@
 \def\dododounderbar#1#2#3%
   {\startmathmode
    \setbox0\hbox{#3}%
-   \setbox2\hbox{\color[\@@onlijnkleur]{\getvalue{underbarmethod\@@onvariant}{\wd0}{#1}{#2}}}%
+   \setbox2\hbox{\color[\@@onrulecolor]{\getvalue{underbarmethod\@@onalternative}{\wd0}{#1}{#2}}}%
    \wd0\zeropoint
    \ht2\ht0
    \dp2\dp0
@@ -476,21 +479,20 @@
 
 \unexpanded\def\dodounderbar#1%
   {\bgroup
-   \dimen0=\@@ononderoffset
+   \dimen0=\@@onbottomoffset
    \dimen0=\underbarlevel\dimen0
    \ifdone \else
     %\advance\dimen0 -1pt
      \advance\dimen0 -\strutht
    \fi
    \dimen2\dimen0
-   \advance\dimen2 \@@onlijndikte
+   \advance\dimen2 \@@onrulethickness
    \dododounderbar{-\dimen0}{\dimen2}{#1}%
    \egroup}
 
 \def\betweenunderbarwords
   {\bgroup
-   \setbox0\hbox
-     {\dodounderbar{\hskip\fontdimen2\font}}%
+   \setbox0\hbox{\dodounderbar{\hskip\fontdimen2\font}}%
    \nobreak
    \hskip\zeropoint\!!minus\fontdimen4\font
    \discretionary{}{}{\box0}%
@@ -530,16 +532,15 @@
 
 \def\dooverstrike#1%
   {\bgroup
-   \dimen0=\@@onbovenoffset
+   \dimen0=\@@ontopoffset
    \dimen2=\dimen0
-   \advance\dimen2 \@@onlijndikte
+   \advance\dimen2 \@@onrulethickness
    \dododounderbar{\dimen2}{-\dimen0}{#1}%
    \egroup}
 
 \def\betweenoverstrikewords
   {\bgroup
-   \setbox0\hbox
-     {\dooverstrike{\hskip\fontdimen2\font}}%
+   \setbox0\hbox{\dooverstrike{\hskip\fontdimen2\font}}%
    \nobreak
    \hskip\zeropoint\!!minus\fontdimen4\font
    \discretionary{}{}{\box0}%
@@ -560,6 +561,18 @@
   {\dodoubleargument\getparameters[\??on]}
 
 %D \macros
+%D   {shiftedword, shiftedwords}
+%D
+%D Used as \type {\shiftedwords {10pt} {some text}} this macro will
+%D move
+
+% \def\shiftedword#1% #2%
+%   {\raise#1\hbox} % {#2}} % officially: {\ifdim#1>\zeropoint\raise\else\lower\fi#1\hbox{#2}}
+
+% \def\shiftedwords#1#2%
+%   {\processisolatedwords{#2}{\shiftedword{#1}}}
+
+%D \macros
 %D   {low, high, lohi}
 %D
 %D Although \TEX\ is pretty well aware of super- and
@@ -572,7 +585,7 @@
 %D
 %D \typebuffer
 %D
-%D \haalbuffer
+%D \getbuffer
 %D
 %D Note the different placement of \type {\lohi}, where we
 %D need a bit more space. The implementation looks a bit
@@ -624,7 +637,7 @@
    \hbox
      {\setbox4\hbox{\dohighlow\lower{16}{.48}{.1}{#2}}%
       \setbox6\hbox{\dohighlow\raise{14}{.86}{.1}{#3}}%
-      \doif{#1}{\v!links}
+      \doif{#1}{\v!left}
         {\ifdim\wd4<\wd6
           \setbox4\hbox to \wd6{\hss\box4}%
         \else
@@ -643,30 +656,30 @@
 %D
 %D \startbuffer
 %D \lohi{aha}{ah} test \lohi{aha}{ah} test
-%D \lohi[links]{aha}{ah} test \lohi[links]{aha}{ah} test
+%D \lohi[left]{aha}{ah} test \lohi[left]{aha}{ah} test
 %D \lohi{aha}{ah} test\lohi{aha}{ah} test
-%D \lohi[links]{aha}{ah}test \lohi[links]{aha}{ah}test
+%D \lohi[left]{aha}{ah}test \lohi[left]{aha}{ah}test
 %D \stopbuffer
 %D
 %D \typebuffer
 %D
-%D \haalbuffer
+%D \getbuffer
 
 %D \macros
 %D   {setupinitial,placeinitial,checkinitial}
 %D
 %D {\em To be documented.}
 %D
-%D \starttypen
+%D \starttyping
 %D \setupinitial[state=start] \placeinitial \input tufte
-%D \stoptypen
+%D \stoptyping
 %D
 %D and
 %D
-%D \starttypen
+%D \starttyping
 %D \def\bpar{\ifvmode\checkinitial\fi}
 %D \def\epar{\ifhmode\par\fi\checkinitial}
-%D \stoptypen
+%D \stoptyping
 
 %  to do: more fine tuning
 
@@ -677,24 +690,24 @@
 \definefontsynonym[initial][Initial] % internal but accepted too
 
 \setupinitial
-  [\c!status=\v!stop,
-   \c!plaats=\v!tekst,
+  [\c!state=\v!stop,
+   \c!location=\v!text,
    \c!n=3,
    \s!font=initial]
 
 \def\placeinitial
-  {\doifelse\@@dcplaats\v!marge{\chardef\DropMode\plusone}{\chardef\DropMode\zerocount}%
-   \doif    \@@dcstatus\v!start{\ifnum\@@dcn>0 \AutoDroppedCaps\fi}}
+  {\doifelse\@@dclocation\v!margin{\chardef\DropMode\plusone}{\chardef\DropMode\zerocount}%
+   \doif    \@@dcstate\v!start{\ifnum\@@dcn>0 \AutoDroppedCaps\fi}}
 
 \let\checkinitial\CheckDroppedCaps
 
 %D This module has only a few setups:
 
 \setupunderbar
-  [\c!variant=a,
-   \c!lijndikte=\linewidth,
-   \c!onderoffset=1.5pt,
-   \c!bovenoffset=2.5pt,
-   \c!lijnkleur=]
+  [\c!alternative=a,
+   \c!rulethickness=\linewidth,
+   \c!bottomoffset=1.5pt,
+   \c!topoffset=2.5pt,
+   \c!rulecolor=]
 
 \protect \endinput

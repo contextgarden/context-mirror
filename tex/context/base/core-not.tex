@@ -25,13 +25,13 @@
 
 %D Footnotes are can be characterized by three components:
 %D
-%D \startopsomming[opelkaar]
-%D \som a small number \voetnoot {a footnote number} or
-%D      symbol {\stelvoetnotenin [conversie=set 2]\voetnoot
+%D \startitemize[packed]
+%D \item a small number \footnote {a footnote number} or
+%D      symbol {\setupfootnotes [conversionconversie=set 2]\footnote
 %D      {a footnote}}
-%D \som and a similar mark at the bottom of the page
-%D \som followed by some additional text
-%D \stopopsomming
+%D \item and a similar mark at the bottom of the page
+%D \item followed by some additional text
+%D \stopitemize
 %D
 %D Because footnotes are declared at the location of their
 %D reference. Footnotes can be seen as a special kind of
@@ -50,9 +50,9 @@
 %D It's sort of a custom to precede footnotes by a horizontal
 %D rule and although fancy rules like
 %D
-%D \starttypen
+%D \starttyping
 %D \hbox to 10em{\hskip-3em\dotfill}
-%D \stoptypen
+%D \stoptyping
 %D
 %D Are quite ligitimate, we default to a simple one 20\% of the
 %D text width.
@@ -66,18 +66,19 @@
 
 \newif\ifendnotes    \endnotesfalse
 \newif\ifbottomnotes \bottomnotestrue
-\newif\ifclevernotes \clevernotesfalse % being [plaats=kolommen]
+
+\chardef\clevernotes=\zerocount % 0=page 1=firstcolumn 2=lastcolumn
 
 %D The next definitions indicate that we can frame the footnote
 %D area. The footnotes themselves are treated as definitions.
 %D
 %D \showsetup{\y!setupfootnotes}
 
-\let\currentnote\v!voetnoot
+\let\currentnote\v!footnote
 
 \def\noteparameter     #1{\csname\??vn     \currentnote#1\endcsname}
 \def\notedefparameter  #1{\csname\??vn\??vn\currentnote#1\endcsname}
-\def\footnoteparameter #1{\csname\??vn      \v!voetnoot#1\endcsname}
+\def\footnoteparameter #1{\csname\??vn      \v!footnote#1\endcsname}
 
 \def\startnotedef        {\csname\e!start\??vn\??vn\currentnote\endcsname}
 \def\stopnotedef         {\csname\e!stop \??vn\??vn\currentnote\endcsname}
@@ -143,9 +144,9 @@
 %D suitable symbol set, symbols can be used instead of numbers,
 %D by saying:
 %D
-%D \starttypen
+%D \starttyping
 %D \setupfootnotes[conversion=set 2]
-%D \stoptypen
+%D \stoptyping
 
 \def\definenote
   {\dodoubleempty\dodefinenote}
@@ -159,62 +160,62 @@
      \@EA\newbox\csname\??vn+\currentnote\endcsname % local box
      \@EA\newbox\csname\??vn-\currentnote\endcsname % local box
      \doglobal\addtocommalist{#1}\noteinsertions
-     \doordefinieren
+     \definedescription
        [\??vn\??vn\currentnote]
-       [\c!plaats=\v!inlinker,
-        \c!breedte=\v!passend,
-        \c!kopletter=\noteparameter\c!letter,
-        \c!kopkleur=\noteparameter\c!kleur,
-        \c!voor=,
-        \c!na=]%
+       [\c!location=\v!inleft,
+        \c!width=\v!fit,
+        \c!headstyle=\noteparameter\c!style,
+        \c!headcolor=\noteparameter\c!color,
+        \c!before=,
+        \c!after=]%
      \presetlocalframed
        [\??vn\currentnote]%
      \getparameters
        [\??vn\currentnote]
-       [\c!plaats=\v!pagina,
-        \c!wijze=\v!per\v!deel,
-        \c!sectienummer=\v!nee,
-        \c!conversie=,
-        \c!lijn=\v!aan,
-        \c!voor=\blanko,
-        \c!korps=\v!klein,
-        \c!letter=,
-        \c!kleur=,
-        \c!na=,
-        \c!lijnkleur=,
-        \c!lijndikte=\linewidth,
-        \c!kader=\v!uit,
-        \c!margeafstand=.5em,
-        \c!kolomafstand=1em,
-        \c!afstand=.125em,
-        \c!uitlijnen=\v!normaal,
-        \c!tolerantie=\v!soepel,
-        \c!splitsen=\v!soepel,
-       %\c!breedte=\zetbreedte,
-       %\c!breedte=\ifdim\hsize<\zetbreedte\hsize\else\zetbreedte\fi,
-        \c!breedte=\defaultnotewidth,
-        \c!hoogte=\teksthoogte,
-        \c!nummercommando=\high,
-        \c!commando=\noteparameter\c!nummercommando, % downward compatible
-        \c!scheider=\@@koscheider,
-        \c!tekstcommando=\high,
-        \c!tekstletter=\tx,
-        \c!tekstkleur=,
-        \c!interactie=\v!ja,
+       [\c!location=\v!page,
+        \c!way=\v!by\v!part,
+        \c!sectionnumber=\v!no,
+        \c!conversion=,
+        \c!rule=\v!on,
+        \c!before=\blank,
+        \c!bodyfont=\v!small,
+        \c!style=,
+        \c!color=,
+        \c!after=,
+        \c!rulecolor=,
+        \c!rulethickness=\linewidth,
+        \c!frame=\v!off,
+        \c!margindistance=.5em,
+        \c!columndistance=1em,
+        \c!distance=.125em,
+        \c!align=\v!normal,
+        \c!tolerance=\v!tolerant,
+        \c!split=\v!tolerant,
+       %\c!width=\makeupwidth,
+       %\c!width=\ifdim\hsize<\makeupwidth\hsize\else\makeupwidth\fi,
+        \c!width=\defaultnotewidth,
+        \c!height=\textheight,
+        \c!numbercommand=\high,
+        \c!command=\noteparameter\c!numbercommand, % downward compatible
+        \c!separator=\@@koseparator,
+        \c!textcommand=\high,
+        \c!textstyle=\tx,
+        \c!textcolor=,
+        \c!interaction=\v!yes,
         \c!n=1]%
-    \definieernummer
+    \definenumber
       [\currentnote]
-      [\c!wijze=\noteparameter\c!wijze,
-       \c!sectienummer=\noteparameter\c!wijze,
-       \c!conversie=\noteparameter\c!conversie]%
-    \letvalue{\??vn\c!lijn:\currentnote}\normalnoterule
+      [\c!way=\noteparameter\c!way,
+       \c!sectionnumber=\noteparameter\c!way,
+       \c!conversion=\noteparameter\c!conversion]%
+    \letvalue{\??vn\c!rule:\currentnote}\normalnoterule
     \unexpanded\setvalue{\currentnote}{\setnote[#1]}%
-    \unexpanded\setvalue{\currentnote\v!tekst}{\setnotetext[#1]}%
+    \unexpanded\setvalue{\currentnote\v!text}{\setnotetext[#1]}%
     \setupnote[\currentnote][#2]%
   \fi}
 
 \def\setupnotedefinition[#1]%
-  {\steldoordefinierenin[\??vn\??vn#1]}
+  {\setupdescriptions[\??vn\??vn#1]}
 
 \def\setupnote
   {\dodoubleempty\dosetupnote}
@@ -225,16 +226,16 @@
      \getparameters
        [\??vn\currentnote][#2]%
      \processaction
-       [\noteparameter\c!lijn]
-       [    \v!aan=>\letvalue{\??vn\c!lijn:\currentnote}\normalnoterule,
-            \v!uit=>\letvalue{\??vn\c!lijn:\currentnote}\relax,
-        \s!default=>\letvalue{\??vn\c!lijn:\currentnote}\relax,
-        \s!unknown=>\setvalue{\??vn\c!lijn:\currentnote}{\noteparameter\c!lijn}]%
+       [\noteparameter\c!rule]
+       [    \v!on=>\letvalue{\??vn\c!rule:\currentnote}\normalnoterule,
+            \v!off=>\letvalue{\??vn\c!rule:\currentnote}\relax,
+        \s!default=>\letvalue{\??vn\c!rule:\currentnote}\relax,
+        \s!unknown=>\setvalue{\??vn\c!rule:\currentnote}{\noteparameter\c!rule}]%
      \processaction % todo
-       [\noteparameter\c!splitsen]
-       [    \v!soepel=>\notepenalty\zeropoint,
-            \v!streng=>\notepenalty9999,
-        \v!zeerstreng=>\notepenalty\maxdimen,
+       [\noteparameter\c!split]
+       [    \v!tolerant=>\notepenalty\zeropoint,
+            \v!strict=>\notepenalty9999,
+        \v!verystrict=>\notepenalty\maxdimen,
            \s!default=>\notepenalty\zeropoint,
            \s!unknown=>\notepenalty\commalistelement]%
    \fi
@@ -250,42 +251,47 @@
        {\edef\noteinsertions{#1}}%
    \fi\fi}
 
-\def\dochecknote % for the moment no mixed text/endnotes modes
-  {\setnotedistance
-   \count\currentnoteins1000
-   %ExpandBothAfter\doifinsetelse\v!kolommen{\noteparameter\c!plaats}
-   \ExpandBothAfter\doifinsetelse\v!kolommen{\footnoteparameter\c!plaats}
-     {\clevernotestrue % global ?
-      \ifnum\@@kln=\zerocount
+\def\dochecknote
+  {% for the moment no mixed text/endnotes modes, so we use
+   % \footnoteparameter and not \noteparameter (**)
+   \setnotedistance
+   \count\currentnoteins\plusthousand
+   \expanded{\doifcommonelse{\v!columns,\v!lastcolumn}{\footnoteparameter\c!location}}% **
+       {\chardef\clevernotes\plustwo}
+       {\expanded{\doifinsetelse{\v!firstcolumn}{\footnoteparameter\c!location}}% **
+          {\chardef\clevernotes\plusone}%
+          {\chardef\clevernotes\zerocount}}%
+   \ifcase\clevernotes\relax
+     % notes not in column areas
+     \ifnum\noteparameter\c!n=\zerocount
+       \settextnotes
+       \scratchcounter\plusone
+     \else
+       \setcolumnnotes
+       \scratchcounter\noteparameter\c!n\relax
+       \divide\count\currentnoteins \scratchcounter
+     \fi
+     \ExpandBothAfter\doifinsetelse\v!page{\footnoteparameter\c!location} % **
+       {\global\endnotesfalse
+        \ExpandBothAfter\doifinsetelse\v!high{\footnoteparameter\c!location} % **
+          {\global\bottomnotesfalse}
+          {\global\bottomnotestrue}}
+       {\global\endnotestrue
+        \global\bottomnotestrue
+        \postponenotes}%
+    \else
+      % notes in column areas
+      \ifnum\@@kln=\zerocount % brrr dependency on \??kl
         \scratchcounter\plusone
       \else
-        %scratchcounter\noteparameter\c!n\relax
-        \scratchcounter\footnoteparameter\c!n\relax
+        \scratchcounter\footnoteparameter\c!n\relax % **
       \fi
       \global\endnotesfalse
       \global\bottomnotestrue
-      \setclevernotes}
-     {\clevernotesfalse
-      \ifnum\noteparameter\c!n=\zerocount
-        \settextnotes
-        \scratchcounter\plusone
-      \else
-        \setcolumnnotes
-        \scratchcounter\noteparameter\c!n\relax
-        \divide\count\currentnoteins \scratchcounter
-      \fi
-      %ExpandBothAfter\doifinsetelse\v!pagina{\noteparameter\c!plaats}
-      \ExpandBothAfter\doifinsetelse\v!pagina{\footnoteparameter\c!plaats}
-        {\global\endnotesfalse
-         %ExpandBothAfter\doifinsetelse\v!hoog{\noteparameter\c!plaats}
-         \ExpandBothAfter\doifinsetelse\v!hoog{\footnoteparameter\c!plaats}
-           {\global\bottomnotesfalse}
-           {\global\bottomnotestrue}}
-        {\global\endnotestrue
-         \global\bottomnotestrue
-         \postponenotes}}%
+      \setclevernotes
+   \fi
    \ifnotelimit
-     \dimen\currentnoteins\noteparameter\c!hoogte
+     \dimen\currentnoteins\noteparameter\c!height
      \multiply\dimen\currentnoteins \scratchcounter
    \fi}
 
@@ -298,15 +304,15 @@
 %D those of the stretch component.
 
 \def\placenoterule
-  {\getvalue{\??vn\c!lijn:\currentnote}}
+  {\getvalue{\??vn\c!rule:\currentnote}}
 
 \def\normalnoterule
   {\ifvmode
      \color
-       [\noteparameter\c!lijnkleur]
+       [\noteparameter\c!rulecolor]
        {\hrule
           \!!width .2\hsize
-          \!!height\noteparameter\c!lijndikte
+          \!!height\noteparameter\c!rulethickness
           \!!depth \zeropoint}%
      \kern\strutdepth
    \fi}
@@ -320,21 +326,21 @@
 \def\setnotedistance
   {\setbox\scratchbox\vbox
      {\forgetall
-      \noteparameter\c!voor
+      \noteparameter\c!before
       \placenoterule
-      \noteparameter\c!na}%
+      \noteparameter\c!after}%
    \global\skip\currentnoteins\ht\scratchbox
    \setbox\scratchbox\box\voidb@x} % scratchbox can be in use
 
 \ifx\setnotehsize\undefined
 
-  \def\setnotehsize{\hsize\noteparameter\c!breedte} % can be overloaded
+  \def\setnotehsize{\hsize\noteparameter\c!width} % can be overloaded
 
 \fi
 
 \def\setclevernotes
   {\def\startpushnote  {\bgroup % wellicht ooit kopuitlijnen
-                        \stelinmargein[\c!uitlijnen=\v!links]%
+                        \setupinmargin[\c!align=\v!left]%
                         \startnotedef}%
    \def\stoppushnote   {\stopnotedef
                         \egroup}%
@@ -343,15 +349,15 @@
 
 \def\setcolumnnotes
   {\def\startpushnote  {\setnotehsize % possibly overloaded
-                        \setrigidcolumnhsize\hsize{\noteparameter\c!kolomafstand}{\noteparameter\c!n}%
+                        \setrigidcolumnhsize\hsize{\noteparameter\c!columndistance}{\noteparameter\c!n}%
                         \bgroup
-                        \stelinmargein[\c!uitlijnen=\v!links]%
+                        \setupinmargin[\c!align=\v!left]%
                         \startnotedef}%
    \def\stoppushnote   {\stopnotedef
                         \egroup}%
    \def\startpopnotes  {\bgroup
                         \setnotehsize
-                        \setrigidcolumnhsize\hsize{\noteparameter\c!kolomafstand}{\noteparameter\c!n}%
+                        \setrigidcolumnhsize\hsize{\noteparameter\c!columndistance}{\noteparameter\c!n}%
                         \setbox0\vbox\bgroup}%
    \def\stoppopnotes   {\egroup
                         \setbox0\vbox
@@ -361,12 +367,12 @@
 
 \def\settextnotes
   {\def\startpushnote  {\startvboxtohbox
-                        \dostartattributes{\??vn\currentnote}\c!letter\c!kleur{}}%
-   \def\stoppushnote   {\hskip\noteparameter\c!kolomafstand % plus.5em minus.5em
+                        \dostartattributes{\??vn\currentnote}\c!style\c!color{}}%
+   \def\stoppushnote   {\hskip\noteparameter\c!columndistance % plus.5em minus.5em
                         \dostopattributes
                         \stopvboxtohbox}%
    \def\startpopnotes  {\vbox\bgroup
-                        \doifnotinset{\noteparameter\c!breedte}{\v!passend,\v!ruim}\setnotehsize
+                        \doifnotinset{\noteparameter\c!width}{\v!fit,\v!broad}\setnotehsize
                         \beginofshapebox}%
    \def\stoppopnotes   {\endofshapebox
                         \reshapebox{\ifhbox\shapebox\unhbox\else\box\fi\shapebox\endgraf}%
@@ -376,7 +382,7 @@
 %D The formatting depends on the width of the table, so we
 %D have to set \type {n} to zero.
 %D
-%D \starttypen
+%D \starttyping
 %D \startbuffer
 %D \bTABLE
 %D \bTR \bTD one \footnote{\dorecurse{10}{abcd }} \eTD \bTD two \eTD \eTR
@@ -387,7 +393,7 @@
 %D \startlocalfootnotes[n=0,location={text,none}]
 %D \placelegend[n=2]{\getbuffer}{\placelocalfootnotes}
 %D \stoplocalfootnotes
-%D \stoptypen
+%D \stoptyping
 
 %D \macros
 %D   {footnote}
@@ -415,10 +421,10 @@
 %D something like:
 %D
 %D \bgroup
-%D \startsmaller
-%D \stelvoetnotenin[conversie=set 1]
-%D \haalbuffer
-%D \stopsmaller
+%D \startnarrower
+%D \setupfootnotes[conversionconversie=set 1]
+%D \getbuffer
+%D \stopnarrower
 %D \egroup
 %D
 %D Typesetting footnotes is, at least for the moment, disabled
@@ -462,9 +468,9 @@
 %D instead of a reference, no number is typeset. We can
 %D temporary disable footnotes by saying
 %D
-%D \starttypen
+%D \starttyping
 %D \notesenabledfalse
-%D \stoptypen
+%D \stoptyping
 %D
 %D which can be handy while for instance typesetting tables
 %D of contents. The pagewise footnote numbering is dedicated
@@ -504,7 +510,7 @@
 
 \def\dododonote#1%
   {\doglobal\increment\internalfootreference
-   \doifelse{\noteparameter\c!wijze}{\v!per\v!pagina}
+   \doifelse{\noteparameter\c!way}{\v!by\v!page}
      {\settrue\pagewisenotes}
      {\setfalse\pagewisenotes}%
    \doifelse{#1}{-}
@@ -517,7 +523,7 @@
            \fi}
           {}%
       \fi
-      \verhoognummer[\currentnote]%
+      \incrementnumber[\currentnote]%
       \maakhetnummer[\currentnote]%
       \rawreference\s!fnt{#1}\hetnummer
       \let\lastnotenumber\hetnummer}%
@@ -535,7 +541,7 @@
 %D especially when we keep the reference and text at one page.
 %D On the other hand we need interactivity when we refer to
 %D previous notes or use end notes. Therefore we support
-%D interactive footnote numbers in two ways \voetnoot{This
+%D interactive footnote numbers in two ways \footnote{This
 %D feature was implemented years after we were able to do so,
 %D mainly because endnotes had to be supported.} that is,
 %D automatically (vise versa) and by user supplied reference.
@@ -556,7 +562,7 @@
   {\bgroup
    \settrue\processingnote
   %\restorecatcodes % to be tested first
-   \ifinregels % otherwise problems with \type <crlf> {xxx}
+   \iftypesettinglines % otherwise problems with \type <crlf> {xxx}
      \ignorelines % makes footnotes work in \startlines ... \stoplines
    \fi
    \ifnotesymbol
@@ -573,27 +579,22 @@
      \redoconvertfont % to undo \undo calls in in headings etc
      \splittopskip\strutht  % not actually needed here
      \splitmaxdepth\strutdp % not actually needed here
-     \iffixedlayoutdimensions % ugly hack, will change
-       \linkermargeafstand\noteparameter\c!margeafstand
-       \rechtermargeafstand\linkermargeafstand
-     \else
-       \def\linkermargeafstand{\noteparameter\c!margeafstand}%
-       \let\rechtermargeafstand\linkermargeafstand
-     \fi
+     \leftmargindistance\noteparameter\c!margindistance
+     \rightmargindistance\leftmargindistance
      \ifcase\noteparameter\c!n\relax % new 31-07-99 ; always ?
-       \doifnotinset{\noteparameter\c!breedte}{\v!passend,\v!ruim}\setnotehsize
+       \doifnotinset{\noteparameter\c!width}{\v!fit,\v!broad}\setnotehsize
      \fi
      \startpushnote
        {\ifx\lastnotenumber\empty \else
           \preparethenumber{\??vn\currentnote}\lastnotenumber\preparednumber
-          \doifelse{\noteparameter\c!interactie}\v!nee
-            {\noteparameter\c!nummercommando
-               {\preparednumber\domovednote\v!volgendepagina\v!vorigepagina}}%
-            {\naarbox{\noteparameter\c!commando % was \c!nummercommando, but compatible
-               {\preparednumber\domovednote\v!volgendepagina\v!vorigepagina}}%
+          \doifelse{\noteparameter\c!interaction}\v!no
+            {\noteparameter\c!numbercommand
+               {\preparednumber\domovednote\v!nextpage\v!previouspage}}%
+            {\gotobox{\noteparameter\c!command % was \c!numbercommand, but compatible
+               {\preparednumber\domovednote\v!nextpage\v!previouspage}}%
                [\s!fnt:f:\internalfootreference]}%
         \fi
-        \doifelse{\noteparameter\c!interactie}\v!nee
+        \doifelse{\noteparameter\c!interaction}\v!no
           {\ifconditional\pagewisenotes
              \rawreference\s!fnt{\s!fnt:t:\internalfootreference}{}%
            \fi}%
@@ -633,16 +634,16 @@
 \def\dolastnotesymbol
   {\unskip\unskip
    \ifdim\lastkern=\notesignal
-     \dodonotesymbol{\kern\noteparameter\c!afstand}% gets the font right, hack !
+     \dodonotesymbol{\kern\noteparameter\c!distance}% gets the font right, hack !
    \fi
    \nobreak
-   \doifelse{\noteparameter\c!interactie}\v!nee
-     {\dodonotesymbol{\lastnotenumber\domovednote\v!vorigepagina\v!volgendepagina}%
+   \doifelse{\noteparameter\c!interaction}\v!no
+     {\dodonotesymbol{\lastnotenumber\domovednote\v!previouspage\v!nextpage}%
       \ifconditional\pagewisenotes
         \rawreference\s!fnt{\s!fnt:f:\internalfootreference}{}%
       \fi}
-     {\naarbox
-        {\dodonotesymbol{\lastnotenumber\domovednote\v!vorigepagina\v!volgendepagina}}%
+     {\gotobox
+        {\dodonotesymbol{\lastnotenumber\domovednote\v!previouspage\v!nextpage}}%
         [\s!fnt:t:\internalfootreference]%
       \rawreference\s!fnt{\s!fnt:f:\internalfootreference}{}}%
    \globallet\lastnotesymbol\relax}
@@ -680,7 +681,7 @@
 %    \egroup}
 
 \def\dodonotesymbol#1%
-  {\noteparameter\c!tekstcommando{\doattributes{\??vn\currentnote}\c!tekstletter\c!tekstkleur{#1}}}
+  {\noteparameter\c!textcommand{\doattributes{\??vn\currentnote}\c!textstyle\c!textcolor{#1}}}
 
 \def\donotesymbol[#1][#2]%
   {\bgroup
@@ -689,7 +690,7 @@
      \ifsecondargument
        \ifx\lastnotesymbol\relax
          \unskip
-         \naarbox{\dodonotesymbol\currenttextreference}[#2]%
+         \gotobox{\dodonotesymbol\currenttextreference}[#2]%
        \else
          \lastnotesymbol
        \fi
@@ -708,10 +709,13 @@
 \let\stoppopnotes  = \relax
 
 \def\placenoteinserts
+  {\processnotes\doplacenoteinserts}
+
+\def\doplacenoteinserts
   {%\ifvoid\currentnoteins \else % unsafe, strange
-   \ifdim\ht\currentnoteins>\zeropoint\relax
+   \relax\ifdim\ht\currentnoteins>\zeropoint\relax
      \ifendnotes \else
-       \noteparameter\c!voor
+       \noteparameter\c!before
        \placenoterule  % alleen in ..mode
        \bgroup
        \setnotebodyfont
@@ -727,19 +731,23 @@
 %          \fi
           % this is too ugly actually
           \stoppopnotes}%
-       \localframed
-         [\??vn\currentnote]
-         [\c!breedte=\v!passend,
-          \c!hoogte=\v!passend,
-          \c!strut=\v!nee,
-          \c!offset=\v!overlay]
-         {\ifdim\dp0=\zeropoint             % this hack is needed because \vadjust
-            \hbox{\lower\strutdp\box0}% % in margin number placement
-          \else                             % hides the (always) present depth
-            \box0
-          \fi}%
+       \setbox2\hbox
+         {\localframed
+            [\??vn\currentnote]
+            [\c!width=\v!fit,
+             \c!height=\v!fit,
+             \c!strut=\v!no,
+             \c!offset=\v!overlay]
+            {\ifdim\dp0=\zeropoint         % this hack is needed because \vadjust
+               \hbox{\lower\strutdp\box0}% % in margin number placement
+             \else                         % hides the (always) present depth
+               \box0
+             \fi}}%
+       \setbox2\hbox{\lower\strutdepth\box2}%
+       \dp2=\strutdepth % so we know that it has the note bodyfont depth
+       \box2
        \egroup
-       \noteparameter\c!na
+       \noteparameter\c!after
      \fi
    \fi}
 
@@ -748,21 +756,21 @@
 %D problem of disappearing inserts when they're called for in
 %D deeply nested boxes. The general case looks like:
 %D
-%D \starttypen
+%D \starttyping
 %D \postponenotes
 %D \.box{whatever we want with footnotes}
 %D \flushnotes
-%D \stoptypen
+%D \stoptyping
 %D
 %D This alternative can be used in headings, captions, tables
 %D etc. The latter one sometimes calls for notes local to
 %D the table, which can be realized by saying
 %D
-%D \starttypen
+%D \starttyping
 %D \setlocalfootnotes
 %D some kind of table with local footnotes
 %D \placelocalfootnotes
-%D \stoptypen
+%D \stoptyping
 %D
 %D Postponing is accomplished by simply redefining the (local)
 %D insert operation. A not too robust method uses the
@@ -836,9 +844,9 @@
 %D This is a nasty and new secondary footnote flusher. It
 %D can be hooked into \type {\everypar} like:
 %D
-%D \starttypen
+%D \starttyping
 %D \appendtoks \synchronizenotes \to \everypar
-%D \stoptypen
+%D \stoptyping
 
 \def\dosynchronizenotes
   {\insert\currentnoteins{\unvbox\currentnoteins}}
@@ -852,8 +860,8 @@
   {\ifdim\ht#1>\zeropoint
      \endgraf
      \ifvmode
-       \witruimte
-       \noteparameter\c!voor
+       \whitespace
+       \noteparameter\c!before
      \fi
      \snaptogrid\hbox
        {\setnotebodyfont
@@ -861,7 +869,7 @@
           {\startpopnotes
            \unvbox#1\endgraf\relax
            \stoppopnotes}%
-        \doif{\noteparameter\c!breedte}\v!passend % new, auto width
+        \doif{\noteparameter\c!width}\v!fit % new, auto width
           {\setbox0\hbox                          % uggly but ok.
              {\beginofshapebox
               \unhbox0\setbox0=\lastbox\unvbox0
@@ -870,9 +878,9 @@
               \vbox{\flushshapebox}}}%
         \localframed
           [\??vn\currentnote]
-          [\c!breedte=\v!passend,
-            \c!hoogte=\v!passend,
-             \c!strut=\v!nee,
+          [\c!width=\v!fit,
+            \c!height=\v!fit,
+             \c!strut=\v!no,
             \c!offset=\v!overlay]
           {\ifdim\dp0=\zeropoint   % this hack is needed because \vadjust
              \hbox{\lower\strutdp\box0}% % in margin number placement
@@ -880,25 +888,25 @@
              \box0
            \fi}}%
      \ifvmode
-       \noteparameter\c!na
+       \noteparameter\c!after
      \fi
    \fi}
 
 %D A stupid alternative is also provided:
 %D
-%D \starttypen
+%D \starttyping
 %D \setupfootnotes[location={text,none}]
-%D \stoptypen
+%D \stoptyping
 
 \def\placenotesasnone#1% is grouped already
   {\ifdim\ht#1>\zeropoint
-     \noteparameter\c!voor
+     \noteparameter\c!before
      \setnotebodyfont
      \startpopnotes % make sure that fake height is killed
      \unvbox#1\endgraf
      \stoppopnotes
      \setbox0=\lastbox \ifvbox0 \unvbox0\else\box0\fi % enable columns
-     \noteparameter\c!na
+     \noteparameter\c!after
    \fi}
 
 %D \macros
@@ -910,7 +918,7 @@
 %D \showsetup{\y!startlocalfootnotes}
 %D \showsetup{\y!placelocalfootnotes}
 
-\def\defaultnotewidth{\zetbreedte}
+\def\defaultnotewidth{\makeupwidth}
 
 \def\collectlocalnotes
   {\def\localnoteinsert##1% was \gdef, but never reset!
@@ -928,7 +936,7 @@
 \def\dostartlocalnotes[#1]%
   {\let\autopostponenotes\postponenotes
    \let\postponenotes\collectlocalnotes
-   \def\defaultnotewidth{\ifdim\hsize<\zetbreedte\hsize\else\zetbreedte\fi}%
+   \def\defaultnotewidth{\ifdim\hsize<\makeupwidth\hsize\else\makeupwidth\fi}%
    \processnotes
      {\doifsomething{#1}{\setupnote[\currentnote][#1]}%
       \savenumber[\currentnote]%
@@ -947,7 +955,7 @@
   {\bgroup
    \dolocalsetupnotes{#1}{#2}
    \processnotes
-     {\ExpandBothAfter\doifinsetelse\v!geen{\noteparameter\c!plaats}
+     {\ExpandBothAfter\doifinsetelse\v!none{\noteparameter\c!location}
         \placenotesasnone\placenotesintext\localpostponednotes}%
    \egroup
    \checknotes}
@@ -955,16 +963,16 @@
 %D These commands can be used like:
 %D
 %D \startbuffer
-%D \startlocalnotes[breedte=.3\hsize,n=0]
-%D   \plaatstabel
+%D \startlocalnotes[width=.3\hsize,n=0]
+%D   \placetable
 %D     {Some Table}
-%D     \plaatsonderelkaar
-%D       {\starttabel[|l|r|]
+%D     \placeontopofeachother
+%D       {\starttable[|l|r|]
 %D        \HL
-%D        \VL Nota\voetnoot{Bene} \VL Bene\voetnoot{Nota} \VL\SR
-%D        \VL Bene\voetnoot{Nota} \VL Nota\voetnoot{Bene} \VL\SR
+%D        \VL Nota\footnote{Bene} \VL Bene\footnote{Nota} \VL\SR
+%D        \VL Bene\footnote{Nota} \VL Nota\footnote{Bene} \VL\SR
 %D        \HL
-%D        \stoptabel}
+%D        \stoptable}
 %D       {\placelocalnotes}
 %D \stoplocalnotes
 %D \stopbuffer
@@ -975,7 +983,7 @@
 %D thanks to the grouping of the local footnotes, we don't need
 %D additional braces.
 %D
-%D \haalbuffer
+%D \getbuffer
 
 %D \macros
 %D   {placefootnotes}
@@ -1013,7 +1021,7 @@
 \def\dodoplacenotes
   {\ifendnotes % hm, todo: per noteclass
      \ifinpagebody \else \ifdim\ht\localpostponednotes>\zeropoint
-       \ExpandBothAfter\doifinsetelse\v!geen{\noteparameter\c!plaats}
+       \ExpandBothAfter\doifinsetelse\v!none{\noteparameter\c!location}
          \placenotesasnone\placenotesintext\localpostponednotes
      \fi \fi
    \else \ifdim\ht\currentnoteins>\zeropoint
@@ -1024,30 +1032,44 @@
 %D   {fakenotes}
 
 \def\fakenotes
-  {\ifhmode
-     \endgraf
-   \fi
-   \ifvmode
-     \calculatetotalnoteheight
+  {\ifhmode\endgraf\fi\ifvmode
+     \calculatetotalclevernoteheight
+     \ifdim\totalnoteheight>\zeropoint \kern\totalnoteheight \fi
+   \fi}
+
+\def\fakepagenotes
+  {\ifhmode\endgraf\fi\ifvmode
+     \calculatetotalpagenoteheight
      \ifdim\totalnoteheight>\zeropoint \kern\totalnoteheight \fi
    \fi}
 
 \newdimen\totalnoteheight
 
-\def\docalculatetotalnoteheight
-  {\ifdim\ht\currentnoteins>\zeropoint
-     \ifclevernotes % tricky here ! ! ! to be sorted out ! ! !
-       \advance\totalnoteheight\ht  \currentbackupnoteins
-       \advance\totalnoteheight\skip\currentbackupnoteins
-     \else
-       \advance\totalnoteheight\ht  \currentnoteins
-       \advance\totalnoteheight\skip\currentnoteins
-     \fi
+
+\def\doaddtototalnoteheight#1%
+  {\ifdim\ht#1>\zeropoint
+     \advance\totalnoteheight\ht  #1%
+     \advance\totalnoteheight\skip#1%
    \fi}
 
-\def\calculatetotalnoteheight
-  {\totalnoteheight\zeropoint
-   \processnotes\docalculatetotalnoteheight}
+\def\docalculatetotalnoteheight
+  {\ifcase\clevernotes % tricky here ! ! ! to be sorted out ! ! !
+     \doaddtototalnoteheight\currentnoteins
+   \else
+     \doaddtototalnoteheight\currentbackupnoteins
+   \fi}
+
+\def\docalculatetotalclevernoteheight
+  {\ifcase\clevernotes \else % tricky here ! ! ! to be sorted out ! ! !
+     \doaddtototalnoteheight\currentnoteins
+   \fi}
+
+\def\docalculatetotalpagenoteheight
+  {\doaddtototalnoteheight\currentnoteins}
+
+\def\calculatetotalnoteheight      {\totalnoteheight\zeropoint\processnotes\docalculatetotalnoteheight}
+\def\calculatetotalclevernoteheight{\totalnoteheight\zeropoint\processnotes\docalculatetotalclevernoteheight}
+\def\calculatetotalpagenoteheight  {\totalnoteheight\zeropoint\processnotes\docalculatetotalpagenoteheight}
 
 \newif\ifnotespresent
 
@@ -1064,19 +1086,19 @@
 %D explictly postponing footnotes? The solution turned out to
 %D be rather simple:
 %D
-%D \starttypen
+%D \starttyping
 %D \everypar  {...\flushnotes...}
 %D \neverypar {...\postponenotes}
-%D \stoptypen
+%D \stoptyping
 %D
 %D and
 %D
-%D \starttypen
+%D \starttyping
 %D \def\ejectinsert%
 %D   {...
 %D    \flushnotes
 %D    ...}
-%D \stoptypen
+%D \stoptyping
 %D
 %D We can use \type{\neverypar} because in most commands
 %D sensitive to footnote gobbling we disable \type{\everypar}
@@ -1091,33 +1113,33 @@
 \def\setnotebodyfont
   {\let\setnotebodyfont\relax
    \restoreglobalbodyfont
-   \switchtobodyfont[\noteparameter\c!korps]%
-   \setuptolerance[\noteparameter\c!tolerantie]%
-   \setupalign[\noteparameter\c!uitlijnen]}
+   \switchtobodyfont[\noteparameter\c!bodyfont]%
+   \setuptolerance[\noteparameter\c!tolerance]%
+   \setupalign[\noteparameter\c!align]}
 
 %D The footnote mechanism defaults to a traditional one
 %D column way of showing them. By default we precede them by
 %D a small line.
 
-\definenote[\v!voetnoot]
+\definenote[\v!footnote]
 
 %D Compatibility macros:
 
-            \def\setupfootnotedefinition{\setupnotedefinition                [\v!voetnoot]}
-            \def\setupfootnotes         {\setupnote                          [\v!voetnoot]}
-\unexpanded \def\footnote               {\setnote                            [\v!voetnoot]}
-\unexpanded \def\footnotetext           {\setnotetext                        [\v!voetnoot]}
-            \def\note                   {\dodoubleempty\notesymbol           [\v!voetnoot]} %  alleen footnote
-            \def\placefootnotes         {\dodoubleempty\doplacefootnotes     [\v!voetnoot]}
-            \def\placelocalfootnotes    {\dodoubleempty\doplacelocalfootnotes[\v!voetnoot]}
+            \def\setupfootnotedefinition{\setupnotedefinition                [\v!footnote]}
+            \def\setupfootnotes         {\setupnote                          [\v!footnote]}
+\unexpanded \def\footnote               {\setnote                            [\v!footnote]}
+\unexpanded \def\footnotetext           {\setnotetext                        [\v!footnote]}
+            \def\note                   {\dodoubleempty\notesymbol           [\v!footnote]} %  alleen footnote
+            \def\placefootnotes         {\dodoubleempty\doplacefootnotes     [\v!footnote]}
+            \def\placelocalfootnotes    {\dodoubleempty\doplacelocalfootnotes[\v!footnote]}
             \def\startlocalfootnotes    {\startlocalnotes}
             \def\stoplocalfootnotes     {\stoplocalnotes }
 
 \def\doplacefootnotes     [#1][#2]%
-  {\ifsecondargument\placenotes     [#1][#2,\c!hoogte=\teksthoogte]\else\placenotes     [#1]\fi}
+  {\ifsecondargument\placenotes     [#1][#2,\c!height=\textheight]\else\placenotes     [#1]\fi}
 
 \def\doplacelocalfootnotes[#1][#2]%
-  {\ifsecondargument\placelocalnotes[#1][#2,\c!hoogte=\teksthoogte]\else\placelocalnotes[#1]\fi}
+  {\ifsecondargument\placelocalnotes[#1][#2,\c!height=\textheight]\else\placelocalnotes[#1]\fi}
 
 %D Backward compatibility command:
 
@@ -1126,3 +1148,51 @@
 \def\autopostponefootnotes{\autopostponenotes}
 
 \protect \endinput
+
+% \def\myfootnote[#1]#2% let's guess that #2 is without catcode problems
+%   {\setgvalue{note:t:#1}%
+%      {\setxvalue{note:l:#1}{\getvalue{note:n:#1}}%
+%       \footnote[note:a:#1:\getvalue{note:l:#1}]{#2}}%
+%    \setgvalue{note:n:#1}%
+%      {1}%
+%    \getvalue{note:t:#1}}%
+
+% \def\mynote[#1]%
+%   {\removeunwantedspaces
+%    \scratchcounter\getvalue{note:n:#1}\relax
+%    \edef\NoteNumber{\the\scratchcounter}%
+%    \doglobal\incrementvalue{note:n:#1}\relax
+%    \doifreferencefoundelse{note:a:#1:1}
+%      {\edef\NotePageA{\number\currentrealreference}%
+%       \doifreferencefoundelse{note:a:#1:\getvalue{note:n:#1}}
+%         {\edef\NotePageB{\number\currentrealreference}%
+%          \doifreferencefoundelse{note:a:#1:\NoteNumber}
+%            {\ifnum\currentrealreference=\NotePageB\relax
+%               \pagereference[note:a:#1:\getvalue{note:n:#1}]%
+%               \note[note:a:#1:\getvalue{note:l:#1}]%
+%             \else\ifnum\NotePageA=\NotePageB\relax
+%               \pagereference[note:a:#1:\getvalue{note:n:#1}]%
+%               \note[note:a:#1:\getvalue{note:l:#1}]%
+%             \else
+%               \getvalue{note:t:#1}%
+%             \fi\fi}
+%            {\ifnum\NotePageA=\NotePageB\relax
+%               \pagereference[note:a:#1:\getvalue{note:n:#1}]%
+%               \note[note:a:#1:\getvalue{note:l:#1}]%
+%             \else
+%               \getvalue{note:t:#1}%
+%             \fi}}
+%         {\pagereference[note:a:#1:\getvalue{note:n:#1}]%
+%          \note[note:a:#1:\getvalue{note:l:#1}]}}
+%      {\pagereference[note:a:#1:\getvalue{note:n:#1}]%
+%       \note[note:a:#1:\getvalue{note:l:#1}]}}
+
+% \starttext
+
+% funny \myfootnote[funny]{funny} funny \mynote[funny] \page
+
+% funny \mynote[funny] funny \mynote[funny] funny \mynote[funny] \page
+% funny \mynote[funny] funny \mynote[funny] \page
+% funny \mynote[funny] funny \mynote[funny] funny \mynote[funny] \page
+
+% \stoptext

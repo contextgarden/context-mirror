@@ -17,26 +17,16 @@
 
 \unprotect
 
-% \def\initlayerproperty#1#2%
-%   {\dodefineviewerlayer
-%      {#1}% tag
-%      {\propertyparameter\c!titel}% title
-%      {1}% visible
-%      {0}% type (1=frozen)
-%      {0}% printable
-%    \setgvalue{\e!start#1}{\getvalue{start#2property}{#1}}%
-%    \getvalue{\e!start#1}}
-
-\def\checklayerproperty#1%
+\def\checklayerproperty
   {\dodefineviewerlayer
      \currentproperty % tag
-     {\propertyparameter\c!titel}% title
-     {\checkedpropertyparameter\c!status\v!start}% visible
+     {\checkedpropertyparameter\c!title\currentproperty}%
+     {\checkedpropertyparameter\c!state\v!start}% visible or hidden
      {0}% type (1=frozen)
      {0}}% printable
 
-\def\startlayerproperty#1%
-  {\dostartviewerlayer{#1}}
+\def\startlayerproperty
+  {\dostartviewerlayer\currentproperty}
 
 \def\stoplayerproperty
   {\dostopviewerlayer}
@@ -56,8 +46,8 @@
      \expandafter\gobbleoneargument
    \fi}
 
-% \defineproperty [debugging]  [layer] [title=debugging]
-% \defineproperty [navigation] [layer] [title=navigation]
+% \defineproperty [debugging]  [\s!layer] [title=debugging]
+% \defineproperty [navigation] [\s!layer] [title=navigation]
 
 %D \starttext
 %D
@@ -118,6 +108,6 @@
 %
 % \def\startshowlayering#1#2%
 %   {\ifshowlayering
-%      \defineproperty[\remappedlayering{#1}][layer][\c!titel=#2]%
+%      \defineproperty[\remappedlayering{#1}][\s!layer][\c!titel=#2]%
 %      \startproperty[\remappedlayering{#1}]%
 %    \fi}

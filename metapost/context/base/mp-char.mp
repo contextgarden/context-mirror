@@ -10,16 +10,16 @@
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See licen-en.pdf for 
-%C details. 
+%C therefore copyrighted by \PRAGMA. See licen-en.pdf for
+%C details.
 
-if unknown context_tool :    input mp-tool ; fi ; 
-if unknown context_shap :    input mp-shap ; fi ; 
-if   known context_char : endinput         ; fi ; 
+if unknown context_tool :    input mp-tool ; fi ;
+if unknown context_shap :    input mp-shap ; fi ;
+if   known context_char : endinput         ; fi ;
 
-boolean context_char ; context_char := true ; 
+boolean context_char ; context_char := true ;
 
-% kan naar elders 
+% kan naar elders
 
 current_position := 0 ;
 
@@ -38,7 +38,7 @@ shape_width  := 45pt ; shape_height := 30pt ;
 
 chart_offset :=  2pt ;
 
-color chart_background_color ; chart_background_color := white ; 
+color chart_background_color ; chart_background_color := white ;
 
 %D test mode
 
@@ -70,12 +70,12 @@ shape_left           := 67 ;
 shape_up             := 68 ;
 shape_down           := 69 ;
 
-% vardef some_shape_path (expr type) == imported from mp-shap 
+% vardef some_shape_path (expr type) == imported from mp-shap
 
 def show_shapes (expr n) =
 
   begin_chart(n,8,10) ;
-    show_con_points := true ; 
+    show_con_points := true ;
     for i=0 upto 7 :
       for j=0 upto 9 :
         new_shape(i+1,j+1,i*10+j);
@@ -83,9 +83,9 @@ def show_shapes (expr n) =
     endfor ;
   end_chart ;
 
-enddef ; 
+enddef ;
 
-%D connections 
+%D connections
 
 def new_chart =
 
@@ -96,14 +96,14 @@ def new_chart =
   connection_smooth_size := 5pt ;
   connection_arrow_size  := 4pt ;
   connection_dash_size   := 3pt ;
-  
+
   max_x := 6 ;
   max_y := 4 ;
-  
+
   numeric xypoint       ; xypoint := 0 ;
-  
+
   pair    xypoints []   ;
-  
+
   boolean xyfree   [][] ;
   path    xypath   [][] ;
   numeric xysx     [][] ;
@@ -112,38 +112,38 @@ def new_chart =
   color   xydraw   [][] ;
   numeric xyline   [][] ;
   boolean xypeep   [][] ;
-  
-  numeric cpath         ; cpath := 0 ; 
-  path    cpaths    []  ; 
+
+  numeric cpath         ; cpath := 0 ;
+  path    cpaths    []  ;
   numeric cline     []  ;
   color   ccolor    []  ;
   boolean carrow    []  ;
   boolean cdash     []  ;
-  boolean ccross    []  ; 
-  
+  boolean ccross    []  ;
+
   boolean smooth        ; smooth       := true  ;
   boolean peepshape     ; peepshape    := false ;
   boolean arrowtip      ; arrowtip     := true  ;
   boolean dashline      ; dashline     := false ;
   boolean forcevalid    ; forcevalid   := false ;
-  boolean touchshape    ; touchshape   := false ; 
-  boolean showcrossing  ; showcrossing := false ; 
-  
-  picture dash_pattern ;
-  
-  boolean reverse_y ; reverse_y := true ;
-  
-enddef ; 
+  boolean touchshape    ; touchshape   := false ;
+  boolean showcrossing  ; showcrossing := false ;
 
-new_chart ; 
+  picture dash_pattern ;
+
+  boolean reverse_y ; reverse_y := true ;
+
+enddef ;
+
+new_chart ;
 
 def y_pos (expr y) =
   if reverse_y : max_y + 1 - y else : y fi
 enddef ;
-  
+
 def initialize_grid (expr maxx, maxy) =
-  begingroup ; 
-  save i, j ; 
+  begingroup ;
+  save i, j ;
   max_x := maxx ;
   max_y := maxy ;
   dsp_x := 0 ;
@@ -201,19 +201,19 @@ vardef i_point (expr x, y, p, t) =
 enddef ;
 
 vardef trimmed (expr x, y, z, t) =
-  if touchshape and t : xyline[x][y]/z else : epsilon fi  
+  if touchshape and t : xyline[x][y]/z else : epsilon fi
 enddef ;
 
 zfactor := 1/3 ;
 
 vardef xy_bottom (expr x, y, z, t) =
   i_point (x, y, ((0,0)--(0,-2)) shifted (zfactor*z*xysx[x][y],0), "bottom")
-  shifted(0,-trimmed(x,y,grid_height,t)) 
+  shifted(0,-trimmed(x,y,grid_height,t))
 enddef ;
 
 vardef xy_top (expr x, y, z, t) =
   i_point (x, y, ((0,0)--(0,2))  shifted (zfactor*z*xysx[x][y],0), "top")
-  shifted(0,trimmed(x,y,grid_height,t)) 
+  shifted(0,trimmed(x,y,grid_height,t))
 enddef ;
 
 vardef xy_left (expr x, y, z, t) =
@@ -248,10 +248,10 @@ def flush_shape (expr x, yy) =
   y := y_pos(yy) ;
   if not xyfree[x][y] :
     pickup pencircle scaled xyline[x][y] ;
-    if xypeep[x][y] : 
-      fill (xypath[x][y] peepholed (unitsquare shifted (x,y))) 
+    if xypeep[x][y] :
+      fill (xypath[x][y] peepholed (unitsquare shifted (x,y)))
         scaled_to_grid withpen pencircle scaled 0
-        withcolor chart_background_color ; 
+        withcolor chart_background_color ;
     else :
       fill xypath[x][y] scaled_to_grid withcolor xyfill[x][y] ;
     fi ;
@@ -276,7 +276,7 @@ vardef points_initialized (expr xfrom, yfrom, xto, yto, n) =
   fi
 enddef ;
 
-def collapse_points = % this is now an mp-tool macro 
+def collapse_points = % this is now an mp-tool macro
   % remove redundant points
   n := 1 ;
   for i=2 upto xypoint:
@@ -293,36 +293,36 @@ def collapse_points = % this is now an mp-tool macro
   fi ;
 enddef ;
 
-vardef smooth_connection (expr a,b) = 
+vardef smooth_connection (expr a,b) =
   sx := connection_smooth_size/grid_width ;
   sy := connection_smooth_size/grid_height ;
   if ypart a = ypart b :
     a shifted (if xpart a >= xpart b : - fi sx,0)
-% a shifted (sx*xpart unitvector(b-a),0) 
+% a shifted (sx*xpart unitvector(b-a),0)
   else :
     a shifted (0,if ypart a >= ypart b : - fi sy)
-% a shifted (0,sy*ypart unitvector(b-a)) 
+% a shifted (0,sy*ypart unitvector(b-a))
   fi
 enddef ;
 
-vardef trim_points =      
+vardef trim_points =
   begingroup
-  save p, a, b, d, i ; path p ; pair d ; 
-  p := for i=1 upto xypoint-1 : xypoints[i]-- endfor xypoints[xypoint] ; 
-  if touchshape : 
+  save p, a, b, d, i ; path p ; pair d ;
+  p := for i=1 upto xypoint-1 : xypoints[i]-- endfor xypoints[xypoint] ;
+  if touchshape :
     a := shape_line_width/grid_width ;
     b := shape_line_width/grid_height ;
   else :
-    a := epsilon ; 
+    a := epsilon ;
     b := epsilon ;
-  fi ;  
+  fi ;
   d := direction infinity of p ;
   xypoints[xypoint] := xypoints[xypoint] shifted
   if     xpart d < 0 : (+a,0) ;
   elseif xpart d > 0 : (-a,0) ;
   elseif ypart d < 0 : (0,+b) ;
   elseif ypart d > 0 : (0,-b) ;
-  else               : origin ; 
+  else               : origin ;
   fi ;
   d := direction 0 of p ;
   xypoints[1] := xypoints[1] shifted
@@ -330,12 +330,12 @@ vardef trim_points =
   elseif xpart d > 0 : (+a,0) ;
   elseif ypart d < 0 : (0,-b) ;
   elseif ypart d > 0 : (0,+b) ;
-  else               : origin ; 
+  else               : origin ;
   fi ;
   endgroup
-enddef ; 
+enddef ;
 
-vardef trim_points = enddef ; 
+vardef trim_points = enddef ;
 
 vardef connection_path =
   if reverse_connection : reverse fi (xypoints[1]--
@@ -354,35 +354,35 @@ enddef ;
 % vardef connection_path =
 %   sx := connection_smooth_size/grid_width ;
 %   sy := connection_smooth_size/grid_height ;
-%   if reverse_connection : reverse fi 
-%   (for i=1 upto xypoint-1 : xypoints[i] -- endfor xypoints[xypoint]) 
-%   if smooth : cornered max(sx,sy) fi 
+%   if reverse_connection : reverse fi
+%   (for i=1 upto xypoint-1 : xypoints[i] -- endfor xypoints[xypoint])
+%   if smooth : cornered max(sx,sy) fi
 % enddef ;
-% 
-% primarydef p cornered c = 
-%   if cycle p : 
-%     ((point 0 of p) shifted (c*(unitvector(point 1 of p - point 0 of p))) -- 
+%
+% primarydef p cornered c =
+%   if cycle p :
+%     ((point 0 of p) shifted (c*(unitvector(point 1 of p - point 0 of p))) --
 %      for i=1 upto length(p) :
-%        (point i-1 of p) shifted (c*(unitvector(point i   of p - point i-1 of p))) -- 
+%        (point i-1 of p) shifted (c*(unitvector(point i   of p - point i-1 of p))) --
 %        (point i   of p) shifted (c*(unitvector(point i-1 of p - point i   of p))) ..
-%        controls point i of p .. 
-%      endfor cycle) 
+%        controls point i of p ..
+%      endfor cycle)
 %   else :
-%     ((point 0 of p) -- 
+%     ((point 0 of p) --
 %      for i=1 upto length(p)-1 :
-%        (point i-1 of p) shifted (c*(unitvector(point i   of p - point i-1 of p))) -- 
+%        (point i-1 of p) shifted (c*(unitvector(point i   of p - point i-1 of p))) --
 %        (point i   of p) shifted (c*(unitvector(point i-1 of p - point i   of p))) ..
-%        controls point i of p .. 
+%        controls point i of p ..
 %      endfor
 %      (point length(p) of p))
-%   fi 
+%   fi
 % enddef ;
 
 def draw_connection =
   if xypoint>0 :
     collapse_points ;
-    trim_points ;  
-    cpath := cpath + 1 ; 
+    trim_points ;
+    cpath := cpath + 1 ;
     cpaths[cpath] := connection_path scaled_to_grid ;
     cline[cpath]  := connection_line_width ;
     ccolor[cpath] := connection_line_color ;
@@ -396,30 +396,30 @@ def draw_connection =
 enddef ;
 
 def flush_connections =
-  pair ip ; 
-  boolean crossing ; 
+  pair ip ;
+  boolean crossing ;
   ahlength     := connection_arrow_size ;
   dash_pattern := dashpattern(on connection_dash_size off connection_dash_size ) ;
-  for i=1 upto cpath : 
+  for i=1 upto cpath :
     if ccross[i] :
       crossing := false ;
       for j=1 upto i :
-       %if not ((point infinity of cpaths[i] = point infinity of cpaths[j]) or 
+       %if not ((point infinity of cpaths[i] = point infinity of cpaths[j]) or
        %        (point 0        of cpaths[i] = point 0        of cpaths[j])) :
         if not  (point infinity of cpaths[i] = point infinity of cpaths[j]) :
           ip := cpaths[i] intersection_point cpaths[j] ;
           if intersection_found : crossing := true fi ;
-        fi ;  
-      endfor ; 
-      if crossing : 
+        fi ;
+      endfor ;
+      if crossing :
         pickup pencircle scaled 2cline[i] ;
        %draw cpaths[i] withcolor chart_background_color ;
-        path cp ; cp := cpaths[i] ; 
-        cp := cp cutbefore point .05 length cp of cp ;  
-        cp := cp cutafter  point .95 length cp of cp ;  
+        path cp ; cp := cpaths[i] ;
+        cp := cp cutbefore point .05 length cp of cp ;
+        cp := cp cutafter  point .95 length cp of cp ;
         draw cp withcolor chart_background_color ;
-      fi ; 
-    fi ; 
+      fi ;
+    fi ;
     pickup pencircle scaled cline[i] ;
     if carrow[i] :
       if cdash[i] :
@@ -513,9 +513,9 @@ vardef right_to_grid (expr a,b) =
    ypart xypoints[a])
 enddef ;
 
-% vardef boundingboxfraction(expr p, f) = 
+% vardef boundingboxfraction(expr p, f) =
 %   ((boundingbox p) enlarged (-f*bbwidth(p),-f*bbheight(p)))
-% enddef ; 
+% enddef ;
 
 vardef valid_connection (expr xfrom, yfrom, xto, yto) =
   begingroup ;
@@ -534,30 +534,30 @@ vardef valid_connection (expr xfrom, yfrom, xto, yto) =
   elseif forcevalid :
    %message("force");
     true
-  elseif (xfrom=xto) and (yfrom=yto) : 
+  elseif (xfrom=xto) and (yfrom=yto) :
    %message("self");
-    false 
+    false
   else :
     % check for crossing shapes
     pair vc ;
     path pp ;
 
-    pair xyfirst, xylast ; 
-    xyfirst := xypoints[1] ; 
+    pair xyfirst, xylast ;
+    xyfirst := xypoints[1] ;
     xylast := xypoints[xypoint] ;
-    trim_points ;  
+    trim_points ;
     pp := for i=1 upto xypoint-1 : xypoints[i]-- endfor xypoints[xypoint] ;
-    xypoints[1] := xyfirst ; 
+    xypoints[1] := xyfirst ;
     xypoints[xypoint] := xylast ;
 
     for i=1 upto max_x :
       for j=1 upto max_y :                % was bug: xfrom,yto
-        if not ( ( (i,j)=(xfrom,yfrom) ) or ( (i,j)=(xto,yto) ) ) : 
-          if not xyfree[i][j] : 
+        if not ( ( (i,j)=(xfrom,yfrom) ) or ( (i,j)=(xto,yto) ) ) :
+          if not xyfree[i][j] :
             vc := pp intersection_point xypath[i][j] ;
             if intersection_found : ok := false fi ;
           fi ;
-        fi ; 
+        fi ;
       endfor ;
     endfor ;
    %if not ok: message("crossing") ; fi ;
@@ -588,8 +588,8 @@ def connect_top_bottom (expr xfrom,yyfrom,zfrom) (expr xto,yyto,zto) =
     elseif dsp_y<0 :
       xypoints[4] := xypoints[4] shifted (0,dsp_y) ;
       xypoints[5] := xypoints[5] shifted (0,dsp_y) ;
-    fi 
-    %%%% end experiment 
+    fi
+    %%%% end experiment
     draw_connection ;
   fi ;
 enddef ;
@@ -676,8 +676,8 @@ def connect_right_bottom (expr xfrom,yyfrom,zfrom) (expr xto,yyto,zto) =
     elseif dsp_y<0 :
       xypoints[3] := xypoints[3] shifted (0,dsp_y) ;
       xypoints[4] := xypoints[4] shifted (0,dsp_y) ;
-    fi 
-    %%%% end experiment 
+    fi
+    %%%% end experiment
     draw_connection ;
   fi ;
 enddef ;
@@ -748,15 +748,15 @@ def connect_bottom_bottom (expr xfrom,yyfrom,zfrom) (expr xto,yyto,zto) =
     fi ;
     %%%% begin experiment
     xypoints[3] := xypoints[3] shifted (dsp_x,0) ;
-    xypoints[4] := xypoints[4] shifted (dsp_x) ;
+    xypoints[4] := xypoints[4] shifted (dsp_x,0) ;
     if dsp_y<0 :
       xypoints[2] := xypoints[2] shifted (0,-dsp_y) ;
       xypoints[3] := xypoints[3] shifted (0,-dsp_y) ;
     elseif dsp_y>0 :
       xypoints[4] := xypoints[4] shifted (0,dsp_y) ;
       xypoints[5] := xypoints[5] shifted (0,dsp_y) ;
-    fi 
-    %%%% end experiment 
+    fi
+    %%%% end experiment
     draw_connection ;
   fi ;
 enddef ;
@@ -891,39 +891,39 @@ enddef ;
 def clip_chart (expr minx, miny, maxx, maxy) =
   cmin_x := minx ;
   cmax_x := maxx ;
-  cmin_y := miny ; 
-  cmax_y := maxy ; 
+  cmin_y := miny ;
+  cmax_y := maxy ;
 enddef ;
 
 def begin_chart (expr n, maxx, maxy) =
   new_chart ;
   chart_figure := n ;
-  chart_scale := 1 ; 
+  chart_scale := 1 ;
   if chart_figure>0: beginfig(chart_figure) ; fi ;
   initialize_grid (maxx, maxy) ;
   bboxmargin := 0 ;
-  cmin_x := 1 ; 
+  cmin_x := 1 ;
   cmax_x := maxx ;
-  cmin_y := 1 ; 
-  cmax_y := maxy ; 
+  cmin_y := 1 ;
+  cmax_y := maxy ;
 enddef ;
 
 def end_chart =
   flush_shapes ;
-  flush_connections ; 
-  cmin_x := cmin_x ; 
-  cmax_x := cmin_x+cmax_x ; 
-  cmin_y := cmin_y-1 ; 
-  cmax_y := cmin_y+cmax_y ;  
-  if reverse_y : 
+  flush_connections ;
+  cmin_x := cmin_x ;
+  cmax_x := cmin_x+cmax_x ;
+  cmin_y := cmin_y-1 ;
+  cmax_y := cmin_y+cmax_y ;
+  if reverse_y :
    cmin_y := y_pos(cmin_y) ;
-   cmax_y := y_pos(cmax_y) ; 
-  fi ; 
+   cmax_y := y_pos(cmax_y) ;
+  fi ;
   path p ;
   p := (((cmin_x,cmin_y)--(cmax_x,cmin_y)--
          (cmax_x,cmax_y)--(cmin_x,cmax_y)--cycle))
        scaled_to_grid ;
- %draw p withcolor red ; 
+ %draw p withcolor red ;
   p := p enlarged chart_offset ;
   clip currentpicture to p ;
   setbounds currentpicture to p ;

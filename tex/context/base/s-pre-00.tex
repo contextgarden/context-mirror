@@ -34,10 +34,10 @@
 
 \setupframedtexts
   [presentationshield]
-  [\c!achtergrond=\v!kleur,
-   \c!achtergrondkleur=StepColor,
+  [\c!background=\v!color,
+   \c!backgroundcolor=StepColor,
    \c!offset=\v!overlay,
-   \c!kader=\v!uit]
+   \c!frame=\v!off]
 
 \definecolor[StepColor][white]
 
@@ -45,7 +45,7 @@
   {\let\enablepresentationstep\relax
    \useJSpreamblenow{presentation}%
    \setuptexttexts
-     [\vbox to \teksthoogte
+     [\vbox to \textheight
         {\dopresentationstep1\box\presentationstack\vfill}]}
 
 \def\presentationstep%
@@ -66,7 +66,7 @@
       \global\presentationheight=\pagetotal
       \forgetall
       \offinterlineskip
-      \mindermeldingen
+      \dontcomplain
       \box\presentationstack
       \doglobal\increment\presentationcounter
       \scratchcounter=\realpageno \multiply\scratchcounter by 100
@@ -74,15 +74,15 @@
       \edef\presentationtag{presentation:\the\scratchcounter}
       \setupfield
         [presentation]
-        [\c!breedte=\v!passend,\c!hoogte=\v!passend,\c!offset=\v!overlay,
-         \c!strut=\v!nee,\c!kader=\v!uit,\c!optie=\v!alleenleesbaar]
+        [\c!width=\v!fit,\c!height=\v!fit,\c!offset=\v!overlay,
+         \c!strut=\v!no,\c!frame=\v!off,\c!option=\v!readonly]
       \definesymbol
         [\presentationtag]
         [\presentationshade]
       \def\presentationshade%
         {\presentationshield
-           [\c!breedte=\tekstbreedte,\c!hoogte=\presentationstepheight]{}}
-      \definefield[\presentationtag][check][presentation][\presentationtag,\v!geen][\presentationtag]
+           [\c!width=\textwidth,\c!height=\presentationstepheight]{}}
+      \definefield[\presentationtag][check][presentation][\presentationtag,\v!none][\presentationtag]
       \fitfield[\presentationtag]}}
 
 \startJSpreamble {presentation} used later
@@ -119,7 +119,7 @@
 %D show functionality. It sort of records pieces of the page
 %D that will show up stepwise. It can be used like:
 %D
-%D \starttypen
+%D \starttyping
 %D \startitemize
 %D \item eerste
 %D \item tweede
@@ -132,57 +132,57 @@
 %D \stopformula
 %D
 %D \presentationstep
-%D \stoptypen
+%D \stoptyping
 %D
 %D When the document is opened, the two text fragments are
 %D covered by a shield. Each page has its own shield stack. The
 %D logical reference \type {NextStep} can be used to hide the
 %D shield.
 %D
-%D \starttypen
+%D \starttyping
 %D \setupfootertexts[{\button{Show Up}[NextStep]}]
-%D \stoptypen
+%D \stoptyping
 %D
 %D In case of presentation style 2, you can say:
 %D
-%D \starttypen
+%D \starttyping
 %D \definereference[Whatever][JS(NextPresentation{\realfolio})]
-%D \stoptypen
+%D \stoptyping
 %D
 %D Depending of the viewer, you need to reset the fields at
 %D startup:
 %D
-%D \starttypen
+%D \starttyping
 %D \setupinteraction[openaction=ResetForm]
-%D \stoptypen
+%D \stoptyping
 %D
 %D Fixed spacing give you the best results:
 %D
-%D \starttypen
+%D \starttyping
 %D \setupwhitespace[fixed]
 %D \setupblank[fixed]
-%D \stoptypen
+%D \stoptyping
 %D
 %D Sometimes you need to set the color of the background, as
 %D with style 2:
 %D
-%D \starttypen
+%D \starttyping
 %D \definecolor[StepColor][Page]
-%D \stoptypen
+%D \stoptyping
 %D
 %D Special effects can be reached with:
 %D
-%D \starttypen
+%D \starttyping
 %D \setupframedtexts
 %D   [presentationshield]
 %D   [background=color,backgroundcolor=red]
-%D \stoptypen
+%D \stoptyping
 %D
 %D There is also:
 %D
-%D \starttypen
+%D \starttyping
 %D \autopresentationsteptrue
-%D \stoptypen
+%D \stoptyping
 %D
 %D One can enable this feature as \type {step} mode.
 

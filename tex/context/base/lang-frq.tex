@@ -18,7 +18,7 @@
 \ifx\s!en\undefined \def\v!en{en}   \fi
 \ifx\??lg\undefined \def\??lg{@@lg} \fi
 
-%M \usemodule[frqlay]
+%M \usemodule[layout]
 
 %D \macros
 %D   {charwidthmethod}
@@ -31,7 +31,7 @@
 %D   {\chardef\charwidthmethod#1\relax
 %D    \mainlanguage[#2#3]\the\dimexpr(\averagecharwidth)}
 %D
-%D \starttabulatie[|c|c|c|c|c|c|]
+%D \starttabulate[|c|c|c|c|c|c|]
 %D \HL
 %D \NC      \NC\bf0=amount\NC\bf1=.5em\NC2=ex\NC\bf3=frequency\NC\bf4=list\NC\NR
 %D \HL
@@ -39,7 +39,7 @@
 %D \NC\bf nl\NC\ShwChrWd0nl\NC\ShwChrWd1nl\NC\ShwChrWd2nl\NC\ShwChrWd3nl\NC\ShwChrWd4nl\NC\NR
 %D \NC\bf de\NC\ShwChrWd0de\NC\ShwChrWd1de\NC\ShwChrWd2de\NC\ShwChrWd3de\NC\ShwChrWd4de\NC\NR
 %D \HL
-%D \stoptabulatie
+%D \stoptabulate
 %D
 %D Method~1 ignores the widths and assumes that each character has a
 %D width of .5em, which is true for most monospaced fonts. Method~2
@@ -107,9 +107,9 @@
 
 %D Although it is of hardly any use, you can inherit a character table:
 %D
-%D \starttypen
+%D \starttyping
 %D \startcharactertable[cz] \charactertable{en} \stopcharactertable
-%D \stoptypen
+%D \stoptyping
 %D
 %D We define a default vector with 100\% x's.
 
@@ -184,7 +184,7 @@
 %D \MPdrawingdonetrue \getMPdrawing \resetMPdrawing
 %D \stopbuffer
 %D
-%D \plaatsfiguur
+%D \placefigure
 %D   [here]
 %D   [fig:charfreq]
 %D   {The character distributions for English, Dutch and German.}
@@ -193,9 +193,9 @@
 %D A few samples of usage of this mechanism are shown below:
 %D
 %D \startbuffer
-%D {\mainlanguage[en]\hsize65\averagecharwidth\mainlanguage[en]\input ward \blanko}
-%D {\mainlanguage[nl]\hsize65\averagecharwidth\mainlanguage[en]\input ward \blanko}
-%D {\mainlanguage[de]\hsize65\averagecharwidth\mainlanguage[en]\input ward \blanko}
+%D {\mainlanguage[en]\hsize65\averagecharwidth\mainlanguage[en]\input ward \blank}
+%D {\mainlanguage[nl]\hsize65\averagecharwidth\mainlanguage[en]\input ward \blank}
+%D {\mainlanguage[de]\hsize65\averagecharwidth\mainlanguage[en]\input ward \blank}
 %D \stopbuffer
 %D
 %D \typebuffer \getbuffer

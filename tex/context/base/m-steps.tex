@@ -39,49 +39,49 @@
 \def\setupSTEPlines {\dodoubleargument\getparameters[\@@STEL]}
 
 \setupSTEPcharts
-  [\c!voor=\blanko,
-   \c!na=\blanko,
-  %\c!afstand=.25em, % nvt 
+  [\c!before=\blank,
+   \c!after=\blank,
+  %\c!distance=.25em, % nvt 
    \c!hoffset=1em,
    \c!voffset=1ex,
-   \c!methode=1,
-   \c!hoogte=2ex,
+   \c!method=1,
+   \c!height=2ex,
    \c!offset=.15\bodyfontsize]
 
 \setupSTEPtables
-  [\c!voor=\blanko,
-   \c!na=\blanko,
-   \c!afstand=.25em,
+  [\c!before=\blank,
+   \c!after=\blank,
+   \c!distance=.25em,
   %\c!hoffset=1em, % nvt 
    \c!voffset=1ex,
-   \c!methode=1,
-   \c!breedte=4em,
+   \c!method=1,
+   \c!width=4em,
    \c!offset=.15\bodyfontsize]
 
 \setupSTEPcells
-  [\c!variant=24,
-   \c!achtergrond=\v!kleur,
-   \c!achtergrondkleur=STEPbackgroundcolor,
-   \c!lijndikte=.1\bodyfontsize,
-   \c!kaderkleur=STEPframecolor,
+  [\c!alternative=24,
+   \c!background=\v!color,
+   \c!backgroundcolor=STEPbackgroundcolor,
+   \c!rulethickness=.1\bodyfontsize,
+   \c!framecolor=STEPframecolor,
    \c!offset=.25\bodyfontsize,
-   \c!letter=,
-   \c!kleur=]
+   \c!style=,
+   \c!color=]
 
 \setupSTEPtexts
-  [\c!variant=24,
-   \c!achtergrond=\v!kleur,
-   \c!achtergrondkleur=STEPbackgroundcolor,
-   \c!lijndikte=.1\bodyfontsize,
-   \c!kaderkleur=STEPframecolor,
+  [\c!alternative=24,
+   \c!background=\v!color,
+   \c!backgroundcolor=STEPbackgroundcolor,
+   \c!rulethickness=.1\bodyfontsize,
+   \c!framecolor=STEPframecolor,
    \c!offset=.25\bodyfontsize,
-   \c!letter=\v!kleinkorps,
-   \c!kleur=]
+   \c!style=\v!smallbodyfont,
+   \c!color=]
 
 \setupSTEPlines
-  [\c!variant=1,
-   \c!lijndikte=.15\bodyfontsize,
-   \c!kleur=STEPlinecolor]
+  [\c!alternative=1,
+   \c!rulethickness=.15\bodyfontsize,
+   \c!color=STEPlinecolor]
 
 \def\initializeSTEP
   {\initializeSTET \initializeSTEC \initializeSTEL}
@@ -90,26 +90,26 @@
   {\freezedimenmacro\@@STPCoffset
    \startMPdrawing
      line_v_offset := \@@STPCoffset  ;
-     line_method   := \@@STPCmethode ; % only charts 
+     line_method   := \@@STPCmethod ; % only charts 
    \stopMPdrawing}
 
 \def\initializeSTPT
   {\freezedimenmacro\@@STPToffset  
    \startMPdrawing
      line_h_offset := \@@STPToffset  ;
-     line_method   := \@@STPTmethode ; % only charts 
+     line_method   := \@@STPTmethod ; % only charts 
    \stopMPdrawing}
 
 \def\initializeSTET
-  {\freezedimenmacro\@@STETlijndikte
+  {\freezedimenmacro\@@STETrulethickness
    \freezedimenmacro\@@STEToffset}
 
 \def\initializeSTEC
-  {\freezedimenmacro\@@STEClijndikte
+  {\freezedimenmacro\@@STECrulethickness
    \freezedimenmacro\@@STECoffset}
 
 \def\initializeSTEL
-  {\freezedimenmacro\@@STELlijndikte}
+  {\freezedimenmacro\@@STELrulethickness}
 
 %D ... 
 
@@ -128,19 +128,19 @@
 \presetlocalframed[\@@STPF]
 
 \def\@@stepcell#1%
-  {\doattributes\@@STEC\c!letter\c!kleur
+  {\doattributes\@@STEC\c!style\c!color
      {\localframed
-         [\@@STPF][\c!offset=\@@STECoffset,\c!kader=\v!uit]
+         [\@@STPF][\c!offset=\@@STECoffset,\c!frame=\v!off]
          {\ignorespaces#1\unskip}}}
 
 \def\@@stepfake#1%
-  {\doattributes\@@STEC\c!letter\c!kleur
+  {\doattributes\@@STEC\c!style\c!color
      {\ignorespaces#1\unskip}}
 
 \def\@@steptext#1%
-  {\doattributes\@@STET\c!letter\c!kleur
+  {\doattributes\@@STET\c!style\c!color
      {\localframed
-         [\@@STPF][\c!offset=\@@STEToffset,\c!kader=\v!uit]
+         [\@@STPF][\c!offset=\@@STEToffset,\c!frame=\v!off]
          {\ignorespaces#1\unskip}}}
 
 %D The first attempt was purely \METAPOST\ based and spawned
@@ -151,7 +151,7 @@
 %D dependent definitions in the cells. The implementation
 %D roughly looks as follows: 
 %D 
-%D \starttypen
+%D \starttyping
 %D \def\startSTEPchart%
 %D   {\bgroup
 %D    \startMPdrawing
@@ -183,7 +183,7 @@
 %D    \getMPdrawing
 %D    \resetMPdrawing
 %D    \egroup}
-%D \stoptypen
+%D \stoptyping
 %D
 %D This method has the advantage that it does the job in
 %D (virtually) one pass, while the next methods need multiple
@@ -203,15 +203,15 @@
 %D typesetting. We show this alternative too because it
 %D demonstrates how to apply backgrounds to table cells. 
 %D 
-%D \starttypen
+%D \starttyping
 %D \newtoks\stepsonetop \newtoks\stepstwotop
 %D \newtoks\stepsonebot \newtoks\stepstwobot
-%D \stoptypen
+%D \stoptyping
 %D
 %D During the collecting phase, we temporarily have to
 %D increment the name space counter.
 %D
-%D \starttypen
+%D \starttyping
 %D \def\startSTEPchart%
 %D   {\bgroup
 %D    \resetMPdrawing
@@ -228,7 +228,7 @@
 %D    \stepstwobot\emptytoks \chardef\somesteptwobot=1
 %D    \let\cells\stepchartcells \def\cell{\cells{}}%
 %D    \let\texts\stepcharttexts \def\text{\texts{}}}
-%D \stoptypen
+%D \stoptyping
 %D
 %D Now we collect the steps and texts, and in the process the
 %D graphic is built. Then we continue with building the table.
@@ -239,7 +239,7 @@
 %D digest, even with the right tools (anchors) already in
 %D place.
 %D
-%D \starttypen
+%D \starttyping
 %D \def\stopSTEPchart
 %D   {\splittabulatefalse
 %D    \insidefloattrue
@@ -270,13 +270,13 @@
 %D       \hskip-\scratchdimen
 %D       \hpos{\tbPOSprefix origin}{\box2}}
 %D    \egroup}
-%D \stoptypen
+%D \stoptyping
 %D
 %D The steps and texts fill the (at most 4) lines that make up
 %D the table. We also feed the (automatically registerd) cell
 %D dimensions to the graphic backend.
 %D
-%D \starttypen
+%D \starttyping
 %D \newcounter\cellcounter
 %D \newcounter\textcounter
 %D
@@ -343,15 +343,15 @@
 %D         texts[b][\cellcounter][\textcounter] := pxy ;
 %D       \stopMPdrawing
 %D       \@EA\appendtoks\@EA\NC\@EA\textcellposition\@EA{\stepidentifier}#2\to\stepstwobot}}
-%D \stoptypen
+%D \stoptyping
 %D
 %D Here are the hooks that take care of calculating the cell
 %D dimensions.
 %D
-%D \starttypen
+%D \starttyping
 %D \def\textcellposition#1{\GSC[#1:text]}
 %D \def\stepidentifierposition#1{\GSC[#1:step]}
-%D \stoptypen
+%D \stoptyping
 %D 
 %D We abandoned this method after some testing and went for 
 %D a third one. It was this third method that evolved into the 
@@ -360,7 +360,7 @@
 %D Since this method was not that efficient, a third one was
 %D implemented, which used one position per cell. So, 
 %D
-%D \blanko {\bf Here starts the real implementation!} \blanko
+%D \blank {\bf Here starts the real implementation!} \blank
 %D
 %D Because we want to build one graphic only we need to store
 %D the graphic directives. We also need to collect the cells,
@@ -397,8 +397,8 @@
 \long\def\dostartSTEPchart[#1]#2\stopSTEPchart
   {\ifinsidefloat 
    \else 
-     \witruimte 
-     \@@STPCvoor 
+     \whitespace 
+     \@@STPCbefore 
      \startbaselinecorrection 
      \setlocalhsize
      \noindent
@@ -450,13 +450,13 @@
      anchor_box(\MPpos{\stepchartprefix origin}) ;
    \stopMPdrawing
    \MPdrawingdonetrue
-   \doifelse\@@STPCmethode{0}
+   \doifelse\@@STPCmethod{0}
      {\setbox0\null}
      {\setbox0\vbox{\MPstaticgraphictrue\getMPdrawing}}%
    \resetMPdrawing
    \setbox2\vbox
      {\offinterlineskip
-      \scratchdimen\@@STPChoogte
+      \scratchdimen\@@STPCheight
       \advance\scratchdimen\@@STPCoffset 
       \advance\scratchdimen\@@STPCoffset
       \ifcase\sometextboxone \box\textboxone \vskip\scratchdimen  \fi
@@ -475,7 +475,7 @@
       \hpos{\stepchartprefix origin}{\box2}}%
    \popMPdrawing
    \egroup
-   \ifinsidefloat \else \stopbaselinecorrection \@@STPCna \fi}
+   \ifinsidefloat \else \stopbaselinecorrection \@@STPCafter \fi}
 
 %D The next macro looks more complicated than it is. We collect
 %D the cells in boxes. Before adding a new step cell, we padd
@@ -556,9 +556,9 @@
 
 \def\MPcellsgraphic
   {image ( drawshape (
-     \@@STECvariant, pxy enlarged (-.5*\@@STECoffset),
-     \@@STEClijndikte, \MPcolor{\@@STECkaderkleur},
-     \MPcolor{\@@STECachtergrondkleur} ) )}
+     \@@STECalternative, pxy enlarged (-.5*\@@STECoffset),
+     \@@STECrulethickness, \MPcolor{\@@STECframecolor},
+     \MPcolor{\@@STECbackgroundcolor} ) )}
 
 %D Although each step can have only one associated text, the
 %D place where the text is defined determines the starting
@@ -647,19 +647,19 @@
 
 \def\MPtextsgraphic
   {image(drawshape(
-     \@@STETvariant, pxy enlarged (-.5*\@@STEToffset),
-     \@@STETlijndikte, \MPcolor{\@@STETkaderkleur},
-     \MPcolor{\@@STETachtergrondkleur} ) )}
+     \@@STETalternative, pxy enlarged (-.5*\@@STEToffset),
+     \@@STETrulethickness, \MPcolor{\@@STETframecolor},
+     \MPcolor{\@@STETbackgroundcolor} ) )}
 
 \def\MPcharttoplinesgraphic#1#2%
   {image(drawline(
-     \@@STELvariant, get_step_chart_top_line(#1,#2),  
-     \@@STELlijndikte, \MPcolor{\@@STELkleur} ) )}
+     \@@STELalternative, get_step_chart_top_line(#1,#2),  
+     \@@STELrulethickness, \MPcolor{\@@STELcolor} ) )}
 
 \def\MPchartbotlinesgraphic#1#2%
   {image(drawline( 
-     \@@STELvariant, get_step_chart_bot_line(#1,#2), 
-     \@@STELlijndikte, \MPcolor{\@@STELkleur} ) )}
+     \@@STELalternative, get_step_chart_bot_line(#1,#2), 
+     \@@STELrulethickness, \MPcolor{\@@STELcolor} ) )}
 
 %D \XML\ coupling. 
 
@@ -704,8 +704,8 @@
 \def\dostartSTEPaligntable[#1][#2]#3\stopSTEPaligntable % flag settings data
   {\ifinsidefloat 
    \else 
-     \witruimte    
-     \@@STPTvoor 
+     \whitespace    
+     \@@STPTbefore 
      \startbaselinecorrection 
      \setlocalhsize
      \noindent
@@ -779,12 +779,12 @@
      anchor_box(\MPpos{\steptableprefix origin}) ;
    \stopMPdrawing
    \MPdrawingdonetrue
-   \doifelse\@@STPTmethode{0}
+   \doifelse\@@STPTmethod{0}
      {\setbox0\null}
      {\setbox0\vbox{\MPstaticgraphictrue\getMPdrawing}}%
    \resetMPdrawing
    % typesetting pass 
-   \dimen6=\@@STPTafstand \dimen6=2\dimen6
+   \dimen6=\@@STPTdistance \dimen6=2\dimen6
    % cell width
    \dimen8=\dimen1
    \advance\dimen8\dimen3
@@ -792,7 +792,7 @@
    % offset width
    \ifcase#1\else \advance\dimen8 \dimen6 \fi
    % arrow width
-   \advance\dimen8 \@@STPTbreedte
+   \advance\dimen8 \@@STPTwidth
    \advance\dimen8 \@@STPToffset
    \advance\dimen8 \@@STPToffset
    \def\docells[##1]##2##3##4%
@@ -801,8 +801,8 @@
         {\hbox to \dimen####1{####2\@@stepfake{####3}\strut####4}}%
       \setbox8\hbox
         {\ifcase#1\else
-           \do1\hss{##2}\relax \hskip\@@STPTafstand 
-           \do3\hss{##3}\hss   \hskip\@@STPTafstand 
+           \do1\hss{##2}\relax \hskip\@@STPTdistance 
+           \do3\hss{##3}\hss   \hskip\@@STPTdistance 
          \fi
          \do5\relax{##4}\hss}%
      \hpos{\steptableprefix\cellcounter-c}{\@@stepcell{\box8}}
@@ -836,12 +836,12 @@
       \hpos{\steptableprefix origin}{\box2}}
   \popMPdrawing
   \egroup
-  \ifinsidefloat \else \stopbaselinecorrection \@@STPTna \fi}
+  \ifinsidefloat \else \stopbaselinecorrection \@@STPTafter \fi}
 
 \def\MPtablelinesgraphic
   {image ( drawline ( 
-     \@@STELvariant, get_step_table_line(\cellcounter), 
-     \@@STELlijndikte, \MPcolor{\@@STELkleur} ) )}
+     \@@STELalternative, get_step_table_line(\cellcounter), 
+     \@@STELrulethickness, \MPcolor{\@@STELcolor} ) )}
 
 \defineXMLpickup[steptable][@@STPT]
   {\bgroup

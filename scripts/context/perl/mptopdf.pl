@@ -1,7 +1,7 @@
 eval '(exit $?0)' && eval 'exec perl -S $0 ${1+"$@"}' && eval 'exec perl -S $0 $argv:q'
         if 0;
 
-# MikTeX users can set environment variable TEXSYSTEM to "miktex". 
+# MikTeX users can set environment variable TEXSYSTEM to "miktex".
 
 #D \module
 #D   [       file=mptopdf.pl,
@@ -17,68 +17,70 @@ eval '(exit $?0)' && eval 'exec perl -S $0 ${1+"$@"}' && eval 'exec perl -S $0 $
 #C therefore copyrighted by \PRAGMA. See licen-en.pdf for
 #C details.
 
-# use File::Copy ; # not in every perl 
+# use File::Copy ; # not in every perl
 
 use Config ;
 use Getopt::Long ;
-use strict ; 
+use strict ;
 
 $Getopt::Long::passthrough = 1 ; # no error message
 $Getopt::Long::autoabbrev  = 1 ; # partial switch accepted
 
-my $Help = my $Latex = my $RawMP = 0 ; 
-my $PassOn = '' ; 
+my $Help = my $Latex = my $RawMP = 0 ;
+my $PassOn = '' ;
 
 &GetOptions
   ( "help"   => \$Help  ,
-    "rawmp"  => \$RawMP, 
+    "rawmp"  => \$RawMP,
     "passon" => \$PassOn,
     "latex"  => \$Latex ) ;
- 
-my $program = "MPtoPDF 1.2" ;
+
+my $program = "MPtoPDF 1.3" ;
 my $pattern = $ARGV[0] ;
 my $done    = 0 ;
 my $report  = '' ;
-my $latexswitch = " --tex=latex --format=latex " ;
+my $texlatexswitch = " --tex=latex --format=latex " ;
+my $mplatexswitch = " --tex=latex " ;
 
-## $dosish = ($Config{'osname'} =~ /dos|mswin/i) ;
-my $dosish = ($Config{'osname'} =~ /^(ms)?dos|^os\/2|^(ms|cyg)win/i) ;
+my $dosish      = ($Config{'osname'} =~ /^(ms)?dos|^os\/2|^(ms|cyg)win/i) ;
+my $miktex      = ($ENV{"TEXSYSTEM"} =~ /miktex/io);
+my $escapeshell = ( ($ENV{'SHELL'}) && ($ENV{'SHELL'} =~ m/sh/i ));
 
-my $miktex = ($ENV{"TEXSYSTEM"} =~ /miktex/io); 
+my @files ;
+my $command = my $mpbin = ''  ;
 
-my @files ; 
-my $command = my $mpbin = ''  ; 
-
-sub CopyFile # agressive copy, works for open files like in gs 
-  { my ($From,$To) = @_ ; 
-    return unless open(INP,"<$From") ; binmode INP ; 
-    return unless open(OUT,">$To") ; binmode OUT ; 
-    while (<INP>) { print OUT $_ } 
-    close (INP) ; 
+sub CopyFile # agressive copy, works for open files like in gs
+  { my ($From,$To) = @_ ;
+    return unless open(INP,"<$From") ; binmode INP ;
+    return unless open(OUT,">$To") ; binmode OUT ;
+    while (<INP>) { print OUT $_ }
+    close (INP) ;
     close (OUT) }
 
 if (($pattern eq '')||($Help))
   { print "\n$program : provide MP output file (or pattern)\n" ;
     exit }
-elsif ($pattern =~ /\.mp$/io) 
-  { shift @ARGV ; my $rest = join(" ", @ARGV) ;  
+elsif ($pattern =~ /\.mp$/io)
+  { shift @ARGV ; my $rest = join(" ", @ARGV) ;
     if (open(INP,$pattern))
-      { while (<INP>) 
-          { if (/(documentstyle|documentclass|begin\{document\})/io) 
-              { $Latex = 1 ; last } } 
-        close (INP) } 
-    if ($Latex) 
-      { $rest .= " $latexswitch" } 
+      { while (<INP>)
+          { if (/(documentstyle|documentclass|begin\{document\})/io)
+              { $Latex = 1 ; last } }
+        close (INP) }
     if ($RawMP)
-      { $mpbin = 'mpost' } 
+      { if ($Latex)
+          { $rest .= " $mplatexswitch" }
+        $mpbin = 'mpost' }
     else
-      { $mpbin = 'texexec --mptex $PassOn' } 
+      { if ($Latex)
+          { $rest .= " $texlatexswitch" }
+        $mpbin = 'texexec --mptex $PassOn' }
     my $error =  system ("$mpbin $rest $pattern") ;
-    if ($error) 
-      { print "\n$program : error while processing mp file\n" ; exit } 
-    else 
-      { $pattern =~ s/\.mp$//io ; 
-        @files = glob "$pattern.*" } } 
+    if ($error)
+      { print "\n$program : error while processing mp file\n" ; exit }
+    else
+      { $pattern =~ s/\.mp$//io ;
+        @files = glob "$pattern.*" } }
 elsif (-e $pattern)
   { @files = ($pattern) }
 elsif ($pattern =~ /.\../o)
@@ -90,15 +92,17 @@ else
 foreach my $file (@files)
   { $_ = $file ;
     if (s/\.(\d+|mps)$// && -e $file)
-      { if ($miktex) 
-          { if ($dosish) 
-              { $command = "pdfetex   &mptopdf" } 
+      { if ($miktex)
+          { if ($dosish)
+              { $command = "pdfetex   &mptopdf" }
             else
               { $command = "pdfetex \\&mptopdf" } }
-        else 
-#         { $command = "pdfetex -progname=pdfetex -efmt=mptopdf" } 
-          { $command = "pdfetex -progname=context -efmt=mptopdf" } 
-        if ($dosish)  
+        else
+          { if ($dosish)
+              { $command = "pdfetex -progname=context &mptopdf" }
+            else
+              { $command = "pdfetex -progname=context \\&mptopdf" } }
+        if ($dosish)
           { system ("$command   \\relax $file") }
         else
           { system ("$command \\\\relax $file") }
@@ -108,8 +112,8 @@ foreach my $file (@files)
         $report .= " $_-$1.pdf" ;
         ++$done } }
 
-if ($report eq '') 
-  { $report = '*' } 
+if ($report eq '')
+  { $report = '*' }
 
 if ($done)
   { print "\n$program : $pattern is converted to$report\n" }

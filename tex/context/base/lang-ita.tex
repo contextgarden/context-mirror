@@ -3,15 +3,15 @@
 %D        version=1997.09.03,
 %D          title=\CONTEXT\ Language Macros,
 %D       subtitle=Italic Languages,
-%D         author=Hans Hagen / Tobias Burnus, 
+%D         author=Hans Hagen / Tobias Burnus,
 %D           date=\currentdate,
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
-%C details. 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
 
-%D Todo: replace \'.. by \namedglyph 
+% Todo: replace \'.. by \namedglyph
 
 \writestatus{loading}{Italic Languages}
 
@@ -19,11 +19,12 @@
 %D many of the first translations were done by Tobias. Later
 %D on, corrections were made by users. If you have suggestions,
 %D or feel that your name missing here, don't hesitate to send
-%D us an email. 
+%D us an email.
 %D
 %D \starttabulate[|lB|l|]
-%D \NC Italian  \NC Giuseppe Bilotta \NC \NR
-%D \NC Rumanian \NC Dan Seracu       \NC \NR
+%D \NC Italian    \NC Giuseppe Bilotta       \NC \NR
+%D \NC Rumanian   \NC Dan Seracu             \NC \NR
+%D \NC Portuguese \NC Pedro F. M. Mendon\c a \NC \NR
 %D \stoptabulate
 
 %  Latin, Italian, Rhaeto-Romanic, Rumanian, Sardian
@@ -36,7 +37,7 @@
 
 \installlanguage
   [\s!fr]
-  [\c!spatiering=\v!opelkaar,
+  [\c!spacing=\v!packed,
    \c!leftsentence=\emdash,
    \c!rightsentence=\emdash,
    \c!leftsubsentence=\emdash,
@@ -45,12 +46,12 @@
    \c!rightquote=\rightguillemot,
    \c!leftquotation=\leftguillemot,
    \c!rightquotation=\rightguillemot,
-   \c!datum={\v!dag+,\v!spatie,\v!maand,\v!spatie,\v!jaar},
-   \c!status=\v!stop]
+   \c!date={\v!day+,\v!space,\v!month,\v!space,\v!year},
+   \c!state=\v!stop]
 
 \installlanguage
   [\s!es]
-  [\c!spatiering=\v!opelkaar,
+  [\c!spacing=\v!packed,
    \c!leftsentence=---,
    \c!rightsentence=---,
    \c!leftsubsentence=---,
@@ -59,16 +60,30 @@
    \c!rightquote=\upperrightsingleninequote,
    \c!leftquotation=\upperleftdoublesixquote,
    \c!rightquotation=\upperrightdoubleninequote,
-   \c!datum={\v!dag,\ ,\v!maand,\ ,\v!jaar},
-   \c!status=\v!stop]
+   \c!date={\v!day,\ ,\v!month,\ ,\v!year},
+   \c!state=\v!stop]
 
-\installlanguage [sp] [\s!es] % old times context 
+\installlanguage [sp] [\s!es] % old times context
+
+\installlanguage
+  [\s!ca]
+  [\c!spacing=\v!packed,
+   \c!leftsentence=---,
+   \c!rightsentence=---,
+   \c!leftsubsentence=---,
+   \c!rightsubsentence=---,
+   \c!leftquote=\upperleftsinglesixquote,
+   \c!rightquote=\upperrightsingleninequote,
+   \c!leftquotation=\upperleftdoublesixquote,
+   \c!rightquotation=\upperrightdoubleninequote,
+   \c!date={\v!day,\ ,\v!month,\ ,\v!year},
+   \c!state=\v!stop]
 
 % Note GB left|/|right (sub)sentences are for \quote {incisi}.
 
 \installlanguage
   [\s!it]
-  [\c!spatiering=\v!opelkaar,
+  [\c!spacing=\v!packed,
    \c!leftsentence=---,
    \c!rightsentence=---,
    \c!leftsubsentence=--,
@@ -80,12 +95,12 @@
    \c!leftspeech=\leftguillemot,
    \c!middlespeech=\leftguillemot,
    \c!rightspeech=\rightguillemot,
-   \c!datum={\v!dag,\ ,\v!maand,\ ,\v!jaar},
-   \c!status=\v!stop]
+   \c!date={\v!day,\ ,\v!month,\ ,\v!year},
+   \c!state=\v!stop]
 
-\installlanguage % the same as italian 
+\installlanguage % the same as italian
   [\s!la]
-  [\c!spatiering=\v!opelkaar,
+  [\c!spacing=\v!packed,
    \c!leftsentence=---,
    \c!rightsentence=---,
    \c!leftsubsentence=---,
@@ -94,12 +109,12 @@
    \c!rightquote=\lowerrightsingleninequote,
    \c!leftquotation=\upperleftdoublesixquote,
    \c!rightquotation=\lowerrightdoubleninequote,
-   \c!datum={\v!dag,\ ,\v!maand,\ ,\v!jaar},
-   \c!status=\v!stop]
+   \c!date={\v!day,\ ,\v!month,\ ,\v!year},
+   \c!state=\v!stop]
 
 \installlanguage
   [\s!pt]
-  [\c!spatiering=\v!opelkaar,
+  [\c!spacing=\v!packed,
    \c!leftsentence=---,
    \c!rightsentence=---,
    \c!leftsubsentence=---,
@@ -108,12 +123,12 @@
    \c!rightquote=\upperrightsingleninequote,
    \c!leftquotation=\upperleftdoublesixquote,
    \c!rightquotation=\upperrightdoubleninequote,
-   \c!datum={\v!jaar,\ ,\v!maand,\ ,\v!dag},
-   \c!status=\v!stop]
+   \c!date={\v!year,\ ,\v!month,\ ,\v!day},
+   \c!state=\v!stop]
 
 \installlanguage
   [\s!ro]
-  [\c!spatiering=\v!opelkaar,
+  [\c!spacing=\v!packed,
    \c!leftsentence=---,
    \c!rightsentence=---,
    \c!leftsubsentence=---,
@@ -122,8 +137,8 @@
    \c!rightquote=\rightguillemot,
    \c!leftquotation=\lowerrightdoubleninequote,
    \c!rightquotation=\upperleftdoublesixquote,
-   \c!datum={\v!dag,\ ,\v!maand,\ ,\v!jaar},
-   \c!status=\v!stop]
+   \c!date={\v!day,\ ,\v!month,\ ,\v!year},
+   \c!state=\v!stop]
 
 %D For compatibility reasons we also define:
 
@@ -131,166 +146,189 @@
 
 \installlanguage [french]      [\s!fr]
 \installlanguage [spanish]     [\s!es]
+\installlanguage [catalan]     [\s!ca]
 \installlanguage [italian]     [\s!it]
 \installlanguage [latin]       [\s!la]
 \installlanguage [portuguese]  [\s!pt]
 \installlanguage [romanian]    [\s!ro]
 
-%D Labels and header texts. 
+%D Labels and header texts.
 
-\setupheadtext [\s!fr] [\v!inhoud=Table des mati\`eres]
-\setupheadtext [\s!es] [\v!inhoud=\'Indice]
-\setupheadtext [\s!it] [\v!inhoud=Indice]
-\setupheadtext [\s!la] [\v!inhoud=Quod in libro continetur] %Argumentum
-\setupheadtext [\s!pt] [\v!inhoud=Conte\'ud]
-\setupheadtext [\s!ro] [\v!inhoud=Cuprins]
+\setupheadtext [\s!fr] [\v!content=Table des mati\`eres]
+\setupheadtext [\s!es] [\v!content=\'Indice]
+\setupheadtext [\s!ca] [\v!content=\'Index de continguts]
+\setupheadtext [\s!it] [\v!content=Indice]
+\setupheadtext [\s!la] [\v!content=Quod in libro continetur] %Argumentum
+\setupheadtext [\s!pt] [\v!content=Conte\'udo]
+\setupheadtext [\s!ro] [\v!content=Cuprins]
 
-\setupheadtext [\s!fr] [\v!tabellen=Tables]
-\setupheadtext [\s!es] [\v!tabellen=Tablas]
-\setupheadtext [\s!it] [\v!tabellen=Tabelle]
-\setupheadtext [\s!la] [\v!tabellen=Tabulae]
-\setupheadtext [\s!pt] [\v!tabellen=Tabelas]
-\setupheadtext [\s!ro] [\v!tabellen=Tabele]
+\setupheadtext [\s!fr] [\v!tables=Tables]
+\setupheadtext [\s!es] [\v!tables=Tablas]
+\setupheadtext [\s!ca] [\v!tables=Taules]
+\setupheadtext [\s!it] [\v!tables=Tabelle]
+\setupheadtext [\s!la] [\v!tables=Tabulae]
+\setupheadtext [\s!pt] [\v!tables=Tabelas]
+\setupheadtext [\s!ro] [\v!tables=Tabele]
 
-\setupheadtext [\s!fr] [\v!figuren=Figures]
-\setupheadtext [\s!es] [\v!figuren=Ilustraci\'ons]
-\setupheadtext [\s!it] [\v!figuren=Figure]
-\setupheadtext [\s!la] [\v!figuren=Imagines]
-\setupheadtext [\s!pt] [\v!figuren=Figuras]
-\setupheadtext [\s!ro] [\v!figuren=Figuri]
+\setupheadtext [\s!fr] [\v!figures=Figures]
+\setupheadtext [\s!es] [\v!figures=Ilustraci\'ons]
+\setupheadtext [\s!ca] [\v!figures=Figures]
+\setupheadtext [\s!it] [\v!figures=Figure]
+\setupheadtext [\s!la] [\v!figures=Imagines]
+\setupheadtext [\s!pt] [\v!figures=Figuras]
+\setupheadtext [\s!ro] [\v!figures=Figuri]
 
-\setupheadtext [\s!fr] [\v!grafieken=Graphiques]
-\setupheadtext [\s!es] [\v!grafieken=Gr\'aficos]
-\setupheadtext [\s!it] [\v!grafieken=Grafici]
-\setupheadtext [\s!la] [\v!grafieken=Typi]
-\setupheadtext [\s!pt] [\v!grafieken=Gr\'aficos]
-\setupheadtext [\s!ro] [\v!grafieken=Grafice]
+\setupheadtext [\s!fr] [\v!graphics=Graphiques]
+\setupheadtext [\s!es] [\v!graphics=Gr\'aficos]
+\setupheadtext [\s!it] [\v!graphics=Grafici]
+\setupheadtext [\s!ca] [\v!graphics=Gr\`afiques]
+\setupheadtext [\s!la] [\v!graphics=Typi]
+\setupheadtext [\s!pt] [\v!graphics=Gr\'aficos]
+\setupheadtext [\s!ro] [\v!graphics=Grafice]
 
-\setupheadtext [\s!fr] [\v!intermezzos=Interm\`edes]
-\setupheadtext [\s!es] [\v!intermezzos=intermedios]
-\setupheadtext [\s!it] [\v!intermezzos=Intermezzi]
-\setupheadtext [\s!la] [\v!intermezzos=Intermissa]
-\setupheadtext [\s!pt] [\v!intermezzos=Intermezzi]
-\setupheadtext [\s!ro] [\v!intermezzos=Intermzzo]
+\setupheadtext [\s!fr] [\v!intermezzi=Interm\`edes]
+\setupheadtext [\s!es] [\v!intermezzi=intermedios]
+\setupheadtext [\s!ca] [\v!intermezzi=intermedis]
+\setupheadtext [\s!it] [\v!intermezzi=Intermezzi]
+\setupheadtext [\s!la] [\v!intermezzi=Intermissa]
+\setupheadtext [\s!pt] [\v!intermezzi=Interm\'edios]
+\setupheadtext [\s!ro] [\v!intermezzi=Intermzzo]
 
 \setupheadtext [\s!fr] [\v!index=Index]
 \setupheadtext [\s!es] [\v!index=\'Indice]
+\setupheadtext [\s!ca] [\v!index=\'Index alfab\`etic]
 \setupheadtext [\s!it] [\v!index=Indice]
 \setupheadtext [\s!la] [\v!index=Indices]
 \setupheadtext [\s!pt] [\v!index=\'Indice]
 \setupheadtext [\s!ro] [\v!index=Index]
 
-\setupheadtext [\s!fr] [\v!afkortingen=Abr\'eviations]
-\setupheadtext [\s!es] [\v!afkortingen=Abreviaci\'ons]
-\setupheadtext [\s!it] [\v!afkortingen=Abbreviazioni]
-\setupheadtext [\s!la] [\v!afkortingen=Notae]
-\setupheadtext [\s!pt] [\v!afkortingen=Abreviaturas]
-\setupheadtext [\s!ro] [\v!afkortingen=Abrevieri]
+\setupheadtext [\s!fr] [\v!abbreviations=Abr\'eviations]
+\setupheadtext [\s!es] [\v!abbreviations=Abreviaci\'ons]
+\setupheadtext [\s!ca] [\v!abbreviations=Abreviacions]
+\setupheadtext [\s!it] [\v!abbreviations=Abbreviazioni]
+\setupheadtext [\s!la] [\v!abbreviations=Notae]
+\setupheadtext [\s!pt] [\v!abbreviations=Abreviaturas]
+\setupheadtext [\s!ro] [\v!abbreviations=Abrevieri]
 
 \setupheadtext [\s!fr] [\v!logos=Logos]
 \setupheadtext [\s!es] [\v!logos=Logotipos]
+\setupheadtext [\s!ca] [\v!logos=Logotips]
 \setupheadtext [\s!it] [\v!logos=Logotipi]
 \setupheadtext [\s!la] [\v!logos=Typi negotiales]
 \setupheadtext [\s!pt] [\v!logos=Logotipos]
 \setupheadtext [\s!ro] [\v!logos=Logo-uri]
 
-\setupheadtext [\s!fr] [\v!eenheden=Unit\'es]
-\setupheadtext [\s!es] [\v!eenheden=Unidads]
-\setupheadtext [\s!it] [\v!eenheden=Unit\`a]
-\setupheadtext [\s!la] [\v!eenheden=Modi]
-\setupheadtext [\s!pt] [\v!eenheden=Unidades]
-\setupheadtext [\s!ro] [\v!eenheden=Unit\u{a}\c{t}i]
+\setupheadtext [\s!fr] [\v!units=Unit\'es]
+\setupheadtext [\s!es] [\v!units=Unidads]
+\setupheadtext [\s!ca] [\v!units=Unitats]
+\setupheadtext [\s!it] [\v!units=Unit\`a]
+\setupheadtext [\s!la] [\v!units=Modi]
+\setupheadtext [\s!pt] [\v!units=Unidades]
+\setupheadtext [\s!ro] [\v!units=Unit\u{a}\c{t}i]
 
-\setuplabeltext [\s!fr] [\v!tabel=Table ]
-\setuplabeltext [\s!es] [\v!tabel=Tablas ]
-\setuplabeltext [\s!it] [\v!tabel=Tabella ]
-\setuplabeltext [\s!la] [\v!tabel=Tabula ]
-\setuplabeltext [\s!pt] [\v!tabel=Tabela ]
-\setuplabeltext [\s!ro] [\v!tabel=Tabelul ]
+\setuplabeltext [\s!fr] [\v!table=Table ]
+\setuplabeltext [\s!es] [\v!table=Tablas ]
+\setuplabeltext [\s!ca] [\v!table=Taules ]
+\setuplabeltext [\s!it] [\v!table=Tabella ]
+\setuplabeltext [\s!la] [\v!table=Tabula ]
+\setuplabeltext [\s!pt] [\v!table=Tabela ]
+\setuplabeltext [\s!ro] [\v!table=Tabelul ]
 
-\setuplabeltext [\s!fr] [\v!figuur=Figure ]
-\setuplabeltext [\s!es] [\v!figuur=Ilustraci\'on ]
-\setuplabeltext [\s!it] [\v!figuur=Fig. ]
-\setuplabeltext [\s!la] [\v!figuur=Imago ]
-\setuplabeltext [\s!pt] [\v!figuur=Figura ]
-\setuplabeltext [\s!ro] [\v!figuur=Figura ]
+\setuplabeltext [\s!fr] [\v!figure=Figure ]
+\setuplabeltext [\s!es] [\v!figure=Ilustraci\'on ]
+\setuplabeltext [\s!ca] [\v!figure=Figura ]
+\setuplabeltext [\s!it] [\v!figure=Fig. ]
+\setuplabeltext [\s!la] [\v!figure=Imago ]
+\setuplabeltext [\s!pt] [\v!figure=Figura ]
+\setuplabeltext [\s!ro] [\v!figure=Figura ]
 
 \setuplabeltext [\s!fr] [\v!intermezzo=Interm\`ede ]
 \setuplabeltext [\s!es] [\v!intermezzo=intermedio ]
+\setuplabeltext [\s!ca] [\v!intermezzo=Intermedi ]
 \setuplabeltext [\s!it] [\v!intermezzo=Intermezzo ]
 \setuplabeltext [\s!la] [\v!intermezzo=Intermissum ]
-\setuplabeltext [\s!pt] [\v!intermezzo=Intermezzo ]
+\setuplabeltext [\s!pt] [\v!intermezzo=Interm\'edio ]
 \setuplabeltext [\s!ro] [\v!intermezzo=Intermezzo ]
 
-\setuplabeltext [\s!fr] [\v!grafiek=Illustration ]
-\setuplabeltext [\s!es] [\v!grafiek=Gr\'afico ]
-\setuplabeltext [\s!it] [\v!grafiek=Grafico ]
-\setuplabeltext [\s!la] [\v!grafiek=Typus ]
-\setuplabeltext [\s!pt] [\v!grafiek=Gr\'afico ]
-\setuplabeltext [\s!ro] [\v!grafiek=Graficul ]
+\setuplabeltext [\s!fr] [\v!graphic=Illustration ]
+\setuplabeltext [\s!es] [\v!graphic=Gr\'afico ]
+\setuplabeltext [\s!ca] [\v!graphic=Gr\'afica ]
+\setuplabeltext [\s!it] [\v!graphic=Grafico ]
+\setuplabeltext [\s!la] [\v!graphic=Typus ]
+\setuplabeltext [\s!pt] [\v!graphic=Gr\'afico ]
+\setuplabeltext [\s!ro] [\v!graphic=Graficul ]
 
-\setuplabeltext [\s!fr] [\v!hoofdstuk=]
-\setuplabeltext [\s!es] [\v!hoofdstuk=]
-\setuplabeltext [\s!it] [\v!hoofdstuk=]
-\setuplabeltext [\s!la] [\v!hoofdstuk=]
-\setuplabeltext [\s!pt] [\v!hoofdstuk=]
-\setuplabeltext [\s!ro] [\v!hoofdstuk=]
+\setuplabeltext [\s!fr] [\v!chapter=]
+\setuplabeltext [\s!es] [\v!chapter=]
+\setuplabeltext [\s!ca] [\v!chapter=]
+\setuplabeltext [\s!it] [\v!chapter=]
+\setuplabeltext [\s!la] [\v!chapter=]
+\setuplabeltext [\s!pt] [\v!chapter=]
+\setuplabeltext [\s!ro] [\v!chapter=]
 
-\setuplabeltext [\s!fr] [\v!paragraaf=]
-\setuplabeltext [\s!es] [\v!paragraaf=]
-\setuplabeltext [\s!it] [\v!paragraaf=]
-\setuplabeltext [\s!la] [\v!paragraaf=]
-\setuplabeltext [\s!pt] [\v!paragraaf=]
-\setuplabeltext [\s!ro] [\v!paragraaf=]
+\setuplabeltext [\s!fr] [\v!section=]
+\setuplabeltext [\s!es] [\v!section=]
+\setuplabeltext [\s!ca] [\v!section=]
+\setuplabeltext [\s!it] [\v!section=]
+\setuplabeltext [\s!la] [\v!section=]
+\setuplabeltext [\s!pt] [\v!section=]
+\setuplabeltext [\s!ro] [\v!section=]
 
-\setuplabeltext [\s!fr] [\v!sub\v!paragraaf=]
-\setuplabeltext [\s!es] [\v!sub\v!paragraaf=]
-\setuplabeltext [\s!it] [\v!sub\v!paragraaf=]
-\setuplabeltext [\s!la] [\v!sub\v!paragraaf=]
-\setuplabeltext [\s!pt] [\v!sub\v!paragraaf=]
-\setuplabeltext [\s!ro] [\v!sub\v!paragraaf=]
+\setuplabeltext [\s!fr] [\v!subsection=]
+\setuplabeltext [\s!es] [\v!subsection=]
+\setuplabeltext [\s!ca] [\v!subsection=]
+\setuplabeltext [\s!it] [\v!subsection=]
+\setuplabeltext [\s!la] [\v!subsection=]
+\setuplabeltext [\s!pt] [\v!subsection=]
+\setuplabeltext [\s!ro] [\v!subsection=]
 
-\setuplabeltext [\s!fr] [\v!sub\v!sub\v!paragraaf=]
-\setuplabeltext [\s!es] [\v!sub\v!sub\v!paragraaf=]
-\setuplabeltext [\s!it] [\v!sub\v!sub\v!paragraaf=]
-\setuplabeltext [\s!la] [\v!sub\v!sub\v!paragraaf=]
-\setuplabeltext [\s!pt] [\v!sub\v!sub\v!paragraaf=]
-\setuplabeltext [\s!ro] [\v!sub\v!sub\v!paragraaf=]
+\setuplabeltext [\s!fr] [\v!subsubsection=]
+\setuplabeltext [\s!es] [\v!subsubsection=]
+\setuplabeltext [\s!ca] [\v!subsubsection=]
+\setuplabeltext [\s!it] [\v!subsubsection=]
+\setuplabeltext [\s!la] [\v!subsubsection=]
+\setuplabeltext [\s!pt] [\v!subsubsection=]
+\setuplabeltext [\s!ro] [\v!subsubsection=]
 
-\setuplabeltext [\s!fr] [\v!sub\v!sub\v!sub\v!paragraaf=]
-\setuplabeltext [\s!es] [\v!sub\v!sub\v!sub\v!paragraaf=]
-\setuplabeltext [\s!it] [\v!sub\v!sub\v!sub\v!paragraaf=]
-\setuplabeltext [\s!la] [\v!sub\v!sub\v!sub\v!paragraaf=]
-\setuplabeltext [\s!pt] [\v!sub\v!sub\v!sub\v!paragraaf=]
-\setuplabeltext [\s!ro] [\v!sub\v!sub\v!sub\v!paragraaf=]
+\setuplabeltext [\s!fr] [\v!subsubsubsection=]
+\setuplabeltext [\s!es] [\v!subsubsubsection=]
+\setuplabeltext [\s!ca] [\v!subsubsubsection=]
+\setuplabeltext [\s!it] [\v!subsubsubsection=]
+\setuplabeltext [\s!la] [\v!subsubsubsection=]
+\setuplabeltext [\s!pt] [\v!subsubsubsection=]
+\setuplabeltext [\s!ro] [\v!subsubsubsection=]
 
-\setuplabeltext [\s!fr] [\v!bijlage=]
-\setuplabeltext [\s!es] [\v!bijlage=]
-\setuplabeltext [\s!it] [\v!bijlage=]
-\setuplabeltext [\s!la] [\v!bijlage=]
-\setuplabeltext [\s!pt] [\v!bijlage=]
-\setuplabeltext [\s!ro] [\v!bijlage=]
+\setuplabeltext [\s!fr] [\v!appendix=]
+\setuplabeltext [\s!es] [\v!appendix=]
+\setuplabeltext [\s!ca] [\v!appendix=]
+\setuplabeltext [\s!it] [\v!appendix=]
+\setuplabeltext [\s!la] [\v!appendix=]
+\setuplabeltext [\s!pt] [\v!appendix=]
+\setuplabeltext [\s!ro] [\v!appendix=]
 
-\setuplabeltext [\s!fr] [\v!deel=Partie ]
-\setuplabeltext [\s!es] [\v!deel=Parte ]
-\setuplabeltext [\s!it] [\v!deel=Parte ]
-\setuplabeltext [\s!la] [\v!deel=Pars ]
-\setuplabeltext [\s!pt] [\v!deel=Parte ]
-\setuplabeltext [\s!ro] [\v!deel=Partea ]
+\setuplabeltext [\s!fr] [\v!part=Partie ]
+\setuplabeltext [\s!es] [\v!part=Parte ]
+\setuplabeltext [\s!ca] [\v!part=Part ]
+\setuplabeltext [\s!it] [\v!part=Parte ]
+\setuplabeltext [\s!la] [\v!part=Pars ]
+\setuplabeltext [\s!pt] [\v!part=Parte ]
+\setuplabeltext [\s!ro] [\v!part=Partea ]
 
-\setuplabeltext [\s!fr] [\v!regel=ligne ]
-\setuplabeltext [\s!es] [\v!regel=l\'\i nea ]
-\setuplabeltext [\s!it] [\v!regel=riga ]
-\setuplabeltext [\s!la] [\v!regel=versus ]
-\setuplabeltext [\s!pt] [\v!regel=linha ]
-\setuplabeltext [\s!ro] [\v!regel=linia ]
+\setuplabeltext [\s!fr] [\v!line=ligne ]
+\setuplabeltext [\s!es] [\v!line=l\'\i nea ]
+\setuplabeltext [\s!ca] [\v!line=l\'\i nia ]
+\setuplabeltext [\s!it] [\v!line=riga ]
+\setuplabeltext [\s!la] [\v!line=versus ]
+\setuplabeltext [\s!pt] [\v!line=linha ]
+\setuplabeltext [\s!ro] [\v!line=linia ]
 
-\setuplabeltext [\s!fr] [\v!regels=lignes ]
-\setuplabeltext [\s!es] [\v!regels=l\'\i neas ]
-\setuplabeltext [\s!it] [\v!regels=righe ]
-\setuplabeltext [\s!la] [\v!regels=versus ]
-\setuplabeltext [\s!pt] [\v!regels=linhas ]
-\setuplabeltext [\s!ro] [\v!regels=liniile ]
+\setuplabeltext [\s!fr] [\v!lines=lignes ]
+\setuplabeltext [\s!es] [\v!lines=l\'\i neas ]
+\setuplabeltext [\s!ca] [\v!lines=l\'\i nies ]
+\setuplabeltext [\s!it] [\v!lines=righe ]
+\setuplabeltext [\s!la] [\v!lines=versus ]
+\setuplabeltext [\s!pt] [\v!lines=linhas ]
+\setuplabeltext [\s!ro] [\v!lines=liniile ]
 
 \setuplabeltext [\s!fr]   [\v!january=janvier]
 \setuplabeltext [\s!fr]  [\v!february=f\'evrier]
@@ -317,6 +355,19 @@
 \setuplabeltext [\s!es]   [\v!october=octubre]
 \setuplabeltext [\s!es]  [\v!november=noviembre]
 \setuplabeltext [\s!es]  [\v!december=deciembre]
+
+\setuplabeltext [\s!ca]   [\v!january=gener]
+\setuplabeltext [\s!ca]  [\v!february=febrer]
+\setuplabeltext [\s!ca]     [\v!march=mar\,c]
+\setuplabeltext [\s!ca]     [\v!april=abril]
+\setuplabeltext [\s!ca]       [\v!may=maig]
+\setuplabeltext [\s!ca]      [\v!june=juny]
+\setuplabeltext [\s!ca]      [\v!july=juliol]
+\setuplabeltext [\s!ca]    [\v!august=agost]
+\setuplabeltext [\s!ca] [\v!september=septembre]
+\setuplabeltext [\s!ca]   [\v!october=octubre]
+\setuplabeltext [\s!ca]  [\v!november=novembre]
+\setuplabeltext [\s!ca]  [\v!december=decembre]
 
 \setuplabeltext [\s!it]   [\v!january=gennaio]
 \setuplabeltext [\s!it]  [\v!february=febbraio]
@@ -386,6 +437,14 @@
 \setuplabeltext [\s!es]    [\v!friday=viernes]
 \setuplabeltext [\s!es]  [\v!saturday=s\'abado]
 
+\setuplabeltext [\s!ca]    [\v!sunday=diumenge]
+\setuplabeltext [\s!ca]    [\v!monday=dilluns]
+\setuplabeltext [\s!ca]   [\v!tuesday=dimarts]
+\setuplabeltext [\s!ca] [\v!wednesday=dimecres]
+\setuplabeltext [\s!ca]  [\v!thursday=dijous]
+\setuplabeltext [\s!ca]    [\v!friday=divendres]
+\setuplabeltext [\s!ca]  [\v!saturday=dissabte]
+
 \setuplabeltext [\s!it]    [\v!sunday=domenica]
 \setuplabeltext [\s!it]    [\v!monday=luned\`\i]
 \setuplabeltext [\s!it]   [\v!tuesday=marted\`\i]
@@ -419,7 +478,7 @@
 \setuplabeltext [\s!ro] [\v!saturday=s\^{a}mb\u{a}t\u{a}]
 
 % \startlanguagespecifics[\s!ro]
-% 
+%
 %   \installcompoundcharacter "a {\u{a}}
 %   \installcompoundcharacter "i {\^{\i}}
 %   \installcompoundcharacter "s {\c{s}}
@@ -428,18 +487,18 @@
 %   \installcompoundcharacter "I {\^{I}}
 %   \installcompoundcharacter "S {\c{S}}
 %   \installcompoundcharacter "T {\c{T}}
-%   \installcompoundcharacter "` {\handlequotation\c!leftquotation}  
+%   \installcompoundcharacter "` {\handlequotation\c!leftquotation}
 %   \installcompoundcharacter "' {\handlequotation\c!rightquotation}
-% 
+%
 % \stoplanguagespecifics
 
 %D Rather new \unknown
 
-\setuplabeltext [\s!it]    [\v!pagina=pagina ]
-\setuplabeltext [\s!it]  [\v!oppagina=a pagina ]
-\setuplabeltext [\s!it] [\v!hierboven=come mostrato sopra]
-\setuplabeltext [\s!it] [\v!hieronder=come mostrato sotto]
-\setuplabeltext [\s!it]       [\v!zie=cf. ]
+\setuplabeltext [\s!it]    [\v!page=pagina ]
+\setuplabeltext [\s!it]  [\v!atpage=a pagina ]
+\setuplabeltext [\s!it] [\v!hencefore=come mostrato sopra]
+\setuplabeltext [\s!it] [\v!hereafter=come mostrato sotto]
+\setuplabeltext [\s!it]       [\v!see=cf. ]
 
 %D Ordinal converters:
 
@@ -448,12 +507,13 @@
      \highordinalstr{er}%
    \fi}
 
-\defineconversion [\s!fr] [\v!dag+] [\frordinaldaynumber]
+\defineconversion [\s!fr] [\v!day+] [\frordinaldaynumber]
 
 %D \ShowAllLanguageValues [\s!fr] [french]     franse slag
 %D \ShowAllLanguageValues [\s!es] [spanish]    spaans benauwd
+%D \ShowAllLanguageValues [\s!ca] [catalan]    catalaans ...
 %D \ShowAllLanguageValues [\s!it] [italian]    italiaanse ...
-%D \ShowAllLanguageValues [\s!la] [latin]      latijnse missen 
+%D \ShowAllLanguageValues [\s!la] [latin]      latijnse missen
 %D \ShowAllLanguageValues [\s!pt] [portuguese] portugese ...
 %D \ShowAllLanguageValues [\s!ro] [romanian]   romanian ...
 

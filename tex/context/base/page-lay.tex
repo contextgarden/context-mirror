@@ -13,8 +13,6 @@
 
 \writestatus{loading}{Context Page Macros / Layout Specification}
 
-% swapmargins will disappear, and be replaced by inner/outer
-
 % to be translated into english
 
 % hoofdhoogte wordt bij status=hoog niet aangepast op outer
@@ -40,42 +38,42 @@
 %D The dimensions related to layout areas are represented by
 %D real dimensions.
 
-\newdimen\papierhoogte       \papierhoogte         = 297mm
-\newdimen\papierbreedte      \papierbreedte        = 210mm
+\newdimen\paperheight          \paperheight          = 297mm
+\newdimen\paperwidth           \paperwidth           = 210mm
 
-\newdimen\printpapierhoogte  \printpapierhoogte    = \papierhoogte
-\newdimen\printpapierbreedte \printpapierbreedte   = \papierbreedte
+\newdimen\printpaperheight     \printpaperheight     = \paperheight
+\newdimen\printpaperwidth      \printpaperwidth      = \paperwidth
 
-\newdimen\zethoogte                                % calculated
-\newdimen\zetbreedte                               % calculated
+\newdimen\makeupheight                               % calculated
+\newdimen\makeupwidth                                % calculated
 
-\newdimen\teksthoogte                              % calculated
-\newdimen\tekstbreedte                             % calculated
+\newdimen\textheight                                 % calculated
+\newdimen\textwidth                                  % calculated
 
-\newdimen\kopwit              \kopwit              = 2cm
-\newdimen\rugwit              \rugwit              = \kopwit
-\newdimen\snijwit             \snijwit             = 0pt
-\newdimen\bodemwit            \bodemwit            = 0pt
+\newdimen\topspace             \topspace             = 2cm
+\newdimen\backspace            \backspace            = \topspace
+\newdimen\cutspace             \cutspace             = 0pt
+\newdimen\bottomspace          \bottomspace          = 0pt
 
-\newdimen\hoofdhoogte         \hoofdhoogte         = 2cm
-\newdimen\voethoogte          \voethoogte          = \hoofdhoogte
+\newdimen\headerheight         \headerheight         = 2cm
+\newdimen\footerheight         \footerheight         = \headerheight
 
-\newdimen\kopoffset           \kopoffset           = 0pt
-\newdimen\rugoffset           \rugoffset           = \kopoffset
+\newdimen\kopoffset            \kopoffset            = 0pt
+\newdimen\rugoffset            \rugoffset            = \kopoffset
 
-\newdimen\linkermargebreedte  \linkermargebreedte  = 3cm
-\newdimen\rechtermargebreedte \rechtermargebreedte = \linkermargebreedte
+\newdimen\leftmarginwidth      \leftmarginwidth      = 3cm
+\newdimen\rightmarginwidth     \rightmarginwidth     = \leftmarginwidth
 
-\newdimen\linkerrandbreedte   \linkerrandbreedte   = 3cm
-\newdimen\rechterrandbreedte  \rechterrandbreedte  = \linkerrandbreedte
+\newdimen\leftedgewidth        \leftedgewidth        = 3cm
+\newdimen\rightedgewidth       \rightedgewidth       = \leftedgewidth
 
-\newdimen\bovenhoogte         \bovenhoogte         = 0cm
-\newdimen\onderhoogte         \onderhoogte         = \bovenhoogte
+\newdimen\topheight            \topheight            = 0cm
+\newdimen\bottomheight         \bottomheight         = \topheight
 
-\newcount\layoutlines         \layoutlines         = 0
-\newcount\layoutcolumns       \layoutcolumns       = 0
-\newdimen\layoutcolumndistance\layoutcolumndistance= 0pt
-\newdimen\layoutcolumnwidth   \layoutcolumnwidth   = 0pt
+\newcount\layoutlines          \layoutlines          = 0
+\newcount\layoutcolumns        \layoutcolumns        = 0
+\newdimen\layoutcolumndistance \layoutcolumndistance = 0pt
+\newdimen\layoutcolumnwidth    \layoutcolumnwidth    = 0pt
 
 %D We can save some tokens and fuzzy parameters by using a
 %D symbolic name for the current set of layout parameters.
@@ -148,121 +146,109 @@
 %D couple of backgrounds only (which is far less than one
 %D percent on a normal document).
 
-\newif\iffixedlayoutdimensions \fixedlayoutdimensionstrue
-
-\iffixedlayoutdimensions
-  \let\@the\the
-\else
-  \let\@the\empty
-\fi
-
 %D The next series of dimensions are complemented by left
 %D and rights ones.
 
-\iffixedlayoutdimensions
-
-  \newdimen \margeafstand
-  \newdimen \randafstand
-  \newdimen \margebreedte
-  \newdimen \randbreedte
-
-\else
-
-  \def\margeafstand{\layoutparameter\c!margeafstand}
-  \def\randafstand {\layoutparameter\c!randafstand}
-  \def\margebreedte{\layoutparameter\c!marge}
-  \def\randbreedte {\layoutparameter\c!rand}
-
-\fi
+\newdimen \margindistance
+\newdimen \edgedistance
+\newdimen \marginwidth
+\newdimen \edgewidth
 
 %D Because a distance does not really makes sense when there
 %D is no area, we use a zero distance in case there is no
 %D area.
 
-\iffixedlayoutdimensions
-
-  \def\layoutdistance#1#2%
-    {\ifdim\zeropoint<#1\layoutparameter#2\else\zeropoint  \fi}
-
-\else
-
-  \def\layoutdistance#1#2%
-    {\ifdim\zeropoint<#1\layoutparameter#2\else\!!zeropoint\fi}
-
-\fi
+\def\layoutdistance#1#2%
+  {\ifdim\zeropoint<#1\layoutparameter#2\else\zeropoint\fi}
 
 %D The horizontal distances are:
 
-\iffixedlayoutdimensions
-
-  \newdimen \linkerrandafstand
-  \newdimen \rechterrandafstand
-  \newdimen \linkermargeafstand
-  \newdimen \rechtermargeafstand
-
-\else
-
-  \def\linkerrandafstand
-    {\layoutdistance\linkerrandbreedte\c!linkerrandafstand}
-
-  \def\rechterrandafstand
-    {\layoutdistance\rechterrandbreedte\c!rechterrandafstand}
-
-  \def\linkermargeafstand
-    {\layoutdistance\linkermargebreedte\c!linkermargeafstand}
-
-  \def\rechtermargeafstand
-    {\layoutdistance\rechtermargebreedte\c!rechtermargeafstand}
-
-\fi
+\newdimen \leftedgedistance
+\newdimen \rightedgedistance
+\newdimen \leftmargindistance
+\newdimen \rightmargindistance
 
 %D The vertical distances are:
 
-\iffixedlayoutdimensions
+\newdimen \topdistance
+\newdimen \headerdistance
+\newdimen \footerdistance
+\newdimen \bottomdistance
 
-  \newdimen \bovenafstand
-  \newdimen \hoofdafstand
-  \newdimen \voetafstand
-  \newdimen \onderafstand
+%D We need to calculate the extra distances:
 
-\else
+\def\setlayoutdimensions
+  {\global\marginwidth        \layoutparameter\c!margin
+   \global\edgewidth          \layoutparameter\c!edge
+   \global\margindistance     \layoutparameter\c!margindistance
+   \global\edgedistance       \layoutparameter\c!edgedistance
+   \global\leftedgedistance   \layoutdistance \leftedgewidth    \c!leftedgedistance
+   \global\rightedgedistance  \layoutdistance \rightedgewidth   \c!rightedgedistance
+   \global\leftmargindistance \layoutdistance \leftmarginwidth  \c!leftmargindistance
+   \global\rightmargindistance\layoutdistance \rightmarginwidth \c!rightmargindistance
+   \global\topdistance        \layoutdistance \topheight        \c!topdistance
+   \global\headerdistance     \layoutdistance \headerheight     \c!headerdistance
+   \global\footerdistance     \layoutdistance \footerheight     \c!footerdistance
+   \global\bottomdistance     \layoutdistance \bottomheight     \c!bottomdistance}
 
-  \def\bovenafstand{\layoutdistance\bovenhoogte\c!bovenafstand}
-  \def\hoofdafstand{\layoutdistance\hoofdhoogte\c!hoofdafstand}
-  \def\voetafstand {\layoutdistance\voethoogte \c!voetafstand }
-  \def\onderafstand{\layoutdistance\onderhoogte\c!onderafstand}
+\def\setlayoutdistances % local in \setreducedvsize
+  {\headerdistance\layoutdistance\headerheight\c!headerdistance
+   \footerdistance \layoutdistance\footerheight \c!footerdistance}
 
-\fi
+\def\outermarginwidth   {\rightorleftpageaction\rightmarginwidth   \leftmarginwidth }
+\def\innermarginwidth   {\rightorleftpageaction\leftmarginwidth    \rightmarginwidth}
+\def\outermargindistance{\rightorleftpageaction\rightmargindistance\leftmargindistance }
+\def\innermargindistance{\rightorleftpageaction\leftmargindistance \rightmargindistance}
 
-%D When fixed dimensions are used, we need to calculate the
-%D distances:
+\def\outeredgewidth     {\rightorleftpageaction\rightedgewidth   \leftedgewidth }
+\def\inneredgewidth     {\rightorleftpageaction\leftedgewidth    \rightedgewidth}
+\def\outeredgedistance  {\rightorleftpageaction\rightedgedistance\leftedgedistance }
+\def\inneredgedistance  {\rightorleftpageaction\leftedgedistance \rightedgedistance}
 
-\iffixedlayoutdimensions
+\def\outerspacewidth    {\rightorleftpageaction\cutspace\backspace}
+\def\innerspacewidth    {\rightorleftpageaction\backspace\cutspace}
 
-  \def\setlayoutdimensions
-    {\global\margebreedte       \layoutparameter\c!marge
-     \global\randbreedte        \layoutparameter\c!rand
-     \global\margeafstand       \layoutparameter\c!margeafstand
-     \global\randafstand        \layoutparameter\c!randafstand
-     \global\linkerrandafstand  \layoutdistance \linkerrandbreedte  \c!linkerrandafstand
-     \global\rechterrandafstand \layoutdistance \rechterrandbreedte \c!rechterrandafstand
-     \global\linkermargeafstand \layoutdistance \linkermargebreedte \c!linkermargeafstand
-     \global\rechtermargeafstand\layoutdistance \rechtermargebreedte\c!rechtermargeafstand
-     \global\bovenafstand       \layoutdistance \bovenhoogte        \c!bovenafstand
-     \global\hoofdafstand       \layoutdistance \hoofdhoogte        \c!hoofdafstand
-     \global\voetafstand        \layoutdistance \voethoogte         \c!voetafstand
-     \global\onderafstand       \layoutdistance \onderhoogte        \c!onderafstand}
+\newtoks\extralayoutcalculations \def\calculatelayoutextras{\the\extralayoutcalculations}
 
-  \def\setlayoutdistances % local in \setreducedvsize
-    {\hoofdafstand\layoutdistance\hoofdhoogte\c!hoofdafstand
-     \voetafstand \layoutdistance\voethoogte \c!voetafstand}
+\appendtoks
+  \scratchdimen\leftmarginwidth  \advance\scratchdimen\leftmargindistance  \xdef\leftmargintotal {\the\scratchdimen}%
+  \scratchdimen\rightmarginwidth \advance\scratchdimen\rightmargindistance \xdef\rightmargintotal{\the\scratchdimen}%
+  \scratchdimen\leftedgewidth    \advance\scratchdimen\leftedgedistance    \xdef\leftedgetotal   {\the\scratchdimen}%
+  \scratchdimen\rightedgewidth   \advance\scratchdimen\rightedgedistance   \xdef\rightedgetotal  {\the\scratchdimen}%
+  \scratchdimen\leftmarginwidth  \advance\scratchdimen\leftedgetotal       \xdef\leftsidetotal   {\the\scratchdimen}%
+  \scratchdimen\rightmarginwidth \advance\scratchdimen\rightedgetotal      \xdef\rightsidetotal  {\the\scratchdimen}%
+  \scratchdimen\leftmargintotal  \advance\scratchdimen\leftedgetotal       \xdef\leftcombitotal  {\the\scratchdimen}%
+  \scratchdimen\rightmargintotal \advance\scratchdimen\rightedgetotal      \xdef\rightcombitotal {\the\scratchdimen}%
+  %
+  \scratchdimen\innermarginwidth \advance\scratchdimen\innermargindistance \xdef\innermargintotal{\the\scratchdimen}%
+  \scratchdimen\outermarginwidth \advance\scratchdimen\outermargindistance \xdef\outermargintotal{\the\scratchdimen}%
+  \scratchdimen\inneredgewidth   \advance\scratchdimen\inneredgedistance   \xdef\inneredgetotal  {\the\scratchdimen}%
+  \scratchdimen\outeredgewidth   \advance\scratchdimen\outeredgedistance   \xdef\outeredgetotal  {\the\scratchdimen}%
+  \scratchdimen\innermargintotal \advance\scratchdimen\inneredgetotal      \xdef\innercombitotal {\the\scratchdimen}%
+  \scratchdimen\outermargintotal \advance\scratchdimen\outeredgetotal      \xdef\outercombitotal {\the\scratchdimen}%
+  \scratchdimen\innermarginwidth \advance\scratchdimen\inneredgetotal      \xdef\innersidetotal  {\the\scratchdimen}%
+  \scratchdimen\outermarginwidth \advance\scratchdimen\outeredgetotal      \xdef\outersidetotal  {\the\scratchdimen}%
+\to \extralayoutcalculations
 
-\else
+\newtoks\everyswapmargins % watch the order !
 
-  \let\setlayoutdimensions\relax
-  \let\setlayoutdistance  \relax
+\appendtoks
+   \swapdimens\leftmargindistance\rightmargindistance
+   \swapdimens\leftedgedistance  \rightedgedistance
+   \swapdimens\leftmarginwidth   \rightmarginwidth
+   \swapdimens\leftedgewidth     \rightedgewidth
+\to \everyswapmargins
 
-\fi
+\appendtoks
+  \swapmacros\leftmargintotal \rightmargintotal
+  \swapmacros\leftedgetotal   \rightedgetotal
+  \swapmacros\leftsidetotal   \rightsidetotal
+  \swapmacros\leftcombitotal  \rightcombitotal
+  \swapmacros\innermargintotal\outermargintotal
+  \swapmacros\inneredgetotal  \outeredgetotal
+  \swapmacros\innercombitotal \outercombitotal
+  \swapmacros\innersidetotal  \outersidetotal
+\to \everyswapmargins
 
 %D \macros
 %D   {definepapersize}
@@ -279,9 +265,10 @@
 
 \def\dodefinepapersize[#1][#2]%
   {\ifsecondargument
-     \getparameters
-       [\??pp#1] % geen \c!schaal, scheelt hash ruimte
-       [\c!breedte=\@@ppbreedte,\c!hoogte=\@@pphoogte,\c!offset=\@@ppoffset,#2]%
+     \doifsomething{#1} % to be sure
+       {\getparameters
+          [\??pp#1] % geen \c!scale, scheelt hash ruimte
+          [\c!width=\@@ppwidth,\c!height=\@@ppheight,\c!offset=\@@ppoffset,#2]}%
    \else
      \getparameters[\??pp][#1]%
      \setuppapersize
@@ -297,7 +284,7 @@
 %D paper.
 
 \definepapersize
-  [\c!breedte=210mm,\c!hoogte=297mm,\c!offset=\!!zeropoint]
+  [\c!width=210mm,\c!height=297mm,\c!offset=\!!zeropoint]
 
 %D \macros
 %D   {setuppaper,setuppapersize}
@@ -331,16 +318,16 @@
 % which is handy in 'example' when we use setups
 
 \def\setuppaper[#1]%
-  {\getparameters[\??pp][\c!papier=,\c!pagina=,#1]%
+  {\getparameters[\??pp][\c!paper=,\c!page=,#1]%
    \scratchcounter\@@ppnx
    \multiply\scratchcounter\@@ppny
    \edef\@@ppxy{\the\scratchcounter}%
-   \doifelsenothing\@@pppagina
-     {\doifsomething\@@pppapier
-        {\dodosetuppapersize[\papersize][\@@pppapier]}}
-     {\doifelsenothing\@@pppapier
-        {\dodosetuppapersize[\@@pppagina][\printpapersize]}
-        {\dodosetuppapersize[\@@pppagina][\@@pppapier]}}}
+   \doifelsenothing\@@pppage
+     {\doifsomething\@@pppaper
+        {\dodosetuppapersize[\papersize][\@@pppaper]}}
+     {\doifelsenothing\@@pppaper
+        {\dodosetuppapersize[\@@pppage][\printpapersize]}
+        {\dodosetuppapersize[\@@pppage][\@@pppaper]}}}
 
 \def\setuppapersize
   {\dodoubleempty\dosetuppapersize}
@@ -352,109 +339,9 @@
         {\getparameters[\??pp#1][#2]}
         {\dodosetuppapersize[#1][#2]}}}
 
-% \def\dodosetuppapersize[#1][#2]%
-%   {\ifsecondargument
-%      \xdef\restorepapersize
-%        {\noexpand\setuppapersize[#1][#2]}%
-%      \dostelpapierrichtingin{#1}\paperlandscape\paperrotation\paperreverse\papermirror
-%      \dostelpapierrichtingin{#2}\printlandscape\printrotation\printreverse\printmirror
-%      \def\docommando##1%
-%        {\doifsomething{##1}{\doifdefined{\??pp##1\c!breedte}
-%           {\global\papierbreedte\getvalue{\??pp##1\c!breedte}%
-%            \global\papierhoogte\getvalue{\??pp##1\c!hoogte}%
-%            \calculatepaperoffsets{##1}%
-%            \xdef\papersize{##1}}}}%
-%      \processcommacommand[#1]\docommando
-%      \doifdefinedelse{\??pp#1\c!schaal}
-%        {\edef\paperscale{\getvalue{\??pp#1\c!schaal}}}
-%        {\edef\paperscale{1}}%
-%      \def\docommando##1%
-%        {\doifsomething{##1}{\doifdefined{\??pp##1\c!breedte}
-%           {\global\printpapierbreedte\getvalue{\??pp##1\c!breedte}%
-%            \global\printpapierhoogte\getvalue{\??pp##1\c!hoogte}%
-%            \xdef\printpapersize{##1}}}}%
-%      \processcommacommand[#2]\docommando
-%      \global\setdimentoatleast\papierbreedte     \onepoint
-%      \global\setdimentoatleast\papierhoogte      \onepoint
-%      \global\setdimentoatleast\printpapierbreedte\onepoint
-%      \global\setdimentoatleast\printpapierhoogte \onepoint
-%      \ifcase\paperlandscape\else
-%        \doglobal\swapdimens\papierbreedte\papierhoogte
-%      \fi
-%      \ifcase\printlandscape\else
-%        \doglobal\swapdimens\printpapierbreedte\printpapierhoogte
-%      \fi
-%      % this check can be confusing, maybe we should add
-%      % an option \setuppapersize[option=fit] or so
-%      \ifdim\papierhoogte>\printpapierhoogte
-%        \global\printpapierhoogte\papierhoogte
-%        \writestatus\m!systems{print height forced to paper height}%
-%      \fi
-%      \ifdim\papierbreedte>\printpapierbreedte
-%        \global\printpapierbreedte\papierbreedte
-%        \writestatus\m!systems{print width forced to paper width}%
-%      \fi
-%      %
-%      \calculatehsizes
-%      \calculatevsizes
-%      \recalculatelogos
-%      \recalculatebackgrounds
-%      \recalculatelayout
-%    \else\iffirstargument
-%      \setuppapersize[#1][#2]%
-%    \else\ifx\papersize\undefined\else
-%      \restorepapersize
-%    \fi\fi\fi}
-
 \def\dodosetuppapersize[#1][#2]%
   {\ifsecondargument
-     \xdef\restorepapersize
-       {\noexpand\setuppapersize[#1][#2]}%
-     \dostelpapierrichtingin{#1}\paperlandscape\paperrotation\paperreverse\papermirror
-     \dostelpapierrichtingin{#2}\printlandscape\printrotation\printreverse\printmirror
-     \def\docommando##1%
-       {\doifsomething{##1}{\doifdefined{\??pp##1\c!breedte}
-          {\global\papierbreedte\getvalue{\??pp##1\c!breedte}%
-           \global\papierhoogte\getvalue{\??pp##1\c!hoogte}%
-           \calculatepaperoffsets{##1}%
-           \xdef\papersize{##1}}}}%
-     \processcommacommand[#1]\docommando
-     \doifdefinedelse{\??pp#1\c!schaal}
-       {\edef\paperscale{\getvalue{\??pp#1\c!schaal}}}
-       {\edef\paperscale{1}}%
-     \def\docommando##1%
-       {\doifsomething{##1}{\doifdefined{\??pp##1\c!breedte}
-          {\global\printpapierbreedte\getvalue{\??pp##1\c!breedte}%
-           \global\printpapierhoogte\getvalue{\??pp##1\c!hoogte}%
-           \xdef\printpapersize{##1}}}}%
-     \processcommacommand[#2]\docommando
-     \global\setdimentoatleast\papierbreedte     \onepoint
-     \global\setdimentoatleast\papierhoogte      \onepoint
-     \global\setdimentoatleast\printpapierbreedte\onepoint
-     \global\setdimentoatleast\printpapierhoogte \onepoint
-     \ifcase\paperlandscape\else
-       \doglobal\swapdimens\papierbreedte\papierhoogte
-     \fi
-     \ifcase\printlandscape\else
-       \doglobal\swapdimens\printpapierbreedte\printpapierhoogte
-     \fi
-     % this check can be confusing, so we've added the possibility
-     % to bypass this test: \setuppapersize[option=fit]
-     \doif\@@ppoptie\v!max % \v!fit is
-       {\bgroup
-        % we need to pre-swap else we get the wrong paper size
-        \doifinset\paperrotation{90,270}{\swapdimens\papierbreedte\papierhoogte}%
-        \doifinset\printrotation{90,270}{\swapdimens\printpapierbreedte\printpapierhoogte}%
-        \ifdim\papierhoogte>\printpapierhoogte
-          \global\printpapierhoogte\papierhoogte
-          \writestatus\m!systems{print height forced to paper height}%
-        \fi
-        \ifdim\papierbreedte>\printpapierbreedte
-          \global\printpapierbreedte\papierbreedte
-          \writestatus\m!systems{print width forced to paper width}%
-        \fi
-        \egroup}%
-     %
+     \dododosetuppapersize[#1][#2]%
      \calculatehsizes
      \calculatevsizes
      \recalculatelogos
@@ -466,6 +353,54 @@
      \restorepapersize
    \fi\fi\fi}
 
+\def\dododosetuppapersize[#1][#2]%
+  {\xdef\restorepapersize
+     {\noexpand\setuppapersize[#1][#2]}%
+   \dostelpapierrichtingin{#1}\paperlandscape\paperrotation\paperreverse\papermirror
+   \dostelpapierrichtingin{#2}\printlandscape\printrotation\printreverse\printmirror
+   \def\docommando##1%
+     {\doifsomething{##1}{\doifdefined{\??pp##1\c!width}
+        {\global\paperwidth\getvalue{\??pp##1\c!width}%
+         \global\paperheight\getvalue{\??pp##1\c!height}%
+         \calculatepaperoffsets{##1}%
+         \xdef\papersize{##1}}}}%
+   \processcommacommand[#1]\docommando
+   \doifdefinedelse{\??pp#1\c!scale}
+     {\edef\paperscale{\getvalue{\??pp#1\c!scale}}}
+     {\edef\paperscale{1}}%
+   \def\docommando##1%
+     {\doifsomething{##1}{\doifdefined{\??pp##1\c!width}
+        {\global\printpaperwidth\getvalue{\??pp##1\c!width}%
+         \global\printpaperheight\getvalue{\??pp##1\c!height}%
+         \xdef\printpapersize{##1}}}}%
+   \processcommacommand[#2]\docommando
+   \global\setdimentoatleast\paperwidth     \onepoint
+   \global\setdimentoatleast\paperheight      \onepoint
+   \global\setdimentoatleast\printpaperwidth\onepoint
+   \global\setdimentoatleast\printpaperheight \onepoint
+   \ifcase\paperlandscape\else
+     \doglobal\swapdimens\paperwidth\paperheight
+   \fi
+   \ifcase\printlandscape\else
+     \doglobal\swapdimens\printpaperwidth\printpaperheight
+   \fi
+   % this check can be confusing, so we've added the possibility
+   % to bypass this test: \setuppapersize[option=fit]
+   \doif\@@ppoption\v!max % \v!fit is
+     {\bgroup
+      % we need to pre-swap else we get the wrong paper size
+      \doifinset\paperrotation{90,270}{\swapdimens\paperwidth\paperheight}%
+      \doifinset\printrotation{90,270}{\swapdimens\printpaperwidth\printpaperheight}%
+      \ifdim\paperheight>\printpaperheight
+        \global\printpaperheight\paperheight
+        \writestatus\m!systems{print height forced to paper height}%
+      \fi
+      \ifdim\paperwidth>\printpaperwidth
+        \global\printpaperwidth\paperwidth
+        \writestatus\m!systems{print width forced to paper width}%
+      \fi
+      \egroup}}
+
 \def\dostelpapierrichtingin#1#2#3#4#5%
   {\global\chardef#2\zerocount
    \global\chardef#5\zerocount
@@ -474,10 +409,10 @@
    \global\negateprintboxfalse
    \processallactionsinset
      [#1]
-     [   \v!liggend=>\global\chardef#2\plusone,
-      \v!gespiegeld=>\global\chardef#5\plusone,
-       \v!geroteerd=>\gdef#3{90}\gdef#4{270},
-        \v!negatief=>\global\negateprintboxtrue,
+     [ \v!landscape=>\global\chardef#2\plusone,
+        \v!mirrored=>\global\chardef#5\plusone,
+         \v!rotated=>\gdef#3{90}\gdef#4{270},
+        \v!negative=>\global\negateprintboxtrue,
                  90=>\gdef#3{90}\gdef#4{270},
                 180=>\gdef#3{180}\gdef#4{0},
                 270=>\gdef#3{270}\gdef#4{90}]}
@@ -486,8 +421,8 @@
 
   \def\calculatepaperoffsets#1%
     {\scratchdimen\getvalue{\??pp#1\c!offset}%
-     \global\advance\papierbreedte -2\scratchdimen
-     \global\advance\papierhoogte  -2\scratchdimen}
+     \global\advance\paperwidth -2\scratchdimen
+     \global\advance\paperheight-2\scratchdimen}
 
 \fi
 
@@ -507,122 +442,134 @@
 % \newtoks \everybeforelayout \relax
 % \newtoks \everyafterlayout  \relax
 
+
 \def\recalculatelayout
+  {\doifsomething{\layoutparameter\c!page\layoutparameter\c!paper}
+     {\dododosetuppapersize[\layoutparameter\c!page][\layoutparameter\c!paper]}%
+   \dorecalculatelayout}
+
+\def\dorecalculatelayout
   {%\the\everybeforelayout
    \setups[\layoutparameter\c!preset]%
-   \global\linkermargebreedte \layoutparameter\c!linkermarge
-   \global\rechtermargebreedte\layoutparameter\c!rechtermarge
-   \global\linkerrandbreedte  \layoutparameter\c!linkerrand
-   \global\rechterrandbreedte \layoutparameter\c!rechterrand
-   \global\hoofdhoogte        \layoutparameter\c!hoofd
-   \global\voethoogte         \layoutparameter\c!voet
-   \global\onderhoogte        \layoutparameter\c!onder
-   \global\bovenhoogte        \layoutparameter\c!boven
-   \global\rugwit             \layoutparameter\c!rugwit
-   \global\kopwit             \layoutparameter\c!kopwit
+   \global\leftmarginwidth \layoutparameter\c!leftmargin
+   \global\rightmarginwidth\layoutparameter\c!rightmargin
+   \global\leftedgewidth   \layoutparameter\c!leftedge
+   \global\rightedgewidth  \layoutparameter\c!rightedge
+   \global\headerheight    \layoutparameter\c!header
+   \global\footerheight    \layoutparameter\c!footer
+   \global\bottomheight    \layoutparameter\c!bottom
+   \global\topheight       \layoutparameter\c!top
+   \global\backspace       \layoutparameter\c!backspace
+   \global\topspace        \layoutparameter\c!topspace
    \setlayoutdimensions % the rest of the `dimensions'
-   \doifelse\@@lygrid\v!ja\gridsnappingtrue\gridsnappingfalse
+   \doifelse\@@lygrid\v!yes\gridsnappingtrue\gridsnappingfalse
+   \ifgridsnapping
+     \setsystemmode\v!grid
+   \else
+     \resetsystemmode\v!grid
+   \fi
    \setups[\layoutparameter\c!setups]% depends on gridsnapping !
    \simplesetupwhitespace
    \simplesetupblank
-   \global\snijwit\layoutparameter\c!snijwit
+   \global\cutspace\layoutparameter\c!cutspace
    \relax
-   \doifelse{\layoutparameter\c!breedte}\v!midden
-     {\ifdim\snijwit=\zeropoint
-        \global\snijwit\rugwit
+   \doifelse{\layoutparameter\c!width}\v!middle
+     {\ifdim\cutspace=\zeropoint
+        \global\cutspace\backspace
       \fi
-      \global\zetbreedte\papierbreedte
-      \global\advance\zetbreedte -\rugwit
-      \global\advance\zetbreedte -\snijwit}
-     {\doifelse{\layoutparameter\c!breedte}\v!passend
-        {\ifdim\snijwit=\zeropoint
-           \global\snijwit\rugwit
+      \global\makeupwidth\paperwidth
+      \global\advance\makeupwidth -\backspace
+      \global\advance\makeupwidth -\cutspace}
+     {\doifelse{\layoutparameter\c!width}\v!fit
+        {\ifdim\cutspace=\zeropoint
+           \global\cutspace\backspace
          \fi
-         \global\zetbreedte\papierbreedte
-         \global\advance\zetbreedte -\snijwit
-         \scratchdimen\rugwit
-         \advance\scratchdimen -\linkerrandbreedte
-         \advance\scratchdimen -\linkerrandafstand
-         \advance\scratchdimen -\linkermargebreedte
-         \advance\scratchdimen -\linkermargeafstand\relax
+         \global\makeupwidth\paperwidth
+         \global\advance\makeupwidth -\cutspace
+         \scratchdimen\backspace
+         \advance\scratchdimen -\leftedgewidth
+         \advance\scratchdimen -\leftedgedistance
+         \advance\scratchdimen -\leftmarginwidth
+         \advance\scratchdimen -\leftmargindistance\relax
          \ifdim\scratchdimen<\zeropoint
            \scratchdimen\zeropoint
          \fi
-         \global\advance\zetbreedte -\rechtermargeafstand
-         \global\advance\zetbreedte -\rechtermargebreedte
-         \global\advance\zetbreedte -\rechterrandafstand
-         \global\advance\zetbreedte -\rechterrandbreedte
-         \global\advance\zetbreedte -\scratchdimen}
-        {\global\zetbreedte\layoutparameter\c!breedte\relax
-         \ifdim\snijwit=\zeropoint
-           \global\snijwit\papierbreedte
-           \global\advance\snijwit-\zetbreedte
-           \global\advance\snijwit-\rugwit
+         \global\advance\makeupwidth -\rightmargindistance
+         \global\advance\makeupwidth -\rightmarginwidth
+         \global\advance\makeupwidth -\rightedgedistance
+         \global\advance\makeupwidth -\rightedgewidth
+         \global\advance\makeupwidth -\scratchdimen}
+        {\global\makeupwidth\layoutparameter\c!width\relax
+         \ifdim\cutspace=\zeropoint
+           \global\cutspace\paperwidth
+           \global\advance\cutspace-\makeupwidth
+           \global\advance\cutspace-\backspace
         % \else
             % A kind of inconsistent specification, but used
             % in for instance s-pre-19.tex; the cutspace is
             % used only for determining some kind of right
             % margin; don't use this in doublesided mode
          \fi}}%
-   \scratchdimen\layoutparameter\c!bodemwit\relax
+   \scratchdimen\layoutparameter\c!bottomspace\relax
   %\ifdim\scratchdimen=\zeropoint
-  %  \scratchdimen\kopwit
+  %  \scratchdimen\topspace
   %\fi
-   \global\bodemwit\layoutparameter\c!bodemwit\relax
-   \global\layoutlines0\number\layoutparameter\c!regels\relax % may be empty
+   \global\bottomspace\layoutparameter\c!bottomspace\relax
+   \global\layoutlines0\number\layoutparameter\c!lines\relax % may be empty
    \ifcase\layoutlines
-     \doifelse{\layoutparameter\c!hoogte}\v!midden
-       {\ifdim\bodemwit=\zeropoint
-          \global\bodemwit\kopwit
+     \doifelse{\layoutparameter\c!height}\v!middle
+       {\ifdim\bottomspace=\zeropoint
+          \global\bottomspace\topspace
         \fi
-        \global\zethoogte\papierhoogte
-        \global\advance\zethoogte -\kopwit
-        \global\advance\zethoogte -\bodemwit}
-       {\doifelse{\layoutparameter\c!hoogte}\v!passend
-          {\ifdim\bodemwit=\zeropoint
-            \global\bodemwit\kopwit
+        \global\makeupheight\paperheight
+        \global\advance\makeupheight -\topspace
+        \global\advance\makeupheight -\bottomspace}
+       {\doifelse{\layoutparameter\c!height}\v!fit
+          {\ifdim\bottomspace=\zeropoint
+            \global\bottomspace\topspace
            \fi
-           \global\zethoogte\papierhoogte
-           \global\advance\zethoogte -\bodemwit
-           \scratchdimen\kopwit
-           \advance\scratchdimen -\bovenhoogte
-           \advance\scratchdimen -\bovenafstand\relax
+           \global\makeupheight\paperheight
+           \global\advance\makeupheight -\bottomspace
+           \scratchdimen\topspace
+           \advance\scratchdimen -\topheight
+           \advance\scratchdimen -\topdistance\relax
            \ifdim\scratchdimen<\zeropoint
              \scratchdimen\zeropoint
            \fi
-           \global\advance\zethoogte -\onderafstand
-           \global\advance\zethoogte -\onderhoogte
-           \global\advance\zethoogte -\scratchdimen}
-          {\global\zethoogte\layoutparameter\c!hoogte\relax
-           \ifdim\bodemwit=\zeropoint
-             \global\bodemwit\papierhoogte
-             \global\advance\bodemwit-\zethoogte
-             \global\advance\bodemwit-\kopwit
+           \global\advance\makeupheight -\bottomdistance
+           \global\advance\makeupheight -\bottomheight
+           \global\advance\makeupheight -\scratchdimen}
+          {\global\makeupheight\layoutparameter\c!height\relax
+           \ifdim\bottomspace=\zeropoint
+             \global\bottomspace\paperheight
+             \global\advance\bottomspace-\makeupheight
+             \global\advance\bottomspace-\topspace
            \else
              % inconsistent specification
            \fi}}%
    \else
-     % beware, when the bodyfont changes (switched) this wil lchange as well; implementing
-     % a global lineheight is tricky: should we take the bodyfont ils or the one set
+     % beware, when the bodyfont changes (switched) this will change as well; implementing
+     % a global lineheight is tricky: should we take the bodyfont interlinespace or the one set
      % independent of the bodyfont (before or after a layout spec); way too fuzzy, so we
      % stick to the current method (after a night of experimenting ...2003/10/13)
-     \global\zethoogte\layoutparameter\c!regels\lineheight
+     \global\makeupheight\layoutparameter\c!lines\lineheight
      % new, cleaner
-     \global\advance\zethoogte-\strutheight
-     \global\advance\zethoogte \topskip
+     \global\advance\makeupheight-\strutheight
+     \global\advance\makeupheight \topskip
      % new, was a bug
-     \global\advance\zethoogte \hoofdafstand
-     \global\advance\zethoogte \voetafstand
+     \global\advance\makeupheight \headerdistance
+     \global\advance\makeupheight \footerdistance
      % so far
-     \global\advance\zethoogte \hoofdhoogte
-     \global\advance\zethoogte \voethoogte
+     \global\advance\makeupheight \headerheight
+     \global\advance\makeupheight \footerheight
    \fi
-   \rugoffset\layoutparameter\c!rugoffset
-   \kopoffset\layoutparameter\c!kopoffset
-   \global\setdimentoatleast\zetbreedte\onepoint
-   \global\setdimentoatleast\zethoogte \onepoint
+   \rugoffset\layoutparameter\c!horoffset
+   \kopoffset\layoutparameter\c!veroffset
+   \global\setdimentoatleast\makeupwidth\onepoint
+   \global\setdimentoatleast\makeupheight \onepoint
    % \checkcurrentlayout % here ?
    % \the\everyafterlayout
+   \calculatelayoutextras
    \calculatehsizes
    \calculatevsizes
    \calculatepseudocolumns
@@ -631,11 +578,11 @@
    \recalculatebackgrounds}
 
 \def\calculatepseudocolumns
-  {\global\layoutcolumns\layoutparameter\c!kolommen
-   \global\layoutcolumndistance\layoutparameter\c!kolomafstand
+  {\global\layoutcolumns\layoutparameter\c!columns
+   \global\layoutcolumndistance\layoutparameter\c!columndistance
    \global\layoutcolumnwidth-\layoutcolumns\layoutcolumndistance
    \global\advance\layoutcolumnwidth\layoutcolumndistance
-   \global\advance\layoutcolumnwidth\zetbreedte
+   \global\advance\layoutcolumnwidth\makeupwidth
    \global\divide\layoutcolumnwidth\layoutcolumns
    \dorecurse\layoutcolumns
      {\scratchdimen\layoutcolumnwidth
@@ -653,29 +600,9 @@
   {\executeifdefined{\??ly:c:#1}\!!zeropoint}
 
 \def\checklayout
-  {\ifdim\zethoogte=\layoutlines\lineheight \else \recalculatelayout \fi}
+  {\ifdim\makeupheight=\layoutlines\lineheight \else \recalculatelayout \fi}
 
 \appendtoks \checklayout \to \everystarttext
-
-% \def\checkcurrentlayout % public and used in naw, so keep this name
-%   {\ifundefined{\??ly\realfolio\c!status}%
-%      \doifoddpageelse\checkcurrentoddlayout\checkcurrentevenlayout
-%    \else
-%      \doifvalue{\??ly\realfolio\c!status}\v!start
-%        {\edef\currentlayout{\realfolio}\recalculatelayout}%
-%    \fi}
-
-% \def\checkcurrentoddlayout
-%   {\ifundefined{\??ly\v!oneven\c!status}\else
-%      \doifvalue{\??ly\v!oneven\c!status}\v!start
-%        {\let\currentlayout\v!oneven\recalculatelayout}%
-%    \fi}
-
-% \def\checkcurrentevenlayout
-%   {\ifundefined{\??ly\v!even\c!status}\else
-%      \doifvalue{\??ly\v!even\c!status}\v!start
-%        {\let\currentlayout\v!even\recalculatelayout}%
-%    \fi}
 
 % document:
 %
@@ -684,22 +611,22 @@
 % \startstandardmakeup[page=blank] ... \stopstandardmakeup
 
 \def\checkcurrentlayout % public and used in naw, so keep this name
-  {\ifundefined{\??ly\realfolio\c!status}%
+  {\ifundefined{\??ly\realfolio\c!state}%
      \doifoddpageelse\checkcurrentoddlayout\checkcurrentevenlayout
    \else
-     \doifvalue{\??ly\realfolio\c!status}\v!start
+     \doifvalue{\??ly\realfolio\c!state}\v!start
        {\xdef\currentlayout{\realfolio}\recalculatelayout}% new, global
    \fi}
 
 \def\checkcurrentoddlayout
-  {\ifundefined{\??ly\v!oneven\c!status}\else
-     \doifvalue{\??ly\v!oneven\c!status}\v!start
-       {\globallet\currentlayout\v!oneven\recalculatelayout}% new, global
+  {\ifundefined{\??ly\v!odd\c!state}\else
+     \doifvalue{\??ly\v!odd\c!state}\v!start
+       {\globallet\currentlayout\v!odd\recalculatelayout}% new, global
    \fi}
 
 \def\checkcurrentevenlayout
-  {\ifundefined{\??ly\v!even\c!status}\else
-     \doifvalue{\??ly\v!even\c!status}\v!start
+  {\ifundefined{\??ly\v!even\c!state}\else
+     \doifvalue{\??ly\v!even\c!state}\v!start
        {\globallet\currentlayout\v!even\recalculatelayout}% new, global
    \fi}
 
@@ -710,20 +637,20 @@
 \def\presetcenterpagebox % in \setuplayout !!!!!!!!!!!!!!!!
   {\doublesidedprintfalse
    \ExpandFirstAfter\processallactionsinset
-     [\@@lyplaats]
-     [      \v!midden=>{\setuppapersize[\c!links=\hss,\c!rechts=\hss,\c!boven=\vss,\c!onder=\vss]},
-             \v!links=>{\setuppapersize[\c!links=,\c!rechts=\hss]},
-            \v!rechts=>{\setuppapersize[\c!links=\hss,\c!rechts=]},
-             \v!onder=>{\setuppapersize[\c!boven=\vss,\c!onder=]},
-             \v!boven=>{\setuppapersize[\c!boven=,\c!onder=\vss]},%
-      \v!dubbelzijdig=>\doublesidedprinttrue,
-       \v!enkelzijdig=>\doublesidedprintfalse]}
+     [\@@lylocation]
+     [     \v!middle=>{\setuppapersize[\c!left=\hss,\c!right=\hss,\c!top=\vss,\c!bottom=\vss]},
+             \v!left=>{\setuppapersize[\c!left=,\c!right=\hss]},
+            \v!right=>{\setuppapersize[\c!left=\hss,\c!right=]},
+           \v!bottom=>{\setuppapersize[\c!top=\vss,\c!bottom=]},
+              \v!top=>{\setuppapersize[\c!top=,\c!bottom=\vss]},%
+      \v!doublesided=>\doublesidedprinttrue,
+      \v!singlesided=>\doublesidedprintfalse]}
 
 \def\definelayout
   {\dodoubleargument\dodefinelayout}
 
 \def\dodefinelayout[#1][#2]%
-  {\getparameters[\??ly#1][\c!status=\v!start,#2]}
+  {\getparameters[\??ly#1][\c!state=\v!start,#2]}
 
 \def\dodosetuplayout[#1][#2]%
   {\ConvertToConstant\doifnot{#2}\v!reset % #2 ?
@@ -761,16 +688,16 @@
 \def\setuplayout
   {\dodoubleempty\dosetuplayout}
 
-\let\@@zahoogte=\!!zeropoint
+\let\@@zaheight=\!!zeropoint
 
 \def\dopushpagedimensions
-  {\xdef\oldteksthoogte{\the\teksthoogte}%
-   \xdef\oldvoethoogte {\the\voethoogte}%
-   \global\let\@@zahoogte\@@zahoogte}
+  {\xdef\oldtextheight  {\the\textheight  }%
+   \xdef\oldfooterheight{\the\footerheight}%
+   \global\let\@@zaheight\@@zaheight}
 
 \def\dopoppagedimensions
-  {\global\teksthoogte\oldteksthoogte
-   \global\voethoogte\oldvoethoogte
+  {\global\textheight  \oldtextheight
+   \global\footerheight\oldfooterheight
    \recalculatelayout
    \global\let\pushpagedimensions\dopushpagedimensions
    \global\let\poppagedimensions\relax}
@@ -799,26 +726,26 @@
 
 \def\reportpagedimensions
   {\ifx\poppagedimensions\relax \else
-     \spatie\@@zahoogte\space-\space
+     \space\@@zaheight\space-\space
    \fi
    \realfolio}
 
-\def\dodopaslayoutaan[#1]%
-  {\getparameters[\??za][\c!hoogte=,\c!regels=0,#1]%
+\def\dodoadaptlayout[#1]%
+  {\getparameters[\??za][\c!height=,\c!lines=0,#1]%
    \pushpagedimensions
-   \ifcase\@@zaregels\relax
-     \showmessage\m!layouts1{\@@zahoogte,\realfolio}%
+   \ifcase\@@zalines\relax
+     \showmessage\m!layouts1{\@@zaheight,\realfolio}%
    \else
-     \showmessage\m!layouts1{\@@zaregels\space\v!regels,\realfolio}%
-     \def\@@zahoogte{\@@zaregels\openlineheight}%
+     \showmessage\m!layouts1{\@@zalines\space\v!lines,\realfolio}%
+     \def\@@zaheight{\@@zalines\openlineheight}%
    \fi
-   \doifelse\@@zahoogte\v!max
-     {\balancedimensions\teksthoogte\voethoogte\voethoogte}
-     {\balancedimensions\teksthoogte\voethoogte\@@zahoogte}%
-   \ifdim\voethoogte<\zeropoint
-     \global\advance\teksthoogte \voethoogte
-     \global\voethoogte\zeropoint
-     \global\xdef\@@zahoogte{\layoutparameter\c!voet\spatie(\v!max)}%
+   \doifelse\@@zaheight\v!max
+     {\balancedimensions\textheight\footerheight\footerheight}
+     {\balancedimensions\textheight\footerheight\@@zaheight}%
+   \ifdim\footerheight<\zeropoint
+     \global\advance\textheight \footerheight
+     \global\footerheight\zeropoint
+     \global\xdef\@@zaheight{\layoutparameter\c!footer\space(\v!max)}%
    \fi
    \setvsize
    \global\pagegoal\vsize  % nog corrigeren voor insertions ?
@@ -827,17 +754,17 @@
    \global\let\pushpagedimensions\relax
    \global\let\poppagedimensions\dopoppagedimensions}
 
-\def\dopaslayoutaan[#1][#2]%
+\def\doadaptlayout[#1][#2]%
   {\doifelsenothing{#2}
-     {\dodopaslayoutaan[#1]}
+     {\dodoadaptlayout[#1]}
      {\def\docommando##1%
         {\addtocommalist{##1}\adaptedpages
-         \setgvalue{\??za##1}{\dodopaslayoutaan[#2]}}%
+         \setgvalue{\??za##1}{\dodoadaptlayout[#2]}}%
       \processcommalist[#1]\docommando
       \adaptpagedimensions}}
 
-\def\paslayoutaan%
-  {\dodoubleempty\dopaslayoutaan}
+\def\adaptlayout
+  {\dodoubleempty\doadaptlayout}
 
 % describe interface
 
@@ -846,19 +773,19 @@
 %D {right} parameters.
 
 \def\centerpagebox#1%
-  {\printpapierbreedte\paperscale\printpapierbreedte
-   \printpapierhoogte \paperscale\printpapierhoogte
-   \setbox#1\vbox to \printpapierhoogte
-     {\@@ppboven
-      \hbox to \printpapierbreedte
+  {\printpaperwidth\paperscale\printpaperwidth
+   \printpaperheight \paperscale\printpaperheight
+   \setbox#1\vbox to \printpaperheight
+     {\@@pptop
+      \hbox to \printpaperwidth
         {\ifdoublesidedprint
-           \doifbothsides \@@pplinks \box#1\@@pprechts
-           \orsideone     \@@pplinks \box#1\@@pprechts
-           \orsidetwo     \@@pprechts\box#1\@@pplinks
-         \od \else        \@@pplinks \box#1\@@pprechts
+           \doifbothsides \@@ppleft \box#1\@@ppright
+           \orsideone     \@@ppleft \box#1\@@ppright
+           \orsidetwo     \@@ppright\box#1\@@ppleft
+         \od \else        \@@ppleft \box#1\@@ppright
          \fi}%
       \par
-      \@@pponder}}
+      \@@ppbottom}}
 
 \def\offsetprintbox#1%
   {\ifdim\kopoffset=\zeropoint % \relax
@@ -945,11 +872,11 @@
   {\mirrorpagebodybox{#1}\printmirror}
 
 \def\scalepagebox#1%
-  {\ifdim\@@lyschaal\points=\onepoint \else
+  {\ifdim\@@lyscale\points=\onepoint \else
      \setbox#1\vbox
-       {\schaal[\c!sx=\@@lyschaal,\c!sy=\@@lyschaal]{\box#1}}%
-     \papierbreedte\@@lyschaal\papierbreedte
-     \papierhoogte \@@lyschaal\papierhoogte
+       {\scale[\c!sx=\@@lyscale,\c!sy=\@@lyscale]{\box#1}}%
+     \paperwidth\@@lyscale\paperwidth
+     \paperheight \@@lyscale\paperheight
    \fi}
 
 \def\negateprintbox#1%
@@ -962,27 +889,6 @@
 \let\pagecutmarktoptext    \empty
 \let\pagecutmarkbottomtext \empty
 
-% \def\addpagecutmarks#1%
-%   {\doif\@@lymarkering\v!aan
-%      {\let\cutmarksymbol\pagecutmarksymbol
-%       \let\cutmarklength\pagecutmarklength
-%       \makecutbox{#1}}}
-
-% \def\addpagecolormarks % #1
-%   {\doifelse\@@lymarkering\v!kleur
-%      {\doaddpagecolormarks\colormarkbox}
-%      {\doifelse\@@lymarkering\v!raster
-%         {\doaddpagecolormarks\rastermarkbox}
-%         {\gobbleoneargument}}}
-
-% \def\doaddpagecolormarks#1#2%
-%   {\let\cutmarksymbol\pagecutmarksymbol
-%    \let\cutmarklength\pagecutmarklength
-%    \makecutbox{#2}%
-%    \ifnum\horizontalcutmarks>2 \chardef\colormarkoffset4 \fi
-%    \ifnum\verticalcutmarks  >2 \chardef\colormarkoffset4 \fi
-%    #1{#2}}
-
 \def\extrapagecutmarkbottomtext
   {\rlap{\jobname}\hfill\currentdate\space-\space\currenttime\hfill\llap{\realfolio}}
 
@@ -994,18 +900,18 @@
    \makecutbox}
 
 \def\addpagecutmarks % #1
-  {\doifelse\@@lymarkering\v!aan
+  {\doifelse\@@lymarking\v!on
      \makepagecutbox
-     {\doifelse\@@lymarkering\v!tekst
+     {\doifelse\@@lymarking\v!text
         {\let\pagecutmarksymbol\empty
          \let\pagecutmarkbottomtext\extrapagecutmarkbottomtext
          \makepagecutbox}
         \gobbleoneargument}}
 
 \def\addpagecolormarks % #1
-  {\doifelse\@@lymarkering\v!kleur
+  {\doifelse\@@lymarking\v!color
      {\doaddpagecolormarks\colormarkbox}
-     {\doifelse\@@lymarkering\v!raster
+     {\doifelse\@@lymarking\v!screen
         {\doaddpagecolormarks\rastermarkbox}
         \gobbleoneargument}}
 
@@ -1019,10 +925,10 @@
 \newif\ifenkelzijdig  \enkelzijdigtrue
 
 \def\doifsometextlineelse#1%
-  {\edef\!!stringa{\csname\??tk#1\c!status\endcsname}%
-   \ifx\!!stringa\v!geen
+  {\edef\!!stringa{\csname\??tk#1\c!state\endcsname}%
+   \ifx\!!stringa\v!none
      \@EA\secondoftwoarguments
-   \else\ifx\!!stringa\v!hoog
+   \else\ifx\!!stringa\v!high
      \@EAEAEA\secondoftwoarguments
    \else
      \@EAEAEA\firstoftwoarguments
@@ -1031,48 +937,48 @@
 % NOG EENS NAGAAN WANNEER NU GLOBAL EN WANNEER NIET
 
 \def\calculatevsizes % global needed in \recalculatelayoutregel
-  {\redoglobal\teksthoogte\zethoogte
-   \doifsometextlineelse \v!hoofd
-     {\redoglobal\advance\teksthoogte -\hoofdhoogte
-      \redoglobal\advance\teksthoogte -\hoofdafstand}%
+  {\redoglobal\textheight\makeupheight
+   \doifsometextlineelse \v!header
+     {\redoglobal\advance\textheight -\headerheight
+      \redoglobal\advance\textheight -\headerdistance}%
      \donothing
-   \doifsometextlineelse \v!voet
-     {\redoglobal\advance\teksthoogte -\voethoogte
-      \redoglobal\advance\teksthoogte -\voetafstand}%
+   \doifsometextlineelse \v!footer
+     {\redoglobal\advance\textheight -\footerheight
+      \redoglobal\advance\textheight -\footerdistance}%
      \donothing
-   \ifzeropt\hoofdhoogte
-     \resetsystemmode\v!hoofd
+   \ifzeropt\headerheight
+     \resetsystemmode\v!header
    \else
-     \setsystemmode\v!hoofd
+     \setsystemmode\v!header
    \fi
-   \ifzeropt\voethoogte
-     \resetsystemmode\v!voet
+   \ifzeropt\footerheight
+     \resetsystemmode\v!footer
    \else
-     \setsystemmode\v!voet
+     \setsystemmode\v!footer
    \fi
    \resetglobal
    \setvsize}
 
 \def\calculatereducedvsizes
-  {\teksthoogte\zethoogte
-   \doifsometextlineelse \v!hoofd
-     {\advance\teksthoogte -\hoofdhoogte
-      \advance\teksthoogte -\hoofdafstand}%
-     {\hoofdhoogte\zeropoint
+  {\textheight\makeupheight
+   \doifsometextlineelse \v!header
+     {\advance\textheight -\headerheight
+      \advance\textheight -\headerdistance}%
+     {\headerheight\zeropoint
       \setlayoutdistances}%
-   \doifsometextlineelse \v!voet
-     {\advance\teksthoogte -\voethoogte
-      \advance\teksthoogte -\voetafstand}%
-     {\voethoogte\zeropoint
+   \doifsometextlineelse \v!footer
+     {\advance\textheight -\footerheight
+      \advance\textheight -\footerdistance}%
+     {\footerheight\zeropoint
       \setlayoutdistances}}
 
-\def\freezetextwidth        % \zetbreedte may be set to \tekstbreedte
-  {\tekstbreedte\zetbreedte % which is a tricky but valid value
-   \doifsomething{\layoutparameter\c!tekstbreedte}%
-     {\tekstbreedte\layoutparameter\c!tekstbreedte}%         % local
-   \doifsomething{\layoutparameter\c!tekstmarge}%
-     {\advance\tekstbreedte-\layoutparameter\c!tekstmarge    % local
-      \advance\tekstbreedte-\layoutparameter\c!tekstmarge}}  % local
+\def\freezetextwidth        % \makeupwidth may be set to \textwidth
+  {\textwidth\makeupwidth % which is a tricky but valid value
+   \doifsomething{\layoutparameter\c!textwidth}%
+     {\textwidth\layoutparameter\c!textwidth}%         % local
+   \doifsomething{\layoutparameter\c!textmargin}%
+     {\advance\textwidth-\layoutparameter\c!textmargin    % local
+      \advance\textwidth-\layoutparameter\c!textmargin}}  % local
 
 \def\calculatehsizes
   {\freezetextwidth
@@ -1138,52 +1044,31 @@
 
 \def\settexthoffset
   {\doifbothsides
-     \texthoffset\rugwit
+     \texthoffset\backspace
    \orsideone
-     \texthoffset\rugwit
+     \texthoffset\backspace
    \orsidetwo
-     \texthoffset\papierbreedte
-     \advance\texthoffset-\rugwit
-     \advance\texthoffset-\zetbreedte
+     \texthoffset\paperwidth
+     \advance\texthoffset-\backspace
+     \advance\texthoffset-\makeupwidth
    \od}
 
 \def\goleftonpage
-  {\hskip-\linkermargeafstand
-   \hskip-\linkermargebreedte
-   \hskip-\linkerrandafstand
-   \hskip-\linkerrandbreedte}
-
-\iffixedlayoutdimensions
-
-  \def\doswapmargins
-    {\let\doswapmargins\relax % to prevent local swapping
-     \swapdimens\linkermargeafstand\rechtermargeafstand
-     \swapdimens\linkerrandafstand \rechterrandafstand
-     \swapdimens\linkermargebreedte\rechtermargebreedte
-     \swapdimens\linkerrandbreedte \rechterrandbreedte}
-
-\else
-
-  \def\dodoswapmargins#1#2%
-    {\edef\!!stringa{\layoutparameter#1}%
-     \edef\!!stringb{\layoutparameter#2}%
-     \letvalue{\??ly\currentlayout#1}\!!stringb
-     \letvalue{\??ly\currentlayout#2}\!!stringa}
-
-  \def\doswapmargins
-    {\let\doswapmargins\relax % to prevent local swapping
-     \dodoswapmargins\c!linkermargeafstand\c!rechtermargeafstand
-     \dodoswapmargins\c!linkerrandafstand \c!rechterrandafstand
-     \swapdimens\linkermargebreedte\rechtermargebreedte
-     \swapdimens\linkerrandbreedte \rechterrandbreedte}
-
-\fi
+  {\hskip-\leftmargindistance
+   \hskip-\leftmarginwidth
+   \hskip-\leftedgedistance
+   \hskip-\leftedgewidth}
 
 \def\doifmarginswapelse#1#2%
   {\doifbothsides#1\orsideone#1\orsidetwo#2\od}
 
 \def\swapmargins
   {\doifmarginswapelse\relax\doswapmargins}
+
+\def\doswapmargins
+  {\let\swapmargins  \relax % to prevent local swapping
+   \let\doswapmargins\relax % to prevent local swapping
+   \the\everyswapmargins}
 
 \def\rightorleftpageaction
   {\ifdubbelzijdig
@@ -1196,38 +1081,28 @@
      \@EA\firstoftwoarguments
    \fi}
 
-\def\outermarginwidth
-  {\rightorleftpageaction\rechtermargebreedte\linkermargebreedte}
-\def\innermarginwidth
-  {\rightorleftpageaction\linkermargebreedte \rechtermargebreedte}
-\def\outermargindistance
-  {\rightorleftpageaction\rechtermargeafstand\linkermargeafstand}
-\def\innermargindistance
-  {\rightorleftpageaction\linkermargeafstand \rechtermargeafstand}
+\def\outermarginwidth   {\rightorleftpageaction\rightmarginwidth\leftmarginwidth }
+\def\innermarginwidth   {\rightorleftpageaction\leftmarginwidth \rightmarginwidth}
+\def\outermargindistance{\rightorleftpageaction\rightmargindistance\leftmargindistance }
+\def\innermargindistance{\rightorleftpageaction\leftmargindistance \rightmargindistance}
 
-\def\outeredgewidth
-  {\rightorleftpageaction\rechterrandbreedte\linkerrandbreedte}
-\def\inneredgewidth
-  {\rightorleftpageaction\linkerrandbreedte \rechterrandbreedte}
-\def\outeredgedistance
-  {\rightorleftpageaction\rechterrandafstand\linkerrandafstand}
-\def\inneredgedistance
-  {\rightorleftpageaction\linkerrandafstand \rechterrandafstand}
+\def\outeredgewidth     {\rightorleftpageaction\rightedgewidth\leftedgewidth }
+\def\inneredgewidth     {\rightorleftpageaction\leftedgewidth \rightedgewidth}
+\def\outeredgedistance  {\rightorleftpageaction\rightedgedistance\leftedgedistance }
+\def\inneredgedistance  {\rightorleftpageaction\leftedgedistance \rightedgedistance}
 
-\def\outerspacewidth
-  {\rightorleftpageaction\snijwit\rugwit}
-\def\innerspacewidth
-  {\rightorleftpageaction\rugwit\snijwit}
+\def\outerspacewidth    {\rightorleftpageaction\cutspace\backspace }
+\def\innerspacewidth    {\rightorleftpageaction\backspace \cutspace}
 
 \beginETEX \dimexpr
 
-  \def\leftmargintotal {\dimexpr(\linkermargebreedte +\linkermargeafstand )}
-  \def\rightmargintotal{\dimexpr(\rechtermargebreedte+\rechtermargeafstand)}
-  \def\leftedgetotal   {\dimexpr(\linkerrandbreedte  +\linkerrandafstand  )}
-  \def\rightedgetotal  {\dimexpr(\rechterrandbreedte +\rechterrandafstand )}
+  \def\leftmargintotal {\dimexpr(\leftmarginwidth +\leftmargindistance )}
+  \def\rightmargintotal{\dimexpr(\rightmarginwidth+\rightmargindistance)}
+  \def\leftedgetotal   {\dimexpr(\leftedgewidth  +\leftedgedistance  )}
+  \def\rightedgetotal  {\dimexpr(\rightedgewidth +\rightedgedistance )}
 
-  \def\leftsidetotal   {\dimexpr(\linkermargebreedte +\leftedgetotal )}
-  \def\rightsidetotal  {\dimexpr(\rechtermargebreedte+\rightedgetotal)}
+  \def\leftsidetotal   {\dimexpr(\leftmarginwidth +\leftedgetotal )}
+  \def\rightsidetotal  {\dimexpr(\rightmarginwidth+\rightedgetotal)}
 
   \def\leftcombitotal  {\dimexpr(\leftmargintotal +\leftedgetotal )}
   \def\rightcombitotal {\dimexpr(\rightmargintotal+\rightedgetotal)}
@@ -1274,7 +1149,7 @@
 %D \showsetup{\y!showframe}
 %D \showsetup{\y!showlayout}
 %D \showsetup{\y!showsetups}
-%D \showsetup{\y!showmargins}
+%D %showsetup{\y!showmargins}
 
 \fetchruntimecommand \showprint   {page-run}
 \fetchruntimecommand \showframe   {page-run}
@@ -1297,53 +1172,55 @@
 %D depending on the current font setting.
 
 \setuplayout
-  [             \c!kopwit=.08417508418\papierhoogte,  %  2.5cm
-                 \c!boven=\!!zeropoint,
-          \c!bovenafstand=\!!zeropoint,
-                 \c!hoofd=.06734006734\papierhoogte,  %  2.0cm
-          \c!hoofdafstand=\!!zeropoint,
-                \c!hoogte=.84175084175\papierhoogte,  % 25.0cm
-           \c!voetafstand=\layoutparameter\c!hoofdafstand,
-                  \c!voet=.06734006734\papierhoogte,  %  2.0cm
-          \c!onderafstand=\layoutparameter\c!bovenafstand,
-                 \c!onder=\!!zeropoint,
-                \c!rugwit=.11904761905\papierbreedte, %  2.5cm
-                  \c!rand=\!!zeropoint,
-           \c!randafstand=\layoutparameter\c!margeafstand,
-                 \c!marge=.12649983170\papierbreedte, %  snijwit-2*afstand
-          \c!margeafstand=.02008341748\papierbreedte, %  12.0pt
-            \c!linkerrand=\layoutparameter\c!rand,
-     \c!linkerrandafstand=\layoutparameter\c!randafstand,
-           \c!linkermarge=\layoutparameter\c!marge,
-    \c!linkermargeafstand=\layoutparameter\c!margeafstand,
-               \c!breedte=.71428571429\papierbreedte, %  15.0cm
-   \c!rechtermargeafstand=\layoutparameter\c!margeafstand,
-          \c!rechtermarge=\layoutparameter\c!marge,
-    \c!rechterrandafstand=\layoutparameter\c!randafstand,
-           \c!rechterrand=\layoutparameter\c!rand,
-             \c!kopoffset=\!!zeropoint,
-             \c!rugoffset=\!!zeropoint,
-          \c!tekstbreedte=, % dangerous option -> centered / local
-            \c!tekstmarge=, % dangerous option -> both sides
-          \c!tekstafstand=\!!zeropoint, % shift down on grid
-                \c!letter=,
-                 \c!kleur=,
-             \c!markering=\v!uit,
-                \c!plaats=, % \v!enkelzijdig, but empty is signal
-                \c!schaal=1,
-                    \c!nx=1,
-                    \c!ny=1,
-                    \c!dx=\!!zeropoint,
-                    \c!dy=\!!zeropoint,
-                  \c!grid=\v!nee,
-                \c!preset=,
-                \c!setups=\systemsetupsprefix\s!default,
-            \c!clipoffset=\!!zeropoint,
-                \c!regels=0,
-              \c!kolommen=1,
-          \c!kolomafstand=\!!zeropoint,
-               \c!snijwit=\!!zeropoint,
-              \c!bodemwit=\!!zeropoint]
+  [             \c!topspace=.08417508418\paperheight,  %  2.5cm
+                     \c!top=\!!zeropoint,
+             \c!topdistance=\!!zeropoint,
+                  \c!header=.06734006734\paperheight,  %  2.0cm
+          \c!headerdistance=\!!zeropoint,
+                  \c!height=.84175084175\paperheight,  % 25.0cm
+          \c!footerdistance=\layoutparameter\c!headerdistance,
+                  \c!footer=.06734006734\paperheight,  %  2.0cm
+          \c!bottomdistance=\layoutparameter\c!topdistance,
+                  \c!bottom=\!!zeropoint,
+               \c!backspace=.11904761905\paperwidth, %  2.5cm
+                    \c!edge=\!!zeropoint,
+            \c!edgedistance=\layoutparameter\c!margindistance,
+                  \c!margin=.12649983170\paperwidth, %  snijwit-2*afstand
+          \c!margindistance=.02008341748\paperwidth, %  12.0pt
+                \c!leftedge=\layoutparameter\c!edge,
+        \c!leftedgedistance=\layoutparameter\c!edgedistance,
+              \c!leftmargin=\layoutparameter\c!margin,
+      \c!leftmargindistance=\layoutparameter\c!margindistance,
+                   \c!width=.71428571429\paperwidth, %  15.0cm
+     \c!rightmargindistance=\layoutparameter\c!margindistance,
+             \c!rightmargin=\layoutparameter\c!margin,
+       \c!rightedgedistance=\layoutparameter\c!edgedistance,
+               \c!rightedge=\layoutparameter\c!edge,
+               \c!veroffset=\!!zeropoint,
+             \c!bottomspace=\!!zeropoint,
+               \c!horoffset=\!!zeropoint,
+                \c!cutspace=\!!zeropoint,
+               \c!textwidth=, % dangerous option -> centered / local
+              \c!textmargin=, % dangerous option -> both sides
+            \c!textdistance=\!!zeropoint, % shift down on grid
+                   \c!style=,
+                   \c!color=,
+                 \c!marking=\v!off,
+                \c!location=, % \v!singlesided, but empty is signal
+                   \c!scale=1,
+                      \c!nx=1,
+                      \c!ny=1,
+                      \c!dx=\!!zeropoint,
+                      \c!dy=\!!zeropoint,
+                    \c!grid=\v!no,
+                  \c!preset=,
+                  \c!setups=\systemsetupsprefix\s!default,
+              \c!clipoffset=\!!zeropoint,
+                   \c!lines=0,
+                   \c!paper=, % for foxet
+                    \c!page=, % for foxet
+                 \c!columns=1,
+          \c!columndistance=\!!zeropoint]
 
 %D First we define a whole range of (DIN) papersizes,
 %D of which the A-series makes most sense. We enable checking.
@@ -1352,106 +1229,119 @@
 %D positioning the typeset paper onto the print paper.
 
 \setuppaper % (size) % only used in XY imposition
-  [\c!breedte=\zeropoint,
-   \c!hoogte=\zeropoint,
-   \c!kopwit=\zeropoint,
-   \c!rugwit=\zeropoint,
+  [\c!width=\zeropoint,
+   \c!height=\zeropoint,
+   \c!topspace=\zeropoint,
+   \c!backspace=\zeropoint,
    \c!dx=\zeropoint,
    \c!dy=\zeropoint,
    \c!nx=1,
    \c!ny=1]
 
 \setuppapersize
-  [\c!optie=\v!max,
-   \c!boven=,
-   \c!onder=\vss,
-   \c!links=,
-   \c!rechts=\hss]
+  [\c!option=\v!max,
+   \c!top=,
+   \c!bottom=\vss,
+   \c!left=,
+   \c!right=\hss]
 
-\definepapersize [A0] [\c!breedte=841mm,\c!hoogte=1189mm]
-\definepapersize [A1] [\c!breedte=594mm,\c!hoogte=841mm]
-\definepapersize [A2] [\c!breedte=420mm,\c!hoogte=594mm]
-\definepapersize [A3] [\c!breedte=297mm,\c!hoogte=420mm]
-\definepapersize [A4] [\c!breedte=210mm,\c!hoogte=297mm]
-\definepapersize [A5] [\c!breedte=148mm,\c!hoogte=210mm]
-\definepapersize [A6] [\c!breedte=105mm,\c!hoogte=148mm]
-\definepapersize [A7] [\c!breedte=74mm,\c!hoogte=105mm]
-\definepapersize [A8] [\c!breedte=52mm,\c!hoogte=74mm]
-\definepapersize [A9] [\c!breedte=37mm,\c!hoogte=52mm]
+\definepapersize [A0]  [\c!width=841mm,\c!height=1189mm]
+\definepapersize [A1]  [\c!width=594mm,\c!height=841mm]
+\definepapersize [A2]  [\c!width=420mm,\c!height=594mm]
+\definepapersize [A3]  [\c!width=297mm,\c!height=420mm]
+\definepapersize [A4]  [\c!width=210mm,\c!height=297mm]
+\definepapersize [A5]  [\c!width=148mm,\c!height=210mm]
+\definepapersize [A6]  [\c!width=105mm,\c!height=148mm]
+\definepapersize [A7]  [\c!width=74mm,\c!height=105mm]
+\definepapersize [A8]  [\c!width=52mm,\c!height=74mm]
+\definepapersize [A9]  [\c!width=37mm,\c!height=52mm]
+\definepapersize [A10] [\c!width=26mm,\c!height=37mm]
 
-\definepapersize [B0] [\c!breedte=1000mm,\c!hoogte=1414mm]
-\definepapersize [B1] [\c!breedte=707mm,\c!hoogte=1000mm]
-\definepapersize [B2] [\c!breedte=500mm,\c!hoogte=707mm]
-\definepapersize [B3] [\c!breedte=354mm,\c!hoogte=500mm]
-\definepapersize [B4] [\c!breedte=250mm,\c!hoogte=354mm]
-\definepapersize [B5] [\c!breedte=177mm,\c!hoogte=250mm]
-\definepapersize [B6] [\c!breedte=125mm,\c!hoogte=177mm]
-\definepapersize [B7] [\c!breedte=88mm,\c!hoogte=125mm]
-\definepapersize [B8] [\c!breedte=63mm,\c!hoogte=88mm]
-\definepapersize [B9] [\c!breedte=44mm,\c!hoogte=63mm]
+\definepapersize [B0]  [\c!width=1000mm,\c!height=1414mm]
+\definepapersize [B1]  [\c!width=707mm,\c!height=1000mm]
+\definepapersize [B2]  [\c!width=500mm,\c!height=707mm]
+\definepapersize [B3]  [\c!width=353mm,\c!height=500mm] % [\c!width=354mm,\c!height=500mm]
+\definepapersize [B4]  [\c!width=250mm,\c!height=353mm] % [\c!width=250mm,\c!height=354mm]
+\definepapersize [B5]  [\c!width=176mm,\c!height=250mm] % [\c!width=177mm,\c!height=250mm]
+\definepapersize [B6]  [\c!width=125mm,\c!height=176mm] % [\c!width=125mm,\c!height=177mm]
+\definepapersize [B7]  [\c!width=88mm,\c!height=125mm]
+\definepapersize [B8]  [\c!width=62mm,\c!height=88mm]   % [\c!width=63mm,\c!height=88mm]
+\definepapersize [B9]  [\c!width=44mm,\c!height=62mm]   % [\c!width=44mm,\c!height=63mm]
+\definepapersize [B10] [\c!width=31mm,\c!height=44mm]
 
-\definepapersize [C0] [\c!breedte=917mm,\c!hoogte=1297mm]
-\definepapersize [C1] [\c!breedte=649mm,\c!hoogte=917mm]
-\definepapersize [C2] [\c!breedte=459mm,\c!hoogte=649mm]
-\definepapersize [C3] [\c!breedte=324mm,\c!hoogte=459mm]
-\definepapersize [C4] [\c!breedte=229mm,\c!hoogte=324mm]
-\definepapersize [C5] [\c!breedte=162mm,\c!hoogte=229mm]
-\definepapersize [C6] [\c!breedte=115mm,\c!hoogte=162mm]
-\definepapersize [C7] [\c!breedte=81mm,\c!hoogte=115mm]
-\definepapersize [C8] [\c!breedte=57mm,\c!hoogte=81mm]
-\definepapersize [C9] [\c!breedte=40mm,\c!hoogte=57mm]
+\definepapersize [C0]  [\c!width=917mm,\c!height=1297mm]
+\definepapersize [C1]  [\c!width=648mm,\c!height=917mm] % [\c!width=649mm,\c!height=917mm]
+\definepapersize [C2]  [\c!width=458mm,\c!height=648mm] % [\c!width=459mm,\c!height=649mm]
+\definepapersize [C3]  [\c!width=324mm,\c!height=458mm] % [\c!width=324mm,\c!height=459mm]
+\definepapersize [C4]  [\c!width=229mm,\c!height=324mm]
+\definepapersize [C5]  [\c!width=162mm,\c!height=229mm]
+\definepapersize [C6]  [\c!width=114mm,\c!height=162mm] % [\c!width=115mm,\c!height=162mm]
+\definepapersize [C7]  [\c!width=81mm,\c!height=114mm]  % [\c!width=81mm,\c!height=115mm]
+\definepapersize [C8]  [\c!width=57mm,\c!height=81mm]
+\definepapersize [C9]  [\c!width=40mm,\c!height=57mm]
+\definepapersize [C10] [\c!width=28mm,\c!height=40mm]
+
+%D Per August 2004 the rounding of some (seldom used) sizes
+%D were corrected top the latest DIN specifications. Peter
+%D Rolf came up with these and a few more missing sizes.
+%D Watch out: spaces and slashes!
+
+\definepapersize [4 A0]  [\c!width=1682mm,\c!height=2378mm]
+\definepapersize [2 A0]  [\c!width=1189mm,\c!height=1682mm]
+\definepapersize [C6/C5] [\c!width=114mm,\c!height=229mm]
 
 %D Because there are no standardized screen sizes, we define
 %D a bunch of sizes with $4:3$ ratios. The \type {S6} size is
 %D nearly as wide as a sheet of \type {A4} paper.
 
-\definepapersize [S3] [\c!breedte=300pt,\c!hoogte=225pt]
-\definepapersize [S4] [\c!breedte=400pt,\c!hoogte=300pt]
-\definepapersize [S5] [\c!breedte=500pt,\c!hoogte=375pt]
-\definepapersize [S6] [\c!breedte=600pt,\c!hoogte=450pt]
-\definepapersize [S8] [\c!breedte=800pt,\c!hoogte=600pt]
-\definepapersize [SW] [\c!breedte=800pt,\c!hoogte=450pt]
-\definepapersize [SM] [\c!breedte=720pt,\c!hoogte=450pt]
+\definepapersize [S3] [\c!width=300pt,\c!height=225pt]
+\definepapersize [S4] [\c!width=400pt,\c!height=300pt]
+\definepapersize [S5] [\c!width=500pt,\c!height=375pt]
+\definepapersize [S6] [\c!width=600pt,\c!height=450pt]
+\definepapersize [S8] [\c!width=800pt,\c!height=600pt]
+\definepapersize [SW] [\c!width=800pt,\c!height=450pt]
+\definepapersize [SM] [\c!width=720pt,\c!height=450pt]
 
 %D These are handy too:
 
-\definepapersize [S33] [\c!breedte=300pt,\c!hoogte=300pt]
-\definepapersize [S44] [\c!breedte=400pt,\c!hoogte=400pt]
-\definepapersize [S55] [\c!breedte=500pt,\c!hoogte=500pt]
-\definepapersize [S66] [\c!breedte=600pt,\c!hoogte=600pt]
+\definepapersize [S33] [\c!width=300pt,\c!height=300pt]
+\definepapersize [S44] [\c!width=400pt,\c!height=400pt]
+\definepapersize [S55] [\c!width=500pt,\c!height=500pt]
+\definepapersize [S66] [\c!width=600pt,\c!height=600pt]
 
 %D One may wonder if \TEX\ should be used for typesetting
 %D \CDROM\ covers, but it does not hurt to have the paper size
 %D ready.
 
-\definepapersize [CD] [\c!breedte=120mm,\c!hoogte=120mm]
+\definepapersize [CD] [\c!width=120mm,\c!height=120mm]
 
 %D The next series is for our English speaking friends who
 %D decided to stick to non metric values. Thanks to Nelson
 %D Beebe for completing the inch based list.
 
-\definepapersize [letter]    [\c!breedte=8.5in,\c!hoogte=11in]
-\definepapersize [ledger]    [\c!breedte=11in,\c!hoogte=17in]
-\definepapersize [tabloid]   [\c!breedte=17in,\c!hoogte=11in]
+\definepapersize [letter]    [\c!width=8.5in,\c!height=11in]
+\definepapersize [ledger]    [\c!width=11in,\c!height=17in]
+\definepapersize [tabloid]   [\c!width=17in,\c!height=11in]
 
-\definepapersize [legal]     [\c!breedte=8.5in,\c!hoogte=14in]
-\definepapersize [folio]     [\c!breedte=8.5in,\c!hoogte=13in]
-\definepapersize [executive] [\c!breedte=7.25in,\c!hoogte=10.5in]
+\definepapersize [legal]     [\c!width=8.5in,\c!height=14in]
+\definepapersize [folio]     [\c!width=8.5in,\c!height=13in]
+\definepapersize [executive] [\c!width=7.25in,\c!height=10.5in]
 
-\definepapersize [A] [\c!breedte=8.5in,\c!hoogte=11in] % 1 sheet
-\definepapersize [B] [\c!breedte=11in,\c!hoogte=17in]  % 2 sheets
-\definepapersize [C] [\c!breedte=17in,\c!hoogte=22in]  % 4 sheets
+\definepapersize [A] [\c!width=8.5in,\c!height=11in] % 1 sheet
+\definepapersize [B] [\c!width=11in,\c!height=17in]  % 2 sheets
+\definepapersize [C] [\c!width=17in,\c!height=22in]  % 4 sheets
 
 %D The next set is for Tobias Burnus, who gave me the sizes.
 
-\definepapersize [envelope 9]  [\c!breedte=8.88in,\c!hoogte=3.88in]
-\definepapersize [envelope 10] [\c!breedte=9.5in,\c!hoogte=4.13in]
-\definepapersize [envelope 11] [\c!breedte=10.38in,\c!hoogte=4.5in]
-\definepapersize [envelope 12] [\c!breedte=11.0in,\c!hoogte=4.75in]
-\definepapersize [envelope 14] [\c!breedte=11.5in,\c!hoogte=5.0in]
-\definepapersize [monarch]     [\c!breedte=7.5in,\c!hoogte=3.88in]
-\definepapersize [check]       [\c!breedte=8.58in,\c!hoogte=3.88in]
-\definepapersize [DL]          [\c!breedte=220mm,\c!hoogte=110mm]
+\definepapersize [envelope 9]  [\c!width=8.88in,\c!height=3.88in]
+\definepapersize [envelope 10] [\c!width=9.5in,\c!height=4.13in]
+\definepapersize [envelope 11] [\c!width=10.38in,\c!height=4.5in]
+\definepapersize [envelope 12] [\c!width=11.0in,\c!height=4.75in]
+\definepapersize [envelope 14] [\c!width=11.5in,\c!height=5.0in]
+\definepapersize [monarch]     [\c!width=7.5in,\c!height=3.88in]
+\definepapersize [check]       [\c!width=8.58in,\c!height=3.88in]
+\definepapersize [DL]          [\c!width=110mm,\c!height=220mm] % [\c!width=220mm,\c!height=110mm]
+\definepapersize [E4]          [\c!width=280mm,\c!height=400mm]
 
 %D We can now default to a reasonable size. We match the print
 %D paper size with the typeset paper size. This setting should
@@ -1466,46 +1356,46 @@
 
 \definepapersize
   [oversized]
-  [\c!breedte=\dimexpr(\papierbreedte+1.5cm),
-   \c!hoogte=\dimexpr(\papierhoogte+1.5cm)]
+  [\c!width=\dimexpr(\paperwidth+1.5cm),
+   \c!height=\dimexpr(\paperheight+1.5cm)]
 
 \definepapersize
   [doublesized]
-  [\c!breedte=\dimexpr(\papierbreedte),
-   \c!hoogte=\dimexpr(2\papierhoogte)]
+  [\c!width=\dimexpr(\paperwidth),
+   \c!height=\dimexpr(2\paperheight)]
 
 \definepapersize
   [doubleoversized]
-  [\c!breedte=\dimexpr(\papierhoogte+1.5cm),
-   \c!hoogte=\dimexpr(2\papierbreedte+1.5cm)]
+  [\c!width=\dimexpr(\paperheight+1.5cm),
+   \c!height=\dimexpr(2\paperwidth+1.5cm)]
 
 \endETEX
 
 \definelayout
-  [\v!pagina]
-  [\c!rugwit=\zeropoint,
-   \c!snijwit=\zeropoint,
-   \c!kopwit=\zeropoint,
-   \c!bodemwit=\zeropoint,
-   \c!marge=\zeropoint,
-   \c!rand=\zeropoint,
-   \c!hoofd=\zeropoint,
-   \c!voet=\zeropoint,
-   \c!boven=\zeropoint,
-   \c!onder=\zeropoint,
-   \c!linkermarge=\zeropoint,
-   \c!rechtermarge=\zeropoint,
-   \c!linkerrand=\zeropoint,
-   \c!rechterrand=\zeropoint,
-   \c!tekstafstand=\zeropoint,
-   \c!breedte=\v!midden,
-   \c!hoogte=\v!midden,
-   \c!regels=0,
-   \c!grid=\v!nee]
+  [\v!page]
+  [\c!backspace=\zeropoint,
+   \c!cutspace=\zeropoint,
+   \c!topspace=\zeropoint,
+   \c!bottomspace=\zeropoint,
+   \c!margin=\zeropoint,
+   \c!edge=\zeropoint,
+   \c!header=\zeropoint,
+   \c!footer=\zeropoint,
+   \c!top=\zeropoint,
+   \c!bottom=\zeropoint,
+   \c!leftmargin=\zeropoint,
+   \c!rightmargin=\zeropoint,
+   \c!leftedge=\zeropoint,
+   \c!rightedge=\zeropoint,
+   \c!textdistance=\zeropoint,
+   \c!width=\v!middle,
+   \c!height=\v!middle,
+   \c!lines=0,
+   \c!grid=\v!no]
 
 \definelayout
-  [\v!midden]
-  [\c!breedte=\v!midden,
-   \c!hoogte=\v!midden]
+  [\v!middle]
+  [\c!width=\v!middle,
+   \c!height=\v!middle]
 
 \protect \endinput

@@ -1499,52 +1499,89 @@ enddef ;
 % nice: currentpicture := inverted currentpicture ;
 
 primarydef p uncolored c =
-  image
-    (for i within p :
-       addto currentpicture
-       if stroked i or filled i :
-         if filled i : contour else : doublepath fi pathpart i
-         dashed dashpart i withpen penpart i
-       else :
-         also i
-       fi
-       withcolor c-(redpart i, greenpart i, bluepart i) ;
-     endfor ; )
+  if color p :
+    c - p
+  else :
+      image
+        (for i within p :
+           addto currentpicture
+           if stroked i or filled i :
+             if filled i : contour else : doublepath fi pathpart i
+             dashed dashpart i withpen penpart i
+           else :
+             also i
+           fi
+           withcolor c-(redpart i, greenpart i, bluepart i) ;
+         endfor ; )
+  fi
 enddef ;
 
 vardef inverted primary p =
   (p uncolored white)
 enddef ;
 
+% primarydef p softened c =
+%   if color p :
+%     tripled(c) * p
+%   else :
+%     image
+%       (save cc ; color cc ; cc := tripled(c) ;
+%        for i within p :
+%          addto currentpicture
+%          if stroked i or filled i :
+%            if filled i : contour else : doublepath fi pathpart i
+%            dashed dashpart i withpen penpart i
+%          else :
+%           also i
+%          fi
+%          withcolor (redpart   cc * redpart   i,
+%                     greenpart cc * greenpart i,
+%                     bluepart  cc * bluepart  i) ;
+%        endfor ;)
+%   fi
+% enddef ;
+
 primarydef p softened c =
-  image
-    (save cc ; color cc ; cc := tripled(c) ;
-     for i within p :
-       addto currentpicture
-       if stroked i or filled i :
-         if filled i : contour else : doublepath fi pathpart i
-         dashed dashpart i withpen penpart i
-       else :
-        also i
-       fi
-       withcolor (redpart   cc * redpart   i,
-                  greenpart cc * greenpart i,
-                  bluepart  cc * bluepart  i) ;
-     endfor ;)
+  begingroup
+  save cc ; color cc ; cc := tripled(c) ;
+  if color p :
+    (redpart   cc * redpart   p,
+     greenpart cc * greenpart p,
+     bluepart  cc * bluepart  p)
+  else :
+    image
+      (for i within p :
+         addto currentpicture
+         if stroked i or filled i :
+           if filled i : contour else : doublepath fi pathpart i
+           dashed dashpart i withpen penpart i
+         else :
+          also i
+         fi
+         withcolor (redpart   cc * redpart   i,
+                    greenpart cc * greenpart i,
+                    bluepart  cc * bluepart  i) ;
+       endfor ;)
+  fi
+  endgroup
 enddef ;
 
 vardef grayed primary p =
-  image
-    (for i within p :
-       addto currentpicture
-       if stroked i or filled i :
-         if filled i : contour else : doublepath fi pathpart i
-         dashed dashpart i withpen penpart i
-       else :
-         also i
-       fi
-       withcolor tripled(.30redpart i+.59greenpart i+.11bluepart i) ;
-     endfor ; )
+  if color p :
+    tripled(.30redpart p+.59greenpart p+.11bluepart p)
+  else :
+    image
+      (for i within p :
+         addto currentpicture
+         if stroked i or filled i :
+           if filled i : contour else : doublepath fi pathpart i
+           dashed dashpart i withpen penpart i
+         else :
+           also i
+         fi
+         withcolor tripled(.30redpart i+.59greenpart i+.11bluepart i) ;
+       endfor ; )
+  fi
 enddef ;
 
 % yes or no: "text" infont "cmr12" at 24pt ;
@@ -1944,12 +1981,20 @@ vardef dodostraightened(expr sign, p) =
   fi
 enddef ;
 
+% vardef simplified expr p =
+%   dostraightened(+1,p)
+% enddef ;
+
+% vardef unspiked   expr p =
+%   dostraightened(-1,p)
+% enddef ;
+
 vardef simplified expr p =
-  dostraightened(+1,p)
+  (reverse dostraightened(+1,dostraightened(+1,reverse p)))
 enddef ;
 
 vardef unspiked   expr p =
-  dostraightened(-1,p)
+  (reverse dostraightened(-1,dostraightened(-1,reverse p)))
 enddef ;
 
 % path p ;
@@ -2085,17 +2130,34 @@ enddef ;
 % obscure macros: create var from string and replace - and :
 % (needed for process color id's)
 
-string _clean_ascii[] ;
+string _clean_ascii_[] ;
 
-_clean_ascii[ASCII "-"] := "_" ;
-_clean_ascii[ASCII ":"] := "_" ;
-_clean_ascii[ASCII "."] := "_" ;
+def register_dirty_chars(expr str) =
+    for i = 0 upto length(str)-1 :
+        _clean_ascii_[ASCII substring(i,i+1) of str] := "_" ;
+    endfor ;
+enddef ;
+
+register_dirty_chars("+-*/:;., ") ;
 
 vardef cleanstring (expr s) =
-  save ss ; string ss, si ; ss = "" ;
+  save ss ; string ss, si ; ss = "" ; save i ;
   for i=0 upto length(s) :
     si := substring(i,i+1) of s ;
-    ss := ss & if known _clean_ascii[ASCII si] : _clean_ascii[ASCII si] else : si fi ;
+    ss := ss & if known _clean_ascii_[ASCII si] : _clean_ascii_[ASCII si] else : si fi ;
+  endfor ;
+  ss
+enddef ;
+
+vardef asciistring (expr s) =
+  save ss ; string ss, si ; ss = "" ; save i ;
+  for i=0 upto length(s) :
+    si := substring(i,i+1) of s ;
+    if (ASCII si >= ASCII "0") and (ASCII si <= ASCII "9") :
+        ss := ss & char(scantokens(si) + ASCII "A") ;
+    else :
+        ss := ss & si ;
+    fi ;
   endfor ;
   ss
 enddef ;

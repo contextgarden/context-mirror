@@ -1,0 +1,117 @@
+%D \module
+%D   [       file=colo-hex,
+%D        version=2004.06.23,
+%D          title=\CONTEXT\ Color Macros,
+%D       subtitle=Hex Colors,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\ifx\dodododefinecolor\undefined
+  \beginTEX \endinput \endTEX
+\else
+  \endinput
+\fi
+
+\writestatus{loading}{Context Color Macros / hexadecimal}
+
+% \edef\testcolor{\string#FFC0C0}
+% \edef\testcolor{\string#55}
+%
+% \setupcolors[state=start]
+%
+% \expanded{\definecolor[thehexcolor][\hexcolorspec\testcolor]}
+%
+% \checkhexcolor[\testcolor]
+%
+% \definecolor[thehexcolor][\testcolor]
+%
+% \starttext
+%
+% test \color[thehexcolor]{rood}
+% test \color[red]{rood}
+% test \color[\testcolor]{rood}
+%
+% \stoptext
+
+\unprotect
+
+\newdimen\hexcolorfraction \hexcolorfraction=\dimexpr(1pt/256)
+
+\chardef\hexcolorprefix=`#
+
+\def\hexcolorspec   #1{\expandafter\dohexcolorspec   #1\empty\empty\empty\empty\relax}
+\def\hexcolorpattern#1{\expandafter\dohexcolorpattern#1\empty\empty\empty\empty\relax}
+
+\ifx\dohexstringtonumber\undefined \def\dohexstringtonumber{"} \fi
+
+\def\hexcolorcomponent#1#2%
+  {\ifnum\dohexstringtonumber#1#2=\zerocount0\else\ifnum\dohexstringtonumber#1#2=\plusone1\else
+     \expandafter\withoutpt\the\dimexpr(\dohexstringtonumber#1#2\hexcolorfraction)%
+   \fi\fi}
+
+\def\dohexcolorspec#1#2#3#4#5#6#7#8\relax
+  {\ifx#4\empty
+     s=\hexcolorcomponent#2#3%
+   \else
+     r=\hexcolorcomponent#2#3,g=\hexcolorcomponent#4#5,b=\hexcolorcomponent#6#7%
+   \fi}
+
+\def\dohexcolorpattern#1#2#3#4#5#6#7#8\relax
+  {0\ifx#4\empty
+     S:\hexcolorcomponent#2#3%
+   \else
+     R:\hexcolorcomponent#2#3:\hexcolorcomponent#4#5:\hexcolorcomponent#6#7%
+   \fi:0:0}
+
+\def\doifhexcolorelse#1%
+  {\expandafter\dodoifhexcolorelse#10\od} % 0 is a dirty trick to catch an empty #1
+
+\def\dodoifhexcolorelse#1#2\od
+  {\ifnum`#1=\hexcolorprefix
+     \expandafter\firstoftwoarguments
+   \else
+     \expandafter\secondoftwoarguments
+   \fi}
+
+\def\docheckhexcolor#1%
+  {\doifhexcolorelse{#1}{\doifundefined{#1}{\setxvalue{\??cr#1}{\hexcolorpattern{#1}}}}\donothing}
+
+\def\checkhexcolor[#1]%
+  {\expanded{\docheckhexcolor{#1}}}
+
+\def\colorHpattern{\@EA\hexcolorpattern\@EA{\@EA*\@@cl@@h}} % * == dummy placeholder
+
+\let\dodododefinecolor\dododefinecolor % we will overload this one
+
+\def\dododefinecolor#1#2#3#4[#5][#6]%
+  {\doifhexcolorelse{#6}
+     {\setxvalue{\??cr#5}{\hexcolorpattern{#6}}}
+     {\dodododefinecolor#1#2#3#4[#5][#6]}}
+
+%D For Adam Lindsay and his XeTeX special driver:
+
+% because we intercept the zero condition, the .23pt in 1.23pt will disappear in the
+% ifcase zero part branch
+
+\def\colorhexcomponent#1%
+  {\ifdim#1\points<.005\points
+     00\else\lchexnumbers{\the\dimexpr(255\dimexpr(#1\points)\relax+.5\points)\relax}%
+   \fi}
+
+% the faster one
+
+\newdimen\hex@color@a \hex@color@a=.005pt
+\newdimen\hex@color@b \hex@color@b=.5pt
+\chardef \hex@color@c             =255
+
+\def\colorhexcomponent#1%
+  {\ifdim#1\points<\hex@color@a
+     00\else\lchexnumbers{\the\dimexpr(#1\points*\hex@color@c+\hex@color@b)\relax}%
+   \fi}
+
+\protect \endinput

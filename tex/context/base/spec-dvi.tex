@@ -26,15 +26,15 @@
 \newbox\DVIobjects \newcounter\DVIobjectcounter
 
 \definespecial\dostartobject#1#2#3#4#5%
-  {\setbox\nextbox=\vbox\bgroup
-     \def\dodostopobject%
+  {\setbox\nextbox\vbox\bgroup
+     \def\dodostopobject
        {\egroup
         \doglobal\increment\DVIobjectcounter
-        \global\setbox\DVIobjects=\vbox
+        \global\setbox\DVIobjects\vbox
           {\offinterlineskip
            \forgetall
            \unvbox\DVIobjects
-           \setbox\nextbox\hbox{\box\nextbox}
+           \setbox\nextbox\hbox{\box\nextbox}%
            \wd\nextbox\zeropoint
            \dp\nextbox\zeropoint
            \ht\nextbox\onepoint
@@ -42,7 +42,7 @@
            \box\nextbox}%
         \dosetobjectreference{#1}{#2}{\DVIobjectcounter}}}
 
-\definespecial\dostopobject%
+\definespecial\dostopobject
   {\dodostopobject}
 
 \definespecial\doinsertobject#1#2%
@@ -50,13 +50,15 @@
    \dogetobjectreference{#1}{#2}\DVIobjectreference
    \splittopskip\zeropoint
    \setbox0=\copy\DVIobjects
-   \dimen0=\DVIobjectreference pt
+   \dimen0=\DVIobjectreference\onepoint
    \advance\dimen0 -\onepoint
-   \setbox2=\vsplit0 to \dimen0
+   \setbox2\vsplit0 to \dimen0
    \ifdim\ht0>\onepoint
      \setbox0\vsplit0 to \onepoint
    \fi
-   \unvbox0\setbox0=\lastbox\unhbox0
+   \unvbox0
+   \setbox0\lastbox
+   \hbox{\unhbox0}% the \hbox is really needed!
    \egroup}
 
 %D \macros
@@ -74,11 +76,11 @@
 %D commands and append these to \type {jobname.tuo} using the
 %D format:
 %D
-%D \starttypen
+%D \starttyping
 %D \pospxy    {identifier}{page}{x}{y}
 %D \pospxywhd {identifier}{page}{x}{y}{w}{h}{d}
 %D \pospxyplus{identifier}{page}{x}{y}{w}{h}{d}{list}
-%D \stoptypen
+%D \stoptyping
 %D
 %D The postprocessor should, of course, provide the \type
 %D {page}, \type {x}, and \type {y} values.
