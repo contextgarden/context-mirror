@@ -83,19 +83,22 @@
 \def\definefilesynonym
   {\dodoubleempty\dodefinefilesynonym}
 
-% \def\dodefinefilesynonym[#1][#2]%
-%   {\doifdefined{\??fs#1}
-%      {\doifnotvalue{\??fs#1}{#2}
-%         {\showmessage\m!files1{#1 (#2),\getvalue{\??fs#1}}}}%
-%    \doifelse{#1}{#2}
-%      {\letbeundefined{\??fs#1}{#2}}
-%      {\setevalue{\??fs#1}{#2}}}
-
 \def\dodefinefilesynonym[#1][#2]%
   {\ifundefined{\??fs#1}\else
      \doifnotvalue{\??fs#1}{#2}{\showmessage\m!files1{#1 (#2),\getvalue{\??fs#1}}}%
    \fi
    \doifelse{#1}{#2}{\letbeundefined{\??fs#1}{#2}}{\setevalue{\??fs#1}{#2}}}
+
+%D \macros
+%D   {definefilefallback}
+
+\def\definefilefallback
+  {\dodoubleargument\dodefinefilefallback}
+
+\def\dodefinefilefallback[#1][#2]%
+  {\doifnotfile{#1}
+     {\def\docommand##1{\doiffile{##1}{\definefilesynonym[#1][##1]\quitcommalist}}%
+      \processcommalist[#2]\docommand}}
 
 %D \macros
 %D   {truefilename}

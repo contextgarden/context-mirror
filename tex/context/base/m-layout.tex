@@ -20,43 +20,43 @@
 
 \unprotect
 
-% \def\layouthwratio{\withoutpt\the\dimexpr(8\paperheight/\dimexpr(\paperwidth/ 8192))}
-% \def\layouthwratio{\withoutpt\the\dimexpr(4\paperheight/\dimexpr(\paperwidth/16384))}
-% \def\layouthwratio{\withoutpt\the\dimexpr(2\paperheight/\dimexpr(\paperwidth/32768))}
+% \def\layouthwratio{\withoutpt\the\dimexpr8\paperheight/\dimexpr(\paperwidth/ 8192)\relax}
+% \def\layouthwratio{\withoutpt\the\dimexpr4\paperheight/\dimexpr(\paperwidth/16384)\relax}
+% \def\layouthwratio{\withoutpt\the\dimexpr2\paperheight/\dimexpr(\paperwidth/32768)\relax}
 
 \def\layouthwratio
-  {\withoutpt\the\dimexpr(2\paperheight/(\paperwidth/32768))}
+  {\withoutpt\the\dimexpr2\paperheight/(\paperwidth/32768)\relax}
 
 \def\layouthfheight
-  {\dimexpr(\layoutparameter\c!header+\layoutparameter\c!headerdistance+
-            \layoutparameter\c!footer +\layoutparameter\c!footerdistance )}
+  {\dimexpr\layoutparameter\c!header+\layoutparameter\c!headerdistance+
+           \layoutparameter\c!footer+\layoutparameter\c!footerdistance\relax}
 
 \startsetups[preset-1]
 
-  \xdef\layoutwidth {\dimexpr(\layoutparameter\c!width)}
-  \gdef\layoutheight{\dimexpr(\layouthwratio\dimexpr(\layoutwidth)+\layouthfheight)}
+  \xdef\layoutwidth {\dimexpr\layoutparameter\c!width\relax}
+  \gdef\layoutheight{\dimexpr\layouthwratio\dimexpr\layoutwidth\relax+\layouthfheight\relax}
 
 \stopsetups
 
 \definelayout
   [preset-1-1]
   [\c!preset=preset-1,
-   \c!backspace=\dimexpr((\paperwidth-\layoutwidth)/2),
-   \c!width=\dimexpr(2\paperwidth/3),
-   \c!cutspace=\dimexpr((\paperwidth-\layoutwidth)/2),
-   \c!margin=\dimexpr((\paperwidth-\layoutwidth)/3),
+   \c!backspace=\dimexpr(\paperwidth-\layoutwidth)/2\relax,
+   \c!width=\dimexpr2\paperwidth/3\relax,
+   \c!cutspace=\dimexpr(\paperwidth-\layoutwidth)/2\relax,
+   \c!margin=\dimexpr(\paperwidth-\layoutwidth)/3\relax,
    \c!header=2\lineheight,
    \c!headerdistance=\lineheight,
    \c!height=\v!middle, % \layoutheight
    \c!footerdistance=\layoutparameter\c!headerdistance, % \lineheight,
    \c!footer=\layoutparameter\c!header, % 2\lineheight,
-   \c!topspace=\dimexpr(1\dimexpr(\paperheight-(\layoutheight+\layouthfheight))/3),
-   \c!bottomspace=\dimexpr(2\dimexpr(\paperheight-(\layoutheight+\layouthfheight))/3)]
+   \c!topspace=\dimexpr1\dimexpr\paperheight-(\layoutheight+\layouthfheight)\relax/3\relax,
+   \c!bottomspace=\dimexpr2\dimexpr\paperheight-(\layoutheight+\layouthfheight)\relax/3\relax]
 
 \startsetups[preset-2]
 
-  \gdef\layouthstep{\dimexpr(\paperwidth /\layoutparameter\c!columns)}
-  \gdef\layoutvstep{\dimexpr(\paperheight/\layoutparameter\c!columns)}
+  \gdef\layouthstep{\dimexpr\paperwidth /\layoutparameter\c!columns\relax}
+  \gdef\layoutvstep{\dimexpr\paperheight/\layoutparameter\c!columns\relax}
 
 \stopsetups
 
@@ -73,8 +73,8 @@
    \c!height=\v!middle, % \layoutheight
    \c!footerdistance=\layoutparameter\c!headerdistance,
    \c!footer=\layoutparameter\c!header,
-   \c!topspace=\dimexpr(\layoutvstep-\layoutparameter\c!header-\layoutparameter\c!headerdistance),
-   \c!bottomspace=\dimexpr(2\layoutvstep-\layoutparameter\c!header-\layoutparameter\c!headerdistance)]
+   \c!topspace=\dimexpr\layoutvstep-\layoutparameter\c!header-\layoutparameter\c!headerdistance\relax,
+   \c!bottomspace=\dimexpr(2\layoutvstep)-\layoutparameter\c!header-\layoutparameter\c!headerdistance\relax]
 
 \definelayout
   [preset-2-2]

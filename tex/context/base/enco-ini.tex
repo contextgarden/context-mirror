@@ -496,11 +496,11 @@
 % faster:
 
 \def\resetcaserange #1 to #2
- {\setmappingtoks
-  \dostepwiserecurse{#1}{#2}\plusone
-    {\edef\@@expanded{\recurselevel\space}%
-     \mappingtoks\@EA\@EA\@EA{\@EA\the\@EA\mappingtoks\@EA\setcasemap\@@expanded 0 0 }}%
-  \ignorespaces}
+  {\setmappingtoks
+   \dostepwiserecurse{#1}{#2}\plusone
+     {\edef\@@expanded{\recurselevel\space}%
+      \mappingtoks\@EA\@EA\@EA{\@EA\the\@EA\mappingtoks\@EA\setcasemap\@@expanded 0 0 }}%
+   \ignorespaces}
 
 \beginETEX
 
@@ -930,34 +930,53 @@
 %D In patterns, characters have to be bytes. These will be
 %D mapped onto the compact pattern arrays.
 
+\let\normalpatterns   \patterns
+\let\normalhyphenation\hyphenation
+
 \def\patternchar#1 {\rawcharacter{#1}} % space is part of character definition !
 
 \ifx \enablepatterntokens\undefined
   \def\handlepatterntoken#1]{\csname#1\endcsname}
 \fi
 
-\def\startpatternaccents#1#2% % used grouped
-  {\bgroup
-   \let\char\patternchar
-   \doifelsenothing{#1}{\enableencoding[ec]}{\enableencoding[#1]}%
-   \doifelsenothing{#2}{\enablemapping [ec]}{\enablemapping [#2]}%
-   \ifx \enablepatterntokens\undefined
+% we need to postpone catcode changes, e.g. hr patterns
+% have \catcode" -> which fails when " is letter
+
+\def\pathypsettings
+  {\ifx \enablepatterntokens\undefined
      \defineactivecharacter [ {\handlepatterntoken}%
    \else
      \enablepatterntokens
    \fi
-   \ifx \enablepatternxml\undefined \else
-     \enablepatternxml
-   \fi
-   \catcode16 =\@@letter\lccode16=16 % brrr, extra quote in ec (turkish)
-   \catcode17 =\@@letter\lccode17=17 % brrr, extra quote in ec (turkish)
-   \catcode`\"=\@@letter\lccode`\"=`\"
-   \catcode`\'=\@@letter\lccode`\'=`\'
-   \catcode`\-=\@@letter\lccode`\-=`\-
+   \lccode16=16 % brrr, extra quote in ec (turkish)
+   \lccode17=17 % brrr, extra quote in ec (turkish)
+   \lccode`\-=`\-
+   \lccode`\'=`\'
+   \lccode`\"=`\"
+   \relax}
+
+\def\patterns   {\pathypsettings\normalpatterns   }
+\def\hyphenation{\pathypsettings\normalhyphenation}
+
+\def\startpatternloading#1#2#3% % we should use \everypatternloading
+  {\startreadingfile
+   \bgroup
+   % let's get rid of interfering stuff
+   \let\everyjob\scratchtoks
+   \let\message \gobbleoneargument
+   % we want direct characters
+   \let\char\patternchar
+   \doifelsenothing{#2}{\enableencoding[ec]}{\enableencoding[#2]}%
+   \doifelsenothing{#3}{\enablemapping [ec]}{\enablemapping [#3]}%
+   \expanded{\doifinstring{\f!languageprefix}{#1}}
+     {\ifx \enablepatternxml\undefined \else
+        \enablepatternxml
+      \fi}%
    \let\dohandleaccent\normaldohandleaccent}
 
-\def\stoppatternaccents
-  {\egroup}
+\def\stoppatternloading
+  {\egroup
+   \stopreadingfile}
 
 \def\definecharacter#1 #2 %
   {\ifundefined{#1}\setvalue{#1}{\dohandlecharacter{#1}}\fi

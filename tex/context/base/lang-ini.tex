@@ -312,8 +312,6 @@
      \dodoloadpatterns{#1}{#2}{}{}%
    \fi}
 
-\let\normalpatterns\patterns
-
 \def\dodoloadpatterns#1#2#3#4% beware, loaded language also incr
   {\normallanguage\loadedlanguage % when not really needed
    \bgroup
@@ -322,12 +320,12 @@
    % \doifnothing\currentencoding{\let\currentencoding\s!default}%
    % \doifnothing\currentmapping {\let\currentmapping \s!default}%
    % better:
-\let\synchronizepatterns\relax \let\enabledmapping\empty % needed?
+   \let\synchronizepatterns\relax % needed?
+   \let\enabledmapping     \empty % needed?
    \doifelsenothing{#3}{\enableencoding[\s!default]}{\enableencoding[#3]}%
    \doifelsenothing{#4}{\enablemapping [\s!default]}{\enablemapping [#4]}%
    \ifundefined{\??la\??la:\currentencoding:\currentmapping:#2}%
      \let\showpatterns\relax
-     \scratchtoks\everyjob % we don't want additional junk put there, is saving needed?
      \edef\alreadyloadedlanguage
        {\executeifdefined{\??la\??la:\currentencoding:\currentmapping:\truefilename{\f!languageprefix#2.\f!patternsextension}}\empty}%
      \edef\alreadyloadedlanguage
@@ -335,29 +333,21 @@
      \ifx\alreadyloadedlanguage\empty
        \letgvalue{\??la\??la:\currentencoding:\currentmapping:#2}\loadedlanguage
        \doifundefined{\??la\??la:\s!default:\s!default:#2}{\letgvalue{\??la\??la:\s!default:\s!default:#2}\loadedlanguage}% fall back
-       \startreadingfile
-       \startpatternaccents{#3}{#4}%
-       \readsysfile{\truefilename{\f!languageprefix#2.\f!patternsextension}}
-         {\setxvalue{\??la#1\s!patterns}{#2}%
-          \setxvalue{\??la\??la:\currentencoding:\currentmapping:\truefilename{\f!languageprefix#2.\f!patternsextension}}{\number\loadedlanguage}%
-          \xdef\preloadedpmessage{\preloadedpmessage\showpatterns{#2}{\number\normallanguage}{\currentencoding}{\currentmapping}}%
-          \doglobal\addtocommalist{#2}\preloadedpatterns
-          \showmessage\m!linguals1{#2,#1,\loadedlanguage,\currentencoding,\currentmapping}}
-         {\readsysfile{\f!languageprefix#2.\f!patternsextension}
-            {\setxvalue{\??la#1\s!patterns}{#2}%
-             \setxvalue{\??la\??la:\currentencoding:\currentmapping:\f!languageprefix#2.\f!patternsextension}{\number\loadedlanguage}%
-             \xdef\preloadedpmessage{\preloadedpmessage\showpatterns{#2}{\number\normallanguage}{\currentencoding}{\currentmapping}}%
-             \doglobal\addtocommalist{#2}\preloadedpatterns
-             \showmessage\m!linguals1{#2,#1,\loadedlanguage,\currentencoding,\currentmapping}}
-            {\showmessage\m!linguals2{#2,#1,\loadedlanguage,\currentencoding,\currentmapping,\f!languageprefix#2.\f!patternsextension,\truefilename{\f!languageprefix#2.\f!patternsextension}}}}%
-       \readsysfile{\truefilename{\f!languageprefix#2.\f!hyphensextension}}
-         {\showmessage\m!linguals3{#2,#1,\loadedlanguage,\currentencoding,\currentmapping}}
-         {\readsysfile{\f!languageprefix#2.\f!hyphensextension}
-            {\showmessage\m!linguals3{#2,#1,\loadedlanguage,\currentencoding,\currentmapping}}
-            {\showmessage\m!linguals4{#2,#1,\loadedlanguage,\currentencoding,\currentmapping}}}%
+       \startpatternloading{\truefilename{\f!languageprefix#2.\f!patternsextension}}{#3}{#4}%
+         \readsysfile{\truefilename{\f!languageprefix#2.\f!patternsextension}}
+           {\setxvalue{\??la#1\s!patterns}{#2}%
+            \setxvalue{\??la\??la:\currentencoding:\currentmapping:\truefilename{\f!languageprefix#2.\f!patternsextension}}{\number\loadedlanguage}%
+            \xdef\preloadedpmessage{\preloadedpmessage\showpatterns{#2}{\number\normallanguage}{\currentencoding}{\currentmapping}}%
+            \doglobal\addtocommalist{#2}\preloadedpatterns
+            \showmessage\m!linguals1{#2,#1,\loadedlanguage,\currentencoding,\currentmapping}}
+           {\showmessage\m!linguals2{#2,#1,\loadedlanguage,\currentencoding,\currentmapping,\f!languageprefix#2.\f!patternsextension,\truefilename{\f!languageprefix#2.\f!patternsextension}}}%
+       \stoppatternloading
+       \startpatternloading{\truefilename{\f!languageprefix#2.\f!hyphensextension}}{#3}{#4}%
+         \readsysfile{\truefilename{\f!languageprefix#2.\f!hyphensextension}}
+           {\showmessage\m!linguals3{#2,#1,\loadedlanguage,\currentencoding,\currentmapping}}
+           {\showmessage\m!linguals4{#2,#1,\loadedlanguage,\currentencoding,\currentmapping}}%
+       \stoppatternloading
        \doglobal\increment\loadedlanguage
-       \stoppatternaccents
-       \stopreadingfile
        % \stopencoding
      \else % optimization, introduced 2004.08.24, while sorting out changes in tl
        \letgvalue{\??la\??la:\currentencoding:\currentmapping:#2}\alreadyloadedlanguage
@@ -367,7 +357,6 @@
        \doglobal\addtocommalist{#2}\preloadedpatterns
        \showmessage\m!linguals1{#2,#1,[\alreadyloadedlanguage],\currentencoding,\currentmapping}%
      \fi
-     \global\everyjob\scratchtoks
    \fi
    \egroup}
 

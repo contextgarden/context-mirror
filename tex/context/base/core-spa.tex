@@ -4031,11 +4031,11 @@
      [   \v!reset=>\global\chardef\everyparagraphintro\zerocount
                    \global\everyfirstparagraphintro\emptytoks
                    \global\everynextparagraphintro \emptytoks,
-        \v!first=>\global\chardef\everyparagraphintro\plusone
+         \v!first=>\global\chardef\everyparagraphintro\plusone
                    \doglobal\appendtoks#2\to\everyfirstparagraphintro,
-      \v!next=>\ifcase\everyparagraphintro\global\chardef\everyparagraphintro\plusone\fi
+          \v!next=>\ifcase\everyparagraphintro\global\chardef\everyparagraphintro\plusone\fi
                    \doglobal\appendtoks#2\to\everynextparagraphintro,
-           \v!each=>\ifcase\everyparagraphintro\global\chardef\everyparagraphintro\plustwo\fi
+          \v!each=>\ifcase\everyparagraphintro\global\chardef\everyparagraphintro\plustwo\fi
                    \doglobal\appendtoks#2\to\everyfirstparagraphintro
                    \doglobal\appendtoks#2\to\everynextparagraphintro]}
 

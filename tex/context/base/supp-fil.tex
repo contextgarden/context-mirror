@@ -115,17 +115,17 @@
 
 \def\writeln#1{\write#1{}}
 
-%D New!
-
 \def\doiffileexistselse#1%
-  {\immediate\openin\scratchread=#1\relax
-   \ifeof\scratchread
-     \immediate\closein\scratchread
-     \expandafter\secondoftwoarguments
-   \else
-     \immediate\closein\scratchread
-     \expandafter\firstoftwoarguments
-   \fi}
+  {\doifelsenothing{#1}
+     {\secondoftwoarguments}
+     {\immediate\openin\scratchread=#1\relax
+      \ifeof\scratchread
+        \immediate\closein\scratchread
+        \expandafter\secondoftwoarguments
+      \else
+        \immediate\closein\scratchread
+        \expandafter\firstoftwoarguments
+      \fi}}
 
 %D \macros
 %D   {doprocessfile,fileline,fileprocessedtrue,dofinishfile}
@@ -485,27 +485,16 @@
 %D implementation method.
 %D
 %D \starttyping
-%D \doiffileelse {filename} {before loading} {not found}
+%D \doiffileelse {filename} {found} {not found}
 %D \stoptyping
-%D
-%D We use \type{\next} here, because we want to close the
-%D file first. We also provide the alternatives:
 %D
 %D \starttyping
 %D \doiflocfileelse {filename} {before loading} {not found}
 %D \stoptyping
 
-\def\doiffileelse#1%
-  {\doifelsenothing{#1}
-     {\secondoftwoarguments}
-     {\immediate\openin\scratchread=#1\relax
-      \ifeof\scratchread
-        \immediate\closein\scratchread
-        \expandafter\secondoftwoarguments
-      \else
-        \immediate\closein\scratchread
-        \expandafter\firstoftwoarguments
-      \fi}}
+\def\doiffileelse  {\doiffileexistselse}
+\def\doiffile    #1{\doiffileexistselse{#1}\firstofoneargument\gobbleoneargument}
+\def\doifnotfile #1{\doiffileexistselse{#1}\gobbleoneargument\firstofoneargument}
 
 \def\doiflocfileelse#1%
   {\makelocreadfilename{#1}%
