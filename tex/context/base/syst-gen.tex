@@ -711,15 +711,15 @@
 %D   {\doifundefinedelse{#1}{}{#2}}
 %D
 %D \def\doifalldefinedelse#1#2#3%
-%D   {\bgroup
+%D   {\begingroup
 %D    \donetrue
 %D    \def\checkcommand##1%
 %D      {\doifundefined{##1}{\donefalse}}%
 %D    \processcommalist[#1]\checkcommand
 %D    \ifdone
-%D      \egroup#2%
+%D      \endgroup#2%
 %D    \else
-%D      \egroup#3%
+%D      \endgroup#3%
 %D    \fi}
 %D \stoptypen
 %D
@@ -838,7 +838,7 @@
 %D \stoptypen
 %D 
 %D A even more previous version used \type{\bgroup} and 
-%D \type{\egroup}. In math mode however, \type{$1{x}2$} differs
+%D \type {\egroup}. In math mode however, \type{$1{x}2$} differs
 %D from \type{$1x2$}. This can been seen when one compares the 
 %D output of: 
 %D 
@@ -847,6 +847,9 @@
 %D $\kern10pt{\showthe\lastkern}$
 %D $\kern10pt\begingroup\showthe\lastkern\endgroup$
 %D \stoptypen
+%D 
+%D Also in math mode, one can better use \type {\begingroup} 
+%D and companion instead of \type {\bgroup}.
 %D 
 %D When we were developing the scientific units module, we 
 %D encountered different behavior in text and math mode, which 
@@ -1421,13 +1424,13 @@
 %D One way of quitting a commalist halfway is:
 
 \def\quitcommalist%
-  {\bgroup\let\doprocesscommaitem\doquitcommalist}
+  {\begingroup\let\doprocesscommaitem\doquitcommalist}
 
 \def\doquitcommalist#1]%
-  {\egroup}
+  {\endgroup}
 
 \def\quitprevcommalist%
-  {\bgroup\let\doprocesscommaitem\doquitprevcommalist}
+  {\begingroup\let\doprocesscommaitem\doquitprevcommalist}
 
 \def\doquitprevcommalist#1]%
   {\let\doprocesscommaitem\doquitcommalist}
@@ -1959,9 +1962,9 @@
 %D rather dirty one.
 
 \long\def\doifnumberelse#1#2#3%
-  {\bgroup\donefalse
+  {\begingroup\donefalse
    \ifcase1#1\or\or\or\or\or\or\or\or\or\else\donetrue\fi
-   \ifdone\egroup#2\else\egroup#3\fi}
+   \ifdone\endgroup#2\else\endgroup#3\fi}
 
 %D The previous implementation was:
 %D 
@@ -2510,7 +2513,7 @@
 %   {\advance\commalistcounter -1
 %    \ifcase\commalistcounter
 %      \def\commalistelement{#1}%
-%      \bgroup\def\doprocesscommaitem##1]{\egroup}%
+%      \begingroup\def\doprocesscommaitem##1]{\endgroup}%
 %    \fi}
 
 \def\p!dogetfromcommalist#1%
@@ -3079,11 +3082,11 @@
      {\firstargumentfalse\getvalue{\s!complex\nameofcommand}[]}}
 
 \def\setnameofcommand#1%
-  {\bgroup
+  {\begingroup
    \escapechar=-1
    \globaldefs=0 % pretty important! 
    \xdef\nameofcommand{\string#1}%
-   \egroup}
+   \endgroup}
 
 %D \macros
 %D   {definecomplexorsimple,definecomplexorsimpleempty}
@@ -3212,9 +3215,9 @@
 %D         \let\expectedarguments\noexpectedarguments
 %D         \def\nextargument{#1\dodogetargument}%
 %D       %\else\ifx\nextargument\lineending % this can be an option
-%D       %  \def\nextargument{\bgroup\def\\ {\egroup\dogetgroupargument#1#2}\\}%
+%D       %  \def\nextargument{\begingroup\def\\ {\endgroup\dogetgroupargument#1#2}\\}%
 %D       %\else\ifx\nextargument\blankspace % but it may never be default
-%D       %  \def\nextargument{\bgroup\def\\ {\egroup\dogetgroupargument#1#2}\\}%
+%D       %  \def\nextargument{\begingroup\def\\ {\endgroup\dogetgroupargument#1#2}\\}%
 %D       \else
 %D         \ifnum\expectedarguments>\noexpectedarguments
 %D           \writestatus
@@ -3245,7 +3248,7 @@
 \let\normalfi       \fi
 
 \def\beginrobusttest
-  {\bgroup
+  {\begingroup
    \let\if      \relax
    \let\ifx     \relax
    \let\ifnum   \relax
@@ -3257,7 +3260,7 @@
    \let\else    \relax
    \let\fi      \relax}
 
-\let\endrobusttest\egroup
+\let\endrobusttest\endgroup
 
 % \def\dogetgroupargument#1#2%
 %   {\def\nextnextargument%  
@@ -3266,9 +3269,9 @@
 %         \let\expectedarguments\noexpectedarguments
 %         \def\nextargument{#1\dodogetargument}%
 %      %\normalelse\normalifx\nextargument\lineending % this can be an option
-%      %  \def\nextargument{\bgroup\def\\ {\egroup\dogetgroupargument#1#2}\\}%
+%      %  \def\nextargument{\begingroup\def\\ {\endgroup\dogetgroupargument#1#2}\\}%
 %      %\normalelse\normalifx\nextargument\blankspace % but may never be default
-%      %  \def\nextargument{\bgroup\def\\ {\egroup\dogetgroupargument#1#2}\\}%
+%      %  \def\nextargument{\begingroup\def\\ {\endgroup\dogetgroupargument#1#2}\\}%
 %       \normalelse
 %         \endrobusttest
 %         \ifnum\expectedarguments>\noexpectedarguments
@@ -3288,9 +3291,9 @@
 %         \noshowargumenterror
 %         \def\nextargument{#1\dodogetargument}%
 %      %\normalelse\normalifx\nextargument\lineending % this can be an option
-%      %  \def\nextargument{\bgroup\def\\ {\egroup\dogetgroupargument#1#2}\\}%
+%      %  \def\nextargument{\begingroup\def\\ {\endgroup\dogetgroupargument#1#2}\\}%
 %      %\normalelse\normalifx\nextargument\blankspace % but may never be default
-%      %  \def\nextargument{\bgroup\def\\ {\egroup\dogetgroupargument#1#2}\\}%
+%      %  \def\nextargument{\begingroup\def\\ {\endgroup\dogetgroupargument#1#2}\\}%
 %       \normalelse
 %         \endrobusttest
 %         \doshowargumenterror
@@ -3317,10 +3320,10 @@
         \normalifcase\@@permitspacesbetweengroups
           \normalifx\nextargument\lineending
             \endrobusttest
-            \def\nextargument{\bgroup\def\\ {\egroup\dogetgroupargument#1#2}\\}%
+            \def\nextargument{\begingroup\def\\ {\endgroup\dogetgroupargument#1#2}\\}%
           \normalelse\normalifx\nextargument\blankspace
             \endrobusttest
-            \def\nextargument{\bgroup\def\\ {\egroup\dogetgroupargument#1#2}\\}%
+            \def\nextargument{\begingroup\def\\ {\endgroup\dogetgroupargument#1#2}\\}%
           \normalelse
             \endrobusttest 
             \doshowargumenterror
@@ -3413,9 +3416,9 @@
 %D \type{\wait} itself.
 
 \def\wait%
-  {\bgroup
+  {\begingroup
    \read16 to \wait
-   \egroup}
+   \endgroup}
 
 %D \macros
 %D   {writestring,writeline,
@@ -3460,13 +3463,13 @@
 %    \fi}
 % 
 % \def\writestatus#1#2%
-%   {\bgroup
+%   {\begingroup
 %    \let\messagecontentA=\empty
 %    \edef\messagecontentB{#2}%  maybe it's \the\scratchcounter
 %    \scratchcounter=0
 %    \expandafter\dosplitstatus#1?\end
 %    \writestring{\messagecontentA\space:\space\messagecontentB}%
-%    \egroup}
+%    \endgroup}
 
 \chardef\statuswidth=15
 \chardef\statuswrite=16
@@ -3492,7 +3495,7 @@
   {}
 
 \def\writestatus#1#2%
-  {\bgroup
+  {\begingroup
    \scratchtoks\emptytoks
    \statuscounter\statuswidth
    \expandafter\dosplitstatus#1%
@@ -3500,7 +3503,7 @@
      \space\space\space\space\space\space\space
      \space\space\space\space\space\space\end
    \expanded{\writestring{\the\scratchtoks\space:\space#2}}%
-   \egroup}
+   \endgroup}
 
 %D The next implementation saves only some 10 words of format 
 %D memory, but we hardly gain any speed.

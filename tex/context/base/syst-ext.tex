@@ -2032,13 +2032,13 @@
 %D Splitting the value and the unit is done by:
 
 \def\withoutunit#1#2%
-  {\bgroup
+  {\begingroup
    \dimen0=#1\relax
    \@EA\convertargument\the\dimen0\to\asciiA
    \@EA\convertargument#2\to\asciiB
    \@EA\@EA\@EA\beforesplitstring\@EA\asciiA\@EA\at\asciiB\to\!!stringa%
    \!!stringa
-   \egroup}
+   \endgroup}
 
 \def\withoutpt#1%
   {\withoutunit{#1}{pt}}
@@ -2066,11 +2066,11 @@
 %D in the following way too.
 
 \def\PtToCm#1%
-  {\bgroup
+  {\begingroup
    \scratchdimen=#1\relax
    \scratchdimen=0.0351459804\scratchdimen % 2.54/72.27
    \withoutpt{\the\scratchdimen}cm%
-   \egroup}
+   \endgroup}
 
 %D We also support:
 %D
@@ -2268,7 +2268,7 @@
   {\afterassignment\dodoprocesstokens\let\nextprocessedtoken= }
 
 \def\processtokens#1#2#3#4#5%
-  {\bgroup
+  {\begingroup
    \def\lastcharacter{\lastcharacter}%
    \def\space{ }%
    \let\\=\space
@@ -2278,7 +2278,7 @@
    \def\white{#4}%
    \let\savedbefore\before
    \doprocesstokens#5\lastcharacter
-   \egroup}
+   \endgroup}
 
 %D \macros
 %D   {doifvalue,doifnotvalue,doifelsevalue,
@@ -2748,7 +2748,7 @@
 %D sort. 
 
 \def\untexsomething%
-  {\bgroup
+  {\begingroup
    \catcode`\{=\@@ignore
    \catcode`\}=\@@ignore
    \escapechar=-1
@@ -2756,7 +2756,7 @@
 
 \long\def\dountexsomething#1#2\to#3%
   {\doglobal#1#2\to\untexedargument
-   \egroup
+   \endgroup
    \let#3=\untexedargument}
 
 \def\untexargument%
@@ -3138,13 +3138,13 @@
 %D This macro is first used in the tabulation macros. 
 
 \def\processcontent#1%
-  {\bgroup\@EA\doprocesscontent\csname#1\endcsname}
+  {\begingroup\@EA\doprocesscontent\csname#1\endcsname}
 
 %\beginTEX
 
 \def\doprocesscontent#1#2#3%
   {\long\def\doprocesscontent##1#1%
-     {\egroup\long\def#2{##1}#3}%
+     {\endgroup\long\def#2{##1}#3}%
    \doprocesscontent}
 
 %\endTEX
@@ -3367,6 +3367,26 @@
 \def\doifsometokselse#1#2#3%
   {\edef\!!stringa{\the#1}%
    \ifx\!!stringa\empty#3\else#2\fi}
+
+%D \macros
+%D   {startstrictinspectnextcharacter}
+%D 
+%D This one if for Taco's bibliography module:
+
+\let\normalinspectnextcharacter\inspectnextcharacter
+
+\def\strictinspectnextcharacter% no user macro ! 
+  {\ifx\nexttoken\charactertoken
+     \expandafter\!!stringa
+   \else
+     \expandafter\!!stringb
+   \fi}
+
+\def\startstrictinspectnextcharacter
+  {\let\inspectnextcharacter\strictinspectnextcharacter}
+
+\def\stopstrictinspectnextcharacter
+  {\let\inspectnextcharacter\normalinspectnextcharacter}
 
 \protect
 

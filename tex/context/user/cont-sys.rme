@@ -16,7 +16,7 @@
 % Here you can take care of overloading some (style) 
 % defaults. What goes here, depends on your local system. 
 %
-% Set default file name mapping:
+% Set default file name mapping (not really needed):
 %
 % \usetypescript [ber] 
 %
@@ -32,6 +32,10 @@
 % \definefontsynonym [gbhei]   [gbsong]
 % \definefontsynonym [gbheisl] [gbsong]
 % \definefontsynonym [gbheisl] [gbsong]
+%
+% You can let \CONTEXT\ load the map files for \PDFTEX. 
+%
+% \autoloadmapfilestrue
 %
 % Setting up a global figure path (beware, \c!gebied may change): 
 %

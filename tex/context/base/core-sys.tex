@@ -176,7 +176,7 @@
      [\getvalue{#1\c!expansie}]
      [       \v!ja=>{{\honorunexpanded\xdef\@@globalexpanded{#2}%
                       \xdef\@@globalexpanded{\@@globalexpanded}}%
-                     \dodoglobal\convertcommand\@@globalexpanded\to#3},
+                      \dodoglobal\convertcommand\@@globalexpanded\to#3},
        \v!commando=>{\dodoglobal\convertcommand #2\to#3},
         \s!default=>{\dodoglobal\convertargument#2\to#3},
         \s!unknown=>{\dodoglobal\convertargument#2\to#3}]}

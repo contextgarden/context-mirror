@@ -322,7 +322,7 @@
 
 \def\docomplexsort[#1][#2][#3]#4%
   {\ifthirdargument
-     \dodocomplexsort[#2][#1#3]{#4}
+     \dodocomplexsort[#2][#1#3]{#4}%
    \else
      \dowritesort{#2}{#4}{#4}%
    \fi}

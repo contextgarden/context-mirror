@@ -714,6 +714,79 @@
    \fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi
    \nextnextnext}
 
+%D Since most things in \CONTEXT\ are configurable, we
+%D slightly change the previous definition so that we can
+%D install new functionality outside this module.  
+
+\def\activedododotextmodediscretionary#1#2%
+  {\convertargument#2\to\discretionarytoken
+   \def\textmodediscretionary{\getvalue{textmodediscretionary\string#1}}%
+   \ifx#1\nextnext % takes care of ||| and +++ and ......
+     \prewordbreak\discretionary{\hbox{$#1$}}{}{\hbox{$#1$}}%
+       \allowbreak\postwordbreak
+     \def\nextnextnext{\afterassignment\egroup\let\next=}%
+   \else\ifx\discretionarytoken\empty
+     \checkafterdiscretionary
+     \bgroup
+       \checkbeforediscretionary
+       \prewordbreak\hbox{\textmodediscretionary\nextnext}\allowbreak\postwordbreak
+     \egroup
+   \else\expandafter\ifx\csname @tmd@\discretionarytoken\endcsname\relax
+     \checkafterdiscretionary
+     \bgroup
+       \checkbeforediscretionary
+       \prewordbreak
+       \discretionary{\hbox{#2}}{}{\hbox{#2}}%
+       \allowbreak\postwordbreak
+     \egroup
+   \else
+     \csname @tmd@\discretionarytoken\endcsname
+   \fi\fi\fi
+   \nextnextnext}
+
+\def\definetextmodediscretionary #1
+  {\convertargument#1\to\ascii
+   \setvalue{@tmd@\ascii}}
+
+\definetextmodediscretionary = 
+  {\prewordbreak\textmodediscretionary}
+
+\definetextmodediscretionary ~
+  {\prewordbreak\discretionary{-}{}{\thinspace}\postwordbreak}
+
+\definetextmodediscretionary _
+  {\prewordbreak\discretionary{\textmodediscretionary}
+     {\textmodediscretionary}{\textmodediscretionary}\prewordbreak}
+
+\definetextmodediscretionary (
+  {\ifdim\lastskip>\zeropoint
+     (\prewordbreak
+   \else
+     \prewordbreak\discretionary{}{(-}{(}\prewordbreak
+   \fi}
+
+\definetextmodediscretionary )
+  {\ifx\nextnext\blankspace
+     \prewordbreak)\relax
+   \else\ifx\nextnext\space
+     \prewordbreak)\relax
+   \else
+     \prewordbreak\discretionary{-)}{}{)}\prewordbreak
+   \fi\fi}
+
+\definetextmodediscretionary '
+  {\prewordbreak\discretionary{-}{}{'}\postwordbreak}
+
+\definetextmodediscretionary <
+  {\beginofsubsentence\prewordbreak\beginofsubsentencespacing}
+
+\definetextmodediscretionary >
+  {\endofsubsentencespacing\prewordbreak\endofsubsentence}
+
+\definetextmodediscretionary ^
+  {\prewordbreak\discretionary{\hbox{$|$}}{}{\hbox{$|$}}%
+   \allowbreak\postwordbreak}
+
 %D Since we don't have to bother about active characters any
 %D longer, we end up with a pretty simple activating macro:
 

@@ -655,6 +655,7 @@ $Help{PDFCOPY}     = "             --pdfcopy   scale pages down/up\n" ;
 $Help{pdfcopy}     =
 $Help{PDFCOPY}     . "               --scale   new page scale\n" .
                      "         --paperoffset   room left at paper border\n" .
+                     "            --markings   add cutmarks\n" .
                      "          --background     =background graphic\n" ;
 $Help{PDFSELECT}   = "           --pdfselect   select pdf pages\n" ;
 $Help{pdfselect}   =
@@ -1163,7 +1164,7 @@ sub CopyFile # agressive copy, works for open files like in gs
     close (INP) ; 
     close (OUT) }
 
-sub CheckChanges # also tuo 
+sub CheckChanges # also tub
   { my $JobName = shift ; 
     my $checksum = 0 ; 
     my $MPJobName = MPJobName($JobName,"mpgraph") ;
@@ -1562,7 +1563,12 @@ sub RunCopy
     print COP "  [directory=]\n" ;
     print COP "\\starttext\n" ;
     print COP "\\copypages\n" ;
-    print COP "  [$FileName][scale=$PageScale,offset=$PaperOffset]\n" ;
+    print COP "  [$FileName]\n" ; 
+    print COP "  [scale=$PageScale,\n" ; 
+    if ($Markings)
+      { print COP "   marking=on,\n" ;
+        print "           cutmarkings : on\n" }
+    print COP "   offset=$PaperOffset]\n" ; 
     print COP "\\stoptext\n" ;
     close (COP) ;
     $ConTeXtInterface = "en" ;

@@ -30,9 +30,8 @@
 \usetypescriptfile[\f!typeprefix spe] % special macros 
 \usetypescriptfile[\f!typeprefix exa] % some examples 
 \usetypescriptfile[\f!typeprefix loc] % local scripts 
-%                 [\f!typeprefix pre] % predefined scripts (compatible)
-
-% \usetypescriptfile[typeface] % project scripts 
+%usetypescriptfile[\f!typeprefix pre] % predefined scripts (compatible)
+%usetypescriptfile[typeface]          % project scripts 
 
 \let\currenttypescripts\empty
 
@@ -141,14 +140,34 @@
      % in run time user type scripts 
    \fi\fi}
 
-\def\loadmapfile[#1]%
-  {\processcommalist[#1]\doloadmapfile}
+\let\allfontmapsfiles\empty \newif\ifautoloadmapfiles
 
-\def\doloadmapfile#1% will be special 
-  {\ifcase\pdfoutput\else\ifx\pdfmapfile\undefined\else
-     \doifundefined{map+#1}
-       {\global\letvalue{map+#1}\empty\pdfmapfile{+#1}}%
-   \fi\fi}
+\def\loadmapfile[#1]%
+  {\def\docommando##1%
+     {\doifinstringelse{.}{#1}
+        {\doglobal\addtocommalist{#1}\allfontmapsfiles}
+        {\expanded{\docommando{#1.\f!fontmapmapextension}}}}%
+   \processcommalist[#1]\docommando}
+
+\def\doloadfontmapfile#1% will be special 
+  {\ifcase\realpageno 
+     % can't happen 
+   \or
+     \writestatus{pdftex}{using    map file: #1}%
+     \pdfmapfile{+#1}% 
+   \else
+     \writestatus{pdftex}{skipping map file: #1}%
+   \fi}
+
+\def\loadallfontmapfiles 
+  {\ifautoloadmapfiles \ifx\allfontmapsfiles\empty \else
+     \ifcase\pdfoutput\else \ifx\pdfmapfile\undefined \else
+       \processcommacommand[\allfontmapsfiles]\doloadfontmapfile
+       \global\let\allfontmapsfiles\empty
+     \fi \fi
+   \fi \fi}
+
+\appendtoks \loadallfontmapfiles \to \everybeforeshipout
 
 % \definetypeface [#1:joke] [#2:rm] 
 % \definetypeface [#1:joke] [#2:rm] [#3:...]

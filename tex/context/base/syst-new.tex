@@ -61,10 +61,12 @@
 %    \afterassignment\dodoifnonzeropositiveelse\scratchcounter=0#1\relax\empty\end}
 
 \def\dodoifnonzeropositiveelse#1#2\end#3#4%
-  {\ifx#1\relax\ifcase\scratchcounter\egroup#4\else\egroup#3\fi\else\egroup#4\fi}
+  {\ifx#1\relax
+     \ifcase\scratchcounter\endgroup#4\else\endgroup#3\fi\else\endgroup#4%
+   \fi}
 
 \def\doifnonzeropositiveelse#1%
-  {\bgroup\afterassignment\dodoifnonzeropositiveelse\scratchcounter=0#1\relax\empty\end}
+  {\begingroup\afterassignment\dodoifnonzeropositiveelse\scratchcounter=0#1\relax\empty\end}
 
 % here ? 
 
@@ -217,15 +219,15 @@
 \newdimen\dimentoaddto
 
 \def\adddimenregister#1\to#2%
-  {\bgroup
-   #2=\!!zeropoint
-   \dimentoaddto\!!zeropoint
+  {\begingroup
+   #2=\zeropoint
+   \dimentoaddto\zeropoint
    \def\docommando%
      {\advance#2 by \dimentoaddto
       \futurelet\next\dodocommando}%
    \def\dodocommando%
      {\ifx\next\relax
-        \expanded{\egroup#2=\the#2}%
+        \expanded{\endgroup#2=\the#2}%
       \else
         \@EA\afterassignment\@EA\docommando\@EA\dimentoaddto
       \fi}%

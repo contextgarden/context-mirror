@@ -1,6 +1,8 @@
 eval '(exit $?0)' && eval 'exec perl -S $0 ${1+"$@"}' && eval 'exec perl -S $0 $argv:q'
         if 0;
 
+# MikTeX users can set environment variable TEXSYSTEM to "miktex". 
+
 #D \module
 #D   [       file=mptopdf.pl,
 #D        version=2000.05.29,
@@ -24,7 +26,8 @@ $pattern = $ARGV[0] ;
 $done    = 0 ;
 $report  = '' ;
 
-my $dosish  = ($Config{'osname'} =~ /dos|mswin/i) ;
+my $dosish = ($Config{'osname'} =~ /dos|mswin/io) ;
+my $miktex = ($ENV{"TEXSYSTEM"} =~ /miktex/io); 
 
 sub CopyFile # agressive copy, works for open files like in gs 
   { my ($From,$To) = @_ ; 
@@ -55,10 +58,17 @@ else
 foreach $file (@files)
   { $_ = $file ;
     if (s/\.(\d+)$// && -e $file)
-      { if ($dosish)  
-           { system ("pdfetex -progname=pdfetex -efmt=mptopdf   \\relax $file") }
+      { if ($miktex) 
+          { if ($dosish) 
+              { $command = "pdfetex   &mptopdf" } 
+            else
+              { $command = "pdfetex \\&mptopdf" } }
+        else 
+          { $command = "pdfetex -progname=pdfetex -efmt=mptopdf" } 
+        if ($dosish)  
+          { system ("$command   \\relax $file") }
         else
-          { system ("pdfetex -progname=pdfetex -efmt=mptopdf \\\\relax $file") }
+          { system ("$command \\\\relax $file") }
         rename ("$_.pdf", "$_-$1.pdf") ;
         if (-e "$_.pdf") { CopyFile ("$_.pdf", "$_-$1.pdf") }
         if ($done) { $report .= " +" }

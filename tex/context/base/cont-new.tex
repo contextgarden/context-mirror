@@ -20,6 +20,97 @@
 
 \writestatus{\m!systems}{beware: some patches loaded from cont-new.tex!}
 
+\def\dodousemodules#1#2%
+  {\setfalse\moduleisloaded 
+   \doifelsenothing{#1}
+     {\def\next
+        {\dododousemodules\f!moduleprefix {#2}% 
+         \dododousemodules\f!privateprefix{#2}%
+         \dododousemodules\f!styleprefix  {#2}%
+         \dododousemodules\f!xstyleprefix {#2}%
+         \dododousemodules\f!thirdprefix  {#2}}}
+     {\def\next
+        {\dododousemodules{#1-}{#2}}}%
+   \next
+   \ifconditional\moduleisloaded\else
+     \showmessage{\m!systems}{6}{#2}%
+   \fi}
+
+\def\dousemodules[#1][#2]%
+  {\ifsecondargument
+     \doifelsenothing{#2}
+       {\let\next\relax}
+       {\def\next{\processcommalist[#2]{\dodousemodules{#1}}}}%
+   \else
+     \def\next{\usemodules[][#1]}%
+   \fi
+   \next}
+
+\def\usemodules%
+  {\dodoubleempty\dousemodules}
+
+\let\usemodule\usemodules
+
+% \usemodule[t][speech]
+
+\def\complexTableTB[#1]{\TABLEnoalign{\blanko[#1]}}
+\def\simpleTableTB     {\TABLEnoalign{\blanko}}
+
+\def\TabulateTB
+  {\complexorsimpleTable{TB}}
+
+\def\doTableinterline% #1 
+  {\ifnum\currentTABLEcolumn>\maxTABLEcolumn
+     \chuckTABLEautorow
+   \else\ifnum\currentTABLEcolumn=0
+     \TABLEnoalign
+       {\global\let\checkTABLEautorow=\empty
+        \global\let\chuckTABLEautorow=\empty}%
+   \else
+     \setTABLEerror\TABLEmissingcolumn
+     \handleTABLEerror
+   \fi\fi
+   \complexorsimpleTable} % {#1} 
+
+\def\TableHL{\doTableinterline{HL}}
+\def\TableTB{\doTableinterline{TB}}
+
+\appendtoks\let\TB\TableTB   \to\everytable
+\appendtoks\let\TB\TabulateTB\to\everytabulate
+
+% \starttabulate
+% \NC text \NC text \NC \NR 
+% \TB[small]
+% \NC text \NC text \NC \NR 
+% \TB[4*big]
+% \NC text \NC text \NC \NR 
+% \stoptabulate
+% 
+% \starttable[|||]
+% \VL text \VL text \VL \AR 
+% \TB[small]
+% \VL text \VL text \VL \AR 
+% \TB[4*big]
+% \VL text \VL text \VL \AR 
+% \stoptable
+
+\def\placefloatlabel
+  {\dodoublempty\doplacefloatlabel}
+
+\def\placefloatlabel[#1][#2]#3%
+  {\doifvalue{\??kj#1\c!nummer}{\v!ja}
+     {\doglobal\convertargument#3\to\asciititle % \asciititle is global 
+      \verhoognummer[#1]%
+      \maakhetnummer[#1]%
+      \dofloatreference
+      \redofloatorder{#1}%
+      \doifsomething{#2}{\rawreference{\s!flt}{#2}{{\hetnummer}{\asciititle}}}%
+      \doschrijfnaarlijst{#1}{\hetnummer}{#3}{#1}%
+      \doattributes{\??kj#1}\c!kopletter\c!kopkleur
+        {\labeltexts{#1}{\hetnummer}}%
+      \doattributes{\??kj#1}\c!letter\c!kleur
+        {\tfskip#3}}}
+
 \def\checkframedtext%
   {\ifinsidefloat
      \localhsize\hsize

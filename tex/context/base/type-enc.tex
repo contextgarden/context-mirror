@@ -332,6 +332,24 @@
   \definefontsynonym [Times-MathSymbol]    [mtsy] [skewcharmi='60]
 \stoptypescript
 
+\starttypescript [math] [tx] [ec]
+  \definefontsynonym [Times-Roman-Upright]     [t1xr]  [encoding=ec]
+  \definefontsynonym [Times-Roman-Italic]      [t1xi]  [encoding=ec]
+  \definefontsynonym [Times-Roman-Slanted]     [t1xsl] [encoding=ec]
+  \definefontsynonym [Times-Roman-Caps]        [t1xsc] [encoding=ec]
+  \definefontsynonym [Times-Companion-Upright] [tcxr]
+  \definefontsynonym [Times-Companion-Italic]  [tcxi]
+  \definefontsynonym [Times-Companion-Slanted] [tcxsl]
+  \definefontsynonym [Times-Math-Italic]       [txmi]
+  \definefontsynonym [Times-Math-Symbols]      [txsy]
+  \definefontsynonym [Times-Math-Extension]    [txex]
+  \definefontsynonym [Times-Math-SymbolsA]     [txsya]
+  \definefontsynonym [Times-Math-SymbolsB]     [txsyb]
+  \definefontsynonym [Times-Math-SymbolsC]     [txsyc] 
+  \definefontsynonym [Times-Math-Italic-A]     [txmia]
+  \definefontsynonym [Times-Math-Extension-A]  [txexa]
+\stoptypescript
+
 % Lucida Bright
 
 \starttypescript [serif] [lucida] [texnansi]
@@ -493,13 +511,13 @@
 
 % Palatino
 
-\starttypescript [serif] [palatino] [texnansi] % brrr, wrong files 
-  \definefontsynonym [Palatino]             [uplr8t]  [encoding=ec]
-  \definefontsynonym [Palatino-Italic]      [uplri8t] [encoding=ec]
-  \definefontsynonym [Palatino-Slanted]     [uplro8t] [encoding=ec]
-  \definefontsynonym [Palatino-Bold]        [uplb8t]  [encoding=ec]
-  \definefontsynonym [Palatino-BoldItalic]  [uplbi8t] [encoding=ec]
-  \definefontsynonym [Palatino-BoldSlanted] [uplbo8t] [encoding=ec]
+\starttypescript [serif] [palatino] [texnansi] 
+  \definefontsynonym [Palatino]             [p052003l] [encoding=texnansi]
+  \definefontsynonym [Palatino-Italic]      [p052023l] [encoding=texnansi]
+  \definefontsynonym [Palatino-Slanted]     [p052003l] [encoding=texnansi]
+  \definefontsynonym [Palatino-Bold]        [p052004l] [encoding=texnansi]
+  \definefontsynonym [Palatino-BoldItalic]  [p052024l] [encoding=texnansi]
+  \definefontsynonym [Palatino-BoldSlanted] [p052024l] [encoding=texnansi]
 \stoptypescript
 
 \starttypescript [serif] [palatino] [ec]
@@ -511,7 +529,7 @@
   \definefontsynonym [Palatino-BoldSlanted] [uplbo8t] [encoding=ec]
 \stoptypescript
 
-\starttypescript [math] [palatino] [ec]
+\starttypescript [math] [px,palatino] [ec] % px now, palatino obsolete ! 
   \definefontsynonym [Palatino-Roman-Upright]     [p1xr]  [encoding=ec]
   \definefontsynonym [Palatino-Roman-Italic]      [p1xi]  [encoding=ec]
   \definefontsynonym [Palatino-Roman-Slanted]     [p1xsl] [encoding=ec]
@@ -531,10 +549,9 @@
 
 % Whatever
 
-\starttypescript % once amd for all
-  \definefontsynonym [ContextNavigation]     [contnav]
+\starttypescript % once and for all
   \definefontsynonym [RalfSmithFormalScript] [rsfs10]
-  \definefontsynonym [ZapfDingbats]          [pzd]
+  \definefontsynonym [ZapfDingbats]          [pzd] % TODO 
 \stoptypescript
 
 \endinput

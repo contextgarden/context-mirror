@@ -622,7 +622,10 @@
   {\bgroup
    \inframedtrue
    \edef\@@framed{#1}%
-   % this piece of pre expansion is needed
+%   % this piece of pre expansion is needed (sometimes used in frameoffset)
+%   \doifvaluesomething{\@@framed\c!lijndikte}
+%     {\linewidth=\getvalue{\@@framed\c!lijndikte}}%
+   % this piece of pre expansion is needed (sometimes used circular)
    \scratchdimen\getvalue{\@@framed\c!kaderoffset}%
    \setevalue{\@@framed\c!kaderoffset}{\the\scratchdimen}%
    \doifnotvalue{\@@framed\c!achtergrondoffset}{\v!kader}

@@ -186,7 +186,6 @@
 
 .gdef.enableXML*
   B.catcode`.!=.@@other*
-   .catcode`."=.@@other*
    .catcode`.?=.@@other*
    .catcode`.&=.@@active .let&=.doXMLentity*
    .catcode`.<=.@@active .unexpanded.def<B.doXMLelementE*

@@ -628,19 +628,27 @@
 \def\docopypages[#1][#2]%
   {\bgroup
    \getfiguredimensions[#1]%
-   \getparameters[\??ip][\c!n=\noffigurepages,\c!schaal=\!!thousand,\c!offset=\!!zeropoint,#2]%
+   \getparameters[\??ip]
+     [\c!n=\noffigurepages,
+      \c!markering=\v!uit,
+      \c!schaal=\!!thousand,
+      \c!offset=\!!zeropoint,
+      #2]%
    \dorecurse{\@@ipn}
      {\vbox to \teksthoogte
         {\hsize=\tekstbreedte
          \scratchdimen=\@@ipoffset
          \centeredbox
-           {\ifdim\scratchdimen>\!!zeropoint\relax
-              \advance\vsize by -2\scratchdimen 
-              \advance\hsize by -2\scratchdimen
-              \externalfigure[#1][\c!pagina=\recurselevel,#2,\c!schaal=,\c!factor=\v!max,\c!offset=\v!overlay]%
-            \else
-              \externalfigure[#1][\c!pagina=\recurselevel,#2,\c!offset=\v!overlay]%
-            \fi}}
+           {\doifelse{\@@ipmarkering}{\v!aan}
+              {\let\next\cuthbox}{\let\next\hbox}%
+            \next
+              {\ifdim\scratchdimen>\!!zeropoint\relax
+                 \advance\vsize by -2\scratchdimen 
+                 \advance\hsize by -2\scratchdimen
+                 \externalfigure[#1][\c!pagina=\recurselevel,#2,\c!schaal=,\c!factor=\v!max,\c!offset=\v!overlay]%
+               \else
+                 \externalfigure[#1][\c!pagina=\recurselevel,#2,\c!offset=\v!overlay]%
+               \fi}}}
       \pagina}
    \egroup}
 

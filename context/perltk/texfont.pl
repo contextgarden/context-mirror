@@ -49,6 +49,13 @@ $auto            = 0 ;
 $fontsuffix  = "" ;
 $namesuffix  = "" ;
 
+# todo: parse name for style, take face from command line 
+# 
+# @Faces  = ("Serif","Sans","Mono") ; 
+# @Styles = ("Slanted","Italic","Bold","BoldSlanted","BoldItalic") ; 
+# 
+# for $fac (@Faces) { for $sty (@Styles) { $FacSty{"$fac$sty"} = "" } } 
+
 &GetOptions
   ( "help"         => \$help,
     "makepath"     => \$makepath,
@@ -446,6 +453,13 @@ if ($show) { system ("texexec --once --silent $texfile") }
 
 foreach $file (@files)
   { unless ($file =~ /(tex|pdf|log)$/io) { unlink $file } }
+
+# todo : generate typescript suggestion
+# 
+# for $fac (@Faces) 
+#   { for $sty (@Styles) 
+#       { if ($FacSty{"$fac$sty"} ne "") 
+#           { print $FacSty{"$fac$sty"} } } } 
 
 exit ; 
 

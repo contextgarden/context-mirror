@@ -45,8 +45,13 @@
 %D \som  the labels can be accessed in an index and list at 
 %D       the end of the document
 %D \stopopsomming
+%D
+%D We use named destinations, which means that one can 
+%D access a figure by name from an external application.
 
 \usemodule[fig-00]
+
+\overcomePDFspacefalse
 
 \doifnothing  {\inputfilename}        {\end} 
 \doiffileelse {\inputfilename.xml} {} {\end} 
@@ -83,7 +88,7 @@
    \defineXMLpush[comment]
    \defineXMLpush[status]}
 
-\defineoverlay[page][\overlaybutton{to:\CurrentPage}]
+\defineoverlay[page][\overlaybutton{Description}]
 
 \startbuffer
   \framed
@@ -99,7 +104,11 @@
 \def\StopFigureA%
   {\doglobal\increment\CurrentPage
    \setupbackgrounds[page][background=page]
-   \pagereference[from:\CurrentPage]
+   \doifelsenothing{\XMLpop{label}}
+     {\expanded{\definereference[Description][about: \XMLpop{file}]}%
+      \pagereference[\XMLpop{file}]}
+     {\expanded{\definereference[Description][about: \XMLpop{label}]}%
+      \pagereference[\XMLpop{label}]}
    \pagefigure[\XMLpop{file}]
    \setupbackgrounds[page][background=]
    \egroup}
@@ -161,10 +170,15 @@
 \def\StopFigureB%
   {\par
    \doglobal\increment\CurrentPage
+   \doifelsenothing{\XMLpop{label}}
+     {\expanded{\definereference[Figure][\XMLpop{file}]}}
+     {\expanded{\definereference[Figure][\XMLpop{label}]}}%
    \button
      {\hbox to \hsize
         {\forgetall \dontcomplain
-         \pagereference[to:\CurrentPage]%
+         \doifelsenothing{\XMLpop{label}}
+           {\pagereference[about: \XMLpop{file}]}
+           {\pagereference[about: \XMLpop{label}]}%
          \expanded{\writetolist[figurelist]{\CurrentPage}{\XMLpop{label}}}%
          \expanded{\figureindex{\CurrentPage}{\XMLpop{label}}}%
          \startnotmode[compact]%
@@ -203,14 +217,8 @@
             \stopmode
             \vfill}%
          \advance\hsize by -40pt
-%         \startnotmode[compact]%
-%           \hskip20pt
-%           \advance\hsize by -20pt
-%         \stopnotmode
-%         \startmode[compact]%    
-           \hskip10pt
-           \advance\hsize by -10pt
-%         \stopmode
+         \hskip10pt
+         \advance\hsize by -10pt
          \vbox to 100pt
            {\blank[disable]
             \starttabulate[|Bel|p|]
@@ -232,7 +240,7 @@
               {}
             \stoptabulate
             \vfill}}}%
-      [from:\CurrentPage]
+      [Figure]
    \vskip10pt
    \egroup}
 

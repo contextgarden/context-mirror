@@ -37,12 +37,12 @@
 \def\@@mathboxcomm  #1{\leavevmode\hbox{$\m@th#1$}}
 
 \chardef\mathordcode    = 0  \let\mathordcomm     \mathord
-\chardef\mathopcode     = 1  \let\mathopcomm      \mathop 
-\chardef\mathbincode    = 2  \let\mathbincomm     \mathbin 
+\chardef\mathopcode     = 1  \let\mathopcomm      \mathop
+\chardef\mathbincode    = 2  \let\mathbincomm     \mathbin
 \chardef\mathrelcode    = 3  \let\mathrelcomm     \mathrel
-\chardef\mathopencode   = 4  \let\mathopencomm    \mathopen 
-\chardef\mathclosecode  = 5  \let\mathclosecomm   \mathclose 
-\chardef\mathpunctcode  = 6  \let\mathpunctcomm   \mathpunct 
+\chardef\mathopencode   = 4  \let\mathopencomm    \mathopen
+\chardef\mathclosecode  = 5  \let\mathclosecomm   \mathclose
+\chardef\mathpunctcode  = 6  \let\mathpunctcomm   \mathpunct
 \chardef\mathalphacode  = 7  \let\mathalphacomm   \firstofoneargument
 \chardef\mathinnercode  = 0  \let\mathinnercomm   \mathinner
 \chardef\mathnothingcode= 0  \let\mathnothingcomm \firstofoneargument
@@ -279,15 +279,20 @@
    \fi}
 
 \def\definemathcommand%
-  {\dodoubleempty\dodefinemathcommand}
+  {\dotripleempty\dodefinemathcommand}
 
-\def\dodefinemathcommand[#1][#2]#3%
+\def\dodefinemathcommand[#1][#2][#3]#4% command class args meaning
   {\unexpanded\setgvalue{#1}{\dohandlemathtoken{#1}}%
-   \ifsecondargument
-     \setvalue{\@mt@\mathcollection#1}{\puremathcomm{#2}{#3}}%
+   \ifthirdargument
+     \processaction
+       [#3]
+       [one=>\setvalue{\@mt@\mathcollection#1}##1{\puremathcomm{#2}{#4{##1}}},
+        two=>\setvalue{\@mt@\mathcollection#1}##1##2{\puremathcomm{#2}{#4{##1}{##2}}}]%
+   \else\ifsecondargument
+     \setvalue{\@mt@\mathcollection#1}{\puremathcomm{#2}{#4}}%
    \else
-     \setvalue{\@mt@\mathcollection#1}{\puremathcomm{nothing}{#3}}%
-   \fi
+     \setvalue{\@mt@\mathcollection#1}{\puremathcomm{nothing}{#4}}%
+   \fi\fi
    \tracemathcommand{#1}}
 
 \def\tracemathcommand#1%

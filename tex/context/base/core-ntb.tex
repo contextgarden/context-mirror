@@ -324,6 +324,10 @@
    \getparameters
      [\@@tbl\@@tbl]
      [\c!uitlijnen={\v!rechts,\v!ruim,\v!hoog},#1]%
+   \ExpandFirstAfter\processallactionsinset
+     [\tbltbloptie]
+     [\v!rek=>\autoTBLspreadtrue]%
+   \linewidth=\tbltbllijndikte % needs to be frozen 
    \dontcomplain
    \def\currentcol{0}%
    \def\maximumrowspan{1}%
@@ -514,8 +518,13 @@
            \settblaut\colTBL\localwidth
          \fi}}%
    \setbox0=\vbox{\the\tbltoks}%
-%\ifautoTBLspread
-%\else
+\ifautoTBLspread
+  % experimental, stretch non fixed cells to \hsize 
+  \checktblwidthsone % trial run 
+  \checktblwidthstwo % real run 
+  \let\handleTBLcell\dohandleTBLcellB
+  \setbox\scratchbox=\vbox{\the\tbltoks}%
+\else
    \ifdim\wd0>\hsize
      \ifautoTBLhsize
        \checktblwidthsone % trial run 
@@ -527,7 +536,7 @@
      \let\handleTBLcell\dohandleTBLcellC
      \setbox\scratchbox=\vbox{\the\tbltoks}%
    \fi\fi\fi
-%\fi
+\fi
    \let\handleTBLcell\dohandleTBLcellD
    \chardef\TBLpass=2
    \def\makeTBL##1##2% meer in cellD 
@@ -738,7 +747,7 @@
       \localframed
         [\@@tbl\@@tbl]
         [#3,\c!achtergrond=,\c!kader=\v!uit]% 25% faster
-        {\bTBLCELL\TBLcharalign{#2}{#4}\eTBLCELL\inTBLcell{##1}{##2}}}%
+        {\bTBLCELL\TBLcharalign{#2}{#4}\eTBLCELL\inTBLcell{#1}{#2}}}%
    \scratchdimen=\gettblwid\colTBL\relax
    \ifdim\wd\scratchbox>\scratchdimen
      \settblwid\colTBL{\the\wd\scratchbox}% auto set
@@ -838,6 +847,7 @@
    \c!strut=\v!nee,
    \c!karakteruitlijnen=\v!nee,
    \c!uitlijnkarakter={,},
+\c!optie=, % \v!rek 
    \c!maxbreedte=8em]
 
 %D We have already prepared the previous macros for nesting, 

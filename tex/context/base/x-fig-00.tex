@@ -11,6 +11,8 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
 %C details. 
 
+% naast label, ook fig als ref en dan naar fig ref springen 
+
 %D This module implements an interface to a figure database
 %D and file. The database is formatted in \XML\ conforming 
 %D the following \DTD: 
@@ -98,6 +100,8 @@
 
 \stopXMLnamespace
 
+\newcounter\figurefilepage
+
 \def\figbase@StartFigure%
   {\bgroup}
 
@@ -148,12 +152,14 @@
      \fi
    \fi}
 
-\let\figurebaselist\empty
-
 \def\usefigurebase[#1]%
   {\doifelse{#1}{\v!reset}
      {\let\figurebaselist\empty}
      {\appendtocommalist{#1}\figurebaselist}}
+
+\let\figurebaselist\empty
+
+\resetfigurefilebase
 
 \protect \endinput 
 

@@ -634,8 +634,89 @@
    f%
    \egroup}
 
-\newsignal\quotationsignal
-\def\quotationskip{.125em}
+% \newsignal\quotationsignal
+% \def\quotationskip{.125em}
+% 
+% \def\stelciterenin%
+%   {\dodoubleargument\getparameters[\??ci]}
+% 
+% \def\stelcitatenin%
+%   {\stelciterenin}
+% 
+% \def\dostartcitaat[#1]%
+%   {\bgroup
+%    \@@civoor
+%    \doifelsenothing{#1}
+%      {\let\dostopcitaat=\relax}
+%      {\startsmaller[#1]
+%       \let\dostopcitaat=\stopsmaller}%
+%    \dostartattributes\??ci\c!letter\c!kleur{}%
+%    \setbox0=\hbox{\getvalue{\??la\currentlanguage\c!leftquotation}}%
+%    \hskip-\wd0
+%    \box0\relax
+%    \ignorespaces}
+% 
+% \def\stopcitaat%
+%   {\unskip\hsmash{\getvalue{\??la\currentlanguage\c!rightquotation}}%
+%    \dostopattributes
+%    \dostopcitaat
+%    \@@cina
+%    \egroup}
+% 
+% \def\startcitaat%
+%   {\dosingleempty\dostartcitaat}
+% 
+% \def\dohandlequotation#1%
+%   {\ifdim\lastskip=\quotationsignal
+%      \unskip\hskip\quotationskip
+%    \fi
+% \ifhmode % else funny pagebeaks 
+%    \penalty\!!tenthousand\hskip\!!zeropoint      % == \prewordbreak
+% \fi
+%    \strut % new, needed below 
+%    \getvalue{\??la\currentlanguage#1}%
+%    \penalty\!!tenthousand\hskip\quotationsignal} % +- \prewordbreak
+% 
+% \unexpanded\def\citaat%
+%   {\groupedcommand
+%      {\dohandlequotation\c!leftquotation}
+%      {\dohandlequotation\c!rightquotation}}
+% 
+% \unexpanded\def\citeer%
+%   {\doifelse{\@@ciletter}{\v!normaal}
+%      {\let\next=\doquotedcite}
+%      {\let\next=\doattributedcite}%
+%    \next}
+% 
+% \def\doquotedcite%
+%   {\groupedcommand
+%      {\dohandlequotation\c!leftquote}
+%      {\dohandlequotation\c!rightquote}}
+% 
+% \def\doattributedcite%
+%   {\groupedcommand
+%      {\dostartattributes\??ci\c!letter\c!kleur}
+%      {\dostopattributes}}
+% 
+% % The previous one fails in \placefloat[left]{}{}, so instead
+% % we use the next alternative, where the first one is handled 
+% % outside group. Watch the strut. 
+% 
+% \unexpanded\def\citaat%
+%   {\dohandlequotation\c!leftquotation
+%    \groupedcommand{}{\dohandlequotation\c!rightquotation}}
+% 
+% \def\doquotedcite%
+%   {\dohandlequotation\c!leftquote
+%    \groupedcommand{}{\dohandlequotation\c!rightquote}}
+% 
+% \stelciterenin
+%   [\c!letter=\v!normaal,
+%    \c!kleur=,
+%    \c!voor=\startsmaller,
+%    \c!na=\stopsmaller]
+
+\newsignal\quotationsignal \def\quotationskip{.125em}
 
 \def\stelciterenin%
   {\dodoubleargument\getparameters[\??ci]}
@@ -643,9 +724,12 @@
 \def\stelcitatenin%
   {\stelciterenin}
 
-\def\dostartcitaat[#1]%
+\def\startcitaat%
   {\bgroup
-   \@@civoor
+   \dosingleempty\dostartcitaat}
+
+\def\dostartcitaat[#1]%
+  {\@@civoor
    \doifelsenothing{#1}
      {\let\dostopcitaat=\relax}
      {\startsmaller[#1]
@@ -663,24 +747,23 @@
    \@@cina
    \egroup}
 
-\def\startcitaat%
-  {\dosingleempty\dostartcitaat}
-
-\def\dohandlequotation#1%
+\def\dohandlequotation#1#2%
   {\ifdim\lastskip=\quotationsignal
-     \unskip\hskip\quotationskip
+     \unskip\hskip\quotationskip 
+   \else
+     #2%
    \fi
-\ifhmode % else funny pagebeaks 
-   \penalty\!!tenthousand\hskip\!!zeropoint      % == \prewordbreak
-\fi
+   \ifhmode % else funny pagebeaks 
+     \penalty\!!tenthousand\hskip\!!zeropoint      % == \prewordbreak
+   \fi
    \strut % new, needed below 
    \getvalue{\??la\currentlanguage#1}%
    \penalty\!!tenthousand\hskip\quotationsignal} % +- \prewordbreak
 
 \unexpanded\def\citaat%
   {\groupedcommand
-     {\dohandlequotation\c!leftquotation}
-     {\dohandlequotation\c!rightquotation}}
+     {\dohandlequotation\c!leftquotation\relax}
+     {\dohandlequotation\c!rightquotation\unskip}}
 
 \unexpanded\def\citeer%
   {\doifelse{\@@ciletter}{\v!normaal}
@@ -690,31 +773,70 @@
 
 \def\doquotedcite%
   {\groupedcommand
-     {\dohandlequotation\c!leftquote}
-     {\dohandlequotation\c!rightquote}}
+     {\dohandlequotation\c!leftquote\relax}
+     {\dohandlequotation\c!rightquote\unskip}}
 
 \def\doattributedcite%
   {\groupedcommand
      {\dostartattributes\??ci\c!letter\c!kleur}
      {\dostopattributes}}
 
-% The previous one fails in \placefloat[left]{}{}, so instead
-% we use the next alternative, where the first one is handled 
-% outside group. Watch the strut. 
+%D The previous one fails in \placefloat[left]{}{}, so instead
+%D we use the next alternative, where the first one is handled 
+%D outside group. Watch the strut. 
 
 \unexpanded\def\citaat%
-  {\dohandlequotation\c!leftquotation
-   \groupedcommand{}{\dohandlequotation\c!rightquotation}}
+  {\dohandlequotation\c!leftquotation\relax
+   \groupedcommand{}{\dohandlequotation\c!rightquotation\unskip}}
 
 \def\doquotedcite%
-  {\dohandlequotation\c!leftquote
-   \groupedcommand{}{\dohandlequotation\c!rightquote}}
+  {\dohandlequotation\c!leftquote\relax
+   \groupedcommand{}{\dohandlequotation\c!rightquote\unskip}}
 
 \stelciterenin
   [\c!letter=\v!normaal,
    \c!kleur=,
    \c!voor=\startsmaller,
    \c!na=\stopsmaller]
+
+%D The next features was so desperately needed by Giuseppe
+%D Bilotta that he made a module for it. Since this is a
+%D typical example of core functionality, I decided to extend
+%D the low level quotation macros in such a way that a speech
+%D feature could be build on top of it. The speech opening and
+%D closing symbols are defined per language. Italian is an
+%D example of a language that has them set. 
+
+\newcounter\speechlevel \newconditional\insidespeech
+
+\def\startspeech 
+  {\doglobal\increment\speechlevel\relax
+   \dohandlequotation\c!leftspeech\relax 
+   \doglobal\settrue\insidespeech
+   \ignorespaces}
+
+\def\stopspeech
+  {\dohandlequotation\c!rightspeech\unskip
+   \doglobal\decrement\speechlevel\relax
+   \ifcase\speechlevel\relax \doglobal\setfalse\insidespeech \fi}
+
+\def\dohandlespeech%
+  {\relax \ifcase\speechlevel 
+   \or\ifconditional\insidespeech
+     \dohandlequotation\c!middlespeech\relax 
+   \else
+     \doglobal\settrue\insidespeech
+   \fi\fi}
+
+\unexpanded\def\speech% 
+  {\doglobal\increment\speechlevel\relax
+   \dohandlequotation\c!leftspeech\relax
+   \groupedcommand
+     {\ignorespaces}
+     {\dohandlequotation\c!rightspeech\unskip
+      \doglobal\decrement\speechlevel\relax}}
+
+\appendtoks \dohandlespeech \to \everypar
 
 % Tijden horen hier niet thuis en zullen in een aparte
 % module worden ondergebracht. voorlopig handhaven we ze nog

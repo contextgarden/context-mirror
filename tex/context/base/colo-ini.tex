@@ -661,20 +661,18 @@
 
 \beginTEX 
 
-\def\colorcsname#1\endcsname
-  {\csname\??cr
-     \@EA\ifx\csname\??cr\currentpalet#1\endcsname\relax\else\currentpalet\fi
-   #1\endcsname}
-
 \def\doifcolorelse#1%
-  {\@EA\ifx\colorcsname#1\endcsname
+  {\@EA\ifx\csname\??cr\@EA\ifx\csname\??cr\currentpalet#1\endcsname\relax\else\currentpalet\fi#1\endcsname\relax
      \expandafter\secondoftwoarguments
    \else
      \expandafter\firstoftwoarguments
    \fi}
 
 \def\getcurrentcolorspecs#1%
-  {\edef\currentcolorspecs{\colorcsname#1\endcsname}}
+  {\edef\currentcolorspecs%
+     {\csname\??cr\@EA
+        \ifx\csname\??cr\currentpalet#1\endcsname\relax\else\currentpalet\fi
+      #1\endcsname}}
 
 \endTEX
 
@@ -1424,18 +1422,15 @@
 
 \newif\ifMPcmyk % \MPcmykfalse
 
-% \def\MPcolor#1%
-%   {\ifMPgraphics
-%      \@EA\@EA\@EA\doMPcolor\csname\??cr#1\endcsname:::::\end
-%    \else
-%      #1%
-%    \fi}
-
 \beginTEX 
 
 \def\MPcolor#1%
   {\ifMPgraphics
-     \@EA\@EA\@EA\doMPcolor\colorcsname#1\endcsname:::::\end
+     \@EA\@EA\@EA\doMPcolor
+       \csname\??cr\@EA
+         \ifx\csname\??cr\currentpalet#1\endcsname\relax\else\currentpalet\fi
+       #1\endcsname
+     :::::\end
    \else
      #1%
    \fi}
@@ -1456,7 +1451,6 @@
    \fi}
 
 \endETEX
-
 
 \def\doMPcolor#1:#2:#3:#4:#5:#6\end
   {\if     #1R(#2,#3,#4)%

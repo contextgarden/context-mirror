@@ -23,14 +23,19 @@
 %D The \ACROBAT\ programs are not bug free. By setting the next
 %D switch, we will at least try to prevent problems.
 
-\newif\ifovercomePDFbugs \overcomePDFbugsfalse % true
+\newif\ifovercomePDFbugs  \overcomePDFbugsfalse % true
+\newif\ifovercomePDFspace \overcomePDFspacetrue 
 
 \def\setPDFdestination#1%
   {\bgroup
    \obeylccodes
    \lccode`\/=`-\lccode`\#=`-\lccode`\<=`-\lccode`\>=`-%
    \lccode`\[=`-\lccode`\]=`-\lccode`\(=`-\lccode`\)=`-%
-   \stripcharacter{ }\from#1\to\PDFdestination
+   \ifovercomePDFspace  
+     \stripcharacter{ }\from#1\to\PDFdestination
+   \else
+     \xdef\PDFdestination{#1}%
+   \fi
    \@EA\lowercase\@EA{\@EA\xdef\@EA\PDFdestination\@EA
      {\ifovercomePDFbugs'\fi\PDFdestination\ifovercomePDFbugs'\fi}}%
    \egroup}
