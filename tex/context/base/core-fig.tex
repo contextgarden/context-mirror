@@ -1763,20 +1763,26 @@
 %D Todo: like external figures, also search on path,
 %D although, they need to be present ar viewing time, so ...
 
-\def\useexternalsoundtrack%
+\def\useexternalsoundtrack
   {\dodoubleargument\douseexternalsoundtrack}
 
 \def\douseexternalsoundtrack[#1][#2]%
-  {\setgvalue{\??sd#1}{#2}}
+  {\setgvalue{\??sd:#1}{#2}}
 
 \def\checksoundtrack#1%
   {\iflocation
-     \doifdefined{\??sd#1}{\doifvaluesomething{\??sd#1}
-       {\doinsertsoundtrack{\getvalue{\??sd#1}}{#1}{}%
-        \setgvalue{\??sd#1}{}}}%
+     \doifdefined{\??sd:#1}{\doifvaluesomething{\??sd:#1}
+       {\doinsertsoundtrack{\getvalue{\??sd:#1}}{#1}\@@sdoptie
+        \setgvalue{\??sd:#1}{}}}%
    \fi}
 
 \setexecutecommandcheck {startsound} \checksoundtrack
+
+\def\setupexternalsoundtracks
+  {\dodoubleargument\getparameters[\??sd]}
+
+\setupexternalsoundtracks
+  [\c!optie=]
 
 \appendtoks \setupexternalfigures[\c!optie=\v!leeg] \to \everyfastmode
 \appendtoks \runMPgraphicsfalse                     \to \everyfastmode

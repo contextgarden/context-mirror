@@ -11,6 +11,8 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
+%D Todo : --language=pl,en,nl : nl incs number of language 
+
 %D This module implements the (for the moment still simple)
 %D multi||language support of \CONTEXT, which should not be
 %D confused with the multi||lingual interface. This support
@@ -318,8 +320,8 @@
 
 \let\normalpatterns\patterns
 
-\def\dodoloadpatterns#1#2#3#4%
-  {\normallanguage\loadedlanguage
+\def\dodoloadpatterns#1#2#3#4% beware, loaded language also incr 
+  {\normallanguage\loadedlanguage % when not really needed
 %  \letvalue{\??la\??la#2}\loadedlanguage
    \bgroup
    \scratchtoks\everyjob % we don't want additional junk put there
@@ -334,7 +336,9 @@
 %\def\patterns##1{\message{#1/#2/#3/#4/##1}\normalpatterns{##1}}%
    \readsysfile{\truefilename{\f!languageprefix#2.\f!patternsextension}}
      {\setxvalue{\??la#1\s!patterns}{#2}%
-      \xdef\preloadedpatterns{\preloadedpatterns\showpatterns{#2}}%
+      \xdef\preloadedpatterns
+        {\preloadedpatterns
+         \number\normallanguage:\showpatterns{#2}}%
       \showmessage{\m!linguals}{1}{#2,#1,\loadedlanguage}}
      {\readsysfile{\f!languageprefix#2.\f!patternsextension}
         {\setxvalue{\??la#1\s!patterns}{#2}%

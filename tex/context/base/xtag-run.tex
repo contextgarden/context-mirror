@@ -101,7 +101,7 @@
       \advance\XMLlevel -1
       \DoMod\XMLlevel by\XMLprettycycle to\scratchcounter
       \advance\scratchcounter 1
-      \startcolor[xtag:\number\scratchcounter]%
+      \startcolor[xtag:\ifnum\scratchcounter<0 0\else\number\scratchcounter\fi]%
         \string<%
         \ifnum\kindofXMLelement=2\string/\fi
         \currentXMLelement
@@ -110,7 +110,7 @@
         \cleanupXMLarguments
         \startcolor[xtag:0]\hbox{\space}\showXMLarguments\unskip\stopcolor
       \fi\fi
-      \startcolor[xtag:\number\scratchcounter]%
+      \startcolor[xtag:\ifnum\scratchcounter<0 0\else\number\scratchcounter\fi]%
       \ifnum\kindofXMLelement=3\string/\fi
       \string>%
       \stopcolor

@@ -67,3 +67,18 @@
 
 --en=? --ve=adobe --co=myriad --so=adobe/myriad --sl=* MyriadMM-we*
 --en=? --ve=adobe --co=myriad --so=adobe/myriad --ca=* MyriadMM-we*
+
+# adobe frutiger
+
+--en=? --ve=adobe --co=frutiger --re
+--en=? --ve=adobe --co=frutiger --so=adobe/frutiger --ma --in
+
+# itc mendoza 
+
+--en=? --ve=itc --co=mendoza --re
+--en=? --ve=itc --co=mendoza --so=itc/mendoza --ma --in
+
+# linotype univers 
+
+--en=? --ve=linotype --co=univers --re
+--en=? --ve=linotype --co=univers --so=linotype/univers --ma --in

@@ -763,12 +763,9 @@
 \newif\ifdubbelzijdig \dubbelzijdigfalse
 \newif\ifenkelzijdig  \enkelzijdigtrue
 
-%\def\doifsometextlineelse#1#2#3% ! omgekeerd !
-%  {\doifinsetelse{\getvalue{\??tk#1\v!tekst\c!status}}{\v!geen,\v!hoog}
-%     {#3}{#2}}
-
 \def\doifsometextlineelse#1%
-  {\edef\!!stringa{\csname\??tk#1\v!tekst\c!status\endcsname}%
+%  {\edef\!!stringa{\csname\??tk#1\v!tekst\c!status\endcsname}%
+  {\edef\!!stringa{\csname\??tk#1\c!status\endcsname}%
    \ifx\!!stringa\v!geen
      \@EA\secondoftwoarguments
    \else\ifx\!!stringa\v!hoog
@@ -975,6 +972,7 @@
              \c!rugoffset=\!!zeropoint,
           \c!tekstbreedte=, % dangerous option
                 \c!letter=,
+                 \c!kleur=,
              \c!markering=\v!uit,
                 \c!plaats=, % \v!enkelzijdig, but empty is signal
                 \c!schaal=1,

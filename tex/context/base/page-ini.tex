@@ -629,6 +629,8 @@
 
 \def\nextcolumn           {\OTRcommand\nextcolumn}
 
+\def\flushsavedfloats     {\OTRcommand\flushsavedfloats}
+
 % beter een \installotr#1 met #1 = macro en auto test 
 
 \newif\iftraceotr 
@@ -869,7 +871,7 @@
      \dosupereject
    \fi
    \inpagebodytrue      % needed for enabling \blanko !
-   \dosetbothinserts    % to be reconsidered !!!!!!!!!!!!!!
+   \flushsavedfloats    % was \dosetbothinserts; only otr one !  
    \setvsize            % this is needed for interacting components, like floats and multicolumns
    \adaptfuzzypagegoal} % watch this hack!
 
@@ -877,7 +879,8 @@
   {\beforefinaloutput
    \the\everybeforeshipout
    \ifspecialbasedsettings
-     \myshipout{\hbox{\hbox to \zeropoint{\the\pageboundsettings}\hbox{\dopagebody#1#2\setpagecounters}}}%
+     \myshipout{\hbox{\hbox to \zeropoint{\the\pageboundsettings}%
+                      \hbox{\dopagebody#1#2\setpagecounters}}}%
    \else
      \the\pageboundsettings
      \myshipout{\hbox{\dopagebody#1#2\setpagecounters}}%
@@ -904,17 +907,17 @@
   {\checkpageversion
    \ifverwerken
      \ifgeselecteerd
-       \dofinaloutput#1#2%
+       \@EAEAEA\dofinaloutput
      \else
-       \donofinaloutput#1#2%
+       \@EAEAEA\donofinaloutput
      \fi
    \else
      \ifgeselecteerd
-       \donofinaloutput#1#2%
+       \@EAEAEA\donofinaloutput
      \else
-       \dofinaloutput#1#2%
+       \@EAEAEA\dofinaloutput
      \fi
-   \fi
+   \fi#1#2%
    \resetselectiepagina
    \verhoogpaginanummer
    \checkpagedimensions
@@ -1172,9 +1175,11 @@
 %           \getbackgroundbox
 %           \getlogobox
            \bgroup % else footnotes get inconsistent font/baseline
-             \doconvertfont{\@@lyletter}{}% layoutparameter ? 
-             \offinterlineskip
-             \gettextboxes
+           % \doconvertfont\@@lyletter\empty 
+             \dostartattributes\??ly\c!letter\c!kleur\empty
+               \offinterlineskip 
+               \gettextboxes
+             \dostopattributes
            \egroup
          \fi
          \getmainbox#1#2}% including footnotes 
@@ -1317,9 +1322,11 @@
                      \fi},
            \v!leeg=>{\ejectinsert
                      \ejectpage
-                     \doifnotvalue{\??tk\v!hoofd\v!tekst\c!status}{\v!stop}
+%                     \doifnotvalue{\??tk\v!hoofd\v!tekst\c!status}{\v!stop}
+                     \doifnotvalue{\??tk\v!hoofd\c!status}{\v!stop}
                        {\setupheader[\c!status=\v!leeg]}%
-                     \doifnotvalue{\??tk\v!voet\v!tekst\c!status}{\v!stop}
+%                     \doifnotvalue{\??tk\v!voet\v!tekst\c!status}{\v!stop}
+                     \doifnotvalue{\??tk\v!voet\c!status}{\v!stop}
                        {\setupfooter[\c!status=\v!leeg]}%
                      \ejectdummypage},
           \v!links=>{\ejectinsert

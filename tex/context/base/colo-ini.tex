@@ -657,10 +657,12 @@
 %D in three digits precision.
 
 \def\realcolorvalue#1%
-  {\ifnum#1<10   0.00\the#1\else
-   \ifnum#1<100  0.0\the#1\else
-   \ifnum#1<1000 0.\the#1\else
-                 1\fi\fi\fi}
+  {\ifnum#1>0 % important, first encountered in --modu supp-mpe 
+     \ifnum#1<10   0.00\the#1\else
+     \ifnum#1<100  0.0\the#1\else
+     \ifnum#1<1000 0.\the#1\else
+                   1\fi\fi\fi
+   \else           0\fi}
 
 \def\doconvertCMYKtoRGB#1\k#2\to#3%
   {\ifdim#2\s!pt<#1\s!pt 

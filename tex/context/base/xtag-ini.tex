@@ -864,10 +864,10 @@
   {\fastenableencoding\simpleXMLencoding
    \XMLsimpleentitiestrue}
 
-\gdef\defineXMLentity%
+\def\defineXMLentity%
   {\dodoubleempty\dodefineXMLentity}
 
-\gdef\dodefineXMLentity[#1][#2]#3%
+\def\dodefineXMLentity[#1][#2]#3%
   {\ifsecondargument
      \defineXMLentities[#1]{#2}{#3}%
    \else
@@ -877,14 +877,14 @@
 \def\defineXMLentities[#1]#2#3%
   {\dododefineXMLentity{#1}{\ifXMLsimpleentities#2\else#3\fi}}
 
-\gdef\dododefineXMLentity#1#2%
+\def\dododefineXMLentity#1#2%
   {\unspaceargument#1\to\ascii % #1 can be {[} or so 
    \long\setvalue{\@@XMLentity:\@EA\firstofoneargument\ascii}{#2}}
 
 %D May this wile become dodo (more in tune with rest); 
 %D beware: also remapped in xtag-map. 
 
-\gdef\doXMLentity#1#2;% interesting: # is now ## 
+\def\doXMLentity#1#2;% interesting: # is now ## 
   {\if\string#1\letterhash 
      \@EA\parseXMLcharacter
    \else\ifXMLrawentities
@@ -1027,7 +1027,7 @@
 
 \unexpanded\def\getXMLentity{\expandedXMLentity}
 
-\gdef\doifXMLentityelse#1#2#3%
+\def\doifXMLentityelse#1#2#3%
   {\ifcsname\@@XMLentity:#1\endcsname#2\else#3\fi}
 
 % see \defineXML... commands:
@@ -1316,6 +1316,16 @@
 \gdef\redoXMLsave#1%
   {\long\@EA\def\@EA\next\@EA##\@EA1\@EA<\@EA/\currentXMLelement>%
      {\long\@EA\def\csname\@@XMLdata:#1\endcsname{##1}}%
+   \next}
+
+\long\gdef\dododefineXMLgsave#1%
+  {\letvalue{\@@XMLdata:#1}\longempty
+   \long\setvalue{\@@XMLelement:#1/}{\long\setgvalue{\@@XMLdata:#1}{}}%
+   \long\setvalue{\@@XMLelement:#1}{\redoXMLgsave{#1}}}
+
+\gdef\redoXMLgsave#1%
+  {\long\@EA\def\@EA\next\@EA##\@EA1\@EA<\@EA/\currentXMLelement>%
+     {\long\@EA\gdef\csname\@@XMLdata:#1\endcsname{##1}}%
    \next}
 
 %\long\gdef\dododefineXMLenvironmentsave#1#2#3%

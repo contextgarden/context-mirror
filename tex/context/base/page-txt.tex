@@ -67,11 +67,20 @@
 \def\setuplayouttext%
   {\dotripleempty\dosetuplayouttext}
 
+% \def\dosetuplayouttext[#1][#2][#3]%
+%   {\ifthirdargument
+%      \getparameters[\??tk#1#2][#3]%
+%    \else
+%      \getparameters[\??tk#1\v!tekst][#2]%
+%    \fi
+%    \calculatevsizes}
+
 \def\dosetuplayouttext[#1][#2][#3]%
   {\ifthirdargument
      \getparameters[\??tk#1#2][#3]%
    \else
-     \getparameters[\??tk#1\v!tekst][#2]%
+    %\getparameters[\??tk#1\v!tekst][#2]%
+     \getparameters[\??tk#1][#2]%
    \fi
    \calculatevsizes}
 
@@ -182,12 +191,18 @@
 %D The next macro will be cleaned up amd made less messy and
 %D dependent.
 
+%\def\placetextlinestrut#1% 
+%  {\doifvalue{#1\v!tekst\c!strut}{\v!ja}{\setstrut\strut}}
+
+\def\placetextlinestrut#1%
+  {\doifvalue{#1\c!strut}{\v!ja}{\setstrut\strut}}
+
 \def\dosingletexts#1#2#3#4#5#6%
   {\bgroup
    \convertargument#6\to\ascii
    \doifsomething{\ascii}
      {\doattributes{#1#2}#3#4%
-        {\doifvalue{#1\v!tekst\c!strut}{\v!ja}{\setstrut\strut}% here!
+        {\placetextlinestrut{#1}% here !
         %\doifdefinedelse{\??mk\ascii\c!koppeling} % brrr
          \doifelsemarking\ascii
            {\dolimitatetexts{#1#2#5}{\haalmarkering[\ascii][\v!eerste]}}
@@ -231,20 +246,32 @@
 %D Instead we will map the values of status onto macro
 %D expansions.
 
+%\def\settextlinestatus#1%
+%  {\edef\textlinestatus{\csname\??tk#1\v!tekst\c!status\endcsname}}
+
+\def\settextlinestatus#1%
+  {\edef\textlinestatus{\csname\??tk#1\c!status\endcsname}}
+
+%\def\resettextlinestatus#1%
+%  {\global\letvalue{\??tk#1\v!tekst\c!status}\v!normaal}
+
+\def\resettextlinestatus#1%
+  {\global\letvalue{\??tk#1\c!status}\v!normaal}
+
 %\def\placelayouttextline#1#2%  % handelt o.b.v. tekst
-%  {\edef\textlinestatus{\getvalue{\??tk#1\v!tekst\c!status}}%
+%  {\settextlinestatus{#1}%
 %   \doifdefinedelse{\string\placelayouttextline\textlinestatus}
 %     {\getvalue{\string\placelayouttextline\textlinestatus}{#1}{#2}}
 %     {\getvalue{\string\placelayouttextline\s!unknown}{#1}{#2}}}
 %
 %\def\placelayouttextline#1% #2 
-%  {\edef\textlinestatus{\getvalue{\??tk#1\v!tekst\c!status}}%
+%  {\settextlinestatus{#1}%
 %   \doifundefined{\string\placelayouttextline\textlinestatus}
 %     {\let\textlinestatus\s!unknown}%
 %   \getvalue{\string\placelayouttextline\textlinestatus}{#1}} % {#2}
 
 \def\placelayouttextline#1% #2 
-  {\edef\textlinestatus{\csname\??tk#1\v!tekst\c!status\endcsname}%
+  {\settextlinestatus{#1}%
    \ifundefined{\string\placelayouttextline\textlinestatus}%
      \let\textlinestatus\s!unknown
    \fi
@@ -256,26 +283,25 @@
 \letvalue{\string\placelayouttextline\v!hoog   }\gobbletwoarguments
 
 \setvalue{\string\placelayouttextline\v!leeg}#1#2%
-  {\setgvalue{\??tk#1\v!tekst\c!status}{\v!normaal}%
-  }% oeps, bug:  \vskip#2\relax}
+  {\resettextlinestatus{#1}}
 
 \setvalue{\string\placelayouttextline\v!start}#1#2%
-  {\setgvalue{\??tk#1\v!tekst\c!status}{\v!normaal}%
+  {\resettextlinestatus{#1}%
    \doplacelayouttextline{#1}{#2}}
 
 \setvalue{\string\placelayouttextline\v!stop}#1#2%
-  {}% oeps, bug:\vskip#2\relax}
+  {}
 
 \setvalue{\string\placelayouttextline\v!geenmarkering}#1#2%
   {\bgroup
-   \setgvalue{\??tk#1\v!tekst\c!status}{\v!normaal}%
+   \resettextlinestatus{#1}%
    \let\dohaalmarkering=\nohaalmarkering
    \doplacelayouttextline{#1}{#2}%
    \egroup}
 
 \setvalue{\string\placelayouttextline\s!unknown}#1#2%
   {\bgroup % new
-   \setgvalue{\??tk#1\v!tekst\c!status}{\v!normaal}%
+   \resettextlinestatus{#1}%
   %\setlocallayoutline{#1\textlinestatus}%
   %\setlocallayoutline{#1\v!tekst\textlinestatus}%
   %\setlocallayoutline{#1\v!marge\textlinestatus}%
@@ -293,9 +319,14 @@
 %D The following macro has to be called after a page
 %D is flushed.
 
+%\def\resetlayoutline#1% beware: global assignment
+%  {\doifvalue{\??tk#1\v!tekst\c!status}\v!hoog
+%     {\resettextlinestatus{#1}%
+%      \donetrue}}
+
 \def\resetlayoutline#1% beware: global assignment
-  {\doifvalue{\??tk#1\v!tekst\c!status}\v!hoog
-     {\global\letvalue{\??tk#1\v!tekst\c!status}\v!normaal
+  {\doifvalue{\??tk#1\c!status}\v!hoog
+     {\resettextlinestatus{#1}%
       \donetrue}}
 
 \def\resetlayoutlines%
@@ -433,6 +464,83 @@
 
 \def\ignoredlinebreak{\unskip\space\ignorespaces}
 
+% \def\doplacelayouttextline#1#2%
+%   {\ifdim#2>\zeropoint\relax  % prevents pagenumbers when zero height
+%      \goleftonpage
+%      \hbox
+%        {\setbox\scratchpagebox=\vbox to #2
+%           {%\forgetall
+%            \vsize#2\relax
+%            \normalbaselines
+%            \let\\\ignoredlinebreak
+%            \let\crlf\ignoredlinebreak
+%            \getvalue{\??tk#1\v!tekst\c!voor}%
+%            \doifbothsidesoverruled
+%              \dodoplacelayouttextline#1\c!linkertekst\c!middentekst\c!rechtertekst
+%                \gobbleoneargument\getvalue
+%            \orsideone
+%              \dodoplacelayouttextline#1\c!linkertekst\c!middentekst\c!rechtertekst
+%                \gobbleoneargument\getvalue
+%            \orsidetwo
+%              \dodoplacelayouttextline#1\c!rechtertekst\c!middentekst\c!linkertekst
+%                \getvalue\gobbleoneargument
+%            \od
+%            \getvalue{\??tk#1\v!tekst\c!na}%
+%            \kern\zeropoint}% keep the \dp, beware of \vtops, never change this!
+%         \dp\scratchpagebox=\zeropoint
+%         \box\scratchpagebox}%
+%      \vskip-#2\relax
+%    \fi}
+% 
+% \def\dodoplacelayouttextline#1#2#3#4#5#6% \hsize toegevoegd
+%   {\hbox                                % \hss's niet meer wijzigen
+%      {\ifdim\linkerrandbreedte>\zeropoint
+%         \hbox to \linkerrandbreedte
+%           {\hsize\linkerrandbreedte
+%            \hss\getvalue{\??tk#1\v!rand#2}}%
+%         \hskip\linkerrandafstand
+%       \fi
+%       \ifdim\linkermargebreedte>\zeropoint
+%         \hbox to \linkermargebreedte
+%           {\hsize\linkermargebreedte
+%            \hbox to \linkermargebreedte
+%              {\hss\getvalue{\??tk#1\v!marge#2}}%
+%            \hskip-\linkermargebreedte
+%            \hbox to \linkermargebreedte
+%              {\hss#5{\??tk#1\v!marge\c!margetekst}}}%
+%         \hskip\linkermargeafstand
+%       \fi
+%       \ifdim\zetbreedte>\zeropoint
+%         \hbox to \zetbreedte
+%           {\hsize\zetbreedte
+%            \hbox to \zetbreedte
+%              {\@@nmpre{#5{\??tk#1\v!tekst\c!kantlijntekst}}%
+%               \getvalue{\??tk#1\v!tekst#2}\hss}%
+%            \hskip-\zetbreedte
+%            \hbox to \zetbreedte
+%              {\hss\getvalue{\??tk#1\v!tekst#3}\hss}%
+%            \hskip-\zetbreedte
+%            \hbox to \zetbreedte
+%              {\hss\getvalue{\??tk#1\v!tekst#4}%
+%               \@@nmpos{#6{\??tk#1\v!tekst\c!kantlijntekst}}}}%
+%       \fi
+%       \ifdim\rechtermargebreedte>\zeropoint
+%         \hskip\rechtermargeafstand
+%         \hbox to \rechtermargebreedte
+%           {\hsize\rechtermargebreedte
+%            \hbox to \rechtermargebreedte
+%              {\getvalue{\??tk#1\v!marge#4}\hss}%
+%            \hskip-\rechtermargebreedte
+%            \hbox to \rechtermargebreedte
+%              {#6{\??tk#1\v!marge\c!margetekst}\hss}}%
+%       \fi
+%       \ifdim\rechterrandbreedte>\zeropoint
+%         \hskip\rechterrandafstand
+%         \hbox to \rechterrandbreedte
+%           {\hsize\rechterrandbreedte
+%            \getvalue{\??tk#1\v!rand#4}\hss}%
+%       \fi}}
+
 \def\doplacelayouttextline#1#2%
   {\ifdim#2>\zeropoint\relax  % prevents pagenumbers when zero height
      \goleftonpage
@@ -443,7 +551,8 @@
            \normalbaselines
            \let\\\ignoredlinebreak
            \let\crlf\ignoredlinebreak
-           \getvalue{\??tk#1\v!tekst\c!voor}%
+          %\getvalue{\??tk#1\v!tekst\c!voor}%
+           \getvalue{\??tk#1\c!voor}%
            \doifbothsidesoverruled
              \dodoplacelayouttextline#1\c!linkertekst\c!middentekst\c!rechtertekst
                \gobbleoneargument\getvalue
@@ -454,25 +563,24 @@
              \dodoplacelayouttextline#1\c!rechtertekst\c!middentekst\c!linkertekst
                \getvalue\gobbleoneargument
            \od
-           \getvalue{\??tk#1\v!tekst\c!na}%
+          %\getvalue{\??tk#1\v!tekst\c!na}%
+           \getvalue{\??tk#1\c!na}%
            \kern\zeropoint}% keep the \dp, beware of \vtops, never change this!
         \dp\scratchpagebox=\zeropoint
         \box\scratchpagebox}%
      \vskip-#2\relax
    \fi}
 
-\def\dodoplacelayouttextline#1#2#3#4#5#6% \hsize toegevoegd
-  {\hbox                                % \hss's niet meer wijzigen
+\def\dodoplacelayouttextline#1#2#3#4#5#6% \hsize toegevoegd, \hss's niet meer wijzigen
+  {\hbox
      {\ifdim\linkerrandbreedte>\zeropoint
-        \hbox to \linkerrandbreedte
-          {\hsize\linkerrandbreedte
-           \hss\getvalue{\??tk#1\v!rand#2}}%
+        \dododoplacelayouttextline\linkerrandbreedte{#1}\v!rand
+          {\hss\getvalue{\??tk#1\v!rand#2}}%
         \hskip\linkerrandafstand
       \fi
       \ifdim\linkermargebreedte>\zeropoint
-        \hbox to \linkermargebreedte
-          {\hsize\linkermargebreedte
-           \hbox to \linkermargebreedte
+        \dododoplacelayouttextline\linkermargebreedte{#1}\v!marge
+          {\hbox to \linkermargebreedte
              {\hss\getvalue{\??tk#1\v!marge#2}}%
            \hskip-\linkermargebreedte
            \hbox to \linkermargebreedte
@@ -480,9 +588,8 @@
         \hskip\linkermargeafstand
       \fi
       \ifdim\zetbreedte>\zeropoint
-        \hbox to \zetbreedte
-          {\hsize\zetbreedte
-           \hbox to \zetbreedte
+        \dododoplacelayouttextline\zetbreedte{#1}\v!tekst
+          {\hbox to \zetbreedte
              {\@@nmpre{#5{\??tk#1\v!tekst\c!kantlijntekst}}%
               \getvalue{\??tk#1\v!tekst#2}\hss}%
            \hskip-\zetbreedte
@@ -495,9 +602,8 @@
       \fi
       \ifdim\rechtermargebreedte>\zeropoint
         \hskip\rechtermargeafstand
-        \hbox to \rechtermargebreedte
-          {\hsize\rechtermargebreedte
-           \hbox to \rechtermargebreedte
+        \dododoplacelayouttextline\rechtermargebreedte{#1}\v!marge
+          {\hbox to \rechtermargebreedte
              {\getvalue{\??tk#1\v!marge#4}\hss}%
            \hskip-\rechtermargebreedte
            \hbox to \rechtermargebreedte
@@ -505,10 +611,38 @@
       \fi
       \ifdim\rechterrandbreedte>\zeropoint
         \hskip\rechterrandafstand
-        \hbox to \rechterrandbreedte
-          {\hsize\rechterrandbreedte
-           \getvalue{\??tk#1\v!rand#4}\hss}%
+        \dododoplacelayouttextline\rechterrandbreedte{#1}\v!rand
+          {\getvalue{\??tk#1\v!rand#4}\hss}%
       \fi}}
+
+% \def\dododoplacelayouttextline#1#2#3#4%
+%   {\hbox to #1{\hsize#1\relax#4}}
+
+\def\dododoplacelayouttextline#1#2#3#4%
+  {\vbox % to \vsize
+     {\hsize#1\relax
+     %\executeifdefined{\??tk#2#3\c!voor}\relax
+      \getvalue{\??tk#2#3\c!voor}\relax 
+      \hbox to #1{#4}%
+     %\executeifdefined{\??tk#2#3\c!na}\relax}}
+      \getvalue{\??tk#2#3\c!na}\relax}}
+
+%D Although it is far better to use backgrounds for this 
+%D purpose, one can add a rule in the following way. This 
+%D method makes the rules disappear in case of an empty text 
+%D line. Consider this a feature. 
+%D
+%D \starttypen 
+%D \setupheadertexts[left][right]
+%D 
+%D \setupheader[text][after=\hrule,style=bold]
+%D 
+%D \starttext
+%D   \input tufte \page
+%D   \setupheader[state=empty]
+%D   \input tufte \page
+%D \stoptext
+%D \stoptypen 
 
 %D The next twosome will be done differently (using an 
 %D existing auxiliary macro).
@@ -620,7 +754,7 @@
 \def\dodocommando[#1][#2]%
   {\getparameters
      [\??tk#1#2]
-     [\c!status=\v!normaal,
+     [%\c!status=\v!normaal, % moved, kan tzt weg  
       \c!voor=,
       \c!na=,
       \c!strut=,
@@ -656,10 +790,16 @@
 %D While the header and footer lines are moved away from the
 %D main text, the top and bottom lines are centered. 
 
-\setuptop     [\c!voor=\vss, \c!na=\vss, \c!strut=]
-\setupheader  [\c!voor=,     \c!na=\vss, \c!strut=\v!ja]
-\setuptext    [\c!voor=\vss, \c!na=\vss, \c!strut=]
-\setupfooter  [\c!voor=\vss, \c!na=,     \c!strut=\v!ja]
-\setupbottom  [\c!voor=\vss, \c!na=\vss, \c!strut=]
+%\setuptop     [\c!voor=\vss, \c!na=\vss, \c!strut=]
+%\setupheader  [\c!voor=,     \c!na=\vss, \c!strut=\v!ja]
+%\setuptext    [\c!voor=\vss, \c!na=\vss, \c!strut=]
+%\setupfooter  [\c!voor=\vss, \c!na=,     \c!strut=\v!ja]
+%\setupbottom  [\c!voor=\vss, \c!na=\vss, \c!strut=]
+
+\setuptop   [\c!status=\v!normaal,\c!voor=\vss,\c!na=\vss,\c!strut=]
+\setupheader[\c!status=\v!normaal,\c!voor=,    \c!na=\vss,\c!strut=\v!ja]
+\setuptext  [\c!status=\v!normaal,\c!voor=\vss,\c!na=\vss,\c!strut=]
+\setupfooter[\c!status=\v!normaal,\c!voor=\vss,\c!na=,    \c!strut=\v!ja]
+\setupbottom[\c!status=\v!normaal,\c!voor=\vss,\c!na=\vss,\c!strut=]
 
 \protect \endinput

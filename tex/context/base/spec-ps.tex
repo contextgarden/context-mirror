@@ -113,6 +113,12 @@
      {\@@insertpostscriptliteral  
         grestore}}
 
+\definespecial\dostartgraphicgroup
+  {\special{\@@insertpostscriptliteral gsave}}
+
+\definespecial\dostopgraphicgroup 
+  {\special{\@@insertpostscriptliteral grestore}}
+
 %D \macros
 %D   {doovalbox}
 %D

@@ -725,11 +725,16 @@
 \def\doPDFinsertsoundtrack#1#2#3% 
   {\bgroup
    \xdef\currentsound{#2}%
+   \let\pdf@@actions\empty 
+   \@EA\processallactionsinset\@EA
+     [#3]
+     [\v!herhaal=>\edef\pdf@@actions{\pdf@@actions /Mode /Repeat }]%
    \flushatshipout % since it can be buried in a chained box
      {\doPDFannotation width 0pt height 0pt data
         {/Subtype /Movie
          /T (sound \currentsound)
-         /Movie <</F (#1)>>}}%
+         /Movie <</F (#1)>>%
+         \ifx\pdf@@actions\empty\else/A << \pdf@@actions >>\fi}}%
    \egroup}
 
 %D \macros
@@ -1595,15 +1600,47 @@
 \def\savesecondaryPDFreference % #1 == \action
   {\global\@EA\let\csname PDF-SR:\the\nofsecondaryreferences\endcsname}
 
+%\def\getsecondaryPDFreferences%
+%  {\ifcase\nofsecondaryreferences\else
+%    %\doifdefined{PDF-SR:\the\nofsecondaryreferences}
+%     \xdef\secondaryPDFreferences%
+%       {/Next << \csname PDF-SR:\the\nofsecondaryreferences\endcsname\space
+%                 \secondaryPDFreferences >>}%
+%     \global\advance\nofsecondaryreferences \minusone
+%     \expandafter\getsecondaryPDFreferences
+%   \fi}
+
+% test should happen in core-ref
+
+\beginETEX \ifcsname
+
 \def\getsecondaryPDFreferences%
   {\ifcase\nofsecondaryreferences\else
-    %\doifdefined{PDF-SR:\the\nofsecondaryreferences}
-     \xdef\secondaryPDFreferences%
-       {/Next << \csname PDF-SR:\the\nofsecondaryreferences\endcsname\space
-                 \secondaryPDFreferences >>}%
+     \ifcsname PDF-SR:\the\nofsecondaryreferences\endcsname
+       \xdef\secondaryPDFreferences%
+         {/Next << \csname PDF-SR:\the\nofsecondaryreferences\endcsname\space
+                   \secondaryPDFreferences >>}%
+     \fi
      \global\advance\nofsecondaryreferences \minusone
      \expandafter\getsecondaryPDFreferences
    \fi}
+
+\endETEX
+
+\beginTEX 
+
+\def\getsecondaryPDFreferences%
+  {\ifcase\nofsecondaryreferences\else
+     \@EA\ifx\csname PDF-SR:\the\nofsecondaryreferences\endcsname\relax\else
+       \xdef\secondaryPDFreferences%
+         {/Next << \csname PDF-SR:\the\nofsecondaryreferences\endcsname\space
+                   \secondaryPDFreferences >>}%
+     \fi
+     \global\advance\nofsecondaryreferences \minusone
+     \expandafter\getsecondaryPDFreferences
+   \fi}
+
+\endTEX
 
 %D \macros
 %D   {loadFDFfields, showFDFfields,
@@ -1857,12 +1894,12 @@
 \def\doPDFovalbox#1#2#3#4#5#6#7% todo: \scratchdimen/\scatchbox  
   {\bgroup
    \dimen0=#4\divide\dimen0 by 2
-   \doPDFovalcalc{0}{+\dimen0}\xmin
+   \doPDFovalcalc{0pt}{+\dimen0}\xmin
    \doPDFovalcalc{#1}{-\dimen0}\xmax
    \doPDFovalcalc{#2}{-\dimen0}\ymax
    \doPDFovalcalc{-#3}{+\dimen0}\ymin
    \advance\dimen0 by #5%
-   \doPDFovalcalc{0}{+\dimen0}\xxmin
+   \doPDFovalcalc{0pt}{+\dimen0}\xxmin
    \doPDFovalcalc{#1}{-\dimen0}\xxmax
    \doPDFovalcalc{#2}{-\dimen0}\yymax
    \doPDFovalcalc{-#3}{+\dimen0}\yymin
@@ -2026,6 +2063,11 @@
 
 \let\presetPDFtransparency \gobbletwoarguments
 \let\initializetransparency\relax
+
+%D New trickery:
+
+\definespecial\dostartgraphicgroup{\pdfliteral{q}}
+\definespecial\dostopgraphicgroup {\pdfliteral{Q}}
 
 %D And that was all.
 

@@ -1424,6 +1424,10 @@
     [\c!voorgrondkleur]
     [\c!identifier!]
     []
+  \variable
+    [\c!voorgrondletter]
+    [\c!identifier!]
+    []
   \value
     [\c!text!]
     []
@@ -3217,6 +3221,10 @@
     [\v!normaal,\v!vet,\v!schuin,\v!vet\v!schuin,\v!type,\v!kap,\v!klein...,\c!command!]
     [\v!normaal]
   \variable
+    [\c!kleur]
+    [\c!identifier!]
+    []
+  \variable
     [\c!markering]
     [\v!aan,\v!uit,\v!kleur]
     [\v!uit]
@@ -3304,8 +3312,10 @@
   \type
     [\c!opt!\c!val!]
   \value
-    [\v!boven,\v!beide,\v!onder]
-    [\v!beide]
+    [\v!boven,\v!beide,\v!onder,-\v!boven,-\v!beide,-\v!onder,
+     \v!hoog,\v!midden,\v!laag,\v!pagina,\v!standaard,\v!geen,
+     \v!ruim,\v!passend]
+    [\v!standaard]
 \stopsetup
 
 \startsetup
@@ -3550,7 +3560,7 @@
     [\v!onder]
   \variable
     [\c!breedte]
-    [\v!passend,\v!max,\c!dimension!]
+    [\v!passend,\v!ruim,\v!max,\c!dimension!]
     [\v!passend]
   \variable
     [\c!kopletter]
@@ -6794,8 +6804,12 @@
     [\lijndikte]
   \variable
     [\c!afstand]
-    [\v!blanko,\v!diepte,\c!dimension!,\v!klein,\v!middel,\v!groot,\v!geen]
+    [\v!blanko,\v!grid,\v!diepte,\c!dimension!,\v!klein,\v!middel,\v!groot,\v!geen]
     [\v!diepte,\v!middel]
+  \variable
+    [\c!korps]
+    [5pt,...,12pt,\v!klein,\v!groot]
+    []
 \stopsetup
 
 \startsetup
@@ -6858,6 +6872,10 @@
   \variable
     [\c!achtergrondkleur]
     [\c!identifier!]
+    []
+  \variable
+    [\c!korps]
+    [5pt,...,12pt,\v!klein,\v!groot]
     []
 \stopsetup
 

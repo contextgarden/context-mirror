@@ -284,20 +284,6 @@
 
 \def\@@MPSK{@MPSK@}
 
-% \def\interceptMPcmykcolor
-%   {\ifMPcmyk
-%      \ifnum\MPrgbnumber\lastMPgvalue=1 % cmyk color spec
-%        \doifdefined{\@@MPSK\number\MPrgbnumber\lastMPbvalue}
-%          {\getvalue{\@@MPSK\number\MPrgbnumber\lastMPbvalue}%
-%           \resetMPcolor\normalhandleMPcmykcolor}%
-%      \fi
-%    \fi}
-
-%\def\interceptMPcmykcolor % can be used often, so sped up
-%  {\ifcase\MPrgbnumber\lastMPgvalue \or % 1 == cmyk color spec
-%     \expandafter\dointerceptMPcmykcolor
-%   \fi}
-
 \def\interceptMPcmykcolor % todo : \ifMPcmyk
   {\ifcase\MPrgbnumber\lastMPgvalue
      % cannot happen
@@ -312,16 +298,10 @@
      \ifMPcmyk \invokeMPtransparencyspecial \fi
    \fi}
 
-%\def\dointerceptMPcmykcolor % can be used often, so sped up
-%  {\@EA\ifx\csname\@@MPSK\number\MPrgbnumber\lastMPbvalue\endcsname\relax\else
-%     \csname\@@MPSK\number\MPrgbnumber\lastMPbvalue\endcsname
-%     \resetMPcolor\normalhandleMPcmykcolor
-%   \fi}
-
 \def\dointerceptMPcmykcolor % can be used often, so sped up 
   {\revokeMPtransparencyspecial
    \@EA\ifx\csname\@@MPSK\number\MPrgbnumber\lastMPbvalue\endcsname\relax\else
-     \csname\@@MPSK\number\MPrgbnumber\lastMPbvalue\endcsname
+     \@EA\@EA\@EA\setMPcmyk\csname\@@MPSK\number\MPrgbnumber\lastMPbvalue\endcsname
      \normalhandleMPcmykcolor
    \fi}
 
@@ -559,17 +539,81 @@
 
 \appendtoks \invokeMPshadespecial \to \invokeMPspecials
 
+%D We need to convert the \CMYK\ specials into colors, because
+%D we have to do it twice, we define a macro. 
+
+\def\checkMPshadingcolor#1#2#3#4#5%
+  {\edef\tempMPrvalue{\csname\@@MP0#1\endcsname}%
+   \edef\tempMPgvalue{\csname\@@MP0#2\endcsname}%
+   \edef\tempMPbvalue{\csname\@@MP0#3\endcsname}%
+   \edef#5%
+     {\ifx\tempMPrvalue\tempMPgvalue
+        \ifx\tempMPrvalue\tempMPbvalue
+          \ifx\tempMPgvalue\tempMPbvalue
+            \tempMPbvalue
+          \fi
+        \fi   
+      \fi}%
+   \edef#4%
+     {\ifnum\MPrgbnumber\tempMPrvalue=\MPspecialsignal\space
+        \ifMPcmyk\getvalue{\@@MPSK\number\MPrgbnumber\tempMPbvalue}\fi
+      \fi}}
+
+%D We also need to make sure that we have two \RGB\ or 
+%D \CMYK colors, since we have to set the colorspace. 
+
+\def\setMPshadingcolors#1#2#3#4#5#6%
+  {\checkMPshadingcolor{#1}{#2}{#3}\MPshadeA\MPshadeAA
+   \checkMPshadingcolor{#4}{#5}{#6}\MPshadeB\MPshadeBB
+   \ifx\MPshadeA\empty 
+     \ifx\MPshadeB\empty 
+       \edef\MPshadeA{\gMPs{#1} \gMPs{#2} \gMPs{#3}}%
+       \edef\MPshadeB{\gMPs{#4} \gMPs{#5} \gMPs{#6}}%
+       \def \MPshadeC{RGB}%   
+     \else
+       \ifx\MPshadeAA\empty
+         \let\MPshadeA\MPcmykWhite
+         \let\MPshadeB\MPcmykBlack
+       \else
+         \scratchdimen=1pt\advance\scratchdimen -\MPshadeAA pt
+         \edef\MPshadeA{0 0 0 \withoutpt\the\scratchdimen}%
+       \fi
+       \def\MPshadeC{CMYK}%   
+     \fi
+   \else
+     \ifx\MPshadeB\empty 
+       \ifx\MPshadeBB\empty
+         \let\MPshadeA\MPcmykWhite
+         \let\MPshadeB\MPcmykBlack
+       \else
+         \scratchdimen=1pt\advance\scratchdimen -\MPshadeBB pt
+         \edef\MPshadeB{0 0 0 \withoutpt\the\scratchdimen}%
+       \fi
+     \fi
+     \def\MPshadeC{CMYK}%   
+   \fi}
+
+%D The reason why this macro is a bit complicates is that we
+%D handle black and white situations (otherwise we would have
+%D to use \CMYK\ b/w in case of a \CMYK\ shade). 
+
+\def\MPcmykBlack{0 0 0 0} 
+\def\MPcmykWhite{0 0 0 1} 
+
+%D Here are the special handlers: 
+
 \defineMPspecial{30}
   {\startMPshading{14}% type 2
+   \setMPshadingcolors{4}{5}{6}{9}{10}{11}%
    \immediate\pdfobj
      {<</FunctionType 2
         /Domain [\gMPs1 \gMPs2]
-        /C0 [\gMPs4 \gMPs5 \gMPs6]
-        /C1 [\gMPs9 \gMPs{10} \gMPs{11}]
+        /C0 [\MPshadeA]
+        /C1 [\MPshadeB]
         /N \gMPs3>>}%
    \immediate\pdfobj
      {<</ShadingType 2
-        /ColorSpace /DeviceRGB
+        /ColorSpace /Device\MPshadeC\space
         /Function \the\pdflastobj\space 0 R
         /Coords [\gMPs7 \gMPs8 \gMPs{12} \gMPs{13}]
         /Extend [true true]>>}%
@@ -577,15 +621,16 @@
 
 \defineMPspecial{31}
   {\startMPshading{16}% type 3
+   \setMPshadingcolors{4}{5}{6}{10}{11}{12}%
    \immediate\pdfobj
      {<</FunctionType 2
         /Domain [\gMPs1 \gMPs2]
-        /C0 [\gMPs4 \gMPs5 \gMPs6]
-        /C1 [\gMPs{10} \gMPs{11} \gMPs{12}]
+        /C0 [\MPshadeA]
+        /C1 [\MPshadeB]
         /N \gMPs3>>}%
    \immediate\pdfobj
      {<</ShadingType 3
-        /ColorSpace /DeviceRGB
+        /ColorSpace /Device\MPshadeC\space
         /Function \the\pdflastobj\space 0 R
         /Coords [\gMPs7 \gMPs8 \gMPs9 \gMPs{13} \gMPs{14} \gMPs{15}]
         /Extend [true true]>>}%
@@ -707,12 +752,12 @@
 %D   {\CMYK\ support disabled,
 %D    conversion to \RGB.}
 %D   {\setupcolors[cmyk=nee,status=start]\haalbuffer[cmyk]}
-%D
+%D 
 %D \plaatsfiguur
 %D   {\CMYK\ support enabled,
 %D    no support in \METAPOST.}
 %D   {\setupcolors[cmyk=ja,mpcmyk=nee,status=start]\haalbuffer[cmyk]}
-%D
+%D 
 %D \plaatsfiguur
 %D   {\CMYK\ support enabled,
 %D    no conversion to \RGB,
@@ -721,9 +766,9 @@
 
 \defineMPspecial{1}
   {\ifMPcmyk
-     \setxvalue{\@@MPSK\gMPs1}{\noexpand\setMPcmyk\gMPs2 \gMPs3 \gMPs4 \gMPs5 }%
+     \setxvalue{\@@MPSK\gMPs1}{\gMPs2 \gMPs3 \gMPs4 \gMPs5 }%
    \fi}
-
+ 
 \def\setMPcmyk#1 #2 #3 #4 %
   {\setvalue{\@@MP01}{#1}%
    \setvalue{\@@MP02}{#2}%
@@ -763,16 +808,16 @@
 %D imagine situations where tex has to work with values
 %D calculated by \METAPOST.
 %D
-%D \startlinecorrection
+%D \startregelcorrectie
 %D \getbuffer
-%D \stoplinecorrection
+%D \stopregelcorrectie
 %D
 %D Later we will implement a more convenient macro:
 %D
-%D \starttyping
+%D \starttypen
 %D \setMPlayer [test] [somepos-1] {Whatever we want here!}
 %D \setMPlayer [test] [somepos-2] {Whatever we need there!}
-%D \stoptyping
+%D \stoptypen
 
 \ifx\dosavepositionwhd\undefined
   \let\dosavepositionwhd\gobblesevenarguments
@@ -799,10 +844,6 @@
 %D \startbuffer
 %D u := 2cm ; path p ; p := fullcircle scaled u shifted (u/4,0);
 %D
-%D color cyan    ; cyan    := cmyk(1,0,0,0) ;
-%D color magenta ; magenta := cmyk(0,1,0,0) ;
-%D color yellow  ; yellow  := cmyk(0,0,1,0) ;
-%D
 %D fill p rotated  90 withcolor transparent(1,.5,yellow) ;
 %D fill p rotated 210 withcolor transparent(1,.5,green) ;
 %D fill p rotated 330 withcolor transparent(1,.5,blue) ;
@@ -810,7 +851,7 @@
 %D
 %D \typebuffer
 %D
-%D \startlinecorrection \processMPbuffer \stoplinecorrection
+%D \startregelcorrectie \processMPbuffer \stopregelcorrectie
 %D
 %D One can also communicate colors between \CONTEXT\ and
 %D \METAPOST:
@@ -831,7 +872,7 @@
 %D fill p rotated 330 withcolor \MPcolor{tyellow} ;
 %D \stopbuffer
 %D
-%D \startlinecorrection \processMPbuffer \stoplinecorrection
+%D \startregelcorrectie \processMPbuffer \stopregelcorrectie
 %D
 %D We save all the three components needed in one macro,
 %D just to save hash space.
@@ -846,7 +887,7 @@
 \defineMPspecial{2}
   {\edef\currentMPspecial{\gMPs6}%
    \presetPDFtransparency{\gMPs1}{\gMPs2}%
-   \setxvalue{\@@MPST\currentMPspecial}%
+   \setevalue{\@@MPST\currentMPspecial}% was \setxvalue, bug !
      {\noexpand\assignMPStransparency
         {\PDFtransparencyidentifier}%
         {\PDFtransparencyreference}%
@@ -855,7 +896,7 @@
 \defineMPspecial{3}
   {\edef\currentMPspecial{\gMPs7}%
    \presetPDFtransparency{\gMPs1}{\gMPs2}%
-   \setxvalue{\@@MPST\currentMPspecial}%
+   \setevalue{\@@MPST\currentMPspecial}% was \setxvalue, bug !
      {\noexpand\assignMPStransparency
         {\PDFtransparencyidentifier}%
         {\PDFtransparencyreference}%
@@ -906,6 +947,10 @@
 % this one does a reset
 
 \let\revokeMPtransparencyspecial\relax
+
+\appendtoks 
+  \revokeMPtransparencyspecial
+\to \MPstopresources
 
 \def\dorevokeMPtransparencyspecial % only called if state is set
   {\ifx\PDFtransparencyresetidentifier\empty\else
@@ -961,22 +1006,31 @@
   \let\PDFtransparencyreference \empty
 
   \def\initializePDFtransparency
-    {\presetPDFtransparency{1}{1}%
+    {\global\let\initializePDFtransparency\relax
+     \presetPDFtransparency{1}{1}%
      \xdef\PDFtransparencyresetidentifier{/Tr0}%
-     \xdef\PDFtransparencyresetreference{\the\pdflastobj\space 0 R}%
-     \global\initializePDFtransparency\relax}
+     \xdef\PDFtransparencyresetreference{\the\pdflastobj\space 0 R}}
 
   \def\presetPDFtransparency#1#2%
     {\initializePDFtransparency
      \@EA\ifx\csname\@@MPSTO#1:#2\endcsname\relax
        \global\advance\PDFcurrenttransparency 1
-       \immediate\pdfobj{\PDFtransparancydictionary{#1}{#2}{}}%
+       \immediate\pdfobj{\PDFtransparencydictionary{#1}{#2}{}}%
        \setxvalue{\@@MPSTN#1:#2}{\the\PDFcurrenttransparency}%
        \setxvalue{\@@MPSTO#1:#2}{\the\pdflastobj}%
      \fi
      \edef\PDFtransparencyidentifier{/Tr\getvalue{\@@MPSTN#1:#2}}%
      \edef\PDFtransparencyreference{\getvalue{\@@MPSTO#1:#2} 0 R}}
 
+     \def\PDFtransparencydictionary#1#2#3% type fraction extras
+       {<</Type /ExtGState 
+          /ca #2 /CA #2
+          /BM /\ifcase#1 Normal\or Normal\or Multiply\or Screen\or 
+               Overlay\or SoftLight\or HardLight\or ColorDodge\or 
+               ColorBurn\or Darken\or Lighten\or Difference\or 
+               Exclusion\else Compatible\fi
+          #3>>}
+     
 \fi
 
 \appendtoks

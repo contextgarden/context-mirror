@@ -267,7 +267,7 @@
   {\setuserpageno{\ruwenummer[\s!page]}%
    \doifelse\@@snstatus\v!stop
      {\global\subpageno\zerocount}
-     {\global\subpageno\ruwenummer[\s!subpage]}}
+     {\global\subpageno\ruwenummer[\s!subpage]}\relax}
 
 % Standaard is \count0 in Plain TeX de paginateller. Omwille
 % van de afhandeling van lokaal nummeren, definieren we
@@ -320,7 +320,7 @@
 
 \newcounter \nofpagesets
 
-\definetwopasslist{\s!page}
+\definetwopasslist\s!page
 
 \def\dopagesetreference%
   {\doglobal\increment\nofpagesets\relax
@@ -334,7 +334,7 @@
 
 \def\getpagestatus% hierboven gebruiken
   {\ifdubbelzijdig
-     \gettwopassdata{\s!page}%
+     \gettwopassdata\s!page
      \iftwopassdatafound \else
        \let\twopassdata=\realpageno
      \fi

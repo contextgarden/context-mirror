@@ -640,8 +640,9 @@
   {\copyparameters[#1][#3]%
      [\c!breedte,\c!hoogte,\c!offset,\c!leeg,\c!lijndikte,%
       \c!straal,\c!hoek,\c!diepte,\c!kader,\c!kaderkleur,%
+      \c!voorgrondletter,\c!voorgrondkleur,% 
       \c!bovenkader,\c!onderkader,\c!linkerkader,\c!rechterkader,%
-      \c!lijndikte,\c!kaderoffset,\c!voorgrondkleur,\c!achtergrond,%
+      \c!lijndikte,\c!kaderoffset,\c!achtergrond,%
       \c!achtergrondoffset,\c!achtergrondraster,\c!achtergrondkleur,%
       \c!uitlijnen,\c!onder,\c!boven,\c!strut,\c!plaats]%
    \copyparameters[#1\c!achtergrond][#1]%
@@ -705,6 +706,9 @@
    \ifsecondargument % faster
      \getparameters[\@@framed][#2]% here !
    \fi
+   % to get the right spacing
+   \doifvaluesomething{\@@framed\c!voorgrondletter}
+     {\@EA\doconvertfont\csname\@@framed\c!voorgrondletter\endcsname\empty}%
    % beware, both the frame and background offset can be overruled
    \edef\localoffset{\getvalue{\@@framed\c!offset}}%
    \edef\localwidth{\getvalue{\@@framed\c!breedte}}%
@@ -2313,6 +2317,7 @@
       \c!straal=.5\bodyfontsize,
       \c!hoek=\v!recht,
       \c!voorgrondkleur=,
+      \c!voorgrondletter=,
       \c!achtergrond=,
       \c!achtergrondkleur=,
       \c!achtergrondraster=\@@rsraster,
@@ -2381,52 +2386,111 @@
 
 \ifx\checkframedtext\undefined \let\checkframedtext\relax \fi 
 
+% \def\dododostartframedtext[#1][#2][#3]%
+%   {\processaction
+%      [#2]
+%      [  \v!links=>\letvalue{\??kd#1\c!links }=\relax
+%                   \letvalue{\??kd#1\c!rechts}=\hfill,
+%        \v!rechts=>\letvalue{\??kd#1\c!links }=\hfill
+%                   \letvalue{\??kd#1\c!rechts}=\relax,
+%        \v!midden=>\letvalue{\??kd#1\c!links }=\hfill
+%                   \letvalue{\??kd#1\c!rechts}=\hfill,
+%          \v!geen=>\letvalue{\??kd#1\c!links }=\relax % new
+%                   \letvalue{\??kd#1\c!rechts}=\relax]% new
+% %    % removed 06/2001
+%    % \forgetparindent
+%    % added 06/2001 [see demo-bbv]
+%    \localhsize\hsize \checkframedtext
+%    % so far
+%    \setbox\framebox=\vbox
+%      \bgroup
+%        \hsize\localhsize
+%     %  \insidefloattrue % ?
+%        \expanded{\switchtobodyfont[\getvalue{\??kd#1\c!korps}]}%
+%        \localframed[\??kd#1][\c!strut=\v!nee,#3]%
+%        \bgroup
+%          \blanko[\v!blokkeer]%
+%          \let\\=\endgraf
+% %          \getvalue{\??kd#1\c!binnen}%
+%          \dostartattributes{\??kd#1}\c!letter\c!kleur{}%
+%          \def\dostopframedtext{\dodostopframedtext{#1}{#2}}}
+
 \def\dododostartframedtext[#1][#2][#3]%
   {\processaction
      [#2]
-     [  \v!links=>\letvalue{\??kd#1\c!links }=\relax
-                  \letvalue{\??kd#1\c!rechts}=\hfill,
-       \v!rechts=>\letvalue{\??kd#1\c!links }=\hfill
-                  \letvalue{\??kd#1\c!rechts}=\relax,
-       \v!midden=>\letvalue{\??kd#1\c!links }=\hfill
-                  \letvalue{\??kd#1\c!rechts}=\hfill,
-         \v!geen=>\letvalue{\??kd#1\c!links }=\relax % new
-                  \letvalue{\??kd#1\c!rechts}=\relax]% new
+     [  \v!links=>\letvalue{\??kd#1\c!links }\relax
+                  \letvalue{\??kd#1\c!rechts}\hfill,
+       \v!rechts=>\letvalue{\??kd#1\c!links }\hfill
+                  \letvalue{\??kd#1\c!rechts}\relax,
+       \v!midden=>\letvalue{\??kd#1\c!links }\hfill
+                  \letvalue{\??kd#1\c!rechts}\hfill,
+         \v!geen=>\letvalue{\??kd#1\c!links }\relax % new
+                  \letvalue{\??kd#1\c!rechts}\relax]% new
    % removed 06/2001
    % \forgetparindent
    % added 06/2001 [see demo-bbv]
    \localhsize\hsize \checkframedtext
    % so far
    \setbox\framebox=\vbox
-     \bgroup
+     \startboxedcontent
        \hsize\localhsize
-    %  \insidefloattrue % ?
+    %  \insidefloattrue % ? better
        \expanded{\switchtobodyfont[\getvalue{\??kd#1\c!korps}]}%
+       \startcolor[\getvalue{\??kd#1\c!kleur}]%
        \localframed[\??kd#1][\c!strut=\v!nee,#3]%
        \bgroup
-         \blanko[\v!blokkeer]%
          \let\\=\endgraf
          \getvalue{\??kd#1\c!binnen}%
-         \dostartattributes{\??kd#1}\c!letter\c!kleur{}%
+         \doifvalue{\??kd#1\c!dieptecorrectie}{\v!aan} % new, inside box
+           {\bgroup
+            \vbox{\strut}
+            \vskip-\lineheight}%
+         \blanko[\v!blokkeer]% plaatst signal
+         \doconvertfont{\getvalue{\??kd#1\c!letter}}{}%
          \def\dostopframedtext{\dodostopframedtext{#1}{#2}}}
 
 %D The \type {none} option is handy for nested usage, as
 %D in the presentation styles, where we don't want
 %D interference.
 
-\def\dodostopframedtext#1#2%
+% \def\dodostopframedtext#1#2%
+%   {\endgraf
+%    \removelastskip
+%    \dostopattributes
+%    \doifvalue{\??kd#1\c!dieptecorrectie}{\v!aan} % new, inside box
+%      {\baselinecorrection}%
+%    \egroup
+%    \egroup
+%    \doif{#2}{\v!geen}{\insidefloattrue}% new
+%    \ifinsidefloat
+%      \box\framebox
+%    \else
+%      \doplaats[\??kd#1][]{\box\framebox}%
+%    \fi
+%    \egroup}
+
+\def\dodostopframedtext#1#2% % no \baselinecorrection, see faq docs
   {\endgraf
    \removelastskip
-   \dostopattributes
-   \doifvalue{\??kd#1\c!dieptecorrectie}{\v!aan} % new, inside box
-     {\baselinecorrection}%
-   \egroup
+   \doifvalue{\??kd#1\c!dieptecorrectie}{\v!aan} % local and global
+     {\forgetall
+      \vskip-\lineheight
+      \vbox{\strut}
+      \egroup
+      \forgetall
+      \vskip-\lineheight
+% will be an option 
+\setbaselinecorrections
+\donegbotbaselinecorrection
+      \vbox{\strut}}
+   \stopboxedcontent
+   \stopcolor
    \egroup
    \doif{#2}{\v!geen}{\insidefloattrue}% new
    \ifinsidefloat
      \box\framebox
    \else
-     \doplaats[\??kd#1][]{\box\framebox}%
+     \doplaats[\??kd#1][\c!dieptecorrectie=\v!uit]{\box\framebox}%
    \fi
    \egroup}
 
@@ -2959,6 +3023,7 @@
    \c!hoek=\v!recht,
    \c!diepte=\!!zeropoint,
    \c!voorgrondkleur=,
+   \c!voorgrondletter=,
    \c!achtergrond=,
    \c!achtergrondraster=\@@rsraster,
    \c!achtergrondkleur=,

@@ -20,7 +20,7 @@
 
 \let\typescriptfiles\empty
 
-\def\usetypescriptfile[#1]%
+\unexpanded\def\usetypescriptfile[#1]%
   {\addtocommalist{#1}\typescriptfiles}
 
 \usetypescriptfile[\f!typeprefix syn] % font file synonyms
@@ -41,7 +41,7 @@
 \let\@@typescripttwo  \empty \let\typescripttwo  \empty
 \let\@@typescriptthree\empty \let\typescriptthree\empty
 
-\def\usetypescript%
+\unexpanded\def\usetypescript%
   {\dotripleempty\dousetypescript}
 
 \def\dousetypescript[#1][#2][#3]%
@@ -295,7 +295,8 @@
       \setxvalue{#1 \c!status}{2}}}
 
 \def\loadallfontmapfiles
-  {\ifx\allfontmapsfiles\empty \else
+  {%\message{[\allfontmapsfiles]}%
+   \ifx\allfontmapsfiles\empty \else
      \ifautoloadmapfiles 
        \ifcase\pdfoutput \else \ifx\pdfmapfile\undefined \else
          \processcommacommand[\allfontmapsfiles]\doloadfontmapfile
@@ -368,12 +369,12 @@
 
 \def\dododefinetypeface[#1][#2]% saveguard against redefinition
   {\doifundefined{\??tf#1\s!default}{\setgvalue{\??tf#1\s!default}{#2}}%
-   \doifundefined{#1}{\setgvalue{#1}{\switchtotypeface[#1][#2]}}}
+   \doifundefined{#1}{\unexpanded\setgvalue{#1}{\switchtotypeface[#1][#2]}}}
 
 \def\setuptypeface% [class] [settings]
   {\doquadrupleempty\doswitchtotypeface[\setupbodyfont][\fontclass]}
 
-\def\switchtotypeface% [class] [settings]
+\unexpanded\def\switchtotypeface% [class] [settings]
   {\doquadrupleempty\doswitchtotypeface[\switchtobodyfont][\globalfontclass]}
 
 \def\doswitchtotypeface[#1][#2][#3][#4]%

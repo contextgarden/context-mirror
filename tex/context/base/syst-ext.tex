@@ -688,7 +688,7 @@
   {\global\advance\outerrecurse \plusone
    \long\global\@EA\def\csname\@@arecurse\recursedepth\endcsname{#2}%
    \global\@EA\let\csname\@@irecurse\recursedepth\endcsname\recurselevel
-   \@EA\dodorecurse\@EA1{\number#1}}
+   \@EA\dodorecurse\@EA1\@EA{\number#1}}
 
 \long\def\ydorecurse#1#2%
   {\global\advance\outerrecurse \plusone
@@ -2408,35 +2408,44 @@
 %D
 %D Significantly faster (especially for longer lists): 
 
-\def\cleanedupcommalist#1,,#2\relax{#1}
-
-\def\xsplitstring#1#2% \cs {item}
-  {\def\dosplitstring##1#2,##2#2,##3\\%
-     {\edef\!!stringa{\cleanedupcommalist##1,,\relax}%
-      \edef\!!stringb{\cleanedupcommalist##2,,\relax}}%
-   \@EA\dosplitstring#1,#2,#2,\\}
-
 \def\addtocommalist#1#2% {item} \cs 
-  {\expanded{\xsplitstring\noexpand#2{#1}}%
-   \dodoglobal\edef#2%
-     {\ifx\!!stringa\empty\else\!!stringa,\fi
-      \ifx\!!stringb\empty\else\!!stringb,\fi#1}}
+  {\rawdoifinsetelse{#1}#2\resetglobal
+     {\dodoglobal\edef#2{\ifx#2\empty\else#2,\fi#1}}}
 
-\def\pretocommalist#1#2%
-  {\expanded{\xsplitstring\noexpand#2{#1}}%
-   \dodoglobal\edef#2%
-     {#1%
-      \ifx\!!stringa\empty\else,\!!stringa\fi
-      \ifx\!!stringb\empty\else,\!!stringb\fi}}
+\def\pretocommalist#1#2% {item} \cs 
+  {\rawdoifinsetelse{#1}#2\resetglobal
+     {\dodoglobal\edef#2{#1\ifx#2\empty\else,#2\fi}}}
+
+\def\xsplitstring#1#2% \cs {str}
+  {\def\dosplitstring##1,#2,##2,#2,##3\\%
+     {\edef\!!stringa{\bcleanedupcommalist##1\empty\empty\relax}%
+      \edef\!!stringb{\acleanedupcommalist##2,,\relax}}%
+   \@EA\dosplitstring\@EA,#1,,#2,,#2,\\}
+
+\def\bcleanedupcommalist#1#2#3\relax{\if#1,\else#1\fi\if#2,\else#2\fi#3}
+\def\bcleanedupcommalist#1#2\relax{\if#1,\else#1\fi#2}
+\def\acleanedupcommalist#1,,#2\relax{#1}
+
+% \def\removefromcommalist#1#2%
+%   {\expanded{\xsplitstring\noexpand#2{#1}}%
+%    \dodoglobal\edef#2%
+%      {\ifx\!!stringa\empty
+%         \!!stringb
+%       \else
+%         \@EA\acleanedupcommalist\!!stringa,,\relax
+%         \ifx\!!stringb\empty\else,\!!stringb\fi
+%       \fi}}
 
 \def\removefromcommalist#1#2%
-  {\expanded{\xsplitstring\noexpand#2{#1}}%
-   \dodoglobal\edef#2%
-     {\ifx\!!stringa\empty
-        \!!stringb
-      \else
-        \!!stringa\ifx\!!stringb\empty\else,\!!stringb\fi
-      \fi}}
+  {\rawdoifinsetelse{#1}#2%
+     {\expanded{\xsplitstring\noexpand#2{#1}}%
+      \dodoglobal\edef#2%
+        {\ifx\!!stringa\empty
+           \!!stringb
+         \else
+           \!!stringa\ifx\!!stringb\empty\else,\!!stringb\fi
+         \fi}}
+     \resetglobal}
 
 %D A not so useful macro: 
 
@@ -2975,7 +2984,7 @@
 \def\@@doifallcommonelse#1#2#3#4% slow 
   {\def\p!docommoncheck##1%
      {\doifnotinset{##1}{#4}\donefalse
-      \ifdone\else\quitcommalist\fi}%
+      \ifdone\else\expandafter\quitcommalist\fi}%
    \donetrue
    \processcommalist[#3]\p!docommoncheck
    \ifdone\expandafter#1\else\expandafter#2\fi}
@@ -3910,7 +3919,7 @@
        \else % old element larger
          \@EA\def\@EA\newcommalistelement\@EA{\!!tempa,#1}%
          \replaceincommalist\sortedcommalist\scratchcounter
-         \quitcommalist
+         \expandafter\quitcommalist
        \fi}%
        \advance\scratchcounter \minusone}
 

@@ -58,6 +58,7 @@
       \c!voetstatus=\v!stop,
       \c!paginastatus=\v!stop,
       \c!kleur=,
+      \c!uitlijnen=,
       #2]%
    \setvalue{\e!start#1\e!opmaak}{\startmakeup[#1]}%
    \setvalue{\e!stop #1\e!opmaak}{\stopmakeup}}
@@ -87,8 +88,8 @@
 
 \def\dostartmakeup[#1][#2]%
   {\bgroup
-   \the\everymakeup
    \edef\currentmakeup{#1}%
+   \the\everymakeup
    \iffirstargument
      \setupmakeup[\currentmakeup][#2]%
      \let\stopmakeup\dodostopmakeup
@@ -104,7 +105,7 @@
   {\pagina
    \setupheader[\c!status=\v!leeg]%
    \setupfooter[\c!status=\v!leeg]%
-   \vbox to \teksthoogte\bgroup}
+   \vbox to \teksthoogte\bgroup\hsize\tekstbreedte}
 
 \def\donostopmakeup%
   {\egroup
@@ -126,7 +127,9 @@
    \global\setbox\makeupbox=\vbox to \makeupparameter\c!hoogte
      \bgroup
        \forgetall 
-       \hsize=\makeupparameter\c!breedte
+       \hsize\makeupparameter\c!breedte
+       \doifsomething{\makeupparameter\c!uitlijnen}
+         {\expanded{\steluitlijnenin[\makeupparameter\c!uitlijnen]}}%
        \makeupparameter\c!boven}
 
 \def\dodostopmakeup%
@@ -134,7 +137,7 @@
    \makeupparameter\c!onder
    \egroup
    \flushmarks % new, here, else empty pages 
-   \stopregistercolor
+\stopregistercolor
    \doflushmakeup
    \egroup
    \calculatehsizes

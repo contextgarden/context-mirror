@@ -142,6 +142,19 @@ def regraphictext (expr t) =
   dofinishgraphictext 
 enddef ;
 
+%D Believe it or not, but it took me half a day to uncover 
+%D the following neccessity:
+%D 
+%D \starttypen 
+%D save withfillcolor, withdrawcolor ;  
+%D \stoptypen 
+%D 
+%D When we have more than one graphictext, these will be 
+%D defined after the first graphic. For some obscure reason, 
+%D this means that in the next graphic they will be called, but
+%D afterwards the data and boolean are not set. Don't ask me 
+%D why. 
+
 def dofinishgraphictext text x_op_x =
   protectgraphicmacros ;
   interim linecap    := butt ;     % normally rounded  
@@ -150,6 +163,7 @@ def dofinishgraphictext text x_op_x =
   let normalwithshade = withshade ;
   save foundpicture, scratchpicture, str ;
   save fill, draw, withshade, reversefill, outlinefill ;
+  save withfillcolor, withdrawcolor ; % quite important
   numeric foundpicture ; picture scratchpicture ; string str ;
   def draw expr p =
     % the first, naive implementation was: 

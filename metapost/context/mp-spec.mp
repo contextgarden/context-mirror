@@ -156,15 +156,17 @@ fi ;
 
 %D Shade allocation.
 
+newinternal shadefactor ; shadefactor := 1 ; 
+
 vardef define_linear_shade (expr a, b, ca, cb) =
-  flush_special(30, 15, "0 1 1" &
+  flush_special(30, 15, "0 1 " & decimal shadefactor & " " &
     dddecimal ca & ddecimal a &
     dddecimal cb & ddecimal b ) ;
   _special_counter_
 enddef ;
 
 vardef define_circular_shade (expr a, b, ra, rb, ca, cb) =
-  flush_special(31, 17, "0 1 1" &
+  flush_special(31, 17, "0 1 " & decimal shadefactor & " " &
     dddecimal ca & ddecimal a & " " & decimal ra &
     dddecimal cb & ddecimal b & " " & decimal rb ) ;
   _special_counter_

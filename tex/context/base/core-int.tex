@@ -2527,17 +2527,21 @@
 \def\plaatsboventekstblok
   {\vbox to \bovenhoogte
      {\vsize\bovenhoogte 
-      \getvalue{\??tk\v!boven\v!tekst\c!voor}
+%      \getvalue{\??tk\v!boven\v!tekst\c!voor}
+      \getvalue{\??tk\v!boven\c!voor}
       \interactiemenus[\v!boven]
-      \getvalue{\??tk\v!boven\v!tekst\c!na}
+%      \getvalue{\??tk\v!boven\v!tekst\c!na}
+      \getvalue{\??tk\v!boven\c!na}
       \kern\zeropoint}}
 
 \def\plaatsondertekstblok
   {\vbox to \onderhoogte
      {\vsize\onderhoogte 
-      \getvalue{\??tk\v!onder\v!tekst\c!voor}
+%      \getvalue{\??tk\v!onder\v!tekst\c!voor}
+      \getvalue{\??tk\v!onder\c!voor}
       \interactiemenus[\v!onder]
-      \getvalue{\??tk\v!onder\v!tekst\c!na}
+%      \getvalue{\??tk\v!onder\v!tekst\c!na}
+      \getvalue{\??tk\v!onder\c!na}
       \kern\zeropoint}}
 
 \ifx\leftedgetextcontent\undefined \else
@@ -2588,7 +2592,9 @@
    \c!kader=\v!aan,
    \c!achtergrond=,
    \c!achtergrondraster=\@@rsraster,
-   \c!achtergrondkleur=]
+   \c!achtergrondkleur=,
+   \c!zelfdepagina=\v!ja,
+   \c!onbekendeverwijzing=\v!ja]
 
 \stelsynchronisatiebalkin
   [\c!variant=\v!pagina,

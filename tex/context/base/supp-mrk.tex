@@ -377,108 +377,7 @@
 
 \endTEX
 
-% %D Here starts the \ETEX\ alternative. 
-% 
-% \beginETEX \marks cum suis 
-% 
-% \newtoks \listofmarks 
-% 
-% \def\@@mrk{mrk:} 
-% \def\@@trk{trk:} 
-% \def\@@crk{crk:}
-% 
-% \def\getcurrentmark    {\getsomemark\thecurrentmarks}
-% \def\gettopmark        {\getsomemark\checkedtopmarks}
-% \def\getbottommark     {\getsomemark\normalbotmarks}
-% \def\getfirstmark      {\getsomemark\normalfirstmarks}
-% \def\getsplitbottommark{\getsomemark\normalsplitbotmarks}
-% \def\getsplitfirstmark {\getsomemark\normalsplitfirstmarks}
-% 
-% \def\getbotmark        {\getsomemark\normalbotmarks}
-% \def\getsplitbotmark   {\getsomemark\normalsplitbotmarks}
-% \def\getsplittopmark   {\getsomemark\normalsplitfirstmarks}
-% 
-% %D \starttypen 
-% %D \def\getsomemark#1#2%
-% %D   {\ifnum\getvalue{\@@mrk\string#2}=0\else % still reset 
-% %D      \expandafter\gobbletwoarguments
-% %D    \fi#1#2}
-% %D \stoptypen 
-% %D
-% %D We need a fully expandable (in \type {\edef}) version of 
-% %D this one ... 
-% 
-% \letvalue{@@0}\empty 
-% \letvalue{@@1}\gobbletwoarguments
-% 
-% \def\getsomemark#1#2% (0,min(1,savedpage))
-%   {\csname 
-%      @@\ifcase\csname\@@mrk\string#2\endcsname\space0\else1\fi
-%    \endcsname#1#2}
-% 
-% %D ... and so we have another ugly but useful hack.  
-% %D
-% %D We will use two state variables per mark, one to signal 
-% %D that a new mark value is set, and one to trigger (on the 
-% %D next page) the setting of the top mark. 
-% 
-% \def\checkedtopmarks#1{\csname\@@trk\string#1\endcsname}
-% \def\thecurrentmarks#1{\csname\@@crk\string#1\endcsname}
-% 
-% \long\def\setmark#1%
-%   {\global\@EA\let\csname\@@mrk\string#1\endcsname\zerocountervalue
-%    \ifexpandmarks
-%      \expandafter\setexpandedmark
-%    \else
-%      \expandafter\setnormalmark
-%    \fi#1}
-% 
-% \def\setexpandedmark#1#2% % marks expand anyway 
-%   {\@EA\xdef\csname\@@crk\string#1\endcsname{#2}%
-%    \normalmarks#1{#2}} 
-% 
-% \def\setnormalmark#1#2% using a tok prevents unwanted expansion in mark 
-%   {\scratchtoks{#2}% 
-%    \@EA\xdef\csname\@@crk\string#1\endcsname{\the\scratchtoks}%
-%    \normalmarks#1{\the\scratchtoks}} % one level expansion 
-% 
-% \def\checktopmark#1% is called often, so its minimized  
-%   {\ifcase\csname\@@mrk\string#1\endcsname\else
-%      \@EA\dochecktopmark\@EA#1%
-%    \fi}
-% 
-% \def\dochecktopmark#1% 
-%   {\ifnum\realpageno>\csname\@@mrk\string#1\endcsname\relax 
-%      \@EA\xdef\csname\@@trk\string#1\endcsname{\normalbotmarks#1}%
-%    \fi}
-% 
-% \def\resetmark#1% we cannot use \normalmarks#1{}}
-%   {\@EA\xdef\csname\@@mrk\string#1\endcsname{\realfolio}%
-%    \global\@EA\let\csname\@@trk\string#1\endcsname\empty}
-% 
-% \def\definenewmark#1%
-%   {\ifcsname\@@mrk\string#1\endcsname\else % this is etex -) 
-%      \newmarks#1%
-%      \appendtoks\checktopmark#1\to\listofmarks 
-%    \fi
-%    \global\@EA\let\csname\@@crk\string#1\endcsname\empty
-%    \global\@EA\let\csname\@@mrk\string#1\endcsname\zerocountervalue
-%    \@EA\gdef\csname\@@trk\string#1\endcsname{\normaltopmarks#1}}% 
-% 
-% \let \newmark           \definenewmark  
-% \let \newpersistentmark \definenewmark  
-% \let \normalsetmark     \setmark
-% 
-% \def\setallmarks{\the\listofmarks}
-% 
-% %D In \type {page-ini} or \type {core-mar} we should say: 
-% %D
-% %D \starttypen 
-% %D \appendtoks \getallmarks \to \everybeforepagebody 
-% %D \appendtoks \setallmarks \to \everyafterpagebody 
-% %D \stoptypen 
-% 
-% \endETEX
+%D The \ETEX\ way of doing things \unknown 
 
 \beginETEX \marks cum suis 
 
@@ -513,12 +412,12 @@
 
 \def\dochecktopmark#1% 
   {\ifnum\realpageno>\csname\@@mrk\string#1\endcsname\relax 
-     \global\@EA\let\csname\@@trk\string#1\endcsname\normalbotmarks
+     \@EA\gdef\csname\@@trk\string#1\endcsname{\normalbotmarks#1}%
    \fi}
 
 \def\resetmark#1% we cannot use \normalmarks#1{}}
   {\@EA\mathchardef\csname\@@mrk\string#1\endcsname\realfolio
-   \global\@EA\let\csname\@@trk\string#1\endcsname\gobbleoneargument}
+   \global\@EA\let\csname\@@trk\string#1\endcsname\empty}
 
 \def\definenewmark#1%
   {\ifcsname\@@mrk\string#1\endcsname\else % this is etex -) 
@@ -526,7 +425,7 @@
    \fi
    \global\@EA\let\csname\@@crk\string#1\endcsname\empty
    \global\@EA\mathchardef\csname\@@mrk\string#1\endcsname\zerocount
-   \global\@EA\let\csname\@@trk\string#1\endcsname\normaltopmarks}
+   \@EA\gdef\csname\@@trk\string#1\endcsname{\normaltopmarks#1}}
 
 \let \newmark           \definenewmark  
 \let \newpersistentmark \definenewmark  
@@ -642,7 +541,5 @@
 %D assigned boxes, the list can grow quite big, and processing
 %D can slow down considerably. This drawback is removed in 
 %D \ETEX\ mode.  
-
-\readfile{supp-nmk}{}{}
 
 \protect \endinput

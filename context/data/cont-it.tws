@@ -729,6 +729,7 @@ var:angolo:rotondo,rettangolare::
 var:raggio:*dimension::
 var:vuoto:si,no::
 var:coloreprimopiano:*name::
+var:foregroundstyle:*name::
 val:*text::
 stopsetup
 
@@ -1640,6 +1641,7 @@ var:distanzabordodestro:*dimension::
 var:horoffset:*dimension::
 var:veroffset:*dimension::
 var:stile:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...,*command::
+var:colore:*name::
 var:marcatura:attivo,disattivo,colore::
 var:luogo:sinistra,centro,destra,fondo,cima, facciasingola,doppiafaccia::
 var:scala:*dimension::
@@ -1675,7 +1677,7 @@ stopsetup
 startsetup
 com:spostaagriglia:
 typ:val/:
-val:cima,entrambi,fondo:entrambi:
+val:cima,entrambi,fondo,-cima,-entrambi,-fondo, alto,centro,basso,pagina,standard,nessuno, ampio,adatta:standard:
 stopsetup
 
 startsetup
@@ -1780,7 +1782,7 @@ startsetup
 com:impostacaptions:
 typ:vars/:
 var:luogo:cima,fondo,nessuno,alto,basso,centro::
-var:ampiezza:adatta,max,*dimension::
+var:ampiezza:adatta,ampio,max,*dimension::
 var:stiletesta:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...,*command::
 var:stile:normale,grassetto,inclinato,grassettoinclinato,type,cap,piccolo...,*command::
 var:numero:si,no::
@@ -3212,7 +3214,8 @@ var:EQ:*text::
 var:colorelinea:*name::
 var:allinea:sinistra,centro,destra,normale::
 var:spessorelinea:*dimension::
-var:distanza:rigovuoto,profondita,*dimension,piccolo,medio,grande,nessuno::
+var:distanza:rigovuoto,griglia,profondita,*dimension,piccolo,medio,grande,nessuno::
+var:fonttesto:5pt,...,12pt,piccolo,grande::
 stopsetup
 
 startsetup
@@ -3232,6 +3235,7 @@ var:allinea:sinistra,centro,destra,normale::
 var:sfondo:schermo,colore,nessuno::
 var:schermosfondo:*number::
 var:coloresfondo:*name::
+var:fonttesto:5pt,...,12pt,piccolo,grande::
 stopsetup
 
 startsetup

@@ -426,8 +426,10 @@
      \immediate\write\MPwrite{let mprunend = end ;}%
      \immediate\write\MPwrite{beginfig(\the\currentMPgraphic);}%
    \fi
-   \global\let\flushMPgraphics\dodostopwritingMPgraphic
+   \global\let\flushMPgraphics\closeMPgraphicfiles % \dodostopwritingMPgraphic
    \global\let\stopwritingMPgraphic=\dostopwritingMPgraphic}
+
+\let\MPgraphicfiles\empty
 
 \def\openMPgraphicfile#1#2% #1=alwaysopen #2=message
   {%\doifundefinedelse{\@@MPG\@@MPG\MPgraphicfile}
@@ -436,6 +438,7 @@
    %  {\ifcase#1\donefalse\else\donetrue\fi}%
    \@EA\ifx\csname\@@MPG\@@MPG\MPgraphicfile\endcsname\relax
      \donetrue \@EA\newwrite\csname\@@MPG\@@MPG\MPgraphicfile\endcsname 
+     \doglobal\addtocommalist\MPgraphicfile\MPgraphicfiles
    \else
      \ifcase#1\relax\donefalse\else\donetrue\fi
    \fi
@@ -466,11 +469,23 @@
      \donefalse
    \fi\fi
    \ifdone
-     \immediate\write\MPwrite{end.}%
-     \immediate\closeout\MPwrite
+     \finishwritingMPgraphics
      \runMPgraphic\MPgraphicfile
    \fi
    \global\let\flushMPgraphics\relax}
+
+\def\finishwritingMPgraphics
+  {\immediate\write\MPwrite{end.}%
+   \immediate\closeout\MPwrite}
+
+\def\closeMPgraphicfiles
+  {\ifrunMPgraphics \else \ifx\MPgraphicsfiles\empty\else
+     \def\docommando##1% 
+       {\message{[flush and process ##1.mp afterwards]}%
+        \@EA\let\@EA\MPwrite\csname\@@MPG\@@MPG##1\endcsname
+        \finishwritingMPgraphics}%
+     \processcommacommand[\MPgraphicfiles]\docommando
+   \fi \fi}
 
 \let\stopwritingMPgraphic\relax
 \let\flushMPgraphics     \relax
@@ -713,7 +728,7 @@
   {\ifrunMPgraphics
      \executeMETAPOST{#1}%
    \else
-     \message{[flush and process \MPgraphicfile.mp afterwards]}%
+     % \message{[flush and process \MPgraphicfile.mp afterwards]}%
    \fi}
 
 %D \macros
@@ -1175,6 +1190,9 @@
 
 \def\dodohandleMPcolor#1 #2 #3setrgbcolor#4setrgbcolor*\\%
   {\bgroup
+\ifdim\MPspecialsignal=.123pt % color spec / hardcoded hack 
+  \immediate\write\scratchwrite{#1 #2 #3 setrgbcolor}%
+\else
    \ifforcegrayMPcolors
      \convertRGBtoGRAY{#1}{#2}{#3}%
      \immediate\write\scratchwrite
@@ -1199,6 +1217,7 @@
         \withoutpt{\the\dimen4} \space
         \withoutpt{\the\dimen6} \space setcmykcolor #4}%
    \fi
+\fi
    \egroup
    \donetrue} % needed for message
 

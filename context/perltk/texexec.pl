@@ -232,7 +232,7 @@ if (($LogFile ne '')&&($LogFile =~ /\w+\.log$/io))
     *STDOUT = *LOGFILE ;
     *STDERR = *LOGFILE }
 
-my $Program = " TeXExec 2.6 - ConTeXt / PRAGMA ADE 1997-2001" ;
+my $Program = " TeXExec 2.7 - ConTeXt / PRAGMA ADE 1997-2001" ;
 
 print "\n$Program\n\n";
 
@@ -883,12 +883,16 @@ sub MakeOptionFile
     elsif ($Arrange||$PdfArrange)
       { $FinalRunNeeded = 1 ;
         if ($FinalRun)
-          { if ($PrintFormat =~ /.*up/goi)
-              { print OPT "\\setuparranging[2UP,\\v!geroteerd,\\v!dubbelzijdig]\n" }
+          { if ($NoDuplex)
+              {$DupStr = "" }
+            else    
+              {$DupStr = ",\\v!dubbelzijdig" }
+            if ($PrintFormat =~ /.*up/goi)
+              { print OPT "\\setuparranging[2UP,\\v!geroteerd$DupStr]\n" }
             elsif ($PrintFormat =~ /.*down/goi)
-              { print OPT "\\setuparranging[2DOWN,\\v!geroteerd,\\v!dubbelzijdig]\n" }
+              { print OPT "\\setuparranging[2DOWN,\\v!geroteerd$DupStr]\n" }
             elsif ($PrintFormat =~ /.*side/goi)
-              { print OPT "\\setuparranging[2SIDE,\\v!geroteerd,\\v!dubbelzijdig]\n" }
+              { print OPT "\\setuparranging[2SIDE,\\v!geroteerd$DupStr]\n" }
             else
               { print OPT "\\setuparranging[$PrintFormat]\n" } }
         else
@@ -946,7 +950,8 @@ sub MakeUserFile
         $MainLanguage = $MainLanguages[0] ;
         print USR "\\setupcurrentlanguage[\\s!$MainLanguage]\n" }
     if ($MainBodyFont ne 'standard')
-      { print USR "\\definefilesynonym[font-cmr][font-$MainBodyFont]\n" }
+       { print USR "\\definetypescriptsynonym[cmr][$MainBodyFont]" ;
+         print USR "\\definefilesynonym[font-cmr][font-$MainBodyFont]\n" }
     print USR "\\protect\n" ;
     print USR "\\endinput\n" ;
     close (USR) ;
@@ -1001,24 +1006,40 @@ sub CompareFiles # 2 = tuo
       { return 0 } }
 
 sub CheckPositions
- { return if ($DVIspec eq '') ;
-   my $JobName = shift ; my $TuoName = "$JobName.tuo" ;
-   if (open(POS,"$TuoName"))
-     { seek POS, (-s $TuoName) - 5000, 0 ;
-       while (<POS>)
-         { if (/\% *position commands *\: *(\d*) *\(unresolved\)/io)
-             { if ($1)
-                 { print "         dvi positions : $1 ($DVIspec ." ;
-                   close (POS) ;
-                   open(POS,">>$TuoName") ;
-                   $ENV{uc "$DVIspec.TEXFONTSDIR"} = $TeXFontsPath ;
-                   print POS "\%\n\% extracted from dvi file by $DVIspec:\n\%\n" ;
-                   close(POS) ;
-                   print "." ;
-                   RunPerlScript ($DVIspec, "$JobName >> $TuoName") ;
-                   print ".)\n" }
-               last } }
-       close (POS) } }
+  { return if ($DVIspec eq '') ;
+    my $JobName = shift ; my $TuoName = "$JobName.tuo" ;
+    if (open(POS,"$TuoName"))
+      { seek POS, (-s $TuoName) - 5000, 0 ;
+        while (<POS>)
+          { if (/\% *position commands *\: *(\d*) *\(unresolved\)/io)
+              { if ($1)
+                  { print "         dvi positions : $1 ($DVIspec ." ;
+                    close (POS) ;
+                    open(POS,">>$TuoName") ;
+                    $ENV{uc "$DVIspec.TEXFONTSDIR"} = $TeXFontsPath ;
+                    print POS "\%\n\% extracted from dvi file by $DVIspec:\n\%\n" ;
+                    close(POS) ;
+                    print "." ;
+                    RunPerlScript ($DVIspec, "$JobName >> $TuoName") ;
+                    print ".)\n" }
+                last } }
+        close (POS) } }
+
+# my @ExtraPrograms = () ; 
+# 
+# sub CheckExtraPrograms
+#   { my $JobName = shift ; my $TuoName = "$JobName.tuo" ;
+#     if (open(PRO,"$TuoName"))
+#       { seek PRO, (-s $TuoName) - 5000, 0 ;
+#         while (<PRO>)
+#           { if (/\%\s*extra\s*program\s*\:\s*(.*)\s*$/io)
+#               { push @ExtraPrograms, $1 } }
+#         close (PRO) } 
+#     foreach my $EP (@ExtraPrograms) 
+#       { if ($EP =~ /(.+)\s*(.*)/o) 
+#           { print "\n         extra program : $1\n" ;
+#             system($EP) ; 
+#             print "\n" } } }
 
 my $ConTeXtVersion = "unknown" ;
 my $ConTeXtModes   = '' ;
@@ -1153,6 +1174,7 @@ sub RunTeXutil
       ($TeXUtil, "--ref --ij --high $TcXPath $JobName" );
     if (-e "$JobName.tuo")
       { CheckPositions ($JobName) ;
+      # CheckExtraPrograms($JobName) ;
         $StopRunning = CompareFiles("$JobName.tup", "$JobName.tuo") }
     else
       { $StopRunning = 1 } # otherwise potential loop
@@ -1997,7 +2019,9 @@ elsif ($MakeFormats)
     else
       { RunFormats } }
 elsif (@ARGV)
-  { @ARGV = <@ARGV> ; RunFiles }
+  { @ARGV = <@ARGV> ; 
+foreach (@ARGV) { s/\\/\//goi } 
+    RunFiles }
 else
   { print $Help{HELP} ;
     unless ($Verbose) { print $Help{VERBOSE} } }

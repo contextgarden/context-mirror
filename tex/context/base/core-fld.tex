@@ -607,9 +607,9 @@
        \def\@@FieldFree{1}%
        \changefield{#2}%
      \else\ifcase\@@FieldAuto\relax
-       \writestatus{\m!fields}{field #2 already typeset}%
+     % \writestatus{\m!fields}{field #2 already typeset}%
      \else
-       \writestatus{\m!fields}{field #2 automatically copied}%
+     % \writestatus{\m!fields}{field #2 automatically copied}%
        \nextsystemfield
        \copyfield[\@@FieldName][\currentsystemfield]%
        \dotripleempty\dofield[#1][\currentsystemfield][#3]% get the if's right

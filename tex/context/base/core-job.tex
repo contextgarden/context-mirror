@@ -166,7 +166,7 @@
 %appendtoks \checkutilityfile     \to \everyjob % obsolete 
 \appendtoks \openutilities        \to \everyjob
 \appendtoks \loadoptionfile       \to \everyjob
-\appendtoks \loadtwopassdata      \to \everyjob
+%appendtoks \loadtwopassdata      \to \everyjob
 \appendtoks \setupfootnotes       \to \everyjob % depends on bodyfont
 \appendtoks \initializeMPgraphics \to \everyjob % after loading system files
 
@@ -181,7 +181,9 @@
 \appendtoks \stopcopyingblocks \to \everygoodbye
 \appendtoks \closespecialfile  \to \everygoodbye
 
-\appendtoks \checkreferences \to \everystarttext % nieuw 4-12-1999 
+\prependtoks \resetutilities  \to \everystarttext % moved 28-02-2002
+\prependtoks \loadtwopassdata \to \everystarttext % moved 28-02-2002
+\appendtoks  \checkreferences \to \everystarttext % new   04-12-1999 
 
 \def\doateverystarttext%
   {\the\everystarttext
@@ -237,8 +239,11 @@
   {\def\startomgeving ##1 {}%
    \let\stopomgeving\relax
    \startreadingfile
-   \processfile{#1}% \readlocfile{#1}{}{}%
+   \processfile{#1}% was : \readlocfile{#1}{}{}
    \stopreadingfile}
+
+\def\onderdeel #1 % at outermost level only
+  {\processfile{#1}}
 
 \def\environment{\omgeving} % for the moment, no \let !  
 
@@ -349,9 +354,6 @@
 
 % Het <pagina>-karakter (FormFeed), wordt omgezet in \par
 
-\edef\oldlinefeed{\the\catcode`\^^L}
-
-\catcode`\^^L=\oldlinefeed
 \catcode`\^^L=\@@endofline
 
 % NOT TOEVOEGEN: \the\everytrace

@@ -77,10 +77,12 @@
 \def\stelmarkeringin%
   {\dodoubleargument\dostelmarkeringin}
 
-\letvalue{\??mk \v!vorige}\gettopmark
-\letvalue{\??mk \v!eerste}\getfirstmark
-\letvalue{\??mk\v!laatste}\getbotmark
-\letvalue{\??mk\v!huidige}\getcurrentmark
+% betere protectie 
+
+\letvalue{\??mk\??mk \v!vorige}\gettopmark
+\letvalue{\??mk\??mk \v!eerste}\getfirstmark
+\letvalue{\??mk\??mk\v!laatste}\getbotmark
+\letvalue{\??mk\??mk\v!huidige}\getcurrentmark
 
 \def\dododefinieermarkering[#1][#2]%
   {\stelmarkeringin[#1]
@@ -102,25 +104,15 @@
 
 \let\geenmarkering=\relax
 
-%\def\fetchmark[#1][#2]% geen \def, anders problemen in \doif...
-%   {\def\dofetchmark{\csname\??mk#2\endcsname}%
-%    \expandafter\dofetchmark\csname\??mk\hoofdmarkering{#1}\endcsname}
-
-%\def\dofetchmark#1#2% needed because we need to expand
-%  {\csname\??mk#2\endcsname#1}
-%
-%\def\fetchmark[#1][#2]% never \unexpanded
-%  {\expandafter\dofetchmark\csname\??mk\hoofdmarkering{#1}\endcsname{#2}}
-
 \def\fetchmark[#1][#2]% never \unexpanded
-  {\@EA\@EA\csname\??mk#2\endcsname
+  {\@EA\@EA\csname\??mk\??mk#2\endcsname
      \csname\??mk\hoofdmarkering{#1}\endcsname}
 
 \beginTEX
 
 \def\fetchmark[#1][#2]% never \unexpanded
   {\@EA\ifx\csname\??mk#1\c!koppeling\endcsname\else
-     \@EA\@EA\csname\??mk#2\endcsname
+     \@EA\@EA\csname\??mk\??mk#2\endcsname
      \csname\??mk\csname\??mk#1\c!koppeling\endcsname\endcsname
    \fi}
 
@@ -130,7 +122,7 @@
 
 \def\fetchmark[#1][#2]% never \unexpanded
   {\ifcsname\??mk#1\c!koppeling\endcsname
-     \@EA\@EA\csname\??mk#2\endcsname
+     \@EA\@EA\csname\??mk\??mk#2\endcsname
      \csname\??mk\csname\??mk#1\c!koppeling\endcsname\endcsname
    \fi}
 
@@ -159,8 +151,8 @@
         [#2]
         [  \v!beide=>{\fetchtwomarks[#1]},
            \v!alles=>{\fetchallmarks[#1]},
-         \s!default=>{\fetchmark[#1][\v!eerste]},
-         \s!unknown=>{\fetchmark[#1][#2]}]%
+         \s!default=>{\fetchmark    [#1][\v!eerste]},
+         \s!unknown=>{\fetchmark    [#1][#2]}]%
       \egroup}}
 
 \def\nohaalmarkering[#1][#2]%

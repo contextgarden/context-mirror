@@ -46,6 +46,8 @@
 \doglobal\newif\ifinPLsingle
 \doglobal\newif\ifinPLdouble
 \doglobal\newif\ifinPLcomment
+\doglobal\newif\ifinPLdoc     % only used in java filter 
+\doglobal\newif\ifPLdocdone   % only used in java filter 
 \doglobal\newif\ifPLverbose
 
 \newcount\PLverboseskipped
@@ -53,7 +55,7 @@
 \gdef\PLverbosecorrection%
   {\ifnum\PLverboseskipped>0
      \obeyedspace
-     \advance\PLverboseskipped by -1
+     \advance\PLverboseskipped -1
      \@EA\PLverbosecorrection  
    \fi}
 
@@ -62,7 +64,7 @@
    \def\obeyedspace%
      {\endPLtypesix
       \ifPLverbose
-        \advance\PLverboseskipped by 1
+        \advance\PLverboseskipped 1
       \else
         \oldobeyedspace
       \fi}%
@@ -72,6 +74,7 @@
    \def\obeyedline%
      {\PLverbosefalse
       \PLverboseskipped=0 
+      \PLdocdonefalse
       \oldobeyedline}%
    \let\obeytabs=\ignoretabs}
 
@@ -168,10 +171,29 @@
      \fi\fi
    \fi}
 
-\gdef\PLtypetwo#1%
+% \gdef\PLtypetwo#1%
+%   {\endPLtypesix
+%    \xdef\PLprefix{\getpretty{#1}}%
+%    \ifinPLcomment
+%      \getpretty{#1}%
+%    \else\ifinPLsingle
+%      \getpretty{#1}%
+%    \else\ifinPLdouble
+%      \getprettydata{#1}%
+%      \ifnum\prettytype=21
+%        \beginofpretty[\!!prettytwo]\getpretty{#1}\endofpretty
+%      \else
+%        \getpretty{#1}%
+%      \fi
+%    \else
+%      \beginofpretty[\!!prettytwo]\getpretty{#1}\endofpretty
+%    \fi\fi\fi}
+
+\gdef\PLtypetwo#1% 
   {\endPLtypesix
-   \xdef\PLprefix{\getpretty{#1}}%
-   \ifinPLcomment
+   \ifinPLdoc
+     \xdef\PLsequence{\PLsequence\getpretty{#1}}%
+   \else\ifinPLcomment
      \getpretty{#1}%
    \else\ifinPLsingle
      \getpretty{#1}%
@@ -184,7 +206,7 @@
      \fi
    \else
      \beginofpretty[\!!prettytwo]\getpretty{#1}\endofpretty
-   \fi\fi\fi}
+   \fi\fi\fi\fi}
 
 \gdef\PLtypethree#1%
   {\endPLtypesix
@@ -266,9 +288,51 @@
      \expandafter\handlenextnextpretty\expandafter\doPLtypefiveA\expandafter\doPLtypefiveB
    \fi}
 
-\gdef\endPLtypesix%
+% \gdef\endPLtypesix%
+%   {\ifx\PLsequence\empty\else
+%      \ifinPLcomment
+%        \PLsequence
+%      \else\ifinPLsingle
+%        \PLsequence
+%      \else\ifinPLdouble
+%        \PLsequence
+%      \else\ifPLverbose
+%        \beginofpretty[\!!prettytwo]\PLsequence\endofpretty
+%        \PLverbosefalse
+%      \else\ifx\PLprefix\empty
+%        \doifprettyidentifierelse{\PLsequence}{\PLverboses}
+%          {\PLverbosetrue\PLverboseskipped=3 }
+%          {\doifprettyidentifierelse{\PLsequence}{\PLidentifiers}
+%             {\beginofpretty[\!!prettytwo]%
+%                {\prettyidentifierfont\PLsequence}%
+%              \endofpretty}
+%             {\ifprettyPLvariables
+%                \doifprettyidentifierelse{\PLsequence}{\PLvariables}
+%                  {\beginofpretty[\!!prettytwo]%
+%                     {\prettyvariablefont\PLsequence}%
+%                   \endofpretty}
+%                  {\PLsequence}%
+%              \else
+%                \PLsequence
+%              \fi}}%
+%      \else\ifprettyPLvariables
+%        \doifprettyidentifierelse{\PLprefix\PLsequence}{\PLvariables}
+%          {\beginofpretty[\!!prettytwo]%
+%             {\prettyvariablefont\PLsequence}%
+%           \endofpretty}
+%          {\PLsequence}%
+%      \else
+%        \PLsequence
+%      \fi\fi\fi\fi\fi\fi
+%      \global\let\PLsequence=\empty
+%      \global\let\PLprefix=\empty
+%    \fi}
+
+\gdef\endPLtypesix
   {\ifx\PLsequence\empty\else
-     \ifinPLcomment
+     \ifinPLdoc
+       \doendPLtypesixvar\!!prettythree
+     \else\ifinPLcomment
        \PLsequence
      \else\ifinPLsingle
        \PLsequence
@@ -278,43 +342,66 @@
        \beginofpretty[\!!prettytwo]\PLsequence\endofpretty
        \PLverbosefalse
      \else\ifx\PLprefix\empty
-       \doifprettyidentifierelse{\PLsequence}{\PLverboses}
-         {\PLverbosetrue\PLverboseskipped=3 }
-         {\doifprettyidentifierelse{\PLsequence}{\PLidentifiers}
-            {\beginofpretty[\!!prettytwo]%
-               {\prettyidentifierfont\PLsequence}%
-             \endofpretty}
-            {\ifprettyPLvariables
-               \doifprettyidentifierelse{\PLsequence}{\PLvariables}
-                 {\beginofpretty[\!!prettytwo]%
-                    {\prettyvariablefont\PLsequence}%
-                  \endofpretty}
-                 {\PLsequence}%
-             \else
-               \PLsequence
-             \fi}}%
+       \doendPLtypesix\!!prettytwo
      \else\ifprettyPLvariables
-       \doifprettyidentifierelse{\PLprefix\PLsequence}{\PLvariables}
-         {\beginofpretty[\!!prettytwo]%
-            {\prettyvariablefont\PLsequence}%
-          \endofpretty}
-         {\PLsequence}%
+       \doendPLtypesixvar\!!prettytwo
      \else
        \PLsequence
-     \fi\fi\fi\fi\fi\fi
-     \global\let\PLsequence=\empty
-     \global\let\PLprefix=\empty
+     \fi\fi\fi\fi\fi\fi\fi
+     \global\let\PLsequence\empty
+     \global\let\PLprefix\empty
    \fi}
 
-\gdef\PLtypesixone%
+\gdef\doendPLtypesix#1% 
+  {\doifprettyidentifierelse{\PLsequence}{\PLverboses}
+     {\PLverbosetrue\PLverboseskipped=3 }
+     {\doifprettyidentifierelse{\PLsequence}{\PLidentifiers}
+        {\beginofpretty[#1]%
+           {\prettyidentifierfont\PLsequence}%
+         \endofpretty}
+        {\ifprettyPLvariables
+           \doifprettyidentifierelse{\PLsequence}{\PLvariables}
+             {\beginofpretty[#1]%
+                {\prettyvariablefont\PLsequence}%
+              \endofpretty}
+             {\PLsequence}%
+         \else
+           \PLsequence
+         \fi}}}
+
+\gdef\doendPLtypesixvar#1% 
+  {\doifprettyidentifierelse{\PLprefix\PLsequence}{\PLvariables}
+     {\beginofpretty[#1]%
+        {\prettyvariablefont\PLsequence}%
+      \endofpretty}
+     {\PLsequence}}
+
+\gdef\PLtypesixone
   {\ifx\PLsequence\empty
      \expandafter\getpretty
    \else
      \expandafter\PLtypesixtwo
    \fi}
 
-\gdef\PLtypesixtwo#1%
-  {\ifinPLcomment
+% \gdef\PLtypesixtwo#1%
+%   {\ifinPLcomment
+%      \getpretty{#1}%
+%    \else\ifinPLsingle
+%      \getpretty{#1}%
+%    \else\ifinPLdouble
+%      \ifx\PLprefix\empty
+%        \getpretty{#1}%
+%      \else
+%        \xdef\PLsequence{\PLsequence\getpretty{#1}}%
+%      \fi
+%    \else
+%      \xdef\PLsequence{\PLsequence\getpretty{#1}}%
+%    \fi\fi\fi}
+
+\gdef\PLtypesixtwo#1% 
+  {\ifinPLdoc
+     \xdef\PLsequence{\PLsequence\getpretty{#1}}%
+   \else\ifinPLcomment
      \getpretty{#1}%
    \else\ifinPLsingle
      \getpretty{#1}%
@@ -326,7 +413,7 @@
      \fi
    \else
      \xdef\PLsequence{\PLsequence\getpretty{#1}}%
-   \fi\fi\fi}
+   \fi\fi\fi\fi}
 
 \gdef\PLtypesevenone#1%
   {\endPLtypesix

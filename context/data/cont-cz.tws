@@ -729,6 +729,7 @@ var:roh:zaobleny,pravouhly::
 var:polomer:*dimenze::
 var:prazdne:ano,ne::
 var:foregroundcolor:*jmeno::
+var:foregroundstyle:*jmeno::
 val:*text::
 stopsetup
 
@@ -1640,6 +1641,7 @@ var:vzdalenostpravehrany:*dimenze::
 var:horoffset:*dimenze::
 var:offsethlavicky:*dimenze::
 var:pismeno:normalni,tucne,sklonene,tucnesklonene,opis,kap,male...,*prikaz::
+var:barva:*jmeno::
 var:znaceni:zap,vyp,barevne::
 var:misto:vlevo,nastred,vpravo,spodek,vrsek, jednostranne,dvoustranny::
 var:meritko:*dimenze::
@@ -1675,7 +1677,7 @@ stopsetup
 startsetup
 com:premistinamrizku:
 typ:val/:
-val:vrsek,obe,spodek:obe:
+val:vrsek,obe,spodek,-vrsek,-obe,-spodek, vysoko,nastred,nizko,stranka,standardni,zadny, siroky,prizpusobive:standardni:
 stopsetup
 
 startsetup
@@ -1780,7 +1782,7 @@ startsetup
 com:nastavpopisky:
 typ:vars/:
 var:misto:vrsek,spodek,zadny,vysoko,nizko,nastred::
-var:sirka:prizpusobive,max,*dimenze::
+var:sirka:prizpusobive,siroky,max,*dimenze::
 var:stylhlavicky:normalni,tucne,sklonene,tucnesklonene,opis,kap,male...,*prikaz::
 var:pismeno:normalni,tucne,sklonene,tucnesklonene,opis,kap,male...,*prikaz::
 var:cislo:ano,ne::
@@ -3212,7 +3214,8 @@ var:EQ:*text::
 var:barvalinky:*jmeno::
 var:zarovnani:vlevo,nastred,vpravo,normalni::
 var:tloustkalinky:*dimenze::
-var:vzdalenost:prazdny,podlehloubky,*dimenze,male,stredni,velke,zadny::
+var:vzdalenost:prazdny,mrizka,podlehloubky,*dimenze,male,stredni,velke,zadny::
+var:zakladnifont:5pt,...,12pt,male,velke::
 stopsetup
 
 startsetup
@@ -3232,6 +3235,7 @@ var:zarovnani:vlevo,nastred,vpravo,normalni::
 var:pozadi:rastr,barevne,zadny::
 var:rastrpozadi:*cislo::
 var:barvapozadi:*jmeno::
+var:zakladnifont:5pt,...,12pt,male,velke::
 stopsetup
 
 startsetup

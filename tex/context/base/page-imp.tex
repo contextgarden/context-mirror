@@ -62,8 +62,8 @@
      \else
        \donetrue
      \fi
-   \else % testen, aangepast 
-     \expandbothargsafter\doifinsetelse{\the\shippedoutpages}{\pagestoshipout}
+   \else % testen, aangepast / expanded nodig ?  
+     \expanded{\doifinsetelse{\the\shippedoutpages}{\pagestoshipout}}%
        \donetrue\donefalse
    \fi
    \ifdone
@@ -231,7 +231,7 @@
      \multiply\scratchcounter \arrangedpageT
      \advance\scratchcounter \realpageno
      \advance\scratchcounter -1
-     \dorecurse\scratchcounter{\noheaderandfooterlines\ejectdummypage}
+     \dorecurse\scratchcounter{\noheaderandfooterlines\ejectdummypage}%
    \fi}
 
 \def\handlearrangedpageXY#1#2#3#4#5%
@@ -781,7 +781,7 @@
                       \c!kader=\@@ipkader]%
                 \fi}}%
         \stopbaselinecorrection
-        \ifnum\combinedpagescounter<\@@ipn
+        \ifnum\combinedpagescounter<\@@ipn\relax
           \@@iptussen
         \else
           \exitloop

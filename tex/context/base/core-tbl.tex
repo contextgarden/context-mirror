@@ -494,11 +494,11 @@
      \doifundefined{\??tt#1::\c!eenheid}
        {\copyparameters
           [\??tt#1::][\??tt\e!tabulate::]%
-          [\c!afstand,\c!eenheid,\c!voor,\c!na,\c!binnen,\c!inspringen,
+          [\c!afstand,\c!eenheid,\c!voor,\c!korps,\c!na,\c!binnen,\c!inspringen,
            \c!uitlijnen,\c!lijnkleur,\c!lijndikte,EQ]}%
      \copyparameters
        [\??tt#1::#2][\??tt#1::]% 
-       [\c!eenheid,\c!afstand,\c!voor,\c!na,\c!binnen,\c!inspringen,
+       [\c!eenheid,\c!afstand,\c!voor,\c!korps,\c!na,\c!binnen,\c!inspringen,
         \c!uitlijnen,\c!lijnkleur,\c!lijndikte,EQ]%
      \setvalue{\e!start#1::#2}{\dofinalstarttabulate[#1][#2][#3]}%
      \setvalue{\e!start#1}{\bgroup\dosubstarttabulate[#1]}%
@@ -592,7 +592,12 @@
      \getvalue{\??tt\currenttabulate\c!voor}%
    \fi
    \bgroup 
-\postponefootnotes % new, to be tested  
+   % todo: spacing around tabulate when bodyfont is set  
+   % expansion en test needed ? 
+   \doifvaluesomething{\??tt\currenttabulate\c!korps}
+     {\expanded{\switchtobodyfont
+        [\getvalue{\??tt\currenttabulate\c!korps}]}}%
+   \postponefootnotes % new, to be tested  
    \chardef\tabulatepass=1
    \widowpenalty=0 % otherwise lines are not broken
    \clubpenalty =0 % but overlap in funny ways
@@ -672,6 +677,7 @@
        \v!middel=>\def\factor{.5},
         \v!groot=>,
          \v!geen=>\scratchskip=\zeropoint\def\factor{0},
+         \v!grid=>\scratchskip=\zeropoint\def\factor{0},
       \s!unknown=>\scratchskip=\commalistelement]%
    \scratchdimen=\factor\scratchskip
    \ifconditional\tabulatesomeamble\kern\else\vskip\fi\scratchdimen % new
@@ -681,7 +687,9 @@
   {\color
      [\getvalue{\??tt\currenttabulate\c!lijnkleur}]
      {\scratchdimen=\getvalue{\??tt\currenttabulate\c!lijndikte}%
-      \hrule\!!height.5\scratchdimen\!!depth.5\scratchdimen}}
+      \hrule\!!height.5\scratchdimen\!!depth.5\scratchdimen\relax
+      \doifvalue{\??tt\currenttabulate\c!afstand}{\v!grid}
+        {\kern-\scratchdimen}}} % experimental tm-prikkels 
 
 %D When set to true, no (less) break optimization is done. 
 
@@ -881,6 +889,8 @@
    \chardef\tabulatepass=2
    \@EA\halign\@EA{\the\!!toksa\cr\fulltabulatecontent\crcr}%
    \prevdepth\dp\strutbox % nog eens beter, temporary hack
+   \doifvalue{\??tt\currenttabulate\c!afstand}{\v!grid}
+     {\vskip-\dp\strutbox}% experimental tm-prikkels 
    \egroup
    \ifinsidefloat \else
      \getvalue{\??tt\currenttabulate\c!na}%
@@ -902,6 +912,7 @@
 \setuptabulate
   [\c!eenheid=1em,
    EQ={:},
+   \c!korps=,
    \c!lijnkleur=,
    \c!lijndikte=\linewidth,
    \c!binnen=,

@@ -552,8 +552,8 @@
 
 %D Extra: 
 
-\def\WidthSpanningText #1#2#3% text width font 
-  {\hbox{\NormalizeFontWidth \temp{#1}{#2}{#3}\temp#1}}
+\def\WidthSpanningText#1#2#3% text width font 
+  {\hbox{\NormalizeFontWidth\temp{#1}{#2}{#3}\temp\the\everydefinedfont#1}}
 
 %D Consider for instance:
 %D 

@@ -13,6 +13,13 @@
 
 \newif\ifsimplifyspecials \simplifyspecialstrue % see later 
 
+%D We will forbid loading specials after the first page is 
+%D shipped out. 
+
+\ifx\realpageno\undefined 
+  \countdef\realpageno=0 \realpageno=1
+\fi 
+
 %D Specials are \TEX's channel to the outside world. They make
 %D \TEX\ even more platform independant and permit easy
 %D adaption to new developments. One major drawback of specials
@@ -400,9 +407,11 @@
       \showmessage\m!specials1\preloadedspecials}}
 
 \def\usespecials[#1]%
-  {\doifelsenothing{\currentspecial}
-     {\processcommalist[#1]\dousespecials}
-     {\showmessage\m!specials6\empty}}
+  {\ifnum\realpageno<2
+     \doifelsenothing{\currentspecial}
+       {\processcommalist[#1]\dousespecials}
+       {\showmessage\m!specials6\empty}%
+   \fi}
 
 %D \macros
 %D   {executespecials}
@@ -642,6 +651,8 @@
         {\showmessage{\m!specials}{7}{#1}}}}
 
 \def\setupoutput[#1]%
-  {\resetspecials\processcommacommand[#1]\dosetupoutput}
+  {\ifnum\realpageno<2 % new 
+     \resetspecials\processcommacommand[#1]\dosetupoutput
+   \fi}
 
 \protect \endinput

@@ -1,5 +1,7 @@
 % fallback
 
+% todo \typescriptthree
+
 \starttypescript [serif] [fallback]
 
   \definefontsynonym [SerifBold]        [Serif]
@@ -7,6 +9,7 @@
   \definefontsynonym [SerifSlanted]     [SerifItalic]
   \definefontsynonym [SerifBoldItalic]  [SerifBold]
   \definefontsynonym [SerifBoldSlanted] [SerifBoldItalic]
+  \definefontsynonym [SerifCaps]        [Serif]
 
 \stoptypescript
 
@@ -17,6 +20,7 @@
   \definefontsynonym [SansSlanted]     [SansItalic]
   \definefontsynonym [SansBoldItalic]  [SansBold]
   \definefontsynonym [SansBoldSlanted] [SansBoldItalic]
+  \definefontsynonym [SansCaps]        [Sans]
 
 \stoptypescript
 
@@ -27,6 +31,7 @@
   \definefontsynonym [MonoSlanted]     [MonoItalic]
   \definefontsynonym [MonoBoldItalic]  [MonoBold]
   \definefontsynonym [MonoBoldSlanted] [MonoBoldItalic]
+  \definefontsynonym [MonoCaps]        [Mono]
 
 \stoptypescript
 
@@ -206,7 +211,7 @@
 
 %D Linotype Univers 
 
-\starttypescript [map] [texnansi]
+\starttypescript [map] [all] % [texnansi]
   \loadmapfile[texnansi-linotype-univers.map]
 \stoptypescript
 
@@ -237,16 +242,77 @@
 
 \starttypescript [sans] [univers,univers-black,univers-light] [texnansi,ec,8r]
 
-  \definefontsynonym [Univers]              [\typefaceencoding-LT50138] [encoding=\typefaceencoding]
-  \definefontsynonym [Univers-Bold]         [\typefaceencoding-LT50140] [encoding=\typefaceencoding]
-  \definefontsynonym [Univers-Oblique]      [\typefaceencoding-LT50139] [encoding=\typefaceencoding]
-  \definefontsynonym [Univers-BoldOblique]  [\typefaceencoding-LT50141] [encoding=\typefaceencoding]
-
   \definefontsynonym [Univers-Light]        [\typefaceencoding-LT50136] [encoding=\typefaceencoding]
   \definefontsynonym [Univers-LightOblique] [\typefaceencoding-LT50137] [encoding=\typefaceencoding]
 
+  \definefontsynonym [Univers]              [\typefaceencoding-LT50138] [encoding=\typefaceencoding]
+  \definefontsynonym [Univers-Oblique]      [\typefaceencoding-LT50139] [encoding=\typefaceencoding]
+  \definefontsynonym [Univers-Bold]         [\typefaceencoding-LT50140] [encoding=\typefaceencoding]
+  \definefontsynonym [Univers-BoldOblique]  [\typefaceencoding-LT50141] [encoding=\typefaceencoding]
+
   \definefontsynonym [Univers-Black]        [\typefaceencoding-LT50142] [encoding=\typefaceencoding]
   \definefontsynonym [Univers-BlackOblique] [\typefaceencoding-LT50143] [encoding=\typefaceencoding]
+
+\stoptypescript
+
+% mendoza
+
+\starttypescript [all]
+  \loadmapfile[texnansi-itc-mendoza.map]
+\stoptypescript
+
+\starttypescript [serif] [mendoza] [name]
+
+  \definefontsynonym [Serif]               [MendozaRoman-Book]
+  \definefontsynonym [SerifCaps]           [MendozaRoman-Book]
+  \definefontsynonym [SerifSlanted]        [MendozaRoman-BookItalic]
+  \definefontsynonym [SerifItalic]         [MendozaRoman-BookItalic]
+  \definefontsynonym [SerifBold]           [MendozaRoman-Bold]
+  \definefontsynonym [SerifBoldSlanted]    [MendozaRoman-BoldItalic]
+  \definefontsynonym [SerifBoldItalic]     [MendozaRoman-BoldItalic]
+
+\stoptypescript
+
+\starttypescript [serif] [mendoza] [texnansi]
+
+  \definefontsynonym[MendozaRoman-Bold]        [texnansi-zab] [encoding=texnansi]
+  \definefontsynonym[MendozaRoman-BoldItalic]  [texnansi-zabi][encoding=texnansi]
+  \definefontsynonym[MendozaRoman-Medium]      [texnansi-zam] [encoding=texnansi]
+  \definefontsynonym[MendozaRoman-MediumItalic][texnansi-zami][encoding=texnansi]
+  \definefontsynonym[MendozaRoman-Book]        [texnansi-zaw] [encoding=texnansi]
+  \definefontsynonym[MendozaRoman-BookItalic]  [texnansi-zawi][encoding=texnansi]
+
+\stoptypescript
+
+% frutiger 
+
+\starttypescript [all]
+  \loadmapfile[texnansi-adobe-frutiger.map]
+\stoptypescript
+
+\starttypescript [sans] [frutiger] [name]
+
+  \definefontsynonym [Sans]            [Frutiger-Roman]
+  \definefontsynonym [SansCaps]        [Frutiger-Roman]
+  \definefontsynonym [SansItalic]      [Frutiger-Italic]
+  \definefontsynonym [SansSlanted]     [Frutiger-Italic]
+  \definefontsynonym [SansBold]        [Frutiger-Bold]
+  \definefontsynonym [SansBoldItalic]  [Frutiger-BoldItalic]
+  \definefontsynonym [SansBoldSlanted] [Frutiger-BoldItalic]
+
+\stoptypescript
+
+\starttypescript [sans] [frutiger] [texnansi]
+
+  \definefontsynonym[Frutiger-Bold]       [texnansi-ftb]  [encoding=texnansi]
+  \definefontsynonym[Frutiger-BoldItalic] [texnansi-ftbi] [encoding=texnansi]
+  \definefontsynonym[Frutiger-Black]      [texnansi-ftbl] [encoding=texnansi]
+  \definefontsynonym[Frutiger-BlackItalic][texnansi-ftbli][encoding=texnansi]
+  \definefontsynonym[Frutiger-Italic]     [texnansi-fti]  [encoding=texnansi]
+  \definefontsynonym[Frutiger-Light]      [texnansi-ftl]  [encoding=texnansi]
+  \definefontsynonym[Frutiger-LightItalic][texnansi-ftli] [encoding=texnansi]
+  \definefontsynonym[Frutiger-Roman]      [texnansi-ftr]  [encoding=texnansi]
+  \definefontsynonym[Frutiger-UltraBlack] [texnansi-ftubl][encoding=texnansi]
 
 \stoptypescript
 

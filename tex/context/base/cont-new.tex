@@ -17,48 +17,557 @@
 %D excellent place for hacks and new features.
 
 \unprotect
-
+
 \writestatus{\m!systems}{beware: some patches loaded from cont-new.tex!}
 
-% \layered[layer id][layer settings][framed setting]{data}
-% \layered[layer id][combined settings]{data}
+% \def\@@itemcounter {\s!itemcount} -> non nested continue 
+%
+% todo : option to merge itemgroup [ig-one a b c] [ig-two d e f]
 
-\def\layered
-  {\dotripleempty\dolayered}
-
-\def\dolayered
-  {\ifthirdargument
-     \expandafter\dolayeredT
+\def\@@itemcounter {\s!itemcount\currentitemgroup}
+
+\def\OTRSETgotocell#1#2% not that robust 
+  {\endgraf
+   \gdef\gotocellcounter{0}%
+   \doloop
+     {\ifnum\mofcolumns<#1\relax 
+        \doglobal\increment\gotocellcounter\relax
+        \ifnum\gotocellcounter>#1\relax
+          \line{\strut}\crlf 
+          \line{\strut}\crlf 
+          \column 
+          \writestatus{columnset}{quitting goto cell}%
+          \exitloop
+        \else
+          \column 
+        \fi 
+      \else 
+        \exitloop 
+      \fi}% 
+   \ifnum\mofcolumns=#1\relax
+     \ifnum#2>1
+       \scratchcounter=0
+       \currenthcell\mofcolumns
+       \currentvcell#2\advance\currentvcell -1 
+       \dorecurse\currentvcell
+         {\OTRSETdoifcellelse\mofcolumns\recurselevel\donothing
+            {\advance\scratchcounter1\relax}}
+       \getnoflines\pagetotal
+       \advance\scratchcounter-\noflines
+       \ifnum\scratchcounter>0 
+         \dorecurse\scratchcounter{\line{\strut}}%
+       \fi
+     \fi
+   \fi
+   \OTRSETsetvsize}
+
+\def\setsidefloat% nilling everypar saves time and redudant pos's 
+  {% removed here dec 2001   
+  %{\everypar\emptytoks\forgetall\vbox{\strut}\vskip-\lineheight}%
+   %
+   \kern\sidefloattopskip
+   \edef\presidefloatdepth{\the\prevdepth}%
+   \nointerlineskip
+   \bgroup
+   \everypar\emptytoks
+   \parskip\zeropoint
+   \logsidefloat
+   \ifrightfloat
+     \hfill
+     \ifmarginfloat
+%       \rlap{\hskip\rechtermargeafstand\hskip\rightskip\unhbox\floatbox}%
+\rlap{\tbox{\hskip\rechtermargeafstand\hskip\rightskip\unhbox\floatbox}}%
+     \else
+       \unhbox\floatbox
+     \fi
    \else
-     \expandafter\dolayeredS
-   \fi}  
+     \noindent
+     \ifmarginfloat
+%       \llap{\unhbox\floatbox\hskip\leftskip\hskip\linkermargeafstand}%
+\llap{\tbox{\unhbox\floatbox\hskip\leftskip\hskip\linkermargeafstand}}%
+     \else
+       \unhbox\floatbox
+     \fi
+     \hfill
+   \fi
+   \egroup
+   \par
+   \kern-\sidefloatheight
+   \penalty10001 % oeps, this will change 
+   \normalbaselines
+   \prevdepth=\presidefloatdepth
+   %\noindent
+   \resetsidefloatparagraph
+   \ignorespaces}
 
-\def\dolayeredT[#1][#2][#3]%
+
+
+\def\setlocalfloatdimensions#1#2% experimental ! ! ! !
+  {\doifvaluesomething{\??fl#1\c!maxbreedte}
+     {\scratchdimen=\getvalue{\??fl#1\c!maxbreedte}\relax
+      \ifdim\wd\nextbox>\scratchdimen
+        \setbox\nextbox=\hbox to \scratchdimen
+          {\doifcommonelse{\v!rechts,\v!inrechter,\v!links,\v!inlinker}{#2}
+             {\doifnotcommon{\v!rechts,\v!inrechter}{#2}\hss
+              \box\nextbox
+              \doifnotcommon{\v!links ,\v!inlinker }{#2}\hss}%
+             {\doifvalue{\??fl#1\c!plaats}\v!rechts\hss
+              \box\nextbox
+              \doifvalue{\??fl#1\c!plaats}\v!links \hss}}%
+      \fi}}
+
+\def\phantombox[#1]%
+  {\hbox\bgroup
+   \getparameters
+     [\??ol]
+     [\c!breedte=\zeropoint,\c!hoogte=\zeropoint,\c!diepte=\zeropoint,#1]%
+   \setbox\scratchbox\null
+   \wd\scratchbox\@@olbreedte
+   \ht\scratchbox\@@olhoogte
+   \dp\scratchbox\@@oldiepte
+   \box\scratchbox
+   \egroup}
+
+\long\@EA\def\csname\e!start\e!instellingen\endcsname#1 %
+  {\bgroup
+   \catcode`\^^M=\@@ignore
+   \xdostartsetups{#1}}
+
+\expanded
+  {\long\noexpand\def\noexpand\xdostartsetups##1##2\csname\e!stop\e!instellingen\endcsname%
+     {\egroup
+      \long\noexpand\setvalue{\??su##1}{##2}}}
+
+\def\startsetups#1 % for international purposes
+  {\bgroup
+   \catcode`\^^M=\@@ignore
+   \dostartsetups{#1}}
+
+\long\def\dostartsetups#1#2\stopsetups
+  {\egroup
+   \long\setvalue{\??su#1}{#2}}
+
+\def\definefont
+  {\dotripleempty\dodefinefont}
+
+\def\dodefinefont[#1][#2][#3]% [name][spec][1.6 | line=10pt | setup_id]
+  {\doifinstringelse{ }{#2}
+     {\ifthirdargument
+        \unexpanded\setvalue{#1}{\redodefinefont{#1}{#2}{#3}}%
+      \else
+        \unexpanded\setvalue{#1}{\dododefinefont{#1}{#2}}%
+      \fi}
+     {\definefont[#1][#2 sa 1][#3]}}
+
+\def\redodefinefont#1#2#3%
+  {\dododefinefont{#1}{#2}%
+   \doifnumberelse{#3}
+     {\stelinterliniein[#3]\stelspatieringin}
+     {\doifassignmentelse{#3}
+        {\stelinterliniein[#3]\stelspatieringin}
+        {\setups[#3]}}}
+
+% todo, but now more easy to do:\definepage
+
+\def\docomplexpagina[#1]%
+  {\flushfootnotes
+   \bgroup
+   \def\dodocomplexpagina##1%
+     {\csname
+        @@\v!pagina\ifundefined{@@\v!pagina##1}\s!unknown\else##1\fi
+      \endcsname}%
+   \processcommalist[#1]\dodocomplexpagina
+   \egroup}
+
+\def\installpagehandler#1#2%
+  {\setvalue{@@\v!pagina#1}{#2}}
+
+\installpagehandler \s!unknown
+  {\let\@@pagespecification\commalistelement
+   \doifinstringelse{+}\@@pagespecification
+     {\ejectinsert\ejectpage
+      \dorecurse\@@pagespecification\ejectdummypage}
+     {\doifnumberelse\@@pagespecification
+        {\ejectinsert\ejectpage
+         \doloop
+           {\ifnum\userpageno<\@@pagespecification\relax
+              \ejectdummypage
+            \else
+              \exitloop
+            \fi}}
+        {}}}
+
+\installpagehandler \s!default
+  {} % do nothing if empty
+
+\installpagehandler  \v!reset
+  {\global\paginageblokkeerdfalse}
+
+\installpagehandler \v!blokkeer
+  {\global\paginageblokkeerdtrue}
+
+\installpagehandler \v!ja
+  {\ifpaginageblokkeerd\else
+     \ejectinsert
+     \ejectpage
+     \ifbinnenkolommen
+       \ejectpage  % anders soms geen overgang
+     \fi
+   \fi}
+
+\installpagehandler \v!opmaak
+  {\ifpaginageblokkeerd\else
+     \eject
+   \fi}
+
+\installpagehandler \v!blanko
+  {\pagebodyornamentsfalse}
+
+\installpagehandler \v!nee
+  {\ifpaginageblokkeerd\else
+     \dosomebreak\nobreak
+   \fi}
+
+\installpagehandler \v!voorkeur
+  {\ifpaginageblokkeerd\else
+     \ifbinnenkolommen
+       \dosomebreak\goodbreak
+     \else
+       \testpagina[3][\!!zeropoint]%
+     \fi
+    \fi}
+
+\installpagehandler \v!grotevoorkeur
+  {\ifpaginageblokkeerd\else
+     \ifbinnenkolommen
+       \dosomebreak\goodbreak
+     \else
+       \testpagina[5][\!!zeropoint]%
+     \fi
+   \fi}
+
+\installpagehandler \v!leeg
+  {\ejectinsert
+   \ejectpage
+   \doifnotvalue{\??tk\v!hoofd\c!status}{\v!stop}
+     {\setupheader[\c!status=\v!leeg]}%
+   \doifnotvalue{\??tk\v!voet\c!status}{\v!stop}
+     {\setupfooter[\c!status=\v!leeg]}%
+   \ejectdummypage}
+
+\installpagehandler \v!links
+  {\ejectinsert
+   \superejectpage
+   \doifbothsidesoverruled
+   \orsideone
+     \resetcurrentsectionmarks
+     \ejectdummypage
+   \orsidetwo
+   \od}
+
+\installpagehandler \v!rechts
+  {\ejectinsert
+   \superejectpage
+   \doifbothsidesoverruled
+   \orsideone
+   \orsidetwo
+     \resetcurrentsectionmarks
+     \ejectdummypage
+   \od}
+
+\installpagehandler \v!even
+  {\pagina
+   \doifonevenpaginaelse
+     {\resetcurrentsectionmarks\ejectdummypage}{}}
+
+\installpagehandler \v!oneven
+  {\pagina
+   \doifonevenpaginaelse
+     {}{\resetcurrentsectionmarks\ejectdummypage}}
+
+\installpagehandler \v!viertal
+  {\ifdubbelzijdig
+     \!!counta=\realpageno
+     \!!countb=\realpageno
+     \divide\!!counta 4
+     \divide\!!countb 2
+     \ifnum\!!counta=\!!countb
+     \else
+       \pagina
+       \pagina[\v!leeg]%
+       \pagina[\v!leeg]%
+     \fi
+   \fi}
+
+\installpagehandler \v!laatste
+  {\ejectinsert
+   \superejectpage\relax
+   \doifbothsidesoverruled
+     \naastpagina
+   \orsideone
+   \orsidetwo
+     %\ifodd\realpageno \else % kan weer weg
+       \noheaderandfooterlines
+       \ejectdummypage
+     %\fi
+   \od
+   \filluparrangedpages}
+
+% \setlayerframed[layer id][layer settings][framed setting]{data}
+% \setlayerframed[layer id][combined settings]{data}
+
+\def\setlayerframed
+  {\dotripleempty\dosetlayerframed}
+
+\def\dosetlayerframed
+  {\ifthirdargument
+     \expandafter\dosetlayerframedT
+   \else
+     \expandafter\dosetlayerframedS
+   \fi}
+
+\def\dosetlayerframedT[#1][#2][#3]%
   {\dowithnextbox{\setlayer[#1][#2]{\box\nextbox}}%
-   \hbox\framed[#3]}        
+   \hbox\framed[#3]}
 
-\def\dolayeredS[#1][#2][#3]%
+\def\dosetlayerframedS[#1][#2][#3]%
   {\dowithnextbox
      {\setlayer
         [#1]
         [\c!breedte=\wd\nextbox,\c!hoogte=\ht\nextbox,
          \c!offset=\!!zeropoint,#2]
         {\box\nextbox}}%
-   \hbox\framed[\c!plaats=\v!normaal,#2]}        
+   \hbox\framed[\c!plaats=\v!normaal,#2]}
+
+\beginETEX
+
+\definepapersize
+  [oversized]
+  [\c!breedte=\dimexpr(\papierbreedte+1.5cm),
+   \c!hoogte=\dimexpr(\papierhoogte+1.5cm)]
+
+\definepapersize
+  [doublesized]
+  [\c!breedte=\dimexpr(\papierbreedte),
+   \c!hoogte=\dimexpr(2\papierhoogte)]
+
+\definepapersize
+  [doubleoversized]
+  [\c!breedte=\dimexpr(\papierhoogte+1.5cm),
+   \c!hoogte=\dimexpr(2\papierbreedte+1.5cm)]
+
+\endETEX
+
+\def\dofield[#1][#2][#3]%
+  {\iffirstargument
+     \bgroup
+     \getfield{#2}%
+     \ifsecondargument
+       \def\@@FieldLabel{#3}%
+     \else
+       \let\@@FieldLabel\@@FieldName
+     \fi
+     \ifx\@@FieldType\empty
+       \writestatus{\m!fields}{unknown field #2}%
+     \else\ifcase\@@FieldFree\relax
+       \doifdefinedelse{\strippedcsname\setupfield\@@FieldGroup}
+         {\let\dosetupfield=#1\getvalue{\strippedcsname\setupfield\@@FieldGroup}}
+         {#1[\@@FieldName][\v!label,\v!kader,\v!horizontaal][][][]}%
+\iftrialtypesetting\else
+       \def\@@FieldFree{1}%
+       \changefield{#2}%
+\fi
+     \else\ifcase\@@FieldAuto\relax
+     % \writestatus{\m!fields}{field #2 already typeset}%
+     \else
+     % \writestatus{\m!fields}{field #2 automatically copied}%
+       \nextsystemfield
+       \copyfield[\@@FieldName][\currentsystemfield]%
+       \dotripleempty\dofield[#1][\currentsystemfield][#3]% get the if's right
+     \fi\fi\fi
+     \egroup
+   \fi}
+
+\def\typesetfield%
+  {\useJSscripts[fld]%
+   \ifx\@@FieldRoot\empty \else
+     \let\@@SavedFieldName\@@FieldName
+     \getfield\@@FieldRoot
+     \ifcase\@@FieldFree\relax
+       \dosetfieldstatus\@@FieldMode\@@FieldParent\@@FieldKids\@@FieldRoot
+       \dopresetrecord
+\iftrialtypesetting\else
+       \def\@@FieldFree{1}%
+       \changefield\@@FieldName
+\fi
+     \fi
+     \getfield\@@SavedFieldName
+   \fi
+   \ifx\@@FieldKids\empty
+     \donefalse
+   \else
+     \donetrue
+   \fi
+   \ifdone
+     \let\@@FieldParent\@@FieldName
+    %\addtocommalist\@@FieldParent\@@FieldKids
+     \appendtocommalist\@@FieldParent\@@FieldKids
+     \dosetfieldstatus\@@FieldMode\@@FieldParent\@@FieldKids\@@FieldRoot
+     \dopresetfield
+     \let\@@FieldMode\fieldchildmode
+   \fi
+   \dosetfieldstatus\@@FieldMode\@@FieldParent\@@FieldKids\@@FieldRoot
+   \dopresetfield}
+
+\def\dopresetfield
+  {\iftrialtypesetting\else\iflocation\getvalue{preset\@@FieldType  field}\fi\fi}
+
+\def\dopresetrecord
+  {\iftrialtypesetting\else\iflocation\getvalue{preset\@@FieldType record}\fi\fi}
+
+\def\doclonefield[#1][#2][#3][#4]% parent children setupgroup values
+  {\ifsecondargument
+     \getfield{#1}%
+\iftrialtypesetting\else
+     \ifx\@@FieldType\empty
+       \writestatus{\m!fields}{unknown field #1}%
+     \else
+       \let\@@FieldMode=\fieldparentmode
+      %\def\docommando##1{\addtocommalist{##1}\@@FieldKids}%
+       \def\docommando##1{\appendtocommalist{##1}\@@FieldKids}%
+       \processcommalist[#2]\docommando
+       \changefield{#1}%
+       \let\@@FieldAutoParent=\@@FieldAuto
+       \def\@@FieldParent{#1}%
+       \let\@@FieldKids=\empty
+       \let\@@FieldRoot=\empty
+       \let\@@FieldMode=\fieldchildmode
+       \def\@@FieldFree{0}%
+       \def\@@FieldAuto{0}%
+       \doifsomething{#3}{\edef\@@FieldGroup{#3}}%
+       \doifsomething{#4}{\edef\@@FieldValues{#4}}%
+       \def\docommando##1%
+         {\ifcase\@@FieldAutoParent\else
+            \setmainfieldkid{\@@FieldParent}{##1}%
+          \fi
+          \changefield{##1}}%
+       \processcommalist[#2]\docommando
+     \fi
+\fi
+   \else
+     \writestatus{\m!fields}{pass parent field and clones}%
+   \fi}
+
+\def\docopyfield[#1][#2]% parent children
+  {\ifsecondargument
+     \getfield{#1}%
+\iftrialtypesetting\else
+     \ifx\@@FieldType\empty
+       \writestatus{\m!fields}{unknown field #1}%
+     \else
+       \let\@@FieldMode=\fieldparentmode
+      %\def\docommando##1{\addtocommalist{##1}\@@FieldKids}%
+       \def\docommando##1{\appendtocommalist{##1}\@@FieldKids}%
+       \processcommalist[#2]\docommando
+       \changefield{#1}%
+       \let\@@FieldAutoParent=\@@FieldAuto
+       \def\@@FieldParent{#1}%
+       \let\@@FieldKids=\empty
+       \let\@@FieldRoot=\empty
+       \let\@@FieldMode=\fieldcopymode
+       \def\@@FieldFree{0}%
+       \def\@@FieldAuto{0}%
+       \def\docommando##1%
+         {\ifcase\@@FieldAutoParent\else
+            \setmainfieldkid{\@@FieldParent}{##1}%
+          \fi
+          \changefield{##1}}%
+       \processcommalist[#2]\docommando
+     \fi
+\fi
+   \else
+     \writestatus{\m!fields}{pass parent field and copies}%
+   \fi}
+
+
+
+\newtoks\everyfirstparagraphintro
+\newtoks\everynextparagraphintro
+
+\chardef\everyparagraphintro=0
+
+\def\setupparagraphintro
+  {\dodoubleempty\dosetupparagraphintro}
+
+\def\dosetupparagraphintro[#1][#2]%
+  {\processallactionsinset
+     [#1]
+     [   \v!reset=>\global\chardef\everyparagraphintro=0
+                   \global\everyfirstparagraphintro\emptytoks
+                   \global\everynextparagraphintro \emptytoks,
+        \v!eerste=>\global\chardef\everyparagraphintro=1
+                   \doglobal\appendtoks#2\to\everyfirstparagraphintro,
+      \v!volgende=>\ifcase\everyparagraphintro\global\chardef\everyparagraphintro=2\fi
+                   \doglobal\appendtoks#2\to\everynextparagraphintro,
+           \v!elk=>\ifcase\everyparagraphintro\global\chardef\everyparagraphintro=2\fi
+                   \doglobal\appendtoks#2\to\everyfirstparagraphintro
+                   \doglobal\appendtoks#2\to\everynextparagraphintro]}
+
+\def\doinsertparagraphintro
+  {\ifcase\everyparagraphintro\relax
+     % no data
+   \or
+     % first data
+     \global\chardef\everyparagraphintro=2
+     \scratchtoks\everyfirstparagraphintro
+     \global\everyfirstparagraphintro\emptytoks
+   \or
+     % next data
+     \scratchtoks\everynextparagraphintro
+   \fi
+   \the\scratchtoks}
+
+\def\insertparagraphintro
+  {\ifcase\everyparagraphintro\else\@EA\doinsertparagraphintro\fi}
+
+\appendtoks\insertparagraphintro\to\everypar
+
+%D \starttext
+%D
+%D \setupparagraphintro[first][\hbox to 3.5em{\tt FIRST \hss}]
+%D \setupparagraphintro[first][\hbox to 3.5em{\tt TSRIF \hss}]
+%D \setupparagraphintro[next] [\hbox to 3.5em{\tt NEXT  \hss}]
+%D \setupparagraphintro[next] [\hbox to 3.5em{\tt TXEN  \hss}]
+%D \setupparagraphintro[each] [\hbox to 3.0em{\tt EACH  \hss}]
+%D \setupparagraphintro[each] [\hbox to 3.0em{\tt HCEA  \hss}]
+%D
+%D some paragraph \par
+%D some paragraph \par
+%D some paragraph \par
+%D
+%D \definelabel[parnumber]
+%D
+%D \setupparagraphintro[reset,each][\inleft{\slxx\parnumber}]
+%D
+%D some paragraph \par
+%D some paragraph \par
+%D some paragraph \par
+%D
+%D \stoptext
 
 \def\@@themaintextcolor{themaintextcolor}
 
-\def\starttextcolor[#1]% 
+\def\starttextcolor[#1]%
   {\doifsomething{#1}
      {\bgroup
-      \def\stoptextcolor          % also goes ok with \page after 
-        {\let\maintextcolor\empty % this one because the top of 
-         \stopregistercolor       % page sets the color right (side 
-         \egroup}%                % effect)   
+      \def\stoptextcolor          % also goes ok with \page after
+        {\let\maintextcolor\empty % this one because the top of
+         \stopregistercolor       % page sets the color right (side
+         \egroup}%                % effect)
       \def\starttextcolor[##1]%
         {\bgroup
          \definecolor[\@@themaintextcolor][##1]%
-         \let\stoptextcolor\relax\egroup}% 
+         \let\stoptextcolor\egroup}%
       \startregistercolor[\@@themaintextcolor]%
       \definecolor[\@@themaintextcolor][#1]%
       \let\maintextcolor\@@themaintextcolor}}
@@ -71,7 +580,7 @@
       \doinitializemaintextcolor}}
 
 \def\doinitializemaintextcolor
-  {\appendtoks\starttextcolor[\@@themaintextcolor]\to\everystarttext 
+  {\appendtoks\starttextcolor[\@@themaintextcolor]\to\everystarttext
    \appendtoks\stoptextcolor                      \to\everystoptext
    \let\doinitializemaintextcolor\relax}
 
@@ -256,10 +765,79 @@
   {\def\currentvariableclass{#1}%
    \getparameters[vars:#1:][#2]}
 
-\def\getvariable#1#2%
-  {\ifundefined{vars:#1:#2}\else\getvalue{vars:#1:#2}\fi}
+% \def\getvariable#1#2%
+%   {\ifundefined{vars:#1:#2}\else\getvalue{vars:#1:#2}\fi}
+
+\def\getvariable#1#2% to be sped up
+  {\csname\ifundefined{vars:#1:#2}empty\else vars:#1:#2\fi\endcsname}
 
 \let\currentvariableclass\empty
+
+% Let's see how fast Mr Bigfoot aka GB tracks down this new
+% feature -)
+
+\def\defineTABLEdivisions
+  {\global\TABLEdivisionfalse % in start
+   \let\DL\TableDL
+   \let\DC\TableDC
+   \let\DV\TableDV
+   \let\DR\TableDR}
+
+\def\defineTABLErules
+  {\let\VL\TableVL
+   \let\VC\TableVC
+   \let\HL\TableHL
+   \let\HC\TableHC
+   \let\VS\TableVS
+   \let\VD\TableVD
+   \let\VT\TableVT}
+
+\def\TableVS{\gdef\@VLn{1}\VL}
+\def\TableVD{\gdef\@VLn{2}\VL}
+\def\TableVT{\gdef\@VLn{3}\VL}
+
+\def\@VLn{1}
+\def\@VLd{.125em}
+
+\def\do!ttInsertVrule % will be merged in 2005
+  {\vrule \!thWidth
+   \ifnum\!tgCode=1
+     \ifx\!tgValue\empty
+       \LineThicknessFactor
+     \else
+       \!tgValue
+     \fi
+     \LineThicknessUnit
+   \else
+     \!tgValue
+   \fi
+   \hskip\@VLd}
+
+\def\!ttInsertVrule%
+  {\hfil
+   \TABLEbeforebar % added
+   \startglobalTABLEcolor % added
+   % we could do without this speedup, some day merge 'm
+   \ifcase\@VLn\or
+     \do!ttInsertVrule
+     \unskip
+   \else
+     \dorecurse\@VLn\do!ttInsertVrule
+     \gdef\@VLn{1}%
+     \unskip
+   \fi
+   \stopglobalTABLEcolor % added
+   \TABLEafterbar % added
+   \hfil
+   &}
+
+%D \starttable[|||]
+%D \HL
+%D \VL test \VS test \VL \FR
+%D \VL test \VD test \VL \MR
+%D \VL test \VT test \VL \LR
+%D \HL
+%D \stoptable
 
 %D To be documented, \type {\includemenu[menu]}.
 %D To be documented, \type {\emphbf} cum suis.
@@ -331,6 +909,8 @@
 
 %  already taken care of: \definesystemvariable{ks}
 
+% is buggy now and does not work any longer
+
 \def\setupcolumnspan[#1]%
   {\getparameters[\??ks][#1]}
 
@@ -384,6 +964,7 @@
       \else
         \snaptogrid\vbox{\box\columnspanbox}
       \fi
+      \endgraf
       \prevdepth\dp\strutbox
       \egroup}
      \vbox\bgroup

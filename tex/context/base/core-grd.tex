@@ -268,7 +268,11 @@
 \newif\iftracegridsnapping
 \newif\ifshowfuzzyskips
 
-\chardef\@@alignsnap=0
+\chardef\@@alignsnap   =0
+\chardef\@@alignsnapbox=0
+
+\let\presnapskip \!!zeropoint  \def\presnap {--}
+\let\postsnapskip\!!zeropoint  \let\postsnap\presnap
 
 \def\tracesnapping%
   {\iftracegridsnapping
@@ -291,103 +295,226 @@
 
 \def\dosnaptogrid[#1]% 
   {\ifgridsnapping
-     \iffirstargument\verplaatsopgrid[#1]\fi\expandafter\dodosnaptogrid
+     \iffirstargument\doifsomething{#1}{\verplaatsopgrid[#1]}\fi
+     \expandafter\dodosnaptogrid
    \fi}
 
-\def\dodosnaptogrid% 
+% \def\dodosnaptogrid% 
+%   {\dowithnextbox
+%      {\bgroup
+%       \ifcase\@@alignsnap\else % 1=top 2=high 3=middle 4=low
+%         \getnoflines{\ht\nextbox}
+%         \setbox\nextbox=\vbox to \noflines\lineheight
+%           {\ifnum\@@alignsnap=1 \kern\lineheight\kern-\topskip\fi
+%            \ifnum\@@alignsnap>2 \vfill\fi
+%            \box\nextbox
+%            \ifnum\@@alignsnap<4 \vfill\fi}
+%       \fi
+%       \forgetall
+%       \par
+%       \ifvbox\nextbox
+%         \setbox\nextbox=\hbox{\box\nextbox}% don't ask
+%       \fi
+%       \scratchskip=\lastskip
+%       \edef\presnapskip{\the\lastskip}%
+%       % mixing single/double columns sometimes goes wrong,
+%       % check 'som' document
+%       \ifbinnenkolommen
+%         \forcepresnaptrue
+%       \fi
+%       \ifforcepresnap
+%         \vbox{\hsize\zeropoint\strut}\nobreak\vskip-\openlineheight
+%       \fi
+%       %
+%       \ifdim\ht\nextbox>\ht\strutbox
+%         \scratchdimen=\ht\nextbox
+%         \ifcase\@@presnap
+%           \ifdim\scratchskip>\zeropoint\relax
+%             \scratchcounter=\scratchskip
+%             \advance\scratchcounter by -\openlineheight
+%             \ifnum\scratchcounter<0
+%               \scratchcounter=-\scratchcounter
+%             \fi
+%             \ifnum\scratchcounter<10 % \lastkip is about \openlineheight
+%               \advance\scratchdimen by -\openstrutdepth
+%               \edef\presnapskip{*\presnapskip}%
+%             \else\ifdim\scratchskip>\openlineheight
+%                                   %<\openlineheight \else
+%               \advance\scratchdimen by -\openstrutdepth
+%               \edef\presnapskip{*\presnapskip}%
+%             \fi\fi
+%           \fi
+%         \fi
+%         \getnoflines\scratchdimen
+%         \advance\noflines by -1
+%         \ifnum\noflines>0
+%           \scratchdimen=\noflines\lineheight
+%         \else
+%           \scratchdimen=\zeropoint
+%         \fi
+%       \else
+%         \scratchdimen=\zeropoint
+%       \fi
+%       \ifnum\@@extrasnap=1 \advance\scratchdimen by \extrasnapsign\lineheight \fi
+%       \ifnum\@@extrasnap=2 \advance\scratchdimen by \extrasnapsign.5\lineheight \fi
+%       \edef\presnap{\the\scratchdimen}%
+%       \ifstrutsnapping
+%         \ifdim\scratchdimen=\zeropoint\else\vskip\scratchdimen\fi
+%       \fi
+%       \ifdim\dp\nextbox>\dp\strutbox
+%         \getnoflines{\dp\nextbox}%
+%         \advance\noflines by -1
+%         \ifnum\noflines>0
+%           \scratchdimen=\noflines\lineheight
+%         \else
+%           \scratchdimen=\zeropoint
+%         \fi
+%       \else
+%         \scratchdimen=\zeropoint
+%       \fi
+%       \ifnum\@@extrasnap=2 \advance\scratchdimen by \extrasnapsign.5\lineheight \fi
+%       \ifnum\@@extrasnap=3 \advance\scratchdimen by \extrasnapsign\lineheight \fi
+%       \edef\postsnap{\the\scratchdimen}%
+%       \ifstrutsnapping
+%         \ht\nextbox=\ht\strutbox
+%         \dp\nextbox=\dp\strutbox
+%       \else
+%         \scratchdimen=\presnap
+%         \advance\scratchdimen by \ht\strutbox
+%         \ht\nextbox=\scratchdimen
+%         \scratchdimen=\postsnap
+%         \advance\scratchdimen by \dp\strutbox
+%         \dp\nextbox=\scratchdimen
+%       \fi
+%       \hbox{\tracesnapping\box\nextbox}%
+%       \ifstrutsnapping
+%         \ifdim\scratchdimen=\zeropoint\else\vskip\scratchdimen\fi
+%       \fi
+%       \extrasnapreset
+%       \enablepresnapcorrection
+%       \global\chardef\@@alignsnap0
+%       \egroup}}
+
+\def\dodosnaptogrid
   {\dowithnextbox
      {\bgroup
-      \ifcase\@@alignsnap\else % 1=top 2=high 3=middle 4=low
-        \getnoflines{\ht\nextbox}
-        \setbox\nextbox=\vbox to \noflines\lineheight
-          {\ifnum\@@alignsnap=1 \kern\lineheight\kern-\topskip\fi
-           \ifnum\@@alignsnap>2 \vfill\fi
-           \box\nextbox
-           \ifnum\@@alignsnap<4 \vfill\fi}
-      \fi
-      \forgetall
-      \par
-      \ifvbox\nextbox
-        \setbox\nextbox=\hbox{\box\nextbox}% don't ask
-      \fi
-      \scratchskip=\lastskip
-      \edef\presnapskip{\the\lastskip}%
-      % mixing single/double columns sometimes goes wrong,
-      % check 'som' document
-      \ifbinnenkolommen
-        \forcepresnaptrue
-      \fi
-      \ifforcepresnap
-        \vbox{\hsize\zeropoint\strut}\nobreak\vskip-\openlineheight
-      \fi
-      %
-      \ifdim\ht\nextbox>\ht\strutbox
-        \scratchdimen=\ht\nextbox
-        \ifcase\@@presnap
-          \ifdim\scratchskip>\zeropoint\relax
-            \scratchcounter=\scratchskip
-            \advance\scratchcounter by -\openlineheight
-            \ifnum\scratchcounter<0
-              \scratchcounter=-\scratchcounter
+      \ifcase\@@alignsnapbox\relax
+        \ifcase\@@alignsnap\else % 1=top 2=high 3=middle 4=low
+          \getnoflines{\ht\nextbox}
+          \setbox\nextbox\vbox to \noflines\lineheight
+            {\ifnum\@@alignsnap=1 \kern\lineheight\kern-\topskip\fi
+             \ifnum\@@alignsnap>2 \vfill\fi
+             \box\nextbox
+             \ifnum\@@alignsnap<4 \vfill\fi}
+        \fi
+        \forgetall
+        \par
+        \ifvbox\nextbox
+          \setbox\nextbox\hbox{\box\nextbox}% don't ask
+        \fi
+        \scratchskip\lastskip
+        \edef\presnapskip{\the\lastskip}%
+        % mixing single/double columns sometimes goes wrong,
+        % check 'som' document
+        \ifbinnenkolommen
+          \forcepresnaptrue
+        \fi
+        \ifforcepresnap
+          \vbox{\hsize\zeropoint\strut}\nobreak\vskip-\openlineheight
+        \fi
+        %
+        \ifdim\ht\nextbox>\ht\strutbox
+          \scratchdimen\ht\nextbox
+          \ifcase\@@presnap
+            \ifdim\scratchskip>\zeropoint\relax
+              \scratchcounter\scratchskip
+              \advance\scratchcounter -\openlineheight
+              \ifnum\scratchcounter<0
+                \scratchcounter-\scratchcounter
+              \fi
+              \ifnum\scratchcounter<10 % \lastkip is about \openlineheight
+                \advance\scratchdimen -\openstrutdepth
+                \edef\presnapskip{*\presnapskip}%
+              \else\ifdim\scratchskip>\openlineheight
+                                    %<\openlineheight \else
+                \advance\scratchdimen -\openstrutdepth
+                \edef\presnapskip{*\presnapskip}%
+              \fi\fi
             \fi
-            \ifnum\scratchcounter<10 % \lastkip is about \openlineheight
-              \advance\scratchdimen by -\openstrutdepth
-              \edef\presnapskip{*\presnapskip}%
-            \else\ifdim\scratchskip>\openlineheight
-                                  %<\openlineheight \else
-              \advance\scratchdimen by -\openstrutdepth
-              \edef\presnapskip{*\presnapskip}%
-            \fi\fi
           \fi
-        \fi
-        \getnoflines\scratchdimen
-        \advance\noflines by -1
-        \ifnum\noflines>0
-          \scratchdimen=\noflines\lineheight
+          \getnoflines\scratchdimen
+            \advance\noflines -1
+          \ifnum\noflines>0
+            \scratchdimen\noflines\lineheight
+          \else
+            \scratchdimen\zeropoint
+          \fi
         \else
-          \scratchdimen=\zeropoint
+          \scratchdimen\zeropoint
         \fi
-      \else
-        \scratchdimen=\zeropoint
-      \fi
-      \ifnum\@@extrasnap=1 \advance\scratchdimen by \extrasnapsign\lineheight \fi
-      \ifnum\@@extrasnap=2 \advance\scratchdimen by \extrasnapsign.5\lineheight \fi
-      \edef\presnap{\the\scratchdimen}%
-      \ifstrutsnapping
-        \ifdim\scratchdimen=\zeropoint\else\vskip\scratchdimen\fi
-      \fi
-      \ifdim\dp\nextbox>\dp\strutbox
-        \getnoflines{\dp\nextbox}%
-        \advance\noflines by -1
-        \ifnum\noflines>0
-          \scratchdimen=\noflines\lineheight
+        \ifnum\@@extrasnap=1 \advance\scratchdimen \extrasnapsign\lineheight \fi
+        \ifnum\@@extrasnap=2 \advance\scratchdimen \extrasnapsign.5\lineheight \fi
+        \edef\presnap{\the\scratchdimen}%
+        \ifstrutsnapping
+          \ifdim\scratchdimen=\zeropoint\else\vskip\scratchdimen\fi
+        \fi
+        \ifdim\dp\nextbox>\dp\strutbox
+          \getnoflines{\dp\nextbox}%
+          \advance\noflines -1
+          \ifnum\noflines>0
+            \scratchdimen\noflines\lineheight
+          \else
+            \scratchdimen\zeropoint
+          \fi
         \else
-          \scratchdimen=\zeropoint
+          \scratchdimen\zeropoint
+        \fi
+        \ifnum\@@extrasnap=2 \advance\scratchdimen \extrasnapsign.5\lineheight \fi
+        \ifnum\@@extrasnap=3 \advance\scratchdimen \extrasnapsign\lineheight \fi
+        \edef\postsnap{\the\scratchdimen}%
+        \ifstrutsnapping
+          \ht\nextbox\ht\strutbox
+          \dp\nextbox\dp\strutbox
+        \else
+          \scratchdimen\presnap
+          \advance\scratchdimen \ht\strutbox
+          \ht\nextbox\scratchdimen
+          \scratchdimen\postsnap
+          \advance\scratchdimen \dp\strutbox
+          \dp\nextbox\scratchdimen
+        \fi
+        \hbox{\tracesnapping\box\nextbox}%
+        \ifstrutsnapping
+          \ifdim\scratchdimen=\zeropoint\else\vskip\scratchdimen\fi
         \fi
       \else
-        \scratchdimen=\zeropoint
-      \fi
-      \ifnum\@@extrasnap=2 \advance\scratchdimen by \extrasnapsign.5\lineheight \fi
-      \ifnum\@@extrasnap=3 \advance\scratchdimen by \extrasnapsign\lineheight \fi
-      \edef\postsnap{\the\scratchdimen}%
-      \ifstrutsnapping
-        \ht\nextbox=\ht\strutbox
-        \dp\nextbox=\dp\strutbox
-      \else
-        \scratchdimen=\presnap
-        \advance\scratchdimen by \ht\strutbox
-        \ht\nextbox=\scratchdimen
-        \scratchdimen=\postsnap
-        \advance\scratchdimen by \dp\strutbox
-        \dp\nextbox=\scratchdimen
-      \fi
-      \hbox{\tracesnapping\box\nextbox}%
-      \ifstrutsnapping
-        \ifdim\scratchdimen=\zeropoint\else\vskip\scratchdimen\fi
+        \scratchdimen\ht\nextbox
+       %\advance\scratchdimen\dp\nextbox % add dp as option 
+        \ifcase\@@alignsnapbox\or
+          \getrawnoflines\scratchdimen
+        \else
+          \getnoflines   \scratchdimen
+        \fi  
+        \scratchdimen\noflines\lineheight\relax
+        \ifnum\pagetotal>\zeropoint\else % disable this as option 
+          \advance\scratchdimen-\strutheight
+          \advance\scratchdimen+\topskip
+        \fi
+        \setbox\nextbox\vbox to \scratchdimen
+          {\ifnum\@@alignsnapbox>2 \vfill\fi % 3 4 
+           \box\nextbox
+           \ifnum\@@alignsnapbox<4 \vfill\fi % 2 3 
+           \kern\zeropoint}% 
+        \ifnum\@@alignsnapbox>2 \def\presnap {++}\fi 
+        \ifnum\@@alignsnapbox<4 \def\postsnap{++}\fi 
+        \setbox\nextbox\hbox{\tracesnapping\box\nextbox}%
+        \dp\nextbox\zeropoint 
+        \box\nextbox 
       \fi
       \extrasnapreset
       \enablepresnapcorrection
       \global\chardef\@@alignsnap0
+      \global\chardef\@@alignsnapbox0
       \egroup}}
 
 \def\snaptomathgrid% probably not working ok
@@ -480,11 +607,32 @@
 
 \def\gridwarning#1{\message{[beware of #1 extra snap]}}
 
-\def\doverplaatsopgrid[#1]%
+% \def\doverplaatsopgrid[#1]%
+%   {\ifgridsnapping
+%      \global\chardef\@@alignsnap0
+%      \processaction
+%        [#1]
+%        [  \v!boven=>\gridwarning+\positiveextrasnap\extrasnapbefore,
+%           \v!onder=>\gridwarning+\positiveextrasnap\extrasnapafter,
+%           \v!beide=>\positiveextrasnap\extrasnaparound,
+%          -\v!boven=>\gridwarning-\negativeextrasnap\extrasnapbefore,
+%          -\v!onder=>\gridwarning-\negativeextrasnap\extrasnapafter,
+%          -\v!beide=>\negativeextrasnap\extrasnaparound,
+%          \v!pagina=>\global\chardef\@@alignsnap1, % topskip
+%            \v!hoog=>\global\chardef\@@alignsnap2, 
+%          \v!midden=>\global\chardef\@@alignsnap3, 
+%            \v!laag=>\global\chardef\@@alignsnap4, 
+%           \v!reset=>\positiveextrasnap\extrasnapreset,
+%         \s!default=>\positiveextrasnap\extrasnaparound,
+%         \s!unknown=>\positiveextrasnap\extrasnapreset]%
+%    \fi}
+
+\def\doverplaatsopgrid[#1]% some day : speed up 
   {\ifgridsnapping
-     \global\chardef\@@alignsnap0
-     \processaction
-       [#1]
+     \global\chardef\@@alignsnap0 
+     \global\chardef\@@alignsnapbox0 
+     \donefalse 
+     \ExpandFirstAfter\processallactionsinset[#1]
        [  \v!boven=>\gridwarning+\positiveextrasnap\extrasnapbefore,
           \v!onder=>\gridwarning+\positiveextrasnap\extrasnapafter,
           \v!beide=>\positiveextrasnap\extrasnaparound,
@@ -495,7 +643,12 @@
            \v!hoog=>\global\chardef\@@alignsnap2, 
          \v!midden=>\global\chardef\@@alignsnap3, 
            \v!laag=>\global\chardef\@@alignsnap4, 
+        \v!passend=>\global\chardef\@@alignsnapbox1, % new 
+           \v!ruim=>\global\chardef\@@alignsnapbox2, % new 
           \v!reset=>\positiveextrasnap\extrasnapreset,
+           \v!geen=>\global\chardef\@@alignsnap0
+                    \global\chardef\@@alignsnapbox0,
+      \v!standaard=>\positiveextrasnap\extrasnaparound,
         \s!default=>\positiveextrasnap\extrasnaparound,
         \s!unknown=>\positiveextrasnap\extrasnapreset]%
    \fi}

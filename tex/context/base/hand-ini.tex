@@ -178,7 +178,8 @@
 \def\startfonthandling[#1]%
   {\def\fonthandling{#1}%
    \doifundefined{\@fha@\fonthandling}
-     {\expanded{\newtoks\csname\@fha@\fonthandling\endcsname}}}
+     {\getparameters[\@fha@\@fha@#1][\c!links=1,\c!rechts=1]% new
+      \expanded{\newtoks\csname\@fha@\fonthandling\endcsname}}}
 
 \def\stopfonthandling%
   {\let\fonthandling\empty}
@@ -202,61 +203,13 @@
 \def\enablehandling%
   {\dodoubleempty\doenablehandling}
 
-%\def\doenablehandling[#1][#2]% handling / symbolic fontname 
-%  {\doifdefinedelse{\@fha@\@fha@#1}%
-%     {\setprotrudingfactor
-%        {\getvalue{\@fha@\@fha@#1\c!links}}
-%        {\getvalue{\@fha@\@fha@#1\c!rechts}}%
-%      \edef\fonthandling{\getvalue{\@fha@\@fha@#1}}%
-%      \checkfonthandling{#2}%
-%      \@EA\rawprocesscommalist\@EA[\fonthandling]\dodoenablehandling
-%      \registerfonthandling{#2}}
-%     {\edef\fonthandling{#1}% new
-%      \dodoenablehandling{#1}}}
-%
-%\def\dodoenablehandling#1% weg met die @EA
-%  {\doifdefined{\@fha@#1}{\@EA\the\csname\@fha@#1\endcsname}}
-%
-%\def\checkfonthandling#1%
-%   {\doifelsevalue{#1\s!handling\c!file}{\purefontname\font}
-%      \skipprotrudingdeftrue\skipprotrudingdeffalse}
-%
-%\def\registerfonthandling#1%
-%  {%\ifskipprotrudingdef\else\message{#1->#2->\purefontname\font}\wait\fi
-%   \setxvalue{#1\s!handling\c!file}{\purefontname\font}}
-%
-%\def\registerfonthandling#1%
-%  {%\ifskipprotrudingdef\else\message{#1->#2->\purefontname\font}\wait\fi
-%   \setxvalue{#1\s!handling\c!file}{\purefontname\font}}
-
 \def\doenablehandling[#1][#2]% handling / symbolic fontname 
   {\fastenablehandling{#1}{#2}} % for the moment the same as:
  
-% fast one for font switch: 
-
-% \def\fastenablehandling#1#2% 
-%   {\@EA\ifx\csname\@fha@\@fha@#1\endcsname\relax
-%      \edef\fonthandling{#1}% new
-%      \dodoenablehandling{#1}%
-%    \else
-%      \setprotrudingfactor
-%        {\csname\@fha@\@fha@#1\c!links\endcsname}
-%        {\csname\@fha@\@fha@#1\c!rechts\endcsname}%
-%      \edef\fonthandling{\csname\@fha@\@fha@#1\endcsname}%
-%      \checkfonthandling{#2}%
-%      \@EA\rawprocesscommalist\@EA[\fonthandling]\dodoenablehandling
-%      \registerfonthandling{#2}%
-%    \fi}
-% 
-% \def\dodoenablehandling#1%
-%   {\@EA\ifx\csname\@fha@#1\endcsname\relax\else
-%      \the\csname\@fha@#1\endcsname
-%    \fi}
-
 \beginTEX
 
 \def\fastenablehandling#1% 
-  {\def\askedfonthandling{#1}%
+  {\edef\askedfonthandling{#1}%
    \@EA\ifx\csname\@fha@\@fha@\askedfonthandling\endcsname\relax
      \expandafter\nofastenablehandling
    \else
@@ -268,7 +221,7 @@
 \beginETEX \ifcsname
 
 \def\fastenablehandling#1% also gets #2 passed 
-  {\def\askedfonthandling{#1}%
+  {\edef\askedfonthandling{#1}%
    \ifcsname\@fha@\@fha@\askedfonthandling\endcsname
      \expandafter\dofastenablehandling
    \else
@@ -287,7 +240,10 @@
    \registerfonthandling{#1}}
 
 \def\nofastenablehandling#1%  
-  {\let\fonthandling\askedfonthandling
+  {\setprotrudingfactor 
+     {\csname\@fha@\@fha@\askedfonthandling\c!links \endcsname}
+     {\csname\@fha@\@fha@\askedfonthandling\c!rechts\endcsname}%
+   \let\fonthandling\askedfonthandling
    \dodoenablehandling\fonthandling}
 
 \beginTEX
@@ -308,13 +264,15 @@
 
 \endETEX
 
-\def\checkfonthandling#1% we need a fast compare 
-  {\doifelsevalue{#1\s!handling\c!file}{\purefontname\font}
-      \skipprotrudingdeftrue\skipprotrudingdeffalse}
+%D We must not use \type {\purefontname} here (was a bug)!
+
+\def\checkfonthandling#1% we need a fast compare
+  {\doifelsevalue{#1\s!handling\c!file}{\fontname\font}
+     \skipprotrudingdeftrue\skipprotrudingdeffalse}
 
 \def\registerfonthandling#1%
-  {%\ifskipprotrudingdef\else\message{#1->#2->\purefontname\font}\wait\fi
-   \@EA\xdef\csname#1\s!handling\c!file\endcsname{\purefontname\font}}
+  {%\ifskipprotrudingdef\else\message{#1->#2->\fontname\font}\wait\fi
+   \@EA\xdef\csname#1\s!handling\c!file\endcsname{\fontname\font}}
 
 %D \macros 
 %D   {usehandling}
@@ -338,6 +296,8 @@
   {\processcommalist[#1]\dousehandling}
 
 %D Let's now see if this macro works: 
+
+\setupfonthandling[\s!default][\c!links=1,\c!rechts=1]
 
 \usehandling [def]
 

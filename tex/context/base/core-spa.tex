@@ -2512,6 +2512,26 @@
 \definehspace [\v!normaal] [1\spaceamount] 
 \definehspace [\v!default] [\v!groot]
 
+% Very nasty but needed for margin stuff inside colored 
+% paragraphs. 
+
+\let\normalvadjust\vadjust
+
+\def\graphicvadjust % bad, those low level color calls here  
+  {\dowithnextbox
+     {\normalvadjust
+        {\dostartgraphicgroup
+         \ifx\maintextcolor\empty
+           \stopcolormode
+           \unvbox\nextbox
+         \else
+           \startcolormode\maintextcolor
+           \unvbox\nextbox
+           \stopcolormode
+         \fi
+         \dostopgraphicgroup}}%
+     \vbox}
+
 \stelwitruimtein
   [\v!geen]
 

@@ -729,6 +729,7 @@ var:colt:rotund,rectangular::
 var:raza:*dimensiune::
 var:gol:da,nu::
 var:foregroundcolor:*nume::
+var:foregroundstyle:*nume::
 val:*text::
 stopsetup
 
@@ -1640,6 +1641,7 @@ var:distantacoltdreapta:*dimensiune::
 var:offsetoriz:*dimensiune::
 var:veroffset:*dimensiune::
 var:stil:normal,aldin,inclinat,aldininclinat,type,cap,mic...,*comanda::
+var:culoare:*nume::
 var:marcaje:on,dezactivat,culoare::
 var:locatie:stanga,centru,dreapta,subsol,sus, ofata,douafete::
 var:scala:*dimensiune::
@@ -1675,7 +1677,7 @@ stopsetup
 startsetup
 com:mutapegrid:
 typ:val/:
-val:sus,ambele,subsol:ambele:
+val:sus,ambele,subsol,-sus,-ambele,-subsol, inalt,centru,jos,pagina,standard,niciunul, broad,ajustat:standard:
 stopsetup
 
 startsetup
@@ -1780,7 +1782,7 @@ startsetup
 com:seteazalegendele:
 typ:vars/:
 var:locatie:sus,subsol,niciunul,inalt,jos,centru::
-var:latime:ajustat,max,*dimensiune::
+var:latime:ajustat,broad,max,*dimensiune::
 var:stiltitlu:normal,aldin,inclinat,aldininclinat,type,cap,mic...,*comanda::
 var:stil:normal,aldin,inclinat,aldininclinat,type,cap,mic...,*comanda::
 var:numar:da,nu::
@@ -3212,7 +3214,8 @@ var:EQ:*text::
 var:culoarerigla:*nume::
 var:aliniere:stanga,centru,dreapta,normal::
 var:grosimerigla:*dimensiune::
-var:distanta:blank,adancime,*dimensiune,mic,mediu,mare,niciunul::
+var:distanta:blank,grila,adancime,*dimensiune,mic,mediu,mare,niciunul::
+var:fonttext:5pt,...,12pt,mic,mare::
 stopsetup
 
 startsetup
@@ -3232,6 +3235,7 @@ var:aliniere:stanga,centru,dreapta,normal::
 var:fundal:ecran,culoare,niciunul::
 var:ecranfundal:*numar::
 var:culoarefundal:*nume::
+var:fonttext:5pt,...,12pt,mic,mare::
 stopsetup
 
 startsetup

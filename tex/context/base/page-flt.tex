@@ -263,6 +263,8 @@
      \docompletefloat{#1}{#2}{#3}{#4}{#5}{#6}{\box\nextbox}%
    \fi}
 
+% pas op, maxbreedte niet instellen als plaats=links/rechts
+
 \def\setlocalfloatdimensions#1#2% experimental ! ! ! !
   {\doifvaluesomething{\??fl#1\c!maxbreedte}
      {\scratchdimen=\getvalue{\??fl#1\c!maxbreedte}\relax
@@ -1248,8 +1250,7 @@
      \par
      \doifcommonelse
         {#1}
-        {\v!links,\v!rechts,\v!inlinker,\v!inrechter,%
-         \v!inmarge}
+        {\v!links,\v!rechts,\v!inlinker,\v!inrechter,\v!inmarge}
         {\global\parfloattrue}
         {\global\parfloatfalse}%
      \ifbinnenkolommen

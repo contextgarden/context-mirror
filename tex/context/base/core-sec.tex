@@ -190,10 +190,13 @@
   {\maakhetnummer[#1]%
    \hetnummer}
 
-\def\huidigenummer[#1]%
-  {%\getvalue{\getvalue{\@@thenumber{#1}\c!zetwijze}}%
-   \getvalue{\getvalue{\@@thenumber{#1}\c!plaats}}%
-     {\dotextprefix{\getvalue{\@@thenumber{#1}\c!tekst}}\lossenummer[#1]}}
+%\def\huidigenummer[#1]%
+%  {%\getvalue{\getvalue{\@@thenumber{#1}\c!zetwijze}}%
+%   \getvalue{\getvalue{\@@thenumber{#1}\c!plaats}}%
+%     {\dotextprefix{\getvalue{\@@thenumber{#1}\c!tekst}}\lossenummer[#1]}}
+
+\def\huidigenummer[#1]% kan tekst hier weg ? 
+  {\dotextprefix{\getvalue{\@@thenumber{#1}\c!tekst}}\lossenummer[#1]}
 
 \def\volgendenummer[#1][#2][#3]%
   {\verhoognummer[#1]%
@@ -886,7 +889,8 @@
    \xdef\@@koniveau{\getvalue{\??se\@@sectie\c!niveau}}}
 
 \def\dohandelpaginaafBB#1#2#3%
-  {\doifinset{\getvalue{\??tk#2\v!tekst\c!status}}{\v!normaal,\v!start}
+%  {\doifinset{\getvalue{\??tk#2\v!tekst\c!status}}{\v!normaal,\v!start}
+  {\doifinset{\getvalue{\??tk#2\c!status}}{\v!normaal,\v!start}
      {\doifvaluesomething{\??ko#1#3}
         {\setuplayouttext[#2][\c!status=\getvalue{\??ko#1#3}]}}}
 
@@ -1418,7 +1422,7 @@
    % \let\unknownreference\gobbleoneargument
    \ifdisplaysectionhead
      \let\headlastlinewidth\!!zeropoint
-     \snaptogrid\hbox
+     \snaptogrid[\getvalue{\??ko#1\c!grid}]\hbox
        {\iflocation
           \ifautocrossdocument
             \doifreferencefoundelse{\getvalue{\??ko#1\c!file}::#1}
@@ -1622,6 +1626,7 @@
          \c!tolerantie=,
          \c!file=,
          \c!expansie=,
+         \c!grid=,
          #2]%
       \ConvertToConstant\doifnot{#1}{\getvalue{\??ko#1\c!default}}
         {\doifsomething{\getvalue{\??ko#1\c!default}}
@@ -1633,10 +1638,12 @@
                \c!letter,\c!kleur,\c!afstand,\c!variant,\c!springvolgendein,
               %\c!nummerletter,\c!tekstletter,
               %\c!expansie, % why njet ?
-               \c!uitlijnen,\c!tolerantie,\c!nummercommando,\c!tekstcommando]}}%
+               \c!uitlijnen,\c!tolerantie,\c!grid,
+               \c!nummercommando,\c!tekstcommando]}}%
       \getparameters[\??ko#1][#2]%
       \doifsomething{\getvalue{\??ko#1\c!sectie}}
-        {\doifundefined{\??mk#1}
+        {\doifelsemarking{#1}% \doifundefined{\??mk#1}
+           {}% marking #1 already defined 
            {\definieermarkering[#1]%
             \koppelmarkering[#1][\getvalue{\??ko#1\c!sectie}]%
             \definieermarkering[#1\v!nummer]%
@@ -1654,7 +1661,8 @@
             \c!letter,\c!kleur,\c!afstand,\c!variant,\c!springvolgendein,
            %\c!nummerletter,\c!tekstletter,
            %\c!expansie, % why njet ?
-            \c!uitlijnen,\c!tolerantie,\c!nummercommando,\c!tekstcommando]%
+            \c!uitlijnen,\c!tolerantie,\c!grid,
+            \c!nummercommando,\c!tekstcommando]%
 \getparameters[\??ko#1][\c!expansie=]% iig een value, rather fuzzy
          \definieermarkering[#1][#2]%
          \definieermarkering[#1\v!nummer][#2\v!nummer]%

@@ -713,22 +713,57 @@
 \def\doorspringen%
   {\dodoubleargumentwithset\dodoorspringen}
 
+% \def\dodoorlabel[#1][#2]%
+%   {\getvalue{\s!number#1\c!voor}%
+%    \bgroup
+%    \doifvalue{\s!number#1\c!plaats}{\v!marge}
+%      {\setvalue{\s!number#1\c!plaats}{\v!inmarge}}%
+%    \doattributes{\s!number#1}\c!kopletter\c!kopkleur
+%      {\getvalue{\e!volgende#1}[#2]}%
+%    \egroup
+%    \getvalue{\s!number#1\c!na}}%
+% 
+% \def\dovolgendedoorlabel[#1][#2]%
+%   {\volgendenummer[#1][\s!lab][#2]}
+% 
+% \def\dodoorlabelen[#1][#2]%
+%   {\definieernummer
+%      [#1][\c!voor=,\c!na=,\c!kopletter=,\c!wijze=\@@nrwijze,#2]%
+%    \setvalue           {#1}{\dodoubleempty\dodoorlabel[#1]}%
+%    \setvalue{\s!reset   #1}{\resetnummer[#1]}%
+%    \setvalue{\e!verhoog #1}{\verhoognummer[#1]}%
+%    \setvalue{\e!volgende#1}{\dodoubleempty\dovolgendedoorlabel[#1]}%
+%    \setvalue{\c!huidige #1}{\huidigenummer[#1]}}
+% 
+% \def\doorlabelen%
+%   {\dodoubleargumentwithset\dodoorlabelen}
+
 \def\dodoorlabel[#1][#2]%
-  {\getvalue{\s!number#1\c!voor}%
-   \bgroup
-   \doifvalue{\s!number#1\c!plaats}{\v!marge}
-     {\setvalue{\s!number#1\c!plaats}{\v!inmarge}}%
-   \doattributes{\s!number#1}\c!kopletter\c!kopkleur
-     {\getvalue{\e!volgende#1}[#2]}%
-   \egroup
-   \getvalue{\s!number#1\c!na}}%
+  {\getvalue{\??lb#1\c!voor}%
+   \getvalue{\??lb#1\c!commando}%
+     {\doattributes{\??lb#1}\c!kopletter\c!kopkleur
+        {\dotextprefix{\getvalue{\??lb#1\c!tekst}}%
+         \getvalue{\e!volgende#1}[#2]}}%
+   \getvalue{\??lb#1\c!na}}%
 
 \def\dovolgendedoorlabel[#1][#2]%
   {\volgendenummer[#1][\s!lab][#2]}
 
 \def\dodoorlabelen[#1][#2]%
-  {\definieernummer
-     [#1][\c!voor=,\c!na=,\c!kopletter=,\c!wijze=\@@nrwijze,#2]%
+  {\getparameters
+     [\??lb#1]
+     [\c!wijze=\@@nrwijze,\c!commando=,\c!plaats=,#2]%
+   % downward compatible 
+   \processaction
+     [\getvalue{\??lb#1\c!plaats}]
+     [  \v!inmarge=>\setvalue{\??lb#1\c!commando}{\inmarge  },
+       \v!inlinker=>\setvalue{\??lb#1\c!commando}{\inlinker },
+      \v!inrechter=>\setvalue{\??lb#1\c!commando}{\inrechter},
+          \v!marge=>\setvalue{\??lb#1\c!commando}{\inmarge  }]%
+   % inefficient, we need to redesign this command 
+   \definieernummer 
+     [#1][\c!wijze=\@@nrwijze]% \getvalue{\??lb#1\c!wijze}]%
+   % generated commands 
    \setvalue           {#1}{\dodoubleempty\dodoorlabel[#1]}%
    \setvalue{\s!reset   #1}{\resetnummer[#1]}%
    \setvalue{\e!verhoog #1}{\verhoognummer[#1]}%

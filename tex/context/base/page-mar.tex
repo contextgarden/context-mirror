@@ -137,15 +137,24 @@
    \ht0=\!!zeropoint
    \dp0=\!!zeropoint
    \gdef\margestrutheight{\the\ht\strutbox}%
-  %\vadjust{\box0}} % fails in high math lines, let it be  
+  %\graphicvadjust{\box0}} % fails in high math lines, let it be  
   %\hbox{\lower\dp\strutbox\box0}} % alas, wrong lapping, therefore useless 
    \dopositionmarginbox0}
 
 %D This approach permits us to implement a better mechanism 
-%D later.  
+%D later. We need the \type {\graphicvadjust} in order to 
+%D handle: 
+%D 
+%D \starttypen 
+%D \inlinker{test} {\red \dorecurse{40}{test }\par}
+%D {\red \inlinker{test} \dorecurse{40}{test }\par}
+%D \stoptypen
+%D 
+%D The outer margin color is either black or color set as 
+%D main text color. 
 
 \ifx\dopositionmarginbox\undefined
-  \def\dopositionmarginbox#1{\vadjust{\box#1}}
+  \def\dopositionmarginbox#1{\graphicvadjust{\box#1}}
 \fi
 
 \def\doinlinker#1%
@@ -375,7 +384,7 @@
 
 \def\oplinker#1%
   {\strut
-   \vadjust
+   \graphicvadjust
      {\mindermeldingen
       \setbox0=\vtop{\forgetall\strut#1}%
       \getboxheight\dimen0\of\box0

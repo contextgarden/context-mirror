@@ -289,6 +289,9 @@ if ($UserInterface eq "nl")
     $MS{"Entries"}                 = "ingangen" ;
     $MS{"References"}              = "verwijzingen" ;
 
+    $MS{"PlugInInit"}              = "    plugin initialized :" ;
+    $MS{"PlugInReport"}            = "         plugin report :" ;
+
   } # end of dutch section
 
 elsif ($UserInterface eq "de")
@@ -377,6 +380,9 @@ elsif ($UserInterface eq "de")
     $MS{"Entries"}                 = "Eintraege" ;
     $MS{"References"}              = "Referenzen" ;
 
+    $MS{"PlugInInit"}              = "    plugin initialized :" ;
+    $MS{"PlugInReport"}            = "         plugin report :" ;
+
   } # end of german section
   
 elsif ($UserInterface eq "it")
@@ -462,6 +468,9 @@ elsif ($UserInterface eq "it")
     $MS{"Entries"}                 = "voci" ;
     $MS{"References"}              = "riferimenti" ;
 
+    $MS{"PlugInInit"}              = "    plugin initialized :" ;
+    $MS{"PlugInReport"}            = "         plugin report :" ;
+
   } # end of italian section
 
 else
@@ -546,6 +555,9 @@ else
     $MS{"Overfull"}                = "overfull" ;
     $MS{"Entries"}                 = "entries" ;
     $MS{"References"}              = "references" ;
+
+    $MS{"PlugInInit"}              = "    plugin initialized :" ;
+    $MS{"PlugInReport"}            = "         plugin report :" ;
 
   } # end of english section
 
@@ -949,6 +961,91 @@ sub HandleCommand
 sub FlushCommands
   { Report ("PassedCommands", $NOfCommands) }
 
+#D Experimental: Extra
+#D
+#D s p : extra programs 
+
+my @ExtraPrograms = () ; 
+
+sub InitializeExtra
+  { }
+
+sub HandleExtra
+  { if ($RestOfLine =~ /(.)\s+(.*)\s*$/o)
+      { if ($1 eq "p")
+          { my $str = $2 ; $str =~ s/^\{(.*)\}$/$1/o ; 
+            push @ExtraPrograms,$str } } } 
+
+sub FlushExtra
+  { print TUO "%\n" . "% $Program / System\n" . "%\n" ;
+    foreach $EP (@ExtraPrograms) 
+      { print TUO "% extra program : $EP\n" } } 
+
+sub RunExtraPrograms 
+  { foreach $EP (@ExtraPrograms) 
+      { system($EP) } } 
+  
+#D Plugins
+#D 
+#D test.pm: 
+#D 
+#D \starttypen 
+#D see plugtest.pm 
+#D \stoptypen 
+#D 
+#D utility format:
+#D 
+#D \starttypen 
+#D p u {name} {data} {data} ... 
+#D \stoptypen 
+
+my $pm_path ; 
+
+BEGIN 
+  { # $pm_path = `kpsewhich --format="other text files" --progname=context texutil.pl` ; 
+    # chomp($pm_path) ; 
+    # $pm_path =~ s/texutil\.pl.*// } 
+    $pm_path = $0 ;   
+    $pm_path =~ s/\\/\//o ;
+    $pm_path =~ s/texutil\.pl.*//io ; 
+    if ($pm_path eq "") { $pm_path = "./" } }
+
+use lib $pm_path ;
+
+my %UserPlugIns ; 
+
+sub HandlePlugIn 
+  { if ($RestOfLine =~ /\s*u\s*\{(.*?)\}\s*(.*)\s*/io) 
+      { my $tag = $1 ; 
+        my $arg = $2 ;
+        if (! defined($UserPlugIns{$tag}))
+          { $UserPlugIns{$tag} = 1 ; 
+            eval("use $tag") ; 
+            my $result = $tag->identify ;
+            if ($result ne "") 
+              { Report ("PlugInInit", "$tag -> $result") } 
+            else 
+              { Report ("PlugInInit", $tag ) } 
+            $tag->initialize() }
+        if (defined($UserPlugIns{$tag}))
+          { $arg =~ s/\{(.*)\}/$1/o ;
+            my @args = split(/\}\s*\{/o, $arg) ;
+            $tag->handle(@args) } } }
+
+sub FlushPlugIns
+  { foreach my $tag (keys %UserPlugIns)     
+      { my @report = $tag->report ;
+        foreach $rep (@report) 
+          { my ($key,$val) = split (/\s*\:\s*/,$rep) ; 
+            if ($val ne "") 
+              { Report ("PlugInReport", "$tag -> $key -> $val") } 
+            else
+              { Report ("PlugInReport", "$tag -> $key") } } 
+        $tag->process ;
+        print TUO "%\n" . "% $Program / $tag->identify\n" . "%\n" ;
+        foreach my $str ($tag->results) 
+          { print TUO "\\plugincommand\{$str\}\n" } } } 
+
 #D Synonyms are a sort of key||value pairs and are used for
 #D ordered lists like abbreviations and units.
 #D
@@ -1297,7 +1394,8 @@ if ($SortN)
 #D be. The totals, when changed, force texexec to do a second pass.
 
 sub FlushData
-  { print TUO "" .
+  { print TUO "%\n" . "% $Program / Status\n" . "%\n" ;
+    print TUO "" .
       "% embedded files    : $NOfFiles ($NOfBadFiles errors)\n" .
       "% synonym entries   : $NOfSynonyms ($NOfBadSynonyms errors)\n" .
       "% register entries  : $NOfEntries ($NOfBadEntries errors)\n" .
@@ -1341,6 +1439,10 @@ sub NormalHandleReferences
                   { HandleFile }
                 elsif ($FirstTag eq "k")
                   { HandleKey }
+                elsif ($FirstTag eq "e")
+                  { HandleExtra }
+                elsif ($FirstTag eq "p")
+                  { HandlePlugIn }
                 elsif ($FirstTag eq "q")
                   { $ValidOutput = 0 ;
                     last } }
@@ -1349,9 +1451,12 @@ sub NormalHandleReferences
                FlushKeys ;
                FlushRegisters ;
                FlushSynonyms ;
+               FlushPlugIns ; 
                FlushFiles ;
                FlushData ;
-               close (TUO) }
+               FlushExtra ; 
+               close (TUO) ;
+               RunExtraPrograms }
             else
              { close (TUO) ;
                unlink "$InputFile.tuo" ;
@@ -1451,6 +1556,7 @@ sub HandleReferences
       { Report("Option", "ProcessingQuotes") }
     InitializeKeys ;
     InitializeCommands ;
+    InitializeExtra ;
     InitializeRegisters ;
     InitializeSynonyms ;
     InitializeFiles ;

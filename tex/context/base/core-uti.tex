@@ -186,6 +186,7 @@
 \long\def\doutilities#1#2#3#4#5% % introduceren in utility file
   {\restorecatcodes
    \resetutilities
+  %\message{#1}%
    \def\docommando##1%                 % more than one utility thing
      {\csname\s!set##1\endcsname}%     % can be handled in one pass, 
    \processcommacommand[#1]\docommando % for instance lists 
@@ -431,5 +432,60 @@
 
 \def\plaatsvolledig#1#2#3#4%   kop, ref, tit, do
   {#1[#2]{#3}#4\pagina[\v!ja]}
+
+% Experiment 
+%
+%\installprogram{Hello World}
+
+\def\installprogram#1%
+  {\immediatewriteutility{e p {#1}}}
+
+% \writeplugindata{texutil}{{alpha}}
+% \writeplugindata{texutil}{{beta}}
+% \writeplugindata{texutil}{{gamma}}
+% \writeplugindata{texutil}{{delta}}
+% 
+% \loadplugindata {plugintest}
+ 
+\def\immediatewriteplugindata#1#2%
+  {\immediatewriteutility{p u {#1} #2}}
+
+\def\writeplugindata#1#2%
+  {\writeutility{p u {#1} #2}}
+
+\def\loadplugindata#1%
+  {\doutilities{#1}{\jobname}{}{}{}{}}
+
+% \plugincommand{\command{}{}{}}
+%
+% this way we can catch undefined commands 
+
+\long\def\plugincommand#1%
+  {\doplugincommand#1\relax}
+
+\long\def\doplugincommand#1%
+  {\ifx#1\undefined
+     \expandafter\noplugincommand
+   \else
+     \expandafter#1%
+   \fi}
+
+\long\def\noplugincommand#1\relax
+  {}
+
+% \addutilityreset{plugintest}
+% 
+% \def\resetplugintest{\let\plugintest\gobbletwoarguments}
+% \def\setplugintest  {\let\plugintest\writestatus}
+% 
+% \installplugin
+%   {plugintest}
+%   {\let\plugintest\gobbletwoarguments}
+%   {\let\plugintest\writestatus}
+
+\long\def\installplugin#1#2#3%
+  {\addutilityreset          {#1}%
+   \long\setvalue{\s!reset#1}{#2}%
+   \long\setvalue{\s!set  #1}{#3}}
 
 \protect \endinput 

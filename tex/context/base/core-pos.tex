@@ -1497,10 +1497,10 @@
      % so far
      \setbox#1=\hbox
        {\setposition{\s!margin:\currentmarginpos}\raise\scratchdimen\box#1}%
-     \dp#1=\!!zeropoint
-     \ht#1=\!!zeropoint
+     \dp#1=\zeropoint
+     \ht#1=\zeropoint
    \fi
-   \vadjust{\box#1}%
+   \graphicvadjust{\box#1}%
    \egroup}
 
 %D For a right menu, a sequence of calls to \type

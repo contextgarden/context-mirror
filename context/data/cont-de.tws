@@ -729,6 +729,7 @@ var:winkel:rund,rechteckig::
 var:radius:*Dimension::
 var:leer:ja,nein::
 var:foregroundcolor:*Name::
+var:foregroundstyle:*Name::
 val:*Text::
 stopsetup
 
@@ -1640,6 +1641,7 @@ var:rechterkantenabstand:*Dimension::
 var:rumpfabstand:*Dimension::
 var:kopfoffset:*Dimension::
 var:stil:normal,fett,geneigt,fettgeneigt,tippen,kap,klein...,*Befehl::
+var:farbe:*Name::
 var:beschriftung:an,aus,farbe::
 var:platz:links,mittig,rechts,unten,oben, einzelseitig,doppelseitig::
 var:format:*Dimension::
@@ -1675,7 +1677,7 @@ stopsetup
 startsetup
 com:amgitterneuausrichten:
 typ:val/:
-val:oben,beide,unten:beide:
+val:oben,beide,unten,-oben,-beide,-unten, hoch,mittig,tief,seite,standard,kein, breit,passend:standard:
 stopsetup
 
 startsetup
@@ -1780,7 +1782,7 @@ startsetup
 com:stellebilderunterschriftein:
 typ:vars/:
 var:platz:oben,unten,kein,hoch,tief,mittig::
-var:breite:passend,max,*Dimension::
+var:breite:passend,breit,max,*Dimension::
 var:kopfstil:normal,fett,geneigt,fettgeneigt,tippen,kap,klein...,*Befehl::
 var:stil:normal,fett,geneigt,fettgeneigt,tippen,kap,klein...,*Befehl::
 var:nummer:ja,nein::
@@ -3212,7 +3214,8 @@ var:EQ:*Text::
 var:linienfarbe:*Name::
 var:ausrichtung:links,mittig,rechts,normal::
 var:liniendicke:*Dimension::
-var:abstand:blanko,tiefe,*Dimension,klein,mittel,gross,kein::
+var:abstand:blanko,gritter,tiefe,*Dimension,klein,mittel,gross,kein::
+var:fliesstext:5pt,...,12pt,klein,gross::
 stopsetup
 
 startsetup
@@ -3232,6 +3235,7 @@ var:ausrichtung:links,mittig,rechts,normal::
 var:hintergrund:raster,farbe,kein::
 var:hintergrundraster:*Nummer::
 var:hintergrundfarbe:*Name::
+var:fliesstext:5pt,...,12pt,klein,gross::
 stopsetup
 
 startsetup

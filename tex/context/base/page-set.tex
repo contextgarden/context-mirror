@@ -67,7 +67,7 @@
      \columnspreadfalse
    \fi
    \ifcolumnspread
-     \dorecurse{\nofcolumns}
+     \dorecurse\nofcolumns
        {\let\!!stringa\recurselevel
         \scratchcounter=\recurselevel \advance\scratchcounter\lofcolumns
         \edef\!!stringb{\the\scratchcounter}%
@@ -91,7 +91,7 @@
              \fi
            \fi}}%
    \else
-     \dorecurse{\tofcolumns}
+     \dorecurse\tofcolumns
        {\let\!!stringa\recurselevel
         \dostepwiserecurse{0}{\columnmaxcells}{1}
           {\ifcsname\@otr@:\!!stringa:\recurselevel\endcsname
@@ -100,7 +100,7 @@
              \expandafter\newbox\csname\@otr@:\!!stringa:\recurselevel\endcsname
            \fi}}%
    \fi
-   \dorecurse{\tofcolumns}
+   \dorecurse\tofcolumns
      {\global\setbox\csname\@otr@:\recurselevel:\columnmaxcells\endcsname\copy\placeholderboxa}%
    \global\columnfirstcell=0
    \global\columnlastcell=\columnfirstcell
@@ -118,7 +118,7 @@
      \columnspreadfalse
    \fi
    \ifcolumnspread
-     \dorecurse{\nofcolumns}
+     \dorecurse\nofcolumns
        {\let\!!stringa\recurselevel
         \scratchcounter=\recurselevel \advance\scratchcounter\lofcolumns
         \edef\!!stringb{\the\scratchcounter}%
@@ -142,7 +142,7 @@
              \fi
            \fi}}%
    \else
-     \dorecurse{\tofcolumns}
+     \dorecurse\tofcolumns
        {\let\!!stringa\recurselevel
         \dostepwiserecurse{0}{\columnmaxcells}{1}
           {\expandafter\ifx\csname\@otr@:\!!stringa:\recurselevel\endcsname\relax
@@ -151,7 +151,7 @@
              \global\setbox\csname\@otr@:\!!stringa:\recurselevel\endcsname\box\voidb@x
            \fi}}%
    \fi
-   \dorecurse{\tofcolumns}
+   \dorecurse\tofcolumns
      {\global\setbox\csname\@otr@:\recurselevel:\columnmaxcells\endcsname\copy\placeholderboxa}%
    \global\columnfirstcell=0
    \global\columnlastcell=\columnfirstcell
@@ -187,7 +187,7 @@
     %\message{no cells a}%
    \else
      \doloop
-       {\ifnum\columnfirstcell>\columnmaxcells
+       {\ifnum\columnfirstcell>\columnmaxcells\relax
           \exitloop
         \else
           \OTRSETdoifcellelse{#1}\columnfirstcell
@@ -196,7 +196,7 @@
         \fi}%
      \global\columnlastcell=\columnfirstcell
      \doloop
-       {\ifnum\columnlastcell>\columnmaxcells
+       {\ifnum\columnlastcell>\columnmaxcells\relax
           \exitloop
         \else
           \OTRSETdoifcellelse{#1}\columnlastcell
@@ -423,6 +423,8 @@
       \immediatewriteutilitycommand
         {\twopassentry{\s!colset}{\the\scratchcounter}{##1}}}%
    \processcommacommand[\OTRSETbalancinglist]\docommando}
+
+\let\OTRSETflushsavedfloats\relax
 
 \definesystemvariable {mc}
 \definesystemvariable {mt}
@@ -480,7 +482,7 @@
      \par
      \egroup
    \fi
-   \page\relax
+   \page\relax % hack. \page should be page 
    \OTRSETsethsize}
 
 \newtoks\OTRSETeverystartofcolumn
@@ -902,6 +904,7 @@
          \OTRSETsetfreecells\mofcolumns\columnfirstcell
          \ifsomefreecolumncells
            \getnoflines{\ht\OTRSETsavedfootnotes}% \footins
+\relax
            \ifnum\columnfreecells<\noflines
              \global\somefreecolumncellsfalse
            \else
@@ -940,11 +943,18 @@
      \setbox#2=\vbox spread \columnslotspacing\lineheight
        {\vss\box#2\vss}%
    \fi
-%\dp#2=\zeropoint
+  %\dp#2=\zeropoint
    \doifdefinedelse{\strippedcsname\OTRSETstoreincolumnslot#1}
      {\getvalue{\strippedcsname\OTRSETstoreincolumnslot#1}{#2}}
      {\copy#2}}
 
+\def\OTRSETdocheckiffloatfits % eigenlijk moet else float anders
+  {\ifnofloatpermitted
+     \global\roomforfloatfalse
+   \else  
+     \global\roomforfloattrue 
+   \fi}
+
 %\def\OTRSETsavebox#1%
 %  {\setbox\floatbox=\box#1\dosavefloat}
 
@@ -988,10 +998,31 @@
 
 \newif\ifcentergridcells \centergridcellstrue
 
+\newif\ifcentergridcellonly     \centergridcellonlyfalse
+\newif\ifautocentergridcellonly \autocentergridcellonlytrue
+
 \def\OTRSETcentergridcells%
   {\ifcentergridcells
-   \dorecurse{\nofcolumns}
+     \dorecurse{\nofcolumns}
        {\currenthcell=\recurselevel
+\ifautocentergridcellonly 
+  % we prevent centering when the next column is empty  
+  % to be checked ! ! ! ! 
+  \advance\currenthcell 1
+  \centergridcellonlytrue
+  \ifnum\currenthcell>\nofcolumns
+    % ok already 
+  \else
+    % only span if there is a next column with content 
+    \dorecurse{\columnmaxcells}
+      {\ifdim\ht\OTRSETgridcell\currenthcell\currentvcell>\zeropoint
+         \centergridcellonlyfalse
+       \else\ifdim\dp\OTRSETgridcell\currenthcell\currentvcell>\zeropoint
+         \centergridcellonlyfalse
+       \fi\fi}%
+  \fi
+\fi 
+        \currenthcell=\recurselevel
         \dorecurse{\columnmaxcells}
           {\currentvcell=\recurselevel\relax
            \ifdim\ht\OTRSETgridcell\currenthcell\currentvcell>\zeropoint
@@ -1006,6 +1037,7 @@
              \!!countb=\currenthcell 
              \!!countc=\currenthcell \advance\!!countc 1 
              \!!donebtrue
+\ifcentergridcellonly \!!countc=\maxdimen \fi 
              \dostepwiserecurse{\!!countc}{\nofcolumns}{1}
                {\if!!doneb
                   \let\xrecurselevel\recurselevel
@@ -1307,6 +1339,7 @@
 \OTRSEToutput
   {\OTRSETnaturalflush
 %   \OTRSETgotonextpage
+\OTRSETdoflushfloats % zou eigenlijk in \flushsavedfloats moeten (gaat fout) 
    \OTRSETcheckfreelines
    \OTRSETchecksidefloat}
 
@@ -1329,18 +1362,22 @@
    \fi}
 
 \def\OTRSEThandlepreposttext%
-  {\getnoflines{\ht\precolumnbox}%
-   \doOTRSETsetgridcells
-     {\copy\placeholderboxe}
-     11\nofcolumns\noflines
-     {\box\precolumnbox}%
-   \getnoflines{\ht\postcolumnbox}%
-   \advance\columnfreecells -\noflines
-   \advance\columnfreecells 1
-   \doOTRSETsetgridcells
-     {\copy\placeholderboxe}
-     1\columnfreecells\nofcolumns\noflines
-     {\box\postcolumnbox}}
+  {\ifdim\ht\precolumnbox>\zeropoint % new 
+     \getnoflines{\ht\precolumnbox}%
+     \doOTRSETsetgridcells
+       {\copy\placeholderboxe}
+       11\nofcolumns\noflines
+       {\box\precolumnbox}%
+   \fi
+   \ifdim\ht\postcolumnbox>\zeropoint % new, otherwise empty bottom line
+     \getnoflines{\ht\postcolumnbox}%
+     \advance\columnfreecells -\noflines
+     \advance\columnfreecells 1
+     \doOTRSETsetgridcells
+       {\copy\placeholderboxe}
+       1\columnfreecells\nofcolumns\noflines
+       {\box\postcolumnbox}%
+   \fi}
 
 \def\OTRSETchecksidefloat%
   {} % {\sidefloatoutput}
@@ -1485,7 +1522,7 @@
 \def\OTRSETsometopfloat   {\def\floatmethod{TOPS}\OTRSETsomeslotfloat} % check 
 \def\OTRSETsomebottomfloat{\def\floatmethod{BOTS}\OTRSETsomeslotfloat} % check 
 
-\def\OTRONEsomeslotfloat {\let\floatmethod\v!hier\OTRONEsomeelsefloat}
+% \def\OTRSETsomeslotfloat {\let\floatmethod\v!hier\OTRONEsomeelsefloat}
 
 \def\OTRSETflushfloatbox% nog verder doorvoeren en meer info in marge
   {\iftestfloatbox\ruledhbox\fi{\box\floatbox}}
@@ -1738,6 +1775,8 @@
 \def\startcolumnsetspan%
   {\dotripleempty\dostartcolumnsetspan}
 
+%%%%%%%%%%%%%%%% TODO 
+
 \def\dostartcolumnsetspan[#1][#2][#3]% [#3] gobbles space 
   {\bgroup
    \!!countc\getvalue{\??kd cs:#1\c!n} % \framedtextparameter{cs:\c!n}%
@@ -1746,7 +1785,7 @@
    \setcolumnsetspanhsize\mofcolumns\!!countc % a/b used
    \hsize\columnsetspanhsize
    \setupframedtexts[cs:#1][\c!breedte=\columnsetspanhsize,#2]
-   \setbox\scratchbox\ruledhbox \bgroup 
+   \setbox\scratchbox\hbox \bgroup 
    \dostartframedtext[cs:#1][\v!geen]
    \vskip-\lineheight\par\strut\par}
 

@@ -57,11 +57,14 @@
 
 % new
 
+\newtoks \everydefinedfont \relax 
+
 \def\dodefinedfont[#1]%
   {\iffirstargument\definefont[\string\definedfont][#1]\fi
-   \csname\string\definedfont\endcsname}
+   \csname\string\definedfont\endcsname
+   \the\everydefinedfont}
 
-\def\definedfont%
+\unexpanded\def\definedfont%
   {\dosingleempty\dodefinedfont}
 
 %%% message 14 added
@@ -1304,6 +1307,8 @@
        \fi
      \fi
    \fi}
+
+\let\definefontfile\definefontsynonym % dedicated to Taco Hoekwater 
 
 \def\setupfontsynonym%
   {\dodoubleempty\dosetupfontsynonym}

@@ -110,6 +110,8 @@
 %D \setlayer [identifier] [optional parameters] {data} 
 %D \stoptypen 
 
+\def\currentlayerdata{0}
+
 \def\setlayer%
   {\dodoubleargument\dosetlayer}
 
@@ -193,6 +195,98 @@
 \newdimen\@@layerxsiz \newdimen\@@layerxoff \newdimen\@@layerxpos
 \newdimen\@@layerysiz \newdimen\@@layeryoff \newdimen\@@layerypos
 
+\let\lastlayerxpos\!!zeropoint
+\let\lastlayerypos\!!zeropoint
+
+% \def\dododosetlayer[#1][#2]% will be sped up
+%   {\getparameters[\??ll#1][#2]%
+%    \doifvalue{\??ll#1\c!positie}\v!overlay  % slow
+%      {\getparameters[\??ll#1]
+%         [\c!breedte=\!!zeropoint,
+%          \c!hoogte=\!!zeropoint,
+%          \c!positie=\v!ja]}%
+%    \@@layerxsiz\getvalue{\??ll#1\c!breedte}%
+%    \@@layerysiz\getvalue{\??ll#1\c!hoogte }%
+%    \@@layerxpos\getvalue{\??ll#1\c!x}%
+%    \@@layerypos\getvalue{\??ll#1\c!y}%
+%    \doifelsevalue{\??ll#1\c!hoffset}\v!max
+%      {\@@layerxoff\@@layerxsiz}    
+%      {\@@layerxoff\getvalue{\??ll#1\c!hoffset}}%
+%    \doifelsevalue{\??ll#1\c!voffset}\v!max
+%      {\@@layeryoff\@@layerysiz}
+%      {\@@layeryoff\getvalue{\??ll#1\c!voffset}}%
+%    \advance\@@layerxoff \getvalue{\??ll#1\c!offset}%
+%    \advance\@@layeryoff \getvalue{\??ll#1\c!offset}%
+%    \@@layerxpos\getvalue{\??ll#1\c!sx}\@@layerxpos
+%    \@@layerypos\getvalue{\??ll#1\c!sy}\@@layerypos
+%    \@@layerxoff\getvalue{\??ll#1\c!sx}\@@layerxoff
+%    \@@layeryoff\getvalue{\??ll#1\c!sy}\@@layeryoff
+%    \doifelsevalue{\??ll#1\c!positie}{\v!ja}   % combine ^
+%      {\edef\layerpage{\MPp{lyr:\currentlayerdata}}%
+%       \scratchdimen\MPx{lyr:#1:\layerpage}%
+%       \scratchdimen-\scratchdimen
+%       \advance\scratchdimen\MPx{lyr:\currentlayerdata}%
+%       \xdef\lastlayerxpos{\the\scratchdimen}%
+%       \@@layerxpos\scratchdimen
+%       \scratchdimen\MPy{lyr:#1:\layerpage}%
+%       \advance\scratchdimen-\MPy{lyr:\currentlayerdata}%
+%       \@@layerypos\scratchdimen
+%       \xdef\lastlayerypos{\the\scratchdimen}%
+%       \setxvalue{\??ll#1\layerpage\c!positie}{\v!ja}%
+%       \setxvalue{\??ll#1\c!status}{\v!start}% needed ?
+%       \setbox\layerbox\vbox to \@@layerysiz
+%         {\hbox to \@@layerxsiz{\xypos{lyr:\currentlayerdata}\hss}\vss}}
+%      {\setbox\layerbox=\emptybox
+%       \global\let\lastlayerxpos\!!zeropoint
+%       \global\let\lastlayerypos\!!zeropoint
+%       \doifvalue{\??ll#1\c!hoek}{\v!onder}
+%         {\ifdim\@@layerysiz>\zeropoint
+%            \advance\@@layerypos-\@@layerysiz
+%            \@@layerypos-\@@layerypos
+%            \@@layeryoff-\@@layeryoff
+%          \fi}%
+%       \edef\layerpage{\getvalue{\??ll#1\c!pagina}}}%
+%    \doifsomething{\layerpage}
+%      {\edef\layerpage{:\layerpage}%
+%       \doifundefined{\@@layerbox#1\layerpage}
+%         {\global\expandafter\newbox\csname\@@layerbox#1\layerpage\endcsname}}%
+%    \global\setbox\csname\@@layerbox#1\layerpage\endcsname=\vbox
+%      {\offinterlineskip
+%       \ifvoid\csname\@@layerbox#1\layerpage\endcsname\else
+%         \ht\csname\@@layerbox#1\layerpage\endcsname\zeropoint
+%         \dp\csname\@@layerbox#1\layerpage\endcsname\zeropoint
+%         \wd\csname\@@layerbox#1\layerpage\endcsname\zeropoint
+%         \doifnotvalue{\??ll#1\c!richting}{\v!omgekeerd}
+%           {\box\csname\@@layerbox#1\layerpage\endcsname}%
+%       \fi
+%       \setbox\nextbox=\hbox
+%         {\alignedbox[\getvalue{\??ll#1\c!plaats}]\vbox{\box\nextbox}}%
+%       \smashbox\nextbox
+%       \vskip\@@layerypos
+%       \vskip\@@layeryoff
+%       \hskip\@@layerxpos
+%       \hskip\@@layerxoff
+%       \box\nextbox
+%       \ifvoid\csname\@@layerbox#1\layerpage\endcsname
+%         % already flushed
+%       \else
+%         % the reverse case % check !
+%         \vskip-\@@layerypos
+%         \vskip-\@@layeryoff
+%         \box\csname\@@layerbox#1\layerpage\endcsname
+%       \fi}%
+%    \ifvoid\layerbox\else\box\layerbox\fi}
+
+\def\setlastlayerpos#1%
+  {\edef\layerpage{\MPp{lyr:\currentlayerdata}}%
+   \scratchdimen\MPx{lyr:#1:\layerpage}%
+   \scratchdimen-\scratchdimen
+   \advance\scratchdimen\MPx{lyr:\currentlayerdata}%
+   \xdef\lastlayerxpos{\the\scratchdimen}%
+   \scratchdimen\MPy{lyr:#1:\layerpage}%
+   \advance\scratchdimen-\MPy{lyr:\currentlayerdata}%
+   \xdef\lastlayerypos{\the\scratchdimen}}
+
 \def\dododosetlayer[#1][#2]% will be sped up
   {\getparameters[\??ll#1][#2]%
    \doifvalue{\??ll#1\c!positie}\v!overlay  % slow
@@ -204,8 +298,12 @@
    \@@layerysiz\getvalue{\??ll#1\c!hoogte }%
    \@@layerxpos\getvalue{\??ll#1\c!x}%
    \@@layerypos\getvalue{\??ll#1\c!y}%
-   \@@layerxoff\getvalue{\??ll#1\c!hoffset}%
-   \@@layeryoff\getvalue{\??ll#1\c!voffset}%
+   \doifelsevalue{\??ll#1\c!hoffset}\v!max
+     {\@@layerxoff\@@layerxsiz}    
+     {\@@layerxoff\getvalue{\??ll#1\c!hoffset}}%
+   \doifelsevalue{\??ll#1\c!voffset}\v!max
+     {\@@layeryoff\@@layerysiz}
+     {\@@layeryoff\getvalue{\??ll#1\c!voffset}}%
    \advance\@@layerxoff \getvalue{\??ll#1\c!offset}%
    \advance\@@layeryoff \getvalue{\??ll#1\c!offset}%
    \@@layerxpos\getvalue{\??ll#1\c!sx}\@@layerxpos
@@ -213,19 +311,26 @@
    \@@layerxoff\getvalue{\??ll#1\c!sx}\@@layerxoff
    \@@layeryoff\getvalue{\??ll#1\c!sy}\@@layeryoff
    \doifelsevalue{\??ll#1\c!positie}{\v!ja}   % combine ^
-     {\edef\layerpage{\MPp{lyr:\currentlayerdata}}%
-      \scratchdimen\MPx{lyr:#1:\layerpage}%
-      \scratchdimen-\scratchdimen
-      \advance\scratchdimen\MPx{lyr:\currentlayerdata}%
-      \@@layerxpos\scratchdimen
-      \scratchdimen\MPy{lyr:#1:\layerpage}%
-      \advance\scratchdimen-\MPy{lyr:\currentlayerdata}%
-      \@@layerypos\scratchdimen
+     {%\edef\layerpage{\MPp{lyr:\currentlayerdata}}%
+      %\scratchdimen\MPx{lyr:#1:\layerpage}%
+      %\scratchdimen-\scratchdimen
+      %\advance\scratchdimen\MPx{lyr:\currentlayerdata}%
+      %\xdef\lastlayerxpos{\the\scratchdimen}%
+      %\@@layerxpos\scratchdimen
+      %\scratchdimen\MPy{lyr:#1:\layerpage}%
+      %\advance\scratchdimen-\MPy{lyr:\currentlayerdata}%
+      %\@@layerypos\scratchdimen
+      %\xdef\lastlayerypos{\the\scratchdimen}%
+\setlastlayerpos{#1}%
+\@@layerxpos\lastlayerxpos
+\@@layerypos\lastlayerypos
       \setxvalue{\??ll#1\layerpage\c!positie}{\v!ja}%
       \setxvalue{\??ll#1\c!status}{\v!start}% needed ?
       \setbox\layerbox\vbox to \@@layerysiz
         {\hbox to \@@layerxsiz{\xypos{lyr:\currentlayerdata}\hss}\vss}}
      {\setbox\layerbox=\emptybox
+      \global\let\lastlayerxpos\!!zeropoint
+      \global\let\lastlayerypos\!!zeropoint
       \doifvalue{\??ll#1\c!hoek}{\v!onder}
         {\ifdim\@@layerysiz>\zeropoint
            \advance\@@layerypos-\@@layerysiz

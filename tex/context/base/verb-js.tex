@@ -1,0 +1,171 @@
+%D \module
+%D   [       file=verb-js,
+%D        version=1998.02.7,
+%D          title=\CONTEXT\ Verbatim Macros,
+%D       subtitle=Pretty \JAVASCRIPT\ Verbatim,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
+%C details. 
+
+\writestatus{loading}{Context Support Macros / Pretty JavaScript Verbatim}
+
+%D In \CONTEXT\ we support \JAVASCRIPT\ inclusion in \PDF\
+%D documents and thereby enter the field of authoring. Of
+%D course we also want to pretty print such scripts, that look
+%D like: 
+%D 
+%D \startJS
+%D alfa = beta*2 ;       // both alfa and beta are numbers // indeed 
+%D if (odd(alfa))
+%D   { do_something() }  
+%D else
+%D   { do_nothing() }    /* As we can see /* in this example */ there
+%D how_about(alfa) ;        is no fi needed. Also no semicolons are
+%D or_about(beta) ;         needed after a right brace. */
+%D \stopJS
+%D 
+%D Because \JAVASCRIPT\ looks much like \PERL, we will use
+%D a slightly adapted \PERL\ visualization. First we load the
+%D \PERL\ module:
+
+\ifx\undefined\setupprettyPLtype \input verb-pl \relax \fi
+
+\unprotect
+
+%D The main difference between the \JAVASCRIPT\ and \PERL\
+%D interpreters concern comments. Where \TEX, \METAPOST\ and
+%D \PERL\ have one comment symbol (\type{%}, \type{%} and
+%D \type{#}), \JAVA\ has the one line comment sequence
+%D \type{//} and the multi line comment delimiters \type{/*}
+%D and \type{*/}.
+%D
+%D We need a counter to keep track of multi line comment
+%D nesting.
+
+\newcount\JScommentlevel
+
+%D We handle both \type{%} and \type{#} a bit different:
+
+\gdef\JSsetspecials%
+  {\PLsetspecials
+   \setpretty`\#=32
+   \setpretty`\%=41
+   \setpretty`\/=43
+   \setpretty`\*=44 }
+
+%D We also need a few more handlers: one for \type{//} and
+%D \type{/*} and one for \type{*/}.
+
+\gdef\JSsethandlers%
+  {\PLsethandlers
+   \installprettyhandler 43 \JStypefourthree
+   \installprettyhandler 44 \JStypefourfour }
+
+%D We can inherit most of the settings:
+
+\gdef\JSsetcontrols%
+  {\PLsetcontrols
+   \def\flushrestofverbatimline%
+     {\endPLtypesix
+      \ifcase\JScommentlevel \inPLcommentfalse \fi
+      \PLverbosefalse
+      \PLverboseskipped=0}}
+
+\gdef\JSsetvariables
+  {\PLsetvariables
+   \global\JScommentlevel=0 }
+
+\gdef\setupprettyJStype%
+  {\def\prettyidentifier{JS}%
+   \let\PLidentifiers=\JSidentifiers
+   \let\PLvariables=\JSvariables
+   \JSsetvariables
+   \JSsetcontrols
+   \JSsethandlers
+   \JSsetspecials
+   \PLsetdiagnostics}
+
+%D The main complication is that we have to look upto four
+%D characters ahead. Such macros are hard to understand but
+%D they do work!
+
+\gdef\JStypefourthree%
+  {\handlenextnextpretty\doJStypefourthree\PLtypefourtwo}
+
+\gdef\doJStypefourthree#1#2%
+  {\getprettydata{#2}%
+   \ifnum\prettytype=43
+     \let\next=\dodoJStypefourthree
+   \else\ifnum\prettytype=44
+     \global\advance\JScommentlevel by 1
+     \global\inPLcommenttrue
+     \PLverbosecorrection
+     \let\next=\JStogglecomment
+   \else
+     \let\next=\PLtypefourtwo
+   \fi\fi
+   \next{#1}#2}
+
+\gdef\JStogglecomment#1#2%
+  {\ifnum\JScommentlevel=1
+     \beginofpretty[\!!prettyone]\getpretties{#1}{#2}\endofpretty
+   \else
+     \getpretties{#1}{#2}%
+   \fi}
+
+\gdef\dodoJStypefourthree% #1%
+  {\endPLtypesix
+   \handlenextnextpretty\dododoJStypefourthree\dodododoPLtypefourthree}
+
+\gdef\dododoJStypefourthree%
+  {\ifnewpretty\expandafter\handlenewpretty\fi\dodododoJStypefourthree}
+
+\gdef\dodododoJStypefourthree#1#2%
+  {\ifinPLcomment
+     \getpretties{#1}{#2}%
+   \else
+     \global\inPLcommenttrue
+     \PLverbosecorrection
+     \ifnaturaltextext
+       \let\next\naturaltextext
+     \else
+       \def\next{\beginofpretty[\!!prettyone]\getpretties{#1}{#2}\endofpretty}%
+     \fi
+     \expandafter\next
+   \fi}
+
+\gdef\JStypefourfour%
+  {\handlenextnextpretty\doJStypefourfour\PLtypefourtwo}
+
+\gdef\doJStypefourfour#1#2%
+  {\getprettydata{#2}%
+   \ifnum\prettytype=43
+     \JStogglecomment{#1}#2%
+     \global\advance\JScommentlevel by -1
+     \ifcase\JScommentlevel \global\inPLcommentfalse \fi
+   \else
+     \endPLtypesix
+     \beginofpretty[\!!prettyfour]\getpretty{#1}\endofpretty
+     \expandafter#2%
+   \fi}
+
+%D We need different (less) reserved words. This list replaces
+%D the \PERL\ one.
+
+\useprettyidentifiers \JSidentifiers \JSsetspecials
+  abstract boolean break byte case catch char class const
+  continue default delete do double else extends false final
+  finally float for function goto if implements import in
+  instanceof int interface long native new null package
+  private protected public return short static super switch
+  synchronized this throw throws transient true try var void
+  while with
+
+\useprettyidentifiers \JSvariables \JSsetspecials
+  not-yet-defined
+
+\protect \endinput  

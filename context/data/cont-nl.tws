@@ -729,6 +729,7 @@ var:hoek:rond,recht::
 var:straal:*maat::
 var:leeg:ja,nee::
 var:voorgrondkleur:*naam::
+var:voorgrondletter:*naam::
 val:*tekst::
 stopsetup
 
@@ -1640,6 +1641,7 @@ var:rechterrandafstand:*maat::
 var:rugoffset:*maat::
 var:kopoffset:*maat::
 var:letter:normaal,vet,schuin,vetschuin,type,kap,klein...,*commando::
+var:kleur:*naam::
 var:markering:aan,uit,kleur::
 var:plaats:links,midden,rechts,onder,boven, enkelzijdig,dubbelzijdig::
 var:schaal:*maat::
@@ -1675,7 +1677,7 @@ stopsetup
 startsetup
 com:verplaatsopgrid:
 typ:val/:
-val:boven,beide,onder:beide:
+val:boven,beide,onder,-boven,-beide,-onder, hoog,midden,laag,pagina,standaard,geen, ruim,passend:standaard:
 stopsetup
 
 startsetup
@@ -1780,7 +1782,7 @@ startsetup
 com:stelblokkopjesin:
 typ:vars/:
 var:plaats:boven,onder,geen,hoog,laag,midden::
-var:breedte:passend,max,*maat::
+var:breedte:passend,ruim,max,*maat::
 var:kopletter:normaal,vet,schuin,vetschuin,type,kap,klein...,*commando::
 var:letter:normaal,vet,schuin,vetschuin,type,kap,klein...,*commando::
 var:nummer:ja,nee::
@@ -3212,7 +3214,8 @@ var:EQ:*tekst::
 var:lijnkleur:*naam::
 var:uitlijnen:links,midden,rechts,normaal::
 var:lijndikte:*maat::
-var:afstand:blanko,diepte,*maat,klein,middel,groot,geen::
+var:afstand:blanko,grid,diepte,*maat,klein,middel,groot,geen::
+var:korps:5pt,...,12pt,klein,groot::
 stopsetup
 
 startsetup
@@ -3232,6 +3235,7 @@ var:uitlijnen:links,midden,rechts,normaal::
 var:achtergrond:raster,kleur,geen::
 var:achtergrondraster:*getal::
 var:achtergrondkleur:*naam::
+var:korps:5pt,...,12pt,klein,groot::
 stopsetup
 
 startsetup

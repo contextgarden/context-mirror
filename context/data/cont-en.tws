@@ -729,6 +729,7 @@ var:corner:round,rectangular::
 var:radius:*dimension::
 var:empty:yes,no::
 var:foregroundcolor:*name::
+var:foregroundstyle:*name::
 val:*text::
 stopsetup
 
@@ -1640,6 +1641,7 @@ var:rightedgedistance:*dimension::
 var:horoffset:*dimension::
 var:veroffset:*dimension::
 var:style:normal,bold,slanted,boldslanted,type,cap,small...,*command::
+var:color:*name::
 var:marking:on,off,color::
 var:location:left,middle,right,bottom,top, singlesided,doublesided::
 var:scale:*dimension::
@@ -1675,7 +1677,7 @@ stopsetup
 startsetup
 com:moveongrid:
 typ:val/:
-val:top,both,bottom:both:
+val:top,both,bottom,-top,-both,-bottom, high,middle,low,page,standard,none, broad,fit:standard:
 stopsetup
 
 startsetup
@@ -1780,7 +1782,7 @@ startsetup
 com:setupcaptions:
 typ:vars/:
 var:location:top,bottom,none,high,low,middle::
-var:width:fit,max,*dimension::
+var:width:fit,broad,max,*dimension::
 var:headstyle:normal,bold,slanted,boldslanted,type,cap,small...,*command::
 var:style:normal,bold,slanted,boldslanted,type,cap,small...,*command::
 var:number:yes,no::
@@ -3212,7 +3214,8 @@ var:EQ:*text::
 var:rulecolor:*name::
 var:align:left,middle,right,normal::
 var:rulethickness:*dimension::
-var:distance:blank,depth,*dimension,small,medium,big,none::
+var:distance:blank,grid,depth,*dimension,small,medium,big,none::
+var:bodyfont:5pt,...,12pt,small,big::
 stopsetup
 
 startsetup
@@ -3232,6 +3235,7 @@ var:align:left,middle,right,normal::
 var:background:screen,color,none::
 var:backgroundscreen:*number::
 var:backgroundcolor:*name::
+var:bodyfont:5pt,...,12pt,small,big::
 stopsetup
 
 startsetup
