@@ -135,33 +135,16 @@
     \def\@@pdfexpandbonus{autoexpand}%
   \fi
 
-  \beginTEX
+  \def\setfontadjusting#1%
+    {\doifvalue{\@fha@\@fha@#1\c!type}\v!hz{\dosetfontadjusting{#1}}}
 
-    \def\setfontadjusting#1%
-      {\expandafter\ifx\csname\@fha@\@fha@#1\c!stap\endcsname\relax\else
-         \iftracefonthandling\showfontadjusting{#1}\fi
-         \pdffontexpand\handledfont
-           \csname\@fha@\@fha@#1\c!min \endcsname\space
-           \csname\@fha@\@fha@#1\c!max \endcsname\space
-           \csname\@fha@\@fha@#1\c!stap\endcsname\space
-           \@@pdfexpandbonus\relax
-       \fi}
-
-  \endTEX
-
-  \beginETEX
-
-    \def\setfontadjusting#1%
-      {\ifcsname\@fha@\@fha@#1\c!stap\endcsname
-         \iftracefonthandling\showfontadjusting{#1}\fi
-         \pdffontexpand\handledfont
-           \csname\@fha@\@fha@#1\c!min \endcsname\space
-           \csname\@fha@\@fha@#1\c!max \endcsname\space
-           \csname\@fha@\@fha@#1\c!stap\endcsname\space
-           \@@pdfexpandbonus\relax
-       \fi}
-
-  \endETEX
+  \def\dosetfontadjusting#1%
+    {\iftracefonthandling\showfontadjusting{#1}\fi
+     \pdffontexpand\handledfont
+       \csname\@fha@\@fha@#1\c!min \endcsname\space
+       \csname\@fha@\@fha@#1\c!max \endcsname\space
+       \csname\@fha@\@fha@#1\c!stap\endcsname\space
+       \@@pdfexpandbonus\relax}
 
   \def\showfontadjusting#1%
     {\writestatus\m!handlings{[adjust]\space#1\space
@@ -194,31 +177,15 @@
   \lproddimen1000\onepoint \divide\lproddimen\maxcard
   \rproddimen1000\onepoint \divide\rproddimen\maxcard
 
-  \beginTEX
+  \def\setprotrudingfactor#1%
+    {\doifvalue{\@fha@\@fha@#1\c!type}\v!hangend{\dosetprotrudingfactor{#1}}}
 
-    \def\setprotrudingfactor#1% mo \onepoint instead of pt
-      {\expandafter\ifx\csname\@fha@\@fha@#1\c!links\endcsname\relax\else
-         \lproddimen\csname\@fha@\@fha@#1\c!links\endcsname\s!pt
-         \multiply\lproddimen\plusthousand\divide\lproddimen\maxcard\relax
-         \rproddimen\csname\@fha@\@fha@#1\c!rechts\endcsname\s!pt
-         \multiply\rproddimen\plusthousand\divide\rproddimen\maxcard\relax
-         \iftracefonthandling\showprotrudingfactor{#1}\fi
-       \fi}
-
-  \endTEX
-
-  \beginETEX
-
-    \def\setprotrudingfactor#1% mo \onepoint instead of pt
-      {\ifcsname\@fha@\@fha@#1\c!links\endcsname
-         \lproddimen\csname\@fha@\@fha@#1\c!links\endcsname\s!pt
-         \multiply\lproddimen\plusthousand\divide\lproddimen\maxcard\relax
-         \rproddimen\csname\@fha@\@fha@#1\c!rechts\endcsname\s!pt
-         \multiply\rproddimen\plusthousand\divide\rproddimen\maxcard\relax
-         \iftracefonthandling\showprotrudingfactor{#1}\fi
-       \fi}
-
-  \endETEX
+  \def\dosetprotrudingfactor#1% mo \onepoint instead of pt
+    {\lproddimen\csname\@fha@\@fha@#1\c!links\endcsname\s!pt
+     \multiply\lproddimen\plusthousand\divide\lproddimen\maxcard\relax
+     \rproddimen\csname\@fha@\@fha@#1\c!rechts\endcsname\s!pt
+     \multiply\rproddimen\plusthousand\divide\rproddimen\maxcard\relax
+     \iftracefonthandling\showprotrudingfactor{#1}\fi}
 
   \def\showprotrudingfactor#1%
     {\writestatus\m!handlings{[protrude]\space#1\space
@@ -357,7 +324,7 @@
 
 \def\dodefinefonthandling[#1][#2][#3]%
   {\setvalue{\@fha@\@fha@#1}{#2}%
-   \getparameters[\@fha@\@fha@#1][\c!links=1,\c!rechts=1,\c!min=20,\c!max=20,\c!stap=5,#3]}
+   \getparameters[\@fha@\@fha@#1][\c!type=\v!hangend,\c!links=1,\c!rechts=1,\c!min=20,\c!max=20,\c!stap=5,#3]}
 
 \def\setupfonthandling
   {\dodoubleempty\dosetupfonthandling}

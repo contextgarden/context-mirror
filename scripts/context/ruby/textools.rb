@@ -11,7 +11,7 @@
 banner = ['TeXTools', 'version 1.2', '2002/2004', 'PRAGMA ADE/POD']
 
 unless defined? ownpath
-    ownpath = $0.sub(/[\\\/]\w*?\.rb/i,'')
+    ownpath = $0.sub(/[\\\/][a-z0-9\-]*?\.rb/i,'')
     $: << ownpath
 end
 

@@ -194,8 +194,7 @@
 %D filetype is specified, we scan for the next set of files.
 %D As one can see, we prefer outlines over bitmaps.
 
-\def\figuretypes%
-  {\c!eps,\c!mps,\c!pdf,\c!png,\c!jpg,\c!tif} % ,\c!tex,\c!tmp} % \c!mov
+\def\figuretypes{\c!eps,\c!mps,\c!pdf,\c!png,\c!jpg,\c!tif} % ,\c!tex,\c!tmp} % \c!mov
 
 %D Instead of using a comma separated list, we could have use a
 %D faster alternative, but the current implementation is not
@@ -949,6 +948,10 @@
 \chardef\splitexternalfigure=0 % 0 nosplit 1 split/yes 2 split/no
 
 \newif\ifgridfigure
+
+% the preset for mov/avi should move to the driver
+%
+% this whole mess needs a clean up anyway
 
 \def\calculateexternalfigure[#1][#2][#3][#4][#5][#6]%
   {\mindermeldingen

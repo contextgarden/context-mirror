@@ -103,7 +103,7 @@
      \MPruntrue
      \doifsomething{#1}{\def\MPgraphicfile{#1}}%
      \startwritingMPgraphic
-     \writecheckMPgraphic{#2}%
+     \writecheckedMPgraphic{#2}%
      \stopwritingMPgraphic
      \egroup}
 
@@ -383,7 +383,7 @@
 %D The next alternative permits extensions in other modules
 %D without the need to know the details of testing.
 
-\newtoks\MPTEXgrapicchecks
+\newtoks\MPTEXgraphicchecks
 
 % \long\def\checkMPTEXgraphic#1%
 %   {\ifforceMPTEXgraphic
@@ -391,7 +391,7 @@
 %    \else
 %      \global\MPTEXgraphicfalse
 %      \expandafter\convertargument#1\to\MPascii
-%      \the\MPTEXgrapicchecks\relax % \relax is end condition!
+%      \the\MPTEXgraphicchecks\relax % \relax is end condition!
 %    \fi}
 
 \long\def\writecheckedMPgraphic#1%
@@ -400,8 +400,9 @@
    \else
      \global\MPTEXgraphicfalse
      \expandafter\convertargument#1\to\MPascii
-     \the\MPTEXgrapicchecks\relax % \relax is end condition!
+     \the\MPTEXgraphicchecks\relax % \relax is end condition!
    \fi
+   \flushMPTEXgraphic % verbatimtex etc
    \writeMPgraphic{#1}}
 
 %D We could have used a kind of array approach using a
@@ -415,7 +416,7 @@
    \@EA\appendtoks
      \@EA\doifincsnameelse\csname MPascii#1\endcsname\MPascii
        {\global\MPTEXgraphictrue\gobbleuntil\relax}\donothing
-   \to \MPTEXgrapicchecks}
+   \to \MPTEXgraphicchecks}
 
 \forceMPTEXcheck{etex}
 \forceMPTEXcheck{textext}
@@ -434,9 +435,9 @@
 %D \stoptypen
 
 \def\flushMPTEXgraphic
-  {\ifMPTEXgraphic \ifx\everyMPTEXgraphic\emptytoks \else
+  {\ifMPTEXgraphic
      \immediate\write\MPwrite{verbatimtex \the\everyMPTEXgraphic\space etex;}%
-   \fi \fi}
+   \fi}
 
 \long\def\flushMPgraphicline#1#2;%
   {\ifx#1\relax \else
@@ -616,7 +617,7 @@
      \theMPinclusions
      \global\let\theMPinclusions\relax
    \fi
-   \flushMPTEXgraphic
+   %\flushMPTEXgraphic
    \ifMPrun \else
      \immediate\write\MPwrite{let mprunend = end ;}%
      \immediate\write\MPwrite{beginfig(\the\currentMPgraphic);}%
