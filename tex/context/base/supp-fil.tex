@@ -256,6 +256,8 @@
 
 \ifx\normalinput\undefined \let\normalinput\input \fi 
 
+\newif\iftracefiles
+
 \def\maxreadlevel{3}
 
 \def\doreadfile#1#2#3#4%
@@ -275,7 +277,7 @@
 \def\redoreadfile#1#2#3%
   {\immediate\openin\scratchread=#1\relax
    \ifeof\scratchread
-   % \writestatus\m!systems{cannot locate #1}\wait
+     \iftracefiles\writestatus\m!systems{cannot locate #1}\fi
      \immediate\closein\scratchread
      \decrement\readlevel\relax
      \ifnum\readlevel>\zerocount
@@ -286,7 +288,8 @@
      \fi
    \else
      \immediate\closein\scratchread 
-   % \writestatus\m!systems{#1 located}\wait
+     \edef\readfilename{#1}%
+     \iftracefiles\writestatus\m!systems{#1 located}\fi
      \def\next{#2\dodoreadfile}%
    \fi
    \next}               

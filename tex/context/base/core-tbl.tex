@@ -594,6 +594,41 @@
 \let\tabulateheadcontent\empty
 \let\tabulatetailcontent\empty
 
+% \def\checkfulltabulatecontent
+%   {\ifundefined{\??tt\currenttabulate\v!hoofd}%
+%      \let\tabulateheadcontent\empty
+%    \else
+%      \@EA\let\@EA\tabulateheadcontent
+%      \csname\??tt\currenttabulate\v!hoofd\endcsname
+%    \fi
+%    \ifundefined{\??tt\currenttabulate\v!voet}%
+%      \let\tabulatetailcontent\empty
+%    \else
+%      \@EA\let\@EA\tabulatetailcontent
+%        \csname\??tt\currenttabulate\v!voet\endcsname
+%    \fi}
+% 
+% \newconditional\tabulatesomeamble
+% 
+% % \def\fulltabulatecontent
+% %   {\tabulatecontent}
+% 
+% \def\fulltabulatecontent 
+%   {\ifx\tabulateheadcontent\empty\else
+%      \TABLEnoalign{\global\settrue\tabulatesomeamble}%
+%      \tabulateheadcontent
+%      \TABLEnoalign{\global\setfalse\tabulatesomeamble}%
+%    \fi
+%    \ignorespaces\tabulatecontent
+%    \ifx\tabulatetailcontent\empty\else
+%      \TABLEnoalign{\global\settrue\tabulatesomeamble}%
+%      \tabulatetailcontent
+%    \fi}
+%
+% the previous code breaks on first \HL 
+
+\newconditional\tabulatesomeamble
+
 \def\checkfulltabulatecontent
   {\ifundefined{\??tt\currenttabulate\v!hoofd}%
      \let\tabulateheadcontent\empty
@@ -606,25 +641,24 @@
    \else
      \@EA\let\@EA\tabulatetailcontent
        \csname\??tt\currenttabulate\v!voet\endcsname
+   \fi
+   \ifx\tabulateheadcontent\empty\else
+     \def\tabulateheadcontent
+       {\TABLEnoalign{\global\settrue\tabulatesomeamble}%
+        \tabulateheadcontent
+        \TABLEnoalign{\global\setfalse\tabulatesomeamble}}%
+   \fi
+   \ifx\tabulatetailcontent\empty\else
+     \def\tabulatetailcontent
+       {\TABLEnoalign{\global\settrue\tabulatesomeamble}%
+        \tabulatetailcontent}%
    \fi}
-
-\newconditional\tabulatesomeamble
-
-% \def\fulltabulatecontent
-%   {\tabulatecontent}
 
 \def\fulltabulatecontent
-  {\ifx\tabulateheadcontent\empty\else
-     \TABLEnoalign{\global\settrue\tabulatesomeamble}%
-     \tabulateheadcontent
-     \TABLEnoalign{\global\setfalse\tabulatesomeamble}%
-   \fi
-   \ignorespaces\tabulatecontent
-   \ifx\tabulatetailcontent\empty\else
-     \TABLEnoalign{\global\settrue\tabulatesomeamble}%
-     \tabulatetailcontent
-   \fi}
-
+  {\tabulateheadcontent
+   \tabulatecontent
+   \tabulatetailcontent}
+ 
 \setvalue{\e!start\e!tabulatehead}%
   {\dosingleempty\dostartstarttabulatehead}
 

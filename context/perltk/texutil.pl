@@ -2673,7 +2673,7 @@ my @dontasksuffixes =
      "mprun.mp",  "mprun.mpd",  "mprun.mpo",  "mprun.mpy") ;
 my @forsuresuffixes =
   ("tui","tup","ted","tes","top",
-   "log","tmp","run",
+   "log","tmp","run","bck",
    "mpt","mpx","mpd","mpo") ;
 my @texonlysuffixes =
   ("dvi","ps","pdf") ;
