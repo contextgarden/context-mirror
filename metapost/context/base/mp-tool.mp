@@ -1520,26 +1520,26 @@ vardef inverted primary p =
   (p uncolored white)
 enddef ;
 
-primarydef p softened c =
-  if color p :
-    tripled(c) * p
-  else :
-    image
-      (save cc ; color cc ; cc := tripled(c) ;
-       for i within p :
-         addto currentpicture
-         if stroked i or filled i :
-           if filled i : contour else : doublepath fi pathpart i
-           dashed dashpart i withpen penpart i
-         else :
-          also i
-         fi
-         withcolor (redpart   cc * redpart   i,
-                    greenpart cc * greenpart i,
-                    bluepart  cc * bluepart  i) ;
-       endfor ;)
-  fi
-enddef ;
+% primarydef p softened c =
+%   if color p :
+%     tripled(c) * p
+%   else :
+%     image
+%       (save cc ; color cc ; cc := tripled(c) ;
+%        for i within p :
+%          addto currentpicture
+%          if stroked i or filled i :
+%            if filled i : contour else : doublepath fi pathpart i
+%            dashed dashpart i withpen penpart i
+%          else :
+%           also i
+%          fi
+%          withcolor (redpart   cc * redpart   i,
+%                     greenpart cc * greenpart i,
+%                     bluepart  cc * bluepart  i) ;
+%        endfor ;)
+%   fi
+% enddef ;
 
 primarydef p softened c =
   begingroup

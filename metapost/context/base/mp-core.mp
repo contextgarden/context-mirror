@@ -1242,7 +1242,7 @@ vardef PrepareSyncTasks(expr n, collapse, extendtop, prestartnext) =
         NOfSyncPaths := NOfSyncPaths + 1 ;
         if not ok :
           if i>1 :
-% not yet correct when two of teh same follow each other
+% not yet correct when two of the same follow each other
             if sync_t[n][i-1] = sync_t[n][i] :
               SyncPaths[NOfSyncPaths] := SyncBox(n, i, SyncLeftOffset, SyncWidth, PaperHeight, -PaperHeight) ;
               SyncTasks[NOfSyncPaths] := i ;

@@ -35,6 +35,12 @@
 --en=? --ve=lucas --co=antiqua --re
 --en=? --ve=lucas --co=antiqua --so=lucas/antiqua --ma --in
 
+# lucas thesans
+
+--en=? --ve=lucas --co=thesans --re
+--en=? --ve=lucas --co=thesans --so=lucas/thesans --ma --in
+--en=? --ve=lucas --co=thesans --so=lucas/thesans --ma --in --expert
+
 # creative arcadia
 
 --en=? --ve=creative --co=arcadia   --re

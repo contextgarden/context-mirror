@@ -1704,6 +1704,7 @@
                \else
                  \setupspacing
                \fi
+% overwegen \dontleavehmode, else unwanted cr due to #2
                \ifcase\headtimingmode#2\fi
                \getvalue{\??ko#1\c!voorcommando}%
                \placeheadmargintexts{#1}% binnen #3?
@@ -1762,6 +1763,7 @@
                \else
                  \setupspacing
                \fi
+% overwegen \dontleavehmode, else unwanted cr due to #2
                \ifcase\headtimingmode#2\fi
                \placeheadmargintexts{#1}% binnen #3?
                \ifdisplaysectionhead
@@ -1810,8 +1812,7 @@
    \resetinteractionparameter\c!kleur
    \resetinteractionparameter\c!contrastkleur
    \strictouterreferencestrue % tzt instelling
-   \def\localheadsetup%
-     {\dolocalheadsetup{#1}}%
+   \def\localheadsetup{\dolocalheadsetup{#1}}%
    \startsynchronisatie}
 
 \def\endheadplacement#1#2%

@@ -207,10 +207,10 @@
      \@EA\secondoftwoarguments
    \fi}
 
-\def\doifXMLtextelse#1% new
+\gdef\doifXMLtextelse#1% new
   {\doiftextelse{\simplifyXMLelements#1}}
 
-\def\doifXMLtext#1#2% new
+\gdef\doifXMLtext#1#2% new
   {\doiftextelse{\simplifyXMLelements#1}{#2}\donothing}
 
 \gdef\convertXMLelement#1\to#2%
