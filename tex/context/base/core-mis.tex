@@ -1667,49 +1667,6 @@
      \setrigidcolumnhsize\hsize\@@lddistance\@@ldn
    \fi}
 
-% \def\afterbothpairedboxes
-%   {\setbox\secondpairedbox\vbox
-%      {\ifnum\@@ldn>1 \rigidcolumnbalance\nextbox \else \flushnextbox \fi}%
-%    \ifnum\pairedlocationa<2\hbox\else\vbox\fi\bgroup % hide vsize
-%    \forgetall
-%    \ifnum\pairedlocationa<2
-%      \scratchdimen\maxoftwoboxdimens\ht\firstpairedbox\secondpairedbox
-%      \vsize\scratchdimen
-%      \ifdim\scratchdimen<\@@ldhoogte\relax % can be \vsize
-%        \scratchdimen\@@ldhoogte
-%      \fi
-%      \ifdim\scratchdimen>\@@ldmaxhoogte\relax
-%        \scratchdimen\@@ldmaxhoogte
-%      \fi
-%      \valignpairedbox\firstpairedbox \scratchdimen
-%      \valignpairedbox\secondpairedbox\scratchdimen
-%    \else
-%      \scratchdimen\maxoftwoboxdimens\wd\firstpairedbox\secondpairedbox
-%      \halignpairedbox\firstpairedbox \scratchdimen
-%      \halignpairedbox\secondpairedbox\scratchdimen
-%      \scratchdimen\ht\secondpairedbox
-%      \vsize\scratchdimen
-%      \ifdim\ht\secondpairedbox<\@@ldhoogte\relax % can be \vsize
-%        \scratchdimen\@@ldhoogte\relax % \relax needed
-%      \fi
-%      \ifdim\scratchdimen>\@@ldmaxhoogte\relax % todo: totale hoogte
-%        \scratchdimen\@@ldmaxhoogte\relax % \relax needed
-%      \fi
-%      \ifdim\scratchdimen>\ht\secondpairedbox
-%        \setbox\secondpairedbox\vbox to \scratchdimen
-%          {\ifnum\pairedlocationa=3 \vss\fi %
-%           \box\secondpairedbox
-%           \ifnum\pairedlocationa=2 \vss\fi}% \kern\zeropoint
-%      \fi
-%    \fi
-%    \ifcase\pairedlocationa
-%      \box\secondpairedbox\hskip\@@ldafstand\box\firstpairedbox \or
-%      \box\firstpairedbox \hskip\@@ldafstand\box\secondpairedbox\or
-%      \box\secondpairedbox\par  \@@ldtussen \box\firstpairedbox \or
-%      \box\firstpairedbox \par  \@@ldtussen \box\secondpairedbox\else
-%    \fi
-%    \egroup}
-
 \def\afterbothpairedboxes
   {\setbox\secondpairedbox\vbox
      {% \localstartcolor[\@@ldcolor]% does not work yet

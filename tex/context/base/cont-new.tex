@@ -31,6 +31,15 @@
 
 \unexpanded\def\xmlrent#1{\doXMLentity#1;}
 
+% \page[left]
+% \definecolumntextarea[intro][left][x=1,y=1,nx=4,ny=20,state=start,background=introlayer]
+% \setupcolumntextareatext[intro][left][\setups{intro}]
+% \flushcolumntextareas
+
+\def\flushcolumntextareas
+  {\initializecolumntextareas
+   \setvsize}
+
 % And so, after a few years of keeping this potentially dangerous
 % speedup in cont-exp, we now move it to the kernel: the next
 % patch is 30\% faster on main interface (seconds) (9->7 sec on

@@ -348,7 +348,7 @@ class CommandLine
         end
     end
 
-    def locatedouble (key, value)
+    def locatedouble(key, value)
 
         foundkey, foundkind = nil, nil
 
@@ -376,10 +376,15 @@ class CommandLine
         end
         if foundkey then
             @provided[foundkey] = true
-            if value.class == FalseClass then
-                @options[foundkey] = true
+            # if value.class == FalseClass then
+                # @options[foundkey] = true
+            # else
+                # @options[foundkey] = if foundkind == VALUE then cleanvalue(value) else true end
+            # end
+            if foundkind == VALUE then
+                @options[foundkey] = cleanvalue(value)
             else
-                @options[foundkey] = if foundkind == VALUE then cleanvalue(value) else true end
+                @options[foundkey] = true
             end
         else
             if value.class == FalseClass then
@@ -391,7 +396,7 @@ class CommandLine
 
     end
 
-    def locatesingle (key, value)
+    def locatesingle(key, value)
 
         @registered.each do |option, shortcut, kind|
             if shortcut == key then
@@ -403,7 +408,7 @@ class CommandLine
 
     end
 
-    def locateseries (series, value)
+    def locateseries(series, value)
 
         series.each do |key|
             locatesingle(key,cleanvalue(value))

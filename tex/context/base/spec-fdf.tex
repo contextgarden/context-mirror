@@ -1416,9 +1416,9 @@
 \def\setFDFalignment[#1]%
   {\processaction
      [#1]
-     [ \v!left=>\edef\FDFalign{2},    % raggedleft
+     [  \v!left=>\edef\FDFalign{2},    % raggedleft
       \v!middle=>\edef\FDFalign{1},    % raggedcenter
-      \v!right=>\edef\FDFalign{0}]}   % raggedright
+       \v!right=>\edef\FDFalign{0}]}   % raggedright
 
 %D \macros
 %D   {setFDFattributes}
@@ -1448,7 +1448,7 @@
 
 \def\setFDFattributes[#1,#2,#3,#4]% style, color, backgroundcolor, framecolor
   {\bgroup % nog interlinie: n TL
-   \setbox\scratchbox=\hbox
+   \setbox\scratchbox\hbox
      \bgroup
        \doconvertfont{#1}{}%
        \PointsToBigPoints\bodyfontsize\size % x/xx, so better the actual size
@@ -1589,12 +1589,10 @@
 %D which simply redefined the previous macro to one that prints
 %D a message to the console.
 
-\def\testFDFactions%
+\def\testFDFactions
   {\def\setFDFaction##1##2%
-     {\doPSsanitizeJScode console.show();console.println("executing:##1");
-        \to\sanitizedJScode
-      \edef\FDFactions%
-        {\FDFactions /##1 << /S /JavaScript /JS (\sanitizedJScode) >> }}}
+     {\doPSsanitizeJScode console.show();console.println("executing:##1"); \to\sanitizedJScode
+      \edef\FDFactions{\FDFactions /##1 << /S /JavaScript /JS (\sanitizedJScode) >> }}}
 
 %D \macros
 %D   {doFDFregistercalculationset}
@@ -1665,7 +1663,7 @@
 \newif\ifbuildFDFdictionary     \buildFDFdictionarytrue
 \newif\ifbuildFDFencodingvector \buildFDFencodingvectortrue
 
-\def\defineFDFfonts%
+\def\defineFDFfonts
   {\let\FDFfonts\empty
    \processcommacommand[\FDFusedfonts]\defineFDFfont}
 
@@ -1771,13 +1769,13 @@
 \def\dosetuppageview#1% watch the v-h swapping here
   {\processaction
      [#1]
-     [\v!fit=>\def\PDFpageviewkey  {fit}\def\PDFpageviewwrd{/Fit},
-      \v!width=>\def\PDFpageviewkey {fith}\def\PDFpageviewwrd{/FitH},
-       \v!height=>\def\PDFpageviewkey {fitv}\def\PDFpageviewwrd{/FitV},
-   \v!minbreedte=>\def\PDFpageviewkey{fitbh}\def\PDFpageviewwrd{/FitBH},
-    \v!minhoogte=>\def\PDFpageviewkey{fitbv}\def\PDFpageviewwrd{/FitBV},
-    \v!standard=>\def\PDFpageviewkey{xyz \PDFpagexyzspec}\def\PDFpageviewwrd{/XYZ \PDFpagexyzspec},
-      \s!unknown=>\def\PDFpageviewkey  {fit}\def\PDFpageviewwrd{/Fit}]%
+     [       \v!fit=>\def\PDFpageviewkey  {fit}\def\PDFpageviewwrd{/Fit},
+           \v!width=>\def\PDFpageviewkey {fith}\def\PDFpageviewwrd{/FitH},
+          \v!height=>\def\PDFpageviewkey {fitv}\def\PDFpageviewwrd{/FitV},
+        \v!minwidth=>\def\PDFpageviewkey{fitbh}\def\PDFpageviewwrd{/FitBH},
+       \v!minheight=>\def\PDFpageviewkey{fitbv}\def\PDFpageviewwrd{/FitBV},
+        \v!standard=>\def\PDFpageviewkey{xyz \PDFpagexyzspec}\def\PDFpageviewwrd{/XYZ \PDFpagexyzspec},
+         \s!unknown=>\def\PDFpageviewkey  {fit}\def\PDFpageviewwrd{/Fit}]%
    \edef\PDFpageview{/View [\PDFpageviewwrd]}}
 
 %D \macros
@@ -2433,7 +2431,7 @@
 %   {\reducetocoding[pdfdoc]\simplifycommands}
 
 \def\enablePDFdocencoding
-  {\enablecoding[pdfdoc]
+  {\enablecoding[pdfdoc]%
    \enablelanguagespecifics[\currentlanguage]% redundant ?
    \simplifycommands}
 

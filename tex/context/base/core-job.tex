@@ -364,19 +364,19 @@
 
 \def\executesystemcommand{\immediate\write18}
 
-\ifnum\etexversion<202
+\ifx\etexversion\undefined \else \ifnum\etexversion<202
   \prependtoks
      \writestatus\m!systems{eTeX version \number\etexversion\space -> too old (bugs)}%
      \writeline
   \to \everyjob
-\fi
+\fi \fi
 
-\ifnum\number\pdftexversion<120
+\ifx\pdftexversion\undefined \else \ifnum\number\pdftexversion<120
   \prependtoks
      \writestatus\m!systems{pdfTeX version \number\pdftexversion\space -> please update}%
      \writeline
   \to \everyjob
-\fi
+\fi \fi
 
 \prependtoks \showcontextbanner \to \everyjob
 

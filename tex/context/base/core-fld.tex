@@ -233,7 +233,7 @@
    \xdef\@@DriverFieldParent {#4}%
    \xdef\@@DriverFieldKids   {#5}%
    \xdef\@@DriverFieldGroup  {#6}%
-   \setfieldmodes       #7%
+   \setfieldmodes             #7%
    \bgroup
      \def\par{\string\n\string\n}%
      \xdef\@@DriverFieldValues {#8}%
@@ -255,42 +255,42 @@
 
 \def\doshowfields[#1]% todo: tabulate van maken en runtime
   {\bgroup
-   \switchtobodyfont[8pt,tt]
-   \doifsomething{#1}{\def\collectedfields{#1}}
+   \switchtobodyfont[8pt,tt]%
+   \doifsomething{#1}{\def\collectedfields{#1}}%
    \ifx\collectedfields\empty
      \par specify [fieldlist] or say \type{\tracefieldstrue} first\par
    \else
      \def\normalizedfieldmode##1##2##3%
        {\ifcase0##2 \else\sl\fi
-        \ifcase0##1 loner\or parent\or clone\or copy\fi}
+        \ifcase0##1 loner\or parent\or clone\or copy\fi}%
      \def\dosetfield##1##2##3##4##5##6##7##8##9%
-       {##1&##2&##3&##4&##5&##6&\normalizedfieldmode##7&##8&##9\cr}
+       {##1&##2&##3&##4&##5&##6&\normalizedfieldmode##7&##8&##9\cr}%
      \halign
        {&##\strut\hss\quad\cr
-        \noalign{\hrule}
+        \noalign{\hrule}%
         NAME  &TYPE  &ROOT   &
         PARENT&KIDS  &GROUP  &
         MODE  &VALUES&DEFAULT\cr
-        \noalign{\hrule}
+        \noalign{\hrule}%
         \@EA\globalprocesscommalist\@EA[\collectedfields]\getfield
-        \noalign{\hrule}}
+        \noalign{\hrule}}%
    \fi
    \egroup}
 
-\def\showfields%
+\def\showfields
   {\dosingleempty\doshowfields}
 
 \def\dologfields[#1]%
   {\bgroup
    \immediate\openout\scratchwrite=fields.log
-   \doifsomething{#1}{\def\collectedfields{#1}}
+   \doifsomething{#1}{\def\collectedfields{#1}}%
    \ifx\colledtedfields\empty
      \immediate\write\scratchwrite{use \tracefieldstrue}%
    \else
      \def\normalizedfieldmode##1##2##3%
        {\edef\@@DriverFieldMode
           {\ifcase##1 loner \or parent \or clone \or copy \fi
-           \ifcase##2 \else(done)\fi}}
+           \ifcase##2 \else(done)\fi}}%
      \def\dosetfield##1##2##3##4##5##6##7##8##9%
        {\normalizedfieldmode##7%
         \immediate\write\scratchwrite
@@ -399,15 +399,15 @@
 
 \def\setfieldreferences
   {\def\fieldreference##1##2%
-     {\ifundefined{\r!widget##1}
+     {\ifundefined{\r!widget##1}%
         \setxvalue{\r!widget##1}{##2}%
       \else
         \edef\!!stringa{\getvalue{\r!widget##1}}%
         \setxvalue{\r!widget##1}{\!!stringa,##2}%
       \fi}}
 
-\def\resetfieldreferences%
-  {\let\fieldreference=\gobbletwoarguments}
+\def\resetfieldreferences
+  {\let\fieldreference\gobbletwoarguments}
 
 \def\getmainfieldkids#1%
   {\checkfieldreferences
@@ -647,14 +647,10 @@
      \writestatus\m!fields{pass parent field and copies}%
    \fi}
 
-\def\copyfield%
-  {\dodoubleempty\docopyfield}
+\def\copyfield{\dodoubleempty\docopyfield}
 
-\unexpanded\def\field%
-  {\dotripleempty\dofield[\dohandlefield]}
-
-\unexpanded\def\fitfield%
-  {\dotripleempty\dofield[\dohandlefitfield]}
+\unexpanded\def\field   {\dotripleempty\dofield[\dohandlefield]}
+\unexpanded\def\fitfield{\dotripleempty\dofield[\dohandlefitfield]}
 
 \def\dofield[#1][#2][#3]%
   {\iffirstargument
@@ -751,7 +747,7 @@
      \def\docommando##1{\dodosetupfield[##1][#2][][][#3]}%
      \processcommalist[#1]\docommando
    \else\ifsecondargument
-     \doifelse{#2}{\v!reset}
+     \doifelse{#2}\v!reset
        {\def\docommando##1{\donosetupfield[#1][][][][]}}
        {\def\docommando##1{\dodosetupfield[##1][][][][#2]}}%
      \processcommalist[#1]\docommando
@@ -826,13 +822,13 @@
    \fi
      \dontcomplain
      \ifShowFieldLabel
-       \setbox0=\hbox
+       \setbox0\hbox
          {\reshapeframeboxtrue % else wrong dimensions
           \framed
             [\c!style=,\c!color=,\c!align=\c!right,#4]
             {\@@DriverFieldLabel}}%
      \fi
-     \setbox2=\hbox
+     \setbox2\hbox
        {\reshapeframeboxtrue % else wrong dimensions
         \ifVerticalField
           \setupframed[\c!height=6ex,\c!width=\hsize]%
@@ -924,8 +920,8 @@
       \doifelsenothing{#1}
         {\def\therightanswer{#2}}
         {\def\therightanswer{#1}}%
-      \setbox0=\hbox{#2}%
-      \setbox2=\hbox{\therightanswer}%
+      \setbox0\hbox{#2}%
+      \setbox2\hbox{\therightanswer}%
       \dimen0=\ifdim\wd0>\wd2 \wd0 \else \wd2 \fi
       \advance\dimen0 .2em
       \definefield
@@ -955,7 +951,7 @@
    \setbox0\hbox
      {\dontcomplain
       \nextsystemfield
-      \setbox0=\hbox{#2}%
+      \setbox0\hbox{#2}%
       \definesymbol
         [\currentsystemfield:txt]
         [{\inframed[\c!frame=\v!off,\c!background=\v!screen]{#3}}]%

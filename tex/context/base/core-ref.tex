@@ -2235,19 +2235,19 @@
        \v!start=>\referencingtrue]%
    \processaction
      [\@@rfinteraction]
-     [  \v!all=>\let\dowantedreference\docompletereference,
-        \v!label=>\let\dowantedreference\dolabelonlyreference,
+     [   \v!all=>\let\dowantedreference\docompletereference,
+       \v!label=>\let\dowantedreference\dolabelonlyreference,
         \v!text=>\let\dowantedreference\dotextonlyreference,
       \v!symbol=>\let\dowantedreference\dosymbolreference]%
    \chardef\autocrossfilereferences\zerocount
    \processaction
      [\@@rfautofile]
-     [     \v!yes=>\chardef\autocrossfilereferences\plusone,
+     [  \v!yes=>\chardef\autocrossfilereferences\plusone,
        \v!page=>\chardef\autocrossfilereferences\plustwo]%
    \chardef\referencefilecase\zerocount
    \processaction[\@@rfconvertfile]
-     [   \v!yes=>\chardef\referencefilecase\plusone,
-      \v!big=>\chardef\referencefilecase\plusone,
+     [  \v!yes=>\chardef\referencefilecase\plusone,
+        \v!big=>\chardef\referencefilecase\plusone,
       \v!small=>\chardef\referencefilecase\plustwo]%
   %\doifelse\@@rfstrut\v!yes % some day an option
   %  \referencetruttrue\referencestrutfalse

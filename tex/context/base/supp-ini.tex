@@ -20,9 +20,9 @@
 \newif\ifeightbitcharacters  \eightbitcharacterstrue
 
 %D We want to have access to the raw alternatives of the
-%D special characters. We use a \type {\xdef} instead of 
-%D \type {\let} because we need an expandable token in a 
-%D \type {\write}. 
+%D special characters. We use a \type {\xdef} instead of
+%D \type {\let} because we need an expandable token in a
+%D \type {\write}.
 
 \bgroup
 
@@ -36,6 +36,8 @@
 .catcode `.< 12 .xdef .letterless            B.string<E
 .catcode `.> 12 .xdef .lettermore            B.string>E
 .catcode `.# 12 .xdef .letterhash            B.string#E
+.catcode `." 12 .xdef .letterdoublequote     B.string"E
+.catcode `.' 12 .xdef .lettersinglequote     B.string'E
 .catcode `.$ 12 .xdef .letterdollar          B.string$E
 .catcode `.% 12 .xdef .letterpercent         B.string%E
 .catcode `.^ 12 .xdef .letterhat             B.string^E

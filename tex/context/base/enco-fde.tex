@@ -65,7 +65,7 @@
   \installcompoundcharacter "' {\handlequotation\c!rightquotation}
   \installcompoundcharacter ". {\kern.1em\ignorespaces}
 
-  \def\setupDElanguage%
+  \def\setupDElanguage
     {\setuplanguage
        [\s!de]
        [\c!leftsentence=\leftguillemot,
@@ -84,9 +84,11 @@
 
 %D An experimental hack:
 
+% no {\simplifiedcompoundcharacter"}
+
 \startencoding[pdfdoc]
   \startlanguagespecifics[\s!de]% hm, a % is needed
-    \defineactivecharacter " {\"} % no {\simplifiedcompoundcharacter"}
+    \defineactivecharacter " {\"}
   \stoplanguagespecifics
 \stopencoding
 

@@ -880,7 +880,7 @@
 %D Since we don't have to bother about active characters any
 %D longer, we end up with a pretty simple activating macro:
 
-\def\enableactivediscretionaries%
+\def\enableactivediscretionaries
   {\let\dotextmodediscretionary=\activedotextmodediscretionary}
 
 %D Done somewhere else: \type {\enableactivediscretionaries}.
@@ -891,7 +891,7 @@
 %D In those situations where the nature of characters is
 %D less predictable, we can use the more direct approach:
 
-\def\directdiscretionary#1%
+\unexpanded\def\directdiscretionary#1%
   {\convertargument#1\to\discretionarytoken
    \let\textmodediscretionary\compoundhyphen
    \expandafter\ifx\csname\@tmd@\string#1\endcsname\relax

@@ -1,6 +1,6 @@
 %D \module
 %D   [       file=supp-mis,
-%D        version=1997.01.04,
+%D        version=2004.10.26, % 1997.01.04,
 %D          title=\CONTEXT\ Support Macros,
 %D       subtitle=Missing (For Generic Use),
 %D         author=Hans Hagen,
@@ -93,7 +93,7 @@
 
 %D Let's see if it works.
 
-\writestatus{loading}{Context Support Macros / Miscellaneous }
+\writestatus{loading}{Context Support Macros / Miscellaneous (2004.10.26)}
 
 %D \macros
 %D   {protect,unprotect}
@@ -177,28 +177,24 @@
 \ifnocontextobject \scratchread    \do \newread   \scratchread    \fi
 \ifnocontextobject \scratchwrite   \do \newwrite  \scratchwrite   \fi
 
-\ifnocontextobject \zeropoint      \do \newdimen  \zeropoint      \fi % else problems with dimen12
-\ifnocontextobject \onepoint       \do \newdimen  \onepoint       \fi
-\ifnocontextobject \onebasepoint   \do \newdimen  \onebasepoint   \fi
-\ifnocontextobject \zerocount      \do \chardef   \zerocount =0   \fi
-\ifnocontextobject \plusone        \do \chardef   \plusone   =1   \fi
-\ifnocontextobject \minusone       \do \newcount  \minusone       \fi
+%D Watch out, in the past we ran into troubles with \type {\onepoint}
+%D (and others) mening something different in \LATEX\ then here. In
+%D such situations clashes are bound to happen. For this reason the
+%D assignments are no inside the test. We try to catch those situations
+%D but we cannot keep ahead of teh future.
 
-\ifnocontextobject \thousandpoint  \do \newdimen  \thousandpoint  \fi
+\ifnocontextobject \zeropoint      \do \newdimen  \zeropoint      \zeropoint     =    0pt \fi % else problems with dimen12
+\ifnocontextobject \onepoint       \do \newdimen  \onepoint       \onepoint      =    1pt \fi
+\ifnocontextobject \onebasepoint   \do \newdimen  \onebasepoint   \onebasepoint  =    1bp \fi
+\ifnocontextobject \zerocount      \do \chardef   \zerocount                     =      0 \fi
+\ifnocontextobject \plusone        \do \chardef   \plusone                       =      1 \fi
+\ifnocontextobject \minusone       \do \newcount  \minusone       \minusone      =     -1 \fi
+\ifnocontextobject \thousandpoint  \do \newdimen  \thousandpoint  \thousandpoint = 1000pt \fi
+\ifnocontextobject \onerealpoint   \do \newdimen  \onerealpoint   \onerealpoint  =    1pt \fi % latex has a funny \onepoint
 
-\ifnocontextobject \onerealpoint   \do \newdimen  \onerealpoint   \fi % latex has a funny \onepoint
-
-\thousandpoint = 1000pt
-\zeropoint     =    0pt
-\onepoint      =    1pt
-\onebasepoint  =    1bp
-\minusone      =   -1
-\onerealpoint  =    1pt
-
-\ifnocontextobject \emptytoks      \do \newtoks   \emptytoks      \fi
-
-\ifnocontextobject \nextbox   \do \newbox   \nextbox   \fi
-\ifnocontextobject \nextdepth \do \newdimen \nextdepth \fi
+\ifnocontextobject \emptytoks      \do \newtoks   \emptytoks \fi
+\ifnocontextobject \nextbox        \do \newbox    \nextbox   \fi
+\ifnocontextobject \nextdepth      \do \newdimen  \nextdepth \fi
 
 \ifnocontextobject \CONTEXTtrue            \do \newif\ifCONTEXT            \fi
 \ifnocontextobject \eightbitcharacterstrue \do \newif\ifeightbitcharacters \fi

@@ -1168,10 +1168,10 @@
        \hbox{\doattributes{\??kj#1}\c!headstyle\c!headcolor{\strut#2\floatcaptionsuffix}}%
        \ifnofloatcaption \else \ifemptyfloatcaption \else
          \ifcase#4\relax
-           \scratchskip\@@kjkjafstand\relax
+           \scratchskip\@@kjkjdistance\relax
            \dotfskip\scratchskip\emergencystretch.5\scratchskip
          \else
-           \ifx\@@kjkjtussen\empty\else\unskip\@@kjkjtussen\fi
+           \ifx\@@kjkjinbetween\empty\else\unskip\@@kjkjinbetween\fi
          \fi
        \fi \fi
      \fi
@@ -1217,7 +1217,7 @@
    \setbox\tempfloatbox\vbox{\borderedfloatbox{#4}}%
    \def\locatefloat
      {\chardef\alignstrutmode\zerocount
-      \alignedline\@@flflplaats\v!middle}%
+      \alignedline\@@flfllocation\v!middle}%
    \docheckcaptioncontent{#1}{#2}{#3}{#4}%
    \ifnofloatcaption
      \dopreparenocaption{#1}{#2}{#3}{#4}%
@@ -1225,13 +1225,13 @@
      \doglobal\addlocalbackgroundtobox\floatbox
    \else
      % todo: installable maken, variant/method=auto vs macro
-     \doifinsetelse\@@kjkjplaats{\v!high,\v!middle,\v!low}
+     \doifinsetelse\@@kjkjlocation{\v!high,\v!middle,\v!low}
        {\dopreparesidecaption{#1}{#2}{#3}{#4}}
-       {\doifelse\@@kjkjminbreedte\v!fit
-          {\doifelse\@@kjkjbreedte\v!max
+       {\doifelse\@@kjkjminwidth\v!fit
+          {\doifelse\@@kjkjwidth\v!max
              {\dopreparestackcaptionmax{#1}{#2}{#3}{#4}}
              {\ifdim\wd\tempcaptionbox>\wd\tempfloatbox % wider caption
-                \doifelse\@@kjkjbreedte\v!fit
+                \doifelse\@@kjkjwidth\v!fit
                   {\dopreparestackcaptionaut{#1}{#2}{#3}{#4}}
                   {\dopreparestackcaptionwid{#1}{#2}{#3}{#4}}%
               \else
@@ -1240,7 +1240,7 @@
           {\dopreparestackcaptionfix{#1}{#2}{#3}{#4}}}% new, special effects (see icare)
      \edef\width{\the\wd\tempfloatbox}%
      \addlocalbackgroundtobox\tempfloatbox
-     \setbox\tempcaptionbox\hbox{\@@kjkjcommando{\box\tempcaptionbox}}%
+     \setbox\tempcaptionbox\hbox{\@@kjkjcommand{\box\tempcaptionbox}}%
      \addlocalbackgroundtobox\tempcaptionbox
      \buildfloatbox
    \fi
@@ -1268,43 +1268,43 @@
       \locatefloat{\copy\tempfloatbox}}}
 
 \def\dopreparestackcaptionfix#1#2#3#4%
-  {\dosetraggedvbox\@@kjkjuitlijnen
+  {\dosetraggedvbox\@@kjkjalign
    \setbox\tempcaptionbox\raggedbox
-     {\hsize\@@kjkjminbreedte % special effects
+     {\hsize\@@kjkjminwidth % special effects
       \putcompletecaption{#4}{#2}{#3}{0}}}
 
 \def\dopreparestackcaptionmax#1#2#3#4%
-  {\dosetraggedvbox\@@kjkjuitlijnen
+  {\dosetraggedvbox\@@kjkjalign
    \setbox\tempcaptionbox\raggedbox
      {\hsize\wd\tempfloatbox
       \putcompletecaption{#4}{#2}{#3}{0}}}
 
 \def\dopreparestackcaptionwid#1#2#3#4%
-  {\dosetraggedvbox\@@kjkjuitlijnen
+  {\dosetraggedvbox\@@kjkjalign
    \setbox\tempcaptionbox\raggedbox
-     {\hsize\@@kjkjbreedte
+     {\hsize\@@kjkjwidth
       \putcompletecaption{#4}{#2}{#3}{0}}}
 
 \def\dopreparestackcaptionmin#1#2#3#4%
   {\raggedcenter                    % the default
-   \dosetraggedvbox\@@kjkjuitlijnen % when given
+   \dosetraggedvbox\@@kjkjalign % when given
    \setbox\tempcaptionbox\raggedbox % vbox, keeps footnotes
      {\hsize\wd\tempfloatbox
       \putcompletecaption{#4}{#2}{#3}{0}}}
 
 % \def\dopreparestackcaptionaut#1#2#3#4%
-%   {\doifsomething\@@kjkjuitlijnen
-%      {\ExpandBothAfter\doifnotinset\v!middle\@@kjkjuitlijnen
+%   {\doifsomething\@@kjkjalign
+%      {\ExpandBothAfter\doifnotinset\v!middle\@@kjkjalign
 %         {\let\captionovershoot\!!zeropoint}}%
 %    \ifdim\wd\tempfloatbox>\hsize
 %      % float is wider than \hsize
-%      \dosetraggedvbox\@@kjkjuitlijnen
+%      \dosetraggedvbox\@@kjkjalign
 %      \setbox\scratchbox\raggedbox % trial run
 %        {\hsize\wd\tempfloatbox
 %         \notesenabledfalse
 %         \putcompletecaption{#4}{#2}{#3}{0}}%
 %      \ifdim\ht\scratchbox>\lineheight % more lines
-%        \dosetraggedvbox\@@kjkjuitlijnen
+%        \dosetraggedvbox\@@kjkjalign
 %        \setbox\tempcaptionbox\raggedbox
 %          {\hsize\wd\tempfloatbox
 %           \advance\hsize -\captionovershoot\relax
@@ -1332,16 +1332,16 @@
 %         \putcompletecaption{#4}{#2}{#3}{0}}%
 %      \ifdim\ht\scratchbox>\lineheight
 %        % at least an average word longer than a line
-%        \dosetraggedvbox\@@kjkjuitlijnen
+%        \dosetraggedvbox\@@kjkjalign
 %        \setbox\tempcaptionbox\raggedbox
 %          {\advance\scratchdimen \captionovershoot
 %           \ifdim\scratchdimen<\hsize \hsize\scratchdimen \fi
 %           \putcompletecaption{#4}{#2}{#3}{0}}%
 %      \else
 %        % just over a line, don't use an overshoot
-%        % \doifinsetelse\@@kjkjuitlijnen{\v!left,\v!right}
-%        \expanded{\doifcommonelse{\@@kjkjuitlijnen}}{\v!left,\v!right,\v!flushleft,\v!flushright}
-%          {\dosetraggedvbox\@@kjkjuitlijnen
+%        % \doifinsetelse\@@kjkjalign{\v!left,\v!right}
+%        \expanded{\doifcommonelse{\@@kjkjalign}}{\v!left,\v!right,\v!flushleft,\v!flushright}
+%          {\dosetraggedvbox\@@kjkjalign
 %           \setbox\tempcaptionbox\raggedbox
 %             {\hsize\scratchdimen
 %              % strange : \raggedcenter
@@ -1354,19 +1354,19 @@
 %    \fi}
 
 \def\dopreparestackcaptionaut#1#2#3#4%
-  {\doifsomething\@@kjkjuitlijnen
-     {\ExpandBothAfter\doifnotinset\v!middle\@@kjkjuitlijnen
+  {\doifsomething\@@kjkjalign
+     {\ExpandBothAfter\doifnotinset\v!middle\@@kjkjalign
         {\let\captionovershoot\!!zeropoint}}%
    \edef\captionhsize{\the\wd\tempfloatbox}%
    \ifdim\captionhsize>\hsize
      % float is wider than \hsize
-     \dosetraggedvbox\@@kjkjuitlijnen
+     \dosetraggedvbox\@@kjkjalign
      \setbox\scratchbox\raggedbox % trial run
        {\hsize\captionhsize
         \notesenabledfalse
         \putcompletecaption{#4}{#2}{#3}{0}}%
      \ifdim\ht\scratchbox>\lineheight % more lines
-       \dosetraggedvbox\@@kjkjuitlijnen
+       \dosetraggedvbox\@@kjkjalign
        \setbox\tempcaptionbox\raggedbox
          {\hsize\captionhsize
           \advance\hsize -\captionovershoot\relax
@@ -1394,7 +1394,7 @@
         \putcompletecaption{#4}{#2}{#3}{0}}%
      \ifdim\ht\scratchbox>\lineheight
        % at least an average word longer than a line
-       \dosetraggedvbox\@@kjkjuitlijnen
+       \dosetraggedvbox\@@kjkjalign
        \setbox\tempcaptionbox\raggedbox
          {\scratchdimen\captionhsize
           \advance\scratchdimen \captionovershoot
@@ -1402,8 +1402,8 @@
           \putcompletecaption{#4}{#2}{#3}{0}}%
      \else
        % just over a line, don't use an overshoot
-       \expanded{\doifcommonelse{\@@kjkjuitlijnen}}{\v!left,\v!right,\v!flushleft,\v!flushright}
-         {\dosetraggedvbox\@@kjkjuitlijnen
+       \expanded{\doifcommonelse{\@@kjkjalign}}{\v!left,\v!right,\v!flushleft,\v!flushright}
+         {\dosetraggedvbox\@@kjkjalign
           \setbox\tempcaptionbox\raggedbox
             {\hsize\captionhsize
              % strange : \raggedcenter
@@ -1435,38 +1435,38 @@
      {\setlocalfloathsize
       \forgetall
       \processaction
-        [\@@kjkjplaats]
+        [\@@kjkjlocation]
         [ \v!top=>\locatefloat{\box\tempcaptionbox}%
-                    \endgraf\nointerlineskip\@@kjkjtussen
+                    \endgraf\nointerlineskip\@@kjkjinbetween
                     \locatefloat{\box\tempfloatbox},
           \v!bottom=>\locatefloat{\box\tempfloatbox}%
-                    \endgraf\nointerlineskip\@@kjkjtussen
+                    \endgraf\nointerlineskip\@@kjkjinbetween
                     \locatefloat{\box\tempcaptionbox},
            \v!high=>\locatefloat
-                      {\doifelse\@@flflplaats\v!left
+                      {\doifelse\@@flfllocation\v!left
                          {\box\tempfloatbox
-                          \dotfskip\@@kjkjafstand
-                          \vbox to\ht\tempfloatbox{\@@kjkjtussen\box\tempcaptionbox\vfill}}
-                         {\vbox to\ht\tempfloatbox{\@@kjkjtussen\box\tempcaptionbox\vfill}%
+                          \dotfskip\@@kjkjdistance
+                          \vbox to\ht\tempfloatbox{\@@kjkjinbetween\box\tempcaptionbox\vfill}}
+                         {\vbox to\ht\tempfloatbox{\@@kjkjinbetween\box\tempcaptionbox\vfill}%
                           \tfskip
                           \box\tempfloatbox}},
            \v!low=>\locatefloat
-                      {\doifelse\@@flflplaats\v!left
+                      {\doifelse\@@flfllocation\v!left
                          {\box\tempfloatbox
-                          \dotfskip\@@kjkjafstand
+                          \dotfskip\@@kjkjdistance
                           \vbox to\ht\tempfloatbox
-                            {\vfill\box\tempcaptionbox\@@kjkjtussen}}
+                            {\vfill\box\tempcaptionbox\@@kjkjinbetween}}
                          {\vbox to\ht\tempfloatbox
-                            {\vfill\box\tempcaptionbox\@@kjkjtussen}%
-                          \dotfskip\@@kjkjafstand
+                            {\vfill\box\tempcaptionbox\@@kjkjinbetween}%
+                          \dotfskip\@@kjkjdistance
                           \box\tempfloatbox}},
          \v!middle=>\locatefloat
-                      {\doifelse\@@flflplaats\v!left
+                      {\doifelse\@@flfllocation\v!left
                          {\box\tempfloatbox
-                          \dotfskip\@@kjkjafstand
+                          \dotfskip\@@kjkjdistance
                           \vbox to\ht\tempfloatbox{\vfill\box\tempcaptionbox\vfill}}
                          {\vbox to\ht\tempfloatbox{\vfill\box\tempcaptionbox\vfill}%
-                          \dotfskip\@@kjkjafstand
+                          \dotfskip\@@kjkjdistance
                           \box\tempfloatbox}},
         \s!unknown=>\locatefloat{\box\tempfloatbox},
            \v!none=>\locatefloat{\box\tempfloatbox}]}}
@@ -1567,11 +1567,11 @@
    \ifnofloatcaption
      \global\setbox\floatbox\vbox{\box\tempfloatbox}%
    \else
-     \doifelse\@@kjkjbreedte\v!max
-       {\dosetraggedvbox\@@kjkjuitlijnen
+     \doifelse\@@kjkjwidth\v!max
+       {\dosetraggedvbox\@@kjkjalign
         \setbox\tempcaptionbox\raggedbox
           {\hsize\wd\tempfloatbox\putcompletecaption{#4}{#2}{#3}{0}}}%
-       {\doifelse\@@kjkjbreedte\v!fit
+       {\doifelse\@@kjkjwidth\v!fit
           {\ifdim\wd\tempcaptionbox>\wd\tempfloatbox\relax
              \setbox\tempcaptionbox\vbox
                {\forgetall\hsize\wd\tempfloatbox\putcompletecaption{#4}{#2}{#3}{0}}%
@@ -1579,23 +1579,23 @@
              \setbox\tempcaptionbox\hbox to \wd\tempfloatbox
                {\hss\box\tempcaptionbox\hss}%
            \fi}
-          {\dosetraggedvbox\@@kjkjuitlijnen
+          {\dosetraggedvbox\@@kjkjalign
            \setbox\tempcaptionbox\raggedbox
              {\hsize\wd\tempfloatbox\putcompletecaption{#4}{#2}{#3}{0}}}}%
-     \setbox\tempcaptionbox\hbox{\@@kjkjcommando{\box\tempcaptionbox}}%
+     \setbox\tempcaptionbox\hbox{\@@kjkjcommand{\box\tempcaptionbox}}%
      \addlocalbackgroundtobox\tempcaptionbox % no \doglobal
      \global\setbox\floatbox\vbox
        {\processaction
-          [\@@kjkjplaats]
-          [ \v!top=>\box\tempcaptionbox
-                      \endgraf\nointerlineskip\@@kjkjtussen
+          [\@@kjkjlocation]
+          [   \v!top=>\box\tempcaptionbox
+                      \endgraf\nointerlineskip\@@kjkjinbetween
                       \box\tempfloatbox,
-            \v!bottom=>\box\tempfloatbox
-                      \endgraf\nointerlineskip\@@kjkjtussen
+           \v!bottom=>\box\tempfloatbox
+                      \endgraf\nointerlineskip\@@kjkjinbetween
                       \box\tempcaptionbox,
              \v!none=>\box\tempfloatbox,
           \s!unknown=>\box\tempfloatbox
-                      \endgraf\nointerlineskip\@@kjkjtussen
+                      \endgraf\nointerlineskip\@@kjkjinbetween
                       \box\tempcaptionbox]}%
    \fi
 %   \doglobal\addlocalbackgroundtobox\floatbox
@@ -1606,14 +1606,14 @@
 \long\def\dosetfloatbox#1#2#3#4% todo : \global\setbox
   {\ifvisible
      \par
-     \edef\@@kjkjplaats    {\getvalue{\??kj#4\c!location    }}%
-      \def\@@kjkjtussen    {\getvalue{\??kj#4\c!inbetween    }}%  no \edef
-      \def\@@kjkjcommando  {\getvalue{\??kj#4\c!command  }}%  no \edef
-     \edef\@@kjkjbreedte   {\getvalue{\??kj#4\c!width   }}%
-     \edef\@@kjkjminbreedte{\getvalue{\??kj#4\c!minwidth}}%  in geval van automatisch
-     \edef\@@kjkjafstand   {\getvalue{\??kj#4\c!distance   }}%
-     \edef\@@kjkjuitlijnen {\getvalue{\??kj#4\c!align }}%
-     \edef\@@flflplaats    {\getvalue{\??fl#4\c!location    }}%
+     \edef\@@kjkjlocation {\getvalue{\??kj#4\c!location}}%
+      \def\@@kjkjinbetween{\getvalue{\??kj#4\c!inbetween}}%  no \edef
+      \def\@@kjkjcommand  {\getvalue{\??kj#4\c!command}}%  no \edef
+     \edef\@@kjkjwidth    {\getvalue{\??kj#4\c!width}}%
+     \edef\@@kjkjminwidth {\getvalue{\??kj#4\c!minwidth}}%  in geval van automatisch
+     \edef\@@kjkjdistance {\getvalue{\??kj#4\c!distance}}%
+     \edef\@@kjkjalign    {\getvalue{\??kj#4\c!align}}%
+     \edef\@@flfllocation {\getvalue{\??fl#4\c!location}}%
      \ifparfloat
        \@EA\dosetparfloat % {#1}{#2}{#3}{#4}%
      \else

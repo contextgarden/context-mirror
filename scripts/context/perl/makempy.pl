@@ -21,6 +21,9 @@ eval '(exit $?0)' && eval 'exec perl -S $0 ${1+"$@"}' && eval 'exec perl -S $0 $
 #  This script uses GhostScript and PStoEdit as well as
 #  pdfTeX, and if requested TeXEdit and ConTeXt.
 
+# todo: we can nowadays do without the intermediate step, because GS
+# can now handle PDF quite good
+
 use Getopt::Long ;
 use Config ;
 use strict ;
@@ -199,9 +202,9 @@ sub show_help_info
     report ("--force : force processing (ignore checksum)" ) ;
     report ("--silent : don't show messages" ) ;
     print "\n" ;
-    report ("--acrobat : use acrobat (reader) for ps->pdf (on unix)") ;
-    report ("--pdftops : use pdftops (xpdf) ps->pdf") ;
-    report ("--ghostscript : use ghostscript (gs) for ps->pdf") ;
+    report ("--acrobat : use acrobat (reader) for pdf->ps (on unix)") ;
+    report ("--pdftops : use pdftops (xpdf) pdf->ps") ;
+    report ("--ghostscript : use ghostscript (gs) for pdf->ps") ;
     print "\n" ;
     report ("input file : metapost file with graphics") ;
     report ("programs needed : texexec and english context") ;
@@ -314,7 +317,8 @@ sub make_pdf_pages
 sub make_mp_figures
   { process ("postscript file") ;
     if ($pmethod) { run($posfile, "$pdftops",
-      "-paperw 10000 -paperh 10000 $pdffile $posfile") }
+      #~ "-paperw 10000 -paperh 10000 $pdffile $posfile") }
+      "-paper match $pdffile $posfile") }
     if ($gmethod) { run($posfile, "$ghostscript",
       "-q -sOutputFile=$posfile -dNOPAUSE -dBATCH -dSAFER -sDEVICE=pswrite $pdffile") }
     if ($amethod) { run($posfile, "$acroread",
@@ -322,6 +326,10 @@ sub make_mp_figures
 
 sub make_mp_pictures
   { process ("metapost file") ;
+    #~ if ($wereondos)
+      #~ { my $safeguard = `pstoedit -gstest` ;
+        #~ if ($safeguard =~ /\-I(.*?[\\\/])lib/mois)
+          #~ { $ENV{'PATH'} .= ";$1bin;" } }
     run ($tmpfile, "$pstoedit", "-ssp -dt -f mpost $posfile $tmpfile") }
 
 if ($help) { show_help_info }

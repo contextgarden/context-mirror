@@ -255,7 +255,7 @@
 \definetyping [MP]  [\c!option=MP, \c!margin=\v!standard]
 \definetyping [TEX] [\c!option=TEX,\c!margin=\v!standard]
 
-\setuptyping [\v!typing]   [\c!margin=\v!standard]
+\setuptyping [\v!typing]  [\c!margin=\v!standard]
 \setuptyping [\v!file]    [\c!margin=\v!standard]
 \setuptyping [definition] [\c!margin=0pt]
 
@@ -353,13 +353,13 @@
 \defineparagraphs [interface] [\c!n=2]
 \setupparagraphs  [interface] [1] [\c!width=4cm]
 
-\def\startvoorbeeld{\par\startnarrower}
-\def\stopvoorbeeld {\stopnarrower}
+\def\startexample{\par\startnarrower}  \let\startvoorbeeld\startexample
+\def\stopexample {\stopnarrower}       \let\stopvoorbeeld \stopexample
 
 \gdef\VisualizeLastSpace{\ifdim\lastskip>0pt\unskip\tttf\char32\fi}
 
-\gdef\ShowHeadText #1{\tttf#1\VL\headtext {#1}\VisualizeLastSpace}
-\gdef\ShowLabelText#1{\tttf#1\VL\labeltext{#1}\VisualizeLastSpace}
+\gdef\ShowHeadText #1{\tttf#1\VL\mainlanguage[\currentlanguage]\headtext {#1}\VisualizeLastSpace}
+\gdef\ShowLabelText#1{\tttf#1\VL\mainlanguage[\currentlanguage]\labeltext{#1}\VisualizeLastSpace}
 
 \startbuffer[lang-a]
 \starttable[|l|l|]
@@ -390,8 +390,8 @@
   \VL \ShowLabelText \v!graphic            \VL\MR
   \VL \ShowLabelText \v!chapter            \VL\MR
   \VL \ShowLabelText \v!section            \VL\MR
-  \VL \ShowLabelText \subsection           \VL\MR
-  \VL \ShowLabelText \subsubsection        \VL\MR
+  \VL \ShowLabelText \v!subsection         \VL\MR
+  \VL \ShowLabelText \v!subsubsection      \VL\MR
   \VL \ShowLabelText \v!appendix           \VL\MR
   \VL \ShowLabelText \v!part               \VL\MR
   \VL \ShowLabelText \v!line               \VL\MR
@@ -440,9 +440,9 @@
 \gdef\ShowTextsValues [#1] [#2]
   {\vbox\bgroup
    \language[#1]%
-   \setbox0=\hbox to \hsize{\hss\bfb#2 language defaults\hss}
-   \dp0=0pt
-   \box0
+   \setbox\scratchbox\hbox to \hsize{\hss\bfb#2 language defaults\hss}
+   \dp\scratchbox\zeropoint
+   \box\scratchbox
    \vskip1em
    \hrule
    \vskip2em

@@ -235,6 +235,8 @@
 % \def\alwaysreduceXMLtokens   {\XMLtokensreduction\plusone}
 % \def\permanentreduceXMLtokens{\XMLtokensreduction\plustwo}
 
+% part of this should move to a low level module
+
 \bgroup
 \catcode`\*=\@@comment
 \catcode`\.=\@@escape
@@ -242,19 +244,19 @@
 .catcode`.E=.@@endgroup
 .catcode`.P=.@@parameter
 
-.catcode`.&=.@@active * .gdef.letterampersand  B.string&E
-.catcode`.<=.@@active * .gdef.letterless       B.string<E
-                      * .gdef.lettermore       B.string>E
-.catcode`.#=.@@active * .gdef.letterhash       B.string#E
-.catcode`.$=.@@active * .gdef.letterdollar     B.string$E
-.catcode`.%=.@@active * .gdef.letterpercent    B.string%E
-.catcode`.\=.@@active * .gdef.letterbackslash  B.string\E
-.catcode`.^=.@@active * .gdef.letterhat        B.string^E
-.catcode`._=.@@active * .gdef.letterunderscore B.string_E
-.catcode`.{=.@@active * .gdef.letterbgroup     B.string{E
-.catcode`.}=.@@active * .gdef.letteregroup     B.string}E
-.catcode`.|=.@@active * .gdef.letterbar        B.string|E
-.catcode`.~=.@@active * .gdef.lettertilde      B.string~E
+.catcode`.&=.@@active * .xdef.letterampersand  B.string&E
+.catcode`.<=.@@active * .xdef.letterless       B.string<E
+                      * .xdef.lettermore       B.string>E
+.catcode`.#=.@@active * .xdef.letterhash       B.string#E
+.catcode`.$=.@@active * .xdef.letterdollar     B.string$E
+.catcode`.%=.@@active * .xdef.letterpercent    B.string%E
+.catcode`.\=.@@active * .xdef.letterbackslash  B.string\E
+.catcode`.^=.@@active * .xdef.letterhat        B.string^E
+.catcode`._=.@@active * .xdef.letterunderscore B.string_E
+.catcode`.{=.@@active * .xdef.letterbgroup     B.string{E
+.catcode`.}=.@@active * .xdef.letteregroup     B.string}E
+.catcode`.|=.@@active * .xdef.letterbar        B.string|E
+.catcode`.~=.@@active * .xdef.lettertilde      B.string~E
 
 .gdef.enableXMLexpansion
   B.def<B.doXMLelementE.let&=.doXMLentityE

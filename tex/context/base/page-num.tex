@@ -384,7 +384,7 @@
      \global\rightpagetrue
    \fi}
 
-\def\@@nmin     {} % kan vervallen  (upward compatibility)
+\def\@@nmin       {} % kan vervallen  (upward compatibility)
 \def\@@nmlocation {} % mag {plaats, in} zijn
 
 \newcounter\@@pagenumberlocation
@@ -402,16 +402,14 @@
      \ExpandFirstAfter\processallactionsinset
        [\@@nmlocation]
        [    \v!middle=>\dododosetpagenumberlocation{\v!text\c!middletext},
-             \v!left=>\dododosetpagenumberlocation{\v!text\c!lefttext},
-            \v!right=>\dododosetpagenumberlocation{\v!text\c!righttext},
-          \v!inleft=>\dododosetpagenumberlocation{\v!margin\c!lefttext},
-         \v!inright=>\dododosetpagenumberlocation{\v!margin\c!righttext},
-           \v!inmargin=>\dododosetpagenumberlocation{\v!margin\ifdubbelzijdig
-                         \c!margintext\else\c!righttext\fi},
-             \v!margin=>\dododosetpagenumberlocation{\v!margin\ifdubbelzijdig
-                         \c!margintext\else\c!righttext\fi},
-           \v!atmargin=>\dododosetpagenumberlocation{\v!text\c!marginedgetext},
-          \v!marginedge=>\dododosetpagenumberlocation{\v!text\c!marginedgetext}]%
+              \v!left=>\dododosetpagenumberlocation{\v!text\c!lefttext},
+             \v!right=>\dododosetpagenumberlocation{\v!text\c!righttext},
+            \v!inleft=>\dododosetpagenumberlocation{\v!margin\c!lefttext},
+           \v!inright=>\dododosetpagenumberlocation{\v!margin\c!righttext},
+          \v!inmargin=>\dododosetpagenumberlocation{\v!margin\ifdubbelzijdig\c!margintext\else\c!righttext\fi},
+            \v!margin=>\dododosetpagenumberlocation{\v!margin\ifdubbelzijdig\c!margintext\else\c!righttext\fi},
+          \v!atmargin=>\dododosetpagenumberlocation{\v!text\c!marginedgetext},
+        \v!marginedge=>\dododosetpagenumberlocation{\v!text\c!marginedgetext}]%
      \ifdone \else
        \dododosetpagenumberlocation{\v!text\c!middletext}% default
      \fi
@@ -528,7 +526,8 @@
      {\ifnum\countervalue{\??se#1}>\zerocount
         \getvalue{#1\c!number}\@@nmnumberseparator
       \fi}%
-   \doifsomething\@@nmtext{\@@nmtext\@@nmnumberseparator}\donexttracklevel{#1}}
+   \doifsomething\@@nmtext{\@@nmtext\@@nmnumberseparator}% strange option, what was the purpose of text?
+   \donexttracklevel{#1}}
 
 \unexpanded\def\completepagenumber
   {\doif{\@@nmstate\@@pnstate}{\v!start\v!start}
